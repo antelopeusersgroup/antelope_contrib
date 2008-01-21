@@ -294,9 +294,6 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 						bool trim)
 
 {
-	// Metadata key used to make predicted arrival time
-	// Fractional tolerance for sample rate error
-	const double relative_dt_allowed=0.001;
 	TimeSeries raw_data_trace;
 
 	// This clones the metadata area for ensemble, but leaves 
@@ -307,10 +304,11 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 	LoadPredictedTimes(raw,times,predicted_time_key,phase);
 	for(int i=0;i<raw.member.size();++i)
 	{
-		double rdterr;
-		// work with this copy
-		rdterr=fabs((raw.member[i].dt-target_dt)/target_dt);
-		if(rdterr>relative_dt_allowed)
+		if(SampleIntervalsMatch<TimeSeries>(raw.member[i],target_dt) )
+		{
+			raw_data_trace=raw.member[i];
+		}
+		else
 		{
 			try {
 				raw_data_trace=ResampleTimeSeries(
@@ -320,14 +318,11 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 				continue;  // This skips when error is thrown
 			}
 		}
-		else
-		{
-			raw_data_trace=raw.member[i];
-		}
 		try {
 			auto_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
 						predicted_time_key,
 							result_twin));
+
 			result->member.push_back(*newtrace);
 		} catch (SeisppError serr)
 		{

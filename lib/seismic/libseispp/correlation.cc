@@ -1,5 +1,7 @@
+#include <float.h>
 #include <string>
 #include "perf.h"
+#include "seispp.h"
 #include "SeisppError.h"
 #include "MultichannelCorrelator.h"
 namespace SEISPP {
@@ -17,8 +19,12 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 	{
 	    throw SeisppError(base_message+string("ly<lx\n"));
 	}
-	if(x.dt != y.dt)
+	/* this comes from seispp and is used to regular question of
+	if sample rates match to some tolerance */
+	if(!SampleIntervalsMatch<TimeSeries>(x,y.dt) )
+	{
 		throw SeisppError(base_message+string(" sample rates do not match"));
+	}
 	// The return series is cloned from y as the parent
 	// This allows perservation of metadata to go with cross-correlation output.
 	TimeSeries z(y);
@@ -65,6 +71,7 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 	int i;
 	int lx,ly;
 	const string base_message("Correlation :  ");
+	const double dteqtest(0.00001);
 
 	// This assumes default constructor marks output dead
 	if( (!y.live) || (!x.live) ) return TimeSeries() ; 
@@ -74,7 +81,8 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 	{
 	    throw SeisppError(base_message+string("ly<lx\n"));
 	}
-	if(x.dt != y.dt)
+	if(fabs( (x.dt-y.dt)/y.dt)>dteqtest)
+	if(!SampleIntervalsMatch<TimeSeries>(x,y.dt) )
 		throw SeisppError(base_message+string(" sample rates do not match"));
 	// The return series is cloned from y as the parent
 	// This allows perservation of metadata to go with cross-correlation output.

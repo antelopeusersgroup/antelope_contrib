@@ -46,11 +46,16 @@ using namespace std;
 Turns verbose mode on and off.  
 **/
 extern bool SEISPP_verbose;
-//
-//now the long list of includes for this directory containing
-//include files for main object definitions.  This is in keeping
-//with recommended style in OOP.
-//
+/*! List of allowed attribute data types.
+
+Binary data types are an essential component of all seismic data 
+processing as binary data are used universally in external data formats.
+This lists the allowed attributes that can be extracted from header
+data.  It is also used in the interface to extract sample data from
+raw external format inputs.*/
+enum AttributeType {INT32, INT16, BYTE, REAL32, REAL64,
+        STRING, BOOL, HDRINVALID};
+
 
 /*! Apply a simple static time shift based on elevation.
 
@@ -693,6 +698,34 @@ template <class Tensemble> void LagShift(Tensemble& d,
 		throw SeisppError(error2);
 	}
 }
+/*! \brief Test a generic time series object for sample rate match with standard.
+
+With real data there is often an issue about the actual sample rate of data
+versus the nominal sample rate.  e.g. in the resample procedures in the SEISPP
+library it is necessary to ask this question as a trigger to know if data need
+to be resample or not. The question is not just common, but prone to variations
+because what is considered good enough is context dependent.  This template
+regularizes this test for any time series object (child of BasicTimeSeries).
+A default is used to allow for a fairly common standard so most applications
+can drop the third argument for this litle procedure.  
+
+The actual test is a simple fractional difference formula like percentage
+error but not converted to percent (e.g. 10% here is 0.1).
+
+\param seis generic time series whose sample interval is to be tested against standard.
+\param target_dt standard sample interval for test
+\param tolerance relative error tolerance (default 0.001)
+*/
+template <class T> bool SampleIntervalsMatch(T& seis, double target_dt,
+		double tolerance=0.001)
+{
+	double normalized_error=fabs( (seis.dt-target_dt)/target_dt);
+	if(normalized_error<tolerance)
+		return true;
+	else
+		return false;
+}
+
 /*!
 // Convert a velocity model in flattened earth geometry to true geometry.
 //
