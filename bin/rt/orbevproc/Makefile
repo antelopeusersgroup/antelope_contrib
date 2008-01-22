@@ -21,7 +21,8 @@ DATA= \
 	evproc.pm \
 	Magnitude.pm \
 	Mlrichter.pm \
-	Mbusneic.pm
+	Mbusneic.pm \
+	Msusneic.pm
 
 ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lwffil -lassoc -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
 

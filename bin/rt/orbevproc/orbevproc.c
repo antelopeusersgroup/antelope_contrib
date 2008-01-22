@@ -130,6 +130,13 @@ mystrtime (double epoch)
 	return (epoch2str (epoch, "%H:%M:%S.%s"));
 }
 
+char *
+mystrdatetime (double epoch)
+
+{
+	return (epoch2str (epoch, "%Y%j:%H:%M:%S.%s"));
+}
+
 #include "orbevproc_version.h"
 
 static int myshutdown = 0;
@@ -291,7 +298,7 @@ db2dbtable (Pf *pf, char *pfkey, Dbptr dbin, char *tablename, Dbptr db, int requ
 		free (ptr);
 	} else {
 		char rec[1024];
-		long istart, iend;
+		int istart, iend;
 
 		if (dbin.record == dbINVALID) return (0);
 
@@ -337,7 +344,7 @@ dbtable2pf (Dbptr db, Pf **pf)
 	void *vbuf=NULL;
 	char key[32];
 	char rec[1024];
-	long rec0, rec1;
+	int rec0, rec1;
 
 	dbquery (db, dbTABLE_NAME, &tablename);
 
@@ -2302,6 +2309,7 @@ main (int argc, char **argv)
 		EventParams *ep;
 		int nodata = 1;
 		long myevid;
+		double last_output_time = 0.0;
 
 		if (type == TYPE_ORB) {
 
@@ -2452,6 +2460,15 @@ main (int argc, char **argv)
 				}
 			}
 			settbl (ep->process_tbl, -1, poout);
+			if (poout->expire_time <= 0.0) {
+				complain (0, "%ld: %s: WARNING - No expiration time\n", ep->myevid, poout->perlclass);
+			} else if (verbose) {
+				char *s1;
+
+				s1 = mystrdatetime(poout->expire_time);
+				elog_notify (0, "%ld: %s: Expire time set to %s\n", ep->myevid, poout->perlclass, s1);
+				free (s1);
+			}
 		}
 
 		if (ep == NULL) {
@@ -2668,7 +2685,7 @@ PROCESS_WFTHREADS:
 			if (ret < 0) {
 				die (0, "fatal orbreapthr_get() error for wf reap thread.\n");
 			}
-			if (ret == ORBREAPTHR_NODATA) continue;
+			if (ret == ORBREAPTHR_NODATA) goto CHECKEXPIRED;
 			if (ret == ORBREAPTHR_STOPPED) {
 				if (verbose) {
 					elog_notify (0, "%ld: Deleting event\n", ep->myevid);
@@ -2843,14 +2860,18 @@ PROCESS_WFTHREADS:
 			/* check to see if this event is done and if any 
 			   of its process objects have expired */
 
-			for (j=0,done=1; j<maxtbl(ep->process_tbl); j++) {
+CHECKEXPIRED:		for (j=0,done=1; j<maxtbl(ep->process_tbl); j++) {
 				ProcessObject *po;
 
 				po = (ProcessObject *) gettbl (ep->process_tbl, j);
 
+				if (po->done) continue;
+
 				if (po->expire_time > 0.0 && now() > po->expire_time) {
 
-					elog_notify (0, "%ld: Maximum wait time expired - flushing processing\n", ep->myevid);
+					if (verbose) {
+						elog_notify (0, "%ld: %s: Maximum wait time expired - flushing processing\n", ep->myevid, po->perlclass);
+					}
 
 					if (flush_processing (po, ep->pt->dbt, type, dbout, orbevout) < 0) {
 						complain (0, "flush_processing() error.\n");
@@ -2880,6 +2901,25 @@ PROCESS_WFTHREADS:
 
 		if (maxtbl(wfthread_tbl) >= max_events_to_thread) {
 			myusleep (0.1);
+			if (verbose && now()-last_output_time > 60.0) {
+				last_output_time = now();
+				for (i=0; i<maxtbl(wfthread_tbl); i++) {
+					int j;
+		
+					ep = (EventParams *) gettbl (wfthread_tbl, i);
+					for (j=0; j<maxtbl(ep->process_tbl); j++) {
+						ProcessObject *po;
+
+						po = (ProcessObject *) gettbl (ep->process_tbl, j);
+						if (po->done) continue;
+						if (po->expire_time > 0.0) {
+							elog_notify (0, "%ld: %s: Waiting...expires in %.3f seconds\n", ep->myevid, po->perlclass, po->expire_time-now());
+						} else {
+							elog_notify (0, "%ld: %s: Waiting...\n", ep->myevid, po->perlclass);
+						}
+					}
+				}
+			}
 			goto PROCESS_WFTHREADS;
 		}
 
