@@ -2883,6 +2883,7 @@ CHECKEXPIRED:		for (j=0,done=1; j<maxtbl(ep->process_tbl); j++) {
 				} 
 			}
 			if (done) {
+				if (ep->halt == 1) continue;
 				if (verbose) {
 					elog_notify (0, "%ld: Stopping wf reap thread\n", ep->myevid);
 				}
