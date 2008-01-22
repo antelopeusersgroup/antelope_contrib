@@ -429,6 +429,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		ss << "Ensemble has " << tse->member.size()
 			<<" seismograms"<<endl;
 		psm->record(ss.str());
+
 		Metadata data_md=psm->xpe->get_data_md();
 		stringstream ts;
 		if(psm->using_subarrays)
@@ -1030,10 +1031,8 @@ void apply_filter(Widget w, void * client_data, void * userdata)
   	   serr.log_error();
 	   psm->record(ss.str());
        }
-
-     /* For now we keep the option menu up until dismissed.  To have it
-	automatically go away after filtering, remove the comment on the next line */
-    //XtDestroyWidget(XtParent(w));
+       XClearArea(XtDisplay(psm->seismic_widget),XtWindow(psm->seismic_widget),
+		0,0,0,0,true);
 }
 
 void pick_filter_options(Widget w, void * client_data, void * userdata)
@@ -1949,7 +1948,8 @@ void restore_data(Widget w, void * client_data, void * userdata)
 	psm->session_state(NEXT_EVENT);
     ss << "Restoring original data"<<endl;
     psm->record(ss.str());
-    XClearArea(XtDisplay(w),XtWindow(w),0,0,0,0,true);
+    XClearArea(XtDisplay(psm->seismic_widget),XtWindow(psm->seismic_widget),
+		0,0,0,0,true);
 }
 
 /* Callback for next subarray button */
