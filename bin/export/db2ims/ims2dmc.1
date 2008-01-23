@@ -1,0 +1,64 @@
+.TH ims2dmc 1 
+.SH NAME
+ims2dmc \- send IMS1.0 short bulletin files to DMC and track in database 
+.SH SYNOPSIS
+.nf
+\fBims2dmc \fP[-v] [-V] [-m email1,email2,...] [-s \fIsubject\fP] \fIfile\fP \fIdatabase\fP
+.fi
+.SH DESCRIPTION
+\fBims2dmc\fP uses \fBrtmail\fP to transfer IMS1.0 short bulletin files to
+the DMC.  It also updates a \fIdmcbull\fP table that tracks when the file
+was transferred to the DMC and some information about the content of those
+files.
+
+As of early 2008, the DMC requests that the files be sent to phasemail@iris.washington.edu
+with the subject line of "PICKS".  This address should be included with any others
+who might need to be informed of the file availability using the -m option.  Except for 
+test purposes, there should be no reason to change the subject line.
+
+.SH OPTIONS
+.IP -v
+Verbose log messages
+.IP -V
+Overwhelmingly verbose log messages.  Useful for debugging purposes only.
+.IP "-m email1,email2,..."
+Email addresses for those who will receive bulletin files.  The DMC requests
+that phase picks be sent to phasemail@iris.washington.edu.
+.IP "-s subject"
+Subject for the email.  The DMC requests that the subject line be "PICKS".  
+You should not have to change this.
+.IP file 
+Name of the file containing IMS1.0 short file format phase and origin information.
+.IP database
+Database which contains the dmcbull table to be update.
+.SH FILES
+The IMS1.0 short file format with DMC modifications is described in the
+man page for \fBdb2ims\fP.  
+.SH ENVIRONMENT
+\fBims2dmc\fP requires that the dmcbull css3.0 schama extension is installed.  
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+ % ims2dmc -m jeakins@ucsd.edu,phasemail@iris.washington.edu \
+		2007_12_ANF_IMS dbops/anf 
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+db2ims(1)
+.fi
+.SH "BUGS AND CAVEATS"
+All bets are off if the file is not of the proper format.
+
+The dmcbull table is reviewed by the db2ims program for duplicate filenames.
+
+Sending of duplicate files is allowed.
+.SH AUTHOR
+.br
+Jennifer Eakins
+.br
+Univ. of California, San Diego

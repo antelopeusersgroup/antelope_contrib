@@ -1,0 +1,241 @@
+.TH DB2IMS 1 "$Date$"
+.SH NAME
+db2ims \- publish an IMS 2.0 short DMC modified bulletin from a css3.0 database
+.SH SYNOPSIS
+.nf
+\fBdb2ims \fP[-v] [-V] [-y] [-m] [-p \fIpf\fP] [-s \fIstart_origin.time\fP] [-e
+                \fIend_origin.time\fP] [-l \fIlogfile\fP] [-d \fIdb\fP]
+                \fIdatabase\fP
+.fi
+.SH DESCRIPTION
+
+\fBdb2ims\fP looks at a css3.0 \fIdatabase\fP and summarizes event and phase
+information in the DMC short IMS 2.0 format.  The output of the program
+is a text file that should be sent to the DMC.  Use the \fBims2dmc\fP script to
+send the output file from \fBdb2ims\fP to the DMC and to track it in a
+dmcbull table.
+
+.LP
+
+\fBdb2ims\fP requires the following database tables:  arrival, assoc, origin,
+origerr, event, and snetsta.  The netmag and stamag tables would be required if the
+-m option is used.  (Currently the -m option is unprogrammed).  The input
+\fIdatabase\fP should pass dbverify origin, assoc and event checks cleanly.
+
+.SH OPTIONS
+.IP "-p pf"
+Name of parameter file (default is \fBdb2ims\fP.\fIpf\fP)
+.IP -v
+Verbose log messages
+.IP -V
+Overwhelmingly verbose log messages.  Useful for debugging purposes only.
+.IP -m
+UNPROGRAMMED.  This option triggers reporting of magnitude information and
+writes a magnitude block.  The netmag and stamag tables are required.
+.IP -y
+Only select reviewed origins.  Any origins which do not have the review field in
+the origin changed to "y" are not included.
+.IP "-s start_time"
+Subset for origins after this time.
+.IP "-e end_time"
+Exclude origins after this time.
+.IP "-t lddate"
+Exclude origins with lddate before this time.
+.IP "-l logfile"
+Output file.  The default format is:  $year_$month_$agency_IMS.  The year and
+month are determined by the first event in the subsetted \fIdatabase\fP.  The agency
+is determined from the parameter file.
+.IP "-d dmcbull database"
+This is the database which contains the dmcbull table.  The dmcbull table
+tracks the output files created by this program that have been sent to the
+IRIS DMC.  By choosing this option, the dfile field of the dmcbull table
+is checked to make sure there are no duplicate output filenames.  If there
+are duplicates, the output file is renamed by appending an index (.1, .2, etc.).
+See ims2dmc(1) for additional information on the dmcbull table.
+.IP database
+Name of input \fIdatabase\fP.  The arrival, assoc, origin, event, snetsta and origerr tables
+are required.
+.SH FILES
+.SS "General format information"
+The format of the output file is a modification of the IMS1.0 short format.  Documentation
+of the format for the various blocks is available from pages 163-170 of the ISF/IMS1.0 document pages.
+.br
+ISF/IMS1.0 documentation:
+  ftp://ftp.isc.ac.uk/pub/isf/isf.pdf
+.br
+ISF extensions of IMS1.0 documentation:
+  ftp://ftp.isc.ac.uk/pub/isf/isf_ext.pdf
+.br
+ISC's informal summary of IMS1.0:
+  http://www.isc.ac.uk/Bulletin/descrip.html
+.br
+
+.SS "DMC specific information"
+Modifications by the DMC include:
+
+1) The IRIS/FDSN specific "Formatted Agency Comment" is defined as a Formatted
+Comment (see below) with the following key/value pair: AGENCY="xx" describing
+the agency submitting the Bulletin.  For example:
+
+ (IRIS AGENCY="University of Washington")
+
+2) The "Phase Information Sub-block" is defined in the ISF extensions document
+starting on page 16 (link to document below).
+
+3) The IRIS/FDSN specific "Phase Information Sub-block Formatted Comments" are
+defined as Formatted Comments (see below) with the following key/value pairs:
+
+FDSNNETWORKCODE="xx" :: FDSN Network code associated with the picked waveform.
+FDSNLOCATIONID="xx" :: FDSN Location ID associated with the picked waveform.
+FDSNQUALITYCODE="x" :: FDSN data quality code (D, R, Q, etc.)
+
+The FDSN network code is required, the location id and quality code are assumed
+to be unknown if not present.
+
+For example:
+
+ (IRIS FDSNNETWORKCODE="II" FDSNLOCATIONID="  ")
+or
+ (IRIS FDSNNETWORKCODE="IU" FDSNLOCATIONID="00" FDSNQUALITYCODE="R")
+
+Formatted Comments:
+IRIS specific Formatted Comments using the IMS1.0 comment syntax are formatted
+beginning with an open, round bracket "(" at position 2 in the record/line,
+followed "IRIS", followed by key and (quoted) value pairs and ending with a
+closed, round bracket ")".  A comment line should not be longer than 120
+characters.
+
+For data submitted to the DMC the station code (Phase Block), channel code
+(Phase Information Sub-block), and Formatted Comment keys: FDSNNETWORKCODE,
+FDSNLOCATIONID and FDSNQUALITYCODE should all follow the SEED/FDSN naming
+nomenclature and uniquely identify the waveform associated with the phase
+arrival.
+
+.SS "General information"
+The output file is divided into three sections (four if a magnitude block is
+requested):  1) EVENT HEADER and DATA; 2) PHASE HEADER and DATA; and 3) PHASE SUB-BLOCK
+HEADER and DATA.
+
+The first line of the file must be, "DATA_TYPE BULLETIN IMS1.0:short".  It is followed
+by EVENT HEADER information which describes the event number, and region where the
+earthquake occurred.  The EVENT DATA block contains the time, location, and depth of
+the earthquake as well as error ellipse information.  Note that in most circumstances,
+no error ellipse information is available for origins that were collected from regional
+network operators (i.e. you may only have this information for origins that were produced
+with dblocsat or dbgenloc).  Please see the /fImatch_origerr_auth/fP parameter in the PARAMETER
+FILE section below.
+
+The second section contains phase information.  It lists the station code, the distance
+from the event, the station to event azimuth, the phase (as picked by the analyst),
+arrival time, residual of the pick, azimuthal direction, and if available, the signal-to-noise
+ratio, amplitude, and period.  For now, the magnitude information is unprogrammed.
+
+The third section contains additional phase information.  It lists the SEED net code,
+the channel code, phase (as picked by the analyst), the date, error in arrival time
+as determined by the analyst.
+
+Each section also has either an event, origin, or arrival id.  These ids should be
+considered subject to change and should not be relied upon.  ID references for
+external bulletins may not be the same as those used by that institution.
+
+.SH PARAMETER FILE
+
+The following is the default parameter file.
+
+.in 2c
+.ft CW
+.nf
+
+.ne 5
+
+#
+agency          ANF
+
+author_reject   ".*assoc.*|.*local.*|.*tele.*"
+.ne 4
+
+match_origerr_auth  "ANF.*"  # origins with strike, sdobs, etc.
+                             # normally QED and regional bulletins
+                             # do not have these values filled in
+
+.fi
+.ft R
+.in
+
+.IP \fIagency\fP
+This is the short name for the reporting agency.  The output file format requires
+this to be 8 characters or less.  Check with the DMC so that your agency is recognized.
+.IP \fIauthor_reject\fP
+This is used to reject certain authors from the output file.  The subset
+that is performed is "auth!~/$author_reject/".  Use this to remove automatic solutions,
+or others that you do not want reported.
+.IP \fImatch_origerr_auth\fP
+Use this to select which authors from which to attempt to find origerr information.  If this
+is not used, the Smaj, Smin, Az, etc. may not be filled in properly (or with proper
+blanks).
+
+.SH EXAMPLE
+.IP \(bu
+Create an IMS short file containing only reviewed events for the
+month of January 2008. Check the dbops/anf.dmcbull table for any
+duplicate file names.
+.in 2c
+.ft CW
+.nf
+
+  %\fB db2ims_new -s "1/1/2008" -e "2/1/2008" -y \\fP
+        -d dbops/anf db/anf
+
+.fi
+.ft R
+.in
+.IP \(bu
+Create an IMS short file containing only events reviewed
+since 7/12/2007 and saved to an output file called MY_events.IMS.
+.in 2c
+.ft CW
+.nf
+.ne 3
+
+  %\fB db2ims_new -t "7/12/2007" -l "MY_events.IMS" -y db/anf\fP
+
+.fi
+.ft R
+.in
+
+.SH DIAGNOSTICS
+Any problems with or questions about the output format should be directed
+to the DMC.
+
+.SH "SEE ALSO"
+.nf
+ims2dmc(1)
+dmcbull(5)
+.fi
+
+.SH "BUGS AND CAVEATS"
+This has not been tested outside of the ANF.  I suspect that there may
+be some modifications needed for translation of other external bulletins.
+Any updates or additional external bulletins will have to be coordinated
+with the DMC, current contact Chad Trebant (chad@iris.washington.edu).
+
+The eTime field in the phase sub-block is currently filled in with the
+deltim value.  This is probably a bad choice as deltim is an arbitrary value
+chosen by the analyst and is filled in with a weighting factor for some
+automatic location programs.
+
+This output format makes no distinction as to what the preferred origin is.
+The preferred origin is used to calculate values placed in the phase/arrival
+blocks, but no indication of this is given in the origin block.  If you want
+this information go back to the css tables.
+
+I have no control over the requirements of the output format.  Any concerns
+or questions should be directed elsewhere.
+
+Tracking what files are created and have been sent to the DMC is critical.
+Make sure to include the ims2dmc program in your routine.
+.SH AUTHOR
+.br
+Jennifer Eakins
+.br
+Univ. of California San Diego

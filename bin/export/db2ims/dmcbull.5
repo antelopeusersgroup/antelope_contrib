@@ -1,0 +1,37 @@
+.TH DMCBULL 5 
+.SH NAME
+dmcbull, dmcbull_schema \- schema for recording transfer of phase bulletins to DMC 
+.SH DESCRIPTION
+The schema extension dmcbull defines the dmcbull table which tracks the name of the 
+IMS1.0 short bulletin file, basic content information, and the time it was sent to 
+the DMC.
+.SH "FIELDS"
+.IP "data_start"
+Time of first event in the phase file.
+.IP "data_end"
+Time of last event in the phase file.
+.IP "time"
+Time dfile was sent to DMC.          
+.IP "nev"
+Number of events in dfile. 
+.IP "nph"
+Number of phase picks in dfile. 
+.IP "dir"
+Directory where file was saved. 
+.IP "dfile"
+Name of phase pick file.
+.IP "auth"
+Who populated the field.  Normally will be ims2db:$user.  See \fB(ims2db)\fP.
+.IP "lddate"
+Modification time.
+.SH "SEE ALSO"
+.nf
+db2ims(1), ims2dmc(1)
+.fi
+.SH AUTHOR
+.nf
+Jennifer Eakins
+.br
+Univ. of California, San Diego
+.fi
+

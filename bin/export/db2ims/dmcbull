@@ -1,0 +1,60 @@
+# css3.0 extension
+
+#Include css3.0  # uncomment to complete schema
+
+Attribute nev 
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "nev > 0" )
+        Description ( "number of events" )
+        Detail {
+                This attribute is the number of events 
+                reported in a bulletin.  
+        }
+        ;
+
+Attribute nph 
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "nph > 0" )
+        Description ( "number of phases" )
+        Detail {
+                This attribute is the number of phase picks
+                reported in a bulletin.  
+        }
+        ;
+
+Attribute data_start
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "data start epoch time" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+Attribute data_end
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "last valid time for data" )
+        Detail {
+                Data end time in epochal seconds.  See field time for more info.
+                This attribute is the time of the last sample of data
+                on the baler.  
+        }
+        ;
+
+Relation dmcbull
+	Fields ( data_start data_end time nev nph dir dfile auth lddate )
+	Primary ( data_start data_end time )
+	Description ( "Phase file sharing information" )
+	Detail {
+		Tracks the start and endtime of phase files that are sent to the DMC along with the time of transmission to the DMC.
+	}
+	;
