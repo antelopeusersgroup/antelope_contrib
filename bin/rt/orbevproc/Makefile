@@ -12,6 +12,7 @@ MAN1 = dbevproc.1 orbevproc.1
 MAN3P = evproc.3p \
 	Magnitude.3p \
 	Mbusneic.3p \
+	Msusneic.3p \
 	Mlrichter.3p 
 
 PF = orbevproc.pf dbevproc.pf

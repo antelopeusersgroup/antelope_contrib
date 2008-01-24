@@ -2783,7 +2783,8 @@ PROCESS_WFTHREADS:
 
 					ret = isit_ready (ep->pt->dbt, pp);
 					if (ret < 0) {
-						die (0, "isit_ready() error.\n");
+						complain (0, "isit_ready() error.\n");
+						continue;
 					}
 
 					if (ret == 0) continue;

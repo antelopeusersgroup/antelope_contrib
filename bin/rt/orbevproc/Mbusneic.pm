@@ -390,7 +390,7 @@ sub process_network {
 		my @dborigin = @{$self->{dbo}} ;
 		$dborigin[3] = 0 ;
 		my $auth = dbgetv ( @dborigin, "auth" ) ;
-		dbputv ( @dborigin, "mb", $self->{m_median}, "mbid", 1, "auth", $auth . " mb" ) ;
+		dbputv ( @dborigin, "mb", $self->{m_median}, "mbid", $self->{magid}, "auth", $auth . " mb" ) ;
 	}
 
 	return $ret ;

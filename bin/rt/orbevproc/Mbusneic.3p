@@ -127,15 +127,15 @@ is primitive, normally embedded white spaces in the filter string should be repl
 (underscore) character which are replaced with white spaces again automatically before being used.
 The \fB"auto"\fP key word means that the filter should be determined automatically based upon the
 \fIsegtype\fP field in the metadatabase \fIcalibration\fP table and assuming the sensor is broadband.
-Note that the input measurement for the US NEIC mb is in microns of ground displacement.
-The autofilter for a broadband velocity sensor would be \fB"BW 0.5 5 5.0 5;INT;G 0.001"\fP (A 
-Butterworth bandpass from 0.5 to 5.0 hz followed by a single integration followed by a gain
-of 0.001 to produce ground displacement in microns).
+Note that the input measurement used in this computational module should be in micrometers/sec of ground velocity.
+The autofilter for a broadband velocity sensor would be \fB"BW 0.5 5 5.0 5;G 0.001"\fP (A 
+Butterworth bandpass from 0.5 to 5.0 hz followed by a gain
+of 0.001 to produce ground velocity in micrometers/sec).
 The \fB"autosp"\fP key word means the same as the \fB"auto"\fP key word except that it is
 assumed the sensor is a short period narrowband sensor. In this case only integrations
 are performed, once again according to the metadatabase \fIcalibration.segtype\fP value, and
-a gain is applied to convert to microns of ground displacement.
-Note that the filter must produce equivalent microns of ground displacement as output,
+a gain is applied to convert to micrometer/second of ground velocity.
+Note that the filter must produce equivalent micrometer/second of ground velocity as output,
 so it is the duty of the user to see that this happens if not using the auto key words. The \fIcalib\fP
 value is always used from the \fItrace\fP table input to \fBMbusneic::process_channel\fP as a means
 to convert the counts to physical ground units before applying the filter.

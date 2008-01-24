@@ -531,6 +531,7 @@ sub process_network {
 					"magnitude", $self->{m_median},
 					"uncertainty", $self->{m_unc},
 					"auth", $self->{params}{output_auth} ) ;
+	$self->{magid} = $magid ;
 	my $rec = dbadd ( @dbnetmag ) ;
 	$dbnetmag[3] = $rec;
 
