@@ -25,12 +25,14 @@ use Datascope;
   }
 
   $database	=  $ARGV[0];
-  print  STDERR "\ndatabase is:$database\n" if ($opt_v || $opt_V) ;
+  print  STDERR "\ndatabase is: $database\n" if ($opt_v || $opt_V) ;
   print  STDERR "\nCurrent time:\n " if ($opt_v || $opt_V) ;
   $t = time() ;
   ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime($t) ; 
   printf  STDERR "%s UTC\n", &strydtime($t) if ($opt_v || $opt_V) ;  
   printf  STDERR " %2d/%02d/%04d (%03d) %2d:%02d:%02d.000 %s %s\n\n", $mon+1, $mday, $year+1900, $yday+1, $hour, $min, $sec, $ENV{'TZ'}, $isdst ? "Daylight Savings Time" : "Standard Time" if ($opt_v || $opt_V);
+
+  printf  STDERR "Starting $0 at %s UTC\n", &strydtime($t) ;
 
 # get variables set up with getopts
    if ($opt_s) {
@@ -62,10 +64,6 @@ use Datascope;
    }
 
    
-
-# see if chosen 
-
-
 #
 # untested filter option...
 # In css3.0 arrival table, there is no way to track the filter used to make the pick.
@@ -136,7 +134,6 @@ use Datascope;
 
    print STDERR  "author reject set to: $auth_reject\n" if ($opt_V);
    $mysubset = "auth !~ /" . $auth_reject . "/";
-print STDERR "Subset is: $mysubset\n";
    @dborigin	= dbsubset(@dborigin, $mysubset  );
    $nrecs	= dbquery (@dborigin,"dbRECORD_COUNT");
    if ( !$nrecs ) {
@@ -291,7 +288,6 @@ print STDERR "Subset is: $mysubset\n";
 # group by event (evid) since I have multiple origins per event. 
 #
 
-
    @dborigin_g = dbgroup(@dbj, "time", "evid", "orid", "prefor", "auth", "lat", "lon", "depth", "mb", "ms", "ml", "nass", "ndef", "algorithm", "dtype", "etype", "origin.auth", "review", "stime", "sdobs", "smajax", "sminax", "strike", "sdepth");
 
 
@@ -304,6 +300,8 @@ print STDERR "Subset is: $mysubset\n";
 # Now that the filename is determined, open it.
 #
    print STDERR "Bulletin info will be logged to $filename. \n" if ( $opt_v || $opt_V ) ;
+
+   print STDERR "Done with subsets.  Writing to output file: $filename.\n";
 
    open (LOG, ">$filename");
    printf LOG "DATA_TYPE BULLETIN IMS1.0:short \n" ;
@@ -323,9 +321,6 @@ print STDERR "Subset is: $mysubset\n";
       print " evid    $evid   prefor   $prefor  \n" if $opt_V ;
 
       @dbevent_b = split(" ",dbgetv(@dbevent_g,"bundle"));
-
-#      $nb	= dbquery (@dbevent_b,"dbRECORD_COUNT");
-#      print STDERR "Number of bundled origins is: $nb \n";
 
 # PRINT EVENT BLOCK HEADER HERE, leave no carriage return so gregion can be filled in later
       printf LOG "\n\nEVENT $evid ";
@@ -365,7 +360,6 @@ print STDERR "Subset is: $mysubset\n";
 	# info from origerr table
         ($stime, $sdobs, $smajax, $sminax, $strike, $sdepth)     = dbgetv(@dbevent_b, qw ( stime sdobs smajax sminax strike sdepth ));
 
-# Calculate gregion
 	$gregion = grname($lat,$lon);
 	$grn	= grn($lat,$lon);
 	$srn	= srn($lat,$lon);
@@ -405,7 +399,6 @@ print STDERR "Subset is: $mysubset\n";
 			$arrtime_ms = 999;
 		}
 
-#		$arrtime	= epoch2str($atime, "%H:%M:%S.%s") ; 
 		$arrtime	= epoch2str($atime, "%H:%M:%S") . ".$arrtime_ms"; 
 		$arrtimesb	= epoch2str($atime, "%Y/%m/%d");
 
@@ -498,18 +491,10 @@ print STDERR "Subset is: $mysubset\n";
 		
 		push(@$prefor, $arid) ;
 
-#		while(($key,$value) = each(%$hashname) ) {
-#			print "$key is $value.\n";
-#		}		
 	   } # end of orid == prefor
 
         } # end of loop over each assoc
 
-#print "Mindelta: $mindelta.  Maxdelta: $maxdelta. Mintime: $mintime.  Maxtime: $maxtime\n";
-
-	foreach $item (@$prefor) {
-#		print "An arid is: $item\n";
-	}
 
 # PRINT region for EVENT BLOCK DATA and ORIGIN BLOCK HEADER 
 	if ($cnt_origin == 1) {
@@ -544,7 +529,6 @@ print STDERR "Subset is: $mysubset\n";
 	    $fixed = $blank;
 	}
 
-#	if ($auth !~ /ANF.*/) {
 	if ($auth !~ /$match_origerr_auth.*/) {
           $stime = $blank ;
 	  $sdobs = $blank;  
@@ -580,7 +564,6 @@ print STDERR "Subset is: $mysubset\n";
 # ORIGIN BLOCK (DATA)
         printf LOG "%4s/%2s/%2s %2s:%2s:%s.%s%1s",  $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec, $blank;
 
-#	if ($auth =~ /ANF.*/) {
 	if ($auth =~ /$match_origerr_auth.*/) {
             printf LOG " %5.2f %5.2f",  $stime, $sdobs ; 
             printf LOG " %8.4f %9.4f%1s ", $lat, $lon, $fixed ;
@@ -598,12 +581,6 @@ print STDERR "Subset is: $mysubset\n";
 
 
 # In theory, a magnitude block should go here... but I am not coding it for now
-
-# select prefor and get bundled assoc/arrival information.
-# go through foreah loop to get all phase information
-
-# FAILURE POINT
-# perhaps the group/bundle need to be remade?
 
 # instead of going through bundles, go through prefor hashes
 
@@ -630,7 +607,6 @@ print STDERR "Subset is: $mysubset\n";
 		    printf LOG " %s%s%s%2s%s  \n", "(IRIS FDSNNETWORKCODE=\"", $$value{net}, "\" FDSNLOCATIONID=\"", $$value{loc}, "\")" ;
 		}
 
-#		exit;
 	}
 
    } #end of loop over each event 
@@ -639,7 +615,6 @@ print STDERR "Subset is: $mysubset\n";
 
 dbclose @db;
 close(LOG);
-
 
 sub convert_auth {
 
