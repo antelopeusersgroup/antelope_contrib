@@ -1881,6 +1881,7 @@ main (int argc, char **argv)
 	char name[FILENAME_MAX];
 	int type;
 	char *antenv;
+	double last_output_time = 0.0;
 
 	elog_init (argc, argv) ;
 
@@ -2309,7 +2310,6 @@ main (int argc, char **argv)
 		EventParams *ep;
 		int nodata = 1;
 		long myevid;
-		double last_output_time = 0.0;
 
 		if (type == TYPE_ORB) {
 
@@ -2861,7 +2861,27 @@ PROCESS_WFTHREADS:
 			/* check to see if this event is done and if any 
 			   of its process objects have expired */
 
-CHECKEXPIRED:		for (j=0,done=1; j<maxtbl(ep->process_tbl); j++) {
+CHECKEXPIRED:		if (verbose && now()-last_output_time > 60.0) {
+				EventParams *myep;
+				int i2;
+
+				last_output_time = now();
+				for (i2=0; i2<maxtbl(wfthread_tbl); i2++) {
+					myep = (EventParams *) gettbl (wfthread_tbl, i2);
+					for (j=0; j<maxtbl(myep->process_tbl); j++) {
+						ProcessObject *po;
+
+						po = (ProcessObject *) gettbl (myep->process_tbl, j);
+						if (po->done) continue;
+						if (po->expire_time > 0.0) {
+							elog_notify (0, "%ld: %s: Waiting...expires in %.3f seconds\n", myep->myevid, po->perlclass, po->expire_time-now());
+						} else {
+							elog_notify (0, "%ld: %s: Waiting...\n", myep->myevid, po->perlclass);
+						}
+					}
+				}
+			}
+			for (j=0,done=1; j<maxtbl(ep->process_tbl); j++) {
 				ProcessObject *po;
 
 				po = (ProcessObject *) gettbl (ep->process_tbl, j);
@@ -2903,25 +2923,6 @@ CHECKEXPIRED:		for (j=0,done=1; j<maxtbl(ep->process_tbl); j++) {
 
 		if (maxtbl(wfthread_tbl) >= max_events_to_thread) {
 			myusleep (0.1);
-			if (verbose && now()-last_output_time > 60.0) {
-				last_output_time = now();
-				for (i=0; i<maxtbl(wfthread_tbl); i++) {
-					int j;
-		
-					ep = (EventParams *) gettbl (wfthread_tbl, i);
-					for (j=0; j<maxtbl(ep->process_tbl); j++) {
-						ProcessObject *po;
-
-						po = (ProcessObject *) gettbl (ep->process_tbl, j);
-						if (po->done) continue;
-						if (po->expire_time > 0.0) {
-							elog_notify (0, "%ld: %s: Waiting...expires in %.3f seconds\n", ep->myevid, po->perlclass, po->expire_time-now());
-						} else {
-							elog_notify (0, "%ld: %s: Waiting...\n", ep->myevid, po->perlclass);
-						}
-					}
-				}
-			}
 			goto PROCESS_WFTHREADS;
 		}
 
