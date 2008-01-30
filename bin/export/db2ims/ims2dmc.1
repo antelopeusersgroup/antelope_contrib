@@ -57,6 +57,11 @@ All bets are off if the file is not of the proper format.
 The dmcbull table is reviewed by the db2ims program for duplicate filenames.
 
 Sending of duplicate files is allowed.
+
+No checks are made on the size of the file you are trying to send.  Note that
+some mailservers may limit the size of an attachment and this program will likely
+fail silently if that limit is exceeded.
+
 .SH AUTHOR
 .br
 Jennifer Eakins

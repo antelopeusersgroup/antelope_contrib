@@ -165,11 +165,12 @@ use Datascope;
    $ortime = dbgetv(@dborigin, qw(time));
    $startyr = epoch2str($ortime, "%Y");
    $startmo = epoch2str($ortime, "%m");
+   $startdy = epoch2str($ortime, "%d");
 
    if ($opt_l) {
         $filename = "$opt_l";
    } else {
-	$filename = "$startyr\_$startmo\_$agency"."_IMS";
+	$filename = "$startyr\_$startmo\_$startdy\_$agency"."_IMS";
    }
 
 # check to see if filename already exists in save area
