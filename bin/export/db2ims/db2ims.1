@@ -10,7 +10,7 @@ db2ims \- publish an IMS 2.0 short DMC modified bulletin from a css3.0 database
 .SH DESCRIPTION
 
 \fBdb2ims\fP looks at a css3.0 \fIdatabase\fP and summarizes event and phase
-information in the DMC short IMS 2.0 format.  The output of the program
+information in the DMC short IMS 2.0 bulletin format.  The output of the program
 is a text file that should be sent to the DMC.  Use the \fBims2dmc\fP script to
 send the output file from \fBdb2ims\fP to the DMC and to track it in a
 dmcbull table.
@@ -158,6 +158,8 @@ match_origerr_auth  "ANF.*"  # origins with strike, sdobs, etc.
                              # normally QED and regional bulletins
                              # do not have these values filled in
 
+ims_dir         IMS                     # directory for storing output files
+
 .fi
 .ft R
 .in
@@ -173,6 +175,10 @@ or others that you do not want reported.
 Use this to select which authors from which to attempt to find origerr information.  If this
 is not used, the Smaj, Smin, Az, etc. may not be filled in properly (or with proper
 blanks).
+.IP \fIims_dir\fP
+This is a directory where the output files will be stored.  Directory is created if
+it does not already exist.  This string will be used in the 'dir' field of the 
+dmcbull table when \fIims2dmc\fP is run. 
 
 .SH EXAMPLE
 .IP \(bu
@@ -216,8 +222,9 @@ dmcbull(5)
 .SH "BUGS AND CAVEATS"
 This has not been tested outside of the ANF.  I suspect that there may
 be some modifications needed for translation of other external bulletins.
-Any updates or additional external bulletins will have to be coordinated
-with the DMC, current contact Chad Trebant (chad@iris.washington.edu).
+Any updates to naming conventions or additional external bulletins will 
+have to be coordinated with the DMC: current contact is Chad 
+Trebant (chad@iris.washington.edu).
 
 The eTime field in the phase sub-block is currently filled in with the
 deltim value.  This is probably a bad choice as deltim is an arbitrary value
@@ -233,7 +240,10 @@ I have no control over the requirements of the output format.  Any concerns
 or questions should be directed elsewhere.
 
 Tracking what files are created and have been sent to the DMC is critical.
-Make sure to include the ims2dmc program in your routine.
+Make sure that you follow up IMS file creation with ims2dmc program in your 
+processing routines.  You will then have a record of the files you create
+stored in a dmcbull extension table.
+
 .SH AUTHOR
 .br
 Jennifer Eakins

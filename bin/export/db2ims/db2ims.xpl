@@ -19,6 +19,7 @@
 
 require "getopts.pl" ;
 use Datascope;
+use File::Path;
 
   if ( ! &Getopts('d:f:t:s:e:l:p:mvVy') || @ARGV < 1 || @ARGV > 1) { 
 	&usage;
@@ -86,6 +87,7 @@ use Datascope;
    $agency	= pfget($Pf, 'agency') ;
    $auth_reject	= pfget($Pf, 'auth_reject') ;
    $match_origerr_auth = pfget($Pf, 'match_origerr_auth');
+   $IMSdir	= pfget($Pf, 'ims_dir') ;
 
 #
 # open up database and lookup tables
@@ -170,8 +172,15 @@ use Datascope;
    if ($opt_l) {
         $filename = "$opt_l";
    } else {
-	$filename = "$startyr\_$startmo\_$startdy\_$agency"."_IMS";
+	$filename = "$IMSdir/$startyr\_$startmo\_$startdy\_$agency"."_IMS";
+	print STDERR "filename is: $filename.  \n" if ($opt_V) ;
+	print STDERR "Now checking for $IMSdir  existance.\n";
+	if (! -e $IMSdir) {
+	  print STDERR "$IMSdir does not exist.  Creating.\n";
+	  mkpath "$IMSdir" ;
+	}
    }
+
 
 # check to see if filename already exists in save area
 
@@ -695,7 +704,7 @@ sub map_etype {
 
 sub usage{
 	print STDERR <<ENDIT ;
-\nUSAGE: \t$0 [-v] [-V] [-y] [-m] [-s start_origin.time] [-e end_origin.time] [-l logfile] [-d dbops] database 
+\nUSAGE: \t$0 [-v] [-V] [-y] [-m] [-s start_origin.time] [-e end_origin.time] [-p pf] [-l logfile] [-d dbops] database 
 
 ENDIT
 exit;
