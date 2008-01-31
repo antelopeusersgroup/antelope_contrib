@@ -9,7 +9,6 @@
 #include "XcorProcessingEngine.h"
 
 
-const string gain_keyword("gain");
 const string dbarrival_lag_keyword("dbarrival_lag");
 /* This is a helper function intended to be used only with file scope.
 It is used to implement trace shifting with a set of existing arrivals
@@ -813,6 +812,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                            ensemble_mdl,
                            trace_mdl,
                            am);
+
 		// This specialized function could be generalized, but
 		// done in one pass here for efficiency.  Local function
 		// to this file found above

@@ -391,7 +391,6 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 						<<endl;
 				}
 			}
-			trattributes.put(gain_keyword,calib);
 			// These attributes are loaded conditionally
 			if(require_coords)
 			{
@@ -459,7 +458,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				for(i=0;i<seis->ns;++i)
 				{
 					seis->s.push_back(static_cast<double>
-							(tdata[i])/calib);
+							(tdata[i])*calib);
 				}
 			}
 			else
@@ -532,7 +531,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							(tprime<(twin.end+0.5*(seis->dt))) )
 						{
 							seis->s[seis->sample_number(tprime)]
-							= static_cast<double>(tdata[k])/calib;
+							= static_cast<double>(tdata[k])*calib;
 						}
 							
 					}

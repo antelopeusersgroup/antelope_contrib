@@ -358,11 +358,11 @@ template <class Tensemble,class Tmember>
 
 In plotting data it is frequently desirable to scale data by some 
 amplitude attribute to maximize the range of what can be seen in the data.
-This is a generic algorithm to do apply such an algorithm to an 
+This is a generic algorithm to apply such an algorithm to an 
 emsemble of data.  The approach is to assume the amplitude factor was
 computed independently by some other method and set as the 
 an attribute in the Metadata area of each member.  Thus this generic
-algorith assumes each member has inherited the Metadata object as 
+algorithm assumes each member has inherited the Metadata object as 
 a component of each member AND that each member of the ensemble is 
 held in an STL vector container of Tmember objects.  
 

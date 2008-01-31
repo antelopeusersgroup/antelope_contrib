@@ -529,19 +529,6 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		vang[0]=ts[0].get_double("vang");
 		vang[1]=ts[1].get_double("vang");
 		vang[2]=ts[2].get_double("vang");
-		/* Now set the transformation matrix */
-		SphericalCoordinate scor;
-		for(i=0;i<3;++i)
-		{
-			double *nu;
-			scor.phi=M_PI_2 - rad(hang[i]);
-			scor.theta = rad(vang[i]);
-                        nu=SphericalToUnitVector(scor);
-                        for(j=0;j<3;++j)tmatrix[i][j]=nu[j];
-                        delete [] nu;
-                }
-                components_are_cardinal = tmatrix_is_cardinal(*this);
-                if(components_are_cardinal) components_are_orthogonal=true;
 	} catch (MetadataError mde)
 	{
 		mde.log_error();
@@ -703,20 +690,11 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		for(j=0;j<3;++j)tmatrix[j][i]=nu[j];
 		delete [] nu;
 	}
-	// A crude test for cardinal directions
-	if( (fabs(tmatrix[0][0]-1.0)<DBL_EPSILON) 
-		&& (fabs(tmatrix[1][1]-1.0)<DBL_EPSILON)
-		&& (fabs(tmatrix[2][2]-1.0)<DBL_EPSILON) )
-	{
-		components_are_cardinal=true;
+        components_are_cardinal = tmatrix_is_cardinal(*this);
+        if(components_are_cardinal) 
 		components_are_orthogonal=true;
-	}
 	else
-	{
-		// Assume a complete transformation is needed otherwise
-		components_are_cardinal=false;
 		components_are_orthogonal=false;
-	}
 }
 // Note on usage in this group of functions.  The rotation algorithms used here
 // all key on the BLAS for speed.  That is, a transformation matrix could be done
@@ -795,6 +773,7 @@ void ThreeComponentSeismogram::rotate_to_standard()
 		//Above multiplies with a transpose without building
 		//it.  Here we have the transformation matrix
 		//
+ 
 		for(i=0;i<3;++i)
 		{
 			dcopy(ns,u.get_address(0,0),3,work[i],1);
