@@ -5,6 +5,8 @@ INCLUDE=ArrivalUpdater.h \
   AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
+  FixedFormatTrace.h \
+  HeaderMap.h \
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
@@ -35,7 +37,9 @@ INCLUDE=ArrivalUpdater.h \
   stack.h
 # This is uses for Attribute_Map constructor and was built with 
 # an external program
-PF=seispp_attribute_maps.pf metadata_defaults.pf
+PF=seispp_attribute_maps.pf \
+  metadata_defaults.pf \
+  HeaderMap.pf
 MAN3=Basic_Time_Series.3 \
   Datascope_Handle.3 \
   GCLrays.3 \
@@ -56,6 +60,8 @@ OBJS=ArrivalUpdater.o \
   AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \
+  FixedFormatTrace.o  \
+  HeaderMap.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \

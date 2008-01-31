@@ -1,0 +1,409 @@
+SAC &Arr{
+sample_data_type real32
+headersize 632
+boolean_true 1
+boolean_false 0
+boolean_default false
+#
+# The sac header like most formats has extra fields not
+# in this map.  If you want to use these as auxiliary metadata
+# you can define your own format by assigning names to the
+# user option fields.  Beware that in SAC there are "internal"
+# attributes I believe are not to be used for this purpose.
+# These are at offsets 9*4,54*4, 55*4, and 80*4.  The user optional
+# attributes other gaps that can be seen in the following
+#
+attributes &Tbl{
+delta real32 4 0
+depmin real32 4 4
+depmax real32 4 8
+scale real32 4 12
+odelta real32 4 16
+b real32 4 20
+e real32 4 24
+o real32 4 28
+a real32 4 32
+t0 real32 4 40
+t1 real32 4 44
+t2 real32 4 48
+t3 real32 4 52
+t4 real32 4 56
+t5 real32 4 60
+t6 real32 4 64
+t7 real32 4 68
+t8 real32 4 72
+t9 real32 4 76
+f  real32 4 80
+resp0 real32 4 84
+resp1 real32 4 88
+resp2 real32 4 92
+resp3 real32 4 96
+resp4 real32 4 100
+resp5 real32 4 104
+resp6 real32 4 108
+resp7 real32 4 112
+resp8 real32 4 116
+resp9 real32 4 120
+stla real32 4 124
+stlo real32 4 128
+stel real32 4 132
+stdp real32 4 136
+evla real32 4 140
+evlo real32 4 144
+evel real32 4 148
+evdp real32 4 152
+mag real32 4 156
+user0 real32 4 160
+user1 real32 4 164
+user2 real32 4 168
+user3 real32 4 172
+user4 real32 4 176
+user5 real32 4 180
+user6 real32 4 184
+user7 real32 4 188
+user8 real32 4 192
+user9 real32 4 196
+dist real32 4 200
+az real32 4 204
+baz real32 4 208
+gcarc real32 4 212
+depmen real32 4 224
+cmpaz real32 4 228
+cmpinc real32 4 232
+xminimum real32 4 236
+xmaximum real32 4 240
+yminimum real32 4 244
+ymaximum real32 4 248
+nzyear int32 4 280
+nzjday int32 4 284
+nzhour int32 4 288
+nzmin int32 4 292
+nzsec int32 4 296
+nzmsec int32 4 300
+nvhdr int32 4 304
+norid int32 4 308
+nevid int32 4 312
+npts int32 4 316
+nwfid int32 4 324
+nxsize int32 4 328
+nysize int32 4 332
+iftype int32 4 340
+idep int32 4 344
+iztype int32 4 348
+iinst int32 4 356
+istreg int32 4 360
+ievreg int32 4 364
+ievtyp int32 4 368
+iqual int32 4 372
+isynth int32 4 376
+imagtyp int32 4 380
+imagsrc int32 4 384
+leven bool 4 420
+lpspol bool 4 424
+lovrok bool 4 428
+lcalda bool 4 432
+kstnm string 8 440
+kevnm string 16 448
+khole string 8 464
+k0 string 8 472
+ka string 8 480
+kt0 string 8 488
+kt1 string 8 496
+kt2 string 8 504
+kt3 string 8 512
+kt4 string 8 520
+kt5 string 8 528
+kt6 string 8 536
+kt7 string 8 544
+kt8 string 8 552
+kt9 string 8 560
+kf string 8 568
+kuser0 string 8 576
+kuser1 string 8 584
+kuser2 string 8 592
+kcmpnm string 8 600
+knetwk string 8 608
+kdatrd string 8 616
+kinst string 8 624
+} # end attributes Tbl
+#
+# This defines defaults for attributes
+# An important concept in SAC, but not necessarily
+# in other formats.
+#
+attribute_defaults &Tbl{
+delta real  1.0
+depmin real  -12345.0
+depmax real  -12345.0
+scale real  -12345.0
+odelta real  -12345.0
+b real  0.0
+e real  0.0
+o real  -12345.0
+a real  -12345.0
+t0 real  -12345.0
+t1 real  -12345.0
+t2 real  -12345.0
+t3 real  -12345.0
+t4 real  -12345.0
+t5 real  -12345.0
+t6 real  -12345.0
+t7 real  -12345.0
+t8 real  -12345.0
+t9 real  -12345.0
+f real  -12345.0
+resp0 real  -12345.0
+resp1 real  -12345.0
+resp2 real  -12345.0
+resp3 real  -12345.0
+resp4 real  -12345.0
+resp5 real  -12345.0
+resp6 real  -12345.0
+resp7 real  -12345.0
+resp8 real  -12345.0
+resp9 real  -12345.0
+stla real  -12345.0
+stlo real  -12345.0
+stel real  -12345.0
+stdp real  -12345.0
+evla real  -12345.0
+evlo real  -12345.0
+evel real  -12345.0
+evdp real  -12345.0
+mag real  -12345.0
+user0 real  -12345.0
+user1 real  -12345.0
+user2 real  -12345.0
+user3 real  -12345.0
+user4 real  -12345.0
+user5 real  -12345.0
+user6 real  -12345.0
+user7 real  -12345.0
+user8 real  -12345.0
+user9 real  -12345.0
+dist real  -12345.0
+az real  -12345.0
+baz real  -12345.0
+gcarc real  -12345.0
+depmen real  -12345.0
+cmpaz real  -12345.0
+cmpinc real  -12345.0
+xminimum real  -12345.0
+xmaximum real  -12345.0
+yminimum real  -12345.0
+ymaximum real  -12345.0
+nzyear int  -12345
+nzjday int  -12345
+nzhour int  -12345
+nzmin int  -12345
+nzsec int  -12345
+nzmsec int  -12345
+nvhdr int  -12345
+norid int  -12345
+nevid int  -12345
+npts int  0
+nwfid int  -12345
+nxsize int  -12345
+nysize int  -12345
+iftype int  -12345
+idep int  -12345
+iztype int  -12345
+iinst int  -12345
+istreg int  -12345
+ievreg int  -12345
+ievtyp int  -12345
+iqual int  -12345
+isynth int  -12345
+imagtyp int  -12345
+imagsrc int  -12345
+leven bool  true
+lpspol bool  false
+lovrok bool  true
+lcalda bool  false
+kstnm string  -12345
+kevnm string  -12345
+khole string  -12345
+k0 string  -12345
+ka string  -12345
+kt0 string  -12345
+kt1 string  -12345
+kt2 string  -12345
+kt3 string  -12345
+kt4 string  -12345
+kt5 string  -12345
+kt6 string  -12345
+kt7 string  -12345
+kt8 string  -12345
+kt9 string  -12345
+kf string  -12345
+kuser0 string  -12345
+kuser1 string  -12345
+kuser2 string  -12345
+kcmpnm string  -12345
+knetwk string  -12345
+kdatrd string  -12345
+kinst string  -12345
+} # end attribute_defaults
+}
+#
+# Standard SEGY definition with no extensions and host float samples.
+# names used here are taken directly from $ANTELOPE/include/segy.h
+# Users who want to change the names of attributes, simply edit this
+# Arr segment and give the new segment a different name.  Similarly
+# for systems that use extensions to segy (e.g. PASSCAL segy) do
+# a similar thing but fill in unused segments not defined below. 
+#
+SEGYfloat &Arr{
+sample_data_type real32
+headersize 240
+boolean_true 1
+boolean_false 2
+boolean_default true
+attributes &Tbl{
+lineSeq int 4 0
+reelSeq int 4 4
+event_number int 4 8
+channel_number int 4 12
+energySourcePt int 4 16
+cdpEns int 4 20
+traceInEnsemble in 4 24
+traceId short 2 30
+vertSum short 2 32
+horSum short 2 34
+dataUse short 2 36
+sourceToRecDist int 4 38
+recElevation int 4 40
+sourceSurfaceElevation int 4 44
+sourceDepth int 4 48
+datumElevRec int 4 52
+datumElevSource int 4 56
+recWaterDepth int 4 60
+sourceWaterDepth int 4 64
+elevationScale short 2 68
+coordScale short 2 70
+sourceLongOrX int 4 72
+sourceLongOrY int 4 76
+recLongOrX int 4 80
+recLatOrY int 4 84
+coordUnits short 2 88
+weatheringVelocity short 2 90
+subWeatheringVelocity short 2 92
+sourceUpholeTime short 2 94
+recUpholeTime short 2 96
+sourceStaticCor short 2 98
+recStaticCor short 2 100
+totalStatic short 2 102
+lagTimeA short 2 104
+lagTimeB short 2 106
+delay short 2 108
+muteStart short 2 110
+muteEnd short 2 112
+sampleLength short 2 114
+deltaSample short 2 116
+gainType short 2 118
+gainConst short 2 120
+initialGain short 2 122
+correlated short 2 124
+sweepStart short 2 126
+sweepEnd short 2 128
+sweepLength short 2 130
+sweepType short 2 132
+sweepTaperAtStart short 2 134
+sweepTaperAtEned short 2 136
+taperType short 2 138
+aliasFreq short 2 140
+aliasSlope short 2 142
+notchFreq short 2 144
+notchSlope short 2 146
+lowCutFreq short 2 148
+hiCutFreq short 2 150
+lowCutSlope short 2 152
+hiCutSlope short 2 154
+year short 2 156
+day short 2 158
+hour short 2 160
+minute short 2 162
+second short 2 164
+timeBasisCode short 2 166
+traceWeightingFactor short 2 168
+phoneRollPos1 short 2 170
+phoneFirstTrace short 2 172
+phoneLastTrace short 2 174
+gapSize short 2 176
+taperOvertravel short 2 178
+} # end attributes Tbl
+attribute_defaults &Tbl{
+lineSeq  0
+reelSeq  0
+event_number  0
+channel_number  0
+energySourcePt  0
+cdpEns  0
+traceInEnsemble  0
+traceId  0
+vertSum  0
+horSum  0
+dataUse  0
+sourceToRecDist  0
+recElevation  0
+sourceSurfaceElevation  0
+sourceDepth  0
+datumElevRec  0
+datumElevSource  0
+recWaterDepth  0
+sourceWaterDepth  0
+elevationScale  0
+coordScale  0
+sourceLongOrX  0
+sourceLongOrY  0
+recLongOrX  0
+recLatOrY  0
+coordUnits  0
+weatheringVelocity  0
+subWeatheringVelocity  0
+sourceUpholeTime  0
+recUpholeTime  0
+sourceStaticCor  0
+recStaticCor  0
+totalStatic  0
+lagTimeA  0
+lagTimeB  0
+delay  0
+muteStart  0
+muteEnd  0
+sampleLength  0
+deltaSample  0
+gainType  0
+gainConst  0
+initialGain  0
+correlated  0
+sweepStart  0
+sweepEnd  0
+sweepLength  0
+sweepType  0
+sweepTaperAtStart  0
+sweepTaperAtEned  0
+taperType  0
+aliasFreq  0
+aliasSlope  0
+notchFreq  0
+notchSlope  0
+lowCutFreq  0
+hiCutFreq  0
+lowCutSlope  0
+hiCutSlope  0
+year  0
+day  0
+hour  0
+minute  0
+second  0
+timeBasisCode  0
+traceWeightingFactor  0
+phoneRollPos1  0
+phoneFirstTrace  0
+phoneLastTrace  0
+gapSize  0
+taperOvertravel  0
+}
+}
+
