@@ -1,3 +1,4 @@
+#include <sstream>
 #include "FixedFormatTrace.h"
 using namespace std;
 using namespace SEISPP;
@@ -114,7 +115,7 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 	{
 		char *line;
 		line=(char *)gettbl(t,i);
-		stringstream ss(line);
+		istringstream ss(line);
 		ss >> attribute_name;
 		ss >> attribute_type;
 		try {
@@ -267,19 +268,22 @@ double FixedFormatTrace::operator()(int i)
 	size_t soffset=static_cast<size_t>(i);
 	unsigned char *sptr=d;
 	double result;
+	int *iraw;
+	short int *sraw;
+	float *fraw;
 	switch (stype)
 	{
 	case INT32:
 		sptr=sptr+4*soffset;
 		/* this assumes int means int32.  Not sure
 		how this is evolving */
-		int *iraw=reinterpret_cast<int *>(sptr);
+		iraw=reinterpret_cast<int *>(sptr);
 		result=static_cast<double>(*iraw);
 		break;
 	case INT16:
 		sptr=sptr+2*soffset;
 		/* this assumes short int means int16.  */
-		short int *sraw=reinterpret_cast<short int *>(sptr);
+		sraw=reinterpret_cast<short int *>(sptr);
 		result=static_cast<double>(*sraw);
 		break;
 	case REAL64:
@@ -289,13 +293,16 @@ double FixedFormatTrace::operator()(int i)
 	case REAL32:
 	default:
 		sptr=sptr+4*soffset;
-		float *fraw=reinterpret_cast<float *>(sptr);
+		fraw=reinterpret_cast<float *>(sptr);
 		result=static_cast<double>(*fraw);
 		break;
 	}
 	double& ref = result;
 	return ref;
 }
+/* This is stubbed in as it is required because we inherit
+BasicTimeSeries.  Ultimately something like the method used
+in BRTT's trace library should be used to mark gaps. */
 void FixedFormatTrace::zero_gaps()
 {
 }
@@ -307,8 +314,8 @@ vector<double> FixedFormatTrace::data()
 	/* I can't figure out the obscure syntax it would take
 	to do this with the raw this pointer so we do this 
 	conversion to a reference.  Clearer in the long run anyway.*/
-	FixedFormatTrace& d=(*this);
-	for(int i=0;i<ns;++i) result.push_back(d(i));
+	FixedFormatTrace& thistrace=(*this);
+	for(int i=0;i<ns;++i) result.push_back(thistrace(i));
 	return(result);
 }
 
