@@ -195,6 +195,7 @@ void auto_switch_polarity(TimeSeriesEnsemble *d)
 					for(j=0;j<d->member[i].s.size();++j)
 						d->member[i].s[j]*=-1.0;
 				}
+				d->member[i].put("vang",0.0);
 			}
 			else if (ctest==n)
 			{
@@ -204,6 +205,7 @@ void auto_switch_polarity(TimeSeriesEnsemble *d)
 					for(j=0;j<d->member[i].s.size();++j)
 						d->member[i].s[j]*=-1.0;
 				}
+				d->member[i].put("hang",0.0);
 			}
 			else if (ctest==e)
 			{
@@ -214,6 +216,7 @@ void auto_switch_polarity(TimeSeriesEnsemble *d)
 					for(j=0;j<d->member[i].s.size();++j)
 						d->member[i].s[j]*=-1.0;
 				}
+				d->member[i].put("hang",90.0);
 			}
 		} catch (MetadataGetError mde) {};
 	}
