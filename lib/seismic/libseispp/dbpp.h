@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <set>
 #include "stock.h"
 #include "db.h"
 #include "pf.h"
@@ -73,8 +74,18 @@ public:
 	can best be thought of as a simplified call to dbopen.
 	\param dbname name of Antelope db to open.
 	\param readonly if true the db is openned read only.
+	\param retain_all_views is a switch that controls the way
+		memory associated with views is managed.  When false
+		(the default) memory management releases all view 
+		pointers (see man dbfree) whenever the copy count for
+		that view drops to zero.  When true any operation
+		that creates a view (e.g. join or subset) will never
+		release the memory of any parent that is itself a view.
+		Setting this variable true is not advised as it will
+		nearly always lead to bad memory leaks.  
 	*/
-	DatascopeHandle(string dbname,bool readonly);
+	DatascopeHandle(string dbname,bool readonly,
+		bool retain_all_views=false);
 	/*! Construct a full view from a parameter file recipe.
 	This constructor uses an Antelope parameter file 
 	to construct a complete view using dbprocess.  It differs from
@@ -92,11 +103,21 @@ public:
 		(calls gettbl(...)  see man gettbl(3)) and the resulting Tbl pointer
 		is passed directly to dbprocess.
 	\param readonly if set true the database will be openned in read only mode.
+	\param retain_all_views is a switch that controls the way
+		memory associated with views is managed.  When false
+		(the default) memory management releases all view 
+		pointers (see man dbfree) whenever the copy count for
+		that view drops to zero.  When true any operation
+		that creates a view (e.g. join or subset) will never
+		release the memory of any parent that is itself a view.
+		Setting this variable true is not advised as it will
+		nearly always lead to bad memory leaks.  
 
 	\exception SeisppDberror is thrown if there are any problems.
 	*/
 	DatascopeHandle(string dbname, string pfname, 
-			string tag,bool readonly);
+			string tag,bool readonly,
+				bool retain_all_views=false);
 	/*! Construct a full view from an Antelope Pf * object recipe.
 	This constructor uses an Antelope parameter file object
 	to construct a complete view using dbprocess.  It differs from a similar
@@ -111,10 +132,26 @@ public:
 		The parameter file is parsed for a Tbl block with this tag
 		(calls gettbl(...)  see man gettbl(3)) and the resulting Tbl pointer
 		is passed directly to dbprocess.
+	\param manage_memory can be used to switch off the automatic
+		memory management of the handle created.  This is rarely a good
+		idea, but is a necessary option because the constructor is
+		passed the raw pointer instead of another DatascopeHandle
+		object.  The default has memory management turned on.
+	\param retain_all_views is a switch that controls the way
+		memory associated with views is managed.  When false
+		(the default) memory management releases all view 
+		pointers (see man dbfree) whenever the copy count for
+		that view drops to zero.  When true any operation
+		that creates a view (e.g. join or subset) will never
+		release the memory of any parent that is itself a view.
+		Setting this variable true is not advised as it will
+		nearly always lead to bad memory leaks.  
 
 	\exception SeisppDberror is thrown if there are any problems.
 	*/
-	DatascopeHandle(Dbptr db, Pf *pf, string tag);
+	DatascopeHandle(Dbptr db, Pf *pf, string tag,
+		bool manage_memory=true,
+			bool retain_all_views=false);
 	/*! Standard copy constructor.  
 	The copy constructor here is far from "standard" even though I've labeled it 
 	as such.  The result is indeed an exact copy of the parent, but the purpose
@@ -131,10 +168,14 @@ public:
 	An odd specialized copy constructor for Datascope db.
 	Handle is constructed using an existing db pointer, dbi,
 	and setting the "parent" for this handle using dbip.
-	A special problem is that the function has to do an independent
-	test to see if dbi is a bundle pointer or not to set the is_bundle
-	variable.  This is necessary as Datascope has no way to independently
-	tell if a Dbptr is a bundle or just a plain table or view.
+	This was used by the author in some earlier code before
+	realizing some special features of the Datascope API that
+	made it unnecessary.  It has been retained for my personal
+	convenience, but any other potential users should avoid this
+	constructor.  The biggest problem with this constructor is
+	any view created by this constructor is guaranteed to cause
+	a memor leak.
+
 	\param dbi Dbptr to be copied.
 	\param dbip parent table to dbi.  As noted above this is needed 
 		to build a complete handle from only a Dbptr descriptor.  
@@ -445,6 +486,48 @@ private:
 	* derived from a parent. 
 	*/
 	Dbptr parent_table;
+	/*! Holds one entry for every created view.  
+
+	Memory needs to be managed with views in Datascope or large
+	bad memory leaks can be created.  This handles this problem in
+	a fairly elegant way using the stl multimap which is perfectly
+	suited to this problem.  Whenever a view is created it's table
+	index is pushed to this multimap.  When a view is copied 
+	an additional entry for that table is posted.  The destructor
+	uses this to manage memory by a simple rule.  When the count of
+	entries for a given view drops to zero the dbfree is called to
+	release the array of pointers held by that view.  Note this
+	is made a pointer so a single copy is passed around to 
+	all copies of the original handle.*/
+	multiset<int> *views;
+	/*! procedure to manage memory of Datascope views. 
+
+	This is an internal method used or memory management of views
+	that is a companion to the multiset views.  Datascope uses
+	arrays of pointers to construct relational db views that have
+	to be managed manually.  This method must only be called when
+	the retain_parent booloeans used in the relational methods
+	is set false.  In his situation this procedure does two things.
+	First, it checks to see if the parent is a view.  If it is a plain
+	table it does nothing.  Otherwise it calls dbfree on the parent.
+	Second, if the view is destroyed it sets the parent_table Dbptr
+	to all dbINVALID. */
+	void manage_parent();
+	/*! Escape switch for retaining parent tables of a view.
+
+	Automatic memory management used in this handle will normally 
+	automatically release memory associated with a view when a new
+	view is created as a child of another view.  When retain_parent is
+	true dbfree is not called on the parent after a new view is created.
+	This is desirable only if the user wants to access the view 
+	again as a raw db pointer.  The proper solution with this interface
+	is to make a copy of the parent handle before calling the 
+	method that creates a new view.  Then the copy will cause the 
+	view count to be larger than 1 and dbfree will not be used.  
+	In short, I've retained this features as a hidden escape valve
+	to provide a hack fix for some programs, but setting this
+	boolean true is to be avoided. */
+	bool retain_parent; 
 };
 /*! \brief Simplified interface to dbmatches.
 

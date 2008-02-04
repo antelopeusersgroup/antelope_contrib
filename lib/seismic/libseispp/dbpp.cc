@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "elog.h"
 #include "dbpp.h"
+#include "seispp.h"
 #include "SeisppError.h"
 using namespace std;
 using namespace SEISPP;
@@ -45,6 +46,15 @@ bool is_a_bundle_pointer(Dbptr db)
 	else
 		return true;
 }
+bool is_view_test(Dbptr db)
+{
+	int is_view;
+	dbquery(db,dbTABLE_IS_VIEW,&is_view);
+	if(is_view)
+		return true;
+	else
+		return false;
+}
 // Default constructor needs to initialize the pointer to 
 // mark it as invalid
 DatascopeHandle::DatascopeHandle()
@@ -59,6 +69,8 @@ DatascopeHandle::DatascopeHandle()
 	parent_table.table=dbINVALID;
 	parent_table.field=dbINVALID;
 	parent_table.record=dbINVALID;
+	views=NULL;
+	retain_parent=false;
 }
 	
 /* dbprocess driven constructor for an Antelope_Database (handle) object.
@@ -72,7 +84,8 @@ a resource (in this case valid pointers to a view into a database)
 DatascopeHandle::DatascopeHandle(string dbname,
 	string pfname, 
 		string tag,
-			bool readonly)
+			bool readonly,
+				bool retain_all_views)
 {
 	if(readonly)
 	{
@@ -85,6 +98,7 @@ DatascopeHandle::DatascopeHandle(string dbname,
 			throw SeisppDberror("Failure in dbopen",db,complain);
 	}
 	close_on_destruction=true;
+	retain_parent=retain_all_views;
 	// Probably needs to be an auto_ptr so pffree can be called
 	// Maybe should use a Metadata object
 	Pf *pf;
@@ -109,14 +123,22 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	if(db.table == dbINVALID)
 		throw SeisppDberror("dbprocess failed",db,complain);
 	pffree(pf);
+	/* initialize views */
+	views = new multiset<int>;
+	bool is_view=is_view_test(db);
+	if(is_view)
+	{
+		views->insert(db.table);
+	}
 	// Always initialize -- better than garbage
 	parent_table=db;
 	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
 }
-// somewhat repetitious, but a useful subset of above
-// Convenient sometimes to use with Plain Jane version immediately below
-DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag)
+/* Construct from a raw pointer.  See dbpp.h or doxygen pages
+for more details */
+DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag,
+			bool manage_memory,bool retain_all_views)
 {
 	Tbl *process_list;
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
@@ -131,15 +153,26 @@ DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag)
         db = dbprocess(dbi,process_list,0);
         if(db.table == dbINVALID)
                 throw SeisppDberror("dbprocess failed",db,complain);
+	if(manage_memory)
+	{
+		/* initialize views */
+		views = new multiset<int>;
+		bool is_view=is_view_test(db);
+		if(is_view) views->insert(db.table);
+	}
+	else
+		views=NULL;
 	// Always initialize -- better than garbage
 	parent_table=db;
 	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
 	freetbl(process_list,0);
+	retain_parent=retain_all_views;
 }
 
 // Plain Jane version just opens the database and sets the Dbptr
-DatascopeHandle::DatascopeHandle(string dbname,bool readonly)
+DatascopeHandle::DatascopeHandle(string dbname,bool readonly,
+		bool retain_all_views)
 {
 	if(readonly)
 	{
@@ -153,6 +186,8 @@ DatascopeHandle::DatascopeHandle(string dbname,bool readonly)
 	}
 	is_bundle = false;
 	close_on_destruction=false;
+	views = new multiset<int>;
+	retain_parent=retain_all_views;
 }
 // copy constructor 
 DatascopeHandle::DatascopeHandle(const DatascopeHandle& dbi)
@@ -161,6 +196,16 @@ DatascopeHandle::DatascopeHandle(const DatascopeHandle& dbi)
 	is_bundle=dbi.is_bundle;
 	close_on_destruction=false; // copies should be this by default
 	parent_table=dbi.parent_table;
+	/* Note this is a pointer so this creates a link back to 
+	the original.  The destructor has to manage this memory
+	and this provides a clean way to pass a common area around
+	between copies.  */
+	views=dbi.views;
+	views->insert(db.table);
+	retain_parent=dbi.retain_parent;
+/*
+cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
+*/
 }
 /* An odd specialized copy constructor for Datascope db.  
 Handle is constructed using an existing db pointer, dbi, 
@@ -177,11 +222,68 @@ DatascopeHandle::DatascopeHandle(Dbptr dbi,Dbptr dbip)
 	parent_table = dbip;
 	is_bundle=is_a_bundle_pointer(dbi);
 	close_on_destruction=false; // copies should be this by default
+	/* This is an implicit signal to this object that it should
+	not manage the memory on this object.  The copy created
+	through this mechanism will leak memory if used to create
+	any views. */
+	views=NULL;
+	/* This is the only case that sets this true by default.  Assume
+	that if this constructor is called you don't care about memory
+	leaks anyway.  */
+	retain_parent=true; 
 }
+/* Destructor.  This is fairly complex because the multiset 
+container is used to manage memory.  See dbpp.h and doxygen
+pages or details */
 	
 DatascopeHandle::~DatascopeHandle()
 {
-	if(close_on_destruction)dbclose(db);
+	if(close_on_destruction)
+	{
+		if(views!=NULL) delete views;
+		dbclose(db);
+	}
+	else if (views!=NULL)
+	{
+		/* do nothing here unless this is a view.  If it
+		is a view call dbfree only if this is the last 
+		handle pointing to that view */
+		bool is_view=is_view_test(db);
+		if(is_view) 
+		{
+//cerr << "DEBUG:  views->count(): "<<views->count(db.table)<<" for table "<<db.table<<endl;
+			int viewcount=views->count(db.table);
+			if((viewcount<=0) && SEISPP_verbose)
+			{
+			   cerr << "DatascopeHandle destructor:  "
+				<< "Coding error.  Destructor called when"
+				<< " view count for view number "
+				<< db.table << " was zero."<<endl;
+			}
+			else
+			{
+			  multiset<int>::iterator viewsptr;
+			  viewsptr=views->find(db.table);
+			  /* Do not test viewsptr as we can't get here
+			  if db.table is now found in the multiset */
+			  views->erase(viewsptr);
+			  int viewcount=views->count(db.table);
+//cerr << "DEBUG:  after erase views->count(): "<<viewcount<<" for table "<<db.table<<endl;
+			  if(viewcount==1)
+			  {
+//cerr << "DEBUG: Calling dbfree on table " << db.table <<endl;
+			    int testfree=dbfree(db);
+			    if(testfree==dbINVALID)
+				throw SeisppError(string("DatascopeHandle Destructor:")
+				 + string(" dbfree returned dbINVALID.") );
+			  }
+/*
+else
+cerr << "DEBUG:  dbfree not called"<<endl;
+*/
+			}
+		}
+	}
 }
 // function that needs to be called to force closing database
 void DatascopeHandle::close()
@@ -255,7 +357,10 @@ DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 		is_bundle=dbi.is_bundle;
 		close_on_destruction=false;
 		parent_table=dbi.parent_table;
+		views=dbi.views;
+		views->insert(db.table);
 	}
+//cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
 	return(*this);
 }
 void DatascopeHandle::operator ++()
@@ -335,9 +440,12 @@ void DatascopeHandle::sort(list<string> sortkeys)
 {
 	Tbl *t;
 	t = list_to_tbl(sortkeys);
+	parent_table=db;
 	db = dbsort(db,t,0,0);
+	if(!retain_parent) manage_parent();
 	if(db.table == dbINVALID)
 		throw SeisppDberror("dbsort failed",db,complain);
+	if(views!=NULL) views->insert(db.table);
 	freetbl(t,free);
 }
 	
@@ -355,10 +463,12 @@ void DatascopeHandle::natural_join(string table1, string table2)
 			+ table2 
 			+ string("failed"),
 			db,complain);
+	if(views!=NULL) views->insert(db.table);
 }
 // special case appending to current db
 void DatascopeHandle::natural_join(string table)
 {
+	parent_table=db;
 	db = dbjoin(db,dblookup(db,0,const_cast<char *>(table.c_str()),0,0),
 		0,0,0,0,0);
 	if(db.table==dbINVALID)
@@ -366,6 +476,8 @@ void DatascopeHandle::natural_join(string table)
 			+ table 
 			+ string("failed"),
 			db,complain);
+	if(!retain_parent) manage_parent();
+	if(views!=NULL) views->insert(db.table);
 }
 
 // full case with different lists for table 1 and table 2
@@ -388,12 +500,15 @@ void DatascopeHandle::join(string table1, string table2,
 			+ table2 
 			+ string("failed"),
 			db,complain);
+	if(views!=NULL) views->insert(db.table);
 }
 
 void DatascopeHandle::group(list<string> groupkeys)
 {
 	Tbl *t;
 	t = list_to_tbl(groupkeys);
+	/* Note group must not manage it's parent as the idea of
+	a group is irrational if the parent is destroyed. */
 	parent_table=db;
 	db = dbgroup(db,t,0,0);
 	is_bundle=true;
@@ -401,13 +516,17 @@ void DatascopeHandle::group(list<string> groupkeys)
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbgroup failed"),
 			db,complain);
+	if(views!=NULL) views->insert(db.table);
 }
 void DatascopeHandle::subset(string sstr)
 {
+	parent_table=db;
 	db = dbsubset(db,const_cast<char *>(sstr.c_str()),0);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbsubset failed"),
 			db,complain);
+	if(!retain_parent) manage_parent();
+	if(views!=NULL) views->insert(db.table);
 }
 void DatascopeHandle::lookup(string t)
 {
@@ -490,5 +609,69 @@ void SeisppDberror::log_error()
 		cerr << " Unknown" << endl;
 	}
 	clear_register(1);
+}
+/* Private method used by relational routines. */
+void DatascopeHandle::manage_parent()
+{
+	bool is_view;
+	is_view = is_view_test(parent_table);
+	/* Note this effectively does nothing if the table 
+	is not a view */
+/*
+cerr << "DEBUG (manage_parent):  "
+	<< "Entering manage_parent"<<endl;
+*/
+	if(is_view && (views!=NULL) )
+	{
+		/* release parent view only if this is the only
+		copy holding it */
+		int number_copies=views->count(parent_table.table);
+		multiset<int>::iterator vptr;
+		if(number_copies<=0)
+		{
+/*
+cerr << "DEBUG (manage_parent):  "
+ << "No copies set of this view.  This should not happen if this is working right." <<endl;
+*/
+			parent_table.database=dbINVALID;
+			parent_table.table=dbINVALID;
+			parent_table.field=dbINVALID;
+			parent_table.record=dbINVALID;
+		}
+		else
+		{
+			/* Assume this will always work if we get here.
+			count should not return a positive number and then
+			fail here. */
+			vptr=views->find(parent_table.table);
+			views->erase(vptr);
+/*
+cerr << "DEBUG (manage_parent):  "
+	<< "number_copies of parent view="<<number_copies<<endl;
+*/
+			if(number_copies==1)
+			{
+//cerr << "Calling dbfree"<<endl;
+				int testfree=dbfree(parent_table);
+				/* We don't make this a fatal error.  
+				Since it only effects the parent the 
+				result may be usable, although odds are
+				the caller will throw and exception if
+				this occurs. */
+				if(SEISPP_verbose && (testfree!=0))
+				{
+					cerr << "DatascpeHandle:  WARNING "
+					 << "dbfree failed in automatic view"
+					 << " memory managment." <<endl
+					 << "Downstream errors may cause abort."
+					 << endl;
+				}
+				parent_table.database=dbINVALID;
+				parent_table.table=dbINVALID;
+				parent_table.field=dbINVALID;
+				parent_table.record=dbINVALID;
+			}
+		}
+	}
 }
 } // End SEISPP namespace declaration
