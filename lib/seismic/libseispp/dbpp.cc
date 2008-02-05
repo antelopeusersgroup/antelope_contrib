@@ -49,6 +49,9 @@ bool is_a_bundle_pointer(Dbptr db)
 bool is_view_test(Dbptr db)
 {
 	int is_view;
+	/* This is probably redundant, but this avoids errors
+	returning true for dbINVALID which can cause downstream problems */
+	if(db.table<0) return(false);
 	dbquery(db,dbTABLE_IS_VIEW,&is_view);
 	if(is_view)
 		return true;
@@ -201,11 +204,12 @@ DatascopeHandle::DatascopeHandle(const DatascopeHandle& dbi)
 	and this provides a clean way to pass a common area around
 	between copies.  */
 	views=dbi.views;
-	views->insert(db.table);
+	if(views!=NULL)
+	{
+		if(is_view_test(db)) views->insert(db.table);
+//cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
+	}
 	retain_parent=dbi.retain_parent;
-/*
-cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
-*/
 }
 /* An odd specialized copy constructor for Datascope db.  
 Handle is constructed using an existing db pointer, dbi, 
@@ -267,8 +271,7 @@ DatascopeHandle::~DatascopeHandle()
 			  /* Do not test viewsptr as we can't get here
 			  if db.table is now found in the multiset */
 			  views->erase(viewsptr);
-			  int viewcount=views->count(db.table);
-//cerr << "DEBUG:  after erase views->count(): "<<viewcount<<" for table "<<db.table<<endl;
+//cerr << "DEBUG:  after erase views->count(): "<<views->count(db.table)<<" for table "<<db.table<<endl;
 			  if(viewcount==1)
 			  {
 //cerr << "DEBUG: Calling dbfree on table " << db.table <<endl;
@@ -358,7 +361,7 @@ DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 		close_on_destruction=false;
 		parent_table=dbi.parent_table;
 		views=dbi.views;
-		views->insert(db.table);
+		if(is_view_test(db)) views->insert(db.table);
 	}
 //cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
 	return(*this);

@@ -149,6 +149,19 @@ DatascopeMatchHandle& DatascopeMatchHandle::operator = (const DatascopeMatchHand
 		tpattern=copy_string_tbl(parent.tpattern);
 		// Make the hook null in the copy to handle memory correctly
 		hook=NULL;
+		/* These are protected (formerly private) variables in DatascopeHandle */
+		close_on_destruction=false;
+		parent_table=parent.parent_table;
+		views=parent.views;
+		if(views!=NULL) 
+		{
+			/* In Datascope negative table numbers can 
+			mean different things, but never things we want
+			to memory manage */
+			if(db.table>0) views->insert(db.table);
+		}
+		this->manage_parent();
+		retain_parent=parent.retain_parent;
 	}
 	return(*this);		
 }

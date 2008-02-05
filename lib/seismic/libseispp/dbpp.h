@@ -479,7 +479,7 @@ public:
 	* accomlish the same thing at a much higher cost.
 	*/
 	bool is_bundle;
-private:
+protected:
 	/*! This is the variable set by close() to mark handle to be closed ond destruction.*/
 	bool close_on_destruction;
 	/*! Parent table or view.  In datascope views cascade in a sequence with each child 
