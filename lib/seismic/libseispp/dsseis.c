@@ -84,6 +84,8 @@ Dbptr *                                      dbsc;
 	Tbl *sortfields, *groupfields;
 	FILE *file;
 	Response *resp;
+	int is_view=0;
+	Dbptr db_to_clear;
 
 	/* Subset the wfdisc by station-channel-time sifters. */
 
@@ -109,6 +111,7 @@ Dbptr *                                      dbsc;
 	if (string[0]) {
 		strcat (string, " )");
 		dbout = dbsubset (dbout, string, 0);
+		is_view=1;
 	}
         dbquery (dbout, dbRECORD_COUNT, &n);
         if (n < 1) {
@@ -120,7 +123,11 @@ Dbptr *                                      dbsc;
 
         if (coords) {
         	db = dblookup (dbin, 0, "site", 0, 0);
+		if(is_view)db_to_clear=dbout;
         	dbout = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+		if(is_view) dbfree(db_to_clear);
+		is_view=1;
+		
         	dbquery (dbout, dbRECORD_COUNT, &n);
         	if (n < 1) {
 			register_error (0, "grdb_sc_loadcss: No data rows to process.\n");
@@ -142,7 +149,10 @@ Dbptr *                                      dbsc;
         }
         if (ir) {
         	db = dblookup (dbin, 0, "sensor", 0, 0);
+		if(is_view)db_to_clear=dbout;
         	dbout = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+		if(is_view) dbfree(db_to_clear);
+		is_view=1;
         	dbquery (dbout, dbRECORD_COUNT, &n);
         	if (n < 1) {
 			register_error (0, "grdb_sc_loadcss: No data rows to process.\n");
@@ -162,8 +172,11 @@ Dbptr *                                      dbsc;
         		}
         	}
         	sensor = 1;
+		if(is_view)db_to_clear=dbout;
         	db = dblookup (dbin, 0, "instrument", 0, 0);
         	dbout = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+		if(is_view) dbfree(db_to_clear);
+		is_view=1;
         	dbquery (dbout, dbRECORD_COUNT, &n);
         	if (n < 1) {
 			register_error (0, "grdb_sc_loadcss: No data rows to process.\n");
@@ -215,8 +228,10 @@ Dbptr *                                      dbsc;
         }
         if (orient) {
         	ok = 1;
+		if(is_view)db_to_clear=dbout;
         	db = dblookup (dbin, 0, "sitechan", 0, 0);
         	dbout2 = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+		is_view=1;
         	dbquery (dbout2, dbRECORD_COUNT, &n);
         	if (n < 1) {
         		ok = 0;
@@ -233,6 +248,7 @@ Dbptr *                                      dbsc;
 		}
 		if (ok) {
 			dbout = dbout2;
+			if(is_view) dbfree(db_to_clear);
 		} else {
 			if (!sensor) {
         			db = dblookup (dbin, 0, "sensor", 0, 0);
@@ -267,9 +283,12 @@ Dbptr *                                      dbsc;
         			register_error (0, "grdb_sc_loadcss: newtbl() error.\n");
         			return (-1);
         		}
+			if(is_view)db_to_clear=dbout;
         		settbl (pat1, 0, strdup("sensor.chanid"));
         		settbl (pat2, 0, strdup("sitechan.chanid"));
         		dbout = dbjoin (dbout, db, &pat1, &pat2, 1, 0, 0);
+			if(is_view) dbfree(db_to_clear);
+			is_view=1;
         		freetbl (pat1, free);
         		freetbl (pat2, free);
         		dbquery (dbout, dbRECORD_COUNT, &n);
@@ -305,6 +324,7 @@ Dbptr *                                      dbsc;
 	settbl (sortfields, 1, strdup("wfdisc.chan"));
 	settbl (sortfields, 2, strdup("wfdisc.time"));
         *dbsc = dbsort (dbout, sortfields, 0, 0);
+	/*if(is_view) dbfree(dbout);*/
 	groupfields = newtbl (2);
 	if (groupfields == NULL) {
 		register_error (0, "grdb_sc_loadcss: newtbl() error.\n");

@@ -143,19 +143,34 @@ for more details */
 DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag,
 			bool manage_memory,bool retain_all_views)
 {
-	Tbl *process_list;
-	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
-        if(process_list==NULL)
-                throw SeisppError("Tag name = "+tag+" not in parameter file");
-	try {
-		is_bundle = dbgroup_used(process_list);
-	} catch (...)
+	if(pf==NULL)
 	{
-		throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
+		db=dbi;
+		parent_table=db;
+		parent_table.table=dbINVALID;
+		parent_table.field=dbINVALID;
+		parent_table.record=dbINVALID;
 	}
-        db = dbprocess(dbi,process_list,0);
-        if(db.table == dbINVALID)
-                throw SeisppDberror("dbprocess failed",db,complain);
+	else
+	{
+		Tbl *process_list;
+		process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
+	        if(process_list==NULL)
+	                throw SeisppError("Tag name = "+tag+" not in parameter file");
+		try {
+			is_bundle = dbgroup_used(process_list);
+		} catch (...)
+		{
+			throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
+		}
+	        db = dbprocess(dbi,process_list,0);
+		freetbl(process_list,0);
+        	if(db.table == dbINVALID)
+                  throw SeisppDberror("dbprocess failed",db,complain);
+	// Always initialize -- better than garbage
+		parent_table=db;
+		if(is_bundle) --parent_table.table;
+	}
 	if(manage_memory)
 	{
 		/* initialize views */
@@ -165,11 +180,7 @@ DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag,
 	}
 	else
 		views=NULL;
-	// Always initialize -- better than garbage
-	parent_table=db;
-	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
-	freetbl(process_list,0);
 	retain_parent=retain_all_views;
 }
 
