@@ -603,7 +603,7 @@ reject      select      started
 thread      what        who         
 </example>
 
-(old,new,max,range,laggards)=orblag(orb,match,reject)
+($old,$new,$max,$range,@laggards)=orblag(orb,match,reject)
     returns oldest, newest, and pktid range, with list of clients
     matching match/reject parameter. Each element of list contains
     client lag, thread, who and what
