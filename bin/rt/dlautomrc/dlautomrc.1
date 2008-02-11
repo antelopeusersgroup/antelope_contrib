@@ -112,8 +112,8 @@ delay_interval  300     # interval to wait after mass
 
 sensor_mv &Arr{         # with -D, override default out_of_range 
 	sts2	50      # value with sensor specific value
-        cmg3t   50
-        trillium_240    25
+        cmg3t   25
+        trillium_240    20
 }
 
 .fi
@@ -199,6 +199,9 @@ you use the test mode with the \fI-n\fP option until you are sure of what you ar
 doing.
 
 This should work with both rt130 and q330 dataloggers.  It has not been tested on rt130s.
+
+The sensor_mv mappings are based on experiences with the USArray Transportable Array.  They
+may need to be adjusted for the needs of individual networks.
 
 .SH AUTHOR
 Jennifer Eakins and Frank Vernon
