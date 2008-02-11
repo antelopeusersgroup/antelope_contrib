@@ -603,10 +603,16 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 	// gaps are the union of all gaps in each component.  There may be
 	// a faster way to do this manipulating the STL set object, but this
 	// is independent of those details and should always work even if it
-	// is slower.
-	//WARNING:  this code segment (irregular start time block
-	// is untested.  Sept. 29, 2006
+	// is slower.  This is needed because the gaps container is keyed
+	// by time intervals.  If two gaps overlap partially, we can get
+	// incorrect results if we don't handle this through this more
+	// complicated algorithm.  Note we skip all this if there
+	// are no gaps defined in any of the components.
 	//
+	if(ts[0].has_gap() || ts[1].has_gap() || ts[2].has_gap() )
+	{
+	//Caution.  There is evidence this code section may not 
+	// be working.  Needs a more rigorous test.  Feb. 11, 2008
 	int istart=0,iend=0;
 	bool in_a_gap=false;
 	for(i=0;i<this->ns;++i)
@@ -664,6 +670,8 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 			}
 		}
 	}
+	}  // End conditional for gap processing
+	
 	//
 	// In any case before we quit we have to set the transformation 
 	// matrix.  This is a direct application of conversion of routines

@@ -13,6 +13,7 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(Pf *pf,string tccmkey)
 	t=pfget_tbl(pf,const_cast<char *>(tccmkey.c_str()));
 	if(t==NULL) throw SeisppError(errmess
 	  + string(" ThreeComponentChannelMap key for Tbl list not in parameter file"));
+	map<string,int>::iterator it;
 	for(int i=0;i<maxtbl(t);++i)
 	{
 		char *line;
@@ -23,6 +24,17 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(Pf *pf,string tccmkey)
 			throw SeisppError(errmess
 				+ string("error parsing Tbl in pf"));
 		string chan(chanbuf);
+		/* Need to only prec array for this error condition */
+		it=level.find(chan);
+		if(it!=level.end()) 
+		  throw SeisppError(errmess
+			+ string("duplicate channel code=") 
+			+ chan
+			+ string(" For entry = ") 
+			+ tccmkey
+			+ string("\nChan code in definition must be unique.\n")
+			+ string("Use a special sta key for irregular stations") );
+
 		channels[chan]=comp;
 		level[chan]=lev;
 	}
@@ -33,11 +45,20 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(string buffer)
 	string chan;
 	int comp,lev;
 	istringstream in(buffer);
+	map<string,int>::iterator it;
 	while(!in.eof())
 	{
 		in >> chan;
 		in >> comp;
 		in >> lev;
+		it=level.find(chan);
+		if(it!=level.end()) 
+		  throw SeisppError(
+			string("ThreeComponentChannelMap(string) constructor:  ")
+			+ string("duplicate channel code=") 
+			+ chan
+			+ string("\nChan code in definition must be unique.\n")
+			+ string("Use a special sta key for irregular stations") );
 		channels[chan]=comp;
 		level[chan]=lev;
 	}

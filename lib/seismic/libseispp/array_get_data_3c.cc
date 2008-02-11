@@ -156,8 +156,10 @@ ThreeComponentEnsemble
 						for(j=0;j<comp.size();++j)
 						{
 							if(prec[j]==iprec)
+							{
                                                         	components.push_back
                                                                 (rawdata.member[member_index[j]]);
+							}
 						}
 						if(components.size()==3)
 						{

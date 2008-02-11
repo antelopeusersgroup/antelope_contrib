@@ -231,6 +231,9 @@ Dbptr *                                      dbsc;
 		if(is_view)db_to_clear=dbout;
         	db = dblookup (dbin, 0, "sitechan", 0, 0);
         	dbout2 = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+//fprintf(stderr,"Top of offending section.  About to create dbout2\n");
+//fprintf(stderr,"new table =%d  This table is freed later %d\n",
+//	dbout2.table, db_to_clear.table);
 		is_view=1;
         	dbquery (dbout2, dbRECORD_COUNT, &n);
         	if (n < 1) {
@@ -249,10 +252,23 @@ Dbptr *                                      dbsc;
 		if (ok) {
 			dbout = dbout2;
 			if(is_view) dbfree(db_to_clear);
+//fprintf(stderr,"In ok block, freeing table=%d\n",db_to_clear.table);
 		} else {
 			if (!sensor) {
         			db = dblookup (dbin, 0, "sensor", 0, 0);
-        			dbout = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+				if(is_view)db_to_clear=dbout;
+//fprintf(stderr,"Before problem dbjoin, dbout.table=%d\n",dbout.table);
+	       			dbout = dbjoin (dbout, db, 0, 0, 1, 0, 0);
+//fprintf(stderr,"In if not sensor block\n");
+//fprintf(stderr,"new table =%d  About to free table %d\n",
+//	dbout.table, db_to_clear.table);
+//fprintf(stderr,"Also freeing table=%d\n",dbout2.table);
+				if(is_view) 
+				{
+					dbfree(dbout2);
+					dbfree(db_to_clear);
+				}
+				is_view=1;
         			dbquery (dbout, dbRECORD_COUNT, &n);
         			if (n < 1) {
 					register_error (0, "grdb_sc_loadcss: No data rows to process.\n");
@@ -287,6 +303,8 @@ Dbptr *                                      dbsc;
         		settbl (pat1, 0, strdup("sensor.chanid"));
         		settbl (pat2, 0, strdup("sitechan.chanid"));
         		dbout = dbjoin (dbout, db, &pat1, &pat2, 1, 0, 0);
+//fprintf(stderr,"new table =%d  About to free table %d\n",
+//dbout.table, db_to_clear.table);
 			if(is_view) dbfree(db_to_clear);
 			is_view=1;
         		freetbl (pat1, free);
@@ -315,6 +333,7 @@ Dbptr *                                      dbsc;
 
         /* Sort and group the output view. */
 
+	if(is_view)db_to_clear=dbout;
 	sortfields = newtbl (3);
 	if (sortfields == NULL) {
 		register_error (0, "grdb_sc_loadcss: newtbl() error.\n");
@@ -324,7 +343,9 @@ Dbptr *                                      dbsc;
 	settbl (sortfields, 1, strdup("wfdisc.chan"));
 	settbl (sortfields, 2, strdup("wfdisc.time"));
         *dbsc = dbsort (dbout, sortfields, 0, 0);
-	/*if(is_view) dbfree(dbout);*/
+//fprintf(stderr,"new table =%d  About to free table %d\n",
+//	dbsc->table, db_to_clear.table);
+	if(is_view) dbfree(db_to_clear);
 	groupfields = newtbl (2);
 	if (groupfields == NULL) {
 		register_error (0, "grdb_sc_loadcss: newtbl() error.\n");
