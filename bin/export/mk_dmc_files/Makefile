@@ -1,12 +1,12 @@
-BIN=	track_dataless			
+BIN=	mk_dmc_files	
 
-MAN1=	track_dataless.1
+MAN1=	mk_dmc_files.1
 
-PF=	track_dataless.pf			
+PF=	mk_dmc_files.pf			
 
 DATADIR=schemas/css3.0.ext
 
-DATA=dataless  
+DATA=dmcfiles  
 
 
 include $(ANTELOPEMAKE) 
