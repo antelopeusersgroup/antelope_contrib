@@ -1,0 +1,200 @@
+.TH DEPLOYMENT2VND 1 2007/10/15  
+.SH NAME
+vnd2deployment\- produce a deployment table from a virutal network definition file (VND) 
+.SH SYNOPSIS
+.nf
+\fBvnd2deployment \fR [-t | -c] \fIfile\fP \fIdatabase\fP 
+.fi
+.SH DESCRIPTION
+\fBvnd2deployment\fR takes an input VND file and tries to map as
+much information is availalbe into a deployment database table.  
+The deployment table is an extension of the css3.0 schema.  A full 
+description of the deployment table can be found by using \fBdbhelp\fR on
+a css3.0 database, or by reviewing the \fIDescription of a Deployment 
+Table\fP section below.  
+.LP
+Note, because of lack of information in the VND, not all fields of the 
+deployment table will be filled in!  Translating multiple times between
+a deployment table to a VND and back to a deployment table will not give
+you the same information.  
+.LP
+VND files were originally distributed in Excel format.  If you save the 
+Excel spreadsheet as "text Windows" and separate the columns by tabs, 
+you should be able to use this script with the \fI-t\fP option to convert
+it to a deployment table.  Alternatively, the DMC is now providing the VNDs
+as CSV (comma separated) files and these can be converted using the \fI-c\fP
+option. 
+.LP
+VND files can be downloaded from the DMC website.  As of October of 2007,
+this website was:
+.fi
+http://www.iris.edu/vnets
+.nf
+
+.SS "Description of a VND"
+From the DMC 2006 December Electronic Newsletter:
+
+"A virtual network is group of stations and/or seismic networks, 
+representing an affiliation that goes beyond the traditional bounds of 
+seismic networks to represent an umbrella organization or initiative. 
+Virtual networks associate to recording stations and seismic networks 
+either indefinitely or for some limited period of time. It is a grouping 
+system that reflects growing partnerships between seismic institutions 
+to undertake large projects and act as a single, newly formed entity. 
+The virtual network naming system allows these traditional networks to 
+have their data represented under the auspices of one or more of these 
+initiatives."
+
+
+The fields in the comma separated version of the file are:
+.nf
+VIRTUAL NET,NETWORK,STATION,INSTALL DATE,CERT DATE, \
+START DATE,START TIME, END DATE,END TIME,PRIMARY DC, \
+SECONDARY DC
+.fi
+
+They are defined as follows:
+
+.IP "VIRTUAL NET"
+The current standard is that a virtual network always starts with a leading 
+underscore "_".  Some examples include _US-TA, _US-FA, _US-All, _ANSS, etc.  
+See http://www.iris.edu/vnets
+
+.IP NETWORK
+The two character network code.  For instance, TA, CI, US, etc.
+
+.IP STATION
+The three to five character station code.  
+
+.IP "INSTALL DATE"
+The date the equipment was first installed (note that no time is included).  
+This is not changed even if all equipment is replaced (i.e. a sensor or
+datalogger have been swapped). 
+ 
+.IP "CERT DATE"
+The date the data center responsible for data collection verifies that 
+metadata is available and starts passing it along to secondary data 
+centers.   This field seems open to interpretation...
+
+.IP "START DATE"
+The date of the first data available from the given station.  Note this 
+date should not be earlier than the \fIINSTALL DATE\fP, but could be earlier
+than the \fICERT DATE\fP.
+
+.IP "START TIME"
+The time of the first data available from the given station.  
+
+.IP "END DATE"
+The date of the last data available from the given station.  
+
+.IP "END TIME"
+The time of the last data available from the given station.  
+
+.IP "PRIMARY DC"
+Name of data center where the majority of endusers get the data.  This
+field has been open to interpretation.  The DMC might have strict requirements
+on what can go in here.
+
+.IP "SECONDARY DC"
+Name of alternate data center where endusers can get the data.  This
+field has been open to interpretation.  The DMC might have strict requirements
+on what can go in here.
+
+.SS "Description of a Deployment Table"
+
+In an effort to keep track of all information necessary to produce a VND, 
+an extension table to the css3.0 schema was created (see \fBdbschema\fR(1) 
+and \fBdbhelp\fR(1)). The fields in a deployment table are:
+
+.IP net 1.25
+In this case, this is the network code that starts with an "_".
+.IP snet 1.25
+The two character SEED network code.  For instance, TA, CI, US, etc.
+.IP station
+The three to five character station code.  
+.IP time 1.25
+Time of the first data available from the given station that has been 
+made available for import from external users.  Note this 
+date should not be earlier than the \fIequip_install\fP, but could be earlier
+than the \fIcert_time\fP.
+.IP endtime   
+Time of last data available to external users from the given station. 
+.IP equip_remove 
+Time the equipment was removed from the site.
+.IP cert_time    
+Time that metadata was made available and/or time that data started 
+flowing to external users.  This field is open to interpretation.
+.IP decert_time    
+Time that station was removed from external data import.  This could 
+be the same or later than \fIendtime\fP and could be the same or later than 
+\fIequip_remove\fP.
+.IP pdcc 1.25
+Primary data center.
+.IP sdcc 1.25
+Secondary data center.
+.IP lddate        
+Last update time of the record.
+
+.SH OPTIONS
+.IP -t
+Input file uses tabs to separate fields.
+
+.IP -c
+Input file uses commas to separate fields.
+
+.SH FILES
+.LP
+See \fIDescription of a VND\fP for the format of a Virtual Network Definition
+file.  These format of these files is based on an Excel spreadsheet, and
+as such, I expect it to change at some point.
+.LP
+As a "best practice", the network operations specific schema extension 
+tables might be kept in a directory such as "dbops".  Tables such as 
+site, sitechan, network, calibration, stage, etc. normally end up in a 
+directory called "dbmaster" in a real-time operations setting.  Waveforms,
+the wfdisc, arrival, origin, and other event database tables are normally
+found in the "db" directory.  Maintaining a separate "dbops" directory 
+allows a data center to segregate these tables that may be essential for 
+their operations, but not for a generic real-time system.
+ 
+.SH EXAMPLE
+Using the VND downloaded from the DMC and saved as TA_vnet.csv, convert
+it and save the deployment table as dbops/mydb.deployment. 
+
+.in 2c
+.ft CW
+.nf
+  % vnd2deployment -c TA_vnet.csv dbops/mydb 
+.fi
+.ft R
+.in
+
+.SH "SEE ALSO"
+.nf
+deployment2vnd(1)
+dbe(1)
+dbhelp(1)
+http://www.iris.edu/vnets
+.fi
+.SH "BUGS AND CAVEATS"
+Works with current definition of VND file.  The format is not
+well documented and subject to change.
+
+The current VND files do not care much about the time, but rather
+only have resolution to the date level.  I suspect that may change
+at some point.  However, the deployment table has a full time description
+so these fields will not be completely accurate in the output deployment
+table.  Do not attempt to translate a deployment table to a VND and then 
+back to a deployment table.  You will lose information in duplicate 
+transformations.
+
+There are no current \fBdbverify\fR checks to make sure that the
+deployment table fields are consistent internally, or to check if
+the deployment table fields match what is available in the site, sitechan,
+snetsta, etc.
+
+
+.SH AUTHOR
+Jennifer Eakins
+.br
+IGPP-SIO-UCSD
