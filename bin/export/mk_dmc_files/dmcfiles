@@ -1,0 +1,34 @@
+# css3.0 extension
+
+#Include css3.0  # uncomment to complete schema
+
+Attribute comment
+        String (180)
+        Format ( "%s" )
+        Null ( "-" )
+        Description ( "free format comment" )
+        Detail {
+                A single line of text commenting on the 
+		changes made in the dataless SEED volume.
+        }
+        ;
+
+Attribute orb
+        String (50)
+        Format ( "%50s" )
+        Null ( "-" )
+        Description ( "orbserver used" )
+        Detail {
+                This is the name of the orbserver where the data were
+                replayed to.
+        }
+        ;
+
+Relation dmcfiles 
+	Fields ( time comment dir dfile orb auth lddate )
+	Primary ( time dfile )
+	Description ( "Track files sent to DMC" )
+	Detail {
+		Track various flat files sent to the DMC.  This might include VND files, dataless SEED files, sync files, etc.  Collect comments on what updates were included in a dataless seed volume and the orb used to transfer them.  
+	}
+	;

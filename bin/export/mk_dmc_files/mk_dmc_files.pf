@@ -1,0 +1,10 @@
+vnd_dir			vnd 
+dataless_dir		dataless
+
+# comment must be a single line less than 180 characters
+default_comment	&Literal{
+Metadata change
+}
+
+
+
