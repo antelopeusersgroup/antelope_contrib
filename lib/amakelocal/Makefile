@@ -10,5 +10,5 @@ CLEAN = antelopemake.local
 
 include $(ANTELOPEMAKE)
 
-antelopemake.local:
+antelopemake.local: localmake
 	localmake
