@@ -1050,7 +1050,7 @@ int my_hardware(char *hdw)
 int my_hostname(char *name)
     return hostname 
 
-int my_ip(char *hostname, char *ipc, long *ip)
+int my_ip(char *hostname, char *ipc, int *ip)
     return ip address, as integer and in dot notation
 
 int my_os(char *name)
@@ -1109,9 +1109,6 @@ int fixup_env ( char **list, int n, int force )
 
 private char *getantelope ( )
     return the ANTELOPE root directory
-
-void unsetenv ( char *name )
-    eliminate the environment variable name
 
 char *expand_env ( char *s )
     return new string substituting $env or ${env} in s with value from environment
