@@ -131,7 +131,7 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	bool is_view=is_view_test(db);
 	if(is_view)
 	{
-		views->insert(db.table);
+		if(views!=NULL)views->insert(db.table);
 	}
 	// Always initialize -- better than garbage
 	parent_table=db;
@@ -372,7 +372,10 @@ DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 		close_on_destruction=false;
 		parent_table=dbi.parent_table;
 		views=dbi.views;
-		if(is_view_test(db)) views->insert(db.table);
+		if(views!=NULL)
+		{
+			if(is_view_test(db)) views->insert(db.table);
+		}
 	}
 //cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
 	return(*this);
