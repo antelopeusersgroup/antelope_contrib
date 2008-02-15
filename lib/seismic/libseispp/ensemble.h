@@ -615,7 +615,7 @@ template <class Tensemble> void LoadEventArrivals(Tensemble& d,
 	/*WARNING:  the handle really should automatically do this, but in the 
 	current implementation it does not.  This will produce a memory leak if
 	we don't do this.  If changed this next line must be removed */
-	dbfree(dbhss.db);
+	//dbfree(dbhss.db);
 }
 /*! Extract a componnt from a ThreeComponentEnsemble to yield a TimeSeriesEnsemble.
 
