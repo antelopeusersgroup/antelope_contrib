@@ -1,8 +1,22 @@
 use Datascope;
 use sysinfo;
 
+require "getopts.pl";
+
 $Os = my_os();
 $Pf = "localmake";
+
+elog_init( $0, @ARGV );
+
+if( !Getopts( 'p:v' ) || @ARGV > 0 ) {
+
+	die( "Usage: localmake [-v] [-p pfname]\n" );
+}
+
+if( $opt_p ) {
+
+	$Pf = $opt_p;
+}
 
 %elements = %{pfget($Pf,"elements")};
 $output_file = pfget( $Pf, "output_file" );
@@ -17,3 +31,8 @@ foreach $element ( keys( %elements ) ) {
 }
 
 close( O );
+
+if( $opt_v ) {
+	
+	elog_notify( "Generated '$output_file' from parameter-file '$Pf'\n" );
+}
