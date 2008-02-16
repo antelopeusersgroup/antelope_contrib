@@ -27,9 +27,13 @@ option.
 .LP
 VND files can be downloaded from the DMC website.  As of October of 2007,
 this website was:
-.fi
-http://www.iris.edu/vnets
+.in 2c
+.ft CW
 .nf
+http://www.iris.edu/vnets
+.fi
+.ft R
+.in
 
 .SS "Description of a VND"
 From the DMC 2006 December Electronic Newsletter:
@@ -103,16 +107,16 @@ on what can go in here.
 .SS "Description of a Deployment Table"
 
 In an effort to keep track of all information necessary to produce a VND, 
-an extension table to the css3.0 schema was created (see \fBdbschema\fR(1) 
+an extension table to the css3.0 schema was created (see \fBdbschema\fR(5) 
 and \fBdbhelp\fR(1)). The fields in a deployment table are:
 
-.IP net 1.25
+.IP "net 1.25"
 In this case, this is the network code that starts with an "_".
-.IP snet 1.25
+.IP "snet 1.25"
 The two character SEED network code.  For instance, TA, CI, US, etc.
 .IP station
 The three to five character station code.  
-.IP time 1.25
+.IP "time 1.25"
 Time of the first data available from the given station that has been 
 made available for import from external users.  Note this 
 date should not be earlier than the \fIequip_install\fP, but could be earlier
@@ -128,9 +132,9 @@ flowing to external users.  This field is open to interpretation.
 Time that station was removed from external data import.  This could 
 be the same or later than \fIendtime\fP and could be the same or later than 
 \fIequip_remove\fP.
-.IP pdcc 1.25
+.IP "pdcc 1.25"
 Primary data center.
-.IP sdcc 1.25
+.IP "sdcc 1.25"
 Secondary data center.
 .IP lddate        
 Last update time of the record.
