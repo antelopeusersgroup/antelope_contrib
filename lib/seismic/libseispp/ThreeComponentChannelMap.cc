@@ -49,8 +49,11 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(string buffer)
 	while(!in.eof())
 	{
 		in >> chan;
+		if(in.eof()) break;
 		in >> comp;
+		if(in.eof()) break;
 		in >> lev;
+		if(in.eof()) break;
 		it=level.find(chan);
 		if(it!=level.end()) 
 		  throw SeisppError(
