@@ -3,7 +3,7 @@
 localmake \- construct antelopemake.local for local site conditions
 .SH SYNOPSIS
 .nf
-localmake
+localmake [-v] [-p pfname] [module]
 .fi
 .SH DESCRIPTION
 The localmake utility creates an $(ANTELOPEMAKE).local file (see antelopemakelocal(5))
@@ -13,7 +13,14 @@ Antelope contributed-code programs depend.
 
 This program is designed to be part of an automated compile process. Though it can be run by hand, 
 this is not the design intent. 
+
+localmake with a module name specified will recompile all the parts (as specified in the parameter file)
+on which a particular software component depends.
 .SH OPTIONS
+.IP -v 
+verbose
+.IP "-p pfname"
+Specify an alternate parameter file
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -43,6 +50,14 @@ elements &Arr{
 		Darwin 	-I/sw/include
 		Solaris -I/usr/openwin/include
 		Linux 	-I/usr/X11R6/include
+	}
+}
+
+modules &Arr{
+	dbxcor &Tbl{
+		src/contrib/lib/graphics/seisw
+		src/contrib/lib/seismic/libseispp
+		src/contrib/bin/db/dbxcor
 	}
 }
 .fi
