@@ -22,3 +22,11 @@ elements &Arr{
 		Linux 	-I/usr/X11R6/include
 	}
 }
+
+modules &Arr{
+	dbxcor &Tbl{
+		src/contrib/lib/graphics/seisw
+		src/contrib/lib/seismic/libseispp
+		src/contrib/bin/db/dbxcor
+	}
+}
