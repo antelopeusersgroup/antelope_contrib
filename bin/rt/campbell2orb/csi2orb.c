@@ -1559,7 +1559,7 @@ int readline(int *fd, char *rebuf)
 		    }
 		    else
 		    {
-			brk=0;
+			brk=1;
 			loop--;
 		    }
 		}
