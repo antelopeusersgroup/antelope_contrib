@@ -10,6 +10,7 @@ INCLUDE=ArrivalUpdater.h \
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
+  ProcessingQueue.h \
   SeisppError.h\
   SeisppKeywords.h \
   SignalToNoise.h \
@@ -65,6 +66,7 @@ OBJS=ArrivalUpdater.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
+  ProcessingQueue.o \
   SignalToNoise.o \
   StationChannelMap.o \
   ThreeComponentChannelMap.o \

@@ -108,6 +108,19 @@ public:
 	is this would always be either FINISHED or SKIPPED.
 	*/
 	void mark(ProcessingStatus ps);
+	/*! Set the database handle to the current record.
+
+	This object maintains a list of integer record numbers that define the 
+	queue.  This method sets the record field of the handle it is passed
+	to the current record.  This is a core method for this object as the
+	standard algorithm to use it is to call the mark method, test that
+	the queue isn't empty, and then call this method. 
+	
+	\param dbh Datascope (Antelope) database handle that is to be updated. 
+	\exception throws a SeisppError object if the handle properties are not
+		consistent with this queue.  
+	*/
+	void set_to_current(DatascopeHandle& dbh);
 	/*! Used to test when the queue is empty.   When using this object
 	the main processing loop should call this method immediately after a
 	mark call and exit it's loop on this condition.*/

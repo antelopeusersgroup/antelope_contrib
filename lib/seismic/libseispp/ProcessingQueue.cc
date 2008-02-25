@@ -208,6 +208,21 @@ void DatascopeProcessingQueue::mark(ProcessingStatus pstat)
 		throw SeisppError(string("DatascopeProcessingQueue::mark:  ")
 		  + "flock failed when attempting to release lock on queue file");
 }
+void DatascopeProcessingQueue::set_to_current(DatascopeHandle& dbh)
+{
+	if(dbh.db.table!=view_table)
+	{
+		char buf[256];
+		stringstream serr(buf);
+		serr << "DatascopeProcessingQueue::set_to_current:  "
+		  << "db table mismatch.  "<<endl;
+		serr << "Queue is defined for table number " << view_table
+			<< " but handle passed points to table "
+			<< dbh.db.table<<endl;
+		throw SeisppError(serr.str());
+	}
+	dbh.db.record=current_record;
+}
 
 }  // end SEISPP Namespace encapsulation
 
