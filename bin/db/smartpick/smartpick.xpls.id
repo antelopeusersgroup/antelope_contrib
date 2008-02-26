@@ -319,11 +319,15 @@ sub pipe_dbpick {
 
 sub postscript_dbpick {
 	
-	my( $psfile ) = $MW->FileSelect( 
-			-directory => ".",
-			-initialfile => "$State{default_postscript_file}",
-			-create => 1,
-			-title => "Postscript file" )->Show;
+# FileSelect is having taint problems
+#	my( $psfile ) = $MW->FileSelect( 
+#			-directory => ".",
+#			-initialfile => "$State{default_postscript_file}",
+#			-create => 1,
+#			-title => "Postscript file" )->Show;
+	
+	my( $psfile ) = ptkask( $MW, 
+		"Enter filename into which to save postscript:" );
 
 	send_to_dbpick( "ps $psfile" );
 
@@ -368,11 +372,15 @@ sub open_detections {
 
 sub snapshot_dbpick {
 	
-	my( $snapshotfile ) = $MW->FileSelect( 
-			-directory => ".",
-			-initialfile => "$State{default_snapshot_file}",
-			-create => 1,
-			-title => "Snapshot file" )->Show;
+# FileSelect is having taint problems
+#	my( $snapshotfile ) = $MW->FileSelect( 
+#			-directory => ".",
+#			-initialfile => "$State{default_snapshot_file}",
+#			-create => 1,
+#			-title => "Snapshot file" )->Show;
+
+	my( $snapshotfile ) = ptkask( $MW, 
+		"Enter filename into which to save snapshot:" );
 
 	my( $winid ) = get_dbpick_win_id();
 
