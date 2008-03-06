@@ -5,12 +5,13 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.196
+ * modified: 2008.028
  ***************************************************************************/
 
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "libslink.h"
 
@@ -29,35 +30,43 @@ int
 sl_savestate (SLCD * slconn, const char *statefile)
 {
   SLstream *curstream;
-  FILE *statefp;
-
+  char line[100];
+  int linelen;
+  int statefd;
+  
   curstream = slconn->streams;
-
+  
   /* Open the state file */
-  if ((statefp = fopen (statefile, "wb")) == NULL)
+  if ( (statefd = slp_openfile (statefile, 'w')) < 0 )
     {
       sl_log_r (slconn, 2, 0, "cannot open state file for writing\n");
       return -1;
     }
-
+  
   sl_log_r (slconn, 1, 2, "saving connection state to state file\n");
-
+  
   /* Traverse stream chain and write sequence numbers */
-  while (curstream != NULL)
+  while ( curstream != NULL )
     {
-      fprintf (statefp, "%s %s %d %s\n",
-	       curstream->net, curstream->sta,
-	       curstream->seqnum, curstream->timestamp);
-
+      linelen = snprintf (line, sizeof(line), "%s %s %d %s\n",
+			  curstream->net, curstream->sta,
+			  curstream->seqnum, curstream->timestamp);
+      
+      if ( write (statefd, line, linelen) != linelen )
+	{
+	  sl_log_r (slconn, 2, 0, "cannot write to state file, %s\n", strerror (errno));
+	  return -1;
+	}
+      
       curstream = curstream->next;
     }
-
-  if (fclose (statefp))
+  
+  if ( close (statefd) )
     {
       sl_log_r (slconn, 2, 0, "cannot close state file, %s\n", strerror (errno));
       return -1;
     }
-
+  
   return 0;
 } /* End of sl_savestate() */
 
@@ -77,7 +86,7 @@ int
 sl_recoverstate (SLCD * slconn, const char *statefile)
 {
   SLstream *curstream;
-  FILE *statefp;
+  int statefd;
   char net[3];
   char sta[6];
   char timestamp[20];
@@ -91,7 +100,7 @@ sl_recoverstate (SLCD * slconn, const char *statefile)
   timestamp[0] = '\0';
 
   /* Open the state file */
-  if ((statefp = fopen (statefile, "rb")) == NULL)
+  if ( (statefd = slp_openfile (statefile, 'r')) < 0 )
     {
       if (errno == ENOENT)
 	{
@@ -104,16 +113,16 @@ sl_recoverstate (SLCD * slconn, const char *statefile)
 	  return -1;
 	}
     }
-
+  
   sl_log_r (slconn, 1, 1, "recovering connection state from state file\n");
-
+  
   count = 1;
-
-  while ( (fgets (line, sizeof(line), statefp)) !=  NULL)
+  
+  while ( (sl_readline (statefd, line, sizeof(line))) >= 0 )
     {
       fields = sscanf (line, "%2s %5s %d %19[0-9,]\n",
 		       net, sta, &seqnum, timestamp);
-
+      
       if ( fields < 0 )
         continue;
       
@@ -124,29 +133,30 @@ sl_recoverstate (SLCD * slconn, const char *statefile)
       
       /* Search for a matching NET and STA in the stream chain */
       curstream = slconn->streams;
-      while (curstream != NULL)
+      while ( curstream != NULL )
 	{
-	  if (!strcmp (net, curstream->net) &&
-	      !strcmp (sta, curstream->sta))
+	  if ( !strcmp (net, curstream->net) &&
+	       !strcmp (sta, curstream->sta) )
 	    {
 	      curstream->seqnum = seqnum;
 
 	      if ( fields == 4 )
 		strncpy (curstream->timestamp, timestamp, 20);
-
+	      
 	      break;
 	    }
+
 	  curstream = curstream->next;
 	}
 
       count++;
     }
 
-  if ( fclose (statefp) )
+  if ( close (statefd) )
     {
       sl_log_r (slconn, 2, 0, "could not close state file, %s\n", strerror (errno));
       return -1;
     }
-
+  
   return 0;
 } /* End of sl_recoverstate() */

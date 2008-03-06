@@ -18,7 +18,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2005.103
+ * modified: 2008.028
  ***************************************************************************/
 
 #ifndef SLPLATFORM_H
@@ -127,6 +127,7 @@ extern int slp_socknoblock (int sock);
 extern int slp_noblockcheck (void);
 extern int slp_getaddrinfo (char * nodename, char * nodeport, 
 			    struct sockaddr * addr, size_t * addrlen);
+extern int slp_openfile (const char *filename, char perm);
 extern const char *slp_strerror(void);
 extern double slp_dtime(void);
 extern void slp_usleep(unsigned long int useconds);

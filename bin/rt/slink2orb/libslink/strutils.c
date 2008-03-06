@@ -5,7 +5,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.196
+ * modified: 2006.344
  ***************************************************************************/
 
 #include <stdio.h>
@@ -19,7 +19,7 @@
 
 
 /***************************************************************************
- * strparse:
+ * sl_strparse:
  *
  * splits a 'string' on 'delim' and puts each part into a linked list
  * pointed to by 'list' (a pointer to a pointer).  The last entry has
@@ -32,7 +32,7 @@
  * the linked list.
  ***************************************************************************/
 int
-strparse (const char *string, const char *delim, strlist **list)
+sl_strparse (const char *string, const char *delim, SLstrlist **list)
 {
   const char *beg;			/* beginning of element */
   const char *del;			/* delimiter */
@@ -40,8 +40,8 @@ strparse (const char *string, const char *delim, strlist **list)
   int count = 0;
   int total;
 
-  strlist *curlist = 0;
-  strlist *tmplist = 0;
+  SLstrlist *curlist = 0;
+  SLstrlist *tmplist = 0;
 
   if (string != NULL && delim != NULL)
     {
@@ -61,7 +61,7 @@ strparse (const char *string, const char *delim, strlist **list)
 	      stop = 1;
 	    }
 
-	  tmplist = (strlist *) malloc (sizeof (strlist));
+	  tmplist = (SLstrlist *) malloc (sizeof (SLstrlist));
 	  tmplist->next = 0;
 
 	  tmplist->element = (char *) malloc (del - beg + 1);
@@ -102,11 +102,11 @@ strparse (const char *string, const char *delim, strlist **list)
 
       return 0;
     }
-}  /* End of strparse() */
+}  /* End of sl_strparse() */
 
 
 /***************************************************************************
- * strncpclean:
+ * sl_strncpclean:
  *
  * Copy 'length' characters from 'source' to 'dest' while removing all
  * spaces.  The result is left justified and always null terminated.
@@ -118,7 +118,7 @@ strparse (const char *string, const char *delim, strlist **list)
  * the destination string.
  ***************************************************************************/
 int
-strncpclean (char *dest, const char *source, int length)
+sl_strncpclean (char *dest, const char *source, int length)
 {
   int sidx, didx;
 
@@ -134,4 +134,4 @@ strncpclean (char *dest, const char *source, int length)
   *(dest+didx) = '\0';
 
   return didx;
-}  /* End of strncpclean() */
+}  /* End of sl_strncpclean() */

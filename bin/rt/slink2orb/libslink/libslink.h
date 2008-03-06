@@ -19,7 +19,7 @@
  *   ORFEUS/EC-Project MEREDIAN
  *   IRIS Data Management Center
  *
- * modified: 2005.332
+ * modified: 2008.028
  ***************************************************************************/
 
 
@@ -32,9 +32,9 @@ extern "C" {
 
 #include "slplatform.h"
 
-#define LIBSLINK_VERSION "1.6"
-#define LIBSLINK_RELEASE "2006.027"
-
+#define LIBSLINK_VERSION "2.1"
+#define LIBSLINK_RELEASE "2008.028"
+  
 #define SLRECSIZE           512      /* Mini-SEED record size */
 #define MAX_HEADER_SIZE     128      /* Max record header size */
 #define SLHEADSIZE          8        /* SeedLink header size */
@@ -72,14 +72,14 @@ extern "C" {
 /* SEED structures */
 
 /* Generic struct for head of blockettes */
-struct blkt_head_s
+struct sl_blkt_head_s
 {
   uint16_t  blkt_type;
   uint16_t  next_blkt;
 } SLP_PACKED;
 
 /* SEED binary time (10 bytes) */
-struct btime_s
+struct sl_btime_s
 {
   uint16_t  year;
   uint16_t  day;
@@ -91,7 +91,7 @@ struct btime_s
 } SLP_PACKED;
 
 /* 100 Blockette (12 bytes) */
-struct blkt_100_s
+struct sl_blkt_100_s
 {
   uint16_t  blkt_type;
   uint16_t  next_blkt;
@@ -101,7 +101,7 @@ struct blkt_100_s
 } SLP_PACKED;
 
 /* 1000 Blockette (8 bytes) */
-struct blkt_1000_s
+struct sl_blkt_1000_s
 {
   uint16_t  blkt_type;
   uint16_t  next_blkt;
@@ -112,7 +112,7 @@ struct blkt_1000_s
 } SLP_PACKED;
 
 /* 1001 Blockette (8 bytes) */
-struct blkt_1001_s
+struct sl_blkt_1001_s
 {
   uint16_t  blkt_type;
   uint16_t  next_blkt;
@@ -123,26 +123,26 @@ struct blkt_1001_s
 } SLP_PACKED;
 
 /* Fixed section data of header (48 bytes) */
-struct fsdh_s
+struct sl_fsdh_s
 {
-  char           sequence_number[6];
-  char           dhq_indicator;
-  char           reserved;
-  char           station[5];
-  char           location[2];
-  char           channel[3];
-  char           network[2];
-  struct btime_s start_time;
-  uint16_t       num_samples;
-  int16_t        samprate_fact;
-  int16_t        samprate_mult;
-  uint8_t        act_flags;
-  uint8_t        io_flags;
-  uint8_t        dq_flags;
-  uint8_t        num_blockettes;
-  int32_t        time_correct;
-  uint16_t       begin_data;
-  uint16_t       begin_blockette;
+  char        sequence_number[6];
+  char        dhq_indicator;
+  char        reserved;
+  char        station[5];
+  char        location[2];
+  char        channel[3];
+  char        network[2];
+  struct sl_btime_s start_time;
+  uint16_t    num_samples;
+  int16_t     samprate_fact;
+  int16_t     samprate_mult;
+  uint8_t     act_flags;
+  uint8_t     io_flags;
+  uint8_t     dq_flags;
+  uint8_t     num_blockettes;
+  int32_t     time_correct;
+  uint16_t    begin_data;
+  uint16_t    begin_blockette;
 } SLP_PACKED;
 
 /* SeedLink packet, sequence number followed by miniSEED record */
@@ -270,6 +270,7 @@ extern double sl_dtime (void);
 extern int    sl_doy2md (int year, int jday, int *month, int *mday);
 extern int    sl_checkversion (const SLCD * slconn, float version);
 extern int    sl_checkslcd (const SLCD * slconn);
+extern int    sl_readline (int fd, char *buffer, int buflen);
 
 /* logging.c */
 extern int    sl_log (int level, int verb, ...);
@@ -300,57 +301,57 @@ extern int   sl_savestate (SLCD *slconn, const char *statefile);
 #define MSD_STBADLASTMATCH  -5        /* Steim, last sample does not match */
 #define MSD_STBADCOMPFLAG   -6        /* Steim, invalid compression flag(s) */
 
-typedef struct MSrecord_s {
-  const char          *msrecord;      /* Pointer to original record */
-  struct fsdh_s        fsdh;          /* Fixed Section of Data Header */ 
-  struct blkt_100_s   *Blkt100;       /* Blockette 100, if present */
-  struct blkt_1000_s  *Blkt1000;      /* Blockette 1000, if present */
-  struct blkt_1001_s  *Blkt1001;      /* Blockette 1001, if present */
-  int32_t             *datasamples;   /* Unpacked 32-bit data samples */
-  int32_t              numsamples;    /* Number of unpacked samples */
-  int8_t               unpackerr;     /* Unpacking/decompression error flag */
+typedef struct SLMSrecord_s {
+  const char            *msrecord;    /* Pointer to original record */
+  struct sl_fsdh_s       fsdh;        /* Fixed Section of Data Header */ 
+  struct sl_blkt_100_s  *Blkt100;     /* Blockette 100, if present */
+  struct sl_blkt_1000_s *Blkt1000;    /* Blockette 1000, if present */
+  struct sl_blkt_1001_s *Blkt1001;    /* Blockette 1001, if present */
+  int32_t               *datasamples; /* Unpacked 32-bit data samples */
+  int32_t                numsamples;  /* Number of unpacked samples */
+  int8_t                 unpackerr;   /* Unpacking/decompression error flag */
 }
-MSrecord;
+SLMSrecord;
 
-extern MSrecord * msr_new (void);
-extern void       msr_free (MSrecord ** msr);
-extern MSrecord * msr_parse (SLlog * log, const char * msrecord, MSrecord ** msr,
-			     int8_t blktflag, int8_t unpackflag);
-extern int        msr_print (SLlog * log, MSrecord * msr, int details);
-extern int        msr_dsamprate (MSrecord * msr, double * samprate);
-extern double     msr_dnomsamprate (MSrecord * msr);
-extern double     msr_depochstime (MSrecord * msr);
+extern SLMSrecord* sl_msr_new (void);
+extern void        sl_msr_free (SLMSrecord ** msr);
+extern SLMSrecord* sl_msr_parse (SLlog * log, const char * msrecord, SLMSrecord ** msr,
+			         int8_t blktflag, int8_t unpackflag);
+extern int         sl_msr_print (SLlog * log, SLMSrecord * msr, int details);
+extern int         sl_msr_dsamprate (SLMSrecord * msr, double * samprate);
+extern double      sl_msr_dnomsamprate (SLMSrecord * msr);
+extern double      sl_msr_depochstime (SLMSrecord * msr);
 
 
 /* strutils.c */
 
 /* For a linked list of strings, as filled by strparse() */
-typedef struct strlist_s {
-  char             *element;
-  struct strlist_s *next;
-} strlist;
+typedef struct SLstrlist_s {
+  char               *element;
+  struct SLstrlist_s *next;
+} SLstrlist;
 
-extern int  strparse(const char *string, const char *delim, strlist **list);
-extern int  strncpclean(char *dest, const char *source, int length);
+extern int  sl_strparse(const char *string, const char *delim, SLstrlist **list);
+extern int  sl_strncpclean(char *dest, const char *source, int length);
 
 /* gswap.c */
 
 /* Generic byte swapping routines */
-extern void   gswap2 ( void *data2 );
-extern void   gswap3 ( void *data3 );
-extern void   gswap4 ( void *data4 );
-extern void   gswap8 ( void *data8 );
+extern void   sl_gswap2 ( void *data2 );
+extern void   sl_gswap3 ( void *data3 );
+extern void   sl_gswap4 ( void *data4 );
+extern void   sl_gswap8 ( void *data8 );
 
 /* Generic byte swapping routines for memory aligned quantities */
-extern void   gswap2a ( void *data2 );
-extern void   gswap4a ( void *data4 );
-extern void   gswap8a ( void *data8 );
+extern void   sl_gswap2a ( void *data2 );
+extern void   sl_gswap4a ( void *data4 );
+extern void   sl_gswap8a ( void *data8 );
 
 /* Byte swap macro for the BTime struct */
-#define SWAPBTIME(x) \
-  gswap2 (x.year);   \
-  gswap2 (x.day);    \
-  gswap2 (x.fract);
+#define SL_SWAPBTIME(x)   \
+  sl_gswap2 (x.year);  \
+  sl_gswap2 (x.day);   \
+  sl_gswap2 (x.fract);
 
 
 #ifdef __cplusplus

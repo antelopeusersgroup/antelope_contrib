@@ -1,4 +1,4 @@
-.TH SL_UTILS 3 2003/11/03
+.TH SL_UTILS 3 2006/12/10
 .SH NAME
 General use utility routines:
 
@@ -18,7 +18,7 @@ sl_strncpclean \- Copy a string while removing space characters
 .sp
 .BI "int \fBsl_doy2md\fP (int " year ", int " jday ", int *" month ", int *" mday ");
 .sp
-.BI "int \fBstrncpclean\fP (char *" dest ", const char *" source ", int " length ");
+.BI "int \fBsl_strncpclean\fP (char *" dest ", const char *" source ", int " length ");
 .fi
 .SH DESCRIPTION
 \fBsl_dtime\fP returns the current system time as a double precision
@@ -34,8 +34,8 @@ time has millisecond precision.
 expected to be in the range 1-366, \fImonth\fP will be in the range
 1-12 and \fImday\fP will be in the range 1-31.
 
-\fBstrncpclean\fP copies \fIlength\fP characters from \fIsource\fP to
-\fIdest\fP while removing all space characters.  The result is left
+\fBsl_strncpclean\fP copies \fIlength\fP characters from \fIsource\fP
+to \fIdest\fP while removing all space characters.  The result is left
 justified and always null terminated.  \fIsource\fP must have at least
 \fIlength\fP characters and \fIdest\fP must have enough room needed
 for the non-space characters within \fIlength\fP and the null
@@ -47,8 +47,8 @@ terminator.
 \fBsl_doy2md\fP returns 0 on success and -1 on error (input year or
 day-of-year is out of range).
 
-\fBstrncpclean\fP returns the number of characters (not including the
-null terminator) copied to the destination string.
+\fBsl_strncpclean\fP returns the number of characters (not including
+the null terminator) copied to the destination string.
 
 .SH AUTHOR
 .nf

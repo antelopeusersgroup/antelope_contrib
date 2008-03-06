@@ -18,7 +18,7 @@
  * Written by Chad Trabant,
  *   IRIS Data Management Center
  *
- * Version: 2005.097
+ * Version: 2006.344
  ***************************************************************************/
 
 #include <memory.h>
@@ -28,7 +28,7 @@
 /* Swap routines that work on any (aligned or not) quantities */
 
 void
-gswap2 ( void *data2 )
+sl_gswap2 ( void *data2 )
 {
   uint8_t temp;
   
@@ -46,7 +46,7 @@ gswap2 ( void *data2 )
 
 
 void
-gswap3 ( void *data3 )
+sl_gswap3 ( void *data3 )
 {
   uint8_t temp;
   
@@ -64,7 +64,7 @@ gswap3 ( void *data3 )
 
 
 void
-gswap4 ( void *data4 )
+sl_gswap4 ( void *data4 )
 {
   uint8_t temp;
 
@@ -84,7 +84,7 @@ gswap4 ( void *data4 )
 
 
 void
-gswap8 ( void *data8 )
+sl_gswap8 ( void *data8 )
 {
   uint8_t temp;
   
@@ -115,7 +115,7 @@ gswap8 ( void *data8 )
 /* Swap routines that work on memory aligned quantities */
 
 void
-gswap2a ( void *data2 )
+sl_gswap2a ( void *data2 )
 {
   uint16_t *data = data2;
   
@@ -124,7 +124,7 @@ gswap2a ( void *data2 )
 
 
 void
-gswap4a ( void *data4 )
+sl_gswap4a ( void *data4 )
 {
   uint32_t *data = data4;
   
@@ -134,7 +134,7 @@ gswap4a ( void *data4 )
 
 
 void
-gswap8a ( void *data8 )
+sl_gswap8a ( void *data8 )
 {
   uint32_t *data4 = data8;
   uint32_t h0, h1;

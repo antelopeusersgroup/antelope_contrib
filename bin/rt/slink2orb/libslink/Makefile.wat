@@ -31,7 +31,8 @@ OBJS=	gswap.obj	&
 	statefile.obj	&
 	config.obj	&
 	slplatform.obj	&
-	slutils.obj
+	slutils.obj     &
+	globmatch.obj
 
 all: lib
 
@@ -53,6 +54,7 @@ statefile.obj:	statefile.c libslink.h
 config.obj:	config.c libslink.h
 slplatform.obj:	slplatform.c slplatform.h libslink.h
 main.obj:	main.c libslink.h
+globmatch.obj:	globmatch.c globmatch.h libslink.h
 
 # How to compile sources:
 .c.obj:

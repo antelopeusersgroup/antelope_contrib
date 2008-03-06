@@ -5,7 +5,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.177
+ * modified: 2006.336
  ***************************************************************************/
 
 
@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-extern int msr_unpack (SLlog * log, MSrecord * msr, int swapflag);
+extern int sl_msr_unpack (SLlog * log, SLMSrecord * msr, int swapflag);
 
 #ifdef __cplusplus
 }

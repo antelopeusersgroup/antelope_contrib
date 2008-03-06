@@ -1,9 +1,15 @@
-# Standard compiler parameters
-CFLAGS = -O -I..
+
+# Build environment can be configured the following
+# environment variables:
+#   CC : Specify the C compiler to use
+#   CFLAGS : Specify compiler options to use
 
 # GCC specific parameters
 GCC = gcc
 GCCFLAGS = -O2 -Wall -I..
+
+# Required compiler parameters
+CFLAGS += -I..
  
 LDFLAGS = -L..
 LDLIBS = -lslink
@@ -37,3 +43,7 @@ gccdebug:
 
 clean:
 	rm -f $(OBJS) $(BIN)
+
+# Implicit rule for building object files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<

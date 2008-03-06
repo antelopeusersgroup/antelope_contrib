@@ -17,7 +17,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.196
+ * modified: 2008.029
  ***************************************************************************/
 
 #include <fcntl.h>
@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "libslink.h"
 
@@ -257,6 +260,34 @@ slp_getaddrinfo (char * nodename, char * nodeport,
 
   return 0;
 }  /* End of slp_getaddrinfo() */
+
+
+/***************************************************************************
+ * slp_openfile:
+ *
+ * Open a specified file and return the file descriptor.  The perm
+ * character is interpreted the following way:
+ *
+ * perm:
+ *  'r', open file with read-only permissions
+ *  'w', open file with read-write permissions, creating if necessary.
+ *
+ * Returns the return value of open(), generally this is a positive
+ * file descriptor on success and -1 on error.
+ ***************************************************************************/
+int
+slp_openfile (const char *filename, char perm)
+{
+#if defined(SLP_WIN32)
+  int flags = (perm == 'w') ? (_O_RDWR | _O_CREAT | _O_BINARY) : (_O_RDONLY | _O_BINARY);
+  int mode = (_S_IREAD | _S_IWRITE);
+#else
+  int flags = (perm == 'w') ? (O_RDWR | O_CREAT) : O_RDONLY;
+  mode_t mode = (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+  
+  return open (filename, flags, mode);
+}  /* End of slp_openfile() */
 
 
 /***************************************************************************

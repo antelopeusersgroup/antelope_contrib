@@ -265,15 +265,15 @@ Some functions are included for parsing Mini-SEED record headers and
 unpacking/decompressing data samples.  As of version 1.0 the data
 formats supported are INT-16, INT-32, Steim-1 and Steim-2.
 
-  msr_parse_() : parse the fixed section data header and blockettes
+  sl_msr_parse_() : parse the fixed section data header and blockettes
 	100, 1000 and 1001.  Optionally unpacking/decompressing data samples.
 
-  msr_print() : print header values out using sl_log().  The level of
+  sl_msr_print() : print header values out using sl_log().  The level of
 	information printed can be controlled.
 
 There are also functions to return the (double precision) sample rate and
 the record start time as a (double precision) POSIX epoch, these are
-msr_dsamprate() and msr_depochstime() respectively.  Consult the manual
+sl_msr_dsamprate() and sl_msr_depochstime() respectively.  Consult the manual
 pages for further details.
 
 

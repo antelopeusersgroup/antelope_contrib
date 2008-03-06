@@ -1,5 +1,8 @@
-# Standard compiler parameters
-CFLAGS = -O
+
+# Build environment can be configured the following
+# environment variables:
+#   CC : Specify the C compiler to use
+#   CFLAGS : Specify compiler options to use
 
 # GCC specific parameters
 GCC = gcc
@@ -7,7 +10,7 @@ GCCFLAGS = -O2 -Wall
 
 LIB_OBJS = gswap.o unpack.o msrecord.o genutils.o strutils.o \
            logging.o network.o statefile.o config.o \
-           slplatform.o slutils.o
+           globmatch.o slplatform.o slutils.o
 
 CURRENT_VER = 1.1
 COMPAT_VER = 1.0
@@ -52,14 +55,8 @@ gccdebug:
 clean:
 	rm -f $(LIB_OBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_ALIAS) $(LIB_DYN) $(LIB_DYN_ALIAS)
 
-install: static
+install:
 	@echo
 	@echo "No install method, copy the library, header file, and"
 	@echo "documentation to the preferred install location"
 	@echo
-
-Include:
-
-purge:
-
-uninstall:

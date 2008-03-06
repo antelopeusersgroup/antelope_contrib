@@ -1,5 +1,4 @@
 /***************************************************************************
- * genutils.c
  *
  * General utility functions.
  *
@@ -8,12 +7,13 @@
  * Originally based on the SeedLink interface of the modified Comserv in
  * SeisComP written by Andres Heinloo
  *
- * Version: 2004.196
+ * Version: 2008.028
  ***************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "libslink.h"
 
@@ -130,3 +130,47 @@ sl_checkslcd (const SLCD * slconn)
 
   return retval;
 }  /* End of sl_checkslconn() */
+
+
+/***************************************************************************
+ * sl_readline:
+ *
+ * Read characters from a stream (specified as a file descriptor)
+ * until a newline character '\n' is read and place them into the
+ * supplied buffer.  Reading stops when either a newline character is
+ * read or buflen-1 characters have been read.  The buffer will always
+ * contain a NULL-terminated string.
+ *
+ * Returns the number of characters read on success and -1 on error.
+ ***************************************************************************/
+int
+sl_readline (int fd, char *buffer, int buflen)
+{
+  int nread = 0;
+  
+  if ( ! buffer )
+    return -1;
+  
+  /* Read data from stream until newline character or max characters */
+  while ( nread < (buflen-1) )
+    {
+      /* Read a single character from the stream */
+      if ( read (fd, buffer+nread, 1) != 1 )
+	{
+	  return -1;
+	}
+      
+      /* Trap door for newline character */
+      if ( buffer[nread] == '\n' )
+	{
+	  break;
+	}
+      
+      nread++;
+    }
+  
+  /* Terminate string in buffer */
+  buffer[nread] = '\0';
+  
+  return nread;
+}  /* End of sl_readline() */

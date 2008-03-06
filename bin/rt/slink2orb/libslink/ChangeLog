@@ -1,3 +1,61 @@
+2008.028: version 2.1
+	- Convert all buffered IO file operations to unbuffered IO routines.
+	- Add sl_readline() to genutils.c to read and return a line, defined
+	by newline characters, from unbuffered IO, i.e. a file descriptor.
+	- Add slp_openfile() to slplatform.[ch] to portably open files.
+	- Change Makefile and src/Makefile to use user defined CC and CFLAGS.
+	
+2007.284: version 2.0 (no version change)
+	- Use memchr() instead of strnstr() in network.c for portability.
+	- Add globmatch.obj to Makefile.wat and Makefile.win.
+
+2007.282: version 2.0
+	- Add parsing of capability flags included with the server
+	version string which is now expected to be in the format:
+	"SeedLink v#.# <optional text> <:: capability flags>".
+	Currently recognized capability flags:
+	  SLPROTO:#.# == SeedLink protocol version
+	  CAP == Supports CAPABILITY command
+          EXTREPLY == Extended reply messages supported
+          NSWILDCARD == Network & station code wildcarding
+	- Add sending of CAPABILITY command after HELLO in say_hello()
+	if the server supports the CAPABILITY command.
+	- Add ability to recognize extended replies from the server,
+	these are in the form of "Reply\rExtended Message\r\n", for
+	example: "ERROR\rSTATION command requires 1 or 2 arguments\r\n".
+
+2007.179:
+	- Add globmatch.[ch], includes a function to do glob matching.
+	- Use glob matching in update_stream() when updating sequence
+	numbers of packet streams received.  This is needed to facilitate
+	the '*' and '?' wildcards in network and station codes.
+	- Change update_stream() to update all the entries in the stream
+	chain that match the given network and station code.  This allows
+	the situation where data from a given network-station pair is
+	selected in two or more selectors to work properly with state files.
+
+2006.354: version 1.7
+	- No functionality changes since 1.6; only function, macro and 
+	struct name changes to avoid collisions with other libraries.
+
+2006.344: version 1.7rc2
+	- Add "sl_" prefix to sl_strparse, sl_strncpclean and sl_gswap
+	functions.
+	- Add "SL" prefix to SLstrlist typedef and SL_SWAPBTIME macro.
+	No functionality changes, symbol renaming only.
+
+2006.336: version 1.7rc1
+	- Add "sl_" prefix to SEED structures to avoid collision,
+	changed structs: sl_blkt_head_s, sl_btime_s, sl_blkt_100_s,
+	sl_blkt_1000_s, sl_blkt_1001_s, sl_fsdh_s.
+	- Add "sl_" prefix to the following routines to avoid
+	collision with libmseed functions: sl_msr_new, sl_msr_free,
+	sl_msr_parse, sl_msr_print, sl_msr_dsamprate,
+	sl_msr_dnomsamprate, sl_msr_depochstime.
+	- Add "SL" to the record structure and typedef which are
+	now: struct SLMSrecord_s, typedef SLMSrecord.
+	No functionality changes, symbol renaming only.
+
 2006.028: version 1.6
 	- No changes, only update version.
 

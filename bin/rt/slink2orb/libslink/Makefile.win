@@ -21,7 +21,8 @@ OBJS=	gswap.obj	\
 	statefile.obj	\
 	config.obj	\
 	slplatform.obj	\
-	slutils.obj
+	slutils.obj	\
+	globmatch.obj
 
 all: lib
 
@@ -38,4 +39,3 @@ dll: $(OBJS)
 # Clean-up directives
 clean:
 	-del a.out core *.o *.obj *% *~ $(LIB) $(DLL)
-

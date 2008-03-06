@@ -37,7 +37,7 @@
  *
  *  Modified by Chad Trabant, ORFEUS/EC-Project MEREDIAN		
  *
- *  modified: 2005.103
+ *  modified: 2006.344
  ************************************************************************/
 
 /*
@@ -117,16 +117,16 @@ static int unpack_int_32 (int32_t*, int, int, int, int32_t*, int);
 
 
 /************************************************************************/
-/*  msr_unpack():							*/
-/*  Unpack Mini-SEED data for a given MSrecord.  The data is accessed	*/
-/*  in the record indicated by MSrecord->msrecord and the unpacked	*/
-/*  samples are placed in MSrecord->datasamples.  The resulting data	*/
+/*  sl_msr_unpack():							*/
+/*  Unpack Mini-SEED data for a given SLMSrecord.  The data is accessed	*/
+/*  in the record indicated by SLMSrecord->msrecord and the unpacked	*/
+/*  samples are placed in SLMSrecord->datasamples.  The resulting data	*/
 /*  samples are 32-bit integers in host order.				*/
 /*                                                                      */
 /*  Return number of samples unpacked or -1 on error.                   */
 /************************************************************************/
 int
-msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
+sl_msr_unpack (SLlog * log, SLMSrecord * msr, int swapflag)
 {
   int     i;
   int     blksize;		/* byte size of Mini-SEED record	*/
@@ -288,8 +288,8 @@ int unpack_steim1
 
     if ( swapflag )
       {
-	gswap4 (px0);
-	gswap4 (pxn);
+	sl_gswap4 (px0);
+	sl_gswap4 (pxn);
       }
     
     /*	Decode compressed data in each frame.				*/
@@ -299,7 +299,7 @@ int unpack_steim1
 	  break;
 	
 	ctrl = pf->ctrl;
-	if ( swapflag ) gswap4 (&ctrl);
+	if ( swapflag ) sl_gswap4 (&ctrl);
 	
 	for (wn = 0; wn < VALS_PER_FRAME; wn++)
 	  {
@@ -328,7 +328,7 @@ int unpack_steim1
 		    if (swapflag)
 		      {
 			stmp = pf->w[wn].hw[i];
-			if ( swapflag ) gswap2 (&stmp);
+			if ( swapflag ) sl_gswap2 (&stmp);
 			*diff++ = stmp;
 		      }
 		    else *diff++ = pf->w[wn].hw[i];
@@ -340,7 +340,7 @@ int unpack_steim1
 		if (swapflag)
 		  {
 		    itmp = pf->w[wn].fw;
-		    if ( swapflag ) gswap4 (&itmp);
+		    if ( swapflag ) sl_gswap4 (&itmp);
 		    *diff++ = itmp;
 		  }
 		else *diff++ = pf->w[wn].fw;
@@ -467,8 +467,8 @@ int unpack_steim2
 
     if ( swapflag )
       {
-	gswap4 (px0);
-	gswap4 (pxn);
+	sl_gswap4 (px0);
+	sl_gswap4 (pxn);
       }
     
     /*	Decode compressed data in each frame.				*/
@@ -476,7 +476,7 @@ int unpack_steim2
       {
 	if (fast && nd >= req_samples) break;
 	ctrl = pf->ctrl;
-	if ( swapflag ) gswap4 (&ctrl);
+	if ( swapflag ) sl_gswap4 (&ctrl);
 
 	for (wn = 0; wn < VALS_PER_FRAME; wn++)
 	  {
@@ -499,7 +499,7 @@ int unpack_steim2
 
 	      case STEIM2_123_MASK:
 		val = pf->w[wn].fw;
-		if ( swapflag ) gswap4 (&val);
+		if ( swapflag ) sl_gswap4 (&val);
 		dnib =  val >> 30 & 0x3;
 		switch (dnib)
 		  {
@@ -527,7 +527,7 @@ int unpack_steim2
 
 	      case STEIM2_567_MASK:
 		val = pf->w[wn].fw;
-		if ( swapflag ) gswap4 (&val);
+		if ( swapflag ) sl_gswap4 (&val);
 		dnib =  val >> 30 & 0x3;
 		switch (dnib)
 		  {
@@ -646,7 +646,7 @@ int unpack_int_16
 
     for (nd=0; nd<req_samples && nd<num_samples; nd++) {
 	stmp = ibuf[nd];
-	if ( swapflag ) gswap2 (&stmp);
+	if ( swapflag ) sl_gswap2 (&stmp);
 	databuff[nd] = stmp;
     }
 
@@ -677,7 +677,7 @@ int unpack_int_32
 
     for (nd=0; nd<req_samples && nd<num_samples; nd++) {
         itmp = ibuf[nd];
-	if ( swapflag ) gswap4 (&itmp);
+	if ( swapflag ) sl_gswap4 (&itmp);
 	databuff[nd] = itmp;
     }
 

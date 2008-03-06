@@ -14,7 +14,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2005.091
+ * modified: 2006.344
  ***************************************************************************/
 
 #include <stdio.h>
@@ -27,27 +27,27 @@
 
 /* Delcare routines only used in this source file */
 void encoding_hash (char enc, char *encstr);
-double host_latency (MSrecord * msr);
+double host_latency (SLMSrecord * msr);
 
 
 /***************************************************************************
- * msr_new:
+ * sl_msr_new:
  *
- * Allocate, initialize and return a new MSrecord struct.
+ * Allocate, initialize and return a new SLMSrecord struct.
  *
- * Returns a pointer to a MSrecord struct on success
+ * Returns a pointer to a SLMSrecord struct on success
  *  or NULL on error.
  ***************************************************************************/
-MSrecord *
-msr_new ( void )
+SLMSrecord *
+sl_msr_new ( void )
 {
-  MSrecord * msr;
-
-  msr = (MSrecord *) malloc (sizeof(MSrecord));
-
+  SLMSrecord * msr;
+  
+  msr = (SLMSrecord *) malloc (sizeof(SLMSrecord));
+  
   if ( msr == NULL )
     {
-      sl_log_rl (NULL, 2, 0, "msr_new(): error allocating memory\n");
+      sl_log_rl (NULL, 2, 0, "sl_msr_new(): error allocating memory\n");
       return NULL;
     }
 
@@ -86,17 +86,17 @@ msr_new ( void )
   msr->unpackerr   = MSD_NOERROR;
   
   return msr;
-}  /* End of msr_new() */
+}  /* End of sl_msr_new() */
 
 
 /***************************************************************************
- * msr_free:
+ * sl_msr_free:
  *
- * Free all memory associated with a MSrecord struct, except the original
+ * Free all memory associated with a SLMSrecord struct, except the original
  * record indicated by the element 'msrecord'.
  ***************************************************************************/
 void
-msr_free ( MSrecord ** msr )
+sl_msr_free ( SLMSrecord ** msr )
 {
   if ( msr != NULL && *msr != NULL )
     {
@@ -111,22 +111,22 @@ msr_free ( MSrecord ** msr )
       
       *msr = NULL;
     }
-}  /* End of msr_free() */
+}  /* End of sl_msr_free() */
 
 
 /***************************************************************************
- * msr_parse:
+ * sl_msr_parse:
  *
- * Parses a SEED record header/blockettes and populates a MSrecord struct.
+ * Parses a SEED record header/blockettes and populates a SLMSrecord struct.
  *
  * If 'blktflag' is true the blockettes will also be parsed.  The parser
  * recognizes Blockettes 100, 1000 and 1001.
  *
  * If 'unpackflag' is true the data samples are unpacked/decompressed and
- * the MSrecord->datasamples pointer is set appropriately.  The data samples
+ * the SLMSrecord->datasamples pointer is set appropriately.  The data samples
  * will be 32-bit integers with the same byte order as the host.  The
- * MSrecord->numsamples will be set to the actual number of samples
- * unpacked/decompressed and MSrecord->unpackerr will be set to indicate
+ * SLMSrecord->numsamples will be set to the actual number of samples
+ * unpacked/decompressed and SLMSrecord->unpackerr will be set to indicate
  * any errors encountered during unpacking/decompression (MSD_NOERROR if
  * no errors).
  *
@@ -138,20 +138,20 @@ msr_free ( MSrecord ** msr )
  *
  * If the msr struct is NULL it will be allocated.
  *
- * Returns a pointer to the MSrecord struct populated on success.  On
+ * Returns a pointer to the SLMSrecord struct populated on success.  On
  * error *ppmsr is set to NULL and NULL is returned.
  ***************************************************************************/
-MSrecord *
-msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
-	   int8_t blktflag, int8_t unpackflag )
+SLMSrecord *
+sl_msr_parse (SLlog * log, const char * msrecord, SLMSrecord ** ppmsr,
+	      int8_t blktflag, int8_t unpackflag )
 {
   int swapflag = 0;		        /* is swapping needed? */
   uint16_t begin_blockette;	        /* byte offset for next blockette */
-  MSrecord * msr = NULL;
+  SLMSrecord * msr = NULL;
 
   if ( ppmsr == NULL )
     {
-      sl_log_rl (log, 2, 1, "msr_parse(): pointer to MSrecord cannot be NULL\n");
+      sl_log_rl (log, 2, 1, "msr_parse(): pointer to SLMSrecord cannot be NULL\n");
       *ppmsr = NULL;
       return NULL;
     }
@@ -163,7 +163,7 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
   /* If this record is new init a new one otherwise clean it up */
   if ( msr == NULL )
     {
-      msr = msr_new();
+      msr = sl_msr_new();
     }
   else
     {
@@ -203,7 +203,7 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
     {
       sl_log_rl (log, 2, 0, "record header/quality indicator unrecognized: %c\n",
 		 msr->fsdh.dhq_indicator);
-      msr_free(&msr);
+      sl_msr_free(&msr);
       *ppmsr = NULL;
       return NULL;
     }
@@ -216,26 +216,26 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
   /* Change byte order? */
   if ( swapflag )
     {
-      SWAPBTIME (&msr->fsdh.start_time);
-      gswap2 (&msr->fsdh.num_samples);
-      gswap2 (&msr->fsdh.samprate_fact);
-      gswap2 (&msr->fsdh.samprate_mult);
-      gswap4 (&msr->fsdh.time_correct);
-      gswap2 (&msr->fsdh.begin_data);
-      gswap2 (&msr->fsdh.begin_blockette);
+      SL_SWAPBTIME (&msr->fsdh.start_time);
+      sl_gswap2 (&msr->fsdh.num_samples);
+      sl_gswap2 (&msr->fsdh.samprate_fact);
+      sl_gswap2 (&msr->fsdh.samprate_mult);
+      sl_gswap4 (&msr->fsdh.time_correct);
+      sl_gswap2 (&msr->fsdh.begin_data);
+      sl_gswap2 (&msr->fsdh.begin_blockette);
     }
 
   /* Parse the blockettes if requested */
   if ( blktflag )
     {
       /* Define some structures */
-      struct blkt_head_s  *blkt_head;
-      struct blkt_100_s   *blkt_100;
-      struct blkt_1000_s  *blkt_1000;
-      struct blkt_1001_s  *blkt_1001;
+      struct sl_blkt_head_s  *blkt_head;
+      struct sl_blkt_100_s   *blkt_100;
+      struct sl_blkt_1000_s  *blkt_1000;
+      struct sl_blkt_1001_s  *blkt_1001;
       
       /* Initialize the blockette structures */
-      blkt_head = (struct blkt_head_s *) malloc (sizeof (struct blkt_head_s));
+      blkt_head = (struct sl_blkt_head_s *) malloc (sizeof (struct sl_blkt_head_s));
       blkt_100  = NULL;
       blkt_1000 = NULL;
       blkt_1001 = NULL;
@@ -248,22 +248,22 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
 	{
 	  
 	  memcpy ((void *) blkt_head, msrecord + begin_blockette,
-		  sizeof (struct blkt_head_s));
+		  sizeof (struct sl_blkt_head_s));
 	  if ( swapflag )
 	    {
-	      gswap2 (&blkt_head->blkt_type);
-	      gswap2 (&blkt_head->next_blkt);
+	      sl_gswap2 (&blkt_head->blkt_type);
+	      sl_gswap2 (&blkt_head->next_blkt);
 	    }
 
 	  if (blkt_head->blkt_type == 100)
 	    {			/* found a 100 blockette */
-	      blkt_100 = (struct blkt_100_s *) malloc (sizeof (struct blkt_100_s));
+	      blkt_100 = (struct sl_blkt_100_s *) malloc (sizeof (struct sl_blkt_100_s));
 	      memcpy ((void *) blkt_100, msrecord + begin_blockette,
-		      sizeof (struct blkt_100_s));
+		      sizeof (struct sl_blkt_100_s));
 	      
 	      if ( swapflag )
 		{
-		  gswap4 (&blkt_100->sample_rate);
+		  sl_gswap4 (&blkt_100->sample_rate);
 		}
 	      
 	      blkt_100->blkt_type = blkt_head->blkt_type;
@@ -276,9 +276,9 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
 	    
 	    {			/* found the 1000 blockette */
 	      blkt_1000 =
-		(struct blkt_1000_s *) malloc (sizeof (struct blkt_1000_s));
+		(struct sl_blkt_1000_s *) malloc (sizeof (struct sl_blkt_1000_s));
 	      memcpy ((void *) blkt_1000, msrecord + begin_blockette,
-		      sizeof (struct blkt_1000_s));
+		      sizeof (struct sl_blkt_1000_s));
 	      
 	      blkt_1000->blkt_type = blkt_head->blkt_type;
 	      blkt_1000->next_blkt = blkt_head->next_blkt;
@@ -289,9 +289,9 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
 	  if (blkt_head->blkt_type == 1001)
 	    {			/* found a 1001 blockette */
 	      blkt_1001 =
-		(struct blkt_1001_s *) malloc (sizeof (struct blkt_1001_s));
+		(struct sl_blkt_1001_s *) malloc (sizeof (struct sl_blkt_1001_s));
 	      memcpy ((void *) blkt_1001, msrecord + begin_blockette,
-		      sizeof (struct blkt_1001_s));
+		      sizeof (struct sl_blkt_1001_s));
 	      
 	      blkt_1001->blkt_type = blkt_head->blkt_type;
 	      blkt_1001->next_blkt = blkt_head->next_blkt;
@@ -316,7 +316,7 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
   /* Unpack the data samples if requested */
   if ( unpackflag )
     {
-      msr->numsamples = msr_unpack (log, msr, swapflag);
+      msr->numsamples = sl_msr_unpack (log, msr, swapflag);
     }
   else {
     msr->numsamples = -1;
@@ -325,11 +325,11 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
   /* Re-direct the original pointer and return the new */
   *ppmsr = msr;
   return msr;
-}  /* End of msr_parse() */
+}  /* End of sl_msr_parse() */
 
 
 /***************************************************************************
- * msr_print:
+ * sl_msr_print:
  *
  * Prints header values, if 'details' is greater than zero then
  * detailed information (values in the fixed header and following
@@ -338,7 +338,7 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
  * Returns non-zero on success or 0 on error.
  ***************************************************************************/
 int
-msr_print (SLlog * log, MSrecord * msr, int details)
+sl_msr_print (SLlog * log, SLMSrecord * msr, int details)
 {
   char sourcename[50];
   char prtnet[4], prtsta[7];
@@ -349,10 +349,10 @@ msr_print (SLlog * log, MSrecord * msr, int details)
   int usec;
 
   /* Generate clean identifier strings */
-  strncpclean (prtnet, msr->fsdh.network, 2);
-  strncpclean (prtsta, msr->fsdh.station, 5);
-  strncpclean (prtloc, msr->fsdh.location, 2);
-  strncpclean (prtchan, msr->fsdh.channel, 3);
+  sl_strncpclean (prtnet, msr->fsdh.network, 2);
+  sl_strncpclean (prtsta, msr->fsdh.station, 5);
+  sl_strncpclean (prtloc, msr->fsdh.location, 2);
+  sl_strncpclean (prtchan, msr->fsdh.channel, 3);
 
   if (prtnet[0] != '\0')
     strcat (prtnet, "_");
@@ -389,7 +389,7 @@ msr_print (SLlog * log, MSrecord * msr, int details)
   /* Report information in the fixed header */
   if (details > 0)
     {
-      dsamprate = msr_dnomsamprate(msr);
+      dsamprate = sl_msr_dnomsamprate(msr);
       sl_log_rl (log, 0, 0, "                 source: %s\n", sourcename);
       sl_log_rl (log, 0, 0, "             start time: %s  (latency ~%1.1f sec)\n",
 		 stime, latency);
@@ -407,7 +407,7 @@ msr_print (SLlog * log, MSrecord * msr, int details)
     }
   else
     {
-      msr_dsamprate (msr, &dsamprate);
+      sl_msr_dsamprate (msr, &dsamprate);
       sl_log_rl (log, 0, 0, "%s, %d samples, %.10g Hz, %s (latency ~%1.1f sec)\n",
 		 sourcename, msr->fsdh.num_samples, dsamprate, stime, latency);
     }
@@ -472,13 +472,13 @@ msr_print (SLlog * log, MSrecord * msr, int details)
     }
   
   return 1;
-}  /* End of msr_print() */
+}  /* End of sl_msr_print() */
 
 
 /***************************************************************************
- * msr_dsamprate:
+ * sl_msr_dsamprate:
  *
- * Calculate a double precision sample rate for the specified MSrecord and
+ * Calculate a double precision sample rate for the specified SLMSrecord and
  * store it in the passed samprate argument.  If a 100 Blockette was
  * included and parsed, the "Actual sample rate" (Blockette 100, field 3)
  * will be returned, otherwise a nominal sample rate will be calculated
@@ -489,7 +489,7 @@ msr_print (SLlog * log, MSrecord * msr, int details)
  * rate (from factor and multiplier) or 0 on error.
  ***************************************************************************/
 int
-msr_dsamprate (MSrecord * msr, double * samprate)
+sl_msr_dsamprate (SLMSrecord * msr, double * samprate)
 {
   if ( ! msr )
     return 0;
@@ -501,27 +501,27 @@ msr_dsamprate (MSrecord * msr, double * samprate)
     }
   else
     {
-      *samprate = msr_dnomsamprate(msr);
+      *samprate = sl_msr_dnomsamprate(msr);
       
       if ( *samprate == -1.0 )
 	return 0;
       
       return 2;
     }
-}  /* End of msr_dsamprate() */
+}  /* End of sl_msr_dsamprate() */
 
 
 /***************************************************************************
- * msr_dnomsamprate:
+ * sl_msr_dnomsamprate:
  *
  * Calculate a double precision nominal sample rate for the specified
- * MSrecord from the sample rate factor and multiplier in the fixed
+ * SLMSrecord from the sample rate factor and multiplier in the fixed
  * section data header.
  *
  * Returns the nominal sample rate or -1.0 on error.
  ***************************************************************************/
 double
-msr_dnomsamprate (MSrecord * msr)
+sl_msr_dnomsamprate (SLMSrecord * msr)
 {
   double srcalc = 0.0;
   int factor;
@@ -545,29 +545,29 @@ msr_dnomsamprate (MSrecord * msr)
     srcalc = -1.0 * (srcalc / (double) multiplier);
   
   return srcalc;
-}  /* End of msr_dnomsamprate() */
+}  /* End of sl_msr_dnomsamprate() */
 
 
 /***************************************************************************
- * msr_depochstime:
+ * sl_msr_depochstime:
  *
- * Convert a btime struct of a FSDH struct of a MSrecord (the record
+ * Convert a btime struct of a FSDH struct of a SLMSrecord (the record
  * start time) into a double precision (Unix/POSIX) epoch time.
  * Include microsecond offset in blockette 1001 if it was included.
  *
  * Returns double precision epoch time or 0 for error.
  ***************************************************************************/
 double
-msr_depochstime (MSrecord * msr)
+sl_msr_depochstime (SLMSrecord * msr)
 {
-  struct btime_s *btime;
+  struct sl_btime_s *btime;
   double dtime;
-
+  
   if ( ! msr )
     return 0;
-
+  
   btime = &msr->fsdh.start_time;
-
+  
   dtime = (double) (btime->year - 1970) * 31536000 +
                    ((btime->year - 1969) / 4) * 86400 +
                    (btime->day - 1) * 86400 +
@@ -582,7 +582,7 @@ msr_depochstime (MSrecord * msr)
     }
   
   return dtime;
-}  /* End of msr_depochstime() */
+}  /* End of sl_msr_depochstime() */
 
 
 /***************************************************************************
@@ -673,7 +673,7 @@ encoding_hash (char enc, char *encstr)
  * Returns seconds of latency.
  ***************************************************************************/
 double
-host_latency (MSrecord *msr)
+host_latency (SLMSrecord *msr)
 {
   double dsamprate = 0.0;       /* Nominal sampling rate */
   double span = 0.0;            /* Time covered by the samples */
@@ -681,7 +681,7 @@ host_latency (MSrecord *msr)
   double sepoch;                /* Epoch time of the record start time */
   double latency = 0.0;
 
-  msr_dsamprate (msr, &dsamprate);
+  sl_msr_dsamprate (msr, &dsamprate);
     
   /* Calculate the time covered by the samples */
   if ( dsamprate )
@@ -691,7 +691,7 @@ host_latency (MSrecord *msr)
   epoch = sl_dtime();
   
   /* Now calculate the latency */
-  sepoch = msr_depochstime(msr);
+  sepoch = sl_msr_depochstime(msr);
   latency = epoch - sepoch - span;
   
   return latency;

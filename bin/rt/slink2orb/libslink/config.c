@@ -6,12 +6,13 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.196
+ * modified: 2008.028
  ***************************************************************************/
 
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "libslink.h"
 
@@ -41,22 +42,22 @@ int
 sl_read_streamlist (SLCD * slconn, const char * streamfile,
 		    const char * defselect)
 {
-  FILE *streamfp;
   char net[3];
   char sta[6];
   char selectors[100];
   char line[100];
+  int streamfd;
   int fields;
   int count;
   int stacount;
   int addret;
-
+  
   net[0] = '\0';
   sta[0] = '\0';
   selectors[0] = '\0';
-
+  
   /* Open the stream list file */
-  if ((streamfp = fopen (streamfile, "rb")) == NULL)
+  if ( (streamfd = slp_openfile (streamfile, 'r')) < 0 )
     {
       if (errno == ENOENT)
 	{
@@ -69,17 +70,17 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
 	  return -1;
 	}
     }
-
+  
   sl_log_r (slconn, 1, 1, "Reading stream list from %s\n", streamfile);
-
+  
   count = 1;
   stacount = 0;
-
-  while ( (fgets (line, sizeof(line), streamfp)) !=  NULL)
+  
+  while ( (sl_readline (streamfd, line, sizeof(line))) >= 0 )
     {
       fields = sscanf (line, "%2s %5s %99[a-zA-Z0-9?. ]\n",
 		       net, sta, selectors);
-
+      
       /* Ignore blank or comment lines */
       if ( fields < 0 || net[0] == '#' || net[0] == '*' )
 	continue;
@@ -103,7 +104,7 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
       
 	count++;
     }
-
+  
   if ( stacount == 0 )
     {
       sl_log_r (slconn, 2, 0, "no streams defined in %s\n", streamfile);
@@ -113,12 +114,12 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
       sl_log_r (slconn, 1, 2, "Read %d streams from %s\n", stacount, streamfile);
     }
 
-  if ( fclose (streamfp) )
+  if ( close (streamfd) )
     {
       sl_log_r (slconn, 2, 0, "closing stream list file, %s\n", strerror (errno));
       return -1;
     }
-
+  
   return count;
 }  /* End of sl_read_streamlist() */
 
@@ -148,16 +149,16 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
   char *net;
   char *sta;
 
-  strlist *ringlist   = NULL;       /* split streamlist on ',' */
-  strlist *reqlist    = NULL;       /* split ringlist on ':' */
-  strlist *netstalist = NULL;       /* split reqlist[0] on "_" */
+  SLstrlist *ringlist   = NULL;       /* split streamlist on ',' */
+  SLstrlist *reqlist    = NULL;       /* split ringlist on ':' */
+  SLstrlist *netstalist = NULL;       /* split reqlist[0] on "_" */
 
-  strlist *ringptr    = NULL;
-  strlist *reqptr     = NULL;
-  strlist *netstaptr  = NULL;
+  SLstrlist *ringptr    = NULL;
+  SLstrlist *reqptr     = NULL;
+  SLstrlist *netstaptr  = NULL;
 
   /* Parse the streams and selectors */
-  strparse (streamlist, ",", &ringlist);
+  sl_strparse (streamlist, ",", &ringlist);
   ringptr = ringlist;
 
   while (ringptr != 0)
@@ -166,11 +167,11 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
       sta = NULL;
       staselect = NULL;
       
-      fields = strparse (ringptr->element, ":", &reqlist);
+      fields = sl_strparse (ringptr->element, ":", &reqlist);
       reqptr = reqlist;
 
       /* Fill in the NET and STA fields */
-      if (strparse (reqptr->element, "_", &netstalist) != 2)
+      if (sl_strparse (reqptr->element, "_", &netstalist) != 2)
 	{
 	  sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n", reqptr->element);
 	  count = -1;
@@ -222,21 +223,21 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
 	}
 
       /* Free the netstalist (the 'NET_STA' part) */
-      strparse (NULL, NULL, &netstalist);
+      sl_strparse (NULL, NULL, &netstalist);
       
       /* Free the reqlist (the 'NET_STA:selector' part) */
-      strparse (NULL, NULL, &reqlist);
+      sl_strparse (NULL, NULL, &reqlist);
       
       ringptr = ringptr->next;
     }
 
   if ( netstalist != NULL )
     {
-      strparse (NULL, NULL, &netstalist);
+      sl_strparse (NULL, NULL, &netstalist);
     }
   if ( reqlist != NULL )
     {
-      strparse (NULL, NULL, &reqlist);
+      sl_strparse (NULL, NULL, &reqlist);
     }
   
   if ( count == 0 )
@@ -249,7 +250,7 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
     }
 
   /* Free the ring list */
-  strparse (NULL, NULL, &ringlist);
+  sl_strparse (NULL, NULL, &ringlist);
   
   return count;
 }  /* End of sl_parse_streamlist() */
