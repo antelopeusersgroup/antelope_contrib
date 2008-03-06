@@ -1,10 +1,12 @@
 5 March 2008
   - Update to libslink 2.1 which includes the ability to use wildcards
       in network and station fields during negotiation.
+  - Change mseed2orbpkt() to only invoke a mapping database call if a
+      mapping database was specified, eliminating stray foreignkeys dbs.
   - version 4.0
 
 2 Mar 2006
-  - Make 'slink2orb' the default parameter file.
+  - Make 'slink2orb.pf' the default parameter file.
 
 27 Jan 2006
   - Update to libslink 1.6, no changes to library or module.

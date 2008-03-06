@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * version 2004.056
+ * version 2007.158
  */
 
 #include <stdlib.h>
@@ -21,9 +21,9 @@
 #include <swapbytes.h>
 
 int
-mseed2orbpkt ( char *msrec, int mssize, char *calibdb, int remap,
-	       char *srcname, double *time, char **packet, int *nbytes,
-	       int *bufsize )
+mseed2orbpkt ( char *msrec, int mssize, char *calibdb, char *mappingdb,
+               int remap, char *srcname, double *time, char **packet,
+               int *nbytes, int *bufsize )
 {
   int reclen;
   int retcode = 0;
@@ -75,27 +75,29 @@ mseed2orbpkt ( char *msrec, int mssize, char *calibdb, int remap,
     strcpy ( parts.src_suffix, "SEED" );
     *parts.src_subcode = 0;
 
-    if ( map_seed_netsta ( snet, ssta, sta )  < 0 ) {
-      elog_complain(0, "mseed2orbpkt: map_seed_netsta() error [%s_%s]\n",
-                    snet, ssta);
-      return -1;
-    }
-    if ( map_seed_chanloc ( sta, schan, sloc, chan )  < 0 ) {
-      elog_complain(0, "mseed2orbpkt: map_seed_chanloc() error [%s_%s]\n",
-                    schan, sloc);
-      return -1;
-    }
+    if ( mappingdb ) {
+      if ( map_seed_netsta ( snet, ssta, sta )  < 0 ) {
+        elog_complain(0, "mseed2orbpkt: map_seed_netsta() error [%s_%s]\n",
+                      snet, ssta);
+        return -1;
+      }
+      if ( map_seed_chanloc ( sta, schan, sloc, chan )  < 0 ) {
+        elog_complain(0, "mseed2orbpkt: map_seed_chanloc() error [%s_%s]\n",
+                      schan, sloc);
+        return -1;
+      }
 
-    if ( remap ) {
-      strcpy ( parts.src_sta, sta );
-      strcpy ( parts.src_chan, chan );
-      strcpy ( parts.src_loc, "" );
+      if ( remap ) {
+        strcpy ( parts.src_sta, sta );
+        strcpy ( parts.src_chan, chan );
+        strcpy ( parts.src_loc, "" );
+      }
     }
 
     join_srcname (&parts, srcname);
     
     /* Get calibration information */
-    if ( calibdb )
+    if ( calibdb && mappingdb )
       dbget_calib (sta, chan, *time, calibdb, &calib, &calper, segtype);
     
     /* Build the ORB packet */

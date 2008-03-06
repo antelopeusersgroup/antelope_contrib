@@ -10,24 +10,28 @@ netdelay      30      # network reconnect delay (seconds)
 keepalive     0       # interval to send keepalive requests (seconds)
 stateint      100     # interval to save the sequence number (packets)
 
-selectors   BH?.D     # Default selectors recognized by SeedLink server,
+#selectors   BH?.D     # Default selectors recognized by SeedLink server,
                       # see below.  If no selectors are indicated then
                       # all packets are sent.  These are the selectors
                       # used in uni-station mode (i.e. if no 'stations'
                       # array).  In multi-station mode, if no selectors
 		      # are provided for a station then these are used.
 
-# 'stations' array: stations to configure using multi-station mode (Protocol
-# ver. 3), in 'NET_STA' format with following selectors.  If no selectors
-# are indicated then the default selectors are used.
-# If this array is not present the communication will be configured in
-# uni-station mode (Protocol ver. <=2), using the default selectors.
+# 'stations' array: stations to configure using multi-station mode
+# (Protocol ver. 3), in 'NET_STA' format with following selectors.  If
+# no selectors are indicated then the default selectors are used.  If
+# this array is not present the communication will be configured in
+# all/uni-station mode (Protocol ver. <=2), using the default
+# selectors.  Some SeedLink servers support enhanced selection using
+# wildcards (via '*' or '?' characters) in the network and station
+# fields.
 
 #stations &Arr{
 #	NET_STA		[selectors]
 #	GE_EIL		BHZ.D  HHZ.D
 #	IU_KONO		BH?
 #	MN_AQU
+#       TA_*            BHZ
 #}
 
 #(notes regarding "selectors" from a SeedLink configuration file)
@@ -48,4 +52,3 @@ selectors   BH?.D     # Default selectors recognized by SeedLink server,
 #   BH? E          - BHZ, BHN, BHE plus detection records of all channels
 #   !LCQ !LEP      - exclude LCQ and LEP channels
 #   !L !T          - exclude log and timing records
-

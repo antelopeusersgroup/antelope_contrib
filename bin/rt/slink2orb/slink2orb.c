@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2006.061
+ * modified: 2008.065
  ***************************************************************************/
 
 #include <signal.h>
@@ -18,14 +18,16 @@
 
 #include <libslink.h>
 
-static char   *version     = "3.7 (2006.061)";
+#include "mseed2orbpkt.h"
+
+static char   *version     = "4.0 (2008.065)";
 static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
 
 static int     orb         = -1;     /* the ORB descriptor */
 static char   *statefile   = 0;	     /* state file */
-static char   *parafile    = "slink2orb"; /* parameter file with default */
+static char   *paramfile   = "slink2orb.pf"; /* parameter file with default */
 static char   *orbaddr     = 0;      /* the host:port of the destination ORB */
 static char   *mappingdb   = 0;      /* the database for SEED name mapping */
 static char   *calibdb     = 0;      /* the database for calibration info */
@@ -33,10 +35,6 @@ static char   *selectors   = 0;      /* default SeedLink selectors */
 static int     stateint    = 100;    /* interval to save the state file (pkts) */
 
 static SLCD   *slconn;
-
-/* Wraps Mini-SEED to make an Antelope/SEED packet (see mseed2orbpkt.c) */
-extern int  mseed2orbpkt(char *, int, char *, int, char *, double *,
-			 char **, int *, int *);
 
 static void packet_handler (char *msrecord, int packet_type,
 			    int seqnum, int packet_size);
@@ -172,8 +170,8 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 	  free(s);
 	}
       
-      mseedret = mseed2orbpkt(msrecord, packet_size, calibdb, remap,
-			      &srcname[0], &time, &packet, &nbytes,
+      mseedret = mseed2orbpkt(msrecord, packet_size, calibdb, mappingdb,
+			      remap, srcname, &time, &packet, &nbytes,
 			      &bufsize);
       
       if (mseedret == 0)
@@ -227,7 +225,7 @@ parameter_proc(int argcount, char **argvec)
 	}
       else if (strcmp(argvec[optind], "-pf") == 0)
 	{
-	  parafile = argvec[++optind];
+	  paramfile = argvec[++optind];
 	}
       else if (strcmp(argvec[optind], "-nt") == 0)
 	{
@@ -287,9 +285,9 @@ parameter_proc(int argcount, char **argvec)
     }
 
   /* Read parameter file */
-  if ( (pfread(parafile, &pf)) < 0 )
+  if ( (pfread(paramfile, &pf)) < 0 )
     {
-      sl_log (1, 0, "error reading parameter file: %s\n", parafile);
+      sl_log (1, 0, "error reading parameter file: %s\n", paramfile);
       exit (1);
     }
   else
@@ -387,7 +385,7 @@ parameter_proc(int argcount, char **argvec)
     }
 
   /* Free the parameter file structure */
-  if (parafile)
+  if (paramfile)
     {
       pffree(pf);
     }
@@ -422,10 +420,10 @@ report_environ()
   
   sl_log(0, 0, "stateint:\t%d\n", stateint);
   
-  if (parafile)
-    sl_log(0, 0, "parafile:\t%s\n", parafile);
+  if (paramfile)
+    sl_log(0, 0, "paramfile:\t%s\n", paramfile);
   else
-    sl_log(0, 0, "'parafile' not defined\n");
+    sl_log(0, 0, "'paramfile' not defined\n");
   
   if (mappingdb)
     sl_log(0, 0, "mappingdb:\t%s\n", mappingdb);
