@@ -13,11 +13,18 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 	int lx,ly;
 	const string base_message("Correlation :  ");
 
+	/* This assumes default constructors marks null trace dead */
+	if(!(x.live) || !(y.live) || x.has_gap() || y.has_gap()) return (TimeSeries());
 	lx=x.s.size();
 	ly=y.s.size();
 	if(ly<lx)
 	{
-	    throw SeisppError(base_message+string("ly<lx\n"));
+	    if(SEISPP_verbose)
+	    {
+		cerr << base_message << "cannot compute cross correlation. "<<endl
+			<<"Number samples in target less than samples in correlator waveform"<<endl
+			<<"Correlator returns an empty (dead) TimeSeries object."<<endl;
+	    }
 	}
 	/* this comes from seispp and is used to regular question of
 	if sample rates match to some tolerance */
@@ -34,32 +41,20 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 	z.t0=y.t0-x.t0;
 	z.dt=x.dt;  // probably not necessary, but forced initialization always good.
 	z.ns=lz;
-	// We could try to process around gaps, but this would
-	// cost a lot in complication of uses of the results and
-	// in efficiency.  We take the attitude here of dropping
-	// data when there is any gap in the y vector
-	if(y.has_gap() || !y.live)
+	// This should be done in frequency domain.  
+	// It would be much faster, but done this way for now
+	for(i=0;i<lz;++i)
 	{
-		z.live=false;
-		for(i=0;i<lz;++i) z.s[i]=0.0;
+		z.s[i]=ddot(lx,&(x.s[0]),1,&(y.s[i]),1);
 	}
-	else
+	if(normalize)
 	{
-		// This should be done in frequency domain.  
-		// It would be much faster, but done this way for now
+		double nrmx=dnrm2(lx,&(x.s[0]),1);
+		double nrmy;
 		for(i=0;i<lz;++i)
 		{
-			z.s[i]=ddot(lx,&(x.s[0]),1,&(y.s[i]),1);
-		}
-		if(normalize)
-		{
-			double nrmx=dnrm2(lx,&(x.s[0]),1);
-			double nrmy;
-			for(i=0;i<lz;++i)
-			{
-				nrmy=dnrm2(lx,&(y.s[i]),1);
-				z.s[i]/= (nrmx*nrmy);
-			}
+			nrmy=dnrm2(lx,&(y.s[i]),1);
+			z.s[i]/= (nrmx*nrmy);
 		}
 	}
 	return z;
@@ -79,7 +74,12 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 	ly=y.s.size();
 	if(ly<lx)
 	{
-	    throw SeisppError(base_message+string("ly<lx\n"));
+	    if(SEISPP_verbose)
+	    {
+		cerr << base_message << "cannot compute cross correlation. "<<endl
+			<<"Number samples in target less than samples in correlator waveform"<<endl
+			<<"Correlator returns an empty (dead) TimeSeries object."<<endl;
+	    }
 	}
 	if(fabs( (x.dt-y.dt)/y.dt)>dteqtest)
 	if(!SampleIntervalsMatch<TimeSeries>(x,y.dt) )

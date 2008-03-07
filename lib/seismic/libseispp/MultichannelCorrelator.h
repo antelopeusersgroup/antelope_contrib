@@ -40,13 +40,24 @@ time domain between two TimeSeries objects.
 This procedure correlates two time series over the complete range of lags possible
 for the size of the two traces.  
 In this procedure x is the correlator and y is the trace against which x is correlated.
-Hence, an error will be thrown if x is longer than y. 
 \par 
 This procedure checks for gaps in the correlation window of y.  If any gaps are present
 in the window the procedure returns immediately with a default TimeSeries object 
 containing no data.  The caller should test for this condition by examining the 
 live variable of the output.  The trace will be marked live if the correlation was
 successful, but live will be false if gaps were detected and correlation failed. 
+\par
+A more subtle problem with gaps arises if on of the inputs (x or y) has a gap at
+the beginning or end of the time window to be processed.  In the seispp library
+this type of situation is not always flagged as a gap because it can happen 
+naturally when, for example, dealing with segmented data derived either from
+a triggered instrument or extraction from continuous data.  This situation is 
+handled by testing the feasibility of the correlation by examining the size
+of x and y.  If x is shorter than y this function returns a null seismogram
+with no data and marked dead.  Thus, just as with an internal gap the caller
+must handle this situation and always test for a return marked dead.
+If SEISPP_verbose is true an error announcing this will be pushed to stderr.
+Otherwise this potential error situation is done silently.
 \par
 Although the procedure does not test this it makes a somewhat implicit assumption the
 data have been converted to a relative time reference frame.  This was done to make
@@ -67,8 +78,7 @@ ator method of the TimeSeries object.
 	will be thrown.
 \param normalize if true the output is normalized by the L2 norm of x.  
 
-\exception SeisppError is thrown if sample rates of x and y do not match or if the 
-	lengths of the two traces are inconsistent (i.e. we require y.ns>x.ns).
+\exception SeisppError is thrown if sample rates of x and y do not match 
 */
 TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize=false);
 
@@ -77,8 +87,7 @@ This is one of two overloaded methods for implementing cross-correlation in the
 time domain between two TimeSeries objects.  
 This procedure correlates two time series over a specified range of time lags.
 In this procedure x is the correlator and y is the trace against which x is correlated.
-Hence, an error will be thrown if x is longer than y. On the other hand, if the
-request range of lags is shorter than the data allow, the output will be silently
+If therequest range of lags is shorter than the data allow, the output will be silently
 truncated without warning.  This assumes the caller will always check the time range
 defined by the data for consistency.  The view here is that a shortened window may be
 valid and should not be consider an unrecoverable error.
@@ -87,7 +96,19 @@ This procedure checks for gaps in the correlation window of y.  If any gaps are 
 in the window the procedure returns immediately with a default TimeSeries object 
 containing no data.  The caller should test for this condition by examining the 
 live variable of the output.  The trace will be marked live if the correlation was
+\par
+A more subtle problem with gaps arises if on of the inputs (x or y) has a gap at
+the beginning or end of the time window to be processed.  In the seispp library
+this type of situation is not always flagged as a gap because it can happen 
+naturally when, for example, dealing with segmented data derived either from
+a triggered instrument or extraction from continuous data.  This situation is 
+handled by testing the feasibility of the correlation by examining the size
+of x and y.  If x is shorter than y this function returns a null seismogram
+with no data and marked dead.  Thus, just as with an internal gap the caller
+must handle this situation and always test for a return marked dead.
 successful, but live will be false if gaps were detected and correlation failed. 
+If SEISPP_verbose is true an error announcing this will be pushed to stderr.
+Otherwise this potential error situation is done silently.
 \par
 Although the procedure does not test this it makes a somewhat implicit assumption the
 data have been converted to a relative time reference frame.  This was done to make
