@@ -18,8 +18,8 @@ time real
 endtime real
 nsamp int
 samprate real
-file string
-directory string
+dfile string
+dir string
 }
 dbprocess_list &Tbl{
 dbopen wfdisc

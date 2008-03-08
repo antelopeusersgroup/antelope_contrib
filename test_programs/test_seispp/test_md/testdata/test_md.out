@@ -1,4 +1,4 @@
-Trying Attribute_map pf constructor
+Trying AttributeMap pf constructor
 Trying copy constructor and = operator
 Trying pfget_mdlist function with tag mdlist
 Trying to copy mdlist
@@ -9,8 +9,8 @@ time,time,0,0
 endtime,endtime,0,0
 nsamp,nsamp,1,1
 samprate,samprate,0,0
-file,file,2,2
-directory,directory,2,2
+dfile,dfile,2,2
+dir,dir,2,2
 Testing delete hypothesis on list object 
 sta,2
 chan,2
@@ -18,17 +18,22 @@ time,0
 endtime,0
 nsamp,1
 samprate,0
-file,2
-directory,2
+dfile,2
+dir,2
 Trying to build Metadata objects
 Trying default constructor
-atime	11.0
-time	10.0
 Trying string constructor with inline data
-MYPAR	2.5
-atime	11.0
-cpar	xyz
-i	27
-time	10.0
-x	4.5
-y	8.0
+MYPAR 2.5
+cpar xyz
+i 27
+x 4.5
+y 8.0
+Trying db constructor in testdb
+chan BHE
+dfile 199518012.w
+dir wf/anza/1995/180
+sta BZN
+nsamp 228083
+endtime 8.04435e+08
+samprate 40
+time 8.04429e+08
