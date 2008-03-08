@@ -1,5 +1,6 @@
 use Datascope;
 use sysinfo;
+use Cwd;
 
 require "getopts.pl";
 
@@ -11,9 +12,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'p:v' ) || @ARGV > 1 ) {
+if( !Getopts( 'p:tv' ) || @ARGV > 1 ) {
 
-	elog_die( "Usage: localmake [-v] [-p pfname] [dbxcor]\n" );
+	elog_die( "Usage: localmake [-v] [-t] [-p pfname] [module]\n" );
 }
 
 if( $opt_p ) {
@@ -21,8 +22,14 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
+if( $opt_t && @ARGV < 1 ) {
+	
+	elog_complain( "Useless use of -t without module name\n" );
+}
+
 %elements = %{pfget($Pf,"elements")};
 %modules = %{pfget($Pf,"modules")};
+$tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $output_file = pfget( $Pf, "output_file" );
 
 open( O, ">$output_file" );
@@ -45,7 +52,7 @@ if( @ARGV > 0 ) {
 	
 	$module = pop( @ARGV );
 
-	@steps = @{$modules{$module}};
+	@steps = @{$modules{$module}{build}};
 
 	if( @steps <= 0 ) {
 	
@@ -56,6 +63,8 @@ if( @ARGV > 0 ) {
 		elog_notify( "Making module '$module'\n" );
 	}
 	
+	$cwd = Cwd::cwd();
+
 	foreach $step ( @steps ) {
 		
 		$dir = "$ENV{ANTELOPE}/$step";
@@ -101,8 +110,58 @@ if( @ARGV > 0 ) {
 		}
 	}
 
+	chdir( $cwd );
+
 	if( $opt_v ) {
-			
+		
 		elog_notify( "Done making module '$module', apparently successfully" );
+	}
+
+	if( $opt_t ) {
+		
+		$tarfilelist = "/tmp/localmake_$<_$$";
+
+		open( T, ">$tarfilelist" );
+		
+		print T map { "$ENV{ANTELOPE}/$_\n" } @{$modules{$module}{package}};
+
+		close( T );
+
+		$tarfile = epoch2str( str2epoch( "now" ), $tarball_time_format );
+
+		$tarfile .= "_$module";
+		$tarfile .= "_" . my_hardware(); 
+		$tarfile .= "_" . my_os();
+		$tarfile .= "_tarball.tar";
+
+		$cmd = "tar -T $tarfilelist -c -v -f $tarfile";
+
+		if( $opt_v ) {
+			
+			elog_notify( "Executing '$cmd'\n" );
+		}
+
+		system( $cmd );
+
+		unlink( $tarfilelist );
+
+		if( $opt_v ) {
+			
+			elog_notify( "Executing '$cmd'\n" );
+		}
+
+		$cmd = "bzip2 $tarfile";
+
+		if( $opt_v ) {
+			
+			elog_notify( "Executing '$cmd'\n" );
+		}
+
+		system( $cmd );
+
+		if( $opt_v ) {
+
+			elog_notify( "Created package file '$tarfile.bz2'\n" );
+		}
 	}
 }

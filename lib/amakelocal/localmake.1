@@ -3,7 +3,7 @@
 localmake \- construct antelopemake.local for local site conditions
 .SH SYNOPSIS
 .nf
-localmake [-v] [-p pfname] [module]
+localmake [-v] [-p pfname] [-t] [module]
 .fi
 .SH DESCRIPTION
 The localmake utility creates an $(ANTELOPEMAKE).local file (see antelopemakelocal(5))
@@ -21,6 +21,8 @@ on which a particular software component depends.
 verbose
 .IP "-p pfname"
 Specify an alternate parameter file
+.IP -t
+Create a tarball package of the compiled module and dependencies
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -29,6 +31,7 @@ for the machine on which compilation is taking place.
 .nf
 
 output_file antelopemake.local
+tarball_time_format %Y_%m_%d
 
 packages &Arr{
 	dbxcor &Arr{
@@ -54,10 +57,12 @@ elements &Arr{
 }
 
 modules &Arr{
-	dbxcor &Tbl{
-		src/contrib/lib/graphics/seisw
-		src/contrib/lib/seismic/libseispp
-		src/contrib/bin/db/dbxcor
+	dbxcor &Arr{
+		build &Tbl{
+			src/contrib/lib/graphics/seisw
+			src/contrib/lib/seismic/libseispp
+			src/contrib/bin/db/dbxcor
+		}
 	}
 }
 .fi
@@ -69,6 +74,11 @@ modules &Arr{
 %
 % ls 
 antelopemake.local
+%
+
+% localmake -v -t dbxcor
+ ...
+localmake: Created package file '2008_03_08_dbxcor_i386_Darwin_tarball.tar.bz2'
 %
 .fi
 .ft R
