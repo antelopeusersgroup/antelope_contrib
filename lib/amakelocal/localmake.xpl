@@ -72,7 +72,7 @@ if( @ARGV > 0 ) {
 			elog_die( "Couldn't change directory to '$dir'\n" );
 		}
 
-		$cmd = "make clean | cf";
+		$cmd = "make clean 2>&1 | cf";
 
 		if( $opt_v ) {
 			
@@ -86,7 +86,7 @@ if( @ARGV > 0 ) {
 			elog_die( "Command 'make clean' failed in directory '$dir'\n" );
 		}
 
-		$cmd = "make install | cf";
+		$cmd = "make install 2>&1 | cf";
 
 		if( $opt_v ) {
 			
