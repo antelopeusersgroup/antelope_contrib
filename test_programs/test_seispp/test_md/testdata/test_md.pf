@@ -22,5 +22,5 @@ file string
 directory string
 }
 dbprocess_list &Tbl{
-open wfdisc
+dbopen wfdisc
 }
