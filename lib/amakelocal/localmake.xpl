@@ -134,7 +134,7 @@ if( @ARGV > 0 ) {
 		$tarfile .= "_" . my_os();
 		$tarfile .= "_tarball.tar";
 
-		$cmd = "tar -T $tarfilelist -c -v -f $tarfile";
+		$cmd = "tar -T $tarfilelist -P -c -v -f $tarfile";
 
 		if( $opt_v ) {
 			
