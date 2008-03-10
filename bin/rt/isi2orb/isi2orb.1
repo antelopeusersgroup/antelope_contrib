@@ -78,6 +78,16 @@ dataflow is reset to the newest values in the server.
 .IP port 
 If this parameter is nonzero, a port other than the default is used
 to connect to the server. 
+.IP too_old
+Some positive time difference between now and the packet time may be specified,
+in which case packets older than now() - too_old are ignored and not 
+put on the orb. The time can be in seconds or anything understood by 
+str2epoch(3), for example "72:00" for 72 hours. 
+.IP too_new
+Some positive time difference between now and the packet time may be specified,
+in which case packets newer than now() + too_new are ignored and not 
+put on the orb. The time can be in seconds or anything understood by 
+str2epoch(3), for example "72:00" for 72 hours. 
 .nf
 
 net II
@@ -90,6 +100,8 @@ segtype V
 isi_logging elog
 statefile_rewind_max_sec 3600
 port 0
+too_old 72:00
+too_new 72:00
 
 .fi
 .SH EXAMPLE

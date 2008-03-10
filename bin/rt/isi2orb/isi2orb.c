@@ -56,6 +56,7 @@
 #define ISI2ORB_NULL_CALPER -1.0
 #define ISI2ORB_SHUTDOWN_SEC 1.0
 #define ISI2ORB_EPSILON 1.0
+#define ISI2ORB_NULL_TIME -9999999999.999
 #define STATEFILE_BURY_INTERVAL_NPKTS 50
 
 Arr *Cnf_entries = 0;
@@ -143,6 +144,8 @@ main( int argc, char **argv )
 	char	*isi_logging = 0;
 	char	*packet = 0;
 	char	*keyp = 0;
+	char	*too_old_string = 0;
+	char	*too_new_string = 0;
 	char	*s = 0;
 	char	*u = 0;
 	char	c = NULL;
@@ -170,6 +173,8 @@ main( int argc, char **argv )
 	char	*pfname = "isi2orb";
 	double	begtime = ISI_NEWEST;
 	double	endtime = ISI_KEEPUP;
+	double	too_old = ISI2ORB_NULL_TIME;
+	double	too_new = ISI2ORB_NULL_TIME;
 	int	format = ISI_FORMAT_GENERIC;
 	int	compress = ISI_COMP_NONE;
 	int	bury_counter = STATEFILE_BURY_INTERVAL_NPKTS;
@@ -328,6 +333,30 @@ main( int argc, char **argv )
 	uppercase = pfget_boolean( pf, "uppercase" );
 	port = pfget_int( pf, "port" );
 	statefile_rewind_max_sec = pfget_double( pf, "statefile_rewind_max_sec" );
+	too_old_string = pfget_string( pf, "too_old" );
+	too_new_string = pfget_string( pf, "too_new" );
+
+	if( too_old_string && strcmp( too_old_string, "" ) ) {
+
+		too_old = str2epoch( too_old_string );
+
+		if( Verbose ) {
+
+			elog_notify( 0, "Rejecting packets more than %f seconds older "
+					"than system time\n", too_old );
+		}
+	}
+
+	if( too_new_string && strcmp( too_new_string, "" ) ) {
+
+		too_new = str2epoch( too_new_string );
+
+		if( Verbose ) {
+
+			elog_notify( 0, "Rejecting packets more than %f seconds newer "
+					"than system time\n", too_new );
+		}
+	}
 
 	if( maxtbl( streams ) <= 0 ) {
 		
@@ -657,6 +686,42 @@ main( int argc, char **argv )
 		pktchan->datasz = ts->hdr.nsamp;
 		pktchan->samprate = 1. / isiSrateToSint( &ts->hdr.srate );
 		pktchan->time = ts->hdr.tofs.value;
+
+		if( too_old != ISI2ORB_NULL_TIME &&
+		    pktchan->time < now() - too_old ) {
+
+		    if( VeryVerbose ) {
+
+			elog_complain( 0, "Rejecting '%s' packet because time '%s' "
+					  "is more than %s older than system clock\n",
+					  key,
+					  s = strtime( pktchan->time ),
+					  u = strtdelta( too_old ) );
+
+			free( s );
+			free( u );
+		    }
+
+		    continue;
+		}
+
+		if( too_new != ISI2ORB_NULL_TIME &&
+		    pktchan->time > now() + too_new ) {
+
+		    if( VeryVerbose ) {
+
+			elog_complain( 0, "Rejecting '%s' packet because time '%s' "
+					  "is more than %s newer than system clock\n",
+					  key,
+					  s = strtime( pktchan->time ),
+					  u = strtdelta( too_new ) );
+
+			free( s );
+			free( u );
+		    }
+
+		    continue;
+		}
 
 		reallot( int *, pktchan->data, pktchan->nsamp * sizeof( int ) );
 
