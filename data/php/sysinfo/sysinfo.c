@@ -94,7 +94,7 @@ PHP_FUNCTION(my_ip)
 	int	argc = ZEND_NUM_ARGS();
 	char	hostname[STRSZ];
 	char	ipc[STRSZ];
-	long	ip;
+	int	ip;
 
 	if( argc != 0 ) {
 

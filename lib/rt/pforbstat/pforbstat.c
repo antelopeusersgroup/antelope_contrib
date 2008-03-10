@@ -646,7 +646,7 @@ orbconnections2pf( Pf *pfanalyze )
 	int	farport;
 	char	orbstat_machine_hostname[STRSZ];
 	char	orbstat_machine_ipc[STRSZ];
-	long	orbstat_machine_ip;
+	int	orbstat_machine_ip;
 	char	cmdline_fromorb[STRSZ];
 	char	cmdline_toorb[STRSZ];
 	char	cmdline_fromip[STRSZ];
