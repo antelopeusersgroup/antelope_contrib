@@ -181,7 +181,7 @@ if ($opt_o) {
 @dmcfiles	= dblookup(@db, "", "dmcfiles", "", "");
 
 @dmcfiles_record = () ;
-$auth        = "tdl:".getpwuid($<) ;
+$auth        = "mdf:".getpwuid($<) ;
 
 push(@dmcfiles_record,	"time", $now,
 			"comment", $comment,

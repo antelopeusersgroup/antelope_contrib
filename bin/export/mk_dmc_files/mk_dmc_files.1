@@ -16,14 +16,17 @@ mk_dmc_files \- generate network or single station dataless or VND file with com
 .fi
 .SH DESCRIPTION
 \fBmk_dmc_files\fP is designed to create and track the updates a network 
-operator makes to a dataless SEED volume or virtual network definition (VND).  
-This is important for dynamic networks such as the USArray Transportable Array.  
+operator makes to a dataless SEED volume, virtual network definition (VND).  
+When changes were made and what they were is important 
+for dynamic networks such as the USArray Transportable Array.  
+.LP
 This script will generate either (1) a single station or combined network dataless 
 SEED volume or (2) a virtual network defintion file.  It allows for a comment on 
 why the update was made to be tracked in an extension table, \fIdmcfiles\fP.
 The output table can then be querried to retrieve the comment for products
 such as webpages.  Of course, the results will only be as good as the comments
-that are entered.
+that are entered.  The output \fIdmcfiles\fP extension table is also used by
+the \fBims2dmc\fP program.
 
 \fBmk_dataless_seed\fP is called to generate the dataless volume.  \fBdeployment2vnd\fP
 is called to generate a Virtual Network Definition file.
@@ -34,7 +37,7 @@ Verbose output.
 .IP -z
 Use gzip to compress the output dataless SEED volume.
 .IP "-p parameter_file"
-Parameter file to use.  The default parameter file name is \fBtrack_dataless\fP.
+Parameter file to use.  The default parameter file name is \fBmk_dmc_files\fP.
 .IP "-d output_dir"
 Output directory for dataless SEED volume or vnd file.  This overrides the default
 directory, \fIdataless_dir\fP or \fIvnd_dir\fP, in the parameter file.
@@ -44,12 +47,15 @@ net code from the parameter file.  Irrelevant if -V option is selected.
 .IP "-s sta"
 Generate a dataless seed for this single station.  Irrelevant if -V option is selected.
 .IP "-f filename"
-Output dataless seed or VND filename.  The default filename for a dataless SEED
-volume will be: \fIDATALESS.XX.YYYY.MM.DD\fP or \fIDATALESS.XX_STS.YYYY.MM.DD\fP where
+Output dataless SEED or VND filename.  The default filename for a dataless SEED
+volume will be: \fIDATALESS.XX.YYYY.MM.DD\fP or \fIDATALESS.XX_STA.YYYY.MM.DD\fP where
 XX is replaced with the value of -n, the default_seed_network from site.pf, 
 or is left as "XX" if these other two values are undefined.  The default filename
 for a VND will be: \fIVNET_YYYYMMDD.csv\fP where VNET is replaced with the value given 
-to -V.  If the -z option is used the output file name will have .gz appended to it.  
+to -V.  If the -z option is used the output file name will have .gz appended to it.  See 
+BUGS AND CAVEATS below if using -z with the -o option.
+.IP "-o orb"
+Output orb for \fBorbxfer2\fP(1).  See BUGS AND CAVEATS below.
 .IP "-V vnet"
 Generate a Virutal Network Definition (VND) file using the specified virtual network
 code.  These codes are created and maintained by the DMC.  Example vnets include: _US-TA, 
@@ -59,16 +65,16 @@ on the command line.
 Generate a dataless SEED volume rather than a VND file. Either -V or -D must be specified
 on the command line.
 .IP dbin
-Input database from which the dataless or VND is generated.  See mk_dataless_seed(1) or
-deployment2vnd(1) for requirements.
+Input database from which the dataless or VND is generated.  See \fBmk_dataless_seed\fP(1) or
+\fBdeployment2vnd\fP(1) for requirements.  This argument is required.
 .IP dbtrack
 Database where the tracking table, \fIdmcfiles\fP exists.  This may be different 
-than \fIdbin\fP.	
+than \fIdbin\fP.  This argument is required.	
 .IP comment
 A descriptive comment that describes what prompted you to make a new 
 dataless SEED volume or changes to the VND.  The maximum string length is 180 characters.  The 
 parameter file has a very generic default comment if you do not specify one
-on the command line.
+on the command line.  The maximum comment length is 180 characters.
 .SH ENVIRONMENT
 Need to have sourced $ANTELOPE/setup.csh and environment variable
 $PFPATH set.
@@ -138,6 +144,9 @@ Make sure your input database has no aggregious errors.
 mk_dataless_seed(1)
 deployment2vnd(1)
 orbxfer2(1)
+dmcfiles(5)
+db2ims(1)
+ims2dmc(1)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP
@@ -147,7 +156,16 @@ If there is no reader attached to the specified output orb with -o, the program
 will hang until a reader is attached.  To avoid this behavior, the wait_match 
 parameter in the orbxfer2.pf file must be blank.
 .LP
+The 4.9 and earlier versions of orbxfer2 had a bug such that compressed files
+pushed into the orb would retain there file names (i.e. myfile.gz), but would 
+actually be uncompressed before placement in the orb.  The receiver would then
+get "myfile.gz" out of the orb, but it would be an ucompressed file.  Until this
+bug is resolved in the next Antelope release, do not use the -z and -o options
+together.
+.LP
 See the current SEED manual for a full description of a dataless SEED volume.
+.LP
+Converse with the DMC regarding the format of the VND files.
 
 .SH AUTHOR
 Jennifer Eakins
