@@ -3,14 +3,15 @@
 ims2dmc \- send IMS1.0 short bulletin files to DMC and track in database 
 .SH SYNOPSIS
 .nf
-\fBims2dmc \fP[-v] [-V] [-m email1,email2,...] [-s \fIsubject\fP] \fIfile\fP \fIdatabase\fP
+\fBims2dmc \fP[-v] [-V] {-m email1,email2,... | -o \fIorb\fP} [-s \fIsubject\fP] \fIfile\fP \fIdatabase\fP
 .fi
 .SH DESCRIPTION
-\fBims2dmc\fP uses \fBrtmail\fP to transfer IMS1.0 short bulletin files to
-the DMC.  It also updates a \fIdmcbull\fP table that tracks when the file
-was transferred to the DMC and some information about the content of those
-files.
-
+\fBims2dmc\fP uses \fBrtmail\fP or \fBorbxfer2\fP to transfer IMS1.0 short 
+bulletin files to the DMC.  It also updates a \fIdmcbull\fP table 
+that tracks when the file was transferred to the DMC and some information about 
+the content of those files.  If transferring via orbxfer2, the \fIdmcfiles\fP table 
+is also updated. 
+.LP
 As of early 2008, the DMC requests that the files be sent to phasemail@iris.washington.edu
 with the subject line of "PICKS".  This address should be included with any others
 who might need to be informed of the file availability using the -m option.  Except for 
@@ -23,20 +24,28 @@ Verbose log messages
 Overwhelmingly verbose log messages.  Useful for debugging purposes only.
 .IP "-m email1,email2,..."
 Email addresses for those who will receive bulletin files.  The DMC requests
-that phase picks be sent to phasemail@iris.washington.edu.
+that phase picks be sent to phasemail@iris.washington.edu.  Either the -m or 
+the -o option must be selected.
+.IP "-o orb"
+Output/transmit orb for orbxfer2(1).  File will be transferred to this orb that
+the DMC (or others) watch with orbxfer2 in receiver mode.  See BUGS and CAVEATS for
+potential changes needed for orbxfer2.pf.  Either the -m or the -o option must be selected.
 .IP "-s subject"
-Subject for the email.  The DMC requests that the subject line be "PICKS".  
+Subject for the email if -m option is used.  The DMC requests that the subject line be "PICKS".  
 You should not have to change this.
 .IP file 
 Name of the file containing IMS1.0 short file format phase and origin information.
 .IP database
-Database which contains the dmcbull table to be update.
+Database which contains the dmcbull table (and optionally dmcfiles table).
 .SH FILES
 The IMS1.0 short file format with DMC modifications is described in the
 man page for \fBdb2ims\fP.  
 .SH ENVIRONMENT
-\fBims2dmc\fP requires that the dmcbull css3.0 schama extension is installed.  
+\fBims2dmc\fP requires that the dmcbull and dmcfiles css3.0 schema extensions be installed.  
 .SH EXAMPLE
+.LP
+Transfer phase picks from December 2007 to the DMC and send a copy to
+jeakins@ucsd.edu recording the file sent in dbops/anf.dmcbull 
 .in 2c
 .ft CW
 .nf
@@ -47,21 +56,45 @@ man page for \fBdb2ims\fP.
 .fi
 .ft R
 .in
+
+.LP
+Transfer phase picks from December 2007 to the DMC using orbxfer,     
+record information on the file sent in dbops/anf.dmcbull and to 
+db/anf.dmcfiles 
+.in 2c
+.ft CW
+.nf
+
+ % ims2dmc -o anfexport.ucsd.edu:meta -d db/anf \
+		2007_12_ANF_IMS dbops/anf 
+
+.fi
+.ft R
+.in
 .SH "SEE ALSO"
 .nf
 db2ims(1)
+mk_dmc_files(1)
+dmcbull(5)
+dmcfiles(5)
 .fi
 .SH "BUGS AND CAVEATS"
-All bets are off if the file is not of the proper format.
-
-The dmcbull table is reviewed by the db2ims program for duplicate filenames.
-
+.LP
+All bets are off if the file you attempt to transfer is not of the proper format.
+.LP
+The dmcbull table is reviewed by the db2ims(1) program for duplicate filenames.  Duplicates
+are given a file name incremented by one. 
+.LP
 Sending of duplicate files is allowed.
-
+.LP
 No checks are made on the size of the file you are trying to send.  Note that
 some mailservers may limit the size of an attachment and this program will likely
-fail silently if that limit is exceeded.
-
+fail silently if that limit is exceeded.  If file size is going to be "too large"
+use the orbxfer2 transfer mechanism (-o option).
+.LP 
+When using the default orbxfer2.pf file, if there is no reader attached to the 
+specified output orb with -o, the program will hang until a reader is attached.  
+To avoid this behavior, the wait_match parameter in the orbxfer2.pf file must be blank.
 .SH AUTHOR
 .br
 Jennifer Eakins

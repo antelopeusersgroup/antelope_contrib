@@ -11,7 +11,7 @@ require "getopts.pl" ;
 use Datascope;
 use rtmail;
 
-  if ( ! &Getopts('f:m:s:vV') || @ARGV < 2 ) { 
+  if ( ! &Getopts('f:m:o:s:vV') || @ARGV < 2 ) { 
 	&usage;
   }
 
@@ -34,11 +34,16 @@ use rtmail;
 	$subject  = "PICKS";
    }
 
-   if (!$opt_m) {
-	print STDERR "Must specify mail recipients with -m\n"; 
-	&usage;	
-   } else {
+   if ($opt_m && $opt_o) {
+	print STDERR "Must use either -m mail_list, or -o orb\n"; 
+	&usage;
+   } elsif (!$opt_m && !$opt_o) {
+	print STDERR "Must use either -m mail_list, or -o orb\n"; 
+	&usage;
+   } elsif ($opt_m) {
 	$mail_list = $opt_m ; 
+   } else {
+	$orb = $opt_o ;
    }
 
    if ($opt_f) {
@@ -62,6 +67,12 @@ use rtmail;
    } 
 
 #
+# track file transfer in dmcfiles table if using orbxfer
+#
+
+   @dmcfiles	= dblookup(@db,"","dmcfiles","","")  if $opt_o ;
+
+#
 #  get proper path and file name
 #
 
@@ -76,7 +87,7 @@ use rtmail;
 # open up file to be sent and get start/end times (ARGH!)
 #
 
-   open(BULL, "$file") || die "Can't open $file.\n";
+   open(BULL, "$dir/$dfile") || die "Can't open $file.\n";
    while (<BULL>) {
         print STDERR "Line is: $_\n" if ($opt_V) ;
         if (/^\d{4}/) {                    # get date if line begins with 4 digit number
@@ -114,31 +125,61 @@ use rtmail;
    eval { dbaddv(@dbdmcbull,@bull_record) } ;
         if ($@) {
               warn $@;
-              print STDERR "Problem adding record:  $start, $end, $time matches.\n"  ; 
+              print STDERR "Problem adding record:  $start, $end, " .  &strydtime($t) . " matches.\n"  ; 
               print STDERR "No record added!\n"; 
         } else {
-              print STDERR "Added record to database: $database \n"  ; 
+              print STDERR "Added dmcbull record to database: $database \n"  ; 
 	}	
+
+   if ($opt_o) {
+       @dmcfiles_record = ();
+       $comment = "DMC phase picks for $nev events from $start to $end" ;
+       push(@dmcfiles_record,    
+		"time",		&strydtime($t),
+		"comment",	$comment,
+		"dir",		$dir,
+		"dfile",	$dfile,
+		"auth",		$auth
+	    );
+	
+       eval { dbaddv(@dmcfiles,@dmcfiles_record) } ;
+            if ($@) {
+              warn $@;
+              print STDERR "Problem adding record:  $time, $comment, $dfile matches.\n"  ; 
+              print STDERR "No record added!\n"; 
+            } else {
+              print STDERR "Added dmcfiles record to database: $database \n"  ; 
+	    }	
+    }
 
 dbclose @db;
 
 #
-# now send file via email to DMC (or others)
+# now send file via email or orb to DMC (or others)
 #
 
-$rtmail = "rtmail -s '$subject' $mail_list < $file" ; 
+if ($opt_m) {
+   $rtmail = "rtmail -s '$subject' $mail_list < $file" ; 
+   system ( $rtmail ) ;
 
-system ( $rtmail ) ;
-
-if ($?) {
-    print STDERR "Attempt to send mail failed: $?  \n";
-} else {
-    print STDERR "Sending phase pick mail to: $mail_list \n";
-}	
+   if ($?) {
+       print STDERR "Attempt to send mail failed: $?  \n";
+   } else {
+       print STDERR "Sending phase pick mail to: $mail_list \n";
+   }	
+} elsif ($opt_o) {
+   $orbxfer = "orbxfer2 $file $orb";
+   system ( $orbxfer ) ;
+   if ($?) {
+       print STDERR "Attempt to send file to orb failed: $?  \n";
+   } else {
+       print STDERR "Sending phase pick file to: $orb\n";
+   }	
+}
 	
 sub usage{
 	print STDERR <<ENDIT ;
-\nUSAGE: \t$0 [-v] [-s subject] -m email1,email2,... file database 
+\nUSAGE: \t$0 [-v] [-s subject] { -m email1,email2,... | -o orb }  file database 
 
 ENDIT
 exit;
