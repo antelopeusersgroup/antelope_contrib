@@ -163,6 +163,11 @@ use File::Path;
 #
 # determine time of first origin to use for filename check
 #
+# sort it first to get proper time
+#
+
+   @dborigin	= dbsort  (@dborigin, "origin.time");
+
    $dborigin[3] = 0 ;
    $ortime = dbgetv(@dborigin, qw(time));
    $startyr = epoch2str($ortime, "%Y");
@@ -174,9 +179,9 @@ use File::Path;
    } else {
 	$filename = "$IMSdir/$startyr\_$startmo\_$startdy\_$agency"."_IMS";
 	print STDERR "filename is: $filename.  \n" if ($opt_V) ;
-	print STDERR "Now checking for $IMSdir  existance.\n";
-	if (! -e $IMSdir) {
-	  print STDERR "$IMSdir does not exist.  Creating.\n";
+	print STDERR "Now checking for $IMSdir  existance.\n" if ($opt_V);
+	if (! -d $IMSdir) {
+	  print STDERR "$IMSdir does not exist.  Creating.\n" if ($opt_v || $opt_V);
 	  mkpath "$IMSdir" ;
 	}
    }

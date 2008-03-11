@@ -1,6 +1,6 @@
 agency		ANF
 
-auth_reject	".*assoc.*|.*local.*|.*tele.*" 
+auth_reject	.*assoc.*|.*local.*|.*tele.* 
 
 match_origerr_auth	"ANF.*"		# origins with strike, sdobs, etc.
 					# normally QED and regional bulletins do not have these values filled in
