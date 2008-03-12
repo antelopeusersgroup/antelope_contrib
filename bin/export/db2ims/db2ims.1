@@ -33,10 +33,16 @@ Overwhelmingly verbose log messages.  Useful for debugging purposes only.
 UNPROGRAMMED.  This option triggers reporting of magnitude information and
 writes a magnitude block.  The netmag and stamag tables are required.
 .IP -y
-Only select reviewed origins.  Any origins which do not have the review field in
-the origin changed to "y" are not included.  Note that this can cause errors in
-the output file (i.e. missing picks or duplicate event listings) 
-if there are both reviewed and unreviewed solutions for a single event.
+Only select reviewed origins.  This is probably the preferred mode of operations.  
+Any origins which do not have the review field in the origin changed to "y" are 
+not included.  Note that for a real-time system where you have an analyst 
+reviewing the database with dbloc2 (changing the review field to "y") 
+and new external bulletins associated and chosen as prefor 
+(with dborigin2orb/orb2dbt), you can get an origin that is chosen as
+the prefor, but not marked as reviewed.  Events that fall into this category 
+are skipped and not reported in the output file despite having one solution/origin
+that is marked as reviewed.  ALL solutions much be marked as reviewed for the
+event to be included in the output file.
 .IP "-s start_time"
 Select origins after this time.
 .IP "-e end_time"
@@ -79,16 +85,16 @@ ISC's informal summary of IMS1.0:
 .SS "DMC specific information"
 Modifications by the DMC include:
 
-1) The IRIS/FDSN specific "Formatted Agency Comment" is defined as a Formatted
+(1) The IRIS/FDSN specific "Formatted Agency Comment" is defined as a Formatted
 Comment (see below) with the following key/value pair: AGENCY="xx" describing
 the agency submitting the Bulletin.  For example:
 
  (IRIS AGENCY="University of Washington")
 
-2) The "Phase Information Sub-block" is defined in the ISF extensions document
+(2) The "Phase Information Sub-block" is defined in the ISF extensions document
 starting on page 16 (link to document below).
 
-3) The IRIS/FDSN specific "Phase Information Sub-block Formatted Comments" are
+(3) The IRIS/FDSN specific "Phase Information Sub-block Formatted Comments" are
 defined as Formatted Comments (see below) with the following key/value pairs:
 
 FDSNNETWORKCODE="xx" :: FDSN Network code associated with the picked waveform.
@@ -164,7 +170,7 @@ match_origerr_auth  "ANF.*"  # origins with strike, sdobs, etc.
                              # normally QED and regional bulletins
                              # do not have these values filled in
 
-ims_dir         IMS                     # directory for storing output files
+ims_dir         IMS          # directory for storing output files
 
 .fi
 .ft R
@@ -182,8 +188,8 @@ Use this to select which authors from which to attempt to find origerr informati
 is not used, the Smaj, Smin, Az, etc. may not be filled in properly (or with proper
 blanks).
 .IP \fIims_dir\fP
-This is a directory where the output files will be stored.  Directory is created if
-it does not already exist.  This string will be used in the 'dir' field of the 
+This is a directory where the output files are stored.  Directory is created if
+it does not already exist.  This string is used in the 'dir' field of the 
 dmcbull table when \fIims2dmc\fP is run. 
 
 .SH EXAMPLE
@@ -195,8 +201,8 @@ duplicate file names.
 .ft CW
 .nf
 
-  %\fB db2ims_new -s "1/1/2008" -e "2/1/2008" -y \\fP
-        -d dbops/anf db/anf
+  %\fB db2ims_new -s "1/1/2008" -e "2/1/2008" -y \\
+        -d dbops/anf db/anf\fP
 
 .fi
 .ft R
@@ -209,7 +215,8 @@ since 7/12/2007 and saved to an output file called MY_events.IMS.
 .nf
 .ne 3
 
-  %\fB db2ims_new -t "7/12/2007" -l "MY_events.IMS" -y db/anf\fP
+  %\fB db2ims_new -t "7/12/2007" -l "MY_events.IMS" \\
+			-y db/anf\fP
 
 .fi
 .ft R

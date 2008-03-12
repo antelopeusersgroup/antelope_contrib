@@ -145,9 +145,25 @@ use File::Path;
    	print STDERR $nrecs, " records after removing author rejects. \n" if ($opt_v);
    }
 
+#
+# Frank's suggestion to deal with problem where automatic solutions 
+# from dborigin2orb/orb2dbt get added to database as prefor, but are 
+# not reviewed (problem for rt databases)
+#
+#  
+
+   @dbj		= dbjoin  (@dbevent, @dborigin);
+   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
+   print STDERR $nrecs, " records after joining event origin. \n" if $opt_v;
+   
+   @dbj     = dbsubset(@dbj,"prefor == orid");
+   @dbevent = dbseparate(@dbj,"event");
+   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
+   print STDERR $nrecs, " records after separating \"y\" prefor events. \n" if $opt_v;
+   
 
 #
-# subset arrival table based on command line arguments (will have to 
+# subset origin table based on command line arguments (will have to 
 #	change the position of this command in the program if
 # 	you broaden the subsetting capabilities)...
 
@@ -166,7 +182,7 @@ use File::Path;
 # sort it first to get proper time
 #
 
-   @dborigin	= dbsort  (@dborigin, "origin.time");
+   @dborigin	= dbsort(@dborigin, "origin.time");
 
    $dborigin[3] = 0 ;
    $ortime = dbgetv(@dborigin, qw(time));
