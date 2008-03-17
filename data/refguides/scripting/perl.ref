@@ -43,6 +43,8 @@ dbaddnull (@db)
 dbaddv (@db, field_name, value, [field_name, value, ...])
     add new row with the specified values to table
 
+dbaddchk (@db[, record]) 
+    Attempt to add new record, first checking for conflict, like dbaddv
 
 dbmark (@db)
     set the specified rows to all null values
@@ -240,6 +242,12 @@ pfget (pfname, key)
 
 pfget_boolean (pfname, key)
     return 0 or 1 depending on the value of key in the parameter file pfname
+
+pfget_size (pfname, key)
+    returns number corresponding to key in parameter file pfname, allowing suffix G, M, k, m or u.
+
+pfget_time (pfname, key)
+    return epoch time corresponding to key in parameter file pfname, using str2epoch
 
 pfupdate (pfname)
     check and reread parameter file if file used along PFPATH changed

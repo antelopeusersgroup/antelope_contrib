@@ -96,8 +96,3 @@ void dr3sub ( double u[3], double v[3], double w[3] )
 
 void dr3sxv ( double c, double v[3], double w[3] )
     multiply 3-vector v by scalar c, returning result w 
-
-void dr3tran ( double A[9], double B[9] )
-    transpose 3x3 matrix A into B
-
-

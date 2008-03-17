@@ -11,7 +11,6 @@ DATA= \
 	libds.ref \
 	liborb.ref \
 	libpforbstat.ref \
-	libpixaddress.ref \
 	libproj.ref \
 	libresponse.ref \
 	libstock.ref \

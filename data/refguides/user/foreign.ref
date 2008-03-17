@@ -271,9 +271,6 @@ sachd [sac1 ...]
 sdd [-vs] sd
     dump blockettes (summary only if -s) from SEED volume sd
 
-dsteim [sd]
-    verbosely dump miniseed data frames
-
 msdd [-dovx] miniseed ...
     dump miniseed volume; -o shows opaque blockettes 
 

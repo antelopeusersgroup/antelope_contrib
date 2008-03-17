@@ -383,6 +383,9 @@ int changedring ( RingBuffer *rb, double tdelta );
 int is_epoch_string ( char *s, double *e )
     return true if string s can be interpreted as a time, returning epoch time e
 
+int is_timezone ( char *name )
+    returns 1 if file corresponding to name is found, 0 otherwise
+
 private double str2epoch(char *s)
     return epoch time corresponding to string s
 
@@ -847,14 +850,6 @@ Type codes
 </example>
 
 <cdeclarations>
-deprecated void swap2 ( unsigned char *from, unsigned char *to, int n )
-    swap two bytes
-
-deprecated void swap4 ( unsigned char *from, unsigned char *to, int n )
-    swap four bytes
-
-deprecated void swap8 ( unsigned char *from, unsigned char *to, int n )
-    swap eight bytes
 
 int align_double ( int i )
     align an address to a multiple of double
@@ -862,79 +857,8 @@ int align_double ( int i )
 int align_int ( int i )
     align an address to a multiple of int
 
-deprecated void H2N2(char *to, char *from, int n)
-deprecated void N2H2(char *to, char *from, int n)
-
-deprecated void H2N4(char *to, char *from, int n)
-deprecated void N2H4(char *to, char *from, int n)
-
-deprecated void H2N8(char *to, char *from, int n)
-deprecated void N2H8(char *to, char *from, int n)
-    convert n 2 byte ints, 4 byte ints (or floats) or 8 byte
-    ints (or doubles) from Host order to Network order, or vice versa
-
-deprecated void H42N3 ( char *to, int *from, int n )
-    convert n 3 byte signed integers from network order to 4 byte host order signed integers
-
-deprecated void N32H4 ( int *to, char *from, int n )
-    convert n 4 byte host order signed integers to 3 byte signed network order integers
-
-deprecated void HD2NF ( char *to, double *from, int n )
-    convert from host double to net float
-
-deprecated void NF2HD ( double *to, char *from, int n )
-    convert from network float to host double
-
-deprecated void NF2HI ( int *to, char *from, int n )
-    convert from net float to host int
-
-deprecated void HI2NF ( char *to, int *from, int n )
-    convert from host int to net float
-
-deprecated void HI2NC ( char *to, int *from, int n )
-    convert from host int to net character
-
-deprecated void NC2HI ( int *to, char *from, int n )
-    convert from net character to host int
-
-deprecated void HI2NS ( char *to, int *from, int n )
-    convert from host int to net short
-
-deprecated void NS2HI ( int *to, char *from, int n )
-    convert from net short to host int
-
-private double htond ( double val )
-    convert host double to net double
-
-private void htondp ( double *valp_from, double *valp_to )
-    convert pointer to host double to pointer to net double
-
-private float htonf ( float val )
-    convert host float to net float
-
-private void htonfp ( float *valp_from, float *valp_to )
-    convert pointer to host float to pointer to net float
-
-deprecated int isnetorder ( )
-    return true if local machine uses network order
-
-private double ntohd ( double val )
-    convert net double to host double
-
-private void ntohdp ( double *valp_from, double *valp_to )
-    convert pointer to net double to pointer to host double
-
-private float ntohf ( float val )
-    convert net float to host float
-
-private void ntohfp ( float *valp_from, float *valp_to )
-    convert pointer to net float to pointer to host float
-
-private int rev4 ( char *from, char *to, int n )
-    reverse order of 4 bytes
-
-private int rev8 ( char *from, char *to, int n )
-    reverse order of 8 bytes
+int align_long ( long i )
+    align an address to a multiple of long
 
 <subsection Compression and Checksums>
 <cdeclarations>

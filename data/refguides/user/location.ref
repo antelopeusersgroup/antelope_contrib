@@ -44,30 +44,11 @@ tabcalc
 hypotab
     companion program to tabcalc travel time calculator
 
-mktt [-p phases] model
-    make tau-p and locsat travel time tables
-
 pltt phases depth d0 dd nd tmin tmax vred [table]
     plot travel times from tau-p travel time table
 
 prtt phases ndp dp0 ddp ndel del0 ddel [table]
     print travel times from tau-p travel time table
-
-remodl model_name
-    create tau-p travel time tables
-
-setbrn
-    create tau-p travel time tables
-
-taup2locsat [options] model
-    create locsat style travel time tables from tau-p model table
-<options>
--i	ask before saving output files
--h header
--l dir
--p phases
--t tauprequest
-</options>
 
 tp2ls phases header [table]
     make locsat style travel time table file from tau-p travel time table

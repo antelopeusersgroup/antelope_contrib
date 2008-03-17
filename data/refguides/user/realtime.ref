@@ -262,18 +262,6 @@ ida2orb [-u] [-r sec] orb nrts selection
 -r sec	reject future packets 
 </options>
 
-ipd2 [options] port orb
-    copy data from UCSD data multiplexer at port to orbserver orb
-<options>
--c check_rate
--i
--p pf
--s pkt_size
--t timeout 
--u 
--v
-</options>
-
 liss2orb [options] liss orb
     copy data from LISS server liss to orbserver orb
 <options>
@@ -304,6 +292,18 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -noipresolv	do not try to resolve ip addresses
 -v
 </options>
+
+q330pocd [-i ip] [-p port] [-noipresolv] targetname orb
+    receive POC messages and save to orb
+-i ip	bind to one of several local ip addresses
+-p port	specify alternative to port 2254
+-noipresolv	don't look up hostnames
+
+q330_location [-m mail] [-p pf] [-t mmax] [-v] orb db
+     alert if Q330 locations in status packets differ more than mmax from database location
+
+q330coms [-n net] [-p pf] [-v] orb db
+    compare Q330 status packets with Q330comm database table
 
 qtunbale [options] url [time [endtime|period]]
     unload data from Quanterra baler
@@ -363,14 +363,6 @@ k22orb [options] target orbdata [orbcmd]
 -v	be more verbose
 -state file	save state in filename
 -start time	only get events after time
-</options>
-
-rt2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
-	acquire logs and data from RefTek RT130 data loggers 
-<options>
--pf pfname 	specify alternate parameter file
--calib_db dbname get calib/calper from database
--v	more verbose
 </options>
 
 rtp2orb [-v] configuration_file

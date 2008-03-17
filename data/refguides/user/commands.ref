@@ -12,7 +12,7 @@ manpage [ - ]
 template [example]
     get example from templates directory
 
-required_unix_pgms
+required_unix_programs
      check for programs required by Antelope
 
 <subsection Miscellaneous>
@@ -351,3 +351,33 @@ xdiff [options] dir1 dir2
 -x exceptions file containing perl regular expressions mapped to null before comparison
 -X	don't ignore CVS directories
 </options>
+
+certify [options] [dir|testid ...]
+    run regression tests 
+-a	with -u or -A, update all tests, even if they don't fail.
+-A	ask if correct result should be updated when a failure occurs.
+-c database	use alternate database instead of ./certify
+-C 	run cvs update before running the tests.
+-d	rerun just the diff commands
+-e	show the environment
+-f	run failing tests only 
+-D	run dbx on the executable
+-G	run gdb on the executable
+-H dir	run in the specified directory
+-i	set up; make directories input, data, results and correct; initialize certify database   
+-k	keep results even if test is successful
+-l	list tests
+-m 	send mail about failures, otherwise be quiet
+-M	suppress the use of the watchmalloc library.
+-n	show what tests would run 
+-p	compile with Purify before running the test
+-P	Compile with Purify, but no x-windows
+-Q	only show failing tests 
+-q	don't show errors in detail
+-R	run certify in every subdirectory which contains certify db
+-r	cleanup directory by removing results and executables
+-s	stop at first failure
+-u	update correct results from the output of this run
+-U	run the executable under ups 
+-x path	add path to front of PATH environment variable
+-X results	add a line for each test to results file
