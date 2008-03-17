@@ -184,7 +184,7 @@ orbserver [options] pf
 </options>
 
 orbserver64 [options] pf
-    same as orbserver, but allows much larger ring buffers (Solaris only)
+    same as orbserver, but allows much larger ring buffers (32 bit Solaris only)
 
 diskserver [-p pf] [-v] dir[:port]
      emulate read-only orbserver on port using directory dir of special forb files
@@ -207,7 +207,7 @@ orbstat [options] orb [secs]
 -c	show client statistics
 -s	show source statistics
 -i	interactive mode
--d all,nets,stations,channels,loc_codes,types	show waveform info 
+-d [all|nets|stations|channels|loc_codes|types]	show waveform info 
 -m re	show only packets or clients matching re
 -r re	don't show packets or clients matching re
 -n avg	boxcar average over avg queries 
@@ -315,12 +315,13 @@ qtunbale [options] url [time [endtime|period]]
 -i info	where to save info files from baler
 -o orb	pass directly to orb using miniseed2orb
 -q	wait quietly for baler to wake up
+-Q	don't ping baler
+-r	raw output, no miniseed2days or miniseed2orb
 -S dir	subdirectory for miniseed day files
 -t to	timeout for ping response from baler
 -u 	show all URLs used
--w wfname	specify pattern for miniseed files
--r	suppress running miniseed2days
 -v	more verbose
+-w wfname	specify pattern for miniseed files
 </options>
 
 qtunbale2 [options] url [time [endtime|period]]
@@ -431,7 +432,7 @@ private db2orb [options] {database|view} [orb]
 -v	verbose
 </options>
 
-dbreplay [options] view [[[orb] t0] {t1|T}]
+dbreplay [options] view orb [t0 [{t1|T}]]
     replay database view to orb from t0 to t1 (or t0+T)
 <options>
 -b max	pause if client is more than max seconds behind
@@ -525,12 +526,12 @@ orb2orb [options] in out [start [period|end]]
     copy data from one orb to another
 <options>
 -c suffix	convert packets to suffix format
+-C rate	throttle to specified output rate: kbytes/sec or (with p suffix) pkts/sec.
 -d	print hex dump of each packet 
 -f	for file input, do not adjust time tags, and output packets as quickly as possible
--i nsecs	save state file every nsecs seconds
+-i secs	save state file every secs seconds
 -l	loop repeatedly over input forb(5) file
 -m re1	read only packets which match re1 
--N	print #samples of data
 -n n	stop after n packets
 -p pf	alternate parameter file
 -R r	when saving to file, use forb(5) format r
@@ -540,16 +541,17 @@ orb2orb [options] in out [start [period|end]]
 -U	unstuff each packet and print
 -u n	discard duplicates in latest n packets
 -v	more verbose
+-X xlat	translate srcnames according to morph table
 -x	require acknowledgment for each packet sent
 </options>
 
-orbxchange pf
-    run multiple orb2orb connections controlled by pf
+orbxchange [-d db] pf
+    run multiple orb2orb connections controlled by pf; use db for fallback orb sources
 
 orbxfer2 [-N net] [-p pf] [-w dir] [-v] [file ...] orb
     write files into orb; with -w, watch directory dir and send files which appear there into the orb and remove them from dir
 
-deprecated orbxfer2 [-p pf] [-S state] [-v] orb
+orbxfer2 [-p pf] [-S state] [-v] orb
     receive incoming files, save into directory specified in pf
 
 deprecated orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
@@ -861,6 +863,7 @@ ps2orb [options] orb
 -n mx	quit after mx iterations
 -t n	report on top n processes every iteration
 -r {mem|cpu}	sort by mem or cpu
+-u user	restrict to specified user
 -vv	print reports on stderr
 </options>
 
@@ -888,7 +891,7 @@ orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [
 orbtail [-f] [-m match] [-r reject] [-number] orb [start [end|period]]
     read and print log packets from orb 
 
-orb2ntp [-d delay] [-f freq] [-m match] [-M] [-n navg] [-r reject] [-u unit] [-v] orb
+orb2ntp [-d delay] [-f freq] [-m match] [-n navg] [-o old] [-r reject] [-u unit] [-Mv] orb
     use orb packet times as (very rough) ntp clock
 
 rtlogs orb
@@ -979,8 +982,8 @@ orbmsd2days [options] orb
 -c nscl	specify particular net_sta_chan_loc desired
 -d db	create wfdisc table in db
 -S state	save orb position in state file
--U   limited duplication suppression
--I   inclusive time screening
+-U	limited duplication suppression
+-I	inclusive time screening
 -m re1	select packets matching regular expression re1
 -r re2	reject packets matching regular expression re2
 -s st	save data only when block start time >= st
@@ -1057,6 +1060,7 @@ get_wftar -v dbmaster tape_drive
 online_backup [options] [directories]
     backup certain files to an online directory
 <options>
+-d n	remove log files after n days
 -d dir	specify an alternate base directory
 -m	send mail rather than writing to stdout
 -n	don't actually run backup, but show what would happen
@@ -1168,6 +1172,7 @@ orbcapture [options] orb db file
 -a n	capture n packets after trigger packet
 -c condition	only new rows satisfying condition trigger capture
 -R {a|x|f}	specify output format ascii, hexadecimal, or header only
+-v	verbose
 </options>
 
 deprecated orbcp -orbin in_orbname -orbout out_orbname
@@ -1217,6 +1222,6 @@ pkttypes [-c]
 orbstash [-m match] [-o out] [-r reject] [-v] in [srcname]
      get and print stash packets from an orbserver in
 
-ipvalidate [-n list] [-p pf] [-v] [ip-addresses]
+ipvalidate [-p pf] [-v] [ip-addresses]
      test if particular ip address is accepted or rejected by valid_ip_address list in pf
   

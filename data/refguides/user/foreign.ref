@@ -20,7 +20,6 @@ dbresp2autodrm view
 rtbulletin [-Av] [-s subset] aview [t0 [t1|period]]
     create a bulletin from input view aview (-A causes standard autodrm output)
 
-
 db2ah [options] dbin dbout
     convert css waveform files into ah format
 <options>
@@ -73,8 +72,8 @@ private mk_dataless_wfdisc [-v] [-p pf] dbin
 private trash_data [-inv] sd 
     truncate SEED volume sd following station headers, creating dataless SEED volume
 
-mk_dataless_seed [-vk] [-o dataless_seed] [-p pf] db
-    create dataless seed volume from db
+mk_dataless_seed [-n re] [-o dataless_seed] [-p pf] [-s re] [-vk] db
+    create dataless seed volume from db, optionally using only stations which match -n net and/or -s sta regular expression
 
 mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tape] [-d dir] rt_db
     build IRIS DMC files on tape or disk
@@ -207,6 +206,7 @@ miniseed2orb [options] file ... orb
 <options>
 -s start	start-time
 -e endtime 	end time
+-I 	inclulsive time screening 
 -m re 	keep if net_sta_chan_loc matches re
 -r re 	reject if net_sta_chan_loc matches re
 -d db 	look up correct sta/chan in calibration table
@@ -218,17 +218,16 @@ miniseed2orb [options] file ... orb
 miniseed2days [options] miniseed ...
     separate input miniseed into separate channel day volumes
 <options>
--c 	eliminate blocks with errors when uncompressed
+-C file	chuck blocks with bad time or compress errors into file
 -d db 	create output db by running miniseed2db on output files
 -D 	retain duplicate seed blocks in output
 -I 	inclulsive time screening 
 -S dir	alternate output directory
 -e end	ignore data after endtime
--k 	retain all input data blocks 
+-k 	keep input data blocks with poor timing quality
 -m match	only keep net_sta_chan_loc matching this re
 -r reject	reject net_sta_chan_loc matching this re
 -s start	ignore data before start
--R	remove input after processing
 -U	eliminate consecutive duplicate data blocks on input
 -u	eliminate all duplicate data blocks from input
 -v	more verbose

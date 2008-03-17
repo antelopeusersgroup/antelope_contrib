@@ -25,5 +25,5 @@ cd2orb [options] [orb]
 cdremap [-p pf] [-t time] database
     test/reproduce channel mapping done by cd2orb
 
-cd1replay [-v] [-s sta] file [file2 ...] receiver
+cd1replay [-s sta] [-t dt] [-v] file [file2 ...] receiver
     replay cd1 data saved by cd2orb (using code sta)

@@ -153,8 +153,12 @@ dbconcat_event db1 db2 [ db3 ...] dbout
     combine multiple CSS 3.0 event databases db1, db2, ... (arrival, assoc, event, origin, and origerr tables) into single new database dbout
 
 dbfixids db idname [ idstart ]
-dbfixids [-s server] db [ db2 ]
+dbfixids [-s server] [-i id1,...] [-x id2,...] db [ db2 ]
     renumber ids for idname (starting at idstart) in database db, or sync ids to idserver server
+<options>
+-i ids	only renumber these ids
+-x ids	don't renumber these ids
+</options>
 
 <subsection Creating Database Views>
 <commands>
@@ -241,12 +245,12 @@ dbverify [options] db[.table]
 -u	complain about unreferenced ids
 -v	verbose
 -x	check for existence of external files
+-X pf	use alternate parameter file
 </options>
 
 dbcheck_responses [-t tolerance] [-v] database
-dbcheck_responses [-t tolerance] [-v] -f response-file
+dbcheck_responses [-t tolerance] [-v] -f response-file ...
      perform simple checks on response files from instrument and stage 
-    
 
 dbdiff [options] db1[.table] db2[.table]
     find differences between two databases (or tables)
@@ -289,6 +293,7 @@ dbnextid db idname
 dbcalc [options] db.table [ record# | expression ]
     interactive interface to Datascope expression calculator
 <options>
+-c expr	calculate single expression
 -e	echo input to stdout
 -r	print reverse polish notation for expression
 -t	show type of each piece of expression and result

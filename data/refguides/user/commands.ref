@@ -75,6 +75,7 @@ ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
     filter list of files according to various options
 <options>
 Combinatorial options
+-a	autosplit input lines
 -b	binary files
 -c	in CVS
 -C	not in CVS
@@ -160,6 +161,7 @@ pfecho [options] name [ param ...]
 <options>
 -i	interactive mode
 -q	don't echo key
+-R	show parameters overridden by later parameter files
 -w	show all pf files read
 -W	show all filenames examined (may not exist)
 -x	expand all references inside pf
@@ -351,6 +353,9 @@ xdiff [options] dir1 dir2
 -x exceptions file containing perl regular expressions mapped to null before comparison
 -X	don't ignore CVS directories
 </options>
+
+getid [-aNv] < in > out
+    substitute special values into source files; used to centralize some info and help architecture independence
 
 certify [options] [dir|testid ...]
     run regression tests 
