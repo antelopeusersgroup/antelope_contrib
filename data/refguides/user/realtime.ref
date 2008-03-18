@@ -25,13 +25,14 @@ rtexec [options] [comment]
 -s	save old logs in new subdirectory
 -t	run `tail -f logs/rtexec` 
 -v	more verbose
+-w why	with -k, file why explains shutdown
 </options>
 
 rtinit [-q] [-v] [db]
     initialize directory for rtexec/rtm by creating directories and copying pf files
 
-rtdemo
-     setup to run an Antelope realtime demo
+rtdemo [-t] [name]
+     setup to run an Antelope realtime demo; -t suppresses gui
 
 rtincident [options] [output_file]
     collect some system related information into report; rtexec
@@ -42,14 +43,16 @@ rtincident [options] [output_file]
 -l log	specify log file for program
 -M msg	specify message to include in report
 -m addr	send report as email to addr
+-n	just show what would be run
+-p program 	specify program which dumped core
+-v	verbose
 -x	append corefile to email
--p program 	specify program
 </options>
 
 inspect_snapshot snapshot
     gui to help read output from rtincident or other snapshots
 
-rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-dv] recipients
+rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-f from] [-r replyto] [-dv] recipients
     send mail with attachments
 
 rtorbcmd [-d] [-p pf] target command
@@ -68,6 +71,7 @@ rtreport [options] [directory]
 -n days	number of days report covers
 -p pf	use specified pf instead of rtreports.pf 
 -s subset	report only on stations satisfying subset
+-w wfdb	alternate waveform database
 -v	more detail about gaps
 -Y	include full date in event report 
 -z	only z channels
@@ -76,7 +80,7 @@ rtreport [options] [directory]
 rtsys [options] [directory]
     summarize system operation and log reports
 <options>
--C eliminate summary of cronjobs 
+-C	eliminate summary of cronjobs 
 -d time	start of reporting period
 -m email,..	list of email recipients
 -N re	only report on network codes matching re
@@ -86,14 +90,14 @@ rtsys [options] [directory]
 -w db	specify alternate waveform db     
 </options>
 
-stanote [-t time] [-r range] [-f|F] file] [database] [sta [note]]
+stanote [-{f|F} file] [-r range] [-t time] [database] [sta [note]]
     simple method for adding note about station, to appear in gap report in rtreport
 
 ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
-rtrun [-nv] command line
-    run command line using rtexec environment (like an rtexec cron job)
+rtrun [-nv] command-line
+    run command-line using rtexec environment (like an rtexec cron job)
 
 cronrun [-nv] command line
     run command line immediately, reproducing cron environment 
@@ -123,12 +127,15 @@ rtoutage [options] db t0 t1
     show data gaps for database db from time t0 to t1
 <options>
 -A	format output as an autodrm outage report
+-c	list reporting stations
+-C	list reporting channels
 -d gapdb	save gap info into database gapdb
 -n netcode	only process station from netcode
+-N	summarize by network
 -P maxpts	maximum # waveform points to load at once
 -p	print percentage of data recovered 
--S	show gaps as seconds only
 -s subset	only show gaps for sta/chan subset
+-S	show gaps as seconds only
 -t	only show totals
 -z	select only vertical channels 
 </options>
@@ -138,6 +145,8 @@ truncate_log [options] log [log..]
 <options>
 -c	also remove lines without time tags
 -d n	trim lines before n days ago
+-f	force truncation sooner than 8 days
+-h h	specify max records in rtsys tables
 -m m	trim files so maximum size is m kbytes 
 -r	suppress saving removed lines in new file
 -s n	only trim files larger than n kbytes

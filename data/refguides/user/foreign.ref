@@ -162,7 +162,7 @@ deprecated psd2db [options] sd dbout
 -v	more verbose
 </options>
 
-sac2db sac1 [sac2 ... ] dbout
+sac2db [-v] sac1 [sac2 ... ] dbout
     create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
 
 scec2db [options] dbname
@@ -267,7 +267,7 @@ Xphase2db db [-phase name]
 sachd [sac1 ...]
     print header information from SAC files sac1, ...
 
-sdd [-vs] sd
+sdd [-sv] sd
     dump blockettes (summary only if -s) from SEED volume sd
 
 msdd [-dovx] miniseed ...

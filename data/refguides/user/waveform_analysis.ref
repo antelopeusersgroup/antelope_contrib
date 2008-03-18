@@ -29,7 +29,8 @@ trtally [-d output] [-ekv] [-r start stop] db1 [{+|-|!|&|^|a} [db2]]
     compute intersections and other operations on two sets of waveform time ranges
 
 trmapnames [-anv] db [net fsta fchan {loc|aux}]
-     map foreign net/sta or sta/chan/loc codes into local sta and chan codes
+trmapnames -u [-anv] db [sta [chan]]
+     map foreign net/sta or sta/chan/loc codes into local sta and chan codes, or vice versa
 
 deprecated dbsteimc [options] dbin [dbout]
     compress waveform data using steim compression (see also trexcerpt)
@@ -81,16 +82,17 @@ trsample [options] database[.table] [time [end|period]]
 <options>
 -c	apply calib to samples
 -e	read data from each row in table
--o	write samples one to a line
 -I	interactive mode
 -[i|t|T]	show integer, epoch time, or readable time index for each sample
 -n npts	print npts samples
+-o	write samples one to a line
 -s expr	subset input according to expr
 </options>
 
 trsignal [options] database
     create wfdisc records with test signal data
 <options>
+-{A|D|V}	segtype
 -a amplitude
 -b timebase	generating function base time
 -c channel	specify chan code
@@ -104,7 +106,6 @@ trsignal [options] database
 -s station	sta code
 -t time	start time for output
 -T type	sin, cos, sqr, tri, saw, dlt, ran, stp, pkt, dif
--{A|D|V}	segtype
 -v	be more verbose
 -w pattern	specify naming convention for output waveforms
 -y yaw	constant signal drift
