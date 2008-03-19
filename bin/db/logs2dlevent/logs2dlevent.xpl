@@ -159,6 +159,7 @@ sub grep_this {
 #    elog_notify(0,"File is now: $file\n");
 
     return unless -f $_;
+    return if $file =~/.gz|.Z|.bz2/;            # attempt to skip compressed files
     return unless $file =~/$file_pattern/;
 #    return unless $file =~/@jdates/;
 
@@ -186,8 +187,8 @@ sub grep_this {
 		elog_notify(0,"---\n") if ($opt_v || $opt_V) ;
 	     }
 	     elog_notify(0, "$line \n") if ($opt_v || $opt_V) ;	# print contents of line
-	     # get individual pieces
-	     ($evdate_hr,$evmin,$evsec,$target,$dlsta,$com1,$com2,$com3,$com4) = split /:/,&trim($_) ;
+             # get individual pieces - differs if it is a LOG or a UMSG
+             ($evdate_hr,$evmin,$evsec,$target,$dlsta,$com1,$com2,$com3,$com4,$com5,$com6) = split /:/,&trim($_) ;
 	     $evtime	= "$evdate_hr".":".$evmin.":".$evsec;
 	     $target	= &trim($target);
 	     $dlsta	= &trim($dlsta);
@@ -197,16 +198,26 @@ sub grep_this {
 	     $evtime	= str2epoch($evtime);
 	     elog_notify(0, "Evtime: $evtime\n") if $opt_V ;
 	     $comment = "$com1";
-	     if ( $com2) {
-	     	$comment = $comment . $com2;
-		if ($com3) {
-	     	    $comment = $comment . $com3;
-		    if ($com4) {
-	     	    	$comment = $comment . $com4;
-		    }
-		}
-	     }
+             if ($comment =~ /LOG/) {   # Try to get correct info from Calibration message
+                # skip com2 - com4 as it is another date
+                if ($com5) {
+                    $comment = $comment . $com5 ;
+                     if ($com6) {
+                         $comment = $comment . $com6;
+                     }
+                }
+             } else {
 
+	       if ( $com2) {
+	     	  $comment = $comment . $com2;
+		  if ($com3) {
+	     	      $comment = $comment . $com3;
+		      if ($com4) {
+	     	    	  $comment = $comment . $com4;
+		      }
+		  }
+	       }
+	     }
 	     foreach $value (values %dlevents) {
 		if ($comment =~ $value ) {
 		    $dlevtype	= $event_phrase{$value}  ;

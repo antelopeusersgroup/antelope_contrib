@@ -12,7 +12,8 @@ logs2dlevent [-p pf] [-d 'time' ] [-n ndays] [-v] [-l match_logname] logdir db
 \fBlogs2dlevent\fP examines logs written to disk with \fBorb2logs\fP(1) to
 find rows which match a regular expression.  The simple match (and reject) 
 expressions are kept in a parameter file, logs2dlevent.pf.  The matching lines
-are placed as a dlcomment into a dlevent table and tagged with a dlevtype.
+are placed as a dlcomment into a dlevent table and tagged with a dlevtype.  The
+program \fBdlreport\fP(1) can be run to summarize the events.
 
 .SH OPTIONS
 
@@ -165,14 +166,17 @@ dlcmd(1)
 
 .SH "BUGS AND CAVEATS"
 This has only been tested on output logs from q3302orb(1).  
-
+.LP
 This program is very slow and very likely could be optimized.
-
+.LP
 The field size for the dlcomment is only 120 characters.   I do not know 
 what the limit on a UMSG size is so you may overflow the field.
-
+.LP
 There may be problems with the time subsetting, and crossing year boundaries:  
 neither have been thoroughly tested.
+.LP
+It may take some adjustment of the parameter file to get (or reject) various
+events that you might find interesting.
 .SH AUTHOR
 .nf
 Jennifer Eakins

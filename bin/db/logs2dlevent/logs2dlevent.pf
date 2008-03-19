@@ -8,23 +8,30 @@ getconfig
 getannc
 getstatus
 reboot
+msg
+Calibration
+Removal
+removal
 }
 
 reject &Tbl{
-#Processing
+Processing
 sbpwr
 Baler
 dopen
 QMASERV
 C1_UMSG
+C1_PULSE
 Error
-Sending
+#Sending
 Issuing
+DEBUGC
 }
 
 dlevents &Arr{
 #	dlevtype	log_phrase
 	service		UMSG
+	service		msg 
 	massrecenter	recenter
 	massrecenter	massrecenter
 	sensor_lock	masslock
@@ -35,6 +42,7 @@ dlevents &Arr{
 	request_status	getstatus
 	baler		Baler
 	reboot		reboot
+	sensor_cal	Calibration
 }
 
 convert_umsg &Arr{
@@ -45,8 +53,8 @@ convert_umsg &Arr{
         MRC             massrecenter
         mrc             massrecenter
         unlock          sensor_unlock
-        lock            sensor_lock
-        Cal             sensor_cal
+        ^lock            sensor_lock
+#        Cal             sensor_cal
 } 
 
 
