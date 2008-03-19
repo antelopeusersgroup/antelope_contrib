@@ -20,12 +20,12 @@ int trfree ( Dbptr tr )
 int trdestroy ( Dbptr *trp )
     close a trace database and free its resources
 
-int trtruncate ( Dbptr tr, int n )
+int trtruncate ( Dbptr tr, long n )
     truncate a tr database table after record n
 
 <subsection Reading and Writing Waveforms>
 <cdeclarations>
-int trgetwf ( Dbptr db, Arr **maparr, float **data, int *datasz, double reqt0, double reqt1, double *t0, double *t1, int *npts, int (*fill) (), void *pvt )
+int trgetwf ( Dbptr db, Arr **maparr, float **data, long *datasz, double reqt0, double reqt1, double *t0, double *t1, long *npts, int (*fill) (), void *pvt )
     read waveform data for single record db between times reqt0  and reqt1 into buffer data, 
     returning #points npts and actual time range t0 to t1.  returns 0 for success
 
@@ -264,18 +264,18 @@ int trintegral ( Dbptr tr )
 
 <subsection Utilities>
 <cdeclarations>
-int trclip ( double time, double samprate, int nsamp, double from, double until, int *pt0, int *npts, double *t0, double *t1 )
+int trclip ( double time, double samprate, long nsamp, double from, double until, long *pt0, long *npts, double *t0, double *t1 )
     find sample range corresponding to time range
 
 
 int trsplit ( Dbptr tr, int (*fill) (), int (*findbad) () )
     break up waveform records, eliminating marked missing data
 
-int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
+int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, long *i0, long *i1, long *imaxp), int (*resample)() )
     splice together any data segments which fit together, eliminating overlapping portions. 
     don't splice sections with different calibs together if factor_calib is 0.
 
-int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
+int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, long *i0, long *i1, long *imaxp), int (*resample)() )
     splice together any data segments which fit together, eliminating overlapping portions. 
     splice sections with different calibs together, multiplying later values by the ratio of calibs.
 
@@ -284,7 +284,7 @@ double traligned ( double atime, double std_time, double std_samprate )
     returns a time properly aligned with a specific time and sample rate
 
 
-void trfill_gap ( Trsample *data, int nsamp )
+void trfill_gap ( Trsample *data, long nsamp )
     fills a data segment with the 'standard' "t4" gap value
 
 
@@ -298,7 +298,7 @@ deprecated int trsamerate ( Trseg *prv, Trseg *cur, double tolerance )
 deprecated int trsameticks ( Trseg *prv, Trseg *cur, double tolerance )
     test for match of sampling
 
-int wfchanid ( Dbptr db )
+long wfchanid ( Dbptr db )
     lookup chanid for a wfdisc record in the sensor or sitechan table
 
 private int trdatacode ( char *datatype )

@@ -8,10 +8,10 @@ implements the Datascope relational database system
 
 <structures>
 typedef struct Dbptr {
-    int database ;
-    int table ;
-    int field ;
-    int record ;
+    long database ;
+    long table ;
+    long field ;
+    long record ;
 } Dbptr ;
 
 <subsection Opening/Closing a Database>
@@ -20,10 +20,10 @@ typedef struct Dbptr {
 int dbopen ( char *path, char *p, Dbptr *db )
     open database path with permission p ("r" or "r+"), return database pointer db
 
-int dbopen_database ( char *path, char *p, Dbptr *db )
+long dbopen_database ( char *path, char *p, Dbptr *db )
     open database or table path, return database pointer db
 
-int dbopen_table ( char *path, char *p, Dbptr *db )
+long dbopen_table ( char *path, char *p, Dbptr *db )
     open table path, return database pointer db
 
 Dbptr dblookup ( Dbptr db, char *d, char *t, char *f, char *r)
@@ -41,16 +41,16 @@ int dbclose ( Dbptr db )
 
 <subsection Adding and Retrieving Values>
 <cdeclarations>
-int dbadd ( Dbptr db, char *r )
+long dbadd ( Dbptr db, char *r )
     add row r to table db, return new record number
 
-int dbadd_remark ( Dbptr db, char *r )
+long dbadd_remark ( Dbptr db, char *r )
     add comment r to CSS table db
 
-int dbaddnull ( Dbptr db )
+long dbaddnull ( Dbptr db )
     add null row to table db
 
-int dbaddv ( Dbptr db, char *t,  char *f1, v1, ... 0 )
+long dbaddv ( Dbptr db, char *t,  char *f1, v1, ... 0 )
     add new row to table db/t, with values v1,...  for
     corresponding fields f1, ...  ; terminate list with zero.  return
     record number of new row (or existing matching row), 
@@ -110,7 +110,7 @@ Dbptr dbjoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, int outer, Tbl **
 Dbptr dbnojoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, char *view_name )
     return view of rows from view db1 which do not match row in view db2.
 
-int dbmatches ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, Hook **hook, Tbl **t )
+long dbmatches ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, Hook **hook, Tbl **t )
     return in t list of row from db2 matching row db1.  hook is 
     used by dbmatches for specific join; it must =zero at first call,
     is freed with free_hook when done.
@@ -139,7 +139,7 @@ Dbptr dbgroup ( Dbptr db, Tbl *fields, char *name, int type )
 Dbptr dbungroup(Dbptr db, char *name)
     return view containing all rows referenced in input grouped view db
 
-int dbprocess ( Dbptr db, Tbl *operations, Dbptr (*unknown)() )
+Dbptr dbprocess ( Dbptr db, Tbl *operations, Dbptr (*unknown)() )
     construct new view using list of operations, which may include:
     dbopen, dbjoin, dbgroup, dbleftjoin, dbnojoin, 
     dbselect, dbseparate, dbsever, dbsort, dbsubset, dbtheta, dbungroup
@@ -206,7 +206,7 @@ int dbex_evalstr ( Dbptr db, char *s, int type, void *v )
     evaluate string s as an expression for database
     row db, convert result to type, return result v 
 
-int dbfind(Dbptr db, char *string, int flags, Hook **hook)
+long dbfind(Dbptr db, char *string, int flags, Hook **hook)
     search for row matching string in view db, where string is regular expression, Datascope expression, or plain string.  if flags&1, search backward.
 
 int dbstrtype ( Dbptr db, char *s )
@@ -237,5 +237,5 @@ int dbcompile ( Dbptr db, char *s )
 Dbptr dbinvalid ()
     return database pointer with all elements set to dbINVALID
 
-int dbnextid ( Dbptr db, char *name )
+long dbnextid ( Dbptr db, char *name )
     generate unique id for field name of database db
