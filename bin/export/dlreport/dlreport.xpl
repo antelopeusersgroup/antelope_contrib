@@ -8,9 +8,9 @@ require "getopts.pl" ;
 use archive ;
 #use diagnostics; 
  
-our ($opt_d, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v, $opt_V, $opt_S, $opt_E) ;
+our ($opt_d, $opt_C, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v, $opt_V, $opt_S, $opt_E) ;
 
-if ( ! &Getopts('d:m:n:s:vVSE') || @ARGV > 1 ) {
+if ( ! &Getopts('d:m:n:s:C:vVSE') || @ARGV > 1 ) {
     &usage;
 }
 
@@ -39,6 +39,11 @@ if ( $opt_s ) {
     $subset = $opt_s ; 
     $subset =~ s"\&\&"\n\t  \&\&"g ; 
     printf "\nReport for subset:\n\t$subset\n" ;
+    if ($opt_C) {
+	$subset = $subset . "&&". "dlname=='$opt_C'" ;
+    }
+} elsif ($opt_C && !$opt_s) {
+    $subset = "dlname=='$opt_C'";
 }
 
 if ( ! $opt_n ) { 
@@ -89,11 +94,12 @@ printf "\n  Report sorted by dlevtype\n" if $opt_E ;
 # main guts of program is sub summarize_dlevent
 
 printf "\nEvent Information\n" ;  
-$nevents = summarize_dlevents ( $tfirst, $tlast, $opt_s, @db ) ; 
+$nevents = summarize_dlevents ( $tfirst, $tlast, $subset, @db ) ; 
 
 chop ($host = `uname -n` ) ;
 $subject = sprintf ("$host dlevent report by station:  $nevents events" ) if $opt_S ; 
 $subject = sprintf ("$host dlevent report by dlevtype:  $nevents events" ) if $opt_E ; 
+$subject = sprintf ("$opt_C dlevent close station report:  $nevents events" ) if $opt_C ;
 &sendmail ( $subject, $opt_m, $mailtmp ) if $opt_m ; 
 
 unlink $mailtmp if $opt_m ;
@@ -101,9 +107,9 @@ unlink $mailtmp if $opt_m ;
 sub summarize_dlevents { 
     my ( $first, $last, $subset, @db ) = @_ ; 
     if ( $subset ne "" ) { 
-	$subset = "time >= $first && time < $last && $subset" ;
+	$subset = "time >= $first && time <= $last && $subset" ;
     } else {
-	$subset = "time >= $first && time < $last" ;
+	$subset = "time >= $first && time <= $last" ;
     }
     @db = dbopen($dbin,"r")  ;
     @dlevent = dblookup ( @db, "", "dlevent", "", "" ) ; 
@@ -113,6 +119,7 @@ sub summarize_dlevents {
 
     @dlevent = dbsort (@dlevent, "dlname",   "time", "dlevtype") if $opt_S ;
     @dlevent = dbsort (@dlevent, "dlevtype", "time", "dlname")   if $opt_E ;
+    @dlevent = dbsort (@dlevent, "dlevtype", "time", "dlname")   if $opt_C ;
 
     $dlev_cnt = 0 ;
     $last_dlname = "none" ;
@@ -165,7 +172,7 @@ sub trim {
 
 
 sub usage {
-    print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n ndays | all] [-s subset] [-v] {-S | -E} db\n"  ; 
+    print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n ndays | all] [-s subset] [-C dlname] [-v] {-S | -E} db\n"  ; 
      exit(1);
 }
 

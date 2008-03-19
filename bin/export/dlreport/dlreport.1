@@ -5,7 +5,7 @@ dlreport \- summarize dlevents in a mailable report
 
 .SH SYNOPSIS
 .nf
-dlreport [-d 'time'] [-n ndays] [-v] [-m email1,email2,...] [-s subset] {-S | -E} db
+dlreport [-d 'time'] [-n ndays] [-v] [-m email1,email2,...] [-s subset] [-C dlsta] {-S | -E} db
 .fi
 
 .SH DESCRIPTION
@@ -29,8 +29,14 @@ When specified, \fBdlreport\fP attempts to send the report to the email addresse
 specified here rather than to standard out.
 .IP "-s"
 A subset expression that must be valid for the dlevent table.
+.IP "-C dlname"
+Write a closure report for the given dlname.         
 .IP "-v"
 Verbose output.
+.IP "-S"
+Sort report based on dlname.  Either -S or -E must be chosen.
+.IP "-E"
+Sort report based on event type.  Either -S or -E must be chosen.
 .IP "db"
 Output db that must use the dlevent schema extension to css3.0 and have a dlevent
 table.
@@ -80,6 +86,15 @@ Report all dlevents after December 17, 2006 at station TA_F03A.
 .ft CW
 .nf
 dlreport -n all -v -s "dlname=='TA_F03A'" -E -d "12/17/2006" usarray_soh 
+.fi
+.ft R
+.in
+
+Gather all dlevents at station TA_P06A and report in a station closure report.
+.in 2c
+.ft CW
+.nf
+dlreport -n all -v -C TA_P06A -E dbops/usarray
 .fi
 .ft R
 .in
