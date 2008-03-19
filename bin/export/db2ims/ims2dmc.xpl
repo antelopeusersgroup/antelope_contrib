@@ -93,8 +93,10 @@ use rtmail;
         if (/^\d{4}/) {                    # get date if line begins with 4 digit number
 	    $evdate       = substr($_, 0,22);
 	    push(@evdates,$evdate);
-	    $nev++ ;
+	    $nor++ ;
             next; 
+	} elsif (/^EVENT/) {
+	    $nev++ ;
         } elsif (/IRIS FDSNNETWORKCODE/) {
 	    # this works because of the hokey format requirements
 	    $nph++ ;
@@ -116,6 +118,7 @@ use rtmail;
 			"data_end", 	$end ,
 			"time",		&strydtime($t),
 			"nev",		$nev,
+			"nor",		$nor,
 			"nph",		$nph,
 			"dir",		$dir,
 			"dfile",	$dfile,

@@ -1,6 +1,6 @@
 # css3.0 extension
 
-#Include css3.0  # uncomment to complete schema
+Include css3.0  # uncomment to complete schema
 
 Attribute nev 
         Integer (8)
@@ -10,6 +10,18 @@ Attribute nev
         Description ( "number of events" )
         Detail {
                 This attribute is the number of events 
+                reported in a bulletin.  
+        }
+        ;
+
+Attribute nor 
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "nor > 0" )
+        Description ( "number of origins" )
+        Detail {
+                This attribute is the number of origins
                 reported in a bulletin.  
         }
         ;
@@ -51,7 +63,7 @@ Attribute data_end
         ;
 
 Relation dmcbull
-	Fields ( data_start data_end time nev nph dir dfile auth lddate )
+	Fields ( data_start data_end time nev nor nph dir dfile auth lddate )
 	Primary ( data_start data_end time )
 	Description ( "Phase file sharing information" )
 	Detail {
