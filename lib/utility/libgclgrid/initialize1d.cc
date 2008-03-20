@@ -27,19 +27,16 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 	int grid_top=field.n3-1;  // index to top surface of grid
 	int igrid;
 	// Use a simple array here to interface with 1d interpolation library
-	double *grid_depths=new double[field.n3];
+	double grid_depth;
 	// To be completely correct and general we have to loop over each surface point because the top
 	// surface is not guaranteed to be at Earth's surface.  
 	for(i=0;i<field.n1;++i)
 		for(j=0;j<field.n2;++j)
 		{
-			// load up the depth values from grid in increasing depth order
-			// note the reversal
-			for(k=grid_top,kk=0;k>=0;--k,++kk) 
-				grid_depths[kk]=field.depth(i,j,k);
-			for(k=grid_top,kk=0;k>=0;--k,++kk) 
+			for(k=0;k<field.n3;++k)
 			{
-				igrid=irregular_lookup(grid_depths[kk],&(z1d[0]),n1dsize);
+				grid_depth=field.depth(i,j,k);
+				igrid=irregular_lookup(grid_depth,&(z1d[0]),n1dsize);
 				if(igrid<0)
 					// case for above top 1d grid point (surface)
 					field.val[i][j][k]=val1d[0];
@@ -48,25 +45,23 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 					// case for below bottom of 1d grid definition
 					// Note this extends the grid down using a gradient
 					field.val[i][j][k]=val1d[n1dsize-1]
-						+ grad[n1dsize-1]*(grid_depths[k]-z1d[n1dsize-1]);
+						+ grad[n1dsize-1]*(grid_depth-z1d[n1dsize-1]);
 				}
 				else
 				{
 					// normal point 
 					field.val[i][j][k]=val1d[igrid]
-						+ grad[igrid]*(grid_depths[kk]-z1d[igrid]);
+						+ grad[igrid]*(grid_depth-z1d[igrid]);
 				}
 			}
 		}
 				
-	delete [] grid_depths;
 }
 	
 	
-/*
-Overloaded version for case with 0 gradient in all "layers".  i.e. constant property
-layers.  Implemented by just creating 0 gradient and calling the above.  
-*/
+	
+// Overloaded version for case with 0 gradient in all "layers".  i.e. constant property
+// layers.  Implemented by just creating 0 gradient and calling the above.  
 void  initialize_1Dscalar(GCLscalarfield3d& field, vector<double>val1d,vector<double> z1d)
 {
 	vector<double> grad;
