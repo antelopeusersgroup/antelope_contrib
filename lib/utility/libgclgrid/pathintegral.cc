@@ -48,6 +48,8 @@ vector <double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
 	outvec.reserve(npts);
 	// push 0 to the first point 
 	outvec.push_back(0.0);
+	// This was found to alway be prudent
+	field.reset_index();
 	for( i=1,outval=0.0,outval_last=0.0;i<npts;++i)
 	{
 		double dx1,dx2,dx3;
