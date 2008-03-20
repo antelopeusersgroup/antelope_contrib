@@ -1,6 +1,6 @@
 # css3.0 extension
 
-Include css3.0  # uncomment to complete schema
+#Include css3.0  # uncomment to complete schema
 
 Attribute nev 
         Integer (8)
