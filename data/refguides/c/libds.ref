@@ -89,7 +89,7 @@ int dbmark ( Dbptr db )
 int dbcrunch ( Dbptr db )
     remove marked (all null) rows from table db
 
-int dbtruncate ( Dbptr db, int n)
+int dbtruncate ( Dbptr db, long n)
     truncate table db to first n rows
 
 int dbdestroy ( Dbptr db )
@@ -177,7 +177,7 @@ int dbfree ( Dbptr db )
 Dbptr dbbase (Dbptr db, char *table)
     returns the base table dbptr for a record of a join/subset/sort view
 
-void dbget_range ( Dbptr db, int *s, int *e )
+void dbget_range ( Dbptr db, long *s, long *e )
     get row number range from grouped view bundle pointer
 
 int dbcopy ( Dbptr dbin, Dbptr dbout, Arr *expressions )
@@ -195,7 +195,7 @@ int dbex_compile ( Dbptr db, char *s, Expression **e, int type )
     dbTIME, dbYEARDAY, or dbSTRING (forcing result type) or 0
     letting result type be dictated by expression
 
-int dbex_eval ( Dbptr db, Expression *e, int f, Dbvalue *v )
+int dbex_eval ( Dbptr db, Expression *e, int f, void *v )
     evaluate expression e for database row db.  If flag f is non-zero,
     allow expression to change field values in row.
 
