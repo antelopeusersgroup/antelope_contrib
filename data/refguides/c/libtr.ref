@@ -109,10 +109,10 @@ int trsignal ( Dbptr tr, char *params )
     generate test signal data in a trace table; params is split into an argc/argv list
 
 
-void mksignal ( char *type, float *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
+void mksignal ( char *type, Trsample *data, double time, long nsamp, double samprate, double t0, double freq, double slew, double amp )
     generate a signal of a specified type: type may be sin, cos, sqr, tri, saw, dlt, ran, stp, pkt or dif. creates floating-point numbers. 
 
-void imksignal ( char *type, int *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
+void imksignal ( char *type, int *data, double time, long nsamp, double samprate, double t0, double freq, double slew, double amp )
     generate a signal of a specified type. creates integers.
 
 <subsection Miniseed and Steim Compression>
@@ -123,7 +123,7 @@ Msd *msdnew ()
 void msdfree(Msd *msd) ;
     free miniseed configuration block
 
-void msdclose(Msd *msd)
+int msdclose(Msd *msd)
      close the file descriptor with msd
 
 int msdget ( Msd *msd, int code, void *val, ...)
@@ -154,14 +154,14 @@ MSD_SPARC_ORDER       MSD_STA
 MSD_TIME              MSD_TIME_CORRECTION   
 </example>
 
-int msd2wf ( Msd *msd, Dbptr db, int (add_wfdisc)() );
+int msd2wf ( Msd *msd, Dbptr db, int (add_wfdisc)(Dbptr, char*,char*,Wfdisc*) );
     reads through a miniseed volume with msdnxt(3), calls 
     add_wfdisc whenever a new data segment is found
 
 int msdnxt ( Msd *msd );
     read header of next input record
 
-int msdrec ( Msd *msd, int rec );
+int msdrec ( Msd *msd, long rec );
     read header of input record #rec
 
 int dmsd(FILE *file, Msd *msd, int verbose)
@@ -170,16 +170,16 @@ int dmsd(FILE *file, Msd *msd, int verbose)
 void msdpackhdr(Msd *msd, unsigned char *record)
     create a miniseed header in record using info from msd
 
-int umsd ( Msd *msd, int **data, int *npts );
+int umsd ( Msd *msd, int **data, long *npts );
     unpack the msd data record, returning the samples 
 
-int cmsd ( Msd *msd, int (*save_record)(Msd *msd, int n0, int n1), int *data, int npts );
+int cmsd ( Msd *msd, int (*save_record)(Msd*, long, long), int *data, long npts );
     compress integer data into miniseed
 
-int ustc ( Msd * msd, int **data, int *npts );
+int ustc ( Msd * msd, int **data, long *npts );
     uncompresses a single Steim level 1 or level 2 miniseed record
 
-int cstc ( Msd * msd, int (*save_record) (), int *data, int npts );
+int cstc ( Msd * msd, int (*save_record)(Msd*, long, long), int *data, long npts );
     compresses the npts input sample data into a miniseed
     record that is accumulated inside the msd struct, and written
     by save_record when full. npts=0 flushes msd.
@@ -264,18 +264,18 @@ int trintegral ( Dbptr tr )
 
 <subsection Utilities>
 <cdeclarations>
-int trclip ( double time, double samprate, long nsamp, double from, double until, long *pt0, long *npts, double *t0, double *t1 )
+long trclip ( double time, double samprate, long nsamp, double from, double until, long *pt0, long *npts, double *t0, double *t1 )
     find sample range corresponding to time range
 
 
-int trsplit ( Dbptr tr, int (*fill) (), int (*findbad) () )
+int trsplit ( Dbptr tr, int (*fill)(Dbptr*, Trsample*, long*, long*, long*), int (*findbad)(Trsample *, long, char*, Tbl*) )
     break up waveform records, eliminating marked missing data
 
-int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, long *i0, long *i1, long *imaxp), int (*resample)() )
+int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, long *i0, long *i1, long *imaxp), int (*resample)(Dbptr*, Trsample*, Trsample*, long, Dbptr*, Trsample*, long*, double*, double*) )
     splice together any data segments which fit together, eliminating overlapping portions. 
     don't splice sections with different calibs together if factor_calib is 0.
 
-int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, long *i0, long *i1, long *imaxp), int (*resample)() )
+int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, long *i0, long *i1, long *imaxp), int (*resample)(Dbptr*, Trsample*, Trsample*, long, Dbptr*, Trsample*, long*, double*, double*) )
     splice together any data segments which fit together, eliminating overlapping portions. 
     splice sections with different calibs together, multiplying later values by the ratio of calibs.
 

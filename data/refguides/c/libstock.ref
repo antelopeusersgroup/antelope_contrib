@@ -65,7 +65,7 @@ int pfget_boolean ( Pf *pf, char *name )
 double pfget_double ( Pf *pf, char *name )
     return double value for name from pf
 
-int pfget_int ( Pf *pf, char *name )
+long pfget_int ( Pf *pf, char *name )
     return integer value for name from pf
 
 char *pfget_string ( Pf *pf, char *name )
@@ -90,7 +90,7 @@ Tbl *pfget_tbl ( Pf *pf, char *name )
 long pfmaxtbl ( Pf *list )
     return the number of elements in the pf list
 
-void pfput ( Pf *pf, char *name, char *value, int t )
+void pfput ( Pf *pf, char *name, void *value, int t )
     put a value (of type t) into pf under name
 
 int pfset ( Pf *pf, char *name, char *value )
@@ -133,10 +133,10 @@ Arr *newarr ( int (*cmp)(char *, char *) )
     create a new associative array with string compare routine cmp;
     if cmp=0, use strcmp().
 
-Arr *duparr(Arr *arr, void *(*adup)())
+Arr *duparr(Arr *arr, void *(*adup)(void *))
     return duplicate (clone) of the array arr using the adup routine to duplicate individual values.
 
-int freearr ( Arr *arr, void (*afree) () )
+int freearr ( Arr *arr, void (*afree)(void *) )
     free array arr, calling afree on each value of the array
 
 void *setarr ( Arr *arr, char *key, void *val )
@@ -171,49 +171,49 @@ Tbl *greparr ( char *re, Arr *arr )
 Tbl *newtbl ( long n )
     return a new list with n elements
 
-Tbl *inittbl ( long left, long right, int direct, char *null, int sz )
+Tbl *inittbl ( long left, long right, int direct, void *null, int sz )
     return a new direct list with specified null value and elements of sz bytes
 
-void freetbl ( Tbl *tbl, void (*tfree) () )
+void freetbl ( Tbl *tbl, void (*tfree)(void *) )
     free memory used by list tbl, calling tfree on each element
 
 long maxtbl ( Tbl *tbl )
     return number of elements in list tbl
 
-Tbl *duptbl(Tbl *tbl, void *(*tdup)())
+Tbl *duptbl(Tbl *tbl, void *(*tdup)(void *))
     return duplicate (clone) of the list tbl using the tdup routine to duplicate individual elements.
 
-void clrtbl ( Tbl *tbl, void (*tfree) () )
+void clrtbl ( Tbl *tbl, void (*tfree)(void *) )
     empty an existing list tbl, calling tfree on each element
 
-void trunctbl ( Tbl *tbl, long last, void (*tfree) () )
+void trunctbl ( Tbl *tbl, long last, void (*tfree)(void *) )
     shorten a list tbl to contain only last elements, calling tfree on other elements 
 
-int settbl ( Tbl *tbl, long index, char *value )
+long settbl ( Tbl *tbl, long index, void *value )
     set element #index of list tbl to value
 
-char *gettbl ( Tbl *tbl, long index )
+void *gettbl ( Tbl *tbl, long index )
     return value for element #index of list tbl
 
-long instbl ( Tbl *tbl, long index, char *value )
+long instbl ( Tbl *tbl, long index, void *value )
     insert element value at position index of list tbl, shifting other element to the right
 
-char *deltbl ( Tbl *tbl, long index )
+void *deltbl ( Tbl *tbl, long index )
     delete element #index from list tbl, returning the deleted element
 
-char *poptbl ( Tbl *tbl )
+void *poptbl ( Tbl *tbl )
     remove last element from list tbl, returning that element 
 
-char *shifttbl ( Tbl *tbl )
+void *shifttbl ( Tbl *tbl )
     remove first element from tbl, returning that element 
 
-long pushtbl ( Tbl *tbl, char *value )
+long pushtbl ( Tbl *tbl, void *value )
     append an element value to the end of the list tbl
 
-long unshifttbl ( Tbl *tbl, char *value )
+long unshifttbl ( Tbl *tbl, void *value )
     insert an element value at the front of the list tbl
 
-int filetbl ( char *name, char *id, int n, void *null, int sz, Tbl **tbl )
+int filetbl ( char *name, char *id, long n, void *null, int sz, Tbl **tbl )
     read or create a list in file name with n elements of sz bytes, returning the tbl
 
 Tbl *readtbl ( char *name, char **id, int rw )
@@ -228,18 +228,18 @@ Tbl *greptbl ( char *re, Tbl *tbl )
 Tbl *tblgrep ( Tbl *tbl, char *s )
     considering each element of list tbl as a regular expression, return a new list of elements which match string s
 
-void sorttbl ( Tbl *tbl, int (*cmp) (), void *pvt )
+void sorttbl ( Tbl *tbl, int (*cmp)(char *, char *, void *), void *pvt )
     sort a list tbl using the comparison function cmp
 
-long searchtbl ( char *key, Tbl *tbl, int (*cmp) (), void *pvt, long *ns, long *ne )
+long searchtbl ( char *key, Tbl *tbl, int (*cmp)(char*, char*, void*), void *pvt, long *ns, long *ne )
     search a sorted list tbl for key using a binary search and comparison function cmp; return count
     and range ns <= i <= ne of matches
 
-int applytbl ( Tbl *tbl, int (*f) (), void *pvt )
+int applytbl ( Tbl *tbl, int (*f)(void*, void*), void *pvt )
     apply function f to each elements of list tbl
 
 Tbl *strtbl ( char *s1, ...)
-    create a new list from a variable argument list of strings, terminated with zero
+    create a new list from a variable argument list of strings, terminated with NULL
 
 char *jointbl ( Tbl *tbl, char *s )
     return a new string containing all elements of list tbl, separated by string s.
@@ -266,22 +266,22 @@ void freemorphtbl ( Morphtbl *map )
 
 <subsection Sorted Lists>
 <cdeclarations>
-Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )
+Stbl *newstbl (int (*cmp)(void *a, void *b))
     create a new sorted list
 
-char *addstbl ( Stbl *stbl, char *key )
+void *addstbl (Stbl *stbl, void *key )
     add an element key to sorted list stbl
 
-void *delstbl ( Stbl *stbl, char *key )
+void *delstbl ( Stbl *stbl, void *key )
     delete element key from sorted list stbl
 
-int freestbl ( Stbl *stbl, int (*sfree) () )
+int freestbl ( Stbl *stbl, void (*sfree)(void *) )
     free sorted list stbl, calling sfree for each element
 
-char *getstbl ( Stbl *stbl, long i )
+void *getstbl ( Stbl *stbl, long i )
     return i'th element from sorted list stbl
 
-char *tststbl ( Stbl *stbl, char *key )
+void *tststbl ( Stbl *stbl, void *key )
     test if element corresponding to key exists in sorted list stbl
 
 long maxstbl ( Stbl *stbl )
@@ -290,7 +290,7 @@ long maxstbl ( Stbl *stbl )
 Tbl *tblstbl ( Stbl *stbl )
     return list of all elements in a sorted list (should be freed with freetbl(tbl,0))
 
-int applystbl ( Stbl *stbl, int (*f) (), void *pvt )
+int applystbl ( Stbl *stbl, int (*f)(void*, void*), void *pvt )
     call function f for each element of sorted list stbl
 
 <subsection Id Maps>
@@ -316,16 +316,16 @@ Bitvector *bitnew ( )
 void bitfree ( Bitvector *b )
     free a bit vector
 
-int bitclr ( Bitvector *b, int index )
+int bitclr ( Bitvector *b, long index )
     clear bit index of bit vector b
 
-int bitset ( Bitvector *b, int index )
+int bitset ( Bitvector *b, long index )
     set bit index of bit vector b
 
-int bittst ( Bitvector *b, int index )
+int bittst ( Bitvector *b, long index )
     test bit index of bit vector b
 
-int bitmax ( Bitvector *b )
+long bitmax ( Bitvector *b )
     return current allocated size of b
 
 Bitvector *bitnot ( Bitvector *b )
@@ -536,7 +536,7 @@ int cleanpath ( char *path, int flags, char *new )
     remove unnecessary '/', '..', and '.' strings from path, returning the result
     in new; if flags is 1, resolve intermediate symbolic links 
 
-char *concatpaths ( char *seg1, *seg2, ... 0 )
+char *concatpaths ( char *seg1, *seg2, ...)
     concatenate path segments seg1, seg2, ..., return the result in a new string
 
 int fspath ( char *path, char *host, char *filesystem )
@@ -644,7 +644,7 @@ private char *newcs ( char *fs, int n )
 void strtrim ( char *s )
     trim leading and trailing whitespace from string s
 
-char *intactline(FILE *file, char **aline, int *size)
+char *intactline(FILE *file, char **aline, long *size)
     read entire line from file into resizable buffer aline with current size
 
 void chomp ( char *s ) 
@@ -679,7 +679,7 @@ int strcontains ( char *s, char *pattern, Hook **hook, long *start, long *nchars
     return 1 if string s contains the regular expression pattern; the
     index and number of matching chars nchars are returned.
 
-Tbl *split ( char *s, char c )
+Tbl *split ( char *s, int c )
     return list of fields of s which are delimited by the char c
 
 void sncopy ( char *dst, char *src, long n )
@@ -691,16 +691,16 @@ void szcopy ( char *dst, char *src, long n )
 private int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad )
     copy a string, truncating or padding as necessary
 
-char *strconcat(char *s, ..., 0)
-    return the result of concatenating all the input strings 
+char *strconcat(char *s, ...)
+    return the result of concatenating all the input strings (terminate list with NULL)
 
-char *strjoin(int c, char *s, ..., 0)
-    return the result of concatenating all the input strings separated by c
+char *strjoin(int c, char *s, ... )
+    return the result of concatenating all the input strings separated by c (terminate list with NULL)
 
-int pushstrc(void **sbuf, int c )
-int pushstrn(void **sbuf, char *s, long n)
-void pushstr(void **sbuf, char *s)
-    add the string s (or char c) to the string buffer sbuf, creating sbuf if *sbuf == 0
+long pushstrc(void **sbuf, int c )
+long pushstrn(void **sbuf, char *s, long n)
+long pushstr(void **sbuf, char *s)
+    add the string s (or char c) to the string buffer sbuf, creating sbuf if *sbuf == 0, returning new length
 
 char *popstr(void **sbuf, int sfree)
     retrieve the entire string from sbuf, freeing sbuf if sfree != 0
@@ -710,19 +710,19 @@ char *strdbl(double x, char *buf)
 
 <subsection Sorting and Searching>
 <cdeclarations>
-void isort ( char *a, long n, int size, int (*cmp)(), void *pvt )
+void isort ( char *a, long n, int size, int (*cmp)(char*, char*, void*), void *pvt )
     sort list a of n elements each size bytes using the comparison function cmp and
     an insertion sort implementation
 
-void quicksort ( char *a, long n, int size, int (*cmp)(), void *pvt )
+void quicksort ( char *a, long n, int size, int (*cmp)(char*, char*, void*), void *pvt )
     sort list a of n elements each size bytes using the comparison function cmp and
     a quick sort implementation
 
-void shellsort ( char *a, long n, int size, int (*cmp)(), void *pvt )
+void shellsort ( char *a, long n, int size, int (*cmp)(char*, char*, void*), void *pvt )
     sort list a of n elements each size bytes using the comparison function cmp and
     a shell sort implementation
 
-long ssearch ( char *key, int keysize, char *index, long nkeys, int unique, int (*cmp)(), void *pvt, long *ns, long *ne )
+long ssearch ( char *key, int keysize, char *index, long nkeys, int unique, int (*cmp)(char*, char*, void*), void *pvt, long *ns, long *ne )
     search sorted index for key with binary search, where keys are size bytes and comparison function cmp. 
     return number of matches and the index range ns <= i <= ne of matches.  unique indicates index has no duplicate entries
 
@@ -775,7 +775,7 @@ private void Hexdump ( FILE *file, long base, void *mem, int n )
 void hexdump ( FILE *file, void *mem, int n )
     write a hex and ascii dump of n bytes of buffer mem 
 
-char *hexdump_string ( int base, void *mem, int n )
+char *hexdump_string ( long base, void *mem, int n )
     return string containing hex dump of buffer mem, 
     labelling the address of mem as base.
 
@@ -788,7 +788,7 @@ void asciidump ( FILE *file, char *mem, int n )
 int read_asciidump ( FILE *file, char *mem, int n )
     read at most n bytes of a ascii dump from file into mem
 
-void *nomem ( char *mem, int n )
+void *nomem ( void *mem, int n )
     returns first address in range mem to mem+n that is invalid, 0 otherwise (non-functional in Linux)
 
 int hex2int ( char c )
@@ -800,7 +800,7 @@ int printable ( char *mem, int l )
 void printable_string ( char *buf, int p, char *mem, int n )
     copies n bytes from mem to p-byte buf, replacing unprintable chars with hex
 
-int hex2mem ( char *hex, void *vmem );
+long hex2mem ( char *hex, void *vmem );
     convert hexadecimal character string hex into binary in vmem
 
 void mem2hex ( void *vmem, int n, char *s );
@@ -851,14 +851,14 @@ Type codes
 
 <cdeclarations>
 
-char *align_double ( int i )
-    align an address to a multiple of double
+char *align_double ( char *a )
+    align an address a to a multiple of double
 
-char *align_int ( int i )
-    align an address to a multiple of int
+char *align_long ( char *a )
+    align an address a to a multiple of long
 
-char *align_long ( long i )
-    align an address to a multiple of long
+char *align_int ( char *a )
+    align an address a to a multiple of int
 
 <subsection Compression and Checksums>
 <cdeclarations>
@@ -877,11 +877,11 @@ int ucanada ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
     uncompress "Canadian Compression"  buffer cmp of ncmp bytes, 
     result is *nuc integers in buffer *uc of dynamic size *ucsz.
 
-int cm6 ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
+int cm6 ( int *uc, int nuc, char **cmp, long *ncmp, long *cmpsz )
     compress nuc integers from uc to plain ascii "GSE AutoDRM CM6" format,
     result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
 
-long um6 ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
+long um6 ( char *cmp, long ncmp, int **uc, long *nuc, long *ucsz )
     uncompress plain ascii "GSE AutoDRM CM6" format buffer cmp of ncmp bytes, 
     result is *nuc integers in buffer *uc of dynamic size *ucsz.
 
@@ -983,7 +983,7 @@ int my_os(char *name)
 int my_username(char *name)
     return the login id 
 
-int ip2name(long addr, char *name)
+int ip2name(int addr, char *name)
     return name corresponding to addr
 
 int name2ip(char *name, struct in_addr *addr, char *ipstr)
@@ -1063,14 +1063,14 @@ deprecated void setmapcf ( char *fn )
 int bury ( )
     save state file, specified by exhume and resurrect calls
 
-int exhume ( char *nm, int *stop, int sec, void (*f)() )
-    recover state file nm, and set up to save new copy.  set up interrupt
-    handlers to set flag stop and timer.  If timer
+int exhume ( char *nm, int *stop, int sec, void (*f)(Pf *) )
+    recover state file nm, and set up to save new copy. set up interrupt
+    handlers to set flag stop and timer. If timer
     expires sec seconds later, calls bury and exits.
 
-int resurrect ( char *name, void *value, int type )
+int resurrect ( char *name, Relic value, Relic_type type )
     recover old value for name from state file, set up to save on later
-    calls to bury.  type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
+    calls to bury. type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
 
 <subsection Buffered Network Stream I/O>
 <cdeclarations>
@@ -1093,10 +1093,10 @@ int bnsget ( Bns *bns, void *data, int t, long n )
 int bnsgetc(Bns *bns, void *data, long mx, int c)
      search for first char c in input, returning up to mx chars including c
 
-int bnsin(Bns *bns)
+long bnsin(Bns *bns)
      return count of chars gotten since previous bnsin call
 
-int bnsout(Bns *bns)
+long bnsout(Bns *bns)
      return count of chars written since previous bnsout call
 
 char *bnsid(Bns *bns, char *id)
@@ -1133,7 +1133,7 @@ int bnserr ( Bns *bns )
 int bnserrno ( Bns *bns )
     return any system errno recorded by bns after read or write
 
-long bns2buf ( Bns *bns, char *buf, int maxbuf )
+long bns2buf ( Bns *bns, char *buf, long maxbuf )
     copy bns buffered data elsewhere
 
 int buf2bns ( Bns *bns, char *buf, long nbytes )
@@ -1165,7 +1165,7 @@ void *usermethod ( char *method )
 int verbose_exists ()
     return 1 if file "verbose" exists, 0 otherwise
 
-Hook *new_hook ( void (*hookfree)() )
+Hook *new_hook ( void (*hookfree)(void *) )
     create a standard structure which contains a pointer to a free routine and
     a (void *) pointer
 
@@ -1188,7 +1188,7 @@ deprecated Signal_info *signal_byname ( char *name )
 deprecated Signal_info *signal_bysig ( int sig )
     translate a signal code into name and description
 
-char *memdup(void *a, long n)
+void *memdup(void *a, long n)
     return pointer to copy of n bytes of memory at address a
 
 int xlatname ( char *name, Xlat *xlat, int nxlat )

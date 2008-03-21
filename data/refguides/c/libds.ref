@@ -50,7 +50,7 @@ long dbadd_remark ( Dbptr db, char *r )
 long dbaddnull ( Dbptr db )
     add null row to table db
 
-long dbaddv ( Dbptr db, char *t,  char *f1, v1, ... 0 )
+long dbaddv ( Dbptr db, char *t,  char *f1, v1, ... NULL )
     add new row to table db/t, with values v1,...  for
     corresponding fields f1, ...  ; terminate list with zero.  return
     record number of new row (or existing matching row), 
@@ -59,9 +59,9 @@ long dbaddv ( Dbptr db, char *t,  char *f1, v1, ... 0 )
 int dbget ( Dbptr db, char *s )
     get row (or field or whole table) from database into s
 
-int dbgetv ( Dbptr db, char *t, char *f1, &v1, ... 0 )
+int dbgetv ( Dbptr db, char *t, char *f1, &v1, ... NULL )
     read values from row db/t for fields f1, ..., return corresponding
-    values in v1, ...; terminate list with 0.  return -1 if
+    values in v1, ...; terminate list with NULL.  return -1 if
     problem occurs.
 
 int dbget_remark ( Dbptr db, char **remark )
@@ -70,7 +70,7 @@ int dbget_remark ( Dbptr db, char **remark )
 int dbput ( Dbptr db, char *s )
     put row (or field or whole table) from s into database/table/field/row db
 
-int dbputv ( Dbptr db, char *t, char *f1, v1, ... 0)
+int dbputv ( Dbptr db, char *t, char *f1, v1, ... NULL)
     write values v1, ... to corresponding fields f1, ... in database row db.
     terminate list with zero.
 
@@ -131,7 +131,7 @@ Dbptr dbsort ( Dbptr db, Tbl *t, int f, char *name )
     sort uniquely if f & dbSORT_UNIQUE is true; reverse sort order if
     f & dbSORT_REVERSE is true.
 
-Dbptr dbgroup ( Dbptr db, Tbl *fields, char *name, int type )
+Dbptr dbgroup ( Dbptr db, Tbl *fields, char *name, long type )
     return view in which each row references groups of 1 or more 
     adjacent rows of input view db, where all fields in list 
     for each group are identical.
@@ -224,7 +224,7 @@ int dbfilename ( Dbptr db, char *filename )
 
 <subsection Managing Ancillary Information>
 <cdeclarations>
-int dbquery ( Dbptr db, int code, Dbvalue *value )
+int dbquery ( Dbptr db, int code, void *value )
     return variety of information for database pointer db (see Datascope Constants)
 
 Tbl * dbtables ( Dbptr db, char *f)

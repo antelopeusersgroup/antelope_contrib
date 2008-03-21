@@ -7,7 +7,6 @@
 <include libresponse.ref>
 <include liborb.ref>
 <include libPkt.ref>
-<include libpforbstat.ref>
 <include libxtra.ref>
 <include libbrttpkt.ref>
 <include libbrttutil.ref>
