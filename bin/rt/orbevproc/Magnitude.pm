@@ -266,7 +266,7 @@ sub process_channel {
 					$self->{stations}{$sta}{signal_tend} ) ;
 		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
 		if ($nbad != 0 && ! $override ) {
-			addlog ( $self, 3, "%s: %s: Leaving process_channel because signal not ready", $sta, $chan ) ;
+			addlog ( $self, 3, "%s: %s: Leaving process_channel because signal not ready (nbad = %d)", $sta, $chan, $nbad ) ;
 			return makereturn ( $self, "ok" ) ; 
 		}
 		$self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
