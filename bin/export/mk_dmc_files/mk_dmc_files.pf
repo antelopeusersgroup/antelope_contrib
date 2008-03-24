@@ -1,7 +1,10 @@
-vnd_dir			vnd 
-dataless_dir		dataless
+
+vnd_dir		vnd			# year based directories will be created under here
+
+dataless_dir	dataless		# station or year based directories will be created under here
 
 # comment must be a single line less than 180 characters
+
 default_comment	&Literal{
 Metadata change
 }

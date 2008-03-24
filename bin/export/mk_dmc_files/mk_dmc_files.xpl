@@ -51,6 +51,7 @@ if ($opt_p) {
 
 if ($opt_s) {
    $sta = $opt_s ;
+   elog_die("Can't use -s with -V\n") if $opt_V ;
 }
 
 if ($opt_V) {
@@ -61,17 +62,28 @@ if ($opt_v) {
    $opt_v = "-v";
 }
 
+if ( (!$opt_D && !$opt_V) || ( $opt_D && $opt_V) ) {
+   elog_die("Must specify either -D or -V vnet. \n") ;
+} 
+
 &get_pf ;
 
+if ($opt_s) {
+   $DLdir = $DLdir . "/" . $sta  ;	# this forces single station dataless into a station directory
+} else {
+   $DLdir = $DLdir . "/" . $year ;	# this forces combined dataless into a yearly directory
+   $VNDdir = $VNDdir . "/" . $year ;	# this forces VND into a yearly directory
+}
+
+#
 # override defaults from pf file with command line choices
+# No year or station based directories will be used
+#
 
 if ($opt_d) { 
     $VNDdir	=  $opt_d ; 
     $DLdir	=  $opt_d ; 
 }
-#} else {
-#    $dir = "Dataless" ;
-#} 
 
 if ( $opt_V ) {
    $dir = $VNDdir ;
@@ -86,10 +98,6 @@ if ( $opt_D ) {
       mkpath "$dir" ;
    }
 }
-
-if ( (!$opt_D && !$opt_V) || ( $opt_D && $opt_V) ) {
-   elog_die("Must specify either -D or -V vnet. \n") ;
-} 
 
 if ($opt_N) {
    $net = $opt_N ;
@@ -167,6 +175,7 @@ if ($opt_z) {
 } 
 
 # send or don't send dataless via orbxfer2
+
 if ($opt_o) {
   $orb = $opt_o ;
   $xfer = "orbxfer2 $opt_v $dir/$filename $orb";
@@ -185,7 +194,7 @@ $auth        = "mdf:".getpwuid($<) ;
 
 push(@dmcfiles_record,	"time", $now,
 			"comment", $comment,
-			"dir", $dir,
+			"dir", abspath($dir),
 			"dfile", $filename,
 			"orb", $orb,
 			"auth", $auth,
@@ -217,6 +226,7 @@ sub get_pf {
 
   $VNDdir		= pfget($pf, 'vnd_dir');
   $DLdir		= pfget($pf, 'dataless_dir');
+
   if (!$comment) {	# only take default if comment is undef
       $comment	= pfget($pf, 'default_comment') ;
       chomp($comment);

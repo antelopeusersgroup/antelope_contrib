@@ -40,10 +40,11 @@ Use gzip to compress the output dataless SEED volume.
 Parameter file to use.  The default parameter file name is \fBmk_dmc_files\fP.
 .IP "-d output_dir"
 Output directory for dataless SEED volume or vnd file.  This overrides the default
-directory, \fIdataless_dir\fP or \fIvnd_dir\fP, in the parameter file.
+directory, \fIdataless_dir\fP or \fIvnd_dir\fP, in the parameter file and no year
+or station directory will be created.
 .IP "-N net"
 Network code to use in the output dataless SEED name.  This overrides the default
-net code from the parameter file.  Irrelevant if -V option is selected.
+net code from the site.pf parameter file.  Irrelevant if -V option is selected.
 .IP "-s sta"
 Generate a dataless seed for this single station.  Irrelevant if -V option is selected.
 .IP "-f filename"
@@ -55,7 +56,13 @@ for a VND will be: \fIVNET_YYYYMMDD.csv\fP where VNET is replaced with the value
 to -V.  If the -z option is used the output file name will have .gz appended to it.  See 
 BUGS AND CAVEATS below if using -z with the -o option.
 .IP "-o orb"
-Output orb for \fBorbxfer2\fP(1).  See BUGS AND CAVEATS below.
+Output orb for \fBorbxfer2\fP(1).  Files will be placed into the orbxfer2 server orb 
+using the \fIvnd_dir\fP and \fIdataless_dir\fP from the pf file.  Because of this, 
+you might not want to use a path containing the filesystem root.  Anyone on the receiving
+side of orbxfer2 that is attempting to write the files out using the same directory 
+structure will likely have problems with an absolute path that starts at the 
+root, /, level.  However, the absolute path is placed into the dir field in the output
+dmcfiles table.  Also see BUGS AND CAVEATS below.
 .IP "-V vnet"
 Generate a Virutal Network Definition (VND) file using the specified virtual network
 code.  These codes are created and maintained by the DMC.  Example vnets include: _US-TA, 
@@ -87,8 +94,11 @@ Below is the default \fBmk_dmc_files\fP parameter file.
 
 # mk_dmc_files.pf
 
-vnd_dir			vnd 
-dataless_dir		dataless
+vnd_dir         vnd                     # year based directories will be created under here
+
+dataless_dir    dataless                # station or year based directories will be created under here
+
+# comment must be a single line less than 180 characters
 
 default_comment	&Literal{
 Metadata change
@@ -104,7 +114,10 @@ This is a very basic parameter file that specifies default output
 directories and a basic comment.
 
 .IP \fIvnc_dir\fP
-Output directory where VND files will be saved.
+Output directory where VND files will be saved.  If using the \fBorbxfer2\fP
+-o option, this will be the base directory that the receiver will catch
+the files in.  Do not use a directory starting at the root level if
+the files will be transferred with \fBorbxfer2\fP.
 .IP \fIdataless_dir\fP
 Output directory where dataless files will be saved.
 .IP \fIdefault_comment\fP
@@ -162,6 +175,10 @@ actually be uncompressed before placement in the orb.  The receiver would then
 get "myfile.gz" out of the orb, but it would be an ucompressed file.  Until this
 bug is resolved in the next Antelope release, do not use the -z and -o options
 together.
+.LP
+If there are permissions problems with the output orb used with -o, the transfer
+of the file to the orb may fail silently.  Review the orbserver logs to see if
+there is a problem.
 .LP
 See the current SEED manual for a full description of a dataless SEED volume.
 .LP
