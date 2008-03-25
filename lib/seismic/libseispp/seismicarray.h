@@ -359,10 +359,9 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 
   This function tries to catch any errors found in processing with
  the when in doubt throw it out attitude.  i.e. the result can be
- expected to frequently be smaller than then input.
+ expected to frequently be smaller than then input.  Problems will
+generally result in a spew of errors to stderr.
 
-\exception MetadataError if any member of the input data does not 
-   have the sta or chan attribute defined.
 \param raw contains the base data.  It is assumed to be in an
   absolute time reference frame.  The metadata attributes  sta 
   and chan must be defined or this function will throw a MetadataError
@@ -385,6 +384,9 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
   if true resample results will be truncated on the left and right
   to eliminate edge transients in using the FIR filters used for 
   decimation.
+
+\exception throws a SeisppError if the resulting gather has no data
+after resampling and windowing.
 **/
 TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 	StationTime& times,
@@ -393,6 +395,59 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 				double target_dt,
 					ResamplingDefinitions& rsdef,
 						bool trim);
+/*! \brief Aligns data by a metadata field time and resamples to a common 
+sample interval.
+
+This is a core, general method to return a gather that can be equivalenced
+to a matrix.  That is, result has all data with common sample rate and
+common time base.  i.e. dt, dt, and t0 are the same for all members of 
+the output gather.  The input, in contrast, can be arbitrary irregular 
+provided the algorithm can cut out and resample something that is 
+rational.  
+ 
+The algorithm usd is a cascade of two core algorithms in the SEISPP
+library.  First, if the input trace does not have the same 
+sample rate as target_dt the resample function is called on the entire
+input trace to produce data sampled at target_dt.  The user should
+be aware of this as for maximum efficiency the input should have just
+enough padding to avoid transients from decimation filter edge effects.
+Second, the resample data are changed from absolute to relative time
+with time 0 of the new data defined by the time defined in a 
+Metadata attribute fetched with key align_mdkey.  If align_mdkey 
+is not defined for a given input trace this function will complain 
+with a message to stderr and that data will be dropped from the 
+output returned by this function.  The user should be aware that this
+algorithm is actually very generic and can be applied to a wide
+range of algorithms.  For example, it can be used for common source
+gathers aligned by some predicted arrival time, common source gathers
+aligned on measured arrival times, common receiver gathers with 
+data aligned by measured arrival time, or CMP gathers aligned on
+some arbitrary time base.  
+
+\param raw contains the base data.  It is assumed to be in an
+  absolute time reference frame.  
+\param align_mdkey is a string key that MUST reference a real valued
+  Metadata attribute that is to be used to define relative time on the 
+  output.  That is, t0 of the output is result_twin.start with 0 defined
+  relative to the time extracted from this key.
+\param result_twin is the time window definition for times
+  relative to the times contained in the "times" StationTime object.
+\param target_dt is the target sample rate for the output data.  All
+  data returned will be sampled at this rate.
+\param rsdef is the ResamplingDefinitions object passed to the
+  resample function used to convert data to a common sample rate.
+  see ResampleTimeSeries page or resample(3) for details.
+\param trim is a boolean that controls edge transients in resampling.
+  if true resample results will be truncated on the left and right
+  to eliminate edge transients in using the FIR filters used for 
+  decimation.
+*/
+TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
+	string align_mdkey,
+		TimeWindow result_twin,
+			double target_dt,
+				ResamplingDefinitions& rsdef,
+					bool trim);
 
 /*! \brief Read a block of three component data in a fixed time window.
 

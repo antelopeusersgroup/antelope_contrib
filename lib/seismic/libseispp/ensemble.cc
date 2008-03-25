@@ -409,9 +409,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 					throw SeisppError(base_error_message
 					 + string(" dbgetv error reading trace table coordinate attributes"));
 				}
-				trattributes.put("lat",lat);
-				trattributes.put("lon",lon);
-				trattributes.put("elev",elev);
+				trattributes.put("sta_lat",lat);
+				trattributes.put("sta_lon",lon);
+				trattributes.put("sta_elev",elev);
 				trattributes.put("dnorth",dnorth);
 				trattributes.put("deast",deast);
 				trattributes.put("refsta",refsta);
@@ -539,9 +539,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				}
 			}
 
-			seis->live=true;
 			seis->ns=seis->s.size();
 			seis->tref=absolute;
+			if((seis->ns)>0)seis->live=true;
 			//
 			// Push these into the ensemble
 			//
@@ -754,12 +754,14 @@ different types of seismic data objects.  These are used in
 a generic algorithm defined in seispp.h */
 double PeakAmplitude(TimeSeries *p)
 {
+	if(!(p->live) || ((p->ns)<=0)) return(0.0);
 	vector<double>::iterator amp;
 	amp=max_element(p->s.begin(),p->s.end());
 	return(*amp);
 }
 double PeakAmplitude(ThreeComponentSeismogram *p)
 {
+	if(!(p->live) || ((p->ns)<=0)) return(0.0);
 	vector<double> ampvec;
 	ampvec.resize(p->u.columns());
 	// This loop could use p->ns but this more more bulletproof.
@@ -783,6 +785,7 @@ double PeakAmplitude(ThreeComponentSeismogram *p)
 }
 double PeakAmplitude(ComplexTimeSeries *p)
 {
+	if(!(p->live) || ((p->ns)<=0)) return(0.0);
 	vector<double> ampvec;
 	ampvec.resize(p->s.size());
 	double ampval;
@@ -799,11 +802,13 @@ double PeakAmplitude(ComplexTimeSeries *p)
 }
 void ScaleMember(TimeSeries *p,double scale)
 {
+	if(!(p->live) || ((p->ns)<=0)) return;
 	// Use the blas dscal routine for speed
 	dscal(p->s.size(),scale,&(p->s[0]),1);	
 }
 void ScaleMember(ThreeComponentSeismogram *p,double scale)
 {
+	if(!(p->live) || ((p->ns)<=0)) return;
 	int size=p->u.columns();
 	size*=3;
 	// WARNING:  maintenance issue here.  This assumes a fixed
@@ -814,6 +819,7 @@ void ScaleMember(ThreeComponentSeismogram *p,double scale)
 }
 void ScaleMember(ComplexTimeSeries *p,double scale)
 {
+	if(!(p->live) || ((p->ns)<=0)) return;
 	// This algorithm could maybe be done with the blas cscal, but
 	// am not sure a vector<Complex> would work correctly with cscal.
 	// We'll use this stl iterator version instead and depend on 

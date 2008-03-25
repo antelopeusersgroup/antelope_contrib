@@ -65,7 +65,8 @@ void dbarrival_shift(TimeSeriesEnsemble& d)
 XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf, 
 	XcorAnalysisSetting asinitial,
 		string waveform_db_name,
-			string result_db_name) 
+			string result_db_name,
+				string queuefile) 
 			  : rdef(global_pf),am("css3.0"),analysis_setting(asinitial)
 {
 	int i, j;
@@ -78,9 +79,33 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	 		am=AttributeMap(schema);
 	
 		trace_mdl=pfget_mdlist(global_pf,"trace_mdl");
-		ensemble_mdl=pfget_mdlist(global_pf,"trace_mdl");
-	
+		ensemble_mdl=pfget_mdlist(global_pf,"ensemble_mdl");
+		string pmodestr=global_md.get_string("processing_mode");
+		if(pmodestr=="EventGathers")
+			processing_mode=EventGathers;
+		else if(pmodestr=="GenericGathers")
+			processing_mode=GenericGathers;
+		else
+			processing_mode=ContinuousDB;
+		/* New section to handle generalization of input.  Formerly just created
+		the waveform_db_handle in the simplest form.  Now we have to handle
+		the case of building a general gather through dbbuild */
 		waveform_db_handle=DatascopeHandle(waveform_db_name,true);
+		
+		switch (processing_mode)
+		{
+		case EventGathers:
+		case GenericGathers:
+			waveform_db_handle=DatascopeHandle(waveform_db_handle.db,
+				global_pf,string("dbprocess_commands"));
+			dpq=new DatascopeProcessingQueue(waveform_db_handle,queuefile);
+			break;
+		case ContinuousDB:
+			dpq=NULL;
+		}
+		time_align_key=global_md.get_string("GatherTimeAlignmentKey");
+		ttmethod=global_md.get_string("TTmethod");
+		ttmodel=global_md.get_string("TTmodel");
 		// deal with possibility that output db is the same
 		// as the input db.  This logic depends upon the 
 		// current API for Datascope in which the handle is 
@@ -197,6 +222,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		mderr.log_error();
 		throw SeisppError("XcorProcessingEngine construction failed");
 	}
+	catch (MetadataError merr)
+	{
+		merr.log_error();
+		throw SeisppError("XcorProcessingEngine construction failed");
+		
+	}
 	catch (SeisppError serr)
 	{
 		throw serr;
@@ -206,23 +237,10 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		throw SeisppError("XcorProcessingEngine constructor:  Unknown error was thrown");
 	}
 }
-//
-// It would be nice to get rid of mcc as a raw pointer here.  We should
-// either invoke a copy overhead or use a resource managing pointer shared_ptr.
-//  This is a typically dangerous use of wild pointers.
-//
 XcorProcessingEngine::~XcorProcessingEngine()
 {
 	if(mcc!=NULL) delete mcc;
-	// There is a serious problem here with destruction related to
-	// a design flaw in DatascopeHandle.  Because we need to keep
-	// several tables open in potentially different databases there
-	// is no clear way to handle the destruction.  The important thing
-	// this means is an XcorProcessingEngine should be created only
-	// once and never destroyed until the program is ready to exit.
-	// Multiple create destroys are guaranteed problems.  Should
-	// be fixed eventually, but the correct solution is in the 
-	// DatascopeHandle code itself, not here.,
+	if(dpq!=NULL) delete dpq;
 }
 /* Small helper needed below.  Looks for bad moveout flag
  and resets moveout to 0.0.  Needed to keep cross correlation
@@ -267,10 +285,10 @@ template <class T, SortOrder SO> struct less_metadata_double
 			keyword=SEISPP::moveout_keyword;
 			break;
   		case SITE_LAT:
-			keyword=string("site.lat");
+			keyword=string("sta_lat");
 			break;
 		case SITE_LON:
-			keyword=string("site.lon");
+			keyword=string("sta_lon");
 			break;
 		case PREDARR_TIME:
 			keyword=predicted_time_key;
@@ -331,10 +349,10 @@ template <class T, SortOrder SO> struct greater_metadata_double
 			keyword=SEISPP::moveout_keyword;
 			break;
   		case SITE_LAT:
-			keyword=string("site.lat");
+			keyword=string("sta_lat");
 			break;
 		case SITE_LON:
-			keyword=string("site.lon");
+			keyword=string("sta_lon");
 			break;
 		case PREDARR_TIME:
 			keyword=predicted_time_key;
@@ -667,11 +685,134 @@ TimeSeriesEnsemble XcorProcessingEngine::get_raw_data()
 {
 	return(*regular_gather);
 }
+DatabaseHandle *XcorProcessingEngine::get_db(string dbmember)
+{
+	if(dbmember=="waveformdb")
+		return(dynamic_cast<DatabaseHandle *>(&waveform_db_handle));
+	else if(dbmember=="resultdb")
+		return(dynamic_cast<DatabaseHandle *>(&result_db_handle));
+	else
+		throw SeisppError("XcorProcessingEngine::get_db:  "
+		 + string("Illegal database name=") + dbmember
+		 + string(" was requested"));
+}
+/* local function to extract a component from a 3c ensemble.  If one requests
+component as L,T, or R, hypocenter metadata just be loaded with each station's 
+data.   This is required for using this code for common receiver gathers in
+source cluster processing. */
+auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tcse,
+	string compname,string phase,string ttmethod,string ttmodel)
+{
+	int i;
+	TimeSeries *x;
+	double slat,slon,sz,stime;
+	const double vp0def(6.0),vs0def(3.5);
+	auto_ptr<TimeSeriesEnsemble> result(new
+		TimeSeriesEnsemble(dynamic_cast<Metadata&> (*tcse),
+				tcse->member.size()));
+	if(compname.find_first_of("ZNE")!=string::npos)
+	{
+	    /* Note this block is pretty much identical to similar function
+	    immediately below.  Kind of bad style, but so what. Historicaly
+	    Convert3CEnsemble was written long before this one.*/
+	    for(i=0;i<tcse->member.size();++i)
+	    {
+		if(!tcse->member[i].live) continue;
+		// First make certain we are in cardinal coordinates
+		tcse->member[i].rotate_to_standard();
+		if(compname=="E")
+			x=ExtractComponent(tcse->member[i],0);
+		else if(compname=="N")
+			x=ExtractComponent(tcse->member[i],1);
+		else
+			x=ExtractComponent(tcse->member[i],2);
+		result->member.push_back(*x);
+		delete x;
+	    }
+	}
+	else if(compname.find_first_of("TRL")!=string::npos)
+	{
+	    for(i=0;i<tcse->member.size();++i)
+            {
+		if(!tcse->member[i].live) continue;
+		double vp0,vs0;
+		double stalat,stalon,staelev;
+		try {
+			tcse->member[i].rotate_to_standard();
+		} catch (SeisppError serr)
+		{
+			serr.log_error();
+			string staname=tcse->member[i].get_string("sta");
+			cerr << "Station = "<< staname
+				<<" data deleted from ensemble"<<endl;
+			continue;
+		}
+		try {
+			vp0=tcse->member[i].get_double("vp0");
+			vs0=tcse->member[i].get_double("vs0");
+		} catch (MetadataGetError mde) {
+			vp0=vp0def;
+			vs0=vs0def;
+		}
+		try {
+			stalat=tcse->member[i].get_double("sta_lat");
+			stalon=tcse->member[i].get_double("sta_lon");
+			staelev=tcse->member[i].get_double("sta_elev");
+			// We store latitude and longitude in attributes
+			// in degrees, but we need to convert them to
+			// radians for internal use
+			stalat=rad(stalat);
+			stalon=rad(stalon);
+			slat=tcse->member[i].get_double("source_lat");
+			slon=tcse->member[i].get_double("source_lon");
+			sz=tcse->member[i].get_double("source_depth");
+			stime=tcse->member[i].get_double("source_time");
+		}
+		catch (MetadataGetError mde)
+		{
+			mde.log_error();
+			throw SeisppError(string("XcorProcessingEngine:")
+				+string("  Failure in three component processing.")
+				+string("Missing metadata invalidates these data. Check pf.") );
+			
+		}
+		Hypocenter hypo(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
+		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
+		try {
+			tcse->member[i].free_surface_transformation(u,vp0,vs0);
+		} catch (SeisppError serr)
+		{
+			serr.log_error();
+			cerr << "Using simple ray coordinates for station "
+				<< tcse->member[i].get_string("sta")
+				<<endl;
+			SphericalCoordinate sc=PMHalfspaceModel(vp0,vs0,
+				u.ux,u.uy);
+			tcse->member[i].rotate(sc);
+		}
+		if(compname=="T")
+			x=ExtractComponent(tcse->member[i],0);
+		else if(compname=="R")
+			x=ExtractComponent(tcse->member[i],1);
+		else
+			x=ExtractComponent(tcse->member[i],2);
+		result->member.push_back(*x);
+		delete x;
+	    }
+	}
+	else
+		throw SeisppError(string("XcorProcessingEngine:")
+			+ string("Don't know how to handle component name=")
+			+ compname
+			+string("\nMust be Z, N, E, L, R, or T") );
+	return result;
+}
 // Local function to extract a particular component from a 3c ensemble
 // returning a scalar time series ensemble that can be passed downstream
 // for processing by this program.  
 auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
-			string compname,Hypocenter hypo,string phase)
+			string compname,Hypocenter hypo,string phase,
+				string ttmethod,string ttmodel)
 {
 	int i;
 	TimeSeries *x;
@@ -722,9 +863,9 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			vs0=vs0def;
 		}
 		try {
-			stalat=tcse->member[i].get_double("lat");
-			stalon=tcse->member[i].get_double("lon");
-			staelev=tcse->member[i].get_double("elev");
+			stalat=tcse->member[i].get_double("sta_lat");
+			stalon=tcse->member[i].get_double("sta_lon");
+			staelev=tcse->member[i].get_double("sta_elev");
 			// We store latitude and longitude in attributes
 			// in degrees, but we need to convert them to
 			// radians for internal use
@@ -735,7 +876,8 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 		{
 			mde.log_error();
 			throw SeisppError(string("XcorProcessingEngine:")
-				+string("  Failure in three component processing"));
+				+string("  Failure in three component processing\n")
+				+string("Missing metadata invalidates these data.  Check pf") );
 			
 		}
 		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
@@ -767,84 +909,9 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			+ compname);
 	return result;
 }
-void XcorProcessingEngine::load_data(Hypocenter & h)
+/* Common code to load_data methods.  Note both call this private method.*/
+void XcorProcessingEngine::prep_gather()
 {
-    try {
-	// It is necessary to clear the contents of mcc in
-	// some situations.  In particular, in the gui dbxcor
-	// we desire sorting the data after it is read.  The
-	// sort algorithm in XcorProcessingEngine aims to sort
-	// xcor traces in the same order as data.  We need to clear
-	// it here to allow it to bypass this until mcc is created.
-	if(mcc!=NULL)
-	{
-		delete mcc;
-		mcc=NULL;
-	}
-	current_data_window=TimeWindow(h.time+raw_data_twin.start,
-		h.time+raw_data_twin.end);
-	UpdateGeometry(current_data_window);
-	// Read raw data.  Using an auto_ptr as good practice
-	// 3c mode can work for either cardinal directions or
-	// applying transformations.  In either case we use
-	// the temporary auto_ptr to hold the data read in
-	auto_ptr<TimeSeriesEnsemble> tse;
-	if(RequireThreeComponents)
-	{
-		string chan_allowed("ZNELRT");
-		if(analysis_setting.component_name
-			.find_first_of(chan_allowed,0)<0)
-		{
-			throw SeisppError(
-				string("XcorProcessingEngine::load_data:")
-				+ string(" Illegal channel code specified.")
-				+ string(" Must be Z,N,E,L,R, or T") );
-		}
-		ThreeComponentEnsemble *tcse;
-		tcse = array_get_data(
-  			   stations,
-                           h,
-			   analysis_setting.phase_for_analysis,
-                           raw_data_twin,
-                           analysis_setting.tpad,
-                           dynamic_cast<DatabaseHandle&>(waveform_db_handle),
-			   stachanmap,
-                           ensemble_mdl,
-                           trace_mdl,
-                           am);
-
-		// This specialized function could be generalized, but
-		// done in one pass here for efficiency.  Local function
-		// to this file found above
-		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CEnsemble(tcse,
-			analysis_setting.component_name,h,
-			analysis_setting.phase_for_analysis));	
-		delete tcse;
-	}
-	else
-	{
-		tse=auto_ptr<TimeSeriesEnsemble>(array_get_data(
-  			   stations,
-                           h,
-			   analysis_setting.phase_for_analysis,
-			   analysis_setting.component_name,
-                           raw_data_twin,
-                           analysis_setting.tpad,
-                           dynamic_cast<DatabaseHandle&>(waveform_db_handle),
-                           ensemble_mdl,
-                           trace_mdl,
-                           am));
-	}
-	StationTime predarr=ArrayPredictedArrivals(stations,h,
-		analysis_setting.phase_for_analysis); 
-
-	// Following not needed because regular_gather is now
-	// stored as an auto_ptr.
-	//if (regular_gather != NULL) { delete regular_gather; regular_gather=NULL;}
-	regular_gather=auto_ptr<TimeSeriesEnsemble>
-			(AssembleRegularGather(*tse,predarr,
-			analysis_setting.phase_for_analysis,
-            		analysis_setting.gather_twin,target_dt,rdef,true));
 	/* Load arrival times if requested */
 	if(load_arrivals)
 	{
@@ -889,17 +956,50 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	}
 	/* Shift traces by measured arrival times if requested.  */
 	if(load_arrivals) dbarrival_shift(*regular_gather);
+	Hypocenter h;
+	if( (processing_mode==EventGathers)
+		|| (processing_mode=ContinuousDB) )
+	{
+		double slat,slon,sz,stime;
+		try{
+		    slat=regular_gather->get_double("source_lat");
+		    slon=regular_gather->get_double("source_lon");
+		    sz=regular_gather->get_double("source_depth");
+		    stime=regular_gather->get_double("source_time");
+		    Hypocenter h(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
+		} catch (...)
+		{
+			cerr << "XcorProcessingEngine::load_data method: "
+				<< "Problems loading hypocenter data from ensemble metadata"
+				<<endl
+				<<"Setting to default.  Fix ensemble_mdl to make this error go away"
+				<<endl;
+		}
+	}
 	for(int i=0;i<regular_gather->member.size();++i)
 	{
 		double lat,lon;
+		double slat,slon,sz,stime;
 		double seaz,esaz,distance;
 		try {
-			lat=regular_gather->member[i].get_double("lat");
-			lon=regular_gather->member[i].get_double("lon");
+			lat=regular_gather->member[i].get_double("sta_lat");
+			lon=regular_gather->member[i].get_double("sta_lon");
 			/* these are loaded in degrees.  We must convert
 			them to radians */
 			lat=rad(lat);
 			lon=rad(lon);
+			/* In generic mode we have to fetch hypocenter data
+			from each trace as we can't guarantee there is one
+			source position for the whole ensemble */
+			if(processing_mode==GenericGathers)
+			{
+				slat=regular_gather->member[i].get_double("source_lat");
+				slon=regular_gather->member[i].get_double("source_lon");
+				sz=regular_gather->member[i].get_double("source_depth");
+				stime=regular_gather->member[i].get_double("source_time");
+				h=Hypocenter(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
+			}
+
 		}
 		catch(MetadataGetError mde)
 		{
@@ -971,6 +1071,185 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	xcorpeak_cutoff=xcorpeak_cutoff_default;
 	coherence_cutoff=coherence_cutoff_default;
 	stack_weight_cutoff=stack_weight_cutoff_default;
+
+}
+/* New method added to support segmented data in any type of 
+generic gather. */
+void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
+{
+    const string base_error("XcorProcessingEngine::load_data(DatabaseHandle&,ProcessingStatus):  ");
+    if( !((processing_mode==GenericGathers) || (processing_mode==EventGathers)))
+	throw SeisppError(base_error
+	  + string("Coding error.  This method not allowed for time window (ContinuousDB) processing"));
+    if(dpq==NULL)
+	throw SeisppError(base_error 
+		+ string("Coding error.  Handle to the DatascopeProcessingQueue object is not defined"));
+    if(mcc!=NULL)
+    {
+	delete mcc;
+	mcc=NULL;
+    }
+    /* This depends on a trick that is a bit dangerous.  That is, a static is initialized the first
+    time a function is called but not on later calls. */
+    static bool first_pass(true);  
+//DEBUG  test to make sure this works as I think
+if(first_pass) cerr << "load_data has set first_pass true "<<endl;
+    auto_ptr<TimeSeriesEnsemble> tse;
+    try {
+	/* First we need to deal with the queue.*/
+	if(first_pass)
+		first_pass=false;
+	else
+		dpq->mark(stat);  
+	DatascopeHandle *dsdbh=dynamic_cast<DatascopeHandle *>(&dbh);
+	dpq->set_to_current(*dsdbh);
+	if(RequireThreeComponents)
+	{
+		string chan_allowed("ZNELRT");
+		if(analysis_setting.component_name
+			.find_first_of(chan_allowed,0)<0)
+		{
+			throw SeisppError(
+				string("XcorProcessingEngine::load_data():")
+				+ string(" Illegal channel code specified.")
+				+ string(" Must be Z,N,E,L,R, or T") );
+		}
+		ThreeComponentEnsemble *tcse;
+		tcse=new ThreeComponentEnsemble(dbh,
+			trace_mdl, ensemble_mdl, am);
+		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CGenericEnsemble(tcse,
+			analysis_setting.component_name,analysis_setting.phase_for_analysis,
+			ttmethod,ttmodel) );
+		
+		delete tcse;
+	}
+	else
+	{
+		tse=auto_ptr<TimeSeriesEnsemble>
+		   (new TimeSeriesEnsemble(dbh,trace_mdl, ensemble_mdl, am));
+	}
+	string alignkey(time_align_key);
+	if( (processing_mode==EventGathers) && (time_align_key==predicted_time_key) )
+	{
+	    /* We fetch the hypocenter for this event from the ensemble metadata.  We 
+	    must throw an excpetion if the event location is not defined as we cannot
+	    continue in that situation.*/
+	    double slat,slon,sz,stime;
+	    try{
+		slat=tse->get_double("source_lat");
+		slon=tse->get_double("source_lon");
+		sz=tse->get_double("source_depth");
+		stime=tse->get_double("source_time");
+	    } catch (...){ throw;}
+
+	    Hypocenter h(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
+	    current_data_window=TimeWindow(h.time+raw_data_twin.start,
+		h.time+raw_data_twin.end);
+	    UpdateGeometry(current_data_window);
+		alignkey=predicted_time_key;
+	    StationTime predarr=ArrayPredictedArrivals(stations,h,
+		analysis_setting.phase_for_analysis); 
+	    LoadPredictedTimes(*tse,predarr,predicted_time_key,
+			analysis_setting.phase_for_analysis);
+	}
+	regular_gather=auto_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
+		alignkey,analysis_setting.gather_twin,target_dt,rdef,true));
+	this->prep_gather();
+    } catch (...) {throw;}
+}
+void XcorProcessingEngine::load_data(Hypocenter & h)
+{
+    if(processing_mode==GenericGathers)
+	throw SeisppError(string("XcorProcessingEngine::load_data:  ")
+		+ string("Coding error.  Wrong method called."));
+    try {
+	// It is necessary to clear the contents of mcc in
+	// some situations.  In particular, in the gui dbxcor
+	// we desire sorting the data after it is read.  The
+	// sort algorithm in XcorProcessingEngine aims to sort
+	// xcor traces in the same order as data.  We need to clear
+	// it here to allow it to bypass this until mcc is created.
+	if(mcc!=NULL)
+	{
+		delete mcc;
+		mcc=NULL;
+	}
+	current_data_window=TimeWindow(h.time+raw_data_twin.start,
+		h.time+raw_data_twin.end);
+	UpdateGeometry(current_data_window);
+	// Read raw data.  Using an auto_ptr as good practice
+	// 3c mode can work for either cardinal directions or
+	// applying transformations.  In either case we use
+	// the temporary auto_ptr to hold the data read in
+	auto_ptr<TimeSeriesEnsemble> tse;
+	if(RequireThreeComponents)
+	{
+		string chan_allowed("ZNELRT");
+		if(analysis_setting.component_name
+			.find_first_of(chan_allowed,0)<0)
+		{
+			throw SeisppError(
+				string("XcorProcessingEngine::load_data:")
+				+ string(" Illegal channel code specified.")
+				+ string(" Must be Z,N,E,L,R, or T") );
+		}
+		ThreeComponentEnsemble *tcse;
+		// WARNING:  maintenance issue.  If processing_mode enum is extended, this
+		// logic will not be correct.
+		if(processing_mode==EventGathers)
+		{
+		    tcse=new ThreeComponentEnsemble(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+			trace_mdl, ensemble_mdl, am);
+		}
+		else
+		{
+		    tcse = array_get_data(
+  			   stations,
+                           h,
+			   analysis_setting.phase_for_analysis,
+                           raw_data_twin,
+                           analysis_setting.tpad,
+                           dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+			   stachanmap,
+                           ensemble_mdl,
+                           trace_mdl,
+                           am);
+		}
+
+		// This specialized function could be generalized, but
+		// done in one pass here for efficiency.  Local function
+		// to this file found above
+		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CEnsemble(tcse,
+			analysis_setting.component_name,h,
+			analysis_setting.phase_for_analysis,
+			ttmethod,ttmodel));	
+		delete tcse;
+	}
+	else
+	{
+		tse=auto_ptr<TimeSeriesEnsemble>(array_get_data(
+  			   stations,
+                           h,
+			   analysis_setting.phase_for_analysis,
+			   analysis_setting.component_name,
+                           raw_data_twin,
+                           analysis_setting.tpad,
+                           dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+                           ensemble_mdl,
+                           trace_mdl,
+                           am));
+	}
+	StationTime predarr=ArrayPredictedArrivals(stations,h,
+		analysis_setting.phase_for_analysis); 
+
+	// Following not needed because regular_gather is now
+	// stored as an auto_ptr.
+	//if (regular_gather != NULL) { delete regular_gather; regular_gather=NULL;}
+	regular_gather=auto_ptr<TimeSeriesEnsemble>
+			(AssembleRegularGather(*tse,predarr,
+			analysis_setting.phase_for_analysis,
+            		analysis_setting.gather_twin,target_dt,rdef,true));
+	this->prep_gather();
     }
     catch (...) {throw;}
 }
@@ -1174,8 +1453,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    // metadata for this trace object before
 			    // we attempt to update the database
 			    double stalat,stalon;
-			    stalat=rad(trace->get_double("lat"));
-			    stalon=rad(trace->get_double("lon"));
+			    stalat=rad(trace->get_double("sta_lat"));
+			    stalon=rad(trace->get_double("sta_lon"));
 			    double delta,seaz,esaz;
                             delta=h.distance(stalat,stalon);
                             seaz=h.seaz(stalat,stalon);

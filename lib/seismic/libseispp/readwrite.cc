@@ -211,30 +211,54 @@ void save_metadata_for_object(Metadata& md,
 	MetadataList::iterator mdli;
 	map<string,AttributeProperties>::iterator ami,amie=am.attributes.end();
 	string cval;
+	const string base_message("dbsave->save_metadata_for_object:  ");
 
 	for(mdli=mdl.begin();mdli!=mdl.end();++mdli)
 	{
 		double dval;
 		int ival;
-		ami = am.attributes.find((*mdli).tag);
-		if(ami==amie) 
+		string mdkey;
+		if(am.is_alias((*mdli).tag))
 		{
-			dbmark(db);
-			throw SeisppError(
-				string("Required attribute ")
-				+(*mdli).tag
-				+string(" cannot be mapped to output namespace"));
+			map<string,AttributeProperties> aliasmap=am.aliases((*mdli).tag);
+			ami=aliasmap.find(table);
+			if(ami==aliasmap.end())
+			{
+				dbmark(db);
+				throw SeisppError(base_message
+				 + string("Alias name=")
+				 + (*mdli).tag
+				 + string(" is not associated with table=")
+				 + table
+				 + string("\nVerify output specification against schema") );
+			}
+			mdkey=(*mdli).tag;   // in this case the alias is the key 
 		}
-		if( (ami->second.db_table_name) != table)
+		else
 		{
-			dbmark(db);
-			throw SeisppError( 
-				string("dbsave (database table mismatch): attribute ")
-				+ ami->second.db_attribute_name
-				+ string(" is tagged with table name ")
-				+ ami->second.db_table_name
-				+ string("expected to find ")
-				+ table);
+			mdkey=(*mdli).tag;
+			ami = am.attributes.find(mdkey);
+			if(ami==amie) 
+			{
+				dbmark(db);
+				throw SeisppError(
+					string("Required attribute ")
+					+(*mdli).tag
+					+string(" cannot be mapped to output namespace"));
+			}
+			if( (ami->second.db_table_name) != table)
+			{
+				dbmark(db);
+				throw SeisppError( 
+					string("dbsave (database table mismatch): attribute ")
+					+ ami->second.db_attribute_name
+					+ string(" is tagged with table name ")
+					+ ami->second.db_table_name
+					+ string("expected to find ")
+					+ table);
+			}
+			/* In this case the key we use the name from the Attribute map as the key */
+			mdkey=ami->second.internal_name;
 		}
 		try {
 			switch(ami->second.mdt)
@@ -254,7 +278,7 @@ void save_metadata_for_object(Metadata& md,
 					
 				}
 				else
-					ival = md.get_int(ami->second.internal_name);
+					ival = md.get_int(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					ival,0);
 				// In this case we need to push this back to metadata
@@ -262,12 +286,12 @@ void save_metadata_for_object(Metadata& md,
 				md.put(ami->second.db_attribute_name,ival);
 				break;
 			case MDreal:
-				dval = md.get_double(ami->second.internal_name);
+				dval = md.get_double(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					dval,0);
 				break;
 			case MDstring:
-				cval = md.get_string(ami->second.internal_name);
+				cval = md.get_string(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					cval.c_str(),0);
 				break;
@@ -275,7 +299,7 @@ void save_metadata_for_object(Metadata& md,
 				// treat booleans as ints for external representation
 				// This isn't really necessary as Antelope
 				// doesn't support boolean attributes
-				if(md.get_bool(ami->second.internal_name))
+				if(md.get_bool(mdkey))
 					ival = 1;
 				else
 					ival = 0;
@@ -527,6 +551,13 @@ int dbsave(ThreeComponentSeismogram& tcs,
 		throw SeisppError(string("dbsave:  dbaddnull failed on table "+table));
 	db.record=recnumber;
 	try {
+		/* post this in case the user tries to save it */
+		string sdtype;
+		if(IntelByteOrder())
+			sdtype=string("3c");
+		else
+			sdtype=string("3c");
+		tcs.put("datatype",sdtype);
 		save_metadata_for_object(dynamic_cast<Metadata&>(tcs),
 			db,table,mdl,am);
 		// Even if they were written in the above loop the contents 
@@ -534,7 +565,6 @@ int dbsave(ThreeComponentSeismogram& tcs,
 		// This is safer than depending on the metadata
 		double etime;
 		etime = tcs.endtime();
-		string sdtype("3c"); // speciall datatype signals dmatrix format
 		dbputv(db,0,"time",tcs.t0,
 			"endtime",etime,
 			"samprate",1.0/tcs.dt,

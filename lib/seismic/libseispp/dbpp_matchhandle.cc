@@ -77,15 +77,47 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 	for(internal_name=keys_list.begin();internal_name!=keys_list.end();
 				++internal_name)
 	{
-		keyiter=am.attributes.find(*internal_name);
-		if(keyiter==keyiterend)
+		string thisMDnamekey;
+		string amkey;
+		if(am.is_alias(*internal_name))
 		{
-			throw SeisppError(string("DatascopeMatchHandle constructor:  internal name=")
+			/* Intentionally do not check for alias errors here as those indicate
+			an installation problem in the parameter file definition or in the 
+			AttributeMap object code.  For efficiency with avoid trappin this here. 
+			May prove a bad idea, but for now that's my story and I'm stickin to it.*/
+                	list<string> tablenames=am.aliastables(*internal_name);
+                	list<string>::iterator tbliter=tablenames.begin();;
+			map<string,AttributeProperties> aliasmap=am.aliases(*internal_name);
+			AttributeProperties apalias=aliasmap[*tbliter];
+			matchkeys.push_back(apalias);
+			MDnamekeys.push_back(*internal_name);
+			if(SEISPP_verbose)
+			{
+				if(tablenames.size()>1)
+				{
+					cerr << "DatascopeMatchHandle (Caution):  "
+						<< "Matching attribute with name="
+						<< *internal_name
+						<< " which is an alias."<<endl
+						<< "Match will use value in table(relation)="
+						<< *tbliter <<endl;
+				}
+			}
+		}
+		else
+		{
+			amkey=*internal_name;
+			keyiter=am.attributes.find(amkey);
+			if(keyiter==keyiterend)
+			{
+			    throw SeisppError(string("DatascopeMatchHandle constructor:  internal name=")
 				+(*internal_name)
 				+ string(" is not in AttributeMap object.\n")
 				+ string("Check initialization and/or fix coding error"));
+			}
+			matchkeys.push_back(keyiter->second);
+			MDnamekeys.push_back(*internal_name);
 		}
-		matchkeys.push_back(keyiter->second);
 	}
 	// Intentionally did not put these in the above to make the
 	// algorithm exception safe.  
@@ -127,6 +159,7 @@ DatascopeMatchHandle::DatascopeMatchHandle(const DatascopeMatchHandle& parent)
 	dbt=parent.dbt;
 	dbscratch_record=parent.dbscratch_record;
 	matchkeys=parent.matchkeys;
+	MDnamekeys=parent.MDnamekeys;
 	// tbl's have to be copied
 	kpattern=copy_string_tbl(parent.kpattern);
 	tpattern=copy_string_tbl(parent.tpattern);
@@ -144,6 +177,7 @@ DatascopeMatchHandle& DatascopeMatchHandle::operator = (const DatascopeMatchHand
 		dbt=parent.dbt;
 		dbscratch_record=parent.dbscratch_record;
 		matchkeys=parent.matchkeys;
+		MDnamekeys=parent.MDnamekeys;
 		// tbl's have to be copied
 		kpattern=copy_string_tbl(parent.kpattern);
 		tpattern=copy_string_tbl(parent.tpattern);
@@ -183,10 +217,14 @@ list<int> DatascopeMatchHandle::find(Metadata& md)
 		int ival;
 		string sval;
 		try {
+			/* To handle aliases we use the MDnamekeys vector
+			names as Metadata keys for fetching attributes. 
+			The AttributeProperties vector matchkeys is
+			used to make sure types agree. */
 			switch (matchkeys[i].mdt)
 			{
 			case MDreal:
-				rval=md.get_double(matchkeys[i].internal_name);
+				rval=md.get_double(MDnamekeys[i]);
 				// perhaps should check return of this, but
 				//intentionally ignored for now
 				dbputv(dbscratch_record,0,
@@ -195,14 +233,14 @@ list<int> DatascopeMatchHandle::find(Metadata& md)
 				++nscratch_records_set;
 				break;
 			case MDint:
-				ival=md.get_int(matchkeys[i].internal_name);
+				ival=md.get_int(MDnamekeys[i]);
 				dbputv(dbscratch_record,0,
 					matchkeys[i].db_attribute_name.c_str(),
 					ival,0);
 				++nscratch_records_set;
 				break;
 			case MDstring:
-				sval=md.get_string(matchkeys[i].internal_name);
+				sval=md.get_string(MDnamekeys[i]);
 				dbputv(dbscratch_record,0,
 					matchkeys[i].db_attribute_name.c_str(),
 					sval.c_str(),0);
@@ -210,7 +248,7 @@ list<int> DatascopeMatchHandle::find(Metadata& md)
 				break;
 			default:
 				cerr << "DatascopeMatchHandle.find():  unrecognized type field for key " 
-					<< matchkeys[i].internal_name 
+					<< MDnamekeys[i] 
 					<< "with database attribute called "
 					<< matchkeys[i].db_attribute_name
 					<< endl

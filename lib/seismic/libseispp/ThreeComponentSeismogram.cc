@@ -402,7 +402,8 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		// let the transformation matrix get inverted.
 		//
 		// last thing we do is mark this live
-		live = true;
+		// One caution is to check value of ns
+		if(ns>0) live = true;
 	    }
 	    else
 	    {
@@ -491,7 +492,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 			if(datatype=="c3")
 				swapdvec(this->u.get_address(0,0),readsize);
 		}
-		live=true;
+		if(ns>0) live=true;
 	    }
 		
 	}

@@ -2,6 +2,7 @@
 #define _ATTRIBUTE_MAP_H_
 #include <string>
 #include <map>
+#include <list>
 #include "stock.h"
 #include "pf.h"
 namespace SEISPP
@@ -142,6 +143,58 @@ public:
 	AttributeMap(const AttributeMap& am0);
 	/*! Standard assignment operator.*/
 	AttributeMap& operator=(const AttributeMap& am0);
+	/*! Returns a list of aliases for a key. 
+
+	A universal issue in a relational database interface is that an
+	attribute can occur in more than one table.  One can give a fully 
+	qualified name through this interface, but it is often convenient to 
+	have a simple name (the alias) that is a shorthand for a particular
+	instance of that attribute in one table.  Further, it is sometimes
+	useful to have a list of possible meanings for an alias that can
+	be searched in order.  Thus this method returns a list of AttributeProperties
+	that are tied to an alias.  The idea would be that the caller would
+	try each member of this list in order before throwing an error.  
+	\param alias is the alias name to search. 
+	\return STL map of AttributeProperties that are aliases for the
+		given keyword.  The map is keyed by the table name. 
+		This provides a clean interface for output of attributes
+		as it allows an output function to use an alias efficiently.
+		The assumption in all cases is that the alias name provides
+		the unique tag or an attribute.  An application must avoid
+		modifying attributes that are part of the alias definition.
+		The alias name is the only one that should normally be assumed
+		current.
+	\exception SeisppError is thrown if an attribute listed in aliases is
+		not defined for the AttributeMap itself.  This always indicates
+		an error in the definition of the AttributeMap.
+	*/
+	map<string,AttributeProperties> aliases(string key);
+	/*! Returns an ordered list of table names to try in extracting an alias named.
+
+	Aliases present an issue on input.  Because many attribute names appear in
+	multiple tables (an essential thing, in fact, for a relational database to work)
+	input of an attribute that is a generic label for such an attribute can be 
+	problematic.  This method returns an ordered list of tables that provide
+	guidance for extracting an attribute defined by such a generic name.  The
+	order is very important as readers will generally need to try qualfied names
+	for each table in the list returned by this method.  Hence the order matters
+	and the list should be inclusive but no longer than necessary as long
+	lists could generate some overead problems in some situations. 
+
+	\param key is the alias name for which this information is desired.
+	\return list of table names in a recommended order of access.
+	\exception SeisppError will be thrown if there are inconsistencies
+	*/
+	list<string> aliastables(string key);
+	/*! Check if an attribute name is an alias.
+
+	For efficiency and convience it is useful to have a simple way to 
+	ask if an attribute name is defined as an alias.  This abstracts this
+	process.  
+	\param key is the attribute name to be tested.  
+	\return true if key is an alias.  Otherwise return false.
+	*/
+	bool is_alias(string key);
 private:
 	/*! Parameter file driven constructor.
 	*  Builds this object from an Antelope parameter file.  Parses the
@@ -153,6 +206,11 @@ private:
 	* \param name name of Tbl to be parse.
 	*/
 	AttributeMap(Pf *pf,string name);  
+	/*! Implements aliases.  
+	*
+	* The map uses an alias name as the key and the list of strings
+	* are keys back to the public map to AttributePropeties. */
+	map<string,list<string> > aliasmap;
 };
 
 } // End namespace SEISPP declaration

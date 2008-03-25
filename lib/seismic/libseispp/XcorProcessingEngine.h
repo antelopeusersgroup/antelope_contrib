@@ -22,19 +22,21 @@
 #include "XcorAnalysisSetting.h"
 #include "ArrivalUpdater.h"
 #include "SignalToNoise.h"
+#include "ProcessingQueue.h"
 
 namespace SEISPP {
 
 using namespace std;
 using namespace SEISPP;
 
+enum XcorEngineMode {ContinuousDB, EventGathers, GenericGathers};
 
 class XcorProcessingEngine {
 public:
 	bool use_subarrays;
 	int current_subarray;  // Index to current subarray 
 	XcorProcessingEngine(Pf * global_pf, XcorAnalysisSetting asinitial,
-		string waveform_db_name, string result_db_name);
+		string waveform_db_name, string result_db_name,string queuefile);
 	~XcorProcessingEngine();  // necessary unless we can get rid of mcc raw pointer
         void change_analysis_setting(XcorAnalysisSetting a) {analysis_setting=a; if(!analysis_setting.rw_set) analysis_setting.robust_tw=analysis_setting.beam_tw;}
 	XcorAnalysisSetting get_analysis_setting() {return(analysis_setting);};
@@ -48,6 +50,9 @@ public:
         void save_results(int evid, int orid,Hypocenter& h);
 
 	void load_data(Hypocenter& hypo);
+	/*! Load data from a generic gather and set the queue status of the previously processed
+	gather to stat.*/
+	void load_data(DatabaseHandle& dbh,ProcessingStatus stat);
 	// Some public attributes required to implement subarrays
 	int number_subarrays();  // Returns count of number of subarrays
 	string current_subarray_name;  // name assigned to current subarray
@@ -82,13 +87,36 @@ public:
 	Metadata get_data_md() {return data_display_md;}
  	Metadata get_xcor_md() {return xcor_display_md;}
 	Metadata get_beam_md() {return beam_display_md;}
+	/*! Fetch a handle to one of the internal databases maintained by this object.
 
+	This processing object maintains a number of database handles it uses for the 
+	load methods and the save_results methods.  Sometimes an external program 
+	needs access to these databases.  In particular, because the load methods 
+	were designed to be stateless, the state must be maintained externally.
+	In particular, in continuous processing this means the information about 
+	events.  In generic gathers it means which gather is to be processed next.
+
+	Note since this method returns a pointer that points to an internal member
+	of this object it goes without saying you must NEVER delete this pointer.
+	
+	\param dbmember is a name used to request which database handle is desired.
+		Must be one of two unique strings:  "waveformdb" or "resultdb".  
+		The former is the handle used for reading while the second is the handle
+		used for writing.  They may or may not be the same database depending
+		on parameter settings.  
+	\expection SeisppError object is thrown if dbmember is anything but one of the 
+		two allowed values.
+	\return pointer to a generic DatabaseHandle object.  At present this is an upcast
+		from a DatascopeHandle, but the interface was intentionally made more 
+		generic anticipating alternatives may exist in the future.
+	*/
+	DatabaseHandle *get_db(string dbmember);
 private:
+	DatascopeHandle waveform_db_handle;
+	DatascopeHandle result_db_handle;
 
 	//This is the meta data object that stores the global static parameters.
 	Metadata global_md;
-	DatascopeHandle waveform_db_handle;
-	DatascopeHandle result_db_handle;
 	// Save the table references for each output table used by this program.
 	// This avoids constant lookups.  These are saved as raw datascope Dbptr
 	// structures instead of a DatascopeHandle because they are hidden behind
@@ -158,6 +186,19 @@ private:
 	bool save_extensions;
 	// Added by GLP Nov 2007 to control loading of arrivals from db
 	bool load_arrivals;
+	// Added Feb. 2008 to allow program to work in source array mode
+	XcorEngineMode processing_mode;
+	// Necessary metadata key for GenericGathers.  Otherwise ignored
+	string time_align_key;
+	// This is coming up enough places in this that it is useful to make
+	// it a variable.  These are method and model for a travel time calculator
+	string ttmethod,ttmodel;
+	/* Added to support new queue driven processng Feb 2008 */
+	DatascopeProcessingQueue *dpq;
+	/* Code used to be in load_data, but since load_data is overloaded this
+	method contains common code shared by load_data methods.  It needs to be
+	a member to allow access to all the class data. */
+	void prep_gather();
 };
 
 } // End SEISPP namespace declaration

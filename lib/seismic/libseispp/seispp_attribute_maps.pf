@@ -2,7 +2,8 @@
 # In the below the is_key field is set only for integer
 # ids that are lised in the schema as "Defines"
 #
-css3.0 &Tbl{
+css3.0 &Arr{
+Attributes &Tbl{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
 affiliation.lddate lddate affiliation real
@@ -580,48 +581,91 @@ emodel.emodely emodely emodel real
 emodel.emodelz emodelz emodel real
 emodel.emodelt emodelt emodel real
 emodel.lddate lddate emodel real
-# aliases go here
-# id key fields all get obvious aliases
-atime time arrival real
-deltim deltim arrival real
-slow slow arrival real
-azimuth azimuth arrival real
-phase phase assoc string
-sta.lat lat site real
-sta.lon lon site real
-sta.elev elev site real
-refsta refsta site string
-dnorth dnorth site real
-deast deast site real
-hang hang sitechan real
-vang vang sitechan real
-sta sta wfdisc string
-chan chan wfdisc string
-time time wfdisc real
-endtime endtime wfdisc real
-jdate jdate wfdisc  int
-nsamp nsamp wfdisc int
-samprate samprate wfdisc real
-calib calib wfdisc real
-calper calper wfdisc real
-datatype datatype wfdisc string
-dir dir wfdisc string
-dfile dfile wfdisc string
-foff foff wfdisc int
-arid arid arrival int true
-evid evid event int true
-orid orid origin int true
-wfid wfid wfdisc int true
-snet snet snetsta string
-#
-# special for pmel and for source gather processing.  These are
-# from genloc1.1
-#
-gridid gridid cluster int true
-cluster.gridid gridid cluster int true
+# These are used by dbxcor as extension tables
+sclink.sta sta sclink string
+sclink.chan chan sclink string
+sclink.pwfid pwfid sclink int
+wfprocess.pwfid pwfid wfprocess int true
+wfprocess.time time wfprocess real
+wfprocess.endtime endtime wfprocess real 
+wfprocess.timetype timetype wfprocess string
+wfprocess.dir dir wfprocess string
+wfprocess.dfile dfile wfprocess string
+wfprocess.foff foff wfprocess int
+wfprocess.datatype datatype wfprocess string
+wfprocess.samprate samprate wfprocess real
+wfprocess.nsamp nsamp wfprocess int
+wfprocess.algorithm algorithm wfprocess string 
+wfprocess.lddate lddate wfprocess real
+xcorarrival.sta sta xcorarrival string
+xcorarrival.chan chan xcorarrival string
+xcorarrival.phase phase xcorarrival string
+xcorarrival.pwfid pwfid xcorarrival int
+xcorarrival.filter filter xcorarrival string
+xcorarrival.algorithm algorithm xcorarrival string
+xcorarrival.pchan pchan xcorarrival string
+xcorarrival.time time xcorarrival real
+xcorarrival.twin twin xcorarrival real
+xcorarrival.samprate samprate xcorarrival real
+xcorarrival.stackwgt stackwgt xcorarrival real
+xcorarrival.coherence coherence xcorarrival real
+xcorarrival.xcorpeak xcorpeak xcorarrival real
+xcorarrival.relamp relamp xcorarrival real
+xcorbeam.netname netname xcorbeam string
+xcorbeam.chan chan xcorbeam string
+xcorbeam.pchan pchan xcorbeam string
+xcorbeam.phase phase xcorbeam string
+xcorbeam.filter filter xcorbeam string
+xcorbeam.pwfid pwfid xcorbeam int
+xcorbeam.fold fold xcorbeam int
+xcorbeam.robustt0 robustt0 xcorbeam int
+xcorbeam.robusttwin robusttwin xcorbeam int
+xcorbeam.amp amp xcorbeam int
+}
+aliases &Tbl{
+sta wfdisc.sta sclink.sta site.sta sitechan.sta
+chan wfdisc.chan sclink.chan sitechan.chan arrival.chan
+time wfdisc.time wfprocess.time
+endtime wfdisc.endtime wfprocess.endtime 
+calib wfdisc.calib
+dir wfdisc.dir wfprocess.dir
+dfile wfdisc.dfile wfprocess.dfile
+foff wfdisc.foff wfprocess.foff
+atime arrival.time
+deltim arrival.deltim
+slow arrival.slow
+azimuth arrival.azimuth
+phase assoc.phase 
+sta_lat site.lat
+sta_lon site.lon
+sta_elev site.elev
+source_lat origin.lat
+source_lon origin.lon
+source_depth origin.depth
+source_time origin.time
+refsta site.refsta
+dnorth site.dnorth
+deast site.east
+hang sitechan.hang
+vang sitechan.vang
+jdate wfdisc.jdae
+nsamp wfdisc.nsamp wfprocess.nsamp
+samprate wfdisc.samprate wfprocess.samprate
+calib wfdisc.calib
+calper wfdisc.calper
+datatype wfdisc.datatype wfprocess.datatype
+timetype wfprocess.timetype
+pwfid wfprocess.pwfid xcorbeam.pwfid sclink.pwfid
+arid arrival.arid assoc.arid
+evid event.evid origin.evid
+orid origin.orid
+wfid wfdisc.wfid
+snet snetsta.snet
+}
 }
 
-rt1.0 &Tbl{
+rt1.0 &Arr{
+Attributes &Tbl{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
 affiliation.lddate lddate affiliation real
@@ -1291,7 +1335,18 @@ wfmgme.snrwa snrwa wfmgme real
 wfmgme.chanwa chanwa wfmgme string
 wfmgme.lddate lddate wfmgme 
 }
-pwmig1.1 &Tbl{
+aliases &Tbl{
+sta wfdisc.sta site.sta sitechan.sta
+chan wfdisc.chan sitechan.chan arrival.chan
+time wfdisc.time
+endtime wfdisc.endtime
+calib wfdisc.calib
+dir wfdisc.dir
+dfile wfdisc.dfile
+}
+}
+pwmig1.1 &Arr{
+Attributes &Tbl{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
 affiliation.lddate lddate affiliation real
@@ -1977,8 +2032,19 @@ ix2 ix2 pwstack int
 gridid gridid pwstack int
 snet snet snetsta string
 }
+aliases &Tbl{
+sta wfdisc.sta site.sta sitechan.sta
+chan wfdisc.chan sitechan.chan arrival.chan
+time wfdisc.time
+endtime wfdisc.endtime
+calib wfdisc.calib
+dir wfdisc.dir
+dfile wfdisc.dfile
+}
+}
 
-Trace4.0 &Tbl{
+Trace4.0 &Arr{
+Attributes &Tbl{
 arrival.sta sta arrival string
 arrival.chan chan arrival string
 arrival.time time arrival real
@@ -2130,37 +2196,37 @@ trace.m0 m0 trace real
 trace.m1 m1 trace real
 trace.mt0 mt0 trace real
 trace.mt1 mt1 trace real
-evid evid trace int
-arid arid trace int
-net net trace string
-sta sta trace string
-chan chan trace string
-time time trace real
-endtime endtime trace real
-processid processid trace int
-nsamp nsamp trace int
-samprate samprate trace real
-instype instype trace string
-calib calib trace real
-calper calper trace real
-datatype datatype trace string
-segtype segtype trace string
-lat lat trace real
-lon lon trace real
-elev elev trace real
-refsta refsta trace string
-dnorth dnorth trace real
-deast deast trace real
-edepth edepth trace real
-hang hang trace real
-vang vang trace real
-comment comment trace int
-m0 m0 trace real
-m1 m1 trace real
-mt0 mt0 trace real
-mt1 mt1 trace real
 }
-xcor1.0 &Tbl{
+aliases &Tbl{
+evid trace.evid event.evid
+arid trace.arid arrival.arid
+net trace.net
+sta trace.sta arrival.sta
+chan trace.chan arrival.chan 
+time trace.time arrival.time
+atime arrival.time
+endtime trace.time
+nsamp trace.nsamp
+processid trace.processid
+calib trace.calib
+calper trace.calper
+samprate trace.samprate
+datatype trace.datatype
+segtype trace.segtype
+source_lat event.lat
+source_lon event.lon
+source_depth origin.depth
+source_time origin.time
+sta_lat trace.lat
+sta_lon trace.lon
+sta_elev trace.elev
+refsta trace.refsta
+vang trace.vang
+hang trace.hang
+}
+}
+xcor1.0 &Arr{
+Attributes &Arr{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
 affiliation.lddate lddate affiliation real
@@ -2796,7 +2862,18 @@ wfprocess.algorithm algorithm wfprocess string
 wfprocess.dir dir wfprocess string
 wfprocess.dfile dfile wfprocess string
 }
-xcor1.2 &Tbl{
+aliases &Tbl{
+sta wfdisc.sta site.sta sitechan.sta
+chan wfdisc.chan sitechan.chan arrival.chan
+time wfdisc.time
+endtime wfdisc.endtime
+calib wfdisc.calib
+dir wfdisc.dir
+dfile wfdisc.dfile
+}
+}
+xcor1.2 &Arr{
+Attibutes &Tbl{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
 affiliation.lddate lddate affiliation real
@@ -3410,6 +3487,11 @@ snet snet snetsta string
 #
 # These are additions for xcor1.2
 #
+sclink.sta sta sclink string
+sclink.chan chan sclink string
+sclink.pwfid pwfid sclink int
+evlink.pwfid pwfid evlink int
+evlink.evid evid evlink int
 xcorbeam.coherence coherence xcorarrival real 
 xcorbeam.xcorpeak xcorpeak xcorarrival real 
 xcorbeam.fold fold xcorbeam int
@@ -3438,5 +3520,15 @@ wfprocess.timetype timetype wfprocess string
 wfprocess.algorithm algorithm wfprocess string
 wfprocess.dir dir wfprocess string
 wfprocess.dfile dfile wfprocess string
+}
+aliases &Tbl{
+sta wfdisc.sta site.sta sitechan.sta
+chan wfdisc.chan sitechan.chan arrival.chan
+time wfdisc.time
+endtime wfdisc.endtime
+calib wfdisc.calib
+dir wfdisc.dir
+dfile wfdisc.dfile
+}
 }
 pf_revision_time 1094848708

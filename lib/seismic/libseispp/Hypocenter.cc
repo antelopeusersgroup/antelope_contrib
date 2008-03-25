@@ -46,10 +46,10 @@ Hypocenter& Hypocenter::operator=(const Hypocenter& h0)
 Hypocenter::Hypocenter(Metadata& md)
 {
 	try {
-		lat=md.get_double("origin.lat");
-		lon=md.get_double("origin.lon");
-		z=md.get_double("origin.depth");
-		time=md.get_double("origin.time");
+		lat=md.get_double("source_lat");
+		lon=md.get_double("source_lon");
+		z=md.get_double("source_depth");
+		time=md.get_double("source_time");
 	} catch (MetadataError& mderr) {throw mderr;};
 	// We run a separate try block here and recover from
 	// model and method not being defined -- a common thing

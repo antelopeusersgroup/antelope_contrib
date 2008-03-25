@@ -347,10 +347,36 @@ public:
 	* \param keys1 list of keys to define join operation of left table.
 	* \param keys2 list of keys to define the join operation for right table.
 	*
-	* \exception throws a SeisppDberror if dbsort fails.  
+	* \exception throws a SeisppDberror if dbjoin fails.  
 	*/
 	void join(string t1, string t2, 
 		list<string> keys1,list<string>keys2);
+	/*! Right join of a table to current view.
+
+	This is similar to the two table join method but the left table
+	is assumed to be the current view.  That is table t is right
+	joined to the current view using the keys defind in keys1 and keys2.
+
+	\param t right table of join operation.
+	\param keys1 list of keys to define join operation of left table.
+	\param keys2 list of keys to define the join operation for right table.
+	
+	\exception throws a SeisppDberror if dbjoin fails.  
+	*/
+	void join(string t,list<string> keys1,list<string>keys2);
+	/*! Join table on the left. 
+
+	A left join means the parent view is considered the t2 (right)
+	table in the join.  This method left joins table t to the
+	existing view using keys specified in the keys1 and keys2 lists.
+	
+	\param t table to join on the left of existing view.
+	\param keys1 list of keys to define join operation of left table.
+	\param keys2 list of keys to define the join operation for right table.
+	
+	\exception throws a SeisppDberror if dbjoin fails.  
+	*/
+	void leftjoin(string t,list<string> keys1,list<string>keys2);
 	/*! Simplified join operator using natural join feature of Antelope. 
 	* The datascope (Antelope) dbms takes advantage of what they call a 
 	* "natural join".  A natural join is one defined by the primary keys
@@ -637,6 +663,15 @@ private:
 	// antelope tbls.  i.e. matchkeys[i] is an expansion of
 	// gettbl(kpattern,i)
 	vector<AttributeProperties> matchkeys;
+	/* This is a parallel vector with matchkeys that links Metadata
+	attribute names that may be aliases unambiguously to the matchkeys
+	vector.  At one point this interface allowed unqualified names 
+	(e.g. time as shorthand for wfdisc.time) through the AttributeMap.
+	March 2008 this as altered to provide a more flexible alias mechanism.*/
+	vector<string> MDnamekeys;
+	/*! This is a copy of the attribute map used by this object hidden
+	behind the interface as the user should only know they need to 
+	define the schema. */
 	AttributeMap amap;
 };
 }  // end namespace seispp

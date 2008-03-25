@@ -1,5 +1,7 @@
+#include <sstream>
 #include "Metadata.h"
 #include "AttributeMap.h"
+#include "seispp.h"
 namespace SEISPP{
 using namespace std;
 using namespace SEISPP;
@@ -114,14 +116,26 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 	// temporary typedef to keep an already awful syntax for a map
 	// from being impossible.  Used in most books for this reason.
 	typedef map<string,AttributeProperties> APMAP;
+	Pf *pfnested;
+	int pftype_return;
+	void *vptr;
+	pftype_return=pfget(pf,const_cast<char *>(name.c_str()),&vptr);
+	if(pftype_return != PFARR)
+		throw SeisppError("AttributeMap pf constructor:  "
+		  + string("parameter ") + name
+		  + string(" must be tagged as an Arr in parameter file defining")
+		  + string(" AttributeMap definitions"));
+	pfnested=static_cast<Pf *>(vptr);
 
-	t = pfget_tbl(pf,const_cast<char *>(name.c_str()));
+	char *attblkey="Attributes";
+	t = pfget_tbl(pfnested,attblkey);
 	if(t==NULL) 
 		throw MetadataError(string("Parameter file missing required ")
 			+name);
-	for(int i=0;i<maxtbl(t);++i)
+	int i;
+	char *line;
+	for(i=0;i<maxtbl(t);++i)
 	{
-		char *line;
 		AttributeProperties *ap;
 		line = (char *)gettbl(t,i);
 		ap = new AttributeProperties(string(line));
@@ -130,6 +144,37 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 		delete ap;
 	}
 	freetbl(t,0);
+	t=pfget_tbl(pfnested,"aliases");
+	if(t!=NULL)
+	{
+		string token;
+		string key;
+		for(i=0;i<maxtbl(t);++i)
+		{
+			line = (char *)gettbl(t,i);
+			istringstream in(line);
+			in>>key;
+			if(in.eof()) throw SeisppError("AttributeMap pf constructor:  "
+				+ string("bad input line in alias list or schema=")
+				+ name
+				+ string("\nOffending line:")+string(line) );
+			in>>token;
+			list<string> aliaslist;
+			aliaslist.push_back(token);
+			if(!in.eof())
+			{
+			   do{
+				in >> token;
+				aliaslist.push_back(token);
+				if(in.eof()) break;
+			    }
+			    while(1);
+			}
+			aliasmap[key]=aliaslist;
+		}
+			
+		freetbl(t,0);
+	}
 }
 // Default constructor uses a frozen name and utilizes the above
 // constructor.
@@ -179,11 +224,76 @@ AttributeMap& AttributeMap::operator=(const AttributeMap& am)
 	if(this!=&am)
 	{
 		attributes = am.attributes;
+		aliasmap=am.aliasmap;
 	}
 	return (*this);
 }
 AttributeMap::AttributeMap(const AttributeMap& am)
 {
 	attributes = am.attributes;
+	aliasmap=am.aliasmap;
 }
+bool AttributeMap::is_alias(string key)
+{
+	if(aliasmap.size()==0) return false;
+	if(aliasmap.find(key)==aliasmap.end()) return false;
+	return true;
+}
+map<string,AttributeProperties> AttributeMap::aliases(string key)
+{
+	map<string,AttributeProperties> result;
+	/* reverse logic a bit odd, but cleanest solution */
+	if(!this->is_alias(key))
+		throw SeisppError("AttributeMap::aliases method: "
+		 + string("Attribute ") + key
+		 + string(" is not defined as an alias") );
+	else
+	{
+		list<string> aml=aliasmap[key];
+		map<string,AttributeProperties>::iterator amiter;
+		list<string>::iterator listiter;
+		for(listiter=aml.begin();listiter!=aml.end();++listiter)
+		{
+			amiter=attributes.find(*listiter);
+			if(amiter==attributes.end()) 
+			  throw SeisppError("AttributeMap::aliases method: "
+				+ string("Attribute named ")
+				+ (*listiter)
+				+ string(" is not defined for this AttributeMap"));
+			result[amiter->second.db_table_name]=amiter->second;
+		}
+	}
+	/* note this silently returns an empty list if key is not alias*/
+	return(result);
+	
+}
+/* This code has very strong parallels to aliases because they do similar
+things even though they return very different results. */
+list<string> AttributeMap::aliastables(string key)
+{
+	list<string> result;
+	if(!this->is_alias(key))
+		throw SeisppError("AttributeMap::aliastables method: "
+		 + string("Attribute ") + key
+		 + string(" is not defined as an alias") );
+	else
+	{
+		list<string> aml=aliasmap[key];
+		map<string,AttributeProperties>::iterator amiter;
+		list<string>::iterator listiter;
+		for(listiter=aml.begin();listiter!=aml.end();++listiter)
+		{
+			amiter=attributes.find(*listiter);
+			if(amiter==attributes.end()) 
+			  throw SeisppError("AttributeMap::aliastables method: "
+				+ string("Attribute named ")
+				+ (*listiter)
+				+ string(" is not defined for this AttributeMap"));
+			result.push_back(amiter->second.db_table_name);
+		}
+	}
+	return(result);
+}
+		
+	
 } // End SEISPP Namespace declaration

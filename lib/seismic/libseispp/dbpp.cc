@@ -497,26 +497,55 @@ void DatascopeHandle::natural_join(string table)
 	if(views!=NULL) views->insert(db.table);
 }
 
+
 // full case with different lists for table 1 and table 2
-void DatascopeHandle::join(string table1, string table2, 
+// join table2 to right of current view defined by the handle.
+void DatascopeHandle::join(string table2, 
 	list<string> joinkeys1, list<string> joinkeys2)
 {
 	Tbl *t1,*t2;
 	t1 = list_to_tbl(joinkeys1);
 	t2 = list_to_tbl(joinkeys2);
-	Dbptr dbj1, dbj2;
-	dbj1 = dblookup(db,0,const_cast<char *>(table1.c_str()),0,0);
+	Dbptr dbj2;
+	parent_table=db;
 	dbj2 = dblookup(db,0,const_cast<char *>(table2.c_str()),0,0);
-	db = dbjoin(dbj1, dbj2,&t1,&t2,0,0,0);
+	db = dbjoin(db, dbj2,&t1,&t2,0,0,0);
 	freetbl(t1,free);
 	freetbl(t2,free);
 	if(db.table==dbINVALID)
-		throw SeisppDberror(string("dbjoin of tables ")
-			+ table1 
-			+ string(" and ") 
+		throw SeisppDberror(string("dbjoin of table ")
 			+ table2 
-			+ string("failed"),
+			+ string("to current view failed"),
 			db,complain);
+	if(!retain_parent) manage_parent();
+	if(views!=NULL) views->insert(db.table);
+}
+// full case with different lists for table 1 and table 2 and explicitly
+// named tables
+void DatascopeHandle::join(string table1, string table2, 
+	list<string> joinkeys1, list<string> joinkeys2)
+{
+	db = dblookup(db,0,const_cast<char *>(table1.c_str()),0,0);
+	this->join(table2,joinkeys1,joinkeys2);
+}
+void DatascopeHandle::leftjoin(string t, 
+	list<string> joinkeys1, list<string> joinkeys2)
+{
+	Tbl *t1,*t2;
+	t1 = list_to_tbl(joinkeys1);
+	t2 = list_to_tbl(joinkeys2);
+	Dbptr dbj1;
+	parent_table=db;
+	dbj1 = dblookup(db,0,const_cast<char *>(t.c_str()),0,0);
+	db = dbjoin(dbj1, db,&t1,&t2,0,0,0);
+	freetbl(t1,free);
+	freetbl(t2,free);
+	if(db.table==dbINVALID)
+		throw SeisppDberror(string("dbjoin of table ")
+			+ t
+			+ string("to left of current view failed"),
+			db,complain);
+	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
 }
 

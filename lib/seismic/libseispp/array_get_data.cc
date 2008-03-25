@@ -223,10 +223,10 @@ void auto_switch_polarity(TimeSeriesEnsemble *d)
 }
 
 // Common error routine for function immediately following.
-void AssembleRegularRatherErrorLog(TimeSeriesEnsemble& raw, int i, 
+void AlignAndResampleErrorLog(TimeSeriesEnsemble& raw, int i, 
 	SeisppError serr)
 {
-	cerr << "AssembleRegularGather: Problem processing data for station="
+	cerr << "AlignAndResample: Problem processing data for station="
 		<< raw.member[i].get_string("sta")
 		<< "  and channel="
 		<< raw.member[i].get_string("chan")
@@ -237,6 +237,54 @@ void AssembleRegularRatherErrorLog(TimeSeriesEnsemble& raw, int i,
 		serr.log_error();
 
 		cerr << "Data from this sta:chan discarded" << endl;
+}
+/* Core routine for AssembleRegularGather but useful on it's own.  This 
+function aligns data on time defined by align_mdkey and resamples all
+data in a gather to target_dt.  The result is in relative with time
+defined b the result_twin definition. */
+TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
+	string align_mdkey,
+		TimeWindow result_twin,
+			double target_dt,
+				ResamplingDefinitions& rsdef,
+					bool trim)
+{
+	// This clones the metadata area for ensemble, but leaves 
+	// contents empty.
+	TimeSeriesEnsemble *result=new TimeSeriesEnsemble(
+			dynamic_cast<Metadata&>(raw),raw.member.size());
+	TimeSeries raw_data_trace;
+	for(int i=0;i<raw.member.size();++i)
+	{
+		// Do nothing to data marked dead
+		if(!raw.member[i].live) continue;
+		if(SampleIntervalsMatch<TimeSeries>(raw.member[i],target_dt) )
+		{
+			raw_data_trace=raw.member[i];
+		}
+		else
+		{
+			try {
+				raw_data_trace=ResampleTimeSeries(
+					raw.member[i],rsdef,target_dt,trim);
+			} catch(SeisppError serr) {
+				AlignAndResampleErrorLog(raw,i,serr);
+				continue;  // This skips when error is thrown
+			}
+		}
+		try {
+			auto_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
+						align_mdkey,result_twin));
+			result->member.push_back(*newtrace);
+		} catch (SeisppError serr)
+		{
+			AlignAndResampleErrorLog(raw,i,serr);
+			// No need for continue here as result only 
+			// saved when ArrivalTimeReference returns 
+			// successfully.
+		}
+	}
+	return(result);
 }
 //@{
 // Takes an ensemble of data with potentially irregular sample
@@ -297,44 +345,13 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 						bool trim)
 
 {
-	TimeSeries raw_data_trace;
-
-	// This clones the metadata area for ensemble, but leaves 
-	// contents empty.
-	TimeSeriesEnsemble *result=new TimeSeriesEnsemble(
-			dynamic_cast<Metadata&>(raw),raw.member.size());
-			
 	LoadPredictedTimes(raw,times,predicted_time_key,phase);
-	for(int i=0;i<raw.member.size();++i)
-	{
-		if(SampleIntervalsMatch<TimeSeries>(raw.member[i],target_dt) )
-		{
-			raw_data_trace=raw.member[i];
-		}
-		else
-		{
-			try {
-				raw_data_trace=ResampleTimeSeries(
-					raw.member[i],rsdef,target_dt,trim);
-			} catch(SeisppError serr) {
-				AssembleRegularRatherErrorLog(raw,i,serr);
-				continue;  // This skips when error is thrown
-			}
-		}
-		try {
-			auto_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
-						predicted_time_key,
-							result_twin));
-
-			result->member.push_back(*newtrace);
-		} catch (SeisppError serr)
-		{
-			AssembleRegularRatherErrorLog(raw,i,serr);
-			// No need for continue here as result only 
-			// saved when ArrivalTimeReference returns 
-			// successfully.
-		}
-	}
+	/* This function always returns something.  Throw and exception only if 
+	the result is empty */
+	TimeSeriesEnsemble *result=AlignAndResample(raw,predicted_time_key,
+		result_twin,target_dt,rsdef,trim);
+	if(result->member.size()<=0) throw SeisppError(string("AssembleRegularGather:  ")
+		+ string("Result after AlignAndResample function contains no data") );
 	auto_switch_polarity(result);
 	return(result);
 }

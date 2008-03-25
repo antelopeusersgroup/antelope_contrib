@@ -99,9 +99,9 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 			if( (jdate>=ondate)
 				&& ((offdate<0)  || (jdate<=offdate) ))
 			{
-				lat=dbh.get_double("lat");
-				lon=dbh.get_double("lon");
-				elev=dbh.get_double("elev");
+				lat=dbh.get_double("site.lat");
+				lon=dbh.get_double("site.lon");
+				elev=dbh.get_double("site.elev");
 				// here we presume null is 0.0
 				dnorth=dbh.get_double("dnorth");
 				deast=dbh.get_double("deast");

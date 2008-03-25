@@ -220,12 +220,17 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 		this->put(end_time_keyword,teread);
 		this->put(number_samples_keyword,ns);
 	}
-	s.reserve(ns);
-	for(int i=0;i<this->ns;++i) 
-		s.push_back(static_cast<double>(inbuffer[i]));
+	if(ns<=0)
+		live=false;
+	else
+	{
+		s.reserve(ns);
+		for(int i=0;i<this->ns;++i) 
+			s.push_back(static_cast<double>(inbuffer[i]));
+		live = true;
+	}
 	// trgetwf is a C function so we need to use free to 
 	// release the space it allocated.
-	live = true;
 	free(inbuffer);
 }
 // standard assignment operator

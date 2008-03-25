@@ -114,6 +114,23 @@ public:
 // handle into a raw data archive or raw data tied to an 
 // Antelope orb.  
 //
+// The attributes loaded with each trace and the ensemble are totally
+// frozen in this constructor.  If other attributes are required they
+// MUST be loaded some other way.  The attributes loaded also depend
+// on the settings of the three require boolean arguments.  
+// Base attributes loaded are:  sta, chan, time, endtime, nsamp,
+// samprate, calib, datatype, and segtype.  If require_coords is
+// true the following are loaded:  sta_lat, sta_lon, sta_elev, dnorth,
+// deast, and refsta.  If require_orientation is true the hang and
+// vang attributes are loaded.  Note all of these names are shorthand
+// internal names defined in internal namespace for the SEISPP library.
+// The relation to database names is defined in the seispp_attributes_map.pf
+// parameter file.
+//
+// Note no ensemble attributes are loaded by this constructor.
+// That is, an ensemble can have attributes loaded that are global for 
+// the entire ensemble.  This constructor loads none in that area.
+//
 //\exception SeisppError object if one of several unrecoverable errors
 //   occur.  These are of three main type.  First, if any of the 
 //   require booleans are true and not satisfied (e.g. site table
