@@ -1,4 +1,5 @@
-#include <sys/file.h>
+#include <unistd.h>
+#include <sstream>
 #include "seispp.h"
 #include "dbpp.h"
 #include "ProcessingQueue.h"
@@ -68,6 +69,7 @@ ostream& operator<<(ostream& os, DatascopeProcessingQueue& q)
 			os << "Unrecognized status value."<<endl;
 		}
 	}
+	return(os);
 }
 
 	
@@ -83,7 +85,7 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 		throw SeisppError("DatascopeProcessingQueue constructor:  "
 		 + string("Cannot open queue file=") + fname);
 	int fd=fileno(fp);
-	if(flock(fd,LOCK_EX) ) 
+	if(lockf(fd,F_LOCK,(off_t) 0 ) ) 
 		throw SeisppError(string("DatascopeProcessingQueue constructor:  ")
 			+ "Could not lock queue file.  Cannot proceed");
 	fseek(fp,0L,SEEK_END);
@@ -105,7 +107,8 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 		view_table=dbh.db.table;
 		status[0]=PROCESSING;
 		save();
-		flock(fd,LOCK_UN);
+		rewind(fp);  // necessary to be sure we unlock file
+		lockf(fd,F_ULOCK,(off_t)0);
 		freopen(fname.c_str(),"r+b",fp);
 	    }
 	    else
@@ -127,7 +130,8 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 			<< "queue size does not match size of view passed through database handle"<<endl
 			<< "Queue size = records_in_this_view"<<endl
 			<< "DatascopeHandle passed has "<<rtest<<" rows"<<endl;
-		   flock(fd,LOCK_UN);
+		   rewind(fp);  // necessary to be sure we unlock file
+		   lockf(fd,F_ULOCK,(off_t)0);
 		   throw SeisppError(serr.str());
 		}
 		for(count=0;count<records_in_this_view;++count) status.push_back(TODO);
@@ -142,7 +146,9 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 			++current_record;
 		}
 	    }
-	    if(flock(fd,LOCK_UN))
+	    //if(flock(fd,LOCK_UN))
+	    rewind(fp);
+	    if(lockf(fd,F_ULOCK,(off_t)0))
 		throw SeisppError(string("DatascopeProcessingQueue::mark:  ")
 		  + "flock failed when attempting to release lock on queue file");
 	} catch (SeisppError serr){throw serr;};
@@ -193,7 +199,9 @@ modified it
 void DatascopeProcessingQueue::mark(ProcessingStatus pstat)
 {
 	int fd=fileno(fp);
-	if(flock(fd,LOCK_EX) ) 
+	rewind(fp);
+	if(lockf(fd,F_LOCK,(off_t)0))
+	//if(flock(fd,LOCK_EX) ) 
 		throw SeisppError(string("DatascopeProcessingQueue::mark:  ")
 			+ "Could not lock queue file.  Cannot proceed");
 	int my_current_record=current_record;
@@ -204,7 +212,8 @@ void DatascopeProcessingQueue::mark(ProcessingStatus pstat)
 	if(my_current_record>=0) status[my_current_record]=PROCESSING;
 	save();
 
-	if(flock(fd,LOCK_UN))
+	rewind(fp);
+	if(lockf(fd,F_ULOCK,(off_t)0))
 		throw SeisppError(string("DatascopeProcessingQueue::mark:  ")
 		  + "flock failed when attempting to release lock on queue file");
 }
