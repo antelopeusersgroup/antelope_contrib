@@ -12,11 +12,11 @@
 use Datascope ;
 require "getopts.pl" ;
 use File::Path;
-
+use Cwd;
  
 elog_init ( $0, @ARGV) ;
 
-our ($opt_d, $opt_p, $opt_v, $opt_V, $opt_s, $opt_o, $opt_f, $opt_z) ;
+our ($opt_d, $opt_p, $opt_v, $opt_V, $opt_s, $opt_o, $opt_f, $opt_z, $opt_C) ;
 my ($now, $t) ;
 
 $now	= time();
@@ -31,8 +31,8 @@ elog_notify(0,"\nStarting program at: $t");
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
 
-if ( ! &Getopts('Dvzp:d:s:N:o:V:') || @ARGV < 2 || @ARGV > 4) { 
-    die ( "Usage: $pgm [-v] [-z] [-p pf] [-d output_dir] [-N net] [-s sta] [-f output_file] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
+if ( ! &Getopts('Dvzp:d:s:N:o:V:C:') || @ARGV < 2 || @ARGV > 4) { 
+    die ( "Usage: $pgm [-v] [-z] [-p pf] [-d output_dir] [-C product_dir] [-N net] [-s sta] [-f output_file] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
 } else {
     $dbin	= $ARGV[0];
     $dbtrack	 = $ARGV[1];
@@ -40,6 +40,10 @@ if ( ! &Getopts('Dvzp:d:s:N:o:V:') || @ARGV < 2 || @ARGV > 4) {
 	$comment = $ARGV[2] ;
     }
 }
+
+$mycwd = getcwd();
+
+elog_notify(0,"Current working directory: $mycwd\n");
 
 elog_notify(0,"Reading pf file\n") if $opt_v;
 
@@ -68,6 +72,7 @@ if ( (!$opt_D && !$opt_V) || ( $opt_D && $opt_V) ) {
 
 &get_pf ;
 
+
 if ($opt_s) {
    $DLdir = $DLdir . "/" . $sta  ;	# this forces single station dataless into a station directory
 } else {
@@ -83,20 +88,31 @@ if ($opt_s) {
 if ($opt_d) { 
     $VNDdir	=  $opt_d ; 
     $DLdir	=  $opt_d ; 
+    if ($opt_C) {
+	elog_complain("Cannot use -C with -d.  Ignoring product directory $opt_C.\n");
+    }
 }
 
 if ( $opt_V ) {
    $dir = $VNDdir ;
-   if (! -d $dir ) {
-      mkpath "$dir" ;
+   if ($opt_C) {
+        $fulldir = cleanpath($opt_C, nolinks) . "/" . $dir ;
+   } else {
+	$fulldir = $dir ;
    }
 }
 
 if ( $opt_D ) {
    $dir = $DLdir ;
-   if (! -d $dir ) {
-      mkpath "$dir" ;
+   if ($opt_C) {
+	$fulldir = cleanpath($opt_C) . "/" . $dir ;
+   } else {
+	$fulldir = $dir ;
    }
+}
+
+if (! -d $fulldir ) {
+    mkpath "$fulldir" ;
 }
 
 if ($opt_N) {
@@ -124,7 +140,7 @@ if ($opt_f) {
 # check to see if filename name already exists.  If so, increment the filename
 #  using -1, -2, -3, etc.
 
-while (-e "$dir/$filename" || -e "$dir/$filename.gz") {
+while (-e "$fulldir/$filename" || -e "$fulldir/$filename.gz") {
     elog_notify(0, "Filename, $filename, already exists.  Incrementing filename.\n") if ($opt_v);
     if (index($filename,"-") < 0) {
         $filename = $filename . "-1";
@@ -145,9 +161,11 @@ while (-e "$dir/$filename" || -e "$dir/$filename.gz") {
 
 if ($opt_D) {
    if ($opt_s) {
-      $mkdl	= "mk_dataless_seed -o $dir/$filename $opt_v -s $opt_s $dbin " ;
+#      $mkdl	= "mk_dataless_seed -o $dir/$filename $opt_v -s $opt_s $dbin " ;
+      $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v -s $opt_s $dbin " ;
    } else {
-      $mkdl	= "mk_dataless_seed -o $dir/$filename $opt_v $dbin " ;
+#      $mkdl	= "mk_dataless_seed -o $dir/$filename $opt_v $dbin " ;
+      $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v $dbin " ;
    }
 
    elog_notify(0, "Starting mk_dataless_seed. \n") if ($opt_v);
@@ -158,7 +176,8 @@ if ($opt_D) {
    &run($mkdl);
 
 } else {
-   $mkvnd	= "deployment2vnd $dbin $dir/$filename" ;
+#   $mkvnd	= "deployment2vnd $dbin $dir/$filename" ;
+   $mkvnd	= "deployment2vnd $dbin $fulldir/$filename" ;
 
    elog_notify(0, "Starting deployment2vnd. \n") if ($opt_v);
    elog_notify(0, "Cmd is: $mkvnd \n") if ($opt_v);
@@ -169,17 +188,24 @@ if ($opt_D) {
 # zip, or don't zip, dataless
 
 if ($opt_z) {
-  $zip	= "gzip $dir/$filename";
+#  $zip	= "gzip $dir/$filename";
+  $zip	= "gzip $fulldir/$filename";
   &run($zip);
   $filename = $filename . ".gz";
 } 
 
 # send or don't send dataless via orbxfer2
+#
+# If a product directory is specified, temporariliy 
+#  cd to that directory so the transfer has the proper path
+#
 
 if ($opt_o) {
   $orb = $opt_o ;
   $xfer = "orbxfer2 $opt_v $dir/$filename $orb";
+  chdir $opt_C if ($opt_C) ;
   &run($xfer);
+  chdir $mycwd if ($opt_C) ;
 } else {
   $orb = "-";
 }
@@ -194,7 +220,7 @@ $auth        = "mdf:".getpwuid($<) ;
 
 push(@dmcfiles_record,	"time", $now,
 			"comment", $comment,
-			"dir", abspath($dir),
+			"dir", abspath($fulldir),
 			"dfile", $filename,
 			"orb", $orb,
 			"auth", $auth,
