@@ -100,6 +100,12 @@ sub format_type {
     } elsif ( $type eq "..." ) { 
 	$result = &string ($type) ; 
 
+#                       char*
+    } elsif ( $type =~ /(\w+)\s*(\*),?\s*$/ ) { 
+	my $decl = "$1*" ; 
+	$result = "" ;
+	$result .= &string($decl) ;
+
     } else { 
 	xf_warn ( "format_type can't format '$type'") ;
 	$result = &string($type) ;

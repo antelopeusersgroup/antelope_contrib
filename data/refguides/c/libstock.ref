@@ -45,7 +45,7 @@ void pffree ( Pf *pf )
 Pf *pfdel( Pf *pf, char *name)
     remove branch for name from pf, returning the deleted branch
 
-int pfconfig ( "ask", char *(*askx)(char *query) )
+int pfconfig ("ask", char *(*askx)(char *))
     replace default &ask routine with new version askx
 
 int pfget ( Pf *pf, char *name, void **result )
@@ -454,9 +454,6 @@ private double h2e ( int iyear, int iday, int ihour, int imin, double sec )
 
 private int mday2doy ( int year, int month, int day )
     convert from year, month, day to Day-Of-Year
-
-private void sdate ( char **tmstr )
-    make a file name based on current epoch time
 
 private int time_string2epoch ( char *string, double *time )
     earlier interface to str2epoch
