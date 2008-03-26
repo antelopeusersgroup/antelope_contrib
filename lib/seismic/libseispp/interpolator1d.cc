@@ -84,7 +84,10 @@ int irregular_lookup(double xp, double *x,int nx)
 	int i;
 	for(i=-1;i<nx;++i)
 		if(x[i+1]>xp) return(i);
-	return(nx);
+	if(fabs(x[nx-1]-xp)<FLT_EPSILON)
+		return(nx-1);
+	else
+		return(nx);
 }
 /* Interpolate 1 point at x for a regular grid of scalars.
 */
