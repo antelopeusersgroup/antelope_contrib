@@ -28,6 +28,11 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 	int igrid;
 	// Use a simple array here to interface with 1d interpolation library
 	double grid_depth;
+	/* Compute a match tolerance to nodes using the nominal dx3 grid spacing as 
+	a scale factor */
+	double dz_match(field.dx3_nom*0.01);
+cout << "DEBUG:  z,v values"<<endl;
+for(i=0;i<n1dsize;++i) cout << z1d[i]<<",  "<<val1d[i]<<endl;
 	// To be completely correct and general we have to loop over each surface point because the top
 	// surface is not guaranteed to be at Earth's surface.  
 	for(i=0;i<field.n1;++i)
@@ -49,6 +54,20 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 				}
 				else
 				{
+					/* We have to be careful of lookup errors creaated
+					by roundoff errors.  This was found the hard way to 
+					be an issue with constant velocity layered models with
+					grad=0 */
+					if(igrid>1)
+					{
+						if(fabs(z1d[igrid-1]-grid_depth)<dz_match) 
+							--igrid;
+					}
+					if(igrid<(n1dsize-1))
+					{
+						if(fabs(z1d[igrid+1]-grid_depth)<dz_match)
+							++igrid;
+					}
 					// normal point 
 					field.val[i][j][k]=val1d[igrid]
 						+ grad[igrid]*(grid_depth-z1d[igrid]);
