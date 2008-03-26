@@ -1216,7 +1216,8 @@ double disordered()
 int legit_ip ( char *pfname, unsigned int ip, char **limit )
 int legit_ip_pf ( Pf *pf, unsigned int ip, char **limit )
 int legit_fd (char *pfname, Pf **pf, int fd, char **limit )  
-    compare input ip address to list of valid_ip_addresses in pf,
+    compare input ip address to list of valid_ip_addresses (and optional
+    list of rejected_ip_addresses) in pf,
     returning 1 if valid, and remainder of matching line in limit
 
 int units_convert(double x, char *x_units, char *want, double *y, char *y_units)
