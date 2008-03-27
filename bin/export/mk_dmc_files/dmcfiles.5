@@ -1,0 +1,34 @@
+.TH DMCFILES 5 
+.SH NAME
+dmcfiles, dmcfiles_schema \- schema for recording transfer of various flat files, maintly to DMC 
+.SH DESCRIPTION
+The schema extension dmcfiles defines the dmcfiles table which tracks the name of the 
+file sent to the DMC, directory where it is located, orb used for transfer, a comment 
+about basic content information, and the time it was sent to the DMC.
+.SH "FIELDS"
+.IP "time"
+Time dfile was sent to DMC.          
+.IP "comment"
+Descriptive comment describing what is different about file.
+.IP "dir"
+Directory where file was saved. 
+.IP "dfile"
+Name of transferred file.
+.IP "orb"
+Orb used by orbxfer to transfer file.  If no orb transfer, field is filled with "-".
+.IP "auth"
+Who populated the field.  For instance, mdf:$user or ims2db:$user.  See \fBims2db\fP(1) or
+\fBmk_dmc_files\fP(1).
+.IP "lddate"
+Modification time.
+.SH "SEE ALSO"
+.nf
+db2ims(1), ims2dmc(1), mk_dmc_files(1)
+.fi
+.SH AUTHOR
+.nf
+Jennifer Eakins
+.br
+Univ. of California, San Diego
+.fi
+
