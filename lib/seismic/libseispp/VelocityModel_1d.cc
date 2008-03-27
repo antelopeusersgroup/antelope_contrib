@@ -13,12 +13,22 @@ using namespace SEISPP;
 double VelocityModel_1d::getv(double zin)
 {
 	double dz;
+	/* Assume at layer sigularity when within dz*this factor */
+	const double dzeqfactor(0.01);
 	for(int i=1;i<nlayers;++i)
 	{
 		if(zin<z[i]) 
 		{
-			dz=zin-z[i-1];
-			return(v[i-1]+dz*grad[i-1]);
+			if(i==1)
+				return(v[1]);
+			else
+			{
+				dz=zin-z[i-1];
+				if(fabs((zin-z[i])/dz)<dzeqfactor)
+					return(v[i]);
+				else
+					return(v[i-1]+dz*grad[i-1]);
+			}
 		}
 	}
 	dz=zin-v[nlayers-1];
