@@ -1,0 +1,503 @@
+: # use perl
+eval 'exec $ANTELOPE/bin/perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+# db2kml
+# Create kml file (Google Earth) from database site and/or origin fields
+# Michael West
+# 10/2006
+use Datascope;
+use Getopt::Std;
+
+
+
+sub get_pf {
+	eval { $testcheck = pffiles($Pf); }; 
+	if (!$testcheck) {
+		die("ERROR:  cannot locate parameter (pf) file: $Pf\n");
+	}
+	$image_server	= pfget ($Pf, 'IMAGE_SERVER' );
+	$lastchar = substr($image_server,-1);
+	### print STDERR "--- $lastchar $image_server\n";
+	if ( $lastchar ne '/') {
+		die("ERROR:  IMAGE_SERVER name must contain a trailing \/ in parameter file\n");
+	}
+	$view_lat	= pfget ($Pf, 'VIEW_LAT' );
+	$view_lon	= pfget ($Pf, 'VIEW_LON' );
+	$view_range	= pfget ($Pf, 'VIEW_RANGE' );
+	print STDERR "Sourcing icons from $image_server\n";
+}
+
+
+
+sub kmlstart {		##### Write the starting portion of a kml file
+print <<END_OF_ENTRY
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+<Document>
+END_OF_ENTRY
+;
+print "\t<name>$dbnameshort</name>\n";
+print "\t<LookAt><longitude>"."$view_lon"."</longitude><latitude>"."$view_lat"."</latitude><altitude>0</altitude>";
+print "<range>"."$view_range"."</range><tilt>0</tilt><heading>0</heading></LookAt>\n";
+print "\t<Style id=\"inactive-hypo\">\n";
+print "\t\t<IconStyle><Icon><href>".$image_server."hypocenter_0.png</href></Icon></IconStyle>\n";
+print "\t\t<LabelStyle><scale>0</scale></LabelStyle>\n";
+print "\t<BalloonStyle><text>\$[description]</text><bgColor>ffffffff</bgColor></BalloonStyle>\n";
+print "\t</Style>\n";
+print "\t<Style id=\"active-hypo\">\n";
+print "\t\t<IconStyle><Icon><href>"."$image_server"."hypocenter_0.png</href></Icon></IconStyle>\n";
+print "\t\t<LabelStyle><scale>1</scale></LabelStyle>\n";
+print "\t\t<BalloonStyle><text>\$[description]</text><bgColor>ffffffff</bgColor></BalloonStyle>\n";
+print "\t</Style>\n";
+print "\t<StyleMap id=\"hypo\">\n";
+print "\t\t<Pair><key>normal</key><styleUrl>#inactive-hypo</styleUrl></Pair>\n";
+print "\t\t<Pair><key>highlight</key><styleUrl>#active-hypo</styleUrl></Pair>\n";
+print "\t\t</StyleMap>\n";
+##	<Style id="error_ellipse">
+##		<IconStyle><Icon><href>".$image_server."error_bullseye_0.png</href></Icon></IconStyle>
+##	</Style>
+print "\t<Style id=\"inactive-station\">\n";
+print "\t\t<IconStyle><Icon><href>".$image_server."seismometer_2.png</href></Icon></IconStyle>\n";
+print "\t\t<LabelStyle><scale>0</scale></LabelStyle>\n";
+print "\t\t<BalloonStyle><text>\$[description]</text><bgColor>ffffffff</bgColor></BalloonStyle>\n";
+print "\t</Style>\n";
+print "\t<Style id=\"active-station\">\n";
+print "\t\t<IconStyle><Icon><href>".$image_server."seismometer_2.png</href></Icon></IconStyle>\n";
+print "\t\t<LabelStyle><scale>0.7</scale></LabelStyle>\n";
+print "\t\t<BalloonStyle><text>\$[description]</text><bgColor>ffffffff</bgColor></BalloonStyle>\n";
+print "\t</Style>\n";
+print "\t<StyleMap id=\"station\">\n";
+print "\t\t<Pair><key>normal</key><styleUrl>#inactive-station</styleUrl></Pair>\n";
+print "\t\t<Pair><key>highlight</key><styleUrl>#active-station</styleUrl></Pair>\n";
+print "\t</StyleMap>\n";
+
+print "\t<Style id=\"checkHideChildrenStyle\">\n";
+print "\t\t<ListStyle><listItemType>checkHideChildren</listItemType></ListStyle>\n";
+print "\t</Style>\n";
+}
+
+
+sub kmlfinish {	##### close a kml file
+	print <<END_OF_ENTRY 
+</Document>
+</kml>
+END_OF_ENTRY
+;
+}
+
+
+sub get_orig_records {	##### extract origin records
+	@db = dbopen($dbname,'r');
+	@db = dblookup(@db,"","origin","",1);
+	if ($BASIC != 1) {
+		@db2 = dblookup(@db,"","event","",1);
+		@db3 = dblookup(@db,"","netmag","",1);
+		@db  = dbjoin(@db,@db2);
+		@db  = dbjoin(@db,@db3);
+		@db  = dbsubset(@db,"orid == prefor");
+	}
+
+	@db = dbsort(@db,'time');
+	$nrecords = dbquery(@db,"dbRECORD_COUNT");
+	if ($nrecords == 0) {
+		die ("database does not exist or origin table contains no records");
+	}
+	print STDERR "number of hypocenter placemarks: $nrecords\n";
+	print "\t<Folder>\n";
+	print "\t\t<name>Earthquakes</name>\n";
+	print "\t\t<visibility>1</visibility>\n";
+	print "\t\t<LookAt><longitude>".$view_lon."</longitude><latitude>".$view_lat."</latitude><altitude>0</altitude>";
+	print "<range>".$view_range."</range><tilt>0</tilt><heading>0</heading></LookAt>\n";
+	#
+	# GET START DATE
+	@db_subset = @db;
+	$db_subset[3] = 0;
+	$Dstart = epoch(yearday(dbgetv(@db_subset,"time"))); # epoch @ 00:00:00
+	#
+	# GET END DATA
+	@db_subset = @db;
+        $nrecs = dbquery(@db_subset,"dbRECORD_COUNT");
+	$db_subset[3] = $nrecs-1;
+	$Dend = epoch(yearday(dbgetv(@db_subset,"time")))+86400;
+	#$Dstart = strtime($Dstart);
+	#$Dend   = strtime($Dend);
+	#print STDERR "---- $Dstart\n $Dend\n";
+	#
+	# STEP THROUGH DAYS
+	for ($D=$Dstart ; $D<($Dend-1) ; $D=$D+86400 ) {
+		$subset = "((time>$D) && (time<($D+86400)))";
+		@db_subset = dbsubset(@db,$subset);
+	        $nrecs = dbquery(@db_subset,"dbRECORD_COUNT") ;
+		$Dstr = epoch2str($D,'%m/%d/%y'." ($nrecs events)");
+		if ( ($nrecs>0) || ($opt_z) ) {
+			print "\t\t<Folder>\n";
+			print "\t\t\t<name>$Dstr</name>\n";
+			print "\t\t\t<styleUrl>#checkHideChildrenStyle</styleUrl>\n";
+			print "\t\t\t<LookAt><longitude>".$view_lon."</longitude><latitude>".$view_lat."</latitude><altitude>0</altitude>";
+			print "<range>".$view_range."</range><tilt>0</tilt><heading>0</heading></LookAt>\n";
+			foreach $row (0..$nrecs-1) {
+				$db_subset[3] = $row ;
+				if ($BASIC) {
+					($lon,$lat,$depth,$time,$orid,$evid,$etype,$mb,$ms,$ml,$auth) = dbgetv(@db_subset,"lon","lat","depth","time","orid","evid","etype","mb","ms","ml","auth");
+					#print STDERR "$mb  - $ms  - $ml\n";
+					if ($ms != -999) {
+						$magnitude = $ms;
+						$magtype = 'Ms';
+					} 
+					elsif ($mb != -999) {
+						$magnitude = $mb;
+						$magtype = 'mb';
+					} 
+					elsif ($ml != -999) {
+						$magnitude = $ml;
+						$magtype = 'ml';
+					} 
+					else {
+						$magnitude = 0;
+						$magtype = 'Unknown magnitude';
+					}
+				}
+				else {
+					($lon,$lat,$depth,$time,$orid,$evid,$etype,$magnitude,$magtype,$auth) = dbgetv(@db_subset,"lon","lat","depth","time","orid","evid","etype","magnitude","magtype","auth");
+				}
+				&origin_size_color;
+				&do_origin;
+			}
+			print "\t\t</Folder>\n";   # end of day folder
+		}
+	}
+##	print "\t\t\t<style><ListStyle><listItemType>checkHideChildren</listItemType></ListStyle></style>\n";
+	print "\t</Folder>\n";   # End of Earthquake folder
+	dbclose(@db);
+}
+
+
+sub do_origin {	##### write out a single origin placemark
+	$look_lon = $lon;
+	$look_lat = $lat;
+	$look_alti = 10.0;
+	$look_range = 20000;
+	$look_tilt = 0;
+	$look_heading = 0;
+	$datestr = epoch2str($time,'%m/%d/%Y');
+	$timestr = epoch2str($time,'%H:%M:%S');
+	#print "$sta\t$lon\t$lat\t$elev\t$staname\n";
+	print "\t\t\t<Placemark>\n\t\t\t<name>$magtype: $magnitude $datestr</name>\n";
+	print "\t\t\t\t<description>\n";
+	print "\t\t\t\t\t<![CDATA[<b>$datestr $timestr UTC<br>$magtype: $magnitude</b><br>lat: $lat lon: $lon<br>";
+	printf "depth: %4.1f ",$depth;
+	if (!$opt_P) {
+		print "<br>author: $auth<br>event type: $etype<br>origin id: $orid";
+	}
+	print "]]>\n";
+
+	print "\t\t\t\t</description>\n";
+	#print "\t\t\t\t<LookAt>\n";
+	#print "\t\t\t\t\t<longitude>$look_lon</longitude>\n";
+	#print "\t\t\t\t\t<latitude>$look_lat</latitude>\n";
+	#print "\t\t\t\t\t<altitude>$look_alti</altitude>\n";
+	#print "\t\t\t\t\t<range>$look_range</range>\n";
+	#print "\t\t\t\t\t<tilt>$look_tilt</tilt>\n";
+	#print "\t\t\t\t\t<heading>$look_heading</heading>\n\t\t\t\t</LookAt>\n";
+        print "\t\t\t\t<styleUrl>#hypo</styleUrl>\n";
+        print "\t\t\t\t<Style><IconStyle><scale>$size</scale><color>$color</color></IconStyle></Style>\n";
+        print "\t\t\t\t<Point>\n\t\t\t\t<altitudeMode>clampToGround></altitudeMode>\n";
+        print "\t\t\t\t\t<coordinates>$lon,$lat,0</coordinates>\n";
+        print "\t\t\t\t</Point>\n";
+        $timestampstr = epoch2str($time,'%Y-%m-%dT%H:%M:%SZ');
+        print "\t\t\t\t<TimeStamp><when>$timestampstr</when></TimeStamp>\n";
+        print "\t\t\t</Placemark>\n";
+}
+
+
+sub origin_size_color {	##### calculate the size and color of hypocenter icons
+	my %depthlist = (
+	0 => '-1.0',
+	1 => '0.0',
+	2 => '1.0',
+	3 => '2.0',
+	4 => '3.0',
+	5 => '4.3',
+	6 => '5.5',
+	7 => '6.8',
+	8 => '8.0',
+	9 => '11.0',
+	10 => '14.0',
+	11 => '17.0',
+	12 => '20.0',
+	13 => '25.0',
+	14 => '30.0',
+	15 => '35.0',
+	16 => '40.0',
+	17 => '45.0',
+	18 => '50.0',
+	19 => '87.5',
+	20 => '125.0',
+	21 => '162.5',
+	22 => '200.0',
+	23 => '250.0',
+	24 => '300.0',
+	25 => '350.0',
+	26 => '400.0',
+	);
+	@colors = qw(
+ FFFFFFFF
+ FFBFFFFF
+ FF80FFFF
+ FF40FFFF
+ FF00FFFF
+ FF00DFFF
+ FF00BFFF
+ FF009FFF
+ FF0080FF
+ FF0060FF
+ FF0040FF
+ FF0020FF
+ FF0000FF
+ FF0000DF
+ FF0000BF
+ FF00009F
+ FF000080
+ FF005940
+ FF00B300
+ FF408600
+ FF805900
+ FFBF2D00
+ FFFF0000
+ FFDF002D
+ FFBF0059
+ FF9F0086
+ FF8000B3
+	);
+	$mindist=9999;
+	$minindex=9999;
+	foreach $key (keys %depthlist) {
+	        $dist = abs($depthlist{$key}-$depth);
+	        if ($dist < $mindist) {
+	                $mindist = $dist;
+	                $minindex = $key;
+	        }
+	}
+	$color = $colors[$minindex];
+	$size = ($magnitude+2.5)/8;
+}
+
+
+
+sub get_error_records {	##### extract origin error records
+	@db = dbopen($dbname,'r');
+	@db = dblookup(@db,"","origin","",1);
+	@db2 = dblookup(@db,"","event","",1);
+	@db3 = dblookup(@db,"","netmag","",1);
+	@db4 = dblookup(@db,"","origerr","",1);
+	@db  = dbjoin(@db,@db2);
+	@db  = dbjoin(@db,@db3);
+	@db  = dbjoin(@db,@db4);
+	@db  = dbsubset(@db,"orid == prefor");
+	@db = dbsort(@db,'time');
+	$nrecords = dbquery(@db,"dbRECORD_COUNT");
+	if ($nrecords == 0) {
+		die ("database does not exist or origin tables contains no records");
+	}
+	#print STDERR "number of hypocenter error overlays: $nrecords\n";
+	print "\t<Folder>\n";
+	print "\t\t<visibility>0</visibility>\n";
+	print "\t\t<name>Earthquake location errors</name>\n";
+	#
+	# GET START DATE
+	@db_subset = @db;
+	$db_subset[3] = 0;
+	$Dstart = epoch(yearday(dbgetv(@db_subset,"time"))); # epoch @ 00:00:00
+	#
+	# GET END DATA
+	@db_subset = @db;
+        $nrecs = dbquery(@db_subset,"dbRECORD_COUNT");
+	$db_subset[3] = $nrecs-1;
+	$Dend = epoch(yearday(dbgetv(@db_subset,"time")))+86400;
+	#
+	# STEP THROUGH DAYS
+	for ($D=$Dstart ; $D<($Dend-1) ; $D=$D+86400 ) {
+		$subset = "((time>$D) && (time<($D+86400)))";
+		@db_subset = dbsubset(@db,$subset);
+	        $nrecs = dbquery(@db_subset,"dbRECORD_COUNT") ;
+		if ( ($nrecs>0) || ($opt_z) ) {
+			$Dstr = epoch2str($D,'%m/%d/%y'." ($nrecs events)");
+			print "\t\t<Folder>\n";
+			print "\t\t\t<visibility>0</visibility>\n";
+			print "\t\t\t<name>$Dstr</name>\n";
+			print "\t\t\t<styleUrl>#checkHideChildrenStyle</styleUrl>\n";
+			foreach $row (0..$nrecs-1) {
+				$db_subset[3] = $row ;
+				($lon,$lat,$depth,$time,$orid,$magnitude,$magtype,$smajax,$sminax,$strike,$conf) = dbgetv(@db_subset,"lon","lat","depth","time","orid","magnitude","magtype","smajax","sminax","strike","conf");
+				&do_error;
+			}
+			print "\t\t</Folder>\n";
+		}
+	}
+	print "\t</Folder>\n";
+	dbclose(@db);
+}
+
+
+sub do_error {	##### write out a single origin error overlay
+	$look_lon = $lon;
+	$look_lat = $lat;
+	$look_alti = 10.0;
+	$look_range = 20000;
+	$look_tilt = 0;
+	$look_heading = 0;
+	$datestr = epoch2str($time,'%m/%d/%Y');
+	$timestr = epoch2str($time,'%H:%M:%S');
+	print "\t\t\t<GroundOverlay>\n\t\t\t\t<name>$magtype: $magnitude $datestr</name>\n";
+	print "\t\t\t\t<description>\n";
+
+
+	print "\t\t\t\t\t<![CDATA[$timestr UTC";
+	print "<br>origin id: $orid<br>Confidence level: $conf<br>Semi-major axis length: $smajax km<br>Semi-minor axis length: $sminax km]]>\n";
+
+	print "\t\t\t\t</description>\n";
+	$northlat = $lat + (1*$smajax)/111.123;
+	$southlat = $lat - (1*$smajax)/111.123;
+	$eastlon  = $lon - (1*$sminax)/(111.123 * cos($lat));
+	$westlon  = $lon + (1*$sminax)/(111.123 * cos($lat));
+	$rotation = -1 * $strike;
+	#print "\t\t\t\t<styleUrl>#error_ellipse</styleUrl>\n";
+	print "\t\t\t\t<Icon><href>".$image_server."error_bullseye_0.png</href></Icon>\n";
+	print "\t\t\t\t<LatLonBox>\n";
+	print "\t\t\t\t\t<north>$northlat</north>\n";
+	print "\t\t\t\t\t<south>$southlat</south>\n";
+	print "\t\t\t\t\t<east>$eastlon</east>\n";
+	print "\t\t\t\t\t<west>$westlon</west>\n";
+	print "\t\t\t\t\t<rotation>$rotation</rotation>\n";
+	print "\t\t\t\t</LatLonBox>\n";
+        $timestampstr = epoch2str($time,'%Y-%m-%dT%H:%M:%SZ');
+        print "\t\t\t\t<TimeStamp><when>$timestampstr</when></TimeStamp>\n";
+        print "\t\t\t</GroundOverlay>\n";
+}
+
+
+
+
+sub get_site_records {	##### extract site records
+	@db = dbopen($dbname,'r');
+	@db = dblookup(@db,"","site","",1);
+	$nrecords = dbquery(@db,"dbRECORD_COUNT");
+	if ($nrecords == 0) {
+		die ("database does not exist or origin table contains no records");
+	}
+	print STDERR "number of station placemarks: $nrecords\n";
+	print "\t<Folder>\n";
+	print "\t\t<visibility>0</visibility>\n";
+	print "\t\t<name>Stations</name>\n";
+	print "\t<LookAt>\t\t<longitude>".$view_lon."</longitude>\t\t<latitude>".$view_lat."</latitude>\t\t<altitude>0</altitude>";
+	print "\t\t<range>".$view_range."</range>\t\t<tilt>0</tilt>\t\t<heading>0</heading>\t</LookAt>\n";
+	for ($db[3]=0 ; $db[3]<$nrecords ; $db[3]++) {
+		($sta,$lon,$lat,$elev,$staname) = dbgetv(@db,"sta","lon","lat","elev","staname");
+		$elev = $elev*1000;				# convert km to meters
+		&do_site;
+	}
+	print "\t</Folder>\n";
+	dbclose(@db);
+}
+
+
+sub do_site {		##### write out a single site placemark
+	$look_lon = $lon;
+	$look_lat = $lat;
+	$look_alti = 10.0;
+	$look_range = 20000;
+	$look_tilt = 0;
+	$look_heading = 0;
+	#print "$sta\t$lon\t$lat\t$elev\t$staname\n";
+	print "\t\t<Placemark>\n\t\t\t<name>$sta</name>\n";
+	print "\t\t\t<visibility>0</visibility>\n";
+	print "\t\t\t<description>\n";
+	if ($opt_P) {
+		print "\t\t\t\t<![CDATA[<b>$sta</b><br>$staname<br>elevation: $elev meters]]>\n";
+	} else {
+		print "\t\t\t\t<![CDATA[<b>$sta</b><br>$staname<br>lat: $lat lon: $lon<br>elevation: $elev meters]]>\n";
+	}
+	print "\t\t\t</description>\n\t\t\t<LookAt>\n";
+	print "\t\t\t\t<longitude>$look_lon</longitude>\n";
+	print "\t\t\t\t<latitude>$look_lat</latitude>\n";
+	print "\t\t\t\t<altitude>$look_alti</altitude>\n";
+	print "\t\t\t\t<range>$look_range</range>\n";
+	print "\t\t\t\t<tilt>$look_tilt</tilt>\n";
+	print "\t\t\t\t<heading>$look_heading</heading>\n\t\t\t</LookAt>\n";
+	print "\t\t\t<styleUrl>#active-station</styleUrl>\n";
+	print "\t\t\t<Style><IconStyle><scale>.7</scale><color>FFFFFFFF</color></IconStyle></Style>\n";
+	print "\t\t\t<Point>\n\t\t\t\t<altitudeMode>absolute</altitudeMode>\n";
+	print "\t\t\t\t<coordinates>$lon,$lat,$elev</coordinates>\n";
+	print "\t\t\t</Point>\n\t\t</Placemark>\n";
+}
+
+
+
+
+sub get_legend {		##### write out a network link to a color and size legend
+	print "\t<ScreenOverlay>\n";
+	print "\t\t<name>Legend</name>\n";
+	print "\t\t<Icon>\n";
+	print "\t\t\t<href>http://www.avo.alaska.edu/eq/kml/icons/depth_mag_scale.png</href>\n";
+	print "\t\t</Icon>\n";
+	print "\t\t<overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>\n";
+	print "\t\t<screenXY x=\"0.01\" y=\"8\" xunits=\"fraction\" yunits=\"insetPixels\"/>\n";
+	print "\t\t<rotationXY x=\"0.5\" y=\"0.5\" xunits=\"fraction\" yunits=\"fraction\"/>\n";
+	print "\t\t<size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n";
+	print "\t</ScreenOverlay>\n";
+}
+
+
+
+##############################################
+
+$Usage = "Usage: db2kml [-sobPelz] [-p pf_file] dbname > kml_file";
+# See man page for complete usage
+
+
+$opt_s = $opt_o = $opt_b = $opt_P = $opt_p = $opt_e = $opt_l = $opt_z = 0; # Kill "variable used once" error
+if ( ! &getopts('p:sobPelz') || $#ARGV != 0 ) {
+	die ( "$Usage\n" );
+} else {
+	$dbname = pop(@ARGV);
+	@dbname = split(/\//,$dbname);
+	$dbnameshort = pop(@dbname);
+
+	$Pf = db2kml;
+	if ($opt_p) {
+        	$Pf = $opt_p;
+	}
+	if ( $Pf =~ /\.pf/) {
+		die("ERROR:  Do not use the 'pf' extension when specifying the parameter file. \n");
+	}
+	&get_pf;
+
+	&kmlstart;
+
+	if ($opt_s) {
+		&get_site_records();
+	}
+
+	if ($opt_o) {
+		$BASIC = 0;
+		&get_orig_records();
+	}
+
+	if ($opt_b) {
+		$BASIC = 1;
+		&get_orig_records();
+	}
+
+	if ($opt_e) {
+		&get_error_records();
+	}
+
+	if ($opt_l) {
+		&get_legend();
+	}
+	&kmlfinish;
+}
+
+

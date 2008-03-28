@@ -1,0 +1,20 @@
+# Parameter file for db2kml
+
+
+# Web-accessible location from which icon and legend images will be sourced.
+# Include the server name and path to the directory where the images live. 
+# You must include the trailing "/".
+# NOTE: The default server can be used for testing, but for any important uses
+# it is essential that you use a web location under your own control.
+# See man page for details
+
+IMAGE_SERVER	http://www.avo.alaska.edu/eq/kml/icons/
+
+
+# The location and height above the Earth of the default view of the 
+# virtual globe. See man page for details.
+
+VIEW_LAT	61
+VIEW_LON	-149
+VIEW_RANGE	4000000
+

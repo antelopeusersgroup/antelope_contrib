@@ -1,0 +1,101 @@
+.TH DB2KML 1 "$Date$"
+.SH NAME
+db2xml \- print station, origin and or origin error data to kml file
+.SH SYNOPSIS
+.nf
+\fBdb2kml \fP[-sobPelz] [-p \fIpf_file\fP] \fIdbname\fP > \fIkml_file\fP
+.fi
+.SH DESCRIPTION
+
+\fBdb2kml\fP This script creates a file of placemarks in kml (Keyhole Markup Language) suitable for Google Earth and a growing number of other programs. The placemarks can be for origin or site information extracted from the specified database. At least one option flag (\-s, \-o, \-b, \-e) must be used or the resulting kml file will not contain any station or origin placemarks. Location errors ellipses are represented by oval overlays draped on the topography. Hypocenter and location errors are grouped into directories by day. This helps navigate different time windows of the data (though the time slide bar is the slicker way to do this.)
+
+In GE, each event will display its magnitude and date when moused over. Selecting the event will bring up a menu with more detailed information. Each point is also tagged with a kml <TimeStamp> tag. In recent versions of Google Earth (> v4.0) it is possible to "play" the events in time using the time slider bar. The time slider bar can also be used to adjust the start and end dates of the events being displayed. There is no limit on the number of sites or events that can be processed, however at present GE bogs down on more than a few thousand aplacemarks.
+
+The icons for the placemarks and the depth-magnitude scale must reside in a web accessible location. A provisional location is included in the parameter file though users are encouraged to modify this for any heavy use.  Please read the note about servers below.
+
+.SH OPTIONS
+.IP -s
+creates placemarks for all stations listed in the site table.
+.IP -o
+creates placemarks for all preferred origins. This option requires the origin, event and netmag tables. Origin placemarks are colored by depth. Size is scaled by origin and magnitude.
+.IP -b
+creates basic placemarks for all origins. This is a simplified version of the -o flag that all earthquakes in an origin table (all origins are assumed to be preferred). The same color and depth scale is used as for -o. A single magnitude is assigned in the order of preference: Ms, mb, ml. In most cases either -o or -b will be used, but not both.
+.IP -P
+limits the output to fields of public interest: mag., lat., lon. and depth. Internal details, such as orid and author are excluded. This option is a modifier to use in conjunction with either -o or -b. It also keeps the lat and lon out of the station text bubbles (the lat and lon are necessarily readable in the placemark properties however).
+.IP -e
+creates error ellipses for each origin. This option requires the origin, event, netmag and origerr tables. The error ellipses are projected on GE as ground overlay images according to the strike, semimajor and semiminor axes given in the origerr table. The confidence level represented by the ellipses is that specified in the conf field. Note this is currently a graphics intensive endeavor and it is recommended not to import thousands of error ellipses simultaneously into Google Earth. Several hundred should be no problem on most machines however.
+.IP -l
+includes a depth and magnitude legend in the upper left corner of the GE window.
+.IP "-p pf_file"
+use \fIpf_file\fP instead of the default pf file.
+.IP -z
+include day folders even when there are no events for that day. This option is useful when the catalog spans a short period of time and it needs to be clear that the day is represented, but it doesn't have any earthquakes.
+
+.SH PARAMETER FILE
+Parameter file contains four simple values. Example:
+        IMAGE_SERVER    http://www.avo.alaska.edu/eq/kml/icons/
+        VIEW_LAT        61
+        VIEW_LON        -149
+        VIEW_RANGE      4000000
+IMAGE SERVER is the most important value as it defines where to look for the icon images used for hypocenters, error ellipses, stations and labels. These images remain on the server and are called by Google Earth (or other client) when the KML file is opened. IMAGE_SERVER defines which link to place in the KML file. See NOTE ON SERVERS below for details (this is important). The VIEW... parameters are of minor consequence and affect only the default view for the dataset. VIEW_LAT and VIEW_LON specify the default view of the virtual globe. Typically these will be near the center of your array/catalog. VIEW_RANGE specifies the height of the view in meters above the point specified by VIEW_LON and VIEW_LAT. A VIEW_RANGE of 4000 has a default view of the Earth that is very roughly 50 km across. A VIEW_RANGE of 4000000 has a width on the order of 5000 km.
+
+.SH NOTE ABOUT SERVERS
+The icons and the magnitude/depth legend must be sourced from a web-accessible location. Especially if your KML files are served to a wide audience, it is important to provide a robust archive for these images that you have control over. To do this, copy the following images to a web accessible directory on your own server:
+.br
+        http://www.avo.alaska.edu/eq/kml/icons/hypocenter_0.png
+.br
+        http://www.avo.alaska.edu/eq/kml/icons/seismometer_2.png
+.br
+        http://www.avo.alaska.edu/eq/kml/icons/depth_mag_scale.png
+.br
+        http://www.avo.alaska.edu/eq/kml/icons/error_bullseye_0.png
+.br
+Then change the web directory in the db2kml parameter file to reflect the new location.
+
+.SH REAL TIME UPDATES
+This script produces a snapshot of a database. Setting up a near real time data feed requires only two additional steps.
+1) rerun db2kml when events are added to the database (event driven, or as a chron job)
+2) produce a short kml file (preferably zipped as a .kmz) that points to the kml file produced in step 1 via a network link with instructions to refresh periodically. For an example, see http://www.avo.alaska.edu/eq/kml/AVOquakes.kmz
+
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 21
+
+%\fB  db2kml -sol AVO_recentEQ > AVO_recentEQ.kml\fP
+number of station placemarks: 194
+number of hypocenter placemarks: 304
+
+  ...
+<Placemark>
+   <name>ml: 2.95 06/01/2006</name>
+   <description>
+   <![CDATA[<b>06/01/2006 03:46:13 UTC<br>ml: 2.95</b><br>lat: 19.4168 lon: -102.3013<br>depth:  0.1 <br>author:
+dbgrassoc_w/dbg<br>event type: -<br>origin id: 83037]]>
+   </description>
+   <styleUrl>#hypo</styleUrl>
+   <Style><IconStyle><scale>0.68125</scale><color>FFBFFFFF</color></IconStyle></Style>
+   <Point>
+      <altitudeMode>clampToGround></altitudeMode>
+      <coordinates>-102.3013,19.4168,0</coordinates>
+   </Point>
+   <TimeStamp><when>2006-06-01T03:46:13Z</when></TimeStamp>
+</Placemark>
+  ...
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+Numerous subsets of placemarks may be desirable - stations in a date range, origins in a magnitude range. In lieu of coding these options into \fBdb2kml\fP, it is more expedient to handle such subsets directly on the database before sending to \fBdb2kml\fP. Because piped views are not currently read by this script, a temporary database must be written before running \fBdb2kml\fP.
+
+.SH AUTHOR
+.nf
+Michael West
+Geophysical Institute
+Alaska Volcano Observatory
+University of Alaska Fairbanks
+.fi
+
