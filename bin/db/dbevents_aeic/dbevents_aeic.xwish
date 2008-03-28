@@ -1,0 +1,4715 @@
+# GTHO 1
+# Glenn Thompson (GTHO), AEIC, University of Alaska Fairbanks 2007
+# This is a modified version of the BRTT program dbevents, v4.9
+# The vast majority of the code here is from BRTT, with other code added from the work of Josh Stachnik (JCS),
+# Mitch Robinson (MR) and myself at AEIC. Other changes have been made by NIKO.
+# All modifications to dbevents included here are prefixed by GTHO 1 and postfixed by GTHO 2
+#
+# History:
+#
+# The original version of aeic_dbevents was based on dbevents v4.3 for Solaris
+# aeic_dbevents is wholly maintained by AEIC. This is an onerous task as every time
+# there is a new release of dbevents, AEIC has needed to add its own modifications in
+# all over again and test them. Unfortunately this has not been done in a consistent manner,
+# and neither has there been any source code versioning control at AEIC. The result is that
+# many different versions of aeic_dbevents are in use across AEIC with different customisations,
+# with sections based on versions of dbevents from several releases ago.
+#  
+# The two main versions of aeic_dbevents in operation at AEIC as of 2 July 2007 differ by 110 lines
+# of code. A third version differs by about 740 lines. And all three versions differ from dbevents v4.8
+# by about 2000 lines! Moreover there are about 310 line changes from dbevents v4.8 to v4.9. 
+#
+# The goal here is to begin with version 4.9 of dbevents, and then add in all the customisations made in
+# different versions of aeic_dbevents, making them optional if desirable. The overall goal is to incorporate
+# these modifications in a manner that BRTT might consider adopting them for future releases of dbevents.
+#
+# Notes:
+#
+#	Any part of the code that I may need to change back to vanilla dbevents is marked with a SCAFFOLD comment
+#
+# Caveats:
+#
+# The MacOs and Solaris versions of dbevents (v4.9) differ only by two lines:
+#	SOLARIS:
+#	<       regsub .*: denali {} host
+#	<       exec xhost -denali
+#	MACOS:
+#	>       regsub .*: marble.brtt.com {} host
+#	>       exec xhost -marble.brtt.com
+# May need to change these lines if running on different OS.
+#
+# GTHO2
+
+
+#   Copyright (c) 2003 Boulder Real Time Technologies, Inc.           
+#                                                                     
+#   This software module is wholly owned by Boulder Real Time         
+#   Technologies, Inc. Any use of this software module without        
+#   express written permission from Boulder Real Time Technologies,   
+#   Inc. is prohibited.                                               
+#
+
+#######################################################
+#------------------------------------------------------
+package require Ttgrid
+package require Pixmap
+catch { package require Tclx } 
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+
+# GTHO 1
+# previous versions of aeic_dbevents commented out the require Pixmap line and
+# included the following line instead (but no comments were made to say why these changes were made!):
+# SCAFFOLD
+source $env(ANTELOPE)/data/tcl/rtm/tailfile.tcl
+# GTHO 2
+
+# GTHO 1
+# Previous versions of aeic_dbevents omitted all code for procedures getopt, enable_balloon, schedule_balloon, 
+# reset_balloon, cancel_balloon, create_balloon, init_balloons (as well as comments for getopt.tcl)
+# GTHO 2
+
+# GTHO 1 - adding environment hash as global
+global env
+
+#------------------------------------------------------
+#######################################################
+
+# getopt.tcl
+#     simple tk-like option parser
+# usage getopt arrname args
+# where arrname - array which have entries for all possible options
+# without leading dash (possible empty)
+#
+
+proc getopt {arrname args} {
+if {[llength $args]==1} {eval set args $args}
+if {![llength $args]} return
+if {[llength $args]%2!=0} {error "Odd count of opt. arguments"}
+array set tmp $args
+foreach i [uplevel array names $arrname] {
+   if [info exists tmp(-$i)] {
+      uplevel set "$arrname\($i\)" $tmp(-$i)
+      unset tmp(-$i)
+   }
+}
+set wrong_list [array names tmp]
+if [llength $wrong_list] { 
+   set msg "Unknown option(s) $wrong_list. Must be one of:"
+   foreach i [uplevel array names $arrname] {
+     append msg " -$i"
+   }
+  error $msg 
+}
+} 
+
+# Tcl Library to provide balloon help.
+# balloon help bindings are automatically added to all buttons and
+# menus by init_balloon call.
+# you have only to provide descriptions for buttons or menu items by
+# setting elements of global help_tips array, indexed by button path or
+# menu path,item to something useful.
+# if you want to have balloon helps for any other widget you can
+# do so by enable_balloon widget_path_or_class
+# or enable_balloon_selective widget_path_or_class Tcl_Script
+#
+# You can toggle balloon help globally on and off by setting variable
+# use_balloons to true or false
+
+proc enable_balloon {widget name_to_bind {script {}}} {
+if ![llength $script] {
+$widget bind $name_to_bind <Any-Enter> "+schedule_balloon %W %X %Y"
+$widget bind $name_to_bind <Any-Motion> "+reset_balloon %W %X %Y"
+} else {
+$widget bind $name_to_bind <Any-Enter> "+schedule_balloon %W %X %Y \[$script\]"
+$widget bind $name_to_bind <Any-Motion> "+reset_balloon %W %X %Y \[$script\]"
+}
+$widget bind $name_to_bind <Any-Leave> "+cancel_balloon"
+}
+
+proc schedule_balloon {window x y {item {}}} {
+global use_balloons help_tips balloon_after_ID 
+if !$use_balloons return
+if [string length $item] {
+set index "$window,$item"
+} else {set index $window}
+if [info exists help_tips($index)] {
+set balloon_after_ID [after $help_tips(delay) "create_balloon \"$help_tips($index)\" $x $y"]
+}
+}
+proc reset_balloon {window x y {item {}}} {
+cancel_balloon
+schedule_balloon $window $x $y $item
+}
+
+proc cancel_balloon {} {
+global balloon_after_ID
+if [info exists balloon_after_ID] {
+after cancel $balloon_after_ID
+unset balloon_after_ID 
+} else { 
+ if [winfo exists .balloon_help] {destroy .balloon_help}
+}
+}
+
+proc create_balloon {text x y} {
+global balloon_after_ID help_tips font
+if {[winfo exists .balloon_help] == 1} return
+toplevel .balloon_help -relief flat
+if {[info exists balloon_after_ID] == 1} {unset balloon_after_ID}
+wm overrideredirect .balloon_help true
+wm positionfrom .balloon_help program
+wm geometry .balloon_help "+[expr $x+5]+[expr $y+5]"
+label .balloon_help.tip -text $text -wraplength $help_tips(width) -bg $help_tips(color) -font $font
+pack .balloon_help.tip
+after 5000 cancel_balloon
+}
+
+proc init_balloons {args} {
+global help_tips use_balloons
+set help_tips(width) 150
+set help_tips(color) #ffff60
+set help_tips(delay) 100
+getopt help_tips $args
+set use_balloons 1
+}
+
+#######################################################
+#------------------------------------------------------
+# GTHO 1: Main begins here: GTHO 2
+
+# GTHO 1: Previous versions of aeic_dbevents omitted following line: GTHO 2
+init_balloons -width 100 -color yellow
+
+#------------------------------------------------------
+#######################################################
+
+proc get_xhosts {} {
+    set XHOST [open |xhost r]
+    set xhosts {}
+    while { [gets $XHOST line ] >= 0 } { 
+	if { [regexp {access control disabled} $line] } { 
+	    lappend xhosts ALL_HOSTS
+	} elseif { ! [regexp {access control enabled} $line] } { 
+	    regsub INET: $line {} line
+	    lappend xhosts $line
+	}
+    }
+    close $XHOST ;
+    return $xhosts
+}
+
+proc turn_off_xhosts {xhosts} { 
+    foreach host $xhosts { 
+	#regsub .*: marble.brtt.com {} host
+	#exec xhost -marble.brtt.com
+	regsub .*: denali {} host
+	exec xhost -denali
+    }
+    set xhosts [get_xhosts]
+    if { [llength $xhosts] > 0 } { 
+	puts "\nfailed to eliminate the following hosts: $xhosts"
+	puts "\tPlease disable xhost access for these by hand"
+	set result 0
+    } else {
+	set result 1
+    }
+    return $result
+}
+
+proc xhosts_ok {msg} { 
+    set result 0
+    set xhosts [get_xhosts]
+    if { [llength $xhosts] > 0 } {
+	set answer [ tk_messageBox \
+			-default cancel \
+			-icon question \
+			-message "$msg\n\nDisable xhost access for $xhosts?" \
+			-title {Disable xhosts?} \
+			-type okcancel ]
+
+	switch -- $answer {
+	    ok      { set result [turn_off_xhosts $xhosts] }
+	}
+    } else { 
+	set result 1 
+    }
+    return $result
+}
+
+proc isthisme {} {
+	global thisisme
+
+	set thisisme 1
+}
+
+proc getappname {} {
+	global thisisme
+
+	tk appname "dbevents_[pid]"
+	set thisisme 0
+	set interps [winfo interps]
+	foreach interp $interps {
+		catch "send -async {$interp} isthisme"
+		if {$thisisme == 1} {
+			return $interp
+		}
+	}
+	return -1
+}
+
+proc check_tc24 {} {
+	set l [winfo visualsavailable .]
+	foreach v $l {
+		if {"$v" == "truecolor 24"} {return yes}
+	}
+	return no
+}
+
+proc usage {} {
+    puts stderr "Usage: dbevents \[-max_age max_age\] \[-show_detections\]"
+    puts stderr "                \[-title window_title\] \[-pf pfname\]"
+    puts stderr "                dbname \[start \[end\]\]"
+}
+
+#######################################################
+#------------------------------------------------------
+# GTHO 1: Main continues here: GTHO 2
+
+if {$argc < 1} {
+	usage
+	exit
+}
+
+set tcl_precision 17
+set update_ms	60000
+set id -1
+set stat	Startup
+set lastupdate	-1
+set lastevent	-1
+set maxmapwidth	800
+set maxmapheight	800
+set dbpickgeom	600x800+500+0
+set dbpicktypeingeom	100x20+518+601
+set mtime_event	0
+set mtime_origin 0
+set wfdialogwin .wfd
+set scsift *:BHZ
+set channels 33
+set phases P,S
+set additional swa
+set twin 180
+set filter 0
+set automap	1
+set doupdate	1
+set textwidth	50
+set legendon 1
+set legendwidth	300
+set legendheight 150
+set last_evid -1
+set myappname	[getappname]
+set geometry	+0+0
+set waittorestart	10000
+set show_origins -1
+
+if {$myappname == "-1"} {
+	puts stderr "dbevents: Cannot get appname."
+	exit
+}
+
+set M_PI	3.14159265358979323846
+set SQRT2	1.414213562
+set dbpickon	0
+# GTHO 1
+# SCAFFOLD
+#puts "main: dbpickon = $dbpickon"
+# GTHO 2
+
+
+set nstar 11
+set xstar(0) 0.0 
+set xstar(1) 0.88199
+set xstar(2) 0.47553 
+set xstar(3) 1.42659
+set xstar(4) 0.29390 
+set xstar(5) 0.0 
+set xstar(6) -0.29390 
+set xstar(7) -1.42659
+set xstar(8) -0.47553 
+set xstar(9) -0.88199 
+set xstar(10) 0.0
+set ystar(0) 0.5 
+set ystar(1) 1.21353
+set ystar(2) 0.15451 
+set ystar(3) -0.46353 
+set ystar(4) -0.40451 
+set ystar(5) -1.5 
+set ystar(6) -0.40451 
+set ystar(7) -0.46353 
+set ystar(8) 0.15451 
+set ystar(9) 1.21353
+set ystar(10) 0.5
+
+set ntriangle 3
+set xtriangle(0) 0.0 
+set xtriangle(1) 0.866
+set xtriangle(2) -0.866
+set ytriangle(0) -1.0
+set ytriangle(1) 0.5
+set ytriangle(2) 0.5
+
+#------------------------------------------------------
+#######################################################
+
+# GTHO 1: The procedure strdelta2epoch was not included in previous versions of aeic_dbevents
+proc strdelta2epoch {str} {
+	set l [split $str ":"]
+	set n [llength $l]
+	switch $n {
+	1	{
+		return [lindex $l 0]
+		}
+	2	{
+		return [expr [lindex $l 1]+60.0*[lindex $l 0]]
+		}
+	3	{
+		return [expr [lindex $l 2]+60.0*[lindex $l 1]+3600.0*[lindex $l 0]]
+		}
+	4	{
+		return [expr [lindex $l 3]+60.0*[lindex $l 2]+3600.0*[lindex $l 1]+86400.0*[lindex $l 0]]
+		}
+	default {
+		puts "Unrecognized delta time string '$str'"
+		usage
+		exit 1
+		}
+	}
+	
+}
+
+#######################################################
+#------------------------------------------------------
+# GTHO 1: Main continues here
+
+set Pf dbevents
+
+# GTHO 1: limit_age is a boolean added by NIKO
+set limit_age 0
+
+# GTHO 1: Here the command line arguments are parsed: GTHO 2
+for {set i 0} {$i < $argc} {incr i} {
+ 	set arg [lindex $argv $i]
+ 	switch -- $arg {
+	-title {
+		incr i
+		if {$i >= $argc} {
+			puts stderr "$argv0: Need -title argument"
+			usage
+			exit 1
+			}
+		set usertitle [lindex $argv $i]
+		#puts "usertitle: $usertitle"
+		}
+	-max_age {
+		incr i
+		if {$i >= $argc} {
+			puts stderr "$argv0: Need -max_age argument"
+			usage
+			exit 1
+			}
+		set max_age [strdelta2epoch [lindex $argv $i]]
+		# GTHO 1: Following line added by GTHO based on code added by NIKO: GTHO 2
+		set limit_age 1
+		#puts "max_age: $max_age"
+		}
+	-pf {
+		incr i
+		if {$i >= $argc} {
+			puts stderr "$argv0: Need -pf argument"
+			usage
+			exit 1
+			}
+		set Pf [lindex $argv $i]
+		#puts "Pf: $Pf"
+		}
+	-show_detections {
+		set show_detections 1
+		#puts "show_detections: $show_detections"
+		}
+ 	default	{
+ 		if {[string range $arg 0 0] != "-"} break
+ 		puts stderr "$argv0: Unknown argument '$arg'"
+ 		usage
+ 		exit 1
+ 		}
+ 	}
+}
+
+if {$i >= $argc} {
+	puts stderr "$argv0: Need dbname argument" 
+	usage
+	exit 1
+}
+
+set dbname [lindex $argv $i]
+incr i
+
+if {$i < $argc} {
+	set time_start [str2epoch [lindex $argv $i]]
+	incr i
+}
+
+if {$i < $argc} {
+	set time_end [str2epoch [lindex $argv $i]]
+	incr i
+}
+
+if {$i < $argc} {
+ 	set arg [lindex $argv $i]
+ 	puts stderr "$argv0: Unknown argument '$arg'"
+ 	usage
+ 	exit 1
+}
+
+
+# GTHO 1: Added lines ************ From here to other stars could be moved down
+global use_aeic_extensions
+set use_aeic_extensions [pfget $Pf use_aeic_extensions]
+if {$use_aeic_extensions == ""} { 
+	set use_aeic_extensions 0 
+
+}
+
+global autodetailmap
+set autodetailmap	[pfget $Pf autodetailmap]
+
+# ANNOUNCE / ALARM
+global announce_enabled
+set announce_enabled		[pfget $Pf announce_enabled]
+if {($announce_enabled == "") || ($use_aeic_extensions == 0)} { 
+	set announce_enabled 0 
+}
+
+# REVIEW / RELOCATE
+global review_event_enabled
+set review_event_enabled		[pfget $Pf review_event_enabled]
+if {($review_event_enabled == "") || ($use_aeic_extensions == 0)} { 
+	set review_event_enabled 1 
+}
+
+# WEBMAPS
+global webmaps_enabled
+global webmapsdb
+global webmapsdir
+set webmaps_enabled 1
+if { [ catch { set webmapsdb  [pfget $Pf webmapsdb ] } ] } {
+	set webmapsdb ""
+}
+if { [ catch { set webmapsdir [pfget $Pf webmapsdir] } ] } {
+	set webmapsdir ""
+}
+if { ($webmapsdb == "" && $webmapsdir == "") || ($use_aeic_extensions == 0) } {
+	set webmaps_enabled 0
+}
+
+# SHAKEMAP
+global shakemapsdir
+if { [catch { set shakemapsdir [pfget $Pf shakemapsdir] } ] } {
+	set shakemapsdir ""
+}
+
+global shakemaps_script
+if { [ catch { set shakemaps_script  [pfget $Pf shakemaps_script ] } ] } {
+	set shakemaps_script ""
+}
+
+global shakemaps_enabled
+if { ($shakemapsdir == "") || ($shakemaps_script == "") || ($use_aeic_extensions == 0)} {
+	set shakemaps_enabled 0
+} else {
+	set shakemaps_enabled 1
+}
+
+
+
+# DOWNSTREAM DELETES 
+global downstream_deletes_enabled
+if {[pfget $Pf delete_script] != "" && $review_event_enabled == 1} {
+	set downstream_deletes_enabled 1
+} else {
+	set downstream_deletes_enabled 0
+}
+ 
+
+# GTHO 2
+
+
+# GTHO 1: Modification to be able to read a list_font from the parameter file
+# For a list of usable XWindows fonts use a command like:
+# xlsfonts | grep adobe-courier-bold-r-normal | grep iso8859-1$
+set list_font	[pfget $Pf list_font]
+if {$list_font == "" || $use_aeic_extensions == 0} {
+	if {$tcl_version < 8.0} {
+		set list_font fixed
+	} else {
+		set list_font [list fixed 8]
+	}
+}
+# GTHO 2
+
+# GTHO 1: Added line as I was getting an error about $font not being set: GTHO 2
+set font $list_font
+#************ 
+
+tk_setPalette \#d9d9ee
+
+#------------------------------------------------------
+#######################################################
+
+
+proc mytk_popup {menu x y {entry {}}} {
+    variable ::tk::Priv
+    global tcl_platform
+    if {($Priv(popup) != "") || ($Priv(postedMb) != "")} {
+        tkMenuUnpost {}
+    }
+    tk::PostOverPoint $menu $x $y $entry
+    if {$tcl_platform(platform) == "unix"} {
+        tk::SaveGrabInfo $menu
+        grab -global $menu
+        set Priv(popup) $menu
+    }
+}
+
+proc clock_seconds {} {
+	global tcl_version
+
+	if {$tcl_version < 8.0} {
+		return [getclock]
+	} else {
+ 		return [clock seconds]
+	}
+}
+
+proc clock_format {tm} {
+	global tcl_version
+
+	if {$tcl_version < 8.0} {
+		return [fmtclock $tm "%T" GMT]
+	} else {
+ 		return [clock format $tm -format "%T" -gmt 1]
+	}
+}
+
+proc mercy {lat} {
+	global M_PI
+
+	if {$lat >= 90.0} {return 1000.0}
+	if {$lat <= -90.0} {return -1000.0}
+	set y [expr 180.0*log(tan((0.5*$M_PI*$lat/180.0)+0.25*$M_PI))/$M_PI]
+	return $y
+}
+
+proc merclat {y} {
+	global M_PI
+
+	set lat [expr 180.0*(2.0 * (atan(exp(($y)*$M_PI/180.0) - 0.25*$M_PI)))/$M_PI]
+	return $lat
+}
+
+proc dist {latc lonc lat lon} {
+	global M_PI
+
+	set lat1 [expr $latc*$M_PI/180.0]
+	set lat2 [expr $lat*$M_PI/180.0]
+	set lon1 [expr $lonc*$M_PI/180.0]
+	set lon2 [expr $lon*$M_PI/180.0]
+	set slat1 [expr sin($lat1)]
+	set clat1 [expr cos($lat1)]
+	set slat2 [expr sin($lat2)]
+	set clat2 [expr cos($lat2)]
+	set x2 [expr $clat2*cos($lon2-$lon1)]
+	set y2 [expr $clat2*sin($lon2-$lon1)]
+	set x [expr $x2-$clat1]
+	set z [expr $slat2-$slat1]
+	set xpp [expr $x*$clat1+$z*$slat1]
+	set ypp $y2
+	set zpp [expr -$x*$slat1+$z*$clat1]
+	set s [expr sqrt($xpp*$xpp+$ypp*$ypp+$zpp*$zpp)]
+	set del [expr 2.0*asin(0.5*$s)*180.0/$M_PI]
+	if {$ypp == 0.0 && $zpp == 0.0} {
+		set az 0.0
+	} else {
+		set az [expr atan2($ypp,$zpp)*180.0/$M_PI]
+	}
+	if {$az < 0.0} {set az [expr $az + 360.0]}
+	return [list $del $az]
+}
+
+proc edpxy {latc lonc lat lon} {
+	global M_PI
+
+	if {$latc == $lat && $lonc == $lon} {return [list 0.0 0.0]}
+	set delax [dist $latc $lonc $lat $lon]
+	set del [lindex $delax 0]
+	set az [expr $M_PI*[lindex $delax 1]/180.0]
+	return [list [expr $del*sin($az)] [expr $del*cos($az)]]
+}
+
+proc set_mxscroll {w} {
+        global mapon
+        global mapxscroll
+        global width
+ 
+        set wtot $width($mapon)
+        set first [lindex [$mapxscroll($mapon) get] 0]
+        set last [expr $first+double($w)/double($wtot)]
+        if {$last > 1.0} {
+                set first [expr 1.0-($last-$first)]
+                set last 1.0
+        }
+        $mapxscroll($mapon) set $first $last
+}
+
+proc set_myscroll {h} {
+        global mapon
+        global mapyscroll
+        global height
+ 
+        set htot $height($mapon)
+        set first [lindex [$mapyscroll($mapon) get] 0]
+        set last [expr $first+double($h)/double($htot)]
+        if {$last > 1.0} {
+                set first [expr 1.0-($last-$first)]
+                set last 1.0
+        }
+        $mapyscroll($mapon) set $first $last
+}
+
+proc set_mxview args {
+        global mapon
+        global mapxscroll
+        global mapcanvas
+        global width
+        global hmapframe
+ 
+        set wtot $width($mapon)
+	set i 0
+        set arg [lindex $args $i]
+        switch $arg {
+        moveto {
+                set l [$mapxscroll($mapon) get]
+		set i [expr $i+1]
+        	set first [lindex $args $i]
+                if {$first < 0.0} {set first 0.0}
+                set delta [expr $first-[lindex $l 0]]
+                set last [expr [lindex $l 1]+$delta]
+                if {$last > 1.0} {
+                        set delta [expr 1.0 - [lindex $l 1]]
+                        set first [expr [lindex $l 0] +$delta]
+                        set last 1.0
+                }
+                set x [expr -int($first*$wtot+0.1)]
+		$mapcanvas($mapon) xview moveto $first
+                $mapxscroll($mapon) set $first $last
+                set x [$mapcanvas($mapon) canvasx 5]
+		set y [expr $hmapframe($mapon)-5]
+                set y [$mapcanvas($mapon) canvasy $y]
+                }
+        default
+                {}
+        }
+}
+
+proc set_mxview_map args {
+        global mapxscroll
+        global mapcanvas
+        global width
+        global hmapframe
+ 
+	set i 0
+        set mapon [lindex $args $i]
+        set wtot $width($mapon)
+	incr i
+       	set arg [lindex $args $i]
+        switch $arg {
+        moveto {
+                set l [$mapxscroll($mapon) get]
+		incr i
+        	set first [lindex $args $i]
+                if {$first < 0.0} {set first 0.0}
+                set delta [expr $first-[lindex $l 0]]
+                set last [expr [lindex $l 1]+$delta]
+                if {$last > 1.0} {
+                        set delta [expr 1.0 - [lindex $l 1]]
+                        set first [expr [lindex $l 0] +$delta]
+                        set last 1.0
+                }
+                set x [expr -int($first*$wtot+0.1)]
+		$mapcanvas($mapon) xview moveto $first
+                $mapxscroll($mapon) set $first $last
+                set x [$mapcanvas($mapon) canvasx 5]
+		set y [expr $hmapframe($mapon)-5]
+                set y [$mapcanvas($mapon) canvasy $y]
+                }
+        default
+                {}
+        }
+}
+
+proc set_myview args {
+        global mapon
+        global mapyscroll
+        global mapcanvas
+        global height
+        global hmapframe
+ 
+        set htot $height($mapon)
+	set i 0
+        set arg [lindex $args $i]
+        switch $arg {
+        moveto {
+                set l [$mapyscroll($mapon) get]
+		set i [expr $i+1]
+        	set first [lindex $args $i]
+                if {$first < 0.0} {set first 0.0}
+                set delta [expr $first-[lindex $l 0]]
+                set last [expr [lindex $l 1]+$delta]
+                if {$last > 1.0} {
+                        set delta [expr 1.0 - [lindex $l 1]]
+                        set first [expr [lindex $l 0] +$delta]
+                        set last 1.0
+                }
+                set x [expr -int($first*$htot+0.1)]
+		$mapcanvas($mapon) yview moveto $first
+                $mapyscroll($mapon) set $first $last
+                set x [$mapcanvas($mapon) canvasx 5]
+		set y [expr $hmapframe($mapon)-5]
+                set y [$mapcanvas($mapon) canvasy $y]
+                }
+        default
+                {}
+        }
+}
+
+proc set_myview_map args {
+        global mapyscroll
+        global mapcanvas
+        global height
+        global hmapframe
+ 
+	set i 0
+        set mapon [lindex $args $i]
+        set htot $height($mapon)
+	incr i
+       	set arg [lindex $args $i]
+        switch $arg {
+        moveto {
+                set l [$mapyscroll($mapon) get]
+		incr i
+        	set first [lindex $args $i]
+                if {$first < 0.0} {set first 0.0}
+                set delta [expr $first-[lindex $l 0]]
+                set last [expr [lindex $l 1]+$delta]
+                if {$last > 1.0} {
+                        set delta [expr 1.0 - [lindex $l 1]]
+                        set first [expr [lindex $l 0] +$delta]
+                        set last 1.0
+                }
+                set x [expr -int($first*$htot+0.1)]
+		$mapcanvas($mapon) yview moveto $first
+                $mapyscroll($mapon) set $first $last
+                set x [$mapcanvas($mapon) canvasx 5]
+		set y [expr $hmapframe($mapon)-5]
+                set y [$mapcanvas($mapon) canvasy $y]
+                }
+        default
+                {}
+        }
+}
+
+proc set_update {update_interval} {
+	global db
+	global id
+	global update_ms
+	global mtime_event
+
+	after cancel 4.9
+	if {$update_interval == "now"} {
+		set mtime_event -1
+		plot_events $db 1 1
+		return
+	}
+	set update_ms [expr [convert_time $update_interval]*1000]
+	plot_events $db 1 1
+}
+
+proc update_latency {} {
+	global lastupdate
+	global lastevent
+	global stat
+	global doupdate
+
+	if {$lastupdate < 0 || $doupdate == 0} {
+		after 1000 update_latency
+		return
+	}
+	set latency [expr [clock_seconds]-$lastupdate]
+	if {$lastevent < 0} {
+		set stat [format "Time: %s Gmt, %s seconds since last update, no events" \
+			[mystrtime [clock seconds]] [clock_format $latency]]
+		seticontime ""
+	} else {
+		set latency2 [expr int([clock_seconds]-$lastevent+0.5)]
+		set stat [format "Time: %s Gmt, %s since last update, %s since last event" \
+			[mystrtime [clock seconds]] [clock_format $latency] [clock_format $latency2]]
+		seticontime $latency2
+	}
+	after 1000 update_latency
+}
+
+proc seticontime {tm} {
+	global lasticontime
+
+	if {[info exists lasticontime] == 0} {
+		set lasticontime foo
+	}
+	if {$tm == $lasticontime} return
+	set lasticontime $tm
+	if {$tm == ""} {
+		.icon.c itemconfigure icontime -text ""
+		return
+	} else {
+		.icon.c itemconfigure icontime -text [clock_format $tm]
+	}
+	set color \#ff0000
+	if {$tm >= 3600} {set color \#004000}
+	if {$tm >= 21600} {set color \#000040}
+	if {$tm >= 86400} {set color \#404040}
+	.icon.c itemconfigure icontime -fill $color
+}
+
+proc mystrtime {epoch} {
+	# GTHO 1: Emergency managers don't want Julian days - give date & time only
+	global use_aeic_extensions
+	if {$use_aeic_extensions} {
+		set out [epoch2str $epoch "%Y/%m/%d %H:%M:%S"]
+	} else {
+		set out [epoch2str $epoch "%Y%j(%m/%d) %H:%M:%S"]
+	}
+	# GTHO 2
+	return "$out"
+}
+
+proc convert_time {tm} {
+	set l [string length $tm]
+	set lend [expr $l-1]
+	set value [string range $tm 0 [expr $l-2]]
+	set units [string range $tm $lend $lend]
+	switch $units {
+	s 	-
+	S	{
+		set out $value
+		}
+	m 	-
+	M	{
+		set out [expr $value*60]
+		}
+	h 	-
+	H	{
+		set out [expr $value*3600]
+		}
+	d 	-
+	D	{
+		set out [expr $value*24*3600]
+		}
+	default {
+		set out [string range $tm 0 end]
+		}
+	}
+	return $out
+}
+
+proc quit_proc {} {
+	send2dbpick quit
+	exit
+}
+
+proc delete_event {} {
+	global delete_evid
+	global dbname
+
+	set ans [tk_dialog .areyousure "dbevents: confirm" "Are You Sure?" "" 0 No Yes]
+	if {$ans != 1} return
+	catch "exec dbsubset $dbname.event evid==$delete_evid | dbjoin - origin assoc arrival | dbdelete -m -"
+}
+
+# GTHO 1
+# Here previous versions of aeic_dbevents incorporated the AEIC routines:
+#	delete_event_qdds (now delete_event_downstream)
+#	send_qdds_email (deleted)
+#	display_webmap
+#	nearest_places
+#	compass_from_az	
+# These are now all at end of script 
+# GTHO 2
+
+proc make_event {evid} {
+	global db
+	global seorid
+	# GTHO 1: Looks like seselev and sesname were adopted from aeic_dbevents variables sesel and sesnam, so probably don't want these: GTHO 2
+	#JCSa
+	#global sesel
+	#global sesnam
+	#JCSb
+	# GTHO 2
+	global sestas
+	global sesta
+	global seolat
+	global seolon
+	global seslat
+	global seslon
+	global seselev
+	global sesondate
+	global sesoffdate
+	global sesname
+	global seevid
+	global seprefor
+	global seauth
+	global sealgorithm
+	global selatency
+	global sereview
+	global senass
+	global sendef
+	global seotime
+	global seodepth
+	global semag
+	global semagtype
+	global seext
+	global serev
+	global seregion
+	global selist
+	global semaxax
+	global seminax
+	global sedpax
+	global sestrike
+	global orlistelements
+	global currentorselection
+	global id
+	global external_catalog_authors
+	global seselected
+	global sestachans
+	global setimedef
+	global stat
+	global prefor
+	global show_detections
+
+	set stat "Making event..."
+	update
+	if {[info exists seorid] != 0} {unset seorid}
+	# GTHO 1: Looks like seselev and sesname were adopted from aeic_dbevents variables sesel and sesnam: GTHO 2
+	#JCS
+	if {[info exists sesel] != 0} {unset sesel}
+	if {[info exists sesnam] != 0} {unset sesnam}
+	#JCS
+	# GTHO 2
+	if {[info exists sestas] != 0} {unset sestas}
+	if {[info exists sesta] != 0} {unset sesta}
+	if {[info exists seolat] != 0} {unset seolat}
+	if {[info exists seolon] != 0} {unset seolon}
+	if {[info exists seslat] != 0} {unset seslat}
+	if {[info exists seslon] != 0} {unset seslon}
+	if {[info exists seselev] != 0} {unset seselev}
+	if {[info exists sesondate] != 0} {unset sesondate}
+	if {[info exists sesoffdate] != 0} {unset sesoffdate}
+	if {[info exists sesname] != 0} {unset sesname}
+	if {[info exists seauth]} {unset seauth}
+	if {[info exists sealgorithm]} {unset sealgorithm}
+	if {[info exists selatency]} {unset selatency}
+	if {[info exists sereview]} {unset sereview}
+	if {[info exists senass]} {unset senass}
+	if {[info exists sendef]} {unset sendef}
+	if {[info exists seotime]} {unset seotime}
+	if {[info exists seodepth]} {unset seodepth}
+	if {[info exists semag]} {unset semag}
+	if {[info exists semagtype]} {unset semagtype}
+	if {[info exists seext]} {unset seext}
+	if {[info exists serev]} {unset serev}
+	if {[info exists seregion]} {unset seregion}
+	if {[info exists selist]} {unset selist}
+	if {[info exists semajax]} {unset semajax}
+	if {[info exists seminax]} {unset seminax}
+	if {[info exists sedpax]} {unset sedpax}
+	if {[info exists sestrike]} {unset sestrike}
+	if {[info exists orlistelements]} {unset orlistelements}
+	if {[info exists currentorselection]} {unset currentorselection}
+	if {[info exists sestachans]} {unset sestachans}
+	if {[info exists setimedef]} {unset setimedef}
+
+	set dbe [dblookup $db 0 event 0 dbSCRATCH]
+	set dbo [dblookup $db 0 origin 0 0]
+	set dba [dblookup $db 0 assoc 0 0]
+	set dbar [dblookup $db 0 arrival 0 dbSCRATCH]
+	set dbs [dblookup $db 0 site 0 dbSCRATCH]
+	if {[info exists prefor($evid)] == 0} {
+		tk_messageBox -type ok -message "No event to show"
+		return
+	}
+	set seprefor $prefor($evid)
+	dbputv $dbe 0 dbSCRATCH evid $evid
+	set origin_recs [dbmatches $dbe $dbo orhook evid\#evid]
+	set n [llength $origin_recs]
+	if {$n < 1} {
+		tk_messageBox -type ok -message "No origins to show"
+		return
+	}
+
+	set seevid $evid
+	set seselected $seprefor
+	foreach rec $origin_recs {
+		set dbo [lreplace $dbo 3 3 $rec]
+		set orid [dbgetv $dbo 0 $rec orid]
+		set seorid($orid) $orid
+		set seolat($orid) [dbgetv $dbo 0 $rec lat]
+		set seolon($orid) [dbgetv $dbo 0 $rec lon]
+		set seauth($orid) [dbgetv $dbo 0 $rec auth]
+		set sealgorithm($orid) [dbgetv $dbo 0 $rec algorithm]
+		set sereview($orid) [dbgetv $dbo 0 $rec review]
+		set senass($orid) [dbgetv $dbo 0 $rec nass]
+		set sendef($orid) [dbgetv $dbo 0 $rec ndef]
+		set seotime($orid) [dbgetv $dbo 0 $rec time]
+		set seodepth($orid) [dbgetv $dbo 0 $rec depth]
+		set ondate [dbgetv $dbo 0 $rec jdate]
+		set selatency($orid) [strtdelta [expr [dbgetv $dbo 0 $rec lddate] - $seotime($orid)]]
+		set dboe [dblookup $db 0 origerr orid $orid]
+		set recore [lindex $dboe 3]
+		if {$recore >= 0} {
+			set semaxax($orid) [dbgetv $dboe 0 $recore smajax]
+			set seminax($orid) [dbgetv $dboe 0 $recore sminax]
+			set sestrike($orid) [dbgetv $dboe 0 $recore strike]
+			set sedpax($orid) [dbgetv $dboe 0 $recore sdepth]
+		}
+
+		set magtype mb
+		set mag [dbgetv $dbo 0 $rec mb]
+		if {$mag == "" || $mag == "{}"} {set mag -999.0}
+		if {$mag == -999.0} {
+			set magtype ms
+			set mag [dbgetv $dbo 0 $rec ms]
+			if {$mag == "" || $mag == "{}"} {set mag -999.0}
+			if {$mag == -999.0} {
+				set magtype ml
+				set mag [dbgetv $dbo 0 $rec ml]
+				if {$mag == "" || $mag == "{}"} {set mag -999.0}
+			}
+		}
+		set semag($orid) $mag
+		set semagtype($orid) $magtype
+
+		if {[info exists external_catalog_authors($seauth($orid))] == 1} {
+			set seext($orid) $external_catalog_authors($seauth($orid))
+		} else {
+			set seext($orid) 0
+		}
+		if {[info exists local_catalog_authors($seauth($orid))] == 1} {
+			set serev($orid) $local_catalog_authors($seauth($orid))
+		} else {
+			if {$sereview($orid) == "y"} {
+				set serev($orid) r
+			} else {
+				set serev($orid) 0
+			}
+		}
+		set seregion($orid) [dbeval $db "grname($seolat($orid),$seolon($orid))"]
+		if {$seext($orid) != "0"} {
+			set rev $seext($orid)
+		} else {
+			if {$seext($orid) != "0"} {
+				set rev $seext($orid)
+			} else {
+				set rev " "
+			}
+		}
+		if {$mag == -999.0} {
+			set selist($orid) [format "%s        %s %3d %s\n     lat = %s, lon = %s, depth = %s\n     orid = %d, nass = %d, evid = %d\n     auth = %s, algorithm = %s,\n     latency = %s\n" \
+				[mystrtime $seotime($orid)] $rev $sendef($orid) $seregion($orid) \
+				$seolat($orid) $seolon($orid) $seodepth($orid) \
+				$orid $senass($orid) $evid \
+				$seauth($orid) $sealgorithm($orid) $selatency($orid)] 
+		} else {
+			set selist($orid) [format "%s %4.1f%s %s %3d %s\n     lat = %s, lon = %s, depth = %s\n     orid = %d, nass = %d, evid = %d\n     auth = %s, algorithm = %s,\n     latency = %s\n" \
+				[mystrtime $seotime($orid)] $mag $magtype $rev $sendef($orid) $seregion($orid) \
+				$seolat($orid) $seolon($orid) $seodepth($orid) \
+				$orid $senass($orid) $evid \
+				$seauth($orid) $sealgorithm($orid) $selatency($orid)]
+		}
+
+		set arids [list]
+		if {[info exists scs]} {unset scs}
+		set assoc_recs [dbmatches $dbo $dba ashook]
+		foreach arec $assoc_recs {
+			set arid [dbgetv $dba 0 $arec arid]
+			set delta [dbgetv $dba 0 $arec delta]
+			set timedef [dbgetv $dba 0 $arec timedef]
+			if {"$timedef" == "-"} {set timedef "n"}
+			if {"$timedef" == ""} {set timedef "n"}
+			lappend arids $arid
+			dbputv $dbar 0 dbSCRATCH arid $arid
+			set arrival_recs [dbmatches $dbar $dbar ar1hook arid\#arid]
+			if {[llength $arrival_recs] < 1} continue
+			set arrec [lindex $arrival_recs 0]
+			set sta [dbgetv $dbar 0 $arrec sta]
+			set chan [dbgetv $dbar 0 $arrec chan]
+			if {[info exists sesta($orid,$sta)] == 0} {
+				dbputv $dbs 0 dbSCRATCH sta $sta ondate $ondate offdate $ondate
+				set site_recs [dbmatches $dbs $dbs st1hook]
+				if {[llength $site_recs] > 0} {
+					set srec [lindex $site_recs 0]
+					set lat [dbgetv $dbs 0 $srec lat]
+					set lon [dbgetv $dbs 0 $srec lon]
+					set elev [dbgetv $dbs 0 $srec elev]
+					set sondate [dbgetv $dbs 0 $srec ondate]
+					set soffdate [dbgetv $dbs 0 $srec offdate]
+					# GTHO 1: In aeic_dbevents variable name was called staname: GTHO 2
+					set name [dbgetv $dbs 0 $srec staname]
+				} else {
+					set lat -1000.0
+					set lon -1000.0
+					# GTHO 1
+					# JCS commented out elev and staname lines in aeic_dbevents
+					# soffdate and sondate added by BRTT
+					# In aeic_dbevents variable name was called staname
+					# GTHO 2
+					set elev -1000.0
+					set sondate -1
+					set soffdate -1
+					set name -
+				}
+				# GTHO 1: Looks like seselev and sesname were adopted from aeic_dbevents variables sesel and sesnam: GTHO 2
+				set sesta($orid,$sta) $sta
+				lappend sestas($orid) $sta
+				set seslat($orid,$sta) $lat
+				set seslon($orid,$sta) $lon
+				set seselev($orid,$sta) $elev
+				set sesondate($orid,$sta) $sondate
+				set sesoffdate($orid,$sta) $soffdate
+				set sesname($orid,$sta) $name
+				set setimedef($orid,$sta) $timedef
+				# GTHO 1: 
+				# SCAFFOLD
+				#puts "sta = $sta"
+				#puts "sesta(orid,sta) = $sesta($orid,$sta)"
+				#	puts "sestas(orid) = $sestas($orid)"
+				# GTHO 2
+
+			}
+			set stachan [format "%s:%s" $sta $chan]
+			if {[info exists scs($stachan)] == 0} {
+				set scs($stachan) $delta
+				lappend sestachans($orid) [format "%s/%s/%s" $stachan $delta $timedef]
+			} else {
+			}
+		}
+
+		dbputv $dbs 0 dbSCRATCH ondate $ondate offdate $ondate
+		set site_recs [dbmatches $dbs $dbs sthook ondate::offdate\#ondate::offdate]
+		foreach srec $site_recs {
+			set sta [dbgetv $dbs 0 $srec sta]
+			set lat [dbgetv $dbs 0 $srec lat]
+			set lon [dbgetv $dbs 0 $srec lon]
+			set elev [dbgetv $dbs 0 $srec elev]
+			set sondate [dbgetv $dbs 0 $srec ondate]
+			set soffdate [dbgetv $dbs 0 $srec offdate]
+			set name [dbgetv $dbs 0 $srec staname]
+			set delta [dbeval $dba "distance\($lat,$lon,$seolat($orid),$seolon($orid)\)"]
+			set pretime [dbeval $dba "ptime\($delta,$seodepth($orid)\)+$seotime($orid)"]
+			if {[info exist show_detections] != 0} {
+				set dbd [dblookup $db 0 detection 0 0]
+				set dbw [dblookup $db 0 wfdisc 0 dbSCRATCH]
+				dbputv $dbw 0 dbSCRATCH sta $sta time [expr $pretime-20.0] endtime [expr $pretime+20.0]
+				set detection_recs [dbmatches $dbw $dbd dthook sta\#sta time::endtime\#time]
+				foreach drec $detection_recs {
+			 		set chan [dbgetv $dbd 0 $drec chan]
+			 		if {[info exists sesta($orid,$sta)] == 0} {
+			 			set sesta($orid,$sta) $sta
+			 			set sestas($orid) [linsert $sestas($orid) 0 $sta]
+			 			set seslat($orid,$sta) $lat
+			 			set seslon($orid,$sta) $lon
+			 			set setimedef($orid,$sta) "1"
+			 		}
+			 		set stachan [format "%s:%s" $sta $chan]
+			 		if {[info exists scs($stachan)] == 0} {
+			 			set scs($stachan) $delta
+			 			lappend sestachans($orid) [format "%s/%s/1" $stachan $delta]
+			 		} else {
+			 		}
+				}
+			}
+
+			# GTHO 1
+			# This next block was commented out in previous versions of aeic_dbevents
+			# However, back then it used detections rather than arrivals too
+			dbputv $dbar 0 dbSCRATCH sta $sta time $pretime
+			set arrival_recs [dbmatches $dbar $dbar arhook sta\#sta time\#\(time-10.0\)::\(time+30.0\)]
+			foreach arec $arrival_recs {
+				set arid [dbgetv $dbar 0 $arec arid]
+				set chan [dbgetv $dbar 0 $arec chan]
+				set j [lsearch -exact $arids $arid]
+				if {$j < 0} {
+					set timedef 0
+				} else {
+					continue
+				}
+				if {[info exists sesta($orid,$sta)] == 0} {
+					set sesta($orid,$sta) $sta
+			 		set sestas($orid) [linsert $sestas($orid) 0 $sta]
+					set seslat($orid,$sta) $lat
+					set seslon($orid,$sta) $lon
+					set seselev($orid,$sta) $elev
+					set sesondate($orid,$sta) $sondate
+					set sesoffdate($orid,$sta) $soffdate
+					set sesname($orid,$sta) $name
+					set setimedef($orid,$sta) $timedef
+				}
+				set stachan [format "%s:%s" $sta $chan]
+				if {[info exists scs($stachan)] == 0} {
+					set scs($stachan) $delta
+					lappend sestachans($orid) [format "%s/%s/%s" $stachan $delta $timedef]
+				} else {
+				}
+			}
+			# GTHO 2
+		}
+		if {[info exists sestachans($orid)]} {
+			if {[llength $sestachans($orid)] > 0} {
+				set sestachans($orid) [lsort -command mycompare $sestachans($orid)]
+			}
+		}
+	}
+
+	plot_origins
+}
+
+proc mycompare {arg1 arg2} {
+	set delta1 [lindex [split $arg1 "/"] 1]
+	set delta2 [lindex [split $arg2 "/"] 1]
+	if {$delta2 > $delta1} {
+		return -1
+	} elseif {$delta2 < $delta1} {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+proc restartdbpick {} {
+	send2dbpick quit
+	after 5000 setwfevent
+}
+
+proc make_eventmenu {menu} {
+	menu $menu -tearoff no
+	$menu add command -label "Evid: " -command {}
+	$menu add command -label "Orid: " -command {}
+	$menu add command -label "Time: " -command {}
+	$menu add command -label "Lat: " -command {}
+	$menu add command -label "Lon: " -command {}
+	$menu add command -label "Depth: " -command {}
+	$menu add command -label "Mag: " -command {}
+	$menu add command -label "Auth: " -command {}
+	$menu add command -label "Reviewed: " -command {}
+	$menu add command -label "Nassoc  : " -command {}
+	$menu add command -label "Ndef    : " -command {}
+	# GTHO 1
+	global use_aeic_extensions
+	if {$use_aeic_extensions == 1} {
+		make_addtopopupmenu $menu
+	}
+	# GTHO 2
+}
+
+proc make_originmenu {menu} {
+	menu $menu -tearoff no
+	$menu add command -label "Evid: " -command {}
+	$menu add command -label "Orid: " -command {}
+	$menu add command -label "Time: " -command {}
+	$menu add command -label "Lat: " -command {}
+	$menu add command -label "Lon: " -command {}
+	$menu add command -label "Depth: " -command {}
+	$menu add command -label "Mag: " -command {}
+	$menu add command -label "Auth: " -command {}
+	$menu add command -label "Reviewed: " -command {}
+	$menu add command -label "Latency: " -command {}
+	$menu add command -label "Nassoc  : " -command {}
+	$menu add command -label "Ndef    : " -command {}
+	# GTHO 1
+	global use_aeic_extensions
+	if {$use_aeic_extensions == 1} {
+		make_addtopopupmenu $menu
+	}
+	# GTHO 2
+}
+
+# GTHO 1: JCS version of following omitted the Ondate, Offdate and Staname: GTHO 2
+proc make_stamenu {menu} {
+	menu $menu -tearoff no
+	$menu add command -label "Sta: " -command {}
+	$menu add command -label "Ondate: " -command {}
+	$menu add command -label "Offdate: " -command {}
+	$menu add command -label "Lat: " -command {}
+	$menu add command -label "Lon: " -command {}
+	$menu add command -label "Elev: " -command {}
+	$menu add command -label "Staname: " -command {}
+}
+
+proc incrementmap {} {
+	global mapon
+	global mapindex
+	global mapnames
+
+	set i $mapindex($mapon)
+	incr i
+	if {$i >= [array size mapindex]} {set i 0} 
+	foreach map $mapnames {
+		if {$mapindex($map) == $i} {
+			set mapon $map
+			set_map $map
+			return
+		}
+	}
+}
+
+proc seteventmenu {menu evid} {
+	global evtime
+	global evlat
+	global evlon
+	global evdepth
+	global evauth
+	global evreview
+	global evnass
+	global evndef
+	global evmag
+	global evmagtype
+	global evorid
+	global delete_evid
+
+	$menu entryconfigure 0 -label [format "Evid:     %s" $evid]
+	$menu entryconfigure 1 -label [format "Orid:     %s" $evorid($evid)]
+	$menu entryconfigure 2 -label [format "Time:     %s" [strtime $evtime($evid)]]
+	$menu entryconfigure 3 -label [format "Lat:      %s" $evlat($evid)]
+	$menu entryconfigure 4 -label [format "Lon:      %s" $evlon($evid)]
+	$menu entryconfigure 5 -label [format "Depth:    %s" $evdepth($evid)]
+	if {$evmag($evid) < 0.0} {
+		$menu entryconfigure 6 -label [format "Mag:      "]
+	} else {
+		$menu entryconfigure 6 -label [format "Mag:      %s%s" $evmag($evid) $evmagtype($evid)]
+	}
+	$menu entryconfigure 7 -label [format "Auth:     %s" $evauth($evid)]
+	$menu entryconfigure 8 -label [format "Reviewed: %s" $evreview($evid)]
+	$menu entryconfigure 9 -label [format "Nassoc  : %s" $evnass($evid)]
+	$menu entryconfigure 10 -label [format "Ndef    : %s" $evndef($evid)]
+	set delete_evid $evid
+}
+
+proc setoriginmenu {menu orid} {
+	global seevid
+	# GTHO 1: Here JCS had added sesel and sesnam again. However, it didn't appear that setoriginmenu used those variables. GTHO 2
+	global sestas
+	global sesta
+	global seolat
+	global seolon
+	global seslat
+	global seslon
+	global seevid
+	global seprefor
+	global seauth
+	global sealgorithm
+	global selatency
+	global sereview
+	global senass
+	global sendef
+	global seotime
+	global seodepth
+	global semag
+	global semagtype
+	global seext
+	global serev
+	global seregion
+	global selist
+	global orlistelements
+
+	$menu entryconfigure 0 -label [format "Evid:     %s" $seevid]
+	$menu entryconfigure 1 -label [format "Orid:     %s" $orid]
+	$menu entryconfigure 2 -label [format "Time:     %s" [strtime $seotime($orid)]]
+	$menu entryconfigure 3 -label [format "Lat:      %s" $seolat($orid)]
+	$menu entryconfigure 4 -label [format "Lon:      %s" $seolon($orid)]
+	$menu entryconfigure 5 -label [format "Depth:    %s" $seodepth($orid)]
+	if {$semag($orid) < 0.0} {
+		$menu entryconfigure 6 -label [format "Mag:      "]
+	} else {
+		$menu entryconfigure 6 -label [format "Mag:      %s%s" $semag($orid) $semagtype($orid)]
+	}
+	$menu entryconfigure 7 -label [format "Auth:     %s" $seauth($orid)]
+	$menu entryconfigure 8 -label [format "Reviewed: %s" $sereview($orid)]
+	$menu entryconfigure 9 -label [format "Latency:  %s" $selatency($orid)]
+	$menu entryconfigure 10 -label [format "Nassoc  : %s" $senass($orid)]
+	$menu entryconfigure 11 -label [format "Ndef    : %s" $sendef($orid)]
+}
+
+# GTHO 1: JCS version used sesel and sesnam, here replaced with seselev and sesname
+# It has no Ondate or Offdate: GTHO 2
+proc setstamenu {menu orid sta} {
+	global sesondate
+	global sesoffdate
+	global seslat
+	global seslon
+	global seselev
+	global sesname
+
+	$menu entryconfigure 0 -label [format "Sta:     %s" $sta]
+	$menu entryconfigure 1 -label [format "Ondate:  %s" $sesondate($orid,$sta)]
+	$menu entryconfigure 2 -label [format "Offdate: %s" $sesoffdate($orid,$sta)]
+	$menu entryconfigure 3 -label [format "Lat:     %s" $seslat($orid,$sta)]
+	$menu entryconfigure 4 -label [format "Lon:     %s" $seslon($orid,$sta)]
+	$menu entryconfigure 5 -label [format "Elev:    %s" $seselev($orid,$sta)]
+	$menu entryconfigure 6 -label [format "Name:    %s" [join $sesname($orid,$sta)]]
+}
+
+# GTHO 1
+# Here JCS had inserted proc setstamenu_val: Presumably an AEIC routine, as setstamenu above may have been at one point.
+# GTHO 2
+
+proc plot_star {canvas x y siz color tags selected} {
+	global nstar
+	global xstar
+	global ystar
+
+	set cmd "$canvas create polygon "
+	if {$selected == 1} {
+		set x1 [expr $x-1.5*$siz]
+		set x2 [expr $x1+3.0*$siz]
+		set y1 [expr $y-1.5*$siz]
+		set y2 [expr $y1+3.0*$siz]
+		$canvas create oval $x1 $y1 $x2 $y2 -fill #000000 -tags $tags
+	}
+	set cmd "$canvas create oval "
+	append cmd "[expr $x-$siz] [expr $y-$siz] [expr $x+$siz] [expr $y+$siz] "
+	# GTHO 1: In aeic_dbevents, the following lines were not commented out
+	# for {set i 0} {$i < $nstar} {incr i} {
+	# 	set xx [expr int($x+($xstar($i)*$siz)+0.5)]
+	# 	set yy [expr int($y+($ystar($i)*$siz)+0.5)]
+	# 	append cmd "$xx $yy "
+	# }
+	# GTHO 2
+	if {$color != "none"} {
+		append cmd "-fill $color "
+	}
+	append cmd "-outline #000000 -tags {"
+	foreach tag $tags {
+		append cmd "$tag "
+	}
+	append cmd "}"
+	eval "$cmd"
+}
+
+proc plot_triangle {canvas x y siz color tags selected} {
+	global ntriangle
+	global xtriangle
+	global ytriangle
+
+	set cmd "$canvas create polygon "
+	if {$selected == 1} {
+		set x1 [expr $x-1.5*$siz]
+		set x2 [expr $x1+3.0*$siz]
+		set y1 [expr $y-1.5*$siz]
+		set y2 [expr $y1+3.0*$siz]
+		$canvas create oval $x1 $y1 $x2 $y2 -fill #000000 -tags $tags
+	}
+	for {set i 0} {$i < $ntriangle} {incr i} {
+		set xx [expr int($x+($xtriangle($i)*$siz)+0.5)]
+		set yy [expr int($y+($ytriangle($i)*$siz)+0.5)]
+		append cmd "$xx $yy "
+	}
+	if {$color != "none"} {
+		append cmd "-fill $color "
+	}
+	append cmd "-outline #000000 -tags {"
+	foreach tag $tags {
+		append cmd "$tag "
+	}
+	append cmd "}"
+	eval "$cmd"
+}
+
+proc drawlegend {} {
+	global mapnames
+	global maplegend
+	global legendwidth
+	global legendheight
+	global symbol_color_number
+	global symbol_color_unsel
+	global symbol_color_text
+
+	foreach map $mapnames {
+		$maplegend($map) create rectangle 1 1 [expr $legendwidth-2] [expr $legendheight-2] -fill #ffffff -outline #000000
+		$maplegend($map) create text [expr 0.5*$legendwidth] 5 -anchor n -text LEGEND -font {Times 12 bold} -fill black
+		$maplegend($map) create text [expr 0.25*$legendwidth] 20 -anchor n -text STATUS -font {Times 10 bold}
+		$maplegend($map) create text [expr 0.75*$legendwidth] 20 -anchor n -text AGE -font {Times 10 bold}
+		plot_star $maplegend($map) 25 50 10 white [list legend] 0
+		$maplegend($map) create text 40 50 -anchor w -text "- Unreviewed" -font {Times 10 bold}
+		$maplegend($map) create rectangle 20 70 30 80 -fill #ffffff -outline #000000
+		$maplegend($map) create text 40 75 -anchor w -text "- Reviewed" -font {Times 10 bold}
+		$maplegend($map) create oval 20 95 30 105 -fill #ffffff -outline #000000
+		$maplegend($map) create text 40 100 -anchor w -text "- Associated" -font {Times 10 bold}
+		set x [expr 0.5*$legendwidth + 20]
+		set y 50
+		for {set i 0} {$i < $symbol_color_number} {incr i} {
+			set x1 [expr $x-5]
+			set x2 [expr $x+5]
+			set y1 [expr $y-5]
+			set y2 [expr $y+5]
+			$maplegend($map) create rectangle $x1 $y1 $x2 $y2 -fill $symbol_color_unsel($i) -outline $symbol_color_unsel($i)
+			set x1 [expr $x+15]
+			$maplegend($map) create text $x1 $y -anchor w -text "$symbol_color_text($i)" -font {Times 10 bold}
+			incr y 15
+		}
+	}
+}
+
+proc setlegend {} {
+	global legendon
+	global maplegend
+	global mapframe
+	global mapcanvas
+	global mapon
+	global legendwidth
+	global legendheight
+	global wmapframe
+	global hmapframe
+	global use_aeic_extensions
+
+	if {$legendon == 1} {
+		# GTHO 1: Change in legend position - could make optional through parameter file
+		# MR: Mitch Robinson change from bottom left to top right
+		if {$use_aeic_extensions == 1} {
+			set x [expr $wmapframe($mapon)-$legendwidth-8]
+			set y 8
+			place $maplegend($mapon) -x $x -y $y -width $legendwidth -height $legendheight
+		} else {
+			# DEFAULT
+			set x 8
+			set y [expr $hmapframe($mapon)-$legendheight-20]
+			place $maplegend($mapon) -x $x -y $y -width $legendwidth -height $legendheight
+		}
+		# GTHO 2
+	} else {
+		place forget $maplegend($mapon)
+	}
+}
+
+proc make_events {db} {
+	global events
+	global evorid
+	global evlat
+	global evlon
+	global evtime
+	global evauth
+	global evreview
+	global evnass
+	global evndef
+	global evdepth
+	global evext
+	global evrev
+	global evmag
+	global evmagtype
+	global evmaxax
+	global evminax
+	global evdpax
+	global evstrike
+	global lastevent
+	global evlist
+	global evlistevids
+	global evevidtotime
+	global external_catalog_authors
+	global local_catalog_authors
+	global stat
+	global prefor
+	global max_age
+	global time_start
+	global time_end
+
+	# GTHO 1
+	# Here are some more variables defined by NIKO and JCS
+	global limit_age
+	global magnitude_preference_order
+	global evregion
+	global evsrn
+	global evgrn
+	global evnearplaces
+	global use_aeic_extensions
+	# GTHO 2
+
+	set stat "Making events..."
+	update idletasks
+	set lastevent -1
+	if {[info exists events] != 0} {unset events}
+	if {[info exists evorid] != 0} {unset evorid}
+	if {[info exists evlat] != 0} {unset evlat}
+	if {[info exists evlon] != 0} {unset evlon}
+	if {[info exists evtime] != 0} {unset evtime}
+	if {[info exists evauth] != 0} {unset evauth}
+	if {[info exists evreview] != 0} {unset evreview}
+	if {[info exists evnass] != 0} {unset evnass}
+	if {[info exists evndef] != 0} {unset evndef}
+	if {[info exists evdepth] != 0} {unset evdepth}
+	if {[info exists evext] != 0} {unset evext}
+	if {[info exists evrev] != 0} {unset evrev}
+	if {[info exists evmag] != 0} {unset evmag}
+	if {[info exists evmagtype] != 0} {unset evmagtype}
+	if {[info exists prefor] != 0} {unset prefor}
+	if {[info exists evlist] != 0} {unset evlist}
+	if {[info exists evlistevids] != 0} {unset evlistevids}
+	if {[info exists evevidtotime] != 0} {unset evevidtotime}
+	if {[info exists evmaxax] != 0} {unset evmaxax}
+	if {[info exists evminax] != 0} {unset evminax}
+	if {[info exists evstrike] != 0} {unset evstrike}
+	if {[info exists evdpax] != 0} {unset evdpax}
+
+	# GTHO 1
+	#JCSa
+	if {[info exists evnearplaces] != 0} {unset evnearplaces}
+	#JCSb
+	# GTHO 2
+
+	set dbe [dblookup $db 0 event 0 0]
+	set dbo2 [dblookup $db 0 origin 0 0]
+	set dbeo [dbjoin $dbe $dbo2]
+	set dbeo [dbsubset $dbeo "orid == prefor"] 
+
+	set dbeo [dbsort  $dbeo time]
+	set n [dbquery $dbeo dbRECORD_COUNT]
+	for {set i 0} {$i < $n} {set i [expr $i+1]} {
+		set evid [dbgetv $dbeo 0 $i evid]
+		if {$evid < 0} continue
+		set prefor($evid) [dbgetv $dbeo 0 $i prefor]
+	}
+
+#	set n [dbquery $dbe dbRECORD_COUNT]
+#	for {set i 0} {$i < $n} {set i [expr $i+1]} {
+#		set evid [dbgetv $dbe 0 $i evid]
+#		if {$evid < 0} continue
+#		set prefor($evid) [dbgetv $dbe 0 $i prefor]
+#	}
+	set dbo [dblookup $db 0 origin 0 0]
+
+	# GTHO 1
+	#NIKO
+	#time subset if desired 
+	if { $limit_age} {
+		set my_timenow [clock seconds]
+		set my_oldest [expr $my_timenow - $max_age]
+		set my_timenowStr [epoch2str $my_timenow "%Y/%m/%d %H:%M"]
+		set my_oldestStr [epoch2str $my_oldest "%Y/%m/%d %H:%M"]
+		puts "my_timenow: $my_timenowStr"
+		puts "my_oldest: $my_oldestStr"
+		set dbo [dbsubset $dbo "time > $my_oldest"]
+	}
+	#NIKO
+	# GTHO 2
+
+	set n [dbquery $dbo dbRECORD_COUNT]
+	if {[info exists max_age] != 0} {
+		set time_min [expr [now]-$max_age]
+		set time_max 1.e30
+	} else {
+		if {[info exists time_start] != 0} {
+			set time_min $time_start
+			if {[info exists time_end] != 0} {
+				set time_min $time_end
+			} else {
+				set time_max 1.e30
+			}
+		} else {
+			set time_min -1.e30
+			set time_max 1.e30
+		}
+	}
+	set nors 0
+	for {set i 0} {$i < $n} {set i [expr $i+1]} {
+		set evid [dbgetv $dbo 0 $i evid]
+		if {$evid < 0} continue
+		set orid [dbgetv $dbo 0 $i orid]
+		if {$orid < 0} continue
+		set tm [dbgetv $dbo 0 $i time]
+		if {$tm < $time_min} continue
+		if {$tm > $time_max} continue
+		incr nors
+		set lat [dbgetv $dbo 0 $i lat]
+		set lon [dbgetv $dbo 0 $i lon]
+		set auth [dbgetv $dbo 0 $i auth]
+		set review [dbgetv $dbo 0 $i review]
+		set nass [dbgetv $dbo 0 $i nass]
+		set ndef [dbgetv $dbo 0 $i ndef]
+		set depth [dbgetv $dbo 0 $i depth]
+
+		# GTHO 1: Adding option to use BRTT code as default, but override with magnitude_preference_order if set
+		if {$magnitude_preference_order == "" || $use_aeic_extensions == 0} { # BRTT DEFAULT
+			set magtype mb
+			set mag [dbgetv $dbo 0 $i mb]
+			if {$mag == "" || $mag == "{}"} {set mag -999.0}
+			if {$mag == -999.0} {
+				set magtype ms
+				set mag [dbgetv $dbo 0 $i ms]
+				if {$mag == "" || $mag == "{}"} {set mag -999.0}
+				if {$mag == -999.0} {
+					set magtype ml
+					set mag [dbgetv $dbo 0 $i ml]
+					if {$mag == "" || $mag == "{}"} {set mag -999.0}
+				}
+			}
+		} else { # AEIC - if magnitude preference order defined in parameter file
+			foreach magtype $magnitude_preference_order {
+				set mag [dbgetv $dbo 0 $i $magtype]
+				if {$mag == "" || $mag == "{}"} {set mag -999.0}
+				if {$mag != -999.0} {
+					break
+				}
+			}
+		}
+		# GTHO 2
+
+
+		if {[info exists events] == 0} {
+			set event ev$evid
+			set events($evid) $event
+		} else {
+			if {[info exists events($evid)] == 0} {
+				set event ev$evid
+				set events($evid) $event
+			} else {
+				set event $events($evid)
+			}
+		}
+		if {[info exists prefor($evid)] == 0 && $evid > 0} {set prefor($evid) $orid}
+		if {[info exists prefor($evid)] != 0 && $orid == $prefor($evid)} {
+			set evorid($evid) $orid
+			set evlat($evid) $lat
+			set evlon($evid) $lon
+			set evauth($evid) $auth
+			set evreview($evid) $review
+			set evnass($evid) $nass
+			set evndef($evid) $ndef
+			set evdepth($evid) $depth
+			set dboe [dblookup $dbo 0 origerr orid $orid]
+			set recore [lindex $dboe 3]
+			if {$recore >= 0} {
+				set evmaxax($evid) [dbgetv $dboe 0 $recore smajax]
+				set evminax($evid) [dbgetv $dboe 0 $recore sminax]
+				set evstrike($evid) [dbgetv $dboe 0 $recore strike]
+				set evdpax($evid) [dbgetv $dboe 0 $recore sdepth]
+			}
+			if {[info exists external_catalog_authors($auth)] == 1} {
+				set evext($evid) $external_catalog_authors($auth)
+			} else {
+				set evext($evid) 0
+			}
+			if {[info exists local_catalog_authors($auth)] == 1} {
+				set evrev($evid) $local_catalog_authors($auth)
+			} else {
+				if {$review == "y"} {
+					set evrev($evid) r
+				} else {
+					set evrev($evid) 0
+				}
+			}
+			set evtime($evid) $tm
+			set evmag($evid) $mag
+			set evmagtype($evid) $magtype
+			set evregion($evid) [dbeval $db "grname($lat,$lon)"]
+			# GTHO 1
+			#JCSa
+			set evsrn($evid) [dbeval $db "srn($lat,$lon)"]
+			set evgrn($evid) [dbeval $db "grn($lat,$lon)"]
+			#JCSb
+			# GTHO 2
+			if {$tm > $lastevent} {set lastevent $tm}
+			set ftime [mystrtime $tm]
+			if {$evext($evid) != "0"} {
+				set rev $evext($evid)
+			} else {
+				if {$evrev($evid) != "0"} {
+					set rev $evrev($evid)
+				} else {
+					set rev " "
+				}
+			}
+			if {$mag == -999.0} {
+				set evlist($ftime) [format "%s        %s %3d %s\n" $ftime $rev $evndef($evid) $evregion($evid)]
+			} else {
+				set evlist($ftime) [format "%s %4.1f%s %s %3d %s\n" $ftime $mag $magtype $rev $evndef($evid) $evregion($evid)]
+			}
+			set evlistevids($ftime) $evid
+			set evevidtotime($evid) $ftime
+			# GTHO 1
+			#JCSa set up nearest places stuff for prefor
+			if {$use_aeic_extensions == 1} {
+				set evnearplaces($evid) [nearest_places $evid]
+			}
+			#JCSb
+			# GTHO 2
+		}
+	}
+
+	return $nors
+}
+
+proc set_map {mapn} {
+	global mapnames
+	global mapcanvas
+	global mapframe
+	global mapxscroll
+	global mapyscroll
+	global mapon
+	global maplegend
+
+	set mapon $mapn
+	foreach map $mapnames {
+		if {$map != $mapon} {
+			grid forget $mapcanvas($map)
+			grid forget $mapxscroll($map)
+			grid forget $mapyscroll($map)
+			grid forget $mapframe($map)
+			place forget $maplegend($map)
+		}
+	}
+
+	grid configure $mapyscroll($mapon) -column 0 -row 0 -sticky nsw
+	grid configure $mapcanvas($mapon) -column 1 -row 0 -sticky nsew
+	grid configure $mapxscroll($mapon) -column 1 -row 1 -sticky sew
+	grid rowconfigure $mapframe($mapon) 0 -weight 1
+	grid rowconfigure $mapframe($mapon) 1 -weight 0
+	grid columnconfigure $mapframe($mapon) 0 -weight 0
+	grid columnconfigure $mapframe($mapon) 1 -weight 1
+	grid configure $mapframe($mapon) -column 0 -row 0 -sticky nsew
+
+	setlegend
+}
+
+proc plot_events {db reread refork} {
+	global events
+	global mapnames
+	global mapcanvas
+	global update_ms
+	global id
+	global stat
+	global lastupdate
+	global evlist
+	global evevidtotime
+	global evlistevids
+	global evlistelements
+	global currentselection
+	global mtime_event
+	global mtime_origin
+	global dbpickon
+# GTHO 1
+# SCAFFOLD
+#puts "plot_events: dbpickon = $dbpickon"
+# GTHO 2
+	global textwidth
+	global hmapframe
+	global last_evid
+	global evidselection
+
+	# GTHO 1
+	#JCSa
+	global Pf
+	global evregion
+	global evmag
+	global evmagtype
+	global evsrn
+	global evgrn
+	global announce_enabled
+	global autodetailmap
+	global mag_thresh
+	global mysrn
+	global usemysrn
+	#JCSb
+	global use_aeic_extensions
+	# GTHO 2
+
+	if {$reread > 0} {
+		set fname [dbquery [dblookup $db 0 event 0 0] dbTABLE_FILENAME]
+		if {[file exists $fname] == 0} {
+			set id [after $update_ms {plot_events $db 1 1}]
+			return
+		}
+		set mtimee [file mtime $fname]
+		set fname [dbquery [dblookup $db 0 origin 0 0] dbTABLE_FILENAME]
+		if {[file exists $fname] == 0} {
+			set id [after $update_ms {plot_events $db 1 1}]
+			return
+		}
+		set mtimeo [file mtime $fname]
+		if {$mtimee == $mtime_event && $mtimeo == $mtime_origin} {
+			if {$reread != 2} {
+				set id [after $update_ms {plot_events $db 1 1}]
+				return
+			}
+		} else {
+			set mtime_event $mtimee
+			set mtime_origin $mtimeo
+			set lastupdate -1
+			set nors [make_events $db]
+			set lastupdate [clock_seconds]
+			if {$nors == 0} {
+				set id [after $update_ms {plot_events $db 1 1}]
+				return
+			}
+			set evidselection end
+		}
+	}
+	set stat "Plotting events..."
+	update idletasks
+	.f.events.txt configure -state normal
+	if {$reread == 2} {set reread 1}
+	if {[info exists evlistelements] == 1} {unset evlistelements}
+	if {[info exists currentselection] == 1} {unset currentselection}
+	set tags [.f.events.txt tag names]
+	foreach tg $tags {
+		.f.events.txt tag delete $tg
+	}
+	.f.events.txt delete 0.0 end
+	set times [lsort [array names evlist]]
+	unset times
+	set levids [lsort -integer [array names evevidtotime]]
+	foreach evid $levids {
+		lappend times $evevidtotime($evid)
+		set l_evid $evid
+	}
+	if {[info exists times] == 0} {
+		set n 0
+	} else {
+		set n [llength $times]
+	}
+	set evlistelements [list]
+	for {set i 0} {$i < $n} {incr i} {
+		set tm [lindex $times $i]
+		set evtag [format "ev%d" $evlistevids($tm)]
+		if {$i == [expr $n-1]} {
+			set evlist($tm) [string trimright $evlist($tm) "\n"]
+			for {set j [string length $evlist($tm)]} {$j < $textwidth} {incr j} {
+				append evlist($tm) " "
+			}
+		}
+		.f.events.txt insert end $evlist($tm) [list $evtag]
+		.f.events.txt tag configure $evtag -background #ffffff
+		.f.events.txt tag bind $evtag <ButtonPress-1> "setselection $evtag"
+		.f.events.txt tag bind $evtag <Any-Enter> "focus .f.events.txt"
+		.f.events.txt tag bind $evtag <Up> "+decrementselection"
+		.f.events.txt tag bind $evtag <Down> "+incrementselection"
+		lappend evlistelements $evtag
+	}
+			set evids [array names events]
+	foreach map $mapnames {
+		$mapcanvas($map) delete events
+		foreach evtag $evlistelements {
+			plot_event $map $evtag 0
+		}
+	}
+
+	# GTHO 1
+	# Comments from JCS:
+	# moved audioplay inside if {$l_evid != $last_evid}
+	# original has set dbpickon 3 in this if statement, this 
+	# should clear up double audioplay execution when mag comes in late 
+	# dbpickon 0 and l_evid -1 on startup - no matter what
+
+	# GTHO: The following block was commented out in dbevents v4.9 but not in aeic_dbevents (4.8)
+	if {$use_aeic_extensions == 1} {
+		if {$dbpickon == 2} {
+		 	if {$l_evid != $last_evid} {set dbpickon 3}
+			if {$announce_enabled == 1} { announce_event $l_evid $last_evid }
+		}
+	}
+	# GTHO 2
+
+	if {[info exists l_evid] != 0} {set last_evid $l_evid}
+	if {[info exists evidselection] == 0} {set evidselection end}
+	if {"$evidselection" == "end"} {
+		set tag [lindex $evlistelements end]
+		set evidselection [string trimleft [string range $tag 2 end] 0]
+	}
+	setselection [format "ev%d" $evidselection]
+	set stat Done
+	if {$refork == 1} {
+		set id [after $update_ms "plot_events [list $db] $reread 1"]
+	} else {
+		set id -1
+	}
+	.f.events.txt configure -state disabled
+}
+
+proc plot_origins {} {
+	global seorid
+	global sestas
+	global sesta
+	global seolat
+	global seolon
+	global seslat
+	global seslon
+	global seevid
+	global seprefor
+	global seauth
+	global sereview
+	global senass
+	global sendef
+	global seotime
+	global seodepth
+	global semag
+	global semagtype
+	global seext
+	global serev
+	global seregion
+	global selist
+	global semaxax
+	global seminax
+	global sedpax
+	global sestrike
+	global orlistelements
+	global citem
+	global show_origins
+	global stat
+
+	global mapnames
+	global mapcanvas
+
+	# GTHO 1
+	# JCSa
+	global evnearplaces
+	global use_aeic_extensions
+	# JCSb
+	# GTHO 2
+
+	set stat "Plotting origins..."
+	update idletasks
+	.f.showevent.txt configure -state normal
+	set orids [array names seorid]
+
+	set tags [.f.showevent.txt tag names]
+	foreach tg $tags {
+		.f.showevent.txt tag delete $tg
+	}
+	.f.showevent.txt delete 0.0 end
+
+	set orid $seprefor
+	set ortag [format "or%d" $orid]
+	lappend orlistelements $ortag
+	.f.showevent.txt insert end $selist($orid) [list $ortag]
+	# GTHO 1
+	# JCSa
+	if {$use_aeic_extensions == 1} {
+		.f.showevent.txt insert end $evnearplaces($seevid) [list $ortag]
+	}
+	# JCSb
+	# GTHO 2
+	.f.showevent.txt tag configure $ortag -background #ffffff -foreground red
+	.f.showevent.txt tag bind $ortag <ButtonPress-1> "setorselection $ortag"
+	.f.showevent.txt tag bind $ortag <Any-Enter> "focus .f.showevent.txt"
+	.f.showevent.txt tag bind $ortag <Up> "+decrementorselection"
+	.f.showevent.txt tag bind $ortag <Down> "+incrementorselection"
+	set selection $ortag
+
+	foreach orid $orids {
+		if {$orid == $seprefor} continue
+		set ortag [format "or%d" $orid]
+		.f.showevent.txt insert end $selist($orid) [list $ortag]
+		.f.showevent.txt tag configure $ortag -background #ffffff -foreground black
+		.f.showevent.txt tag bind $ortag <ButtonPress-1> "setorselection $ortag"
+		.f.showevent.txt tag bind $ortag <Any-Enter> "focus .f.showevent.txt"
+		.f.showevent.txt tag bind $ortag <Up> "+decrementorselection"
+		.f.showevent.txt tag bind $ortag <Down> "+incrementorselection"
+		lappend orlistelements $ortag
+	}
+
+	foreach map $mapnames {
+		if {$show_origins != 0} {
+			$mapcanvas($map) lower events base
+		}
+		$mapcanvas($map) delete origins
+		$mapcanvas($map) delete stations
+		foreach orid $orids {
+			set ortag [format "or%d" $orid]
+			plot_origin $map $ortag 0
+		}
+		if {$show_origins == 0} {
+			$mapcanvas($map) lower origins base
+			$mapcanvas($map) lower stations base
+		}
+	}
+	setorselection $selection
+	set stat Done
+	.f.showevent.txt configure -state disabled
+}
+
+# GTHO 1
+# Here JCS had the routine plot_val_stations (for plotting alarm stations)
+# GTHO 2
+
+proc update_map {} {
+	global mapnames
+	global mapcanvas
+	global show_origins
+	global seorid
+	global sestas
+	global seslat
+	global seslon
+	global setimedef
+	global evlistelements
+	global currentselection
+	global currentorselection
+	global orlistelements
+
+	set orids [array names seorid]
+	foreach map $mapnames {
+		$mapcanvas($map) delete events
+		$mapcanvas($map) delete origins
+		$mapcanvas($map) delete stations
+		set evtag_select [lindex $evlistelements $currentselection]
+		foreach evtag $evlistelements {
+			if {$evtag == $evtag_select} continue
+			plot_event $map $evtag 0
+		}
+		plot_event $map $evtag_select 1
+		set ortag [lindex $orlistelements $currentorselection]
+		set orid_select [string trimleft [string range $ortag 2 end] 0]
+		foreach orid $orids {
+			if {$orid == $orid_select} continue
+			set ortag [format "or%d" $orid]
+			plot_origin $map $ortag 0
+			if { [info exists sestas($orid)] } {
+		    		foreach sta $sestas($orid) {
+			    		plot_station $map $sta $seslat($orid,$sta) $seslon($orid,$sta) $orid $setimedef($orid,$sta)
+		    		}
+			}
+		}
+		set orid $orid_select
+		set ortag [format "or%d" $orid]
+		plot_origin $map $ortag 1
+		if { [info exists sestas($orid)] } {
+		   	foreach sta $sestas($orid) {
+		    		plot_station $map $sta $seslat($orid,$sta) $seslon($orid,$sta) $orid $setimedef($orid,$sta)
+		   	}
+		}
+		if {$show_origins == 0} {
+			$mapcanvas($map) lower origins base
+			$mapcanvas($map) lower stations base
+		} else {
+			$mapcanvas($map) lower events base
+		}
+	}
+}
+
+proc setselection {tag} {
+	global currentselection
+	global evlistelements
+	global evidselection
+
+	if {[info exists currentselection] == 1} {
+		.f.events.txt tag configure [lindex $evlistelements $currentselection] -background #ffffff
+		unselect_event
+	}
+	set currentselection [lsearch -exact $evlistelements $tag]
+	set evidselection [string trimleft [string range $tag 2 end] 0]
+	.f.events.txt tag configure [lindex $evlistelements $currentselection] -background #aaffaa
+	.f.events.txt see [lindex $evlistelements $currentselection].first
+	select_event
+}
+
+proc setorselection {tag} {
+	global currentorselection
+	global orlistelements
+	global oridselection
+
+	if {[info exists currentorselection] == 1} {
+		.f.showevent.txt tag configure [lindex $orlistelements $currentorselection] -background #ffffff
+		unselect_origin
+	}
+	set currentorselection [lsearch -exact $orlistelements $tag]
+	set oridselection [string trimleft [string range $tag 2 end] 0]
+	.f.showevent.txt tag configure [lindex $orlistelements $currentorselection] -background #aaffaa
+	.f.showevent.txt see [lindex $orlistelements $currentorselection].first
+	select_origin
+}
+
+proc decrementselection {} {
+	global currentselection
+	global evlistelements
+	global evidselection
+
+	if {! [info exists evlistelements]} {
+	    bell
+	    return
+	}
+	.f.events.txt tag configure [lindex $evlistelements $currentselection] -background #ffffff
+	unselect_event
+	incr currentselection -1
+	if {$currentselection < 0} {set currentselection 0}
+	set evidselection [string trimleft [string range [lindex $evlistelements $currentselection] 2 end] 0]
+	.f.events.txt tag configure [lindex $evlistelements $currentselection] -background #aaffaa
+	select_event
+}
+
+proc decrementorselection {} {
+	global currentorselection
+	global orlistelements
+	global oridselection
+
+	.f.showevent.txt tag configure [lindex $orlistelements $currentorselection] -background #ffffff
+	unselect_origin
+	incr currentorselection -1
+	if {$currentorselection < 0} {set currentorselection 0}
+	set oridselection [string trimleft [string range [lindex $orlistelements $currentorselection] 2 end] 0]
+	.f.showevent.txt tag configure [lindex $orlistelements $currentorselection] -background #aaffaa
+	.f.showevent.txt see [lindex $orlistelements $currentorselection].first
+	select_origin
+}
+
+proc incrementselection {} {
+	global currentselection
+	global evlistelements
+	global evidselection
+
+	if {! [info exists evlistelements]} {
+	    bell
+	    return
+	}
+	.f.events.txt tag configure [lindex $evlistelements $currentselection] -background #ffffff
+	unselect_event
+	incr currentselection 1
+	if {$currentselection >= [llength $evlistelements]} {set currentselection [expr [llength $evlistelements]-1]}
+	set evidselection [string trimleft [string range [lindex $evlistelements $currentselection] 2 end] 0]
+	.f.events.txt tag configure [lindex $evlistelements $currentselection] -background #aaffaa
+	select_event
+}
+
+proc incrementorselection {} {
+	global currentorselection
+	global orlistelements
+	global oridselection
+
+	.f.showevent.txt tag configure [lindex $orlistelements $currentorselection] -background #ffffff
+	unselect_origin
+	incr currentorselection 1
+	if {$currentorselection >= [llength $orlistelements]} {set currentorselection [expr [llength $orlistelements]-1]}
+	set oridselection [string trimleft [string range [lindex $orlistelements $currentorselection] 2 end] 0]
+	.f.showevent.txt tag configure [lindex $orlistelements $currentorselection] -background #aaffaa
+	.f.showevent.txt see [lindex $orlistelements $currentorselection].first
+	select_origin
+}
+
+proc select_event {} {
+	global mapnames
+	global mapcanvas
+	global symbol_color_number
+	global symbol_color_time
+	global symbol_color_unsel
+	global symbol_color_sel
+	global currentselection
+	global evlistelements
+	global evtime
+	global evlat
+	global evlon
+	global dbpickon
+	global startdbpick
+	global automap
+	global xdelmin
+	global xdelmax
+	global ydelmin
+	global ydelmax
+	global latminbb
+	global latmaxbb
+	global lonminbb
+	global lonmaxbb
+	global lonmaxbb
+	global priority
+	global mapon
+	global waittorestart
+	global show_origins
+	global latc
+	global lonc
+	global imap
+	# GTHO 1
+	global use_aeic_extensions
+	# GTHO 2
+
+	set evtag [lindex $evlistelements $currentselection]
+	set evid [string trimleft [string range $evtag 2 end] 0]
+	set pr -1
+	make_event $evid
+	# GTHO 1
+	#JCSa
+	if {[winfo exists .imagewin]} {
+		display_webmap
+	}
+	if {[winfo exists .imagewin2]} {
+		display_shakemap
+	}
+	#JCSb
+	# GTHO 2
+	foreach map $mapnames {
+		$mapcanvas($map) delete $evtag
+		plot_event $map $evtag 1
+		if {$show_origins != 0} {
+			$mapcanvas($map) lower events base
+		}
+		if {$imap($map) == "zoom"} {
+			if {$priority($map) > $pr} {
+				set pr $priority($map)
+				set newmap $map
+			}
+			continue
+		}
+		if {[info exists xdelmin($map)] == 0} {
+			if {$evlat($evid) <= $latmaxbb($map) && $evlat($evid) >= $latminbb($map)} {
+				if {$evlon($evid) <= $lonmaxbb($map) && $evlon($evid) >= $lonminbb($map)} {
+					if {$priority($map) > $pr} {
+						set pr $priority($map)
+						set newmap $map
+					}
+				}
+			}
+		} else {
+			set xy [latlon2edp $latc($map) $lonc($map) $evlat($evid) $evlon($evid)]
+			set evx [lindex $xy 0]
+			set evy [lindex $xy 1]
+			if {$evx <= [expr 0.9*$xdelmax($map)] && $evx >= [expr 0.9*$xdelmin($map)]} {
+				if {$evy <= [expr 0.9*$ydelmax($map)] && $evy >= [expr 0.9*$ydelmin($map)]} {
+					if {$priority($map) > $pr} {
+						set pr $priority($map)
+						set newmap $map
+					}
+				}
+			}
+		}
+	}
+
+	# GTHO 1
+	# RAH Uncommented the following lines in previous aeic_dbevents
+	# But vanilla dbevents still has them commented out, so I'm doing so here
+	# Note the same code is replicated in select_origin, but there is it active not commented out.
+	#if {$use_aeic_extensions} {
+	#	if {$automap == 1} {
+	#		if {[info exists newmap] == 1} {
+	#			if {$newmap != $mapon} {
+	#				set mapon $newmap
+	#				set_map $mapon
+	#			}
+	#		}
+	#	}
+	#	if {$dbpickon == 2} {
+	#		setwfevent
+	#	}
+	#	if {$dbpickon == 3} {
+	#		set dbpickon 2
+	#		after $waittorestart restartdbpick
+	#	}
+	#	if {$startdbpick == 1} {
+	#		setwfevent
+	#		set startdbpick 0
+	#	}
+	#}
+	# GTHO 2
+}
+
+proc select_origin {} {
+	global mapnames
+	global mapcanvas
+	global currentorselection
+	global orlistelements
+	global automap
+	global newmap
+	global mapon
+	global seolat
+	global seolon
+	global seslat
+	global seslon
+	global setimedef
+	global sestas
+	global xdelmin
+	global xdelmax
+	global ydelmin
+	global ydelmax
+	global latmaxbb
+	global latminbb
+	global lonmaxbb
+	global lonminbb
+	global latc
+	global lonc
+	global priority
+	global show_origins
+	global dbpickon
+	global startdbpick
+	global waittorestart
+	global imap
+
+	set ortag [lindex $orlistelements $currentorselection]
+	set orid [string trimleft [string range $ortag 2 end] 0]
+	set pr -1
+	foreach map $mapnames {
+		$mapcanvas($map) delete $ortag
+		$mapcanvas($map) delete stations
+		if {$imap($map) == "zoom"} {
+			reset_zoom_latlon $map $seolat($orid) $seolon($orid)
+		}
+		plot_origin $map $ortag 1
+		if { [info exists sestas($orid)] } {
+		    foreach sta $sestas($orid) {
+			    # GTHO 1: Here NIKO had inserted code to check if seslat/seslon made sense. Omitted here. GTHO 2	
+			    plot_station $map $sta $seslat($orid,$sta) $seslon($orid,$sta) $orid $setimedef($orid,$sta)
+		    }
+		}
+		if {$show_origins == 0} {
+			$mapcanvas($map) lower origins base
+			$mapcanvas($map) lower stations base
+		}
+		$mapcanvas($map) lower origins stations
+		if {$imap($map) == "zoom"} {
+			if {$priority($map) > $pr} {
+				set pr $priority($map)
+				set newmap $map
+			}
+			continue
+		}
+		if {[info exists xdelmin($map)] == 0} {
+			if {$seolat($orid) <= $latmaxbb($map) && $seolat($orid) >= $latminbb($map)} {
+				if {$seolon($orid) <= $lonmaxbb($map) && $seolon($orid) >= $lonminbb($map)} {
+					if {$priority($map) > $pr} {
+						set pr $priority($map)
+						set newmap $map
+					}
+				}
+			}
+		} else {
+			set xy [latlon2edp $latc($map) $lonc($map) $seolat($orid) $seolon($orid)]
+			set evx [lindex $xy 0]
+			set evy [lindex $xy 1]
+			if {$evx <= [expr 0.9*$xdelmax($map)] && $evx >= [expr 0.9*$xdelmin($map)]} {
+				if {$evy <= [expr 0.9*$ydelmax($map)] && $evy >= [expr 0.9*$ydelmin($map)]} {
+					if {$priority($map) > $pr} {
+						set pr $priority($map)
+						set newmap $map
+					}
+				}
+			}
+		}
+	}
+	# GTHO 1: The following lines are present in dbevents, but AEIC replicated them in select_event also: GTHO 2
+	if {$automap == 1} {
+		if {[info exists newmap] == 1} {
+			if {$newmap != $mapon} {
+				set mapon $newmap
+				set_map $mapon
+			}
+		}
+	}
+
+	if {$dbpickon == 2} {
+		setwfevent
+	}
+	if {$dbpickon == 3} {
+		set dbpickon 2
+		after $waittorestart restartdbpick
+	}
+	if {$startdbpick == 1} {
+		setwfevent
+		set startdbpick 0
+	}
+
+}
+
+proc unselect_event {} {
+	global mapnames
+	global mapcanvas
+	global symbol_color_number
+	global symbol_color_time
+	global symbol_color_unsel
+	global symbol_color_sel
+	global currentselection
+	global evlistelements
+	global evtime
+	global show_origins
+
+	set evtag [lindex $evlistelements $currentselection]
+	foreach map $mapnames {
+		$mapcanvas($map) delete $evtag
+		plot_event $map $evtag 0
+		if {$show_origins == 1} {
+			$mapcanvas($map) lower events base
+		}
+	}
+}
+
+proc unselect_origin {} {
+	global mapnames
+	global mapcanvas
+	global currentorselection
+	global orlistelements
+	global show_origins
+
+	set ortag [lindex $orlistelements $currentorselection]
+	foreach map $mapnames {
+		$mapcanvas($map) delete $ortag
+		plot_origin $map $ortag 0
+		if {$show_origins == 0} {
+			$mapcanvas($map) lower origins base
+			$mapcanvas($map) lower stations base
+		}
+	}
+}
+
+proc plot_event {map evtag selected} {
+	global proj
+	global evtime
+	global evlat
+	global evlon
+	global evext
+	global evrev
+	global xscale
+	global yscale
+	global xl
+	global yt
+	global latc
+	global lonc
+	global symsiz
+	global symsizo2
+	global mapcanvas
+	global mapcanvasmenu
+	global symbol_color_number
+	global symbol_color_time
+	global symbol_color_unsel
+	global symbol_color_sel
+	global SQRT2
+        global width
+        global height
+	global wmapframe
+	global hmapframe
+	global evmaxax
+	global evminax
+	global evstrike
+	
+
+	set evid [string trimleft [string range $evtag 2 end] 0]
+
+
+	# GTHO 1: Extra variable added by JCS
+	#JCSa
+	global mapcanvasstamenu
+	global delete_evid
+	set delete_evid $evid
+	#JCSb
+	# GTHO 2
+
+	set tm [expr int([clock_seconds] - $evtime($evid) + 0.5)]
+	for {set i 0} {$i < $symbol_color_number} {incr i} {
+		if {$tm <= $symbol_color_time($i)} break
+	}
+	if {$selected == 1} {
+		set color $symbol_color_sel($i)
+		set siz [expr $symsiz($map)*1.5]
+		set sizo2 [expr $symsizo2($map)*1.5]
+	} else {
+		set color $symbol_color_unsel($i)
+		set siz $symsiz($map)
+		set sizo2 $symsizo2($map)
+	}
+	if {$proj($map) == "merc"} {
+		set x [expr ($evlon($evid)-$xl($map))*$xscale($map)]
+		set y [expr ([mercy $evlat($evid)]-$yt($map))*$yscale($map)]
+	}
+	if {$proj($map) == "edp"} {
+		set xy [edpxy $latc($map) $lonc($map) $evlat($evid) $evlon($evid)]
+		set x [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+		set y [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+	}
+	if {$selected == 1} {
+		set first [expr ($x-0.5*$wmapframe($map))/$width($map)]
+		set_mxview_map $map moveto $first
+		set first [expr ($y-0.5*$hmapframe($map))/$height($map)]
+		set_myview_map $map moveto $first
+	}
+	if {$evext($evid) != "0" || $evrev($evid) != "0"} {
+		set x1 [expr $x-$sizo2]
+		set x2 [expr $x+$sizo2]
+		set y1 [expr $y-$sizo2]
+		set y2 [expr $y+$sizo2]
+		if {$evext($evid) != "0"} {
+			if {$selected == 1} {
+				$mapcanvas($map) create rectangle $x1 $y1 $x2 $y2 -fill #000000 -tags [list events $evtag]
+			}
+			$mapcanvas($map) create oval $x1 $y1 $x2 $y2 -fill $color -outline #000000 -tags [list events $evtag]
+		} else {
+			if {$selected == 1} {
+				set nsiz [expr $sizo2*$SQRT2]
+				set xx1 [expr $x-$nsiz]
+				set xx2 [expr $x+$nsiz]
+				set yy1 [expr $y-$nsiz]
+				set yy2 [expr $y+$nsiz]
+				$mapcanvas($map) create oval $xx1 $yy1 $xx2 $yy2 -fill #000000 -tags [list events $evtag]
+			}
+			$mapcanvas($map) create rectangle $x1 $y1 $x2 $y2 -fill $color -outline #000000 -tags [list events $evtag]
+		}
+		$mapcanvas($map) bind $evtag <ButtonPress-1> "setselection $evtag"
+		$mapcanvas($map) bind $evtag <ButtonPress-3> "eventmenu $mapcanvasmenu($map) $evid %x %y"
+		return
+	}
+	plot_star $mapcanvas($map) $x $y $siz $color [list events $evtag] $selected
+
+	if {[info exists evmaxax($evid)] != 0} {
+		set sstr [expr sin($evstrike($evid)*3.14159/180.0)]
+		set cstr [expr cos($evstrike($evid)*3.14159/180.0)]
+		set xmax [expr $sstr * $evmaxax($evid) / 111.11]
+		set ymax [expr $cstr * $evmaxax($evid) / 111.11]
+		set xmin [expr $cstr * $evminax($evid) / 111.11]
+		set ymin [expr  - ($sstr * $evminax($evid)) / 111.11]
+		set ll [edp2latlon $evlat($evid) $evlon($evid) $xmax $ymax]
+		set lat1 [lindex $ll 0]
+		set lon1 [lindex $ll 1]
+		set ll [edp2latlon $evlat($evid) $evlon($evid) $xmin $ymin]
+		set lat2 [lindex $ll 0]
+		set lon2 [lindex $ll 1]
+		set ll [edp2latlon $evlat($evid) $evlon($evid) [expr -$xmax] [expr -$ymax]]
+		set lat3 [lindex $ll 0]
+		set lon3 [lindex $ll 1]
+		set ll [edp2latlon $evlat($evid) $evlon($evid) [expr -$xmin] [expr -$ymin]]
+		set lat4 [lindex $ll 0]
+		set lon4 [lindex $ll 1]
+		if {$proj($map) == "merc"} {
+			set xm1 [expr ($lon1-$xl($map))*$xscale($map)]
+			set ym1 [expr ([mercy $lat1]-$yt($map))*$yscale($map)]
+			set xm2 [expr ($lon2-$xl($map))*$xscale($map)]
+			set ym2 [expr ([mercy $lat2]-$yt($map))*$yscale($map)]
+			set xm3 [expr ($lon3-$xl($map))*$xscale($map)]
+			set ym3 [expr ([mercy $lat3]-$yt($map))*$yscale($map)]
+			set xm4 [expr ($lon4-$xl($map))*$xscale($map)]
+			set ym4 [expr ([mercy $lat4]-$yt($map))*$yscale($map)]
+		}
+		if {$proj($map) == "edp"} {
+			set xy [edpxy $latc($map) $lonc($map) $lat1 $lon1]
+			set xm1 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+			set ym1 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+			set xy [edpxy $latc($map) $lonc($map) $lat2 $lon2]
+			set xm2 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+			set ym2 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+			set xy [edpxy $latc($map) $lonc($map) $lat3 $lon3]
+			set xm3 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+			set ym3 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+			set xy [edpxy $latc($map) $lonc($map) $lat4 $lon4]
+			set xm4 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+			set ym4 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+		}
+		$mapcanvas($map) create polygon $xm1 $ym1 $xm2 $ym2 $xm3 $ym3 $xm4 $ym4 -smooth yes -fill "" -outline red -tags [list events $evtag]
+	}
+
+	$mapcanvas($map) bind $evtag <ButtonPress-1> "setselection $evtag"
+	$mapcanvas($map) bind $evtag <ButtonPress-3> "eventmenu $mapcanvasmenu($map) $evid %x %y"
+}
+
+proc plot_origin {map ortag selected} {
+	global proj
+	global xscale
+	global yscale
+	global xl
+	global yt
+	global latc
+	global lonc
+	global symsiz
+	global symsizo2
+	global mapcanvas
+	global mapcanvasoriginmenu
+	global symbol_color_number
+	global symbol_color_time
+	global symbol_color_unsel
+	global symbol_color_sel
+	global SQRT2
+        global width
+        global height
+	global wmapframe
+	global hmapframe
+	global seprefor
+	global seolat
+	global seolon
+	global semaxax
+	global seminax
+	global sestrike
+
+	set orid [string trimleft [string range $ortag 2 end] 0]
+	if {$orid == $seprefor} {
+		set color orange
+		set siz [expr $symsiz($map)*3.0]
+		set sizo2 [expr $symsizo2($map)*3.0]
+	} else {
+		set color yellow
+		set siz [expr $symsiz($map)*2.0]
+		set sizo2 [expr $symsizo2($map)*2.0]
+	}
+	if {$proj($map) == "merc"} {
+		set x [expr ($seolon($orid)-$xl($map))*$xscale($map)]
+		set y [expr ([mercy $seolat($orid)]-$yt($map))*$yscale($map)]
+	}
+	if {$proj($map) == "edp"} {
+		set xy [edpxy $latc($map) $lonc($map) $seolat($orid) $seolon($orid)]
+		set x [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+		set y [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+	}
+	if {$orid == $seprefor} {
+		set first [expr ($x-0.5*$wmapframe($map))/$width($map)]
+		set_mxview_map $map moveto $first
+		set first [expr ($y-0.5*$hmapframe($map))/$height($map)]
+		set_myview_map $map moveto $first
+	}
+	set x1 [expr $x-$sizo2]
+	set x2 [expr $x+$sizo2]
+	set y1 [expr $y-$sizo2]
+	set y2 [expr $y+$sizo2]
+	if {$selected} {
+		# $mapcanvas($map) create rectangle $x1 $y1 $x2 $y2 -fill #000000 -tags [list origins $ortag]
+		$mapcanvas($map) create oval $x1 $y1 $x2 $y2 -fill $color -outline #000000 -tags [list origins $ortag]
+		if {[info exists semaxax($orid)] != 0} {
+			set sstr [expr sin($sestrike($orid)*3.14159/180.0)]
+			set cstr [expr cos($sestrike($orid)*3.14159/180.0)]
+			set xmax [expr $sstr * $semaxax($orid) / 111.11]
+			set ymax [expr $cstr * $semaxax($orid) / 111.11]
+			set xmin [expr $cstr * $seminax($orid) / 111.11]
+			set ymin [expr  - ($sstr * $seminax($orid)) / 111.11]
+			set ll [edp2latlon $seolat($orid) $seolon($orid) $xmax $ymax]
+			set lat1 [lindex $ll 0]
+			set lon1 [lindex $ll 1]
+			set ll [edp2latlon $seolat($orid) $seolon($orid) $xmin $ymin]
+			set lat2 [lindex $ll 0]
+			set lon2 [lindex $ll 1]
+			set ll [edp2latlon $seolat($orid) $seolon($orid) [expr -$xmax] [expr -$ymax]]
+			set lat3 [lindex $ll 0]
+			set lon3 [lindex $ll 1]
+			set ll [edp2latlon $seolat($orid) $seolon($orid) [expr -$xmin] [expr -$ymin]]
+			set lat4 [lindex $ll 0]
+			set lon4 [lindex $ll 1]
+			if {$proj($map) == "merc"} {
+				set xm1 [expr ($lon1-$xl($map))*$xscale($map)]
+				set ym1 [expr ([mercy $lat1]-$yt($map))*$yscale($map)]
+				set xm2 [expr ($lon2-$xl($map))*$xscale($map)]
+				set ym2 [expr ([mercy $lat2]-$yt($map))*$yscale($map)]
+				set xm3 [expr ($lon3-$xl($map))*$xscale($map)]
+				set ym3 [expr ([mercy $lat3]-$yt($map))*$yscale($map)]
+				set xm4 [expr ($lon4-$xl($map))*$xscale($map)]
+				set ym4 [expr ([mercy $lat4]-$yt($map))*$yscale($map)]
+			}
+			if {$proj($map) == "edp"} {
+				set xy [edpxy $latc($map) $lonc($map) $lat1 $lon1]
+				set xm1 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+				set ym1 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+				set xy [edpxy $latc($map) $lonc($map) $lat2 $lon2]
+				set xm2 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+				set ym2 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+				set xy [edpxy $latc($map) $lonc($map) $lat3 $lon3]
+				set xm3 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+				set ym3 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+				set xy [edpxy $latc($map) $lonc($map) $lat4 $lon4]
+				set xm4 [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+				set ym4 [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+			}
+			$mapcanvas($map) create polygon $xm1 $ym1 $xm2 $ym2 $xm3 $ym3 $xm4 $ym4 -smooth yes -fill "" -outline red -tags [list origins $ortag]
+		}
+	} else {
+		$mapcanvas($map) create oval $x1 $y1 $x2 $y2 -fill $color -outline #000000 -tags [list origins $ortag]
+	}
+	$mapcanvas($map) bind $ortag <ButtonPress-1> "setorselection $ortag"
+	$mapcanvas($map) bind $ortag <ButtonPress-3> "originmenu $mapcanvasoriginmenu($map) $orid %x %y"
+}
+
+proc plot_station {map sta lat lon orid timedef} {
+	global proj
+	global xscale
+	global yscale
+	global xl
+	global yt
+	global latc
+	global lonc
+	global symsiz
+	global symsizo2
+	global mapcanvas
+	global mapcanvasoriginmenu
+	global symbol_color_number
+	global symbol_color_time
+	global symbol_color_unsel
+	global symbol_color_sel
+	global SQRT2
+        global width
+        global height
+	global wmapframe
+	global hmapframe
+	global seprefor
+	global mapcanvasstamenu
+	global help_tips
+
+	switch $timedef {
+	1	{
+			set color \#c0c0c0
+		}
+	0	{
+			set color \#ff8000
+		}
+	d	{
+			set color \#0000ff
+		}
+	default	{
+			set color \#00ff00
+		}
+	}
+	set siz [expr $symsiz($map)*1.5]
+	set sizo2 [expr $symsizo2($map)*1.5]
+	if {$proj($map) == "merc"} {
+		set x [expr ($lon-$xl($map))*$xscale($map)]
+		set y [expr ([mercy $lat]-$yt($map))*$yscale($map)]
+	}
+	if {$proj($map) == "edp"} {
+		set xy [edpxy $latc($map) $lonc($map) $lat $lon]
+		set x [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+		set y [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+	}
+	set statag $sta
+	plot_triangle $mapcanvas($map) $x $y $siz $color [list stations $statag] 0
+	set help_tips($mapcanvas($map),$statag) $sta
+	# GTHO 1
+	# The following is button 2 in aeic_dbevents
+	# GTHO 2
+	$mapcanvas($map) bind $statag <ButtonPress-3> "stamenu $mapcanvasstamenu($map) $orid $sta %x %y"
+	enable_balloon $mapcanvas($map) $statag "format $statag"
+}
+
+# GTHO 1
+# JCS had proc plot_val_stations here
+# GTHO 2
+
+proc eventmenu {menu evid x y} {
+	seteventmenu $menu $evid
+	mytk_popup $menu $x $y
+}
+
+proc originmenu {menu orid x y} {
+	setoriginmenu $menu $orid
+	mytk_popup $menu $x $y
+}
+
+proc stamenu {menu orid sta x y} {
+	setstamenu $menu $orid $sta
+	mytk_popup $menu $x $y
+}
+
+# GTHO 1
+# JCS had proc stamenu_val here
+# GTHO 2
+
+proc setwfevent {} {
+	global evidselection
+	global oridselection
+	global evorid
+        global scsift
+        global channels
+        global additional
+        global phases
+        global twin
+        global filter
+        global sestachans
+
+	set ts [expr -0.2*$twin]
+	# set orid $evorid($evidselection)
+	set orid $oridselection
+	if {[info exists sestachans]} {
+		set first 1
+		foreach stachan $sestachans($orid) {
+			set def [lindex [split $stachan "/"] 2]
+			# if {$def != "d"} continue
+			set stachan [lindex [split $stachan "/"] 0]
+			if {$first == 1} {
+				set first 0
+			} else {
+				append pickchans ","
+			}
+			append pickchans $stachan
+		}
+	}
+	set ok [xhosts_ok "Cannot show waveforms while xhost is enabled"]
+	if { $ok } {
+	    # GTHO 1: Problem here was that $phases wasn't set, so sp command to dbpick was failing, so waveform on command (sw 1) didn't occur: GTHO 2
+	    send2dbpick "sw 0 filter $filter se $orid tse pal 1 rec cw 1 $channels tw $twin ts $ts sd 1 $additional cw 1 $channels sp $phases sw 1"
+	} else { 
+	# GTHO 1
+		puts "failed to send sw command to dbpick"
+	} 
+	# GTHO 2
+}
+
+proc send2dbpick {msg} {
+	global dbpickon
+	global dbname
+	global message
+	global dbpickgeom
+	global dbpicktypeingeom
+	global stat
+	global doupdate
+	global dbpappname
+	global myappname
+	global iddbp
+	global warpdbpick
+
+	if {$dbpickon != 1} {set message $msg}
+	if {$message == "quit"} {
+		set doupdate 0
+		set stat "Quitting dbpick..."
+		update idletasks
+	}
+	if {$dbpickon < 2} {
+		if {$dbpickon < 1} {
+			if {$message == "quit"} {set doupdate 1; return}
+			set doupdate 0
+			set stat "Starting dbpick..."
+			update idletasks
+			set dbpappname "dbevents_dbp[pid]" 
+			if {$warpdbpick == 0} {
+				exec xterm -iconic -sb -geom $dbpicktypeingeom -e dbpick -nostarttalk -noedit -appname $dbpappname -geometry $dbpickgeom $dbname &
+			} else {
+				exec warp xterm -iconic -sb -geom $dbpicktypeingeom -e dbpick -nostarttalk -noedit -appname $dbpappname -geometry $dbpickgeom $dbname &
+			}
+			set dbpickon 1
+		}
+		if {[catch "send -async $dbpappname send $myappname respondhi"]} {
+		}
+		set cmd [format "\"send -async %s send $myappname respondhi\"" $dbpappname]
+		set iddbp [after 5000 "send2dbpick $cmd"]
+
+		return
+	}
+	if {[catch {send -async $dbpappname $message} errmsg]} {
+		if {$message != "quit"} {
+			set stat "Cannot talk to dbpick - disabling waveform display"
+		}
+		set dbpickon 0
+		set doupdate 1
+		return
+	}
+	if {$message == "quit"} {set doupdate 1; set dbpickon 0}
+
+}
+
+proc respondhi {} {
+	global doupdate
+	global dbpickon
+	global message
+	global iddbp
+
+	after cancel $iddbp
+	set dbpickon 2
+	set doupdate 1
+	send2dbpick $message
+}
+
+proc showbutton {} {
+	global show_origins
+	global evidselection
+	global mapnames
+	global mapcanvas
+	global citem
+	global showmode
+
+	if {$show_origins == -1} {
+		set show_origins 0
+		return
+	}
+
+	switch $showmode {
+	stations {
+		set show_origins 1
+		foreach map $mapnames {
+			$mapcanvas($map) lower events base
+			$mapcanvas($map) raise stations $citem($map)
+			$mapcanvas($map) raise origins $citem($map)
+		}
+		}
+	events {
+		set show_origins 0
+		foreach map $mapnames {
+			$mapcanvas($map) lower origins base
+			$mapcanvas($map) lower stations base
+			$mapcanvas($map) raise events $citem($map)
+		}
+		}
+	}
+}
+
+proc wf_dialog {} {
+    variable ::tk::Priv
+    global tcl_platform
+    global wfdialogwin
+    global scsift
+    global channels
+    global twin
+    global filter
+    global phases
+    global additional
+
+    set w $wfdialogwin
+    set title "dbevents: wfopts"
+    set text "edit waveform options"
+    catch {destroy $wfdialogwin}
+    toplevel $wfdialogwin -class Dialog
+    wm title $wfdialogwin $title
+    wm iconname $wfdialogwin Dialog
+    wm protocol $wfdialogwin WM_DELETE_WINDOW { }
+    wm overrideredirect $wfdialogwin 1
+
+    wm transient $wfdialogwin [winfo toplevel [winfo parent $wfdialogwin]]
+    if {$tcl_platform(platform) == "macintosh"} {
+	unsupported1 style $w dBoxProc
+    }
+
+    frame $wfdialogwin.bot
+    frame $wfdialogwin.mid
+    frame $wfdialogwin.top
+    if {$tcl_platform(platform) == "unix"} {
+	$wfdialogwin.bot configure -relief raised -bd 1
+	$wfdialogwin.mid configure -relief raised -bd 1
+	$wfdialogwin.top configure -relief raised -bd 1
+    }
+    pack $wfdialogwin.bot -side bottom -fill both
+    pack $wfdialogwin.top -side top -fill both
+    pack $wfdialogwin.mid -side top -fill both -expand 1
+
+    option add *Dialog.msg.wrapLength 3i widgetDefault
+    label $wfdialogwin.msg -justify left -text $text
+    if {$tcl_platform(platform) == "macintosh"} {
+	$wfdialogwin.msg configure -font system
+    } else {
+	$wfdialogwin.msg configure -font {Times 18}
+    }
+    pack $wfdialogwin.msg -in $wfdialogwin.top -side right -expand 1 -fill both -padx 3m -pady 0
+
+    button $w.done -text "DONE" -command "set Priv(button) 0" -font {Times 10}
+    $w.done configure -default normal
+    grid $w.done -in $w.bot -column 0 -row 0 -sticky ew -pady 0
+    bind $w.bot <Return> "
+    	$w.done configure -state active -relief sunken
+    	update idletasks
+    	after 100
+    	set Priv(button) 0
+    "
+    bind $w <Destroy> {set Priv(button) -1}
+
+    frame $w.mid.f1 -relief flat -bd 0
+    label $w.mid.f1.label -text "Station-Channel Sifter: " -relief flat
+    entry $w.mid.f1.entry -width 20 -textvariable scsift -relief flat
+    pack $w.mid.f1.label $w.mid.f1.entry -side left
+
+    frame $w.mid.f2 -relief flat -bd 0
+    label $w.mid.f2.label -text "Channels To Display: " -relief flat
+    entry $w.mid.f2.entry -width 5 -textvariable channels -relief flat
+    pack $w.mid.f2.label $w.mid.f2.entry -side left
+
+    frame $w.mid.f3 -relief flat -bd 0
+    label $w.mid.f3.label -text "Time Window: " -relief flat
+    entry $w.mid.f3.entry -width 8 -textvariable twin -relief flat
+    pack $w.mid.f3.label $w.mid.f3.entry -side left
+
+    frame $w.mid.f4 -relief flat -bd 0
+    label $w.mid.f4.label -text "Filter Index: " -relief flat
+    entry $w.mid.f4.entry -width 8 -textvariable filter -relief flat
+    pack $w.mid.f4.label $w.mid.f4.entry -side left
+
+    frame $w.mid.f5 -relief flat -bd 0
+    label $w.mid.f5.label -text "Phases: " -relief flat
+    entry $w.mid.f5.entry -width 8 -textvariable phases -relief flat
+    pack $w.mid.f5.label $w.mid.f5.entry -side left
+
+    frame $w.mid.f6 -relief flat -bd 0
+    label $w.mid.f6.label -text "Additional Cmds: " -relief flat
+    entry $w.mid.f6.entry -width 8 -textvariable additional -relief flat
+    pack $w.mid.f6.label $w.mid.f6.entry -side left
+
+    pack $w.mid.f1 $w.mid.f2 $w.mid.f3 $w.mid.f4 $w.mid.f5 $w.mid.f6 -side top -fill x
+
+    wm withdraw $w
+    update idletasks
+    set x [expr [winfo screenwidth $w]/2 - [winfo reqwidth $w]/2 \
+	    - [winfo vrootx [winfo parent $w]]]
+    set y [expr [winfo screenheight $w]/2 - [winfo reqheight $w]/2 \
+	    - [winfo vrooty [winfo parent $w]]]
+    wm geom $w +$x+$y
+    wm deiconify $w
+
+    set oldFocus [focus]
+    set oldGrab [grab current $w]
+    if {$oldGrab != ""} {
+	set grabStatus [grab status $oldGrab]
+    }
+    grab $w
+    focus $w.done
+
+    tkwait variable Priv(button)
+    catch {focus $oldFocus}
+    catch {
+	bind $w <Destroy> {}
+	destroy $w
+    }
+    if {$oldGrab != ""} {
+	if {$grabStatus == "global"} {
+	    grab -global $oldGrab
+	} else {
+	    grab $oldGrab
+	}
+    }
+    # GTHO 1
+    # Following line is present in aeic_dbevents
+    #return $Priv(button)
+    # GTHO 2
+}
+
+#######################################################
+#------------------------------------------------------
+# GTHO 1: Main continues here: GTHO 2
+
+# set check [exec xhost]
+# set lcheck [split $check \n]
+# if {[llength $lcheck] > 1} {
+# 	puts stderr "dbevents: Cannot run with xhost authorization enabled."
+# 	exit
+# }
+
+set maxmapwidth		[pfget $Pf maxmapwidth]
+set maxmapheight	[pfget $Pf maxmapheight]
+set dbpickgeom		[pfget $Pf dbpickgeom]
+set dbpicktypeingeom	[pfget $Pf dbpicktypeingeom]
+set scsift		[pfget $Pf scsift]
+set twin		[pfget $Pf twin]
+set channels		[pfget $Pf channels]
+set phases		[pfget $Pf phases]
+# GTHO 1
+if {$phases == ""} { 
+	set phases P,S 
+}
+# GTHO 2
+set additional		[pfget $Pf additional]
+set filter		[pfget $Pf filter]
+# GTHO 1
+if {$filter == ""} { 
+	set filter 0
+}
+# GTHO 2
+
+set startdbpick		[pfget $Pf startdbpick]
+set automap		[pfget $Pf automap]
+set textwidth		[pfget $Pf textwidth]
+set legendon		[pfget $Pf legendon]
+set stamode		[pfget $Pf stamode]
+set warpdbpick		[pfget $Pf warpdbpick]
+set geometry		[pfget $Pf geometry]
+set waittorestart	[expr 1000*[pfget $Pf waittorestart]]
+
+# GTHO 1: The following was included in aeic_dbevents but no authorship/comments given
+if { [catch {set magnitude_preference_order [pfgetlist @$Pf#magnitude_preference_order]}] } {
+	set magnitude_preference_order ""
+}
+# GTHO 2
+
+set showmode events
+if {$stamode != 0} {set showmode stations}
+
+pfgetarr maps @$Pf#maps
+
+set update_intervals [pfgetlist @$Pf#update_intervals]
+
+set update_interval [pfget $Pf update_interval]
+set update_ms [expr [convert_time $update_interval]*1000]
+
+set symbol_colors [pfgetlist @$Pf#symbol_colors]
+set i 0
+foreach s $symbol_colors {
+	if {$s == ""} continue
+	set sl [split $s " \t"]
+	if {$i == 0} {
+		set symbol_color_text($i) [format "- Within [lindex $sl 0]"]
+	} else {
+		set symbol_color_text($i) [format "- %s to %s" $lasttime [lindex $sl 0]]
+	}
+	set symbol_color_time($i) [convert_time [lindex $sl 0]]
+	set symbol_color_unsel($i) [tkcolor [lindex $sl 1]]
+	set symbol_color_sel($i) [tkcolor [lindex $sl 2]]
+	if {[info exists lasttime]} {set lasttime2 $lasttime}
+	set lasttime [lindex $sl 0]
+	incr i
+}
+set symbol_color_number $i
+set symbol_color_time([expr $i-1]) 9999999999
+set symbol_color_text([expr $i-1]) [format "- Older than %s" $lasttime2]
+
+# GTHO 1
+if {$use_aeic_extensions} {
+	# mag_thresh is the minimum magnitude for which an alarm should sound
+	#JCSa
+	global mag_thresh
+	global mysrn
+	global usemysrn
+	global station_colours
+
+	set mag_thresh [pfget $Pf mag_thresh]
+	# GTHO
+	if {$mag_thresh == ""} { 
+		set mag_thresh 0
+	}
+	
+	set mysrn [pfget $Pf mysrn]
+	set usemysrn [pfget $Pf usemysrn_mag]
+	set station_colors [pfgetlist @$Pf#station_colors]
+
+	# get station colors 
+	set i 0
+	foreach s $station_colors {
+		if {$s == ""} continue
+		set sl [split $s " \t"]
+		if {$i == 0} {
+			set station_color_text($i) [format "- Lessthan [lindex $sl 0]"]
+		} else {
+			set station_color_text($i) [format "- %s to %s" $lastval [lindex $sl 0]]
+		}
+		set station_color_val($i) [lindex $sl 0]
+		set station_color_unsel($i) [lindex $sl 1]
+		set station_color_sel($i) [lindex $sl 2]
+		if {[info exists lastval]} {set lastval2 $lastval}
+		set lastval [lindex $sl 0]
+		incr i
+	}
+	set station_color_number $i
+	set station_color_val([expr $i-1]) 99999999
+	set station_color_text([expr $i-1]) [format "- Greater than %s" $lastval2]
+	#JCSb
+}
+# GTHO 2
+
+pfgetarr external_catalog_authors @$Pf#external_catalog_authors
+pfgetarr local_catalog_authors @$Pf#local_catalog_authors
+
+set mapnames [array names maps]
+
+#------------------------------------------------------
+#######################################################
+
+proc waveforms_menu {m} {
+    $m delete 0 end 
+    set xhosts [get_xhosts]
+    if { [llength $xhosts] == 0 } {
+	$m add command -label Show -command setwfevent
+	$m add command -label Dismiss -command {send2dbpick quit}
+	$m add command -label Restart -command restartdbpick
+	$m add command -label "Options..." -command wf_dialog
+    } else { 
+	$m add command -label "disabled because of xhost" -state disabled
+	$m add command -label "   $xhosts" -state disabled
+	$m add command -label "Disable xhosts" -command "turn_off_xhosts $xhosts"
+    }
+}
+
+# GTHO 1: None of the following reset_* procedures were present in previous versions of aeic_dbevents
+# GTHO 2
+
+proc reset_zoom_antipode {map} {
+	global latc
+	global lonc
+	global mapcanvas
+	global zoomtag
+	global stat
+
+	set stat "Panning map to antipode..."
+	update idletasks
+	set latc($map) [expr -$latc($map)]
+	set lonc($map) [expr 180.0+$lonc($map)]
+	if {$lonc($map) > 180.0} {set lonc($map) [expr $lonc($map)-360.0]}
+	$mapcanvas($map) itemconfigure $zoomtag($map) -latr $latc($map) -lonr $lonc($map)
+	update_map
+}
+
+proc reset_zoom_latlon {map lat lon} {
+	global latc
+	global lonc
+	global mapcanvas
+	global zoomtag
+	global stat
+
+	set stat "Panning map..."
+	update idletasks
+	set latc($map) $lat
+	set lonc($map) $lon
+	$mapcanvas($map) itemconfigure $zoomtag($map) -latr $latc($map) -lonr $lonc($map)
+	update_map
+}
+
+proc reset_zoom_xy {map x y} {
+	global width
+	global height
+	global yb
+	global yt
+	global xl
+	global xr
+	global latc
+	global lonc
+
+	set w $width($map)
+	set h $height($map)
+	set xx [expr (double($x)/double($w))*($xr($map)-$xl($map))+$xl($map)]
+	set yy [expr (double($h-$y)/double($h))*($yt($map)-$yb($map))+$yb($map)]
+	set ll [edp2latlon $latc($map) $lonc($map) $xx $yy]
+	reset_zoom_latlon $map [lindex $ll 0] [lindex $ll 1]
+}
+
+proc reset_zoom_zoom {map zoomfac} {
+	global width
+	global height
+	global yb
+	global yt
+	global xl
+	global xr
+	global xdelmin
+	global xdelmax
+	global ydelmin
+	global ydelmax
+	global xscale
+	global yscale
+	global mapcanvas
+	global vptag
+	global stat
+
+	set stat "Zooming map..."
+	update idletasks
+	set xl($map) [expr $zoomfac*$xl($map)]
+	set xr($map) [expr $zoomfac*$xr($map)]
+	set yb($map) [expr $zoomfac*$yb($map)]
+	set yt($map) [expr $zoomfac*$yt($map)]
+	set xdelmin($map) $xl($map)
+	set xdelmax($map) $xr($map)
+	set ydelmin($map) $yb($map)
+	set ydelmax($map) $yt($map)
+	set xscale($map) [expr $width($map)/($xr($map)-$xl($map))]
+	set yscale($map) [expr $height($map)/($yb($map)-$yt($map))]
+	$mapcanvas($map) itemconfigure $vptag($map) -xleft $xl($map) -xright $xr($map) \
+						    -ybottom $yb($map) -ytop $yt($map)
+	update_map
+}
+
+proc setupmain {} {
+	global maps
+	global mapnames
+	global mapindex
+	global mapon
+	global imap
+	global width
+	global height
+	global mapframe
+	global maplegend
+	global mapcanvas
+	global mapcanvasmenu
+	global mapcanvasoriginmenu
+	global mapcanvasstamenu
+	global mapxscroll
+	global mapyscroll
+	global proj
+	global symsiz
+	global symsizo2
+	global latminbb
+	global latmaxbb
+	global lonminbb
+	global lonmaxbb
+	global latc
+	global lonc
+	global yb
+	global yt
+	global xl
+	global xr
+	global xscale
+	global yscale
+	global latmin
+	global latmax
+	global lonmin
+	global lonmax
+	global xdelmin
+	global xdelmax
+	global ydelmin
+	global ydelmax
+	global wmapframe
+	global hmapframe
+	global citem
+	global fname
+	global icon_pixmap
+	global dbname
+	global db
+	global update_interval
+	global update_intervals
+	global maxmapwidth
+	global maxmapheight
+	global legendwidth
+	global legendheight
+	global automap
+	global legendon
+	global stat
+	global textwidth
+	global env
+	global icon_pixmap
+	global geometry
+	global list_font
+	global priority
+	global tc24
+	global showmode
+	global zoomtag
+	global vptag
+
+# GTHO 1: 
+	global use_aeic_extensions
+	if {$use_aeic_extensions} {
+#JCSa
+		global announce_enabled
+		global downstream_deletes_enabled
+		global mag_thresh
+		global mysrn
+		global usemysrn
+
+#JCSb
+	}
+# GTHO 2
+
+
+	frame .mbar -relief raised -bd 2 -background gray
+	menubutton .mbar.file -text File -underline 0 \
+		-menu .mbar.file.menu -background gray \
+		-activebackground darkgray
+	menubutton .mbar.maps -text Maps -underline 0 \
+		-menu .mbar.maps.menu -background gray \
+		-activebackground darkgray
+	menubutton .mbar.waveforms -text Waveforms -underline 0 \
+		-menu .mbar.waveforms.menu -background gray \
+		-activebackground darkgray
+
+
+	# GTHO 1: Additional main menubar items added by JCS
+	#JCSa
+	if {$use_aeic_extensions == 1} {
+		menubutton .mbar.announce -text Announce -underline 0 \
+			-menu .mbar.announce.menu -background gray \
+			-activebackground darkgray
+		menubutton .mbar.delete -text Delete  -underline 0 \
+			-menu .mbar.delete.menu -background gray \
+			-activebackground darkgray
+		button .mbar.dbe -text Database -command {exec dbe $dbname &}
+		#JCSb
+	}
+	# GTHO 2
+
+	radiobutton .mbar.showevents -text Events -variable showmode -value events -command showbutton
+	radiobutton .mbar.showstations -text Stations -variable showmode -value stations -command showbutton
+	button .mbar.nextevent -text NextEvent -command incrementselection
+	button .mbar.prevevent -text PrevEvent -command decrementselection
+	button .mbar.nextmap -text NextMap -command incrementmap
+	button .mbar.quit -text QUIT -command quit_proc
+
+	pack .mbar.file .mbar.maps .mbar.waveforms -side left
+	
+	# GTHO 1
+	if {$use_aeic_extensions == 1} {
+		pack configure .mbar.announce .mbar.dbe -side left -after .mbar.waveforms
+		if {$downstream_deletes_enabled == 1} {
+			pack configure .mbar.delete -side left -before .mbar.dbe
+		}
+	}	
+	# GTHO 2
+
+	pack .mbar.quit .mbar.nextmap .mbar.prevevent .mbar.nextevent .mbar.showstations .mbar.showevents -side right
+
+	showbutton
+
+	menu .mbar.file.menu
+	.mbar.file.menu add command -label "Quit" -underline 0 \
+		-accelerator "Ctrl+c" -command quit_proc \
+		-background #80ff80 -activebackground red
+	
+	menu .mbar.maps.menu \
+		-background #a0a0ff -activebackground #000060 \
+		-activeforeground #ffff00
+	.mbar.maps.menu add cascade -label "Map Display" \
+		-menu .mbar.maps.menu.mapd 
+	.mbar.maps.menu add cascade -label "Map Update" \
+		-menu .mbar.maps.menu.mapu 
+	.mbar.maps.menu add checkbutton -label "Auto Map" \
+		-variable automap
+	.mbar.maps.menu add checkbutton -label "Show Legend" \
+		-variable legendon -command setlegend 
+	
+	menu .mbar.maps.menu.mapd \
+		-background #a0a0ff -activebackground #000060 \
+		-activeforeground #ffff00
+	menu .mbar.maps.menu.mapu \
+		-background #a0a0ff -activebackground #000060 \
+		-activeforeground #ffff00
+	.mbar.maps.menu.mapu add command -label "now" \
+		-command {set_update now} \
+		-background #a0a0ff
+
+	foreach update $update_intervals {
+		.mbar.maps.menu.mapu add radiobutton -label "$update" \
+			-variable update_interval -value $update \
+			-command {set_update $update_interval} \
+			-background #a0a0ff 
+	}
+	
+	menu .mbar.waveforms.menu \
+		-background #a0a0ff -activebackground #000060 \
+		-activeforeground #ffff00 \
+		-disabledforeground #ff0000 \
+		-postcommand "waveforms_menu .mbar.waveforms.menu"
+
+	# GTHO 1: This is where JCS defines the Alert & Contrl drop down menus
+	#JCSa
+	if {$use_aeic_extensions == 1} {
+		menu .mbar.announce.menu \
+			-background #a0a0ff -activebackground #000060 \
+			-activeforeground #ffff00 
+		.mbar.announce.menu add checkbutton -label "Announce Events" \
+			-variable announce_enabled
+		.mbar.announce.menu add cascade -label "Mag Threshold" \
+			-menu .mbar.announce.menu.magthresh
+		menu .mbar.announce.menu.magthresh \
+			-background #a0a0ff -activebackground #000060 \
+			-activeforeground #ffff00
+		foreach magt {0 1 2 3 4 5 6 7} {
+			.mbar.announce.menu.magthresh add radiobutton -label "$magt" \
+				-variable mag_thresh -value $magt \
+				-background #a0a0ff 
+		}
+		.mbar.announce.menu add checkbutton -label "Use SRN" \
+			-variable usemysrn
+	
+		menu .mbar.delete.menu \
+			-background #a0a0ff -activebackground #000060 \
+			-activeforeground #ffff00 
+		#.mbar.delete.menu add checkbutton -label "Allow Downstream Deletes" \
+		#	-variable downstream_deletes_enabled
+		# GTHO: commented the following lines so there Nothing happens options don't show
+		if {$downstream_deletes_enabled == 1} {
+			.mbar.delete.menu add command -label "Delete event from database, QDDS, EOC and Shakemap" \
+				-command delete_event_downstream
+		} else {
+			.mbar.delete.menu add command -label "Delete event from database" \
+				-command delete_event
+		}
+			
+		#.mbar.delete.menu add command -label "Show Query" \
+		#	-command {puts stderr "Nothing happens yet"}
+		#.mbar.delete.menu add command -label "Send Query to QDDS" \
+		#	-command {puts stderr "Nothing happens yet"}
+		#.mbar.delete.menu add checkbutton -label "Auto Detail Map" \
+		#	-variable autodetailmap
+		#JCSb
+	}
+	# GTHO 2
+		
+	if {"$tc24" == "yes"} {frame .f -visual "truecolor 24"} else {frame .f}
+	frame .f.map -bd 0
+
+	set first 1
+	set i 0
+	foreach map $mapnames {
+		incr i
+		if {$imap($map) == "zoom"} {
+			set width($map) [pfget $maps($map) width]
+			set height($map) [pfget $maps($map) height]
+		} else {
+			set width($map) [pixmap $imap($map) width]
+			set height($map) [pixmap $imap($map) height]
+		}
+		set mapframe($map) .f.map.f$map
+		set maplegend($map) .f.map.f$map.l$map
+		set mapcanvas($map) .f.map.f$map.c$map
+		set mapcanvasmenu($map) .f.map.f$map.c$map.m$map
+		set mapcanvasoriginmenu($map) .f.map.f$map.c$map.mo$map
+		set mapcanvasstamenu($map) .f.map.f$map.c$map.ms$map
+		set mapxscroll($map) .f.map.f$map.sx$map
+		# set mapyscroll($map) .f.map.sy$map
+		set mapyscroll($map) .f.map.f$map.sy$map
+		if {$imap($map) == "zoom"} {
+			set proj($map) edp
+		} else {
+			set proj($map) [pfget $maps($map) proj]
+		}
+		set symsiz($map) [expr int([pfget $maps($map) symsize])]
+		set symsizo2($map) [expr int(0.5*$symsiz($map)+0.5)]
+		set latminbb($map) [pfget $maps($map) latminbb]
+		set latmaxbb($map) [pfget $maps($map) latmaxbb]
+		set lonminbb($map) [pfget $maps($map) lonminbb]
+		set lonmaxbb($map) [pfget $maps($map) lonmaxbb]
+		set priority($map) [pfget $maps($map) priority]
+		if {$proj($map) == "merc"} {
+			set latmin($map) [pfget $maps($map) latmin]
+			set latmax($map) [pfget $maps($map) latmax]
+			set lonmin($map) [pfget $maps($map) lonmin]
+			set lonmax($map) [pfget $maps($map) lonmax]
+			set yb($map) [mercy $latmin($map)]
+			set yt($map) [mercy $latmax($map)]
+			set xl($map) $lonmin($map)
+			set xr($map) $lonmax($map)
+			set xscale($map) [expr $width($map)/($xr($map)-$xl($map))]
+			set yscale($map) [expr $height($map)/($yb($map)-$yt($map))]
+		}
+		if {$proj($map) == "edp"} {
+			set latc($map) [pfget $maps($map) latc]
+			set lonc($map) [pfget $maps($map) lonc]
+			set xdelmin($map) [pfget $maps($map) xdelmin]
+			set xdelmax($map) [pfget $maps($map) xdelmax]
+			set ydelmin($map) [pfget $maps($map) ydelmin]
+			set ydelmax($map) [pfget $maps($map) ydelmax]
+			set yb($map) $ydelmin($map)
+			set yt($map) $ydelmax($map)
+			set xl($map) $xdelmin($map)
+			set xr($map) $xdelmax($map)
+			set xscale($map) [expr $width($map)/($xr($map)-$xl($map))]
+			set yscale($map) [expr $height($map)/($yb($map)-$yt($map))]
+		}
+		if {$first == 1} {
+			set mapon $map
+		}
+		set first 0
+		set wmapframe($map) $width($mapon)
+		if {$wmapframe($map) > $maxmapwidth} {set wmapframe($map) $maxmapwidth}
+		set hmapframe($map) $height($mapon)
+		if {$hmapframe($map) > $maxmapheight} {set hmapframe($map) $maxmapheight}
+		frame $mapframe($map) -relief flat -bd 0
+		canvas $mapcanvas($map) -width $wmapframe($map) -height $hmapframe($map) -confine 0 \
+				-scrollregion [list 0 0 [expr $width($map)-1] [expr $height($map)-1]] \
+				-xscrollincrement 10 -yscrollincrement 10
+    		make_eventmenu $mapcanvasmenu($map)
+    		make_originmenu $mapcanvasoriginmenu($map)
+    		make_stamenu $mapcanvasstamenu($map)
+		scrollbar $mapxscroll($map) -orient horizontal -command set_mxview -width 10
+		scrollbar $mapyscroll($map) -orient vertical   -command set_myview -width 10
+		if {$width($map) < $maxmapwidth} {
+			set w $maxmapwidth
+		} else {
+			set w $width($map)
+		}
+		if {$height($map) < $maxmapheight} {
+			set h $maxmapheight
+		} else {
+			set h $height($map)
+		}
+		$mapcanvas($map) create rectangle 0 0 $w $h -fill white -outline white -tags [list base]
+		# set citem($map) [$mapcanvas($map) create image 0 0 -image $imap($map) -anchor nw]
+		if {$imap($map) == "zoom"} {
+			set vptag($map) [format "vp%d" $i]
+			set zoomtag($map) [list [format "zm%d" $i]]
+			$mapcanvas($map) create viewport $vptag($map) 0 0 \
+				-width $width($map) -height $height($map) -xleft $xl($map) -xright $xr($map) \
+				-ybottom $yb($map) -ytop $yt($map) -fill white -tag $vptag($map)
+			set citem($map) [$mapcanvas($map) create edpmap $vptag($map) \
+				-latr $latc($map) -lonr $lonc($map) -resolution auto -tag $zoomtag($map)]
+			bind $mapcanvas($map) <ButtonPress-1> "reset_zoom_xy $map %x %y"
+			bind $mapcanvas($map) <Any-Enter> "focus $mapcanvas($map)"
+			bind $mapcanvas($map) <A> "reset_zoom_antipode $map"
+			bind $mapcanvas($map) <i> "reset_zoom_zoom $map 0.8"
+			bind $mapcanvas($map) <o> "reset_zoom_zoom $map 1.25"
+			bind $mapcanvas($map) <I> "reset_zoom_zoom $map 0.5"
+			bind $mapcanvas($map) <O> "reset_zoom_zoom $map 2.0"
+		} else {
+			set citem($map) [$mapcanvas($map) create pixmap $imap($map) 1 1 -anchor nw]
+		}
+		bind $mapcanvas($map) <Configure> "+set_mxscroll %w; set_myscroll %h;"
+		.mbar.maps.menu.mapd add radiobutton -label "$map" \
+			-variable mapon -value $map \
+			-command {set_map $mapon} \
+			-background #a0a0ff 
+		bind $mapcanvas($map) <Shift-ButtonPress-1> decrementselection
+		bind $mapcanvas($map) <Shift-ButtonPress-3> incrementselection
+		bind $mapcanvas($map) <Shift-ButtonPress-2> incrementmap
+		canvas $maplegend($map) -width $legendwidth -height $legendheight
+		set y [expr $hmapframe($map)-5]
+	}
+
+	drawlegend
+
+	if {$showmode == "stations"} {showbutton}
+
+	grid configure $mapyscroll($mapon) -column 0 -row 0 -sticky nsw
+	grid configure $mapcanvas($mapon) -column 1 -row 0 -sticky nsew
+	grid configure $mapxscroll($mapon) -column 1 -row 1 -sticky sew
+	grid rowconfigure $mapframe($mapon) 0 -weight 1
+	grid rowconfigure $mapframe($mapon) 1 -weight 0
+	grid columnconfigure $mapframe($mapon) 0 -weight 0
+	grid columnconfigure $mapframe($mapon) 1 -weight 1
+
+	grid configure $mapframe($mapon) -column 0 -row 0 -sticky nsew
+	grid rowconfigure .f.map 0 -weight 1
+	grid columnconfigure .f.map 0 -weight 1
+
+	grid configure .f.map -row 0 -column 0 -padx 0 -pady 0 -sticky nsew -rowspan 2
+	
+	setlegend
+	
+	# GTHO 1: Uncommented in aeic_dbevents: GTHO 2
+	# SCAFFOLD
+	#focus .mbar
+	
+	frame .s -relief raised -bd 2 -background #ffe0e0 -relief flat
+	label .s.slabel -text "Status:" -background #ffe0e0 -relief flat
+	entry .s.sentry -width 100 -textvariable stat -background #ffe0e0 -relief flat
+	pack .s.slabel .s.sentry -side left
+	
+	frame .f.events
+	text .f.events.txt \
+	    -width $textwidth \
+	    -yscrollcommand ".f.events.scrolly set" \
+	    -wrap none \
+	    -font $list_font \
+	    -cursor hand2
+
+	scrollbar .f.events.scrolly -command ".f.events.txt yview" -width 10
+	grid .f.events.scrolly -row 0 -column 0 -padx 0 -pady 0 -sticky nsw
+	grid .f.events.txt -row 0 -column 1 -padx 0 -pady 0 -sticky nsw
+	grid rowconfigure .f.events 0 -weight 1
+
+	grid .f.events -row 0 -column 1 -padx 0 -pady 0 -sticky nsw
+
+	frame .f.showevent -height [expr int($maxmapheight*0.25)]
+	text .f.showevent.txt \
+	    -width $textwidth \
+	    -yscrollcommand ".f.showevent.scrolly set" \
+	    -wrap none \
+	    -font $list_font \
+	    -cursor hand2
+
+	scrollbar .f.showevent.scrolly -command ".f.showevent.txt yview" -width 10
+	grid .f.showevent.scrolly -row 0 -column 0 -padx 0 -pady 0 -sticky nsw
+	grid .f.showevent.txt -row 0 -column 1 -padx 0 -pady 0 -sticky nsw
+	grid rowconfigure .f.showevent 0 -weight 1
+
+	grid .f.showevent -row 1 -column 1 -padx 0 -pady 0 -sticky nsw
+
+	grid rowconfigure .f 0 -weight 1 -minsize 50
+	grid rowconfigure .f 1 -weight 0 
+	grid columnconfigure .f 0 -weight 1
+	grid columnconfigure .f 1 -weight 0
+	
+	grid configure .mbar -column 0 -row 0 -sticky ew
+	grid configure .f -column 0 -row 1 -sticky nsew
+	grid configure .s -column 0 -row 2 -sticky ew
+
+	grid rowconfigure . 0 -weight 0
+	grid rowconfigure . 1 -weight 1
+	grid rowconfigure . 2 -weight 0
+	grid columnconfigure . 0 -weight 1
+	
+	set db [dbopen $dbname r]
+	
+	plot_events $db 1 1
+	
+	update_latency
+
+}
+
+#######################################################
+#------------------------------------------------------
+# GTHO 1: Main continues here: GTHO 2
+
+set tc24 [check_tc24]
+	
+set icon_pixmap [pixmap create $env(ANTELOPE)/data/icons/dbevents.gif]
+if {"$tc24" == "yes"} {toplevel .icon -visual "truecolor 24"} else {toplevel .icon}
+canvas .icon.c -width [pixmap $icon_pixmap width] -height [pixmap $icon_pixmap height]
+.icon.c create pixmap $icon_pixmap 1 1 -anchor nw
+.icon.c create text [expr int([pixmap $icon_pixmap width]*0.5)]  \
+		[expr [pixmap $icon_pixmap height] - 1] -anchor s -text dbevents -font [list helvetica 10 bold]
+.icon.c create text [expr int([pixmap $icon_pixmap width]*0.5)]  \
+		1 -anchor n -text "" -font [list helvetica 10 bold] -tags [list icontime]
+pack .icon.c
+
+if {[info exists usertitle] == 0} {
+	wm title . [format "dbevents: %s" $dbname]
+	wm iconname . $dbname
+} else {
+	wm title . $usertitle
+	wm iconname . $usertitle
+}
+
+# GTHO 1: Alternative title that AEIC likes to use
+if {$use_aeic_extensions} {
+	set titlestring [format "dbevents (with AEIC extensions): %s" $dbname]
+	if {$limit_age} {
+		wm title . [format "%s - %ddays" $titlestring [expr int($max_age / 86400)]]
+	}
+	wm iconname . [string range $dbname [expr [string last / $dbname] +1 ] end]
+}
+# GTHO 2
+
+wm geometry . $geometry
+wm iconwindow . .icon
+
+if {"$tc24" == "yes"} {frame .f -visual "truecolor 24"} else {frame .f}
+message .f.text -text "Reading map gif files..." -width 600
+pack .f.text
+pack .f
+
+#------------------------------------------------------
+#######################################################
+
+proc readmaps {} {
+	global maps
+	global mapnames
+	global mapindex
+	global fname
+	global imap
+	global env
+
+	set i 0
+	foreach map $mapnames {
+		set mapindex($map) $i
+		incr i
+		set fname [pfget $maps($map) file]
+		if {$fname == "zoom"} {
+			.f.text configure -text [format "Setting zoom map for %s" $map]
+			update
+			set imap($map) "zoom"
+			continue
+		}
+		if {[string range $fname 0 7] == "ANTELOPE"} {
+			set fname [format "%s%s" $env(ANTELOPE) [string range $fname 8 end]]
+		}
+		.f.text configure -text [format "Reading map %s from gif file\n%s" $map $fname]
+		update
+		if {[catch "pixmap create $fname" out]} {
+			tk_messageBox -type ok -message "Cannot create map $map...$out"
+			exit
+		} else {
+			set imap($map) $out
+		}
+	}
+
+	destroy .f
+	setupmain
+}
+
+#######################################################
+#------------------------------------------------------
+# GTHO 1: Main continues here: GTHO 2
+after 1000 readmaps
+
+#------------------------------------------------------
+#######################################################
+# START OF PROCEDURES ADDED BY AEIC
+
+# GTHO 1
+proc make_addtopopupmenu {menu} {
+	global Pf
+	global downstream_deletes_enabled
+	global review_event_enabled
+	global webmaps_enabled
+	global shakemaps_enabled
+	global evidselection
+	global evtime
+		
+	# These are AEIC additions to the event and origin menu
+	$menu add separator
+
+	# WEBMAPS
+	if {$webmaps_enabled == 1} {
+		$menu add command -label "Show Detail Map" -command display_webmap
+	}
+
+	# SHAKEMAP
+	if {$shakemaps_enabled == 1} {
+		$menu add command -label "Show Shakemap" -command display_shakemap
+	}
+
+	# REVIEW / RELOCATE
+	if {$review_event_enabled == 1} {
+		$menu add command -label "Review event" -command review_event
+	}
+
+	# DOWNSTREAM DELETES 
+	if {$downstream_deletes_enabled == 0} {
+		$menu add command -label "Delete event from database" -command delete_event
+	} else {
+		$menu add command -label "Delete event from QDDS EOC and Shakemap" -command delete_event_downstream
+	}
+
+}
+# GTHO 2
+
+# GTHO 1: Note the version of delete_event_qdds (now delete_event_downstream) in aeic_dbevents_mitch is different
+#JCSa
+proc delete_event_downstream {} {
+	global delete_evid
+	global evtime
+	global dbname
+	global downstream_deletes_enabled
+	global Pf
+	puts "delete_event_downstream:"
+
+	# Do not delete anything if we are in test mode (test_mode == 1) 
+	if { [catch { set test_mode [pfget $Pf test_mode] } ] } {
+		set test_mode 0
+	}
+
+	# Get $delete_script
+	if { [catch { set delete_script [pfget $Pf delete_script] } ] } {
+		set delete_script ""
+		return
+	}
+
+	# Get $delete_pf
+	if { [catch { set delete_pf [pfget $Pf delete_pf] } ] } {
+		set delete_pf ""
+		return
+	}
+
+	# Get $delete_options
+	if { [catch { set delete_options [pfget $Pf delete_options] } ] } {
+		set delete_options ""
+		return
+	}
+
+	puts "delete_script $delete_script"
+	puts "delete_pf $delete_pf"
+	puts "delete_options $delete_options"
+
+
+	if {($delete_script != "") } {
+
+		if {[file exists $delete_script]} {
+
+			set ans [tk_dialog .areyousure "confirm" "Delete event from database, QDDS, EOC and Shakemap?" "" 0 No Yes]
+			if {$ans != 1} {
+				puts stderr "Event not deleted"
+				return
+			}
+		
+			if {$test_mode == 0} {
+				puts $delete_evid
+				set evidtime $evtime($delete_evid)
+				puts "$delete_script $delete_options -p $delete_pf $dbname $delete_evid $evidtime "
+				catch "exec $delete_script $delete_options -p $delete_pf $dbname $delete_evid $evidtime" 
+
+			} else {
+				puts "test mode on, event not deleted"
+			}
+		}
+	}
+
+}
+
+proc display_webmap {} {
+	# Modified by GTHO 5 Sep 2007
+	# It now checks for renamed webmap files - which use event time in place of evid in their filenames - if an entry in the database cannot be found
+	# This allows AEIC to run just one version of dbrecenteqs (on summary event database), but for dbevents_aeic running on any event database (at AEIC) to see the associated webmap
+	# (Another application also transfers these webmaps to the iMacs used on the EOC Project, so at each EOC they can bring up the webmap too without running dbrecenteqs on their local database)
+	global Pf
+	global dbname
+	global evlistelements
+	global currentselection
+	global evtime
+	global evmag
+	global evmagtype
+	global webmaps_enabled
+	global webmapsdb
+	global webmapsdir
+	puts "display_webmap:"
+	set evtag [lindex $evlistelements $currentselection]
+	set evid [string trimleft [string range $evtag 2 end] 0]
+	set webmaps_geometry [pfget $Pf webmaps_geometry]
+
+	if {[winfo exists .imagewin]} {
+	  	foreach wintype {imagedisplay dismiss time mag} {
+			if {[winfo exists .imagewin.$wintype]} {
+				destroy .imagewin.$wintype
+			}
+	  	}
+	} else {
+	  	toplevel .imagewin
+	  	wm geom .imagewin $webmaps_geometry
+	}
+
+	# GTHO 1
+	set msg ""
+	puts "**************************"
+	set webmapfound 0
+
+	# search database
+	if {[file exists $webmapsdb]} {
+		set db [dbopen $webmapsdb r]
+		set dbmap [dbsubset [dblookup $db 0 webmaps 0 0] "evid==$evid"]
+		set nrec [dbquery $dbmap dbRECORD_COUNT]
+
+		if {$nrec == 1} {
+		  	set idir [dbgetv $dbmap 0 0 dir]
+		  	set idfile [dbgetv $dbmap 0 0 dfile]
+			if {[file exists $idir/$idfile] == 1} {
+				set webmapfound 1
+				set myimage [image create photo -file $idir/$idfile]
+			}
+		}
+		dbfree $db
+	}
+
+	if {$webmapfound == 0} {
+	  	set msg [format "No webmap found for event %d from database %s:" $evid $webmapsdb]
+		# work out what the renamed webmap would be called
+		if {$webmapsdir != ""} {
+			set prefortime $evtime($evid)
+			set prefortimestring [epoch2str $prefortime "%m_%d_%Y_%H_%M_%S_%s"]
+			set webmappath [format "%s/%s__.gif" $webmapsdir $prefortimestring]
+
+			# Does the webmap exist?
+		   	if {[file exists $webmappath] == 1} { # yes
+				set webmapfound 1
+		  		set msg [format "%s\n Renamed webmap %s found" $msg $webmappath]
+				set myimage [image create photo -file $webmappath]
+			} else { # no - then look for close matches (+/- 1 second)
+				# Glob for a near file name
+				set webmaptouse ""
+		  		set msg [format "%s\n Renamed webmap %s not found" $msg $webmappath]
+				for {set sec -1} {$sec < 2} {incr sec} {
+					set origintime [expr $prefortime + $sec]
+					set prefortimestring [epoch2str $origintime "%m_%d_%Y_%H_%M_%S"]
+					set webmappath [format "%s/%s" $webmapsdir $prefortimestring]
+					set posswebmaps [glob -nocomplain $webmappath*]
+					if {$posswebmaps != "" } {
+						foreach posswebmap $posswebmaps {
+							puts "Possible webmap is $posswebmap"
+							set webmaptouse $posswebmap
+							set webmapfound 1
+						}
+					}
+				}
+				if {$webmaptouse != ""} {
+		  			set msg [format "%s\n Fuzzy match worked\n %s found" $msg $webmaptouse]
+					set myimage [image create photo -file $webmaptouse]
+				} else {
+		  			set msg [format "%s\n Fuzzy match also failed" $msg]
+		 		}
+			}
+		} 
+	}
+
+	puts $msg
+	if {$webmapfound == 1} {
+		label .imagewin.imagedisplay -image $myimage
+		pack .imagewin.imagedisplay
+	}  
+	# GTHO 2
+	
+	wm title .imagewin "Webmap for event $evid"
+	button .imagewin.dismiss -text Dismiss -command "destroy .imagewin"
+	label .imagewin.time -text "[mystrtime $evtime($evid)]"
+	label .imagewin.mag -text "Mag: $evmag($evid) $evmagtype($evid)"
+
+	pack .imagewin.time .imagewin.mag .imagewin.dismiss -side left -padx 2 -expand 1
+
+}
+
+proc display_shakemap { } {
+	global Pf
+	global dbname
+	global evlistelements
+	global currentselection
+	global evtime
+	global evmag
+	global evmagtype
+	global shakemapsdir
+	global shakemaps_script
+	puts "display_shakemap:"
+
+	set evtag [lindex $evlistelements $currentselection]
+	set evid [string trimleft [string range $evtag 2 end] 0]
+	set shakemaps_geometry [pfget $Pf shakemaps_geometry]
+
+
+	# SHAKEMAP
+	puts "Looking for shakemap"
+
+	puts "shakemapsdir = $shakemapsdir"
+	set time $evtime($evid)
+	set year [epoch2str $time "%Y"]
+	puts "year = $year"
+	
+	set shakemapgif $shakemapsdir/$evid.gif
+	puts "shakemapgif = $shakemapgif"
+	if {[file exists $shakemapgif] == 0 } {
+		puts "gif does not exists on first check"
+		if {[file exists $shakemaps_script] == 1} {
+			puts "running $shakemaps_script $year $evid $time $shakemapsdir"
+			catch "exec $shakemaps_script $year $evid $time $shakemapsdir"
+			if {[file exists $shakemapgif] == 1} {
+				puts "gif exists on second check"
+			} else {
+				puts "gif does not exist of second check - will not show a shakemap"
+			}
+		} else {
+			puts "$shakemaps_script does not exist - will not show a shakemap"
+		}
+	}
+
+
+
+	if {[winfo exists .imagewin2]} {
+	  	foreach wintype {imagedisplay dismiss} {
+			if {[winfo exists .imagewin2.$wintype]} {
+				destroy .imagewin2.$wintype
+			}
+	  	}
+	} else {
+	  	toplevel .imagewin2
+	  	wm geom .imagewin2 $shakemaps_geometry
+	}
+
+
+	if {[file exists $shakemapgif]} {
+		set myimage [image create photo -file $shakemapgif ]
+
+		label .imagewin2.imagedisplay -image $myimage
+		pack .imagewin2.imagedisplay
+	}
+	
+	wm title .imagewin2 "Shakemap for event $evid"
+	button .imagewin2.dismiss -text Dismiss -command "destroy .imagewin2"
+
+	pack .imagewin2.dismiss -side left -padx 2 -expand 1
+
+}
+
+
+proc nearest_places {evid} {
+	global Pf
+	global evlistelements
+	global currentselection
+	global evlat
+	global evlon
+	global near_place_list
+
+	set olat $evlat($evid)
+	set olon $evlon($evid)
+	set placedb [pfget $Pf placedb]
+	set neardist [pfget $Pf neardist]
+	set alwaysinc [pfget $Pf always_include]
+	set nmax [pfget $Pf nplacemax]
+# GTHO 1:  Added an if statement here as it was crashing if $always = "" at set ex = ...
+	if { $alwaysinc != "" } {
+		set ex [format "distance(lat,lon,%f,%f)*111.195 <= %d || place=~/%s/" $olat $olon $neardist $alwaysinc]
+	} else {
+		set ex [format "distance(lat,lon,%f,%f)*111.195 <= %d " $olat $olon $neardist]
+	}
+# GTHO 2
+	set db [dbopen $placedb r]
+	set dbp [dbsubset [dblookup $db 0 places 0 0] "$ex"]
+	set ex1 [format "distance\(lat,lon,%f,%f\)*111.195" $olat $olon]
+	set ex2 [format "azimuth\(lat,lon,%f,%f\)" $olat $olon]
+	set dbp [dbsort $dbp $ex1]
+	set nplaces [dbquery $dbp dbRECORD_COUNT]
+	if {$nplaces < $nmax} {set nmax $nplaces}
+	set near_place_str ""
+	for {set i 0} {$i < $nmax} {incr i} {
+		set place [dbgetv $dbp 0 $i place]
+		set dbp [lreplace $dbp 3 3 $i]
+		set dist_km [dbeval $dbp $ex1]
+		set dist_mi [expr $dist_km/1.6]
+		set azim [dbeval $dbp $ex2]
+		set comp [compass_from_az $azim]
+		set place_str [format "       %.0f km (%.0f mi) %s of %s\n" $dist_km $dist_mi $comp $place]
+		append near_place_str $place_str
+	}
+
+	return $near_place_str
+	dbfree $db
+}
+
+proc compass_from_az {azimuth} {
+	while {$azimuth < 0.} {set azimuth [expr $az+360.]}
+	while {$azimuth > 360.} {set azimuth [expr $az-360.]}
+        if {$azimuth >= 348.75 || $azimuth < 11.25} {
+                return "N";             # 0.00
+        } elseif {$azimuth >= 11.25 && $azimuth < 33.75} {
+                return "NNE";           # 22.50
+        } elseif {$azimuth >= 33.75 && $azimuth < 56.25} {
+                return "NE";            # 45.00 
+        } elseif {$azimuth >= 56.25 && $azimuth < 78.75} {
+                return "ENE";           # 67.50 
+        } elseif {$azimuth >= 78.75 && $azimuth < 101.25} {
+                return "E";             # 90.0 0 
+        } elseif {$azimuth >= 101.25 && $azimuth < 123.75} {
+                return "ESE";           # 112.50        
+        } elseif {$azimuth >= 123.75 && $azimuth < 146.25} {
+                return "SE";            # 135.00        
+        } elseif {$azimuth >= 146.25 && $azimuth < 168.75} {
+                return "SSE";           # 157.50        
+        } elseif {$azimuth >= 168.75 && $azimuth < 191.25} {
+                return "S";             # 180.00        
+        } elseif {$azimuth >= 191.25 && $azimuth < 213.75} {
+                return "SSW";           # 202.50        
+        } elseif {$azimuth >= 213.75 && $azimuth < 236.25} {
+                return "SW";            # 225.00        
+        } elseif {$azimuth >= 236.25 && $azimuth < 258.75} {
+                return "WSW";           # 247.50        
+        } elseif {$azimuth >= 258.75 && $azimuth < 281.25} {
+                return "W";             # 270.00        
+        } elseif {$azimuth >= 281.25 && $azimuth < 303.75} {
+                return "WNW";           # 292.50        
+        } elseif {$azimuth >= 303.75 && $azimuth < 326.25} {
+                return "NW";            # 315.00        
+        } elseif {$azimuth >= 326.25 && $azimuth < 348.75} {
+                return "NNW";           # 337.50        
+        } else {
+                return ""; # Faulty logic if we hit this
+        }
+}
+
+#  JCSb
+
+# Need to add a review_event procedure here to fire off beeper duty reviews
+proc review_event { } {
+	global env
+	global Pf
+	global evmag
+	global evmagtype
+	global dbpickon 
+	global evlistelements
+	global evidselection
+	global currentselection
+	global evlat
+	global evlon
+	global dbname
+	global evtime
+        global evdepth
+        global evauth
+        global evreview
+        global evnass
+        global evndef
+        global evorid
+	global use_aeic_extensions
+
+	global waveform_db
+	global dest_db
+
+	global orid
+	global userdefined_orid
+	global time
+
+	puts "review_event:"
+
+	set dest_db $env(HOME)/alarm
+	set evid $evidselection
+	set orid $evorid($evid)
+	set lat $evlat($evid)
+	set lon $evlon($evid)
+	set depth $evdepth($evid)
+	set time $evtime($evid)
+	set ndef $evndef($evid)
+	set mag $evmag($evid)
+
+        if {[catch {toplevel .r} message]} {
+		wm deiconify .r
+		raise .r
+                tk_dialog .dialog "Sorry..." \
+                        "Only one Response screen allowed at a time" \
+                        error 0 Dismiss
+                return
+        }
+ 
+
+        wm title .r "Response for evid $evid"
+        wm minsize .r 300 196
+        wm geometry .r +50+50
+
+	set userdefined_orid orid
+	frame .r.origin
+	label .r.origin.l -text "Origin id: "
+#	listbox .r.origin.lbox -height 1 -width 7 -selectmode single -yscrollcommand .r.origin.scrl set
+#	scrollbar .r.origin.scrl -command ".r.origin.lbox yview"
+
+	global seorid
+	set orids [array names seorid]
+	set numorids [llength $orids]
+	
+#	foreach origin_this_event $orids {
+#		puts $origin_this_event
+#		puts $seorid($origin_this_event)
+#		.r.origin.lbox insert end $origin_this_event
+#	}
+
+#	bind .r.origin.lbox <Key-Return> {
+#		global userdefined_orid
+#		puts userdefined_orid
+#		set orid userdefined_orid
+#	}
+
+	set userdefined_orid $orid
+	entry .r.origin.ent -width 7  -textvariable userdefined_orid
+        button .r.origin.change -text "Change" -command {
+		global orid
+		global userdefined_orid
+		set orid $userdefined_orid
+		puts "orid = $orid"
+		puts "userdefined_orid = $userdefined_orid"
+
+	}
+# -state normal
+
+#	MyLblEntry .r.origin.ent -label "Orid"\
+#                            -textvariable orid \
+#                            -width 7
+
+#	bind .r.origin.ent <Key-Return> {
+#		global userdefined_orid
+#		puts userdefined_orid
+#		set orid userdefined_orid
+#		puts orid
+#	}
+
+#	bind .r.origin.ent .r.origin.change {
+#		global userdefined_orid
+#		puts userdefined_orid
+#		set orid userdefined_orid
+#		puts orid
+#	}
+
+
+        listbox .r.l 
+        .r.l insert end "Time [strtime $time] GMT"
+        .r.l insert end "Lat $lat"
+        .r.l insert end "Lon $lon"
+        .r.l insert end "Depth $depth km"
+        .r.l insert end "Ml $mag"
+        .r.l insert end "$ndef Phases"
+
+	frame .r.wf
+	label .r.wf.l -text "Waveforms from:"
+	pack .r.wf.l -side top
+	pfgetarr processing_systems %aeic_rtsys#processing_systems
+	set systems [array names processing_systems]
+	set counter 0
+	foreach system $systems {
+		incr counter
+		pfgetarr myarr %aeic_rtsys#processing_systems#$system
+
+		radiobutton .r.wf.$system -text $myarr(system_name) \
+			-value $system -variable waveform_db
+
+		if {$counter == 1} {
+			.r.wf.$system invoke
+		}
+		pack .r.wf.$system -side left
+	}
+	.r.wf.op select
+
+        frame .r.db
+        button .r.db.dbloc -text "Subset database & relocate event" -command {
+		global orid
+		global userdefined_orid
+		global dest_db
+		global time
+	 	call_dbloc2 $userdefined_orid $dest_db $time .r.db.dbe
+		#.r.dbe configure -state normal
+	}
+
+
+        button .r.db.dbe -text "view database" \
+                -command "exec dbe $dest_db &" -state disabled
+	
+	pack .r.origin -side top -fill x
+#	pack .r.origin.l .r.origin.lbox -side left
+#	pack .r.origin.scrl -side right -fill y
+	if {$numorids > 1} {
+		pack .r.origin.l .r.origin.ent .r.origin.change -side left
+#		pack .r.origin.l .r.origin.ent -side left
+
+	}
+        pack .r.l -side top -fill x
+	pack .r.wf -side top -fill x
+        pack .r.db -side top -fill x
+        pack .r.db.dbloc -side top 
+        pack .r.db.dbe -side top 
+
+        button .r.dismiss -text "Dismiss" -command {
+                destroy .r
+        }
+
+        pack .r.dismiss -side top -fill x
+ 
+        return
+}
+ 
+
+proc call_dbloc2 { orid dest_db time dbe_widget } {
+
+	puts "call_dbloc2 $orid $dest_db $time..."
+	global dbname
+	set source_db $dbname
+ 	set primary_system [pfget aeic_rtsys primary_system]
+
+	set key [join [list "processing_systems{" \
+			   $primary_system \
+			   "{archive_database}}" ] ""]
+        pfget aeic_rtsys $key waveform_db
+	puts "waveform_db: $waveform_db"
+
+	set waveform_db [epoch2str $time $waveform_db]
+        set site_db "/Seis/databases/stations/master_stations"
+	puts "site_db: $site_db"
+
+	if {[file exists $dest_db]} {
+		puts "$dest_db exists"
+	        set i [tk_dialog .dialog "Housecleaning" \
+        	       "$dest_db already exists -- delete?" \
+                        question 0 Delete "Leave it"]
+	
+                if {$i == 0} {
+			
+			puts "Removing $dest_db"
+			eval file delete [glob -nocomplain $dest_db*] 
+
+			$dbe_widget configure -state disabled
+
+                }
+        }
+
+
+
+        set Subset "dbsubset $source_db.origin 'orid == $orid' "
+        set Join "dbjoin - assoc arrival event"
+        set Unjoin "dbunjoin -f -o $dest_db -"
+	
+ 	puts "exec $Subset | $Join | $Unjoin"
+        if {[catch {exec sh -c "$Subset | $Join | $Unjoin"} message]} {
+		puts "Subset failed"
+                tk_dialog .dialog "Sorry..." \
+                        "Failed to subset $source_db for orid $orid." \
+                        error 0 Dismiss
+        } else {
+		puts "Subset succeeded"
+                if {[file exists $source_db.lastid]} {
+			puts "cp $source_db.lastid $dest_db.lastid"
+			exec sh -c "cp $source_db.lastid $dest_db.lastid"
+		} else {
+			puts "touch $dest_db.lastid"
+			exec touch $dest_db.lastid
+		}
+ 
+		puts "Opening $dest_db for writing - editing schemas etc"
+                set fd [open "$dest_db" w]
+                puts $fd "css3.0"
+                regsub {[^/][-a-zA-Z0-9_]*$} $dest_db {{&}} DD
+                regsub {[^/][-a-zA-Z0-9_]*$} $waveform_db {{&}} dw
+                regsub {[^/][-a-zA-Z0-9_]*$} $site_db {{&}} ds
+ 
+                puts $fd "$DD:$dw:$ds"
+                close $fd
+ 		puts "Finished editing $dest_db"
+
+		
+                set Xterm "/usr/openwin/bin/xterm -geometry 80x24+0-0"
+		puts "$Xterm -e dbloc2 -r $dest_db"
+                exec sh -c "$Xterm -e dbloc2 -r $dest_db" &
+
+		$dbe_widget configure -state normal
+        }
+
+	puts "Review events completed normally"
+        return
+ 
+}
+
+
+
+proc announce_event { l_evid last_evid } {
+	global Pf
+	global evgrn
+	global evsrn
+	global evregion
+	global evmag
+	global evmagtype
+	global mag_thresh
+	global usemysrn
+	global mysrn
+	global dbpickon # GTHO 1: not used: GTHO 2
+	global evtime
+	puts "announce_event:"
+
+	# GTHO 1
+	# Only want to announce an event if the event time is within the last hour
+	set time $evtime($l_evid)
+	set timenow [ str2epoch now ]
+	set timethreshold [ expr $timenow - 3600 ]
+	if {$time < $timethreshold} {
+		puts "announce_event: this event is older than 1 hour and will not be announced"
+		return
+	} else {
+		puts "announce_event: this event occurred within the last hour and will be announced"
+	}
+	# GTHO 2
+
+	set soundpath [pfget $Pf soundpath]
+	set audioplayer [pfget $Pf audioplayer]
+# GTHO 1: Taken out volume because not all programs will have a -v (volume) option
+#	set audiovol [pfget $Pf audiovol]
+# GTHO 2
+	set pt $soundpath/point.au
+	set eqin $soundpath/eqin.au
+	set mg $soundpath/mag.au
+	set snd $soundpath/[pfget $Pf soundfile]
+
+	set dbwav $soundpath/[pfget $Pf dbwav]
+	set extra_sound ""
+	if {[file exists $dbwav]} {
+		set extra_sound $dbwav
+	}
+
+	# GTHO 1: 20070606 modifying to use geographic region sound file if it exists
+	# otherwise will use the more broad seismic region sound file
+	set grnfile  $soundpath/grn$evgrn($l_evid).au
+	set srnfile  $soundpath/srn$evsrn($l_evid).au
+
+ 	if {[file exists $grnfile] == 1} {
+ 	   	set eqloc $grnfile
+	} else {
+        	set eqloc $srnfile
+	}
+	# GTHO 2
+	
+
+	set mg1 [lindex [split [format "%.1f" $evmag($l_evid)] .] 0]
+	set mg2 [lindex [split [format "%.1f" $evmag($l_evid)] .] 1]
+	set mg1f $soundpath/$mg1.au
+	set mg2f $soundpath/$mg2.au
+  	
+	if {$l_evid != $last_evid} {
+	  	# small detail map not available for new events
+	  	# because dbrecenteqs likely has not built map
+	  	# so kill imagewin if it is running
+	  	if {[winfo exists .imagewin]} {
+			destroy .imagewin
+			puts stderr "Destroying imagewindow for new event"
+	  	}
+          	# this is only place concerned if dbpick is running, restarts dbpick
+        	#  if {$dbpickon == 2} {set dbpickon 3}
+	  	if {$mg1 >= $mag_thresh || $evmag($l_evid) == -999.0} {
+	    		if {($usemysrn == 1 && $evsrn($l_evid) == $mysrn) || $usemysrn == 0} {
+	     			if {$evmag($l_evid) == -999.0} {
+	      				set nomg $soundpath/nomag.au
+	      				#set sndstr {$snd $eqin $eqloc $nomg}
+	     				exec $audioplayer $snd $extra_sound $eqin $eqloc $nomg &
+	      				puts stderr "announce_event: Magnitude $evmag($l_evid) $evmagtype($l_evid) in $evregion($l_evid) $l_evid"
+	     			} else {
+	     				 #set sndstr {$snd $eqin $eqloc $mg $mg1f $pt $mg2f}
+	      				exec $audioplayer $snd $extra_sound $eqin $eqloc $mg $mg1f $pt $mg2f & 
+	      				puts stderr "announce_event: Magnitude $evmag($l_evid) $evmagtype($l_evid) in $evregion($l_evid) $l_evid"
+	     			}
+	     			# end usemysrn
+	    		}
+	   	}
+	}
+} 
+
+#JCSa plot only alarm stations
+proc plot_val_stations {db} {
+	global mapnames
+	global mapcanvas
+	global mapcanvasstamenu
+	
+	set dbs [dblookup $db 0 site 0 dbSCRATCH]
+	set site_recs [dbmatches $dbs $dbs st1hook]
+	if {[llength $site_recs] > 0} {
+		set srec [lindex $site_recs 0]
+		set sta [dbgetv $dbs 0 $site_recs sta]
+		set lat [dbgetv $dbs 0 $srec lat]
+		set lon [dbgetv $dbs 0 $srec lon]
+		set elev [dbgetv $dbs 0 $srec elev]
+		set staname [dbgetv $dbs 0 $srec staname]
+	} 
+	plot_station_val $map $sta $lat $lon $val
+	
+}
+#JCSb
+
+#JCSa this will plot stations based on some value
+proc plot_station_val {map lat lon orid val sta} {
+	global Pf
+	global proj
+	global station_color_number
+	global station_color_val
+	global station_color
+	global SQRT2
+        global width
+        global height
+	global wmapframe
+	global hmapframe
+	global seprefor
+	#JCSa
+	global mapcanvasstamenu
+
+        for {set i 0} {$i < $station_color_number} {incr i} {
+	  if {$val <= $station_color_val($i)} break
+       	}
+  	set color $station_color($i)
+	set statag [format "sta%s" $sta]
+	#JCSb
+	#switch $timedef {
+	#1	{
+#			set color \#ff0000
+#		}
+#	0	{
+#			set color \#ffff00
+#		}
+#	d	{
+#			set color \#0000ff
+#		}
+#	default	{
+#			set color \#00ff00
+#		}
+#	}
+	set siz [expr $symsiz($map)*1.5]
+	set sizo2 [expr $symsizo2($map)*1.5]
+	if {$proj($map) == "merc"} {
+		set x [expr ($lon-$xl($map))*$xscale($map)]
+		set y [expr ([mercy $lat]-$yt($map))*$yscale($map)]
+	}
+	if {$proj($map) == "edp"} {
+		set xy [edpxy $latc($map) $lonc($map) $lat $lon]
+		set x [expr ([lindex $xy 0]-$xl($map))*$xscale($map)]
+		set y [expr ([lindex $xy 1]-$yt($map))*$yscale($map)]
+	}
+#puts "lat: $lat lon: $lon x: $x y: $y sta: $sta"
+#	plot_triangle $mapcanvas($map) $x $y $siz $color [list stations] 0
+	plot_triangle $mapcanvas($map) $x $y $siz $color [list stations $statag] 0
+	$mapcanvas($map) bind $statag <ButtonPress-2> "stamenu_val $mapcanvasstamenu($map) $sta $val %x %y"
+}
+#JCSb
+
+
+proc stamenu_val {menu sta val x y} {
+	setstamenu_val $menu $sta $val
+	mytk_popup $menu $x $y
+}
+# END OF PROCEDURES ADDED BY AEIC
+
+proc MyLblEntry {w args} {
+    frame $w
+    label $w.l
+    entry $w.e
+    pack $w.l -side left
+    pack $w.e -side left -fill x
+    while { ! [lempty $args] } {
+        set option [lvarpop args]
+        switch -- $option {
+            -label      { set value [lvarpop args] ; $w.l config -text $value }
+            -textvariable       { set value [lvarpop args] ; global $value; $w.e config -textvariable $value }
+            -width      { set value [lvarpop args] ; $w.e config -width $value }        }
+    }    
+    return $w
+}
