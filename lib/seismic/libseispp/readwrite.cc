@@ -554,7 +554,7 @@ int dbsave(ThreeComponentSeismogram& tcs,
 		/* post this in case the user tries to save it */
 		string sdtype;
 		if(IntelByteOrder())
-			sdtype=string("3c");
+			sdtype=string("c3");
 		else
 			sdtype=string("3c");
 		tcs.put("datatype",sdtype);
