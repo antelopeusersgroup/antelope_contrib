@@ -1,0 +1,27 @@
+2008.092:
+	- Add man page.
+	- Commit to BRTT/Antelope CVS repository.
+
+2008.073:
+	- Include a fix for small RRP restransmits provided by D. Ketchum.
+	- Use a default status file writing interval of 100 packets.
+	- Change the default modulus when modules==0 in ring_init() to
+	100 instead of 10.
+
+2008.039:
+	- Fix usage of default ring file name and reader extension.
+
+2007.???
+	- Convert from rrp2archive to rrp2orb, writing miniSEED records
+	to an ORB instead of to disk.
+
+2007.184:
+	- Improve the archiving to better handle interrupted system calls,
+        specifically, open and write.  In both cases the call is restarted
+	if interrupted up to 10 times and then graceful failure with an 
+	error message.
+
+2007.181:
+	- Initial version, re-worked the original ring_reader.c code to
+	integrate better and used the liss2archive code as a base for the
+	archiving part.

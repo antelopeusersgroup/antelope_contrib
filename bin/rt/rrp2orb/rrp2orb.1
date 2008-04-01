@@ -1,0 +1,100 @@
+.TH RRP2ORB 1 2008/04/01
+.SH NAME
+rrp2orb \- RRP Mini-SEED to Antelope ORB module
+.SH SYNOPSIS
+.nf
+rrp2orb [options] -ring ringfile ORB
+
+.fi
+.SH DESCRIPTION
+\fBrrp2orb\fP reads Mini-SEED records from an RRP (Ring Replication
+Protocol) ring file and sends them to an ORB as packet type 'SEED'.
+
+.SH OPTIONS
+
+.IP "-V"
+Print the program version and exit.
+
+.IP "-h"
+Print the program help/usage and exit.
+
+.IP "-v"
+Be more verbose.  This flag can be used multiple times ("-v -v" or 
+"-vv") for more verbosity.
+
+.IP "-m \fImatch\fP"
+Specify a regular expression to limit which records are sent to the
+ORB to only those which match.  The \fImatch\fP pattern is compared to
+the SEED record source parameters in the following
+form: 'NET_STA_LOC_CHAN'.
+
+.IP "-n \fIcode\fP"
+Change the network code of the data records (after matching) before
+sending them to the ORB.
+
+.IP "-ring \fIringfile\fP (required)"
+Specify the ring file from which to read Mini-SEED records.  This is a
+required parameter.
+
+.IP "-mod \fIinterval\fP"
+Save the ring reader status file (reader position) every
+\fIinterval\fP packets.  By default the status file will be saved
+every 100 packets.
+
+.IP "-ext \fIreaderid\fP"
+Use the \fIreaderid\fP as an extension on the reader's status file.
+This reader ID must be unique for each reader of the ring file.  If
+not specified it will default to ".ringstat".  If two ring readers are
+running concurrently and using the default (or same) status file
+extension (\fIreaderid\fP) mayhem will ensue, or at least the readers
+might be confused about their actual read position on restart.
+
+.IP "-MD \fImappingdb\fR"
+Use the specified database for mapping SEED names to CSS database
+names.  If the channel names do not exist in the specified database
+they will be inserted.  The database should be specified using an
+absolute path.
+
+.IP "-CD \fIcalibdb\fR"
+Copy calib, calper and segtype from the calibration table in the
+specified database.  Recommended if the data will be processed
+directly from the ORB since this information is not available
+in the data stream.  A mapping database must also be specified
+using the -MD option.  The database should be specified using an
+absolute path.
+
+.IP "-r"
+Use the database specified with the -MD option to remap input net,
+sta, chan, and loc codes to local sta and chan codes.  This can be
+helpful when processing this data with programs that do not
+recognize the loc code in the source name.
+
+.IP "\fIORB\fR"
+A required argument.  Specifies the location of the ORB server in
+[host]:[port] format.  If 'host' is omitted 'localhost' is assumed.
+If 'port' is omitted the default ORB port is assumed.
+
+.SH "RRP"
+The RRP system was designed by and being used to deliver data from the
+NEIC.
+
+A ring reader's status file is always written to the same directory as
+the ring file itself and is named "<ringfile><readerid>".  As an
+example, the default reader id is ".ringstat", for a reader using the
+default ID reading a ring file at:
+
+.nf
+/data/import/ringfile
+.fi
+
+the reader's status file will be written to:
+
+.nf
+/data/import/ringfile.ringstat
+.fi
+
+.SH AUTHOR
+.nf
+Chad Trabant
+IRIS Data Management Center
+.fi
