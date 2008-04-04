@@ -1,0 +1,136 @@
+Schema dbrtfm1.1
+	Description ( "Man-page tracking database" )
+	Detail {
+		The dbrtfm schema allows man-pages for all components
+		of a Unix-based software system to be tracked by 
+		software package name and version number, recording 
+		which man pages have been thoroughly read through and 
+		when. This allows a complete review of the 
+		existing package capabilities.
+	}
+	Timedate lddate
+	;
+
+Attribute author
+	String (80)
+	Format ( "%-80s" )
+	Null ( "-" )
+	Units ( "-" )
+	Description ( "author of a man page" )
+	Detail {
+		This field specifies the author of a man page. 
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of last record modification" )
+	Detail {
+		The lddate field specifies the last time a record was 
+		modified.
+	}
+	;
+
+Attribute linecount
+	Integer (10)
+	Format ("%10d")
+	Null ( "-1" )
+	Description( "Number of lines in man-page" )
+	Detail {
+		This field gives the number of lines in the man-page
+		file. This can be useful when deciding what to read
+		during comprehensive scans of the man-page set. 
+	}
+	;
+
+Attribute manpage
+	String (40)
+	Format ( "%-40s" )
+	Null ( "-" )
+	Units ( "-" )
+	Description ( "name of a man page" )
+	Detail {
+		This field specifies the name of a man page. 
+		This should be a real man-page with non-trivial 
+		content, rather than a link to such; otherwise 
+		attempts to review the man-page set for an 
+		entire software package would result in duplication 
+		of effort.
+	}
+	;
+
+Attribute package
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Units ( "-" )
+	Description ( "name of a software package" )
+	Detail {
+		This field specifies the overall name of a 
+		software package, e.g. Antelope.
+	}
+	;
+
+Attribute mansect
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Units ( "-" )
+	Description ( "section of a man page" )
+	Detail {
+		This field specifies the section in which a manpage 
+		is stored, e.g. "1" or "3p".
+	}
+	;
+
+Attribute time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time a man page was read." )
+	Detail {
+		This field specifies the time at which a man-page 
+		was completely read. A null value indicates the man
+		page has not been read, or has not been read completely.
+	}
+	;
+
+Attribute version
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Units ( "-" )
+	Description ( "version of a software package" )
+	Detail {
+		This field specifies the version of a 
+		software package, e.g. "4.8" for Antelope.
+	}
+	;
+
+Attribute compsect
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Units ( "-" )
+	Description ( "component section of a package" )
+	Detail {
+		If a software package has subsections or extensions, 
+		this field lists the name, for example Antelope 
+		has the "contrib" component
+	}
+	;
+
+Relation review
+	Fields ( package version compsect manpage mansect author linecount time lddate )
+	Primary ( package version manpage mansect )
+	Description ( "man pages to review" )
+	Detail {
+		This table lists manual pages that need to be 
+		reviewed or that have been reviewed.
+	}
+	;
+

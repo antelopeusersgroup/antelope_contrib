@@ -1,0 +1,209 @@
+.TH DBRTFM 1 "$Date$"
+.SH NAME
+dbrtfm \- tool to help read the full manual-page complement for Antelope
+.SH SYNOPSIS
+.nf
+\fBdbrtfm \fP[-t] [-s] [-l] [-S] [-m \fImode\fP] [-q] [+\fIn\fP] [\fImanpage\fP [\fImansect\fP]]
+.fi
+.SH DESCRIPTION
+The \fBdbrtfm\fP application is a tool designed to help one progressively
+read the full manual-page set for Antelope.
+
+Upon first execution, \fBdbrtfm\fP builds a database of all available man
+pages so the user can track which ones have been read. The location of this
+database is set by the parameter \fIdbrtfm_database\fP in the parameter file
+(the default is in the user's home directory); 
+the database schema is \fIdbrtfm1.0\fP.
+
+Currently, the next unread man-page is chosen from those listed in the tracking
+database. If desired, an optional man-page name may be specified on
+the command line, in which case the first available man page with that name
+is shown. If a man-page section is specified also, that further constrains
+the selection. If the \fIignore_contrib\fP parameter is set to true
+in the parameter file, man pages from the Antelope contributed-code
+distribution are ignored when the next unread manual
+page is chosen automatically.
+If the \fI+n\fP argument is used, where \fIn\fP is an integer,
+the specified number of man-pages are skipped past the next available
+man page, when nothing else is specified on the command line (i.e. when
+choosing the next unread man page automatically).
+
+If the \fI-S\fP option is used, a summary is printed of the number of
+man-pages read so far (assuming those with NULL value for the \fItime\fP
+field have not yet been read).
+
+\fBdbrtfm\fP sets the chosen file to the perl value \fI$file\fP, then eval's the
+perl-code given in the \fIshowman\fP parameter of the parameter file, which
+should provide some way to display (or email, or print, or whatever is
+desired) the specified man-page on your system. One may specify
+several different modes of display in the \fIshowman\fP parameter; barring
+overrides with the command-line arguments, the default is set by the
+\fIdefault_mode\fP parameter.
+
+After the \fBdbrtfm\fP run, \fBdbrtfm\fP asks the user to mark whether 
+the man page has been read. 
+
+.SH OPTIONS
+.IP -l
+When automatically choosing the man-page to read, 
+instead of choosing the next one in the list,
+choose the longest unread man-page.
+.IP -s
+When automatically choosing the man-page to read, 
+instead of choosing the next one in the list,
+choose the shortest unread man-page.
+.IP -t
+use a tk GUI for answering whether man-page is read. 
+.IP -q
+Query whether a man-page specified on the command-line has been read or not
+.IP "-m mode"
+Display man page in an alternate \fImode\fP instead of the default
+.IP "+n"
+Skip \fIn\fP man-pages when choosing the next available unread man-page.
+This can be useful if the next available unread man-page is prohibitively
+long for the amount of time available before all approved electronic
+devices must be shut off.
+.IP -S
+Print a summary of progress reading the Antelope man-pages
+.SH PARAMETER FILE
+
+.nf
+
+default_mode pager
+
+home &env(HOME)
+
+dbrtfm_database &home/rtfmdb
+
+ignore_contrib  yes
+
+lines_per_full_page 60
+
+showman &Arr{
+
+        pager &Literal{
+
+                if( defined( $ENV{PAGER} ) ) {
+
+                        $pager = $ENV{PAGER};
+
+                } else {
+
+                        $pager = "more";
+                }
+
+                exec( "nroff -man $nroff | $pager" );
+        }
+
+        netscape &Literal{
+
+                chomp( $rc = system( "netscape -remote 'ping()'" ) );
+                if( $rc != 0 ) {
+
+                        chomp( $whoami = `whoami` );
+                        system( "netscape -P $whoami 'file://$file' &" );
+
+                } else {
+
+                        system( "netscape -remote 'openFILE($file)' &" );
+                }
+        }
+
+        mozilla &Literal{
+
+                chomp( $rc = system( "netscape -remote 'ping()'" ) );
+                if( $rc != 0 ) {
+
+                        chomp( $whoami = `whoami` );
+                        system( "netscape -P $whoami 'file://$file' &" );
+
+                } else {
+
+                        system( "netscape -remote 'openFILE($file)' &" );
+                }
+        }
+
+        pager &Literal{
+
+                exec( "nroff -man $ENV{ANTELOPE}/man$section/$\fImanpage\fP
+        }
+}
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% \fBdbrtfm\fP
+
+  [a chosen man-page opens in a separate xterm and stays until exited]
+
+dbrtfm: Mark not_threadsafe(3) as read? y
+
+dbrtfm: Man-page
+        'not_threadsafe(3)' by
+        'Dan Quinlan' 
+marked as read at
+        '11/27/2006   0:50:02.655 UTC'
+
+% 
+
+% \fBdbrtfm -S\fP
+
+dbrtfm report for </Users/testuser/rtfmdb>:
+=======================================================
+
+Ignoring contrib:
+-----------------
+
+  Distinct man-pages read:       142 of     741,  19% done,     599 left
+               Lines read:     13759 of   84808,  16% done,   71049 left
+   Equiv. full-text pages:       229 of    1413,  16% done,    1184 left
+
+Including contrib:
+------------------
+
+  Distinct man-pages read:       151 of     978,  15% done,     827 left
+               Lines read:     14264 of  115856,  12% done,  101592 left
+   Equiv. full-text pages:       238 of    1931,  12% done,    1693 left
+% 
+
+.fi
+.ft R
+.in
+
+.SH DIAGNOSTICS
+
+dbrtfm: \fBdbrtfm\fP: initializing tracking database '/Users/kent/rtfmdb'
+
+dbrtfm: Build rtfm database '/Users/kent/rtfmdb' from scratch?
+
+(\fBdbrtfm\fP asks for confirmation before rebuilding the man-page 
+database; this can avert
+the small mess when one accidentally uses the default parameter file
+instead of one that one has customized).
+
+.SH "BUGS AND CAVEATS"
+The netscape and mozilla configurations of the parameter file do not open or
+raise the netscape/mozilla windows if they are iconified or buried.
+
+The command-line specification of man-pages works only for the actual
+names under which they are stored. One cannot, for example, use the command-line
+specification to call up the man page for something that is actually just
+a link to another man page.
+
+The line count for manual pages is based on the number of lines in the 
+nroff source file, rather than the number of lines in the formatted 
+text seen in a standard pager utility, which can be a bit misleading. This 
+accounting strategy is a good approximation in bulk, however may be a 
+small mistake (defensible, though, since line count is dependent on the 
+exact configuration of the display utility).
+
+The matching done to figure out the author during initial database 
+build is very, perhaps overly simplistic. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$

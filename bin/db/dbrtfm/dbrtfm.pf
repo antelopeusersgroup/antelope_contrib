@@ -1,0 +1,61 @@
+
+default_mode pager
+
+home  &env(HOME)
+
+dbrtfm_database &home/rtfmdb
+
+ignore_contrib  no
+
+lines_per_full_page 60
+
+# Available variables for the showman code sections are 
+# 	$html		html file with man page
+#	$nroff		raw source file of man page
+#	$manpage	base name of man page
+# 	$mansect	section name for man page
+#
+showman &Arr{
+
+	pager &Literal{
+
+		if( defined( $ENV{PAGER} ) ) {
+			
+			$pager = $ENV{PAGER};
+
+		} else {
+
+			$pager = "more";
+		}
+
+		system( "xterm -e 'tbl $nroff | nroff -man | $pager'" );
+	}
+
+	netscape &Literal{
+
+		chomp( $rc = system( "netscape -remote 'ping()'" ) );
+		if( $rc != 0 ) {
+
+			chomp( $whoami = `whoami` );
+			system( "netscape -P $whoami 'file://$html' &" );
+
+		} else {
+
+			system( "netscape -remote 'openFILE($html)' &" );
+		}
+	}
+
+	mozilla &Literal{
+
+		chomp( $rc = system( "netscape -remote 'ping()'" ) );
+		if( $rc != 0 ) {
+
+			chomp( $whoami = `whoami` );
+			system( "netscape -P $whoami 'file://$html' &" );
+
+		} else {
+
+			system( "netscape -remote 'openFILE($html)' &" );
+		}
+	}
+}
