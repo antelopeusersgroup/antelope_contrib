@@ -66,7 +66,11 @@ proc init_globals {} {
 
 	set Template_time [epoch2str $ttime $Template_time_format]
 
-	set Dbcentral_dbname [pfget $Pf dbcentral_database]
+	if { $Dbcentral_dbname == "" } {
+
+		set Dbcentral_dbname [pfget $Pf dbcentral_database]
+	}
+
 	set default_tasklines [pfgetlist @$Pf#default_tasks]
 
 	if { ! [file exists $Dbcentral_dbname] } {
@@ -475,7 +479,7 @@ proc parse_cmdline {} {
 	global List_Nicknames Resolve_dbname Time_specified
 	global List_dbnames Exec_dbnames Queryfile
 	global Nickname Task Pf Stripped_argv
-	global Cmdline
+	global Dbcentral_dbname Cmdline
 
 	set Cmdline 0
 	set List_Nicknames 0
@@ -485,6 +489,7 @@ proc parse_cmdline {} {
 	set List_dbnames 0
 	set Exec_dbnames 0
 	set Queryfile ""
+	set Dbcentral_dbname ""
 	set Pf dbcentral
 
 	set Stripped_argv {}
@@ -537,6 +542,17 @@ proc parse_cmdline {} {
 			}
 
 			set Pf [lindex $argv $i]
+
+		} elseif { [cequal $myarg -D] } {
+
+			incr i
+
+			if { $i == $n } {
+				puts stderr "cluster dbname required for -D"
+				exit -1
+			}
+
+			set Dbcluster_dbname [lindex $argv $i]
 
 		} elseif { [cequal $myarg -t] } {
 

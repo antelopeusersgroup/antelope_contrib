@@ -3,8 +3,8 @@
 \fBdbcentral\fP \- centralized utility to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-\fBdbcentral\fP [-a] [-n] [-t timestring] [-d] [-l] [-q queryfile] [-p pfname]
-	  [database_clustername [task_nickname]]
+\fBdbcentral\fP [-a] [-n] [-t timestring] [-d] [-D dbname] [-l] [-q queryfile] 
+	  [-p pfname] [database_clustername [task_nickname]]
 .fi
 .SH DESCRIPTION
 Many institutions have a variety of databases which are commonly used
@@ -137,6 +137,9 @@ BUGS AND CAVEATS setions below for additional information.
 .IP -d
 Show the absolute pathname of a database. A database clustername must 
 be specified when using the -d option.
+
+.IP "-D dbname"
+Specify a database name other than the one in the parameter file. 
 
 .IP -l
 Show the pathnames of all databases in a cluster. A database clustername must 
@@ -555,6 +558,13 @@ The database-path option -d applies the time-string to the database cluster
 names. The time string defaults to the current time if none is otherwise specified 
 with -t. If no database in the cluster explicitly covers the time value in 
 question, \fBdbcentral\fP by design will return an empty string.
+
+The -D specification of an alternate database name is highly questionable since 
+the parameter-file customizations are supposed to be tied so closely to the 
+nicknames in a given database. Nevertheless there may be some applications for 
+command-line specification of the database name, if it uses default_tasks or 
+if several dbcentral databases intentionally use some of the same cluster 
+nicknames. 
 
 The \fBdbcentral\fP -q mode needs an ability to subset for time, i.e. for 
 only certain databases in a cluster.
