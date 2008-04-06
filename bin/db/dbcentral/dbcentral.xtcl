@@ -2,29 +2,72 @@
 #
 # GUI utility to keep track of databases and launch commands on them
 #
-#   Copyright (c) 2002-2005 Lindquist Consulting, Inc.
+#   Copyright (c) 2002-2008 Lindquist Consulting, Inc.
 #   All rights reserved. 
 #                                                                     
 #   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
-# 
-#   This software may be used freely in any way as long as 
-#   the copyright statement above is not removed. 
-
+#
+#   This software is licensed under the New BSD license: 
+#
+#   Redistribution and use in source and binary forms,
+#   with or without modification, are permitted provided
+#   that the following conditions are met:
+#   
+#   * Redistributions of source code must retain the above
+#   copyright notice, this list of conditions and the
+#   following disclaimer.
+#   
+#   * Redistributions in binary form must reproduce the
+#   above copyright notice, this list of conditions and
+#   the following disclaimer in the documentation and/or
+#   other materials provided with the distribution.
+#   
+#   * Neither the name of Lindquist Consulting, Inc. nor
+#   the names of its contributors may be used to endorse
+#   or promote products derived from this software without
+#   specific prior written permission.
+#
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+#   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+#   THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+#   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+#   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+#   IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+#   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+#   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#   POSSIBILITY OF SUCH DAMAGE.
+#
 
 catch {package require Tclx}
 lappend auto_path $env(ANTELOPE)/data/tcl/library
 
 proc init_globals {} {
 	global Template_time Template_time_format 
+	global Time_specified Specified_time
 	global Nicknames Tasks Commands
-	global Dbcentral_dbname Db
+	global Dbcentral_dbname Db Pf
 	
 	set Template_time_format "%m/%d/%Y %H:%M:%S.%s %Z"
 
-	set Template_time [epoch2str [str2epoch now] $Template_time_format]
+	if { $Time_specified } {
 
-	set Dbcentral_dbname [pfget dbcentral dbcentral_database]
-	set default_tasklines [pfgetlist @dbcentral#default_tasks]
+		set ttime $Specified_time
+
+	} else {
+
+		set ttime [str2epoch now]
+	}	
+
+	set Template_time [epoch2str $ttime $Template_time_format]
+
+	set Dbcentral_dbname [pfget $Pf dbcentral_database]
+	set default_tasklines [pfgetlist @$Pf#default_tasks]
 
 	if { ! [file exists $Dbcentral_dbname] } {
 		
@@ -38,7 +81,7 @@ proc init_globals {} {
 
 	set nclusters [dbquery $dbclusters dbRECORD_COUNT]
 
-	pfgetarr custom_tasks %dbcentral#custom_tasks
+	pfgetarr custom_tasks %$Pf#custom_tasks
 
 	for { set i 0 } { $i < $nclusters } { incr i } {
 
@@ -48,7 +91,7 @@ proc init_globals {} {
 
 		if { [lsearch -exact [array names custom_tasks] $nickname] > -1 } {
 
-			set tasklines [pfgetlist @dbcentral#custom_tasks#$nickname]
+			set tasklines [pfgetlist @$Pf#custom_tasks#$nickname]
 
 			set_tasks $nickname $tasklines
 
@@ -427,25 +470,27 @@ proc allexec { nickname task } {
 	}
 }
 
-proc run_cmdline {} {
+proc parse_cmdline {} {
 	global argc argv
-	global Template_time Template_time_format
-	global Nicknames Tasks Commands
+	global List_Nicknames Resolve_dbname Time_specified
+	global List_dbnames Exec_dbnames Queryfile
+	global Nickname Task Pf Stripped_argv
 	global Cmdline
 
-	set Cmdline 1
-
-	set i 0
-	set n [llength $argv]
-
+	set Cmdline 0
 	set List_Nicknames 0
 	set Resolve_dbname 0
 	set Time_specified 0
+	set Specified_time [str2epoch now]
 	set List_dbnames 0
 	set Exec_dbnames 0
 	set Queryfile ""
+	set Pf dbcentral
 
-	set stripped_argv {}
+	set Stripped_argv {}
+
+	set i 0
+	set n [llength $argv]
 
 	while { $i < $n } {
 
@@ -455,13 +500,19 @@ proc run_cmdline {} {
 
 			set List_Nicknames 1
 
+			set Cmdline 1
+
 		} elseif { [cequal $myarg -l] } {
 
 			set List_dbnames 1
 
+			set Cmdline 1
+
 		} elseif { [cequal $myarg -a] } {
 
 			set Exec_dbnames 1
+
+			set Cmdline 1
 
 		} elseif { [cequal $myarg -q] } {
 
@@ -474,66 +525,99 @@ proc run_cmdline {} {
 
 			set Queryfile [lindex $argv $i]
 
-		} elseif { [cequal $myarg -t] } {
+			set Cmdline 1
+
+		} elseif { [cequal $myarg -p] } {
+
 			incr i
+
+			if { $i == $n } {
+				puts stderr "pfname required for -p"
+				exit -1
+			}
+
+			set Pf [lindex $argv $i]
+
+		} elseif { [cequal $myarg -t] } {
+
+			incr i
+
 			if { $i == $n } {
 				puts stderr "\ndbcentral: Must specify a time string with -t\n"
 				exit -1
 			}
-			set time [lindex $argv $i]
-			set Template_time [epoch2str [str2epoch $time] \
-					   $Template_time_format]
+
+			set Specified_time [lindex $argv $i]
+
 			set Time_specified 1
+
+			set Cmdline 1
+
 		} elseif { [cequal $myarg -d] } {
+
 			set Resolve_dbname 1
+
+			set Cmdline 1
+
 		} else {
-			lappend stripped_argv $myarg
+
+			lappend Stripped_argv $myarg
 		}
 		incr i
 	}
 
-	if { [llength $stripped_argv] >= 1 } {
+	if { [llength $Stripped_argv] >= 1 } {
 		
-		set nickname [lindex $stripped_argv 0]
+		set Nickname [lindex $Stripped_argv 0]
+		set Cmdline 1
 
 	} else {
 
-		set nickname ""
+		set Nickname ""
 	}
 
-	if { [llength $stripped_argv] >= 2 } {
+	if { [llength $Stripped_argv] >= 2 } {
 		
-		set task [lindex $stripped_argv 1]
+		set Task [lindex $Stripped_argv 1]
+		set Cmdline 1
 
 	} else {
 
-		set task ""
+		set Task ""
 	}
+}
 
-	if { $nickname != "" } {
-	  if { ! [info exists Tasks($nickname)] ||
-	     [llength $Tasks($nickname)] <= 0 } {
+proc run_cmdline {} {
+	global Template_time Template_time_format
+	global Nicknames Tasks Commands
+	global List_Nicknames Resolve_dbname Time_specified
+	global List_dbnames Exec_dbnames Queryfile
+	global Nickname Task Cmdline Stripped_argv
+
+	if { $Nickname != "" } {
+	  if { ! [info exists Tasks($Nickname)] ||
+	     [llength $Tasks($Nickname)] <= 0 } {
 
 		puts stderr \
-		  "\ndbcentral: No tasks defined for database '$nickname'\n"
+		  "\ndbcentral: No tasks defined for database '$Nickname'\n"
 		exit -1
 	  }
 	}
 
-	if { $task != "" &&
-	     ! [info exists Commands($nickname,$task)] } {
+	if { $Task != "" &&
+	     ! [info exists Commands($Nickname,$Task)] } {
 
 		puts stderr \
-		  "\ndbcentral: No task '$task' defined for database '$nickname'\n"
+		  "\ndbcentral: No task '$Task' defined for database '$Nickname'\n"
 		exit -1
 
 	}
 
-	if { $List_Nicknames && $nickname != "" } {
+	if { $List_Nicknames && $Nickname != "" } {
 
-		puts stdout "\ndbcentral command nicknames for $nickname:\n"
+		puts stdout "\ndbcentral command nicknames for $Nickname:\n"
 
-		foreach key $Tasks($nickname) {
+		foreach key $Tasks($Nickname) {
 			puts stdout "\t$key"
 		}
 		puts stdout "\n"
@@ -547,25 +631,25 @@ proc run_cmdline {} {
 		}
 		puts stdout "\n"
 
-	} elseif { $Resolve_dbname && $nickname == "" } {
+	} elseif { $Resolve_dbname && $Nickname == "" } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -d\n"
 		exit -1
 
 	} elseif { $Resolve_dbname } {
 
-		puts stdout [get_dbpath $nickname]	
+		puts stdout [get_dbpath $Nickname]	
 
-	} elseif { $List_dbnames && $nickname == "" } {
+	} elseif { $List_dbnames && $Nickname == "" } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -l\n"
 		exit -1
 
 	} elseif { $List_dbnames } {
 
-		puts stdout [join [get_dbnames $nickname] "\n"]
+		puts stdout [join [get_dbnames $Nickname] "\n"]
 
-	} elseif { $Queryfile != "" && $nickname == "" } {
+	} elseif { $Queryfile != "" && $Nickname == "" } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -q\n"
 		exit -1
@@ -613,7 +697,7 @@ proc run_cmdline {} {
 			}
 		}
 
-		set dblist [get_dbnames $nickname 1]
+		set dblist [get_dbnames $Nickname 1]
 
 		for { set idb 0 } { $idb < [llength $dblist] } { incr idb } {
 
@@ -643,49 +727,51 @@ proc run_cmdline {} {
 			dbclose $db
 		}
 
-	} elseif { $Exec_dbnames && $nickname == "" } {
+	} elseif { $Exec_dbnames && $Nickname == "" } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -a\n"
 		exit -1
 
-	} elseif { $Exec_dbnames && $task == "" } {
+	} elseif { $Exec_dbnames && $Task == "" } {
 
 		puts stderr "\ndbcentral: Must specify a task nickname when using -a\n"
 		exit -1
 
 	} elseif { $Exec_dbnames } {
 
-		allexec $nickname $task
+		allexec $Nickname $Task
 
-	} elseif { [llength $stripped_argv] == 0 && $Time_specified } {
+	} elseif { [llength $Stripped_argv] == 0 && $Time_specified } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -t\n"
 		exit -1
 
-	} elseif { [llength $stripped_argv] == 1 } {
+	} elseif { [llength $Stripped_argv] == 1 } {
 
-		set task [lindex $Tasks($nickname) 0]
+		set Task [lindex $Tasks($Nickname) 0]
 
-		oneexec $nickname $task
+		oneexec $Nickname $Task
 
-	} elseif { [llength $stripped_argv] == 2 } {
+	} elseif { [llength $Stripped_argv] == 2 } {
 
-		oneexec $nickname $task
+		oneexec $Nickname $Task
 
 	} else {
 
-		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [-q queryfile] [database_nickname [task_nickname]]}
+		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [-p pfname] [-q queryfile] [database_nickname [task_nickname]]}
 		exit -1
 	}
 }
 
+parse_cmdline
+
 init_globals
 
-if { $argc == 0 && ! [info exists tk_version] } {
+if { $Cmdline == 0 && ! [info exists tk_version] } {
 
-	exec $env(ANTELOPE)/bin/awish $argv0
+	exec $env(ANTELOPE)/bin/awish $argv0 -p $Pf
 
-} elseif { $argc == 0 } {
+} elseif { $Cmdline == 0 } {
 
 	init_windows
 
