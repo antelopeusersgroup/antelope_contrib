@@ -1,0 +1,584 @@
+source_dir src
+base_dir /opt
+make_files_module 1
+
+default_makefile &Literal{
+include $(__PROJECT__MAKE)
+}
+
+files &Arr{
+Makefile &Literal{
+include $(__PROJECT__MAKE)
+
+DIRS= adm lib bin data
+}
+adm/Makefile &Literal{
+include $(__PROJECT__MAKE)
+
+DIRS= docs setup
+}
+lib/Makefile 		&default_makefile
+data/Makefile 		&default_makefile
+bin/Makefile 		&default_makefile
+bin/db/Makefile 	&default_makefile
+bin/rt/Makefile 	&default_makefile
+bin/utility/Makefile 	&default_makefile
+adm/docs/Makefile 	&Literal{
+MAN5 = __project__makefile.5
+
+include $(__PROJECT__MAKE)
+}
+adm/docs/__project__makefile.5 &Literal{
+.TH __PROJECT__MAKEFILE 5 "$Date$"
+.SH NAME
+__project__makefile \- __PROJECT__ Makefile format
+.SH DESCRIPTION
+The __project__ makefile is an extension of the Antelope Makefiles documented 
+in antelopemakefile(5). They behave exactly the same way as Antelope makefiles,
+with the exception that they use the __PROJECT__MAKE environment variable 
+instead of ANTELOPEMAKE to point to their make rules, and they install to 
+__BASEDIR__/__project__/X.X instead of /opt/antelope/X.X. 
+.SH FILES
+.SH ENVIRONMENT
+.IP __PROJECT__
+This is the __PROJECT__ environment variable, exactly analogous to the ANTELOPE 
+environment variable as documented in antelopeenv(5). It indicates the 
+base directory for an __PROJECT__ release. It uses the same version number as the 
+Antelope installation since the __PROJECT__ code is compiled against and therefore
+dependent on specific Antelope versions. This environment variable 
+is usually set automatically, for example by sourcing the file
+__BASEDIR__/__project__/4.8/setup.csh. 
+.IP __PROJECT__MAKE
+This is the __PROJECT__MAKE environment variable, exactly analogous to the ANTELOPEMAKE
+environment variable as documented in antelopeenv(5) and antelopemakefile(5).
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+antelopemakefile(5)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+}
+adm/setup/Makefile 	&Literal{
+DEST=$(__PROJECT__)
+
+Include :: $(DEST)/setup.csh
+install :: $(DEST)/setup.csh
+
+all clean Include install installMAN pf relink tags :: FORCED
+	@-DIRS="$(DIRS)" ;\
+	for i in $$DIRS ; do \
+	    printf "+    %-40s  %s\n" $$i "`date`" ; \
+	    if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
+	done
+
+uninstall :: FORCED
+	@-if [ -r $(DEST)/setup.csh ] ; then \
+	    DIRS="$(DIRS)" ;\
+	    for i in $$DIRS ; do \
+	        printf "+    %-40s  %s\n" $$i "`date`" ; \
+	        if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
+	    done ; \
+	    $(RM) $(DEST)/setup.csh; \
+	fi
+
+FORCED:
+
+$(DEST)/setup.csh: setup.csh
+	deposit setup.csh $(DEST)
+
+setup.csh: setup.csh.id
+	getid < setup.csh.id > setup.csh
+
+clean :: 
+	$(RM) setup.csh
+}
+adm/setup/setup.csh.id &Literal{
+unsetenv __PROJECT__
+
+source /opt/antelope/$id/setup.csh
+
+setenv __PROJECT__ __BASEDIR__/__project__/$id 
+
+set a="$__PROJECT__/bin"
+
+foreach i ( $path ) 
+    if ( "$i" !~ __BASEDIR__/__project__/* ) then
+        set a=($a $i)
+    endif
+end
+set path=($a)
+
+if ( $?MANPATH ) then
+    set a=$__PROJECT__/man
+    foreach i ( `echo $MANPATH | sed 's/:/ /g'` )
+        if ( "$i" !~ __BASEDIR__/__project__/* ) then
+            set a=($a $i)
+        endif
+    end
+    setenv MANPATH `echo $a | sed 's/ /:/g' ` 
+else
+    setenv MANPATH $__PROJECT__/man:$ANTELOPE/man:$ANTELOPE:h/$tcltk/man:$ANTELOPE:h/$perl/man
+endif
+
+if ( $?PFPATH ) then
+    if ( $PFPATH !~ *$__PROJECT__* ) then
+	set p=""
+	set m="$ANTELOPE/data/pf"
+	foreach i ( `echo $PFPATH | sed 's/:/ /g'` )
+	    if ( "$i" !~ "$m" ) then
+		set p=($p $i)
+	    else 
+		set p=($p $m "$__PROJECT__/data/pf")
+	    endif
+	end
+	set p=($p)
+	setenv PFPATH `echo $p | sed 's/ /:/g' `
+    endif
+else
+    setenv PFPATH $ANTELOPE/data/pf:$__PROJECT__/data/pf:.
+endif
+
+if ( $?DATAPATH ) then
+    if ( $DATAPATH !~ *$__PROJECT__* ) then
+	set p=""
+	set m="$ANTELOPE/data"
+	foreach i ( `echo $DATAPATH | sed 's/:/ /g'` )
+	    if ( "$i" !~ "$m" ) then
+		set p=($p $i)
+	    else
+                set p=($p $m "$__PROJECT__/data")
+	    endif
+	end
+	set p=($p)
+	setenv DATAPATH `echo $p | sed 's/ /:/g' `
+    endif
+else
+    setenv DATAPATH $ANTELOPE/data:$__PROJECT__/data
+endif
+
+unset a
+unset m
+unset p
+
+setenv __PROJECT__MAKE     $__PROJECT__/include/__project__make
+
+set __project__=$__PROJECT__
+set antelopemake=$ANTELOPEMAKE
+}
+data/pf_localmods/Makefile 	&Literal{
+PF = 
+
+include $(__PROJECT__MAKE)
+}
+data/system/Makefile &Literal{
+DATADIR=system
+DATA= envrc \
+      aliasrc \
+      tcsh_properties \
+      tcshrc_default \
+      windowbars
+
+CLEAN= tcshrc_default 
+
+include $(__PROJECT__MAKE)
+
+tcshrc_default: tcshrc_default.id
+	getid < tcshrc_default.id > tcshrc_default
+}
+data/system/aliasrc &Literal{
+
+alias .. 'cd ..'
+alias v '\!vi'
+alias = 'pushd \!*'
+alias - 'popd \!*'
+
+}
+data/system/envrc &Literal{
+
+set BASE=$ANTELOPE:h
+set VERS=$ANTELOPE:t
+
+setenv EDITOR vi
+setenv OPENWINHOME /usr/openwin
+setenv PAGER /usr/bin/less
+setenv VISUAL vi   
+
+setenv __PROJECT__      __BASEDIR__/__project__/$VERS
+setenv __PROJECT__MAKE  $__PROJECT__/include/__project__make
+setenv __PROJECT__FILES __BASEDIR__/__project__/files
+
+unset BASE
+unset VERS
+
+setenv PFPATH $ANTELOPE/data/pf:$__PROJECT__/data/pf:$HOME/data/pf:.
+setenv SCHEMA_DIR $ANTELOPE/data/schemas:$__PROJECT__/data/schemas
+
+setenv SCHEMA_DEFAULT css3.0
+}
+data/system/tcsh_properties &Literal{
+set promptchars="%#"
+set prompt="%m%# "
+set autolist
+set addsuffix
+}
+data/system/tcshrc_default.id &Literal{
+
+if( ! ${?ANTELOPE} ) then
+        setenv ANTELOPE /opt/antelope/$id
+endif
+
+source $ANTELOPE/setup.csh
+
+foreach f ( __BASEDIR__/__project__/$ANTELOPE:t/data/system/envrc \
+            __BASEDIR__/__project__/$ANTELOPE:t/data/system/pathrc \
+            __BASEDIR__/__project__/$ANTELOPE:t/data/system/aliasrc \
+            __BASEDIR__/__project__/$ANTELOPE:t/data/system/tcsh_properties \
+            __BASEDIR__/__project__/$ANTELOPE:t/data/system/windowbars )
+
+        if( -e $f ) then
+                source $f
+        else
+                echo Warning: Couldnt find $f!
+        endif
+end
+}
+data/system/windowbars &Literal{
+
+# these commands should set up your login so that window headers display
+# the directory into which you have cd'd.
+#
+if ( ! $?TERM ) exit
+set hostname = `uname -n`
+
+if ($TERM == sun-cmd) then
+    alias hdr     'echo -n "]l\!*\"'
+    alias ihdr    'echo -n "]L\!*\"'
+else if ($TERM == xterm) then
+    alias hdr     'echo -n "]2;\!*"'
+    alias ihdr    'echo -n "]1;\!*"'
+else if ($TERM == dtterm) then
+    alias hdr     'echo -n "]2;\!*"'
+    alias ihdr    'echo -n "]1;\!*"'
+endif
+
+if ($TERM == sun-cmd || $TERM == xterm || $TERM == dtterm) then
+    if ( $SHELL =~ */tcsh ) then
+	alias precmd 'hdr "${hostname}: $cwd"; ihdr ${hostname}'
+    else if ( $SHELL =~ */csh ) then 
+	alias setbar 'hdr "${hostname}: $cwd"; ihdr ${hostname} '
+	setbar
+	alias cd      'cd \!* ; setbar'
+	alias popd    'popd \!* ; setbar'
+	alias pushd   'pushd \!* ; setbar'
+    endif
+endif
+}
+data/system/path/Makefile &Literal{
+
+DEST=$(__PROJECT__)
+
+DIRS=
+
+Include :: $(DEST)/data/system/pathrc
+install :: $(DEST)/data/system/pathrc
+
+all clean Include install installMAN pf relink tags :: FORCED
+	@-DIRS="$(DIRS)" ;\
+	for i in $$DIRS ; do \
+	    printf "+    %-40s  %s\n" $$i "`date`" ; \
+	    if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
+        done
+
+uninstall :: FORCED
+	@-if [ -r $(DEST)/data/system/pathrc ] ; then \
+	    DIRS="$(DIRS)" ;\
+	    for i in $$DIRS ; do \
+		printf "+    %-40s  %s\n" $$i "`date`" ; \
+		if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
+	    done ; \
+	    $(RM) $(DEST)/data/system/pathrc; \
+	fi
+
+FORCED:
+
+$(DEST)/data/system/pathrc: solaris linux darwin darwin-intel
+	@case `uname -s` in \
+	    SunOS) deposit -r solaris $@; echo deposit -r solaris $@ ;; \
+	    Linux) deposit -r linux   $@; echo deposit -r linux $@ ;; \
+	    Darwin) case `uname -p` in \
+		powerpc) deposit -r darwin  $@; echo deposit -r darwin $@ ;; \
+		i386) deposit -r darwin-intel  $@; echo deposit -r darwin-intel $@ ;; \
+		*) echo "Error: processor type `uname -p` on Darwin not recognized." ;; \
+	    esac ;; \
+	    *)  echo "Error: System type `uname -s` not recognized." ;;\
+	esac
+
+solaris linux darwin darwin-intel:
+	getid < $@.id > $@
+}
+data/system/path/solaris.id &Literal{
+
+set BASE=$ANTELOPE:h
+set VERS=$ANTELOPE:t
+
+set pathtmp = ( \
+	__BASEDIR__/__project__/$VERS/bin \
+	$ANTELOPE/bin \
+	$BASE/$tcltk/bin \
+	$BASE/$perl/bin \
+	/usr/bin \
+	/usr/sbin \
+	/usr/openwin/bin \
+	/usr/ccs/bin \
+	/opt/SUNWspro/bin \
+	/opt/csw/bin \
+	/usr/sfw/bin \
+	)
+
+if ( "`/usr/bin/id`" !~ uid=0* ) then
+	set pathtmp=( . $HOME/bin $pathtmp )
+endif
+
+set path=($pathtmp)
+unset pathtmp
+
+set manpath = ( \
+	__BASEDIR__/__project__/$VERS/man \
+	$ANTELOPE/man \
+	$BASE/$tcltk/man \
+	$BASE/$perl/man \
+	/usr/man \
+	/usr/openwin/man \
+	/usr/ccs/man \
+	/opt/SUNWspro/man \
+	/opt/csw/man \
+	/usr/sfw/man \
+	)
+
+setenv MANPATH `echo $manpath | sed 's/ /:/g' `
+unset manpath
+
+unset BASE
+unset VERS
+}
+data/system/path/linux.id &Literal{
+
+set BASE=$ANTELOPE:h
+set VERS=$ANTELOPE:t
+
+set pathtmp = ( \
+	$ANTELOPE/bin \
+	$BASE/$tcltk/bin \
+	$BASE/$perl/bin \
+	__BASEDIR__/__project__/$VERS/bin \
+	/usr/bin \
+	/usr/local/bin \
+	/usr/openwin/bin \
+	)
+
+if ( "`/usr/bin/id`" !~ uid=0* ) then
+	set pathtmp=( . $HOME/bin $pathtmp )
+endif
+
+set path=($pathtmp)
+unset pathtmp
+
+set manpath = ( \
+	$ANTELOPE/man \
+	$BASE/local/man \
+	$BASE/$tcltk/man \
+	$BASE/$perl/man \
+	__BASEDIR__/__project__/$VERS/man \
+	/usr/local/man \
+	/usr/openwin/man \
+	)
+
+setenv MANPATH `echo $manpath | sed 's/ /:/g' `
+unset manpath
+
+unset BASE
+unset VERS
+}
+data/system/path/darwin.id &Literal{
+
+set BASE=$ANTELOPE:h
+set VERS=$ANTELOPE:t
+
+set pathtmp = ( \
+	$ANTELOPE/bin \
+	$BASE/$tcltk/bin \
+	$BASE/$perl/bin \
+	__BASEDIR__/__project__/$VERS/bin \
+	/bin \
+	/usr/bin \
+	/usr/openwin/bin \
+	)
+
+if ( "`/usr/bin/id`" !~ uid=0* ) then
+	set pathtmp=( . $HOME/bin $pathtmp )
+endif
+
+set path=($pathtmp)
+unset pathtmp
+
+set manpath = ( \
+	$ANTELOPE/man \
+	$BASE/$tcltk/man \
+	$BASE/$perl/man \
+	__BASEDIR__/__project__/$VERS/man \
+	/usr/openwin/man \
+	)
+
+setenv MANPATH `echo $manpath | sed 's/ /:/g' `
+unset manpath
+
+unset BASE
+unset VERS
+}
+data/system/path/darwin-intel.id &Literal{
+set BASE=$ANTELOPE:h
+set VERS=$ANTELOPE:t
+
+set pathtmp = ( \
+	$ANTELOPE/bin \
+	$BASE/tcltk8.4/bin \
+	$BASE/perl5.8/bin \
+	__BASEDIR__/__project__/$VERS/bin \
+	/bin \
+	/usr/bin \
+	/usr/openwin/bin \
+	)
+
+if ( "`/usr/bin/id`" !~ uid=0* ) then
+	set pathtmp=( . $HOME/bin $pathtmp )
+endif
+
+set path=($pathtmp)
+unset pathtmp
+
+set manpath = ( \
+	$ANTELOPE/man \
+	$BASE/tcltk8.4/man \
+	$BASE/perl5.8/man \
+	__BASEDIR__/__project__/$VERS/man \
+	/usr/openwin/man \
+	)
+
+setenv MANPATH `echo $manpath | sed 's/ /:/g' `
+unset manpath
+
+unset BASE
+unset VERS
+}
+lib/makerules/Makefile &Literal{
+
+DEST=$(__PROJECT__)
+
+Include :: $(DEST)/include/__project__make
+install :: $(DEST)/include/__project__make
+
+all clean Include install installMAN pf relink tags :: FORCED
+	@-DIRS="$(DIRS)" ;\
+	for i in $$DIRS ; do \
+	    printf "+    %-40s  %s\n" $$i "`date`" ; \
+	    if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
+	done
+
+uninstall :: FORCED
+	@-if [ -r $(DEST)/include/__project__make ] ; then \
+	    DIRS="$(DIRS)" ;\
+	    for i in $$DIRS ; do \
+	        printf "+    %-40s  %s\n" $$i "`date`" ; \
+	        if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
+	    done ; \
+	    $(RM) $(DEST)/include/__project__make; \
+	fi
+
+FORCED:
+
+$(DEST)/include/__project__make: solaris linux darwin darwin-intel
+	@case `uname -s` in \
+	    SunOS) deposit -r solaris $@; echo deposit -r solaris $@ ;; \
+	    Linux) deposit -r linux   $@; echo deposit -r linux $@ ;; \
+	    Darwin) case `uname -p` in \
+		powerpc) deposit -r darwin  $@; echo deposit -r darwin $@ ;; \
+		i386) deposit -r darwin-intel  $@; echo deposit -r darwin-intel $@ ;; \
+		*) echo "Error: processor type `uname -p` on Darwin not recognized." ;; \
+	    esac ;; \
+	    *)  echo "Error: System type `uname -s` not recognized." ;;\
+	esac
+}
+lib/makerules/solaris &Literal{
+
+include $(ANTELOPEMAKE)
+
+DEST=__BASEDIR__/__project__/$(ANTELOPE:/opt/antelope/%=%)
+
+CFLAGS += -I$(DEST)/include
+COFLAGS += -I$(DEST)/include
+FFLAGS += -I$(DEST)/include
+LDPATH += -L$(DEST)/lib -L$(DEST)/static
+LDRUN += -R$(DEST)/lib 
+}
+lib/makerules/linux &Literal{
+
+include $(ANTELOPEMAKE)
+
+DEST=__BASEDIR__/__project__/$(ANTELOPE:/opt/antelope/%=%)
+
+CFLAGS += -I$(DEST)/include
+COFLAGS += -I$(DEST)/include
+FFLAGS += -I$(DEST)/include
+LDPATH += -L$(DEST)/lib -L$(DEST)/static
+LDRUN += -Wl,rpath,$(DEST)/lib 
+}
+lib/makerules/darwin &Literal{
+
+include $(ANTELOPEMAKE)
+
+DEST=__BASEDIR__/__project__/$(ANTELOPE:/opt/antelope/%=%)
+
+CFLAGS += -I$(DEST)/include
+COFLAGS += -I$(DEST)/include
+FFLAGS += -I$(DEST)/include
+LDPATH += -L$(DEST)/lib -L$(DEST)/static
+LDRUN += -R$(DEST)/lib 
+}
+lib/makerules/darwin-intel &Literal{
+
+include $(ANTELOPEMAKE)
+
+DEST=__BASEDIR__/__project__/$(ANTELOPE:/opt/antelope/%=%)
+
+CFLAGS += -I$(DEST)/include
+COFLAGS += -I$(DEST)/include
+FFLAGS += -I$(DEST)/include
+LDPATH += -L$(DEST)/lib -L$(DEST)/static
+LDRUN += -R$(DEST)/lib 
+}
+adm/coldstart/Makefile &Literal{
+coldstart: .FORCED
+	__PROJECT__=__BASEDIR__/__project__/`getid id`; export __PROJECT__; \
+	__PROJECT__MAKE=__BASEDIR__/__project__/`getid id`/include/__project__make; export __PROJECT__MAKE; \
+	( cd ../setup; make install ) ; \
+	( cd ../../lib/makerules; make install ) ; \
+	( cd ../..; make Include ) ; \
+	mkdir __BASEDIR__/__project__/`getid id`/man ; \
+	( cd ../..; make install )
+
+.FORCED:
+}
+}

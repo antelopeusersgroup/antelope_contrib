@@ -1,0 +1,230 @@
+.TH BUILD_SOURCETREE 1 "$Date$"
+.SH NAME
+build_sourcetree \- create a skeleton source-code tree for an Antelope-dependent software package
+.SH SYNOPSIS
+.nf
+\fBbuild_sourcetree \fP[-v] [-p \fIpfname\fP] \fIproject\fP
+.fi
+.SH DESCRIPTION
+The \fBbuild_sourcetree\fP command takes a short name on the
+command-line, usually the name of a project or host organization, and
+creates a new skeleton source-code tree (complete with Makefiles, setup scripts,
+Make rules, and user environment) for an Antelope-dependent source-code
+repository of tools specific to the project or organization. This source-code
+tree is then usually imported into a version control system of some sort,
+such as CVS, Subversion, or Git, after which it may be populated with
+tools and libraries and customized for the specific needs of the organization.
+
+The \fBbuild_sourcetree\fP parameter-file specifies the files that go into 
+the skeleton build structure, and their contents. All necessary subdirectories
+will be created during the build process. Files will be auto-filled
+upon creation such that the string \fI__PROJECT__\fP is replaced with a 
+capital-letters version of the \fIproject\fP name, the string 
+\fI__project__\fP is replaced with a lowercase version of the \fIproject\fP 
+name, and the string \fI__BASEDIR__\fP is replaced with the contents of the
+\fIbase_dir\fP parameter from the parameter file. 
+
+The skeleton source tree comes with many Antelope-style features. Just as 
+there is are ANTELOPE and ANTELOPEMAKE environment variables (see 
+antelopeenv(5) and antelopemakefile(5)), the build_sourcetree command creates 
+structures around PROJECT and PROJECTMAKE environment variables (with 
+\fIPROJECT\fP substituted appropriately according to the input project name). 
+An \fI/opt/project/X.X/setup.csh\fP file is created. A user-environment in 
+\fI$PROJECT/data/system\fP is created, with standard environment, alias, path, 
+and tcshrc defaults (for the latter, once compiled copy 
+\fI$PROJECT/data/system/tcshrc_defaults\fP to your home directory .tcshrc to 
+take advantage). A \fIsrc/adm/coldstart\fP directory contains a Makefile which 
+can build everything from first principles the first time it is used,
+which can be a nice feature to get going. (Once the module has been compiled
+for the first time, it will act more like standard Antelope or Antelope 
+contributed code and this coldstart feature is no longer necessary).
+Standard source directories for Antelope bin, lib, and data files are created. 
+A set of makerules is created which supports the PROJECTMAKE environment 
+variable in the same style as antelopemakefile(5).  All of this, of course, 
+may be modified once the initial skeleton is created. 
+.SH OPTIONS
+.IP "-p pfname"
+Specify a parameter-file other than the default \fBbuild_sourcetree\fP.pf
+.IP -v
+verbose
+.SH PARAMETER FILE
+.IP source_dir
+This parameter specifies the directory that is constructed with the new
+source-code
+.IP base_dir
+This parameter specifies the top-level directory under which the final 
+package will be installed, usually \fI/opt\fP (or perhaps \fI/usr/local\fP).
+.IP make_files_module
+This parameter indicates whether to assume there will be a parallel 
+module with quasi-static files that do not have compile dependencies on 
+Antelope. 
+.IP files
+This array contains one entry for each file to be made in the new 
+source tree. The key should be a file pathname intended to be relative 
+to the \fIsource_dir\fP (the key may contain directory-separator i.e. 
+forward-slash characters). The value should be a string value, usually a 
+pf(5) &Literal assignment, specifying the intended contents of the file. 
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+%\fB build_sourcetree anf\fP
+
+%\fB ls -R src\fP
+
+Makefile
+adm
+bin
+data
+lib
+
+src/adm:
+Makefile
+coldstart
+docs
+setup
+
+src/adm/coldstart:
+Makefile
+
+src/adm/docs:
+Makefile
+anfmakefile.5
+
+src/adm/setup:
+Makefile
+setup.csh.id
+
+src/bin:
+Makefile
+db
+rt
+utility
+
+src/bin/db:
+Makefile
+
+src/bin/rt:
+Makefile
+
+src/bin/utility:
+Makefile
+
+src/data:
+Makefile
+pf_localmods
+system
+
+src/data/pf_localmods:
+Makefile
+
+src/data/system:
+Makefile
+aliasrc
+envrc
+path
+tcsh_properties
+tcshrc_default.id
+windowbars
+
+src/data/system/path:
+Makefile
+darwin-intel.id
+darwin.id
+linux.id
+solaris.id
+
+src/lib:
+Makefile
+makerules
+
+src/lib/makerules:
+Makefile
+darwin
+darwin-intel
+linux
+solaris
+
+%\fB svn import src svn://localhost/my_repository/project_src_module/trunk\fP
+
+.fi
+
+Alternatively
+
+.nf
+% \fBbuild_sourcetree anf\fP
+% 
+% \fBcd src/adm/coldstart\fP
+% 
+% \fBmake\fP
+
+ANF=/opt/anf/`getid id`; export ANF; \
+	ANFMAKE=/opt/anf/`getid id`/include/anfmake; export ANFMAKE; \
+	( cd ../setup; make install ) ; \
+	( cd ../../lib/makerules; make install ) ; \
+	( cd ../..; make Include ) ; \
+	mkdir /opt/anf/`getid id`/man ; \
+	( cd ../..; make install )
+getid < setup.csh.id > setup.csh
+deposit setup.csh /opt/anf/4.9
+deposit -r darwin-intel /opt/anf/4.9/include/anfmake
++    adm                                       Mon Apr  7 04:52:46 AKDT 2008
++    docs                                      Mon Apr  7 04:52:46 AKDT 2008
++    setup                                     Mon Apr  7 04:52:46 AKDT 2008
++    lib                                       Mon Apr  7 04:52:46 AKDT 2008
++    makerules                                 Mon Apr  7 04:52:46 AKDT 2008
++    bin                                       Mon Apr  7 04:52:46 AKDT 2008
++    db                                        Mon Apr  7 04:52:46 AKDT 2008
++    rt                                        Mon Apr  7 04:52:46 AKDT 2008
++    utility                                   Mon Apr  7 04:52:46 AKDT 2008
++    data                                      Mon Apr  7 04:52:46 AKDT 2008
++    pf_localmods                              Mon Apr  7 04:52:46 AKDT 2008
++    system                                    Mon Apr  7 04:52:46 AKDT 2008
++    path                                      Mon Apr  7 04:52:46 AKDT 2008
+getid < solaris.id > solaris
+getid < linux.id > linux
+getid < darwin.id > darwin
+getid < darwin-intel.id > darwin-intel
+deposit -r darwin-intel /opt/anf/4.9/data/system/pathrc
++    adm                                       Mon Apr  7 04:52:46 AKDT 2008
++    docs                                      Mon Apr  7 04:52:46 AKDT 2008
+deposit anfmakefile.5 /opt/anf/4.9/man/man5
++    setup                                     Mon Apr  7 04:52:46 AKDT 2008
++    lib                                       Mon Apr  7 04:52:46 AKDT 2008
++    makerules                                 Mon Apr  7 04:52:46 AKDT 2008
++    bin                                       Mon Apr  7 04:52:46 AKDT 2008
++    db                                        Mon Apr  7 04:52:46 AKDT 2008
++    rt                                        Mon Apr  7 04:52:46 AKDT 2008
++    utility                                   Mon Apr  7 04:52:46 AKDT 2008
++    data                                      Mon Apr  7 04:52:46 AKDT 2008
++    pf_localmods                              Mon Apr  7 04:52:46 AKDT 2008
++    system                                    Mon Apr  7 04:52:46 AKDT 2008
++    path                                      Mon Apr  7 04:52:47 AKDT 2008
+getid < tcshrc_default.id > tcshrc_default
+deposit envrc /opt/anf/4.9/data/system
+deposit aliasrc /opt/anf/4.9/data/system
+deposit tcsh_properties /opt/anf/4.9/data/system
+deposit tcshrc_default /opt/anf/4.9/data/system
+deposit windowbars /opt/anf/4.9/data/system
+
+.fi
+.ft R
+.in
+.SH LIBRARY
+.SH BUGS AND CAVEATS
+The \fBbuild_sourcetree\fP command does nothing to alter or enhance 
+an already-existing source-code tree. 
+
+The project name is always converted to lowercase for directory names
+and to uppercase for environment variable names. It is questionable whether 
+to enforce this so rigidly. 
+
+The parameter-file ends up looking a little unaesthetic, with indentation 
+omitted to preserve the literal structure of the file contents. The parameter
+file is not really meant to be modified by anyone but advanced designers. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
