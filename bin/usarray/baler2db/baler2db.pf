@@ -1,0 +1,19 @@
+#  WFDISC will get substituted with the proper database wfdisc table inside the program
+# 
+wfdisc_cmds &Tbl{
+    dbset    -v WFDISC sta RAMR V04C 
+    dbset    -v WFDISC sta 0795 I05A 
+    dbsubset -v WFDISC "chan=~/LL.*|VH.*|UH.*|VFP|VTW|LTW|HH.|HL.|HG.|HN./" | dbdelete - 
+    dbsubset -v WFDISC "chan=~/VCE|VCQ/" | dbdelete - 
+    dbsubset -v WFDISC "sta=~/HELLBK/"   | dbdelete - 
+    dbsubset -v WFDISC "sta=~/EXMP/"     | dbdelete - 
+    dbsubset -v WFDISC "sta=~/D03A|HAST|Y12C/"      | dbset -v - chan VMU VM4 
+    dbsubset -v WFDISC "sta=~/D03A|HAST|Y12C/"      | dbset -v - chan VMV VM5 
+    dbsubset -v WFDISC "sta=~/D03A|HAST|Y12C/"      | dbset -v - chan VMW VM6 
+    dbsubset -v WFDISC "sta=~/R04C|T06C|U04C|U05C/" | dbset -v - chan VMZ VM1 
+    dbsubset -v WFDISC "sta=~/R04C|T06C|U04C|U05C/" | dbset -v - chan VMN VM2 
+    dbsubset -v WFDISC "sta=~/R04C|T06C|U04C|U05C/" | dbset -v - chan VME VM3 
+    dbsubset -v WFDISC "sta=~/I05A|LAVA|P05C|S04C/" | dbset -v - chan VMU VM1 
+    dbsubset -v WFDISC "sta=~/I05A|LAVA|P05C|S04C/" | dbset -v - chan VMV VM2 
+    dbsubset -v WFDISC "sta=~/I05A|LAVA|P05C|S04C/" | dbset -v - chan VMW VM3 
+}

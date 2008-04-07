@@ -1,0 +1,70 @@
+.TH FILL_GAPS 1 "$Date$"
+.SH NAME
+fill_gaps \- build database combining rt data with baler data to fill gaps
+.SH SYNOPSIS
+.nf
+\fBfill_gaps \fP[-v] [-V] [-T]
+                [-n \fInet\fP ] 
+                [-r \fIreject_stas\fP ] 
+                [-s \fIsta_match\fP ] 
+                [-b \fIclean_baler_db\fP ] 
+                [-o \fIdbout\fP ]               
+                \fIdbin\fP [\fIdmc_gap_db\fP] \fIstart_time\fP \fIend_time\fP
+.fi
+.SH DESCRIPTION
+\fBfill_gaps\fP is designed to build the best possible waveform database, 
+combining data collected from a real-time system with data retrieved from
+on-site storage devices.  \fBfill_gaps\fP assumes there are valid wfdisc,
+calibration, and gap tables from the rt system.  It also requires a clean wfdisc of 
+baler data with no waveform overlaps made by \fBbuild_baler_data\fP.
+
+\fBfill_gaps\fP creates a directory named \fIfilled_gaps\fP  where temporary 
+databases are made with proper links to the waveforms.  The final step is to 
+execute a series of \fBtrexcerpt\fP commands for each jdate from the gap table
+between \fIstart_time\fP and \fIend_time\fP.
+
+If the optional [\fIdmc_gap_db\fP] database is specified, then these gaps are also
+filled in the output database.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -T
+Test mode.  Does not execute trexcerpt commands.
+.IP "-n net      "
+Select network.  Default is TA.
+.IP "-r reject_stas"
+Regular expression for stations to be rejected.  Default is "SUTB|V04C".
+.IP "-s sta_match"
+Regular expression for stations to be matched.  Default is ".*".
+.IP "-b clean_baler_db"
+Name of database containing clean baler data.  Default is "dbin_dir/baler/clean_data".
+.IP "-o dbout"
+Name of database containing clean baler data.  Default is "dbin_dir/filled_gaps/dbin_basename".
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+None.
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+build_baler_data(1)
+baler_request(1)
+baler2db(1)
+gap_status(1)
+replay_data(1)
+rt_baler_info(1)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBfill_gaps\fP should only be run after baler data are collected, combined and cleaned by 
+\fBbuild_baler_data\fP.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

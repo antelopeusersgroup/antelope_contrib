@@ -1,0 +1,54 @@
+.TH BUILD_BALER_DATA 1 "$Date$"
+.SH NAME
+build_baler_data \- build clean database from multiple baler dbs
+.SH SYNOPSIS
+.nf
+\fBbuild_baler_data \fP [-v] [-V] [-n]
+                [-d \fIclean_baler_db\fP ]
+                \fIbalerdb_central\fP \fIclustername\fP \fIstart_time\fP \fIend_time\fP
+.fi
+.SH DESCRIPTION
+\fBbuild_baler_data\fP is designed to build the best possible waveform database, 
+combining data collected from
+on-site storage devices.  \fBbuild_baler_data\fP requires a dbcentral style db
+pointing to multiple dbs of
+baler data.
+
+\fBbuild_baler_data\fP creates a directory named \fIbaler\fP where the \fIclean_baler_db\fP 
+is written.  The waveforms are written in the longest contiguous waveform segments possible.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Test mode.  Does not execute trexcerpt commands.
+.IP "-d clean_baler_db"
+Name of database containing clean baler data.  Default is "baler/clean_data".
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+None.
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+build_baler_request(1)
+baler2db(1)
+gap_status(1)
+dbcentral(1)
+replay_data(1)
+rt_baler_info(1)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBbuild_baler_data\fP should only be run after baler data are collected and installed
+into \fIbalerdb_central\fP using
+\fBbaler2db\fP.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

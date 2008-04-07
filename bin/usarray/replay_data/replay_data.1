@@ -1,0 +1,64 @@
+.TH REPLAY_DATA 1 "$Date$"
+.SH NAME
+replay_data \- replays database waveforms into orb, uses replay db table
+.SH SYNOPSIS
+.nf
+\fBreplay_data\fP [-v] [-V] [-n] 
+         [-d \fItmpdb\fP] 
+         [-s \fIstart_time\fP] 
+         [-t \fItimestep\fP]
+         \fIdb\fP \fIorb\fP
+.fi
+.SH DESCRIPTION
+\fBreplay_data\fP is the last program in a series of programs of filling gapped data in a database
+and sending data to the IRIS DMC. \fBreplay_data\fP opens  \fIdb\fP and checks to see if a replay 
+table exists.  It compares the data in the wfdisc table, and only replays data which exists in 
+the wfdisc table and not the replay table.  \fBreplay_data\fP calls \fBdbreplay\fP and sends 
+the replay data to \fIorb\fP. When the \fBdbreplay\fP program is completed, a DMC 
+sync file is generated in the directory \fIsync\fP and sent to the DMC using orbxfer2.
+
+\fBreplay_data\fP will change directories to the directory where \fIdb\fP exists to properly
+set up for the sync file transfer naming convention for the DMC.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Test mode.  Does not execute dbreplay or orbxfer2 commands, nor change replay table.
+.IP "-d tmpdb"
+Temporary database name.  Default is \fItmp_replay_$$\fP.
+.IP "-s start_time"
+Start time of data to process from \fIdb\fP.  The default is to process the
+complete \fIdb\fP database.
+.IP "-t timestep"
+Time step for dbreplay.  The default is 1800 seconds.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  Need
+environment variable $PFPATH to be set.
+
+.SH PARAMETER FILE
+None.
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+build_baler_data(1)
+baler_request(1)
+baler2db(1)
+gap_status(1)
+rt_baler_info(1)
+dbreplay(1)
+orbxfer2(1)
+db2sync(1)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBreplay_data\fP works best on processors with good floating point support.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

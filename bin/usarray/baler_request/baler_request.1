@@ -1,0 +1,64 @@
+.TH BALER_REQUEST 1 "$Date$"
+.SH NAME
+baler_request \- generate sync file for baler gap filling requests
+.SH SYNOPSIS
+.nf
+\fBbaler_request \fP [-v] [-V]  
+                [-n \fInet\fP ] 
+                [-r \fIreject_stas\fP ] 
+                [-s \fIsta_match\fP ] 
+                [-t \fIstart_time\fP ] 
+                [-e \fIend_time\fP ]               
+                [-d \fIdirectory\fP ]               
+                \fIgap_database\fP  [ \fIdmc_gap_database\fP ]
+.fi
+.SH DESCRIPTION
+\fBbaler_request\fP is designed to generate a sync file of data gaps 
+to be used by baler_admin to retrieve the missing data.  The sync file is 
+written to file named \fIbaler_request_YYYY_MM\fP.  
+.LP
+The inputs to the program are the \fIgap_database\fP which contains gap table.  
+There is an optional \fIdmc_gap_database\fP which contains a listing of gaps 
+observed at the DMC.  If there is a \fIgap_database.deployment\fP table 
+available, then all stations which have had their \fIequip_remove\fP field 
+value set before the current date will be removed from the sync file.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP "-n net      "
+Select network.  Default is TA.
+.IP "-r reject_stas"
+Regular expression for stations to be rejected.  Default is "SUTB|V04C".
+.IP "-s sta_match"
+Regular expression for stations to be matched.  Default is ".*".
+.IP "-t start_time"
+Start time of events to process from \fIdbin\fP.  The default is to process the
+complete \fIdbin\fP database.
+.IP "-e end_time"
+End time of events to process from \fIdbin\fP.  The default is to process the
+complete \fIdbin\fP database.
+.IP "-d directory"
+Directory to write output file into.  The default is "." .
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+
+Needs environment variable $PFPATH to be set.
+.SH PARAMETER FILE
+None.
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+\fBbaler_request\fP only outputs sync file to \fBSTDOUT\fP.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

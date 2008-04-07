@@ -1,0 +1,102 @@
+.TH BALER2DB 1 "$Date$"
+.SH NAME
+baler2db \- take mseed data from baler downlad directory and loads into dbcentral db
+.SH SYNOPSIS
+.nf
+\fBbaler2db\fP [-v]  
+         [-d \fIdbout\fP ] 
+         [-p \fIpffile\fP ] 
+         \fImseed_dir\fP \fIdbmaster\fP \fIbalerdb_central\fP
+.fi
+.SH DESCRIPTION
+\fBbaler2db\fP is the first program in a series of programs to fill gapped data in a database.
+\fBbaler2db\fP starts with data which has been recovered from a baler or other device in miniseed
+format, make necessary corrections to the data, and builds a cleaned database of day volumes.  
+All data recovered from a baler through a run of \fBbaler_admin\fP or send via cdrom 
+(or equivalent) are assumed to be stored in miniseed files, all located in the directory 
+\fImseed_dir\fP.  
+
+The first step in \fBbaler2db\fP, after various checks, is to run \fBminiseed2days\fP which 
+creates a new database named \fIraw_baler\fP in the same directory where \fImseed_dir\fP is located.
+\fBminiseed2days\fP is executed with the \fI-C\fP option so that all miniseed blocketts which have 
+problems such a "0" clock quality or corrupted miniseed data are removed.
+
+Next, a new wfdisc named \fIdbout\fP is created using the same waveforms as \fIraw_baler\fP.  
+The \fIdbout\fP wfdisc has any corrections provided through the \fIpffile\fP, fixing things like
+known station or channel mislabling.  Any wfdisc records less than 2 seconds long are removed.
+
+The \fIdbout\fP and \fIraw_baler\fP databases are linked to \fIdbmaster\fP through a descriptor 
+file.   \fBdbfixchanids\fP  is run on \fIdbout\fP, followed by \fBdbfix_calib\fP and \fBdbverify\fP.
+
+Finally if all is successful, a new row is added to the dbcentral database - \fIbalerdb_central\fP.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP "-d dbout"
+Output database name.  Default is \fIcleaned_baler\fP.
+.IP "-p pffile"
+Name of parameter file.  Default is \fIbaler2db\fP.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  Need
+environment variable $PFPATH to be set.
+
+.SH PARAMETER FILE
+\fBbaler2db\fP parameter file element is:
+
+.IP wfdisc_cmds 
+list of commands to correct known baler problems in the wfdisc.  Generally these are
+mis-named station and/or channel codes.
+.fi
+.ft R
+.in
+.SH DEFAULT PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+#  WFDISC will get substituted with the proper database wfdisc table inside the program
+# 
+wfdisc_cmds &Tbl{
+    dbset    -v WFDISC sta RAMR V04C 
+    dbset    -v WFDISC sta 0795 I05A 
+    dbsubset -v WFDISC "chan=~/LL.*|VH.*|UH.*|VFP|VTW|LTW|HH.|HL.|HG.|HN./" | dbdelete - 
+    dbsubset -v WFDISC "chan=~/VCE|VCQ/" | dbdelete - 
+    dbsubset -v WFDISC "sta=~/HELLBK/"   | dbdelete - 
+    dbsubset -v WFDISC "sta=~/EXMP/"     | dbdelete - 
+    dbsubset -v WFDISC "sta=~/D03A|HAST|Y12C/"      | dbset -v - chan VMU VM4 
+    dbsubset -v WFDISC "sta=~/D03A|HAST|Y12C/"      | dbset -v - chan VMV VM5 
+    dbsubset -v WFDISC "sta=~/D03A|HAST|Y12C/"      | dbset -v - chan VMW VM6 
+    dbsubset -v WFDISC "sta=~/R04C|T06C|U04C|U05C/" | dbset -v - chan VMZ VM1 
+    dbsubset -v WFDISC "sta=~/R04C|T06C|U04C|U05C/" | dbset -v - chan VMN VM2 
+    dbsubset -v WFDISC "sta=~/R04C|T06C|U04C|U05C/" | dbset -v - chan VME VM3 
+    dbsubset -v WFDISC "sta=~/I05A|LAVA|P05C|S04C/" | dbset -v - chan VMU VM1 
+    dbsubset -v WFDISC "sta=~/I05A|LAVA|P05C|S04C/" | dbset -v - chan VMV VM2 
+    dbsubset -v WFDISC "sta=~/I05A|LAVA|P05C|S04C/" | dbset -v - chan VMW VM3 
+}
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+build_baler_data(1)
+baler_request(1)
+gap_status(1)
+replay_data(1)
+rt_baler_info(1)
+miniseed2days(1)
+dbfixchanids(1)
+dbdescriptor(5)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBbaler2db\fP will only work on the directory \fImseed_dir\fP.   \fImseed_dir\fP can 
+only contains miniseed files, no subdirectories.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

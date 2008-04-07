@@ -1,0 +1,75 @@
+.TH GAP_STATUS 1 "$Date$"
+.SH NAME
+gap_status \-  identify status of gaps in realtime database wrt balers and recovered data
+.SH SYNOPSIS
+.nf
+\fBgap_status \fP[-v] 
+                [-n \fInet\fP ] 
+                [-s \fIsta_match\fP ] 
+                [-c \fIchan_match\fP ]  
+                \fIgap_database\fP \fIbaler_list_db\fP 
+                \fIrecovered_data_db\fP [\fIfilled_data_db\fP] 
+.fi
+.SH DESCRIPTION
+\fBgap_status\fP is designed to determine the status of all identified gaps in a real-time
+database.  This program is designed to be run before executing \fIbuild_baler_request\fP.
+.LP
+Three or four databases are used to run this program.
+.nf
+.ne 7
+    database of all original gaps in \fIgap_database\fP
+    database of waveforms currently on balers in \fIbaler_list_db\fP
+    database of recovered waveforms from balers in \fIrecovered_data_db\fP
+    optional database of filled data gaps resulting from merging rt and 
+        baler data in \fIfilled_data_db\fP
+.fi
+.LP
+The program first isolates all unique station-channel pairs from the gap list. 
+All gaps are checked to see if the gap has been filled in the \fIfilled_data_db\fP.  
+If filled then the \fIfilled\fP field in the appropriate row in the gap table is updated with 
+an \fIf\fP.
+All remaining gaps are then checked to see if the gap has been recovered from the baler in the 
+\fIrecovered_data_db\fP.  
+If recovered then the \fIfilled\fP field in the appropriate row in the gap table is updated with 
+an \fIr\fP.
+All remaining gaps are then checked to see if the gap data exists on the baler in the 
+\fIbaler_list_db\fP.  
+If exists on baler then the \fIfilled\fP field in the appropriate row in the gap table is updated with 
+an \fIb\fP.
+If does not exists on baler then the \fIfilled\fP field in the appropriate row in the gap table is updated with 
+an \fIn\fP.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP "-n net      "
+Select network.  Default is TA.
+.IP "-s sta_match"
+Regular expression for stations to be matched.  Default is ".*".
+.IP "-c chan_match"
+Regular expression for channels to be matched.  Default is ".HZ".
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+
+Needs environment variable $PFPATH to be set.
+.SH PARAMETER FILE
+None.
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+build_baler_data(1)
+baler_request(1)
+baler2db(1)
+gap_status(1)
+replay_data(1)
+rt_baler_info(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+.SH AUTHOR
+Frank Vernon
+.br
