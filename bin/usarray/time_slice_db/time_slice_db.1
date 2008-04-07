@@ -1,0 +1,141 @@
+.TH TIME_SLICE_DB 1 "$Date$"
+.SH NAME
+time_slice_db \- Divide seismic database into complete periodic increments
+.SH SYNOPSIS
+.nf
+\fBtime_slice_db \fP[-v] [-V] [-s] [-f] [-C] [-B] [-E] [-W] [-D | -Y]
+                [-I \fIidserver\fP] 
+                [-P \fIdbpath\fP] 
+                [-d \fIdirectory_base\fP] 
+                [-l \fIlag_period\fP] 
+                [-p \fIparameter_file\fP]
+                [-t \fIstart_time\fP]
+                [-e \fIend_time\fP]
+                \fIdbin\fP \fIdbbase_name\fP
+.fi
+.SH DESCRIPTION
+\fBtime_slice_db\fP is designed build complete periodic databases from a larger database.
+The default time slice is by months, but options can split by year or day.
+\fBtime_slice_db\fP will keep all data from the current month ( or year or day), and the 
+previous number of \fIlag_periods\fP in \fIdbin\fP.  
+Older data will be split from \fIdbin\fP into monthly ( or yearly or daily) databases.
+\fBtime_slice_db\fP will reorganize the seismic database tables into the appropriate database 
+directory structure - 
+.IP \fIdirectory_base/YYYY_MM/dbbase_name_YYYY_MM\fP.  
+.IP \fIdirectory_base/YYYY/dbbase_name_YYYY\fP.  
+.IP \fIdirectory_base/YYYY_DDD/dbbase_name_YYYY_DDD\fP.  
+
+.in
+The decision for which db to include data is decided by the origin.time of the preferred origin for an event.  Even if other 
+origins for the same event or associated arrivals cross over a time boundary, it is the preferred 
+origin.time which controls the choice of db.
+
+This program was written to address specific issues at the ANF for the USArray TA.  
+It is designed to split up events including the following tables: 
+event origin assoc arrival origerr stamag netmag emodel predarr.  It will also split up
+the wfdisc, with the addition of the next day following the end of the output db so that 
+events which have origin times at the end of the period can still be reviewed with the 
+appropriate waveforms.  \fBtime_slice_db\fP will not move the actual waveforms 
+(unless the \fI-f\fP option is used), it only
+puts the correct references to where \fIdbin\fP waveforms are located.  If this program 
+does not meet your needs, you should use  \fBdbsplit\fP.
+
+This program is NOT designed to work on a live real-time database.  If you want to use on
+a real-time system, first shutdown the appropriate rtexec, then use this program, finally
+restarting rtexec.
+
+.IP \fIdbin\fP 
+database which needs to be sliced.
+.IP \fIdbbase_name\fP 
+database base name to build output db names.
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -C
+Clean up input database.  Removing rows which have been moved to the output databases. 
+Before starting copy the input database into the \fIlast_saved_db\fP directory using 
+\fIdbcp -s dbin last_saved_db\fP.
+.IP -Y
+split database into years.  Files stored as \fIdaily_dbs/YYYY/dbbase_name_YYYY\fP.
+.IP -D
+split database into days.  Files stored as \fIyearly_dbs/YYYY_DDD/dbbase_name_YYYY_DDD\fP.
+.IP -s
+Don't  attempt  to  keep  external file references correct; just copy the tables, 
+and don't update dir/dfile fields. See dbcp (1).
+.IP -f 
+Actually copies waveforms instead of referencing original waveforms. See dbcp (1).
+.IP -b
+Only slices big tables listed in pf file.
+.IP -e
+Only slices events.
+.IP -w
+Only slices waveforms.
+.IP "-I idserver"
+Name of idserver to be written into descriptor file for output database to use.
+The default parameter idserver is none.
+.IP "-P dbpath"
+dbpath to be written into descriptor file for output database to use.
+The default parameter dbpath is none.
+.IP "-d directory_base"
+directory base name for building the monthly databases
+The default is ./monthly_dbs
+.IP "-l lag_period"
+Number of complete periods before present to allow to be processed.
+The default is 1 in arrears, only skipping the current and immediately previous periods.
+.IP "-p parameter_file"
+Name of parameter file to use.  $PFPATH is searched to find parameter file.
+The default parameter file name is \fBtime_slice_db\fP.
+.IP "-t start_time"
+Start time for processing data.
+The default start time is \fB1 January 1970\fP.
+.IP "-e end_time"
+End time for processing data.
+The default end time is \fBnow()\fP.
+
+.SH ENVIRONMENT
+Need environment variable $PFPATH to be set.
+.SH PARAMETER FILE
+\fBtime_slice_db\fP parameter file elements are:
+
+.IP big_tables 
+typically very large tables which are not associated with waveforms or events.  
+These tables listed need to have time, sta, chan included as fields.
+.fi
+.ft R
+.in
+.SH DEFAULT PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+big_tables &Tbl{	
+	latency
+	wfsrb
+	specdisc
+}
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+dbsplit(1)
+dbcluster(1)
+pfecho(1)
+dbcp(1)
+pf(3)
+.fi
+.SH "BUGS AND CAVEATS"
+This program does most the work using perl system calls to the Datascope interface.
+This was done because of the memory usage in large databases which could not be really
+freed in perl.  Using system calls keeps the memory usage at a managable level even for
+megarow databases.
+.SH AUTHOR
+Frank Vernon
+.br
+IGPP, UCSD
