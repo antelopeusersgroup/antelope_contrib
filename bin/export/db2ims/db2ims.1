@@ -123,6 +123,11 @@ FDSNLOCATIONID and FDSNQUALITYCODE should all follow the SEED/FDSN naming
 nomenclature and uniquely identify the waveform associated with the phase
 arrival.
 
+For additional information on the DMC modifications see:
+.br
+http://www.iris.edu/data/events/DMC-ISF.htm
+.br
+
 .SS "General information"
 The output file is divided into three sections (four if a magnitude block is
 requested):  1) EVENT HEADER and DATA; 2) PHASE HEADER and DATA; and 3) PHASE SUB-BLOCK
@@ -245,10 +250,16 @@ deltim value.  This is probably a bad choice as deltim is an arbitrary value
 chosen by the analyst and is filled in with a weighting factor for some
 automatic location programs.
 
-This output format makes no distinction as to what the preferred origin is.
-The preferred origin is used to calculate values placed in the phase/arrival
-blocks, but no indication of this is given in the origin block.  If you want
-this information go back to the css tables.
+Earlier versions of this output format made no distinction as to what the 
+preferred origin was.  As of late April 2008, the DMC has agreed that adding 
+a comment (#PRIME) after the preferred origin in the ORIGIN block is an 
+acceptable way to indicate the preferred origin.  The preferred origin is 
+used to calculate values placed in the phase/arrival blocks, so having some
+indication is rather important and was a significant drawback for earlier 
+files.  I do not have a way to convert files generated without this indication
+to the new format.  You could go back to the css tables and attempt to figure
+it out.  However, re-running with the newer version of this script is 
+probably the best solution.
 
 I have no control over the requirements of the output format.  Any concerns
 or questions should be directed elsewhere.

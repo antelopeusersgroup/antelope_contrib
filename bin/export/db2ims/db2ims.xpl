@@ -14,7 +14,8 @@
 #  J.Eakins 2/2007 - 4/2007
 # mods for file naming 
 #  J.Eakins 1/2008 
-#
+# add back in an indicator for prefor
+#  J.Eakins 4/2008
 # 
 
 require "getopts.pl" ;
@@ -608,6 +609,11 @@ use File::Path;
 	}
         printf LOG " %6.2f %6.2f %1s %1s %2s %9s %8s\n", $mindelta, $maxdelta, $blank, $blank, $etype, $auth, $orid ; 
 	
+	# Latest officially sanctioned way to determine origin supremacy 
+	if ($orid == $prefor) { 
+	    printf LOG " %s \n", "(#PRIME)" ; 
+	}
+
       } # end of loop over each origin.  Should have prefor information by now
 
 
