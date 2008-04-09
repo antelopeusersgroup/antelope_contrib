@@ -6,6 +6,7 @@ MAN1=	pmelgrid.1
 #    -ltrvltm -ldl -Bdynamic -lgenloc -lpfstream -lglputil -lpmel -lbrttutil -lm -dalign
 
 ldlibs= -lpfstream -lpmel -lgenloc -lglputil -ltrvltm -lbrttutil -lperf $(DBLIBS)
+ldlibs=-lpfstream -lpmel -lgenloc -lglputil $(PERFLIBS) $(TRLIBS)
 
 include $(ANTELOPEMAKE)  	
 DIRS=
