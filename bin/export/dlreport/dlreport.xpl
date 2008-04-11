@@ -84,6 +84,7 @@ if ($opt_n =~ /\d/) {
 }
 
 
+printf "\n*** Station Close Report for $opt_C ***\n\n" if ($opt_C) ;
 printf "Datalogger event report for $opt_n days beginning %s\n\n", 
     epoch2str ( $tfirst, "%A %B %d %Y-%j" ) ; 
 
@@ -138,13 +139,13 @@ sub summarize_dlevents {
 	} 
 
 	if ($opt_E) {
-	    if ($dlevtype =~/service/ ) {
+	    if ($dlevtype =~/service|sensor_cal/ ) {
 		printf (" %-s %s %s \n", $dlname, epoch2str($dlevtime, "%D (%j) %H:%M:%S:%s" ) , $dlcomment );
 	    } else {
 		printf ("\t  %-s %s  \n", $dlname, epoch2str($dlevtime, "%D (%j) %H:%M:%S:%s" ) );
 	    }
 	} elsif ($opt_S) {
-	    if ($dlevtype =~/service/ ) {
+	    if ($dlevtype =~/service|sensor_cal/ ) {
 		printf (" %-s %s %s \n", $dlevtype, epoch2str($dlevtime, "%D (%j) %H:%M:%S:%s" ) , $dlcomment );
 	    } else {
 		printf ("\t  %-s %s  \n", $dlevtype, epoch2str($dlevtime, "%D (%j) %H:%M:%S:%s" ) );
