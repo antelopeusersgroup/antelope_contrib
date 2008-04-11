@@ -405,12 +405,14 @@ sub process_station {
 				&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
 			addlog ( $self, 1, "%s: Station mag = data with null calib",
  						$sta ) ;
+			$self->{stations}{$sta}{disposition} = "NullCalib" ;
 			return makereturn ( $self, "ok" ) ;
 		}
 		if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
 				&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
 			addlog ( $self, 1, "%s: Station mag = data clipped",
  						$sta ) ;
+			$self->{stations}{$sta}{disposition} = "DataClipped" ;
 			return makereturn ( $self, "ok" ) ;
 		}
 		if (defined $self->{stations}{$sta}{channels}{$chan}{m}) {
@@ -463,6 +465,7 @@ sub process_station {
 		}
 		addlog ( $self, 1, "%s: Station mag = %.3f",
  					$sta, $msta ) ;
+		$self->{stations}{$sta}{disposition} = sprintf "%.3f", $msta ;
 	} else {
 		addlog ( $self, 1, "%s: Station mag = no data",
  					$sta ) ;
@@ -485,12 +488,32 @@ sub process_network {
 
 	my @mags ;
 	my $sta ;
+	my @logs ;
+	my $log ;
 	foreach $sta (keys(%{$self->{stations}})) {
-		if ( ! defined $self->{stations}{$sta}{m} ) {next; }
+		if ( defined $log ) {
+			$log .= ', ' ;
+		}
+		$log .= $sta . "=" . $self->{stations}{$sta}{disposition}  ;
+		if ( length $log > 80 ) {
+			push @logs, $log ;
+			undef $log ;
+		}
+		if ( ! defined $self->{stations}{$sta}{m} ) { next; }
 		$m += $self->{stations}{$sta}{m} ;
 		$std += $self->{stations}{$sta}{m} * $self->{stations}{$sta}{m} ;
 		$nm ++ ;
 		push @mags, $self->{stations}{$sta}{m} ;
+	}
+
+	if ( defined $log ) {
+		push @ logs, $log ;
+	}
+
+	if ( @logs ) {
+		foreach $log ( @logs ) {
+			addlog ( $self, 1, "Network mag: " . $log ) ;
+		}
 	}
 
 	if ( $nm < 1 ) {

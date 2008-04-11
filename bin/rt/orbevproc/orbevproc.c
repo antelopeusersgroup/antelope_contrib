@@ -174,7 +174,7 @@ startup_banner()
 void ignoreSIGALRM();
 
 static void
-haltbysignal (int sig)
+haltbysignal (int sig, void *sip, void *uap)
 
 {
 	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -298,7 +298,7 @@ db2dbtable (Pf *pf, char *pfkey, Dbptr dbin, char *tablename, Dbptr db, int requ
 		free (ptr);
 	} else {
 		char rec[1024];
-		int istart, iend;
+		long istart, iend;
 
 		if (dbin.record == dbINVALID) return (0);
 
@@ -344,7 +344,7 @@ dbtable2pf (Dbptr db, Pf **pf)
 	void *vbuf=NULL;
 	char key[32];
 	char rec[1024];
-	int rec0, rec1;
+	long rec0, rec1;
 
 	dbquery (db, dbTABLE_NAME, &tablename);
 

@@ -85,6 +85,9 @@ msusneic_params &Arr{
      }
      minimum_period        15.0
      maximum_period        25.0
+     minimum_distance      20.0
+     maximum_distance      160.0
+     maximum_depth         50.0
      update_time           30.0
      maximum_wait_time     1800.0
      maximum_bad_fraction  0.2
@@ -169,6 +172,15 @@ shows as the peak surface wave amplitude. The algorithm in this computational mo
 peak surface wave amplitude and determines its associated period. If the measured period is outside
 of the period range expressed by these parameters, then the surface wave measurement will not
 be used.
+.IP "\fIminimum_distance\fP \fImaximum_distance\fP"
+These are minimum and maximum distances in degrees from the event to each station that defines
+the distance range where the surface wave magnitude will be computed. If the distance is outside
+of this range for a particular station, then that station is not used to compute the network surface wave magnitude.
+If these are not specified, then they default to 20 and 160 degrees respectively.
+.IP \fImaximum_depth\fP
+This is the maximum event depth in km for computing surface wave magnitude. If the event depth is greater
+than this value, then the surface wave magnitude is not computed.
+If this is not specified, then it defaults to 50 km.
 .IP \fIupdate_time\fP
 This is a time duration in seconds (\fB0.0\fP to disable) that is passed back to \fBorbevproc\fP to
 instruct it to call \fBMsusneic::process_channel\fP every \fIupdate_time\fP seconds even if the

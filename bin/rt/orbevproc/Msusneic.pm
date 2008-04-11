@@ -28,7 +28,8 @@ sub compms {
 
 	my $distance = $self->{stations}{$sta}{delta} ;
 
-	if ( $distance < 20.0 || $distance > 160.0 ) {return;}
+	if ( $distance < $self->{params}{minimum_distance} 
+				|| $distance > $self->{params}{maximum_distance} ) {return;}
 
 	my $ms = log($amplitude_in_micrometers_per_second/(2.0 * pi))/log(10) ;
 
@@ -53,7 +54,11 @@ sub getwftimes {
 	my ($otime,$odepth,$oauth) = dbgetv ( @{$self->{dbo}}, "time", "depth", "auth" ) ;
 	my $date = yearday ( $otime ) ;
 
-	if ( $odepth > 50.0 ) {
+	if ( ! defined $self->{params}{maximum_depth} ) {
+		$self->{params}{maximum_depth} = 50.0 ;
+	}
+
+	if ( $odepth > $self->{params}{maximum_depth} ) {
 		addlog ( $self, 1, "Event too deep" ) ;
 		return makereturn ( $self, "skip" ) ; 
 	}
@@ -72,6 +77,12 @@ sub getwftimes {
 	if ( ! defined $self->{params}{maximum_period} ) {
 		$self->{params}{maximum_period} = 22.0 ;
 	}
+	if ( ! defined $self->{params}{minimum_distance} ) {
+		$self->{params}{minimum_distance} = 20.0 ;
+	}
+	if ( ! defined $self->{params}{maximum_distance} ) {
+		$self->{params}{maximum_distance} = 160.0 ;
+	}
 
 	my $event_tend = -1.e20 ;
 	for ($self->{dba}[3] = 0; $self->{dba}[3] < $self->{nassoc}; $self->{dba}[3]++) {
@@ -85,11 +96,11 @@ sub getwftimes {
 		($ret, $process, $channels, $ndbv) = match_sta ($self, $sta, $otime) ;
 		if ( $ret ne "ok" ) { next; }
 
-		if ($delta > 160.0) {
+		if ($delta > $self->{params}{maximum_distance}) {
 			addlog ( $self, 1, $sta . ": station too far away" ) ;
 			next ;
 		}
-		if ($delta < 20.0) {
+		if ($delta < $self->{params}{minimum_distance}) {
 			addlog ( $self, 1, $sta . ": station too close" ) ;
 			next ;
 		}
@@ -135,6 +146,7 @@ sub getwftimes {
 			"tupdate" => $self->{params}{update_time},
 			"nchans" => $ndbv,
 			"channels" => $channels,
+			"disposition" => "DataNotReady",
 		} ;
 		if ( defined $process->{clip_upper} && defined $process->{clip_lower} ) {
 			$hash->{clip_upper} = $process->{clip_upper} ;
@@ -217,12 +229,14 @@ sub process_channel {
 			&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of null calib",
  						$sta, $chan )  ;
+ 		$self->{stations}{$sta}{disposition} = "NullCalib" ;
 		return $ret ;
 	}
 	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
 			&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of clipped data",
  						$sta, $chan )  ;
+ 		$self->{stations}{$sta}{disposition} = "DataClipped" ;
 		return $ret ;
 	}
 	if ( ! defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
@@ -238,6 +252,7 @@ sub process_channel {
 		if ( ! defined $self->{stations}{$sta}{channels}{$chan}{signal_per}) {
 			addlog ( $self, 1, "%s: %s: Channel mag not computed because period not determined (data peak value near end of data range)",
  						$sta, $chan )  ;
+			$self->{stations}{$sta}{disposition} = "PeriodClipped" ;
 			return $ret ;
 		}
 		my $period =
@@ -245,6 +260,7 @@ sub process_channel {
 		if ( $period < $self->{params}{minimum_period} || $period > $self->{params}{maximum_period} ) {
 			addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range (%.2f)",
  						$sta, $chan, $period )  ;
+			$self->{stations}{$sta}{disposition} = "PeriodOutsideRange" ;
 			return $ret ;
 		}
  		$self->{stations}{$sta}{channels}{$chan}{m} = compms ( 
@@ -261,6 +277,7 @@ sub process_channel {
  				$sta, $chan,
  				$self->{stations}{$sta}{channels}{$chan}{m} ) ;
 	} else {
+ 		$self->{stations}{$sta}{disposition} = "LowSnr" ;
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
  						$sta, $chan )  ;
 	}

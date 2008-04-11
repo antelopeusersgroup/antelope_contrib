@@ -187,6 +187,7 @@ sub getwftimes {
 			"tupdate" => $self->{params}{update_time},
 			"nchans" => $ndbv,
 			"channels" => $channels,
+			"disposition" => "DataNotReady",
 		} ;
 		if ( defined $process->{clip_upper} && defined $process->{clip_lower} ) {
 			$hash->{clip_upper} = $process->{clip_upper} ;
@@ -296,12 +297,14 @@ sub process_channel {
 			&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of null calib",
  						$sta, $chan )  ;
+		$self->{stations}{$sta}{disposition} = "NullCalib" ;
 		return $ret ;
 	}
 	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
 			&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of clipped data",
  						$sta, $chan )  ;
+		$self->{stations}{$sta}{disposition} = "DataClipped" ;
 		return $ret ;
 	}
 	if ( ! defined $self->{stations}{$sta}{channels}{$chan}{signal_amax} ) {
@@ -333,6 +336,7 @@ sub process_channel {
 		} else {
 			addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
  							$sta, $chan )  ;
+			$self->{stations}{$sta}{disposition} = "LowSnr" ;
 				
 		}
 	} else {
