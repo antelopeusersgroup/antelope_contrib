@@ -250,9 +250,9 @@ sub process_channel {
 		my $micrometers_per_second =
  			$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
 		if ( ! defined $self->{stations}{$sta}{channels}{$chan}{signal_per}) {
-			addlog ( $self, 1, "%s: %s: Channel mag not computed because period not determined (data peak value near end of data range)",
+			addlog ( $self, 1, "%s: %s: Channel mag not computed because period not determined (gaps near data peak value)",
  						$sta, $chan )  ;
-			$self->{stations}{$sta}{disposition} = "PeriodClipped" ;
+			$self->{stations}{$sta}{disposition} = "PeriodNotDetermined" ;
 			return $ret ;
 		}
 		my $period =

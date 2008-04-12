@@ -9,6 +9,7 @@ package Magnitude ;
 use lib "$ENV{ANTELOPE}/data/evproc" ;
 
 use evproc ;
+use Trace ;
 
 use strict ;
 use warnings ;
@@ -222,7 +223,7 @@ sub process_channel {
 	}
 
 	if ( $self->{stations}{$sta}{channels}{$chan}{noise_done} == 0 ) { 
-		my ($nbad, $fbad) = findbad ( @dbtrace, $self->{stations}{$sta}{noise_tstart},
+		my ($nbad, $fbad) = trace_findbad ( @dbtrace, $self->{stations}{$sta}{noise_tstart},
 						$self->{stations}{$sta}{noise_tend} ) ;
 		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
 		if ( $nbad == 0 || $override ) {
@@ -246,7 +247,7 @@ sub process_channel {
  				$self->{stations}{$sta}{channels}{$chan}{noise_amp}, 
  				$self->{stations}{$sta}{channels}{$chan}{noise_per}, 
  				$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
- 				$self->{stations}{$sta}{channels}{$chan}{noise_std}) = computestats ( @dbtrace, 1,
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_std}) = trace_computestats ( @dbtrace, 1,
  					0.0, $self->{stations}{$sta}{noise_tstart}, 
  						$self->{stations}{$sta}{noise_tend} ) ;
  			if ( defined $self->{stations}{$sta}{channels}{$chan}{noise_amax} ) {
@@ -262,7 +263,7 @@ sub process_channel {
 	}
 
 	if ( $self->{stations}{$sta}{channels}{$chan}{signal_done} == 0 ) { 
-		my ($nbad, $fbad) = findbad ( @dbtrace, $self->{stations}{$sta}{signal_tstart},
+		my ($nbad, $fbad) = trace_findbad ( @dbtrace, $self->{stations}{$sta}{signal_tstart},
 					$self->{stations}{$sta}{signal_tend} ) ;
 		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
 		if ($nbad != 0 && ! $override ) {
@@ -289,7 +290,7 @@ sub process_channel {
  			$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
  			$self->{stations}{$sta}{channels}{$chan}{signal_per}, 
  			$self->{stations}{$sta}{channels}{$chan}{signal_mean}, 
- 			$self->{stations}{$sta}{channels}{$chan}{signal_std}) = computestats ( @dbtrace, 1,
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_std}) = trace_computestats ( @dbtrace, 1,
  					$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
  					$self->{stations}{$sta}{signal_tstart}, 
  					$self->{stations}{$sta}{signal_tend} ) ;
@@ -298,7 +299,7 @@ sub process_channel {
 				($self->{stations}{$sta}{channels}{$chan}{noise_amax}, 
  					$self->{stations}{$sta}{channels}{$chan}{noise_tmax}, 
  					$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
- 					$self->{stations}{$sta}{channels}{$chan}{noise_std}) = computestats ( @dbtrace, 1,
+ 					$self->{stations}{$sta}{channels}{$chan}{noise_std}) = trace_computestats ( @dbtrace, 1,
  						0.0, $self->{stations}{$sta}{noise_tstart}, 
  							$self->{stations}{$sta}{noise_tend} ) ;
  				if ( defined $self->{stations}{$sta}{channels}{$chan}{noise_amax} ) {
