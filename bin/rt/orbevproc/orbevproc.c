@@ -2730,6 +2730,7 @@ PROCESS_WFTHREADS:
 				char netsta[64];
 				StationParams *sp;
 				int k, used;
+				char chan[32];
 
 				pchan = (PktChannel *) gettbl (pkt->channels, j);
 				sprintf (netsta, "%s_%s", pchan->net, pchan->sta);
@@ -2738,7 +2739,6 @@ PROCESS_WFTHREADS:
 				for (k=0,used=0; k<maxtbl(sp->plist); k++) {
 					ProcessParams *pp;
 					ProcessParamsChan *ppc;
-					char chan[32];
 					char *s;
 					int l;
 					Dbptr dbtr;
@@ -2749,7 +2749,7 @@ PROCESS_WFTHREADS:
 
 					/* now match against the chan expression */
 
-					if (k == 0) map_seed_chanloc (pp->sta, pchan->chan, pchan->loc, chan);
+					map_seed_chanloc (pp->sta, pchan->chan, pchan->loc, chan);
 					if (strmatches (chan, pp->chan_expr, 0) != 1) continue;
 
 					ppc = (ProcessParamsChan *) getarr (pp->channels, chan);
@@ -2775,6 +2775,7 @@ PROCESS_WFTHREADS:
 						ret = pktchannel2trace_put (ep->pt, pchan, 1, sp->tstart-10.0, sp->tend+10.0) ;
 						if (ret < 0) {
 							complain (0, "pktchannel2trace_put(%s) error.\n", srcname);
+							continue;
 						}
 					}
 
