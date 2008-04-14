@@ -210,6 +210,14 @@ orb2disk [options] orb directory [start-time [end]]
 -v	more verbose
 </options>
 
+orbproxy [options] orbhostport
+     orbserver proxy
+<options>
+-i local_ipaddr	bind to one of several local ip addresses
+-p local_portno	local proxy port number
+-v	more verbose
+</options>
+
 orbstat [options] orb [secs]
     show statistics for orbserver orb every secs seconds
 <options>
@@ -582,6 +590,19 @@ orb2genc [options] orbin orbout
 -S statefile	
 -dbcalib dbcalib
 -v
+</options>
+
+orbaddcalib [options] dbcalib orbin orbout
+    add calib, calper and segtype to ORB waveform packets
+<options>
+-onlynull	only fill in packets with NULL calib values
+-dbcheck	check database for each waveform packet
+-v	more verbose
+-t translation_pf	morph SEED names
+-select select_expr	select expression for incoming packets
+-relect reject_expr	reject expression for incoming packets
+-start {pktid|time|OLDEST}	initial ORB read pointer position
+-S statefile	statefile
 </options>
 
 orbstaseg [options] csssta orbdetect orbwfin orbwfout
