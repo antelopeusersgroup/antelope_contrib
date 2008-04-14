@@ -165,6 +165,28 @@ dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
 -name1 value1 [-name2 value2] [...]
 </options>
 
+dbcalibrate [options] dbin [sequence_id [sequence_id_cmp[,chan_cmp]]
+    sensor and cross comparison calibration analysis program
+<options>
+-out dbout	output database name
+-prm	delete temporary parameter file after execution
+-p pfname	use an alternate parameter file pfname
+-calper calper	calibration period
+-resp_dir resp_dir	directory for output response files
+-resp_dfile resp_dfile	filename for output response spectrum
+-resp_dfilee resp_dfilee	filename for output response error spectrum
+-resp_dfilen reap_dfilen	filename for output nominal response spectrum
+-dcalwf_sifter expr	used to subset rows from input dlcalwf table
+-sngen sngen	fix sensor generator gain to this value
+-v	be more verbose
+-outrecno	print output sensorcal table row numbers
+-error_at_calper	compute errors relative to spectrum amplitude at calper period
+-template name	use name processing template from parameter file
+-dbcmp dbcmp	take comparison waveforms from dbcmp database
+-noise tstart_noise	noise start time
+-type {ratio|power|coherence}	computation type
+</options>
+
 dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} db [dbout]
     make waveform measurements from database
 <options>
