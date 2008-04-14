@@ -2,6 +2,12 @@ DATADIR=doc/refguides/scripting
 DATA= \
         matlab.ref \
 	perl.ref \
+	perlDatascope.ref \
+	perlTrace.ref \
+	perlScg.ref \
+	perlHistory.ref \
+	perlVector.ref \
+	perltkBplot.ref \
 	php.ref \
 	scripting.ref \
 	scripting0.ref \

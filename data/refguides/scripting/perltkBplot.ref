@@ -1,0 +1,138 @@
+<chapter Perltk Bplot>
+<info>
+use TK::Canvas
+use TK::Bplot
+</info>
+<man>
+% man bplot 
+</man>
+
+<commands>
+
+$canvas->create('bpviewport', name, x, y, ?option, value, ...?)
+    create canvas viewport for graph
+<options>
+-anchor => {n|ne|e|se|s|sw|w|nw|c}
+-tags => taglist
+-width =>width	width in pixels (0: rubber-band)
+-height => height 	height in pixels (0: rubber-band)
+-mleft => left margin
+-mright => right margin
+-mbottom => bottom margin
+-mtop => top margin
+-wtran => {none|edp|merc}	coordinate system
+-latr => reference latitude
+-lonr => reference longitude
+-xmode => {lin|log|time} 	
+-ymode => {lin|log}
+-xleft => x0 	data-coordinate of left edge of plot 
+-xright => x1	data-coordinate of right edge of plot 
+-ybottom => ybottom	data-coordinate of bottom edge of plot
+-ytop => ytop	data-coordinate of top edge of plot 
+-fill => color	background color for plot region 
+-fill_frame => color	background color for margins
+</options>
+
+$canvas->create('bpaxes', vpname, ?option, value, ...?)
+    create axes associated with vpname
+<options>
+-tags => taglist	
+-fill_labels => color	x and y labels color
+-fill_numbers => color	numbers color
+-fill_axes => color	axes color
+-font_labels => font	labels font
+-font_numbers => font	numbers font
+-font_numbers_superscripts => font	exponent font
+-xvisible => {0|1}		draw and label xaxis ticks
+-yvisible => {0|1}		draw and label yaxis ticks
+-linewidth => width	
+-linewidth_small => width
+-mindx => dx
+-mindy => dy
+-xincrement => dx
+-xincrement_small => dx
+-xlabel => label	label along x axis
+-xformat => {auto|none|time}	tick label style
+-yincrement => dy
+-yincrement_small => dy
+-ylabel => label	label along y axis
+-yformat => {auto|none}	tick label style
+-axis_style => [nesw]*	draw these sides of box
+-tic_style => ([nesw][ioc])*   ticks inward, outward, center
+</options>
+
+$canvas->create('bpgrid', vpname, ?option, value, ...?)
+    canvas item to create a mesh of grid lines
+<options>
+-tags => taglist
+-fill => color
+-fill_small => color
+-linewidth => width
+-linewidth_small => width
+-visible => {0|1}
+-visible_x => {0|1}
+-visible_xsmall => {0|1}
+-visible_y => {0|1}
+-visible_ysmall => {0|1}
+-mindx => dx
+-mindy => dy
+-xincrement => dx
+-xincrement_small => dx
+-yincrement => dy
+-yincrement_small => dy
+</options>
+
+$canvas->create('bptext', vpname, text, x, y, ?option, value, ...?)
+    create item to draw set of points or symbols
+<options>
+-vector => handle|tag	vector containing the points
+-tags => taglist
+-symbol => {point|cross|x|triangle|square|circle|diamond|star}
+-fill => color	fill the symbols with this color
+-outline => color	draw outline in this color
+-linewidth => width
+-textforeground => color
+-font => font
+-size => size
+-visible => {0|1}
+-showsymbols => {0|1}
+-showtext => {0|1}
+</options>
+
+$canvas->create('bppolyline', vpname, ?option, value, ...?)
+    create item drawn with lines 
+<options>
+-vector => handle|tag	vector containing the points
+-thistory => handle|tag
+-tags => taglist
+-fill => color	if specified, fill object with color
+-outline => color	draw lines in this color
+-linewidth => width
+-label => label
+-visible => {0|1}
+</options>
+
+$canvas->create('bppolypoint', vpname, ?option, value, ...?)
+    canvas item to plot text in data coordinates
+<options>
+-tags => taglist
+-fill => color
+-font => font
+-visible => {0|1}
+-justification => {n|ne|e|se|s|sw|w|nw|c}
+-angle => angle
+</options>
+
+$canvas->create('bpmap', viewportname, ?option, value, ...?)
+    canvas item to plot world maps using equal distance projection
+<options>
+-tags => taglist
+-fill_land => color
+-fill_water => color
+-coasts => color:linewidth
+-political => index:color:linewidth,...
+-rivers => color
+-visible => {0|1}
+-resolution => {auto|crude|low|intermediate|high|full}
+</options>
+
