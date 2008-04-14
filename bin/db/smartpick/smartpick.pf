@@ -129,3 +129,13 @@ channels &Arr{
 	Broadbands	BH.
 	dbloc2
 }
+
+required_programs &Tbl{
+	dbe 
+	dbpick
+	dbxcor
+	import
+	unregister
+	xterm
+	xwininfo
+}

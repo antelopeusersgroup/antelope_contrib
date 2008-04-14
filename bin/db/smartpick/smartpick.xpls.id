@@ -2156,29 +2156,32 @@ $ENV{'PATH'} = $State{path};
 
 $State{snapshots_possible} = 1;
 
-my( @required ) = qw( dbe 
-		      dbpick
-		      dbxcor
-		      import
-		      unregister
-		      xterm
-		      xwininfo
-		      );
+my( @required ) = @{pfget( $State{pf}, "required_programs" )};
 
 foreach $program ( @required ) {
-	
-	if( ! check_for_executable( $program ) ) {
 
-		if( $program eq "import" ) {
+	if( $program =~ /^[[:alnum:]]*$/ ) {
 
-			$State{snapshots_possible} = 0;
+		if( ! check_for_executable( $program ) ) {
 
-			next;
-		}
+			if( $program eq "import" ) {
+
+				$State{snapshots_possible} = 0;
+
+				next;
+
+			} else {
 		
-		elog_die( "Couldn't find the '$program' executable on path. " . 
-			"Please check the 'path' parameter in $State{pf}.pf. " .
-			"Bye.\n" );
+				elog_die( "Couldn't find the '$program' executable " .
+					"on path. Please check the 'path' parameter " .
+					"in $State{pf}.pf. Bye.\n" );
+			}
+		}
+
+	} else {
+	
+		elog_die( "Parameter-file required_programs table " .
+			"contains unexpected characters in '$program'. Bye.\n" );
 	}
 }
 

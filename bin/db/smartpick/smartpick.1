@@ -602,6 +602,12 @@ to define four buttons  \fIfirst_teleseism\fP, \fInext_teleseism\fP,
 \fIprevious_teleseism\fP, \fIlast_teleseism\fP to step through events further
 than 30 degrees from Southern California:
 
+.IP required_programs
+This table contains the names of programs required by smartpick in order 
+to run. Under most conditions, this table should not need to be changed, and 
+in fact changes are inadvisable. This is in the parameter-file rather than hard-wired
+into code in order to allow operator adjustments for unusual situations. 
+
 .in 4c
 .ft CW
 .nf
@@ -890,6 +896,15 @@ channels &Arr{
         dbloc2 
 }
 
+required_programs &Tbl{
+	dbe 
+	dbpick
+	dbxcor
+	import
+	unregister
+	xterm
+	xwininfo
+}
 .fi
 .ft R
 .in
@@ -984,7 +999,6 @@ dbpick(1), smartpick(1), X(7)
 The dbpick commands filter, tmadd, tmdel have not been implemented 
 in \fBsmartpick\fP. The \fIsave\fP (trexcerpt(1)) feature of smartpick
 has not been implemented. 
-
 It should be possible to add a mechanism to group stations by
 geographic coordinates. However, this has not yet been implemented.
 There may be some ondate issues in the choice of stations for a given
