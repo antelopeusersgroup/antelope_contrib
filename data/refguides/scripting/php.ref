@@ -12,8 +12,21 @@ dl( 'Datascope.so' );
 ds_dbopen (database, permissions)
     returns a database pointer to the database
 
+ds_dbopen_database (database, permissions)
+    returns a database pointer to the database or table
+
+ds_dbopen_database (database, permissions)
+    returns a database pointer to the specified table ("-" for stdin)
+
 dblookup ($db, database, table, field, row)
     returns a database pointer for the specified database, table, field, and row.
+
+ds_dbtmp ($schema)
+    return a database pointer to a temporary database of the specified schema
+
+ds_dbcreate ($filename [, $schema [, $dbpath [, $description [, $detail]]]])
+    create a database descriptor in the specified filename
+
 ds_dbclose ($db)
     close a database
 
@@ -115,6 +128,15 @@ dbnojoin ($db1, $db2, [join-keys])
 dbunjoin ($db, database)
     create a new database from the records of the input view
 
+dbwrite_view ( $db, $filename )
+    save a database view to a file
+
+dbread_view ( $filename [, $viewname] )
+    read a database view from the given filename
+
+dbsave_view ( $db )
+    save a database view as part of the database
+
 <subsection Handling Waveform Data>
 
 trloadchan ( $db, t0, t1, sta, chan )
@@ -137,6 +159,12 @@ trdata ( $tr [, i0 [, npts]] )
 
 trdatabins ( $tr, binsize [, i0 [, npts]] )
     same as trdata, but the data points are grouped into bins of binsize samples and the min, max for each group is returned
+
+trsplit ( $tr )
+    break up waveform records at marked bad data
+
+trsplice ( $tr )
+    splice together data segments
 
 trfilter ( $tr, filter )
     filter data in-place according to the given filter-description string
