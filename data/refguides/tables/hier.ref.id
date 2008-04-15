@@ -2,8 +2,8 @@
 <commands>
 <subsection /opt/antelope/>
 <List>
-$perl	perl $perlversion release
-$tcltk	Tcl/Tk $tcltk_version release
+perl*	perl release
+tcltk*	Tcl/Tk release
 data
   /rtdemo	demo realtime data
   /db	demo databases
