@@ -40,3 +40,84 @@ int pmtfifo_release_block (Pmtfifo *mtf)
 int pmtfifo_release_blocks (Pmtfifo *mtf)
     release any existing and all future blocking conditions (i.e. make the FIFO non-blocking) on the mtf POSIX MT-safe FIFO queue
 
+<subsection Time History Utility>
+<cdeclarations>
+BUHistory *buhistory_create(int maxnp, char *tag, char *filename, char *handle)
+    create a time history object with maxnp maximum number of points
+
+int buhistory_free (char *handle)
+    free a time history object referenced by handle
+
+int buhistory_free_tag (char *tag)
+    free a time history object referenced by tag
+
+void buhistory_free_history (BUHistory *history)
+    free a time history object with pointer history
+
+BUHistory *buhistory_get_history (char *handle)
+    get the time history object pointer corresponding to handle
+
+int buhistory_add(char *handle, double time, double value)
+    add a time-value point to a time history
+
+int buhistory_get_points (char *handle, int *npts, double **tpts, double **ypts)
+    get all of the time-value points from a time history
+
+int buhistory_eval(char *handle, double time, double *value)
+    evaluate a time history at time
+
+int buhistory_maxmin (char *handle, double *tmin, double *tmax, double *vmin, double *vmax)
+    get the minimum and maximum time and data ranges for a time history
+
+<subsection Vector Utility>
+<cdeclarations>
+BUVector * buvector_create (int nx, int ny, char *tag, char *handle)
+    create a vector object with nx X-values and ny Y-values
+
+int buvector_free (char *handle)
+    free a vector object referenced by handle
+
+int buvector_free_tag (char *tag)
+    free a vector object referenced by tag
+
+void buvector_free_vector (BUVector *vector)
+    free a time history object with pointer vector
+
+BUVector *buvector_get_vector (char *handle)
+    get the vector object pointer corresponding to handle
+
+BUVector *buvector_read(char *fname, char *tag, int line_off, int xpos, int ny, int *ypos, int lpos, char *handle)
+    create a vector object and fill it by reading an ASCII file
+
+BUVector *buvector_create_tsamp (int nsamp, double time, double samprate, double *data, char *tag, char *handle)
+    create a vector object and fill it from a time series waveform
+
+BUVector *buvector_create_response_fap (char *filename, char *tag, char *handle, int *err)
+    create a vector object and fill it from a instrument response file
+
+int buvector_resize (char *handle)
+    resize a vector object
+
+BUVector *buvector_copy (char *in_handle, char *tag, char *handle)
+    copy a vector object
+
+int buvector_append(char *handle, int index, double x, double *y, char *label)
+    append to a vector object
+
+int buvector_puty(char *handle, int index, double *y, char *label)
+    replace a point in a vector object
+
+int buvector_get_point(char *handle, int index, double *x, double *y, char *label)
+    get all of the data for a single point in a vector object
+
+int buvector_get_points (char *handle, int *npts, int *ny, double **xpts, void *vypts, char ***labels)
+    get all of the data for a all of the points in a vector object
+
+int buvector_eval(char *handle, double x, double *y)
+    evaluate a vector object at X-value x
+
+int buvector_maxmin(char *handle, int iy, double *xmin, double *xmax, double *ymin, double *ymax)
+    get the minimum and maximum ranges for a vector object
+
+int buvector_transform_edp (char *handle, double lonr, double latr)
+    transform a vector object into equal distance map projection coordinates
