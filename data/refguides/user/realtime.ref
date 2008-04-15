@@ -312,9 +312,11 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 
 q330pocd [-i ip] [-p port] [-noipresolv] targetname orb
     receive POC messages and save to orb
+<options>
 -i ip	bind to one of several local ip addresses
 -p port	specify alternative to port 2254
 -noipresolv	don't look up hostnames
+</options>
 
 q330_location [-m mail] [-p pf] [-t mmax] [-v] orb db
      alert if Q330 locations in status packets differ more than mmax from database location
