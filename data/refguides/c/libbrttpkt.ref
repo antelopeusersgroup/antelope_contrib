@@ -110,3 +110,20 @@ int pktchannelpipe_push (PktChannelPipe *pcp, char *srcname, double pkttime, cha
 int pktchannelpipe_flush (PktChannelPipe *pcp)
     flush all packet-channels from the pcp packet-channel pipe object
 
+<subsection Packet-Channel To Trace Accumulation>
+<cdeclarations>
+
+PktChannel2Trace *pktchannel2trace_new (Dbptr dbmaster, Dbptr dbtrace, Dbptr dbwf, int need_calib, int need_response, int need_site)
+    create a new pktchannel2trace object
+
+int pktchannel2trace_free (PktChannel2Trace *pt)
+    free a pktchannel2trace object
+
+int pktchannel2trace_put_from_db (PktChannel2Trace *pt, char *sta, char *chan_expr, int calibfrommaster, double tstart, double tend)
+    fill a pktchannel2trace object from an archive database
+
+int pktchannel2trace_put (PktChannel2Trace *pt, PktChannel *pchan, int calibfrommaster, double tstart, double tend)
+    fill a pktchannel2trace object from an ORB Packet-Channel
+
+int pktchannel2trace_get_stats (PktChannel2Trace *pt, char *sta, char *chan, int *ngood, int *nbad)
+    determine the numbers of good and gap sample values in a pktchannel2trace object
