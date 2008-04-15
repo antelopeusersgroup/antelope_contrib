@@ -8,9 +8,9 @@ include $(ANTELOPEMAKE)
 refhdr.mif : refhdr.mif.id
 	produce $@
 
-install:: mif 
+#install:: mif 
 
-mif: user.mif scripting.mif c.mif combined.mif
+#mif: user.mif scripting.mif c.mif combined.mif
 
 DOC=$(ANTELOPE)/data/$(DATADIR)
 user.mif : $(DOC)/user/*.ref \
