@@ -1072,8 +1072,13 @@ mail_parser [options] [file [file...]]
 
 <subsection Archiving Data>
 <commands>
-rtbackup [-v] [-m who] [-p pf] db drive
-    backup waveform and database data from db to (tape) drive
+rtbackup [-v] [-V] [-n] 
+         [-p pf] [-r reject_stas] [-s sta_match]
+         [-t start_time ] [-e end_time] rt_db 
+    backup waveform and database data from rt_db to independent disk directory
+
+rtbackup2tape [-v] [-m who] [-p pf] db drive
+    original rtbackup (renamed)- backup waveform and database data from db to (tape) drive
 
 get_archive [options] db dbout drive [t0 [t1]]
     restore waveforms (between t0 and t1) to dbout using db.wftar from rtbackup tape on drive
