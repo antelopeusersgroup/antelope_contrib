@@ -1,7 +1,38 @@
 <chapter Miscellaneous Utilities>
 <commands>
 
+build [pf] [pf_dependent_arguments]
+    framework for constructing simple gui interfaces based on
+    parameter files and perl scripts
+
+children pid ...
+    returns children of process pid
+
+cleartmp [-nv] directory idle
+     cleartmp removes files from directory which have not been used in over idle
+     days, and finishes by removing any empty directories.
+
+tksend [options] app_name [message]
+    send message to program using tk send protocol
+<options>
+-i	read stdin for more messages
+-p	wait for and print returned messages
+-verbose	be more verbose
+-validate	validate application name and return disposition and version number
+-version {3|4|auto}
+ 	select older or newer tksend protocol; default is auto{matic}
+-wait	wait for response
+</options>
+
+txform [-v] dir filename
+    text transform program
+
+warp [-nv] command
+    run command on opposite display (if machine has 2 displays)
+
 <subsection Examples and Templates>
+ See the example directory also.
+
 <commands>
 mkmk [ - ]
     show prototype Antelope makefile (- suppresses comments)
@@ -12,10 +43,7 @@ manpage [ - ]
 template [example]
     get example from templates directory
 
-required_unix_programs
-     check for programs required by Antelope
-
-<subsection Miscellaneous>
+<subsection Antelope Installation>
 <commands>
 private check_antelope_installation
     spot check for proper Antelope installation
@@ -39,26 +67,17 @@ antelope_update [options] [url]
 check_license [-v] [license_filename]
     verify license is valid
 
-check_path [-v] [path]
-    check path to ensure that 'other' users can traverse it
-
-cmpdirs [options] dir1 dir2
-<options>
--c	compare files
--C	ignore CVS directories
--i re	ignore files/directories matching re
--l	list format output
--t	compare only text files
--r	recursive
--v	more verbose
-</options>
-
 private check_visual [-display display_name]
     check out default X-windows display visual
 
-private register_antelope [-t]
+register_antelope [-t]
     gui for requesting Antelope license
 
+required_unix_programs
+     check for programs required by Antelope
+
+<subsection Path utilities>
+<commands>
 abspath apath [...]
     construct absolute path corresponding to input apath
 
@@ -71,45 +90,10 @@ cleanpath [-l] apath
 concatpaths path p2 ...
     concatenate paths from command line or stdin to create complete path
 
-ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
-    filter list of files according to various options
-<options>
-Combinatorial options
--a	autosplit input lines
--b	binary files
--c	in CVS
--C	not in CVS
--d	directory
--e	empty directories
--l	symbolic links
--L	is plain file and has multiple links
--o	is on this file system
--O	is on different file system from $cwd
--p	plain file
--t	text file
--x	executable
--z	zero size
--v	invert result of all tests 
-Regular expression matching
--m re	keep matching files
--r re	reject matching  files
-Operations on filenames
--D dirname	extract dirname
--B basename	extract basename
--S suffix	extract suffix
--E command	perl command operating on filename
-Other options
--X	execute each result
--n	only show command, don't execute
--u	print only unique paths
-</options>
-
-deprecated uwd [-f configfile]
-    print canonical working directory (for ancient automounters)
-
-
 datafile [-ae] {name | dir name | env dir name}
     show what files will be selected by datafile/datapath/datasearch(3) routines.
+<subsection Antelope facilities>
+<commands>
 
 epoch [options] [ +format ] [ time/date components ]
     convert time formats.
@@ -186,67 +170,17 @@ dbsetrgn db
 trwfname [input]
 	try out trwfname(3) patterns
 
-private tabulate_missed_stations translation_db dbname [dbname...]
-    find station names that do not appear in translation_db
-
-private capitalize_station dbname
-    capitalize station field in dbname
-
-private translate_stachan_names translation_db dbname
-    apply station name-translations listed in translation_db
-	
-children pid ...
-    returns children of process pid
-
-private getunique
-    return unique integer
-
-deprecated pathf [ -f configfile ] [ paths... ]
-    filter for translating pathnames
-
-private perl_unbuffer command
-    use pty/tty pair to get unbuffered output from command
-
-
-tksend [options] app_name [message]
-    send message to program using tk send protocol
-<options>
--i	read stdin for more messages
--p	wait for and print returned messages
--verbose	be more verbose
--validate	validate application name and return disposition and version number
--version {3|4|auto}
- 	select older or newer tksend protocol; default is auto{matic}
--wait	wait for response
-</options>
-
 private unregister window_name
     eliminate defunct tk send registries
 
 comsim connection
     monitor, test and debug serial or ip communications
 
-reflect [-d dir] [-v] remote_host[:port] remote_file
-    keep local files up to date with remote copies
-
-reflectd [-p port] [-v] 
-    server companion to reflect
-
-warp [-nv] command
-    run command on opposite display (if machine has 2 displays)
-
 xunits [-amqv] [from [to]]
     convert values from one unit to another, eg newtons to lbs
 
-build [pf] [pf_dependent_arguments]
-    framework for constructing simple gui interfaces based on
-    parameter files and perl scripts
-
-private refguide {creference|user|scripting}
-    prepare Framemaker mif version of reference guide
-
-txform [-v] dir filename
-    text transform program
+<subsection File utilities>
+<commands>
 
 grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
     look through certain files below dir for pattern; useful for finding occurrences of call to function, or for many other problems
@@ -272,8 +206,95 @@ restrict searches to certain files by using any combination of:
 -y	(f)lex and yacc source
 </options>
 
+ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
+    filter list of files according to various options
+<options>
+Combinatorial options
+-a	autosplit input lines
+-b	binary files
+-c	in CVS
+-C	not in CVS
+-d	directory
+-e	empty directories
+-l	symbolic links
+-L	is plain file and has multiple links
+-o	is on this file system
+-O	is on different file system from $cwd
+-p	plain file
+-t	text file
+-x	executable
+-z	zero size
+-v	invert result of all tests 
+Regular expression matching
+-m re	keep matching files
+-r re	reject matching  files
+Operations on filenames
+-D dirname	extract dirname
+-B basename	extract basename
+-S suffix	extract suffix
+-E command	perl command operating on filename
+Other options
+-X	execute each result
+-n	only show command, don't execute
+-u	print only unique paths
+</options>
+
+check_path [-v] [path]
+    check path to ensure that 'other' users can traverse it
+
+cmpdirs [options] dir1 dir2
+<options>
+-c	compare files
+-C	ignore CVS directories
+-i re	ignore files/directories matching re
+-l	list format output
+-t	compare only text files
+-r	recursive
+-v	more verbose
+</options>
+
+xdiff [options] dir1 dir2
+    compare files after eliminating expected discrepancies
+<options>
+-a abs	set absolute tolerance for numerical differences
+-b	ignore blanks
+-B	keep blank lines with exception file  
+-c	ignore case differences (spiff only)
+-C	treat as C files (spiff only)
+-d diff	specify the diff program to run
+-D display	specify  the display to run tkdiff on.
+-F	treat as Fortran files (spiff only)
+-i	case independent compare
+-I re	ignore files with names like regular expression e
+-L	skip files when both are symbolic links 
+-o	in comparing directories, ignore  missing files in the 2nd directory.
+-O	in comparing directories, ignore missing files in the 1st directory.
+-q	only show files that are different, don't show differences
+-r rel	set relative tolerance for numerical differences
+-S	treat as Bourne shell scripts (spiff only)
+-s	suppress matching lines in the output
+-t	use tkdiff to show files where there are differences
+-v	be more verbose
+-V	show each command run, and show each substitution  when an exception file is provided.
+-w width specify screen width when using sdiff
+-x exceptions file containing perl regular expressions mapped to null before comparison
+-X	don't ignore CVS directories
+</options>
+
+deprecated reflect [-d dir] [-v] remote_host[:port] remote_file
+    keep local files up to date with remote copies
+
+deprecated reflectd [-p port] [-v] 
+    server companion to reflect
+
+<subsection Programming aides>
+<commands>
+
+getid [-aNv] < in > out
+    substitute special values into source files; used to centralize some info and help architecture independence
+
 ldlibs [options] names
-    provide information about object libraries and link lines
+    suggest link libraries; provide information about object libraries 
 <options>
 Modifying Options
 -f	generate fortran ldlibs line (default is c)
@@ -322,43 +343,9 @@ private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm
 fixman [-BInd] pages
     check man page, correct some problems, and suggest other changes
 
-cleartmp [-nv] directory idle
-     cleartmp removes files from directory which have not been used in over idle
-     days, and finishes by removing any empty directories.
-
-xdiff [options] dir1 dir2
-    compare files after eliminating expected discrepancies
-<options>
--a abs	set absolute tolerance for numerical differences
--b	ignore blanks
--B	keep blank lines with exception file  
--c	ignore case differences (spiff only)
--C	treat as C files (spiff only)
--d diff	specify the diff program to run
--D display	specify  the display to run tkdiff on.
--F	treat as Fortran files (spiff only)
--i	case independent compare
--I re	ignore files with names like regular expression e
--L	skip files when both are symbolic links 
--o	in comparing directories, ignore  missing files in the 2nd directory.
--O	in comparing directories, ignore missing files in the 1st directory.
--q	only show files that are different, don't show differences
--r rel	set relative tolerance for numerical differences
--S	treat as Bourne shell scripts (spiff only)
--s	suppress matching lines in the output
--t	use tkdiff to show files where there are differences
--v	be more verbose
--V	show each command run, and show each substitution  when an exception file is provided.
--w width specify screen width when using sdiff
--x exceptions file containing perl regular expressions mapped to null before comparison
--X	don't ignore CVS directories
-</options>
-
-getid [-aNv] < in > out
-    substitute special values into source files; used to centralize some info and help architecture independence
-
 certify [options] [dir|testid ...]
     run regression tests 
+<options>
 -a	with -u or -A, update all tests, even if they don't fail.
 -A	ask if correct result should be updated when a failure occurs.
 -c database	use alternate database instead of ./certify
@@ -386,3 +373,4 @@ certify [options] [dir|testid ...]
 -U	run the executable under ups 
 -x path	add path to front of PATH environment variable
 -X results	add a line for each test to results file
+</options>

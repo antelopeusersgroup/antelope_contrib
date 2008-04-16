@@ -1,11 +1,3 @@
-<chapter Antelope Tcl/Tk>
-<commands>
-atcl
-    Antelope version of tcl shell for scripts
-
-awish
-    Antelope version of tk shell for scripts
-
 <include tcldb.ref>
 <include tclorb8.ref>
 <include tkBrttPlot.ref>

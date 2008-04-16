@@ -1,4 +1,4 @@
-<initialization Tables refhdr.mif>
+<initialization Tables ../refhdr.mif>
 <no_index don't index appendices>
 <include antelopemake.ref>
 <include schemas.ref>

@@ -2,6 +2,7 @@ BIN=refguide
 MAN1=refguide.1
 DATADIR=doc/refguides
 DATA=refhdr.mif combined.ref
+CLEAN=refhdr.mif
 
 include $(ANTELOPEMAKE)
 
