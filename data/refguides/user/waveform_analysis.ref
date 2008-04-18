@@ -144,6 +144,13 @@ alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
 -v	be more verbose
 </options>
 
+dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
+    create time correction table by comparing good source gdb:...
+    with bad source bdb:...
+
+correctdt [-m srcmatch] [-t stime] [-v] bdb
+    using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
+
 <subsection Analysis>
 <commands>
 dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]

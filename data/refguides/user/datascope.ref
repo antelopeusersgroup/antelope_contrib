@@ -45,19 +45,16 @@ dbsnapshot [options] db [start_time [end_time|period]]
 -w M	minutes M of data before now
 </options>
 
-syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
-    create tar snapshot of system configuration 
-
 <subsection Creating and Editing Databases>
 <commands>
 dbe [-e] [-p pf] db[.table] [ db[.table] ...]
     general purpose viewer/editor for databases 
 
 dberesp [db.table | -f response ..]
-    plot response curves from database table or response files
+    run by dbe to plot response curves from database table or response files
 
-db_extfile_proc -m mode [-u] [-w nmax] [-t table] dbtable
-    run arbitrary commands on database external files
+db_extfile_proc -m mode [-u] [-w nmax] [-t table] db.table
+    run by dbe to run arbitrary commands on database external files
 
 db_textedit db.table
     run by dbe to edit external text files
@@ -99,18 +96,8 @@ dbcp [options] dbin[.table] dbout
 -v	verbose
 </options>
 
-
 dbadd [-afov] dbin.table dbout.table expr1 [expr2 ...]
     add rows to dbout.table using rows from dbin.table and expressions expr1, expr2, ...; with -a, add all fields from dbin.table, with -f ignore key duplications, with -o overwrite duplications
-
-dbdelete [options] view [table ...]
-    delete (or mark) all records in database view (or just records in table)
-<options>
--c	require individual confirmations for each record
--m	mark records only (no final crunch)
--s	save copy of original file
--v	verbose
-</options>
 
 dbaddv [options] database.table [name value name value ...]
     add records to table
@@ -118,6 +105,15 @@ dbaddv [options] database.table [name value name value ...]
 -c	confirm each addition
 -i	interactively
 -f	ignore key duplication
+-v	verbose
+</options>
+
+dbdelete [options] view [table ...]
+    delete (or mark) all records in database view (or just records in table)
+<options>
+-c	require individual confirmations for each record
+-m	mark records only (no final crunch)
+-s	save copy of original file
 -v	verbose
 </options>
 
@@ -304,13 +300,6 @@ dbremark [ -p ] database table field value
 
 deprecated dbtidy db
     sort various tables from CSS database db into preferred order, and renumber some ids
-
-dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
-    create time correction table by comparing good source gdb:...
-    with bad source bdb:...
-
-correctdt [-m srcmatch] [-t stime] [-v] bdb
-    using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
 
 dbfixchanids [-q] [+q] db
     fix chanid attributes in wfdisc and arrival tables
