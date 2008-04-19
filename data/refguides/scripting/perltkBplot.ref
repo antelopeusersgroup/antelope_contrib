@@ -136,3 +136,8 @@ $canvas->create('bpmap', viewportname, ?option, value, ...?)
 -resolution => {auto|crude|low|intermediate|high|full}
 </options>
 
+viewport_pixels2wcoords(viewportname, x, y)
+    returns world coordinates corresponding to canvas pixels coordinates x and y for viewport viewportname
+
+viewport_wcoords2pixels(viewportname, x, y)
+    returns canvas pixel coordinates corresponding to world coordinates x and y for viewport viewportname
