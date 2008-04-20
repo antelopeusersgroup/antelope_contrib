@@ -15,6 +15,8 @@ ArrivalUpdater::ArrivalUpdater() : aaview(), eogroup(), am("css3.0")
 	dbassoc.database=dbINVALID;
 	dbarrival.database=dbINVALID;
 	dborigin.database=dbINVALID;
+	timestamp=-1.0;
+	current_evid=-1;
 }
 ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 	MetadataList& mdl2,string amname) : aaview(),am(amname)
@@ -43,6 +45,17 @@ ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 		sortkeys.push_back("evid");
 		sortkeys.push_back("orid");
 		dbh.sort(sortkeys);
+		dbh.natural_join("assoc");
+		dbh.natural_join("arrival");
+		/* dbh is our working view.  Build and index to match on these keys 
+		that defines aaview */
+		list<string> view_match_keys;
+		view_match_keys.push_back("evid");
+		view_match_keys.push_back("orid");
+		view_match_keys.push_back("sta");
+		view_match_keys.push_back("phase");
+		aaview=DatascopeMatchHandle(dbh,empty,view_match_keys,am);	
+		/* eogroup groups dbh by evid:orid.  We need that keying in some contexts */
 		list<string>groupkeys;
 		groupkeys.push_back("evid");
 		groupkeys.push_back("orid");
@@ -51,15 +64,8 @@ ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 		list<string> grpmatchkeys;
 		grpmatchkeys.push_back("evid");
 		eogroup=DatascopeMatchHandle(dbgrp,empty,grpmatchkeys,am);
-		dbh.natural_join("assoc");
-		dbh.natural_join("arrival");
-		list<string> view_match_keys;
-		view_match_keys.push_back("evid");
-		view_match_keys.push_back("orid");
-		view_match_keys.push_back("sta");
-		view_match_keys.push_back("phase");
-		aaview=DatascopeMatchHandle(dbh,empty,view_match_keys,am);	
-
+		timestamp=now();
+		current_evid=-1;
 	}
 	catch (...) {throw;};
 }
@@ -73,6 +79,8 @@ ArrivalUpdater::ArrivalUpdater(const ArrivalUpdater& parent)
 	dbassoc=parent.dbassoc;
 	dbarrival=parent.dbarrival;
 	dborigin=parent.dborigin;
+	current_evid=parent.current_evid;
+	timestamp=parent.timestamp;
 }
 ArrivalUpdater& ArrivalUpdater::operator=(const ArrivalUpdater& parent)
 {
@@ -86,6 +94,8 @@ ArrivalUpdater& ArrivalUpdater::operator=(const ArrivalUpdater& parent)
 		dbassoc=parent.dbassoc;
 		dbarrival=parent.dbarrival;
 		dborigin=parent.dborigin;
+		current_evid=parent.current_evid;
+		timestamp=parent.timestamp;
 	}
 	return(*this);
 }
@@ -205,7 +215,7 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 				
 int ArrivalUpdater::update(Metadata& md)
 {
-	const string base_error("ArrivalUpdater::update method:");
+	const string base_error("ArrivalUpdater::update method: ");
 	int err=0;
 	Dbptr db;
 	list<int>::iterator rowptr;
@@ -275,6 +285,10 @@ int ArrivalUpdater::clear_when_not_prefor(int evid_to_clear)
 		int rec;
 		list<int>::iterator irptr;
 		int prefor,orid,evid;
+		/* This is actually very inefficient if there are lots of
+		arrivals in the working view.  The reason is the call to dbmark
+		is made or origin for every row in assoc that refers to an origin not
+		set as prefor.  Only one is needed.   */
 		for(irptr=reclist.begin();irptr!=reclist.end();irptr++)
 		{
 			Dbptr db,dbtokill;
@@ -314,7 +328,46 @@ int ArrivalUpdater::update(ThreeComponentSeismogram& ts)
 		return(this->update(dynamic_cast<Metadata&>(ts)));
 	} catch (...) {throw;};
 }
-
+int ArrivalUpdater::clear_old(int evid_to_clear)
+{
+	const string base_error("ArrivalUpdater::clear_old:  ");
+	int ndeleted;
+	Metadata md;
+	md.put("evid",evid_to_clear);
+	list<int> reclist=eogroup.find(md);
+	/* Silently do nothing if no such evid exists in the database */
+	if(reclist.size()<=0) return(0);
+	/* Now do the same check for the assoc-arrival view */
+	reclist=eogroup.find(md);
+	if(reclist.size()<=0) return(0);
+	int rec;
+	list<int>::iterator irptr;
+	int prefor,orid,evid;
+	ndeleted=0;
+	for(irptr=reclist.begin();irptr!=reclist.end();irptr++)
+	{
+		Dbptr db,dbtokill;
+		double lddate;
+		eogroup.db.record=*irptr;
+		DBBundle bundle=eogroup.get_range();
+		db=bundle.parent;
+		db.record=bundle.start_record;
+		for(db.record=bundle.start_record;
+				db.record<bundle.end_record;++db.record)
+		{
+			dbgetv(db,0,"arrival",&dbtokill,0);
+			dbgetv(dbtokill,0,"lddate",&lddate);
+			if(lddate<timestamp)
+			{
+				dbmark(dbtokill);
+				dbgetv(db,0,"assoc",&dbtokill,0);
+				dbmark(dbtokill);
+				++ndeleted;
+			}
+		}
+	}
+	return(ndeleted);
+}
 
 } // End SEISPP namespace declaration
 	

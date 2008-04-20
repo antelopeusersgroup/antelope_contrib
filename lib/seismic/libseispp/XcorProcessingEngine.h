@@ -184,6 +184,9 @@ private:
 	StationChannelMap stachanmap;
 	// Added by GLP June 2007 to allow running without extension tables
 	bool save_extensions;
+	//Added April 2008:  if true, delete old picks for an event in a 
+	// gather not marked as processed
+	bool delete_old_arrivals;
 	// Added by GLP Nov 2007 to control loading of arrivals from db
 	bool load_arrivals;
 	// Added Feb. 2008 to allow program to work in source array mode

@@ -98,6 +98,28 @@ public:
 	* \return number of origins cleared 
 	* \param evid_to_clear is the evid of event to clean up.*/
 	int clear_when_not_prefor(int evid_to_clear);
+	/*! Clears old arrivals for an event.
+
+	When update is called it marks the wall clock time.  If this
+	method is called after a call to update it will delete any
+	rows in assoc and arrival for a listed event with a time stamp earlier
+	than that marked time.  Thus user should make sure
+	this method is never called on an evid except after
+	an update.  Note rows in arrival and assoc are both 
+	cleared using dbmark.  This means the user needs to arrange
+	for a dbcrunch at a later time.
+
+	\param evid_to_process is the event id of the event 
+	for which assoc rows are to be cleared.  
+
+	\return number of rows of database deleted 
+
+	\exception SeisppError is thrown if the last event
+	processed does not match this evid.  This is a sanity
+	check to make sure the user doesn't try to unintentionally
+	delete valid data.
+	*/
+	int clear_old(int evid_to_process);
 private:
 	/*! This is a match handle into the working view.
 	This working view is event:origin:assoc:arrival 
@@ -111,6 +133,12 @@ private:
 	Needed to clear unassociated origin and assoc rows */
 	DatascopeMatchHandle eogroup;
 	AttributeMap am;
+	/*! Holds time stamp immediately before an update.  Used
+	by clear_old method */
+	double timestamp;
+	/*! Holds last id of last event processed.  This is used
+	to make sure incorrect arrivals are not cleared by clear_old.*/
+	int current_evid;
 };
 
 } // End SEISPP Namespace declaration

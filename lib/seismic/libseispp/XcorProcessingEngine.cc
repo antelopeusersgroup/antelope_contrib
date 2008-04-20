@@ -157,6 +157,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		MetadataList mdlassoc=pfget_mdlist(global_pf,"save_list_assoc");
 		MetadataList mdlarrival=pfget_mdlist(global_pf,"save_list_arrival");
 		arru=ArrivalUpdater(result_db_handle,mdlassoc,mdlarrival,schema);
+		delete_old_arrivals=global_md.get_bool("delete_old_arrivals");
 		// This is needed for wfprocess table saving of array beam
 		beam_mdl = pfget_mdlist(global_pf,"BeamMetadataList");
 		beam_directory=global_md.get_string("beam_directory");
@@ -573,7 +574,7 @@ void XcorProcessingEngine::sort_ensemble()
                 less_metadata_double<TimeSeries,DISTANCE>());
 	break;
    default:
-	cerr << "Illegal     sort order.  Original order preserved."<<endl;
+	cerr << "Illegal sort order.  Original order preserved."<<endl;
    }
    if(mcc!=NULL)
    {
@@ -1092,8 +1093,6 @@ void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
     /* This depends on a trick that is a bit dangerous.  That is, a static is initialized the first
     time a function is called but not on later calls. */
     static bool first_pass(true);  
-//DEBUG  test to make sure this works as I think
-if(first_pass) cerr << "load_data has set first_pass true "<<endl;
     auto_ptr<TimeSeriesEnsemble> tse;
     try {
 	/* First we need to deal with the queue.*/
@@ -1504,6 +1503,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					<< arruerr << "problems in saving results"<<endl;
 				  cerr << "Turn on verbose for more details"<<endl;
 			        }
+				if(delete_old_arrivals) arru.clear_old(evid);
 			    }
 			    catch (SeisppError serr)
 			    {
