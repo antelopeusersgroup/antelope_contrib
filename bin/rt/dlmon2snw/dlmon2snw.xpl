@@ -7,15 +7,15 @@
     use orb;
     require "getopts.pl" ;
 
-    our ( $opt_v, $opt_p );
+    our ( $opt_v, $opt_p, $opt_i );
     my ($pfsource,$orbname,$orb,$pktid,$srcname,$pkttime,$net,$sta,$chan,$loc);
     my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref,$value);
     my ($par,$nsta,$when,$src);
     my (@sources);
     my (%pf,%dls,%par);
 
-    if ( !  &Getopts('vp:') || @ARGV != 1 )
-        { die ( "Usage: $0 [-v] [-p pf_sourcename] orb \n" ) ; }
+    if ( !  &Getopts('vip:') || @ARGV != 1 )
+        { die ( "Usage: $0 [-v] [-i] [-p pf_sourcename] orb \n" ) ; }
 
     $orbname   = $ARGV[0];
 
@@ -70,9 +70,16 @@
                 $nsta =~ s/_/-/ ;
                 printf "%s:", $nsta;
                 my @pars = sort keys %{$ref->{dls}{$sta}};
-                printf "%d:",($#pars + 1);
+                if ($opt_i) {
+                    printf "    ";
+                } else {
+                    printf "%d:",($#pars + 1);
+                }
                 foreach my $par (@pars) {
                     $value = $ref->{dls}{$sta}{$par};
+                    if ($opt_i) {
+                        next unless ($par =~ /inp/ );
+                    }
                     printf "%s=%s;", $par, $value;
                 }
                 printf "\n";

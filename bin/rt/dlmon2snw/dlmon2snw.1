@@ -3,7 +3,7 @@
 dlmon2snw \- provides output data stream to SeisNetWatch
 .SH SYNOPSIS
 .nf
-dlmon2snw [-v] [-p pf_sourcename] orb
+dlmon2snw [-v] [-i] [-p pf_sourcename] orb
 .fi
 .SH DESCRIPTION
 dlmon2snw extracts the q330 /pf/st files from an orb, reformats the data so that
@@ -11,6 +11,8 @@ SeisNetWatch can read it. Output is sent to standard out. Program reads one of e
 .SH OPTIONS
 .IP -v
 verbose
+.IP -i
+provides only the ip information.  Skips all other parameters.
 .IP "-p pf_sourcename"
 change pf_sourcename selected from orb.  Default is .*/pf/st.
 .SH FILES
