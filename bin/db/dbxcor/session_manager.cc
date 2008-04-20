@@ -13,14 +13,6 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 
 
     parent=NULL;
-    /* new feature June 2007.  Get a match handle on orid to feed processing */
-    DatascopeHandle dbhw(wdbname,false);
-    dbhw.lookup("event");
-    dbhw.natural_join("origin");
-    list<string>matchkey;
-    matchkey.push_back("orid");
-    dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,AttributeMap("css3.0"));
-
     controls=new Widget[MAX_NUM_CONTROLS];
     sensitive=new bool[MAX_NUM_CONTROLS];
     for(i=0; i<MAX_NUM_CONTROLS; i++) {
@@ -35,17 +27,6 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 	mess=var.what();
 	throw SeisppError(string("SessionManager constructor:  open failed on log file=")
 		+ lname
-		+string("\nSystem message:\n")
-		+ mess);
-    }
-    try {
-	instream.open(hname.c_str(),ios::in);
-    } catch (ios::failure& var)
-    {
-	string mess;
-	mess=var.what();
-	throw SeisppError(string("SessionManager constructor:  open failed on control stream=")
-		+ hname
 		+string("\nSystem message:\n")
 		+ mess);
     }
@@ -65,8 +46,62 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
     if(pfread(const_cast<char *>(pfname.c_str()),&pf)) 
 	throw SeisppError(string("session_manager(constructor):  pfread failed on ")
 			+pfname);
-    Metadata smcontrol(pf);
     try {
+	Metadata smcontrol(pf);
+	/* new feature June 2007.  Get a match handle on orid to feed processing */
+	DatascopeHandle dbhw(wdbname,false);
+	dbhw.lookup("event");
+	dbhw.natural_join("origin");
+	list<string>matchkey;
+	matchkey.push_back("orid");
+	dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,AttributeMap("css3.0"));
+
+        string pmodestr=smcontrol.get_string("processing_mode");
+        if(pmodestr=="EventGathers")
+	{
+                procmode=EventGathers;
+		current_phase=smcontrol.get_string("default_phase");
+	}
+        else if(pmodestr=="GenericGathers")
+	{
+                procmode=GenericGathers;
+		current_phase=smcontrol.get_string("default_phase");
+	}
+        else
+                procmode=ContinuousDB;
+
+	if(procmode == ContinuousDB)
+	{
+		if(hname!="")
+		{
+		    try {
+			instream.open(hname.c_str(),ios::in);
+		    } catch (ios::failure& var)
+			{
+				string mess;
+				mess=var.what();
+				throw SeisppError("SessionManager constructor"
+				 + string("open failed on control stream ")
+				 + hname
+				 + string("System message")
+				 + mess);
+			}
+		}
+	}
+	else
+	{
+		if(hname=="")
+		{
+			throw SeisppError("SessionManager constructor:"
+			 + string("Command line inconsistent with parameter file\n")
+			 + string("The -q command line options is required for selected processing_mode parameter."));
+		}
+		else
+		{
+			queuefilename=hname;
+		}	
+	}
+		
 	bool turn_off_popups=smcontrol.get_bool("turn_off_informational_popups");
 	if(turn_off_popups)
 	{
@@ -408,7 +443,7 @@ bool SessionManager::validate_setting(stringstream & ss)
 	ss << "You specified an initial sort order of "<<sort_order<<endl<<
 	    " which is not available before the analysis"<<endl<<
 	    " of the ensemble, "
-	    <<"the sort order is reset to "<<endl<<"site.lat"<<endl;
+	    <<"the sort order was reset to "<<endl<<"predicted arrival time"<<endl;
         if (display_initial_sort_box) return false;
     } else if (scase==0 && (state==ANALYZE || state==REF)) {
 	active_setting.result_sort_order=WEIGHT;

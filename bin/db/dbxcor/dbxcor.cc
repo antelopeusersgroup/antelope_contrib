@@ -212,7 +212,8 @@ do_sw(Widget parent, SessionManager & sm)
 	sm.set_phase(asetptr->first);
 	/* This forces a reset of default filter setting */
 	sm.modify_filter(string("default"),sm.active_setting.filter_param);
-        sm.xpe=new XcorProcessingEngine(pf,asetptr->second,sm.get_waveform_db_name(),sm.get_result_db_name());
+        sm.xpe=new XcorProcessingEngine(pf,asetptr->second,sm.get_waveform_db_name(),
+		sm.get_result_db_name(),sm.get_queuefile_name());
 	sm.using_subarrays=sm.xpe->use_subarrays;
 
 	int n=0;
@@ -228,6 +229,7 @@ do_sw(Widget parent, SessionManager & sm)
         {
                 serr.log_error();
                 cerr << "Fatal error:  exiting"<<endl;
+		exit(-1);
         }
 
 }
@@ -347,16 +349,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 	//that XcorProcessingEngine's analyze() method does clean up itself,
 	//so here if we delete mcc, later we might get a seg fault when
 	//next time XcorProcessingEngine tries to do another analyze...
-//        if (psm->mcc != NULL) delete psm->mcc;
 
-/*
-	if(dbgetv(psm->db,0,"evid",&evid,
-		"orid",&orid,
-		"lat",&lat,
-		"lon",&lon,
-		"depth",&depth,
-		"time",&otime,0)!=dbINVALID)
-*/
 	if(orid>=0)
 	{
 		const string base_error("handle_next_event:  ");
@@ -453,8 +446,13 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
 		psm->active_setting=psm->asetting_default[phase_to_analyze];
                 stringstream vs;
-                if (!psm->validate_setting(vs) && w != NULL) 
+                if (!psm->validate_setting(vs) )
+		{
+			if(w != NULL) 
 				message_box(psm, vs.str(), w);
+			else
+				psm->record(vs.str());
+		}
 
     		psm->xpe->change_analysis_setting(psm->active_setting);
 
@@ -500,6 +498,186 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		exit(-1);
 	}
 }
+void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
+{
+	const string base_error("dbxcor::handle_next_ensemble:  ");
+        const string method("tttaup");
+        const string model("iasp91");
+	stringstream ss;
+	if((psm->xpe)==NULL)
+		throw SeisppError(base_error
+		 + string("XcorProcessingEngine has not been initiated or was cleared")
+		 + string("\nCannot copntinue"));
+	try {
+		DatabaseHandle *dbh;
+		if(psm->get_phase()!=phase_to_analyze)
+		{	
+		    try {
+			modify_asetting_for_phase(*psm,phase_to_analyze);
+		    } catch (SeisppError serr) {
+			serr.log_error();
+			ss << "Do no know how to handle phase = "<<phase_to_analyze<<endl;
+			psm->record(ss.str());
+			return;
+		    }
+		}
+		dbh=psm->xpe->get_db(string("waveformdb"));
+		/* NONE is the only possible state after pushing a save button.
+		We assume if the state is anything else we should mark it skipped.
+		The load_data method using the queue file in the Xcor engine
+		needs to mark what it did to the previous ensemble before 
+		loading the next one. */
+		if(psm->get_state() == NONE)
+		{
+			psm->session_state(THINKING);
+			psm->xpe->load_data(*dbh,FINISHED);
+		}
+		else
+		{
+			psm->session_state(THINKING);
+			psm->xpe->load_data(*dbh,SKIPPED);
+		}
+		ss << "Data loaded" <<endl;
+		psm->record(ss.str());
+		if(psm->using_subarrays)
+		{
+			// After a read always reset this variable to 
+			// start at top of the list of subarrays
+			psm->xpe->current_subarray=0;
+			psm->session_state(NEXT_SUBARRAY);
+			ss << "Displaying data for subarray="
+				<< psm->xpe->current_subarray<<endl;
+		}
+		else
+		{
+			psm->session_state(NEXT_EVENT);
+			ss << "Displaying data for this event"<<endl;
+		}
+		TimeSeriesEnsemble * tse=psm->xpe->get_waveforms_gui();
+		XcorEngineMode xem=psm->get_processing_mode();
+		Hypocenter h;
+		if( (xem==ContinuousDB) || (xem==EventGathers) )
+		{
+			double slat,slon,sdepth,stime;
+			try {
+				/* Frozen names here are not good, but 
+				for now we'll use them */
+				slat=tse->get_double("source_lat");
+				slon=tse->get_double("source_lon");
+				sdepth=tse->get_double("source_depth");
+				stime=tse->get_double("source_time");
+				h=Hypocenter(rad(slat),rad(slon),sdepth,stime,method,model);
+				psm->set_hypo(h);
+                		ss << "Data loaded for event: "
+		                        << slat<<","
+		                        << slon<<","
+		                        << sdepth <<","
+					<< strtime(stime) <<endl;
+			}
+			catch (...)
+			{
+				ss << "Problem loading hypocenter.  Previous value retained.  Expect trouble."<<endl;
+			}
+		}
+		ss << "Ensemble has " << tse->member.size()
+			<<" seismograms"<<endl;
+		psm->record(ss.str());
+
+		Metadata data_md=psm->xpe->get_data_md();
+		stringstream ts;
+		if( (xem==ContinuousDB) || (xem==EventGathers) )
+		{
+			int evid,orid;
+			try {
+				evid=tse->get_int("evid");
+				orid=tse->get_int("orid");
+				psm->set_evid(evid);
+				psm->set_orid(orid);
+			} catch (MetadataGetError mderr)
+			{
+				mderr.log_error();
+				ss << "Evid and/or orid not defined for ensemble. "<<endl
+					<< "Setting both to 1.  Fix this before trying to save data."<<endl;
+				psm->record(ss.str());
+				evid=1;
+				orid=1;
+			}
+			if(psm->using_subarrays)
+			{
+			    ts << psm->xpe->current_subarray_name
+				<< " "
+				<< phase_to_analyze 
+				<< " data for evid="<<evid
+				<<", orid="<<orid
+				<<".  Location:  "
+				<<deg(h.lat) <<","<<deg(h.lon)<<","<<h.z<<","<<strtime(h.time);      
+			}
+			else
+			{
+			    ts << phase_to_analyze << " data for evid="<<evid
+				<<", orid="<<orid
+				<<".  Location:  "
+				<<deg(h.lat) <<","<<deg(h.lon)<<","<<h.z<<","<<strtime(h.time);      
+			}
+		}
+		else
+		{
+			ts <<"Generic Gather";
+		}
+		data_md.put("title",ts.str());
+
+		psm->active_setting=psm->asetting_default[phase_to_analyze];
+                stringstream vs;
+                if (!psm->validate_setting(vs) )
+		{
+			if(w != NULL) 
+				message_box(psm, vs.str(), w);
+			else
+				psm->record(vs.str());
+		}
+
+    		psm->xpe->change_analysis_setting(psm->active_setting);
+
+                try {
+        	    psm->xpe->sort_ensemble();
+    		} catch (SeisppError serr) {
+		    serr.log_error();
+        	    ss << "Fatal error occured! Sort was unsuccessful."<<endl;
+        	    psm->record(ss.str());
+        	    return;
+    		}
+
+		//make sure the attributes are appropriate, no coherence display before the
+		//analysis
+		for(int i=0; i<psm->attributes_info.size(); i++) {
+		    if (psm->attributes_info[i].enabled && 
+			!psm->attributes_info[i].available_before_analysis) {
+			psm->attributes_info[i].enabled=false;
+			XtUnmanageChild(psm->attributes_info[i].w);
+		    }
+		}
+
+    	        ss << "Ensemble is sorted"<<endl;
+		tse=psm->xpe->get_waveforms_gui();
+
+		psm->markers.beam_tw=psm->active_setting.beam_tw;
+		psm->markers.robust_tw=psm->active_setting.robust_tw;
+		psm->markers.beam_color=string("red");
+		psm->markers.robust_color=string("green");
+  		psm->markers.title=ts.str();
+
+		XtVaSetValues(psm->seismic_widget,ExmNseiswEnsemble, (XtPointer)(tse),
+		    ExmNseiswMetadata, (XtPointer)(&data_md),ExmNdisplayMarkers,&(psm->markers),
+		    NULL);
+
+		psm->record(ss.str());
+		psm->record(string("Done\n"));
+	} catch (SeisppError serr) {
+                serr.log_error();
+                cerr << "Fatal error in loading data:  exiting"<<endl;
+		exit(-1);
+	}
+}
 
 void get_next_event(Widget w, void * client_data, void * userdata)
 {
@@ -509,14 +687,20 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	try {
 
 	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
-
-	if(psm->instream.good())
+	XcorEngineMode mode=psm->get_processing_mode();
+	if(mode==ContinuousDB)
 	{
-		const string base_error("get_next_event:  ");
+	    if(psm->instream.good())
+	    {
 		psm->instream >> orid;
 		psm->instream >> phase_to_analyze;
-
 		handle_next_event( orid, phase_to_analyze, w, psm );
+	    }
+	}
+	else
+	{
+	    phase_to_analyze=psm->get_phase();
+	    handle_next_ensemble(phase_to_analyze,w,psm);
 	}
 
 	} catch (SeisppError serr) {
@@ -2050,15 +2234,6 @@ void exit_gui(Widget w, void * uesless1, void * useless2)
 
 void usage(char *use)
 {
-	/* Old format.  
-        cerr << argv[0]<<" dbin dbout dbevent [-pf pffile -v] " <<endl;
-	**********************************
-	new usage.  Allow db to be - and in that situation retrieve the 
-	parent db from the dbview pointer.  By default dbout=db but allow
-	alternative output file through the -o option (existing capability
-	I think.)  -f will allow fifo input.  In that situation pass
-	orid and phase. */
-        //cerr << argv[0]<<" db [-o dbout -f infile -pf pffile -v] " <<endl;
 	cerr << "dbxcor "<< use <<endl;
         exit(-1);
 }
@@ -2109,7 +2284,7 @@ main (int argc, char **argv)
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false},
 			    {NULL,"signal_to_noise_ratio", ATTR_DOUBLE,true,NULL,-1,false, "Signal to Noise Ratio",false}
 			};
-  char *use=(char *) "db [-appname name -o dbout -f infile -pf pffile -V -v]";
+  char *use=(char *) "db [-appname name -o dbout i [-q queuefile | -i infile ] -pf pffile -V -v]";
   char *author=(char *) "Peng Wang and Gary Pavlis";
   char *email=(char *) "pewang@indiana.edu,pavlis@indiana.edu";
   char *loc=(char *) "Indiana University";
@@ -2128,9 +2303,11 @@ main (int argc, char **argv)
   }
   string result_db_name(argv[1]);
   //string hypodb(argv[3]);
-  string infile("");
+  string readfile("");
   string pfname("dbxcor");
   string appname("dbxcor");
+  enum InMode {TKSEND, INFILE, QFILE};
+  InMode inputmode(TKSEND);
   for(i=2;i<argc;++i) {
       string argtest(argv[i]);
       if(argtest=="-pf") {
@@ -2142,10 +2319,26 @@ main (int argc, char **argv)
       } else if (argtest=="-o") {
 	   ++i;
 	   result_db_name=string(argv[i]);
-      } else if (argtest=="-f") {
+      } else if (argtest=="-i") {
+	   if(inputmode==QFILE)
+	   {
+		cerr << "Input argument error.  Must use either -i, -q, or neither."<<endl;
+	  	cbanner(rev,use,author,loc,email);
+		exit(-1);
+	   }
 	   ++i;
 	   appname=string("");
-	   infile=string(argv[i]);
+	   readfile=string(argv[i]);
+      } else if (argtest=="-q") {
+	   if(inputmode==INFILE)
+	   {
+		cerr << "Input argument error.  Must use either -i, -q, or neither."<<endl;
+	  	cbanner(rev,use,author,loc,email);
+		exit(-1);
+	   }
+	   ++i;
+	   appname=string("");
+	   readfile=string(argv[i]);
       } else if(argtest=="-V") {
 	  cbanner(rev,use,author,loc,email);
           exit(1);
@@ -2158,7 +2351,7 @@ main (int argc, char **argv)
   string logstr(LOGNAME);
 
   try {
-      SessionManager sm(pfname,infile,logstr,waveform_db_name,result_db_name);
+      SessionManager sm(pfname,readfile,logstr,waveform_db_name,result_db_name);
   sm.attributes_info.push_back(air[0]);
   sm.attributes_info.push_back(air[1]);
   sm.attributes_info.push_back(air[2]);
@@ -2332,7 +2525,7 @@ main (int argc, char **argv)
 
 
   if( ! appname.compare( "" ) ) {
-  	btninfo.label=(char *) "Get Next Event";
+  	btninfo.label=(char *) "Next Gather";
   	btninfo.callback=get_next_event;
   	btninfo.callback_data=&sm;
   	sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  

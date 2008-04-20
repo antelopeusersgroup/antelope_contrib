@@ -95,8 +95,8 @@ public:
     /*! Main constructor.
 
 	\param pfname parameter file used to build this object.
-	\param hname input file name used to drive program.  Expect to read orid and phase as 
-		two tokens from each line.  This drives the analysis.
+	\param hname one of two things.  In -i mode this is the file used to
+		drive the analysis.  in -q mode this is the queue file name.
 	\param lname log file name 
 	\param wdbname waveform database name
 	\param rdbname result database name (can be the same as wdbname)
@@ -106,6 +106,7 @@ public:
     string get_waveform_db_name() {return waveform_db_name;}
     string get_result_db_name() {return result_db_name;}
     string get_pf_name() {return pf_name;}
+    string get_queuefile_name(){return queuefilename;}
     int get_evid(){return evid;}
     int get_orid(){return orid;}
     Hypocenter get_hypo(){return hypo;}
@@ -153,6 +154,11 @@ public:
     int current_filter();
     /* Modify or add a filter tagged with name */
     void modify_filter(string name, TimeInvariantFilter& filt);
+    /* A somewhat trivial interface routine to fetch the processng
+    mode.  Could have been made an attribute, but since the existing
+    interface had no public attributes decided this was more consistent
+    even if a bit silly */
+    XcorEngineMode get_processing_mode(){return(procmode);};
 private:
     bool *sensitive;
     SessionState state;
@@ -160,6 +166,7 @@ private:
     string waveform_db_name;
     string result_db_name;
     string pf_name;
+    string queuefilename;
 // These are needed for save_event for CSS3.0 database manipulations
     int evid;
     int orid;
@@ -177,6 +184,12 @@ private:
     map<string,int> filter_index;
     int current_filter_index;
     bool sort_reverse;
+    /* This enum is defined in XcorProcessingEngine.  It defines
+    it's mode of operation.  This object sets this in the constructor
+     ASSUMING the same parameter file is used to build the 
+    XcorProcesingEngine object.  i.e. the parameter parsing here
+    duplicates that in XcorProcessingEngine. */
+    XcorEngineMode procmode;
 };
 
 #endif

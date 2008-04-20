@@ -410,6 +410,43 @@ Finally, \fIphase_for_analysis\fR should normally match the key for this
 block of parameters.  It is required because of the laziness of the author
 as it simplifies the process of parsing this already complicated pf file.
 .LP
+\fIprocessing_mode\fR should be one of three options:  (1) EventGathers,
+(2) GenericGathers, or (3) ContinuousData (default and case used if
+you make a typo in the first 2 option names).  If anything but the 
+default (ContinuousData) case is set, a second parameter is required
+tagged with the keyword \fIdefault_phase\fR which must name a phase defined
+by the phase definitions described above.  This defines the phase
+that will be used in processing in these modes.  The setting of 
+\fIprocessing_mode\fR is a primary control on the kinds of data
+the program expects.  
+When running in ContinuousData mode (the default) data are extracted 
+using a time window with the window start and end times driven by 
+predicted arrival times for a specified phase.  In this mode the 
+phase can change with every request for new data since the presumption
+is that the program is reading from a CSS3.0 database with a wfdisc
+that indexes a suite of continuous data.  
+The GenericGathers and EventGathers mode, in contrast, 
+require the input data to be
+segmented and these modes require the segments define blocks of data 
+long enough that they can be subsequently windowed into the 
+range defined by the processing window parameters.
+Both of these modes use the a secondary parameter tagged
+\fIdbprocess_commands\fR that is a Tbl passed to dbprocess to 
+build the working view used to define the gather.  The default
+parameter file for this program gives forms for this Tbl that
+are appropriate for EventGather and GenericGather forms.
+The concept used for this mode, however, is very general and
+is intended to be schema independent.  The basic idea is that
+dbprocess must build a view that closes with a dbgroup 
+clause that defines the definition of what a "gather" means.
+For an EventGather this is restrictive.  It MUST be a group
+on evid.  For a GenericGather there is no real restriction.
+The primary intent for GenericGather is actually a source array
+gather.  That is, a collection of event seismograms grouped by
+station and some method for linking events with common waveforms.
+Current experimental mode uses a cluster table as used by 
+pmelgrid.
+.LP
 \fIresample_definitions\fR and \fItarget_sample_interval\fR are inseparably 
 linked.  As the name implies \fItarget_sample_interval\fR is the sample
 interval (in seconds) to which all the data will be resampled.  
