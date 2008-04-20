@@ -602,5 +602,5 @@ dbgroup evid
 GatherTimeAlignmentKey predarr_time
 TTmethod tttaup
 TTmodel iasp91
-delete_old_arrivals true
+delete_old_arrivals false
 default_phase P
