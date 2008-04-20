@@ -36,7 +36,7 @@ events which have origin times at the end of the period can still be reviewed wi
 appropriate waveforms.  \fBtime_slice_db\fP will not move the actual waveforms 
 (unless the \fI-f\fP option is used), it only
 puts the correct references to where \fIdbin\fP waveforms are located.  If this program 
-does not meet your needs, you should use  \fBdbsplit\fP.
+does not meet your needs, you should use  \fBdbsplit(1)\fP.
 
 This program con be configured to work on a live real-time database.  
 
@@ -56,9 +56,9 @@ Before starting copy the input database into the \fIlast_saved_db\fP directory u
 \fIdbcp -s dbin last_saved_db\fP.
 .IP -s
 Don't  attempt  to  keep  external file references correct; just copy the tables, 
-and don't update dir/dfile fields. See dbcp (1).
+and don't update dir/dfile fields. See dbcp(1).
 .IP -f 
-Actually copies waveforms instead of referencing original waveforms. See dbcp (1).
+Actually copies waveforms instead of referencing original waveforms. See dbcp(1).
 .IP -B
 Only slices big tables listed in pf file.
 .IP -E
@@ -67,7 +67,7 @@ Only slices events.
 Only slices waveforms.
 .IP "-p parameter_file"
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
-The default parameter file name is \fBtime_slice_db\fP.
+The default parameter file is \fBtime_slice_db\fP.
 .IP "-t start_time"
 Start time for processing data.
 The default start time is \fB1 January 1970\fP.
@@ -86,7 +86,7 @@ These tables listed need to have time, sta, chan included as fields.
 .fi
 .ft R
 .in
-.SH DEFAULT PARAMETER FILE
+.SH PARAMETER FILE
 .in 2c
 .ft CW
 .nf
@@ -107,7 +107,8 @@ If lag is 1 in arrears, \fBtime_slice_db\fP skips the current and immediately pr
 Name of idserver to be written into descriptor file for output database to use.
 .IP dbpath
 dbpath to be written into descriptor file for output database to use.
-
+.IP dblocks
+dblocking type for database
 .IP big_tables 
 Table list of large database tables which require less strict (ie time consuming) processing
 
@@ -141,6 +142,7 @@ big_tables &Tbl{
 0 if successful, 1 if not.
 .SH "SEE ALSO"
 .nf
+dbcp(1)
 dbsplit(1)
 dbcentral(1)
 pfecho(1)
