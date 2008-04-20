@@ -8,9 +8,10 @@ use archive ;
 use timeslice ;
 require "getopts.pl" ;
 
-our ( $opt_B, $opt_C, $opt_D, $opt_E, $opt_I, $opt_P, $opt_V, $opt_W, $opt_Y, $Pf ) ; 
-our ( $opt_d, $opt_e, $opt_f, $opt_l, $opt_p, $opt_s, $opt_t, $opt_v ) ; 
+our ( $opt_B, $opt_C, $opt_E, $opt_V, $opt_W, $Pf ) ; 
+our ( $opt_e, $opt_f, $opt_m, $opt_p, $opt_s, $opt_t, $opt_v ) ; 
 our ( $dbpath, $dblocks, $dbidserver) ;
+our ( $pgm, $host);
 
 #
 #  This program does most the work using system calls to the Datascope interface
@@ -20,82 +21,90 @@ our ( $dbpath, $dblocks, $dbidserver) ;
 #
 
 #####################################################
-# need to check orb2db_msg function
+# need to check orb2db_msg functionality
+#
 #####################################################
 
 {    
-    my ( $dbin, $dirbase, $start_time, $end_time, $lag, $last_time, $dbbase );
-    my ( $period, $verbose, $debug, $usage);
-    my $pgm = $0 ; 
+    my ( $dbin, $dirbase, $wfbase, $start_time, $end_time, $lag, $last_time, $dbbase );
+    my ( $period, $verbose, $debug, $usage, $exist, $subject, $cmd, $stime);
+    $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
+    $cmd = "\n$0 @ARGV" ;
 #
 #  get arguments
 #
-    if ( ! &Getopts('BCDd:Ee:fl:I:P:p:st:vVWY') || @ARGV != 2 ) { 
-        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-s] [-f] [-C] [-B] [-E] [-W] [-D | -Y] \n" ;
-        $usage .=  "	[-I idserver] [-P dbpath] [-d directory_base] \n" ;
-        $usage .=  "	[-l lag ] [-p pf]  [-t start_time ] [-e end_time]  \n" ;
-        $usage .=  "	dbin dbbase_name \n\n"  ; 
-
+    if ( ! &Getopts('BCEe:fm:p:st:vVW') || @ARGV != 1 ) { 
+        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-s] [-f] [-C]\n" ;
+        $usage .=  "	[-p pf] [-m mail_to] [-t start_time ] [-e end_time]  \n" ;
+        $usage .=  "	(-B | -E | -W)   \n" ;
+        $usage .=  "	dbin \n\n"  ; 
+        
+        elog_notify($cmd);
         elog_die ( $usage ) ; 
     }
 
+    &savemail() if $opt_m ; 
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    elog_notify ("\nstarting execution	$stime\n\n");
+
+    chop ($host = `uname -n` ) ;
+
     $dbin   = $ARGV[0];
-    $dbbase = $ARGV[1];
     
     $Pf         = $opt_p || $pgm ;
-    $dirbase    = $opt_d || "./monthly_dbs" ;
-    $dirbase    = $opt_d || "./yearly_dbs" if $opt_Y;
-    $dirbase    = $opt_d || "./daily_dbs" if $opt_D;
-    $period     = "month" ;
-    $period     = "year" if $opt_Y;
-    $period     = "day"  if $opt_D;
-    $lag        = $opt_l || 1 ;    
-    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $dbpath     = $opt_P || " ";
-    $dbidserver = $opt_I || " ";
-    $dblocks    = "nfs" ;
+    
+    ($dirbase,$wfbase,$dbbase,$period,$lag,$dbpath,$dbidserver,$dblocks) = getparam( $Pf );
+
     $start_time = $opt_t || 0. ;
     $end_time   = $opt_e || now() ;
     $lag        = 0 if $opt_e ;    
 
+    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
     
-    if ($opt_Y && $opt_D) {
-        elog_die("\n Can only split by year, month, OR day ");
-    }
-
     if (system_check(0)) {
-        elog_die("\n Ran out of system resources");
+        $subject = "Problems - $pgm $host	Ran out of system resources";
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject");
     }
 
     $last_time = &last_time($end_time, $lag, $period, $debug);
     
     &backup_dbin( $dbin, $dbbase, $verbose, $debug) if $opt_C;
 
-    &process_events( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug )    unless ($opt_B || $opt_W) ;
+    &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug)     if ($opt_E) ;
 
     if (system_check(0)) {
-        elog_die("\n Ran out of system resources");
+        $subject = "Problems - $pgm $host	Ran out of system resources";
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject");
     }
 
-    &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug )    unless ($opt_B || $opt_E) ;
+    &process_wfdisc( $dbin, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug )     if ($opt_W) ;
 
-    &process_big_tables( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) unless ($opt_E || $opt_W) ;
+    &process_big_tables( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) if ($opt_B) ;
 
-    elog_notify ("$pgm completed successfully");
-    exit;
+    $stime = strydtime(now());
+    elog_notify ("\ncompleted successfully	$stime\n\n");
+    
+    $subject = "Success  $pgm  $host";
+    elog_notify ($subject);
+    &sendmail ( $subject, $opt_m ) if $opt_m ;
+  
+    exit(0);
 }
 
 
 
-sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug);
-    my ( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) = @_ ;
+sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug);
+    my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug) = @_ ;
     my ( $first_event, $last_event, $n, $ts, $current, $next_ts, $nrecs, $narrivals, $nevents, $norigins );
-    my ( $subset, $dirname, $dbname, $noassoc, $cmd, $dtmp, $dbexist, $origin_dir, $msg);
+    my ( $subset, $dirname, $dbname, $noassoc, $cmd, $dtmp, $dbexist, $origin_dir, $msg, $exists, $subject);
+    my ( $wftmp, $wfpath, $wfdir, $base, $suffix) ; 
     my ( @dbin, @dbevent, @dborigin, @dbarrival, @dbtmp, @dbj, @dbout);
     my ( @ts );
     
@@ -103,7 +112,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
 #  open database tables
 #
 
-    elog_notify("\n starting process_events") if $opt_v;
+    elog_notify("\nstarting process_events") if $opt_v;
 
     @dbin 		= dbopen($dbin,'r');
     @dbevent 	= dblookup(@dbin,0,"event",0,0);
@@ -171,14 +180,18 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
         
 #  make month directory name and db name
 
-        ($dirname, $dbname) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"origin", $dbpath, $dblocks, $dbidserver, $debug);
-        if ($dbname =~ /EXISTS/) {
+        ($wftmp, $wfpath)        =  &mk_d($wfbase,$dbbase,$period,$ts);
+        ($wfdir, $base, $suffix) = parsepath($wfpath);
+        $wfpath = "$dbpath:$wfdir\/{$base}";
+
+        ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"origin", $wfpath, $dblocks, $dbidserver, $debug);
+        if ($exists) {
             $dbname = $dirname . "/tmp_events";
             ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
             elog_notify("\nprocess_events	dbmerge $dbname $dbexist \n\n");
         } else {
             ($dirname, $dbname) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"arrival", $dbpath, $dblocks, $dbidserver, $debug);
-            if ($dbname =~ /EXISTS/) {
+            if ($exists) {
                 $dbname = $dirname . "/tmp_events";
                 ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
                 elog_notify("\nprocess_events	dbmerge $dbname $dbexist\n\n");
@@ -194,7 +207,10 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
         elog_notify( "process_events	$cmd ") if $opt_V;
          
         if (run($cmd,0)) {
-            elog_die ("process_events	Cmd failed: $cmd");
+            elog_complain("\nprocess_events	Cmd failed: $cmd");
+            $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_die("\n$subject");
         }
 
         @dbtmp 		   = dbopen($dbname,'r+');
@@ -211,7 +227,10 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
             $msg  = "orb2db_msg $dbin pause";
             elog_notify("process_events	$msg") if $opt_v;
             if (run($msg,0)) {
-                elog_die ("process_events	Cmd failed: $msg");
+                elog_complain("\nprocess_events	Cmd failed: $msg");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
             
             $cmd  = "dbjoin $dbin.origin event | ";
@@ -223,7 +242,11 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
                 $msg  = "orb2db_msg $dbin continue";
                 elog_notify("process_events	$msg");
                 run($msg,0);
-                elog_die ("process_events	Cmd failed: $cmd");
+                            
+                elog_complain("\nprocess_events	Cmd failed: $cmd");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
             
             $msg  = "orb2db_msg $dbin continue";
@@ -260,7 +283,10 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
             $msg  = "orb2db_msg $dbin pause";
             elog_notify("process_events	$msg") if $opt_v;
             if (run($msg,0)) {
-                elog_die ("process_events	Cmd failed: $msg");
+                elog_complain("\nprocess_events	Cmd failed: $msg");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
             
             $cmd = "dbsubset $dbin.arrival \" $subset \" | dbdelete - ";
@@ -270,7 +296,11 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
                 $msg  = "orb2db_msg $dbin continue";
                 elog_notify("process_events	$msg");
                 run($msg,0);
-                elog_die ("process_events	Cmd failed: $cmd");
+                
+                elog_complain("\nprocess_events	Cmd failed: $cmd");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
             
             $msg  = "orb2db_msg $dbin continue";
@@ -288,7 +318,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $dbbase, $start_time, $
 sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug );
     my ( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) = @_ ;
     my ( $ts, $current, $next_ts, $next_ts2, $wfdisc_dir, $tmp_db, $tmp_db2, $cmd, $msg );
-    my ( $subset, $dirname, $dbname, $dtmp, $dbexist, $nrecs ) ;
+    my ( $subset, $dirname, $dbname, $dtmp, $dbexist, $nrecs, $exists, $subject ) ;
     my ( @dbin, @dbm, @dbwfdisc, @dbcalib ) ;
     my ( @ts);
     
@@ -296,7 +326,7 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
 #  open database tables
 #
 
-    elog_notify("\n starting process_wfdisc") if $opt_v;
+    elog_notify("\nstarting process_wfdisc") if $opt_v;
 
     @dbin 		= dbopen($dbin,'r+');
     @dbwfdisc 	= dblookup(@dbin,0,"wfdisc",0,0);    
@@ -327,8 +357,8 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
             elog_notify ( "process_wfdisc	current processing $current	 - stop processing at $last_time\n" ) if $opt_V;
             last;
         }
-        ($dirname, $dbname) =  &mk_db_des($ts, $dirbase, $dbbase, $period, "wfdisc", $dbpath, $dblocks, $dbidserver, $debug);
-        if ($dbname =~ /EXISTS/) {
+        ($dirname, $dbname, $exists) =  &mk_db_des($ts, $dirbase, $dbbase, $period, "wfdisc", $dbpath, $dblocks, $dbidserver, $debug);
+        if ($exists) {
             $dbname = $dirname . "/tmp_wfdisc";
             ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
             elog_notify ("\nprocess_wfdisc	dbmerge $dbname $dbexist \n\n");
@@ -360,7 +390,10 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
         $cmd = "dbsort -o $dbname.wfdisc time sta chan";
         elog_notify( "process_wfdisc	$cmd") if $opt_v;
         if (run($cmd,0)) {
-            elog_die ("Cmd failed: $cmd");
+            elog_complain("\nprocess_wfdisc	Cmd failed: $cmd");
+            $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_die("\n$subject");
         }
         
         @dbcalib = dbopen($dbname,'r');
@@ -387,7 +420,10 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
             $msg  = "orb2db_msg $dbin pause";
             elog_notify("process_wfdisc	$msg") if $opt_v;
             if (run($msg,0)) {
-                elog_die ("process_wfdisc	Cmd failed: $msg");
+                elog_complain("\nprocess_wfdisc	Cmd failed: $msg");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
             
             $cmd = "dbsubset $dbin.wfdisc \"time < _$next_ts\_ && endtime > _$current\_\" | dbdelete - " ;
@@ -396,7 +432,11 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
                 $msg  = "orb2db_msg $dbin continue";
                 elog_notify("process_wfdisc	$msg");
                 run($msg,0);
-                elog_die ("process_wfdisc	Cmd failed: $cmd");
+                
+                elog_complain("\nprocess_wfdisc	Cmd failed: $cmd");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
             
             $msg  = "orb2db_msg $dbin continue";
@@ -407,12 +447,13 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
     return;    
 }
 
-sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug );
-    my ( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) = @_ ;
+sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug );
+    my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) = @_ ;
     my ( $ts, $current, $next_ts, $ref );
-    my ( $subset, $dirname, $dbname, $table, $problems, $cmd, $dtmp, $dbexist, $msg );
+    my ( $subset, $dirname, $dbname, $table, $problems, $cmd, $dtmp, $dbexist, $msg, $exists, $subject );
+    my ( $wftmp, $wfpath, $wfdir, $base, $suffix) ; 
     my ( @dbin, @dbm, @dbt );
-    my ( @ts, @tables, @ctables );
+    my ( @ts, @tables, @ctables, @dbtables );
     
 #
 #  open database tables
@@ -426,8 +467,13 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
     $ref           = pfget ( $Pf, 'big_tables' ) ;
     @tables        = @$ref ;
     @ctables       = () ;
+    @dbtables      = dbquery(@dbin,"dbSCHEMA_TABLES") ;
+        
+    elog_notify("process_big_tables	requested tables	@tables") if $opt_V ;
     
-    elog_notify("process_big_tables	@tables") if $opt_V ;
+    @tables = &intersect(\@dbtables,\@tables);
+
+    elog_notify("process_big_tables	existing schema tables	@tables") if $opt_V ;
     
     foreach $table (@tables) {
         elog_notify ("\ndbin $dbin 	table $table") if $opt_v ;
@@ -437,10 +483,12 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
             elog_notify ("\nprocess_big_tables	no $table table in  $dbin") if $opt_v ;
             next ;
         }
-        
 
         if (system_check($problems)) {
-            elog_die("\nprocess_big_tables	Ran out of system resources") ;
+            elog_complain("\nprocess_big_tables	 Ran out of system resources");
+            $subject = "Problems - $pgm $host	Ran out of system resources";
+            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_die("\n$subject");
         }
 
         @dbt = dbsubset(@dbt,"time < \_$last_time\_ && time >= \_$start_time\_" ) ;
@@ -455,8 +503,13 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
                 elog_notify ( "process_big_tables	current processing $current	 - stop processing at $last_time\n" ) if $opt_V ;
                 last ;
             }
-            ($dirname, $dbname) =  &mk_db_des($ts, $dirbase, $dbbase, $period, $table, $dbpath, $dblocks, $dbidserver, $debug);
-            if ($dbname =~ /EXISTS/) {
+            
+            ($wftmp, $wfpath)        =  &mk_d($wfbase,$dbbase,$period,$ts);
+            ($wfdir, $base, $suffix) = parsepath($wfpath);
+            $wfpath = "$dbpath:$wfdir\/{$base}";
+
+            ($dirname, $dbname, $exists) =  &mk_db_des($ts, $dirbase, $dbbase, $period, $table, $wfpath, $dblocks, $dbidserver, $debug);
+            if ($exists) {
                 $dbname = $dirname . "/tmp_$table";
                 ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
                 elog_notify ( "\nprocess_big_tables		dbmerge $dbname $dbexist \n\n" );
@@ -470,7 +523,10 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
             $cmd = "dbsort -o $dbname.$table time sta chan";
             elog_notify( "process_big_tables	$cmd") if $opt_v;
             if (run($cmd,0)) {
-                elog_die ("Cmd failed: $cmd");
+                elog_complain("\nprocess_big_tables	Cmd failed: $cmd");
+                $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
         }
         dbfree(@dbt);
@@ -482,9 +538,13 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
         foreach $table (@ctables) {
             elog_notify ("\nprocess_big_tables	cleaning dbin $dbin 	table $table") if $opt_v;
             
-            if (system_check($problems)) {
-                elog_die("\nprocess_big_tables	 Ran out of system resources");
+            if (system_check(0)) {
+                elog_complain("\nprocess_big_tables	 Ran out of system resources	cleaning dbin $dbin 	table $table");
+                $subject = "Problems - $pgm $host	Ran out of system resources";
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject");
             }
+
 
             @dbt = dbopen($dbin,'r') ;
             @dbt = dblookup(@dbt,0,$table,0,0) ;
@@ -507,7 +567,10 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
                 $msg  = "orb2db_msg $dbin pause";
                 elog_notify("process_big_tables	$msg") if $opt_v;
                 if (run($msg,0)) {
-                    elog_die ("process_big_tables	Cmd failed: $msg");
+                    elog_complain("\nprocess_big_tables	Cmd failed: $msg");
+                    $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                    &sendmail($subject, $opt_m) if $opt_m ; 
+                    elog_die("\n$subject");
                 }
             
                 $cmd = "time >= _$current\_ && time < _$next_ts\_";
@@ -518,7 +581,11 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
                     $msg  = "orb2db_msg $dbin continue";
                     elog_notify("process_big_tables	$msg");
                     run($msg,0);
-                    elog_die ("process_big_tables	Cmd failed: $cmd");
+                    
+                    elog_complain("\nprocess_big_tables	Cmd failed: $cmd");
+                    $subject = "Problems - $pgm $host	sub process_events	Cmd failed";
+                    &sendmail($subject, $opt_m) if $opt_m ; 
+                    elog_die("\n$subject");
                 }
             
                 $msg  = "orb2db_msg $dbin continue";
@@ -531,3 +598,50 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $dbbase, $start
     return;    
 }
 
+sub getparam { # ($dirbase,$wfbase,$dbbase,$period,$lag,$dbpath,$dbidserver,$dblocks) = getparam($Pf);
+    my ($Pf) = @_ ;
+    my ($dirbase, $wfbase, $dbbase, $period, $lag, $dbpath, $dbidserver, $dblocks) ;
+    my ($rt_tot, $rt_avail, $dirbase_tot, $dirbase_avail, $subject);
+    my (@db);
+    my (%rtdb,%dirbase);
+    
+    $dirbase    = pfget( $Pf, "dirbase" );
+    $wfbase     = pfget( $Pf, "wfbase" );
+    $dbbase     = pfget( $Pf, "dbbase" );
+    $period     = pfget( $Pf, "period" );
+    $lag        = pfget( $Pf, "lag" );
+    $dbpath     = pfget( $Pf, "dbpath" );
+    $dbidserver = pfget( $Pf, "dbidserver" );
+    $dblocks    = pfget( $Pf, "dblocks" );
+
+    if ( !defined($opt_B) && !defined($opt_E) && !defined($opt_W) ) {
+        elog_complain("\nCommand line error	-	must have at least one of -B -E -W specified");
+        $subject = "Problems - $pgm $host	Command line error.";
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject");
+    }
+    
+    if ($period !~ /year|month|day/) {
+        elog_complain("\n\n Paremeter file error.\nperiod $period is not \"year\" or \"month\" or \"day\"");
+        $subject = "Problems - $pgm $host	Paremeter file error.";
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject");
+    }
+    
+    if ($opt_V) {
+        elog_notify("dirbase	$dirbase");
+        elog_notify("wfbase	$wfbase");
+        elog_notify("dbbase	$dirbase");
+        elog_notify("period	$period" );
+        elog_notify("lag		$lag" );
+        elog_notify("dbpath	$dbpath" );
+        elog_notify("dbidserver	$dbidserver" );
+        elog_notify("dblocks	$dblocks" );
+    }
+    
+    if (!-d $dirbase) {
+        makedir($dirbase);
+    }
+        
+    return ($dirbase,$wfbase,$dbbase,$period,$lag,$dbpath,$dbidserver,$dblocks) ;
+}

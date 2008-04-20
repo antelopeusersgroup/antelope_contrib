@@ -104,10 +104,10 @@ sub border { # ($current,$next_ts) =  &border($ts, $period, $debug);
     }
 }
 
-sub mk_db_des { # ($dirname, $dbname) =  &mk_db_des($ts,$dirbase,$dbbase,$period,$table,$dbpath, $dblocks, $dbidserver, $debug);
+sub mk_db_des { # ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbase,$period,$table,$dbpath, $dblocks, $dbidserver, $debug);
 #  make directory name and db name
     my ($ts,$dirbase,$dbbase,$period,$table,$dbpath, $dblocks, $dbidserver, $debug) = @_ ;
-    my ($y, $m, $dirname, $dbname) ;
+    my ($y, $m, $dirname, $dbname, $exists) ;
     my (@dbtest) ;
     
     elog_notify("mk_db_des	ts	$ts		dirbase	$dirbase	dbbase	$dbbase") if $debug;
@@ -115,23 +115,25 @@ sub mk_db_des { # ($dirname, $dbname) =  &mk_db_des($ts,$dirbase,$dbbase,$period
     elog_notify("mk_db_des dirname	$dirname	dbname	$dbname") if $debug;
 
 #  test to see if db already exists.
-        
+     
+    $exists = 0;
     if (-e $dbname || -e "$dbname.$table") {
         @dbtest = dbopen($dbname,"r") ;
         @dbtest = dblookup(@dbtest,0,"$table",0,0) ;
         if (dbquery(@dbtest,dbTABLE_PRESENT)) {
             elog_complain("mk_db_des	database $dbname.$table already exists!") ;
-            $dbname = "EXISTS";        
+            $exists = 1;        
         }
         dbclose(@dbtest);
     } 
     elog_notify("mk_db_des	make directory $dirname") if $debug;
     makedir($dirname);
-    if (!-f $dbname && $dbname !~ /EXISTS/ ) { 
+    if (!-f $dbname && ! $exists) { 
+        elog_notify("mk_db_des	make descriptor $dbname") if $debug;
         &cssdescriptor ($dbname,$dbpath,$dblocks,$dbidserver) ; 
     }
     
-    return ($dirname, $dbname);
+    return ($dirname, $dbname, $exists);
 }
 
 sub mk_d { # ($dirname, $dbname) =  &mk_d($dirbase,$dbbase,$period,$ts,$debug);
