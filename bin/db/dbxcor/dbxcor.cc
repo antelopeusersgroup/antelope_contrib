@@ -3,7 +3,7 @@
 #include "Seisw.h"
 #include "SeismicPick.h"
 #include "XcorProcessingEngine.h"
-#include "cc_tks.h"
+#include "tks.h"
 
 #include <Xm/DrawingA.h>
 
