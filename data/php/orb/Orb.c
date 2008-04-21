@@ -1008,7 +1008,7 @@ PHP_FUNCTION(template)
 		return;
 	}
 }
-/* }}} */
+* }}} */
 
 /* {{{ proto int orbopen( string name, string perm ) */
 PHP_FUNCTION(orbopen)
@@ -1912,8 +1912,8 @@ PHP_METHOD(orb_pkt, channels)
 
 	} else if( ichannel >= maxtbl( pkt->channels ) ) {
 
-		sprintf( msg, "Channel index %d too high; packet contains "
-			      "only %n channels\n", 
+		sprintf( msg, "Channel index %ld too high; packet contains "
+			      "only %d channels\n", 
 			      ichannel, maxtbl( pkt->channels ) );
 		
 		ZVAL_NULL( return_value );
