@@ -409,7 +409,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 		} else if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
 			sprintf( value->s, "%f", Z_DVAL_PP( zvalue ) );
 		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
-			sprintf( value->s, "%f", Z_LVAL_PP( zvalue ) );
+			sprintf( value->s, "%ld", Z_LVAL_PP( zvalue ) );
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
 			if( Z_BVAL_PP( zvalue ) ) { 
 				sprintf( value->s, "true" );
@@ -499,7 +499,7 @@ zval2pf( zval *zvalue, Pf **pf )
 
 		*pf = pfnew( PFSTRING );
 
-		sprintf( value, "%d", Z_LVAL_P( zvalue ) );
+		sprintf( value, "%ld", Z_LVAL_P( zvalue ) );
 
 		(*pf)->value.s = strdup( value );
 
@@ -665,7 +665,7 @@ PHP_FUNCTION(template)
 		return;
 	}
 }
-/* }}} */
+* }}} */
 
 /* {{{ proto int elog_init( int argc, array argv ) */
 PHP_FUNCTION(elog_init)
@@ -2285,7 +2285,6 @@ PHP_FUNCTION(pffiles)
 	int	pfname_len;
 	Tbl	*files;
 	long	all = 0;
-	int	rc;
 	int	i;
 
 	if( argc < 1 || argc > 2 ) {
@@ -2339,7 +2338,6 @@ PHP_FUNCTION(pfdel)
 	int	key_len;
 	Pf	*pf;
 	Pf	*pfvalue;
-	char	*string_value;
 	char	errstring[STRSZ];
 
 	if( argc != 2 ) {
@@ -2462,7 +2460,6 @@ PHP_FUNCTION(pfget)
 	int	key_len;
 	Pf	*pf;
 	Pf	*pfvalue;
-	char	*string_value;
 	char	errstring[STRSZ];
 	int	rc;
 
@@ -4813,7 +4810,7 @@ PHP_FUNCTION(dbquery)
                 break;  
  
         default:
-		sprintf( errmsg, "dbquery: bad code '%s'", dbcode );
+		sprintf( errmsg, "dbquery: bad code '%d'", dbcode );
 		zend_error( E_ERROR, errmsg );
 		break ;
 	}
@@ -4859,7 +4856,6 @@ PHP_FUNCTION(dbbase)
 	int	argc = ZEND_NUM_ARGS();
 	char	*tablename;
 	int	tablename_len;
-	int	i;
 
 	if( argc != 2 ) {
 
@@ -4892,7 +4888,6 @@ PHP_FUNCTION(dbsubset)
 	int	argc = ZEND_NUM_ARGS();
 	char	*expr;
 	int	expr_len;
-	int	i;
 
 	if( argc != 2 ) {
 
@@ -4925,7 +4920,6 @@ PHP_FUNCTION(dbseparate)
 	int	argc = ZEND_NUM_ARGS();
 	char	*table;
 	int	table_len;
-	int	i;
 
 	if( argc != 2 ) {
 
@@ -4958,7 +4952,6 @@ PHP_FUNCTION(dbsever)
 	int	argc = ZEND_NUM_ARGS();
 	char	*table;
 	int	table_len;
-	int	i;
 
 	if( argc != 2 ) {
 
@@ -4992,7 +4985,6 @@ PHP_FUNCTION(dbunjoin)
 	char	*database;
 	int	database_len;
 	int	retcode;
-	int	i;
 
 	if( argc != 2 ) {
 
@@ -5861,7 +5853,6 @@ PHP_FUNCTION(dbungroup)
 	zval	*db_array;
 	Dbptr	db;
 	int	argc = ZEND_NUM_ARGS();
-	int	nrecs;
 
 	if( argc != 1 ) {
 
@@ -5950,7 +5941,6 @@ PHP_FUNCTION(dbnrecs)
 PHP_FUNCTION(dbputv)
 {
 	zval	*db_array_in;
-	zval	*db_array;
 	Dbptr	db;
 	zval	***args;
 	int	type;
@@ -6054,7 +6044,6 @@ PHP_FUNCTION(dbputv)
 PHP_FUNCTION(dbaddv)
 {
 	zval	*db_array_in;
-	zval	*db_array;
 	Dbptr	db;
 	zval	***args;
 	int	type;
@@ -6620,7 +6609,6 @@ PHP_FUNCTION(ds_dbtmp)
 /* {{{ proto int ds_dbcreate( string schema ) */
 PHP_FUNCTION(ds_dbcreate)
 {
-	Dbptr	db;
 	char	*filename = NULL;
 	int	filename_len;
 	char	*schema = NULL;
