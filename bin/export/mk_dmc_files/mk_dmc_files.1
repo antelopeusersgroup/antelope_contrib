@@ -43,24 +43,28 @@ Use gzip to compress the output dataless SEED volume.
 Parameter file to use.  The default parameter file name is \fBmk_dmc_files\fP.
 .IP "-d output_dir"
 Output directory for dataless SEED volume or vnd file.  This overrides the default
-directory, \fIdataless_dir\fP or \fIvnd_dir\fP, in the parameter file and no year
-or station directory is created.  Cannot use with -C.
+directory, \fIdataless_dir\fP , \fIsta_dataless_dir\fP, or \fIvnd_dir\fP, in the 
+parameter file and no year or station directory is created.  Cannot use with -C.
 .IP "-C product_dir"
-Directory underneath which \fIvnc_dir\fP and \fIdataless_dir\fP are created.  The 
-default is to create the \fIvnd_dir\fP and \fIdataless_dir\fP in the current directory.
+Directory underneath which \fIvnc_dir\fP, \fIsta_dataless_dir\fP or \fIdataless_dir\fP are created.  The 
+default is to create the \fIvnd_dir\fP, \fIsta_dataless_dir\fP and \fIdataless_dir\fP in the current directory.
 This is very useful when used in conjunction with the \fI-o\fP option.  With \fI-o\fP,
-the file to be transferred is stored in the \fIproduct_dir/vnc_dir\fP or 
+the file to be transferred is stored in the \fIproduct_dir/vnc_dir\fP \fIproduct_dir/dataless_sta\fP or
 \fIproduct_dir/dataless_dir\fP area, but the file transferred appears as 
-\fIvnd_dir/YYYY/VNET_YYYYMMMDD.csv/\fP.  Ignored if -D is used.  See EXAMPLES.
+\fIvnd_dir/YYYY/VNET_YYYYMMMDD.csv/\fP for example.  Ignored if -D is used.  See EXAMPLES.
 .IP "-N net"
 Network code to use in the output dataless SEED name.  This overrides the default
 net code from the site.pf parameter file.  Irrelevant if -V option is selected.
+.IP "-m mail_list"
+Generate an automated email informing the \fImail_list\fP of an updated file.  The filename,
+comment, and orb (if -o) are included in the text of the email.
 .IP "-s sta"
-Generate a dataless seed for this single station.  Irrelevant if -V option is selected.
+Generate a dataless seed for this single station.  Single station dataless will be stored 
+in the \fIsta_dataless_dir\fP directory.  Irrelevant if -V option is selected.
 .IP "-f filename"
 Output dataless SEED or VND filename.  The default filename for a dataless SEED
 volume is: \fIDATALESS.XX.YYYY.MM.DD\fP or \fIDATALESS.XX_STA.YYYY.MM.DD\fP where
-XX is replaced with the value of -n, the default_seed_network from site.pf, 
+XX is replaced with the value of \fI-N\fP, the default_seed_network from site.pf, 
 or is left as "XX" if these other two values are undefined.  The default filename
 for a VND is: \fIVNET_YYYYMMDD.csv\fP where VNET is replaced with the value given 
 to -V.  If the -z option is used the output file name will have .gz appended to it.  See 
@@ -163,6 +167,23 @@ it via orbxfer2.
 .fi
 .ft R
 .in
+
+.LP Generate a single station dataless, store it in a product directory
+ and inform people why the dataless was generated.  The dataless will 
+end up in the directory: /raid/space/products/TA/dataless_sta/L08A and
+will not be transferred via orbxfer2.
+.in 2c
+.ft CW
+.nf
+
+%\fB mk_dmc_files -D -s L08A anfexport:meta \\
+	-m "jeakins@ucsd.edu,someone@iris.edu" \\
+	-C /raid/space/products/TA
+	dbmaster/anf dbops/anf "L08A station closed"\fP
+.fi
+.ft R
+.in
+
 
 .LP Generate a complete dataless for a network after adding two new stations.  
 Store it in a data products directory on your raid system, but transfer using orbxfer2

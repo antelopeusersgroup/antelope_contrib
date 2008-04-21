@@ -1,7 +1,8 @@
 
 vnd_dir		vnd			# year based directories will be created under here
 
-dataless_dir	dataless		# station or year based directories will be created under here
+dataless_dir		dataless_all		# year based directories will be created under here
+sta_dataless_dir	dataless_sta		# station based directories will be created under here
 
 # comment must be a single line less than 180 characters
 
