@@ -111,7 +111,6 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
 	if(process_list==NULL)
 	{
-		freetbl(process_list,0);
 		throw SeisppError("Tag name = "+tag+" not in parameter file");
 	}
 	try {
@@ -218,7 +217,6 @@ DatascopeHandle::DatascopeHandle(const DatascopeHandle& dbi)
 	if(views!=NULL)
 	{
 		if(is_view_test(db)) views->insert(db.table);
-//cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
 	}
 	retain_parent=dbi.retain_parent;
 }
@@ -266,7 +264,6 @@ DatascopeHandle::~DatascopeHandle()
 		bool is_view=is_view_test(db);
 		if(is_view) 
 		{
-//cerr << "DEBUG:  views->count(): "<<views->count(db.table)<<" for table "<<db.table<<endl;
 			int viewcount=views->count(db.table);
 			if((viewcount<=0) && SEISPP_verbose)
 			{
@@ -282,19 +279,13 @@ DatascopeHandle::~DatascopeHandle()
 			  /* Do not test viewsptr as we can't get here
 			  if db.table is now found in the multiset */
 			  views->erase(viewsptr);
-//cerr << "DEBUG:  after erase views->count(): "<<views->count(db.table)<<" for table "<<db.table<<endl;
 			  if(viewcount==1)
 			  {
-//cerr << "DEBUG: Calling dbfree on table " << db.table <<endl;
 			    int testfree=dbfree(db);
 			    if(testfree==dbINVALID)
 				throw SeisppError(string("DatascopeHandle Destructor:")
 				 + string(" dbfree returned dbINVALID.") );
 			  }
-/*
-else
-cerr << "DEBUG:  dbfree not called"<<endl;
-*/
 			}
 		}
 	}
@@ -377,7 +368,6 @@ DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 			if(is_view_test(db)) views->insert(db.table);
 		}
 	}
-//cerr << "DEBUG:  table "<<db.table<<" has views->count="<<views->count(db.table)<<endl;
 	return(*this);
 }
 void DatascopeHandle::operator ++()
@@ -663,10 +653,6 @@ void DatascopeHandle::manage_parent()
 	is_view = is_view_test(parent_table);
 	/* Note this effectively does nothing if the table 
 	is not a view */
-/*
-cerr << "DEBUG (manage_parent):  "
-	<< "Entering manage_parent"<<endl;
-*/
 	if(is_view && (views!=NULL) )
 	{
 		/* release parent view only if this is the only
@@ -675,10 +661,6 @@ cerr << "DEBUG (manage_parent):  "
 		multiset<int>::iterator vptr;
 		if(number_copies<=0)
 		{
-/*
-cerr << "DEBUG (manage_parent):  "
- << "No copies set of this view.  This should not happen if this is working right." <<endl;
-*/
 			parent_table.database=dbINVALID;
 			parent_table.table=dbINVALID;
 			parent_table.field=dbINVALID;
@@ -691,13 +673,8 @@ cerr << "DEBUG (manage_parent):  "
 			fail here. */
 			vptr=views->find(parent_table.table);
 			views->erase(vptr);
-/*
-cerr << "DEBUG (manage_parent):  "
-	<< "number_copies of parent view="<<number_copies<<endl;
-*/
 			if(number_copies==1)
 			{
-//cerr << "Calling dbfree"<<endl;
 				int testfree=dbfree(parent_table);
 				/* We don't make this a fatal error.  
 				Since it only effects the parent the 
