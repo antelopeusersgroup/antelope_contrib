@@ -55,7 +55,7 @@ wm title $MainWin "USER CONTROL INTERFACE"
          switch -- $arg {
               -dc {
                   incr i
-                  if( $i >= $argc)  {
+                  if {$i >= $argc}  {
                        puts "$argv0: neeed argument for -dc\n"
                        puts "usage: ucp2 [-dc dc_ip_add] [-pf parameter_file]\n"
                        exit 1
@@ -64,7 +64,7 @@ wm title $MainWin "USER CONTROL INTERFACE"
                }
               -pf {
                   incr i
-                  if( $i >= $argc)  {
+                  if {$i >= $argc}  {
                        puts "$argv0: neeed argument for -pf\n"
                        puts "usage: ucp2 [-dc dc_ip_add] [-pf parameter_file]\n"
                        exit 1

@@ -22,7 +22,7 @@ global dcwait
 
 set cmdhis 0
 set empty "null"
-set dcname "" 
+#set dcname "" 
 set CmdWin .dcCmd
 toplevel $CmdWin
 wm title $CmdWin "DC/DAS COMMANDS"

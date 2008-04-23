@@ -18,7 +18,7 @@ global radtype
 global maxwait 
 
 set cmdhis 0
-set dcname "" 
+#set dcname "" 
 set RadWin .radCmd
 toplevel $RadWin
 wm title $RadWin "MASTER/SLAVE RADIO COMMANDS"
