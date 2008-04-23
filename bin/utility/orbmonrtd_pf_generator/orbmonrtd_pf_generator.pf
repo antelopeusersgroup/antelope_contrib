@@ -1,0 +1,117 @@
+#
+# Define a local dump command
+#
+dump_cmd    "getgif \$window \$period \$name"
+
+#
+# The Orb of interest
+#
+orb         anfexport-mgmt:usarrayTA
+
+#
+# The parameter files to be created
+#
+sources &Arr{
+    anf1hrBHZ &Arr{
+        tw      3600
+        amin 	-2500.000
+        amax 	2500.000
+        width 	
+        height
+        filter
+        chan 	BHZ
+        modulus 
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat
+        }
+    }
+    anf2hrBHZ &Arr{
+        tw      7200
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    BHZ
+        modulus  8
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat
+        }
+    }
+    anf24hrBHZ &Arr{
+        tw      86400
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    BHZ
+        modulus
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat
+        }
+    }
+    anf24hrLHZ &Arr{
+        tw      86400
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    LHZ
+        modulus
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat
+        }
+    }
+}
+
+#
+# Define any snet_sta exceptions that need
+# special treatment to the Orb trace
+#
+exceptions &Arr{
+    AZ_MONP2 &Arr{
+        amin    -5000.000
+        amax    5000.000
+        width
+        height
+        filter
+    }
+}
+
+#
+# Detections array - 1 to 1 mapping to orbmonrtd
+#
+detections &Arr{
+    BW_0.8_4_3.0_4    00ff00    0.05
+    BW_0.5_4_1.2_4    ffa0a0    0.1
+    BW_3.0_4_0_0      a0a0ff    0.0
+}
+
+#
+# Arrivals array - 1 to 1 mapping to orbmonrtd
+#
+arrivals &Arr{
+    S1    ff0000
+    P    ff0000
+    S2    00a000
+    P1    ff0000
+    D1    ffa0a0
+    S3    0000ff
+    P2    00a000
+    D2    00a000
+    S    ff0000
+    P3    0000ff
+    D3    8080ff
+}
+
+pf_revision_time 1199145710

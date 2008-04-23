@@ -1,0 +1,273 @@
+.TH ORBMONRTD_PF_GENERATOR 1 "$Date$" 
+.SH NAME
+orbmonrtd_pf_generator \- create parameter files for orbmonrtd from a dbmaster deployment table
+.SH SYNOPSIS
+.nf
+orbmonrtd_pf_generator [-v] [-d pfdirectory] 
+                       [-p pffile] dbmaster
+.fi
+.SH DESCRIPTION
+The script orbmonrtd_pf_generator creates parameter files for
+orbmonrtd(1). This is useful for networks that have dynamic
+deployments, such as the USArray experiment. To monitor temporarily
+deployed stations requires orbmonrtd parameter files to be frequently
+updated as the dbmaster deployment table is updated. This allows
+accurate determination of the state of health of a complete dynamic
+network.
+
+The parameter file for orbmonrtd_pf_generator defines a series of
+variables commonly found in orbmonrtd parameter files, such as the dump
+command (if needed) and the detections and arrivals definitions. See
+orbmonrtd(1) for more information. These have a direct one\-to\-one
+mapping from the orbmonrtd_pf_generator.pf to the orbmonrtd.pf.
+Variables that are defined only in the orbmonrtd_pf_generator parameter
+file are the Orb to be monitored, the sources array that lists the
+parameter files to be created, and an exceptions array.
+
+The sources array lists the name of the parameter file to be created,
+the time window (tw, in seconds), the amplitude min and max (amin and
+amax respectively), the width and height (in pixels), and a filter (if
+needed) for each individual trace from the Orb. The channel of interest
+for orbmonrtd is defined in the chan key\-value pair. An optional
+modulus operator can be defined if, for example, the user wishes to
+only see every n\'th channel trace from the Orb to be monitored. An
+optional subset table can be defined as a series of Datascope database
+operations to the deployment table if the user wishes to re\-order the
+traces in orbmonrtd in a certain way, such as by latitude or deployment
+start time.
+
+The exceptions array allows certain stations to over\-ride the
+definitions applied to the Orb trace by the sources array. The key for
+this array is the station network and station code concatenated (ie.
+snet_sta). The key\-value pairs are amin, amax, width, height and
+filter. These over\-rides are important for stations that have certain
+characteristics that make them unique in comparison to the rest of the
+deployed network. For example, the station might be deployed next to a
+busy highway, or in a windy coastal position, so it is useful to
+increase the amplitude of the trace to filter out background noise.
+.SH OPTIONS
+.IP "-d pfdirectory"
+Define the path to the directory that you wish the dynamically created
+orbmonrtd parameter files to be written to. Please ensure that the user
+that runs this script has permission to write to the specified
+directory
+.IP "-p pffile"
+Specify a parameter file for use with this script
+.IP "-v"
+Verbose output
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+#
+# Define a local dump command
+#
+dump_cmd    "/export/home/rt/rtsystems/vncweb/bin/getgif \\$window \\$period \\$name"
+
+#
+# The Orb of interest
+#
+orb         anfexport-mgmt:usarrayTA
+
+#
+# The parameter files to be created
+#
+sources &Arr{
+    anf1hrBHZ &Arr{
+        tw      3600
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    BHZ 
+        modulus 4
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat 
+        }   
+    }   
+    anf2hrBHZ &Arr{
+        tw      7200
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    BHZ 
+        modulus  8
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat 
+        }   
+    }   
+    anf24hrBHZ &Arr{
+        tw      86400
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    BHZ 
+        modulus
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat 
+        }   
+    }   
+    anf24hrLHZ &Arr{
+        tw      86400
+        amin    -2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        chan    LHZ 
+        modulus 2
+        subset  &Tbl{
+            dbjoin site
+            dbsubset snet =~ /TA/
+            dbsort -r lat 
+        }   
+    }   
+}
+
+#
+# Define any snet_sta exceptions that need
+# special treatment to the Orb trace
+#
+exceptions &Arr{
+    AZ_MONP2 &Arr{
+        amin    -5000.000
+        amax    5000.000
+        width
+        height
+        filter
+    }
+}
+
+#
+# Detections array - 1 to 1 mapping to orbmonrtd
+#
+detections &Arr{
+    BW_0.8_4_3.0_4    00ff00    0.05
+    BW_0.5_4_1.2_4    ffa0a0    0.1
+    BW_3.0_4_0_0      a0a0ff    0.0
+}
+
+#
+# Arrivals array - 1 to 1 mapping to orbmonrtd
+#
+arrivals &Arr{
+    S1    ff0000
+    P    ff0000
+    S2    00a000
+    P1    ff0000
+    D1    ffa0a0
+    S3    0000ff
+    P2    00a000
+    D2    00a000
+    S    ff0000
+    P3    0000ff
+    D3    8080ff
+}
+
+pf_revision_time 1199145710
+.fi
+.SH EXAMPLE
+.nf
+orbmonrtd_pf_generator -v -d pftmp -p pf/orbmonrtd_pf_generator /path/to/usarray/dbmaster/usarray
+.fi
+.SH RETURN VALUES
+An example orbmonrtd parameter file created by this script follows:
+.nf
+
+hostname{rt}54% cat anf2hrBHZ.pf
+
+arrivals        &Arr{
+    D1  ffa0a0
+    D2  00a000
+    D3  8080ff
+    P   ff0000
+    P1  ff0000
+    P2  00a000
+    P3  0000ff
+    S   ff0000
+    S1  ff0000
+    S2  00a000
+    S3  0000ff
+}
+detections      &Arr{
+    BW_0.5_4_1.2_4      ffa0a0    0.1
+    BW_0.8_4_3.0_4      00ff00    0.05
+    BW_3.0_4_0_0        a0a0ff    0.0
+}
+dump    "/export/home/rt/rtsystems/vncweb/bin/getgif $window $period $name"
+pf_revision_time        1208991095
+sources &Tbl{
+    TA_A06A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_A08A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_B07A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_B15A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_C08A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_D07A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_D10A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_E06A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_E14A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_F07A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_F09A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_G14A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_H16A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_H12A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_I17A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_J15A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_J18A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_K20A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_L17A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_L21A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_M15A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_N17A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_N11A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_O18A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_P18A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_P12A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_Q13A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_R18A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_R22A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_S18A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_T18A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_T12A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_U13A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_V20A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_W15A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_W22A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_X19A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_Y20A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_Z21A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_113A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_126A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_222A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_218A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_327A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+    TA_527A_BHZ anfexport-mgmt:usarrayTA 7200 -2500.000 2500.000
+}
+.fi
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orbmonrtd(1)
+.fi
+.SH "BUGS AND CAVEATS"
+A deployment table is required for the dbmaster database. The script will die without one defined.
+.SH AUTHOR
+.nf
+Rob Newman
+University of California, San Diego
+.fi
+# This is just an id line from rcs.
+.\" $Id$
