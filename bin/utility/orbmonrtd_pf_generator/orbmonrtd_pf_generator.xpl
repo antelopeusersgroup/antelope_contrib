@@ -78,7 +78,7 @@ sub check_dbmaster {
         "Please check the path defined in the -d option. Goodbye.\n" ) ;
     } else {
         if( $opt_v ) {
-            print( "Connected to dbmaster $dbname and opened deployment table.\n" ) ;
+            print( "Successfully connected to dbmaster $dbname and opened deployment table.\n" ) ;
         }
     }
 }
@@ -115,11 +115,11 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     }
 
     if( $opt_v ) {
-        print( "Retrieving snet_station names.\n" ) ;
+        print( "Retrieving snet_station names for: $key\n" ) ;
     }
 
     if( defined $modulus && $modulus ne '' ) {
-        print( "Subsetting using modulus value of $modulus.\n" ) ;
+        print( "Subsetting using modulus value of $modulus for: $key\n" ) ;
     }
 
     my( @netstas ) ;
@@ -147,7 +147,13 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     if ( defined $State{dump_cmd} ) { pfput( "dump", $State{dump_cmd}, 'pfobj' ) } ;
     if ( defined $State{detections} ) { pfput( "detections", $State{detections}, 'pfobj' ) } ;
     if ( defined $State{arrivals} ) { pfput( "arrivals", $State{arrivals}, 'pfobj' ) } ;
-    pfput( "pf_revision_time", time(), 'pfobj' ) ;
+
+    $revision_time = time() ;
+    pfput( "pf_revision_time", $revision_time, 'pfobj' ) ; 
+ 
+    if( $opt_v ) { 
+        print "Parameter file revision time is $revision_time for: $key\n" ;
+    }
 
     my( $tw ) = $State{sources}->{$key}->{'tw'} ;
     my( $chan ) = $State{sources}->{$key}->{'chan'} ;
