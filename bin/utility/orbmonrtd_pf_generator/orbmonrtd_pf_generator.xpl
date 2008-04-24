@@ -21,7 +21,9 @@ chomp( $Program ) ;
 
 elog_init( $Program, @ARGV ) ;
 
+our( $dbname, $pfdir, %State, @db, $this_pf_file, $revision_time ) ;
 our( $opt_v, $opt_d, $opt_p ) ;
+
 if( ! &Getopts( 'vd:p:' ) || @ARGV != 1 ) {
     die( "Usage: orbmonrtdpfgenerator [-v] [-d pfdirectory] [-p pffile] dbmaster\n" ) ;
 } else {
