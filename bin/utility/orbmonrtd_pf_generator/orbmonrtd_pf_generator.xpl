@@ -16,7 +16,7 @@ require "getopts.pl" ;
 use Datascope ;
 use IO ;
 
-$Program = `basename $0` ;
+my( $Program ) = `basename $0` ;
 chomp( $Program ) ;
 
 elog_init( $Program, @ARGV ) ;
@@ -64,7 +64,7 @@ sub init_globals {
         "arrivals",
         "pf_revision_time"
     ) ;
-    foreach $param ( @params ) {
+    foreach my $param ( @params ) {
         $State{$param} = pfget( $State{pf}, $param ) ;
     }
 }
