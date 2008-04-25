@@ -22,6 +22,43 @@ require "getopts.pl" ;
 use Datascope;
 use File::Path;
 
+use strict 'vars' ;
+# debug
+#use diagnostics;
+
+our ($opt_d, $opt_f, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_m, $opt_v, $opt_V, $opt_y);
+
+our ($sub1, $sub2, $start, $end, $cmd) ; 
+our ($database, $filename ) ;
+our (@db, @dbevent_b, @dborigin_b, @dbj);
+our (@dborigin_g, @dbevent_g);
+our (@dbarrival, @dbevent, @dborigin, @dbassoc, @dborigerr);
+our (@dbsnetsta, @dbschanloc, @dbnetmag, @dbstamag );
+our (@trackdb, @dmcbull);
+
+our ($bull, $bulls, $dmcfile);
+
+our ($t, $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst);
+our ($blank, $value, $agency, $auth) ;
+our ($evtype, $emap, $etype, %emap); 
+our ($nrecs, $nevents, $event, $origin, $nevents_total) ;
+our ($mindelta, $maxdelta, $orid, $ortime, $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec);
+our ($startyr, $startmo, $startdy);
+our ($artime, $arrtime_ms, $atime, $mintime, $maxtime, $arid, $lddate);
+our ($smajax, $sminax, $strike, $sdepth, $ndef, $stime, $sdobs, $lat, $lon, $fixed);
+our ($match_origerr_auth, $tasdef, $fm, $pickinfo);
+our ($maginfo, $magtype, $magnitude, $hashname);
+our ($sta, $chan, $filtype, $deltime, $net, $loc, $dist, $evaz, $phase, $tres, $azim);
+our ($azres, $slodef, $arrtimesb, $arrtime, $slow, $sres, $snr, $amp, $pre);
+our ($cnt_origin, $gregion, $grn, $srn, $otime, $depth, $assoc, $delta) ;
+our ($evid, $dtype, $alg, $prefauth, $per);
+our ($prefix, $suffix) ;
+
+our ($prefor);
+
+our ($Pf, $auth_reject, $mysubset, $IMSdir) ;
+
+
   if ( ! &Getopts('d:f:t:s:e:l:p:mvVy') || @ARGV < 1 || @ARGV > 1) { 
 	&usage;
   }
@@ -80,7 +117,7 @@ use File::Path;
    if ($opt_p) {
 	$Pf = $opt_p ;
    } else {
-	$Pf = db2ims ;
+	$Pf = "db2ims" ;
    }
 
 # get information from Pf file
@@ -328,6 +365,12 @@ use File::Path;
    $nevents	= dbquery (@dbevent_g,"dbRECORD_COUNT");
    print STDERR "Number of grouped events is: $nevents	\n" if ($opt_v || $opt_V);
 
+   if ($nevents <= 1 ) {
+        print STDERR "No records after grouping.  \n";
+        print STDERR "Check for possible dbpath errors.  Exiting.\n";
+        exit(1);
+   }
+
 #
 # Now that the filename is determined, open it.
 #
@@ -349,7 +392,7 @@ use File::Path;
 #
 # setup @$prefor for accepting %$arid
 #
-      @$prefor = () ;
+      @{$prefor} = () ;
       print " evid    $evid   prefor   $prefor  \n" if $opt_V ;
 
       @dbevent_b = split(" ",dbgetv(@dbevent_g,"bundle"));
@@ -682,7 +725,7 @@ sub convert_auth {
 	} elsif ($auth=~/UCSD.*/) {
 		$auth = "ANZA";
 	} else {
-		$auth == "UNKNWN";
+		$auth = "UNKNWN";
 	}
 
 	print STDERR "converted auth is: $auth\n" if $opt_V;
