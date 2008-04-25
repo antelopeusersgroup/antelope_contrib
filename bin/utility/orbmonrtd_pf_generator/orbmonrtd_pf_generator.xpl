@@ -107,10 +107,10 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     my( $modulus ) = $State{sources}->{$key}->{'modulus'} ;
 
     if( $expr ne '' ) {
-        @db = dbprocess( @db, @{$expr} ) ;
+        my( @db_subset ) = dbprocess( @db, @{$expr} ) ;
     }
 
-    if( dbquery( @db, "dbRECORD_COUNT" ) < 1 ) {
+    if( dbquery( @db_subset, "dbRECORD_COUNT" ) < 1 ) {
         die( 'No records returned from your subsets' ) ;
     }
 
@@ -123,11 +123,11 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     }
 
     my( @netstas ) ;
-    for( $db[3]=0; $db[3] < dbquery( @db, "dbRECORD_COUNT" ); $db[3]++ ) {
-        my( $snet, $staname ) = dbgetv( @db, "snet", "sta" ) ;
+    for( $db_subset[3]=0; $db_subset[3] < dbquery( @db_subset, "dbRECORD_COUNT" ); $db_subset[3]++ ) {
+        my( $snet, $staname ) = dbgetv( @db_subset, "snet", "sta" ) ;
         my( $snet_sta ) = $snet."_".$staname ;
         if( defined $modulus && $modulus ne '' ) {
-            if( $db[3] % $modulus == 0 ) {
+            if( $db_subset[3] % $modulus == 0 ) {
                 push @netstas, trim($snet_sta) ;
             }
         } else {
@@ -191,6 +191,10 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     pfput( "sources", \@this_sources_tbl, 'pfobj' ) ;
     pfwrite( $this_pf_file, 'pfobj' ) ;
     close( DYNAPF ) ;
-}
 
+    undef @db_subset ;
+}
+# Clean up
+dbfree( @db ) ;
+dbclose( @db ) ;
 exit 0 ;
