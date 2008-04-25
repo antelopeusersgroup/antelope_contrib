@@ -3,7 +3,13 @@
 ims2dmc \- send IMS1.0 short bulletin files to DMC and track in database 
 .SH SYNOPSIS
 .nf
-\fBims2dmc \fP[-v] [-V] {-m email1,email2,... | -o \fIorb\fP} [-s \fIsubject\fP] \fIfile\fP \fIdatabase\fP
+\fBims2dmc \fP
+	[-v] 
+	[-V] 
+	[-C \fIproduct_dir\fP] 
+	[-s \fIsubject\fP] 
+	{-m email1,email2,... | -o \fIorb\fP} 
+	\fIfile\fP \fIdatabase\fP
 .fi
 .SH DESCRIPTION
 \fBims2dmc\fP uses \fBrtmail\fP or \fBorbxfer2\fP to transfer IMS1.0 short 
@@ -22,6 +28,9 @@ test purposes, there should be no reason to change the subject line.
 Verbose log messages
 .IP -V
 Overwhelmingly verbose log messages.  Useful for debugging purposes only.
+.IP "-s subject"
+Subject for the email if -m option is used.  The DMC requests that the subject line be "PICKS".  
+You should not have to change this.  Ignored if -m is not used.
 .IP "-m email1,email2,..."
 Email addresses for those who will receive bulletin files.  The DMC requests
 that phase picks be sent to phasemail@iris.washington.edu.  Either the -m or 
@@ -30,9 +39,14 @@ the -o option must be selected.
 Output/transmit orb for orbxfer2(1).  File will be transferred to this orb that
 the DMC (or others) watch with orbxfer2 in receiver mode.  See BUGS and CAVEATS for
 potential changes needed for orbxfer2.pf.  Either the -m or the -o option must be selected.
-.IP "-s subject"
-Subject for the email if -m option is used.  The DMC requests that the subject line be "PICKS".  
-You should not have to change this.
+.IP "-C product_dir"
+Top level directory underneath which the IMS files reside.  The phase pick files generated
+by \fBdb2ims\fP reside in an \fIims_dir\fP as specified in db2ims.pf.  This could include a 
+full path name that you do not want to transfer when using orbxfer.  The \fIproduct_dir\fP is
+the top level directories that you wish to strip off when transferring the file via \fBorbxfer2\fP,
+the -o option.  Using this option with \fI-o\fP, if the file to be transferred is stored in 
+the \fIproduct_dir/ims_dir\fP, the \fBorbxfer2\fP receiver receives the file as
+\fIims_dir/2008_01_01_ANF_IMS\fP for example.  
 .IP file 
 Name of the file containing IMS1.0 short file format phase and origin information.
 .IP database
@@ -74,6 +88,7 @@ db/anf.dmcfiles
 .SH "SEE ALSO"
 .nf
 db2ims(1)
+orbxfer2(1)
 mk_dmc_files(1)
 dmcbull(5)
 dmcfiles(5)
