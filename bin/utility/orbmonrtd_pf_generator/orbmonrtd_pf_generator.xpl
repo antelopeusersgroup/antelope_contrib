@@ -21,7 +21,7 @@ chomp( $Program ) ;
 
 elog_init( $Program, @ARGV ) ;
 
-our( $dbname, $pfdir, %State, @db, $this_pf_file, $revision_time ) ;
+our( $dbname, $pfdir, %State, @db, @db_subset, $this_pf_file, $revision_time ) ;
 our( $opt_v, $opt_d, $opt_p ) ;
 
 if( ! &Getopts( 'vd:p:' ) || @ARGV != 1 ) {
@@ -107,7 +107,7 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     my( $modulus ) = $State{sources}->{$key}->{'modulus'} ;
 
     if( $expr ne '' ) {
-        my( @db_subset ) = dbprocess( @db, @{$expr} ) ;
+        @db_subset = dbprocess( @db, @{$expr} ) ;
     }
 
     if( dbquery( @db_subset, "dbRECORD_COUNT" ) < 1 ) {
