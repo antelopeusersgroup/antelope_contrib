@@ -1,0 +1,176 @@
+.TH mchedr2db 1 "$Date$"
+.SH NAME
+mchedr2db \- collect and convert mchedr format bulletin
+.SH SYNOPSIS
+.nf
+\fBmchedr2db\fP [-v] [-A] [-p \fIpf\fP] [-a \fIauth\fP] [-f \fIfile\fP] db 
+.fi
+.SH DESCRIPTION
+\fBmchedr2db\fP converts mchedr format files distributed by the USGS into
+css3.0 origin, and possibly arrival, tables.  Files could reside locally, 
+or be collected from an ftp site.
+.LP
+This script was tested on the USGS mine and explosion data, but should
+work on any mchedr format data.  See ftp://hazards.cr.usgs.gov/mineblast/read_me
+for additional information on this particular bulletin.
+.LP
+Files are retrieved from the remote ftp site and stored locally.  When this
+script is run, file update times on the remote ftp site are checked against
+the files that have been recovered and stored locally.  If the remote update 
+time is newer than the stored file, the file is retrieved (replacing the previous
+copy) and converted.
+.LP
+This is a new script that has not been rigorously tested.  I recommend 
+that you treat it as experimental and note that it may have problems that
+have not been uncovered in my simple testing.  Use at your own risk!  However,
+if you find it useful and have suggestions for improvement, let me know and I 
+will consider incorporating them in my next round of changes.
+.SH OPTIONS
+.IP -v
+Verbose output
+.IP -A
+Attempt to create arrival table if arrival information is available in input
+file.  This was intended for use with the -f option, but should probably be successful
+for files automatically downloaded. 
+.IP "-p parameter_file"
+Parameter file to use.  The default parameter file name is \fBmchedr2db\fP.
+.IP "-a author"
+Fill in the auth field in the origin (and optionally arrival table) with
+this author.  The default is "mchedr".
+.IP "-f file"
+Do not retrieve files via ftp.  Instead convert the specified local mchedr format file: \fIfile\fP.
+.IP db
+Database that contains output origin and arrival information.  An attempt is made to
+update any pre-existing origin or arrival information.
+.SH FILES
+Documentation of the mchedr format is found on the USGS web pages.  See for example:
+ftp://hazards.cr.usgs.gov/mineblast/read_me.
+.SH ENVIRONMENT
+Need to have sourced $ANTELOPE/setup.csh and environment variable $PFPATH set.
+.SH PARAMETER FILE
+Below is the default \fbmchedr2db\fP parameter file.
+.in 2c
+.ft CW
+.nf
+.ps 8
+
+# mkhedr2db.pf
+
+account		# fill in with your email address, someone@somewhere.edu
+
+bulletins &Arr{
+  current_exp &Arr{
+        file            mchedrexp.dat
+        remote_host     hazards.cr.usgs.gov
+        remote_dir      explosions
+        local_dir       /raid/bulletins/mine_files
+        author          NEIC_mines
+        arrivals        no 
+  }
+
+  monthly_exp &Arr{
+        file            ex.dat
+        remote_host     hazards.cr.usgs.gov
+        remote_dir      mineblast 
+        local_dir       /raid/bulletins/mine_files
+        author          NEIC_mines
+        arrivals        yes
+  }
+
+}
+
+.ps
+.fi
+.ft R
+.in
+.LP
+The user must define the type of bulletin they are collecting by naming the
+instance of mchedr files to collect.  Each instance (i.e. current_exp and
+monthly_exp above) must have the following parameters defined:
+.LP
+.IP file
+Name of file to retrieve from remote ftp site.  This could be a regex that follows
+perl conventions for pattern matching.  This is not thoroughly tested. 
+.IP remote_host
+Address of remote ftp site.
+.IP remote_dir
+Directory on remote ftp site where files reside.
+.IP local_dir
+Local directory where retrieved files are stored.  If it does not exist
+it is created.
+.IP author
+Name to be used for the auth field in the origin (and optionally arrival) table.  
+This can be overridden by the -a command line option.
+.IP arrivals
+If arrival information is available, create an arrival table.  Need to specify "yes" 
+if you want arrivals collected.  The USGS currently has arrival information in
+the mchedr bulletins for mines/explosions, but not in the mchedrexp.dat file which
+contains the last 91 days of bulletin information.  I suggest you review a
+file from the bulletin you wish to collect prior to using this program to see
+if it has arrival information and then tune your pf accordingly. 
+.SH EXAMPLE
+#
+# This section should contain an example that the user can follow
+# verbatim.  For a command, this should show a sample command line and output.
+# Use the same fonts as in \fBSYNOPSIS\fR. What the user types in should
+# be bold, and program response or output should be roman. All commands 
+# should be preceded by a representative UNIX prompt.
+#
+# For a library, you might show an example program (This is usually only 
+# done for more complex routines or packages.)
+#
+.LP Generate a database from the mchedr0801ex.dat file producing both
+an origin and arrival table. 
+.in 2c
+.ft CW
+.nf
+%\fB mchedr2db -A -f mchedr0801ex.dat jan_mines\fP
+.fi
+.ft R
+.in
+.LP Collect mchedr files from remote ftp sites referenced in the 
+mchedr_mines.pf file.  
+.in 2c
+.ft CW
+.nf
+%\fB mchedr2db -p mchedr_mines mines\fP
+.fi
+.ft R
+.in
+
+.SH DIAGNOSTICS
+
+.SH "SEE ALSO"
+.nf
+pde2origin(1)
+qed2origin(1)
+scec2db(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+This program has not been tested on any data other than the USGS mines and 
+explosion data.  I suspect it will work on other mchedr data files, but I have
+not confirmed this. 
+.LP
+This program is more verbose than necessary.
+.LP
+I have many stray in-house \fIblah2db\fP programs that I am trying to consolidate 
+into a useful framework.  This program may disappear in the future as I move
+toward a unified approach to bulletin collection.
+.LP 
+When creating arrivals, there are assumptions about the phase and what channel
+it was picked on.  The mchedr does not specify a channel, so I impose the following 
+mapping.  All "P" picks are mapped to "BHZ"; "S" picks are mapped to "BHN"; "LG" picks
+are mapped to "BHN"; all others map to BHZ.
+.LP
+Magnitudes.  Sigh.  If the reported magnitude is ML or MB, the mapping is obvious.  If
+the reported magnitude is LG, I chose to map this as an "mb" magnitude in the origin 
+table.  For reported "MD" magnitudes I force the origin table to use "ml".  Other
+magnitude types are not translated, but you might get an error message.  I have also
+seen events in the mchedr files that have no reported magnitudes.  These are noted with
+a message like: "Can't parse magtypes:     or      ".  I should probably broaden the
+possible mapping of magnitudes or allow this to be customizable in the pf.
+.SH AUTHOR
+Jennifer Eakins
+.br
+Univ. of California, San Diego

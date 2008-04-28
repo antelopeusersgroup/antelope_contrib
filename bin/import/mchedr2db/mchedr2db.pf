@@ -1,0 +1,24 @@
+
+account		# fill in with your email address, someone@somewhere.edu
+
+bulletins &Arr{
+  current_exp &Arr{
+	file		mchedrexp.dat
+	remote_host	hazards.cr.usgs.gov
+	remote_dir 	explosions
+	local_dir	/hf/hifreq/qed/mine_files
+	author  	NEIC_mines
+	arrivals	no 
+  }
+
+  monthly_exp &Arr{
+  	file		ex.dat
+  	remote_host	hazards.cr.usgs.gov
+  	remote_dir 	mineblast 
+	local_dir	/hf/hifreq/qed/mine_files
+	author  	NEIC_mines
+	arrivals	yes
+  }
+
+}
+
