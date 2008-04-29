@@ -14,12 +14,24 @@ use archive;
 require "getopts.pl" ;
 use File::Path;
 use Cwd;
+use strict 'vars' ;
  
 elog_init ( $0, @ARGV) ;
 
-our ($opt_d, $opt_m, $opt_p, $opt_v, $opt_V, $opt_s, $opt_o, $opt_f, $opt_z, $opt_C) ;
+our ($opt_d, $opt_m, $opt_p, $opt_v, $opt_s, $opt_o, $opt_f, $opt_z, $opt_C) ;
+our ($opt_D, $opt_V, $opt_N);
+our ($pf, $VNDdir, $DLdir, $STADLdir) ;
+our (@db, @dmcfiles, @dmcfiles_record) ;
+our ($dfile, $comment, $dbin, $dbtrack, $vnet, $net, $mycwd);
+our ($sta, $year, $month, $day, $dir, $fulldir) ;
+our ($subject, $filename, $orb, $auth, $xfer);
+our ($filename, $suffix, $prefix, $mkdl, $mkvnd, $zip);
+
 my ($now, $t) ;
-my ($pgm,$mailtmp,$host);
+my ($mailtmp,$host);
+
+my $pgm = $0 ; 
+$pgm =~ s".*/"" ;
 
 if ( ! &Getopts('Dvzp:d:s:m:N:o:V:C:') || @ARGV < 2 || @ARGV > 4) { 
     die ( "Usage: $pgm [-v] [-z] [-p pf] [-d output_dir] [-C product_dir] [-N net] [-s sta] [-f output_file] [-m email1,email2,...] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
@@ -40,15 +52,12 @@ $year	= epoch2str($now, "%Y");
 $month	= epoch2str($now, "%m");
 $day  	= epoch2str($now, "%d");
 
-my $pgm = $0 ; 
-$pgm =~ s".*/"" ;
-$mailtmp = "/tmp/#$pgm.$$" if $opt_m;
+$mailtmp = "/tmp/#$pgm.$$" ; 
    
 chop ($host = `uname -n` ) ;
 
 elog_notify(0,"\nStarting $pgm at: $t");
 
-#elog_notify(&cmdline()) ;
 &cmdline() if $opt_m;
 
 elog_notify(0,"Current working directory: $mycwd\n");
@@ -261,8 +270,6 @@ push(@dmcfiles_record,	"time", $now,
 			"auth", $auth,
 			) ;
 
-# lddate is placed automatically via dbaddv
-
 elog_notify(0, "Creating dmcfiles_record\n") if ($opt_v);
 eval { dbaddv(@dmcfiles,@dmcfiles_record) };
 
@@ -274,8 +281,6 @@ if ($@) {
 
 
 dbclose(@db);
-
-
 
 exit(0);
 
