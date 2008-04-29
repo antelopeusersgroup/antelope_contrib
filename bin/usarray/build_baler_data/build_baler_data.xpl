@@ -166,8 +166,8 @@ sub trexcerpt {  # &trexcerpt ($tmpwf, $dbout, $starttime, $endtime)  ;
     
     elog_notify(sprintf "trexcerpt start time %s		End time %s",strydtime($starttime),strydtime($endtime));
         
-    $cmd = "trexcerpt -g $tmpwf $dbout $starttime $endtime";
-    $cmd = "trexcerpt -v -g $tmpwf $dbout $starttime $endtime" if $opt_v;
+    $cmd = "trexcerpt -D -E -g $tmpwf $dbout $starttime $endtime";
+    $cmd = "trexcerpt -v -D -E -g $tmpwf $dbout $starttime $endtime" if $opt_v;
     elog_notify("	$cmd");
     $problems = 0 ;
     $problems = run($cmd,$problems) unless $opt_n;
