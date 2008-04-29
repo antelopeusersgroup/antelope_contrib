@@ -309,8 +309,8 @@ sub trexcerpt {  # $tmpdays = &trexcerpt ($dbrt,$tmpgap,$dbbaler,$dbout,$dbmaste
     foreach $jdate (@jdates) {
         $epochday = epoch($jdate);
         $epend    = $epochday + 86399.9999;
-        $cmd = "trexcerpt -g $tmpdays $dbout $epochday $epend";
-        $cmd = "trexcerpt -g -v $tmpdays $dbout $epochday $epend" if $opt_v;
+        $cmd = "trexcerpt -D -E -g $tmpdays $dbout $epochday $epend";
+        $cmd = "trexcerpt -D -E -g -v $tmpdays $dbout $epochday $epend" if $opt_v;
         elog_notify("$jdate - 	$cmd");
         system($cmd) unless $opt_T;
     }
