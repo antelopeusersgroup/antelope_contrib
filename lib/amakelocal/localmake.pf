@@ -22,6 +22,11 @@ elements &Arr{
 		Solaris -I/usr/openwin/include
 		Linux 	-I/usr/X11R6/include
 	}
+	PYTHONINCLUDE &Arr{
+		Darwin 	/sw/include/python2.5
+		Solaris /usr/local/include/python2.5
+		Linux 	/usr/local/include/python2.5
+	}
 }
 
 modules &Arr{
