@@ -123,7 +123,6 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		if( (dbassoc.table==dbINVALID) 
 			|| (dbarrival.table==dbINVALID))
 		{
-			result_db_handle.close();
 			waveform_db_handle.close();
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string("  constructor had problems opening one or more database tables"));
