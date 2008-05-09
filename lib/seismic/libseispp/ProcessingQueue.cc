@@ -77,21 +77,25 @@ ostream& operator<<(ostream& os, DatascopeProcessingQueue& q)
 DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string fname)
 {
 	struct stat sbuffer;
+	const string base_error("DatascopeProcessingQueue constructor:  ");
 	if(stat(fname.c_str(),&sbuffer))
 		fp=fopen(fname.c_str(),"w");
 	else
 		fp=fopen(fname.c_str(),"r+b");
 	if(fp==NULL)
-		throw SeisppError("DatascopeProcessingQueue constructor:  "
+		throw SeisppError(base_error
 		 + string("Cannot open queue file=") + fname);
 	int fd=fileno(fp);
 	if(lockf(fd,F_LOCK,(off_t) 0 ) ) 
-		throw SeisppError(string("DatascopeProcessingQueue constructor:  ")
+		throw SeisppError(base_error
 			+ "Could not lock queue file.  Cannot proceed");
 	fseek(fp,0L,SEEK_END);
 	long foff=ftell(fp);
 	try {
 	    records_in_this_view=dbh.number_tuples();
+	    if(records_in_this_view<=0) 
+		throw SeisppError(base_error
+		 + "Database view is empty. Run dbverify and/or fix your code");
 	    if(foff==0)
 	    {
 		if(SEISPP_verbose)

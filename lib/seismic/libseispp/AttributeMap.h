@@ -79,6 +79,14 @@ public:
 	AttributeProperties(const AttributeProperties&);
 	/*! \brief Standard assignment operator. */	
 	AttributeProperties& operator=(const AttributeProperties&);
+	/*! \brief Returns full name. 
+
+	Database attribute names can and often do occur in multiple tables.  This method
+	returns a full name that is used to uniquely define that attribute in a particular
+	table.  Although this could be generalized, for the present this is always returned
+	in the form used by Antelope/datascope:  that is the string is if the form table.attribute.
+	*/
+	string fully_qualified_name();
 };
 /*! \brief Associative array to map internal to external naming conventions. 
 * 

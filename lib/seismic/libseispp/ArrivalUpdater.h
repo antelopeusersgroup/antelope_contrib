@@ -139,6 +139,8 @@ private:
 	/*! Holds last id of last event processed.  This is used
 	to make sure incorrect arrivals are not cleared by clear_old.*/
 	int current_evid;
+	/*! Set false if the handle references a null view.  Normally is true.*/
+	bool view_has_data;
 };
 
 } // End SEISPP Namespace declaration

@@ -90,13 +90,13 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		/* New section to handle generalization of input.  Formerly just created
 		the waveform_db_handle in the simplest form.  Now we have to handle
 		the case of building a general gather through dbbuild */
-		waveform_db_handle=DatascopeHandle(waveform_db_name,true);
+		waveform_db_handle=DatascopeHandle(waveform_db_name,false);
 		
 		switch (processing_mode)
 		{
 		case EventGathers:
 		case GenericGathers:
-			waveform_db_handle=DatascopeHandle(waveform_db_handle.db,
+			waveform_db_handle=DatascopeHandle(waveform_db_handle,
 				global_pf,string("dbprocess_commands"));
 			dpq=new DatascopeProcessingQueue(waveform_db_handle,queuefile);
 			break;
@@ -133,9 +133,19 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			|| (dbevlink.table==dbINVALID)
 			|| (dbwfprocess.table==dbINVALID) )
 		{
+		   if(processing_mode==GenericGathers)
+		   {
+			throw SeisppError(string("XcorProcessingEngine: ")
+			 + "Required extension tables (evlink, wfprocess, xcorbeam, xcorarrival)"
+			 + " are not defined.\n"
+			 + "With Generic Gather mode processing these are required.");
+		   }
+		   else
+		   {
 			save_extensions=false;
 			cerr << "XcorProcessingEngine (Warning):  Extension tables not defined"
 				<< " only arrival and assoc will be saved in database"<<endl;
+		   }
 		}
 		else
 			save_extensions=true;
@@ -240,6 +250,8 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 }
 XcorProcessingEngine::~XcorProcessingEngine()
 {
+	dbcrunch(dbassoc);
+	dbcrunch(dbarrival);
 	if(mcc!=NULL) delete mcc;
 	if(dpq!=NULL) delete dpq;
 }
@@ -1447,6 +1459,9 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    situation there is no definitive arrival for a given station and
 			    inconsistencies must be resolved by a least squares procedure */
 			    if(use_subarrays) continue;
+			    /* Do not save arrival/assoc in GenericGather mode.  In that
+			    case we cannot guarantee the event concept is valid */
+			    if(processing_mode==GenericGathers) continue;
 
 			    // These need to be computed and posted to
 			    // metadata for this trace object before
@@ -1503,7 +1518,6 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					<< arruerr << "problems in saving results"<<endl;
 				  cerr << "Turn on verbose for more details"<<endl;
 			        }
-				if(delete_old_arrivals) arru.clear_old(evid);
 			    }
 			    catch (SeisppError serr)
 			    {
@@ -1520,6 +1534,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		    }				
 		}
 	}
+	if(delete_old_arrivals) arru.clear_old(evid);
 }	
 // These are private functions hidden by the interface
 void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)

@@ -548,8 +548,6 @@ protected:
 	to provide a hack fix for some programs, but setting this
 	boolean true is to be avoided. */
 	bool retain_parent; 
-// DEBUG ROUTINE.  REMOVE FOR PRODUCTION
-void reportstate(DatascopeHandle& dbh,string message);
 };
 /*! \brief Simplified interface to dbmatches.
 

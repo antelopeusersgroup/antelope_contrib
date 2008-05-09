@@ -290,7 +290,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	}
 	try {
 		/* Use this trick to get a memory managed plain db for the handle */
-		DatascopeHandle dbtr_handle(dbtr,NULL,string(""));
+		DatascopeHandle dbhtmp(dbtr,dbtr);
+		DatascopeHandle dbtr_handle(dbhtmp,NULL,string(""),
+			true,false);
 		// 
 		// At the moment we do a hidden trick here.  We will extract the ensemble metadata fromn
 		// the trace event table.  This is very schema specific, but pretty much unavoidable.

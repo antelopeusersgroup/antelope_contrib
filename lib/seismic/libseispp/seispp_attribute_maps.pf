@@ -582,6 +582,8 @@ emodel.emodelz emodelz emodel real
 emodel.emodelt emodelt emodel real
 emodel.lddate lddate emodel real
 # These are used by dbxcor as extension tables
+evlink.evid evid evlink int
+evlink.pwfid pwfid evlink int
 sclink.sta sta sclink string
 sclink.chan chan sclink string
 sclink.pwfid pwfid sclink int
@@ -623,7 +625,7 @@ xcorbeam.robusttwin robusttwin xcorbeam int
 xcorbeam.amp amp xcorbeam int
 }
 aliases &Tbl{
-sta wfdisc.sta sclink.sta site.sta sitechan.sta
+sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta 
 chan wfdisc.chan sclink.chan sitechan.chan arrival.chan
 time wfdisc.time wfprocess.time
 endtime wfdisc.endtime wfprocess.endtime 
@@ -657,7 +659,7 @@ datatype wfdisc.datatype wfprocess.datatype
 timetype wfprocess.timetype
 pwfid wfprocess.pwfid xcorbeam.pwfid sclink.pwfid
 arid arrival.arid assoc.arid
-evid event.evid origin.evid
+evid event.evid origin.evid evlink.evid
 orid origin.orid
 wfid wfdisc.wfid
 snet snetsta.snet

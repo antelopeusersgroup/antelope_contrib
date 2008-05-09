@@ -133,10 +133,6 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 			AttributeProperties apalias=aliasmap[viewtable];
 			matchkeys.push_back(apalias);
 			MDnamekeys.push_back(*internal_name);
-//DEBUG
-cerr << "Match handle alias for internal name = "<<(*internal_name)<<endl
-	<< "Using table="<<viewtable<<endl
-	<< "AttributeProperties:  (table.attribute)="<<apalias.db_table_name<<"."<<apalias.db_attribute_name<<endl;
 			if(SEISPP_verbose)
 			{
 				if(tablenames.size()>1)
@@ -217,8 +213,6 @@ DatascopeMatchHandle::DatascopeMatchHandle(const DatascopeMatchHandle& parent)
 		tpattern=copy_string_tbl(parent.tpattern);
 	// Make the hook null in the copy to handle memory correctly
 	hook=NULL;
-if(views!=NULL)cerr << "DatascopeMatchHandle copy constructor  exit views count ="<<views->count(db.table)
-                << " for table "<<db.table<<endl;
 }
 DatascopeMatchHandle& DatascopeMatchHandle::operator = (const DatascopeMatchHandle& parent)
 {
@@ -249,8 +243,6 @@ DatascopeMatchHandle& DatascopeMatchHandle::operator = (const DatascopeMatchHand
 		views=parent.views;
 		if(views!=NULL) 
 		{
-cerr << "DatascopeMatchHandle operator =:  entry views count ="<<views->count(db.table)
-                << " for table "<<db.table<<endl;
 			/* In Datascope negative table numbers can 
 			mean different things, but never things we want
 			to memory manage */
@@ -259,9 +251,6 @@ cerr << "DatascopeMatchHandle operator =:  entry views count ="<<views->count(db
 		this->manage_parent();
 		retain_parent=parent.retain_parent;
 	}
-if(views!=NULL)cerr << "DatascopeMatchHandle operator =:  exit views count ="<<views->count(db.table)
-                << " for table "<<db.table<<endl;
-
 	return(*this);		
 }
 DatascopeMatchHandle::~DatascopeMatchHandle()
@@ -274,17 +263,13 @@ DatascopeMatchHandle::~DatascopeMatchHandle()
 // algorithm will assume keys do 
 list<int> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 {
+	const string base_error("DatascopeMatchHandle.find(): ");
 	int nscratch_records_set;
 	int i;
 	string fullname;
-int nrecs;
-dbquery(dbt,dbRECORD_COUNT,&nrecs);
-cerr << "Parent db view size="<< nrecs<<endl;
-cerr << "Parent db table number ="<< dbt.table <<endl;
+	int ierr;
 	for(i=0,nscratch_records_set=0;i<matchkeys.size();++i)
 	{
-//DEBUG
-cerr << "Setting scratch record attribute="<<matchkeys[i].db_attribute_name<<endl;
 		double rval;
 		int ival;
 		string sval;
@@ -292,8 +277,6 @@ cerr << "Setting scratch record attribute="<<matchkeys[i].db_attribute_name<<end
 			fullname=matchkeys[i].fully_qualified_name();
 		else
 			fullname=matchkeys[i].db_attribute_name;
-cerr << "fullname (used for matching) set to = "<<fullname<<endl;
-int ierr;
 		try {
 			/* To handle aliases we use the MDnamekeys vector
 			names as Metadata keys for fetching attributes. 
@@ -303,14 +286,10 @@ int ierr;
 			{
 			case MDreal:
 				rval=md.get_double(MDnamekeys[i]);
-				// perhaps should check return of this, but
-				//intentionally ignored for now
 				ierr=dbputv(dbscratch_record,0,
 					fullname.c_str(),
 					rval,0);
 				++nscratch_records_set;
-dbgetv(dbscratch_record,0,fullname.c_str(),&rval,0);
-cerr << "Value in scratch record = "<< rval<<endl;
 				break;
 			case MDint:
 				ival=md.get_int(MDnamekeys[i]);
@@ -318,28 +297,13 @@ cerr << "Value in scratch record = "<< rval<<endl;
 					fullname.c_str(),
 					ival,0);
 				++nscratch_records_set;
-if(ierr) elog_notify(1,"dbputv error writing attribute %s\n",fullname.c_str());
-ierr=dbgetv(dbscratch_record,0,fullname.c_str(),&ival,0);
-if(ierr) elog_notify(1,"dgetv error reading attribute %s\n",fullname.c_str());
-cerr << "Value in scratch record = "<< ival<<endl;
 				break;
 			case MDstring:
 				sval=md.get_string(MDnamekeys[i]);
-/*
-				dbputv(dbscratch_record,0,
+				ierr=dbputv(dbscratch_record,0,
 					fullname.c_str(),
 					sval.c_str(),0);
-*/
-char *stest=strdup(sval.c_str());
-ierr=dbputv(dbscratch_record,0,matchkeys[i].db_attribute_name.c_str(),stest,0);
-if(ierr) elog_notify(1,"dbputv error writing attribute %s\n",fullname.c_str());
-free(stest);
 				++nscratch_records_set;
-char stmp[80];
-//dbgetv(dbscratch_record,0,fullname.c_str(),stmp,0);
-ierr=dbgetv(dbscratch_record,0,matchkeys[i].db_attribute_name.c_str(),stmp,0);
-if(ierr) elog_notify(1,"dgetv error reading attribute %s\n",fullname.c_str());
-cerr << "Value in scratch record = "<< stmp<<endl;
 				break;
 			default:
 				cerr << "DatascopeMatchHandle.find():  unrecognized type field for key " 
@@ -350,6 +314,10 @@ cerr << "Value in scratch record = "<< stmp<<endl;
 					<< "Attempting to match without this key"
 					<< endl;
 			}
+			if(ierr==dbINVALID) throw SeisppError(base_error
+				+ "dbputv error writing attribute" 
+				+ fullname
+				+ " to scratch record for match view");
 		} catch (MetadataError mderr)
 		{
 			cerr << "DatascopeMatchHandle.find(): match key attribute not found in metadata of input data object" 
@@ -361,7 +329,7 @@ cerr << "Value in scratch record = "<< stmp<<endl;
 	}
 	if(nscratch_records_set<=0)
 	{
-		throw SeisppError("DatascopeMatchHandle.find(): error inputs, cannot proceed");
+		throw SeisppError(base_error +"error inputs, cannot proceed");
 	}
 	int nmatches;
 	Tbl *records;
@@ -369,7 +337,7 @@ cerr << "Value in scratch record = "<< stmp<<endl;
 	nmatches=dbmatches(dbscratch_record,dbt,
 		&kpattern,&tpattern,&hook,&records);
 	if(nmatches==dbINVALID)
-		throw SeisppDberror("DatascopeMatchHandle.find(0:  dbmatches failed and threw an error",dbt);
+		throw SeisppDberror(base_error +"dbmatches failed and threw an error",dbt);
 	// This will silently return an empty list if
 	// nothing matches (nmatches=0)
 	for(i=0;i<nmatches;++i)

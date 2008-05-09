@@ -183,8 +183,7 @@ namespace SEISPP
 					+ string(" tagged with key=")
 					+ internal_name);
 		    }
-		    dbattributename=apalias.db_table_name
-			+ "." + apalias.db_attribute_name;
+		    dbattributename=apalias.fully_qualified_name();
 		    dbnamelist.push_back(dbattributename);
 		}
 	    }
@@ -198,10 +197,9 @@ namespace SEISPP
                     +string(" is not in AttributeMap.  Check initialization"));
                 // the weird ap->second is a STL oddity for the item
                 // two of a pair <key,type>
-                dbattributename=ap->second.db_table_name
-                    + "." +ap->second.db_attribute_name;// antelope naming
+		dbattributename=ap->second.fully_qualified_name();
                 if((*i).mdt != ap->second.mdt) throw MetadataError(base_error
-                        +string("mismatch of type definitions for database attribute ")+(ap->second.db_attribute_name));
+                        +string("mismatch of type definitions for database attribute ")+(ap->second.fully_qualified_name()));
 		dbnamelist.push_back(dbattributename);
 	    }
 

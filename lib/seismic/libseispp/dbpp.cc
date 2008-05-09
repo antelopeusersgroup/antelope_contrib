@@ -19,46 +19,6 @@ bool is_view_test(Dbptr db)
 	else
 		return false;
 }
-//DEBUG routine:  Remove for production.  Also requires edit of dbpp.h
-void DatascopeHandle::reportstate(DatascopeHandle &dbh,string mess)
-{
-	cerr << mess<<endl
-		<< "Table="<<dbh.db.table<<endl;
-	cerr << "Views container address="<<dbh.views<<endl;
-	if(dbh.views==NULL)
-		cerr << ".  views memory management pointer is NULL"<<endl;
-	else if(dbh.db.table<0)
-		cerr << "Table is an invalid (negative) number"<<endl;
-	else
-	{
-		cerr << " has count of " << dbh.views->count(dbh.db.table)<<" in view container."<<endl;
-		cerr << "views container current size="<<dbh.views->size()<<endl;
-		cerr << "Views contents = {"<<endl;
-		multiset<int>::iterator ptr;
-		for(ptr=dbh.views->begin(); ptr!= dbh.views->end(); ++ptr)
-		{
-			cerr << " "<<*ptr;
-		}
-		cerr <<" }"<<endl;
-		
-		if(is_view_test(dbh.db))
-			cerr << "Interface says this is a view"<<endl;
-		else
-			cerr << "Interface says this is a simple table"<<endl;
-		cerr << "Dbptr contents=("
-			<<dbh.db.database<<", "
-			<<dbh.db.table<<", "
-			<<dbh.db.field<<", "
-			<<dbh.db.record<<") "<<endl;
-		cerr << "parent Dbptr ="
-			<<dbh.parent_table.database<<", "
-			<<dbh.parent_table.table<<", "
-			<<dbh.parent_table.field<<", "
-			<<dbh.parent_table.record<<") "<<endl;
-		if(dbh.views!=NULL)
-		  cerr << "parent db table count"<<dbh.views->count(parent_table.table)<<endl;
-	}
-}
 
 // Simple function needed by constructors below.  Returns true if
 // the string dbgroup is found in the command to be send to dbprocess.
@@ -105,11 +65,8 @@ string FindFirstValidTable(Dbptr db,list<string> tables_to_test)
 	for(tttptr=tables_to_test.begin();tttptr!=tables_to_test.end();++tttptr)
 	{
 		Dbptr dbtest;
-//DEBUG
-cerr<< "Testing table="<<*tttptr<<endl;
 		ierr=dbgetv(db,0,tttptr->c_str(),&dbtest,0);
 		if(ierr==0) return(*tttptr);
-cerr << "Failed"<<endl;
 	}
 	return(string("BAD"));
 }
@@ -192,8 +149,6 @@ DatascopeHandle::DatascopeHandle(string dbname,
 	parent_table=db;
 	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
-//DEBUG
-reportstate(*this,string("Exiting pf driven constructor"));
 }
 /* Construct from a raw pointer.  See dbpp.h or doxygen pages
 for more details.  Note this constructor used to used 
@@ -288,17 +243,12 @@ DatascopeHandle::DatascopeHandle(const DatascopeHandle& dbi)
 	views=dbi.views;
 	if(views!=NULL)
 	{
-cerr << "DatascopeHandle copy constructor:  entry views count ="<<views->count(db.table)
-		<< " for table "<<db.table<<endl;
 		if(db.table>0)
 		{
 			if(is_view_test(db)) views->insert(db.table);
 		}
 	}
 	retain_parent=dbi.retain_parent;
-cerr << "DatascopeHandle copy constructor:  exit views count ="<<views->count(db.table)
-		<< " for table "<<db.table<<endl;
-reportstate(*this,string("Exiting copy constructor"));
 }
 /* An odd specialized copy constructor for Datascope db.  
 Handle is constructed using an existing db pointer, dbi, 
@@ -331,7 +281,6 @@ pages or details */
 	
 DatascopeHandle::~DatascopeHandle()
 {
-reportstate(*this,string("Entering destructor"));
 	if(close_on_destruction)
 	{
 		if(views!=NULL) 
@@ -361,7 +310,6 @@ reportstate(*this,string("Entering destructor"));
 		if(is_view) 
 		{
 			int viewcount=views->count(db.table);
-cerr << "View count for table = "<<db.table<<" is "<<viewcount<<endl;
 			if(viewcount<=0)
 			{
 			   if(SEISPP_verbose)
@@ -383,27 +331,14 @@ cerr << "View count for table = "<<db.table<<" is "<<viewcount<<endl;
 			  viewcount=views->count(db.table);
 			  if(viewcount<=0)
 			  {
-//DEBUG
-cerr << "Calling dbfree on table="<<db.table<<endl;
 			    int testfree=dbfree(db);
 			    if(testfree==dbINVALID)
 				throw SeisppError(string("DatascopeHandle Destructor:")
 				 + string(" dbfree returned dbINVALID.") );
 			  }
 			}
-			/* We need to do this to release te container memory when 
-			all views are cleared */
-/*
-			if(views->size()<=0) 
-			{
-cerr << "views container is empty.  Deleting and setting pointer NULL."<<endl;
-				delete views;
-				views=NULL;
-			}
-*/
 		}
 	}
-reportstate(*this,string("Exiting destructor"));
 }
 // function that needs to be called to force closing database
 void DatascopeHandle::close()
@@ -471,7 +406,6 @@ int DatascopeHandle::number_attributes()
 }
 DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 {
-reportstate(*this,string("Entering operator="));
 	if(this!=&dbi)
 	{
 		db=dbi.db;
@@ -488,7 +422,6 @@ reportstate(*this,string("Entering operator="));
 			}
 		}
 	}
-reportstate(*this,string("Exiting operator="));
 	return(*this);
 }
 void DatascopeHandle::operator ++()
@@ -569,7 +502,6 @@ Tbl *list_to_tbl(list<string> slist)
 	
 void DatascopeHandle::sort(list<string> sortkeys)
 {
-reportstate(*this,string("Entering sort"));
 	Tbl *t;
 	t = list_to_tbl(sortkeys);
 	parent_table=db;
@@ -579,13 +511,11 @@ reportstate(*this,string("Entering sort"));
 		throw SeisppDberror("dbsort failed",db,complain);
 	if(views!=NULL) views->insert(db.table);
 	freetbl(t,free);
-reportstate(*this,string("Exiting sort"));
 }
 	
 // natural join requires no join keys
 void DatascopeHandle::natural_join(string table1, string table2)
 {
-reportstate(*this,string("entering natural_join with two args"));
 	Dbptr dbj1, dbj2;
 	dbj1 = dblookup(db,0,const_cast<char *>(table1.c_str()),0,0);
 	dbj2 = dblookup(db,0,const_cast<char *>(table2.c_str()),0,0);
@@ -598,13 +528,11 @@ reportstate(*this,string("entering natural_join with two args"));
 			+ string("failed"),
 			db,complain);
 	if(views!=NULL) views->insert(db.table);
-reportstate(*this,string("Exiting natural_join with two args"));
 
 }
 // special case appending to current db
 void DatascopeHandle::natural_join(string table)
 {
-reportstate(*this,string("Entering natural_join with one args"));
 	parent_table=db;
 	db = dbjoin(db,dblookup(db,0,const_cast<char *>(table.c_str()),0,0),
 		0,0,0,0,0);
@@ -615,7 +543,6 @@ reportstate(*this,string("Entering natural_join with one args"));
 			db,complain);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
-reportstate(*this,string("Exiting natural_join with one args"));
 }
 
 
@@ -624,7 +551,6 @@ reportstate(*this,string("Exiting natural_join with one args"));
 void DatascopeHandle::join(string table2, 
 	list<string> joinkeys1, list<string> joinkeys2)
 {
-reportstate(*this,string("Exiting join with two args"));
 	Tbl *t1,*t2;
 	t1 = list_to_tbl(joinkeys1);
 	t2 = list_to_tbl(joinkeys2);
@@ -641,7 +567,6 @@ reportstate(*this,string("Exiting join with two args"));
 			db,complain);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
-reportstate(*this,string("Exiting join with two args"));
 }
 // full case with different lists for table 1 and table 2 and explicitly
 // named tables
@@ -654,7 +579,6 @@ void DatascopeHandle::join(string table1, string table2,
 void DatascopeHandle::leftjoin(string t, 
 	list<string> joinkeys1, list<string> joinkeys2)
 {
-reportstate(*this,string(" Entering leftjoin"));
 	Tbl *t1,*t2;
 	t1 = list_to_tbl(joinkeys1);
 	t2 = list_to_tbl(joinkeys2);
@@ -671,12 +595,10 @@ reportstate(*this,string(" Entering leftjoin"));
 			db,complain);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
-reportstate(*this,string(" Exiting leftjoin"));
 }
 
 void DatascopeHandle::group(list<string> groupkeys)
 {
-reportstate(*this,string("Entering group"));
 	Tbl *t;
 	t = list_to_tbl(groupkeys);
 	/* Note group must not manage it's parent as the idea of
@@ -690,11 +612,9 @@ reportstate(*this,string("Entering group"));
 			db,complain);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
-reportstate(*this,string("Exiting group"));
 }
 void DatascopeHandle::subset(string sstr)
 {
-reportstate(*this,string("Entering subset"));
 	parent_table=db;
 	db = dbsubset(db,const_cast<char *>(sstr.c_str()),0);
 	if(db.table==dbINVALID)
@@ -702,11 +622,9 @@ reportstate(*this,string("Entering subset"));
 			db,complain);
 	if(!retain_parent) manage_parent();
 	if(views!=NULL) views->insert(db.table);
-reportstate(*this,string("Exiting subset"));
 }
 void DatascopeHandle::lookup(string t)
 {
-reportstate(*this,string("Entering lookup"));
 	/* Since we move this pointer away, we have to make
 	sure we handle count correctly if db pointed at a view
 	before calling this method);
@@ -722,7 +640,6 @@ reportstate(*this,string("Entering lookup"));
 	defined with a specific name. */
 	is_bundle=is_a_bundle_pointer(db);
 	if((views!=NULL) && is_view_test(db)) views->insert(db.table);
-reportstate(*this,string("Exiting lookup"));
 }
 DBBundle DatascopeHandle::get_range()
 {
@@ -797,7 +714,6 @@ void SeisppDberror::log_error()
 /* Private method used by relational routines. */
 void DatascopeHandle::manage_parent()
 {
-reportstate(*this,string("Entering manage_parent"));
 	bool is_view;
 	is_view = is_view_test(parent_table);
 	/* Note this effectively does nothing if the table 
@@ -847,11 +763,7 @@ reportstate(*this,string("Entering manage_parent"));
 				parent_table.field=dbINVALID;
 				parent_table.record=dbINVALID;
 			}
-cerr << "manage_parent edited views for parent_table ="<<parent_table.table
-	<<".  After edit count for this table="
-	<< views->count(parent_table.table)<<endl;
 		}
 	}
-reportstate(*this,string("Exiting manage_parent"));
 }
 } // End SEISPP namespace declaration

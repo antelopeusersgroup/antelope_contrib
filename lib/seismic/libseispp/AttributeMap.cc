@@ -105,6 +105,13 @@ AttributeProperties& AttributeProperties::operator=(const AttributeProperties& a
 	is_key = apin.is_key;
 	return(*this);
 }
+string AttributeProperties::fully_qualified_name()
+{
+	string result;
+	result=db_table_name + "." + db_attribute_name;
+	return(result);
+}
+
 // An AttributeMap is a higher order object built up o
 // name definitions defined by a set of AttributeProperties
 // objects.  

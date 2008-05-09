@@ -78,15 +78,15 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	int jdate=yearday(time);
 	int ondate=0,offdate=0;
 	dbh.rewind();
-	vector<int> ondl,offdl;
-	vector<int>::iterator ondlmin,offdlmin;
-	for(int i=0;i<dbh.number_tuples();++i,++dbh)
+	vector<int> ondl,offdl,future_ondl;
+	vector<int>::iterator ondlmax,offdlmin;
+	int ndbrows=dbh.number_tuples();
+	for(int i=0;i<ndbrows;++i,++dbh)
 	{
 		double lat,lon,elev,dnorth,deast;
 		string staname;
 		string netname;
 		string refsta;
-		string stakey;
 		try{
 			ondate=dbh.get_int("ondate");
 			offdate=dbh.get_int("offdate");
@@ -120,12 +120,26 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 				// Use sta alone as a key.  In normal css database
 				// this is required to be unique.  snet is needed
 				// only for foreign name maps.
-				array[staname]=SeismicStationLocation(lat,lon,
-						elev,dnorth,deast,staname,netname,refsta);	
+				SeismicStationLocation newstaloc(lat,lon,
+					 elev,dnorth,deast,staname,netname,refsta);
+				//array[staname]=newstaloc;
+				array.insert(pair<string,SeismicStationLocation>(staname,newstaloc));
+				
 			}
-			else if(ondate>jdate)
+			else
 			{
-				ondl.push_back(ondate); 
+				/* We post times of stations expected to 
+				come on in the future.  The end of the current
+				valid time period is either on offdate for
+				the currently defined array or the time the
+				next station gets turned on.  Complain
+				if ondate is invalid */
+				if(epoch(ondate)>0.0)
+					future_ondl.push_back(ondate);
+				else if (SEISPP_verbose)
+					cerr << "SeismicArray(Warning):  "
+					  << "Invalid ondate attribute in site table.   "
+					  << "Check your database"<<endl;
 			}
 		} catch (SeisppDberror dberr)
 		{
@@ -138,28 +152,40 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 			<<"Unhandled exception. SeismicArray object may be incomplete."<<endl;
 		}
 	}
-	if(offdl.empty() && ondl.empty())
+	// Old test
+	//if(offdl.empty() && ondl.empty())
+	if(array.size()<=0)
 		throw SeisppError(string("SeismicArray database constructor:")
 			+ string("  no stations found in the db marked live")
 			+ string(" at time ")+string(strtime(time)) );
-	if(offdl.empty() || ondl.empty())
+	if(ondl.empty())
+		//This really shouldn't happen, but a sane fallback
+		ondate=jdate-1;
+	else
 	{
-		if(offdl.empty())offdate=2050001;
-		if(!ondl.empty())
+		ondlmax=max_element(ondl.begin(),ondl.end());
+		ondate=*ondlmax;
+	}
+	if(offdl.empty())
+	{
+		if(future_ondl.empty())
+			offdate=2050001;
+		else
 		{
-			ondlmin=min_element(ondl.begin(),ondl.end());
-			offdate=min(offdate,*ondlmin);
+			offdlmin=min_element(future_ondl.begin(),
+				future_ondl.end());
+			offdate= *offdlmin;
 		}
 	}
 	else
 	{
-		// Get the end of the valid time as smaller of the
-		// earliest offdate or the earliest ondate
-		ondlmin=min_element(ondl.begin(),ondl.end());
 		offdlmin=min_element(offdl.begin(),offdl.end());
-		offdate=min(*ondlmin,*offdlmin);
+		offdate=*offdlmin;
+		offdlmin=min_element(future_ondl.begin(),
+                                future_ondl.end());
+		offdate=min(offdate,*offdlmin);
 	}
-	valid_time_interval=TimeWindow(epoch(jdate),
+	valid_time_interval=TimeWindow(epoch(ondate),
 				epoch(offdate));
 }
 /* This constructor uses the one above.  Not the most efficient way to do 

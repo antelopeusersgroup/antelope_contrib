@@ -82,10 +82,6 @@ ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 	}
 	catch (...) {throw;};
 }
-ArrivalUpdater::~ArrivalUpdater()
-{
-cerr << "Destroying Arrival Updater"<<endl;
-}
 
 ArrivalUpdater::ArrivalUpdater(const ArrivalUpdater& parent)
 	: aaview(parent.aaview), eogroup(parent.eogroup)
@@ -102,7 +98,6 @@ ArrivalUpdater::ArrivalUpdater(const ArrivalUpdater& parent)
 }
 ArrivalUpdater& ArrivalUpdater::operator=(const ArrivalUpdater& parent)
 {
-cerr << "Entering operator= for ArrivalUpdater"<<endl;
 	if(this!=&parent)
 	{
 		aaview=parent.aaview;
@@ -118,7 +113,6 @@ cerr << "Entering operator= for ArrivalUpdater"<<endl;
 		view_has_data=parent.view_has_data;
 	}
 	return(*this);
-cerr << "Exiting operator= for ArrivalUpdater"<<endl;
 }
 string mdt2str(MDtype mdt)
 {
