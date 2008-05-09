@@ -17,6 +17,7 @@ ArrivalUpdater::ArrivalUpdater() : aaview(), eogroup(), am("css3.0")
 	dborigin.database=dbINVALID;
 	timestamp=-1.0;
 	current_evid=-1;
+	view_has_data=false;
 }
 ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 	MetadataList& mdl2,string amname) : aaview(),am(amname)
@@ -47,27 +48,43 @@ ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 		dbh.sort(sortkeys);
 		dbh.natural_join("assoc");
 		dbh.natural_join("arrival");
-		/* dbh is our working view.  Build and index to match on these keys 
-		that defines aaview */
-		list<string> view_match_keys;
-		view_match_keys.push_back("evid");
-		view_match_keys.push_back("orid");
-		view_match_keys.push_back("sta");
-		view_match_keys.push_back("phase");
-		aaview=DatascopeMatchHandle(dbh,empty,view_match_keys,am);	
-		/* eogroup groups dbh by evid:orid.  We need that keying in some contexts */
-		list<string>groupkeys;
-		groupkeys.push_back("evid");
-		groupkeys.push_back("orid");
-		DatascopeHandle dbgrp(dbh);
-		dbgrp.group(groupkeys);
-		list<string> grpmatchkeys;
-		grpmatchkeys.push_back("evid");
-		eogroup=DatascopeMatchHandle(dbgrp,empty,grpmatchkeys,am);
+		/* Set this private boolean if this view has no data */
+		if(dbh.number_tuples()<=0) 
+		{
+			view_has_data=false;
+			/* These must be initialized to avoid a seg fault in 
+			copy operations */
+			aaview=DatascopeMatchHandle();
+			eogroup=DatascopeMatchHandle();
+		}
+		else
+		{
+			view_has_data=true;
+			/* dbh is our working view.  Build and index to match on these keys 
+			that defines aaview */
+			list<string> view_match_keys;
+			view_match_keys.push_back("evid");
+			view_match_keys.push_back("orid");
+			view_match_keys.push_back("sta");
+			view_match_keys.push_back("phase");
+			aaview=DatascopeMatchHandle(dbh,empty,view_match_keys,am);	
+			list<string>groupkeys;
+			groupkeys.push_back("evid");
+			groupkeys.push_back("orid");
+			DatascopeHandle dbgrp(dbh);
+			dbgrp.group(groupkeys);
+			list<string> grpmatchkeys;
+			grpmatchkeys.push_back("evid");
+			eogroup=DatascopeMatchHandle(dbgrp,empty,grpmatchkeys,am);
+		}
 		timestamp=now();
 		current_evid=-1;
 	}
 	catch (...) {throw;};
+}
+ArrivalUpdater::~ArrivalUpdater()
+{
+cerr << "Destroying Arrival Updater"<<endl;
 }
 
 ArrivalUpdater::ArrivalUpdater(const ArrivalUpdater& parent)
@@ -81,9 +98,11 @@ ArrivalUpdater::ArrivalUpdater(const ArrivalUpdater& parent)
 	dborigin=parent.dborigin;
 	current_evid=parent.current_evid;
 	timestamp=parent.timestamp;
+	view_has_data=parent.view_has_data;
 }
 ArrivalUpdater& ArrivalUpdater::operator=(const ArrivalUpdater& parent)
 {
+cerr << "Entering operator= for ArrivalUpdater"<<endl;
 	if(this!=&parent)
 	{
 		aaview=parent.aaview;
@@ -96,8 +115,10 @@ ArrivalUpdater& ArrivalUpdater::operator=(const ArrivalUpdater& parent)
 		dborigin=parent.dborigin;
 		current_evid=parent.current_evid;
 		timestamp=parent.timestamp;
+		view_has_data=parent.view_has_data;
 	}
 	return(*this);
+cerr << "Exiting operator= for ArrivalUpdater"<<endl;
 }
 string mdt2str(MDtype mdt)
 {
@@ -177,9 +198,7 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 			{
 				throw SeisppError(post_mmerror(*mdptr,ap->second));
 			}
-			dbattributename=ap->second.db_table_name
-					+ string(".")
-					+ ap->second.db_attribute_name;
+			dbattributename=ap->second.fully_qualified_name();
 			switch(mdptr->mdt)
 			{
 			case MDreal:
@@ -219,9 +238,21 @@ int ArrivalUpdater::update(Metadata& md)
 	int err=0;
 	Dbptr db;
 	list<int>::iterator rowptr;
-	/* First get matches for evid grouped view*/
-	list<int> rowlist=aaview.find(md);
-	int nrow=rowlist.size();
+	int nrow;
+	list<int> rowlist;
+	if(view_has_data)
+	{
+		/* Only do this search if the aaview is not empty.
+		Seg fault results if we don't do this */
+		rowlist=aaview.find(md);
+		nrow=rowlist.size();
+	}
+	else
+	{
+		// This is a simple way to assure we enter the append block
+		// always if the original view was empty. 
+		nrow=0;
+	}
 	if(nrow==0)
 	{
 		dbassoc.record=dbaddnull(dbassoc);
@@ -238,17 +269,19 @@ int ArrivalUpdater::update(Metadata& md)
 	{
 		rowptr=rowlist.begin();
 		aaview.db.record=*rowptr;
-		// These need error trapping. Just getting it down for now
 		dbgetv(aaview.db,0,"assoc",&db,0);
 		if(db.table==dbINVALID)
 			throw SeisppError(base_error
 			 + string(" failure in fetching assoc pointer from view"));
+		/* Must update lddate */
+		dbputv(db,0,"lddate",now(),0);
 		err+=put_attributes_to_db(md,db,mdlassoc,am);
 		dbgetv(aaview.db,0,"arrival",&db,0);
 		if(db.table==dbINVALID)
 			throw SeisppError(base_error
 			 + string(" failure in fetching arrival pointer from view"));
 		err+=put_attributes_to_db(md,db,mdlarrival,am);
+		dbputv(db,0,"lddate",now(),0);
 	}
 	if(nrow>1)
 	{
@@ -330,17 +363,20 @@ int ArrivalUpdater::update(ThreeComponentSeismogram& ts)
 }
 int ArrivalUpdater::clear_old(int evid_to_clear)
 {
+	//Silently return immediately if the original arrival view
+	// was empty.  In that case be definition there is nothing old 
+	// to clear 
+	if(!view_has_data) return(0);
 	const string base_error("ArrivalUpdater::clear_old:  ");
 	int ndeleted;
 	Metadata md;
+	/* This is CSS3.0 schema specific, but since this entire 
+	processing object is based on CSS3.0 database concepts this
+	should not be an issue.  Still worth noting for maintenance.*/
 	md.put("evid",evid_to_clear);
-	list<int> reclist=eogroup.find(md);
+	list<int> reclist=eogroup.find(md,false);
 	/* Silently do nothing if no such evid exists in the database */
 	if(reclist.size()<=0) return(0);
-	/* Now do the same check for the assoc-arrival view */
-	reclist=eogroup.find(md);
-	if(reclist.size()<=0) return(0);
-	int rec;
 	list<int>::iterator irptr;
 	int prefor,orid,evid;
 	ndeleted=0;
