@@ -214,6 +214,23 @@ do_sw(Widget parent, SessionManager & sm)
 	sm.modify_filter(string("default"),sm.active_setting.filter_param);
         sm.xpe=new XcorProcessingEngine(pf,asetptr->second,sm.get_waveform_db_name(),
 		sm.get_result_db_name(),sm.get_queuefile_name());
+	/*Although the session manager holds the name of the database that
+	is to be used, at this point in the execution of this program
+	the session manager is incomplete.  We must make the match
+	handle, dbh, valid or the program will crash.  This is very 
+	bad programming logic as it violates creation is initialization
+	rules, but I had no choice for making this work with the 
+	new memory management scheme used in the DatascopeHandle object.
+	WATCH OUT:  this is a maintenance issue. */
+	DatabaseHandle *rootdbh=sm.xpe->get_db(string("waveformdb"));
+	DatascopeHandle *rootdsh=dynamic_cast<DatascopeHandle *>(rootdbh);
+	DatascopeHandle dbhw(*rootdsh);
+	dbhw.lookup("event");
+	dbhw.natural_join("origin");
+	list<string>matchkey;
+	matchkey.push_back("orid");
+	sm.dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,AttributeMap("css3.0"));
+
 	sm.using_subarrays=sm.xpe->use_subarrays;
 
 	int n=0;
@@ -2284,11 +2301,13 @@ main (int argc, char **argv)
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false},
 			    {NULL,"signal_to_noise_ratio", ATTR_DOUBLE,true,NULL,-1,false, "Signal to Noise Ratio",false}
 			};
-  char *use=(char *) "db [-appname name -o dbout i [-q queuefile | -i infile ] -pf pffile -V -v]";
+  char *use=(char *) "db [-appname name -o dbout [-q queuefile | -i infile ] -pf pffile -V -v]";
   char *author=(char *) "Peng Wang and Gary Pavlis";
   char *email=(char *) "pewang@indiana.edu,pavlis@indiana.edu";
   char *loc=(char *) "Indiana University";
   char *rev=(char *) "$Revision 1.13$";
+  ios::sync_with_stdio();
+  elog_init(argc,argv);
 
   if(argc<2) 
   {
@@ -2481,7 +2500,11 @@ main (int argc, char **argv)
 
   init_attr(sm, air);
 
-  //create and manage seisw widget
+  /*create and manage seisw widget.  Note this function alters
+  the session manager (sm) by creating a copy of the database
+  handle derived from the XcorProcessingEngine.  This violates
+  the rule of creation is initialization for an object, but was
+  unavoidable. */
   do_sw(second_paned_win, sm);
 
   XtManageChild(second_paned_win);

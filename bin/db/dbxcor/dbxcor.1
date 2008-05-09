@@ -3,13 +3,18 @@
 dbxcor - GUI-based, multichannel cross-correlation program 
 .SH SYNOPSIS
 .nf
-dbxcor db [-appname name -o dbout -f infile -pf pffile -V -v]
+dbxcor db [-appname name -o dbout [-q queuefile | -i infile ] -pf pffile -V -v]
 .fi
 .SH DESCRIPTION
 .LP
 The dbxcor program is a multichannel cross-correlation program 
 designed to provide a robust way to estimate arrival times for
-teleseismic phases.  
+a gather of seismograms.  The original algorithm was designed for
+teleseismic body wave processing, but this version extends the capabilities
+to generic gathers that are aligned by any reference frame 
+that can be conceived.  The type example in seismology other than
+an event gather is a receiver gather used for source array processing. 
+.LP
 The basic algorithm is a type of array processing approach.
 As such it works only for signals that are reasonably matched
 across the entire array aperture.  The program combines three
@@ -50,14 +55,15 @@ Command line arguments are:
 \fIdb\fR is the working database unless dbout is defined.
 That is, normally this program reads all it's information from db
 and updates and/or appends to existing tables in this database.
-This is always the database from which waveforms are to be extracted.
+This parameter always defines the database from which waveforms are to be extracted.
 It can contain continuous data or segmented data, but it must have
-links to at least site and sitechan for the program to be functional.
-Waveforms are loaded over a fixed time interval and then internally 
-chopped to a gather aligned to the predicted arrival time of 
-each event in a sequence.  
+links to at least site for the program to be functional.
+The details of how the input data need to be organized are described in 
+more detail below this depends on the processing mode.
 .IP -appname
-This program was designed to be driven by smartpick which uses the tksend (1)
+The default behavior of this program is to drive the program through
+smartpick.  In this mode the program
+uses the tksend (1)
 mechanism to communicate.  tksend uses the name defined by this parameter
 as the target used for communication.  This defaults to dbxcor.
 .IP -o
@@ -67,7 +73,7 @@ to this database.  Note that normally dbxcor does database updates on
 any existing arrivals tied to a particular event through assoc.   
 A convenient way to avoid updates and preserve existing arrivals is to 
 specify dbout as an independent database.
-.IP -f
+.IP -i
 Read input from a file instead of through the tksend mechanism.  
 The file name passed through this argument is assumed to contain
 a set of lines with two parameters per line containing ordered
@@ -84,6 +90,19 @@ with a mix of P, S, and PP phases.  These lines are identical to
 the input passed through the smartpick interface, but you, the
 user, in this case need to handle the event and phase description
 instead of making the choices interactively..
+.IP -q 
+Use queuefile and the processing queue method for data handling.
+In this mode the tksend mechanism is disabled and the program is 
+driven by a processing queue cached in the file queuefile. If queuefile
+does not exist it will be created.  The queue file is a binary file 
+used to cache records to be processed.  In event processing this is
+typically records in evid.  When run in this mode the program will
+keep track of which events have already been processed and pick up where
+you left off in a previous run.  This mode is highly recommended if
+processing a large data set with a static database.  This mode
+must NEVER be used on a dynamic database or results can be unpredictable.
+Note also that -i and -q modes are mutually exclusive.  dbxcor will
+exit if you try to define both.
 .IP -pf
 Is used to specify an alternative parameter file than the default of
 dbxcor.pf.
@@ -92,7 +111,7 @@ Show usage line and exit.
 .IP -v
 Run in verbose mode.
 .SH Operating Modes
-This program can be run in a least four common permutations.
+This program can be run in a least six common permutations.
 .IP (1)
 Driven by smartpick.  In this mode the idea is to use dbpick to 
 explore the data and decide what teleseismic phases are worthy
@@ -110,13 +129,21 @@ an issue a command like this in the dbpick window:
 where P could be changed to any teleseismic phase of interest known to 
 the tau-p calculator.  
 .IP (3)
-The -f option can be used to process a list of events known to have workable
+The -i option can be used to process a list of events known to have workable
 phases for one or more phases.  For example, one might select all teleseismic
 events from 30 to 95 degrees with magnitude greater than 6 and have some confidence
 all will yield workable P and S phases.  The major disadvantage of this approach
 at present is that you, the user, would need to keep track of where you leave
 off between runs of the program.  
-.IP (4) 
+.IP (4)
+The -q options is the best choice for mass processing of a static database.
+This approach was designed to work for both event processing and source
+array processing.  In this mode the program keeps track of which records
+in an input view have been processed.  This mode, however, does not allow
+switching seismic phases during processing.  Hence, a given queue file 
+might be run for all P phases and the data rerun with a new queue file
+for S, SS, etc.  
+.IP (5) 
 The use of the -o options is highly recommended if you want to run this program on
 a real-time database.  Because the back end of the program does database updates to 
 arrival and assoc it is intrinsically dangerous to run the program on a dynamically 
@@ -127,7 +154,11 @@ field in assoc, and auth fields.  Fields like snr computed by real time pickers
 are not transferred when the program runs with the -o option.  If you need to preserve
 other information in arrival and assoc the best advice as always is to work on a 
 copy of the database derived from a snapshot of a real time system.  
-
+.IP (6)
+This program was designed to allow it to process source array gathers.  
+This requires an input view to drive the processing created with dbprocess
+(see parameter file description below) and running the program with 
+generic gathers as the processing mode.  
 .LP
 The front end of this program is a graphical user interface using
 the X Motif and X toolkit libraries.  The graphical iterface has four main sections:
@@ -313,6 +344,31 @@ with others in the array.  This can indicate an equipment failure,
 error in metadata, or a real property of the earth. The second type
 of plot is an x-y graph of one or more trace attributes.  Currently
 this is limited to:  stack weight, coherence, and peak cross correlation.
+.SH WAVEFORM DATA MODELS
+.PP
+This program expects waveforms assembled in different ways depending
+on the setting of the "processing_mode" parameter (see below).  
+.LP
+When processing_mode is \fIContinuousDB\fR the program assumes the
+database contains a wfdisc table that will be treated as continuous
+data AND that the processing will be event-based.  
+Note that the data do not absolutely have to be continuous, but the
+approach is time window based.  That is, the algorithm used is to carve
+out time windows defined around predicted and/or measured arrival times.
+.LP
+When processing_mode is set to EventGathers it is assumed the data have been
+literally assembled into event gathers produced by the program extract_events.
+The model used by extract_events is full three-component objects indexed by
+an extension table wfprocess (also used to store beam output).  This mode
+is recommended when processing a large data set as assembling the gathers
+in this way has a huge impact on interactive performance.  extract_events
+does significant preprocessing that would otherwise have to be done on
+the fly.  The author has seen order of magnitude improvements in data 
+read times with this method relative to continuousDB processing.  
+.LP
+When processing_mode is set to GenericGathers the entire input view is driven
+by the contents of what is built through the "dbprocess_command" parameter (see
+below).  
 .SH PARAMETER FILE
 .LP
 The complete parameter file for this program is very long
@@ -615,22 +671,15 @@ and some errors.  The program can die on data problems that will
 normally leave a diagnostic message on stderr.
 .SH "BUGS AND CAVEATS"
 .IP (1)
-The program contains some refresh anomalies.  If you expect a seismic
-display to change and it does not, try double clicking the seismic window.
-This forces a screen refresh independent of previous history.
-.IP (2)
-There are some related problems with the log window.  Sometimes the 
-program will be working and there is no hint it is active.  The most
-annoying at present is when the program is reading data.  I currently
-posts the message that it is reading and requests patience only after 
-the read is completed.  Since reading data can take many seconds this 
-causes problems for the impatient.  
-.IP (3)
 The beam and cross-correlation plots are not automatically destroyed
 when a new event is loaded.  For now these must be manually closed to 
 avoid confusion.  Both displays should probably also have a dismiss
 button, but I've been able to make that work correctly so it remains to 
 be implemented.
+.IP (2) 
+Be warned that dbcrunch is called on assoc and arrival when the program
+exits.  Since this is intrinsically dangerous, backup you databases often
+when processing with this program.
 .SH AUTHOR
 Peng Wang (pewang@indiana.edu) wrote the GUI.  The seismic analysis sections
 were written by Gary Pavlis (pavlis@indiana.edu)

@@ -48,13 +48,16 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 			+pfname);
     try {
 	Metadata smcontrol(pf);
-	/* new feature June 2007.  Get a match handle on orid to feed processing */
-	DatascopeHandle dbhw(wdbname,false);
-	dbhw.lookup("event");
-	dbhw.natural_join("origin");
-	list<string>matchkey;
-	matchkey.push_back("orid");
-	dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,AttributeMap("css3.0"));
+	/* Initialize dbh as default.  This REQUIRES that it be set
+	later using a handle acquired from XcorProcessingEngine.
+	This proved necesarry in a reluctant change to this required
+	April 2008.  Datascope is a bit too clever and when a new
+	database is openned it is assigned the same database number
+	even if it had been previously openned elsewhere.  This broke
+	the memory management model.  As a result I was forced
+	to this approach here.  This has important maintenance side
+	effects that are unavoidable. */
+	dbh=DatascopeMatchHandle();
 
         string pmodestr=smcontrol.get_string("processing_mode");
         if(pmodestr=="EventGathers")
@@ -166,7 +169,7 @@ SessionManager::~SessionManager()
     delete controls;
     delete sensitive;
  
-    dbh.close();
+    //dbh.close();
     if (xpe != NULL) delete xpe;  //believe that deletion of xpe will result in deletion of the last mcc
 }
 
