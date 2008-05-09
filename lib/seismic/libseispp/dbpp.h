@@ -42,27 +42,21 @@ public:
 * base class and a few additional ones that are more more specific to the
 * Antelope datascope API.  
 * \par
-* The lifetime of a DatascopeHandle is unusual and important to understand.
-* Because a database is usually openned only once at the start of a program's
-* execution this object cannot easily use the resource acquisition is initialization
-* model of object creation.  In particular, we can't have the database close when
-* a handle is destroyed.  As a result a DatascopeHandle is destroyed only if 
-* the close method is called on the object before it destroyed.  The actual 
-* close, however, is not immediate but occurs only when the handle marked is
-* destroyed.  This is not ideal as other copies of the handle can be left
-* undefined if this is not recognized.  Be warned this interface may change
-* at a later date to eliminate this type of behaviour.  Assume that the 
-* only safe thing to do is just let the database be closed automatically 
-* when the program exits.  
-* \par
-* A related feature of this interface is memory management.  We take the 
-* Antelope implied perspective that leaking a intermediate views is not 
-* a serious offense for most programs.  i.e. the current version of this 
-* object will create leaks whenever a method that creates a view (e.g. subset
-* or group) is called.  This was done because the expectation is this would
-* be used mainly in table-driven processing where one of the first things the
-* program does is create a working view.  Subsequent processing is 
-* table-driven working from the top down.
+* This handle attempts as best possible to manage memory used by 
+* an Antelope database automatically.  It does this through a mechanism
+* similar to the way a shared_ptr works, but modified for peculiarities
+* of the Datascope interface.  The aim of the memory management is 
+* to avoid leaking memory connected with what Datascope calls a "view".
+* This means the results of sorts, subsets, joins, and pretty much
+* any relational db concept.  To do this it keeps track of the count
+* of each table that is a view in an internal container.  A pointer
+* to this single container is passed between copies of a particular
+* handle.  The CRITICAL corollary of this for application is that
+* memory management will ONLY work if all copies of a handle are 
+* derived from a single, original handle.  i.e. a program should
+* use only operator = and the copy constructor to create any
+* secondary copies of a handle.  Multiple constructors or multiple
+* calls to the C function dbopen are likely to cause trouble. 
 */
 class DatascopeHandle : public DatabaseHandle
 {
@@ -126,7 +120,7 @@ public:
 	file.  This constructor is thus preferred if the Pf is, as is the usual
 	case, used to contain other parameters required by the program.
 
-	\param db Datascope (Antelope) database pointer.  
+	\param dbh Datascope handle object  
 	\param pf Antelope Pf * object to be parsed for dbprocess commands.
 	\param tag keyword marking the Tbl&{} block of commands passed to dbprocess.
 		The parameter file is parsed for a Tbl block with this tag
@@ -149,7 +143,7 @@ public:
 
 	\exception SeisppDberror is thrown if there are any problems.
 	*/
-	DatascopeHandle(Dbptr db, Pf *pf, string tag,
+	DatascopeHandle(DatascopeHandle& dbh, Pf *pf, string tag,
 		bool manage_memory=true,
 			bool retain_all_views=false);
 	/*! Standard copy constructor.  
@@ -554,6 +548,8 @@ protected:
 	to provide a hack fix for some programs, but setting this
 	boolean true is to be avoided. */
 	bool retain_parent; 
+// DEBUG ROUTINE.  REMOVE FOR PRODUCTION
+void reportstate(DatascopeHandle& dbh,string message);
 };
 /*! \brief Simplified interface to dbmatches.
 
@@ -633,6 +629,21 @@ public:
 	row.  It is more troublesome with views, but the concept is the same.
 	It does require much more care to get it right though.  
 	\par
+	The normal behaviour of this method will be be take input metadata
+	parameters and map them to fully qualified names used by Datascope
+	defined by the AttributeMap object cached in the private area of
+	this object.  (Fully qualified means names like wfdisc.sta as
+	opposed to the attribute name, in this case sta, alone.)  This
+	behaviour can be overridden by setting boolean use_fullname
+	argument false using the 2 argument call to this method.  
+	An approach where this is known to be required is in matching
+	against a dbgroup view.  Apparently dbgroup uses the literal
+	attribute string passed to dbgroup.  This means, for example,
+	if you call dbgroup with evid, attempts to match with event.evid
+	will fail.  The use_fullname=false mechanism is a workaround
+	for this problem but seemed a sensible extension of the interface
+	anyway.
+	\par
 	Note this routine will spew some output to stderr in the event of certain 
 	nonfatal errors.  There probably should be a verbose flag flag to turn these
 	on and off as desired, but for now they are there.  These errors don't deserve
@@ -643,6 +654,12 @@ public:
 	\param md the contents of the matchkey attributes (defined by the one
 		and only valid constructor for this object) are extracted from
 		this object and matched against the table held inside this handle.
+	\param use_fullname is a boolean controlling alias name expansion.
+		To make sure a key is unambiguous the default expands 
+		keys to full qualified names (The format is table.attribute.  
+		For example, wfdisc.sta).  If this parameter is set false, only
+		the base attribute name will be used to define the match
+		criteria.  (See above for more on this feature.)
 	\return list of integer record numbers that match the contents of md.
 		List will be zero length if there are no matches.
 	\exception SeisppError is thrown if the contents of md do not contain the 
@@ -650,7 +667,7 @@ public:
 	\exception SeisppDberror is thrown if the internal call to dbmatches fails.
 
 	*/
-	list<int> find(Metadata& md);
+	list<int> find(Metadata& md, bool use_fullname=true);
 private:
 	Dbptr dbscratch_record;
 	Dbptr dbt;
@@ -674,5 +691,27 @@ private:
 	define the schema. */
 	AttributeMap amap;
 };
+
+/*! \brief Find first valid table in a view for an alias attribute. 
+
+Because some attributes are conveniently specified by shorthand aliases that attribute
+can exist in more than one table in a view.  Bad things happen if one tries to ask for
+an attribute by a fully qualified name (i.e. one that includes the table) if that 
+table is not the current database handle view.  This procedure returns the table name 
+of the first match it finds in a list of possible tables.  
+
+\param db Datascope db pointer of view that is to be scanned.  
+\param tables_to_test is a list of table names to try using specified alias
+
+\return Normal return is the first valid table name.  Returns the string "BAD" 
+if no match is found in the input view.  The caller must arrange to trap this
+as an error.  Intentional design decision to avoid unnecessary overhead of 
+an exception.  Assumption is this is a low level return totally appropriate
+as a more standard procedure.  The frozen string is not very elegant, but 
+preferable to dealing with a constant in an include file  The frozen string is not very elegant, but 
+preferable to dealing with a constant in an include file.
+*/
+string FindFirstValidTable(Dbptr db,list<string> tables_to_test);
+
 }  // end namespace seispp
 #endif
