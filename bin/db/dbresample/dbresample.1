@@ -3,7 +3,7 @@
 dbresample - convert all data in an event segmented database to common sample rate
 .SH SYNOPSIS
 .nf
-dbresample dbin dbout [-pf pffile -notrim]
+dbresample dbin dbout [-pf pffile -notrim -V]
 .fi
 .SH DESCRIPTION
 .LP
@@ -80,6 +80,8 @@ trace segments where the filter does not completely overlap the FIR filter
 vector of points.  By default the edges of all input traces are trimmed to
 remove these transients.  When this flag is used the original trace lengths
 are preserved. This flag has no effect on upsampled data.
+.IP -V
+Run in verbose mode.
 .SH PARAMETER FILE
 .LP
 The parameter file mainly specifies what to do 

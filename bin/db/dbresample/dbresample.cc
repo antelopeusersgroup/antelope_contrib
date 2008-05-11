@@ -11,10 +11,10 @@ using namespace SEISPP;
 #include "resample.h"
 void usage()
 {
-	cerr<<"dbresample dbin dbout [-pf pffile -notrim]"<<endl;
+	cerr<<"dbresample dbin dbout [-pf pffile -notrim -V]"<<endl;
 	exit(-1);
 }
-
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
 	Dbptr db;
@@ -47,6 +47,8 @@ int main(int argc, char **argv)
 			}
 			else if(test=="-notrim")
 				trim = false;
+			else if(test=="-V")
+				SEISPP_verbose=true;
 			else
 			{
 				cerr<<"Illegal argument = "<<argv[i]<<endl;
@@ -78,11 +80,10 @@ int main(int argc, char **argv)
 		// This is the list saved
 		MetadataList md_to_output=pfget_mdlist(pf,
 			"output_list");
-		if(dbopen(const_cast<char *>(dbname.c_str()),"r",&db))
-			die(0,"dbopen failed on database %s",dbname.c_str());
 
 		// Input and output database handles
-		DatascopeHandle dbhi(db,pf,tag);
+		DatascopeHandle dbhi(dbname,false);
+		dbhi=DatascopeHandle(dbhi,pf,tag);
 		DatascopeHandle dbho(dboname,false);
 		// Builds the object that defines how decimation is
 		// and resampling is to be done.
