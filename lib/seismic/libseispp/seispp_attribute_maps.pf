@@ -2215,8 +2215,8 @@ calper trace.calper
 samprate trace.samprate
 datatype trace.datatype
 segtype trace.segtype
-source_lat event.lat
-source_lon event.lon
+source_lat origin.lat
+source_lon origin.lon
 source_depth origin.depth
 source_time origin.time
 sta_lat trace.lat
