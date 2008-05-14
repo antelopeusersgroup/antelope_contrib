@@ -1,4 +1,5 @@
 #include "tr.h" // Antelope trace library
+#include "seispp.h"
 #include "SeisppKeywords.h"
 #include "SeisppError.h"
 #include "TimeSeries.h"
@@ -106,6 +107,15 @@ TimeSeries::TimeSeries(const Metadata& md,bool load_data) : Metadata(md)
 
 	}
 }
+/* Small error needed for recovery. Echos only in verbose mode. */
+void TimeSeriesRequiredError(MetadataGetError mde,string name)
+{
+	cerr << "TimeSeries constructor:  Required Metadata not found"<<endl;
+	mde.log_error();
+	cerr << "Trying to recover by querying db again with default name="
+		<< name<<endl;
+	cerr << "Edit your parameter file to make this message go away"<<endl;
+}
 
 /* Constructor to read a single seismogram from an antelope
 database.  Arguments:
@@ -126,6 +136,11 @@ as currently implemented is totally locked into antelope anyway
 so css3.0 attribute names can pretty easily be assumed to be 
 workable.
 
+Modification May 2008:  Changed this again to assume ns,t0,
+and dt were stored in Metadata, but then to hit the db again
+if they are not defined and post an error.  This was necessary
+after a change to implement aliasing in a more consistent fashion.
+
 */
 
 TimeSeries::TimeSeries(DatabaseHandle& rdb,
@@ -137,25 +152,45 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb); 
 	double te,t0read,teread,srate;
 	int nread;
-	if(dbgetv(dbh.db,0,number_samples_keyword.c_str(),&ns,
-		start_time_keyword.c_str(),&t0,
-		sample_rate_keyword.c_str(),&srate,0) ==dbINVALID)
+	/* Metadata constructor should load these parameters, but
+	because they are required to build this object we attempt
+	a recovery if they are not found by hitting the db 
+	with a default name */
+	try {
+		ns=this->get_int(number_samples_keyword);
+	}catch (MetadataGetError mde)
 	{
-		throw SeisppDberror(string("TimeSeries database ")
-			+string(" constructor:  error reading ")
-			+string("one of the following attributes")
-			+string(" from database with dbgetv:\n")
-			+ number_samples_keyword +string(" ")
-			+ start_time_keyword +string(" ")
-			+ sample_rate_keyword,
-				dbh.db); 
+		if(SEISPP_verbose) 
+		  TimeSeriesRequiredError(mde,number_samples_keyword);
+		try{
+			ns=dbh.get_int(number_samples_keyword);
+		} catch(SeisppDberror serr) {throw serr;}
+		this->put(number_samples_keyword,ns);
 	}
+	try {
+		t0=this->get_double(start_time_keyword);
+	}catch (MetadataGetError mde)
+	{
+		if(SEISPP_verbose) 
+		  TimeSeriesRequiredError(mde,start_time_keyword);
+		try{
+			t0=dbh.get_double(start_time_keyword);
+		} catch(SeisppDberror serr) {throw serr;}
+		this->put(start_time_keyword,t0);
+	}
+	try {
+		srate=this->get_double(sample_rate_keyword);
+	}catch (MetadataGetError mde)
+	{
+		if(SEISPP_verbose) 
+		  TimeSeriesRequiredError(mde,sample_rate_keyword);
+		try{
+			t0=dbh.get_double(start_time_keyword);
+		} catch(SeisppDberror serr) {throw serr;}
+		this->put(sample_rate_keyword,srate);
+	}
+cout << "DEBUG:  starttime="<<strtime(t0)<<endl;
 	dt=1.0/srate;
-	// Make sure what is posted to metadata matches what
-	// we just read from the db
-	this->put(number_samples_keyword,ns);
-	this->put(start_time_keyword,t0);
-	this->put(sample_rate_keyword,srate);
 	// Safer to compute this quantity than require it to 
 	// be read from the database
 	te=this->endtime()+dt/2.0;
