@@ -23,6 +23,11 @@ namespace SEISPP
 class TopMute
 {
 public:
+/*! Turns the mute on or off.
+
+if true mute will be applied if used.  If false ApplyTopMute
+functions will be return immediately doing nothing.*/
+	bool enabled;
 /*!
 // Time of end of zero mute region.  The start of the zero region of a top
 // mute is always assumed to be the start of data.  Data will be zeroed from 
@@ -42,7 +47,7 @@ public:
 **/
 	TimeReferenceType reftype;   
 	//* Default constructor */
-	TopMute(){t0e=1.0; t1=2.0; reftype=relative;};
+	TopMute(){t0e=1.0; t1=2.0; reftype=relative; enabled=false;};
 /*!
 // Parameter file driven constructor.  
 // Looks for three keyword strings to set the three data parameters

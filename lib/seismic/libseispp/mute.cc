@@ -15,6 +15,7 @@ void ApplyTopMute(TimeSeries &ts,TopMute& mute)
 {
 	int i,i2;
 	double t;
+	if(!mute.enabled) return;
 	if(ts.t0>mute.t1) return;
 	for(i=0;i<ts.ns;++i)
 	{
@@ -39,6 +40,7 @@ void ApplyTopMute(ThreeComponentSeismogram &ts,TopMute& mute)
 {
 	int i,i2,j;
 	double t;
+	if(!mute.enabled) return;
 	if(ts.t0>mute.t1) return;
 	for(i=0;i<ts.ns;++i)
 	{
@@ -63,6 +65,7 @@ void ApplyTopMute(ThreeComponentSeismogram &ts,TopMute& mute)
 // For a group of TimeSeries objects (ensemble)
 void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute)
 {
+	if(!mute.enabled) return;
 	vector<TimeSeries>::iterator i;
 
 	// This might be doable with STL algorithms, but this is so
@@ -77,6 +80,7 @@ void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute)
 //
 void ApplyTopMute(ThreeComponentEnsemble &t3ce, TopMute& mute)
 {
+	if(!mute.enabled) return;
 	vector<ThreeComponentSeismogram>::iterator t3c;
 
 	for(t3c=t3ce.member.begin();t3c!=t3ce.member.end();++t3c)
@@ -97,6 +101,7 @@ TopMute::TopMute(Pf *pf,string tag)
 			reftype = relative;
 		t0e = md.get_double("zero_end_time");
 		t1 = md.get_double("end_time");
+		enabled=true;
 	}
 	catch (...) {throw;};
 }
