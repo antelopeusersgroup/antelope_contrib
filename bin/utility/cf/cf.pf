@@ -165,6 +165,7 @@ make &Arr{
 	^getid[[:space:]]
 	^if[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*install[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/]*installman[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*cpp[[:space:]]
 	^else[[:space:]]
 	^fi[[:space:]]
