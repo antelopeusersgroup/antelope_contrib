@@ -1639,8 +1639,6 @@ sub init_windows {
 	
 	my( $ptk_frame );
 
-	ptkfontsize( $State{smartpick_fontsize} );
-
 	my( $w ) = MainWindow->new();
 
 	unless( $State{unmap_menubar} ) {
@@ -1657,6 +1655,8 @@ sub init_windows {
 	$State{balloons} = [ ];
 
 	ptksticky( "nsew" );
+
+	ptkfontsize( $State{smartpick_fontsize} );
 
 	init_layout( $w, @specs );
 
