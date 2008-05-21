@@ -763,6 +763,9 @@ This parameter controls the geometry of the \fBsmartpick\fP GUI window
 itself.  If left blank, the geometry is left entirely to the window
 manager.
 
+.IP smartpick_fontsize
+This parameter controls the font size of the \fBsmartpick\fP GUI elements.
+
 .IP stations_frame_columns
 If a stations_frame widget is defined, this parameter specifies the 
 number of columns it will have.
@@ -792,7 +795,9 @@ left out of the widget-specification lines.
 
 .ne 12
 
-smartpick_geometry dbpick_command_iconified        0
+smartpick_geometry 
+smartpick_fontsize		12 
+dbpick_command_iconified        0
 dbpick_command_geometry         80x12
 \fIdbpick_geometry\fP           800x500+50+50 dbpick_options
 path                            /bin:/usr/bin:/usr/openwin/bin:/usr/X11R6/bin:\&a

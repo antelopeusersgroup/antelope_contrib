@@ -1639,6 +1639,8 @@ sub init_windows {
 	
 	my( $ptk_frame );
 
+	ptkfontsize( $State{smartpick_fontsize} );
+
 	my( $w ) = MainWindow->new();
 
 	unless( $State{unmap_menubar} ) {
@@ -2119,6 +2121,7 @@ foreach $param ( @booleans ) {
 	      dbpick_geometry  		[[:alnum:]_\-+]*
 	      dbpick_options 		[[:alnum:]_\-+]*
 	      smartpick_geometry 	[[:alnum:]_\-+]*
+	      smartpick_fontsize 	[[:alnum:]]*
 	      path			/[[:alnum:]_/:.]+
 	      shell			/[[:alnum:]_/]+/(tc|c|ba|k)?sh
 	      print_command		[[:alnum:]_/:.]+

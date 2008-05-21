@@ -1,4 +1,5 @@
 smartpick_geometry		
+smartpick_fontsize		12
 dbpick_command_iconified 	0
 dbpick_command_geometry 	80x12
 dbpick_geometry 		800x500+50+50
