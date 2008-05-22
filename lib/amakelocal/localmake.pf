@@ -34,6 +34,8 @@ modules &Arr{
 		build &Tbl{
 			src/contrib/lib/graphics/seisw
 			src/contrib/lib/seismic/libseispp
+			src/contrib/lib/utility/libgclgrid
+			src/contrib/lib/perf
 			src/contrib/bin/db/dbxcor
 		}
 		package &Tbl{
