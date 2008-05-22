@@ -349,7 +349,8 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			// a gap problem to deal with.
 			//
 			Dbptr db_bundle;
-			int is,ie;
+			//KGL SCAFFOLD change type for 4.10
+			long int is,ie;
 			char sta[10],chan[10];  // We'll need to have these sometimes
 			dbgetv(dbtrgrp.db,0,
 				"sta",sta,"chan",chan,"bundle",&db_bundle,0);

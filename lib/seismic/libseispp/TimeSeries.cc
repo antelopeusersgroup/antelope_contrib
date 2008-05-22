@@ -151,7 +151,8 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	float *inbuffer=NULL;
 	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb); 
 	double te,t0read,teread,srate;
-	int nread;
+	//KGL SCAFFOLD temporary fix for compile with 4.10
+	long int nread;
 	/* Metadata constructor should load these parameters, but
 	because they are required to build this object we attempt
 	a recovery if they are not found by hitting the db 

@@ -1506,7 +1506,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    trace->put("arrival.iphase",
 				analysis_setting.phase_for_analysis);
 			    trace->put("arrival.auth",auth);
-			    trace->put("arrival.jdate",yearday(atime));
+			    // KGL SCAFFOLD temporary cast to compile with new 64-bit-compliant headers
+			    trace->put("arrival.jdate",(int) yearday(atime));
 			    trace->put("arrival.deltim",deltim);
 			    try {
 			    	int arruerr=arru.update(*trace);

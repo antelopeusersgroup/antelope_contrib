@@ -644,7 +644,8 @@ void DatascopeHandle::lookup(string t)
 DBBundle DatascopeHandle::get_range()
 {
 	DBBundle bundle;
-	int s,e;
+	//KGL SCAFFOLD change type for compilation problems with 4.10
+	long int s,e;
 	const string emess("get_range:  handle is not a bundle pointer");
 	if(is_bundle)
 	{
