@@ -210,6 +210,7 @@ void save_metadata_for_object(Metadata& md,
 {
 	MetadataList::iterator mdli;
 	map<string,AttributeProperties>::iterator ami,amie=am.attributes.end();
+	map<string,AttributeProperties> aliasmap;
 	string cval;
 	const string base_message("dbsave->save_metadata_for_object:  ");
 
@@ -220,7 +221,7 @@ void save_metadata_for_object(Metadata& md,
 		string mdkey;
 		if(am.is_alias((*mdli).tag))
 		{
-			map<string,AttributeProperties> aliasmap=am.aliases((*mdli).tag);
+			aliasmap=am.aliases((*mdli).tag);
 			ami=aliasmap.find(table);
 			if(ami==aliasmap.end())
 			{
