@@ -34,6 +34,11 @@ This operation makes up for the consequences of old schemas which did
 not support mail messages of total size over a megabyte (attempts to 
 put such messages in pre-Mail1.3 schemas would result in a corrupt byte 
 count).
+
+.IP find_attachments
+This operation searches for MIME attachments and tabulates them in the
+attachments table of the given database. If there is no attachments
+table, dbscanmail will create one.
 .SH OPTIONS
 
 .IP -v 

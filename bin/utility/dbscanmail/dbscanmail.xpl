@@ -13,12 +13,19 @@
 use Mail::Internet;
 use Datascope ;
 use filemail;
+use MIME::Parser;
+use MIME::Entity;
+use MIME::Decoder;
+use MIME::Base64;
+
 require "getopts.pl" ;
+
 
 @valid_operations = ( "set_messageid", 
 		      "list_contenttypes",
 		      "build_references", 
-		      "fix_bytecount" );
+		      "fix_bytecount",
+		      "find_attachments" );
 
 sub get_mailobj_bybytes {
 	my( @db ) = @_;
@@ -42,6 +49,8 @@ sub get_mailobj_bybytes {
 	@msg = split( /\n/, $msg, -1 );
 
 	$mailobj = new Mail::Internet( \@msg );
+
+	return ( $mailobj );
 }
 
 sub get_msgarray_bylines {
@@ -256,6 +265,84 @@ sub list_contenttypes {
 
 	return 0;
 }
+
+
+sub find_attachments {
+	my( @db ) = @_;
+
+	if( scalar( @db ) < 4 ) {
+		# finished, do nothing
+		return;
+	} 
+
+	my( $msg_bylines, $lines_read, $bytes_read ) = get_msgarray_bylines( @db );
+
+	$parser = new MIME::Parser;
+	$entity = new MIME::Entity;
+
+	$parser->output_to_core(1);
+
+	$entity = eval { $parser->parse_data( $msg_bylines ) };
+
+	$results = $parser->results;
+	$had_errors = $results->errors;
+
+	if( $had_errors ) {
+
+		elog_die( "Failed to parse message from record $db[3].\n" );
+	}
+
+	@parts = $entity->parts();
+
+	if ( @parts > 0 ) {
+
+		@dbattachments = dblookup( @db, "", "attachments", "", "" );
+
+		foreach $part ( @parts ) {
+
+			my( $part_head ) = $part->head;
+			my( $filename ) = $part_head->recommended_filename;
+
+			if( $filename ) {
+
+				my( $part_type, $blob, $attsize );
+
+				$part_type = $part->mime_type;
+
+				$io = $part->open( "r" );
+
+				while( ! $io->eof ) {
+
+					$c = $io->getc;
+					$blob.=$c;
+				}
+
+				$io->close;
+
+				$attsize = length( $blob );
+
+
+				my( $sender, $date, $msgid ) =
+					dbgetv( @db, "from", "time", "messageid" );
+
+				dbaddv( @dbattachments,
+					"from", $sender,
+					"time", $date,
+					"attname", $filename,
+					"attsize", $attsize,
+					"messageid", $msgid,
+					"mimetype", $part_type,
+					);
+
+			}
+
+		} 
+
+	}	
+
+} 
+
+
 
 elog_init( "dbscanmail", @ARGV );
 
