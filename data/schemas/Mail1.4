@@ -1,0 +1,362 @@
+Schema "Mail1.4"
+	Description ( "Mail Database" ) 
+	Detail {
+		Track mail usage.
+	}
+	Timedate timestamp
+	;
+
+Attribute attname
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "Name of attachment" ) 
+	Detail {
+		This field gives the name of a MIME attachment to 
+		a mail message
+	}
+	; 
+
+Attribute attsize
+	Integer ( 10 )
+	Format ( "%10d" ) 
+	Null  ( "-1"  ) 
+	Description ( "size in bytes of an attachment" ) 
+	Detail {
+		This field gives the total number of bytes in a 
+		mail attachment once the attachment has been 
+		decoded into its original form. 
+	}
+	; 
+
+Attribute bytes
+	Integer ( 10 )
+	Format ( "%10d" ) 
+	Null  ( "-1"  ) 
+	Description ( "bytes in message" ) 
+	Detail {
+		This field gives the total number of bytes in a message.
+	}
+	; 
+
+Attribute corrtype
+	String ( 25 )
+	Format ( "%-25s" ) 
+	Null  ( "-"  ) 
+	Description ( "correspondent type" ) 
+	Detail {
+		The correspondent-type field indicates whether 
+		an email sender is a person, organization, retailer, 
+		daemon, or spammer. 
+	}
+	; 
+
+Attribute descrip
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "long description from From" ) 
+	Detail {
+		This field gives the text description of a sender
+		out of the email 'From' field
+	}
+	; 
+
+Attribute dfile
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "data file" )
+	Detail {
+		In wfdisc, this is the file name of a disk-based waveform
+		file.  In instrument, this points to an instrument
+		response file.  See dir.
+	}
+	;
+
+Attribute dir
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "directory" )
+	Detail {
+		This attribute is the directory-part of a path name. 
+		Relative path names or '.' (dot), the notation for the
+		current directory, may be used.
+	}
+	;
+
+Attribute foff
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "0" )
+	Range ( "foff >= 0" )
+	Description ( "byte offset" )
+	Detail {
+		This is the byte offset of a waveform segment within a
+		data file.  It is used when data are multiplexed.  See dir
+		and dfile.
+	}
+	;
+
+Attribute from
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "sender" ) 
+	Detail {
+		This field gives the fully qualified email address 
+		of a mail sender
+	}
+	; 
+
+Attribute inreplyto
+	String ( 1 )
+	Format ( "%-1s" ) 
+	Null  ( "-"  ) 
+	Range ( "inreplyto =~ /y|n/" )
+	Description ( "inreplyto" ) 
+	Detail {
+		This field specifies whether a reference to a message 
+		was taken from the In-Reply-To mail header field (if not,
+		it was taken from the References field)
+	}
+	; 
+
+Attribute lines
+	Integer ( 10 )
+	Format ( "%10d" ) 
+	Null  ( "-1"  ) 
+	Description ( "lines in message" ) 
+	Detail {
+		This field gives the total count of lines in a message,
+		including all header lines, as it is stored in the mail
+		file.
+	}
+	; 
+
+Attribute messageid
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "message id" )
+	Detail {
+		This attribute is the message id for the mail message
+		as specified in Internet RFC 2822. Anything outside of 
+		the enclosing angle brackets is discarded as out of 
+		compliance with the specification. Whitespace, which is 
+		illegal, should be removed, along with the enclosing 
+		angle brackets which are not part of the official message id. 
+		Unfortunately messageid cannot be a primary key since 
+		its presence in the message, while recommended by the RFC, is
+		not officially required.
+	}
+	;
+
+Attribute mimetype
+	String (40)
+	Format ( "%-40s" )
+	Null ( "-" )
+	Description ( "MIME type" )
+	Detail {
+		This attribute gives the Multipart Internet Mail Extension 
+		type code for an attachment to an email message.
+	}
+	;
+
+Attribute newest
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "epoch time of newest message of a given type" ) 
+	Detail {
+	    Epochal time given as seconds and fractions of a second
+	    since hour 0 January 1, 1970, and stored in a double
+	    precision floating number.  
+	}
+	; 
+
+Attribute nmessages
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "nmessages >= 0" )
+	Description ( "number of messages" )
+	Detail {
+		This is the number of messages of a given type, 
+		for example from a certain address
+	}
+	;
+
+Attribute oldest
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "epoch time of oldest message of a given type" ) 
+	Detail {
+	    Epochal time given as seconds and fractions of a second
+	    since hour 0 January 1, 1970, and stored in a double
+	    precision floating number.  
+	}
+	; 
+
+Attribute realname
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "Real name of a correspondent" )
+	Detail {
+		This field indicates the real name 
+		by which an email sender should be referred. 
+		For the common case where one person has 
+		several email addresses, this field should 
+		be used consistently for each person.
+	}
+	; 
+
+Attribute reference
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "reference message id" )
+	Detail {
+		This attribute is a message id for a mail message 
+		that is referred to by another. The id that appears in this 
+		field would be specified in the In-Reply-To or 
+		References headers of an RFC2822 Internet mail message.
+	}
+	;
+
+Attribute time
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "epoch time" ) 
+	Detail {
+	    Epochal time given as seconds and fractions of a second
+	    since hour 0 January 1, 1970, and stored in a double
+	    precision floating number.  
+	}
+	; 
+
+Attribute subject
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "subject" ) 
+	Detail {
+		This field lists the subject of an email message.
+	}
+	; 
+
+Attribute timestamp
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "(epoch) time of last record modification" ) 
+	Detail {
+	    This is the last time the record was modified.  
+	}
+	; 
+
+Attribute to
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "recipient" ) 
+	Detail {
+		This field lists the fully-qualified internet email 
+		address of a person to whom email has been sent. 
+	}
+	; 
+
+Relation attachments 
+	Fields ( 
+		from time attname attsize messageid mimetype timestamp
+	    )
+	Primary ( attname messageid ) 
+	Foreign ( from messageid )
+	Description ( "mail attachments" ) 
+	Detail {
+		This table catalogs all attachments embedded in mail
+		messages.
+	}
+	;
+
+Relation out 
+	Fields ( 
+	    to subject time lines bytes foff dir dfile messageid timestamp
+	    )
+	Primary ( to subject time ) 
+	Alternate ( messageid )
+	Description ( "outbound mail" ) 
+	Detail {
+		This table catalogs all messages which have been 
+		sent by a given user.
+	}
+	;
+
+Relation in 
+	Fields ( 
+	    from subject time lines bytes foff dir dfile messageid timestamp
+	    )
+	Primary ( from subject time ) 
+	Alternate ( messageid )
+	Description ( "inbound mail" ) 
+	Detail {
+		This table catalogs all email messages which have 
+		been received by a given user, or a given person
+		if they have multiple email addresses.
+	}
+	;
+
+Relation correspondents 
+	Fields ( 
+	    from descrip realname corrtype timestamp
+	    )
+	Primary ( from ) 
+	Description ( "Info about Correspondents" ) 
+	Detail {
+		This table catalogs all the senders and 
+		recipients of emails in the database, translating
+		their email addresses to their descriptions
+		and real names (generally the description is the
+		explanation string automatically added by the 
+		email sending agent, where the realname field may be 
+		the same or may be a cleaned-up version made 
+		to be consistent for all addresses corresponding
+		to the same person).
+	}
+	;
+
+Relation references
+	Fields (
+	    messageid inreplyto reference timestamp
+	    )
+	Primary ( messageid reference )
+	Description ( "References amongst email messages" )
+	Detail {
+		This table catalogs the contents of the In-reply-to
+		and References fields of an RFC2822 internet email
+		message. This is useful for tracking threads of email 
+		discussion.
+	}
+	;
+
+Relation summary
+	Fields (
+	    from nmessages oldest newest timestamp
+	    )
+	Primary ( from )
+	Description ( "Summary of message numbers and times" )
+	Detail {
+		This table summarizes the contents of a particular 
+		email collection, often used for inbox monitoring. 
+		Each sender is tabulated with the number of messages
+		and the time-range present for the given sender. 
+	}
+	;
