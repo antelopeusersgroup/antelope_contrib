@@ -1604,7 +1604,7 @@ void pick_error_window_callback(Widget w, void * client_data, void * userdata)
     psm->beammarkers.robust_tw=tmp;
     XtVaSetValues(w,ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
     double deltim;
-    deltim=(tmp.start - tmp.end)/2.0;
+    deltim=(tmp.end - tmp.start)/2.0;
     TimeSeriesEnsemble *tseptr=psm->xpe->get_waveforms_gui();
     tseptr->put("deltim",deltim);
     XtRemoveAllCallbacks(w,ExmNbtn3Callback);
