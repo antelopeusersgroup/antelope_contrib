@@ -1270,6 +1270,51 @@ void XcorProcessingEngine::filter_data(TimeInvariantFilter f)
 {
 	FilterEnsemble(waveform_ensemble,f);
 }
+/* helper for save_results.  Counts and sets nass in origin.  
+Uses DatascopeHandle as a convenience because of automatic memory
+management.  Algorithm is not the most obvious or necessarily the 
+most efficient.  Tried subsetting origin then joining to assoc, but 
+something in the db interface gets confused in this application with 
+rows set with dbmark.  For this reason found it necessary to subset
+assoc and then leftjoin origin.  The subset of assoc using a specific
+orid seems to solve the problem with dbmark records.    
+
+Arguments:
+	dbh - handle to database containing origin and assoc to be accessed
+		to compute nass.  Note this is intentionally NOT a reference but
+		we always get a copy here because the handle is intended to 
+		evaporate on exit.
+	orid - origin id of event to be handled.
+*/
+void set_nassoc(DatascopeHandle dbh,int orid)
+{
+	dbh.lookup("assoc");
+	ostringstream subsetss;
+	subsetss << "orid=="<<orid;
+	dbh.subset(subsetss.str());
+	list<string> joinkeys;
+	joinkeys.push_back("orid");
+	dbh.leftjoin("origin",joinkeys,joinkeys);
+	int nass=dbh.number_tuples();
+
+	if(nass>0) 
+	{
+		Dbptr db;
+		dbh.db.record=0;
+		int ierr;
+		ierr=dbgetv(dbh.db,0,"origin",&db,0);
+		if(ierr==dbINVALID)
+		{
+			throw SeisppError(string("XcorProcessingEngine::save_results->set_nassoc:")
+				+ "  dbgetv error attempting to fetch Dbptr for origin");
+		}
+		dbputv(db,0,"nass",nass,0);
+	}
+	else
+		cerr << "save_results (WARNING):  orid="
+			<<" has no rows in join of origin and assoc"<<endl
+                        <<"Cannot set nass in origin table for this orid"<<endl;
+}
 /* Small companion to save_results to edit an input channelo code to 
  produce a channel code that will normaly resolve to valid sitchan entries.
  Algorithm used will always replace character 3 in the input chan unless
@@ -1535,6 +1580,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		}
 	}
 	if(delete_old_arrivals) arru.clear_old(evid);
+	/* this is a procedure that counts and sets number of associations in origin */
+	set_nassoc(result_db_handle,orid);
 }	
 // These are private functions hidden by the interface
 void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)
