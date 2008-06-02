@@ -19,6 +19,10 @@ stations_frame_subset		offdate == NULL
 overlay_time_correction		0
 num_nearby_stations		0
 autolaunch_dbxcor		0
+crunch_on_exit &Tbl{
+	arrival 
+	assoc
+}
 
 layout &Tbl{
 #Widget parameters for smartpick GUI: 
@@ -135,6 +139,7 @@ required_programs &Tbl{
 	dbe 
 	dbpick
 	dbxcor
+	dbcrunch
 	import
 	unregister
 	xterm

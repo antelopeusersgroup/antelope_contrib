@@ -391,11 +391,21 @@ sub snapshot_dbpick {
 	return;
 }
 
+sub crunch_tables {
+
+	foreach $table ( @{$State{crunch_on_exit}} ) {
+
+		system( "dbcrunch $State{dbname} $table" );
+	}
+}
+
 sub quit_smartpick {
 
 	kill_dbpick();
 
 	kill_dbxcor();
+
+	crunch_tables();
 
 	if( -e "$State{winfile}" ) {
 		
@@ -2185,6 +2195,16 @@ foreach $program ( @required ) {
 	
 		elog_die( "Parameter-file required_programs table " .
 			"contains unexpected characters in '$program'. Bye.\n" );
+	}
+}
+
+my( @crunch ) = @{pfget( $State{pf}, "crunch_on_exit" )};
+
+foreach $table ( @crunch ) {
+
+	if( $table =~ /^[[:alnum:]]*$/ ) {
+
+		push( @{$State{crunch_on_exit}}, $table );
 	}
 }
 
