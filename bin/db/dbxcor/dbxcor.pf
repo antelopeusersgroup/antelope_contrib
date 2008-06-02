@@ -198,7 +198,6 @@ data_window_parameters	&Arr{
 data_window_start	-300.0
 initial_time_stamp	2003355:00:00:00.0
 network_name	Bolivar
-pf_revision_time	1182182997
 phase_processing_parameters	&Arr{
     P	&Arr{
         analysis_sort_order	stack_weight
@@ -293,12 +292,12 @@ phase_processing_parameters	&Arr{
     }
 }
 resample_definitions    &Arr{
-    10 &Arr{
+    40 &Arr{
         Decimator_response_files        &Tbl{
 		1 none
 	}
-	high_limit 11
-	low_limit 9
+	high_limit 41
+	low_limit 39
     }
 }
 
@@ -310,6 +309,8 @@ save_list_arrival	&Tbl{
     arrival.time real
     arrival.iphase string
     arrival.jdate int
+    arrival.deltim real
+    arrival.snr real
     arrival.auth string
 }
 save_list_assoc	&Tbl{
@@ -326,7 +327,8 @@ save_list_assoc	&Tbl{
 save_to_arrival	true
 schema	css3.0
 stack_weight_cutoff	0.001
-target_sample_interval	0.1
+#target_sample_interval	0.1
+target_sample_interval	0.025
 time_lag_cutoff	4.0
 trace_mdl	&Tbl{
     sta string
@@ -588,7 +590,7 @@ integration	INT
 }
 LoadArrivals false
 
-processing_mode EventGathers
+processing_mode ContinuousData
 dbprocess_commands &Tbl{
 dbopen wfprocess
 dbjoin sclink 
@@ -602,5 +604,7 @@ dbgroup evid
 GatherTimeAlignmentKey predarr_time
 TTmethod tttaup
 TTmodel iasp91
-delete_old_arrivals false
+delete_old_arrivals true
 default_phase P
+
+pf_revision_time 1208693851
