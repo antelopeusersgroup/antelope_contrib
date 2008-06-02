@@ -20,8 +20,8 @@ overlay_time_correction		0
 num_nearby_stations		0
 autolaunch_dbxcor		0
 crunch_on_exit &Tbl{
-	arrival 
-	assoc
+#	arrival 
+#	assoc
 }
 
 layout &Tbl{
