@@ -242,8 +242,9 @@ bool GridCell::InsideTest(double x, double y, double z, double tolerance)
 }	
 	
 	
-static const double FeasibleFraction(0.1);
-static const double AcceptFraction(1.0E-2);
+static const double FeasibleTest(0.1);
+static const double AcceptableTest(1.0E-2);
+static const double UnambiguousTest(1.0E-5);
 
 /* This is a recovery routines. The lookup function uses
 the direction set method which is known to fail in some situations in 
@@ -296,7 +297,7 @@ int *recover(GCLgrid3d& g, double x, double y, double z,
 	    for(k=kmin;k<=kmax;++k)
 	    {
 		GridCell cell(g,i,j,k);
-		if(cell.InsideTest(x,y,z,FeasibleFraction))
+		if(cell.InsideTest(x,y,z,FeasibleTest))
 			feasible.push_back(cell);
 	    }
 	int nfeasible=feasible.size();
@@ -313,9 +314,10 @@ int *recover(GCLgrid3d& g, double x, double y, double z,
 	}
 	else
 	{
+
 		// This will silently take the first element in the list
 		// if none of the cells in the list pass the full 
-		// acceptance test.  Assumption is feasible means within
+		// acceptance test.  Assumption is that feasible means within
 		// extrapolation tolerance from any edge.
 		fptr=feasible.begin();
 		result[0]=fptr->ii;
@@ -324,11 +326,24 @@ int *recover(GCLgrid3d& g, double x, double y, double z,
 		for(fptr=feasible.begin();fptr!=feasible.end();
 			fptr++)
 		{
-			// hunt for the first call passing the acceptance
-			// test.  Assumes that if more than one pass the
-			// test the point is on the boundary between cells
-			// and any of the multiple options are equivalent.
-			if(fptr->InsideTest(x,y,z,AcceptFraction))
+			// hunt for the first call passing the unambiguous
+			// test.  If that fails we'll try again with 
+			// a lower tolerance 
+			if(fptr->InsideTest(x,y,z,UnambiguousTest))
+			{
+				result[0]=fptr->ii;
+				result[1]=fptr->jj;
+				result[2]=fptr->kk;
+				return(result);
+			}
+		}
+		for(fptr=feasible.begin();fptr!=feasible.end();
+			fptr++)
+		{
+			// hunt for the first call passing the unambiguous
+			// test.  If that fails we'll try again with 
+			// a lower tolerance 
+			if(fptr->InsideTest(x,y,z,AcceptableTest))
 			{
 				result[0]=fptr->ii;
 				result[1]=fptr->jj;
@@ -440,7 +455,6 @@ int GCLgrid3d::lookup(double x, double y, double z)
 	int di, dj, dk;
 	int ctest;
 	int count=0;
-	double delta[3];
 	/* When inside this number of cell units, increasing distance
 	from the target point will break the iterative loop.  Found
 	necessary to stop excessive iterations on edge points */
@@ -491,9 +505,9 @@ int GCLgrid3d::lookup(double x, double y, double z)
 		nrmdxj = dr3mag(dxj);
 		nrmdxk = dr3mag(dxk);
 
-		delta[0] = x - (x1[i][j][k]);
-		delta[1] = y - (x2[i][j][k]);
-		delta[2] = z - (x3[i][j][k]);
+		dxraw(0) = x - (x1[i][j][k]);
+		dxraw(1) = y - (x2[i][j][k]);
+		dxraw(2) = z - (x3[i][j][k]);
 
 		// Now compute and use the local Jacobian
 		// to compute the number of grid cells to jump.
@@ -502,7 +516,6 @@ int GCLgrid3d::lookup(double x, double y, double z)
 			J(ii,0)=dxi[ii];
 			J(ii,1)=dxj[ii];
 			J(ii,2)=dxk[ii];
-			dxraw(ii)=delta[ii];  // duplicate for testing only
 		}
 		// This is a FORTRAN function to invert a 3x3 matrix
 		// with an analytic form. It is the same routine
@@ -574,7 +587,7 @@ int GCLgrid3d::lookup(double x, double y, double z)
 	if(ctest==0)
 	{
 		GridCell cell(*this, ix1,ix2,ix3);
-		if(cell.InsideTest(x,y,z,AcceptFraction))
+		if(cell.InsideTest(x,y,z,UnambiguousTest))
 		{
 			return(0);
 		}
