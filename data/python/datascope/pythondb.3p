@@ -1,0 +1,181 @@
+.TH PYTHONDB 3P "$Date$"
+.SH NAME
+pythondb \- Python interface to Datascope
+.SH SYNOPSIS
+.nf
+sys.path.append( os.environ['ANTELOPE'] + '/data/python' )
+
+from datascope import *
+.fi
+.SH DESCRIPTION
+The Python Interface to Datascope allows one to perform operations 
+on Datascope databases from the Python scripting language. 
+Following are brief descriptions of the functions implemented.
+
+The python calls may be used in two ways, either in a procedural 
+style or in an object style invocation. Either way, a database pointer 
+is returned, which is a Python object containing four fields, 
+the standard database, table, field, and record indices (for further 
+information see dbintro(1)). Database pointers may be addressed one of 
+several ways. For example, to address the record number, you can use 
+.nf
+
+>>> db = dbopen( '/opt/antelope/data/db/demo/demo','r')
+>>> db
+[Dbptr:
+        database = 0
+        table    = -501
+        field    = -501
+        record   = -501
+]
+
+>>> db.record
+-501
+
+>>> db[3]
+-501
+
+>>> db['record']
+-501
+>>> 
+
+.fi
+
+.SS Datascope functions
+.IP "\fBdbopen\fP (database, permissions)"
+Returns a database pointer to the specified database.
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbopen( database, "r+" ) 
+
+.fi
+.in
+.ft R
+.IP "\fBdblookup\fP (dbptr, database, table, field, record)"
+Aim a database pointer at part of a database
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dblookup( db, '', 'origin', '', '' )
+
+.fi
+.in
+.ft R
+.IP "\fBdbsubset\fP (dbptr, expr)"
+Subset a database view
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbsubset( db, "orid == 645" )
+
+.fi
+or
+.nf
+
+db.dbsubset( "orid == 645" )
+
+.fi
+.in
+.ft R
+.IP "\fBdbsort\fP (dbptr, key)"
+Sort a database view
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbsort( db, 'time' )
+
+.fi
+.in
+.ft R
+.IP "\fBdbjoin\fP (db1, db2)"
+Join two database views
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbjoin( db1, db2 )
+
+.fi
+.in
+.ft R
+.IP "\fBtrloadchan\fP (db, t0, t1, sta, chan)"
+Load a station-channel of data into a trace object
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tr = trloadchan( db, 706139719.05000, 706139855.95000, "TKM", "BHZ" )
+
+.fi
+.in
+.ft R
+.IP "\fBtrdata\fP (tr)"
+Extract a vector of samples from a trace-object row
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+v = trdata( tr )
+
+.fi
+.in
+.ft R
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+import sys
+import os
+import pylab
+
+sys.path.append( os.environ['ANTELOPE'] + '/data/python' )
+
+from datascope import *
+
+db = dbopen( "/opt/antelope/data/db/demo/demo", "r" )
+
+tr = trloadchan( db, 706139719.05000, 706139855.95000, "TKM", "BHZ" )
+
+tr[3] = 0
+
+v = trdata( tr )
+
+pylab.plot(v)
+
+pylab.savefig('dataplot.png',dpi=100)
+
+os.system( "open dataplot.png" )
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$

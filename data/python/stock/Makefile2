@@ -1,0 +1,31 @@
+
+STOCKDLIB= _stock.so
+DLIB=python_stock$(DSUFFIX)
+
+DATADIR= python/antelope
+
+DATA= $(STOCKDLIB) stock.py
+
+MAN1=
+MAN3= 
+MAN5=
+
+CLEAN= *.pyc *.so
+
+cflags= -I$(PYTHONINCLUDE)
+fflags=
+ldflags= 
+ldlibs= $(TRLIBS)
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKE).local
+
+STOCKOBJS= _stock.o
+
+$(STOCKDLIB) : $(STOCKOBJS)
+	$(RM) $@
+	$(DLD) $(DLDFLAGS) -o $(STOCKDLIB) $(STOCKOBJS) $(DLDLIBS) 
+
+$(DLIB): $(STOCKDLIB)
+	$(RM) $@
+	@cp $(STOCKDLIB) $(DLIB)
