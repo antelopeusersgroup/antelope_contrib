@@ -355,7 +355,7 @@ int ArrivalUpdater::update(ThreeComponentSeismogram& ts)
 		return(this->update(dynamic_cast<Metadata&>(ts)));
 	} catch (...) {throw;};
 }
-int ArrivalUpdater::clear_old(int evid_to_clear)
+int ArrivalUpdater::clear_old(int evid_to_clear,string phase)
 {
 	//Silently return immediately if the original arrival view
 	// was empty.  In that case be definition there is nothing old 
@@ -385,9 +385,10 @@ int ArrivalUpdater::clear_old(int evid_to_clear)
 		for(db.record=bundle.start_record;
 				db.record<bundle.end_record;++db.record)
 		{
+			char iphase[10];
 			dbgetv(db,0,"arrival",&dbtokill,0);
-			dbgetv(dbtokill,0,"lddate",&lddate);
-			if(lddate<timestamp)
+			dbgetv(dbtokill,0,"iphase",iphase,"lddate",&lddate);
+			if( (lddate<timestamp) && (phase==iphase) )
 			{
 				dbmark(dbtokill);
 				dbgetv(db,0,"assoc",&dbtokill,0);

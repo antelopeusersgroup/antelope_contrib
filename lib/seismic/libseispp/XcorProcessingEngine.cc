@@ -1579,7 +1579,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		    }				
 		}
 	}
-	if(delete_old_arrivals) arru.clear_old(evid);
+	if(delete_old_arrivals) arru.clear_old(evid,
+		analysis_setting.phase_for_analysis);
 	/* this is a procedure that counts and sets number of associations in origin */
 	set_nassoc(result_db_handle,orid);
 }	

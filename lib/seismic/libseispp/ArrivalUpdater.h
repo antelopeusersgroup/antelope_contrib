@@ -98,12 +98,13 @@ public:
 	* \return number of origins cleared 
 	* \param evid_to_clear is the evid of event to clean up.*/
 	int clear_when_not_prefor(int evid_to_clear);
-	/*! Clears old arrivals for an event.
+	/*! Clears old arrivals for an event for current phase.
 
 	When update is called it marks the wall clock time.  If this
 	method is called after a call to update it will delete any
-	rows in assoc and arrival for a listed event with a time stamp earlier
-	than that marked time.  Thus user should make sure
+	rows in assoc and arrival for a listed event 
+	and matching the current phase with a time stamp earlier
+	than that marked time.  Thus the user should make sure
 	this method is never called on an evid except after
 	an update.  Note rows in arrival and assoc are both 
 	cleared using dbmark.  This means the user needs to arrange
@@ -111,6 +112,8 @@ public:
 
 	\param evid_to_process is the event id of the event 
 	for which assoc rows are to be cleared.  
+	\param phase is the phase name of the phase currently 
+	being processed for which old arrivals are to be cleared.
 
 	\return number of rows of database deleted 
 
@@ -119,7 +122,7 @@ public:
 	check to make sure the user doesn't try to unintentionally
 	delete valid data.
 	*/
-	int clear_old(int evid_to_process);
+	int clear_old(int evid_to_process,string phase);
 private:
 	/*! This is a match handle into the working view.
 	This working view is event:origin:assoc:arrival 
