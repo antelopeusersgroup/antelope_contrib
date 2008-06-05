@@ -1,7 +1,7 @@
 #
 # Define a local dump command
 #
-dump_cmd    "getgif \$window \$period \$name"
+dump_cmd    getgif \$window \$period \$name
 
 #
 # The Orb of interest
