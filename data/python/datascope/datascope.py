@@ -254,6 +254,11 @@ class Dbptr(list):
         db = _datascope._dbjoin(self, db2)
 
         self[:] = db[:]
+
+    def getv(self, *args):
+        """Get values from a database row"""
+
+        return _datascope._dbgetv( self, *args ) 
         
     def loadchan(self, t0, t1, sta, chan):
         """Load time-series data for a given station, channel, and time-interval into memory"""
@@ -327,6 +332,10 @@ def dbjoin(db1, db2):
 
     return dbout
 
+def dbgetv(db, *args):
+    """Get values from a database row"""
+
+    return db.getv(*args)
 
 def trloadchan(dbin, t0, t1, sta, chan):
     """Load time-series data for a given station, channel, and time-interval into memory"""
@@ -531,6 +540,17 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+        def test_method_getv(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db.lookup(table = 'origin')
+
+            db.record = 0
+
+            values = db.getv( 'lat','auth','nass','time' )
+
+            self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
+            
         def test_method_loadchan(self):
             db = Dbptr(Testdatascope.dbname)
 
@@ -633,6 +653,17 @@ if __name__ == '__main__':
             self.assertEqual(dbout.field, dbALL)
             self.assertEqual(dbout.record, dbALL)
 
+        def test_procedure_dbgetv(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            db.record = 0
+
+            values = dbgetv( db, 'lat','auth','nass','time' )
+
+            self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
+            
         def test_procedure_trloadchan(self):
             db = dbopen(Testdatascope.dbname)
 
