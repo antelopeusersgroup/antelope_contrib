@@ -6,6 +6,6 @@ PF = dbrtfm.pf
 
 DATADIR = schemas
 
-DATA = dbrtfm1.0
+DATA = dbrtfm1.1
 
 include $(LINDCNSMAKE)
