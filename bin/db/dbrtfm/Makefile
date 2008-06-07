@@ -8,4 +8,4 @@ DATADIR = schemas
 
 DATA = dbrtfm1.1
 
-include $(LINDCNSMAKE)
+include $(ANTELOPEMAKE)
