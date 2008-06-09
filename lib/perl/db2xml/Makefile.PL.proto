@@ -8,7 +8,7 @@ WriteMakefile(
     'VERSION'	=> '1.0', # finds $VERSION
     'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-      (ABSTRACT => 'perl interfact to the db2xml library', # retrieve abstract from module
+      (ABSTRACT => 'perl interface to the db2xml library', # retrieve abstract from module
        AUTHOR     => 'AuthorField') : ()),
     'LIBS'		=> ['LinkArguments'], # e.g., '-lm'
     'DEFINE'		=> '', # e.g., '-DHAVE_SOMETHING'
