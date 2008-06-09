@@ -227,17 +227,17 @@ class Dbptr(list):
 
         self[:] = db[:]
 
-    def sort(self, akey):
+    def sort(self, akey, name = None):
         """Sort a database view"""
 
-        db = _datascope._dbsort(self, akey)
+        db = _datascope._dbsort(self, akey, name)
 
         self[:] = db[:]
         
-    def subset(self, expr):
+    def subset(self, expr, name = None):
         """Subset a database view"""
 
-        db = _datascope._dbsubset(self, expr)
+        db = _datascope._dbsubset(self, expr, name)
 
         self[:] = db[:]
 
@@ -248,10 +248,10 @@ class Dbptr(list):
 
         self[:] = db[:]
         
-    def join(self, db2):
+    def join(self, db2, name = None):
         """Join two database views"""
 
-        db = _datascope._dbjoin(self, db2)
+        db = _datascope._dbjoin(self, db2, name)
 
         self[:] = db[:]
 
@@ -303,32 +303,32 @@ def dbinvalid():
     return Dbptr()
 
 
-def dbsort(dbin, akey):
+def dbsort(dbin, akey, name = None):
     """Sort a database view"""
 
     dbout = Dbptr(dbin)
 
-    dbout.sort(akey)
+    dbout.sort(akey, name)
 
     return dbout
 
 
-def dbsubset(dbin, expr):
+def dbsubset(dbin, expr, name = None):
     """Subset a database view"""
 
     dbout = Dbptr(dbin)
 
-    dbout.subset(expr)
+    dbout.subset(expr, name)
 
     return dbout
 
 
-def dbjoin(db1, db2):
+def dbjoin(db1, db2, name = None):
     """Join two database views"""
 
     dbout = Dbptr(db1)
 
-    dbout.join(db2)
+    dbout.join(db2, name)
 
     return dbout
 
@@ -518,6 +518,14 @@ if __name__ == '__main__':
 
             self.assertTrue(db[1] >= 0)
 
+            db.sort('time', 'testview')
+
+            self.assertTrue(db[1] >= 0)
+
+            db2 = dblookup( db, table='testview' )
+
+            self.assertEqual(db.table, db2.table)
+
         def test_method_subset(self):
             db = Dbptr(Testdatascope.dbname)
 
@@ -628,11 +636,20 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
             self.assertFalse(dbout is db)
 
+            dbout = dbsort(db, 'time', 'testview')
+
+            self.assertTrue(dbout.table >= 0)
+            self.assertFalse(dbout is db)
+
+            db2 = dblookup(dbout, table='testview')
+
+            self.assertEqual(dbout.table,db2.table)
+
         def test_procedure_dbsubset(self):
             db = dbopen(Testdatascope.dbname)
 
             db = dblookup(db, table = 'origin')
-            dbout = dbsubset(db, 'mb > 3')
+            dbout = dbsubset(db, 'mb > 3', name = 'testsubset')
 
             self.assertTrue(dbout.table >= 0)
             self.assertFalse(dbout is db)
@@ -643,7 +660,7 @@ if __name__ == '__main__':
             dborigin = dblookup(db, table = 'origin')
             dbassoc = dblookup(db, table = 'origin')
 
-            dbout = dbjoin(dborigin, dbassoc)
+            dbout = dbjoin(dborigin, dbassoc, name = 'testjoin')
 
             self.assertFalse(dbout is dborigin)
             self.assertFalse(dbout is dbassoc)

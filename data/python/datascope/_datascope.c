@@ -168,17 +168,18 @@ python_dbsubset( PyObject *self, PyObject *args ) {
 	char	*usage;
 	Dbptr	db;
 	char	*expr = 0;
+	char	*name = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&s", convert_Dbptr, &db, &expr ) ) {
+	if( ! PyArg_ParseTuple( args, "O&sz", convert_Dbptr, &db, &expr, &name ) ) {
 
-		usage = "Usage: _dbsubset( db, expr )\n";
+		usage = "Usage: _dbsubset( db, expr, name )\n";
 
 		PyErr_SetString( PyExc_RuntimeError, usage );
 
 		return NULL;
 	}
 
-	db = dbsubset( db, expr, 0 );
+	db = dbsubset( db, expr, name );
 
 	return Dbptr2PyObject( db );
 }
@@ -203,12 +204,13 @@ python_dbinvalid( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbsort( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbsort( db, key )\n";
+	char	*usage = "Usage: _dbsort( db, key, name )\n";
 	Dbptr	db;
+	char	*name = 0;
 	char	*akey = 0;
 	Tbl 	*keys;
 
-	if( ! PyArg_ParseTuple( args, "O&s", convert_Dbptr, &db, &akey ) ) {
+	if( ! PyArg_ParseTuple( args, "O&sz", convert_Dbptr, &db, &akey, &name ) ) {
 
 		PyErr_SetString( PyExc_RuntimeError, usage );
 
@@ -217,7 +219,7 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 	keys = strtbl( akey, 0 );
 
-	db = dbsort( db, keys, 0, 0 );
+	db = dbsort( db, keys, 0, name );
 
 	freetbl( keys, 0 );
 
@@ -226,19 +228,20 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbjoin( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbjoin( db1, db2 )\n";
+	char	*usage = "Usage: _dbjoin( db1, db2, name )\n";
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	dbout;
+	char	*name = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&O&", convert_Dbptr, &db1, convert_Dbptr, &db2 ) ) {
+	if( ! PyArg_ParseTuple( args, "O&O&z", convert_Dbptr, &db1, convert_Dbptr, &db2, &name ) ) {
 
 		PyErr_SetString( PyExc_RuntimeError, usage );
 
 		return NULL;
 	}
 
-	dbout = dbjoin( db1, db2, 0, 0, 0, 0, 0 );
+	dbout = dbjoin( db1, db2, 0, 0, 0, 0, name );
 
 	return Dbptr2PyObject( dbout );
 }
