@@ -143,7 +143,7 @@ convert_Boolean( PyObject *obj, void *addr )
 static int
 convert_strtbl( PyObject *obj, void *addr )
 {
-	Tbl	*atbl = (Tbl *) addr;
+	Tbl	**atbl = (Tbl **) addr;
 	PyObject *seqobj;
 	int	nitems = 0;
 	int	iitem;
@@ -152,10 +152,17 @@ convert_strtbl( PyObject *obj, void *addr )
 
 	if( obj == Py_None ) {
 
-		atbl = 0;
+		*atbl = 0;
 
 		return 1;
 	} 
+
+	if( PyString_Check( obj ) ) {
+
+		*atbl = strtbl( PyString_AsString( obj ), NULL );
+
+		return 1;
+	}
 
 	if( ! PySequence_Check( obj ) ) {
 
@@ -167,7 +174,7 @@ convert_strtbl( PyObject *obj, void *addr )
 
 	nitems = PySequence_Size( obj );
 
-	atbl = newtbl( nitems );
+	*atbl = newtbl( nitems );
 
 	for( iitem = 0; iitem < nitems; iitem++ ) {
 		
@@ -175,7 +182,9 @@ convert_strtbl( PyObject *obj, void *addr )
 
 		if( ! seqobj ) {
 
-			freetbl( atbl, 0 );
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -188,7 +197,9 @@ convert_strtbl( PyObject *obj, void *addr )
 
 		if( ! PyString_Check( seqobj ) ) {
 
-			freetbl( atbl, 0 );
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -201,7 +212,9 @@ convert_strtbl( PyObject *obj, void *addr )
 
 		if( ( astring = PyString_AsString( seqobj ) ) == NULL ) {
 
-			freetbl( atbl, 0 );
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -212,7 +225,7 @@ convert_strtbl( PyObject *obj, void *addr )
 			return 0;
 		}
 
-		pushtbl( atbl, astring );
+		pushtbl( *atbl, astring );
 	}
 
 	return 1;
@@ -312,13 +325,19 @@ python_dbinvalid( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbsort( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbsort( db, key, name )\n";
+	char	*usage = "Usage: _dbsort( db, keys, unique, reverse, name )\n";
 	Dbptr	db;
+	Tbl 	*keys = 0;
 	char	*name = 0;
-	char	*akey = 0;
-	Tbl 	*keys;
+	int	flags = 0;
+	int	reverse = 0;
+	int	unique = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&sz", convert_Dbptr, &db, &akey, &name ) ) {
+	if( ! PyArg_ParseTuple( args, "O&O&O&O&z", convert_Dbptr, &db, 
+						   convert_strtbl, &keys, 
+						   convert_Boolean, &unique, 
+						   convert_Boolean, &reverse, 
+						   &name ) ) {
 
 		if( ! PyErr_Occurred() ) {
 
@@ -328,11 +347,22 @@ python_dbsort( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	keys = strtbl( akey, 0 );
+	if( reverse ) {
 
-	db = dbsort( db, keys, 0, name );
+		flags |= dbSORT_REVERSE;
+	} 
 
-	freetbl( keys, 0 );
+	if( unique ) {
+
+		flags |= dbSORT_UNIQUE;
+	} 
+
+	db = dbsort( db, keys, flags, name );
+
+	if( keys != NULL ) {
+
+		freetbl( keys, 0 );
+	}
 
 	return Dbptr2PyObject( db );
 }

@@ -227,10 +227,10 @@ class Dbptr(list):
 
         self[:] = db[:]
 
-    def sort(self, akey, name = None):
+    def sort(self, keys, unique = False, reverse = False, name = None):
         """Sort a database view"""
 
-        db = _datascope._dbsort(self, akey, name)
+        db = _datascope._dbsort(self, keys, unique, reverse, name)
 
         self[:] = db[:]
         
@@ -304,12 +304,12 @@ def dbinvalid():
     return Dbptr()
 
 
-def dbsort(dbin, akey, name = None):
+def dbsort(dbin, keys, unique = False, reverse = False, name = None):
     """Sort a database view"""
 
     dbout = Dbptr(dbin)
 
-    dbout.sort(akey, name)
+    dbout.sort(keys, unique, reverse, name)
 
     return dbout
 
@@ -519,7 +519,7 @@ if __name__ == '__main__':
 
             self.assertTrue(db[1] >= 0)
 
-            db.sort('time', 'testview')
+            db.sort('time', name = 'testview')
 
             self.assertTrue(db[1] >= 0)
 
@@ -637,14 +637,18 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
             self.assertFalse(dbout is db)
 
-            dbout = dbsort(db, 'time', 'testview')
+            dbout = dbsort(db, 'time', name = 'testview')
 
             self.assertTrue(dbout.table >= 0)
             self.assertFalse(dbout is db)
 
             db2 = dblookup(dbout, table='testview')
 
-            self.assertEqual(dbout.table,db2.table)
+            self.assertEqual(dbout.table, db2.table)
+
+            dbout = dbsort(db, 'time', unique = True, reverse = True, name = 'testview')
+
+            self.assertTrue(dbout.table >= 0)
 
         def test_procedure_dbsubset(self):
             db = dbopen(Testdatascope.dbname)
