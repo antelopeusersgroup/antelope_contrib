@@ -220,6 +220,16 @@ class Dbptr(list):
             "\trecord   = %d\n" % self[3] +
             "]\n")
 
+    def close(self):
+        """Close a Datascope database"""
+
+        _datascope._dbclose(self)
+
+    def free(self):
+        """free datascope memory"""
+
+        _datascope._dbfree(self)
+
     def lookup(self, database = "", table = "", field = "", record = ""):
         """Aim a database pointer at part of a database"""
     
@@ -292,6 +302,22 @@ def dbopen(dbname, perm = 'r'):
     """Open a Datascope database"""
 
     return Dbptr(dbname, perm)
+
+
+def dbclose(db):
+    """Close a Datascope database"""
+
+    db.close()
+
+    return 
+
+
+def dbfree(db):
+    """Free datascope memory"""
+
+    db.free()
+
+    return 
 
 
 def dblookup(dbin, database = "" , table = "", field = "", record = ""):
@@ -396,7 +422,7 @@ if __name__ == '__main__':
             db3 = Dbptr(Testdatascope.dbname)
 
             self.assert_(isinstance(db3, Dbptr))
-            self.assertEqual(db3[0], 0)
+            self.assertTrue(db3[0] >= 0)
             self.assertEqual(db3[1], dbALL)
             self.assertEqual(db3[2], dbALL)
             self.assertEqual(db3[3], dbALL)
@@ -404,7 +430,7 @@ if __name__ == '__main__':
             db4 = Dbptr(Testdatascope.dbname, 'r')
 
             self.assert_(isinstance(db4, Dbptr))
-            self.assertEqual(db4[0], 0)
+            self.assertTrue(db4[0] >= 0)
             self.assertEqual(db4[1], dbALL)
             self.assertEqual(db4[2], dbALL)
             self.assertEqual(db4[3], dbALL)
@@ -412,7 +438,7 @@ if __name__ == '__main__':
             db5 = Dbptr(dbname = Testdatascope.dbname)
 
             self.assert_(isinstance(db5, Dbptr))
-            self.assertEqual(db5[0], 0)
+            self.assertTrue(db5[0] >= 0)
             self.assertEqual(db5[1], dbALL)
             self.assertEqual(db5[2], dbALL)
             self.assertEqual(db5[3], dbALL)
@@ -420,7 +446,7 @@ if __name__ == '__main__':
             db6 = Dbptr(dbname = Testdatascope.dbname, perm = 'r')
 
             self.assert_(isinstance(db6, Dbptr))
-            self.assertEqual(db6[0], 0)
+            self.assertTrue(db6[0] >= 0)
             self.assertEqual(db6[1], dbALL)
             self.assertEqual(db6[2], dbALL)
             self.assertEqual(db6[3], dbALL)
@@ -503,13 +529,27 @@ if __name__ == '__main__':
             self.assertEqual(dbINVALID, -102)
             self.assertEqual(dbALL, -501)
 
+        def test_method_close(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db.close()
+
+        def test_method_free(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db.lookup(table = 'origin')
+
+            db.sort('time')
+
+            db.free()
+
         def test_method_lookup(self):
             db = Dbptr(Testdatascope.dbname)
 
             db.lookup(table = 'origin')
 
             self.assert_(isinstance(db, Dbptr))
-            self.assertEqual(db[0], 0)
+            self.assertTrue(db[0] >= 0)
             self.assertEqual(db[1], 19)
             self.assertEqual(db[2], dbALL)
             self.assertEqual(db[3], dbALL)
@@ -619,7 +659,7 @@ if __name__ == '__main__':
 
             self.assert_(isinstance(db, Dbptr))
 
-            self.assertEqual(db.database, 0)
+            self.assertTrue(db.database >= 0)
             self.assertEqual(db.table, dbALL)
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
@@ -628,7 +668,22 @@ if __name__ == '__main__':
 
             self.assert_(isinstance(db, Dbptr))
 
-            self.assertEqual(db, [0, dbALL, dbALL, dbALL])
+            self.assertTrue(db.database >= 0)
+            self.assertEqual(db[1:], [dbALL, dbALL, dbALL])
+
+        def test_procedure_dbclose(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            dbclose(db)
+
+        def test_procedure_dbfree(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            db = dbsort(db, 'time')
+
+            dbfree(db)
 
         def test_procedure_dblookup(self):
             db = dbopen(Testdatascope.dbname, 'r')
@@ -637,7 +692,7 @@ if __name__ == '__main__':
 
             self.assert_(isinstance(dbout, Dbptr))
 
-            self.assertEqual(dbout, [0, 19, dbALL, dbALL])
+            self.assertEqual(dbout[1:], [19, dbALL, dbALL])
             self.assertFalse(dbout is db)
 
         def test_procedure_dbinvalid(self):
@@ -695,7 +750,7 @@ if __name__ == '__main__':
             self.assertFalse(dbout is dbassoc)
 
             self.assertTrue(dbout.database >= 0)
-            self.assertTrue(dbout.table > 41)
+            self.assertTrue(dbout.table >= 41)
             self.assertEqual(dbout.field, dbALL)
             self.assertEqual(dbout.record, dbALL)
 

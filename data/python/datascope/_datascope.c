@@ -58,6 +58,8 @@ char *__progname = "Python";
 
 static PyObject *python_dbinvalid( PyObject *self, PyObject *args );
 static PyObject *python_dbopen( PyObject *self, PyObject *args );
+static PyObject *python_dbclose( PyObject *self, PyObject *args );
+static PyObject *python_dbfree( PyObject *self, PyObject *args );
 static PyObject *python_dblookup( PyObject *self, PyObject *args );
 static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
@@ -71,6 +73,8 @@ PyMODINIT_FUNC init_datascope( void );
 
 static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbopen",   	python_dbopen,   	METH_VARARGS, "Open Datascope database" },
+	{ "_dbclose",  	python_dbclose,   	METH_VARARGS, "Close a Datascope database" },
+	{ "_dbfree",  	python_dbfree,   	METH_VARARGS, "Free Datascope memory" },
 	{ "_dblookup", 	python_dblookup, 	METH_VARARGS, "Lookup Datascope indices" },
 	{ "_dbsort",   	python_dbsort,   	METH_VARARGS, "Sort Datascope table" },
 	{ "_dbsubset", 	python_dbsubset, 	METH_VARARGS, "Subset Datascope table" },
@@ -90,7 +94,7 @@ Dbptr2PyObject( Dbptr db )
 }
 
 static int
-convert_Dbptr( PyObject *obj, void *addr )
+parse_to_Dbptr( PyObject *obj, void *addr )
 {
 	Dbptr	*db = (Dbptr *) addr;
 
@@ -118,7 +122,7 @@ convert_Dbptr( PyObject *obj, void *addr )
 }
 
 static int
-convert_Boolean( PyObject *obj, void *addr )
+parse_from_Boolean( PyObject *obj, void *addr )
 {
 	int	*value = (int *) addr;
 
@@ -144,7 +148,7 @@ convert_Boolean( PyObject *obj, void *addr )
 }
 
 static int
-convert_strtbl( PyObject *obj, void *addr )
+parse_to_strtbl( PyObject *obj, void *addr )
 {
 	Tbl	**atbl = (Tbl **) addr;
 	PyObject *seqobj;
@@ -236,7 +240,7 @@ convert_strtbl( PyObject *obj, void *addr )
 
 static PyObject *
 python_dbopen( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dblookup( dbname, perm )\n";
+	char	*usage = "Usage: _dbopen( dbname, perm )\n";
 	char	*dbname;
 	char	*perm;
 	Dbptr	db;
@@ -262,6 +266,62 @@ python_dbopen( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_dbclose( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbclose( db )\n";
+	Dbptr	db;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbclose( db );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error closing database" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbfree( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbfree( db )\n";
+	Dbptr	db;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbfree( db );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error freeing datascope memory" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
 python_dblookup( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dblookup( db, database, table, field, record )\n";
 	Dbptr	db;
@@ -270,7 +330,7 @@ python_dblookup( PyObject *self, PyObject *args ) {
 	char	*field = 0;
 	char	*record = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&ssss", convert_Dbptr, &db, 
+	if( ! PyArg_ParseTuple( args, "O&ssss", parse_to_Dbptr, &db, 
 				      &database, &table, &field, &record ) ) {
 
 		if( ! PyErr_Occurred() ) {
@@ -293,7 +353,7 @@ python_dbsubset( PyObject *self, PyObject *args ) {
 	char	*expr = 0;
 	char	*name = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&sz", convert_Dbptr, &db, &expr, &name ) ) {
+	if( ! PyArg_ParseTuple( args, "O&sz", parse_to_Dbptr, &db, &expr, &name ) ) {
 
 		if( ! PyErr_Occurred() ) {
 
@@ -336,10 +396,10 @@ python_dbsort( PyObject *self, PyObject *args ) {
 	int	reverse = 0;
 	int	unique = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&O&O&O&z", convert_Dbptr, &db, 
-						   convert_strtbl, &keys, 
-						   convert_Boolean, &unique, 
-						   convert_Boolean, &reverse, 
+	if( ! PyArg_ParseTuple( args, "O&O&O&O&z", parse_to_Dbptr, &db, 
+						   parse_to_strtbl, &keys, 
+						   parse_from_Boolean, &unique, 
+						   parse_from_Boolean, &reverse, 
 						   &name ) ) {
 
 		if( ! PyErr_Occurred() ) {
@@ -382,11 +442,11 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 	int	duplicate_pattern = 0;
 	char	*name = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&O&O&O&O&z", convert_Dbptr, &db1, 
-					       convert_Dbptr, &db2, 
-					       convert_strtbl, &pattern1, 
-					       convert_strtbl, &pattern2,
-					       convert_Boolean, &outer, 
+	if( ! PyArg_ParseTuple( args, "O&O&O&O&O&z", parse_to_Dbptr, &db1, 
+					       parse_to_Dbptr, &db2, 
+					       parse_to_strtbl, &pattern1, 
+					       parse_to_strtbl, &pattern2,
+					       parse_from_Boolean, &outer, 
 					       &name ) ) {
 
 		if( ! PyErr_Occurred() ) {
@@ -433,11 +493,11 @@ python_db2xml( PyObject *self, PyObject *args ) {
 	int	primary = 0;
 	int	rc;
 	
-	if( ! PyArg_ParseTuple( args, "O&zzO&O&O&", convert_Dbptr, &db, 
+	if( ! PyArg_ParseTuple( args, "O&zzO&O&O&", parse_to_Dbptr, &db, 
 						    &rootnode, &rownode, 
-						    convert_strtbl, &fields, 
-						    convert_strtbl, &expressions, 
-						    convert_Boolean, &primary ) ) {
+						    parse_to_strtbl, &fields, 
+						    parse_to_strtbl, &expressions, 
+						    parse_from_Boolean, &primary ) ) {
 
 		if( ! PyErr_Occurred() ) {
 
@@ -500,7 +560,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 
 		return NULL;
 
-	} else if( ! convert_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
+	} else if( ! parse_to_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
 
 		sprintf( errmsg, "Argument 0 to _dbgetv must be a Dbptr or four-element list of integers" );
 
@@ -618,7 +678,7 @@ python_trloadchan( PyObject *self, PyObject *args ) {
 	char	*sta;
 	char	*chan;
 
-	if( ! PyArg_ParseTuple( args, "O&ddss", convert_Dbptr, 
+	if( ! PyArg_ParseTuple( args, "O&ddss", parse_to_Dbptr, 
 				       &db, &t0, &t1, &sta, &chan ) ) {
 
 		if( ! PyErr_Occurred() ) {
@@ -644,7 +704,7 @@ python_trdata( PyObject *self, PyObject *args ) {
 	int	i;
 	PyObject *obj;
 
-	if( ! PyArg_ParseTuple( args, "O&", convert_Dbptr, &tr ) ) {
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
 
 		if( ! PyErr_Occurred() ) {
 
