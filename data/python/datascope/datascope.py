@@ -268,7 +268,12 @@ class Dbptr(list):
     def getv(self, *args):
         """Get values from a database row"""
 
-        return _datascope._dbgetv( self, *args ) 
+        return _datascope._dbgetv(self, *args)
+    
+    def query(self, dbcode):
+        """Retrieve ancillary information about a database"""
+
+        return _datascope._dbquery(self, dbcode)
         
     def xml( self, rootnode = None, rownode = None, fields = None, expressions = None, primary = False ):
         """convert a database view to XML"""
@@ -377,6 +382,12 @@ def dbgetv(db, *args):
     return db.getv(*args)
 
 
+def dbquery(db, dbcode):
+    """Retrieve ancillary information about a database"""
+
+    return db.query(dbcode)
+        
+
 def trloadchan(dbin, t0, t1, sta, chan):
     """Load time-series data for a given station, channel, and time-interval into memory"""
 
@@ -419,7 +430,7 @@ if __name__ == '__main__':
             self.assertEqual(db2[2], dbALL)
             self.assertEqual(db2[3], dbALL)
 
-            db3 = Dbptr(Testdatascope.dbname)
+            db3 = Dbptr(self.dbname)
 
             self.assert_(isinstance(db3, Dbptr))
             self.assertTrue(db3[0] >= 0)
@@ -427,7 +438,7 @@ if __name__ == '__main__':
             self.assertEqual(db3[2], dbALL)
             self.assertEqual(db3[3], dbALL)
 
-            db4 = Dbptr(Testdatascope.dbname, 'r')
+            db4 = Dbptr(self.dbname, 'r')
 
             self.assert_(isinstance(db4, Dbptr))
             self.assertTrue(db4[0] >= 0)
@@ -435,7 +446,7 @@ if __name__ == '__main__':
             self.assertEqual(db4[2], dbALL)
             self.assertEqual(db4[3], dbALL)
 
-            db5 = Dbptr(dbname = Testdatascope.dbname)
+            db5 = Dbptr(dbname = self.dbname)
 
             self.assert_(isinstance(db5, Dbptr))
             self.assertTrue(db5[0] >= 0)
@@ -443,7 +454,7 @@ if __name__ == '__main__':
             self.assertEqual(db5[2], dbALL)
             self.assertEqual(db5[3], dbALL)
 
-            db6 = Dbptr(dbname = Testdatascope.dbname, perm = 'r')
+            db6 = Dbptr(dbname = self.dbname, perm = 'r')
 
             self.assert_(isinstance(db6, Dbptr))
             self.assertTrue(db6[0] >= 0)
@@ -530,12 +541,12 @@ if __name__ == '__main__':
             self.assertEqual(dbALL, -501)
 
         def test_method_close(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.close()
 
         def test_method_free(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
 
@@ -544,7 +555,7 @@ if __name__ == '__main__':
             db.free()
 
         def test_method_lookup(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
 
@@ -555,7 +566,7 @@ if __name__ == '__main__':
             self.assertEqual(db[3], dbALL)
 
         def test_method_invalid(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
         
             db.invalid()
 
@@ -565,7 +576,7 @@ if __name__ == '__main__':
             self.assertEqual(db[3], dbINVALID)
 
         def test_method_sort(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
             db.sort('time')
@@ -581,7 +592,7 @@ if __name__ == '__main__':
             self.assertEqual(db.table, db2.table)
 
         def test_method_subset(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
             db.subset('mb > 3')
@@ -589,7 +600,7 @@ if __name__ == '__main__':
             self.assertTrue(db[1] >= 0)
 
         def test_method_join(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
 
@@ -603,7 +614,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
             
         def test_method_getv(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
 
@@ -613,8 +624,13 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_method_query(self):
+            db = Dbptr(self.dbname)
+
+            self.assertEqual(self.dbname, db.query(dbDATABASE_NAME))
+
         def test_method_xml(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
 
@@ -623,7 +639,7 @@ if __name__ == '__main__':
             self.assert_(isinstance(xml,str))
 
         def test_method_loadchan(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
@@ -644,7 +660,7 @@ if __name__ == '__main__':
             self.assertNotEqual(db.record, dbINVALID)
 
         def test_method_data(self):
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
@@ -655,7 +671,7 @@ if __name__ == '__main__':
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
 
         def test_procedure_dbopen(self):
-            db = dbopen(Testdatascope.dbname, 'r')
+            db = dbopen(self.dbname, 'r')
 
             self.assert_(isinstance(db, Dbptr))
 
@@ -664,7 +680,7 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
 
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             self.assert_(isinstance(db, Dbptr))
 
@@ -672,12 +688,12 @@ if __name__ == '__main__':
             self.assertEqual(db[1:], [dbALL, dbALL, dbALL])
 
         def test_procedure_dbclose(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             dbclose(db)
 
         def test_procedure_dbfree(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
 
@@ -686,7 +702,7 @@ if __name__ == '__main__':
             dbfree(db)
 
         def test_procedure_dblookup(self):
-            db = dbopen(Testdatascope.dbname, 'r')
+            db = dbopen(self.dbname, 'r')
 
             dbout = dblookup(db, '', 'origin', '', '')
 
@@ -696,7 +712,7 @@ if __name__ == '__main__':
             self.assertFalse(dbout is db)
 
         def test_procedure_dbinvalid(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
         
             db = dbinvalid()
 
@@ -706,7 +722,7 @@ if __name__ == '__main__':
             self.assertEqual(db[3], dbINVALID)
 
         def test_procedure_dbsort(self):
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             db = dblookup(db, table = 'origin')
             dbout = dbsort(db, 'time')
@@ -728,7 +744,7 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
 
         def test_procedure_dbsubset(self):
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             db = dblookup(db, table = 'origin')
             dbout = dbsubset(db, 'mb > 3', name = 'testsubset')
@@ -737,7 +753,7 @@ if __name__ == '__main__':
             self.assertFalse(dbout is db)
 
         def test_procedure_dbjoin(self):
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             dborigin = dblookup(db, table = 'origin')
             dbassoc = dblookup(db, table = 'assoc')
@@ -770,18 +786,35 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
 
         def test_procedure_dbgetv(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
 
             db.record = 0
 
-            values = dbgetv( db, 'lat','auth','nass','time' )
+            values = dbgetv(db, 'lat','auth','nass','time')
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_procedure_dbquery(self):
+            db = Dbptr(self.dbname)
+
+            value = dbquery(db, dbDATABASE_NAME)
+
+            self.assertEqual(value, self.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            value = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(value, 1351)
+
+            value = dbquery(db, dbSCHEMA_TABLES)
+
+            self.assertTrue(isinstance(value,tuple))
+
         def test_procedure_db2xml(self):
-            db = Dbptr(Testdatascope.dbname)
+            db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
 
@@ -793,7 +826,7 @@ if __name__ == '__main__':
             self.assert_(isinstance(xml,str))
 
         def test_procedure_trloadchan(self):
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
 
@@ -805,7 +838,7 @@ if __name__ == '__main__':
             self.assertNotEqual(db.record, dbINVALID)
 
         def test_procedure_trdata(self):
-            db = dbopen(Testdatascope.dbname)
+            db = dbopen(self.dbname)
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
 

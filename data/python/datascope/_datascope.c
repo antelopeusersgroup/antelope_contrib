@@ -65,6 +65,7 @@ static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
 static PyObject *python_dbjoin( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
+static PyObject *python_dbquery( PyObject *self, PyObject *args );
 static PyObject *python_db2xml( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
@@ -81,6 +82,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbjoin",   	python_dbjoin,   	METH_VARARGS, "Join Datascope tables" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
+	{ "_dbquery",   python_dbquery,   	METH_VARARGS, "Get ancillary information about a database" },
 	{ "_db2xml",    python_db2xml,   	METH_VARARGS, "convert a database view to XML" },
 	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
@@ -91,6 +93,27 @@ static PyObject *
 Dbptr2PyObject( Dbptr db )
 {
 	return Py_BuildValue( "[iiii]", db.database, db.table, db.field, db.record );
+}
+
+static PyObject *
+strtbl2PyObject( Tbl *atbl ) 
+{
+	PyObject *obj;
+	int	i;
+
+	if( atbl == NULL ) {
+
+		return NULL;
+	} 
+
+	obj = PyTuple_New( maxtbl( atbl ) );
+
+	for( i = 0; i < maxtbl( atbl ); i++ ) {
+
+		PyTuple_SetItem( obj, i, PyString_FromString( gettbl( atbl, i ) ) );
+	}
+
+	return obj;
 }
 
 static int
@@ -666,6 +689,136 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 	}
 
 	return vals;
+}
+
+static PyObject *
+python_dbquery( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbquery( db, code )\n";
+	Dbptr	db;
+	PyObject *obj;
+	char	*string;
+	char	errmsg[STRSZ];
+	Tbl	*tbl;
+	int	dbcode;
+	int	n;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &db, &dbcode ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	switch( dbcode )	
+	{
+	case dbSCHEMA_DEFAULT:
+	case dbDATABASE_FILENAME:
+	case dbIDSERVER:
+	case dbLOCKS:
+        case dbSCHEMA_DESCRIPTION:
+        case dbTIMEDATE_NAME:
+        case dbDATABASE_DESCRIPTION:
+        case dbTABLE_DESCRIPTION:
+        case dbFIELD_DESCRIPTION:
+        case dbSCHEMA_DETAIL:
+        case dbDATABASE_DETAIL:
+        case dbTABLE_DETAIL:
+        case dbFIELD_DETAIL:
+        case dbSCHEMA_NAME:
+        case dbDATABASE_NAME:
+        case dbTABLE_NAME:
+        case dbFIELD_NAME:
+        case dbTABLE_FILENAME:
+        case dbTABLE_DIRNAME:
+        case dbFIELD_RANGE:
+        case dbFIELD_FORMAT:
+        case dbDBPATH:
+        case dbFORMAT:
+        case dbFIELD_UNITS:
+        case dbFIELD_BASE_TABLE:
+        case dbUNIQUE_ID_NAME:
+
+		if( ( rc = dbquery(db, dbcode, &string) ) >= 0 ) {
+
+			obj = Py_BuildValue( "s", string );
+
+		} else {
+
+			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+
+			obj = NULL;
+		}
+
+		break;
+
+        case dbDATABASE_COUNT:
+        case dbTABLE_COUNT:
+        case dbFIELD_COUNT:
+        case dbRECORD_COUNT:
+        case dbTABLE_SIZE:
+        case dbFIELD_SIZE:
+        case dbFIELD_INDEX:
+        case dbVIEW_TABLE_COUNT:
+        case dbRECORD_SIZE:
+        case dbTABLE_IS_WRITEABLE:
+        case dbTABLE_IS_VIEW:
+	case dbDATABASE_IS_WRITABLE:
+	case dbTABLE_PRESENT:
+	case dbTABLE_IS_TRANSIENT:
+        case dbFIELD_TYPE:
+
+		if( ( rc = dbquery(db, dbcode, &n) ) >= 0 ) {
+			
+			obj = Py_BuildValue( "i", n );
+
+		} else {
+
+			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+
+			obj = NULL;
+		}
+
+                break;  
+
+        case dbLINK_FIELDS:
+        case dbSCHEMA_FIELDS:
+	case dbSCHEMA_TABLES:
+        case dbFIELD_TABLES:
+        case dbVIEW_TABLES:
+        case dbTABLE_FIELDS:
+        case dbPRIMARY_KEY:
+        case dbALTERNATE_KEY:
+        case dbFOREIGN_KEYS:
+
+		if( ( rc = dbquery(db, dbcode, &tbl) ) >= 0 ) {
+
+			obj = strtbl2PyObject( tbl );
+
+		} else {
+
+			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+
+			obj = NULL;
+		}
+
+                break;  
+ 
+        default:
+
+		sprintf( errmsg, "dbquery: bad code '%d'", dbcode );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		obj = NULL;
+
+		break ;
+	}
+
+	return obj;
 }
 
 static PyObject *
