@@ -107,15 +107,120 @@ convert_Dbptr( PyObject *obj, void *addr )
 
 	} else {
 
-		PyErr_Warn( PyExc_RuntimeWarning, 
+		PyErr_SetString( PyExc_TypeError, 
 			"Dbptr is not a Dbptr object or 4-integer list" );
 	}
 
 	return 0;
 }
 
+static int
+convert_Boolean( PyObject *obj, void *addr )
+{
+	int	*value = (int *) addr;
+
+	if( obj == Py_False ) {
+
+		*value = 0;
+
+		return 1;
+
+	} else if( obj == Py_True ) {
+
+		*value = -1;
+
+		return 1;
+
+	} else {
+
+		PyErr_SetString( PyExc_TypeError, 
+			"Attempt to coerce non-Boolean value into Boolean" );
+	}
+
+	return 0;
+}
+
+static int
+convert_strtbl( PyObject *obj, void *addr )
+{
+	Tbl	*atbl = (Tbl *) addr;
+	PyObject *seqobj;
+	int	nitems = 0;
+	int	iitem;
+	char	*astring;
+	char	errmsg[STRSZ];
+
+	if( obj == Py_None ) {
+
+		atbl = 0;
+
+		return 1;
+	} 
+
+	if( ! PySequence_Check( obj ) ) {
+
+		PyErr_SetString( PyExc_TypeError, 
+			"Attempt to convert sequence to table of strings failed: input argument is not a sequence" );
+
+		return 0;
+	}
+
+	nitems = PySequence_Size( obj );
+
+	atbl = newtbl( nitems );
+
+	for( iitem = 0; iitem < nitems; iitem++ ) {
+		
+		seqobj = PySequence_GetItem( obj, iitem );
+
+		if( ! seqobj ) {
+
+			freetbl( atbl, 0 );
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"failed to extract item %d (counting from 0)", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		if( ! PyString_Check( seqobj ) ) {
+
+			freetbl( atbl, 0 );
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"item %d (counting from 0) is not a string", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		if( ( astring = PyString_AsString( seqobj ) ) == NULL ) {
+
+			freetbl( atbl, 0 );
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"conversion of item %d (counting from 0) to string failed", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		pushtbl( atbl, astring );
+	}
+
+	return 1;
+}
+
 static PyObject *
 python_dbopen( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dblookup( dbname, perm )\n";
 	char	*dbname;
 	char	*perm;
 	Dbptr	db;
@@ -123,8 +228,7 @@ python_dbopen( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "ss", &dbname, &perm ) ) {
 		
-		PyErr_SetString( PyExc_RuntimeError, 
-			"Error parsing input arguments\n" );
+		PyErr_SetString( PyExc_RuntimeError, usage );
 
 		return NULL;
 	}
@@ -153,7 +257,10 @@ python_dblookup( PyObject *self, PyObject *args ) {
 	if( ! PyArg_ParseTuple( args, "O&ssss", convert_Dbptr, &db, 
 				      &database, &table, &field, &record ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}
@@ -165,16 +272,17 @@ python_dblookup( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbsubset( PyObject *self, PyObject *args ) {
-	char	*usage;
+	char	*usage = "Usage: _dbsubset( db, expr, name )\n";
 	Dbptr	db;
 	char	*expr = 0;
 	char	*name = 0;
 
 	if( ! PyArg_ParseTuple( args, "O&sz", convert_Dbptr, &db, &expr, &name ) ) {
 
-		usage = "Usage: _dbsubset( db, expr, name )\n";
+		if( ! PyErr_Occurred() ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}
@@ -212,7 +320,10 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&sz", convert_Dbptr, &db, &akey, &name ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}
@@ -228,20 +339,49 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbjoin( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbjoin( db1, db2, name )\n";
+	char	*usage = "Usage: _dbjoin( db1, db2, outer, pattern1, pattern2, name )\n";
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	dbout;
+	Tbl	*pattern1 = 0;
+	Tbl 	*pattern2 = 0;
+	int	outer = 0;
+	int	duplicate_pattern = 0;
 	char	*name = 0;
 
-	if( ! PyArg_ParseTuple( args, "O&O&z", convert_Dbptr, &db1, convert_Dbptr, &db2, &name ) ) {
+	if( ! PyArg_ParseTuple( args, "O&O&O&O&O&z", convert_Dbptr, &db1, 
+					       convert_Dbptr, &db2, 
+					       convert_strtbl, &pattern1, 
+					       convert_strtbl, &pattern2,
+					       convert_Boolean, &outer, 
+					       &name ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}
 
-	dbout = dbjoin( db1, db2, 0, 0, 0, 0, name );
+	if( pattern1 != 0 && pattern2 == 0 ) {
+
+		pattern2 = pattern1; 
+
+		duplicate_pattern++;
+	}
+
+	dbout = dbjoin( db1, db2, &pattern1, &pattern2, outer, 0, name );
+
+	if( pattern1 != 0 ) {
+
+		freetbl( pattern1, 0 );
+	}
+
+	if( pattern2 != 0 && ! duplicate_pattern ) {
+
+		freetbl( pattern2, 0 );
+	}
 
 	return Dbptr2PyObject( dbout );
 }
@@ -389,7 +529,10 @@ python_trloadchan( PyObject *self, PyObject *args ) {
 	if( ! PyArg_ParseTuple( args, "O&ddss", convert_Dbptr, 
 				       &db, &t0, &t1, &sta, &chan ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}
@@ -411,7 +554,10 @@ python_trdata( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", convert_Dbptr, &tr ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}

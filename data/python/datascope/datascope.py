@@ -248,10 +248,10 @@ class Dbptr(list):
 
         self[:] = db[:]
         
-    def join(self, db2, name = None):
+    def join(self, db2, outer = False, pattern1 = None, pattern2 = None, name = None):
         """Join two database views"""
 
-        db = _datascope._dbjoin(self, db2, name)
+        db = _datascope._dbjoin(self, db2, pattern1, pattern2, outer, name)
 
         self[:] = db[:]
 
@@ -282,6 +282,7 @@ class Dbptr(list):
 
         return v
         
+
 def dbopen(dbname, perm = 'r'):
     """Open a Datascope database"""
 
@@ -323,12 +324,12 @@ def dbsubset(dbin, expr, name = None):
     return dbout
 
 
-def dbjoin(db1, db2, name = None):
+def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = None):
     """Join two database views"""
 
     dbout = Dbptr(db1)
 
-    dbout.join(db2, name)
+    dbout.join(db2, outer, pattern1, pattern2, name)
 
     return dbout
 
@@ -658,7 +659,9 @@ if __name__ == '__main__':
             db = dbopen(Testdatascope.dbname)
 
             dborigin = dblookup(db, table = 'origin')
-            dbassoc = dblookup(db, table = 'origin')
+            dbassoc = dblookup(db, table = 'assoc')
+            dbarrival = dblookup(db, table = 'arrival')
+            dbwfdisc = dblookup(db, table = 'wfdisc')
 
             dbout = dbjoin(dborigin, dbassoc, name = 'testjoin')
 
@@ -669,6 +672,21 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table > 41)
             self.assertEqual(dbout.field, dbALL)
             self.assertEqual(dbout.record, dbALL)
+
+            self.assertRaises(TypeError, dbjoin, dborigin, dbassoc, outer = 'non-boolean')
+            self.assertRaises(TypeError, dbjoin, dborigin, dbassoc, 42)
+
+            dbout = dbjoin(dborigin, dbassoc, outer = True) 
+
+            self.assertTrue(dbout.table >= 0)
+
+            dbout = dbjoin(dborigin, dbassoc, tuple(["orid"])) 
+
+            self.assertTrue(dbout.table >= 0)
+
+            dbout = dbjoin(dbarrival, dbwfdisc, ["sta", "chan"], ["sta", "chan"])
+
+            self.assertTrue(dbout.table >= 0)
 
         def test_procedure_dbgetv(self):
             db = Dbptr(Testdatascope.dbname)
