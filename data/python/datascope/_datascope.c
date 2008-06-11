@@ -44,6 +44,7 @@
 
 #include "Python.h"
 #include "db.h"
+#include "dbxml.h"
 #include "tr.h"
 
 #ifdef __APPLE__
@@ -62,6 +63,7 @@ static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
 static PyObject *python_dbjoin( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
+static PyObject *python_db2xml( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static void add_datascope_constants( PyObject *mod );
@@ -75,6 +77,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbjoin",   	python_dbjoin,   	METH_VARARGS, "Join Datascope tables" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
+	{ "_db2xml",    python_db2xml,   	METH_VARARGS, "convert a database view to XML" },
 	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
 	{ NULL, NULL, 0, NULL }
@@ -414,6 +417,65 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 	}
 
 	return Dbptr2PyObject( dbout );
+}
+
+static PyObject *
+python_db2xml( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _db2xml( db, rootnode, rownode, fields, expressions, primary )\n";
+	PyObject *obj;
+	Dbptr	db;
+	char	*rootnode = 0;
+	char	*rownode = 0; 
+	char	*xml = 0;
+	Tbl	*fields = 0;
+	Tbl	*expressions = 0;
+	int 	flags = 0;
+	int	primary = 0;
+	int	rc;
+	
+	if( ! PyArg_ParseTuple( args, "O&zzO&O&O&", convert_Dbptr, &db, 
+						    &rootnode, &rownode, 
+						    convert_strtbl, &fields, 
+						    convert_strtbl, &expressions, 
+						    convert_Boolean, &primary ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( primary ) {
+
+		flags |= DBXML_PRIMARY;
+	}
+
+	rc = db2xml( db, rootnode, rownode, fields, expressions, (void **) &xml, flags );
+
+	if( fields ) {
+
+		freetbl( fields, 0 );
+	}
+
+	if( expressions ) {
+
+		freetbl( expressions, 0 );
+	}
+
+	if( rc < 0 || xml == NULL) {
+
+		PyErr_SetString( PyExc_RuntimeError, "db2xml failed" );
+
+		return NULL;
+	}
+
+	obj = PyString_FromString( xml );
+
+	free( xml );
+
+	return obj;
 }
 
 static PyObject *

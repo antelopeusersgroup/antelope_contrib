@@ -260,6 +260,11 @@ class Dbptr(list):
 
         return _datascope._dbgetv( self, *args ) 
         
+    def xml( self, rootnode = None, rownode = None, fields = None, expressions = None, primary = False ):
+        """convert a database view to XML"""
+
+        return _datascope._db2xml( self, rootnode, rownode, fields, expressions, primary )
+
     def loadchan(self, t0, t1, sta, chan):
         """Load time-series data for a given station, channel, and time-interval into memory"""
 
@@ -333,10 +338,18 @@ def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = Non
 
     return dbout
 
+
+def db2xml( db, rootnode = None, rownode = None, fields = None, expressions = None, primary = False ):
+    """convert a database view to XML"""
+
+    return db.xml( rootnode, rownode, fields, expressions, primary )
+
+
 def dbgetv(db, *args):
     """Get values from a database row"""
 
     return db.getv(*args)
+
 
 def trloadchan(dbin, t0, t1, sta, chan):
     """Load time-series data for a given station, channel, and time-interval into memory"""
@@ -560,6 +573,15 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_method_xml(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db.lookup(table = 'origin')
+
+            xml = db.xml()
+
+            self.assert_(isinstance(xml,str))
+
         def test_method_loadchan(self):
             db = Dbptr(Testdatascope.dbname)
 
@@ -703,6 +725,18 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_procedure_db2xml(self):
+            db = Dbptr(Testdatascope.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            xml = db2xml(db, rootnode = 'anode', rownode = 'arow', 
+                        fields = ["lat", "lon", "depth", "time"], 
+                        expressions = ["lat", "lon", "depth", "strtime(time)"], 
+                        primary = True)
+
+            self.assert_(isinstance(xml,str))
+
         def test_procedure_trloadchan(self):
             db = dbopen(Testdatascope.dbname)
 

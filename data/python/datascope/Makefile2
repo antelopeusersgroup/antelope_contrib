@@ -15,7 +15,7 @@ CLEAN= *.pyc *.so
 cflags= -I$(PYTHONINCLUDE)
 fflags=
 ldflags= 
-ldlibs= $(TRLIBS)
+ldlibs= -ldbxml $(TRLIBS)
 
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKE).local
