@@ -261,6 +261,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
+	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
 	case NEXT_SUBARRAY:
 	    sensitive[BTN_NEXTSUB]=true;
@@ -282,6 +283,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
+	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
 	case REF:
             sensitive[BTN_NEXTEV]=true;
@@ -305,6 +307,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
+	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
 	case ANALYZE:
             sensitive[BTN_NEXTEV]=true;
@@ -334,6 +337,8 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_VIEW_PCORRELATION]=true;
 	    sensitive[MENU_VIEW_SWEIGHT]=true;
 	    sensitive[MENU_VIEW_SNR]=true;
+	    sensitive[BTN_TWEEKER]=true;
+	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
   	case SAVE:
             sensitive[BTN_NEXTEV]=true;
@@ -365,6 +370,8 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_VIEW_PCORRELATION]=true;
             sensitive[MENU_VIEW_SWEIGHT]=true;
 	    sensitive[MENU_VIEW_SNR]=true;
+	    sensitive[BTN_TWEEKER]=true;
+	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
 	case TRACE_EDIT:
 	    sensitive[BTN_PICKS_TEDIT]=true;
@@ -376,6 +383,12 @@ void SessionManager::session_state(SessionState s)
 	    break;
 	case THINKING:
             sensitive[MENU_FILE_EXIT]=true;
+	    break;
+	case TWEEKING:
+	    sensitive[BTN_TWEEKER]=true;
+	    break;
+	case POLARITY_SWITCHING:
+	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
 	default:
 	    break;
@@ -433,12 +446,21 @@ bool SessionManager::validate_setting(stringstream & ss)
 	    sort_order="predicted time";
 	    scase=0;
 	    break;
-	case SNR:
-	    sort_order="signal to noise ratio";
-	    scase=1;
+	case ESAZ:
+	    sort_order="event to source azimuth";
+	    scase=0;
+	    break;
+	case DBARRIVAL_TIME:
+	    sort_order="previously measured arrival time";
+	    scase=0;
+	    break;
+	case DISTANCE:
+	    sort_order="epicentral distance";
+	    scase=0;
 	    break;
 	default:
-	    break;
+	    sort_order="predicted time";
+	    scase=0;
     }
 
     if(scase==1 && state != ANALYZE && state != REF) {
@@ -449,7 +471,9 @@ bool SessionManager::validate_setting(stringstream & ss)
 	    <<"the sort order was reset to "<<endl<<"predicted arrival time"<<endl;
         if (display_initial_sort_box) return false;
     } else if (scase==0 && (state==ANALYZE || state==REF)) {
-	active_setting.result_sort_order=WEIGHT;
+	/* This originally was stack weight.  Switched to xcor peak as this seems normally
+	to be a more useful initial sort order after analysis. */
+	active_setting.result_sort_order=CORRELATION_PEAK;
 	ss << "The sort order for the analysis result is set automatically "
 	   << endl <<"to stack weight from the specified "<<sort_order<<endl;
 	if (display_analysis_sort_box) return false;

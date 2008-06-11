@@ -1623,7 +1623,7 @@ void pick_arrival_error(Widget w, void * client_data, void * userdata)
 /* This global seems unavoidable to avoid memory leaks.  Within the block
 below it holds the data for the array beam display.  In an X program which 
 passes around all these opaque pointers, we need manage the memory locally
-and I see now alternative here. */
+and I see no alternative here. */
 TimeSeriesEnsemble *beam_tse(NULL);
 /* This procedure creates the beam plot window and manages it */
 void do_beam_plot(Widget w, void * client_data, void * userdata)
@@ -1676,24 +1676,6 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
 		ExmNseiswMetadata,&beam_display_md,
 		ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
 
-/*  Old single button version.  
-    n=0;
-    XtSetArg(args[n],XmNuserData,psm); n++;
-    form=XmCreateForm(pane,(char *) "form",args,n);   
-    btn_arrival=XmCreatePushButtonGadget(form,(char *) "Pick Arrival",NULL,0);
-    XtVaSetValues(btn_arrival, XmNtopAttachment, XmATTACH_FORM,
-                        XmNbottomAttachment, XmATTACH_FORM,
-                        XmNleftAttachment, XmATTACH_FORM,
-                        NULL);
-    XtManageChild(btn_arrival);
-    XtAddCallback(btn_arrival,XmNactivateCallback,pick_phase_time,beam_widget);
-    
-    XtVaGetValues(btn_arrival,XmNheight,&h,NULL);
-    XtVaSetValues(form,XmNpaneMaximum,h,XmNpaneMinimum,h,NULL);
-    
-    XtManageChild(form);
-    XtManageChild(pane);
- New derived from main for multiple buttons on bottom of display.*/
 	n=0;
 	XtSetArg(args[n],XmNuserData,psm); n++;
 	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
@@ -1722,7 +1704,7 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
 	psm->controls[BTN_ARRIVAL_ERROR]=create_button(tlrc,btninfo);
 	// Manually create this callback to provide for a "Dismiss" 
 	// button.  Added Sept 2007 by glp
-/*
+/*  Comment out for now.  Crashes for unknown reason.
 	n=0;
 	XmString str;
 	const string dstr("Dismiss");
@@ -1863,7 +1845,7 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 	    XtCreateWindow(w,(unsigned int) InputOutput, (Visual *) CopyFromParent,0,NULL);
 	    win=XtWindow(w);
 
-	    XClearWindow(dpy,win);
+	    XClearArea(dpy,win,0,0,0,0,true);
 
 	    gc = XCreateGC(dpy,win,(unsigned long)0,values);
 	    fa = XLoadQueryFont(dpy,"fixed");
@@ -2208,7 +2190,7 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 	// This forces a redraw 
     	Display *dpy=XtDisplay(w);
     	Window win=XtWindow(w);
-	XClearWindow(dpy,win);
+	XClearArea(dpy,win,0,0,0,0,true);
 }
 /* Callback to toggle subarray mode on and off.  This is an on off
 switch mode for this toggle. */
@@ -2241,7 +2223,279 @@ void subarray_toggle(Widget w, void *client_data, void *userdata)
 	// Call the routine to load subbarray 1 as the active ensemble 
 	load_next_subarray(w,client_data,userdata);
 }
+/* This is a new set of gizmos added summer 2008.  Capability added is to ability to 
+repair cycle skip errors interactively and ability to interactively change polarity of any
+trace in a gather */
 
+/*  I know it is evil to have a global variable like this, but it 
+solves a practical problem here that makes is useful. Otherwise
+we'd have to pass this thing through the widget, which I consider
+more dangerous than this. */
+static TimeSeriesEnsemble *tweeker_tse(NULL);
+/* This is the callback assigned to MB2 for the tweeker window.  It aims to pick
+a time, post the result to the parent ensemble, and then realign the data with the
+measured pick time */
+const int XcorTraceNumber(2);  /* must match position of xcor in trace stack*/
+void handle_tweeker_time(Widget w, void *client_data, void *userdata)
+{
+	SessionManager *psm=reinterpret_cast<SessionManager *> (client_data);
+	stringstream ss;
+	SeismicPick *spick;
+	XtVaGetValues(psm->tweeker_widget,ExmNseiswPick,&spick,NULL);
+	double tpicked=spick->get_point().time;
+	/* Dogmatically insist on picking XCOR trace */
+	int trace_picked=spick->get_trace_number();
+	if(trace_picked==XcorTraceNumber)
+	{
+		/* The pick sign needs to be reversed for use below.  I 
+		could change the code below, but this makes the parallel
+		to the template routines that do this for an ensemble
+		clearer. */
+		tpicked -= 1.0;
+		/* assume this won't produce an exception.  Ok in dbxcor, but
+		don't do this if this is recycled. */
+		int i=tweeker_tse->member[0].get_int("member_number");
+		ss << "Ensemble member "<< i << " pick time shift ="<<tpicked<<endl;
+		psm->record(ss.str());
+		/* Post this lag to the gather data and xcor members.  Then apply
+
+		to this trace only the same algorithm used in MoveoutTimeShift(xcor)
+		and LagShift (data).  We don't use those because they change the whole
+		ensemble and we want to change just the ensemble member we just
+		picked */
+		TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+		tse->member[i].put(moveout_keyword,tpicked);
+		psm->mcc->xcor.member[i].put(moveout_keyword,tpicked);
+		psm->mcc->xcor.member[i].t0 -= tpicked;
+		double tshift=tse->member[i].get_double(arrival_time_key);
+		tse->member[i].rtoa(tshift);
+		tshift+=tpicked;
+		tse->member[i].ator(tshift);
+		tse->member[i].put(arrival_time_key,tshift);
+		TimeSeriesEnsemble *wintse;
+		/* Do the same to the xcor and data trace being
+		display (do not shift the beam window).  Here we
+		use the equivalent of MoveoutTimeShift because we
+		don't care about preserving time zero for the
+		data held by this widget. */
+		tweeker_tse->member[0].t0 -= tpicked;
+		tweeker_tse->member[XcorTraceNumber].t0 -= tpicked;
+		
+		// We need to refresh the parent display to have the shift take effect.
+		XClearArea(XtDisplay(psm->seismic_widget),XtWindow(psm->seismic_widget),
+			0,0,0,0,true);
+		// Same for this display
+		XClearArea(XtDisplay(psm->tweeker_widget),XtWindow(psm->tweeker_widget),
+			0,0,0,0,true);
+	}
+	else
+	{
+		/* Land here if user picks on anything but xcor trace */
+		ss << "Error:  you must pick on the cross-correlation trace (top of display)"<<endl;
+		psm->record(ss.str());
+	}
+}
+void pick_tweeker_time(Widget w, void * client_data, void * userdata)
+{
+    SessionManager *psm=reinterpret_cast<SessionManager *> (client_data);
+    
+    XtRemoveAllCallbacks(psm->tweeker_widget,ExmNbtn2Callback);
+    XtAddCallback(psm->tweeker_widget,ExmNbtn2Callback,handle_tweeker_time,psm);
+}
+/* This is initiated by a Btn2 click on a trace in the parent display when the 
+tweeking mode button is pushed.  */
+void pick_tweekdata_callback(Widget w, void *client_data, void *userdata)
+{
+	Widget rshell, pane;
+	SessionManager *psm=reinterpret_cast<SessionManager *> (client_data);
+	SeismicPick *spick;
+	stringstream ss;
+
+	/* First use pick object to grab the trace number to be processed from the main display.*/
+	XtVaGetValues(w,ExmNseiswPick,&spick,NULL);
+	/*MAINTENANCE WARNING:  use of generic i here is a bit error prone because
+	i is commonly used as a generic counter.  Nice for shorthand, but be careful */
+	int i=spick->get_trace_number();
+	/* We immediately try extract trace and associated cross-correlation function.
+	We do this immediately becasue this allow us to report an error and return
+	immediately if the the trace is marked dead - something we can't allow */
+	TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+	TimeSeries d=tse->member[i];
+	if(!d.live)
+	{
+		ss << "Cycle Skip Repair:  selected trace number "
+			<< i << " is marked dead.  Try another."<<endl;
+		psm->record(ss.str());
+		return;
+	}
+	if(tweeker_tse!=NULL) delete tweeker_tse;
+	tweeker_tse=new TimeSeriesEnsemble(0,d.ns);
+	/* put the data at the top and the xcor trace at the bottom */
+	tweeker_tse->member.push_back(d);
+	TimeSeries beam=psm->xpe->get_beam();
+	tweeker_tse->member.push_back(beam);
+	TimeSeries xcordata=psm->mcc->xcor.member[i];;
+	tweeker_tse->member.push_back(xcordata);
+	/* Autoscale by peak amplitude */
+	MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>(*tweeker_tse,gain_keyword);
+	/* Note the 3rd arg set true means use 1/amplitude as scale, which 
+	is the correct form here. */
+	ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>(*tweeker_tse,gain_keyword,true);
+	/* Safest to push this to all members of the ensemble. Since it this only has
+	three members a small overhead for robustness.  This is an underhanded way to 
+	pass the original ensemble member downstream */
+	for(int ii=0;ii<3;++ii) tweeker_tse->member[ii].put("member_number",i);
+	ss << "Creating display to pick time shift for trace number "<< i<<endl;
+	psm->record(ss.str());
+
+	rshell=XtVaCreatePopupShell ("Cycle Skip Repair",topLevelShellWidgetClass, get_top_shell(w),
+                XmNtitle,"Fix Cycle Skip Window",XmNallowShellResize,True,XmNwidth,800,XmNheight,800,
+                XmNdeleteResponse,XmUNMAP,NULL);
+	/* We need a paned window to allow us to put some control buttons on the bottom of the 
+	window */
+	pane = XtVaCreateWidget("Cycle Skip Repair",xmPanedWindowWidgetClass, rshell,NULL);
+	
+	/* Now we want to put the seisw widget display in the top part of the pane.  To do 
+	this we first create the widget similar to the code in do_beam_plot.  
+	Size is generous in case mod are needed.  Note used in two places
+	in this function. */
+	Arg args[10];
+	int n=0;
+	XtSetArg(args[n],XmNpaneMinimum,500); n++;
+	XtSetArg(args[n],XmNmarginHeight,50);n++;
+	/* WARNING:  this may leak memory.  Not sure if seisw destructor clears
+	debris like this in an assigment to a generic widget. */
+	psm->tweeker_widget = ExmCreateSeisw(pane,(char *)"Seisw",args,n);
+	XtManageChild(psm->tweeker_widget);
+	/* Widget is created, now set additional entitites through
+	the Set method.  Two items used:  metadata and marker data.
+	Use beam display Metadata as a starting point and then
+	change a few items. */
+	Metadata display_md=psm->xpe->get_beam_md();
+	stringstream sstitle;
+	sstitle<<"Manual Edit Window for Ensemble member="<<i;
+	display_md.put("title",sstitle.str());
+	/* Similar for display markers */
+	static DisplayMarkerDataRec tweeker_markers;
+	tweeker_markers = psm->beammarkers;
+	tweeker_markers.beam_tw.start=0.0;
+	tweeker_markers.beam_tw.end=0.0;
+	tweeker_markers.robust_tw.start=0.0;
+	tweeker_markers.robust_tw.end=0.0;
+	tweeker_markers.title="Manual Picker";
+	
+	/* This actually loads data for the display and initiates the plot */
+	XtVaSetValues(psm->tweeker_widget,
+		ExmNseiswEnsemble,static_cast<XtPointer>(tweeker_tse),
+		ExmNseiswMetadata,&display_md,
+		ExmNdisplayMarkers,(XtPointer)(&tweeker_markers), NULL);
+	/* This builds the area for the button at the bottom of the display */
+	n=0;
+	XtSetArg(args[n],XmNuserData,psm); n++;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
+	XtSetArg(args[n], XmNtopWidget, pane); n++;
+	XtSetArg(args[n],XmNpaneMinimum,50); n++;
+	XtSetArg(args[n],XmNpaneMaximum,100); n++;
+	Widget tlrc=XmCreateRowColumn(pane,(char *) "btnrow",args,n);
+        XtVaSetValues(tlrc,XmNorientation,XmHORIZONTAL,
+          XmNentryAlignment,XmALIGNMENT_BEGINNING,XmNpacking,XmPACK_COLUMN,NULL);
+        MenuItem btninfo;
+	btninfo.label=(char *)("Pick Xcor Lag");
+	btninfo.callback=pick_tweeker_time;
+	btninfo.callback_data=psm;
+	psm->controls[BTN_TWEEKER_ARRIVAL]=create_button(tlrc,btninfo);
+	XtManageChild(tlrc);
+	XtManageChild(pane);
+	XtPopup(rshell,XtGrabNone);
+}
+/* This callback is tied to the parent Seisw widget when the user pushes the button that
+initiates interactive repair of cycle skips.  It's primary purpose is to select a member number for
+the parent ensemble and pass it to the do_fix_cycle_skip_plot method */
+void enable_cycle_skip_picking(Widget w, void *client_data, void *userdata)
+{
+    SessionManager *psm=reinterpret_cast<SessionManager *>(client_data);
+    /* This acts like the trace edit button.  It disables all other widgets
+    but the main seismic display widget and the button that toggles the
+    tweeker feature.  Note that when this procedure exits the previous state
+    of the session_manager is restored. */
+    XmString str;
+    SessionState current_state=psm->get_state();
+    if(current_state==TWEEKING)
+    {
+	psm->restore_previous_state();
+        str = XmStringCreateLocalized ((char *) "Enable Manual Picking");
+        XtVaSetValues(w, XmNlabelString, str, NULL);
+    }
+    else
+    {
+        psm->session_state(TWEEKING);
+        str = XmStringCreateLocalized ((char *) "Stop Manual Picking");
+        XtVaSetValues(w, XmNlabelString, str, NULL);
+        XtRemoveAllCallbacks(psm->seismic_widget,ExmNbtn2Callback);
+        XtAddCallback(psm->seismic_widget,ExmNbtn2Callback,pick_tweekdata_callback,psm);
+    }
+}
+/* This is a callback to be driven by a single button.  Picks with MB2 when
+a polarity button is pushed will flip the polarity of the trace selected. */
+void polarity_switch_callback(Widget w, void *client_data, void *userdaa)
+{
+	SeismicPick *spick;
+	stringstream ss;
+	
+	SessionManager *psm=reinterpret_cast<SessionManager *>(client_data);
+	TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+	/* This enables the picker to get trace number and simultaneously
+	returns a pointer to the parent ensemble.  We need the later because
+	we have to alter the data */
+	XtVaGetValues(w,ExmNseiswPick,&spick,NULL);
+	int trace_picked=spick->get_trace_number();
+	if((trace_picked<0) || (trace_picked>=tse->member.size()) )
+	{
+		ss << "Trace number "<<trace_picked
+			<< " picked for polarity reversal is outside range of ensemble"
+			<<endl;
+	}
+	else
+	{
+		for(int i=0;i<tse->member[trace_picked].ns;++i)
+			tse->member[trace_picked].s[i] *= -1.0;
+		ss << "Switched polarity of trace number "<<trace_picked<<endl;
+		/* We post this flag to metadata as we may want it downstream */
+		tse->member[trace_picked].put("polarity_reversed",true);
+		/* This forces a redraw of the main display */
+		XClearArea(XtDisplay(w),XtWindow(w),
+		    0,0,0,0,true);
+	}
+	psm->record(ss.str());
+}
+	
+
+/* This small routine enables a mode for flipping the polarity of a trace the user
+points to and clicks with MB2.  It works like the widget for trace editing in many
+ways, but is implemented totally differently.  Peng implemented trace editing in 
+the widget, but here we make this a different callback used only by the dbxcor interface.
+*/
+void enable_polarity_switching(Widget w, void *client_data, void *userdata)
+{
+    Widget data_display_widget=reinterpret_cast<Widget>(client_data);
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    XmString str;
+    SessionState current_state=psm->get_state();
+    if(current_state==POLARITY_SWITCHING)
+    {
+	psm->restore_previous_state();
+        str = XmStringCreateLocalized ((char *) "Polarity Edit");
+        XtVaSetValues(w, XmNlabelString, str, NULL);
+    }
+    else
+    {
+        psm->session_state(POLARITY_SWITCHING);
+        str = XmStringCreateLocalized ((char *) "Stop Polarity Edit");
+        XtVaSetValues(w, XmNlabelString, str, NULL);
+	XtRemoveAllCallbacks(psm->seismic_widget,ExmNbtn2Callback);
+	XtAddCallback(psm->seismic_widget,ExmNbtn2Callback,polarity_switch_callback,psm);
+    }
+}
 
 void exit_gui(Widget w, void * uesless1, void * useless2)
 {
@@ -2606,6 +2860,16 @@ main (int argc, char **argv)
   btninfo.label=(char *) "Pick Cutoff";
   btninfo.callback=pick_cutoff;
   sm.controls[BTN_PICK_CUTOFF]=create_button(tlrc,btninfo);
+
+  btninfo.label=(char *) "Enable Manual Picking";
+  btninfo.callback=enable_cycle_skip_picking;
+  btninfo.callback_data=&sm;
+  sm.controls[BTN_TWEEKER]=create_button(tlrc,btninfo);
+
+  btninfo.label=(char *) "Polarity Edit";
+  btninfo.callback=enable_polarity_switching;
+  btninfo.callback_data=&sm;
+  sm.controls[BTN_POLARITY_SWITCHER]=create_button(tlrc,btninfo);
 
 // Alternate save as button.  Under file menu also
   btninfo.label=(char *) "Save";

@@ -48,7 +48,7 @@ using namespace std;
 using namespace SEISPP;
 
 enum SessionState {START, NONE, NEXT_EVENT, NEXT_SUBARRAY, REF, ANALYZE, SAVE,
-	TRACE_EDIT,PICKING_CUTOFF,THINKING};
+	TRACE_EDIT,PICKING_CUTOFF,THINKING,TWEEKING,POLARITY_SWITCHING};
 
 enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,  
 	BTN_ANALYZE, BTN_BEAM_PLOT, BTN_XCOR_PLOT, BTN_RESTORE,
@@ -62,7 +62,10 @@ enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,
 	MENU_OPTIONS_FILTER, 
       	MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_DISTANCE,MENU_VIEW_COHERENCE,
 	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT, MENU_VIEW_SNR,
-	BTN_ARRIVAL,BTN_ARRIVAL_ERROR};
+	BTN_ARRIVAL,BTN_ARRIVAL_ERROR,
+        BTN_TWEEKER,BTN_POLARITY_SWITCHER,
+	BTN_TWEEKER_ARRIVAL
+};
 
 /* WARNING:  if ControlIdType is changed, this number must be greater than
 or equal to number of items in that enum */
@@ -76,6 +79,7 @@ public:
     Widget parent;          //parent paned window widget for both seismic and xcor widget 
     Widget *controls;   //generalization of btns and menu items
     Widget msg_w;   //generalization of msg box            
+    Widget tweeker_widget;  // Auxiliary seisw window for repair work
     ofstream log_stream;  //log file stream
     ifstream instream;
 
