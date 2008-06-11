@@ -265,6 +265,13 @@ class Dbptr(list):
 
         self[:] = db[:]
 
+    def process(self, list):
+        """Run a series of database operations"""
+
+        db = _datascope._dbprocess(self, list)
+
+        self[:] = db[:]
+
     def getv(self, *args):
         """Get values from a database row"""
 
@@ -366,6 +373,16 @@ def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = Non
     dbout = Dbptr(db1)
 
     dbout.join(db2, outer, pattern1, pattern2, name)
+
+    return dbout
+
+
+def dbprocess(db, list):
+    """Run a series of database operations"""
+
+    dbout = Dbptr(db)
+
+    dbout.process(list)
 
     return dbout
 
@@ -613,6 +630,18 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+        def test_method_process(self):
+            db = Dbptr(self.dbname)
+
+            db.process(["dbopen origin", "dbsubset mb > 5", "dbsort time"])
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+
+            self.assertTrue(db.query(dbRECORD_COUNT) > 0)
+            
         def test_method_getv(self):
             db = Dbptr(self.dbname)
 
@@ -785,6 +814,18 @@ if __name__ == '__main__':
 
             self.assertTrue(dbout.table >= 0)
 
+        def test_procedure_dbprocess(self):
+            db = Dbptr(self.dbname)
+
+            db2 = dbprocess(db, ["dbopen origin", "dbsubset mb > 5", "dbsort time"])
+
+            self.assertTrue(db2.database >= 0)
+            self.assertTrue(db2.table >= 0)
+            self.assertEqual(db2.field, dbALL)
+            self.assertEqual(db2.record, dbALL)
+
+            self.assertTrue(db2.query(dbRECORD_COUNT) > 0)
+            
         def test_procedure_dbgetv(self):
             db = Dbptr(self.dbname)
 

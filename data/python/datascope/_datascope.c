@@ -64,6 +64,7 @@ static PyObject *python_dblookup( PyObject *self, PyObject *args );
 static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
 static PyObject *python_dbjoin( PyObject *self, PyObject *args );
+static PyObject *python_dbprocess( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
 static PyObject *python_dbquery( PyObject *self, PyObject *args );
 static PyObject *python_db2xml( PyObject *self, PyObject *args );
@@ -79,6 +80,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dblookup", 	python_dblookup, 	METH_VARARGS, "Lookup Datascope indices" },
 	{ "_dbsort",   	python_dbsort,   	METH_VARARGS, "Sort Datascope table" },
 	{ "_dbsubset", 	python_dbsubset, 	METH_VARARGS, "Subset Datascope table" },
+	{ "_dbprocess",	python_dbprocess, 	METH_VARARGS, "Run a series of database operations" },
 	{ "_dbjoin",   	python_dbjoin,   	METH_VARARGS, "Join Datascope tables" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
@@ -387,6 +389,27 @@ python_dbsubset( PyObject *self, PyObject *args ) {
 	}
 
 	db = dbsubset( db, expr, name );
+
+	return Dbptr2PyObject( db );
+}
+
+static PyObject *
+python_dbprocess( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbprocess( db, list )\n";
+	Dbptr	db;
+	Tbl	*list = 0;
+
+	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &db, parse_to_strtbl, &list ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dbprocess( db, list, 0 );
 
 	return Dbptr2PyObject( db );
 }
