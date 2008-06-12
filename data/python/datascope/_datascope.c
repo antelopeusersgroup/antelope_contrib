@@ -47,6 +47,8 @@
 #include "dbxml.h"
 #include "tr.h"
 
+static Arr *Hooks = 0;
+
 #ifdef __APPLE__
 
 /* The scaffold below works around a problem on Darwin */
@@ -63,10 +65,15 @@ static PyObject *python_dbfree( PyObject *self, PyObject *args );
 static PyObject *python_dblookup( PyObject *self, PyObject *args );
 static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
+static PyObject *python_dblist2subset( PyObject *self, PyObject *args );
 static PyObject *python_dbjoin( PyObject *self, PyObject *args );
 static PyObject *python_dbprocess( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
+static PyObject *python_dbextfile( PyObject *self, PyObject *args );
+static PyObject *python_dbex_eval( PyObject *self, PyObject *args );
 static PyObject *python_dbquery( PyObject *self, PyObject *args );
+static PyObject *python_dbmatches( PyObject *self, PyObject *args );
+static PyObject *python_dbfind( PyObject *self, PyObject *args );
 static PyObject *python_db2xml( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
@@ -80,11 +87,16 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dblookup", 	python_dblookup, 	METH_VARARGS, "Lookup Datascope indices" },
 	{ "_dbsort",   	python_dbsort,   	METH_VARARGS, "Sort Datascope table" },
 	{ "_dbsubset", 	python_dbsubset, 	METH_VARARGS, "Subset Datascope table" },
+	{ "_dblist2subset", python_dblist2subset, METH_VARARGS, "Convert a list of records to a database subset" },
 	{ "_dbprocess",	python_dbprocess, 	METH_VARARGS, "Run a series of database operations" },
 	{ "_dbjoin",   	python_dbjoin,   	METH_VARARGS, "Join Datascope tables" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
+	{ "_dbextfile", python_dbextfile,   	METH_VARARGS, "Retrieve an external file name from a database row" },
+	{ "_dbex_eval", python_dbex_eval,   	METH_VARARGS, "Evaluate a database expression" },
 	{ "_dbquery",   python_dbquery,   	METH_VARARGS, "Get ancillary information about a database" },
+	{ "_dbmatches", python_dbmatches,   	METH_VARARGS, "Find matching records in second table" },
+	{ "_dbfind",    python_dbfind,   	METH_VARARGS, "Search for matching record in table" },
 	{ "_db2xml",    python_db2xml,   	METH_VARARGS, "convert a database view to XML" },
 	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
@@ -95,6 +107,62 @@ static PyObject *
 Dbptr2PyObject( Dbptr db )
 {
 	return Py_BuildValue( "[iiii]", db.database, db.table, db.field, db.record );
+}
+
+static PyObject *
+Dbvalue2PyObject( Dbvalue value, int type )
+{
+	PyObject *obj;
+	
+	switch( type ) {
+
+	case dbBOOLEAN:
+
+		if( value.i ) {
+
+			Py_INCREF( Py_True );
+
+			obj = Py_True;
+
+		} else {
+
+			Py_INCREF( Py_False );
+
+			obj = Py_False;
+		}
+
+		break;
+
+	case dbINTEGER:
+	case dbYEARDAY:
+		
+		obj = Py_BuildValue( "i", value.i );
+
+		break;
+
+	case dbREAL:
+	case dbTIME:
+		
+		obj = Py_BuildValue( "d", value.i );
+
+		break;
+
+	case dbSTRING:
+		
+		obj = Py_BuildValue( "s", value.t );
+
+		free( value.t );
+
+		break;
+
+	default:
+
+		obj = NULL;
+
+		break;
+	}
+
+	return obj;
 }
 
 static PyObject *
@@ -113,6 +181,27 @@ strtbl2PyObject( Tbl *atbl )
 	for( i = 0; i < maxtbl( atbl ); i++ ) {
 
 		PyTuple_SetItem( obj, i, PyString_FromString( gettbl( atbl, i ) ) );
+	}
+
+	return obj;
+}
+
+static PyObject *
+inttbl2PyObject( Tbl *atbl )
+{
+	PyObject *obj;
+	int	i;
+
+	if( atbl == NULL ) {
+
+		return NULL;
+	}
+	
+	obj = PyTuple_New( maxtbl( atbl ) );
+
+	for( i = 0; i < maxtbl( atbl ); i++ ) {
+
+		PyTuple_SetItem( obj, i, PyInt_FromLong( (long) gettbl( atbl, i ) ) );
 	}
 
 	return obj;
@@ -170,6 +259,99 @@ parse_from_Boolean( PyObject *obj, void *addr )
 	}
 
 	return 0;
+}
+
+static int
+parse_to_inttbl( PyObject *obj, void *addr )
+{
+	Tbl	**atbl = (Tbl **) addr;
+	PyObject *seqobj;
+	int	nitems = 0;
+	int	iitem;
+	long	along;
+	char	errmsg[STRSZ];
+
+	if( obj == Py_None ) {
+
+		*atbl = 0;
+
+		return 1;
+	} 
+
+	if( PyInt_Check( obj ) ) {
+
+		*atbl = newtbl( 1 );
+
+		pushtbl( *atbl, (void *) PyInt_AsLong( obj ) );
+
+		return 1;
+	}
+
+	if( ! PySequence_Check( obj ) ) {
+
+		PyErr_SetString( PyExc_TypeError, 
+			"Attempt to convert sequence to table of integers failed: input argument is not a sequence" );
+
+		return 0;
+	}
+
+	nitems = PySequence_Size( obj );
+
+	*atbl = newtbl( nitems );
+
+	for( iitem = 0; iitem < nitems; iitem++ ) {
+		
+		seqobj = PySequence_GetItem( obj, iitem );
+
+		if( ! seqobj ) {
+
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"failed to extract item %d (counting from 0)", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		if( ! PyInt_Check( seqobj ) ) {
+
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"item %d (counting from 0) is not an integer", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		if( ( along = PyInt_AsLong( seqobj ) ) == -1 && PyErr_Occurred() ) {
+
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"conversion of item %d (counting from 0) to long failed", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		pushtbl( *atbl, (void *) along );
+	}
+
+	return 1;
 }
 
 static int
@@ -265,7 +447,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 static PyObject *
 python_dbopen( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbopen( dbname, perm )\n";
+	char	*usage = "Usage: _dbopen(dbname, perm)\n";
 	char	*dbname;
 	char	*perm;
 	Dbptr	db;
@@ -292,7 +474,7 @@ python_dbopen( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbclose( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbclose( db )\n";
+	char	*usage = "Usage: _dbclose(db)\n";
 	Dbptr	db;
 	int	rc;
 
@@ -320,7 +502,7 @@ python_dbclose( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbfree( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbfree( db )\n";
+	char	*usage = "Usage: _dbfree(db)\n";
 	Dbptr	db;
 	int	rc;
 
@@ -348,7 +530,7 @@ python_dbfree( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dblookup( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dblookup( db, database, table, field, record )\n";
+	char	*usage = "Usage: _dblookup(db, database, table, field, record)\n";
 	Dbptr	db;
 	char	*database = 0;
 	char	*table = 0;
@@ -373,7 +555,7 @@ python_dblookup( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbsubset( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbsubset( db, expr, name )\n";
+	char	*usage = "Usage: _dbsubset(db, expr, name)\n";
 	Dbptr	db;
 	char	*expr = 0;
 	char	*name = 0;
@@ -394,8 +576,196 @@ python_dbsubset( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_dblist2subset( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dblist2subset(db, list)\n";
+	Dbptr	db;
+	Tbl	*list;
+
+	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &db, parse_to_inttbl, &list ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dblist2subset( db, list );
+	
+	return Dbptr2PyObject( db );
+}
+
+static PyObject *
+python_dbex_eval( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbex_eval(db, expr)\n";
+	PyObject *obj;
+	Dbptr	db;
+	Dbvalue value;
+	char	*expr = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &expr ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbex_evalstr( db, expr, 0, &value );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbex_evalstr failed" );
+	
+		obj = NULL;
+
+	} else {
+
+		obj = Dbvalue2PyObject( value, rc );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_dbextfile( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbextfile(db, tablename)\n";
+	PyObject *obj;
+	Dbptr	db;
+	char	*tablename = 0;
+	char	filename[FILENAME_MAX];
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &tablename ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbextfile( db, tablename, filename );
+
+	obj = Py_BuildValue( "s", filename );
+
+	return obj;
+}
+
+static PyObject *
+python_dbfind( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbfind(db, expr, first, reverse)\n";
+	Dbptr	db;
+	char	*expr;
+	int	first;
+	int	reverse = 0;
+	int	flags;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( reverse ) {
+
+		flags++;
+	} 
+	
+	db.record = first;
+
+	rc = dbfind( db, expr, flags, 0 );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_dbmatches( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbmatches(dbk, dbt, hookname, kpattern, tpattern)\n";
+	PyObject *obj;
+	Dbptr	dbk;
+	Dbptr	dbt;
+	char	*hookname = 0;
+	Tbl	*kpattern = 0;
+	Tbl 	*tpattern = 0;
+	Tbl	*list = 0;
+	Hook	*hook = 0;
+	int	duplicate_pattern = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&O&sO&O&", 
+					parse_to_Dbptr, &dbk, 
+					parse_to_Dbptr, &dbt,
+					&hookname,
+					parse_to_strtbl, &kpattern,
+					parse_to_strtbl, &tpattern ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( kpattern != NULL && tpattern == NULL ) {
+
+		tpattern = kpattern;
+
+		duplicate_pattern++;
+	}
+
+	if( Hooks == 0 ) {
+
+		Hooks = newarr( 0 );
+	}
+
+	hook = getarr( Hooks, hookname );
+
+	rc = dbmatches( dbk, dbt, &kpattern, &tpattern, &hook, &list );
+
+	if( kpattern != NULL ) {
+
+		freetbl( kpattern, 0 );
+	} 
+
+	if( ( tpattern != NULL ) && ! duplicate_pattern ) {
+
+		freetbl( tpattern, 0 );
+	} 
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbmatches failed" );
+
+		return NULL;
+	}
+
+	if( getarr( Hooks, hookname ) == NULL ) {
+
+		setarr( Hooks, hookname, hook );
+	}
+
+	obj = inttbl2PyObject( list );
+
+	freetbl( list, 0 );
+
+	return obj;
+}
+
+static PyObject *
 python_dbprocess( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbprocess( db, list )\n";
+	char	*usage = "Usage: _dbprocess(db, list)\n";
 	Dbptr	db;
 	Tbl	*list = 0;
 
@@ -434,7 +804,7 @@ python_dbinvalid( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbsort( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbsort( db, keys, unique, reverse, name )\n";
+	char	*usage = "Usage: _dbsort(db, keys, unique, reverse, name)\n";
 	Dbptr	db;
 	Tbl 	*keys = 0;
 	char	*name = 0;
@@ -478,7 +848,7 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbjoin( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbjoin( db1, db2, outer, pattern1, pattern2, name )\n";
+	char	*usage = "Usage: _dbjoin(db1, db2, outer, pattern1, pattern2, name)\n";
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	dbout;
@@ -512,12 +882,12 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 
 	dbout = dbjoin( db1, db2, &pattern1, &pattern2, outer, 0, name );
 
-	if( pattern1 != 0 ) {
+	if( pattern1 != NULL ) {
 
 		freetbl( pattern1, 0 );
 	}
 
-	if( pattern2 != 0 && ! duplicate_pattern ) {
+	if( pattern2 != NULL && ! duplicate_pattern ) {
 
 		freetbl( pattern2, 0 );
 	}
@@ -527,7 +897,7 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_db2xml( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _db2xml( db, rootnode, rownode, fields, expressions, primary )\n";
+	char	*usage = "Usage: _db2xml(db, rootnode, rownode, fields, expressions, primary)\n";
 	PyObject *obj;
 	Dbptr	db;
 	char	*rootnode = 0;
@@ -586,7 +956,7 @@ python_db2xml( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbgetv( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbgetv( db, field [, field...] )\n";
+	char	*usage = "Usage: _dbgetv(db, field [, field...])\n";
 	Dbptr	db;
 	Dbvalue	val;
 	PyObject *arg;
@@ -716,7 +1086,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbquery( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbquery( db, code )\n";
+	char	*usage = "Usage: _dbquery(db, code)\n";
 	Dbptr	db;
 	PyObject *obj;
 	char	*string;
@@ -846,7 +1216,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_trloadchan( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _trloadchan( db, t0, t1, sta, chan )\n";
+	char	*usage = "Usage: _trloadchan(db, t0, t1, sta, chan)\n";
 	Dbptr	db;
 	Dbptr	tr;
 	double	t0;
@@ -872,7 +1242,7 @@ python_trloadchan( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_trdata( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _trdata( tr )\n";
+	char	*usage = "Usage: _trdata(tr)\n";
 	Dbptr	tr;
 	float	*data;
 	int	result;

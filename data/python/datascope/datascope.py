@@ -33,6 +33,7 @@ class Dbptr(list):
             return False
 
         else:
+
             return True
 
     def __init__(self, *args, **kwargs):
@@ -251,6 +252,13 @@ class Dbptr(list):
 
         self[:] = db[:]
 
+    def list2subset(self, list = None):
+        """Convert a list of records to a database subset"""
+
+        db = _datascope._dblist2subset(self, list)
+
+        self[:] = db[:]
+
     def invalid(self):
         """Set database pointer to dbINVALID values"""
 
@@ -258,8 +266,16 @@ class Dbptr(list):
 
         self[:] = db[:]
         
-    def join(self, db2, outer = False, pattern1 = None, pattern2 = None, name = None):
+    def join(self, db2in, outer = False, pattern1 = None, pattern2 = None, name = None):
         """Join two database views"""
+
+        if( isinstance(db2in, str) ):
+
+            db2 = dblookup( db, table = db2in )
+
+        else:
+
+            db2 = db2in
 
         db = _datascope._dbjoin(self, db2, pattern1, pattern2, outer, name)
 
@@ -277,11 +293,36 @@ class Dbptr(list):
 
         return _datascope._dbgetv(self, *args)
     
+    def extfile(self, tablename = None):
+        """Compose filename from database record for a given table"""
+
+        return _datascope._dbextfile(self, tablename)
+
+    def filename(self):
+        """Compose filename from database record"""
+
+        return _datascope._dbextfile(self, None)
+
     def query(self, dbcode):
         """Retrieve ancillary information about a database"""
 
         return _datascope._dbquery(self, dbcode)
         
+    def ex_eval(self, expr):
+        """Evaluate a database expression"""
+
+        return _datascope._dbex_eval(self, expr)
+
+    def matches(self, dbt, hookname, kpattern = None, tpattern = None):
+        """find matching records in second table"""
+
+        return _datascope._dbmatches(self, dbt, hookname, kpattern, tpattern)
+
+    def find(self, expr, first = -1, reverse = False):
+        """Search for matching record in a table"""
+
+        return _datascope._dbfind(self, expr, first, reverse)
+
     def xml( self, rootnode = None, rownode = None, fields = None, expressions = None, primary = False ):
         """convert a database view to XML"""
 
@@ -367,6 +408,16 @@ def dbsubset(dbin, expr, name = None):
     return dbout
 
 
+def dblist2subset(dbin, list = None):
+    """Convert a list of records to a database subset"""
+
+    dbout = Dbptr(dbin)
+
+    dbout.list2subset(list)
+
+    return dbout
+      
+
 def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = None):
     """Join two database views"""
 
@@ -375,6 +426,18 @@ def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = Non
     dbout.join(db2, outer, pattern1, pattern2, name)
 
     return dbout
+
+
+def dbmatches(dbk, dbt, hookname, kpattern = None, tpattern = None):
+    """find matching records in second table"""
+
+    return dbk.matches(dbt, hookname, kpattern, tpattern)
+
+
+def dbfind(db, expr, first = -1, reverse = False):
+    """Search for matching record in table"""
+
+    return db.find(expr, first, reverse)
 
 
 def dbprocess(db, list):
@@ -399,11 +462,28 @@ def dbgetv(db, *args):
     return db.getv(*args)
 
 
+def dbextfile(db, tablename = None):
+    """Compose filename from database record for a given table"""
+
+    return db.extfile(tablename)
+
+def dbfilename(db):
+    """Compose filename from database record"""
+
+    return db.filename()
+
+
 def dbquery(db, dbcode):
     """Retrieve ancillary information about a database"""
 
     return db.query(dbcode)
         
+
+def dbex_eval(db, expr):
+    """Evaluate a database expression"""
+
+    return db.ex_eval(expr)
+
 
 def trloadchan(dbin, t0, t1, sta, chan):
     """Load time-series data for a given station, channel, and time-interval into memory"""
@@ -616,6 +696,16 @@ if __name__ == '__main__':
 
             self.assertTrue(db[1] >= 0)
 
+        def test_method_list2subset(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'origin')
+
+            db.list2subset([1, 3, 27])
+
+            self.assertTrue(db[1] >= 0)
+            self.assertEqual(db.query(dbRECORD_COUNT), 3)
+
         def test_method_join(self):
             db = Dbptr(self.dbname)
 
@@ -653,10 +743,55 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_method_extfile(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'wfdisc')
+
+            db.record = 0
+
+            fname = db.extfile()
+
+            self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
+            
         def test_method_query(self):
             db = Dbptr(self.dbname)
 
             self.assertEqual(self.dbname, db.query(dbDATABASE_NAME))
+
+        def test_method_ex_eval(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'origin')
+
+            db.record = 0
+
+            mash = db.ex_eval('auth . "::" . algorithm')
+            total = db.ex_eval('nass + ndef')
+            tf = db.ex_eval('depth > 0')
+
+            self.assertEqual(mash, 'JSPC::locsat:kyrghyz')
+            self.assertEqual(total, 14)
+            self.assertTrue(tf)
+
+        def test_method_matches(self):
+            db = Dbptr(self.dbname)
+
+            dbk = dblookup(db, table = 'origin', field = "orid", record = "645" )
+            dbt = dblookup(db, table = 'assoc' )
+
+            values = dbk.matches(dbt, "originassochook", "orid" )
+
+            self.assertTrue(len(values) > 0)
+
+        def test_method_find(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'origin')
+
+            rc = db.find('orid == 645')
+
+            self.assertTrue(rc > 0)
 
         def test_method_xml(self):
             db = Dbptr(self.dbname)
@@ -781,6 +916,16 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
             self.assertFalse(dbout is db)
 
+        def test_procedure_dblist2subset(self):
+            db = Dbptr(self.dbname)
+
+            db2 = dblookup(db, table = 'origin')
+
+            db3 = dblist2subset(db2, [1, 3, 27])
+
+            self.assertTrue(db3[1] >= 0)
+            self.assertEqual(db3.query(dbRECORD_COUNT), 3)
+
         def test_procedure_dbjoin(self):
             db = dbopen(self.dbname)
 
@@ -837,6 +982,67 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_procedure_dbextfile(self):
+            db = Dbptr(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+            db.record = 0
+
+            fname = dbextfile(db)
+
+            self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
+
+            dbsensor = dblookup(db, table = 'sensor')
+            dbinstrument = dblookup(db, table = 'instrument')
+
+            db = dbjoin(db, dbsensor)
+            db = dbjoin(db, dbinstrument)
+            
+            db.record = 0
+
+            fname = dbextfile(db, 'instrument')
+
+            self.assertEqual(fname, '/opt/antelope/data/db/demo/response/sts2_vel_RT72A.1')
+
+        def test_procedure_dbfilename(self):
+            db = Dbptr(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+            db.record = 0
+
+            fname = dbfilename(db)
+
+            self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
+
+            dbsensor = dblookup(db, table = 'sensor')
+            dbinstrument = dblookup(db, table = 'instrument')
+
+            db = dbjoin(db, dbsensor)
+            db = dbjoin(db, dbinstrument)
+            
+            db.record = 0
+
+            fname = dbfilename(db)
+
+            self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
+
+        def test_procedure_dbex_eval(self):
+            db = Dbptr(self.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            db.record = 0
+
+            mash = dbex_eval(db, 'auth . "::" . algorithm')
+            total = dbex_eval(db, 'nass + ndef')
+            tf = dbex_eval(db, 'depth > 0')
+
+            self.assertEqual(mash, 'JSPC::locsat:kyrghyz')
+            self.assertEqual(total, 14)
+            self.assertTrue(tf)
+
         def test_procedure_dbquery(self):
             db = Dbptr(self.dbname)
 
@@ -854,6 +1060,25 @@ if __name__ == '__main__':
 
             self.assertTrue(isinstance(value,tuple))
 
+        def test_procedure_dbmatches(self):
+            db = Dbptr(self.dbname)
+
+            dbk = dblookup(db, table = 'origin', field = "orid", record = "645" )
+            dbt = dblookup(db, table = 'assoc' )
+
+            values = dbmatches(dbk, dbt, "originassochook", "orid" )
+
+            self.assertTrue(len(values) > 0)
+
+        def test_procedure_dbfind(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'origin')
+
+            rc = dbfind(db, 'orid == 645')
+
+            self.assertTrue(rc > 0)
+
         def test_procedure_db2xml(self):
             db = Dbptr(self.dbname)
 
@@ -861,8 +1086,7 @@ if __name__ == '__main__':
 
             xml = db2xml(db, rootnode = 'anode', rownode = 'arow', 
                         fields = ["lat", "lon", "depth", "time"], 
-                        expressions = ["lat", "lon", "depth", "strtime(time)"], 
-                        primary = True)
+                        expressions = ["lat", "lon", "depth", "strtime(time)"]) 
 
             self.assert_(isinstance(xml,str))
 
