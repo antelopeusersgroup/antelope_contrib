@@ -351,6 +351,22 @@ class Dbptr(list):
         return v
         
 
+def dbcreate(filename, schema, dbpath = None, description = None, detail = None):
+    """Create a new database descriptor file"""
+
+    _datascope._dbcreate(filename, schema, dbpath, description, detail)
+
+    return 
+
+
+def dbtmp(schema):
+    """Create a temporary database"""
+
+    db = _datascope._dbtmp(schema)
+
+    return Dbptr(db)
+
+
 def dbopen(dbname, perm = 'r'):
     """Open a Datascope database"""
 
@@ -810,18 +826,18 @@ if __name__ == '__main__':
             self.assert_(isinstance(db, Dbptr))
             
             self.assertTrue(tr.database >= 0)
-            self.assertNotEqual(db.table, dbINVALID)
-            self.assertNotEqual(db.field, dbINVALID)
-            self.assertNotEqual(db.record, dbINVALID)
+            self.assertNotEqual(tr.table, dbINVALID)
+            self.assertNotEqual(tr.field, dbINVALID)
+            self.assertNotEqual(tr.record, dbINVALID)
 
             tr = db.loadchan("1992-05-17 21:55:19.05", "1992-05-17 21:57:35.95", "TKM", "BHZ")
 
             self.assert_(isinstance(db, Dbptr))
             
             self.assertTrue(tr.database >= 0)
-            self.assertNotEqual(db.table, dbINVALID)
-            self.assertNotEqual(db.field, dbINVALID)
-            self.assertNotEqual(db.record, dbINVALID)
+            self.assertNotEqual(tr.table, dbINVALID)
+            self.assertNotEqual(tr.field, dbINVALID)
+            self.assertNotEqual(tr.record, dbINVALID)
 
         def test_method_data(self):
             db = dbopen(self.dbname)
@@ -1098,9 +1114,9 @@ if __name__ == '__main__':
             self.assert_(isinstance(db, Dbptr))
             
             self.assertTrue(tr.database >= 0)
-            self.assertNotEqual(db.table, dbINVALID)
-            self.assertNotEqual(db.field, dbINVALID)
-            self.assertNotEqual(db.record, dbINVALID)
+            self.assertNotEqual(tr.table, dbINVALID)
+            self.assertNotEqual(tr.field, dbINVALID)
+            self.assertNotEqual(tr.record, dbINVALID)
 
         def test_procedure_trdata(self):
             db = dbopen(self.dbname)
@@ -1112,5 +1128,18 @@ if __name__ == '__main__':
             v = trdata(tr)
 
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
+
+        def test_procedure_dbcreate(self):
+           
+            dbcreate('/tmp/datascope_unittest_db', 'css3.0')
+
+        def test_procedure_dbtmp(self):
+
+            db = dbtmp('css3.0')
+
+            self.assertTrue(db.database >= 0)
+            self.assertEqual(db.table, dbALL)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
 
     unittest.main()

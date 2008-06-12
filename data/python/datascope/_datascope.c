@@ -75,6 +75,8 @@ static PyObject *python_dbquery( PyObject *self, PyObject *args );
 static PyObject *python_dbmatches( PyObject *self, PyObject *args );
 static PyObject *python_dbfind( PyObject *self, PyObject *args );
 static PyObject *python_db2xml( PyObject *self, PyObject *args );
+static PyObject *python_dbtmp( PyObject *self, PyObject *args );
+static PyObject *python_dbcreate( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static void add_datascope_constants( PyObject *mod );
@@ -98,6 +100,8 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbmatches", python_dbmatches,   	METH_VARARGS, "Find matching records in second table" },
 	{ "_dbfind",    python_dbfind,   	METH_VARARGS, "Search for matching record in table" },
 	{ "_db2xml",    python_db2xml,   	METH_VARARGS, "convert a database view to XML" },
+	{ "_dbtmp",     python_dbtmp,  		METH_VARARGS, "create a new database descriptor" },
+	{ "_dbcreate",  python_dbcreate,   	METH_VARARGS, "create a temporary database" },
 	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
 	{ NULL, NULL, 0, NULL }
@@ -493,6 +497,59 @@ python_dbclose( PyObject *self, PyObject *args ) {
 	if( rc < 0 ) {
 
 		PyErr_SetString( PyExc_RuntimeError, "error closing database" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbtmp( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbtmp(schema)\n";
+	Dbptr	db;
+	char	*schema = 0;   
+
+	if( ! PyArg_ParseTuple( args, "s", &schema ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dbtmp( schema );
+
+	return Dbptr2PyObject( db );
+}
+
+static PyObject *
+python_dbcreate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbcreate(filename, schema, dbpath, description, detail)\n";
+	char	*filename = 0;   
+	char	*schema = 0;   
+	char	*dbpath = 0;   
+	char	*description = 0;   
+	char	*detail = 0;   
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "sszzz", &filename, &schema, &dbpath, &description, &detail) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbcreate( filename, schema, dbpath, description, detail );
+
+	if( rc != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error creating database" );
 
 		return NULL;
 	}
