@@ -155,14 +155,19 @@ the queryfile is specified to be '-', these commands are taken from stdin. The
 final command should be a display instruction such as dbselect. If stdin 
 is used to deliver the query instructions, an empty line should be used to 
 indicate the end of the dbprocess command list. See the example below for a 
-demonstration. If the last line of the query instructions begins with \fIdb2pipe\fP, 
+demonstration. If the last line or second-to-last line of the query instructions 
+begins with \fIdb2pipe\fP, 
 each resulting view is piped into the remaining command string after any 
 percent-escape strings have been replaced according to the timestamp 
 appropriate to the beginning of the database volume. This allows, for example, 
 processed results from each database in a cluster to be unpacked and saved 
 in derivative databases named by time period. If desired, these derivative 
 databases can be further merged in a separate step after the dbcentral query
-is completed. 
+is completed. If the last line of the query instructions begins with \fIdbmerge\fP, 
+the line is used to execute the dbmerge(1) command. Both the db2pipe and 
+dbmerge lines may include percent-escapes per epoch2str(3), which will be replaced 
+at run-time with values corresponding to the start time of the database being 
+processed (see example below). 
 
 .IP -n
 Show available database clusternames or task nicknames.
@@ -430,6 +435,54 @@ mydb_2007_03_01           mydb_2007_04_01.arrival
 (one could use dbmerge(1) on these results to combine them into one single
 output database). 
 
+.SS "To apply operations to all databases in a cluster, then save to new databases, then merge automatically, the dbmerge feature may be used:"
+
+.nf
+
+% cat myrequest 
+dbopen origin
+dbsubset lon > -126 && lon < -123
+dbsubset lat > 40 && lat < 48
+db2pipe dbunjoin -o /scr/day/temp/tempdb_%Y_%m -
+dbmerge /scr/day/temp/tempdb_%Y_%m megathrust
+% 
+
+raptor% dbcentral -q myrequest pde
+executing dbunjoin -o /scr/day/temp/tempdb_1661_02 - < /tmp/dbcentral_51098_0
+executing dbmerge /scr/day/temp/tempdb_1661_02 megathrust
+
+passed all checks, starting to append
+
+        starting to append origin
+
+dbmerge  - completed   6/13/2008 (165) 20:33:55.000 UTC
+
+executing dbunjoin -o /scr/day/temp/tempdb_1960_01 - < /tmp/dbcentral_51098_1
+executing dbmerge /scr/day/temp/tempdb_1960_01 megathrust
+
+passed all checks, starting to append
+
+ ........
+ ........
+
+executing dbunjoin -o /scr/day/temp/tempdb_2000_01 - < /tmp/dbcentral_51098_41
+executing dbmerge /scr/day/temp/tempdb_2000_01 megathrust
+
+passed all checks, starting to append
+
+        starting to append origin
+
+dbmerge  - completed   6/13/2008 (165) 20:34:02.000 UTC
+
+%
+
+
+% ls megathrust.origin 
+megathrust.origin
+% 
+
+.fi
+
 .SS "To run an arbitrary task on all databases in a cluster:"
 
 .nf
@@ -573,6 +626,10 @@ The ability of \fBdbcentral\fP to pipe results of cross-database queries to
 arbitrary unix commands appears to be hampered by problems with interpretation 
 of the saved views used in an intermediate step. This issue is being investigated.
 
+The \fIdbmerge\fP capability presumes the component databases will not conflict. Also, 
+the command-line for dbquery in the queryfile has to be constructed to match the 
+db2pipe command arguments, i.e. if db2pipe is used to create a bunch of temporary 
+databases, the same temporary names should be given to dbmerge (under normal usage). 
 .SH AUTHOR
 .nf
 Kent Lindquist

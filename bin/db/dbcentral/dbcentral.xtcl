@@ -57,7 +57,7 @@ proc init_globals {} {
 
 	if { $Time_specified } {
 
-		set ttime $Specified_time
+		set ttime [str2epoch $Specified_time]
 
 	} else {
 
@@ -476,7 +476,7 @@ proc allexec { nickname task } {
 
 proc parse_cmdline {} {
 	global argc argv
-	global List_Nicknames Resolve_dbname Time_specified
+	global List_Nicknames Resolve_dbname Time_specified Specified_time
 	global List_dbnames Exec_dbnames Queryfile
 	global Nickname Task Pf Stripped_argv
 	global Dbcentral_dbname Cmdline
@@ -699,11 +699,21 @@ proc run_cmdline {} {
 
 		set cmdlist ""
 		set db2pipecmd_template ""
+		set dbmergecmd_template ""
+		set dbprocess_ended 0
 		for { set icmd 0 } { $icmd < [llength $query] } { incr icmd } {
 			
 			set querycmd [lindex $query $icmd]
 
 			if { [regexp {^db2pipe (.*)} $querycmd junk db2pipecmd_template] } {
+
+				set dbprocess_ended 1
+
+			} elseif { [regexp {^dbmerge (.*)} $querycmd junk dbmergecmd_template] } {
+
+				set dbprocess_ended 1
+
+			} elseif { $dbprocess_ended } {
 
 				break
 
@@ -736,11 +746,24 @@ proc run_cmdline {} {
 				db2pipe $db $fd
 				close $fd
 				puts stdout "executing $db2pipecmd < $tmp"
-				eval exec [set db2pipecmd] < $tmp
+				if { [catch "eval exec [set db2pipecmd] < $tmp" error] } {
+					puts stderr $error
+				}
 				file delete $tmp
 			}
 
 			dbclose $db
+
+			if { $nrecs > 0 && $dbmergecmd_template != "" } {
+
+				set dbmergecmd [epoch2str $time $dbmergecmd_template]
+
+				puts stdout "executing dbmerge $dbmergecmd"
+				if { [catch { eval exec "dbmerge [set dbmergecmd]" } error] } {
+					
+					puts stderr $error	
+				}
+			}
 		}
 
 	} elseif { $Exec_dbnames && $Nickname == "" } {
