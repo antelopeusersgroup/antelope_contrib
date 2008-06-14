@@ -111,6 +111,10 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 		display_initial_sort_box=false;
 		display_analysis_sort_box=false;
 	}
+	/* these parameters control the color of lines on data and beam
+	plots.  */
+	markers.beam_color=smcontrol.get_string("beam_window_marker_color");
+	markers.robust_color=smcontrol.get_string("robust_window_marker_color");
 	beammarkers.beam_color=smcontrol.get_string("beam_arrival_pick_marker_color");
 	beammarkers.robust_color=smcontrol.get_string("beam_arrival_error_marker_color");
 	beammarkers.title=smcontrol.get_string("beam_plot_title");

@@ -497,8 +497,6 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
 		psm->markers.beam_tw=psm->active_setting.beam_tw;
 		psm->markers.robust_tw=psm->active_setting.robust_tw;
-		psm->markers.beam_color=string("red");
-		psm->markers.robust_color=string("green");
   		psm->markers.title=ts.str();
 
 		XtVaSetValues(psm->seismic_widget,ExmNseiswEnsemble, (XtPointer)(tse),
