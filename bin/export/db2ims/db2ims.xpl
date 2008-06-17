@@ -513,6 +513,12 @@ our ($Pf, $auth_reject, $mysubset, $IMSdir) ;
 		    $per  = sprintf "%5.2f", $per ;	
 		}
 
+		if ($deltime == -1.0) {  
+		    $deltime = " " ;
+		} else {	
+		    $deltime = sprintf "%5.2f", $deltime ;	
+		}
+
 		if ($loc =~ /-/) {
 		    $loc = " " ;
 		}
@@ -524,6 +530,10 @@ our ($Pf, $auth_reject, $mysubset, $IMSdir) ;
 		} else {
 		   $pickinfo	= "m__";	# m is used because we only send reviewed solutions, no auto-picks
 		}
+
+		if ($sdepth > 99.9) {  
+		    $sdepth = 99.9 ;
+		}	
 
 		if ($opt_m) {	# uncoded magnitude reporting
 		   $maginfo = $magtype . " " . $magnitude ;
@@ -589,6 +599,10 @@ our ($Pf, $auth_reject, $mysubset, $IMSdir) ;
 	$oms 		= epoch2str($otime, "%S");
 	$omsec		= epoch2str($otime, "%s");
 
+	# get percision and rounding correct 
+	if ($omsec == 1000) {
+		$omsec = 999;
+	}
 	$omsec		= $omsec/10 ;
 	$omsec		= sprintf "%2d", $omsec ;
 
@@ -613,7 +627,7 @@ our ($Pf, $auth_reject, $mysubset, $IMSdir) ;
 	  $sdepth = $blank; 
 	} else {
 	  $strike = sprintf "%3d", $strike;
-	  $sdepth = sprintf "%3d", $sdepth;
+	  $sdepth = sprintf "%4.1f", $sdepth;
 	}
 
 	if ($ndef == -1) {
@@ -629,7 +643,6 @@ our ($Pf, $auth_reject, $mysubset, $IMSdir) ;
 #	}
 
 	$etype = &map_etype;
-	
 
         printf "%4s/%2s/%2s %2s:%2s:%s.%s%1s",  $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec, $blank if ($opt_v||$opt_V) ;
         printf " %5.2f %5.2f",  $stime, $sdobs  if ($opt_v||$opt_V) ; 
