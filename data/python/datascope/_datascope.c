@@ -69,6 +69,7 @@ static PyObject *python_dblist2subset( PyObject *self, PyObject *args );
 static PyObject *python_dbjoin( PyObject *self, PyObject *args );
 static PyObject *python_dbprocess( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
+static PyObject *python_dbaddv( PyObject *self, PyObject *args );
 static PyObject *python_dbextfile( PyObject *self, PyObject *args );
 static PyObject *python_dbex_eval( PyObject *self, PyObject *args );
 static PyObject *python_dbquery( PyObject *self, PyObject *args );
@@ -80,6 +81,7 @@ static PyObject *python_dbcreate( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static void add_datascope_constants( PyObject *mod );
+static int parse_to_Dbptr( PyObject *obj, void *addr );
 PyMODINIT_FUNC init_datascope( void );
 
 static struct PyMethodDef _datascope_methods[] = {
@@ -94,6 +96,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbjoin",   	python_dbjoin,   	METH_VARARGS, "Join Datascope tables" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
+	{ "_dbaddv",    python_dbaddv,   	METH_VARARGS, "Add records to a database table" },
 	{ "_dbextfile", python_dbextfile,   	METH_VARARGS, "Retrieve an external file name from a database row" },
 	{ "_dbex_eval", python_dbex_eval,   	METH_VARARGS, "Evaluate a database expression" },
 	{ "_dbquery",   python_dbquery,   	METH_VARARGS, "Get ancillary information about a database" },
@@ -167,6 +170,130 @@ Dbvalue2PyObject( Dbvalue value, int type )
 	}
 
 	return obj;
+}
+
+static int 
+PyObject2Dbvalue( PyObject *obj, int type, Dbvalue *value )
+{
+	int	retcode = 0;
+
+	switch( type ) {
+
+	case dbDBPTR:
+
+		if( parse_to_Dbptr( obj, &value ) ) {
+		
+			retcode = 1;
+
+		} else {
+
+			retcode = 0;
+		}
+
+		break;
+
+	case dbSTRING:
+
+		if( PyString_Check( obj ) ) {
+
+			value->t = PyString_AsString( obj );
+	
+			retcode = 1;
+
+		} else { 
+
+			retcode = 0;
+		}
+
+		break;
+
+	case dbBOOLEAN:
+
+		if( obj == Py_False ) {
+
+			value->i = 0;
+
+			retcode = 1;
+
+		} else if( obj == Py_True ) {
+
+			value->i = -1;
+
+			retcode = 1;
+
+		} else if( PyInt_Check( obj ) ) {
+
+			value->i = PyInt_AsLong( obj );
+	
+			retcode = 1;
+
+		} else { 
+
+			retcode = 0;
+		}
+
+		break;
+
+	case dbINTEGER:
+	case dbYEARDAY:
+
+		if( PyInt_Check( obj ) ) {
+
+			value->i = PyInt_AsLong( obj );
+	
+			retcode = 1;
+
+		} else { 
+
+			retcode = 0;
+		}
+
+		break;
+
+	case dbREAL:
+
+		if( PyFloat_Check( obj ) ) {
+
+			value->d = PyFloat_AsDouble( obj );
+	
+			retcode = 1;
+
+		} else { 
+
+			retcode = 0;
+		}
+
+		break;
+
+	case dbTIME:
+
+		if( PyString_Check( obj ) ) {
+
+			value->d = str2epoch( PyString_AsString( obj ) );
+	
+			retcode = 1;
+
+		} else if( PyFloat_Check( obj ) ) {
+
+			value->d = PyFloat_AsDouble( obj );
+	
+			retcode = 1;
+
+		} else { 
+
+			retcode = 0;
+		}
+
+		break;
+
+	default:
+
+		retcode = 0;
+
+		break;
+	}
+
+	return retcode;
 }
 
 static PyObject *
@@ -1009,6 +1136,150 @@ python_db2xml( PyObject *self, PyObject *args ) {
 	free( xml );
 
 	return obj;
+}
+
+static PyObject *
+python_dbaddv( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbaddv(db, field, value [, field, value...])\n";
+	Dbptr	db;
+	Dbvalue	value;
+	char	errmsg[STRSZ];
+	char	*field_name;
+	int	nargs;
+	int	nfields;
+	int	i;
+	int	type;
+	int	fieldname_index;
+	int	fieldval_index;
+	int	retcode = 0;
+	int	rc;
+
+	nargs = PyTuple_Size( args );
+
+	if( ( nargs < 3 ) || ( ( nargs - 1 ) % 2 != 0 ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+
+	} else if( ! parse_to_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
+
+		sprintf( errmsg, "Argument 0 to _dbaddv must be a Dbptr or four-element list of integers" );
+
+		PyErr_SetString( PyExc_TypeError, errmsg );
+
+		return NULL;
+	}
+
+	db.record = dbNULL;
+
+	rc = dbget( db, NULL );
+
+	if( rc == dbINVALID ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbaddv: failed to get null record" );
+
+		return NULL;
+	}
+
+	db.record = dbSCRATCH;
+
+	nfields = ( nargs - 1 ) / 2;
+
+	for( i = 0; i < nfields; i++ ) {
+
+		fieldname_index = i * 2 + 1;
+
+		if( ! PyString_Check( PyTuple_GetItem( args, fieldname_index ) ) ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+
+			return NULL;
+		}
+	}
+
+	for( i = 0; i < nfields; i++ ) {
+
+		fieldname_index = i * 2 + 1;
+		fieldval_index = fieldname_index + 1;
+
+		field_name = PyString_AsString( PyTuple_GetItem( args, fieldname_index ) );
+
+		db = dblookup( db, 0, 0, field_name, 0 );
+
+		rc = dbquery( db, dbFIELD_TYPE, &type );
+
+		if( rc == dbINVALID ) {
+
+			sprintf( errmsg, "dbaddv: dbquery failed for field %s", field_name );
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+
+			return NULL;
+		}
+
+		rc = PyObject2Dbvalue( PyTuple_GetItem( args, fieldval_index ), type, &value );
+
+		if( rc < 0 ) {
+			
+			sprintf( errmsg, "dbaddv: failed to convert field %s", field_name );
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+
+			return NULL;
+		}
+
+		switch( type ) {
+
+		case dbDBPTR:
+
+			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			break;
+
+		case dbSTRING:
+
+			retcode |= dbputv( db, 0, field_name, value.t, 0 );
+			break;
+
+		case dbBOOLEAN:
+		case dbINTEGER:
+		case dbYEARDAY:
+
+			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			break;
+
+		case dbREAL:
+		case dbTIME:
+
+			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			break;
+
+		default:
+
+			retcode = -1;
+			break;
+		}
+	}
+
+	if( retcode != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbaddv failed putting in one of the values\n" );
+
+		return NULL;
+	}
+
+	retcode = dbaddchk( db, 0 );
+
+	if( retcode != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbaddv failed at dbaddchk call\n" );
+
+		clear_register( 1 ); /* DEBUG */
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", retcode );
 }
 
 static PyObject *

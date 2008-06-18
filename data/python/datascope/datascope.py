@@ -293,6 +293,11 @@ class Dbptr(list):
 
         return _datascope._dbgetv(self, *args)
     
+    def addv(self, *args):
+        """Add values in a new database row"""
+
+        return _datascope._dbaddv(self, *args)
+    
     def extfile(self, tablename = None):
         """Compose filename from database record for a given table"""
 
@@ -478,6 +483,12 @@ def dbgetv(db, *args):
     return db.getv(*args)
 
 
+def dbaddv(db, *args):
+    """Add values to a new database row"""
+
+    return db.addv(*args)
+
+
 def dbextfile(db, tablename = None):
     """Compose filename from database record for a given table"""
 
@@ -516,6 +527,7 @@ def trdata(trin):
 if __name__ == '__main__':
     import unittest
     import operator
+    import os
 
     class Testdatascope(unittest.TestCase):
         dbname = '/opt/antelope/data/db/demo/demo' 
@@ -759,6 +771,24 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_method_addv(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"]
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv( 'lat', 61.5922,
+                                 'lon', -149.130,
+                                 'depth', 20, 
+                                 'time', '9/30/2002 11:15 AM' )
+
+            self.assertTrue( db.record >= 0 )
+
+	    db.close()
+
         def test_method_extfile(self):
             db = Dbptr(self.dbname)
 
@@ -998,6 +1028,25 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_procedure_dbaddv(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"]
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db = dblookup(db, table = 'origin')
+
+	    db.record = dbaddv( db,  'lat', 61.5922,
+                                     'lon', -149.130,
+                                     'depth', 20, 
+                                     'time', '9/30/2002 11:15 AM',
+				     'auth', os.environ["USER"] )
+
+            self.assertTrue( db.record >= 0 )
+
+	    dbclose(db)
+
         def test_procedure_dbextfile(self):
             db = Dbptr(self.dbname)
 
