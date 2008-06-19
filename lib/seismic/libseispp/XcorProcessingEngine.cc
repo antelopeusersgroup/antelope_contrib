@@ -970,7 +970,7 @@ void XcorProcessingEngine::prep_gather()
 	if(load_arrivals) dbarrival_shift(*regular_gather);
 	Hypocenter h;
 	if( (processing_mode==EventGathers)
-		|| (processing_mode=ContinuousDB) )
+		|| (processing_mode==ContinuousDB) )
 	{
 		double slat,slon,sz,stime;
 		try{
@@ -978,7 +978,7 @@ void XcorProcessingEngine::prep_gather()
 		    slon=regular_gather->get_double("source_lon");
 		    sz=regular_gather->get_double("source_depth");
 		    stime=regular_gather->get_double("source_time");
-		    Hypocenter h(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
+		    h=Hypocenter(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
 		} catch (...)
 		{
 			cerr << "XcorProcessingEngine::load_data method: "
@@ -1259,6 +1259,12 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 			(AssembleRegularGather(*tse,predarr,
 			analysis_setting.phase_for_analysis,
             		analysis_setting.gather_twin,target_dt,rdef,true));
+	/* To use the common prep_gather method we need to post these
+	to the ensemble metadata area.  Note the conversion to degrees*/
+	regular_gather->put("source_lat",deg(h.lat));
+	regular_gather->put("source_lon",deg(h.lon));
+	regular_gather->put("source_depth",deg(h.z));
+	regular_gather->put("source_time",deg(h.time));
 	this->prep_gather();
     }
     catch (...) {throw;}
