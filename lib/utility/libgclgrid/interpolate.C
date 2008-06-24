@@ -1,7 +1,9 @@
+#include "dmatrix.h"
 #include "gclgrid.h"
 /* function prototype used only here (FORTRAN routine) */
 extern "C" {
-extern void fmeweights_(double *,double *,double *);
+extern void fmeweights_(double *,double *,double *,int *);
+extern void treex3_(double *, int *, double *, int *, double *);
 }
 /*This is an interpolation function for 3d grids.
 This function is mostly an interface function to the fme_interpolate
@@ -49,7 +51,72 @@ simpler than the older subroutine like implementation.
 One more.  Added BLAS_LIMIT to use the BLAS to interpolate 
 large vectors.  This was done in anticipation of using this
 function for interpolation of 3D travel time tables.
-*/
+
+June 2008
+Important change to make this more robust.  Found in some distorted element
+geometries when a point was located very near and edge the fmeweights subroutine
+did not converge.  I was not properly trapping this condition.  
+I ended up using a completely different algorithm that should now be faster
+and much more bombproof.  The new algorithm is much like that in the lookup
+method using basis vectors and avoiding the nasty convergence loop of the
+olf fortran code.
+**************************************************************************************/
+
+
+
+
+void compute_element_weights(GCLgrid3d *g, 
+	int i, int j, int k,
+		double *xp, double *weights)
+{
+	dmatrix J(3,3),Jinv(3,3);
+	dvector dxunit(3),dxraw(3),xi(3);
+	J(0,0)=g->x1[i+1][j][k] - g->x1[i][j][k];
+	J(1,0)=g->x2[i+1][j][k] - g->x2[i][j][k];
+	J(2,0)=g->x3[i+1][j][k] - g->x3[i][j][k];
+
+	J(0,1)=g->x1[i][j+1][k] - g->x1[i][j][k];
+	J(1,1)=g->x2[i][j+1][k] - g->x2[i][j][k];
+	J(2,1)=g->x3[i][j+1][k] - g->x3[i][j][k];
+
+	J(0,2)=g->x1[i][j][k+1] - g->x1[i][j][k];
+	J(1,2)=g->x2[i][j][k+1] - g->x2[i][j][k];
+	J(2,2)=g->x3[i][j][k+1] - g->x3[i][j][k];
+
+	dxraw(0) = xp[0] - g->x1[i][j][k];
+	dxraw(1) = xp[1] - g->x2[i][j][k];
+	dxraw(2) = xp[2] - g->x3[i][j][k];
+
+	int three(3);
+	double det;
+	treex3_(J.get_address(0,0),&three,
+		Jinv.get_address(0,0),&three,&det);
+	dxunit=Jinv*dxraw;
+	/* This transformation is needed to go from 0->1 cube edges to -1 to +1 
+	needed for shape functions */
+	int ii;
+	for(ii=0;ii<3;++ii) xi(ii)=2*dxunit(ii)-1.0;
+	/* These are derived from old fortran FMLIN3 subroutine */
+	double xip,xim,etap,etam,zetap,zetam;  
+	xim = 1.0 - xi(0);
+	etam = 1.0 - xi(1);
+	zetam = 1.0 - xi(2);
+	
+	xip = 1.0 + xi(0);
+	etap = 1.0 + xi(1);
+	zetap = 1.0 + xi(2);
+	weights[0]=0.125*xim*etam*zetam;
+	weights[1]=0.125*xim*etam*zetap;
+	weights[2]=0.125*xip*etam*zetap;
+	weights[3]=0.125*xip*etam*zetam;
+	weights[4]=0.125*xim*etap*zetam;
+	weights[5]=0.125*xim*etap*zetap;
+	weights[6]=0.125*xip*etap*zetap;
+	weights[7]=0.125*xip*etap*zetam;
+}
+
+
+//vector interpolators switch from loop to a blas call when nv larger than this
 #define BLAS_LIMIT 10
 double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 {
@@ -75,46 +142,13 @@ double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 		
 	if( (xp1!=xplast[0]) || (xp2!=xplast[1]) || (xp3!=xplast[2]) )
 	{
+		int ciwret;
 		double xp[3];
 		xp[0]=xp1;
 		xp[1]=xp2;
 		xp[2]=xp3;
-		/* point 0 */
-		coord[0] = x1[i][j][k];
-		coord[8] = x2[i][j][k];
-		coord[16] = x3[i][j][k];
-		/* point 1 */
-		coord[1] = x1[i][j][k+1];
-		coord[9] = x2[i][j][k+1];
-		coord[17] = x3[i][j][k+1];
-		/* point 2 */
-		coord[2] = x1[i+1][j][k+1];
-		coord[10] = x2[i+1][j][k+1];
-		coord[18] = x3[i+1][j][k+1];
-		/* point 3 */
-		coord[3] = x1[i+1][j][k];
-		coord[11] = x2[i+1][j][k];
-		coord[19] = x3[i+1][j][k];
-		/* point 4 (other side of element in dimension 2) */
-		coord[4] = x1[i][j+1][k];
-		coord[12] = x2[i][j+1][k];
-		coord[20] = x3[i][j+1][k];
-		/* point 5 */
-		coord[5] = x1[i][j+1][k+1];
-		coord[13] = x2[i][j+1][k+1];
-		coord[21] = x3[i][j+1][k+1];
-		/* point 6 */
-		coord[6] = x1[i+1][j+1][k+1];
-		coord[14] = x2[i+1][j+1][k+1];
-		coord[22] = x3[i+1][j+1][k+1];
-		/* point 7 */
-		coord[7] = x1[i+1][j+1][k];
-		coord[15] = x2[i+1][j+1][k];
-		coord[23] = x3[i+1][j+1][k];
-		xp[0]=xp1;
-		xp[1]=xp2;
-		xp[2]=xp3;
-		fmeweights_(xp,coord,weights);
+		compute_element_weights(dynamic_cast<GCLgrid3d *>(this),
+			i,j,k,xp,weights);
 	}
 	/* Compute interpolated vector as a linear combination of the
 	 * corners using weights just computed (or from the last pass)
@@ -154,8 +188,7 @@ double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 	return(f);
 }
 //
-// painfully parallel routine for scalars.  There may be a way to do this
-// elegantly in C++ but it is beyond my current understanding.
+// parallel routine to above for scalar fields
 //
 double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 {
@@ -174,43 +207,13 @@ double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 	
 	if( (xp1!=xplast[0]) || (xp2!=xplast[1]) || (xp3!=xplast[2]) )
 	{
+		int ciwret;
 		double xp[3];
 		xp[0]=xp1;
 		xp[1]=xp2;
 		xp[2]=xp3;
-		/* point 0 */
-		coord[0] = x1[i][j][k];
-		coord[8] = x2[i][j][k];
-		coord[16] = x3[i][j][k];
-		/* point 1 */
-		coord[1] = x1[i][j][k+1];
-		coord[9] = x2[i][j][k+1];
-		coord[17] = x3[i][j][k+1];
-		/* point 2 */
-		coord[2] = x1[i+1][j][k+1];
-		coord[10] = x2[i+1][j][k+1];
-		coord[18] = x3[i+1][j][k+1];
-		/* point 3 */
-		coord[3] = x1[i+1][j][k];
-		coord[11] = x2[i+1][j][k];
-		coord[19] = x3[i+1][j][k];
-		/* point 4 (other side of element in dimension 2) */
-		coord[4] = x1[i][j+1][k];
-		coord[12] = x2[i][j+1][k];
-		coord[20] = x3[i][j+1][k];
-		/* point 5 */
-		coord[5] = x1[i][j+1][k+1];
-		coord[13] = x2[i][j+1][k+1];
-		coord[21] = x3[i][j+1][k+1];
-		/* point 6 */
-		coord[6] = x1[i+1][j+1][k+1];
-		coord[14] = x2[i+1][j+1][k+1];
-		coord[22] = x3[i+1][j+1][k+1];
-		/* point 7 */
-		coord[7] = x1[i+1][j+1][k];
-		coord[15] = x2[i+1][j+1][k];
-		coord[23] = x3[i+1][j+1][k];
-		fmeweights_(xp,coord,weights);
+		compute_element_weights(dynamic_cast<GCLgrid3d *>(this),
+			i,j,k,xp,weights);
 	}
 
 	f=0.0;
@@ -238,7 +241,7 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 	static double xplast[3]={0.0,0.0,0.0};
 	static double weights[8];
 	double *f = new double[nv];
-	int i,j;
+	int i,j,ierr;
 	int ix[2];
 
 	get_index(ix);
@@ -307,7 +310,15 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		coord[7]=cp.x1;
 		coord[15]=cp.x2;
 		coord[23]=cp.x3;
-		fmeweights_(xp,coord,weights);
+
+		fmeweights_(xp,coord,weights,&ierr);
+		/* Do not implement recovery here, but for now just blast a
+		warning if the convergence flag is raised */
+		cerr << "GCLvectorfield::interpolate method (WARNING):  "
+		  << "fmeweights procedure did not converge.  Interpolation errors are likely"
+		  << endl
+		  << "The surface is probably too strongly curved for this algorithm to handle"
+		  << endl;
 	}
 	for(l=0;l<nv;++l)
 	{
@@ -335,7 +346,7 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 	static double weights[8];
 	double f;
 	int ix[2];
-	int i,j,l;
+	int i,j,l,ierr;
 
 	get_index(ix);
 	i=ix[0];
@@ -402,7 +413,14 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		coord[7]=cp.x1;
 		coord[15]=cp.x2;
 		coord[23]=cp.x3;
-		fmeweights_(xp,coord,weights);
+		fmeweights_(xp,coord,weights,&ierr);
+		/* Do not implement recovery here, but for now just blast a
+		warning if the convergence flag is raised */
+		cerr << "GCLscalarfield::interpolate method (WARNING):  "
+		  << "fmeweights procedure did not converge.  Interpolation errors are likely"
+		  << endl
+		  << "The surface is probably too strongly curved for this algorithm to handle"
+		  << endl;
 	}
 	f=0.0;
 	f+=weights[0]* val[i][j];
