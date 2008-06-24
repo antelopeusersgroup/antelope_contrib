@@ -1,0 +1,178 @@
+.TH UPDATE_PDE 1 "1999/09/20 12:12:08 "
+.SH NAME
+update_pde \- retreive files of reviewed monthly hypocenter data from NEIC and incorporate them into a local css3.0 format catalog. 
+
+.SH SYNOPSIS
+.nf
+\fBupdate_pde\fR [-v ] -y year -p parameter_file
+ 
+.fi
+.SH DESCRIPTION
+This script retreives EHDF format files from the NEIC ftp site (currently 
+hazards.cr.usgs.gov) via the NET::FTP perl module.  Files are retrieved and 
+stored in a local directory and are converted to css3.0 format via the 
+pde2origin(1) program distributed with the ANTELOPE software package.  
+
+The remote site is checked for new or modified files (under the "pde" 
+directory).  If such a file is found, it is retrieved and then converted 
+to css3.0 format.  The modification times are checked against files stored 
+under a "YYYY_HDF_monthly" directory.  If a modified file is found, 
+update_pde checks the local pde catalog and adds in any new or modified
+origins from the retrieved file.
+
+Files retreived are of the form ehdfYYYYMM.dat (MM is the two-digit month of 
+the year YYYY).  Format specifics can be found in the file ehdf.doc.  Yearly
+files ehdfYYYY.dat are rejected.
+
+See:
+ftp://hazards.cr.usgs.gov/pde/read_me for additional info.
+
+A typical file will look like this:
+
+.nf
+GS  199801010002173337643N118858W  66     8 00&         340MLGS   330MLGM    40             <GM-P >
+GS  199801010011134337670N118869W  50     6 00&         310MLGM   310MLBRK   40             <GM-P >
+GS  199801010012395561413N141388W  00    12 00&         260MLAEIC             2             <AEIC >
+GS  199801010031510537648N118861W  74     6 00&         280MDGM              40             <GM-P >
+etc.
+
+.fi
+
+The users listed in mail_to specified in the pf file should receive an email message when the program fails or runs
+to completion.
+
+
+.SH OPTIONS
+
+
+.IP \fB-v\fR 
+verbosely report what the program is doing and any errors that may occur.
+
+.IP \fB-y\fR "year"
+4-digit year to retrieve.  PDE yearly files are availible from this
+site from 1990 to ~10-12 months prior to today.
+
+.SH PARAMETER FILE
+
+This script requires a parameter file, normally called update_pde.pf. 
+The following is an example parameter file.
+
+.nf
+
+# Paramter file for update_pde
+
+pde_dir         /catalogs/pde/        # Directory where you are going to store all pde monthly catalog info.
+
+remote_host     hazards.cr.usgs.gov      # The ftp site run by the USGS, should not have to change
+
+author          PDE_monthly           # Name to fill in to author field for monthly catalog
+
+account         myname@ucsd.edu       # email address for anonymous ftp
+
+mail_to  &Tbl{                        # Users to be notified
+myname@ucsd.edu, someonelse@bigmoney.com
+}
+
+
+.fi 
+
+.LP
+The parameter file consists of the following information.
+
+.IP "pde_dir"
+
+This is the directory (full path) where you want to store the pde catalog and individual files.  The catalog will
+be written here and will be called pde_YYYY.  You need to have read/write permissions here.  The 
+script will try to create this directory if it does not exist.  Additional directories will be created
+under this directory including: temp and YYYY_HDF_monthly/. 
+
+.IP "remote_host"
+
+The ftp site at USGS that allows ftp pickup of the PDE bulletin.  This has changed over the years, but
+as of January 2008 it is: hazards.cr.usgs.gov.
+
+.IP "author"
+
+The fill value for the author field in the origin table.
+
+.IP "account"
+
+This is required by the perl ftp module for anonymous access to the remote host.
+
+.IP "mail_to"
+
+List of users who will receive email when this program is run.
+
+
+.SH FILES
+
+pde2origin(1) is used to convert the files in EHDF (or PDE) format to css3.0 format.  Files
+are saved to "qed_dir/qed_store/".
+
+ehdf.doc describes the data format.
+
+ehdfYYYYMM.dat contains hypocenter data for on month (MM) of the year (YYYY). 
+
+pde_YYYY.origin is created in the "pde_dir" directory.
+
+pde_monthly.log is created in the "pde_dir" directory.
+
+pde_mail.log is created in the "pde_dir" directory.
+
+
+.SH EXAMPLE
+.br
+1) Update the pde catalog for 1998 using parameter file pf/update_pde_local.pf
+.in 2c
+.ft CW
+.nf
+.ne 4
+
+%\fB update_pde -v 1998 -p pf/update_pde_local\fP
+
+.fi
+.ft R
+.in 
+
+.br
+2) You want to set up a cron job to run the 1st day of every month to update the monthly pde catalog.
+
+As the real-time user, add the following to the crontab &Arr for a running rtexec.pf:
+
+.in 2c
+.ft CW
+.nf
+.ne 4
+
+ get_pde  UTC 0 21 1 * * update_pde -v update_pde -y 2003
+
+.fi
+.ft R
+.in 
+
+.SH "SEE ALSO"
+.nf
+pde2origin(1)
+antelopeenv(5)
+update_weekly_qed(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+Env variables PFPATH and ANTELOPE must be set.
+
+There is a hard-wired path to gzip in the code (/usr/bin/gzip).
+
+Also hard-wired is the directory (pde/) where the PDE files are
+stored on the USGS ftp site.
+
+This code has not been extensively tested.  It may fail in unexpected ways.
+
+.SH AUTHOR
+.nf
+.br
+Jennifer Eakins
+.br
+Univ. of Calif. San Diego
+
+
+
