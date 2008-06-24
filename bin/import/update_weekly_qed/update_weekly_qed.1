@@ -1,0 +1,142 @@
+.TH UPDATE_WEEKLY_QED 1 "1999/07/09 09:12:08 "
+.SH NAME
+update_weekly_qed \- retreive files of reviewed weekly hypocenter data from NEIC and incorporate them into a local css3.0 format catalog. 
+
+.SH SYNOPSIS
+.nf
+\fBupdate_weekly_qed\fR [-v ] parameter_file
+ 
+.fi
+.SH DESCRIPTION
+This script retreives EHDF format files from the NEIC ftp site (currently ghtftp.cr.usgs.gov) via the NET::FTP perl module.  Files are retrieved and stored in a local directory and are converted to css3.0 format via the \fBqed2origin\fR program distributed with the ANTELOPE software package.  
+
+The remote site is checked for new or modified files (under the "pub/weekly" directory).  If such 
+a file is found, it is retrieved and then converted to css3.0 format.  The modification times are 
+checked against files stored under a "qed_store" directory.  If a modified file is found, 
+\fBupdate_weekly_qed\fR checks the current qed_weekly catalog and will add any new or modified
+origins that exist for the time period of the retrieved file.  
+
+Files retreived are of the form ehdfYYYYWWw.dat (WW is the two-digit week of the year YYYY) and contain one week of data.  Format specifics can be found in the file ehdf.doc which should also be retrieved.  The file ehdfqed.dat contains approximately 3 weeks of hypocenter data from the Quick Epicenter Determinations (QED) publication and is updated daily. The weekly bundled data is about 3 months behind current date.
+
+http://www.neic.cr.usgs.gov/neis/data_services/ftp_files.html for additional info.
+
+A typical file will look like this:
+
+.nf
+GS  199905210028345061820N152200W1131    18 00&                               2             <AEIC >
+GS  199905210037362037780N 27120E 340     3 00&         360MLATH            366             <ATH  >
+GS  199905210056317038320N 21950E  50    13 00&         350MDATH            364             <ATH  >
+etc.
+
+.fi
+
+The users listed in the mail_to log should receive an email message when the program fails or runs
+to completion.
+
+
+.SH OPTIONS
+
+Currently, the only option availible is -v:
+
+.IP \fB-v\fR 
+verbosely report what the program is doing and any errors that may occur.
+
+.SH PARAMETER FILE
+
+This script requires a parameter file, normally called update_qed_weekly.pf. 
+The following is an example parameter file.
+
+.nf
+
+# Paramter file for update_weekly_qed
+
+qed_dir         /scr/month/eakins/qed/          # Directory where you are going to store all qed weekly catalog info.
+
+author          QED_weekly                      # Name to fill in to author field of weekly catalog
+
+account         eakins@epicenter.ucsd.edu       # email address for anonymous ftp
+
+mail_to  &Tbl{                                  # Users to be notified
+eakins@epicenter.ucsd.edu
+}
+
+
+.fi 
+
+.LP
+The parameter file consists of the following information.
+
+.IP "qed_dir"
+
+This is the directory (full path) where you want to store the weekly qed catalog.  The catalog will
+be written here and will be called qed_weekly.  You need to have read/write permissions here.  The 
+script will try to create this directory if it does not exist.  Additional directories will be created
+under this directory including: temp and qed_store. 
+
+.IP "author"
+
+The fill value for the author field in the origin table.
+
+.IP "account"
+
+This is required by the perl ftp module for anonymous access to the remote host.
+
+.IP "mail_to"
+
+List of users who will receive email when this program is run.
+
+
+.SH FILES
+
+qed2origin(1) is used to convert the files in EHDF (or PDE) format to css3.0 format.  Files
+are saved to "qed_dir/qed_store/".
+
+ehdf.doc describes the data format.
+
+ehdfqed.dat contains the last ~3-7 weeks of data.
+
+ehdfYYYYWWw.dat contains hypocenter data for the two-digit week (WW) of the year (YYYY). 
+
+qed_weekly.origin is created in the "qed_dir" directory.
+
+weekly.log is created in the "qed_dir" directory.
+
+mail.log is created in the "qed_dir" directory.
+
+
+.SH EXAMPLE
+.RS .2i
+.RE
+
+1) Update the qed_weekly catalog using parameter file pf/update_weekly_qed.pf
+
+update_weekly_qed pf/update_weekly_qed
+
+
+2) You want to set up a cron job to run every night at 21:00 UTC to update the weekly qed catalog.
+
+As the real-time user, add the following to the crontab &Arr for a running rtexec.pf:
+
+ update_weekly_qed	UTC 0 21 * * * update_weekly_qed -v update_weekly_qed
+
+
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pde2origin(1)
+qed2origin(1)
+update_pde(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+Env variables PFPATH and ANTELOPE must be set.
+
+This code has not been extensively tested and is still under development: it may fail in unexpected ways.  
+
+.SH AUTHOR
+.nf
+Jennifer Eakins
+Univ. of Calif. San Diego
+(858)534-2869
+jeakins@ucsd.edu
+.\" $Id$
