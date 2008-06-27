@@ -250,6 +250,17 @@ Initializes data and sets aside memory for
  the transverse component, x2 becomes radial, and x3 becomes longitudinal.  In the 
  special case for a vector pointing in the x3 direction the data are not altered.
 
+The sense of this transformation is confusing because of a difference in 
+convention between spherical coordinates and standard earth coordinates.
+In particular, orientation on the earth uses a convention with x2 being
+the x2 axis and bearings are relative to that with a standard azimuth
+measured clockwise from north.  Spherical coordinate angle phi (used here)
+is measured counterclockwise relative to the x1 axis, which is east in
+standard earth coordinates. This transformation is computed using a phi
+angle.   To use this then to compute a transformation to standard ray 
+coordinates with x2 pointing in the direction of wavefront advance, 
+phi should be set to -1.0 times the azimuth of the propagation direction.
+
 \param sc defines final x3 direction (longitudinal) in a spherical coordinate structure.
 **/
 	void rotate(SphericalCoordinate sc);

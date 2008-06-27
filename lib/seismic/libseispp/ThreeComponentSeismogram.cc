@@ -991,7 +991,9 @@ void ThreeComponentSeismogram::free_surface_transformation(SlownessVector uvec,
 
 	// First the horizonal rotation
 	SphericalCoordinate scor;
-	scor.phi = M_PI_2 - uvec.azimuth(); // geo azimuth != phi of scor
+	//rotation angle is - azimuth to put x2 (north in standard coord) 
+	//in radial direction
+	scor.phi=-uvec.azimuth();
 	scor.theta=0.0;
 	scor.radius=1.0;
 	// after this transformation x1=transverse horizontal
