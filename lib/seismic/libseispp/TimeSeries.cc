@@ -190,7 +190,6 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 		} catch(SeisppDberror serr) {throw serr;}
 		this->put(sample_rate_keyword,srate);
 	}
-cout << "DEBUG:  starttime="<<strtime(t0)<<endl;
 	dt=1.0/srate;
 	// Safer to compute this quantity than require it to 
 	// be read from the database
