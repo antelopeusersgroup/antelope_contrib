@@ -70,10 +70,16 @@ void MatlabProcessor::load(double *x,int ns, string name)
 	if(vec==NULL)
 		throw SeisppError(base_error
 			+ string("mxCreateDoubleMatrix failed"));
+#ifdef OLDMATLAB
 	mxSetName(vec,name.c_str());
+#endif
 	double *vptr=mxGetPr(vec);
 	for(int i=0;i<ns;++i)vptr[i]=x[i];
+#ifdef OLDMATLAB
 	ierr = engPutArray(ep,vec);
+#else
+	ierr = engPutVariable(ep,name.c_str(),vec);
+#endif
 	mxDestroyArray(vec);
 	if(ierr) throw SeisppError(base_error
 		+ string("mxPutArray for vector")
@@ -94,13 +100,19 @@ void MatlabProcessor::load(dmatrix& d, string name)
 	if(mat==NULL)
 		throw SeisppError(base_error
 			+ string("mxCreateDoubleMatrix failed"));
+#ifdef OLDMATLAB
 	mxSetName(mat,name.c_str());
+#endif
 	double *mptr=mxGetPr(mat);
 	int i,j,iv;
 	for(j=0,iv=0;j<d.columns();++j)
 		for(i=0;i<d.rows();++i,++iv)
 			mptr[iv]=d(i,j);
+#ifdef OLDMATLAB
 	ierr = engPutArray(ep,mat);
+#else
+	ierr = engPutVariable(ep,name.c_str(),mat);
+#endif
 	mxDestroyArray(mat);
 	if(ierr) throw SeisppError(base_error
 		+ string("mxPutArray for matrix")
@@ -230,7 +242,11 @@ vector<double> MatlabProcessor::retrieve_vector(string name)
 	const string base_error("MatlabProcessor::retrieve_vector: ");
 	int nrow,ncol;
 	mxArray *VectorReturned;
+#ifdef OLDMATLAB
 	VectorReturned = engGetArray(ep,name.c_str());
+#else
+	VectorReturned = engGetVariable(ep,name.c_str());
+#endif
 	if(VectorReturned==NULL)
 		throw SeisppError(base_error
 		+ string("engGetArray procedure throw an error while retrieving array tagged as")
@@ -258,7 +274,11 @@ auto_ptr<dmatrix> MatlabProcessor::retrieve_matrix(string name)
 	string base_error("MatlabProcessor::retrieve_matrix:  ");
 	int nrow,ncol;
 	mxArray *mp;
+#ifdef OLDMATLAB
 	mp=engGetArray(ep,name.c_str());
+#else
+	mp=engGetVariable(ep,name.c_str());
+#endif
 	if(mp==NULL)
 		throw SeisppError(base_error
 		+ string("engGetArray procedure throw an error while retrieving array tagged as")

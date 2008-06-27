@@ -278,7 +278,7 @@ to a parent ensemble. */
 const string EnsembleIndexKeyword("MatlabEnsembleIndex");
 /*! This procedure will synchronize Metadata from an ensemble returned by
 one of ensemble retrieve methods with a parent. */
-template <class Tensemble> CloneMetadata(Tensemble& parent, auto_ptr<Tensemble *>(child))
+template <class Tensemble> void CloneMetadata(Tensemble& parent, auto_ptr<Tensemble *>(child))
 {
 	cerr << "CloneMetadata procedure not yet implemented\n"<<endl;
 }
@@ -312,7 +312,7 @@ sorted between any loading of data to matlab.
 	member's data a 0 will be loaded for any member with that
 	condition and a message stating this will be posted to stderr.
 */
-template <class Tensemble> LoadMetadata(Tensemble& ens,
+template <class Tensemble> void LoadMetadata(Tensemble& ens,
 	string metadata_name,
 		string matlab_name, 
 			AttributeMap& am,
@@ -342,9 +342,9 @@ template <class Tensemble> LoadMetadata(Tensemble& ens,
 					ival=ens.member[i].get_int(metadata_name);
 					mdvector.push_back(static_cast<double>(ival));
 					break;
-				case MDreal;
+				case MDreal:
 					dval=ens.member[i].get_double(metadata_name);
-					mdvector_push_back(dval);
+					mdvector.push_back(dval);
 					break;
 				default:
 					throw SeisppError(string("LoadMetadata:  ")
