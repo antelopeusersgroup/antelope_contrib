@@ -49,7 +49,7 @@ nsamp int
 samprate real
 dfile string
 dir string
-jdate int
+wfdisc.jdate int
 calib real
 calper real
 }
@@ -62,7 +62,7 @@ nsamp int
 samprate real
 dfile string
 dir string
-jdate int
+wfdisc.jdate int
 calib real
 calper real
 }
