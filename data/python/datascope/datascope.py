@@ -231,6 +231,21 @@ class Dbptr(list):
 
         _datascope._dbfree(self)
 
+    def delete(self):
+        """delete database rows"""
+
+        _datascope._dbdelete(self)
+
+    def mark(self):
+        """mark database rows"""
+
+        _datascope._dbmark(self)
+
+    def crunch(self):
+        """delete marked database rows"""
+
+        _datascope._dbcrunch(self)
+
     def lookup(self, database = "", table = "", field = "", record = ""):
         """Aim a database pointer at part of a database"""
     
@@ -313,6 +328,11 @@ class Dbptr(list):
 
         return _datascope._dbquery(self, dbcode)
         
+    def nextid(self, name):
+        """Generate a unique id from the lastid table"""
+
+	return _datascope._dbnextid(self, name)
+
     def ex_eval(self, expr):
         """Evaluate a database expression"""
 
@@ -328,10 +348,15 @@ class Dbptr(list):
 
         return _datascope._dbfind(self, expr, first, reverse)
 
-    def xml( self, rootnode = None, rownode = None, fields = None, expressions = None, primary = False ):
+    def xml(self, rootnode = None, rownode = None, fields = None, expressions = None, primary = False):
         """convert a database view to XML"""
 
         return _datascope._db2xml( self, rootnode, rownode, fields, expressions, primary )
+
+    def trwfname(self, pattern):
+        """Generate waveform file names"""
+
+	return _datascope._trwfname(self, pattern)
 
     def loadchan(self, t0, t1, sta, chan):
         """Load time-series data for a given station, channel, and time-interval into memory"""
@@ -348,6 +373,28 @@ class Dbptr(list):
 
         return Dbptr(tr)
 
+    def sample(self, t0, t1, sta, chan, apply_calib = False):
+        """Return time-series data for a given station, channel, and time-interval"""
+
+        if(isinstance(t0, str)):
+            
+            t0 = _stock._str2epoch(t0)
+
+        if(isinstance(t1, str)):
+            
+            t1 = _stock._str2epoch(t1)
+
+        v = _datascope._trsample(self, t0, t1, sta, chan, apply_calib)
+
+        return v
+
+    def filter(self, filter_string):
+        """Apply time-domain filters to waveform data"""
+
+	rc = _datascope._trfilter(self, filter_string)
+
+	return rc
+
     def data(self):
         """Obtain data points from a trace-table record"""
 
@@ -355,6 +402,51 @@ class Dbptr(list):
 
         return v
         
+    def splice(self):
+        """Splice together data segments"""
+
+	_datascope._trsplice(self)
+
+	return
+
+    def split(self):
+        """Split data segments with marked gaps"""
+
+	_datascope._trsplit(self)
+
+	return
+
+    def trtruncate(self, leave):
+        """Truncate a tr database table"""
+
+	_datascope._trtruncate(self, leave)
+
+	return
+
+    def trcopy(self, trout = None):
+        """Copy trace table including the trace data"""
+
+        if(trout == None):
+
+	    trout = _datascope._dbinvalid()
+
+	trout = _datascope._trcopy(trout, self)
+
+        return Dbptr(trout)
+
+    def trfree(self):
+        """Free up memory buffers and clear trace object tables"""
+
+	rc = _datascope._trfree(self)
+
+	return rc
+
+    def trdestroy(self):
+        """Close a trace database, cleaning up memory and files"""
+
+	rc = _datascope._trdestroy(self)
+
+	return rc
 
 def dbcreate(filename, schema, dbpath = None, description = None, detail = None):
     """Create a new database descriptor file"""
@@ -390,6 +482,30 @@ def dbfree(db):
     """Free datascope memory"""
 
     db.free()
+
+    return 
+
+
+def dbdelete(db):
+    """Delete database rows"""
+
+    db.delete()
+
+    return 
+
+
+def dbmark(db):
+    """Mark database rows"""
+
+    db.mark()
+
+    return 
+
+
+def dbcrunch(db):
+    """Delete marked database rows"""
+
+    db.crunch()
 
     return 
 
@@ -471,10 +587,16 @@ def dbprocess(db, list):
     return dbout
 
 
-def db2xml( db, rootnode = None, rownode = None, fields = None, expressions = None, primary = False ):
+def db2xml(db, rootnode = None, rownode = None, fields = None, expressions = None, primary = False):
     """convert a database view to XML"""
 
     return db.xml( rootnode, rownode, fields, expressions, primary )
+
+
+def trwfname(db, pattern):
+    """Generate waveform file names"""
+
+    return db.trwfname(pattern)
 
 
 def dbgetv(db, *args):
@@ -506,6 +628,11 @@ def dbquery(db, dbcode):
     return db.query(dbcode)
         
 
+def dbnextid(db, name):
+    """Generate a unique id from the lastid table"""
+
+    return db.nextid(name)
+
 def dbex_eval(db, expr):
     """Evaluate a database expression"""
 
@@ -518,10 +645,76 @@ def trloadchan(dbin, t0, t1, sta, chan):
     return dbin.loadchan(t0, t1, sta, chan)
 
 
+def trfilter(trin, filter_string):
+    """Apply time-domain filters to waveform data"""
+
+    return trin.filter(filter_string)
+
+
+def trsample(dbin, t0, t1, sta, chan, apply_calib = False):
+    """Return time-series data for a given station, channel, and time-interval"""
+
+    return dbin.sample(t0, t1, sta, chan, apply_calib)
+
+
 def trdata(trin):
     """Obtain data points from a trace-table record"""
 
     return trin.data()
+
+
+def trcopy(trin, trout = None):
+    """Copy trace table including the trace data"""
+
+    trout = trin.trcopy(trout)
+
+    return trout
+    
+    
+def trtruncate(tr, leave):
+    """Truncate a tr database table"""
+
+    tr.trtruncate(leave)
+
+    return
+
+
+def trsplice(trin):
+    """Splice together data segments"""
+
+    trin.splice()
+
+    return
+
+
+def trsplit(trin):
+    """Split data segments with marked gaps"""
+
+    rc = trin.split()
+
+    return rc
+
+
+def trfree(tr):
+    """Free up memory buffers and clear trace object tables"""
+
+    rc = tr.trfree()
+
+    return rc
+
+
+def trdestroy(tr):
+    """Close a trace database, cleaning up memory and files"""
+
+    rc = tr.trdestroy()
+
+    return rc
+
+
+def trlookup_segtype(segtype):
+    """Lookup segtype in segtype table"""
+
+    return _datascope._trlookup_segtype(segtype)
 
 
 if __name__ == '__main__':
@@ -767,12 +960,12 @@ if __name__ == '__main__':
 
             db.record = 0
 
-            values = db.getv( 'lat','auth','nass','time' )
+            values = db.getv('lat','auth','nass','time')
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
         def test_method_addv(self):
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"]
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -780,12 +973,99 @@ if __name__ == '__main__':
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv( 'lat', 61.5922,
-                                 'lon', -149.130,
-                                 'depth', 20, 
-                                 'time', '9/30/2002 11:15 AM' )
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
 
-            self.assertTrue( db.record >= 0 )
+            self.assertTrue(db.record >= 0)
+
+	    db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_method_delete(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:16 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:17 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:18 AM' )
+
+            nrecs_before = dbquery(db, dbRECORD_COUNT)
+
+	    db.record = 1
+
+	    db.mark()
+	    db.crunch()
+
+            nrecs_after = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(nrecs_before, 4)
+            self.assertEqual(nrecs_after, 3)
+
+	    db.close()
+
+        def test_method_crunch(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:16 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:17 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:18 AM' )
+
+            nrecs_before = dbquery(db, dbRECORD_COUNT)
+
+	    db.record = 1
+
+	    db.delete()
+
+            nrecs_after = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(nrecs_before, 4)
+            self.assertEqual(nrecs_after, 3)
 
 	    db.close()
 
@@ -869,6 +1149,20 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.field, dbINVALID)
             self.assertNotEqual(tr.record, dbINVALID)
 
+        def test_method_trfree(self):
+            db = Dbptr(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+	    tr.trfree()
+
+        def test_method_trdestroy(self):
+            db = Dbptr(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+	    tr.trdestroy()
+
         def test_method_data(self):
             db = dbopen(self.dbname)
 
@@ -879,6 +1173,87 @@ if __name__ == '__main__':
             v = tr.data()
 
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
+
+        def test_method_filter(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+	    tr.filter("BW 0.5 4 3 4; INT")
+
+            tr.record = 0
+
+            v = tr.data()
+
+            self.assertEqual(v[0:4], (0.0, 0.0030230032280087471, 0.029202612116932869, 0.13213051855564117))
+
+        def test_method_splice(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            nrecs_before = dbquery(tr, dbRECORD_COUNT)
+
+	    tr.splice()
+
+            nrecs_after = dbquery(tr, dbRECORD_COUNT)
+
+	    self.assertTrue(nrecs_after <= nrecs_before)
+	 
+        def test_method_split(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            nrecs_before = dbquery(tr, dbRECORD_COUNT)
+
+	    tr.split()
+
+            nrecs_after = dbquery(tr, dbRECORD_COUNT)
+
+	    self.assertTrue(nrecs_after >= nrecs_before)
+	 
+        def test_method_trtruncate(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            nrecs_before = dbquery(tr, dbRECORD_COUNT)
+
+	    tr.trtruncate(0)
+
+            nrecs_after = dbquery(tr, dbRECORD_COUNT)
+
+	    self.assertTrue(nrecs_before > 0)
+	    self.assertTrue(nrecs_after == 0)
+	 
+        def test_method_trcopy(self):
+            db = dbopen(self.dbname)
+
+            trin = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            trout = trin.trcopy()
+            
+            self.assert_(isinstance(trout, Dbptr))
+            
+            self.assertTrue(trout.database >= 0)
+            self.assertNotEqual(trin.database, trout.database)
+            self.assertNotEqual(trout.table, dbINVALID)
+            self.assertNotEqual(trout.field, dbINVALID)
+            self.assertNotEqual(trout.record, dbINVALID)
+
+        def test_method_nextid(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            id = db.nextid("arid")
+
+	    dbclose(db)
+
+            self.assertEqual(id, 1)
 
         def test_procedure_dbopen(self):
             db = dbopen(self.dbname, 'r')
@@ -910,6 +1285,96 @@ if __name__ == '__main__':
             db = dbsort(db, 'time')
 
             dbfree(db)
+
+        def test_procedure_dbdelete(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 25, 
+                                'time', '9/30/2002 11:16 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:17 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:18 AM' )
+
+            nrecs_before = dbquery(db, dbRECORD_COUNT)
+
+	    db.record = 1
+
+	    dbdelete(db)
+
+            nrecs_after = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(nrecs_before, 4)
+            self.assertEqual(nrecs_after, 3)
+
+	    db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_procedure_dbcrunch(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 25, 
+                                'time', '9/30/2002 11:16 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:17 AM' )
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:18 AM' )
+
+            nrecs_before = dbquery(db, dbRECORD_COUNT)
+
+	    db.record = 1
+
+	    dbmark(db)
+
+	    dbcrunch(db)
+
+            nrecs_after = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(nrecs_before, 4)
+            self.assertEqual(nrecs_after, 3)
+
+	    db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dblookup(self):
             db = dbopen(self.dbname, 'r')
@@ -1029,7 +1494,7 @@ if __name__ == '__main__':
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
         def test_procedure_dbaddv(self):
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"]
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1037,15 +1502,21 @@ if __name__ == '__main__':
 
             db = dblookup(db, table = 'origin')
 
-	    db.record = dbaddv( db,  'lat', 61.5922,
-                                     'lon', -149.130,
-                                     'depth', 20, 
-                                     'time', '9/30/2002 11:15 AM',
-				     'auth', os.environ["USER"] )
+	    db.record = dbaddv(db, 'lat', 61.5922,
+                                  'lon', -149.130,
+                                   'depth', 20.0, 
+                                   'time', '9/30/2002 11:15 AM',
+				   'auth', os.environ["USER"] )
 
-            self.assertTrue( db.record >= 0 )
+            self.assertTrue(db.record >= 0)
+
+	    values = dbgetv(db, 'lat', 'lon', 'depth', 'time', 'auth')
+
+	    self.assertEqual(values, (61.5922, -149.130, 20, 1033384500, os.environ["USER"]))
 
 	    dbclose(db)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbextfile(self):
             db = Dbptr(self.dbname)
@@ -1160,12 +1631,104 @@ if __name__ == '__main__':
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-            self.assert_(isinstance(db, Dbptr))
+            self.assert_(isinstance(tr, Dbptr))
             
             self.assertTrue(tr.database >= 0)
             self.assertNotEqual(tr.table, dbINVALID)
             self.assertNotEqual(tr.field, dbINVALID)
             self.assertNotEqual(tr.record, dbINVALID)
+
+        def test_procedure_trfree(self):
+            db = dbopen(self.dbname)
+
+            tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+	    trfree(tr)
+
+        def test_procedure_trdestroy(self):
+            db = dbopen(self.dbname)
+
+            tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+	    trdestroy(tr)
+
+        def test_procedure_trtruncate(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            nrecs_before = dbquery(tr, dbRECORD_COUNT)
+
+	    trtruncate(tr, 0)
+
+            nrecs_after = dbquery(tr, dbRECORD_COUNT)
+
+	    self.assertTrue(nrecs_before > 0)
+	    self.assertTrue(nrecs_after == 0)
+	 
+        def test_procedure_trcopy(self):
+            db = dbopen(self.dbname)
+
+            trin = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            trout = trcopy(trin)
+            
+            self.assert_(isinstance(trout, Dbptr))
+            
+            self.assertTrue(trout.database >= 0)
+            self.assertNotEqual(trin.database, trout.database)
+            self.assertNotEqual(trout.table, dbINVALID)
+            self.assertNotEqual(trout.field, dbINVALID)
+            self.assertNotEqual(trout.record, dbINVALID)
+
+        def test_procedure_trsample(self):
+            db = dbopen(self.dbname)
+
+            v = trsample(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", True)
+
+            self.assertEqual(v[0], (706139719.04999995, -1530.054443359375))
+            self.assertEqual(v[1], (706139719.0999999, -1520.4915771484375))
+            self.assertEqual(v[2], (706139719.14999998, -1506.1473388671875))
+            self.assertEqual(v[3], (706139719.19999993, -1504.951904296875)) 
+
+        def test_procedure_trsplice(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            nrecs_before = dbquery(tr, dbRECORD_COUNT)
+
+	    trsplice(tr)
+
+            nrecs_after = dbquery(tr, dbRECORD_COUNT)
+
+	    self.assertTrue(nrecs_after <= nrecs_before)
+	 
+        def test_procedure_trsplit(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            nrecs_before = dbquery(tr, dbRECORD_COUNT)
+
+	    trsplit(tr)
+
+            nrecs_after = dbquery(tr, dbRECORD_COUNT)
+
+	    self.assertTrue(nrecs_after >= nrecs_before)
+	 
+        def test_procedure_trfilter(self):
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+	    trfilter(tr, "BW 0.5 4 3 4; INT")
+
+            tr.record = 0
+
+            v = tr.data()
+
+            self.assertEqual(v[0:4], (0.0, 0.0030230032280087471, 0.029202612116932869, 0.13213051855564117))
 
         def test_procedure_trdata(self):
             db = dbopen(self.dbname)
@@ -1178,9 +1741,54 @@ if __name__ == '__main__':
 
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
 
+        def test_procedure_trlookup_segtype(self):
+
+	    t = trlookup_segtype("V")
+
+	    self.assertEqual(t,("nm/sec", "velocity"))
+
+	    self.assertRaises(RuntimeError, trlookup_segtype, "not a valid segtype")
+
         def test_procedure_dbcreate(self):
            
             dbcreate('/tmp/datascope_unittest_db', 'css3.0')
+
+        def test_procedure_trwfname(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db = dblookup(db, table = 'wfdisc')
+
+	    db.record = dbaddv(db, 'sta', "AAK",
+                                   'chan', "BHZ",
+                                   'time', "9/30/2002 11:00 AM",
+                                   'endtime', '9/30/2002 11:15 AM' )
+
+            path = db.trwfname("%{sta}.%{chan}.%Y.%j.%H_%M_%S")
+
+            self.assertEqual(path, "/tmp/AAK.BHZ.2002.273.11_00_00")
+
+	    dbclose(db)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_procedure_dbnextid(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            id = dbnextid(db, "arid")
+
+	    dbclose(db)
+
+            self.assertEqual(id, 1)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbtmp(self):
 

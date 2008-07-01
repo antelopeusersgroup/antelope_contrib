@@ -62,6 +62,9 @@ static PyObject *python_dbinvalid( PyObject *self, PyObject *args );
 static PyObject *python_dbopen( PyObject *self, PyObject *args );
 static PyObject *python_dbclose( PyObject *self, PyObject *args );
 static PyObject *python_dbfree( PyObject *self, PyObject *args );
+static PyObject *python_dbdelete( PyObject *self, PyObject *args );
+static PyObject *python_dbmark( PyObject *self, PyObject *args );
+static PyObject *python_dbcrunch( PyObject *self, PyObject *args );
 static PyObject *python_dblookup( PyObject *self, PyObject *args );
 static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
@@ -76,10 +79,21 @@ static PyObject *python_dbquery( PyObject *self, PyObject *args );
 static PyObject *python_dbmatches( PyObject *self, PyObject *args );
 static PyObject *python_dbfind( PyObject *self, PyObject *args );
 static PyObject *python_db2xml( PyObject *self, PyObject *args );
+static PyObject *python_dbnextid( PyObject *self, PyObject *args );
 static PyObject *python_dbtmp( PyObject *self, PyObject *args );
 static PyObject *python_dbcreate( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
+static PyObject *python_trsample( PyObject *self, PyObject *args );
+static PyObject *python_trfilter( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
+static PyObject *python_trcopy( PyObject *self, PyObject *args );
+static PyObject *python_trsplice( PyObject *self, PyObject *args );
+static PyObject *python_trsplit( PyObject *self, PyObject *args );
+static PyObject *python_trfree( PyObject *self, PyObject *args );
+static PyObject *python_trdestroy( PyObject *self, PyObject *args );
+static PyObject *python_trtruncate( PyObject *self, PyObject *args );
+static PyObject *python_trlookup_segtype( PyObject *self, PyObject *args );
+static PyObject *python_trwfname( PyObject *self, PyObject *args );
 static void add_datascope_constants( PyObject *mod );
 static int parse_to_Dbptr( PyObject *obj, void *addr );
 PyMODINIT_FUNC init_datascope( void );
@@ -88,6 +102,9 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbopen",   	python_dbopen,   	METH_VARARGS, "Open Datascope database" },
 	{ "_dbclose",  	python_dbclose,   	METH_VARARGS, "Close a Datascope database" },
 	{ "_dbfree",  	python_dbfree,   	METH_VARARGS, "Free Datascope memory" },
+	{ "_dbdelete", 	python_dbdelete,   	METH_VARARGS, "Delete Rows from tables" },
+	{ "_dbmark", 	python_dbmark,   	METH_VARARGS, "Mark  rows in tables" },
+	{ "_dbcrunch", 	python_dbcrunch,   	METH_VARARGS, "Delete marked rows from tables" },
 	{ "_dblookup", 	python_dblookup, 	METH_VARARGS, "Lookup Datascope indices" },
 	{ "_dbsort",   	python_dbsort,   	METH_VARARGS, "Sort Datascope table" },
 	{ "_dbsubset", 	python_dbsubset, 	METH_VARARGS, "Subset Datascope table" },
@@ -102,11 +119,22 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbquery",   python_dbquery,   	METH_VARARGS, "Get ancillary information about a database" },
 	{ "_dbmatches", python_dbmatches,   	METH_VARARGS, "Find matching records in second table" },
 	{ "_dbfind",    python_dbfind,   	METH_VARARGS, "Search for matching record in table" },
-	{ "_db2xml",    python_db2xml,   	METH_VARARGS, "convert a database view to XML" },
-	{ "_dbtmp",     python_dbtmp,  		METH_VARARGS, "create a new database descriptor" },
-	{ "_dbcreate",  python_dbcreate,   	METH_VARARGS, "create a temporary database" },
+	{ "_db2xml",    python_db2xml,   	METH_VARARGS, "Convert a database view to XML" },
+	{ "_dbnextid",  python_dbnextid,   	METH_VARARGS, "Generate a unique id from the lastid table" },
+	{ "_dbtmp",     python_dbtmp,  		METH_VARARGS, "Create a new database descriptor" },
+	{ "_dbcreate",  python_dbcreate,   	METH_VARARGS, "Create a temporary database" },
 	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
+	{ "_trsample",  python_trsample,	METH_VARARGS, "Return channel waveform data" },
+	{ "_trfilter",  python_trfilter,	METH_VARARGS, "Apply time-domain filters to waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
+	{ "_trcopy",	python_trcopy,		METH_VARARGS, "Make copy of a trace table including the trace data" },
+	{ "_trsplice",	python_trsplice,	METH_VARARGS, "Splice together data segments" },
+	{ "_trsplit",	python_trsplit,		METH_VARARGS, "Split data segments which contain marked gaps" },
+	{ "_trfree",	python_trfree,		METH_VARARGS, "Free memory buffers and clear trace object tables" },
+	{ "_trdestroy",	python_trdestroy,	METH_VARARGS, "Close a trace database, cleaning up memory and files" },
+	{ "_trtruncate", python_trtruncate,	METH_VARARGS, "Truncate a tr database table" },
+	{ "_trlookup_segtype", python_trlookup_segtype,	METH_VARARGS, "Lookup segtype in segtype table" },
+	{ "_trwfname", 	python_trwfname,	METH_VARARGS, "Generate waveform file names" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -258,6 +286,12 @@ PyObject2Dbvalue( PyObject *obj, int type, Dbvalue *value )
 	
 			retcode = 1;
 
+		} else if( PyInt_Check( obj ) ) { 
+
+			value->d = (double) PyInt_AsLong( obj );
+	
+			retcode = 1;
+
 		} else { 
 
 			retcode = 0;
@@ -313,6 +347,38 @@ strtbl2PyObject( Tbl *atbl )
 
 		PyTuple_SetItem( obj, i, PyString_FromString( gettbl( atbl, i ) ) );
 	}
+
+	return obj;
+}
+
+static PyObject *
+strarr2PyObject( Arr *anarr ) 
+{
+	PyObject *obj;
+	Tbl	*keys;
+	char	*key;
+	char	*value;
+	int	i;
+
+	if( anarr == NULL ) {
+
+		return NULL;
+	} 
+
+	keys = keysarr( anarr );
+
+	obj = PyDict_New();
+
+	for( i = 0; i < maxtbl( keys ); i++ ) {
+
+		key = gettbl( keys, i );
+
+		value = getarr( anarr, key );
+
+		PyDict_SetItem( obj, PyString_FromString( key ), PyString_FromString( value ) );
+	}
+
+	freetbl( keys, 0 );
 
 	return obj;
 }
@@ -624,6 +690,90 @@ python_dbclose( PyObject *self, PyObject *args ) {
 	if( rc < 0 ) {
 
 		PyErr_SetString( PyExc_RuntimeError, "error closing database" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbdelete( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbdelete(db)\n";
+	Dbptr	db;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbdelete( db );
+
+	if( rc != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error deleting database rows" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbmark( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbmark(db)\n";
+	Dbptr	db;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbmark( db );
+
+	if( rc != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error deleting database rows" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbcrunch( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbcrunch(db)\n";
+	Dbptr	db;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbcrunch( db );
+
+	if( rc != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error deleting database rows" );
 
 		return NULL;
 	}
@@ -1270,11 +1420,9 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 	retcode = dbaddchk( db, 0 );
 
-	if( retcode != 0 ) {
+	if( retcode == dbINVALID ) {
 
 		PyErr_SetString( PyExc_RuntimeError, "dbaddv failed at dbaddchk call\n" );
-
-		clear_register( 1 ); /* DEBUG */
 
 		return NULL;
 	}
@@ -1420,6 +1568,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 	char	*string;
 	char	errmsg[STRSZ];
 	Tbl	*tbl;
+	Arr	*arr;
 	int	dbcode;
 	int	n;
 	int	rc;
@@ -1506,6 +1655,20 @@ python_dbquery( PyObject *self, PyObject *args ) {
                 break;  
 
         case dbLINK_FIELDS:
+
+		if( ( rc = dbquery(db, dbcode, &arr) ) >= 0 ) {
+
+			obj = strarr2PyObject( arr );
+
+		} else {
+
+			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+
+			obj = NULL;
+		}
+
+                break;  
+ 
         case dbSCHEMA_FIELDS:
 	case dbSCHEMA_TABLES:
         case dbFIELD_TABLES:
@@ -1537,6 +1700,161 @@ python_dbquery( PyObject *self, PyObject *args ) {
 		obj = NULL;
 
 		break ;
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_dbnextid( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbnextid(db, name)\n";
+	Dbptr	db;
+	long	id;
+	char	*name;
+
+	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &name ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	id = dbnextid( db, name );
+
+	if( id == -1 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "unable to update lastid table" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", id );
+}
+
+static PyObject *
+python_trfilter( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trfilter(tr, filter_string)";
+	Dbptr	tr;
+	char	*filter_string;
+	int	rc;
+	
+	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &tr, &filter_string ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trfilter( tr, filter_string );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_trsample( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trsample(db, t0, t1, sta, chan, apply_calib)";
+	Dbptr	db;
+	Dbptr	tr;
+	double	t0;
+	double	t1;
+	double	time;
+	double	row_starttime;
+	double	samprate;
+	float	*data;
+	char	*sta;
+	char	*chan;
+	int	apply_calib = 0;
+	int	nrows = 0;
+	int	nsamp_total = 0;
+	int	nsamp_row = 0;
+	int	irow;
+	int	isamp_row = 0;
+	int	isamp_total = 0;
+	Tbl	*s;
+	PyObject *obj;
+	PyObject *pair;
+
+	if( ! PyArg_ParseTuple( args, "O&ddssO&", parse_to_Dbptr, 
+				       &db, &t0, &t1, &sta, &chan, parse_from_Boolean, &apply_calib ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	tr = trloadchan( db, t0, t1, sta, chan );
+
+	tr = dbsort( tr, s = strtbl( "time", 0 ), 0, 0 );
+
+	freetbl( s, 0 );
+
+	trsplice( tr, trTOLERANCE, 0, 0 );
+
+	if( apply_calib ) {
+
+		trapply_calib( tr );
+	}
+
+	dbquery( tr, dbRECORD_COUNT, &nrows );
+
+	if( nrows <= 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trsample: no data (no rows in trace object)\n" );
+
+		return NULL;
+	}
+
+	for( irow = 0; irow < nrows; irow++ ) {
+
+		tr.record = irow;
+
+		dbgetv( tr, 0, "nsamp", &nsamp_row, 0 );
+
+		nsamp_total += nsamp_row;
+	}
+
+	if( nsamp_total <= 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trsample: no data (no samples in trace object rows)\n" );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( nsamp_total );
+
+	for( irow = 0; irow < nrows; irow++ ) {
+
+		tr.record = irow;
+
+		dbgetv( tr, 0, "nsamp", &nsamp_row, 
+			       "time", &row_starttime, 
+			       "samprate", &samprate, 
+			       "data", &data, 0 );
+		
+		for( isamp_row = 0; isamp_row < nsamp_row; isamp_row++ ) {
+
+			time = SAMP2TIME( row_starttime, samprate, isamp_row );
+
+			pair = PyTuple_New( 2 );
+
+			PyTuple_SetItem( pair, 0, PyFloat_FromDouble( time ) );
+			PyTuple_SetItem( pair, 1, PyFloat_FromDouble( (double) data[isamp_row] ) );
+
+			PyTuple_SetItem( obj, isamp_total, pair );
+
+			isamp_total++;
+		}
 	}
 
 	return obj;
@@ -1614,6 +1932,244 @@ python_trdata( PyObject *self, PyObject *args ) {
 	}
 
 	return obj;
+}
+
+static PyObject *
+python_trsplice( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trsplice(tr)\n";
+	Dbptr	tr;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trsplice( tr, trTOLERANCE, 0, 0 );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "splice error" );
+
+		return NULL;
+	} 
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_trlookup_segtype( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trlookup_segtype(segtype)\n";
+	char	*segtype;
+	char	*segunits = 0;
+	char	*segdesc = 0;
+	PyObject *obj;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "s", &segtype ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	rc = trlookup_segtype( segtype, &segunits, &segdesc );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "trlookup_segtype error" );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( 2 );
+
+	PyTuple_SetItem( obj, 0, PyString_FromString( segunits ) );
+	PyTuple_SetItem( obj, 1, PyString_FromString( segdesc ) );
+
+	return obj;
+}
+
+static PyObject *
+python_trwfname( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trwfname(db, pattern)\n";
+	Dbptr	db;
+	int	rc;
+	char	*pattern;
+	char	*path = 0;
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &pattern ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trwfname( db, pattern, &path );
+
+	if( rc == -1 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "trwfname error (problem with path)" );
+
+		return NULL;
+
+	} else if( rc == -2 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "trwfname error (dir or dfile too large for database fields)" );
+
+		return NULL;
+
+	} else if( path == NULL ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "trwfname error (empty path)" );
+
+		return NULL;
+	}
+
+	obj = Py_BuildValue( "s", path );
+
+	free( path );
+
+	return obj;
+}
+
+static PyObject *
+python_trtruncate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trtruncate(tr, leave)\n";
+	Dbptr	tr;
+	int	rc;
+	int	leave;
+
+	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &tr, &leave ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trtruncate( tr, leave );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "trtruncate error" );
+
+		return NULL;
+	} 
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_trfree( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trfree(tr)\n";
+	Dbptr	tr;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trfree( tr );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_trdestroy( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trdestroy(tr)\n";
+	Dbptr	tr;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trdestroy( &tr );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_trsplit( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trsplit(tr)\n";
+	Dbptr	tr;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trsplit( tr, 0, 0 );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "split error" );
+
+		return NULL;
+	} 
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_trcopy( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trcopy(trout, trin)\n";
+	Dbptr	trin;
+	Dbptr	trout;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &trout, parse_to_Dbptr, &trin ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = trcopy( &trout, trin );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "trcopy: unknown error\n" );
+
+		return NULL;
+
+	} else {
+
+		return Dbptr2PyObject( trout );
+	}
 }
 
 static void
