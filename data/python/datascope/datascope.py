@@ -246,6 +246,20 @@ class Dbptr(list):
 
         _datascope._dbcrunch(self)
 
+    def dbtruncate(self, nrecords):
+        """Truncate a database table"""
+
+	_datascope._dbtruncate(self, nrecords)
+
+	return
+
+    def dbdestroy(self):
+        """Completely eliminate all tables in a database"""
+
+	rc = _datascope._dbdestroy(self)
+
+	return rc
+
     def lookup(self, database = "", table = "", field = "", record = ""):
         """Aim a database pointer at part of a database"""
     
@@ -274,6 +288,20 @@ class Dbptr(list):
 
         self[:] = db[:]
 
+    def separate(self, tablename):
+        """Extract a subset of a base table"""
+
+        db = _datascope._dbseparate(self, tablename)
+
+        self[:] = db[:]
+
+    def sever(self, tablename, name = None):
+        """Remove a table from a joined view"""
+
+        db = _datascope._dbsever(self, tablename, name)
+
+        self[:] = db[:]
+
     def invalid(self):
         """Set database pointer to dbINVALID values"""
 
@@ -286,7 +314,7 @@ class Dbptr(list):
 
         if( isinstance(db2in, str) ):
 
-            db2 = dblookup( db, table = db2in )
+            db2 = dblookup(db, table = db2in)
 
         else:
 
@@ -295,6 +323,57 @@ class Dbptr(list):
         db = _datascope._dbjoin(self, db2, pattern1, pattern2, outer, name)
 
         self[:] = db[:]
+
+    def theta(self, db2in, ex_str, outer = False, name = None):
+        """Theta-join two database views"""
+
+	if( isinstance(db2in, str) ):
+
+	    db2 = dblookup(db, table = db2in)
+
+        else:
+
+	    db2 = db2in
+
+        db = _datascope._dbtheta(self, db2, ex_str, outer, name)
+
+	self[:] = db[:]
+
+    def group(self, groupfields, name = None, type = 1):
+        """Group a sorted table"""
+
+	db = _datascope._dbgroup(self, groupfields, name, type)
+
+	self[:] = db[:]
+
+    def ungroup(self, name = None):
+        """Ungroup a grouped table"""
+
+	db = _datascope._dbungroup(self, name)
+
+	self[:] = db[:]
+
+    def nojoin(self, db2in, outer = False, pattern1 = None, pattern2 = None, name = None):
+        """Find rows which don't join between two database views"""
+
+        if( isinstance(db2in, str) ):
+
+            db2 = dblookup( db, table = db2in )
+
+        else:
+
+            db2 = db2in
+
+        db = _datascope._dbnojoin(self, db2, pattern1, pattern2, name)
+
+        self[:] = db[:]
+
+    def unjoin(self, database_name, rewrite = False):
+        """Create new tables from a joined table"""
+
+	_datascope._dbunjoin(self, database_name, rewrite)
+
+	return
 
     def process(self, list):
         """Run a series of database operations"""
@@ -312,6 +391,16 @@ class Dbptr(list):
         """Add values in a new database row"""
 
         return _datascope._dbaddv(self, *args)
+
+    def putv(self, *args):
+        """Write fields in a database row"""
+
+        return _datascope._dbputv(self, *args)
+
+    def addnull(self):
+        """Add a new, null row to a table"""
+
+	return _datascope._dbaddnull(self)
     
     def extfile(self, tablename = None):
         """Compose filename from database record for a given table"""
@@ -555,6 +644,26 @@ def dblist2subset(dbin, list = None):
     return dbout
       
 
+def dbseparate(dbin, tablename):
+    """Extract a subset of a base table"""
+
+    dbout = Dbptr(dbin)
+
+    dbout.separate(tablename)
+
+    return dbout
+
+
+def dbsever(dbin, tablename, name = None):
+    """Remove a table from a joined view"""
+
+    dbout = Dbptr(dbin)
+
+    dbout.sever(tablename, name)
+
+    return dbout
+
+
 def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = None):
     """Join two database views"""
 
@@ -564,6 +673,54 @@ def dbjoin(db1, db2, pattern1 = None, pattern2 = None, outer = False, name = Non
 
     return dbout
 
+
+def dbnojoin(db1, db2, pattern1 = None, pattern2 = None, name = None):
+    """Find rows which don't join between two database views"""
+
+    dbout = Dbptr(db1)
+
+    dbout.nojoin(db2, pattern1, pattern2, name)
+
+    return dbout
+
+
+def dbunjoin(db, database_name, rewrite = False):
+    """Create new tables from a joined table"""
+
+    db.unjoin(database_name, rewrite)
+
+    return
+
+
+def dbtheta(db1, db2, ex_str, outer = False, name = None):
+    """Theta-join two database views"""
+
+    dbout = Dbptr(db1)
+
+    dbout.theta(db2, ex_str, outer, name)
+
+    return dbout
+
+
+def dbgroup(db, groupfields, name = None, type = 1):
+    """Group a sorted table"""
+
+    dbout = Dbptr(db)
+
+    dbout.group(groupfields, name, type)
+
+    return dbout
+	
+
+def dbungroup(db, name = None):
+    """Ungroup a grouped table"""
+
+    dbout = Dbptr(db)
+
+    dbout.ungroup(name)
+
+    return dbout
+	
 
 def dbmatches(dbk, dbt, hookname, kpattern = None, tpattern = None):
     """find matching records in second table"""
@@ -611,6 +768,18 @@ def dbaddv(db, *args):
     return db.addv(*args)
 
 
+def dbputv(db, *args):
+    """Write fields to a database row"""
+
+    return db.putv(*args)
+
+
+def dbaddnull(db):
+    """Add a new, null row to a table"""
+
+    return db.addnull()
+
+
 def dbextfile(db, tablename = None):
     """Compose filename from database record for a given table"""
 
@@ -637,6 +806,22 @@ def dbex_eval(db, expr):
     """Evaluate a database expression"""
 
     return db.ex_eval(expr)
+
+
+def dbtruncate(db, nrecords):
+    """Truncate a database table"""
+
+    db.dbtruncate(nrecords)
+
+    return
+
+
+def dbdestroy(db):
+    """Completely eliminate all tables in a database"""
+
+    db.dbdestroy()
+
+    return 
 
 
 def trloadchan(dbin, t0, t1, sta, chan):
@@ -941,6 +1126,63 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+        def test_method_nojoin(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'origin')
+
+            dbwfdisc = dblookup(db, table = 'wfdisc')
+
+            db.nojoin(dbwfdisc)
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+            
+        def test_method_theta(self):
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'assoc')
+
+            dbwfdisc = dblookup(db, table = 'wfdisc')
+
+            db.theta(dbwfdisc, 'assoc.sta == wfdisc.sta')
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+            
+        def test_method_group(self):
+	    db = Dbptr(self.dbname)
+
+	    db.lookup(table = 'arrival')
+
+	    db.sort('sta')
+
+	    db.group('sta')
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+
+        def test_method_ungroup(self):
+	    db = Dbptr(self.dbname)
+
+	    db.lookup(table = 'arrival')
+
+	    db.sort('sta')
+
+	    db.group('sta')
+
+	    db.ungroup()
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+
         def test_method_process(self):
             db = Dbptr(self.dbname)
 
@@ -953,6 +1195,50 @@ if __name__ == '__main__':
 
             self.assertTrue(db.query(dbRECORD_COUNT) > 0)
             
+        def test_method_separate(self):
+            db = Dbptr(self.dbname)
+
+            db.process(["dbopen wfdisc", 
+	                "dbjoin arrival",
+			"dbjoin assoc",
+			"dbjoin origin",
+			"dbsubset orid == 645"])
+
+            db.separate("wfdisc")
+
+            self.assertEqual(dbquery(db,dbVIEW_TABLES),("wfdisc",))
+
+        def test_method_sever(self):
+            db = Dbptr(self.dbname)
+
+	    dborigin = dblookup(db, table = 'origin')
+
+	    dbstamag = dblookup(db, table = 'stamag')
+
+	    db = dbjoin(dborigin, dbstamag)
+
+            db.sever("stamag")
+
+            self.assertEqual(dbquery(db,dbVIEW_TABLES),("origin",))
+
+        def test_method_unjoin(self):
+            db = Dbptr(self.dbname)
+
+	    tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
+
+            db.process(["dbopen origin",
+	                "dbjoin assoc",
+			"dbjoin arrival",
+			"dbsubset orid == 645"])
+
+            db.unjoin(tempdbname)
+
+	    os.stat(tempdbname + '.origin')
+	    os.stat(tempdbname + '.assoc')
+	    os.stat(tempdbname + '.arrival')
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
         def test_method_getv(self):
             db = Dbptr(self.dbname)
 
@@ -964,6 +1250,42 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_method_addnull(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.addnull()
+
+	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+
+            db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_method_putv(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addnull()
+	    
+	    db.putv('lat', 61.5922, 'auth', os.environ["USER"])
+
+	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+
+            db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
         def test_method_addv(self):
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
@@ -981,6 +1303,51 @@ if __name__ == '__main__':
             self.assertTrue(db.record >= 0)
 
 	    db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_method_dbtruncate(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+            nrecs_before = dbquery(db, dbRECORD_COUNT)
+
+	    db.dbtruncate(0)
+
+            nrecs_after = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(nrecs_before, 1)
+            self.assertEqual(nrecs_after, 0)
+
+	    db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_method_dbdestroy(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+	    db.dbdestroy()
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1376,6 +1743,51 @@ if __name__ == '__main__':
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
+        def test_procedure_dbtruncate(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+            nrecs_before = dbquery(db, dbRECORD_COUNT)
+
+	    dbtruncate(db, 0)
+
+            nrecs_after = dbquery(db, dbRECORD_COUNT)
+
+            self.assertEqual(nrecs_before, 1)
+            self.assertEqual(nrecs_after, 0)
+
+	    db.close()
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_procedure_dbdestroy(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = db.addv('lat', 61.5922,
+                                'lon', -149.130,
+                                'depth', 20, 
+                                'time', '9/30/2002 11:15 AM' )
+
+	    dbdestroy(db)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
         def test_procedure_dblookup(self):
             db = dbopen(self.dbname, 'r')
 
@@ -1437,6 +1849,50 @@ if __name__ == '__main__':
             self.assertTrue(db3[1] >= 0)
             self.assertEqual(db3.query(dbRECORD_COUNT), 3)
 
+        def test_procedure_dbseparate(self):
+            db = Dbptr(self.dbname)
+
+            db.process(["dbopen wfdisc", 
+	                "dbjoin arrival",
+			"dbjoin assoc",
+			"dbjoin origin",
+			"dbsubset orid == 645"])
+
+            dbout = dbseparate(db, "wfdisc")
+
+            self.assertEqual(dbquery(dbout,dbVIEW_TABLES),("wfdisc",))
+
+        def test_procedure_dbsever(self):
+            db = Dbptr(self.dbname)
+
+	    dborigin = dblookup(db, table = 'origin')
+
+	    dbstamag = dblookup(db, table = 'stamag')
+
+	    db = dbjoin(dborigin, dbstamag)
+
+            db = dbsever(db, "stamag")
+
+            self.assertEqual(dbquery(db,dbVIEW_TABLES),("origin",))
+
+        def test_procedure_dbunjoin(self):
+            db = Dbptr(self.dbname)
+
+	    tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
+
+            db.process(["dbopen origin",
+	                "dbjoin assoc",
+			"dbjoin arrival",
+			"dbsubset orid == 645"])
+
+            dbunjoin(db, tempdbname, rewrite = True)
+
+	    os.stat(tempdbname + '.origin')
+	    os.stat(tempdbname + '.assoc')
+	    os.stat(tempdbname + '.arrival')
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
         def test_procedure_dbjoin(self):
             db = dbopen(self.dbname)
 
@@ -1470,6 +1926,63 @@ if __name__ == '__main__':
 
             self.assertTrue(dbout.table >= 0)
 
+        def test_procedure_dbnojoin(self):
+            db = Dbptr(self.dbname)
+
+            dbarrival = dblookup(db, table = 'origin')
+
+            dbwfdisc = dblookup(db, table = 'wfdisc')
+
+            db = dbnojoin(dbarrival, dbwfdisc)
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+            
+        def test_procedure_dbtheta(self):
+            db = Dbptr(self.dbname)
+
+            dbassoc = dblookup(db, table = 'assoc')
+
+            dbwfdisc = dblookup(db, table = 'wfdisc')
+
+            db = dbtheta(dbassoc, dbwfdisc, 'assoc.sta == wfdisc.sta')
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+            
+        def test_procedure_dbgroup(self):
+	    db = Dbptr(self.dbname)
+
+	    db = dblookup(db, table = 'arrival')
+
+	    db = dbsort(db, 'sta')
+
+	    db = dbgroup(db, 'sta')
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+            self.assertEqual(db.record, dbALL)
+
+        def test_procedure_dbungroup(self):
+	    db = Dbptr(self.dbname)
+
+	    db = dblookup(db, table = 'arrival')
+
+	    db = dbsort(db, 'sta')
+
+	    db = dbgroup(db, 'sta')
+
+	    db = dbungroup(db)
+
+            self.assertTrue(db.database >= 0)
+            self.assertTrue(db.table >= 0)
+            self.assertEqual(db.field, dbALL)
+
         def test_procedure_dbprocess(self):
             db = Dbptr(self.dbname)
 
@@ -1493,6 +2006,42 @@ if __name__ == '__main__':
 
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
+        def test_procedure_dbaddnull(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db = dblookup(db, table = 'origin')
+
+	    db.record = dbaddnull(db)
+
+	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+
+	    dbclose(db)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+        def test_procedure_dbputv(self):
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = dbaddnull(db)
+	    
+	    dbputv(db, 'lat', 61.5922, 'auth', os.environ["USER"])
+
+	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+
+            dbclose(db)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
         def test_procedure_dbaddv(self):
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 

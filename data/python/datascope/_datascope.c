@@ -65,14 +65,25 @@ static PyObject *python_dbfree( PyObject *self, PyObject *args );
 static PyObject *python_dbdelete( PyObject *self, PyObject *args );
 static PyObject *python_dbmark( PyObject *self, PyObject *args );
 static PyObject *python_dbcrunch( PyObject *self, PyObject *args );
+static PyObject *python_dbdestroy( PyObject *self, PyObject *args );
+static PyObject *python_dbtruncate( PyObject *self, PyObject *args );
 static PyObject *python_dblookup( PyObject *self, PyObject *args );
 static PyObject *python_dbsort( PyObject *self, PyObject *args );
 static PyObject *python_dbsubset( PyObject *self, PyObject *args );
 static PyObject *python_dblist2subset( PyObject *self, PyObject *args );
+static PyObject *python_dbseparate( PyObject *self, PyObject *args );
+static PyObject *python_dbsever( PyObject *self, PyObject *args );
 static PyObject *python_dbjoin( PyObject *self, PyObject *args );
+static PyObject *python_dbnojoin( PyObject *self, PyObject *args );
+static PyObject *python_dbtheta( PyObject *self, PyObject *args );
+static PyObject *python_dbunjoin( PyObject *self, PyObject *args );
+static PyObject *python_dbgroup( PyObject *self, PyObject *args );
+static PyObject *python_dbungroup( PyObject *self, PyObject *args );
 static PyObject *python_dbprocess( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
 static PyObject *python_dbaddv( PyObject *self, PyObject *args );
+static PyObject *python_dbputv( PyObject *self, PyObject *args );
+static PyObject *python_dbaddnull( PyObject *self, PyObject *args );
 static PyObject *python_dbextfile( PyObject *self, PyObject *args );
 static PyObject *python_dbex_eval( PyObject *self, PyObject *args );
 static PyObject *python_dbquery( PyObject *self, PyObject *args );
@@ -105,15 +116,26 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbdelete", 	python_dbdelete,   	METH_VARARGS, "Delete Rows from tables" },
 	{ "_dbmark", 	python_dbmark,   	METH_VARARGS, "Mark  rows in tables" },
 	{ "_dbcrunch", 	python_dbcrunch,   	METH_VARARGS, "Delete marked rows from tables" },
+	{ "_dbdestroy",	python_dbdestroy,	METH_VARARGS, "Completely eliminate every table in a database" },
+	{ "_dbtruncate", python_dbtruncate,	METH_VARARGS, "Truncate a database table" },
 	{ "_dblookup", 	python_dblookup, 	METH_VARARGS, "Lookup Datascope indices" },
 	{ "_dbsort",   	python_dbsort,   	METH_VARARGS, "Sort Datascope table" },
 	{ "_dbsubset", 	python_dbsubset, 	METH_VARARGS, "Subset Datascope table" },
 	{ "_dblist2subset", python_dblist2subset, METH_VARARGS, "Convert a list of records to a database subset" },
+	{ "_dbseparate", python_dbseparate, 	METH_VARARGS, "Extract a subset of a base table from a joined view" },
+	{ "_dbsever", 	python_dbsever,		METH_VARARGS, "Remove a table from a joined view" },
 	{ "_dbprocess",	python_dbprocess, 	METH_VARARGS, "Run a series of database operations" },
 	{ "_dbjoin",   	python_dbjoin,   	METH_VARARGS, "Join Datascope tables" },
+	{ "_dbnojoin", 	python_dbnojoin,   	METH_VARARGS, "Return records which don't join" },
+	{ "_dbtheta",  	python_dbtheta,   	METH_VARARGS, "Theta-join Datascope tables" },
+	{ "_dbunjoin", 	python_dbunjoin,   	METH_VARARGS, "Create new tables from a joined table" },
+	{ "_dbgroup",  	python_dbgroup,   	METH_VARARGS, "Group a sorted table" },
+	{ "_dbungroup",	python_dbungroup,   	METH_VARARGS, "Ungroup a grouped table" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
 	{ "_dbaddv",    python_dbaddv,   	METH_VARARGS, "Add records to a database table" },
+	{ "_dbputv",    python_dbputv,   	METH_VARARGS, "Write fields to a database table" },
+	{ "_dbaddnull", python_dbaddnull,   	METH_VARARGS, "Add a new, null row to a database table" },
 	{ "_dbextfile", python_dbextfile,   	METH_VARARGS, "Retrieve an external file name from a database row" },
 	{ "_dbex_eval", python_dbex_eval,   	METH_VARARGS, "Evaluate a database expression" },
 	{ "_dbquery",   python_dbquery,   	METH_VARARGS, "Get ancillary information about a database" },
@@ -782,6 +804,63 @@ python_dbcrunch( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_dbtruncate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbtruncate(db, nrecords)\n";
+	Dbptr	db;
+	int	rc;
+	int	nrecords;
+
+	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &db, &nrecords ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbtruncate( db, nrecords );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbtruncate error" );
+
+		return NULL;
+	} 
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbdestroy( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbdestroy(tr)\n";
+	Dbptr	db;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbdestroy( db );
+
+	if( rc != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error destroying database" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
 python_dbtmp( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbtmp(schema)\n";
 	Dbptr	db;
@@ -928,6 +1007,73 @@ python_dblist2subset( PyObject *self, PyObject *args ) {
 	db = dblist2subset( db, list );
 	
 	return Dbptr2PyObject( db );
+}
+
+static PyObject *
+python_dbseparate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbseparate(db, tablename)\n";
+	PyObject *obj;
+	Dbptr	db;
+	char	*tablename = 0;
+
+	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &tablename ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dbseparate( db, tablename );
+
+	if( db.table < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbseparate failed" );
+	
+		obj = NULL;
+
+	} else {
+
+		obj = Dbptr2PyObject( db );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_dbsever( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbsever(db, tablename, name)\n";
+	PyObject *obj;
+	Dbptr	db;
+	char	*tablename = 0;
+	char	*view_name = 0;
+
+	if( ! PyArg_ParseTuple( args, "O&sz", parse_to_Dbptr, &db, &tablename, &view_name ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dbsever( db, tablename, view_name );
+
+	if( db.table < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbsever failed" );
+	
+		obj = NULL;
+
+	} else {
+
+		obj = Dbptr2PyObject( db );
+	}
+
+	return obj;
 }
 
 static PyObject *
@@ -1182,7 +1328,7 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_dbjoin( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _dbjoin(db1, db2, outer, pattern1, pattern2, name)\n";
+	char	*usage = "Usage: _dbjoin(db1, db2, pattern1, pattern2, outer, name)\n";
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	dbout;
@@ -1227,6 +1373,178 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 	}
 
 	return Dbptr2PyObject( dbout );
+}
+
+static PyObject *
+python_dbnojoin( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbnojoin(db1, db2, pattern1, pattern2, name)\n";
+	Dbptr	db1;
+	Dbptr	db2;
+	Dbptr	dbout;
+	Tbl	*pattern1 = 0;
+	Tbl 	*pattern2 = 0;
+	int	duplicate_pattern = 0;
+	char	*name = 0;
+
+	if( ! PyArg_ParseTuple( args, "O&O&O&O&z", parse_to_Dbptr, &db1, 
+					       parse_to_Dbptr, &db2, 
+					       parse_to_strtbl, &pattern1, 
+					       parse_to_strtbl, &pattern2,
+					       &name ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( pattern1 != 0 && pattern2 == 0 ) {
+
+		pattern2 = pattern1; 
+
+		duplicate_pattern++;
+	}
+
+	dbout = dbnojoin( db1, db2, &pattern1, &pattern2, name );
+
+	if( pattern1 != NULL ) {
+
+		freetbl( pattern1, 0 );
+	}
+
+	if( pattern2 != NULL && ! duplicate_pattern ) {
+
+		freetbl( pattern2, 0 );
+	}
+
+	return Dbptr2PyObject( dbout );
+}
+
+static PyObject *
+python_dbtheta( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbtheta(db1, db2, ex_str, outer, name)\n";
+	Dbptr	db1;
+	Dbptr	db2;
+	Dbptr	dbout;
+	int	outer = 0;
+	char	*ex_str = 0;
+	char	*name = 0;
+
+	if( ! PyArg_ParseTuple( args, "O&O&sO&z", parse_to_Dbptr, &db1, 
+					       parse_to_Dbptr, &db2, 
+					       &ex_str,
+					       parse_from_Boolean, &outer, 
+					       &name ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	dbout = dbtheta( db1, db2, ex_str, outer, name );
+
+	return Dbptr2PyObject( dbout );
+}
+
+static PyObject *
+python_dbunjoin( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbunjoin(db, database_name, rewrite)\n";
+	Dbptr	db;
+	char	*database_name = 0;
+	int	rewrite = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&sO&", parse_to_Dbptr, &db, 
+					       &database_name,
+					       parse_from_Boolean, &rewrite ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbunjoin( db, database_name, rewrite );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbunjoin error" );
+
+		return NULL;
+	} 
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_dbgroup( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbgroup(db, groupfields, name, type)\n";
+	Dbptr	db;
+	Tbl	*groupfields = 0;
+	char	*name = 0;
+	long	type;
+
+	if( ! PyArg_ParseTuple( args, "O&O&zi", parse_to_Dbptr, &db, 
+					       parse_to_strtbl, &groupfields, 
+					       &name,
+					       &type ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dbgroup( db, groupfields, name, type );
+
+	if( groupfields != NULL ) {
+
+		freetbl( groupfields, 0 );
+	}
+
+	return Dbptr2PyObject( db );
+}
+
+static PyObject *
+python_dbungroup( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbungroup(db, name)\n";
+	PyObject *obj;
+	Dbptr	db;
+	char	*view_name = 0;
+
+	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &view_name ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	db = dbungroup( db, view_name );
+
+	if( db.table < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbungroup failed" );
+	
+		obj = NULL;
+
+	} else {
+
+		obj = Dbptr2PyObject( db );
+	}
+
+	return obj;
 }
 
 static PyObject *
@@ -1289,6 +1607,34 @@ python_db2xml( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_dbaddnull( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbaddnull(db)\n";
+	Dbptr	db;
+	long	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbaddnull( db );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error adding null row" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
 python_dbaddv( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbaddv(db, field, value [, field, value...])\n";
 	Dbptr	db;
@@ -1314,9 +1660,10 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 	} else if( ! parse_to_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
 
-		sprintf( errmsg, "Argument 0 to _dbaddv must be a Dbptr or four-element list of integers" );
+		if( ! PyErr_Occurred() ) {
 
-		PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
 
 		return NULL;
 	}
@@ -1558,6 +1905,127 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 	}
 
 	return vals;
+}
+
+static PyObject *
+python_dbputv( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbputv(db, field, value [, field, value...])\n";
+	Dbptr	db;
+	Dbvalue	value;
+	char	errmsg[STRSZ];
+	char	*field_name;
+	int	nargs;
+	int	nfields;
+	int	i;
+	int	type;
+	int	fieldname_index;
+	int	fieldval_index;
+	int	retcode = 0;
+	int	rc;
+
+	nargs = PyTuple_Size( args );
+
+	if( ( nargs < 3 ) || ( ( nargs - 1 ) % 2 != 0 ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+
+	} else if( ! parse_to_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	nfields = ( nargs - 1 ) / 2;
+
+	for( i = 0; i < nfields; i++ ) {
+
+		fieldname_index = i * 2 + 1;
+
+		if( ! PyString_Check( PyTuple_GetItem( args, fieldname_index ) ) ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+
+			return NULL;
+		}
+	}
+
+	for( i = 0; i < nfields; i++ ) {
+
+		fieldname_index = i * 2 + 1;
+		fieldval_index = fieldname_index + 1;
+
+		field_name = PyString_AsString( PyTuple_GetItem( args, fieldname_index ) );
+
+		db = dblookup( db, 0, 0, field_name, 0 );
+
+		rc = dbquery( db, dbFIELD_TYPE, &type );
+
+		if( rc == dbINVALID ) {
+
+			sprintf( errmsg, "dbputv: dbquery failed for field %s", field_name );
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+
+			return NULL;
+		}
+
+		rc = PyObject2Dbvalue( PyTuple_GetItem( args, fieldval_index ), type, &value );
+
+		if( rc < 0 ) {
+			
+			sprintf( errmsg, "dbputv: failed to convert field %s", field_name );
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+
+			return NULL;
+		}
+
+		switch( type ) {
+
+		case dbDBPTR:
+
+			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			break;
+
+		case dbSTRING:
+
+			retcode |= dbputv( db, 0, field_name, value.t, 0 );
+			break;
+
+		case dbBOOLEAN:
+		case dbINTEGER:
+		case dbYEARDAY:
+
+			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			break;
+
+		case dbREAL:
+		case dbTIME:
+
+			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			break;
+
+		default:
+
+			retcode = -1;
+			break;
+		}
+	}
+
+	if( retcode != 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbputv failed putting in one of the values\n" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", retcode );
 }
 
 static PyObject *
