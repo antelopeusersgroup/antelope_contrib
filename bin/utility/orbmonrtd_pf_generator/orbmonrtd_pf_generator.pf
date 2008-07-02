@@ -114,4 +114,9 @@ arrivals &Arr{
     D3    8080ff
 }
 
+#
+# Filter setting - 1 to 1 mapping to orbmonrtd
+#
+filter	
+
 pf_revision_time 1199145710

@@ -62,6 +62,7 @@ sub init_globals {
         "exceptions",
         "detections",
         "arrivals",
+        "filter",
         "pf_revision_time"
     ) ;
     foreach my $param ( @params ) {
