@@ -537,6 +537,14 @@ class Dbptr(list):
 
 	return rc
 
+#SCAFFOLD class Response():
+#SCAFFOLD     """Create a Datascope Response object
+#SCAFFOLD  
+#SCAFFOLD         Response()
+#SCAFFOLD         Response(filename)     
+#SCAFFOLD     """
+
+
 def dbcreate(filename, schema, dbpath = None, description = None, detail = None):
     """Create a new database descriptor file"""
 
@@ -906,17 +914,21 @@ if __name__ == '__main__':
     import unittest
     import operator
     import os
+    import math
 
     class Testdatascope(unittest.TestCase):
         dbname = '/opt/antelope/data/db/demo/demo' 
 
         def setUp(self):
+
             pass
 
         def tearDown(self):
+
             pass
 
         def test_Dbptr_constructor(self):
+
             db1 = Dbptr()
 
             self.assert_(isinstance(db1, Dbptr))
@@ -969,6 +981,7 @@ if __name__ == '__main__':
             self.assertRaises(TypeError, Dbptr, [dbINVALID,dbINVALID,dbINVALID,dbINVALID,dbINVALID])
 
         def test_getitem(self):
+
             db = Dbptr()
 
             self.assertRaises(IndexError, operator.getitem, db, -1)
@@ -988,6 +1001,7 @@ if __name__ == '__main__':
             self.assertRaises(KeyError, operator.getitem, db, 'notafield')
 
         def test_setitem(self):
+
             db = Dbptr()
 
             self.assertRaises(IndexError, operator.setitem, db, -1, 0)
@@ -1019,6 +1033,7 @@ if __name__ == '__main__':
             self.assertEqual(db['record'], dbINVALID)
 
         def test_setattr(self):
+
             db = Dbptr()
 
             db.database = 0
@@ -1029,6 +1044,7 @@ if __name__ == '__main__':
             self.assertRaises(AttributeError, setattr, db, 'doesnotexist', dbINVALID)
 
         def test_getattr(self):
+
             db = Dbptr()
 
             self.assert_(db.database == dbINVALID)
@@ -1044,11 +1060,13 @@ if __name__ == '__main__':
             self.assertEqual(dbALL, -501)
 
         def test_method_close(self):
+
             db = Dbptr(self.dbname)
 
             db.close()
 
         def test_method_free(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1058,6 +1076,7 @@ if __name__ == '__main__':
             db.free()
 
         def test_method_lookup(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1069,6 +1088,7 @@ if __name__ == '__main__':
             self.assertEqual(db[3], dbALL)
 
         def test_method_invalid(self):
+
             db = Dbptr(self.dbname)
         
             db.invalid()
@@ -1079,6 +1099,7 @@ if __name__ == '__main__':
             self.assertEqual(db[3], dbINVALID)
 
         def test_method_sort(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1095,6 +1116,7 @@ if __name__ == '__main__':
             self.assertEqual(db.table, db2.table)
 
         def test_method_subset(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1103,6 +1125,7 @@ if __name__ == '__main__':
             self.assertTrue(db[1] >= 0)
 
         def test_method_list2subset(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1113,6 +1136,7 @@ if __name__ == '__main__':
             self.assertEqual(db.query(dbRECORD_COUNT), 3)
 
         def test_method_join(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1127,6 +1151,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
             
         def test_method_nojoin(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1141,6 +1166,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
             
         def test_method_theta(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'assoc')
@@ -1155,6 +1181,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
             
         def test_method_group(self):
+
 	    db = Dbptr(self.dbname)
 
 	    db.lookup(table = 'arrival')
@@ -1169,6 +1196,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
 
         def test_method_ungroup(self):
+
 	    db = Dbptr(self.dbname)
 
 	    db.lookup(table = 'arrival')
@@ -1184,6 +1212,7 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
 
         def test_method_process(self):
+
             db = Dbptr(self.dbname)
 
             db.process(["dbopen origin", "dbsubset mb > 5", "dbsort time"])
@@ -1196,6 +1225,7 @@ if __name__ == '__main__':
             self.assertTrue(db.query(dbRECORD_COUNT) > 0)
             
         def test_method_separate(self):
+
             db = Dbptr(self.dbname)
 
             db.process(["dbopen wfdisc", 
@@ -1209,6 +1239,7 @@ if __name__ == '__main__':
             self.assertEqual(dbquery(db,dbVIEW_TABLES),("wfdisc",))
 
         def test_method_sever(self):
+
             db = Dbptr(self.dbname)
 
 	    dborigin = dblookup(db, table = 'origin')
@@ -1222,6 +1253,7 @@ if __name__ == '__main__':
             self.assertEqual(dbquery(db,dbVIEW_TABLES),("origin",))
 
         def test_method_unjoin(self):
+
             db = Dbptr(self.dbname)
 
 	    tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
@@ -1240,6 +1272,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_getv(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1251,6 +1284,7 @@ if __name__ == '__main__':
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
         def test_method_addnull(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1268,6 +1302,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_putv(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1287,6 +1322,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_addv(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1307,6 +1343,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_dbtruncate(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1334,6 +1371,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_dbdestroy(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1352,6 +1390,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_delete(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1395,6 +1434,7 @@ if __name__ == '__main__':
 	    db.close()
 
         def test_method_crunch(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1437,6 +1477,7 @@ if __name__ == '__main__':
 	    db.close()
 
         def test_method_extfile(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'wfdisc')
@@ -1448,11 +1489,13 @@ if __name__ == '__main__':
             self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
             
         def test_method_query(self):
+
             db = Dbptr(self.dbname)
 
             self.assertEqual(self.dbname, db.query(dbDATABASE_NAME))
 
         def test_method_ex_eval(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1468,6 +1511,7 @@ if __name__ == '__main__':
             self.assertTrue(tf)
 
         def test_method_matches(self):
+
             db = Dbptr(self.dbname)
 
             dbk = dblookup(db, table = 'origin', field = "orid", record = "645" )
@@ -1478,6 +1522,7 @@ if __name__ == '__main__':
             self.assertTrue(len(values) > 0)
 
         def test_method_find(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1487,6 +1532,7 @@ if __name__ == '__main__':
             self.assertTrue(rc > 0)
 
         def test_method_xml(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -1496,6 +1542,7 @@ if __name__ == '__main__':
             self.assert_(isinstance(xml,str))
 
         def test_method_loadchan(self):
+
             db = Dbptr(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1517,6 +1564,7 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.record, dbINVALID)
 
         def test_method_trfree(self):
+
             db = Dbptr(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1524,6 +1572,7 @@ if __name__ == '__main__':
 	    tr.trfree()
 
         def test_method_trdestroy(self):
+
             db = Dbptr(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1531,6 +1580,7 @@ if __name__ == '__main__':
 	    tr.trdestroy()
 
         def test_method_data(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1542,6 +1592,7 @@ if __name__ == '__main__':
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
 
         def test_method_filter(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1555,6 +1606,7 @@ if __name__ == '__main__':
             self.assertEqual(v[0:4], (0.0, 0.0030230032280087471, 0.029202612116932869, 0.13213051855564117))
 
         def test_method_splice(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1568,6 +1620,7 @@ if __name__ == '__main__':
 	    self.assertTrue(nrecs_after <= nrecs_before)
 	 
         def test_method_split(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1581,6 +1634,7 @@ if __name__ == '__main__':
 	    self.assertTrue(nrecs_after >= nrecs_before)
 	 
         def test_method_trtruncate(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1595,6 +1649,7 @@ if __name__ == '__main__':
 	    self.assertTrue(nrecs_after == 0)
 	 
         def test_method_trcopy(self):
+
             db = dbopen(self.dbname)
 
             trin = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -1610,6 +1665,7 @@ if __name__ == '__main__':
             self.assertNotEqual(trout.record, dbINVALID)
 
         def test_method_nextid(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1623,6 +1679,7 @@ if __name__ == '__main__':
             self.assertEqual(id, 1)
 
         def test_procedure_dbopen(self):
+
             db = dbopen(self.dbname, 'r')
 
             self.assert_(isinstance(db, Dbptr))
@@ -1640,11 +1697,13 @@ if __name__ == '__main__':
             self.assertEqual(db[1:], [dbALL, dbALL, dbALL])
 
         def test_procedure_dbclose(self):
+
             db = Dbptr(self.dbname)
 
             dbclose(db)
 
         def test_procedure_dbfree(self):
+
             db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
@@ -1654,6 +1713,7 @@ if __name__ == '__main__':
             dbfree(db)
 
         def test_procedure_dbdelete(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1698,6 +1758,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbcrunch(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1744,6 +1805,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbtruncate(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1771,6 +1833,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbdestroy(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -1789,6 +1852,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dblookup(self):
+
             db = dbopen(self.dbname, 'r')
 
             dbout = dblookup(db, '', 'origin', '', '')
@@ -1799,6 +1863,7 @@ if __name__ == '__main__':
             self.assertFalse(dbout is db)
 
         def test_procedure_dbinvalid(self):
+
             db = Dbptr(self.dbname)
         
             db = dbinvalid()
@@ -1809,6 +1874,7 @@ if __name__ == '__main__':
             self.assertEqual(db[3], dbINVALID)
 
         def test_procedure_dbsort(self):
+
             db = dbopen(self.dbname)
 
             db = dblookup(db, table = 'origin')
@@ -1831,6 +1897,7 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
 
         def test_procedure_dbsubset(self):
+
             db = dbopen(self.dbname)
 
             db = dblookup(db, table = 'origin')
@@ -1840,6 +1907,7 @@ if __name__ == '__main__':
             self.assertFalse(dbout is db)
 
         def test_procedure_dblist2subset(self):
+
             db = Dbptr(self.dbname)
 
             db2 = dblookup(db, table = 'origin')
@@ -1850,6 +1918,7 @@ if __name__ == '__main__':
             self.assertEqual(db3.query(dbRECORD_COUNT), 3)
 
         def test_procedure_dbseparate(self):
+
             db = Dbptr(self.dbname)
 
             db.process(["dbopen wfdisc", 
@@ -1863,6 +1932,7 @@ if __name__ == '__main__':
             self.assertEqual(dbquery(dbout,dbVIEW_TABLES),("wfdisc",))
 
         def test_procedure_dbsever(self):
+
             db = Dbptr(self.dbname)
 
 	    dborigin = dblookup(db, table = 'origin')
@@ -1876,6 +1946,7 @@ if __name__ == '__main__':
             self.assertEqual(dbquery(db,dbVIEW_TABLES),("origin",))
 
         def test_procedure_dbunjoin(self):
+
             db = Dbptr(self.dbname)
 
 	    tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
@@ -1894,6 +1965,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbjoin(self):
+
             db = dbopen(self.dbname)
 
             dborigin = dblookup(db, table = 'origin')
@@ -1927,6 +1999,7 @@ if __name__ == '__main__':
             self.assertTrue(dbout.table >= 0)
 
         def test_procedure_dbnojoin(self):
+
             db = Dbptr(self.dbname)
 
             dbarrival = dblookup(db, table = 'origin')
@@ -1941,6 +2014,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
             
         def test_procedure_dbtheta(self):
+
             db = Dbptr(self.dbname)
 
             dbassoc = dblookup(db, table = 'assoc')
@@ -1955,6 +2029,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
             
         def test_procedure_dbgroup(self):
+
 	    db = Dbptr(self.dbname)
 
 	    db = dblookup(db, table = 'arrival')
@@ -1969,6 +2044,7 @@ if __name__ == '__main__':
             self.assertEqual(db.record, dbALL)
 
         def test_procedure_dbungroup(self):
+
 	    db = Dbptr(self.dbname)
 
 	    db = dblookup(db, table = 'arrival')
@@ -1984,6 +2060,7 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
 
         def test_procedure_dbprocess(self):
+
             db = Dbptr(self.dbname)
 
             db2 = dbprocess(db, ["dbopen origin", "dbsubset mb > 5", "dbsort time"])
@@ -1996,6 +2073,7 @@ if __name__ == '__main__':
             self.assertTrue(db2.query(dbRECORD_COUNT) > 0)
             
         def test_procedure_dbgetv(self):
+
             db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
@@ -2007,6 +2085,7 @@ if __name__ == '__main__':
             self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
             
         def test_procedure_dbaddnull(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -2024,6 +2103,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbputv(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -2043,6 +2123,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbaddv(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -2068,6 +2149,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbextfile(self):
+
             db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'wfdisc')
@@ -2091,6 +2173,7 @@ if __name__ == '__main__':
             self.assertEqual(fname, '/opt/antelope/data/db/demo/response/sts2_vel_RT72A.1')
 
         def test_procedure_dbfilename(self):
+
             db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'wfdisc')
@@ -2114,6 +2197,7 @@ if __name__ == '__main__':
             self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
 
         def test_procedure_dbex_eval(self):
+
             db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
@@ -2129,6 +2213,7 @@ if __name__ == '__main__':
             self.assertTrue(tf)
 
         def test_procedure_dbquery(self):
+
             db = Dbptr(self.dbname)
 
             value = dbquery(db, dbDATABASE_NAME)
@@ -2146,6 +2231,7 @@ if __name__ == '__main__':
             self.assertTrue(isinstance(value,tuple))
 
         def test_procedure_dbmatches(self):
+
             db = Dbptr(self.dbname)
 
             dbk = dblookup(db, table = 'origin', field = "orid", record = "645" )
@@ -2156,6 +2242,7 @@ if __name__ == '__main__':
             self.assertTrue(len(values) > 0)
 
         def test_procedure_dbfind(self):
+
             db = Dbptr(self.dbname)
 
             db.lookup(table = 'origin')
@@ -2165,6 +2252,7 @@ if __name__ == '__main__':
             self.assertTrue(rc > 0)
 
         def test_procedure_db2xml(self):
+
             db = Dbptr(self.dbname)
 
             db = dblookup(db, table = 'origin')
@@ -2176,6 +2264,7 @@ if __name__ == '__main__':
             self.assert_(isinstance(xml,str))
 
         def test_procedure_trloadchan(self):
+
             db = dbopen(self.dbname)
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2188,6 +2277,7 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.record, dbINVALID)
 
         def test_procedure_trfree(self):
+
             db = dbopen(self.dbname)
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2195,6 +2285,7 @@ if __name__ == '__main__':
 	    trfree(tr)
 
         def test_procedure_trdestroy(self):
+
             db = dbopen(self.dbname)
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2202,6 +2293,7 @@ if __name__ == '__main__':
 	    trdestroy(tr)
 
         def test_procedure_trtruncate(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2216,6 +2308,7 @@ if __name__ == '__main__':
 	    self.assertTrue(nrecs_after == 0)
 	 
         def test_procedure_trcopy(self):
+
             db = dbopen(self.dbname)
 
             trin = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2231,6 +2324,7 @@ if __name__ == '__main__':
             self.assertNotEqual(trout.record, dbINVALID)
 
         def test_procedure_trsample(self):
+
             db = dbopen(self.dbname)
 
             v = trsample(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", True)
@@ -2241,6 +2335,7 @@ if __name__ == '__main__':
             self.assertEqual(v[3], (706139719.19999993, -1504.951904296875)) 
 
         def test_procedure_trsplice(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2254,6 +2349,7 @@ if __name__ == '__main__':
 	    self.assertTrue(nrecs_after <= nrecs_before)
 	 
         def test_procedure_trsplit(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2267,6 +2363,7 @@ if __name__ == '__main__':
 	    self.assertTrue(nrecs_after >= nrecs_before)
 	 
         def test_procedure_trfilter(self):
+
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2280,6 +2377,7 @@ if __name__ == '__main__':
             self.assertEqual(v[0:4], (0.0, 0.0030230032280087471, 0.029202612116932869, 0.13213051855564117))
 
         def test_procedure_trdata(self):
+
             db = dbopen(self.dbname)
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
@@ -2303,6 +2401,7 @@ if __name__ == '__main__':
             dbcreate('/tmp/datascope_unittest_db', 'css3.0')
 
         def test_procedure_trwfname(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -2325,6 +2424,7 @@ if __name__ == '__main__':
 	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbnextid(self):
+
 	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
 	    os.system('/bin/rm -f ' + tempdbname + '*')
@@ -2347,5 +2447,24 @@ if __name__ == '__main__':
             self.assertEqual(db.table, dbALL)
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
+
+	def test_eval_response(self):
+
+	    db = Dbptr(self.dbname)
+
+	    db.lookup(table = 'instrument')
+
+	    db.record = 0
+
+	    fname = dbfilename(db)
+
+	    # SCAFFOLD
+            resp = _datascope.Response(fname)
+
+            # 5 Hz response:
+	    r = resp.eval(5 * 2 * math.pi)
+
+	    self.assertEqual(r.real, 0.99690287534053668)
+	    self.assertEqual(r.imag, -0.074926382150504581)
 
     unittest.main()

@@ -42,10 +42,12 @@
  *
  */
 
+#include <stdio.h>
 #include "Python.h"
 #include "db.h"
 #include "dbxml.h"
 #include "tr.h"
+#include "response.h"
 
 static Arr *Hooks = 0;
 
@@ -58,8 +60,17 @@ char *__progname = "Python";
 
 #endif
 
-static PyObject *python_dbinvalid( PyObject *self, PyObject *args );
+typedef struct {
+	PyObject_HEAD
+	Response *resp;
+} Responseobject;
+
+staticforward PyTypeObject Responsetype;
+
+#define is_Responseobject( v ) ( (v)->ob_type == &Responsetype )
+
 static PyObject *python_dbopen( PyObject *self, PyObject *args );
+static PyObject *python_dbinvalid( PyObject *self, PyObject *args );
 static PyObject *python_dbclose( PyObject *self, PyObject *args );
 static PyObject *python_dbfree( PyObject *self, PyObject *args );
 static PyObject *python_dbdelete( PyObject *self, PyObject *args );
@@ -105,9 +116,36 @@ static PyObject *python_trdestroy( PyObject *self, PyObject *args );
 static PyObject *python_trtruncate( PyObject *self, PyObject *args );
 static PyObject *python_trlookup_segtype( PyObject *self, PyObject *args );
 static PyObject *python_trwfname( PyObject *self, PyObject *args );
+static PyObject *python_eval_response( PyObject *self, PyObject *args );
+
 static void add_datascope_constants( PyObject *mod );
 static int parse_to_Dbptr( PyObject *obj, void *addr );
+static PyObject *Responsetype_new( PyObject *self, PyObject *args );
+static int Response_print( Responseobject *self, FILE *fp, int flags );
+static void Response_dealloc( Responseobject *self );
+static PyObject *Response_getattr( Responseobject *self, char *name );
+
 PyMODINIT_FUNC init_datascope( void );
+
+static PyTypeObject Responsetype = {
+	PyObject_HEAD_INIT( &PyType_Type )
+	0,					/* ob_size */
+	"Response",				/* tp_name */
+	sizeof(Responseobject),			/* tp_basicsize */
+	0,					/* tp_itemsize */
+	(destructor)	Response_dealloc,
+	(printfunc)	Response_print,
+	(getattrfunc)	Response_getattr,
+	(setattrfunc)	0,
+	(cmpfunc)	0,
+	(reprfunc)	0,
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	(hashfunc)	0,			/* tp_hash */
+	(ternaryfunc)	0,			/* tp_call */
+	(reprfunc)	0,			/* tp_str */
+};
 
 static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbopen",   	python_dbopen,   	METH_VARARGS, "Open Datascope database" },
@@ -157,6 +195,12 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_trtruncate", python_trtruncate,	METH_VARARGS, "Truncate a tr database table" },
 	{ "_trlookup_segtype", python_trlookup_segtype,	METH_VARARGS, "Lookup segtype in segtype table" },
 	{ "_trwfname", 	python_trwfname,	METH_VARARGS, "Generate waveform file names" },
+	{ "Response", 	Responsetype_new,	METH_VARARGS, "Create a new response object" },
+	{ NULL, NULL, 0, NULL }
+};
+
+static struct PyMethodDef Response_methods[] = {
+	{ "eval",	python_eval_response,	METH_VARARGS, "Evaluate a response curve at a given angular frequency" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -2659,4 +2703,116 @@ init_datascope( void ) {
 	mod = Py_InitModule( "_datascope", _datascope_methods );
 
 	add_datascope_constants( mod );
+}
+
+static Responseobject *
+newResponseobject() 
+{
+	Responseobject *self;
+
+	self = PyObject_New( Responseobject, &Responsetype );
+
+	if( self == NULL ) {
+		
+		return NULL;
+	}
+
+	self->resp = 0;
+
+	return self;
+}
+
+static PyObject *
+Responsetype_new( PyObject *self, PyObject *args )
+{
+	char	*filename = NULL;
+	PyObject *obj;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "z", &filename ) ) {
+		
+		return NULL;
+
+	} else {
+
+		obj = (PyObject *) newResponseobject();
+	}
+
+	if( filename != NULL ) {
+
+		rc = get_response( filename, &((Responseobject *) obj)->resp ); 
+
+		if( rc != 0 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, "get_response failed" );
+
+			return NULL;
+		}
+	}
+
+	return obj;
+}
+
+static void
+Response_dealloc( Responseobject *self )
+{
+	if( self->resp != NULL ) {
+		
+		free_response( self->resp );
+
+		self->resp = NULL;
+	}
+
+	PyObject_Free( self );	
+}
+
+static int
+Response_print( Responseobject *self, FILE *fp, int flags )
+{
+	fprintf( fp, "[Response:\n" );
+	fprintf( fp, "\tDatascope response object\n" );
+	fprintf( fp, "]\n" );
+
+	return 0;
+}
+
+static PyObject *
+Response_getattr( Responseobject *self, char *name )
+{
+	if( strcmp( name, "__members__" ) == 0 ) {
+
+		return Py_BuildValue( "[s]", "eval" );
+
+	} else {
+
+		return Py_FindMethod( Response_methods, (PyObject *) self, name );
+	}
+}
+
+static PyObject *
+python_eval_response( PyObject *self, PyObject *args )
+{
+	char    *usage = "Usage: _eval_response(omega)\n";
+	double	omega;
+	double	real;
+	double	imag;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "d", &omega ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	rc = eval_response( omega, ((Responseobject *) self)->resp, &real, &imag );
+
+	if( rc != 0 ) {
+		
+		PyErr_SetString( PyExc_RuntimeError, "eval_response failed" );
+
+		return NULL;
+	}
+	
+	return PyComplex_FromDoubles( real, imag );
 }
