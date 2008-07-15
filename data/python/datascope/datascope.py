@@ -189,6 +189,7 @@ class Dbptr(list):
             return self[3]
 
         else:
+
             raise AttributeError, "unknown attribute '" + attrname + "'"
 
     def __setattr__(self, attrname, value):
@@ -537,12 +538,48 @@ class Dbptr(list):
 
 	return rc
 
-#SCAFFOLD class Response():
-#SCAFFOLD     """Create a Datascope Response object
-#SCAFFOLD  
-#SCAFFOLD         Response()
-#SCAFFOLD         Response(filename)     
-#SCAFFOLD     """
+class Response():
+    """Create a Datascope Response object
+  
+         Response()
+         Response(filename)     
+    """
+
+    def __init__(self, *args, **kwargs):
+
+        _filename = None
+    
+        if(kwargs.has_key('filename')):
+
+            _filename = kwargs['filename']
+
+        if(len(args) >= 1):
+
+            if(isinstance(args[0], str)):
+
+                _filename = args[0]
+
+            else:
+
+                raise TypeError, 'Response constructor arguments not understood'
+
+        self._resp = _datascope._Response(_filename)
+
+    def __getattr__(self, attrname):
+
+        if(attrname == "eval"):
+
+            return self._resp.eval
+
+        else:
+
+            raise AttributeError, "unknown attribute '" + attrname + "'"
+
+
+def eval_response(resp, omega):
+    """Evaluate a Datascope Response object at an angular frequency"""
+
+    return resp.eval(omega)
 
 
 def dbcreate(filename, schema, dbpath = None, description = None, detail = None):
@@ -2448,7 +2485,7 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
 
-	def test_eval_response(self):
+	def test_method_eval_response(self):
 
 	    db = Dbptr(self.dbname)
 
@@ -2458,11 +2495,28 @@ if __name__ == '__main__':
 
 	    fname = dbfilename(db)
 
-	    # SCAFFOLD
-            resp = _datascope.Response(fname)
+            resp = Response(fname)
 
             # 5 Hz response:
 	    r = resp.eval(5 * 2 * math.pi)
+
+	    self.assertEqual(r.real, 0.99690287534053668)
+	    self.assertEqual(r.imag, -0.074926382150504581)
+
+	def test_procedure_eval_response(self):
+
+	    db = Dbptr(self.dbname)
+
+	    db.lookup(table = 'instrument')
+
+	    db.record = 0
+
+	    fname = dbfilename(db)
+
+            resp = Response(fname)
+
+            # 5 Hz response:
+	    r = eval_response(resp, 5 * 2 * math.pi)
 
 	    self.assertEqual(r.real, 0.99690287534053668)
 	    self.assertEqual(r.imag, -0.074926382150504581)
