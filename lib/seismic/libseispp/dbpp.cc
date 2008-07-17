@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sstream>
 #include "elog.h"
 #include "dbpp.h"
 #include "seispp.h"
