@@ -358,6 +358,32 @@ public:
 	\exception throws a SeisppDberror if dbjoin fails.  
 	*/
 	void join(string t,list<string> keys1,list<string>keys2);
+	/*! Right join of a table to current view specified by Dbptr.
+
+	This similar to the one table join method, but the table is
+	defined by a raw Dbptr instead of using a name. 
+
+	\param db Dbptr of table/view to join to this handle
+	\param keys1 list of keys to define join operation of left table.
+	\param keys2 list of keys to define the join operation for right table.
+	
+	\exception throws a SeisppDberror if dbjoin fails.  
+	*/
+	void join(Dbptr db ,list<string> keys1,list<string>keys2);
+	/*! Right join of a table to current view specified by DatascopeHandle.
+
+	This similar to the one table join method, but the table is
+	defined by another DatascopeHandle object instead of the name.
+	This is a convenient way to join complex tables each individually
+	build from on or more relational operators.
+
+	\param dbh DatascopeHandle to join on the right with this one
+	\param keys1 list of keys to define join operation of left table.
+	\param keys2 list of keys to define the join operation for right table.
+	
+	\exception throws a SeisppDberror if dbjoin fails.  
+	*/
+	void join(DatascopeHandle& dbh ,list<string> keys1,list<string>keys2);
 	/*! Join table on the left. 
 
 	A left join means the parent view is considered the t2 (right)
