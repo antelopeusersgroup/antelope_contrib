@@ -1,0 +1,84 @@
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+		Spatial grids are conveniently indexed with a single
+		integer.  This allows the structure of the grid to be
+		defined as desired.  This index is also a convenient
+		key if the grid is defined in a database table instead
+		of being stored on disk.
+        }
+        ;
+
+Attribute pmelrun
+	String (5)
+        Format ( "%-5s" )
+        Null ( "-" )
+        Description ( "Run code for dbpmel program" )
+        Detail {
+		The dbpmel program builds several special output
+		tables.  To allow multiple runs with different 
+		parameters against a common database we need this
+		key in some of these tables.
+        }
+        ;
+
+Attribute sswrodgf
+	Real ( 15 )
+	Format ( "%15.6lg" )
+	Range ( "sswrodgf>0.0" )
+	Description ( "Normalized sum of squared weighted residuals" )
+        Null ( "-999.0000" )
+	Detail {
+		Proper statistical description of a misfit statistic
+		for data with variable uncertainties uses a weighting
+		of e_i/sigma_i where sigma_i is the estimated uncertainty
+		in e_i.  sswrodgf is the sum of squared weighted residuals
+		divided by the number of degrees of freedom.  This is 
+		a normalized form of rms used with this type of weighting.
+		}
+	;
+
+Attribute ndgf
+	Integer (4)
+	Format ( "%4d" )
+	Null ("-1")
+	Range ( "ndgf>=0")
+	Description ( "Number of degrees of freedom" )
+	Detail {
+		Many statistical metrics require a degrees of freedom
+		parameter which is typically number of data - number
+		of parameters.  Other contexts may use this to mean
+		something different that is consistent with the words.
+		}
+	;
+
+Relation gridstat
+	Fields ( gridname gridid pmelrun sswrodgf ndgf sdobs lddate )
+	Primary ( gridname gridid pmelrun )
+	Foreign ( gridid )
+	Description ( "Location misfit statistics for multievent location" )
+	Detail {
+		Used by dbpmel to save misfit statistics for different
+		grid points.  These statistics are ensemble averages for
+		all events associated with a given grid point defined
+		by gridid and gridname. 
+	}
+	;
+

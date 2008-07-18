@@ -1,0 +1,40 @@
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+		Spatial grids are conveniently indexed with a single
+		integer.  This allows the structure of the grid to be
+		defined as desired.  This index is also a convenient
+		key if the grid is defined in a database table instead
+		of being stored on disk.
+        }
+        ;
+
+Relation cluster
+	Fields ( gridname gridid evid lddate )
+	Primary ( gridname gridid evid )
+	Foreign ( gridid evid )
+	Description ( "linking table to define event clusters" )
+	Detail {
+		This table is used to link a set of events to a grid 
+		point that defines a particular point in space. 
+		Normally many evids are linked to each gridid.
+	}
+	;
+

@@ -1,6 +1,6 @@
 BIN=dbpmel
-DATADIR=schemas
-DATA=genloc1.1
+DATADIR=schemas/css3.0.ext
+DATA=gridscor gridstat hypocentroid pmelruns cluster
 PF=dbpmel.pf
 
 MAN1=	dbpmel.1

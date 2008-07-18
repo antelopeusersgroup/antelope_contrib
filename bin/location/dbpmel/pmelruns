@@ -1,0 +1,41 @@
+Attribute pmelrun
+	String (5)
+        Format ( "%-5s" )
+        Null ( "-" )
+        Description ( "Run code for dbpmel program" )
+        Detail {
+		The dbpmel program builds several special output
+		tables.  To allow multiple runs with different 
+		parameters against a common database we need this
+		key in some of these tables.
+        }
+	;
+Attribute vmodel3d
+        String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "3D velocity model name" )
+        Detail {
+                This character string identifies the velocity model of
+the
+                earth used to compute the travel times of seismic
+phases.
+                These are required for event location (if phase is
+                defining) or for computing travel-time residuals.
+		This is a companion to vmodel used to tag 3D reference
+		models in dbpmel and related programs.
+        }
+        ;
+
+Relation pmelruns
+	Fields (
+		pmelrun vmodel vmodel3d dir dfile lddate )
+	Primary ( pmelrun )
+	Detail {
+		This is a special working table for dbpmel that is 
+		used to save the large set of parameters that control
+		it's operation.  The run code, pmelrun, is used as a
+		key in several other tables to allow multiple runs
+		to be stored in a single database.
+	}
+	;

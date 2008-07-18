@@ -1,0 +1,144 @@
+Attribute dlat
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlat >= -90.0 && dlat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "estimated latitude (double precision)" )
+        Detail {
+                This attribute is the geographic latitude.  Locations
+                north of the equator have positive latitudes.  It is
+		comparable to css3.0's lat, but has sufficient precision
+		for doubles.  css3.0 defines only single precision.
+        }
+        ;
+
+Attribute dlon
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlon >= -180.0 && dlon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "estimated longitude (double precision)" )
+        Detail {
+                This attribute is the geographic longitude in degrees.
+                Longitudes are measured positive east of the Greenwich
+                meridian.  It is comparable to css3.0's lat, but has 
+		sufficient precision for doubles.  css3.0 defines only 
+		single precision.
+
+        }
+        ;
+
+Attribute hclat
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "hclat >= -90.0 && hclat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "hypocentroid latitude" )
+        Detail {
+                Latitude of the hypocentroid of a group of events.
+               	Supplement to dlat.
+        }
+        ;
+
+
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+		Spatial grids are conveniently indexed with a single
+		integer.  This allows the structure of the grid to be
+		defined as desired.  This index is also a convenient
+		key if the grid is defined in a database table instead
+		of being stored on disk.
+        }
+        ;
+
+Attribute hclon
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "hclon >= -180.0 && hclon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "hypocentroid longitude" )
+        Detail {
+                Latitude of the hypocentroid of a group of events.
+               	Supplement to dlat.
+        }
+        ;
+
+Attribute hcdepth
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "depth >= 0.0 && depth < 1000.0" )
+        Units ( "Kilometers" )
+        Description ( "hypocentroid depth" )
+        Detail {
+                Depth of the hypocentroid of a group of events.
+        }
+        ;
+	
+Attribute ztop
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "ztop >= -10.0 && ztop < 1000.0" )
+        Units ( "Kilometer" )
+        Description ( "Top of a depth range" )
+        Detail {
+                Regions can be specified in terms of a top and bottom
+		depth.  This is the top.
+        }
+        ;
+
+Attribute zbot
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "zbot >= -10.0 && zbot < 1000.0" )
+        Units ( "Kilometer" )
+        Description ( "Bottom of a depth range" )
+        Detail {
+                Regions can be specified in terms of a top and bottom
+		depth.  This is the bottom.
+        }
+        ;
+
+
+Relation hypocentroid
+	Fields (
+		gridname gridid dlat dlon depth hclat hclon hcdepth 
+		nass delta ztop zbot lddate
+
+	)
+	Primary ( gridname gridid )
+	Description ( "hypocentroid of a group of seismic events" )
+	Detail {
+		The center of mass of a group of seismic events is a 
+		useful concept called a hypocentroid.  This table 
+		stores the hypocentroid corresponding to a cluster of
+		events tied to a particular grid point defined with the
+		reference point dlat, lon, depth. nass is the number of 
+		events within a distance range delta from dlat,dlon and 
+		within a depth interval zupper to zlower.
+	}
+	;
