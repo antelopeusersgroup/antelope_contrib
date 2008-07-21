@@ -552,6 +552,8 @@ Hook          **hookp;
     return retcode;
 }
 
+#if 0 
+
 int 
 orbacct (orb, orbselections, accselect, req_t0, req_twin, trp )
 int             orb;
@@ -678,4 +680,4 @@ Dbptr         *trp;
     return retcode;
 }
 
-
+#endif
