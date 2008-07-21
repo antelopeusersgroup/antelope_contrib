@@ -24,7 +24,7 @@ $(DLIB) : $(OBJS) _init.o
 	case `uname -s` in \
 	    SunOS) $(CC) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
 	    Linux) $(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) _init.o ;; \
-	    Darwin) $(DLD) $(DLDFLAGS) -o $@ -init tt1dcvl_init $(DLDLIBS) $(OBJS) ;; \
+	    Darwin) $(DLD) $(DLDFLAGS) -o $@ -init _tt1dcvl_init $(DLDLIBS) $(OBJS) ;; \
 	    *)  echo dynamic $(DLIB) not created: System type `uname -s` not recognized. ;;\
 	esac
 
