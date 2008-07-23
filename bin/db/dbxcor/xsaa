@@ -1,0 +1,108 @@
+Attribute coherence
+	Real (7)
+	Format ( "%7.3f" )
+	Null ( "-1.0" )
+	Range ( "coherence>=0.0 && coherence<=1.0" )
+	Description ( "coherence" )
+	Detail {
+		Coherence is a measure of waveform similarity commonly used in many 
+signal processing algorithms.
+	}
+	;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+                Spatial grids are conveniently indexed with a single
+                integer.  This allows the structure of the grid to be
+                defined as desired.  This index is also a convenient
+                key if the grid is defined in a database table instead
+                of being stored on disk.
+        }
+        ;
+
+Attribute pchan
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "Processing channel code" )
+	Detail {
+		This is a processing channel code that may or may not match the more 
+common chan attribute.  It is intended most to denote  generic channel after resampling 
+and/or coordinate reorientation.  The expected codes are Z,N,E,L,R,T,H, and 3C but the 
+range is not currently restricted to these.
+	}
+	;
+
+Attribute pwfid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "wfid > 0" )
+	Description ( "processed waveform id" )
+	Detail {
+		Comparable to wfid used in wfdisc, but this integer
+		key is the primary index of the core processing waveform
+		table and is used for association and joining of 
+		ancillary tables created by all processing algorithms
+		that use this schema.
+	}
+	;
+
+Attribute relamp
+	Real (10)
+	Format ( "%10.4f" )
+	Null ( "-1.0")
+	Range ( "relamp>0.0" )
+	Description ( "Relative amplitude measurement" )
+	Detail {
+		In array processing one can easily compute amplitudes
+		relative to an array beam.  This can be useful data and
+		is worth storing in a database when measured.
+	}
+	;
+
+Attribute stackwgt
+	Real (6)
+	Format ( "%6.3f" )
+	Null ( "-1.000" )
+	Range ( "wgt >= 0.0" )
+	Description ( "stacking weight" )
+	Detail {
+		In robust stacking a weight is assigned to each member of the ensemble.
+	}
+	;
+
+Attribute xcorpeak
+	Real (7)
+	Format ( "%7.3f" )
+	Null ( "-1.0" )
+	Description ( "peak correlation coefficient" )
+	Detail {
+		In cross-correlation the peak of the cross correlation curve is commonly 
+normalized to a correlation coefficient.  This attribute is used to store the value of this 
+measure of similarity of two waveforms.
+	}
+	;
+
+Relation xsaa
+	Fields ( sta chan phase evid orid pwfid gridid filter algorithm pchan time twin samprate stackwgt 
+coherence xcorpeak relamp lddate )
+	Primary ( sta chan pwfid orid)
+	Description ( "Details of an arrival computed by beam cross-correlation" )
+	Detail {
+		Arrival times can be computed by cross correlation of a set of arrivals with 
+an array beam.  Defining this process requires some attributes not found in the standard 
+arrival table.  In particular, multiple processing runs could produce different results on 
+the same arrival.  The idea is that when this happens this table can be used to define 
+results from different processing runs that one could elect to average to produce a final 
+arrival estimate.  Note the table was designed to be workable for both receiver arrays 
+and virtual source arrays (common receiver gather for an ensemble of earthquakes with 
+similar waveforms).
+	}
+	;
+
