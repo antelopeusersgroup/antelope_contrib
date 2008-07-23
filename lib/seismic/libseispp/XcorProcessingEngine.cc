@@ -116,7 +116,15 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			result_db_handle=DatascopeHandle(result_db_name,false);
 		dbassoc=dblookup(result_db_handle.db,0,(char *) "assoc",0,0);
 		dbarrival=dblookup(result_db_handle.db,0,(char *) "arrival",0,0);
-		dbxcorarrival=dblookup(result_db_handle.db,0,(char *) "xcorarrival",0,0);
+		/* For the present we use different output tables in event mode
+		compared to GenericGathers mode.  The later more or less assumes
+		the reciprocal source array problem, which is inconsistent with
+		the naming, but this is housecleaning I haven't managed to deal
+		with. (glp:  July 21, 2008) */
+		if(processing_mode==GenericGathers)
+			dbxcorarrival=dblookup(result_db_handle.db,0,(char *) "xsaa",0,0);
+		else
+			dbxcorarrival=dblookup(result_db_handle.db,0,(char *) "xcorarrival",0,0);
 		dbxcorbeam=dblookup(result_db_handle.db,0,(char *) "xcorbeam",0,0);
 		dbwfprocess=dblookup(result_db_handle.db,0,(char *) "wfprocess",0,0);
 		dbevlink=dblookup(result_db_handle.db,0,(char *) "evlink",0,0);
@@ -226,6 +234,14 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		mcc = NULL;   // Need this unless we can convert to a shared_ptr;
 		autoscale_initial=global_md.get_bool("AutoscaleInitialPlot");
 		load_arrivals=global_md.get_bool("LoadArrivals");
+		if( (processing_mode==GenericGathers)
+			&& load_arrivals)
+		{
+			throw SeisppError(string("XcorProcessingEngine:  ")
+			 + "illegal parameter combination\n"
+			 + "LoadArrivals=true not allowed if "
+			 + "processing_mode=GenreicGathers");
+		}
 
 	} catch (MetadataGetError mderr)
 	{
@@ -959,11 +975,13 @@ void XcorProcessingEngine::prep_gather()
 		regular_gather->member[i].put(peakxcor_keyword,0.0);
 		regular_gather->member[i].put(amplitude_static_keyword,0.0);
 		regular_gather->member[i].put(moveout_keyword,MoveoutBad);
-		/* Initialize arrival_time_key to predicted arrival time which
+		/* Initialize arrival_time_key to time_align_key value which 
 		is the time 0 mark for the data at this stage.  Note this
 		time is dithered throughout this processing, but we maintain
-		a time standard by simultaneously dithering this attribute.*/
-		atime=regular_gather->member[i].get_double(predicted_time_key);
+		a time standard by simultaneously dithering this attribute.
+		This is sometimes a do nothing operation depending on processing mode
+		but this makes the result independent of how we got here.*/
+		atime=regular_gather->member[i].get_double(time_align_key);
 		regular_gather->member[i].put(arrival_time_key,atime);
 	}
 	/* Shift traces by measured arrival times if requested.  */
@@ -1138,8 +1156,7 @@ void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		tse=auto_ptr<TimeSeriesEnsemble>
 		   (new TimeSeriesEnsemble(dbh,trace_mdl, ensemble_mdl, am));
 	}
-	string alignkey(time_align_key);
-	if( (processing_mode==EventGathers) && (time_align_key==predicted_time_key) )
+	if(processing_mode==EventGathers) 
 	{
 	    /* We fetch the hypocenter for this event from the ensemble metadata.  We 
 	    must throw an excpetion if the event location is not defined as we cannot
@@ -1156,14 +1173,28 @@ void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	    current_data_window=TimeWindow(h.time+raw_data_twin.start,
 		h.time+raw_data_twin.end);
 	    UpdateGeometry(current_data_window);
-		alignkey=predicted_time_key;
 	    StationTime predarr=ArrayPredictedArrivals(stations,h,
 		analysis_setting.phase_for_analysis); 
 	    LoadPredictedTimes(*tse,predarr,predicted_time_key,
 			analysis_setting.phase_for_analysis);
 	}
+	else
+	{
+		/* At this point this else means only GenericGathers.  Beware
+		that if a new processing mode is added this is potential trouble.*/
+		int nfailed;
+		nfailed=LoadPredictedArrivalTimes<TimeSeriesEnsemble>(*tse,
+			analysis_setting.phase_for_analysis,predicted_time_key,
+				ttmethod,ttmodel);
+		if(nfailed>0) 
+			cerr << "XcorProcessingEngine::load_data method (Warning):  "
+				<< nfailed <<" travel time errors processing current gather"
+				<<endl
+				<< "Run in verbose mode for more details"<<endl;
+			
+	}
 	regular_gather=auto_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
-		alignkey,analysis_setting.gather_twin,target_dt,rdef,true));
+		time_align_key,analysis_setting.gather_twin,target_dt,rdef,true));
 	this->prep_gather();
     } catch (...) {throw;}
 }
@@ -1387,7 +1418,9 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				0);
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
-		dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,0);
+		/* We don't write this in GenericGather mode as then every seismogram may have
+		a different evid associated with it */
+		if(processing_mode!=GenericGathers) dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,0);
 	    }
 	    catch (MetadataGetError mderr)
 	    {
@@ -1485,7 +1518,49 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    if(save_extensions)
 			    {
 			      filter_param=trace->get_string("filter_spec");
-			      record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
+			      /* This depends on setting dbxcorarrival to different tables depending
+			      on setting of processing_mode in the constructor for this beast.
+			      The tables have different contents and keys for the two cases,
+			      and for now (July 2008) we'll carry this along to avoid collisions.
+			      Ultimately the two tables are likely to be assimilated into one that
+			      works correctly independent of mode.   For now I can't change this
+			      without creating a lot of havoc. */
+			      if(processing_mode==GenericGathers)
+			      {
+				int ggevid,ggorid,gridid;
+				try {
+				    ggevid=trace->get_int("evid");
+				    ggorid=trace->get_int("orid");
+				    gridid=trace->get_int("gridid");
+				    record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
+					"chan",chan.c_str(),
+					"phase",analysis_setting.phase_for_analysis.c_str(),
+					"pwfid",pwfid,
+					"evid",ggevid,
+					"orid",ggorid,
+					"gridid",gridid,
+					"filter",filter_param.c_str(),
+					"algorithm",auth.c_str(),
+					"pchan",pchan.c_str(),
+					"time",atime,
+					"twin",analysis_setting.analysis_tw.length(),
+					"samprate",1.0/(trace->dt),
+					"stackwgt",stack_weight,
+					"coherence",coh,
+					"relamp",amplitude,
+					"xcorpeak",xcorpeak,0);
+				    if(record<0) cerr << "XcorProcessingEngine::save_results(WARNING):  "
+							<< "dbaddv failed writing xsaa table for station="
+							<< sta<<" evid="<<ggevid<<endl;
+				  } catch (MetadataGetError mde)
+				  {
+					cerr << "XcorProcessingEngine::save_results:  problem saving xsaa table"<<endl;
+					mde.log_error();
+				  }
+			      }
+			      else
+			      {
+			          record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
 					"chan",chan.c_str(),
 					"phase",analysis_setting.phase_for_analysis.c_str(),
 					"pwfid",pwfid,
@@ -1499,10 +1574,13 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					"coherence",coh,
 					"relamp",amplitude,
 					"xcorpeak",xcorpeak,0);
-			      if(record<0)
-			      {
-				cerr << "save_results(warning):  problems saving xcorarrival table"
+			         if(record<0)
+			         {
+				   cerr << "save_results(warning):  problems saving xcorarrival table"
+				     << " for station="
+				     << sta
 					<<endl;
+			         }
 			      }
 			    }
 			    /* Do not save arrival/assoc if subarray mode is enabled.  In that
@@ -1588,7 +1666,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	if(delete_old_arrivals) arru.clear_old(evid,
 		analysis_setting.phase_for_analysis);
 	/* this is a procedure that counts and sets number of associations in origin */
-	set_nassoc(result_db_handle,orid);
+	if(processing_mode!=GenericGathers) set_nassoc(result_db_handle,orid);
 }	
 // These are private functions hidden by the interface
 void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)

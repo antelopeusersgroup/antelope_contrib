@@ -13,12 +13,15 @@
  */
 
 #include <vector>
+#include "coords.h"
 #include "perf.h"
+
 #include "pfstream.h"
 #include "TimeWindow.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ComplexTimeSeries.h"
+#include "Hypocenter.h"
 namespace SEISPP {
 /*! \brief Object to contain a group (ensemble) of time series objects (seismograms).
 
@@ -634,6 +637,115 @@ template <class Tensemble> void LoadEventArrivals(Tensemble& d,
 	we don't do this.  If changed this next line must be removed */
 	//dbfree(dbhss.db);
 }
+/*! \brief Load predicted times for a general ensemble.
+
+This is a generic algorithm to implement posting predicted arrival times
+to every member of a generic ensemble.  The method uses is not appropriate
+for event (common source) gathers because it loads the source information
+for each member of the ensemble individually.  For this reason the 
+following seven attributes must be loaded into the Metadata area of
+every member of the ensemble:  source_lat, source_lon, source_depth,
+source_time, sta_lat, sta_lon, and sta_elev.  Note this algorithm
+assumes the seispp convention that all angles in Metadata are stored
+as degrees, NOT radians.  
+
+Traces marked dead are handled gracefully, but of course will not
+have valid results.  Specifically the predicted time result is posted
+as 0 since a 0 epoch time is nonsense.
+
+\param d ensemble object to be processed
+\param phase phase name for which arrival time is to be computed
+\param predarr_keyword is the key used to store the predicted time in
+	the Metadata area for each ensemble member.  (default is
+	the global value for seispp defined in SeisppKeywords.h.
+	Currently predarr_time.)
+\param ttmethod travel time method passed to ttcalc interface 
+	(default tttaup).
+\param ttmodel travel time model passed to ttcalc interface
+	(default iasp91).
+\param verbose if true every error will cause an error messae
+	to be be written to stderr.  Otherwise be silent and 
+	just return the count or errors (default=false)
+
+\return Normal return is 0.  Nonzero values indicate number of
+	failures in computing times.  Failed data members have
+	predicted time set to 0.0.
+
+*/
+template <class Tensemble> int LoadPredictedArrivalTimes(Tensemble& d,
+	string phase,
+		string predarr_keyword=predicted_time_key,
+			string ttmethod="tttaup",
+				string ttmodel="iasp91",
+					bool verbose=false)
+{
+	int i,nmembers;
+	double slat,slon,sz,stime;
+	double rlat,rlon,relev;
+	double phasetime;
+	int nfailures(0);
+
+	nmembers=d.member.size();
+	for(i=0;i<nmembers;++i)
+	{
+		if(d.member[i].live)
+		{
+			try{
+				slat=d.member[i].get_double("source_lat");
+				slon=d.member[i].get_double("source_lon");
+				sz=d.member[i].get_double("source_depth");
+				stime=d.member[i].get_double("source_time");
+				rlat=d.member[i].get_double("sta_lat");
+				rlon=d.member[i].get_double("sta_lon");
+				relev=d.member[i].get_double("sta_elev");
+				slat=rad(slat); 
+				slon=rad(slon);
+				rlat=rad(rlat);
+				rlon=rad(rlon);
+				Hypocenter h(slat,slon,sz,stime,
+					ttmethod,ttmodel);
+				phasetime=h.phasetime(rlat,rlon,relev,phase);
+				phasetime+=stime;
+			}
+			catch (MetadataGetError mderr)
+			{
+				phasetime=0.0;
+				++nfailures;
+				if(verbose)
+				{
+					cerr << "LoadPredictedArrivalTimes:  "
+					 << "get failed on attribute name="
+					<< mderr.name
+					<<" for ensemble member number "
+					<< i <<endl
+					<< "Arrival time set to 0.0"<<endl;
+				}
+			}
+			catch (SeisppError serr)
+			{
+				phasetime=0.0;
+				++nfailures;
+				if(verbose)
+				{
+					cerr << "LoadPredictedArrivalTimes:  "
+					 << "travel time calculator error "
+					 << "for member="<<i <<endl
+					 << "SeisppError message:"<<endl;
+					serr.log_error();
+					cerr << "Arrival time set to zero"<<endl;
+				}
+			}
+
+		}
+		else
+		{
+			phasetime=0.0;
+		}
+		d.member[i].put(predarr_keyword,phasetime);
+	}
+	return(nfailures);
+}
+
 /*! Extract a componnt from a ThreeComponentEnsemble to yield a TimeSeriesEnsemble.
 
 An ensemble of three component data can be conceptualized as a three-dimensional

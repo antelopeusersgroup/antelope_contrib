@@ -623,6 +623,10 @@ xcorbeam.fold fold xcorbeam int
 xcorbeam.robustt0 robustt0 xcorbeam int
 xcorbeam.robusttwin robusttwin xcorbeam int
 xcorbeam.amp amp xcorbeam int
+# Added by glp July 2008 to support dbxcor source array tables
+cluster.gridid gridid cluster int
+hypocentroid.gridid gridid hypocentroid int
+xsaa.gridid gridid xsaa int
 }
 aliases &Tbl{
 sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta 
@@ -634,6 +638,7 @@ dir wfdisc.dir wfprocess.dir
 dfile wfdisc.dfile wfprocess.dfile
 foff wfdisc.foff wfprocess.foff
 atime arrival.time
+arrival_time  arrival.time xcorarrival.time
 deltim arrival.deltim
 slow arrival.slow
 azimuth arrival.azimuth
@@ -663,6 +668,7 @@ evid event.evid origin.evid evlink.evid
 orid origin.orid
 wfid wfdisc.wfid
 snet snetsta.snet
+gridid cluster.gridid hypocentroid.gridid xsaa.gridid
 }
 }
 
@@ -1987,9 +1993,14 @@ gclgdisk.dir dir gclgdisk string
 gclgdisk.dfile dfile gclgdisk string
 gclgdisk.foff foff gclgdisk int
 gclgdisk.lddate lddate gclgdisk real 
+cluster.gridid gridid cluster int
+hypocentroid.gridid gridid hypocentroid int
+xsaa.gridid gridid xsaa int
 # aliases go here
 # Note the changes from css3.0
 # id key fields all get obvious aliases
+}
+aliases &Tbl{
 atime time arrival real
 deltim deltim arrival real
 slow slow arrival real
