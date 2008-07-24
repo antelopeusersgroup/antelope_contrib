@@ -2249,7 +2249,7 @@ void handle_tweeker_time(Widget w, void *client_data, void *userdata)
 		could change the code below, but this makes the parallel
 		to the template routines that do this for an ensemble
 		clearer. */
-		tpicked -= 1.0;
+		tpicked *= 1.0;
 		/* assume this won't produce an exception.  Ok in dbxcor, but
 		don't do this if this is recycled. */
 		int i=tweeker_tse->member[0].get_int("member_number");
