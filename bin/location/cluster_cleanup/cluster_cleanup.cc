@@ -6,6 +6,7 @@
 #include "Metadata.h"
 #include "Hypocenter.h"
 #include "gclgrid.h"
+#include "seispp.h"
 using namespace std;
 using namespace SEISPP;
 
@@ -191,6 +192,7 @@ int index_to_gridid(GCLgrid3d& g, int i, int j, int k)
 }
 
 	
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
 	ios::sync_with_stdio();
@@ -214,7 +216,10 @@ int main(int argc, char **argv)
                         pfin = string(argv[i]);
                 }
 		else if(!strcmp(argv[i],"-v"))
+		{
 			Verbose=true;
+			SEISPP_verbose=true;
+		}
 		else
 			usage();
 	}
