@@ -462,6 +462,14 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // We need to reset bad moveout in xcor so it can be plotted properly.
    // 
    ResetMoveout(mcc->xcor);
+   // Need to explicitly set traces marked dead with target sample
+   // rate.  This was found to confuse dbxcor plotting if the first
+   // trace was dead.
+   for(int i=0;i<mcc->xcor.member.size();++i)
+   {
+	if(!mcc->xcor.member[i].live)
+		mcc->xcor.member[i].dt=target_dt;
+    }
    // This permanently alters the time base for the xcor result.
    // All users of this must be aware time base for xcor is not longer
    // related to a fixed time base.  Aim is to produce a gather that
