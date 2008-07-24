@@ -109,6 +109,7 @@ static PyObject *python_trsample( PyObject *self, PyObject *args );
 static PyObject *python_trsamplebins( PyObject *self, PyObject *args );
 static PyObject *python_trfilter( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
+static PyObject *python_trdatabins( PyObject *self, PyObject *args );
 static PyObject *python_trcopy( PyObject *self, PyObject *args );
 static PyObject *python_trsplice( PyObject *self, PyObject *args );
 static PyObject *python_trsplit( PyObject *self, PyObject *args );
@@ -189,6 +190,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_trsamplebins", python_trsamplebins,	METH_VARARGS, "Return channel waveform data in binned time/min/max triplets" },
 	{ "_trfilter",  python_trfilter,	METH_VARARGS, "Apply time-domain filters to waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
+	{ "_trdatabins", python_trdatabins,	METH_VARARGS, "Extract binned data points from trace table record" },
 	{ "_trcopy",	python_trcopy,		METH_VARARGS, "Make copy of a trace table including the trace data" },
 	{ "_trsplice",	python_trsplice,	METH_VARARGS, "Splice together data segments" },
 	{ "_trsplit",	python_trsplit,		METH_VARARGS, "Split data segments which contain marked gaps" },
@@ -2390,7 +2392,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	char	*sta;
 	char	*chan;
 	int	apply_calib = 0;
-	int	binsize = 0;
+	int	binsize = 1;
 	int	nrows = 0;
 	int	nsamp_total = 0;
 	int	nsamp_row = 0;
@@ -2580,6 +2582,93 @@ python_trdata( PyObject *self, PyObject *args ) {
 
 		PyTuple_SetItem( obj, i, PyFloat_FromDouble( data[i] ) );
 	}
+
+	return obj;
+}
+
+static PyObject *
+python_trdatabins( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trdata(tr, binsize)\n";
+	Dbptr	tr;
+	float	*data;
+	int	binsize = 1;
+	int	result;
+	int	nsamp;
+	int	i;
+	int	ipair = 0;
+	double	min;
+	double	max;
+	PyObject *obj;
+	PyObject *pair;
+
+	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &tr, &binsize ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( tr.record < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trdata requires a single record number in tr.record\n" );
+
+		return NULL;
+	} 
+
+	result = dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
+
+	if( result != 0 || data == 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trdata failed to retrieve nsamp and data-pointer from record\n" );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( nsamp );
+
+	for( i = 0; i < nsamp; i++ ) {
+
+		if( ( i % binsize ) == 0 ) {
+
+			if( i != 0 ) {
+
+				pair = PyTuple_New( 2 );
+
+				PyTuple_SetItem( pair, 0, PyFloat_FromDouble( min ) );
+				PyTuple_SetItem( pair, 1, PyFloat_FromDouble( max ) );
+
+				PyTuple_SetItem( obj, ipair, pair );
+
+				ipair++;
+			}
+
+			min = max = (double) data[i];
+		}
+
+		if( max < (double) data[i] ) {
+
+			max = (double) data[i];
+		}
+
+		if( min > (double) data[i] ) {
+
+			min = (double) data[i];
+		}
+	}
+
+	pair = PyTuple_New( 2 );
+
+	PyTuple_SetItem( pair, 0, PyFloat_FromDouble( min ) );
+	PyTuple_SetItem( pair, 1, PyFloat_FromDouble( max ) );
+
+	PyTuple_SetItem( obj, ipair, pair );
+
+	ipair++;
 
 	return obj;
 }

@@ -507,6 +507,13 @@ class Dbptr(list):
 
         return v
         
+    def databins(self, binsize):
+        """Obtain binned data points from a trace-table record"""
+
+        v = _datascope._trdatabins(self, binsize)
+
+        return v
+        
     def splice(self):
         """Splice together data segments"""
 
@@ -912,6 +919,12 @@ def trdata(trin):
     """Obtain data points from a trace-table record"""
 
     return trin.data()
+
+
+def trdatabins(trin, binsize):
+    """Obtain binned data points from a trace-table record"""
+
+    return trin.databins(binsize)
 
 
 def trcopy(trin, trout = None):
@@ -2456,6 +2469,21 @@ if __name__ == '__main__':
             v = trdata(tr)
 
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
+
+        def test_procedure_trdatabins(self):
+
+            db = dbopen(self.dbname)
+
+            tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            tr.record = 0
+
+            v = trdatabins(tr, 50)
+
+            self.assertEqual(v[0], (-1395.0, -1248.0))
+            self.assertEqual(v[1], (-1397.0, -1281.0))
+            self.assertEqual(v[2], (-1353.0, -1287.0))
+            self.assertEqual(v[3], (-1441.0, -1319.0))
 
         def test_procedure_trlookup_segtype(self):
 
