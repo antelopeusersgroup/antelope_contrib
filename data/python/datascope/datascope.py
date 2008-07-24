@@ -478,6 +478,21 @@ class Dbptr(list):
 
         return v
 
+    def samplebins(self, t0, t1, sta, chan, binsize, apply_calib = False):
+        """Return binned time-series data for a given station, channel, and time-interval"""
+
+        if(isinstance(t0, str)):
+            
+            t0 = _stock._str2epoch(t0)
+
+        if(isinstance(t1, str)):
+            
+            t1 = _stock._str2epoch(t1)
+
+        v = _datascope._trsamplebins(self, t0, t1, sta, chan, binsize, apply_calib)
+
+        return v
+
     def filter(self, filter_string):
         """Apply time-domain filters to waveform data"""
 
@@ -885,6 +900,12 @@ def trsample(dbin, t0, t1, sta, chan, apply_calib = False):
     """Return time-series data for a given station, channel, and time-interval"""
 
     return dbin.sample(t0, t1, sta, chan, apply_calib)
+
+
+def trsamplebins(dbin, t0, t1, sta, chan, binsize, apply_calib = False):
+    """Return binned time-series data for a given station, channel, and time-interval"""
+
+    return dbin.samplebins(t0, t1, sta, chan, binsize, apply_calib)
 
 
 def trdata(trin):
@@ -2370,6 +2391,17 @@ if __name__ == '__main__':
             self.assertEqual(v[1], (706139719.0999999, -1520.4915771484375))
             self.assertEqual(v[2], (706139719.14999998, -1506.1473388671875))
             self.assertEqual(v[3], (706139719.19999993, -1504.951904296875)) 
+
+        def test_procedure_trsamplebins(self):
+
+            db = dbopen(self.dbname)
+
+            v = trsamplebins(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", 50, True)
+
+            self.assertEqual(v[0], (706139719.04999995, -1667.520263671875, -1491.8031005859375))
+            self.assertEqual(v[1], (706139721.54999995, -1669.910888671875, -1531.249755859375))
+            self.assertEqual(v[2], (706139724.04999995, -1617.3153076171875, -1538.421875))
+            self.assertEqual(v[3], (706139726.54999995, -1722.506591796875, -1576.6732177734375))
 
         def test_procedure_trsplice(self):
 

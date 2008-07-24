@@ -106,6 +106,7 @@ static PyObject *python_dbtmp( PyObject *self, PyObject *args );
 static PyObject *python_dbcreate( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trsample( PyObject *self, PyObject *args );
+static PyObject *python_trsamplebins( PyObject *self, PyObject *args );
 static PyObject *python_trfilter( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static PyObject *python_trcopy( PyObject *self, PyObject *args );
@@ -185,6 +186,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbcreate",  python_dbcreate,   	METH_VARARGS, "Create a temporary database" },
 	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
 	{ "_trsample",  python_trsample,	METH_VARARGS, "Return channel waveform data" },
+	{ "_trsamplebins", python_trsamplebins,	METH_VARARGS, "Return channel waveform data in binned time/min/max triplets" },
 	{ "_trfilter",  python_trfilter,	METH_VARARGS, "Apply time-domain filters to waveform data" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
 	{ "_trcopy",	python_trcopy,		METH_VARARGS, "Make copy of a trace table including the trace data" },
@@ -2367,6 +2369,142 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 			isamp_total++;
 		}
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_trsamplebins( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trsamplebins(db, t0, t1, sta, chan, binsize, apply_calib)";
+	Dbptr	db;
+	Dbptr	tr;
+	double	t0;
+	double	t1;
+	double	time;
+	double	row_starttime;
+	double	samprate;
+	float	*data;
+	double	min;
+	double	max;
+	char	*sta;
+	char	*chan;
+	int	apply_calib = 0;
+	int	binsize = 0;
+	int	nrows = 0;
+	int	nsamp_total = 0;
+	int	nsamp_row = 0;
+	int	irow;
+	int	isamp_row = 0;
+	int	ireturn = 0;
+	Tbl	*s;
+	PyObject *obj;
+	PyObject *triple;
+
+	if( ! PyArg_ParseTuple( args, "O&ddssiO&", parse_to_Dbptr, 
+				       &db, &t0, &t1, &sta, &chan, &binsize, parse_from_Boolean, &apply_calib ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	tr = trloadchan( db, t0, t1, sta, chan );
+
+	tr = dbsort( tr, s = strtbl( "time", 0 ), 0, 0 );
+
+	freetbl( s, 0 );
+
+	trsplice( tr, trTOLERANCE, 0, 0 );
+
+	if( apply_calib ) {
+
+		trapply_calib( tr );
+	}
+
+	dbquery( tr, dbRECORD_COUNT, &nrows );
+
+	if( nrows <= 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trsample: no data (no rows in trace object)\n" );
+
+		return NULL;
+	}
+
+	for( irow = 0; irow < nrows; irow++ ) {
+
+		tr.record = irow;
+
+		dbgetv( tr, 0, "nsamp", &nsamp_row, 0 );
+
+		nsamp_total += nsamp_row;
+	}
+
+	if( nsamp_total <= 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trsample: no data (no samples in trace object rows)\n" );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( nsamp_total );
+
+	for( irow = 0; irow < nrows; irow++ ) {
+
+		tr.record = irow;
+
+		dbgetv( tr, 0, "nsamp", &nsamp_row, 
+			       "time", &row_starttime, 
+			       "samprate", &samprate, 
+			       "data", &data, 0 );
+		
+		for( isamp_row = 0; isamp_row < nsamp_row; isamp_row++ ) {
+
+			if( isamp_row % binsize == 0 ) {
+				
+				if( isamp_row != 0 ) {
+
+					triple = PyTuple_New( 3 );
+					
+					PyTuple_SetItem( triple, 0, PyFloat_FromDouble( time ) );
+					PyTuple_SetItem( triple, 1, PyFloat_FromDouble( min ) );
+					PyTuple_SetItem( triple, 2, PyFloat_FromDouble( max ) );
+
+					PyTuple_SetItem( obj, ireturn, triple );
+
+					ireturn++;
+				}
+
+				time = SAMP2TIME( row_starttime, samprate, isamp_row );
+
+				min = max = (double) data[isamp_row];
+			}
+
+			if( max < (double) data[isamp_row] ) {
+
+				max = (double) data[isamp_row];
+			}
+
+			if( min > (double) data[isamp_row] ) {
+
+				min = (double) data[isamp_row];
+			}
+		}
+
+		triple = PyTuple_New( 3 );
+					
+		PyTuple_SetItem( triple, 0, PyFloat_FromDouble( time ) );
+		PyTuple_SetItem( triple, 1, PyFloat_FromDouble( min ) );
+		PyTuple_SetItem( triple, 2, PyFloat_FromDouble( max ) );
+
+		PyTuple_SetItem( obj, ireturn, triple );
+
+		ireturn++;
 	}
 
 	return obj;
