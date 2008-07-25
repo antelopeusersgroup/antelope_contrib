@@ -131,8 +131,11 @@ DatascopeHandle::DatascopeHandle(string dbname,
 		is_bundle = dbgroup_used(process_list);
 	} catch (...)
 	{
-		freetbl(process_list,0);
-		throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
+		//disable this safety, but leave it here for now in case
+		// it nees to be restored.
+		//freetbl(process_list,0);
+		//throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
+		is_bundle=true;
 	}
 	db = dbprocess(db,process_list,0);
 	freetbl(process_list,0);
@@ -180,7 +183,9 @@ DatascopeHandle::DatascopeHandle(DatascopeHandle& dbh, Pf *pf, string tag,
 			is_bundle = dbgroup_used(process_list);
 		} catch (...)
 		{
-			throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
+			//remove this apparently unnecessary safety value\				// retained for now in case something explodes
+			//throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
+			is_bundle=true;
 		}
 	        db = dbprocess(dbi,process_list,0);
 		freetbl(process_list,0);
