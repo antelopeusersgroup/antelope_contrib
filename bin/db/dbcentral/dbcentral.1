@@ -173,8 +173,13 @@ processed (see example below).
 Show available database clusternames or task nicknames.
 
 .IP -t
-Specify a time-string interpretable by the epoch(1) command (default is "now"). 
-A database clustername must be specified when using the -t option.
+For all operations where dbcentral is operating on a single database out of a
+cluster, dbcentral needs to decide which database to use, which it does 
+by finding the database in the cluster that contains a given reference time. 
+By default, that reference time is the system-clock setting for the current time. 
+If desired, an alternate time may be specified with the -t option by passing in 
+any string interpretable by the epoch(1) command. A database clustername must be
+specified when using the -t option.
 
 .SH FILES
 .SH ENVIRONMENT
