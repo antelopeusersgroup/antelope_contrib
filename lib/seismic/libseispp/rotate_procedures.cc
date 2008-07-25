@@ -30,10 +30,15 @@ SphericalCoordinate PMHalfspaceModel(
 	s.radius = 1.0;
 	s.phi = atan2(uy,ux);
 	sin_i = hypot(ux,uy)*vp0;
-	sini2 = sin_i*sin_i;
-	vpvs2 = vp0/vs0;
-	vpvs2 *= vpvs2;
-	s.theta = atan2( 2.0*sin_i*sqrt(vpvs2 - sini2),vpvs2 - 2.0*sini2);
+	if(sin_i>=1.0)
+		s.theta=0.0;
+	else
+	{
+		sini2 = sin_i*sin_i;
+		vpvs2 = vp0/vs0;
+		vpvs2 *= vpvs2;
+		s.theta = atan2( 2.0*sin_i*sqrt(vpvs2 - sini2),vpvs2 - 2.0*sini2);
+	}
 	return(s);
 }
 

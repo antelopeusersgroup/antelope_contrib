@@ -819,9 +819,12 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 		} catch (SeisppError serr)
 		{
 			serr.log_error();
-			cerr << "Using simple ray coordinates for station "
+			cerr << "Using simple P ray coordinates for station "
 				<< tcse->member[i].get_string("sta")
 				<<endl;
+			/* Need to force u to P wave here or we are asking for
+			trouble */
+			u=hypo.pslow(stalat,stalon,staelev);
 			SphericalCoordinate sc=PMHalfspaceModel(vp0,vs0,
 				u.ux,u.uy);
 			tcse->member[i].rotate(sc);
