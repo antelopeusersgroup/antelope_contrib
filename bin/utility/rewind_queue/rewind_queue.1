@@ -1,0 +1,55 @@
+.TH REWIND_QUEUE 1 "$Date$"
+.SH NAME
+rewind_queue - reset ProcessingQueue to retrieve orphans
+.SH SYNOPSIS
+.nf
+rewind_queue queuefile
+.fi
+.SH DESCRIPTION
+This program is a necessary evil for programs using the 
+ProcessingQueue object 
+(http://geology.indiana.edu/pavlis/software/seispp/html/d9/ddd/classSEISPP_1_1DatascopeProcessingQueue.html)
+to handle database driven processing.  This is used, for example,
+in dbxcor when used in source array mode.  It does one simple
+thing;  it resets the queue pointer to the first record in the database
+view to which the queue file is linked. The ProcessingQueue uses a file
+marking database rows as finished, skipped, being processed, or 
+unfinished.  When a program crashes it will likely leave a record marked
+as being actively processed, which causes a restart to skip that record
+leaving data associated with that database record an orphan.  
+This program solves this problem in a simple way by simply resetting
+the queue pointer to the first row in the database view linked to the
+queuefile.  
+Users should recognize that the next run of a program
+using that queue will have to handle the overhead of a linear search
+through the queue to look for orphans.  The overhead, however, is 
+tiny and the more important thing to recognize is the next run will
+pick up the orphans.  
+.SH FILES
+The queue file this program hits is a frozen binary format linked
+to the ProcessingQueue object AND a particular database view.  
+It is a file of binary int number and it's contents are easily viewed
+with the unix od with -t set to print host int values.  The first
+three int values in the file are a header with the following attributes
+in the following order:  total_record_count, datascope table number 
+linked to this view, and the currrent high water mark.  This is 
+followed by a vector of ints total_record_count long of processing
+status values.  The program basically does nothing more than set
+the current record counter to 0. 
+.SH "SEE ALSO"
+.nf
+http://geology.indiana.edu/pavlis/software/seispp/html/d9/ddd/classSEISPP_1_1DatascopeProcessingQueue.html
+.fi
+.SH "BUGS AND CAVEATS"
+This program really should have a more elaborate edit mode that would
+allow a subset condition to selectively mark queue entries for 
+reprocessing.  Currently there is no way to reprocess a specific 
+row in a view handled by a ProcessingQueue.   This can be a big
+problem if working from a queue with days of work linked to it.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$
