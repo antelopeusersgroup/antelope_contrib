@@ -204,12 +204,21 @@ do_sw(Widget parent, SessionManager & sm)
 		throw SeisppError("do_sw:  total failure in setting up phase processing setup");
 
         try {
-	// initially load the first element of the container of XcorAnalysisSetting setups.
-	// Not ideal, but not easy to fix without producing other problems.
+	/* Set the initial value of analysis setting */
 	map<string,XcorAnalysisSetting>::iterator asetptr;
-	asetptr=sm.asetting_default.begin();
+	string default_phase=sm.get_phase();
+	asetptr=sm.asetting_default.find(default_phase);
+	if(asetptr==sm.asetting_default.end())
+	{
+		asetptr=sm.asetting_default.begin();
+		cerr << "do_sw(WARNING):  default phase = "<<default_phase << " not defined in phase processing setup"
+			<< endl
+			<< "Initializing with first item found.  This may produce unpredictable if you are not running under smartpick"
+			<<endl;
+	}
 	sm.active_setting=asetptr->second;
 	sm.set_phase(asetptr->first);
+
 	/* This forces a reset of default filter setting */
 	sm.modify_filter(string("default"),sm.active_setting.filter_param);
         sm.xpe=new XcorProcessingEngine(pf,asetptr->second,sm.get_waveform_db_name(),
@@ -525,6 +534,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		 + string("\nCannot copntinue"));
 	try {
 		DatabaseHandle *dbh;
+		TimeSeriesEnsemble *tse;
 		if(psm->get_phase()!=phase_to_analyze)
 		{	
 		    try {
@@ -542,17 +552,35 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		The load_data method using the queue file in the Xcor engine
 		needs to mark what it did to the previous ensemble before 
 		loading the next one. */
-		if(psm->get_state() == NONE)
-		{
-			psm->session_state(THINKING);
-			psm->xpe->load_data(*dbh,FINISHED);
+		int tsesize;
+		DatascopeHandle *dsdbh=dynamic_cast<DatascopeHandle *>(dbh);
+		do {
+			if(psm->get_state() == NONE)
+			{
+				psm->session_state(THINKING);
+				psm->xpe->load_data(*dbh,FINISHED);
+			}
+			else
+			{
+				psm->session_state(THINKING);
+				psm->xpe->load_data(*dbh,SKIPPED);
+			}
+			tse=psm->xpe->get_waveforms_gui();
+			tsesize=tse->member.size();
+			if(tsesize<=1) 
+			{
+				ss << "Skipping input ensemble with only one memeber"<<endl;
+				psm->record(ss.str());
+			}
 		}
-		else
+		while((tsesize<=1) && (dsdbh->db.record<dsdbh->number_tuples()));
+		/* Exit the program on this condition as it means there is no more data to process */
+		if(dsdbh->db.record>=dsdbh->number_tuples()) 
 		{
-			psm->session_state(THINKING);
-			psm->xpe->load_data(*dbh,SKIPPED);
+			cout << "dbxcor queue is empty.  Exiting"<<endl;
+			exit(0);
 		}
-		ss << "Data loaded" <<endl;
+		ss << "Data loaded with ensemble size=" <<tsesize<<endl;
 		psm->record(ss.str());
 		if(psm->using_subarrays)
 		{
@@ -568,7 +596,6 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 			psm->session_state(NEXT_EVENT);
 			ss << "Displaying data for this event"<<endl;
 		}
-		TimeSeriesEnsemble * tse=psm->xpe->get_waveforms_gui();
 		XcorEngineMode xem=psm->get_processing_mode();
 		Hypocenter h;
 		if( (xem==ContinuousDB) || (xem==EventGathers) )
