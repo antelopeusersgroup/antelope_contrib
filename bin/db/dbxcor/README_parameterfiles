@@ -1,0 +1,10 @@
+The stock parameter file for dbxcor is for it's original usage in teleseismic body
+wave processing.  Two other pf files are in this directory that are never installed
+in the antelope standard place, but are placed here for the record.  
+
+dbxcor_Plocal.pf is a starting point to process P data with local earthquake data using source
+arrays linked to points in space with the cluster (man cluster) program.
+
+dbxcor_Slocal.pf is a similar file for S wave processing.  It is also a much more elaborate
+example for handling three component data as the example rotates data to transverse.
+That, of course, make so sense for single component data so be forewarned.

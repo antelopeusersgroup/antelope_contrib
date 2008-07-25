@@ -1,0 +1,645 @@
+AutoscaleInitialPlot	true
+BeamMetadataList	&Tbl{
+    pwfid int
+    wfprocess.timetype string
+    wfprocess.dir string
+    wfprocess.dfile string
+    wfprocess.algorithm string
+}
+RequireThreeComponents	false
+StationChannelMap	&Arr{
+    SDV	&Tbl{
+        BHE_00 0 0
+        BHN_00 1 0
+        BHZ_00 2 0
+        BHE_10 0 1
+        BHN_10 1 1
+        BHZ_10 2 1
+        HHE_10 0 2
+        HHN_10 1 2
+        HHZ_10 2 2
+        HHE_20 0 3
+        HHN_20 1 3
+        HHZ_20 2 3
+    }
+    default	&Tbl{
+        BHE 0 0
+        BHN 1 0
+        BHZ 2 0
+        HHE 0 1
+        HHN 1 1
+        HHZ 2 1
+        LHE 0 2
+        LHN 1 2
+        LHZ 2 2
+    }
+}
+beam_dfile	xcorbeam.w
+beam_directory	xcorbeams
+beam_window_parameters	&Arr{
+    SUVariableArea_grey_value	1
+    VariableArea	true
+    WiggleTrace	true
+    blabel	Array Beam
+    blabel2	Array Beam
+    clip_data	false
+    clip_percent	95
+    clip_wiggle_traces	false
+    d1num	0.0
+    d2num	0.0
+    default_curve_color	black
+    f1num	0.0
+    f2num	0.0
+    first_trace_offset	0.0
+    grid1	1
+    grid2	1
+    gridcolor	blue
+    hbox	500
+    interpolate	true
+    label1	time
+    label2	index
+    labelcolor	blue
+    labelfont	Rom14
+    labelsize	18.0
+    n1tic	5
+    n2tic	1
+    plot_file_name	SeismicPlot.ps
+    style	normal
+    time_axis_grid_type	solid
+    time_scaling	auto
+    title	Generic Plot
+    titlecolor	red
+    titlefont	Rom22
+    titlesize	36.0
+    trace_axis_attribute	assoc.delta
+    trace_axis_grid_type	none
+    trace_axis_scaling	auto
+    trace_spacing	1.0
+    trim_gap_edges	true
+    use_variable_trace_spacing	false
+    verbose	true
+    wbox	1000
+    windowtitle	SeismicPlot
+    x1beg	0.0
+    x1end	120.0
+    x2beg	0.0
+    x2end	24.0
+    xbox	50
+    xcur	1.0
+    ybox	50
+}
+coherence_cutoff	0.01
+correlation_peak_cutoff	0.01
+correlation_window_parameters	&Arr{
+    SUVariableArea_grey_value	1
+    VariableArea	true
+    WiggleTrace	true
+    blabel	Cross Correlation Plot
+    blabel2	Cross Correlation Plot
+    clip_data	false
+    clip_percent	98
+    clip_wiggle_traces	false
+    d1num	0.0
+    d2num	0.0
+    default_curve_color	black
+    f1num	0.0
+    f2num	0.0
+    first_trace_offset	0.0
+    grid1	1
+    grid2	1
+    gridcolor	blue
+    hbox	500
+    interpolate	true
+    label1	time
+    label2	index
+    labelcolor	blue
+    labelfont	Rom14
+    labelsize	18.0
+    n1tic	5
+    n2tic	1
+    plot_file_name	SeismicPlot.ps
+    style	normal
+    time_axis_grid_type	solid
+    time_scaling	auto
+    title	Cross Correlation Functions
+    titlecolor	red
+    titlefont	Rom22
+    titlesize	36.0
+    trace_axis_attribute	assoc.delta
+    trace_axis_grid_type	none
+    trace_axis_scaling	auto
+    trace_spacing	1.0
+    trim_gap_edges	true
+    use_variable_trace_spacing	false
+    verbose	true
+    wbox	1000
+    windowtitle	SeismicPlot
+    x1beg	0.0
+    x1end	120.0
+    x2beg	0.0
+    x2end	24.0
+    xbox	50
+    xcur	1.0
+    ybox	50
+}
+data_window_end	800.0
+data_window_parameters	&Arr{
+    SUVariableArea_grey_value	1
+    VariableArea	true
+    WiggleTrace	true
+    blabel	Data Window
+    blabel2	Data Window
+    clip_data	true
+    clip_percent	99.5
+    clip_wiggle_traces	false
+    d1num	0.0
+    d2num	0.0
+    default_curve_color	black
+    f1num	0.0
+    f2num	0.0
+    first_trace_offset	0.0
+    grid1	1
+    grid2	1
+    gridcolor	blue
+    hbox	5000
+    interpolate	true
+    label1	time
+    label2	index
+    labelcolor	blue
+    labelfont	Rom14
+    labelsize	18.0
+    n1tic	5
+    n2tic	1
+    plot_file_name	SeismicPlot.ps
+    style	normal
+    time_axis_grid_type	solid
+    time_scaling	auto
+    title	Data Aligned by Arrival Time
+    titlecolor	red
+    titlefont	Rom22
+    titlesize	36.0
+    trace_axis_attribute	assoc.delta
+    trace_axis_grid_type	none
+    trace_axis_scaling	auto
+    trace_spacing	1.0
+    trim_gap_edges	true
+    use_variable_trace_spacing	false
+    verbose	true
+    wbox	1000
+    windowtitle	SeismicPlot
+    x1beg	0.0
+    x1end	120.0
+    x2beg	0.0
+    x2end	24.0
+    xbox	50
+    xcur	1.0
+    ybox	50
+}
+data_window_start	-100.0
+initial_time_stamp	1990001:00:00:00.0
+network_name	AEIC
+phase_processing_parameters	&Arr{
+    P	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.6
+        component_for_analysis	Z
+        default_filter	BW 0.8 2 0 0
+        phase_for_analysis	P
+        regular_gather_twin_end	40.0
+        regular_gather_twin_start	-10.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	10.0
+    }
+    PP	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.8
+        component_for_analysis	Z
+        default_filter	DEMEAN
+        phase_for_analysis	PP
+        regular_gather_twin_end	120.0
+        regular_gather_twin_start	-40.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    PKP	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.8
+        component_for_analysis	Z
+        default_filter	DEMEAN
+        phase_for_analysis	PKP
+        regular_gather_twin_end	120.0
+        regular_gather_twin_start	-40.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    S	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	E
+        beam_window_fraction	0.6
+        component_for_analysis	T
+        default_filter	DEMEAN
+        phase_for_analysis	S
+        regular_gather_twin_end	150.0
+        regular_gather_twin_start	-60.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    SS	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	E
+        beam_window_fraction	0.6
+        component_for_analysis	T
+        default_filter	DEMEAN
+        phase_for_analysis	SS
+        regular_gather_twin_end	350.0
+        regular_gather_twin_start	-100.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    SKS	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	N
+        beam_window_fraction	0.6
+        component_for_analysis	R
+        default_filter	DEMEAN
+        phase_for_analysis	SKS
+        regular_gather_twin_end	350.0
+        regular_gather_twin_start	-100.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    SKKS	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	N
+        beam_window_fraction	0.6
+        component_for_analysis	R
+        default_filter	DEMEAN
+        phase_for_analysis	SKKS
+        regular_gather_twin_end	350.0
+        regular_gather_twin_start	-100.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+}
+
+resample_definitions    &Arr{
+    20  &Arr{
+        Decimator_response_files        &Tbl{
+            0.4   resample
+        }
+        high_limit      21
+        low_limit       19
+    }
+    40  &Arr{
+        Decimator_response_files        &Tbl{
+            0.8   resample
+        }
+        high_limit      41
+        low_limit       39
+    }
+	50  &Arr{
+        Decimator_response_files        &Tbl{
+            1   none
+        }
+        high_limit      51
+        low_limit       49
+    }
+    100 &Arr{
+        Decimator_response_files        &Tbl{
+            2   /opt/antelope/4.9/data/responses/RT72A_2_f
+        }
+        high_limit      101
+        low_limit       99
+    }
+}
+
+result_twin_end	100.0
+result_twin_start	-20.0
+save_list_arrival	&Tbl{
+    arrival.sta string
+    arrival.chan string
+    arrival.time real
+    arrival.iphase string
+    arrival.jdate int
+    arrival.auth string
+}
+save_list_assoc	&Tbl{
+    assoc.sta string
+    assoc.orid int
+    assoc.delta real
+    assoc.seaz real
+    assoc.esaz real
+    assoc.timeres real
+    assoc.timedef string
+    assoc.phase string
+    assoc.vmodel string
+}
+save_to_arrival	false
+schema	css3.0
+stack_weight_cutoff	0.001
+target_sample_interval	0.02
+time_lag_cutoff	0.5
+trace_mdl	&Tbl{
+    sta string
+    chan string
+    time real
+    endtime real
+    nsamp int
+    samprate real
+    dfile string
+    dir string
+    sta_lat real
+    sta_lon real
+    sta_elev real
+    source_lat real
+    source_lon real
+    source_depth real
+    source_time real
+    datatype string
+    dfile string
+    dir string
+    foff int 
+    arrival.time real
+    arrival_time real
+    orid int
+    evid int
+    gridid int
+}
+ensemble_mdl  &Tbl{
+sta string
+}
+
+#
+# new control for beam plots 
+#
+turn_off_informational_popups true
+beam_window_marker_color red
+robust_window_marker_color blue
+beam_arrival_pick_marker_color blue
+beam_arrival_error_marker_color red
+beam_plot_title Beam Plot
+use_subarrays	false
+virtual_arrays &Arr{
+# Passcal stations STS-2
+PC &Arr{
+sta_list &Tbl{
+CUPC  
+ARPC  
+CAPC  
+CMPC  
+EDPC  
+FCPC  
+JMPC  
+LAPC  
+LMPC  
+MAPC  
+MNPC  
+MOPC  
+MUPC  
+PAPC  
+PFPC  
+PRPC  
+ROPC  
+RPPC  
+SIPC  
+SMPC  
+SRPC  
+STPC  
+ULPC  
+VIPC  
+ZUPC  
+}
+}
+#funvisis statiosn CMG-40s
+VE &Arr{
+sta_list &Tbl{
+BAUV  
+BIRV  
+CAIV  
+CAPV  
+CRUV  
+CUNV  
+CUPV  
+CURV  
+DABV  
+ELOV  
+GUIV  
+GUNV  
+GURV  
+IBAV  
+IMOV  
+ITEV  
+JACV  
+LUEV  
+MACV  
+MERV  
+MONV  
+ORCV  
+ORIV  
+PARV  
+PAYV  
+PCRV  
+QARV  
+RIOV  
+SANV  
+SIQV  
+SOCV  
+TERV  
+TINV  
+TURV  
+VIGV  
+VIRV  
+}
+}
+# Western stations
+WEST &Arr{
+sta_list &Tbl{
+VIRV
+IMOV
+ARUB
+MONV
+DABV
+JACV
+SIQV
+QARV
+CURV
+TERV
+SANV
+SDV
+SOCV
+VIGV
+CAPV
+}
+}
+SW &Arr{
+sta_list &Tbl{
+CAPV
+VIGV
+SOCV
+ELOV
+SANV
+BAUV
+CURV
+SANV
+TERV
+}
+}
+SINT &Arr{
+sta_list &Tbl{
+TERV
+SANV
+TIRV
+TURV
+TEST
+BIRV
+JMPC
+ROPC
+FCPC
+LMPC
+BAUV
+ULPC
+CUPV
+MERV
+RPPC
+}
+}
+GUAR &Arr{
+sta_list &Tbl{
+JMPC
+ROPC
+FCPC
+LMPC
+ULPC
+BAUV
+MERV
+RPPC
+LAPC
+SMPC
+PFPC
+STPC
+}
+}
+CRATON &Arr{
+sta_list &Tbl{
+PAYV
+MOPC
+CAIV
+MAPC
+CMPC
+GURV
+PAPC
+RIOV
+VIPC
+CAPC
+EDPC
+LUEV
+}
+}
+EAST &Arr{
+sta_list &Tbl{
+ABPC
+PARV
+PCRV
+SRPC
+MUPC
+PRPC
+ORIV
+ARPC
+CUPC
+SIPC
+MNPC
+MATU
+CARI
+CACO
+GUAY
+COCH
+GUNV
+GUAY
+GUIV
+}
+}
+OCEAN &Arr{
+sta_list &Tbl{
+PINA
+SHRB
+PNCH
+PINA
+CUBA
+RRNR
+SOMB
+DAQI
+ZOMB
+DRKS
+BTBT
+BLOS
+B151
+ORCV
+IBAV
+ITEV
+COCH
+GUAY
+MIPC
+CURA
+ARUB
+MONV
+IMOV
+}
+}
+}
+filters &Tbl{
+1HP  BW 1.0 2 0 0
+2HP  BW 2.0 2 0 0
+5HP  BW 5.0 2 0 0
+4LP BW 0.0 0 5.0 3
+5LP BW 0.0 0 5.0 3
+8LP BW 0.0 0 8.0 3
+1-4BP BW 1.0 3 4.0 3
+1-5BP BW 1.0 3 5.0 3
+1-8BP BW 1.0 3 8.0 3
+1-10BP BW 1.0 3 10.0 3
+1-15BP BW 1.0 3 15.0 3
+0.5-5BP BW 0.5 3 5 3
+0.5-10BP BW 0.5 3 10 3
+2-5BP BW 2.0 3 5.0 3
+integration	INT
+derivative   DIF
+}
+#
+# this must be false for GenericGathers because in that case
+# we assume arrivals are loaded with the data
+#
+LoadArrivals false
+
+processing_mode GenericGathers
+dbprocess_commands &Tbl{
+dbopen hypocentroid
+dbjoin cluster
+dbjoin event
+dbjoin origin
+dbjoin assoc
+dbjoin arrival
+dbsubset iphase=~/P/
+dbleftjoin wfdisc sta time::endtime\#arrival.time
+dbjoin site
+dbjoin sitechan
+dbsubset wfdisc.chan=~/BHZ/
+dbsort gridid sta evid
+dbgroup gridid sta
+}
+GatherTimeAlignmentKey arrival.time
+TTmethod tttaup
+TTmodel iasp91
+delete_old_arrivals false
+default_phase P
+
+pf_revision_time 1209042013
