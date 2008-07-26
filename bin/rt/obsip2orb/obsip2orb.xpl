@@ -9,18 +9,27 @@ our ( $opt_c, $opt_n, $opt_v) ;
 
 {    
     my ( $dbin, $orbname, $orb, $orbclient, $nfiles, $file, $cmd, $row);
-    my ($pgm, $result, $client, $when, $check, $found);
+    my ($pgm, $result, $client, $when, $check, $found, $usage, $stime, $subject, $host);
     my ( @dbin, @dbwfdisc, @clients);
+
+    $pgm = $0 ; 
+    $pgm =~ s".*/"" ;
+    elog_init($pgm, @ARGV);
+    $cmd = "\n$0 @ARGV" ;
+
 #
 #  get arguments
 #
     if ( ! &Getopts('c:nv') || @ARGV < 2 ) { 
-        $pgm = $0 ; 
-        $pgm =~ s".*/"" ;
-        die ( "\nUsage: $0  [-v] [-n] orb dbin [dbin2 [dbin3 ...]] \n\n" ) ; 
+        $usage  =  "\nUsage: $0  [-v] [-n] orb dbin [dbin2 [dbin3 ...]] \n\n" ;
+        elog_notify($cmd) ; 
+        elog_die ( $usage ) ;     
     }
     
-    elog_notify("$0");
+    elog_notify($cmd) ; 
+    $stime = strydtime(now()) ;
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n") ;
     
     $orbclient  = $opt_c || "orb2orb" ;
 
@@ -30,8 +39,8 @@ our ( $opt_c, $opt_n, $opt_v) ;
     $check = pfget("miniseed2orb","wait_match");
     
     if  ($orbclient != /$check/ ) {
-        elog_notify("$orbclient not specified for \"wait_match\" in miniseed2orb.pf");
-        elog_die("update miniseed2orb.pf");
+        elog_notify("$orbclient not specified for \"wait_match\" in miniseed2orb.pf\nupdate miniseed2orb.pf\n\n");
+        elog_die();
     }
 
 #
@@ -80,7 +89,14 @@ our ( $opt_c, $opt_n, $opt_v) ;
         }    
     }
     orbclose($orb);
-    exit;
+    
+    $stime = strydtime(now());
+    elog_notify ("completed successfully	$stime\n\n");
+
+    $subject = sprintf("Success  $pgm  $host");
+    elog_notify ($subject);
+    
+    exit(0);
 }
 
 
