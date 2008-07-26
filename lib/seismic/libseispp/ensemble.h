@@ -22,6 +22,7 @@
 #include "ThreeComponentSeismogram.h"
 #include "ComplexTimeSeries.h"
 #include "Hypocenter.h"
+#include "SeisppKeywords.h"
 namespace SEISPP {
 /*! \brief Object to contain a group (ensemble) of time series objects (seismograms).
 
