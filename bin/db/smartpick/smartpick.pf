@@ -13,6 +13,7 @@ auto_sw_on                      1
 print_command			lp
 default_postscript_file		smartpick.ps
 default_snapshot_file		smartpick.gif
+dbxcor_log_file			dbxcor.log
 antelope			&env(ANTELOPE)
 stations_frame_columns		10
 stations_frame_subset		offdate == NULL
@@ -141,6 +142,7 @@ required_programs &Tbl{
 	dbxcor
 	dbcrunch
 	import
+	tee
 	unregister
 	xterm
 	xwininfo

@@ -607,6 +607,10 @@ to define four buttons  \fIfirst_teleseism\fP, \fInext_teleseism\fP,
 \fIprevious_teleseism\fP, \fIlast_teleseism\fP to step through events further
 than 30 degrees from Southern California:
 
+.IP dbxcor_log_file
+The output from the dbxcor command is directed to a log file, the name of which 
+may be controlled with this \fIdbxcor_log_file\fP parameter. 
+
 .IP required_programs
 This table contains the names of programs required by smartpick in order 
 to run. Under most conditions, this table should not need to be changed, and 
@@ -817,6 +821,7 @@ stations_frame_subset           offdate == NULL
 print_command                   lp
 default_postscript_file         smartpick.ps
 default_snapshot_file           smartpick.gif
+dbxcor_log_file			dbxcor.log
 antelope                        &env(ANTELOPE)
 overlay_time_correction         0
 num_nearby_stations             0
@@ -915,6 +920,7 @@ required_programs &Tbl{
 	dbpick
 	dbxcor
 	import
+	tee
 	unregister
 	xterm
 	xwininfo

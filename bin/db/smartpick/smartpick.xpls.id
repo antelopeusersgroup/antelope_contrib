@@ -604,8 +604,8 @@ sub start_dbxcor {
 	} 
 
 	my( $cmd ) = "xterm " .
-		     " -title dbxcor_output " .
-		     "-e dbxcor $State{dbname} -v $dbxcor_appname";
+		     "-title dbxcor_output " .
+		     "-e 'dbxcor $State{dbname} -v $dbxcor_appname 2>&1 | tee $State{dbxcor_log_file}'";
 
 	$State{DbxcorPid} = rtbkg( $cmd );
 
@@ -2137,6 +2137,7 @@ foreach $param ( @booleans ) {
 	      print_command		[[:alnum:]_/:.]+
 	      default_postscript_file	[[:alnum:]_/:.]+
 	      default_snapshot_file	[[:alnum:]_/:.]+
+	      dbxcor_log_file		[[:alnum:]_/:.]+
 	      num_nearby_stations	[[:digit:]]+
 	      overlay_time_correction	[[:digit:]\.\+-]+
 	      stations_frame_columns	[[:digit:]]+
