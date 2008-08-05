@@ -1,0 +1,54 @@
+.TH ATWS_CALC_MWP 1 "$Date$"
+.SH NAME
+atws_calc_mwp \- calculate Mwp manually
+.SH SYNOPSIS
+.nf
+atws_calc_mwp db orid
+.fi
+.SH DESCRIPTION
+\fBatws_calc_mwp\fP is an interactive application that enables the calculation of Mwp.
+The algorithm is based on the paper of Tsuboi et al. BSSA 1995 and the software
+is from Barry Hirshorn of the Pacific Tsunami 
+Warning System in Hawaii.
+.LP
+A database is required with at least the origin, wfdisc and assoc tables present.
+Start the program with:
+.ft CW
+.in 2c
+.nf
+
+\fBatws_calc_mwp\fP your-database your-orid
+
+.fi
+.in
+.ft R
+.LP
+This will bring up the interactive window. The labels at thetop of the window
+describe the available actions. The user will move through the associated waveforms
+and select the maximum moment as decribed in Tsuboi and then save the result which
+is written to screen. Note that the resultant magnitude is not saved in the table.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+\fBatws_calc_mwp\fP ansn 60013
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+James Stewart based on code from Barry Hirshorn
+.br
+Geoscience Australia
+.\" $Id$
