@@ -1,0 +1,17 @@
+use ExtUtils::MakeMaker;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+WriteMakefile(
+    'NAME'		=> 'atws_mwp',
+    'FIRST_MAKEFILE' 	=> 'perl_makefile',
+    'MAKEFILE' 		=> 'perl_makefile',
+    'VERSION'		=> '0.01', 
+    'PREREQ_PM'		=> {}, 
+     ($] >= 5.005 ?    
+      (ABSTRACT 	=> 'perl interface to an Mwp library of PTWC origin', 
+       AUTHOR     	=> 'AuthorField') : ()),
+    'LIBS'		=> ['LinkArguments'], 
+    'DEFINE'		=> '', 
+    'INC'		=> 'CompileArguments', 
+    'OBJECT'		=> 'mwp_routines.o fill.o atws_mwp.o', 
+);
