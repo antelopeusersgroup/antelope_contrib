@@ -591,7 +591,7 @@ template <class T> T median(vector<T>& x)
 	if(count%2)
 		result=copyx[medposition];
 	else
-		result=(copyx[medposition]+copyx[medposition+1])/2.0;
+		result=(copyx[medposition]+copyx[medposition-1])/2.0;
 	return (result);
 }
 /*!
