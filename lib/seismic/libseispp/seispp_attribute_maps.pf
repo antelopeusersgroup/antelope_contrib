@@ -669,6 +669,7 @@ orid origin.orid
 wfid wfdisc.wfid
 snet snetsta.snet
 gridid cluster.gridid hypocentroid.gridid xsaa.gridid
+iphase arrival.iphase assoc.phase
 }
 }
 
