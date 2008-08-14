@@ -5,4 +5,4 @@ include $(ANTELOPEMAKE)
 OBJS=rewind_queue.o
 $(BIN) : $(OBJS)
 	$(RM) $@
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
