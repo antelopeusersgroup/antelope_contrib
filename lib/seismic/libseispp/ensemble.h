@@ -84,16 +84,16 @@ public:
 //
 //\param dbhi is a generalized handle to a database.  In the current
 // implementation it is assumed to be a DatascopeHandle.
+//   into each seismogram's metadata area.  
+//\param data_mdl is a list of metadata attributes to be loaded 
 //\param ensemble_mdl is a list of metadata attributes to be loaded
 //   into the global metadata area for the whole ensemble.
-//\param data_mdl is a list of metadata attributes to be loaded 
-//   into each seismogram's metadata area.  
 //\param am is the mapping operator used to translate internal names
 //   to database attribute names (e.g. wfdisc.time).
 **/
 	TimeSeriesEnsemble(DatabaseHandle& dbhi,
-	        MetadataList& ensemble_mdl,
-	                MetadataList& data_mdl,
+	        MetadataList& data_mdl,
+	        	MetadataList& ensemble_mdl,
 	                        AttributeMap& am);
 /*!
 // Time-window based database-driven constructor.  
