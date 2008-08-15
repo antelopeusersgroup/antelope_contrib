@@ -860,6 +860,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 	auto_ptr<TimeSeriesEnsemble> result(new
 		TimeSeriesEnsemble(dynamic_cast<Metadata&> (*tcse),
 				tcse->member.size()));
+
 	if(compname.find_first_of("ZNE")!=string::npos)
 	{
 	    for(i=0;i<tcse->member.size();++i)
@@ -992,8 +993,18 @@ void XcorProcessingEngine::prep_gather()
 		a time standard by simultaneously dithering this attribute.
 		This is sometimes a do nothing operation depending on processing mode
 		but this makes the result independent of how we got here.*/
-		atime=regular_gather->member[i].get_double(time_align_key);
-		regular_gather->member[i].put(arrival_time_key,atime);
+		if(time_align_key=="none")
+		{
+		/* This mode is inteded to used if input gathers 
+		have a relative time base*/
+		    atime=0.0;
+		    regular_gather->member[i].put(arrival_time_key,atime);
+		}
+		else
+		{
+		    atime=regular_gather->member[i].get_double(time_align_key);
+		    regular_gather->member[i].put(arrival_time_key,atime);
+		}
 	}
 	/* Shift traces by measured arrival times if requested.  */
 	if(load_arrivals) dbarrival_shift(*regular_gather);
@@ -1204,7 +1215,15 @@ void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 				<< "Run in verbose mode for more details"<<endl;
 			
 	}
-	regular_gather=auto_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
+	/* Warning:  we assume if arrival alignment is turned off that
+	the data are multichannel in flavor and all have the same 
+	sample rate.  Probably should test for this condition here, but
+	will leave this as only a warning for now. */
+	if(time_align_key=="none")
+	    regular_gather=auto_ptr<TimeSeriesEnsemble>
+				(new TimeSeriesEnsemble(*tse));
+	else
+	    regular_gather=auto_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
 		time_align_key,analysis_setting.gather_twin,target_dt,rdef,true));
 	this->prep_gather();
     } catch (...) {throw;}
@@ -1536,6 +1555,14 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			      Ultimately the two tables are likely to be assimilated into one that
 			      works correctly independent of mode.   For now I can't change this
 			      without creating a lot of havoc. */
+			      int addrecord=dbaddnull(dbxcorarrival);
+			      if(addrecord==dbINVALID)
+			      {
+				cerr<<"XcorProcessingEngine::save_results:  "
+					<< "dbaddnull failed for xcor arrival extension table"<<endl;
+				continue;
+			      }
+			      dbxcorarrival.record=addrecord;
 			      if(processing_mode==GenericGathers)
 			      {
 				int ggevid,ggorid,gridid;
@@ -1543,7 +1570,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				    ggevid=trace->get_int("evid");
 				    ggorid=trace->get_int("orid");
 				    gridid=trace->get_int("gridid");
-				    record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
+				    record=dbputv(dbxcorarrival,0,"sta",sta.c_str(),
 					"chan",chan.c_str(),
 					"phase",analysis_setting.phase_for_analysis.c_str(),
 					"pwfid",pwfid,
@@ -1571,7 +1598,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			      }
 			      else
 			      {
-			          record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
+			          record=dbputv(dbxcorarrival,0,"sta",sta.c_str(),
 					"chan",chan.c_str(),
 					"phase",analysis_setting.phase_for_analysis.c_str(),
 					"pwfid",pwfid,
