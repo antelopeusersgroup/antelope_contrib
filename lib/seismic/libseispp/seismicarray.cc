@@ -181,9 +181,12 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	{
 		offdlmin=min_element(offdl.begin(),offdl.end());
 		offdate=*offdlmin;
-		offdlmin=min_element(future_ondl.begin(),
+		if(!future_ondl.empty())
+		{
+			offdlmin=min_element(future_ondl.begin(),
                                 future_ondl.end());
-		offdate=min(offdate,*offdlmin);
+			offdate=min(offdate,*offdlmin);
+		}
 	}
 	valid_time_interval=TimeWindow(epoch(ondate),
 				epoch(offdate));
