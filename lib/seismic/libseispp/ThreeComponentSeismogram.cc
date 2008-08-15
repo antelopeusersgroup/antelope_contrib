@@ -578,7 +578,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		temin=min(temin,ts[2].endtime());
 		temax=max(ts[0].endtime(),ts[1].endtime());
 		temax=max(temax,ts[2].endtime());
-		ns=nint((temax-temin)/dt);
+		ns=nint((temax-tsmin)/dt);
 		this->u=dmatrix(3,ns);
 		this->u.zero();
 		if(fabs((tsmax-tsmin)/dt)>1.0) 
