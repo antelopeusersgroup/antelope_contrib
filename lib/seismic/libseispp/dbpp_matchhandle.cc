@@ -122,6 +122,12 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 					 + "Input view does not contain a table matching internal name="
 					 + (*internal_name) );
 			}
+			else if(table.length()>0)
+			{
+				/* kind of an odd way to test for a simple
+				table, but that is what this is */
+				viewtable=table;
+			}
 			else
 			{
 				viewtable=FindFirstValidTable(dbtmp,tablenames);
@@ -130,6 +136,12 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 					 + "Input view does not contain a table containing the attribute "
 					 + (*internal_name) );
 			}
+			if(aliasmap.find(viewtable)==aliasmap.end())
+				throw SeisppError(base_error
+				+ "Attribute map does not define an alias for key="
+				+ (*internal_name)
+				+ " for table="
+				+ viewtable);
 			AttributeProperties apalias=aliasmap[viewtable];
 			matchkeys.push_back(apalias);
 			MDnamekeys.push_back(*internal_name);
