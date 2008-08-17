@@ -627,9 +627,25 @@ xcorbeam.amp amp xcorbeam int
 cluster.gridid gridid cluster int
 hypocentroid.gridid gridid hypocentroid int
 xsaa.gridid gridid xsaa int
+xsaa.evid evid xsaa int
+xsaa.orid orid xsaa int
+xsaa.pwfid pwfid xsaa int
+xsaa.sta sta xsaa string
+xsaa.chan chan xsaa string
+xsaa.phase phase xsaa string
+xsaa.filter filter xsaa string
+xsaa.algorithm algorithm xsaa string
+xsaa.pchan pchan xsaa string
+xsaa.time time xsaa real
+xsaa.twin twin xsaa real
+xsaa.samprate samprate xsaa real
+xsaa.stackwgt stackwgt xsaa real
+xsaa.coherence coherence xsaa real
+xsaa.xcorpeak xcorpeak xsaa real
+xsaa.relamp relamp xsaa real
 }
 aliases &Tbl{
-sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta 
+sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta  xsaa.sta
 chan wfdisc.chan sclink.chan sitechan.chan arrival.chan
 time wfdisc.time wfprocess.time
 endtime wfdisc.endtime wfprocess.endtime 
@@ -642,7 +658,7 @@ arrival_time  arrival.time xcorarrival.time
 deltim arrival.deltim
 slow arrival.slow
 azimuth arrival.azimuth
-phase assoc.phase 
+phase assoc.phase xcorarrival.phase xsaa.phase
 sta_lat site.lat
 sta_lon site.lon
 sta_elev site.elev
@@ -662,14 +678,18 @@ calib wfdisc.calib
 calper wfdisc.calper
 datatype wfdisc.datatype wfprocess.datatype
 timetype wfprocess.timetype
-pwfid wfprocess.pwfid xcorbeam.pwfid sclink.pwfid
+pwfid wfprocess.pwfid xcorbeam.pwfid sclink.pwfid xcorarrival.pwfid xsaa.pwfid
 arid arrival.arid assoc.arid
-evid event.evid origin.evid evlink.evid
-orid origin.orid
+evid event.evid origin.evid evlink.evid xsaa.evid
+orid origin.orid assoc.orid xsaa.orid
 wfid wfdisc.wfid
 snet snetsta.snet
 gridid cluster.gridid hypocentroid.gridid xsaa.gridid
 iphase arrival.iphase assoc.phase
+stackwgt xcorarrival.stackwgt xsaa.stackwgt
+coherence xcorarrival.coherence xsaa.coherence
+xcorpeak xcorarrival.xcorpeak xsaa.xcorpeak
+relamp xcorarrival.relamp xsaa.relamp
 }
 }
 
