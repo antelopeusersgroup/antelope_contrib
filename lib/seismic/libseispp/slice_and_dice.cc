@@ -43,21 +43,28 @@ TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw)
 	result.s.resize(result.ns);
 	result.t0=tw.start;
 	// add gaps if there is a mismatch on the left or right
-	if(tw.start<parent.t0) result.add_gap(TimeWindow(tw.start,result.t0));
+	if(tw.start<parent.t0) result.add_gap(TimeWindow(tw.start,parent.t0));
 	if(tw.end>parent.endtime()) result.add_gap(TimeWindow(parent.endtime(),result.endtime()));
 	//
 	// Now copy the data to result
 	// Setting the above gaps simplifies this process a lot.
 	//	
+	int sampnumber;
+	double t;
 	for(int i=0;i<result.ns;++i)
 	{
-		double t;
 		if(result.is_gap(i)) 
 			result.s[i]=0.0;
 		else
 		{
 			t=result.time(i);
-			result.s[i]=parent.s[parent.sample_number(t)];
+			sampnumber=parent.sample_number(t);
+			if(sampnumber>=parent.ns) 	
+				// This should always be and essentially
+				// redundant, but safer
+				result.s[i]=0.0;
+			else
+				result.s[i]=parent.s[sampnumber];
 		}
 	}
 	return(result);
@@ -110,7 +117,7 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 	result.u=dmatrix(3,result.ns);
 	result.t0=tw.start;
 	// add gaps if there is a mismatch on the left or right
-	if(tw.start<parent.t0) result.add_gap(TimeWindow(tw.start,result.t0));
+	if(tw.start<parent.t0) result.add_gap(TimeWindow(tw.start,parent.t0));
 	if(tw.end>parent.endtime()) result.add_gap(TimeWindow(parent.endtime(),result.endtime()));
 	//
 	// Now copy the data to result
