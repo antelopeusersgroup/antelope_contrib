@@ -5,12 +5,15 @@ use Datascope ;
 use orb ;
 require "getopts.pl" ;
 
-our ( $opt_c, $opt_n, $opt_v) ; 
+our ( $opt_c, $opt_l, $opt_n, $opt_v) ; 
 
 {    
     my ( $dbin, $orbname, $orb, $orbclient, $nfiles, $file, $cmd, $row);
     my ($pgm, $result, $client, $when, $check, $found, $usage, $stime, $subject, $host);
     my ( @dbin, @dbwfdisc, @clients);
+    
+    my ($lag,$old,$new,$max,$range,$thread,$pktid,$who,$what);
+    my (@laggards);
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -21,7 +24,7 @@ our ( $opt_c, $opt_n, $opt_v) ;
 #  get arguments
 #
     if ( ! &Getopts('c:nv') || @ARGV < 2 ) { 
-        $usage  =  "\nUsage: $0  [-v] [-n] orb dbin [dbin2 [dbin3 ...]] \n\n" ;
+        $usage  =  "\nUsage: $0  [-v] [-n] [-c orbclient] [-l] orb dbin [dbin2 [dbin3 ...]] \n\n" ;
         elog_notify($cmd) ; 
         elog_die ( $usage ) ;     
     }
@@ -38,10 +41,7 @@ our ( $opt_c, $opt_n, $opt_v) ;
 #
     $check = pfget("miniseed2orb","wait_match");
     
-    if  ($orbclient != /$check/ ) {
-        elog_notify("$orbclient not specified for \"wait_match\" in miniseed2orb.pf\nupdate miniseed2orb.pf\n\n");
-        elog_die();
-    }
+    elog_notify("miniseed2orb.pf \"wait_match\" $check\n\n");
 
 #
 #  make sure wait_match currently connected to orb
@@ -87,7 +87,19 @@ our ( $opt_c, $opt_n, $opt_v) ;
             elog_notify("\n$cmd");
             system($cmd) unless $opt_n;
         }    
+  
+  
+        $lag = 1.0;
+        while ($lag > 0.1 && $opt_l ) {
+            ($old,$new,$max,$range,@laggards) = orblag($orb,"orbmsd2days",".*/pf");
+            elog_notify("	orbmsd2days	$old	$new	$max	$range	@laggards");
+            ($lag, $thread, $pktid, $who, $what) =  split (' ', $laggards[0], 5) ;
+            elog_notify("	orbmsd2days	$lag");
+            sleep 30;
+        }
     }
+    
+
     orbclose($orb);
     
     $stime = strydtime(now());
