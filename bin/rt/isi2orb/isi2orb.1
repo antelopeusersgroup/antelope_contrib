@@ -162,6 +162,13 @@ may be set to a nonzero value to prevent data requests larger than
 a certain size for wildcarded expressions. If you experience problems, it may
 be better not to use wildcarded expressions in conjunction with state files. 
 
+The \fIstreams\fP table expressions are case-sensitive! At the time of this writing, 
+the IDA servers tabulate station and channel names in lowercase letters. Thus, 
+until such time as the server policy changes, the streams-table entries need to be lowercase. 
+The parameter \fIuppercase\fP in the \fIisi2orb.pf\fP parameter-file has nothing to do with 
+the alphabetic case of letters in expressions sent to the IDA server; rather, this parameter 
+specifies whether to force the letters used in orb source-names to be uppercase. 
+
 The individual station-channel streams are emitted as streams of orbserver 
 GENC packets. In principle they could be multiplexed into MGENC packets 
 on a per-station basis.
