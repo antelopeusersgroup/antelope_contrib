@@ -20,7 +20,12 @@ if( !Getopts( 'ip:v' ) || @ARGV > 1 ) {
 
 if( $opt_p ) {
 
-	$Pf = $opt_p;
+	$Pf_proto = $Pf = $opt_p;
+
+	if( ! pffiles( $Pf ) ) {
+
+		elog_die( "Couldn't find specified '$Pf.pf'. Bye.\n" );
+	}
 }
 
 if( pffiles( $Pf ) ) {
@@ -50,7 +55,10 @@ print O "$header\n\n";
 
 foreach $element ( keys( %elements ) ) {
 	
-	print O "$element = $elements{$element}{$Os}\n";
+	if( defined( $elements{$element}{$Os} ) && $elements{$element}{$Os} ne "" ) {
+
+		print O "$element = $elements{$element}{$Os}\n";
+	}
 }
 
 close( O );

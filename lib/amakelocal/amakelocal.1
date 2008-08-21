@@ -27,7 +27,8 @@ this is not the design intent.
 .IP -v 
 verbose
 .IP "-p pfname"
-Specify an alternate parameter file
+Specify an alternate parameter file. If this option is used, amakelocal does not default to using 
+the amakelocal_proto.pf file in the absence of the specified file. 
 .IP -i 
 Install mode. The default behavior of amakelocal is to create an antelopemake.local file in the 
 local directory, for installation by a surrounding make hierarchy. If the -i option is invoked, 
@@ -40,7 +41,9 @@ parameter file.
 The amakelocal.pf parameter file contains specifications for macros that will be custom-configured 
 for the machine on which compilation is taking place. If this parameter-file is present, these contents
 are used. If amakelocal.pf is not present, \fBamakelocal\fP defaults to the supplied 
-\fIamakelocal_proto.pf\fP parameter file. 
+\fIamakelocal_proto.pf\fP parameter file. If an element is not present, or if the entry for 
+the current operating system is not specified or is empty, the corresponding macro is omitted from 
+the output file. 
 .nf
 
 output_file antelopemake.local
