@@ -1,7 +1,7 @@
-BIN = localmake
-PF = localmake.pf
+BIN = amakelocal
+PF = amakelocal_proto.pf
 
-MAN1 = localmake.1
+MAN1 = amakelocal.1
 MAN5 = antelopemakelocal.5
 
 INCLUDE = antelopemake.local
@@ -10,5 +10,5 @@ CLEAN = antelopemake.local
 
 include $(ANTELOPEMAKE)
 
-antelopemake.local: localmake
-	localmake
+antelopemake.local: amakelocal
+	amakelocal -v
