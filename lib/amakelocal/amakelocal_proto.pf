@@ -27,4 +27,10 @@ elements &Arr{
 		Solaris
 		Linux 
 	}
+	PHP_INC &Arr{
+#               Darwin /usr/include/php 
+		Darwin 	
+		Solaris
+		Linux 
+	}
 }

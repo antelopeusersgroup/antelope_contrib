@@ -114,9 +114,12 @@ if( $runmode eq "verify" ) {
 
 			$exitcode = 1;
 
-			elog_complain( "Required macro '$macro' is undefined, cancelling " .
-			   "compilation in current subdirectory '" . cwd() . "' " .
-			   "(Use amakelocal(1) to configure your local system).\n" );
+			elog_complain( 
+			   "\n\n\t***********\n\n" .
+			   "\tRequired macro '$macro' is undefined.\n\n\tCancelling " .
+			   "compilation in current subdirectory\n\t'" . cwd() . "'\n" .
+			   "\n\tUse amakelocal(1) to configure your local system.\n" .
+			   "\n\t***********\n\n" );
 
 		} else {
 
