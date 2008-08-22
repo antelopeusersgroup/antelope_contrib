@@ -47,6 +47,35 @@ int load_hypocentroid(Dbptr dbv,int rec, Hypocenter *h)
 	h->z = depth;
 	return(0);
 }
+enum FREEZE_METHOD get_freeze_method(Pf *pf)
+{
+	enum FREEZE_METHOD result;
+	char *s;
+	s=pfget_string(pf,"freeze_method");
+	if(s==NULL)
+	{
+		elog_notify(0,"freeze_method parameter not defined in parameter file\nDefault to maximum arrival count space coordinates");
+		result=ALLSPACE_MAXARRIVALS;
+	}
+	else if(strcmp(s,"depth_maxarrival")==0)
+		result=DEPTH_MAXARRIVALS;
+	else if(strcmp(s,"allspace_maxarrivals")==0)
+		result=ALLSPACE_MAXARRIVALS;
+	else if(strcmp(s,"all_maxarrivals")==0)
+		result=ALL_MAXARRIVALS;
+	else if(strcmp(s,"depth_minrms")==0)
+		result=DEPTH_MINRMS;
+	else if(strcmp(s,"allspace_minrms")==0)
+		result=ALLSPACE_MINRMS;
+	else if(strcmp(s,"all_minrms")==0)
+		result=ALL_MINRMS;
+	else
+	{
+		result=ALLSPACE_MAXARRIVALS;
+		elog_notify(0,"Invalid keyword %s used for parameter freeze_method\nDefault allspace_maxarrivals",s);
+	}
+	return(result);
+}
 
 
 #define EVIDGRP "evidgroup"
@@ -210,7 +239,11 @@ option which is know to cause problems\nrecenter set off\n");
 
 
 	events_to_fix = load_calibration_events(pf);
-
+	/* New code added Aug 2008 to reduce absolute location skews
+	when the reference model is very wrong */
+	int freeze=pfget_boolean(pf,"enable_cluster_freeze");
+	enum FREEZE_METHOD fm;
+	if(freeze) fm=get_freeze_method(pf);
 	/* We next create a grouping of the working view by
 	the gridid:evid key.  We use dbmatches below to match
 	gridids and the record list from dbmatches is the set
@@ -334,20 +367,32 @@ option which is know to cause problems\nrecenter set off\n");
 		starting solution and this copy is required to keep the
 		solution consistent with this fact */
 		dcopy(smatrix->ncol,smatrix->scref,1,smatrix->sc,1);
+		Arr *fixarrtmp;
+		if(freeze)
+		{
+			if(in_fixdepthlist(events_to_fix,evid,nevents))
+				fixarrtmp=duparr(events_to_fix,(void *)strdup);
+			else
+				fixarrtmp=get_freezearr(fm,h0,evid,ta,nevents);
+		}
+		else
+			fixarrtmp=duparr(events_to_fix,(void *)strdup);
 		
 
 		/* This is the main processing routine.  It was 
 		intentionally built without any db hooks to make it
 		more portable */
 		if(pmel(nevents,evid,ta,h0,
-			events_to_fix,&hypocentroid,smatrix,
+			fixarrtmp,&hypocentroid,smatrix,
 			arr_phase,&o,pf,&converge,&pmelhistory))
 		{
 			elog_notify(0,
 			  "No solution from pmel for cluster id = %d\n",
 				gridid);
+			freearr(fixarrtmp,free);
 			continue;
 		}
+		freearr(fixarrtmp,free);
 		fprintf(stdout,"Cluster id=%d pmel convergence reason\n",
 			gridid);
 		for(k=0,pmelfail=0;k<maxtbl(converge);++k)

@@ -16,6 +16,7 @@ travel_time_model
 pmel_run_name
 gridname
 pmelrun_archive_directory
+freeze_method
 author
 }
 boolean &Tbl{
@@ -23,6 +24,7 @@ use_all_stations
 use_dnorth_deast
 pmel_autodelete_high_rms
 pmel_cluster_mode
+enable_cluster_freeze
 }
 }
 pmel_run_name test
@@ -140,3 +142,10 @@ P
 S
 Lg
 }
+# 
+# new parameters added Aug 2008 to implement cluster absolute position
+# freezing method.  Useful when velocity model is a poor and mixing
+# range of epicentral distances. 
+#
+enable_cluster_freeze false
+freeze_method allspace_maxarrivals

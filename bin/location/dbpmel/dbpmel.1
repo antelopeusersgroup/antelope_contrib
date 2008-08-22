@@ -250,6 +250,32 @@ multiple clustering sets to be defined on the same catalog.)
 .LP
 The \fBauthor\fR parameter is used to set the auth field in the output
 origin table.  
+.ce
+\fBFreeze Mode Parameters\fR
+.LP
+When this program is run in cluster mode on grids of control points experience
+has shown that an instability can sometimes arise if the reference model is
+grossly inadequate.  When the model has grossly wrong velocities a tradeoff 
+can occur between depth of an ensemble of events and computed stations 
+corrections.  The effect is basically that pushing events deeper makes the 
+travel time curve flatter for a given depth, but this can be absorbed 
+completely sometimes in station corrections that compensate for the 
+absolute depth adjustment.  If an initial run produces crazy depths
+try setting the parameter \fBenable_cluster_freeze\fR to true.  
+(the default is false).  When this parameter is set true one event in
+each ensemble is forced to not move.  This is done by setting one or
+more of the fix coordinate variables for this one event.  In the current
+version the choice of what event to use as the artificial calibration 
+event is fixed.  The pseudo-calibration event is defined by choosing 
+the event with the largest number of arrivals.  The user has a choice
+of three options for a linked parameter called \fBfreeze_method\fR.  
+This parameter should be set to one of three acceptable keywords:
+(1) depth_maxarrivals, (2) allspace_maxarrivals, or (3) all_maxarrivals.  
+If freeze_method is anything else it will default to allspace_maxarrivals, 
+a diagnostic will be posted to elog, and the program will continue execution.
+depth_maxarrivals fixes only the depth coordinate, allspace_maxarrivals fixes
+all space coordinates, and all_maxarrivals fixes space and the origin time
+of the pseudo-calibration event.  
 .SH "SEE ALSO"
 .nf
 genloc(3), genloc_intro(3), makegclgrid(1), cluster(1)
