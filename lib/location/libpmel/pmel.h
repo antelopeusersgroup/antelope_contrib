@@ -1,3 +1,5 @@
+#ifndef _GENLOC_PMEL_H_
+#define _GENLOC_PMEL_H_
 /* This structure definition should ultimately end up in location.h
 I put it here only temporarily */
 /* This structure is used to define an indexed matrix that is called
@@ -29,6 +31,8 @@ typedef struct scmatrix {
         double *S;
 } SCMatrix;
 
+enum FREEZE_METHOD {DEPTH_MAXARRIVALS, ALLSPACE_MAXARRIVALS, ALL_MAXARRIVALS, 
+		DEPTH_MINRMS, ALLSPACE_MINRMS, ALL_MINRMS, NOTSET };
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -36,6 +40,9 @@ extern "C" {
 char *make_evid_key(int);
 Arr *load_calibration_events(Pf *);
 char *get_fixlist(Arr *,int);
+int in_fixdepthlist(Arr *a, int *evid, int nev);
+Arr *get_freezearr(enum FREEZE_METHOD fm, Hypocenter *h, int *evid,
+		Tbl **ta, int nev);
 Arr *parse_3D_phase(Pf *);
 void edit_phase_handle(Arr *,Tbl *);
 int pmel(int, int *, Tbl **, Hypocenter *,Arr *,Hypocenter *,
@@ -51,4 +58,5 @@ int update_scarr(SCMatrix *,Arr *);
 Arr *pmel_dbload_stations(Dbptr db,Pf *);
 #ifdef  __cplusplus
 }
+#endif
 #endif
