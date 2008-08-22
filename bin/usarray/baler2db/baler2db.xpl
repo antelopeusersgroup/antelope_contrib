@@ -6,7 +6,7 @@
     use archive ;
     use Cwd ;
 
-    our ($opt_v,$opt_p,$opt_d);
+    our ($opt_v,$opt_p,$opt_d,$host);
 
 {
     my ($db,$Pf,$mseed_dir,$dbdir,$cmd,$base,$suffix,$ref,$pffile,$pfdir,$pfbase,$pfsuffix);
@@ -24,8 +24,7 @@
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
-
+    $cmd = "\n$0 @ARGV" ;
 #
 #  program initialization
 #
@@ -35,8 +34,14 @@
         $usage .=  "	[-d dbout] [-p pf]  \n" ;
         $usage .=  "	mseed_dir dbmaster dbcentral \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
+
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     $cwd = getcwd ;
 
