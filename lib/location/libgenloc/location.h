@@ -1,3 +1,6 @@
+#ifndef _GENLOC_LOCATION_H_
+#define _GENLOC_LOCATION_H_
+
 #define FLT_EPSILON     1.192092896E-07F
 
 /*  ----INCLUDE FILE FOR HYPOCENTER LOCATION PROGRAM ------
@@ -334,6 +337,10 @@ typedef struct Gridloc_options {
 define function prototypes */
 #include "db.h"
 /* function prototypes */
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 
 float bisquare (float);
 double normal_quantile(int, int);
@@ -411,5 +418,10 @@ void Bad_Clock_free(Bad_Clock *);
 int minus_phases_arrival_edit(Tbl *,Arr *,Arr *);
 int clock_is_bad(Tbl *,double);
 
+#ifdef  __cplusplus
+}
+#endif
+
+#endif
 /* $Id$ */
 
