@@ -62,16 +62,16 @@ the output file.
 output_file antelopemake.local
 
 elements &Arr{
-	XMOTIFLIB &Arr{
-		Darwin 	-L/sw/lib
-		Solaris -L/usr/openwin/lib
-		Linux 	-L/usr/X11R6/lib
-	}
-	XMOTIFINCLUDE &Arr{
-		Darwin 	-I/sw/include
-		Solaris -I/usr/openwin/include
-		Linux 	-I/usr/X11R6/include
-	}
+        XMOTIFLIB &Arr{
+                Darwin 	-L/sw/lib
+                Solaris -L/usr/openwin/lib
+                Linux 	-L/usr/X11R6/lib
+        }
+        XMOTIFINCLUDE &Arr{
+                Darwin 	-I/sw/include
+                Solaris -I/usr/openwin/include
+                Linux 	-I/usr/X11R6/include
+        }
         PYTHONINCLUDE       &Arr{
                 Darwin  /sw/include/python2.5
                 Linux   /usr/local/include/python2.5
