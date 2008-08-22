@@ -1,0 +1,40 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+
+Attribute commtype
+	String (50)
+	Format ( "%50s" )
+	Null ( "-" )
+	Description ( "communications used" )
+	Detail {
+		This is a brief textual description that would allow 
+                specifications like VSAT, CDMA, regular_internet, DSL, etc.
+	}
+	;
+
+Attribute provider
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "communications provider used" )
+	Detail {
+		This is a brief textual description that would allow specifications like: Hughes, Verizon, SBC, etc.
+	}
+	;
+
+Relation comm
+	Fields ( sta time endtime commtype provider lddate )
+	Primary ( sta time::endtime )
+	Description ( "Table for USArray station commmunications" )
+	Detail {
+		Table designed to handle more detail in station communications including:
+		
+		commtype: string field that would allow specifications like VSAT, CDMA, regular_internet, DSL, etc.
+		
+		provider: string field allowing specifications like: Hughes, Verizon, SBC, etc.
+		
+		ip:  will need to accommodate dhcp mapped names, so more than just 15 characters.
+	}
+	;
+

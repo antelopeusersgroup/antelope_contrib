@@ -1,5 +1,16 @@
 
-DATA = qgrid sitephotos wfoffset gsnspec replayed rrdcache rrdgraph dlevent wfsrb
+DATA = \
+	comm \
+	deployment \
+	dlevent \
+	gsnspec \
+	qgrid \
+	replayed \
+	rrdcache \
+	rrdgraph \
+	sitephotos \
+	wfoffset \
+	wfsrb
 
 DATADIR = schemas/css3.0.ext
 
