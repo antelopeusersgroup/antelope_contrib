@@ -6,7 +6,7 @@
     use Datascope ;
     use archive;
     
-    our ($opt_v,$opt_n,$opt_r,$opt_c,$opt_s);
+    our ($opt_v,$opt_V,$opt_n,$opt_r,$opt_c,$opt_s);
     
 {    #  Main program
 
@@ -14,23 +14,30 @@
     my ($net,$selchan,$sta_match);
     my ($sta,$chan,$subset,$mintime,$maxtime,$time,$tgap,$filled,$stachan);
     my ($rec,$balerdata,$brec,$frec);
-    my ($stime,$endtime,$gtime,$gend,$samprate,$usage);
+    my ($stime,$endtime,$gtime,$gend,$samprate,$usage,$cmd,$host);
     my (@dbgap,@dbgchan,@dbgsta,@dbgnull,@dbbaler,@dbbscr,@dbrec,@dbrscr,@dbfill,@dbfscr);
     my (@recs,@dbbsta,@dbsnetsta);
 
     my $pgm = $0 ;
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
+    $cmd = "\n$0 @ARGV" ;
 
-    if (  ! &Getopts('vn:c:s:') || ( @ARGV < 3 || @ARGV > 4 ) ) { 
-        $usage  =  "\n\n\nUsage: $0  \n	[-v] \n" ;
+    if (  ! &Getopts('vVn:c:s:') || ( @ARGV < 3 || @ARGV > 4 ) ) { 
+        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] \n" ;
         $usage .=  "	[-n net] [-s sta_match] [-c chan] \n" ;
         $usage .=  "	gapdb baler_list_db recovered_data_db [filled_data_db] \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
 
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
+
+    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     
     if ( @ARGV == 4 )  {
         $gapdb       = $ARGV[0] ;
@@ -100,7 +107,7 @@
         $dbgchan[3] = $stachan ;
         ($sta,$chan) = dbgetv(@dbgchan,qw( sta chan )) ;
         $subset = "sta =~ /$sta/ && chan =~ /$chan/" ;
-        elog_notify ("subset $subset") ;
+        elog_notify ("subset $subset") if $opt_v;
         @dbgsta = dbsubset(@dbgap,$subset) ;
 #
 #  Check to see if  there is any information from baler for this station-channel
@@ -120,7 +127,8 @@
         for ($rec=0; $rec< dbquery(@dbgsta,"dbRECORD_COUNT"); $rec++) {
             $dbgsta[3] = $rec ;
             ($gtime,$tgap, $filled ) = dbgetv(@dbgsta,qw( time tgap filled )) ;
-            $gend = $gtime+$tgap ;
+            $gend = $gtime + $tgap - 0.001 ;
+            elog_notify (sprintf "gap in rt db %s	%s	%s	%s ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_V;
             
 #            next if ($filled =~ /f/);
 #
@@ -130,20 +138,23 @@
             if (defined($filldb)) {
            
                 dbputv(@dbfscr,"sta",$sta,"chan",$chan,"time",$gtime,"endtime",$gend);
-                @recs = dbmatches(@dbfscr,@dbfill,"filled","sta","chan","time::endtime");
+                @recs = dbmatches(@dbfscr,@dbfill,"filled");
+                
+                elog_notify (sprintf "	%d records match in filled db", $#recs+1) if $opt_v;
+
             
                 if ($#recs == -1 ) {
-                    elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has no data in filled db ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_v;
+                    elog_notify (sprintf "	no data in filled db ") if $opt_V;
                 } elsif ($#recs == 0 ) {
-                    elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has data in filled db ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_v;
+                    elog_notify (sprintf "	data in filled db ") if $opt_V;
                     $dbfill[3] = $recs[0];
                     ($time,$endtime,$samprate) = dbgetv(@dbfill,qw( time endtime samprate )) ;
                     if (($time - (1/$samprate)) <= $gtime && ($endtime + (1/$samprate)) >= $gend) {
                         dbputv(@dbgsta,"filled","f");
-                        elog_notify (sprintf "	filled db %s	%s ",strydtime($time),strydtime($endtime)) if $opt_v;
+                        elog_notify (sprintf "	filled db	%s	%s	%s	%s ",$sta,$chan,strydtime($time),strydtime($endtime)) if $opt_V;
                         next;
                     } else {
-                         elog_notify (sprintf "	filled db %s	%s	is incomplete",strydtime($time),strydtime($endtime));
+                         elog_notify (sprintf "	filled db	%s	%s	%s	%sis incomplete",$sta,$chan,strydtime($time),strydtime($endtime));
                     }
                 } else {
                     elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has multiple wf data in filled db ",$sta,$chan,strydtime($gtime),strydtime($gend));
@@ -164,17 +175,17 @@
             @recs = dbmatches(@dbrscr,@dbrec,"recovered","sta","chan","time::endtime");
             
             if ($#recs == -1 ) {
-                elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has no data in recovered db ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_v;
+                elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has no data in recovered db ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_V;
             } elsif ($#recs == 0 ) {
-                elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has data in recovered db ",$sta,$chan,strydtime($gtime),strydtime($gend))  if $opt_v;;
+                elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has data in recovered db ",$sta,$chan,strydtime($gtime),strydtime($gend))  if $opt_V;;
                 $dbrec[3] = $recs[0];
                 ($time,$endtime,$samprate) = dbgetv(@dbrec,qw( time endtime samprate )) ;
                 if (($time - (1/$samprate)) <= $gtime && ($endtime + (1/$samprate)) >= $gend) {
                     dbputv(@dbgsta,"filled","r");
-                    elog_notify (sprintf "	recovered db %s	%s ",strydtime($time),strydtime($endtime)) if $opt_v;
+                    elog_notify (sprintf "	recovered db	%s	%s	%s	%s	",$sta,$chan,strydtime($time),strydtime($endtime)) if $opt_V;
                     next;
                 } else {
-                     elog_notify (sprintf "	recovered db %s	%s	is incomplete",strydtime($time),strydtime($endtime));
+                     elog_notify (sprintf "	recovered db	%s	%s	%s	%s	is incomplete",$sta,$chan,strydtime($time),strydtime($endtime));
                 }
             } else {
                 elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has multiple wf data in recovered db ",$sta,$chan,strydtime($gtime),strydtime($gend));
@@ -199,12 +210,12 @@
                 }
                 next;
             } elsif ($#recs == 0 ) {
-                elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has data on baler  ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_v;
+                elog_notify (sprintf "gap in rt db %s	%s	%s	%s	 has data on baler  ",$sta,$chan,strydtime($gtime),strydtime($gend)) if $opt_V;
                 $dbbaler[3] = $recs[0];
                 ($time,$endtime,$samprate) = dbgetv(@dbbaler,qw( time endtime samprate )) ;
                 if ($time <= $gtime && $endtime >= $gend) {
                     dbputv(@dbgsta,"filled","b");
-                    elog_notify (sprintf "	baler has data for %s	%s ",strydtime($time),strydtime($endtime)) if $opt_v;
+                    elog_notify (sprintf "	baler has data for %s	%s ",strydtime($time),strydtime($endtime)) if $opt_V;
                     next;
                 } else {
                      elog_notify (sprintf "	baler db %s	%s	incompletely filled",strydtime($time),strydtime($endtime));
@@ -222,7 +233,7 @@
         }
         dbfree(@dbgsta);
         dbfree(@dbbsta) ;
-        elog_notify (" ");
+        elog_notify (" ") if $opt_v;
     }    
 
     $stime = strydtime(now());
