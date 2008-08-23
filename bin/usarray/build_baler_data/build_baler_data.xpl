@@ -1,6 +1,7 @@
 #
 #   program needs:
 #    testing of trexcertp failure when 99999999
+#    add dbmaster (snetsta, schanloc) to descriptor to $tmpwf
 #
     require "getopts.pl" ;
     use strict ;
@@ -13,21 +14,27 @@
 
     my ($starttime,$endtime,$stime,$etime,$maxsamprate,$ndays);
     my ($dbcentral,$cluster);
-    my ($dbout,$tmpwf,$dir,$base,$suff,$usage);
+    my ($dbout,$tmpwf,$dir,$base,$suff,$usage,$cmd,$host);
     my (@db) ;
 
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
+    $cmd = "\n$0 @ARGV" ;
     
     if (  ! &Getopts('vVnd:') || @ARGV != 4 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-d clean_baler_db]  \n" ;
         $usage .=  "	balerdb_central clustername start_time end_time \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
+
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     $dbcentral = $ARGV[0] ;
     $cluster   = $ARGV[1] ;
@@ -167,7 +174,7 @@ sub trexcerpt {  # &trexcerpt ($tmpwf, $dbout, $starttime, $endtime)  ;
     elog_notify(sprintf "trexcerpt start time %s		End time %s",strydtime($starttime),strydtime($endtime));
         
     $cmd = "trexcerpt -D -E -g $tmpwf $dbout $starttime $endtime";
-    $cmd = "trexcerpt -v -D -E -g $tmpwf $dbout $starttime $endtime" if $opt_v;
+    $cmd = "trexcerpt -v -D -E -g $tmpwf $dbout $starttime $endtime" if $opt_V;
     elog_notify("	$cmd");
     $problems = 0 ;
     $problems = run($cmd,$problems) unless $opt_n;
