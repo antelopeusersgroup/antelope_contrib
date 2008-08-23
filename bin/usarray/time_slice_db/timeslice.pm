@@ -3,7 +3,7 @@ package timeslice ;
 require Exporter;   
 @ISA = ('Exporter');
 
-@EXPORT=qw(backup_dbin time_splits border mk_db_des mk_d last_time sort_events) ;
+@EXPORT=qw(backup_dbin time_splits border mk_db_des mk_d last_time sort_events times) ;
 
 use strict ;
 use Datascope ;
@@ -121,7 +121,7 @@ sub mk_db_des { # ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbas
         @dbtest = dbopen($dbname,"r") ;
         @dbtest = dblookup(@dbtest,0,"$table",0,0) ;
         if (dbquery(@dbtest,dbTABLE_PRESENT)) {
-            elog_complain("mk_db_des	database $dbname.$table already exists!") ;
+            elog_complain("mk_db_des	database $dbname.$table already exists!") if $debug;
             $exists = 1;        
         }
         dbclose(@dbtest);
@@ -249,4 +249,27 @@ sub sort_events { # &sort_events($dbname, $debug);
         elog_die ("Cmd failed: $cmd");
     }
     return;
+}
+
+sub times {  # ($starttime,$endtime) = &times($year,$month,$debug);
+    my ($year,$month,$debug) = @_ ;
+    my ($stime) ;
+    my ($starttime,$endtime) ;
+    
+    $stime = "$month/1/$year";
+    elog_notify($stime) if $debug;
+
+    $starttime = str2epoch($stime) ;
+    $month++ ;
+    if ($month == 13 ) {
+        $month = 1 ;
+        $year++
+    }
+
+    $stime = "$month/1/$year";
+    elog_notify($stime) if $debug;
+
+    $endtime = str2epoch($stime) ;
+    
+    return ($starttime,$endtime) ;
 }
