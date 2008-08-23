@@ -1,5 +1,6 @@
 #
 #  needs to check subset on stations which have not had equip_remove
+#  needs to change unlink to unless $opt_V after testing.
 #
 
 
@@ -15,12 +16,12 @@
 
     my ($net,$stime,$tmpgap,$tmpba);
     my ($gapdb,$gapdb2,$etime,$reject,$filled,$dbops,$reqdir);
-    my ($sta_match,$verbose,$usage);
+    my ($sta_match,$verbose,$usage,$cmd,$host);
     
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
+    $cmd = "\n$0 @ARGV" ;
    
     if (  ! &Getopts('vVn:r:s:t:e:d:') || (@ARGV < 1 || @ARGV > 2 )) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V]  \n" ;
@@ -28,8 +29,14 @@
         $usage .=  "	[-t start_time] [-e end_time] [-d directory] \n" ;
         $usage .=  "	gapdb [gap2db] \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
+
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     $gapdb     = $ARGV[0] ;
     
@@ -77,7 +84,8 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     my ($row,$sta,$chan,$time,$endtime,$stime,$sendtime);
     my ($nrecs,$opsdir,$dbops,$suff,$jdate,$subset,$now,$baler_request);
     my ($cmd,$nsec,$nrows,$dir,$base,$suffix,$dbpath);
-    my (@dbg,@dbgap,@dbba,@dbd);
+    my ($tmpjunk,$tgap,$next_day,$last_time);
+    my (@dbg,@dbgap,@dbba,@dbd,@dbjunk);
 #
 #  check dbops database
 #    
@@ -101,13 +109,13 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
         $nrows = dbquery(@dbd,"dbRECORD_COUNT");
         $stime = yearday(now()) ;
         $subset = "equip_remove > \_$stime\_" ;
-        elog_notify("baler_admin	deployment nrows	$nrows	subset	$subset") if $opt_V;
+        elog_notify("baler_admin	deployment nrows	$nrows	subset	$subset") if $opt_v;
         @dbd = dbsubset(@dbd,$subset);
         $nrows = dbquery(@dbd,"dbRECORD_COUNT");
         elog_notify("baler_admin	deployment nrows	$nrows after subset") if $opt_v;
         $nrows = dbquery(@dbgap,"dbRECORD_COUNT");
         elog_notify("baler_admin	gap nrows	$nrows") if $opt_V;
-        @dbgap = dbjoin(@dbgap,@dbd);
+        @dbgap = dbjoin(@dbgap,@dbd,"sta", "time::endtime#equip_install::equip_remove");
         @dbgap = dbseparate(@dbgap,"wfdisc");
         $nrows = dbquery(@dbgap,"dbRECORD_COUNT");
         elog_notify("baler_admin	gap nrows	$nrows after join with deployment") if $opt_v;
@@ -120,39 +128,82 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     elog_notify("baler_admin	baler_request	$baler_request") if $opt_v;
     
 #
-#  open tmpba database
+#  open tmpjunk database
 #    
-    @dbba    = dbopen($tmpba,"r+");
-    @dbba    = dblookup(@dbba,0,"wfdisc",0,0);
 
-#
-#  foreach gap, export information to STDOUT for baler_admin program
-#
+    $tmpjunk = "/tmp/tmp_junk_$$";
+    @dbjunk  = dbopen($tmpjunk,"r+");
+    @dbjunk  = dblookup(@dbjunk,0,"wfdisc",0,0);
+
     $nrows = dbquery(@dbgap,"dbRECORD_COUNT");
     for ($row=0; $row < $nrows; $row++) {
         $dbgap[3] = $row;
         ($sta,$chan,$time,$endtime) = dbgetv(@dbgap,qw (sta chan time endtime) );
-        $dbba[3] = dbaddnull(@dbba);
-        $time    = $time    - 300;
-        $endtime = $endtime + 300;
-
-        dbputv(@dbba,"sta",$sta,"chan",$chan,"time",$time,"endtime",$endtime);
-        
+        $dbjunk[3] = dbaddnull(@dbjunk);
+#        $time      = $time    - 300;
+#        $endtime   = $endtime + 300;
+        dbputv(@dbjunk,"sta",$sta,"chan",$chan,"time",$time,"endtime",$endtime);        
     }
     dbclose(@dbg);
-    dbclose(@dbba);
+    dbclose(@dbjunk);
     
-    $cmd  = "dbset $tmpba.wfdisc chan \"*\" BHZ" ;
+    $cmd  = "dbset $tmpjunk.wfdisc chan \"*\" BHZ" ;
     print STDERR "$cmd \n" if $opt_v;
     system ($cmd);
     
     $nsec = 1800;
-    &compress_wfdisc($tmpba,$nsec,$opt_v);
-
-    @dbba    = dbopen($tmpba,"r");
+    &compress_wfdisc($tmpjunk,$nsec,$opt_v);
+    
+#
+#  build tmpba database
+#    
+    
+    @dbba    = dbopen($tmpba,"r+");
     @dbgap   = dblookup(@dbba,0,"wfdisc",0,0);
-    @dbgap   = dbsort(@dbgap,"sta","time","endtime");
+    
+    @dbjunk  = dbopen($tmpjunk,"r");
+    @dbjunk  = dblookup(@dbjunk,0,"wfdisc",0,0);
+    $nrows   = dbquery(@dbjunk,"dbRECORD_COUNT");    
+    
+    
+#
+#  split all gaps in tmpjunk.wfdisc on day boundaries in tmpba.wfdisc
+#    
 
+    for ($row=0; $row < $nrows; $row++)   { 
+        $dbjunk[3] = $row ;
+        ($sta,$chan,$time,$endtime) = dbgetv(@dbjunk,"sta","chan","time","endtime");
+        elog_notify(sprintf ("split_gap_table	sta  $sta	chan  $chan	time  %s		last_time  %s	tgap  %d",strydtime($time),strydtime($endtime),$tgap)) if $opt_V;
+            
+        while ($time < $endtime ) {
+            $next_day = epoch(yearday($time + 86400.));
+            if ( $endtime <= $next_day ) {
+                $tgap = $endtime - $time ;
+                dbaddv(@dbgap, "sta", $sta, "chan", $chan, "time", $time, "endtime", $endtime, "foff", $tgap);
+                $time = $endtime + 1.;
+            } else {
+                $tgap = $next_day - $time ;
+                dbaddv(@dbgap, "sta", $sta, "chan", $chan, "time", $time, "endtime", ($next_day - 0.001), "foff", $tgap);
+                $time = $next_day ;
+            }            
+            elog_notify(sprintf ("	time  %s	tgap  %d	last_time  %s	next_day  %s",strydtime($time),$tgap,strydtime($last_time),strydtime($next_day))) if $opt_V;
+        }
+    }
+        
+    dbclose(@dbjunk);
+    dbclose(@dbgap); 
+    
+    $cmd = "dbsort -o $tmpba.wfdisc foff sta time";
+    print STDERR "$cmd \n" if $opt_v;
+    system($cmd);
+
+#
+#  foreach gap, export information to STDOUT for baler_admin program
+#
+    
+    @dbba    = dbopen($tmpba,"r+");
+    @dbgap   = dblookup(@dbba,0,"wfdisc",0,0);
+    
     makedir($reqdir) if (!-d $reqdir); 
     open (REQ,">$baler_request");
     
@@ -160,21 +211,21 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     for ($row=0; $row < $nrows; $row++) {
         $dbgap[3] = $row;
         ($sta,$chan,$time,$endtime) = dbgetv(@dbgap,qw (sta chan time endtime) );
+        
         $stime    = epoch2str($time,"%Y,%j,%H:%M:%S");
         $sendtime = epoch2str($endtime,"%Y,%j,%H:%M:%S");
 #
 #  export information to STDOUT for baler_admin program
 #
         printf REQ "%s| %s| |%s|%s|%s| %10d secs| %8.4f days \n", $net,$sta,$chan,$stime,$sendtime,$endtime-$time,($endtime-$time)/86400. ;
-        
     }
     
     close(REQ);
-    unlink($tmpgap) unless $opt_V;
-    unlink("$tmpgap.wfdisc") unless $opt_V;
+    unlink($tmpgap) unless $opt_v;
+    unlink("$tmpgap.wfdisc") unless $opt_v;
     
-    unlink($tmpba) unless $opt_V;
-    unlink("$tmpba.wfdisc") unless $opt_V;
+    unlink($tmpba) unless $opt_v;
+    unlink("$tmpba.wfdisc") unless $opt_v;
     
     return;
 }
