@@ -1,8 +1,5 @@
 #  Program to take DMC gap file and turn into monthly gap tables.
 #
-#  Needs default to write in local directory, -p option for periods
-#
-#  NEEDS TO BE CHECKED!!!!  The above defaults have not been tested!
 #
 
 require "getopts.pl" ;
@@ -18,12 +15,12 @@ our ( $dbpath, $dblocks, $dbidserver) ;
 {    #  Main program
 
     my ($tmpgap,$gapdb,$sync_file,$period,$usage,$dirbase);
-    my ($stime,$start_time,$end_time,$verbose,$debug);
+    my ($stime,$start_time,$end_time,$verbose,$debug,$cmd,$host);
     
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
+    $cmd = "\n$0 @ARGV" ;
    
     if (  ! &Getopts('Dd:e:I:pP:t:vVY') || @ARGV != 1) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-p [-D | -Y]] \n" ;
@@ -31,8 +28,14 @@ our ( $dbpath, $dblocks, $dbidserver) ;
         $usage .=  "	[-t start_time ] [-e end_time]  \n" ;
         $usage .=  "	sync_file \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
+
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     $sync_file     = $ARGV[0] ;
 
@@ -173,7 +176,7 @@ sub split_gap_table { # &split_gap_table ($tmpgap, $period, $dirbase, $dbbase, $
                 dbaddv(@dbtmp2,"sta",$sta,"chan",$chan,"time",$time,"tgap",$tgap);
                 $time = $last_time + 1.;
             } else {
-                $tmp_tgap = $next_day - $time ;
+                $tmp_tgap = $next_day - $time - 0.001;
                 dbaddv(@dbtmp2,"sta",$sta,"chan",$chan,"time",$time,"tgap",$tmp_tgap);
                 $time = $next_day ;
                 $tgap = $last_time - $next_day ;
