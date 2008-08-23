@@ -10,7 +10,6 @@
 #
     require "getopts.pl" ;
     use strict ;
-#    use diagnostics ;
     use Datascope ;
     use orb ;
     use archive;
@@ -22,7 +21,7 @@
     my ($net,$reject,$sta_match,$usage,$dmc,$dbdmc);
     my ($stime,$etime,$tmpgap,$tmpbaler,$tmprt,$tmpdays);
     my ($dbin,$dbbaler,$dbout,$filled,$verbose,$debug);
-    my ($dir,$base,$suff,$dbmaster);
+    my ($dir,$base,$suff,$dbmaster,$cmd,$host);
     my (@db);
 
 #
@@ -33,7 +32,7 @@
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
+    $cmd = "\n$0 @ARGV" ;
 
 #
 #  program initialization
@@ -45,8 +44,14 @@
         $usage .=  "	[-b clean_baler_db] [-o dbout]  \n" ;
         $usage .=  "	dbin [dmcgap_db] start_time end_time \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
+
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     if ( @ARGV == 4 )  {
         $dbin      = $ARGV[0] ;
