@@ -10,7 +10,7 @@
 
     my  ($tmpdb,$db,$dbmaster,$cmd,$orb,$orbname,$row,$sta,$chan,$time,$endtime,$timestep,$nj);
     my  ($dir,$base,$suffix,$dbrow,$stime,$etime,$idserver,$rmfile,$subset,$replay_exist,$usage);
-    my  ($dbbase);
+    my  ($dbbase,$problems,$host,$subject);
     my  (@db,@dbw,@dbr,@dbscr,@dbtmp,@recs,@dbsnet,@dbnj,);
     our ($opt_v,$opt_V,$opt_n,$opt_d,$opt_s,$opt_t);
     
@@ -22,8 +22,7 @@
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
-    elog_notify("$0 @ARGV");
-
+    $cmd = "\n$0 @ARGV" ;
 #
 #  program initialization
 #
@@ -33,6 +32,7 @@
         $usage .=  "	[-d tmpdb] [-s start_time] [-t timestep]  \n" ;
         $usage .=  "	db orb \n\n"  ; 
 
+        elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
 
@@ -42,6 +42,11 @@
     $orbname  = $ARGV[1] ;
     
     $timestep = $opt_t || 1800 ;
+    
+    elog_notify($cmd) ; 
+    $stime = strydtime(now()) ;
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime\n\n") ;
     
 #
 #  check orb
@@ -154,13 +159,22 @@
 #
 #  build run dbreplay
 #
+    $problems = 0;
    
     $cmd  = "dbreplay -w orb2orb ";
     $cmd .= "-v " if ($opt_v || $opt_V) ;
     $cmd .= "-t $timestep $tmpdb $orbname";
-    elog_notify ($cmd);
+
+    if  ( ! $opt_n ) {
+        elog_notify("\n$cmd");        
+        $problems = run($cmd,$problems) ;
+    } else {
+        elog_notify("\nskipping $cmd") ;
+    } 
     
-    system ($cmd) unless $opt_n ;
+    if ($problems) {
+        elog_die("\nFAILED:	$cmd");        
+    }
 #
 #  build update replayed table
 #
@@ -184,13 +198,30 @@
     mkdir("sync");
     
     $cmd = "db2sync $tmpdb sync/ANF_replay_$stime.sync";
-    elog_notify ($cmd);
-    system ($cmd);
+
+    if  ( ! $opt_n ) {
+        elog_notify("\n$cmd");        
+        $problems = run($cmd,$problems) ;
+    } else {
+        elog_notify("\nskipping $cmd") ;
+    } 
+    
+    if ($problems) {
+        elog_die("\nFAILED:	$cmd");        
+    }
     
     $cmd = "orbxfer2 -N sync sync/ANF_replay_$stime.sync  $orbname";
-    elog_notify ($cmd);
-    system ($cmd) unless $opt_n ;
+
+    if  ( ! $opt_n ) {
+        elog_notify("\n$cmd");        
+        $problems = run($cmd,$problems) ;
+    } else {
+        elog_notify("\nskipping $cmd") ;
+    } 
     
+    if ($problems) {
+        elog_die("\nFAILED:	$cmd");        
+    }    
     unless ( $opt_V || $opt_n ) {
         unlink ("$tmpdb");
         unlink ("$tmpdb.wfdisc");
@@ -202,6 +233,9 @@
     $stime = strydtime(now());
     elog_notify ("completed successfully	$stime\n\n");
 
+    $subject = sprintf("Success  $pgm  $host");
+    elog_notify ($subject);
+    
     exit(0);
 
 
