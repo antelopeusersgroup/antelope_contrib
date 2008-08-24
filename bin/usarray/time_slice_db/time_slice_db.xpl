@@ -48,7 +48,7 @@ our ( $pgm, $host);
     &savemail() if $opt_m ; 
     elog_notify($cmd) ; 
     $stime = strydtime(now());
-    elog_notify ("\nstarting execution	$stime\n\n");
+    elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     chop ($host = `uname -n` ) ;
 
