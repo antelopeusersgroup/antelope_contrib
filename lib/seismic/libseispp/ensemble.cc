@@ -26,11 +26,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, int nsamples)
 TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
 	: Metadata(tceold)
 {
-	int nmembers=tceold.member.size();
-	if(!member.empty()) member.clear();
-	member.reserve(nmembers);
-	for(int i=0; i<nmembers; ++i)
-		member.push_back(tceold.member[i]);
+	member=tceold.member;
 }
 TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 	MetadataList& station_mdl,
@@ -697,11 +693,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tceold)
 	: Metadata(tceold)
 {
-	int nmembers=tceold.member.size();
-	if(!member.empty()) member.clear();
-	member.reserve(nmembers);
-	for(int i=0; i<nmembers; ++i)
-		member.push_back(tceold.member[i]);
+	member=tceold.member;
 }
 // Partial copy constructor copies metadata only.  reserves nmembers slots
 // in ensemble container
@@ -727,11 +719,7 @@ TimeSeriesEnsemble& TimeSeriesEnsemble::operator=(const TimeSeriesEnsemble& tseo
 {
 	if(this!=&tseold)
 	{
-		if(!(this->member.empty())) this->member.clear();
-		int nmembers=tseold.member.size();
-		member.reserve(nmembers);
-		for(int i=0; i<nmembers; ++i)
-			member.push_back(tseold.member[i]);
+		member=tseold.member;
 		mreal=tseold.mreal;
 		mint=tseold.mint;
 		mbool=tseold.mbool;
@@ -743,11 +731,7 @@ ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEn
 {
 	if(this!=&tseold)
 	{
-		if(!(this->member.empty())) this->member.clear(); 
-		int nmembers=tseold.member.size();
-		member.reserve(nmembers);
-		for(int i=0; i<nmembers; ++i)
-			member.push_back(tseold.member[i]);
+		member=tseold.member;
 		mreal=tseold.mreal;
 		mint=tseold.mint;
 		mbool=tseold.mbool;
