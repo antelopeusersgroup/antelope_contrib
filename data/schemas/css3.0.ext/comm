@@ -8,8 +8,8 @@ Attribute commtype
 	Null ( "-" )
 	Description ( "communications used" )
 	Detail {
-		This is a brief textual description that would allow 
-                specifications like VSAT, CDMA, regular_internet, DSL, etc.
+		This is a textual description that descibes the communication
+		specifications like VSAT, CDMA, regular_internet, DSL, etc.
 	}
 	;
 
@@ -19,7 +19,8 @@ Attribute provider
 	Null ( "-" )
 	Description ( "communications provider used" )
 	Detail {
-		This is a brief textual description that would allow specifications like: Hughes, Verizon, SBC, etc.
+		This is a textual description that descibes the vendor providing
+		comms.  For example: Hughes, ATT, Verizon, SBC, Wild Blue, etc.
 	}
 	;
 
@@ -28,13 +29,14 @@ Relation comm
 	Primary ( sta time::endtime )
 	Description ( "Table for USArray station commmunications" )
 	Detail {
-		Table designed to handle more detail in station communications including:
-		
-		commtype: string field that would allow specifications like VSAT, CDMA, regular_internet, DSL, etc.
-		
-		provider: string field allowing specifications like: Hughes, Verizon, SBC, etc.
-		
-		ip:  will need to accommodate dhcp mapped names, so more than just 15 characters.
+                Table designed to handle detail in station communications including:
+
+                   commtype: string field that would allow specifications like VSAT, CDMA, regular_internet, DSL, etc.
+                   provider: string field allowing specifications like: Hughes, Verizon, ATT, Wild Blue, Univ. of Somewhere, etc.
+                   power:  string describing power source for communication:  AC, solar, duty cycle, batteries, etc.
+                   equiptype:  string describing equipment used for communications:  Raven X, Cellular C3211, satellite modem, etc.
+
+                This is a contributed schema extension developed for use at the ANF, UCSD.
 	}
 	;
 

@@ -1,0 +1,89 @@
+# css3.0 extension
+
+#Include css3.0  # uncomment to complete schema
+
+Attribute testtype
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "test performed" )
+	Detail {
+		This is a text string describing the test performed:  clock_qual, masspo, MRC, clock_err, etc.
+	}
+	;
+
+Attribute qcresult
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "test result" )
+	Detail {
+		This field describes the result of the test performed.  It could be pass/fail, a number, a percentage based on the testtype, or a text string.  
+	}
+	;
+
+
+Attribute data_start
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "data start epoch time" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+Attribute data_end
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "last valid time for data" )
+        Detail {
+                Data end time in epochal seconds.  See field time for more info.
+                This attribute is the time of the last sample of data
+                on the baler.  
+        }
+        ;
+
+Attribute revsamp
+	Integer (16)
+        Format ( "%16d" )
+        Null ( "-1" )
+	Range ( "revsamp > 0" )
+        Description ( "number of reviewed samples" )
+        Detail {
+                Number of samples reviewed in test.  Field size is expanded beyond
+                what is used in the nsamp field (8).   
+        }
+        ;
+
+Attribute revp
+        Real (7)
+        Format ( "%7.4f" )
+        Null ( "-1" )
+        Range ( "revp >= 0 && revp <=100" )
+        Description ( "percent of data reviewed" )
+        ;
+
+Attribute hostname
+        String ( 25 )
+        Format ( "%-25s" )
+        Null  ( "-"  )
+        Description ( "computer host name" )
+        Detail {
+               Computer host name where processing was conducted.
+        }
+        ;
+
+
+Relation qctests  
+	Fields ( sta chan time testtype qcresult data_start data_end samprate revsamp revp dir dfile hostname auth lddate )
+	Primary ( sta chan time testtype)
+	Description ( "Quality control test results" )
+	Detail {
+		Track quality control tests performed and results.  A single field, qcresult, is available to express the status of the test (i.e pass/fail, a percentage of good or bad data, or number of bad points).  Input and output from the test can be saved in an output parameter file referred to by the dfile.
+	}
+	;
+

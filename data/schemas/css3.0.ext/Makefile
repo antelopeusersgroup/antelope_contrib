@@ -4,6 +4,8 @@ DATA = \
 	deployment \
 	dlevent \
 	gsnspec \
+	newcomm \
+	qctest \
 	qgrid \
 	replayed \
 	rrdcache \
