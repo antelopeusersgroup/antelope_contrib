@@ -1,4 +1,4 @@
-dirbase		/anf/TA/dbs/events						# 
+dirbase		/anf/TA/dbs/event_dbs						# 
 wfbase		/anf/TA/dbs/wfs 						# 
 dbbase		usarray									# 
 period		month									# allowed values are "year" or "month" or "day"
