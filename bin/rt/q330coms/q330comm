@@ -1,0 +1,41 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+Attribute idtag
+	String (12)
+	Format ( "%-12s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		This is an twelve-character code, which uniquely identifies the a piece of equipment such as a datalogger or sensor.
+		idtag can be used when there are two identification strings associated with at datalogger such as a Q330 which has a 16-digit hexadecimal number adn also a human readable idtag
+	}
+	;
+
+Attribute inp
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		50-character string, which provides information about communications, ip address, port number, logical port number.
+	}
+	;
+
+Attribute thr
+	Integer (8)
+	Format ( "%8ld" )
+	Null ( "-1" )
+	Range ( "thr > 0" )
+	Description ( "Throttle rate" )
+	Detail {
+		Current Q330 throttle rate.
+	}
+	;
+
+Relation q330comm
+	Fields ( dlsta time endtime inp ssident idtag lat lon elev thr lddate )
+	Primary ( dlsta time::endtime )
+	Description ( "q330 communications information for USArray" )
+	;
+
