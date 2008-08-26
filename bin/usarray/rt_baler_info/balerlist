@@ -1,0 +1,161 @@
+Attribute connection
+	String (16)
+	Format ( "%16s" )
+	Null ( "-" )
+	Description ( "connection status of Q330" )
+	Detail {
+		This is the text returned from orb /pf/st packet 
+	}
+	;
+	
+Attribute target
+	String (16)
+	Format ( "%16s" )
+	Null ( "-" )
+	Description ( "q3302orb target name" )
+	Detail {
+		q3302orb target name which is acquiring dlname station data. 
+	}
+	;
+	
+Attribute inp
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "identification tag" )
+        Detail {
+                50-character string, which provides information about communications, ip address, port number, logical port number.
+        }
+        ;
+
+Attribute q330sn
+        String (16)
+        Format ( "%-16s" )
+        Null ( "-" )
+        Description ( "q330 serial number" )
+        Detail {
+                q330 serial number
+        }
+        ;
+
+Attribute balersn
+        String (6)
+        Format ( "%-6s" )
+        Null ( "-" )
+        Description ( "baler serial number" )
+        Detail {
+                baler serial number
+        }
+        ;
+
+Attribute balerfirm
+        String (10)
+        Format ( "%-10s" )
+        Null ( "-" )
+        Description ( "baler firmware revision" )
+        Detail {
+                baler firmware revision
+        }
+        ;
+
+Attribute baleron
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( "baler turned on" )
+        Detail {
+                baler turned on: yes or no
+        }
+        ;
+
+Attribute htmlinfo
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( "html file accessbility" )
+        Detail {
+                were html information files downloaded: yes or no
+        }
+        ;
+
+Attribute msdinfo
+        String (3)
+        Format ( "%-3s" )
+        Null ( "-" )
+        Description ( "miniseed listing accessbility" )
+        Detail {
+                was a listing of miniseed files downloaded: yes or no
+        }
+        ;
+
+Attribute onsecs
+        Integer (6)
+        Format ( "%6ld" )
+        Null ( "-1" )
+        Range ( "onsecs >= 0" )
+        Units ( "Seconds" )
+        Description ( "Power on start in seconds " )
+        Detail {
+                Number of seconds from first command to turn baler on until either turned on or turn on fails.
+        }
+        ;
+
+Attribute htmlsecs
+        Integer (6)
+        Format ( "%6ld" )
+        Null ( "-1" )
+        Range ( "htmlsecs >= 0" )
+        Units ( "Seconds" )
+        Description ( "html response in seconds " )
+        Detail {
+                Number of seconds from first command to baler on until html download completes or fails.
+        }
+        ;
+
+Attribute msdsecs
+        Integer (6)
+        Format ( "%6ld" )
+        Null ( "-1" )
+        Range ( "msdsecs >= 0" )
+        Units ( "Seconds" )
+        Description ( "miniseed listing time in seconds " )
+        Detail {
+                Number of seconds from first command to baler to list miniseed contents until completes or fails.
+        }
+        ;
+
+Attribute data_start
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "data start epoch time" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+Attribute data_end
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "last valid time for data" )
+        Detail {
+                Data end time in epochal seconds.  See field time for more info.
+                This attribute is the time of the last sample of data
+                on the baler.  
+        }
+        ;
+
+Relation balerlist
+	Fields ( dlname time endtime target connection q330sn inp  balersn balerfirm baleron onsecs htmlinfo htmlsecs msdinfo msdsecs data_start data_end lddate )
+	Primary ( dlname time )
+	Description ( "Table listing of information from Baler 14" )
+	Detail {
+		Table designed provide documentation on the process to acquire information about the status and
+		contents of the Quanterra Baler 14.
+		
+		}
+	;
+

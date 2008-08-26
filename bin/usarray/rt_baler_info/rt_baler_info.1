@@ -1,0 +1,119 @@
+.TH RT_BALER_INFO 1 "$Date$"
+.SH NAME
+rt_baler_info \- retrieve information about Quanterra balers
+.SH SYNOPSIS
+.nf
+\fBrt_baler_info \fP[-v] [-V] [-n]
+                [-d \fIdeployment_db\fP]
+                [-p \fIparameter_file\fP]
+                [-s \fInet_sta_regex\fP] 
+                [-t \fIq3302orb_target\fP] 
+                \fIorb\fP \fIcommand_orb\fP \fIdbops\fP
+.fi
+.SH DESCRIPTION
+\fBrt_baler_info\fP is designed to extract information from Quanterra balers 
+from a real time system. 
+It will copy html files from the baler and generate a wfdisc file for each
+station, listing the waveform contents on the baler at the time of the program 
+execution.  The wfdisc has a naming convention of NET_STA_wf.wfdisc
+
+It will also build one combined wfdisc containing information about all balers.
+.IP \fIorb\fP 
+orbserver where target q3302orb /pf/st files are found
+.IP \fIcommand_orb\fP 
+command orbserver to send dlcmd commands
+.IP \fIdbops\fP 
+database to write balerlist table and where deployment table (if exists) is found.
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Do not talk to balers, only rebuild combined wfdisc.
+.IP "-d deployment_db"
+Name of database where deployment table can be found.  
+The default deployment_db is \fBdbops\fP.
+.IP "-p parameter_file"
+Name of parameter file to use.  $PFPATH is searched to find parameter file.
+The default parameter file name is \fBrt_baler_info\fP.
+.IP "-s net_sta_regex"
+Regular expression to select NET_STAs to extract information from their balers.
+The default is \fB.*\fP
+.IP "-t q3302orb_target"
+Regular expression to select q3302orb target names to get information.
+The default is \fB.*\fP
+
+.SH ENVIRONMENT
+needs to be called from rtexec or have sourced $ANTELOPE/setup.csh.  Need
+environment variable $PFPATH to be set.
+.SH PARAMETER FILE
+\fBrt_baler_info\fP parameter file elements are:
+
+.IP balerdbdir
+directory name where to write wfdisc listing of balers.
+Default is baler/db
+.IP balerdb
+db name of combined wfdisc listing of all balers.
+Default is baler/all
+.IP balerinfodir
+directory name where to write htm files from balers.
+Default is baler/info
+.IP all_chan_skip 
+Tbl list channels to remove from balerdb.wfdisc. 
+.IP info 
+Tbl list of htm files to extact from baler. 
+.IP interface 
+Tbl list of baler interfaces to attempt to connect to. 
+
+.fi
+.ft R
+.in
+.SH DEFAULT PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+balerdbdir	baler/db
+balerdb 	baler/all
+balerinfodir	baler/info
+all_chan_skip &Tbl{	
+	ACE 
+	LOG 
+	OCF 
+}
+info &Tbl{	
+	info.htm 
+	status.htm 
+	baler.htm 
+	threads.htm 
+	files.htm 
+}
+interface &Tbl{
+	serial1
+	serial2
+	ethernet
+}
+
+
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+pf(3)
+pfecho(1)
+rtexec(1)
+dlcmd(1)
+q3302orb(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+.SH AUTHOR
+Frank Vernon
+.br
+Boulder Real Time Technologies, Inc.

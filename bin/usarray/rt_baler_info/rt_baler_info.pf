@@ -1,0 +1,20 @@
+balerdbdir	baler/db
+balerdb 	baler/db/all
+balerinfodir	baler/info
+all_chan_skip &Tbl{	
+	ACE 
+	LOG 
+	OCF 
+}
+info &Tbl{	
+	info.htm 
+	status.htm 
+	baler.htm 
+	threads.htm 
+	files.htm 
+}
+interface &Tbl{
+	ethernet
+	serial2
+	serial1
+}
