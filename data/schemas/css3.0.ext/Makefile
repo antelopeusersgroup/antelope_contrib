@@ -3,6 +3,7 @@ DATA = \
 	comm \
 	deployment \
 	dlevent \
+	dlsite \
 	gsnspec \
 	newcomm \
 	qctests \
