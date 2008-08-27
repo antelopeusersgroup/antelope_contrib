@@ -5,7 +5,7 @@ DATA = \
 	dlevent \
 	gsnspec \
 	newcomm \
-	qctest \
+	qctests \
 	qgrid \
 	replayed \
 	rrdcache \
