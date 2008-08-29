@@ -17,13 +17,18 @@ builds completely or nearly completely redundant associations with
 neighboring grid points.  This program aims to remove redundant 
 grid associations.
 .LP
-This program opens an extension table called "hypocentroid" in an 
+The algorithm used here occurs in two stages of reduction.
+The program first opens an extension table called "hypocentroid" in an 
 input database.  It loads a grid file from the database controlled by
 a parameter file definition.  The program checks the location of 
 computed hypocentroids in the input database relative to each grid 
 point.  If multiple grid points have hypocentroids that fall within 
 the same grid cell the program chooses the one with the maximum number
-of event associations and writes this to the output database.  
+of event associations and caches this information internally.  The 
+program then enters an (optional) secondary reduction controlled by
+the parameter \fIredundant_check_method\fR. The secondary algorithm
+aims to remove clusters that contain completely duplicate lists
+of evids or ones that are total subsets of another with larger counts.
 .SH OPTIONS
 .LP
 The -pf parameter can be used to use an alternative to the standard pffile
@@ -32,6 +37,18 @@ derived from the program name -- the usual Antelope convention.
 .LP
 \fIgridname\fR is a string parameter used to identify the GCLgrid that 
 contains the set of control points to be used by the program.
+.LP
+\fIredundant_check_method\fR controls the secondary removal algorithm.
+Must be one of three possible string or the program will abort with
+an exception noting this condition.  The allowed values for this
+parameter are:  (1) exact, (2) maximum_associations, or (3) distance_only.  
+If \fIexact\fR is used, only clusters with an exact match of evids 
+will be deleted in the secondary scan.  If \fImaximum_association\fR 
+is used, clusters are compared by pairs and if one cluster is a complete
+subset of the other (i.e. all evids in one occur in the other) the 
+member with the smaller count is discarded.  Finally, if set to 
+\fIdistance_only\fR the secondary removal algorithm is completely 
+bypassed.
 .SH "SEE ALSO"
 .nf
 cluster(1), dbpmel(1), makegclgrid(1)

@@ -1,1 +1,3 @@
-gridname test
+gridname	Bering
+redundant_check_method maximum_associations
+pf_revision_time	1147304035
