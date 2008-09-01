@@ -1,3 +1,4 @@
+#include "seispp.h"
 #include "XcorProcessingEngine.h"
 using namespace std;
 using namespace SEISPP;
@@ -78,6 +79,7 @@ int choose_reference(DatascopeHandle& dbh,
 }
 	
 
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
 	int i;
@@ -104,7 +106,7 @@ int main(int argc, char **argv)
 	try {
 		AttributeMap("css3.0");
 		Metadata global_md(pf);
-		AnalysisSetting asetting(global_md);
+		XcorAnalysisSetting asetting(global_md);
 		// Window parameters
 		double ts,te;
 		ts=global_md.get_double("beam_window_start_time");
@@ -123,8 +125,9 @@ cout << "Robust window="<<ts<<"-"<<te<<endl;
 		string resultdb(global_md.get_string("output_database"));
 		string method(global_md.get_string("method"));
 		string model(global_md.get_string("model"));
-		XcorProcessingEngine xpe(pf,asetting,wfdname,resultdb);
+		XcorProcessingEngine xpe(pf,asetting,wfdname,resultdb,string(""));
 		DatascopeHandle dbh(dbtmp,false);
+
 		// This assumes there is one and only one origin
 		// in the tmp database that will drive this
 		dbh.natural_join(string("event"),string("origin"));
@@ -160,7 +163,7 @@ cout << "Running correlator"<<endl;
 		MultichannelCorrelator *mce=xpe.analyze();
 		orid=dbnextid(dbh.db,"orid");
 cout << "Saving results tagged with orid="<<orid<<endl;
-		xpe.save_results(evid,orid);
+		xpe.save_results(evid,orid,h);
 	}
 	catch(MetadataError mde)
 	{

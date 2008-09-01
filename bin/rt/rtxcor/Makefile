@@ -2,9 +2,7 @@ BIN=rtxcor
 PF=rtxcor.pf
 MAN1=rtxcor.1
 
-cxxflags=-g
-DBG=-g
-ldlibs=-lseispp -lperf -lgclgrid $(TRLIBS) 
+ldlibs=-lseispp -ltrvltm -lgclgrid $(TRLIBS)  $(DBLIBS) -lperf -lm
 
 include $(ANTELOPEMAKE) 
 
