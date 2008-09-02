@@ -147,7 +147,21 @@ It would be nice for \fBamakelocal\fP or some other program to have a GUI editin
 \fIamakelocal.pf\fP file. 
 
 \fBamakelocal\fP could be more sophisticated in its tests and its flexibility for specifying 
-required dependencies (presence of perl modules, for example); this is a work in progress. 
+required dependencies (presence of perl modules, or presence of certain executables, for example; 
+perhaps compliance with certain tests); 
+this is a work in progress. 
+
+Ultimately it might be nice if amakelocal tested the things it was putting in the antelopemake.local
+file, rather than just assuming the parameter-file is correct. 
+
+It may not ultimately be advantageous to have the compilation turn-on/turn-off based entirely on the 
+presence of make-rule macros. There may be other types of conditions which should govern. 
+
+It must be emphasized that despite appearances, this is not an attempt to replace the GNU 
+autoconf/automake architecture, which has a sysadmin philosophy diametrically opposite the 
+self-contained approach in Antelope. The amakelocal effort is merely an attempt to carefully 
+and consciously 'break the seal' of the Antelope self-containment to make some selected external 
+dependencies possible. 
 .SH AUTHOR
 Kent Lindquist
 Lindquist Consulting, Inc.
