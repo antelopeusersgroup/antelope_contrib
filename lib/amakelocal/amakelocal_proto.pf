@@ -12,25 +12,25 @@ header &Literal{
 elements &Arr{
 	XMOTIFLIB &Arr{
 		Darwin 	
-		Solaris -L/usr/openwin/lib
+		SunOS -L/usr/openwin/lib
 		Linux 	-L/usr/X11R6/lib
 	}
 	XMOTIFINCLUDE &Arr{
 		Darwin 	
-		Solaris -I/usr/openwin/include
+		SunOS -I/usr/openwin/include
 		Linux 	-I/usr/X11R6/include
 	}
 	PYTHONINCLUDE &Arr{
 #		Darwin 	/sw/include/python2.5
-#		Solaris /usr/local/include/python2.5
+#		SunOS /usr/local/include/python2.5
 		Darwin 	
-		Solaris
+		SunOS
 		Linux 
 	}
 	PHP_INC &Arr{
 #               Darwin /usr/include/php 
 		Darwin 	
-		Solaris
+		SunOS
 		Linux 
 	}
 }
