@@ -28,7 +28,8 @@ to review the previous week of logs, not including the current (incomplete) day,
 set -n to 7.  The default is 1 day.
 .IP "-l match_logname"
 Regular expression to reduce the number of files/directories to search. The default 
-is to search only files with "log" in the name. 
+is to search only files with "log" in the name.  You may wish to use an expression that
+would filter out logs such as the \fItargetname\fP/log packets produced by \fBq3302orb\fP.
 .IP "-v"
 Verbose output.
 .IP "-V"
@@ -113,9 +114,9 @@ convert_umsg &Arr{
 .LP
 Which log strings are kept are controlled by:
 .IP \fImatch\fP
-This is a list of regular expressions (untested) that will be searched for in the logs.
+This is a list of regular expressions that will be searched for in the logs.
 .IP \fIreject\fP
-This is a list of regular expressions (untested) that will be rejected from any previous matches
+This is a list of regular expressions that will be rejected from any previous matches
 in the logs.  For instance, based on the default parameter file, if there is a message in the 
 logs that has both "massrecenter" and "Sending", that line will be excluded from the output 
 database.
@@ -134,7 +135,9 @@ only tested on a Q330).  It assumes that interactions via Willard are noted
 with a UMSG or via output from dlcmd.  Hopefully, you can convince those who
 interact with the datalogger via a UMSG to use standard phrases... otherwise
 this script might be of little use.  If the output from dlcmd changes, this 
-script will likely be less effective.
+script will likely be less effective.  There have been multiple changes in 
+the message format for q3302orb over the years, so results may vary depending
+on your log vintage.
 
 .LP
 A cronjob listing in rtexec.pf that runs on Thursday grabbing the previous 
@@ -177,6 +180,10 @@ neither have been thoroughly tested.
 .LP
 It may take some adjustment of the parameter file to get (or reject) various
 events that you might find interesting.
+.LP
+Greps of log files which change format over time are obviously prone to errors.  
+You may not get all of the information you want in the dlcomment field.
+.LP
 .SH AUTHOR
 .nf
 Jennifer Eakins

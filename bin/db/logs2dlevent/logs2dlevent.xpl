@@ -22,17 +22,30 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
     elog_init ( $0, @ARGV) ;
 
     our ( $opt_d, $opt_l, $opt_n, $opt_p, $opt_v, $opt_V, $opt_w );
-    
+
+
+    my ($dlname, $dlsta, $dlevtype, $comment);
+    my ($evtime, $evdate_hr, $evmin, $evsec, $event_type, $event );
+    my ($current_jdate, $end_jdate, $start_jdate, @jdates);
+    my (%dlevents, $key, $value, %event_phrase, %convert_umsg, @match, @reject);    
+    my ($target, @dlevent_record, @dbl, @db); 
+    my ($cnt_days, $dbout, $dir, $search_dir, $logdir);
+    my ($file_pattern, $search_pattern, $reject_pattern, $line, $matches);
+    my ($com1, $com2, $com3, $com4, $com5, $com6);
     my ($now, $t) ;
     my ($first, $last) ;
     my ($prog_name,$mailtmp,$host,$Problems,$Success,$Neutral);
+    my ($pf);
+
+    
+
+    $prog_name = $0 ;
+    $prog_name =~ s".*/"";
 
     $now     = time();
     $t    = strtime($now);
 
     elog_notify(0,"\nStarting program at: $t");
-
-
 
  
 # -n is number of days to search
@@ -42,7 +55,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 # -w the log file structure if different than $db/%Y/%J/%{srcname}
 #  see orb2logs(1) and trwfname(3).  Currently unprogrammed.
 
-# -d directory where logs are stored
+# -d time to start search 
 
 if (! &Getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
     print STDERR "Getopts or number of arguments failure.\n";
@@ -71,6 +84,7 @@ if (! &Getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
     $reject_pattern = join "|", @reject;
 
     if ($opt_l) {
+#        $file_pattern	= "$opt_l" ;
         $file_pattern	= $opt_l ;
     } else { 
         $file_pattern	= "log" ;	# name of log file to match
@@ -127,7 +141,7 @@ if (! &Getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
 
      if ($opt_w) {
 	elog_complain("Sorry... I haven't programmed the -w option\n") ;
-	elog_complain("Using the default waveform pattern instead: %Y/%j\n") ;
+	elog_complain("Using the default log pattern instead: %Y/%j\n") ;
      }
 
      elog_notify(0,"Opening db: $dbout\n") if $opt_V;
@@ -199,16 +213,24 @@ sub grep_this {
 	     elog_notify(0, "Evtime: $evtime\n") if $opt_V ;
 	     $comment = "$com1";
              if ($comment =~ /LOG/) {   # Try to get correct info from Calibration message
-                # skip com2 - com4 as it is another date
+                # skip com2 - com4 as currently they are another date (earlier versions have this as log info, see elsif below)
                 if ($com5) {
                     $comment = $comment . $com5 ;
                      if ($com6) {
                          $comment = $comment . $com6;
                      }
+                } elsif ($com2 =~ /ip.*/) {     # try to program for old log/umsg's from before 2006?
+		    $comment = $comment . $com2;
+		    if ($com3) {
+			$comment = $comment . $com3;
+			if ($com4) {
+			   $comment = $comment . $com4;
+			}
+		    }
                 }
              } else {
 
-	       if ( $com2) {
+	       if ( $com2 ) {
 	     	  $comment = $comment . $com2;
 		  if ($com3) {
 	     	      $comment = $comment . $com3;
@@ -327,7 +349,7 @@ sub get_pf {
 
 sub usage { 
         print STDERR <<END;
-            \nUSAGE: $0 [-p pf] [-d ndays_lag] [-n ndays] [-v] [-l match_logname] logdir db 
+            \nUSAGE: $0 [-p pf] [-d date] [-n ndays] [-v] [-l match_logname] logdir db 
 
 END
         exit(1);
