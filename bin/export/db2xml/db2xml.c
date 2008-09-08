@@ -26,10 +26,15 @@ main (int argc, char **argv)
 	char	*database;
 	int	verbose = 0;
 	int	primary = 0;
-	Pf	pf;
+	Pf	*pf;
 	char	*xmlstring = 0;
 	char	*rootname = 0;
 	char	*rowname = 0;
+	char	*stylesheet = 0;
+	char	xslt_processor[STRSZ];
+	char	command[STRSZ];
+	char	tempfile[FILENAME_MAX];
+	FILE	*tempfs;
 	Tbl	*fields = 0;
 	Tbl	*expressions = 0;
 	int	rc;
@@ -37,11 +42,15 @@ main (int argc, char **argv)
 
 	elog_init( argc, argv ) ; 
 
-	while ((c = getopt (argc, argv, "pd:r:v")) != -1) {
+	while ((c = getopt (argc, argv, "pd:r:t:v")) != -1) {
 		switch (c) {
 
 		case 'v':
 			verbose++;
+			break;
+
+		case 't':
+			stylesheet = strdup( optarg );
 			break;
 
 		case 'd':
@@ -65,6 +74,8 @@ main (int argc, char **argv)
 	if( errflg || argc - optind < 1 || (((argc-optind) % 2) != 1)) {
 		usage ();
 	}
+
+	pfread( "db2xml", &pf );
 
 	database = argv[optind++];
 	
@@ -96,16 +107,38 @@ main (int argc, char **argv)
 	rc = db2xml( db, rootname, rowname, fields, expressions, 
 		(void **) &xmlstring, flags );
 
-	if( rc < 0 ) {
+	if( rc < 0 || xmlstring == NULL ) {
 		
 		clear_register( 1 );
+
 		die( 0, "db2xml failed\n" );
 
-	} else if( xmlstring != NULL ) {
+	} else if( stylesheet != NULL ) {
+
+		sprintf( tempfile, "/tmp/db2xml_%d_%d.xml", getuid(), getpid() );
+
+		tempfs = fopen( tempfile, "w" );
+
+		fwrite( xmlstring, sizeof(char), strlen( xmlstring ), tempfs );
+
+		fclose( tempfs );
+
+		sprintf( xslt_processor, "%s", pfget_string( pf, "xslt_processor" ) );
+
+		strsub( xslt_processor, "STYLESHEET", stylesheet, xslt_processor );
+
+		strsub( xslt_processor, "XMLFILE", tempfile, command );
+
+		system( command );
+
+		unlink( tempfile );
+
+	} else {
 
 		fwrite( xmlstring, sizeof(char), strlen( xmlstring ), stdout );
-		free( xmlstring );
 	}
+
+	free( xmlstring );
 
 	return 0;
 }

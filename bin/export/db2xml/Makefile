@@ -1,6 +1,6 @@
 
 BIN= db2xml
-PF=
+PF= db2xml.pf
 
 MAN1= db2xml.1
 

@@ -3,7 +3,7 @@
 db2xml \- pretty-print a database view as XML
 .SH SYNOPSIS
 .nf
-\fBdb2xml \fP[-v] [-p] [-d \fIdocument_root\fP] [-r \fIrowname\fP]
+\fBdb2xml \fP[-v] [-p] [-d \fIdocument_root\fP] [-r \fIrowname\fP] [-t \fIstylesheet\fP]
                 \fIdbname.table\fP [\fIname\fP \fIexpr\fP [\fIname\fP \fIexpr\fP
                 ...]]
 .fi
@@ -32,23 +32,43 @@ shell.
 
 .SH OPTIONS
 
--v Verbose
+.IP -v 
+Verbose
 
--p Only print out the primary keys as elements
+.IP -p
+Only print out the primary keys as elements
 
--d set the \fIname\fP of the document root element.
+.IP -d
+set the \fIname\fP of the document root element.
 
--r set the \fIname\fP of the elements representing individual rows
+.IP -r
+set the \fIname\fP of the elements representing individual rows
 of the input view.
+
+.IP "-t stylesheet"
+send the xml generated to the XSLT processor specified in the 
+parameter file rather than to standard output. 
+
+.SH PARAMETER FILE
+The \fIxslt_processor\fP parameter gives a command-line used to transform the 
+generated XML file with an XSLT stylesheet. The command-line may contain the 
+word \fISTYLESHEET\fP, which will be replaced with the value given to the -t option
+on the command line. The command-line must contain the word \fIXMLFILE\fP, 
+which will be replaced with the name of a temporary file to which the initial 
+XML output is written. 
+.nf
+
+% pfecho db2xml
+xslt_processor xsltproc STYLESHEET XMLFILE
+
+.fi
 .SH EXAMPLE
 .ft CW
 .in 2c
 .nf
 
 .ne 21
-yukon% dbsubset /opt/antelope/data/db/demo/demo.origin 'mb > 6.4' |
-       db2xml -d quakes -r hypocenter - lat lat lon lon
-        timestring 'strtime(time)'
+% dbsubset /opt/antelope/data/db/demo/demo.origin 'mb > 6.4' | db2xml -d quakes -r hypocenter - lat lat lon lon timestring 'strtime(time)'
 
 <quakes>
    <hypocenter>
@@ -68,9 +88,65 @@ yukon% dbsubset /opt/antelope/data/db/demo/demo.origin 'mb > 6.4' |
    </hypocenter>
 </quakes>
 
-yukon%
+%
 
 .fi
+
+Now do the same thing but transform the results with a stylesheet:
+
+.nf
+% cat test.xsl
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+<xsl:output method="html"/>
+
+<xsl:template match="/">
+ <html>
+ <body>
+ <table rules="all">
+ <th>lat</th><th>lon</th><th>timestring</th>
+ <xsl:apply-templates select="quakes"/>
+ </table>
+ </body>
+ </html>
+</xsl:template>
+
+<xsl:template match="hypocenter">
+ <tr>
+ <td><xsl:value-of select="lat"/></td>
+ <td><xsl:value-of select="lon"/></td>
+ <td><xsl:value-of select="timestring"/></td>
+ </tr>
+</xsl:template>
+
+</xsl:stylesheet>
+
+%
+% dbsubset /opt/antelope/data/db/demo/demo.origin 'mb > 6.4' | db2xml -t test.xsl -d quakes -r hypocenter - lat lat lon lon timestring 'strtime(time)'
+<html><body><table rules="all">
+<th>lat</th>
+<th>lon</th>
+<th>timestring</th>
+   <tr>
+<td>-7.297</td>
+<td>129.137</td>
+<td>5/04/1992   8:45:10.089</td>
+</tr>
+   <tr>
+<td>41.604</td>
+<td>88.813</td>
+<td>5/21/1992   4:59:57.500</td>
+</tr>
+   <tr>
+<td>41.417</td>
+<td>88.3439</td>
+<td>5/21/1992   5:00:00.399</td>
+</tr>
+</table></body></html>
+% 
+
+.fi
+
 .in
 .ft R
 .SH RETURN VALUES
