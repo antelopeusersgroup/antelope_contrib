@@ -1,0 +1,68 @@
+.TH PYTHONSTOCK 3P "$Date$"
+.SH NAME
+pythonstock \- Python interface to Antelope stock library
+.SH SYNOPSIS
+.nf
+sys.path.append( os.environ['ANTELOPE'] + '/data/python' )
+
+from antelope.stock import *
+.fi
+.SH DESCRIPTION
+The Python Interface to the Antelope stock library allows one to perform operations 
+from libstock.so in the Python scripting language. 
+Following are brief descriptions of the functions implemented.
+
+.SS Datascope functions
+.IP "\fBstrtime\fP (epoch)"
+Returns a string version of an epoch time
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+e = 1220912560
+
+s = strtime(e)
+
+.fi
+.in
+.ft R
+.IP "\fBstr2epoch\fP (timestring)"
+Returns an epoch time corresponding to a time string, parsable by str2epoch(3)
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+s = '1/1/2000 14:00'
+
+e = str2epoch(s)
+
+.fi
+.in
+.ft R
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pythonorb(3p), pythonstock(3p)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$

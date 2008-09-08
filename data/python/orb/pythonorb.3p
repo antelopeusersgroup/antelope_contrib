@@ -1,0 +1,64 @@
+.TH PYTHONORB 3P "$Date$"
+.SH NAME
+pythonorb \- Python interface to Antelope Orbserver
+.SH SYNOPSIS
+.nf
+sys.path.append( os.environ['ANTELOPE'] + '/data/python' )
+
+from antelope.orb import *
+.fi
+.SH DESCRIPTION
+The Python Interface to the Antelope Orb allows one to perform operations 
+on Antelope orbservers from the Python scripting language. 
+Following are brief descriptions of the functions implemented.
+
+.SS Orb functions
+.IP "\fBorbopen\fP (orbname, permissions)"
+Returns an orb descriptor to the specified orbserver.
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+orbfd = orbopen( orbname, "r" ) 
+
+.fi
+.in
+.ft R
+.IP "\fBorbclose\fP (orbfd)"
+Close an orb connection. 
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+orbclose( orbfd )
+
+.fi
+.in
+.ft R
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pythondb(3p), pythonstock(3p)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$

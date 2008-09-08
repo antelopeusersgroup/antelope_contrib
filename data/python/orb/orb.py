@@ -92,16 +92,22 @@ if __name__ == '__main__':
     import unittest
     import os
 
-    class Testdatascope(unittest.TestCase):
+    class Testorb(unittest.TestCase):
         orbname = ':dq'
 
         def setUp(self):
+
+            # os.chdir("/tmp")
+            # os.system("pfcp orbserver .")
+            # os.system("orbserver -p " + self.orbname + " orbserver &")
+            # os.system("sleep 3")
  
             pass
 
         def tearDown(self):
 
-            pass
+            # os.system("echo halt | orbstat -i " + self.orbname)
+	    pass
 
         def test_Orb_constructor(self):
 
