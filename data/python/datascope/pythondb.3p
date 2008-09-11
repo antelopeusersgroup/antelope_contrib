@@ -12,6 +12,12 @@ The Python Interface to Datascope allows one to perform operations
 on Datascope databases from the Python scripting language. 
 Following are brief descriptions of the functions implemented.
 
+Many of these python functions are direct wrappers around the C-language interfaces 
+in the Datascope library. Further information on how to use any given command may 
+therefore be obtained from the man pages on the relevant commands. For example, 
+this man page will explain the syntax of the python \fIdbsubset\fP function. However, for 
+a full explanation of dbsubset, see the dbsubset(3) man page. 
+
 The python calls may be used in two ways, either in a procedural 
 style or in an object style invocation. Either way, a database pointer 
 is returned, which is a Python object containing four fields, 
@@ -42,6 +48,7 @@ several ways. For example, to address the record number, you can use
 .fi
 
 .SS Datascope functions
+
 .IP "\fBdbopen\fP (database, permissions)"
 Returns a database pointer to the specified database.
 .ft CW
@@ -51,9 +58,181 @@ Returns a database pointer to the specified database.
 
 db = dbopen( database, "r+" ) 
 
+or
+
+db = dbopen( database )
+
 .fi
 .in
 .ft R
+
+.IP "\fBdbclose\fP (db)"
+Close an open database
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbclose( db )
+
+or
+
+db.close()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbfree\fP (db)"
+Free Datascope memory
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbfree( db )
+
+or
+
+db.free()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbdestroy\fP (db)"
+Completely eliminate all tables in a database
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db.dbdestroy()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbcreate\fP (filename, schema, dbpath = None, description = None, detail = None)"
+Create a new database descriptor file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbcreate(database_name)
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbtmp\fP (schema)"
+Create a temporary database
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbtmp(schema)
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbdelete\fP (db)"
+Delete Datascope database rows
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbdelete( db )
+
+or
+
+db.delete()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbinvalid\fP (db)"
+Return a database pointer with dbINVALID values, or set a database pointer to dbINVALID values
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbinvalid( db )
+
+or
+
+db.invalid()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbmark\fP (db)"
+Mark Datascope database rows for deletion
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbmark( db )
+
+or
+
+db.mark()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbcrunch\fP (db)"
+Delete marked database rows
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbcrunch( db )
+
+or
+
+db.crunch()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbtruncate\fP (db, nrecords)"
+Truncate a database table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbtruncate( db, nrecords )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrtruncate\fP (db, leave)"
+Truncate a trace-object database table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trtruncate( db, leave )
+
+.fi
+.in
+.ft R
+
 .IP "\fBdblookup\fP (dbptr, database, table, field, record)"
 Aim a database pointer at part of a database
 .ft CW
@@ -63,9 +242,18 @@ Aim a database pointer at part of a database
 
 db = dblookup( db, '', 'origin', '', '' )
 
+or 
+
+db.lookup( '', 'origin', '', '' )
+
+or
+
+db.lookup( table='origin' )
+
 .fi
 .in
 .ft R
+
 .IP "\fBdbsubset\fP (dbptr, expr)"
 Subset a database view
 .ft CW
@@ -75,15 +263,31 @@ Subset a database view
 
 db = dbsubset( db, "orid == 645" )
 
-.fi
 or
-.nf
 
-db.dbsubset( "orid == 645" )
+db.subset( "orid == 645" )
 
 .fi
 .in
 .ft R
+
+.IP "\fBdblist2subset\fP (dbptr, list)"
+Convert a list of records to a database subset
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dblist2subset( db, rownumber_list )
+
+or
+
+db.list2subset( rownumber_list )
+
+.fi
+.in
+.ft R
+
 .IP "\fBdbsort\fP (dbptr, key)"
 Sort a database view
 .ft CW
@@ -93,9 +297,48 @@ Sort a database view
 
 db = dbsort( db, 'time' )
 
+or 
+
+db.sort( 'time' )
+
 .fi
 .in
 .ft R
+
+.IP "\fBdbgroup\fP (dbptr, groupfields, name=None, type=1)"
+Group a sorted table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbgroup( db, groupfields )
+
+or 
+
+db.group( groupfields )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbungroup\fP (dbptr, name=None)"
+Ungroup a grouped table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbungroup( db )
+
+or 
+
+db.ungroup()
+
+.fi
+.in
+.ft R
+
 .IP "\fBdbjoin\fP (db1, db2)"
 Join two database views
 .ft CW
@@ -105,9 +348,383 @@ Join two database views
 
 db = dbjoin( db1, db2 )
 
+or
+
+db1.join( db2 )
+
+or
+
+db1.join( 'assoc' )
+
 .fi
 .in
 .ft R
+
+.IP "\fBdbunjoin\fP (db, database_name, rewrite=False)"
+Create new tables from a joined table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbunjoin( db, database_name )
+
+or
+
+db.unjoin( database_name )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbtheta\fP (db1, db2, expression, outer=False, name=None)"
+Theta-join two database views
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbtheta( db1, db2, expr )
+
+or
+
+db1.theta( db2, expr )
+
+or
+
+db1.theta( 'assoc', expr )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbnojoin\fP (db1, db2)"
+Find rows which don't join between two database rows
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbnojoin( db1, db2 )
+
+or
+
+db1.nojoin( db2 )
+
+or
+
+db1.nojoin( 'assoc' )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbseparate\fP (dbptr, tablename)"
+Extract a subset of a base table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbseparate( db, 'origin' )
+
+or 
+
+db.separate( 'origin' )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbsever\fP (dbptr, tablename)"
+Remove a table from a joined view
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbsever( db, 'origin' )
+
+or 
+
+db.sever( 'origin' )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbprocess\fP (db, cmdlist)"
+Run a series of database operations
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+db = dbprocess( db, cmdlist )
+
+or 
+
+db.process( cmdlist )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbgetv\fP (db, field_name [,field_name, ...] )"
+Get values from a database row
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+values = dbgetv( db, 'lat', 'lon' )
+
+or 
+
+values = db.getv( 'lat', 'lon' )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbaddv\fP (db, field_name, value [,field_name, value, ...] )"
+Add values to a new database row
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbaddv( db, 'lat', 61,.5922, 'lon', -149.130 )
+
+or 
+
+db.addv( 'lat', 61.5922, 'lon', -149.130 )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbputv\fP (db, field_name, value [,field_name, value, ...] )"
+Write fields in a database row
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbputv( db, 'lat', 61,.5922, 'lon', -149.130 )
+
+or 
+
+db.putv( 'lat', 61.5922, 'lon', -149.130 )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbaddnull\fP (db)"
+Add a new, null row to a table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+record_num = dbaddnull( db )
+
+or 
+
+db.addnull()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbextfile\fP (db, tablename = None)"
+Compose filename from database record for a given table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+fname = dbextfile( db )
+
+or 
+
+fname = db.extfile()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbfilename\fP (db)"
+Compose filename from database record
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+fname = dbfilename( db )
+
+or 
+
+fname = db.filename()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbquery\fP (db, dbcode)"
+Retrieve ancillary information about a database
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+nrecs = dbquery( db, dbRECORD_COUNT )
+
+or 
+
+nrecs = db.query( dbRECORD_COUNT )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbnextid\fP (db, name)"
+Generate a unique id from the lastid table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+arid = dbnextid( db, 'arid' )
+
+or 
+
+arid = db.nextid( 'arid' )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbex_eval\fP (db, expr)"
+Evaluate a database expression
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+result = dbex_eval( db, expr )
+
+or 
+
+result = db.ex_eval( expr )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbmatches\fP (db, dbt, hookname, kpattern = None, tpattern = None)"
+Find matching records in second table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+resultlist = dbmatches( db, dbt, hookname )
+
+or 
+
+resultlist = db.matches( db, dbt, hookname )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbfind\fP (db, expr, first = -1, reverse = False)"
+Search for matching record in a table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+record = dbfind( db, expr )
+
+or 
+
+record = db.find( expr )
+
+.fi
+.in
+.ft R
+
+.IP "\fBdb2xml\fP (db, rootnode = None, rownode = None, fields = None, expressions = None, primary = False)"
+Convert a database view to XML
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+xmlstring = db2xml( db )
+
+or 
+
+xmlstring = db.xml( db )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrwfname\fP (db, pattern )"
+Generate waveform file names
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+fname = trwfname( db, pattern )
+
+or 
+
+fname = db.trwfname( pattern )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrsample\fP (db, t0, t1, sta, chan, apply_calib = False)"
+Return time-series data for a given station, channel, and time-interval
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+v = db.sample(706139719.05000, 706139855.95000, "TKM", "BHZ", True)
+
+or
+
+v = trsample(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", True)
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrsamplebins\fP (db, t0, t1, sta, chan, binsize, apply_calib = False)"
+Return binned time-series data for a given station, channel, and time-interval
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+v = db.samplebins(706139719.05000, 706139855.95000, "TKM", "BHZ", 50, True)
+
+or
+
+v = trsamplebins(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", 50, True)
+
+.fi
+.in
+.ft R
+
 .IP "\fBtrloadchan\fP (db, t0, t1, sta, chan)"
 Load a station-channel of data into a trace object
 .ft CW
@@ -117,9 +734,31 @@ Load a station-channel of data into a trace object
 
 tr = trloadchan( db, 706139719.05000, 706139855.95000, "TKM", "BHZ" )
 
+or
+
+tr = db.loadchan( 706139719.05000, 706139855.95000, "TKM", "BHZ" )
+
 .fi
 .in
 .ft R
+
+.IP "\fBtrfilter\fP (tr, filter_string)"
+Apply time-domain filters to waveform data
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tr = trfilter(tr, filter_string)
+
+or
+
+v = tr.filter( filter_string)
+
+.fi
+.in
+.ft R
+
 .IP "\fBtrdata\fP (tr)"
 Extract a vector of samples from a trace-object row
 .ft CW
@@ -128,6 +767,146 @@ Extract a vector of samples from a trace-object row
 .ne 3
 
 v = trdata( tr )
+
+or
+
+v = tr.data()
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrdatabins\fP (tr)"
+Obtain binned data points from trace-table record
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+v = trdatabins( tr, binsize )
+
+or
+
+v = tr.databins( binsize )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrsplice\fP (tr)"
+Splice together data segments
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trsplice( tr )
+
+or
+
+tr.splice()
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrsplit\fP (tr)"
+Split data segments with marked gaps
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trsplit( tr )
+
+or
+
+tr.split()
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrcopy\fP (tr)"
+Copy trace table including the trace data
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trout = trcopy(trin)
+
+or
+
+trout = trin.trcopy()
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrfree\fP (tr)"
+Free up memory buffers and clear trace object tables
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trfree(tr)
+
+or
+
+tr.trfree()
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrdestroy\fP (tr)"
+Close a trace database, cleaning up memory and files
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trdestroy(tr)
+
+or
+
+tr.trdestroy()
+
+.fi
+.in
+.ft R
+
+.SS Response Functions
+
+.IP "\fBResponse\fP (filename)"
+Create a Datascope Response object
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+Response( filename )
+
+.fi
+.in
+.ft R
+
+.IP "\fBeval_response\fP (resp, omega)"
+Evaluate a Datascope Response object at an angular frequency
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+resp = Response(fname)
+
+r = resp.eval(5 * 2 * math.pi)
+
+or 
+
+r = eval_response( resp, 5 * 2 * math.pi )
 
 .fi
 .in
@@ -138,9 +917,12 @@ v = trdata( tr )
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 .SH EXAMPLE
+A short example is shown below. Examples of each command are available in the unittest 
+section at the end of the file $(ANTELOPE)/data/python/antelope/datascope.py.
 .in 2c
 .ft CW
 .nf
+
 import sys
 import os
 import pylab
