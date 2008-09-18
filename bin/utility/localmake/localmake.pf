@@ -78,4 +78,24 @@ modules &Arr{
 			man/man3/glp_matrix_utils.3
 		}
 	}
+	python_antelope &Arr{
+		build &Tbl{
+			src/contrib/data/python
+		}
+		package &Tbl{
+			lib/python__datascope.dylib 
+			lib/python__orb.dylib
+			lib/python__stock.dylib
+			data/python/antelope/_orb.so
+			data/python/antelope/_datascope.so
+			data/python/antelope/_stock.so
+			data/python/antelope/datascope.py
+			data/python/antelope/orb.py
+			data/python/antelope/stock.py
+			data/python/antelope/__init__.py
+			man/man3/pythondb.3p
+			man/man3/pythonorb.3p
+			man/man3/pythonstock.3p
+		}
+	}
 }
