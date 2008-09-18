@@ -589,6 +589,23 @@ nrecs = db.query( dbRECORD_COUNT )
 .in
 .ft R
 
+.IP "\fBdbnrecs\fP (db)"
+Retrieve number of records in a database view
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+nrecs = dbnrecs( db )
+
+or 
+
+nrecs = db.nrecs()
+
+.fi
+.in
+.ft R
+
 .IP "\fBdbnextid\fP (db, name)"
 Generate a unique id from the lastid table
 .ft CW

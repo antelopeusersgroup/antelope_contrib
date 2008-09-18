@@ -1,6 +1,6 @@
 
 STOCKDLIB= _stock.so
-DLIB=python_stock$(DSUFFIX)
+DLIB=python__stock$(DSUFFIX)
 
 DATADIR= python/antelope
 

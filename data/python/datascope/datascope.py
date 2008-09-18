@@ -418,6 +418,11 @@ class Dbptr(list):
 
         return _datascope._dbquery(self, dbcode)
         
+    def nrecs(self):
+        """Retrieve number of records in a database view"""
+
+        return _datascope._dbquery(self, dbRECORD_COUNT)
+        
     def nextid(self, name):
         """Generate a unique id from the lastid table"""
 
@@ -852,6 +857,7 @@ def dbextfile(db, tablename = None):
 
     return db.extfile(tablename)
 
+
 def dbfilename(db):
     """Compose filename from database record"""
 
@@ -864,10 +870,17 @@ def dbquery(db, dbcode):
     return db.query(dbcode)
         
 
+def dbnrecs(db):
+    """Retrieve number of records in a database view"""
+
+    return db.query(dbRECORD_COUNT)
+        
+
 def dbnextid(db, name):
     """Generate a unique id from the lastid table"""
 
     return db.nextid(name)
+
 
 def dbex_eval(db, expr):
     """Evaluate a database expression"""
@@ -1564,6 +1577,14 @@ if __name__ == '__main__':
             db = Dbptr(self.dbname)
 
             self.assertEqual(self.dbname, db.query(dbDATABASE_NAME))
+
+        def test_method_nrecs(self):
+
+            db = Dbptr(self.dbname)
+
+	    db.lookup(table='origin')
+
+            self.assertEqual(db.nrecs(), 1351)
 
         def test_method_ex_eval(self):
 
@@ -2300,6 +2321,20 @@ if __name__ == '__main__':
             value = dbquery(db, dbSCHEMA_TABLES)
 
             self.assertTrue(isinstance(value,tuple))
+
+        def test_procedure_dbnrecs(self):
+
+            db = Dbptr(self.dbname)
+
+            value = dbquery(db, dbDATABASE_NAME)
+
+            self.assertEqual(value, self.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            value = dbnrecs(db)
+
+            self.assertEqual(value, 1351)
 
         def test_procedure_dbmatches(self):
 
