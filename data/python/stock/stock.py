@@ -84,10 +84,52 @@ def strtime(epoch):
     return _stock._strtime(epoch)
 
 
+def strtdelta(epoch):
+    """Convert an epoch time difference to a string representation"""
+
+    return _stock._strtdelta(epoch)
+
+
+def strydtime(epoch):
+    """Convert an epoch time to a string date and time, including julian day"""
+
+    return _stock._strydtime(epoch)
+
+
+def strdate(epoch):
+    """Convert an epoch time to a string date"""
+
+    return _stock._strdate(epoch)
+
+
+def strlocaltime(epoch):
+    """Convert an epoch time to a string date and time in local time zone"""
+
+    return _stock._strlocaltime(epoch)
+
+
+def strlocalydtime(epoch):
+    """Convert an epoch time to a string date and time in local time zone, with julian day"""
+
+    return _stock._strlocalydtime(epoch)
+
+
+def strlocaldate(epoch):
+    """Convert an epoch time to a string date in local time zone"""
+
+    return _stock._strlocaldate(epoch)
+
+
 def str2epoch(astring):
     """Convert a string to an epoch time"""
 
     return _stock._str2epoch(astring)
+
+
+def now():
+    """Return epoch time for local system clock"""
+
+    return _stock._now()
 
 
 if __name__ == '__main__':
@@ -201,6 +243,48 @@ if __name__ == '__main__':
 
             self.assertEqual(t,' 1/01/1970   0:00:00.000')
 
+        def test_strydtime(self):
+
+            e = 0
+            t = strydtime(e)
+
+            self.assertEqual(t,' 1/01/1970 (001)  0:00:00.000')
+
+        def test_strdate(self):
+
+            e = 0
+            t = strdate(e)
+
+            self.assertEqual(t,' 1/01/1970')
+
+        def test_strlocaldate(self):
+
+            e = 0
+            t = strlocaldate(e)
+
+            self.assertTrue(isinstance(t, str))
+
+        def test_strlocaltime(self):
+
+            e = 0
+            t = strlocaltime(e)
+
+            self.assertTrue(isinstance(t, str))
+
+        def test_strlocalydtime(self):
+
+            e = 0
+            t = strlocalydtime(e)
+
+            self.assertTrue(isinstance(t, str))
+
+        def test_strtdelta(self):
+
+            e = 0
+            t = strtdelta(e)
+
+            self.assertEqual(t,' 0 microseconds      ')
+
         def test_str2epoch(self):
 
             s = '1/1/2000 14:00'
@@ -208,5 +292,11 @@ if __name__ == '__main__':
             e = str2epoch(s)
 
             self.assertEqual(e, 946735200)
+
+        def test_now(self):
+
+            e = now()
+
+	    self.assertTrue(isinstance(e,float))
 
     unittest.main()

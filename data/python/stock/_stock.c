@@ -70,7 +70,15 @@ static PyObject *python_pffiles( PyObject *self, PyObject *args );
 static PyObject *python_pf2string( PyObject *self, PyObject *args );
 static PyObject *python_pf2xml( PyObject *self, PyObject *args );
 static PyObject *python_strtime( PyObject *self, PyObject *args );
+static PyObject *python_strtdelta( PyObject *self, PyObject *args );
+static PyObject *python_strydtime( PyObject *self, PyObject *args );
+static PyObject *python_strtime( PyObject *self, PyObject *args );
+static PyObject *python_strdate( PyObject *self, PyObject *args );
+static PyObject *python_strlocaltime( PyObject *self, PyObject *args );
+static PyObject *python_strlocalydtime( PyObject *self, PyObject *args );
+static PyObject *python_strlocaldate( PyObject *self, PyObject *args );
 static PyObject *python_str2epoch( PyObject *self, PyObject *args );
+static PyObject *python_now( PyObject *self, PyObject *args );
 static PyObject *pf2PyObject( Pf *pfvalue );
 static PyObject *string2PyObject( char *s );
 static PyObject *strtbl2PyObject( Tbl *atbl );
@@ -91,8 +99,15 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_pffiles", 		python_pffiles,   	METH_VARARGS, "Return a list of parameter path names" },
 	{ "_pf2string",		python_pf2string,   	METH_VARARGS, "Convert a parameter-file to a string" },
 	{ "_pf2xml",		python_pf2xml,   	METH_VARARGS, "Convert a parameter-file to an xml string" },
+	{ "_strtdelta",   	python_strtdelta,   	METH_VARARGS, "Convert a time-difference to a string" },
+	{ "_strydtime",   	python_strydtime,   	METH_VARARGS, "Convert an epoch time to a string date and time including julian day" },
+	{ "_strdate",   	python_strdate,   	METH_VARARGS, "Convert an epoch time to a string date" },
+	{ "_strlocaltime",   	python_strlocaltime,   	METH_VARARGS, "Convert an epoch time to a local date and time string" },
+	{ "_strlocalydtime",   	python_strlocalydtime,   	METH_VARARGS, "Convert an epoch time to a local date and time string with julian day" },
+	{ "_strlocaldate",   	python_strlocaldate,   	METH_VARARGS, "Convert an epoch time to a string date in local time zone" },
 	{ "_strtime",   	python_strtime,   	METH_VARARGS, "Compute a string representation of epoch time" },
 	{ "_str2epoch",   	python_str2epoch,   	METH_VARARGS, "Compute an epoch time from a string" },
+	{ "_now",   		python_now,   		METH_VARARGS, "Return epoch time for local system clock" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -712,6 +727,32 @@ python_pfget_time( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_strtdelta( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _strtdelta( epoch )\n";
+	PyObject *obj;
+	double	epoch;
+	char 	*s;
+
+	if( ! PyArg_ParseTuple( args, "d", &epoch ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	s = strtdelta( epoch );
+
+	if( s ) {
+
+		free( s );
+	}
+
+	obj = Py_BuildValue( "s", s );
+
+	return obj;
+}
+
+static PyObject *
 python_strtime( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _strtime( epoch )\n";
 	PyObject *obj;
@@ -738,6 +779,136 @@ python_strtime( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_strydtime( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _strydtime( epoch )\n";
+	PyObject *obj;
+	double	epoch;
+	char 	*s;
+
+	if( ! PyArg_ParseTuple( args, "d", &epoch ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	s = strydtime( epoch );
+
+	if( s ) {
+
+		free( s );
+	}
+
+	obj = Py_BuildValue( "s", s );
+
+	return obj;
+}
+
+static PyObject *
+python_strdate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _strdate( epoch )\n";
+	PyObject *obj;
+	double	epoch;
+	char 	*s;
+
+	if( ! PyArg_ParseTuple( args, "d", &epoch ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	s = strdate( epoch );
+
+	if( s ) {
+
+		free( s );
+	}
+
+	obj = Py_BuildValue( "s", s );
+
+	return obj;
+}
+
+static PyObject *
+python_strlocaltime( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _strlocaltime( epoch )\n";
+	PyObject *obj;
+	double	epoch;
+	char 	*s;
+
+	if( ! PyArg_ParseTuple( args, "d", &epoch ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	s = strlocaltime( epoch );
+
+	if( s ) {
+
+		free( s );
+	}
+
+	obj = Py_BuildValue( "s", s );
+
+	return obj;
+}
+
+static PyObject *
+python_strlocalydtime( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _strlocalydtime( epoch )\n";
+	PyObject *obj;
+	double	epoch;
+	char 	*s;
+
+	if( ! PyArg_ParseTuple( args, "d", &epoch ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	s = strlocalydtime( epoch );
+
+	if( s ) {
+
+		free( s );
+	}
+
+	obj = Py_BuildValue( "s", s );
+
+	return obj;
+}
+
+static PyObject *
+python_strlocaldate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _strlocaldate( epoch )\n";
+	PyObject *obj;
+	double	epoch;
+	char 	*s;
+
+	if( ! PyArg_ParseTuple( args, "d", &epoch ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	s = strlocaldate( epoch );
+
+	if( s ) {
+
+		free( s );
+	}
+
+	obj = Py_BuildValue( "s", s );
+
+	return obj;
+}
+
+static PyObject *
 python_str2epoch( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _str2epoch( string )\n";
 	PyObject *obj;
@@ -752,6 +923,26 @@ python_str2epoch( PyObject *self, PyObject *args ) {
 	}
 
 	epoch = str2epoch( astring );
+
+	obj = Py_BuildValue( "d", epoch );
+
+	return obj;
+}
+
+static PyObject *
+python_now( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _now()\n";
+	PyObject *obj;
+	double	epoch;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	epoch = now();
 
 	obj = Py_BuildValue( "d", epoch );
 
