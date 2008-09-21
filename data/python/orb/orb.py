@@ -97,31 +97,35 @@ if __name__ == '__main__':
 
         def setUp(self):
 
-            # os.chdir("/tmp")
-            # os.system("pfcp orbserver .")
-            # os.system("orbserver -p " + self.orbname + " orbserver &")
-            # os.system("sleep 3")
+            os.chdir("/tmp")
+            os.system("pfcp orbserver .")
+            os.system("orbserver -p " + self.orbname + " orbserver &")
+            os.system("sleep 3")
  
-            pass
-
         def tearDown(self):
 
-            # os.system("echo halt | orbstat -i " + self.orbname)
-	    pass
+            os.system("echo halt | orbstat -i " + self.orbname)
+            print "DEBUG Halting orb..."
+            os.system("sleep 10")
+            print "DEBUG Finished halting orb."
 
         def test_Orb_constructor(self):
 
 	    orb = Orb(self.orbname)
 
 	    self.assertRaises(RuntimeError, Orb, 'not an orb')
+	    
+            print "DEBUG Finished running constructor test"
 
         def test_procedure_orbopen(self):
 
 	    orb = orbopen(self.orbname, 'r')
+            print "DEBUG Finished running open test"
 
         def test_procedure_orbclose(self):
 
 	    orb = orbopen(self.orbname, 'r')
+            print "DEBUG Finished running close test"
 
 	    orbclose(orb)
 
