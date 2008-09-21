@@ -42,6 +42,7 @@
  *
  */
 
+#include <stdlib.h>
 #include "Python.h"
 #include "stock.h"
 
@@ -60,8 +61,13 @@ static PyObject *python_pfget_double( PyObject *self, PyObject *args );
 static PyObject *python_pfget_size( PyObject *self, PyObject *args );
 static PyObject *python_pfget_boolean( PyObject *self, PyObject *args );
 static PyObject *python_pfget_time( PyObject *self, PyObject *args );
+static PyObject *python_pfget_arr( PyObject *self, PyObject *args );
+static PyObject *python_pfget_tbl( PyObject *self, PyObject *args );
+static PyObject *python_pfget( PyObject *self, PyObject *args );
 static PyObject *python_strtime( PyObject *self, PyObject *args );
 static PyObject *python_str2epoch( PyObject *self, PyObject *args );
+static PyObject *pf2PyObject( Pf *pfvalue );
+static PyObject *string2PyObject( char *s );
 PyMODINIT_FUNC init_stock( void );
 
 static struct PyMethodDef stock_methods[] = {
@@ -71,10 +77,236 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_pfget_size",   	python_pfget_size,   	METH_VARARGS, "Get a size value from a parameter file" },
 	{ "_pfget_boolean",   	python_pfget_boolean,   METH_VARARGS, "Get a boolean value from a parameter file" },
 	{ "_pfget_time",   	python_pfget_time,   	METH_VARARGS, "Get a time value from a parameter file" },
+	{ "_pfget_arr",   	python_pfget_arr,   	METH_VARARGS, "Get an array value from a parameter file" },
+	{ "_pfget_tbl",   	python_pfget_tbl,   	METH_VARARGS, "Get a table value from a parameter file" },
+	{ "_pfget",   		python_pfget,   	METH_VARARGS, "Get a value from a parameter file" },
 	{ "_strtime",   	python_strtime,   	METH_VARARGS, "Compute a string representation of epoch time" },
 	{ "_str2epoch",   	python_str2epoch,   	METH_VARARGS, "Compute an epoch time from a string" },
 	{ NULL, NULL, 0, NULL }
 };
+
+static PyObject *
+string2PyObject( char *s )
+{
+	PyObject *obj;
+	int	tf;
+
+	if( strmatches( s, "^[-+]{0,1}[[:digit:]]{1,}$", 0 ) == 1 ) {
+
+		obj = Py_BuildValue( "i", atoi( s ) );
+
+	} else if( ( tf = yesno( s ) ) <= 0 ) {
+
+		/* Test for true/false after testing for integers 
+		   since not every 0 or 1 is a boolean, yet 0 and 1 
+		   will almost always work as booleans */
+
+		if( tf ) {
+
+			Py_INCREF( Py_True );
+
+			obj = Py_True;
+
+		} else {
+
+			Py_INCREF( Py_False );
+
+			obj = Py_False;
+		}
+	
+	} else if( strmatches( s, "^[-+[:digit:].eE]{1,}$", 0 ) == 1 ) {
+
+		obj = Py_BuildValue( "d", atof( s ) );
+
+	} else if( strmatches( s, "^[[:digit:]]{1,}[GMkmu]$", 0 ) == 1 ) {
+
+		obj = Py_BuildValue( "d", sz2dbl( s ) );
+
+	} else {
+
+		obj = Py_BuildValue( "s", s );
+	}
+
+	return obj;
+}
+
+static PyObject *
+pf2PyObject( Pf *pf )
+{
+	PyObject *obj;
+	Pf	*pfvalue;
+	Tbl	*keys;
+	char	*key;
+	int	ivalue;
+
+	switch( pf->type ) {
+	case PFSTRING:
+		
+		obj = string2PyObject( pfexpand( pf ) );
+
+		break;
+
+	case PFTBL:
+
+		obj = PyTuple_New( pfmaxtbl( pf ) );
+
+		for( ivalue = 0; ivalue < pfmaxtbl( pf ); ivalue++ ) {
+
+			pfvalue = (Pf *) gettbl( pf->value.tbl, ivalue );
+
+			PyTuple_SetItem( obj, ivalue, pf2PyObject( pfvalue ) );
+		}
+
+		break;
+
+	case PFFILE:
+	case PFARR:
+
+		keys = keysarr( pf->value.arr );
+
+		obj = PyDict_New();
+
+		for( ivalue = 0; ivalue < maxtbl( keys ); ivalue++ ) {
+
+			key = gettbl( keys, ivalue );
+
+			pfvalue = (Pf *) getarr( pf->value.arr, key );
+
+			PyDict_SetItem( obj, Py_BuildValue( "s", key ), pf2PyObject( pfvalue ) );
+		}
+
+		break;
+
+	case PFINVALID:
+	default:
+
+		obj = (PyObject *) NULL;
+
+		break;
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pfget( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pfget( pfname, pfkey )\n";
+	char	*pfname;
+	char	*pfkey;
+	char	errmsg[STRSZ];
+	Pf	*pf;
+	Pf	*pfvalue;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "ss", &pfname, &pfkey ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	rc = pfresolve( pf, pfkey, 0, &pfvalue );
+
+	if( rc < 0 ) {
+
+		sprintf( errmsg, "Failed to find parameter '%s' in parameter file '%s'\n", pfkey, pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	return pf2PyObject( pfvalue );
+}
+
+static PyObject *
+python_pfget_tbl( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pfget_tbl( pfname, pfkey )\n";
+	char	*pfname;
+	char	*pfkey;
+	char	errmsg[STRSZ];
+	Pf	*pf;
+	Pf	*pfvalue;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "ss", &pfname, &pfkey ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	rc = pfresolve( pf, pfkey, 0, &pfvalue );
+
+	if( rc < 0 ) {
+
+		sprintf( errmsg, "Failed to find parameter '%s' in parameter file '%s'\n", pfkey, pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	return pf2PyObject( pfvalue );
+}
+
+static PyObject *
+python_pfget_arr( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pfget_arr( pfname, pfkey )\n";
+	char	*pfname;
+	char	*pfkey;
+	char	errmsg[STRSZ];
+	Pf	*pf;
+	Pf	*pfvalue;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "ss", &pfname, &pfkey ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	rc = pfresolve( pf, pfkey, 0, &pfvalue );
+
+	if( rc < 0 ) {
+
+		sprintf( errmsg, "Failed to find parameter '%s' in parameter file '%s'\n", pfkey, pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	return pf2PyObject( pfvalue );
+}
 
 static PyObject *
 python_pfget_string( PyObject *self, PyObject *args ) {

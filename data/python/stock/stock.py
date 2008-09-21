@@ -13,7 +13,7 @@ def pfget_int(pfname, pfkey):
 
 
 def pfget_double(pfname, pfkey):
-    """Retrieve a double-precision value from a parameter file"""
+    """Retrieve a floating-point value from a parameter file"""
 
     return _stock._pfget_double(pfname, pfkey)
 
@@ -34,6 +34,24 @@ def pfget_boolean(pfname, pfkey):
     """Retrieve a boolean value from a parameter file"""
 
     return _stock._pfget_boolean(pfname, pfkey)
+
+
+def pfget_tbl(pfname, pfkey):
+    """Retrieve a table value from a parameter file"""
+
+    return _stock._pfget_tbl(pfname, pfkey)
+
+
+def pfget_arr(pfname, pfkey):
+    """Retrieve an array value from a parameter file"""
+
+    return _stock._pfget_arr(pfname, pfkey)
+
+
+def pfget(pfname, pfkey):
+    """Retrieve an arbitrary value from a parameter file"""
+
+    return _stock._pfget(pfname, pfkey)
 
 
 def strtime(epoch):
@@ -95,6 +113,39 @@ if __name__ == '__main__':
 	    val = pfget_boolean('trdefaults', 'verbose_splicing')
 
 	    self.assertTrue(isinstance(val, bool))
+
+        def test_pfget_tbl(self):
+           
+	    val = pfget_tbl('trdefaults', 'waveform_types')
+
+	    self.assertTrue(isinstance(val, tuple))
+
+        def test_pfget_arr(self):
+           
+	    val = pfget_arr('rtexec', 'Run')
+
+	    self.assertTrue(isinstance(val, dict))
+
+        def test_pfget(self):
+           
+	    val = pfget('trdefaults', 'default_trace_schema')
+	    print val
+	    self.assertTrue(isinstance(val, str))
+
+	    val = pfget('trdefaults', 'miniseed_record_size')
+	    self.assertTrue(isinstance(val, int))
+
+	    val = pfget('trdefaults', 'samprate_tolerance')
+	    self.assertTrue(isinstance(val, float))
+
+	    val = pfget('orbserver', 'ringsize')
+	    self.assertTrue(isinstance(val, float))
+
+	    val = pfget('trdefaults', 'waveform_types')
+	    self.assertTrue(isinstance(val, tuple))
+
+	    val = pfget('rtexec', 'Run')
+	    self.assertTrue(isinstance(val, dict))
 
         def test_strtime(self):
 

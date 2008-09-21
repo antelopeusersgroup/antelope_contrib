@@ -13,6 +13,97 @@ from libstock.so in the Python scripting language.
 Following are brief descriptions of the functions implemented.
 
 .SS Datascope functions
+.IP "\fBpfget_string\fP (pfname, pfkey)"
+Retrieve a string value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+s = pfget_string( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget_time\fP (pfname, pfkey)"
+Retrieve a time value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+e = pfget_time( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget_size\fP (pfname, pfkey)"
+Retrieve a size value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+s = pfget_size( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget_double\fP (pfname, pfkey)"
+Retrieve a floating-point value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+val = pfget_double( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget_int\fP (pfname, pfkey)"
+Retrieve an integer value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+val = pfget_int( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget_boolean\fP (pfname, pfkey)"
+Retrieve a boolean value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tf = pfget_boolean( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget\fP (pfname, pfkey)"
+Retrieve an arbitrary value from a parameter file, attempting to guess the correct data type
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+val = pfget( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
 .IP "\fBstrtime\fP (epoch)"
 Returns a string version of an epoch time
 .ft CW
