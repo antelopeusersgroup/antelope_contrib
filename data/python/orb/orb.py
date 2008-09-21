@@ -91,42 +91,42 @@ def orbclose(orb):
 if __name__ == '__main__':
     import unittest
     import os
+    orbname = ':dq'
 
-    class Testorb(unittest.TestCase):
-        orbname = ':dq'
+    class Testorb_fixture():
 
-        def setUp(self):
+        def start(self):
 
             os.chdir("/tmp")
             os.system("pfcp orbserver .")
-            os.system("orbserver -p " + self.orbname + " orbserver &")
+            os.system("orbserver -p " + orbname + " orbserver &")
             os.system("sleep 3")
- 
-        def tearDown(self):
 
-            os.system("echo halt | orbstat -i " + self.orbname)
-            print "DEBUG Halting orb..."
-            os.system("sleep 10")
-            print "DEBUG Finished halting orb."
+        def stop(self):
+
+            os.system("echo halt | orbstat -i " + orbname)
+
+    class Testorb(unittest.TestCase):
 
         def test_Orb_constructor(self):
 
-	    orb = Orb(self.orbname)
+	    orb = Orb(orbname)
 
 	    self.assertRaises(RuntimeError, Orb, 'not an orb')
 	    
-            print "DEBUG Finished running constructor test"
-
         def test_procedure_orbopen(self):
 
-	    orb = orbopen(self.orbname, 'r')
-            print "DEBUG Finished running open test"
+	    orb = orbopen(orbname, 'r')
 
         def test_procedure_orbclose(self):
 
-	    orb = orbopen(self.orbname, 'r')
-            print "DEBUG Finished running close test"
+	    orb = orbopen(orbname, 'r')
 
 	    orbclose(orb)
 
-    unittest.main()
+    server = Testorb_fixture()
+    server.start()
+    suite = unittest.makeSuite(Testorb)
+    runner = unittest.TextTestRunner()
+    runner.run(suite)
+    server.stop()
