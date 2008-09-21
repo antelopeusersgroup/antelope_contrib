@@ -54,6 +54,30 @@ def pfget(pfname, pfkey):
     return _stock._pfget(pfname, pfkey)
 
 
+def pfupdate(pfname):
+    """Re-read and update a parameter-file"""
+
+    return _stock._pfupdate(pfname)
+
+
+def pffiles(pfname, all = False):
+    """Return a list of parameter-file path names"""
+
+    return _stock._pffiles(pfname, all)
+
+
+def pf2string(pfname):
+    """Convert a parameter-file to a string representation"""
+
+    return _stock._pf2string(pfname)
+
+
+def pf2xml(pfname, flags = None, prolog = None, name = None ):
+    """Convert a parameter-file to an XML string representation"""
+
+    return _stock._pf2xml(pfname)
+
+
 def strtime(epoch):
     """Convert an epoch time to a standard string"""
 
@@ -126,10 +150,15 @@ if __name__ == '__main__':
 
 	    self.assertTrue(isinstance(val, dict))
 
+        def test_pfupdate(self):
+           
+	    rc = pfupdate('rtexec')
+
+	    self.assertTrue(rc == 0 or rc == 1)
+
         def test_pfget(self):
            
 	    val = pfget('trdefaults', 'default_trace_schema')
-	    print val
 	    self.assertTrue(isinstance(val, str))
 
 	    val = pfget('trdefaults', 'miniseed_record_size')
@@ -146,6 +175,24 @@ if __name__ == '__main__':
 
 	    val = pfget('rtexec', 'Run')
 	    self.assertTrue(isinstance(val, dict))
+
+        def test_pffiles(self):
+
+	    files = pffiles('rtexec')
+
+	    self.assertTrue(isinstance(files,tuple))
+
+        def test_pf2string(self):
+           
+	    val = pf2string('trdefaults')
+
+	    self.assertTrue(isinstance(val, str))
+
+        def test_pf2xml(self):
+           
+	    val = pf2string('trdefaults')
+
+	    self.assertTrue(isinstance(val, str))
 
         def test_strtime(self):
 

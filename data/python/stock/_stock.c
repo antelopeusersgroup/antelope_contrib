@@ -45,6 +45,7 @@
 #include <stdlib.h>
 #include "Python.h"
 #include "stock.h"
+#include "pfxml.h"
 
 #ifdef __APPLE__
 
@@ -64,10 +65,16 @@ static PyObject *python_pfget_time( PyObject *self, PyObject *args );
 static PyObject *python_pfget_arr( PyObject *self, PyObject *args );
 static PyObject *python_pfget_tbl( PyObject *self, PyObject *args );
 static PyObject *python_pfget( PyObject *self, PyObject *args );
+static PyObject *python_pfupdate( PyObject *self, PyObject *args );
+static PyObject *python_pffiles( PyObject *self, PyObject *args );
+static PyObject *python_pf2string( PyObject *self, PyObject *args );
+static PyObject *python_pf2xml( PyObject *self, PyObject *args );
 static PyObject *python_strtime( PyObject *self, PyObject *args );
 static PyObject *python_str2epoch( PyObject *self, PyObject *args );
 static PyObject *pf2PyObject( Pf *pfvalue );
 static PyObject *string2PyObject( char *s );
+static PyObject *strtbl2PyObject( Tbl *atbl );
+static int parse_from_Boolean( PyObject *obj, void *addr );
 PyMODINIT_FUNC init_stock( void );
 
 static struct PyMethodDef stock_methods[] = {
@@ -80,10 +87,61 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_pfget_arr",   	python_pfget_arr,   	METH_VARARGS, "Get an array value from a parameter file" },
 	{ "_pfget_tbl",   	python_pfget_tbl,   	METH_VARARGS, "Get a table value from a parameter file" },
 	{ "_pfget",   		python_pfget,   	METH_VARARGS, "Get a value from a parameter file" },
+	{ "_pfupdate", 		python_pfupdate,   	METH_VARARGS, "Reread and update a parameter file" },
+	{ "_pffiles", 		python_pffiles,   	METH_VARARGS, "Return a list of parameter path names" },
+	{ "_pf2string",		python_pf2string,   	METH_VARARGS, "Convert a parameter-file to a string" },
+	{ "_pf2xml",		python_pf2xml,   	METH_VARARGS, "Convert a parameter-file to an xml string" },
 	{ "_strtime",   	python_strtime,   	METH_VARARGS, "Compute a string representation of epoch time" },
 	{ "_str2epoch",   	python_str2epoch,   	METH_VARARGS, "Compute an epoch time from a string" },
 	{ NULL, NULL, 0, NULL }
 };
+
+static int
+parse_from_Boolean( PyObject *obj, void *addr )
+{
+	int	*value = (int *) addr;
+
+	if( obj == Py_False ) {
+
+		*value = 0;
+
+		return 1;
+
+	} else if( obj == Py_True ) {
+
+		*value = -1;
+
+		return 1;
+
+	} else {
+
+		PyErr_SetString( PyExc_TypeError, 
+			"Attempt to coerce non-Boolean value into Boolean" );
+	}
+
+	return 0;
+}
+
+static PyObject *
+strtbl2PyObject( Tbl *atbl ) 
+{
+	PyObject *obj;
+	int	i;
+
+	if( atbl == NULL ) {
+
+		return NULL;
+	} 
+
+	obj = PyTuple_New( maxtbl( atbl ) );
+
+	for( i = 0; i < maxtbl( atbl ); i++ ) {
+
+		PyTuple_SetItem( obj, i, PyString_FromString( gettbl( atbl, i ) ) );
+	}
+
+	return obj;
+}
 
 static PyObject *
 string2PyObject( char *s )
@@ -184,6 +242,151 @@ pf2PyObject( Pf *pf )
 
 		break;
 	}
+
+	return obj;
+}
+
+static PyObject *
+python_pfupdate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pfupdate( pfname )\n";
+	char	*pfname;
+
+	if( ! PyArg_ParseTuple( args, "s", &pfname ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", updatePf( pfname ) );
+}
+
+static PyObject *
+python_pffiles( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pffiles( pfname, all )\n";
+	char	*pfname;
+	int	all = 0;
+	Tbl	*filestbl;
+	Pf	*pf;
+	PyObject *obj;
+	char	errmsg[STRSZ];
+
+	if( ! PyArg_ParseTuple( args, "sO&", &pfname, parse_from_Boolean, &all ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	filestbl = pffiles( pfname, all );
+
+	obj = strtbl2PyObject( filestbl );
+
+	freetbl( filestbl, 0 );
+
+	return obj;
+}
+
+static PyObject *
+python_pf2string( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pf2string( pfname )\n";
+	char	*pfname;
+	Pf	*pf;
+	char	*value;
+	PyObject *obj;
+	char	errmsg[STRSZ];
+
+	if( ! PyArg_ParseTuple( args, "s", &pfname ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	value = pf2string( pf );
+
+	obj = Py_BuildValue( "s", value );
+
+	free( value );
+
+	return obj;
+}
+
+static PyObject *
+python_pf2xml( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pffiles( pfname, all )\n";
+	char	*pfname;
+	Pf	*pf;
+	char	*value;
+	PyObject *obj;
+	char	*flags_string = 0;
+	char	*prolog = 0;
+	char	*name = 0;
+	int	flags = 0;
+	char	errmsg[STRSZ];
+
+	if( ! PyArg_ParseTuple( args, "szzz", &pfname, &flags_string, &prolog, &name ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	if( name == (char *) NULL ) {
+
+		name = pfname;
+	}
+
+	if( flags_string != NULL &&
+	    strmatches( flags_string, ".*PFXML_STRONG.*", 0 ) ) {
+
+		flags |= PFXML_STRONG;	    	
+	}
+
+	if( flags_string != NULL &&
+	    strmatches( flags_string, ".*PFXML_NEWLINES.*", 0 ) ) {
+
+		flags |= PFXML_NEWLINES;	    	
+	}
+
+	if( flags_string != NULL &&
+	    strmatches( flags_string, ".*PFXML_PRESERVE_PFFILE.*", 0 ) ) {
+
+		flags |= PFXML_PRESERVE_PFFILE;	    	
+	}
+
+	value = pf2xml( pf, name, prolog, flags );
+
+	obj = Py_BuildValue( "s", value );
+
+	free( value );
 
 	return obj;
 }
