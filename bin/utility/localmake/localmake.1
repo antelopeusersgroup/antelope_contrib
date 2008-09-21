@@ -3,21 +3,50 @@
 localmake \- build subsections of the Antelope-contrib code base
 .SH SYNOPSIS
 .nf
-localmake [-v] [-p pfname] [-t] module
+localmake [-v] [-l] [-p pfname] [-t] module
 .fi
 .SH DESCRIPTION
-localmake with a module name specified will recompile all the parts (as specified in the parameter file)
-on which a particular software component depends.
+The \fBlocalmake\fP program is designed to build and install coherent
+subsections of the Antelope contributed-code software base, usually to 
+support the installation of one particular Antelope-contrib program or 
+one particular Antelope-contrib software library or interface. 
+
+If the \fBlocalmake\fP program is given a \fImodule\fP name, it will 
+recompile all the parts of the specified \fImodule\fP (as detailed in 
+the \fBlocalmake\fP parameter file) on which a particular software 
+component depends. If the \fI-t\fP option is used, \fBlocalmake\fP will 
+further assemble the resulting compiled components into a platform-specific
+tar file which may be distributed for use on identically configured 
+machines elsewhere. 
 .SH OPTIONS
+.IP -l
+Print a list of available modules and exit. 
 .IP -v 
 verbose
 .IP "-p pfname"
 Specify an alternate parameter file
 .IP -t
-Create a tarball package of the compiled module and dependencies
+Create a tarball of the compiled \fImodule\fP and files on which it depends
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
+.IP tarball_time_format
+This parameter specifies the time format (in the format of epoch2str(3))
+to be used in naming tar files with compiled code after it has been built. 
+.IP modules
+The \fImodules\fP array contains descriptions of all the software \fImodules\fP that 
+\fBlocalmake\fP knows how to build and package. The keys in the array
+should be unique, descriptive names for the software \fImodules\fP. The values 
+are arrays with the parameters for how to build and package each \fImodule\fP. 
+.IP "modules{<module_name>}{build}"
+This parameter is a table of directories relative to $ANTELOPE containing the 
+source code for the software \fImodule\fP and all of its dependencies. When 
+\fBlocalmake\fP is told to build a given software package, it enters each of 
+these directories in turn and executes 'make install'. 
+.IP "modules{<module_name>}{package}"
+This parameter is a table of files relative to $ANTELOPE containing 
+all pieces of compiled code and supporting files comprising a given software
+\fImodule\fP. 
 .nf
 
 tarball_time_format %Y_%m_%d
@@ -27,7 +56,97 @@ modules &Arr{
 		build &Tbl{
 			src/contrib/lib/graphics/seisw
 			src/contrib/lib/seismic/libseispp
+			src/contrib/lib/utility/libgclgrid
+			src/contrib/lib/perf
 			src/contrib/bin/db/dbxcor
+		}
+		package &Tbl{
+			static/libsciplot.a
+			bin/dbxcor
+			data/pf/dbxcor.pf
+			data/schemas/css3.0.ext/evlink
+			data/schemas/css3.0.ext/sclink
+			data/schemas/css3.0.ext/wfprocess
+			data/schemas/css3.0.ext/xcorarrival
+			data/schemas/css3.0.ext/xcorbeam
+			man/man1/dbxcor.1
+			bin/smartpick_classic
+			bin/smartpick
+			data/pf/smartpick_classic.pf
+			data/pf/smartpick.pf
+			man/man1/smartpick_classic.1
+			man/man1/smartpick.1
+			static/libseispp.a
+			static/libseisw.a
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid_error.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_3dgrid_contiguous.checksum.880250e9.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_4dgrid_contiguous.checksum.30144256.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.extract_gridline.checksum.d8861568.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.fme_weights_.checksum.ee6cf964.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_3dgrid_contiguous.checksum.9cd6ef36.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_4dgrid_contiguous.checksum.970b2485.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.9756fa5d.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.d3dde98f.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pathintegral.checksum.18f3459b.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.r0_ellipse.double.r0_ellipse.-28.double.-29.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.remap_path.checksum.9d7961f7.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_error.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.pkg.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatvel.double.flatvel.-28.double.v.-2c.double.z.-29.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatz.double.flatz.-28.double.z.-29.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html
+			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatz.double.uflatz.-28.double.z.-29.fct.html
+			doc/seispp/gclgrid/ccdoc.class_summary.html
+			doc/seispp/gclgrid/gclgrid.db
+			doc/seispp/gclgrid/index.html
+			include/gclgrid.h
+			include/dmatrix.h
+			static/libgclgrid.a
+			man/man3/gclgrid.3
+			man/man3/dmatrix.3
+			man/man3/pathintegral.3
+			man/man3/ustrans.3
+			man/man3/extract_gridline.3
+			include/glputil.h
+			lib/libglputil.dylib
+			static/libglputil.a
+			man/man3/check_required_pf.3
+			man/man3/ftest.3
+			man/man3/dbform_working_view.3
+			man/man3/glp_matrix_utils.3
+		}
+	}
+	python_antelope &Arr{
+		build &Tbl{
+			src/contrib/data/python
+		}
+		package &Tbl{
+			lib/python__datascope.dylib 
+			lib/python__orb.dylib
+			lib/python__stock.dylib
+			data/python/antelope/_orb.so
+			data/python/antelope/_datascope.so
+			data/python/antelope/_stock.so
+			data/python/antelope/datascope.py
+			data/python/antelope/orb.py
+			data/python/antelope/stock.py
+			data/python/antelope/__init__.py
+			man/man3/pythondb.3p
+			man/man3/pythonorb.3p
+			man/man3/pythonstock.3p
 		}
 	}
 }
@@ -36,9 +155,9 @@ modules &Arr{
 .in 2c
 .ft CW
 .nf
-% localmake -v -t dbxcor
+% \fBlocalmake\fP -v -t dbxcor
  ...
-localmake: Created package file '2008_03_08_dbxcor_i386_Darwin_tarball.tar.bz2'
+\fBlocalmake\fP: Created package file '2008_03_08_dbxcor_i386_Darwin_tarball.tar.bz2'
 %
 .fi
 .ft R
@@ -52,10 +171,16 @@ localmake: Created package file '2008_03_08_dbxcor_i386_Darwin_tarball.tar.bz2'
 antelopemake(5), antelopemakelocal(5), amakelocal(1)
 .fi
 .SH "BUGS AND CAVEATS"
-This is a development prototype. 
-
 The package contents are actually a bit platform-specific, which is not 
-yet accounted for. 
+yet accounted for. For example, dynamic libraries are named differently 
+on Darwin than on Linux and Solaris. 
+
+Inter-package conflicts and dependencies are not accounted for. 
+
+The \fBlocalmake\fP.pf contents are highly detailed and contingent on insider 
+knowledge of the piece of software being built. It is intended that these 
+package descriptions be written by the author of the relevant piece 
+of code. 
 .SH AUTHOR
 Kent Lindquist
 Lindquist Consulting, Inc.

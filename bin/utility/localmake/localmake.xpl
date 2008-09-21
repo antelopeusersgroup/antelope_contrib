@@ -4,6 +4,25 @@ use Cwd;
 
 require "getopts.pl";
 
+sub show_available {
+
+	if( scalar( @module_names ) <= 0 ) {
+		
+		print "\n\n\tNo modules configured in $Pf.pf\n\n";
+
+	} else {
+
+		print "\nAvailable modules:\n\n";
+
+		foreach $module ( @module_names ) {
+
+			print "\t$module\n";
+		}
+
+		print "\n";
+	}
+}
+
 $Os = my_os();
 $Pf = "localmake";
 
@@ -12,9 +31,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'p:tv' ) || ! @ARGV == 1 ) {
+if( !Getopts( 'lp:tv' ) || (! $opt_l && ! @ARGV == 1 ) ) {
 
-	elog_die( "Usage: localmake [-v] [-t] [-p pfname] module\n" );
+	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] module\n" );
 }
 
 if( $opt_p ) {
@@ -25,12 +44,23 @@ if( $opt_p ) {
 %modules = %{pfget($Pf,"modules")};
 $tarball_time_format = pfget( $Pf, "tarball_time_format" );
 
+@module_names = keys( %modules );
+
+if( $opt_l ) {
+
+	show_available();
+
+	exit( 0 );
+}
+
 $module = pop( @ARGV );
 
 @steps = @{$modules{$module}{build}};
 
 if( @steps <= 0 ) {
 	
+	show_available();
+
 	elog_die( "No steps listed for module '$module' in parameter-file '$Pf'\n" );
 
 } elsif( $opt_v ) {
