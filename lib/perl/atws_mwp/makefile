@@ -12,6 +12,7 @@ CLEAN = Makefile.PL runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFIL
 ldlibs = $(DBLIBS)
 
 include $(ANTELOPEMAKE)
+DIRS=
 
 SRCS = atws_mwp.pm atws_mwp.xs
 
