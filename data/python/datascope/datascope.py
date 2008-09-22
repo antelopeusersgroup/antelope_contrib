@@ -1011,6 +1011,24 @@ if __name__ == '__main__':
 
             pass
 
+        def is_close(self, v1, v2, tolerance):
+
+            if( v2 == 0.0 and abs(v1-v2) <= tolerance ):
+
+                return True
+
+            elif( v2 == 0.0 and abs(v1-v) > tolerance ):
+
+	        return False
+
+	    elif(abs(v1-v2)/abs(v2) <= tolerance):
+
+	        return True
+
+            else:
+
+	        return False
+
         def test_Dbptr_constructor(self):
 
             db1 = Dbptr()
@@ -1365,7 +1383,10 @@ if __name__ == '__main__':
 
             values = db.getv('lat','auth','nass','time')
 
-            self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
+            self.assertTrue(self.is_close(values[0], 40.074, 0.0001))
+            self.assertEqual(values[1], 'JSPC')
+            self.assertEqual(values[2], 7)
+            self.assertTrue(self.is_close(values[3], 704371900.67, 0.00000001))
             
         def test_method_addnull(self):
 
@@ -1695,7 +1716,10 @@ if __name__ == '__main__':
 
             v = tr.data()
 
-            self.assertEqual(v[0:4], (0.0, 0.0030230032280087471, 0.029202612116932869, 0.13213051855564117))
+            self.assertTrue(self.is_close(v[0], 0.0, 0.001))
+            self.assertTrue(self.is_close(v[1], 0.003023, 0.001))
+            self.assertTrue(self.is_close(v[2], 0.0292, 0.001))
+            self.assertTrue(self.is_close(v[3], 0.1321, 0.001))
 
         def test_method_splice(self):
 
@@ -2174,7 +2198,10 @@ if __name__ == '__main__':
 
             values = dbgetv(db, 'lat','auth','nass','time')
 
-            self.assertEqual(values, (40.073999999999998, 'JSPC', 7, 704371900.66885996))
+            self.assertTrue(self.is_close(values[0], 40.074, 0.0001))
+            self.assertEqual(values[1], 'JSPC')
+            self.assertEqual(values[2], 7)
+            self.assertTrue(self.is_close(values[3], 704371900.67, 0.00000001))
             
         def test_procedure_dbaddnull(self):
 
@@ -2234,7 +2261,11 @@ if __name__ == '__main__':
 
 	    values = dbgetv(db, 'lat', 'lon', 'depth', 'time', 'auth')
 
-	    self.assertEqual(values, (61.5922, -149.130, 20, 1033384500, os.environ["USER"]))
+	    self.assertTrue(self.is_close(values[0], 61.5922, 0.0001))
+	    self.assertTrue(self.is_close(values[1], -149.130, 0.0001))
+	    self.assertEqual(values[2],  20)
+	    self.assertEqual(values[3], 1033384500)
+	    self.assertEqual(values[4], os.environ["USER"])
 
 	    dbclose(db)
 
@@ -2435,10 +2466,14 @@ if __name__ == '__main__':
 
             v = trsample(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", True)
 
-            self.assertEqual(v[0], (706139719.04999995, -1530.054443359375))
-            self.assertEqual(v[1], (706139719.0999999, -1520.4915771484375))
-            self.assertEqual(v[2], (706139719.14999998, -1506.1473388671875))
-            self.assertEqual(v[3], (706139719.19999993, -1504.951904296875)) 
+            self.assertTrue(self.is_close(v[0][0], 706139719.04999995, 0.000000001))
+            self.assertTrue(self.is_close(v[0][1], -1530.054443359375, 0.0001))
+            self.assertTrue(self.is_close(v[1][0], 706139719.0999999, 0.000000001))
+            self.assertTrue(self.is_close(v[1][1], -1520.4915771484375, 0.0001))
+            self.assertTrue(self.is_close(v[2][0], 706139719.14999998, 0.000000001))
+            self.assertTrue(self.is_close(v[2][1], -1506.1473388671875, 0.0001))
+            self.assertTrue(self.is_close(v[3][0], 706139719.19999993, 0.000000001))
+            self.assertTrue(self.is_close(v[3][1], -1504.951904296875, 0.0001)) 
 
         def test_procedure_trsamplebins(self):
 
@@ -2446,10 +2481,18 @@ if __name__ == '__main__':
 
             v = trsamplebins(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", 50, True)
 
-            self.assertEqual(v[0], (706139719.04999995, -1667.520263671875, -1491.8031005859375))
-            self.assertEqual(v[1], (706139721.54999995, -1669.910888671875, -1531.249755859375))
-            self.assertEqual(v[2], (706139724.04999995, -1617.3153076171875, -1538.421875))
-            self.assertEqual(v[3], (706139726.54999995, -1722.506591796875, -1576.6732177734375))
+            self.assertTrue(self.is_close(v[0][0], 706139719.04999995, 0.000000001))
+            self.assertTrue(self.is_close(v[0][1], -1667.520263671875, 0.0001))
+            self.assertTrue(self.is_close(v[0][2], -1491.8031005859375, 0.0001))
+            self.assertTrue(self.is_close(v[1][0], 706139721.54999995, 0.000000001))
+            self.assertTrue(self.is_close(v[1][1], -1669.910888671875, 0.0001))
+            self.assertTrue(self.is_close(v[1][2], -1531.249755859375, 0.0001))
+            self.assertTrue(self.is_close(v[2][0], 706139724.04999995, 0.000000001))
+            self.assertTrue(self.is_close(v[2][1], -1617.3153076171875, 0.0001))
+            self.assertTrue(self.is_close(v[2][2], -1538.421875, 0.0001))
+            self.assertTrue(self.is_close(v[3][0], 706139726.54999995, 0.000000001))
+            self.assertTrue(self.is_close(v[3][1], -1722.506591796875, 0.0001))
+            self.assertTrue(self.is_close(v[3][2], -1576.6732177734375, 0.0001))
 
         def test_procedure_trsplice(self):
 
@@ -2491,7 +2534,10 @@ if __name__ == '__main__':
 
             v = tr.data()
 
-            self.assertEqual(v[0:4], (0.0, 0.0030230032280087471, 0.029202612116932869, 0.13213051855564117))
+            self.assertTrue(self.is_close(v[0], 0.0, 0.001))
+            self.assertTrue(self.is_close(v[1], 0.003023, 0.001))
+            self.assertTrue(self.is_close(v[2], 0.0292, 0.001))
+            self.assertTrue(self.is_close(v[3], 0.1321, 0.001))
 
         def test_procedure_trdata(self):
 
@@ -2595,8 +2641,8 @@ if __name__ == '__main__':
             # 5 Hz response:
 	    r = resp.eval(5 * 2 * math.pi)
 
-	    self.assertEqual(r.real, 0.99690287534053668)
-	    self.assertEqual(r.imag, -0.074926382150504581)
+	    self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
+	    self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
 
 	def test_procedure_eval_response(self):
 
@@ -2613,7 +2659,7 @@ if __name__ == '__main__':
             # 5 Hz response:
 	    r = eval_response(resp, 5 * 2 * math.pi)
 
-	    self.assertEqual(r.real, 0.99690287534053668)
-	    self.assertEqual(r.imag, -0.074926382150504581)
+	    self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
+	    self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
 
     unittest.main()
