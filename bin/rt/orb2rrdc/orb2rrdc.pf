@@ -1,0 +1,22 @@
+rrdtool		rrdtool
+
+# Convenient parameter-file macros:
+# --------------------------------
+
+status_heartbeat_sec 40		# status_stepsize_sec * 2
+
+status_archives  RRA:AVERAGE:0.5:&status_stepsize_sec:1200 RRA:MAX:0.5:60:700
+
+# Actual orb2rrd parameters:
+# --------------------------
+
+rrdfile_pattern	rrd/%{net}_%{sta}_%{rrdvar}.rrd
+
+default_network &ref(site,default_seed_network)
+
+status_stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
+
+dls_vars	&Tbl{
+br24   GAUGE:&status_heartbeat_sec:U:U   &status_archives
+lcq    GAUGE:&status_heartbeat_sec:U:U   &status_archives
+}
