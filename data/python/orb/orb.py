@@ -73,6 +73,11 @@ class Orb():
 
         _orb._orbclose(self._orbfd)
 
+    def ping(self):
+        """Query orbserver version"""
+
+        return _orb._orbping(self._orbfd)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -86,6 +91,12 @@ def orbclose(orb):
     orb.close()
 
     return 
+
+
+def orbping(orb):
+    """Query orbserver version"""
+
+    return orb.ping()
 
 
 if __name__ == '__main__':
@@ -121,6 +132,16 @@ if __name__ == '__main__':
         def test_procedure_orbclose(self):
 
 	    orb = orbopen(orbname, 'r')
+
+	    orbclose(orb)
+
+        def test_procedure_orbping(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            version = orbping(orb)
+
+	    self.assertTrue(version > 0)
 
 	    orbclose(orb)
 
