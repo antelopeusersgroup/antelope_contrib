@@ -78,6 +78,11 @@ class Orb():
 
         return _orb._orbping(self._orbfd)
 
+    def tell(self):
+        """Query orb read-head position"""
+
+        return _orb._orbtell(self._orbfd)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -97,6 +102,12 @@ def orbping(orb):
     """Query orbserver version"""
 
     return orb.ping()
+
+
+def orbtell(orb):
+    """Query current connection read-head position"""
+
+    return orb.tell()
 
 
 if __name__ == '__main__':
@@ -142,6 +153,16 @@ if __name__ == '__main__':
             version = orbping(orb)
 
 	    self.assertTrue(version > 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbtell(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            pktid = orbtell(orb)
+
+	    self.assertTrue(pktid > 0)
 
 	    orbclose(orb)
 

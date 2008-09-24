@@ -58,6 +58,7 @@ char *__progname = "Python";
 static PyObject *python_orbopen( PyObject *self, PyObject *args );
 static PyObject *python_orbclose( PyObject *self, PyObject *args );
 static PyObject *python_orbping( PyObject *self, PyObject *args );
+static PyObject *python_orbtell( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
 
@@ -67,6 +68,7 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbopen",  	python_orbopen,   	METH_VARARGS, "Open an Antelope orb connection" },
 	{ "_orbclose", 	python_orbclose,   	METH_VARARGS, "Close an Antelope orb connection" },
 	{ "_orbping", 	python_orbping,   	METH_VARARGS, "Query orbserver version" },
+	{ "_orbtell", 	python_orbtell,   	METH_VARARGS, "Query current orb read-head position" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -122,6 +124,35 @@ python_orbclose( PyObject *self, PyObject *args ) {
 	}
 
 	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_orbtell( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbtell(orb)\n";
+	int	orbfd;
+	int	pktid;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	pktid = orbtell( orbfd );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error querying orb position" );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", pktid );
 }
 
 static PyObject *

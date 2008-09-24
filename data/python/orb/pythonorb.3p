@@ -34,6 +34,10 @@ Close an orb connection.
 
 orbclose( orbfd )
 
+or
+
+orbfd.close()
+
 .fi
 .in
 .ft R
@@ -45,6 +49,26 @@ Query orbserver version
 .ne 3
 
 version = orbping( orbfd )
+
+or 
+
+version = orbfd.ping()
+
+.fi
+.in
+.ft R
+.IP "\fBorbtell\fP (orbfd)"
+Query current orb read-head position
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pktid = orbtell( orbfd )
+
+or 
+
+pktid = orbfd.tell()
 
 .fi
 .in
