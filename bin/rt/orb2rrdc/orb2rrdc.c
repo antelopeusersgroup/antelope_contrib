@@ -73,7 +73,10 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 	
 		fprintf( Rrdfp, "%s\n", command );
 
-		fprintf( stderr, "%s\n", getaline( Rrdfp, response, STRSZ ) );
+		if( VeryVerbose ) { 
+
+			elog_notify( 0, "%s\n", getaline( Rrdfp, response, STRSZ ) );
+		}
 
 		setarr( Rrd_files, key, rrd );
 	}
@@ -90,7 +93,10 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 
 	fprintf( Rrdfp, "%s\n", command );
 
-	fprintf( stderr, "%s\n", getaline( Rrdfp, response, STRSZ ) );
+	if( VeryVerbose ) { 
+
+		elog_notify( 0, "%s\n", getaline( Rrdfp, response, STRSZ ) );
+	}
 }
 
 int
@@ -131,7 +137,7 @@ main( int argc, char **argv )
 	OrbreapThr *ort;
 	int	pktid;
 	char	srcname[ORBSRCNAME_SIZE];
-	double	time;
+	double	time = 0;
 	char	*packet = 0;
 	int	nbytes = 0;
 	int	bufsize = 0;
@@ -252,6 +258,14 @@ main( int argc, char **argv )
 
 		orbresurrect( orb, &pktid, &time );
 
+		if( Verbose ) {
+
+			elog_notify( 0, "Resurrecting state to pktid %d, time %s\n",
+				pktid, s = strtime( time ) );
+
+			free( s );
+		}
+
 		orbseek( orb, pktid );
 	}
 
@@ -315,7 +329,19 @@ main( int argc, char **argv )
 
 		orbreapthr_get( ort, &pktid, srcname, &time, &packet, &nbytes, &bufsize );
 
-		/* SCAFFOLD need to add statefile stuff */
+		if( statefile ) {
+
+			rc = bury();
+
+			if( rc < 0 ) {
+
+				elog_complain( 0, "Unexpected failure of bury command! " 
+					"(are there two orb2rrdc's running with the same state" 
+					"file?)\n" );
+
+				clear_register( 1 );
+			}
+		}
 
 		rc = unstuffPkt( srcname, time, packet, nbytes, &pkt );
 
@@ -323,7 +349,9 @@ main( int argc, char **argv )
 
 			if( VeryVerbose ) {
 
-				elog_notify( 0, "Received a parameter-file '%s' at %s\n%s\n\n", 
+				/* Parameter files generally too big for elog */
+
+				fprintf( stderr, "Received a parameter-file '%s' at %s\n%s\n\n", 
 						srcname, 
 						s = strtime( time ), 
 						pf2string( pkt->pf ) );
