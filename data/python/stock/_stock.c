@@ -347,18 +347,19 @@ python_pf2string( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_pf2xml( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _pffiles( pfname, all )\n";
+	char	*usage = "Usage: _pf2xml( pfname, flags = 0, prolog = None, name = None )\n";
 	char	*pfname;
 	Pf	*pf;
 	char	*value;
 	PyObject *obj;
-	char	*flags_string = 0;
+	PyObject *flags_object;
+	char	*flags_string;
 	char	*prolog = 0;
 	char	*name = 0;
 	int	flags = 0;
 	char	errmsg[STRSZ];
 
-	if( ! PyArg_ParseTuple( args, "szzz", &pfname, &flags_string, &prolog, &name ) ) {
+	if( ! PyArg_ParseTuple( args, "sOzz", &pfname, &flags_object, &prolog, &name ) ) {
 
 		PyErr_SetString( PyExc_RuntimeError, usage );
 
@@ -379,22 +380,37 @@ python_pf2xml( PyObject *self, PyObject *args ) {
 		name = pfname;
 	}
 
-	if( flags_string != NULL &&
-	    strmatches( flags_string, ".*PFXML_STRONG.*", 0 ) ) {
+	if( PyInt_Check( flags_object ) ) {
 
-		flags |= PFXML_STRONG;	    	
-	}
+		flags = (int) PyInt_AsLong( flags_object );
 
-	if( flags_string != NULL &&
-	    strmatches( flags_string, ".*PFXML_NEWLINES.*", 0 ) ) {
+	} else if( PyString_Check( flags_object ) ) {
 
-		flags |= PFXML_NEWLINES;	    	
-	}
+		flags_string = PyString_AsString( flags_object );
 
-	if( flags_string != NULL &&
-	    strmatches( flags_string, ".*PFXML_PRESERVE_PFFILE.*", 0 ) ) {
+		if( flags_string != NULL &&
+	    	strmatches( flags_string, ".*PFXML_STRONG.*", 0 ) ) {
 
-		flags |= PFXML_PRESERVE_PFFILE;	    	
+			flags |= PFXML_STRONG;	    	
+		}
+
+		if( flags_string != NULL &&
+	    	strmatches( flags_string, ".*PFXML_NEWLINES.*", 0 ) ) {
+
+			flags |= PFXML_NEWLINES;	    	
+		}
+
+		if( flags_string != NULL &&
+	    	strmatches( flags_string, ".*PFXML_PRESERVE_PFFILE.*", 0 ) ) {
+
+			flags |= PFXML_PRESERVE_PFFILE;	    	
+		}
+
+	} else {
+
+		PyErr_SetString( PyExc_RuntimeError,  usage );
+
+		return NULL;
 	}
 
 	value = pf2xml( pf, name, prolog, flags );
@@ -949,8 +965,21 @@ python_now( PyObject *self, PyObject *args ) {
 	return obj;
 }
 
+static void
+add_stock_constants( PyObject *mod ) {
+
+	PyModule_AddIntConstant( mod, "PFXML_NEWLINES", PFXML_NEWLINES );
+	PyModule_AddIntConstant( mod, "PFXML_STRONG", PFXML_STRONG );
+	PyModule_AddIntConstant( mod, "PFXML_PRESERVE_PFFILE", PFXML_PRESERVE_PFFILE );
+	
+	return;	
+}
+
 PyMODINIT_FUNC 
 init_stock( void ) {
+	PyObject *mod;
 
-	Py_InitModule( "_stock", stock_methods );
+	mod = Py_InitModule( "_stock", stock_methods );
+
+	add_stock_constants( mod );
 }

@@ -104,6 +104,19 @@ val = pfget( pfname, pfkey )
 .in
 .ft R
 
+.IP "\fBpf2xml\fP (pfname, flags = 0, prolog = None, name = None)"
+Convert a parameter-file to XML
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+xml = pf2xml( pfname, PFXML_STRONG )
+
+.fi
+.in
+.ft R
+
 .IP "\fBstrtime\fP (epoch)"
 Returns a string version of an epoch time
 .ft CW
@@ -151,6 +164,8 @@ e = str2epoch(s)
 pythonorb(3p), pythonstock(3p)
 .fi
 .SH "BUGS AND CAVEATS"
+The pf2xml function is not properly a member of the Antelope libstock library, though this seems a reasonable
+place for it in the python wrapper. 
 .SH AUTHOR
 .nf
 Kent Lindquist

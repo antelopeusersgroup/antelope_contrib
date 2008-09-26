@@ -1,5 +1,7 @@
 import _stock
 
+from _stock import *
+
 def pfget_string(pfname, pfkey):
     """Retrieve a string value from a parameter file"""
 
@@ -75,7 +77,7 @@ def pf2string(pfname):
 def pf2xml(pfname, flags = None, prolog = None, name = None ):
     """Convert a parameter-file to an XML string representation"""
 
-    return _stock._pf2xml(pfname)
+    return _stock._pf2xml(pfname, flags, prolog, name)
 
 
 def strtime(epoch):
@@ -232,7 +234,7 @@ if __name__ == '__main__':
 
         def test_pf2xml(self):
            
-	    val = pf2string('trdefaults')
+	    val = pf2xml('trdefaults', PFXML_STRONG)
 
 	    self.assertTrue(isinstance(val, str))
 
