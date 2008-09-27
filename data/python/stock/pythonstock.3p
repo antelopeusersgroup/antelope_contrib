@@ -91,8 +91,35 @@ tf = pfget_boolean( pfname, pfkey )
 .in
 .ft R
 
-.IP "\fBpfget\fP (pfname, pfkey)"
-Retrieve an arbitrary value from a parameter file, attempting to guess the correct data type
+.IP "\fBpfget_tbl\fP (pfname, pfkey)"
+Retrieve a table (list) value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tf = pfget_tbl( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget_arr\fP (pfname, pfkey)"
+Retrieve an array (dictionary) value from a parameter file
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tf = pfget_arr( pfname, pfkey )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfget\fP (pfname, pfkey = None)"
+Retrieve an arbitrary value from a parameter file, attempting to guess the correct data type. 
+If the pfkey is left empty, the entire parameter-file is returned. 
 .ft CW
 .in 2c
 .nf
@@ -164,8 +191,8 @@ e = str2epoch(s)
 pythonorb(3p), pythonstock(3p)
 .fi
 .SH "BUGS AND CAVEATS"
-The pf2xml function is not properly a member of the Antelope libstock library, though this seems a reasonable
-place for it in the python wrapper. 
+The pf2xml function is not properly a member of the Antelope libstock library, 
+though this seems a reasonable place for it in the python wrapper. 
 .SH AUTHOR
 .nf
 Kent Lindquist

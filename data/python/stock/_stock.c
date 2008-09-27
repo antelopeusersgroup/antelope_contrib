@@ -430,9 +430,10 @@ python_pfget( PyObject *self, PyObject *args ) {
 	char	errmsg[STRSZ];
 	Pf	*pf;
 	Pf	*pfvalue;
+	PyObject *obj;
 	int	rc;
 
-	if( ! PyArg_ParseTuple( args, "ss", &pfname, &pfkey ) ) {
+	if( ! PyArg_ParseTuple( args, "sz", &pfname, &pfkey ) ) {
 
 		PyErr_SetString( PyExc_RuntimeError, usage );
 
@@ -448,18 +449,28 @@ python_pfget( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	rc = pfresolve( pf, pfkey, 0, &pfvalue );
+	if( pfkey == NULL ) {
 
-	if( rc < 0 ) {
+		obj = pf2PyObject( pf );
 
-		sprintf( errmsg, "Failed to find parameter '%s' in parameter file '%s'\n", pfkey, pfname );
+	} else {
 
-		PyErr_SetString( PyExc_RuntimeError, errmsg );
+		rc = pfresolve( pf, pfkey, 0, &pfvalue );
 
-		return NULL;
+		if( rc 	< 0 ) {
+
+			sprintf( errmsg, "Failed to find parameter '%s' in parameter file '%s'\n", 
+						pfkey, pfname );
+
+			PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+			return NULL;
+		}
+
+		obj = pf2PyObject( pfvalue );
 	}
 
-	return pf2PyObject( pfvalue );
+	return obj;
 }
 
 static PyObject *

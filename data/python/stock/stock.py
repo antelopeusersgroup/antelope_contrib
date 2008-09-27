@@ -50,8 +50,8 @@ def pfget_arr(pfname, pfkey):
     return _stock._pfget_arr(pfname, pfkey)
 
 
-def pfget(pfname, pfkey):
-    """Retrieve an arbitrary value from a parameter file"""
+def pfget(pfname, pfkey = None):
+    """Retrieve an arbitrary value from a parameter file, or retrieve the whole parameter file"""
 
     return _stock._pfget(pfname, pfkey)
 
@@ -218,6 +218,9 @@ if __name__ == '__main__':
 	    self.assertTrue(isinstance(val, tuple))
 
 	    val = pfget('rtexec', 'Run')
+	    self.assertTrue(isinstance(val, dict))
+
+	    val = pfget('orbserver_names')
 	    self.assertTrue(isinstance(val, dict))
 
         def test_pffiles(self):
