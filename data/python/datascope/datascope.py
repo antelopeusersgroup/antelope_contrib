@@ -315,7 +315,7 @@ class Dbptr(list):
 
         if( isinstance(db2in, str) ):
 
-            db2 = dblookup(db, table = db2in)
+            db2 = dblookup(self, table = db2in)
 
         else:
 
