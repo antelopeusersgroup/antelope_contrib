@@ -1,0 +1,47 @@
+.TH ORBTOPO 1 "$Date$"
+.SH NAME
+orbtopo \- Create topology plots of orb interconnectivity
+.SH SYNOPSIS
+.nf
+orbtopo dbname targetdir
+.fi
+.SH DESCRIPTION
+The orbtopo program monitors a Datascope database in registry1.2 or higher format, 
+which should contain monitoring results from the pforbstat(1) program archived by 
+the orbpf2db(1) program. The orbtopo program updates a set of graphs in the target-directory
+showing current orb connectivity. If a state file is enabled and new orbs appear since 
+the last run, orbtopo emails recipients specified in the parameter file about the changes. The 
+orbtopo program is meant to run as a cron job, usually from the Antelope rtexec(1) crontab table 
+in rtexec.pf. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+The orbtopo program requires the Python NetworkX and PyGraphviz packages to be installed from 
+http://networkx.lanl.gov
+
+orbtopo will process database tables with non-routable IP addresses in them. However, there is an 
+assumption that no non-routable address appears more than once across the entire set of orbservers
+being monitored. 
+
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pforbstat(1), orbpf2db(1), rtexec(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$
