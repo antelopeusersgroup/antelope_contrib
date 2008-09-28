@@ -1,2 +1,35 @@
-output_figure /Users/kent/Desktop/Modified_raptor/projects/iris_anfmix/orbtopo/testout/grid.png
+outputs &Tbl{
+	grid.png
+	grid.dot
+	grid.cmapx
+	grid.svg
+}
 
+valid_twin_sec 0
+# valid_twin_sec 86400 	# 0 = everything valid
+
+graph_program 	twopi
+
+colors &Arr{
+	monitored	lightgoldenrod1
+	fringe		grey
+}
+
+graph_attributes &Arr{
+	name		Orb Topology Map
+	overlap		false
+	ratio		1.3
+	ranksep		3
+}
+
+node_attributes &Arr{
+	style		filled
+	shape		hexagon
+	fillcolor	green
+	fontcolor	\#000000
+}
+
+edge_attributes &Arr{
+	dir		forward
+	color		blue
+}

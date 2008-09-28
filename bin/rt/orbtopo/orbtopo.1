@@ -14,6 +14,12 @@ the last run, orbtopo emails recipients specified in the parameter file about th
 orbtopo program is meant to run as a cron job, usually from the Antelope rtexec(1) crontab table 
 in rtexec.pf. 
 .SH OPTIONS
+.IP "-p pfname"
+Use an alternate parameter file, as specified. The default is \fIorbtopo.pf\fP.
+
+.IP -v
+Verbose
+
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -26,8 +32,9 @@ in rtexec.pf.
 .in
 .SH RETURN VALUES
 .SH LIBRARY
-The orbtopo program requires the Python NetworkX and PyGraphviz packages to be installed from 
-http://networkx.lanl.gov
+The orbtopo program requires the Python PyGraphviz package to be installed from 
+http://networkx.lanl.gov (and, of course, the underlying Graphviz package from 
+http://www.graphviz.org)
 
 orbtopo will process database tables with non-routable IP addresses in them. However, there is an 
 assumption that no non-routable address appears more than once across the entire set of orbservers
@@ -43,5 +50,7 @@ pforbstat(1), orbpf2db(1), rtexec(1)
 .nf
 Kent Lindquist
 Lindquist Consulting, Inc. 
+
+following previous prototype work by Todd Hansen (UCSD/ROADNet, now amazon.com) and Kent Lindquist
 .fi
 .\" $Id$

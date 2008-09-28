@@ -43,56 +43,176 @@
 
 from antelope.datascope import *
 from antelope.stock import *
+import socket
+import string
+import getopt
 
 try:
-    import networkx as NX
+
+    import pygraphviz as PG
+
 except:
-    print "orbtopo requires the python 'networkx' module (not found). " + \
-    "See https://networkx.lanl.gov to download and install 'networkx'. Bye."
+
+    print "orbtopo requires the python 'pygraphviz' module (not found). " + \
+    "See https://networkx.lanl.gov to download and install 'pygraphviz'. Bye."
     raise SystemExit
 
 try:
+
     import pylab as P
+
 except:
+
     print "orbtopo requires the python 'pylab' module (not found). " + \
     "See http://matplotlib.sourceforge.net to download and install 'pylab'. Bye."
     raise SystemExit
 
-#SCAFFOLD elog_init
+def portnum_to_name(portnum):
 
-pfname = 'orbtopo'
+    if( orbserver_portnames.has_key(portnum) ):
 
-#SCAFFOLD needs getopt and -p for pfname
-#SCAFFOLD need -i for interactive-plotting mode
- 
-if len(sys.argv) != 3:
+        portname = orbserver_portnames[portnum]
 
-    #SCAFFOLD elog_die
+    else:
 
-    print "Usage: orbtopo dbname targetdir\n"
-    raise SystemExit
+        portname = str(portnum)
+
+    return portname
+
+def serverip_to_name(ip):
+
+    if( not servernames.has_key(ip) ):
+
+        try:
+
+            servernames[ip] = socket.gethostbyaddr(ip)[0]
+
+	except:
+
+            servernames[ip] = ip
+
+    servername = servernames[ip]
+
+    return servername
+
+def server_description(ip, port):
+
+    description = serverip_to_name(ip) + ':' + portnum_to_name(port)
+
+    return description
+
+def set_nodecolor(desc):
+
+    n = G.get_node(desc)
+
+    if( directmonitor.has_key(desc) and directmonitor[desc] ):
+
+        fillcolor = pf['colors']['monitored']
+
+    else:
+
+        fillcolor = pf['colors']['fringe']
+
+    n.attr['fillcolor'] = fillcolor
+
+usage = "Usage: orbtopo [-v] [-p pfname] dbname targetdir\n"
+
+elog_init( sys.argv )
+
+try:
+    opts, pargs = getopt.getopt(sys.argv[1:], "p:v")
+
+except getopt.GetoptError, err:
+
+    print str(err) 
+    elog_die( usage );
+
+if len(pargs) != 2:
+
+    elog_die( usage )
 
 else:
 
-    dbname = sys.argv[1]
-    targetdir = sys.argv[2]
+    dbname = pargs[0]
+    targetdir = pargs[1]
 
-output_figure = pfget(pfname, 'output_figure')
+    pfname = 'orbtopo'
+    verbose = False
 
-G = NX.DiGraph()
+    for o, a in opts:
+        if o == "-v":
+
+	    verbose = True
+
+        elif o == "-p":
+
+	    pfname = a
+        
+	else:
+
+	    elog_die( usage )
+
+pf = pfget(pfname)
+
+orbserver_names = pfget('orbserver_names')
+orbserver_portnames = dict(zip(orbserver_names.values(), orbserver_names.keys()))
+
+G = PG.AGraph()
+
+for key in pf['graph_attributes'].keys():
+    G.graph_attr[key] = str(pf['graph_attributes'][key]).lower()
+
+for key in pf['node_attributes'].keys():
+    G.node_attr[key] = str(pf['node_attributes'][key]).lower()
+
+for key in pf['edge_attributes'].keys():
+    G.edge_attr[key] = str(pf['edge_attributes'][key]).lower()
 
 db = dbopen( dbname )
-db.lookup( table = 'servers' )
-nrecs = db.query( dbRECORD_COUNT )
 
-for db.record in range(nrecs):
-    G.add_node(db.getv('serveraddress'))
+servernames = {};
+directmonitor = {};
+
+db.lookup( table = 'servers' )
+
+for db.record in range(db.query(dbRECORD_COUNT)):
+
+    (serveraddress, serverport, host) = db.getv('serveraddress', 'serverport', 'host')
+
+    (machine, rtdir) = string.split( host, ':' )
+
+    servernames[serveraddress] = machine
+
+    # If it's in the servers table, it's directly monitored, and vice-versa:
+
+    serverdesc =  server_description(serveraddress,serverport)
+
+    directmonitor[serverdesc] = True
 
 db.lookup( table = 'connections' )
-nrecs = db.query( dbRECORD_COUNT )
 
-for db.record in range(nrecs):
-    G.add_edge(db.getv('fromaddress'), db.getv('toaddress'))
+if( pf['valid_twin_sec'] > 0 ):
+    db.subset( 'when >= ' + str(str2epoch( "now" ) - float(pf['valid_twin_sec'])) )
 
-NX.draw_graphviz(G, with_labels=False)
-P.savefig(output_figure)
+db.join('clients', outer=True)
+
+for db.record in range(db.query(dbRECORD_COUNT)):
+
+    (fromaddress, fromport, toaddress, toport, closeorb, o2omachine, clientid, latency) = \
+            db.getv( 'fromaddress', 'fromport', 'toaddress', 'toport', 'closeorb', \
+            'o2omachine', 'clientid', 'latency_sec')
+
+    fromdesc = server_description(fromaddress, fromport)
+    todesc = server_description(toaddress, toport)
+
+    G.add_node(fromdesc)
+    G.add_node(todesc)
+
+    set_nodecolor(fromdesc)
+    set_nodecolor(todesc)
+
+    G.add_edge(fromdesc, todesc, label=strtdelta(latency).strip())
+
+for ofile in pf['outputs']:
+    opath = os.path.join(targetdir, ofile)
+    G.draw(opath, prog=pf['graph_program'])
