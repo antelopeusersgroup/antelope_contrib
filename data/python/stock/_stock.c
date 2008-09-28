@@ -366,6 +366,7 @@ python_elog_init( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _elog_init( sys.argv )\n";
 	Tbl	*arglist;
 	char	**argv;
+	int	argc;
 	int	iarg;
 	int	rc;
 
@@ -376,14 +377,16 @@ python_elog_init( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	allot( char **, argv, maxtbl( arglist ) );
+	argc = maxtbl( arglist );
 
-	for( iarg = 0; iarg < maxtbl( arglist ); iarg++ ) {
+	allot( char **, argv, argc );
+
+	for( iarg = 0; iarg < argc; iarg++ ) {
 
 		argv[iarg] = gettbl( arglist, iarg );
 	}
 	
-	rc = elog_init( 0, argv );
+	rc = elog_init( argc, argv );
 
 	freetbl( arglist, 0 );
 
