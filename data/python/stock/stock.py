@@ -2,6 +2,30 @@ import _stock
 
 from _stock import *
 
+def elog_init(argv):
+    """Initialize the Antelope error log"""
+
+    return _stock._elog_init(argv)
+
+
+def elog_notify(msg):
+    """Put a notification message on the Antelope error log"""
+
+    return _stock._elog_notify(msg)
+
+
+def elog_complain(msg):
+    """Put a complaint message on the Antelope error log"""
+
+    return _stock._elog_complain(msg)
+
+
+def elog_die(msg):
+    """Put a fatal message on the Antelope error log and exit"""
+
+    return _stock._elog_die(msg)
+
+
 def pfget_string(pfname, pfkey):
     """Retrieve a string value from a parameter file"""
 
@@ -137,6 +161,7 @@ def now():
 if __name__ == '__main__':
     import unittest
     import operator
+    import sys
 
     class Teststock(unittest.TestCase):
 
@@ -303,5 +328,21 @@ if __name__ == '__main__':
             e = now()
 
 	    self.assertTrue(isinstance(e,float))
+
+        def test_elog_init(self):
+
+            elog_init( sys.argv )
+
+        def test_elog_notify(self):
+
+            elog_notify( "Test notification message" )
+
+        def test_elog_complain(self):
+
+            elog_notify( "Test complaint message" )
+
+        def test_elog_die(self):
+
+	    self.assertRaises(SystemExit, elog_die, "Test fatal message")
 
     unittest.main()

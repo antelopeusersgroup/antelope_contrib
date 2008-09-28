@@ -56,6 +56,10 @@ char *__progname = "Python";
 
 #endif
 
+static PyObject *python_elog_init( PyObject *self, PyObject *args );
+static PyObject *python_elog_notify( PyObject *self, PyObject *args );
+static PyObject *python_elog_complain( PyObject *self, PyObject *args );
+static PyObject *python_elog_die( PyObject *self, PyObject *args );
 static PyObject *python_pfget_string( PyObject *self, PyObject *args );
 static PyObject *python_pfget_int( PyObject *self, PyObject *args );
 static PyObject *python_pfget_double( PyObject *self, PyObject *args );
@@ -83,9 +87,14 @@ static PyObject *pf2PyObject( Pf *pfvalue );
 static PyObject *string2PyObject( char *s );
 static PyObject *strtbl2PyObject( Tbl *atbl );
 static int parse_from_Boolean( PyObject *obj, void *addr );
+static int parse_to_strtbl( PyObject *obj, void *addr );
 PyMODINIT_FUNC init_stock( void );
 
 static struct PyMethodDef stock_methods[] = {
+	{ "_elog_init",   	python_elog_init,   	METH_VARARGS, "Initialize the Antelope error log" },
+	{ "_elog_notify",   	python_elog_notify,   	METH_VARARGS, "Put a notification message on the Antelope error log" },
+	{ "_elog_complain",   	python_elog_complain,  	METH_VARARGS, "Put a warning message on the Antelope error log" },
+	{ "_elog_die",   	python_elog_die,   	METH_VARARGS, "Put a fatal message on the Antelope error log and exit" },
 	{ "_pfget_string",   	python_pfget_string,   	METH_VARARGS, "Get a string value from a parameter file" },
 	{ "_pfget_int",   	python_pfget_int,   	METH_VARARGS, "Get an integer value from a parameter file" },
 	{ "_pfget_double",   	python_pfget_double,   	METH_VARARGS, "Get a double value from a parameter file" },
@@ -135,6 +144,97 @@ parse_from_Boolean( PyObject *obj, void *addr )
 	}
 
 	return 0;
+}
+
+static int
+parse_to_strtbl( PyObject *obj, void *addr )
+{
+	Tbl	**atbl = (Tbl **) addr;
+	PyObject *seqobj;
+	int	nitems = 0;
+	int	iitem;
+	char	*astring;
+	char	errmsg[STRSZ];
+
+	if( obj == Py_None ) {
+
+		*atbl = 0;
+
+		return 1;
+	} 
+
+	if( PyString_Check( obj ) ) {
+
+		*atbl = strtbl( PyString_AsString( obj ), NULL );
+
+		return 1;
+	}
+
+	if( ! PySequence_Check( obj ) ) {
+
+		PyErr_SetString( PyExc_TypeError, 
+			"Attempt to convert sequence to table of strings failed: input argument is not a sequence" );
+
+		return 0;
+	}
+
+	nitems = PySequence_Size( obj );
+
+	*atbl = newtbl( nitems );
+
+	for( iitem = 0; iitem < nitems; iitem++ ) {
+		
+		seqobj = PySequence_GetItem( obj, iitem );
+
+		if( ! seqobj ) {
+
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"failed to extract item %d (counting from 0)", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		if( ! PyString_Check( seqobj ) ) {
+
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"item %d (counting from 0) is not a string", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		if( ( astring = PyString_AsString( seqobj ) ) == NULL ) {
+
+			freetbl( *atbl, 0 );
+
+			*atbl = 0;
+
+			sprintf( errmsg, 
+				"Attempt to convert sequence to table of strings failed: "
+				"conversion of item %d (counting from 0) to string failed", iitem );
+
+			PyErr_SetString( PyExc_TypeError, errmsg );
+
+			return 0;
+		}
+
+		pushtbl( *atbl, astring );
+	}
+
+	return 1;
 }
 
 static PyObject *
@@ -259,6 +359,88 @@ pf2PyObject( Pf *pf )
 	}
 
 	return obj;
+}
+
+static PyObject *
+python_elog_init( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _elog_init( sys.argv )\n";
+	Tbl	*arglist;
+	char	**argv;
+	int	iarg;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_strtbl, &arglist ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	allot( char **, argv, maxtbl( arglist ) );
+
+	for( iarg = 0; iarg < maxtbl( arglist ); iarg++ ) {
+
+		argv[iarg] = gettbl( arglist, iarg );
+	}
+	
+	rc = elog_init( 0, argv );
+
+	freetbl( arglist, 0 );
+
+	free( argv );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_elog_notify( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _elog_notify( msg )\n";
+	char	*msg;
+
+	if( ! PyArg_ParseTuple( args, "s", &msg ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	elog_notify( 0, msg );
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_elog_complain( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _elog_complain( msg )\n";
+	char	*msg;
+
+	if( ! PyArg_ParseTuple( args, "s", &msg ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	elog_complain( 0, msg );
+
+	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_elog_die( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _elog_die( msg )\n";
+	char	*msg;
+
+	if( ! PyArg_ParseTuple( args, "s", &msg ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	PyErr_SetString( PyExc_SystemExit, msg );
+
+	return NULL;
 }
 
 static PyObject *

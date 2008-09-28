@@ -172,6 +172,45 @@ e = str2epoch(s)
 .fi
 .in
 .ft R
+
+.IP "\fBelog_notify\fP (msg)"
+Put a notification message on the Antelope error log
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+elog_notify("Test notification message")
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_complain\fP (msg)"
+Put a complaint message on the Antelope error log
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+elog_complain("Test complaint message")
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_die\fP (msg)"
+Put a fatal message on the Antelope error log and exit
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+elog_die("Test fatal message")
+
+.fi
+.in
+.ft R
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
