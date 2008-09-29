@@ -93,6 +93,11 @@ class Orb():
 
         return _orb._orbreject(self._orbfd, reject)
 
+    def reap(self):
+        """Get the next packet from an orb"""
+
+        return _orb._orbreap(self._orbfd)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -130,6 +135,12 @@ def orbreject(orb, reject):
     """Reject orb source names"""
 
     return orb.reject( reject )
+
+
+def orbreap(orb):
+    """Get the next packet from an orb"""
+
+    return orb.reap()
 
 
 if __name__ == '__main__':
@@ -205,6 +216,22 @@ if __name__ == '__main__':
             n = orbreject(orb, ".*")
 
 	    self.assertTrue(n >= 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbreap(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbreap(orb)
+
+	    self.assertTrue(isinstance(pktid, int))
+	    self.assertTrue(isinstance(srcname, str))
+	    self.assertTrue(isinstance(time, float))
+	    self.assertTrue(isinstance(packet, str))
+	    self.assertTrue(isinstance(nbytes, int))
 
 	    orbclose(orb)
 

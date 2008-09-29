@@ -73,6 +73,54 @@ pktid = orbfd.tell()
 .fi
 .in
 .ft R
+.IP "\fBorbselect\fP (orbfd, match)"
+Select orb source-names
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+nsources = orbselect( orbfd, match )
+
+or 
+
+nsources = orbfd.select(match)
+
+.fi
+.in
+.ft R
+.IP "\fBorbreject\fP (orbfd, reject)"
+Reject orb source-names
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+nsources = orbreject( orbfd, reject )
+
+or 
+
+nsources = orbfd.reject( reject )
+
+.fi
+.in
+.ft R
+.IP "\fBorbreap\fP (orbfd)"
+Get next orb packet
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(pktid, srcname, time, packet, nbytes) = orbreap( orbfd )
+
+or 
+
+(pktid, srcname, time, packet, nbytes) = orbfd.reap()
+
+.fi
+.in
+.ft R
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT

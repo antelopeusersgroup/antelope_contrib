@@ -61,6 +61,7 @@ static PyObject *python_orbping( PyObject *self, PyObject *args );
 static PyObject *python_orbtell( PyObject *self, PyObject *args );
 static PyObject *python_orbselect( PyObject *self, PyObject *args );
 static PyObject *python_orbreject( PyObject *self, PyObject *args );
+static PyObject *python_orbreap( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
 
@@ -73,6 +74,7 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbtell", 	python_orbtell,   	METH_VARARGS, "Query current orb read-head position" },
 	{ "_orbselect",	python_orbselect,   	METH_VARARGS, "Select orb source names" },
 	{ "_orbreject",	python_orbreject,   	METH_VARARGS, "Reject orb source names" },
+	{ "_orbreap",	python_orbreap,   	METH_VARARGS, "Get the next packet from an orb" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -230,6 +232,39 @@ python_orbping( PyObject *self, PyObject *args ) {
 	}
 
 	return Py_BuildValue( "i", orbversion );
+}
+
+static PyObject *
+python_orbreap( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbreap(orb)\n";
+	int	orbfd;
+	int	pktid;
+	char	srcname[ORBSRCNAME_SIZE];
+	double	pkttime;
+	char	*pkt = 0;
+	int	nbytes = 0;
+	int	bufsize = 0;
+	PyObject *obj;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+
+	rc = orbreap( orbfd, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
+
+	obj = Py_BuildValue( "s#", pkt, nbytes );
+
+	free( pkt );
+
+	return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
 }
 
 static void
