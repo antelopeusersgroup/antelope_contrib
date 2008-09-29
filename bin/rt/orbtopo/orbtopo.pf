@@ -6,7 +6,6 @@ outputs &Tbl{
 }
 
 valid_twin_sec 0
-# valid_twin_sec 86400 	# 0 = everything valid
 
 graph_program 	twopi
 
