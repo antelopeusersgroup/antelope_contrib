@@ -59,6 +59,8 @@ static PyObject *python_orbopen( PyObject *self, PyObject *args );
 static PyObject *python_orbclose( PyObject *self, PyObject *args );
 static PyObject *python_orbping( PyObject *self, PyObject *args );
 static PyObject *python_orbtell( PyObject *self, PyObject *args );
+static PyObject *python_orbselect( PyObject *self, PyObject *args );
+static PyObject *python_orbreject( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
 
@@ -69,6 +71,8 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbclose", 	python_orbclose,   	METH_VARARGS, "Close an Antelope orb connection" },
 	{ "_orbping", 	python_orbping,   	METH_VARARGS, "Query orbserver version" },
 	{ "_orbtell", 	python_orbtell,   	METH_VARARGS, "Query current orb read-head position" },
+	{ "_orbselect",	python_orbselect,   	METH_VARARGS, "Select orb source names" },
+	{ "_orbreject",	python_orbreject,   	METH_VARARGS, "Reject orb source names" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -124,6 +128,50 @@ python_orbclose( PyObject *self, PyObject *args ) {
 	}
 
 	return Py_BuildValue( "" );
+}
+
+static PyObject *
+python_orbselect( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbselect(orb, regex)\n";
+	int	orbfd;
+	char	*select;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "is", &orbfd, &select ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orbselect( orbfd, select );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_orbreject( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbreject(orb, regex)\n";
+	int	orbfd;
+	char	*reject;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "is", &orbfd, &reject ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orbreject( orbfd, reject );
+
+	return Py_BuildValue( "i", rc );
 }
 
 static PyObject *

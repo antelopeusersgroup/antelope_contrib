@@ -83,6 +83,16 @@ class Orb():
 
         return _orb._orbtell(self._orbfd)
 
+    def select(self, match):
+        """Match orb source-names"""
+
+        return _orb._orbselect(self._orbfd, match)
+
+    def reject(self, reject):
+        """Reject orb source names"""
+
+        return _orb._orbreject(self._orbfd, reject)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -108,6 +118,18 @@ def orbtell(orb):
     """Query current connection read-head position"""
 
     return orb.tell()
+
+
+def orbselect(orb, match):
+    """Match orb source names"""
+
+    return orb.select( match )
+
+
+def orbreject(orb, reject):
+    """Reject orb source names"""
+
+    return orb.reject( reject )
 
 
 if __name__ == '__main__':
@@ -162,7 +184,27 @@ if __name__ == '__main__':
 
             pktid = orbtell(orb)
 
-	    self.assertTrue(pktid > 0)
+	    self.assertTrue(isinstance(pktid,int))
+
+	    orbclose(orb)
+
+        def test_procedure_orbselect(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            n = orbselect(orb, ".*")
+
+	    self.assertTrue(n >= 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbreject(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            n = orbreject(orb, ".*")
+
+	    self.assertTrue(n >= 0)
 
 	    orbclose(orb)
 
