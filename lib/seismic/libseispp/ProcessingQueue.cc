@@ -114,6 +114,7 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 		rewind(fp);  // necessary to be sure we unlock file
 		lockf(fd,F_ULOCK,(off_t)0);
 		freopen(fname.c_str(),"r+b",fp);
+		AtEOF = false;
 	    }
 	    else
 	    {

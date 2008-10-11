@@ -293,134 +293,6 @@ void ResetMoveout(TimeSeriesEnsemble& d)
 		}
 	}
 }
-template <class T, SortOrder SO> struct less_metadata_double
-                : public binary_function<T,T,bool> {
-        bool operator()(T x, T y)
-        {
-		string keyword;
-		switch (SO)
-		{
-		case COHERENCE:
-			keyword=SEISPP::coherence_keyword;
-			break;
-		case CORRELATION_PEAK:
-			keyword=SEISPP::peakxcor_keyword;
-			break;
-		case AMPLITUDE:
-			keyword=SEISPP::amplitude_static_keyword;
-			break;
-		case LAG:
-			keyword=SEISPP::moveout_keyword;
-			break;
-  		case SITE_LAT:
-			keyword=string("sta_lat");
-			break;
-		case SITE_LON:
-			keyword=string("sta_lon");
-			break;
-		case PREDARR_TIME:
-			keyword=predicted_time_key;
-			break;
-		case ESAZ:
-			keyword=string("esaz");;
-			break;
-		case DISTANCE:
-			keyword=string("distance");;
-			break;
-		case DBARRIVAL_TIME:
-			keyword=dbarrival_time_key;
-			break;
-		case ARRIVAL_TIME:
-			keyword=arrival_time_key;
-			break;
-		case SNR:
-			keyword=snr_keyword;
-			break;
-		case WEIGHT:
-		default:
-			keyword=SEISPP::stack_weight_keyword;
-			break;
-		}
-		/* the try-catch logic below assure that data that
-		return errors on a get act as if they are the smallest possible value */
-		double valx,valy;
-		try { 
-			valx=x.get_double(keyword);
-		}catch(...) {return true;};
-		try { 
-			valy=y.get_double(keyword);
-		}catch(...) {return false;};
-	
-	        if(valx<valy)
-	                return true;
-	        else
-	                return false;
-        }
-};
-template <class T, SortOrder SO> struct greater_metadata_double
-                : public binary_function<T,T,bool> {
-        bool operator()(T x, T y)
-        {
-		string keyword;
-		switch (SO)
-		{
-		case COHERENCE:
-			keyword=SEISPP::coherence_keyword;
-			break;
-		case CORRELATION_PEAK:
-			keyword=SEISPP::peakxcor_keyword;
-			break;
-		case AMPLITUDE:
-			keyword=SEISPP::amplitude_static_keyword;
-			break;
-		case LAG:
-			keyword=SEISPP::moveout_keyword;
-			break;
-  		case SITE_LAT:
-			keyword=string("sta_lat");
-			break;
-		case SITE_LON:
-			keyword=string("sta_lon");
-			break;
-		case PREDARR_TIME:
-			keyword=predicted_time_key;
-			break;
-		case ESAZ:
-			keyword=string("esaz");;
-			break;
-		case DISTANCE:
-			keyword=string("distance");;
-			break;
-		case DBARRIVAL_TIME:
-			keyword=dbarrival_time_key;
-			break;
-		case ARRIVAL_TIME:
-			keyword=arrival_time_key;
-			break;
-		case SNR:
-			keyword=snr_keyword;
-			break;
-		case WEIGHT:
-		default:
-			keyword=SEISPP::stack_weight_keyword;
-			break;
-		}
-		/* the try-catch logic below assure that data that
-		return errors on a get act as if they are the largest possible value */
-		double valx,valy;
-		try { 
-			valx=x.get_double(keyword);
-		}catch(...) {return true;};
-		try { 
-			valy=y.get_double(keyword);
-		}catch(...) {return false;};
-	
-	        if(valx>valy)
-	                return true;
-	        else
-	                return false;
-        }
-};
 
 /* Small helper for analyze() method below.  snr cannot be computed
 in this algorithm until after the MultichannelCorrelator object is
@@ -1127,7 +999,7 @@ void XcorProcessingEngine::prep_gather()
 }
 /* New method added to support segmented data in any type of 
 generic gather. */
-void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
+int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 {
     const string base_error("XcorProcessingEngine::load_data(DatabaseHandle&,ProcessingStatus):  ");
     if( !((processing_mode==GenericGathers) || (processing_mode==EventGathers)))
@@ -1150,7 +1022,11 @@ void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	if(first_pass)
 		first_pass=false;
 	else
+	{
 		dpq->mark(stat);  
+	}
+	/* exit cleanly when queue is empty */
+	if(!dpq->has_data()) return(-1);
 	DatascopeHandle *dsdbh=dynamic_cast<DatascopeHandle *>(&dbh);
 	dpq->set_to_current(*dsdbh);
 	if(RequireThreeComponents)
@@ -1226,6 +1102,7 @@ void XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	    regular_gather=auto_ptr<TimeSeriesEnsemble>(AlignAndResample(*tse,
 		time_align_key,analysis_setting.gather_twin,target_dt,rdef,true));
 	this->prep_gather();
+	return(0);
     } catch (...) {throw;}
 }
 void XcorProcessingEngine::load_data(Hypocenter & h)

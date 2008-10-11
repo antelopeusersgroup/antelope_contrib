@@ -5,6 +5,7 @@ INCLUDE=ArrivalUpdater.h \
   AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
+  EventCatalog.h \
   FixedFormatTrace.h \
   HeaderMap.h \
   Hypocenter.h\
@@ -61,6 +62,7 @@ OBJS=ArrivalUpdater.o \
   AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \
+  EventCatalog.o \
   FixedFormatTrace.o  \
   HeaderMap.o \
   Hypocenter.o \

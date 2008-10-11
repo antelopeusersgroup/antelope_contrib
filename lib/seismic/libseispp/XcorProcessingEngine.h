@@ -50,9 +50,21 @@ public:
         void save_results(int evid, int orid,Hypocenter& h);
 
 	void load_data(Hypocenter& hypo);
-	/*! Load data from a generic gather and set the queue status of the previously processed
-	gather to stat.*/
-	void load_data(DatabaseHandle& dbh,ProcessingStatus stat);
+	/*! Load data from a generic database handle.  
+
+	This method is aimed as generic interface to load data from a database 
+	tagged with a queue.  When called the engine will load the next generic
+	gather defined through the engine defintion and the database handle.
+	This is a very generic way to load data from a database.  
+	\param dbh  generic database handle that will be used to load the next gather
+		to be processed.
+	\param stat is the processing status that will be used to mark the queue
+		associated with this database. 
+
+	\return 0 if data loaded successfully.  Nonzero is returned when the queue
+		is empty.
+	*/
+	int load_data(DatabaseHandle& dbh,ProcessingStatus stat);
 	// Some public attributes required to implement subarrays
 	int number_subarrays();  // Returns count of number of subarrays
 	string current_subarray_name;  // name assigned to current subarray
@@ -202,6 +214,158 @@ private:
 	method contains common code shared by load_data methods.  It needs to be
 	a member to allow access to all the class data. */
 	void prep_gather();
+};
+/*! /brief Function object to sort a set of objects defined by a Metadata double in
+increasing order.
+
+The stl sort algorithm can use a general function to define order.  This template
+allows sorting a group of objects that inherit metadata in ascending order by 
+a real (double) parameter defined by a particular key. 
+
+\param T is the ensemble class type
+\param SO is a SortOrder enum value that is used to define the attribute for
+	sorting.  This has to be an enum as I've found no way to give a function
+	object like this a parameter any other way. 
+*/
+
+template <class T, SortOrder SO> struct less_metadata_double
+                : public binary_function<T,T,bool> {
+        bool operator()(T x, T y)
+        {
+		string keyword;
+		switch (SO)
+		{
+		case COHERENCE:
+			keyword=SEISPP::coherence_keyword;
+			break;
+		case CORRELATION_PEAK:
+			keyword=SEISPP::peakxcor_keyword;
+			break;
+		case AMPLITUDE:
+			keyword=SEISPP::amplitude_static_keyword;
+			break;
+		case LAG:
+			keyword=SEISPP::moveout_keyword;
+			break;
+  		case SITE_LAT:
+			keyword=string("sta_lat");
+			break;
+		case SITE_LON:
+			keyword=string("sta_lon");
+			break;
+		case PREDARR_TIME:
+			keyword=predicted_time_key;
+			break;
+		case ESAZ:
+			keyword=string("esaz");;
+			break;
+		case DISTANCE:
+			keyword=string("distance");;
+			break;
+		case DBARRIVAL_TIME:
+			keyword=dbarrival_time_key;
+			break;
+		case ARRIVAL_TIME:
+			keyword=arrival_time_key;
+			break;
+		case SNR:
+			keyword=snr_keyword;
+			break;
+		case WEIGHT:
+		default:
+			keyword=SEISPP::stack_weight_keyword;
+			break;
+		}
+		/* the try-catch logic below assure that data that
+		return errors on a get act as if they are the smallest possible value */
+		double valx,valy;
+		try { 
+			valx=x.get_double(keyword);
+		}catch(...) {return true;};
+		try { 
+			valy=y.get_double(keyword);
+		}catch(...) {return false;};
+	
+	        if(valx<valy)
+	                return true;
+	        else
+	                return false;
+        }
+};
+/*! /brief Function object to sort a set of objects defined by a Metadata double in decreasing order.
+
+The stl sort algorithm can use a general function to define order.  This template
+allows sorting a group of objects that inherit metadata in descending order by 
+a real (double) parameter defined by a particular key. 
+
+\param T is the ensemble class type
+\param SO is a SortOrder enum value that is used to define the attribute for
+	sorting.  This has to be an enum as I've found no way to give a function
+	object like this a parameter any other way. 
+*/
+template <class T, SortOrder SO> struct greater_metadata_double
+                : public binary_function<T,T,bool> {
+        bool operator()(T x, T y)
+        {
+		string keyword;
+		switch (SO)
+		{
+		case COHERENCE:
+			keyword=SEISPP::coherence_keyword;
+			break;
+		case CORRELATION_PEAK:
+			keyword=SEISPP::peakxcor_keyword;
+			break;
+		case AMPLITUDE:
+			keyword=SEISPP::amplitude_static_keyword;
+			break;
+		case LAG:
+			keyword=SEISPP::moveout_keyword;
+			break;
+  		case SITE_LAT:
+			keyword=string("sta_lat");
+			break;
+		case SITE_LON:
+			keyword=string("sta_lon");
+			break;
+		case PREDARR_TIME:
+			keyword=predicted_time_key;
+			break;
+		case ESAZ:
+			keyword=string("esaz");;
+			break;
+		case DISTANCE:
+			keyword=string("distance");;
+			break;
+		case DBARRIVAL_TIME:
+			keyword=dbarrival_time_key;
+			break;
+		case ARRIVAL_TIME:
+			keyword=arrival_time_key;
+			break;
+		case SNR:
+			keyword=snr_keyword;
+			break;
+		case WEIGHT:
+		default:
+			keyword=SEISPP::stack_weight_keyword;
+			break;
+		}
+		/* the try-catch logic below assure that data that
+		return errors on a get act as if they are the largest possible value */
+		double valx,valy;
+		try { 
+			valx=x.get_double(keyword);
+		}catch(...) {return true;};
+		try { 
+			valy=y.get_double(keyword);
+		}catch(...) {return false;};
+	
+	        if(valx>valy)
+	                return true;
+	        else
+	                return false;
+        }
 };
 
 } // End SEISPP namespace declaration
