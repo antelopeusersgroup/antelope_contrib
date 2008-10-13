@@ -151,13 +151,15 @@ public:
 	the catalog to a test hypocenter.  If a match is found the 
 	internal pointer is positioned to the the matching entry.
 	The matching entry can be retrieved after a successful find
-	by calling the current() method. 
+	by calling the current() method.  If a match is not found the
+	position of the current event counters should be assumed to
+	be undefined.  (It isn't but it probably isn't what you want.)
 	
 	\param test Hypocenter object to test to see if in catalog.
 	\return true if match is found, false if not
 	*/
 	bool find(Hypocenter& test);
-	/* \brief Add a Hypocenter to the catalog.
+	/*! \brief Add a Hypocenter to the catalog.
 
 	This is a bombproof add. If a match to the Hypocenter to be inserted already 
 	exists, the request is ignored and the method returns false.  If it is unique
@@ -174,14 +176,14 @@ public:
 		Use the replace method if you want to force an overwrite.
 	*/
 	bool add(Hypocenter& hnew,Metadata& md);
-	/* \brief Add/Replace an entry in this catalog.
+	/*! \brief Add/Replace an entry in this catalog.
 
 	This method is complementary to add.  The add method will not overwrite
 	an existing entry if it is already in the catalog.  This does the reverse
 	in that it will always replace an event with the new data if a match is 
 	found.  If there was no event matching the one passed as an argument it
 	is simply added.  The return can be tested if it is important to know if
-	a replacement was made or the event was just appended.  It return
+	a replacement was made or the event was just appended.  It returns
 	true if something was replaced and false otherwise.
 
 	\param hnew event to be added/replaced
@@ -212,15 +214,17 @@ public:
 	This method deletes the event defined as the "current" hypocenter.  The current
 	hypocenter is set either by working through the catalog with the ++ operator
 	or using the find method.  It is very important to recognize that the current
-	hypocenter will be reset to the first event in the catalog  This is necessary 
+	hypocenter should be viewed as undefined after calling this method.  This is necessary 
 	because deletion invalidates the current pointer and there is no unambiguous
-	way to reset it.  This is, to my mind anyway, a good a choice as any. */
+	way to reset it.  One could make a choice, but in the authors view keeping the
+	interface consistent is more important and since what is and is not feasible is
+	implementation dependent it is best to just say it is undefined.*/
 	void delete_current();
 	/*! brief Generic subset method. 
 	
 	It is frequently of interest to produce a subset of an event catalog.  This provides
 	a generic method to do this using the STL concept of a type of function object
-	calld a predicate.  To be instantiated this template requires a function object that
+	called a predicate.  To be instantiated this template requires a function object that
 	returns true if a Hypocenter object satisfies a subset condition.  This allows the
 	subset specification to be totally generic.  
 
