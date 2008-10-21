@@ -2576,7 +2576,11 @@ if __name__ == '__main__':
 
         def test_procedure_dbcreate(self):
            
-            dbcreate('/tmp/datascope_unittest_db', 'css3.0')
+	    tempdbname = '/tmp/datascope_unittest_db_' + os.environ["USER"] + str(os.getpid())
+
+            dbcreate(tempdbname, 'css3.0')
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_trwfname(self):
 
