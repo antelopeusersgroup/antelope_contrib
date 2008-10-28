@@ -1,0 +1,22 @@
+#  
+# validyne DP250 or DP350 infrasound sensor 
+# Normalized  response relative to pressure 
+# All poles and zeroes in radians/sec
+# 1                   type
+# 1                   num of zeroes
+# 1                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# ??????              normalization factor
+# 1.0                 gain
+# sensitivity  19 mV/Pascal @ 1Hz
+#
+# From "Colorado Trip Report" from RMRogers@smu.edu 10/23/2008
+# Assembled by J.Eakins, jeakins@ucsd.edu
+#
+theoretical   1 anti-alias   paz    hydrophone
+1   
+1             Poles
+-0.0172e+00   0.0000e+00    0.0000E+00    0.0000E+00
+1             Zeros
+ 2.8009e-06   0.0000E+00    0.0000E+00    0.0000E+00

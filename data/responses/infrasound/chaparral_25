@@ -1,0 +1,26 @@
+#  
+# chapararl_25 infrasound sensor 
+# Normalized  response relative to pressure 
+# All poles and zeroes in radians/sec
+# 1                   type
+# 3                   num of zeroes
+# 3                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# ??????              normalization factor
+# 1.0                 gain
+# sensitivity  354 mV/Pascal @ 1Hz
+#
+# From "Colorado Trip Report" from RMRogers@smu.edu 10/23/2008
+# Assembled by J.Eakins, jeakins@ucsd.edu
+#
+theoretical   1 anti-alias   paz    hydrophone
+1   
+3             Poles
+-4.0632e+00   0.0000e+00    0.0000E+00    0.0000E+00
+-0.1433e+00   0.0378e+00    0.0000E+00    0.0000E+00
+-0.1433e+00  -0.0378e+00    0.0000E+00    0.0000E+00
+3             Zeros
+-4.4005  0.0000E+00    0.0000E+00    0.0000E+00
+-0.0026  0.0024E+00    0.0000E+00    0.0000E+00
+-0.0000 -0.0024E+00    0.0000E+00    0.0000E+00
