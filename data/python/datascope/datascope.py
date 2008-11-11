@@ -383,6 +383,16 @@ class Dbptr(list):
 
         self[:] = db[:]
 
+    def get(self, scratch = None):
+        """Get a table, field, or record from a base table"""
+
+        return _datascope._dbget(self, scratch)
+    
+    def put(self, record = None):
+        """Put a table, field, or record into a base table"""
+
+        return _datascope._dbput(self, record)
+    
     def getv(self, *args):
         """Get values from a database row"""
 
@@ -826,6 +836,18 @@ def trwfname(db, pattern):
     """Generate waveform file names"""
 
     return db.trwfname(pattern)
+
+
+def dbget(db, scratch = None):
+    """Get a table, field, or record from a base table"""
+
+    return db.get(scratch)
+
+
+def dbput(db, record = None):
+    """Put a table, field, or record into a base table"""
+
+    return db.put(record)
 
 
 def dbgetv(db, *args):
@@ -2188,6 +2210,36 @@ if __name__ == '__main__':
 
             self.assertTrue(db2.query(dbRECORD_COUNT) > 0)
             
+        def test_procedure_dbget(self):
+
+            db = Dbptr(self.dbname)
+
+            db = dblookup(db, table = 'origin')
+
+            db.record = 0
+
+            value = dbget(db)
+
+            self.assertEqual(value, '  40.0740   69.1640  155.1660   704371900.66886        1       -1  1992118    7    7   -1      715       48 -       -999.0000 f    2.62        1 -999.00       -1 -999.00       -1 locsat:kyrghyz  JSPC                  -1   790466871.00000\n')
+
+        def test_procedure_dbput(self):
+
+	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
+            db = Dbptr(tempdbname, 'r+')
+
+            db.lookup(table = 'origin')
+
+	    db.record = dbSCRATCH;
+    
+	    dbput(db, '  40.0740   69.1640  155.1660   704371900.66886        1       -1  1992118    7    7   -1      715       48 -       -999.0000 f    2.62        1 -999.00       -1 -999.00       -1 locsat:kyrghyz  JSPC                  -1   790466871.00000')
+
+            dbclose(db)
+
+	    os.system('/bin/rm -f ' + tempdbname + '*')
+
         def test_procedure_dbgetv(self):
 
             db = Dbptr(self.dbname)

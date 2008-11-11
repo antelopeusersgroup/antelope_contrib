@@ -470,6 +470,23 @@ db.process( cmdlist )
 .in
 .ft R
 
+.IP "\fBdbget\fP (db [, 0] )"
+Get a table, field, or record from a base table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+value = dbget( db )
+
+or 
+
+value = db.get()
+
+.fi
+.in
+.ft R
+
 .IP "\fBdbgetv\fP (db, field_name [,field_name, ...] )"
 Get values from a database row
 .ft CW

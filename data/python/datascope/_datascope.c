@@ -91,6 +91,8 @@ static PyObject *python_dbunjoin( PyObject *self, PyObject *args );
 static PyObject *python_dbgroup( PyObject *self, PyObject *args );
 static PyObject *python_dbungroup( PyObject *self, PyObject *args );
 static PyObject *python_dbprocess( PyObject *self, PyObject *args );
+static PyObject *python_dbget( PyObject *self, PyObject *args );
+static PyObject *python_dbput( PyObject *self, PyObject *args );
 static PyObject *python_dbgetv( PyObject *self, PyObject *args );
 static PyObject *python_dbaddv( PyObject *self, PyObject *args );
 static PyObject *python_dbputv( PyObject *self, PyObject *args );
@@ -172,6 +174,8 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbgroup",  	python_dbgroup,   	METH_VARARGS, "Group a sorted table" },
 	{ "_dbungroup",	python_dbungroup,   	METH_VARARGS, "Ungroup a grouped table" },
 	{ "_dbinvalid", python_dbinvalid,   	METH_VARARGS, "Create an invalid database pointer" },
+	{ "_dbget",     python_dbget,   	METH_VARARGS, "Get table, field, or record from a base table" },
+	{ "_dbput",     python_dbput,   	METH_VARARGS, "Put table, field, or record into a base table" },
 	{ "_dbgetv",    python_dbgetv,   	METH_VARARGS, "Retrieve values from a database row" },
 	{ "_dbaddv",    python_dbaddv,   	METH_VARARGS, "Add records to a database table" },
 	{ "_dbputv",    python_dbputv,   	METH_VARARGS, "Write fields to a database table" },
@@ -1823,6 +1827,103 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 	}
 
 	return Py_BuildValue( "i", retcode );
+}
+
+static PyObject *
+python_dbget( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbget(db, scratch)\n";
+	PyObject *obj;
+	Dbptr	db;
+	char	*s = 0;
+	char	*scratch = 0;
+	long	size;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &scratch ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( scratch != NULL && ! strcmp( scratch, "scratch" ) ) {
+
+		rc = dbget( db, s );
+
+		if( rc < 0 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, "dbget failed" );
+	
+			obj = NULL;
+
+		} else {
+
+			obj = Py_BuildValue( "" );
+		}
+
+	} else {
+
+		if( db.record != dbALL ) {
+
+			dbquery( db, dbRECORD_SIZE, &size );
+
+		} else {
+
+			dbquery( db, dbTABLE_SIZE, &size );
+		}
+
+		allot( char *, s, size + 2 );
+
+		rc = dbget( db, s );
+
+		if( rc < 0 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, "dbget failed" );
+
+			obj = NULL;
+
+		} else {
+
+			obj = Py_BuildValue( "s", s );
+		}
+
+		if( s != 0 ) {
+
+			free( s );
+		}
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_dbput( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _dbput(db, string )\n";
+	Dbptr	db;
+	char	*s = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &s ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = dbput( db, s );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "dbput failed" );
+	}
+
+	return Py_BuildValue( "" );
 }
 
 static PyObject *
