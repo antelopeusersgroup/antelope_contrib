@@ -150,9 +150,12 @@ if __name__ == '__main__':
 
     class Testorb_fixture():
 
+	tempdir = '/tmp/python_orbtest_' + os.environ["USER"] + str(os.getpid())
+
         def start(self):
 
-            os.chdir("/tmp")
+	    os.mkdir(self.tempdir)
+            os.chdir(self.tempdir)
             os.system("pfcp orbserver .")
             os.system("orbserver -p " + orbname + " orbserver &")
             os.system("sleep 3")
@@ -160,6 +163,11 @@ if __name__ == '__main__':
         def stop(self):
 
             os.system("echo halt | orbstat -i " + orbname)
+            os.system("sleep 5")
+	    os.system("/bin/rm -f " + self.tempdir + "/orb/*")
+	    os.rmdir(self.tempdir + "/orb")
+	    os.system("/bin/rm -f " + self.tempdir + "/*")
+	    os.rmdir(self.tempdir)
 
     class Testorb(unittest.TestCase):
 
