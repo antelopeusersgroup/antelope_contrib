@@ -4,7 +4,6 @@ use Cwd;
 
 require "getopts.pl";
 
-$Os = my_os();
 $Pf = "amakelocal";
 $Pf_proto = "amakelocal_proto";
 
@@ -13,7 +12,7 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'ip:v' ) ) {
+if( !Getopts( 'ip:s:v' ) ) {
 
 	elog_die( "Usage: amakelocal [-i] [-v] [-p pfname] [MACRO [MACRO ...]]\n" );
 }
@@ -54,7 +53,17 @@ if( pffiles( $Pf ) ) {
 	$Pf = $Pf_proto;
 }
 
+if( $opt_s ) {
+
+	$Os = $opt_s;
+
+} else {
+
+	$Os = my_os();
+}
+
 $output_file = pfget( $Pf, "output_file" );
+$dest = pfget( $Pf, "dest" );
 
 if( $runmode eq "construct" ) {
 
@@ -67,9 +76,26 @@ if( $runmode eq "construct" ) {
 
 	foreach $element ( keys( %elements ) ) {
 		
-		if( defined( $elements{$element}{$Os} ) && $elements{$element}{$Os} ne "" ) {
+		if( ! defined( $elements{$element} ) ) {
 
-			print O "$element = $elements{$element}{$Os}\n";
+			next;
+
+		} else {
+			
+			$contents = $elements{$element};
+		}
+
+		if( ref( $contents ) eq "HASH" ) {
+		
+			if( defined( $contents->{$Os} ) && 
+			    $contents->{$Os} ne "" ) {
+
+				print O "$element = $contents->{$Os}\n";
+			}
+
+		} else {
+
+			print O "$element = $contents\n";
 		}
 	}
 
@@ -84,12 +110,12 @@ if( $runmode eq "construct" ) {
 
 		if( $opt_v ) {
 
-			elog_notify( "Installing '$output_file' in $ENV{ANTELOPE}/include" );
+			elog_notify( "Installing '$output_file' in $dest" );
 		} 
 
-		system( "deposit $output_file $ENV{ANTELOPE}/include" );
+		system( "deposit $output_file $dest" );
 
-		unless( cwd() eq "$ENV{ANTELOPE}/include" ) {
+		unless( cwd() eq "$dest" ) {
 
 			unlink( $output_file );
 		}
@@ -100,7 +126,7 @@ if( $runmode eq "construct" ) {
 
 if( $runmode eq "verify" ) {
 
-	open( A, "$ENV{ANTELOPE}/include/$output_file" );
+	open( A, "$dest/$output_file" );
 
 	@antelopemake = <A>;
 
