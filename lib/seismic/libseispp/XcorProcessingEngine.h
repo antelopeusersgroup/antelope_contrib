@@ -65,6 +65,17 @@ public:
 		is empty.
 	*/
 	int load_data(DatabaseHandle& dbh,ProcessingStatus stat);
+	/*! \brief Deletes data already processed.
+
+	In source array processing it has been found useful to work 
+	through a gather in sections.  The reason is that an ensemble
+	may have several common waveforms that can be correlated.  This 
+	allows working through all common waveforms until no common members
+	remain.  Note this method does something no other method does.
+	That is, it clears data from the (normally hidden) raw data 
+	gather.  
+	*/
+	int clear_already_processed();
 	// Some public attributes required to implement subarrays
 	int number_subarrays();  // Returns count of number of subarrays
 	string current_subarray_name;  // name assigned to current subarray

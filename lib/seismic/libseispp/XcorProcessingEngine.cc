@@ -10,14 +10,16 @@
 
 
 const string dbarrival_lag_keyword("dbarrival_lag");
+const string trace_number_keyword("trace_number");
+const string finished_keyword("processed");
 /* This is a helper function intended to be used only with file scope.
 It is used to implement trace shifting with a set of existing arrivals
-loaded from the database.  The algorithm is complicated by the fact with 
+loaded from the database.  The algorithm is complicated by the fact with
 need scan them all once, compute and subtract a mean, and then set a
 lag.  This is necessary to prevent a large skew between arrivals previously
 set in the db and those missing.  Reason is that origin errors can produce
 large average shifts in arrival time.  Result is set in the trace headers
-keyed by the keyword set in dbarrival_lag_keyword immediately above.  
+keyed by the keyword set in dbarrival_lag_keyword immediately above.
 LagShift is then called to shift all data by the computed values.
 
 Note this routine intentionally tests no Metadata attributes or existence
@@ -62,11 +64,11 @@ void dbarrival_shift(TimeSeriesEnsemble& d)
 	}
    	LagShift(d,dbarrival_lag_keyword,arrival_time_key);
 }
-XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf, 
+XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	XcorAnalysisSetting asinitial,
 		string waveform_db_name,
 			string result_db_name,
-				string queuefile) 
+				string queuefile)
 			  : rdef(global_pf),am("css3.0"),analysis_setting(asinitial)
 {
 	int i, j;
@@ -77,7 +79,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		string schema=global_md.get_string("schema");
 		if(schema!="css3.0")
 	 		am=AttributeMap(schema);
-	
+
 		trace_mdl=pfget_mdlist(global_pf,"trace_mdl");
 		ensemble_mdl=pfget_mdlist(global_pf,"ensemble_mdl");
 		string pmodestr=global_md.get_string("processing_mode");
@@ -91,7 +93,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		the waveform_db_handle in the simplest form.  Now we have to handle
 		the case of building a general gather through dbbuild */
 		waveform_db_handle=DatascopeHandle(waveform_db_name,false);
-		
+
 		switch (processing_mode)
 		{
 		case EventGathers:
@@ -107,10 +109,10 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		ttmethod=global_md.get_string("TTmethod");
 		ttmodel=global_md.get_string("TTmodel");
 		// deal with possibility that output db is the same
-		// as the input db.  This logic depends upon the 
-		// current API for Datascope in which the handle is 
-		// Datascope like being freely copyable.  
-		if (waveform_db_name==result_db_name) 
+		// as the input db.  This logic depends upon the
+		// current API for Datascope in which the handle is
+		// Datascope like being freely copyable.
+		if (waveform_db_name==result_db_name)
 			result_db_handle=DatascopeHandle(waveform_db_handle);
 		else
 			result_db_handle=DatascopeHandle(result_db_name,false);
@@ -128,7 +130,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		dbxcorbeam=dblookup(result_db_handle.db,0,(char *) "xcorbeam",0,0);
 		dbwfprocess=dblookup(result_db_handle.db,0,(char *) "wfprocess",0,0);
 		dbevlink=dblookup(result_db_handle.db,0,(char *) "evlink",0,0);
-		if( (dbassoc.table==dbINVALID) 
+		if( (dbassoc.table==dbINVALID)
 			|| (dbarrival.table==dbINVALID))
 		{
 			waveform_db_handle.close();
@@ -161,12 +163,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		int ntest;
 		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,(char *) "site",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
-		if(ntest<=0) 
+		if(ntest<=0)
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string(" required site table is empty"));
 		dbtmp=dblookup(waveform_db_handle.db,0,(char *) "sitechan",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
-		if(ntest<=0) 
+		if(ntest<=0)
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string(" required sitechan table is empty"));
 		// These two lists are largely fixed, but an example of the
@@ -179,7 +181,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		beam_mdl = pfget_mdlist(global_pf,"BeamMetadataList");
 		beam_directory=global_md.get_string("beam_directory");
 		beam_dfile=global_md.get_string("beam_dfile");
-	
+
 	        string time_stamp=global_md.get_string("initial_time_stamp");
 	        double treference=str2epoch(const_cast<char *>
 	                        (time_stamp.c_str()));
@@ -191,7 +193,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			  + string("Found no stations marked on at event time"));
 
 		use_subarrays=global_md.get_bool("use_subarrays");
-		/* We always load subarray definitions even if they are turned 
+		/* We always load subarray definitions even if they are turned
 		off initially.  This allows toggling between full and subarray
 		processing in interactive mode. */
 		load_subarrays_from_pf(stations,global_pf);
@@ -204,13 +206,13 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		// small cost in execution time
 		SeismicArray test=stations.subset(0);
 		current_subarray_name=test.name;
-	
+
 		raw_data_twin.start=global_md.get_double("data_window_start");
 		raw_data_twin.end=global_md.get_double("data_window_end");
 		current_data_window.start=treference+raw_data_twin.start;
 		current_data_window.end=treference+raw_data_twin.end;
 	        target_dt=global_md.get_double("target_sample_interval");
-		// These set up separate display parameters for each 
+		// These set up separate display parameters for each
 		// display window (data, beam, xcor result);
 		data_display_md=Metadata(global_pf,"data_window_parameters");
 		xcor_display_md=Metadata(global_pf,"correlation_window_parameters");
@@ -223,7 +225,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		coherence_cutoff_default=coherence_cutoff;
 		stack_weight_cutoff_default=stack_weight_cutoff;
 		time_lag_cutoff=global_md.get_double("time_lag_cutoff");
-		// For three component data we need to create this 
+		// For three component data we need to create this
 		// StationChannelMap object that tells us how to map channel
 		// codes into components
 		RequireThreeComponents=global_md.get_bool("RequireThreeComponents");
@@ -252,7 +254,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	{
 		merr.log_error();
 		throw SeisppError("XcorProcessingEngine construction failed");
-		
+
 	}
 	catch (SeisppError serr)
 	{
@@ -298,7 +300,7 @@ void ResetMoveout(TimeSeriesEnsemble& d)
 in this algorithm until after the MultichannelCorrelator object is
 created.  We want the snr attributes stored with the xcor functions
 to allow sorting the ensemble by snr externally.  This makes sure
-this is done for all traces.  dead traces are posted too, but a 
+this is done for all traces.  dead traces are posted too, but a
 they are maked with snr of -1.0.  A magic number, but should be
 ok in this context. */
 void copy_SNR_to_xcor(TimeSeriesEnsemble& d, TimeSeriesEnsemble& xcor,
@@ -328,11 +330,11 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
      UpdateGeometry(current_data_window);
      mcc=	new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
    	analysis_setting.robust_tw,time_lag_cutoff,RobustSNR,NULL,
-   	analysis_setting.reference_trace); 
+   	analysis_setting.reference_trace);
    } catch (...) {throw;};
    //
    // We need to reset bad moveout in xcor so it can be plotted properly.
-   // 
+   //
    ResetMoveout(mcc->xcor);
    // Need to explicitly set traces marked dead with target sample
    // rate.  This was found to confuse dbxcor plotting if the first
@@ -354,7 +356,7 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // original to a predicted arrival time when running from raw data
    // (the current situation for teleseismic data).
    LagShift(waveform_ensemble,moveout_keyword,arrival_time_key);
-   // compute signal to noise ratio for each trace and post to metadata 
+   // compute signal to noise ratio for each trace and post to metadata
    ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,snr_keyword);
    if(waveform_ensemble.member.size()==mcc->xcor.member.size())
 	copy_SNR_to_xcor(waveform_ensemble,mcc->xcor,snr_keyword);
@@ -605,7 +607,7 @@ DatabaseHandle *XcorProcessingEngine::get_db(string dbmember)
 		 + string(" was requested"));
 }
 /* local function to extract a component from a 3c ensemble.  If one requests
-component as L,T, or R, hypocenter metadata just be loaded with each station's 
+component as L,T, or R, hypocenter metadata just be loaded with each station's
 data.   This is required for using this code for common receiver gathers in
 source cluster processing. */
 auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tcse,
@@ -682,7 +684,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string("  Failure in three component processing.")
 				+string("Missing metadata invalidates these data. Check pf.") );
-			
+
 		}
 		Hypocenter hypo(rad(slat),rad(slon),sz,stime,ttmethod,ttmodel);
 		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
@@ -720,7 +722,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 }
 // Local function to extract a particular component from a 3c ensemble
 // returning a scalar time series ensemble that can be passed downstream
-// for processing by this program.  
+// for processing by this program.
 auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			string compname,Hypocenter hypo,string phase,
 				string ttmethod,string ttmodel)
@@ -790,7 +792,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string("  Failure in three component processing\n")
 				+string("Missing metadata invalidates these data.  Check pf") );
-			
+
 		}
 		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
 		try {
@@ -854,12 +856,13 @@ void XcorProcessingEngine::prep_gather()
 	{
 		double atime;
 		double lat,lon;
+		regular_gather->member[i].put(trace_number_keyword,i);
 		regular_gather->member[i].put(coherence_keyword,0.0);
 		regular_gather->member[i].put(stack_weight_keyword,0.0);
 		regular_gather->member[i].put(peakxcor_keyword,0.0);
 		regular_gather->member[i].put(amplitude_static_keyword,0.0);
 		regular_gather->member[i].put(moveout_keyword,MoveoutBad);
-		/* Initialize arrival_time_key to time_align_key value which 
+		/* Initialize arrival_time_key to time_align_key value which
 		is the time 0 mark for the data at this stage.  Note this
 		time is dithered throughout this processing, but we maintain
 		a time standard by simultaneously dithering this attribute.
@@ -867,7 +870,7 @@ void XcorProcessingEngine::prep_gather()
 		but this makes the result independent of how we got here.*/
 		if(time_align_key=="none")
 		{
-		/* This mode is inteded to used if input gathers 
+		/* This mode is inteded to used if input gathers
 		have a relative time base*/
 		    atime=0.0;
 		    regular_gather->member[i].put(arrival_time_key,atime);
@@ -939,11 +942,11 @@ void XcorProcessingEngine::prep_gather()
 		regular_gather->member[i].put("distance",distance);
 		regular_gather->member[i].put("distance_deg",deg(distance));
 	}
-	// post netname here.  Overridden below for subarrays 
+	// post netname here.  Overridden below for subarrays
 	// but this sets it for full array mode
 	regular_gather->put("netname",netname);
-	
-	
+
+
 	// Load filtered data into waveform_ensemble copy
 	// of this data.
 	if(use_subarrays)
@@ -956,14 +959,14 @@ void XcorProcessingEngine::prep_gather()
 			SeismicArray subnet=stations.subset(current_subarray);
 			csub=ArraySubset(*regular_gather,subnet);
 			// post subarray name as netname in ensemble
-			// Convenient if mysterious way to get this 
+			// Convenient if mysterious way to get this
 			// to save procedure
 			csub->put("netname",subnet.name);
 			// Need to set the name too
 			current_subarray_name=subnet.name;
 			if((*csub).member.size()>0) break;
-		} 
-		if(current_subarray>=nsubs) 
+		}
+		if(current_subarray>=nsubs)
 			throw SeisppError(
 				string("XcorProcessingEngine::load_data: ")
 				+ string("  error in subarray definitions.  ")
@@ -982,7 +985,7 @@ void XcorProcessingEngine::prep_gather()
 		ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
 			(waveform_ensemble,gain_keyword,true);
 		ScaleCalib<TimeSeriesEnsemble>
-			(waveform_ensemble,gain_keyword,amplitude_static_keyword); 
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword);
 	}
 	else
 	{
@@ -990,14 +993,14 @@ void XcorProcessingEngine::prep_gather()
 		InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
 			(waveform_ensemble,gain_keyword,initial_gain);
 	}
-	
+
 	// We need to always reset these
 	xcorpeak_cutoff=xcorpeak_cutoff_default;
 	coherence_cutoff=coherence_cutoff_default;
 	stack_weight_cutoff=stack_weight_cutoff_default;
 
 }
-/* New method added to support segmented data in any type of 
+/* New method added to support segmented data in any type of
 generic gather. */
 int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 {
@@ -1006,7 +1009,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	throw SeisppError(base_error
 	  + string("Coding error.  This method not allowed for time window (ContinuousDB) processing"));
     if(dpq==NULL)
-	throw SeisppError(base_error 
+	throw SeisppError(base_error
 		+ string("Coding error.  Handle to the DatascopeProcessingQueue object is not defined"));
     if(mcc!=NULL)
     {
@@ -1015,7 +1018,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
     }
     /* This depends on a trick that is a bit dangerous.  That is, a static is initialized the first
     time a function is called but not on later calls. */
-    static bool first_pass(true);  
+    static bool first_pass(true);
     auto_ptr<TimeSeriesEnsemble> tse;
     try {
 	/* First we need to deal with the queue.*/
@@ -1023,7 +1026,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		first_pass=false;
 	else
 	{
-		dpq->mark(stat);  
+		dpq->mark(stat);
 	}
 	/* exit cleanly when queue is empty */
 	if(!dpq->has_data()) return(-1);
@@ -1046,7 +1049,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CGenericEnsemble(tcse,
 			analysis_setting.component_name,analysis_setting.phase_for_analysis,
 			ttmethod,ttmodel) );
-		
+
 		delete tcse;
 	}
 	else
@@ -1054,9 +1057,9 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		tse=auto_ptr<TimeSeriesEnsemble>
 		   (new TimeSeriesEnsemble(dbh,trace_mdl, ensemble_mdl, am));
 	}
-	if(processing_mode==EventGathers) 
+	if(processing_mode==EventGathers)
 	{
-	    /* We fetch the hypocenter for this event from the ensemble metadata.  We 
+	    /* We fetch the hypocenter for this event from the ensemble metadata.  We
 	    must throw an excpetion if the event location is not defined as we cannot
 	    continue in that situation.*/
 	    double slat,slon,sz,stime;
@@ -1072,7 +1075,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		h.time+raw_data_twin.end);
 	    UpdateGeometry(current_data_window);
 	    StationTime predarr=ArrayPredictedArrivals(stations,h,
-		analysis_setting.phase_for_analysis); 
+		analysis_setting.phase_for_analysis);
 	    LoadPredictedTimes(*tse,predarr,predicted_time_key,
 			analysis_setting.phase_for_analysis);
 	}
@@ -1084,15 +1087,15 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		nfailed=LoadPredictedArrivalTimes<TimeSeriesEnsemble>(*tse,
 			analysis_setting.phase_for_analysis,predicted_time_key,
 				ttmethod,ttmodel);
-		if(nfailed>0) 
+		if(nfailed>0)
 			cerr << "XcorProcessingEngine::load_data method (Warning):  "
 				<< nfailed <<" travel time errors processing current gather"
 				<<endl
 				<< "Run in verbose mode for more details"<<endl;
-			
+
 	}
 	/* Warning:  we assume if arrival alignment is turned off that
-	the data are multichannel in flavor and all have the same 
+	the data are multichannel in flavor and all have the same
 	sample rate.  Probably should test for this condition here, but
 	will leave this as only a warning for now. */
 	if(time_align_key=="none")
@@ -1170,7 +1173,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CEnsemble(tcse,
 			analysis_setting.component_name,h,
 			analysis_setting.phase_for_analysis,
-			ttmethod,ttmodel));	
+			ttmethod,ttmodel));
 		delete tcse;
 	}
 	else
@@ -1188,7 +1191,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                            am));
 	}
 	StationTime predarr=ArrayPredictedArrivals(stations,h,
-		analysis_setting.phase_for_analysis); 
+		analysis_setting.phase_for_analysis);
 
 	// Following not needed because regular_gather is now
 	// stored as an auto_ptr.
@@ -1207,26 +1210,26 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
     }
     catch (...) {throw;}
 }
-// This applies a second filter to the data beyond the base filter.  
+// This applies a second filter to the data beyond the base filter.
 // This is often necessary. e.g. demean followed by integration.
 //
 void XcorProcessingEngine::filter_data(TimeInvariantFilter f)
 {
 	FilterEnsemble(waveform_ensemble,f);
 }
-/* helper for save_results.  Counts and sets nass in origin.  
+/* helper for save_results.  Counts and sets nass in origin.
 Uses DatascopeHandle as a convenience because of automatic memory
-management.  Algorithm is not the most obvious or necessarily the 
-most efficient.  Tried subsetting origin then joining to assoc, but 
-something in the db interface gets confused in this application with 
+management.  Algorithm is not the most obvious or necessarily the
+most efficient.  Tried subsetting origin then joining to assoc, but
+something in the db interface gets confused in this application with
 rows set with dbmark.  For this reason found it necessary to subset
 assoc and then leftjoin origin.  The subset of assoc using a specific
-orid seems to solve the problem with dbmark records.    
+orid seems to solve the problem with dbmark records.
 
 Arguments:
 	dbh - handle to database containing origin and assoc to be accessed
 		to compute nass.  Note this is intentionally NOT a reference but
-		we always get a copy here because the handle is intended to 
+		we always get a copy here because the handle is intended to
 		evaporate on exit.
 	orid - origin id of event to be handled.
 */
@@ -1241,7 +1244,7 @@ void set_nassoc(DatascopeHandle dbh,int orid)
 	dbh.leftjoin("origin",joinkeys,joinkeys);
 	int nass=dbh.number_tuples();
 
-	if(nass>0) 
+	if(nass>0)
 	{
 		Dbptr db;
 		dbh.db.record=0;
@@ -1259,13 +1262,13 @@ void set_nassoc(DatascopeHandle dbh,int orid)
 			<<" has no rows in join of origin and assoc"<<endl
                         <<"Cannot set nass in origin table for this orid"<<endl;
 }
-/* Small companion to save_results to edit an input channelo code to 
+/* Small companion to save_results to edit an input channelo code to
  produce a channel code that will normaly resolve to valid sitchan entries.
  Algorithm used will always replace character 3 in the input chan unless
- the the original chan code has less than 3 characters.  In that case it 
- does nothing.  It should work with both common channel codes like 
+ the the original chan code has less than 3 characters.  In that case it
+ does nothing.  It should work with both common channel codes like
  BHZ and BHZ_01.  Note this function tacitly assumes a.arrival_chan_code is
- a single character like Z, N, or E.  
+ a single character like Z, N, or E.
 */
 string set_chan_this_phase(string chan, XcorAnalysisSetting& a)
 {
@@ -1332,18 +1335,18 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	    catch (MetadataGetError mderr)
 	    {
 		cerr << "Problems getting attributes needed for xcorbeam"<<endl
-			
+
 			<< "Coding error or problem in MetadataList parameters"
 			<< endl;
 		mderr.log_error();
 	    }
-	    catch (...) 
+	    catch (...)
 	    {
 		cerr << "Unexpected exception"<<endl;
 		throw;
 	    }
 	}
-		
+
 	// I think static in this context means they are set once
 	// and only once at startup
 	static const string authbase("dbxcor");
@@ -1356,7 +1359,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	// we are locked into the use of a try-catch construct here.
 	// Evil, but the only choice.  A SERIOUS maintenance issue
 	// is also the use of a fixed null value used if the deltim
-	// value is not set.  Here we use the value defined in 
+	// value is not set.  Here we use the value defined in
 	// Antelope 4.9.  If this changes, problems could surface.
 	*/
 	const double deltimnull(-1.0);
@@ -1393,7 +1396,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			lag=trace->get_double(moveout_keyword);
 			//
 			// Skip data marked with indeterminate moveout
-			// This is used by MultichannelCorrelator to 
+			// This is used by MultichannelCorrelator to
 			// flag data it could not handle
 			//
 			if(fabs(lag)>MoveoutBadTest) continue;
@@ -1411,6 +1414,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			// the gain attribute
 			gain=trace->get_double(gain_keyword);
 			amplitude *=gain;
+			double ampdb=20.0*log10(amplitude);
 			/* Need to repost snr so it can be saved consistently
 			with css3.0 naming convention.  A bit awkward, but
 			stuck with this.  */
@@ -1422,6 +1426,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				&& (coh>coherence_cutoff)
 				&& (stack_weight>stack_weight_cutoff) )
 			{
+				/* Any trace that gets here needs to be marked completed */
+				trace->put(finished_keyword,true);
 			    if(save_extensions)
 			    {
 			      filter_param=trace->get_string("filter_spec");
@@ -1462,7 +1468,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					"samprate",1.0/(trace->dt),
 					"stackwgt",stack_weight,
 					"coherence",coh,
-					"relamp",amplitude,
+					"relamp",ampdb,
 					"xcorpeak",xcorpeak,0);
 				    if(record<0) cerr << "XcorProcessingEngine::save_results(WARNING):  "
 							<< "dbaddv failed writing xsaa table for station="
@@ -1524,7 +1530,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    chantmp=trace->get_string("chan");
 			    // This routine replaces chantmp with a
 			    // channel code defined for this phase from
-			    // analysis_setting.  
+			    // analysis_setting.
 			    chantmp=set_chan_this_phase(chantmp,analysis_setting);
 			    // These need to be posted as match keys
 			    trace->put("evid",evid);
@@ -1575,14 +1581,18 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			cerr << "save_results:  problem with trace number "
 				<< i << endl;
 			mderr.log_error();
-		    }				
+		    }
+		}
+		else
+		{
+			trace->put(finished_keyword,false);
 		}
 	}
 	if(delete_old_arrivals) arru.clear_old(evid,
 		analysis_setting.phase_for_analysis);
 	/* this is a procedure that counts and sets number of associations in origin */
 	if(processing_mode!=GenericGathers) set_nassoc(result_db_handle,orid);
-}	
+}
 // These are private functions hidden by the interface
 void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)
 {
@@ -1610,7 +1620,7 @@ void XcorProcessingEngine::shift_arrivals(double tshift)
                 trace!=waveform_ensemble.member.end();++trace)
 	{
 		//
-		// Intentionally not putting a try block here to 
+		// Intentionally not putting a try block here to
 		// catch an exception for moveout not being defined.
 		// Shouldn't get here in that condition so I'm
 		// intentionally avoiding the overhead of a try block
@@ -1628,13 +1638,13 @@ void XcorProcessingEngine::shift_arrivals(double tshift)
 				trace->put(moveout_keyword,moveout);
 				trace->put(arrival_time_key,atime);
 			}
-		  } 
+		  }
 		} catch (MetadataGetError mde) {
 		    mde.log_error();
 		}
 	}
 }
-	
+
 void XcorProcessingEngine::restore_original_ensemble()
 {
 	if(use_subarrays)
@@ -1655,7 +1665,7 @@ void XcorProcessingEngine::restore_original_ensemble()
 		ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
 			(waveform_ensemble,gain_keyword,true);
 		ScaleCalib<TimeSeriesEnsemble>
-			(waveform_ensemble,gain_keyword,amplitude_static_keyword); 
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword);
 	}
 	else
 		InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
@@ -1680,12 +1690,12 @@ void XcorProcessingEngine::next_subarray()
 		    ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
 			(waveform_ensemble,gain_keyword,true);
 		    ScaleCalib<TimeSeriesEnsemble>
-			(waveform_ensemble,gain_keyword,amplitude_static_keyword); 
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword);
 		}
 		else
 			InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
 				(waveform_ensemble,gain_keyword,(double)1.0);
-		    
+
 	    } catch (...) {throw;}
 	}
 	else
@@ -1698,3 +1708,72 @@ int XcorProcessingEngine::number_subarrays()
 	return(stations.number_subarrays());
 }
 
+/* This method returns size of gather after cleared.  Caller should
+test for 0 length and not try to process an empty gather */
+int XcorProcessingEngine::clear_already_processed()
+{
+	/* This method depends on related methods in the engine doing
+	two things.  First, the load_data routines post a unique integer
+	trace number.  This is required to cross-reference with the
+	gather holding the processed data.  Second, when results
+	are already saved the assumption is each trace for which
+	the results were successfully save will have a boolean
+	posted to mark them as done. Keys used to define these
+	are internal to this file and found at top of this file */
+	set<int> kill_list;
+	vector<TimeSeries>::iterator trace;
+	int this_trace_number;
+	for(trace=waveform_ensemble.member.begin();trace!=waveform_ensemble.member.end();++trace)
+	{
+		bool killme;
+		killme=trace->get_bool(finished_keyword);
+		if(killme)
+		{
+			this_trace_number=trace->get_int(trace_number_keyword);
+			kill_list.insert(this_trace_number);
+		}
+	}
+	/* We now clear the waveform_ensemble member vector and selectively copy
+	 * from the master copy.
+	 */
+	waveform_ensemble.member.clear();
+	set<int>::iterator killiter;
+	for(trace=regular_gather->member.begin();trace!=regular_gather->member.end();++trace)
+	{
+		if(trace->live)
+		{
+			try {
+				this_trace_number=trace->get_int(trace_number_keyword);
+				if(kill_list.find(this_trace_number)==kill_list.end())
+				{
+					waveform_ensemble.member.push_back(*trace);
+				}
+			}
+			catch(MetadataGetError mderr){};  // Silently do nothing if get_int failed
+		}
+	}
+	/* overwrite regular_ensemble with waveform_ensemble.  It will be the new master */
+	regular_gather=auto_ptr<TimeSeriesEnsemble>(new TimeSeriesEnsemble(waveform_ensemble));
+	/* The working copy (waveform_ensemble) now must be preprocessed
+	with initial filter and initialize the amplitude factors.  Note
+	this is a complete duplicate of code in prep_gather.  Watch out
+	as a possible maintenance issue.  Did this to avoid a private
+	method or a procedure with a long list of arguments*/
+	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+	if(autoscale_initial)
+	{
+		MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword);
+		ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword,true);
+		ScaleCalib<TimeSeriesEnsemble>
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword);
+	}
+	else
+	{
+		double initial_gain=1.0;
+		InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
+			(waveform_ensemble,gain_keyword,initial_gain);
+	}
+	return(regular_gather->member.size());
+}
