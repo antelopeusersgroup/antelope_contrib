@@ -103,6 +103,7 @@ processing a large data set with a static database.  This mode
 must NEVER be used on a dynamic database or results can be unpredictable.
 Note also that -i and -q modes are mutually exclusive.  dbxcor will
 exit if you try to define both.
+This method is required if running in GenericGather mode.
 .IP -pf
 Is used to specify an alternative parameter file than the default of
 dbxcor.pf.
@@ -143,6 +144,7 @@ in an input view have been processed.  This mode, however, does not allow
 switching seismic phases during processing.  Hence, a given queue file 
 might be run for all P phases and the data rerun with a new queue file
 for S, SS, etc.  
+This is also the required mode for source array processing.
 .IP (5) 
 The use of the -o options is highly recommended if you want to run this program on
 a real-time database.  Because the back end of the program does database updates to 
@@ -368,7 +370,19 @@ read times with this method relative to continuousDB processing.
 .LP
 When processing_mode is set to GenericGathers the entire input view is driven
 by the contents of what is built through the "dbprocess_command" parameter (see
-below).  
+below).  This means the meaning of gather can be completely different.  In particular,
+this mode can be used to implement source array processing in which bundles of 
+events assembled into receiver gathers can be used to produce a set of picks
+consistent with a given gather.  Note that in GenericGather processing mode 
+the "Save" button behaves differently.  Because generic gathers might contain
+multiple suites of event that could be correlated differently, the display 
+acts recursively in this mode.  That is, when the save button is pushed data
+marked live and saved to the database are deleted from the gather and the 
+display is refreshed to include only the debris (i.e. data that didn't correlate
+in the previous analysis).  The user may choose to move on and push the 
+"Next Gather" button or try to do further processing on these remaining traces.
+This process can be repeated until no data remain in the gather or until the
+"Next Gather" button us pushed.
 .SH PARAMETER FILE
 .LP
 The complete parameter file for this program is very long
@@ -664,6 +678,13 @@ data_window_parameters,
 beam_window_parameters, and coherence_window_parameters.  
 As the names imply these control the data display, beam, and
 cross-correlation windows respectively.
+.ce
+\fITemplates\fR
+.fi
+.LP
+The stock parameter file is designed for teleseismic body wave processing.  The contrib
+distribution has two alternative parameter files called dbxcor_Plocal.pf and dbxcor_Slocal.pf
+that contain recipes that can be used as a starting point for local event (source array) processing.
 .SH DIAGNOSTICS
 .LP
 The log window is used to give feedback on progress of the analysis

@@ -163,6 +163,9 @@ public:
     interface had no public attributes decided this was more consistent
     even if a bit silly */
     XcorEngineMode get_processing_mode(){return(procmode);};
+    /* Returns a plot title that depends on processing mode and user
+    input.  Built from ensemble global attributes. */
+    string plot_title(TimeSeriesEnsemble& tse);
 private:
     bool *sensitive;
     SessionState state;
@@ -194,6 +197,10 @@ private:
     XcorProcesingEngine object.  i.e. the parameter parsing here
     duplicates that in XcorProcessingEngine. */
     XcorEngineMode procmode;
+    /*these are ensemble attribute names used to build the title */
+   list<string> generic_title_ints;
+   list<string> generic_title_strings;
+   list<string> generic_title_reals;
 };
 
 #endif

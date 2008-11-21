@@ -379,7 +379,13 @@ trace_mdl	&Tbl{
 }
 ensemble_mdl  &Tbl{
 sta string
+gridid int
 }
+plot_title_mdl &Tbl{
+sta string
+gridid int
+}
+
 
 #
 # new control for beam plots 

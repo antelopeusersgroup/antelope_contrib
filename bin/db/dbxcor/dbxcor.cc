@@ -115,7 +115,7 @@ Widget create_button(Widget parent, MenuItem btninfo)
   w = XmCreatePushButton (parent, btninfo.label, args, n);
   XmStringFree (str);
   XtAddCallback(w,XmNactivateCallback,btninfo.callback,(XtPointer)(btninfo.callback_data));
-  XtManageChild(w);    
+  XtManageChild(w);
 
   return w;
 }
@@ -158,7 +158,7 @@ Widget PostDialog (Widget parent, int dialog_type, char *msg)
  Seismic processing routines
 *******************************************************************************/
 
-void 
+void
 do_sw(Widget parent, SessionManager & sm)
 {
  	int i,j;
@@ -226,9 +226,9 @@ do_sw(Widget parent, SessionManager & sm)
 	/*Although the session manager holds the name of the database that
 	is to be used, at this point in the execution of this program
 	the session manager is incomplete.  We must make the match
-	handle, dbh, valid or the program will crash.  This is very 
+	handle, dbh, valid or the program will crash.  This is very
 	bad programming logic as it violates creation is initialization
-	rules, but I had no choice for making this work with the 
+	rules, but I had no choice for making this work with the
 	new memory management scheme used in the DatascopeHandle object.
 	WATCH OUT:  this is a maintenance issue. */
 	DatabaseHandle *rootdbh=sm.xpe->get_db(string("waveformdb"));
@@ -247,7 +247,7 @@ do_sw(Widget parent, SessionManager & sm)
 	XtSetArg(args[n],(char *) ExmNzoomFactor,100); n++;
 	XtSetArg(args[n],XmNpaneMaximum,20000); n++;
 	XtSetArg(args[n],XmNpaneMinimum,500); n++;
-	
+
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
 	}
@@ -259,7 +259,7 @@ do_sw(Widget parent, SessionManager & sm)
         }
 
 }
- 
+
 Widget get_top_shell(Widget w);
 void destroy_callback(Widget w, void * client_data, void * userdata);
 
@@ -272,13 +272,13 @@ void disable_display(Widget w, void * client_data, void * userdata)
     if (cbs->set == XmUNSET) {
 	if (psm->get_state()!=ANALYZE && psm->get_state()!=SAVE) psm->display_initial_sort_box=true;
 	else psm->display_analysis_sort_box=true;
-    } 
+    }
 
     if (cbs->set == XmSET) {
         if (psm->get_state()!=ANALYZE && psm->get_state()!=SAVE) psm->display_initial_sort_box=false;
         else psm->display_analysis_sort_box=false;
     }
-    
+
 }
 
 void message_box(SessionManager * psm, string s, Widget parent)
@@ -333,10 +333,10 @@ void message_box(SessionManager * psm, string s, Widget parent)
     XtAddCallback(ok_btn,XmNactivateCallback,destroy_callback,msg_box);
 
     XtManageChild(form);
-    
+
     XtManageChild(rowcol);
 }
-// Companion to get_next_event.  Changes analysis setting to 
+// Companion to get_next_event.  Changes analysis setting to
 // that defined for phase.  Throws an error if an XcorAnalysisSetting object
 // is not found for requested phase.
 void modify_asetting_for_phase(SessionManager& sm,string phase)
@@ -356,6 +356,13 @@ void modify_asetting_for_phase(SessionManager& sm,string phase)
 	sm.modify_filter(string("default"),sm.active_setting.filter_param);
 }
 
+string subarray_title(string starting, string subarray_name)
+{
+	string result("SA->");
+	result=result+subarray_name+" "+starting;
+	if(result.length()>80) result.erase(80);
+	return(result);
+}
 void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
 {
 	stringstream ss;
@@ -402,12 +409,12 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 			throw SeisppError(base_error
 				+string("error reading origin data from input db"));
 		}
-			
+
 		psm->set_evid(evid);
 		psm->set_orid(orid);
 		// Reset analysis setting if the phase name to fetch changes
 		if(psm->get_phase()!=phase_to_analyze)
-		{	
+		{
 		    try {
 			modify_asetting_for_phase(*psm,phase_to_analyze);
 		    } catch (SeisppError serr) {
@@ -432,7 +439,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		psm->record(ss.str());
 		if(psm->using_subarrays)
 		{
-			// After a read always reset this variable to 
+			// After a read always reset this variable to
 			// start at top of the list of subarrays
 			psm->xpe->current_subarray=0;
 			psm->session_state(NEXT_SUBARRAY);
@@ -450,31 +457,16 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		psm->record(ss.str());
 
 		Metadata data_md=psm->xpe->get_data_md();
-		stringstream ts;
-		if(psm->using_subarrays)
-		{
-		    ts << psm->xpe->current_subarray_name
-			<< " "
-			<< phase_to_analyze 
-			<< " data for evid="<<evid
-			<<", orid="<<orid
-			<<".  Location:  "
-			<<lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
-		}
-		else
-		{
-		    ts << phase_to_analyze << " data for evid="<<evid
-			<<", orid="<<orid
-			<<".  Location:  "
-			<<lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
-		}
-		data_md.put("title",ts.str());
+		string title;
+		title=psm->plot_title(*tse);
+		if(psm->using_subarrays) title=subarray_title(title,psm->xpe->current_subarray_name);
+		data_md.put("title",title);
 
 		psm->active_setting=psm->asetting_default[phase_to_analyze];
                 stringstream vs;
                 if (!psm->validate_setting(vs) )
 		{
-			if(w != NULL) 
+			if(w != NULL)
 				message_box(psm, vs.str(), w);
 			else
 				psm->record(vs.str());
@@ -494,7 +486,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		//make sure the attributes are appropriate, no coherence display before the
 		//analysis
 		for(i=0; i<psm->attributes_info.size(); i++) {
-		    if (psm->attributes_info[i].enabled && 
+		    if (psm->attributes_info[i].enabled &&
 			!psm->attributes_info[i].available_before_analysis) {
 			psm->attributes_info[i].enabled=false;
 			XtUnmanageChild(psm->attributes_info[i].w);
@@ -506,7 +498,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
 		psm->markers.beam_tw=psm->active_setting.beam_tw;
 		psm->markers.robust_tw=psm->active_setting.robust_tw;
-  		psm->markers.title=ts.str();
+  		psm->markers.title=title;
 
 		XtVaSetValues(psm->seismic_widget,ExmNseiswEnsemble, (XtPointer)(tse),
 		    ExmNseiswMetadata, (XtPointer)(&data_md),ExmNdisplayMarkers,&(psm->markers),
@@ -514,7 +506,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
-	}  
+	}
 
 	} catch (SeisppError serr) {
                 serr.log_error();
@@ -536,7 +528,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		DatabaseHandle *dbh;
 		TimeSeriesEnsemble *tse;
 		if(psm->get_phase()!=phase_to_analyze)
-		{	
+		{
 		    try {
 			modify_asetting_for_phase(*psm,phase_to_analyze);
 		    } catch (SeisppError serr) {
@@ -550,7 +542,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		/* NONE is the only possible state after pushing a save button.
 		We assume if the state is anything else we should mark it skipped.
 		The load_data method using the queue file in the Xcor engine
-		needs to mark what it did to the previous ensemble before 
+		needs to mark what it did to the previous ensemble before
 		loading the next one. */
 		int tsesize;
 		DatascopeHandle *dsdbh=dynamic_cast<DatascopeHandle *>(dbh);
@@ -567,7 +559,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 			}
 			tse=psm->xpe->get_waveforms_gui();
 			tsesize=tse->member.size();
-			if(tsesize<=1) 
+			if(tsesize<=1)
 			{
 				ss << "Skipping input ensemble with only one memeber"<<endl;
 				psm->record(ss.str());
@@ -575,7 +567,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		}
 		while((tsesize<=1) && (dsdbh->db.record<dsdbh->number_tuples()));
 		/* Exit the program on this condition as it means there is no more data to process */
-		if(dsdbh->db.record>=dsdbh->number_tuples()) 
+		if(dsdbh->db.record>=dsdbh->number_tuples())
 		{
 			cout << "dbxcor queue is empty.  Exiting"<<endl;
 			exit(0);
@@ -584,7 +576,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		psm->record(ss.str());
 		if(psm->using_subarrays)
 		{
-			// After a read always reset this variable to 
+			// After a read always reset this variable to
 			// start at top of the list of subarrays
 			psm->xpe->current_subarray=0;
 			psm->session_state(NEXT_SUBARRAY);
@@ -602,7 +594,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		{
 			double slat,slon,sdepth,stime;
 			try {
-				/* Frozen names here are not good, but 
+				/* Frozen names here are not good, but
 				for now we'll use them */
 				slat=tse->get_double("source_lat");
 				slon=tse->get_double("source_lon");
@@ -626,53 +618,16 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		psm->record(ss.str());
 
 		Metadata data_md=psm->xpe->get_data_md();
-		stringstream ts;
-		if( (xem==ContinuousDB) || (xem==EventGathers) )
-		{
-			int evid,orid;
-			try {
-				evid=tse->get_int("evid");
-				orid=tse->get_int("orid");
-				psm->set_evid(evid);
-				psm->set_orid(orid);
-			} catch (MetadataGetError mderr)
-			{
-				mderr.log_error();
-				ss << "Evid and/or orid not defined for ensemble. "<<endl
-					<< "Setting both to 1.  Fix this before trying to save data."<<endl;
-				psm->record(ss.str());
-				evid=1;
-				orid=1;
-			}
-			if(psm->using_subarrays)
-			{
-			    ts << psm->xpe->current_subarray_name
-				<< " "
-				<< phase_to_analyze 
-				<< " data for evid="<<evid
-				<<", orid="<<orid
-				<<".  Location:  "
-				<<deg(h.lat) <<","<<deg(h.lon)<<","<<h.z<<","<<strtime(h.time);      
-			}
-			else
-			{
-			    ts << phase_to_analyze << " data for evid="<<evid
-				<<", orid="<<orid
-				<<".  Location:  "
-				<<deg(h.lat) <<","<<deg(h.lon)<<","<<h.z<<","<<strtime(h.time);      
-			}
-		}
-		else
-		{
-			ts <<"Generic Gather";
-		}
-		data_md.put("title",ts.str());
+		string title;
+		title=psm->plot_title(*tse);
+		if(psm->using_subarrays) title=subarray_title(title,psm->xpe->current_subarray_name);
+		data_md.put("title",title);
 
 		psm->active_setting=psm->asetting_default[phase_to_analyze];
                 stringstream vs;
                 if (!psm->validate_setting(vs) )
 		{
-			if(w != NULL) 
+			if(w != NULL)
 				message_box(psm, vs.str(), w);
 			else
 				psm->record(vs.str());
@@ -692,7 +647,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		//make sure the attributes are appropriate, no coherence display before the
 		//analysis
 		for(int i=0; i<psm->attributes_info.size(); i++) {
-		    if (psm->attributes_info[i].enabled && 
+		    if (psm->attributes_info[i].enabled &&
 			!psm->attributes_info[i].available_before_analysis) {
 			psm->attributes_info[i].enabled=false;
 			XtUnmanageChild(psm->attributes_info[i].w);
@@ -706,7 +661,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		psm->markers.robust_tw=psm->active_setting.robust_tw;
 		psm->markers.beam_color=string("red");
 		psm->markers.robust_color=string("green");
-  		psm->markers.title=ts.str();
+  		psm->markers.title=title;
 
 		XtVaSetValues(psm->seismic_widget,ExmNseiswEnsemble, (XtPointer)(tse),
 		    ExmNseiswMetadata, (XtPointer)(&data_md),ExmNdisplayMarkers,&(psm->markers),
@@ -760,8 +715,8 @@ void sort_picked(Widget w, void * client_data, void * userdata)
 
     XmToggleButtonCallbackStruct *cbs=(XmToggleButtonCallbackStruct *)userdata;
 
-    if (cbs->set == XmUNSET) return; 
-    
+    if (cbs->set == XmUNSET) return;
+
     XtVaSetValues(pane,XmNuserData,n,NULL);
 }
 
@@ -941,20 +896,20 @@ void pick_attributes(Widget w, void * client_data, void * userdata)
     check_box = XmCreateRowColumn (rowcol, (char *) "Check Box", args, i);
 
     for (i = 0; i < psm->attributes_info.size(); i++) {
-        attr_box = XmCreateToggleButtonGadget (check_box, 
+        attr_box = XmCreateToggleButtonGadget (check_box,
 	    (char *)(psm->attributes_info[i].display_name.c_str()), NULL, 0);
-        if (psm->attributes_info[i].enabled) 
+        if (psm->attributes_info[i].enabled)
 	    XtVaSetValues(attr_box,XmNset,XmSET,NULL);
         XtAddCallback (attr_box, XmNvalueChangedCallback, toggled, (XtPointer) i);
         XtManageChild (attr_box);
-	if (psm->get_state() != ANALYZE && psm->get_state() != SAVE && 
+	if (psm->get_state() != ANALYZE && psm->get_state() != SAVE &&
 	    !psm->attributes_info[i].available_before_analysis) {
 	    XtSetSensitive(attr_box,False);
 	}
     }
 
     XtManageChild(check_box);
- 
+
     separator = XmCreateSeparatorGadget (rowcol, (char *) "sep",NULL, 0);
     XtManageChild (separator);
 
@@ -1004,7 +959,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     Arg args[10];
     int i, picked, selected;
     Dimension h;
-    
+
     i=0;
     XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
     sort_dialog=XmCreateDialogShell(get_top_shell(w),(char *) "Sort Options",args,i);
@@ -1107,7 +1062,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
-   
+
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Peak Correlation",NULL,0);
     picked=CORRELATION_PEAK;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
@@ -1229,15 +1184,15 @@ void apply_filter(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
     stringstream ss;
-    /* Here we get the filter number through the userDataresource of the 
+    /* Here we get the filter number through the userDataresource of the
 	radio button parent*/
     Widget pane=XtParent(XtParent(w));
     int n;
     XtVaGetValues(pane,XmNuserData,&n,NULL);
     psm->set_filter(n);
     /* For now we apply filters recursively to accumulate results
-	in a filter chain.  This is done because restore data can 
-	be used to back up to a starting point.  Comment out the 
+	in a filter chain.  This is done because restore data can
+	be used to back up to a starting point.  Comment out the
 	following line to change to always start from base data. */
     /* psm->xpe->restore_original_ensemble();*/
     TimeInvariantFilter cf=psm->get_filter(n);
@@ -1268,7 +1223,7 @@ void pick_filter_options(Widget w, void * client_data, void * userdata)
     Arg args[10];
     int i, picked, selected;
     Dimension h;
-    
+
     i=0;
     XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
     filter_dialog=XmCreateDialogShell(get_top_shell(w),(char *) "Filter Options",args,i);
@@ -1376,7 +1331,7 @@ void report_edit(Widget w, void * client_data, void * userdata)
         if (tse->member[tmp].live) ss<<"Restored ";
         else ss << "Cutoff ";
         ss<<"from trace #"<<tmp+1<<endl;
-      } else ss << "Wrong pick type "<<spick->type<<endl;      	
+      } else ss << "Wrong pick type "<<spick->type<<endl;
     }
 
     psm->record(ss.str());
@@ -1384,7 +1339,7 @@ void report_edit(Widget w, void * client_data, void * userdata)
 
 void toggle_edit(Widget w, void * client_data, void * userdata)
 {
-    XmString str;    
+    XmString str;
     Dimension edit_enable;
     Arg args[8];
     int n;
@@ -1392,16 +1347,16 @@ void toggle_edit(Widget w, void * client_data, void * userdata)
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
 
     XtVaGetValues(psm->seismic_widget,ExmNeditEnable, &edit_enable, NULL);
-  
+
     if (edit_enable==0) {
 	edit_enable=1;
 	str = XmStringCreateLocalized ((char *) "Stop Trace Edit");
 	psm->session_state(TRACE_EDIT);
     } else {
-	edit_enable=0; 
+	edit_enable=0;
 	str = XmStringCreateLocalized ((char *) "Trace Edit");
 	psm->restore_previous_state();
-    }   
+    }
 
     XtVaSetValues(w, XmNlabelString, str, NULL);
     XmStringFree (str);
@@ -1415,7 +1370,7 @@ void toggle_edit(Widget w, void * client_data, void * userdata)
 
 void pick_cutoff(Widget w, void * client_data, void * userdata)
 {
-    
+
     XmString str;
     Dimension edit_enable;
     Arg args[8];
@@ -1447,15 +1402,15 @@ void pick_cutoff(Widget w, void * client_data, void * userdata)
 
 void pick_arrival_callback(Widget w, void * client_data, void * userdata)
 {
-    SeismicPick * spick;    
+    SeismicPick * spick;
     stringstream ss;
-    double tmp; 
+    double tmp;
 
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
 
     XtVaGetValues(w,ExmNseiswPick,&spick,NULL);
     tmp=(double)(spick->get_point().time);
-   
+
     if (spick->type == POINT) {
  	ss << "Time shift is "<<(double)tmp<<endl;
 	psm->xpe->shift_arrivals((double)tmp);
@@ -1477,7 +1432,7 @@ void pick_phase_time(Widget w, void * client_data, void * userdata)
 {
     Widget beam_widget=reinterpret_cast<Widget>(client_data);
     SessionManager * psm;
-    
+
     XtVaGetValues(XtParent(w),XmNuserData,&psm,NULL);
     XtRemoveAllCallbacks(beam_widget,ExmNbtn2Callback);
     XtAddCallback(beam_widget,ExmNbtn2Callback,pick_arrival_callback,psm);
@@ -1529,7 +1484,7 @@ void pick_window_callback(Widget w, void * client_data, void * userdata)
     TimeWindow tmp;
 
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
-    int choice=psm->choice;  
+    int choice=psm->choice;
 
     XtVaGetValues(w,ExmNseiswPick,&spick,NULL);
     tmp=spick->get_window();
@@ -1611,9 +1566,9 @@ void do_analyze(Widget w, void * client_data, void * userdata)
     psm->record(string("Done\n"));
 }
 /*  This next two funtions are a confusing adaptation of the window plotting
-method used for the main display.  We use the "robust_tw" time window to 
+method used for the main display.  We use the "robust_tw" time window to
 hold the estimate of the arrival uncertainty.  This is used in beam plot
-callback below to set deltim in the Metadata area of the beam trace.  
+callback below to set deltim in the Metadata area of the beam trace.
 This pair of procedures are callbacks to the pick error button added by glp
 July 2007.
 */
@@ -1637,7 +1592,7 @@ void pick_error_window_callback(Widget w, void * client_data, void * userdata)
 
 void pick_arrival_error(Widget w, void * client_data, void * userdata)
 {
-    
+
     Widget beam_widget=reinterpret_cast<Widget>(client_data);
     SessionManager * psm;
 
@@ -1646,14 +1601,14 @@ void pick_arrival_error(Widget w, void * client_data, void * userdata)
     XtAddCallback(beam_widget,ExmNbtn3Callback,pick_error_window_callback,psm);
 }
 /* This global seems unavoidable to avoid memory leaks.  Within the block
-below it holds the data for the array beam display.  In an X program which 
+below it holds the data for the array beam display.  In an X program which
 passes around all these opaque pointers, we need manage the memory locally
 and I see no alternative here. */
 TimeSeriesEnsemble *beam_tse(NULL);
 /* This procedure creates the beam plot window and manages it */
 void do_beam_plot(Widget w, void * client_data, void * userdata)
 {
-    Widget rshell_beam, beam_widget, pane, form, btn_arrival;     
+    Widget rshell_beam, beam_widget, pane, form, btn_arrival;
     XWindowAttributes xwa;
     Dimension h;
     int n;
@@ -1667,7 +1622,7 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     pane = XtVaCreateWidget("Beam Plot",
 	xmPanedWindowWidgetClass, rshell_beam,
 	NULL);
-    
+
 
     TimeSeries beam=psm->mcc->ArrayBeam();
     /* beam_tse is a global for this program.  It has to be that
@@ -1681,21 +1636,21 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     beam_display_md.put("title",psm->markers.title);
 
     n=0;
-    /*Previous had this.  This disables callbacks for MB3 
+    /*Previous had this.  This disables callbacks for MB3
     XtSetArg(args[n],(char *) ExmNdisplayOnly,1); n++;
     **************************************/
     XtSetArg(args[n],XmNpaneMinimum,500); n++;
     XtSetArg(args[n],XmNmarginHeight,100);n++;
-    // Don't think this is really necessary or desirable 
+    // Don't think this is really necessary or desirable
     //XtSetArg(args[n],(char *) ExmNcleanupData, static_cast<XtPointer>(beam_tse));n++;
-    
+
     beam_widget=ExmCreateSeisw(pane,(char *) "Beam Plot",args,n);
 
     XtManageChild(beam_widget);
-    /* the Seisw widget always initializes with a NULL data pointer. 
-    The following is necessary to get the data to display and to 
+    /* the Seisw widget always initializes with a NULL data pointer.
+    The following is necessary to get the data to display and to
     show pick markers */
-    
+
     XtVaSetValues(beam_widget,
 		ExmNseiswEnsemble,static_cast<XtPointer>(beam_tse),
 		ExmNseiswMetadata,&beam_display_md,
@@ -1707,7 +1662,7 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
 	XtSetArg(args[n], XmNtopWidget, pane); n++;
 	XtSetArg(args[n],XmNpaneMinimum,50); n++;
 	XtSetArg(args[n],XmNpaneMaximum,100); n++;
-	/* These attach the button widgets to the top and bottom of the parent form 
+	/* These attach the button widgets to the top and bottom of the parent form
 	XtSetArg(args[n],XmNtopAttachment,XmATTACH_FORM); n++;
 	XtSetArg(args[n],XmNbottomAttachment,XmATTACH_FORM); n++;
 	*/
@@ -1727,7 +1682,7 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
 	btninfo.callback=pick_arrival_error;
 	btninfo.callback_data=beam_widget;
 	psm->controls[BTN_ARRIVAL_ERROR]=create_button(tlrc,btninfo);
-	// Manually create this callback to provide for a "Dismiss" 
+	// Manually create this callback to provide for a "Dismiss"
 	// button.  Added Sept 2007 by glp
 /*  Comment out for now.  Crashes for unknown reason.
 	n=0;
@@ -1743,7 +1698,7 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
 			(XtPointer)(rshell_beam));
 	XtManageChild(w_dismiss);
 */
-			
+
 	XtManageChild(tlrc);
 	XtManageChild(pane);
 /* End new stuff */
@@ -1813,8 +1768,8 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 
                 name=psm->attributes_info[index].name;
                 for(i=begin; i<=end; i++) {
-		   // Make this more bombproof against get_double 
-		   // throwing an exception 
+		   // Make this more bombproof against get_double
+		   // throwing an exception
 		   try {
                       x1[i-begin]=tse->member[i-1].get_double(name.c_str());
 		   } catch (MetadataGetError mderr)
@@ -1836,14 +1791,14 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 		    psm->attributes_info[index].graph_widget=NULL;
 		}
 
-                Widget plotWidget=XtVaCreateManagedWidget(name.c_str(), 
- 		    sciplotWidgetClass,w, 
- 		    XtNheight, 250, XtNwidth, 250, 
- 		    XtNplotTitle, "", 
- 		    XtNxLabel, "Values", 
- 		    XtNyLabel, "Trace #", 
- 		    XtNchartType, XtCARTESIAN, 
- 		    XtNshowLegend, false, 
+                Widget plotWidget=XtVaCreateManagedWidget(name.c_str(),
+ 		    sciplotWidgetClass,w,
+ 		    XtNheight, 250, XtNwidth, 250,
+ 		    XtNplotTitle, "",
+ 		    XtNxLabel, "Values",
+ 		    XtNyLabel, "Trace #",
+ 		    XtNchartType, XtCARTESIAN,
+ 		    XtNshowLegend, false,
  		    NULL);
 		psm->attributes_info[index].graph_widget=plotWidget;
 
@@ -1899,13 +1854,13 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 		    tse->member[i-1].get_double((psm->attributes_info[index].name).c_str()));
                 XDrawString(dpy,win,gc,0,ai->str_origin[i-begin],tmp,strlen(tmp));
               }
-	    }    
+	    }
  	    twidth=XTextWidth(fa,tmp,strlen(tmp));
 	    XtVaSetValues(w,XmNpaneMinimum,twidth,XmNpaneMaximum,twidth,NULL);
 
 	    XFreeGC(dpy,gc);
       }
-    
+
 }
 
 void refresh_attr_win(Widget w, void * client_data, void * userdata)
@@ -1923,7 +1878,7 @@ void refresh_attr_win(Widget w, void * client_data, void * userdata)
 		{
 			/* there may be a way to handle this error, but for now
 			we force an exit.  Debugging found this led to inconsistency
-			that ultimately produced a seg fault.  For now only 
+			that ultimately produced a seg fault.  For now only
 			alterative is to exit cleanly with an error. */
 			serr.log_error();
 			exit(-1);
@@ -1931,7 +1886,7 @@ void refresh_attr_win(Widget w, void * client_data, void * userdata)
 	    }
 	}
     }
-    
+
 }
 
 
@@ -2016,7 +1971,7 @@ void do_attr_window(Widget w, void * client_data, void * userdata)
 		XtVaSetValues(wdgt,XmNpaneMinimum,100,XmNpositionIndex,pos_indx,NULL);
 
 		//for drawing area, we need to have expose function
-		if (!psm->attributes_info[i].use_graph)		
+		if (!psm->attributes_info[i].use_graph)
 		    XtAddCallback(wdgt,XmNexposeCallback,update_attributes_display,psm);
 
 		pos_indx++;
@@ -2031,9 +1986,9 @@ void do_attr_window(Widget w, void * client_data, void * userdata)
     XtAddCallback(psm->seismic_widget,ExmNdisplayAttrCallback,refresh_attr_win,psm);
 
 //    XtDestroyWidget(get_top_shell(w));
-} 
+}
 
-//This is just some preliminary list of attributes the time series need 
+//This is just some preliminary list of attributes the time series need
 //to display, we need to have a GUI to let user add one later.
 void init_attr(SessionManager & sm, AttributeInfoRec * air)
 {
@@ -2058,7 +2013,7 @@ void init_attr(SessionManager & sm, AttributeInfoRec * air)
 */
     for(i=0; i<sm.attributes_info.size(); i++) {
 	sm.attributes_info[i].w=XmCreatePanedWindow(sm.parent,(char *) "attribute",NULL,0);
-    }    
+    }
 }
 
 void do_xcor_plot(Widget w, void * client_data, void * userdata)
@@ -2096,8 +2051,6 @@ void do_xcor_plot(Widget w, void * client_data, void * userdata)
             XtPopup (rshell_xcor, XtGrabNone);
 */
 }
-
-
 void save_event(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
@@ -2106,7 +2059,7 @@ void save_event(Widget w, void * client_data, void * userdata)
     if (psm->get_state() != SAVE) {
  	psm->record("Illegal save request\n");
 	return;
-    }   
+    }
 
     int evid,orid;
     evid=psm->get_evid();
@@ -2131,8 +2084,54 @@ void save_event(Widget w, void * client_data, void * userdata)
 			psm->session_state(NEXT_SUBARRAY);
 
 	  }
-	  else
+	  else if(psm->get_processing_mode()==ContinuousDB)
 		psm->session_state(NONE);
+	  else
+	  {
+		  /* This XcorProcessingEngine method clears data already saved and
+		   * posts leftovers to the copy displayed by this program.  This is
+		   * used to allow recursive processing on the same gather. We intentionally
+		   * do not change sessions_state in this case.:w
+		   *
+		   */
+		  int newsize=psm->xpe->clear_already_processed();
+		  ss << "Clearing processed data and refreshing edited gather."
+			<< "  New gather has "<<newsize<<" members."<<endl;
+		  psm->record(ss.str());
+		  if(newsize<=0) 
+			psm->session_state(NONE);
+		  else
+		  {
+			psm->session_state(NEXT_EVENT);
+			/* need to update the display widget or bad things 
+			can happen.  We do not mess with the display
+			markers in this case since we are not changing
+			anything but the contents of the ensemble displayed */
+			TimeSeriesEnsemble *tsetmp=psm->xpe->get_waveforms_gui();
+			/* This seems necessary, although it should not be.
+			seg faults without setting this */
+			Metadata data_md=psm->xpe->get_data_md();
+			/* DEBUG test:  setting display markers because
+			there are hints this is causing a seg fault */
+			XtVaSetValues(psm->seismic_widget,
+				ExmNseiswMetadata, (XtPointer)(&data_md),
+				ExmNdisplayMarkers,&(psm->markers),
+				ExmNseiswEnsemble,(XtPointer)(tsetmp),NULL);
+			/* Not sure this is necessary, but could not hurt.
+			This is duplicate of code in handle_next_event */
+			for(int i=0; i<psm->attributes_info.size(); i++) 
+			{
+                    	  if (psm->attributes_info[i].enabled &&
+                              !psm->attributes_info[i].available_before_analysis) 
+			  {
+                        	psm->attributes_info[i].enabled=false;
+                        	XtUnmanageChild(psm->attributes_info[i].w);
+                          }
+                        }
+
+			
+		  }
+	  }
     } catch (SeisppError serr) {
           ss << "Problems in save_results routine"<<endl;
           serr.log_error();
@@ -2183,15 +2182,12 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 			ss << "Resetting to allow reading next event"<<endl;
 			psm->session_state(NEXT_EVENT);
 		}
-		// Update subarray in title string.  This is minor maintenance
-		// issue.  This depends on the subarray name being the first word in
-		// the current title.
-		string oldtitle(psm->markers.title);
-		int sstart=oldtitle.find_first_of(" ",0);
-		oldtitle.erase(0,sstart);
-		psm->markers.title=psm->xpe->current_subarray_name+oldtitle;
+		TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+		string title=psm->plot_title(*tse);
+		title=subarray_title(title,psm->xpe->current_subarray_name);
 		Metadata data_md=psm->xpe->get_data_md();
-		data_md.put("title",psm->markers.title);
+		data_md.put("title",title);
+		psm->markers.title=title;
 		XtVaSetValues(psm->seismic_widget,
 			ExmNseiswMetadata, (XtPointer)(&data_md),
 			ExmNdisplayMarkers,&(psm->markers),NULL);
@@ -2212,7 +2208,7 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 		ss << "No more subarrays for this event.  Push button to read next event"<<endl;
 	}
         psm->record(ss.str());
-	// This forces a redraw 
+	// This forces a redraw
     	Display *dpy=XtDisplay(w);
     	Window win=XtWindow(w);
 	XClearArea(dpy,win,0,0,0,0,true);
@@ -2245,14 +2241,14 @@ void subarray_toggle(Widget w, void *client_data, void *userdata)
 	psm->xpe->current_subarray=0;
 	// This restores the original data in either direction.
 	restore_data(w,client_data,userdata);
-	// Call the routine to load subbarray 1 as the active ensemble 
+	// Call the routine to load subbarray 1 as the active ensemble
 	load_next_subarray(w,client_data,userdata);
 }
-/* This is a new set of gizmos added summer 2008.  Capability added is to ability to 
+/* This is a new set of gizmos added summer 2008.  Capability added is to ability to
 repair cycle skip errors interactively and ability to interactively change polarity of any
 trace in a gather */
 
-/*  I know it is evil to have a global variable like this, but it 
+/*  I know it is evil to have a global variable like this, but it
 solves a practical problem here that makes is useful. Otherwise
 we'd have to pass this thing through the widget, which I consider
 more dangerous than this. */
@@ -2272,7 +2268,7 @@ void handle_tweeker_time(Widget w, void *client_data, void *userdata)
 	int trace_picked=spick->get_trace_number();
 	if(trace_picked==XcorTraceNumber)
 	{
-		/* The pick sign needs to be reversed for use below.  I 
+		/* The pick sign needs to be reversed for use below.  I
 		could change the code below, but this makes the parallel
 		to the template routines that do this for an ensemble
 		clearer. */
@@ -2305,7 +2301,7 @@ void handle_tweeker_time(Widget w, void *client_data, void *userdata)
 		data held by this widget. */
 		tweeker_tse->member[0].t0 -= tpicked;
 		tweeker_tse->member[XcorTraceNumber].t0 -= tpicked;
-		
+
 		// We need to refresh the parent display to have the shift take effect.
 		XClearArea(XtDisplay(psm->seismic_widget),XtWindow(psm->seismic_widget),
 			0,0,0,0,true);
@@ -2323,11 +2319,11 @@ void handle_tweeker_time(Widget w, void *client_data, void *userdata)
 void pick_tweeker_time(Widget w, void * client_data, void * userdata)
 {
     SessionManager *psm=reinterpret_cast<SessionManager *> (client_data);
-    
+
     XtRemoveAllCallbacks(psm->tweeker_widget,ExmNbtn2Callback);
     XtAddCallback(psm->tweeker_widget,ExmNbtn2Callback,handle_tweeker_time,psm);
 }
-/* This is initiated by a Btn2 click on a trace in the parent display when the 
+/* This is initiated by a Btn2 click on a trace in the parent display when the
 tweeking mode button is pushed.  */
 void pick_tweekdata_callback(Widget w, void *client_data, void *userdata)
 {
@@ -2363,11 +2359,11 @@ void pick_tweekdata_callback(Widget w, void *client_data, void *userdata)
 	tweeker_tse->member.push_back(xcordata);
 	/* Autoscale by peak amplitude */
 	MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>(*tweeker_tse,gain_keyword);
-	/* Note the 3rd arg set true means use 1/amplitude as scale, which 
+	/* Note the 3rd arg set true means use 1/amplitude as scale, which
 	is the correct form here. */
 	ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>(*tweeker_tse,gain_keyword,true);
 	/* Safest to push this to all members of the ensemble. Since it this only has
-	three members a small overhead for robustness.  This is an underhanded way to 
+	three members a small overhead for robustness.  This is an underhanded way to
 	pass the original ensemble member downstream */
 	for(int ii=0;ii<3;++ii) tweeker_tse->member[ii].put("member_number",i);
 	ss << "Creating display to pick time shift for trace number "<< i<<endl;
@@ -2376,12 +2372,12 @@ void pick_tweekdata_callback(Widget w, void *client_data, void *userdata)
 	rshell=XtVaCreatePopupShell ("Cycle Skip Repair",topLevelShellWidgetClass, get_top_shell(w),
                 XmNtitle,"Fix Cycle Skip Window",XmNallowShellResize,True,XmNwidth,800,XmNheight,800,
                 XmNdeleteResponse,XmUNMAP,NULL);
-	/* We need a paned window to allow us to put some control buttons on the bottom of the 
+	/* We need a paned window to allow us to put some control buttons on the bottom of the
 	window */
 	pane = XtVaCreateWidget("Cycle Skip Repair",xmPanedWindowWidgetClass, rshell,NULL);
-	
-	/* Now we want to put the seisw widget display in the top part of the pane.  To do 
-	this we first create the widget similar to the code in do_beam_plot.  
+
+	/* Now we want to put the seisw widget display in the top part of the pane.  To do
+	this we first create the widget similar to the code in do_beam_plot.
 	Size is generous in case mod are needed.  Note used in two places
 	in this function. */
 	Arg args[10];
@@ -2408,7 +2404,7 @@ void pick_tweekdata_callback(Widget w, void *client_data, void *userdata)
 	tweeker_markers.robust_tw.start=0.0;
 	tweeker_markers.robust_tw.end=0.0;
 	tweeker_markers.title="Manual Picker";
-	
+
 	/* This actually loads data for the display and initiates the plot */
 	XtVaSetValues(psm->tweeker_widget,
 		ExmNseiswEnsemble,static_cast<XtPointer>(tweeker_tse),
@@ -2466,7 +2462,7 @@ void polarity_switch_callback(Widget w, void *client_data, void *userdaa)
 {
 	SeismicPick *spick;
 	stringstream ss;
-	
+
 	SessionManager *psm=reinterpret_cast<SessionManager *>(client_data);
 	TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
 	/* This enables the picker to get trace number and simultaneously
@@ -2493,11 +2489,11 @@ void polarity_switch_callback(Widget w, void *client_data, void *userdaa)
 	}
 	psm->record(ss.str());
 }
-	
+
 
 /* This small routine enables a mode for flipping the polarity of a trace the user
 points to and clicks with MB2.  It works like the widget for trace editing in many
-ways, but is implemented totally differently.  Peng implemented trace editing in 
+ways, but is implemented totally differently.  Peng implemented trace editing in
 the widget, but here we make this a different callback used only by the dbxcor interface.
 */
 void enable_polarity_switching(Widget w, void *client_data, void *userdata)
@@ -2534,8 +2530,8 @@ void usage(char *use)
         exit(-1);
 }
 
-void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * options_menu, 
-      	MenuItem * view_menu, SessionManager &sm) 
+void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * options_menu,
+      	MenuItem * view_menu, SessionManager &sm)
 {
     sm.controls[MENU_FILE_SAVE]=file_menu[0].w;
     sm.controls[MENU_FILE_EXIT]=file_menu[1].w;
@@ -2558,7 +2554,7 @@ bool SEISPP::SEISPP_verbose=false;
 /*******************************************************************************
 main: Set up the application
 *******************************************************************************/
-int 
+int
 main (int argc, char **argv)
 {
   Display	*display;
@@ -2588,7 +2584,7 @@ main (int argc, char **argv)
   ios::sync_with_stdio();
   elog_init(argc,argv);
 
-  if(argc<2) 
+  if(argc<2)
   {
     cbanner(rev,use,author,loc,email);
     usage(use);
@@ -2668,19 +2664,19 @@ main (int argc, char **argv)
       fprintf (stderr,"\n%s:  Can't open display\n", argv[0]);
       exit(1);
     }
-  
+
 
   shell = XtVaAppCreateShell(argv[0], APP_CLASS, applicationShellWidgetClass,
 			     display, XmNallowShellResize, True, NULL);
 */
-/*  Alternative from one book.  Did not work in Solaris 
+/*  Alternative from one book.  Did not work in Solaris
   shell = XtVaOpenApplication(&AppContext, APP_CLASS, NULL,0,
 	&argc,argv,NULL,applicationShellWidgetClass,NULL,XmNallowShellResize, True,0);
 */
  /* Here is another initialization method. */
   XtSetLanguageProc(NULL, NULL, NULL);
   shell = XtVaAppInitialize(&AppContext, APP_CLASS,NULL,0,&argc,argv, NULL,NULL);
-			     
+
 
   //create first level form widget
   flrc=XmCreateForm(shell,(char *) APP_CLASS,NULL,0);
@@ -2688,7 +2684,7 @@ main (int argc, char **argv)
   //first row of the flrc
   /* Create the menu bar */
   menu_bar = XmCreateMenuBar(flrc, (char *) "menuBar", NULL, 0);
-  XtVaSetValues (menu_bar, XmNtopAttachment,  XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, 
+  XtVaSetValues (menu_bar, XmNtopAttachment,  XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM,
 	XmNrightAttachment, XmATTACH_FORM, NULL);
 
   MenuItem file_menu[]={
@@ -2742,8 +2738,8 @@ main (int argc, char **argv)
 		 XmNtopWidget, menu_bar,
                  XmNbottomAttachment, XmATTACH_FORM,
                  NULL);
-  
-  /*create paned window 
+
+  /*create paned window
   This is an outer paned window split with the seismic display
   on top and the message log portion at the bottom.  Attachment
   parameters tie the display to the upper left corner.
@@ -2763,7 +2759,7 @@ main (int argc, char **argv)
 	NULL);
 
 
-  //Use the second paned window to ensure that when attributes are 
+  //Use the second paned window to ensure that when attributes are
   //displayed, they are laid out horizontally.
   second_paned_win=XtVaCreateWidget((char *)"panel",
 	xmPanedWindowWidgetClass, paned_win,
@@ -2802,7 +2798,7 @@ main (int argc, char **argv)
   sm.msg_w = XmCreateScrolledText (paned_win, (char *) "msg_w", args, n);
   XtManageChild (sm.msg_w);
 
-  //create the third level row column widget 
+  //create the third level row column widget
   n=0;
 
 /*
@@ -2830,7 +2826,7 @@ main (int argc, char **argv)
   	btninfo.label=(char *) "Next Gather";
   	btninfo.callback=get_next_event;
   	btninfo.callback_data=&sm;
-  	sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  
+  	sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);
   } else {
 	Tks_SetVerbose();
 	Display *display=XtDisplay(shell);
@@ -2856,7 +2852,7 @@ main (int argc, char **argv)
   btninfo.label=(char *) "Load Next Subarray";
   btninfo.callback=load_next_subarray;
   btninfo.callback_data=&sm;
-  sm.controls[BTN_NEXTSUB]=create_button(tlrc,btninfo);  
+  sm.controls[BTN_NEXTSUB]=create_button(tlrc,btninfo);
 
   btninfo.label=(char *) "Pick Ref Trace";
   btninfo.callback=pick_ref_trace;
@@ -2935,11 +2931,11 @@ main (int argc, char **argv)
 		}
 		parts = split( msg, ' ' );
 		if( maxtbl( parts ) != 2 ) {
-      			fprintf (stderr,"\n%s: error parsing Tk input msg '%s'\n", 
+      			fprintf (stderr,"\n%s: error parsing Tk input msg '%s'\n",
 				argv[0], msg);
 			Tks_ClearAppName( tks, const_cast<char *>(appname.c_str()) );
 			exit(1);
-		} 
+		}
 		orid = atoi( (char *) gettbl( parts, 0 ) );
 		string phase_to_analyze( (char *) gettbl( parts, 1 ) );
 		handle_next_event( orid, phase_to_analyze, NULL, &sm );

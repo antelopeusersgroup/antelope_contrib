@@ -361,6 +361,13 @@ trace_mdl	&Tbl{
     dir string
     foff int 
 }
+plot_title_mdl &Tbl{
+source_lat real
+source_lon real
+source_depth real
+evid int
+orid int
+}
 ensemble_mdl  &Tbl{
 source_lat real
 source_lon real

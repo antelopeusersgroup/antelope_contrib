@@ -1,7 +1,34 @@
+#include <algorithm>
+#include "Metadata.h"
 #include "session_manager.h"
 
 using namespace std;
 using namespace SEISPP;
+void constructor_warning(string attribute)
+{
+	cerr << "Warning (session_manager constructor):  "
+	  << "plot_title_mdl requests attribute="<<attribute
+	  << " but this attribute is not in ensemble_mdl"
+	  << " or is not a legal type for a title"
+          <<endl
+	  <<"This attribute will not be displayed.  "
+	  <<"Edit parameter file to fix this problem"
+	  <<endl;
+}
+
+/* Similar to a find() algorithm but done with a stupid linear search.
+Needed because MetadataList does not have required operators to use the generic algorithm.
+Not much of an issue as these lists can never be a large enough that a linear search is a problem.
+Returns true if the tag of mptr is found in mdl. */
+bool mdlcheck(MetadataList& mdl, MetadataList::iterator mptr)
+{
+	MetadataList::iterator mloop;
+	for(mloop=mdl.begin();mloop!=mdl.end();++mloop)
+	{
+		if(mloop->tag == mptr->tag) return true;
+	}
+	return false;
+}
 
 SessionManager::SessionManager(string pfname, string hname, string lname, string wdbname, string rdbname)
 {
@@ -47,6 +74,35 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 	throw SeisppError(string("session_manager(constructor):  pfread failed on ")
 			+pfname);
     try {
+	/* First extract these entities using pf interface.  Not elegant to 
+	mix these, but simplifies this application. */
+	MetadataList ensemble_mdl=pfget_mdlist(pf,"ensemble_mdl");
+	MetadataList title_mdl=pfget_mdlist(pf,"plot_title_mdl");
+	MetadataList::iterator tptr;
+	for(tptr=title_mdl.begin();tptr!=title_mdl.end();++tptr)
+	{
+		if(mdlcheck(ensemble_mdl,tptr))
+		{
+			switch(tptr->mdt)
+			{
+			case MDstring:
+				generic_title_strings.push_back(tptr->tag);
+				break;
+			case MDint:
+				generic_title_ints.push_back(tptr->tag);
+				break;
+			case MDreal:
+				generic_title_reals.push_back(tptr->tag);
+				break;
+			default:
+				constructor_warning(tptr->tag);
+			};
+		}
+		else
+		{
+			constructor_warning(tptr->tag);
+		}
+	}
 	Metadata smcontrol(pf);
 	/* Initialize dbh as default.  This REQUIRES that it be set
 	later using a handle acquired from XcorProcessingEngine.
@@ -599,4 +655,55 @@ void SessionManager::modify_filter(string name,TimeInvariantFilter& filt)
 	{
 		available_filters[fptr->second]=filt;
 	}
+}
+string SessionManager::plot_title(TimeSeriesEnsemble& tse)
+{
+	stringstream tss;
+	list<string>::iterator key;
+	string sval;
+	int ival;
+	double rval;
+	/* procmode is a private variable of the session manager so we
+	don't need to use the method used to fetch it */
+	switch(procmode)
+	{
+	case ContinuousDB:
+	case EventGathers:
+		tss<<current_phase
+			<< " data for evid="<<evid
+			<<" and orid="<<orid;
+	case GenericGathers:
+	default:
+		/* write strings, then int, then real.  Silently skip
+		all entries not stored with ensemble */
+		for(key=generic_title_strings.begin();
+			key!=generic_title_strings.end();++key)
+		{
+			try {
+				sval=tse.get_string(*key);
+				tss<<" "<< (*key) <<"="<<sval;
+			} catch (MetadataGetError mde){};
+		}
+		for(key=generic_title_ints.begin();
+			key!=generic_title_ints.end();++key)
+		{
+			try {
+				ival=tse.get_int(*key);
+				tss<<" "<< (*key) <<"="<<ival;
+			} catch (MetadataGetError mde){};
+		}
+		for(key=generic_title_reals.begin();
+			key!=generic_title_reals.end();++key)
+		{
+			try {
+				rval=tse.get_double(*key);
+				tss<<" "<< (*key) <<"="<<rval;
+			} catch (MetadataGetError mde){};
+		}
+		
+	};
+	string result=tss.str();
+	/* trim result if it is too long to no more than 80 characters */
+	if(result.length()>80) result.erase(80);
+	return(result);
 }
