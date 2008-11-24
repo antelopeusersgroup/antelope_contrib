@@ -2517,6 +2517,78 @@ void enable_polarity_switching(Widget w, void *client_data, void *userdata)
 	XtAddCallback(psm->seismic_widget,ExmNbtn2Callback,polarity_switch_callback,psm);
     }
 }
+/* This an the next procedure implement a manual pick function on the main display.
+enable_display_mpicker is the callback hooked to a button on the main display.
+main_display_manual_picker is a callback enabled for mb2 on the main display
+by the former. These are very similar to the polarity editor callbacks above.*/
+void main_display_manual_picker(Widget w, void *client_data,void *userdata)
+{
+	SeismicPick *spick;
+	stringstream ss;
+
+	SessionManager *psm=reinterpret_cast<SessionManager *>(client_data);
+	TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+	
+	/*enable the picker to get the pick time */
+	XtVaGetValues(w,ExmNseiswPick,&spick,NULL);
+	double time_picked=spick->get_point().time;
+	int trace_picked=spick->get_trace_number();
+
+	if((trace_picked<0) || (trace_picked>=tse->member.size()) )
+	{
+		ss << "ERROR:  Trace number "<<trace_picked
+			<< " picked is outside range of ensemble"
+			<<endl;
+	}
+	else
+	{
+		int i=trace_picked;  //convenient shorthand
+		/* Apply pick times and update display */
+		tse->member[i].put(moveout_keyword,time_picked);
+		/*
+		psm->mcc->xcor.member[i].put(moveout_keyword,time_picked);
+		psm->mcc->xcor.member[i].t0 -= time_picked;
+		*/
+		double tshift=tse->member[i].get_double(arrival_time_key);
+		tse->member[i].rtoa(tshift);
+		tshift+=time_picked;
+		tse->member[i].ator(tshift);
+		tse->member[i].put(arrival_time_key,tshift);
+		/*WARNING WARNING WARNING:  this is currently 
+		set as a const string in XcorProcessingEngine.cc.
+		If that line is ever changed this will break. */
+		tse->member[i].put("processed",true);
+		ss << "Shifting pick for trace number "
+			<< i << " by "
+			<< tshift <<" seconds."
+			<<endl;
+		XClearArea(XtDisplay(w),XtWindow(w),
+		    0,0,0,0,true);
+	}
+	psm->record(ss.str());
+}
+void enable_display_mpicker(Widget w, void *client_data, void *userdata)
+{
+    Widget data_display_widget=reinterpret_cast<Widget>(client_data);
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    XmString str;
+    SessionState current_state=psm->get_state();
+    if(current_state==MANUAL_PICKING)
+    {
+	psm->restore_previous_state();
+        str = XmStringCreateLocalized ((char *) "Manual Picking");
+        XtVaSetValues(w, XmNlabelString, str, NULL);
+    }
+    else
+    {
+        psm->session_state(MANUAL_PICKING);
+        str = XmStringCreateLocalized ((char *) "Stop Manual Picking");
+        XtVaSetValues(w, XmNlabelString, str, NULL);
+	XtRemoveAllCallbacks(psm->seismic_widget,ExmNbtn2Callback);
+	XtAddCallback(psm->seismic_widget,ExmNbtn2Callback,main_display_manual_picker,psm);
+    }
+}
+	
 
 void exit_gui(Widget w, void * uesless1, void * useless2)
 {
@@ -2882,10 +2954,15 @@ main (int argc, char **argv)
   btninfo.callback=pick_cutoff;
   sm.controls[BTN_PICK_CUTOFF]=create_button(tlrc,btninfo);
 
-  btninfo.label=(char *) "Enable Manual Picking";
+  btninfo.label=(char *) "Magnify Picking";
   btninfo.callback=enable_cycle_skip_picking;
   btninfo.callback_data=&sm;
   sm.controls[BTN_TWEEKER]=create_button(tlrc,btninfo);
+
+  btninfo.label=(char *) "Manual Picking";
+  btninfo.callback=enable_display_mpicker;
+  btninfo.callback_data=&sm;
+  sm.controls[BTN_MANUAL_PICKING]=create_button(tlrc,btninfo);
 
   btninfo.label=(char *) "Polarity Edit";
   btninfo.callback=enable_polarity_switching;
@@ -2906,7 +2983,7 @@ main (int argc, char **argv)
 
   XtRealizeWidget(shell);
 
-  sm.session_state();
+  sm.session_state(NONE);
 
   if(tks!=NULL)
   {

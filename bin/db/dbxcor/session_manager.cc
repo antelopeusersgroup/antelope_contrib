@@ -322,6 +322,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
+	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	case NEXT_SUBARRAY:
 	    sensitive[BTN_NEXTSUB]=true;
@@ -344,6 +345,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
+	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	case REF:
             sensitive[BTN_NEXTEV]=true;
@@ -368,6 +370,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
+	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	case ANALYZE:
             sensitive[BTN_NEXTEV]=true;
@@ -399,6 +402,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_VIEW_SNR]=true;
 	    sensitive[BTN_TWEEKER]=true;
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
+	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
   	case SAVE:
             sensitive[BTN_NEXTEV]=true;
@@ -432,6 +436,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_VIEW_SNR]=true;
 	    sensitive[BTN_TWEEKER]=true;
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
+	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	case TRACE_EDIT:
 	    sensitive[BTN_PICKS_TEDIT]=true;
@@ -449,6 +454,9 @@ void SessionManager::session_state(SessionState s)
 	    break;
 	case POLARITY_SWITCHING:
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
+	    break;
+	case MANUAL_PICKING:
+	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	default:
 	    break;
