@@ -98,4 +98,35 @@ modules &Arr{
 			man/man3/pythonstock.3p
 		}
 	}
+	isi2orb &Arr{
+		build &Tbl{
+			src/contrib/bin/rt/isi2orb
+		}
+		package &Tbl{
+			include/libisi_iacp.h 
+			include/libisi_isi.h 
+			include/libisi_logio.h 
+			include/libisi_list.h 
+			include/libisi_platform.h 
+			include/libisi_stdtypes.h 
+			include/libisi_util.h 
+			static/libisi.a 
+			man/man3/libisi.3 
+			doc/ext/isi/isi.pdf 
+			doc/ext/isi/iacp.pdf 
+			bin/isi2orb 
+			data/pf/isi2orb.pf 
+			man/man1/isi2orb.1 
+		}
+	}
+	rtkill &Arr{
+		build &Tbl{
+			src/contrib/bin/rt/rtkill
+		}
+		package &Tbl{
+			bin/rtkill 
+			data/pf/rtkill.pf 
+			man/man1/rtkill.1 
+		}
+	}
 }
