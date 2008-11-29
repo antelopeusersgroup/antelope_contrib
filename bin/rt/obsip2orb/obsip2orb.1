@@ -3,7 +3,7 @@
 obsip2orb \- Send OBSIP waveform data to orb
 .SH SYNOPSIS
 .nf
-\fBobsip2orb\fP [-v] [-n] [-l] [-c orbclient]
+\fBobsip2orb\fP [-v] [-X] [-n] [-c orbclient]
                 \fIorb dbin [dbin2 [dbin3 ...]]\fP
 .fi
 .SH DESCRIPTION
@@ -14,8 +14,11 @@ then sorts by station-channel-time before sending the data to the orb.
 
 There are two checks which are made before data are sent to the orb.  The first check is 
 to see if \fIorb\fP is allowing connections.  The second check is to see if the
-orbclient (usually orb2orb) is connected that will read the miniseed packets.  This is required
-to make sure that the data are not written to the orb to quickly.
+orbclient (usually orbmsd2days or orb2orb) that will read the miniseed packets is connected.  
+This is required to make sure that the data are not written to the orb to quickly.
+
+\fBobsip2orb\fP will write a temporary local \fIminiseed2orb_obsip.pf\fP file that is 
+used to control the \fBminiseed2orb\fP instance. 
 
 .IP \fIorb\fP 
 orb to send data to.
@@ -27,9 +30,11 @@ verbose
 .IP -n
 Does not send any data, only shows commands which would have been executed.
 .IP "-c orbclient"
-Orbclient which will read mseed data packets from orb.  Default is orbclient is orb2orb.
-.IP -l
-makes sure that lag of orbclient is reduced to 0.10 before started next db.
+Orbclient which will read mseed data packets from orb.  Default is orbclient is orbmsd2days.
+.IP -X
+Expert mode.  This removes the throttling of \fBminiseed2orb\fP.  Use of this option requires 
+a complete understanding of the end-to-end dataflow and buffering.  It is extremely easy to lose 
+data in this mode.
 
 .SH ENVIRONMENT
 needs to have sourced $ANTELOPE/setup.csh.  
