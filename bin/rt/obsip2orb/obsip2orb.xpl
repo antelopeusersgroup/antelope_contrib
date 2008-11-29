@@ -17,7 +17,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
     if ( ! &Getopts('Xc:nv') || @ARGV < 2 ) { 
         $pgm = $0 ; 
         $pgm =~ s".*/"" ;
-        die ( "\nUsage: $0  [-v] [-X] [-n] orb dbin [dbin2 [dbin3 ...]] \n\n" ) ; 
+        die ( "\nUsage: $0  [-c orbclient] [-v] [-X] [-n] orb dbin [dbin2 [dbin3 ...]] \n\n" ) ; 
     }
     
     elog_notify("$0");
