@@ -150,6 +150,10 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 		{
 			++current_record;
 		}
+		if(current_record>=records_in_this_view)
+			AtEOF=true;
+		else
+			AtEOF=false;
 	    }
 	    //if(flock(fd,LOCK_UN))
 	    rewind(fp);
