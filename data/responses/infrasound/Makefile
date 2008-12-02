@@ -1,8 +1,8 @@
 DATADIR=responses
 DATA= \
-	chaparral  \
+	chaparral_25  \
 	mb2000_fil \
-	mb2000_raw \ 	
+	mb2000_raw \
 	validyne    	
                 
 include $(ANTELOPEMAKE)  	
