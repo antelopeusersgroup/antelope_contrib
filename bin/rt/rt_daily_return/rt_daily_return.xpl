@@ -93,8 +93,9 @@
     while ($time < $endtime)  {
         elog_notify( sprintf ("\nprocessing gap for day %s",strydtime($time)));
         $etime = $time + 86399.999 ;
-        $cmd  = "dbjoin $dbin.deployment site | dbsubset - \"epoch(ondate)< $time && deployment.endtime > $etime\" ";
-        $cmd .= "| dbjoin - sensor | dbsubset - \"sensor.time < $time && sensor.endtime > $etime\" ";
+        $cmd  = "dbjoin $dbin.deployment site | dbsubset - \"epoch(ondate) <= $time && deployment.endtime >= $etime\" ";
+        $cmd .= "| dbjoin - sensor | dbsubset - \"sensor.time <= $time && sensor.endtime >= $etime\" ";
+        $cmd .= "| dbseparate - sensor ";
         $cmd .= "| rtoutage -t -N -S -d $dbout ";
         $cmd .= "-z " if $opt_z;
         $cmd .= "-n $opt_n " if $opt_n;
