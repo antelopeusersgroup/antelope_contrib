@@ -205,11 +205,13 @@ for db.record in range(db.query(dbRECORD_COUNT)):
     fromdesc = server_description(fromaddress, fromport)
     todesc = server_description(toaddress, toport)
 
-    G.add_node(fromdesc)
-    G.add_node(todesc)
+    if(not G.has_node(fromdesc)):
+        G.add_node(fromdesc)
+        set_nodecolor(fromdesc)
 
-    set_nodecolor(fromdesc)
-    set_nodecolor(todesc)
+    if(not G.has_node(todesc)):
+        G.add_node(todesc)
+        set_nodecolor(todesc)
 
     G.add_edge(fromdesc, todesc, label=strtdelta(latency).strip())
 
