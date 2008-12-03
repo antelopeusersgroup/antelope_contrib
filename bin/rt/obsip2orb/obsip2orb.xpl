@@ -9,18 +9,30 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
 
 {    
     my ( $dbin, $orbname, $orb, $orbclient, $nfiles, $file, $cmd, $row);
-    my ( $pgm, $result, $client, $when, $check, $found);
+    my ( $pgm, $result, $client, $when, $check, $found, $usage, $host, $stime);
     my ( @dbin, @dbwfdisc, @clients, @pffiles);
+
+    $pgm = $0 ; 
+    $pgm =~ s".*/"" ;
+    elog_init($pgm, @ARGV);
+    $cmd = "\n$0 @ARGV" ;
+    
 #
 #  get arguments
 #
     if ( ! &Getopts('Xc:nv') || @ARGV < 2 ) { 
-        $pgm = $0 ; 
-        $pgm =~ s".*/"" ;
-        die ( "\nUsage: $0  [-c orbclient] [-v] [-X] [-n] orb dbin [dbin2 [dbin3 ...]] \n\n" ) ; 
+        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-X] [-n] \n" ;
+        $usage .=  "	[-c orbclient]  \n" ;
+        $usage .=  "	orb dbin [dbin2 [dbin3 ...]]\n\n"  ; 
+        
+        elog_notify($cmd) ; 
+        elog_die ( $usage ) ; 
     }
     
-    elog_notify("$0");
+    elog_notify($cmd) ; 
+    $stime = strydtime(now());
+    chop ($host = `uname -n` ) ;
+    elog_notify ("\nstarting execution on	$host	$stime");
     
     $orbclient  = $opt_c || "orbmsd2days" ;
 
@@ -86,7 +98,8 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
         foreach $row (0..$nfiles-1) {
             $dbwfdisc[3] = $row;
             $file = dbextfile(@dbwfdisc);
-            $cmd = "miniseed2orb -p miniseed2orb_obsip -u $file $orbname";
+            $cmd  = "miniseed2orb -p miniseed2orb_obsip -u $file $orbname";
+            $cmd .= "miniseed2orb -p miniseed2orb_obsip -u $file $orbname";
             elog_notify("\n$cmd") if $opt_v;
             system($cmd) unless $opt_n;
         }    
@@ -94,7 +107,11 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
     
     orbclose($orb);
     unlink("miniseed2orb_obsip.pf") if (-e "miniseed2orb_obsip.pf");
-    exit;
+
+    $stime = strydtime(now());
+    elog_notify ("completed successfully	$stime\n\n");
+    
+    exit(0);
 }
 
 
