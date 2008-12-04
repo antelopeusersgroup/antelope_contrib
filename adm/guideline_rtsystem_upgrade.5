@@ -1,0 +1,175 @@
+.TH guideline_rtsystem_upgrade 5 "$Date$"
+.SH NAME
+guideline_rtsystem_upgrade \- upgrade a real-time system to the latest antelope release
+
+.SH DESCRIPTION
+Each new Antelope release generally requires upgrading the existing real-time system pf directories and the file rtexec.pf. This is the best time to review, update, and clean-up existing real-time systems. Extremely simple real-time systems may not require any actual upgrade while more complex real-time systems will most likely require an upgrade; it is best if all existing real-time systems are inspected at this time. The following steps outline the procedure and minimize potential problems. Shortcuts are not advised. 
+
+.SS 1.  Prepare for the transition.
+Print out a copy of the new release $ANTELOPE/Changes.txt. Read through the first few pages to become familiar with the newchanges for this release. The bulk of this document consists of the "Detailed Changes from Logs" section. These changes are listed alphabetically by program. Refer to this repeatedly during the release conversion.
+
+Depending on the complexity of your system, allot yourself anywhere from a long morning to a week, to complete all the upgrades and test the upgraded real-time system.
+
+If your network contains several real-time systems (i.e. several rtexec.pf files and associated directory structures, running one or more orbs each), it's probably best to start with the most complex one first. It may be advisable to upgrade this real-time system, test it, solve any problems/issues, and then proceed to upgrade other, simpler real-time systems. This way if, during testing, there are changes to your upgraded pf files these changes can be directly incorporated into the other real-time system upgrades.
+
+Consider keeping a log of pf file changes (create file: changes_pf4-10.log) for your entire system for each release. This can be particularly useful when more than one person needs to know about updates to the real-time systems. Document all the existing real-time system locations in your network here and keep track of which systems have been upgraded.
+
+Finally,a real-time system is an operational system and needs to be kept scrupulously clean. Parameter files not in use should be stored elsewhere (e.g. pf_archive/) and rtexec.pf should be kept clean as well. For recommendations on protocol and naming conventions see:
+.br
+\fIhttp://www.lindquistconsulting.com/rtexec_style.php\fP.
+
+For each real-time system, complete steps 2 through 6. 
+
+.SS 2.  Update rtexec.pf
+Copy the default rtexec.pf to the running rt-system directory and append the current release number to the new file.
+
+.nf
+	% pfcp rtexec rtexec_4.10
+.fi
+
+View old pf file and new pf file side by side. Copy old rtexec.pf parameter settings into new pf file on a line by line basis (e.g. rtexec_4.10.pf). 
+
+.SS 3.  Prepare an updated pf directory. 
+Create a new (empty) pf directory called pf_\fInewversion\fP in the existing real-time system directory.
+
+.nf
+	% mkdir pf_4.10
+.fi
+
+Starting with the first pf file in the existing pf dir, compare the pf_revision_time at the bottom of the pf file with the pf_revision_time in $ANTELOPE/data/pf/\fIprogram.pf\fP and check Changes.txt for any changes to that program. For example, compare
+
+.nf
+	pf/dbevents.pf 				pf_revision_time 1107501685 
+	$ANTELOPE/data/pf/dbevents.pf 		pf_revision_time 1208943055 
+.fi
+
+\fBa)\fP  If the pf revision times are the same, then copy the existing pf file to the new pf directory, update your changes log (file: changes_pf4-10.log), and proceed to the next pf file in the pf directory.
+
+.nf
+	% cp pf/dbevents.pf pf_4.10/dbevents.pf
+.fi
+
+ELSE
+
+\fBb)\fP  If, as shown above, the pf revision times differ,then copy the new release pf file to the new pf directory
+
+.nf
+	% pfcp dbevents.pf pf_4.10/.
+.fi
+
+and compare the old and new pf files side by side. Line by line, update the new pf file in the new directory (pf_4.10) with the old pf settings (copy & paste come in useful, preventing typos). Read the man page to understand new parameters. Refer to Changes.txt for changes to that program. Update your changes log (file: changes_pf4-10.log).
+
+Proceed to the next pf file in the pf directory.
+
+When all pf files have been reviewed and installed in the new pf dir (pf_4.10) then proceed to step 4.
+
+.SS 4.  Backup existing rtexec files and pf directories before proceeding any further.
+
+.nf
+	% cp rtexec.pf rtexec_bkup_4.9 
+	% cp rtexec.pf_4.10 rtexec_bkup_4.10 
+
+	% cp -r pf pf_bkup_4.9 
+	% cp -r pf_4.10 pf_bkup_4.10
+.fi
+
+.SS 5.  Test new pf files. 
+\fBa)  STOP real-time system.\fP Set all processes to "do not run". 
+
+If this is the most complex of the existing real-time systems it is likely that it is being fed data through an import orb. For a properly set-up network, it is extremely unlikely that any data will be lost in the switch over and testing process as data acquired during this time should still be available on the import orb or possibly on the datalogger (when the import real-time system itself is being upgraded, a very small amount of data may be lost depending on your set-up. If there's a backup import orb consider upgrading that one first, testing it, then switching to it, upgrading the primary import orb and switching back to it. Hopefully any upgrade issues have already been worked out on the most complex real-time system, enabling upgrades of other network real-time systems to proceed swiftly).
+
+Switch the rtexec files and the pf directories by renaming the rtexec files and renaming the old pf directory to pf_\fIoldversion\fP and renaming the new directory to pf:
+
+.nf
+	% mv rtexec.pf rtexec.pf_4.9
+	% mv rtexec.pf_4.10 rtexec.pf 
+	% mv pf pf_4.9
+	% mv pf_4.10 pf
+.fi
+
+Check that user rt has sourced the new antelope release (echo $ANTELOPE; source $ANTELOPE/setup.csh) and double check that the newrtexec.pf, in the Defines Array, has ANTELOPE set to the new antelope release. See Note at end of section 5. 
+
+\fBb)  RESTART real-time system.\fP
+
+Bring each process on line individually. Check the process log for any errors before proceeding to run the next process. If there is a problem, stop the process, sort out the problem, then re-run the process. Sometimes the pf path can produce unexpected results. Antelope program parameter files cascade in the order specified in $PFPATH. This can become particularly annoying when trying to track down problems in a real-time system. Due to this cascading feature, it is recommended in step 2 to copy the entire default pf file to the new pf directory and to NOT remove any of the parameter values from the pf file.
+
+To check the actual path and pf parameter values being used by the program, use pfwhich and pfecho:
+
+.nf
+	% pfwhich dbevents
+	% pfecho dbevents
+.fi
+
+Also of use:
+.nf
+	pfcompare	compare parameter files with stock parameters
+	pfdiff		compare two parameter files
+	pfe		parameter file navigator
+.fi
+
+If problems arise which require extensive time to fix, there is the option of shutting down the real-time system and reverting to the former rtexec.pf file and former pf directory until the current issue is resolved (don't forget to restart).
+
+.nf
+	% mv rtexec.pf rtexec.pf_4.10
+	% mv rtexec.pf_4.9 rtexec.pf
+	% mv pf pf_4.10
+	% mv pf_4.9 pf
+.fi
+
+If odd, unexplained problems persist, remember to re-check that user rt has sourced the new antelope release (echo $ANTELOPE; source $ANTELOPE/setup.csh) and triple check that the newrtexec.pf, in the Defines Array, has ANTELOPE set to the new antelope release.
+
+.nf
+	ANTELOPE 	/opt/antelope/4.10 	#location of the real time software
+.fi
+
+When all process have been tested and all log files look OK (no unknown problems) then proceed to step 6.
+
+
+\fBNOTE:\fP
+When switching between antelope versions in a test environment, it is often useful to set-up an alias, such as "ant", which sources the specified version of Antelope. A csh/tcsh example follows:
+
+.nf
+	% alias ant 'set ANTELOPE=/opt/antelope/\!^; source /opt/antelope/\!^/setup.csh'
+	% ant 4.10 	#sets ANTELOPE=/opt/antelope/4.10 and sources /opt/antelope/4.10/setup.csh
+.fi
+
+.SS 6.  Clean up real-time system.
+\fBa)\fP  At the pf directory level, if it does not already exist, create another directory called pf_archive. Store old pf directories in this directory.
+
+.nf
+	% mvpf_4.9 pf_archive
+.fi
+
+b)  Ensure that only the most recent version of the running pf file is in the pf directory. Subsequent updates to the pf files should be done in the following manner. Copy the current pf file to the same name, with the last datetime the file was edited appended to the end of it (program.pf_\fIyyyymmdd\fP). Update and test current file. When finished, copy the new version so that the current datetime is appended to the end of the filename and store all these datetime appended versions in pf_archive.
+
+.nf
+	% cp dbevents.pf dbevents.pf_20081202 		# file was last changed on Dec 2, 2008.
+	% mv dbevents.pf_20081202 ../pf_archive
+.fi
+
+.SS 7. Repeat above steps.
+Repeat above steps, 2 through 6, for other existing real-time systems in the network. 
+
+.SS 8.  Change shell set-ups. 
+Avoid version skew. Change user rt shell, other users shell, or system shell set-ups (.tcshrc, .setup, .cshrc, .profile, etc.) to set the ANTELOPE environment variable to the new Antelope distribution. Ensure that the following environment variables are set:
+
+.nf
+	setenv PFPATH $ANTELOPE/data/pf:$HOME/pf:./pf:.;
+	setenv MATLABPATH "$ANTELOPE/data/matlab/antelope"
+.fi
+
+.SS 9.  Monitor. 
+Monitor these systems closely for the following week to catch any new issues that might crop up. 
+
+.SH "BUGS AND CAVEATS"
+In upgrading a network, it is important to avoid version skew, i.e. having multiple versions of Antelope running all over the place for extended periods. This can create a number of unexpected problems.
+
+In most cases the lastest antelope release is backwards compatible. One could change the antelope version in rtexec.pf and then just try running the real-time system with the existing pf directory. The disadvantage of this, assuming everything works, is that you miss learning about the updates and program improvements to any real-time processes you are running and you will not be able to take advantage of any new parameter value settings. This is not an advisable method if you are running a robust, complicated network. At least once a year, you will need to review your real-time dataﬂow and re-evaluate it with an eye to improving your network. 
+
+.SH AUTHOR
+Taimi Mulder
+
+.SH ACKNOWLEDGEMENTS
+This guideline benefited from the valuable input of Jennifer Eakins and Kent Lindquist.
+
+.\" $Id$
