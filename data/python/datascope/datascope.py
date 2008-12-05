@@ -575,7 +575,7 @@ class Dbptr(list):
 
 	return rc
 
-class Response():
+class Response:
     """Create a Datascope Response object
   
          Response()
