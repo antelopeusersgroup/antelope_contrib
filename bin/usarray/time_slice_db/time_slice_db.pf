@@ -1,14 +1,15 @@
-dirbase		/anf/TA/dbs/event_dbs						# 
-wfbase		/anf/TA/dbs/wfs 						# 
-dbbase		usarray									# 
-period		month									# allowed values are "year" or "month" or "day"
-lag			1 										# number of periods of lag of data before processing
+dirbase		/anf/TA/dbs/event_dbs				# 
+wfbase		/tmp 						# 
+dbbase		usarray						# 
+period		month						# allowed values are "year" or "month" or "day"
+lag		1 						# number of periods of lag of data before processing
 dbpath		/anf/TA/dbs/dbmaster/{usarray}			# default dbpath for event and big_table dbs
-dbidserver	anfops:2498								# default dbidserver
-dblocks		nfs										# default dblocks
+dbidserver	anfanalyst.ucsd.edu:2498			# default dbidserver
+dblocks		nfs						# default dblocks
 
 big_tables &Tbl{	
 	latency
 	wfsrb
 	specdisc
 }
+
