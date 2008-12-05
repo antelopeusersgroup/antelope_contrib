@@ -1,8 +1,10 @@
 #dbpath				/anf/anfops_rthome/rtsystems/usarray/dbmaster/{usarray}:/anf/anfops1/usarray/dbops/{usarray}	# default dbpath
 dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
-dbidserver			anfproc.ucsd.edu:2498				# default dbidserver
+dbidserver			anfanalyst.ucsd.edu:2499				# default dbidserver
 dblocks				nfs									# default dblocks
 
 msd2db_pat			/anf/TA/dbs/certified/20*/*/*STA*   # pattern search wf files,  STA is generic for all stations
 rt_sta_dir			/anf/TA/wf/rt_stas					# output directory for station dbs
 
+
+pf_revision_time 1228272181
