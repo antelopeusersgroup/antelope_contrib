@@ -13,11 +13,12 @@ q330logs2db  [-p pf] [-v] [-l match_logname] [-s {OLDEST|start_time} | -S statef
 find rows which match a regular expression.  The simple match (and reject) 
 expressions are kept in a parameter file, q330logs2db.pf.  The matching lines
 are placed as a dlcomment into a dlevent table and tagged with a dlevtype.  
-See also the program \fBlogs2dlevent\fP(1) and \fBdlreport\fP(1) which review
-the logs written out by \fBorb2logs\fP(1) can be run to summarize the events.  The
-parameter files for \fBq330logs2db\fP and \fBlogs2dlevent\fP are identical.
+See also the programs \fBlogs2dlevent\fP(1) and \fBdlreport\fP(1) which review
+the logs written out by \fBorb2logs\fP(1).  \fBdlreport\fP can be run to 
+summarize the events.  The parameter files for \fBq330logs2db\fP and 
+\fBlogs2dlevent\fP are identical.
 .LP
-The intent for this script was to run it on an operational real-time 
+The intent for this script is that it will be run on an operational real-time 
 system to help summarize various interactions with the datalogger (currently 
 only tested on a Q330).  It assumes that interactions via Willard are noted
 with a UMSG or via output from dlcmd.  Hopefully, you can convince those who
