@@ -28,6 +28,7 @@ sub init_globals {
 		"institute_url",
 		"institute_webdir",
 		"institute_description",
+		"institute_copyright",
 		"page_refresh_seconds",
 		"other_region_links",
 		"region_string_prefix",
@@ -942,6 +943,8 @@ sub create_focusmap_html {
 			      "$State{institute_logo_filebase}" );
 	$writer->dataElement( "institute_description", 
 			      "$State{institute_description}" );
+	$writer->dataElement( "copyright", 
+			      "$State{institute_copyright}" );
 	$writer->dataElement( "last_updated", 
 		epoch2str( str2epoch( "now" ), "%A %B %d, %Y %l:%M %p %Z", "" ) ) ;
 
@@ -1749,6 +1752,8 @@ sub create_stockmap_html {
 			      "$State{institute_logo_filebase}" );
 	$writer->dataElement( "institute_description", 
 			      "$State{institute_description}" );
+	$writer->dataElement( "copyright", 
+			      "$State{institute_copyright}" );
 	my( $abs_dbname ) = `abspath $dbname`;
 	chomp( $abs_dbname );
 	$writer->dataElement( "dbname", $abs_dbname );

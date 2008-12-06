@@ -2,6 +2,10 @@
 institute_url http://www.lindquistconsulting.com/
 institute_webdir /var/apache/htdocs
 institute_description Lindquist Consulting
+institute_copyright &Literal{
+Unless otherwise noted, all content available via this web application is 
+copyright by the institution maintaining the web-site.
+}
 institute_logo your_logo.gif
 
 dbrecenteqs_subdir dbrecenteqs
