@@ -344,13 +344,13 @@ require "getopts.pl";
 	    }
 
 	($net[$i],$sta[$i],$chan[$i],$time[$i],$endtime[$i]) = dbgetv(@db1,"$mynet","sta","chan","time","endtime") ;
-	$bettertime[$i] = epoch2str($time[$i],"%Y,%j,%H:%M:%S.%s");
+	$bettertime[$i] = epoch2str($time[$i],"%Y,%j,%H:%M:%S.%u");
 	
 #	if (epoch2str($endtime[$i],"%s") >= 500) {
 #	    $endtime[$i] = $endtime[$i] + 1.0;
 #	}
 
-	$betterendtime[$i] = epoch2str($endtime[$i],"%Y,%j,%H:%M:%S.%s");
+	$betterendtime[$i] = epoch2str($endtime[$i],"%Y,%j,%H:%M:%S.%u");
 	print OUT "$net[$i]|$sta[$i]|$loc[$i]|$chan[$i]|$bettertime[$i]|$betterendtime[$i]||$samprate[$i]|$nsamp[$i]|$flag[$i]||$tapename[$i]|||$DMCmod[$i]|$mod[$i]\n";
     }
 
