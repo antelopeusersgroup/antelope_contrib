@@ -5,8 +5,11 @@ guideline_rtsystem_upgrade \- upgrade a real-time system to the latest antelope 
 .SH DESCRIPTION
 Each new Antelope release generally requires upgrading the existing real-time system pf directories and the file rtexec.pf. This is the best time to review, update, and clean-up existing real-time systems. Extremely simple real-time systems may not require any actual upgrade while more complex real-time systems will most likely require an upgrade; it is best if all existing real-time systems are inspected at this time. The following steps outline the procedure and minimize potential problems. Shortcuts are not advised. 
 
+This document is primarily intended for operational grade settings. However, it is also appropriate for research grade settings; it is recommended to follow these steps to ensure a consistent environment for research purposes.
+
+.SH PROCEDURE
 .SS 1.  Prepare for the transition.
-Print out a copy of the new release $ANTELOPE/Changes.txt. Read through the first few pages to become familiar with the newchanges for this release. The bulk of this document consists of the "Detailed Changes from Logs" section. These changes are listed alphabetically by program. Refer to this repeatedly during the release conversion.
+Print out a copy of the new release $ANTELOPE/Changes.txt. Read through the first few pages to become familiar with the newchanges for this release. The bulk of this document consists of the "Detailed Changes from Logs" section. These changes are listed alphabetically by program. Refer to this repeatedly during the upgrade.
 
 Depending on the complexity of your system, allot yourself anywhere from a long morning to a week, to complete all the upgrades and test the upgraded real-time system.
 
@@ -14,7 +17,7 @@ If your network contains several real-time systems (i.e. several rtexec.pf files
 
 Consider keeping a log of pf file changes (create file: changes_pf4-10.log) for your entire system for each release. This can be particularly useful when more than one person needs to know about updates to the real-time systems. Document all the existing real-time system locations in your network here and keep track of which systems have been upgraded.
 
-Finally,a real-time system is an operational system and needs to be kept scrupulously clean. Parameter files not in use should be stored elsewhere (e.g. pf_archive/) and rtexec.pf should be kept clean as well. For recommendations on protocol and naming conventions see:
+Finally, a real-time system is an operational system and needs to be kept scrupulously clean. Parameter files not in use should be stored elsewhere (e.g. pf_archive/) and rtexec.pf should be kept clean as well. For recommendations on protocol and naming conventions see:
 .br
 \fIhttp://www.lindquistconsulting.com/rtexec_style.php\fP.
 
@@ -98,6 +101,13 @@ To check the actual path and pf parameter values being used by the program, use 
 .nf
 	% pfwhich dbevents
 	% pfecho dbevents
+.fi
+
+To check the path of an individual process run in the real-time system, or the real-time system paths, use rtrun:
+
+.nf
+	% rtrun "which cdorb2db"
+	% rtrun "echo $PATH"
 .fi
 
 Also of use:
