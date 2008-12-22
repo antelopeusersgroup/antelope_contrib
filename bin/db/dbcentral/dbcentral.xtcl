@@ -52,7 +52,10 @@ proc init_globals {} {
 	global Time_specified Specified_time
 	global Nicknames Tasks Commands
 	global Dbcentral_dbname Db Pf
+	global Usage
 	
+	set Usage {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [-p pfname] [-q queryfile] [database_nickname [task_nickname]]}
+
 	set Template_time_format "%m/%d/%Y %H:%M:%S.%s %Z"
 
 	if { $Time_specified } {
@@ -609,6 +612,7 @@ proc run_cmdline {} {
 	global List_Nicknames Resolve_dbname Time_specified
 	global List_dbnames Exec_dbnames Queryfile
 	global Nickname Task Cmdline Stripped_argv
+	global Usage
 
 	if { $Nickname != "" } {
 	  if { ! [info exists Tasks($Nickname)] ||
@@ -649,7 +653,7 @@ proc run_cmdline {} {
 
 	} elseif { $Resolve_dbname && $Nickname == "" } {
 
-		puts stderr "\ndbcentral: Must specify a database clustername when using -d\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -d\n\n$Usage\n\n"
 		exit -1
 
 	} elseif { $Resolve_dbname } {
@@ -658,7 +662,7 @@ proc run_cmdline {} {
 
 	} elseif { $List_dbnames && $Nickname == "" } {
 
-		puts stderr "\ndbcentral: Must specify a database clustername when using -l\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -l\n\n$Usage\n\n"
 		exit -1
 
 	} elseif { $List_dbnames } {
@@ -667,7 +671,7 @@ proc run_cmdline {} {
 
 	} elseif { $Queryfile != "" && $Nickname == "" } {
 
-		puts stderr "\ndbcentral: Must specify a database clustername when using -q\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -q\n\n$Usage\n\n"
 		exit -1
 
 	} elseif { $Queryfile != "" } {
@@ -768,12 +772,12 @@ proc run_cmdline {} {
 
 	} elseif { $Exec_dbnames && $Nickname == "" } {
 
-		puts stderr "\ndbcentral: Must specify a database clustername when using -a\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -a\n\n$Usage\n\n"
 		exit -1
 
 	} elseif { $Exec_dbnames && $Task == "" } {
 
-		puts stderr "\ndbcentral: Must specify a task nickname when using -a\n"
+		puts stderr "\ndbcentral: Must specify a task nickname when using -a\n\n$Usage\n\n"
 		exit -1
 
 	} elseif { $Exec_dbnames } {
@@ -782,7 +786,7 @@ proc run_cmdline {} {
 
 	} elseif { [llength $Stripped_argv] == 0 && $Time_specified } {
 
-		puts stderr "\ndbcentral: Must specify a database clustername when using -t\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -t\n\n$Usage\n\n"
 		exit -1
 
 	} elseif { [llength $Stripped_argv] == 1 } {
@@ -797,7 +801,7 @@ proc run_cmdline {} {
 
 	} else {
 
-		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [-p pfname] [-q queryfile] [database_nickname [task_nickname]]}
+		puts stderr $Usage
 		exit -1
 	}
 }
