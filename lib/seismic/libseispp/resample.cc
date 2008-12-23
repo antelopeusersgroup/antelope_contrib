@@ -128,6 +128,7 @@ DecimatedVector *ResampleOperator::apply(int ns, double *s,double dtin,
 	for(this_decimator=declist.begin();
 		this_decimator!=declist.end();++this_decimator)
 	{
+
 		nextdv = this_decimator->apply(dvptr->d,trim);
 		total_lag += static_cast<int>(rint(static_cast<double>(nextdv->lag)*decout));
 		dtout *= this_decimator->decfac;
@@ -176,7 +177,18 @@ Decimator::Decimator(string fname,double decfac_target)
 		coefs.reserve(0);
 		lag=0;
 		if(decfac_target>MAX_UPSAMPLE_DECFAC)
-			throw SeisppError(err_mess_head+"illegal decfac for upsample defininition.  Must specify decfac less than 1");
+		{
+			stringstream sserr;
+			sserr << err_mess_head 
+				<< "illegal decimation factor = "
+				<< decfac_target 
+				<< " for decimator type = "
+				<< fname
+				<<endl
+				<<"resample or none operators require decfac<1.0"
+				<<endl;
+			throw SeisppError(sserr.str());
+		}
 		return;
 	}
 
