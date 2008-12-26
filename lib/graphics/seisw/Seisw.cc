@@ -689,7 +689,7 @@ externaldef (exmseiswlassrec) ExmSeiswClassRec exmSeiswClassRec = {
 /* Declare any global static variables. */
 
 /* DEBUG function used to deal with scaling problems */
-/*
+#ifdef DEBUG_WIDGET
 //////////////////////////////////////////////////////////
 void showscaling(ExmSeiswWidget sw)
 {
@@ -744,7 +744,7 @@ cerr << "first_trace_offset = "<< p->first_trace_offset <<endl;
 cerr << "use_variable_trace_spacing = "<< p->use_variable_trace_spacing <<endl<<endl;
 }
 }
-*/
+#endif
 
 
 void compute_and_set_resolution(ExmSeiswWidget sw, SeiswPar *spar)
@@ -873,11 +873,10 @@ BrowseScroll(XtPointer closure,
   int interval = 100;
   int vsize,hsize;
 
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Entering BrowseScroll"<<endl;
 showscaling(sw);
-*/
+#endif
 
   //These should be the same formula SetVerticalScrollbar and SetHorizontalScrollbar uses
   //but can't figure out how to use scroll trait to make this work, so use this here for
@@ -963,11 +962,10 @@ showscaling(sw);
   sw->seisw.DragID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)sw),
                                     (unsigned long) interval,
                                     BrowseScroll, (XtPointer) sw);
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Exiting BrowseScroll"<<endl;
 showscaling(sw);
-*/
+#endif
 }
 
 static void create_rubberbox_gc(ExmSeiswWidget sw)
@@ -1030,11 +1028,10 @@ static void Btn1DownProc (
 	SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
   	SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);  
         int leave;
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Enter Btn1DownProc values"<<endl;
 showpar(spar);
-*/
+#endif
 
 	if (spar==NULL || sca==NULL) return;
 
@@ -1062,11 +1059,10 @@ showpar(spar);
 
 	    //create rubberbox gc
 	    create_rubberbox_gc(sw);
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Leaving Btn1DownProc values"<<endl;
 showpar(spar);
-*/
+#endif
 
 }
 
@@ -1082,11 +1078,10 @@ static void Btn1UpProc (
         SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
 	float temp_x1, temp_x2;
 	int xstart, ystart, xb, yb, x1,y1,x2,y2,bw,h;
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Entering Btn1UpProc values"<<endl;
 showpar(spar);
-*/
+#endif
 
 	if (spar==NULL || sca==NULL) return;
 
@@ -1179,11 +1174,10 @@ showpar(spar);
             XClearArea(XtDisplay(w),sca->win,0,0,sw->core.width,sw->core.height,True);
 
 	}
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Leaving Btn1UpProc values"<<endl;
 showpar(spar);
-*/
+#endif
 }
 
 static void Btn1MotionProc (
@@ -3355,7 +3349,7 @@ static XImage *newBitmap_peng (Display *dpy, int width, int height,
         b1fz = (x1end > x1beg) ? 0 : bx1max;
         b1lz = (x1end > x1beg) ? bx1max : 0;
 /*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Rasterizing "<<n2<<" traces"<<endl;
 cerr << "boffset="<<boffset<<" bscale="<<bscale<<endl
 << "Image size = "<<width << " by "  << height<<endl;
@@ -3382,13 +3376,12 @@ cerr << "(b2f,b2l,b1fz,b1lz)"<<endl;
                         clip2 *= ((bx2max-bx2) / bxcur);
                         b2l = bx2max;
                 }
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << b2f << " "
 	<< b2l << " "
 	<< b1fz << " "
 	<< b1lz << endl;
-*/
+#endif
 
 
 
@@ -3959,11 +3952,10 @@ static void ReInitialize(
 	/* These are convenient shorthands for these two private members of the widget */
 	SeiswCA *ca=static_cast<SeiswCA *>(nw->seisw.seisw_ca);
 	SeiswPar *para=static_cast<SeiswPar *>(nw->seisw.seisw_parameters);
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Entering ReInitialize values"<<endl;
 showpar(para);
-*/
+#endif
 
 	/* This is a minor inefficiency.  Could test this against a static pointer
 	but the overhead is not worth the headache */
@@ -4094,11 +4086,10 @@ showpar(para);
 	tda->x2begb=para->x2beg;
 	tda->x2endb=para->x2end;
 
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Leaving ReInitialize values"<<endl;
 showpar(para);
-*/
+#endif
 }
 
 
@@ -4330,11 +4321,10 @@ Initialize(
    if (wc->seisw_class.reconfigure) 
      (*(wc->seisw_class.reconfigure))(exmSeiswWidgetClass, new_w, NULL);
 
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Leaving Initialize values"<<endl;
 showpar(para);
-*/
+#endif
 }
 
 /* Computes the number of pixels in the current zoom box.  
@@ -4439,11 +4429,10 @@ SetVerticalScrollbar(ExmSeiswWidget nw)
   int vizx, vizy;
   XmNavigatorDataRec nav_data;
   Boolean was_managed, is_managed;
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Top of SetVerticalScrollbar"<<endl;
 showscaling(nw);
-*/
+#endif
 
 
   if ((!nw->seisw.Mom) ||
@@ -4504,11 +4493,10 @@ showscaling(nw);
                             NavSliderSize | NavIncrement | NavPageIncrement);
       _XmSFUpdateNavigatorsValue(XtParent((Widget)nw), &nav_data, True);
     }
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Exiting SetVerticalScrollbar"<<endl;
 showscaling(nw);
-*/
+#endif
 
     return (was_managed != is_managed);
 
@@ -4608,7 +4596,19 @@ Destroy (Widget w)
    if (sw->seisw.seisw_pick != NULL) 
 	delete static_cast<SeismicPick *>(sw->seisw.seisw_pick);
  
-   if (sw->seisw.cleanup_data != NULL) delete sw->seisw.cleanup_data;
+  /****
+  * This was commented out because it seemed to do nothing.  Peng Wang
+  * added this resource to this widget and I (glp) do not know for sure what
+  * it was to be used for.  I am guessing it was a stash for assorted 
+  * debris cast to an opaque pointer that Peng discovered was not really
+  * needed and failed to remove it. In this current code this line does
+  * nothing beause it is set to NULL in Initialize and nothing else
+  * touches it.  It is generating a compiler error so I'm commenting it
+  * out.  If some poor soul is tempted to set this resource and load
+  * data here it will definitely create a memory leak. 
+  */
+   //if (sw->seisw.cleanup_data != NULL) delete sw->seisw.cleanup_data;
+
    if (sw->seisw.display_attributes != NULL) {
 	int * ipointer=(static_cast<DisplayAttributes>(sw->seisw.display_attributes))->str_origin;
 	if (ipointer != NULL) delete ipointer;
@@ -4977,11 +4977,11 @@ static void SetBox(Widget w)
             x2max=MAX(x2max,sca->x2[i]);
         }
     } else {
-            x2min=sca->x2[0];
+            x2min=sca->x2[0]-0.5;
 	    if(nmember==1)
 		x2max=2.0;
 	    else
-            	x2max=sca->x2[nmember-1]+1.0;
+            	x2max=sca->x2[nmember-1]+0.5;
     }
 
     //
@@ -5318,11 +5318,10 @@ DrawVisual (
  SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
  int xposition, yposition;
  char *title;
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Entering DrawVisual"<<endl;
 showscaling(sw);
-*/
+#endif
 
 
     if (!XtIsRealized((Widget)sw))
@@ -5347,14 +5346,6 @@ showscaling(sw);
 		CalcVisualSize(w);
 		compute_and_set_resolution(sw,spar);
 	}
-// DEBUG TEST
-/*
-		CalcVisualSize(w);
-		compute_and_set_resolution(sw,spar);
-*/
-// End DEBUG TEST - remove above if this works
-
-
 
 	    sca->width=sw->core.width-(sw->primitive.highlight_thickness+sw->primitive.shadow_thickness
 			+spar->xbox+sw->seisw.margin_width);
@@ -5490,11 +5481,10 @@ showscaling(sw);
 
 	if(sw->seisw.display_attributes!=NULL)
 		XtCallCallbackList(w, sw->seisw.display_attr_callback, NULL);
-/*
-//DEBUG
+#ifdef DEBUG_WIDGET
 cerr << "Exiting DrawVisual"<<endl;
 showscaling(sw);
-*/
+#endif
 
 }
 
