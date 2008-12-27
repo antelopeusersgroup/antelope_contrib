@@ -279,6 +279,7 @@ void SessionManager::session_state(SessionState s)
 
     previous_state=state;
     state=s;
+    XcorEngineMode pmode=this->get_processing_mode();
 
     // Whenever we enter this routine all gui items are first disabled
     // then we only turn on the one's appropriate for a given state
@@ -304,8 +305,9 @@ void SessionManager::session_state(SessionState s)
 	case NEXT_EVENT:
 	    sensitive[BTN_NEXTEV]=true;
 	    sensitive[BTN_REF]=true;
+	    sensitive[MENU_PICKS_MASTER]=true; // alternate for BTN_REF
 	    sensitive[BTN_RESTORE]=true;
-	    sensitive[BTN_SUBON]=true;
+	    if(pmode!=GenericGathers) sensitive[MENU_OPTIONS_SUBARRAY]=true;
 	    sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
  	    sensitive[MENU_PICKS]=true;
@@ -313,8 +315,6 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_PICKS_RWIN]=true;
 	    sensitive[BTN_PICKS_TEDIT]=true;
 	    sensitive[BTN_PICK_CUTOFF]=true;
-	    sensitive[MENU_PICKS_VIEW]=true;
-  	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
@@ -327,8 +327,9 @@ void SessionManager::session_state(SessionState s)
 	case NEXT_SUBARRAY:
 	    sensitive[BTN_NEXTSUB]=true;
 	    sensitive[BTN_REF]=true;
+	    sensitive[MENU_PICKS_MASTER]=true; // alternate for BTN_REF
 	    sensitive[BTN_RESTORE]=true;
-	    sensitive[BTN_SUBON]=true;
+	    if(pmode!=GenericGathers) sensitive[MENU_OPTIONS_SUBARRAY]=true;
 	    sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
  	    sensitive[MENU_PICKS]=true;
@@ -336,8 +337,6 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_PICKS_RWIN]=true;
 	    sensitive[BTN_PICKS_TEDIT]=true;
 	    sensitive[BTN_PICK_CUTOFF]=true;
-	    sensitive[MENU_PICKS_VIEW]=true;
-  	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
@@ -351,9 +350,10 @@ void SessionManager::session_state(SessionState s)
             sensitive[BTN_NEXTEV]=true;
 	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
             sensitive[BTN_REF]=true;
+	    sensitive[MENU_PICKS_MASTER]=true; // alternate for BTN_REF
             sensitive[BTN_ANALYZE]=true;
 	    sensitive[BTN_RESTORE]=true;
-	    sensitive[BTN_SUBON]=true;
+	    if(pmode!=GenericGathers) sensitive[MENU_OPTIONS_SUBARRAY]=true;
             sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
             sensitive[MENU_PICKS]=true;
@@ -361,8 +361,6 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS_RWIN]=true;
             sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[BTN_PICK_CUTOFF]=true;
-            sensitive[MENU_PICKS_VIEW]=true;
-	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
@@ -376,11 +374,12 @@ void SessionManager::session_state(SessionState s)
             sensitive[BTN_NEXTEV]=true;
 	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
             sensitive[BTN_REF]=true;
+	    sensitive[MENU_PICKS_MASTER]=true; // alternate for BTN_REF
             sensitive[BTN_ANALYZE]=true;
             sensitive[BTN_BEAM_PLOT]=true;
             sensitive[BTN_XCOR_PLOT]=true;
 	    sensitive[BTN_RESTORE]=true;
-	    sensitive[BTN_SUBON]=true;
+	    if(pmode!=GenericGathers) sensitive[MENU_OPTIONS_SUBARRAY]=true;
             sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
             sensitive[MENU_PICKS]=true;
@@ -388,8 +387,6 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS_RWIN]=true;
             sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[BTN_PICK_CUTOFF]=true;
-            sensitive[MENU_PICKS_VIEW]=true;
-            sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
@@ -409,11 +406,12 @@ void SessionManager::session_state(SessionState s)
 	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
  	    sensitive[BTN_FILE_SAVE]=true;
             sensitive[BTN_REF]=true;
+	    sensitive[MENU_PICKS_MASTER]=true; // alternate for BTN_REF
             sensitive[BTN_ANALYZE]=true;
             sensitive[BTN_BEAM_PLOT]=true;
             sensitive[BTN_XCOR_PLOT]=true;
 	    sensitive[BTN_RESTORE]=true;
-	    sensitive[BTN_SUBON]=true;
+	    if(pmode!=GenericGathers) sensitive[MENU_OPTIONS_SUBARRAY]=true;
             sensitive[MENU_FILE]=true;
  	    sensitive[MENU_FILE_SAVE]=true;
             sensitive[MENU_FILE_EXIT]=true;
@@ -422,8 +420,6 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS_RWIN]=true;
             sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[BTN_PICK_CUTOFF]=true;
-            sensitive[MENU_PICKS_VIEW]=true;
-            sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;

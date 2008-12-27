@@ -2173,6 +2173,15 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 		// correctly, but best to handle it instead of aborting here.
 		try {
 			psm->xpe->next_subarray();
+			TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+			string title=psm->plot_title(*tse);
+			title=subarray_title(title,psm->xpe->current_subarray_name);
+			Metadata data_md=psm->xpe->get_data_md();
+			data_md.put("title",title);
+			psm->markers.title=title;
+			XtVaSetValues(psm->seismic_widget,
+			  ExmNseiswMetadata, (XtPointer)(&data_md),
+			  ExmNdisplayMarkers,&(psm->markers),NULL);
 		} catch (SeisppError serr)
 		{
 			serr.log_error();
@@ -2182,15 +2191,6 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 			ss << "Resetting to allow reading next event"<<endl;
 			psm->session_state(NEXT_EVENT);
 		}
-		TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
-		string title=psm->plot_title(*tse);
-		title=subarray_title(title,psm->xpe->current_subarray_name);
-		Metadata data_md=psm->xpe->get_data_md();
-		data_md.put("title",title);
-		psm->markers.title=title;
-		XtVaSetValues(psm->seismic_widget,
-			ExmNseiswMetadata, (XtPointer)(&data_md),
-			ExmNdisplayMarkers,&(psm->markers),NULL);
 		// next_subarray increments current_subarray counter
 		// If at the end we need to disable next_subarray
 		if((psm->xpe->current_subarray)>=lastsub)
@@ -2602,6 +2602,12 @@ void usage(char *use)
         exit(-1);
 }
 
+/* This function associates a named member of the controls array to widgets 
+attached to the top menu.  This is a pretty ugly way to do this and a serious
+maintenance problem as it is disconnected from where the control array is defined
+in multiple ways.  Any change to the user interface that alters this relationship
+requires a change here.  i.e. add or remove an item from the menu bar and you MUST
+make a change here */
 void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * options_menu,
       	MenuItem * view_menu, SessionManager &sm)
 {
@@ -2609,11 +2615,10 @@ void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * o
     sm.controls[MENU_FILE_EXIT]=file_menu[1].w;
     sm.controls[MENU_PICKS_BWIN]=picks_menu[0].w;
     sm.controls[MENU_PICKS_RWIN]=picks_menu[1].w;
-//    sm.controls[MENU_PICKS_VIEW]=picks_menu[4].w;
-//    sm.controls[MENU_PICKS_VIEW_ATTR]=view_submenu[0].w;
-//    sm.controls[MENU_PICKS_VIEW_SETTING]=view_submenu[1].w;
+    sm.controls[MENU_PICKS_MASTER]=picks_menu[2].w;
     sm.controls[MENU_OPTIONS_SORT]=options_menu[0].w;
     sm.controls[MENU_OPTIONS_FILTER]=options_menu[1].w;
+    sm.controls[MENU_OPTIONS_SUBARRAY]=options_menu[2].w;
     sm.controls[MENU_VIEW_SNAME]=view_menu[0].w;
     sm.controls[MENU_VIEW_DISTANCE]=view_menu[1].w;
     sm.controls[MENU_VIEW_COHERENCE]=view_menu[2].w;
@@ -2760,8 +2765,8 @@ main (int argc, char **argv)
 	XmNrightAttachment, XmATTACH_FORM, NULL);
 
   MenuItem file_menu[]={
-    {(char *) "Save",&xmPushButtonGadgetClass,'s',(char *) "Ctrl<Key>S",NULL,save_event,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Exit",&xmPushButtonGadgetClass,'x',(char *) "Ctrl<Key>C",NULL,exit_gui,(XtPointer)0,NULL,(MenuItem *)NULL},
+    {(char *) "Save",&xmPushButtonGadgetClass,'s',(char *) "Ctrl<Key>S","Ctrl+S",save_event,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Exit",&xmPushButtonGadgetClass,'x',(char *) "Ctrl<Key>C","Ctrl+C",exit_gui,(XtPointer)0,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
@@ -2776,8 +2781,10 @@ main (int argc, char **argv)
   };
 
   MenuItem picks_menu[]={
-    {(char *) "Beam Window",&xmPushButtonGadgetClass,'B',NULL,NULL,pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Robust Window",&xmPushButtonGadgetClass,'R',NULL,NULL,pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Beam Window",&xmPushButtonGadgetClass,'B',"<Key>B","B",pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Robust Window",&xmPushButtonGadgetClass,'R',"<Key>R","R",pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *)"Reference Trace",&xmPushButtonGadgetClass,'M',"<Key>M","M",
+    	pick_ref_trace,(XtPointer)&sm,NULL,(MenuItem *)NULL},
 //    {"View",&xmPushButtonGadgetClass,'V',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)view_submenu},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
@@ -2785,6 +2792,8 @@ main (int argc, char **argv)
   MenuItem options_menu[]={
     {(char *) "Sort Options",&xmPushButtonGadgetClass,'r',NULL,NULL,pick_sort_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {(char *) "Filter Options",&xmPushButtonGadgetClass,'l',NULL,NULL,pick_filter_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *)"Enable Subarrays",&xmPushButtonGadgetClass,'s',NULL,NULL,
+    	subarray_toggle,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
@@ -2915,11 +2924,6 @@ main (int argc, char **argv)
 		exit(1);
 	}
   }
-
-  btninfo.label=(char *) "Enable subarrays";
-  btninfo.callback=subarray_toggle;
-  btninfo.callback_data=&sm;
-  sm.controls[BTN_SUBON]=create_button(tlrc,btninfo);
 
   btninfo.label=(char *) "Load Next Subarray";
   btninfo.callback=load_next_subarray;

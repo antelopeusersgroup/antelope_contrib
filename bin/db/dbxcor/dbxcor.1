@@ -126,7 +126,7 @@ dbpick on the same X display.  Find the data you want to process
 an issue a command like this in the dbpick window:
 .nf
    exec tksend dbxcor %orid P
-.nf
+.fi
 where P could be changed to any teleseismic phase of interest known to 
 the tau-p calculator.  
 .IP (3)
@@ -255,8 +255,13 @@ Think of the "Restore Data" button as the ultimate escape.  It allows you to
 essentially start over as if you had just finished reading the current block 
 of data.
 .IP (4)
-The "Picks" menu item has two selections: (1) Beam window and (2) Robust Window.
-Experience has shown that care in selection of these two windows is critical 
+The "Picks" menu item has three selections: (1) Beam window, (2) Robust Window,
+and (3) Reference Trace.  
+The later (Reference Trace) is an alternative interface to the "Pick Reference" 
+button at the bottom of the display.  It was placed here to make the interaction
+more efficient because all three entries are hit constantly and as a result
+have keyboard accelerators (see below).
+Experience has shown that care in selection of the two windows is critical 
 for successful results with this program.  In fact, the default windows set
 through the parameter file are rarely ideal and experience shows altering
 these time windows is almost always advisd.  The Beam Window defines the time gate
@@ -299,7 +304,7 @@ and use them as an alternative "Pick Cutoff" attribute.
 Large arrays will not always have a coherent phase that can be stacked with the full
 array aperture.  This is especially true for small teleseismic event P waves that
 are commonly detectable only in the traditional short period band.  For this reason
-dbxcor has a toggle button labeled "Enable Subarrays" (reciprocal is labeled 
+dbxcor has an option menu item labeled "Enable Subarrays" (reciprocal is labeled 
 "Disable Subarrays").  You can switch back and forth between full and subarray processing
 BUT but be careful of two pitfalls.  First, it is inadvisable to save results
 from both subarray and full array processing of the same event.  It is allowed, but
@@ -346,6 +351,21 @@ with others in the array.  This can indicate an equipment failure,
 error in metadata, or a real property of the earth. The second type
 of plot is an x-y graph of one or more trace attributes.  Currently
 this is limited to:  stack weight, coherence, and peak cross correlation.
+.SH KEYBOARD ACCELERATORS
+.LP
+Several the menu items use Motif keyboard accelerators.  This means typing
+the stated key anywhere in the gui is equivalent to following a particular
+menu chain.  Currently defined accelerators are:
+.IP b
+Alias for Picks->Beam Window.
+.IP r 
+Alias for Picks->Robust Window.
+.IP m
+Alias for Picks->Reference Trace.  The "m" is intended to be mnemonic for "master" trace 
+with a meaning similar to reference.  The obvious choice of "r" collides with the 
+accelerator or the robust window pick name so m was chosen.  The reference trace concept
+was retained because earlier versions of the program and documentation use that terminology
+repeatedly.  Apologies to all users confused by this.  
 .SH WAVEFORM DATA MODELS
 .PP
 This program expects waveforms assembled in different ways depending
@@ -382,7 +402,33 @@ display is refreshed to include only the debris (i.e. data that didn't correlate
 in the previous analysis).  The user may choose to move on and push the 
 "Next Gather" button or try to do further processing on these remaining traces.
 This process can be repeated until no data remain in the gather or until the
-"Next Gather" button us pushed.
+"Next Gather" button us pushed.  Furthermore, in this mode results are currently 
+saved to a different output table called xsaa that differs somewhat from 
+the xcorarrival table created in other modes. 
+.SH MANUAL PICKING FEATURES
+.LP
+Two different manual pick correction methods are available.  Both are accessible
+from buttons on the bottom row of the GUI.  The \fIManual Picking\fR button is 
+a simple picker.  Point at a trace, click MB2, and the seismogram will be shifted to 
+make that point to zero in the arrival time reference frame.  Note this is only 
+the same as picking the arrival time if the rest of the data are aligned relative
+to the 0 mark.  Be warned that sometimes the algorithm used in the multichannel
+correlation processing will shift 0 somewhat making this picking process more awkward
+than would be ideal.
+.LP
+The second mode of picking is more elaborate.  If you push the "Magnify Picking" button
+the main display is armed to produce a special picking method.  When enabled all other 
+buttons on the GUI are disabled until this button is pushed again.  The primary purpose
+of this method is to repair cycle skips in cross-correlation.  Point at a trace that
+needs to be fixed and click on it somewhere with MB2.  This will bring up a new window
+with three seismogram.  In order from the bottom up these are: (1) the seismogram 
+to be picked, (2) the current beam estimate, and (3) the cross-correlation function
+between the beam and the displayed trace.  You must pick a point on the cross-correlation
+trace to shift the data to correct a cycle skip.  The concept to keep in mind is to point
+at the peak of the correlation function that you believe is more appropriate than the 
+maximum chosen by the program.  The traces in the new window and the master display 
+will be updated based on the selected pick.  (Note:  the picker does not use any kind of
+maximum finder.  It simply uses the time defined by your pick.).
 .SH PARAMETER FILE
 .LP
 The complete parameter file for this program is very long
@@ -701,7 +747,12 @@ be implemented.
 Be warned that dbcrunch is called on assoc and arrival when the program
 exits.  Since this is intrinsically dangerous, backup you databases often
 when processing with this program.
+.IP (3)
+The creation of two different output tables (xcorarrival and xsaa) depending
+on the processing mode is problematic and at some point they will likely be 
+merged into one table that can work on both modes.
 .SH AUTHOR
 Peng Wang (pewang@indiana.edu) wrote the GUI.  The seismic analysis sections
-were written by Gary Pavlis (pavlis@indiana.edu)
+were written by Gary Pavlis (pavlis@indiana.edu).  Later versions of the gui 
+were extensively reworked by Pavlis.
 .\" $Id$
