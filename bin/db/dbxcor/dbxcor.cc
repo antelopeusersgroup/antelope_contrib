@@ -120,7 +120,6 @@ Widget create_button(Widget parent, MenuItem btninfo)
   return w;
 }
 
-
 /*
 ** Destroy the shell parent of the Message box, and thus the box itself
 */
@@ -954,8 +953,6 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
     Widget radio_box, sort_dialog, pane, form, ok_btn, ok_reverse_btn, cancel_btn;
-    XmString str_coherence, str_correlation_peak, str_amplitude, str_lag, str_weight;
-    XmString str_lat,str_lon,str_time;
     Arg args[10];
     int i, picked, selected;
     Dimension h;
@@ -1179,7 +1176,69 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
      XtManageChild(pane);
 
 }
+void select_mccmode1(Widget w, void * client_data, void * userdata)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    psm->active_setting.mccmode=CORRELATE_AND_STACK;
+}
+void select_mccmode2(Widget w, void * client_data, void * userdata)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    psm->active_setting.mccmode=CORRELATE_ONLY;
+}
+void select_mccmode3(Widget w, void * client_data, void * userdata)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    psm->active_setting.mccmode=STACK_ONLY;
+}
+/* Very similar callback for setting MultichannelCorrelator mode. */
+void pick_mcc_options(Widget w, void * client_data, void * userdata)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    Widget radio_box, mcc_dialog, pane, form, ok_btn, ok_reverse_btn, cancel_btn;
+    Arg args[10];
+    int i, picked, selected;
+    Dimension h;
 
+    selected=psm->active_setting.mccmode;
+
+    i=0;
+    XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
+    XtSetArg(args[i],XmNuserData,selected); i++;
+    mcc_dialog=XmCreateDialogShell(get_top_shell(w),(char *) "MCC Mode Options",args,i);
+
+    radio_box=XmCreateRadioBox(mcc_dialog,(char *) "MCC Mode Options",NULL,0);
+
+    Widget wtemp;
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *)"Correlate and Stack",NULL,0);
+    picked=CORRELATE_AND_STACK;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,select_mccmode1,(XtPointer)(psm));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *)"Correlate Only",NULL,0);
+    picked=CORRELATE_ONLY;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,select_mccmode2,(XtPointer)(psm));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *)"Stack Only",NULL,0);
+    picked=STACK_ONLY;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,select_mccmode3,(XtPointer)(psm));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    XtManageChild(radio_box);
+}
 void apply_filter(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
@@ -2608,8 +2667,9 @@ maintenance problem as it is disconnected from where the control array is define
 in multiple ways.  Any change to the user interface that alters this relationship
 requires a change here.  i.e. add or remove an item from the menu bar and you MUST
 make a change here */
-void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * options_menu,
-      	MenuItem * view_menu, SessionManager &sm)
+void set_menu_controls(MenuItem * file_menu, MenuItem * edit_menu,
+	MenuItem * picks_menu, MenuItem * options_menu,
+      		MenuItem * view_menu, SessionManager &sm)
 {
     sm.controls[MENU_FILE_SAVE]=file_menu[0].w;
     sm.controls[MENU_FILE_EXIT]=file_menu[1].w;
@@ -2618,13 +2678,24 @@ void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * o
     sm.controls[MENU_PICKS_MASTER]=picks_menu[2].w;
     sm.controls[MENU_OPTIONS_SORT]=options_menu[0].w;
     sm.controls[MENU_OPTIONS_FILTER]=options_menu[1].w;
-    sm.controls[MENU_OPTIONS_SUBARRAY]=options_menu[2].w;
+    sm.controls[MENU_OPTIONS_MCC]=options_menu[2].w;
+    sm.controls[MENU_OPTIONS_SUBARRAY]=options_menu[3].w;
     sm.controls[MENU_VIEW_SNAME]=view_menu[0].w;
     sm.controls[MENU_VIEW_DISTANCE]=view_menu[1].w;
     sm.controls[MENU_VIEW_COHERENCE]=view_menu[2].w;
     sm.controls[MENU_VIEW_PCORRELATION]=view_menu[3].w;
     sm.controls[MENU_VIEW_SWEIGHT]=view_menu[4].w;
     sm.controls[MENU_VIEW_SNR]=view_menu[5].w;
+    /* edit_menu was built from items that used to be Buttons.
+    Moved to menu bar Dec. 2008 by glp to improve efficiency of gui.
+    Intentionally retained controls tabs with  BTN to avoid 
+    some potential symbol collisions.*/
+    sm.controls[BTN_PICKS_TEDIT]=edit_menu[0].w;
+    sm.controls[BTN_PICK_CUTOFF]=edit_menu[1].w;
+    sm.controls[BTN_RESTORE]=edit_menu[2].w;
+    sm.controls[BTN_POLARITY_SWITCHER]=edit_menu[3].w;
+    sm.controls[BTN_MANUAL_PICKING]=edit_menu[4].w;
+    sm.controls[BTN_TWEEKER]=edit_menu[5].w;
 }
 
 bool SEISPP::SEISPP_verbose=false;
@@ -2635,9 +2706,8 @@ int
 main (int argc, char **argv)
 {
   Display	*display;
-  Widget       	shell, flrc, slrc, tlrc, menu_bar, menu_picks, menu_options, menu_file, menu_view, menu_settings;
-  Widget        btn_next,btn_edit,btn_arrival,btn_ref,btn_bwin,btn_rwin;
-  Widget        btn_analyze,btn_beam_plot,btn_xcor_plot;
+  Widget       	shell, flrc, slrc, tlrc; 
+  Widget	menu_bar, menu_edit, menu_picks, menu_options, menu_file, menu_view;
   Widget 	paned_win, second_paned_win;
   XtAppContext 	AppContext;
   XmString	str;
@@ -2789,20 +2859,32 @@ main (int argc, char **argv)
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
+  MenuItem edit_menu[]={
+    {(char *) "Trace Edit",&xmPushButtonGadgetClass,'T',"<Key>T","T",toggle_edit,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Pick Cutoff",&xmPushButtonGadgetClass,'C',"<Key>C","C",pick_cutoff,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Restore Data",&xmPushButtonGadgetClass,'D',"<Key>D","D",restore_data,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Enable Polarity Editing",&xmPushButtonGadgetClass,'P',"<Key>P","P",enable_polarity_switching,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Enable Manual Picking",&xmPushButtonGadgetClass,'M',NULL,NULL,enable_display_mpicker,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Enable Cycle Skip Picker",&xmPushButtonGadgetClass,'C',NULL,NULL,enable_cycle_skip_picking,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
+  };
+
   MenuItem options_menu[]={
     {(char *) "Sort Options",&xmPushButtonGadgetClass,'r',NULL,NULL,pick_sort_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {(char *) "Filter Options",&xmPushButtonGadgetClass,'l',NULL,NULL,pick_filter_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "MCC Options",&xmPushButtonGadgetClass,'m',NULL,NULL,pick_mcc_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {(char *)"Enable Subarrays",&xmPushButtonGadgetClass,'s',NULL,NULL,
     	subarray_toggle,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
   sm.controls[MENU_FILE]=menu_file=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "File",'F',false,file_menu);
+  sm.controls[MENU_EDIT]=menu_edit=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Edit",'P',false,edit_menu);
   sm.controls[MENU_PICKS]=menu_picks=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Picks",'P',false,picks_menu);
   sm.controls[MENU_OPTIONS]=menu_options=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Options",'O',false,options_menu);
   sm.controls[MENU_VIEW]=menu_view=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "View",'V',false,view_menu);
 
-  set_menu_controls(file_menu,picks_menu,options_menu,view_menu,sm);
+  set_menu_controls(file_menu,edit_menu,picks_menu,options_menu,view_menu,sm);
 
   /* Menubar is done -- manage it */
   XtManageChild (menu_bar);
@@ -2938,10 +3020,6 @@ main (int argc, char **argv)
   btninfo.callback=do_analyze;
   sm.controls[BTN_ANALYZE]=create_button(tlrc,btninfo);
 
-  btninfo.label=(char *) "Trace Edit";
-  btninfo.callback=toggle_edit;
-  sm.controls[BTN_PICKS_TEDIT]=create_button(tlrc,btninfo);
-
   btninfo.label=(char *) "Plot Beam";
   btninfo.callback=do_beam_plot;
   sm.controls[BTN_BEAM_PLOT]=create_button(tlrc,btninfo);
@@ -2949,29 +3027,6 @@ main (int argc, char **argv)
   btninfo.label=(char *) "Plot Correlation";
   btninfo.callback=do_xcor_plot;
   sm.controls[BTN_XCOR_PLOT]=create_button(tlrc,btninfo);
-
-  btninfo.label=(char *) "Restore Data";
-  btninfo.callback=restore_data;
-  sm.controls[BTN_RESTORE]=create_button(tlrc,btninfo);
-
-  btninfo.label=(char *) "Pick Cutoff";
-  btninfo.callback=pick_cutoff;
-  sm.controls[BTN_PICK_CUTOFF]=create_button(tlrc,btninfo);
-
-  btninfo.label=(char *) "Magnify Picking";
-  btninfo.callback=enable_cycle_skip_picking;
-  btninfo.callback_data=&sm;
-  sm.controls[BTN_TWEEKER]=create_button(tlrc,btninfo);
-
-  btninfo.label=(char *) "Manual Picking";
-  btninfo.callback=enable_display_mpicker;
-  btninfo.callback_data=&sm;
-  sm.controls[BTN_MANUAL_PICKING]=create_button(tlrc,btninfo);
-
-  btninfo.label=(char *) "Polarity Edit";
-  btninfo.callback=enable_polarity_switching;
-  btninfo.callback_data=&sm;
-  sm.controls[BTN_POLARITY_SWITCHER]=create_button(tlrc,btninfo);
 
 // Alternate save as button.  Under file menu also
   btninfo.label=(char *) "Save";

@@ -295,12 +295,6 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_NEXTEV]=true;    
 	    sensitive[MENU_FILE]=true;
 	    sensitive[MENU_FILE_EXIT]=true;
-/*
- 	    sensitive[MENU_PICKS]=true;
- 	    sensitive[MENU_OPTIONS_FILTER]=true;
- 	    sensitive[MENU_OPTIONS_SORT]=true;
- 	    sensitive[MENU_VIEW]=true;
-*/
 	    break;
 	case NEXT_EVENT:
 	    sensitive[BTN_NEXTEV]=true;
@@ -313,11 +307,13 @@ void SessionManager::session_state(SessionState s)
  	    sensitive[MENU_PICKS]=true;
 	    sensitive[MENU_PICKS_BWIN]=true;
 	    sensitive[MENU_PICKS_RWIN]=true;
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_PICKS_TEDIT]=true;
 	    sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
+	    sensitive[MENU_OPTIONS_MCC]=true;
 	    sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
@@ -335,11 +331,13 @@ void SessionManager::session_state(SessionState s)
  	    sensitive[MENU_PICKS]=true;
 	    sensitive[MENU_PICKS_BWIN]=true;
 	    sensitive[MENU_PICKS_RWIN]=true;
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_PICKS_TEDIT]=true;
 	    sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
+	    sensitive[MENU_OPTIONS_MCC]=true;
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
@@ -359,11 +357,13 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS]=true;
             sensitive[MENU_PICKS_BWIN]=true;
             sensitive[MENU_PICKS_RWIN]=true;
+	    sensitive[MENU_EDIT]=true;
             sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
+	    sensitive[MENU_OPTIONS_MCC]=true;
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
@@ -385,11 +385,13 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS]=true;
             sensitive[MENU_PICKS_BWIN]=true;
             sensitive[MENU_PICKS_RWIN]=true;
+	    sensitive[MENU_EDIT]=true;
             sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
+	    sensitive[MENU_OPTIONS_MCC]=true;
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
@@ -418,11 +420,13 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS]=true;
             sensitive[MENU_PICKS_BWIN]=true;
             sensitive[MENU_PICKS_RWIN]=true;
+	    sensitive[MENU_EDIT]=true;
             sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
+	    sensitive[MENU_OPTIONS_MCC]=true;
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    sensitive[MENU_VIEW_DISTANCE]=true;
@@ -435,10 +439,12 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	case TRACE_EDIT:
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_PICKS_TEDIT]=true;
             sensitive[MENU_FILE_EXIT]=true;
 	    break;
 	case PICKING_CUTOFF:
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_FILE_EXIT]=true;
 	    break;
@@ -449,9 +455,11 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_TWEEKER]=true;
 	    break;
 	case POLARITY_SWITCHING:
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_POLARITY_SWITCHER]=true;
 	    break;
 	case MANUAL_PICKING:
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_MANUAL_PICKING]=true;
 	    break;
 	default:

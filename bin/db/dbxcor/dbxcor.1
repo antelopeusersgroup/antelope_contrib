@@ -165,10 +165,12 @@ generic gathers as the processing mode.
 The front end of this program is a graphical user interface using
 the X Motif and X toolkit libraries.  The graphical iterface has four main sections:
 .IP (1)
-A top bar with pull-down menus.  The menus are File, Picks, Option, and View.  
-File is largely an alternative exit.  Picks is used to select processing
+A top bar with pull-down menus.  The menus are File, Edit,  Picks, Option, and View.  
+File is largely an alternative exit.  Edit contains a number of trace editing
+functions described below.  Picks is used to select processing
 time windows (see below).  The options menu provides a means to bring up
-two popup windows;  one or data sort criteria and the other for filter options.
+thee popup windows;  one for data sort criteria, one for filter options,
+and one for multichannel correlator options.
 Finally, view is used to run various attribute plots an station names on or off.
 .IP (2)
 A seismic data display section.  The data shown are displayed using a 
@@ -241,8 +243,8 @@ to restore the original data filtered only with the default filter for
 the requested phase.  
 .IP (2) 
 Bad traces can and normally should be edited out by one of two mechanisms.
-First, the "Trace Edit" button is a toggle.  When pushed all elements of the 
-GUI are disabled except the inverse toggle labeled "Stop Trace Edit".  Click 
+First, the Edit->Trace Edit button is a toggle.  When selected all elements of the 
+GUI are disabled except the inverse toggle labeled "Stop Trace Edit" under the edit menu.  Click 
 on traces to be killed with MB2.  As you do so they will be marked dead, 
 made flat, and colored red.  The mark dead attribute is reversible
 so if you hit the wrong trace
@@ -251,9 +253,11 @@ second method for editing is only possible after running Analyze at least once.
 Alternatively, click with MB1 on the button labeled "Pick Cutoff".  Pick a trace on the display
 with MB2 and all data below that trace on the display will be marked dead.  
 .IP (3)
-Think of the "Restore Data" button as the ultimate escape.  It allows you to 
+The edit menu has a "Restore Data" button that is the ultimate escape.
+It allows you to 
 essentially start over as if you had just finished reading the current block 
-of data.
+of data.  Note these data may not be sorted in the same order as the data 
+before hitting this button.
 .IP (4)
 The "Picks" menu item has three selections: (1) Beam window, (2) Robust Window,
 and (3) Reference Trace.  
@@ -351,21 +355,69 @@ with others in the array.  This can indicate an equipment failure,
 error in metadata, or a real property of the earth. The second type
 of plot is an x-y graph of one or more trace attributes.  Currently
 this is limited to:  stack weight, coherence, and peak cross correlation.
-.SH KEYBOARD ACCELERATORS
+.SH MULTICHANNEL CORRELATOR MODES
 .LP
-Several the menu items use Motif keyboard accelerators.  This means typing
-the stated key anywhere in the gui is equivalent to following a particular
-menu chain.  Currently defined accelerators are:
-.IP b
-Alias for Picks->Beam Window.
-.IP r 
-Alias for Picks->Robust Window.
-.IP m
-Alias for Picks->Reference Trace.  The "m" is intended to be mnemonic for "master" trace 
-with a meaning similar to reference.  The obvious choice of "r" collides with the 
-accelerator or the robust window pick name so m was chosen.  The reference trace concept
-was retained because earlier versions of the program and documentation use that terminology
-repeatedly.  Apologies to all users confused by this.  
+Experience with earlier versions of this program revealed a need for three
+different ways of running the multichannel correlation procedure that is
+the core of this program: (1) the normal mode of correlate and stack
+described in the first section of this man page; (2) a "Stack Only" mode 
+in which cross-correlations functions are computed but data are not allowed
+to be time shifted; and (3) a "Correlate Only" mode where data are time shifted
+but the stack is not computed but overwritten by the windowed reference trace.
+This mode is set through the Options->MCC Options menu item.  When selected a
+popup window is create with radio buttons that are used to select one of these
+mutually exclusive options.
+.LP
+This feature was implemented because of several practical problems that arose
+in initial test of this program.
+.IP (1)
+Sometimes one or more traces are subject to cycle skips that are impossible
+to work around.  When faced with this problem use the manual picking function or
+the cycle skip repair edit feature to time shift the problem trace to what you
+believe is the correct time, enable the "Stack Only" MCC Option button, and run
+the process again.  This will allow the problem signal to participate in the 
+stack in the proper timing relationship.
+.IP (2)
+In array processing of teleseismic data the ideal window to correlate and stack is not
+necessarily the desired window for subsequent processing.  The "Stack Only" mode 
+cca be useful in this mode if you set the parameter LoadArrivals true and
+set GatherTimeAlignmentKey to arrival.time.  
+.IP (3)
+The "Correlate Only" mode is most useful in source array processing.  A common 
+receiver gather from events spread through a region of any size will contain a mix
+of data that are extremly well matched, data that are similar but fairly divergent,
+and data that are wildly divergent from any other components of the gather.  This
+mode has been found useful to find and correlate the really similar waveforms in
+an ensemble.  A useful strategy when facing a large gather of divergent signals is
+to visually find events with very similar waveforms, select a relatively long 
+beam time window, and run the analysis in correlate only mode.  This is a very 
+effective way to find waveforms that strongly ressemble the reference as the
+result will be sorted (by default) by the peak cross-correlation with the reference
+trace.
+.SH MANUAL PICKING FEATURES
+.LP
+Two different manual pick correction methods are available.  Both are accessible
+from buttons on the bottom row of the GUI.  The \fIManual Picking\fR button is 
+a simple picker.  Point at a trace, click MB2, and the seismogram will be shifted to 
+make that point to zero in the arrival time reference frame.  Note this is only 
+the same as picking the arrival time if the rest of the data are aligned relative
+to the 0 mark.  Be warned that sometimes the algorithm used in the multichannel
+correlation processing will shift 0 somewhat making this picking process more awkward
+than would be ideal.
+.LP
+The second mode of picking is more elaborate.  If you push the "Magnify Picking" button
+the main display is armed to produce a special picking method.  When enabled all other 
+buttons on the GUI are disabled until this button is pushed again.  The primary purpose
+of this method is to repair cycle skips in cross-correlation.  Point at a trace that
+needs to be fixed and click on it somewhere with MB2.  This will bring up a new window
+with three seismogram.  In order from the bottom up these are: (1) the seismogram 
+to be picked, (2) the current beam estimate, and (3) the cross-correlation function
+between the beam and the displayed trace.  You must pick a point on the cross-correlation
+trace to shift the data to correct a cycle skip.  The concept to keep in mind is to point
+at the peak of the correlation function that you believe is more appropriate than the 
+maximum chosen by the program.  The traces in the new window and the master display 
+will be updated based on the selected pick.  (Note:  the picker does not use any kind of
+maximum finder.  It simply uses the time defined by your pick.).
 .SH WAVEFORM DATA MODELS
 .PP
 This program expects waveforms assembled in different ways depending
@@ -405,30 +457,36 @@ This process can be repeated until no data remain in the gather or until the
 "Next Gather" button us pushed.  Furthermore, in this mode results are currently 
 saved to a different output table called xsaa that differs somewhat from 
 the xcorarrival table created in other modes. 
-.SH MANUAL PICKING FEATURES
+.SH KEYBOARD ACCELERATORS
 .LP
-Two different manual pick correction methods are available.  Both are accessible
-from buttons on the bottom row of the GUI.  The \fIManual Picking\fR button is 
-a simple picker.  Point at a trace, click MB2, and the seismogram will be shifted to 
-make that point to zero in the arrival time reference frame.  Note this is only 
-the same as picking the arrival time if the rest of the data are aligned relative
-to the 0 mark.  Be warned that sometimes the algorithm used in the multichannel
-correlation processing will shift 0 somewhat making this picking process more awkward
-than would be ideal.
-.LP
-The second mode of picking is more elaborate.  If you push the "Magnify Picking" button
-the main display is armed to produce a special picking method.  When enabled all other 
-buttons on the GUI are disabled until this button is pushed again.  The primary purpose
-of this method is to repair cycle skips in cross-correlation.  Point at a trace that
-needs to be fixed and click on it somewhere with MB2.  This will bring up a new window
-with three seismogram.  In order from the bottom up these are: (1) the seismogram 
-to be picked, (2) the current beam estimate, and (3) the cross-correlation function
-between the beam and the displayed trace.  You must pick a point on the cross-correlation
-trace to shift the data to correct a cycle skip.  The concept to keep in mind is to point
-at the peak of the correlation function that you believe is more appropriate than the 
-maximum chosen by the program.  The traces in the new window and the master display 
-will be updated based on the selected pick.  (Note:  the picker does not use any kind of
-maximum finder.  It simply uses the time defined by your pick.).
+Several the menu items use Motif keyboard accelerators.  This means typing
+the stated key anywhere in the gui is equivalent to following a particular
+menu chain.  Currently defined accelerators are:
+.IP b
+Alias for Picks->Beam Window.
+.IP r 
+Alias for Picks->Robust Window.
+.IP m
+Alias for Picks->Reference Trace.  The "m" is intended to be mnemonic for "master" trace 
+with a meaning similar to reference.  The obvious choice of "r" collides with the 
+accelerator or the robust window pick name so m was chosen.  The reference trace concept
+was retained because earlier versions of the program and documentation use that terminology
+repeatedly.  Apologies to all users confused by this.  
+.IP t
+Alias for Edit->Trace Edit.  This enables or disables the single trace kill (edit) function
+with MB2.
+.IP c
+Alias for Edit->Pick Cutoff.  This enables and disables the trace cutoff picking method
+described above.  (MB2 selection kills all traces below picked point)
+.IP p
+Alias for Edit->Enable Polarity Edit.  This enables the polarity flipping feature
+with MB2 described above.
+.IP d
+Alias for Edit->Restore Data.  That is, it is the escape button that clears
+everything and restores the original ensemble.
+This is supposed to be mnemonic for "data".  Could not 
+use the more logical "r" because it was already used as an accelerator
+for picking the robust window. 
 .SH PARAMETER FILE
 .LP
 The complete parameter file for this program is very long
@@ -751,6 +809,10 @@ when processing with this program.
 The creation of two different output tables (xcorarrival and xsaa) depending
 on the processing mode is problematic and at some point they will likely be 
 merged into one table that can work on both modes.
+.IP (4)
+The informational text window does not refresh properly.  Whenever a message is posted
+to that window the text is pushed to a line above the scroll bar and is not visible 
+until the user hits the scrollbar widget to shift the text downward.
 .SH AUTHOR
 Peng Wang (pewang@indiana.edu) wrote the GUI.  The seismic analysis sections
 were written by Gary Pavlis (pavlis@indiana.edu).  Later versions of the gui 
