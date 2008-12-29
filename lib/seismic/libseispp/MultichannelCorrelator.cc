@@ -186,15 +186,17 @@ void NormalizeAmplitudeStatics(vector<double>& statics)
 //@}
 
 MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
-	CorrelationMethod method, 
-		TimeWindow beam_window,
-			TimeWindow robust_window,
-			    double lag_cutoff,
-				StackType stacktype,
-					TimeSeries *initial_beam,
-						int reference_member,
-							bool normalize,
-								bool parallel)
+  CorrelationMethod method, 
+    TimeWindow beam_window,
+      TimeWindow robust_window,
+          double lag_cutoff,
+              StackType stacktype,
+                TimeSeries *initial_beam,
+                  int reference_member,
+                    bool normalize,
+                      bool parallel,
+		        bool correlate_only,
+			  bool freeze)
 {
 	int i, count;
 	double tshiftnorm;
@@ -207,6 +209,9 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 
 	if(data.member.empty())
 		throw SeisppError(base_message+string("Input data ensemble is empty\n"));
+	if(correlate_only && freeze) 
+		throw SeisppError(base_message+"illegal parameter combination.\n"
+			+ string("correlate_only and freeze options are mutually exclusive."));
 	// All methods use reference_member when that argument is used.  Otherwise
 	// the contents of the Beam trace are used.
 	try{
@@ -253,6 +258,9 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			if(xcor.member[i].live)
 			{
 				TimeSeriesMaximum tsm(xcor.member[i]);
+				/* do this here to get amplitudes right in
+				freeze mode.  */
+				if(freeze)tsm.lag=0.0;
 				lag.push_back(tsm.lag);
 				peakxcor.push_back(tsm.peak);
 				weight.push_back(1.0);
@@ -301,10 +309,10 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			method_used=RobustStack;
 		}
 		//
-		// Note one odd bit of logic here.  Event he simple
+		// Note one odd bit of logic here.  Even the simple
 		// method passes through this loop once.  Note the
 		// conditional that loopback only occurs when method
-		// is set to RobustStack.
+		// is set to RobustStack or when freeze is set.
 		//
 		count=0;
 		Stack newstack;
@@ -314,8 +322,17 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 				newstack=Stack(data,beam_window);
 			else
 				newstack=Stack(data,beam_window,robust_window,stacktype);	
-			beam=newstack.stack;
-			beam.put("fold",newstack.fold);
+			/* normally we overwrite the beam TimeSeries object with the new
+			stack trace.  Note this is bypassed when correlate_only is true
+			and the beam is left as the windowed reference trace passed in.
+			The only signal for this is settng fold to 1*/
+			if(!correlate_only) 
+			{
+				beam=newstack.stack;
+				beam.put("fold",newstack.fold);
+			}
+			else
+				beam.put("fold",1);
 			stack_normalization_factor=linfnorm(newstack.weights);
 			// silently avoid divide by zero.  Shouldn't happen but worth this 
 			// safety valve.
@@ -327,16 +344,23 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			//
 			for(i=0;i<data.member.size();++i)
 			{
-				try {
-					xcor.member[i]=correlation(beam,data.member[i],lag_range,true);
-				} catch (SeisppError serr)
+				/* We don't need to recompute the xcor functions when correlation_mode
+				is enabled.  Confused the algorithm, but this is a relatively expensive
+				calculation best avoided in this situation.  This is especially true since
+				it is expected that normally this mode would use a fairly long time gate. */
+				if(!correlate_only)
 				{
-					cerr << "MultichannelCorrelation(Warning):  problem data deleted."
-						<< endl
-						<< "Error message follows"<<endl;
-					serr.log_error();
-					// Push an empty, dead trace to handle this condition
-					xcor.member.push_back(TimeSeries());
+					try {
+						xcor.member[i]=correlation(beam,data.member[i],lag_range,true);
+					} catch (SeisppError serr)
+					{
+						cerr << "MultichannelCorrelation(Warning):  problem data deleted."
+							<< endl
+							<< "Error message follows"<<endl;
+						serr.log_error();
+						// Push an empty, dead trace to handle this condition
+						xcor.member.push_back(TimeSeries());
+					}
 				}
 				// Stack object handles data marked bad
 				// already.  Have to do same here as 
@@ -344,6 +368,11 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 				if(xcor.member[i].live && data.member[i].live)
 				{
 					TimeSeriesMaximum tsm(xcor.member[i]);
+					/* We do this rather than just setting lag[i] to zero as this
+					allows the amplitude term to be computed correctly for the frozen
+					time gate */
+					if(freeze)
+						tsm.lag=0.0;
 					lag[i]=tsm.lag;
 					peakxcor[i]=tsm.peak;
 					weight[i]=newstack.weights[i]/stack_normalization_factor;
@@ -360,6 +389,9 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 				}
 				deltalag[i]=lag[i]-lastlag[i];
 			} 
+			/* Avoid the overhead of the next few steps in correlate_only mode.
+			The loop would still be broken, but this extra code seems justified.*/
+			if(correlate_only) break;
 			kill_data_with_bad_xcor(data,lag,lag_cutoff);
 			
 			tshiftnorm=linfnorm(deltalag);

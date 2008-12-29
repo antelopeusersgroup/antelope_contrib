@@ -29,8 +29,44 @@ namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
 
+/*! \brief Defines overall processing mode for XcorEngine. 
+
+This enum controls the overall processing mode for an XcorProcessingEngine object.
+See documentation for the XcorProcessingEngine for a desciption of what thee modes mean.
+*/
 enum XcorEngineMode {ContinuousDB, EventGathers, GenericGathers};
 
+/* \brief Processing object for multichannel correlator.
+
+This is a processing object that can be used to process a series of gathers
+using the MultichannelCorrelator object.  It is an model of a processing engine
+that reads in data and produces output like an engine that eat fuel and air 
+and produces power and exhaust.  The normal use is this sequence for each
+gather to be processed:  (1) read data, (2) run MultichannelCorrelator on
+these data, and (3) save results.   The options in running this are huge,
+however, and this beast has a lot of variation.  The behaviour is controlled
+by two different means.  First, on creation most parameters are set through
+an input Antelope parameter file.  Second, this beast has a parallel 
+object called XcorAnalysisSetting that contains input to this beast that
+are volatile.  To use an automotive analogy, the pf is like parts selected
+to create this engine at the factor.  The XcorAnalysisSetting object is like
+the engine controls (throttle, choke, etc.).
+
+This beast behaves expects very different data and behaves very differently
+for each of these modes.  ContinuousDB assumes event gathers indexed
+by an Antelope database using wfdisc. This can be segmented data in spite
+of the name, but the model is the same.  That is time windows are carved 
+from the input on the fly.  Provided the data segments are larger than requested
+time gates there will be no issues.  EventGathers is a generalization of 
+this mode.  We still assume event processing, but dbprocess is used to 
+define the database view that drives the processing.  In this mode it is
+essential that the commands passed to dbprocess contain a dbgroup command
+to define ensemble grouping by event.  GenericGathers is similar to EventGathers
+in how it expects to see input data, but does not assume the data are 
+event gathers.  In the current implementation this somewhat implicitly 
+assumes the input data are common receiver gathers used for source array 
+processing, but the only place this matter much is in the save method. 
+*/
 class XcorProcessingEngine {
 public:
 	bool use_subarrays;

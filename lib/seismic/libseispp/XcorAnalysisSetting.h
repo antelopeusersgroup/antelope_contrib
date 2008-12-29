@@ -19,11 +19,12 @@ namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
 
-// Analysis results can be sorted by these keys
-// made an enum for convenience.  
+/*! Defines sort order for an ensemble after analysis by XcorProcessingEngine.*/
 enum SortOrder {COHERENCE,CORRELATION_PEAK,AMPLITUDE,LAG,WEIGHT,
 	SITE_LAT,SITE_LON,PREDARR_TIME,ESAZ,DISTANCE,ARRIVAL_TIME,
 	DBARRIVAL_TIME,SNR};
+/*! Defines MultichannelCorrelator analysis mode.  */
+enum MCCAnalysisMode {CORRELATE_AND_STACK, CORRELATE_ONLY, STACK_ONLY};
 
 //@{ Encapsulates all quantities required by XcorProcessingEngine in 
 //   a single data structure.  
@@ -61,6 +62,7 @@ public:
 	// Added by GLP 1/6/2006
 	SortOrder result_sort_order;
 	bool sort_reverse;
+	MCCAnalysisMode mccmode;
 };
 
 } // end SEISPP namespace declaration

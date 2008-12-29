@@ -156,5 +156,6 @@ private:
 	string method;
 	string model;
 };
+
 } // End SEISPP namespace declaration
 #endif

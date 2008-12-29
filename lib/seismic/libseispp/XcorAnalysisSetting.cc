@@ -122,6 +122,9 @@ XcorAnalysisSetting::XcorAnalysisSetting(Metadata md)
 		// Default on construction is always normal sort order.  User must 
 		// explicitly set this true to change the default.
 		sort_reverse=false;
+		/* We hard code the default as stack and sum as that is the normal operation
+		mode and default for MultichannelCorrelator constructor */
+		mccmode=CORRELATE_AND_STACK;
 	        	                      
 	} catch (MetadataGetError mderr)
 	{
@@ -159,6 +162,7 @@ XcorAnalysisSetting::XcorAnalysisSetting(const XcorAnalysisSetting& old)
 	result_sort_order=old.result_sort_order;
 	arrival_chan_code=old.arrival_chan_code;
 	sort_reverse=old.sort_reverse;
+	mccmode=old.mccmode;
 }
 XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& old)
 {
@@ -184,6 +188,7 @@ XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& o
 	result_sort_order=old.result_sort_order;
 	arrival_chan_code=old.arrival_chan_code;
 	sort_reverse=old.sort_reverse;
+	mccmode=old.mccmode;
     }
     return(*this);
 }

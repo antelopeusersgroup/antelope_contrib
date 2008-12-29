@@ -336,22 +336,44 @@ public:
 	*	ever is shorter.
 	* \param stack_type Method to use to compute stack.
 	* \param initial_beam optional initial estimate of stack.
+	*   If NULL (default) this is ignored and reference_member is used as the 
+	*   initial beam estimate.
 	* \param reference_member optional reference trace to use as starting estimate of
 	*	stack for robust method.  Ignored for other simple or median stack.
-	* \param normalize if true cross-correlation traces will be normalized.
-	* \param parallel use a parallel processing algorithm (currently not implemented).
+	*	(default false)
+	* \param normalize if true cross-correlation traces will be normalized. (default false)
+	* \param parallel use a parallel processing algorithm (currently not implemented so 
+	*       default is false).
+	* \param correlate_only when true cross-correlation with the reference trace is performed
+	*       but the data are not stacked and the beam attribute of the object is a copy
+	*       of the input reference trace.  Trace header (Metadata) attributes normally set by this
+	*       object, however, set in the input ensmble, d. 
+	* \param freeze is somewhat the reverse of correlate_only.  When true a stack is computed
+	*       but lag estimates are all set to zero.  In this situation the cross-correlation 
+	*       functions are still computed and stored in the xcor attribute but the peak 
+	*       correlation will not normally be aligned on zero.  The peakxcor and amplitude_static
+	*       vectors will be properly filled out and are defined relative to the computed stack.
+	*       In short, this pretty much behaves like the default behaviour except no time shifting
+	*       done.  (Default is false)  Note since this is the opposite of correlate_only
+	*       setting this and correlate_only both true will lead to a SeisppError exception
+	*       being thrown.
+	* \exception SeisppError will be thrown for a variety of conditions.  These include:  (1) no
+	*	data in input ensemble, (2) no reference trace defined, (3) cascading errors thrown
+	*       by stacker or other seispp procedures, and (4) input inconsistencies.
 	*/
 	MultichannelCorrelator(TimeSeriesEnsemble& d,
-		CorrelationMethod meth,
-			TimeWindow beam_window,
-				TimeWindow robust_window=TimeWindow(),
-				    double lag_cutoff=5.0,
-					StackType stack_type=BasicStack,
-						TimeSeries *initial_beam=NULL,
-						     int reference_member=0,
-							bool normalize=false,
-								bool parallel=false);
-	/*!
+     	      CorrelationMethod meth,
+	        TimeWindow beam_window,
+	          TimeWindow robust_window=TimeWindow(),
+	           double lag_cutoff=5.0,
+	            StackType stack_type=BasicStack,
+	              TimeSeries *initial_beam=NULL,
+	               int reference_member=0,
+	                bool normalize=false,
+	                  bool parallel=false,
+	                    bool correlate_only=false,
+                      	      bool freeze=false);
+    /*!
 	*  \brief Construct this object from a ThreeComponentEnemble.
 	*
 	*  This constructor differs very little from it's close cousin that

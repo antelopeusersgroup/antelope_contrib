@@ -328,9 +328,24 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    if(mcc!=NULL) delete mcc;
    try {
      UpdateGeometry(current_data_window);
-     mcc=	new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
+     switch(analysis_setting.mccmode)
+     {
+     case CORRELATE_ONLY:
+       mcc=new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
+   	analysis_setting.robust_tw,time_lag_cutoff,RobustSNR,NULL,
+   	analysis_setting.reference_trace,false,false,true,false);
+       break;
+     case STACK_ONLY:
+       mcc=new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
+   	analysis_setting.robust_tw,time_lag_cutoff,RobustSNR,NULL,
+   	analysis_setting.reference_trace,false,false,false,true);
+       break;
+     case CORRELATE_AND_STACK:
+     default:
+       mcc=new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
    	analysis_setting.robust_tw,time_lag_cutoff,RobustSNR,NULL,
    	analysis_setting.reference_trace);
+     }
    } catch (...) {throw;};
    //
    // We need to reset bad moveout in xcor so it can be plotted properly.
