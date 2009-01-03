@@ -29,6 +29,21 @@ public:
  Default constructor.
 **/
 	SlownessVector();
+/*! \brief Fully parameterized constructor.
+
+A slowness vector is defined by it's components.  There is one ambiguity, however,
+with a zero slowness vector.  That is, normally direction of propagation is
+inferred from the vector azimuth.  A zero slowness vector has physical significance
+(normal incidence) but presents and ambiguity in this regard.  We use a defaulted
+az0 parameter to specify the azimuth that should be used if the magnitude of
+slowness vector is 0.
+
+\param ux0 - set x (EW) component to this value.
+\param uy0 - set y (NS) component to this value.
+\param az0 - use this as azimuth (radians) if this is a zero slowness vector
+	(default 0.0)
+*/
+	SlownessVector(double ux0, double uy0, double az0=0.0);
 /*!
  Copy constructor.
 **/
@@ -51,6 +66,10 @@ public:
  from a given position.  The value returned is in radians.
 **/
 	double baz();
+/*! \brief Standard assignment operator. */
+	SlownessVector& operator=(const SlownessVector& parent);
+private:
+	double azimuth0;
 };
 /*! \brief This object defines a uniform grid of points in slowness space.
 

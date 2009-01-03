@@ -1,3 +1,4 @@
+#include <float.h>
 #include "SeisppError.h"
 #include "Metadata.h"
 #include "slowness.h"
@@ -76,11 +77,29 @@ SlownessVector::SlownessVector()
 {
 	ux=0.0;
 	uy=0.0;
+	azimuth0=0.0;
 }
 SlownessVector::SlownessVector(const SlownessVector& old)
 {
 	ux=old.ux;
 	uy=old.uy;
+	azimuth0=old.azimuth0;
+}
+SlownessVector::SlownessVector(double ux0, double uy0, double az0)
+{
+	ux=ux0;
+	uy=uy0;
+	azimuth0=az0;
+}
+SlownessVector& SlownessVector::operator=(const SlownessVector& parent)
+{
+	if(this!=&parent)
+	{
+		ux=parent.ux;
+		uy=parent.uy;
+		azimuth0=parent.azimuth0;
+	}
+	return(*this);
 }
 
 // These could (and once were) inline, but decided that was poor
@@ -91,7 +110,7 @@ double SlownessVector::mag()
 }
 double SlownessVector::azimuth()
 {
-	if(this->mag() <= 0.0) return(0.0);
+	if(this->mag() <= FLT_EPSILON) return(azimuth0);
 	double phi;
 	phi=M_PI_2-atan2(uy,ux);
 	if(phi>M_PI)
@@ -103,9 +122,11 @@ double SlownessVector::azimuth()
 }
 double SlownessVector::baz()
 {
-	if(this->mag() <= 0.0) return(0.0);
 	double phi;
-	phi=3.0*M_PI_2-atan2(uy,ux);
+	if(this->mag() <= FLT_EPSILON) 
+		phi=M_PI-azimuth0;
+	else
+		phi=3.0*M_PI_2-atan2(uy,ux);
 	if(phi>M_PI)
                 return(phi-2.0*M_PI);
 	else if(phi<-M_PI)

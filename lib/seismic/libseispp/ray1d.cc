@@ -132,14 +132,17 @@ RayPathSphere::RayPathSphere(const  RayPathSphere& other)
 }
 
 /* basic assignment operator for this object*/
-void RayPathSphere::operator=(const RayPathSphere& other)
+RayPathSphere& RayPathSphere::operator=(const RayPathSphere& other)
 {
-	if(&other==this) return;
-	npts=other.npts;
-	p=other.p;
-	r=other.r;
-	t=other.t;
-	delta=other.delta;
+	if(this!=&other)
+	{
+		npts=other.npts;
+		p=other.p;
+		r=other.r;
+		t=other.t;
+		delta=other.delta;
+	}
+	return(*this);
 }
 double RayPathSphere::depth(int ip)
 {

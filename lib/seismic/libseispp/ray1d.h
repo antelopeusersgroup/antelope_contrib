@@ -83,7 +83,7 @@ public:
 	/*! Standard copy constructor.*/
 	RayPathSphere(const RayPathSphere& raytocopy);
 	/*! Standard assignment operator.*/
-	void operator = (const RayPathSphere&);
+	RayPathSphere& operator = (const RayPathSphere&);
 	/*! Return depth to a particular point on the ray path.
 
 	Because the ray path is stored as triplets of radii, distance,
