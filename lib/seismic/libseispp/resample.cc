@@ -11,6 +11,7 @@ Written:  Winter spring 2004
 */
 #include <list>
 #include <vector>
+#include <sstream>
 using namespace std;
 #include "seispp.h"
 #include "interpolator1d.h"

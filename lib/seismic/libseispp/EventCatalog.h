@@ -36,10 +36,10 @@ their space times positions (using vp) are less than rmax (units of km).  Parame
 here are reasonable for global solution, but network operators using this code
 for regional networks may want to change these parameters.
 */
-class SpaceTimeCompare
+class SpaceTimeCompare : public binary_function<Hypocenter,Hypocenter,bool>
 {
 public:
-        bool operator()(Hypocenter h1, Hypocenter h2)
+        bool operator()(const Hypocenter& h1, const Hypocenter& h2) const
         {
 		const double vp(6.2);  // km/s
 		const double dtmin(2.0);  // fudge factor cannot be smaller than this
@@ -61,7 +61,8 @@ public:
 		else
 		{
 			double r2,dt;
-			r2=h1.distance(h2.lat,h2.lon);
+			Hypocenter htmp=const_cast<Hypocenter&>(h1);
+			r2=htmp.distance(h2.lat,h2.lon);
 			r2=r2*r2;
 			r2+=((h1.z-h2.z)*(h1.z-h2.z));
 			dt=r2/(vp*vp);

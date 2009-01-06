@@ -57,7 +57,7 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& a
 		}
 		current_hypo=catalog.begin();
 		mdloaded=mdl;
-	} catch (exception& e)
+	} catch (std::exception& e)
 	{
 		string message=base_message
 			+ "dynamic_cast to DatascopeHandle failed.\nstdlib error message:"
@@ -94,7 +94,7 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,string ttmethod, string ttmodel)
 					<< strtime(otime)<<endl;
 		}
 		current_hypo=catalog.begin();
-	} catch (exception& e)
+	} catch (std::exception& e)
 	{
 		string message=base_message
 			+ "dynamic_cast to DatascopeHandle failed.\nstdlib error message:"
@@ -189,6 +189,7 @@ EventCatalog& EventCatalog::operator=(const EventCatalog& parent)
 	current_hypo=parent.current_hypo;
 	mdloaded=parent.mdloaded;
     }
+    return(*this);
 }
 
 } /* End SEISPP namespace encapsulation*/
