@@ -115,7 +115,7 @@ arrivals &Arr{
 }
 
 #
-# Filter setting - 1 to 1 mapping to orbmonrtd
+# Filter - 1 to 1 mapping to orbmonrtd
 #
 filter	
 

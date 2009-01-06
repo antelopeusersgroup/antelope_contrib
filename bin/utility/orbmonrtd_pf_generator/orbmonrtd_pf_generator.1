@@ -1,9 +1,10 @@
 .TH ORBMONRTD_PF_GENERATOR 1 "$Date$" 
 .SH NAME
-orbmonrtd_pf_generator \- create parameter files for orbmonrtd from a dbmaster deployment table
+orbmonrtd_pf_generator \- create parameter files for orbmonrtd from a dbmaster database
 .SH SYNOPSIS
 .nf
 orbmonrtd_pf_generator [-v] [-d pfdirectory] 
+                       [-t table_name]
                        [-p pffile] dbmaster
 .fi
 .SH DESCRIPTION
@@ -11,7 +12,7 @@ The script orbmonrtd_pf_generator creates parameter files for
 orbmonrtd(1). This is useful for networks that have dynamic
 deployments, such as the USArray experiment. To monitor temporarily
 deployed stations requires orbmonrtd parameter files to be frequently
-updated as the dbmaster deployment table is updated. This allows
+updated as the dbmaster site or deployment table is updated. This allows
 accurate determination of the state of health of a complete dynamic
 network.
 
@@ -51,6 +52,11 @@ Define the path to the directory that you wish the dynamically created
 orbmonrtd parameter files to be written to. Please ensure that the user
 that runs this script has permission to write to the specified
 directory
+.IP "-t table_name"
+Optionally specify a valid Datascope CSS3.0 database table to use to 
+determine endtimes or offdates for deployed stations. By default the 
+CSS 3.0 site and snetsta tables are used. The only other option is 
+the CSS 3.0 extension deployment table. 
 .IP "-p pffile"
 Specify a parameter file for use with this script
 .IP "-v"
@@ -179,7 +185,7 @@ pf_revision_time 1199145710
 .fi
 .SH EXAMPLE
 .nf
-orbmonrtd_pf_generator -v -d pftmp -p pf/orbmonrtd_pf_generator /path/to/usarray/dbmaster/usarray
+orbmonrtd_pf_generator -v -d pftmp -t deployment -p pf/orbmonrtd_pf_generator /path/to/usarray/dbmaster/usarray
 .fi
 .SH RETURN VALUES
 An example orbmonrtd parameter file created by this script follows:
