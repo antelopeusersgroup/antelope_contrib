@@ -4,7 +4,7 @@ namespace SEISPP
 
 // Rather trivial routines to apply a geometric static as a simple elevation
 // divided by an input velocity.  
-void ApplyGeometricStatic(TimeSeries *ts, double vel, double elev)
+void ApplyGeometricStatic(BasicTimeSeries *ts, double vel, double elev)
 {
 	ts->t0 -= elev/vel;
 }
@@ -18,7 +18,7 @@ void ApplyGeometricStatic(TimeSeries *ts)
 	double elev,vel;
 	const string help_message="EDIT metadata_defaults.pf\n";
 	try {
-		elev = ts->get_double("elevation");
+		elev = ts->get_double("elev");
 	} catch (MetadataError& mde)
 	{
 		mde.log_error();

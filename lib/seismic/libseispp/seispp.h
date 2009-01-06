@@ -59,17 +59,22 @@ enum AttributeType {INT32, INT16, BYTE, REAL32, REAL64,
 
 /*! Apply a simple static time shift based on elevation.
 
-Applies a time shift called a geometric static to TimeSeries object ts 
+Applies a time shift called a geometric static to BasicTimeSeries object ts 
 using velocity vel and elevation elev.  This is a simple elev/vel correction.
+Note this method can be applied to any data object that inherits 
+BasicTimeSeries so this should be considered a generic method to do this
+process.  It is very important to note, however, that it is the 
+caller responsibility to do any bookeeping if it is important to 
+keep track of the time shift applid by this procedure.
 \param ts data to which the static should be applied.
 \param vel surface velocity to use for static computation.
 \param elev elevation of station.
 **/
-void ApplyGeometricStatic(TimeSeries *ts, double vel, double elev);
+void ApplyGeometricStatic(BasicTimeSeries *ts, double vel, double elev);
 /*!
 // Applies a time shift called a geometric static to TimeSeries object ts 
 // using velocity and elevation extracted from the metadata area of ts.  
-// The function requires that attributes "elevation" and "surface_velocity"
+// The function requires that attributes "elev" and "surface_velocity"
 // be defined in the object.  If these attributes are not defined the 
 // data are not altered but a diagnostic is issued to stderr.
 **/
