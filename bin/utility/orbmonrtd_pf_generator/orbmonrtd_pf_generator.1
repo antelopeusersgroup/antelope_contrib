@@ -8,13 +8,16 @@ orbmonrtd_pf_generator [-v] [-d pfdirectory]
                        [-p pffile] dbmaster
 .fi
 .SH DESCRIPTION
-The script orbmonrtd_pf_generator creates parameter files for
+The Perl script orbmonrtd_pf_generator creates parameter files for
 orbmonrtd(1). This is useful for networks that have dynamic
 deployments, such as the USArray experiment. To monitor temporarily
 deployed stations requires orbmonrtd parameter files to be frequently
-updated as the dbmaster site or deployment table is updated. This allows
-accurate determination of the state of health of a complete dynamic
-network.
+updated as the dbmaster site offdate or deployment endtime table 
+fields are updated. Executing this script outputs only those stations 
+you expect to be returning data (i.e. \'online\') to the orbmonrtd 
+parameter file structure, and therfore be displayed in orbmonrtd. This 
+helps in accurate determination of the state of health of a complete 
+dynamic network.
 
 The parameter file for orbmonrtd_pf_generator defines a series of
 variables commonly found in orbmonrtd parameter files, such as the dump
@@ -33,9 +36,10 @@ for orbmonrtd is defined in the chan key\-value pair. An optional
 modulus operator can be defined if, for example, the user wishes to
 only see every n\'th channel trace from the Orb to be monitored. An
 optional subset table can be defined as a series of Datascope database
-operations to the deployment table if the user wishes to re\-order the
-traces in orbmonrtd in a certain way, such as by latitude or deployment
-start time.
+operations to the default site and snetsta tables (or a deployment 
+table if the -t argument is defined as deployment) if the user wishes 
+to re\-order the traces in orbmonrtd in a certain way, such as by 
+latitude, site ondate, network code, or deployment start time.
 
 The exceptions array allows certain stations to over\-ride the
 definitions applied to the Orb trace by the sources array. The key for
@@ -270,7 +274,9 @@ sources &Tbl{
 orbmonrtd(1)
 .fi
 .SH "BUGS AND CAVEATS"
-A deployment table is required for the dbmaster database. The script will die without one defined.
+Valid CSS3.0 schema site and snetsta tables are required for the dbmaster 
+database. The script will die without these present. If the deployment table
+is to be used, a valid CSS3.0 extension deployment table must exist.
 .SH AUTHOR
 .nf
 Rob Newman
