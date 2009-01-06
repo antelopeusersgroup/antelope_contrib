@@ -6,7 +6,7 @@ namespace SEISPP
 // divided by an input velocity.  
 void ApplyGeometricStatic(BasicTimeSeries *ts, double vel, double elev)
 {
-	ts->t0 -= elev/vel;
+	ts->t0 += elev/vel;
 }
 // Here we use overloading to allow simplified and/or defaulted values
 // This implementation is always verbose if errors are thrown in
