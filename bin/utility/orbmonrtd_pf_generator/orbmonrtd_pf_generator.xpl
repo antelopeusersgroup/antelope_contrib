@@ -21,11 +21,11 @@ chomp( $Program ) ;
 
 elog_init( $Program, @ARGV ) ;
 
-our( $dbname, $pfdir, %State, @db, @db_subset, $this_pf_file, $revision_time ) ;
-our( $opt_v, $opt_d, $opt_p ) ;
+our( $dbname, $pfdir, %State, @db_subset, $this_pf_file, $revision_time ) ;
+our( $opt_v, $opt_d, $opt_t, $opt_p ) ;
 
 if( ! &Getopts( 'vd:p:' ) || @ARGV != 1 ) {
-    die( "Usage: orbmonrtdpfgenerator [-v] [-d pfdirectory] [-p pffile] dbmaster\n" ) ;
+    die( "Usage: orbmonrtdpfgenerator [-v] [-d pfdirectory] [-t table] [-p pffile] dbmaster\n" ) ;
 } else {
     $dbname = $ARGV[0] ;
     $pfdir = $opt_d ;
@@ -70,20 +70,6 @@ sub init_globals {
     }
 }
 
-sub check_dbmaster {
-    @db = dblookup( @db, "", "deployment", "", "" ) ;
-    if( dbquery( @db, "dbRECORD_COUNT" ) < 1 ) {
-        dbfree( @db ) ;
-        dbclose( @db ) ;
-        die( "The dbmaster database deployment table has no records! " .
-        "Please check the path defined in the -d option. Goodbye.\n" ) ;
-    } else {
-        if( $opt_v ) {
-            print( "Successfully connected to dbmaster $dbname and opened deployment table.\n" ) ;
-        }
-    }
-}
-
 sub pf_sources {
     my( $pf, $hashname ) = @_ ;
     print "$hashname\n" ;
@@ -95,12 +81,23 @@ sub pf_sources {
 setup_state() ;
 init_globals() ;
 
-@db = dbopen( $dbname, "r" ) ;
+my( @db ) = dbopen( $dbname, "r" ) ;
 
-check_dbmaster() ;
+my( @db_site ) = dblookup( @db, "", "site", "", "" ) ;
+my( @db_snetsta ) = dblookup( @db, "", "snetsta", "", "" ) ;
 
-@db = dbsubset( @db, "endtime > now()" ) ;
-@db = dbsort( @db, "snet","sta" ) ;
+@db = dbjoin( @db_site, @db_snetsta ) ;
+
+# Allow subsets to handle offdates in the future like IRIS wants
+if( defined( $opt_t ) && $opt_t eq "deployment" ) {
+    my( @db_deployment ) = dblookup( @db, "", "deployment", "", "" ) ;
+    @db = dbjoin( @db, @db_deployment ) ;
+    @db = dbsubset( @db, "endtime > now() || endtime == NULL" ) ;
+    @db = dbsort( @db, "snet","sta" ) ;
+} else {
+    @db = dbsubset( @db, "offdate > now() || offdate == NULL" ) ;
+    @db = dbsort( @db, "sta" ) ;
+}
 
 while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
 
