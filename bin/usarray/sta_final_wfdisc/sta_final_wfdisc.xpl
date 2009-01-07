@@ -84,7 +84,7 @@
 
     @db = dbopen($dbops,"r+");
     @dbdeploy = dblookup(@db,0,"deployment",0,0);
-    @dbdeploy = dbsubset(@dbdeploy,"equip_remove < $now  && snet =~ /TA/");
+    @dbdeploy = dbsubset(@dbdeploy,"decert_time < $now  && snet =~ /TA/");
     @dbdeploy = dbsort(@dbdeploy,"sta");
     
     $nrows = dbquery(@dbdeploy,"dbRECORD_COUNT");
