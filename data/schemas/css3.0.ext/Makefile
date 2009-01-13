@@ -1,5 +1,6 @@
 
 DATA = \
+	adoption \
 	comm \
 	deployment \
 	dlevent \
