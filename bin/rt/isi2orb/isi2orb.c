@@ -490,7 +490,19 @@ main( int argc, char **argv )
 					free( s );
 				}
 
-				*nextrequest = now();
+				*nextrequest = 0;
+
+				dreq->req.twind[ireq].beg = ISI_NEWEST;
+
+			} else if( *nextrequest > now() ) {
+
+				elog_complain( 0, 
+					  "Data request for '%s' is ahead of "
+					  "system clock; ignoring "
+					  "state file, setting to newest\n",
+					  key );
+
+				*nextrequest = 0;
 
 				dreq->req.twind[ireq].beg = ISI_NEWEST;
 
@@ -498,7 +510,6 @@ main( int argc, char **argv )
 
 				dreq->req.twind[ireq].beg = *nextrequest;
 			}
-
 
 		} else {
 
