@@ -168,7 +168,7 @@
                                 dbgetv(@dbdeploy,"time","endtime","equip_install","equip_remove","decert_time");
                              
         %staperf = ();
-        $endtime = now() if ($endtime > now());
+#        $endtime = now() if ($endtime > now());
         $staperf{deploy_days} = int($endtime/86400) - int($time/86400.);
         
         $staperf{deploy_days} = $totdays if ($totdays > $staperf{deploy_days});
