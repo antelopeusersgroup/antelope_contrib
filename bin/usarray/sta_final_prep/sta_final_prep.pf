@@ -1,0 +1,15 @@
+#balerdirbase		/anf/TA/baler/station_aof_dumps				# absolute path name for station miniseed base name
+#archivebase			/anf/TA/wf/station_final				# absolute path name for station baler archive name
+
+balerdirbase		/Volumes/TA_Final_Data/station_aof_dumps	# absolute path name for station miniseed base name
+archivebase			/Volumes/TA_Final_Data/station_final		# absolute path name for station baler archive name
+bhdata_dir			BVLAOU                                      # subdirectory name for BH and LH data
+sohdata_dir			VLAOU                                       # subdirectory name for VH, UH, and SOH data 
+
+dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+dbidserver			anfanalyst.ucsd.edu:2499					# default dbidserver
+dblocks				nfs											# default dblocks
+
+wfclean				chan=~/HH.|HL.|HG.|HN.|LL.*|LTW|VCE|VCQ|VFP|VTW/	# remove these wfdisc rows
+
+prob_mail			flvernon@ucsd.edu							# email addresses to send notification of problems
