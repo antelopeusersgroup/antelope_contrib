@@ -380,6 +380,7 @@ sub getparam { # %pf = getparam($Pf);
     my (%pf) ;
     
     $pf{archivebase}		= pfget( $Pf, "archivebase" );
+    $pf{purgatory}	    	= pfget( $Pf, "purgatory" );
     
     $pf{dbops}     		    = pfget( $Pf, "dbops" );
     
@@ -388,6 +389,7 @@ sub getparam { # %pf = getparam($Pf);
     
     if ($opt_V) {
         elog_notify("\narchivebase      $pf{archivebase}");
+        elog_notify("purgatory        $pf{purgatory}" );
         elog_notify("dbops            $pf{dbops}" );
         elog_notify("deploy_mail      $pf{deploy_mail}" );
         elog_notify("prob_mail        $pf{prob_mail}\n\n" );
