@@ -39,6 +39,9 @@ needs to have sourced $ANTELOPE/setup.csh.
 .ne 7
 .IP archivebase
 Absolute path name for output directory containing station directories with station database
+.IP purgatory
+Absolute path name for output directory containing station directories for station database 
+with problems
 .IP dbops
 Path name for database containing appropriate deployment table.
 .IP deploy_mail
@@ -53,7 +56,8 @@ email addresses to send notification of problems
 .ft CW
 .nf
 
-archivebase          /Volumes/TA_Final_Data/station_final            # absolute path name for station baler archive name
+archivebase         /Volumes/TA_Final_Data/station_final            # absolute path name for station baler archive name
+purgatory			/Volumes/TA_Final_Data//purgatory	            # absolute path name for station baler archive name
 
 dbops                /anf/TA/dbs/dbops/usarray
 

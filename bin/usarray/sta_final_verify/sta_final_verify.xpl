@@ -20,7 +20,7 @@
     my ($stime,$table,$sta,$chan,$dirname,$dbname);
     my ($mintime,$maxtime);
     my ($row,$nrows,$time,$endtime,$equip_install,$equip_remove,$decert_time,$totdays);
-    my ($line,$st1,$st2,$statmp,$chantmp,$dep,$prob);
+    my ($line,$st1,$st2,$statmp,$chantmp,$dep,$prob,$purgatory);
     my (@db,@dbwfdisc,@dbwf,@dbschan,@dbchanperf,@dbbh,@dbdeploy,@dbcd);
     my (%pf,%staperf);
 
@@ -69,6 +69,7 @@
 
     $table = "wfdisc";
     foreach $sta (@ARGV) {
+        $purgatory = 0;
         $stime = strydtime(now());
         elog_notify ("\nstarting processing station $sta\n\n");
     
@@ -115,12 +116,12 @@
         }
         
 #
-#  Check for anomolous net and sta
+#  Open db
 #
         $prob = 0;
         open(PROB,"> /tmp/prob_$sta\_$$");
         
-        @db     = dbopen($sta,'r');
+        @db       = dbopen($sta,'r');
         @dbschan  = dblookup(@db,0,"schanloc",0,0);
         @dbwfdisc = dblookup(@db,0,"wfdisc",0,0);
 
@@ -154,6 +155,7 @@
                 print PROB "$line\n";
                 $prob++;
             }
+            $purgatory++;
         }
         dbclose(@db);
         
@@ -168,7 +170,7 @@
                                 dbgetv(@dbdeploy,"time","endtime","equip_install","equip_remove","decert_time");
                              
         %staperf = ();
-#        $endtime = now() if ($endtime > now());
+        $endtime = now() if ($endtime > now());
         $staperf{deploy_days} = int($endtime/86400) - int($time/86400.);
         
         $staperf{deploy_days} = $totdays if ($totdays > $staperf{deploy_days});
@@ -321,6 +323,7 @@
             $problems++ ;
             elog_complain("\nProblem $problems
                            \n			$line");
+            $purgatory++;
         }
                 
         close(PROB);
@@ -346,6 +349,12 @@
         unlink "/tmp/prob_$sta\_$$" unless $opt_V;
         unlink "/tmp/deploy_$sta\_$$" unless $opt_V;        
         
+        if ($purgatory) {
+            makedir($pf{purgatory});
+            $cmd = "mv $dirname $pf{purgatory}";
+            elog_notify("\n$cmd");        
+            $problems = run($cmd,$problems);
+        }
         %staperf = ();        
     }
         
