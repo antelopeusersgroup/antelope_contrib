@@ -20,7 +20,7 @@
     my ($stime,$table,$sta,$chan,$dirname,$dbname);
     my ($mintime,$maxtime);
     my ($row,$nrows,$time,$endtime,$equip_install,$equip_remove,$decert_time,$totdays);
-    my ($line,$st1,$st2,$statmp,$chantmp,$dep,$prob,$purgatory);
+    my ($line,$st1,$st2,$statmp,$chantmp,$dep,$prob);
     my (@db,@dbwfdisc,@dbwf,@dbschan,@dbchanperf,@dbbh,@dbdeploy,@dbcd);
     my (%pf,%staperf);
 
@@ -69,7 +69,6 @@
 
     $table = "wfdisc";
     foreach $sta (@ARGV) {
-        $purgatory = 0;
         $stime = strydtime(now());
         elog_notify ("\nstarting processing station $sta\n\n");
     
@@ -155,7 +154,6 @@
                 print PROB "$line\n";
                 $prob++;
             }
-            $purgatory++;
         }
         dbclose(@db);
         
@@ -323,7 +321,6 @@
             $problems++ ;
             elog_complain("\nProblem $problems
                            \n			$line");
-            $purgatory++;
         }
                 
         close(PROB);
@@ -349,7 +346,7 @@
         unlink "/tmp/prob_$sta\_$$" unless $opt_V;
         unlink "/tmp/deploy_$sta\_$$" unless $opt_V;        
         
-        if ($purgatory) {
+        if ($prob) {
             makedir($pf{purgatory});
             $cmd = "mv $dirname $pf{purgatory}";
             elog_notify("\n$cmd");        
