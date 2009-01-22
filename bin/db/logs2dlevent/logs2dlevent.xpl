@@ -173,7 +173,7 @@ sub grep_this {
 #    elog_notify(0,"File is now: $file\n");
 
     return unless -f $_;
-    return if $file =~/.gz|.Z|.bz2/;            # attempt to skip compressed files
+    return if $file =~/\.gz|\.Z|\.bz2/;            # attempt to skip compressed files
     return unless $file =~/$file_pattern/;
 #    return unless $file =~/@jdates/;
 
