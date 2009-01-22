@@ -128,7 +128,7 @@ sub mk_db_des { # ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbas
     } 
     elog_notify("mk_db_des	make directory $dirname") if $debug;
     makedir($dirname);
-    if (!-f $dbname && ! $exists) { 
+    if (!-f $dbname ) { 
         elog_notify("mk_db_des	make descriptor $dbname") if $debug;
         &cssdescriptor ($dbname,$dbpath,$dblocks,$dbidserver) ; 
     }
