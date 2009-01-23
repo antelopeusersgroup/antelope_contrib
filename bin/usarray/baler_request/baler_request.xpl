@@ -106,16 +106,7 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
 
     @dbd     = dblookup(@dbg,0,"deployment",0,0);
     if (dbquery(@dbd,"dbTABLE_PRESENT")) {
-        $nrows = dbquery(@dbd,"dbRECORD_COUNT");
-        $stime = yearday(now()) ;
-        $subset = "equip_remove > \_$stime\_" ;
-        elog_notify("baler_admin	deployment nrows	$nrows	subset	$subset") if $opt_v;
-        @dbd = dbsubset(@dbd,$subset);
-        $nrows = dbquery(@dbd,"dbRECORD_COUNT");
-        elog_notify("baler_admin	deployment nrows	$nrows after subset") if $opt_v;
-        $nrows = dbquery(@dbgap,"dbRECORD_COUNT");
-        elog_notify("baler_admin	gap nrows	$nrows") if $opt_V;
-        @dbgap = dbjoin(@dbgap,@dbd,"sta", "time::endtime#equip_install::equip_remove");
+        @dbgap = dbjoin(@dbgap,@dbd);
         @dbgap = dbseparate(@dbgap,"wfdisc");
         $nrows = dbquery(@dbgap,"dbRECORD_COUNT");
         elog_notify("baler_admin	gap nrows	$nrows after join with deployment") if $opt_v;
@@ -140,8 +131,6 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
         $dbgap[3] = $row;
         ($sta,$chan,$time,$endtime) = dbgetv(@dbgap,qw (sta chan time endtime) );
         $dbjunk[3] = dbaddnull(@dbjunk);
-#        $time      = $time    - 300;
-#        $endtime   = $endtime + 300;
         dbputv(@dbjunk,"sta",$sta,"chan",$chan,"time",$time,"endtime",$endtime);        
     }
     dbclose(@dbg);
