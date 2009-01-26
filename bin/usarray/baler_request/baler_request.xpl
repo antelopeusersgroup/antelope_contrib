@@ -106,10 +106,10 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     @dbd     = dblookup(@dbg,0,"deployment",0,0);
     
     $subset = sprintf("deployment.time < \_%d\_ ",yearday(now()));
-    elog_notify("subset	$subset");
+    elog_notify("subset	$subset") if $opt_v;
     if (dbquery(@dbd,"dbTABLE_PRESENT")) {
         @dbgap = dbjoin(@dbgap,@dbd);
-        @dbgap = subset(@dbgap,$subset);
+        @dbgap = dbsubset(@dbgap,$subset);
         @dbgap = dbseparate(@dbgap,"wfdisc");
         $nrows = dbquery(@dbgap,"dbRECORD_COUNT");
         elog_notify("baler_admin	gap nrows	$nrows after join with deployment") if $opt_v;
