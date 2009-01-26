@@ -41,7 +41,7 @@
     elog_notify($cmd) ; 
     $stime = strydtime(now());
     chop ($host = `uname -n` ) ;
-    elog_notify ("\nstarting execution on	$host	$stime\n\n");
+    elog_notify ("\nstarting execution on	$host	$stime\n");
 
     $cwd = getcwd ;
 
@@ -61,8 +61,16 @@
     $dbcentral     = $ARGV[2] ;
 
     ($dbodir,$base,$suffix) = parsepath($mseed_dir);
-    $dbodir = cleanpath($dbodir,"nolinks") ;
-    $dbodir = relpath($cwd,$dbodir);
+    
+    elog_notify("dbodir	$dbodir	base	$base	suffix	$suffix") if $opt_v;
+    if ($dbodir =~ /\./ && $base !~ /\w+/ ) {
+        elog_notify("if dbodir	$dbodir	") if $opt_v;
+        ($dbodir,$base,$suffix) = parsepath($cwd);
+    } else {
+        elog_notify("else dbodir	$dbodir	") if $opt_v;
+        $dbodir = relpath($cwd,$dbodir);
+    }
+    elog_notify("dbodir	$dbodir	cwd	$cwd") if $opt_v;
     $db     = $opt_d || "cleaned_baler" ;
     $db     = $dbodir . "/" . $db;
     $dbraw  = $dbodir . "/raw_baler";
@@ -78,9 +86,9 @@
     $dbdir                     = abspath(cleanpath($dbdir,"nolinks"));
     $dbpath                    = relpath($dbcdir,$dbdir);
 
-    elog_notify("dbcdir	$dbcdir");
-    elog_notify("dbdir	$dbdir");
-    elog_notify("dbpath	$dbpath");
+    elog_notify("dbcdir	$dbcdir") if $opt_v;
+    elog_notify("dbdir	$dbdir") if $opt_v;
+    elog_notify("dbpath	$dbpath") if $opt_v;
         
     @dbscratch                 = dblookup(@dbc,"","","","dbSCRATCH");
     dbputv(@dbscratch,"clustername","baler_data",
@@ -92,6 +100,7 @@
     if ($#recs>-1) {
         elog_die("\nData from $db already in $dbcentral");
     }
+
 #
 #   run miniseed to days
 #
