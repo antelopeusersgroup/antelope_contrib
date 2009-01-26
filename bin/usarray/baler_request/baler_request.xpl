@@ -105,7 +105,7 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     @dbgap   = dblookup(@dbg,0,"wfdisc",0,0);
     @dbd     = dblookup(@dbg,0,"deployment",0,0);
     
-    $subset = sprintf("deployment.endtime < \_%d\_ ",yearday(now()));
+    $subset = sprintf("deployment.endtime > \_%d\_ ",yearday(now()));
     elog_notify("subset	$subset") if $opt_v;
     if (dbquery(@dbd,"dbTABLE_PRESENT")) {
         @dbgap = dbjoin(@dbgap,@dbd);
