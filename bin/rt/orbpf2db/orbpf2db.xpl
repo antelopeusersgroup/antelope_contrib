@@ -1,15 +1,27 @@
 require "getopts.pl" ;
 use Datascope;
 use orb;
+use strict;
+use warnings;
  
 # Kent Lindquist
 # Lindquist Consulting
 # orbpf2db
 # July, 2003
 
+our( $opt_v, $opt_V, $opt_s, $opt_p, $opt_m, $opt_f, $opt_w );
+our( $orbname, $dbname, $Pf, $match, $write_mode );
+our( $pfmin, %trans );
+our( @db, $orb, $stop );
+our( $pktid, $srcname, $time, $packet, $nbytes, $result, $pkt );
+our( $key, $schema, %version, %clean, @dbscratch, @dbtable );
+our( %fieldmap, @matchfields, $hookname, @records );
+
 sub database_prep {
 	my( $wantschema ) = pop( @_ );
 	my( $dbname ) = pop( @_ );
+
+	my( $haveschema );
 
 	if( ! defined( @db ) ) { 
 
@@ -72,10 +84,11 @@ $match = ".*/pf/orbstat";
 $write_mode = "overwrite";
 $pktid = 0;
 $time = -9999999999.999;
+$pfmin = 1093457141.000;
 
 if ( ! &Getopts('s:w:f:p:m:vV') || @ARGV != 2 ) { 
 
-    	die ( "Usage: orbpf2db [-vV] [-p pffile] [-m match] [-f from] [-w mode] orb database\n" ) ; 
+    	die ( "Usage: orbpf2db [-vV] [-p pffile] [-s statefile] [-m match] [-f from] [-w mode] orb database\n" ) ; 
 
 } else {
 	
@@ -93,6 +106,17 @@ if( $opt_V ) {
 if( $opt_p ) {
 	
 	$Pf = $opt_p;
+}
+
+my( $rc ) = pfrequire( $Pf, $pfmin );
+
+if( $rc == -2 ) {
+	
+	elog_die( "Parameter-file '$Pf' is too old; please update it \n" );
+
+} elsif( $rc < 0 ) {
+	
+	elog_die( "Error $rc from pfrequire(). Please see pfrequire(3). Bye.\n" );
 }
 
 %trans = %{pfget( $Pf, "translations" )};
@@ -197,9 +221,9 @@ for( ; $stop == 0 ; ) {
 	if( defined( $version{"version_field"} ) &&
 	    $version{"version_field"} ne "" ) {
 
-		$version_min = $version{"version_min"};
+		my( $version_min ) = $version{"version_min"};
 
-		$packet_version = pfget( $pkt->pf, $version{"version_field"} );
+		my( $packet_version ) = pfget( $pkt->pf, $version{"version_field"} );
 
 		if( ! defined( $packet_version ) ) {
 
@@ -220,6 +244,8 @@ for( ; $stop == 0 ; ) {
 
 	%clean = %{$trans{$key}{"clean"}};
 
+	my( $cleantable );
+
 	foreach $cleantable ( keys( %clean ) ) {
 
 		@dbscratch = dblookup( @db, "", "$cleantable", "", "dbSCRATCH" );
@@ -228,6 +254,9 @@ for( ; $stop == 0 ; ) {
 		%fieldmap = %{$trans{$key}{"clean"}{$cleantable}};
 
 		@matchfields = ();
+
+		my( $field, $pattern, $value );
+
 		foreach $field ( keys( %fieldmap ) ) {
 
 			$pattern = $fieldmap{$field};
@@ -261,6 +290,8 @@ for( ; $stop == 0 ; ) {
 		@records = dbmatches( @dbscratch, @dbtable, 
 						$hookname, @matchfields  );
 
+		my( $record );
+
 		foreach $record ( @records ) {
 			
 			$dbtable[3] = $record;
@@ -272,7 +303,9 @@ for( ; $stop == 0 ; ) {
 
 	reopen_database();
 
-	%tables = %{$trans{$key}{"tables"}};
+	my( %tables ) = %{$trans{$key}{"tables"}};
+
+	my( $table );
 
 	foreach $table ( keys( %tables ) ) {
 
@@ -286,13 +319,15 @@ for( ; $stop == 0 ; ) {
 
 		if( defined( $fieldmap{FOREACH} ) ) {
 
-			$structref = pfget( $pkt->pf, $fieldmap{FOREACH} );
+			my( $structref ) = pfget( $pkt->pf, $fieldmap{FOREACH} );
 
 			next if( ! defined( $structref ) );
 
+			my( @mykeys );
+
 			if( ref( $structref ) eq "HASH" ) {
 
-				%arrays = %$structref;
+				my( %arrays ) = %$structref;
 				@mykeys = keys( %arrays );
 
 			} elsif( ref( $structref ) eq "ARRAY" ) {
@@ -304,6 +339,8 @@ for( ; $stop == 0 ; ) {
 					       " for table '$table'\n" );
 				next;
 			}
+
+			my( $key, $field, $value, $pattern );
 
 			foreach $key ( @mykeys ) {
 
@@ -340,7 +377,11 @@ for( ; $stop == 0 ; ) {
 						$value = pfget( $pkt->pf, $pattern );
 					}
 
-					dbputv( @dbscratch, "$field", $value );
+					if( defined( $field ) && 
+					    defined( $value ) ) {
+
+						dbputv( @dbscratch, "$field", $value );
+					}
 				}
 
 				if( $write_mode eq "add" ) {
@@ -352,6 +393,9 @@ for( ; $stop == 0 ; ) {
 					$hookname = "hook__$dbtable[0]_$table";	
 					@matchfields = dbquery( @dbtable, dbPRIMARY_KEY );
 					@records = dbmatches( @dbscratch, @dbtable, $hookname, @matchfields );	
+
+					my( $recno );
+
 					@records = sort {$a <=> $b} @records;
 					if( ! defined( @records ) || 
 					    ( $recno = shift( @records ) ) !~ /^\d+$/ ) {
@@ -360,7 +404,7 @@ for( ; $stop == 0 ; ) {
 	
 					} else {
 	
-						@dbreplace = @dbtable;
+						my( @dbreplace ) = @dbtable;
 						$dbreplace[3] = $recno;
 						dbput( @dbreplace );
 					}
@@ -369,6 +413,8 @@ for( ; $stop == 0 ; ) {
 
 		} else {
 			
+			my( $field, $pattern, $value );
+
 			foreach $field ( keys( %fieldmap ) ) {
 
 				$pattern = $fieldmap{$field};
@@ -413,7 +459,7 @@ for( ; $stop == 0 ; ) {
 				} else {
 
 					@records = sort {$a <=> $b} @records;
-					@dbreplace = @dbtable;
+					my( @dbreplace ) = @dbtable;
 					$dbreplace[3] = shift( @records );
 					dbput( @dbreplace );
 				}
