@@ -16,6 +16,7 @@ DATA=	iceworm1.3 \
 	registry1.0 \
 	registry1.1 \
 	registry1.2 \
+	registry1.3 \
 	sitephotos0.3 \
 	dbcluster0.5 \
 	dbcluster0.6 \
