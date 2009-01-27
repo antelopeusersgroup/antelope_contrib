@@ -84,7 +84,7 @@ $match = ".*/pf/orbstat";
 $write_mode = "overwrite";
 $pktid = 0;
 $time = -9999999999.999;
-$pfmin = 1093457141.000;
+$pfmin = 1233000000.000;
 
 if ( ! &Getopts('s:w:f:p:m:vV') || @ARGV != 2 ) { 
 
@@ -160,9 +160,10 @@ if( $opt_f && ( ! $opt_s || ! -e "$opt_s" ) ) {
 	elog_complain( "Ignoring -f in favor of existing state-file\n" );
 }
 
+$stop = 0;
+
 if( $opt_s ) {
 
-	$stop = 0;
 	exhume( $opt_s, \$stop, 15 );
 	orbresurrect( $orb, \$pktid, \$time  );
 	orbseek( $orb, "$pktid" );
@@ -398,11 +399,13 @@ for( ; $stop == 0 ; ) {
 
 					@records = sort {$a <=> $b} @records;
 					if( ! defined( @records ) || 
-					    ( $recno = shift( @records ) ) !~ /^\d+$/ ) {
+					    scalar( @records ) < 1 ) {
 	
 						dbadd( @dbtable );
 	
 					} else {
+
+						$recno = shift( @records );
 	
 						my( @dbreplace ) = @dbtable;
 						$dbreplace[3] = $recno;

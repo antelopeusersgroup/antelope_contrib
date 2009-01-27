@@ -1,6 +1,6 @@
 translations &Arr{
 	/pf/orbstat &Arr{
-		schema	registry1.2
+		schema	registry1.3
 		version &Arr{
 			version_field	pforbstat_version
 			version_min	2.0
