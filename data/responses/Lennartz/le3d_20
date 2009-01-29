@@ -1,0 +1,24 @@
+# @(#)le3d_20	1.0 8/9/05
+# $Id$
+# Lennartz LE-3D/20 5E-02 hz seimometer
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 3                   num of zeroes
+# 3                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1.0                 normalization factor
+# 1.0                 gain
+# sensitivity  1000 V/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+1.00000E+00000
+3             Poles
+-2.200E-01     2.350E-01     0.0000E+00    0.0000E+00
+-2.200E-01    -2.350E-01     0.0000E+00    0.0000E+00
+-2.300E-01     0.000E+00     0.0000E+00    0.0000E+00
+
+3             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
