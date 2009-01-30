@@ -3,7 +3,7 @@ wfbase		/tmp 						#
 dbbase		usarray						# 
 period		month						# allowed values are "year" or "month" or "day"
 lag		1 						# number of periods of lag of data before processing
-dbpath		/anf/TA/dbs/dbmaster/{usarray}			# default dbpath for event and big_table dbs
+dbpath		/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}			# default dbpath for event and big_table dbs
 dbidserver	anfanalyst.ucsd.edu:2498			# default dbidserver
 dblocks		nfs						# default dblocks
 

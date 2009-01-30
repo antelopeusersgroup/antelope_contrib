@@ -15,7 +15,6 @@ balerwfdisc			/anf/TA/baler/db/all				# complete baler wfdisc db
 archivebase			/anf/TA/wf/archive					# should be on a different disk than the rtdb
 
 dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}		# default dbpath
-#dbpath				/anf/anfops_rthome/rtsystems/usarray/dbmaster/{usarray}	# default dbpath
 dbidserver			anfanalyst.ucsd.edu:2498			# default dbidserver
 dblocks				nfs									# default dblocks
 
