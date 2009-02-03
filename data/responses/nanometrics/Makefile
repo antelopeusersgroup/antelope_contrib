@@ -33,7 +33,7 @@ DATA= trident_1000sps_fir1    \
       trillium_120          \
       trillium_240          \
       trillium_40           \
-      Trillium40_UserGuide_responseinfo.pdf \
+      Trillium40TransferFunction.pdf \
       Trillium120P_UserGuide_responseinfo.pdf \
       Trillium240_UserGuide_responseinfo.pdf
                        
