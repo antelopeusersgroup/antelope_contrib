@@ -11,14 +11,14 @@
     our ( $opt_v, $opt_m, $opt_n, $opt_p );
     
     my ($pfsource,$orbname,$dbname,$orb,$pktid,$srcname,$net,$sta,$chan,$loc);
-    my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref);
+    my ($nbytes,$result,$pkt,$subcode,$desc,$type,$suffix,$pf,$ref);
     my ($when,$src,$pkttime,$start,$end);
-    my ($inp,$ssident,$idtag,$lat,$lon,$elev,$thr,$endtime,$now);
-    my ($latnull,$latdb,$lonnull,$londb,$elevnull,,$endnull,$elevdb,$ssidentdb,$idtagdb,$timedb);
-    my ($r,$row,$stadb,$inpdb,$ssold,$nsta,$nstau,$nsn);
-    my ($pgm,$mailtmp,$host,$Notes,$Problems,$subject,$cmd,$usage,$rec);
-    my (@db,@dbq330,@dbq330r,@dbscratch,@dbnull,@dbuniq);
-    my (@row,@sources,@sta,@stas);
+    my ($ssident,$lat,$lon,$elev,$now);
+    my ($latnull,$latdb,$lonnull,$londb,$elevnull,$elevdb,$endnull,$ssidentdb,$idtagdb,$timedb);
+    my ($stadb,$inpdb,$nsta);
+    my ($pgm,$host,$subject,$cmd,$usage,$rec);
+    my (@db,@dbq330,@dbq330r,@dbscratch,@dbnull);
+    my (@sources,@stas);
     my (%dls);
 
 #  Set up mail    
@@ -42,9 +42,6 @@
         
     chop ($host = `uname -n` ) ;
     elog_notify ("\nstarting execution on	$host	$start\n\n");
-
-    $Notes     = 0;
-    $Problems  = 0;
 
 #  Set up intial parameters
 
@@ -236,7 +233,7 @@
     }
 
     $subject = "Completion - $pgm $host $orbname ";
-    &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
+    &sendmail($subject, $opt_m) if $opt_m ; 
     print "\n$subject \n\n";
     
     $end = strydtime(now());
