@@ -13,29 +13,36 @@
     my ($pfsource,$orbname,$dbname,$orb,$pktid,$srcname,$net,$sta,$chan,$loc);
     my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref);
     my ($when,$src,$pkttime,$start,$end);
-    my ($inp,$ssident,$idtag,$lat,$lon,$elev,$thr,$endtime);
-    my ($latnull,$latdb,$lonnull,$londb,$elevnull,$elevdb);
+    my ($inp,$ssident,$idtag,$lat,$lon,$elev,$thr,$endtime,$now);
+    my ($latnull,$latdb,$lonnull,$londb,$elevnull,,$endnull,$elevdb,$ssidentdb,$idtagdb,$timedb);
     my ($r,$row,$stadb,$inpdb,$ssold,$nsta,$nstau,$nsn);
-    my ($prog_name,$mailtmp,$host,$Notes,$Problems,$subject);
+    my ($pgm,$mailtmp,$host,$Notes,$Problems,$subject,$cmd,$usage,$rec);
     my (@db,@dbq330,@dbq330r,@dbscratch,@dbnull,@dbuniq);
-    my (@row,@sources,@sta);
-
-    if ( !  &Getopts('vm:n:p:') || @ARGV != 2 )
-        { die ( "Usage: $0 [-v] [-m mail_to] [-n net] [-p pf_sourcename] orb db\n" ) ; }
+    my (@row,@sources,@sta,@stas);
+    my (%dls);
 
 #  Set up mail    
+            
+    $pgm = $0 ;
+    $pgm =~ s".*/"" ;
+    elog_init($pgm, @ARGV);
+    $cmd = "\n$0 @ARGV" ;
+
+    if ( !  &Getopts('vm:n:p:') || @ARGV != 2 ) { 
+        $usage  =  "\n\n\nUsage: $0 [-v] [-m mail_to] [-n net] [-p pf_sourcename] orb db\n"  ;
+        
+        elog_notify($cmd) ; 
+        elog_die ( $usage ) ; 
+    }
+
+    &savemail() if $opt_m ; 
+    elog_notify($cmd) ; 
     
     $start = strydtime(now());
-    elog_init ( $0, @ARGV );
         
-    $prog_name = $0 ;
-    $prog_name =~ s".*/"" ;
-
-    $mailtmp = "/tmp/#$prog_name.$$";
-    &savemail($mailtmp) if $opt_m ; 
-    
     chop ($host = `uname -n` ) ;
-    
+    elog_notify ("\nstarting execution on	$host	$start\n\n");
+
     $Notes     = 0;
     $Problems  = 0;
 
@@ -46,20 +53,9 @@
 
     $pfsource  = $opt_p || ".*/pf/st" ;
     
-    print "pfsource	$pfsource \n";
-    print "orb		$orbname \n";
-    print "db		$dbname \n\n";
-    
-
-#
-#  open output db
-#
-    @db        = dbopen($dbname,"r+");
-    @dbq330    = dblookup(@db,"","q330comm","","");
-    @dbq330r   = @dbq330;
-    @dbscratch = dblookup(@dbq330,"","","","dbSCRATCH");
-    @dbnull    = dblookup(@dbq330,"","","","dbNULL");
-    $endtime   = dbgetv(@dbnull,"endtime");
+    elog_notify ("pfsource	$pfsource") if $opt_v;
+    elog_notify ("orb		$orbname") if $opt_v;
+    elog_notify ("db		$dbname\n") if $opt_v;
     
 #
 #  open input orb
@@ -67,7 +63,9 @@
     $orb = orbopen($orbname,"r");
 
     if( $orb < 0 ) {
-        die( "Failed to open orb '$orbname' for reading\n" );
+        $subject = "Problems - $pgm $host	Failed to open orb '$orbname' for reading";
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die( $subject );
     }
 
     orbselect( $orb, $pfsource);
@@ -78,7 +76,7 @@
         $srcname = $src->srcname() ;
         orbselect ( $orb, $srcname ) ;
         ($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbget ( $orb, "ORBNEWEST" ) ;
-        printf "\n%s	%s \n\n", $srcname, strydtime($pkttime) if $opt_v;
+        elog_notify (sprintf ("\n%s	%s \n\n", $srcname, strydtime($pkttime))) if $opt_v;
         if (!defined $pktid) {
             next ;
         }
@@ -89,7 +87,7 @@
 
         if ( $result ne "Pkt_pf" ) {
             if( $opt_v ) {
-                print "Received a $result, skipping\n" ;
+                elog_notify ("Received a $result, skipping") ;
             }
             next;
         }
@@ -103,136 +101,147 @@
 
         if ( defined $pf ) {
             $ref = pfget($pf, "");
-            my @stas = sort keys %{$ref->{dls}};
-            foreach my $sta (@stas) {
+            @stas = sort keys %{$ref->{dls}};
+            foreach $sta (@stas) {
 
                 if ($opt_n) {
                     next if ($sta !~ /^$opt_n/);
                 }
 
-                my @pars = sort keys %{$ref->{dls}{$sta}};
-                $inp     = $ref->{dls}{$sta}{"inp"};
-                $ssident = $ref->{dls}{$sta}{"sn"};
-                $idtag   = $ref->{dls}{$sta}{"pt"};
-                $lat     = $ref->{dls}{$sta}{"lat"}; 
-                $lon     = $ref->{dls}{$sta}{"lon"};
-                $elev    = $ref->{dls}{$sta}{"elev"};
-                $thr     =  $ref->{dls}{$sta}{"thr"};
-                
-                next if ( $idtag == 0 );
-                
-                if ( $ssident =~ /.*[a-f].*/ ) {
-                    print "$srcname	$sta	$ssident	" . strydtime($pkttime) . "	pktid  $pktid \n";
+                $dls{$sta}{inp}     = $ref->{dls}{$sta}{inp};
+                $dls{$sta}{ssident} = $ref->{dls}{$sta}{sn};
+                $dls{$sta}{idtag}   = $ref->{dls}{$sta}{pt};
+                $dls{$sta}{lat}     = $ref->{dls}{$sta}{lat}; 
+                $dls{$sta}{lon}     = $ref->{dls}{$sta}{lon};
+                $dls{$sta}{elev}    = $ref->{dls}{$sta}{elev};
+                $dls{$sta}{thr}     = $ref->{dls}{$sta}{thr};
+                $dls{$sta}{pkttime} = $pkttime;
+                                
+                if ( $dls{$sta}{ssident} =~ /.*[a-f].*/ ) {
+                    elog_notify ("$srcname	$sta	$ssident	" . strydtime($pkttime) . "	pktid  $pktid");
                 }
-                $ssident     = uc($ssident);
+                $dls{$sta}{ssident}  = uc($dls{$sta}{ssident});
 
-                printf "%s	%s	%s	%s	%s	%s	%s	%s \n", $sta, $inp, $ssident,$idtag,$lat,$lon,$elev,$thr if $opt_v;
+                elog_notify( sprintf "%s	%s	%s	%s	%s	%s	%s	%s", 
+                    $sta, $dls{$sta}{inp}, $dls{$sta}{ssident},$dls{$sta}{idtag},
+                    $dls{$sta}{lat},$dls{$sta}{lon},$dls{$sta}{elev},$dls{$sta}{thr}) if $opt_v;
 
-                dbputv(@dbscratch, "dlsta",   $sta,
-                                   "time",    $pkttime,
-                                   "endtime", $endtime,
-                                   "inp",     $inp,
-                                   "ssident", $ssident,
-                                   "idtag",   $idtag,
-                                   "thr",     $thr);
-
-                if ($lat eq "-" || $lon eq "-" || $elev eq "-") {
-                    ($lat,$lon,$elev) = dbgetv(@dbnull,"lat","lon","elev");
-                }
-
-                if (abs($lat) < 0.01 || abs($lon) < 0.01 ) {
-                    ($lat,$lon,$elev) = dbgetv(@dbnull,"lat","lon","elev");
-                }
-
-                dbputv(@dbscratch, "lat", $lat, "lon", $lon, "elev", $elev);
-
-
-#  Check if data are new
-
-                @row = dbmatches(@dbscratch,@dbq330,"new_install","ssident","endtime");
-                if ($#row == -1) {
-                    @sta = dbmatches(@dbscratch,@dbq330,"dup_sta","dlsta","endtime");
-                    foreach $r (@sta) {
-                        $dbq330r[3] = $r;
-                        ($ssold) = dbgetv(@dbq330r,"ssident");
-                        dbputv(@dbq330r,"endtime",($pkttime-1));
-                        $Notes++ ;
-                        printf "\nNotification #$Notes\n" ;
-                        printf "$sta datalogger $ssold replaced with $ssident \n";
-                    }
-                    dbadd(@dbq330);
-                    next;
-                }
-                
-#  Find most recent row
-                $row = pop @row ;
-                
-#  Clean up any leftover rows w/o endtimes
-
-                foreach $r (@row) {
-                    $dbq330r[3] = $r;
-                    dbputv(@dbq330r,"endtime",($pkttime-1));
-                }
-                
-#  Use most recent row
-
-                $dbq330r[3] = $row;
-                ($stadb, $inpdb, $latdb, $londb, $elevdb) = dbgetv(@dbq330r,"dlsta","inp","lat","lon","elev");
-                
-#  Changed station
-                
-                if ($sta ne $stadb ) {
-                    dbputv(@dbq330r,"endtime",($pkttime-1)); 
-                    dbadd(@dbq330);
-                    $Notes++ ;
-                    printf "\nNotification #$Notes\n" ;
-                    printf " $stadb datalogger $ssident moved to $sta \n";
-                    next;
-                }
-                
-#  Updated lat and lon
-                
-                ($latnull,$lonnull,$elevnull) = dbgetv(@dbnull,"lat","lon","elev");
-                if (($latdb == $latnull)||($londb==$lonnull)||($elevdb==$elevnull)) {
-                    dbputv(@dbq330r,"lat",$lat,"lon",$lon,"elev",$elev);
-                }
-                
-#  Changed ip information
-                
-                if ($inp ne $inpdb ) {
-                    dbputv(@dbq330r,"endtime",($pkttime-1)); 
-                    dbadd(@dbq330);
-                    printf "$stadb datalogger moved from $inpdb to $inp \n" if $opt_v;
-                    next;
-                }                
             }
         }
     }
     
-    @dbq330r = dbsubset(@dbq330r,"endtime > _$start\_");
-    $nsta    = dbquery(@dbq330r,"dbRECORD_COUNT");
-    @dbuniq  = dbsort(@dbq330r,"dlsta","-u");
-    $nstau   = dbquery(@dbuniq,"dbRECORD_COUNT");
-    @dbuniq  = dbsort(@dbq330r,"ssident","-u");
-    $nsn     = dbquery(@dbuniq,"dbRECORD_COUNT");
+#
+#  open output db
+#
+    @db        = dbopen($dbname,"r+");
+    @dbq330    = dblookup(@db,"","q330comm","","");
+    @dbscratch = dblookup(@dbq330,"","","","dbSCRATCH");
+    @dbnull    = dblookup(@dbq330,"","","","dbNULL");
+    $endnull   = dbgetv(@dbnull,"endtime");
     
-    if (($nsta != $nstau)||($nsn != $nstau)) {
-        print "\nNumber of unique stations	$nstau\n";
-        print "Number of stations	$nsta\n";
-        print "Number of unique serial numbers	$nsn\n";
-        $subject = "Problems and Notifications - $prog_name $host $orbname ";
-        &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
-        print "\n$subject \n\n";
-        exit (1);
+    $nsta = dbquery(@dbq330,"dbRECORD_COUNT");
+    elog_notify("	Number of database stations:	$nsta") if $opt_v;
+    
+    $now = now();
+    @dbq330r    = dbsubset(@dbq330,"endtime > $now");
+    @dbq330r    = dbsort(@dbq330r,"dlsta");
+    
+    $nsta = dbquery(@dbq330r,"dbRECORD_COUNT");
+    elog_notify("	Number of active database stations:	$nsta") if $opt_v;
+    
+    @stas = sort keys %dls;
+    elog_notify("	Number of active real time stations:	$#stas") if $opt_v;
+    elog_notify("\n	Stations to process - 	@stas");
+#
+#  Loop over existing q330coms table records
+#                
+    for ($dbq330r[3] = 0; $dbq330r[3] < $nsta; $dbq330r[3]++) {
+        ($stadb, $timedb, $inpdb, $ssidentdb, $idtagdb, $latdb, $londb, $elevdb) = 
+            dbgetv(@dbq330r,"dlsta","time","inp","ssident", "idtag","lat","lon","elev");
+#
+#  Station expected to be connected
+#                
+        if (exists($dls{$stadb})) {
+            elog_notify(sprintf("%s active as of:		%s",$stadb,strydtime($timedb))) if $opt_v;
+#
+#  Station not currently connected
+#                
+            if ($dls{$stadb}{idtag} == 0 ) {
+                elog_notify("	$dls{$stadb}{ssident}	$dls{$stadb}{inp}	not connected") if $opt_v;
+                delete($dls{$stadb});
+                next;
+            }
+#
+#  Station has same Q330 serial number and ip connection
+#                
+            if ( $ssidentdb =~ /$dls{$stadb}{ssident}/ && $inpdb =~ /$dls{$stadb}{inp}/  ) {
+                elog_notify("	$ssidentdb	$inpdb	did not change") if $opt_v;
+#
+#  Updated lat and lon
+#                
+                ($latnull,$lonnull,$elevnull) = dbgetv(@dbnull,"lat","lon","elev");
+
+                if (($latdb == $latnull)||($londb==$lonnull)||($elevdb==$elevnull)|| abs($latdb) < 0.01 || abs($londb) < 0.01) {
+                    elog_notify("		updating location	$dls{$stadb}{lat}	$dls{$stadb}{lon}	$dls{$stadb}{elev}") if $opt_v;
+                    
+                    if ($lat eq "-" || $lon eq "-" || $elev eq "-") {
+                        dbputv(@dbq330r,"lat",$latnull,"lon",$lonnull,"elev",$elevnull);
+                    } else {
+                        dbputv(@dbq330r,"lat",$dls{$stadb}{lat},"lon",$dls{$stadb}{lon},"elev",$dls{$stadb}{elev});
+                    }
+                }
+#
+#  Station has new Q330 serial number or ip connection
+#                
+            } else {
+                elog_notify("$stadb	$ssidentdb	$inpdb	CHANGED	putting endtime in view");
+                dbputv(@dbq330r,"endtime",($now-1));
+                elog_notify("		$dls{$stadb}{ssident}	$dls{$stadb}{inp}	adding new record to table");
+                next;
+            }
+        }  else {
+#
+#  Stations to close in table
+#
+            elog_notify(sprintf("%s is closed as of:	%s",$stadb,strydtime(now())));
+            dbputv(@dbq330r,"endtime",($now-1));
+        }
+        delete($dls{$stadb});
+    }
+#
+#  New stations or data to add to table
+#
+    @stas = sort keys %dls;
+    elog_notify("\n");
+    elog_notify("Remaining stations to process - 	@stas") if $opt_v;
+
+    foreach $sta (@stas) {
+#
+#  Station not currently connected
+#                
+        if ($dls{$sta}{idtag} == 0 ) {
+            elog_notify("$sta	$dls{$sta}{ssident}	$dls{$sta}{inp}	not connected") if $opt_v;
+            next;
+        }
+        elog_notify("Adding station	$sta");
+        dbaddv(@dbq330,"dlsta",   $sta,
+                       "time",    $now,
+                       "inp",     $dls{$sta}{inp},
+                       "ssident", $dls{$sta}{ssident},
+                       "idtag",   $dls{$sta}{idtag},
+                       "lat",     $dls{$sta}{lat},
+                       "lon",     $dls{$sta}{lon},
+                       "elev",    $dls{$sta}{elev},
+                       "thr",     $dls{$sta}{thr});
     }
 
-    if ($Notes) {
-        $subject = "Notifications - $prog_name $host $orbname ";
-        &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
-        print "\n$subject \n\n";
-    }
+    $subject = "Completion - $pgm $host $orbname ";
+    &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
+    print "\n$subject \n\n";
     
     $end = strydtime(now());
     
-    elog_notify("$prog_name	started $start	ended $end");
+    elog_notify("$pgm	started $start	ended $end");
 exit ;
+    
+    
