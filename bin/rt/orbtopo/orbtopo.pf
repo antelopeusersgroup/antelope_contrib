@@ -32,3 +32,19 @@ edge_attributes &Arr{
 	dir		forward
 	color		blue
 }
+
+shapes &Arr{
+	monitored	doubleoctagon
+	fringe		hexagon
+}
+
+latency_warning &Arr{
+	normal		darkgreen
+	warning		darkorange
+	high		firebrick
+}
+
+latency_warning_levels &Arr{
+	warning		60
+	high		3600
+

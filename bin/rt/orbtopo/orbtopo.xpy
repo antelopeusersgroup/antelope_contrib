@@ -115,6 +115,43 @@ def set_nodecolor(desc):
 
     n.attr['fillcolor'] = fillcolor
 
+def set_edgecolor(latency,fromdesc,todesc):
+
+    n = G.get_edge(fromdesc,todesc)
+
+    if( latency > pf['latency_warning_levels']['high'] ):
+
+        linecolor = pf['latency_warning']['high']
+
+    elif( latency > pf['latency_warning_levels']['warning'] ):
+
+        linecolor = pf['latency_warning']['warning']
+
+    else:
+
+        linecolor = pf['latency_warning']['normal']
+
+    n.attr['fontcolor'] = linecolor
+    n.attr['color'] = linecolor
+
+def set_penwidth(packets,fromdesc,todesc):
+
+    n = G.get_edge(fromdesc,todesc)
+
+    if( packets > 0 ):
+
+        penwidth = 1 + ( math.log10( packets ) ) 
+        arrowsize = 1 + ( math.log10( packets ) ) 
+
+    else:
+        penwidth = 1 
+        arrowsize = 1 
+
+    n.attr['arrowSize'] = '%s' % (arrowsize)
+
+    # Note that setlinewidth is deprecated as of 2008-01-31, use 'penwidth'=W instead
+    n.attr['style'] = 'setlinewidth(%s)' % (penwidth)
+
 usage = "Usage: orbtopo [-v] [-p pfname] dbname targetdir\n"
 
 elog_init( sys.argv )
@@ -214,6 +251,9 @@ for db.record in range(db.query(dbRECORD_COUNT)):
         set_nodecolor(todesc)
 
     G.add_edge(fromdesc, todesc, label=strtdelta(latency).strip())
+
+    set_edgecolor(latency, fromdesc, todesc)
+    set_penwidth(latency, fromdesc, todesc)
 
 for ofile in pf['outputs']:
     opath = os.path.join(targetdir, ofile)
