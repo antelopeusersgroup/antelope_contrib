@@ -121,7 +121,7 @@ require "pf2.pl";
 
         if (! -e $new_css) {
             &log_mesg("No descriptor file for $new_css, creating. \n");
-	    dbcreate("$new_css","css3.0",$qed_temp\{$base}");
+	    dbcreate("$new_css","css3.0","$qed_temp\{$base}");
         }
 
 
@@ -151,8 +151,7 @@ require "pf2.pl";
         $min_otime		=dbex_eval(@db2add_origin, "min(time)");  
         $max_otime		=dbex_eval(@db2add_origin, "max(time)");  
 
-        print STDERR "\nLooking to add origins from:", &strydtime($min_otime), "to:", &strydtime($max_otime), " \n\n" if ($o
-pt_v || $opt_V);
+        print STDERR "\nLooking to add origins from:", &strydtime($min_otime), "to:", &strydtime($max_otime), " \n\n" if ($opt_v || $opt_V);
 
         @qed		= dbopen($qed_catalog,"r+");
         @qed_or         = dblookup(@qed,"","origin","","");
