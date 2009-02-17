@@ -1,0 +1,432 @@
+.TH mk_dbops 1 "$Date$"
+
+.SH NAME
+mk_dbops \- update dbops tables after station install, adoption, removal or comms change
+
+.SH SYNOPSIS
+.nf
+\fBmk_dbops \fP
+	{-I | -U  | -R | -A }
+	[-k]
+	[-n]
+	[-v]
+	[-V \fIvnet\fP]
+	[-m \fIsource_match\fP]
+	[-p \fIpf\fP]
+	[-P \fIprelimORB\fP]
+	[-S \fIstatusORB\fP]
+	[-w \fIprelimwfDB\fP]
+	[-W \fIwfDB\fP]
+	[-s \fIsiteDB\fP]
+	\fIdbops\fP \fIsnet\fP \fIsta\fP [\fItimestamp\fP [\fIcomm_provider\fP [\fIcomm_type\fP]]]
+.fi
+.SH DESCRIPTION
+
+.SS Background
+The EarthScope USArray Transportable Array (TA) network of 400+ 
+currently operational seismic stations and approximate 1600 lifetime  
+installations prompted development of additional relations (tables) 
+to keep track of operational information at the Array Network Facility (ANF).
+Tables were created to keep track of communication setup, inclusion time
+in the virtual network, and adoption status if the station is still 
+operational.  Many tools have been developed to make use of this information.
+See for instance, \fBwebdlmon(3H)\fP, \fBdeployment2vnd(1)\fP, \fBrt_baler_info(1)\fP,
+\fBrt_daily_return(1)\fP, and \fBorbmonrtd_pf_generator(1)\fP.  For the first 700 
+or so stations, the deployment and comm tables were edited using \fBdbe(1)\fP:  
+a slow, tedious process that was prone to error.  
+
+.SS "Dataflow and Procedures at the ANF"
+.LP
+At the ANF, newly installed stations are quarantined into a \fIprelim\fP ORB until
+metadata is available.  Data is also written out to disk into a \fIprelim\fP DB as 
+a precaution against a corruption of the \fIprelim\fP ORB, or the overwrite of the 
+first \fIprelim\fP data received.
+.LP
+Upon receipt of the metadata, \fBdbbuild(1)\fP is used to update the dbmaster 
+tables.  A dataless SEED file is generated and passed to downstream users via 
+\fBmk_dmc_files(1)\fP (which uses \fBorbxfer2(1)\fP).  The quarantined data is 
+now transferred via \fBorb2orb(1)\fP to the \fIcertified\fI ORB where it is written 
+out to disk with \fBorb2db(1)\fP.
+.LP
+At this point, following the old procedures, the \fIdeployment\fP, \fIcomm\fP, 
+and \fIdlsite\fP tables would be updated via \fBdbe(1)\fP in a process which 
+took significant time and concentration and led to various errors due to typos 
+or omission.  As the amount of stations increased, a new method for updates was
+called for and the development of \fBmk_dbops\fP began.
+.LP
+.SS "New approach"
+.LP
+In order to reduce errors and to make the process easier and less time consuming,
+\fBmk_dbops\fP was written to automatically update the adoption, comm, deployment, and
+dlsite tables when there is:  a new station installation; a station removal or adoption; 
+or a communications update to an existing station.  Instead of having
+to fill the fields by hand, the various times are collected from existing databases
+or orbs whenever possible.  A parameter file maintains the default locations of 
+these orbs and dbs, with command line overrides possible.   
+.LP
+.SH OPTIONS
+.LP
+See the EXAMPLE section for how needed command line options differ depending on the type
+of update (installation, comms update, removal, or adoption).  One and only one of \fI-I\fP, 
+\fI-U\fP, \fI-R\fP or \fI-A\fP must be used.  
+
+.IP -I
+Station installation.  Updates occur in three tables:  comm, deployment, 
+and dlsite.  Requires that \fItimestamp\fP be the station certification time.
+.IP -U
+Communication update for pre-existing station.  Updates occur in 
+two tables:  comm and dlsite.  Requires that \fItimestamp\fP be the time of new 
+communications.  End time for previous communication will be 1 second earlier 
+than \fItimestamp\fP.
+.IP -R
+Station removal.  Updates occur in three tables:  comm, deployment, 
+and dlsite.  Requires that \fItimestamp\fP be the station decertification time.  
+If the station operation is taken over by another group, use the 
+\fI-A\fP option instead. 
+.IP -A
+Station adoption.  Updates occur in adoption and deployment tables.  Updates may 
+also occur in dlsite and comm if the adoption type is not EARN.  This option starts 
+an interactive mode where additional information is requested.  When prompted fill 
+in:  the adoption type, new vnet code if it is an EARN or TRANSITION adoption type, 
+the new station name;  new network code that the station will be 
+operating under; responsible data center (15 char max).  
+
+If you do not have information on the new station name, the \fIsta\fP and \fIsnet\fP 
+from the command line is used (defaults shown after prompt).  When there is a 
+station adoption, the deployment.equip_remove is left null.  
+
+Currently there are only three \fIadoption_types\fP available: E (EARN), T (OPERATOR TRANSITION), 
+and R (REFNET/BACKBONE).  See PARAMETER FILE section below for additional description.
+
+.IP -k
+Keep created backup files.  Backups of the tables to be modified are always created 
+and appear as \fIdbops.table+\fP.  Any backup files already existing 
+are overwritten.  This option overrides the default behavior which is to remove 
+these backup files upon successful completion of the script.
+.IP "-V vnet"
+Virtual network code to be used in the deployment table.  Overrides default
+found in pf.   Only valid when using \fI-I\fP, an installation or when the deployment
+table has multiple records for a single station (i.e. both a _US-TA and _US-EARN record).
+.IP "-P prelimORB "
+Preliminary ORB used to gather the \fIdeployment.time\fP value during an installation, \fI-I\fP.
+Overrides the default found in \fIpf\fP. 
+.IP "-w prelimwfDB"
+Use the preliminary waveform database during an installation, \fI-I\fP, to 
+gather the \fIdeployment.time\fP value rather than the value obtained from
+the \fIprelimORB\fP.
+Use the waveform database during a removal, \fI-R\fP, to gather the 
+\fIdeployment.endtime\fP value.  Overrides the default found in \fIpf\fP. 
+.IP "-m source_match"
+Packet source match used during installation update, \fI-I\fP, for collecting 
+the \fIdeployment.time\fP value.  The default looks for packets which match \fIsnet_sta.*M40\fP.
+.IP "-S statusORB "
+Status ORB used by the \fBq330_location(1)\fP program during an installation, \fI-I\fP if \fI-n\fP
+is not selected.  Overrides the default found in \fIpf\fP. 
+.IP -n 
+Do not run the \fBq330_location(1)\fP program during an installation, \fI-I\fP.  You will
+need to update the dlsite table outside of this program (using \fBq330_location(1)\fP or by
+other means).  The \fBq330_location(1)\fP program has verbose output and is not limited (yet) to the
+station you are attempting to update.  See \fBq330_location(1)\fP.
+.IP "-W wfDB"
+Use this certified waveform database during a removal, \fI-R\fP, to gather the 
+\fIdeployment.endtime\fP value.  Overrides the default found in \fIpf\fP. 
+.IP "-s siteDB"
+Database containing stage table if different from \fIdbops\fP database.  \fIstage.time\fP
+is used for \fIcomm.time\fP during an installation, \fI-I\fP and for deployment table
+updates for an adoption, \fI-A\fP.  \fIstage.endtime\fP is used
+for \fIcomm.endtime\fP and \fIdlsite.endtime\fP during a removal, \fI-R\fP.
+.IP "-p pf "
+Parameter file to use.  Default \fIpf\fP is \fImk_dbops.pf\fP.
+.IP -v 
+Verbose log output.
+.IP dbopsdb
+Database containing adoption, comm, deployment, and dlsite tables that are to be updated.
+Be sure to use \fI-s\fP if \fIdbopsdb\fP does not also contain the stage table.
+.IP snet
+Seed network code for station.  Note this is different from the virtual network code.
+.IP sta
+Station code for station to be installed/updated/removed/adopted.  The \fIsnet\fP and \fIsta\fP are
+combined to make a \fIdlname\fP used in the \fIdlsite\fP table.
+.IP timestamp
+Must be a valid timestamp.  If you use a date string, surround \fItimestamp\fP by quotes (i.e. "10/28/2008 18:30:00").
+.br
+\(bu For an installation, this is the certification time used in the \fIdeployment\fP table.  
+.br
+\(bu For an update, this is the time that the communications change occurred.
+.br
+\(bu For a removal, this is the decertification time used in the \fIdeployment\fP table.
+.br
+\(bu For an adoption, this is the decertification and certification time used in the \fIdeployment\fP table.  
+.IP comm_provider
+String describing who provides the communications (i.e. Wild Blue, ATT, Local TelCo, etc.).  This
+is mandatory for an installation and an update.  It is ignored for removals and adoptions.  If you have
+spaces in the provider name, surround \fIcomm_provider\fP by quotes (see EXAMPLES).
+.IP comm_type
+String describing the type of communications (i.e. vsat, dsl, cell modem, etc.).  This
+is mandatory for an installation but not for an update.  It is ignored for removals and 
+adoptions.  If it is not included during an update, the pre-existing \fIcomm.commtype\fP is used.
+If you have spaces in the communications type, surround \fIcomm_type\fP by quotes (see EXAMPLES).
+
+.SH FILES
+.LP 
+There are four schema extension tables that are modified by this program:  comm, deployment,
+dlsite, and adoption.  See the documentation available via \fBdbhelp(1)\fP for the css3.0 
+schema.  See also the additional documentation available in \fBdeployment(5)\fP, \fBadoption(5)\fP, 
+and \fBcomm(5)\fP.
+
+.SH ENVIRONMENT
+Needs to be run under an ANTELOPE environment.
+.SH PARAMETER FILE
+Here is an example pf file:
+.in 2c
+.ft CW
+.nf
+.ps 8
+
+#
+status_orb      somewhere.ucsd.edu:status	# orb where status packets exist, override with -S
+
+prelim_orb      somewhere.ucsd.edu:prelim	# orb where prelim waveforms exist, override with -P
+
+wfdb            db/usarray	# where certified waveforms are written to disk, override with -W
+
+vnet            _US-TA
+
+pdcc            IRIS DMC
+
+# Only 3 adoption types supported: E, T, R.  
+# Do not change or add to list of codes below.
+# atype_phrase can be modified 
+
+adoption_types &Arr{
+# code  atype_phrase
+E       EARN
+T       OPERATOR TRANSITION
+R       REFNET / BACKBONE 
+}
+
+
+.ps
+.fi
+.ft R
+.in
+.LP
+
+This parameter file maintains the default locations for various orbs and dbs
+such that they do not have to be repeated on the command line unless overrides
+are required.
+
+.IP \fIstatus_orb\fP
+Status ORB used by the \fBq330_location\fP program during an installation, \fI-I\fP if \fI-n\fP
+is not selected.  If the orb is not operational or you do not have access, the program exits.
+.IP \fIprelim_orb\fP
+Preliminary ORB used to gather the \fIdeployment.time\fP value during an installation, \fI-I\fP.
+If the orb is not operational or you do not have access, the program exits.
+.IP \fIwfdb\fP
+Use this certified waveform database during a removal, \fI-R\fP, to gather the 
+\fIdeployment.endtime\fP value.  
+.IP \fIvnet\fP
+Virtual network code to be used in the deployment table.  
+.IP \fIpdcc\fP
+Data center to be filled in for \fIdeployment.pdcc\fP.  If not filled in, the pdcc is set to -.  
+The DMC has some limitation on what can be put in this field.  Contact them for a full definition of a PDCC.
+.IP \fIadoption_types\fP
+Only three adoption types are accepted \fIE\fP, \fIT\fP, and \fIR\fP.  These correspond to an EARN transition,
+a transition to regional/national lab network operator, and a transition to operation as a REFNET
+or Backbone station.  The \fIatype_phrase\fP is placed in the adoption table.  The phrase can be modified,
+but a standard should be chosen for compatibility with web apps that may use the \fIadoption.atype\fP 
+field for sorting.
+
+.LP
+.SH EXAMPLE
+.LP  
+There are four different modes of operation for this program:  installation,
+update, removal, or adoption.
+.LP
+   For a new installation: 
+
+       mk_dbops -I [-k] [-v] [-n] [-V vnet] [-m source_match] [-p pf] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type 
+
+   For a comms update:
+
+       mk_dbops -U [-k] [-v] [-p pf] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  ;
+
+   For a station removal:
+
+       mk_dbops -R [-k] [-v] [-p pf] [-W wfDB] [-s siteDB] dbopsdb snet sta decert_time 
+
+   For a station transition to regional network:
+
+       mk_dbops -A [-k] [-v] [-p pf] [-W wfDB] [-s siteDB] dbopsdb snet sta decert_time   
+
+
+.SS Installation 
+
+.LP 
+Update the comm, deployment, and dlsite table after installation of 
+TA TEST a vsat site with comms provided by Wild Blue.   Certification time 
+is 12/10/2008 18:30 UTC.
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -I dbops/usarray TA TEST \\
+        "12/10/2008 18:30:00" "Wild Blue" vsat \fP
+.fi
+.ft R
+.in
+
+.LP 
+Update the comm, deployment, and dlsite table after installation of 
+BB TST2 a cell modem site with comms provided by Alltel and part of the _US-TEST
+vitural network.   Certification time is 12/10/2008 18:30 UTC.  Use the 
+prelim waveform database for the first data available time, \fIdeployment.time\fP.  
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -I dbops/usarray -V _US-TEST -w prelim/usarray \\
+	BB TST2 "12/10/2008 18:30:00" "Alltel" "cell modem" \fP
+.fi
+.ft R
+.in
+
+.SS Update
+
+.LP 
+Update the comm and dlsite tables after the communications
+provider for TA EXST changed from Verizon to ATT.  Time new comms were 
+established is 12/10/2008 18:30:00.  Keep backups of the comm and dlsite tables.
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -k -U dbops/usarray TA EXST \\
+        "12/10/2008 18:30:00" ATT \fP
+.fi
+.ft R
+.in
+
+.SS Removal
+
+.LP 
+Update the comm, deployment and dlsite tables for TA DONE.  Decertification 
+(time metadata was passed along closing the station) was 12/10/2008 18:30:00.  
+Keep backups of the comm, deployment and site tables.
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -k -R dbops/usarray TA DONE 2008:353:18:30:00 \fP
+.fi
+.ft R
+.in
+
+.SS Adoption/Transition
+
+.LP 
+Update the adoption, comm, deployment and dlsite tables, after 
+station TA ADPT is adopted by PNSN.   Time station transitioned 
+to non-standard TA opertaions was 12/10/2008 18:30:00.  Station 
+was adopted by UW and called SNOW.
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -A dbops/usarray TA ADPT "12/10/2008 18:30:00" \fP
+
+mk_dbops: Adoption type(E|T|R|-): \fIT\fP
+mk_dbops: New station name(ADPT): \fISNOW\fP
+mk_dbops: New network code(TA): \fIUW\fP
+mk_dbops: Newly responsible data center(????????): \fIPNSN\fP
+
+
+.fi
+.ft R
+.in
+
+.LP 
+Update the comm, deployment and dlsite tables, after transtion of 
+station TA ERNN.  Time station transitioned to non-standard TA opertaions 
+was 12/10/2008 18:30:00.  Station is part of the EARN program and will continue
+to flow through the ANF with the same name.  
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -A dbops/usarray TA ERNN "12/10/2008 18:30:00" \fP
+
+mk_dbops: Adoption type(E|T|R|-): \fIE\fP
+mk_dbops: New vnet code for EARN station(_XX-XXXXX): \fI_US-EARN\fP
+mk_dbops: New station name(EARN): \fI \fP
+mk_dbops: New network code(TA): \fI \fP
+mk_dbops: Newly responsible data center(-): \fIANF\fP
+
+
+.fi
+.ft R
+.in
+
+
+
+.SH RETURN VALUES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+\fBadoption(5)\fP
+\fBcomm(5)\fP
+\fBdeployment(5)\fP
+\fBconvert_comm(1)\fP
+\fBconvert_dlsite(1)\fP
+\fBconvert_deployment(1)\fP
+\fBdelpoyment2vnd(1)\fP
+\fBmk_dmc_files(1)\fP
+\fBq330_location(1)\fP
+.fi
+.SH "BUGS AND CAVEATS"
+Per agreed upon conventions:  EARN stations retain their same snet_sta, 
+TRANSITION stations may change their snet_sta, and REFNET/Backbone 
+stations should retain their same snet_sta.  If these conventions change, 
+reprogramming, or at least further testing of the current script is necessary.
+
+If using \fI-I\fP mode with the default behavior to pull the oldest data time from
+the prelim orb, you must have permission to access the orb.
+
+If using \fI-I\fP or \fI-U\fP mode that checks the status orb, 
+you must have permission to access the orb.
+
+User must have write access to dbops tables.
+
+If a record cannot be added to a table the program dies.  This could be a problem,
+for instance, if one table had a successful update (i.e. comm) and then the update 
+to the deployment table fails.  Prior to any updating, the script creates backups 
+of all tables to be updated.  They are called \fIdbopsdb.table+\fP and are removed
+upon successful completion of the script unless \fI-k\fP is specified.
+
+When updating the dlsite table using \fI-I\fP mode, the \fBq330_location\fP code
+is run.  This script does not subset based on a single station, so all stations
+are reviewed and reported upon.  There is copious output from this script.  This 
+script is being modified, and the station based subset will hopefully be incorporated
+soon.
+
+If dbmaster tables are not updated for a newly installed station,
+you will not be able to update the tables in \fI-I\fP mode.
+
+When running in \fI-I\fP mode, if the newly certified stations have no data
+in the default \fIstatus_orb\fP you will have to run \fIq330_location(1)\fP 
+by hand.  Alternatively, use the \fI-S\fP option to point at the orb that has the
+necessary .*/st packets, likely the \fIprelimORB\fP.
+
+Subsets of the stage table require BHZ channel data.  Wfdisc subsets look for 
+both BHZ and LHZ data to find the oldest and newest waveform data.  At some point 
+I should probably put this into the pf file as an option.
+
+This script does not fill in the dutycycle or power fields in the comm table.  I 
+plan on working on that at some future date.
+
+.SH AUTHOR
+Jennifer Eakins
+.br
+ANF-IGPP-SIO-UCSD
+.br
+jeakins@ucsd.edu

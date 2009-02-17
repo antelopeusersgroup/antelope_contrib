@@ -1,0 +1,87 @@
+#  css3.0 extension
+
+# Include css3.0  # uncomment to complete schemacom
+
+Attribute idtag
+	String (12)
+	Format ( "%-12s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		This is an twelve-character code, which uniquely identifies the a piece of equipment such as a datalogger or sensor.
+		idtag can be used when there are two identification strings associated with at datalogger such as a Q330 which has a 16-digit hexadecimal number adn also a human readable idtag
+	}
+	;
+
+Attribute commtype
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "communications used" )
+	Detail {
+		This descibes the communication specifications 
+		like VSAT, CDMA, regular_internet, DSL, etc.
+	}
+	;
+
+Attribute provider
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "communications provider used" )
+	Detail {
+		This descibes the vendor providing comms.  
+		For example: Hughes, ATT, Verizon, SBC, Wild Blue, 
+		Local Telco, etc.
+	}
+	;
+
+Attribute inp
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		50-character string, which provides information about communications, ip address, port number, logical port number.
+	}
+	;
+
+Attribute thr
+	Integer (8)
+	Format ( "%8ld" )
+	Null ( "-1" )
+	Range ( "thr > 0" )
+	Description ( "Throttle rate" )
+	Detail {
+		Current Q330 throttle rate.
+	}
+	;
+
+Attribute model
+	String (15)
+	Format ( "%-15s" )
+	Description ( "Model" )
+	Detail {
+		This string identifies a model.
+	}
+	;
+
+Attribute manu
+	String (15)
+	Format ( "%-15s" )
+	Description ( "Manufacturer" )
+	Detail {
+		This string identifies a manufacturer.
+	}
+	;
+
+Relation dlsite
+	Fields ( model ssident time endtime dlname idtag lat lon elev commtype provider lddate )
+	Primary ( model ssident time::endtime )
+	Description ( "dataloggers site characteristics" )
+	Detail {
+		This relation is meant to hold semi-static information relating to
+		dataloggers in the field including their dlname associations, 
+		location (lat, lon, elev) and communications types and providers.
+	}
+	;

@@ -1,0 +1,73 @@
+.TH DEPLOYMENT 5 
+.SH NAME
+deployment, deployment_schema\- schema for recording various time ranges for station data 
+.SH DESCRIPTION
+The schema extension \fBdeployment\fP defines the deployment table which tracks the possible 
+data availability of a station.  Development was driven by the need to produce a Virtual
+Network Definition (VND) file for the DMC.  This schema incorporates time values for the 
+actual first and last data available, the equipment installation and removal, an operational
+time/endtime range based on certification criteria, the virtual net code, the snet, and the 
+sta.
+
+.SH "FIELDS"
+.IP "vnet"
+The virtual network code.  Per DMC convention, the \fIvnet\fP starts with an "_". 
+For instance, _US-TA, _GSN-BROADBAND, _REALTIME.  See 
+http://www.iris.edu/news/newsletter/vol6no2/page1.htm or 
+http://www.iris.edu/vnets for more information.
+.IP "snet"
+The SEED network code.  Normally this is the two character network code for the station, i.e. 
+AZ, BK, CI, TA, US.
+.IP "sta"
+The three to five character station code.  
+.IP "time"
+Time of first data available for external users.  
+This is normally the time of the first sample recorded in a wfdisc at the data center.  
+Note this date should not be earlier than the \fIequip_install\fP, but could be earlier
+than the \fIcert_time\fP.
+
+.IP "endtime"
+Time of last data available.  This is normally the endtime in the wfdisc for the last 
+sample recorded at the data center.
+.IP "equip_install"
+Time seismic equipment was first installed. 
+.IP "equip_remove"
+Time seismic equipment was removed.   This can be left null if the equipment remains
+on-site but is no longer part of a described virtual network.  See \fBadoption(5)\fP.
+.IP "cert_time"
+For ANF purposes, the time that the metadata was first passed along after passing basic
+verification checks or the time that data started flowing to external users.  
+This can also be considered as the time which the station first
+belongs to the \fIvnet\fP.
+.IP "decert_time"
+For ANF purposes, the time that the closing metadata was passed along or the time that 
+the station was removed from external data import.  This can also be 
+considered as the time which the station no longer belongs to the \fIvnet\fP
+This could be the same or later than \fIendtime\fP and could be the same or later than
+\fIequip_remove\fP.
+.IP pdcc
+Primary data center.  This means something to the DMC in terms of data availability and 
+available software.  Despite being the primary collection point for TA data, the ANF is not
+considered a PDCC, and IRIS DMC is filled in for this field instead.
+.IP sdcc
+Secondary data center.
+.IP "lddate"
+Modification time.
+.SH "BUGS AND CAVEATS"
+The original deployment extension schema used a shorter field \fInet\fP instead of \fIvnet\fP.  
+You will need to convert any older version deployment tables to this new version.  I have provided 
+a script called \fBconvert_deployment(1)\fP to do this.  
+.SH "SEE ALSO"
+.nf
+adoption(5)
+convert_deployment(1)
+comm(5)
+mk_dbops(1)
+.fi
+.SH AUTHOR
+.nf
+Jennifer Eakins
+.br
+Univ. of California, San Diego
+.fi
+

@@ -1,0 +1,49 @@
+.TH COMM 5 
+.SH NAME
+comm, comm_schema\- schema for recording information about communications setup at a given station 
+.SH DESCRIPTION
+The schema extension \fBcomm\fP defines the comm table which tracks the communication
+setup for a station.  Development was driven by the need to produce a map showing
+communication providers for the USArray TA.  This schema incorporates time values detailing the
+time that comms were established and when they ended, the type of communications (i.e. "cell modem", 
+DSL, vsat, "hosted internet", etc.), the provider (i.e. ATT, Verizon, Wild Blue, HPWREN, etc.), power 
+source for the comms (i.e. solar, AC, etc.), whether or not the comms are duty cycled, and the equipment type.
+
+.SH "FIELDS"
+.IP "sta"
+The three to five character station code.  
+.IP "time"
+Time comms were established. 
+.IP "endtime"
+Time comms were removed or changed to another provider.  
+.IP "commtype"
+Type of communications.  Examples include "cell modem", DSL, vsat, "hosted internet".
+.IP "power"
+Power source for the communications equipment.  This is likely either "AC" or "Solar".
+.IP "dutycycle"
+Whether or not the communications are on some type of duty cycle.  Expected strings are
+either "yes", "no", "maybe", or "unk".  Comms may be put on duty cycle as a power saving
+option or to comply with local site regulations.
+.IP "equiptype"
+Type of equipment installed.  
+.IP "lddate"
+Modification time.
+.SH "BUGS AND CAVEATS"
+The original comm extension schema used shorter fields for \fIcommtype\fP and \fIprovider\fP.  It 
+also did not include \fIpower\fP, \fIdutycycle\fP, or \fIequiptype\fP. 
+You will need to convert any older version comm schemas to this new version.  I have provided 
+a script called \fBconvert_comm(1)\fP to do this.  
+.SH "SEE ALSO"
+.nf
+adoption(5)
+convert_deployment(1)
+convert_comm(1)
+deployment(5)
+.fi
+.SH AUTHOR
+.nf
+Jennifer Eakins
+.br
+Univ. of California, San Diego
+.fi
+

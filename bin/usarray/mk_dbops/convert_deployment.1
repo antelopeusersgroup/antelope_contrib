@@ -1,0 +1,74 @@
+.TH CONVERT_DEPLOYMENT 1 
+.SH NAME
+convert_deployment \- convert original deployment table to new schema
+.SH SYNOPSIS
+.nf
+\fBconvert_deployment \fP[-inv] database
+.fi
+.SH DESCRIPTION
+After January 2009, I changed the schema extension definition of the deployment
+table, to better support additional applications and to attempt to comply with 
+the DMC's definition of a VNET (Virutal NETwork).  Because schema extensions
+do not support versioning, the schema extension/table name was kept the
+same and the \fBconvert_deployment\fP script was written to help anyone else
+who may have chosen to use this schema extension convert the old format table 
+to the new.  
+.LP
+The program \fBconvert_deployment\fP reads the old format deployment table,
+and creates a deployment table with the \fInet\fP field replaced with the 
+extended \fIvnet\fP field.  The original deployment table is saved with a 
+suffix of "-".  The new format deployment table replaces \fIdatabase.deployment\fP.
+.LP
+\fBconvert_deployment\fP converts a single deployment table at a time and does
+not have to be run in the particular directory where \fIdatabase.deployment\fP resides.
+.SH OPTIONS
+.IP -i
+Ask before converting deployment table.
+.IP -n
+Just show what would happen.
+.IP -v
+Be more verbose.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+
+%\fB convert_deployment -i db/usarray\fP
+: convert db/usarray.deployment ? n
+
+%\fB convert_deployment -v usarray \fP
+converting usarray.deployment
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+deployment(5)
+deployment2vnd(1)
+mk_dbops(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The following error message can be ignored:
+
+.in 2c
+.ft CW
+.nf
+.ne 6
+2009-048 22:50:04 perl *complain*: Table 'db.deployment' has invalid length 4758.    
+2009-048 22:50:04 perl *complain*: If more than one process is writing to this database,
+  **please** turn on locking in the descriptor file.
+.fi
+.ft R
+.in
+
+
+Not thoroughly tested.  
+
+Odd things may happen if the descriptor file basename differs from the 
+basename of the deployment table that is found by following the dbpath.
+
+.SH AUTHOR
+Jennifer Eakins

@@ -1,0 +1,74 @@
+.TH CONVERT_DLSITE 1 
+.SH NAME
+convert_dlsite \- convert original dlsite table to new schema
+.SH SYNOPSIS
+.nf
+\fBconvert_dlsite \fP[-inv] database
+.fi
+.SH DESCRIPTION
+After January 2009, I changed the schema extension definition of the dlsite 
+table, to better support additional applications and track additional 
+information.  The updated schema has expanded field length for the commtype and
+provider.  Because schema extensions do not support versioning, the schema extension/table 
+name was kept the same and the \fBconvert_dlsite\fP script was written to help anyone else
+who may have chosen to use this schema extension.  
+.LP
+The program \fBconvert_dlsite\fP reads the old format dlsite table,
+and creates a dlsite table with the \fIcommtype\fP and \fIprovider\fP fields 
+extended.
+
+The original dlsite table is saved with a suffix of "-".  The new format dlsite 
+table replaces \fIdatabase.dlsite\fP.
+.LP
+\fBconvert_dlsite\fP converts a single dlsite table at a time and does
+not have to be run in the particular directory where \fIdatabase.dlsite\fP resides.
+.SH OPTIONS
+.IP -i
+Ask before converting dlsite table.
+.IP -n
+Just show what would happen.
+.IP -v
+Be more verbose.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+
+%\fB convert_dlsite -i db/usarray\fP
+: convert db/usarray.dlsite ? n
+
+%\fB convert_dlsite -v usarray \fP
+converting usarray.dlsite 
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+dlsite(5)
+mk_dbops(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The following error message can be ignored:
+
+.in 2c
+.ft CW
+.nf
+.ne 6
+2009-048 22:50:04 perl *complain*: Table 'db.dlsite' has invalid length 4758.    
+2009-048 22:50:04 perl *complain*: If more than one process is writing to this database,
+  **please** turn on locking in the descriptor file.
+.fi
+.ft R
+.in
+
+
+Not thoroughly tested.  
+
+Odd things may happen if the descriptor file basename differs from the 
+basename of the dlsite table that is found by following the dbpath.
+
+.SH AUTHOR
+Jennifer Eakins

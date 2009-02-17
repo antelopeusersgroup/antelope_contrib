@@ -1,0 +1,51 @@
+.TH ADOPTION 5 
+.SH NAME
+adoption, adoption_schema\- schema for recording information about stations that transition to other data centers 
+.SH DESCRIPTION
+The schema extension \fBadoption\fP defines the adoption table which tracks stations 
+that have been taken over or transitioned to an alternate data center.
+Development was driven by the need to track stations which were previously part of 
+the USArray TA and were either:  taken over by other data centers; retained for operation through the
+ANF as part of the EARN program; maintained collection at the ANF, but are no longer part 
+of the USArray TA footprint.  This schema incorporates the time that the transition occurred,
+previous snet and name of the station, new snet and name of the station if known, the type of
+transition that occurred, and the newly responsible data center.
+
+.SH "FIELDS"
+.IP "snet"
+The SEED network code.   Normally this is a two character string.  Network codes are provided by 
+the IRIS DMC and they should be consulted before assignment if you have a new station.
+.IP "sta"
+The three to five character station code.  
+.IP "time"
+Time of transition from original operation to new data center control, or time of operational 
+status change at same data center.
+.IP "newsnet"
+New SEED network code.
+.IP "newsta"
+New station code.
+.IP "atype"
+The type of transition/adoption that has occurred.  This can be filled in with up to 50 characters, but
+automated scripts such as \fBmk_dbops(1)\fP may fill it in with predetermined phrases.  The current
+default phrases are:  \fIEARN\fP, \fIOPERATOR TRANSITION\fP, \fI REFNET / BACKBONE\fP.
+.IP "auth"
+Name of the responsible data center.  Limit is 15 characters.  Examples might be PNSN, AZ Geol. Survey,
+DOGAMI, etc.
+.IP "lddate"
+Modification time.
+.SH "BUGS AND CAVEATS"
+Not sure what will happen if you have two transitions for a single station.  I suspect there 
+will be problems.
+.SH "SEE ALSO"
+.nf
+comm(5)
+deployment(5)
+mk_dbops(1)
+.fi
+.SH AUTHOR
+.nf
+Jennifer Eakins
+.br
+Univ. of California, San Diego
+.fi
+
