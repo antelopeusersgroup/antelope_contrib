@@ -1,0 +1,9 @@
+.project
+.cproject
+infile
+pkt.pf
+*.patch
+metadata
+.optimize.db
+.settings
+*.dSYM/
