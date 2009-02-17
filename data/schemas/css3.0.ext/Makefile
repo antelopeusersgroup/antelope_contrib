@@ -1,10 +1,7 @@
 
 DATA = \
 	adoption \
-	comm \
-	deployment \
 	dlevent \
-	dlsite \
 	gsnspec \
 	newcomm \
 	qctests \
