@@ -27,7 +27,7 @@ is hard wired as a set of constants.
 
 There is a second hard wired constant in this that is more subtle as it is linked
 to the use of this function object inside the EventCatalog object defined below.
-That object's implementation uses an STL set of Hypocenters using this compare
+That object's implementation uses an STL map of Hypocenters using this compare
 function to compare members.  Equality is a nontrivial issue with Hypocenter members
 because location errors render this question far from simple.  Two parameters are
 hard wired into this code linked to this concept.  vp is the velocity used to convert 
@@ -246,8 +246,6 @@ public:
 	in an linear way from beginning to end (time order).  */
 	void operator++();
 private:
-	//set<Hypocenter,SpaceTimeCompare> catalog;
-	//set<Hypocenter,SpaceTimeCompare>::iterator current_hypo;
 	map<Hypocenter,Metadata,SpaceTimeCompare> catalog;
 	map<Hypocenter,Metadata,SpaceTimeCompare>::iterator current_hypo;
 	/* There is no guarantee every hypo has all entries in this loaded unless
@@ -258,11 +256,11 @@ private:
 template <class Predicate>
 auto_ptr<EventCatalog> EventCatalog::subset(Predicate pred)
 {
-	set<Hypocenter,SpaceTimeCompare>::iterator cptr;
+	map<Hypocenter,Metadata,SpaceTimeCompare>::iterator cptr;
 	auto_ptr<EventCatalog> result(new EventCatalog());
 	for(cptr=catalog.begin();cptr!=catalog.end();++cptr)
 	{
-		if(pred(*cptr)) result->catalog.insert(*cptr);
+		if(pred(cptr->first)) result->catalog.insert(*cptr);
 	}
 	return(result);
 }
