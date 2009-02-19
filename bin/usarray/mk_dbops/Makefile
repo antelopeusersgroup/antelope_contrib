@@ -13,7 +13,7 @@ DATA = \
 	adoption \
 	comm \
 	deployment \
-	dlsite  \
+	dlsite  
 
 include $(ANTELOPEMAKE)
 
