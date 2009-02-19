@@ -45,6 +45,7 @@ make &Arr{
 	^make(\\[[[:digit:]]+\\])?:.*Error
 	^make(\\[[[:digit:]]+\\])?:.*Fatal error
 	^make(\\[[[:digit:]]+\\])?:.*Command not found
+	^rm: Unable to remove
 	^ld: fatal:
 	^.*ld: can't locate file for:
 	^.*ld returned [1-9] exit status
