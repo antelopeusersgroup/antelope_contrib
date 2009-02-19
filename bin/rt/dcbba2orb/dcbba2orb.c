@@ -50,7 +50,7 @@
 /*
  * Constants
  */
-#define VERSION "dcbba2orb 1.0.0"
+#define VERSION "dcbba2orb 1.1.0"
 /* State variables for use in readFromDC() */
 #define ST_WAIT_FOR_SYNC 0
 #define ST_READ_PKTTYPE 1
@@ -90,8 +90,8 @@ void sig_hdlr(int iSignal);
 int validateBBAChecksum(unsigned char *aBBAPkt, int iBBAPktLength);
 int parseBBAPacket(unsigned char *aBBAPkt, struct stBBAPacketInfo* oPktInfo);
 int readFromDC(struct stBBAPacketInfo *oPktInfo, unsigned char *aBBAPkt);
-int stuffBBAPkt(struct stBBAPacketInfo *PktInfo,
-		unsigned char *BBAPktIn, char **OrbPktOut);
+int stuffBBAPkt(struct stBBAPacketInfo *PktInfo, unsigned char *BBAPktIn,
+		char **OrbPktOut);
 char *getBBAChNameFromId(unsigned short usBBAPktType, char *sSubCode,
 		int iStaId, int iChId);
 int initSiteLookupArrays(void);
@@ -119,6 +119,15 @@ int main(int iArgCount, char *aArgList[]) {
 			elog_complain(1,
 					"main(): Error encountered during paramFileRead() operation.");
 			dcbbaCleanup(-1);
+		}
+
+		/* Exit if bPFValidateFlag is set */
+		if (oConfig.bPFValidateFlag == TRUE) {
+			elog_notify(
+					0,
+					"main(): Parameter File %s validated successfully. Exiting.",
+					oConfig.sParamFileName);
+			dcbbaCleanup(0);
 		}
 
 		/* Allocate memory for our packet */
@@ -160,8 +169,7 @@ int main(int iArgCount, char *aArgList[]) {
 
 				if (bOKToSend == TRUE) {
 					/* Add orb header to Packet */
-					iOutPktLen = stuffBBAPkt(&oPktInfo, aBBAPkt,
-							&sOutPkt);
+					iOutPktLen = stuffBBAPkt(&oPktInfo, aBBAPkt, &sOutPkt);
 					if (iOutPktLen == 0) {
 						/*whine*/
 						elog_complain(
@@ -247,17 +255,18 @@ int readFromDC(struct stBBAPacketInfo *oPktInfo, unsigned char *aBBAPkt) {
 	/*
 	 * Declarations
 	 */
-	int iBBAPktIndex;			/* Index for current position in aBBAPkt */
-	unsigned char cIn;			/* holding variable for a character read in via bnsget() */
-	int iReadState;				/* Current read state, used in read loop */
-	unsigned short usVal;		/* Temp variable used for reading unsigned shorts in network byte order. */
-	unsigned short iPktLength;	/* The full length of the current packet as reported by the packet header */
+	int iBBAPktIndex; /* Index for current position in aBBAPkt */
+	unsigned char cIn; /* holding variable for a character read in via bnsget() */
+	int iReadState; /* Current read state, used in read loop */
+	unsigned short usVal; /* Temp variable used for reading unsigned shorts in network byte order. */
+	unsigned short iPktLength; /* The full length of the current packet as reported by the packet header */
 
 	/*
 	 * Initialization
 	 */
 	if (oDCDataBNS == NULL) { /* Make sure we're connected */
-		elog_complain(1, "readFromDC called before connection to data concentrator was established");
+		elog_complain(1,
+				"readFromDC called before connection to data concentrator was established");
 		return RESULT_FAILURE;
 	}
 	iBBAPktIndex = 0;
@@ -287,7 +296,8 @@ int readFromDC(struct stBBAPacketInfo *oPktInfo, unsigned char *aBBAPkt) {
 						"readFromDC(): state=ST_WAIT_FOR_SYNC, Unsupported packet prefix encountered: %x\n",
 						cIn, cIn);
 			} else {
-				elog_complain(0,
+				elog_complain(
+						0,
 						"readFromDC(): state=ST_WAIT_FOR_SYNC, discarding character '%c' = %x\n",
 						cIn, cIn);
 			}
@@ -404,19 +414,19 @@ int readFromDC(struct stBBAPacketInfo *oPktInfo, unsigned char *aBBAPkt) {
  * 	The length of OrbPacketOut. This will be 0 if an error occurred, and
  *  OrbPktOut will be null.
  */
-int stuffBBAPkt(struct stBBAPacketInfo *PktInfo,
-		unsigned char *BBAPktIn, char **OrbPktOut) {
+int stuffBBAPkt(struct stBBAPacketInfo *PktInfo, unsigned char *BBAPktIn,
+		char **OrbPktOut) {
 
-	char *oNewPkt = 0;			/* the new orb packet */
-	double dCalib;				/* Calibration value for the entire packet */
-	float fCalib; 				/* Cal value converted to float */
-	float fSampRate;			/* Sample rate, converted to float */
-	struct stBBAPreHdr oPreHdr;	/* Orb Pre Header */
-	unsigned char aOrbHdr[512];	/* The full Orb Header, ready to prepend to the packet */
+	char *oNewPkt = 0; /* the new orb packet */
+	double dCalib; /* Calibration value for the entire packet */
+	float fCalib; /* Cal value converted to float */
+	float fSampRate; /* Sample rate, converted to float */
+	struct stBBAPreHdr oPreHdr; /* Orb Pre Header */
+	unsigned char aOrbHdr[512]; /* The full Orb Header, ready to prepend to the packet */
 	unsigned char aHdrPart[512];/* The variable length part of the header after the pre-header */
-	unsigned char *pHdrPart;	/* Pointer to a location in the variable length header */
-	char sSta[PKT_NAMESIZE];	/* Station name as translated by getBBAStaFromSID */
-	char sChNames[512];			/* The channel names (in network byte order) */
+	unsigned char *pHdrPart; /* Pointer to a location in the variable length header */
+	char sSta[PKT_NAMESIZE]; /* Station name as translated by getBBAStaFromSID */
+	char sChNames[512]; /* The channel names (in network byte order) */
 	int iHdrPartSize, iNewPktSize, iChNamesSize;
 	short iDatatype, iNSamp, iNChan, iCHSize, iBBAHdrSize, iOrbHdrSize;
 
@@ -537,7 +547,11 @@ int stuffBBAPkt(struct stBBAPacketInfo *PktInfo,
 void showCommandLineUsage(void) {
 	cbanner(
 			VERSION,
-			" [-V] [-v] [-a dcipaddr | -t testfilename ] [-d dcdataport] [-o orbname] [-g paramfile]",
+			" [-V|--usage] [-r|--validatepf] [-v|--verbose] [--brief] "
+			"-a DC_IP_ADDRESS|--dcaddress=DC_IP_ADDRESS|-t TEST_FILE_NAME|--testfile=TEST_FILENAME "
+			"[-d DC_DATA_PORT|--dcdataport=DC_DATA_PORT] "
+			"[-o DATA_ORB_NAME|--dataorb=DATA_ORB_NAME] "
+			"[-g PARAM_FILENAME|--pf=PARAM_FILENAME]",
 			"Geoff Davis", "IGPP, UCSD", "gadavis@ucsd.edu");
 }
 
@@ -548,11 +562,28 @@ void showCommandLineUsage(void) {
  */
 int parseCommandLineOptions(int iArgCount, char *aArgList[]) {
 	int iOption = '\0';
+	int iLongOptIdx = 0;
 	int bAddressSet = FALSE;
 	int bDataFileSet = FALSE;
+	static struct option oLongOpts[] = {
+			/* These options set a flag */
+			{ "verbose", no_argument, &oConfig.bVerboseModeFlag, TRUE},
+			{ "brief",	no_argument, &oConfig.bVerboseModeFlag, FALSE},
+			{ "validatepf", no_argument, &oConfig.bPFValidateFlag, TRUE},
+			/* These options don't set a flag. We distinguish them by their indices. */
+			{ "usage", no_argument, 0, 'V' },
+			{ "dcaddress", required_argument, 0, 'a' },
+			{ "dataport", required_argument, 0, 'd' },
+			{ "controlport", required_argument, 0, 'c' },
+			{ "dataorb", required_argument, 0, 'o' },
+			{ "pf", required_argument, 0, 'g' },
+			{ "statefile", required_argument, 0, 's' },
+			{ "testfile", required_argument, 0, 's' },
+			{ 0, 0, 0, 0 } };
 
 	/* Initialize the CONFIG structure */
 	oConfig.bVerboseModeFlag = FALSE;
+	oConfig.bPFValidateFlag = FALSE;
 	oConfig.iConnectionType = CONNECT_TCP_IP;
 	oConfig.sDCConnectionParams[0] = "";
 	oConfig.sDCConnectionParams[1] = DEFAULT_DC_DATA_PORT;
@@ -565,8 +596,32 @@ int parseCommandLineOptions(int iArgCount, char *aArgList[]) {
 	oConfig.iBBAPktBufSz = DEFAULT_BBA_PKT_BUF_SZ;
 
 	/* Loop through all possible options */
-	while ((iOption = getopt(iArgCount, aArgList, "vVa:d:c:o:g:s:t:")) != -1) {
+	while ((iOption = getopt_long(iArgCount, aArgList, "vVra:d:c:o:g:s:t:",
+			oLongOpts, &iLongOptIdx)) != -1) {
+		if (iOption == 0) { /* Parse long options */
+
+			if (oLongOpts[iLongOptIdx].flag != 0) {
+				/* If this option set a flag, do nothing else now */
+				break;
+			}
+			/*
+			 * Handle options that don't set a flag
+			 */
+
+			/*
+			 * If there was a long option without a corresponding short option
+			 * that didn't set a flag either, we would handle it here and break
+			 */
+
+			/*
+			 * Handle long options with corresponding short option by passing
+			 * them off to the switch statement below
+			 */
+			iOption = oLongOpts[iLongOptIdx].val;
+		}
 		switch (iOption) {
+		case 0:
+			break; /* This long option was handled above so don't do anything */
 		case 'V':
 			showCommandLineUsage();
 			return RESULT_FAILURE;
@@ -585,7 +640,7 @@ int parseCommandLineOptions(int iArgCount, char *aArgList[]) {
 		case 'c': /* Port number of the control port on the DC */
 			oConfig.sDCConnectionParams[2] = optarg;
 			break;
-		case 'o': /* Orb Name */
+		case 'o': /* Data Orb Name */
 			oConfig.sOrbName = optarg;
 			break;
 		case 'g':
@@ -598,6 +653,9 @@ int parseCommandLineOptions(int iArgCount, char *aArgList[]) {
 			oConfig.sDCConnectionParams[0] = optarg;
 			bDataFileSet = TRUE;
 			oConfig.iConnectionType = CONNECT_FILE;
+			break;
+		case 'r': /* Read the parameter file and exit */
+			oConfig.bPFValidateFlag = TRUE;
 			break;
 
 			/* Handle invalid arguments */
@@ -615,7 +673,8 @@ int parseCommandLineOptions(int iArgCount, char *aArgList[]) {
 	elog_notify(0, "%s\n", VERSION);
 
 	/* Verify valid command line options & combinations */
-	if ((bAddressSet == FALSE) && bDataFileSet == FALSE) {
+	if ((bAddressSet == FALSE) && (bDataFileSet == FALSE)
+			&& (oConfig.bPFValidateFlag == FALSE)) {
 		elog_complain(0,
 				"parseCommandLineOptions(): No address for Data Concentrator specified.\n");
 		showCommandLineUsage();
@@ -697,15 +756,16 @@ int initSiteLookupArrays() {
 			setarr(oConfig.oStaCh, sKey, oNewSiteEntry);
 		}
 	}
-	return RESULT_SUCCESS;
-}
+		return RESULT_SUCCESS;
+	}
 
-/*
- * Reads the parameter file and initializes several lookup tables.
- */
+	/*
+	 * Reads the parameter file and initializes several lookup tables.
+	 */
 int paramFileRead(void) {
 	int ret; /* Return value from pfupdate */
 	static int iPFFirstRead = 1; /* Tracks whether or not this is the first read of the parameter file */
+	char *pfver_read = NULL;
 
 	/* Read the parameter file */
 	if ((ret = pfupdate(oConfig.sParamFileName, &oConfig.oConfigPf)) < 0) {
@@ -724,6 +784,24 @@ int paramFileRead(void) {
 		else
 			elog_notify(0, "updated config file loaded %s\n",
 					oConfig.sParamFileName);
+
+		/* Check to make sure the parameter file version matches #PFVER */
+		pfver_read = pfget_string(oConfig.oConfigPf, "dcbba2orb_pf_ver");
+		if (pfver_read == 0) {
+			elog_log(0,
+					"pfupdate(): no version number found in parameter file %s",
+					oConfig.sParamFileName);
+			free(pfver_read);
+			return RESULT_FAILURE;
+		} else if (strcmp(pfver_read, PFVER) != 0) {
+			elog_log(
+					0,
+					"pfupdate(): dcbba2orb_pf_ver \"%s\" in \"%s\" does not match the required version \"%s\". Please update the parameter file. See the manpage for formatting details.",
+					pfver_read, oConfig.sParamFileName, PFVER);
+			free(pfver_read);
+			return RESULT_FAILURE;
+		}
+		free(pfver_read);
 
 		/* Read in the Network Name from the parameter file */
 		oConfig.sNetworkName = pfget_string(oConfig.oConfigPf, "Network_Name");
@@ -768,7 +846,7 @@ int paramFileRead(void) {
  */
 int getBBAStaFromSID(int iStaID, char *StaName) {
 	char sKey[5];
-	void *result;	/* Pointer to an entry in the station name lookup array */
+	void *result; /* Pointer to an entry in the station name lookup array */
 	/* Convert iStaID to a string so we can do the pf lookup */
 	sprintf(sKey, "%i", iStaID);
 	result = getarr(oConfig.oStaName, sKey);
@@ -1090,8 +1168,7 @@ int parseBBAPacket(unsigned char *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
 	usVal = 0;
 	memcpy((char *) &usVal, &aBBAPkt[BBA_HSIZE_OFF], 2); /* header size */
 	if (usVal == 0) {
-		elog_log(
-				0,
+		elog_log(0,
 				"parseBBAPacket(): Wrong header. Zero header size detected.\n");
 		return RESULT_FAILURE;
 	} else
@@ -1109,17 +1186,17 @@ int parseBBAPacket(unsigned char *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
 
 	/* get data type in orb header format */
 	switch (aBBAPkt[BBA_DTYPE_OFF]) {
-	case 0x0:	/* 16 bit */
+	case 0x0: /* 16 bit */
 		strcpy(oPktInfo->sDataType, "s2");
 		break;
-	case 0x01:	/* 32 bit */
+	case 0x01: /* 32 bit */
 		strcpy(oPktInfo->sDataType, "s4");
 		break;
-	case 0x02:	/* 64 bit */
+	case 0x02: /* 64 bit */
 		strcpy(oPktInfo->sDataType, "t4");
-	case 0x10:	/* 16 bit "UCSD" compressed */
-	case 0x11:	/* 32 bit "UCSD" compressed */
-	case 0x12:	/* 64 bit "UCSD" compressed */
+	case 0x10: /* 16 bit "UCSD" compressed */
+	case 0x11: /* 32 bit "UCSD" compressed */
+	case 0x12: /* 64 bit "UCSD" compressed */
 		strcpy(oPktInfo->sDataType, "c0");
 		break;
 	default:

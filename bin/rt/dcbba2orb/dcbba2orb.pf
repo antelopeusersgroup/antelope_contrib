@@ -3,132 +3,137 @@
 # communicate with an IGPP data concentrator.
 #
 
-Network_Name  AZ        # Name of the SEED network to use
+#
+# Starting with dcbba2orb 1.0.1, dcbba2orb expects a configuration file 
+# version in order to verify that data formats are compatible
+#
+dcbba2orb_pf_ver        1.1     # Required, pf format version
+
+Network_Name            AZ      # Name of the SEED network to use
 
 #
 # The site table maps station and channel ID numbers to names
 # This table is used for DAS data packets (type DAAB)
-# The calib field is not used but is kept for legacy purposes
 # 
 Site &Tbl{
-#DTYPE    SID NAME    COMP   SENS       CALIB
+#DTYPE    SID NAME    COMP   SENS
 #
-BBA/HS  264   PFO       1    HLZ    1.266669
-BBA/HS  264   PFO       2    HLN    1.266669
-BBA/HS  264   PFO       3    HLE    1.266669
-BBA/HS  264   PFO       4    HHZ    1.266669
-BBA/HS  264   PFO       5    HHN    1.266669
-BBA/HS  264   PFO       6    HHE    1.266669
-BBA/BS  264   PFO       4    BHZ    1.266669
-BBA/BS  264   PFO       5    BHN    1.266669
-BBA/BS  264   PFO       6    BHE    1.266669
-BBA/LS  264   PFO       4    LHZ    1.266669
-BBA/LS  264   PFO       5    LHN    1.266669 
-BBA/LS  264   PFO       6    LHE    1.266669
+BBA/HS  264   PFO       1    HLZ
+BBA/HS  264   PFO       2    HLN
+BBA/HS  264   PFO       3    HLE
+BBA/HS  264   PFO       4    HHZ
+BBA/HS  264   PFO       5    HHN
+BBA/HS  264   PFO       6    HHE
+BBA/BS  264   PFO       4    BHZ
+BBA/BS  264   PFO       5    BHN
+BBA/BS  264   PFO       6    BHE
+BBA/LS  264   PFO       4    LHZ
+BBA/LS  264   PFO       5    LHN
+BBA/LS  264   PFO       6    LHE
 #
-BBA/HS  268   LVA2      1    HLZ    1.266669
-BBA/HS  268   LVA2      2    HLN    1.266669
-BBA/HS  268   LVA2      3    HLE    1.266669
-BBA/HS  268   LVA2      4    HHZ    1.266669
-BBA/HS  268   LVA2      5    HHN    1.266669
-BBA/HS  268   LVA2      6    HHE    1.266669
-BBA/BS  268   LVA2      4    BHZ    1.266669
-BBA/BS  268   LVA2      5    BHN    1.266669
-BBA/BS  268   LVA2      6    BHE    1.266669
-BBA/LS  268   LVA2      4    LHZ    1.266669
-BBA/LS  268   LVA2      5    LHN    1.266669 
-BBA/LS  268   LVA2      6    LHE    1.266669
+BBA/HS  268   LVA2      1    HLZ
+BBA/HS  268   LVA2      2    HLN
+BBA/HS  268   LVA2      3    HLE
+BBA/HS  268   LVA2      4    HHZ
+BBA/HS  268   LVA2      5    HHN
+BBA/HS  268   LVA2      6    HHE
+BBA/BS  268   LVA2      4    BHZ
+BBA/BS  268   LVA2      5    BHN
+BBA/BS  268   LVA2      6    BHE
+BBA/LS  268   LVA2      4    LHZ
+BBA/LS  268   LVA2      5    LHN
+BBA/LS  268   LVA2      6    LHE
 #
-BBA/HS  269   RDM       1    HLZ    1.266669
-BBA/HS  269   RDM       2    HLN    1.266669
-BBA/HS  269   RDM       3    HLE    1.266669
-BBA/HS  269   RDM       4    HHZ    1.266669
-BBA/HS  269   RDM       5    HHN    1.266669
-BBA/HS  269   RDM       6    HHE    1.266669
-BBA/BS  269   RDM       4    BHZ    1.266669
-BBA/BS  269   RDM       5    BHN    1.266669
-BBA/BS  269   RDM       6    BHE    1.266669
-BBA/LS  269   RDM       4    LHZ    1.266669
-BBA/LS  269   RDM       5    LHN    1.266669 
-BBA/LS  269   RDM       6    LHE    1.266669
+BBA/HS  269   RDM       1    HLZ
+BBA/HS  269   RDM       2    HLN
+BBA/HS  269   RDM       3    HLE
+BBA/HS  269   RDM       4    HHZ
+BBA/HS  269   RDM       5    HHN
+BBA/HS  269   RDM       6    HHE
+BBA/BS  269   RDM       4    BHZ
+BBA/BS  269   RDM       5    BHN
+BBA/BS  269   RDM       6    BHE
+BBA/LS  269   RDM       4    LHZ
+BBA/LS  269   RDM       5    LHN
+BBA/LS  269   RDM       6    LHE
 #
-BBA/HS  298   CRY       1    HLZ    1.266669
-BBA/HS  298   CRY       2    HLN    1.266669
-BBA/HS  298   CRY       3    HLE    1.266669
-BBA/HS  298   CRY       4    HHZ    1.266669
-BBA/HS  298   CRY       5    HHN    1.266669
-BBA/HS  298   CRY       6    HHE    1.266669
-BBA/BS  298   CRY       4    BHZ    1.266669
-BBA/BS  298   CRY       5    BHN    1.266669
-BBA/BS  298   CRY       6    BHE    1.266669
-BBA/LS  298   CRY       4    LHZ    1.266669
-BBA/LS  298   CRY       5    LHN    1.266669 
-BBA/LS  298   CRY       6    LHE    1.266669
+BBA/HS  298   CRY       1    HLZ
+BBA/HS  298   CRY       2    HLN
+BBA/HS  298   CRY       3    HLE
+BBA/HS  298   CRY       4    HHZ
+BBA/HS  298   CRY       5    HHN
+BBA/HS  298   CRY       6    HHE
+BBA/BS  298   CRY       4    BHZ
+BBA/BS  298   CRY       5    BHN
+BBA/BS  298   CRY       6    BHE
+BBA/LS  298   CRY       4    LHZ
+BBA/LS  298   CRY       5    LHN
+BBA/LS  298   CRY       6    LHE
 #
-BBA/HS  437   WMC       1    HLZ    1.266669
-BBA/HS  437   WMC       2    HLN    1.266669
-BBA/HS  437   WMC       3    HLE    1.266669
-BBA/HS  437   WMC       4    HHZ    1.266669
-BBA/HS  437   WMC       5    HHN    1.266669
-BBA/HS  437   WMC       6    HHE    1.266669
-BBA/BS  437   WMC       4    BHZ    1.266669
-BBA/BS  437   WMC       5    BHN    1.266669
-BBA/BS  437   WMC       6    BHE    1.266669
-BBA/LS  437   WMC       4    LHZ    1.266669
-BBA/LS  437   WMC       5    LHN    1.266669 
-BBA/LS  437   WMC       6    LHE    1.266669
+BBA/HS  437   WMC       1    HLZ
+BBA/HS  437   WMC       2    HLN
+BBA/HS  437   WMC       3    HLE
+BBA/HS  437   WMC       4    HHZ
+BBA/HS  437   WMC       5    HHN
+BBA/HS  437   WMC       6    HHE
+BBA/BS  437   WMC       4    BHZ
+BBA/BS  437   WMC       5    BHN
+BBA/BS  437   WMC       6    BHE
+BBA/LS  437   WMC       4    LHZ
+BBA/LS  437   WMC       5    LHN
+BBA/LS  437   WMC       6    LHE
 #
-BBA/HS  444   FRD       1    HLZ    1.266669
-BBA/HS  444   FRD       2    HLN    1.266669
-BBA/HS  444   FRD       3    HLE    1.266669
-BBA/HS  444   FRD       4    HHZ    1.266669
-BBA/HS  444   FRD       5    HHN    1.266669
-BBA/HS  444   FRD       6    HHE    1.266669
-BBA/BS  444   FRD       4    BHZ    1.266669
-BBA/BS  444   FRD       5    BHN    1.266669
-BBA/BS  444   FRD       6    BHE    1.266669
-BBA/LS  444   FRD       4    LHZ    1.266669
-BBA/LS  444   FRD       5    LHN    1.266669 
-BBA/LS  444   FRD       6    LHE    1.266669
+BBA/HS  444   FRD       1    HLZ
+BBA/HS  444   FRD       2    HLN
+BBA/HS  444   FRD       3    HLE
+BBA/HS  444   FRD       4    HHZ
+BBA/HS  444   FRD       5    HHN
+BBA/HS  444   FRD       6    HHE
+BBA/BS  444   FRD       4    BHZ
+BBA/BS  444   FRD       5    BHN
+BBA/BS  444   FRD       6    BHE
+BBA/LS  444   FRD       4    LHZ
+BBA/LS  444   FRD       5    LHN
+BBA/LS  444   FRD       6    LHE
 #
-BBA/HS  445   TRO       1    HLZ    1.266669
-BBA/HS  445   TRO       2    HLN    1.266669
-BBA/HS  445   TRO       3    HLE    1.266669
-BBA/HS  445   TRO       4    HHZ    1.266669
-BBA/HS  445   TRO       5    HHN    1.266669
-BBA/HS  445   TRO       6    HHE    1.266669
-BBA/BS  445   TRO       4    BHZ    1.266669
-BBA/BS  445   TRO       5    BHN    1.266669
-BBA/BS  445   TRO       6    BHE    1.266669
-BBA/LS  445   TRO       4    LHZ    1.266669
-BBA/LS  445   TRO       5    LHN    1.266669 
-BBA/LS  445   TRO       6    LHE    1.266669
+BBA/HS  445   TRO       1    HLZ
+BBA/HS  445   TRO       2    HLN
+BBA/HS  445   TRO       3    HLE
+BBA/HS  445   TRO       4    HHZ
+BBA/HS  445   TRO       5    HHN
+BBA/HS  445   TRO       6    HHE
+BBA/BS  445   TRO       4    BHZ
+BBA/BS  445   TRO       5    BHN
+BBA/BS  445   TRO       6    BHE
+BBA/LS  445   TRO       4    LHZ
+BBA/LS  445   TRO       5    LHN
+BBA/LS  445   TRO       6    LHE
 #
-BBA/HS  697   SND       1    HLZ    1.266669
-BBA/HS  697   SND       2    HLN    1.266669
-BBA/HS  697   SND       3    HLE    1.266669
-BBA/HS  697   SND       4    HHZ    1.266669
-BBA/HS  697   SND       5    HHN    1.266669
-BBA/HS  697   SND       6    HHE    1.266669
-BBA/BS  697   SND       4    BHZ    1.266669
-BBA/BS  697   SND       5    BHN    1.266669
-BBA/BS  697   SND       6    BHE    1.266669
-BBA/LS  697   SND       4    LHZ    1.266669
-BBA/LS  697   SND       5    LHN    1.266669 
-BBA/LS  697   SND       6    LHE    1.266669
+BBA/HS  697   SND       1    HLZ
+BBA/HS  697   SND       2    HLN
+BBA/HS  697   SND       3    HLE
+BBA/HS  697   SND       4    HHZ
+BBA/HS  697   SND       5    HHN
+BBA/HS  697   SND       6    HHE
+BBA/BS  697   SND       4    BHZ
+BBA/BS  697   SND       5    BHN
+BBA/BS  697   SND       6    BHE
+BBA/LS  697   SND       4    LHZ
+BBA/LS  697   SND       5    LHN
+BBA/LS  697   SND       6    LHE
 #
-BBA/HS  699   TRO       1    HLZ    1.266669
-BBA/HS  699   TRO       2    HLN    1.266669
-BBA/HS  699   TRO       3    HLE    1.266669
-BBA/HS  699   TRO       4    HHZ    1.266669
-BBA/HS  699   TRO       5    HHN    1.266669
-BBA/HS  699   TRO       6    HHE    1.266669
-BBA/BS  699   TRO       4    BHZ    1.266669
-BBA/BS  699   TRO       5    BHN    1.266669
-BBA/BS  699   TRO       6    BHE    1.266669
-BBA/LS  699   TRO       4    LHZ    1.266669
-BBA/LS  699   TRO       5    LHN    1.266669 
-BBA/LS  699   TRO       6    LHE    1.266669
+BBA/HS  699   TRO       1    HLZ
+BBA/HS  699   TRO       2    HLN
+BBA/HS  699   TRO       3    HLE
+BBA/HS  699   TRO       4    HHZ
+BBA/HS  699   TRO       5    HHN
+BBA/HS  699   TRO       6    HHE
+BBA/BS  699   TRO       4    BHZ
+BBA/BS  699   TRO       5    BHN
+BBA/BS  699   TRO       6    BHE
+BBA/LS  699   TRO       4    LHZ
+BBA/LS  699   TRO       5    LHN
+BBA/LS  699   TRO       6    LHE
 #
 }
 

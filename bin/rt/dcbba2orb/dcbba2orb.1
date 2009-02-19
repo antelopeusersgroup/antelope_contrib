@@ -1,48 +1,69 @@
-.TH DCBBA2ORB 1 "2/17/2009"
+.TH DCBBA2ORB 1 "Feb 18, 2009"
 .SH NAME
 dcbba2orb \- acquire data from an IGPP Data Concentrator to an ORB
 .SH SYNOPSIS
 .nf
-dcbba2orb [-V] [-v] -a dcipaddr | -t testfilename [-d dcdataport] [-o orbname] [-g paramfile]
+\fBdcbba2orb \fP[-V|--usage] [-r|--validatepf] [-v|--verbose] [--brief]
+                -a \fIDC_IP_ADDRESS\fP|--dcaddress=\fIDC_IP_ADDRESS\fP|-t
+                \fITEST_FILE_NAME\fP|--testfile=\fITEST_FILENAME\fP
+                [-d \fIDC_DATA_PORT\fP|--dcdataport=\fIDC_DATA_PORT\fP]
+                [-o \fIDATA_ORB_NAME\fP|--dataorb=\fIDATA_ORB_NAME\fP]
+                [-g \fIPARAM_FILENAME\fP|--pf=\fIPARAM_FILENAME\fP]
 .fi
 .SH DESCRIPTION
-dcbba2orb acquires data in the BBA packet format from multiple data loggers connected to an IGPP Data Concentrator. Once a packet is acquired from the Data Concentrator, the various numeric field codes are translated according to tables in the parameter file. Data packets, Data Concentrator status packets, Reftek data logger status packets, and receive/transmit status packets are supported.
+\fBdcbba2orb\fP acquires data in the BBA packet format from multiple data loggers connected to an IGPP Data Concentrator. Once a packet is acquired from the Data Concentrator, the various numeric field codes are translated according to tables in the parameter file. Data packets, Data Concentrator status packets, Reftek data logger status packets, and receive/transmit status packets are supported.
 .SH OPTIONS
-.IP "-V"
+.IP "-V, --usage"
 Print version and usage, then exit
-.IP "-v"
-Verbose mode (use this option to see details on what dcbba2orb is doing)
-.IP "-a dcipaddr"
+.IP "-r, --validatepf"
+Validate parameter file, then exit
+.IP "-v, --verbose"
+Verbose mode (use this option to see details on what \fBdcbba2orb\fP is doing). This option can be negated with --brief.
+.IP "--brief"
+Opposite of verbose. Used to negate --verbose. This is the default.
+.IP "-a <ipaddress>, --dcaddress=<ipaddress>"
 Hostname or IP address of the Data concentrator to acquire data from. Either this option or -t must be specified.
-.IP "-t testfilename"
+.IP "-t <filename>, --testfile=<filename>"
 File containing sample data for testing data acquisition. The best way to generate one of these files is using \fBtcpdump(1)\fP or \fBsnoop(1)\fP to record an existing data logger output, and then extract just the data fields of the packets using a tool like \fBwireshark(1)\fP.
-.IP "-d dcdataport"
+.IP "-d <port>, --dataport=<port>"
 Port number of the data port on the data concentrator - defaults to \fI5000\fP.
-.IP "-o orbname"
+.IP "-o <orbname>, --dataorb=<orbname>"
 Name of the orb to output data packets to
-.IP "-g paramfile"
-Parameter file name. Defaults to dcbba2orb.pf
+.IP "-g paramfile, --pf=<filename>"
+Parameter file name. Defaults to \fBdcbba2orb\fP.pf
 .SH ORB OUTPUT PACKETS
 dcbba2orb outputs packets in the BBA packet format, with a special orb header that translates numeric station ids and channel ids to text-based station and channel names in the SEED format. Because the data loggers can be configured in a variety of manners, the ID to name mapping is defined in the parameter file.
 .SH PARAMETER FILE
-The dcbba2orb parameter file contains much of the information necessary to for connecto to and acquiring data from an IGPP data concentrator. Following is the default dcbba2orb parameter file.
+The \fBdcbba2orb\fP parameter file contains much of the information necessary to for connecto to and acquiring data from an IGPP data concentrator. This parameter file contains a version number, dcbba2orb_pf_ver. If the parameter file version number does not exist or if it doesn't match the required version, the program will complain and fail to load the parameter file.
+
+Following is the default \fBdcbba2orb\fP parameter file.
 .in 2c
 .ft CW
 .nf
+
+.ne 8
+
 .ps 8
 
 #
-# This dcbba2orb parameter file is used to specify the settings needed to 
+# This \fBdcbba2orb\fP parameter file is used to specify the settings needed to
 # communicate with an IGPP data concentrator.
 #
 
+.ne 5
+#
+# Starting with \fBdcbba2orb\fP 1.0.1, \fBdcbba2orb\fP expects a configuration file
+# version in order to verify that data formats are compatible
+#
+dcbba2orb_pf_ver        1.0     # Required, pf format version
+
+.ne 128
 Network_Name  AZ        # Name of the SEED network to use
 
 #
 # The site table maps station and channel ID numbers to names
 # This table is used for DAS data packets (type DAAB)
-# The calib field is not used but is kept for legacy purposes
-# 
+#
 Site &Tbl{
 #DTYPE    SID NAME    COMP   SENS       CALIB
 #
@@ -56,7 +77,7 @@ BBA/BS  264   PFO       4    BHZ    1.266669
 BBA/BS  264   PFO       5    BHN    1.266669
 BBA/BS  264   PFO       6    BHE    1.266669
 BBA/LS  264   PFO       4    LHZ    1.266669
-BBA/LS  264   PFO       5    LHN    1.266669 
+BBA/LS  264   PFO       5    LHN    1.266669
 BBA/LS  264   PFO       6    LHE    1.266669
 #
 BBA/HS  268   LVA2      1    HLZ    1.266669
@@ -69,7 +90,7 @@ BBA/BS  268   LVA2      4    BHZ    1.266669
 BBA/BS  268   LVA2      5    BHN    1.266669
 BBA/BS  268   LVA2      6    BHE    1.266669
 BBA/LS  268   LVA2      4    LHZ    1.266669
-BBA/LS  268   LVA2      5    LHN    1.266669 
+BBA/LS  268   LVA2      5    LHN    1.266669
 BBA/LS  268   LVA2      6    LHE    1.266669
 #
 BBA/HS  269   RDM       1    HLZ    1.266669
@@ -82,7 +103,7 @@ BBA/BS  269   RDM       4    BHZ    1.266669
 BBA/BS  269   RDM       5    BHN    1.266669
 BBA/BS  269   RDM       6    BHE    1.266669
 BBA/LS  269   RDM       4    LHZ    1.266669
-BBA/LS  269   RDM       5    LHN    1.266669 
+BBA/LS  269   RDM       5    LHN    1.266669
 BBA/LS  269   RDM       6    LHE    1.266669
 #
 BBA/HS  298   CRY       1    HLZ    1.266669
@@ -95,7 +116,7 @@ BBA/BS  298   CRY       4    BHZ    1.266669
 BBA/BS  298   CRY       5    BHN    1.266669
 BBA/BS  298   CRY       6    BHE    1.266669
 BBA/LS  298   CRY       4    LHZ    1.266669
-BBA/LS  298   CRY       5    LHN    1.266669 
+BBA/LS  298   CRY       5    LHN    1.266669
 BBA/LS  298   CRY       6    LHE    1.266669
 #
 BBA/HS  437   WMC       1    HLZ    1.266669
@@ -108,7 +129,7 @@ BBA/BS  437   WMC       4    BHZ    1.266669
 BBA/BS  437   WMC       5    BHN    1.266669
 BBA/BS  437   WMC       6    BHE    1.266669
 BBA/LS  437   WMC       4    LHZ    1.266669
-BBA/LS  437   WMC       5    LHN    1.266669 
+BBA/LS  437   WMC       5    LHN    1.266669
 BBA/LS  437   WMC       6    LHE    1.266669
 #
 BBA/HS  444   FRD       1    HLZ    1.266669
@@ -121,7 +142,7 @@ BBA/BS  444   FRD       4    BHZ    1.266669
 BBA/BS  444   FRD       5    BHN    1.266669
 BBA/BS  444   FRD       6    BHE    1.266669
 BBA/LS  444   FRD       4    LHZ    1.266669
-BBA/LS  444   FRD       5    LHN    1.266669 
+BBA/LS  444   FRD       5    LHN    1.266669
 BBA/LS  444   FRD       6    LHE    1.266669
 #
 BBA/HS  445   TRO       1    HLZ    1.266669
@@ -134,7 +155,7 @@ BBA/BS  445   TRO       4    BHZ    1.266669
 BBA/BS  445   TRO       5    BHN    1.266669
 BBA/BS  445   TRO       6    BHE    1.266669
 BBA/LS  445   TRO       4    LHZ    1.266669
-BBA/LS  445   TRO       5    LHN    1.266669 
+BBA/LS  445   TRO       5    LHN    1.266669
 BBA/LS  445   TRO       6    LHE    1.266669
 #
 BBA/HS  697   SND       1    HLZ    1.266669
@@ -147,7 +168,7 @@ BBA/BS  697   SND       4    BHZ    1.266669
 BBA/BS  697   SND       5    BHN    1.266669
 BBA/BS  697   SND       6    BHE    1.266669
 BBA/LS  697   SND       4    LHZ    1.266669
-BBA/LS  697   SND       5    LHN    1.266669 
+BBA/LS  697   SND       5    LHN    1.266669
 BBA/LS  697   SND       6    LHE    1.266669
 #
 BBA/HS  699   TRO       1    HLZ    1.266669
@@ -160,11 +181,12 @@ BBA/BS  699   TRO       4    BHZ    1.266669
 BBA/BS  699   TRO       5    BHN    1.266669
 BBA/BS  699   TRO       6    BHE    1.266669
 BBA/LS  699   TRO       4    LHZ    1.266669
-BBA/LS  699   TRO       5    LHN    1.266669 
+BBA/LS  699   TRO       5    LHN    1.266669
 BBA/LS  699   TRO       6    LHE    1.266669
 #
 }
 
+.ne 13
 #
 # Das_Stat is the definition of channels for DAS status packets (type DABC).
 # The following is version 1.01 of the status packets
@@ -179,6 +201,7 @@ Das_Stat &Arr{
   7    TEMP
 }
 
+.ne 21
 #
 # DC_Status is the definition of channels for DC status packet (type DACD)
 # The following is version 1.00 of the DC Status packet
@@ -201,17 +224,19 @@ DC_Stat &Arr{
   15   RSR
 }
 
+.ne 9
 #
 # RTX_Stat is the definition of channels for Receive/Transmit status packets (type DADE)
 # The following is version 1.00 of the RTX status packet
-# 
+#
 RTX_Stat &Arr{
-  1 	RTXREQ
-  2		RTXRCV
+  1     RTXREQ
+  2             RTXRCV
   3     RTXSKP
 }
 
 .ps
+
 .fi
 .ft R
 .in
@@ -220,24 +245,27 @@ The parameter file consists of a default value for the SEED network code and sev
 .IP \fINetwork_Name\fP
 This is the default SEED network code for data acquired from the data logger.
 .IP \fISite\fP
-The site table maps station and channel ID numbers to names. It is used for DAS data packets (type DAAB). It consists of the following columns: Data type (DTYPE), Station ID (SID), Station Name (NAME), Channel ID (COMP), Sensor Name (SENS), and Calibration factor (CALIB). The CALIB column is not used but is kept for compatibility with the now defunct \fBipd2(1)\fP \fIpkt.pf\fP parameter file.
+The site table maps station and channel ID numbers to names. It is used for DAS data packets (type DAAB). It consists of the following columns: Data type (DTYPE), Station ID (SID), Station Name (NAME), Channel ID (COMP), and Sensor Name (SENS).
+\fBNOTE:\fP The CALIB column was removed in version 1.1 of the parameter file.
 .IP \fIDas_Stat\fP
 Das_Stat is an array containing channel number to name mappings for DAS status packets (type DABC). It typically does not change, but is included in the parameter file in case further refinements to the data concentrator are made.
 .IP \fIDC_Stat\fP
 DC_Stat is an array containing channel number to name mappings for DC Status packets (type DACD). It typically does not change, but is included in the parameter file in case further refinements to the data concentrator are made.
 .IP \fIRTX_Stat\fP
-RTX_Stat is an array containing channel number to name mappings for Receive/Transmit status packets (type DADE). It typically does not change, but is included in the parameter file in case further refinements to the data concentrato are made.
+RTX_Stat is an array containing channel number to name mappings for Receive/Transmit status packets (type DADE). It typically does not change, but is included in the parameter file in case further refinements to the data concentrator are made.
 .SH EXAMPLE
 .in 2c
 .ft CW
 .nf
+
 dcbba2orb -o $ORB -a 172.16.4.250
+
 .fi
 .ft R
 .in
 .SH DIAGNOSTICS
 .IP "readFromDC(): state=ST_WAIT_FOR_SYNC, discarding character 'R' = 52"
-Typically, this message shows up when the program first connects to the Data Concentrator before the first data packet is received. The data concentrator prints out "RESET RESET   v071002 00005020 RESET RESET" before sending it's first data packet. If a number of these messages show up displaying characters other than the reset message, there may be communications errors or you might not actually be talking to a data concentrator.
+Typically, this message shows up when the program first connects to the Data Concentrator before the first data packet is received. The data concentrator prints out \fIRESET RESET   v071002 00005020 RESET RESET\fP before sending it's first data packet. If a number of these messages show up displaying characters other than the reset message, there may be communications errors or you might not actually be talking to a data concentrator.
 .IP "readFromDC(): bnsget failed to read"
 This error is printed if the connection to the data concentrator fails (socket closed) or if an EOF is encountered while reading a test file with the -f option.
 
@@ -248,10 +276,9 @@ ipd2(1)
 ucp2(1)
 .IP "IGPP Data Concentrator and the BBA Packet Format"
 Web page available from the USARRAY ANF team - please contact anfsysadmins@anfmon.ucsd.edu for a copy.
-.fi
 .SH "BUGS AND CAVEATS"
 .LP
-dcbba2orb doesn't currently attempt to reconnect to the Data Concentrator if the connection is lost. However, if dcbba2orb is run under rtexec, this shouldn't be an issue.
+\fBdcbba2orb\fP doesn't currently attempt to reconnect to the Data Concentrator if the connection is lost. However, if \fBdcbba2orb\fP is run under rtexec, this shouldn't be an issue.
 .LP
 The initial startup banner printed by the Data Concentrator is not parsed and shows up as gibberish characters in the log. This does not affect the data being transferred.
 .SH AUTHOR
