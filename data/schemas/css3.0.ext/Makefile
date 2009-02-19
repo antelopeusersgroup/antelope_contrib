@@ -1,9 +1,7 @@
 
 DATA = \
-	adoption \
 	dlevent \
 	gsnspec \
-	newcomm \
 	qctests \
 	qgrid \
 	replayed \
