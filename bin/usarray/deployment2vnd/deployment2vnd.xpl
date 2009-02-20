@@ -14,12 +14,21 @@ require "getopts.pl";
   $database = $ARGV[0];
   $file	= $ARGV[1];
 
+
+  ($dir, $x, $y)  = parsepath($file);
+
+  if (!-d $dir) {
+     $mkdir = "mkdir -p $dir"  ;
+     &run ($mkdir) ;
+  } 
+
+
   elog_init ($0, @ARGV) ;
 
   if (-e $file) {
     elog_die("File already exists!  Won't overwrite\n") ;
     exit(1);
-  }
+  } 
 
 
   @db		= dbopen ( $database, "r") ; 
@@ -32,9 +41,9 @@ require "getopts.pl";
   }   
 
   if ($opt_s) {
-     elog_notify("# records before subset =  ", dbquery(@deploy, "dbRECORD_COUNT") , "\n") ;
+     elog_notify("No. records before subset =  ", dbquery(@deploy, "dbRECORD_COUNT") , "\n")  if ($opt_v);
      $sub = "$opt_s" ;
-     elog_notify("Subset is:  $opt_s \n"); 
+     elog_notify("Subset is:  $opt_s \n")  if ($opt_v); 
      @deploy	= dbsubset(@deploy,$sub);
   }
 
@@ -59,7 +68,7 @@ require "getopts.pl";
 
   for ($row = 0; $row < $nrecs; $row++ ) {
 	$deploy[3] = $row ;
-	($net, $snet, $sta, $start, $end, $equipin, $equipout, $cert, $decert, $pdcc, $sdcc) = dbgetv(@deploy, qw (net snet sta time endtime equip_install equip_remove cert_time decert_time pdcc sdcc) ) ;
+	($vnet, $snet, $sta, $start, $end, $equipin, $equipout, $cert, $decert, $pdcc, $sdcc) = dbgetv(@deploy, qw (vnet snet sta time endtime equip_install equip_remove cert_time decert_time pdcc sdcc) ) ;
 
 #	$start_date = epoch2str ($start, "%Y/%m/%d");	
 #	$start_time = epoch2str ($start, "%T");	
@@ -115,12 +124,12 @@ require "getopts.pl";
 	    $sdcc = "";
 	}
 
-	elog_notify(0, "$net\t$snet\t$sta\t$install_date\t$cert_date\t$start_date\t$start_time\t$end_date\t$end_time\t$pdcc\t$sdcc\n") if ($opt_t && $opt_v);
-	print FILE  "$net\t$snet\t$sta\t$install_date\t$cert_date\t$start_date\t$start_time\t$end_date\t$end_time\t$pdcc\t$sdcc\n" if $opt_t;
-	print FILE  "net\t snet\t sta\t install_date\t cert_date\t start_date\t start_time\t end_date\t end_time\t pdcc\t sdcc\n" if ($opt_h && ($row == 0 || $row == $nrecs-1) && $opt_t);
-	elog_notify(0, "$net,$snet,$sta,$install_date,$cert_date,$start_date,$start_time,$end_date,$end_time,$pdcc,$sdcc\n") if (!$opt_t  && $opt_v);
-	print FILE  "$net,$snet,$sta,$install_date,$cert_date,$start_date,$start_time,$end_date,$end_time,$pdcc,$sdcc\n" if !$opt_t;
-	print FILE  "net,snet,sta,install_date,cert_date,start_date,start_time,end_date,end_time,pdcc,sdcc\n" if ($opt_h && ($row == 0 || $row == $nrecs-1) && !$opt_t );
+	elog_notify(0, "$vnet\t$snet\t$sta\t$install_date\t$cert_date\t$start_date\t$start_time\t$end_date\t$end_time\t$pdcc\t$sdcc\n") if ($opt_t && $opt_v);
+	print FILE  "$vnet\t$snet\t$sta\t$install_date\t$cert_date\t$start_date\t$start_time\t$end_date\t$end_time\t$pdcc\t$sdcc\n" if $opt_t;
+	print FILE  "vnet\t snet\t sta\t install_date\t cert_date\t start_date\t start_time\t end_date\t end_time\t pdcc\t sdcc\n" if ($opt_h && ($row == 0 || $row == $nrecs-1) && $opt_t);
+	elog_notify(0, "$vnet,$snet,$sta,$install_date,$cert_date,$start_date,$start_time,$end_date,$end_time,$pdcc,$sdcc\n") if (!$opt_t  && $opt_v);
+	print FILE  "$vnet,$snet,$sta,$install_date,$cert_date,$start_date,$start_time,$end_date,$end_time,$pdcc,$sdcc\n" if !$opt_t;
+	print FILE  "vnet,snet,sta,install_date,cert_date,start_date,start_time,end_date,end_time,pdcc,sdcc\n" if ($opt_h && ($row == 0 || $row == $nrecs-1) && !$opt_t );
    }
 
    close FILE;
@@ -137,5 +146,14 @@ sub trim {
              s/\s+$//;
         }
         return wantarray ? @out  : $out[0];
+}
+
+sub run {               # run system cmds safely
+    my ( $cmd ) = @_ ;
+    system ( $cmd ) ;
+    if ($?) {
+        elog_complain(0, "$cmd error $? \n") ;
+        exit(1);
+    }
 }
 

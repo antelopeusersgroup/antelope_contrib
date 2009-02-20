@@ -70,8 +70,8 @@ require "getopts.pl";
     } elsif  (/^Virtual|VIRTUAL/) {
 	next;
     } elsif  (/^_/) {
-      ($net,$snet,$sta,$equip_install,$cert_date,$start_date,$start_time,$end_date,$end_time,$pdcc,$sdcc) = split( /$sep/,$_) ;
-      ($net,$snet,$sta,$pdcc,$sdcc) = &trim ($net,$snet,$sta,$pdcc,$sdcc);
+      ($vnet,$snet,$sta,$equip_install,$cert_date,$start_date,$start_time,$end_date,$end_time,$pdcc,$sdcc) = split( /$sep/,$_) ;
+      ($vnet,$snet,$sta,$pdcc,$sdcc) = &trim ($vnet,$snet,$sta,$pdcc,$sdcc);
 
 # now fix separated dates and times 
 
@@ -132,7 +132,7 @@ require "getopts.pl";
 
       @deploy_record = ();
 
-      push(@deploy_record, 	"net",			$net,
+      push(@deploy_record, 	"vnet",			$vnet,
 				"snet",			$snet,
 				"sta",			$sta,
 				"time", 		$time,

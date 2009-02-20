@@ -19,6 +19,11 @@ Note, the deployment table has more information than a VND file.
 Translating multiple times between a deployment table to a VND and back 
 to a deployment table will not give you the same information.
 
+.LP
+If you wish to track the VND files that your data center generates, 
+consider using the \fBmk_dmc_files(1)\fP script which will track the 
+files generated in a \fIdmcfiles\fP table.
+
 .SS "Description of a VND"
 From the DMC 2006 December Electronic Newsletter:
 
@@ -183,12 +188,19 @@ headers.
 .SH "SEE ALSO"
 .nf
 vnd2deployment(1)
+convert_deployment(1)
 dbe(1)
 dbhelp(1)
 mk_dmc_files(1)
+mk_dbops(1)
 http://www.iris.edu/vnets
 .fi
 .SH "BUGS AND CAVEATS"
+Prior to February 2009, the deployment table used \fInet\fP rather than
+\fIvnet\fP. The current version of \fPdeployment2vnd\fI uses the newer
+schema extension definition with \fIvnet\fP.  To convert your older 
+format deployment table to the newer format, use \fBconvert_deployment\fP  
+
 Works with current definition of VND file.  The format is not
 well documented and subject to change.
 

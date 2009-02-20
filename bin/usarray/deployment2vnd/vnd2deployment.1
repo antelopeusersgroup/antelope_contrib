@@ -107,11 +107,11 @@ on what can go in here.
 .SS "Description of a Deployment Table"
 
 In an effort to keep track of all information necessary to produce a VND, 
-an extension table to the css3.0 schema was created (see \fBdbschema\fR(5) 
-and \fBdbhelp\fR(1)). The fields in a deployment table are:
+an extension table to the css3.0 schema was created (see \fBdbschema\fR(5), 
+\fBdbhelp\fR(1), or \fBdeployment(5)\fR). The fields in a deployment table are:
 
-.IP "net 1.25"
-In this case, this is the network code that starts with an "_".
+.IP "vnet 1.25"
+This is the virtraul network code that starts with an "_".
 .IP "snet 1.25"
 The two character SEED network code.  For instance, TA, CI, US, etc.
 .IP station
@@ -176,6 +176,7 @@ it and save the deployment table as dbops/mydb.deployment.
 .SH "SEE ALSO"
 .nf
 deployment2vnd(1)
+deployment(1)
 dbe(1)
 dbhelp(1)
 http://www.iris.edu/vnets
