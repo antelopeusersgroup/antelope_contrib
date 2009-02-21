@@ -14,6 +14,7 @@ use archive;
 require "getopts.pl" ;
 use File::Path;
 use Cwd;
+use orb ;
 use strict 'vars' ;
  
 elog_init ( $0, @ARGV) ;
@@ -68,6 +69,13 @@ if ($opt_p) {
    $pf = $opt_p;
 } else {
    $pf = $pgm . ".pf" ;
+}
+
+# make sure output orb has write access for this host
+if ($opt_o) {
+  if (orbopen($opt_o,"w") < 0) {
+     elog_die("Can't open output orb\n")  ;
+  } 
 }
 
 if ($opt_s) {
@@ -195,8 +203,7 @@ if ($opt_D) {
    &run($mkdl);
 
 } else {
-#   $mkvnd	= "deployment2vnd $dbin $dir/$filename" ;
-   $mkvnd	= "deployment2vnd $dbin $fulldir/$filename" ;
+   $mkvnd       = "deployment2vnd -s 'vnet=~/$opt_V/' $dbin $fulldir/$filename" ;
 
    elog_notify(0, "Starting deployment2vnd. \n") if ($opt_v);
    elog_notify(0, "Cmd is: $mkvnd \n") if ($opt_v);

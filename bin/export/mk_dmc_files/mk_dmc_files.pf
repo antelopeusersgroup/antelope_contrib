@@ -1,6 +1,5 @@
 
-vnd_dir		vnd			# year based directories will be created under here
-
+vnd_dir			vnd			# year based directories will be created under here
 dataless_dir		dataless_all		# year based directories will be created under here
 sta_dataless_dir	dataless_sta		# station based directories will be created under here
 
