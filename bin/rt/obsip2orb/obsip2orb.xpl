@@ -3,13 +3,14 @@ use strict ;
 
 use Datascope ; 
 use orb ;
+use archive;
 require "getopts.pl" ;
 
 our ( $opt_c, $opt_n, $opt_X, $opt_v) ; 
 
 {    
-    my ( $dbin, $orbname, $orb, $orbclient, $nfiles, $file, $cmd, $row);
-    my ( $pgm, $result, $client, $when, $check, $found, $usage, $host, $stime);
+    my ( $dbin, $orbname, $orb, $orbclient, $nfiles, $file, $cmd, $row, $problems, $problem_check);
+    my ( $pgm, $result, $client, $when, $check, $found, $usage, $host, $stime, $subject);
     my ( @dbin, @dbwfdisc, @clients, @pffiles);
 
     $pgm = $0 ; 
@@ -17,6 +18,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
+    $problems = 0;
 #
 #  get arguments
 #
@@ -40,9 +42,10 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
 #  make sure wait_match specified in miniseed2orb.pf
 #
     @pffiles = pffiles("miniseed2orb");
-    elog_notify("pffiles	@pffiles");
+    elog_notify("pffiles	@pffiles") if $opt_v;
     unlink("miniseed2orb_obsip.pf") if (-e "miniseed2orb_obsip.pf");
     $cmd = "cp $pffiles[0] miniseed2orb_obsip.pf";
+    elog_notify("$cmd") if $opt_v;
     system($cmd);
     
     $orbname = shift(@ARGV);
@@ -99,13 +102,33 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
             $dbwfdisc[3] = $row;
             $file = dbextfile(@dbwfdisc);
             $cmd  = "miniseed2orb -p miniseed2orb_obsip -u $file $orbname";
-            elog_notify("\n$cmd") if $opt_v;
-            system($cmd) unless $opt_n;
+#            elog_notify("\n$cmd") if $opt_v;
+#            system($cmd) unless $opt_n;
+            if  (! $opt_n ) {
+                elog_notify("$cmd");
+                $problem_check = $problems;
+                $problems = run($cmd,$problems) ;
+                if ( $problem_check != $problems ) {
+                	elog_complain("$cmd -	Failed.	");
+                	elog_complain("	Sleeping 120 seconds. Retrying");
+                	sleep 120;
+                	elog_complain("	Retrying");
+                    $problem_check = $problems;
+                    $problems = run($cmd,$problems) ;
+                    if ( $problem_check != $problems ) {
+                        $subject = "Problems - $pgm $host	miniseed2orb $file" ;
+#                        &sendmail($subject, $opt_m) if $opt_m ; 
+                        elog_die("\n$subject") ;
+                    }
+                }
+            } else {
+                elog_notify("skipping $cmd") ;
+            }
         }    
     }
     
     orbclose($orb);
-    unlink("miniseed2orb_obsip.pf") if (-e "miniseed2orb_obsip.pf");
+    unlink("miniseed2orb_obsip.pf") unless $opt_v;
 
     $stime = strydtime(now());
     elog_notify ("completed successfully	$stime\n\n");
