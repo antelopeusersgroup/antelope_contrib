@@ -13,7 +13,19 @@ mrc_delay	30		# interval in seconds to wait between mass recenters if -a is used
 delay_interval	300		# interval to wait after mass recenter before checking mass positions
 
 sensor_mv &Arr{			# with -d, override default out_of_range value with sensor specific value
+	default &out_of_range
 	sts2	50	
+	sts2_g1	50	
+	sts2_g2	50	
+	sts2_g3	50	
 	cmg3t	25	
 	trillium_240	20	
+}
+
+chan	BHZ			# channel code for selecting sensors to check.  Only one channel per station
+
+sensor_lead &Arr{		# maps Sensor A/B to calibration.lead values
+#    Sensor	calibration.lead
+	A		1
+	B		4
 }

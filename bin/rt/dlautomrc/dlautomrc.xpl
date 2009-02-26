@@ -1,9 +1,11 @@
+
 #
 #  Issues mass recenter, gathers mass positions before and after
 #
 # 11/8/2006   Original	J. Eakins
 # 12/28/2006  Modified	F. Vernon
 # 08/13/2007  more modifications by J. Eakins
+# 02/26/2009  modified by J.Eakins to add lead based checking
 # 
 #
 #    use diagnostics ;
@@ -20,7 +22,9 @@
     our (%dl_mv, %sensor_mv);
     our (%dl_snname);
     my (@dl_mv);
-    my ($pfsource,$orbname,$orb,$pf,$mv,$pfmass,$pfobj,$nomrcd);
+    my ($pfsource,$orbname,$orb,$pf,$mv,$out_of_range,$pfmass,$pfobj,$nomrcd);
+    my ($chan, $chansub); 
+    our ($lead, %lead_map) ;
     my ($target,$cmdorb,$statorb,$dl,$dlname,$targetsrc);
     my ($when,$subject,$cmd,$prob,$n,$nmax,$complete);
     my ($dltype,$delay_interval,$mrc_delay,$ref);
@@ -86,15 +90,26 @@
     $pf = $opt_p || $prog_name ;
     
     $dltype	        = pfget($pf, "dltype");
+    $chan		= pfget($pf, "chan");
     $mrc_delay		= pfget($pf, "mrc_delay");
     $delay_interval	= pfget($pf, "delay_interval");
-    $mv			= pfget($pf, "out_of_range");
+    $out_of_range	= pfget($pf, "out_of_range");
+    $mv			= $out_of_range ;
+
+    $ref		= pfget($pf, "sensor_lead") ;
+    %lead_map		= %$ref ;
 
     $ref		= pfget($pf, "sensor_mv") ;
     %sensor_mv		= %$ref ;
 
     $dl = $opt_d || $dltype ;  # This should default to q330
     $mv = $opt_a || $mv ;	# this gets modified later if opt_D
+
+    $chansub 		= "chan=~/$chan/";
+    
+#
+#
+#
 
     if ($opt_a && $opt_D) {
 	print STDERR "-a value of $opt_a will be overwritten by values in database since -D was used\n\n";
@@ -116,9 +131,10 @@
 	@dbcalibration	= dblookup(@db,"","calibration","","");
 	@dbj		= dbsubset(@dbcalibration, "endtime >= $now || endtime == 9999999999.99900" ) ;
 
-	print STDERR "Subsetting:  chan=='BHZ'&&dlsta!='-' \n" if $opt_V;
+	print STDERR "Subsetting:  $chansub&&dlsta!='-' \n" if $opt_V;
 
-	@dbj		= dbsubset(@dbj, "chan == 'BHZ'" ) ;
+#	@dbj		= dbsubset(@dbj, "chan == 'BHZ'" ) ;
+	@dbj		= dbsubset(@dbj, $chansub ) ;
 	@dbj		= dbsubset(@dbj, "dlsta != '-'" ) ;
 
 	print STDERR "Subsetting based on -N: $opt_N\n" if ($opt_N && $opt_v) ;
@@ -129,16 +145,17 @@
 
 	foreach $row (0..$nrecs-1) {
 	   $dbj[3] = $row ;
-	   ($mvdlsta,$snname)	= dbgetv(@dbj, qw (dlsta snname) ) ;
+	   ($mvdlsta,$snname,$lead)	= dbgetv(@dbj, qw (dlsta snname lead) ) ;
 	   $mvdlsta = &trim($mvdlsta);
 	   $snname = &trim($snname);
 	   $dl_snname{"$mvdlsta"} = $snname;
 	
 	   if (!$snname  || !defined($sensor_mv{$snname} ) ) {
-		print STDERR "Database error!  Can't get sensor definition for: $mvdlsta\n";
-		$mvdlsta = $mv;		# this should be out_of_range from pf file?
-		$snname = "sts2";	# presumabely defined in default pf file
-		print STDERR "  Using default sensor type $snname with mv value of $mv\n\n";
+		print STDERR "Database error!  Can't get sensor/mv definition for: $mvdlsta, using default.\n";
+		$snname = "default";	# 
+		$mv = $out_of_range;	# 
+	        $dl_snname{"$mvdlsta"} = $snname;
+		print STDERR "  Using default sensor type with mv value of $mv for $mvdlsta\n\n";
 	   }
 
 	   
@@ -375,11 +392,12 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
     my ($ref,$dlsta,$sta) ;
     my ($m0,$m1,$m2,$m3,$m4,$m5,$mc,$con,$masspo);
     my (@dlsta,@mc,@recenter,@xclude,@dataloggers) ;
+    our ($lead, %lead_map) ;
     our ($snname) ;
     our (%dl_mv,%sensor_mv);
     our (%dl_snname);
     @recenter = ();
-    @mc = qw(m0 m1 m2 m3 m4 m5);
+#    @mc = qw(m0 m1 m2 m3 m4 m5);
     $srcname =~ s/\/.*// ;
     
     if ($opt_x) {
@@ -422,6 +440,19 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
 #               printf "\n%s	%s	%s	%s	%s	%s	%s	%s	\n", $dlsta, $m0, $m1, $m2, $m3, $m4, $m5, $con ;
                
         next if ($con !~ /yes/);
+
+# assume that calibration.lead is filled in and then only check the appropriate masspos
+#  This works around 6ch Q330 case where default/dead sensor reports mass of 2.0 V
+#  and the 2.0V reading triggers recenter of all Trillium sensors
+#
+
+	if ( $lead =  $lead_map{A} ) {	
+            @mc = qw(m0 m1 m2);
+	} elsif ( $lead = $lead_map{B}  ) {
+            @mc = qw(m3 m4 m5);
+	} else {		# lead is undefined or NULL
+	    @mc = qw(m0 m1 m2 m3 m4 m5) ;	# check all mass pos.
+        } 
 
         foreach $mc (@mc) {
             $masspo = $ref->{dls}{$dlsta}{$mc};
