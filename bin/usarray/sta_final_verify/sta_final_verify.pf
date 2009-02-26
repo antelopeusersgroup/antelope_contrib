@@ -1,5 +1,5 @@
 
-archivebase			/anf/TA/wf/station_final			# absolute path name for station baler archive name
+archivebase			/anf/TA/wf/tmp_pre_station_final	# absolute path name for station baler archive name
 purgatory			/anf/TA/wf/purgatory				# absolute path name for station baler archive name
 
 #archivebase			/Volumes/TA_Final_Data/station_final			# absolute path name for station baler archive name
