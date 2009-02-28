@@ -181,7 +181,7 @@
         print TR "miniseed_segment_seconds 0\n";
         close(TR);
         
-        $cmd  = "miniseed2db ";
+        $cmd  = "miniseed2db -T 0.001 ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "2\* $sta ";
         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
@@ -306,57 +306,57 @@
             elog_notify("\nskipping $cmd");
         }
  
-# 
-#   evaluate data return - removed since now covered in sta_final_verify
-# 
-#         
-#         elog_notify(" ");
-#         $staperf{max_ave_perf}  = 0;
-#         $staperf{max_nperfdays} = 0;
-#         $staperf{max_datadays} = 0;
-#         @db = dbopen($sta,"r");
-#         @db = dblookup(@db,0,"chanperf",0,0);
-#         @dbdeploy = dblookup(@db,0,"deployment",0,0);
-#         @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
-#         $dbdeploy[3] = 0;
-#         ($time,$endtime) = dbgetv(@dbdeploy,"time","endtime");
-#         $staperf{deploy_days} = int($endtime/86400) - int($time/86400.) ;
-# 
-#         foreach $chan (qw( BHZ BHN BHE LHZ LHN LHE)) {
-#             @dbchanperf                = dbsubset(@db,"chan =~ /$chan/");
-#             @dbcd                      = dbsubset(@dbchanperf,"perf > 0.0");
-#             $staperf{$chan}{days}      = dbquery(@dbcd,"dbRECORD_COUNT");
-#             $staperf{max_datadays}     = $staperf{$chan}{days} if ($staperf{$chan}{days} > $staperf{max_datadays});
-#             if ($staperf{$chan}{days} == 0.0) {
-#                 $staperf{$chan}{ave_perf}  = 0.0;
-#             } else {
-#                 $staperf{$chan}{ave_perf}  = (dbex_eval(@dbchanperf,"sum(perf)"))/$staperf{$chan}{days};
-#             }
-#             $staperf{max_ave_perf}     = $staperf{$chan}{ave_perf} if ($staperf{$chan}{ave_perf} > $staperf{max_ave_perf});
-#             @dbchanperf                = dbsubset(@dbchanperf,"perf == 100.");
-#             $staperf{$chan}{nperfdays} = dbquery(@dbchanperf,"dbRECORD_COUNT");
-#             $staperf{max_nperfdays}    = $staperf{$chan}{nperfdays} if ($staperf{$chan}{nperfdays} > $staperf{max_nperfdays}) ;
-#             $line = sprintf("%s  %s	%4d days with 100%% data return	with %5.1f%% average daily data return on days with data",
-#                                 $sta,$chan,$staperf{$chan}{nperfdays},$staperf{$chan}{ave_perf});
-#             elog_notify("	$line");
-#             print PROB "$line\n" ;
-#         }
-#         dbclose(@db);
-#         
-#         $staperf{deploy_days} = 0.1 if ($staperf{deploy_days} < 0.1) ;
-#         
-#         $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days",
-#                          $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
-#         
-#         if ($staperf{max_ave_perf} < 99.) {
-#             $prob++;
-#             print PROB "\n$line\n" ;
-#             $problems++ ;
-#             elog_complain("\nProblem $problems
-#                            \n	$line");
-#         } else {
-#             elog_notify("\n	$line\n\n");
-#         }
+#
+#  evaluate data return
+#
+        
+        elog_notify(" ");
+        $staperf{max_ave_perf}  = 0;
+        $staperf{max_nperfdays} = 0;
+        $staperf{max_datadays} = 0;
+        @db = dbopen($sta,"r");
+        @db = dblookup(@db,0,"chanperf",0,0);
+        @dbdeploy = dblookup(@db,0,"deployment",0,0);
+        @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
+        $dbdeploy[3] = 0;
+        ($time,$endtime) = dbgetv(@dbdeploy,"time","endtime");
+        $staperf{deploy_days} = int($endtime/86400) - int($time/86400.) ;
+
+        foreach $chan (qw( BHZ BHN BHE LHZ LHN LHE)) {
+            @dbchanperf                = dbsubset(@db,"chan =~ /$chan/");
+            @dbcd                      = dbsubset(@dbchanperf,"perf > 0.0");
+            $staperf{$chan}{days}      = dbquery(@dbcd,"dbRECORD_COUNT");
+            $staperf{max_datadays}     = $staperf{$chan}{days} if ($staperf{$chan}{days} > $staperf{max_datadays});
+            if ($staperf{$chan}{days} == 0.0) {
+                $staperf{$chan}{ave_perf}  = 0.0;
+            } else {
+                $staperf{$chan}{ave_perf}  = (dbex_eval(@dbchanperf,"sum(perf)"))/$staperf{$chan}{days};
+            }
+            $staperf{max_ave_perf}     = $staperf{$chan}{ave_perf} if ($staperf{$chan}{ave_perf} > $staperf{max_ave_perf});
+            @dbchanperf                = dbsubset(@dbchanperf,"perf == 100.");
+            $staperf{$chan}{nperfdays} = dbquery(@dbchanperf,"dbRECORD_COUNT");
+            $staperf{max_nperfdays}    = $staperf{$chan}{nperfdays} if ($staperf{$chan}{nperfdays} > $staperf{max_nperfdays}) ;
+            $line = sprintf("%s  %s	%4d days with 100%% data return	with %5.1f%% average daily data return on days with data",
+                                $sta,$chan,$staperf{$chan}{nperfdays},$staperf{$chan}{ave_perf});
+            elog_notify("	$line");
+            print PROB "$line\n" ;
+        }
+        dbclose(@db);
+        
+        $staperf{deploy_days} = 0.1 if ($staperf{deploy_days} < 0.1) ;
+        
+        $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days",
+                         $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
+        
+        if ($staperf{max_ave_perf} < 99.) {
+            $prob++;
+            print PROB "\n$line\n" ;
+            $problems++ ;
+            elog_complain("\nProblem $problems
+                           \n	$line");
+        } else {
+            elog_notify("\n	$line\n\n");
+        }
         
         close(PROB);
 
