@@ -181,9 +181,21 @@
         print TR "miniseed_segment_seconds 0\n";
         close(TR);
         
+        $cmd  = "miniseed2db ";
+        $cmd .= "-v " if $opt_V;
+        $cmd .= "20\*/[0-3][0-9]0-9] $sta ";
+        $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
+        
+        if  ( ! $opt_n ) {
+            elog_notify("\n$cmd") if $opt_v ;        
+            $problems = run($cmd,$problems) ;
+        } else {
+            elog_notify("\nskipping $cmd") ;
+        } 
+        
         $cmd  = "miniseed2db -T 0.001 ";
         $cmd .= "-v " if $opt_V;
-        $cmd .= "2\* $sta ";
+        $cmd .= "20\*/\*.msd $sta ";
         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
         
         if  ( ! $opt_n ) {
