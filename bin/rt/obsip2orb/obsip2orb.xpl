@@ -102,6 +102,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
             $dbwfdisc[3] = $row;
             $file = dbextfile(@dbwfdisc);
             $cmd  = "miniseed2orb -p miniseed2orb_obsip -u $file $orbname";
+            $cmd .= "> /tmp/tmp_obsip2orb_miniseed2orb 2>&1 " unless $opt_v ;
 #            elog_notify("\n$cmd") if $opt_v;
 #            system($cmd) unless $opt_n;
             if  (! $opt_n ) {
@@ -129,6 +130,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
     
     orbclose($orb);
     unlink("miniseed2orb_obsip.pf") unless $opt_v;
+    unlink("/tmp/tmp_obsip2orb_miniseed2orb") unless $opt_v;
 
     $stime = strydtime(now());
     elog_notify ("completed successfully	$stime\n\n");
