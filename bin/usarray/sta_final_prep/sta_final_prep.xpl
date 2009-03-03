@@ -157,7 +157,7 @@
         closedir(DIR);
                 
         foreach $mseedfile (@mseedfiles) {
-            $cmd  = "miniseed2days -c -U -r \".*_.*_LH[ZNE12]_.*\" -w %Y/%{net}_%{sta}_%{chan}.msd ";
+            $cmd  = "miniseed2days -c -U -r \".*_.*_[BHL]H[ZNE12]_.*\" -w %Y/%{net}_%{sta}_%{chan}.msd ";
             $cmd .= "-v " if $opt_V;
             $cmd .= " - < $sohname/$mseedfile ";
             $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
