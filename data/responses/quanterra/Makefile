@@ -46,9 +46,20 @@ DATA= \
     Q330_Description.pdf \
     README_quanterra \
     ULP \
-    VLP 
-
-
+    VLP \
+	q-90s1 \
+	q-90s2 \
+	q-90s3 \
+	q-90s4 \
+	q-90s5 \
+	q-90s6 \
+	q-92s1 \
+	q-92s2 \
+	q-92s3 \
+	q-92s4 \
+	q-92s5 \
+	q-92s6 \
+	Readme.Qx80
                            
 include $(ANTELOPEMAKE)  	
 DIRS=
