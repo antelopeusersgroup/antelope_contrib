@@ -1,0 +1,12 @@
+The FIR filters for Qx80 Dataloggers (Q380/Q680) are
+specified in the firmware of the datalogger.
+There exist 2 versions of this firmware, depending on the manufacturing date
+of the digitizer module.
+The digitizersers report their firmware revision number at bootup time in a message FROM SERVER.
+There are 2 possibilities: eiter VERSION 900616 or VERSION 920812.
+Depending on the reported firmware version, one has to select the corresponding filters. 
+
+The information contained in the files is available on the internet at
+http://quake.geo.berkeley.edu/ftp/pub/quanterra/response/firfilters/
+
+Nikolaus Horn, nikolaus.horn@zamg.ac.at
