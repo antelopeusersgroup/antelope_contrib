@@ -1,0 +1,18 @@
+# @(#)LE-3D/20s 2007-11-02
+# LE-3D/20s  Seismometer
+# Normalized  response relative to velocity
+# This transfer-function only describes the
+# low-frequency behaviour of the instrument.
+# This is enough if the passband of the 
+# digitizer cuts above 40Hz
+# 
+theoretical   1 anti-alias   paz    manual
+1.0
+3             Poles
+-4.21   4.66   0.0000E+00    0.0000E+00
+-4.21  -4.66   0.0000E+00    0.0000E+00
+-2.105  0.0    0.0000E+00    0.0000E+00
+3             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
