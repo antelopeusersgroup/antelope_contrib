@@ -1,0 +1,14 @@
+# GSV-111    1.00000 hz geophone
+# Normalized  response relative to velocity
+# 1                   type
+# 2                   num of zeroes
+# 2                   num of poles
+# sensitivity  250 v/m/sec
+theoretical   1 sensor   paz    guess
+1.0
+2             Poles
+-.4443E+01    0.4443E+01    0.0000E+00    0.0000E+00
+-.4443E+01    -.4443E+01    0.0000E+00    0.0000E+00
+2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
