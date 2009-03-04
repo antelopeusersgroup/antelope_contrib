@@ -1,0 +1,90 @@
+category	Quanterra
+configuration	Q380/Q680 with 1992 firmware)
+
+
+description	Quanterra Qx80 19920812 (new) firmware
+dfile qx80-92
+info &Literal{
+This is the standard configuration for a Q380/Q680 with new (1992/08/12)
+Firmware. 
+The decimation tree here is 5120/320/80/40/20/10/1.
+There exists an alternative 5120/640/160/20/10/1 decimation tree. 
+If your instrument is configured to use the alternate tree, you are on your own!
+}
+
+
+streams		80sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
+
+# definitions of streams
+80sps	  80 a/d q-92s1 q-92s2
+40sps	  40 a/d q-92s1 q-92s2 q-92s3
+20sps	  20 a/d q-92s1 q-92s2 q-92s3 q-92s4
+10sps	  10 a/d q-92s1 q-92s2 q-92s3 q-92s4 q-92s5
+1sps	   1 a/d q-92s1 q-92s2 q-92s3 q-92s4 q-92s5 q-92s6
+0.1sps 	 0.1 a/d G4 q-92s1 q-92s2 q-92s3 q-92s4 q-92s5 q-92s6 VLP
+0.01sps	0.01 a/d G4 q-92s1 q-92s2 q-92s3 q-92s4 q-92s5 q-92s6 VLP ULP
+
+gains		414517
+# Stages
+a/d	&Arr{
+samprate	5120
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+q-92s1 &Arr{ # used in the Qx80 first stage.
+gtype	FIR_decimator
+decifac	16
+response	&datafile(responses/q-92s1)
+}
+
+q-92s2	&Arr{ 
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/q-92s2)
+}
+
+q-92s3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/q-92s3)
+}
+
+q-92s4	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/q-92s4)
+}
+
+q-92s5	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/q-92s5)
+}
+
+q-92s6	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/q-92s6)
+}
+
+ULP	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/ULP)
+}
+
+VLP	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/VLP)
+}
+
+G4 &Arr{
+gtype gain
+gnom  4.0	
+}
+
+

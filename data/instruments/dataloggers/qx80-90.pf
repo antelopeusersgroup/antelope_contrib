@@ -1,0 +1,130 @@
+category	Quanterra
+configuration	Q380/Q680 with '90 firmware
+
+description	Quanterra Qx80 19900616 (old) Firmware
+dfile oldqx80
+info &Literal{
+This is the configuration for a Q380/Q680 with old (1990/06/16)
+Firmware. 
+The decimation tree here is 5120/320/80/40/20/10/1.
+There exists an alternative 5120/640/160/20/10/1 decimation tree. 
+If your instrument is configured to use the alternate tree, you are on your own!
+}
+
+streams		80sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
+
+# definitions of streams
+80sps	  80 a/d q-90s1 q-90s2
+40sps	  40 a/d q-90s1 q-90s2 q-90s3
+20sps	  20 a/d q-90s1 q-90s2 q-90s3 q-90s4
+10sps	  10 a/d q-90s1 q-90s2 q-90s3 q-90s4 q-90s5
+1sps	   1 a/d q-90s1 q-90s2 q-90s3 q-90s4 q-90s5 q-90s6
+0.1sps 	 0.1 a/d G4 q-90s1 q-90s2 q-90s3 q-90s4 q-90s5 q-90s6 VLP
+0.01sps	0.01 a/d G4 q-90s1 q-90s2 q-90s3 q-90s4 q-90s5 q-90s6 VLP ULP
+
+gains		414517
+
+# Stages
+a/d	&Arr{
+samprate	5120
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+q-90s1 &Arr{ # used in the Qx80 first stage.
+gtype	FIR_decimator
+decifac	16
+response	&datafile(responses/q-90s1)
+}
+
+q-90s2	&Arr{ 
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/q-90s2)
+}
+
+q-90s3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/q-90s3)
+}
+
+q-90s4	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/q-90s4)
+}
+
+q-90s5	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/q-90s5)
+}
+
+q-90s6	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/q-90s6)
+}
+
+ULP	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/ULP)
+}
+
+VLP	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/VLP)
+}
+
+G4 &Arr{
+gtype gain
+gnom  4.0	
+}
+
+#soh	LCQ	LEP	UCD	UEP	UF1	UFC UK2	UME	UMZ	UMN
+soh	LCQ	UFC 	UF1 
+
+LCQ     &Arr{ #clock quality
+stages          clk_qual 
+gnom            1
+iunits          percent
+ounits          counts
+samprate        1
+}
+
+clk_qual &Arr{
+gtype           clock quality
+gnom            1
+iunits          percent
+ounits          counts
+sn              datalogger
+}
+
+UFC 	&Arr{
+stages 		vco 
+gnom    	1
+iunits  	V
+ounits		counts
+samprate 	0.01
+rsptype		v
+}
+vco &Arr{
+gtype		VCO control voltage
+gnom		4.0
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+LEP &Arr{
+stages		lep
+gnom		1
+iunits		V
+ounits		counts
+samprate	1
+}
