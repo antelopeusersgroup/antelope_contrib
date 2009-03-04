@@ -1,0 +1,33 @@
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.kmi.com
+
+and Document 302350 September 2002     
+and Application Note # 39
+}
+
+category	Kinemetrics
+configuration	FBA23 100 Hz 1.0g
+
+description	KMI FBA23 100 Hz FS 1g
+dfile		fba23_100hz_1g
+
+rsptype                 A       # accelerometer
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code 
+sensor_type_code        N       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	2.550e-10
+iunits		nm/s**2
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/fba23_7damp_100hz) 
+

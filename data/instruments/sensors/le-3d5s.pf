@@ -1,0 +1,31 @@
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+	http://www.lennartz-electronic.de/PDF_documents/LE-xD.pdf
+
+}
+
+category	Lennartz
+configuration	LE-3D/5s
+
+description	LE-3D 5S
+dfile		le3d5s
+
+rsptype                 V       # velovity
+band                    s       # broad band
+short_period_sensor     yes      # Sets first character of SEED channel code 
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	4e-7 #400V/m/s
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/le_3d_5s) 
+

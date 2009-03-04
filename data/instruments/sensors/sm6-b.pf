@@ -1,0 +1,29 @@
+info    &Literal{
+Input/Output Geophone SM6-B, 4.5 Hz, 28.8V/m/s
+}
+
+category	IO
+configuration	SM6-B 4.5Hz Geophone
+
+description	SM6-B 4.5Hz Geophone
+dfile		sm6b4.5
+
+rsptype                 V       # geophone
+band                    b       # short-period, not broadband
+short_period_sensor     yes      # Sets first character of SEED channel code 
+sensor_type_code        P       # 2nd character in SEED channel code
+								# should be P, but dbbuild does not like that
+
+gtype		sensor
+sensitivity	28.8e-9		#
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/sm6-b) 
+

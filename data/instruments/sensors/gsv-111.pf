@@ -1,0 +1,27 @@
+info    &Literal{
+a vague description of the GSV-111 geophones we use in Schwaz
+}
+
+category	GeoSig
+configuration	GSV-111 10mm/s
+
+description	GSV-111 1-315Hz 10mm/s
+dfile		gsv111_10mm
+
+rsptype                 V       # geophone
+band                    b       # short-period, not broadband
+short_period_sensor     no      # Sets first character of SEED channel code 
+sensor_type_code        H       # 2nd character in SEED channel code
+								# should be P, but dbbuild does not like that
+
+gtype		sensor
+sensitivity	2.5e-7		# 2.5V / 10mm /s or 250V / m /s
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+}
+
+response	&datafile(responses/gsv_111_10mm) 
+
