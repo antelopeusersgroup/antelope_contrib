@@ -1,0 +1,11 @@
+# @(#)fba_1g_acc
+# K2 1G FBA-23   100.00000 hz seimometer
+#    0.700000 damping
+# Normalized  response relative to acceleration 
+theoretical   1 anti-alias   paz    pzseismo
+394627280.0
+3             Poles
+-0.4442E+03    0.4442E+03     0.0000E+00    0.0000E+00
+-0.4442E+03   -0.4442E+03     0.0000E+00    0.0000E+00
+-1.000E+03    0.000E+00     0.0000E+00    0.0000E+00
+0             Zeros
