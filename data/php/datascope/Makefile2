@@ -12,8 +12,11 @@ cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC 
 ldlibs= $(STOCKLIBS) $(TRLIBS) -ldbxml -lpfxml
 
+ANTELOPEMAKELOCAL = $(ANTELOPEMAKE).local
+
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKE).local
+include $(ANTELOPEMAKELOCAL)
+
 DBG=
 
 DSOBJS= Datascope.o
