@@ -183,7 +183,7 @@
         
         $cmd  = "miniseed2db ";
         $cmd .= "-v " if $opt_V;
-        $cmd .= "20\*/[0-3][0-9]0-9] $sta ";
+        $cmd .= "20\*/[0-3][0-9][0-9] $sta ";
         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
         
         if  ( ! $opt_n ) {
