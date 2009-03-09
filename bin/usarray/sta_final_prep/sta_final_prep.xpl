@@ -284,7 +284,7 @@
         @dbschan  = dbnojoin(@dbschan,@dbsensor);
         $nrows    = dbquery(@dbschan,"dbRECORD_COUNT");
         if ($nrows > 0) {
-            $line = "\nDatabase problem\n	$sta schanloc has $nrows which do not join with sensor table";
+            $line = "\nDatabase problem\n	$sta schanloc has $nrows channels which do not join with sensor table";
             elog_complain($line);
             print PROB "$line\n";
             for ($row = 0; $row<$nrows; $row++) {
