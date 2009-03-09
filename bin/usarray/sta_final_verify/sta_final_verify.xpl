@@ -175,6 +175,7 @@
                                 
         $dep = 0;
         open(DEP,"> /tmp/deploy_$sta\_$$");
+        print DEP "results from $pgm\n\n";
         if ($mintime < $time) {
             $st1 = strydtime($mintime);
             $st2 = strydtime($time);
