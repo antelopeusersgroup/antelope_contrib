@@ -29,7 +29,9 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow twin)
 	twd=twin.shift(moveout);
 	stack=WindowData(d.member[0],twd); 
 	weights.reserve(d.member.size());
-	for(i=1,fold=1;i<d.member.size();++i)
+	fold=1;
+	sumwt=1.0;
+	for(i=1;i<d.member.size();++i)
 	{
 		if(d.member[i].live)
 		{
