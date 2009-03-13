@@ -24,7 +24,7 @@ INCLUDE	include files to install into $(DEST)/include
 PF	parameter files to install into $(DEST)/data/pf 
 DATA	data files to install into $(DEST)/data/$(DATADIR)
 DEMO	demos to install into $(DEST)/data/$(DEMODIR)
-DOC	documents to install into $(DEST)/data/$(DOCDIR)
+DOC	documents to install into $(DEST)/doc/$(DOCDIR)
 MAN1	program man pages for $(DEST)/man/man1
 MAN3	c interface man pages for $(DEST)/man/man3
 MAN3F	fortran man pages for $(DEST)/man/man3f
