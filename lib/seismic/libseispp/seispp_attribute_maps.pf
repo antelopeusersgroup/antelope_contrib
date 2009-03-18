@@ -626,6 +626,9 @@ xcorbeam.amp amp xcorbeam int
 # Added by glp July 2008 to support dbxcor source array tables
 cluster.gridid gridid cluster int
 hypocentroid.gridid gridid hypocentroid int
+hypocentroid.hclat hclat hypocentroid real
+hypocentroid.hclon hclon hypocentroid real
+hypocentroid.hcdepth hcdepth hypocentroid real
 xsaa.gridid gridid xsaa int
 xsaa.evid evid xsaa int
 xsaa.orid orid xsaa int
@@ -671,7 +674,7 @@ dnorth site.dnorth
 deast site.east
 hang sitechan.hang
 vang sitechan.vang
-jdate wfdisc.jdae
+jdate wfdisc.jdate
 nsamp wfdisc.nsamp wfprocess.nsamp
 samprate wfdisc.samprate wfprocess.samprate
 calib wfdisc.calib
@@ -685,6 +688,9 @@ orid origin.orid assoc.orid xsaa.orid
 wfid wfdisc.wfid
 snet snetsta.snet
 gridid cluster.gridid hypocentroid.gridid xsaa.gridid
+hclat hypocentroid.hclat
+hclon hypocentroid.hclon
+hcdepth hypocentroid.hcdepth
 iphase arrival.iphase assoc.phase
 stackwgt xcorarrival.stackwgt xsaa.stackwgt
 coherence xcorarrival.coherence xsaa.coherence
@@ -1374,7 +1380,7 @@ dir wfdisc.dir
 dfile wfdisc.dfile
 }
 }
-pwmig1.1 &Arr{
+pwmig1.2 &Arr{
 Attributes &Tbl{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
@@ -2022,58 +2028,53 @@ xsaa.gridid gridid xsaa int
 # id key fields all get obvious aliases
 }
 aliases &Tbl{
-atime time arrival real
-deltim deltim arrival real
-slow slow arrival real
-azimuth azimuth arrival real
-phase phase assoc string
-lat lat site real
-lon lon site real
-elev elev site real
-sta.lat lat site real
-sta.lon lon site real
-sta.elev elev site real
-refsta refsta site string
-dnorth dnorth site real
-deast deast site real
-hang hang sitechan real
-vang vang sitechan real
-sta sta wfdisc string
-chan chan wfdisc string
-time time wfprocess real
-endtime endtime wfprocess real
-jdate jdate wfdisc  int
-nsamp nsamp wfprocess int
-samprate samprate wfprocess real
-calib calib wfdisc real
-calper calper wfdisc real
-datatype datatype wfprocess string
-dir dir wfprocess string
-dfile dfile wfprocess string
-foff foff wfprocess int
-arid arid arrival int true
-evid evid event int true
-orid orid origin int true
-wfid wfid wfdisc int true
-pwfid pwfid wfprocess int true
-timetype timetype wfprocess string
-ux ux pwstack real 
-uy uy pwstack real
-ux0 ux0 pwstack real 
-uy0 uy0 pwstack real
-ix1 ix1 pwstack int
-ix2 ix2 pwstack int
-gridid gridid pwstack int
-snet snet snetsta string
-}
-aliases &Tbl{
-sta wfdisc.sta site.sta sitechan.sta
-chan wfdisc.chan sitechan.chan arrival.chan
-time wfdisc.time
-endtime wfdisc.endtime
+sta wfdisc.sta sclink.sta site.sta sitechan.sta arrival.sta assoc.sta xcorarrival.sta sensor.sta snetsta.sta specdisc.sta  xsaa.sta
+chan wfdisc.chan sclink.chan sitechan.chan arrival.chan
+time wfdisc.time wfprocess.time
+endtime wfdisc.endtime wfprocess.endtime 
 calib wfdisc.calib
-dir wfdisc.dir
-dfile wfdisc.dfile
+dir wfdisc.dir wfprocess.dir
+dfile wfdisc.dfile wfprocess.dfile
+foff wfdisc.foff wfprocess.foff
+atime arrival.time
+arrival_time  arrival.time xcorarrival.time
+deltim arrival.deltim
+slow arrival.slow
+azimuth arrival.azimuth
+phase assoc.phase xcorarrival.phase xsaa.phase
+sta_lat site.lat
+sta_lon site.lon
+sta_elev site.elev
+source_lat origin.lat
+source_lon origin.lon
+source_depth origin.depth
+source_time origin.time
+refsta site.refsta
+dnorth site.dnorth
+deast site.east
+hang sitechan.hang
+vang sitechan.vang
+jdate wfdisc.jdate
+nsamp wfdisc.nsamp wfprocess.nsamp
+samprate wfdisc.samprate wfprocess.samprate
+calib wfdisc.calib
+calper wfdisc.calper
+datatype wfdisc.datatype wfprocess.datatype
+timetype wfprocess.timetype
+pwfid wfprocess.pwfid sclink.pwfid 
+arid arrival.arid assoc.arid
+evid event.evid origin.evid evlink.evid xsaa.evid
+orid origin.orid assoc.orid xsaa.orid
+wfid wfdisc.wfid
+snet snetsta.snet
+gridid cluster.gridid hypocentroid.gridid xsaa.gridid
+iphase arrival.iphase assoc.phase
+ux pwstack.ux 
+uy pwstack.uy
+ux0 pwstack.ux0
+uy0 pwstack.uy0
+ix1 pwstack.ix1
+ix2 pwstack.ix2
 }
 }
 
