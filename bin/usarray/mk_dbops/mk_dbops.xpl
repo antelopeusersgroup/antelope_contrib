@@ -15,7 +15,7 @@ require "getopts.pl";
 
   elog_init ($0, @ARGV) ;
 
-  if ( !&Getopts('kvyIRUAm:n:w:W:s:S:p:P:') || @ARGV < 4 || @ARGV > 6 ) {
+  if ( !&Getopts('knvyIRUAm:w:W:s:S:p:P:') || @ARGV < 4 || @ARGV > 6 ) {
     die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
@@ -199,8 +199,6 @@ $packet_ext	= ".*M40" ;	# Look for data packets
 
   elog_notify("\n  ---  Dbops update type:   $type  --- \n\n");
 
-#  elog_notify("Creating backup of tables:  ") if ($opt_v) ;
-
 # check for "alive" prelim orb if you are removing or installing.   
 #  not needed if you are using prelimwf_db
 
@@ -259,7 +257,6 @@ if ($opt_U) {
   foreach $table ("comm", "dlsite") {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-#	elog_notify("saving backup of $table_filename \n  ") ;
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
 	&run("$cmd");
 	push(@rm_list,$table_filename) ;
@@ -319,7 +316,6 @@ if ($opt_U) {
     foreach $table ("adoption", "comm", "deployment", "dlsite") {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-#	elog_notify("saving backup of $table_filename \n  ") ;
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
 	&run("$cmd");
 	push(@rm_list,$table_filename) ;
@@ -357,7 +353,6 @@ if ($opt_U) {
   foreach $table ("comm", "deployment", "dlsite") {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-#	elog_notify("saving backup of $table_filename \n  ") ;
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
 	&run("$cmd");
 	push(@rm_list,$table_filename) ;
@@ -393,7 +388,6 @@ if ($opt_U) {
   foreach $table ("comm", "deployment", "dlsite") {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-#	elog_notify("saving backup of $table_filename \n  ") ;
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
 	&run("$cmd");
 	push(@rm_list,$table_filename) ;
@@ -625,7 +619,6 @@ sub modifycomm {  # &modifycomm($time)
 my ($endcommtime)  = @_ ;
 
 # update comm table
-#  $commsub = "$stasub && $nullsub";
   @single_comm = dbsubset (@comm, $commsub) ;		# get single record that will be updated
 
   elog_die("No records in comm table matching $sta with null endtime\n") if (!dbquery(@single_comm, "dbRECORD_COUNT") ) ; 
@@ -721,7 +714,6 @@ sub add2deployment  {	# ( $vnet, $time, $equip_install, $cert_time)  add a new r
 
   @dep_record = ();
 
-# replaced dmcnull with endnull
   push(@dep_record,
 	"vnet",   	$vnet,
 	"snet",   	$snet,
