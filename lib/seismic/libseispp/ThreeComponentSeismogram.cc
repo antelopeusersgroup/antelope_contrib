@@ -694,9 +694,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		scor.phi=hang[i];
 		scor.theta=vang[i];
 		nu=SphericalToUnitVector(scor);
-		// transformation matrix is forward transform so nu vectors
-		// get stored in columns of tmatrix
-		for(j=0;j<3;++j)tmatrix[j][i]=nu[j];
+		for(j=0;j<3;++j)tmatrix[i][j]=nu[j];
 		delete [] nu;
 	}
         components_are_cardinal = tmatrix_is_cardinal(*this);
