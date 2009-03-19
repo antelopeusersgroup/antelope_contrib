@@ -1,0 +1,39 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.reftek.com
+
+}
+
+category	Reftek
+configuration	RT97 80 Hz fc
+
+description	Reftek RT97 Datalogger 80 Hz fc
+dfile rt97_80
+
+streams		250sps  
+
+# definitions of streams
+250sps	 250   RT97_80 a/d
+
+gains  6553.4
+
+
+# Stages
+
+a/d	&Arr{
+samprate	250
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+RT97_80	&Arr{
+gtype		analog_anti_alias
+response	&datafile(responses/RT97_80)
+}
+

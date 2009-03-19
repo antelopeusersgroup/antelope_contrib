@@ -1,0 +1,26 @@
+originator     Frank Vernon, UCSD
+last_modified  2009-03-05
+
+category	Paroscientific
+configuration   6000-16B microbarometer Temperature
+
+description	Parosci microbarometer Temperature
+#dfile		paro6000T
+dfile		paroT6000
+
+rsptype		t	# Temperature component of microbarometer
+band		l	# broadband
+sensor_type_code	K	# fill in second character of channel code
+
+gtype		sensor
+sensitivity	1e+6	
+ounits		V
+iunits		C  
+
+orientations	&Tbl{
+K       0       0 
+}
+
+response	&datafile(responses/paroT6000) 
+#response	&datafile(responses/paro6000T) 
+

@@ -1,0 +1,111 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.reftek.com
+
+}
+
+category	Passcal
+configuration	Reftek 72A-07
+
+description	Reftek 72A-07 w/LOG channel
+dfile rt72A-07
+
+streams		1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps  20sps 10sps 8sps 5sps 4sps 2sps 1sps
+
+
+# definitions of streams
+1000sps	 1000  a/d1 cf1 cf2 cf2 cf2 cf3
+500sps	 500   a/d1 cf1 cf2 cf2 cf2 cf2 cf3
+250sps	 250   a/d1 cf1 cf2 cf2 cf2 cf2 cf2 cf3
+125sps	 125   a/d1 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+
+200sps	 200   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf3
+100sps	 100   a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+50sps	 50    a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+25sps	 25    a/d2 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+
+40sps	 40    a/d3 cf1 cf2 cf2 cf2 cf2 cf2 cf3
+20sps	 20    a/d3 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+10sps	 10    a/d3 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+5sps	 5     a/d3 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+
+8sps	 8     a/d4 cf1 cf2 cf2 cf2 cf2 cf2 cf3
+4sps	 4     a/d4 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+2sps	 2     a/d4 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+1sps	 1     a/d4 cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+
+gains		524383.8
+
+# Stages
+a/d1	&Arr{
+samprate	128000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d2	&Arr{
+samprate	102400
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d3	&Arr{
+samprate	20480
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d4	&Arr{
+samprate	4096
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+
+soh             LOG  
+
+LOG     &Arr{
+stages          log
+gnom            1
+iunits
+ounits
+samprate        -1
+ctype           o
+}
+ 
+log &Arr{
+gtype           REF TEK LOG
+gnom            1
+iunits
+ounits
+sn              datalogger
+}

@@ -1,0 +1,26 @@
+originator     Frank Vernon, UCSD
+last_modified  2009-01-30
+
+category	Geotech
+configuration	S-13/GG-13 Vertical
+
+description	Geotech S-13/GG-13 short-period seismometer
+dfile		gs13z
+
+rsptype	V	# velocity instrument
+band	s	# short period 
+
+gtype		sensor	# stage type
+sensitivity	6.29e-7 # equivalent to 629 V/m/sec
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+}
+
+response	&datafile(responses/gs13) 
+
+sensor_type_code  	H
+short_period_sensor  	yes
+

@@ -1,0 +1,33 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Guralp
+configuration	CMG3T
+
+description	Guralp CMG3T
+dfile	cmg3t
+
+rsptype                 V       # velocity instrument
+band			b	# broadband
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	15e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/cmg3t) 
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+

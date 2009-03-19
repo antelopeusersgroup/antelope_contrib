@@ -5,6 +5,9 @@ a vague description of the GSV-111 geophones we use in Schwaz
 category	GeoSig
 configuration	GSV-111 10mm/s
 
+originator	Nikolaus Horn
+last_modified	March 4, 2009
+
 description	GSV-111 1-315Hz 10mm/s
 dfile		gsv111_10mm
 

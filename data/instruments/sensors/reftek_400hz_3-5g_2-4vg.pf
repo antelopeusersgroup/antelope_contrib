@@ -1,0 +1,31 @@
+originator     Frank Vernon, UCSD
+last_modified  2009-01-30
+# $Header$
+#
+# Sensitivity: 2.44732e-10
+# q330 gain:   9742.0315
+#
+
+category			RefTek
+configuration		RefTek 131A 400 Hz 3.5g 2.4 V/g 
+
+description			Refraction Tech. 131A 400 Hz 3.5g 2.4 Volt per g
+dfile				reftek_400hz_3-5g_2-4vg
+
+rsptype				A	# accelerometer
+band				b	# broad band
+short_period_sensor	no	# 1st letter of SEED channel code
+sensor_type_code	N	# 2nd letter of SEED channel code
+
+gtype				sensor
+sensitivity			2.44732e-10
+iunits				nm/s**2
+ounits				V
+
+orientations	&Tbl{
+Z	0	0
+N   0   90
+E  90   90
+}
+
+response	&datafile(responses/dummy) 

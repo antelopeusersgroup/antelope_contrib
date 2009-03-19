@@ -1,0 +1,24 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-10-28
+
+category	infrasound
+configuration	Chaparral 2.5 
+
+description	Chapparral 2.5 microphone  
+dfile		chaparral_25	
+
+rsptype		I	# infrasound instrument
+band		l	# 
+sensor_type_code	D
+
+gtype		sensor
+sensitivity	354E-3	
+ounits		V 	
+iunits		Pa    
+
+orientations	&Tbl{
+D       0       0 
+}
+
+response	&datafile(responses/chaparral_25) 
+

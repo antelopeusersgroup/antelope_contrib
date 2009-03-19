@@ -1,0 +1,24 @@
+originator     Frank Vernon, UCSD
+last_modified  2009-03-05
+
+category	Paroscientific
+configuration	6000-16B microbarometer Pressure
+
+description	Parosci microbarometer Pressure
+dfile		paroP6000	
+
+rsptype		P	# pressure instrument
+band		l	# 
+sensor_type_code	D
+
+gtype		sensor
+sensitivity	1e+3
+ounits		V
+iunits		mbar  
+
+orientations	&Tbl{
+D       0       0 
+}
+
+response	&datafile(responses/paroP6000) 
+

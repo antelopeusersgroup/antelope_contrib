@@ -1,0 +1,95 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.kmi.com
+
+and Application Note #39 Revision A March 9, 2004
+}
+
+category	Kinemetrics
+configuration	Whitney w/Causal Filters
+
+description	K2-Whitney Causal Filters 
+dfile k2-whitney_causal
+
+streams		250sps 200sps 100sps 50sps 40sps 20sps
+
+# definitions of streams
+250sps	 250   a/d FIRA250 FIRBC
+200sps	 200   a/d FIRA200 FIRBC
+100sps	 100   a/d FIRA100 FIRBC
+ 50sps	  50   a/d FIRA100 FIRA50  FIRBC
+ 40sps	  40   a/d FIRA200 FIRA200 FIRBC
+ 20sps	  20   a/d FIRA100 FIRA200 FIRBC
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"250sps"} ) { 
+	@ok = qw(250sps) ; 
+    } elsif ( defined $chosen{"200sps"} ) { 
+	@ok = qw(200sps) ; 
+    } elsif ( defined $chosen{"100sps"} ) { 
+	@ok = qw(100sps) ; 
+    } elsif ( defined $chosen{"50sps"} ) { 
+	@ok = qw(50sps) ; 
+    } elsif ( defined $chosen{"40sps"} ) { 
+	@ok = qw(40sps) ; 
+    } elsif ( defined $chosen{"20sps"} ) { 
+	@ok = qw(20sps) ; 
+    } else { 
+	@ok = qw(250sps 200sps 100sps 50sps 40sps 20sps) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  3355443
+
+
+# Stages
+
+a/d	&Arr{
+samprate	2000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+FIRA250		&Arr{
+gtype		FIR_decimator
+decifac		4
+response	&datafile(responses/FIRA250)
+}
+
+FIRA200		&Arr{
+gtype		FIR_decimator
+decifac		5
+response	&datafile(responses/FIRA200)
+}
+
+FIRA100		&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/FIRA100)
+}
+
+FIRA50		&Arr{
+gtype		FIR_decimator
+decifac		2
+response	&datafile(responses/FIRA50)
+}
+
+FIRBC		&Arr{
+gtype	FIR_decimator
+decifac		2
+response	&datafile(responses/FIRBC)
+}
+

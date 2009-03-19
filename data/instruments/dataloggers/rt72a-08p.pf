@@ -1,0 +1,121 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.reftek.com
+
+}
+
+category	Passcal
+configuration	Reftek 72A-08
+
+description	Reftek 72A-08 Datalogger w/LOG channel
+dfile rt72A-08
+
+streams		1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 8sps 5sps 4sps 2sps 1sps
+
+# definitions of streams
+1000sps	1000 a/d cf1 cf2 cf2 cf2 cf3 
+500sps	500  a/d cf1 cf2 cf2 cf2 cf3 RT72A_2_f
+250sps	250  a/d cf1 cf2 cf2 cf2 cf3 RT72A_4_f
+200sps	200  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_f
+125sps	125  a/d cf1 cf2 cf2 cf2 cf3 RT72A_4_s RT72A_2_f
+100sps	100  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_2_f
+50sps	 50  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_4_f
+40sps	 40  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_f
+25sps	 25  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_4_s RT72A_2_f
+20sps	 20  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_2_f
+10sps	 10  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_4_f
+8sps	  8  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_5_f
+5sps	  5  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_4_s RT72A_2_f
+4sps	  4  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_5_s RT72A_2_f
+2sps	  2  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_5_s RT72A_4_f
+1sps	  1  a/d cf1 cf2 cf2 cf2 cf3 RT72A_5_s RT72A_5_s RT72A_5_s RT72A_4_s RT72A_2_f
+
+
+gains  526315
+
+
+# Stages
+a/d	&Arr{
+samprate	128000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+
+RT72A_5_f	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/RT72A_5_f)
+}
+
+RT72A_5_s	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/RT72A_5_s)
+}
+
+RT72A_4_f	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/RT72A_4_f)
+}
+
+RT72A_4_s	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/RT72A_4_s)
+}
+
+RT72A_2_f	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/RT72A_2_f)
+}
+
+RT72A_2_s	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/RT72A_2_s)
+}
+
+soh             LOG  
+
+LOG     &Arr{
+stages          log
+gnom            1
+iunits
+ounits
+samprate        -1
+ctype           o
+}
+ 
+log &Arr{
+gtype           REF TEK LOG
+gnom            1
+iunits
+ounits
+sn              datalogger
+}

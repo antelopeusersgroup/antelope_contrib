@@ -1,0 +1,19 @@
+This directory contains parameter files for dbbuild for a variety of
+dataloggers and sensors.  These parameter files direct the behavior of
+dbbuild and it is crucial that the information contained in them be
+correct. 
+
+Each parameter file contains an originator and a last_modified date. 
+If you find an error in a parameter file, please contact the author to
+fix the problem (not BRTT!).
+
+You must be very careful when adding new files to these directories. 
+Use the existing files as examples, and read the man page dbbuild.5. 
+Typically you will need to add some response files to the directory
+../responses.
+
+dbbuild_validate(1) provides some simple sanity checks on both
+parameter files and response files.  However, these checks are only a
+beginning.  A parameter file may pass dbbuild_validate and still be
+utterly wrong.
+

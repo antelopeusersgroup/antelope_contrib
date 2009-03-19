@@ -1,0 +1,25 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Kinemetrics
+configuration	Ranger SS1 horizontal
+
+description	Ranger SS1
+dfile	ranger_h
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	1.6654e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+?	?	?
+}
+
+response	&datafile(responses/ranger) 
+

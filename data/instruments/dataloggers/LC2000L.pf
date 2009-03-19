@@ -1,0 +1,84 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	SAIC
+configuration	LCheapo 2000 Long Period
+
+description	LCheapo 2000 Long Period  Datalogger 
+dfile lc2000l
+
+info    &Literal{
+This is the configuration for a LCheapo, UCSD OBS datalogger.
+}
+
+streams		2000sps 1000sps 500sps 250sps 125sps 62.5sps 31.25sps 
+
+# definitions of streams
+2000sps	 	2000	a/d cf1 cf2 cf2 cf2 cf2 cf3
+1000sps	 	1000	a/d cf1 cf2 cf2 cf2 cf2 cf2 cf3
+500sps	 	500	a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+250sps	 	250	a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+125sps	 	125	a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+62.5sps	 	62.5	a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+31.25sps	31.25	a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"2000sps"} ) { 
+	@ok = qw(2000sps) ; 
+    } elsif ( defined $chosen{"1000sps"} ) { 
+	@ok = qw(1000sps) ; 
+    } elsif ( defined $chosen{"500sps"} ) { 
+	@ok = qw(500sps) ; 
+    } elsif ( defined $chosen{"250sps"} ) { 
+	@ok = qw(250sps) ; 
+    } elsif ( defined $chosen{"125sps"} ) { 
+	@ok = qw(125sps) ; 
+    } elsif ( defined $chosen{"62.5sps"} ) { 
+	@ok = qw(62.5sps) ; 
+    } elsif ( defined $chosen{"31.25sps"} ) { 
+	@ok = qw(31.25sps) ; 
+    } else { 
+	@ok = qw(2000sps 1000sps 500sps 250sps 125sps 62.5sps 31.25sps ) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  582520        
+
+
+# Stages
+
+#  a/d conversion factor is 1165040, but there is a 0.5 preamp gain in datalogger
+
+a/d	&Arr{
+samprate	512000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype		FIR_decimator
+decifac		8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype		FIR_decimator
+decifac		2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype		FIR_decimator
+decifac		2
+response	&datafile(responses/cf3)
+}
+

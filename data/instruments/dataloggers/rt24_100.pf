@@ -1,0 +1,39 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.reftek.com
+
+}
+
+category	Reftek
+configuration	RT24 100 Hz fc
+
+description	Reftek RT24 Datalogger 100 Hz fc
+dfile rt24_100
+
+streams		250sps  
+
+# definitions of streams
+250sps	 250   RT24_100 a/d
+
+gains  3276.7
+
+
+# Stages
+
+a/d	&Arr{
+samprate	250
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+RT24_100	&Arr{
+gtype		analog_anti_alias
+response	&datafile(responses/RT24_100)
+}
+

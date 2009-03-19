@@ -10,6 +10,9 @@ and Application Note # 39
 category	Kinemetrics
 configuration	FBA23 100 Hz 1.0g
 
+originator	Nikolaus Horn
+last_modified	March 4, 2009
+
 description	KMI FBA23 100 Hz FS 1g
 dfile		fba23_100hz_1g
 

@@ -1,0 +1,51 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.reftek.com
+
+}
+
+category	Reftek
+configuration	97-06-I
+
+description	Reftek 97-06-I Datalogger
+dfile rt97_06
+
+streams		250sps
+
+# definitions of streams
+250sps	250  a/d cf1 cf2 cf2 cf2 cf2 cf2 cf3 
+
+gains  526315
+
+
+# Stages
+a/d	&Arr{
+samprate	128000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+

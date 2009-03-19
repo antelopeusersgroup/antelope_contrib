@@ -1,0 +1,117 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Guralp
+configuration	DM24
+
+description	Guralp DM24 Datalogger 
+dfile dm24
+
+streams		200sps 100sps 50sps 40sps 25sps 20sps 10sps 8sps 5sps 4sps 2sps 1sps
+
+# definitions of streams
+200sps	 200   a/d cf1 cf2 cf2 cf2 cf3 guralp_10
+100sps	 100   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_2
+50sps	  50   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_4
+40sps	  40   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_5
+25sps	  25   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_8
+20sps	  20   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_10
+10sps	  10   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_4 guralp_5
+8sps	   8   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_5 guralp_5
+5sps	   5   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_10 guralp_4
+4sps	   4   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_10 guralp_5
+2sps	   2   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_10 guralp_10
+1sps	   1   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_10 guralp_10 guralp_2
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"100sps"} ) { 
+	@ok = qw(100sps 10sps 1sps) ; 
+    } elsif ( defined $chosen{"50sps"} && defined $chosen{"25sps"}  ) { 
+	@ok = qw(50sps 25sps 5sps) ; 
+    } elsif ( defined $chosen{"50sps"} ) { 
+	@ok = qw(50sps 25sps 10sps 5sps 1sps) ; 
+    } else { 
+	@ok = qw(200sps 100sps 50sps 40sps 25sps 20sps 10sps 8sps 5sps 4sps 2sps 1sps) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  787401.57
+
+
+# Stages
+
+a/d	&Arr{
+samprate	256000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+
+guralp_16	&Arr{
+gtype	FIR_decimator
+decifac	16
+response	&datafile(responses/guralp_16)
+}
+
+guralp_10	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/guralp_10)
+}
+
+guralp_8	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/guralp_8)
+}
+
+guralp_5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/guralp_5)
+}
+
+guralp_4	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/guralp_4)
+}
+
+guralp_3	&Arr{
+gtype	FIR_decimator
+decifac	3
+response	&datafile(responses/guralp_3)
+}
+
+guralp_2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/guralp_2)
+}
+

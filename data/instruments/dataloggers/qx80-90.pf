@@ -1,6 +1,9 @@
 category	Quanterra
 configuration	Q380/Q680 with '90 firmware
 
+originator	Nikolaus Horn
+last_modified	March 4, 2009
+
 description	Quanterra Qx80 19900616 (old) Firmware
 dfile oldqx80
 info &Literal{

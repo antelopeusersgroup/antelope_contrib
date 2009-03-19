@@ -5,6 +5,9 @@ Input/Output Geophone SM6-B, 4.5 Hz, 28.8V/m/s
 category	IO
 configuration	SM6-B 4.5Hz Geophone
 
+originator	Nikolaus Horn
+last_modified	March 4, 2009
+
 description	SM6-B 4.5Hz Geophone
 dfile		sm6b4.5
 

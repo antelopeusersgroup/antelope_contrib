@@ -1,0 +1,25 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Unknown
+configuration	unknown-velocity
+
+description	Dummy 1-D Sensor used in ignorance
+dfile	unknown
+
+rsptype                 V       # velocity instrument
+band                    b       # short period
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	10.e-8
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	180
+}
+
+response	&datafile(responses/dummy) 
+

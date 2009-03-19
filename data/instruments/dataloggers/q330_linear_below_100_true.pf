@@ -1,0 +1,244 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Quanterra
+configuration	Q330 Linear Below 100 True 
+
+description	Quanterra 330 Linear Below 100 True
+dfile q330_lb100
+
+streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps
+
+# definitions of streams
+200sps	200 a/d z126d20 z174d5m
+100sps	100 a/d z126d20 z174d5m z97d2m 
+50sps	 50 a/d z126d20 z174d5m z97d2m z99d2
+40sps	 40 a/d z126d20 z174d5m z165d5
+20sps	 20 a/d z126d20 z174d5m z165d5 z97d2
+10sps	 10 a/d z126d20 z174d5m z165d5 z97d2 z97d2
+1sps	  1 a/d z126d20 z174d5m z165d5 z97d2 z97d2 z239d10
+
+gains  5e5    # in units of counts/volt
+
+
+# Stages
+a/d	&Arr{
+samprate	20000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+z126d20	&Arr{
+gtype	FIR_decimator
+decifac	20
+response	&file($HOME/q330/save/z126d20)
+}
+
+z126d20m	&Arr{
+gtype	FIR_decimator
+decifac	20
+response	&file($HOME/q330/save/z126d20m)
+}
+
+z165d5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&file($HOME/q330/save/z165d5)
+}
+
+z165d5m	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&file($HOME/q330/save/z165d5m)
+}
+
+z174d5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&file($HOME/q330/save/z174d5)
+}
+
+z174d5m	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&file($HOME/q330/save/z174d5m)
+}
+
+z239d10	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&file($HOME/q330/save/z239d10)
+}
+
+z239d10m	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&file($HOME/q330/save/z239d10m)
+}
+
+z97d2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&file($HOME/q330/save/z97d2)
+}
+
+z97d2m	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&file($HOME/q330/save/z97d2m)
+}
+
+z99d2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&file($HOME/q330/save/z99d2)
+}
+
+z99d2m	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&file($HOME/q330/save/z99d2m)
+}
+
+soh		LCE LCQ VCO VEA VEC VEP VKI VMU VMV VMW VPB
+
+LCE	&Arr{
+stages 		phase 
+iunits  	S
+ounits		counts
+samprate 	1
+}
+ 
+LCQ	&Arr{
+stages 		clk_qual 
+iunits  	PERCENT
+ounits		counts
+samprate 	1
+} 
+
+VCO      &Arr{
+stages 		vco 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+ 
+VEA       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+}
+
+VEC       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+}
+
+VEP       &Arr{
+stages 		mvolt 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VKI       &Arr{
+stages 		temp 
+iunits  	CELSIUS
+ounits		counts
+samprate 	.1
+}
+
+VMU       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VMV       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VMW       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VPB      &Arr{
+stages 		buf_use 
+iunits  	PERCENT
+ounits		counts
+samprate 	.1
+}
+
+phase &Arr{
+gtype		clock phase
+gnom		1000000
+iunits		S
+ounits		counts
+sn		datalogger
+}
+
+clk_qual &Arr{
+gtype		clock quality
+iunits		PERCENT
+ounits		counts
+sn		datalogger
+}
+
+vco &Arr{
+gtype		VCO control voltage
+gnom		6.66667
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+mamp &Arr{
+gtype		current meter
+gnom		1000
+iunits		A
+ounits		counts
+sn		datalogger
+}
+
+mvolt &Arr{
+gtype		volt meter
+gnom		1000
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+temp &Arr{
+gtype		thermometer
+iunits		CELSIUS
+ounits		counts
+sn		datalogger
+}
+
+mp &Arr{
+gtype		mass position
+gnom		10
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+buf_use &Arr{
+gtype		Q330 buffer usage
+gnom		10
+iunits		PERCENT
+ounits		counts
+sn		datalogger
+}

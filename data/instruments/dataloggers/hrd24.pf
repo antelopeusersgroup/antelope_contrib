@@ -1,6 +1,9 @@
 category	Nanometrics
 configuration	HRD24
 
+originator	Nikolaus Horn
+last_modified	March 4, 2009
+
 description	Nanometrics HRD24
 dfile hrd24
 info &Literal{

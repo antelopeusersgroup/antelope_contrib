@@ -1,0 +1,43 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Geological Survey of Canada
+configuration	YKA SP
+
+description	CNSN Yellowknife short-period digitizer
+dfile yka-sp
+
+streams		20sps
+
+# definitions of streams
+ 20sps     20   a/d yka-sp_fir1 yka-sp_fir2
+
+# Stages
+# YKA-SP analog response: assuming a 5-pole butterworth at 90 Hz
+# Ken did not have actual component values to calculate poles, if
+# necessary get these from Phil or use stn book values (if not coupled
+# with seismo).
+# YKA-SP response with S-13 sensitivity
+
+gains		15900000
+
+a/d	&Arr{
+samprate	800
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+yka-sp_fir1	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/yka-sp_fir1)
+}
+
+yka-sp_fir2	&Arr{
+gtype		FIR_decimator
+decifac		4
+response	&datafile(responses/yka-sp_fir2)
+}
+

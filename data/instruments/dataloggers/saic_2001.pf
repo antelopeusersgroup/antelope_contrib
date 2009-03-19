@@ -1,0 +1,51 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	SAIC
+configuration	2001
+
+description	SAIC 2001
+dfile saic-2001
+
+streams		1280sps 640sps 320sps 160sps 80sps 40sps 20sps 
+
+
+# definitions of streams
+1280sps	 1280  a/d cf1 cf2 cf3
+640sps	 640   a/d cf1 cf2 cf2 cf3
+320sps	 320   a/d cf1 cf2 cf2 cf2 cf3
+160sps	 160   a/d cf1 cf2 cf2 cf2 cf2 cf3
+80sps	 80    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf3
+40sps	 40    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+20sps	 20    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+
+gains  524384
+
+
+# Stages
+a/d	&Arr{
+samprate	81920
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+

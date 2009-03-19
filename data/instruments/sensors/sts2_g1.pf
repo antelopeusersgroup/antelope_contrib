@@ -1,0 +1,52 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+#
+# Whereas the mechanical part of the STS-2 seismometer 
+# never changed since 1990, the electronics part has 
+# been redesigned twice. 
+# There exist three different "electronic" generations 
+# which differ in the transfer function at frequencies 
+# above 10 Hz.
+# sts2_g1    shipped 04/90-06/95
+# sts2_g2    shipped 06/95-02/98
+# sts2_g3    shipped 02/98 thru present
+# if any questions consult VLSTGEN2-ext.pdf or contact 
+# Streckeisen representative
+#
+
+info 	&Literal{
+This version shipped 4/90 to 6/95.
+Consult VLSTGEN2-ext.pdf or contact Streckheisen for more info
+}
+
+category	Streckeisen
+configuration	STS-2 G1
+
+description	Streckeisen STS-2 G1
+dfile	sts2_g1
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	15e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/sts2_g1) 
+
+caldrive	c
+active		yes
+calgen		1
+cal2rsp		1
+calper		1
+

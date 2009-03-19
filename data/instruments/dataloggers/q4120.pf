@@ -1,0 +1,118 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Quanterra
+configuration	4120
+
+description	Quanterra 4120 Datalogger
+dfile q4120
+
+streams		400sps 200sps 100sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
+
+# definitions of streams
+400sps	400 a/d AD32M FS2D5M 
+200sps	200 a/d AD32M FS2D5M F96CM
+100sps	100 a/d AD32M FS2D5M F96CM F96CM 
+40sps	 40 a/d AD32M FS2D5M F96CM FS2D5
+20sps	 20 a/d AD32M FS2D5M F96CM F96CM FS2D5
+10sps	 10 a/d AD32M FS2D5M F96CM F96CM FS2D5 F96C
+1sps	  1 a/d AD32M FS2D5M F96CM F96CM FS2D5 F96C F260
+0.1sps	  0.1 a/d AD32M FS2D5M F96CM F96CM FS2D5 F96C F260 VLP 
+0.01sps	  0.01 a/d AD32M FS2D5M F96CM F96CM FS2D5 F96C F260 VLP ULP
+
+gains  414517
+
+
+# Stages
+a/d	&Arr{
+samprate	32000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+AD20M	&Arr{ # used in the Q730 first stage.
+gtype	FIR_decimator
+decifac	20
+response	&datafile(responses/AD20M)
+}
+
+AD32M	&Arr{ # used in the Q4120 first stage.
+gtype	FIR_decimator
+decifac	16
+response	&datafile(responses/AD32M)
+}
+
+F260	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/F260)
+}
+
+F260M	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/F260)
+}
+
+F64C	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/F64C)
+}
+
+F64CM	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/F64CM)
+}
+
+F72B	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/F72B)
+}
+
+F72BM	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/F72BM)
+}
+
+F96C	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/F96C)
+}
+
+F96CM	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/F96CM)
+}
+
+FS2D5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/FS2D5)
+}
+
+FS2D5M	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/FS2D5M)
+}
+
+ULP	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/ULP)
+}
+
+VLP	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/VLP)
+}
+

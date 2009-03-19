@@ -8,6 +8,9 @@ These instrument parameter files and their responses derived from
 category	Lennartz
 configuration	LE-3D/5s
 
+originator	Nikolaus Horn
+last_modified	March 4, 2009
+
 description	LE-3D 5S
 dfile		le3d5s
 

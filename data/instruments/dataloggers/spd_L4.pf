@@ -1,0 +1,39 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Geological Survey of Canada
+configuration	SPD L-4
+
+description	CNSN short-period L4 digitizer
+dfile spd_L4
+
+streams         100sps
+
+# definitions of streams
+100sps      100   a/d spd_fir1 spd_fir2
+
+# Stages
+#   composite stages for LP1
+
+gains		112400000
+
+a/d        &Arr{
+samprate        1000
+gtype           digitizer
+iunits          V
+ounits          counts
+sn		datalogger
+}
+
+spd_fir1   &Arr{
+gtype           FIR_decimator
+decifac		5
+response        &datafile(responses/spd_fir1)
+}
+
+spd_fir2   &Arr{
+gtype           FIR_decimator
+decifac		2
+response        &datafile(responses/spd_fir2)
+}
+

@@ -1,0 +1,34 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.guralp.com/faq/poles_and_zeros.htm
+
+and provided to BRTT by Eliana Arias at the PASSCAL Instrument Center
+}
+category 	Guralp
+configuration	cmg5t
+
+description	Guralp CMG5T Sensor
+dfile	cmg5t
+
+rsptype	A	# velocity instrument
+band	b	# broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	1.0204e-9 
+iunits		nm/s**2
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/cmg5) 
+

@@ -1,0 +1,35 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	UWIseismic
+configuration	low-gain
+
+description	University of West Indies SRU 16 bit system (low gain)
+dfile uwi_lg
+
+streams		100sps  
+
+# definitions of streams
+100sps	 100   uwi_lg a/d
+
+#
+#  Low gain is 16 bit attenuated by 20 a/d= 6553.4/20
+#
+gains  327.68
+
+
+# Stages
+
+a/d	&Arr{
+samprate	100
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+uwi_lg	&Arr{
+gtype		analog_anti_alias
+response	&datafile(responses/uwiseismic)
+}
+

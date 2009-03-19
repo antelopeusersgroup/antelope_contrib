@@ -1,0 +1,27 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Mark Products
+configuration	L22
+
+description	Mark Products L22
+dfile	l22
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	8.8e-8
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	180
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/l22) 
+

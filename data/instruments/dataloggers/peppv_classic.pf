@@ -1,0 +1,87 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	PEPPV
+configuration	digitizer (older sensors)
+
+description	PEPPV digitizer (older sensors)
+dfile peppv_classic
+
+streams		20sps 
+
+# definitions of streams
+20sps	  20   a/d cf1 cf2 cf2 cf2 cf3 guralp_10 guralp_10
+
+gains  2500000.0
+
+
+# Stages
+
+a/d	&Arr{
+samprate	256000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+cf1	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/cf1)
+}
+
+cf2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf2)
+}
+
+cf3	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cf3)
+}
+
+guralp_16	&Arr{
+gtype	FIR_decimator
+decifac	16
+response	&datafile(responses/guralp_16)
+}
+
+guralp_10	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/guralp_10)
+}
+
+guralp_8	&Arr{
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/guralp_8)
+}
+
+guralp_5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/guralp_5)
+}
+
+guralp_4	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/guralp_4)
+}
+
+guralp_3	&Arr{
+gtype	FIR_decimator
+decifac	3
+response	&datafile(responses/guralp_3)
+}
+
+guralp_2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/guralp_2)
+}
+

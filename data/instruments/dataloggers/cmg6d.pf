@@ -1,0 +1,95 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Guralp
+configuration	CMG6TD
+
+description	Guralp CMG6TD Datalogger 
+info	&Literal{
+I think there is a major problem with the CMG6TD responses.  It
+appears that the corner frequency for all three of these files is
+exactly at the nyquist frequency for the decimated output sample rate. 
+
+For example, if the input sample rate is 1000 sps, and the decimation
+factor is 5, then the output sample rate is 200 sps.  The corner
+frequency of the filter occurs at 100 Hz - the Nyquist of 200 sps.
+
+These coeffs were from Guralp's web site.
+
+So CAVEAT EMPTOR all users of this device.
+}
+
+dfile cmg6td
+
+streams		200sps 100sps 50sps 40sps 25sps 20sps 10sps 8sps 5sps 4sps 2sps 1sps
+
+# definitions of streams
+250sps   250   a/d cmg6d_4
+200sps	 200   a/d cmg6d_5
+100sps	 100   a/d cmg6d_5 cmg6d_2
+50sps	  50   a/d cmg6d_5 cmg6d_4
+40sps	  40   a/d cmg6d_5 cmg6d_5
+25sps	  25   a/d cmg6d_5 cmg6d_4 cmg6d_2
+20sps	  20   a/d cmg6d_5 cmg6d_5 cmg6d_2
+10sps	  10   a/d cmg6d_5 cmg6d_5 cmg6d_4
+8sps	   8   a/d cmg6d_5 cmg6d_5 cmg6d_5
+5sps	   5   a/d cmg6d_5 cmg6d_5 cmg6d_2 cmg6d_4
+4sps	   4   a/d cmg6d_5 cmg6d_5 cmg6d_5 cmg6d_2
+2sps	   2   a/d cmg6d_5 cmg6d_5 cmg6d_5 cmg6d_4
+1sps	   1   a/d cmg6d_5 cmg6d_5 cmg6d_2 cmg6d_5 cmg6d_2 cmg6d_2
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"250sps"} ) {
+        @ok = qw(50sps 10sps 1sps) ;
+    } elsif ( defined $chosen{"200sps"} ) { 
+	@ok = qw(200sps 100sps 10sps 1sps) ; 
+    } elsif ( defined $chosen{"100sps"} ) { 
+	@ok = qw(100sps 10sps 1sps) ; 
+    } elsif ( defined $chosen{"50sps"} && defined $chosen{"25sps"}  ) { 
+	@ok = qw(50sps 25sps 5sps) ; 
+    } elsif ( defined $chosen{"50sps"} ) { 
+	@ok = qw(50sps 25sps 10sps 5sps 1sps) ; 
+    } else { 
+	@ok = qw(200sps 100sps 50sps 40sps 25sps 20sps 10sps 8sps 5sps 4sps 2sps 1sps) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  787401.57
+
+
+# Stages
+
+a/d	&Arr{
+samprate	1000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+
+cmg6d_5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/cmg6d_5)
+}
+
+cmg6d_4	&Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/cmg6d_4)
+}
+
+cmg6d_2	&Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/cmg6d_2)
+}
+

@@ -1,0 +1,35 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	UWIseismic
+configuration	high-gain
+
+description	University of West Indies SRU 16 bit system (high gain)
+dfile uwi_hg
+
+streams		100sps  
+
+# definitions of streams
+100sps	 100   uwi_hg a/d
+
+#
+#  High gain is 2X stock 16 bit a/d= 2*6553.4
+#
+gains  13106.8
+
+
+# Stages
+
+a/d	&Arr{
+samprate	100
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+uwi_hg	&Arr{
+gtype		analog_anti_alias
+response	&datafile(responses/uwiseismic)
+}
+

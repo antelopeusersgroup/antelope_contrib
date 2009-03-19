@@ -1,0 +1,30 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Unknown
+configuration	counter
+
+description	null sensor
+dfile	null
+
+rsptype	x	# not an instrument
+band	b	# broad band
+sensor_type_code	U	# second letter of SEED channel code
+
+gtype		sensor
+sensitivity	1
+iunits		cnts
+ounits		V
+
+orientations	&Tbl{
+U	0	0
+}
+
+response	&Literal{
+theoretical  1  null   fir    null
+1000 1
+1
+1   0.0
+0
+}
+

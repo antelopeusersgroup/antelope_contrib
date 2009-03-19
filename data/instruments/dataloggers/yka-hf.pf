@@ -1,0 +1,43 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Geological Survey of Canada
+configuration	YKA HF
+
+description	CNSN Yellowknife high-frequency digitizer
+dfile yka-hf
+
+streams		100sps
+
+# definitions of streams
+ 100sps     100   a/d yka-hf_fir1 yka-hf_fir2
+
+# Stages
+# YKA-HF analog response: assuming a 5-pole butterworth at 90 Hz
+# Ken did not have actual component values to calculate poles, if
+# necessary get these from Phil or use stn book values (if not coupled
+# with seismo).
+# YKA-HF response with S-13 sensitivity
+
+gains		159000000
+
+a/d	&Arr{
+samprate	800
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+yka-hf_fir1	&Arr{
+gtype		FIR_decimator
+decifac		4
+response	&datafile(responses/yka-hf_fir1)
+}
+
+yka-hf_fir2	&Arr{
+gtype		FIR_decimator
+decifac		2
+response	&datafile(responses/yka-hf_fir2)
+}
+

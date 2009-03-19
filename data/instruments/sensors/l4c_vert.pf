@@ -1,0 +1,25 @@
+originator     Frank Vernon, UCSD
+last_modified  2009-01-30
+
+category	Mark Products
+configuration	L4C 1-component vertical
+
+description	Mark Products L4C
+dfile	l4c_v
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	1.6654e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+}
+
+response	&datafile(responses/l4c) 
+

@@ -1,0 +1,80 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.kmi.com
+
+and Application Note #39 Revision A March 9, 2004
+}
+
+category	Kinemetrics
+configuration	Etna
+
+description	Etna Datalogger 
+dfile etna
+
+streams		250sps 200sps 100sps 
+
+# definitions of streams
+250sps	 250   a/d FIRA250S3 FIRBNC
+200sps	 200   a/d FIRA200S3 FIRBNC
+100sps	 100   a/d FIRA100S3 FIRBNC
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"250sps"} ) { 
+	@ok = qw(250sps) ; 
+    } elsif ( defined $chosen{"200sps"} ) { 
+	@ok = qw(200sps) ; 
+    } elsif ( defined $chosen{"100sps"} ) { 
+	@ok = qw(100sps) ; 
+    } else { 
+	@ok = qw(250sps 200sps 100sps) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  3355443
+
+
+# Stages
+
+a/d	&Arr{
+samprate	2000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+FIRA250S3	&Arr{
+gtype		FIR_decimator
+decifac		4
+response	&datafile(responses/FIRA250S3)
+}
+
+FIRA200S3	&Arr{
+gtype		FIR_decimator
+decifac		5
+response	&datafile(responses/FIRA200S3)
+}
+
+FIRA100S3	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/FIRA100S3)
+}
+
+FIRBNC		&Arr{
+gtype		FIR_decimator
+decifac		2
+response	&datafile(responses/FIRBNC)
+}
+

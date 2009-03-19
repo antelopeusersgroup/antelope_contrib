@@ -1,0 +1,23 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Tekelec
+configuration	MB2000 aneroid microbarometer 
+
+description	Tekelec MB2000 aneroid microbarometer
+dfile		mb2000_raw
+
+rsptype		I	# infrasound instrument
+band		D	# broadband
+
+gtype		sensor
+sensitivity	50
+iunits		Pa
+ounits		V
+
+orientations	&Tbl{
+D	0	0
+}
+
+response	&datafile(responses/mb2000_raw) 
+
