@@ -17,20 +17,33 @@ c  Modified:  December 2002 Original subroutine found in older
 c  libgclgrid interpolated a function based on values passed
 c  in.  This function returns the weights so that multiple
 c  calls with no change in position can be recomputed faster.
+c  Modification:  June 2008
+c  Found serious problems with convergence of the loop here
+c  when a point was located just outside a distorted box.  
+c  Repeated attempts to improve the lookup method to make this
+c  go away failed.  The main thing this changed is that this
+c  subroutine now returns and error code ierr.  0 means all is
+c  fine while nonzero means the iteration in this routine
+c  did not converge.  This is now used downstream in a recovery
+c  using a different interpolation formula.
 c------------------------------------------------------------
 
-      subroutine fmeweights(xx,coord,fun)
+      subroutine fmeweights(xx,coord,fun,ierr)
       implicit none
       integer i,itno,j
       double precision x(3),xx(3),xdum
       double precision coord(8,3)
       double precision der(3,8),fun(8),jac(3,3)
       double precision residual(3),solution(3),er,det,jac1(3,3)
+      integer ierr
       integer MAXIT
       double precision CONVTEST
       parameter(MAXIT=20)
       parameter(CONVTEST=0.001)
       double precision scale
+
+c  error flag set 0 as default
+      ierr=0
 
 c  We compute this scale in a bombproof way to make the code
 c  independent of scale.  This is used in the convergence loop
@@ -92,7 +105,10 @@ c
 
       er = er/scale
       itno = itno + 1
+c	write(*,*) itno, er
       if( (itno.lt.MAXIT) .and. (er.gt.CONVTEST)) goto 100
+c  Set ierr nonzero if the loop above didn't converge
+      if(itno.ge.MAXIT) ierr=1
 
       return
       end

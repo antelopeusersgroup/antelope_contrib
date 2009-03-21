@@ -462,6 +462,29 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 					filename,fieldname.c_str());
 			throw 2;
 		}
+		long foff;
+		int nv,dim,foffin;
+		if(dbgetv(dbgrd,0,"foff",&foffin,
+			"dimensions",&dim,"nv",&nv,0)==dbINVALID)
+		{
+			elog_notify(0,(char *)"dbgetv error fetching foff from gclfield table\n");
+			throw 2;
+		}
+		foff=(long)foffin;
+		if(nv>1)
+		{
+			elog_notify(0,(char *)"GCLscalarfield constructor nv=%d is illegal",
+				nv);
+			throw 2;
+		}
+		if(dim!=2)
+		{
+			elog_notify(0,
+			 (char *)"GCLscalarfield: database dimension %d mismatch for fieldname=%s",
+				dim,fieldname.c_str());
+			throw 2;
+		}
+		fseek(fp,foff,SEEK_SET);
 		dbfree(dbgrd);
 		gridsize = n1*n2;
 		val=create_2dgrid_contiguous(n1, n2);
@@ -533,6 +556,29 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 					filename,fieldname.c_str());
 			throw 2;
 		}
+		long foffin;
+		int nv,dim;
+		if(dbgetv(dbgrd,0,"foff",&foffin,
+			"dimensions",&dim,"nv",&nv,0)==dbINVALID)
+		{
+			elog_notify(0,(char *)"dbgetv error fetching foff from gclfield table\n");
+			throw 2;
+		}
+		foff=(long)foffin;
+		if(nv>1)
+		{
+			elog_notify(0,(char *)"GCLscalarfield3d constructor nv=%d is illegal",
+				nv);
+			throw 2;
+		}
+		if(dim!=3)
+		{
+			elog_notify(0,
+			 (char *)"GCLscalarfield3d: database dimension %d mismatch for fieldname=%s",
+				dim,fieldname.c_str());
+			throw 2;
+		}
+		fseek(fp,foff,SEEK_SET);
 		dbfree(dbgrd);
 		gridsize = n1*n2*n3;
 		val=create_3dgrid_contiguous(n1, n2, n3);
@@ -556,7 +602,6 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
 	char sstring[256];
-	int foff;
 	char filename[512];
 	Dbptr dbgrd;
 	FILE *fp;
@@ -597,7 +642,23 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	        }
 		dbgrd.record = 0;
 		int nvdb;
-		dbgetv(dbgrd,0,"nv",&nvdb,0);
+		long foff;
+		int dim,foffin;
+		if(dbgetv(dbgrd,0,"nv",&nvdb,"foff",&foffin,
+			"dimensions",&dim,0)==dbINVALID)
+		{
+			elog_notify(0,(char *)"GCLvectorfield: dbgetv error fetching attributes from gclfield table for field=%s\n",
+				fieldname.c_str());
+			throw 2;
+		}
+		foff=(long)foffin;
+		if(dim!=2)
+		{
+			elog_notify(0,
+			 (char *)"GCLvectorfield: database dimension %d mismatch for fieldname=%s",
+				dim,fieldname.c_str());
+			throw 2;
+		}
 		if(nvsize>0)
 		{
 			if(nvdb!=nvsize)
@@ -622,6 +683,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		dbfree(dbgrd);
 		gridsize = n1*n2*nv;
 		val=create_3dgrid_contiguous(n1, n2, nv);
+		fseek(fp,foff,SEEK_SET);
 		if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
 		{
 			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
@@ -690,7 +752,23 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	        }
 		dbgrd.record = 0;
 		int nvdb;
-		dbgetv(dbgrd,0,"nv",&nvdb,0);
+		long foff;
+		int dim,foffin;
+		if(dbgetv(dbgrd,0,"nv",&nvdb,"foff",&foffin,
+			"dimensions",&dim,0)==dbINVALID)
+		{
+			elog_notify(0,(char *)"GCLvectorfield3d: dbgetv error fetching attributes from gclfield table for field=%s\n",
+				fieldname.c_str());
+			throw 2;
+		}
+		foff=(long)foffin;
+		if(dim!=3)
+		{
+			elog_notify(0,
+			 (char *)"GCLvectorfield3d: database dimension %d mismatch for fieldname=%s",
+				dim,fieldname.c_str());
+			throw 2;
+		}
 		if(nvsize>0)
 		{
 			if(nvdb!=nvsize)
@@ -715,6 +793,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		dbfree(dbgrd);
 		gridsize = n1*n2*n3*nv;
 		val=create_4dgrid_contiguous(n1, n2, n3,nv);
+		fseek(fp,foff,SEEK_SET);
 		if(fread(val[0][0][0],sizeof(double),gridsize,fp) != gridsize)
 		{
 			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
