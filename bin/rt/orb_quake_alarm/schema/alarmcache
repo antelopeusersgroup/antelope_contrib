@@ -1,0 +1,43 @@
+#   Copyright (c) 2009 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+#   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+#   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+#   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+#   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+#   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+#   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
+Attribute alarmid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "alarmid > 0" )
+	Description ( "alarm id" )
+	Detail {
+		This field provides a unique integer ID for 
+		each alarm issued.
+	}
+	;
+
+Relation alarmcache
+	Fields ( alarmid dir dfile lddate )
+	Foreign ( alarmid )
+	Description ( "cache of structured, derived products for alarms" )
+	Detail {
+		The alarmcache table tracks files of derived values for each 
+		alarm which may be useful in creating adaptive alarms based 
+		on the results of previous alarms. Each external file is in 
+		parameter-file format, with the keys of the parameter file being
+		uniquely determined by the algorithm version used to compute
+		the alarm.
+	}
+	;
+
