@@ -25,6 +25,7 @@ DATA=	iceworm1.3 \
 	Mail1.2 \
 	Mail1.3 \
 	Mail1.4 \
+	Mail1.5 \
 	issues1.0 \
 	Techcomp1.0 \
 	Acronyms1.2 \
