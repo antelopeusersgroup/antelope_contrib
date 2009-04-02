@@ -1,3 +1,8 @@
+: # use perl
+eval 'exec $ANTELOPE/bin/perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
 use strict ;
 use warnings ;
 
@@ -44,7 +49,7 @@ sub setup_state {
     if( system( "pfecho $State{pf} > /dev/null 2>&1" ) ) {
         die( "Couldn't find $State{pf}.pf. Goodbye.\n" ) ;
     }
-    my $pf_change_time = "1199145600" ;
+    my $pf_change_time = "1238630400" ;
  
     if( pfrequire( $State{pf}, $pf_change_time ) < 0 ) {
         elog_flush( 1, 0 ) ;
@@ -83,21 +88,19 @@ init_globals() ;
 
 my( @db ) = dbopen( $dbname, "r" ) ;
 
-my( @db_site ) = dblookup( @db, "", "site", "", "" ) ;
+my( @db_sitechan ) = dblookup( @db, "", "sitechan", "", "" ) ;
 my( @db_snetsta ) = dblookup( @db, "", "snetsta", "", "" ) ;
 
-@db = dbjoin( @db_site, @db_snetsta ) ;
+my( @db_joined ) = dbjoin( @db_sitechan, @db_snetsta ) ;
 
 # Allow subsets to handle offdates in the future like IRIS wants
 if( defined( $opt_t ) && $opt_t eq "deployment" ) {
     my( @db_deployment ) = dblookup( @db, "", "deployment", "", "" ) ;
-    @db = dbjoin( @db, @db_deployment ) ;
+    @db = dbjoin( @db_joined, @db_deployment ) ;
     @db = dbsubset( @db, "endtime > now() || endtime == NULL" ) ;
-    @db = dbsort( @db, "snet","sta" ) ;
-} else {
-    @db = dbsubset( @db, "offdate > now() || offdate == NULL" ) ;
-    @db = dbsort( @db, "sta" ) ;
 }
+@db = dbsubset( @db_joined, "offdate > now() || offdate == NULL" ) ;
+@db = dbsort( @db, "snet","sta" ) ;
 
 while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
 
@@ -106,6 +109,8 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
 
     if( $expr ne '' ) {
         @db_subset = dbprocess( @db, @{$expr} ) ;
+    } else {
+        @db_subset = @db ;
     }
 
     if( dbquery( @db_subset, "dbRECORD_COUNT" ) < 1 ) {
@@ -120,16 +125,16 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
         print( "Subsetting using modulus value of $modulus for: $key\n" ) ;
     }
 
-    my( @netstas ) ;
+    my( @netstachans ) ;
     for( $db_subset[3]=0; $db_subset[3] < dbquery( @db_subset, "dbRECORD_COUNT" ); $db_subset[3]++ ) {
-        my( $snet, $staname ) = dbgetv( @db_subset, "snet", "sta" ) ;
-        my( $snet_sta ) = $snet."_".$staname ;
+        my( $snet, $staname,$chan ) = dbgetv( @db_subset, "snet", "sta", "chan" ) ;
+        my( $snet_sta_chan ) = $snet."_".$staname."_".$chan ;
         if( defined $modulus && $modulus ne '' ) {
             if( $db_subset[3] % $modulus == 0 ) {
-                push @netstas, trim($snet_sta) ;
+                push @netstachans, trim($snet_sta_chan) ;
             }
         } else {
-            push @netstas, $snet_sta ;
+            push @netstachans, $snet_sta_chan ;
         }
     }
 
@@ -154,7 +159,6 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
     }
 
     my( $tw ) = $State{sources}->{$key}->{'tw'} ;
-    my( $chan ) = $State{sources}->{$key}->{'chan'} ;
     my( $amin ) = $State{sources}->{$key}->{'amin'} ;
     my( $amax ) = $State{sources}->{$key}->{'amax'} ;
     my( $width ) = $State{sources}->{$key}->{'width'} ;
@@ -164,20 +168,20 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
 
     my( @this_sources_tbl ) ;
 
-    foreach( @netstas ) {
+    foreach( @netstachans ) {
         if( exists $State{exceptions}->{$_} ) {
             my( $ex_amin ) = $State{exceptions}->{$_}->{'amin'} ;
             my( $ex_amax ) = $State{exceptions}->{$_}->{'amax'} ;
             my( $ex_width ) = $State{exceptions}->{$_}->{'width'} ;
             my( $ex_height ) = $State{exceptions}->{$_}->{'height'} ;
             my( $ex_filter ) = $State{exceptions}->{$_}->{'filter'} ;
-            my( $source_str ) = trim( $_."_".$chan." ".$orb." ".$tw." ".$ex_amin." ".$ex_amax." ".$ex_width." ".$ex_height." ".$ex_filter ) ;
+            my( $source_str ) = trim( $_." ".$orb." ".$tw." ".$ex_amin." ".$ex_amax." ".$ex_width." ".$ex_height." ".$ex_filter ) ;
             push @this_sources_tbl, $source_str ;
             undef $source_str ;
             undef $ex_amin ; undef $ex_amax ; undef $ex_width ; undef $ex_height ; undef $ex_filter ;
         } else {
             #net_sta_chan   inputorb   twin   amin amax   width height [filter]
-            my( $source_str ) = trim( $_."_".$chan." ".$orb." ".$tw." ".$amin." ".$amax." ".$width." ".$height." ".$filter ) ;
+            my( $source_str ) = trim( $_." ".$orb." ".$tw." ".$amin." ".$amax." ".$width." ".$height." ".$filter ) ;
             push @this_sources_tbl, $source_str ;
             undef $source_str ;
         }

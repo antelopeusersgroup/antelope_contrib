@@ -12,7 +12,7 @@ The Perl script orbmonrtd_pf_generator creates parameter files for
 orbmonrtd(1). This is useful for networks that have dynamic
 deployments, such as the USArray experiment. To monitor temporarily
 deployed stations requires orbmonrtd parameter files to be frequently
-updated as the dbmaster site offdate or deployment endtime table 
+updated as the dbmaster sitehan offdate or deployment endtime table 
 fields are updated. Executing this script outputs only those stations 
 you expect to be returning data (i.e. \'online\') to the orbmonrtd 
 parameter file structure, and therfore be displayed in orbmonrtd. This 
@@ -31,25 +31,26 @@ parameter files to be created, and an exceptions array.
 The sources array lists the name of the parameter file to be created,
 the time window (tw, in seconds), the amplitude min and max (amin and
 amax respectively), the width and height (in pixels), and a filter (if
-needed) for each individual trace from the Orb. The channel of interest
-for orbmonrtd is defined in the chan key\-value pair. An optional
+needed) for each individual trace from the Orb. An optional
 modulus operator can be defined if, for example, the user wishes to
 only see every n\'th channel trace from the Orb to be monitored. An
 optional subset table can be defined as a series of Datascope database
-operations to the default site and snetsta tables (or a deployment 
+operations to the default sitechan and snetsta tables (or a deployment 
 table if the -t argument is defined as deployment) if the user wishes 
-to re\-order the traces in orbmonrtd in a certain way, such as by 
-latitude, site ondate, network code, or deployment start time.
+to subset or re\-order the traces in orbmonrtd in a certain way, such 
+as by latitude (requires joining with the site table) ondate, network 
+code, channel code, or deployment start time.
 
 The exceptions array allows certain stations to over\-ride the
 definitions applied to the Orb trace by the sources array. The key for
-this array is the station network and station code concatenated (ie.
-snet_sta). The key\-value pairs are amin, amax, width, height and
-filter. These over\-rides are important for stations that have certain
-characteristics that make them unique in comparison to the rest of the
-deployed network. For example, the station might be deployed next to a
-busy highway, or in a windy coastal position, so it is useful to
-increase the amplitude of the trace to filter out background noise.
+this array is the station network, station code, and (if present)
+location code concatenated (ie. snet_sta_loc). The key\-value pairs 
+are amin, amax, width, height and filter. These over\-rides are important 
+for stations that have certain characteristics that make them unique in 
+comparison to the rest of the deployed network. For example, the station 
+might be deployed next to a busy highway, or in a windy coastal position, 
+so it is useful to increase the amplitude of the trace to filter out 
+background noise.
 .SH OPTIONS
 .IP "-d pfdirectory"
 Define the path to the directory that you wish the dynamically created
@@ -72,12 +73,12 @@ Verbose output
 #
 # Define a local dump command
 #
-dump_cmd    "/export/home/rt/rtsystems/vncweb/bin/getgif \\$window \\$period \\$name"
+dump_cmd    getgif \$window \$period \$name
 
 #
 # The Orb of interest
 #
-orb         anfexport-mgmt:usarrayTA
+orb         :usarray
 
 #
 # The parameter files to be created
@@ -85,64 +86,81 @@ orb         anfexport-mgmt:usarrayTA
 sources &Arr{
     anf1hrBHZ &Arr{
         tw      3600
-        amin    -2500.000
-        amax    2500.000
-        width
+        amin 	\-2500.000
+        amax 	2500.000
+        width 	
         height
         filter
-        chan    BHZ 
-        modulus 4
+        modulus 
         subset  &Tbl{
-            dbjoin site
             dbsubset snet =~ /TA/
-            dbsort -r lat 
-        }   
-    }   
+            dbsubset chan =~ /BHZ.*/
+            dbjoin site
+            dbsort \-r lat
+        }
+    }
     anf2hrBHZ &Arr{
         tw      7200
-        amin    -2500.000
+        amin    \-2500.000
         amax    2500.000
         width
         height
         filter
-        chan    BHZ 
         modulus  8
         subset  &Tbl{
-            dbjoin site
             dbsubset snet =~ /TA/
-            dbsort -r lat 
-        }   
-    }   
-    anf24hrBHZ &Arr{
-        tw      86400
-        amin    -2500.000
+            dbsubset chan =~ /BHZ.*/
+            dbjoin site
+            dbsort \-r lat
+        }
+    }
+    TA2hrBHZ_AG &Arr{
+        tw      7200
+        amin    \-2500.000
         amax    2500.000
         width
         height
         filter
-        chan    BHZ 
-        modulus
+        modulus  
         subset  &Tbl{
-            dbjoin site
             dbsubset snet =~ /TA/
-            dbsort -r lat 
-        }   
-    }   
-    anf24hrLHZ &Arr{
-        tw      86400
-        amin    -2500.000
+            dbsubset chan =~ /BHZ.*/
+            dbsubset sta =~ /[A\-G].*/
+            dbsort sta
+        }
+    }
+    REG2hrBHZ &Arr{
+        tw      7200
+        amin    \-2500.000
         amax    2500.000
         width
         height
         filter
-        chan    LHZ 
-        modulus 2
+        modulus  
         subset  &Tbl{
-            dbjoin site
+            dbsubset snet !~ /TA/
+            dbsubset chan =~ /BHZ.*/
+            dbsubset offdate > now() || offdate == NULL
+            dbsort snet sta
+        }
+    }
+    TA24hrBHZ_X9 &Arr{
+        tw      86400
+        amin    \-2500.000
+        amax    2500.000
+        width
+        height
+        filter
+        modulus  
+        subset  &Tbl{
             dbsubset snet =~ /TA/
-            dbsort -r lat 
-        }   
-    }   
+            dbsubset chan =~ /BHZ.*/
+            dbsubset sta =~ /[X\-Z0\-9].*/
+            dbsubset offdate > now() || offdate == NULL
+            dbjoin site
+            dbsort \-r lat
+        }
+    }
 }
 
 #
@@ -151,7 +169,7 @@ sources &Arr{
 #
 exceptions &Arr{
     AZ_MONP2 &Arr{
-        amin    -5000.000
+        amin    \-5000.000
         amax    5000.000
         width
         height
@@ -160,7 +178,7 @@ exceptions &Arr{
 }
 
 #
-# Detections array - 1 to 1 mapping to orbmonrtd
+# Detections array \- 1 to 1 mapping to orbmonrtd
 #
 detections &Arr{
     BW_0.8_4_3.0_4    00ff00    0.05
@@ -185,7 +203,12 @@ arrivals &Arr{
     D3    8080ff
 }
 
-pf_revision_time 1199145710
+#
+# Filter setting \- 1 to 1 mapping to orbmonrtd
+#
+filter	
+
+pf_revision_time 1238630400
 .fi
 .SH EXAMPLE
 .nf
@@ -215,7 +238,7 @@ detections      &Arr{
     BW_0.8_4_3.0_4      00ff00    0.05
     BW_3.0_4_0_0        a0a0ff    0.0
 }
-dump    "/export/home/rt/rtsystems/vncweb/bin/getgif $window $period $name"
+dump    "/path/to/rtsystems/vncweb/bin/getgif $window $period $name"
 filter
 pf_revision_time        1208991095
 sources &Tbl{
@@ -274,13 +297,14 @@ sources &Tbl{
 orbmonrtd(1)
 .fi
 .SH "BUGS AND CAVEATS"
-Valid CSS3.0 schema site and snetsta tables are required for the dbmaster 
-database. The script will die without these present. If the deployment table
-is to be used, a valid CSS3.0 extension deployment table must exist.
+Valid CSS3.0 schema sitechan and snetsta tables are required for the dbmaster 
+database. The script will die without these present. If the site or deployment 
+table is to be used, a valid CSS3.0 extension deployment table must exist.
 .SH AUTHOR
 .nf
 Rob Newman
 University of California, San Diego
+<rlnewman@ucsd.edu>
 .fi
 # This is just an id line from rcs.
 .\" $Id$
