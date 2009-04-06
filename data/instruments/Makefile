@@ -1,5 +1,5 @@
 DATADIR=instruments
-DATA=calibrate.sensormodel
+DATA=calibrate.sensormodel 
 
 include $(ANTELOPEMAKE)
 
