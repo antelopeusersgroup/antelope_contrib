@@ -252,7 +252,7 @@ Dbvalue2PyObject( Dbvalue value, int type )
 	case dbREAL:
 	case dbTIME:
 		
-		obj = Py_BuildValue( "d", value.d );
+		obj = Py_BuildValue( "d", value.i );
 
 		break;
 
@@ -2393,7 +2393,6 @@ python_trsample( PyObject *self, PyObject *args ) {
 	int	irow;
 	int	isamp_row = 0;
 	int	isamp_total = 0;
-	Tbl	*s;
 	PyObject *obj;
 	PyObject *pair;
 
@@ -2410,11 +2409,15 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 	tr = trloadchan( db, t0, t1, sta, chan );
 
-	tr = dbsort( tr, s = strtbl( "time", 0 ), 0, 0 );
+	dbquery( tr, dbRECORD_COUNT, &nrows );
 
-	freetbl( s, 0 );
+	if( nrows <= 0 ) {
 
-	trsplice( tr, trTOLERANCE, 0, 0 );
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trsample: no data (no rows in trace object)\n" );
+
+		return NULL;
+	}
 
 	if( apply_calib ) {
 
@@ -2500,7 +2503,6 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	int	irow;
 	int	isamp_row = 0;
 	int	ireturn = 0;
-	Tbl	*s;
 	PyObject *obj;
 	PyObject *triple;
 
@@ -2517,11 +2519,15 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 
 	tr = trloadchan( db, t0, t1, sta, chan );
 
-	tr = dbsort( tr, s = strtbl( "time", 0 ), 0, 0 );
+	dbquery( tr, dbRECORD_COUNT, &nrows );
 
-	freetbl( s, 0 );
+	if( nrows <= 0 ) {
 
-	trsplice( tr, trTOLERANCE, 0, 0 );
+		PyErr_SetString( PyExc_RuntimeError, 
+			"trsamplebins: no data (no rows in trace object)\n" );
+
+		return NULL;
+	}
 
 	if( apply_calib ) {
 
@@ -2533,7 +2539,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	if( nrows <= 0 ) {
 
 		PyErr_SetString( PyExc_RuntimeError, 
-			"trsample: no data (no rows in trace object)\n" );
+			"trsamplebins: no data (no rows in trace object)\n" );
 
 		return NULL;
 	}
@@ -2550,7 +2556,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	if( nsamp_total <= 0 ) {
 
 		PyErr_SetString( PyExc_RuntimeError, 
-			"trsample: no data (no samples in trace object rows)\n" );
+			"trsamplebins: no data (no samples in trace object rows)\n" );
 
 		return NULL;
 	}
