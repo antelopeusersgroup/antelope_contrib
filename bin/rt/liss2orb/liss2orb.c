@@ -179,8 +179,8 @@ main (int argc, char **argv)
 	    if ( fd < 0 ) { 
 		if ( failures==0) {
 		    complain ( 1, "Can't open liss server %s", liss_server ) ;
-		    sleep ( 60 ) ;
 		}
+		snooze ( 60. ) ;
 		failures++ ;
 	    } else { 
 		if ( failures ) { 
