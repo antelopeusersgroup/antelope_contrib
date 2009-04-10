@@ -152,6 +152,12 @@ def str2epoch(astring):
     return _stock._str2epoch(astring)
 
 
+def epoch2str(epoch, fmt, tz = None):
+    """Convert an epoch time to a string"""
+
+    return _stock._epoch2str(epoch, fmt, tz)
+
+
 def now():
     """Return epoch time for local system clock"""
 
@@ -322,6 +328,16 @@ if __name__ == '__main__':
             e = str2epoch(s)
 
             self.assertEqual(e, 946735200)
+
+        def test_epoch2str(self):
+
+	    e = 946735200
+
+	    s = epoch2str(e, "%m/%d/%Y %H:%M")
+	    self.assertEqual(s, '01/01/2000 14:00')
+
+	    z = epoch2str(e, "%m/%d/%Y %H:%M %Z", "US/Alaska")
+	    self.assertEqual(z, '01/01/2000 05:00 AKST')
 
         def test_now(self):
 

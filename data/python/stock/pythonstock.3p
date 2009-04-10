@@ -173,6 +173,23 @@ e = str2epoch(s)
 .in
 .ft R
 
+.IP "\fBepoch2str\fP (epoch, fmt, tz = None)"
+Returns a time string corresponding to an epoch time, in format determined by epoch2str(3)
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+e = 946735200
+
+f = '%m/%d/%Y %H:%M'
+
+s = epoch2str(e, f)
+
+.fi
+.in
+.ft R
+
 .IP "\fBelog_notify\fP (msg)"
 Put a notification message on the Antelope error log
 .ft CW
