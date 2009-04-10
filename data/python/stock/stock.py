@@ -158,6 +158,18 @@ def epoch2str(epoch, fmt, tz = None):
     return _stock._epoch2str(epoch, fmt, tz)
 
 
+def epoch(yearday):
+    """Convert a yearday value to an epoch time"""
+
+    return _stock._epoch(yearday)
+
+
+def yearday(epoch):
+    """Convert an epoch time to a yearday value """
+
+    return _stock._yearday(epoch)
+
+
 def now():
     """Return epoch time for local system clock"""
 
@@ -338,6 +350,20 @@ if __name__ == '__main__':
 
 	    z = epoch2str(e, "%m/%d/%Y %H:%M %Z", "US/Alaska")
 	    self.assertEqual(z, '01/01/2000 05:00 AKST')
+
+        def test_epoch(self):
+
+            yd = 2000001
+            e = epoch(yd)
+
+            self.assertEqual(e, 946684800)
+
+        def test_yearday(self):
+
+            e = 946684800
+            yd = yearday(e)
+
+            self.assertEqual(yd, 2000001)
 
         def test_now(self):
 

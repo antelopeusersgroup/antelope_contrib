@@ -83,6 +83,8 @@ static PyObject *python_strlocalydtime( PyObject *self, PyObject *args );
 static PyObject *python_strlocaldate( PyObject *self, PyObject *args );
 static PyObject *python_str2epoch( PyObject *self, PyObject *args );
 static PyObject *python_epoch2str( PyObject *self, PyObject *args );
+static PyObject *python_epoch( PyObject *self, PyObject *args );
+static PyObject *python_yearday( PyObject *self, PyObject *args );
 static PyObject *python_now( PyObject *self, PyObject *args );
 static PyObject *pf2PyObject( Pf *pfvalue );
 static PyObject *string2PyObject( char *s );
@@ -118,6 +120,8 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_strtime",   	python_strtime,   	METH_VARARGS, "Compute a string representation of epoch time" },
 	{ "_str2epoch",   	python_str2epoch,   	METH_VARARGS, "Compute an epoch time from a string" },
 	{ "_epoch2str",   	python_epoch2str,   	METH_VARARGS, "Convert an epoch time to a string" },
+	{ "_epoch",	   	python_epoch,   	METH_VARARGS, "Convert a year-day value to an epoch time" },
+	{ "_yearday",   	python_yearday,   	METH_VARARGS, "Convert epoch time to a year-day value" },
 	{ "_now",   		python_now,   		METH_VARARGS, "Return epoch time for local system clock" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -1174,6 +1178,48 @@ python_epoch2str( PyObject *self, PyObject *args ) {
 
 		free( s );
 	}
+
+	return obj;
+}
+
+static PyObject *
+python_epoch( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _epoch( yearday )\n";
+	PyObject *obj;
+	double	e;
+	int	yd;
+
+	if( ! PyArg_ParseTuple( args, "i", &yd ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	e = epoch( yd );
+
+	obj = Py_BuildValue( "d", e );
+
+	return obj;
+}
+
+static PyObject *
+python_yearday( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _yearday( epoch )\n";
+	PyObject *obj;
+	double	e;
+	int	yd;
+
+	if( ! PyArg_ParseTuple( args, "d", &e ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	yd = yearday( e );
+
+	obj = Py_BuildValue( "i", yd );
 
 	return obj;
 }

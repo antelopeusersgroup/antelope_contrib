@@ -190,6 +190,36 @@ s = epoch2str(e, f)
 .in
 .ft R
 
+.IP "\fBepoch\fP (yearday)"
+Returns an epoch time corresponding to a yearday value
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+yd = 2001001
+
+e = epoch(yd)
+
+.fi
+.in
+.ft R
+
+.IP "\fByearday\fP (epoch)"
+Returns a yearday value corresponding to an epoch time
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+e = 946684800
+
+yd = yearday(e)
+
+.fi
+.in
+.ft R
+
 .IP "\fBelog_notify\fP (msg)"
 Put a notification message on the Antelope error log
 .ft CW
