@@ -1,20 +1,33 @@
 use lib "$ENV{ANTELOPE}/data/perl" ;
 
 #
-# report datalogger events reported in dlevent table
+# report datalogger events recorded in dlevent table
 #
 
 require "getopts.pl" ;
 use archive ;
+use strict; 
 #use diagnostics; 
- 
-our ($opt_d, $opt_C, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v, $opt_V, $opt_S, $opt_E) ;
 
-if ( ! &Getopts('d:m:n:s:C:vVSE') || @ARGV > 1 ) {
+our ($opt_d, $opt_C, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v, $opt_V, $opt_S, $opt_E, $opt_u) ;
+our (@dlevent, $ndlev, $last_dlname, $last_dlevtype, $dlev_cnt, $nevents, $host, $subject);
+our ($program, $ref, $Pf, %url, $url_string, $fsta, $snet) ;
+
+
+if ( ! &Getopts('p:d:m:n:s:C:vVSEu') || @ARGV > 1 ) {
     &usage;
 }
 
 use Datascope ;
+
+$program = $0; 
+$program =~ s".*/"";
+$Pf = $program;
+
+if ($opt_p) {
+	$Pf = $opt_p ;
+}
+
 
 my $mailtmp = "/tmp/#dlevent-mail.$$" ; 
 &savemail($mailtmp) if $opt_m ;
@@ -67,7 +80,7 @@ if ($opt_n =~ /\d/) {
     @dlevent = dbsort ( @dlevent, "time") ;
     $ndlev = dbquery(@dlevent, "dbRECORD_COUNT" ) ; 
     if ($ndlev == 0) {
-	printf "No records after subset: $sub.  EXITING.\n";
+	printf "No records after subset: $subset.  EXITING.\n";
 	exit(1);
     }
     $tfirst  = dbex_eval(@dlevent,"min(time)");
@@ -122,21 +135,28 @@ sub summarize_dlevents {
     @dlevent = dbsort (@dlevent, "dlevtype", "time", "dlname")   if $opt_E ;
     @dlevent = dbsort (@dlevent, "dlevtype", "time", "dlname")   if $opt_C ;
 
-    $dlev_cnt = 0 ;
     $last_dlname = "none" ;
     $last_dlevtype = "none" ;
+
+    # get pf information
+    $ref	= pfget($Pf, "url") if $opt_u ;
+    %url	= %$ref ;
 
     for ( @dlevent[3] = 0 ; @dlevent[3] < $ndlev ; $dlevent[3]++ ) {
 	  ($dlname, $dlevtime, $dlevtype, $dlcomment) = 
 		dbgetv( @dlevent, qw(dlname time dlevtype dlcomment) ) ;
 	
 	if ($dlname !~ /$last_dlname/ && $opt_S ) {
-	    printf "\n $dlname \n" ; 
+	   printf ("\t  PLOTS:  %s \n", &get_url_string($last_dlname,$last_dlevtype) ) if ($opt_u && $dlev_cnt != 0 && exists($url{$last_dlevtype}) ) ; 
+	   printf "\n $dlname \n" ; 
+	   $dlev_cnt = 0 ;
 	} 
 
 	if ($dlevtype !~ /$last_dlevtype/ && $opt_E) {
-	    printf "\n Summarizing $dlevtype dlevents \n" ; 
+	   printf "\n Summarizing $dlevtype dlevents \n" ; 
+	   $dlev_cnt = 0 ;
 	} 
+
 
 	if ($opt_E) {
 	    if ($dlevtype =~/service|sensor_cal/ ) {
@@ -149,6 +169,7 @@ sub summarize_dlevents {
 		printf (" %-s %s %s \n", $dlevtype, epoch2str($dlevtime, "%D (%j) %H:%M:%S:%s" ) , $dlcomment );
 	    } else {
 		printf ("\t  %-s %s  \n", $dlevtype, epoch2str($dlevtime, "%D (%j) %H:%M:%S:%s" ) );
+
 	    }
 	}	
 	
@@ -157,6 +178,7 @@ sub summarize_dlevents {
 	$dlev_cnt++;
     }
 
+    printf ("\t  PLOTS:  %s \n", &get_url_string($dlname,$dlevtype)     ) if ($opt_u && defined($url{$dlevtype}) ) ;
     return $ndlev ;
 }
 
@@ -176,5 +198,19 @@ sub usage {
     print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n ndays | all] [-s subset] [-C dlname] [-v] {-S | -E} db\n"  ; 
      exit(1);
 }
+
+sub get_url_string { 	# $url_string = &get_url_string ($dlname, $dlevtype) 
+   my ($dl, $evtype) = @_ ;
+   
+   ($snet,$fsta) = split /_/,$dl;
+
+   $url_string	= $url{$evtype} ;
+   $url_string	=~ s/%{sta}/$fsta/g;
+   $url_string	=~ s/%{net}/$snet/g;
+   $url_string	=~ s/%{dl}/$dl/g;
+
+   return ($url_string);
+}
+  
 
 

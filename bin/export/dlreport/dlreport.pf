@@ -1,0 +1,13 @@
+#
+# dlreport.pf
+#
+
+# the keys in the url table must match the dleventtype from logs2dlevent.pf
+
+
+url &Arr{
+# dlevtype	# url (can use net, sta, and dlname for substitution)
+massrecenter	http://anf.ucsd.edu/tools/webdlmon/webdlmon_plots.php?sta=%{sta}&var=m0
+reboot		http://anf.ucsd.edu/tools/webdlmon/webdlmon_plots.php?sta=%{sta}&var=nr24
+}
+

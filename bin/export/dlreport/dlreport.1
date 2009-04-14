@@ -5,7 +5,7 @@ dlreport \- summarize dlevents in a mailable report
 
 .SH SYNOPSIS
 .nf
-dlreport [-d 'time'] [-n ndays] [-v] [-m email1,email2,...] [-s subset] [-C dlsta] {-S | -E} db
+dlreport [-d 'time'] [-n ndays] [-v] [-m email1,email2,...] [-u] [-p pf] [-s subset] [-C dlsta] {-S | -E} db
 .fi
 
 .SH DESCRIPTION
@@ -31,6 +31,10 @@ specified here rather than to standard out.
 A subset expression that must be valid for the dlevent table.
 .IP "-C dlname"
 Write a closure report for the given dlname.         
+.IP "-p pf "
+Parameter file containing URL mappings.  The default pf file is \fIdlreport.pf\fP.
+.IP "-u"
+Include URL in output.  The URL is defined in the parameter file.  Only works with -S option.
 .IP "-v"
 Verbose output.
 .IP "-S"
@@ -70,8 +74,19 @@ dlreport -n 365 -v -s "dlname=='TA_G03A'&&dlevtype=='massrecenter'" -S usarray_s
 .fi
 .ft R
 .in
-.LP
 
+.LP
+Report all mass recenters that occurred in the past 3 days.  Include
+links to state of health plots.
+.in 2c
+.ft CW
+.nf
+dlreport -n 3 -s "dlevtype=='massrecenter'" -u -m "jeakins@ucsd.edu" -S usarray
+.fi
+.ft R
+.in
+
+.LP
 Report all dlevents at station TA_S06C. 
 .in 2c
 .ft CW
@@ -99,6 +114,8 @@ dlreport -n all -v -C TA_P06A -E dbops/usarray
 .ft R
 .in
 
+.LP
+
 
 .SH "SEE ALSO"
 .nf
@@ -108,7 +125,7 @@ logs2dlevent(1)
 .SH "BUGS AND CAVEATS"
 None yet, but that is rather optimistic. 
 
-No -s subsets other than those based on dlname have been tested.
+No -s subsets other than those based on dlname and dlevtype have been tested.
 
 .SH AUTHOR
 .nf
