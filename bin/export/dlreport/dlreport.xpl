@@ -6,7 +6,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 require "getopts.pl" ;
 use archive ;
-use strict; 
+#use strict; 
 #use diagnostics; 
 
 our ($opt_d, $opt_C, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v, $opt_V, $opt_S, $opt_E, $opt_u) ;
@@ -195,7 +195,7 @@ sub trim {
 
 
 sub usage {
-    print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n ndays | all] [-s subset] [-C dlname] [-v] {-S | -E} db\n"  ; 
+    print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n ndays | all] [-s subset] [-C dlname] [-p pf] [-u] [-v] {-S | -E} db\n"  ; 
      exit(1);
 }
 
