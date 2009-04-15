@@ -1,8 +1,3 @@
-: # use perl
-eval 'exec $ANTELOPE/bin/perl -S $0 "$@"'
-if 0;
-
-use lib "$ENV{ANTELOPE}/data/perl" ;
 use strict ;
 use warnings ;
 
@@ -10,7 +5,7 @@ use warnings ;
 # $Id$
 #
 # Dynamically create parameter files for orbmonrtd
-# from dbmaster deployment table
+# from dbmaster database tables
 #
 # @author     Rob Newman <rlnewman@ucsd.edu>
 # @copyright  University of California, San Diego
@@ -19,7 +14,6 @@ use warnings ;
 
 require "getopts.pl" ;
 use Datascope ;
-use IO ;
 
 my( $Program ) = `basename $0` ;
 chomp( $Program ) ;
