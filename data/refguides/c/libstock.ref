@@ -313,6 +313,9 @@ long idget ( Stbl *map, long key )
 Bitvector *bitnew ( )
     create a new bit vector
 
+private Bitvector *bitfile(char *filename, long nbits)
+    creates a file representing a bit vector
+
 void bitfree ( Bitvector *b )
     free a bit vector
 
@@ -557,6 +560,9 @@ unsigned long filesize(char *path)
 unsigned int filemode(char *path)
      return file mode for file path
 
+unsigned long filetime(char *path)
+     return last modification time for path
+
 int is_present(char *path)
      return 1 if path exists, 0 otherwise
 
@@ -782,6 +788,9 @@ int read_hexdump ( FILE *file, char *mem, int n )
 void asciidump ( FILE *file, char *mem, int n )
     write ascii dump of n bytes of buffer mem, with escaped non-printing chars
 
+char *asciistring ( char *memory, int n )
+    return string containing ascii dump of nbytes of buffer mem 
+
 int read_asciidump ( FILE *file, char *mem, int n )
     read at most n bytes of a ascii dump from file into mem
 
@@ -874,7 +883,7 @@ int ucanada ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
     uncompress "Canadian Compression"  buffer cmp of ncmp bytes, 
     result is *nuc integers in buffer *uc of dynamic size *ucsz.
 
-int cm6 ( int *uc, int nuc, char **cmp, long *ncmp, long *cmpsz )
+int cm6 ( int *uc, long nuc, char **cmp, long *ncmp, long *cmpsz )
     compress nuc integers from uc to plain ascii "GSE AutoDRM CM6" format,
     result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
 
@@ -893,11 +902,20 @@ int uucsd ( int *uc, char **cmp, int ncmp, int nuc )
     uncompress nuc integers from "UCSD RefTek data logger" format buffer cmp of ncmp bytes, 
     advancing *cmp to the next location after uncompressed data
 
+void bt_crc16 ( short *crc, uchar *buf, int size );
+    accumulate 16 bit crc over size chars in buf in *crc
+
+void bt_crc32 ( int *crc, uchar *buf, int size );
+    accumulate 32 bit crc over size chars in buf in *crc
+
 FILE *gz_cat ( char *name)
     return FILE opened for reading on the output of "zcat name"
 
-FILE *gz_open ( char *name)
+FILE *gz_open (char *name)
     return FILE opened for reading on the uncompressed version of name
+
+int gz_openfd (char *name)
+    return file descriptor opened for reading on the uncompressed version of name
 
 private FILE *zopen ( char *filename, char *permissions )
     fopen a compressed or uncompressed file
@@ -974,6 +992,12 @@ int my_hostname(char *name)
 int my_ip(char *hostname, char *ipc, int *ip)
     return ip address, as integer and in dot notation
 
+private int my_ips (int *ips) 
+    returns up to MAX_IPS ip addresses in ips; count is return code
+
+private int my_ipaddress ()
+    returns a single ip address for the current machine
+
 int my_os(char *name)
     return operating system (Solaris, Linux, ...)
 
@@ -1005,6 +1029,9 @@ int pidinfo(int pid, Pidstat *process)
 void syscpu(int *ncpu, CpuUsage **cpu)
     return user, nice, system and idle time for each cpu
 
+int sysncpu ()
+    returns number of processors
+
 void sysloadavg(double *avg, int *nproc)
     return 1 minute, 5 minute and 15 minute load averages
 
@@ -1019,6 +1046,22 @@ int sysproc(Tbl **procsp)
 int sysmounted(Tbl **sysmnt)
     return list of mounted filesystems, with mount point, filesystem type, 
     and remote host and filesystem if mounted remotely.
+
+private void *std_dlopen (const char *lib)
+    dynamically load a dynamic library lib from $ANTELOPE/lib
+
+private int std_getpwnam ( char *user, struct passwd *pwdp )
+    thread safe version, fills pwd with zeros when it fails
+
+private int std_set_timer (void (*alarm_handler)(void), double how_long) 
+    sets a timer which calls alarm_handler when it expires.
+
+private int std_statvfs(const char *path, Std_statvfs *buf)
+    SunOS statvfs/Linux-Darwin statfs substitute
+
+long sysboottime()
+     returns estimate of last time the system was booted 
+
 
 <subsection Environment>
 <cdeclarations>
@@ -1104,6 +1147,8 @@ int bnsput ( Bns *bns, void *data, int t, long n )
 
 int bnsflush ( Bns *bns )
     write all data currently in bns buffer
+
+int bnssnoop (Bns *bns, char *filename)
 
 void bnsmark ( Bns *bns )
     save the current read point in the input buffer; keep all
@@ -1200,10 +1245,10 @@ private int clr_fl ( int fd, int flags )
 private int set_fl ( int fd, int flags )
     set file status flags
 
-void fill_random ( char *buffer, int nbytes, int *position )
+void fill_random ( uchar *buffer, int nbytes, int *position )
     fill a buffer with random values
 
-int check_random ( char *buffer, int nbytes )
+int check_random ( uchar *buffer, int nbytes )
     compare a buffer previously filled with fill_random
     with the values expected.
 

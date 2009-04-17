@@ -50,11 +50,11 @@ int orbgetstash ( int orb, char *srcname, double *time, char **packet, int *nbyt
 int orbreap ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
     read next packet from orb, returning standard packet information
 
-int orbreap_nd ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
+deprecated int orbreap_nd ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
     read next packet from orb, returning standard packet information, or
     ORB_INCOMPLETE if no packet is available
 
-int orbreap_timeout ( int orb, int sec, int *id, char *nm, double *t, char **p, int *n, int *sz )
+int orbreap_timeout ( int orb, double sec, int *id, char *nm, double *t, char **p, int *n, int *sz )
     read next packet from orb, returning standard packet information, or
     ORB_INCOMPLETE if no packet is available after sec seconds
 

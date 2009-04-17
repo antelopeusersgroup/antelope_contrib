@@ -107,6 +107,9 @@ Dbptr dbjoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, int outer, Tbl **
     Setting outer causes every row in db1 to appear in 
     output view, joined to null record for db2 if necessary.
 
+int dbfind_join_keys (Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2)
+    returns keys for join between db1 and db2
+
 Dbptr dbnojoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, char *view_name )
     return view of rows from view db1 which do not match row in view db2.
 
