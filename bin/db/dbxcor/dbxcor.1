@@ -52,7 +52,7 @@ wfprocess, and evlink) used to store outputs special to this program.
 .LP
 Command line arguments are:
 .IP db
-\fIdb\fR is the working database unless dbout is defined.
+\fIdb\fP is the working database unless dbout is defined.
 That is, normally this program reads all it's information from db
 and updates and/or appends to existing tables in this database.
 This parameter always defines the database from which waveforms are to be extracted.
@@ -397,7 +397,7 @@ trace.
 .SH MANUAL PICKING FEATURES
 .LP
 Two different manual pick correction methods are available.  Both are accessible
-from buttons on the bottom row of the GUI.  The \fIManual Picking\fR button is 
+from buttons on the bottom row of the GUI.  The \fIManual Picking\fP button is 
 a simple picker.  Point at a trace, click MB2, and the seismogram will be shifted to 
 make that point to zero in the arrival time reference frame.  Note this is only 
 the same as picking the arrival time if the rest of the data are aligned relative
@@ -423,7 +423,7 @@ maximum finder.  It simply uses the time defined by your pick.).
 This program expects waveforms assembled in different ways depending
 on the setting of the "processing_mode" parameter (see below).  
 .LP
-When processing_mode is \fIContinuousDB\fR the program assumes the
+When processing_mode is \fIContinuousDB\fP the program assumes the
 database contains a wfdisc table that will be treated as continuous
 data AND that the processing will be event-based.  
 Note that the data do not absolutely have to be continuous, but the
@@ -496,10 +496,10 @@ describe only the parameters the end user will need to be aware of.
 They are grouped in two sections:  (1) Must Change and (2) May
 Require Changes.
 .ce
-\fIMust Change\fR
+\fIMust Change\fP
 .fi
 .LP
-\fIinitial_time_stamp\fR is an estimate of the approximate start time
+\fIinitial_time_stamp\fP is an estimate of the approximate start time
 of the data set being analyzed.  Any time which doesn't yield an empty
 site table should work.  This is necessary because dbxcor uses a dynamic
 method to maintain it's station geometry table derived from ondate and
@@ -510,11 +510,11 @@ but on startup a rational time is required to initialize properly.
 The best choice is some time known to be inside the ondate to offdate
 range of the stations being used for this run.
 .LP
-\fInetwork_name\fR should be a unique word used to describe the full
+\fInetwork_name\fP should be a unique word used to describe the full
 array being processed.  Beam traces produced as output with the full array
 will be tagged with this name.
 .LP
-\fIphase_processing_parameters\fR is the tag or an Arr list of parameters 
+\fIphase_processing_parameters\fP is the tag or an Arr list of parameters 
 for each phase to be processed. This will be clearer with an example:
 .nf
 phase_processing_parameters     &Arr{
@@ -549,11 +549,11 @@ phase_processing_parameters     &Arr{
 .LP
 This example defines how the program should handle two phases:  P and PP. 
 Note that each phase defines values for the same parameter names.  
-\fIanalysis_sort_order\fR defines how the data will be sorted when
+\fIanalysis_sort_order\fP defines how the data will be sorted when
 processing is completed after the Analyze button is pushed.  
 stack_weight is recommended, but alternatives are coherence, 
 correlation_peak, amplitude, or moveout.  
-\fIarrival_channel\fR is a channel code that will be used to 
+\fIarrival_channel\fP is a channel code that will be used to 
 tag the entry in arrival.  Note there is a fundamental problem 
 here that is handled in a way that is not general.  The method
 used here will only work with SEED channel codes or Antelope
@@ -563,35 +563,35 @@ defined by this parameter in position 3 of the the channel string.
 This is far from ideal, but works for most data.  If this method does
 not work for your data, you will need to run some kind of edit script
 on the output arrival table.  A closely related parameter
-is \fIcomponent_for_analysis\fR.  As the name implies this is
+is \fIcomponent_for_analysis\fP.  As the name implies this is
 the component extracted from the data to use for the processing. 
 Valid values are: Z,N,E,L,R, or T.  Z, N, and E are cardinal directions
 while R, T, and L are ray coordinate directions of radial, transverse,
 and longitudinal.  Note that R, T, and L are produced using the
 free surface transformation of Kennett (1991).  
-\fIbeam_window_fraction, robust_window_fraction, regular_gather_twin_start\fR,
-and \fIregular_window_twin_end\fR are closely linked.  The regular gather window
+\fIbeam_window_fraction, robust_window_fraction, regular_gather_twin_start\fP,
+and \fIregular_window_twin_end\fP are closely linked.  The regular gather window
 parameters define the range of data that will be displayed on the GUI in
 the arrival time reference frame (i.e. 0 for each trace is the predicted
 arrival time of the requested phase).  This time window is multiplied by
-\fIbeam_window_fraction\fR and \fIrobust_window_fraction\fR to define 
+\fIbeam_window_fraction\fP and \fIrobust_window_fraction\fP to define 
 initial values for the beam and robust windows.  
-\fItpad\fR and \fIdefault_filter\fR should be considered together are are
-used in the same way as tpad parameters in dbpick(1).  That is, \fItpad\fR
+\fItpad\fP and \fIdefault_filter\fP should be considered together are are
+used in the same way as tpad parameters in dbpick(1).  That is, \fItpad\fP
 is a time padding added to the beginning and end of the regular gather window
 to allow for edge transients for the filter.
-Finally, \fIphase_for_analysis\fR should normally match the key for this
+Finally, \fIphase_for_analysis\fP should normally match the key for this
 block of parameters.  It is required because of the laziness of the author
 as it simplifies the process of parsing this already complicated pf file.
 .LP
-\fIprocessing_mode\fR should be one of three options:  (1) EventGathers,
+\fIprocessing_mode\fP should be one of three options:  (1) EventGathers,
 (2) GenericGathers, or (3) ContinuousData (default and case used if
 you make a typo in the first 2 option names).  If anything but the 
 default (ContinuousData) case is set, a second parameter is required
-tagged with the keyword \fIdefault_phase\fR which must name a phase defined
+tagged with the keyword \fIdefault_phase\fP which must name a phase defined
 by the phase definitions described above.  This defines the phase
 that will be used in processing in these modes.  The setting of 
-\fIprocessing_mode\fR is a primary control on the kinds of data
+\fIprocessing_mode\fP is a primary control on the kinds of data
 the program expects.  
 When running in ContinuousData mode (the default) data are extracted 
 using a time window with the window start and end times driven by 
@@ -605,7 +605,7 @@ segmented and these modes require the segments define blocks of data
 long enough that they can be subsequently windowed into the 
 range defined by the processing window parameters.
 Both of these modes use the a secondary parameter tagged
-\fIdbprocess_commands\fR that is a Tbl passed to dbprocess to 
+\fIdbprocess_commands\fP that is a Tbl passed to dbprocess to 
 build the working view used to define the gather.  The default
 parameter file for this program gives forms for this Tbl that
 are appropriate for EventGather and GenericGather forms.
@@ -621,19 +621,19 @@ station and some method for linking events with common waveforms.
 Current experimental mode uses a cluster table as used by 
 pmelgrid.
 .LP
-\fIresample_definitions\fR and \fItarget_sample_interval\fR are inseparably 
-linked.  As the name implies \fItarget_sample_interval\fR is the sample
+\fIresample_definitions\fP and \fItarget_sample_interval\fP are inseparably 
+linked.  As the name implies \fItarget_sample_interval\fP is the sample
 interval (in seconds) to which all the data will be resampled.  
-The contents of the \fIreasample_definitions\fR Arr block describe the
+The contents of the \fIreasample_definitions\fP Arr block describe the
 recipes used to resample different sample rates.  That block is
 also very complicated, but is described in detail in dbresample (1).
 For most cases these parameters are set once and require no further
 changes unless new data with a different sample rate are introduced.
 .ce
-\fIMay Require Changes\fR
+\fIMay Require Changes\fP
 .fi
 .LP
-\fIAutoscaleInitialPlot\fR controls initial plot scaling.  By default 
+\fIAutoscaleInitialPlot\fP controls initial plot scaling.  By default 
 data are all displayed initially at true amplitude.  If this parameter is set
 true, each trace in the display will be scaled to have an equal peak amplitude.
 This is most useful when data are contaminated by several bad traces with 
@@ -641,7 +641,7 @@ large spikes or uncompensated offsets.  These can render a signal of interest
 invisible without extensive editing. Normally it should be false unless 
 the data quality is very poor.
 .LP
-As the name implies \fIRequireThreeComponents\fR is a boolean that tells
+As the name implies \fIRequireThreeComponents\fP is a boolean that tells
 the program if it should be dogmatic about requiring three component data.
 When true the program will automatically drop any data not having three 
 components.  This parameter should always be true if you choose to 
@@ -649,7 +649,7 @@ process channels R, T, or L (ray coordinates) since these make no
 sense otherwise.  The only time this parameter would normally be set is
 in processing P wave phases only and you specify using channel Z.
 .LP
-\fIStationChannelMap\fR is a complicated Arr used to resolve the 
+\fIStationChannelMap\fP is a complicated Arr used to resolve the 
 ambiguities of what channel to use for stations with multiple loc 
 codes or high gain and low gain channels.  The dbxcor program uses a 
 general solution to this problem implemented through the StationChannelMap
@@ -713,18 +713,18 @@ with the station name as the tag.  In a worst case you might use a different ent
 for each station, but this should not normally be necessary as almost all experiments
 or networks use some standard channel naming conventions. 
 .LP
-\fIbeam_arrival_error_marker_color\fR and \fIbeam_arrival_pick_marker_color\fR
+\fIbeam_arrival_error_marker_color\fP and \fIbeam_arrival_pick_marker_color\fP
 can be used to changed the default colors for the lines marking the pick time
 for the beam trace and the interval for the beam arrival time error respectively.
 .LP
-\fIbeam_dfile\fR and \fIbeam_directory\R control the file name and directory 
+\fIbeam_dfile\fP and \fIbeam_directory\fP control the file name and directory 
 in which beam traces are written.  Beam data is written as raw binary doubles
 in this directory/file location.  Each new beam is simply appended. 
 .LP
-\fIcoherence_cutoff\fR,
-\fIcorrelation_peak_cutoff\fR, 
-\fIstack_weight_cutoff\fR, and
-\fItime_lag_cutoff\fR are all automatic cutoff on these four computed attributes.
+\fIcoherence_cutoff\fP,
+\fIcorrelation_peak_cutoff\fP, 
+\fIstack_weight_cutoff\fP, and
+\fItime_lag_cutoff\fP are all automatic cutoff on these four computed attributes.
 (Note the first three can be plotted as attribute plots with the View menu.)
 The names imply what attribute is involved: coherence, peak of cross correlation,
 robust weight, and computed lag respectively.  In interactive use all four of 
@@ -735,7 +735,7 @@ or minus 4 s, which is a reasonable upper bound.  Increasing this value will
 increase compute time as it also sets the range for which the cross-correlation 
 functions are computed.
 .LP
-\fIdata_window_start\fR and \fIdata_window_end\fR define the time range around
+\fIdata_window_start\fP and \fIdata_window_end\fP define the time range around
 the theoretical time the program tries to read.  It should be larger than the
 range defined by regular_gather_start to regular_gather_end plus two times the
 tpad value.  If resampling is required it would also be advised to make this 
@@ -748,7 +748,7 @@ every time you read data if
 this window is much larger than necessary.  Note this, like the other time
 window parameters used in this program, have units of seconds. 
 .LP
-\fIfilters\fR is used to define filters you want to use in processing.
+\fIfilters\fP is used to define filters you want to use in processing.
 This parameter is a tag for a Tbl of arbitrary length.  Each line of
 the Tbl section linked to this tag defines one filter option.  
 The format is best understood by an example:
@@ -767,7 +767,7 @@ filter options radio box in the GUI).  The second token in each line
 must be a valid filter description as described in trfilter(3) or
 wffil(3).
 .ce
-\fIPlot Parameters\fR
+\fIPlot Parameters\fP
 .fi
 .LP
 There are three seismic plots made by this program: 
@@ -783,7 +783,7 @@ beam_window_parameters, and coherence_window_parameters.
 As the names imply these control the data display, beam, and
 cross-correlation windows respectively.
 .ce
-\fITemplates\fR
+\fITemplates\fP
 .fi
 .LP
 The stock parameter file is designed for teleseismic body wave processing.  The contrib
