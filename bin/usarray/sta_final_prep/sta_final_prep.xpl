@@ -374,7 +374,7 @@
 
  
 #
-#  evaluate data return
+#  clean up
 #
         
         $subject = "TA $sta baler data net, station, channel problem";
