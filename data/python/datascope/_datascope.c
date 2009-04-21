@@ -43,6 +43,7 @@
  */
 
 #include <stdio.h>
+#include <math.h>
 #include "Python.h"
 #include "db.h"
 #include "dbxml.h"
@@ -2498,8 +2499,9 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	int	apply_calib = 0;
 	int	binsize = 1;
 	int	nrows = 0;
-	int	nsamp_total = 0;
 	int	nsamp_row = 0;
+	int	nsamp_total = 0;
+	int	nbins_total = 0;
 	int	irow;
 	int	isamp_row = 0;
 	int	ireturn = 0;
@@ -2551,6 +2553,13 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 		dbgetv( tr, 0, "nsamp", &nsamp_row, 0 );
 
 		nsamp_total += nsamp_row;
+
+		nbins_total += (int) floor( (double) nsamp_row / (double) binsize );
+
+		if( nsamp_row % binsize != 0 ) {
+
+			nbins_total += 1;
+		}
 	}
 
 	if( nsamp_total <= 0 ) {
@@ -2561,7 +2570,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	obj = PyTuple_New( nsamp_total );
+	obj = PyTuple_New( nbins_total );
 
 	for( irow = 0; irow < nrows; irow++ ) {
 
