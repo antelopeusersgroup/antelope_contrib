@@ -178,19 +178,28 @@ deg2km(deg)
 
 <subsection Strings>
 <expression>
+strlen(str)
+    number of characters in str
+
 substr(str,x0,n)
+    return portion of string str from x0 to n    
+
+patsub(str,pattern,replacement)
+    replace str matching pattern with replacement 
 
 null("fieldname")
-
-strlen(sta)
+    return null value for a field
 
 <subsection External Files and Commands>
 <expression>
 concatpaths(dir,dfile)
+    join two path segments
 
 dirname(path)
+    return all but last component of path
 
 basename(path)
+    return last component of path
 
 ["wc" extfile()]
     execute a unix command, as in this example
@@ -198,6 +207,9 @@ basename(path)
 <function>
 extfile([ table ])
     generate the complete path for an external file
+
+is_present(filename)
+    return 1 if filename exists, 0 otherwise 
 
 <subsection Operators>
 <List>

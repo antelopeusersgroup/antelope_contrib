@@ -46,32 +46,30 @@ dbSCHEMA_FIELDS
     return a Tbl list of all the attributes in the schema
 dbLINK_FIELDS
     return a Tbl list of all id attributes in the schema
-dbTIMEDATE_NAME
-    name of attribute automatically filled with current time when record is changed
-dbLASTIDS
-    returns Arr array of lastid by table name, for tables with added records
 
-dbDATABASE_DESCRIPTION
-    short description for database
-dbDATABASE_DETAIL
-    short description for database
-dbDATABASE_NAME
-    database name
-dbDATABASE_FILENAME
-    return the name of database descriptor file
-dbDATABASE_IS_WRITABLE
-    return non-zero if database was opened with permission "r+"
 dbIDSERVER
     return the name of the idserver, or 0 if not used
 dbLOCKS
     returns value of DBLOCKS 
+dbLASTIDS
+    returns Arr array of lastid by table name, for tables with added records
 
-dbDATABASE_COUNT
-    count of databases open
 dbDBPATH
     return the path along which database tables may be found
-dbTABLE_COUNT
-    count of relations in database
+dbDATABASE_NAME
+    database name
+dbDATABASE_DESCRIPTION
+    short description for database
+dbDATABASE_DETAIL
+    short description for database
+dbDATABASE_FILENAME
+    return the name of database descriptor file
+dbDATABASE_FILES
+    return array of table filenames indexed by the table name
+dbDATABASE_IS_WRITABLE
+    return non-zero if database was opened with permission "r+"
+dbDATABASE_COUNT
+    count of databases open
 
 dbTABLE_NAME
     relation name
@@ -79,28 +77,27 @@ dbTABLE_DESCRIPTION
     short description for relation
 dbTABLE_DETAIL
     short description for relation
-dbTABLE_FILENAME
-    return complete path for file holding table
 dbTABLE_DIRNAME
     return the directory path for the table
+dbTABLE_FILENAME
+    return complete path for file holding table
 dbTABLE_PRESENT
     return non-zero if table has at least one record
 dbTABLE_SIZE
     return total size in bytes of a table
-dbRECORD_COUNT
-    count of records in table
-dbRECORD_SIZE
-    return size in bytes of a record in the table
 dbTABLE_FIELDS
     return a Tbl list of the fields in the table
-dbFIELD_COUNT
-    count of attributes in relation
 dbTABLE_IS_WRITABLE
     return non-zero if table is writeable
 dbTABLE_IS_ADDABLE
     return non-zero if locks and permissions allow adding records
 dbTABLE_IS_TRANSIENT
     return non-zero if table has no actual file
+dbTABLE_COUNT
+    count of relations in database
+dbTABLE_CREATION
+    returns a dbprocess like string whigh shows how the view was created
+    
 
 
 dbPRIMARY_KEY
@@ -109,9 +106,17 @@ dbALTERNATE_KEY
     return the alternate key for a table
 dbFOREIGN_KEYS
     return any foreign keys in the table
+dbTIMEDATE_NAME
+    name of attribute automatically filled with current time when record is changed
 dbUNIQUE_ID_NAME
     return name of id defined by the table, if any
 
+
+
+dbRECORD_COUNT
+    count of records in table
+dbRECORD_SIZE
+    return size in bytes of a record in the table
 
 dbTABLE_IS_VIEW
     returns non-zero if table is a view
@@ -133,6 +138,8 @@ dbFIELD_RANGE
     return the expression which defines the valid range of values for a field
 dbFIELD_FORMAT
     return printf format string used to save attibute value into database
+dbFORMAT
+    returns the preferred print format for the specified field 
 dbFIELD_SIZE
     return size in bytes of an attribute
 dbFIELD_TYPE
@@ -153,4 +160,7 @@ dbFIELD_INDEX
     return the offset in bytes of a field into a record
 dbFIELD_TABLES
     return a Tbl list of tables which contain the field
+dbFIELD_COUNT
+    count of attributes in relation
+
 

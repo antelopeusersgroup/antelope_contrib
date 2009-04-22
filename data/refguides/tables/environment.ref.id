@@ -69,6 +69,9 @@ GRX_FONTPATH
 ORB_IP_ADDRESS
   cause orb client connections to bind to the specified ip address
 
+ORB_MAX_DATA_BYTES
+  override default limit of 4,000,000 byes on orb packets
+
 PFPATH
   overrides the default path to parameter files: "$(ANTELOPE)/data/pf:."
 
@@ -86,4 +89,13 @@ TTMODEL
 
 TAUP_PATH
 TAUP_TABLE
-  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel time tables and the default tau-p model iasp91
+  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel time tables and the default tau-p model iasp91.  Deprecated in favor of TTMETHOD and TTMODEL.
+
+VFONTLIB
+   override default hershey font file directory used by vogle graphics library
+
+ZONEINFO
+   override default directory for timezone files (default depends on platform)
+
+LD_LIBRARY_PATH
+   NEVER set this shell variable.  Leads to unpredictable failures and mysterious results.
