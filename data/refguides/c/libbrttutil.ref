@@ -68,6 +68,29 @@ int pmtmanagedfifo_pop (Pmtmanagedfifo *mtf, char *consumer_name, Hook **data, u
 int pmtmanagedfifo_display (char *pre, Pmtmanagedfifo *mtf)
     display name of the mtf managed POSIX MT-safe FIFO queue and all of its consumer names using elog_notify and prepend pre onto each line of output
 
+<subsection MT-Safe Computational Threading>
+<cdeclarations>
+Pmtcomp *pmtcomp_create ()
+    create a  MT-safe computational thread object
+
+long pmtcomp_destroy (Pmtcomp *mtc)
+    destroy the mtc MT-safe computational thread object by killing and joining any running threads and freeing all resources
+
+long pmtcomp_addthread (Pmtcomp *mtc, long (*comp_sub) (long ioffset, long number, void *user_data), long ioffset, long number, void *user_data)
+    add a new computational thread to the mtc MT-safe computational thread object with comp_sub callback proceedure for doing the computations and with ioffset, number, user_data arguments for the callback proceedure
+
+long pmtcomp_setthread (Pmtcomp *mtc, long index, long (*comp_sub) (long ioffset, long number, void *user_data), long ioffset, long number, void *user_data)
+    reset computational thread parameters for the mtc MT-safe computational thread object for thread index with comp_sub callback proceedure for doing the computations and with ioffset, number, user_data arguments for the callback proceedure
+
+long pmtcomp_deletethread (Pmtcomp *mtc, long index)
+    delete the computational thread index for the mtc MT-safe computational thread object by killing and joining the thread and freeing all thread resources
+
+long pmtcomp_nthreads (Pmtcomp *mtc)
+    return the number of computational thread associated with the mtc MT-safe computational thread object
+
+long pmtcomp_processthreads (Pmtcomp *mtc)
+    make one processing pass through the computational threads for the mtc MT-safe computational thread object
+
 <subsection Data Grid Utility>
 <cdeclarations>
 BUGrid *bugrid_create (char *grid_type, long nxgrid, float *xgrid_coords, char *xgrid_type, char *xgrid_units, long nygrid, float *ygrid_coords, char *ygrid_type, char *ygrid_units, char *data_type, char *data_units, char *tag, char *handle)
