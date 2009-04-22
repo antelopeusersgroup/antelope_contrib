@@ -7,6 +7,7 @@ DATA= \
 	perlScg.ref \
 	perlHistory.ref \
 	perlVector.ref \
+	perlGrid.ref \
 	perltkBplot.ref \
 	php.ref \
 	scripting.ref \
