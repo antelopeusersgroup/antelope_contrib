@@ -1,7 +1,7 @@
 <subsection Simple Averaging Filters>
 <List>
 
-AVE twin[toffset]	
+AVE twin [toffset [min_percent_good]]	
     Boxcar average waveform
 ABS	
     Compute waveform absolute value
@@ -9,4 +9,6 @@ SQ
     Compute waveform square value
 SQRT	
     Compute waveform square root value
+AGC twin toffset agcamp [min_percent_good]]	
+    Automatic gain control waveform
 </List>
