@@ -739,6 +739,17 @@ orbevproc [options] orbwf orbev dbname
 -dbwf dbwf	archive waveform database
 </options>
 
+orbwfproc [options] dbmaster [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
+    generalized real-time waveform processor
+<options>
+-start {pktid|time}
+-end time
+-select expr	input select expression
+-reject expr	input reject expression
+-state file	save state in file
+-p pf
+</options>
+
 orbmag [options] orbwf orbdb dbname
     real time magnitude computation
 <options>
