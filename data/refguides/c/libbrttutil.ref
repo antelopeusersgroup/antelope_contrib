@@ -10,6 +10,8 @@ other miscellaneous utilities
 <cdeclarations>
 int parse_param (Pf *pf, char *name, int type, int need, void *val)
     parse name parameter from pf parameter file object of a certain type into val and return an error if need is set and name with type does not exist; type may be P_SINT, P_LINT, P_FLT, P_DBL, P_STR, P_BOOL, P_TBL, P_TBLPF, P_ARR, P_ARRPF
+int pf2struc (Pf *pf, int ndefs, Pf2strucDefs *defs, void *struc)
+    parse pf parameter file object into a structure, struc, using a set of ndefs parsing definitions specified in defs
 
 <subsection MT-Safe FIFO>
 <cdeclarations>
@@ -39,6 +41,94 @@ int pmtfifo_release_block (Pmtfifo *mtf)
 
 int pmtfifo_release_blocks (Pmtfifo *mtf)
     release any existing and all future blocking conditions (i.e. make the FIFO non-blocking) on the mtf POSIX MT-safe FIFO queue
+
+<subsection Managed MT-Safe FIFO>
+<cdeclarations>
+Pmtmanagedfifo *pmtmanagedfifo_create (char *name)
+    create a managed POSIX MT-safe FIFO queue named as name
+
+Pmtmanagedfifo *pmtmanagedfifo_get (char *name)
+    get a managed POSIX MT-safe FIFO queue named as name
+
+Pmtfifo *pmtmanagedfifo_set_consumer (Pmtmanagedfifo *mtf, char *consumer_name, int maxqueue, int block)
+    set a consumer with name consumer_name for the mtf managed POSIX MT-safe FIFO queue with a queue of maximum size maxqueue and block when the queue is full
+
+Pmtfifo *pmtmanagedfifo_get_consumer (Pmtmanagedfifo *mtf, char *consumer_name)
+    get the consumer with name consumer_name for the mtf managed POSIX MT-safe FIFO queue
+
+int pmtmanagedfifo_destroy (Pmtmanagedfifo *mtf)
+    destroy the mtf managed POSIX MT-safe FIFO queue and free all resources
+
+int pmtmanagedfifo_push (Pmtmanagedfifo *mtf, Hook *data, Hook *(*copyproc) (Hook *), int copydata)
+    push data object specified by Hook data onto the mtf managed POSIX MT-safe FIFO queue with copyproc callback for copying the data object and make a copy before pushing if copydata is set
+
+int pmtmanagedfifo_pop (Pmtmanagedfifo *mtf, char *consumer_name, Hook **data, unsigned long *sequence)
+    pop data object specified by Hook data from the mtf managed POSIX MT-safe FIFO queue for consumer with name consumer_name and return original queue sequence number in sequence
+
+int pmtmanagedfifo_display (char *pre, Pmtmanagedfifo *mtf)
+    display name of the mtf managed POSIX MT-safe FIFO queue and all of its consumer names using elog_notify and prepend pre onto each line of output
+
+<subsection Data Grid Utility>
+<cdeclarations>
+BUGrid *bugrid_create (char *grid_type, long nxgrid, float *xgrid_coords, char *xgrid_type, char *xgrid_units, long nygrid, float *ygrid_coords, char *ygrid_type, char *ygrid_units, char *data_type, char *data_units, char *tag, char *handle)
+    create a data grid object with type grid_type, with nxgrid X-coordinates in xcoords of type xgrid_type and units xgrid_units, with nygrid Y-coordinates in ycoords of type ygrid_type and units ygrid_units, with dependent variable data of type data_type and units data_units, with a tag name, tag, and return a handle name in handle
+
+BUGrid *bugrid_get_grid (char *handle)
+    get the data grid object with handle name handle
+
+long bugrid_register_grid (BUGrid *grid, char *handle)
+    register the grid data grid object to handle name handle
+
+long bugrid_free (char *handle)
+    free the data grid object with handle name handle
+
+void bugrid_free_bugrid (BUGrid *grid)
+    free the grid data grid object
+
+long bugrid_free_tag (char *tag)
+    free the data grid object with tag tag
+
+BUGrid *bugrid_copy (char *in_handle, char *tag, char *handle)
+    copy the data grid object with handle name in_handle, give at a tag name, tag and return a handle name in handle
+
+long bugrid_put(char *handle, double time, long nsamps, double dt, float *data)
+    put dependent variable data, data, with start time, number time samples nsamps, time increment dt, into the data grid object with handle name handle
+
+long bugrid_put_bugrid(BUGrid *grid, double time, long nsamps, double dt, float *data)
+    put dependent variable data, data, with start time, number time samples nsamps, time increment dt, into the grid data grid object
+
+long bugrid_eval (char *handle, long isamp, long nxys, float *x, float *y, char *interp_mode, char *extrap_mode, float **out, long *out_size)
+    evaluate grid using the data grid object with handle name handle for time sample isamp, for the nxys arrays of independent X and Y coordinates in x and y, using interp_mode grid interpolation mode, extrap_mode grid extrapolation mode and put the results into out with size out_size
+
+long bugrid_eval_bugrid (BUGrid *grid, long isamp, long nxys, float *x, float *y, char *interp_mode, char *extrap_mode, float **out, long *out_size)
+    evaluate grid using the grid data grid object for time sample isamp, for the nxys arrays of independent X and Y coordinates in x and y, using interp_mode grid interpolation mode, extrap_mode grid extrapolation mode and put the results into out with size out_size
+
+long bugrid_order_bugrid (BUGrid *grid)
+    order all data and coordinates for grid data grid object
+
+long bugrid_stuff (char *handle, char **packet, int *nbytes, int *packetsz)
+    stuff the ORB packet with nbytes bytes and size packetsz from the data grid object with handle name handle
+
+long bugrid_stuff_bugrid (BUGrid *grid, char **packet, int *nbytes, int *packetsz)
+    stuff the ORB packet with nbytes bytes and size packetsz from the grid data grid object
+
+long bugrid_unstuff (char *packet, int nbytes, BUGrid **grid)
+    unstuff the ORB packet with nbytes bytes into the grid data grid object
+
+long bugrid_coords_d2slow (long nds, float *xcoords, float *ycoords, char *method, char *model, char *phase_code, float sdepth, float gap_value)
+    perform a mapping of nds distance and azimuth values, in xcoords and ycoords, into Cartesian slowness values, in xcoords and ycoords, using travel time method, model, phase phase_code, source depth sdepth, and use gap_value to flag undfined output values in the mapping
+
+long bugrid_eval_d2slow (char *handle, long isamp, long nds, float *distances, float *azimuths, char *method, char *model, char *phase_code, float sdepth, char *interp_mode, char *extrap_mode, float **out, long *out_size)
+    evaluate a Cartesian slowness grid using the data grid object with handle name handle for time sample isamp, by mapping the nds distances-azimuths into Cartesian slowness values, using travel time method, model, phase phase_code, source depth sdepth, using interp_mode grid interpolation mode, extrap_mode grid extrapolation mode and put the results into out with size out_size
+
+long bugrid_eval_d2slow_bugrid (BUGrid *grid, long isamp, long nds, float *distances, float *azimuths, char *method, char *model, char *phase_code, float sdepth, char *interp_mode, char *extrap_mode, float **out, long *out_size)
+    evaluate a Cartesian slowness grid using the grid data grid object for time sample isamp, by mapping the nds distances-azimuths into Cartesian slowness values, using travel time method, model, phase phase_code, source depth sdepth, using interp_mode grid interpolation mode, extrap_mode grid extrapolation mode and put the results into out with size out_size
+
+long bugrid_maxmin(char *handle, long isamp, float *xmin, float *xmax, float *ymin, float *ymax, float *zmin, float *zmax)
+    determine xmin, xmax, ymin, ymax, zmin, zmax maximum and minimum values for the independent and dependent data for the data grid object with handle name handle for time sample isamp
+
+long bugrid_maxmin_bugrid(BUGrid *grid, long isamp, float *xmin, float *xmax, float *ymin, float *ymax, float *zmin, float *zmax)
+    determine xmin, xmax, ymin, ymax, zmin, zmax maximum and minimum values for the independent and dependent data for the grid data grid object
 
 <subsection Time History Utility>
 <cdeclarations>
