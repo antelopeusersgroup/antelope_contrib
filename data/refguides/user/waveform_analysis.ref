@@ -15,6 +15,7 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -g	eliminate 'marked' data gaps
 -j expr	origin/site subset
 -m {time|convert|event|arrival|explicit}
+-O 	don't attempt speed optimization 
 -o datatype	specify output waveform datatype (default = sd)
 -p	in arrival mode, save waveforms only for pick channel 
 -s expr	evid/orid/arid subset
@@ -327,6 +328,19 @@ dbheli [options] db sta chan tstart twinline nlines scale
 -f filter
 -o dborigin
 -ps psfile
+</options>
+
+dbpick_combine [options] db1 db2
+    combine subset of two separate databases and view in dbpick
+<options>
+-v	verbose
+-keep db	keep all temporary dbs
+-chan subset	basic channel subset applied to wfdisc and arrival
+-start time	start time of data to review
+-end time	end time of data to review
+-sta subset	station subset
+-nearby sta	subset dbs for stations with in 2 degrees or dist
+-dist ndeg	subset distance for -nearby
 </options>
 
 <subsection Waveform Verification>

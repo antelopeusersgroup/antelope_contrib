@@ -10,12 +10,17 @@ rtexec [options] [comment]
 <options>
 -c	clear logs
 -d	debug mode
+-D	for Mac OS X launchd, don't fork	
 -f	don't ask about killing previous rtexec
 -k	kill running rtexec
 -n	show what processes would be run
 -s	save old logs in new subdirectory
 -t	run `tail -f logs/rtexec` 
 -v	more verbose
+-x	user xuserauth rather than userauth	
+-q min  run for specified minutes then shutdown
+-r min	run for specified minutes then restart
+-u user	specify user requesting shutdown
 -w why	with -k, file why explains shutdown
 </options>
 
@@ -74,6 +79,21 @@ dbevents [options] dbname [start [end]]
 -pf pfname	parameter file name
 </options>
 
+dlreport [options] { -S | -E } db 
+    summarize dlevents in mailable report 
+<options>
+-d time		start time for report	
+-n ndays	number of days for report
+-v		verbose
+-m email,..	email list	
+-u		include URL in report
+-p pf		alternate parameter file
+-s subset	valid subset for dlevent
+-C dlsta	write a closure report for dlsta
+-S		station based subset
+-E		dlevent type subset
+</options>
+
 rtreport [options] [directory]
     report some statistics on data collection
 <options>
@@ -85,6 +105,7 @@ rtreport [options] [directory]
 -p pf	use specified pf instead of rtreports.pf 
 -s subset	report only on stations satisfying subset
 -w wfdb	alternate waveform database
+-x subset	deployment table subset
 -v	more detail about gaps
 -Y	include full date in event report 
 -z	only z channels
@@ -117,6 +138,7 @@ rtoutage [options] db t0 t1
 -s subset	only show gaps for sta/chan subset
 -S	show gaps as seconds only
 -t	only show totals
+-s subset	deployment table subset
 -z	select only vertical channels 
 </options>
 
@@ -258,7 +280,7 @@ orblook { start orbname interval | restart orbname interval | stop orbname }
 
 <subsection Data Loggers: import to orb>
 <commands>
-adsend2orb orb port
+deprecated adsend2orb orb port
     read earthworm packets from udp port and copy to orbserver orb
 
 deprecated eworm2orb pf
@@ -459,6 +481,7 @@ dlautomrc [options] cmdorb orb [target]
 <options>
 -a vlt	out of range voltage value
 -d dl 	data logger type
+-D db 	use sensor types from db for voltage trigger level
 -f  	force mass recenter (with -s, not with -a)
 -m add	email notification list  
 -n  	no mrc, only report what would be done 
@@ -852,15 +875,16 @@ sms2orb [-dv] queue orb
 dlmon [options] orb [cmdorb]
     monitor/control generic digitizers
 <options>
--model model	data logger model
--state {Icons|Multi|Single}	initial display state
--select_status expr_status
--select_log expr_log
--subset subs_expr	initial expression for subsetting stations
--sort name	initial sort name
--pf pffile	parameter file
 -dump period
 -dump_image file
+-model model	data logger model
+-pf pffile	parameter file
+-select_status expr_status
+-select_log expr_log
+-show_map 	
+-state {Icons|Multi|Single}	initial display state
+-sort name	initial sort name
+-subset subs_expr	initial expression for subsetting stations
 </options>
 
 old_dlmon [options] orb [-cmd cmdorb]
@@ -1006,6 +1030,8 @@ orbmsd2days [options] orb
     save miniseed (only) packets from orb into day volumes
 <options>
 -c nscl	specify particular net_sta_chan_loc desired
+-D file	file for writing problem packets
+-p time|oldest|pktid	position
 -d db	create wfdisc table in db
 -S state	save orb position in state file
 -U	limited duplication suppression

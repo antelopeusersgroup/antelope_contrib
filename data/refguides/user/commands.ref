@@ -206,25 +206,32 @@ restrict searches to certain files by using any combination of:
 -y	(f)lex and yacc source
 </options>
 
-ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
+ffilter [-aBbCcDdEelLnoOpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
     filter list of files according to various options
 <options>
 Combinatorial options
 -a	autosplit input lines
 -b	binary files
+-B	basename 
 -c	in CVS
 -C	not in CVS
 -d	directory
+-D	dirname 
 -e	empty directories
+-E	command
 -l	symbolic links
 -L	is plain file and has multiple links
+-n	only show command, don't execute
 -o	is on this file system
 -O	is on different file system from $cwd
 -p	plain file
+-S	suffix
 -t	text file
+-u	print ouly unique paths
 -x	executable
--z	zero size
+-X	execute each result
 -v	invert result of all tests 
+-z	zero size
 Regular expression matching
 -m re	keep matching files
 -r re	reject matching  files
@@ -243,6 +250,7 @@ check_path [-v] [path]
     check path to ensure that 'other' users can traverse it
 
 cmpdirs [options] dir1 dir2
+    compare directories by filenames
 <options>
 -c	compare files
 -C	ignore CVS directories
@@ -251,6 +259,13 @@ cmpdirs [options] dir1 dir2
 -t	compare only text files
 -r	recursive
 -v	more verbose
+</options>
+
+cntlines [options] filename
+   helper script for certify to count bad/good lines
+<options>
+-c re m	contains at least m lines containing re	
+-n re m	no more than m lines containing re	
 </options>
 
 xdiff [options] dir1 dir2
@@ -266,6 +281,7 @@ xdiff [options] dir1 dir2
 -F	treat as Fortran files (spiff only)
 -i	case independent compare
 -I re	ignore files with names like regular expression e
+-k	show comparison even if there is no difference
 -L	skip files when both are symbolic links 
 -o	in comparing directories, ignore  missing files in the 2nd directory.
 -O	in comparing directories, ignore missing files in the 1st directory.

@@ -37,6 +37,48 @@ private db2ew_wave_server [-vV] [-p pf] dbname
     attach to a CSS3.0 database and make data
     therein accessible via the Earthworm protocols.
 
+db2ims [options] db
+    create IMS1.0 short DMC format bulletin
+<options>
+-d db	database containing dmcbull table 
+-e time	origin end time
+-l file	output log file name
+-m	report magnitudes (unprogrammed)
+-p pf	use paramter file pf
+-s time	origin start time
+-t time	exclude origins with lddate before time
+-v	verbose
+-V	very verbose
+-y	only report reviewed origins
+</options>
+
+ims2dmc [options] file db
+    send IMS1.0 short files to DMC and track in db
+<options>
+-C dir	product directory
+-m list	email address list
+-o orb	orb for orbxfer transfer of files
+-s subject	subject line of email
+-v	verbose
+-V	more verbose than you want
+</options>
+
+mk_dmc_files [options] {-D | -V vnet} dbin dbtrack [comment]
+    generate dataless SEED or VND and optionally export to others
+<options>
+-v	verbose
+-z	use gzip to compress output file
+-p pf	parameter file
+-d dir	output directory for files
+-C dir	leading dir for output directory
+-N net	network code for output file
+-s sta	station for single station dataless
+-f file	override default file name
+-o orb	output orb for orbxfer2(1)
+-D	generate dataless SEED
+-V vnet	generate VND file for vnet
+</options>
+
 db2sac [options] dbin dbout
     convert css waveform files into sac format
 <options>
@@ -54,6 +96,15 @@ db2sac [options] dbin dbout
 
 db2segy db outfile [-pf pf] [-v]
     convert waveforms from input database db to segy disk image
+
+deployment2vnd [options] db file
+    convert deployment table to CSV or tab format VND table 
+<options>
+-h	print headers	
+-s subset	subset expression
+-t	use tabs instead of commas
+-v	verbose
+</options>
 
 <subsection Importing Data into a Datascope Database>
 <commands>
@@ -80,6 +131,16 @@ deprecated pde2origin pde dbout [-auth author]
 
 deprecated qed2origin qed dbout
     create origin records in database dbout from input QED file qed
+
+logs2dlevent [options] logdir db
+    create dlevent records in db from q330 log files
+<options>
+-p pf		alternate pf file
+-d time		start time for review
+-n ndays	total number of days to review	
+-v		verbose
+-l match_log	regex for files to search
+</options>
 
 pick2db [-cvp] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname
     convert hypoellipse pickfile(s) to CSS3.0 database
@@ -223,7 +284,7 @@ qtunbale2 [options] url [time [endtime|period]]
 miniseed2db [-T tolerance] [-v] miniseed|dir [msd2|dir2 ...] db
     create wfdisc rows in db for miniseed volume(s), or miniseed volumes under directories
 
-miniseed2orb [options] file ... orb
+miniseed2orb [options] file|directory ... orb
     put data blocks from input miniseed files into packets on orb
 <options>
 -s start	start-time
@@ -283,7 +344,7 @@ db2miniseed [options] db [output]
 -v	verbose
 </options>
 
-log2miniseed [-a] [-c chan] [-l loc] [-n net] [-s sta] log ...
+log2miniseed [-avV] [-c chan] [-l loc] [-n net] [-s sta] log ...
      read input log files and create miniseed
 
 fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed|dir ...
