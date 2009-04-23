@@ -396,17 +396,6 @@ rtp2orb [-v] configuration_file
 ryo2orb [-v] [-V] [-p pfname] [-m subset] rtd_ipaddress:port orbserver
      collect GPS data in RYO format and write to orb
 
-b3s2orb [options]
-    read B3S2 data to orb
-<options>
--c p1	command port (default = "/dev/ttya")
--i p2	data port (default = "/dev/ttyb" )
--o orb	default = localhost
--p pf	default = pkt.pf
--s
--v	more verbose
-</options>
-
 slink2orb [options] SeedLink orb
     SeedLink to orb module
 <options>
@@ -617,6 +606,7 @@ orb2orb [options] in out [start [period|end]]
 -r re2	don't read packets matching re2
 -S filename	save state in filename
 -s p	start after pktid #p
+-T a.pf specify srcnames to pass through in a.pf 
 -U	unstuff each packet and print
 -u n	discard duplicates in latest n packets
 -v	more verbose

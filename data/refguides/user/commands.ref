@@ -218,7 +218,8 @@ Combinatorial options
 -d	directory
 -D	dirname 
 -e	empty directories
--E	command
+-g	in git
+-G	not in git
 -l	symbolic links
 -L	is plain file and has multiple links
 -n	only show command, don't execute
@@ -239,7 +240,7 @@ Operations on filenames
 -D dirname	extract dirname
 -B basename	extract basename
 -S suffix	extract suffix
--E command	perl command operating on filename
+-E px	execute perl code px on each filename
 Other options
 -X	execute each result
 -n	only show command, don't execute

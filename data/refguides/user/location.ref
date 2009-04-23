@@ -61,9 +61,6 @@ dbproject_covariance [-v] [-c conf] dbname
 relocate dbin dbout [-pf pf] [-useold] [-sift expression]
     relocate all events in database using genloc
 
-orbgenloc orb [-S statefile] [-pf pf]
-    orb interface to genloc single event location code
-
 sgnloc inpf outpf
     command line interface to single event location code
 
