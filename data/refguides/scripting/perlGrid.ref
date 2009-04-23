@@ -21,4 +21,4 @@ grid_get ( grid_handle )
     get information relating to a grid object
 
 grid_put ( grid_handle, time, nsamps, dt, @data )
-    put dependent variable data in @data with time start time, nsamps numer of samples, dt time increment into grid obejct referenced by grid_handle
+    put dependent variable data in @data with time start time, nsamps numer of samples, dt time increment into grid object referenced by grid_handle
