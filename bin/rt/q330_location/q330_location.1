@@ -3,7 +3,9 @@
 q330_location \- attaches to orb and checks q330 locations
 .SH SYNOPSIS
 .nf
-q330_location [-v] [-m mail_to] [-p pf_sourcename] [-t max_offset_meters] orb db
+q330_location [-v] [-m mail_to] [-p pf_sourcename] 
+              [-n net_code] [-s sta_regex] [-c chan_code] 
+              [-t max_offset_meters] orb db
 .fi
 .SH DESCRIPTION
 \fBq330_location\fP extracts q330 /pf/st files from an orb, finds the current lat and long 
@@ -16,12 +18,18 @@ This program is designed to run as a cron program under rtexec.pf.
 .SH OPTIONS
 .IP -v
 verbose
+.IP "-n net_code_regex"
+select net code. Default is TA.
+.IP "-s sta_code_regex"
+select sta code. Default is ".*".
+.IP "-c chan_code_regex"
+select channel code. Default is BHZ.
 .IP "-t max_offset_meters"
 set threshold for offset for flagging possible problems. Default is 20 meters.
 .IP "-m mail_to"
 email address list to send results.
 .IP "-p pf_sourcename"
-change pf_sourcename selected from orb.  Default is .*/pf/st.
+change pf_sourcename selected from orb.  Default is ".*/pf/st".
 .SH FILES
 None.
 .SH ENVIRONMENT
