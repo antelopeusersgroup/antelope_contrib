@@ -1,6 +1,6 @@
 .TH TIME_SLICE_DB 1 "$Date$"
 .SH NAME
-time_slice_db \- Divide seismic database into complete periodic increments
+time_slice_db \- Divide seismic database into periodic increments
 .SH SYNOPSIS
 .nf
 \fBtime_slice_db \fP[-v] [-V] [-s] [-f] [-C]
@@ -12,8 +12,8 @@ time_slice_db \- Divide seismic database into complete periodic increments
                 \fIdbin\fP
 .fi
 .SH DESCRIPTION
-\fBtime_slice_db\fP is designed build complete periodic databases from a larger database.
-The allowed periods are by month, by year or by day.
+\fBtime_slice_db\fP is designed to build periodic databases from a larger database.
+The allowed periods of division are by month, by year or by day.
 \fBtime_slice_db\fP will keep all data from the current month (or year or day), and the 
 previous number of \fIlag_periods\fP in \fIdbin\fP.  
 Older data will be split from \fIdbin\fP into monthly (or yearly or daily) databases.
@@ -51,9 +51,9 @@ verbose
 .IP -V
 Extremely verbose.  Used for debugging purposes only.
 .IP -C
-Clean up input database.  Removing rows which have been moved to the output databases. 
-Before starting copy the input database into the \fIlast_saved_db\fP directory using 
-\fIdbcp -s dbin last_saved_db\fP.
+Clean up input database and rows which have been moved to the output databases. 
+Before the cleanup is begun, the input database is saved into the \fIlast_saved_db\fP directory using 
+\fIdbcp -s dbin last_saved_db\fP. Previous versions of the last_saved_db are overwritten.
 .IP -s
 Don't  attempt  to  keep  external file references correct; just copy the tables, 
 and don't update dir/dfile fields. See dbcp(1).

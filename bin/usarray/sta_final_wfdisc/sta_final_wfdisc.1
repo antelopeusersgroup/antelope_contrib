@@ -12,16 +12,16 @@ sta_final_wfdisc \- builds complete station wfdisc
 \fBsta_final_wfdisc\fP is designed to build the station waveform database
 from the real time system.  
 
-\fBsta_final_wfdisc\fP creates a directory where the \fIstation_wfdsic_table\fP 
+\fBsta_final_wfdisc\fP creates a directory where the \fIstation_wfdisc_table\fP 
 is written.  No waveforms are written, only references existing waveforms.
 
 .SH ARGUMENTS
 .IP \fIdbops\fP 
-database which contains deployment table.
+Database which contains deployment table.
 
 .SH OPTIONS
 .IP -v
-verbose
+Verbose
 .IP -V
 Extremely verbose.  Used for debugging purposes only.
 .IP -n
@@ -30,7 +30,7 @@ Test mode.  Does not execute miniseed2db commands.
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBsta_final_wfdisc\fP.
 .IP "-m mail_to"
-email address list to send results.
+Email address list to send results.
 
 .SH ENVIRONMENT
 needs to have sourced $ANTELOPE/setup.csh.  
@@ -47,9 +47,9 @@ dbpath to be written into descriptor file for output database to use.
 .IP dblocks
 dblocking type for database
 .IP msd2db_pat
-pattern search wf files,  STA is generic for all stations
+Pattern search wf files,  STA is generic for all stations
 .IP rt_sta_dir
-output directory for station dbs
+Output directory for station dbs
 
 .fi
 .ft R
@@ -74,6 +74,7 @@ rt_sta_dir			/anf/TA/wf/rt_stas					# output directory for station dbs
 .SH "SEE ALSO"
 .nf
 miniseed2db (1)
+sta_final_verify (1)
 .fi
 .SH "BUGS AND CAVEATS"
 

@@ -20,7 +20,7 @@ correct. All channels named \fIwfclean\fP are removed.
 
 The assumptions of the program are that:
 .IP 
-the station data for station sta are kept in a directory \fIbalerdirbase/sta\fP
+the station data for station \fIsta\fP are kept in a directory \fIbalerdirbase/sta\fP
 .IP 
 the original BH and LH data are kept in a subdirectory \fIbhdata_dir\fP
 .IP 
@@ -30,7 +30,7 @@ miniseed file names follow the regular expression "C.*\.bms.*"
 
 .SH OPTIONS
 .IP -v
-verbose
+Verbose
 .IP -V
 Extremely verbose.  Used for debugging purposes only.
 .IP -n
@@ -39,10 +39,10 @@ Test mode.  Does not execute trexcerpt commands.
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBsta_final_prep\fP.
 .IP "-m mail_to"
-email address list to send results.
+Email address list to send results.
 
 .SH ENVIRONMENT
-needs to have sourced $ANTELOPE/setup.csh.  
+Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
 .in 2c
 .ft CW
@@ -53,9 +53,9 @@ Absolute path name for input directory containing station directories with raw b
 .IP archivebase
 Absolute path name for output directory containing station directories with station database
 .IP bhdata_dir
-subdirectory name for BH and LH data 
+Subdirectory name for BH and LH data 
 .IP sohdata_dir
-subdirectory name for VH, UH, and SOH data 
+Subdirectory name for VH, UH, and SOH data 
 .IP dbidserver
 Name of idserver to be written into descriptor file for output database to use.
 .IP dbpath    
@@ -63,9 +63,9 @@ dbpath to be written into descriptor file for output database to use.
 .IP dblocks
 dblocking type for database
 .IP wfclean
-pattern search wf files,  STA is generic for all stations
+Pattern search wf files,  STA is generic for all stations
 .IP prob_mail
-email addresses to send notification of problems
+Email addresses to send notification of problems
 .fi
 .ft R
 .in

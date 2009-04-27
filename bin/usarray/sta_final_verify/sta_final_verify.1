@@ -13,7 +13,7 @@ sta_final_verify \- tests quality of station final baler data
 .IP
 flag errors in net, sta, chan, loc codes
 .IP
-verify and correct times in deploymnent table and send an email for changed stations
+verify and correct times in deployment table and send an email for changed stations
 .IP
 verify data return and send an email for stations with less than 95% data return
 
@@ -21,7 +21,7 @@ verify data return and send an email for stations with less than 95% data return
 Station directories with problems are moved to \fIpurgatory\fP.
 .SH OPTIONS
 .IP -v
-verbose
+Verbose
 .IP -V
 Extremely verbose.  Used for debugging purposes only.
 .IP -n
@@ -30,10 +30,10 @@ Test mode.  Does not execute trexcerpt commands.
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBsta_final_verify\fP.
 .IP "-m mail_to"
-email address list to send results.
+Email address list to send results.
 
 .SH ENVIRONMENT
-needs to have sourced $ANTELOPE/setup.csh.  
+Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
 .in 2c
 .ft CW
@@ -47,9 +47,9 @@ with problems
 .IP dbops
 Path name for database containing appropriate deployment table.
 .IP deploy_mail
-email addresses to send notification deployment table changes
+Email addresses to send notification deployment table changes
 .IP prob_mail
-email addresses to send notification of problems
+Email addresses to send notification of problems
 .fi
 .ft R
 .in
@@ -59,7 +59,7 @@ email addresses to send notification of problems
 .nf
 
 archivebase         /Volumes/TA_Final_Data/station_final            # absolute path name for station baler archive name
-purgatory			/Volumes/TA_Final_Data//purgatory	            # absolute path name for station baler archive name
+purgatory			/Volumes/TA_Final_Data/purgatory	            # absolute path name for station baler archive name
 
 dbops                /anf/TA/dbs/dbops/usarray
 
