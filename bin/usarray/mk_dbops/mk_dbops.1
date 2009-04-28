@@ -125,7 +125,7 @@ is not selected.  Overrides the default found in \fIpf\fP.
 .IP -n 
 Do not run the \fBq330_location(1)\fP program during an installation, \fI-I\fP.  You will
 need to update the dlsite table outside of this program (using \fBq330_location(1)\fP or by
-other means).  The \fBq330_location(1)\fP program has verbose output and is not limited (yet) to the
+other means).  The \fBq330_location(1)\fP program has verbose output and is limited to the
 station you are attempting to update.  See \fBq330_location(1)\fP.
 .IP "-W wfDB"
 Use this certified waveform database during a removal, \fI-R\fP, to gather the 
@@ -404,10 +404,11 @@ of all tables to be updated.  They are called \fIdbopsdb.table+\fP and are remov
 upon successful completion of the script unless \fI-k\fP is specified.
 
 When updating the dlsite table using \fI-I\fP mode, the \fBq330_location\fP code
-is run.  This script does not subset based on a single station, so all stations
-are reviewed and reported upon.  There is copious output from this script.  This 
-script is being modified, and the station based subset will hopefully be incorporated
-soon.
+is run.  As of the 4.11 release, this \fBq330_location\fP script subsets based on 
+a single station. Earlier releases did not subset based on a single station, so 
+all stations were reviewed and reported upon.  This caused some problems with null 
+values for commtype and provider if there were multiple stations that had not been
+added to the deployment table.  Also note that \fBq330_location\fP has copious output. 
 
 If dbmaster tables are not updated for a newly installed station,
 you will not be able to update the tables in \fI-I\fP mode.

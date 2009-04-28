@@ -443,12 +443,12 @@ if ($opt_U) {
 
   &add2deployment($vnet, $dtime, $stime, $mytime) ;  
 
-# Try to use Frank's q330_location script to add to dlsite table if opt_n is chosen
+# Try to use Frank's q330_location script to add to dlsite table unless opt_n is chosen
 
   if (!$opt_n) {
      elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
      elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
-     $cmd = "q330_location $status_orb $dbops" ;
+     $cmd = "q330_location -s $sta $status_orb $dbops" ;
      &run($cmd)  ;
   } else {
      elog_notify("\n   You need to run q330_location to populate dlsite table\n\n") ;
