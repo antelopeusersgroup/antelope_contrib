@@ -709,7 +709,7 @@ orbdetev2detection [options] dbfkeys orbin orbout
 -v
 </options>
 
-orbtrigger [options] orbname
+deprecated orbtrigger [options] orbname
     real time network trigger algorithm
 <options>
 -v
