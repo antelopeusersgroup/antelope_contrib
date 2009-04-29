@@ -195,6 +195,12 @@ dbcalibrate [options] dbin [sequence_id [sequence_id_cmp[,chan_cmp]]
 -type {ratio|power|coherence}	computation type
 </options>
 
+displayscal [options] dbname rowno [noiserowno]
+    display results of calibration analysis
+<options>
+-dumpandexit psfile	dump image to psfile and exit
+</options>
+
 dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} db [dbout]
     make waveform measurements from database
 <options>
