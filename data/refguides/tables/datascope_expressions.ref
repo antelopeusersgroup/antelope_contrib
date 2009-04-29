@@ -192,6 +192,8 @@ null("fieldname")
 
 <subsection External Files and Commands>
 <expression>
+is_present(filename)
+
 concatpaths(dir,dfile)
     join two path segments
 

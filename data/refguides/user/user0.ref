@@ -1,5 +1,6 @@
 <initialization User ../refhdr.mif>
 <include realtime.ref>
+<include baler.ref>
 <include cd1.ref>
 <include database_processing.ref>
 <include location.ref>

@@ -373,6 +373,7 @@ certify [options] [dir|testid ...]
 -D	run dbx on the executable
 -G	run gdb on the executable
 -H dir	run in the specified directory
+-I	run installed executable, rather than build directory
 -i	set up; make directories input, data, results and correct; initialize certify database   
 -k	keep results even if test is successful
 -l	list tests
@@ -390,4 +391,7 @@ certify [options] [dir|testid ...]
 -U	run the executable under ups 
 -x path	add path to front of PATH environment variable
 -X results	add a line for each test to results file
+-Z	combine stderr/stdout into single output file
+-v	more verbose
+-V	show all commands
 </options>
