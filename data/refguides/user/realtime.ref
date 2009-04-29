@@ -316,6 +316,19 @@ liss2orb [options] liss orb
 -v
 </options>
 
+dcbba2orb [options] 
+    copy data from RefTek DAS port to orbserver orb
+<options>
+-V	usage 
+-r	validate pf file
+-v	verbose
+-a ip	data concentrator IP
+-t file	data test file
+-d port	data port of data concentrator
+-o orb	orb for output
+-g pf	parameter file
+</options>
+
 rddas [options] port orb
     copy data from RefTek DAS port to orbserver orb
 <options>
