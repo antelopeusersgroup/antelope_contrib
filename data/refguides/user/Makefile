@@ -1,5 +1,6 @@
 DATADIR=doc/refguides/user
 DATA= \
+	baler.ref \
 	cd1.ref \
 	commands.ref \
 	database_processing.ref \

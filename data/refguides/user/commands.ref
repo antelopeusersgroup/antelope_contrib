@@ -339,7 +339,7 @@ Different Modes
 -W routine	show what libraries require routine
 </options>
 
-compile [options]
+compile cc-arguments
     used by BRTT to compile with optional optimization on different architectures
 
 deposit [-rx] file dir
