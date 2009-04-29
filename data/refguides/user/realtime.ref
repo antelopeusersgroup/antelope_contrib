@@ -18,7 +18,7 @@ rtexec [options] [comment]
 -t	run `tail -f logs/rtexec` 
 -v	more verbose
 -x	user xuserauth rather than userauth	
--q min  run for specified minutes then shutdown
+-q min	run for specified minutes then shutdown
 -r min	run for specified minutes then restart
 -u user	specify user requesting shutdown
 -w why	with -k, file why explains shutdown
@@ -82,16 +82,16 @@ dbevents [options] dbname [start [end]]
 dlreport [options] { -S | -E } db 
     summarize dlevents in mailable report 
 <options>
--d time		start time for report	
+-d time	start time for report	
 -n ndays	number of days for report
--v		verbose
+-v	verbose
 -m email,..	email list	
--u		include URL in report
--p pf		alternate parameter file
+-u	include URL in report
+-p pf	alternate parameter file
 -s subset	valid subset for dlevent
 -C dlsta	write a closure report for dlsta
--S		station based subset
--E		dlevent type subset
+-S	station based subset
+-E	dlevent type subset
 </options>
 
 rtreport [options] [directory]

@@ -135,10 +135,10 @@ deprecated qed2origin qed dbout
 logs2dlevent [options] logdir db
     create dlevent records in db from q330 log files
 <options>
--p pf		alternate pf file
--d time		start time for review
+-p pf	alternate pf file
+-d time	start time for review
 -n ndays	total number of days to review	
--v		verbose
+-v	verbose
 -l match_log	regex for files to search
 </options>
 

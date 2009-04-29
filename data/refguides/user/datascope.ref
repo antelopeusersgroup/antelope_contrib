@@ -19,7 +19,7 @@ mk_dbops [options] {-I | -U | -R | -A} db snet sta [timestamp [comm_provider [co
 -U	update
 -v	verbose
 -V vnet	virtual network code
--m match source match
+-m match	source match
 -p pf	parameter file
 -P orb	prelim orb
 -S orb	status orb
