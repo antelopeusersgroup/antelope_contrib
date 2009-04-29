@@ -174,6 +174,9 @@ dbfixids [-s server] [-i id1,...] [-x id2,...] db [ db2 ]
 -x ids	don't renumber these ids
 </options>
 
+time_slice_db [-v] [-V] [-s] [-f] [-C] [-p parameter_file] [-m mail_to] [-t start_time] [-e end_time] (-B | -E | -W) dbin
+    Divide seismic database into periodic increments
+    
 <subsection Creating Database Views>
 <commands>
 dbsubset [-n name] [-v] aview expr
