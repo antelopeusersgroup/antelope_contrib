@@ -33,10 +33,20 @@ include day folders even when there are no events for that day. This option is u
 
 .SH PARAMETER FILE
 Parameter file contains four simple values. Example:
+.in 2c 
+.ft CW
+.nf
+.ps 8
+
 	IMAGE_SERVER    http://www.avo.alaska.edu/eq/kml/icons/
 	VIEW_LAT        61
 	VIEW_LON        -149
 	VIEW_RANGE      4000000
+.ps
+.fi
+.ftR
+.in
+.LP
 IMAGE SERVER is the most important value as it defines where to look for the icon images used for hypocenters, error ellipses, stations and labels. These images remain on the server and are called by Google Earth (or other client) when the KML file is opened. IMAGE_SERVER defines which link to place in the KML file. See NOTE ON SERVERS below for details (this is important). The VIEW... parameters are of minor consequence and affect only the default view for the dataset. VIEW_LAT and VIEW_LON specify the default view of the virtual globe. Typically these will be near the center of your array/catalog. VIEW_RANGE specifies the height of the view in meters above the point specified by VIEW_LON and VIEW_LAT. A VIEW_RANGE of 4000 has a default view of the Earth that is very roughly 50 km across. A VIEW_RANGE of 4000000 has a width on the order of 5000 km.
 
 .SH NOTE ABOUT SERVERS
