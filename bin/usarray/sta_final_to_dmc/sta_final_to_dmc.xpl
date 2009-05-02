@@ -33,15 +33,16 @@
 {    #  Main program
 
     my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$problem_check);
-    my ($stime,$table,$net,$sta,$chan);
+    my ($stime,$table,$net,$sta,$chan,$subset);
     my ($dir,$base,$suf,$dirname,$dbname,$orb,$orbname);
     my ($mintime,$maxtime,$year,$mseedfile,$sync_file,$nsync,$sync_dir,$sync_dfile);
     my ($n,$row,$nrows,$time,$endtime,$tgap,$gsta,$gchan,$rtsta,$equip_install,$equip_remove);
     my ($ref,$line,$st1,$st2,$st3,$dep,$dbsize,$orbsize,$orbstat,$orbclient,$comment);
     my ($old,$new,$max,$range,$mlag,$thread,$pktid,$who,$what);
     my ($when,$found_sf,$found_oc,$found_xf,$client);
-    my (@dbtest,@db,@dbops,@dbdmcfiles,@dbdeploy,@dbscrdmc,@dbdeployment,@mseedfiles);
-    my (@dbgwf,@dbgap,@dbwfchk,@dbscr,@laggards,@rows,@dirs,@files,@chans,@msd,@line);
+    my (@dbtest,@db,@dbops,@dbdmcfiles,@dbdeploy,@dbscrdmc,@dbdeployment);
+    my (@dbgwf,@dbgap,@dbwfchk,@dbscr,@dbtmp);
+    my (@laggards,@rows,@dirs,@files,@chans,@msd,@line,@mseedfiles);
     my (@dbsize,@pffiles,@clients);
     my (%pf);
 
@@ -133,6 +134,15 @@
 
     $nsync = 0;
     foreach $sta (@ARGV) {
+        $subset = "comment =~ /$sta final baler data sent to DMC.*/";
+        @dbtmp = dbsubset(@dbdmcfiles,$subset);
+        if (dbquery(@dbtmp,"dbRECORD_COUNT")) {
+            $dbtmp[3] = 0 ;
+            $stime = strydtime(dbgetv(@dbtmp,"time"));
+            elog_notify("$sta already processed at $stime") if $opt_v;
+            next;
+        }
+        
         $stime = strydtime(now());
         $year  = epoch2str(now(),"%Y");
         elog_notify ("\nstarting processing station $sta");
