@@ -18,5 +18,5 @@ rt_sta_dir			/anf/TA/wf/rt_stas			# Absolute path name for directory containing
 
 sync_dir			/anf/TA/products/sync/sta_final	# Absolute path name for directory to store sync files
 
-deploy_mail			flvernon@ucsd.edu,jeakins@ucsd.edu	# email addresses to send notification of 
+deploy_mail			your@email.edu	# email addresses to send notification of 
 														# deployment table checks

@@ -1,0 +1,51 @@
+.TH CAL_WF 1 "$Date$"
+.SH NAME
+cal_wf \- gets waveforms from rt db and writes to calibration db
+.SH SYNOPSIS
+.nf
+\fBcal_wf\fP [-v] [-V] [-n]
+       [-m \fImail_to_operator\fP]  
+       \fIdb\fP \fIdbcal\fP
+.fi
+.SH DESCRIPTION
+\fBcal_wf\fP opens the \fIdbcal.dlcalwf\fP table, checks to see what waveforms are missing from
+\fIdbcal.wfdisc\fP, and extracts the missing waveforms from \fIdb.wfdisc\fP
+.SH ARGUMENTS
+.IP "db"
+The name of the input database containing the \fIwfdisc\fP. 
+This argument is required.
+.IP "dbcal"
+The name of the output database containing the \fIdlcalwf\fP and\fIwfdisc\fP. 
+This argument is required.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -n
+Test mode. 
+.IP "-m mail_to_operator"
+email address list to send to program operators.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+none.
+.fi
+.ft R
+.in
+
+.SH "SEE ALSO"
+.nf
+dlcmd(1)
+q3302orb(1)
+dbcalibrate(1)
+displayscal(1)
+.fi
+.SH AUTHOR
+Frank Vernon
+.br
+UCSD

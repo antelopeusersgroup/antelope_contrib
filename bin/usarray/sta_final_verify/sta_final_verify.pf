@@ -2,9 +2,7 @@
 archivebase			/anf/TA/wf/station_final	# absolute path name for station baler archive name
 purgatory			/anf/TA/wf/purgatory				# absolute path name for station baler archive name
 
-#archivebase			/Volumes/TA_Final_Data/station_final			# absolute path name for station baler archive name
-
 dbops				/anf/TA/dbs/dbops/usarray
 
-deploy_mail			flvernon@ucsd.edu,jeakins@ucsd.edu
-prob_mail			flvernon@ucsd.edu
+deploy_mail			your@email.edu
+prob_mail			your@email.edu
