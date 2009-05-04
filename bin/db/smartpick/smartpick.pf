@@ -139,7 +139,7 @@ channels &Arr{
 required_programs &Tbl{
 	dbe 
 	dbpick
-	dbxcor
+#	dbxcor
 	dbcrunch
 	import
 	tee
