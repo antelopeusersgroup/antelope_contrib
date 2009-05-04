@@ -375,6 +375,9 @@ sub calibrate_view { # ($maxdur,$sleep) = &calibrate_view($orbname,$mon_chan,$of
             $problem_check = $problems;
             $problems = run($cmd,$problems) ;
             if ( $problem_check != $problems ) {
+                $cmd = "cat /tmp/tmp_dlcmd.pf";
+                elog_notify("$cmd");
+                $problems = run($cmd,$problems) ;
                 $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
                 &sendmail($subject, $opt_m) if $opt_m ; 
                 elog_die("\n$subject") ;
@@ -416,6 +419,9 @@ sub calibrate_one { # $sleep = &calibrate_view($orbname,$mon_chan,$offset,$probl
         $problem_check = $problems;
         $problems = run($cmd,$problems) ;
         if ( $problem_check != $problems ) {
+            $cmd = "cat /tmp/tmp_dlcmd.pf";
+            elog_notify("$cmd");
+            $problems = run($cmd,$problems) ;
             $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject") ;
