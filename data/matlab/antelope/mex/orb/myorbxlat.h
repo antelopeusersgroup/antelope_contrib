@@ -9,8 +9,6 @@ Xlat myOrbxlat[] = {
     {"ORBNEXT_WAIT", ORBNEXT_WAIT },
     {"ORBOLDEST", ORBOLDEST },
     {"ORBNEWEST", ORBNEWEST },
-    {"ORBNEXTT", ORBNEXTT },
-    {"ORBPREVT", ORBPREVT },
 } ;
  
 int myNOrbxlat = sizeof(myOrbxlat) / sizeof(Xlat) ; 
