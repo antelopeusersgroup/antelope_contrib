@@ -73,11 +73,11 @@ public:
 // bitching about unitialized data, but values are meaningless when this
 // constructor is called.
 **/
-	BasicTimeSeries::BasicTimeSeries();
+	BasicTimeSeries();
 /*!
 // Standard copy constructor.
 **/
-	BasicTimeSeries::BasicTimeSeries(const BasicTimeSeries&);
+	BasicTimeSeries(const BasicTimeSeries&);
 /*!
 // Checks if a sample defined by an integer offset value is a data gap.
 // Calls like seis.is_gap(is) return true if sample is is a data gap.  
