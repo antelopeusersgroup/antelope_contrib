@@ -34,7 +34,9 @@ Extremely verbose.  Used for debugging purposes only.
 .IP -n
 Test mode. 
 .IP -i
-Calibrate stations (limited by \fIsta_regex\fP) in the staq330 table which have not been calibrated using white noise.
+Calibrate stations (limited by \fIsta_regex\fP) in the staq330 table which have not been calibrated 
+using white noise. \fBq330_calibration\fP will check to make sure that both channel 2 and channel
+3 have been used as monitor channels.  Missing channels will be calibrated.
 The default offset in this case is 0.25.
 .IP -N
 Calibrate stations (limited by \fIsta_regex\fP) in the staq330 table.  To allow network operations
@@ -50,6 +52,8 @@ The default duration_offset_fraction is \fB0.5\fP.
 .IP "-p parameter_file"
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBq330_calibration\fP.
+.IP "-t start_time"
+Only calibrate stations which have been deployed after \fIstart_time\fP
 
 
 .SH ENVIRONMENT

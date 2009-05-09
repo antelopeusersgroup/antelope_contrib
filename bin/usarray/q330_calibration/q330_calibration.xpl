@@ -15,7 +15,7 @@
     use archive;
     use orb;
     
-    our ($opt_v,$opt_V,$opt_i,$opt_m,$opt_N,$opt_n,$opt_o,$opt_p,$opt_2,$opt_3);
+    our ($opt_v,$opt_V,$opt_i,$opt_m,$opt_N,$opt_n,$opt_o,$opt_p,$opt_t,$opt_2,$opt_3);
     our ($pgm,$host);
     our (%pf);
     
@@ -24,9 +24,10 @@
     my ($usage,$cmd,$problems,$subject,$debug,$verbose);
     my ($orb,$orbname,$db,$stime,$Pf,$regex,$subset,$target);
     my ($sta,$dlsta,$snmodel,$chident,$sleep,$problem_check);
-    my ($offset,$start,$otime,$rows,$trow,$row,$irow,$drow,$group);
-    my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbtmp) ;
-    my (@a);
+    my ($offset,$start,$otime,$rows,$trow,$row,$irow,$drow,$group,$ncal,$key);
+    my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbtmp,@dbdeploy,@dbmone,@dbmonn,@dbje,@dbjn) ;
+    my (@a,@group);
+    my (%a);
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -35,10 +36,10 @@
 
     $problems = 0;
     $usage    =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] [-i] [-N] [-2] [-3] \n" ;
-    $usage   .=  "	[-o duration_offset_fraction] [-p pf] [-m mail_to] \n" ;
+    $usage   .=  "	[-o duration_offset_fraction] [-t start_time] [-p pf] [-m mail_to] \n" ;
     $usage   .=  "	cmdorb db sta_regex [sta_regex1 [sta_regex2 [...]]] \n\n"  ; 
     
-    if (  ! &Getopts('nvVim:No:p:23') || @ARGV < 3 ) { 
+    if (  ! &Getopts('nvVim:No:p:t:23') || @ARGV < 3 ) { 
         unless ( ($opt_i || $opt_N) && @ARGV == 2) {
             elog_notify ( $cmd ) ; 
             elog_die    ( $usage ) ;
@@ -69,7 +70,7 @@
 #
 #  check db
 #
-    $problems = &check_tables($db,$problems,qw(dlcalwf dlsensor staq330));
+    $problems = &check_tables($db,$problems,qw(deployment dlcalwf dlsensor staq330));
     if ($problems) {
         $subject = "Problems - $pgm $host	db $db	missing tables" ;
         &sendmail($subject, $opt_m) if $opt_m ; 
@@ -95,11 +96,18 @@
 #  open db
 #
     @db            = dbopen($db,'r');
+    @dbdeploy      = dblookup(@db,0,"deployment",0,0);
     @dbdlcalwf     = dblookup(@db,0,"dlcalwf",0,0);
     @dbdlsensor    = dblookup(@db,0,"dlsensor",0,0);
     @dbstaq330     = dblookup(@db,0,"staq330",0,0);
     @dbdlsensor    = dbsubset(@dbdlsensor,"endtime == NULL");
     @dbstaq330     = dbsubset(@dbstaq330,"endtime == NULL");
+    
+    if ($opt_t) {
+        @dbdeploy = dbsubset(@dbdeploy,"time > \_$opt_t\_");
+        @dbstaq330 = dbjoin(@dbstaq330,@dbdeploy,"sta","time::endtime");
+        @dbstaq330 = dbseparate(@dbstaq330,"staq330");
+    }
 
     elog_notify(sprintf("%d	stations in dlsensor",dbquery(@dbdlsensor,'dbRECORD_COUNT')));
     elog_notify(sprintf("%d	stations in staq330",dbquery(@dbstaq330,'dbRECORD_COUNT')));
@@ -132,40 +140,87 @@
     
         $offset = 0.25;
         
-        $subset = "fchan =~ /BHZ/ && dlcaltype =~ /white/ && ((endtime - time) > 3600)";
-        
-        @dbdlcalwf = dbsubset(@dbdlcalwf,$subset);
-        
-        @dbj = dbnojoin(@dbj,@dbdlcalwf,"sta#fsta");
-        
-        elog_notify(sprintf("%d	stations which need calibrations",dbquery(@dbj,'dbRECORD_COUNT')));
+#  find stations missing calibrations using BHE monitor channel
 
-        @a = ();
-        for ($dbj[3] = 0; $dbj[3] < dbquery(@dbj,'dbRECORD_COUNT'); $dbj[3]++) {
-            $sta = dbgetv(@dbj,"sta");
-            push(@a,substr($sta,0,1));
-        }
-        @a = &get_unique(@a);
-        elog_notify("@a") if $opt_V;
+        $subset = "fchan =~ /BHE/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
+        @dbmone = dbsubset(@dbdlcalwf,$subset);
+        @dbje   = dbnojoin(@dbj,@dbmone,"sta#fsta");
         
-        foreach $group (@a) {
+        elog_notify(sprintf("%d	stations which need calibrations using BHE as monitor",dbquery(@dbje,'dbRECORD_COUNT')));
+        
+#  find stations missing calibrations using BHN monitor channel
+
+        $subset = "fchan =~ /BHN/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
+        @dbmonn = dbsubset(@dbdlcalwf,$subset);
+        @dbjn = dbnojoin(@dbj,@dbmonn,"sta#fsta");
+        
+        elog_notify(sprintf("%d	stations which need calibrations using BHN as monitor",dbquery(@dbjn,'dbRECORD_COUNT')));
+        
+#  find out how many station-channel pairs need to be processed by first character in station name
+
+        %a = ();
+        for ($dbje[3] = 0; $dbje[3] < dbquery(@dbje,'dbRECORD_COUNT'); $dbje[3]++) {
+            $sta = dbgetv(@dbje,"sta");
+            $a{substr($sta,0,1)}++;
+        }
+        for ($dbjn[3] = 0; $dbjn[3] < dbquery(@dbjn,'dbRECORD_COUNT'); $dbjn[3]++) {
+            $sta = dbgetv(@dbjn,"sta");
+            $a{substr($sta,0,1)}++;
+        }        
+        
+        prettyprint(\%a) if $opt_V;
+        
+#  group in sets of station-channels which have at least 10 pairs
+        
+        $ncal  = 0;
+        $group = "";
+        @group = ();
+        foreach $key (keys(%a)) {
+            $ncal  += $a{$key};
+            $group .= "$key\.\*|";
+            if ($ncal > 10) {
+                $group =~ s/\|$//;
+                elog_notify($group);
+                push(@group,$group);
+                
+                $ncal = 0;
+                $group = "",
+            }
+        }
+        
+#  make sure last set is appended
+        
+        if ($group !~ //) {
+            $group =~ s/\|$//;
+            elog_notify($group) if $opt_V;
+            push(@group,$group);
+        }
+        
+#  loop over groups, calibrating one group at a time
+                
+        foreach $group (@group) {
             $sleep = 0;
             $start = now();
-            $subset = "sta =~ /$group\.\*/";
-            elog_notify("processing $subset");
-            @dbtmp = dbsubset(@dbj,$subset);
-        
-            $sleep = &calibrate_view($orbname,"0x4",$offset,$problems,@dbtmp) unless $opt_2;
+            $subset = "sta =~ /$group/";
+            
+            @dbtmp = dbsubset(@dbje,$subset);
+            if (dbquery(@dbtmp,"dbRECORD_COUNT") && ! $opt_2 ) {
+                elog_notify("processing BHE monitor $subset");
+                $sleep = &calibrate_view($orbname,"0x4",$offset,$problems,@dbtmp) ;
+            }
 
-            elog_notify ("sleeping $sleep");
-
-            $sleep = $sleep - (now() - $start); 
-            elog_notify ("sleeping $sleep");
-            sleep ($sleep) unless ($opt_n || $sleep < 1);
-    
-            $sleep = &calibrate_view($orbname,"0x2",$offset,$problems,@dbtmp) unless $opt_3;
+            @dbtmp = dbsubset(@dbjn,$subset);
+            
+            if (dbquery(@dbtmp,"dbRECORD_COUNT") && ! $opt_3 ) {
+                elog_notify("processing BHN monitor $subset");
+                elog_notify ("sleeping $sleep");
+                $sleep = $sleep - (now() - $start); 
+                elog_notify ("sleeping $sleep");
+                sleep ($sleep) unless ($opt_n || $sleep < 1);
+                $sleep = &calibrate_view($orbname,"0x2",$offset,$problems,@dbtmp) ;
+            }
         } 
-    
+        
     } elsif ($opt_N) {  
 # 
 #  process whole network
