@@ -12,11 +12,18 @@ EventCatalog::EventCatalog(MetadataList& mdl)
 	mdloaded=mdl;
 }
 
-EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& am,string ttmethod, string ttmodel)
+EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& am,
+	string ttmethod, string ttmodel,bool is_view)
 {
 	const string base_message("EventCatalog database constructor:  ");
 	try {
 		DatascopeHandle dsdbh=dynamic_cast<DatascopeHandle&>(dbh);
+		if(!is_view)
+		{
+			dsdbh.lookup("event");
+			dsdbh.natural_join("origin");
+			dsdbh.subset("orid==prefor");
+		}
 		double lat,lon,depth,otime;
 		Metadata md;
 		int nrec=dsdbh.number_tuples();
@@ -52,7 +59,7 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& a
 					<< "Warning:  this event was not added because"
 					<< " it was judged a duplicate:"
 					<< endl
-					<< deg(lat) << " "<< deg(lon) <<" "<<depth
+					<< lat << " "<< lon <<" "<<depth
 					<< strtime(otime)<<endl;
 		}
 		current_hypo=catalog.begin();
@@ -65,12 +72,19 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& a
 		throw SeisppError(message);
 	}
 }
-EventCatalog::EventCatalog(DatabaseHandle& dbh,string ttmethod, string ttmodel)
+EventCatalog::EventCatalog(DatabaseHandle& dbh,string ttmethod, string ttmodel,
+	bool is_view)
 {
 	const string base_message("EventCatalog database constructor:  ");
 	Metadata emptymd;
 	try {
 		DatascopeHandle dsdbh=dynamic_cast<DatascopeHandle&>(dbh);
+		if(!is_view)
+		{
+			dsdbh.lookup("event");
+			dsdbh.natural_join("origin");
+			dsdbh.subset("orid==prefor");
+		}
 		double lat,lon,depth,otime;
 		int nrec=dsdbh.number_tuples();
 		for(dsdbh.db.record=0;dsdbh.db.record<nrec;++dsdbh.db.record)
