@@ -121,6 +121,23 @@ or
 .fi
 .in
 .ft R
+.IP "\fBorbget\fP (orbfd, whichpkt)"
+Get an orb packet specified by one of the special values documented in orbget(3), 
+such as ORBNEWEST, ORBOLDEST, ORBCURRENT, ORBSTASH etc. 
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(pktid, srcname, time, packet, nbytes) = orbget( orbfd, ORBNEWEST )
+
+or 
+
+(pktid, srcname, time, packet, nbytes) = orbfd.reap(ORBNEWEST)
+
+.fi
+.in
+.ft R
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT

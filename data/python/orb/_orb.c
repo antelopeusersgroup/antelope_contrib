@@ -62,6 +62,7 @@ static PyObject *python_orbtell( PyObject *self, PyObject *args );
 static PyObject *python_orbselect( PyObject *self, PyObject *args );
 static PyObject *python_orbreject( PyObject *self, PyObject *args );
 static PyObject *python_orbreap( PyObject *self, PyObject *args );
+static PyObject *python_orbget( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
 
@@ -75,6 +76,7 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbselect",	python_orbselect,   	METH_VARARGS, "Select orb source names" },
 	{ "_orbreject",	python_orbreject,   	METH_VARARGS, "Reject orb source names" },
 	{ "_orbreap",	python_orbreap,   	METH_VARARGS, "Get the next packet from an orb" },
+	{ "_orbget",	python_orbget,   	METH_VARARGS, "Get a specified packet from an orb" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -267,6 +269,40 @@ python_orbreap( PyObject *self, PyObject *args ) {
 	return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
 }
 
+static PyObject *
+python_orbget( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbget(orb, whichpkt)\n";
+	int	orbfd;
+	int	whichpkt;
+	int	pktid;
+	char	srcname[ORBSRCNAME_SIZE];
+	double	pkttime;
+	char	*pkt = 0;
+	int	nbytes = 0;
+	int	bufsize = 0;
+	PyObject *obj;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "ii", &orbfd, &whichpkt ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+
+	rc = orbget( orbfd, whichpkt, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
+
+	obj = Py_BuildValue( "s#", pkt, nbytes );
+
+	free( pkt );
+
+	return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
+}
+
 static void
 add_orb_constants( PyObject *mod ) {
 	int	i;
@@ -275,7 +311,16 @@ add_orb_constants( PyObject *mod ) {
 
 		PyModule_AddIntConstant( mod, Orbxlat[i].name, Orbxlat[i].num );
 	}
-	
+
+	PyModule_AddIntConstant( mod, "ORBCURRENT", ORBCURRENT );
+	PyModule_AddIntConstant( mod, "ORBNEXT", ORBNEXT );
+	PyModule_AddIntConstant( mod, "ORBPREV", ORBPREV );
+	PyModule_AddIntConstant( mod, "ORBOLDEST", ORBOLDEST );
+	PyModule_AddIntConstant( mod, "ORBNEWEST", ORBNEWEST );
+	PyModule_AddIntConstant( mod, "ORBNEXT_WAIT", ORBNEXT_WAIT );
+	PyModule_AddIntConstant( mod, "ORBSTASH", ORBSTASH );
+	PyModule_AddIntConstant( mod, "ORBPREVSTASH", ORBPREVSTASH );
+
 	return;	
 }
 

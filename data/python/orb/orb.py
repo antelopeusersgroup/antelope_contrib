@@ -98,6 +98,11 @@ class Orb():
 
         return _orb._orbreap(self._orbfd)
 
+    def get(self, whichpkt):
+        """Get a specified packet from an orb"""
+
+        return _orb._orbget(self._orbfd, whichpkt)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -141,6 +146,12 @@ def orbreap(orb):
     """Get the next packet from an orb"""
 
     return orb.reap()
+
+
+def orbget(orb, whichpkt):
+    """Get a specified packet from an orb"""
+
+    return orb.get(whichpkt)
 
 
 if __name__ == '__main__':
@@ -234,6 +245,22 @@ if __name__ == '__main__':
             os.system( "pf2orb rtexec " + orbname )
 
             ( pktid, srcname, time, packet, nbytes ) = orbreap(orb)
+
+	    self.assertTrue(isinstance(pktid, int))
+	    self.assertTrue(isinstance(srcname, str))
+	    self.assertTrue(isinstance(time, float))
+	    self.assertTrue(isinstance(packet, str))
+	    self.assertTrue(isinstance(nbytes, int))
+
+	    orbclose(orb)
+
+        def test_procedure_orbget(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
 
 	    self.assertTrue(isinstance(pktid, int))
 	    self.assertTrue(isinstance(srcname, str))
