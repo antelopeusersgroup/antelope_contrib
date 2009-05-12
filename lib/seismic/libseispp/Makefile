@@ -22,6 +22,7 @@ INCLUDE=ArrivalUpdater.h \
   TimeSeries.h\
   TimeVariableWeight.h\
   TimeWindow.h\
+  VectorStatistics.h\
   VelocityModel_1d.h\
   XcorAnalysisSetting.h \
   XcorProcessingEngine.h \
