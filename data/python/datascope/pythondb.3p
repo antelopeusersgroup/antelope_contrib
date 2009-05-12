@@ -471,7 +471,7 @@ db.process( cmdlist )
 .ft R
 
 .IP "\fBdbget\fP (db [, 0] )"
-Get a table, field, or record from a base table
+Get an entire table, field, or record from a base table
 .ft CW
 .in 2c
 .nf
@@ -482,6 +482,23 @@ value = dbget( db )
 or 
 
 value = db.get()
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbput\fP (db [, record] )"
+Put an entire table, field, or record into a base table
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+dbput( db )
+
+or 
+
+db.put()
 
 .fi
 .in
