@@ -110,11 +110,16 @@ public:
 	\param ttmethod travel time method used to construct Hypocenter objects that
 		are internally used to define this object.
 	\param ttmodel earth model used for travel time and slowness vector calculations.
+	\param is_view allows optional preprocessing to use a subset of data.
+		By default the handle is modified to become a join or origin 
+		and event.  If this is false, it is assumed the dbh points to
+		a handle that is a join of event and origin.
 	\exception will throw a SeisppError exception if this process fail.  Fail in this case
 		means any read error on the database.
 	*/
 	EventCatalog(DatabaseHandle& dbh,
-		string ttmethod="tttaup",string ttmodel="iasp91");
+		string ttmethod="tttaup",string ttmodel="iasp91",
+			bool is_view=false);
 	/*! \brief Database constructor with auxiliary attributes.
 
 	Constructs this object from a generic database.  In the current implementation the 
@@ -132,11 +137,16 @@ public:
 	\param ttmethod travel time method used to construct Hypocenter objects that
 		are internally used to define this object.
 	\param ttmodel earth model used for travel time and slowness vector calculations.
+	\param is_view allows optional preprocessing to use a subset of data.
+		By default the handle is modified to become a join or origin 
+		and event.  If this is false, it is assumed the dbh points to
+		a handle that is a join of event and origin.
 	\exception will throw a SeisppError exception if this process fail.  Fail in this case
 		means any read error on the database.
 	*/
 	EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& am,
-		string ttmethod="tttaup",string ttmodel="iasp91");
+		string ttmethod="tttaup",string ttmodel="iasp91",
+			bool is_view=false);
 	/*! \brief Standard copy constructor.
 	*/
 	EventCatalog(const EventCatalog& parent);
