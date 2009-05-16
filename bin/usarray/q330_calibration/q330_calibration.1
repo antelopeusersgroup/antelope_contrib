@@ -35,7 +35,8 @@ Extremely verbose.  Used for debugging purposes only.
 .IP -n
 Test mode. 
 .IP -i
-Calibrate stations (limited by \fIsta_regex\fP) in the staq330 table which have not been calibrated 
+Calibrate dataloggers and sensors on stations (limited by \fIsta_regex\fP) in the staq330 and dlsensor
+tables that have not been calibrated 
 using white noise. \fBq330_calibration\fP will check to make sure that both channel 2 and channel
 3 have been used as monitor channels.  Missing channels will be calibrated.
 The default offset in this case is 0.25.

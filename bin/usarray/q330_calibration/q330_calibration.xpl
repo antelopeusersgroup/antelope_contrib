@@ -25,7 +25,7 @@
     my ($orb,$orbname,$db,$stime,$Pf,$regex,$subset,$target);
     my ($sta,$dlsta,$snmodel,$chident,$sleep,$problem_check);
     my ($offset,$start,$otime,$rows,$trow,$row,$irow,$drow,$group,$ncal,$key);
-    my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbtmp,@dbdeploy,@dbmone,@dbmonn,@dbje,@dbjn) ;
+    my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbnj,@dbtmp,@dbdeploy,@dbmone,@dbmonn,@dbje,@dbjn) ;
     my (@a,@group);
     my (%a);
 
@@ -114,6 +114,15 @@
 
     @dbj = dbjoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
     elog_notify(sprintf("%d	stations in join of staq330 and dlsensor",dbquery(@dbj,'dbRECORD_COUNT')));
+    
+    @dbnj = dbnojoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
+    elog_notify(sprintf("%d  	stations in no join of staq330 and dlsensor",dbquery(@dbnj,'dbRECORD_COUNT')));
+    if (dbquery(@dbnj,'dbRECORD_COUNT') && $opt_v) {
+        @dbnj = dbsort(@dbnj,"sta");
+        for ($dbnj[3] = 0; $dbnj[3] < dbquery(@dbnj,'dbRECORD_COUNT'); $dbnj[3]++) {
+            elog_notify(sprintf("%s",dbgetv(@dbnj,"sta")));
+        }
+    }
 #
 #  subset join of staq330-dlsensor by station regular expressions.
 #
@@ -140,19 +149,19 @@
     
         $offset = 0.25;
         
-#  find stations missing calibrations using BHE monitor channel
+#  find sensors and dataloggers missing calibrations using BHE monitor channel
 
         $subset = "fchan =~ /BHE/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
         @dbmone = dbsubset(@dbdlcalwf,$subset);
-        @dbje   = dbnojoin(@dbj,@dbmone,"sta#fsta");
+        @dbje   = dbnojoin(@dbj,@dbmone,"sta#fsta","dlsensor.time::dlsensor.endtime#dlcalwf.time::dlcalwf.endtime");
         
         elog_notify(sprintf("%d	stations which need calibrations using BHE as monitor",dbquery(@dbje,'dbRECORD_COUNT')));
         
-#  find stations missing calibrations using BHN monitor channel
+#  find sensors and dataloggers missing calibrations using BHN monitor channel
 
         $subset = "fchan =~ /BHN/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
         @dbmonn = dbsubset(@dbdlcalwf,$subset);
-        @dbjn = dbnojoin(@dbj,@dbmonn,"sta#fsta");
+        @dbjn = dbnojoin(@dbj,@dbmonn,"sta#fsta","dlsensor.time::dlsensor.endtime#dlcalwf.time::dlcalwf.endtime");
         
         elog_notify(sprintf("%d	stations which need calibrations using BHN as monitor",dbquery(@dbjn,'dbRECORD_COUNT')));
         
@@ -202,6 +211,7 @@
             $sleep = 0;
             $start = now();
             $subset = "sta =~ /$group/";
+            next unless ($group);
             
             @dbtmp = dbsubset(@dbje,$subset);
             if (dbquery(@dbtmp,"dbRECORD_COUNT") && ! $opt_2 ) {
