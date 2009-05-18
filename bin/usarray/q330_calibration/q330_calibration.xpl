@@ -327,11 +327,21 @@
 #  clean up and exit
 #
     $stime = strydtime(now());
-    elog_notify ("completed successfully	$stime\n\n");
+    
+    if ($problems) {
+        elog_notify ("completed with $problems problems	$stime\n\n");
 
-    $subject = sprintf("Success  $pgm  $host");
-    elog_notify ($subject);
-    &sendmail ( $subject, $opt_m ) if $opt_m ;
+        $subject = sprintf("Problems ($problems)    $pgm    $host");
+        &sendmail ( $subject, $opt_m ) if $opt_m ;
+        elog_die ($subject);
+    } else {
+        elog_notify ("completed successfully	$stime\n\n");
+
+        $subject = sprintf("Success  $pgm  $host");
+        elog_notify ($subject);
+        &sendmail ( $subject, $opt_m ) if $opt_m ;
+    
+    }
   
     exit(0);
 }
@@ -443,9 +453,9 @@ sub calibrate_view { # ($maxdur,$sleep) = &calibrate_view($orbname,$mon_chan,$of
                 $cmd = "cat /tmp/tmp_dlcmd.pf";
                 elog_notify("$cmd");
                 $problems = run($cmd,$problems) ;
-                $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
-                &sendmail($subject, $opt_m) if $opt_m ; 
-                elog_die("\n$subject") ;
+                $subject = "Problem $problems - $pgm $host	dlcmd $sta $mon_chan" ;
+#                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_complain("\n$subject") ;
             }
             if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
                 next;
@@ -487,9 +497,9 @@ sub calibrate_one { # $sleep = &calibrate_view($orbname,$mon_chan,$offset,$probl
             $cmd = "cat /tmp/tmp_dlcmd.pf";
             elog_notify("$cmd");
             $problems = run($cmd,$problems) ;
-            $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
-            &sendmail($subject, $opt_m) if $opt_m ; 
-            elog_die("\n$subject") ;
+            $subject = "Problem $problems- $pgm $host	dlcmd $sta $mon_chan" ;
+#            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_complain("\n$subject") ;
         }
         if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
             return (0);
