@@ -1,0 +1,92 @@
+.TH CONSTRUCTION_MAIL 3 "$Date$"
+.SH NAME
+construction_mail \- mail_parser handler for TA construction reports
+.SH SYNOPSIS
+.nf
+construction_mail_handler( $message, $pfarray );
+.fi
+.SH DESCRIPTION
+The construction_mail handler is intended to be launched by the mail_parser(1) 
+utility. The TA field personnel routinely sends construction reports
+email notifications to anf@ucsd.edu at the end of each new installation. The 
+process starts with procmail triggering mail_parser script due to some specified
+rule inside .procmailrc file. This rule is set to trigger the script for every 
+email with "Construction Report" phrase in the subject line of the email. The rule 
+looks like:
+.nf
+
+	:0
+	* ^Subject:.*Construction Report.*
+	{
+			:0c
+			|/home/reyes/bin/mail_parser_wrapper
+
+			:0:
+			$HOME/mail/TEST
+	}
+
+.fi
+this will run the mail_parser_wrapper and move the original email to an archive
+folder named TEST. The mail_parser_wrapper shell script is in charge og setting the
+Antelope variables and executing the mail_parser script. It looks like this:
+.nf
+
+#!/bin/csh -f
+
+	cd ~
+	set ANTELOPE=/opt/antelope/4.10p
+	source $ANTELOPE/setup.csh
+	setenv PFPATH $ANTELOPE/data/pf:$HOME/data/pf:./pf:.
+	exec $ANTELOPE/bin/mail_parser -m -v 
+
+.fi
+The handler will check the mail_parser.pf file to create rules out of each
+Handler definition in the file. The user will need to add this new Handler to 
+the existing mail_parser.pf file. In this case the parser will source 
+construction_mail.pl if sender and subject are matched to the incoming message.
+
+In this case the body of the e-mail will be examine for the following values:
+.nf
+
+	Date: 
+	Station Code: 
+	Elevation: 
+	GPS: 
+
+.fi
+The text after each ":" or "=" will be grab as the value of the variable. This 
+variables will match fields on the site table. The script will check for 
+validity of the variables first. Then the script will check if there is a 
+previous entry for that station name on the table. Then it will do an update
+or a new entry to the table. 
+.SH PARAMETER FILE
+.nf
+
+mail_parser.pf:
+
+Handlers &Tbl{
+	&Arr{
+	handler		 construction_mail
+	sender		 .*
+	subject		 .*Construction Report.* 
+	#database	 /home/reyes/bin/temp_usarray
+	database	 /anf/TA/dbs/dbops/construction
+	include_body 0					#0=false, 1=true
+	report_to	 anf@ucsd.edu 	#blank for sender
+	mail_success 1 					#Send mail on success 
+	report_from	 anf@ucsd.edu 	    #blank for same as sender
+	mail_subject "Construction Parser Report"
+	cc_sender	 0					#0=false, 1=true
+	log			 0					#0=false, 1=true
+	include_tb	 1					#0=false, 1=true
+	}
+}
+.fi
+.SH "SEE ALSO"
+mail_parser(1)
+.SH "BUGS AND CAVEATS"
+none
+.SH AUTHOR
+Juan C. Reyes
+.\" $Id$
+
