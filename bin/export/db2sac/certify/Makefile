@@ -1,0 +1,4 @@
+include $(ANTELOPEMAKE)
+DIRS=
+
+# $Id$ 

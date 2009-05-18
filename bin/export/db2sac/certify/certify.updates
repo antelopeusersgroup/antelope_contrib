@@ -1,0 +1,9 @@
+db2sac       927750792.00000 denali                S5.7N/dev  changed method of calculating mean value to more stable appr    927750792
+seed2sac     927750801.00000 denali                S5.7N/dev  changed method of calculating mean value to more stable appr    927750802
+db2sac      1029297294.00000 castle     danq       S5.8W/dev  use output datatype sc instead of t4                           1029297295
+seed2sac    1029297304.00000 castle     danq       S5.8W/dev  use output datatype sc instead of t4                           1029297305
+db2isac     1029297355.00000 castle     danq       S5.8W/dev  first run                                                      1029297355
+db2isac     1029297448.00000 castle     danq       S5.8W/dev  first run                                                      1029297448
+db2sac      1147718842.00000 crestone   danq       SunOS/dev  double in etoh changed rounding slightly                       1147718842
+seed2sac    1147718845.00000 crestone   danq       SunOS/dev  double in etoh changed rounding slightly                       1147718845
+db2isac     1147718863.00000 crestone   danq       SunOS/dev  double in etoh changed rounding slightly                       1147718863

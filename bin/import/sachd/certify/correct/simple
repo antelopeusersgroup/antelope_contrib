@@ -1,0 +1,754 @@
+
+--> data/1987137052539.50.BAY.HBIE.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.004000     time increment, sec           
+         depmin =           -73.208664     minimum amplitude             
+         depmax =            74.966942     maximum amplitude             
+              b =             0.000000     data beginning time (relative to ref time)
+              e =            52.995998     data ending time (relative to ref time)
+           stla =            50.820000     station latititude            
+           stlo =            75.550003     station longitude             
+           stel =           600.000000     station elevation, m          
+           stdp =            99.000000     station depth, m              
+         depmen =             1.009387     mean value, amplitude         
+          cmpaz =            90.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1987            ref time of file, yr          
+         nzjday =           137            ref time of file, day         
+         nzhour =             5            ref time of file, hr          
+          nzmin =            25            ref time of file, min         
+          nzsec =            39            ref time of file, sec         
+         nzmsec =           500            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         13250            number of samples             
+         iftype =             1            type of file                  
+           idep =             7            type of amplitude             
+         iztype =            10            zero time equivalence         
+         isynth =            49            synthetic data flag           
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lovrok =             0            overwrite permission          
+         lcalda =             1            calc distance, azimuth        
+          kstnm =           BAY            station name                  
+         kcmpnm =          HBIE            component name                
+
+First 12 data samples:
+
+  -6.47369146347046   -7.51267910003662    -8.3119010925293   -8.15205669403076 
+  -7.11306858062744   -5.51462602615356   -4.15595054626465   -3.67641758918762 
+  -3.43665099143982   -3.03704047203064   -3.11696243286133   -4.23587226867676 
+
+--> data/920713181133.GUN.E.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.005794     minimum amplitude             
+         depmax =             0.009893     maximum amplitude             
+              b =           411.299988     data beginning time (relative to ref time)
+              e =          8411.100586     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           530.900024     user-defined time pick        
+             t2 =           960.400024     user-defined time pick        
+             t3 =          1009.299988     user-defined time pick        
+             t4 =          1001.099976     user-defined time pick        
+             t5 =           554.200012     user-defined time pick        
+             t6 =           648.099976     user-defined time pick        
+             t7 =           653.500000     user-defined time pick        
+             t8 =          1177.699951     user-defined time pick        
+             t9 =          1194.400024     user-defined time pick        
+           stla =            38.500000     station latititude            
+           stlo =          -107.000000     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           386.000000     available to user             
+           dist =          5643.599609     stn-event distance, km        
+             az =           329.140991     event-stn azimuth             
+            baz =           139.292145     stn-event azimuth             
+          gcarc =            50.718895     stn-event dist, degrees       
+          cmpaz =            90.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           GUN            station name                  
+          kevnm =  0713181133.G            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             E            component name                
+
+First 12 data samples:
+
+ .00138186849653721  .00142973964102566  .00138506235089153  .00143342243973166 
+ .00146717706229538  .00145021069329232  .00147611077409238   .0014597992412746 
+ .00145785568747669  .00149402709212154  .00151510757859796  .00146887614391744 
+
+--> data/920713181133.GUN.N.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.003887     minimum amplitude             
+         depmax =             0.006612     maximum amplitude             
+              b =           411.299988     data beginning time (relative to ref time)
+              e =          8411.100586     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           530.900024     user-defined time pick        
+             t2 =           960.400024     user-defined time pick        
+             t3 =          1009.299988     user-defined time pick        
+             t4 =          1001.099976     user-defined time pick        
+             t5 =           554.200012     user-defined time pick        
+             t6 =           648.099976     user-defined time pick        
+             t7 =           653.500000     user-defined time pick        
+             t8 =          1177.699951     user-defined time pick        
+             t9 =          1194.400024     user-defined time pick        
+           stla =            38.500000     station latititude            
+           stlo =          -107.000000     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           386.000000     available to user             
+           dist =          5643.599609     stn-event distance, km        
+             az =           329.140991     event-stn azimuth             
+            baz =           139.292145     stn-event azimuth             
+          gcarc =            50.718895     stn-event dist, degrees       
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           GUN            station name                  
+          kevnm =  0713181133.G            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             N            component name                
+
+First 12 data samples:
+
+ .00212133047170937  .00211938004940748  .00208595185540617  .00209544273093343 
+ .00208830926567316  .00211562379263341  .00211468245834112  .00209018471650779 
+ .00209991633892059  .00210993969812989  .00210261251777411  .00209517730399966 
+
+--> data/920713181133.GUN.V.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.011201     minimum amplitude             
+         depmax =             0.008194     maximum amplitude             
+              b =           411.299988     data beginning time (relative to ref time)
+              e =          8411.100586     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           530.900024     user-defined time pick        
+             t2 =           960.400024     user-defined time pick        
+             t3 =          1009.299988     user-defined time pick        
+             t4 =          1001.099976     user-defined time pick        
+             t5 =           554.200012     user-defined time pick        
+             t6 =           648.099976     user-defined time pick        
+             t7 =           653.500000     user-defined time pick        
+             t8 =          1177.699951     user-defined time pick        
+             t9 =          1194.400024     user-defined time pick        
+           stla =            38.500000     station latititude            
+           stlo =          -107.000000     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           386.000000     available to user             
+           dist =          5643.599609     stn-event distance, km        
+             az =           329.140991     event-stn azimuth             
+            baz =           139.292145     stn-event azimuth             
+          gcarc =            50.718895     stn-event dist, degrees       
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =             0.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           GUN            station name                  
+          kevnm =  0713181133.G            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             V            component name                
+
+First 12 data samples:
+
+734.039931558073e-6 728.841405361891e-6 706.788268871605e-6 703.100231476128e-6 
+724.540441296995e-6 688.952277414501e-6 699.951779097319e-6 726.906582713127e-6 
+697.339419275522e-6 681.635574437678e-6 687.703723087907e-6 661.208177916706e-6 
+
+--> data/920713181133.LED.E.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.035975     minimum amplitude             
+         depmax =             0.021740     maximum amplitude             
+              b =           411.299988     data beginning time (relative to ref time)
+              e =          8411.100586     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           532.200012     user-defined time pick        
+             t2 =           962.900024     user-defined time pick        
+             t3 =          1009.500000     user-defined time pick        
+             t4 =          1003.599976     user-defined time pick        
+             t5 =           555.599976     user-defined time pick        
+             t6 =           649.700012     user-defined time pick        
+             t7 =           655.299988     user-defined time pick        
+             t8 =          1180.599976     user-defined time pick        
+             t9 =          1197.699951     user-defined time pick        
+           stla =            39.153900     station latititude            
+           stlo =          -106.345200     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           151.000000     available to user             
+           dist =          5662.327148     stn-event distance, km        
+             az =           330.188812     event-stn azimuth             
+            baz =           140.363235     stn-event azimuth             
+          gcarc =            50.887878     stn-event dist, degrees       
+          cmpaz =            90.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           LED            station name                  
+          kevnm =  0713181133.L            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             E            component name                
+
+First 12 data samples:
+
+-0.00595679692924023 -0.00623209495097399 -0.00634466949850321 -0.00636280933395028 
+-0.0062754712998867 -0.00612614629790187  -0.005977772641927 -0.00624525314196944 
+-0.00663998816162348 -0.00659400131553411 -0.00625279312953353 -0.00646188855171204 
+
+--> data/920713181133.LED.N.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.025917     minimum amplitude             
+         depmax =             0.023130     maximum amplitude             
+              b =           411.299988     data beginning time (relative to ref time)
+              e =          8411.100586     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           532.200012     user-defined time pick        
+             t2 =           962.900024     user-defined time pick        
+             t3 =          1009.500000     user-defined time pick        
+             t4 =          1003.599976     user-defined time pick        
+             t5 =           555.599976     user-defined time pick        
+             t6 =           649.700012     user-defined time pick        
+             t7 =           655.299988     user-defined time pick        
+             t8 =          1180.599976     user-defined time pick        
+             t9 =          1197.699951     user-defined time pick        
+           stla =            39.153900     station latititude            
+           stlo =          -106.345200     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           151.000000     available to user             
+           dist =          5662.327148     stn-event distance, km        
+             az =           330.188812     event-stn azimuth             
+            baz =           140.363235     stn-event azimuth             
+          gcarc =            50.887878     stn-event dist, degrees       
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           LED            station name                  
+          kevnm =  0713181133.L            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             N            component name                
+
+First 12 data samples:
+
+-0.00565156619995832 -0.00556101370602846 -0.00582720199599862 -0.00565957790240645 
+-0.00565470941364765 -0.00590944103896618 -0.00605357438325882 -0.00594001729041338 
+-0.00582820270210505 -0.00620458833873272 -0.00631601177155972 -0.00606174673885107 
+
+--> data/920713181133.LED.V.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.017013     minimum amplitude             
+         depmax =             0.026662     maximum amplitude             
+              b =           411.299988     data beginning time (relative to ref time)
+              e =          8411.100586     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           532.200012     user-defined time pick        
+             t2 =           962.900024     user-defined time pick        
+             t3 =          1009.500000     user-defined time pick        
+             t4 =          1003.599976     user-defined time pick        
+             t5 =           555.599976     user-defined time pick        
+             t6 =           649.700012     user-defined time pick        
+             t7 =           655.299988     user-defined time pick        
+             t8 =          1180.599976     user-defined time pick        
+             t9 =          1197.699951     user-defined time pick        
+           stla =            39.153900     station latititude            
+           stlo =          -106.345200     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           151.000000     available to user             
+           dist =          5662.327148     stn-event distance, km        
+             az =           330.188812     event-stn azimuth             
+            baz =           140.363235     stn-event azimuth             
+          gcarc =            50.887878     stn-event dist, degrees       
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =             0.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           LED            station name                  
+          kevnm =  0713181133.L            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             V            component name                
+
+First 12 data samples:
+
+ .00676893163472414  .00710863107815385  .00723868329077959  .00682788621634245 
+ .00664533860981464  .00687659904360771  .00709045445546508  .00724444072693586 
+ .00739349890500307  .00728480285033584  .00708166044205427  .00711539946496487 
+
+--> data/920713181133.POS.E.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.034206     minimum amplitude             
+         depmax =             0.009562     maximum amplitude             
+              b =           408.399994     data beginning time (relative to ref time)
+              e =          8408.200195     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           528.099976     user-defined time pick        
+             t2 =           955.299988     user-defined time pick        
+             t3 =          1008.900024     user-defined time pick        
+             t4 =           996.000000     user-defined time pick        
+             t5 =           551.400024     user-defined time pick        
+             t6 =           644.700012     user-defined time pick        
+             t7 =           649.700012     user-defined time pick        
+             t8 =          1171.900024     user-defined time pick        
+             t9 =          1187.599976     user-defined time pick        
+           stla =            38.599998     station latititude            
+           stlo =          -106.099998     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           366.000000     available to user             
+           dist =          5601.416992     stn-event distance, km        
+             az =           329.922882     event-stn azimuth             
+            baz =           140.347778     stn-event azimuth             
+          gcarc =            50.339867     stn-event dist, degrees       
+          cmpaz =            90.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           POS            station name                  
+          kevnm =  0713181133.P            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             E            component name                
+
+First 12 data samples:
+
+-0.00998713541775942 -0.00997195206582546 -0.0099540688097477 -0.00994317419826984 
+-0.00990224909037352 -0.0098685510456562 -0.00983822904527187 -0.00973374862223864 
+-0.00971881300210953 -0.00969319231808186 -0.0096747362986207 -0.00972449406981468 
+
+--> data/920713181133.POS.N.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.018226     minimum amplitude             
+         depmax =             0.034990     maximum amplitude             
+              b =           408.399994     data beginning time (relative to ref time)
+              e =          8408.200195     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           528.099976     user-defined time pick        
+             t2 =           955.299988     user-defined time pick        
+             t3 =          1008.900024     user-defined time pick        
+             t4 =           996.000000     user-defined time pick        
+             t5 =           551.400024     user-defined time pick        
+             t6 =           644.700012     user-defined time pick        
+             t7 =           649.700012     user-defined time pick        
+             t8 =          1171.900024     user-defined time pick        
+             t9 =          1187.599976     user-defined time pick        
+           stla =            38.599998     station latititude            
+           stlo =          -106.099998     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           366.000000     available to user             
+           dist =          5601.416992     stn-event distance, km        
+             az =           329.922882     event-stn azimuth             
+            baz =           140.347778     stn-event azimuth             
+          gcarc =            50.339867     stn-event dist, degrees       
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           POS            station name                  
+          kevnm =  0713181133.P            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             N            component name                
+
+First 12 data samples:
+
+  .0023667891509831  .00232365913689137  .00225759064778686  .00220333342440426 
+ .00212902785278857  .00209102127701044  .00203858176246285   .0020353845320642 
+ .00206679222173989  .00207367399707437  .00214593671262264   .0021845125593245 
+
+--> data/920713181133.POS.V.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.027006     minimum amplitude             
+         depmax =             0.022231     maximum amplitude             
+              b =           408.399994     data beginning time (relative to ref time)
+              e =          8408.200195     data ending time (relative to ref time)
+              a =             0.000000     1st arrival time (relative to ref time)
+             t1 =           528.099976     user-defined time pick        
+             t2 =           955.299988     user-defined time pick        
+             t3 =          1008.900024     user-defined time pick        
+             t4 =           996.000000     user-defined time pick        
+             t5 =           551.400024     user-defined time pick        
+             t6 =           644.700012     user-defined time pick        
+             t7 =           649.700012     user-defined time pick        
+             t8 =          1171.900024     user-defined time pick        
+             t9 =          1187.599976     user-defined time pick        
+           stla =            38.599998     station latititude            
+           stlo =          -106.099998     station longitude             
+           evla =            -3.919000     event latitude                
+           evlo =           283.398010     event longitude               
+           evel =             6.100000     event elevation               
+           evdp =            97.000000     event depth                   
+          user9 =           366.000000     available to user             
+           dist =          5601.416992     stn-event distance, km        
+             az =           329.922882     event-stn azimuth             
+            baz =           140.347778     stn-event azimuth             
+          gcarc =            50.339867     stn-event dist, degrees       
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =             0.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           195            ref time of file, day         
+         nzhour =            18            ref time of file, hr          
+          nzmin =            11            ref time of file, min         
+          nzsec =            33            ref time of file, sec         
+         nzmsec =           700            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =         79999            number of samples             
+         iftype =             1            type of file                  
+         iztype =            11            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           POS            station name                  
+          kevnm =  0713181133.P            event name                    
+            kt1 =             P            time pick 1 ident             
+            kt2 =             S            time pick 2 ident             
+            kt3 =         PKiKP            time pick 3 ident             
+            kt4 =            sS            time pick 4 ident             
+            kt5 =            pP            time pick 5 ident             
+            kt6 =            PP            time pick 6 ident             
+            kt7 =            PP            time pick 7 ident             
+            kt8 =            SS            time pick 8 ident             
+            kt9 =            SS            time pick 9 ident             
+         kcmpnm =             V            component name                
+
+First 12 data samples:
+
+-0.00315862940624356 -0.00316641060635448 -0.00323506025597453 -0.00322407623752952 
+-0.00322816427797079 -0.00323827331885695 -0.00326627749018371 -0.00326265580952168 
+-0.00321778818033636 -0.00325101194903255 -0.00318465870805085 -0.00312669086270034 
+
+--> data/LVZ.BHE.cut.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.050000     time increment, sec           
+         depmin =          -922.000000     minimum amplitude             
+         depmax =           748.000000     maximum amplitude             
+          scale =     508262016.000000     amplitude scale factor        
+              b =             0.000000     data beginning time (relative to ref time)
+              e =         14400.044922     data ending time (relative to ref time)
+      internal1 =             2.000000     internal use                  
+           stla =            67.897903     station latititude            
+           stlo =            34.651402     station longitude             
+           stel =           630.000000     station elevation, m          
+           stdp =           200.000000     station depth, m              
+         depmen =          -114.429558     mean value, amplitude         
+          cmpaz =            90.000000     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          1992            ref time of file, yr          
+         nzjday =           366            ref time of file, day         
+         nzhour =             7            ref time of file, hr          
+          nzmin =             1            ref time of file, min         
+          nzsec =            43            ref time of file, sec         
+         nzmsec =           560            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =        288002            number of samples             
+         iftype =             1            type of file                  
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           LVZ            station name                  
+         kcmpnm =           BHE            component name                
+
+First 12 data samples:
+
+               -274                -256                -235                -220 
+               -204                -179                -151                -122 
+                -90                 -64                 -43                 -17 
+
+--> data/ZAK.DAWY.25.sac
+
+SAC Non-NULL header values:
+
+          delta =             0.100000     time increment, sec           
+         depmin =            -0.151621     minimum amplitude             
+         depmax =             0.517535     maximum amplitude             
+              b =            89.949997     data beginning time (relative to ref time)
+              e =           239.850006     data ending time (relative to ref time)
+              o =          -603.340027     event time (relative to ref time)
+              a =            99.998871     1st arrival time (relative to ref time)
+             t0 =            99.998871     user-defined time pick        
+             t4 =            99.969055     user-defined time pick        
+           stla =            64.065498     station latititude            
+           stlo =          -139.390701     station longitude             
+           stel =           808.000000     station elevation, m          
+           stdp =             0.000000     station depth, m              
+           evla =            10.934000     event latitude                
+           evlo =           140.841995     event longitude               
+           evdp =         24900.000000     event depth                   
+          user0 =             2.500000     available to user             
+          user4 =           327.830841     available to user             
+          user7 =             0.001548     available to user             
+          user8 =           400.000000     available to user             
+          user9 =            91.570595     available to user             
+           dist =          8420.795898     stn-event distance, km        
+             az =            26.515804     event-stn azimuth             
+            baz =           265.631897     stn-event azimuth             
+          gcarc =            75.760719     stn-event dist, degrees       
+         depmen =             0.000238     mean value, amplitude         
+          cmpaz =            85.631897     component azimuth             
+         cmpinc =            90.000000     component inclination         
+         nzyear =          2005            ref time of file, yr          
+         nzjday =            16            ref time of file, day         
+         nzhour =            20            ref time of file, hr          
+          nzmin =            27            ref time of file, min         
+          nzsec =            56            ref time of file, sec         
+         nzmsec =           100            ref time of file, msec        
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =          1500            number of samples             
+      internal8 =             1            internal use                  
+         iftype =             1            type of file                  
+           idep =             6            type of amplitude             
+         iztype =            10            zero time equivalence         
+         isynth =            49            synthetic data flag           
+          leven =      16777216            data-evenly-spaced flag       
+         lpspol =      16777216            station polarity flag         
+         lovrok =             1            overwrite permission          
+         lcalda =      16777216            calc distance, azimuth        
+       unused27 =    -942669825            reserved for future use       
+          kstnm =          DAWY            station name                  
+             ka =             P            1st arrival time ident        
+            kt0 =             P            time pick 0 ident             
+            kt4 =             P            time pick 4 ident             
+         kuser0 =          Rftn            available to user             
+         kuser1 =       IT_DECO            available to user             
+         kcmpnm =             Q            component name                
+
+First 12 data samples:
+
+2.94132547661779e-42 12.9858328688981e-42 137.876044112058e27          -137290528 
+-786.836416534363e18 16.4632374717321e-36    .349706172943115 -158.017871449076e-36 
+-344.065439749308e-21    35.5875968933105 -449.529013974857e-36 -407.222229155928e-33 

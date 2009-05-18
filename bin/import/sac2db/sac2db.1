@@ -1,0 +1,132 @@
+.\" $Name $Revision$ $Date$
+.TH SAC2DB 1 "$Date$"
+.SH NAME
+sac2db \- create css database from sac headers
+.SH SYNOPSIS
+.nf
+\fBsac2db \fP[-v] \fIsacfile\fP [ \fIsacfile\fP ... ] \fIdatabase\fP
+.fi
+.SH DESCRIPTION
+\fBsac2db\fP creates a \fIdatabase\fP using (some of) the information
+in a SAC header.  It creates the wfdisc, site and sitechan tables,
+leaving the data in the original (float or intel float) format in the SAC file.
+If event or arrival information is present, this information is
+used to add to the event, origin, arrival and assoc tables.
+.SH FILES
+The input files must be SAC.
+The output files are standard CSS format.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 8
+
+%\fB sac2db *.SAC new_db\fP
+%\fB ls\fP
+LVZ.BHE.cut.SAC         NRIL.BHN.cut.SAC        new_db.site
+LVZ.BHN.cut.SAC         NRIL.BHZ.cut.SAC        new_db.sitechan
+LVZ.BHZ.cut.SAC         new_db.lastid           new_db.wfdisc
+NRIL.BHE.cut.SAC        new_db.remark
+%\fB \fP
+
+.fi
+.ft R
+.in
+.SH DIAGNOSTICS
+.IP \(bu 
+Can't open sac file \fIfilename\fP
+.IP \(bu 
+Can't read sac file \fIfilename\fP
+.br
+For some reason, (perhaps permissions?), the named sac files
+can't be read.
+.IP \(bu 
+station name (kstnm) undefined in \fIfilename\fP
+.IP \(bu 
+can't figure out channel name for \fIfilename\fP
+.IP \(bu 
+Sample rate (1/delta) undefined in \fIfilename\fP
+.IP \(bu 
+time not properly specified in \fIfilename\fP
+.IP \(bu 
+# data points (npts) undefined in \fIfilename\fP
+.br
+The specified data was not present in the header.
+.IP \(bu 
+SAC file \fIfilename\fP not incorporated.
+.br
+Because essential data (station name, channel name, time, sample rate,
+or the number of data points) was not present in the sac header, the
+named sac file was not incorporated into the \fIdatabase\fP.
+.IP \(bu
+nzyear has a value in the first century,
+changing it to the current millennium.
+.br
+Sometimes, people fill in the year as 95 instead of 1995.  This
+is detected and changed to 19xx (for 100 > year >= 70) and to 20xx
+(for 70 > year > 0 ) 
+.IP \(bu
+station latitude is null in \fIfilename\fP
+.IP \(bu
+station longitude is null in \fIfilename\fP
+.IP \(bu
+station elevation is null in \fIfilename\fP
+.br
+The station location information was not completely filled out.
+.IP \(bu
+channel orientation not present in \fIfilename\fP
+.br
+The channel orientation (cmpaz and cmpinc) were not specified.
+The program attempts to infer the orientation from the last
+letter of the channel name.
+.IP \(bu
+Origin time not specified,
+so using file start time for file \fIfilename\fP
+.br
+Oftentimes, the origin time O is not specified in the SAC header, although
+a latitude and longitude are given.
+.IP \(bu
+couldn't add \fIfilename\fP to wfdisc
+.IP \(bu
+couldn't add sta='\fIsta\fP' ondate=\fIyearday\fP lat=\fIstla\fP lon=\fIstlo\fP elev=\fIstel\fP from \fIfilename\fP to site
+.IP \(bu
+couldn't add sta='\fIsta\fP' chan='\fIchan\fP' ondate=\fIyearday\fP hang=\fIhang\fP vang=\fIvang\fP edepth=\fIstdp\fP from \fIfilename\fP to sitechan
+.IP \(bu
+couldn't add time=\fIevtime\fP lat=\fIlat\fP lon=\fIlon\fP depth=\fIdepth\fP from \fIfilename\fP to origin
+.IP \(bu
+couldn't add a new event for file \fIfilename\fP
+.IP \(bu
+couldn't add sta='\fIsta\fP' time=\fItime\fP iphase='\fIiphase\fP' from \fIfilename\fP to arrival
+.IP \(bu
+couldn't add arid=\fIarid\fP orid=\fIorid\fP \fIfilename\fP to assoc
+.LP
+All these error messages indicate a problem in writing records to
+the \fIdatabase\fP.
+The message should indicate the root cause of the
+problem (permissions or conflicting records in the \fIdatabase\fP).
+.SH "SEE ALSO"
+.nf
+dbintro(3)
+.fi
+.SH "BUGS AND CAVEATS"
+Because the sac header is not very complete, the \fIdatabase\fP records are
+likewise missing important information.
+Furthermore, because sac headers are often constructed by hand, they
+tend not to be very consistent, and there are sometimes local conventions
+which differ from place to place.
+.LP
+Generally, \fBsac2db\fP soldiers on with fairly verbose error messages.
+Although it may fail at adding some site or sitechan records, these problems
+can generally be fixed by editing the resultant \fIdatabase\fP by hand with
+dbverify(1) (to find problems) and dbe(1) or dbset(1) to fix them.
+.LP
+A common complaint is that depths appear not to be copied correctly.
+Apparently, it is common practice among SAC users to specify depth in
+kilometers in the sac header; the documentation, however, clearly states
+that all depths are in meters.  In the CSS schema, depths are in kilometers,
+and consequently, \fBsac2db\fP divides depths from the sac headers by 1000.0 to
+convert from meters to kilometers.
+.SH AUTHOR
+Daniel Quinlan
+.\" $Id$

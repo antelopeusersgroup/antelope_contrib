@@ -1,0 +1,165 @@
+'\" t
+.TH DB2SAC 1 "$Date$"
+.SH NAME
+db2sac, db2ah \- conversion routine for css information
+.SH SYNOPSIS
+.nf
+\fBdb2sac \fP[-i] [-sc \fIsta-cha\fP] [-ts \fIstart-time\fP] [-te \fIend-time\fP] 
+          [-w \fIwf_dir\fP] [-gap {\fInone\fP | \fIzero\fP | \fIinterp\fP}]
+          [-counts]         \fIinput_db\fP \fIoutput_db\fP
+
+\fBdb2ah \fP[-sc \fIsta-cha\fP] [-ts \fIstart-time\fP] [-te \fIend-time\fP] 
+          [-w \fIwf_dir\fP] [-gap {\fInone\fP | \fIzero\fP | \fIinterp\fP}]
+          [-counts]         \fIinput_db\fP \fIoutput_db\fP
+.fi
+.SH DESCRIPTION
+.LP
+\fBdb2sac\fP and \fBdb2ah\fP are conversion utilities which convert
+\fICSS\fP format waveform files into \fISAC\fP or \fIAH\fP format, and also
+create a
+new \fICSS\fP wfdisc table incorporating these files.  Note that this new
+\fICSS\fP wfdisc table is consistent with all the other tables in
+original database,
+and programs which use a \fICSS\fP database
+should continue to run.
+.LP
+The newly created AH files are \fIarchitecture independent xdr\fP
+ah files.
+.LP
+Each \fICSS\fP database can create a number of \fISAC/AH\fP files.  These
+files are named using the following convention:
+.in 2c
+.ft CW
+.nf
+
+\fIYYYYJJJHHMMSS.SS.STN.CHAN\fP
+
+.fi
+.ft R
+.in
+.LP
+Where the fields have the following meanings:
+.ne 7
+.TS
+l l.
+\fIYYYY\fP      Year
+\fIJJJ\fP       Julian Day
+\fIHH\fP        Hour
+\fIMM\fP        Minute
+\fISS.SSSS\fP   Seconds.Fractional-Seconds
+\fISTN\fP       Station
+\fICHAN\fP      Channel
+.TE
+.SH OPTIONS
+.IP "-h | -help"
+Gives a summary of the command usage.
+.IP -i
+Write output sac files in intel order
+.IP "-v | -version"
+Print the version number and last modification date.
+.IP "-sc \fIexpr\fP"
+.br
+Select station-channel pairs with expressions of the
+form
+.in 2c
+.ft CW
+.nf
+
+\fIstation\fP:\fIchannel\fP,\fIstation\fP:\fIchannel\fP,...
+
+.fi
+.ft R
+.in
+\fIStation\fP and \fIchannel\fP may each be either explicit names, "*",
+or a regular expression in the style of egrep(1).
+.IP "-ts \fIstart-time\fP"
+.IP "-te \fIend-time\fP"
+These may be used to select a subset of the waveforms based on
+a starting time and ending time. The time specification format
+consists of a day field optionally followed by a time field,
+<\fIday\fP \fItime\fP>, where the two fields are separated by
+a blank character (this normally requires the use of quotes
+in the command line). The \fIday\fP field can be specified in
+a number of ways, e.g. MM/DD/YY or julian day, and the time field
+is usually specified as HH:MM:SS.SS.
+.IP "-w \fIwaveform-dir\fP"
+You may specify the name of the waveform directory explicitly; otherwise
+a default is used -- \fIsac\fP for \fBdb2sac\fP and \fIah\fP for \fBdb2ah\fP.
+.IP "-gap {\fInone\fP | \fIzero\fP | \fIinterp\fP}"
+This specifies how internally flagged gaps are treated. Small internal
+waveform segment gaps (usually caused by radio telemetry drops) are
+treated in a consistent fashion within the database. They are flagged
+with maximum positive values for the format of the data so that they
+are clearly identifiable and distinct from other valid sample values
+(such as \fIzero\fP). In converting to SAC or AH, these gap values can
+be left as is, set to \fIzero\fP or they can be interpolated according to this argument.
+If this argument is omitted, then the default behavior is to set gap
+values to \fIzero\fP.
+.IP "-counts"
+.br
+When specified, data is written to SAC/AH
+files in counts rather than ground units (nm, nm/sec, or nm/sec^2),
+which is the default behavior.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 21
+%\fB db2ah -sc CHM:HHZ -ts 1/20/92 -te 1/30/92 knet.1992.jan-apr ah\fP
+Translating...
+Writing: 1992028045438.50.CHM.HHZ
+Writing CHM, HHZ,  6200 samples, starting 1992 028 04:54:38:5000 UT
+Translating...
+Writing: 1992029060349.50.CHM.HHZ
+Writing CHM, HHZ,  6200 samples, starting 1992 029 06:03:49:5000 UT
+Translating...
+Writing: 1992029075333.00.CHM.HHZ
+Writing CHM, HHZ,  6600 samples, starting 1992 029 07:53:33:0000 UT
+Translating...
+Writing: 1992029080238.50.CHM.HHZ
+Writing CHM, HHZ, 13450 samples, starting 1992 029 08:02:38:5000 UT
+Translating...
+Writing: 1992029081530.00.CHM.HHZ
+Writing CHM, HHZ,  6400 samples, starting 1992 029 08:15:30:0000 UT
+Translating...
+Writing: 1992029082145.50.CHM.HHZ
+Writing CHM, HHZ,  5300 samples, starting 1992 029 08:21:45:5000 UT
+%\fB ls ah*\fP
+ah.wfdisc
+
+ah:
+1992028045438.50.CHM.HHZ        1992029080238.50.CHM.HHZ
+1992029060349.50.CHM.HHZ        1992029081530.00.CHM.HHZ
+1992029075333.00.CHM.HHZ        1992029082145.50.CHM.HHZ
+
+% \fBdb2sac  -sc "AAK:*" demo sac\fP
+Translating...
+Writing AAK, BHZ,  2249 samples (BINARY), starting 1992 138 21:55:10:2500 UT
+Translating...
+Writing AAK, BHN,  2249 samples (BINARY), starting 1992 138 21:55:10:2500 UT
+Translating...
+Writing AAK, BHE,  2249 samples (BINARY), starting 1992 138 21:55:10:2500 UT
+
+% \fBls sac*\fP
+sac.wfdisc
+
+sac:
+1992138215510.25.AAK.BHE   1992138215510.25.AAK.BHN   1992138215510.25.AAK.BHZ
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+sac2db(1)
+.SH BUGS AND CAVEATS
+When specifying a time range, you must specify a beginning and
+ending \fItime\fP, not a date.  For instance, the time range
+from 11/26/91 to 11/26/91 is actually the time from midnight 11/26 to
+midnight 11/26, a total period of zero seconds, not, as you might think,
+the entire day of November 26, 1991.
+.SH AUTHOR
+.nf
+Eric Winkelman
+Daniel Quinlan
+.\" $Id$

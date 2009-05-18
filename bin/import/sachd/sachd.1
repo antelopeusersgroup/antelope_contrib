@@ -1,0 +1,73 @@
+.\" $Name $Revision$ $Date$
+.TH SACHD 1 "$Date$"
+.SH NAME
+sachd \- print sac header
+.SH SYNOPSIS
+.nf
+\fBsachd\fR \fR[\fIsac-file ...\fR]
+.fi
+.SH DESCRIPTION
+Sachd is a small example program which prints the non-null values from
+a sac header.  It reads either from stdin, or using the command line
+arguments.
+.SH EXAMPLE
+.nf
+lemond% sachd < /home/ruper/levshin/CANADA/April/931016/931016.FCC.sac
+ 
+SAC Non-NULL header values:
+ 
+          delta =             1.000000     time increment, sec           
+         depmin =       -693676.875000     minimum amplitude             
+         depmax =        856146.125000     maximum amplitude             
+              b =             0.000000     initial value, ampl.          
+              e =          3599.000000     final value, amplitude        
+              o =         -1769.000000     event start, sec > 0          
+      internal1 =             2.000000     internal use                  
+           stla =            58.762001     station latititude            
+           stlo =           -94.086998     station longitude             
+           stel =            39.000000     station elevation, m          
+           stdp =             0.000000     station depth, m              
+           evla =            -5.700000     event latitude                
+           evlo =           145.800003     event longitude               
+           evdp =            33.000000     event depth                   
+           dist =         12244.426758     stn-event distance, km        
+             az =            28.697292     event-stn azimuth             
+            baz =           293.521942     stn-event azimuth             
+          gcarc =           110.144539     stn-event dist, degrees       
+         depmen =         46138.996094     mean value, amplitude         
+          cmpaz =             0.000000     component azimuth             
+         cmpinc =             0.000000     component inclination         
+         nzyear =          1993            zero time of file, yr         
+         nzjday =           289            zero time of file, day        
+         nzhour =             3            zero time of file, hr         
+          nzmin =            35            zero time of file, min        
+          nzsec =             0            zero time of file, sec        
+         nzmsec =             0            zero time of file, msec       
+      internal4 =             6            internal use                  
+      internal5 =             0            internal use                  
+      internal6 =             0            internal use                  
+           npts =          3600            number of samples             
+         iftype =             1            type of file                  
+         iztype =             9            zero time equivalence         
+          leven =             1            data-evenly-spaced flag       
+         lpspol =             0            station polarity flag         
+         lcalda =             1            calc distance, azimuth        
+       unused27 =             0            reserved for future use       
+          kstnm =           FCC            station name                  
+         kcmpnm =           BHZ            component name                
+ 
+First 12 data samples:
+ 
+        26647.222656      -127440.078125       -40447.789062       126147.835938
+       105347.265625        22891.560547        60291.769531       170846.656250
+       -32694.488281      -143943.968750       -17369.126953       113700.882812
+
+.fi
+.SH "SEE ALSO"
+.nf
+Look at libsac.h and the libsac.a library source code.
+.fi
+.SH AUTHOR
+Danny Harvey
+
+.\" $Id$ 
