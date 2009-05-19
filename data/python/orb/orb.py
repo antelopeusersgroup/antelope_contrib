@@ -103,10 +103,25 @@ class Orb():
 
         return _orb._orbseek(self._orbfd, whichpkt)
 
+    def after(self, time):
+        """Position orb connection packet pointer by epoch time"""
+
+        return _orb._orbafter(self._orbfd, time)
+
     def reap(self):
         """Get the next packet from an orb"""
 
         return _orb._orbreap(self._orbfd)
+
+    def reap_nd(self):
+        """Get the next packet from an orb with no delay"""
+
+        return _orb._orbreap_nd(self._orbfd)
+
+    def reap_timeout(self, maxseconds):
+        """Get the next packet from an orb, waiting a maximum number of seconds"""
+
+        return _orb._orbreap_timeout(self._orbfd, maxseconds)
 
     def get(self, whichpkt):
         """Get a specified packet from an orb"""
@@ -164,10 +179,28 @@ def orbseek(orb, whichpkt):
     return orb.seek( whichpkt )
 
 
+def orbafter(orb, time):
+    """Position orb connection packet pointer by epoch time"""
+
+    return orb.after( time )
+
+
 def orbreap(orb):
     """Get the next packet from an orb"""
 
     return orb.reap()
+
+
+def orbreap_nd(orb):
+    """Get the next packet from an orb with no delay"""
+
+    return orb.reap_nd()
+
+
+def orbreap_timeout(orb, maxseconds):
+    """Get the next packet from an orb, waiting a maximum number of seconds"""
+
+    return orb.reap_timeout(maxseconds)
 
 
 def orbget(orb, whichpkt):
@@ -286,6 +319,38 @@ if __name__ == '__main__':
 
 	    orbclose(orb)
 
+        def test_procedure_orbreap_nd(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbreap_nd(orb)
+
+	    if( isinstance(pktid, int) ):
+	        self.assertTrue(isinstance(srcname, str))
+	        self.assertTrue(isinstance(time, float))
+	        self.assertTrue(isinstance(packet, str))
+	        self.assertTrue(isinstance(nbytes, int))
+
+	    orbclose(orb)
+
+        def test_procedure_orbreap_timeout(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbreap_timeout(orb, 1)
+
+	    if( isinstance(pktid, int) ):
+	        self.assertTrue(isinstance(srcname, str))
+	        self.assertTrue(isinstance(time, float))
+	        self.assertTrue(isinstance(packet, str))
+	        self.assertTrue(isinstance(nbytes, int))
+
+	    orbclose(orb)
+
         def test_procedure_orbget(self):
 
 	    orb = orbopen(orbname, 'r')
@@ -309,6 +374,16 @@ if __name__ == '__main__':
             pktid = orbseek(orb, ORBOLDEST)
 
 	    self.assertTrue(pktid >= 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbafter(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            pktid = orbafter(orb, 631152000)
+
+	    self.assertTrue(pktid < 0)
 
 	    orbclose(orb)
 

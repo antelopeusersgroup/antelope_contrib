@@ -137,6 +137,22 @@ pktid = orbfd.seek( whichpkt )
 .fi
 .in
 .ft R
+.IP "\fBorbafter\fP (orbfd, time)"
+Position orb read head by epoch time
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pktid = orbafter( orbfd, time )
+
+or 
+
+pktid = orbfd.after( time )
+
+.fi
+.in
+.ft R
 .IP "\fBorbreap\fP (orbfd)"
 Get next orb packet
 .ft CW
@@ -149,6 +165,38 @@ Get next orb packet
 or 
 
 (pktid, srcname, time, packet, nbytes) = orbfd.reap()
+
+.fi
+.in
+.ft R
+.IP "\fBorbreap_nd\fP (orbfd)"
+Get next orb packet without delay
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(pktid, srcname, time, packet, nbytes) = orbreap_nd( orbfd )
+
+or 
+
+(pktid, srcname, time, packet, nbytes) = orbfd.reap_nd()
+
+.fi
+.in
+.ft R
+.IP "\fBorbreap_timeout\fP (orbfd, maxseconds)"
+Get next orb packet, waiting a maximum of maxseconds seconds
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(pktid, srcname, time, packet, nbytes) = orbreap_timeout( orbfd )
+
+or 
+
+(pktid, srcname, time, packet, nbytes) = orbfd.reap_timeout()
 
 .fi
 .in
