@@ -106,7 +106,7 @@ nsources = orbfd.reject( reject )
 .in
 .ft R
 .IP "\fBorbposition\fP (orbfd, where)"
-Position orb read head
+Position orb read head by time or code
 .ft CW
 .in 2c
 .nf
@@ -117,6 +117,22 @@ pktid = orbposition( orbfd, where )
 or 
 
 pktid = orbfd.position( where )
+
+.fi
+.in
+.ft R
+.IP "\fBorbseek\fP (orbfd, whichpkt)"
+Position orb read head by pktid or code
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pktid = orbseek( orbfd, whichpkt )
+
+or 
+
+pktid = orbfd.seek( whichpkt )
 
 .fi
 .in

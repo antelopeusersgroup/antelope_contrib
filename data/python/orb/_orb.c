@@ -64,6 +64,7 @@ static PyObject *python_orbreject( PyObject *self, PyObject *args );
 static PyObject *python_orbposition( PyObject *self, PyObject *args );
 static PyObject *python_orbreap( PyObject *self, PyObject *args );
 static PyObject *python_orbget( PyObject *self, PyObject *args );
+static PyObject *python_orbseek( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
 
@@ -76,9 +77,10 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbtell", 	python_orbtell,   	METH_VARARGS, "Query current orb read-head position" },
 	{ "_orbselect",	python_orbselect,   	METH_VARARGS, "Select orb source names" },
 	{ "_orbreject",	python_orbreject,   	METH_VARARGS, "Reject orb source names" },
-	{ "_orbposition", python_orbposition,  	METH_VARARGS, "Position the orb read head" },
+	{ "_orbposition", python_orbposition,  	METH_VARARGS, "Position the orb read head by time" },
 	{ "_orbreap",	python_orbreap,   	METH_VARARGS, "Get the next packet from an orb" },
 	{ "_orbget",	python_orbget,   	METH_VARARGS, "Get a specified packet from an orb" },
+	{ "_orbseek", 	python_orbseek,  	METH_VARARGS, "Position the orb read head by pktid" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -198,6 +200,28 @@ python_orbposition( PyObject *self, PyObject *args ) {
 	}
 
 	pktid = orbposition( orbfd, where );
+
+	return Py_BuildValue( "i", pktid );
+}
+
+static PyObject *
+python_orbseek( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbseek(orb, whichpkt)\n";
+	int	orbfd;
+	int	whichpkt;
+	int	pktid;
+
+	if( ! PyArg_ParseTuple( args, "ii", &orbfd, &whichpkt ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	pktid = orbseek( orbfd, whichpkt );
 
 	return Py_BuildValue( "i", pktid );
 }

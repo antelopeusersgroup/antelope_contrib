@@ -94,9 +94,14 @@ class Orb():
         return _orb._orbreject(self._orbfd, reject)
 
     def position(self, where):
-        """Position orb read head"""
+        """Position orb connection packet pointer by time or code"""
 
         return _orb._orbposition(self._orbfd, where)
+
+    def seek(self, whichpkt):
+        """Position orb connection packet pointer by pktid or code"""
+
+        return _orb._orbseek(self._orbfd, whichpkt)
 
     def reap(self):
         """Get the next packet from an orb"""
@@ -148,9 +153,15 @@ def orbreject(orb, reject):
 
 
 def orbposition(orb, where):
-    """Position orb read head"""
+    """Position orb connection packet pointer by time or code"""
 
     return orb.position( where )
+
+
+def orbseek(orb, whichpkt):
+    """Position orb connection packet pointer by pktid or code"""
+
+    return orb.seek( whichpkt )
 
 
 def orbreap(orb):
@@ -288,6 +299,16 @@ if __name__ == '__main__':
 	    self.assertTrue(isinstance(time, float))
 	    self.assertTrue(isinstance(packet, str))
 	    self.assertTrue(isinstance(nbytes, int))
+
+	    orbclose(orb)
+
+        def test_procedure_orbseek(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            pktid = orbseek(orb, ORBOLDEST)
+
+	    self.assertTrue(pktid >= 0)
 
 	    orbclose(orb)
 
