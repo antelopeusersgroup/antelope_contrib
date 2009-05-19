@@ -93,6 +93,11 @@ class Orb():
 
         return _orb._orbreject(self._orbfd, reject)
 
+    def position(self, where):
+        """Position orb read head"""
+
+        return _orb._orbposition(self._orbfd, where)
+
     def reap(self):
         """Get the next packet from an orb"""
 
@@ -140,6 +145,12 @@ def orbreject(orb, reject):
     """Reject orb source names"""
 
     return orb.reject( reject )
+
+
+def orbposition(orb, where):
+    """Position orb read head"""
+
+    return orb.position( where )
 
 
 def orbreap(orb):
@@ -235,6 +246,16 @@ if __name__ == '__main__':
             n = orbreject(orb, ".*")
 
 	    self.assertTrue(n >= 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbposition(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            pktid = orbposition(orb, "oldest")
+
+	    self.assertTrue(pktid >= 0)
 
 	    orbclose(orb)
 

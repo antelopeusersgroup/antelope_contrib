@@ -105,6 +105,22 @@ nsources = orbfd.reject( reject )
 .fi
 .in
 .ft R
+.IP "\fBorbposition\fP (orbfd, where)"
+Position orb read head
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pktid = orbposition( orbfd, where )
+
+or 
+
+pktid = orbfd.position( where )
+
+.fi
+.in
+.ft R
 .IP "\fBorbreap\fP (orbfd)"
 Get next orb packet
 .ft CW
