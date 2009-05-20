@@ -54,10 +54,17 @@ class Pkt():
 
         _Pkt._unstuffPkt(srcname, time, packet, nbytes)
 
+
 def unstuffPkt(srcname, time, packet, nbytes):
     """Unpack an Antelope packet"""
 
     return _Pkt._unstuffPkt(srcname, time, packet, nbytes)
+
+
+def split_srcname(srcname):
+    """Render an Antelope srcname into its component parts"""
+
+    return _Pkt._split_srcname(srcname)
 
 
 if __name__ == '__main__':
@@ -98,6 +105,17 @@ if __name__ == '__main__':
 	    orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
+
+        def test_procedure_split_srcname(self):
+
+	    (net, sta, chan, loc, suffix, subcode) = split_srcname("AZ_PFO_BHZ_00/BBA/BS")
+
+	    self.assertEqual(net, "AZ")
+	    self.assertEqual(sta, "PFO")
+	    self.assertEqual(chan, "BHZ")
+	    self.assertEqual(loc, "00")
+	    self.assertEqual(suffix, "BBA")
+	    self.assertEqual(subcode, "BS")
 
     server = TestPkt_fixture()
     server.start()

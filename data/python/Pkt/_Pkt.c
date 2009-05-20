@@ -56,11 +56,13 @@ char *__progname = "Python";
 #endif
 
 static PyObject *python_unstuffPkt( PyObject *self, PyObject *args );
+static PyObject *python_split_srcname( PyObject *self, PyObject *args );
 
 PyMODINIT_FUNC init_Pkt( void );
 
 static struct PyMethodDef _Pkt_methods[] = {
 	{ "_unstuffPkt",  	python_unstuffPkt,   	METH_VARARGS, "Unstuff an Antelope orbserver packet" },
+	{ "_split_srcname",  	python_split_srcname,  	METH_VARARGS, "Decompose a packet srcname into component parts" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -86,6 +88,29 @@ python_unstuffPkt( PyObject *self, PyObject *args ) {
 	obj = Py_BuildValue( "" );
 
 	return obj;
+}
+
+static PyObject *
+python_split_srcname( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _split_srcname(srcname)\n";
+	char	*srcname;
+	Srcname parts;
+	
+	if( ! PyArg_ParseTuple( args, "s", &srcname ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	} 
+
+	split_srcname( srcname, &parts );
+
+	return Py_BuildValue( "ssssss", parts.src_net, 
+				        parts.src_sta,
+					parts.src_chan,
+					parts.src_loc,
+					parts.src_suffix,
+					parts.src_subcode );
 }
 
 PyMODINIT_FUNC

@@ -25,6 +25,14 @@ pkt = unstuffPkt( srcname, time, packet, nbytes )
 .fi
 .in
 .ft R
+.IP "\fBsplit_srcname\fP (srcname)"
+Break a packet source-name into component parts
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(net, sta, chan, loc, suffix, subcode) = split_srcname(srcname)
 
 .fi
 .in
