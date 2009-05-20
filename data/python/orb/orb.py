@@ -209,6 +209,12 @@ def orbget(orb, whichpkt):
     return orb.get(whichpkt)
 
 
+def orbpkt_string(srcname, time, packet, nbytes):
+    """Convert an orb packet to string representation"""
+
+    return _orb._orbpkt_string(srcname, time, packet, nbytes)
+
+
 if __name__ == '__main__':
     import unittest
     import os
@@ -225,6 +231,7 @@ if __name__ == '__main__':
             os.system("pfcp orbserver .")
             os.system("orbserver -p " + orbname + " orbserver &")
             os.system("sleep 3")
+            os.system( "pf2orb rtexec " + orbname )
 
         def stop(self):
 
@@ -383,7 +390,21 @@ if __name__ == '__main__':
 
             pktid = orbafter(orb, 631152000)
 
-	    self.assertTrue(pktid < 0)
+	    self.assertTrue(pktid >= 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbpkt_string(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
+
+            packet_string = orbpkt_string(srcname, time, packet, nbytes)
+
+	    self.assertTrue(isinstance(packet_string, str))
 
 	    orbclose(orb)
 

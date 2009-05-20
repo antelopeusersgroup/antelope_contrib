@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include "Python.h"
 #include "orb.h"
+#include "forb.h"
 
 #ifdef __APPLE__
 
@@ -68,6 +69,7 @@ static PyObject *python_orbreap_timeout( PyObject *self, PyObject *args );
 static PyObject *python_orbget( PyObject *self, PyObject *args );
 static PyObject *python_orbseek( PyObject *self, PyObject *args );
 static PyObject *python_orbafter( PyObject *self, PyObject *args );
+static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
 
@@ -87,6 +89,7 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbget",	python_orbget,   	METH_VARARGS, "Get a specified packet from an orb" },
 	{ "_orbseek", 	python_orbseek,  	METH_VARARGS, "Position the orb read head by pktid" },
 	{ "_orbafter", 	python_orbafter,  	METH_VARARGS, "Position the orb read head by epoch time" },
+	{ "_orbpkt_string", python_orbpkt_string, METH_VARARGS, "Return forb(5) representation of packet" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -335,7 +338,6 @@ python_orbreap( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-
 	rc = orbreap( orbfd, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
 
 	obj = Py_BuildValue( "s#", pkt, nbytes );
@@ -367,7 +369,6 @@ python_orbreap_nd( PyObject *self, PyObject *args ) {
 
 		return NULL;
 	}
-
 
 	rc = orbreap_nd( orbfd, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
 
@@ -414,7 +415,6 @@ python_orbreap_timeout( PyObject *self, PyObject *args ) {
 
 		return NULL;
 	}
-
 
 	rc = orbreap_timeout( orbfd, maxseconds, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
 
@@ -471,6 +471,44 @@ python_orbget( PyObject *self, PyObject *args ) {
 
 	return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
 }
+
+static PyObject *
+python_orbpkt_string( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbpkt_string(srcname, time, packet, nbytes)\n";
+	char	srcname[ORBSRCNAME_SIZE];
+	double	pkttime;
+	char	*pkt = 0;
+	char	*packet_string = 0;
+	int	nbytes = 0;
+	int	nbytes_pkt = 0;
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "sds#i", srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	packet_string = orbpkt_string( srcname, pkttime, pkt, nbytes_pkt );
+
+	if( packet_string == NULL ) {
+
+		return Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "s", packet_string );
+
+		free( packet_string );
+
+		return Py_BuildValue( "O", obj );
+	}
+}
+
 
 static void
 add_orb_constants( PyObject *mod ) {
