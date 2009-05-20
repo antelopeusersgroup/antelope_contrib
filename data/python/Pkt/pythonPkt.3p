@@ -1,0 +1,56 @@
+.TH PYTHONPKT 3P "$Date$"
+.SH NAME
+pythonPkt \- Python interface to Antelope Packet library
+.SH SYNOPSIS
+.nf
+sys.path.append( os.environ['ANTELOPE'] + '/data/python' )
+
+from antelope.Pkt import *
+.fi
+.SH DESCRIPTION
+The Python Interface to the Antelope Packet library allows one to perform operations 
+on Antelope orbserver packets from the Python scripting language. 
+Following are brief descriptions of the functions implemented.
+
+.SS Pkt functions
+.IP "\fBunstuffPkt\fP (srcname, time, packet, nbytes)"
+Returns an unstuffed Pkt object 
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pkt = unstuffPkt( srcname, time, packet, nbytes )
+
+.fi
+.in
+.ft R
+
+.fi
+.in
+.ft R
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pythondb(3p), pythonorb(3p), pythonstock(3p)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$

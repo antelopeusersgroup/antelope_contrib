@@ -1,0 +1,31 @@
+
+ORBDLIB= _Pkt.so 
+DLIB=python__Pkt$(DSUFFIX)
+
+DATADIR= python/antelope
+
+DATA= $(ORBDLIB) Pkt.py 
+
+MAN1=
+MAN3P= pythonPkt.3p
+MAN5=
+
+CLEAN= *.pyc *.so
+
+cflags= -I$(PYTHONINCLUDE)
+fflags=
+ldflags= 
+ldlibs= $(ORBLIBS)
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKE).local
+
+ORBOBJS= _Pkt.o
+
+$(ORBDLIB) : $(ORBOBJS)
+	$(RM) $@
+	$(DLD) $(DLDFLAGS) -o $(ORBDLIB) $(ORBOBJS) $(DLDLIBS) 
+
+$(DLIB): $(ORBDLIB)
+	$(RM) $@
+	@cp $(ORBDLIB) $(DLIB)
