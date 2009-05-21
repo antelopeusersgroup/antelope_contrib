@@ -56,12 +56,14 @@ char *__progname = "Python";
 #endif
 
 static PyObject *python_unstuffPkt( PyObject *self, PyObject *args );
+static PyObject *python_join_srcname( PyObject *self, PyObject *args );
 static PyObject *python_split_srcname( PyObject *self, PyObject *args );
 
 PyMODINIT_FUNC init_Pkt( void );
 
 static struct PyMethodDef _Pkt_methods[] = {
 	{ "_unstuffPkt",  	python_unstuffPkt,   	METH_VARARGS, "Unstuff an Antelope orbserver packet" },
+	{ "_join_srcname",  	python_join_srcname,  	METH_VARARGS, "Combine component parts into a packet srcname" },
 	{ "_split_srcname",  	python_split_srcname,  	METH_VARARGS, "Decompose a packet srcname into component parts" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -88,6 +90,37 @@ python_unstuffPkt( PyObject *self, PyObject *args ) {
 	obj = Py_BuildValue( "" );
 
 	return obj;
+}
+
+static PyObject *
+python_join_srcname( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _join_srcname(net, sta, chan, loc, suffix, subcode)\n";
+	char	srcname[ORBSRCNAME_SIZE];
+	char	*net;
+	char	*sta;
+	char	*chan;
+	char	*loc;
+	char	*suffix;
+	char	*subcode;
+	Srcname parts;
+	
+	if( ! PyArg_ParseTuple( args, "ssssss", &net, &sta, &chan, &loc, &suffix, &subcode ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	} 
+
+	strcpy( parts.src_net, net );
+	strcpy( parts.src_sta, sta );
+	strcpy( parts.src_chan, chan );
+	strcpy( parts.src_loc, loc );
+	strcpy( parts.src_suffix, suffix );
+	strcpy( parts.src_subcode, subcode );
+
+	join_srcname( &parts, srcname );
+
+	return Py_BuildValue( "s", srcname );
 }
 
 static PyObject *

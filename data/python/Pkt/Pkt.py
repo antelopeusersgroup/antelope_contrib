@@ -61,6 +61,12 @@ def unstuffPkt(srcname, time, packet, nbytes):
     return _Pkt._unstuffPkt(srcname, time, packet, nbytes)
 
 
+def join_srcname(net, sta, chan, loc, suffix, subcode):
+    """Combine component parts into an Antelope srcname"""
+
+    return _Pkt._join_srcname(net, sta, chan, loc, suffix, subcode)
+
+
 def split_srcname(srcname):
     """Render an Antelope srcname into its component parts"""
 
@@ -116,6 +122,12 @@ if __name__ == '__main__':
 	    self.assertEqual(loc, "00")
 	    self.assertEqual(suffix, "BBA")
 	    self.assertEqual(subcode, "BS")
+
+        def test_procedure_join_srcname(self):
+
+	    srcname = join_srcname("AZ", "PFO", "BHZ", "00", "BBA", "BS")
+
+	    self.assertEqual(srcname, "AZ_PFO_BHZ_00/BBA/BS")
 
     server = TestPkt_fixture()
     server.start()
