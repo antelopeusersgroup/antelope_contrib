@@ -1,0 +1,24 @@
+originator     Juan Reyes, UCSD
+last_modified  2009-05-21
+
+category	infrasound
+configuration	DPG_2WATER      
+
+description	DPG_2WATER pressure sensor 
+dfile		DPG_2WATER 
+
+rsptype		I	# infrasound instrument
+band		l	# 
+sensor_type_code	D
+
+gtype		sensor
+sensitivity	5.01E-4 	
+ounits		V 	
+iunits		Pa    
+
+orientations	&Tbl{
+D       0       0 
+}
+
+response	&datafile(responses/DPG_2WATER) 
+
