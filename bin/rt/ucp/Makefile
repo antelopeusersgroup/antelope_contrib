@@ -5,7 +5,7 @@ REQUIRE=
 REQUIRE_DATA=tcl
 MAN1= ucp.1
 
-CLEAN=
+CLEAN=tclIndex
 
 TCL= anzadp.tcl \
 	daspar.tcl \
