@@ -38,6 +38,18 @@ that recycled some of the original code written in February 1999.
 #include "segy.h"
 #include "location.h"
 #define min(a,b) ((a) <= (b) ? (a) : (b))
+/* Newer compilers will complain if these prototypes are not defined.  
+Could be placed in segy.y, but that would strike me as mysterious. */
+
+void initialize_header(SegyHead *header);
+char *make_key(char *s, char *c);
+Arr *build_stachan_list(Pf *pf, int *nchan,int verbose);
+int get_channel_index(Arr *a, char *sta, char *chan);
+Arr *check_tables(Dbptr db, Pf *pf);
+void check_for_required_tables(Arr *tabarray);
+Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables);
+void set_shot_variable(Dbptr db, Arr *tables, int evid, SegyHead *h);
+void repair_gaps(Dbptr trdb);
 
 static void
 usage()
@@ -439,7 +451,7 @@ void repair_gaps(Dbptr trdb)
 			i=nsamp-1;
 			while(trdata[i] >= (g->fill))
 			{
-				trdata[i] = 0.0;
+				trdata[i] = (Trsample)0.0;
 				--i;
 			}
 		}
@@ -448,7 +460,7 @@ void repair_gaps(Dbptr trdb)
 			i0=0;
 			while(trdata[i0] >= (g->fill))
 			{
-				trdata[i0] = 0.0;
+				trdata[i0] = (Trsample)0.0;
 				++i0;
 			}
  
@@ -471,7 +483,7 @@ void repair_gaps(Dbptr trdb)
 				{
 					while((trdata[i]>=(g->fill)) && (i<nsamp))
 					{
-						trdata[i]=(g->lower);
+						trdata[i]=(Trsample)((g->lower));
 						++i;
 					}
 				}
@@ -489,7 +501,7 @@ void repair_gaps(Dbptr trdb)
 		
 		
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	SegyReel reel;
 	SegyHead *header;
@@ -556,9 +568,9 @@ main(int argc, char **argv)
 	if(pfread(pfname,&pf)) 
 		die(0,"pfread error for pf file %s.pf\n",argv[0]);
 	/* rotation parameters */
-	if(rotate=pfget_boolean(pf,"rotate"))
+	rotate=pfget_boolean(pf,"rotate");
+	if(rotate)
 	{
-		rotate = 1;
 		phi = pfget_double(pf,"phi");
 		theta = pfget_double(pf,"theta");
 	}
@@ -608,7 +620,7 @@ main(int argc, char **argv)
 	is not currently implemented */
 	samprate0 = pfget_double(pf,"sample_rate");
 	tlength = pfget_double(pf,"trace_length");
-	nsamp0 = tlength*samprate0;
+	nsamp0 = (int)(tlength*samprate0);
 
 	/* true blue segy uses a short for the number of samples so
 	we have to truncate long traces.  We reset nsamp0 and
@@ -629,7 +641,7 @@ main(int argc, char **argv)
 	if(traces == NULL) 
 		die(0,"Cannot alloc trace data matrix work space of size %d by %d\n",
 			nchan, nsamp0);
-	header = (SegyHead *)calloc(nchan,sizeof(SegyHead));
+	header = (SegyHead *)calloc((size_t)nchan,sizeof(SegyHead));
 	if(header == NULL)
 		die(0,"Cannot alloc memory for %d segy headers\n",nchan);
 
@@ -637,12 +649,12 @@ main(int argc, char **argv)
 	reel.kjob = 1;
 	reel.kline = 1;
 	reel.kreel = 1;
-	reel.kntr = (short)nchan;
+	reel.kntr = (int16_t)nchan;
 	reel.knaux = 0;
-	reel.sr = (short)(1000000.0/samprate0);
+	reel.sr = (int16_t)(1000000.0/samprate0);
 	reel.kfldsr = reel.sr;
-	reel.knsamp = (short)nsamp0;
-	reel.kfsamp = (short)nsamp0;
+	reel.knsamp = (int16_t)nsamp0;
+	reel.kfsamp = (int16_t)nsamp0;
 	reel.dsfc=1;  /* I think this is host floats*/
 	reel.kmfold = 0;
 	if(map_to_cdp)
@@ -683,7 +695,7 @@ main(int argc, char **argv)
 				header[i].channel_number = i + 1;
 			}
 			header[i].event_number = shotid;
-			for(j=0;j<nsamp0;++j)  traces[i][j] = 0.0;
+			for(j=0;j<nsamp0;++j)  traces[i][j] = (Trsample)0.0;
 		}
 		time0 = str2epoch(s);
 		endtime0 = time0 + tlength;
@@ -763,7 +775,7 @@ main(int argc, char **argv)
 			if(ichan >= 0)
 			{
 				if(Verbose) 
-				   fprintf(stdout,"%s:%s\t%-d\t%-ld\t%-d\t%-d\n",
+				   fprintf(stdout,"%s:%s\t%-d\t%-d\t%-d\t%-d\n",
 					sta,chan,ichan+1,
                                         header[ichan].reelSeq,
 					shotid, evid);
@@ -776,9 +788,9 @@ main(int argc, char **argv)
 				header[ichan].recLongOrX = (long)(deast*1000.0);
 				header[ichan].recLatOrY = (long)(dnorth*1000.0);
 				header[ichan].recElevation = (long)(elev*1000.0);
-				header[ichan].deltaSample = (short) 
+				header[ichan].deltaSample = (int16_t) 
 						(1000000.0/samprate0);
-				header[ichan].sampleLength = (short)nsamp0;
+				header[ichan].sampleLength = (int16_t)nsamp0;
 				/* This cracks the time fields */
 				time_str = epoch2str(time0,fmt);
 				sscanf(time_str,"%hd %hd %hd %hd %hd %hd",
@@ -803,8 +815,8 @@ main(int argc, char **argv)
 				  header[ichan].sourceLongOrX = header[ichan].recLongOrX;
 				  header[ichan].sourceLatOrY = header[ichan].recLatOrY;
 				  header[ichan].sourceSurfaceElevation = header[ichan].recElevation;
-				  header[ichan].sourceDepth = 0.0;
-				  header[ichan].sourceToRecDist = 0.0;
+				  header[ichan].sourceDepth = (float)0.0;
+				  header[ichan].sourceToRecDist = (float)0.0;
 				}
 				else
 				{
@@ -832,7 +844,7 @@ main(int argc, char **argv)
 			if(fwrite((void *)(&(header[i])),sizeof(SegyHead),1,fp) != 1)
 				die(0,"Write error on header for trace %d\n",total_traces+i);		
 			if(fwrite((void *)traces[i],sizeof(float),
-					nsamp0,fp) != nsamp0)
+					(size_t)nsamp0,fp) != nsamp0)
 				die(0,"Write error while writing data for trace %d\n",
 					total_traces+i);
 		}
