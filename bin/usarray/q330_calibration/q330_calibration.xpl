@@ -7,6 +7,7 @@
 #		DONE    option to calibrate 10% of the network at a time, while eventually calibrating whole network
 #		DONE    option to only calibrate uncalibrated stations
 #       DONE	add target to staq330 table
+#       add check in -i option for individual monitor channels.
 #
 
     require "getopts.pl" ;
@@ -25,7 +26,8 @@
     my ($orb,$orbname,$db,$stime,$Pf,$regex,$subset,$target);
     my ($sta,$dlsta,$snmodel,$chident,$sleep,$problem_check);
     my ($offset,$start,$otime,$rows,$trow,$row,$irow,$drow,$group,$ncal,$key);
-    my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbnj,@dbtmp,@dbdeploy,@dbmone,@dbmonn,@dbje,@dbjn) ;
+    my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbtmp,@dbmone,@dbmonn,@dbje,@dbjn) ;
+    my (@dbdlcale,@dbdlcaln);
     my (@a,@group);
     my (%a);
 
@@ -96,7 +98,6 @@
 #  open db
 #
     @db            = dbopen($db,'r');
-    @dbdeploy      = dblookup(@db,0,"deployment",0,0);
     @dbdlcalwf     = dblookup(@db,0,"dlcalwf",0,0);
     @dbdlsensor    = dblookup(@db,0,"dlsensor",0,0);
     @dbstaq330     = dblookup(@db,0,"staq330",0,0);
@@ -104,28 +105,12 @@
     @dbstaq330     = dbsubset(@dbstaq330,"endtime == NULL");
     
     if ($opt_t) {
-        @dbdeploy = dbsubset(@dbdeploy,"time > \_$opt_t\_");
-        @dbstaq330 = dbjoin(@dbstaq330,@dbdeploy,"sta","time::endtime");
-        @dbstaq330 = dbseparate(@dbstaq330,"staq330");
+        @dbdlsensor = dbsubset(@dbdlsensor,"time > \_$opt_t\_");
     }
 
     elog_notify(sprintf("%d	stations in dlsensor",dbquery(@dbdlsensor,'dbRECORD_COUNT')));
     elog_notify(sprintf("%d	stations in staq330",dbquery(@dbstaq330,'dbRECORD_COUNT')));
 
-    @dbj = dbjoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
-    elog_notify(sprintf("%d	stations in join of staq330 and dlsensor",dbquery(@dbj,'dbRECORD_COUNT')));
-    
-    @dbnj = dbnojoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
-    elog_notify(sprintf("%d  	stations in no join of staq330 and dlsensor",dbquery(@dbnj,'dbRECORD_COUNT')));
-    if (dbquery(@dbnj,'dbRECORD_COUNT') && $opt_v) {
-        @dbnj = dbsort(@dbnj,"sta");
-        for ($dbnj[3] = 0; $dbnj[3] < dbquery(@dbnj,'dbRECORD_COUNT'); $dbnj[3]++) {
-            elog_notify(sprintf("%s",dbgetv(@dbnj,"sta")));
-        }
-    }
-#
-#  subset join of staq330-dlsensor by station regular expressions.
-#
     if (@ARGV) {
         $subset = "sta =~ /";
         foreach $regex (@ARGV) {
@@ -134,37 +119,39 @@
         }
         $subset =~ s"\|$"\/";
         elog_notify("subsetting station list by - 	$subset") ;
-        @dbj = dbsubset(@dbj, $subset) ;
+        @dbstaq330 = dbsubset(@dbstaq330, $subset) ;
     }
 #
 #  sort stations alphabetically.
 #
-    @dbj = dbsort  (@dbj, "sta") ;
+    @dbstaq330 = dbsort  (@dbstaq330, "sta") ;
 
     $start = now();
     
     if ($opt_i) {  
-
-#  process uncalibrated stations
     
         $offset = 0.25;
-        
-#  find sensors and dataloggers missing calibrations using BHE monitor channel
 
-        $subset = "fchan =~ /BHE/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
-        @dbmone = dbsubset(@dbdlcalwf,$subset);
-        @dbje   = dbnojoin(@dbj,@dbmone,"sta#fsta","dlsensor.time::dlsensor.endtime#dlcalwf.time::dlcalwf.endtime");
+#  process uncalibrated stations
         
+#  find stations missing calibrations using BHE monitor channel
+
+        $subset   = "fchan =~ /BHE/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
+        @dbdlcale = dbsubset(@dbdlcalwf,$subset);
+        @dbmone   = dbnojoin(@dbdlsensor,@dbdlcale,"dlident#ssident","dlsensor.time::dlsensor.endtime#dlcalwf.time");
+        
+        @dbje = dbjoin(@dbstaq330,@dbmone,"ssident#dlident");
         elog_notify(sprintf("%d	stations which need calibrations using BHE as monitor",dbquery(@dbje,'dbRECORD_COUNT')));
         
-#  find sensors and dataloggers missing calibrations using BHN monitor channel
+#  find stations missing calibrations using BHN monitor channel
 
-        $subset = "fchan =~ /BHN/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
-        @dbmonn = dbsubset(@dbdlcalwf,$subset);
-        @dbjn = dbnojoin(@dbj,@dbmonn,"sta#fsta","dlsensor.time::dlsensor.endtime#dlcalwf.time::dlcalwf.endtime");
+        $subset   = "fchan =~ /BHN/ && dlcaltype =~ /white/ && dlcalinput =~ /d/ && ((endtime - time) > 3600)";
+        @dbdlcaln = dbsubset(@dbdlcalwf,$subset);
+        @dbmonn   = dbnojoin(@dbdlsensor,@dbdlcaln,"dlident#ssident","dlsensor.time::dlsensor.endtime#dlcalwf.time");
         
+        @dbjn = dbjoin(@dbstaq330,@dbmonn,"ssident#dlident");
         elog_notify(sprintf("%d	stations which need calibrations using BHN as monitor",dbquery(@dbjn,'dbRECORD_COUNT')));
-        
+                
 #  find out how many station-channel pairs need to be processed by first character in station name
 
         %a = ();
@@ -211,7 +198,6 @@
             $sleep = 0;
             $start = now();
             $subset = "sta =~ /$group/";
-            next unless ($group);
             
             @dbtmp = dbsubset(@dbje,$subset);
             if (dbquery(@dbtmp,"dbRECORD_COUNT") && ! $opt_2 ) {
@@ -235,6 +221,8 @@
 # 
 #  process whole network
 #             
+        @dbj = dbjoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
+        elog_notify(sprintf("%d	stations in join of staq330 and dlsensor",dbquery(@dbj,'dbRECORD_COUNT')));
         $rows = dbquery(@dbj,'dbRECORD_COUNT');
         elog_notify(sprintf("%d	stations to calibrate",$rows));
 #
@@ -309,6 +297,8 @@
 #
 #  process requested stations
 #        
+        @dbj = dbjoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
+        elog_notify(sprintf("%d	stations in join of staq330 and dlsensor",dbquery(@dbj,'dbRECORD_COUNT')));
         $sleep = 0 ;
         $sleep = &calibrate_view($orbname,"0x4",$offset,$problems,@dbj) unless $opt_2 ;
     
@@ -327,21 +317,11 @@
 #  clean up and exit
 #
     $stime = strydtime(now());
-    
-    if ($problems) {
-        elog_notify ("completed with $problems problems	$stime\n\n");
+    elog_notify ("completed successfully	$stime\n\n");
 
-        $subject = sprintf("Problems ($problems)    $pgm    $host");
-        &sendmail ( $subject, $opt_m ) if $opt_m ;
-        elog_die ($subject);
-    } else {
-        elog_notify ("completed successfully	$stime\n\n");
-
-        $subject = sprintf("Success  $pgm  $host");
-        elog_notify ($subject);
-        &sendmail ( $subject, $opt_m ) if $opt_m ;
-    
-    }
+    $subject = sprintf("Success  $pgm  $host");
+    elog_notify ($subject);
+    &sendmail ( $subject, $opt_m ) if $opt_m ;
   
     exit(0);
 }
@@ -453,9 +433,9 @@ sub calibrate_view { # ($maxdur,$sleep) = &calibrate_view($orbname,$mon_chan,$of
                 $cmd = "cat /tmp/tmp_dlcmd.pf";
                 elog_notify("$cmd");
                 $problems = run($cmd,$problems) ;
-                $subject = "Problem $problems - $pgm $host	dlcmd $sta $mon_chan" ;
-#                &sendmail($subject, $opt_m) if $opt_m ; 
-                elog_complain("\n$subject") ;
+                $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject") ;
             }
             if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
                 next;
@@ -497,9 +477,9 @@ sub calibrate_one { # $sleep = &calibrate_view($orbname,$mon_chan,$offset,$probl
             $cmd = "cat /tmp/tmp_dlcmd.pf";
             elog_notify("$cmd");
             $problems = run($cmd,$problems) ;
-            $subject = "Problem $problems- $pgm $host	dlcmd $sta $mon_chan" ;
-#            &sendmail($subject, $opt_m) if $opt_m ; 
-            elog_complain("\n$subject") ;
+            $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
+            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_die("\n$subject") ;
         }
         if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
             return (0);
