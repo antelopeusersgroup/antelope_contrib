@@ -163,7 +163,7 @@ int main(int argc,char *argv[])
 	case 'V':
 	  usage();
 	  exit(-1);
-	  break;	
+	  break;
 	case 'v':
 	  verbose=1;
 	  break;
@@ -270,7 +270,7 @@ int main(int argc,char *argv[])
 	  elog_complain(1,"exhume failed, returned %d.\n",ch);
 	  exit(-1);
 	}
-       
+
       if (ch==0)
 	elog_notify(0,"no saved state file found. starting from scratch\n");
 
@@ -300,7 +300,7 @@ int main(int argc,char *argv[])
       elog_complain(0,"orbopen failed");
       return(-1);
     }
-  
+
   fd=-1;
   while (1)
     {
@@ -345,13 +345,13 @@ int main(int argc,char *argv[])
 	    {
 	      printProgram(&fd);
 	      break;
-	    }	
-	  if (fpass && checktime) 
+	    }
+	  if (fpass && checktime)
 	    getTime(&fd);
-	  
+
 	  if (fpass)
 	    fpass=0;
-	  
+
 	  if (fd < 0 || setMemPtr(&fd,NextMemPtr)==UNSUCCESSFUL)
 	    {
 	      elog_complain(0,"setMemPtr(&fd,%d) failed\n",NextMemPtr);
@@ -387,8 +387,8 @@ int main(int argc,char *argv[])
 
       if (slop && settime)
 	  setTime(&fd);
-	  
-      
+
+
       /* if slop then we ran out of data to get */
       if (interval>0 && slop)
 	{
@@ -399,7 +399,7 @@ int main(int argc,char *argv[])
 		    close(fd);
 		    fd=-1;
 		}
-	    
+
 	    close(fd);
 	    fd=-2;
 	    if (jitterenable && samintlogvalid && skewlogvalid)
@@ -409,7 +409,7 @@ int main(int argc,char *argv[])
 		    sleeptime=interval;
 		else if (verbose)
 		    elog_notify(0,"sleep shorted. (sleeping for %d sec, interval=%d)\n",sleeptime,interval);
-		
+
 		sleep(sleeptime);
 	    }
 	    else
@@ -461,10 +461,10 @@ int stuffline(Tbl *r, char *readbuf)
 	      elog_complain(0,"this error: stuffline(): deltbl() returns NULL should never occur.\n");
 	      exit(-1);
 	  }
-	  
+
 	  c=gettbl(r,0);
 	  if (c==NULL)
-	  {  
+	  {
 	      freetbl(r,0);
 	      if (verbose)
 		  elog_notify(0,"No 01 column in response.\n\tAre we done?");
@@ -472,7 +472,7 @@ int stuffline(Tbl *r, char *readbuf)
 	  }
       }
   else
-  {  
+  {
       freetbl(r,0);
       if(verbose)
 	  elog_notify(0,"No columns in response.\n\tAre we done?");
@@ -486,7 +486,7 @@ int stuffline(Tbl *r, char *readbuf)
 	{
 	  complain(1,"pfupdate(%s,configpf)",configfile);
 	  exit(-1);
-	} 
+	}
       else if (ret==1)
 	elog_notify(0,"updated config file loaded %s\n",configfile);
     }
@@ -501,7 +501,7 @@ int stuffline(Tbl *r, char *readbuf)
   else if (crack_time_ret==NULL)
   {
       elog_complain(0,"Failed to parse timing in stuffline().\nSince you specified, the -m arrayid argument, I am going to ignore the packet.\n\n");
-      
+
       /* load some values that will allow it to skip through the rest of this code */
       /* if we exit here instead then we don't update the state file with the current mem location */
       fake.timestamp=now();
@@ -525,13 +525,13 @@ int stuffline(Tbl *r, char *readbuf)
     {
 	while(*c!='\0' && !isdigit(*c) && *c != 'A' && *c != 'L')
 	    c++;
-	
+
 	if (c[0]=='A' || c[0]=='L')
 	{
 	    if (*c != 'L')
 	    {
 		c=shifttbl(r);
-		
+
 		while(*c!='\0' && !isdigit(*c) && *c != 'L')
 		    c++;
 	    }
@@ -540,7 +540,7 @@ int stuffline(Tbl *r, char *readbuf)
 	    {
 		if (channels != 0 || verbose)
 		    complain(0,"this memory location (%d) did not contain enough data elements (%d)\n",OldMemPtr,channels);
-		
+
 		/* don't do it */
 		freePkt(orbpkt);
 		freetbl(r,0);
@@ -550,7 +550,7 @@ int stuffline(Tbl *r, char *readbuf)
 			elog_notify(0,"are we done yet?\n");
 		    return(1);
 		}
-		
+
 		exit(-1);
 	    }
 
@@ -564,12 +564,12 @@ int stuffline(Tbl *r, char *readbuf)
 	{
 	    chantab=NULL;
 	    pktchan = newPktChannel();
-	    
+
 	    if (configpf != NULL)
 	    {
 		sprintf(pfsearch,"%s{%d}{ch%d}",srcname,crack_time_ret->prog_vs,channels+1);
 		channame=pfget_string(configpf,pfsearch);
-		
+
 		if (channame != NULL)
 		{
 		    if (verbose)
@@ -583,11 +583,11 @@ int stuffline(Tbl *r, char *readbuf)
 			    channame_cpy[lcv]=' ';
 			lcv++;
 		    }
-		    
+
 		    chantab=split(channame_cpy,' ');
 		    strncpy(pktchan->chan,gettbl(chantab,0),PKT_TYPESIZE);
 
-		    if (!chan_length_override && strlen(pktchan->chan)>8) 
+		    if (!chan_length_override && strlen(pktchan->chan)>8)
 		    {
                         /* to make Steve Foley happy */
 		        /* (keeps chan names short enough to fit in CSS3.0 */
@@ -618,7 +618,7 @@ int stuffline(Tbl *r, char *readbuf)
 	    }
 	    else
 		sprintf(pktchan->chan,"%d",channels+1);
-	    
+
 	    pktchan->datasz = 1;
 	    pktchan->data=malloc(4);
 	    if (pktchan->data==NULL)
@@ -626,12 +626,12 @@ int stuffline(Tbl *r, char *readbuf)
 		elog_complain(1,"stuffline(): malloc");
 		exit(-1);
 	    }
-	    
+
 	    if (chantab && maxtbl(chantab)>1)
 		pktchan->data[0]=atof(c+2)*atof(gettbl(chantab,1));
 	    else
 		pktchan->data[0]=atof(c+2)*1000;
-		
+
 	    pktchan->time=orbpkt->time;
 	    strncpy(pktchan->net,srcparts.src_net,PKT_TYPESIZE);
 	    strncpy(pktchan->sta,srcparts.src_sta,PKT_TYPESIZE);
@@ -642,40 +642,40 @@ int stuffline(Tbl *r, char *readbuf)
 		strncpy(pktchan->segtype,gettbl(chantab,2),4);
 	    else
 		strncpy(pktchan->segtype,"c",2);
-	    
+
 	    if (chantab && maxtbl(chantab)>1)
 		pktchan->calib=1.0/atof(gettbl(chantab,1));
 	    else
 		pktchan->calib=0.001;
-	    
+
 	    pktchan->calper=-1;
-	    
+
 	    if (crack_time_ret->saminterval>0)
 		pktchan->samprate=1.0/crack_time_ret->saminterval;
 	    else
 		pktchan->samprate=0;
-	    
+
 	    pushtbl(orbpkt->channels,pktchan);
 	    orbpkt->nchannels++;
-	    
+
 	    if (verbose)
 		fprintf(stderr,"adding channel %s (%d) %f\n",pktchan->chan,channels,pktchan->data[0]*pktchan->calib);
-	    
+
 	    if (chantab)
 	    {
 		freetbl(chantab,0);
 		chantab=NULL;
 	    }
 	}
-      
+
 	if (c[0]!='\0')
 	    ++channels;
     }
 
   freetbl(r,0);
-  
+
   pktchan = newPktChannel();
-  
+
   sprintf(pktchan->chan,"memloc");
 
   pktchan->datasz = 1;
@@ -807,7 +807,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 	    elog_complain(0,"keysarr() failed. PF Variable: %s should be an array.\n",srcname);
 	    return(NULL);
 	}
-    
+
 	while (!exit_flag && (prog_vs_ch=poptbl(valsarr)))
 	{
 	    prog_vs=atoi(prog_vs_ch);
@@ -820,7 +820,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 		    elog_notify(0,"prog_vs_chan not defined for %s in parameter file\n",pfsearch);
 	    }
 	    else
-	    { 
+	    {
 		sscanf(tmp_idx,"ch%d",&crack_time_ret.prog_ch);
 		if (verbose)
 		    elog_notify(0,"prog_vs_chan defined as %d (atoi(%s)) for %s\n",crack_time_ret.prog_ch, tmp_idx, pfsearch);
@@ -849,7 +849,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 
 	/* now that we have the correct array def, don't forget until we finish unstuff() */
 	crack_time_ret.prog_vs=prog_vs;
-	
+
 	sprintf(pfsearch,"%s{%s}{year_chan}", srcname, prog_vs_ch);
 	if ((tmp_idx=pfget_string(configpf,pfsearch))==NULL)
 	    crack_time_ret.year_ch=DEFAULT_YEAR_CHAN;
@@ -869,7 +869,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 	    if (verbose)
 		elog_notify(0,"day chan = %d\n",crack_time_ret.day_ch);
 	}
-	
+
 	sprintf(pfsearch,"%s{%s}{hour_min_chan}", srcname, prog_vs_ch);
 	if ((tmp_idx=pfget_string(configpf,pfsearch))==NULL)
 	    crack_time_ret.hour_min_ch=DEFAULT_HOURMIN_CHAN;
@@ -879,7 +879,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 	    if (verbose)
 		elog_notify(0,"hour_min chan = %d\n",crack_time_ret.hour_min_ch);
 	}
-	
+
 	sprintf(pfsearch,"%s{%s}{sec_chan}", srcname, prog_vs_ch);
 	if ((tmp_idx=pfget_string(configpf,pfsearch))==NULL)
 	{
@@ -926,13 +926,13 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 	}
 	previoussecstamp=atoi(val_ch+2);
     }
- 
+
     /* check timestamp */
     if (secondsfield)
 	sprintf(pfsearch,"%d-%03d %d:%02d:%02d %s",previousyearstamp,previousdaystamp,previoushrstamp/100,previoushrstamp%100,previoussecstamp,camtimezone);
     else
 	sprintf(pfsearch,"%d-%03d %d:%d %s",previousyearstamp,previousdaystamp,previoushrstamp/100,previoushrstamp%100,camtimezone);
-    
+
     crack_time_ret.timestamp=str2epoch(pfsearch);
     if (verbose)
 	elog_notify(0,"timestamp: %s -> %s\n",pfsearch,strtime(crack_time_ret.timestamp));
@@ -943,7 +943,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 	crack_time_ret.saminterval=pfget_int(configpf,pfsearch);
 	samintlog=crack_time_ret.saminterval;
 	samintlogvalid=1;
-	
+
 	if (previoustimestamp>-0.2)
 	{
 	    if (crack_time_ret.timestamp-previoustimestamp>crack_time_ret.saminterval+crack_time_ret.saminterval*0.05 || crack_time_ret.timestamp-previoustimestamp<crack_time_ret.saminterval-crack_time_ret.saminterval*0.05)
@@ -957,7 +957,7 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 		}
 	    }
 	}
-	
+
     }
     else
     {
@@ -1093,16 +1093,16 @@ void getTime(int *fd)
 		{
 		    if (errno!=EAGAIN)
 		    {
-			elog_complain(1,"getTime: read()");		    
+			elog_complain(1,"getTime: read()");
 			val&=~O_NONBLOCK;
 			if (fcntl(*fd,F_SETFL,val)==-1)
 			{
 			    elog_complain(1,"getTime: fcntl(F_SETFL,blocking) failed:");
 			    close(*fd);
 			    *fd=-1;
-			    return; 
+			    return;
 			}
-			
+
 			close(*fd);
 			*fd=-1;
 			return;
@@ -1115,14 +1115,14 @@ void getTime(int *fd)
 		}
 		else if (program[lcv]=='\r' || program[lcv]=='\n')
 		    program[lcv]='J';
-		
+
 		lcv++;
 	    }
 	    while (!brk || program[lcv-1]!='*');
 	}
   }
   while (program[lcv-1]!='*');
-  
+
 
   val&=~O_NONBLOCK;
   if (fcntl(*fd,F_SETFL,val)==-1)
@@ -1130,7 +1130,7 @@ void getTime(int *fd)
       elog_complain(1,"getTime: fcntl(F_SETFL,blocking) failed:");
       close(*fd);
       *fd=-1;
-      return; 
+      return;
   }
 
   program[lcv-1]='0';
@@ -1258,7 +1258,7 @@ int getAttention(int *fd)
 
 	sleep(2);
 
-	if (verbose) 
+	if (verbose)
 	  elog_notify(0,"waiting for ** prompt");
 
 	while ((ret=read(*fd,prompt,4))>0)
@@ -1272,7 +1272,7 @@ int getAttention(int *fd)
 		    elog_complain(1,"getAttention: fcntl(F_SETFL,blocking) failed:");
 		    close(*fd);
 		    *fd=-1;
-		    return UNSUCCESSFUL; 
+		    return UNSUCCESSFUL;
 		}
 
 		if (verbose)
@@ -1289,14 +1289,14 @@ int getAttention(int *fd)
 	    return(UNSUCCESSFUL);
 	}
     }
-  
+
   val&=~O_NONBLOCK;
   if (fcntl(*fd,F_SETFL,val)==-1)
   {
       elog_complain(1,"getAttention: fcntl(F_SETFL,blocking) failed:");
       close(*fd);
       *fd=-1;
-      return UNSUCCESSFUL; 
+      return UNSUCCESSFUL;
   }
 
   elog_complain(0,"getAttention() = Could not get attention (prompt[0]=%c,prompt[1]=%c,prompt[2]=%c,prompt[3]=%c)\n",prompt[0],prompt[1],prompt[2],prompt[3]);
@@ -1335,7 +1335,7 @@ void flushOut(int *fd)
   while(read(*fd,&c,1)>0)
   {
    /* BAD hack for SMER GORGE. Not sure what causes ASCII 94 char (foley) */
-      if (read_count == 20) 
+      if (read_count == 20)
       {
          elog_complain(0, "too many characters read in flushOut(), dying with char:^%c^ and errno: ^%d^...",c,errno);
          close(*fd);
@@ -1343,7 +1343,7 @@ void flushOut(int *fd)
          return;
       }
       /* elog_notify(0,"flushOut() read: %c", c); */
-      read_count++;    
+      read_count++;
       /* fprintf(stderr,"%c\n",c); */
   }
 
@@ -1390,13 +1390,13 @@ int flushUntil(int *fd,char c)
 	/* prepare for select */
 	timeout.tv_sec=MAXCAMDELAY;
 	timeout.tv_usec=0;
-	
+
 	FD_ZERO(&readfd);
 	FD_SET(*fd,&readfd);
-	
+
 	FD_ZERO(&except);
 	FD_SET(*fd,&except);
-	
+
 	selret=select(*fd+1,&readfd,NULL,&except,&timeout);
 
 	if (selret<0)
@@ -1424,7 +1424,7 @@ int flushUntil(int *fd,char c)
 		    if (errno!=EAGAIN)
 		    {
 			elog_complain(1,"flushUntil: read");
-			
+
 			val&=~O_NONBLOCK;
 			if (fcntl(*fd,F_SETFL,val)==-1)
 			{
@@ -1433,7 +1433,7 @@ int flushUntil(int *fd,char c)
 			    *fd=-1;
 			    return UNSUCCESSFUL;
 			}
-			
+
 			close(*fd);
 			*fd=-1;
 			return UNSUCCESSFUL;
@@ -1453,7 +1453,7 @@ int flushUntil(int *fd,char c)
 			*fd=-1;
 			return UNSUCCESSFUL;
 		    }
-		    
+
 		    return loop;
 		}
 	    }
@@ -1509,13 +1509,13 @@ int readline(int *fd, char *rebuf)
 	/* prepare for select */
 	timeout.tv_sec=MAXCAMDELAY;
 	timeout.tv_usec=0;
-	
+
 	FD_ZERO(&readfd);
 	FD_SET(*fd,&readfd);
-	
+
 	FD_ZERO(&except);
 	FD_SET(*fd,&except);
-	
+
 	selret=select(*fd+1,&readfd,NULL,&except,&timeout);
 
 	if (selret<0)
@@ -1542,17 +1542,17 @@ int readline(int *fd, char *rebuf)
 		    if (errno!=EAGAIN)
 		    {
 			elog_complain(1,"readline: read()");
-			
+
 			val&=~O_NONBLOCK;
 			if (fcntl(*fd,F_SETFL,val)==-1)
 			{
 			    elog_complain(1,"readline: fcntl(F_SETFL,blocking) failed:");
 			    close(*fd);
 			    *fd=-1;
-			    return UNSUCCESSFUL; 
-			
+			    return UNSUCCESSFUL;
+
 			}
-		    
+
 			close(*fd);
 			*fd=-1;
 			return UNSUCCESSFUL;
@@ -1571,13 +1571,13 @@ int readline(int *fd, char *rebuf)
 			elog_notify(0,"campbell resp: %s\n",rebuf);
 
 		    val&=~O_NONBLOCK;
-		    
+
 		    if (fcntl(*fd,F_SETFL,val)==-1)
 		    {
 			elog_complain(1,"readline: fcntl(F_SETFL,blocking) failed:");
 			close(*fd);
 			*fd=-1;
-			return UNSUCCESSFUL; 
+			return UNSUCCESSFUL;
 		    }
 
 		    return loop;
@@ -1592,9 +1592,9 @@ int readline(int *fd, char *rebuf)
       elog_complain(1,"readline: fcntl(F_SETFL,blocking) failed:");
       close(*fd);
       *fd=-1;
-      return UNSUCCESSFUL; 
+      return UNSUCCESSFUL;
   }
-  
+
   elog_complain(0,"readline() = overflow in readline (c=%c)\n",rebuf[loop-1]);
   close(*fd);
   *fd=-1;
@@ -1640,10 +1640,14 @@ int find_speed(char *val)
     return B57600;
   if (l==115200)
     return B115200;
+#ifdef B230400
   if (l==230400)
     return B230400;
+#endif
+#ifdef B460800
   if (l==460800)
     return B460800;
+#endif
 
   elog_complain(0,"speed %s is not supported see: /usr/include/sys/termios.h for supported values. Using default: 9600 bps\n",val);
   return B9600;
@@ -1664,7 +1668,7 @@ void init_serial(char *file_name, struct termios *orig_termios, int *fd, int spe
     {
       perror("get serial attributes");
     }
-  
+
   *orig_termios=tmp_termios;
 
   cfsetispeed(&tmp_termios,speed);
@@ -1703,29 +1707,29 @@ int initConnection(char *host, char *port)
   else
     {
       host_ent = gethostbyname(host);
-      
+
       if ( host_ent == NULL )
 	{
 	  elog_complain(0,"initConnection = Could not resolve address (host=%s)\n",host);
 	  return UNSUCCESSFUL;
 	}
-      
+
       memcpy(&addr.sin_addr, host_ent->h_addr,min(host_ent->h_length, sizeof(addr.sin_addr)));
     }
-  
+
   /* make socket */
   if( (fd=socket(AF_INET, SOCK_STREAM, 0)) == -1 )
     {
       elog_complain(0,"initConnection = Could not make socket\n");
       return UNSUCCESSFUL;
     }
-  
+
   /* create address from host ent */
   addr.sin_family = AF_INET;
   addr.sin_port = htons(atoi(port));
-  
+
   nconnected=connect(fd, (struct sockaddr *) &addr, sizeof(addr));
-  
+
   if (nconnected)
     {
       elog_complain(1,"initConnection = connect failed\n");
@@ -1760,7 +1764,7 @@ void setTime(int *fd)
 
   write(*fd,"7H\r",3);
   flushUntil(fd,'>');
-  
+
   lt=now();
   if (lt%60<55)
   {
