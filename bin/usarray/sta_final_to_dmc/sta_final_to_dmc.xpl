@@ -117,7 +117,7 @@
     
     ($orbsize,$problems) = orbcheck($orb,$orbname,$orbclient,$problems);
     
-    ($problems) = &orbprime($orbname,$problems);
+    ($problems) = &orbprime($orbname,$problems) unless $opt_n;
 
     if ( $problems ) {
         elog_complain("\nProblem $problems
@@ -241,86 +241,87 @@
 #
 #  Build explicit gap filling request while verifying that gap is not filled
 #
+        if ( ! $opt_n ) {
+            @db      = dbopen("tmp_gap_$sta\_$$","r+");
+            @dbgwf   = dblookup(@db,0,"wfdisc",0,0);
+        
+            @dbgap   = dbopen($dbname,"r");
+            @dbgap   = dblookup(@dbgap,0,"gap",0,0);
+        
+            @dbwfchk = dblookup(@dbgap,0,"wfdisc",0,0);
+            @dbscr   = dblookup(@dbwfchk,0,0,0,"dbSCRATCH");
+        
+            $nrows   = dbquery(@dbgap,"dbRECORD_COUNT");
+        
+            $problem_check = $problems;
 
-        @db      = dbopen("tmp_gap_$sta\_$$","r+");
-        @dbgwf   = dblookup(@db,0,"wfdisc",0,0);
-        
-        @dbgap   = dbopen($dbname,"r");
-        @dbgap   = dblookup(@dbgap,0,"gap",0,0);
-        
-        @dbwfchk = dblookup(@dbgap,0,"wfdisc",0,0);
-        @dbscr   = dblookup(@dbwfchk,0,0,0,"dbSCRATCH");
-        
-        $nrows   = dbquery(@dbgap,"dbRECORD_COUNT");
-        
-        $problem_check = $problems;
-
-        for ($row = 0; $row<$nrows; $row++) {
-            $dbgap[3] = $row;
-            ($gsta,$gchan,$time,$tgap) = dbgetv(@dbgap,"sta","chan","time","tgap");
-            $endtime = $time + $tgap - 0.004;
-            dbputv(@dbscr,"sta",$gsta,"chan",$gchan,"time",$time,"endtime",$endtime);
-            @rows = dbmatches(@dbscr,@dbwfchk,"overlap_$sta","sta","chan","time::endtime");
-            if ($#rows > -1) {
-                $problems++ ;
-                elog_complain("\nProblem $problems");
-                printf STDERR "	$sta	$chan	already has gap filled data between	%s	and	%s\n",
+            for ($row = 0; $row<$nrows; $row++) {
+                $dbgap[3] = $row;
+                ($gsta,$gchan,$time,$tgap) = dbgetv(@dbgap,"sta","chan","time","tgap");
+                $endtime = $time + $tgap - 0.004;
+                dbputv(@dbscr,"sta",$gsta,"chan",$gchan,"time",$time,"endtime",$endtime);
+                @rows = dbmatches(@dbscr,@dbwfchk,"overlap_$sta","sta","chan","time::endtime");
+                if ($#rows > -1) {
+                    $problems++ ;
+                    elog_complain("\nProblem $problems");
+                    printf STDERR "	$sta	$chan	already has gap filled data between	%s	and	%s\n",
                                 strydtime($time),strydtime($endtime);
+                }
+                dbaddv(@dbgwf,"sta",    $gsta,
+                              "chan",   $gchan,
+                              "time",   $time,
+                              "endtime",$endtime) if ($problem_check == $problems );
             }
-            dbaddv(@dbgwf,"sta",    $gsta,
-                          "chan",   $gchan,
-                          "time",   $time,
-                          "endtime",$endtime) if ($problem_check == $problems );
-        }
 
-        if ( $problem_check != $problems && ! $opt_n) {
-            $subject = "Problems - $pgm $host	Gaps already filled in $sta" ;
-            &sendmail($subject, $opt_m) if $opt_m ; 
-            elog_die("\n$subject") ;
-        }
+            if ( $problem_check != $problems && ! $opt_n) {
+                $subject = "Problems - $pgm $host	Gaps already filled in $sta" ;
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject") ;
+            }
          
 #  Check the aggregate size of data files
 
-        @dbsize = dbsort(@dbwfchk,"dir","dfile","-u");
-        $nrows  = dbquery(@dbsize,"dbRECORD_COUNT");
+            @dbsize = dbsort(@dbwfchk,"dir","dfile","-u");
+            $nrows  = dbquery(@dbsize,"dbRECORD_COUNT");
         
-        $dbsize = 0;
-        for ($row = 0; $row<$nrows; $row++) {
-            $dbsize[3] = $row;
-            $dbsize += -s dbextfile(@dbsize);
-        }
+            $dbsize = 0;
+            for ($row = 0; $row<$nrows; $row++) {
+                $dbsize[3] = $row;
+                $dbsize += -s dbextfile(@dbsize);
+            }
         
-        $line    = "dbname $dbname	Total Bytes - 	$dbsize";
-        $comment = "$sta final baler data sent to DMC     Total Bytes \- $dbsize";
-        open(RTSTA,"> /tmp/sta");
-        print RTSTA "$line \n";
-        close(RTSTA);
+            $line    = "dbname $dbname	Total Bytes - 	$dbsize";
+            $comment = "$sta final baler data sent to DMC     Total Bytes \- $dbsize";
+            open(RTSTA,"> /tmp/sta");
+            print RTSTA "$line \n";
+            close(RTSTA);
 
-		elog_notify($line);        
+		    elog_notify($line);        
 
 #  Check the min and max times of all channels as requested by Jennifer.
 
-        $mintime  = dbex_eval(@dbwfchk,"min(time)");
-        $maxtime  = dbex_eval(@dbwfchk,"max(endtime)");
+            $mintime  = dbex_eval(@dbwfchk,"min(time)");
+            $maxtime  = dbex_eval(@dbwfchk,"max(endtime)");
 
 #  find file directories for non-wf miniseed data
 
-        @dbwfchk  = dbsubset(@dbwfchk,"chan =~ /$pf{non_wf_chan_proxy}/");
-        @dbwfchk  = dbsort(@dbwfchk,"dir","-u") ; 
+            @dbwfchk  = dbsubset(@dbwfchk,"chan =~ /$pf{non_wf_chan_proxy}/");
+            @dbwfchk  = dbsort(@dbwfchk,"dir","-u") ; 
 
-        @dirs = ();
-        $nrows = dbquery(@dbwfchk,"dbRECORD_COUNT");
+            @dirs = ();
+            $nrows = dbquery(@dbwfchk,"dbRECORD_COUNT");
         
-        for ($row = 0; $row<$nrows; $row++) {
-            $dbwfchk[3] = $row;
-            ($dir,$base,$suf) = parsepath(dbextfile(@dbwfchk));
-            elog_notify("dir	$dir") if $opt_V;
-            push(@dirs,$dir);
+            for ($row = 0; $row<$nrows; $row++) {
+                $dbwfchk[3] = $row;
+                ($dir,$base,$suf) = parsepath(dbextfile(@dbwfchk));
+                elog_notify("dir	$dir") if $opt_V;
+                push(@dirs,$dir);
+            }
+            elog_notify("dirs	@dirs") if $opt_V;
+        
+            dbclose(@db);
+            dbclose(@dbgap);
         }
-        elog_notify("dirs	@dirs") if $opt_V;
-        
-        dbclose(@db);
-        dbclose(@dbgap);
         
 #
 #  Build rt station wfdisc (is this in the correct wf naming format????)
