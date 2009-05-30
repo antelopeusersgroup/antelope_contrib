@@ -377,6 +377,10 @@ sub check_tables { # $problems = &check_tables($db,$problems,@tables);
 
     foreach $table (@tables) {
         @db      = dblookup(@db,0,$table,0,0);
+        if ($db[1] < 0) {
+            elog_complain("$table not defined in schema") ;
+            $problems++;
+        }        
         if (! dbquery(@db,"dbTABLE_PRESENT")) {
             elog_complain("No records in $table table of $db") ;
             $problems++;
