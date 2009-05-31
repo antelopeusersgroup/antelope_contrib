@@ -39,6 +39,8 @@ ResampleOperator::ResampleOperator(double e,Pf *pf)
 	
 	low = pfget_double(pf,const_cast<char *>("low_limit"));
 	high = pfget_double(pf,const_cast<char *>("high_limit"));
+	if(low>high) throw SeisppError(string("ResampleOperator constructor: ")
+			+ "Sample interval range error (low>high)");
 	t = pfget_tbl(pf,const_cast<char *>("Decimator_response_files"));
 	try{
 
@@ -398,7 +400,9 @@ ResamplingDefinitions::ResamplingDefinitions(Pf *pf)
 		if(pfget(pfrda,key,(void **)&pfsr)!=PFARR)
 			throw SeisppError("ResamplingDefinitions constructor:  Syntax error in parameter file Arr block tagged ResamplingDefinitions");
 		exact=atof(key);
-		rop = new ResampleOperator(exact,pfsr);
+		try{
+			rop = new ResampleOperator(exact,pfsr);
+		} catch(SeisppError serr){throw serr;};
 		si_range.low=rop->low;
 		si_range.high=rop->high;
 		decset.insert(ROmap::value_type(si_range,*rop));
