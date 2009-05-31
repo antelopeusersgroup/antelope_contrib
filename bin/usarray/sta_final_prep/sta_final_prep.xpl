@@ -397,6 +397,13 @@
         } else {
             elog_notify("\nskipping $cmd") if $prob ;
         } 
+
+        if  ( -d "$pf{balerprocbase}\/$sta" ) {
+            $prob++ ;
+            $problems++ ;
+            elog_complain("\nProblem $problems
+                           \n	$pf{balerprocbase}\/$sta already exists");
+        } 
         
         $cmd  = "mv $pf{balerdirbase}\/$sta $pf{balerprocbase}";
         if  ( ! $opt_n && ! $prob) {
