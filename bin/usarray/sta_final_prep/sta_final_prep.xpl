@@ -103,12 +103,12 @@
         }
                         
         $dirname  = "$pf{archivebase}\/$sta";
-        if ( -d $dirname) {
-            $problems++ ;
-            elog_complain("\nProblem $problems
-                           \n	directory $dirname already exists!
-                           \n	Skipping to next station");        
-        }
+#         if ( -d $dirname) {
+#             $problems++ ;
+#             elog_complain("\nProblem $problems
+#                            \n	directory $dirname already exists!
+#                            \n	Skipping to next station");        
+#         }
         
         $dbname   = "$pf{archivebase}\/$sta\/$sta";
         elog_notify("dirname	$dirname	dbname	$dbname") if $opt_v ;
