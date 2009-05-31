@@ -1,7 +1,7 @@
 #
 #   program needs:
 #
-#   check for overlaps
+#   check overlaps with realtime data
 #
 #
     require "getopts.pl" ;
@@ -16,12 +16,13 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$ptmp);
+    my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$subset,$ptmp);
     my ($stime,$table,$sta,$chan,$dirname,$dbname);
     my ($mintime,$maxtime);
     my ($row,$nrows,$time,$endtime,$equip_install,$equip_remove,$decert_time,$totdays);
     my ($line,$st1,$st2,$statmp,$chantmp,$dep,$prob);
-    my (@db,@dbwfdisc,@dbwf,@dbschan,@dbchanperf,@dbbh,@dbdeploy,@dbcd);
+    my (@db,@dbwfdisc,@dbwf,@dbschan,@dbchanperf,@dbbh,@dbdeploy,@dbcd,@dbdeptmp,@dbtmp);
+    my (@dbdmcfiles,@dbscrdmc,@dbops);
     my (%pf,%staperf);
 
     $pgm = $0 ; 
@@ -60,6 +61,21 @@
     }
     $problems = 0;
 
+#
+#  open dbops and check that dbops dmcfiles table exists.
+#
+    @dbops         = dbopen($pf{dbops},"r+");
+    @dbdeploy      = dblookup(@dbops,0,"deployment",0,0);
+    @dbdmcfiles    = dblookup(@dbops,0,"dmcfiles",0,0);
+    @dbscrdmc      = dblookup(@dbdmcfiles,0,0,0,"dbSCRATCH");
+    if (! dbquery(@dbdmcfiles,"dbTABLE_PRESENT") ) {
+        $problems++ ;
+        elog_complain("\nProblem $problems
+                       \n	database table $pf{dbops}.dmcfiles does not exist!") ;
+        $subject = "Problems - $pgm $host	dbops problem" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject");
+    }
 
 #   subset for unprocessed data
 
@@ -69,6 +85,15 @@
 
     $table = "wfdisc";
     foreach $sta (@ARGV) {
+        $subset = "comment =~ /$sta final baler data sent to DMC.*/";
+        @dbtmp = dbsubset(@dbdmcfiles,$subset);
+        if (dbquery(@dbtmp,"dbRECORD_COUNT")) {
+            $dbtmp[3] = 0 ;
+            $stime = strydtime(dbgetv(@dbtmp,"time"));
+            elog_notify("\n$sta already sent to DMC at $stime, skipping verification") if $opt_v;
+            next;
+        }
+        
         $stime = strydtime(now());
         elog_notify ("\nstarting processing station $sta\n\n");
     
@@ -160,12 +185,13 @@
 #
 #  Verify start and end times in deployment table
 #
-        @db = dbopen($pf{dbops},"r+");
-        @dbdeploy = dblookup(@db,0,"deployment",0,0);
-        @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
-        $dbdeploy[3] = 0;
+#         @db = dbopen($pf{dbops},"r+");
+#         @dbdeploy = dblookup(@db,0,"deployment",0,0);
+#         @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
+        @dbdeptmp = dbsubset(@dbdeploy,"sta=~/$sta/");
+        $dbdeptmp[3] = 0;
         ($time,$endtime,$equip_install,$equip_remove,$decert_time) = 
-                                dbgetv(@dbdeploy,"time","endtime","equip_install","equip_remove","decert_time");
+                                dbgetv(@dbdeptmp,"time","endtime","equip_install","equip_remove","decert_time");
                              
         %staperf = ();
         $endtime = now() if ($endtime > now());
@@ -182,7 +208,7 @@
             $line = "Deployment table time field change -\n	$sta old time		$st2	new	$st1\n";
             print DEP "$line\n";
             elog_notify($line);
-            dbputv(@dbdeploy,"time",$mintime);
+            dbputv(@dbdeptmp,"time",$mintime);
             $dep++;
         }
         if ($mintime < $equip_install) {
@@ -191,7 +217,7 @@
             $line = "Deployment table equip_install field change -\n	$sta old equip_install	$st2	new	$st1\n";
             print DEP "$line\n";
             elog_notify($line) if $opt_v;
-            dbputv(@dbdeploy,"equip_install",$mintime);  
+            dbputv(@dbdeptmp,"equip_install",$mintime);  
             $dep++;
         }
         if ($maxtime > $endtime) {
@@ -200,7 +226,7 @@
             $line = "Deployment table endtime field change -\n	$sta old endtime	$st2	new	$st1\n";
             print DEP "$line\n";
             elog_notify($line);
-            dbputv(@dbdeploy,"endtime",$maxtime);
+            dbputv(@dbdeptmp,"endtime",$maxtime);
             $dep++;
         }
         if ($maxtime > $equip_remove) {
@@ -209,7 +235,7 @@
             $line = "Deployment table equip_remove field change -\n	$sta old equip_remove	$st2	new	$st1\n";
             print DEP "$line\n";
             elog_notify($line);
-            dbputv(@dbdeploy,"equip_remove",$maxtime);
+            dbputv(@dbdeptmp,"equip_remove",$maxtime);
             $dep++;
         }
         if ($endtime > now()) {
@@ -233,7 +259,7 @@
             elog_notify($line);
             $dep++;
         }
-        dbclose(@db);
+#         dbclose(@db);
         
         close(DEP);
         
@@ -355,6 +381,8 @@
         }
         %staperf = ();        
     }
+    
+    dbclose(@dbops);
         
     $stime = strydtime(now());
     elog_notify ("completed successfully	$stime\n\n");
