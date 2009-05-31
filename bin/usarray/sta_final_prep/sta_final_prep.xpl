@@ -393,9 +393,20 @@
         if  ( ! $opt_n ) {
             elog_notify("\n$cmd") if $prob ;        
             $problems = run($cmd,$problems) if $prob ;
+
         } else {
             elog_notify("\nskipping $cmd") if $prob ;
         } 
+        
+        $cmd  = "mv $pf{balerdirbase}\/$sta $pf{balerprocbase}";
+        if  ( ! $opt_n && ! $prob) {
+            elog_notify("\n$cmd") ;        
+            $problems = run($cmd,$problems) ;
+
+        } else {
+            elog_notify("\nskipping $cmd") ;
+        } 
+
 
         unlink "/tmp/$sta\_return_$$" unless $opt_V;
         unlink "/tmp/tmp_miniseed2db\_$$" unless $opt_V;
@@ -426,6 +437,7 @@ sub getparam { # %pf = getparam($Pf);
     my (%pf) ;
     
     $pf{balerdirbase}		= pfget( $Pf, "balerdirbase" );
+    $pf{balerprocbase}		= pfget( $Pf, "balerprocbase" );
     $pf{archivebase}		= pfget( $Pf, "archivebase" );
     $pf{bhdata_dir}			= pfget( $Pf, "bhdata_dir" );
     $pf{sohdata_dir}		= pfget( $Pf, "sohdata_dir" );
@@ -440,6 +452,7 @@ sub getparam { # %pf = getparam($Pf);
     
     if ($opt_V) {
         elog_notify("\nbalerdirbase     $pf{balerdirbase}");
+        elog_notify("balerprocbase    $pf{balerprocbase}");
         elog_notify("archivebase      $pf{archivebase}");
         elog_notify("bhdata_dir       $pf{bhdata_dir}");
         elog_notify("sohdata_dir      $pf{sohdata_dir}");
