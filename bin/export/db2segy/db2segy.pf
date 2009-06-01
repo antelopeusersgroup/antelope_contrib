@@ -96,3 +96,9 @@ sitechan
 origin
 #shot
 }
+#
+# New features added in 2009
+#
+use_32bit_nsamp false
+input_source_coordinates false
+coordinate_scale_factor 3600

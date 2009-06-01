@@ -54,7 +54,7 @@ void repair_gaps(Dbptr trdb);
 static void
 usage()
 {
-	fprintf(stderr,"Usage:  db2segy dbin outfile [-pf pffile -v]\n");
+	fprintf(stderr,"Usage:  db2segy dbin outfile [-pf pffile -SU -ss subset -v]\n");
 	exit(-1);
 }
 
@@ -111,7 +111,8 @@ initialize_header(SegyHead *header)
 	header->taperOvertravel = 0;
 	header->extrash[10] = 0;
 	header->samp_rate = 0;
-	header->data_form = 0;
+	/* Always ieee floats in this program for now */
+	header->data_form = 5;
 	header->trigyear = 0 ;
 	header->trigday=0;
 	header->trighour=0;
@@ -378,6 +379,7 @@ void set_shot_variable(Dbptr db, Arr *tables, int evid, SegyHead *h)
 		{
 			elog_complain(0,"evid %d not found in shot table\nShot coordinates will not be saved in segy headers\n",
 				evid);
+			dbfree(db);
 			return;
 		}
 		else if(ntest > 1)
@@ -400,14 +402,15 @@ void set_shot_variable(Dbptr db, Arr *tables, int evid, SegyHead *h)
 		/*convert to m from km */
 		deast *= 1000.0;
 		dnorth *= 1000.0;
-		h->sourceLongOrX = (long) deast;
-		h->sourceLatOrY = (long) dnorth;
-		h->sourceSurfaceElevation = (long)elev;
-		h->sourceDepth = (long)edepth;
+		h->sourceLongOrX = (int32_t) deast;
+		h->sourceLatOrY = (int32_t) dnorth;
+		h->sourceSurfaceElevation = (int32_t)elev;
+		h->sourceDepth = (int32_t)edepth;
 		/* WARNING:  This assumes receiver coordinates have already been set */
-		h->sourceToRecDist = (long) hypot(dnorth - ((double)(h->recLatOrY)),
+		h->sourceToRecDist = (int32_t) hypot(dnorth - ((double)(h->recLatOrY)),
 						deast - ((double)(h->recLongOrX)) );
 	}
+	dbfree(db);
 }
 /* The trace library routines that existed at the time this code
 was written were heavy handed about dealing with taps.  trload_css
@@ -524,7 +527,7 @@ int main(int argc, char **argv)
 	double samprate;
 	int i,j;
 	char stime[30],etime[30];
-	char s[80];
+	char s[128];
 	double tlength;
 	double phi, theta;
 	char *newchan_standard[3]={"X1","X2","X3"};
@@ -543,7 +546,28 @@ int main(int argc, char **argv)
 	char *fmt="%Y %j %H %M %S %s";
 	char *pfname;
 	int Verbose=0;
-
+	/* New features added 2009 */
+	/* this is a boolean.  If true (nonzero) it is assumed stdin will
+	contain four numbers:  time,lat, lon, elev.  If false, only the
+	time field is read and remainder of any input on each line is dropped.*/
+	int input_source_coordinates;
+	/* scale factor for source coordinates.  Needed because segy uses
+	an int to store source coordinates.  Sensible choices are 
+	3600 for arc seconds and 10000 for a pseudodecimal. Note this
+	parameter is ignored unless input_source_coordinates is true.*/
+	int coordScale;
+	/* If true use passcal 32 bit extension num_samps as record length. 
+	SEGY standard uses a 16 bit entry that easily overflows with large
+	shots at long offset.  In this ase assume the 16 bit quantity is
+	meaningless. */
+	int use_32bit_nsamp;
+	/* This is switched on by argument switch.  When set to a nonzero
+	(default) the reel headers are written.  When 0 `
+	the reel heades will not be written -- used by seismic unix 
+r
+	and passcal*/
+	int write_reel_headers=1;
+	char *substr=NULL;
 
 	if(argc < 3) usage();
 	dbin = argv[1];
@@ -556,9 +580,22 @@ int main(int argc, char **argv)
 			++i;
 			pfname = argv[i];
 		}
-		if(!strcmp(argv[i],"-v"))
+		else if(!strcmp(argv[i],"-SU"))
+		{
+			write_reel_headers=0;
+		}
+		else if(!strcmp(argv[i],"-v"))
 		{
 			Verbose=1;
+		}
+		else if(!strcmp(argv[i],"-ss"))
+		{
+			++i;
+			substr=argv[i];
+		}
+		else
+		{
+			usage();
 		}
 	}
 	if(pfname == NULL) pfname = strdup("db2segy");
@@ -586,6 +623,41 @@ int main(int argc, char **argv)
 		fprintf(stderr,"Cannot open db %s\n", dbin);
 		usage();
 	}
+	/* We grab the sample rate and trace length (in seconds) and
+	use this to define global sample rates for the data.  
+	segy REQUIRES fixed length records and sample rates, so
+	irregular sample rates will cause this program to die. 
+	One could add a decimate/interpolate function, but this 
+	is not currently implemented */
+	samprate0 = pfget_double(pf,"sample_rate");
+	tlength = pfget_double(pf,"trace_length");
+	nsamp0 = (int)(tlength*samprate0);
+	use_32bit_nsamp=pfget_boolean(pf,"use_32bit_nsamp");
+
+	/* nsamp in segy is a 16 bit field.  Handling depends on
+	setting of use_32bit_nsamp boolean */
+	if(nsamp0 > 32767) 
+	{
+	    if(use_32bit_nsamp)
+	    {
+	    	elog_notify(0,"Warning:  segy ues a 16 bit entity to store number of samples\nThat field is garbage. Using the 32 bit extension field.\n");
+	    }
+	    else
+	    {
+		elog_complain(0,
+		  "Warning:  segy uses a 16 bit entity to store number of samples\nRequested %d samples per trace.  Trucated to 32767\n",nsamp0);
+		nsamp0 = 32767;
+	    }
+	}
+	input_source_coordinates=pfget_boolean(pf,"input_source_coordinates");
+	if(input_source_coordinates)
+	{
+		coordScale=pfget_int(pf,"coordinate_scale_factor");
+	}
+	else
+	{
+		coordScale=1;
+	}
 	/* check list of tables defined in pf.  Return array of
 	logicals that define which tables are valid and join 
 	tables. */
@@ -593,6 +665,16 @@ int main(int argc, char **argv)
 	check_for_required_tables(table_list);
 	dbj = join_tables(db,pf,table_list);
 	if(dbj.record == dbINVALID) die(0,"dbjoin error\n");
+	if(substr!=NULL) dbj=dbsubset(dbj,substr,0);
+	int ndbrows;
+	dbquery(dbj,dbRECORD_COUNT,&ndbrows);
+	if(ndbrows<=0)
+	{
+		fprintf(stderr,"Working database view is empty\n");
+		if(substr!=NULL) fprintf(stderr,"Subset condtion =%s a likely problem\n",
+				substr);
+		usage();
+	}
 
 	fp = fopen(outfile,"w");
 	if(fp == NULL) 
@@ -610,27 +692,8 @@ int main(int argc, char **argv)
 	for(i=0;i<3200;i++) reel1[i] = '\0';
 
 	/* Just blindly write this turkey. Bad form, but tough*/
-	fwrite(reel1,1,3200,fp);
+	if(write_reel_headers) fwrite(reel1,1,3200,fp);
 
-	/* We grab the sample rate and trace length (in seconds) and
-	use this to define global sample rates for the data.  
-	segy REQUIRES fixed length records and sample rates, so
-	irregular sample rates will cause this program to die. 
-	One could add a decimate/interpolate function, but this 
-	is not currently implemented */
-	samprate0 = pfget_double(pf,"sample_rate");
-	tlength = pfget_double(pf,"trace_length");
-	nsamp0 = (int)(tlength*samprate0);
-
-	/* true blue segy uses a short for the number of samples so
-	we have to truncate long traces.  We reset nsamp0 and
-	issue a warning in this condition. */
-	if(nsamp0 > 32767) 
-	{
-		elog_complain(0,
-		  "Warning:  segy uses a 16 bit entity to store number of samples\nRequested %d samples per trace.  Trucated to 32767\n",nsamp0);
-		nsamp0 = 32767;
-	}
 	/* memory allocation for trace data.  This is a large matrix
 	that is cleared for each event.  This model works because of
 	segy's fixed length format.  This routine is a descendent of
@@ -643,30 +706,34 @@ int main(int argc, char **argv)
 			nchan, nsamp0);
 	header = (SegyHead *)calloc((size_t)nchan,sizeof(SegyHead));
 	if(header == NULL)
-		die(0,"Cannot alloc memory for %d segy headers\n",nchan);
-
-	/* now fill in the binary reel header and write it */
-	reel.kjob = 1;
-	reel.kline = 1;
-	reel.kreel = 1;
-	reel.kntr = (int16_t)nchan;
-	reel.knaux = 0;
-	reel.sr = (int16_t)(1000000.0/samprate0);
-	reel.kfldsr = reel.sr;
-	reel.knsamp = (int16_t)nsamp0;
-	reel.kfsamp = (int16_t)nsamp0;
-	reel.dsfc=1;  /* I think this is host floats*/
-	reel.kmfold = 0;
-	if(map_to_cdp)
-		reel.ksort = 2;
-	else
-		reel.ksort = 1;
-	reel.kunits = 1;  /* This sets units to always be meters */
-
-	if(fwrite((void *)(&reel),sizeof(SegyReel),1,fp) != 1) 
+			die(0,"Cannot alloc memory for %d segy header workspace\n",nchan);
+	if(write_reel_headers)
 	{
-		fprintf(stderr,"Write error for binary reel header\n");
-		exit(-2);
+
+		/* now fill in the binary reel header and write it */
+		reel.kjob = 1;
+		reel.kline = 1;
+		reel.kreel = 1;
+		reel.kntr = (int16_t)nchan;
+		reel.knaux = 0;
+		reel.sr = (int16_t)(1000000.0/samprate0);
+		reel.kfldsr = reel.sr;
+		reel.knsamp = (int16_t)nsamp0;
+		reel.kfsamp = (int16_t)nsamp0;
+		reel.dsfc=5;  /* This is ieee floats*/
+		reel.kmfold = 0;
+		if(map_to_cdp)
+			reel.ksort = 2;
+		else
+			reel.ksort = 1;
+		reel.kunits = 1;  /* This sets units to always be meters */
+		for(i=0;i<344;++i)reel.unused2[i]='\0';
+	
+		if(fwrite((void *)(&reel),sizeof(SegyReel),1,fp) != 1) 
+		{
+			fprintf(stderr,"Write error for binary reel header\n");
+			exit(-2);
+		}
 	}
 
 	/* Now we enter a loop over stdin reading start times.  
@@ -677,9 +744,9 @@ int main(int argc, char **argv)
 	*/
 	while((stest=fgets(s,80,stdin)) != NULL)
 	{
+		double slat,slon,selev;  /* Used when reading source location*/
 		if(Verbose)
-			fprintf(stdout,"Processing event with start time %s = shot %d\n",
-			s,shotid);
+			fprintf(stdout,"Processing:  %s\n",s);
 		for(i=0;i<nchan;++i)
 		{
 			initialize_header(&(header[i]));
@@ -695,23 +762,41 @@ int main(int argc, char **argv)
 				header[i].channel_number = i + 1;
 			}
 			header[i].event_number = shotid;
+			header[i].energySourcePt=shotid;
 			for(j=0;j<nsamp0;++j)  traces[i][j] = (Trsample)0.0;
 		}
-		time0 = str2epoch(s);
+		if(input_source_coordinates)
+		{
+			char stmp[40];
+			sscanf(s,"%s%d%lf%lf%lf",stmp,&shotid,&slon,&slat,&selev);
+			time0=str2epoch(stmp);
+		}
+		else
+		{
+			time0 = str2epoch(s);
+		}
 		endtime0 = time0 + tlength;
 		sprintf(stime,"%20.4f",time0);
 		sprintf(etime,"%20.4f",endtime0);
 		trdb.database = -1;
 		if(trload_css(dbj,stime,etime,&trdb,0, 0) < 0)
 		{
-			elog_complain(0,"trload_css failed for data in time range %s to %s\nNo data found for this time interval\n",
-				stime, etime);
+			if(Verbose) 
+			{
+			  fprintf(stdout,"trload_css failed for shotid=%d",shotid);
+			  fprintf(stdout,"  No data in time range %s to %s\n",
+			  	strtime(time0),strtime(endtime0) );
+			  fprintf(stdout,"No data written for this shotid block.");
+			  fprintf(stdout,"  Handle this carefully in geometry definitions.\n");
+			}
+
 			continue;
 		}
 		/* This does gap processing */
 		repair_gaps(trdb);
 		
 		trapply_calib(trdb);
+			
 		if(rotate)
 		{
 			if(rotate_to_standard(trdb,newchan_standard))
@@ -728,6 +813,8 @@ int main(int argc, char **argv)
 			fprintf(stdout,"Station  chan_name  chan_number seq_number shotid  evid\n");
 		trdb = dbsort(trdb,sortkeys,0,0);
 		dbquery(trdb,dbRECORD_COUNT,&ntraces);
+		if(Verbose) fprintf(stdout,"Read %d traces for event at time%s\n",
+			ntraces,strtime(time0));
 		for(trdb.record=0;trdb.record<ntraces;++trdb.record)
 		{
 			Trsample *trdata;
@@ -783,14 +870,29 @@ int main(int argc, char **argv)
 				for(j=0;j<nsamp;++j) 
 				   traces[ichan][j] = (float)trdata[j];
 				/* header fields coming from trace table */
-				header[ichan].samp_rate = (long)
+				header[ichan].samp_rate = (int32_t)
 						(1000000.0/samprate0);
-				header[ichan].recLongOrX = (long)(deast*1000.0);
-				header[ichan].recLatOrY = (long)(dnorth*1000.0);
-				header[ichan].recElevation = (long)(elev*1000.0);
+				/* Note negative here.  This is a oddity
+				of segy that - means divide by this to
+				get actual */
+				header[ichan].coordScale=-coordScale;
+				if(coordScale==1)
+				{
+				  header[ichan].recLongOrX = (int32_t)(deast*1000.0);
+				  header[ichan].recLatOrY = (int32_t)(dnorth*1000.0);
+				}
+				else
+				{
+				  header[ichan].recLongOrX
+				    =(int32_t)(lon*(double)coordScale);
+				  header[ichan].recLatOrY
+				    =(int32_t)(lat*(double)coordScale);
+				}
+				header[ichan].recElevation = (int32_t)(elev*1000.0);
 				header[ichan].deltaSample = (int16_t) 
 						(1000000.0/samprate0);
 				header[ichan].sampleLength = (int16_t)nsamp0;
+				header[ichan].num_samps = (int32_t)nsamp0;
 				/* This cracks the time fields */
 				time_str = epoch2str(time0,fmt);
 				sscanf(time_str,"%hd %hd %hd %hd %hd %hd",
@@ -808,15 +910,26 @@ int main(int argc, char **argv)
 				header[ichan].trigminute = header[ichan].minute;
 				header[ichan].trigsecond = header[ichan].second;
 				free(time_str);
-				if(map_to_cdp)
+				if(input_source_coordinates)
+				{
+				  header[ichan].sourceLongOrX
+				    =(int32_t)(slon*(double)coordScale);
+				  header[ichan].sourceLatOrY
+				    =(int32_t)(slat*(double)coordScale);
+				  header[ichan].sourceSurfaceElevation
+				             =(int32_t)selev;
+				  /* No easy way to specify both elev and depth*/
+				  header[ichan].sourceDepth=0;
+				}
+				else if(map_to_cdp)
 				{
 				/* When faking CDP data we make this look 
 				like a zero offset, single fold data set */
 				  header[ichan].sourceLongOrX = header[ichan].recLongOrX;
 				  header[ichan].sourceLatOrY = header[ichan].recLatOrY;
 				  header[ichan].sourceSurfaceElevation = header[ichan].recElevation;
-				  header[ichan].sourceDepth = (float)0.0;
-				  header[ichan].sourceToRecDist = (float)0.0;
+				  header[ichan].sourceDepth = 0;
+				  header[ichan].sourceToRecDist = 0;
 				}
 				else
 				{
@@ -825,7 +938,9 @@ int main(int argc, char **argv)
 				table currently supported is a "shot" table 
 				that holds shot coordinates.  If other tables
 				were added new functions could be added with
-				a similar calling sequence */
+				a similar calling sequence.  This procedure
+				silently does nothing if a shot table is not
+				present.*/
 					set_shot_variable(db,table_list,
 						evid,&header[ichan]);
 				}
@@ -850,7 +965,7 @@ int main(int argc, char **argv)
 		}
 		total_traces += nchan;
 		trdestroy(&trdb);		
-		++shotid;
+		if(!input_source_coordinates) ++shotid;
 	}
 	return 0 ;
 }
