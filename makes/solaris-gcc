@@ -35,6 +35,7 @@ TSORT=
 
 X11=/usr/openwin
 X11LIBS=-L$(XLIB) -R$(XLIB) -lX11
+XINCLUDE=$(X11)/include
 
 TCLLDFLAGS = -L$(TCLLIB) -Wl,-R$(TCLLIB) 
 
