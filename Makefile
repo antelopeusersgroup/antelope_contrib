@@ -2,6 +2,6 @@
 
 include $(ANTELOPEMAKE)
 
-DIRS=makes lib bin data java adm
+DIRS=lib bin data java adm
 
 # $Id$ 
