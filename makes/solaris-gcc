@@ -1,0 +1,55 @@
+# This version of antelopemake is not used at BRTT.
+#
+# This version of antelopemake is an attempt to allow using
+# the GNU tools rather than the Sun compiler suite.
+#
+# It presumes compatibility between the Sun and GNU compilers, which
+# is a big assumption.
+#
+# It presumes that both GNU make and the GNU compiler suite
+# are installed.  make must run GNU make, and cc must run GNU gcc. 
+# (This is commonly the case in the Linux and MacOSX environment).
+#
+
+F77LIBS= # -lg2c
+CCCOMMON=-fPIC -fno-strict-aliasing -D_REENTRANT  # -rdynamic
+DCFLAGS=
+
+CC=gcc
+LD=$(CC)
+DLD=$(CC) 
+
+LDRUN=-Wl,-R$(ANTELOPE)/lib 
+DLDFLAGS= $(ldflags) $(LDEXTRA) $(LDPATH) $(LDRUN) -shared 
+DLDLIBS=$(ldlibs) 
+
+# CXX=$(CCC)	# c++ on linux
+CXXAR=$(AR)
+CXXDLD=$(CXX)
+
+CXXARFLAGS=$(ARFLAGS)
+CXXDLDFLAGS=$(DLDFLAGS)
+
+LORDER=
+TSORT=
+
+X11=/usr/openwin
+X11LIBS=-L$(XLIB) -R$(XLIB) -lX11
+
+TCLLDFLAGS = -L$(TCLLIB) -Wl,-R$(TCLLIB) 
+
+THREAD=-lthread
+NSLLIBS = -lsocket -lnsl
+
+CRYPT=
+STOCKNEEDS=-lkstat -ldl -lposix4 -lnsl -lsocket -lm 
+
+FFLAGS  = $(DBG) $(fflags) $(FEXTRA) -I$(ANTELOPE)/local/include -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) 
+CFLAGS  = $(CCCOMMON) $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/local/include -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
+CCFLAGS = $(CCCOMMON) $(DBG)  $(cflags) $(CEXTRA) -I$(ANTELOPE)/local/include -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
+
+ASFLAGS = 
+
+RANLIB=:
+
+MAKE=make -e -s

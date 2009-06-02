@@ -1,0 +1,107 @@
+# This version of antelopemake is not used at BRTT.
+#
+# This version of antelopemake attempt to allow using gcc 
+# in combination with certain of the Sun development tools, 
+# in particular gcc with Sun's make, ld,
+# and ar (usually installed at /usr/ccs/bin/).
+#
+# All of the SUNW development packages from the Solaris CD must be
+# installed.
+#
+# Messagess like:
+# "gcc: -i: linker input file unused because linking not done"
+# Can be safely ignored.
+
+CC=gcc		# required if you don't install gcc with the cc alias
+
+F77LIBS=-L/opt/SUNWspro/lib -L/opt/SUNWspro/SC5.0/lib -R/opt/SUNWspro/lib -R/opt/SUNWspro/SC5.0/lib -lM77 -lF77 -lsunmath 
+
+CCOMMON=-O2 -Wl,-i -D_REENTRANT 
+DCFLAGS=-fPIC
+
+LD=ld 
+DLD=$(LD) 
+
+LDRUN=-R$(ANTELOPE)/lib 
+DLDFLAGS= $(ldflags) $(LDEXTRA) $(LDPATH) $(LDRUN) -G -ztext 
+DLDLIBS=$(ldlibs) 
+
+CXX=$(CCC)	# c++ on linux
+CXXAR=$(CCC)
+CXXDLD=$(CCC)
+
+CXXARFLAGS=-xar -o
+CXXDLDFLAGS=$(DCFLAGS) $(ldflags) $(LDEXTRA) $(LDPATH) $(LDRUN) -G 
+
+LORDER=`lorder
+TSORT=| tsort`
+
+X11=/usr/openwin
+X11LIBS=-L$(XLIB) -R$(XLIB) -lX11
+
+TCLLDFLAGS = -L$(TCLLIB) -R$(TCLLIB) 
+
+THREAD=-lthread
+NSLLIBS = -lsocket -lnsl
+
+CRYPT=
+STOCKNEEDS=-lkstat -ldl -lposix4 -lnsl -lsocket -lm 
+
+FFLAGS  = -D_REENTRANT $(DBG)  $(fflags) $(FEXTRA) -I$(ANTELOPE)/local/include -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) -R/opt/SUNWspro/lib
+CFLAGS  = $(CCOMMON) $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/local/include -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
+CCFLAGS = $(CCOMMON) $(DBG)  $(cflags) $(CEXTRA) -I$(ANTELOPE)/local/include -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
+
+ASFLAGS = -P -D_ASM # -K PIC  # Remove the -K PIC for x86
+
+RANLIB=:
+
+.KEEP_STATE :
+.PRECIOUS:$(LIB) $(DLIB)
+
+MAKE=make -e
+
+# The following lines would normally be in the
+# default makefile rules, but Sun bungles the debuggers/compilation
+# when a preprocessor is used on Fortran code.  However, 
+# it's very useful to use the .F suffix for Fortran in order
+# to include include files from a central location, rather than 
+# embedding absolute paths into the include line, as the
+# fortran include statement (as implemented by Sun)
+# forces you to do.  The following rules always generate
+# .f files from the .F files, and remove the # line# lines
+# which cpp inserts (even with the -P flag, which it isn't supposed to).
+# This will all work ok, if you're using .KEEP_STATE, however, 
+# it can get confusing.
+
+FPP=/usr/ccs/lib/cpp
+COMPILE.F=$(FC) $(FFLAGS) $(FPPFLAGS) $(TARGET_ARCH) -c
+LINK.F=$(FC) $(FFLAGS) $(FPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+
+# Cppflags is required in order to screen out compiler flags
+# other than -I from FFLAGS, so that cpp will shut up about them.
+# This is a hack, of course, and requires that options be
+# mentioned separately, not all together, but I hope it will
+# work most of the time.
+Cppflags=`echo $(FFLAGS) $(FPPFLAGS) | sed 's/-[^I][^ ]*//g'`
+
+.F.f :
+	$(FPP) $(Cppflags) $*.F | sed '/^#/d' > $*.f"
+
+.F:
+	$(FPP) $(Cppflags) $*.F | sed '/^#/d' > $*.f"
+	$(COMPILE.f) $(OUTPUT_OPTION) $*.f
+	$(LINK.f) -o $@ $*.o $(LDLIBS)
+
+.F.o:
+	$(FPP) $(Cppflags) $*.F | sed '/^#/d' > $*.f"
+	$(COMPILE.f) $(OUTPUT_OPTION) $*.f
+
+.F.a:
+	$(FPP) $(Cppflags) $*.F | sed '/^#/d' > $*.f"
+	$(COMPILE.f) -o $% $*.f
+	$(AR) $(ARFLAGS) $@ $%
+	$(RM) $%
+
+.f:
+	$(COMPILE.f) $(OUTPUT_OPTION) $<
+	$(LINK.f) -o $@ $@.o $(LDLIBS)
