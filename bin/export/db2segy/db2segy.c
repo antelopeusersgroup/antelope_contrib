@@ -658,6 +658,8 @@ r
 	{
 		coordScale=1;
 	}
+	/* boolean.  When nonzero set coordinates as geographic arc seconds values */
+	int use_geo_coordinates=pfget_boolean(pf,"use_geo_coordinates");
 	/* check list of tables defined in pf.  Return array of
 	logicals that define which tables are valid and join 
 	tables. */
@@ -872,22 +874,35 @@ r
 				/* header fields coming from trace table */
 				header[ichan].samp_rate = (int32_t)
 						(1000000.0/samprate0);
-				/* Note negative here.  This is a oddity
-				of segy that - means divide by this to
-				get actual */
-				header[ichan].coordScale=-coordScale;
-				if(coordScale==1)
+				if(!use_geo_coordinates && ( coordScale==1))
 				{
 				  header[ichan].recLongOrX = (int32_t)(deast*1000.0);
 				  header[ichan].recLatOrY = (int32_t)(dnorth*1000.0);
 				}
 				else
 				{
-				  header[ichan].recLongOrX
-				    =(int32_t)(lon*(double)coordScale);
-				  header[ichan].recLatOrY
-				    =(int32_t)(lat*(double)coordScale);
-				  header[ichan].coordUnits=2;
+				/* Note negative here.  This is a oddity
+				of segy that - means divide by this to
+				get actual.  Always make this negative in case 
+				user inputs a negative number. */
+				  header[ichan].coordScale=-abs(coordScale);
+				  /* Force 2 = geographic coordinates.  Standard says when this is
+				  so units are arc seconds, hence we multiply deg by 3600*coordScale */
+				  if(use_geo_coordinates)
+				  {
+				    header[ichan].coordUnits=2;
+				    header[ichan].recLongOrX
+				     =(int32_t)(lon*3600.0*(double)coordScale);
+				    header[ichan].recLatOrY
+				     =(int32_t)(lat*3600.0*(double)coordScale);
+				  }
+				  else
+				  {
+				    header[ichan].recLongOrX
+				     =(int32_t)(lon*(double)coordScale);
+				    header[ichan].recLatOrY
+				     =(int32_t)(lat*(double)coordScale);
+				  }
 				}
 				header[ichan].recElevation = (int32_t)(elev*1000.0);
 				header[ichan].deltaSample = (int16_t) 
@@ -913,6 +928,11 @@ r
 				free(time_str);
 				if(input_source_coordinates)
 				{
+				  if(use_geo_coordinates)
+				  {
+					slat*=3600.0;
+					slon*=3600.0;
+				  }
 				  header[ichan].sourceLongOrX
 				    =(int32_t)(slon*(double)coordScale);
 				  header[ichan].sourceLatOrY

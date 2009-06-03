@@ -102,3 +102,4 @@ origin
 use_32bit_nsamp false
 input_source_coordinates false
 coordinate_scale_factor 3600
+use_geo_coordinates true

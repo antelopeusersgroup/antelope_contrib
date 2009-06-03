@@ -62,7 +62,7 @@ as part of the input stream.  This is controlled by the input boolean
 \fBinput_source_coordinates\fR in the parameter file.  When set true the program
 will assume that the input lines that drive the program are of the form:
 .nf
-  time  ffid lon   lat   elev
+  time  ffid x(lon)   y(lat)   elev
 .fi
 where the time field string must NOT be specified in a format with BI
 spaces (e.g. 2009001:01:22:22.405 is acceptable  but "1/1/2009 01:22:22.405" 
@@ -76,25 +76,35 @@ i.e line count is ignored when running in this mode and this value is
 used to set ffid.  In general this should make indexing easier for 
 most likely uses of this program as ffid is the lowest common 
 demoninator in reflection data.
-The lat and lon fields are assumed to specify source coordinates in
-decimal degrees.  The elev field is simply trucated to an integer and 
-written to the segy header and is thus agnostic about units.  Do be aware,
-however, that elev will be truncated to an integer.  Similarly because segy 
-is ancient it specifies all coordinates with an integer attribute.  This
-collides strongly with using latitude and longitude as a source coordinate 
-definition since this would provide an accuracy to only the nearest degree.
-As a result when setting source coordinates this way a parameter called
-\fBcoordinate_scale_factor\fR is crucial in this setting.  This attribute
-becomes the segy attribure for the coordinate scale factor (an integer).  
-The standard specifies this is a multiplier for all coordinate data.  
-When this is anything but 1 source and receiver coordinates are multiplied
-by this value before truncation to integers.  Two reasonable choices for
-geographic coordinates are 3600 (arc seconds) or 10000  (gives best 
-decimal accuracy comparable to arc seconds 
-but a bit easier for a human to grok in a header dump.).
-Do keep in mind, however, that the scale factor is written as a 16 bit
-integer so 10000 is probably the largest reasonable number to use since
-100000 would overflow.
+.LP
+This program handles source and receiver coordinates according to the 
+SEGY standard, but with some limitations.  The first is you either
+get units of meter or arcseconds depending on the setting of the parameter 
+file boolean \fBuse_geo_coordinates\fR.  When this is true you will get
+coordinates in arc seconds, otherwise it will be meter or null.
+Source coordinates are taken from the site table.  If using geographc 
+coordinates the lat,lon fields are used.  If you are using meters the dnorth
+and deast fields of the site table are used.  Be warned the standard schema
+definition for Antelope for site coordinates will lead to a loss of accuracy 
+for receiver coordinates as the number of digits stored is only sufficient for 
+approximately 100 m accuracy.  If you need better resolution you will need to 
+mess with the header data yourself.  
+.LP
+Source coordinates can optionally be passed to the program through the 
+standard input stream.  This is controlled by a boolean variable 
+\fRinput_source_coordinates.\fR.  Fields read as x=lon and y=lat are
+blindly converted depending upon the setting of \fBuse_geo_coordinates\fR.
+When true the input coordinates are converted to arcseconds, otherwise they
+are assumed in units of meters (e.g. UTM coordinates).  
+.LP
+The parameter \fBcoordinate_scale_factor\fR is treated as described in the 
+standard with some restrictions.  Specifically, it is required to be a multiplier so
+if a number smaller than one is not allowed.  Internally the standard then requires
+this number to be converted to a negative value and stored at offset 71-72 in the 
+segy header.  Thus, all coordinates stored in the header are multiplied by this 
+value.  To restore them to meters divide by this number.  To restore geographic 
+coordinates divide header values by coordinate_scale_factor*3600 to get decimal 
+degrees of longitude and latitude.  
 .LP
 \fBdb2segy\fR allows one to optionally rotate data to 
 any specified orthonormal coordinate system.  This makes sense, of
@@ -156,8 +166,11 @@ sending only error messages to stderr.  The default is not verbose.
 .SH FILES
 .LP
 \fBdb2segy\fR expects to see stdin in one of two forms.
-When \fBinput_source_coordinates\fR is set true, the input format
-is expect to be as described above (i.e. time plus space coordinates).
+As noted above when \fBinput_source_coordinates\fR is set true, the input format
+is expect to be in the following order (free format ascii):
+.nf
+time lon(x) lat(y) depth
+.fi
 When false only the first field, the start time, is required.  If
 there is any other data on an input line it will be silently discarded
 in this mode.  
@@ -166,6 +179,9 @@ passed directly to str2epoch(3) so anything str2epoch can
 crack should produce the desired results.
 If in doubt run the program in verbose mode and the times will be echoed
 with strtime with it's default time string format.
+How the coordinate fields are handled depends on the setting of \fBuse_geo_coordinates\fR.
+When true, coordinates are assumed to be longitude and latitude in degrees.  Otherwise they
+are tacitly assumed to be meters in some local coordinate system.
 .LP
 Standard output lists the output station/channel order and
 echoes trace channel and index number as conversion progresses.
@@ -209,12 +225,18 @@ parameter will be skipped with an error message logged.
 variables to make the data look like stacked cdp data instead of shot
 gathers (the default behaviour).  
 .LP
-The boolean \fBinput_source_coordinates\fR and \fBcoordinate_scale_factor\fR
-work together as described above.  I emphasize that when input_source_coordinates
+The boolean \fBinput_source_coordinates\fR, \fBcoordinate_scale_factor\fR,
+and \fBuse_geo_coordinates\fR 
+work together as described above.  I emphasize that when use_geo_coordinates
 is false receiver coordinates are extracted from the dnorth and deast fields 
-of the site table and written in the headers in units of meters.  When true
-the coordinate_scale_factor is applied to the latitude and longitude attributes in 
-the site table. 
+of the site table and written in the headers in units of meters.  
+When input_source_coordinates is true the coordinates are treated as geographic
+if use_geo_coordinates is true, but are written verbatim if this si false.  In either case
+the coordinate_scale_factor is always applied to coordinate values as specified by the 
+standard.  Note that the scale factor is always a number greater than one for this program
+and is used as a mutiplier.  Be aware that because the standard says a mutiplier should
+be specified negative this attribute (stored in byte offset 71-72 in the segy header) will
+always be negative when written by this program.
 .LP
 The boolean \fBuse_32bit_nsamp\fR can be used if very long record lengths are desired.
 The segy standard stores the number of samples field in a 16 bit integer in both 
