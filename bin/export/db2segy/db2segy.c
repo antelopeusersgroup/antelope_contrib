@@ -887,6 +887,7 @@ r
 				    =(int32_t)(lon*(double)coordScale);
 				  header[ichan].recLatOrY
 				    =(int32_t)(lat*(double)coordScale);
+				  header[ichan].coordUnits=2;
 				}
 				header[ichan].recElevation = (int32_t)(elev*1000.0);
 				header[ichan].deltaSample = (int16_t) 
