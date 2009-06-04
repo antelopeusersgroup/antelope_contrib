@@ -234,6 +234,22 @@ pktid = orbfd.putx(srcname, time, packet, nbytes)
 .fi
 .in
 .ft R
+.IP "\fBorblag\fP (orbfd, match = None, reject = None)"
+Return parameters indicating degree to which clients are behind
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(oldest, newest, maxpktid, range, clients) = orblag()
+
+or
+
+(oldest, newest, maxpktid, range, clients) = orb.lag()
+
+.fi
+.in
+.ft R
 .IP "\fBorbpkt_string\fP (srcname, time, packet, nbytes)"
 Convert an orb packet to a string representation, as used in forb(5)
 .ft CW

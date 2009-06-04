@@ -77,6 +77,7 @@ static PyObject *python_orbput( PyObject *self, PyObject *args );
 static PyObject *python_orbputx( PyObject *self, PyObject *args );
 static PyObject *python_orbseek( PyObject *self, PyObject *args );
 static PyObject *python_orbafter( PyObject *self, PyObject *args );
+static PyObject *python_orblag( PyObject *self, PyObject *args );
 static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
@@ -98,6 +99,7 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbputx",	python_orbputx,   	METH_VARARGS, "Put a packet onto an orb, returning pktid" },
 	{ "_orbseek", 	python_orbseek,  	METH_VARARGS, "Position the orb read head by pktid" },
 	{ "_orbafter", 	python_orbafter,  	METH_VARARGS, "Position the orb read head by epoch time" },
+	{ "_orblag", 	python_orblag,  	METH_VARARGS, "Return parameters on how far clients are behind" },
 	{ "_orbpkt_string", python_orbpkt_string, METH_VARARGS, "Return forb(5) representation of packet" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -496,6 +498,73 @@ python_orbputx( PyObject *self, PyObject *args ) {
 	pktid = orbputx( orbfd, srcname, pkttime, pkt, nbytes_pkt );
 
 	return Py_BuildValue( "i", pktid );
+}
+
+static PyObject *
+python_orblag( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orblag(orb, match, reject)\n";
+	int	orbfd;
+	char	*match = 0;
+	char	*reject = 0;
+	char	err[STRSZ];
+	double	rc;
+	int	ilaggard;
+	int	nlaggards;
+	ClientLag *cl = 0;
+	Laggards *laggards = 0;
+	PyObject *laggards_obj;
+	PyObject *clientlag_obj;
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "izz", &orbfd, &match, &reject) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orblag( orbfd, match, reject, &laggards );
+
+	if( rc < 0 ) {
+
+		sprintf( err, "Error: orblag returned %f\n", rc );
+
+		PyErr_SetString( PyExc_RuntimeError, err );
+
+		return NULL;
+	}
+
+	nlaggards = maxtbl( laggards->list );
+
+	laggards_obj = PyTuple_New( nlaggards );
+
+	for( ilaggard = 0; ilaggard < nlaggards; ilaggard++ ) {
+
+		cl = gettbl( laggards->list, ilaggard );
+
+		clientlag_obj = PyTuple_New( 5 );
+
+		PyTuple_SetItem( clientlag_obj, 0, PyFloat_FromDouble( cl->lag ) );
+		PyTuple_SetItem( clientlag_obj, 1, PyInt_FromLong( (long) cl->thread ) );
+		PyTuple_SetItem( clientlag_obj, 2, PyInt_FromLong( (long) cl->pktid ) );
+		PyTuple_SetItem( clientlag_obj, 3, PyString_FromString( cl->who ) );
+		PyTuple_SetItem( clientlag_obj, 4, PyString_FromString( cl->what ) );
+
+		PyTuple_SetItem( laggards_obj, ilaggard, clientlag_obj );
+	}
+
+	obj = Py_BuildValue( "iiiiO", laggards->oldest,
+				      laggards->newest,
+				      laggards->maxpktid, 
+				      laggards->range, 
+				      laggards_obj );
+
+	freeLaggards( laggards );
+
+	return obj;
 }
 
 static PyObject *

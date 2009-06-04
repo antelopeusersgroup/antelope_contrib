@@ -128,6 +128,11 @@ class Orb():
 
         return _orb._orbput(self._orbfd, srcname, time, packet, nbytes)
 
+    def lag(self, match = None, reject = None):
+        """"Return parameters indicating degree to which clients are behind"""
+
+	return _orb._orblag(self._orbfd, match, reject)
+
     def putx(self, srcname, time, packet, nbytes):
         """Put a packet on an orb, returning the pktid of the output packet"""
 
@@ -218,6 +223,12 @@ def orbputx(orb, srcname, time, packet, nbytes):
     """Put a packet on an orb, returning the pktid of the output packet"""
 
     return orb.putx(srcname, time, packet, nbytes)
+
+
+def orblag(orb, match = None, reject = None):
+    """"Return parameters indicating degree to which clients are behind"""
+
+    return orb.lag(match, reject)
 
 
 def orbpkt_string(srcname, time, packet, nbytes):
@@ -432,6 +443,25 @@ if __name__ == '__main__':
             packet_string = orbpkt_string(srcname, time, packet, nbytes)
 
 	    self.assertTrue(isinstance(packet_string, str))
+
+	    orbclose(orb)
+
+        def test_procedure_orblag(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "orbtail -f -2 " + orbname + "&" )
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( oldest, newest, maxpktid, range, clients ) = orblag( orb )
+
+            os.system( "pf2orb rtexec " + orbname )
+
+	    self.assertTrue(isinstance(oldest,int))
+	    self.assertTrue(newest > 0)
+	    self.assertTrue(maxpktid > 0)
+	    self.assertTrue(range > 0)
+	    self.assertTrue(isinstance(clients,tuple))
 
 	    orbclose(orb)
 
