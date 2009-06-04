@@ -73,6 +73,8 @@ static PyObject *python_orbposition( PyObject *self, PyObject *args );
 static PyObject *python_orbreap( PyObject *self, PyObject *args );
 static PyObject *python_orbreap_timeout( PyObject *self, PyObject *args );
 static PyObject *python_orbget( PyObject *self, PyObject *args );
+static PyObject *python_orbput( PyObject *self, PyObject *args );
+static PyObject *python_orbputx( PyObject *self, PyObject *args );
 static PyObject *python_orbseek( PyObject *self, PyObject *args );
 static PyObject *python_orbafter( PyObject *self, PyObject *args );
 static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
@@ -92,6 +94,8 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbreap",	python_orbreap,   	METH_VARARGS, "Get the next packet from an orb" },
 	{ "_orbreap_timeout", python_orbreap_timeout, METH_VARARGS, "Get the next packet from an orb, waiting a maximum number of seconds" },
 	{ "_orbget",	python_orbget,   	METH_VARARGS, "Get a specified packet from an orb" },
+	{ "_orbput",	python_orbput,   	METH_VARARGS, "Put a packet onto an orb" },
+	{ "_orbputx",	python_orbputx,   	METH_VARARGS, "Put a packet onto an orb, returning pktid" },
 	{ "_orbseek", 	python_orbseek,  	METH_VARARGS, "Position the orb read head by pktid" },
 	{ "_orbafter", 	python_orbafter,  	METH_VARARGS, "Position the orb read head by epoch time" },
 	{ "_orbpkt_string", python_orbpkt_string, METH_VARARGS, "Return forb(5) representation of packet" },
@@ -440,6 +444,58 @@ python_orbget( PyObject *self, PyObject *args ) {
 	free( pkt );
 
 	return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
+}
+
+static PyObject *
+python_orbput( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbput(orb, srcname, time, packet, nbytes)\n";
+	int	orbfd;
+	char	srcname[ORBSRCNAME_SIZE];
+	double	pkttime;
+	char	*pkt = 0;
+	int	nbytes = 0;
+	int	nbytes_pkt = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "isds#i", &orbfd, srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orbput( orbfd, srcname, pkttime, pkt, nbytes_pkt );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_orbputx( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbputx(orb, srcname, time, packet, nbytes)\n";
+	int	orbfd;
+	char	srcname[ORBSRCNAME_SIZE];
+	double	pkttime;
+	char	*pkt = 0;
+	int	nbytes = 0;
+	int	nbytes_pkt = 0;
+	int	pktid;
+
+	if( ! PyArg_ParseTuple( args, "isds#i", &orbfd, srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	pktid = orbputx( orbfd, srcname, pkttime, pkt, nbytes_pkt );
+
+	return Py_BuildValue( "i", pktid );
 }
 
 static PyObject *

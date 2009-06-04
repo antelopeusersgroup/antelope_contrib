@@ -123,6 +123,16 @@ class Orb():
 
         return _orb._orbget(self._orbfd, whichpkt)
 
+    def put(self, srcname, time, packet, nbytes):
+        """Put a packet on an orb"""
+
+        return _orb._orbput(self._orbfd, srcname, time, packet, nbytes)
+
+    def putx(self, srcname, time, packet, nbytes):
+        """Put a packet on an orb, returning the pktid of the output packet"""
+
+        return _orb._orbputx(self._orbfd, srcname, time, packet, nbytes)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -196,6 +206,18 @@ def orbget(orb, whichpkt):
     """Get a specified packet from an orb"""
 
     return orb.get(whichpkt)
+
+
+def orbput(orb, srcname, time, packet, nbytes):
+    """Put a packet on an orb"""
+
+    return orb.put(srcname, time, packet, nbytes)
+
+
+def orbputx(orb, srcname, time, packet, nbytes):
+    """Put a packet on an orb, returning the pktid of the output packet"""
+
+    return orb.putx(srcname, time, packet, nbytes)
 
 
 def orbpkt_string(srcname, time, packet, nbytes):
@@ -344,6 +366,38 @@ if __name__ == '__main__':
 	    self.assertTrue(isinstance(time, float))
 	    self.assertTrue(isinstance(packet, str))
 	    self.assertTrue(isinstance(nbytes, int))
+
+	    orbclose(orb)
+
+        def test_procedure_orbput(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
+
+            time += 1
+
+	    rc = orbput(orb, srcname, time, packet, nbytes )
+
+	    self.assertTrue(rc == 0)
+
+	    orbclose(orb)
+
+        def test_procedure_orbputx(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
+
+            time += 1
+
+	    rc = orbputx(orb, srcname, time, packet, nbytes )
+
+	    self.assertTrue(rc > 0)
 
 	    orbclose(orb)
 

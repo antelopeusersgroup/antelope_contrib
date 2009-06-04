@@ -169,22 +169,6 @@ or
 .fi
 .in
 .ft R
-.IP "\fBorbreap_nd\fP (orbfd)"
-Get next orb packet without delay
-.ft CW
-.in 2c
-.nf
-.ne 3
-
-(pktid, srcname, time, packet, nbytes) = orbreap_nd( orbfd )
-
-or 
-
-(pktid, srcname, time, packet, nbytes) = orbfd.reap_nd()
-
-.fi
-.in
-.ft R
 .IP "\fBorbreap_timeout\fP (orbfd, maxseconds)"
 Get next orb packet, waiting a maximum of maxseconds seconds
 .ft CW
@@ -213,7 +197,39 @@ such as ORBNEWEST, ORBOLDEST, ORBCURRENT, ORBSTASH etc.
 
 or 
 
-(pktid, srcname, time, packet, nbytes) = orbfd.reap(ORBNEWEST)
+(pktid, srcname, time, packet, nbytes) = orbfd.get(ORBNEWEST)
+
+.fi
+.in
+.ft R
+.IP "\fBorbput\fP (orbfd, srcname, time, packet, nbytes)"
+Put a packet on an orbserver
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+rc = orbput( orbfd, srcname, time, packet, nbytes )
+
+or 
+
+rc = orbfd.put(srcname, time, packet, nbytes)
+
+.fi
+.in
+.ft R
+.IP "\fBorbputx\fP (orbfd, srcname, time, packet, nbytes)"
+Put a packet on an orbserver, returning the pktid of the output packet
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pktid = orbputx( orbfd, srcname, time, packet, nbytes )
+
+or 
+
+pktid = orbfd.putx(srcname, time, packet, nbytes)
 
 .fi
 .in
@@ -230,25 +246,12 @@ packet_string = orbpkt_string( srcname, time, packet, nbytes )
 .fi
 .in
 .ft R
-.SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
-.SH EXAMPLE
-.in 2c
-.ft CW
-.nf
-.fi
-.ft R
-.in
-.SH RETURN VALUES
-.SH LIBRARY
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 pythondb(3p), pythonstock(3p)
 .fi
-.SH "BUGS AND CAVEATS"
+.SH "BUGS AND CAVEATS" 
+Not all error conditions are wrapped to emit Python Exceptions, as they probably should be. 
 .SH AUTHOR
 .nf
 Kent Lindquist
