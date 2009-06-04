@@ -71,7 +71,6 @@ static PyObject *python_orbselect( PyObject *self, PyObject *args );
 static PyObject *python_orbreject( PyObject *self, PyObject *args );
 static PyObject *python_orbposition( PyObject *self, PyObject *args );
 static PyObject *python_orbreap( PyObject *self, PyObject *args );
-static PyObject *python_orbreap_nd( PyObject *self, PyObject *args );
 static PyObject *python_orbreap_timeout( PyObject *self, PyObject *args );
 static PyObject *python_orbget( PyObject *self, PyObject *args );
 static PyObject *python_orbseek( PyObject *self, PyObject *args );
@@ -91,7 +90,6 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbreject",	python_orbreject,   	METH_VARARGS, "Reject orb source names" },
 	{ "_orbposition", python_orbposition,  	METH_VARARGS, "Position the orb read head by time" },
 	{ "_orbreap",	python_orbreap,   	METH_VARARGS, "Get the next packet from an orb" },
-	{ "_orbreap_nd", python_orbreap_nd,   	METH_VARARGS, "Get the next packet from an orb with no delay" },
 	{ "_orbreap_timeout", python_orbreap_timeout, METH_VARARGS, "Get the next packet from an orb, waiting a maximum number of seconds" },
 	{ "_orbget",	python_orbget,   	METH_VARARGS, "Get a specified packet from an orb" },
 	{ "_orbseek", 	python_orbseek,  	METH_VARARGS, "Position the orb read head by pktid" },
@@ -362,51 +360,6 @@ python_orbreap( PyObject *self, PyObject *args ) {
 	free( pkt );
 
 	return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
-}
-
-static PyObject *
-python_orbreap_nd( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _orbreap_nd(orb)\n";
-	int	orbfd;
-	int	pktid;
-	char	srcname[ORBSRCNAME_SIZE];
-	double	pkttime;
-	char	*pkt = 0;
-	int	nbytes = 0;
-	int	bufsize = 0;
-	PyObject *obj;
-	int	rc;
-
-	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
-
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
-
-		return NULL;
-	}
-
-	rc = orbreap_nd( orbfd, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
-
-	if( rc < 0 ) {
-
-		return Py_BuildValue( "OOOOO",
-				      Py_BuildValue( "" ),
-				      Py_BuildValue( "" ),
-				      Py_BuildValue( "" ),
-				      Py_BuildValue( "" ),
-				      Py_BuildValue( "" )
-				      );
-
-	} else {
-
-		obj = Py_BuildValue( "s#", pkt, nbytes );
-
-		free( pkt );
-
-		return Py_BuildValue( "isdOi", pktid, srcname, pkttime, obj, nbytes );
-	}
 }
 
 static PyObject *

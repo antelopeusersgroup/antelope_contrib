@@ -113,11 +113,6 @@ class Orb():
 
         return _orb._orbreap(self._orbfd)
 
-    def reap_nd(self):
-        """Get the next packet from an orb with no delay"""
-
-        return _orb._orbreap_nd(self._orbfd)
-
     def reap_timeout(self, maxseconds):
         """Get the next packet from an orb, waiting a maximum number of seconds"""
 
@@ -189,12 +184,6 @@ def orbreap(orb):
     """Get the next packet from an orb"""
 
     return orb.reap()
-
-
-def orbreap_nd(orb):
-    """Get the next packet from an orb with no delay"""
-
-    return orb.reap_nd()
 
 
 def orbreap_timeout(orb, maxseconds):
@@ -323,22 +312,6 @@ if __name__ == '__main__':
 	    self.assertTrue(isinstance(time, float))
 	    self.assertTrue(isinstance(packet, str))
 	    self.assertTrue(isinstance(nbytes, int))
-
-	    orbclose(orb)
-
-        def test_procedure_orbreap_nd(self):
-
-	    orb = orbopen(orbname, 'r')
-
-            os.system( "pf2orb rtexec " + orbname )
-
-            ( pktid, srcname, time, packet, nbytes ) = orbreap_nd(orb)
-
-	    if( isinstance(pktid, int) ):
-	        self.assertTrue(isinstance(srcname, str))
-	        self.assertTrue(isinstance(time, float))
-	        self.assertTrue(isinstance(packet, str))
-	        self.assertTrue(isinstance(nbytes, int))
 
 	    orbclose(orb)
 
