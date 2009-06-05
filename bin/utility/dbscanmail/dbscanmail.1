@@ -53,14 +53,11 @@ been sent rather than those that have been received. The default is to
 scan the \fIin\fP table only. 
 
 .IP "-a recno"
-Start processing after the specified record number. This is useful 
+Start processing at the specified record number. This is useful 
 if multiple runs are necessary to complete a cleanup operation, if 
 dbscanmail is encountering fatal errors which must be cleaned up
 individually.
 
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -112,13 +109,12 @@ Scanned 70 messages and encountered 0 problems
 .fi
 .ft R
 .in
-.SH RETURN VALUES
 .SH LIBRARY
-.SH ATTRIBUTES
-.SH DIAGNOSTICS
+dbscanmail uses perl modules Mail::Internet, MIME::Parser, and MIME::Entity from 
+the MIME-tools CPAN archive. 
 .SH "SEE ALSO"
 .nf
-filemail(1), filemail(3p)
+filemail(1), filemail(3p), Mail::Internet(3), MIME::Parser(3), MIME::Entity(3)
 .fi
 .SH "BUGS AND CAVEATS"
 The database must be in Mail1.3 schema or later. 
@@ -127,6 +123,9 @@ It would be quite straightforward to document a couple routines and
 put in a mechanism to allow arbitrary scanning functions to be added 
 externally, for any custom process a user might want to perform 
 on a mail database.
+
+The find_attachments subroutine does not attempt to recover messages
+which were created with errors in boundary line placement.
 .SH AUTHOR
 .nf
 Kent Lindquist

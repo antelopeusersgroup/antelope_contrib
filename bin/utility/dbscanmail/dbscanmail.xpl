@@ -5,6 +5,7 @@
 # All rights reserved. 
 #                                                                     
 # Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+# find_attachments added by Ruth Rutter, Lindquist Consulting, Inc.
 # 
 # This software may be used freely in any way as long as 
 # the copyright statement above is not removed. 
@@ -15,8 +16,6 @@ use Datascope ;
 use filemail;
 use MIME::Parser;
 use MIME::Entity;
-use MIME::Decoder;
-use MIME::Base64;
 
 require "getopts.pl" ;
 
@@ -275,21 +274,49 @@ sub find_attachments {
 		return;
 	} 
 
+	my( $tempdir ) = "/tmp/dbscanmail_$<_$$";
+
+	mkdir( $tempdir );
+
 	my( $msg_bylines, $lines_read, $bytes_read ) = get_msgarray_bylines( @db );
 
 	$parser = new MIME::Parser;
 	$entity = new MIME::Entity;
 
-	$parser->output_to_core(1);
+	$parser->output_dir( $tempdir );
 
-	$entity = eval { $parser->parse_data( $msg_bylines ) };
+	grep( s/^From /Mail-From: /, @{$msg_bylines});
+
+	eval { $entity = $parser->parse_data( $msg_bylines ) };
+
+	if( $@ ) {
+
+		unlink( $tempdir );
+
+		elog_complain( "Failed to parse message from record $db[3]: " . 
+			       "parse error was '$@'.\n" );
+
+		return;
+	}
 
 	$results = $parser->results;
 	$had_errors = $results->errors;
 
+	if( $opt_v){
+		@msgs = $results->msgs;
+		for $x(@msgs){
+			print($x);
+		}
+	}
+
 	if( $had_errors ) {
 
-		elog_die( "Failed to parse message from record $db[3].\n" );
+		unlink( $tempdir );
+
+		elog_complain( "Failed to parse message from record $db[3] "
+			. "due to error in boundary line placement\n\n");
+		
+		return;
 	}
 
 	@parts = $entity->parts();
@@ -309,15 +336,29 @@ sub find_attachments {
 
 				$part_type = $part->mime_type;
 
-				$io = $part->open( "r" );
+				eval { $io = $part->open( "r" ) };
 
-				while( ! $io->eof ) {
+
+				if(!$io){
+
+					if( $opt_V){
+
+						print("Error opening part. Entity skeleton:\n");
+						$entity->dump_skeleton(\*STDERR);
+					}
+
+				}
+				else{
+				  while( ! $io->eof ) {
 
 					$c = $io->getc;
 					$blob.=$c;
-				}
+				  }
+				
 
 				$io->close;
+				}
+
 
 				$attsize = length( $blob );
 
@@ -333,13 +374,12 @@ sub find_attachments {
 					"messageid", $msgid,
 					"mimetype", $part_type,
 					);
-
 			}
-
 		} 
-
 	}	
 
+	$parser->filer->purge;
+	unlink( $tempdir );
 } 
 
 
@@ -358,6 +398,8 @@ if ( ! &Getopts('a:vVo') || @ARGV != 2 ) {
 
 if( $opt_V ) {
 	$opt_v++;
+
+	MIME::Tools->debugging( 1 );
 }
 
 if( ! grep( /^$operation$/, @valid_operations ) ) {
