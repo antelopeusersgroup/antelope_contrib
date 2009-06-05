@@ -341,22 +341,23 @@ sub find_attachments {
 
 				if(!$io){
 
-					if( $opt_V){
+					if( $opt_V ){
 
-						print("Error opening part. Entity skeleton:\n");
+						elog_complain("Error opening part. Entity skeleton:\n");
 						$entity->dump_skeleton(\*STDERR);
 					}
 
-				}
-				else{
-				  while( ! $io->eof ) {
+				} else {
 
-					$c = $io->getc;
-					$blob.=$c;
-				  }
+					while( ! $io->eof ) {
+
+						$c = $io->getc;
+						$blob.=$c;
+					}
 				
 
 				$io->close;
+
 				}
 
 
@@ -374,6 +375,21 @@ sub find_attachments {
 
 					( $sender, $date, $msgid ) =
 						dbgetv( @db, "from", "time", "messageid" );
+				}
+
+				if( ( $filename eq "-" ) ||
+				    ( $msgid eq "-" || $msgid =~ /^\s*$/ ) ||
+				    ( $attsize == -1 ) || 
+				    ( $date == -9999999999 ) ) {
+
+					elog_complain( "Null primary key adding attachment for $db[3]: " .
+						       "Skipping entire message\n" .
+						       "\tattname\t$filename\n" .
+						       "\tattsize\t$attsize\n" .
+						       "\tmessageid\t$msgid\n" .
+						       "\ttime\t$date\n\n" );
+					
+					return;
 				}
 
 				dbaddv( @dbattachments,
