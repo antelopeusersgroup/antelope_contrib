@@ -362,9 +362,19 @@ sub find_attachments {
 
 				$attsize = length( $blob );
 
+				my( $sender, $date, $msgid );
+				
+				if( $opt_o ) {
+					
+					$sender = "Sender";
 
-				my( $sender, $date, $msgid ) =
-					dbgetv( @db, "from", "time", "messageid" );
+					( $date, $msgid ) = dbgetv( @db, "time", "messageid" );
+
+				} else {
+
+					( $sender, $date, $msgid ) =
+						dbgetv( @db, "from", "time", "messageid" );
+				}
 
 				dbaddv( @dbattachments,
 					"from", $sender,
@@ -417,9 +427,9 @@ if( $opt_v ) {
 $schema = dbquery( @db, dbSCHEMA_NAME );
 $schema =~ s/Mail//;
 
-if( $schema < 1.3 ) {
+if( $schema < 1.5 ) {
 
-	elog_die( "dbscanmail requires schema Mail1.3 or later. Bye!\n" );
+	elog_die( "dbscanmail requires schema Mail1.5 or later. Bye!\n" );
 }
 
 if( $opt_o ) {

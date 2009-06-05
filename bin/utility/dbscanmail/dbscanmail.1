@@ -117,7 +117,7 @@ the MIME-tools CPAN archive.
 filemail(1), filemail(3p), Mail::Internet(3), MIME::Parser(3), MIME::Entity(3)
 .fi
 .SH "BUGS AND CAVEATS"
-The database must be in Mail1.3 schema or later. 
+The database must be in Mail1.5 schema or later. 
 
 It would be quite straightforward to document a couple routines and 
 put in a mechanism to allow arbitrary scanning functions to be added 
@@ -126,6 +126,11 @@ on a mail database.
 
 The find_attachments subroutine does not attempt to recover messages
 which were created with errors in boundary line placement.
+
+The find_attachments subroutine, when aimed at the output table, fills in the 
+attachments.from address as \fISender\fP. This may not be the best choice though it's 
+not clear how to make definitive improvements on the strategy without rethinking schema 
+design. 
 .SH AUTHOR
 .nf
 Kent Lindquist
