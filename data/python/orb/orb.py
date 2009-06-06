@@ -133,6 +133,16 @@ class Orb():
 
 	return _orb._orblag(self._orbfd, match, reject)
 
+    def stat(self):
+        """"Return parameters about orb status"""
+
+	return _orb._orbstat(self._orbfd)
+
+    def sources(self):
+        """"Return information on orb data-streams (source names)"""
+
+	return _orb._orbsources(self._orbfd)
+
     def putx(self, srcname, time, packet, nbytes):
         """Put a packet on an orb, returning the pktid of the output packet"""
 
@@ -229,6 +239,18 @@ def orblag(orb, match = None, reject = None):
     """"Return parameters indicating degree to which clients are behind"""
 
     return orb.lag(match, reject)
+
+
+def orbstat(orb):
+    """"Return various status parameters about the orbserver"""
+
+    return orb.stat()
+
+
+def orbsources(orb):
+    """"Return information on orb data streams (source-names)"""
+
+    return orb.sources()
 
 
 def orbpkt_string(srcname, time, packet, nbytes):
@@ -446,22 +468,80 @@ if __name__ == '__main__':
 
 	    orbclose(orb)
 
+        def test_procedure_orbstat(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            stat = orbstat( orb )
+
+	    self.assertTrue(isinstance(stat['when'], float))
+	    self.assertTrue(isinstance(stat['started'], float))
+	    self.assertTrue(isinstance(stat['orb_start'], float))
+	    self.assertTrue(isinstance(stat['connections'], int))
+	    self.assertTrue(isinstance(stat['messages'], int))
+	    self.assertTrue(isinstance(stat['maxdata'], int))
+	    self.assertTrue(isinstance(stat['errors'], int))
+	    self.assertTrue(isinstance(stat['rejected'], int))
+	    self.assertTrue(isinstance(stat['closes'], int))
+	    self.assertTrue(isinstance(stat['opens'], int))
+	    self.assertTrue(isinstance(stat['port'], int))
+	    self.assertTrue(isinstance(stat['address'], str))
+	    self.assertTrue(isinstance(stat['pid'], int))
+	    self.assertTrue(isinstance(stat['nsources'], int))
+	    self.assertTrue(isinstance(stat['nclients'], int))
+	    self.assertTrue(isinstance(stat['maxsrc'], int))
+	    self.assertTrue(isinstance(stat['maxpkts'], int))
+	    self.assertTrue(isinstance(stat['version'], str))
+	    self.assertTrue(isinstance(stat['who'], str))
+	    self.assertTrue(isinstance(stat['host'], str))
+
+	    orbclose(orb)
+
+        def test_procedure_orbsources(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            (when, sources) = orbsources( orb )
+
+	    self.assertTrue(isinstance(when, float))
+
+	    if( len(sources) > 0 ):
+
+	        self.assertTrue(isinstance(sources[0]['srcname'], str))
+	        self.assertTrue(isinstance(sources[0]['active'], int))
+	        self.assertTrue(isinstance(sources[0]['soldest'], int))
+	        self.assertTrue(isinstance(sources[0]['slatest'], int))
+	        self.assertTrue(isinstance(sources[0]['npkts'], int))
+	        self.assertTrue(isinstance(sources[0]['nbytes'], int))
+	        self.assertTrue(isinstance(sources[0]['soldest_time'], float))
+	        self.assertTrue(isinstance(sources[0]['slatest_time'], float))
+
+	    orbclose(orb)
+
         def test_procedure_orblag(self):
 
 	    orb = orbopen(orbname, 'r')
 
-            os.system( "orbtail -f -2 " + orbname + "&" )
+            os.system( "orbtail " + orbname + " now 2 &" )
+
             os.system( "pf2orb rtexec " + orbname )
 
             ( oldest, newest, maxpktid, range, clients ) = orblag( orb )
 
             os.system( "pf2orb rtexec " + orbname )
 
-	    self.assertTrue(isinstance(oldest,int))
+	    self.assertTrue(isinstance(oldest, int))
 	    self.assertTrue(newest > 0)
 	    self.assertTrue(maxpktid > 0)
 	    self.assertTrue(range > 0)
-	    self.assertTrue(isinstance(clients,tuple))
+	    self.assertTrue(isinstance(clients, tuple))
+
+            os.system( "sleep 2" )
+            os.system( "pf2orb rtexec " + orbname )
 
 	    orbclose(orb)
 

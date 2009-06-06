@@ -78,6 +78,8 @@ static PyObject *python_orbputx( PyObject *self, PyObject *args );
 static PyObject *python_orbseek( PyObject *self, PyObject *args );
 static PyObject *python_orbafter( PyObject *self, PyObject *args );
 static PyObject *python_orblag( PyObject *self, PyObject *args );
+static PyObject *python_orbstat( PyObject *self, PyObject *args );
+static PyObject *python_orbsources( PyObject *self, PyObject *args );
 static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
@@ -100,6 +102,8 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbseek", 	python_orbseek,  	METH_VARARGS, "Position the orb read head by pktid" },
 	{ "_orbafter", 	python_orbafter,  	METH_VARARGS, "Position the orb read head by epoch time" },
 	{ "_orblag", 	python_orblag,  	METH_VARARGS, "Return parameters on how far clients are behind" },
+	{ "_orbstat", 	python_orbstat,  	METH_VARARGS, "Return parameters on status of an orbserver" },
+	{ "_orbsources", python_orbsources,  	METH_VARARGS, "Return information on data-streams in an orbserver" },
 	{ "_orbpkt_string", python_orbpkt_string, METH_VARARGS, "Return forb(5) representation of packet" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -565,6 +569,116 @@ python_orblag( PyObject *self, PyObject *args ) {
 	freeLaggards( laggards );
 
 	return obj;
+}
+
+static PyObject *
+python_orbstat( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbstat(orb)\n";
+	int	orbfd;
+	Orbstat *os = 0;
+	char	*ip;
+	struct	in_addr addr;
+	int	rc;
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orbstat( orbfd, &os );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error querying orb status" );
+
+		return NULL;
+	}
+
+	memcpy( &addr.s_addr, &os->address, 4 );
+	ip = inet_ntoa( addr );
+
+	obj = PyDict_New();
+
+	PyDict_SetItemString( obj, "when", Py_BuildValue( "f", os->when ) );
+	PyDict_SetItemString( obj, "started", Py_BuildValue( "f", os->started ) );
+	PyDict_SetItemString( obj, "orb_start", Py_BuildValue( "f", os->orb_start ) );
+	PyDict_SetItemString( obj, "connections", Py_BuildValue( "i", os->connections ) );
+	PyDict_SetItemString( obj, "messages", Py_BuildValue( "i", os->messages ) );
+	PyDict_SetItemString( obj, "maxdata", PyInt_FromLong( (long) os->maxdata ) );
+	PyDict_SetItemString( obj, "errors", Py_BuildValue( "i", os->errors ) );
+	PyDict_SetItemString( obj, "rejected", Py_BuildValue( "i", os->rejected ) );
+	PyDict_SetItemString( obj, "closes", Py_BuildValue( "i", os->closes ) );
+	PyDict_SetItemString( obj, "opens", Py_BuildValue( "i", os->opens ) );
+	PyDict_SetItemString( obj, "port", Py_BuildValue( "i", os->port ) );
+	PyDict_SetItemString( obj, "address", Py_BuildValue( "s", ip ) );
+	PyDict_SetItemString( obj, "pid", Py_BuildValue( "i", os->pid ) );
+	PyDict_SetItemString( obj, "nsources", Py_BuildValue( "i", os->nsources ) );
+	PyDict_SetItemString( obj, "nclients", Py_BuildValue( "i", os->nclients ) );
+	PyDict_SetItemString( obj, "maxsrc", Py_BuildValue( "i", os->maxsrc ) );
+	PyDict_SetItemString( obj, "maxpkts", Py_BuildValue( "i", os->maxpkts ) );
+	PyDict_SetItemString( obj, "version", Py_BuildValue( "s", os->version ) );
+	PyDict_SetItemString( obj, "who", Py_BuildValue( "s", os->who ) );
+	PyDict_SetItemString( obj, "host", Py_BuildValue( "s", os->host ) );
+
+	return obj;
+}
+
+static PyObject *
+python_orbsources( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbsources(orb)\n";
+	int	orbfd;
+	Orbsrc *os = 0;
+	double 	atime;
+	int	nsources;
+	int	isource;
+	int	rc;
+	PyObject *obj;
+	PyObject *source_obj;
+
+	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orbsources( orbfd, &atime, &os, &nsources );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error querying orb sources" );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( nsources );
+
+	for( isource = 0; isource < nsources; isource++ ) {
+
+		source_obj = PyDict_New();
+
+		PyDict_SetItemString( source_obj, "srcname", Py_BuildValue( "s", os[isource].srcname ) );
+		PyDict_SetItemString( source_obj, "active", Py_BuildValue( "i", os[isource].active ) );
+		PyDict_SetItemString( source_obj, "nbytes", Py_BuildValue( "i", os[isource].nbytes ) );
+		PyDict_SetItemString( source_obj, "npkts", Py_BuildValue( "i", os[isource].npkts ) );
+		PyDict_SetItemString( source_obj, "slatest", Py_BuildValue( "i", os[isource].slatest ) );
+		PyDict_SetItemString( source_obj, "soldest", Py_BuildValue( "i", os[isource].soldest ) );
+		PyDict_SetItemString( source_obj, "slatest_time", Py_BuildValue( "f", os[isource].slatest_time ) );
+		PyDict_SetItemString( source_obj, "soldest_time", Py_BuildValue( "f", os[isource].soldest_time ) );
+
+		PyTuple_SetItem( obj, isource, source_obj );
+	}
+
+	return Py_BuildValue( "fO", atime, obj );
 }
 
 static PyObject *

@@ -241,11 +241,43 @@ Return parameters indicating degree to which clients are behind
 .nf
 .ne 3
 
-(oldest, newest, maxpktid, range, clients) = orblag()
+(oldest, newest, maxpktid, range, clients) = orblag( orb )
 
 or
 
 (oldest, newest, maxpktid, range, clients) = orb.lag()
+
+.fi
+.in
+.ft R
+.IP "\fBorbstat\fP (orbfd)"
+Return a dictionary of status parameters about an orbserver
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+stat = orbstat( orb )
+
+or
+
+stat = orb.stat()
+
+.fi
+.in
+.ft R
+.IP "\fBorbsources\fP (orbfd)"
+Return a list of dictionaries about orb srcnames
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(when, sources) = orbsources( orb )
+
+or
+
+(when, sources) = orb.sources()
 
 .fi
 .in
