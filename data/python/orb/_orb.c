@@ -80,6 +80,7 @@ static PyObject *python_orbafter( PyObject *self, PyObject *args );
 static PyObject *python_orblag( PyObject *self, PyObject *args );
 static PyObject *python_orbstat( PyObject *self, PyObject *args );
 static PyObject *python_orbsources( PyObject *self, PyObject *args );
+static PyObject *python_orbclients( PyObject *self, PyObject *args );
 static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
@@ -104,6 +105,7 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orblag", 	python_orblag,  	METH_VARARGS, "Return parameters on how far clients are behind" },
 	{ "_orbstat", 	python_orbstat,  	METH_VARARGS, "Return parameters on status of an orbserver" },
 	{ "_orbsources", python_orbsources,  	METH_VARARGS, "Return information on data-streams in an orbserver" },
+	{ "_orbclients", python_orbclients,  	METH_VARARGS, "Return information on clients of an orbserver" },
 	{ "_orbpkt_string", python_orbpkt_string, METH_VARARGS, "Return forb(5) representation of packet" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -676,6 +678,82 @@ python_orbsources( PyObject *self, PyObject *args ) {
 		PyDict_SetItemString( source_obj, "soldest_time", Py_BuildValue( "f", os[isource].soldest_time ) );
 
 		PyTuple_SetItem( obj, isource, source_obj );
+	}
+
+	return Py_BuildValue( "fO", atime, obj );
+}
+
+static PyObject *
+python_orbclients( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbclients(orb)\n";
+	int	orbfd;
+	Orbclient *oc = 0;
+	double 	atime;
+	int	nclients;
+	int	iclient;
+	int	rc;
+	char	*ip;
+	struct	in_addr addr;
+	PyObject *obj;
+	PyObject *client_obj;
+
+	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = orbclients( orbfd, &atime, &oc, &nclients );
+
+	if( rc < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "error querying orb clients" );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( nclients );
+
+	for( iclient = 0; iclient < nclients; iclient++ ) {
+
+		memcpy( &addr.s_addr, oc[iclient].address, 4 );
+		ip = inet_ntoa( addr );
+
+		client_obj = PyDict_New();
+
+		PyDict_SetItemString( client_obj, "lastpkt", Py_BuildValue( "f", oc[iclient].lastpkt ) );
+		PyDict_SetItemString( client_obj, "started", Py_BuildValue( "f", oc[iclient].started ) );
+		PyDict_SetItemString( client_obj, "read", PyInt_FromLong( (long) oc[iclient].read ) );
+		PyDict_SetItemString( client_obj, "pid", Py_BuildValue( "i", oc[iclient].pid ) );
+		PyDict_SetItemString( client_obj, "bytes", PyInt_FromLong( (long) oc[iclient].bytes ) );
+		PyDict_SetItemString( client_obj, "packets", PyInt_FromLong( (long) oc[iclient].packets ) );
+		PyDict_SetItemString( client_obj, "pktid", Py_BuildValue( "i", oc[iclient].pktid ) );
+		PyDict_SetItemString( client_obj, "port", Py_BuildValue( "i", oc[iclient].port ) );
+		PyDict_SetItemString( client_obj, "address", Py_BuildValue( "s", ip ) );
+		PyDict_SetItemString( client_obj, "thread", Py_BuildValue( "i", oc[iclient].thread ) );
+		PyDict_SetItemString( client_obj, "fd", Py_BuildValue( "i", oc[iclient].fd ) );
+		PyDict_SetItemString( client_obj, "nreject", Py_BuildValue( "i", oc[iclient].nreject ) );
+		PyDict_SetItemString( client_obj, "nselect", Py_BuildValue( "i", oc[iclient].nselect ) );
+		PyDict_SetItemString( client_obj, "errors", Py_BuildValue( "i", oc[iclient].errors ) );
+		PyDict_SetItemString( client_obj, "priority", Py_BuildValue( "i", oc[iclient].priority ) );
+		PyDict_SetItemString( client_obj, "lastrequest", Py_BuildValue( "i", oc[iclient].lastrequest ) );
+		PyDict_SetItemString( client_obj, "mymessages", Py_BuildValue( "i", oc[iclient].mymessages ) );
+		PyDict_SetItemString( client_obj, "nrequests", PyInt_FromLong( (long) oc[iclient].nrequests ) );
+		PyDict_SetItemString( client_obj, "nwrites", PyInt_FromLong( (long) oc[iclient].nwrites ) );
+		PyDict_SetItemString( client_obj, "nreads", PyInt_FromLong( (long) oc[iclient].nreads ) );
+		PyDict_SetItemString( client_obj, "written", PyInt_FromLong( (long) oc[iclient].written ) );
+		PyDict_SetItemString( client_obj, "perm", PyString_FromFormat( "c", oc[iclient].perm ) );
+		PyDict_SetItemString( client_obj, "what", Py_BuildValue( "s", oc[iclient].what ) );
+		PyDict_SetItemString( client_obj, "host", Py_BuildValue( "s", oc[iclient].host ) );
+		PyDict_SetItemString( client_obj, "who", Py_BuildValue( "s", oc[iclient].who ) );
+		PyDict_SetItemString( client_obj, "select", Py_BuildValue( "s", oc[iclient].select ) );
+		PyDict_SetItemString( client_obj, "reject", Py_BuildValue( "s", oc[iclient].reject ) );
+
+		PyTuple_SetItem( obj, iclient, client_obj );
 	}
 
 	return Py_BuildValue( "fO", atime, obj );

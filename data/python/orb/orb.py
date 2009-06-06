@@ -143,6 +143,11 @@ class Orb():
 
 	return _orb._orbsources(self._orbfd)
 
+    def clients(self):
+        """"Return information on orb clients"""
+
+	return _orb._orbclients(self._orbfd)
+
     def putx(self, srcname, time, packet, nbytes):
         """Put a packet on an orb, returning the pktid of the output packet"""
 
@@ -251,6 +256,12 @@ def orbsources(orb):
     """"Return information on orb data streams (source-names)"""
 
     return orb.sources()
+
+
+def orbclients(orb):
+    """"Return information on orb clients""" 
+
+    return orb.clients()
 
 
 def orbpkt_string(srcname, time, packet, nbytes):
@@ -519,6 +530,55 @@ if __name__ == '__main__':
 	        self.assertTrue(isinstance(sources[0]['nbytes'], int))
 	        self.assertTrue(isinstance(sources[0]['soldest_time'], float))
 	        self.assertTrue(isinstance(sources[0]['slatest_time'], float))
+
+	    orbclose(orb)
+
+        def test_procedure_orbclients(self):
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "orbtail " + orbname + " now 2 &" )
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            (when, clients) = orbclients( orb )
+
+	    self.assertTrue(isinstance(when, float))
+
+	    if( len(clients) > 0 ):
+
+	        self.assertTrue(isinstance(clients[0]['lastpkt'], float))
+	        self.assertTrue(isinstance(clients[0]['started'], float))
+	        self.assertTrue(isinstance(clients[0]['read'], int))
+	        self.assertTrue(isinstance(clients[0]['pid'], int))
+	        self.assertTrue(isinstance(clients[0]['bytes'], int))
+	        self.assertTrue(isinstance(clients[0]['packets'], int))
+	        self.assertTrue(isinstance(clients[0]['pktid'], int))
+	        self.assertTrue(isinstance(clients[0]['port'], int))
+	        self.assertTrue(isinstance(clients[0]['address'], str))
+	        self.assertTrue(isinstance(clients[0]['thread'], int))
+	        self.assertTrue(isinstance(clients[0]['fd'], int))
+	        self.assertTrue(isinstance(clients[0]['nreject'], int))
+	        self.assertTrue(isinstance(clients[0]['nselect'], int))
+	        self.assertTrue(isinstance(clients[0]['errors'], int))
+	        self.assertTrue(isinstance(clients[0]['priority'], int))
+	        self.assertTrue(isinstance(clients[0]['lastrequest'], int))
+	        self.assertTrue(isinstance(clients[0]['mymessages'], int))
+	        self.assertTrue(isinstance(clients[0]['nrequests'], int))
+	        self.assertTrue(isinstance(clients[0]['nwrites'], int))
+	        self.assertTrue(isinstance(clients[0]['nreads'], int))
+	        self.assertTrue(isinstance(clients[0]['written'], int))
+	        self.assertTrue(isinstance(clients[0]['perm'], str))
+	        self.assertTrue(isinstance(clients[0]['what'], str))
+	        self.assertTrue(isinstance(clients[0]['host'], str))
+	        self.assertTrue(isinstance(clients[0]['who'], str))
+	        self.assertTrue(isinstance(clients[0]['select'], str))
+	        self.assertTrue(isinstance(clients[0]['reject'], str))
+
+            os.system( "pf2orb rtexec " + orbname )
+
+            os.system( "sleep 2" )
+            os.system( "pf2orb rtexec " + orbname )
 
 	    orbclose(orb)
 

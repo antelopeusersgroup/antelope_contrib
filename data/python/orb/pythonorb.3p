@@ -282,6 +282,22 @@ or
 .fi
 .in
 .ft R
+.IP "\fBorbclients\fP (orbfd)"
+Return a list of dictionaries about orb clients
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(when, clients) = orbclients( orb )
+
+or
+
+(when, clients) = orb.clients()
+
+.fi
+.in
+.ft R
 .IP "\fBorbpkt_string\fP (srcname, time, packet, nbytes)"
 Convert an orb packet to a string representation, as used in forb(5)
 .ft CW
