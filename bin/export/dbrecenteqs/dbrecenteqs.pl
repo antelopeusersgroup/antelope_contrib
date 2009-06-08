@@ -2080,7 +2080,7 @@ sub pixfile_convert {
 
 		$cmd = "convert -trim +repage " .
 			"-density $Mapspec{pixels_per_inch}x$Mapspec{pixels_per_inch} " .
-		       "-size ${size_pixels}x${size_pixels} -colors $ncolors " .
+		       "-resize ${size_pixels}x${size_pixels} -colors $ncolors " .
 		       "$Mapspec{psfile} $Mapspec{pixfile}"; 
 
 	} elsif( $State{pixfile_conversion_method} eq "none" ) {
