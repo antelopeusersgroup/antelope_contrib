@@ -1864,6 +1864,11 @@ sub create_map {
 	%Mapspec = %{pixfile_convert( \%Mapspec )};
 	write_pixfile_pffile( \%Mapspec );
 
+	if( ( "$Mapspec{mapclass}" eq "index" ) ) {
+
+		system( "cp $Mapspec{psfile} $State{stockmaps_location}" );
+	}
+
 	unlink( "$Mapspec{psfile}" );
 
 	return \%Mapspec;
@@ -2216,7 +2221,12 @@ sub setup_index_Mapspec {
 	$Mapspec{"psfile"} = concatpaths( $State{"workdir"},
 				"$Mapspec{file_basename}.ps" );
 
-	$Mapspec{"pixfile"} = concatpaths( "$ENV{ANTELOPE}/data/dbrecenteqs",
+	if( makedir( $State{"stockmaps_location"} ) < 0 ) {
+
+		die( "dbrecenteqs: Failed to make directory $State{stockmaps_location}. Bye.\n" );
+	}
+
+	$Mapspec{"pixfile"} = concatpaths( $State{"stockmaps_location"},
 				"$Mapspec{file_basename}.$Mapspec{format}" );
 
 	%Mapspec = %{set_projection( \%Mapspec )};

@@ -49,6 +49,7 @@ sub init_globals {
 		"background_graphic",
 		"institute_logo",
 		"region_phrases_database",
+		"stockmaps_location",
 		);
 	
 	foreach $param ( @params, @path_params ) {
