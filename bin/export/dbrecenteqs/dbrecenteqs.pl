@@ -113,7 +113,7 @@ sub setup_State {
 		die( "Couldn't find $State{pf}.pf. Bye.\n" );
 	}
 
-	$pf_change_time = "1173381768";
+	$pf_change_time = "1244585155";
 
 	if( pfrequire( $State{pf}, $pf_change_time ) < 0 ) {
 
@@ -1828,8 +1828,13 @@ sub create_map {
 		plot_coastlines( \%Mapspec, "middle" );
 		plot_lakes( \%Mapspec, "middle" );
 		plot_rivers( \%Mapspec, "middle" );
-		plot_national_boundaries( \%Mapspec, "middle" );
-		plot_state_boundaries( \%Mapspec, "middle" );
+
+		if( $Mapspec{plot_political_boundaries} ) {
+
+			plot_national_boundaries( \%Mapspec, "middle" );
+			plot_state_boundaries( \%Mapspec, "middle" );
+		}
+
 		plot_hypocenters( \%Mapspec, "middle" );
 		plot_linefiles( \%Mapspec, "middle" );
 		plot_basemap( \%Mapspec, "middle" );
@@ -1846,8 +1851,13 @@ sub create_map {
 		plot_basemap( \%Mapspec, "first" );
 		plot_drape( \%Mapspec, "middle" );
 		plot_oceans( \%Mapspec, "middle" );
-		plot_national_boundaries( \%Mapspec, "middle" );
-		plot_state_boundaries( \%Mapspec, "middle" );
+
+		if( $Mapspec{plot_political_boundaries} ) {
+
+			plot_national_boundaries( \%Mapspec, "middle" );
+			plot_state_boundaries( \%Mapspec, "middle" );
+		}
+
 		plot_cities( \%Mapspec, "last" );
 	}
 
