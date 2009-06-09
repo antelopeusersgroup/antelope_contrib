@@ -2000,6 +2000,10 @@ sub update_stockmap {
 
 	my( $webmap_image ) = dbextfile( @dbwebmaps );
 
+	if( $opt_v ) { 
+		elog_notify "dbrecenteqs: Beginning write of $webmap_image\n";
+	}
+
 	$modified_image->Write(filename=>$webmap_image);
 
 	undef $modified_image;
@@ -2010,7 +2014,13 @@ sub update_stockmap {
 	    ! -e "$State{dbrecenteqs_dir}/$Mapspec{legend_filebase}" ) {
 		system( "/bin/cp $Mapspec{legend} $State{dbrecenteqs_dir}" );
 	}
+
+	if( $opt_v ) { 
+		elog_notify "dbrecenteqs: Finished write of $webmap_image\n";
+		elog_notify "dbrecenteqs: Done updating map $mapname\n";
+	}
 }
+
 sub verified_copy {
 	my( $sourcedb, $table, $targetdb ) = @_;
 
