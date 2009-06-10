@@ -54,6 +54,13 @@
 char **environ;
 char *__progname = "Python";
 
+/* Include these for 4.11 libdeviants workaround on Darwin */
+
+#include "deviants.h"
+#include "sysdata.h"
+
+extern void proc2pidstat( void *kinfo, void *process );
+
 #endif
 
 static PyObject *python_elog_init( PyObject *self, PyObject *args );
@@ -125,6 +132,16 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_now",   		python_now,   		METH_VARARGS, "Return epoch time for local system clock" },
 	{ NULL, NULL, 0, NULL }
 };
+
+#ifdef __APPLE__
+
+void 
+proc2pidstat ( void *kinfo, void *process) {
+	/* Resolve Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
+	return;
+}
+
+#endif
 
 static int
 parse_from_Boolean( PyObject *obj, void *addr )
