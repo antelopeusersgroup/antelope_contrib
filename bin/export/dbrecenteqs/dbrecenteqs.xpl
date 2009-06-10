@@ -2000,11 +2000,13 @@ sub update_stockmap {
 
 	my( $webmap_image ) = dbextfile( @dbwebmaps );
 
+	my( $webmap_image_tmp ) = $webmap_image . ".new";
+
 	if( $opt_v ) { 
-		elog_notify "dbrecenteqs: Beginning write of $webmap_image\n";
+		elog_notify "dbrecenteqs: Beginning write of $webmap_image_tmp\n";
 	}
 
-	$modified_image->Write(filename=>$webmap_image);
+	$modified_image->Write(filename=>$webmap_image_tmp);
 
 	undef $modified_image;
 
@@ -2016,7 +2018,13 @@ sub update_stockmap {
 	}
 
 	if( $opt_v ) { 
-		elog_notify "dbrecenteqs: Finished write of $webmap_image\n";
+		elog_notify "dbrecenteqs: Finished write of $webmap_image_tmp\n";
+		elog_notify "dbrecenteqs: Moving $webmap_image_tmp to $webmap_image\n";
+	}
+
+	system( "/bin/mv $webmap_image_tmp $webmap_image" );
+
+	if( $opt_v ) { 
 		elog_notify "dbrecenteqs: Done updating map $mapname\n";
 	}
 }
