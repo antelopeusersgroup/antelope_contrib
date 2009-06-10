@@ -59,6 +59,13 @@ static Arr *Hooks = 0;
 char **environ;
 char *__progname = "Python";
 
+/* Include these for 4.11 libdeviants workaround on Darwin */
+
+#include "deviants.h"
+#include "sysdata.h"
+
+extern void proc2pidstat( void *kinfo, void *process );
+
 #endif
 
 typedef struct {
@@ -212,6 +219,16 @@ static struct PyMethodDef _Response_methods[] = {
 	{ "eval",	python_eval_response,	METH_VARARGS, "Evaluate a response curve at a given angular frequency" },
 	{ NULL, NULL, 0, NULL }
 };
+
+#ifdef __APPLE__
+
+void 
+proc2pidstat ( void *kinfo, void *process) {
+	/* Resolve Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
+	return;
+}
+
+#endif
 
 static PyObject *
 Dbptr2PyObject( Dbptr db )
