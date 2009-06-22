@@ -1,0 +1,379 @@
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute fieldname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a gclfield" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  We call some physical quantity tied to 
+		a GCLgrid a field.  This attribute defines the name
+		attached to that field quantity.
+        }
+        ;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+		Spatial grids are conveniently indexed with a single
+		integer.  This allows the structure of the grid to be
+		defined as desired.  This index is also a convenient
+		key if the grid is defined in a database table instead
+		of being stored on disk.
+        }
+        ;
+
+Attribute radius
+	Real (10)
+	Format ( "%10.3f" )
+	Null ( "-1.0" )
+	Range ( "radius > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "radius of a spherical surface" )
+	Detail {
+		The earth is approximately spherical and large scale
+		imaging requires spherical shaped objects.  Radius is
+		a base parameter to describe location of a point in
+		the earth when spherical coordinates are used.
+	}
+	;
+
+Attribute dx1nom
+	Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+	Range ( "dx1nom > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Nominal grid spacing in x1 direction" )
+	Detail {
+		This and two related attributes define the nominal 
+		grid spacing of a geographical curvilinear grid coordinate
+		definition file.  Because the mapping is not required to
+		be uniform this is only a nominal value, not the actual
+		grid spacing. 
+	}
+	;
+
+Attribute dx2nom
+	Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+	Range ( "dx2nom > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Nominal grid spacing in x2 direction" )
+	Detail {
+		This and two related attributes define the nominal 
+		grid spacing of a geographical curvilinear grid coordinate
+		definition file.  Because the mapping is not required to
+		be uniform this is only a nominal value, not the actual
+		grid spacing. 
+	}
+	;
+
+Attribute dx3nom
+	Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+	Range ( "dx3nom > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Nominal grid spacing in x3 direction" )
+	Detail {
+		This and two related attributes define the nominal 
+		grid spacing of a geographical curvilinear grid coordinate
+		definition file.  Because the mapping is not required to
+		be uniform this is only a nominal value, not the actual
+		grid spacing. 
+	}
+	;
+
+Attribute azimuth_y
+        Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+        Range ( "azimuth_y >= 0.0 && azimuth_y < 360.0" )
+        Units ( "Degrees" )
+        Description ( "Azimuth of y axis at coordinate origin" )
+        Detail {
+		In geographical curvilinear coordinates this is the
+		trajectory of the y Cartesian axis at the origin of
+		the coordinate system.  The x axis is always assumed
+		to be 90 degrees away and z is assumed up.  This
+		uniquely defines the origin and orientation of
+		the Cartesian system when combined with the 
+		origin definition parameters.
+        }
+        ;
+
+Attribute dimensions
+	Integer (3)
+	Format ( "%3d" )
+	Null ("0")
+	Range ( "dimensions > 0" )
+	Description ("Number of dimensions" )
+	Detail {
+		Graphical objects multidimensional.  This parameter
+		defines the number of dimensions in the object.  
+		It is normally 2 or 3.
+	}
+	;
+
+Attribute n1
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "n1 >= 0" )
+	Description ( "Number of grid cells in dimension 1" )
+	Detail {
+		Geographical curvilinear grids are defined by 
+		3d arrays with n1 points for dimension 1 
+		n2 points for dimension 2 and n3 points for dimension 3.
+	}
+	;
+
+Attribute n2
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "n2 >= 0" )
+	Description ( "Number of grid cells in dimension 2" )
+	Detail {
+		Geographical curvilinear grids are defined by 
+		3d arrays with n1 points for dimension 1 
+		n2 points for dimension 2 and n3 points for dimension 3.
+	}
+	;
+
+Attribute n3
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "n3 >= 0" )
+	Description ( "Number of grid cells in dimension 3" )
+	Detail {
+		Geographical curvilinear grids are defined by 
+		3d arrays with n1 points for dimension 1 
+		n2 points for dimension 2 and n3 points for dimension 3.
+	}
+	;
+
+Attribute nv
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "nv >= 0" )
+	Description ( "Number of elements in a vector" )
+	Detail {
+		Geographical curvilinear grids define vector field
+		objects.  This defines the number of components of
+		vectors stored in a vector field.
+	}
+	;
+
+Attribute xlow
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "minimum grid extent in the x direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute xhigh
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "maximum grid extent in the x direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute ylow
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "minimum grid extent in the y direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute yhigh
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "maximum grid extent in the y direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute zlow
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "minimum grid extent in the z direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute zhigh
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "maximum grid extent in the z direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute i0
+        Integer (4)
+        Format ( "%4d")
+        Null ("-1")
+        Range ( "i0 >= 0" )
+        Description ( "index for dimension 1 of origin point" )
+        Detail {
+                Geographical curvilinear grids are defined by
+                3d arrays with n1 points for dimension 1
+                n2 points for dimension 2 and n3 points for dimension 3.
+		i0, j0, and k0 define the location of the origin
+		of the Cartesian coordinate system used in the mapping
+		within the grid.  That is, a quanity like f[i0][j0][k0] 
+		is at the origin.
+        }
+        ;
+
+Attribute j0
+        Integer (4)
+        Format ( "%4d")
+        Null ("-1")
+        Range ( "j0 >= 0" )
+        Description ( "index for dimension 2 of origin point" )
+        Detail {
+                Geographical curvilinear grids are defined by
+                3d arrays with n1 points for dimension 1
+                n2 points for dimension 2 and n3 points for dimension 3.
+		i0, j0, and k0 define the location of the origin
+		of the Cartesian coordinate system used in the mapping
+		within the grid.  That is, a quanity like f[i0][j0][k0] 
+		is at the origin.
+        }
+        ;
+
+Attribute k0
+        Integer (4)
+        Format ( "%4d")
+        Null ("-1")
+        Range ( "i0 >= 0" )
+        Description ( "index for dimension 3 of origin point" )
+        Detail {
+                Geographical curvilinear grids are defined by
+                3d arrays with n1 points for dimension 1
+                n2 points for dimension 2 and n3 points for dimension 3.
+		i0, j0, and k0 define the location of the origin
+		of the Cartesian coordinate system used in the mapping
+		within the grid.  That is, a quanity like f[i0][j0][k0] 
+		is at the origin.
+        }
+        ;
+
+Attribute cdefined
+	String (1)
+        Format ( "%-1s" )
+        Null ( "-" )
+        Range ( "cdefined =~ /d|n/" )
+        Description ( " Cartesian mapping = defining, non-defining" )
+        Detail {
+		Geographical curvilinear coordinates define mappings from
+		3d arrays to a Cartesian and/or geographical coordinate
+		system.  This parameter allows the option of turning
+		off the Cartesian mapping and leaving it undefined.
+		Be warned this may or may not be allowed in an 
+		implementation that uses this. i.e. the "or" is
+		not necessary a good thing.
+	}
+	;
+
+Attribute geodefined
+	String (1)
+        Format ( "%-1s" )
+        Null ( "-" )
+        Range ( "geodefined =~ /d|n/" )
+        Description ( " Cartesian mapping = defining, non-defining" )
+        Detail {
+		Geographical curvilinear coordinates define mappings from
+		3d arrays to a Cartesian and/or geographical coordinate
+		system.  This parameter allows the option of turning
+		off the Geographical mapping and leaving it undefined.
+		Be warned this may or may not be allowed in an 
+		implementation that uses this. i.e. the "or" is
+		not necessary a good thing.
+	}
+	;
+
+
+Relation gclgdisk
+	Fields (
+		gridname dimensions 
+		lat lon radius azimuth_y dx1nom dx2nom dx3nom
+		n1 n2 n3 i0 j0 k0 xlow xhigh ylow yhigh zlow zhigh
+		cdefined geodefined datatype dir dfile foff lddate
+	)
+	Primary ( gridname dimensions )
+	Description ( "Geographical curvilinear coordinate grid file information" )
+	Detail {
+		This relation defines parameter information for geographical
+		curvilinear grid files stored on disk.  2d and 3d grids 
+		are indexed with the same table allowing a surface 2d
+		grid to have the same base name as a 3d extension of it. 
+	}
+	;

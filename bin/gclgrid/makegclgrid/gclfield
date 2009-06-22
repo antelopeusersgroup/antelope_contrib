@@ -1,0 +1,65 @@
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute fieldname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a gclfield" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  We call some physical quantity tied to 
+		a GCLgrid a field.  This attribute defines the name
+		attached to that field quantity.
+        }
+        ;
+
+Attribute dimensions
+	Integer (3)
+	Format ( "%3d" )
+	Null ("0")
+	Range ( "dimensions > 0" )
+	Description ("Number of dimensions" )
+	Detail {
+		Graphical objects multidimensional.  This parameter
+		defines the number of dimensions in the object.  
+		It is normally 2 or 3.
+	}
+	;
+
+Attribute nv
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "nv >= 0" )
+	Description ( "Number of elements in a vector" )
+	Detail {
+		Geographical curvilinear grids define vector field
+		objects.  This defines the number of components of
+		vectors stored in a vector field.
+	}
+	;
+
+Relation gclfield
+	Fields (
+		gridname fieldname dimensions 
+		nv dir dfile foff lddate
+	)
+	Primary ( gridname fieldname )
+	Description ( "GCLgrid field object attribute table" )
+	Detail {
+		This relation defines parameter information for data fields
+		defined on GCLgrid objects.   This is used for an external 
+		representation of these objects.
+	}
+	;
