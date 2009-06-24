@@ -270,7 +270,7 @@ Dbvalue2PyObject( Dbvalue value, int type )
 	case dbREAL:
 	case dbTIME:
 		
-		obj = Py_BuildValue( "d", value.i );
+		obj = Py_BuildValue( "d", value.d );
 
 		break;
 
