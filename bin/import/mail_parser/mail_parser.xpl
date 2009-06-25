@@ -3,7 +3,7 @@ use Mail::Internet;
 require "getopts.pl" ;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
-$ENV{'PATH'} = '/bin:/usr/bin';
+$ENV{'PATH'} = "/bin:/usr/bin:$ENV{'ANTELOPE'}/bin";
 
 sub pop_message {
 	local( @message );
