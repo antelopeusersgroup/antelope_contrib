@@ -1,4 +1,5 @@
 tarball_time_format %Y_%m_%d
+tar_command tar
 
 modules &Arr{
 	dbxcor &Arr{

@@ -43,6 +43,7 @@ if( $opt_p ) {
 
 %modules = %{pfget($Pf,"modules")};
 $tarball_time_format = pfget( $Pf, "tarball_time_format" );
+$tar_command = pfget( $Pf, "tar_command" );
 
 @module_names = keys( %modules );
 
@@ -139,7 +140,7 @@ if( $opt_t ) {
 	$tarfile .= "_" . my_os();
 	$tarfile .= "_tarball.tar";
 
-	$cmd = "tar -T $tarfilelist -P -c -v -f $tarfile";
+	$cmd = "$tar_command -T $tarfilelist -P -c -v -f $tarfile";
 
 	if( $opt_v ) {
 		
