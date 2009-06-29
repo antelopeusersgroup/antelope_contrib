@@ -18,35 +18,44 @@ Stack::Stack()
 
 Stack::Stack(TimeSeriesEnsemble& d, TimeWindow twin)
 {
+    const string base_error("Stack (BasicStack) constructor: ");
+    int i;
     try {
 	TimeWindow twd;  // derived from twin using moveout
 	double moveout;
-	int i;
-	//This is a plain simple stacker using the += algorithm.  It arbitrarily clones
-	// the metadata of the first member of the ensemble.
-	if(d.member.size()<=0) 
-	moveout=d.member[0].get_double(moveout_keyword);
-	twd=twin.shift(moveout);
-	stack=WindowData(d.member[0],twd); 
-	weights.reserve(d.member.size());
-	fold=1;
-	sumwt=1.0;
-	for(i=1;i<d.member.size();++i)
+	vector<TimeSeries> stackdata;
+	int nmember=d.member.size();
+	if(nmember<=0)
+		throw SeisppError(base_error
+			+ "Input ensemble is empty. ");
+	stackdata.reserve(nmember);
+	weights.reserve(nmember);
+	for(i=0;i<nmember;++i)
 	{
-		if(d.member[i].live)
-		{
-			moveout=d.member[i].get_double(moveout_keyword);
-			twd=twin.shift(moveout);
-			stack += WindowData(d.member[i],twd);
-			weights.push_back(1.0);
-			sumwt+=1.0;
-			++fold;
-		}
-		else
+	    if(d.member[i].live &&(!d.member[i].is_gap(twd)))
+	    {
+		moveout=d.member[i].get_double(moveout_keyword);
+		twd=twin.shift(moveout);
+		if(d.member[i].is_gap(twd)) 
 		{
 			weights.push_back(0.0);
 		}
+		else
+		{
+		    stackdata.push_back(WindowData(d.member[i],twd));
+		    weights.push_back(1.0);
+		}
+	    }
 	}
+	fold=stackdata.size();
+	if(fold<=0) throw SeisppError(base_error
+		+ "Ensemble has no live, gap-free data in stack window");
+	stack=stackdata[0];
+	for(i=1;i<fold;++i)
+	{
+		stack+=stackdata[i];
+	}
+	sumwt=static_cast<double>(fold);
 	for(i=0;i<stack.ns;++i) stack.s[i]/=sumwt;
 	// Compute the rms for applications needing
 	// an absolute amplitude measure.  This form is 
@@ -91,6 +100,13 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 		  +string("Illegal time window specified\nStack time window must enclose window used for applying penalty function\n")); 
 	stacktype=method; // Might as well set this at the top.
 	try {
+		// Call alternate constructor an return immediately for
+		// simple stack method.
+		if(stacktype=BasicStack)
+		{
+			*this=Stack(d,stack_twin);
+			return;
+		}
 		int ensemblesize=d.member.size();
 		double ampscale;
 		double nrmd,nrmr;
@@ -154,6 +170,13 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 					+ string("input ensemble has no data free of gaps in time window"));
 			stack = stackdata[0];
 			stack.t0=stack_twin.start;	
+			// Handle this special case or we get NaNs
+			if(fold==1)
+			{
+				weights.push_back(1.0);
+				sumwt=1.0;
+				return;
+			}
 			for(i=0;i<stack.ns;++i) stack.s[i]=0.0;
 			switch(method)
 			{
@@ -318,7 +341,8 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 			break;
 		case BasicStack:
 			throw SeisppError(basemessage
-				+ string("coding error.  Use Stack(x,x) to invoke Basic method."));
+				+ "Logic error: Unexpected entry into BasicStack switch block.\n"
+				+ string("Report this error to author."));
 			break;
 		default:
 			throw SeisppError(basemessage
