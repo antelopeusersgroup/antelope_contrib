@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+
+    <title>$application_title</title>
+
+    $jquery_includes
+
+    <script type="text/javascript" src="static/dbwfserver.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="static/dbwfserver.css">
+
+</head>
+<body>
+
+ <div id='loading'>Loading data ...</div>
+ <h1>$application_title</h1>
+
+ <div id='title'>$application_title for database: <span id='dbname'>$dbname</span></div>
+ <div id="station">Station:&nbsp;<select>$stations</select></div>
+
+ <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
+ <div id="chan_plots"><!-- populated dynamically by dbwfserver.js --></div>
+
+<div id='xlabel'>Time of day</div>
+
+ <div id='interact'>
+    <p><b>Key Interactions:</b>
+          &nbsp;
+	  [zoom in: click-drag] | 
+	  [zoom out: shift-click-drag] | 
+	  [scroll left: left arrow] |  
+	  [scroll right: right arrow] | 
+	  [reset: click 'r']
+    </p>
+ </div>
+
+</body>
+</html>

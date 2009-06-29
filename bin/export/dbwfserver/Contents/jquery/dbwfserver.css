@@ -1,0 +1,71 @@
+body {
+    margin:0px;
+    padding:0px;
+    background-color:#DFDFDF;
+}
+h1 {
+    color:#C5C5C5;
+    font-size:20px;
+    margin-left:18px;
+}
+#container {
+    width:800px;
+}
+h4 {
+    text-align:center;
+    font-family:sans-serif;
+    padding:8px;
+}
+#title {
+    text-align:center;
+    margin-top:8px;
+    font-weight:bold;
+}
+#station {
+    font-family:sans-serif;
+    margin-left:18px;
+}
+.plot {
+    width:820px;
+    height:190px;
+    margin:auto;
+    margin-top:-33px;
+}
+.label {
+    position:relative;
+    left:10px;
+    width:120px;
+    text-align:center;
+}
+
+.label-station {
+    margin-right:5px;
+}
+#xlabel {
+    text-align:center;
+    margin:20px 0px 20px 40px;
+}
+
+#loading {
+    position:absolute;
+    top:0px;
+    right:0px;
+    padding:4px;
+    margin:0px;
+    background-color:#FFA500;
+    color:#FFF;
+    font-size:14px;
+    font-weight:bold;
+    font-family:sans-serif;
+}
+
+#interact {
+    text-align:center;
+    color:#696969;
+    margin:14px;
+}
+
+#dbname {
+    font-family: Courier, "Courier New", monospace 
+}
+
