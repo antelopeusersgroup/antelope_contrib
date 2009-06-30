@@ -77,7 +77,7 @@
 #
 
     $table = "wfdisc";
-    foreach $sta (@ARGV) {
+    foreach $sta ( sort (@ARGV) ) {
         $stime = strydtime(now());
         elog_notify ("\nstarting processing station $sta\n\n");
     
@@ -152,7 +152,7 @@
             } else {
                 elog_notify("\nskipping $cmd") if $opt_v ;
             } 
-           unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
+            unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
         }
         
 #
@@ -329,7 +329,7 @@
 #
 #  evaluate data return
 #
-        $prob = eval_data_return ($sta,$prob,$problems) unless $opt_n;       
+        ($prob,$problems) = eval_data_return ($sta,$prob,$problems) unless $opt_n;       
 #         elog_notify(" ");
 #         $staperf{max_ave_perf}  = 0;
 #         $staperf{max_nperfdays} = 0;
@@ -515,17 +515,38 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     
     my (%staperf);
     
+    %staperf = (); 
+
     elog_notify(" ");
     $staperf{max_ave_perf}  = 0;
     $staperf{max_nperfdays} = 0;
-    $staperf{max_datadays} = 0;
+    $staperf{max_datadays}  = 0;
+    
     @db = dbopen($sta,"r");
-    @db = dblookup(@db,0,"chanperf",0,0);
+    
     @dbdeploy = dblookup(@db,0,"deployment",0,0);
     @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
+    if (! dbquery(@dbdeploy,"dbRECORD_COUNT")) {
+        $prob++;
+        $problems++;
+        $line = "$sta does not exist in deployment table!";
+        elog_notify("	$line");
+        print PROB "$line\n" ;
+        return ($prob,$problems);
+    }
     $dbdeploy[3] = 0;
     ($time,$endtime) = dbgetv(@dbdeploy,"time","endtime");
     $staperf{deploy_days} = int($endtime/86400) - int($time/86400.) ;
+
+    @db = dblookup(@db,0,"chanperf",0,0);
+    if (! dbquery(@db,"dbTABLE_PRESENT")) {
+        $prob++;
+        $problems++;
+        $line = "$sta\.chanperf table has no records!";
+        elog_notify("	$line");
+        print PROB "$line\n" ;
+        return ($prob,$problems);
+    }
 
     foreach $chan (qw( BHZ BHN BHE LHZ LHN LHE)) {
         @dbchanperf                = dbsubset(@db,"chan =~ /$chan/");
@@ -548,12 +569,26 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     }
     dbclose(@db);
         
-    $staperf{deploy_days} = 0.1 if ($staperf{deploy_days} < 0.1) ;
         
-    $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days",
-                     $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
+    $line = sprintf("maximimum average data return on seismic channels is %5.1f%% - less than 99%%",
+                     $staperf{max_ave_perf});
         
     if ($staperf{max_ave_perf} < 99.) {
+        $prob++;
+        print PROB "\n$line\n" ;
+        $problems++ ;
+        elog_complain("\nProblem $problems
+                       \n	$line");
+    } else {
+        elog_notify("\n	$line\n\n");
+    }
+        
+    $staperf{deploy_days} = 0.1 if ($staperf{deploy_days} < 0.1) ;
+
+    $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days\n	Check deployment table",
+                     $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
+        
+    if ($staperf{deploy_days} < $staperf{max_datadays}) {
         $prob++;
         print PROB "\n$line\n" ;
         $problems++ ;
