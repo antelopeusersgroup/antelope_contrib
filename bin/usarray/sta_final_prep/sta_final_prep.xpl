@@ -140,6 +140,14 @@
         @mseedfiles = grep { /C.*\.bms.*/  } readdir(DIR);
         closedir(DIR);
         
+        if ($#mseedfiles == -1 ) {
+            $problems++ ;
+            elog_complain("\nProblem $problems
+                           \n	$dbname has no '.*bms.*' files in $bhname! 
+                           \n	Skipping to next station") ;
+            next;
+        }
+        
         foreach $mseedfile (@mseedfiles) {
             $cmd  = "miniseed2days -c -U -m \".*_.*_[BL]H._.*\" ";
             $cmd .= "-v " if $opt_V;
@@ -163,6 +171,14 @@
         @mseedfiles = grep { /C.*\.bms.*/  } readdir(DIR);
         closedir(DIR);
                 
+        if ($#mseedfiles == -1 ) {
+            $problems++ ;
+            elog_complain("\nProblem $problems
+                           \n	$dbname has no '.*bms.*' files in $sohname! 
+                           \n	Skipping to next station") ;
+            next;
+        }
+        
         foreach $mseedfile (@mseedfiles) {
             $cmd  = "miniseed2days -c -U -r \".*_.*_[BHL]H[ZNE12]_.*\" -w %Y/%{net}_%{sta}_%{chan}.msd ";
             $cmd .= "-v " if $opt_V;
@@ -263,6 +279,13 @@
         unless ($opt_n) {
             @dbwfdisc = dblookup(@db,0,"wfdisc",0,0);
             @dbbh     = dbsubset(@dbwfdisc,"sta =~/$sta/ && chan =~ /[BL]H[ZNE]/");
+            if (dbquery(@dbbh,"dbRECORD_COUNT") == 0 ) {
+                $problems++ ;
+                elog_complain("\nProblem $problems
+                               \n	$dbname\.wfdisc has no chan =~ /[BL]H[ZNE]/! 
+                               \n	Skipping to next station") ;
+                next;
+            }
             $mintime  = dbex_eval(@dbbh,"min(time)");
             $maxtime  = dbex_eval(@dbbh,"max(endtime)");
         }
