@@ -113,7 +113,7 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 		vector<double> work;
 		vector<double>lastbeam;
 			const double CONVERGE=0.0001;
-			double deltad,lastdeltad;
+			double deltad;
 			const int MAXIT=30;
 			int iteration_count;
 			int medposition;
@@ -296,7 +296,6 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 			//
 			} while( (iteration_count<=2)
 				|| ((deltad>CONVERGE) 
-				&& (deltad<lastdeltad) 
 				&& (iteration_count<MAXIT) ));
 			// 
 			// Form the final stack as weighted sum
