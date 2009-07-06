@@ -1,0 +1,91 @@
+.TH GCLFMATH 1 "$Date$"
+.SH NAME
+gclfmath - do simple mathematical operations to elements of GCL 3D field objects
+.SH SYNOPSIS
+.nf
+gclfmath db gridname infield outfield [-vector -dir outdir] < commands
+.fi
+.SH DESCRIPTION
+.LP
+Several programs developed by the author utilize GCL (Geographical CurviLinear) grids
+and two associated data objects called a GCLscalarfield3d and GCLvectorfield3d.  This program
+can be used for fairly flexible editing of these field objects.  Applications include
+building 3D velocity models, constructing an S from a P model using constant or variable
+Vp/Vs ratios, zeroing components of vector fields, or applying a scale factor to fields.
+The program uses the database interface to manage the different field components.  
+.LP
+The program is driven by edit instructions from standard input.  The format of the
+lines that define the changes requested are described below.   Operations allowed are
+the scalar operations of multiple, add, and assign.  The user is reminded that 
+scalar division by a constant c can be done with a multiply by 1/c.  Similarly,
+subtraction is addition with a negative sign.  The format allows one to reference one
+grid point at time, ranges over one or more indices, or the entire grid.  
+.LP
+The \fIdb\fR is a database name and must be the first argument.  \fIgridname\fR 
+and \fIinfile\fR are intimately linked.  The \fIgridname\fR is a key used to define
+a unique grid geometry definition for the data stored in the field component tagged
+with the key \fIinfield\fR.  The result of running this program will be stored in the
+database with a new field tagged with the name \fIoutfield\fR.  The result by definition
+will be associated with the same parent grid geometry defined by \fIgridname\fR.
+.SH OPTIONS
+.IP -vector
+Use this flag if the field to be modified is a vector field.  The default assumes
+the input is a scalar field.  
+.IP -dir
+Directory name into which the new field data file will be written.  
+Default is editedfields.
+.SH FILES
+.LP
+Standard input lines define the way the field is to be edited.  The 
+structure of each lines is:
+.nf
+x1range x2range x3range vrange opcode value
+.fi
+where x1range, x2range, x3range, and vrange define a range of grid index values
+that opcode is to be applied using the number set as value.  The range parameters 
+are integer ranges in one of five possible formats:  n-m (apply to range n to m inclusive);
+n- (apply to n to maximum for the associated coordinate direction; -m (apply to 0 to 
+value m inclusive); n (apply only to value n); or * (apply to entire range).  
+.LP
+\fIExamples:\fR
+.nf
+0 18-29 * * = 3.5 
+.fi
+This would assign the value of 3.5 to x1 grid point 0, x2 ranginf from 18 to 29, and
+the entire range of x3.  I the -vector flag were used all components of each vector 
+would be set to 3.5.  For scalar fields the 4th column is ignored.
+.nf
+2- * -15 2 * 0.5
+.fi
+This would multiply components of the field by 0.5 that satisfy the following
+conditions:  x1 from 2 to maximum, all components of x2, and x3 from 0 to 15.
+If the -vector flag is set only component 2 of the 0.5 multiplier will be applied
+only to component 2.  For scalar fields this is ignored and components that satisfy
+the above definition will be multiplied by 0.5.  
+.nf
+* * * * + 1.0
+.fi
+Add 1.0 to every value in the field.  
+.SH DIAGNOSTICS
+.LP
+Diagnostic messages are printed to stderr if something fails
+.SH "SEE ALSO"
+.nf
+See documentation for the GCLgrid library found at:
+http://geology.indiana.edu/pavlis/software/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Be careful about mixing up vector and scalar fields.  Although the libarary should not
+allow this there may be residual bugs that fail to trap inconsistent requests.  i.e. 
+you can use a name that is associated with a vector field but if you fail to use the -vector
+flag results may be silently scrambled. 
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Department of Geological Sciences
+1001 East 10th Street
+Indiana University
+Bloomington, IN  47405
+pavlis@indiana.edu
+.\" $Id$
