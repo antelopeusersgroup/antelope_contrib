@@ -53,6 +53,13 @@
 char **environ;
 char *__progname = "Python";
 
+/* Include these for 4.11 libdeviants workaround on Darwin */
+
+#include "deviants.h"
+#include "sysdata.h"
+
+extern void proc2pidstat( void *kinfo, void *process );
+
 #endif
 
 static PyObject *python_unstuffPkt( PyObject *self, PyObject *args );
@@ -68,26 +75,40 @@ static struct PyMethodDef _Pkt_methods[] = {
 	{ NULL, NULL, 0, NULL }
 };
 
+#ifdef __APPLE__
+
+void
+proc2pidstat ( void *kinfo, void *process) {
+        /* Resolve Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
+	return;
+}
+
+#endif
+
 static PyObject *
 python_unstuffPkt( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _unstuffPkt(srcname, time, packet, nbytes)\n";
-	char	srcname[ORBSRCNAME_SIZE];
+	char	*srcname = 0;
 	double	pkttime;
 	char	*packet = 0;
-	int	nbytes_pckt = 0;
+	int	nbytes_packet = 0;
 	int	nbytes = 0;
+	int	type;
+	Packet	*pkt = 0;
 	PyObject *obj;		
 
-	if( ! PyArg_ParseTuple( args, "sds#i", srcname, &pkttime, &packet, &nbytes_pckt, &nbytes) ) {
+	if( ! PyArg_ParseTuple( args, "sds#i", &srcname, &pkttime, &packet, &nbytes_packet, &nbytes) ) {
 
 		PyErr_SetString( PyExc_RuntimeError, usage );
 
 		return NULL;
 	} 
 
+	type = unstuffPkt( srcname, pkttime, packet, nbytes_packet, &pkt );
+
 	/* SCAFFOLD */
 
-	obj = Py_BuildValue( "" );
+	obj = Py_BuildValue( "i", type );
 
 	return obj;
 }
@@ -146,9 +167,23 @@ python_split_srcname( PyObject *self, PyObject *args ) {
 					parts.src_subcode );
 }
 
+static void
+add_pkt_constants( PyObject *mod ) {
+	int	i;
+
+	for( i = 0; i < Pktxlatn; i++ ) {
+
+		PyModule_AddIntConstant( mod, Pktxlat[i].name, Pktxlat[i].num );
+	}
+
+	return;
+}
+
 PyMODINIT_FUNC
 init_Pkt( void ) {
 	PyObject *mod;
 
 	mod = Py_InitModule( "_Pkt", _Pkt_methods );
+
+	add_pkt_constants( mod );
 }

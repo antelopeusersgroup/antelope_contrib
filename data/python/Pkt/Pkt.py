@@ -52,7 +52,7 @@ class Pkt():
     def unstuff(self):
         """Unpack an Antelope packet"""
 
-        _Pkt._unstuffPkt(srcname, time, packet, nbytes)
+        return _Pkt._unstuffPkt(self._srcname, self._time, self._packet, self._nbytes)
 
 
 def unstuffPkt(srcname, time, packet, nbytes):
@@ -112,6 +112,13 @@ if __name__ == '__main__':
 
             os.system( "pf2orb rtexec " + orbname )
 
+	    ( pktid, srcname, time, packet, nbytes ) = orb.reap()
+
+	    type = unstuffPkt( srcname, time, packet, nbytes )
+
+	    self.assertTrue(isinstance(packet, str))
+	    self.assertTrue(isinstance(type, int))
+ 
         def test_procedure_split_srcname(self):
 
 	    (net, sta, chan, loc, suffix, subcode) = split_srcname("AZ_PFO_BHZ_00/BBA/BS")
