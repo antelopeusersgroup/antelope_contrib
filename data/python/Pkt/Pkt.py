@@ -5,33 +5,34 @@ from _Pkt import *
 class Pkt():
     """Create an Antelope Packet object
         
-        Pkt( srcname, time, packet, nbytes )
+        Pkt( srcname, time, packet, nbytes, pktid = -1 )
     """
     
     def __init__(self, *args, **kwargs):
 
-        self._srcname = ''
-	self._time = -9999999999.999
-	self._packet = None
-	self._nbytes = 0
+	self._pkt = None
 
-        if(len(args) == 4):
+        if(len(args) == 4 or len(args) == 5 ):
 
             if(not isinstance(args[0], str)):
 
-                raise TypeError, 'first argument to Pkt() must be a string'
+                raise TypeError, 'first argument to Pkt() (srcname) must be a string'
 
             elif(not isinstance(args[1], float)):
 
-                raise TypeError, 'second argument to Pkt() must be a floating-point value'
+                raise TypeError, 'second argument to Pkt() (time) must be a floating-point value'
 
             elif(not isinstance(args[2], str)):
 
-                raise TypeError, 'third argument to Pkt() must be a string'
+                raise TypeError, 'third argument to Pkt() (packet) must be a string'
 
             elif(not isinstance(args[3], int)):
 
-                raise TypeError, 'fourth argument to Pkt() must be an integer'
+                raise TypeError, 'fourth argument to Pkt() (nbytes) must be an integer'
+
+            elif(len(args) == 5 and not isinstance(args[4], int)):
+
+                raise TypeError, 'fifth argument to Pkt() (pktid) must be an integer'
 
             else:
 
@@ -41,24 +42,44 @@ class Pkt():
 
                 raise TypeError, 'Pkt constructor arguments not understood'
 
+        srcname = args[0]
+	time    = args[1]
+	packet  = args[2]
+	nbytes  = args[3]
+
+	if( len(args) == 5 ):
+	    pktid = args[4]
+        else:
+	    pktid = -1
+
+        self._pkt = _Pkt._pkt( srcname, time, packet, nbytes, pktid )
 
     def __str__(self):
         
         return ("\n[Pkt:\n" +
-            "\tsrcname  = %s\n" % self._srcname +
-            "\ttime  = %s\n" % self._time +
+            "\tsrcname  = %s\n" % self.srcname() +
+            "\ttime  = %s\n" % self.time() +
             "]\n")
 
-    def unstuff(self):
-        """Unpack an Antelope packet"""
+    def type(self):
 
-        return _Pkt._unstuffPkt(self._srcname, self._time, self._packet, self._nbytes)
+        return self._pkt.type()
+
+    def srcname(self):
+
+        return self._pkt.srcname()
+
+    def time(self):
+
+        return self._pkt.time()
 
 
-def unstuffPkt(srcname, time, packet, nbytes):
+def unstuffPkt(srcname, time, packet, nbytes, pktid = -1):
     """Unpack an Antelope packet"""
 
-    return _Pkt._unstuffPkt(srcname, time, packet, nbytes)
+    pkt = Pkt(srcname, time, packet, nbytes, pktid)
+
+    return pkt.type(), pkt
 
 
 def join_srcname(net, sta, chan, loc, suffix, subcode):
@@ -114,10 +135,13 @@ if __name__ == '__main__':
 
 	    ( pktid, srcname, time, packet, nbytes ) = orb.reap()
 
-	    type = unstuffPkt( srcname, time, packet, nbytes )
+	    ( type, pkt ) = unstuffPkt( srcname, time, packet, nbytes )
 
 	    self.assertTrue(isinstance(packet, str))
 	    self.assertTrue(isinstance(type, int))
+	    self.assertTrue(isinstance(pkt, Pkt))
+	    self.assertTrue(isinstance(pkt.srcname(), str))
+	    self.assertTrue(isinstance(pkt.time(), float))
  
         def test_procedure_split_srcname(self):
 

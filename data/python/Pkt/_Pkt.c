@@ -62,16 +62,70 @@ extern void proc2pidstat( void *kinfo, void *process );
 
 #endif
 
+typedef struct {
+	PyObject_HEAD
+	int	displaymode;
+	int	pktid;
+	char	srcname[ORBSRCNAME_SIZE];
+	double	time;
+	Packet  *pkt;
+	char	*raw;
+	int	raw_nbytes;
+	int	type;
+} _pktobject;
+
+staticforward PyTypeObject _pkttype;
+
+#define is__pktobject( v ) ( (v)->ob_type == &_pkttype )
+
 static PyObject *python_unstuffPkt( PyObject *self, PyObject *args );
 static PyObject *python_join_srcname( PyObject *self, PyObject *args );
 static PyObject *python_split_srcname( PyObject *self, PyObject *args );
+static PyObject *python_pkt_type( PyObject *self, PyObject *args );
+static PyObject *python_pkt_srcname( PyObject *self, PyObject *args );
+static PyObject *python_pkt_time( PyObject *self, PyObject *args );
+
+static void add_pkt_constants( PyObject *mod );
+static _pktobject *new_pktobject();
+static PyObject *_pkttype_new( PyObject *self, PyObject *args );
+static int _pkt_print( _pktobject *self, FILE *fp, int flags );
+static void _pkt_dealloc( _pktobject *self );
+static PyObject *_pkt_getattr( _pktobject *self, char *name );
 
 PyMODINIT_FUNC init_Pkt( void );
+
+static PyTypeObject _pkttype = {
+	PyObject_HEAD_INIT( &PyType_Type )
+	0,					/* ob_size */
+	"_pkt",					/* tp_name */
+	sizeof(_pktobject),			/* tp_basicsize */
+	0,					/* tp_itemsize */
+	(destructor)	_pkt_dealloc,	
+	(printfunc)	_pkt_print,
+	(getattrfunc)	_pkt_getattr,
+	(setattrfunc)	0,
+	(cmpfunc)	0,
+	(reprfunc)	0,
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	(hashfunc)	0,			/* tp_hash */
+	(ternaryfunc)	0,			/* tp_call */
+	(reprfunc)	0,			/* tp_str */
+};
 
 static struct PyMethodDef _Pkt_methods[] = {
 	{ "_unstuffPkt",  	python_unstuffPkt,   	METH_VARARGS, "Unstuff an Antelope orbserver packet" },
 	{ "_join_srcname",  	python_join_srcname,  	METH_VARARGS, "Combine component parts into a packet srcname" },
 	{ "_split_srcname",  	python_split_srcname,  	METH_VARARGS, "Decompose a packet srcname into component parts" },
+	{ "_pkt",  		_pkttype_new,  		METH_VARARGS, "Create a new _pkt object" },
+	{ NULL, NULL, 0, NULL }
+};
+
+static struct PyMethodDef _pkt_methods[] = {
+	{ "type", 		python_pkt_type,	METH_VARARGS, "Return the integer packet type for a _pkt object" },
+	{ "srcname", 		python_pkt_srcname,	METH_VARARGS, "Return the srcname for a _pkt object" },
+	{ "time", 		python_pkt_time,	METH_VARARGS, "Return the internal packet time for a _pkt object" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -79,14 +133,15 @@ static struct PyMethodDef _Pkt_methods[] = {
 
 void
 proc2pidstat ( void *kinfo, void *process) {
-        /* Resolve Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
+        /* Sidestep Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
 	return;
 }
 
 #endif
 
 static PyObject *
-python_unstuffPkt( PyObject *self, PyObject *args ) {
+python_unstuffPkt( PyObject *self, PyObject *args ) 
+{
 	char	*usage = "Usage: _unstuffPkt(srcname, time, packet, nbytes)\n";
 	char	*srcname = 0;
 	double	pkttime;
@@ -114,7 +169,8 @@ python_unstuffPkt( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
-python_join_srcname( PyObject *self, PyObject *args ) {
+python_join_srcname( PyObject *self, PyObject *args ) 
+{
 	char	*usage = "Usage: _join_srcname(net, sta, chan, loc, suffix, subcode)\n";
 	char	srcname[ORBSRCNAME_SIZE];
 	char	*net;
@@ -145,7 +201,8 @@ python_join_srcname( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
-python_split_srcname( PyObject *self, PyObject *args ) {
+python_split_srcname( PyObject *self, PyObject *args ) 
+{
 	char	*usage = "Usage: _split_srcname(srcname)\n";
 	char	*srcname;
 	Srcname parts;
@@ -167,8 +224,174 @@ python_split_srcname( PyObject *self, PyObject *args ) {
 					parts.src_subcode );
 }
 
+static _pktobject *
+new_pktobject()
+{
+	_pktobject *self;
+
+	self = PyObject_New( _pktobject, &_pkttype );
+
+	if( self == NULL ) {
+		
+		return NULL;
+	}
+
+	self->displaymode = PKT_TERSE;
+
+	self->pktid = -1;
+
+	self->pkt = 0;
+	self->time = 0;
+	self->raw = 0;
+	self->raw_nbytes = 0;
+
+	strcpy( self->srcname, "" );
+
+	return self;
+}
+
+static PyObject *
+_pkttype_new( PyObject *self, PyObject *args ) 
+{
+	char	*usage = "Usage: _pkt(srcname, time, packet, nbytes, pktid)\n";
+	PyObject *obj;
+	char	*srcname = 0;
+	double	pkttime;
+	char	*packet = 0;
+	int	nbytes_packet = 0;
+	int	nbytes = 0;
+	int	pktid = -1;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "sds#ii", &srcname, &pkttime, &packet, &nbytes_packet, &nbytes, &pktid) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+
+	} else {
+		
+		obj = (PyObject *) new_pktobject();
+	}
+
+	((_pktobject *) obj)->pktid = pktid;
+	((_pktobject *) obj)->time = pkttime;
+	((_pktobject *) obj)->raw_nbytes = nbytes;
+
+	strcpy( ((_pktobject *) obj)->srcname, srcname );
+
+	allot( char *, ((_pktobject *) obj)->raw, nbytes_packet );
+	memcpy( ((_pktobject *) obj)->raw, packet, sizeof( char ) );
+
+	rc = unstuffPkt( ((_pktobject *) obj)->srcname, 
+			 ((_pktobject *) obj)->time, 
+			 ((_pktobject *) obj)->raw, 
+			 ((_pktobject *) obj)->raw_nbytes, 
+			 &((_pktobject *) obj)->pkt );
+
+	if( rc > 0 ) {
+
+		((_pktobject *) obj)->type = rc;
+
+	} else {
+
+		/* SCAFFOLD deal with the error return */
+	}
+
+	return obj;
+}
+
 static void
-add_pkt_constants( PyObject *mod ) {
+_pkt_dealloc( _pktobject *self )
+{
+	if( self->raw != NULL ) {
+		
+		free( self->raw );
+
+		self->raw = NULL;
+	}
+
+	if( self->pkt != NULL ) {
+
+		freePkt( self->pkt );
+	}
+
+	PyObject_Free( self );
+}
+
+static int
+_pkt_print( _pktobject *self, FILE *fp, int flags ) 
+{
+	
+	fprintf( fp, "[_pkt:\n" );
+	fprintf( fp, "\tAntelope pkt object\n" );
+	showPkt( self->pktid, self->srcname, self->time, self->raw, self->raw_nbytes, fp, self->displaymode );
+	fprintf( fp, "]\n" );
+
+	return 0;
+}
+
+static PyObject *
+_pkt_getattr( _pktobject *self, char *name )
+{
+	if( strcmp( name, "__members__" ) == 0 ) {
+		
+		return Py_BuildValue( "[s]", "type" );
+
+	} else {
+
+		return Py_FindMethod( _pkt_methods, (PyObject *) self, name );
+	}
+}
+
+static PyObject *
+python_pkt_type( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: type()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", ((_pktobject *) self)->type );
+}
+
+static PyObject *
+python_pkt_srcname( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: srcname()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktobject *) self)->srcname );
+}
+
+static PyObject *
+python_pkt_time( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: time()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktobject *) self)->pkt->time );
+}
+
+static void
+add_pkt_constants( PyObject *mod ) 
+{
 	int	i;
 
 	for( i = 0; i < Pktxlatn; i++ ) {
@@ -180,7 +403,8 @@ add_pkt_constants( PyObject *mod ) {
 }
 
 PyMODINIT_FUNC
-init_Pkt( void ) {
+init_Pkt( void ) 
+{
 	PyObject *mod;
 
 	mod = Py_InitModule( "_Pkt", _Pkt_methods );
