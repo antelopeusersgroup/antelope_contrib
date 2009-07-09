@@ -224,7 +224,7 @@ static struct PyMethodDef _Response_methods[] = {
 
 void 
 proc2pidstat ( void *kinfo, void *process) {
-	/* Resolve Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
+	/* Sidestep Antelope 4.11 problem with unresolved symbol in libdeviants under Darwin */
 	return;
 }
 
