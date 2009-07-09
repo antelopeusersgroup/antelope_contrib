@@ -162,6 +162,10 @@ class Pkt():
 
         return self._pkt.PacketType()
 
+    def show(self, mode = PKT_TERSE):
+
+        return self._pkt.show(mode)
+
     def srcname(self):
 
         return self._pkt.srcname()
@@ -215,6 +219,16 @@ def unstuffPkt(srcname, time, packet, nbytes, pktid = -1):
     pkt = Pkt(srcname, time, packet, nbytes, pktid)
 
     return pkt.type(), pkt
+
+
+def showPkt(pktid, srcname, time, packet, nbytes, mode = PKT_TERSE):
+    """Print out an Antelope packet"""
+
+    pkt = Pkt(srcname, time, packet, nbytes, pktid)
+
+    pkt.show(mode)
+
+    return
 
 
 def join_srcname(net, sta, chan, loc, suffix, subcode):

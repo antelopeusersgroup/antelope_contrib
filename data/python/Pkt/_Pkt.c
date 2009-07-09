@@ -102,6 +102,7 @@ static PyObject *python_pkt_dfile( PyObject *self, PyObject *args );
 static PyObject *python_pkt_pf( PyObject *self, PyObject *args );
 static PyObject *python_pkt_db( PyObject *self, PyObject *args );
 static PyObject *python_pkt_channels( PyObject *self, PyObject *args );
+static PyObject *python_pkt_show( PyObject *self, PyObject *args );
 
 static PyObject *python_pktchannel_time( PyObject *self, PyObject *args );
 static PyObject *python_pktchannel_net( PyObject *self, PyObject *args );
@@ -197,6 +198,7 @@ static struct PyMethodDef _pkt_methods[] = {
 	{ "pf", 		python_pkt_pf,		METH_VARARGS, "Return the parameter file object encapsulated in a _pkt object, if any" },
 	{ "db", 		python_pkt_db,		METH_VARARGS, "Return the database pointer encapsulated in a _pkt object, if any" },
 	{ "channels", 		python_pkt_channels,	METH_VARARGS, "Return one _pktchannel data channel object from a _pkt object" },
+	{ "show", 		python_pkt_show,	METH_VARARGS, "Display the contents of a _pkt object" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -468,6 +470,31 @@ python_pkt_PacketType( PyObject *self, PyObject *args )
 			      ((_pktobject *) self)->type->name,
 			      xlatnum( ((_pktobject *) self)->type->content, Pktxlat, Pktxlatn ), 
 			      ((_pktobject *) self)->type->desc );
+}
+
+static PyObject *
+python_pkt_show( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: show(mode = PKT_TERSE)\n";
+	int	mode = PKT_TERSE;
+	FILE	*file = stdout;
+
+	if( ! PyArg_ParseTuple( args, "i", &mode ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	showPkt( ((_pktobject *) self)->pktid, 
+		 ((_pktobject *) self)->srcname,
+		 ((_pktobject *) self)->time,
+		 ((_pktobject *) self)->raw,
+		 ((_pktobject *) self)->raw_nbytes,
+		 file, 
+		 mode );
+
+	return Py_BuildValue( "" );
 }
 
 static PyObject *

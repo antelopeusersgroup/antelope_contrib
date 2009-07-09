@@ -49,7 +49,7 @@ Break a packet source-name into component parts
 .fi
 .in
 .ft R
-.IP "\unstuffPkt\fP (srcname, time, packet, nbytes, pktid = -1)"
+.IP "\fBunstuffPkt\fP (srcname, time, packet, nbytes, pktid = -1)"
 Unstuff an orb packet, returning type and a packet object
 .ft CW
 .in 2c
@@ -94,25 +94,24 @@ pktchannel.cuser2()
 .fi
 .in
 .ft R
-.SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
-.SH EXAMPLE
-.in 2c
+.IP "\fBshowPkt\fP (pktid, srcname, time, packet, nbytes, mode = PKT_TERSE)"
+print the contents of a packet to stdout
 .ft CW
+.in 2c
 .nf
+.ne 3
+
+showPkt(pktid, srcname, time, packet, nbytes)
+
+showPkt(pktid, srcname, time, packet, nbytes, PKT_DUMP)
+
 .fi
-.ft R
 .in
-.SH RETURN VALUES
-.SH LIBRARY
-.SH DIAGNOSTICS
+.ft R
 .SH "SEE ALSO"
 .nf
 pythondb(3p), pythonorb(3p), pythonstock(3p)
 .fi
-.SH "BUGS AND CAVEATS"
 .SH AUTHOR
 .nf
 Kent Lindquist
