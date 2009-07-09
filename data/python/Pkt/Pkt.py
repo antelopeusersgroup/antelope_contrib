@@ -1,6 +1,99 @@
 import _Pkt
 
 from _Pkt import *
+from datascope import *
+
+class PktChannel():
+    """Create an Antelope PktChannel object. 
+
+       This constructor is used internally to Pkt.py and generally should not be invoked
+       directly by end-user code. 
+
+       PktChannel( _pktchannel )
+    """
+
+    def __init__(self, *args, **kwargs):
+
+        self._pktchannel = None
+
+	if(len(args) != 1):
+
+	    raise TypeError, 'PktChannel constructor requires a _pktchannel object'
+
+        self._pktchannel = args[0]
+
+    def time(self):
+       
+       return self._pktchannel.time()
+
+    def net(self):
+       
+       return self._pktchannel.net()
+
+    def sta(self):
+       
+       return self._pktchannel.sta()
+
+    def chan(self):
+       
+       return self._pktchannel.chan()
+
+    def loc(self):
+       
+       return self._pktchannel.loc()
+
+    def nsamp(self):
+       
+       return self._pktchannel.nsamp()
+
+    def samprate(self):
+       
+       return self._pktchannel.samprate()
+
+    def calib(self):
+       
+       return self._pktchannel.calib()
+
+    def calper(self):
+       
+       return self._pktchannel.calper()
+
+    def segtype(self):
+       
+       return self._pktchannel.segtype()
+
+    def data(self):
+       
+       return self._pktchannel.data()
+
+    def duser1(self):
+       
+       return self._pktchannel.duser1()
+
+    def duser2(self):
+       
+       return self._pktchannel.duser2()
+
+    def iuser1(self):
+       
+       return self._pktchannel.iuser1()
+
+    def iuser2(self):
+       
+       return self._pktchannel.iuser2()
+
+    def iuser3(self):
+       
+       return self._pktchannel.iuser3()
+
+    def cuser1(self):
+       
+       return self._pktchannel.cuser1()
+
+    def cuser2(self):
+       
+       return self._pktchannel.cuser2()
+
 
 class Pkt():
     """Create an Antelope Packet object
@@ -65,6 +158,10 @@ class Pkt():
 
         return self._pkt.type()
 
+    def PacketType(self):
+
+        return self._pkt.PacketType()
+
     def srcname(self):
 
         return self._pkt.srcname()
@@ -72,6 +169,44 @@ class Pkt():
     def time(self):
 
         return self._pkt.time()
+
+    def parts(self):
+
+        return self._pkt.parts()
+
+    def nchannels(self):
+
+        return self._pkt.nchannels()
+
+    def channels(self, ichannel):
+
+        return PktChannel(self._pkt.channels(ichannel))
+
+    def string(self):
+
+        return self._pkt.string()
+
+    def version(self):
+
+        return self._pkt.version()
+
+    def dfile(self):
+
+        return self._pkt.dfile()
+
+    def pf(self):
+
+        return self._pkt.pf()
+
+    def db(self):
+
+	db = self._pkt.db()
+
+	if( isinstance(db, list)):
+	    
+	    db = Dbptr(db)
+
+        return db
 
 
 def unstuffPkt(srcname, time, packet, nbytes, pktid = -1):
@@ -98,6 +233,7 @@ if __name__ == '__main__':
     import unittest
     import os
     from orb import *
+    from stock import *
     orbname = ':dq'
 
     class TestPkt_fixture():
@@ -142,7 +278,31 @@ if __name__ == '__main__':
 	    self.assertTrue(isinstance(pkt, Pkt))
 	    self.assertTrue(isinstance(pkt.srcname(), str))
 	    self.assertTrue(isinstance(pkt.time(), float))
+	    self.assertTrue(isinstance(pkt.version(), int))
+
+	    (net, sta, chan, loc, suffix, subcode) = pkt.parts()
  
+	    self.assertTrue(isinstance(net, str))
+	    self.assertTrue(isinstance(sta, str))
+	    self.assertTrue(isinstance(chan, str))
+	    self.assertTrue(isinstance(loc, str))
+	    self.assertTrue(isinstance(suffix, str))
+	    self.assertTrue(isinstance(subcode, str))
+
+	    self.assertTrue(isinstance(pkt.nchannels(), int))
+
+	    (name, strtype, desc) = pkt.PacketType()
+
+	    self.assertTrue(isinstance(name, str))
+	    self.assertTrue(isinstance(strtype, str))
+	    self.assertTrue(isinstance(desc, str))
+
+	    pf = pkt.pf()
+
+	    ft = pfget(pf, "Failure_threshold")
+
+	    self.assertTrue(isinstance(ft, int))
+
         def test_procedure_split_srcname(self):
 
 	    (net, sta, chan, loc, suffix, subcode) = split_srcname("AZ_PFO_BHZ_00/BBA/BS")

@@ -49,6 +49,51 @@ Break a packet source-name into component parts
 .fi
 .in
 .ft R
+.IP "\unstuffPkt\fP (srcname, time, packet, nbytes, pktid = -1)"
+Unstuff an orb packet, returning type and a packet object
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(type, pkt) = unstuffPkt(srcname, time, packet, nbytes)
+
+pkt.srcname()
+pkt.time()
+pkt.PacketType()
+pkt.type()
+pkt.nchannels()
+pkt.pf()
+pkt.string()
+pkt.db()
+pkt.dfile()
+pkt.version()
+pkt.channels(ichannel)
+
+pktchannel = pkt.channels(0)
+
+pktchannel.time()
+pktchannel.net()
+pktchannel.sta()
+pktchannel.chan()
+pktchannel.loc()
+pktchannel.nsamp()
+pktchannel.samprate()
+pktchannel.data()
+pktchannel.calib()
+pktchannel.calper()
+pktchannel.segtype()
+pktchannel.duser1()
+pktchannel.duser2()
+pktchannel.iuser1()
+pktchannel.iuser2()
+pktchannel.iuser3()
+pktchannel.cuser1()
+pktchannel.cuser2()
+
+.fi
+.in
+.ft R
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT

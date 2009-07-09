@@ -45,6 +45,8 @@
 #include <stdio.h>
 #include "Python.h"
 #include "Pkt.h"
+#include "pf.h"
+#include "db.h"
 
 #ifdef __APPLE__
 
@@ -71,19 +73,54 @@ typedef struct {
 	Packet  *pkt;
 	char	*raw;
 	int	raw_nbytes;
-	int	type;
+	PacketType *type;
 } _pktobject;
 
+typedef struct {
+	PyObject_HEAD
+	PktChannel *pktchan;
+	PyObject *pktobj;
+} _pktchannelobject;
+
 staticforward PyTypeObject _pkttype;
+staticforward PyTypeObject _pktchanneltype;
 
 #define is__pktobject( v ) ( (v)->ob_type == &_pkttype )
+#define is__pktchannelobject( v ) ( (v)->ob_type == &_pktchanneltype )
 
-static PyObject *python_unstuffPkt( PyObject *self, PyObject *args );
 static PyObject *python_join_srcname( PyObject *self, PyObject *args );
 static PyObject *python_split_srcname( PyObject *self, PyObject *args );
 static PyObject *python_pkt_type( PyObject *self, PyObject *args );
+static PyObject *python_pkt_PacketType( PyObject *self, PyObject *args );
 static PyObject *python_pkt_srcname( PyObject *self, PyObject *args );
 static PyObject *python_pkt_time( PyObject *self, PyObject *args );
+static PyObject *python_pkt_parts( PyObject *self, PyObject *args );
+static PyObject *python_pkt_nchannels( PyObject *self, PyObject *args );
+static PyObject *python_pkt_string( PyObject *self, PyObject *args );
+static PyObject *python_pkt_version( PyObject *self, PyObject *args );
+static PyObject *python_pkt_dfile( PyObject *self, PyObject *args );
+static PyObject *python_pkt_pf( PyObject *self, PyObject *args );
+static PyObject *python_pkt_db( PyObject *self, PyObject *args );
+static PyObject *python_pkt_channels( PyObject *self, PyObject *args );
+
+static PyObject *python_pktchannel_time( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_net( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_sta( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_chan( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_loc( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_nsamp( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_samprate( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_calib( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_calper( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_segtype( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_data( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_duser1( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_duser2( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_iuser1( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_iuser2( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_iuser3( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_cuser1( PyObject *self, PyObject *args );
+static PyObject *python_pktchannel_cuser2( PyObject *self, PyObject *args );
 
 static void add_pkt_constants( PyObject *mod );
 static _pktobject *new_pktobject();
@@ -91,6 +128,11 @@ static PyObject *_pkttype_new( PyObject *self, PyObject *args );
 static int _pkt_print( _pktobject *self, FILE *fp, int flags );
 static void _pkt_dealloc( _pktobject *self );
 static PyObject *_pkt_getattr( _pktobject *self, char *name );
+static PyObject *new_pktchannelobject( PyObject *pktobj, int ichannel );
+static PyObject *_pktchanneltype_new( PyObject *self, PyObject *args );
+static int _pktchannel_print( _pktchannelobject *self, FILE *fp, int flags );
+static void _pktchannel_dealloc( _pktchannelobject *self );
+static PyObject *_pktchannel_getattr( _pktchannelobject *self, char *name );
 
 PyMODINIT_FUNC init_Pkt( void );
 
@@ -114,18 +156,69 @@ static PyTypeObject _pkttype = {
 	(reprfunc)	0,			/* tp_str */
 };
 
+static PyTypeObject _pktchanneltype = {
+	PyObject_HEAD_INIT( &PyType_Type )
+	0,					/* ob_size */
+	"_pktchannel",				/* tp_name */
+	sizeof(_pktchannelobject),		/* tp_basicsize */
+	0,					/* tp_itemsize */
+	(destructor)	_pktchannel_dealloc,	
+	(printfunc)	_pktchannel_print,
+	(getattrfunc)	_pktchannel_getattr,
+	(setattrfunc)	0,
+	(cmpfunc)	0,
+	(reprfunc)	0,
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	(hashfunc)	0,			/* tp_hash */
+	(ternaryfunc)	0,			/* tp_call */
+	(reprfunc)	0,			/* tp_str */
+};
+
 static struct PyMethodDef _Pkt_methods[] = {
-	{ "_unstuffPkt",  	python_unstuffPkt,   	METH_VARARGS, "Unstuff an Antelope orbserver packet" },
 	{ "_join_srcname",  	python_join_srcname,  	METH_VARARGS, "Combine component parts into a packet srcname" },
 	{ "_split_srcname",  	python_split_srcname,  	METH_VARARGS, "Decompose a packet srcname into component parts" },
 	{ "_pkt",  		_pkttype_new,  		METH_VARARGS, "Create a new _pkt object" },
+	{ "_pktchannel",	_pktchanneltype_new,	METH_VARARGS, "Create a new _pktchannel object" },
 	{ NULL, NULL, 0, NULL }
 };
 
 static struct PyMethodDef _pkt_methods[] = {
 	{ "type", 		python_pkt_type,	METH_VARARGS, "Return the integer packet type for a _pkt object" },
+	{ "PacketType",		python_pkt_PacketType,	METH_VARARGS, "Return packet type name, type, and type description for a _pkt object" },
 	{ "srcname", 		python_pkt_srcname,	METH_VARARGS, "Return the srcname for a _pkt object" },
 	{ "time", 		python_pkt_time,	METH_VARARGS, "Return the internal packet time for a _pkt object" },
+	{ "parts", 		python_pkt_parts,	METH_VARARGS, "Return the srcname parts for a _pkt object" },
+	{ "nchannels", 		python_pkt_nchannels,	METH_VARARGS, "Return the number of channels in a _pkt object" },
+	{ "string", 		python_pkt_string,	METH_VARARGS, "Return the string encapsulated in a _pkt object, if any" },
+	{ "version", 		python_pkt_version,	METH_VARARGS, "Return the version of a _pkt object" },
+	{ "dfile", 		python_pkt_dfile,	METH_VARARGS, "Return the dfile included in a _pkt object, if any" },
+	{ "pf", 		python_pkt_pf,		METH_VARARGS, "Return the parameter file object encapsulated in a _pkt object, if any" },
+	{ "db", 		python_pkt_db,		METH_VARARGS, "Return the database pointer encapsulated in a _pkt object, if any" },
+	{ "channels", 		python_pkt_channels,	METH_VARARGS, "Return one _pktchannel data channel object from a _pkt object" },
+	{ NULL, NULL, 0, NULL }
+};
+
+static struct PyMethodDef _pktchannel_methods[] = {
+	{ "time", 		python_pktchannel_time,	METH_VARARGS, "Return the internal packet channel time for a _pktchannel object" },
+	{ "net", 		python_pktchannel_net,	METH_VARARGS, "Return the internal packet channel net for a _pktchannel object" },
+	{ "sta", 		python_pktchannel_sta,	METH_VARARGS, "Return the internal packet channel sta for a _pktchannel object" },
+	{ "chan", 		python_pktchannel_chan,	METH_VARARGS, "Return the internal packet channel chan for a _pktchannel object" },
+	{ "loc", 		python_pktchannel_loc,	METH_VARARGS, "Return the internal packet channel loc for a _pktchannel object" },
+	{ "nsamp", 		python_pktchannel_nsamp, METH_VARARGS, "Return the internal packet channel nsamp for a _pktchannel object" },
+	{ "samprate", 		python_pktchannel_samprate, METH_VARARGS, "Return the internal packet channel samprate for a _pktchannel object" },
+	{ "calib", 		python_pktchannel_calib, METH_VARARGS, "Return the internal packet channel calib for a _pktchannel object" },
+	{ "calper", 		python_pktchannel_calper, METH_VARARGS, "Return the internal packet channel calper for a _pktchannel object" },
+	{ "segtype", 		python_pktchannel_segtype, METH_VARARGS, "Return the internal packet channel segtype for a _pktchannel object" },
+	{ "data", 		python_pktchannel_data, METH_VARARGS, "Return the data samples for a _pktchannel object" },
+	{ "duser1", 		python_pktchannel_duser1, METH_VARARGS, "Return floating-point user data item 1 from a _pktchannel object" },
+	{ "duser2", 		python_pktchannel_duser2, METH_VARARGS, "Return floating-point user data item 2 from a _pktchannel object" },
+	{ "iuser1", 		python_pktchannel_iuser1, METH_VARARGS, "Return integer user data item 1 from a _pktchannel object" },
+	{ "iuser2", 		python_pktchannel_iuser2, METH_VARARGS, "Return integer user data item 2 from a _pktchannel object" },
+	{ "iuser3", 		python_pktchannel_iuser3, METH_VARARGS, "Return integer user data item 3 from a _pktchannel object" },
+	{ "cuser1", 		python_pktchannel_cuser1, METH_VARARGS, "Return character user data item 1 from a _pktchannel object" },
+	{ "cuser2", 		python_pktchannel_cuser2, METH_VARARGS, "Return character user data item 2 from a _pktchannel object" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -138,35 +231,6 @@ proc2pidstat ( void *kinfo, void *process) {
 }
 
 #endif
-
-static PyObject *
-python_unstuffPkt( PyObject *self, PyObject *args ) 
-{
-	char	*usage = "Usage: _unstuffPkt(srcname, time, packet, nbytes)\n";
-	char	*srcname = 0;
-	double	pkttime;
-	char	*packet = 0;
-	int	nbytes_packet = 0;
-	int	nbytes = 0;
-	int	type;
-	Packet	*pkt = 0;
-	PyObject *obj;		
-
-	if( ! PyArg_ParseTuple( args, "sds#i", &srcname, &pkttime, &packet, &nbytes_packet, &nbytes) ) {
-
-		PyErr_SetString( PyExc_RuntimeError, usage );
-
-		return NULL;
-	} 
-
-	type = unstuffPkt( srcname, pkttime, packet, nbytes_packet, &pkt );
-
-	/* SCAFFOLD */
-
-	obj = Py_BuildValue( "i", type );
-
-	return obj;
-}
 
 static PyObject *
 python_join_srcname( PyObject *self, PyObject *args ) 
@@ -289,13 +353,16 @@ _pkttype_new( PyObject *self, PyObject *args )
 			 ((_pktobject *) obj)->raw_nbytes, 
 			 &((_pktobject *) obj)->pkt );
 
-	if( rc > 0 ) {
+	if( rc < 0 ) {
 
-		((_pktobject *) obj)->type = rc;
+		elog_complain( 0, "Failure to unstuff packet\n" );
+
+		((_pktobject *) obj)->pkt = NULL;
+		((_pktobject *) obj)->type = NULL;
 
 	} else {
 
-		/* SCAFFOLD deal with the error return */
+		((_pktobject *) obj)->type = suffix2pkttype( ((_pktobject *) obj)->pkt->parts.src_suffix );
 	}
 
 	return obj;
@@ -336,7 +403,18 @@ _pkt_getattr( _pktobject *self, char *name )
 {
 	if( strcmp( name, "__members__" ) == 0 ) {
 		
-		return Py_BuildValue( "[s]", "type" );
+		return Py_BuildValue( "[sssssssssss]", 
+				      "type", 
+				      "time", 
+				      "srcname",
+				      "parts",
+				      "PacketType",
+				      "nchannels",
+				      "string",
+				      "version",
+				      "dfile",
+				      "pf",
+				      "db" );
 
 	} else {
 
@@ -348,6 +426,7 @@ static PyObject *
 python_pkt_type( PyObject *self, PyObject *args )
 {
 	char	*usage = "Usage: type()\n";
+	PyObject *obj;
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
@@ -356,7 +435,39 @@ python_pkt_type( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	return Py_BuildValue( "i", ((_pktobject *) self)->type );
+	if( ((_pktobject *) self)->type == NULL ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "i", ((_pktobject *) self)->type->content );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_PacketType( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: PacketType()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->type == NULL ) {
+
+		return Py_BuildValue( "" );
+	}
+
+	return Py_BuildValue( "sss", 
+			      ((_pktobject *) self)->type->name,
+			      xlatnum( ((_pktobject *) self)->type->content, Pktxlat, Pktxlatn ), 
+			      ((_pktobject *) self)->type->desc );
 }
 
 static PyObject *
@@ -378,6 +489,7 @@ static PyObject *
 python_pkt_time( PyObject *self, PyObject *args )
 {
 	char	*usage = "Usage: time()\n";
+	PyObject *obj;
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
@@ -386,7 +498,649 @@ python_pkt_time( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	return Py_BuildValue( "f", ((_pktobject *) self)->pkt->time );
+	if( ((_pktobject *) self)->pkt == NULL ) {
+
+		obj = Py_BuildValue( "f", ((_pktobject *) self)->time );
+
+	} else {
+
+		obj = Py_BuildValue( "f", ((_pktobject *) self)->pkt->time );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_parts( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: parts()\n";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "ssssss", 
+			     	     ((_pktobject *) self)->pkt->parts.src_net, 
+			     	     ((_pktobject *) self)->pkt->parts.src_sta, 
+			     	     ((_pktobject *) self)->pkt->parts.src_chan, 
+			     	     ((_pktobject *) self)->pkt->parts.src_loc, 
+			     	     ((_pktobject *) self)->pkt->parts.src_suffix, 
+			     	     ((_pktobject *) self)->pkt->parts.src_subcode );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_nchannels( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: nchannels()\n";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "i", ((_pktobject *) self)->pkt->nchannels );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_channels( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: channels(ichannel)\n";
+	int	ichannel;
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "i", &ichannel ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+
+	} else if( ichannel < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "channel index must be >= 0\n" );
+
+		return NULL;
+
+	} else if( ((_pktobject *) self)->pkt->channels == NULL ||
+	           ichannel >= maxtbl( ((_pktobject *) self)->pkt->channels )) {
+
+		PyErr_SetString( PyExc_RuntimeError, "channel index exceeds number of available channels\n" );
+
+		return NULL;
+	}
+
+	obj = new_pktchannelobject( self, ichannel );
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_string( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: string()\n";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ||
+	    ((_pktobject *) self)->pkt->string == NULL ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "s", ((_pktobject *) self)->pkt->string );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_version( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: version()\n";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "i", ((_pktobject *) self)->pkt->version );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_dfile( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: dfile()\n";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ||
+	    ((_pktobject *) self)->pkt->dfile == NULL || 
+	    ((_pktobject *) self)->pkt->dfile_size <= 0 ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		obj = Py_BuildValue( "s#", 
+			((_pktobject *) self)->pkt->dfile, 
+			((_pktobject *) self)->pkt->dfile_size );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_pf( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: pf()\n";
+	char	*name = "Packet::pf";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ||
+	    ((_pktobject *) self)->pkt->pf == NULL ) {
+
+		obj = Py_BuildValue( "" );
+
+	} else {
+
+		putPf_nofree( name, ((_pktobject *) self)->pkt->pf );
+
+		obj = Py_BuildValue( "s", name );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pkt_db( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: db()\n";
+	PyObject *obj;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ((_pktobject *) self)->pkt == NULL ) {
+
+		obj = Py_BuildValue( "[iiii]", dbINVALID, dbINVALID, dbINVALID, dbINVALID );
+
+	} else {
+
+		obj = Py_BuildValue( "[iiii]", 
+				     ((_pktobject *) self)->pkt->db.database,
+				     ((_pktobject *) self)->pkt->db.table,
+				     ((_pktobject *) self)->pkt->db.field,
+				     ((_pktobject *) self)->pkt->db.record
+				     );
+	}
+
+	return obj;
+}
+
+static PyObject *
+new_pktchannelobject( PyObject *pktobj, int ichannel )
+{
+	_pktchannelobject *self;
+
+	self = PyObject_New( _pktchannelobject, &_pktchanneltype );
+
+	if( self == NULL ) {
+		
+		return NULL;
+	}
+
+	self->pktobj = pktobj;
+
+	Py_INCREF( pktobj );
+
+	if( ichannel >= 0 &&
+	    self->pktobj != NULL &&
+	    ((_pktobject *) self->pktobj)->pkt != NULL &&
+	    ((_pktobject *) self->pktobj)->pkt->channels != NULL ) {
+
+		self->pktchan = (PktChannel *) gettbl( ((_pktobject *) self->pktobj)->pkt->channels, ichannel );
+
+	} else {
+
+		self->pktchan = NULL;
+	}
+
+	return (PyObject *) self;
+}
+
+static PyObject *
+_pktchanneltype_new( PyObject *self, PyObject *args ) 
+{
+	char	*usage = "Usage: _pktchannel(_pkt, ichannel)\n";
+	PyObject *obj;
+	PyObject *pktobj;
+	int	ichannel;
+
+	if( ! PyArg_ParseTuple( args, "Oi", &pktobj, &ichannel) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+
+	} else if( ichannel < 0 ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "channel index must be >= 0\n" );
+
+		return NULL;
+
+	} else if( ((_pktobject *) pktobj)->pkt->channels == NULL ||
+	           ichannel >= maxtbl( ((_pktobject *) obj)->pkt->channels )) {
+
+		PyErr_SetString( PyExc_RuntimeError, "channel index exceeds number of available channels\n" );
+
+		return NULL;
+	}
+		
+	obj = new_pktchannelobject( pktobj, ichannel );
+
+	return obj;
+}
+
+static void
+_pktchannel_dealloc( _pktchannelobject *self )
+{
+	Py_DECREF( ((_pktchannelobject *) self)->pktobj );
+
+	/* deallocation of PktChannel structure handled by freePkt within _pkt_dealloc */
+
+	PyObject_Free( self );
+}
+
+static int
+_pktchannel_print( _pktchannelobject *self, FILE *fp, int flags ) 
+{
+	char	*s;
+	
+	fprintf( fp, "[_pktchannel:\n" );
+	fprintf( fp, "\tAntelope pktchannel object\n" );
+	fprintf( fp, "\tnet:\t%s\n", self->pktchan->net );
+	fprintf( fp, "\tsta:\t%s\n", self->pktchan->sta );
+	fprintf( fp, "\tchan:\t%s\n", self->pktchan->chan );
+	fprintf( fp, "\tloc:\t%s\n", self->pktchan->loc );
+	fprintf( fp, "\ttime:\t%s\n", s = strtime( self->pktchan->time ) );
+	fprintf( fp, "\tnsamp:\t%d\n", self->pktchan->nsamp );
+	fprintf( fp, "\tsamprate:\t%lf\n", self->pktchan->samprate );
+	fprintf( fp, "]\n" );
+
+	free( s );
+
+	return 0;
+}
+
+static PyObject *
+_pktchannel_getattr( _pktchannelobject *self, char *name )
+{
+	if( strcmp( name, "__members__" ) == 0 ) {
+		
+		return Py_BuildValue( "[ssssssssssssssssss]", 
+				      "time",
+				      "net",
+				      "sta",
+				      "chan",
+				      "loc",
+				      "nsamp",
+				      "samprate",
+				      "data",
+				      "calib",
+				      "calper",
+				      "segtype",
+				      "duser1",
+				      "duser2",
+				      "iuser1",
+				      "iuser2",
+				      "iuser3",
+				      "cuser1",
+				      "cuser2"
+				      );
+
+	} else {
+
+		return Py_FindMethod( _pktchannel_methods, (PyObject *) self, name );
+	}
+}
+
+static PyObject *
+python_pktchannel_time( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: time()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktchannelobject *) self)->pktchan->time );
+}
+
+static PyObject *
+python_pktchannel_net( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: net()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->net );
+}
+
+static PyObject *
+python_pktchannel_sta( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: sta()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->sta );
+}
+
+static PyObject *
+python_pktchannel_chan( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: chan()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->chan );
+}
+
+static PyObject *
+python_pktchannel_loc( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: loc()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->loc );
+}
+
+static PyObject *
+python_pktchannel_nsamp( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: nsamp()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", ((_pktchannelobject *) self)->pktchan->nsamp );
+}
+
+static PyObject *
+python_pktchannel_samprate( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: samprate()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktchannelobject *) self)->pktchan->samprate );
+}
+
+static PyObject *
+python_pktchannel_calib( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: calib()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktchannelobject *) self)->pktchan->calib );
+}
+
+static PyObject *
+python_pktchannel_calper( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: calper()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktchannelobject *) self)->pktchan->calper );
+}
+
+static PyObject *
+python_pktchannel_segtype( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: segtype()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->segtype );
+}
+
+static PyObject *
+python_pktchannel_data( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: data()\n";
+	PyObject *obj;
+	int	i;
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	obj = PyTuple_New( ((_pktchannelobject *) self)->pktchan->nsamp );
+
+	for( i = 0; i < ((_pktchannelobject *) self)->pktchan->nsamp; i++ ) {
+
+		PyTuple_SetItem( obj, i, PyInt_FromLong( (long) ((_pktchannelobject *) self)->pktchan->data[i] ) );
+	}
+
+	return obj;
+}
+
+static PyObject *
+python_pktchannel_duser1( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: duser1()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktchannelobject *) self)->pktchan->duser1 );
+}
+
+static PyObject *
+python_pktchannel_duser2( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: duser2()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "f", ((_pktchannelobject *) self)->pktchan->duser2 );
+}
+
+static PyObject *
+python_pktchannel_iuser1( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: iuser1()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", ((_pktchannelobject *) self)->pktchan->iuser1 );
+}
+
+static PyObject *
+python_pktchannel_iuser2( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: iuser2()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", ((_pktchannelobject *) self)->pktchan->iuser2 );
+}
+
+static PyObject *
+python_pktchannel_iuser3( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: iuser3()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "i", ((_pktchannelobject *) self)->pktchan->iuser3 );
+}
+
+static PyObject *
+python_pktchannel_cuser1( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: cuser1()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->cuser1 );
+}
+
+static PyObject *
+python_pktchannel_cuser2( PyObject *self, PyObject *args )
+{
+	char	*usage = "Usage: cuser2()\n";
+
+	if( ! PyArg_ParseTuple( args, "" ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	return Py_BuildValue( "s", ((_pktchannelobject *) self)->pktchan->cuser2 );
 }
 
 static void
