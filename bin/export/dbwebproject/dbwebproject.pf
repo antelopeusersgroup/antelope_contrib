@@ -1,15 +1,15 @@
 
-DocumentRoot		/var/apache/htdocs
-DocumentRootSubdir	.
+TargetRoot		/var/apache
 
-ConfigDir		../config
+ConfigDir		&TargetRoot/config
+DocumentDir		&TargetRoot/htdocs
 
 install_web_config_pf 	no
 
 overwrite_config	no
 
 web_config_pf &Arr{
-   pf_location	/var/apache/config/web_config.pf
+   pf_location	&ConfigDir/web_config.pf
    pf_contents  &Literal{
 
      Databases &Arr{
@@ -19,11 +19,11 @@ web_config_pf &Arr{
      # other parameters specific to the local web-site
 
    }
-   loader_location	&DocumentRoot/ssi/_web_config_pf.php	
+   loader_location	&DocumentDir/ssi/_web_config_pf.php	
    loader_contents &Literal{
 
      <?php
-	$web_config_pf = "/var/apache/config/web_config";
+	$web_config_pf = "&ConfigDir/web_config";
      ?>
 
    }
@@ -33,8 +33,8 @@ antelope	&env(ANTELOPE)
 
 php_pf	&Literal{
 <?php
-	putenv( "PFPATH=/var/apache/config" );
-	$_ENV{'PFPATH'} = "/var/apache/config";
+	putenv( "PFPATH=&ConfigDir" );
+	$_ENV{'PFPATH'} = "&ConfigDir";
 ?>
 }
 

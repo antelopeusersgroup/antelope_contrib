@@ -20,10 +20,25 @@
 require "getopts.pl";
 use Datascope;
 
+sub remap_target {
+	my( $ref ) = @_;
+
+	if( defined( $TargetRootCmdline ) && 
+	    $TargetRootCmdline ne $TargetRootPf ) {
+
+		$$ref =~ s/$TargetRootPf/$TargetRootCmdline/g;
+	}
+	
+	return;
+}
+
 sub setup_web_config_pf {
 	
 	my( $pf_location ) = pfget( $Pfname, "web_config_pf{pf_location}" );
 	my( $pf_contents ) = pfget( $Pfname, "web_config_pf{pf_contents}" );
+
+	remap_target( \$pf_location );
+	remap_target( \$pf_contents );
 
 	if( -e "$pf_contents" ) {
 
@@ -46,6 +61,9 @@ sub setup_web_config_pf {
 
 	$loader_location = pfget( $Pfname, "web_config_pf{loader_location}" );
 	$loader_contents = pfget( $Pfname, "web_config_pf{loader_contents}" );
+
+	remap_target( \$loader_location );
+	remap_target( \$loader_contents );
 
 	if( -e "$loader_contents" ) {
 
@@ -185,7 +203,9 @@ sub run_recipe {
 				$header = $entry->{header};
 				@files = @{$entry->{files}};
 
-				$dest = concatpaths( $TargetDir, $dest );
+				remap_target( \$header );
+
+				$dest = concatpaths( $DocumentDir, $dest );
 
 				foreach $file ( @files ) {
 					
@@ -197,7 +217,7 @@ sub run_recipe {
 
 				( $source, $dest ) = split( /\s+/, $entry );
 
-				$dest = concatpaths( $TargetDir, $dest );
+				$dest = concatpaths( $DocumentDir, $dest );
 
 				deposit_file( $source, 1, "", $dest );
 			}
@@ -214,6 +234,8 @@ sub run_recipe {
 				$header = $cffile->{header};
 				@files = @{$entry->{files}};
 				@files = @{$cffile->{files}};
+
+				remap_target( \$header );
 
 				$dest = concatpaths( $ConfigDir, $dest );
 
@@ -287,7 +309,7 @@ $Pfname = $Program;
 
 if ( ! &Getopts('nr:p:v') || @ARGV > 1 ) { 
 
-    	elog_die ( "Usage: $Program [-v] [-n] [-p pfname] [-r DocumentRoot] [recipe]\n" ); 
+    	elog_die ( "Usage: $Program [-v] [-n] [-p pfname] [-r TargetRoot] [recipe]\n" ); 
 
 } else {
 
@@ -301,21 +323,20 @@ if ( ! &Getopts('nr:p:v') || @ARGV > 1 ) {
 
 if( $opt_r ) {
 
-	$DocumentRoot = $opt_r;
+	$TargetRootCmdline = $opt_r;
 
 } else {
 
-	$DocumentRoot = pfget( $Pfname, "DocumentRoot" );
+	undef( $TargetRootCmdline );
 }
 
-$DocumentRootSubdir = pfget( $Pfname, "DocumentRootSubdir" );
+$TargetRootPf = pfget( $Pfname, "TargetRoot" );
 
+$DocumentDir= pfget( $Pfname, "DocumentDir" );
 $ConfigDir = pfget( $Pfname, "ConfigDir" );
 
-if( $ConfigDir !~ m@^/@ ) {
-
-	$ConfigDir = concatpaths( $DocumentRoot, $ConfigDir );
-}
+remap_target( \$DocumentDir );
+remap_target( \$ConfigDir );
 
 $install_web_config_pf = pfget_boolean( $Pfname, "install_web_config_pf" );
 
@@ -332,8 +353,6 @@ foreach $command ( keys %Commands ) {
 	elog_die( "Can't find the specified executable program " .
 		  "'$command' on the path.\n" );
 }
-
-$TargetDir = concatpaths( $DocumentRoot, $DocumentRootSubdir );
 
 if( $install_web_config_pf ) {
 
