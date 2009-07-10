@@ -367,6 +367,15 @@ python_orbreap( PyObject *self, PyObject *args ) {
 
 	rc = orbreap( orbfd, &pktid, srcname, &pkttime, &pkt, &nbytes, &bufsize );
 
+	if( rc < 0 ) {
+
+		elog_flush( 1, 0 );
+		
+		PyErr_SetString( PyExc_RuntimeError, "orbreap failed\n" );
+
+		return NULL;
+	}
+
 	obj = Py_BuildValue( "s#", pkt, nbytes );
 
 	free( pkt );
@@ -746,7 +755,7 @@ python_orbclients( PyObject *self, PyObject *args ) {
 		PyDict_SetItemString( client_obj, "nwrites", PyInt_FromLong( (long) oc[iclient].nwrites ) );
 		PyDict_SetItemString( client_obj, "nreads", PyInt_FromLong( (long) oc[iclient].nreads ) );
 		PyDict_SetItemString( client_obj, "written", PyInt_FromLong( (long) oc[iclient].written ) );
-		PyDict_SetItemString( client_obj, "perm", PyString_FromFormat( "c", oc[iclient].perm ) );
+		PyDict_SetItemString( client_obj, "perm", PyString_FromFormat( "%c", oc[iclient].perm ) );
 		PyDict_SetItemString( client_obj, "what", Py_BuildValue( "s", oc[iclient].what ) );
 		PyDict_SetItemString( client_obj, "host", Py_BuildValue( "s", oc[iclient].host ) );
 		PyDict_SetItemString( client_obj, "who", Py_BuildValue( "s", oc[iclient].who ) );
