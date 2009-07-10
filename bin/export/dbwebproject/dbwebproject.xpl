@@ -37,6 +37,11 @@ sub setup_web_config_pf {
 	my( $pf_location ) = pfget( $Pfname, "web_config_pf{pf_location}" );
 	my( $pf_contents ) = pfget( $Pfname, "web_config_pf{pf_contents}" );
 
+	if( $pf_location !~ m@^/@ ) {
+
+		$pf_location = concatpaths( $ConfigDir, $pf_location );
+	}
+
 	remap_target( \$pf_location );
 	remap_target( \$pf_contents );
 
@@ -61,6 +66,11 @@ sub setup_web_config_pf {
 
 	$loader_location = pfget( $Pfname, "web_config_pf{loader_location}" );
 	$loader_contents = pfget( $Pfname, "web_config_pf{loader_contents}" );
+
+	if( $loader_location !~ m@^/@ ) {
+
+		$loader_location = concatpaths( $DocumentDir, $loader_location );
+	}
 
 	remap_target( \$loader_location );
 	remap_target( \$loader_contents );
@@ -201,11 +211,25 @@ sub run_recipe {
 				$sourcedir = $entry->{sourcedir};
 				$dest = $entry->{targetdir};
 				$header = $entry->{header};
-				@files = @{$entry->{files}};
+				@file_specs = @{$entry->{files}};
 
 				remap_target( \$header );
 
 				$dest = concatpaths( $DocumentDir, $dest );
+
+				@files = ();
+
+				foreach $file_spec ( @file_specs ) {
+
+					if( ref( $file_spec ) eq "ARRAY" ) {
+
+						push @files, @$file_spec;
+
+					} else {
+						
+						push @files, $file_spec;
+					}
+				}
 
 				foreach $file ( @files ) {
 					
@@ -232,12 +256,25 @@ sub run_recipe {
 				$sourcedir = $cffile->{sourcedir};
 				$dest = $cffile->{targetdir};
 				$header = $cffile->{header};
-				@files = @{$entry->{files}};
-				@files = @{$cffile->{files}};
+				@file_specs = @{$cffile->{files}};
 
 				remap_target( \$header );
 
 				$dest = concatpaths( $ConfigDir, $dest );
+
+				@files = ();
+
+				foreach $file_spec ( @file_specs ) {
+
+					if( ref( $file_spec ) eq "ARRAY" ) {
+
+						push @files, @$file_spec;
+
+					} else {
+						
+						push @files, $file_spec;
+					}
+				}
 
 				foreach $file ( @files ) {
 					
@@ -321,19 +358,38 @@ if ( ! &Getopts('nr:p:v') || @ARGV > 1 ) {
 	$recipe = shift( @ARGV );
 }
 
-if( $opt_r ) {
+if( pfrequire( $Pfname, str2epoch( "2009-07-10  18:46:12.11262 UTC" ) ) < 0 ) {
 
-	$TargetRootCmdline = $opt_r;
-
-} else {
-
-	undef( $TargetRootCmdline );
+	elog_die( "The parameter-file '$Pfname' needs to be updated for consistency with the latest dbwebproject(1)\n" );
 }
 
 $TargetRootPf = pfget( $Pfname, "TargetRoot" );
 
+if( $opt_r ) {
+
+	$TargetRootCmdline = $opt_r;
+
+	$TargetRoot = $TargetRootCmdline;
+
+} else {
+
+	undef( $TargetRootCmdline );
+
+	$TargetRoot = $TargetRootPf;
+}
+
 $DocumentDir= pfget( $Pfname, "DocumentDir" );
 $ConfigDir = pfget( $Pfname, "ConfigDir" );
+
+if( $DocumentDir !~ m@^/@ ) {
+
+	$DocumentDir = concatpaths( $TargetRoot, $DocumentDir );
+}
+
+if( $ConfigDir !~ m@^/@ ) {
+
+	$ConfigDir = concatpaths( $TargetRoot, $ConfigDir );
+}
 
 remap_target( \$DocumentDir );
 remap_target( \$ConfigDir );

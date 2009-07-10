@@ -1,15 +1,15 @@
 
 TargetRoot		/var/apache
 
-ConfigDir		&TargetRoot/config
-DocumentDir		&TargetRoot/htdocs
+ConfigDir		config
+DocumentDir		htdocs
 
 install_web_config_pf 	no
 
 overwrite_config	no
 
 web_config_pf &Arr{
-   pf_location	&ConfigDir/web_config.pf
+   pf_location	web_config.pf
    pf_contents  &Literal{
 
      Databases &Arr{
@@ -19,7 +19,7 @@ web_config_pf &Arr{
      # other parameters specific to the local web-site
 
    }
-   loader_location	&DocumentDir/ssi/_web_config_pf.php	
+   loader_location	ssi/_web_config_pf.php	
    loader_contents &Literal{
 
      <?php
@@ -93,11 +93,7 @@ recipes &Arr{
 				sourcedir 	&antelope/data/www/images
 				targetdir	rtapps/images
 				files &Tbl{
-					roadnet_bottom_line.gif
-					roadnet_logo.jpg
-					roadnet_logo_bkgrd.gif
-					roadnet_page_bkgrd.gif
-					roadnet_sorry.gif
+					&glob(&sourcedir/roadnet*)
 				}
 			}
 		}

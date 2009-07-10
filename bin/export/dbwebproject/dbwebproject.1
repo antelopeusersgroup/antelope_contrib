@@ -24,11 +24,12 @@ by \fBdbwebproject\fP, which is given by the \fITargetRoot\fP parameter in the
 parameter file. This top-level directory may be overridden on the command-line 
 with the \fI-r\fP option. 
 
-The \fIConfigDir\fP parameter specifies the absolute-path location for any
+The \fIConfigDir\fP parameter specifies the location for any
 configuration files such as parameter-files used by the web-site code. The 
-\fIDocumentDir\fP parameter specifies the absolute-path of the top-level 
+\fIDocumentDir\fP parameter specifies the path of the top-level 
 directory into which \fBdbwebproject\fP should place files to be served by the 
-web-server. 
+web-server. If these two parameters are not absolute paths, they are assumed
+to be relative to \fITargetRoot\fP.
 
 The \fBdbwebproject\fP application is based on recipes, which determine
 the structure of the web-site created. The \fIrun_recipes\fP parameter
@@ -51,6 +52,8 @@ values in a single parameter-file for the whole web-site. The array
 where the final web-site configuration parameter file resides. Usually,
 for security reasons, this should not be in a directory visible
 below the server's \fIDocumentDir\fP (\fIDocumentRoot\fP for Apache). 
+If \fIpf_location\fP is not an absolute path, it is assumed to be relative to 
+\fIConfigDir\fP. 
 The \fIpf_contents\fP parameter gives either
 a literal string value with the contents of the web-site configuration
 parameter file, or a pathname to the location of the 'source' for this
@@ -66,7 +69,8 @@ set a parameter file containing the name and location of the
 site-configuration pf file (usually without the .pf extension). Similar
 to the parameters setting the contents of the site-configuration parameter
 itself, there are two parameters for the loader: \fIloader_location\fP and
-\fIloader_contents\fP. Again, the \fIloader_contents\fP parameter can be given
+\fIloader_contents\fP. If \fIloader_location\fP is not an absolute path, 
+it is assumed to be relative to \fIDocumentDir\fP. Again, the \fIloader_contents\fP parameter can be given
 either as a filename with the 'source' or as a string-literal with the
 actual contents. The web-configuration parameter file is only installed if 
 \fIinstall_web_config_pf\fP is set to \fIyes\fP (or other boolean \fItrue\fP value). 
@@ -115,16 +119,15 @@ specified location instead.
 
 .ne 7
 
-TargetRoot              /var/apache
-DocumentRoot            /var/apache/htdocs
-DocumentRootSubdir      .
+TargetRoot      /var/apache
 
-ConfigDir		config
+DocumentDir     htdocs
+ConfigDir       config
 
 install_web_config_pf 	no
 
 web_config_pf &Arr{
-   pf_location  /var/apache/config/web_config.pf
+   pf_location  web_config.pf
    pf_contents  &Literal{
 
 .ne 5
@@ -136,11 +139,11 @@ web_config_pf &Arr{
 
 .ne 7
    }
-   loader_location      &DocumentRoot/ssi/_web_config_pf.php
+   loader_location      ssi/_web_config_pf.php
    loader_contents &Literal{
 
      <?php
-        $web_config_pf = "/var/apache/config/web_config";
+        $web_config_pf = "&ConfigDir/web_config";
      ?>
 
 .ne 6
@@ -170,7 +173,7 @@ run_recipes &Tbl{
 # the commands in eachrow_command. Finally, tokens expressed as 
 # in the example &raw(master_index) will be replaced with the corresponding
 # pathnames listed in the raw_materials array. All relative pathnames 
-# are interpreted relative to $DocumentRoot/$DocumentRootSubdir. The $EXTFILE
+# are interpreted relative to $DocumentDir. The $EXTFILE
 # variable refers to external files from the database row being processed. 
 # This is most useful in writing cleanup recipes. Cleanup recipes 
 # provide a third type of recipe: dbprocess_prep gives the commands 
@@ -191,16 +194,18 @@ recipes &Arr{
 #                 The first form is just a source filename and a dest
 #                 filename, the first interpretable from the directory in
 #                 which \fBdbwebproject\fP is run and the second relative
-#                 to $DocumentRoot/$DocumentRootSubdir:
+#                 to $DocumentDir:
 #                 
 #                       <some_sourcefile>   <some_destdir>
 #                 
 #                 The second form allows clusters of source-files
 #                 that have the same source directory and same
 #                 destination directory to be installed in batch mode.
-#                 The targetdir parameter is relative to DocumentRoot
-#                 and DocumentSubdir. If a header is specfied, all listed 
-#                 files are prepended with the contents of the header string:
+#                 The targetdir parameter is relative to DocumentDir.
+#                 If a header is specfied, all listed files are prepended
+#                 with the contents of the header string. Any given file entry 
+#                 in the files table may also be a parameter-file &glob() entry, 
+#                 as documented in pf(5):
 #                 
 #                 &Arr{
 #                       sourcedir       <some_sourcedir>
@@ -216,7 +221,7 @@ recipes &Arr{
                 config   &Tbl{
 #                  This table is the same as the pages table above except 
 #                  all installations are relative to ConfigDir instead of 
-#                  DocumentRoot/DocumentSubdir
+#                  DocumentDir
                 }
         }
 }
