@@ -298,6 +298,52 @@ or
 .fi
 .in
 .ft R
+.IP "\fBorbexhume\fP (filename)"
+Read and initiate a state-file for orb tracking. Unlike the 
+other scripting interfaces to Antelope, in Python the exhume 
+function is currently specific to the orb interface.
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+orbexhume( filename )
+
+.fi
+.in
+.ft R
+.IP "\fBorbresurrect\fP (orbfd)"
+Restore previous orb position variables
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+(pktid, pkttime) = orbresurrect( orb )
+
+or
+
+(pktid, pkttime) = orb.resurrect()
+
+.fi
+.in
+.ft R
+.IP "\fBorbbury\fP (orbfd, pktid, pkttime)"
+Save orb position variables
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+orbbury( orb, pktid, pkttime )
+
+or
+
+orb.bury( pktid, pkttime )
+
+.fi
+.in
+.ft R
 .IP "\fBorbpkt_string\fP (srcname, time, packet, nbytes)"
 Convert an orb packet to a string representation, as used in forb(5)
 .ft CW

@@ -63,6 +63,21 @@ extern void proc2pidstat( void *kinfo, void *process );
 
 #endif
 
+#define PYTHONORB_NULL_PKTTIME -9999999999.999
+
+typedef struct Orb_relic {
+	int	orbfd;
+	char	orbfd_str[10];
+	char	*orbname;
+	char	*pktid_relicname;
+	char	*pkttime_relicname;
+	double	orb_start;
+	int	pktid;
+	double	pkttime;
+} Orb_relic;
+
+static Arr *Orb_relics;
+
 static PyObject *python_orbopen( PyObject *self, PyObject *args );
 static PyObject *python_orbclose( PyObject *self, PyObject *args );
 static PyObject *python_orbping( PyObject *self, PyObject *args );
@@ -81,9 +96,15 @@ static PyObject *python_orblag( PyObject *self, PyObject *args );
 static PyObject *python_orbstat( PyObject *self, PyObject *args );
 static PyObject *python_orbsources( PyObject *self, PyObject *args );
 static PyObject *python_orbclients( PyObject *self, PyObject *args );
+static PyObject *python_orbresurrect( PyObject *self, PyObject *args );
+static PyObject *python_orbexhume( PyObject *self, PyObject *args );
+static PyObject *python_orbbury( PyObject *self, PyObject *args );
 static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
+static Orb_relic *new_Orb_relic( int orbfd );
+static Orb_relic *get_Orb_relic( int orbfd );
+static void delete_Orb_relic( int orbfd );
 
 PyMODINIT_FUNC init_orb( void );
 
@@ -106,6 +127,9 @@ static struct PyMethodDef _orb_methods[] = {
 	{ "_orbstat", 	python_orbstat,  	METH_VARARGS, "Return parameters on status of an orbserver" },
 	{ "_orbsources", python_orbsources,  	METH_VARARGS, "Return information on data-streams in an orbserver" },
 	{ "_orbclients", python_orbclients,  	METH_VARARGS, "Return information on clients of an orbserver" },
+	{ "_orbresurrect", python_orbresurrect, METH_VARARGS, "Recover an orbserver's previous position" },
+	{ "_orbexhume", python_orbexhume, 	METH_VARARGS, "Read and initiate a state file for orb tracking" },
+	{ "_orbbury", python_orbbury, 		METH_VARARGS, "Save orb tracking variables in state file" },
 	{ "_orbpkt_string", python_orbpkt_string, METH_VARARGS, "Return forb(5) representation of packet" },
 	{ NULL, NULL, 0, NULL }
 };
@@ -161,6 +185,8 @@ python_orbclose( PyObject *self, PyObject *args ) {
 
 		return NULL;
 	}
+
+	delete_Orb_relic( orbfd );
 
 	rc = orbclose( orbfd );
 
@@ -766,6 +792,163 @@ python_orbclients( PyObject *self, PyObject *args ) {
 	}
 
 	return Py_BuildValue( "fO", atime, obj );
+}
+
+static Orb_relic *
+new_Orb_relic( int orbfd ) {
+	Orb_relic *or;
+
+	allot( Orb_relic *, or, 1 );
+
+	or->orbfd = orbfd;
+	or->orbname = NULL;
+	or->orb_start = PYTHONORB_NULL_PKTTIME;
+	or->pkttime = PYTHONORB_NULL_PKTTIME;
+	or->pktid = -1;
+
+	sprintf( or->orbfd_str, "%d", or->orbfd );
+
+	orbresurrect4perl( orbfd, &or->orbname, &or->orb_start );
+
+	or->pktid_relicname = strconcat( or->orbname, "{last_pktid}", 0 );
+	or->pkttime_relicname = strconcat( or->orbname, "{last_pkttime}", 0 );
+
+	if( Orb_relics == (Arr *) NULL ) {
+
+		Orb_relics = newarr( 0 );
+	}
+
+	setarr( Orb_relics, or->orbfd_str, (void *) or );
+
+	return or;
+}
+
+static Orb_relic *
+get_Orb_relic( int orbfd ) {
+	Orb_relic *or;
+	char	key[STRSZ];
+
+	sprintf( key, "%d", orbfd );
+
+	if( Orb_relics == (Arr *) NULL ) {
+
+		elog_complain( 0, "Unexpected failure finding orb relic\n" );
+
+		return (Orb_relic *) NULL;
+	}
+
+	or = getarr( Orb_relics, key );
+
+	if( or == (Orb_relic *) NULL ) {
+
+		elog_complain( 0, "Unexpected failure finding orb relic\n" );
+
+		return (Orb_relic *) NULL;
+	}
+
+	return or;
+}
+
+static void
+delete_Orb_relic( int orbfd ) {
+	char	key[STRSZ];
+
+	if( Orb_relics == (Arr *) NULL ) {
+
+		return;
+	}
+
+	sprintf( key, "%d", orbfd );
+
+	delarr( Orb_relics, key );
+
+	return;
+}
+
+static PyObject *
+python_orbresurrect( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbresurrect(orb)\n";
+	int	orbfd;
+	Orb_relic *or;
+	Relic	relic;
+
+	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	or = new_Orb_relic( orbfd );
+	
+	relic.ip = &or->pktid;
+
+	if( resurrect( or->pktid_relicname, relic, INT_RELIC ) == 0 ) {
+
+		elog_notify( 0, "resurrected pktid %d\n", or->pktid );
+	}
+
+	relic.dp = &or->pkttime;
+
+	if( resurrect( or->pkttime_relicname, relic, DOUBLE_RELIC ) == 0 ) {
+
+		elog_notify( 0, "resurrected pkttime %f\n", or->pkttime );
+	}
+
+	return Py_BuildValue( "id", or->pktid, or->pkttime );
+}
+
+static PyObject *
+python_orbbury( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbbury(orb, pktid, pkttime)\n";
+	Orb_relic *or;
+	int	orbfd;
+	int	pktid;
+	double	pkttime;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "iid", &orbfd, &pktid, &pkttime ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	or = get_Orb_relic( orbfd );
+
+	or->pktid = pktid;
+	or->pkttime = pkttime;
+
+	rc = bury();
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_orbexhume( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _orbexhume(filename)\n";
+	char	*filename;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "s", &filename ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	rc = exhume( filename, 0, 0, 0 );
+
+	return Py_BuildValue( "i", rc );
 }
 
 static PyObject *

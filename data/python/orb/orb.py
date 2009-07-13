@@ -153,6 +153,16 @@ class Orb():
 
         return _orb._orbputx(self._orbfd, srcname, time, packet, nbytes)
 
+    def resurrect(self):
+        """restores previous orb position variables"""
+
+	return _orb._orbresurrect(self._orbfd)
+
+    def bury(self, pktid, pkttime):
+        """Save orb position variables"""
+
+	return _orb._orbbury(self._orbfd, pktid, pkttime)
+
 
 def orbopen(orbname, perm = 'r'):
     """Open an Antelope orb connection"""
@@ -262,6 +272,24 @@ def orbclients(orb):
     """"Return information on orb clients""" 
 
     return orb.clients()
+
+
+def orbresurrect(orb):
+    """Restore previous orb position variables"""
+
+    return orb.resurrect()
+
+
+def orbbury(orb, pktid, pkttime):
+    """Save orb tracking variables in state file"""
+
+    return orb.bury(pktid, pkttime)
+
+
+def orbexhume(filename):
+    """Read and initiate a statefile for orb tracking"""
+
+    return _orb._orbexhume(filename)
 
 
 def orbpkt_string(srcname, time, packet, nbytes):
@@ -604,6 +632,33 @@ if __name__ == '__main__':
             os.system( "pf2orb rtexec " + orbname )
 
 	    orbclose(orb)
+
+        def test_procedure_orbresurrect(self):
+
+	    tempstate = '/tmp/python_orbtest_state_' + os.environ["USER"] + str(os.getpid())
+
+            rc = orbexhume( tempstate )
+
+	    self.assertEqual(rc, 0)
+
+	    orb = orbopen(orbname, 'r')
+
+            os.system( "pf2orb rtexec " + orbname )
+
+	    pktid, time = orbresurrect( orb )
+
+	    self.assertEqual(pktid, -1)
+	    self.assertEqual(time, -9999999999.999)
+
+            ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
+
+	    rc = orbbury(orb, pktid, time)
+
+	    self.assertEqual(rc, 0)
+
+	    orbclose(orb)
+
+	    os.system("/bin/rm -f " + tempstate)
 
     server = Testorb_fixture()
     server.start()
