@@ -2204,11 +2204,35 @@ python_dbquery( PyObject *self, PyObject *args ) {
 	char	errmsg[STRSZ];
 	Tbl	*tbl;
 	Arr	*arr;
+	PyObject *dbcode_obj;
+	char	*dbcode_str;
 	int	dbcode;
 	int	n;
 	int	rc;
 
-	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &db, &dbcode ) ) {
+	if( ! PyArg_ParseTuple( args, "O&O", parse_to_Dbptr, &db, &dbcode_obj ) ) {
+
+		if( ! PyErr_Occurred() ) {
+
+			PyErr_SetString( PyExc_RuntimeError, usage );
+		}
+
+		return NULL;
+	}
+
+	if( PyInt_Check( dbcode_obj ) ) {
+
+		dbcode = (int) PyInt_AsLong( dbcode_obj );
+
+	} else if( PyString_Check( dbcode_obj ) ) {
+
+		dbcode_str = PyString_AsString( dbcode_obj );
+
+		fprintf( stderr, "dbcode_str is %s\n", dbcode_str );
+
+		dbcode = xlatname( dbcode_str, Dbxlat, Dbxlatn );
+
+	} else {
 
 		if( ! PyErr_Occurred() ) {
 
