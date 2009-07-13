@@ -45,9 +45,17 @@ orb.after(time)
     packet after the specified time. Time must be UTC
     epoch time in seconds, not string.
 
-# orbresurrect(orb, pktid, pkttime)
-#     restore orb position from state, save to state when bury is called
-# 
+orbexhume(filename)
+    prepare to save/restore orb state to/from filename
+
+orbresurrect(orb)
+orb.resurrect()
+    restore orb position from state, save to state when bury is called
+
+orbbury(orb, pktid, pkttime)
+orb.bury(pktid, pkttime)
+    Save orb position to state file
+
 orbping(orb)
 orb.ping()
     test if the specified orb responds; return version number.
