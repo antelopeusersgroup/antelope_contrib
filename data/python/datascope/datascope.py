@@ -1021,6 +1021,7 @@ if __name__ == '__main__':
     import operator
     import os
     import math
+    import re
 
     class Testdatascope(unittest.TestCase):
         dbname = '/opt/antelope/data/db/demo/demo' 
@@ -1461,7 +1462,9 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             self.assertTrue(db.record >= 0)
 
@@ -1482,7 +1485,9 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
@@ -1510,7 +1515,9 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM', 
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.dbdestroy()
 
@@ -1529,22 +1536,30 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:16 AM' )
+                                'time', '9/30/2002 11:16 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:17 AM' )
+                                'time', '9/30/2002 11:17 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:18 AM' )
+                                'time', '9/30/2002 11:18 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
@@ -1573,22 +1588,30 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:16 AM' )
+                                'time', '9/30/2002 11:16 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:17 AM' )
+                                'time', '9/30/2002 11:17 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:18 AM' )
+                                'time', '9/30/2002 11:18 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
@@ -1863,22 +1886,30 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 25, 
-                                'time', '9/30/2002 11:16 AM' )
+                                'time', '9/30/2002 11:16 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:17 AM' )
+                                'time', '9/30/2002 11:17 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:18 AM' )
+                                'time', '9/30/2002 11:18 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
@@ -1908,22 +1939,30 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 25, 
-                                'time', '9/30/2002 11:16 AM' )
+                                'time', '9/30/2002 11:16 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:17 AM' )
+                                'time', '9/30/2002 11:17 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:18 AM' )
+                                'time', '9/30/2002 11:18 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
@@ -1955,7 +1994,9 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
@@ -1983,7 +2024,9 @@ if __name__ == '__main__':
 	    db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
-                                'time', '9/30/2002 11:15 AM' )
+                                'time', '9/30/2002 11:15 AM',
+				'nass', 0,
+				'ndef', 0 )
 
 	    dbdestroy(db)
 
@@ -2307,6 +2350,8 @@ if __name__ == '__main__':
                                   'lon', -149.130,
                                    'depth', 20.0, 
                                    'time', '9/30/2002 11:15 AM',
+				   'nass', 0,
+				   'ndef', 0,
 				   'auth', os.environ["USER"] )
 
             self.assertTrue(db.record >= 0)
@@ -2651,7 +2696,7 @@ if __name__ == '__main__':
 
             path = db.trwfname("%{sta}.%{chan}.%Y.%j.%H_%M_%S")
 
-            self.assertEqual(path, "/tmp/AAK.BHZ.2002.273.11_00_00")
+            self.assertTrue(re.match(".*/tmp/AAK\.BHZ\.2002\.273\.11_00_00$", path))
 
 	    dbclose(db)
 
