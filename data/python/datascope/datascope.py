@@ -2446,6 +2446,14 @@ if __name__ == '__main__':
 
             self.assertEqual(value, 1351)
 
+	    db.record = 0;
+
+	    db = dblookup(db, field = 'lat')
+
+	    value = dbquery(db, dbFIELD_TYPE)
+
+	    self.assertEqual(value, dbREAL)
+
             value = dbquery(db, dbSCHEMA_TABLES)
 
             self.assertTrue(isinstance(value,tuple))
