@@ -1,0 +1,174 @@
+.TH extract_eventss 1 
+.SH NAME
+extract_events - event extraction program (trexcerpt alternative)
+.SH SYNOPSIS
+.nf
+extract_events dbin dbout [-e eventdb -s eventsubset -v -V -pf pfname]
+.fi
+.SH DESCRIPTION
+.LP
+This program should be viewed as an alternative to trexcerpt.  One should
+recognize that it's primary purpose is to prepare raw data to a format that
+can be more efficiently handled by downstream processing.  Thus it can be used
+to resample all data to a common sample rate and build three-component bundle files
+that can be used to eliminate baggage needed to handle these issues on raw data.
+This is in contrast to trexcerpt which seems to have the design goal of being a generic
+waveform extraction tool.  This program is thus more limited in some ways and 
+more complex in others (e.g. resampling).  
+.LP
+The program always reads from the input database, dbin, and writes to dbout. 
+The program will exit immediately if you try to use the same database for dbin and dbout.
+Most options of the program are controlled by the parameter file which are described below.
+This program centers on the concept of a phase arrival time.  That time can be either 
+theoretical (the default) or measured data in an arrival table.  The former is most useful
+for teleseismic data with no prior information.  The later is useful when someone else
+already did the work of picking the data for you and you just want the good stuff.  
+A type example at this writing is phase picks made the ANF for USArray.  You can use this
+program to extract ONLY data with P wave picks in the ANF database. 
+In either case, 
+the program will blindly write overlapping waveforms because the primary waveform indexing for
+subsequent processing assumed to NOT be the standard wfdisc table but the more generic wfprocess
+table.  The css3.0 as implemented by BRTT depends on the concept of a time range as the 
+key for rows in wfdisc.  This creates real havoc in event processing because extracting overlapping
+waveforms in this fashion is very very common.  To avoid this problem this program produces two
+parallel waveform indexing tables:  wfdisc and wfprocess.  The wfdisc table is necessary to make
+it easy to view waveforms with programs like dbpick, but should be viewed here as baggage.  
+The primary waveform index is wfprocess in combination with two tables called sclink and evlink.
+These link wfprocess to css3.0's sta:chan and evid keys respectively.  
+.LP
+Note that there are multiple options for the format of the wfprocess table output.  For many
+applications the most important distinction with wfdisc is that a datatype of "3c" or "c3" 
+are supported for three component bundle data (3c and c3 are used to set  byte order).  
+A type example of how this can be useful is to prep data for processing with programs like
+dbxcor.  Using the 3c formats removes the rather elaborate overhead required in css3.0 to 
+associate channels into a three-component bundle.  This can dramatically reduce time to read in 
+a block of new data depending on the size of your array and the complexity of the channel mapping
+(e.g. some GSN station have 9 or more channels that need to be sorted through).  
+.SH OPTIONS
+.IP -e
+Use eventdb to supply the list of events to extract from the database.  By default the program 
+will look for an event and origin table in dbin.  
+.IP -s 
+Appy a subset expression to the event->origin view before extraction.  This, for example, 
+might define a time or source region subset condition.  
+.IP -v
+Be more verbose in reporting errors or potential errors.  As always if you get a cryptic error message
+or no error message at all try this option flag.
+.IP -V
+Report usage line as recommended by BRTT.
+.IP -pf 
+Use alternative parameter file pfname instead of default extract_events.pf
+.SH PARAMETER FILE
+.LP
+First, it is important to recognize key switches that can dramatically change
+what you get from this program:
+.IP (1)
+\fBphase\fR determines the seismic phase used for extracting waveforms.  All segments 
+extracted by this program are done relative to either the theoretical or measured arrival
+time of the phase specified with this parameter.  This windowing is controlled by five
+closely connected parameters.  The data are first sliced in a time window relative to the
+phase time starting at \fBdata_window_start\fR and ending \fBdata_window_end\fR seconds 
+relative to this arrival time.  
+\fBprocessing_window_start\fR and \fBprocessing_window_end\fR define a similar relative time
+window that defines the final output size.  This window should always be slightly smaller than
+the data window.  To guarantee this is the case the program also uses the parameter \fBtpad\fR
+to further pad the raw read window.  The default of 100 s is generous, but reasonable for most
+continuous data.  If dbin contains already segmented data and either of these windows flow outside
+the existing segment range the edges will be flagged as gaps and should be handled automatically. 
+.IP (2)
+\fBuse_arrival_tables\fR is a critical boolean.  When set true only
+waveforms with entries in arrival associated to specific events will be extracted.  
+When false (default) time segments are extracted for all waveforms with data inside the 
+specified relative time window using the theoretical times for the \fBphase\fR parameter.
+.IP  (3)
+\fBsave_as_3c_objects\fR controls whether or not three-component bundled data are saved to the
+wfprocess table.  These data are normally interleaved with individual channel data and can 
+selected by subsetting wfprocess to only include datatype of "3c" or "c3".  
+This parameter is loosely linked to another called \fBdatatype\fR.  
+When running in 3c mode the datatype parameter is ignored.  When false this should be one
+of the datatype attributes recongized by the antelope trace library.  If you aren't using
+the 3c mode setting datatype to sd (miniseed) is strongly advised.  Formats like t4, u4, i2, etc.
+should work but will produce data that is inseparably linked to the wfdisc table produced by 
+this program.  Miniseed files contain bare bones header information sufficient to make them 
+relatively standalone.  Do not ever use sac format as output.  It may or may not be accepted, but
+the output will almost certainly be very incomplete.  
+.IP (4)
+The parameter \fBgather_mode\fR is an options parameter that determines the layout of files produced
+by the program.  The parameter should be set to either the string "event_gathers" or "station_gathers".
+This is used in combination with the parameter \fBoutput_waveform_directory\fR to determine the 
+layout of waveform files written by the program.  In "event_gather" model subdirectories are produced
+under the \fBoutput_waveform_directory\fR path for each event and files are given a frozen file
+name under each directory.  In "station_gathers" mode seismograms for each 
+station-channel are written into station directories with the station name as the directory name.
+This has been found useful by some people using shell-script type processing methods.
+.IP (5)
+\fBapply_free_surface_tranformation\fR is a boolean that can be used to enable conversion of
+data into an LQT coordinate system using the nonorthogonal transformation operator 
+described by Kennett (1991).  If this parameter is set true the program tries to 
+load two velocity parameters:  \fBvp0\fR and \fBvs0\fR.  These define a surface P and S 
+velocity to use to compute the transformation matrix.  This parameter is false by default
+and is ill advised unless you really want output data in an LQT coordinate system.
+The problem with is is that there is no way at present to easily connect the output 
+produced this way to the parent data.   It's primary use is spot testing instrument orientation
+metadata.  
+.IP (6)
+Several parameters control data ressampling.  Resampling can be enabled by setting 
+the boolean parameter \fBresample_data\fR true (this is the default).  
+When this is enabled
+the target sample interval is the defined
+by the parameter \fBtarget_sample_interval\fR which is in unit of seconds.  
+The resampling recipe is controlled by the (admittedly elaborate) parameter
+with the tag \fBresampling_definitions\fR.  For a description of how this recipe works
+the reader is referred to the man page for dbresample(1) as this code uses the same
+generic processing object.
+.IP (7)
+Sometimes it may be preferable to set the boolean \fBsave_files_only\fR true.  
+(The default is false) In this mode NO database rows are written to either wfdisc
+or wfprocess.  This is most useful if writing to wfdisc would generate a lot of 
+overlapping waveform errors and the data are being exported for use in some other
+processing environment than Antelope.  The ONLY rational choice for dataformat for
+output in this situation is miniseed as raw binary formats with no headers are 
+almost certainly not what you want.  The program does NOT test for this combination
+so use this option only if you are sure it is what you want.  If you need something
+like SAC output, this will not work.  You would want to run the program with this
+parameter false and then run db2sac to get sac data.
+.IP (8)
+The boolean \fBpreserve_original_chan\fR controls how output channels are named.  
+When true (the default) the chan attribute is loaded with the original data and preserved
+on output.  If this boolean is set false the program will look for three additional 
+parameters with string values:  \fBX1_channel_name, X2_channel_name\fR, and \fBX3_channel_name\fR.
+These are tags given to three-component bundles assigned to the X1, X2, and X3 axes.  
+The default is simplified cardinal direction codes of "E", "N", and "Z".  
+.LP
+Finally, a few ancillary parameters.  \fBnetname\fR is used as a name to tag the station
+geometry read internally. It should not normally need to be changed by the user.  \fBmethod\fR and
+\fBmodel\fR specify a travel time method and model used with the ttcalc(3) interface to compute
+theoretical travel times.  This is ignored if the data are being accessed by actual arrivals, but 
+are important for defining time segments otherwise.  \fBfilter\fR can be used to specify a string
+that defines a filter using the BRTT filter library.  If this is NONE no filtering is done.  Otherwise
+the data window (with the tpad applied) is prefiltered with this filter before being cut to the
+final length.  The default is DEMEAN.  Finally, the
+parameter \fBStationChannelMap\fR defines a complicated Arr used to resolve ambiguities in 
+what channel to use for stations with multiple channel or loc codes.  For more details see 
+man dbxcor(1) which explains this in detail.
+.LP
+The user should never ever mess with the following parameter: 
+station_mdlist, Ensemble_mdlist, and output_mdlist.  
+These are used by internal generic methods to control what is read and written
+to the database and should not be adjusted by the user.  
+.SH "SEE ALSO"
+.nf
+dbresample(1) and dbxcor(1) have blocks of parameters in common with this program
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+I consider the save_files_only option an abomination so it may be removed from future
+releases of this program.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Dept. of Geological Sciences
+1001 East 10th Street
+Bloomington, IN 47405
+pavlis@indiana.edu
+.fi
