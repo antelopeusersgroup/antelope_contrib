@@ -2,9 +2,25 @@ agency		ANF
 
 auth_reject	.*assoc.*|.*local.*|.*tele.* 
 
-#match_origerr_auth	"ANF.*"		# origins with strike, sdobs, etc.
 match_origerr_auth	ANF.*		# origins with strike, sdobs, etc.
 					# normally QED and regional bulletins do not have these values filled in
 
 ims_dir		IMS			# directory for storing output files
+
+
+# parameters for subsetting reported magnitudes
+#  magnitudes reported in MAG BLOCK must match 
+
+accept_magtype &Arr{	# netmag.magtype=~/$magtype[0]|$magtype[1]|.../
+     ml
+     ML
+     Ml
+}
+
+mag_origin_auth 	ANF	
+
+mag_netmag_auth 	evproc
+
+
+pf_revision_time	1243897200
 

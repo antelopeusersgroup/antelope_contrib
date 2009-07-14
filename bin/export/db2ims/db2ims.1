@@ -18,9 +18,9 @@ dmcbull table.
 .LP
 
 \fBdb2ims\fP requires the following database tables:  arrival, assoc, origin,
-origerr, event, and snetsta.  The netmag and stamag tables would be required if the
--m option is used.  (Currently the -m option is unprogrammed).  The input
-\fIdatabase\fP should pass dbverify origin, assoc and event checks cleanly.
+origerr, event, and snetsta.  The netmag and stamag tables are required if the
+-m option is used.  The input \fIdatabase\fP should pass dbverify origin, assoc 
+and event checks cleanly.
 
 .SH OPTIONS
 .IP "-p pf"
@@ -30,7 +30,7 @@ Verbose log messages
 .IP -V
 Overwhelmingly verbose log messages.  Useful for debugging purposes only.
 .IP -m
-UNPROGRAMMED.  This option triggers reporting of magnitude information and
+This option triggers reporting of magnitude information and
 writes a magnitude block.  The netmag and stamag tables are required.
 .IP -y
 Only select reviewed origins.  This is probably the preferred mode of operations.  
@@ -41,7 +41,7 @@ and new external bulletins associated and chosen as prefor
 (with dborigin2orb/orb2dbt), you can get an origin that is chosen as
 the prefor, but not marked as reviewed.  Events that fall into this category 
 are skipped and not reported in the output file despite having one solution/origin
-that is marked as reviewed.  ALL solutions much be marked as reviewed for the
+that is marked as reviewed.  ALL solutions must be marked as reviewed for the
 event to be included in the output file.
 .IP "-s start_time"
 Select origins after this time.
@@ -125,13 +125,13 @@ arrival.
 
 For additional information on the DMC modifications see:
 .br
-http://www.iris.edu/data/events/DMC-ISF.htm
+http://www.iris.edu/data/event/isf_format.htm
 .br
 
 .SS "General information"
 The output file is divided into three sections (four if a magnitude block is
-requested):  1) EVENT HEADER and DATA; 2) PHASE HEADER and DATA; and 3) PHASE SUB-BLOCK
-HEADER and DATA.
+requested):  1) EVENT HEADER and DATA; 2) MAGNITUDE HEADER AND DATA; 3) PHASE 
+HEADER and DATA; and 4) PHASE SUB-BLOCK HEADER and DATA.
 
 The first line of the file must be, "DATA_TYPE BULLETIN IMS1.0:short".  It is followed
 by EVENT HEADER information which describes the event number, and region where the
@@ -140,16 +140,30 @@ the earthquake as well as error ellipse information.  Note that in most circumst
 no error ellipse information is available for origins that were collected from regional
 network operators (i.e. you may only have this information for origins that were produced
 with dblocsat or dbgenloc).  Please see the /fImatch_origerr_auth/fP parameter in the PARAMETER
-FILE section below.
+FILE section below.  An indication of what the analysts chose as the preferred solution is 
+indicated with a comment of /fI#PRIME/fP.
 
-The second section contains phase information.  It lists the station code, the distance
+The second section, optionally included when the -m option is selected, contains 
+magnitude information.  After the header line, the data section contains the magnitude 
+type, network magnitude value, magnitude error, number of stations used to calculate
+the network magnitude, the organization publishing the magnitude ane the origin ID.  The
+IMS format allows for the inclusion of a "min-max indicator" which would be displayed to
+the immediate right of the magnitude value as either a "<" or ">".  As the css3.0 schema
+does not track this type of parameter, /fBdb2ims/fP hardcodes this to a blank.  Only magnitudes
+which match the /fImatch_mag_auth/fP and /fImatch_mag_type/fP from the parameter file and
+have non-null values are reported.  
+
+The third section (second if -m is not selected) contains phase information.  It lists 
+the station code, the distance
 from the event, the station to event azimuth, the phase (as picked by the analyst),
 arrival time, residual of the pick, azimuthal direction, and if available, the signal-to-noise
-ratio, amplitude, and period.  For now, the magnitude information is unprogrammed.
+ratio, amplitude, and period.  Magnitude information is filled in if the preferred origin, indicated
+with a ("PRIME") comment in section 1 with the EVENT DATA, matches the /fImatch_mag_auth/fP parameter.  
+See PARAMETER FILE section below.
 
-The third section contains additional phase information.  It lists the SEED net code,
+The final section contains additional phase information.  It lists the SEED net code,
 the channel code, phase (as picked by the analyst), the date, error in arrival time
-as determined by the analyst.
+as determined by the analyst, and author of the pick..
 
 Each section also has either an event, origin, or arrival id.  These ids should be
 considered subject to change and should not be relied upon.  ID references for
@@ -168,14 +182,30 @@ The following is the default parameter file.
 #
 agency          ANF
 
-author_reject   ".*assoc.*|.*local.*|.*tele.*"
+author_reject   .*assoc.*|.*local.*|.*tele.*
 .ne 4
 
-match_origerr_auth  "ANF.*"  # origins with strike, sdobs, etc.
+match_origerr_auth  ANF.*  # origins with strike, sdobs, etc.
                              # normally QED and regional bulletins
                              # do not have these values filled in
 
 ims_dir         IMS          # directory for storing output files
+
+# parameters for subsetting reported magnitudes
+#  magnitudes reported in MAG BLOCK must match 
+
+accept_magtype &Arr{    
+     ml
+     ML
+     Ml
+}
+
+mag_origin_auth         ANF
+
+mag_netmag_auth         evproc
+
+pf_revision_time        1243897200
+
 
 .fi
 .ft R
@@ -196,6 +226,12 @@ blanks).
 This is a directory where the output files are stored.  Directory is created if
 it does not already exist.  This string is used in the 'dir' field of the 
 dmcbull table when \fIims2dmc\fP is run. 
+.IP \accept_magtype\fP
+List of magnitude types to report in magnitude block if the -m option is chosen.
+.IP \mag_origin_auth\fP
+List of origin.auth values to report in magnitude block if the -m option is chosen.
+.IP \mag_netmag_auth\fP
+List of netmag.auth values to report in magnitude block if the -m option is chosen.
 
 .SH EXAMPLE
 .IP \(bu
@@ -247,7 +283,7 @@ Trebant (chad@iris.washington.edu).
 
 The eTime field in the phase sub-block is currently filled in with the
 deltim value.  This is probably a bad choice as deltim is an arbitrary value
-chosen by the analyst and is filled in with a weighting factor for some
+chosen by the analyst and is filled in with a weighting factor by some
 automatic location programs.
 
 Earlier versions of this output format made no distinction as to what the 
@@ -263,6 +299,9 @@ probably the best solution.
 
 I have no control over the requirements of the output format.  Any concerns
 or questions should be directed elsewhere.
+
+Magnitude values in the phase block are only reported when the preferred 
+author (#PRIME location) is the \fImag_origin_auth\fP.  
 
 Tracking what files are created and have been sent to the DMC is critical.
 Make sure that you follow up IMS file creation with ims2dmc program in your 
