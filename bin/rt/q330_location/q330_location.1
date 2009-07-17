@@ -1,10 +1,10 @@
-.TH Q330_LOCATION 1 2006/04/26 "Antelope Contrib SW" "User Commands"
+.TH Q330_LOCATION 1 2009/07/17 "Antelope Contrib SW" "User Commands"
 .SH NAME
 q330_location \- attaches to orb and checks q330 locations
 .SH SYNOPSIS
 .nf
 q330_location [-v] [-m mail_to] [-p pf_sourcename] 
-              [-n net_code] [-s sta_regex] [-c chan_code] 
+              [-n] [-f] [-s sta_regex] [-c chan_code] 
               [-t max_offset_meters] orb db
 .fi
 .SH DESCRIPTION
@@ -18,8 +18,12 @@ This program is designed to run as a cron program under rtexec.pf.
 .SH OPTIONS
 .IP -v
 verbose
-.IP "-n net_code_regex"
-select net code. Default is TA.
+.IP -d
+debug mode
+.IP -f
+Force dlcmd to renew data form the balers befor reporting parameters.
+.IP -n
+Run in test mode. No table updates. 
 .IP "-s sta_code_regex"
 select sta code. Default is ".*".
 .IP "-c chan_code_regex"
@@ -40,8 +44,10 @@ None.
 .nf
 q3302orb(1),dlmon(1)
 .fi
-.SH AUTHOR
+.SH AUTHORS
 Frank Vernon
+.br
+Modified by Juan Reyes 2009/07
 .br
 UCSD
 .\" $Id$
