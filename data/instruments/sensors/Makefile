@@ -1,10 +1,5 @@
 DATADIR=instruments/sensors
-DATA= fba23_100hz_1g.pf \
-	gsv-111.pf \
-	le-3d20s.pf \
-	le-3d5s.pf \
-	le-3dlite.pf \
-	sm6-b.pf \
+DATA= \
 	chaparral.pf \
 	cmg1t.pf \
 	cmg1t_100sec.pf \
@@ -15,7 +10,8 @@ DATA= fba23_100hz_1g.pf \
 	cmg3esp_120sec.pf \
 	cmg3esp_30sec.pf \
 	cmg3esp_60sec.pf \
-	cmg3t.pf \
+	cmg3esp_nsn.pf \
+        cmg3t.pf \
 	cmg3t_100sec.pf \
 	cmg3t_120sec.pf \
 	cmg3t_30sec.pf \
@@ -30,21 +26,23 @@ DATA= fba23_100hz_1g.pf \
 	dpg2_water.pf \
 	episensor_10vpg.pf \
 	episensor_1_25vpg.pf \
-	episensor_20vpg.pf  \
+	episensor_20vpg.pf \
 	episensor_2_5vpg.pf \
-	episensor_40vpg.pf  \
-	episensor_5vpg.pf   \
-	episensor_80vpg.pf  \
-	fba23_0_25g.pf      \
-	fba23_0_5g.pf       \
-	fba23_1g.pf         \
-	fba23_2g.pf         \
-	fba23_2g_100hz.pf         \
-	fba23_4g.pf         \
+	episensor_40vpg.pf \
+	episensor_5vpg.pf \
+	episensor_80vpg.pf \
+	fba23_0_25g.pf \
+	fba23_0_5g.pf \
+        fba23_100hz_1g.pf \
+	fba23_1g.pf \
+	fba23_2g.pf\
+	fba23_2g_100hz.pf \
+	fba23_4g.pf \
 	gs13.pf \
 	gs13e.pf \
 	gs13n.pf \
 	gs13z.pf \
+	gsv-111.pf \
 	hs10_horz.pf \
 	hs10_vert.pf \
 	ks54000.pf \
@@ -53,6 +51,9 @@ DATA= fba23_100hz_1g.pf \
 	l4c.pf \
 	l4c_horz.pf \
 	l4c_vert.pf \
+	le-3d20s.pf \
+	le-3d5s.pf \
+	le-3dlite.pf \
 	le3d_20sec.pf \
 	mb2000_fil.pf \
 	mb2000_raw.pf \
@@ -68,6 +69,7 @@ DATA= fba23_100hz_1g.pf \
 	s13z.pf \
 	s6000.pf \
 	sh1.pf \
+	sm6-b.pf \
 	sts1_e.pf \
 	sts1_n.pf \
 	sts1_z.pf \
