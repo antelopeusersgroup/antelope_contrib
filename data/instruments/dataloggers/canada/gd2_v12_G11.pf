@@ -1,0 +1,83 @@
+originator     Taimi Mulder, GSC
+last_modified  2009-07-13
+
+category	Geological Survey of Canada
+configuration	GD2_v12_G11
+
+description	CNSN GD2_v12 digitizer
+dfile 		gd2_v12_g11
+
+streams		100sps 40sps 20sps
+
+# definitions of streams
+100sps	  100   preamp a/d gd2_fir1_100 gd2_fir2_100
+ 40sps	   40   preamp a/d gd2_fir1_40  gd2_fir2_40
+ 20sps	   20   preamp a/d gd2_fir1_20  gd2_fir2_40
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"100sps"} ) { 
+	@ok = qw(100sps) ; 
+    } elsif ( defined $chosen{"40sps"} ) { 
+	@ok = qw(40sps) ; 
+    } elsif ( defined $chosen{"20sps"} ) { 
+	@ok = qw(20sps) ; 
+    } else { 
+	@ok = qw(100sps 40sps 20sps) ; 
+    }
+    return (@ok) ; 
+}
+
+
+# Stages
+
+# transmission gain: G11=(2^(32-11))/40V 
+gains		52428.8	# in units of counts/volt
+
+preamp	&Arr{
+gtype		preamp
+response	&datafile(responses/gd2_preamp)
+}
+
+a/d	&Arr{
+samprate	1000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+gd2_fir1_100	&Arr{
+gtype			FIR_decimator
+decifac			5
+response		&datafile(responses/gd2_fir1_100)
+}
+
+gd2_fir2_100	&Arr{
+gtype			FIR_decimator
+decifac			2
+response		&datafile(responses/gd2_fir2_100)
+}
+
+gd2_fir1_40		&Arr{
+gtype			FIR_decimator
+decifac			5
+response		&datafile(responses/gd2_fir1_40)
+}
+
+gd2_fir2_40		&Arr{
+gtype			FIR_decimator
+decifac			5
+response		&datafile(responses/gd2_fir2_40)
+}
+
+gd2_fir1_20		&Arr{
+gtype			FIR_decimator
+decifac			10
+response		&datafile(responses/gd2_fir1_20)
+}

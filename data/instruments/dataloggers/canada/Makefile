@@ -1,0 +1,63 @@
+DATADIR=instruments/dataloggers
+DATA= \
+    gd1.pf \
+    gd1_G00.pf \
+    gd1_G05.pf \
+    gd1_G06.pf \
+    gd1_G07.pf \
+    gd1_G08.pf \
+    gd1_G09.pf \
+    gd1_G10.pf \
+    gd1_G11.pf \
+    gd1_G12.pf \
+    gd1_G13.pf \
+    gd2_v12.pf \
+    gd2_v12_G00.pf \
+    gd2_v12_G05.pf \
+    gd2_v12_G06.pf \
+    gd2_v12_G07.pf \
+    gd2_v12_G08.pf \
+    gd2_v12_G09.pf \
+    gd2_v12_G10.pf \
+    gd2_v12_G11.pf \
+    gd2_v12_G12.pf \
+    gd2_v12_G13.pf \
+    gd2_v21.pf \
+    gd2_v21_G00.pf \
+    gd2_v21_G05.pf \
+    gd2_v21_G06.pf \
+    gd2_v21_G07.pf \
+    gd2_v21_G08.pf \
+    gd2_v21_G09.pf \
+    gd2_v21_G10.pf \
+    gd2_v21_G11.pf \
+    gd2_v21_G12.pf \
+    gd2_v21_G13.pf \
+    spd_L4.pf \
+    spd_L4_G00.pf \
+    spd_L4_G05.pf \
+    spd_L4_G06.pf \
+    spd_L4_G07.pf \
+    spd_L4_G08.pf \
+    spd_L4_G09.pf \
+    spd_L4_G10.pf \
+    spd_L4_G11.pf \
+    spd_L4_G12.pf \
+    spd_L4_G13.pf \
+    spd_S13.pf \
+    spd_S13_G00.pf \
+    spd_S13_G05.pf \
+    spd_S13_G06.pf \
+    spd_S13_G07.pf \
+    spd_S13_G08.pf \
+    spd_S13_G09.pf \
+    spd_S13_G10.pf \
+    spd_S13_G11.pf \
+    spd_S13_G12.pf \
+    spd_S13_G13.pf \
+    yka_bb.pf \
+    yka_hf.pf \
+    yka_sp.pf
+
+include $(ANTELOPEMAKE)
+DIRS=

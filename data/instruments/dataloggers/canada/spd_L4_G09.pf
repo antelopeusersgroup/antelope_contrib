@@ -1,0 +1,43 @@
+originator     Taimi Mulder, GSC
+last_modified  2009-07-13
+
+category	Geological Survey of Canada
+configuration	SPD_L4_G09
+
+description	CNSN short-period L4 digitizer
+dfile 		spd_l4_g09
+
+streams         100sps
+
+# definitions of streams
+100sps      100   preamp a/d spd_fir1 spd_fir2
+
+# Stages
+
+# transmission gain: G09= 112400000/(2^9)V 
+gains		219531
+
+preamp	&Arr{
+gtype		preamp
+response	&datafile(responses/spd_preamp)
+}
+
+a/d        &Arr{
+samprate        1000
+gtype           digitizer
+iunits          V
+ounits          counts
+sn		datalogger
+}
+
+spd_fir1   &Arr{
+gtype           FIR_decimator
+decifac		5
+response        &datafile(responses/spd_fir1)
+}
+
+spd_fir2   &Arr{
+gtype           FIR_decimator
+decifac		2
+response        &datafile(responses/spd_fir2)
+}

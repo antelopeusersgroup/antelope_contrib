@@ -1,0 +1,49 @@
+originator     Taimi Mulder, GSC
+last_modified  2009-07-13
+
+category	Geological Survey of Canada
+configuration	GD1_G06
+
+description	CNSN GD1 digitizer
+dfile 		gd1_g06
+
+streams		40sps
+
+# definitions of streams
+ 40sps     40   preamp a/d gd1_fir1 gd1_fir2 gd1_fir3
+
+# Stages
+
+# transmission gain: G6=(2^(32-6))/40V 
+gains		1677721.6	# in units of counts/volt
+
+preamp	&Arr{
+gtype		preamp
+response	&datafile(responses/gd1_preamp)
+}
+
+a/d	&Arr{
+samprate	15000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+gd1_fir1	&Arr{
+gtype		FIR_decimator
+decifac		25
+response	&datafile(responses/gd1_fir1)
+}
+
+gd1_fir2	&Arr{
+gtype		FIR_decimator
+decifac		5
+response	&datafile(responses/gd1_fir2)
+}
+
+gd1_fir3	&Arr{
+gtype		FIR_decimator
+decifac		3
+response	&datafile(responses/gd1_fir3)
+}

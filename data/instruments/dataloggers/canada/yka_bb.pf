@@ -1,0 +1,43 @@
+originator     Taimi Mulder, GSC
+last_modified  2009-07-13
+
+category	Geological Survey of Canada
+configuration	YKA_BB
+
+description	CNSN Yellowknife broad-band digitizer
+dfile 		yka_bb
+
+streams		20sps
+
+# definitions of streams
+ 20sps     20   a/d yka_bb_fir1 yka_bb_fir2
+
+# Stages
+# YKA-BB has no analog filters
+# STS-1 seismometers at Yellowknife were modified so as to have a 
+# higher gain than normal.  Significant differences in calibration 
+# between the various YKA BB sites exist as there is no EEROM and 
+# hence no capability to store a calibration constant.
+
+gains		419000
+
+a/d	&Arr{
+samprate	300
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+yka_bb_fir1	&Arr{
+gtype		FIR_decimator
+decifac		5
+response	&datafile(responses/yka_bb_fir1)
+}
+
+yka_bb_fir2	&Arr{
+gtype		FIR_decimator
+decifac		3
+response	&datafile(responses/yka_bb_fir2)
+}
+
