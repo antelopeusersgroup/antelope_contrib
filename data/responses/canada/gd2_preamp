@@ -1,0 +1,19 @@
+#  Manufacturer: Geological Survey of Canada
+#  Model       : gd2 v12 & v21
+#  Description : gd2 digitizer, preamp stage
+#
+# 2-pole low-pass MFB, Wc = 1129.56   Zeta = 0.638861
+# Poles are at (-721.629 +/- 868.992)     Scalar = 1275896.
+# 1-pole low pass, Wc = 1879.70
+# Pole is at (-1879.70, 0.0)              Scalar is 1879.70
+# 1-pole low pass, Wc = 84471.4
+# Pole is at (-84471.4, 0.0)              Scalar is 84471.4
+#
+theoretical 1 anti-alias paz GSC_mulder
+2.0258790316746e+14
+4
+-7.21629e+02    +8.68992e+02    0.0     0.0
+-7.21629e+02    -8.68992e+02    0.0     0.0
+-1.879678e+03   0.0             0.0     0.0
+-8.447139e+04   0.0             0.0     0.0
+0

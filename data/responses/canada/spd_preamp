@@ -1,0 +1,25 @@
+#  Manufacturer: Geological Survey of Canada
+#  Model       : spd
+#  Description : spd digitizer, preamp stage
+#
+# 1-pole high pass, Wc = 3.21275
+# Pole is at (-3.21275, 0.0)              Zero is at (0.0, 0.0)
+# 2-pole low-pass MFB, Wc = 557.984, Zeta = 0.923938
+# Poles are at (-515.543 +/- 213.452)     Scalar is 311346.
+# 2-pole low-pass MFB, Wc = 567.501, Zeta = 0.382707
+# Poles are at (-217.187 +/- 524.297)     Scalar is 322057.
+# 1-pole low pass, Wc = 64102.6
+# Pole is at (-64102.6, 0.0)              Scalar is 64102.6
+#
+theoretical 1 anti-alias paz GSC_mulder
+6.427642E+15
+6
+-3.21275E+00   0.00000E+00  0.0000E+00    0.0000E+00
+-5.15543E+02  +2.13452E+02  0.0000E+00    0.0000E+00
+-5.15543E+02  -2.13452E+02  0.0000E+00    0.0000E+00
+-2.17187E+02  +5.24297E+02  0.0000E+00    0.0000E+00
+-2.17187E+02  -5.24297E+02  0.0000E+00    0.0000E+00
+-6.41026E+04   0.00000E+00  0.0000E+00    0.0000E+00
+1
+-0.00000E+00   0.00000E+00  0.0000E+00    0.0000E+00
+

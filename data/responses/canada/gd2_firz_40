@@ -1,0 +1,79 @@
+# CNSN GD2, v.21 digitizer FIR filter
+#      designed by Ken Beverley
+#
+# coefficients are symmetric, listed in time order
+# normalization factor  1073741837.00
+#
+# Firu_40   (up-conversion Fir1 for 40 s/s)
+# Chebyshev FIR Lowpass Filter Coefficients (calculated using FIR_GEN.BAS)
+# Design: Pass = 0.000010  Stop = 0.045200  Ripple =-135.3200  #Coeff = 229
+# Actual: Pass = 0.000273  Stop = 0.044997  Ripple =-149.5379
+# Residual Coeff error is -1
+# ------------------------------
+# For firz: Used every 4th coeff, starting with 0.
+#           Final #coeff = 57 (reduced by 4)
+#           Note that although filtered output points must be multiplied by 4
+#           to account for using every 4th coeff, required normalization of 
+#           filter makes this un-necessary.
+# ------------------------------
+theoretical  1  anti_alias   fir    gsc-mulder
+1000 5
+57
+-4.56348e-08 0.0
+3.57628e-07 0.0
+2.49036e-06 0.0
+8.0131e-06 0.0
+1.61855e-05 0.0
+1.8606e-05 0.0
+-5.12041e-06 0.0
+-8.2979e-05 0.0
+-0.000228927 0.0
+-0.000404175 0.0
+-0.000480218 0.0
+-0.000242394 0.0
+0.000524411 0.0
+0.0018586 0.0
+0.00341174 0.0
+0.00433824 0.0
+0.00344466 0.0
+-0.000312788 0.0
+-0.00706825 0.0
+-0.015323 0.0
+-0.0216894 0.0
+-0.0214607 0.0
+-0.0100618 0.0
+0.0150106 0.0
+0.0525131 0.0
+0.0968749 0.0
+0.139201 0.0
+0.169717 0.0
+0.18084 0.0
+0.169717 0.0
+0.139201 0.0
+0.0968749 0.0
+0.0525131 0.0
+0.0150106 0.0
+-0.0100618 0.0
+-0.0214607 0.0
+-0.0216894 0.0
+-0.015323 0.0
+-0.00706825 0.0
+-0.000312788 0.0
+0.00344466 0.0
+0.00433824 0.0
+0.00341174 0.0
+0.0018586 0.0
+0.000524411 0.0
+-0.000242394 0.0
+-0.000480218 0.0
+-0.000404175 0.0
+-0.000228927 0.0
+-8.2979e-05 0.0
+-5.12041e-06 0.0
+1.8606e-05 0.0
+1.61855e-05 0.0
+8.0131e-06 0.0
+2.49036e-06 0.0
+3.57628e-07 0.0
+-4.56348e-08 0.0
+0

@@ -1,14 +1,10 @@
-# CNSN gd1 digitizer FIR filter file
+# CNSN GD1 digitizer FIR 1 filter
 #      designed by Ken Beverley
-# $Id$
 #
-# coefficients are symmtric, listed in time order 
-# type                  ?  
-# input sample rate     15000  
-# decimation factor     25 
+# coefficients are symmetric, listed in time order
 # normalization factor  1.0 
-# gain factor           1.000000 
-theoretical  1  anti_alias   fir    gsc-mulder 
+#  
+theoretical  1  anti_alias   fir    GSC_mulder 
 15000 25 
 297
 -3.0591512111e-08 0.0

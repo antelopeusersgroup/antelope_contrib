@@ -1,14 +1,11 @@
-# CNSN short-period digitizer spd_100sps_dec2_fir2 FIR filter file
+# CNSN short-period digitizer FIR filter
 #      designed by Ken Beverley
-# $Id$
 #
-# coefficients are symmtric, listed in time order 
-# type                  ?  
-# input sample rate     200  
-# decimation factor     2 
-# normalization factor  1.0 
-# gain factor           1.000000 
-theoretical  1  anti_alias   fir    gsc-mulder 
+# coefficients are symmetric, listed in time order 
+# normalization factor  1.0?
+# spd fir2
+# 
+theoretical  1  anti_alias   fir    GSC_mulder 
 200 2 
 115
  1.07102096e-07 0.00000e+00
