@@ -1,19 +1,18 @@
-originator     Frank Vernon, UCSD
-last_modified  2008-06-24
+originator     Taimi Mulder, GSC
+last_modified  2009-07-15
 
 category	Guralp
-configuration	CMG3ESP NSN
+configuration	CMG3ESP_NSN
 
-description	Guralp CMG3ESP NSN
-dfile	cmg3esp_nsn
+description	Guralp CMG3ESP_NSN
+dfile		cmg3esp_nsn
 
-rsptype                 V       # velocity instrument
+rsptype			V	# velocity instrument
 band			b	# broadband
 short_period_sensor     no      # Sets first character of SEED channel code
 sensor_type_code        H       # 2nd character in SEED channel code
 
-
-gtype		sensor
+gtype		seismometer
 sensitivity	20e-7
 iunits		nm/s
 ounits		V
