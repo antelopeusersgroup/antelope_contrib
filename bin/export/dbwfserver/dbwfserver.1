@@ -6,9 +6,11 @@ dbwfserver \- serve URLs of explorable waveform data based on network requests
 dbwfserver [-dv] [-p pfname] [-P port] dbname
 .fi
 .SH DESCRIPTION
-The dbwfserver application launches and runs a server that takes incoming requests for segments 
-of waveform data and returns a Uniform Resource Locator for a server instance which will 
-display the requested data out of the named database \fIdbname\fP. 
+The dbwfserver application launches and runs a server that takes
+incoming requests for segments of waveform data and returns a Uniform
+Resource Locator for a server instance which will display the
+requested data out of the named database \fIdbname\fP.
+
 .SH OPTIONS
 .IP -d
 Daemonize the application
@@ -20,24 +22,24 @@ Override the port specified in the parameter file
 Verbose output 
 .SH PARAMETER FILE
 .IP application_title
-The \fIapplication_title\fP parameter contains the string used as the web-page title 
-for results returned from \fBdbwfserver\fP. 
+The \fIapplication_title\fP parameter contains the string used as the 
+web-page title for results returned from \fBdbwfserver\fP. 
 .IP application_name
 This parameter provides a name for the \fBdbwfserver\fP service within Twisted.
 .IP default_chans
 If channel names are not specified to \fBdbwfserver\fP in a request, the channel-names
 in the \fIdefault_chans\fP table are used. 
 .IP port
-The \fIport\fP parameter controls the port number to which \fBdbwfserver\fP binds
-to listen for incoming data requests. 
+The \fIport\fP parameter controls the port number to which \fBdbwfserver\fP
+binds to listen for incoming data requests. 
 .IP canvas_size_default
-The \fIcanvas_size_default\fP parameter, which may be overridden from within each 
-individual request, specifies the assumed pixel width available on the display 
-for plotting of waveform data. This parameter may be overridden with an actual 
-\fIcanvas_size\fP value in each individual request. If the number of data points in 
-a requested segment exceeds \fIcanvas_size\fP by more than a factor of \fIbinning_threshold\fP,
-the data are returned as 
-bins (time/min/max triplets) instead of as individual data points (time/value). 
+The \fIcanvas_size_default\fP parameter, which may be overridden from within 
+each individual request, specifies the assumed pixel width available on the 
+display for plotting of waveform data. This parameter may be overridden with 
+an actual \fIcanvas_size\fP value in each individual request. If the number of 
+data points in a requested segment exceeds \fIcanvas_size\fP by more than a 
+factor of \fIbinning_threshold\fP, the data are returned as bins 
+(time/min/max triplets) instead of as individual data points (time/value). 
 .IP binning_threshold
 This is the factor by which the number of data points must exceed the \fIcanvas_size\fP
 in order for data to be returned as data bins rather than as individual points. 
