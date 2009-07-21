@@ -1,2 +1,3 @@
 .optimize.db
 .DS_Store
+.make.state
