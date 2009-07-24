@@ -1,6 +1,7 @@
 DATADIR= matlab/antelope/user
 DATA= \
-	trdisp.m 
+	trdisp.m \
+	dbcentral_dbnames.m
 
 HTMLDIR= matlab/antelope/html
 HTML= $(DATA:.m=.html)
