@@ -1,0 +1,3 @@
+db2sql.o
+libdb2sql.a
+libdb2sql.dylib

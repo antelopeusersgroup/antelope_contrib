@@ -1,0 +1,17 @@
+use ExtUtils::MakeMaker;
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
+WriteMakefile(
+    'NAME'		=> 'Datascope::db2sql',
+    'FIRST_MAKEFILE' 	=> 'perl_makefile',
+    'MAKEFILE' 		=> 'perl_makefile',
+    'VERSION'		=> '1.0', 
+    'PREREQ_PM'		=> {}, 
+    ($] >= 5.005 ?    
+      (ABSTRACT 	=> 'perl interface to the db2sql library', 
+       AUTHOR     	=> 'AuthorField') : ()),
+    'LIBS'		=> ['LinkArguments'], 
+    'DEFINE'		=> '', 
+    'INC'		=> 'CompileArguments', 
+    #'OBJECT'		=> '$(O_FILES)', 
+);

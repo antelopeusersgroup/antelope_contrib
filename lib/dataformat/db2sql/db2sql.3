@@ -1,0 +1,159 @@
+.TH DB2SQL 3 "$Date: 2007/08/23 16:24:12 $"
+.SH NAME
+dbschema2sqlcreate, db2sqlinsert \- routines to create SQL commands from Datascope databases
+.SH SYNOPSIS
+.nf
+#include "db2sql.h"
+
+Tbl *dbschema2sqlcreate( Dbptr db, int flags );
+
+int db2sqlinsert( Dbptr db, Tbl **tbl, int flags );
+
+.fi
+.SH DESCRIPTION
+The \fBdbschema2sqlcreate\fP function converts the schema for the input database
+into a Tbl of string values containing SQL create statements. 
+Currently, the only supported value for \fIflags\fP is \fIDB2SQL_OMIT_SYNC\fP. Unless this flag 
+is used, an extra database field is appended by \fBdbschema2sqlcreate\fP with the 
+value of the macro \fIDB2SQL_SYNCFIELD_NAME\fP, currently set to \fIsyncsha\fP in db2sql.h and 
+with the corresponding SQL schema format given by the macro \fIDB2SQL_SYNCFIELD_SPEC\fP as 
+.nf
+
+CHAR(40) DEFAULT '-'
+
+.fi
+This syncronization field is used to hold values of a synchronization string computed by the 
+\fBdb2sqlinsert\fP function for updating changes made to the database. 
+
+
+The \fBdb2sqlinsert\fP function generates SQL insert commands for each row in the 
+specified database pointer. 
+Currently, the only supported value for \fIflags\fP is \fIDB2SQL_OMIT_SYNC\fP. Unless this flag 
+is used, an extra database field is computed and inserted by \fBdb2sqlinsert\fP, containing
+a synchronization string that uniquely labels the contents of the input database row. This can 
+be used in later operations to alter or delete SQL-database rows when their corresponding Datascope database
+rows change. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+#include <stdlib.h>
+#include "db.h"
+#include "stock.h"
+#include "dbmon.h"
+#include "db2sql.h"
+
+void newrow( Dbptr db, char *table, char *sync, void *private );
+void changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private );
+void delrow( Dbptr db, char *table, char *sync, void *private );
+
+void
+newrow( Dbptr db, char *table, char *sync, void *private )
+{ 
+	Tbl	**sql = (Tbl **) private;
+
+	db2sqlinsert( db, sql, 0L );
+
+	return;
+}
+
+void
+changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
+{ 
+	delrow( db, table, oldsync, private );
+
+	newrow( db, table, sync, private );
+
+	return;
+}
+
+void
+delrow( Dbptr db, char *table, char *sync, void *private )
+{ 
+	Tbl	**sql = (Tbl **) private;
+	char	*sqlcmd;
+
+	allot( char *, sqlcmd, STRSZ );
+
+	sprintf( sqlcmd, "DELETE from `%s` WHERE %s = '%s';\n", 
+			table, DB2SQL_SYNCFIELD_NAME, sync );
+
+	pushtbl( *sql, sqlcmd );
+
+	return;
+}
+
+int
+main(int argc, char **argv )
+{
+	Dbptr	db;
+	char	*dbname = "./testdb/demo";
+	Hook	*dbmon_hook = NULL;
+	Tbl	*tables; 
+	Tbl	*sql = NULL;
+
+	if( argc > 1 ) {
+
+		tables = strtbl( "sensor", 0 );
+
+	} else {
+		
+		tables = (Tbl *) NULL;
+	}
+
+	dbopen_database( dbname, "r", &db );
+
+	dbmon_hook = dbmon_init( db, tables, newrow, changerow, delrow, 0 );
+
+	dbmon_update( dbmon_hook, (void *) &sql );
+
+	dbmon_status( stdout, dbmon_hook );
+
+	debugtbl( stdout, "\n\nSQL statement table:\n", sql );
+
+	clrtbl( sql, free );
+
+	fprintf( stdout, "Sleeping 5 sec before checking for updates..." );
+	fflush( stdout );
+	sleep( 5 );
+	fprintf( stdout, "awake again\n" );
+
+	dbmon_update( dbmon_hook, (void *) &sql );
+
+	elog_flush( 1, 0 );
+
+	debugtbl( stdout, "\n\nSQL statement table:\n", sql );
+
+	dbmon_close( &dbmon_hook );
+	
+	freetbl( sql, free ); 
+}
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+Primary keys indicating ranges in Datascope, e.g. "time::endtime", are decoupled and added to the SQL primary key 
+as individual fields (e.g. PRIMARY KEY( ... time, endtime, ... )), since SQL schemata appear not to support ranges 
+as primary keys. 
+
+The SQL format emitted by \fBdb2sql\fP is currently tailored for MySQL. The option is open in the future to expand 
+this to support other SQL variants. 
+.SH AUTHOR
+.nf
+Kent Lindquist 
+Lindquist Consulting, Inc.
+.fi
+.\" $Id: manpage_template,v 1.13 2007/08/23 16:24:12 kent Exp $

@@ -1,0 +1,121 @@
+.TH PERLDB2XML 3P "$Date$"
+.SH NAME
+perldb2sql \- Perl extension of db2sql
+.SH SYNOPSIS
+.nf
+use Datascope;
+use Datascope::db2sql;
+
+@sql = dbschema2sqlcreate( @db [, $flags] );
+
+@sql = db2sqlinsert( @db [, $flags] );
+
+.fi
+.SH DESCRIPTION
+The perl \fBdb2sql\fP functions mimic the c-callable db2sql(3) routines, 
+allowing arbitrary database views to be converted to SQL \fICREATE\fP and 
+\fICREATE\fP statements with which they can be loaded into a SQL database. 
+
+The \fBdbschema2sqlcreate\fP function extracts all tables referenced 
+in the input database view, generating an array of strings containing 
+\fICREATE\fP statements for each table. 
+
+The \fBdb2sqlinsert\fP function extracts all base-table rows referenced 
+in the input database view, generating an array of strings containing 
+\fIINSERT\fP statements for each row. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+use Datascope;
+use Datascope::db2sql;
+
+@db = dbopen( "/opt/antelope/data/db/demo/demo", "r" );
+
+@db = dblookup( @db, "", "origin", "", "" );
+
+print join( "\\n", dbschema2sqlcreate( @db ) );
+
+@db = dbsubset( @db, 'orid == 645' );
+
+print join( "\\n", db2sqlinsert( @db ) );
+
+print "\\n";
+
+.fi
+.ft R
+.in
+The example above produces the following output: 
+.in 2c
+.ft CW
+.nf
+
+%perl test.pl
+
+CREATE TABLE `origin`
+  (
+  `lat`        DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`        DECIMAL(9,4) DEFAULT -999.0000,
+  `depth`      DECIMAL(9,4) DEFAULT -999.0000,
+  `time`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `orid`       INTEGER(8) DEFAULT -1,
+  `evid`       INTEGER(8) DEFAULT -1,
+  `jdate`      INTEGER(8) DEFAULT -1,
+  `nass`       INTEGER(4) DEFAULT -1,
+  `ndef`       INTEGER(4) DEFAULT -1,
+  `ndp`        INTEGER(4) DEFAULT -1,
+  `grn`        INTEGER(8) DEFAULT -1,
+  `srn`        INTEGER(8) DEFAULT -1,
+  `etype`      CHAR(2) DEFAULT '-',
+  `review`     CHAR(4) DEFAULT '-',
+  `depdp`      DECIMAL(9,4) DEFAULT -999.0000,
+  `dtype`      CHAR(1) DEFAULT '-',
+  `mb`         DECIMAL(7,2) DEFAULT -999.00,
+  `mbid`       INTEGER(8) DEFAULT -1,
+  `ms`         DECIMAL(7,2) DEFAULT -999.00,
+  `msid`       INTEGER(8) DEFAULT -1,
+  `ml`         DECIMAL(7,2) DEFAULT -999.00,
+  `mlid`       INTEGER(8) DEFAULT -1,
+  `algorithm`  CHAR(15) DEFAULT '-',
+  `auth`       CHAR(15) DEFAULT '-',
+  `commid`     INTEGER(8) DEFAULT -1,
+  `lddate`     DECIMAL(17,5) DEFAULT -9999999999.99900,
+  PRIMARY KEY (`time`, `lat`, `lon`, `depth`, `ndef`, `nass`)
+  );
+INSERT INTO `origin` VALUES(  40.0740,   69.1640,  155.1660,   704371900.66886,        1,       -1,  1992118,    7,    7,   -1,      715,       48, '-', '', -999.0000, 'f',    2.62,        1, -999.00,       -1, -999.00,       -1, 'locsat:kyrghyz', 'JSPC',       -1,   790466871.00000);
+
+INSERT INTO `origin` VALUES(  36.9340,   71.0010,    0.0000,   704397756.21221,        2,       -1,  1992118,    7,    7,   -1,      717,       48, '-', '', -999.0000, 'f',    3.72,        2, -999.00,       -1, -999.00,       -1, 'locsat:kyrghyz', 'JSPC',       -1,   790466871.00000);
+ ....
+ ....
+ ....
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+db2sql(3), db2sql(1), perldb(3P)
+.fi
+.SH "BUGS AND CAVEATS"
+The macro DB2SQL_SYNCFIELD_NAME from db2sql.h should be expressed in this module as a named constant. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$

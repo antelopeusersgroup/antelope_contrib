@@ -1,0 +1,98 @@
+.TH DBMON 3
+.SH NAME
+dbmon_init, dbmon_update, dbmon_status, dbmon_close \- monitor a Datascope database for changes
+.SH SYNOPSIS
+.nf
+
+#include "dbmon.h"
+
+Hook *dbmon_init( Dbptr db, Tbl *table_subset, 
+                  void (*newrow)(Dbptr db, char *table, char *sync, void *private), 
+		  void (*changerow)(char *oldsync, Dbptr db, char *table, char *newsync, void *private), 
+		  void (*delrow)(Dbptr db, char *table, char *oldsync, void *private), 
+		  int flags );
+
+int dbmon_update( Hook *dbmon_hook, void *private );
+
+void dbmon_status( FILE *fp, Hook *dbmon_hook );
+
+void dbmon_close( Hook **dbmon_hook );
+
+.fi
+.SH DESCRIPTION
+The \fBdbmon_init\fP function begins tracking a dynamically updating Datascope database. The 
+\fIdb\fP database pointer indicates the database to be tracked. If the \fItable_subset\fP is 
+null, all tables are tracked.  If this argument is a list of string names for database 
+tables (see strtbl(3)), tracking is limited to the named tables.  \fBdbmon_init\fP returns a hook(3) 
+pointer which is used in subsequent calls to interact with the tracked monitoring status of the 
+database. Three callbacks are registered when invoking \fBdbmon_init\fP: \fInewrow\fP, \fIchangerow\fP, 
+and \fIdelrow\fP. 
+
+After \fBdbmon_init\fP is called, the \fBdbmon_update\fP function is called to begin monitoring 
+of the database. Also, subsequent updates are triggered by calling the \fBdbmon_update\fP function. 
+
+For each Datascope database row newly detected by \fBdbmon_update\fP, a database pointer pointing to 
+the new row is given as the first argument to the \fInewrow\fP callback. The second argument to the 
+\fInewrow\fP callback is the Datascope table-name containing the row in question. The third argument 
+is a string computed by \fBdbmon_update\fP intended to be a unique hash of the database row. This can 
+be used as desired by the calling application to identify the returned row in future operations. The fourth
+argument to the \fInewrow\fP callback is a \fIprivate\fP void pointer, the same as the \fIprivate\fP
+pointer provided to the \fBdbmon_update\fP function. This \fIprivate\fP pointer may be used by the 
+application programmer writing callbacks to handle more complex behavior for each database row, for 
+example the \fIprivate\fP pointer may reference a data structure for transformed rows or instructions 
+to another utility. 
+
+For each changed database row detected by \fBdbmon_update\fP, the \fIchangerow\fP callback is 
+invoked. The first argument to \fIchangerow\fP is the \fIsync\fP string value from the row 
+before the change. The rest of the arguments to \fIchangerow\fP are the same as the arguments to \fInewrow\fP,
+with the database pointer and the \fIsync\fP string referring to the new version of the row. 
+
+For database rows that \fBdbmon_update\fP concludes have been marked for deletion, the \fIdelrow\fP
+callback is invoked, with the \fIoldsync\fP string holding the value of the synchronization string
+from before the row was marked. The \fItable\fP-name argument indicates the database table from 
+which the row was deleted. The database pointer is provided as a convenience to the programmer and 
+does not contain any information about the row from before it was marked for deletion. 
+
+The \fBdbmon_status\fP function is a debugging utility which prints what is known internal 
+to the library about the current status of the database represented by the tracking hook. 
+
+The \fBdbmon_close\fP function stops tracking a previously tracked Datascope databases, 
+freeing all tracking structures. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+The \fIflags\fP argument to \fBdbmon_init\fP is not yet used and should be set to 0. 
+
+If the database descriptor-file changes such that the underlying files referenced for each database 
+table change, the dbmon library will not adjust dynamically. 
+
+Rows may not be deleted from database tables being monitored. They must be marked with dbmark(3) and left 
+in place. Currently, state-file based post-cleanup reconnection is not supported. 
+
+The dbmon library does not yet support a state file, though perhaps should. 
+
+In addition to the database pointer for a given row, the corresponding table name is passed to the callback functions,
+even though the table name could also be derived from a dbquery(3) call on the database pointer. This is 
+done as a convenience to the programmer implementing the callbacks. 
+.SH AUTHOR
+.nf
+Dr. Kent Lindquist 
+Lindquist Consulting, Inc. 
+.fi

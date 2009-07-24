@@ -1,0 +1,9 @@
+dsn	DBI:mysql:host=localhost
+user	&env(USER)
+password &ask(Password: )
+
+refresh_interval_sec 5
+schema_create_errors_nonfatal true
+
+table_subset &Tbl{
+}

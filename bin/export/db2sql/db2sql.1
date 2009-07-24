@@ -1,0 +1,172 @@
+.TH DB2SQL 1 
+.SH NAME
+db2sql \- export a Datascope database to a SQL database
+.SH SYNOPSIS
+.nf
+db2sql    [-1rvV] [-p pfname] datascope_dbname[.table] sql_dbname
+db2sql -l  [-rvV] [-p pfname] datascope_dbname[.table] 
+.fi
+.SH DESCRIPTION
+The \fBdb2sql\fP program exports a Datascope database to a SQL database. If the database does not 
+exist, a SQL version of the relevant schema is first created. SQL INSERT rows are then executed for 
+each row of the Datascope database. If a \fItable\fP is specified on the command line, transfer is limited
+to the schema definition and rows for that Datascope table. The database tables to transfer may also 
+be limited by the \fItable_subset\fP list in the parameter file. 
+
+In the current invocation, if a database of the specified target name already exists on the 
+SQL server, it is summarily removed. 
+
+.SH OPTIONS
+.IP -1
+Make one pass of Extract-Transform-Load, then exit. Without this option, the default is to refresh the 
+SQL mirror of the Datascope database at regular intervals.
+.IP -l 
+List SQL commands necessary to convert the database, rather than logging in to the server
+and issuing the SQL commands to the server. If \fI-l\fP is specified, the \fIsql_dbname\fP 
+argument is neither required nor allowed. 
+.IP "-p pfname" 
+Specify a parameter file other than the default \fBdb2sql\fP.pf
+.IP -r
+Rebuild the database if it already exists. This command executes a \fIDROP DATABASE\fP command to the 
+SQL server for the named target database, so should be used with caution.
+.IP -v
+Be verbose
+.IP -V
+Be very verbose
+.SH PARAMETER FILE
+.SS Parameter-file Parameters
+.IP dsn
+The \fIdsn\fP parameter specifies a Perl DBI Data Source Name, usually listing the database driver 
+and connection properties of the target SQL server. Do not include the SQL database name in 
+the \fIdsn\fP parameter, as the database name is entered on the command line. 
+.IP user
+The \fIuser\fP parameter specifies the database username under which to connect to the 
+SQL server. 
+.IP password
+The \fIpassword\fP parameter specifies the database password needed to connect to the SQL server. 
+This may be left set to the &ask() function as documented in pf(5), allowing the password to 
+be entered on the command line rather than stored in plain text in the parameter file. \fBdb2sql\fP 
+suppresses echoing of input on the pf(5) &ask() function to protect the privacy of entered passwords. 
+.IP refresh_interval_sec
+When \fBdb2sql\fP is run in continuously-updating mode, this parameter specifies how frequently to check the 
+monitored database for changes. 
+.IP schema_create_errors_nonfatal
+If this boolean value is \fIfalse\fP, errors encountered upon mapping a database schema from Datascope to SQL are 
+considered fatal, causing the termination of \fBdb2sql\fP. If the \fIschema_create_errors_nonfatal\fP boolean 
+value is \fItrue\fP, \fBdb2sql\fP warns of the error and attempts to proceed. 
+.IP table_subset
+If the \fItable_subset\fP parameter has database table-names in it, database loading is limited to the 
+named tables. Otherwise, all database tables in the schema are used. (Note however that a database table name 
+specified on the command line will override the parameter-file \fItable_subset\fP).
+if this 
+.SS Default Parameter file
+.nf
+
+dsn      DBI:mysql:host=localhost
+user     &env(USER)
+password &ask(Password: )
+
+refresh_interval_sec 5
+schema_create_errors_nonfatal true
+
+table_subset &Tbl{
+}
+
+.fi
+
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+% \fBdb2sql\fP -rV /opt/antelope/data/db/demo/demo.site sample 
+
+db2sql: Importing '/opt/antelope/data/db/demo/demo.site' into 'sample' starting at  8/14/2009   0:28:05.279 UTC
+db2sql: Database 'sample' already exists. Dropping 'sample'
+db2sql: Executing SQL Command:
+CREATE TABLE `site`
+  (
+  `sta`      CHAR(6) DEFAULT '-',
+  `ondate`   INTEGER(8) DEFAULT -1,
+  `offdate`  INTEGER(8) DEFAULT -1,
+  `lat`      DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`      DECIMAL(9,4) DEFAULT -999.0000,
+  `elev`     DECIMAL(9,4) DEFAULT -999.0000,
+  `staname`  CHAR(50) DEFAULT '-',
+  `statype`  CHAR(4) DEFAULT '-',
+  `refsta`   CHAR(6) DEFAULT '-',
+  `dnorth`   DECIMAL(9,4) DEFAULT 0.0000,
+  `deast`    DECIMAL(9,4) DEFAULT 0.0000,
+  `lddate`   DECIMAL(17,5) DEFAULT -9999999999.99900,
+  PRIMARY KEY (`sta`, `ondate`, `offdate`)
+  );
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('HIA',  1986201,       -1,   49.2667,  119.7417,    0.6100, 'Hailar, Neimenggu Province, China', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('KIV',  1988258,       -1,   43.9562,   42.6888,    1.2100, 'Kislovodsk, Russia', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('KMI',  1986159,       -1,   25.1233,  102.7400,    1.9450, 'Kunming, Yunnan Province, China', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('LSA',  1991333,       -1,   29.7000,   91.1500,    3.7890, 'Tibet, China', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('LZH',  1986151,       -1,   36.0867,  103.8444,    1.5600, 'Lanzhou, Gansu Province, China', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('OBN',  1988258,       -1,   55.1138,   36.5687,    0.1600, 'Obninsk, Russia', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('WUS',  1988305,       -1,   41.1990,   79.2180,    1.4570, 'Wushi, Xinjiang Uygur, China', '-', '-',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('CHM',  1991244,       -1,   42.9986,   74.7513,    0.6550, 'Chumysh, Kyrgyzstan', 'ss', 'AAK',   40.6512,   20.8922,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('EKS2',  1991244,       -1,   42.6615,   73.7772,    1.3600, 'Erkin-Sai, Kyrgyzstan', 'ss', 'AAK',    3.3841,  -58.6444,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('USP',  1991244,       -1,   43.2669,   74.4997,    0.7400, 'Uspenovka, Kyrgyzstan', 'ss', 'AAK',   70.4529,    0.4293,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('TKM',  1991244,       -1,   42.8601,   75.3184,    0.9600, 'Tokmak, Kyrgyzstan', 'ss', 'AAK',   25.5465,   67.1613,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('KBK',  1991244,       -1,   42.6564,   74.9478,    1.7600, 'Karagaibulak, Kyrgyzstan', 'ss', 'AAK',    2.6678,   37.0771,   745027200.00000);
+
+
+db2sql: Executing SQL Command:
+INSERT INTO `site` VALUES('AAK',  1991244,       -1,   42.6333,   74.4944,    1.6800, 'Ala-Archa, Kyrgyzstan', 'ss', 'AAK',    0.0000,    0.0000,   745027200.00000);
+
+
+db2sql: Done importing '/opt/antelope/data/db/demo/demo.site' into 'sample' at  8/14/2009   0:28:05.313 UTC
+.fi
+.ft R
+.in
+.SH LIBRARY
+\fBdb2sql\fP requires the Perl \fIDBI\fP module from www.cpan.org to be installed, along with one or more
+\fIDBD\fP database drivers (for example \fIDBD::mysql\fP).
+.SH "SEE ALSO"
+.nf
+db2sql(3), perldb2sql(3P), DBI(3), DBD::mysql(3)
+.fi
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi

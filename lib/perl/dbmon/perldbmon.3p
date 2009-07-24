@@ -1,0 +1,144 @@
+.TH PERLDBMON 3P "$Date$"
+.SH NAME
+perldbmon \- Perl extension of dbmon database monitoring library
+.SH SYNOPSIS
+.nf
+
+use Datascope;
+use Datascope::dbmon;
+
+\fBdbmon_init\fP( \fI@db\fP, \fI$hookname\fP, \fI\\&newrow\fP, \fI\\&changerow\fP, \fI\\&delrow\fP [, \fI@tables\fP] );
+
+\fBdbmon_update\fP( \fI$hookname\fP, \fI$private_ref\fP );
+
+\fBdbmon_close\fP( \fI$hookname\fP );
+
+.fi
+.SH DESCRIPTION
+The perl \fBdbmon\fP module mimics the c-callable dbmon(3) library,
+allowing a Datascope database to be tracked for added, deleted, and changed 
+rows, with user-specified actions to take place upon each modification. 
+
+The first call made should be to \fBdbmon_init\fP, which takes as arguments a 
+pointer to an already open database, a unique string name to a hook(3) to be used
+internally for status tracking, and references to three callback functions, 
+\fInewrow\fP, \fIchangerow\fP, and \fIdelrow\fP. If the \fI@tables\fP array is given 
+to \fBdbmon_init\fP, tracking and updating activities 
+are limited to the database tables listed in the array. Otherwise, all tables in the 
+database schema are examined.  The arguments for the callback functions, explained 
+in more detail below, are as follows:
+.nf
+
+      newrow( @db, $table, $sync, $private_ref );
+
+      changerow( $oldsync, @db, $table, $newsync, $private_ref );
+
+      delrow( @db, $table, $oldsync, $private_ref );
+
+.fi
+
+After initialization of a database via the \fBdbmon_init\fP function, the 
+\fBdbmon_update\fP function is called one or more times to update the status of the 
+monitored database. When new, changed, or deleted rows are detected by \fBdbmon_update\fP, 
+\fBdbmon_update\fP invokes the respective callback function(s) to process the modifications
+as desired. 
+
+As with the C-callable \fBdbmon\fP library, the perl version computes a synchronization 
+string for each database row which uniquely identifies a row with given 
+contents. These syncronization values are handed to the callback routines, along with a 
+database pointer indicating the row in question, in order for the callback author to 
+decide on and impose the fate of any other data entities based on the row. Two further 
+arguments are passed to the callbacks: the name of the database table in which the row
+resides (even though this could in principle be derived from the database pointer), and a 
+private perl reference which can be used at the discretion of the programmer. For the 
+\fInewrow\fP callback, the syncronization string is that of the new row. For the \fIdelrow\fP
+callback, the synchronization string is that of the old row before it was deleted. The 
+\fIchangerow\fP callback receives copies of the synchronization strings from both before 
+and after the change.
+
+
+.SH EXAMPLE
+The following example, omitting some ancillary details, shows the basic structure 
+of \fBperldbmon\fP usage: 
+.in 2c
+.ft CW
+.nf
+
+use DBI;
+use Datascope;
+use Datascope::db2sql;
+use Datascope::dbmon;
+
+sub newrow {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $table, $sync, $dbh ) = @_;
+
+	my( $cmd ) = db2sqlinsert( @db );
+
+	$dbh->do( $cmd );
+
+	return;
+}
+
+sub changerow {
+	my( $oldsync ) = shift( @_ );
+	my( @db ) = splice( @_, 0, 4 );
+	my( $table, $sync, $dbh ) = @_;
+
+	delrow( @db, $table, $oldsync, $dbh );
+
+	newrow( @db, $table, $sync, $dbh );
+
+	return;
+}
+
+sub delrow {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $table, $sync, $dbh ) = @_;
+
+	my( $cmd ) = sprintf( "DELETE from `%s` WHERE syncsha = '%s';\\n", $table, $sync );
+
+	$dbh->do( $cmd );
+
+	return;
+}
+
+$hookname = "my_dbmon_hook";
+
+$dbh = DBI->connect( $dsn, $user, $pw );
+
+@db = dbopen( $dbname, "r" );
+
+dbmon_init( @db, $hookname, \&newrow, \&changerow, \&delrow );
+
+$stop = 0;
+
+while( ! $stop ) {
+
+	dbmon_update( $hookname, $dbh );
+
+	sleep( 5 );
+}
+
+dbmon_close( $hookname );
+
+.fi
+.ft R
+.in
+.in 2c
+.ft CW
+.nf
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+dbmon(3), perldb(3P), db2sql(3), db2sql(1)
+.fi
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$
