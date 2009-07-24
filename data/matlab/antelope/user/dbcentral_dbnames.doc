@@ -19,11 +19,7 @@ VERBOSE is an optional command to print verbose output to assist in
 troubleshooting. The default integer value is 0. To return verbose
 output assign this variable the integer value 1.
 
-Antelope Toolbox for Matlab
-[Antelope is a product of Boulder Real-Time Technologies, Inc.]
-
-Robert Newman
-<robertlnewman@gmail.com>
+Author: Robert Newman <robertlnewman@gmail.com>
 (c) 2009 Robert L Newman
 
 See also DBOPEN, DBLOOKUP, DBSUBSET under ANTELOPE
