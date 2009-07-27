@@ -161,6 +161,8 @@ void
 do_sw(Widget parent, SessionManager & sm)
 {
  	int i,j;
+//DEBUG
+cerr << "Entering do_sw"<<endl;
 
         Pf *pf;
         if(pfread(const_cast<char *>((sm.get_pf_name()).c_str()),&pf))
@@ -210,9 +212,12 @@ do_sw(Widget parent, SessionManager & sm)
 	if(asetptr==sm.asetting_default.end())
 	{
 		asetptr=sm.asetting_default.begin();
-		cerr << "do_sw(WARNING):  default phase = "<<default_phase << " not defined in phase processing setup"
+		cerr << "do_sw(WARNING):  default phase = "<<default_phase 
+			<< " is not defined in phase processing setup"
 			<< endl
-			<< "Initializing with first item found.  This may produce unpredictable if you are not running under smartpick"
+			<< "Initializing with first item found.  "
+			<<"This may produce unpredictable results "
+			<< "if you are not running under smartpick"
 			<<endl;
 	}
 	sm.active_setting=asetptr->second;
@@ -249,6 +254,8 @@ do_sw(Widget parent, SessionManager & sm)
 
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
+//DEBUG
+cerr << "Normal exit do_sw"<<endl;
 	}
         catch (SeisppError serr)
         {
@@ -364,6 +371,8 @@ string subarray_title(string starting, string subarray_name)
 }
 void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
 {
+//DEBUG
+cerr << "Entering handle_next_event"<<endl;
 	stringstream ss;
 	int evid;
         double lat,lon,depth,otime;
@@ -384,6 +393,9 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
 	if(orid>=0)
 	{
+//DEBUG
+cerr << "Entering hande_next_event read block"<<endl;
+
 		const string base_error("handle_next_event:  ");
 		mdfinder.put("orid",orid);
 		list<int> recs=psm->dbh.find(mdfinder);
@@ -433,7 +445,14 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
                         << strtime(otime)<<endl;
 		psm->record(ss.str());
 		psm->session_state(THINKING);
+//DEBUG
+cerr << "Calling load_data method"<<endl;
+double dtload_data=now();
                 psm->xpe->load_data(h);
+dtload_data = now()-dtload_data;
+//DEBUG
+cerr << "load_data method finished normally"<<endl
+  << "Read time="<<dtload_data<<" seconds"<<endl;
 		ss << "Data loaded" <<endl;
 		psm->record(ss.str());
 		if(psm->using_subarrays)
@@ -473,6 +492,8 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
     		psm->xpe->change_analysis_setting(psm->active_setting);
 
+//DEBUG
+cerr << "Sorting ensemble"<<endl;
                 try {
         	    psm->xpe->sort_ensemble();
     		} catch (SeisppError serr) {
@@ -505,6 +526,8 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
+//DEBUG
+cerr << "Normal exit from handle_next_event"<<endl;
 	}
 
 	} catch (SeisppError serr) {
