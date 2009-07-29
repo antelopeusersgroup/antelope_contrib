@@ -211,10 +211,14 @@ deposit windowbars /opt/anf/4.9/data/system
 .fi
 .ft R
 .in
-.SH LIBRARY
 .SH BUGS AND CAVEATS
 The \fBbuild_sourcetree\fP command does nothing to alter or enhance 
 an already-existing source-code tree. 
+
+The "coldstart" Makefile created for the source-tree presumes that the 
+ANTELOPE environment variable and environment are properly set (usually 
+by sourcing $ANTELOPE/setup.csh or $ANTELOPE/setup.sh). If this is not 
+true, the coldstart Makefile will fail to perform properly. 
 
 The project name is always converted to lowercase for directory names
 and to uppercase for environment variable names. It is questionable whether 

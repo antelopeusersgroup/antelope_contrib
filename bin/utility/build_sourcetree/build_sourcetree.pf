@@ -47,7 +47,7 @@ base directory for an __PROJECT__ release. It uses the same version number as th
 Antelope installation since the __PROJECT__ code is compiled against and therefore
 dependent on specific Antelope versions. This environment variable 
 is usually set automatically, for example by sourcing the file
-__BASEDIR__/__project__/4.8/setup.csh. 
+__BASEDIR__/__project__/4.8/setup.csh or __BASEDIR__/__project__/4.8/setup.sh.
 .IP __PROJECT__MAKE
 This is the __PROJECT__MAKE environment variable, exactly analogous to the ANTELOPEMAKE
 environment variable as documented in antelopeenv(5) and antelopemakefile(5).
@@ -74,8 +74,8 @@ Lindquist Consulting, Inc.
 adm/setup/Makefile 	&Literal{
 DEST=$(__PROJECT__)
 
-Include :: $(DEST)/setup.csh
-install :: $(DEST)/setup.csh
+Include :: $(DEST)/setup.csh $(DEST)/setup.sh
+install :: $(DEST)/setup.csh $(DEST)/setup.sh
 
 all clean Include install installMAN pf relink tags :: FORCED
 	@-DIRS="$(DIRS)" ;\
@@ -92,6 +92,7 @@ uninstall :: FORCED
 	        if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
 	    done ; \
 	    $(RM) $(DEST)/setup.csh; \
+	    $(RM) $(DEST)/setup.sh; \
 	fi
 
 FORCED:
@@ -99,11 +100,17 @@ FORCED:
 $(DEST)/setup.csh: setup.csh
 	deposit setup.csh $(DEST)
 
+$(DEST)/setup.sh: setup.sh
+	deposit setup.sh $(DEST)
+
 setup.csh: setup.csh.id
 	getid < setup.csh.id > setup.csh
 
+setup.sh: setup.sh.id
+	getid < setup.sh.id > setup.sh
+
 clean :: 
-	$(RM) setup.csh
+	$(RM) setup.csh setup.sh
 }
 adm/setup/setup.csh.id &Literal{
 unsetenv __PROJECT__
@@ -177,6 +184,86 @@ setenv __PROJECT__MAKE     $__PROJECT__/include/__project__make
 
 set __project__=$__PROJECT__
 set antelopemake=$ANTELOPEMAKE
+}
+adm/setup/setup.sh.id &Literal{
+unset __PROJECT__
+
+. /opt/antelope/$id/setup.sh
+
+__PROJECT__=/opt/__project__/$id; export __PROJECT__
+
+a="$__PROJECT__/bin"
+
+# Set up the PATH and MANPATH environment variables.
+# If some version of the local trees is already in the path, remove it.
+for i in `echo $PATH | sed 's/:/ /g'`; do
+  case $i in
+    /opt/__project__/*)        ;;
+    *)                 a="$a:$i" ;;
+  esac
+done
+PATH=$a ; export PATH
+unset a
+
+if [ "x$MANPATH" != x ] ; then
+  a=$__PROJECT__/man
+  for i in `echo $MANPATH | sed 's/:/ /g'`; do
+    case $i in
+      /opt/__project__/*)  ;;
+      *)                a="$a:$i"
+    esac
+  done
+  MANPATH=$a ; export MANPATH
+  unset a
+else
+  MANPATH="$__PROJECT__/man:$ANTELOPE/man:$ANTELOPE/../$tcltk/man:$ANTELOPE/../$perl/man" ; export MANPATH
+fi
+
+if [ "x$PFPATH" != x ] ; then
+  case $PFPATH in
+    *\$__PROJECT__*)      ;;
+    *)            
+    p=""
+    m="$ANTELOPE/data/pf"
+    for i in `echo $PFPATH | sed 's/:/ /g'`; do
+      if [ "$i" != "$m" ]; then
+        p="$p:$i"
+      else
+        p="$p:$m:$__PROJECT__/data/pf"
+      fi
+    done
+    PFPATH=$p; export PFPATH
+    ;;
+  esac
+else
+  PFPATH="$ANTELOPE/data/pf:$__PROJECT__/data/pf:." ; export PFPATH
+fi
+
+if [ "x$DATAPATH" != x ] ; then
+  case $DATAPATH in
+    *\$__PROJECT__*)      ;;
+    *)            
+    p=""
+    m="$ANTELOPE/data"
+    for i in `echo $DATAPATH | sed 's/:/ /g'`; do
+      if [ "$i" != "$m" ] ; then
+        p="$p:$i"
+      else
+        p="$p:$m:$__PROJECT__/data"
+      fi
+    done
+    DATAPATH=$p; export DATAPATH
+    ;;
+  esac
+else
+  DATAPATH="$ANTELOPE/data:$__PROJECT__/data" ; export DATAPATH
+fi
+
+unset a
+unset m
+unset p
+
+__PROJECT__MAKE="$__PROJECT__/include/__project__make" ; export __PROJECT__MAKE
 }
 data/pf_localmods/Makefile 	&Literal{
 PF = 
