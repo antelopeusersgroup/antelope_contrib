@@ -1,0 +1,25 @@
+DBCENTRAL_DBNAMES Retrieve database paths for a cluster in a dbcentral clusters table
+
+DATA = DBCENTRAL_DBNAMES( DB, CLUSTERNAME, INCLUDE_TIMES, VERBOSE )
+
+DBCENTRAL_DBNAMES takes a Datascope database path and clustername 
+to a Datascope dbcentral clusters database table and returns a data 
+structure containing all the wild-card expanded database filenames. 
+It uses the 'volume' field to correctly resolve directory paths and 
+filenames.
+
+The DB and CLUSTERNAME arguments are required. 
+
+INCLUDE_TIMES is an optional argument that will additionally return 
+the epoch start time of each resolved database path and filename. 
+The default integer value is 0. To return start times assign this 
+variable the integer value 1.
+
+VERBOSE is an optional command to print verbose output to assist in
+troubleshooting. The default integer value is 0. To return verbose
+output assign this variable the integer value 1.
+
+Author: Robert Newman <robertlnewman@gmail.com>
+(c) 2009 Robert L Newman
+
+See also DBOPEN, DBLOOKUP, DBSUBSET under ANTELOPE

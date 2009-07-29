@@ -117,17 +117,12 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 
         string pmodestr=smcontrol.get_string("processing_mode");
         if(pmodestr=="EventGathers")
-	{
                 procmode=EventGathers;
-		current_phase=smcontrol.get_string("default_phase");
-	}
         else if(pmodestr=="GenericGathers")
-	{
                 procmode=GenericGathers;
-		current_phase=smcontrol.get_string("default_phase");
-	}
         else
                 procmode=ContinuousDB;
+	current_phase=smcontrol.get_string("default_phase");
 
 	if(procmode == ContinuousDB)
 	{
