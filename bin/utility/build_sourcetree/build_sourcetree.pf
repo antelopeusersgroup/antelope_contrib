@@ -38,7 +38,6 @@ in antelopemakefile(5). They behave exactly the same way as Antelope makefiles,
 with the exception that they use the __PROJECT__MAKE environment variable 
 instead of ANTELOPEMAKE to point to their make rules, and they install to 
 __BASEDIR__/__project__/X.X instead of /opt/antelope/X.X. 
-.SH FILES
 .SH ENVIRONMENT
 .IP __PROJECT__
 This is the __PROJECT__ environment variable, exactly analogous to the ANTELOPE 
@@ -51,20 +50,10 @@ __BASEDIR__/__project__/4.8/setup.csh or __BASEDIR__/__project__/4.8/setup.sh.
 .IP __PROJECT__MAKE
 This is the __PROJECT__MAKE environment variable, exactly analogous to the ANTELOPEMAKE
 environment variable as documented in antelopeenv(5) and antelopemakefile(5).
-.SH PARAMETER FILE
-.SH EXAMPLE
-.in 2c
-.ft CW
-.nf
-.fi
-.ft R
-.in
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 antelopemakefile(5)
 .fi
-.SH "BUGS AND CAVEATS"
 .SH AUTHOR
 .nf
 Kent Lindquist
@@ -416,7 +405,7 @@ $(DEST)/data/system/pathrc: solaris linux darwin darwin-intel
 solaris linux darwin darwin-intel:
 	getid < $@.id > $@
 
-clean:
+clean ::
 	$(RM) solaris linux darwin darwin-intel
 }
 data/system/path/solaris.id &Literal{
@@ -660,7 +649,10 @@ LDPATH += -L$(DEST)/lib -L$(DEST)/static
 LDRUN += -R$(DEST)/lib 
 }
 adm/coldstart/Makefile &Literal{
+install: coldstart
+
 coldstart: .FORCED
+ifdef ANTELOPE
 	__PROJECT__=__BASEDIR__/__project__/`getid id`; export __PROJECT__; \
 	__PROJECT__MAKE=__BASEDIR__/__project__/`getid id`/include/__project__make; export __PROJECT__MAKE; \
 	( cd ../setup; make install ) ; \
@@ -668,6 +660,14 @@ coldstart: .FORCED
 	( cd ../..; make Include ) ; \
 	mkdir __BASEDIR__/__project__/`getid id`/man ; \
 	( cd ../..; make install )
+else
+	@echo ""
+	@echo "The ANTELOPE environment variable is not set." 
+	@echo "Please run setup.csh or setup.sh according to the"
+	@echo "setup.csh(1) man-page for BRTT Antelope software."
+	@echo ""
+	@exit 1
+endif
 
 .FORCED:
 }
