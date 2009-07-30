@@ -1674,4 +1674,22 @@ void remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
 //    new version of grid.  
 //@}
 void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern);
+/*! \brief Decimate a GCLgrid3d.
+
+We sometimes want to decimate a grid. This procedure does this for
+a 3D grid with variable decimation for each generalized coordinate 
+axis.  An added compliation is the fact that because GCLgrids hae
+the x3 direction directed upward in earth coordinates and the free
+surface is so special, we work the x3 coordinate backward compared
+to the others.  i.e. we for the n3-1 point to be the n3-1 point in
+the result, not the 0 points.  
+
+\param g parent grid that is to be decimated
+\param dec1 decimation factor for x1
+\param dec2 decimation factor for x2
+\param dec3 decimamtion factor for x3
+
+\return pointer to decimated grid object 
+*/
+GCLgrid3d *decimate(GCLgrid3d& g,int dec1, int dec2, int dec3);
 #endif
