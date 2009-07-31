@@ -306,6 +306,22 @@ phi should be set to -1.0 times the azimuth of the propagation direction.
 //  Start helper function prototypes
 ///////////////////////////////////////////////////
 //
+/*! Rotate data in the horizontal plane by a specified angle.
+
+A common case for rotation is a rotation around the vertical (x3) axis.
+This procedure this to modify a ThreeComponentSeismogram object in place
+an properly update the transformation matrix.  This is more or less
+a front end to the rotate by tranformation matrix.  This procedure perhaps
+should have been part of the interface definition.  It is necessary because
+the angle based methods that are in the interface become undefined for 
+this geometry. 
+\param d is the seismogram to be rotated
+\param phi is the angle (radians) by which the data are to be rotate.  
+It is VERY IMPORTANT to recognize phi is spherical coordinate angle NOT
+a geographical azimuth.  
+
+*/
+void HorizontalRotation(ThreeComponentSeismogram& d, double phi);
 /*!
  Extract one component from a ThreeComponentSeismogram and 
  create a TimeSeries object from it.  
