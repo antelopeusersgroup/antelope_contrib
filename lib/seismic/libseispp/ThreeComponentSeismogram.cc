@@ -1,4 +1,5 @@
 #include <float.h>
+#include <sstream>
 #include "ThreeComponentSeismogram.h"
 #include "perf.h"
 #include "coords.h"
@@ -242,11 +243,16 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 
 		DBBundle bundle = dbh.get_range();
 		if((bundle.end_record-bundle.start_record)!=3)
-			throw(SeisppDberror(
-			  string(this_function_base_message
-			  +	"  database bundle pointer irregularity\n"
-			  +     "All data must have exactly 3 channels per bundle"),
-			  dbh.db,complain));
+		{
+			char buf[128];
+			ostringstream message(buf);
+			message<< this_function_base_message 
+				<< "  database bundle pointer irregularity"<<endl
+				<<"All data must have exactly 3 channels per bundle,"
+				<< " but group bundle size="
+				<< bundle.end_record-bundle.start_record<<endl;
+			throw(SeisppDberror(message.str(),dbh.db,complain));
+		}
 		// Use the simplified copy constructor.  This handle
 		// to loop through data.  Sometimes is a bundle pointer
 		// other times it could be one row at a time.  
@@ -280,9 +286,15 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		if(samprate[0]!=samprate[1] || samprate[1]!=samprate[2]
 			|| samprate[0]!=samprate[2])
 		{
-			throw SeisppDberror(
-				string("Irregular sample rates in ")
-				+ string("three component data set"),
+			char buf[256];
+			ostringstream message(buf);
+			message << this_function_base_message
+			  << "Irregular sample rates ="
+			  << samprate[0] <<", "
+			  << samprate[1] <<", "
+			  << samprate[2] <<endl
+			  << "Cannot handle mixed sample rate data in a 3c bundle"<<endl;
+			throw SeisppDberror(message.str(),
 				dbh.db,complain);
 		}
 		// get the start and end time ranges and handle ragged

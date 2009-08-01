@@ -1,5 +1,6 @@
 /* This file contains member functions for a BasicTimeSeries object.*/
 #include <ostream>
+#include "stock.h"  // Antelope stock library for strtime in operator <<
 #include "BasicTimeSeries.h"
 namespace SEISPP {
 using namespace SEISPP;
@@ -99,16 +100,17 @@ ostream& operator<<(ostream& os,BasicTimeSeries& y)
 {
 
 	os << "ns=" <<y.ns<<endl
-		<< "t0=" <<y.t0<<endl
 		<< "dt=" <<y.dt<<endl;
 	if(y.live)
 		os << "Data is marked live"<<endl;
 	else
 		os << "Data is marked dead"<<endl;
 	if(y.tref==relative)
-		os << "Data time standard is relative"<<endl;
+		os << "Data time standard is relative"<<endl
+			<< "t0="<<y.t0<<endl;
 	else
-		os << "Data time standard is UTC (absolute)"<<endl;
+		os << "Data time standard is UTC (absolute)"<<endl
+			<< "t0="<<strtime(y.t0)<<endl;
 	set<TimeWindow,TimeWindowCmp>::iterator g;
 	for(g=y.gaps.begin();g!=y.gaps.end();++g)
 	{
