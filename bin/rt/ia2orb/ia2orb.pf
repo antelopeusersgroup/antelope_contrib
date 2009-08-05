@@ -1,0 +1,17 @@
+ssh 			ssh
+scp 			scp
+download_dir 		/tmp
+
+reject_future_data_sec 	86400
+reject_old_request_sec	129600
+max_rangerequest_sec 	3600
+
+ia_user 		seismology
+relay_server_ip 	127.0.0.1
+
+ia_network &Arr{
+#
+#sta    net  grid relay_server_ip    relay_port byteswap_timecorr  acquisition
+#
+PGC01   CN   NA   &relay_server_ip   99999   yes   continuous
+}

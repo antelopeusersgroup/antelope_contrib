@@ -1,0 +1,4 @@
+target		ia2orb
+cmdorbname	:
+default_gui_mode point
+default_request_start -00:10

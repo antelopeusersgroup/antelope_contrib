@@ -1,0 +1,8 @@
+target		ia2orb
+cmdorbname	:
+select 		/db/origin|/pf/.*orb2dbt
+
+trigger_expression	ml > 0 || mb > 0
+
+start_expr 	time
+end_expr 	time + 600

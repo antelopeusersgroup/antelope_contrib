@@ -1,0 +1,235 @@
+.TH IA2ORB 1 "$Date: 2003/09/11 17:08:29 $"
+.SH NAME
+ia2orb \- Acquire data from Internet Accelerometers into Antelope orbserver
+.SH SYNOPSIS
+.nf
+ia2orb [-kvV] [-p pfname] [-s statefile] [-t target] [-c cmdorbname] orbname
+.fi
+.SH DESCRIPTION
+
+The \fBia2orb\fP utility acquires data from Internet Accelerometer (IA)
+dataloggers via the Internet Accelerometer relay server, placing the acquired
+data onto the Antelope orbserver specified by \fIorbname\fP. Files are converted
+from the original miniseed into orb packets by the 
+Antelope \fBminiseed2orb(1)\fP program, which is called automatically by \fBia2orb\fP. 
+
+The stations to be acquired are specified by the \fIia_network\fP array in the 
+parameter file. See the PARAMETER FILE section below for complete details. Each 
+station may have acquisition specified as \fIoff\fP, \fIon-demand\fP, or 
+\fIcontinuous\fP. If a station is marked for \fIcontinuous\fP acquisition, 
+all files are downloaded from the instrument as they become available. If a 
+station is marked for \fIon-demand\fP acquisition, files are downloaded only upon 
+receipt of an acquisition command via the command-orb (usually put there by 
+the \fBiatrigger(1)\fP or \fBiarequest(1)\fP applications), and only for files matching the 
+requested point in time or time range for waveform data. The \fBia2orb\fP application
+dynamically monitors its parameter file for changes to the \fIia_network\fP array, 
+so the \fBia2orb\fP application does not need to be stopped and restarted if 
+the status is changed for a given station. 
+
+.SH OPTIONS
+.IP "-c cmdorbname"
+This is the name of the orbserver containing acquisition commands for 
+\fBia2orb\fP. Packets of type \fI/pf/dlcm\fP on this orbserver (with 
+the correct target name -- see the \fI-t\fP option below) will be 
+interpreted as instructions to acquire on-demand waveforms. If this 
+option is not specified, the command orbserver defaults to the name of the 
+data orbserver (\fIorbname\fP) given on the command line. 
+
+.IP -k
+Keep the original miniseed files downloaded from the IA (rather than 
+immediately erasing them after transfer to the orbserver).
+
+.IP "-p pfname"
+Specify a parameter-file other than the default \fIia2orb.pf\fP.
+
+.IP "-s statefile"
+Specify a state-file. If this option is invoked, information is saved about the 
+last-acquired file from each station configured for continuous acquisition, such 
+that upon restarting, \fBia2orb\fP will attempt to continue from where it 
+left off with each continuous station. (Although note that the \fIreject_old_request_sec\fP
+parameter in the parameter file -- see below -- takes precedence, so if the statefile
+is too far behind, data before \fIreject_old_request_sec\fP will not be requested).
+
+.IP "-t target" 
+This is the \fBia2orb\fP instance name for commands delivered to the 
+command orb. If not specified, the default is \fIia2orb\fP (i.e. the \fBia2orb\fP program
+will be looking for orb command packets of the name \fIia2orb/pf/dlcm\fP on the command-orb).
+
+.IP -v
+Be verbose. 
+
+.IP -V
+Be very verbose.
+
+.SH PARAMETER FILE
+.SS "Parameter File Parameters"
+.IP download_dir
+This parameter specifies the directory into which miniseed files from the IAs 
+will be initially downloaded. (Unless the -k option is specified, the downloaded
+files will be erased after they are uploaded to the orbserver). 
+
+.IP ia_network
+This array specifies all available stations in the Internet Accelerometer Network. 
+If a station does not appear in this list, it will not be acquired. There should be 
+one line per station in this table. Seven whitespace-separated values appear on each line. The first 
+is the name of the station, which must be unique. The second and third items are the 
+network name and grid name for the station, respectively. The fourth and fifth elements 
+give the relay server IP address and port number to use to connect to the station, respectively. 
+The sixth element is a boolean value indicating whether to byte-swap the time-correction value in the 
+acquired miniseed files from this station (accounting for a bug in some versions of the IA 
+firmware). The final element indicates the acquisition mode for this station. If this value is 
+\fIcontinuous\fP, continuous data are acquired from the given station. If \fIon-demand\fP, data are acquired
+only in response to commands received by \fBia2orb\fP via the orbserver. If this value is \fIoff\fP, 
+no data are acquired from this station. 
+
+.IP ia_user
+This parameter gives the *nix username with which to connect to the 
+IAs through the relay server (the named user should exist on each 
+IA. It's not a requirement, nor standard, that the same user exist on the 
+relay server itself).
+
+.IP max_rangerequest_sec
+The \fBia2orb\fP program allows time-ranges of waveform data to be requested 
+(via command packets placed on the command-orb) from all stations configured in 
+\fIon-demand\fP acquisition mode (in the \fIia_network\fP
+parameter-file array). The \fImax_rangerequest_sec\fP parameter 
+specifies the maximum time-range of data, in seconds, that may be 
+requested from on-demand stations via the \fIacqrange\fP command to \fBia2orb\fP. Requests for
+time-spans of waveform data exceeding this length are summarily rejected by \fBia2orb\fP. 
+
+.IP relay_server_ip
+This is the Internet address of the Internet Accelerometer relay server, 
+in dotted decimal notation. This parameter is not read directly by \fBia2orb\fP, 
+rather it is a formatting convenience within the \fBia2orb\fP.pf parameter file. The 
+\fIrelay_server_ip\fP parameter may be used as a plain reference (see the man-page 
+pf(5) for more information on plain references) to fill in the rows of the \fIia_network\fP 
+array, as demonstrated in the Parameter File Example below.
+
+.IP reject_future_data_sec
+This parameter specifies the number of seconds into the future (as judged 
+by the system clock) beyond which data with future timestamps will be 
+rejected rather than acquired onto the orbserver. If \fIreject_future_data_sec\fP is less than 0, 
+all data are allowed. 
+
+.IP reject_old_request_sec
+This parameter specifies the number of seconds into the past beyond which data requests 
+will be ignored by \fBia2orb\fP, whether coming from command-orb requests or from 
+state-file notes. If \fIreject_future_data_sec\fP is set to 0, no filtering is performed. 
+
+.IP scp
+This is the name of the scp(1) executable invoked by \fBia2orb\fP, which can be just \fIscp\fP
+if available on the local path (otherwise an absolute path should be specified).
+
+.IP ssh
+This is the name of the ssh(1) executable invoked by \fBia2orb\fP, which can be just \fIssh\fP
+if available on the local path (otherwise an absolute path should be specified).
+
+.SS "Parameter File Example"
+
+.in 2c
+.ft CW
+.nf
+
+ssh 			ssh
+scp 			scp
+download_dir 		/tmp
+
+reject_future_data_sec 	86400
+reject_old_request_sec	129600
+max_rangerequest_sec 	3600
+
+ia_user 		seismology
+relay_server_ip 	127.0.0.1
+
+ia_network &Arr{
+\#
+\#sta    net  grid relay_server_ip    relay_port byteswap_timecorr  acquisition
+\#
+PGC01   CN   NA   &relay_server_ip   99999   yes   continuous
+}
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+The \fBia2orb\fP program may be run from the command line in a shell with 
+an ssh authentication agent, for example as follows: 
+.nf
+
+% ssh-agent $SHELL
+% ssh-add ~/.ssh/id_iauser
+Passphrase:
+% ia2orb -v ':@'
+
+.fi
+
+The following example shows how to trigger the acquisition of a segment of 
+data across the network for a given time, by putting a command packet on the 
+orbserver for the running \fBia2orb\fP instance using the default target name 
+of \fIia2orb\fP:
+.nf
+
+%cat mycmd.pf
+command acqnet
+time 1177721659.872
+% 
+% pf2orb -s ia2orb -p dlcm mycmd :
+%
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+iarequest(1), iatrigger(1), orbserver(1), miniseed2orb(1) 
+.fi
+.SH "BUGS AND CAVEATS"
+\fBia2orb\fP is strongly bound to the current naming convention and 
+timestamping patterns for files on the IA dataloggers. Changes to these
+conventions will invalidate data-acquisition assumptions made in the 
+\fBia2orb\fP code. 
+
+\fBia2orb\fP presumes the IA is configured to return time-series data in
+counts, not in physical units.
+
+\fBia2orb\fP presumes the account and shell under which it runs are already
+authenticated for the ssh connections to the relay server. As a guideline 
+only, one way to accomplish this when running from an interactive environment 
+is by configuring an ssh agent:
+.nf
+
+% ssh-agent $SHELL
+% ssh-add ./my_private_ssh_key_file
+Passphrase:
+%
+
+.fi
+The above example is only a guide to further exploration. The authentication
+mechanisms for running \fBia2orb\fP (specifically, for running it continuously and 
+in an automated sense under the Antelope real-time system) will have to be
+constructed to match the security policies of the site at which \fBia2orb\fP
+is run. 
+
+\fBia2orb\fP is currently set up to use only one relay server per station. 
+In principle it would be possible to expand it to use multiple relay servers, 
+falling back to second or third relay servers on failure of the first. 
+
+The \fIbyteswap_timecorr\fP capability was written as a workaround to a bug 
+in the Internet Accelerometer acquisition code at the time of writing. It is no
+longer necessary to enable this for all instruments. 
+
+The -k option keeps the original files downloaded from the IA. However, 
+if the \fIbyteswap_msd_timecorr\fP parameter is set, the byte-swapping is 
+done in place on the files, so the files in the \fIdownload_dir\fP will 
+be not quite identical to those on the IA itself.
+
+\fBia2orb\fP will not repeatedly attempt to retrieve a given file from the IA if 
+attempts to get that file are at first unsuccessful. 
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id: manpage_template,v 1.12 2003/09/11 17:08:29 danq Exp $
