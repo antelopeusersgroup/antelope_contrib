@@ -38,10 +38,10 @@ K2K 2A1
 }
 
 category	Nanometrics
-configuration   Taurus 
+configuration   Taurus default
 
-description	Nanometric Taurus Datalogger
-dfile taurus
+description	Nanometric Taurus Datalogger Default
+dfile taurus_default
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 
