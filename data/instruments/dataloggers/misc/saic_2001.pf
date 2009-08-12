@@ -11,13 +11,13 @@ streams		1280sps 640sps 320sps 160sps 80sps 40sps 20sps
 
 
 # definitions of streams
-1280sps	 1280  a/d cf1 cf2 cf3
-640sps	 640   a/d cf1 cf2 cf2 cf3
-320sps	 320   a/d cf1 cf2 cf2 cf2 cf3
-160sps	 160   a/d cf1 cf2 cf2 cf2 cf2 cf3
-80sps	 80    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf3
-40sps	 40    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
-20sps	 20    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+1280sps	 1280  a/d cf1 cf2 cf2 cf3
+640sps	 640   a/d cf1 cf2 cf2 cf2 cf3
+320sps	 320   a/d cf1 cf2 cf2 cf2 cf2 cf3
+160sps	 160   a/d cf1 cf2 cf2 cf2 cf2 cf2 cf3
+80sps	 80    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+40sps	 40    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
+20sps	 20    a/d cf1 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf2 cf3
 
 gains  524384
 
