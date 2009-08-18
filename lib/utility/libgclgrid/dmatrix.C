@@ -46,8 +46,6 @@ double &dmatrix::operator()(int rowindex, int colindex)
   if (colindex<0) out_of_range=1;
   if (out_of_range)
 	throw dmatrix_index_error(nrr,ncc,rowindex,colindex);
-// old, stored in column order
-//  return (ary[colindex+(ncc+1)*(rowindex)]);
   return (ary[rowindex+(nrr)*(colindex)]);
 }
 //
@@ -127,15 +125,12 @@ dmatrix operator*(const dmatrix& x1,const dmatrix& b)
 	if(x1.ncc!=b.nrr)
 		throw dmatrix_size_error(x1.nrr, x1.ncc, b.nrr, b.length);
 	dmatrix prod(x1.nrr,b.ncc);
-	for(i=0;i<x1.nrr;i++)for(j=0;j<b.ncc;j++)
-		{prod(i,j)=0.0;
-		for(k=0;k<x1.ncc;k++)
-		   {
-		   xval=x1.ary[k+(x1.ncc+1)*i];
-		   bval=b.ary[j+(b.ncc+1)*k];
-		   prod(i,j) += xval*bval;
-		   }
-		}
+	for(i=0;i<x1.nrr;i++)
+	  for(j=0;j<b.ncc;j++)
+	  {
+		prod(i,j)=ddot(x1.ncc,&(x1.ary[i]),x1.nrr,
+			&(b.ary[j*(b.nrr)]),1);
+	  }
 	return prod;
 	}
 dvector operator*(const dmatrix& x1,const dvector& b)
@@ -175,8 +170,9 @@ int i,j;
 dmatrix temp(x1.ncc,x1.nrr);
 for(i=0; i<x1.nrr; i++)
    for(j=0; j<x1.ncc;j++)
-temp.ary[i+(temp.ncc+1)*j]=
-   x1.ary[j+(x1.ncc+1)*i];
+   {
+	temp(j,i)=const_cast<dmatrix&>(x1)(i,j);
+   }
 return temp;
 }
 
@@ -252,7 +248,5 @@ double &dvector::operator()(int rowindex)
 {
   if (rowindex>=nrr)
 	throw dmatrix_index_error(nrr,1,rowindex,1);
-// old, stored in column order
-//  return (ary[colindex+(ncc+1)*(rowindex)]);
   return (ary[rowindex]);
 }		
