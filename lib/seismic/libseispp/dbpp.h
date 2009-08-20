@@ -629,7 +629,7 @@ public:
 	DatascopeMatchHandle(DatascopeHandle& parent,
 			string table, 
 			list<string> matchkeys,
-			AttributeMap am);
+			AttributeMap& am);
 	/*! Standard copy constructor. */
 	DatascopeMatchHandle(const DatascopeMatchHandle& parent);
 	/*! Standard assignment operator. */

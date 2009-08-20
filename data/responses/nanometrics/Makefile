@@ -1,5 +1,7 @@
 DATADIR=responses
-DATA= trident_1000sps_fir1    \
+DATA= taurus_inf_aa \
+      taurus_std_aa \
+      trident_1000sps_fir1    \
       trident_1000sps_fir2    \
       trident_1000sps_fir3    \
       trident_100sps_fir1    \

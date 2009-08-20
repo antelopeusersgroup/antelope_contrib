@@ -25,7 +25,7 @@ DatascopeMatchHandle::DatascopeMatchHandle() : DatascopeHandle(),amap("css3.0")
 //
 DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 	string table, list<string>keys_list,
-	AttributeMap am) : DatascopeHandle(parent)
+	AttributeMap& am) : DatascopeHandle(parent)
 {
 	const string base_error("DatascopeMatchHandle constructor:  ");
 	// We save this copy in the private area of this object

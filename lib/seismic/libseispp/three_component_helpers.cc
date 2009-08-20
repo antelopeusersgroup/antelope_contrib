@@ -131,6 +131,23 @@ auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& tc
 	}
 	return(tceo);
 }
-	
+
+void HorizontalRotation(ThreeComponentSeismogram& d, double phi)
+{
+	double tmatrix[3][3];
+	double a,b;
+	a=cos(phi);
+	b=sin(phi);
+	tmatrix[0][0]=a;
+	tmatrix[1][0]=-b;
+	tmatrix[2][0]=0.0;
+	tmatrix[0][1]=b;
+	tmatrix[1][1]=a;
+	tmatrix[2][1]=0.0;
+	tmatrix[0][2]=0.0;
+	tmatrix[1][2]=0.0;
+	tmatrix[2][2]=1.0;
+	d.apply_transformation_matrix(tmatrix);
+}
 
 } // end SEISPP namespace encapsulation

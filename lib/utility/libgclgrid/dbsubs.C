@@ -390,6 +390,15 @@ bool test_for_byteswap(Dbptr db, string gridname,int dim)
             "gridname =~ /%s/ && dimensions == %d",
                   gridname.c_str(),dim);
 	db=dbsubset(db,sstring,0);
+	int nrec;
+	dbquery(db,dbRECORD_COUNT,&nrec);
+	if(nrec<=0)
+	{
+		cerr <<"Warning:  test_for_byteswap failed to find a grid named "
+			<< gridname<<endl
+			<< "Beware orphan gclfield records"<<endl;
+		return(false);
+	}
 	char dtype[4];
 	db.record=0;
 	dbgetv(db,0,"datatype",dtype,0);
@@ -1105,6 +1114,12 @@ void GCLscalarfield::dbsave(Dbptr dbo,
 			throw(dbserr);
 		}
 	}
+	else
+	{
+		if(test_for_byteswap(dbo,this->name,2) )
+			swapdvec(this->val[0],n1*n2);
+	}
+		
 	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
 	if(db.table == dbINVALID)
 	{
@@ -1185,6 +1200,11 @@ void GCLscalarfield3d::dbsave(Dbptr dbo,
 		{
 			throw(dbserr);
 		}
+	}
+	else
+	{
+		if(test_for_byteswap(dbo,this->name,3) )
+			swapdvec(this->val[0][0],n1*n2*n3);
 	}
 	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
 	if(db.table == dbINVALID)
@@ -1267,6 +1287,11 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 			throw(dbserr);
 		}
 	}
+	else
+	{
+		if(test_for_byteswap(dbo,this->name,2) )
+			swapdvec(this->val[0][0],n1*n2*nv);
+	}
 	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
 	if(db.table == dbINVALID)
 	{
@@ -1347,6 +1372,11 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 		{
 			throw(dbserr);
 		}
+	}
+	else
+	{
+		if(test_for_byteswap(dbo,this->name,3) )
+			swapdvec(this->val[0][0][0],n1*n2*n3*nv);
 	}
 	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
 	if(db.table == dbINVALID)

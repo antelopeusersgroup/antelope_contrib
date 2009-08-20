@@ -13,6 +13,7 @@ include $(ANTELOPEMAKE)
 
 OBJS=converters.o \
     create_destroy.o \
+    decimate.o \
     dbsubs.o \
     dx_output.o \
     ellipsoid.o \
