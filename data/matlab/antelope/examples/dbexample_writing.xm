@@ -12,7 +12,7 @@ db=dblookup_table( db,'origin' );
 
 %      *****  Preferred method *****
 % METHOD ONE: add a new row with with some fields set, all in one step:
-dbaddv( db,'lat',41,'lon',-150,'depth',16,'time',str2epoch( '1/16/97 14:25' ) );
+dbaddv( db,'lat',41,'lon',-150,'depth',16,'time',str2epoch( '1/16/97 14:25' ),'nass',0,'ndef',0 );
 
 % METHOD TWO: add a null row, then use dbputv to set some fields in it:
 db.record=dbaddnull( db );
