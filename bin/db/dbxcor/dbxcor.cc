@@ -242,7 +242,8 @@ cerr << "Entering do_sw"<<endl;
 	dbhw.natural_join("origin");
 	list<string>matchkey;
 	matchkey.push_back("orid");
-	sm.dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,AttributeMap("css3.0"));
+	AttributeMap amtmp("css3.0");
+	sm.dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,amtmp);
 
 	sm.using_subarrays=sm.xpe->use_subarrays;
 
