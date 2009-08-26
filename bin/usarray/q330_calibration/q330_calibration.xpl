@@ -527,6 +527,14 @@ sub dlcmdpf { # $done = dlcmdpf($Pf);
 
     &prettyprint(\%pf) if $opt_V;
         
+    unless (ref(\$pf{$keys[0]}) eq "REF") {
+        $done = 0;
+        elog_notify("\n not completed 		done	$done\n\n");
+        &prettyprint(\%pf);
+        elog_complain("\n	dlcmd did not return parameter file\n\n");
+        return ($done) ;
+    }
+ 
     if ($pf{$keys[0]}{disposition} =~ /done/) {
         $done = 1;
         elog_notify("completed successfully		done	$done") if $opt_V;
