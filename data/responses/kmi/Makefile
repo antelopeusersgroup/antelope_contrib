@@ -15,7 +15,7 @@ DATA= \
     FIRBCDP \
     FIRBNC \
     FIRBNCDP \
-    README_KMI_appnote39a.pdf \
+    README_KMI_appnote39c.pdf \
     episensor \
     fba11 \
     fba23_100 \
