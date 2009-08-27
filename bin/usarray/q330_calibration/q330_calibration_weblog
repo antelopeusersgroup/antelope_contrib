@@ -1,0 +1,30 @@
+Attribute email
+	String (128)
+	Format ( "%128s" )
+	Null ( "-" )
+	Description ( "q330_calibration requestor email" )
+	Detail {
+		This field is the email address of the person executing q330_calibration through the web interface
+	}
+	;
+	
+Attribute stastr
+	String (50)
+	Format ( "%50s" )
+	Null ( "-" )
+	Description ( "q330_calibration station list" )
+	Detail {
+		The list of space delimited station codes sent to q330_calibration through the web interface
+	}
+	;
+
+Relation q330_calibration_weblog
+	Fields ( email stastr time lddate )
+	Primary ( email time )
+	Description ( "Table describing which users submitted calibration requests via the ANF website" )
+	Detail {
+		Table designed to provide a record of who submitted q330_calibration requests via the ANF 
+		website administrative area using the calibration tool
+		
+		}
+	;
