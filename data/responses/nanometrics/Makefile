@@ -35,6 +35,7 @@ DATA= taurus_inf_aa \
       trillium_120          \
       trillium_240          \
       trillium_40           \
+      Trillium40_UserGuide_13912R11_2009.pdf \
       Trillium40TransferFunction.pdf \
       Trillium120P_UserGuide_responseinfo.pdf \
       Trillium240_UserGuide_responseinfo.pdf \

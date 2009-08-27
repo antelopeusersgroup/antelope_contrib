@@ -202,7 +202,7 @@
             @dbtmp = dbsubset(@dbje,$subset);
             if (dbquery(@dbtmp,"dbRECORD_COUNT") && ! $opt_2 ) {
                 elog_notify("processing BHE monitor $subset");
-                $sleep = &calibrate_view($orbname,"0x4",$offset,$problems,@dbtmp) ;
+                ($sleep,$problems) = &calibrate_view($orbname,"0x4",$offset,$problems,@dbtmp) ;
             }
 
             @dbtmp = dbsubset(@dbjn,$subset);
@@ -213,7 +213,7 @@
                 $sleep = $sleep - (now() - $start); 
                 elog_notify ("sleeping $sleep");
                 sleep ($sleep) unless ($opt_n || $sleep < 1);
-                $sleep = &calibrate_view($orbname,"0x2",$offset,$problems,@dbtmp) ;
+                ($sleep,$problems) = &calibrate_view($orbname,"0x2",$offset,$problems,@dbtmp) ;
             }
         } 
         
@@ -239,7 +239,7 @@
                     $row = (10*$drow) + $irow;
                     next if ($row >= $rows);
                     $dbj[3] = $row;
-                    $sleep = &calibrate_one($orbname,"0x4",$offset,$problems,@dbj);
+                    ($sleep,$problems) = &calibrate_one($orbname,"0x4",$offset,$problems,@dbj);
                 }
                 elog_notify("row	$row\n\n") if $opt_v ;
                 elog_notify ("sleeping $sleep") ;
@@ -255,7 +255,7 @@
                     $row = (10*$drow) + $irow;
                     next if ($row >= $rows);
                     $dbj[3] = $row;
-                    $sleep = &calibrate_one($orbname,"0x2",$offset,$problems,@dbj);
+                    ($sleep,$problems) = &calibrate_one($orbname,"0x2",$offset,$problems,@dbj);
                 }
                 elog_notify("row	$row\n\n") if $opt_v ;
                 elog_notify ("sleeping $sleep") ;
@@ -269,7 +269,7 @@
 #         $trow   = 10 unless ($trow > 10 );
 #         for ($row = 0; $row < $rows; $row++){
 #             $dbj[3] = $row;
-#             $sleep = &calibrate_one($orbname,"0x4",$offset,$problems,@dbj);
+#             ($sleep,$problems) = &calibrate_one($orbname,"0x4",$offset,$problems,@dbj);
 #             unless (($row + 1) % $trow) {
 #                 elog_notify("row	$row\n\n") if $opt_V ;
 #                 elog_notify ("sleeping $sleep") ;
@@ -285,7 +285,7 @@
 #         
 #         for ($row = 0; $row < $rows; $row++){
 #             $dbj[3] = $row;
-#             $sleep = &calibrate_one($orbname,"0x2",$offset,$problems,@dbj);
+#             ($sleep,$problems) = &calibrate_one($orbname,"0x2",$offset,$problems,@dbj);
 #             unless (($row + 1) % $trow) {
 #                 elog_notify("row	$row\n\n") if $opt_V ;
 #                 elog_notify ("sleeping $sleep") ;
@@ -300,7 +300,7 @@
         @dbj = dbjoin(@dbstaq330,@dbdlsensor,"ssident#dlident");
         elog_notify(sprintf("%d	stations in join of staq330 and dlsensor",dbquery(@dbj,'dbRECORD_COUNT')));
         $sleep = 0 ;
-        $sleep = &calibrate_view($orbname,"0x4",$offset,$problems,@dbj) unless $opt_2 ;
+        ($sleep,$problems) = &calibrate_view($orbname,"0x4",$offset,$problems,@dbj) unless $opt_2 ;
     
         elog_notify ("sleeping $sleep") ;
 
@@ -308,7 +308,7 @@
         elog_notify ("sleeping $sleep") ;
         sleep ($sleep) unless ($opt_n || $sleep < 1) ;
     
-        $sleep = &calibrate_view($orbname,"0x2",$offset,$problems,@dbj) unless $opt_3 ;
+        ($sleep,$problems) = &calibrate_view($orbname,"0x2",$offset,$problems,@dbj) unless $opt_3 ;
     }
 
     dbclose(@db);
@@ -319,9 +319,15 @@
     $stime = strydtime(now());
     elog_notify ("completed successfully	$stime\n\n");
 
-    $subject = sprintf("Success  $pgm  $host");
-    elog_notify ($subject);
-    &sendmail ( $subject, $opt_m ) if $opt_m ;
+    if ($problems == 0 ) {
+        $subject = sprintf("Success  $pgm  $host");
+        elog_notify ($subject);
+        &sendmail ( $subject, $opt_m ) if $opt_m ;
+    } else { 
+        $subject = "Problems - $pgm $host	$problems problems" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
   
     exit(0);
 }
@@ -410,7 +416,7 @@ sub getparam { # %pf = getparam($Pf);
     return (%pf) ;
 }
 
-sub calibrate_view { # ($maxdur,$sleep) = &calibrate_view($orbname,$mon_chan,$offset,$problems,@dbj);
+sub calibrate_view { # ($sleep,$problems) = &calibrate_view($orbname,$mon_chan,$offset,$problems,@dbj);
     my ($orbname,$mon_chan,$offset,$problems,@dbj) = @_ ;
     my ($cmd, $subject, $problem_check);
     my ($sta, $dlsta, $chident, $snmodel, $target, $otime, $maxdur, $sleep, $ssec);
@@ -437,9 +443,11 @@ sub calibrate_view { # ($maxdur,$sleep) = &calibrate_view($orbname,$mon_chan,$of
                 $cmd = "cat /tmp/tmp_dlcmd.pf";
                 elog_notify("$cmd");
                 $problems = run($cmd,$problems) ;
-                $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
-                &sendmail($subject, $opt_m) if $opt_m ; 
-                elog_die("\n$subject") ;
+                $subject = "Problem $problems	- $pgm $host	dlcmd $sta $mon_chan" ;
+#                &sendmail($subject, $opt_m) if $opt_m ; 
+#                elog_die("\n$subject") ;
+                elog_complain("\n$subject") ;
+                elog_complain("	$cmd") ;
             }
             if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
                 next;
@@ -455,10 +463,10 @@ sub calibrate_view { # ($maxdur,$sleep) = &calibrate_view($orbname,$mon_chan,$of
         elog_notify("offset	$otime") if $opt_v ;
         sleep ($otime) unless $opt_n;
     }
-    return($maxdur,$sleep);
+    return($sleep,$problems);
 }
 
-sub calibrate_one { # $sleep = &calibrate_view($orbname,$mon_chan,$offset,$problems,@dbj);
+sub calibrate_one { # ($sleep,$problems) = &calibrate_one($orbname,$mon_chan,$offset,$problems,@dbj);
     my ($orbname,$mon_chan,$offset,$problems,@dbj) = @_ ;
     my ($cmd, $subject, $problem_check);
     my ($sta, $dlsta, $chident, $snmodel, $target, $otime,  $sleep);
@@ -481,9 +489,11 @@ sub calibrate_one { # $sleep = &calibrate_view($orbname,$mon_chan,$offset,$probl
             $cmd = "cat /tmp/tmp_dlcmd.pf";
             elog_notify("$cmd");
             $problems = run($cmd,$problems) ;
-            $subject = "Problems - $pgm $host	dlcmd $sta $mon_chan" ;
-            &sendmail($subject, $opt_m) if $opt_m ; 
-            elog_die("\n$subject") ;
+            $subject = "Problem $problems	- $pgm $host	dlcmd $sta $mon_chan" ;
+#                &sendmail($subject, $opt_m) if $opt_m ; 
+#                elog_die("\n$subject") ;
+            elog_complain("\n$subject") ;
+            elog_complain("	$cmd") ;
         }
         if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
             return (0);
@@ -497,7 +507,7 @@ sub calibrate_one { # $sleep = &calibrate_view($orbname,$mon_chan,$offset,$probl
     elog_notify("offset	$otime") if $opt_V ;
     sleep ($otime) unless $opt_n;
 
-    return($sleep);
+    return($sleep,$problems);
 }
 
 sub dlcmdpf { # $done = dlcmdpf($Pf);
@@ -517,6 +527,14 @@ sub dlcmdpf { # $done = dlcmdpf($Pf);
 
     &prettyprint(\%pf) if $opt_V;
         
+    unless (ref(\$pf{$keys[0]}) eq "REF") {
+        $done = 0;
+        elog_notify("\n not completed 		done	$done\n\n");
+        &prettyprint(\%pf);
+        elog_complain("\n	dlcmd did not return parameter file\n\n");
+        return ($done) ;
+    }
+ 
     if ($pf{$keys[0]}{disposition} =~ /done/) {
         $done = 1;
         elog_notify("completed successfully		done	$done") if $opt_V;
