@@ -18,13 +18,20 @@ Attribute stastr
 	}
 	;
 
+Attribute pid
+        Integer (6)
+        Format ( "%6d" )
+        Null ( "-1" )
+        Description ( "process id" )
+        ;
+
 Relation q330_calibration_weblog
-	Fields ( email stastr time lddate )
-	Primary ( email time )
+	Fields ( email stastr time pid hostname lddate )
+	Primary ( email time pid )
 	Description ( "Table describing which users submitted calibration requests via the ANF website" )
 	Detail {
 		Table designed to provide a record of who submitted q330_calibration requests via the ANF 
-		website administrative area using the calibration tool
+		website administrative area using the calibration tool.
 		
 		}
 	;
