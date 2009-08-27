@@ -57,9 +57,9 @@ class Orb():
 
             self._orbfd = _orb._orbopen(self._orbname, self._perm)
 
-	    if(self._orbfd < 0):
+            if(self._orbfd < 0):
 
-	        raise RuntimeError, 'Failure opening orbserver %s' % self._orbname
+                raise RuntimeError, 'Failure opening orbserver %s' % self._orbname
 
     def __str__(self):
         
@@ -131,22 +131,22 @@ class Orb():
     def lag(self, match = None, reject = None):
         """"Return parameters indicating degree to which clients are behind"""
 
-	return _orb._orblag(self._orbfd, match, reject)
+        return _orb._orblag(self._orbfd, match, reject)
 
     def stat(self):
         """"Return parameters about orb status"""
 
-	return _orb._orbstat(self._orbfd)
+        return _orb._orbstat(self._orbfd)
 
     def sources(self):
         """"Return information on orb data-streams (source names)"""
 
-	return _orb._orbsources(self._orbfd)
+        return _orb._orbsources(self._orbfd)
 
     def clients(self):
         """"Return information on orb clients"""
 
-	return _orb._orbclients(self._orbfd)
+        return _orb._orbclients(self._orbfd)
 
     def putx(self, srcname, time, packet, nbytes):
         """Put a packet on an orb, returning the pktid of the output packet"""
@@ -156,12 +156,12 @@ class Orb():
     def resurrect(self):
         """restores previous orb position variables"""
 
-	return _orb._orbresurrect(self._orbfd)
+        return _orb._orbresurrect(self._orbfd)
 
     def bury(self, pktid, pkttime):
         """Save orb position variables"""
 
-	return _orb._orbbury(self._orbfd, pktid, pkttime)
+        return _orb._orbbury(self._orbfd, pktid, pkttime)
 
 
 def orbopen(orbname, perm = 'r'):
@@ -305,11 +305,11 @@ if __name__ == '__main__':
 
     class Testorb_fixture():
 
-	tempdir = '/tmp/python_orbtest_' + os.environ["USER"] + str(os.getpid())
+        tempdir = '/tmp/python_orbtest_' + os.environ["USER"] + str(os.getpid())
 
         def start(self):
 
-	    os.mkdir(self.tempdir)
+            os.mkdir(self.tempdir)
             os.chdir(self.tempdir)
             os.system("pfcp orbserver .")
             os.system("orbserver -p " + orbname + " orbserver &")
@@ -320,130 +320,130 @@ if __name__ == '__main__':
 
             os.system("echo halt | orbstat -i " + orbname)
             os.system("sleep 5")
-	    os.system("/bin/rm -f " + self.tempdir + "/orb/*")
-	    os.rmdir(self.tempdir + "/orb")
-	    os.system("/bin/rm -f " + self.tempdir + "/*")
-	    os.rmdir(self.tempdir)
+            os.system("/bin/rm -f " + self.tempdir + "/orb/*")
+            os.rmdir(self.tempdir + "/orb")
+            os.system("/bin/rm -f " + self.tempdir + "/*")
+            os.rmdir(self.tempdir)
 
     class Testorb(unittest.TestCase):
 
         def test_Orb_constructor(self):
 
-	    orb = Orb(orbname)
+            orb = Orb(orbname)
 
-	    self.assertRaises(RuntimeError, Orb, 'not an orb')
-	    
+            self.assertRaises(RuntimeError, Orb, 'not an orb')
+            
         def test_procedure_orbopen(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
         def test_procedure_orbclose(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbping(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             version = orbping(orb)
 
-	    self.assertTrue(version > 0)
+            self.assertTrue(version > 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbtell(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             pktid = orbtell(orb)
 
-	    self.assertTrue(isinstance(pktid,int))
+            self.assertTrue(isinstance(pktid,int))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbselect(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             n = orbselect(orb, ".*")
 
-	    self.assertTrue(n >= 0)
+            self.assertTrue(n >= 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbreject(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             n = orbreject(orb, ".*")
 
-	    self.assertTrue(n >= 0)
+            self.assertTrue(n >= 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbposition(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             pktid = orbposition(orb, "oldest")
 
-	    self.assertTrue(pktid >= 0)
+            self.assertTrue(pktid >= 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbreap(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
             ( pktid, srcname, time, packet, nbytes ) = orbreap(orb)
 
-	    self.assertTrue(isinstance(pktid, int))
-	    self.assertTrue(isinstance(srcname, str))
-	    self.assertTrue(isinstance(time, float))
-	    self.assertTrue(isinstance(packet, str))
-	    self.assertTrue(isinstance(nbytes, int))
+            self.assertTrue(isinstance(pktid, int))
+            self.assertTrue(isinstance(srcname, str))
+            self.assertTrue(isinstance(time, float))
+            self.assertTrue(isinstance(packet, str))
+            self.assertTrue(isinstance(nbytes, int))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbreap_timeout(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
             ( pktid, srcname, time, packet, nbytes ) = orbreap_timeout(orb, 1)
 
-	    if( isinstance(pktid, int) ):
-	        self.assertTrue(isinstance(srcname, str))
-	        self.assertTrue(isinstance(time, float))
-	        self.assertTrue(isinstance(packet, str))
-	        self.assertTrue(isinstance(nbytes, int))
+            if( isinstance(pktid, int) ):
+                self.assertTrue(isinstance(srcname, str))
+                self.assertTrue(isinstance(time, float))
+                self.assertTrue(isinstance(packet, str))
+                self.assertTrue(isinstance(nbytes, int))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbget(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
             ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
 
-	    self.assertTrue(isinstance(pktid, int))
-	    self.assertTrue(isinstance(srcname, str))
-	    self.assertTrue(isinstance(time, float))
-	    self.assertTrue(isinstance(packet, str))
-	    self.assertTrue(isinstance(nbytes, int))
+            self.assertTrue(isinstance(pktid, int))
+            self.assertTrue(isinstance(srcname, str))
+            self.assertTrue(isinstance(time, float))
+            self.assertTrue(isinstance(packet, str))
+            self.assertTrue(isinstance(nbytes, int))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbput(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
@@ -451,15 +451,15 @@ if __name__ == '__main__':
 
             time += 1
 
-	    rc = orbput(orb, srcname, time, packet, nbytes )
+            rc = orbput(orb, srcname, time, packet, nbytes )
 
-	    self.assertTrue(rc == 0)
+            self.assertTrue(rc == 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbputx(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
@@ -467,35 +467,35 @@ if __name__ == '__main__':
 
             time += 1
 
-	    rc = orbputx(orb, srcname, time, packet, nbytes )
+            rc = orbputx(orb, srcname, time, packet, nbytes )
 
-	    self.assertTrue(rc > 0)
+            self.assertTrue(rc > 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbseek(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             pktid = orbseek(orb, ORBOLDEST)
 
-	    self.assertTrue(pktid >= 0)
+            self.assertTrue(pktid >= 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbafter(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             pktid = orbafter(orb, 631152000)
 
-	    self.assertTrue(pktid >= 0)
+            self.assertTrue(pktid >= 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbpkt_string(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
@@ -503,67 +503,67 @@ if __name__ == '__main__':
 
             packet_string = orbpkt_string(srcname, time, packet, nbytes)
 
-	    self.assertTrue(isinstance(packet_string, str))
+            self.assertTrue(isinstance(packet_string, str))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbstat(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
             stat = orbstat( orb )
 
-	    self.assertTrue(isinstance(stat['when'], float))
-	    self.assertTrue(isinstance(stat['started'], float))
-	    self.assertTrue(isinstance(stat['orb_start'], float))
-	    self.assertTrue(isinstance(stat['connections'], int))
-	    self.assertTrue(isinstance(stat['messages'], int))
-	    self.assertTrue(isinstance(stat['maxdata'], int))
-	    self.assertTrue(isinstance(stat['errors'], int))
-	    self.assertTrue(isinstance(stat['rejected'], int))
-	    self.assertTrue(isinstance(stat['closes'], int))
-	    self.assertTrue(isinstance(stat['opens'], int))
-	    self.assertTrue(isinstance(stat['port'], int))
-	    self.assertTrue(isinstance(stat['address'], str))
-	    self.assertTrue(isinstance(stat['pid'], int))
-	    self.assertTrue(isinstance(stat['nsources'], int))
-	    self.assertTrue(isinstance(stat['nclients'], int))
-	    self.assertTrue(isinstance(stat['maxsrc'], int))
-	    self.assertTrue(isinstance(stat['maxpkts'], int))
-	    self.assertTrue(isinstance(stat['version'], str))
-	    self.assertTrue(isinstance(stat['who'], str))
-	    self.assertTrue(isinstance(stat['host'], str))
+            self.assertTrue(isinstance(stat['when'], float))
+            self.assertTrue(isinstance(stat['started'], float))
+            self.assertTrue(isinstance(stat['orb_start'], float))
+            self.assertTrue(isinstance(stat['connections'], int))
+            self.assertTrue(isinstance(stat['messages'], int))
+            self.assertTrue(isinstance(stat['maxdata'], int))
+            self.assertTrue(isinstance(stat['errors'], int))
+            self.assertTrue(isinstance(stat['rejected'], int))
+            self.assertTrue(isinstance(stat['closes'], int))
+            self.assertTrue(isinstance(stat['opens'], int))
+            self.assertTrue(isinstance(stat['port'], int))
+            self.assertTrue(isinstance(stat['address'], str))
+            self.assertTrue(isinstance(stat['pid'], int))
+            self.assertTrue(isinstance(stat['nsources'], int))
+            self.assertTrue(isinstance(stat['nclients'], int))
+            self.assertTrue(isinstance(stat['maxsrc'], int))
+            self.assertTrue(isinstance(stat['maxpkts'], int))
+            self.assertTrue(isinstance(stat['version'], str))
+            self.assertTrue(isinstance(stat['who'], str))
+            self.assertTrue(isinstance(stat['host'], str))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbsources(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
             (when, sources) = orbsources( orb )
 
-	    self.assertTrue(isinstance(when, float))
+            self.assertTrue(isinstance(when, float))
 
-	    if( len(sources) > 0 ):
+            if( len(sources) > 0 ):
 
-	        self.assertTrue(isinstance(sources[0]['srcname'], str))
-	        self.assertTrue(isinstance(sources[0]['active'], int))
-	        self.assertTrue(isinstance(sources[0]['soldest'], int))
-	        self.assertTrue(isinstance(sources[0]['slatest'], int))
-	        self.assertTrue(isinstance(sources[0]['npkts'], int))
-	        self.assertTrue(isinstance(sources[0]['nbytes'], int))
-	        self.assertTrue(isinstance(sources[0]['soldest_time'], float))
-	        self.assertTrue(isinstance(sources[0]['slatest_time'], float))
+                self.assertTrue(isinstance(sources[0]['srcname'], str))
+                self.assertTrue(isinstance(sources[0]['active'], int))
+                self.assertTrue(isinstance(sources[0]['soldest'], int))
+                self.assertTrue(isinstance(sources[0]['slatest'], int))
+                self.assertTrue(isinstance(sources[0]['npkts'], int))
+                self.assertTrue(isinstance(sources[0]['nbytes'], int))
+                self.assertTrue(isinstance(sources[0]['soldest_time'], float))
+                self.assertTrue(isinstance(sources[0]['slatest_time'], float))
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbclients(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "orbtail " + orbname + " now 2 &" )
 
@@ -571,48 +571,48 @@ if __name__ == '__main__':
 
             (when, clients) = orbclients( orb )
 
-	    self.assertTrue(isinstance(when, float))
+            self.assertTrue(isinstance(when, float))
 
-	    if( len(clients) > 0 ):
+            if( len(clients) > 0 ):
 
-	        self.assertTrue(isinstance(clients[0]['lastpkt'], float))
-	        self.assertTrue(isinstance(clients[0]['started'], float))
-	        self.assertTrue(isinstance(clients[0]['read'], int))
-	        self.assertTrue(isinstance(clients[0]['pid'], int))
-	        self.assertTrue(isinstance(clients[0]['bytes'], int))
-	        self.assertTrue(isinstance(clients[0]['packets'], int))
-	        self.assertTrue(isinstance(clients[0]['pktid'], int))
-	        self.assertTrue(isinstance(clients[0]['port'], int))
-	        self.assertTrue(isinstance(clients[0]['address'], str))
-	        self.assertTrue(isinstance(clients[0]['thread'], int))
-	        self.assertTrue(isinstance(clients[0]['fd'], int))
-	        self.assertTrue(isinstance(clients[0]['nreject'], int))
-	        self.assertTrue(isinstance(clients[0]['nselect'], int))
-	        self.assertTrue(isinstance(clients[0]['errors'], int))
-	        self.assertTrue(isinstance(clients[0]['priority'], int))
-	        self.assertTrue(isinstance(clients[0]['lastrequest'], int))
-	        self.assertTrue(isinstance(clients[0]['mymessages'], int))
-	        self.assertTrue(isinstance(clients[0]['nrequests'], int))
-	        self.assertTrue(isinstance(clients[0]['nwrites'], int))
-	        self.assertTrue(isinstance(clients[0]['nreads'], int))
-	        self.assertTrue(isinstance(clients[0]['written'], int))
-	        self.assertTrue(isinstance(clients[0]['perm'], str))
-	        self.assertTrue(isinstance(clients[0]['what'], str))
-	        self.assertTrue(isinstance(clients[0]['host'], str))
-	        self.assertTrue(isinstance(clients[0]['who'], str))
-	        self.assertTrue(isinstance(clients[0]['select'], str))
-	        self.assertTrue(isinstance(clients[0]['reject'], str))
+                self.assertTrue(isinstance(clients[0]['lastpkt'], float))
+                self.assertTrue(isinstance(clients[0]['started'], float))
+                self.assertTrue(isinstance(clients[0]['read'], int))
+                self.assertTrue(isinstance(clients[0]['pid'], int))
+                self.assertTrue(isinstance(clients[0]['bytes'], int))
+                self.assertTrue(isinstance(clients[0]['packets'], int))
+                self.assertTrue(isinstance(clients[0]['pktid'], int))
+                self.assertTrue(isinstance(clients[0]['port'], int))
+                self.assertTrue(isinstance(clients[0]['address'], str))
+                self.assertTrue(isinstance(clients[0]['thread'], int))
+                self.assertTrue(isinstance(clients[0]['fd'], int))
+                self.assertTrue(isinstance(clients[0]['nreject'], int))
+                self.assertTrue(isinstance(clients[0]['nselect'], int))
+                self.assertTrue(isinstance(clients[0]['errors'], int))
+                self.assertTrue(isinstance(clients[0]['priority'], int))
+                self.assertTrue(isinstance(clients[0]['lastrequest'], int))
+                self.assertTrue(isinstance(clients[0]['mymessages'], int))
+                self.assertTrue(isinstance(clients[0]['nrequests'], int))
+                self.assertTrue(isinstance(clients[0]['nwrites'], int))
+                self.assertTrue(isinstance(clients[0]['nreads'], int))
+                self.assertTrue(isinstance(clients[0]['written'], int))
+                self.assertTrue(isinstance(clients[0]['perm'], str))
+                self.assertTrue(isinstance(clients[0]['what'], str))
+                self.assertTrue(isinstance(clients[0]['host'], str))
+                self.assertTrue(isinstance(clients[0]['who'], str))
+                self.assertTrue(isinstance(clients[0]['select'], str))
+                self.assertTrue(isinstance(clients[0]['reject'], str))
 
             os.system( "pf2orb rtexec " + orbname )
 
             os.system( "sleep 2" )
             os.system( "pf2orb rtexec " + orbname )
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orblag(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "orbtail " + orbname + " now 2 &" )
 
@@ -622,43 +622,43 @@ if __name__ == '__main__':
 
             os.system( "pf2orb rtexec " + orbname )
 
-	    self.assertTrue(isinstance(oldest, int))
-	    self.assertTrue(newest > 0)
-	    self.assertTrue(maxpktid > 0)
-	    self.assertTrue(range > 0)
-	    self.assertTrue(isinstance(clients, tuple))
+            self.assertTrue(isinstance(oldest, int))
+            self.assertTrue(newest > 0)
+            self.assertTrue(maxpktid > 0)
+            self.assertTrue(range > 0)
+            self.assertTrue(isinstance(clients, tuple))
 
             os.system( "sleep 2" )
             os.system( "pf2orb rtexec " + orbname )
 
-	    orbclose(orb)
+            orbclose(orb)
 
         def test_procedure_orbresurrect(self):
 
-	    tempstate = '/tmp/python_orbtest_state_' + os.environ["USER"] + str(os.getpid())
+            tempstate = '/tmp/python_orbtest_state_' + os.environ["USER"] + str(os.getpid())
 
             rc = orbexhume( tempstate )
 
-	    self.assertEqual(rc, 0)
+            self.assertEqual(rc, 0)
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
-	    pktid, time = orbresurrect( orb )
+            pktid, time = orbresurrect( orb )
 
-	    self.assertEqual(pktid, -1)
-	    self.assertEqual(time, -9999999999.999)
+            self.assertEqual(pktid, -1)
+            self.assertEqual(time, -9999999999.999)
 
             ( pktid, srcname, time, packet, nbytes ) = orbget(orb, ORBNEWEST)
 
-	    rc = orbbury(orb, pktid, time)
+            rc = orbbury(orb, pktid, time)
 
-	    self.assertEqual(rc, 0)
+            self.assertEqual(rc, 0)
 
-	    orbclose(orb)
+            orbclose(orb)
 
-	    os.system("/bin/rm -f " + tempstate)
+            os.system("/bin/rm -f " + tempstate)
 
     server = Testorb_fixture()
     server.start()

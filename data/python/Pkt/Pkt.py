@@ -16,9 +16,9 @@ class PktChannel():
 
         self._pktchannel = None
 
-	if(len(args) != 1):
+        if(len(args) != 1):
 
-	    raise TypeError, 'PktChannel constructor requires a _pktchannel object'
+            raise TypeError, 'PktChannel constructor requires a _pktchannel object'
 
         self._pktchannel = args[0]
 
@@ -103,7 +103,7 @@ class Pkt():
     
     def __init__(self, *args, **kwargs):
 
-	self._pkt = None
+        self._pkt = None
 
         if(len(args) == 4 or len(args) == 5 ):
 
@@ -136,14 +136,14 @@ class Pkt():
                 raise TypeError, 'Pkt constructor arguments not understood'
 
         srcname = args[0]
-	time    = args[1]
-	packet  = args[2]
-	nbytes  = args[3]
+        time    = args[1]
+        packet  = args[2]
+        nbytes  = args[3]
 
-	if( len(args) == 5 ):
-	    pktid = args[4]
+        if( len(args) == 5 ):
+            pktid = args[4]
         else:
-	    pktid = -1
+            pktid = -1
 
         self._pkt = _Pkt._pkt( srcname, time, packet, nbytes, pktid )
 
@@ -204,11 +204,11 @@ class Pkt():
 
     def db(self):
 
-	db = self._pkt.db()
+        db = self._pkt.db()
 
-	if( isinstance(db, list)):
-	    
-	    db = Dbptr(db)
+        if( isinstance(db, list)):
+            
+            db = Dbptr(db)
 
         return db
 
@@ -252,11 +252,11 @@ if __name__ == '__main__':
 
     class TestPkt_fixture():
 
-	tempdir = '/tmp/python_Pkttest_' + os.environ["USER"] + str(os.getpid())
+        tempdir = '/tmp/python_Pkttest_' + os.environ["USER"] + str(os.getpid())
 
         def start(self):
 
-	    os.mkdir(self.tempdir)
+            os.mkdir(self.tempdir)
             os.chdir(self.tempdir)
             os.system("pfcp orbserver .")
             os.system("orbserver -p " + orbname + " orbserver &")
@@ -266,73 +266,73 @@ if __name__ == '__main__':
 
             os.system("echo halt | orbstat -i " + orbname)
             os.system("sleep 5")
-	    os.system("/bin/rm -f " + self.tempdir + "/orb/*")
-	    os.rmdir(self.tempdir + "/orb")
-	    os.system("/bin/rm -f " + self.tempdir + "/*")
-	    os.rmdir(self.tempdir)
+            os.system("/bin/rm -f " + self.tempdir + "/orb/*")
+            os.rmdir(self.tempdir + "/orb")
+            os.system("/bin/rm -f " + self.tempdir + "/*")
+            os.rmdir(self.tempdir)
 
     class TestPkt(unittest.TestCase):
 
         def test_Pkt_constructor(self):
 
-	    self.assertRaises(TypeError, Pkt, 'Pkt constructor arguments not understood')
-	    
+            self.assertRaises(TypeError, Pkt, 'Pkt constructor arguments not understood')
+            
         def test_procedure_unstuffPkt(self):
 
-	    orb = orbopen(orbname, 'r')
+            orb = orbopen(orbname, 'r')
 
             os.system( "pf2orb rtexec " + orbname )
 
-	    ( pktid, srcname, time, packet, nbytes ) = orb.reap()
+            ( pktid, srcname, time, packet, nbytes ) = orb.reap()
 
-	    ( type, pkt ) = unstuffPkt( srcname, time, packet, nbytes )
+            ( type, pkt ) = unstuffPkt( srcname, time, packet, nbytes )
 
-	    self.assertTrue(isinstance(packet, str))
-	    self.assertTrue(isinstance(type, int))
-	    self.assertTrue(isinstance(pkt, Pkt))
-	    self.assertTrue(isinstance(pkt.srcname(), str))
-	    self.assertTrue(isinstance(pkt.time(), float))
-	    self.assertTrue(isinstance(pkt.version(), int))
+            self.assertTrue(isinstance(packet, str))
+            self.assertTrue(isinstance(type, int))
+            self.assertTrue(isinstance(pkt, Pkt))
+            self.assertTrue(isinstance(pkt.srcname(), str))
+            self.assertTrue(isinstance(pkt.time(), float))
+            self.assertTrue(isinstance(pkt.version(), int))
 
-	    (net, sta, chan, loc, suffix, subcode) = pkt.parts()
+            (net, sta, chan, loc, suffix, subcode) = pkt.parts()
  
-	    self.assertTrue(isinstance(net, str))
-	    self.assertTrue(isinstance(sta, str))
-	    self.assertTrue(isinstance(chan, str))
-	    self.assertTrue(isinstance(loc, str))
-	    self.assertTrue(isinstance(suffix, str))
-	    self.assertTrue(isinstance(subcode, str))
+            self.assertTrue(isinstance(net, str))
+            self.assertTrue(isinstance(sta, str))
+            self.assertTrue(isinstance(chan, str))
+            self.assertTrue(isinstance(loc, str))
+            self.assertTrue(isinstance(suffix, str))
+            self.assertTrue(isinstance(subcode, str))
 
-	    self.assertTrue(isinstance(pkt.nchannels(), int))
+            self.assertTrue(isinstance(pkt.nchannels(), int))
 
-	    (name, strtype, desc) = pkt.PacketType()
+            (name, strtype, desc) = pkt.PacketType()
 
-	    self.assertTrue(isinstance(name, str))
-	    self.assertTrue(isinstance(strtype, str))
-	    self.assertTrue(isinstance(desc, str))
+            self.assertTrue(isinstance(name, str))
+            self.assertTrue(isinstance(strtype, str))
+            self.assertTrue(isinstance(desc, str))
 
-	    pf = pkt.pf()
+            pf = pkt.pf()
 
-	    ft = pfget(pf, "Failure_threshold")
+            ft = pfget(pf, "Failure_threshold")
 
-	    self.assertTrue(isinstance(ft, int))
+            self.assertTrue(isinstance(ft, int))
 
         def test_procedure_split_srcname(self):
 
-	    (net, sta, chan, loc, suffix, subcode) = split_srcname("AZ_PFO_BHZ_00/BBA/BS")
+            (net, sta, chan, loc, suffix, subcode) = split_srcname("AZ_PFO_BHZ_00/BBA/BS")
 
-	    self.assertEqual(net, "AZ")
-	    self.assertEqual(sta, "PFO")
-	    self.assertEqual(chan, "BHZ")
-	    self.assertEqual(loc, "00")
-	    self.assertEqual(suffix, "BBA")
-	    self.assertEqual(subcode, "BS")
+            self.assertEqual(net, "AZ")
+            self.assertEqual(sta, "PFO")
+            self.assertEqual(chan, "BHZ")
+            self.assertEqual(loc, "00")
+            self.assertEqual(suffix, "BBA")
+            self.assertEqual(subcode, "BS")
 
         def test_procedure_join_srcname(self):
 
-	    srcname = join_srcname("AZ", "PFO", "BHZ", "00", "BBA", "BS")
+            srcname = join_srcname("AZ", "PFO", "BHZ", "00", "BBA", "BS")
 
-	    self.assertEqual(srcname, "AZ_PFO_BHZ_00/BBA/BS")
+            self.assertEqual(srcname, "AZ_PFO_BHZ_00/BBA/BS")
 
     server = TestPkt_fixture()
     server.start()
