@@ -25,6 +25,16 @@ Attribute pid
         Description ( "process id" )
         ;
 
+Attribute hostname
+	String (25)
+	Format ( "%-25s" )
+	Null ( "-" )
+	Description ( "computer host name" )
+	Detail {
+		Computer host name where processing was conducted.
+	}
+	;
+
 Relation q330_calibration_weblog
 	Fields ( email stastr time pid hostname lddate )
 	Primary ( email time pid )
