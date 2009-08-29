@@ -250,16 +250,16 @@ class Dbptr(list):
     def dbtruncate(self, nrecords):
         """Truncate a database table"""
 
-	_datascope._dbtruncate(self, nrecords)
+        _datascope._dbtruncate(self, nrecords)
 
-	return
+        return
 
     def dbdestroy(self):
         """Completely eliminate all tables in a database"""
 
-	rc = _datascope._dbdestroy(self)
+        rc = _datascope._dbdestroy(self)
 
-	return rc
+        return rc
 
     def lookup(self, database = "", table = "", field = "", record = ""):
         """Aim a database pointer at part of a database"""
@@ -328,31 +328,31 @@ class Dbptr(list):
     def theta(self, db2in, ex_str, outer = False, name = None):
         """Theta-join two database views"""
 
-	if( isinstance(db2in, str) ):
+        if( isinstance(db2in, str) ):
 
-	    db2 = dblookup(db, table = db2in)
+            db2 = dblookup(db, table = db2in)
 
         else:
 
-	    db2 = db2in
+            db2 = db2in
 
         db = _datascope._dbtheta(self, db2, ex_str, outer, name)
 
-	self[:] = db[:]
+        self[:] = db[:]
 
     def group(self, groupfields, name = None, type = 1):
         """Group a sorted table"""
 
-	db = _datascope._dbgroup(self, groupfields, name, type)
+        db = _datascope._dbgroup(self, groupfields, name, type)
 
-	self[:] = db[:]
+        self[:] = db[:]
 
     def ungroup(self, name = None):
         """Ungroup a grouped table"""
 
-	db = _datascope._dbungroup(self, name)
+        db = _datascope._dbungroup(self, name)
 
-	self[:] = db[:]
+        self[:] = db[:]
 
     def nojoin(self, db2in, outer = False, pattern1 = None, pattern2 = None, name = None):
         """Find rows which don't join between two database views"""
@@ -372,9 +372,9 @@ class Dbptr(list):
     def unjoin(self, database_name, rewrite = False):
         """Create new tables from a joined table"""
 
-	_datascope._dbunjoin(self, database_name, rewrite)
+        _datascope._dbunjoin(self, database_name, rewrite)
 
-	return
+        return
 
     def process(self, list):
         """Run a series of database operations"""
@@ -411,7 +411,7 @@ class Dbptr(list):
     def addnull(self):
         """Add a new, null row to a table"""
 
-	return _datascope._dbaddnull(self)
+        return _datascope._dbaddnull(self)
     
     def extfile(self, tablename = None):
         """Compose filename from database record for a given table"""
@@ -436,7 +436,7 @@ class Dbptr(list):
     def nextid(self, name):
         """Generate a unique id from the lastid table"""
 
-	return _datascope._dbnextid(self, name)
+        return _datascope._dbnextid(self, name)
 
     def ex_eval(self, expr):
         """Evaluate a database expression"""
@@ -461,7 +461,7 @@ class Dbptr(list):
     def trwfname(self, pattern):
         """Generate waveform file names"""
 
-	return _datascope._trwfname(self, pattern)
+        return _datascope._trwfname(self, pattern)
 
     def loadchan(self, t0, t1, sta, chan):
         """Load time-series data for a given station, channel, and time-interval into memory"""
@@ -511,9 +511,9 @@ class Dbptr(list):
     def filter(self, filter_string):
         """Apply time-domain filters to waveform data"""
 
-	rc = _datascope._trfilter(self, filter_string)
+        rc = _datascope._trfilter(self, filter_string)
 
-	return rc
+        return rc
 
     def data(self):
         """Obtain data points from a trace-table record"""
@@ -532,48 +532,48 @@ class Dbptr(list):
     def splice(self):
         """Splice together data segments"""
 
-	_datascope._trsplice(self)
+        _datascope._trsplice(self)
 
-	return
+        return
 
     def split(self):
         """Split data segments with marked gaps"""
 
-	_datascope._trsplit(self)
+        _datascope._trsplit(self)
 
-	return
+        return
 
     def trtruncate(self, leave):
         """Truncate a tr database table"""
 
-	_datascope._trtruncate(self, leave)
+        _datascope._trtruncate(self, leave)
 
-	return
+        return
 
     def trcopy(self, trout = None):
         """Copy trace table including the trace data"""
 
         if(trout == None):
 
-	    trout = _datascope._dbinvalid()
+            trout = _datascope._dbinvalid()
 
-	trout = _datascope._trcopy(trout, self)
+        trout = _datascope._trcopy(trout, self)
 
         return Dbptr(trout)
 
     def trfree(self):
         """Free up memory buffers and clear trace object tables"""
 
-	rc = _datascope._trfree(self)
+        rc = _datascope._trfree(self)
 
-	return rc
+        return rc
 
     def trdestroy(self):
         """Close a trace database, cleaning up memory and files"""
 
-	rc = _datascope._trdestroy(self)
+        rc = _datascope._trdestroy(self)
 
-	return rc
+        return rc
 
 class Response:
     """Create a Datascope Response object
@@ -792,7 +792,7 @@ def dbgroup(db, groupfields, name = None, type = 1):
     dbout.group(groupfields, name, type)
 
     return dbout
-	
+        
 
 def dbungroup(db, name = None):
     """Ungroup a grouped table"""
@@ -802,7 +802,7 @@ def dbungroup(db, name = None):
     dbout.ungroup(name)
 
     return dbout
-	
+        
 
 def dbmatches(dbk, dbt, hookname, kpattern = None, tpattern = None):
     """find matching records in second table"""
@@ -1042,15 +1042,15 @@ if __name__ == '__main__':
 
             elif( v2 == 0.0 and abs(v1-v) > tolerance ):
 
-	        return False
+                return False
 
-	    elif(abs(v1-v2)/abs(v2) <= tolerance):
+            elif(abs(v1-v2)/abs(v2) <= tolerance):
 
-	        return True
+                return True
 
             else:
 
-	        return False
+                return False
 
         def test_Dbptr_constructor(self):
 
@@ -1307,13 +1307,13 @@ if __name__ == '__main__':
             
         def test_method_group(self):
 
-	    db = Dbptr(self.dbname)
+            db = Dbptr(self.dbname)
 
-	    db.lookup(table = 'arrival')
+            db.lookup(table = 'arrival')
 
-	    db.sort('sta')
+            db.sort('sta')
 
-	    db.group('sta')
+            db.group('sta')
 
             self.assertTrue(db.database >= 0)
             self.assertTrue(db.table >= 0)
@@ -1322,15 +1322,15 @@ if __name__ == '__main__':
 
         def test_method_ungroup(self):
 
-	    db = Dbptr(self.dbname)
+            db = Dbptr(self.dbname)
 
-	    db.lookup(table = 'arrival')
+            db.lookup(table = 'arrival')
 
-	    db.sort('sta')
+            db.sort('sta')
 
-	    db.group('sta')
+            db.group('sta')
 
-	    db.ungroup()
+            db.ungroup()
 
             self.assertTrue(db.database >= 0)
             self.assertTrue(db.table >= 0)
@@ -1354,10 +1354,10 @@ if __name__ == '__main__':
             db = Dbptr(self.dbname)
 
             db.process(["dbopen wfdisc", 
-	                "dbjoin arrival",
-			"dbjoin assoc",
-			"dbjoin origin",
-			"dbsubset orid == 645"])
+                        "dbjoin arrival",
+                        "dbjoin assoc",
+                        "dbjoin origin",
+                        "dbsubset orid == 645"])
 
             db.separate("wfdisc")
 
@@ -1367,11 +1367,11 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-	    dborigin = dblookup(db, table = 'origin')
+            dborigin = dblookup(db, table = 'origin')
 
-	    dbstamag = dblookup(db, table = 'stamag')
+            dbstamag = dblookup(db, table = 'stamag')
 
-	    db = dbjoin(dborigin, dbstamag)
+            db = dbjoin(dborigin, dbstamag)
 
             db.sever("stamag")
 
@@ -1381,20 +1381,20 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-	    tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
 
             db.process(["dbopen origin",
-	                "dbjoin assoc",
-			"dbjoin arrival",
-			"dbsubset orid == 645"])
+                        "dbjoin assoc",
+                        "dbjoin arrival",
+                        "dbsubset orid == 645"])
 
             db.unjoin(tempdbname)
 
-	    os.stat(tempdbname + '.origin')
-	    os.stat(tempdbname + '.assoc')
-	    os.stat(tempdbname + '.arrival')
+            os.stat(tempdbname + '.origin')
+            os.stat(tempdbname + '.assoc')
+            os.stat(tempdbname + '.arrival')
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_getv(self):
 
@@ -1413,218 +1413,218 @@ if __name__ == '__main__':
             
         def test_method_addnull(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.addnull()
+            db.addnull()
 
-	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+            self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
 
             db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_putv(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addnull()
-	    
-	    db.putv('lat', 61.5922, 'auth', os.environ["USER"])
+            db.record = db.addnull()
+            
+            db.putv('lat', 61.5922, 'auth', os.environ["USER"])
 
-	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+            self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
 
             db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_addv(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             self.assertTrue(db.record >= 0)
 
-	    db.close()
+            db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_dbtruncate(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
-	    db.dbtruncate(0)
+            db.dbtruncate(0)
 
             nrecs_after = dbquery(db, dbRECORD_COUNT)
 
             self.assertEqual(nrecs_before, 1)
             self.assertEqual(nrecs_after, 0)
 
-	    db.close()
+            db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_dbdestroy(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM', 
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.dbdestroy()
+            db.dbdestroy()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_method_delete(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:16 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:17 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:18 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
-	    db.record = 1
+            db.record = 1
 
-	    db.mark()
-	    db.crunch()
+            db.mark()
+            db.crunch()
 
             nrecs_after = dbquery(db, dbRECORD_COUNT)
 
             self.assertEqual(nrecs_before, 4)
             self.assertEqual(nrecs_after, 3)
 
-	    db.close()
+            db.close()
 
         def test_method_crunch(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:16 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:17 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:18 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
-	    db.record = 1
+            db.record = 1
 
-	    db.delete()
+            db.delete()
 
             nrecs_after = dbquery(db, dbRECORD_COUNT)
 
             self.assertEqual(nrecs_before, 4)
             self.assertEqual(nrecs_after, 3)
 
-	    db.close()
+            db.close()
 
         def test_method_extfile(self):
 
@@ -1648,7 +1648,7 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-	    db.lookup(table='origin')
+            db.lookup(table='origin')
 
             self.assertEqual(db.nrecs(), 1351)
 
@@ -1727,7 +1727,7 @@ if __name__ == '__main__':
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-	    tr.trfree()
+            tr.trfree()
 
         def test_method_trdestroy(self):
 
@@ -1735,7 +1735,7 @@ if __name__ == '__main__':
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-	    tr.trdestroy()
+            tr.trdestroy()
 
         def test_method_data(self):
 
@@ -1755,7 +1755,7 @@ if __name__ == '__main__':
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-	    tr.filter("BW 0.5 4 3 4; INT")
+            tr.filter("BW 0.5 4 3 4; INT")
 
             tr.record = 0
 
@@ -1774,12 +1774,12 @@ if __name__ == '__main__':
 
             nrecs_before = dbquery(tr, dbRECORD_COUNT)
 
-	    tr.splice()
+            tr.splice()
 
             nrecs_after = dbquery(tr, dbRECORD_COUNT)
 
-	    self.assertTrue(nrecs_after <= nrecs_before)
-	 
+            self.assertTrue(nrecs_after <= nrecs_before)
+         
         def test_method_split(self):
 
             db = dbopen(self.dbname)
@@ -1788,12 +1788,12 @@ if __name__ == '__main__':
 
             nrecs_before = dbquery(tr, dbRECORD_COUNT)
 
-	    tr.split()
+            tr.split()
 
             nrecs_after = dbquery(tr, dbRECORD_COUNT)
 
-	    self.assertTrue(nrecs_after >= nrecs_before)
-	 
+            self.assertTrue(nrecs_after >= nrecs_before)
+         
         def test_method_trtruncate(self):
 
             db = dbopen(self.dbname)
@@ -1802,13 +1802,13 @@ if __name__ == '__main__':
 
             nrecs_before = dbquery(tr, dbRECORD_COUNT)
 
-	    tr.trtruncate(0)
+            tr.trtruncate(0)
 
             nrecs_after = dbquery(tr, dbRECORD_COUNT)
 
-	    self.assertTrue(nrecs_before > 0)
-	    self.assertTrue(nrecs_after == 0)
-	 
+            self.assertTrue(nrecs_before > 0)
+            self.assertTrue(nrecs_after == 0)
+         
         def test_method_trcopy(self):
 
             db = dbopen(self.dbname)
@@ -1827,15 +1827,15 @@ if __name__ == '__main__':
 
         def test_method_nextid(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             id = db.nextid("arid")
 
-	    dbclose(db)
+            dbclose(db)
 
             self.assertEqual(id, 1)
 
@@ -1875,162 +1875,162 @@ if __name__ == '__main__':
 
         def test_procedure_dbdelete(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 25, 
                                 'time', '9/30/2002 11:16 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:17 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:18 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
-	    db.record = 1
+            db.record = 1
 
-	    dbdelete(db)
+            dbdelete(db)
 
             nrecs_after = dbquery(db, dbRECORD_COUNT)
 
             self.assertEqual(nrecs_before, 4)
             self.assertEqual(nrecs_after, 3)
 
-	    db.close()
+            db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbcrunch(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 25, 
                                 'time', '9/30/2002 11:16 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:17 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:18 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
-	    db.record = 1
+            db.record = 1
 
-	    dbmark(db)
+            dbmark(db)
 
-	    dbcrunch(db)
+            dbcrunch(db)
 
             nrecs_after = dbquery(db, dbRECORD_COUNT)
 
             self.assertEqual(nrecs_before, 4)
             self.assertEqual(nrecs_after, 3)
 
-	    db.close()
+            db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbtruncate(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
             nrecs_before = dbquery(db, dbRECORD_COUNT)
 
-	    dbtruncate(db, 0)
+            dbtruncate(db, 0)
 
             nrecs_after = dbquery(db, dbRECORD_COUNT)
 
             self.assertEqual(nrecs_before, 1)
             self.assertEqual(nrecs_after, 0)
 
-	    db.close()
+            db.close()
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbdestroy(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = db.addv('lat', 61.5922,
+            db.record = db.addv('lat', 61.5922,
                                 'lon', -149.130,
                                 'depth', 20, 
                                 'time', '9/30/2002 11:15 AM',
-				'nass', 0,
-				'ndef', 0 )
+                                'nass', 0,
+                                'ndef', 0 )
 
-	    dbdestroy(db)
+            dbdestroy(db)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dblookup(self):
 
@@ -2103,10 +2103,10 @@ if __name__ == '__main__':
             db = Dbptr(self.dbname)
 
             db.process(["dbopen wfdisc", 
-	                "dbjoin arrival",
-			"dbjoin assoc",
-			"dbjoin origin",
-			"dbsubset orid == 645"])
+                        "dbjoin arrival",
+                        "dbjoin assoc",
+                        "dbjoin origin",
+                        "dbsubset orid == 645"])
 
             dbout = dbseparate(db, "wfdisc")
 
@@ -2116,11 +2116,11 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-	    dborigin = dblookup(db, table = 'origin')
+            dborigin = dblookup(db, table = 'origin')
 
-	    dbstamag = dblookup(db, table = 'stamag')
+            dbstamag = dblookup(db, table = 'stamag')
 
-	    db = dbjoin(dborigin, dbstamag)
+            db = dbjoin(dborigin, dbstamag)
 
             db = dbsever(db, "stamag")
 
@@ -2130,20 +2130,20 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-	    tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
 
             db.process(["dbopen origin",
-	                "dbjoin assoc",
-			"dbjoin arrival",
-			"dbsubset orid == 645"])
+                        "dbjoin assoc",
+                        "dbjoin arrival",
+                        "dbsubset orid == 645"])
 
             dbunjoin(db, tempdbname, rewrite = True)
 
-	    os.stat(tempdbname + '.origin')
-	    os.stat(tempdbname + '.assoc')
-	    os.stat(tempdbname + '.arrival')
+            os.stat(tempdbname + '.origin')
+            os.stat(tempdbname + '.assoc')
+            os.stat(tempdbname + '.arrival')
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbjoin(self):
 
@@ -2211,13 +2211,13 @@ if __name__ == '__main__':
             
         def test_procedure_dbgroup(self):
 
-	    db = Dbptr(self.dbname)
+            db = Dbptr(self.dbname)
 
-	    db = dblookup(db, table = 'arrival')
+            db = dblookup(db, table = 'arrival')
 
-	    db = dbsort(db, 'sta')
+            db = dbsort(db, 'sta')
 
-	    db = dbgroup(db, 'sta')
+            db = dbgroup(db, 'sta')
 
             self.assertTrue(db.database >= 0)
             self.assertTrue(db.table >= 0)
@@ -2226,15 +2226,15 @@ if __name__ == '__main__':
 
         def test_procedure_dbungroup(self):
 
-	    db = Dbptr(self.dbname)
+            db = Dbptr(self.dbname)
 
-	    db = dblookup(db, table = 'arrival')
+            db = dblookup(db, table = 'arrival')
 
-	    db = dbsort(db, 'sta')
+            db = dbsort(db, 'sta')
 
-	    db = dbgroup(db, 'sta')
+            db = dbgroup(db, 'sta')
 
-	    db = dbungroup(db)
+            db = dbungroup(db)
 
             self.assertTrue(db.database >= 0)
             self.assertTrue(db.table >= 0)
@@ -2267,21 +2267,21 @@ if __name__ == '__main__':
 
         def test_procedure_dbput(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = dbSCRATCH;
+            db.record = dbSCRATCH;
     
-	    dbput(db, '  40.0740   69.1640  155.1660   704371900.66886        1       -1  1992118    7    7   -1      715       48 -       -999.0000 f    2.62        1 -999.00       -1 -999.00       -1 locsat:kyrghyz  JSPC                  -1   790466871.00000')
+            dbput(db, '  40.0740   69.1640  155.1660   704371900.66886        1       -1  1992118    7    7   -1      715       48 -       -999.0000 f    2.62        1 -999.00       -1 -999.00       -1 locsat:kyrghyz  JSPC                  -1   790466871.00000')
 
             dbclose(db)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbgetv(self):
 
@@ -2300,73 +2300,73 @@ if __name__ == '__main__':
             
         def test_procedure_dbaddnull(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db = dblookup(db, table = 'origin')
 
-	    db.record = dbaddnull(db)
+            db.record = dbaddnull(db)
 
-	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+            self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
 
-	    dbclose(db)
+            dbclose(db)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbputv(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db.lookup(table = 'origin')
 
-	    db.record = dbaddnull(db)
-	    
-	    dbputv(db, 'lat', 61.5922, 'auth', os.environ["USER"])
+            db.record = dbaddnull(db)
+            
+            dbputv(db, 'lat', 61.5922, 'auth', os.environ["USER"])
 
-	    self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
+            self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
 
             dbclose(db)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbaddv(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db = dblookup(db, table = 'origin')
 
-	    db.record = dbaddv(db, 'lat', 61.5922,
+            db.record = dbaddv(db, 'lat', 61.5922,
                                   'lon', -149.130,
                                    'depth', 20.0, 
                                    'time', '9/30/2002 11:15 AM',
-				   'nass', 0,
-				   'ndef', 0,
-				   'auth', os.environ["USER"] )
+                                   'nass', 0,
+                                   'ndef', 0,
+                                   'auth', os.environ["USER"] )
 
             self.assertTrue(db.record >= 0)
 
-	    values = dbgetv(db, 'lat', 'lon', 'depth', 'time', 'auth')
+            values = dbgetv(db, 'lat', 'lon', 'depth', 'time', 'auth')
 
-	    self.assertTrue(self.is_close(values[0], 61.5922, 0.0001))
-	    self.assertTrue(self.is_close(values[1], -149.130, 0.0001))
-	    self.assertEqual(values[2],  20)
-	    self.assertEqual(values[3], 1033384500)
-	    self.assertEqual(values[4], os.environ["USER"])
+            self.assertTrue(self.is_close(values[0], 61.5922, 0.0001))
+            self.assertTrue(self.is_close(values[1], -149.130, 0.0001))
+            self.assertEqual(values[2],  20)
+            self.assertEqual(values[3], 1033384500)
+            self.assertEqual(values[4], os.environ["USER"])
 
-	    dbclose(db)
+            dbclose(db)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbextfile(self):
 
@@ -2446,13 +2446,13 @@ if __name__ == '__main__':
 
             self.assertEqual(value, 1351)
 
-	    db.record = 0;
+            db.record = 0;
 
-	    db = dblookup(db, field = 'lat')
+            db = dblookup(db, field = 'lat')
 
-	    value = dbquery(db, dbFIELD_TYPE)
+            value = dbquery(db, dbFIELD_TYPE)
 
-	    self.assertEqual(value, dbREAL)
+            self.assertEqual(value, dbREAL)
 
             value = dbquery(db, dbSCHEMA_TABLES)
 
@@ -2524,7 +2524,7 @@ if __name__ == '__main__':
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-	    trfree(tr)
+            trfree(tr)
 
         def test_procedure_trdestroy(self):
 
@@ -2532,7 +2532,7 @@ if __name__ == '__main__':
 
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-	    trdestroy(tr)
+            trdestroy(tr)
 
         def test_procedure_trtruncate(self):
 
@@ -2542,13 +2542,13 @@ if __name__ == '__main__':
 
             nrecs_before = dbquery(tr, dbRECORD_COUNT)
 
-	    trtruncate(tr, 0)
+            trtruncate(tr, 0)
 
             nrecs_after = dbquery(tr, dbRECORD_COUNT)
 
-	    self.assertTrue(nrecs_before > 0)
-	    self.assertTrue(nrecs_after == 0)
-	 
+            self.assertTrue(nrecs_before > 0)
+            self.assertTrue(nrecs_after == 0)
+         
         def test_procedure_trcopy(self):
 
             db = dbopen(self.dbname)
@@ -2607,12 +2607,12 @@ if __name__ == '__main__':
 
             nrecs_before = dbquery(tr, dbRECORD_COUNT)
 
-	    trsplice(tr)
+            trsplice(tr)
 
             nrecs_after = dbquery(tr, dbRECORD_COUNT)
 
-	    self.assertTrue(nrecs_after <= nrecs_before)
-	 
+            self.assertTrue(nrecs_after <= nrecs_before)
+         
         def test_procedure_trsplit(self):
 
             db = dbopen(self.dbname)
@@ -2621,19 +2621,19 @@ if __name__ == '__main__':
 
             nrecs_before = dbquery(tr, dbRECORD_COUNT)
 
-	    trsplit(tr)
+            trsplit(tr)
 
             nrecs_after = dbquery(tr, dbRECORD_COUNT)
 
-	    self.assertTrue(nrecs_after >= nrecs_before)
-	 
+            self.assertTrue(nrecs_after >= nrecs_before)
+         
         def test_procedure_trfilter(self):
 
             db = dbopen(self.dbname)
 
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
-	    trfilter(tr, "BW 0.5 4 3 4; INT")
+            trfilter(tr, "BW 0.5 4 3 4; INT")
 
             tr.record = 0
 
@@ -2673,31 +2673,31 @@ if __name__ == '__main__':
 
         def test_procedure_trlookup_segtype(self):
 
-	    t = trlookup_segtype("V")
+            t = trlookup_segtype("V")
 
-	    self.assertEqual(t,("nm/sec", "velocity"))
+            self.assertEqual(t,("nm/sec", "velocity"))
 
-	    self.assertRaises(RuntimeError, trlookup_segtype, "not a valid segtype")
+            self.assertRaises(RuntimeError, trlookup_segtype, "not a valid segtype")
 
         def test_procedure_dbcreate(self):
            
-	    tempdbname = '/tmp/datascope_unittest_db_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/datascope_unittest_db_' + os.environ["USER"] + str(os.getpid())
 
             dbcreate(tempdbname, 'css3.0')
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_trwfname(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             db = dblookup(db, table = 'wfdisc')
 
-	    db.record = dbaddv(db, 'sta', "AAK",
+            db.record = dbaddv(db, 'sta', "AAK",
                                    'chan', "BHZ",
                                    'time', "9/30/2002 11:00 AM",
                                    'endtime', '9/30/2002 11:15 AM' )
@@ -2706,25 +2706,25 @@ if __name__ == '__main__':
 
             self.assertTrue(re.match(".*/tmp/AAK\.BHZ\.2002\.273\.11_00_00$", path))
 
-	    dbclose(db)
+            dbclose(db)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbnextid(self):
 
-	    tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
             db = Dbptr(tempdbname, 'r+')
 
             id = dbnextid(db, "arid")
 
-	    dbclose(db)
+            dbclose(db)
 
             self.assertEqual(id, 1)
 
-	    os.system('/bin/rm -f ' + tempdbname + '*')
+            os.system('/bin/rm -f ' + tempdbname + '*')
 
         def test_procedure_dbtmp(self):
 
@@ -2735,40 +2735,40 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
 
-	def test_method_eval_response(self):
+        def test_method_eval_response(self):
 
-	    db = Dbptr(self.dbname)
+            db = Dbptr(self.dbname)
 
-	    db.lookup(table = 'instrument')
+            db.lookup(table = 'instrument')
 
-	    db.record = 0
+            db.record = 0
 
-	    fname = dbfilename(db)
-
-            resp = Response(fname)
-
-            # 5 Hz response:
-	    r = resp.eval(5 * 2 * math.pi)
-
-	    self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
-	    self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
-
-	def test_procedure_eval_response(self):
-
-	    db = Dbptr(self.dbname)
-
-	    db.lookup(table = 'instrument')
-
-	    db.record = 0
-
-	    fname = dbfilename(db)
+            fname = dbfilename(db)
 
             resp = Response(fname)
 
             # 5 Hz response:
-	    r = eval_response(resp, 5 * 2 * math.pi)
+            r = resp.eval(5 * 2 * math.pi)
 
-	    self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
-	    self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
+            self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
+            self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
+
+        def test_procedure_eval_response(self):
+
+            db = Dbptr(self.dbname)
+
+            db.lookup(table = 'instrument')
+
+            db.record = 0
+
+            fname = dbfilename(db)
+
+            resp = Response(fname)
+
+            # 5 Hz response:
+            r = eval_response(resp, 5 * 2 * math.pi)
+
+            self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
+            self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
 
     unittest.main()

@@ -191,98 +191,98 @@ if __name__ == '__main__':
 
         def test_pfget_string(self):
            
-	    val = pfget_string('trdefaults', 'default_trace_schema')
+            val = pfget_string('trdefaults', 'default_trace_schema')
 
-	    self.assertTrue(isinstance(val, str))
+            self.assertTrue(isinstance(val, str))
 
         def test_pfget_int(self):
            
-	    val = pfget_int('trdefaults', 'miniseed_record_size')
+            val = pfget_int('trdefaults', 'miniseed_record_size')
 
-	    self.assertTrue(isinstance(val, int))
+            self.assertTrue(isinstance(val, int))
 
         def test_pfget_double(self):
            
-	    val = pfget_double('trdefaults', 'samprate_tolerance')
+            val = pfget_double('trdefaults', 'samprate_tolerance')
 
-	    self.assertTrue(isinstance(val, float))
+            self.assertTrue(isinstance(val, float))
 
         def test_pfget_size(self):
            
-	    val = pfget_size('orbserver', 'ringsize')
+            val = pfget_size('orbserver', 'ringsize')
 
-	    self.assertTrue(isinstance(val, float))
+            self.assertTrue(isinstance(val, float))
 
         def test_pfget_time(self):
            
-	    val = pfget_time('trdefaults', 'pf_revision_time')
+            val = pfget_time('trdefaults', 'pf_revision_time')
 
-	    self.assertTrue(isinstance(val, float))
+            self.assertTrue(isinstance(val, float))
 
         def test_pfget_boolean(self):
            
-	    val = pfget_boolean('trdefaults', 'verbose_splicing')
+            val = pfget_boolean('trdefaults', 'verbose_splicing')
 
-	    self.assertTrue(isinstance(val, bool))
+            self.assertTrue(isinstance(val, bool))
 
         def test_pfget_tbl(self):
            
-	    val = pfget_tbl('trdefaults', 'waveform_types')
+            val = pfget_tbl('trdefaults', 'waveform_types')
 
-	    self.assertTrue(isinstance(val, tuple))
+            self.assertTrue(isinstance(val, tuple))
 
         def test_pfget_arr(self):
            
-	    val = pfget_arr('rtexec', 'Run')
+            val = pfget_arr('rtexec', 'Run')
 
-	    self.assertTrue(isinstance(val, dict))
+            self.assertTrue(isinstance(val, dict))
 
         def test_pfupdate(self):
            
-	    rc = pfupdate('rtexec')
+            rc = pfupdate('rtexec')
 
-	    self.assertTrue(rc == 0 or rc == 1)
+            self.assertTrue(rc == 0 or rc == 1)
 
         def test_pfget(self):
            
-	    val = pfget('trdefaults', 'default_trace_schema')
-	    self.assertTrue(isinstance(val, str))
+            val = pfget('trdefaults', 'default_trace_schema')
+            self.assertTrue(isinstance(val, str))
 
-	    val = pfget('trdefaults', 'miniseed_record_size')
-	    self.assertTrue(isinstance(val, int))
+            val = pfget('trdefaults', 'miniseed_record_size')
+            self.assertTrue(isinstance(val, int))
 
-	    val = pfget('trdefaults', 'samprate_tolerance')
-	    self.assertTrue(isinstance(val, float))
+            val = pfget('trdefaults', 'samprate_tolerance')
+            self.assertTrue(isinstance(val, float))
 
-	    val = pfget('orbserver', 'ringsize')
-	    self.assertTrue(isinstance(val, float))
+            val = pfget('orbserver', 'ringsize')
+            self.assertTrue(isinstance(val, float))
 
-	    val = pfget('trdefaults', 'waveform_types')
-	    self.assertTrue(isinstance(val, tuple))
+            val = pfget('trdefaults', 'waveform_types')
+            self.assertTrue(isinstance(val, tuple))
 
-	    val = pfget('rtexec', 'Run')
-	    self.assertTrue(isinstance(val, dict))
+            val = pfget('rtexec', 'Run')
+            self.assertTrue(isinstance(val, dict))
 
-	    val = pfget('orbserver_names')
-	    self.assertTrue(isinstance(val, dict))
+            val = pfget('orbserver_names')
+            self.assertTrue(isinstance(val, dict))
 
         def test_pffiles(self):
 
-	    files = pffiles('rtexec')
+            files = pffiles('rtexec')
 
-	    self.assertTrue(isinstance(files,tuple))
+            self.assertTrue(isinstance(files,tuple))
 
         def test_pf2string(self):
            
-	    val = pf2string('trdefaults')
+            val = pf2string('trdefaults')
 
-	    self.assertTrue(isinstance(val, str))
+            self.assertTrue(isinstance(val, str))
 
         def test_pf2xml(self):
            
-	    val = pf2xml('trdefaults', PFXML_STRONG)
+            val = pf2xml('trdefaults', PFXML_STRONG)
 
-	    self.assertTrue(isinstance(val, str))
+            self.assertTrue(isinstance(val, str))
 
         def test_strtime(self):
 
@@ -343,13 +343,13 @@ if __name__ == '__main__':
 
         def test_epoch2str(self):
 
-	    e = 946735200
+            e = 946735200
 
-	    s = epoch2str(e, "%m/%d/%Y %H:%M")
-	    self.assertEqual(s, '01/01/2000 14:00')
+            s = epoch2str(e, "%m/%d/%Y %H:%M")
+            self.assertEqual(s, '01/01/2000 14:00')
 
-	    z = epoch2str(e, "%m/%d/%Y %H:%M %Z", "US/Alaska")
-	    self.assertEqual(z, '01/01/2000 05:00 AKST')
+            z = epoch2str(e, "%m/%d/%Y %H:%M %Z", "US/Alaska")
+            self.assertEqual(z, '01/01/2000 05:00 AKST')
 
         def test_epoch(self):
 
@@ -369,7 +369,7 @@ if __name__ == '__main__':
 
             e = now()
 
-	    self.assertTrue(isinstance(e,float))
+            self.assertTrue(isinstance(e,float))
 
         def test_elog_init(self):
 
@@ -385,6 +385,6 @@ if __name__ == '__main__':
 
         def test_elog_die(self):
 
-	    self.assertRaises(SystemExit, elog_die, "Test fatal message")
+            self.assertRaises(SystemExit, elog_die, "Test fatal message")
 
     unittest.main()
