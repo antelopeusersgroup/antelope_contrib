@@ -3,7 +3,8 @@
 q330_calibration \- runs q330 calibations on network
 .SH SYNOPSIS
 .nf
-\fBq330_calibration\fP [-v] [-V] [-n] [-i] [-N] [-2] [-3]
+\fBq330_calibration\fP [-v] [-V] [-n] [-2] [-3]
+                  [-i] [-N [-d no_calib_days]]
                   [-o duration_offset_fraction] [-t start_time]
                   [-p \fIpf\fP] [-m \fImail_to_operator\fP] 
                   \fIcmdorb\fP \fIdb\fP \fIsta_regex\fP [\fIsta_regex1\fP [\fIsta_regex2\fP [...]]]
@@ -33,7 +34,11 @@ verbose
 .IP -V
 Extremely verbose.  Used for debugging purposes only.
 .IP -n
-Test mode. 
+Test mode. No operations executed. 
+.IP -2
+Restrict calibration of stations to using channel 2 as the monitor channel.
+.IP -3
+Restrict calibration of stations to using channel 3 as the monitor channel.
 .IP -i
 Calibrate dataloggers and sensors on stations (limited by \fIsta_regex\fP) in the staq330 and dlsensor
 tables that have not been calibrated 
@@ -42,12 +47,15 @@ using white noise. \fBq330_calibration\fP will check to make sure that both chan
 The default offset in this case is 0.25.
 .IP -N
 Calibrate stations (limited by \fIsta_regex\fP) in the staq330 table.  To allow network operations
-to condinue, only 10% of the stations are calibrated simultaneously, leaving 90% operational. 
+to continue, only 10% of the stations are calibrated simultaneously, leaving 90% operational. 
 The default offset in this case is 0.
-.IP -2
-Restrict calibration of stations to using channel 2 as the monitor channel.
-.IP -3
-Restrict calibration of stations to using channel 3 as the monitor channel.
+.IP "-d no_calib_days"
+This option is only valid when used with the \fI-N\fP full network calibration. 
+Instead of calibrating the whole network, the \fI-d\fP option will only calibration stations which
+have not been calibrated in the last \fIno_calib_days\fP.  This option is useful if a network calibration
+is interupted for some reason and you want to complete the missing stations at a later time.  
+It is recommended that the \fI-n\fP noop option is used to test what stations need to be calibrated
+before actual execution.
 .IP "-o duration_offset_fraction"
 Offset in time between calibration commands measured as a multiplier of the duration.
 The default duration_offset_fraction is \fB0.5\fP.
@@ -56,6 +64,9 @@ Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBq330_calibration\fP.
 .IP "-t start_time"
 Only calibrate stations which have been deployed after \fIstart_time\fP
+.IP "-m mail_to"
+Email address list to send results.  Multiple email addresses should be comma delimited without
+white space.
 
 
 .SH ENVIRONMENT
@@ -80,21 +91,21 @@ array of sensor specific parameters for cailbration.  Allowed calibration parame
 .ne 7
 sensors &Arr{
     sts2_g3 &Arr{
-        duration       7200
+        duration       7200    # duration <= 16380; q330 limitation
         settling_time  900 
         trailer_time   900 
         waveform       white 
         amplitude      1        # V = 2.5 amplitude in volts is equal to 5 V / 2 ** amplitude
     }
     cmg3t &Arr{
-        duration       7200
+        duration       7200    # duration <= 16380; q330 limitation
         settling_time  900 
         trailer_time   900 
         waveform       white 
         amplitude      1        # V = 2.5 - amplitude in volts is equal to 5 V / 2 ** amplitude
     }
     trillium_240 &Arr{
-        duration       7200
+        duration       7200    # duration <= 16380; q330 limitation
         settling_time  900 
         trailer_time   900 
         waveform       white 
@@ -108,13 +119,16 @@ sensors &Arr{
 0 if successful, 1 if not.
 .SH "SEE ALSO"
 .nf
+q330_baler(1)
 dlcmd(1)
 q3302orb(1)
 dbcalibrate(1)
 displayscal(1)
 .fi
 .SH "BUGS AND CAVEATS"
-none.
+This program is fundamentally dependent on the staq330 table which is written to by the program \fBq330_baler\fP.
+If you find strange behaviour in the operation of \fBq330_calibration\fP, be sure to check that the \fIstaq330\fP 
+table is correct and up to date.  You may need to rerun \fBq330_baler\fP to get things to work as expected.
 .LP
 .SH AUTHOR
 Frank Vernon
