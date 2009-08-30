@@ -8,21 +8,14 @@ dbfix_cals_segtype database
 .SH DESCRIPTION
 dbfix_cals_segtype assigns NULL calib, calper and/or segtype values in the wfdisc table to the values obtained 
 from a join with the calibration table. 
-.SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
 .SH EXAMPLE
 .ft CW
 .RS .2i
 .RE
 .ft R
-.SH RETURN VALUES
-.SH LIBRARY
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-rtdbclean(1)
+rtdbclean(1) dbfix_calib(1)
 .fi
 .SH "BUGS AND CAVEATS"
 Several other tables may need this service as well: dmcwf, wftape, wftar. dbfix_calib
