@@ -231,7 +231,7 @@
         $nrowe = $#sta_0x4 + 1;
         $stepe = sprintf "%d" , (($nrowe-1)/$trow) + 1;
         elog_notify (sprintf "%d BHE monitor channels to calibrate	step	%d",$nrowe,$stepe);
-        elog_notify ("@sta_0x4") if $opt_V;
+        elog_notify ("@sta_0x4") ; # if $opt_V;
         
         for ($dbstaq330[3] = 0; $dbstaq330[3] < $rows; $dbstaq330[3]++) {
             $sta = dbgetv(@dbstaq330, "sta" ) ;
@@ -250,9 +250,9 @@
         }
         
         $nrown = $#sta_0x2 + 1;
-        $stepn = sprintf "%d" , $nrown/$trow;
+        $stepn = sprintf "%d" , (($nrown-1)/$trow) + 1;
         elog_notify (sprintf "%d BHN monitor channels to calibrate	step	%d",$nrown,$stepn);
-        elog_notify ("@sta_0x2") if $opt_V;
+        elog_notify ("@sta_0x2") ; # if $opt_V;
         
         dbclose(@db);
         
