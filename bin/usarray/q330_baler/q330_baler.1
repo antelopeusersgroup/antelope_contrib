@@ -1,0 +1,62 @@
+.TH Q330_BALER 1 "$Date$"
+.SH NAME
+q330_baler \- collects system information about q330 and balers
+.SH SYNOPSIS
+.nf
+\fBq330_baler \fP [-v] [-V] [-n] [-a] [-b] [-q]
+                [-s \fIsubset\fP] [-p \fIpfsource_name\fP] [-m \fImail_to_operator\fP] [-M \fImail_to_field_ops\fP]
+                \fIstatus_orb\fP \fIcmd_orb\fP \fIdb\fP
+.fi
+.SH DESCRIPTION
+\fBq330_baler\fP collects information about the configuration and status 
+of Q330 dataloggers and Quanterra PB14 and PB44 packet balers.
+\fBq330_baler\fP gets information about the Q330 by using \fBdlcmd\fP in the getconfig and
+getstatus modes.  \fBq330_baler\fP gets information about the PB14 from the User Messages in the 
+packets in the \fIstatus_orb\fP. \fBq330_baler\fP gets information about the PB44 from the User Messages in the 
+packets in the \fIstatus_orb\fP as well as from the baler status.html page.
+
+\fBq330_baler\fP writes into the \fIdb.staq330\fP and the \fIdb.stabaler\fP tables.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Test mode.  No operations executed. 
+.IP -a
+Prints PB14 tag message
+.IP "-d subset"
+Subset of NET_STAs to process.  Default is ".*".
+.IP "-p pfsource_name"
+Regex of q3302orb generated /pf/st files to use.
+The default is .*/pf/st files in the \fIstatus_orb\fP.
+.IP "-m mail_to_operator"
+email address list to send to program operators.
+.IP "-M mail_to_field_ops"
+email address list to send notification of Q330 and Baler changes.
+
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+none.
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+dlcmd(1)
+.fi
+.SH "BUGS AND CAVEATS"
+none.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br
