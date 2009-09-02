@@ -112,7 +112,6 @@ int pktchannelpipe_flush (PktChannelPipe *pcp)
 
 <subsection Packet-Channel To Trace Accumulation>
 <cdeclarations>
-
 PktChannel2Trace *pktchannel2trace_new (Dbptr dbmaster, Dbptr dbtrace, Dbptr dbwf, int need_calib, int need_response, int need_site)
     create a new pktchannel2trace object
 
