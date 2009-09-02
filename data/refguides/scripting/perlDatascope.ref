@@ -531,7 +531,7 @@ orbafter(orb, time)
     packet after the specified time. Time must be UTC
     epoch time in seconds, not string.
 
-orbresurrect(orb, pktid, pkttime)
+orbresurrect(orb, \\$pktid, \\$pkttime)
     restore orb position from state, save to state when bury is called
 
 orbping(orb)
