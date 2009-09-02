@@ -1,0 +1,85 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+
+Attribute model
+        String (15)
+        Format ( "%-15s" )
+        Description ( "Model" )
+        Detail {
+                This string identifies a model.
+        }
+        ;
+
+Attribute inp
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		50-character string, which provides information about communications, ip address, port number, logical port number.
+	}
+	;
+
+Attribute firm
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "firmware version" )
+	Detail {
+		30-character string, which provides information about current system firmware version.
+	}
+	;
+
+
+Attribute nreg24
+	Integer (6)
+	Format ( "%6ld" )
+	Null ( "-1" )
+	Range ( "nreg24 > -1" )
+	Description ( "Number of registrations in past 24 hours" )
+	Detail {
+		Number of q330 reboots.
+	}
+	;
+
+Attribute last_reg
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Epochal seconds" )
+        Description ( "time of last registration" )
+        Detail {
+                Time of last pb14 registration to q330.
+        }
+        ;
+
+Attribute nreboot
+	Integer (6)
+	Format ( "%6ld" )
+	Null ( "-1" )
+	Range ( "nreboot > -1" )
+	Description ( "Number of reboots" )
+	Detail {
+		Number of q330 reboots.
+	}
+	;
+
+Attribute last_reboot
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Epochal seconds" )
+        Description ( "time of last reboot" )
+        Detail {
+                Time of last q330 reboot.
+        }
+        ;
+
+
+Relation stabaler
+	Fields ( dlsta time endtime net sta inp model ssident firm nreg24 last_reg nreboot last_reboot lddate )
+	Primary ( dlsta time::endtime )
+	Description ( "pb14 info for USArray" )
+	;
+
