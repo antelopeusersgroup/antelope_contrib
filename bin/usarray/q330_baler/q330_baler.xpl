@@ -339,7 +339,7 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
         unless (exists $config{$key}{config}{dptokens}) {
             $line = "key	$key	has not registered, no Q330 data in TA_config.pf";
             print Q3302ORB "$line\n";
-            elog_complain($line);
+            elog_notify($line);
             next;
         }
         
