@@ -21,12 +21,13 @@
 #
 
     require "getopts.pl" ;
-#    use strict ;
+    use strict ;
 #    use diagnostics;
     use Switch ;
     use Datascope ;
     use archive;
     use orb;
+    use baler ;
     
     our ($opt_v,$opt_V,$opt_D,$opt_a,$opt_b,$opt_m,$opt_M,$opt_n,$opt_p,$opt_q,$opt_s);
     our ($pgm,$host);
@@ -96,6 +97,7 @@
     open(Q330NOTES,">/tmp/tmp_q330notes_$$");
     open(BALERNOTES,">/tmp/tmp_balernotes_$$");
     open(DBMASTER,">/tmp/tmp_dbmaster_$$");
+    open(BALERFULL,">/tmp/tmp_balerfull_$$");
 
     print NOQ330 "No Q330 connection since q3302orb restarted\n";
     print Q3302ORB "Q3302orb config data problems\n";
@@ -105,6 +107,7 @@
     print Q330NOTES "Q330 Notifications\n\n";
     print BALERNOTES "Baler Notifications\n\n";
     print DBMASTER "Dbmaster possible issues\n\n";
+    print BALERFULL "Q330 buffer for baler > 90%\n\n";
     
     &sta_info($orb,$pfsource);
     elog_notify("q3302orb targets -	@targets");
@@ -124,6 +127,7 @@
     print Q330NOTES "\n\n";
     print BALERNOTES "\n\n";
     print DBMASTER "\n\n";
+    print BALERFULL "\n\n";
     
     close(NOQ330);
     close(Q3302ORB);
@@ -133,7 +137,11 @@
     close(Q330NOTES);
     close(BALERNOTES);
     close(DBMASTER);
+    close(BALERFULL);
     
+    $cmd = "cat /tmp/tmp_balerfull_$$ >> /tmp/tmp_noreg_$$";
+    system($cmd);
+
     $cmd = "cat /tmp/tmp_noq330_$$ >> /tmp/tmp_noreg_$$";
     system($cmd);
 
@@ -472,12 +480,13 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
         if ( $config{$key}{config}{fix}{logical_port_packet_memory_size}[3] >0 ) {
             $q330{$dlsta}{LP4_buf}    = 
                 int(100*$stat{$key}{status}{log}{3}{bytes_of_packet_currently_used}/$config{$key}{config}{fix}{logical_port_packet_memory_size}[3]);
-            if ($q330{$dlsta}{LP4_buf}>98) {
+            if ($q330{$dlsta}{LP4_buf}>90) {
                 $line  = "$dlsta	bytes_of_packet_currently_used	";
                 $line .= "$stat{$key}{status}{log}{3}{bytes_of_packet_currently_used}		";
                 $line .= "logical_port_packet_memory_size		";
                 $line .= "$config{$key}{config}{fix}{logical_port_packet_memory_size}[3]";
-                elog_notify($line);
+                print BALERFULL "$line\n";
+                elog_complain($line);
             }
         } else {
             $q330{$dlsta}{LP4_buf}    = -1;
@@ -1046,62 +1055,6 @@ sub pb44 { # ($model,$net,$sta,$inp,$ssident,$firm,$nreboot,$last_reboot) = $pb(
         }
     }
     return
-}
-
-sub get_text { # ($good,@text) = &get_text($url, $info) ;
-    my ( $url, $name) = @_ ; 
-    my ($good, @text);
-    $url = "$url/$name" ; 
-    ($good, @text) = read_url ($url ) ; 
-    grep(s/\r//g, @text) ; 
-    return ($good, @text) ; 
-}
-
-sub read_url { #     ($good, @text) = &read_url ( $url ) ;
-#
-#  reads html files from baler
-#
-    require HTTP::Request;
-    use LWP ; 
-    use HTML::Parser ;
-    use HTML::Entities ;
-    my $Ua = LWP::UserAgent->new;
-
-    my ( $url ) = @_ ;
-    my ( $good ) ;
-    $good = 1 ;
-    elog_notify ( "read_url	url='$url' ") if $opt_V ;
-    my $request = HTTP::Request->new(GET => $url ) ;
-    my $response = $Ua->request($request);
-    if (! $response->is_success) {
-	    my $msg = $response->message ;
-	    elog_notify( $msg ) ;
-        $good = 0;
-    }
-    return ($good, &htmltext ( $response )) ; 
-}
-
-sub htmltext { # &htmltext ( $response ) ;
-    require HTTP::Request;
-    use LWP ; 
-    use HTML::Parser ;
-    use HTML::Entities ;
-    my $Ua = LWP::UserAgent->new;
-
-    my ( $response ) = @_ ;
-    local ( @Text ) ;
-    my $p = HTML::Parser->new('text_h' => [\&text, "self, text, is_cdata"]) ;  
-    $p->parse($response->content);
-    $p->eof;                 
-    return @Text ; 
-}
-
-sub text {
-    my($self, $text, $is_cdata) = @_;
-    if ( $text ne "" ) { 
-	    $text = decode_entities($text) ;
-	    push @Text, $text ; 
-    }
 }
 
 sub prettyprint {
