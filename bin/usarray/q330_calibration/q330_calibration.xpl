@@ -231,7 +231,7 @@
         $nrowe = $#sta_0x4 + 1;
         $stepe = sprintf "%d" , (($nrowe-1)/$trow) + 1;
         elog_notify (sprintf "%d BHE monitor channels to calibrate	step	%d",$nrowe,$stepe);
-        elog_notify ("@sta_0x4") ; # if $opt_V;
+        elog_notify ("@sta_0x4") if $opt_v;
         
         for ($dbstaq330[3] = 0; $dbstaq330[3] < $rows; $dbstaq330[3]++) {
             $sta = dbgetv(@dbstaq330, "sta" ) ;
@@ -252,7 +252,7 @@
         $nrown = $#sta_0x2 + 1;
         $stepn = sprintf "%d" , (($nrown-1)/$trow) + 1;
         elog_notify (sprintf "%d BHN monitor channels to calibrate	step	%d",$nrown,$stepn);
-        elog_notify ("@sta_0x2") ; # if $opt_V;
+        elog_notify ("@sta_0x2") if $opt_v;
         
         dbclose(@db);
         
@@ -332,6 +332,12 @@
 #
 #  clean up and exit
 #
+    if (-e "/tmp/tmp_dlcmd_$$.pf") {
+        $cmd = "rm /tmp/tmp_dlcmd_$$.pf";
+        elog_notify ($cmd) if $opt_v;
+        $problems = run($cmd,$problems) ;
+    }
+    
     $stime = strydtime(now());
     elog_notify ("completed successfully	$stime\n\n");
 
@@ -458,20 +464,20 @@ sub calibrate { # ($sleep,$problems) = &calibrate($orbname,$sta,$mon_chan,$offse
     $cmd .= "-period $pf{sensors}{$snmodel}{period} "               if exists $pf{sensors}{$snmodel}{period};
     $cmd .= "-amplitude $pf{sensors}{$snmodel}{amplitude} "         if exists $pf{sensors}{$snmodel}{amplitude};
     $cmd .= "-sensors $chident -monitor_channels $mon_chan " ;
-    $cmd .= "> /tmp/tmp_dlcmd.pf 2>&1 ";
+    $cmd .= "> /tmp/tmp_dlcmd_$$.pf 2>&1 ";
     if  (! $opt_n ) {
         elog_notify("$cmd");
         $problem_check = $problems;
         $problems = run($cmd,$problems) ;
         if ( $problem_check != $problems ) {
-            $cmd = "cat /tmp/tmp_dlcmd.pf";
+            $cmd = "cat /tmp/tmp_dlcmd_$$.pf";
             elog_notify("$cmd");
             $problems = run($cmd,$problems) ;
             $subject = "Problem $problems	- $pgm $host	dlcmd $sta $mon_chan" ;
             elog_complain("\n$subject") ;
             elog_complain("	$cmd") ;
         }
-        if (! dlcmdpf("/tmp/tmp_dlcmd.pf")) {
+        if (! dlcmdpf("/tmp/tmp_dlcmd_$$.pf")) {
             return (0);
         }
     } else {
