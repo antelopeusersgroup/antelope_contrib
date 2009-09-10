@@ -2,6 +2,7 @@
 DATA = \
 	dlevent \
 	gsnspec \
+	q330_calibration_weblog \
 	qctests \
 	qgrid \
 	replayed \
