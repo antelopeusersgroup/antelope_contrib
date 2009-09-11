@@ -160,7 +160,7 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 	    if(lockf(fd,F_ULOCK,(off_t)0))
 		throw SeisppError(string("DatascopeProcessingQueue::mark:  ")
 		  + "flock failed when attempting to release lock on queue file");
-	} catch (SeisppError serr){throw serr;};
+	} catch (SeisppError& serr){throw serr;};
 }
 DatascopeProcessingQueue::~DatascopeProcessingQueue()
 {	

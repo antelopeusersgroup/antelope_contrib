@@ -330,7 +330,7 @@ list<int> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 				+ "dbputv error writing attribute" 
 				+ fullname
 				+ " to scratch record for match view");
-		} catch (MetadataError mderr)
+		} catch (MetadataError& mderr)
 		{
 			cerr << "DatascopeMatchHandle.find(): match key attribute not found in metadata of input data object" 
 				<< endl

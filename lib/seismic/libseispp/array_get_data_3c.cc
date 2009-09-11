@@ -64,12 +64,7 @@ ThreeComponentEnsemble
 					prec.push_back(tccm.precedence(chan));
 					member_index.push_back(i);
 				} 
-				catch (MetadataError mde)
-				{
-					mde.log_error();
-					throw SeisppError("array_get_data:  required attribute chan is not defined in input data");
-				}
-				catch (SeisppError sde)
+				catch (SeisppError& sde)
 				{
 				    if(SEISPP_verbose)
 				    {

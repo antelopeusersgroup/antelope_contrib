@@ -13,7 +13,7 @@ using namespace std;
  seispp error objects that are it's descendents.
 \author Gary L. Pavlis
 **/
-class SeisppError
+class SeisppError 
 {
 public:
 /*!
@@ -24,14 +24,27 @@ public:
  Default constructor built inline.
 **/
 	SeisppError(){message="seispp library error\n";};
-/*!
- Copy constructor.
+/*! Construct from a std::string
 **/
 	SeisppError(const string mess){message=mess;};
+/*! Construct from a char *
+**/
+	SeisppError(const char *mess){message=string(mess);};
 /*!
  Sends error message thrown by seispp library functions to standard error.
 **/
-	virtual void log_error(){cerr << "seispp error: "<<message<<endl;};
+	void log_error(){
+            cerr << message << endl;
+        };
+/*! This overrides the method in std::exception to load our string.
+  This allows handlers to use the what method and get the error string
+  from seisp.  Idea copied from:  
+  http://www.cplusplus.com/doc/tutorial/exceptions/
+  */
+        const char * what() const throw()
+        {
+            return message.c_str();
+        }
 };
 
 /*!
@@ -64,12 +77,6 @@ public:
 **/
 	SeisppDberror(const string mess, 
 		Dbptr dbi, ErrorSeverity et);
-/*! 
- Sends error message thrown by seispp library functions to standard error.
- This version writes errors from elog functions posted by Antelope libraries.
-**/
-
-	void log_error();
 };
 /*! \brief Special error object thrown by SAC file reader.
 
