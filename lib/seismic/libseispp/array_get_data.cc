@@ -39,7 +39,7 @@ StationTime ArrayPredictedArrivals(SeismicArray& stations,
 			atime+=hypo.time;
 			result[(*sta).first]=atime;
 		}
-		catch (SeisppError serr)
+		catch (SeisppError& serr)
 		{
 			cerr << "ArrayPredictedError(Warning):  phasetime "
 				<< "failed computing travel time for "
@@ -218,13 +218,13 @@ void auto_switch_polarity(TimeSeriesEnsemble *d)
 				}
 				d->member[i].put("hang",90.0);
 			}
-		} catch (MetadataGetError mde) {};
+		} catch (MetadataGetError& mde) {};
 	}
 }
 
 // Common error routine for function immediately following.
 void AlignAndResampleErrorLog(TimeSeriesEnsemble& raw, int i, 
-	SeisppError serr)
+	SeisppError& serr)
 {
 	cerr << "AlignAndResample: Problem processing data for station="
 		<< raw.member[i].get_string("sta")
@@ -267,7 +267,7 @@ TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
 			try {
 				raw_data_trace=ResampleTimeSeries(
 					raw.member[i],rsdef,target_dt,trim);
-			} catch(SeisppError serr) {
+			} catch(SeisppError& serr) {
 				AlignAndResampleErrorLog(raw,i,serr);
 				continue;  // This skips when error is thrown
 			}
@@ -276,7 +276,7 @@ TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
 			auto_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
 						align_mdkey,result_twin));
 			result->member.push_back(*newtrace);
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			AlignAndResampleErrorLog(raw,i,serr);
 			// No need for continue here as result only 

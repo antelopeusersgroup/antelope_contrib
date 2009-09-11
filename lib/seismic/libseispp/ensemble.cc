@@ -59,7 +59,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 			try {
 				d = new TimeSeries(*rdbhv,
 					station_mdl,am);
-			} catch (SeisppDberror dberr)
+			} catch (SeisppDberror& dberr)
 			{
 				cerr << "Problem with member "
 					<< i 
@@ -646,7 +646,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 			try {
 				data3c = new ThreeComponentSeismogram(*rdbhv,
 					station_mdl,am);
-			} catch (SeisppDberror dberr)
+			} catch (SeisppDberror& dberr)
 			{
 				cerr << "Problem with member "
 					<< i 

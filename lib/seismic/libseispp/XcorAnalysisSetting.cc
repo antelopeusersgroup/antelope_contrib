@@ -126,12 +126,8 @@ XcorAnalysisSetting::XcorAnalysisSetting(Metadata md)
 		mode and default for MultichannelCorrelator constructor */
 		mccmode=CORRELATE_AND_STACK;
 	        	                      
-	} catch (MetadataGetError mderr)
-	{
-		mderr.log_error();
-		throw SeisppError("XcorAnalysisSetting construction failed");
-	}
-	catch (SeisppError serr)
+	} 
+	catch (SeisppError& serr)
 	{
 		throw serr;
 	}

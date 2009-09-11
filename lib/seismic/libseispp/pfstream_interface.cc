@@ -66,14 +66,9 @@ TimeSeriesEnsemble *GetNextEnsemble(Pfstream_handle *pfh,
 	    TimeSeries& t0r = *t0;
 	    copy_selected_metadata(dynamic_cast<Metadata&>(t0r),dynamic_cast<Metadata&>(tseobj),mdlist);
 	}
-	catch(SeisppError serr)
+	catch(SeisppError& serr)
 	{
 		throw serr;
-	}
-	catch(MetadataError& mderr)
-	{
-		mderr.log_error();
-		throw SeisppError("GetNextEnsemble: Problems building TimeSeriesEnsemble object");
 	}
 	return(tsptr);
 }
@@ -179,14 +174,9 @@ ThreeComponentEnsemble *GetNext3cEnsemble(Pfstream_handle *pfh,
 	    ThreeComponentSeismogram& t0r = *t0;
 	    copy_selected_metadata(t0r.md,tceobj.md,mdlist);
 	}
-	catch(SeisppError serr)
+	catch(SeisppError& serr)
 	{
 		throw serr;
-	}
-	catch(MetadataError& mderr)
-	{
-		mderr.log_error();
-		throw SeisppError("Problems building TimeSeriesEnsemble object");
 	}
 	return(tceptr);
 }

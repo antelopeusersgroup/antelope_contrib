@@ -245,24 +245,14 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			 + "processing_mode=GenreicGathers");
 		}
 
-	} catch (MetadataGetError mderr)
-	{
-		mderr.log_error();
-		throw SeisppError("XcorProcessingEngine construction failed");
-	}
-	catch (MetadataError merr)
-	{
-		merr.log_error();
-		throw SeisppError("XcorProcessingEngine construction failed");
-
-	}
-	catch (SeisppError serr)
+	} 
+	catch (SeisppError& serr)
 	{
 		throw serr;
 	}
 	catch (...)
 	{
-		throw SeisppError("XcorProcessingEngine constructor:  Unknown error was thrown");
+		throw SeisppError("XcorProcessingEngine constructor:  Unknown error was thrown - code maintenance error likely cause.");
 	}
 }
 XcorProcessingEngine::~XcorProcessingEngine()
@@ -664,7 +654,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 		double stalat,stalon,staelev;
 		try {
 			tcse->member[i].rotate_to_standard();
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			serr.log_error();
 			string staname=tcse->member[i].get_string("sta");
@@ -675,7 +665,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 		try {
 			vp0=tcse->member[i].get_double("vp0");
 			vs0=tcse->member[i].get_double("vs0");
-		} catch (MetadataGetError mde) {
+		} catch (MetadataGetError& mde) {
 			vp0=vp0def;
 			vs0=vs0def;
 		}
@@ -693,7 +683,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 			sz=tcse->member[i].get_double("source_depth");
 			stime=tcse->member[i].get_double("source_time");
 		}
-		catch (MetadataGetError mde)
+		catch (MetadataGetError& mde)
 		{
 			mde.log_error();
 			throw SeisppError(string("XcorProcessingEngine:")
@@ -705,7 +695,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
 		try {
 			tcse->member[i].free_surface_transformation(u,vp0,vs0);
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			serr.log_error();
 			cerr << "Using simple P ray coordinates for station "
@@ -776,7 +766,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 		double stalat,stalon,staelev;
 		try {
 			tcse->member[i].rotate_to_standard();
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			serr.log_error();
 			string staname=tcse->member[i].get_string("sta");
@@ -787,7 +777,7 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 		try {
 			vp0=tcse->member[i].get_double("vp0");
 			vs0=tcse->member[i].get_double("vs0");
-		} catch (MetadataGetError mde) {
+		} catch (MetadataGetError& mde) {
 			vp0=vp0def;
 			vs0=vs0def;
 		}
@@ -801,18 +791,15 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			stalat=rad(stalat);
 			stalon=rad(stalon);
 		}
-		catch (MetadataGetError mde)
+		catch (MetadataGetError& mde)
 		{
-			mde.log_error();
-			throw SeisppError(string("XcorProcessingEngine:")
-				+string("  Failure in three component processing\n")
-				+string("Missing metadata invalidates these data.  Check pf") );
+			throw mde;
 
 		}
 		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
 		try {
 			tcse->member[i].free_surface_transformation(u,vp0,vs0);
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			serr.log_error();
 			cerr << "Using simple ray coordinates for station "
@@ -943,7 +930,7 @@ void XcorProcessingEngine::prep_gather()
 			}
 
 		}
-		catch(MetadataGetError mde)
+		catch(MetadataGetError& mde)
 		{
 			mde.log_error();
 			cerr << "In XcorProcessEngine::load_data:  continuing with lat,lon=0"<<endl;
@@ -1347,7 +1334,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		a different evid associated with it */
 		if(processing_mode!=GenericGathers) dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,0);
 	    }
-	    catch (MetadataGetError mderr)
+	    catch (MetadataGetError& mderr)
 	    {
 		cerr << "Problems getting attributes needed for xcorbeam"<<endl
 
@@ -1488,7 +1475,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				    if(record<0) cerr << "XcorProcessingEngine::save_results(WARNING):  "
 							<< "dbaddv failed writing xsaa table for station="
 							<< sta<<" evid="<<ggevid<<endl;
-				  } catch (MetadataGetError mde)
+				  } catch (MetadataGetError& mde)
 				  {
 					cerr << "XcorProcessingEngine::save_results:  problem saving xsaa table"<<endl;
 					mde.log_error();
@@ -1584,14 +1571,17 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				  cerr << "Turn on verbose for more details"<<endl;
 			        }
 			    }
-			    catch (SeisppError serr)
+			    catch (SeisppError& serr)
 			    {
 				serr.log_error();
+                                cerr << "Exiting:  cannot continue after this error"
+                                    <<" Run dbverify on output db as it may have been corrupted"
+                                    <<endl;
 				exit(-1);
 			    }
 			}
 		    }
-		    catch (MetadataGetError mderr)
+		    catch (MetadataGetError& mderr)
 		    {
 			cerr << "save_results:  problem with trace number "
 				<< i << endl;
@@ -1654,7 +1644,7 @@ void XcorProcessingEngine::shift_arrivals(double tshift)
 				trace->put(arrival_time_key,atime);
 			}
 		  }
-		} catch (MetadataGetError mde) {
+		} catch (MetadataGetError& mde) {
 		    mde.log_error();
 		}
 	}
@@ -1764,7 +1754,7 @@ int XcorProcessingEngine::clear_already_processed()
 					waveform_ensemble.member.push_back(*trace);
 				}
 			}
-			catch(MetadataGetError mderr){};  // Silently do nothing if get_int failed
+			catch(MetadataGetError& mderr){};  // Silently do nothing if get_int failed
 		}
 	}
 	/* overwrite regular_ensemble with waveform_ensemble.  It will be the new master */

@@ -1,4 +1,5 @@
 #include <stdio.h>
+// These probably don't belong in this file, but it works
 #include <sstream>
 #include "elog.h"
 #include "dbpp.h"
@@ -693,54 +694,59 @@ DBBundle DatascopeHandle::get_range()
 	return(bundle);
 }
 
-
-// error object functions 
-SeisppDberror::SeisppDberror(const string mess, Dbptr dbi)
-		: SeisppError(mess)
+string Dberror_message(string mess, Dbptr db, ErrorSeverity et)
 {
-	db=dbi;
-	error_type=unknown;
-}
-SeisppDberror::SeisppDberror(const string mess, Dbptr dbi,
-		ErrorSeverity et) : SeisppError(mess)
-{
-	db=dbi;
-	error_type=et;
-}
-
-void SeisppDberror::log_error()
-{
-	cerr<<"Database related error:"<<endl
-		<<message<<endl
-	<< "Current database pointer:"
+    stringstream ess;
+    ess<<"SeisppDberror:  Database related error"<<endl
+        << mess <<endl
 	<<"Current database pointer:"
 	<<"Database="<<db.database
 	<<", Table="<<db.table
 	<<", Record="<<db.record
 	<<", Field="<<db.field<<endl
 	<<"severity level=";
-	switch (error_type)
-	{
-	case fault:
-		cerr << " Fault" << endl;
-		break;
-	case fatal:
-		cerr << " Fatal" << endl;
-		break;
-	case complain:
-		cerr << " Complain" << endl;
-		break;
-	case notify:
-		cerr << " Notify" << endl;
-		break;
-	case log:
-		cerr << " Log" << endl;
-		break;
-	default:
-		cerr << " Unknown" << endl;
-	}
-	clear_register(1);
+    switch (et)
+    {
+    case fault:
+    	ess << " Fault" << endl;
+    	break;
+    case fatal:
+    	ess << " Fatal" << endl;
+    	break;
+    case complain:
+    	ess << " Complain" << endl;
+    	break;
+    case notify:
+    	ess << " Notify" << endl;
+    	break;
+    case log:
+    	ess << " Log" << endl;
+    	break;
+    default:
+    	ess << " Unknown" << endl;
+    }
+    clear_register(1);
+    return ess.str();
 }
+
+
+// error object functions 
+// These probably don't belong in this file, but it works
+SeisppDberror::SeisppDberror(const string mess, Dbptr dbi)
+		: SeisppError(mess)
+{
+    db=dbi;
+    error_type=unknown;
+    message=Dberror_message(mess,db,error_type);
+}
+SeisppDberror::SeisppDberror(const string mess, Dbptr dbi,
+		ErrorSeverity et) : SeisppError(mess)
+{
+    db=dbi;
+    error_type=et;
+    message=Dberror_message(mess,db,error_type);
+}
+
 /* Private method used by relational routines. */
 void DatascopeHandle::manage_parent()
 {

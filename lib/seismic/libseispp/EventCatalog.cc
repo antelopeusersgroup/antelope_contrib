@@ -41,14 +41,14 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& a
 			try {
 				md=Metadata(dynamic_cast<DatabaseHandle&>(dsdbh),
 					mdl,am);
-			} catch (MetadataError mderr)
+			} catch (SeisppError& serr)
 			{
 				if(SEISPP_verbose) 
 				{
 					cerr << "EventCatalog database constructor:  "
 						<< "error extracting aux attribures."
 						<< "MetadataError exception message:  ";
-					mderr.log_error();
+					serr.log_error();
 				}
 				/* Better an empty md than a partial one of unknown state */
 				md=Metadata();

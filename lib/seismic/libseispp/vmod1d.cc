@@ -106,17 +106,6 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 
 	ifstream input;
 
-	/*
-	try{
-		input.open(fname.c_str(), ios::in);
-	} catch (ios::failure& var)
-	{
-		string mess;
-		mess = var.what();
-		throw(VelocityModel_1d_IOerror("Cannot open file "+fname,
-                        "VelocityModel_1d constructor failed"));
-	}
-	*/
 	input.open(fname.c_str(), ios::in);
 	if(input.fail())
 		throw(VelocityModel_1d_IOerror("Cannot open file "+fname,

@@ -542,7 +542,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		vang[0]=ts[0].get_double("vang");
 		vang[1]=ts[1].get_double("vang");
 		vang[2]=ts[2].get_double("vang");
-	} catch (MetadataError mde)
+	} catch (MetadataError& mde)
 	{
 		mde.log_error();
 		throw SeisppError(
@@ -1104,7 +1104,7 @@ double *ThreeComponentSeismogram::operator[](int i)
 		result=u.get_address(0,i);
 		return(result);
 	}
-	catch (dmatrix_index_error derr)
+	catch (dmatrix_index_error& derr)
 	{
 		derr.log_error();
 		throw SeisppError(string("ThreeComponentSeismogram::operator[]: index error"));

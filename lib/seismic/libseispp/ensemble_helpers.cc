@@ -55,7 +55,7 @@ auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
 		
 			}
 
-		} catch (MetadataGetError mde) {
+		} catch (MetadataGetError& mde) {
 			cerr << "StaChanRegExSubset (Warning):  sta/chan metadata error in building ensemble subset. "<<endl;
 			mde.log_error();
 		}
@@ -77,7 +77,7 @@ auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 			sta=parent.member[i].get_string("sta");
 			aptr=sa.array.find(sta);
 			if(aptr!=aptr_end) result->member.push_back(parent.member[i]);
-		} catch (MetadataGetError mde) {
+		} catch (MetadataGetError& mde) {
 			cerr << "ArraySubset (Warning):  "
 				<< "Missing sta attribute in parent ensemble member number "
 				<< i << endl;
