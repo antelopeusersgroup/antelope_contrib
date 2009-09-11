@@ -9,7 +9,7 @@ This document is primarily intended for operational grade settings. However, it 
 
 .SH PROCEDURE
 .SS 1.  Prepare for the transition.
-Print out a copy of the new release $ANTELOPE/Changes.txt. Read through the first few pages to become familiar with the newchanges for this release. The bulk of this document consists of the "Detailed Changes from Logs" section. These changes are listed alphabetically by program. Refer to this repeatedly during the upgrade.
+Print out a copy of the new release $ANTELOPE/Changes.txt. Read through the first few pages to become familiar with the new changes for this release. The bulk of this document consists of the "Detailed Changes from Logs" section. These changes are listed alphabetically by program. Refer to this repeatedly during the upgrade.
 
 Depending on the complexity of your system, allot yourself anywhere from a long morning to a week, to complete all the upgrades and test the upgraded real-time system.
 
@@ -90,7 +90,7 @@ Switch the rtexec files and the pf directories by renaming the rtexec files and 
 	% mv pf_4.10 pf
 .fi
 
-Check that user rt has sourced the new antelope release (echo $ANTELOPE; source $ANTELOPE/setup.csh) and double check that the newrtexec.pf, in the Defines Array, has ANTELOPE set to the new antelope release. See Note at end of section 5. 
+Check that user rt has sourced the new antelope release (echo $ANTELOPE; source $ANTELOPE/setup.csh) and double check that the new rtexec.pf, in the Defines Array, has ANTELOPE set to the new antelope release. See Note at end of section 5. 
 
 \fBb)  RESTART real-time system.\fP
 
@@ -136,11 +136,11 @@ When all process have been tested and all log files look OK (no unknown problems
 
 
 \fBNOTE:\fP
-When switching between antelope versions in a test environment, it is often useful to set-up an alias, such as "ant", which sources the specified version of Antelope. A csh/tcsh example follows:
+When switching between antelope versions in a test environment, it is often useful to set-up an alias, such as "antv", which sources the specified version of Antelope. Avoid using "ant" as an alias as it can clash with Apache "ant" XML-based build system.  A csh/tcsh example of the alias "antv" and its usage follows:
 
 .nf
-	% alias ant 'set ANTELOPE=/opt/antelope/\!^; source /opt/antelope/\!^/setup.csh'
-	% ant 4.10 	#sets ANTELOPE=/opt/antelope/4.10 and sources /opt/antelope/4.10/setup.csh
+	% alias antv 'set ANTELOPE=/opt/antelope/\!^; source /opt/antelope/\!^/setup.csh'
+	% antv 4.10 	#sets ANTELOPE=/opt/antelope/4.10 and sources /opt/antelope/4.10/setup.csh
 .fi
 
 .SS 6.  Clean up real-time system.
@@ -150,7 +150,7 @@ When switching between antelope versions in a test environment, it is often usef
 	% mvpf_4.9 pf_archive
 .fi
 
-b)  Ensure that only the most recent version of the running pf file is in the pf directory. Subsequent updates to the pf files should be done in the following manner. Copy the current pf file to the same name, with the last datetime the file was edited appended to the end of it (program.pf_\fIyyyymmdd\fP). Update and test current file. When finished, copy the new version so that the current datetime is appended to the end of the filename and store all these datetime appended versions in pf_archive.
+b)  Ensure that only the most recent version of the running pf file is in the pf directory. Subsequent updates to the pf files should be done in the following manner. Copy the current pf file to the same name, with the last datetime the file was edited appended to the end of it (program.pf_\fIyyyymmdd\fP). Update and test current file. When finished, copy the new version so that the current datetime is appended to the end of the filename and store all these datetime appended versions in pf_archive. Or better yet, avoid creating multiple copies by keeping track of parameter file versions in a revision-control system such as CVS or SVN.
 
 .nf
 	% cp dbevents.pf dbevents.pf_20081202 		# file was last changed on Dec 2, 2008.
@@ -174,7 +174,7 @@ Monitor these systems closely for the following week to catch any new issues tha
 .SH "BUGS AND CAVEATS"
 In upgrading a network, it is important to avoid version skew, i.e. having multiple versions of Antelope running all over the place for extended periods. This can create a number of unexpected problems.
 
-In most cases the lastest antelope release is backwards compatible. One could change the antelope version in rtexec.pf and then just try running the real-time system with the existing pf directory. The disadvantage of this, assuming everything works, is that you miss learning about the updates and program improvements to any real-time processes you are running and you will not be able to take advantage of any new parameter value settings. This is not an advisable method if you are running a robust, complicated network. At least once a year, you will need to review your real-time dataﬂow and re-evaluate it with an eye to improving your network. 
+In most cases the lastest antelope release is backwards compatible. One could change the antelope version in rtexec.pf and then just try running the real-time system with the existing pf directory. The disadvantage of this, assuming everything works, is that you miss learning about the updates and program improvements to any real-time processes you are running and you will not be able to take advantage of any new parameter value settings. This is not an advisable method if you are running a robust, complicated network. At least once a year, you will need to review your real-time dataflow and re-evaluate it with an eye to improving your network. 
 
 .SH AUTHOR
 Taimi Mulder
