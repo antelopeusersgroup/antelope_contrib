@@ -1,6 +1,7 @@
 #ifndef _METADATA_H_
 #define _METADATA_H_
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <list>
 #include <map>
@@ -10,6 +11,7 @@
 #include "pf.h"
 #include "AttributeMap.h"
 #include "databasehandle.h"
+#include "SeisppError.h"
 
 namespace SEISPP 
 {
@@ -44,42 +46,52 @@ typedef list<Metadata_typedef> MetadataList;
 
 /*! \brief Base class error object for Metadata.  
 **/
-class MetadataError
+class MetadataError : public SeisppError
 {
 public:
-	string message;
-	MetadataError(){message="Metadata error";};
+	MetadataError(){message="no detail posted";};
 	MetadataError(string mess){message=mess;};
 	MetadataError(char *mess){message=mess;};
-	virtual void log_error(){cerr<<"Metadata error: "<< message<<endl;}
+	void log_error(){
+            cerr<<"Metadata error: "<< message<<endl;
+        };
 };
 /*! \brief Error object thrown by get methods.
 **/
-class MetadataGetError : public MetadataError
+class MetadataGetError : public SeisppError
 {
 public:
 	string mdtype;
 	string name;
-	MetadataGetError(const string mtd, const string n, const string mess)
-		{mdtype=mtd; name=n;  message=mess; };
-	virtual void log_error()
-	{ cerr<<"Error attempting to extract parameter " << name
-		<< " of type " << mdtype << "\n" << message << endl;};
+	MetadataGetError(const string mtd, const string n, const string mess){
+            mdtype=mtd;
+            name=n;
+            stringstream ess;
+            ess << "MetadataGetError: "
+               << "Error while attemping to extract attribute with name="
+               << n<<" with type="<<mtd<<endl
+                << "Detailed message posted:  "<<mess<<endl;
+            message=ess.str();
+        };
 };
 /*! \brief Error object thrown if problems are encountered parsing input
 in some constructors.
 **/
-class MetadataParseError : public MetadataError
+class MetadataParseError : public SeisppError
 {
 public:
 	int error_code;
 	MetadataParseError(int ierr,const string mess)
-	{error_code=ierr;message=mess;};
-	virtual void log_error()
-	{cerr<<"pfcompile failed with return code="
-		<<error_code<<endl;
-	cerr<<message<<endl;
-	};
+	{
+            error_code=ierr;
+            stringstream ess;
+            ess << "MetadataParseError:  "
+                << "pfcompile failed returning error code="
+                <<error_code<<endl
+                << "Detail message posted:  "
+                << mess<<endl;
+            message=ess.str();
+        };
 };
 
 /*! \brief Object to hold auxiliary parameters referenced by a keyword.

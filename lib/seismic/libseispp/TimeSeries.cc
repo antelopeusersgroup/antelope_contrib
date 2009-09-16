@@ -162,35 +162,35 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	with a default name */
 	try {
 		ns=this->get_int(number_samples_keyword);
-	}catch (MetadataGetError mde)
+	}catch (MetadataGetError& mde)
 	{
 		if(SEISPP_verbose) 
 		  TimeSeriesRequiredError(mde,number_samples_keyword);
 		try{
 			ns=dbh.get_int(number_samples_keyword);
-		} catch(SeisppDberror serr) {throw serr;}
+		} catch(SeisppDberror& serr) {throw serr;}
 		this->put(number_samples_keyword,ns);
 	}
 	try {
 		t0=this->get_double(start_time_keyword);
-	}catch (MetadataGetError mde)
+	}catch (MetadataGetError& mde)
 	{
 		if(SEISPP_verbose) 
 		  TimeSeriesRequiredError(mde,start_time_keyword);
 		try{
 			t0=dbh.get_double(start_time_keyword);
-		} catch(SeisppDberror serr) {throw serr;}
+		} catch(SeisppDberror& serr) {throw serr;}
 		this->put(start_time_keyword,t0);
 	}
 	try {
 		srate=this->get_double(sample_rate_keyword);
-	}catch (MetadataGetError mde)
+	}catch (MetadataGetError& mde)
 	{
 		if(SEISPP_verbose) 
 		  TimeSeriesRequiredError(mde,sample_rate_keyword);
 		try{
 			t0=dbh.get_double(start_time_keyword);
-		} catch(SeisppDberror serr) {throw serr;}
+		} catch(SeisppDberror& serr) {throw serr;}
 		this->put(sample_rate_keyword,srate);
 	}
 	dt=1.0/srate;

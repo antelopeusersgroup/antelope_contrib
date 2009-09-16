@@ -140,7 +140,7 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 				this->put<char *>(attribute_name,svalue);
 			}
 		}
-		catch (SeisppError serr)
+		catch (SeisppError& serr)
 		{
 			cerr << "Warning:  problem parsing the following line"
 				<< " from parameter file for trace type="
@@ -200,7 +200,7 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 	try {
 		dt=this->get<double>(key);
 		if(!key_is_dt) dt=1.0/dt;
-	} catch (SeisppError serr)
+	} catch (SeisppError& serr)
 	{
 		throw SeisppError(base_error
 		 + string("failed to fetch sample intervale using keyword=")
@@ -230,7 +230,7 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 		ns=this->get<int>(nsamp_keyword);
 		dt=this->get<double>(dt_keyword);
 		if(!key_is_dt) dt=1.0/dt;
-	} catch (SeisppError serr)
+	} catch (SeisppError& serr)
 	{
 		throw SeisppError(base_error
 		 + string("failure fetching BasicTimeSeries attributes from header"));

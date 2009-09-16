@@ -223,7 +223,7 @@ void save_metadata_for_object(Metadata& md,
 		{
 			try {
 				aliasmap=am.aliases((*mdli).tag);
-			} catch(SeisppError serr){throw serr;};
+			} catch(SeisppError& serr){throw serr;};
 			ami=aliasmap.find(table);
 			if(ami==aliasmap.end())
 			{

@@ -246,7 +246,7 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			try {
 				xcor.member.push_back(correlation(beam,data.member[i],
 					lag_range,true));
-			} catch (SeisppError serr)
+			} catch (SeisppError& serr)
 			{
 				cerr << "MultichannelCorrelation(Warning):  problem data deleted."
 					<< endl
@@ -352,7 +352,7 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 				{
 					try {
 						xcor.member[i]=correlation(beam,data.member[i],lag_range,true);
-					} catch (SeisppError serr)
+					} catch (SeisppError& serr)
 					{
 						cerr << "MultichannelCorrelation(Warning):  problem data deleted."
 							<< endl
@@ -481,15 +481,13 @@ MultichannelCorrelator:: MultichannelCorrelator(ThreeComponentEnsemble data,
 								bool normalize,
 									bool parallel)
 {
-//Peng Wang, commented out for compilation and testing, this should not be
-//directly data or ThreeComponentEnsemble, instead, should converted to ThreeComponentSeismogram
-//	try{
-//		auto_ptr<TimeSeriesEnsemble>comp(ExtractComponent(data,component));
-//		*this = MultichannelCorrelator(*comp,method,beam_window,robust_window,
-//				stacktype,initial_beam,reference_member,normalize,parallel);
-//	}catch(...) {
-	    //supposed to throw something
-//	}
+    try {
+		auto_ptr<TimeSeriesEnsemble>comp(ExtractComponent(data,component));
+		*this = MultichannelCorrelator(*comp,method,beam_window,robust_window,
+				lag_cutoff, stacktype,initial_beam,reference_member,normalize,parallel,false,false);
+	}catch(...) {
+	    throw;
+	};
 }
 MultichannelCorrelator:: MultichannelCorrelator(const MultichannelCorrelator& co)
 {

@@ -1,0 +1,294 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+
+Attribute target
+        String (16)
+        Format ( "%16s" )
+        Null ( "-" )
+        Description ( "q3302orb target name" )
+        Detail {
+                q3302orb target name which is acquiring dlname station data. 
+        }
+        ;
+        
+Attribute idtag
+	String (12)
+	Format ( "%-12s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		This is an twelve-character code, which uniquely identifies the a piece of equipment such as a datalogger or sensor.
+		idtag can be used when there are two identification strings associated with at datalogger such as a Q330 which has a 16-digit hexadecimal number adn also a human readable idtag
+	}
+	;
+
+Attribute inp
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "identification tag" )
+	Detail {
+		50-character string, which provides information about communications, ip address, port number, logical port number.
+	}
+	;
+
+Attribute model
+    String (15)
+    Format ( "%-15s" )
+    Description ( "Model" )
+    Detail {
+        This string identifies a model.
+    }
+    ;
+
+Attribute firm
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "firmware version" )
+	Detail {
+		30-character string, which provides information about current system firmware version.
+	}
+	;
+
+Attribute nchan
+	Integer (3)
+	Format ( "%3ld" )
+	Null ( "-1" )
+	Range ( "nchan > 0" )
+	Description ( "Number of channels" )
+	Detail {
+		Number of input channels available on q330.
+	}
+	;
+
+Attribute nreboot
+	Integer (6)
+	Format ( "%6ld" )
+	Null ( "-1" )
+	Range ( "nreboot > -1" )
+	Description ( "Number of reboots" )
+	Detail {
+		Number of q330 reboots.
+	}
+	;
+
+Attribute last_reboot
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Epochal seconds" )
+        Description ( "time of last reboot" )
+        Detail {
+                Time of last q330 reboot.
+        }
+        ;
+
+Attribute q330_user_tag
+	Integer (6)
+	Format ( "%6ld" )
+	Null ( "-1" )
+	Range ( "q330_user_tag > -1" )
+	Description ( "Q330 user tag" )
+	Detail {
+            It is used as an index to a configuration file template so that a program can 
+            read the template type and load the new template of this type. Ê
+            There are different configurations for 3ch systems with serial or ethernet telemetry 
+            and 6ch systems with serial or ethernet telemetry and then reversed 6ch systems.
+    }
+	;
+
+Attribute memory_size
+	Integer (10)
+	Format ( "%10ld" )
+	Null ( "-1" )
+	Range ( "memory_size > 0" )
+	Description ( "Q330 memory size" )
+	Detail {
+		Number of bytes of Q330 memory in unit.
+	}
+	;
+
+Attribute LP1_buf
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Range ( "LP1_buf >= 0 && LP1_buf <= 100 " )
+	Description ( "% Logical Port 1 buffer full" )
+	Detail {
+		100.0*stat.log[0].bytes_of_packet_currently_used)/fix.logical_port_packet_memory_size[0]
+	}
+	;
+	
+Attribute LP2_buf
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Range ( "LP2_buf >= 0 && LP2_buf <= 100 " )
+	Description ( "% Logical Port 2 buffer full" )
+	Detail {
+		100.0*stat.log[1].bytes_of_packet_currently_used)/fix.logical_port_packet_memory_size[1]
+	}
+	;
+	
+Attribute LP3_buf
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Range ( "LP3_buf >= 0 && LP3_buf <= 100 " )
+	Description ( "% Logical Port 3 buffer full" )
+	Detail {
+		100.0*stat.log[2].bytes_of_packet_currently_used)/fix.logical_port_packet_memory_size[2]
+	}
+	;
+	
+Attribute LP4_buf
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Range ( "LP4_buf >= 0 && LP4_buf <= 100 " )
+	Description ( "% Logical Port 4 buffer full" )
+	Detail {
+		100.0*stat.log[3].bytes_of_packet_currently_used)/fix.logical_port_packet_memory_size[3]
+	}
+	;
+	
+Attribute qap_1_3_type
+	Integer (6)
+	Format ( "%6ld" )
+	Null ( "-1" )
+	Range ( "qap_1_3_type > -1" )
+	Description ( "qap channel 1-3 type" )
+	Detail {
+		 channels 1-3  QAPCHP 
+		 type 0 means no board installed
+		 type 1 means the normal channels
+		 type 2 means the high resolution channels
+	}
+	;
+	
+Attribute qap_1_3_ver
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "qap channel 1-3 version" )
+	Detail {
+		channels 1-3  QAPCHP firmware version
+	}
+	;
+	
+Attribute qap_4_6_type
+	Integer (6)
+	Format ( "%6ld" )
+	Null ( "-1" )
+	Range ( "qap_4_6_type > -1" )
+	Description ( "qap channel 4-6 type" )
+	Detail {
+		 channels 4-6  QAPCHP 
+		 type 0 means no board installed
+		 type 1 means the normal channels
+		 type 3 means the high resolution channels
+	}
+	;
+	
+Attribute qap_4_6_ver
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "qap channel 4-6 version" )
+	Detail {
+		channels 4-6  QAPCHP firmware version
+	}
+	;
+	
+Attribute ch1_3_filter
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "chan 1-3 filter setting" )
+	Detail {
+		50-character string, which provides information about current filter settings for channels 1, 2, 3.
+	}
+	;
+	
+Attribute ch4_6_filter
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "chan 4-6 filter setting" )
+	Detail {
+		50-character string, which provides information about current filter settings for channels 4, 5, 6.
+	}
+	;
+	
+Attribute ch1_preamp
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "chan 1 preamp setting" )
+	Detail {
+		24-character string, which provides information about current chan 1 preamp setting.
+	}
+	;
+	
+Attribute ch2_preamp
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "chan 2 preamp setting" )
+	Detail {
+		24-character string, which provides information about current chan 2 preamp setting.
+	}
+	;
+	
+Attribute ch3_preamp
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "chan 3 preamp setting" )
+	Detail {
+		24-character string, which provides information about current chan 3 preamp setting.
+	}
+	;
+	
+Attribute ch4_preamp
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "chan 4 preamp setting" )
+	Detail {
+		24-character string, which provides information about current chan 4 preamp setting.
+	}
+	;
+	
+Attribute ch5_preamp
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "chan 5 preamp setting" )
+	Detail {
+		24-character string, which provides information about current chan 5 preamp setting.
+	}
+	;
+	
+Attribute ch6_preamp
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "chan 6 preamp setting" )
+	Detail {
+		24-character string, which provides information about current chan 6 preamp setting.
+	}
+	;
+	
+
+Relation staq330
+	Fields ( dlsta time endtime target net sta inp model ssident idtag firm nchan nreboot last_reboot 
+	         q330_user_tag memory_size qap_1_3_type qap_1_3_ver qap_4_6_type qap_4_6_ver 
+	         ch1_3_filter ch4_6_filter ch1_preamp ch2_preamp ch3_preamp ch4_preamp ch5_preamp ch6_preamp 
+	         LP1_buf LP2_buf LP3_buf LP4_buf lddate )
+	Primary ( dlsta time::endtime )
+	Description ( "q330 communications information for USArray" )
+	;
+

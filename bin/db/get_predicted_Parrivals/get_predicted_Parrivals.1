@@ -1,0 +1,131 @@
+.TH get_predicted_Parrivals 1 
+.SH NAME
+get_predicted_Parrivals \ - produce arrival table with predicted P arrivals given an input bulletin 
+.SH SYNOPSIS
+.nf
+
+\fBget_predicted_Parrivals\fP [-d] [-n] [-v]
+		[-a \fIsite_subset\fP ] 
+		[-c \fIchan\fP ] 
+		[-s \fIorigin_subset\fP ] 
+		\fIdbcat\fP \fIdbsite\fP \fIdbout\fP 
+.fi
+.SH DESCRIPTION
+There may be occasions where you have waveforms and need predicted arrivals
+but do not wish to run the data through the \fBdbdetect(1)\fP and 
+\fBdbgrassoc(1)\fP processes.  This script generates an arrival table in 
+the \fIdbout\fP database populated with predicted arrivals when given: an 
+input catalog, \fIdbcat\fP and an input site (and optionally deployment) 
+database, \fIdbcat\fP.
+
+The script is fairly dumb and performs only minimal checking to see if the
+station in the site table was "on" during the event of interest.
+
+.SH OPTIONS
+.LP
+.IP -v
+Verbose messaging.
+.IP -n
+Only report how many arrivals would be added.  Do not actually generate 
+an arrival table.
+.IP -d 
+Use the deployment table available in the \fIdbsite\fP database.  This 
+forces a subset in attempt to only produce arrivals for stations that may have
+been operational during the time of the events of interest.  The deployment 
+table must be accessible through the \fIdbsite\fP descriptor.
+.IP "-a site_subset"
+Subset the site table with the expression specified for \fIsite_subset\fP.  The
+subset expression must be valid for the site table.
+.IP "-c chan"
+Change the default channel for placing P picks.  The default channel is BHZ.  
+All P picks are placed on this channel.
+.IP "-s origin_subset"
+Subset the origin table of the input catalog \fIdbcat\fP.  Only produce 
+predicted arrivals for the origins that meet these subset rules.
+.IP dbcat
+Database which contains the origins from which predicted arrivals are 
+calculated.
+.IP dbsite
+Database which contains the site table.  Picks are generated for all stations 
+which have active ondate/offdate spans for the time of the origins of interest
+unless the \fI-a site_subset\fP reduces the list.
+.IP dbout
+Output database that contains the generated arrival table with the 
+predicted P picks.  Note: this script does not test the database for 
+pre-existing arrivals.
+.SH ENVIRONMENT
+Needs to be run under an ANTELOPE environment.
+.SH EXAMPLE
+.LP
+Generate predicted P arrivals for the A*, B*, C*, and D* stations found in the
+site database, my_experiment, for orid 13781 from the qed bulletin and save
+the arrivals to the test database.
+.in 2c
+.ft CW
+.nf
+ %\fB get_predicted_Parrivals -s "orid=='13781'" \\
+    -a "sta=~/[ABCD].*/" qed my_experiment test \fP
+.fi
+.ft R
+.in
+
+.LP
+Show how many arrivals would be added for each event in the big_quakes 
+database.  No arrivals will be generated.
+.in 2c
+.ft CW
+.nf
+ %\fB get_predicted_Parrivals -n big_quakes my_experiment test \fP
+.fi
+.ft R
+.in
+
+.LP
+Generate predicted P arrivals using channel HHZ, for stations that are
+operational according to the deployment table of my_exeperiment.  Only
+use origins with magnitudes greater than 7.0 or depths greater than 500.
+.in 2c
+.ft CW
+.nf
+ %\fB get_predicted_Parrivals -d -c HHZ \\
+    -s "(mb>='7.0'||ms>='7.0')||depth>='500'" \\
+    big_quakes my_experiment test \fP
+.fi
+.ft R
+.in
+
+.SH "SEE ALSO"
+.nf
+\fBdbassoc_arrival\fP(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+You may not actually have waveforms for all stations where output arrivals
+are generated (note that no wfdisc is needed for this script).
+.LP
+The output arrivals are likely not in the same database as your wfdisc.  You
+will have to either rename the \fIdbout\fP.arrival, or modify a descriptor
+file to point to these separate arrivals and your wfdisc.
+.LP
+You should still run \fBdbloc2(1)\fP or some other program such as 
+\fBdbassoc_arrival\fP to associate these predicted arrivals to 
+generate assoc, origin, origerr, and event rows. 
+.LP
+This script only puts in the predicted first arriving P arrival.  It uses the 
+\fBptime\fP function from \fBdbexpressions\fP(1).
+.LP
+These are only predicted P arrivals based on the IASPEI travel time model.  
+They should be analyst reviewed. 
+.LP
+There is no smart programming to check that you have waveform data for the
+channel where the pick is to be applied.
+.LP
+Not extensively tested and little support will be provided.  This was a quick 
+script that I thought might be useful.  If you want to modify it, please do 
+so, and check in the changes to the contrib repository.  
+.SH AUTHOR
+Jennifer Eakins
+.br
+ANF
+.br
+Univ. of California, San Diego

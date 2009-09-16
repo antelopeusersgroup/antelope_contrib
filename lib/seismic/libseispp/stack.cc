@@ -154,7 +154,7 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 					  try {
 						stackdata.push_back(WindowData(d.member[i],twd));
 						dindex.push_back(i);
-					   } catch (SeisppError serr)
+					   } catch (SeisppError& serr)
 					   {
 						cerr << "Stacker:  problem processing ensemble member = "<<i<<endl;
 						cerr << "Data skipped"<<endl;

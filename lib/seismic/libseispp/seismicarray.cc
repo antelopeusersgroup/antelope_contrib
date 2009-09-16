@@ -141,7 +141,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 					  << "Invalid ondate attribute in site table.   "
 					  << "Check your database"<<endl;
 			}
-		} catch (SeisppDberror dberr)
+		} catch (SeisppDberror& dberr)
 		{
 			dberr.log_error();
 		}

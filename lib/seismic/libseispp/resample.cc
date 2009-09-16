@@ -402,7 +402,7 @@ ResamplingDefinitions::ResamplingDefinitions(Pf *pf)
 		exact=atof(key);
 		try{
 			rop = new ResampleOperator(exact,pfsr);
-		} catch(SeisppError serr){throw serr;};
+		} catch(SeisppError& serr){throw serr;};
 		si_range.low=rop->low;
 		si_range.high=rop->high;
 		decset.insert(ROmap::value_type(si_range,*rop));

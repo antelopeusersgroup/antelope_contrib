@@ -509,7 +509,7 @@ namespace SEISPP
 				+ string("This indicates a coding error that must be fixed\n")
 				+ string("If caller does not exit on this error, expect a less graceful abort"));
                 };
-            } catch( MetadataError merr)
+            } catch( MetadataError& merr)
             {
                 cerr << "Error in copy_selected_metadata at item ";
                 cerr << count << " with tag " << mdti->tag <<"\n" ;

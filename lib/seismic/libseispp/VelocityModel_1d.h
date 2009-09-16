@@ -3,57 +3,75 @@
 #include <string>
 #include <vector>
 #include "db.h"
+#include "seispp.h"
 namespace SEISPP {
 using namespace std;
 /*! \brief Error object thrown by 1d velocity model objects.
 
+This is a simple error objects thrown by velocity model routines.
+It inherits the SeisppError object so all it really does format a message
+string that is a public member of SeisppError.  Caller to velocity model
+routines should arrange to catch a SeisppError by reference and call
+either the log_error or what method of that base class.
 \author Gary L. Pavlis
 **/
-class VelocityModel_1d_Error
+class VelocityModel_1d_Error : public SeisppError
 {
 public:
-	//* Contains error message. */
-	string message;
-	//* Dump error message to stderr. */
-	virtual void log_error(){cerr<<"VelocityModel_1d object error"<<endl;};
+    /*! Default constructor*/
+    VelocityModel_1d_Error(){message="VelocityModel_1d object error";};
+    /*! Construct posting an informative message. */
+    VelocityModel_1d_Error(string mess){
+        message=mess;
+    }
 };
 
-/*! \brief Error object thrown by 1d velocity model objects.
+/*! \brief Error object thrown by 1d velocity model object db constructor.
 
-This version is thrown by database driven constructor.
-**/
-class VelocityModel_1d_Dberror : public VelocityModel_1d_Error
+This is a simple error objects thrown by velocity model routines.
+This version is used when db routines have a problem.
+It inherits the SeisppError object so all it really does format a message
+string that is a public member of SeisppError.  Caller to velocity model
+routines should arrange to catch a SeisppError by reference and call
+either the log_error or what method of that base class.
+\author Gary L. Pavlis
+*/
+class VelocityModel_1d_Dberror : public SeisppError
 {
 public:
-	//* Holds name of velocity model that generated error.*/
+	/*! Holds name of velocity model that generated error.*/
 	string name;
-	//* Basic constructor.*/
-	VelocityModel_1d_Dberror(string modname,string mess){
-		name=modname;  message=mess;};
-	//* Dump error message to stderr. */
-	virtual void log_error(){
-		cerr<<"Database error accessing velocity model mod1d table "<<name<<endl;
-		cerr<<message;
-	};
+        /*! Construct with argument to post name of model being loaded.*/
+        VelocityModel_1d_Dberror(string modname,string mess){
+            name=modname;
+            stringstream ess;
+            ess << "VelocityModel_1d_Dberror:  "
+                << "Error while trying to read model "<<modname
+                <<" from mod1d table"<<endl
+                <<"Verify mod1d table is visible and that this model is defined."
+                <<endl;
+            message=ess.str();
+        }
 };
 /*! \brief Error object thrown by 1d velocity model object for i/o error.
 
 \author Gary L. Pavlis
 **/
-class VelocityModel_1d_IOerror : public VelocityModel_1d_Error
+class VelocityModel_1d_IOerror : public SeisppError
 {
 public:
-	//* Holds i/o error message.*/
+	/*! This holds a description of io error encountered */
 	string ioerr;
-	//* Basic constructor */
-	VelocityModel_1d_IOerror(string mess, string ioe){
-		message = mess; ioerr = ioe;};
-	//* Dump error message to stderr.*/
-	virtual void log_error(){
-		cerr<<"Velocity i/o error" << endl
-			<< message << endl
-			<< ioerr << endl;
-	};
+        /*! Only constructor for this error object */
+        VelocityModel_1d_IOerror(string mess, string ioe){
+            ioerr=ioe;
+            stringstream ess;
+            ess <<"VelocityModel_1d_IOerror:  "
+                <<"i/o error in file-based model constructor."<<endl
+                <<"Description of i/o error:  "<<ioerr<<endl
+                <<"Detailed message" <<mess<<endl;
+            message=ess.str();
+        }
 };
 
 /*! \brief Object to encapsulate concept of a 1d (layered Earth) velocity model.
