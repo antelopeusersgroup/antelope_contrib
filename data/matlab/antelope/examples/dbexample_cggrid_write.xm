@@ -11,7 +11,7 @@ echo on
 Z = exp( -X.^2 - Y.^2 );
 cgg = cggrid( X, Y, Z )
 
-outfile = ['/tmp/mycggrid_' getenv('USER')];
+outfile = dbexample_get_tempname( 'mycggrid', 'file' );
 
 cggrid_write( cgg, 't4', outfile );
 

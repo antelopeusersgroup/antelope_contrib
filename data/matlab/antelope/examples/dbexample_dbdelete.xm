@@ -2,7 +2,7 @@ display('Running dbexample_dbdelete')
 
 echo on
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -32,5 +32,7 @@ dbdelete( db )
 dbquery( db,'dbRECORD_COUNT' )
 
 dbclose( db );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 echo off

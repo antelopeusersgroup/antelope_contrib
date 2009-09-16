@@ -2,7 +2,8 @@ display('Running dbexample_trwfname')
 
 echo on
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dir = dbexample_get_tempname( 'demodir', 'dir' );
+output_dbname = [output_dir 'newdb'];
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -26,6 +27,8 @@ path = trwfname( db )
 path = trwfname( db, 'Mydir/station_%{sta}/%A_%B_%o_%Y.data' )
 
 dbclose( db );
+
+unix( ['/bin/rm -rf ' output_dir] );
 
 echo off
 

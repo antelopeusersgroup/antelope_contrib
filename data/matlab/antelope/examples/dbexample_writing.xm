@@ -3,7 +3,7 @@ display('Running dbexample_writing')
 echo on
 
 % Open up a new database for writing; choose the origin table:
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -35,7 +35,7 @@ dbclose( db );
 
 % Now open a new database
 
-output_dbname_2 = ['/tmp/newdb_2_' getenv('USER')]
+output_dbname_2 = ['newdb_2' getenv('USER')]
 
 unix( ['/bin/rm -f ' output_dbname_2 '*'] );
 
@@ -50,5 +50,8 @@ dbput( db,record1 );
 dbadd( db,record2 );
 
 dbclose( db );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
+unix( ['/bin/rm -f ' output_dbname_2 '*'] );
 
 echo off

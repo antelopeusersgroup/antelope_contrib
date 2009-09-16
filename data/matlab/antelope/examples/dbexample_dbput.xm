@@ -2,7 +2,7 @@ display('Running dbexample_dbput')
 
 echo on
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -21,5 +21,7 @@ db.record =  dbaddnull( db );
 dbput( db,record )
 
 dbclose( db );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 echo off

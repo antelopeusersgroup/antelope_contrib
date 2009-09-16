@@ -7,7 +7,7 @@ echo on
 % Make a copy of the tables we need so we don't corrupt the 
 % demo database:
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 unix( ['cp ' demodb_path '.arrival ' output_dbname '.arrival'] );
 unix( ['cp ' demodb_path '.wfdisc ' output_dbname '.wfdisc'] );
 

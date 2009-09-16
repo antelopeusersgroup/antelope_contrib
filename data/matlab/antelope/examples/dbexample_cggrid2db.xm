@@ -16,7 +16,7 @@ cgg = cggrid( X, Y, Z )
 % Save this to a fake database as though it belonged
 % to an earthquake:
 
-output_dir = ['/tmp/exampledir_' getenv('USER')];
+output_dir = dbexample_get_tempname( 'exampledir', 'dir' );
 unix( ['/bin/rm -rf ' output_dir] );
 unix( ['mkdir ' output_dir] );
 
@@ -58,5 +58,7 @@ pause(0.5);
 dbclose( db );
 
 clear( cgg2 );
+
+unix( ['/bin/rm -rf ' output_dir] );
 
 echo off

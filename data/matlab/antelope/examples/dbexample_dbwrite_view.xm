@@ -5,7 +5,7 @@ dbexample_get_demodb_path;
 echo on
 
 % Make a named pipe:
-pipe_name = ['/tmp/mypipe_' getenv('USER')];
+pipe_name = dbexample_get_tempname( 'mypipe', 'file' );
 
 unix( ['mkfifo ' pipe_name] );
 

@@ -2,7 +2,7 @@ display('Running dbexample_dbaddnull')
 
 echo on
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -13,5 +13,7 @@ db=dblookup_table( db,'origin' );
 db.record =  dbaddnull( db )
 
 dbclose( db );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 echo off

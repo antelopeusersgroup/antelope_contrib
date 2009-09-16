@@ -12,7 +12,7 @@ dbwfdisc=dblookup_table( db,'wfdisc' );
 
 db=dbjoin( dbarrival,dbwfdisc );
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -21,5 +21,7 @@ dbunjoin( db,output_dbname );
 unix( ['ls ' output_dbname '*'] );
 
 dbclose( db );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 echo off

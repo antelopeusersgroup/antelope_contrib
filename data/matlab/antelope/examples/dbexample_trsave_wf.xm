@@ -27,7 +27,7 @@ trinsert_data( tr, data );
 
 datatype = 'sd';
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -48,5 +48,7 @@ pause(0.5);
 dbclose( db );
 
 trdestroy( tr );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 echo off

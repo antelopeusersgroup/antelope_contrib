@@ -4,7 +4,7 @@ dbexample_get_demodb_path;
 
 echo on
 
-filename = '/tmp/dbexample_samplemat.mat';
+filename = dbexample_get_tempname( 'dbexample_data', 'mat' );
 
 db = dbopen( demodb_path,'r' );
 
@@ -21,7 +21,7 @@ tr = trload_css( db, time, endtime );
 s = tr2struct( tr );
 
 % Save the structure to a file to send elsewhere:
-save '/tmp/dbexample_data.mat' s
+save filename s
 
 % Also plot one of the time-series as an example of structure access:
 subplot( 1, 1, 1 );
@@ -29,8 +29,6 @@ plot(s(2).data)
 
 dbclose( db );
 
-% SCAFFOLD 'forget' to destroy tr, pending bug resolution 
-% SCAFFOLD in dbseparate/trdestroy interaction 
-% SCAFFOLD trdestroy( tr );
+unix( ['/bin/rm -f ' filename] );
 
 echo off

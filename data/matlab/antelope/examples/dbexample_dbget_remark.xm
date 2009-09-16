@@ -2,7 +2,7 @@ display('Running dbexample_dbget_remark')
 
 echo on
 
-output_dbname = ['/tmp/newdb_' getenv('USER')]
+output_dbname = dbexample_get_tempname( 'newdb', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname '*'] );
 
@@ -19,5 +19,7 @@ dbadd_remark( db,'This earthquake occurred under Palmer, Alaska' )
 dbget_remark( db )
 
 dbclose( db );
+
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 echo off
