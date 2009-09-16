@@ -27,6 +27,8 @@ save filename s
 subplot( 1, 1, 1 );
 plot(s(2).data)
 
+figure( gcf );
+
 dbclose( db );
 
 unix( ['/bin/rm -f ' filename] );
