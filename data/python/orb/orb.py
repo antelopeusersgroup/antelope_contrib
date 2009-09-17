@@ -2,7 +2,7 @@ import _orb
 
 from _orb import *
 
-class Orb():
+class Orb(object):
     """Create an Antelope Orb connection
         
         Orb(orbname)
@@ -303,7 +303,7 @@ if __name__ == '__main__':
     import os
     orbname = ':dq'
 
-    class Testorb_fixture():
+    class Testorb_fixture(object):
 
         tempdir = '/tmp/python_orbtest_' + os.environ["USER"] + str(os.getpid())
 
