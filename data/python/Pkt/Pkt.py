@@ -3,7 +3,7 @@ import _Pkt
 from _Pkt import *
 from datascope import *
 
-class PktChannel():
+class PktChannel(object):
     """Create an Antelope PktChannel object. 
 
        This constructor is used internally to Pkt.py and generally should not be invoked
@@ -95,7 +95,7 @@ class PktChannel():
        return self._pktchannel.cuser2()
 
 
-class Pkt():
+class Pkt(object):
     """Create an Antelope Packet object
         
         Pkt( srcname, time, packet, nbytes, pktid = -1 )
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     from stock import *
     orbname = ':dq'
 
-    class TestPkt_fixture():
+    class TestPkt_fixture(object):
 
         tempdir = '/tmp/python_Pkttest_' + os.environ["USER"] + str(os.getpid())
 
