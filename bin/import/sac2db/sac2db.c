@@ -347,8 +347,8 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 				 "lat", lat,
 				 "lon", lon,
 				 "depth", 0.0,
-				"nass", 0,
-				"ndef", 0,
+				"nass", 0L,
+				"ndef", 0L,
 				 "jdate", yearday (evtime),
 				 NULL);
 	    dbo.record = dbadd (dbo, 0);
@@ -358,8 +358,8 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 				 "lat", lat,
 				 "lon", lon,
 				 "depth", depth,
-				"nass", 0,
-				"ndef", 0,
+				"nass", 0L,
+				"ndef", 0L,
 				 "jdate", yearday (evtime),
 				 NULL);
 
