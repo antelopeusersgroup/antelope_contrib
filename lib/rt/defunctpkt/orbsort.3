@@ -1,0 +1,170 @@
+.\" $Name $Revision$ $Date$
+.TH ORBSORT 3 "$Date$"
+.SH NAME
+new_orbpipe, orbsort, free_orbpipe \- sort orb buffer packets (deprecated)
+.SH SYNOPSIS
+.nf
+#include "orb.h"
+
+Orbpipe *new_orbpipe ( int maxpkts );
+
+int orbsort ( Orbpipe *pipe, 
+	int *pktid, double *time, char *srcname, char **packet, int *nbytes, int *bufsize );
+
+void free_orbpipe ( Orbpipe *pipe, void (*free_packet)() );
+
+.fi
+.SH DESCRIPTION
+Because packets may be inserted into the orbserver out of order, there
+is a requirement for some method of getting them back in sorted order.
+Orbpipe fulfills this requirement; it is based on the assumption that
+there is some maximum number of packets which can be out of order.  
+Orbsort keeps this many packets in sorted order in an Orbpipe, 
+returning the oldest packet whenever the pipe is full.
+.LP
+The input arguments are:
+.IP pipe
+.br
+The buffer used by orbsort; it must have been previously created by a
+call to new_orbpipe.  The structure (defined in orb.h) is:
+.nf
+
+    typedef struct Orbpipe {
+        Tbl     *tbl ; 
+        int maxpkts ;
+        double last ;
+        Orbpipe_packet rpkt ;
+    } Orbpipe ;
+
+.fi
+Each element in the tbl list is the following structure (defined in orb.h):
+.nf
+
+    typedef struct Orbpipe_packet {
+            double time ;
+            int pktid ; 
+            char srcname[ORBSRCNAME_SIZE] ;
+            char *packet ; 
+            int nbytes ; 
+            int bufsize; 
+    } Orbpipe_packet ;
+
+
+.fi
+These structures allow peeking at packets in the pipe; it's
+permissible to adjust maxpkts to a larger number; changing
+to a smaller number will have no effect.
+.IP pktid
+.IP time
+.IP srcname
+.IP packet
+.IP nbytes
+.IP bufsize
+These packet parameters and a pointer to the packet returned by
+orbget or orbreap are saved.  Note that the packet itself is not copied, 
+only the pointer. 
+it's up to the caller to handle memory allocation for the packets.
+.LP
+These packet parameters and a pointer to the packet may be returned by
+orbsort.  Normally, every call to orbsort will return a packet, except
+at the beginning while the pipe is filling.
+.LP
+free_orbpipe frees the structure created by new_orbpipe; if 
+free_packet is non-zero, then it is called on each packet in the pipe, 
+including the last packet returned by the pipe.
+.SH EXAMPLE
+The following test program is an example of how to use orbpipe.
+.nf
+
+    #include <stdio.h>
+    #include "orb.h"
+
+    int
+    main ()
+    {
+
+        char            aline[STRSZ] ;
+        int             pktid = 0,
+                        pktid,
+                        maxpkts = 5;
+        double         time, time ;
+        char          *apacket, *packet ;
+        Orbpipe        *apipe ;
+	int		nbytes, bufsize=0 ;
+	char		srcname[ORBSRCNAME_SIZE];
+
+        printf ( "maxpkts is %d\\n", maxpkts ) ;
+        apipe = new_orbpipe ( maxpkts ) ;
+
+        apacket = (char *) -1 ;
+	while ( gets(aline) ) {
+	    sscanf ( aline, "%lf", &time ) ; 
+	    pktid++ ; 
+	    rpktid = pktid ;
+	    printf ( "%2d @%6f -> ", pktid, time ) ;
+	    rpacket = (char *) -1 ; 
+       	    strcpy (srcname, "test");
+	    switch ( orbsort ( apipe, &rpktid, &time, srcname, &rpacket, &nbytes, &bufsize ) ) {
+     
+		case 0:
+		    printf ( "\\n" ) ; 
+		    break ;
+     
+		case 1:
+		    printf ( "%2d @%6f\\n", rpktid, time ) ; 
+		    if ( rpacket != (char *) -1 ) 
+			complain ( 0, "Bad returned address for packet = %x\\n", 
+			    rpacket ) ; 
+		    break ;
+     
+		case 2:
+		    printf ( "%2d @%6f ** out of order **\\n", rpktid, time ) ; 
+		    if ( rpacket != (char *) -1 ) 
+			complain ( 0, "Bad returned address for packet = %x\\n", 
+			    rpacket ) ; 
+		    break ;
+     
+		case 3:
+		    printf ( "%2d @%6f ** duplicate **\\n", rpktid, time ) ; 
+		    if ( rpacket != (char *) -1 ) 
+			complain ( 0, "Bad returned address for packet = %x\\n", 
+			    rpacket ) ; 
+		    break ;
+     
+	    }
+	}
+     
+	return 0;
+    }
+
+
+.fi
+
+.SH RETURN VALUES
+orbsort has the following return values:
+.IP 0
+No packet returned -- the pipe is not yet full.
+.IP 1
+A packet is returned and is later than the last packet returned.
+.IP 2
+A packet is returned, but it is out of order: the previous packet
+returned had a later time.
+.IP 3
+A packet is returned, but its time tag is a duplicate of the previously
+returned packet.
+.SH LIBRARY
+-lorb
+.SH "SEE ALSO"
+.nf
+orb(3)
+orbserver(1)
+.fi
+.SH "BUGS AND CAVEATS"
+There is no flush operation defined; however this can be accomplished 
+in practice by feeding orbsort dummy packets with very large times.
+.SH AUTHOR
+.nf
+Danny Harvey
+Daniel Quinlan
+
+.\" $Id$ 
