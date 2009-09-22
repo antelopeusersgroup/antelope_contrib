@@ -1,0 +1,132 @@
+#SRC_PORT  PSIZE TOFF PTYPE  HDRTYP HDRSIZ NSTA NCH SRATE SMPSIZ   NET  
+Inputs &Tbl{
+ 132.239.4.170  1262  52  CEHS  DPH   62   16   3     100 100   s4  anza 
+ 132.239.4.170  2462  52  CELS  DPH   62   16   3     40  200   s4  anzac 
+ 132.239.4.170   508  8  ESP  IPH    0   16   3     0   0     -1  anza 
+}
+#132.239.4.170  1262  52  CEHS  DPH   62   16   3     100 100   s4  anza 
+#132.239.4.170  2462  52  CELS  DPH   62   16   3     40  200   s4  anzac 
+#/dev/rsd1c  1024  6  CLS DPH   64   1   1     20 100   s4  cpsclc 
+#/dev/rsd1c  1024  6  PSCLLS  DPH   64   1   1     20 100   s4  psclc 
+#/dev/rsd1c  1024  6  PSCLIP  IPH   16   0   0     0   0     -1 psclc 
+
+#DTYPE    SID NAME  UP?   COMP   SENS TRG? PICK? CALIB
+Site &Tbl{
+ CEHS  245   TRO    Y      1    EHZ    Y Y 6.551734
+ CEHS  245   TRO    Y      2    EHE    N Y 6.551734
+ CEHS  245   TRO    Y      3    EHN    N N 6.551734
+ CEHS  446   FRD    Y      1    HHZ    Y Y 1.266669
+ CEHS  446   FRD    Y      2    HHE    N Y 1.266669
+ CEHS  446   FRD    Y      3    HHN    N N 1.266669
+ CEHS  443   RDM    Y      1    HHZ    Y Y 1.266669
+ CEHS  443   RDM    Y      2    HHE    N Y 1.266669
+ CEHS  443   RDM    Y      3    HHN    N N 1.266669
+ CEHS  267   WMC    Y      1    HHZ    Y Y 1.266669
+ CEHS  267   WMC    Y      2    HHE    N Y 1.266669
+ CEHS  267   WMC    Y      3    HHN    N N 1.266669
+ CEHS  436   PFO    Y      1    HHZ    Y Y 1.266669
+ CEHS  436   PFO    Y      2    HHE    N Y 1.266669
+ CEHS  436   PFO    Y      3    HHN    N N 1.266669
+ CEHS  282   GLAC   Y      1    HHZ    Y Y 1.266669
+ CEHS  282   GLAC   Y      2    HHE    N Y 1.266669
+ CEHS  282   GLAC   Y      3    HHN    N N 1.266669
+ CEHS  442   ELKS   Y      1    HHZ    Y Y 1.266669
+ CEHS  442   ELKS   Y      2    HHE    N Y 1.266669
+ CEHS  442   ELKS   Y      3    HHN    N N 1.266669
+ CEHS  295   ASBS   Y      1    HHZ    Y Y 1.266669
+ CEHS  295   ASBS   Y      2    HHE    N N 1.266669
+ CEHS  295   ASBS   Y      3    HHN    N N 1.266669
+ CEHS  65535 009    N      1    HHZ    N N 1.266669
+ CEHS  65535 009    N      2    HHE    N N 1.266669
+ CEHS  65535 009    N      3    HHN    N N 1.266669
+ CEHS  293   SND    Y      1    HHZ    Y Y 1.266669
+ CEHS  293   SND    Y      2    HHE    N Y 1.266669
+ CEHS  293   SND    Y      3    HHN    N N 1.266669
+ CEHS  399   CRY    Y      1    HHZ    Y Y 1.266669
+ CEHS  399   CRY    Y      2    HHE    N Y 1.266669
+ CEHS  399   CRY    Y      3    HHN    N N 1.266669
+ CEHS  404   SHUM   Y      1    HHZ    Y Y 1.266669
+ CEHS  404   SHUM   Y      2    HHE    N Y 1.266669
+ CEHS  404   SHUM   Y      3    HHN    N N 1.266669
+ CEHS  449   KNW    Y      1    HHZ    Y Y 1.266669
+ CEHS  449   KNW    Y      2    HHE    N Y 1.266669
+ CEHS  449   KNW    Y      3    HHN    N N 1.266669
+ CEHS  318   BZN    Y      1    HHZ    Y Y 1.266669
+ CEHS  318   BZN    Y      2    HHE    N Y 1.266669
+ CEHS  318   BZN    Y      3    HHN    N N 1.266669
+ CEHS  236   LVA2   Y      1    HHZ    Y Y 1.266669
+ CEHS  236   LVA2   Y      2    HHE    N N 1.266669
+ CEHS  236   LVA2   Y      3    HHN    N N 1.266669
+ CEHS  279   SOL    Y      1    HHZ    N N 1.266669
+ CEHS  279   SOL    Y      2    HHE    N N 1.266669
+ CEHS  279   SOL    Y      3    HHN    N N 1.266669
+ CELS  245   TRO    Y      1    EHZ    N N 6.551734
+ CELS  245   TRO    Y      2    EHE    N N 6.551734
+ CELS  245   TRO    Y      3    BHN    N N 6.551734
+ CELS  446   FRD    Y      1    BHZ    N N 1.266669
+ CELS  446   FRD    Y      2    BHE    N N 1.266669
+ CELS  446   FRD    Y      3    BHN    N N 1.266669
+ CELS  443   RDM    Y      1    BHZ    N N 1.266669
+ CELS  443   RDM    Y      2    BHE    N N 1.266669
+ CELS  443   RDM    Y      3    BHN    N N 1.266669
+ CELS  267   WMC    Y      1    BHZ    N N 1.266669
+ CELS  267   WMC    Y      2    BHE    N N 1.266669
+ CELS  267   WMC    Y      3    BHN    N N 1.266669
+ CELS  436   PFO    Y      1    BHZ    N N 1.266669
+ CELS  436   PFO    Y      2    BHE    N N 1.266669
+ CELS  436   PFO    Y      3    BHN    N N 1.266669
+ CELS  282   GLAC   Y      1    BHZ    N N 1.266669
+ CELS  282   GLAC   Y      2    BHE    N N 1.266669
+ CELS  282   GLAC   Y      3    BHN    N N 1.266669
+ CELS  442   ELKS   Y      1    BHZ    N N 1.266669
+ CELS  442   ELKS   Y      2    BHE    N N 1.266669
+ CELS  442   ELKS   Y      3    BHN    N N 1.266669
+ CELS  295   ASBS   Y      1    BHZ    N N 1.266669
+ CELS  295   ASBS   Y      2    BHE    N N 1.266669
+ CELS  295   ASBS   Y      3    BHN    N N 1.266669
+ CELS  65535 009    N      1    BHZ    N N 1.266669
+ CELS  65535 009    N      2    BHE    N N 1.266669
+ CELS  65535 009    N      3    BHN    N N 1.266669
+ CELS  293   SND    Y      1    BHZ    N N 1.266669
+ CELS  293   SND    Y      2    BHE    N N 1.266669
+ CELS  293   SND    Y      3    BHN    N N 1.266669
+ CELS  399   CRY    Y      1    BHZ    N N 1.266669
+ CELS  399   CRY    Y      2    BHE    N N 1.266669
+ CELS  399   CRY    Y      3    BHN    N N 1.266669
+ CELS  404   SHUM   Y      1    BHZ    N N 1.266669
+ CELS  404   SHUM   Y      2    BHE    N N 1.266669
+ CELS  404   SHUM   Y      3    BHN    N N 1.266669
+ CELS  449   KNW    Y      1    BHZ    N N 1.266669
+ CELS  449   KNW    Y      2    BHE    N N 1.266669
+ CELS  449   KNW    Y      3    BHN    N N 1.266669
+ CELS  318   BZN    Y      1    BHZ    N N 1.266669
+ CELS  318   BZN    Y      2    BHE    N N 1.266669
+ CELS  318   BZN    Y      3    BHN    N N 1.266669
+ CELS  236   LVA2   Y      1    BHZ    N N 1.266669
+ CELS  236   LVA2   Y      2    BHE    N N 1.266669
+ CELS  236   LVA2   Y      3    BHN    N N 1.266669
+ CELS  279   SOL    Y      1    BHZ    N N 1.266669
+ CELS  279   SOL    Y      2    BHE    N N 1.266669
+ CELS  279   SOL    Y      3    BHN    N N 1.266669
+}
+#PSCLLS   7565   TRO    Y      1    EHZ    Y Y 6.551734
+#PSCLLS   7565   TRO    Y      2    EHE    N N 6.551734
+#PSCLLS   7565   TRO    Y      3    EHN    N N 6.551734
+#CPSCLLS   7565   TRO    Y      1    EHZ    Y Y 6.551734
+#CPSCLLS   7565   TRO    Y      2    EHE    N N 6.551734
+#CPSCLLS   7565   TRO    Y      3    EHN    N N 6.551734
+
+#Ptype STA CH PreSec PostSec LPF LPFP HPF HPFP   STA  LTA THRESH NOS NDEC MAXFS
+Trig &Tbl{
+CEHS all all 20           30 0.8    5  5.0   5 0.075   30     5   8    3     5 
+}
+#Ptype STA CH PRESEC NSEC NCOEF NSEG NWIN DTCT ONSET ONSETN WLENL WLENR  LPF HPF IORD
+Onset &Tbl{
+CEHS   all all 15   35     7   50    4  2.2     7     20     2.0   2.0   0.8  5.0   6.0
+}
+#PMARK HTCPIP RTCPIP 
+Trans &Tbl{
+NULL   132.239.4.34      131.215.66.7 
+}
+
+# $Id$ 
