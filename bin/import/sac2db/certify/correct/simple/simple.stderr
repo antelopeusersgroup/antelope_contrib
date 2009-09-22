@@ -1,0 +1,13 @@
+sac2db: '1987137052539.50.BAY.HBIE.but.this.is.too.long' is too large for 32 chars in dfile field in wfdisc: please shorten it
+sac2db: SAC file ../../data/1987137052539.50.BAY.HBIE.but.this.is.too.long not incorporated.
+sac2db: station elevation is null in ../../data/920713181133.GUN.E.sac
+sac2db: station elevation is null in ../../data/920713181133.GUN.N.sac
+sac2db: station elevation is null in ../../data/920713181133.GUN.V.sac
+sac2db: station elevation is null in ../../data/920713181133.LED.E.sac
+sac2db: station elevation is null in ../../data/920713181133.LED.N.sac
+sac2db: station elevation is null in ../../data/920713181133.LED.V.sac
+sac2db: station elevation is null in ../../data/920713181133.POS.E.sac
+sac2db: station elevation is null in ../../data/920713181133.POS.N.sac
+sac2db: station elevation is null in ../../data/920713181133.POS.V.sac
+sac2db: Can't read sac file ../../data/CVS
+sac2db: Can't read sac file ../../data/junk

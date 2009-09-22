@@ -2,3 +2,4 @@ simple      1020141151.00000 castle     danq       S5.7W/dev  added CVS director
 simple      1029298018.00000 castle     danq       S5.8W/dev  change t4 to sc, add some intel order sac files                1029298018
 simple      1050602917.00000 castle     danq       S5.8W/dev  changes in calib format and null value                         1050602917
 simple      1065639620.00000 castle     danq       S5.8W/dev  check for filenames too large                                  1065639620
+simple      1253649089.00000 crestone   danq       SunOS/dev- changed for nass/ndef changed in schema: added to origin key   1253649089
