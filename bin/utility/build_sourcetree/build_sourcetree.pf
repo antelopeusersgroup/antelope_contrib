@@ -267,12 +267,17 @@ DATA= envrc \
       tcshrc_default \
       windowbars
 
-CLEAN= tcshrc_default 
+CLEAN= tcshrc_default envrc
 
 include $(__PROJECT__MAKE)
 
+all :: tcshrc_default envrc
+
 tcshrc_default: tcshrc_default.id
 	getid < tcshrc_default.id > tcshrc_default
+
+envrc: envrc.id
+	getid < envrc.id > envrc
 }
 data/system/aliasrc &Literal{
 
@@ -282,10 +287,10 @@ alias = 'pushd \!*'
 alias - 'popd \!*'
 
 }
-data/system/envrc &Literal{
+data/system/envrc.id &Literal{
 
-set BASE=$ANTELOPE:h
-set VERS=$ANTELOPE:t
+set BASE=/opt/antelope
+set VERS=$id
 
 setenv EDITOR vi
 setenv OPENWINHOME /usr/openwin
@@ -410,8 +415,8 @@ clean ::
 }
 data/system/path/solaris.id &Literal{
 
-set BASE=$ANTELOPE:h
-set VERS=$ANTELOPE:t
+set BASE=/opt/antelope
+set VERS=$id
 
 set pathtmp = ( \
 	__BASEDIR__/__project__/$VERS/bin \
@@ -455,8 +460,8 @@ unset VERS
 }
 data/system/path/linux.id &Literal{
 
-set BASE=$ANTELOPE:h
-set VERS=$ANTELOPE:t
+set BASE=/opt/antelope
+set VERS=$id
 
 set pathtmp = ( \
 	$ANTELOPE/bin \
@@ -493,8 +498,8 @@ unset VERS
 }
 data/system/path/darwin.id &Literal{
 
-set BASE=$ANTELOPE:h
-set VERS=$ANTELOPE:t
+set BASE=/opt/antelope
+set VERS=$id
 
 set pathtmp = ( \
 	$ANTELOPE/bin \
@@ -528,8 +533,8 @@ unset BASE
 unset VERS
 }
 data/system/path/darwin-intel.id &Literal{
-set BASE=$ANTELOPE:h
-set VERS=$ANTELOPE:t
+set BASE=/opt/antelope
+set VERS=$id
 
 set pathtmp = ( \
 	$ANTELOPE/bin \
