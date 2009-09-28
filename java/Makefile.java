@@ -1,5 +1,6 @@
 # Copyright (c) 2001 Boulder Real Time Technologies, Inc.
 # All rights reserved 
+# vim: ft=make
 
 # This software module is wholly owned by Boulder Real Time 
 # Technologies, Inc. Any use of this software module without
@@ -16,17 +17,17 @@ include $(ANTELOPEMAKE)
 DIRS=
 
 JAVAS = \
-	$(ANTELOPE)/src/java/com/brtt/antelope/Epoch.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/JFrameOrbStat.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/Orb.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/OrbClient.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/OrbErrorException.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/OrbPacket.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/OrbPacketChannel.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/OrbSource.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/OrbStat.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/SourcesModel.java \
-	$(ANTELOPE)/src/java/com/brtt/antelope/Stock.java
+	com/brtt/antelope/Epoch.java \
+	com/brtt/antelope/JFrameOrbStat.java \
+	com/brtt/antelope/Orb.java \
+	com/brtt/antelope/OrbClient.java \
+	com/brtt/antelope/OrbErrorException.java \
+	com/brtt/antelope/OrbPacket.java \
+	com/brtt/antelope/OrbPacketChannel.java \
+	com/brtt/antelope/OrbSource.java \
+	com/brtt/antelope/OrbStat.java \
+	com/brtt/antelope/SourcesModel.java \
+	com/brtt/antelope/Stock.java
 
 CLASSES = \
 	com/brtt/antelope/Epoch.class \
