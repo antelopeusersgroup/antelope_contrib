@@ -8,8 +8,8 @@ function get_relative_path( $path ) {
 	return str_replace( $_SERVER['DOCUMENT_ROOT'], '', $npath ) ;
 }
 
-if( !extension_loaded( 'Datascope' ) ) {
-	dl( 'Datascope.so' ) or die( '<b><u>Webdlmon Error:</u></b> 
+if( ! extension_loaded( "Datascope" ) ) {
+	die( '<b><u>Webdlmon Error:</u></b> 
 		Cannot load Datascope.so extension. Goodbye.' ) ;
 }
 

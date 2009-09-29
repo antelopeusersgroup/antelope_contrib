@@ -5,7 +5,9 @@ Datascope_PHP \- Datascope interface for PHP
 .nf
 
 <?php
-\fBdl\fP('Datascope.so')
+if( ! extension_loaded( "Datascope" ) ) {
+	die( "Module 'Datascope' is not loaded, unable to continue" );
+}
 ?>
 
 .fi
@@ -19,23 +21,30 @@ identically-named C function calls. For further elaboration on the
 concepts involved in each routine, please refer to the C man pages
 for the underlying routines, which describe them in depth. 
 
-These extensions must first be loaded with a \fBdl\fP statement:
+These extensions must first be loaded with an \fIextension\fP directive
+inside the \fIphp.ini\fP file:
 .ft CW
 .in 2c
 .nf
 
-\fBdl('Datascope.so');\fP
+extension=Datascope.so
 
 .fi
 .in
 .ft R
 .LP
 
+The \fIphp.ini\fP file's \fIextension_dir\fP directive must also be set to 
+point to $ANTELOPE/data/php (filling in the reference to $ANTELOPE explicitly,
+of course, since the environment variable will not work inside \fIphp.ini\fP),
+or the compiled \fIDatascope.so\fP file must be copied into the \fIextension_dir\fP
+already specified in \fIphp.ini\fP by the local system administrator. 
+
+.SS Datascope functions
+
 The following functions have been implemented. Since these functions
 are wrappers around the respective C function calls, the documentation
 on the identically-named C routines may also be helpful.
-
-.SS Datascope functions
 
 .IP "\fBds_dbopen\fP ( database, permissions )"
 Returns a database pointer to the specified database.

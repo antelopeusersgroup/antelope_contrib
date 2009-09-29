@@ -7,9 +7,9 @@
  <?php echo '<h2>Datascope PHP Examples</h2>'; ?>
  <p>
  <?php
-        echo "<b>Load Datascope Library (dl)</b><br>\n";
-	echo "<code>dl('Datascope.so');</code>";
-	dl('Datascope.so');
+        echo "<b>Check for Loaded Datascope Library</b><br>\n";
+	echo "<code>if( ! extension_loaded(\"Datascope\") ) { die( \"Unable to find extension 'Datascope'\" ); }</code>";
+	if( ! extension_loaded("Datascope") ) { die( "Unable to find extension 'Datascope'" ); }
  ?>
  <?php
         echo "<p><b>Open database (ds_dbopen_database)</b>";

@@ -1,9 +1,9 @@
 <?php
-if( !extension_loaded( "Datascope" ) ) {
-	dl( "Datascope.so" ) or die( "Failed to dynamicaly load Datascope.so" ) ;
+if( ! extension_loaded( "Datascope" ) ) {
+	die( "Module 'Datascope' not loaded. Bye." );
 }
 if( !extension_loaded( "Orb" ) ) {
-	dl( "Orb.so" ) or die( "Failed to dynamically load Orb.so" ) ;
+	die( "Module 'Orb' not loaded. Bye." );
 }
 
 $pf = "weborbstat" ;

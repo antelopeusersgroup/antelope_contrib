@@ -1,6 +1,7 @@
 .optimize.db
 .DS_Store
 .make.state
+*.a
 *.o
 *.dylib
 *.so

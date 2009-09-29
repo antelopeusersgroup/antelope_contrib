@@ -49,8 +49,8 @@
 #            4.Query the database for an image using a time string -- NOT WORKING YET
 */
 
-if( !extension_loaded( 'Datascope' ) ) {
-        dl( 'Datascope.so' ) ; # load Datascope library
+if( ! extension_loaded( "Datascope" ) ) {
+	die( "Module 'Datascope' not loaded. Bye." );
 }
 
 ################################################################

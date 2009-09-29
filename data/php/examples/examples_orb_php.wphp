@@ -7,9 +7,9 @@
  <?php echo '<h2>Orb PHP Examples</h2>'; ?>
  <p>
  <?php
-        echo "<b>Load Orb Library (dl)</b><br>\n";
-	echo "<code>dl('Orb.so');</code>";
-	dl('Orb.so');
+        echo "<b>Check for Loaded Orb Library</b><br>\n";
+	echo "<code>if( ! extension_loaded(\"Orb\") ) { die( \"Unable to find extension 'Orb'\" ); }</code>";
+	if( ! extension_loaded("Orb") ) { die( "Unable to find extension 'Orb'" ); }
         
 	echo "<p><b>Open Orb (name,perm)</b>";
 	echo "<br>\n<code>\$orbfd = orbopen(\":\",\"r\");</code>";

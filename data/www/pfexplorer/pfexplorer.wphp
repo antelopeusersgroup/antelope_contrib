@@ -36,7 +36,9 @@
 #   Manpages       : pfexplorer.3h, pfexplore.3h
 #
 
-dl( '$ANTELOPE/Datascope.so' ) ; # Dynamic load of Datascope library
+if( ! extension_loaded( "Datascope" ) ) {
+	die( "Module 'Datascope' not loaded. Bye." );
+}
 
 $ANT = "$ANTELOPE/data/pf/" ; # Path to antelope
 $self = $_SERVER['PHP_SELF'] ; # Shorthand reference to self

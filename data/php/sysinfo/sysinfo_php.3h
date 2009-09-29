@@ -5,7 +5,9 @@ sysinfo_PHP \- Antelope sysinfo interface for PHP
 .nf
 
 <?php
-\fBdl\fP('sysinfo.so')
+if( ! extension_loaded( "sysinfo" ) ) {
+	die( "Module 'sysinfo' is not loaded, unable to continue" );
+}
 ?>
 
 .fi
@@ -20,17 +22,24 @@ merely wrappers around identically-named C function calls. For further
 elaboration on the concepts involved in each routine, please refer to the
 C man pages for the underlying routines, which describe them in depth. 
 
-These extensions must first be loaded with a \fBdl\fP statement:
+This extension must first be loaded with an \fIextension\fP directive
+inside the \fIphp.ini\fP file:
 .ft CW
 .in 2c
 .nf
 
-\fBdl('sysinfo.so');\fP
+extension=sysinfo.so
 
 .fi
 .in
 .ft R
 .LP
+
+The \fIphp.ini\fP file's \fIextension_dir\fP directive must also be set to 
+point to $ANTELOPE/data/php (filling in the reference to $ANTELOPE explicitly,
+of course, since the environment variable will not work inside \fIphp.ini\fP),
+or the compiled \fIsysinfo.so\fP file must be copied into the \fIextension_dir\fP
+already specified in \fIphp.ini\fP by the local system administrator. 
 
 .SS sysinfo functions
 

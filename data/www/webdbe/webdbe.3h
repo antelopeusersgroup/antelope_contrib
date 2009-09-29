@@ -56,8 +56,8 @@ webdbe_title.gif \- optional, edit. This is the title image for the interface.
 $db = "/opt/antelope/data/db/demo/demo" ; // Database pointer
 $recs_per_page = "20" ; // Records per page returned
 
-if(!extension_loaded( 'Datascope' )) { // Dynamic load Datascope
-        dl( 'Datascope.so' ) ;
+if( ! extension_loaded( "Datascope" ) ) {
+	die( "Module 'Datascope' not loaded. Bye." );
 }
 require_once( 'webdbe.inc' ) ; // Get the functionality
 $mydb = ds_dbopen( $db,'r' ) ; // Open the database
