@@ -211,10 +211,15 @@ main( int argc, char **argv )
 
 		elog_die( 0, "Error: no rrdtool executable name specified in parameter file\n" );
 
-	} else if( ( rrdtool[0] == '/' && ! is_present( rrdtool ) ) || ! datafile( "PATH", rrdtool ) ) {
+	} else if( ( rrdtool[0] == '/' && ! is_present( rrdtool ) ) || ( rrdtool[0] != '/' && ! datafile( "PATH", rrdtool ) ) ) {
 
 		elog_die( 0, "Error: can't find rrdtool executable by name of '%s' (check PATH environment " 
 			"variable, or absolute path name if given)\n", rrdtool );
+
+	} else if( rrdtool[0] == '/' ) {
+
+		sprintf( command, "%s -", rrdtool );
+
 	} else {
 
 		sprintf( command, "rrdtool -" );
