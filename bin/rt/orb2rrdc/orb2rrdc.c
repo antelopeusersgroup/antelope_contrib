@@ -149,6 +149,7 @@ main( int argc, char **argv )
 	char	*element;
 	Tbl	*parts;
 	double	val;
+	Pf	*pfval = 0;
 
 	elog_init( argc, argv );
 
@@ -380,30 +381,46 @@ main( int argc, char **argv )
 			   
 			   element = gettbl( dlspfkeys, i );
 
+			   if( strcontains( element, "_", 0, 0, 0 ) ) {
+
+				parts = split( (s = strdup( element )), '_' );
+
+				sprintf( net, "%s", (char *) gettbl( parts, 0 ) );
+				sprintf( sta, "%s", (char *) gettbl( parts, 1 ) );
+
+				free( s );
+				freetbl( parts, 0 );
+
+			   } else {
+
+				sprintf( net, "%s", Default_network );
+
+				sprintf( sta, "%s", element );
+			   }
+
 			   for( j = 0; j < maxtbl( Dls_vars_keys ); j++ ) {
 
 			   	dls_var = gettbl( Dls_vars_keys, j );
 
-				if( strcontains( element, "_", 0, 0, 0 ) ) {
+				sprintf( key, "%s{%s}", element, dls_var );
 
-					parts = split( (s = strdup( element )), '_' );
+				if( pfresolve( dlspf, key, 0, &pfval ) < 0 ) {
 
-					sprintf( net, "%s", (char *) gettbl( parts, 0 ) );
-					sprintf( sta, "%s", (char *) gettbl( parts, 1 ) );
+					elog_complain( 0, "Unable to extract variable '%s' "
+						"(not present or wrong type) from element '%s' "
+						"in packet from '%s', timestamped '%s'; Skipping\n",
+						key, element, srcname, s = strtime( time ) );
 
 					free( s );
-					freetbl( parts, 0 );
+
+					pfval = 0;
+
+					continue;
 
 				} else {
 
-					sprintf( net, Default_network );
-
-					sprintf( sta, element );
+					val = pfget_double( dlspf, key );
 				}
-
-				sprintf( key, "%s{%s}", element, dls_var );
-
-				val = pfget_double( dlspf, key );
 
 				archive_dlsvar( db, net, sta, dls_var, 
 						(char *) getarr( Dls_vars_dsparams, dls_var ),
