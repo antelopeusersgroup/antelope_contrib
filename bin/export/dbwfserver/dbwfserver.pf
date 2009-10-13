@@ -9,6 +9,8 @@ default_chans &Tbl{
     BHE
 }
 
+default_time_window 1200
+
 binning_threshold 2
 canvas_size_default 800
 
@@ -20,11 +22,34 @@ static_dir &datafilename(www/dbwfserver/static)
 jquery_files &Tbl{
 	IE excanvas.pack.js
 	jquery-1.3.2.min.js
-	jquery.flot.pack.js
+	jquery.flot.min.js
+	jquery.flot-selection.min.js
 	jquery.hotkeys-0.7.8-packed.js
+  jquery-ui-1.7.2.custom.min.js
 }
 
 display_tracebacks false 
 
 import_paths &Tbl{
+}
+
+filters &Arr{ # filter specifications
+#label		filter
+WAV				WAV 1
+WAA				WAA 1
+0.3_HP		BW 0.3 5 0.0 0
+0.5_HP		BW 0.5 5 0.0 0
+1_HP			BW 1.0 2 0.0 0
+5_HP			BW 5.0 2 0.0 0
+0.3-1_BP	BW 0.3 5 1.0 5
+0.5-2_BP	BW 0.5 5 1.0 5
+0.8-3_BP	BW 0.8 5 3.0 5
+1-5_BP		BW 1.0 5 5.0 5
+1-12_BP		BW 1.0 5 12.0 5
+3-10_BP		BW 3.0 4 10.0 4
+INT				DEMEAN ; INT
+INT-			BW 0.1 2 0.0 0 ; INT
+INT2			DEMEAN ; INT2
+DIF				DIF
+DIF2			DIF2
 }

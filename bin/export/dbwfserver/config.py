@@ -20,6 +20,8 @@ daemonize           = False
 import_paths        = ()
 jquery_files        = ()
 default_chans       = ()
+default_time_window = -1
+filters             = {}
 
 def usage():
 
@@ -62,6 +64,8 @@ def configure(args):
     globals()['display_tracebacks']   = stock.pfget_boolean( pfname, "display_tracebacks" )
     globals()['jquery_files']         = stock.pfget_tbl( pfname, "jquery_files" )
     globals()['default_chans']        = stock.pfget_tbl( pfname, "default_chans" )
+    globals()['default_time_window']  = stock.pfget_tbl( pfname, "default_time_window" )
+    globals()['filters']              = stock.pfget_arr( pfname, "filters" )
 
     for option, value in opts:
 

@@ -11,7 +11,7 @@ import dbwfserver.resource as resource
 
 root = resource.Root()
 
-root.putChild('data', resource.DataSlice())
+root.putChild('data', resource.Data())
 
 root.putChild('jquery', static.File(config.jquery_dir))
 root.putChild('static', static.File(config.static_dir))

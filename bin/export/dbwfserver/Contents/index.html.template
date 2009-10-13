@@ -1,39 +1,107 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <html>
+
 <head>
 
     <title>$application_title</title>
+
+    <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
+
+    <script language="javascript" type="text/javascript">
+    google.load("jquery", "1.3.2" ); // Load jQuery
+    google.load("jqueryui", "1.7.2" ); // Load jQuery UI
+    </script>
 
     $jquery_includes
 
     <script type="text/javascript" src="static/dbwfserver.js"></script>
 
     <link rel="stylesheet" type="text/css" href="static/dbwfserver.css">
+    <link rel="stylesheet" type="text/css" href="static/jquery-ui-1.7.2.custom.css">
 
 </head>
+
 <body>
 
- <div id='loading'>Loading data ...</div>
- <h1>$application_title</h1>
+<div id="content">
 
- <div id='title'>$application_title for database: <span id='dbname'>$dbname</span></div>
- <div id="station">Station:&nbsp;<select>$stations</select></div>
+    <div id="loading"><p>Loading data ...</p></div>
+    <div id="event"></div>
 
- <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
- <div id="chan_plots"><!-- populated dynamically by dbwfserver.js --></div>
+    <div id="info" class="dialog" title="Dbwfserver information">
+        <p>Welcome to the waveform server. Please click the
+        <strong>'Stations'</strong> or <strong>'Events'</strong>
+        button to start exploring.</p>
+        <p>Clicking the <strong>'Stations'</strong>
+        button will display a list of stations in the arrival
+        database. Clicking the <strong>'Events'</strong> button
+        will display a list of event origin numbers in the origin
+        database. You can then subset the list by clicking either
+        the station code or origin number in the list.</p>
+        <p>Click the <strong>'Themer'</strong> button to choose a 
+        color scheme for the waveform display.</p>
+    </div>
 
-<div id='xlabel'>Time of day</div>
+    <div id="themer" class="dialog" title="Dbwfserver themer">
+        <form id="formtheme" name="formtheme">
+        <p>Select your layout options below and close this window (click 'X' in top right).</p>
+        <p>Color scheme: 
+            <select id="cs" name="cs">
+                <option value="yb">yellow on blue</option>
+                <option value="bw">black on white</option>
+                <option value="yg">yellow on green</option>
+                <option value="wb">white on black</option>
+                <option value="yp">yellow on purple</option>
+                <option value="ob">orange on black</option>
+            </select>
+            <span id="csFg" align="absmiddle" style="border:1px solid #000;background-color:#FDFF4F;width:10px;height:10px;">&nbsp;&nbsp;</span>
+            <span id="csBg" align="absmiddle" style="border:1px solid #000;background-color:#00029F;width:10px;height:10px;">&nbsp;&nbsp;</span>
+        </p>
+        </form>
+    </div>
 
- <div id='interact'>
-    <p><b>Key Interactions:</b>
-          &nbsp;
-	  [zoom in: click-drag] | 
-	  [zoom out: shift-click-drag] | 
-	  [scroll left: left arrow] |  
-	  [scroll right: right arrow] | 
-	  [reset: click 'r']
-    </p>
- </div>
+    <div id="conf">
+        <ul>
+            <li class="ui-state-active ui-corner-all"><a id="info_link">Info <span class="ui-icon ui-icon-newwin" /></a></li>
+            <li class="ui-state-active ui-corner-all"><a id="themer_link">Themer <span class="ui-icon ui-icon-newwin" /></a></li>
+        </ul>
+    </div>
+
+    <h1>$application_title</h1>
+
+    <div id="title">$application_title for database: <span id="dbname">$dbname</span></div>
+
+    <div id="nav">
+        <ul>
+            <li class="ui-state-active ui-corner-all"><a href="data?type=stations" title="Stations">Stations</a></li>
+            <li class="ui-state-active ui-corner-all"><a href="data?type=events" title="Events">Events</a></li>
+        </ul>
+    </div>
+
+    <div id="crumbs"><p><a href="/" title="Start over">Home</a> <span id='crumbspath'></span></p></div>
+
+    <div id="subnav"></div>
+
+    <div id="wforms">
+        <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
+        <div id="chan_plots"><!-- populated dynamically by dbwfserver.js --></div>
+    </div>
+
+    <div id="interact">
+        <p><strong>Key Interactions:</strong>
+            &nbsp;
+            [zoom in: click-drag] |
+            [zoom out: shift-click-drag] |
+            [scroll left: left arrow] |
+            [scroll right: right arrow] |
+            [reset: click 'r']
+        </p>
+    </div>
+
+</div>
 
 </body>
+
 </html>
