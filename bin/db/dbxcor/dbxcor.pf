@@ -1,4 +1,4 @@
-AutoscaleInitialPlot	false
+AutoscaleInitialPlot	true
 BeamMetadataList	&Tbl{
     pwfid int
     wfprocess.timetype string
@@ -6,7 +6,10 @@ BeamMetadataList	&Tbl{
     wfprocess.dfile string
     wfprocess.algorithm string
 }
-RequireThreeComponents	true
+/* This parameter must be set true if you want to use
+   radial or transverse components for S  phase.  Can
+   be left false for most P phase using only Z */
+RequireThreeComponents	false
 StationChannelMap	&Arr{
     SDV	&Tbl{
         BHE_00 0 0
@@ -26,12 +29,18 @@ StationChannelMap	&Arr{
         BHE 0 0
         BHN 1 0
         BHZ 2 0
-        HHE 0 1
-        HHN 1 1
-        HHZ 2 1
-        LHE 0 2
-        LHN 1 2
-        LHZ 2 2
+        BHE_00 0 1
+        BHN_00 1 1
+        BHZ_00 2 1
+        BHE_10 0 2
+        BHN_10 1 2
+        BHZ_10 2 2
+        HHE 0 3
+        HHN 1 3
+        HHZ 2 3
+        LHE 0 4
+        LHN 1 4
+        LHZ 2 4
     }
 }
 beam_dfile	xcorbeam.w
@@ -43,7 +52,7 @@ beam_window_parameters	&Arr{
     blabel	Array Beam
     blabel2	Array Beam
     clip_data	false
-    clip_percent	95
+    clip_percent	99
     clip_wiggle_traces	false
     d1num	0.0
     d2num	0.0
@@ -232,6 +241,19 @@ phase_processing_parameters	&Arr{
         component_for_analysis	Z
         default_filter	DEMEAN
         phase_for_analysis	PKP
+        regular_gather_twin_end	120.0
+        regular_gather_twin_start	-40.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    PKiKP	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.8
+        component_for_analysis	Z
+        default_filter	DEMEAN
+        phase_for_analysis	PKiKP
         regular_gather_twin_end	120.0
         regular_gather_twin_start	-40.0
         robust_window_fraction	0.2
@@ -728,7 +750,7 @@ cmgbb   BW 0.033 2 2 5
 MGSKS  BW 0.02 2 0.5 2
 integration	INT
 }
-LoadArrivals false
+LoadArrivals true
 
 processing_mode ContinuousData
 dbprocess_commands &Tbl{
@@ -741,10 +763,10 @@ dbjoin site sta
 dbsort evid
 dbgroup evid
 }
-GatherTimeAlignmentKey predarr_time
+GatherTimeAlignmentKey arrival.time
 TTmethod tttaup
 TTmodel iasp91
-delete_old_arrivals true
+delete_old_arrivals false
 default_phase P
 
 pf_revision_time 1208693851
