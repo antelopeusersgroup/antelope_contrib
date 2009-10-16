@@ -530,6 +530,7 @@ phase_processing_parameters     &Arr{
         robust_window_fraction  0.2
         stacking_method robust
         tpad    30.0
+        channel_expression BHZ
     }
     PP  &Arr{
         analysis_sort_order     stack_weight
@@ -543,6 +544,7 @@ phase_processing_parameters     &Arr{
         robust_window_fraction  0.2
         stacking_method robust
         tpad    30.0
+        channel_expression ..Z.*
     }
 }
 .fi
@@ -554,21 +556,35 @@ processing is completed after the Analyze button is pushed.
 stack_weight is recommended, but alternatives are coherence, 
 correlation_peak, amplitude, or moveout.  
 \fIarrival_channel\fP is a channel code that will be used to 
-tag the entry in arrival.  Note there is a fundamental problem 
-here that is handled in a way that is not general.  The method
-used here will only work with SEED channel codes or Antelope
-channel constructs (e.g. BHZ_01).  The program takes the
-root channel code for this station and inserts the character
-defined by this parameter in position 3 of the the channel string.
-This is far from ideal, but works for most data.  If this method does
-not work for your data, you will need to run some kind of edit script
-on the output arrival table.  A closely related parameter
-is \fIcomponent_for_analysis\fP.  As the name implies this is
-the component extracted from the data to use for the processing. 
-Valid values are: Z,N,E,L,R, or T.  Z, N, and E are cardinal directions
+tag the entry in arrival.  
+Single character codes of Z, N, or E must be used for this parameter.
+They are substituted based on input data for SEED channel codes derived from
+the original data.  
+Two other channel parameters are used in different context:
+\fIchannel_expression\fP and \fIcomponent_for_analysis\fP.
+Which of these two parameters is used  depends on the setting of the 
+global boolean \fIRequireThreeComponents\fP.  When true 
+\fIchannel_expression\fP is ignored but \fIcomponent_for_analysis\fP is
+used.  When false the reverse is true.
+The \fIchannel_expression\fP argument allows any arbitrary subset
+condition that would be allowed as a subset expression in 
+Datascope.  (e.g. .HZ.* would select a collection of 
+Z channels like BHZ, LHZ, BHZ_00, and BHZ_01.)
+For three component processing there
+is a fundamental problem 
+here that is awkward to deal with no matter what you do.  
+In that mode a single character code is used that 
+make sense only for a three-component data.  Allowed values
+for \fIcomponent_for_analysis\fP are Z,N,E,T,R, and L.  
+The program will abort on startup if you use anything else for 
+this parameter.  
+Z, N, and E are cardinal directions
 while R, T, and L are ray coordinate directions of radial, transverse,
 and longitudinal.  Note that R, T, and L are produced using the
-free surface transformation of Kennett (1991).  
+free surface transformation of Kennett (1991).  In either case in 
+three component processing the data a transformation matrix is always constructed
+and data are rotated as needed.  
+Because the single code channels 
 \fIbeam_window_fraction, robust_window_fraction, regular_gather_twin_start\fP,
 and \fIregular_window_twin_end\fP are closely linked.  The regular gather window
 parameters define the range of data that will be displayed on the GUI in
