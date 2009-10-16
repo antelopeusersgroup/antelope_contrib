@@ -447,6 +447,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_FILE_EXIT]=true;
 	    break;
 	case TWEEKING:
+	    sensitive[MENU_EDIT]=true;
 	    sensitive[BTN_TWEEKER]=true;
 	    break;
 	case POLARITY_SWITCHING:
@@ -501,6 +502,9 @@ bool SessionManager::validate_setting(stringstream & ss)
 	    sort_order="stack weight";
 	    scase=1;
 	    break;
+        case XCORPEAKRATIO:
+            sort_order="xcor peak ratio";
+            scase=1;
 	case SITE_LAT:
 	    sort_order="site.lat";
 	    scase=0;

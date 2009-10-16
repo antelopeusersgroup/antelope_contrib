@@ -161,8 +161,6 @@ void
 do_sw(Widget parent, SessionManager & sm)
 {
  	int i,j;
-//DEBUG
-cerr << "Entering do_sw"<<endl;
 
         Pf *pf;
         if(pfread(const_cast<char *>((sm.get_pf_name()).c_str()),&pf))
@@ -255,8 +253,6 @@ cerr << "Entering do_sw"<<endl;
 
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
-//DEBUG
-cerr << "Normal exit do_sw"<<endl;
 	}
         catch (SeisppError serr)
         {
@@ -370,10 +366,24 @@ string subarray_title(string starting, string subarray_name)
 	if(result.length()>80) result.erase(80);
 	return(result);
 }
+void load_default_trace_attributes(TimeSeriesEnsemble& d)
+{
+    vector<TimeSeries>::iterator dptr;
+    const double coh0(0.0);
+    const double corr0(0.0);
+    const double snr0(-1.0);
+    const double sw0(1.0);
+    for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+    {
+        dptr->put(coherence_keyword,coh0);
+        dptr->put(stack_weight_keyword,sw0);
+        dptr->put(snr_keyword,snr0);
+        dptr->put(peakxcor_keyword,corr0);
+    }
+}
+
 void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
 {
-//DEBUG
-cerr << "Entering handle_next_event"<<endl;
 	stringstream ss;
 	int evid;
         double lat,lon,depth,otime;
@@ -394,9 +404,6 @@ cerr << "Entering handle_next_event"<<endl;
 
 	if(orid>=0)
 	{
-//DEBUG
-cerr << "Entering hande_next_event read block"<<endl;
-
 		const string base_error("handle_next_event:  ");
 		mdfinder.put("orid",orid);
 		list<int> recs=psm->dbh.find(mdfinder);
@@ -446,14 +453,7 @@ cerr << "Entering hande_next_event read block"<<endl;
                         << strtime(otime)<<endl;
 		psm->record(ss.str());
 		psm->session_state(THINKING);
-//DEBUG
-cerr << "Calling load_data method"<<endl;
-double dtload_data=now();
                 psm->xpe->load_data(h);
-dtload_data = now()-dtload_data;
-//DEBUG
-cerr << "load_data method finished normally"<<endl
-  << "Read time="<<dtload_data<<" seconds"<<endl;
 		ss << "Data loaded" <<endl;
 		psm->record(ss.str());
 		if(psm->using_subarrays)
@@ -474,6 +474,8 @@ cerr << "load_data method finished normally"<<endl
 		ss << "Ensemble has " << tse->member.size()
 			<<" seismograms"<<endl;
 		psm->record(ss.str());
+                // Load defaults for trace attributes that might have live plots 
+                load_default_trace_attributes(*tse);
 
 		Metadata data_md=psm->xpe->get_data_md();
 		string title;
@@ -493,8 +495,6 @@ cerr << "load_data method finished normally"<<endl
 
     		psm->xpe->change_analysis_setting(psm->active_setting);
 
-//DEBUG
-cerr << "Sorting ensemble"<<endl;
                 try {
         	    psm->xpe->sort_ensemble();
     		} catch (SeisppError serr) {
@@ -527,8 +527,6 @@ cerr << "Sorting ensemble"<<endl;
 
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
-//DEBUG
-cerr << "Normal exit from handle_next_event"<<endl;
 	}
 
 	} catch (SeisppError serr) {
@@ -782,6 +780,10 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 	    ss << "Result sort order set to stack weight"<<endl;
 	    psm->active_setting.result_sort_order=WEIGHT;
 	    break;
+        case XCORPEAKRATIO:
+            ss << "Result sort order set to xcor peak ratio metric "<<endl;
+            psm->active_setting.result_sort_order=XCORPEAKRATIO;
+            break;
         case SITE_LAT:
 	    ss << "Ensemble sort order set to lat"<<endl;
 	    psm->active_setting.result_sort_order=SITE_LAT;
@@ -1086,6 +1088,16 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Peak Correlation",NULL,0);
     picked=CORRELATION_PEAK;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Correlation 1st/2nd Peak Ratio",NULL,0);
+    picked=XCORPEAKRATIO;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
     if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
@@ -2740,12 +2752,25 @@ main (int argc, char **argv)
   int i,n=0;
   Arg args[18];
   /* Note this struct is defined in the seisw widget display_marker.h */
+  // The last entry used to sometimes be false to forbid that an attribute be displayed in a graphic
+  // before analysis was completed.  This is now superceded by initializing these after all calls
+  // to load_data above to defaults.  This is used for coherence, peak_xcor, stack_weight, ad signal_to_noise_ratio
+  /*
   AttributeInfoRec air[6]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
 			    {NULL,"distance_deg",ATTR_DOUBLE,true,NULL,-1,false, "Epicentral distance",true},
-			    {NULL,"coherence",ATTR_DOUBLE,true,NULL,-1,false, "Coherence",false},
-			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
-			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false},
-			    {NULL,"signal_to_noise_ratio", ATTR_DOUBLE,true,NULL,-1,false, "Signal to Noise Ratio",false}
+			    {NULL,"coherence",ATTR_DOUBLE,true,NULL,-1,false, "Coherence",true},
+			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",true},
+			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",true},
+			    {NULL,"signal_to_noise_ratio", ATTR_DOUBLE,true,NULL,-1,false, "Signal to Noise Ratio",true}
+			};
+                        */
+
+  AttributeInfoRec air[6]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
+			    {NULL,"distance_deg",ATTR_DOUBLE,true,NULL,-1,false, "Epicentral distance",true},
+			    {NULL,SEISPP::coherence_keyword,ATTR_DOUBLE,true,NULL,-1,false, "Coherence",true},
+			    {NULL,SEISPP::peakxcor_keyword, ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",true},
+			    {NULL,SEISPP::stack_weight_keyword, ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",true},
+			    {NULL,snrdb_keyword, ATTR_DOUBLE,true,NULL,-1,false, "Signal to Noise Ratio",true}
 			};
   char *use=(char *) "db [-appname name -o dbout [-q queuefile | -i infile ] -pf pffile -V -v]";
   char *author=(char *) "Peng Wang and Gary Pavlis";
