@@ -66,6 +66,18 @@ specified, but if it is necessary to distiguish the method it is assumed
 another keyword will be used or the another attribute posted to quality 
 the type of estimate stored with this name. */
 const string snr_keyword("signal_to_noise_ratio");
+/*! Keyword to post signal to noise ratio in db.  
+
+  Signal to noise ratio can vary over orders of magnitude so it is
+  often preferable to post values in db to, for example, plot 
+  variable snr data and see something. */
+const string snrdb_keyword("snr_in_db");
+/*!  Peak cross correlation ratio metric.  
+  
+  Used in XcorProcessingEngine to post the ratio of the peak 
+  cross-correlation to the second largest peak. 
+  */
+const string XcorPeakRatioKeyword("xcor_peak_ratio");
 /*! Used to flag a moveout estimate as bad.  Set to this large value. */
 const double MoveoutBad=1.0e10;
 /*! A test for a bad moveout value uses this number.  It is intentionally much

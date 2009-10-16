@@ -287,13 +287,18 @@ StationTime ArrayPredictedArrivals(SeismicArray& stations,
  necessary fudge factor to allow for errors in the predicted arrival time
  and extra time needed to remove filter endpoint transients.  
  The algorithm keys on a chan string to select data from the database.
- Only 3 values are allowed for chan: Z,N,E.  If anything
- else is passed through chan the functio will throw a SeisppError exception.
- Z,N, or E are assumed cardinal directions.  They generate subsets of the 
- input defined by SEED channel codes.  The result will contain ALL Z,N, or
- E channels found in the requested time windows.  For example, if a station
- has HHZ, BHZ, and LHZ channels the output will contain three members from
- that station.  It is the callers job to sort out any redundancy this 
+ This can be applied in one of three ways.  First, a single channel
+ code (e.g. BHZ) can be used, in which case only data matching that
+ channel code will be returned.  Second, you can use a Datascope
+ style regular expression for character strings.  e.g. ..Z would return
+ all 3 character channel codes ending in Z.  Finally, you can use
+ one of thee allowed single characters:  Z,N,E.  These are expanded
+ to an expression match for all SEED channel codes matching that
+ pattern including an expansion of Antelope style loc codes 
+ (e.g. if you had BHZ, LHZ, HHZ, BHZ_00, and BHZ_01 at a station
+ all five would be returned if you specify Z).  
+ Z,N, or E are assumed cardinal directions.  
+ It is the callers job to sort out any redundancy this 
  will produce.  
 
 \return a pointer to a newly allocated TimeSeriesEnsemble containing all 

@@ -288,6 +288,9 @@ template <class T, SortOrder SO> struct less_metadata_double
 		case CORRELATION_PEAK:
 			keyword=SEISPP::peakxcor_keyword;
 			break;
+                case XCORPEAKRATIO:
+                        keyword=SEISPP::XcorPeakRatioKeyword;
+                        break;
 		case AMPLITUDE:
 			keyword=SEISPP::amplitude_static_keyword;
 			break;

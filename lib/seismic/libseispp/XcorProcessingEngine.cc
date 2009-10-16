@@ -312,6 +312,89 @@ void copy_SNR_to_xcor(TimeSeriesEnsemble& d, TimeSeriesEnsemble& xcor,
 			ix->put(keyword,snrbad);
 	}
 }
+/* Helper for analyze.  Computes a new metric added Oct 2009 to help
+   identify cycle skips.  This quantity is the ratio of the largest to
+   next largest peak in the cross correlation function for each trace.  
+   This is aimed to help an analyst identify traces more prone to cycle
+   skips. 
+ d - waveform ensemble
+ xcens - cross correlation function ensemble (assumed to be parallel with
+   d.  True of outpuf from MutlichannelCorrelator but do not recycle
+   me without being aware of this.
+ mdkey - metadata keyword used to post result.
+ */
+
+void  ComputePeakRatioMetric(TimeSeriesEnsemble& d,
+        TimeSeriesEnsemble& xcens, const string mdkey)
+{
+    /* Probably should test size of d and xcens for consistency, but
+       in this alorithm that is not necessary so we avoid it for 
+       efficiency */
+    vector<double> work;
+    vector<TimeSeries>::iterator dptr,xcptr;
+    for(dptr=d.member.begin(),xcptr=xcens.member.begin();
+            dptr!=d.member.end();++dptr,++xcptr)
+    {
+        work.clear();
+        double ratio;
+        vector<double>::iterator sptr;
+        if(dptr->live && ((xcptr->ns)>3))
+        {
+            work.clear();
+            /* Hunt through the data vector and push peak positive
+               values to the work array */
+            sptr=xcptr->s.begin();
+            double dslast,dsnow;
+            dslast=(*(sptr+1))-(*sptr);
+            sptr+=2;
+            do {
+                dsnow=(*sptr)-(*(sptr-1));
+                if( (dslast>=0.0) && (dsnow<0.0) )
+                {
+                    work.push_back(*(sptr-1));
+                }
+                dslast=dsnow;
+                ++sptr;
+            } while(sptr!=xcptr->s.end());
+            if(work.size()<=1)
+                ratio=1.0;
+            else
+            {
+                sort(work.begin(),work.end());
+                int smax=work.size() - 1;
+                ratio=work[smax]/work[smax-1];
+            }
+        }
+        dptr->put(mdkey,ratio);
+        xcptr->put(mdkey,ratio);
+    }
+}
+void set_SNR_in_db(TimeSeriesEnsemble& d, const string snrkey,
+        const string snrdbkey)
+{
+    vector<TimeSeries>::iterator dptr;
+    double nullvalue(-10.0);
+    try {
+        double value;
+        for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+        {
+            if(dptr->live)
+            {
+                value=dptr->get_double(snrkey);
+                value=20.0*log10(value);
+                dptr->put(snrdbkey,value);
+            }
+            else
+                dptr->put(snrdbkey,nullvalue);
+        }
+    }catch (SeisppError& serr)
+    {
+        serr.log_error();
+        cerr << "setting all snrdb values to null value="<<nullvalue<<endl;
+        for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+            dptr->put(snrdbkey,nullvalue);
+    }
+}
 
 MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
 {
@@ -361,14 +444,43 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // original to a predicted arrival time when running from raw data
    // (the current situation for teleseismic data).
    LagShift(waveform_ensemble,moveout_keyword,arrival_time_key);
-   // compute signal to noise ratio for each trace and post to metadata
-   ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,snr_keyword);
+   /* compute signal to noise ratio for each trace and post to metadata
+      Because the start time can move around we compute the start of
+      the noise window using max t0 + analysis_setting.tad. */
+   vector<TimeSeries>::iterator dptr;
+   double maxt0=analysis_setting.gather_twin.start
+       - analysis_setting.tpad;  //should always be less than any data t0
+   for(dptr=waveform_ensemble.member.begin();
+           dptr!=waveform_ensemble.member.end();++dptr) 
+   {
+       if(dptr->live)
+       {
+           if((dptr->t0)>maxt0) maxt0=dptr->t0;  //
+       }
+   }
+   TimeWindow noisetw(maxt0+analysis_setting.tpad,
+           analysis_setting.beam_tw.start);
+   if(noisetw.length()<0.0) noisetw.start=analysis_setting.gather_twin.start;
+   if(noisetw.length()<0.0)
+   {
+    ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,snr_keyword);
+    cout << "WARNING:  reverting to unpadded noise estimate.  May give misleading SNR results with filtering"
+        <<endl;
+   }
+   else
+       ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,
+               noisetw,snr_keyword);
+   set_SNR_in_db(waveform_ensemble,snr_keyword,snrdb_keyword);
    if(waveform_ensemble.member.size()==mcc->xcor.member.size())
 	copy_SNR_to_xcor(waveform_ensemble,mcc->xcor,snr_keyword);
    else
 	throw SeisppError(string("XcorProcessingEngine::analyze():  ")
 		+ string("size mismatch of waveform and xcor ensembles\n")
 		+ string("This is a coding error.  Report to pavlis@indiana.edu"));
+   /* New procedure computes a peak correlation ratio writes as an 
+      attribute to both xcor and data ensembles.  New metric to sort
+      on added Oct. 16, 2009*/
+   ComputePeakRatioMetric(waveform_ensemble,mcc->xcor,XcorPeakRatioKeyword);
    // Auto scale data using computed amplitude set by MultichannelCorrelator
    ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,
 	amplitude_static_keyword,true);
@@ -487,6 +599,15 @@ void XcorProcessingEngine::sort_ensemble()
             sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,DISTANCE>());
 	break;
+   case XCORPEAKRATIO:
+	if(analysis_setting.sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,XCORPEAKRATIO>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                less_metadata_double<TimeSeries,XCORPEAKRATIO>());
+	break;
+
    default:
 	cerr << "Illegal sort order.  Original order preserved."<<endl;
    }
@@ -574,6 +695,14 @@ void XcorProcessingEngine::sort_ensemble()
                sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
                    less_metadata_double<TimeSeries,SNR>());
            break;
+   case XCORPEAKRATIO:
+	if(analysis_setting.sort_reverse)
+            sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                greater_metadata_double<TimeSeries,XCORPEAKRATIO>());
+	else
+            sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                less_metadata_double<TimeSeries,XCORPEAKRATIO>());
+	break;
       default:
    	cerr << "Illegal sort order.  Original order preserved."<<endl;
       }
@@ -1127,6 +1256,9 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		delete mcc;
 		mcc=NULL;
 	}
+        /* This is used only by UpdateGeometry to determine if 
+           it needs a refresh.  It is not an exact match to data
+           range because it does not allow for travel times.  */
 	current_data_window=TimeWindow(h.time+raw_data_twin.start,
 		h.time+raw_data_twin.end);
 	UpdateGeometry(current_data_window);
@@ -1184,7 +1316,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
   			   stations,
                            h,
 			   analysis_setting.phase_for_analysis,
-			   analysis_setting.component_name,
+			   analysis_setting.chan_expression,
                            raw_data_twin,
                            analysis_setting.tpad,
                            dynamic_cast<DatabaseHandle&>(waveform_db_handle),
@@ -1466,7 +1598,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					"algorithm",auth.c_str(),
 					"pchan",pchan.c_str(),
 					"time",atime,
-					"twin",analysis_setting.analysis_tw.length(),
+					"twin",analysis_setting.beam_tw.length(),
 					"samprate",1.0/(trace->dt),
 					"stackwgt",stack_weight,
 					"coherence",coh,
@@ -1491,7 +1623,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					"algorithm",auth.c_str(),
 					"pchan",pchan.c_str(),
 					"time",atime,
-					"twin",analysis_setting.analysis_tw.length(),
+					"twin",analysis_setting.beam_tw.length(),
 					"samprate",1.0/(trace->dt),
 					"stackwgt",stack_weight,
 					"coherence",coh,

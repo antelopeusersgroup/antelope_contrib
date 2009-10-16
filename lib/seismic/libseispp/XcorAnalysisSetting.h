@@ -22,7 +22,7 @@ using namespace SEISPP;
 /*! Defines sort order for an ensemble after analysis by XcorProcessingEngine.*/
 enum SortOrder {COHERENCE,CORRELATION_PEAK,AMPLITUDE,LAG,WEIGHT,
 	SITE_LAT,SITE_LON,PREDARR_TIME,ESAZ,DISTANCE,ARRIVAL_TIME,
-	DBARRIVAL_TIME,SNR};
+	DBARRIVAL_TIME,SNR,XCORPEAKRATIO};
 /*! Defines MultichannelCorrelator analysis mode.  */
 enum MCCAnalysisMode {CORRELATE_AND_STACK, CORRELATE_ONLY, STACK_ONLY};
 
@@ -63,6 +63,9 @@ public:
 	SortOrder result_sort_order;
 	bool sort_reverse;
 	MCCAnalysisMode mccmode;
+        /* Added by GLP Oct 2009.  Allows channel subsetting to
+        improve read performance */
+        string chan_expression;
 };
 
 } // end SEISPP namespace declaration
