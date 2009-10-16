@@ -125,6 +125,7 @@ XcorAnalysisSetting::XcorAnalysisSetting(Metadata md)
 		/* We hard code the default as stack and sum as that is the normal operation
 		mode and default for MultichannelCorrelator constructor */
 		mccmode=CORRELATE_AND_STACK;
+                chan_expression=md.get_string("channel_expression");
 	        	                      
 	} 
 	catch (SeisppError& serr)
@@ -159,6 +160,7 @@ XcorAnalysisSetting::XcorAnalysisSetting(const XcorAnalysisSetting& old)
 	arrival_chan_code=old.arrival_chan_code;
 	sort_reverse=old.sort_reverse;
 	mccmode=old.mccmode;
+        chan_expression=old.chan_expression;
 }
 XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& old)
 {
@@ -185,6 +187,7 @@ XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& o
 	arrival_chan_code=old.arrival_chan_code;
 	sort_reverse=old.sort_reverse;
 	mccmode=old.mccmode;
+        chan_expression=old.chan_expression;
     }
     return(*this);
 }

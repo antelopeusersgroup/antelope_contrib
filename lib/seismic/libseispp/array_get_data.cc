@@ -134,6 +134,11 @@ TimeWindow StationTimeRange(StationTime& times)
 //    WARNING:  part of an interface definition that has not  yet been 
 //    been implemented.  i.e. this argument is ignored.
 //@}
+/* Modified Oct 2009 to have more flexibility in chan specification.  
+   Previous version, as described above, only accepted Z,N, or E.  Now
+   a single character code initiates old behaviour, but if chan has
+   more than one character it is passed directly to to the channel 
+   sort expression */
 TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	string phase, string chan, TimeWindow data_window, double tpad,
 	DatabaseHandle& dbh, MetadataList& ensemble_mdl, MetadataList& member_mdl,
@@ -145,6 +150,7 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	TimeWindow arrival_range=StationTimeRange(times);
 	TimeWindow read_window(arrival_range.start-tpad+data_window.start,
 			arrival_range.end+tpad+data_window.end);
+        string chan_expression(chan);
 	if( (chan=="Z") || (chan=="N") || (chan=="E") )
 	{
 		/* For the single channel version we depend on the 
@@ -155,17 +161,12 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 		are used (i.e. things like BHZ, HHZ, and LHZ).  After that
 		the constructor does almost all the work for us.  The result
 		MUST be recognized to contain multiple sample rate data. */
-		string chan_expression=string("..")+chan+string(".*");
-		try {
-			result = new TimeSeriesEnsemble(dbh,
-				read_window,"none",chan_expression);
-		} catch (...) {throw;}
-	}
-	else
-	{
-		throw SeisppError(string("array_get_data: cannot handle channel code ")
-			+ chan + string("\n Must be Z,N,E\n"));
-	}
+		chan_expression=string("..")+chan+string(".*");
+        }
+	try {
+		result = new TimeSeriesEnsemble(dbh,
+			read_window,"none",chan_expression);
+	} catch (...) {throw;}
 	// Currently the MetadataList elements are ignored.  This 
 	// needs to ultimately be repaired.
 	return(result);

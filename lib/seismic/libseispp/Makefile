@@ -16,6 +16,7 @@ INCLUDE=ArrivalUpdater.h \
   SeisppError.h\
   SeisppKeywords.h \
   SignalToNoise.h \
+  SimpleWavelets.h \
   SphericalCoordinate.h\
   StationChannelMap.h\
   ThreeComponentChannelMap.h\
@@ -72,6 +73,7 @@ OBJS=ArrivalUpdater.o \
   MultichannelCorrelator.o \
   ProcessingQueue.o \
   SignalToNoise.o \
+  SimpleWavelets.o \
   StationChannelMap.o \
   ThreeComponentChannelMap.o \
   ThreeComponentSeismogram.o \
@@ -102,6 +104,7 @@ OBJS=ArrivalUpdater.o \
   seismicarray.o \
   slice_and_dice.o \
   slowness.o \
+  sparse_convolve.o \
   sort_ensembles.o \
   spherical_coordinate.o \
   stack.o \

@@ -572,6 +572,27 @@ that match are copied to the output.
 **/
 auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 		SeismicArray& array);
+/*! Sparse convolution routine.
+
+  Sometimes a time series is made up initially of only a relatively 
+  small number of impulses.  A case in point is some simple synthetic
+  In that case, standard convolution methods are unnecessarily slow.
+  This specialized function can sometimes be useful in such a context.
+
+  \param wavelet is assumed to be the nonsparse wavelet that will
+    be replicated with appropriate lags for each impulse in d
+  \param d is the sparse ThreeComponentSeismogram object that to which
+    the wavelet function is to be convolved.  The contents of this 
+    object are assumed to be mostly zeros or the algorithm is not 
+    very efficient. It will work for data that is not sparse, but it will
+    be slow compared to convolution by Fourier transforms.
+  \return ThreeComponentSeismogram object that is the convolution of
+    wavelet with d.  Result will have more samples than d by 2 times
+    the length of wavelet 
+*/
+
+ThreeComponentSeismogram sparse_convolve(TimeSeries& wavelet,
+        ThreeComponentSeismogram& d);
 
 /*! Generic routine to compute a median.
 // This template can be used to compute the median of a vector
