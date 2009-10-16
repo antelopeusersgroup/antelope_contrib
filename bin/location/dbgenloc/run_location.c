@@ -158,6 +158,10 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
 	if (reason_converged != 0 
 		&& maxtbl(reason_converged) > 0 ) {
 	if ( strncmp(gettbl(reason_converged,0), "Location hit iteration count limit", 34) != 0) {
+                if(compute_residual_only_results(*hypo,taro,turo))
+                {
+                    elog_notify(0,"Warning(dbgenloc): problems computing residual only data");
+                }
 		save_results (dbin, dbout, pf, ta, tu, taro, turo, &o, 
 			vmodel, hypo, residual, orid , C, emodel) ;
 		retcode = 0 ;

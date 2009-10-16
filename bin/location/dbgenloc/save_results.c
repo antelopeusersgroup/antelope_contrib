@@ -41,7 +41,8 @@ int compute_residual_only_results(Hypocenter hypo,
 		}
 		else
 		{
-			atimes->res.raw_residual=atimes->time-tto.time;
+			atimes->res.raw_residual=atimes->time-tto.time
+                                - hypo.time;;
 			atimes->res.weighted_residual=atimes->res.raw_residual;
 			atimes->res.residual_weight=0.0;
 			atimes->res.other_weights=0.0;
