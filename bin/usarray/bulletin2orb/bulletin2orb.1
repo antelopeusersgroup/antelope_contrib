@@ -1,0 +1,1203 @@
+'\" te
+.TH BULLETIN2ORB 1 2009/10/19
+.SH NAME
+bulletin2orb,bulletin.pm \- collect catalog information from remote institutions and put in /pf/orb2dbt packets 
+.SH SYNOPSIS
+.nf
+\fBbulletin2orb\fP [-v] [-V] [-1] [-p \fIparameter_file\fP] [-s \fIseconds\fP] \fIorb\fP
+
+.fi
+.SH DESCRIPTION
+.SS Background
+.LP
+Association of events with externally published bulletins is a necessary
+part of the analyst review process with \fBdbloc2(1)\fP or real-time event
+processing using \fBdborigin2orb(1)\fP.  
+Whether or not this external association happens is often 
+limited by the ability of the analyst/operator to write a parser to collect these 
+catalogs from other network operators via a timely automated routine.  The 
+distribution format and mechanism varies from institution to institution.  
+Examples of methods of distribution include:  simple http available text file, 
+html augmented file available via http, XML files, ftpable file, RSS feed, 
+KML mappable files, finger quake (mostly deprecated), etc.  Methods supported by
+\fBbulletin2orb(1)\fP and the associated \fBbulletin.pm\fP are discussed in the
+\fIBulletin Collection Types\fP section.  Formats of the web pages or retrieved 
+files vary widely and are discussed in the \fISupported Bulletins\fP and 
+\fIFile Formats\fP section.
+.LP
+Prior to the creation of \fBbulletin2orb\fP and the corresponding module
+\fBbulletin.pm\fP, I had to maintain individual scripts for collection of each 
+external bulletin.  Without any modules in place, each script recreated techniques
+to collect the bulletin, parse information out of it, and place that information 
+in the appropriate css3.0 tables.  This led to redundant code that was hard to 
+maintain.  Furthermore, sharing those scripts outside of our group was problematic 
+as they often had to be tweaked yearly or more often as URLs, ftp locations, or 
+html styles changed.  A more reasonable approach to maintaining the scripts and 
+sharing the information gleaned from them (i.e. the css3.0 origin tables) was needed.
+The need for ease of maintenance led to the development of the more generic 
+\fBbulletin2orb\fP script and associated \fBbulletin.pm\fP routines along with the
+service of providing a single access point for external bulletin information.
+.LP
+The approach taken with \fBbulletin2orb\fP is to have a single data center, currently
+the ANF at UCSD (Array Network Facility), maintain all of the parsing scripts in 
+\fBbulletin.pm\fP.  That same data center would then run various instances 
+of the \fBbulletin2orb\fP bulletin collection script.  The data center can 
+then serve the data to external users via \fI/pf/$BULL/orb2dbt\fP 
+packets.  The external clients collect whichever bulletins they are 
+interested in by using \fBorb2orb\fP with a match statement and write individual
+bulletins out to local disk via \fBorb2dbt\fP.  \fBbulletin2orb\fP is a script best used in-house
+at the ANF, but has been shared with the community as a courtesy.
+.LP
+For information on how to collect bulletins from the orb maintained at the ANF, please
+review the documentation provided with the \fIbulletins\fP \fBrtdemo(1)\fP.  You can 
+adjust the provided demo such that only bulletins of interest to your specific project
+are collected.  You should not have to run the \fBbulletin2orb\fP program!
+
+.SS "General Methodology"
+.LP
+The procedural flow for \fBbulletin2orb\fP is that a specific \fImethod\fP is chosen that
+determines how the bulletin is to be collected.  Depending upon the format of the returned 
+data (i.e. single lines of text containing all information, multi-line text, downloaded
+file, etc.), a \fIparser\fP and, for some bulletins, an \fIextractor\fP must also
+be specified.  The bulletins to be collected by \fBbulletin2orb\fP are selected via
+the \fIbulletin2orb.pf\fP.  The script runs in daemon mode (unless the \fI-1\fP option
+is selected) and processes each bulletin collection routine sequentially.  The next
+attempt to process all bulletins begins after the program sleeps for \fI-s\fP seconds.
+For the non-searchable, non-ftp'd, rapidly supplied bulletins, checks are made 
+against the previous collection run to attempt to avoid sending duplicate \fI/pf/$BULL/orb2dbt\fP 
+packets into the orb.  However, you will see duplicate information sent for any bulletin
+that is returned via the \fIftp\fP, \fIdbsubset\fP, or \fIsearch*\fP \fImethod\fPs.  Duplication
+also occurs if the \fBbulletin2orb\fP process is restarted.  
+
+At the ANF, multiple instances of \fBbulletin2orb\fP are running.  Update intervals 
+for the various instances of \fBbulletin2orb\fP are:  10 minutes, 60 minutes, 24 hours,
+and monthly.  Duplicate instances are recommended such that no undue load of excessive
+data requests are put on the regional network servers.
+
+
+.SS "Bulletin Collection Types - aka \fImethod\fP"
+.LP
+The perl module \fBbulletin.pm\fP was created to modularize the different techniques
+used to collect bulletin information from external sources.  If additional methods
+of collection are required (i.e. RSS feed, KML files, etc.) or new 
+data formats for collected bulletin
+information are discovered, new subroutines will need to be developed and added to
+\fBbulletin.pm\fP.  The currently supported types of collection methods are described
+below.  The method selected for a particular bulletin is specified in the \fImethod\fP 
+parameter value of \fIbulletin2orb.pf\fP for each bulletin collection task.  DO NOT change
+these unless you are certain you know what you are doing.  Only the methods listed below 
+are currently supported.  Specifying any other \fImethod\fP in the pf file causes the 
+script to die.  The actual subroutine name in \fBbulletin.pm\fP is \fBcollect_\fP\fImethod\fP.
+
+.IP "\(bu \fBtext\fP:  plain text - web accessible"
+.br
+
+This is perhaps the simplest type to collect and process.  The text has no HTML code 
+embedded in it and tends to be fixed format.  An example of published bulletins 
+with this format is the CUBE format produced by the NEIC.  This bulletin can be 
+collected using the \fIget\fP command of the \fILWP::Simple\fP perl module.  Each 
+line can be run through a parser that checks to see if the collected line is 
+new.  Each new line can then have the individual parts extracted and the info 
+placed into a hash for later processing.
+
+.IP "\(bu \fBcollect_htmltagged\fP or \fBcollect_htmlnotags\fP:  HTML text - web accessible"
+.br
+
+This is the most common format.  These methods deal with information that is returned within 
+some sort of frame of html code, rather than a simple text file.  
+
+It seems that the majority of the ANSS networks 
+have a web page that has a map along with basic lat/lon/depth/mag information and
+a link to another html page with more detailed information (the embedded html
+link necessitates the use of the \fIhtmltagged\fP method).  Unfortunately, there 
+is a wide variety in format within these lists: a) Do they use +/- 
+with the lat/lon, use N/S and E/W indicators, or assume you know they are only reporting 
+longitude West? b) Are there any extra characters after depth or magnitude? 
+c) Is the magnitude type defined as ml, md, mc, M, or unknown? d) Do they 
+use UTC or local time (and are their computers modern enough 
+to deal with the new dates that Standard and Daylight time changes occur)?  
+Examples of published bulletins collected by this method are:  
+NEIC QED, UUSS-combo, PNSN, Lamont, and CERI(NMSN).  These bulletins require the \fIread_url\fP 
+subroutine which uses the \fInew\fP and \fIrequest\fP commands of the 
+\fILWP::UserAgent\fP Perl module along with the 
+\fIHTML::Parser new\fP Perl module for the \fIparse\fP and \fIdecode_entities\fP 
+routines.  The returned array contains 
+dissimilar lines, so the \fIcollect_htmltagged\fP or \fIcollect_htmlnotags\fP  
+subroutine reviews each line making sure all 
+pieces of information are available before adding it to an array for review via 
+a parser subroutine. 
+
+There are other institutions that use slightly different 
+formats that have no embedded html links (i.e. MTECH(reviewed and auto), 
+UNR-NBE, daily UUSS and YELL, and NRCAN) that use the \fIcollect_htmlnotags\fP 
+method which then calls the \fIget\fP command.  
+In this case, a temporary file is collected and saved to \fI/tmp/notags_$parser\fP.  
+See the PARAMETER FILE section for definition of \fIparser\fP.  An intermediary subroutine extracts 
+the usable lines (basically those lines between the <pre></pre> tags), converts/fixes 
+the different time and lat/lon values, and creates a usable array of lines that 
+are put into the %parsed_info and %magnitude_info hashes via the \fIparse\fP subroutines.
+
+.IP "\(bu \fBsearch_post\fP or \fBsearch_qf\fP:  HTML or plain text - via web search"
+.br
+
+There are two types of search requests that can be made using the Perl module \fILWP::UserAgent\fP 
+and \fIquery_form\fP (i.e. SCEC/SCSN) or \fIPOST\fP (NRCAN(search), NCSN, NBE(search), NESN(search).  
+Both return information that is saved to a file name \fI/tmp/search_$parser\fP
+and then extracted via an "extract" subroutine.  Again, the output format varies widely.
+There are some bulletin search 
+routines (i.e. CERI/NMSN) which require an intermediate step where the user has to 
+click a button to move on to the final results.  I have skipped any attempt to try 
+to program for this.  Although not proven, I suspect that the searchable results 
+are updated less frequently than the plain or HTML text that is web accessible.  I also
+expect that the search function may take more resources than a simply served HTML file, 
+thus it is recommended that bulletin collections of this type be run at much less 
+frequent intervals.  In particular, you may not want to run \fBbulletin2orb\fP in
+the default daemon mode, but instead use the \fI-1\fP option for single execution
+and collect this type of bulletin via cronjob.
+
+.IP "\(bu \fBftp\fP:  plain text via ftp"
+.br
+
+Historically, reviewed bulletins have been distributed in a well-defined fixed format 
+file via ftp.  Documentation for the format is normally available and the format
+changes very infrequently.  However, these bulletins tend to be bundled and cover
+a long period of data.  Furthermore, bulletins available via ftp tend to not be 
+updated as frequently as formats available via http.  Thus, these bulletin types
+may be more useful to analysts using \fBdbloc2(1)\fP doing delayed event reviews
+than for a real-time system using \fBdborigin2orb(1)\fP.  You may not want to run 
+\fBbulletin2orb\fP in the default daemon mode, but instead use the \fI-1\fP option 
+for single execution and collect this type of bulletin via cronjob.  
+Collection of information from the ftp bulletins involves connecting to the remote
+site, checking to see if the remote file was updated more recently than the 
+last update time of the file stored on the local disk, and downloading all available 
+remote files that have been updated. The storage location is specified in \fIbulletin2orb.pf\fP.
+After file retrieval, the retrieved bulletin is opened, parsed, and event information is extracted.
+
+.IP "\(bu \fBdbsubset\fP: local database subset"
+.br
+
+As a data center, you may also produce your own css3.0 origin and netmag tables.  The
+\fIdbsubset\fP method allows you to collect your bulletin information and distribute it
+to others via \fBbulletin2orb\fP.  Currently, subsetting options are limited to time and
+author:  no lat/lon or magnitude subsets are available.  Only origin and netmag information 
+is collected and redistributed.  Each origin row that matches the \fIauth_subset\fP from the
+pf is added to the export \fIorb\fP.  NOTE:  if you have multiple orids for a single event
+they will be pushed to the export \fIorb\fP as single events!  The database the client 
+writes out is not identical to the input database, \fIdb\fP as all prefor information 
+is lost. 
+
+.SS "Supported Bulletins"
+.LP 
+Many institutions have 
+multiple methods for collection (i.e. a web page with rapid solutions, 
+a searchable bulletin, and/or a downloadable ftp file).  You may or may not want to collect
+all types of bulletins from a regional network.  My goal was to produce
+parsers and collect information from a wide variety of bulletins in a method that was sustainable
+and able to expand as new bulletins are discovered.  The end-user can pick and choose the best
+solution from the origin table generated by \fBorb2dbt(1)\fP.
+ 
+The table below shows the responsible institution or network, whether or not 
+non-reviewed events may be included (if known), how frequently the bulletin is updated by the 
+responsible data center, and the \fImethod\fP, \fIparser\fP, and \fIextractor\fP.
+.ne
+.TS
+box ;
+l c c c c c.
+\fBInst/Network\fP	\fBNonRvwdEvts?\fP	\fBUpdateInt\fP	\fImethod\fP	\fIparser\fP	\fIextractor\fP
+NEIC-CUBE	maybe	Rapid	text	qedCUBE	-
+NEIC-QED	maybe	Rapid	htmltagged	recenteqs	neicWWW
+EMSC	maybe	Rapid	htmltagged	EMSC	EMSC	
+AEIC	maybe	Rapid	htmlnotags	finger	finger	
+CERI-NMSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
+Lamont-LCSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
+MTECH-auto	yes	Rapid	htmlnotags	mtechAUTO	mtechAUTO
+MTECH-rev 	no	Rapid	htmlnotags	recenteqs	simsum
+PNSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
+NRCAN-PGC	maybe	Rapid	htmlnotags	recenteqs	simsum
+NRCAN-GSC	maybe	Rapid	htmlnotags	recenteqs	simsum
+UNR-NBE	yes	Rapid	htmlnotags	NBEwww	NBEwww
+UUSS-combo	maybe	Rapid	htmltagged	recenteqs	qedWWW	
+UUSS-daily     	maybe	Rapid	htmlnotags	recenteqs	simsum
+YELL-daily     	maybe	Rapid	htmlnotags	recenteqs	simsum
+
+NEIC-PDE	no	Monthly	ftp	ehdf	-
+NEIC-QEDweekly	no	D/Weekly	ftp	ehdf	-
+PNSN-rev	no	Quarterly(?)	ftp	uwcard	-
+UUSS-lists	no	Quarterly(?)	htmlnotags	uussLIST	uussLIST
+YELL-lists	no	Quarterly(?)	htmlnotags	uussLIST	uussLIST
+AEIC	maybe	Quarterly(?)	search_qf	AEIC	AEIC
+GSmines	no   	Daily(?)	ftp	mchdr	mchdr	
+GSmines-monthly	no   	Weekly(?)	ftp	mchdr	mchdr	
+
+ANF	maybe	Rapid**	dbsubset	dbsubset	-
+BC-NESN	maybe	Rapid**	search_post	NESN	NESN
+NBE-search	maybe	Rapid**	search_post	NBEsearch	NBEsearch	
+NCSN-search	maybe	Rapid**	search_post	HYPO2000	HYPO2000
+SCSN-search	maybe	Rapid**	search_qf	HYPO2000	HYPO2000
+
+.TE
+.sp
+Some bulletins are updated rapidly, within a few minutes to hours of the event 
+origin time.  Bulletins of this type which can be collected via \fBbulletin2orb\fP 
+include:  NEIC-CUBE, NEIC-QED, EMSC, UUSS (combo and daily, YELL-daily, Lamont-LCSN, 
+CERI-NMSN, PNSN, NRCAN (PGC and GSC), MTECH (automatic and reviewed), and UNR-NBE.
+These rapid updating bulletin types can be requested fairly often without putting 
+a high processing load on either the remote distributor or the host running
+\fBbulletin2orb\fP.
+
+Some bulletins are updated every few hours or daily, 
+include less frequently updated reviewed solutions, or require submissions to a 
+search page.  These bulletins should not have a collection attempt made every 600 
+seconds.  Instead you should run a separate instance of \fBbulletin2orb\fP which
+overrides the default sleep window with a larger value for \fI-s\fP, or run a multiple
+time per day (or week) cron job.  Bulletins that you might wish to attempt to
+collect multiple times per day include:  ANF, BC-NESN, NBE-search, NCSN-search, 
+and SCSN-search.  Bulletins that you might wish to collect daily include:  
+AEIC, NEIC-QEDweekly and GSmines.  Bulletins that you might wish to attempt to collect a
+few times per month include:  NEIC-PDE, PNSN-rev, UUSS-lists, and YELL-lists.  You
+might also consider recollecting many of the searchable bulletins once a month with 
+a longer time window supplied to the search.  In this way you might attempt to catch
+events that have been reprocessed or added after analyst review of back-logged data.
+
+NOTE:  There will be duplicate origin data written to the export orb for many of these
+bulletins.  This is especially true for any of the searchable bulletins as each successive
+search returns the same data.  Attempts have been made to limit the duplication of
+event data for those bulletins that have a rapid update interval and are not results
+from a search.  I expect that the endusers' \fBorb2dbt(1)\fP process will deal with 
+any duplication of data.
+
+
+.SS "Supported File Formats"
+.LP
+There are a multitude of different file formats that have been developed by individual
+institutions.  Some are more consistent and better documented than others.  
+Listed below are a few that currently have parsers written for them with links 
+to documentation and pickup location when available.  The parsers are in
+\fBbulletin.pm\fP and appear as \fBparse_\fP\fIparser\fP.
+.IP "\(bu \fBCUBE\fP"
+.LP
+The CUBE format provided by the NEIC combines solutions from many of the ANSS regional
+networks.  The \fImethod\fP used for this bulletin is \fItext\fP.  The \fIparser\fP 
+used for this bulletin is \fIqedCUBE\fP.  Descriptions of the format can be found here:
+.LP
+http://earthquake.usgs.gov/regional/neic/qdds/cube_fmt.php
+.br
+ftp://ehzftp.wr.usgs.gov/QDM/docs/CUBE.html
+.br
+http://neic.cr.usgs.gov/neis/qdds/cube_fmt.html
+.LP
+The actual URL for the bulletin is:
+.LP
+http://earthquake.usgs.gov/eqcenter/catalogs/merged_catalog.cube
+.IP "\(bu \fBrecenteqs\fP"
+.LP
+Many of the regional networks provide a web page that has a map along with a
+list of earthquakes.  There is no formal format description that I have found.  In general,
+the listings seem to have a magnitude (no magtype), a date, lat, lon, depth, and location.
+The majority of the ANSS networks include links in their earthquake lists. 
+Those that have these embedded links use the \fIhtmltagged\fP \fImethod\fP with the 
+\fIrecenteqs\fP \fIparser\fP and the \fIqedWWW\fP or \fIneicWWW\fP \fIextractor\fP.  
+This type of bulletin collection needs to have the time zone \fITZ\fP, 
+\fIextractor\fP, and \fIdefaultmagtype\fP specified in the parameter file.  
+
+Some regional networks provide a web page map and listing which has no html links.  
+These bulletins use the
+\fIhtmlnotags\fP \fImethod\fP and either \fIrecenteqs\fP or an institution specific
+\fIparser\fP (i.e. mtechAUTO, NBEwww, uussLIST).  An \fIextractor\fP
+needs to be specified and varies depending on the institution which produces the bulletin.
+
+The actual URLs for the bulletins:
+.LP
+.br
+http://earthquake.usgs.gov/eqcenter/recenteqsww/Quakes/quakes_all.php
+.br
+http://www.seis.utah.edu/req2webdir/recenteqs/Quakes/quakes0.html
+.br
+http://www.ldeo.columbia.edu/LCSN/recenteqs/Quakes/quakes0.html
+.br
+http://folkworm.ceri.memphis.edu/recenteqs/Quakes/quakes0.html
+.br
+http://www.pnsn.org/recenteqs/Quakes/quakes0.htm
+.br
+http://mbmgquake.mtech.edu/earthworm/reviewed_locations.html
+.br
+http://mbmgquake.mtech.edu/earthworm/automatic_locations.html
+.br
+
+.IP "\(bu \fBEMSC\fP"
+.LP
+The EMSC format provided by the European-Mediterranean Seismological Centre
+reports solutions from many of the regional and national networks found in Europe, 
+around the Mediterranean, western Asia, and northern Africa along with solutions from the NEIC.  
+The \fImethod\fP used for this bulletin is \fIhtmltagged\fP.  The \fIparser\fP 
+used for this bulletin is \fIEMSC\fP.  I have found no formal write-up of the format. 
+.LP
+The actual URLs for the bulletin:
+.LP
+.br
+http://www.emsc-csem.org/index.php?page=current&sub=list
+.br
+
+.IP "\(bu \fBHYPO2000\fP"
+.LP
+A well documented format used by the SCSN and NCSN.  This is one of the output format
+options available from the searchable bulletins.  Unfortunately, there are slight 
+differences between how Berkeley and Caltech use the format, but both should be
+able to use \fIHYPO2000\fP for the \fIparser\fP and \fIextractor\fP.  The SCSN 
+bulletin collection uses the \fIsearch_qf\fP \fImethod\fP while the NCSN bulletin 
+collection uses the \fIsearch_post\fP \fImethod\fP.  Format descriptions can be found here:
+.LP
+http://www.data.scec.org/catalog_search/docs/2000hyposum_format.txt
+.br
+http://www.ncedc.org/ncedc/documents.html#catalog_formats
+.br
+.LP
+The actual URL for the bulletin search program is:
+.LP
+http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl
+.br
+http://www.ncedc.org/cgi-bin/catalog-search2.pl
+
+.IP "\(bu \fBNESN\fP"
+.LP
+The NESN, run by Boston College, has its own unique format for the earthquake bulletin
+information that is displayed.  In general, the data is tab separated, and contains three
+possible magnitude types, Mn, Mc, and Ml.  Both a searchable bulletin and list (with no tags)
+are available, but the searchable mechanism is the preferred collection method as the 
+no-search option leads to all events since 1990.  The searchable bulletin uses the 
+\fIsearch_post\fP \fImethod\fP and \fINESN\fP for the \fIparser\fP and \fIextractor\fP.  
+.LP
+The actual URL for the bulletin search program is:
+.br
+http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl
+.br
+
+.IP "\(bu \fBfinger\fP"
+.LP
+Although I thought it was deprecated and not in use anywhere, I managed to find a few
+places where you could still get a web based listing in the old \fIfinger\fP format.  
+A \fIparser\fP and \fIextractor\fP have been written and tested successfully for the
+AEIC instance.  Note that this is only applicable to web accessible plain text
+versions of a finger listing that report event times in UTC.   
+.LP
+The actual URL for the finger listing for which this extractor works is:
+.br
+http://www.aeic.alaska.edu/cgi-bin/quake_finger.pl
+.br
+
+.IP "\(bu \fBAEIC\fP"
+.LP
+The AEIC, run by the University of Alaska, Fairbanks, has its own unique format for 
+the earthquake bulletin information that is displayed.  The data returned from the
+searchable bulletin is white space separated, and contains three possible magnitude 
+types, mb, ML, and MS.  The searchable bulletin uses the \fIsearch_qf\fP \fImethod\fP 
+and \fIAEIC\fP for the \fIparser\fP and \fIextractor\fP.  
+.LP
+
+The actual URL for the bulletin search program is:
+.br
+http://www.aeic.alaska.edu/cgi-bin/db2catalog.pl
+.br
+
+.IP "\(bu \fBNBE\fP"
+.LP
+The Nevada Broadcast of Earthquakes (NBE) has a tagged web format similar to that
+used in the recenteqs display of other regional networks.  No specific format description
+is available.  However, a different \fIparser\fP and \fIextractor\fP is used:  \fINBEwww\fP.  
+.br
+.LP
+The actual URL for the bulletin is:
+.br
+http://www.seismo.unr.edu/Catalog/nbe.html
+.br
+.LP
+Also available from UNR is a searchable catalog.  Like the NESN and NCSN bulletins, the 
+\fIsearch_post\fP \fImethod\fP is used.  The \fIparser\fP and \fIextractor\fP is unique
+to this institution and is currently called \fINBEsearch\fP.
+.br
+.LP
+The actual URL for the bulletin search program is:
+.br
+http://www.seismo.unr.edu/cgi-bin/catalog-search
+.br
+.IP "\(bu \fBehdf\fP"
+.LP
+This is a well documented format used by the NEIC/USGS.  Format descriptions can be found here:
+.LP
+ftp://hazards.cr.usgs.gov/weekly/ehdf.txt
+.LP
+The weekly QED bulletin is available via the \fIftp\fP \fImethod\fP using the \fIedhr\fP
+\fIparser\fP.  
+.br
+.LP
+The ftp location for the QED weekly files is:
+.br
+ftp://hazards.cr.usgs.gov/weekly
+.br
+.LP
+However, in the pf file, the leading \fIftp://\fP is excluded in the \fIftphost\fP parameter
+and \fI/weekly\fP is the value used for the \fIftpdir\fP.  The \fIftpmatch\fP should be set
+to \fIehdf.*\fP.
+.IP "\(bu \fBuwcard\fP"
+.LP
+The UW card format is a well documented format used by the PNSN of UW.  Format 
+descriptions can be found here:
+.LP
+ftp://ftp.ess.washington.edu/pub/seis_net/README.cardformat
+.br
+http://www.pnsn.org/INFO_GENERAL/PNSN_QUARTERLY_EQ_CATALOG_KEY.html
+.br
+The PNSN reviewed bulletin is available via the \fIftp\fP \fImethod\fP using the \fIuwcard\fP
+\fIparser\fP.  
+.br
+.LP
+The ftp location for the PNSN reviewed files is:
+.br
+ftp://ftp.ess.washington.edu/pub/seis_net
+.br
+.LP
+However, in the pf file, the leading \fIftp://\fP is excluded in the \fIftphost\fP parameter
+and \fIpub/seis_net\fP is the value used for the \fIftpdir\fP.  The \fIftpmatch\fP should be set
+to \fIloc.[0-9].*\fP.
+
+.IP "\(bu \fBmchdr\fP"
+.LP
+This is a well documented format used by the NEIC/USGS.  It is another example of a card
+format where the first one or two characters of the line determines what type of information
+is available.  This parser was written to collect the USGS mine explosion bulletin. 
+The QED weekly bulletin could also be collected in this format, but the \fIehdf\fP format is
+preferred, mostly for historic reasons.   For the USGS mine explosion bulletin, the 
+\fImchdr\fP \fImethod\fP and \fImchdr\fP \fIextractor\fP are used. 
+Format descriptions can be found here:
+.LP
+ftp://hazards.cr.usgs.gov/weekly/mchedr.txt
+.LP
+The ftp location for the recent mine explosion files is:
+.LP
+ftp://hazards.cr.usgs.gov/explosions/mchedrexp.dat
+.LP
+However, in the pf file, the leading \fIftp://\fP is excluded in the \fIftphost\fP parameter
+and \fIexplosions\fP is the value used for the \fIftpdir\fP.  The \fIftpmatch\fP should be set
+to \fImchedrexp.dat\fP.  Historic information, from 1997 forward, is available from:
+.LP
+ftp://hazards.cr.usgs.gov/mineblast/ex.dat
+.br
+.LP
+
+.SH OPTIONS
+.IP -1
+Execute the program only once.  This option allows you to attempt a single collection 
+of each bulletin defined in the pf \fIbulletins\fP section instead of the normal daemon
+mode which attempts to collect indefinitely every \fI-s\fP seconds. 
+.IP "-p pf"
+Parameter file to use.  The default \fIpf\fP is \fIbulletin2orb.pf\fP.
+.IP "-s seconds"
+Interval to pause between collection attempts.  The default value is 600 seconds which
+works well for the rapidly updating bulletins.  It is strongly recommended to increase
+this value if you are attempting to collect bulletins that are not updated frequently 
+or require a search on the far side.  
+.IP -v 
+Verbose elog output.
+.IP -V 
+More verbosity than you should ever need.  Used for debugging purposes only.  Should not
+be used for an operational \fBbulletin2orb\fP.
+
+.SH ENVIRONMENT
+Must have sourced $ANTELOPE/setup.csh or $ANTELOPE.sh.  Your version of Antelope 
+needs to be 4.11 (fully patched) or higher.
+.SH PARAMETER FILE
+The \fIbulletin2orb.pf\fP parameter file contains a series of \fBbulletins\fP
+(in an associative array).  The \fBbulletins\fP array has one or more bulletin
+specifications.  Each bulletin specification consists of an associative array
+with the bulletin name (user specified) as the associative array key.  Bulletin
+parameters can vary depending on the \fImethod\fP and/or the \fIparser\fP.  Changes
+to the \fImethod\fP, \fIparser\fP, \fIextractor\fP, \fIurl\fP, \fIftphost\fP, 
+\fIftpdir\fP, \fIftpmatch\fP, or \fIlinestart\fP are NOT RECOMMENDED! 
+.LP
+In general, only change the \fIsrc\fP, \fIlocaldir\fP, and \fIndays\fP.  Leave the 
+remainder as is or unexpected results may occur.
+
+.in 2c
+.ft CW
+.nf
+.ps 7
+
+#
+# bulletin2orb.pf
+#
+# Not all of these should be run under a 
+# single instance of bulletin2orb. 
+# Many should be run with a longer default
+# interval between collection attempts
+#  
+# --J.Eakins  10/7/2009
+
+
+bulletins &Arr{
+
+#
+# These bulletins can be collected using the default
+# settings (-s 600).
+#
+#  Create a bulletin2orb_rapid.pf between START/END
+#
+
+# START
+
+  AEIC-finger &Arr{	# quick, but not so accurate in time/space solutions from AEIC
+	method		htmlnotags
+	parser		finger	
+	extractor	finger
+	src		AEIC/finger	# srcname will be /pf/$src/orb2dbt
+	auth		AEIC      	# auth == $auth	
+	url		http://www.aeic.alaska.edu/cgi-bin/quake_finger.pl
+	defaultmagtype	ml		# 
+  }
+
+  EMSC-www &Arr{
+        method          htmltagged              # text file available via http
+        extractor       EMSC
+        parser          EMSC
+        src             EMSC	     # srcname will be /pf/$src/orb2dbt
+        auth            EMSC            #
+        url             http://www.emsc-csem.org/index.php?page=current&sub=list
+  }
+
+  MTECH-auto    &Arr{	# automatic solutions from Montana Tech
+	method		htmlnotags
+	parser		mtechAUTO	
+	extractor	mtechAUTO	 
+	src		MTECH/A  	# srcname will be /pf/$src/orb2dbt
+	auth		MTECH		#  auth == $auth . "$evid" 	
+	url		http://mbmgquake.mtech.edu/earthworm/automatic_locations.html	
+	defaultmagtype	md		# not coded yet
+  }
+
+  MTECH-rev     &Arr{	# reviewed solutions from Montana Tech
+	method		htmlnotags
+	parser		recenteqs
+	extractor	simsum	
+	src		MTECH/R		# srcname will be /pf/$src/orb2dbt
+	auth		MTECH_R		# auth == $auth	
+	url		http://mbmgquake.mtech.edu/earthworm/reviewed_locations.html	
+	defaultmagtype	ml		# not coded yet
+  }
+
+  UNR-NBE    	&Arr{	# both prelim and reviewed solutions from the Nevada Broadcast of Earthquakes
+	method		htmlnotags
+	extractor	NBEwww		# extract_nbeWWW
+	parser		NBEwww		# parse_nbeWWW
+	src		NBE		# srcname will be /pf/$src/orb2dbt
+	auth		NBE 		# auth == $auth	. "$NBE_evid"
+	url		http://www.seismo.unr.edu/Catalog/nbe.html	
+	defaultmagtype	ml		# not coded yet, "local magnitudes"
+  }
+
+
+  NEIC-CUBE &Arr{	# combined quick bulletin from NEIC.  Includes solutions from multiple regional networks
+	method		text		# text file available via http
+	parser		CUBE
+	src		NEIC/CUBE	# srcname will be /pf/$src/orb2dbt
+	auth		USGS		# qedCUBE will actually have auth == "USGS:$contributor"
+	url		http://earthquake.usgs.gov/eqcenter/catalogs/merged_catalog.cube
+  }
+
+  NEIC-QED &Arr{	# Quick Earthquake determination list from NEIC/USGS
+	method		htmltagged 	# WWW screen scrape w/ tags
+	parser		recenteqs
+	extractor	neicWWW		
+	TZ		UTC
+	src		NEIC/qed	# srcname will be /pf/$src/orb2dbt
+	auth		QED 		# auth == $auth	
+	url		http://earthquake.usgs.gov/eqcenter/recenteqsww/Quakes/quakes_all.php
+	defaultmagtype	M 		#  md if mag< 1.9, ml if mag >=1.9, ???
+  }
+
+
+  Lamont-LCSN &Arr{	# Lamont Cooperative Seismo Network (Eastern US)
+	method		htmltagged 	# WWW screen scrape w/ tags
+	parser		recenteqs	
+	extractor	qedWWW	
+	TZ		US/Eastern
+	src		LCSN		# srcname will be /pf/$src/orb2dbt
+	auth		LCSN		# auth == $auth	
+	url		http://www.ldeo.columbia.edu/LCSN/recenteqs/Quakes/quakes0.html	
+	defaultmagtype	md		#  md if mag< 1.9, ml if mag >=1.9, ???
+  }
+
+  CERI-NMSN   &Arr{
+	method		htmltagged
+	parser		recenteqs
+	extractor	qedWWW	
+	TZ		US/Central
+	src		NMSN		# srcname will be /pf/$src/orb2dbt
+	auth		CERI		# auth == $auth	
+	url		http://folkworm.ceri.memphis.edu/recenteqs/Quakes/quakes0.html	
+	defaultmagtype	md		#  md if mag< 1.9, ml if mag >=1.9, ???
+  }
+
+  PNSN &Arr{
+	method		htmltagged
+	parser		recenteqs
+	extractor	qedWWW	
+	TZ		US/Pacific 
+	src		PNSN/A	 	# srcname will be /pf/$src/orb2dbt
+	auth		PNSN_A		# auth == $auth	
+	url		http://www.pnsn.org/recenteqs/Quakes/quakes0.htm	
+	defaultmagtype	md		#  md if mag< 1.9, ml if mag >=1.9, ???
+  }
+
+  UUSS-combo   &Arr{
+	method		htmltagged 
+	parser		recenteqs	
+	extractor	qedWWW	
+	TZ		US/Mountain
+	src		UUSS/combo 	# srcname will be /pf/$src/orb2dbt
+	auth		UUSS		# auth == $auth	
+	url		http://www.seis.utah.edu/req2webdir/recenteqs/Quakes/quakes0.html	
+	defaultmagtype	md		# md if mag< 1.9, ml if mag >=1.9, ??? 
+  }
+
+  NRCAN-PGC 	&Arr{
+	method		htmlnotags
+	parser		recenteqs
+	extractor	simsum	
+	src		NRCAN/PGC	# srcname will be /pf/$src/orb2dbt
+	auth		PGC  	 	# auth == $auth	
+### If you want more events, try the year long grab
+###http://earthquakescanada.nrcan.gc.ca/recent/maps-cartes/index-eng.php?maptype=1y&tpl_region=west
+	url	 	http://earthquakescanada.nrcan.gc.ca/recent/maps-cartes/index-eng.php?tpl_region=west	
+	defaultmagtype	M 		# not coded yet
+  }
+
+
+  NRCAN-GSC 	&Arr{
+	method		htmlnotags
+	parser		recenteqs
+	extractor	simsum	
+	src		NRCAN/GSC	# srcname will be /pf/$src/orb2dbt
+	auth		GSC  		# auth == $auth	
+	url	 	http://earthquakescanada.nrcan.gc.ca/recent/maps-cartes/index-eng.php?tpl_region=east	
+	defaultmagtype	M 		# not coded yet
+  }
+
+# END 
+
+#
+# these should probably not be checked every 600 seconds 
+# I suggest putting them in a separate pf and run a bull2orb
+# that has a -s of 3600*3 (every 3 hours)
+#
+
+#
+#  Create a bulletin2orb_multi.pf between START/END
+#
+# START
+
+# searchable catalogs need ndays defined
+
+  AEIC-search      &Arr{
+	method		search_qf 
+	parser		AEIC	# calls will be to postqf_AEIC, extract_AEIC, parse_AEIC
+	extractor	AEIC	# AEIC
+	src		AEIC	# srcname will be /pf/$src/orb2dbt
+	auth		AEIC		# auth == $auth	
+	url		http://www.aeic.alaska.edu/cgi-bin/db2catalog.pl	
+	ndays		90		# used to set min/max time for search 
+  }
+
+  SCSN-search      &Arr{
+	method		search_qf
+	parser		HYPO2000	# calls will be to postqf_HYPO2000, extract_HYPO2000, parse_HYPO2000
+	extractor	HYPO2000	# extract_HYPO2000
+	src		SCSN		# srcname will be /pf/$src/orb2dbt
+	auth		SCSN		# auth == $auth	. "$evid"
+	url		http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl	
+	ndays		7 		# used to set min/max time for search 
+  }
+
+   NCSN-search    &Arr{
+ 	method		search_post 
+ 	parser		HYPO2000
+ 	extractor	HYPO2000	# extract_HYPO2000
+ 	src		NCSN	  	# srcname will be /pf/$src/orb2dbt
+ 	auth		NCSN		# auth == $auth	. "$nscn_evid" . "$rev_info"
+ 	url		http://www.ncedc.org/cgi-bin/catalog-search2.pl	
+ 	ndays		7 		# used to set min/max time for search 
+   }
+
+   BC-NESN       &Arr{
+ 	method		search_post
+ 	parser		NESN	
+ 	extractor	NESN    	# extract_NESN 
+ 	src		NESN		# srcname will be /pf/$src/orb2dbt
+ 	auth		NESN		# auth == $auth	
+ 	url		http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl	
+	ndays		31 		# used to set min/max time for search 
+   }
+
+  NBE-search  	&Arr{
+	method		search_post
+	parser		NBEsearch
+	extractor	NBEsearch	# extract_NBE (different from extract_NBEwww)
+	src		NBE		# srcname will be /pf/$src/orb2dbt
+	auth		UNR_NBE		# auth == $auth	
+	url		http://www.seismo.unr.edu/cgi-bin/catalog-search	
+	ndays		7  		# used to set min/max time for search 
+  }
+  
+ ANF	&Arr{
+	method		dbsubset	
+	parser		dbsubset 
+	src		ANF		# srcname will be /pf/$src/orb2dbt
+	auth		ANF		# auth will be filled in with origin.auth after authsubset
+	db 		/path/to/usarray/db/usarray
+	authsubset	auth=~/ANF.*/
+	ndays		7 		# used to set min/max time for search 
+   }
+
+  UUSS-daily &Arr{	# utah daily updated solutions 
+	method		htmlnotags
+	parser		recenteqs
+	extractor	simsum	
+	TZ		UTC
+	src		UUSS/utah	# srcname will be /pf/$src/orb2dbt
+	auth		UUSS		# auth == $auth	
+	url		http://www.quake.utah.edu/ftp/DATA_REQUESTS/RECENT_EQS/utah.list	
+	defaultmagtype	md		# md if mag< 1.9, ml if mag >=1.9, ??? 
+  }
+
+  YELL-daily &Arr{	# yellowstone daily updated solutions 
+	method		htmlnotags
+	parser		recenteqs
+	extractor	simsum	
+	TZ		UTC
+	src		UUSS/yellowstone	# srcname will be /pf/$src/orb2dbt
+	auth		UUSS		# auth == $auth	
+	url		http://www.quake.utah.edu/ftp/DATA_REQUESTS/RECENT_EQS/yellowstone.list	
+	defaultmagtype	md		# md if mag< 1.9, ml if mag >=1.9, ??? 
+  }
+
+  NEIC-QEDweekly &Arr{	# NEIC's more reviewed QED solutions (not quite PDE quality)
+	method		ftp
+	parser		ehdf	
+	src		NEIC/qedw	# srcname will be /pf/$src/orb2dbt
+	auth		QED_weekly	# auth == $auth	
+	ftphost		hazards.cr.usgs.gov	# remote host for ftp pickup
+	ftpdir		/weekly/	# remote directory where files are kept 
+	ftpmatch	ehdf.* 		# match string or remote ftp files 
+	linestart	GS  		# match for start of event line ("GS" for ehdr, "E" for CUBE, etc.) 
+	account		jeakins@ucsd.edu	# email address for anonymous ftp
+	localdir	savefiles/qed_weekly	# local directory where retrieved files are kept 
+  }
+
+  PNSN-rev &Arr{	# reviewed solutions by UW/PNSN
+	method		ftp
+	parser		uwcard
+	src		PNSN/R  	# srcname will be /pf/$src/orb2dbt
+	auth		PNSN_R  	# auth == $auth	
+	ftphost		ftp.ess.washington.edu	# remote host for ftp pickup
+	ftpdir		pub/seis_net/	# remote directory where files are kept 
+	ftpmatch	loc.[0-9].* 		# match string or remote ftp files 
+	linestart	A   		# match for start of event line ("GS" for ehdr, "E" for CUBE, etc.) 
+	linelength	40  		# reject lines that are shorter than linelength 
+	account		jeakins@ucsd.edu	# email address for anonymous ftp
+	localdir	savefiles/pnsn_reviewed # local directory where retrieved files are kept 
+	defaultmagtype	md		# 
+  }
+
+  GSmines   &Arr{
+	method		ftp
+	parser		mchdr
+	extractor	mchdr 	
+	src		NEIC/mines	# srcname will be /pf/$src/orb2dbt
+	auth		NEIC_mines	# auth == $auth	
+	ftphost		hazards.cr.usgs.gov	# remote host for ftp pickup
+	ftpdir		explosions	# remote directory where files are kept 
+	ftpmatch	mchedrexp.dat 		# match string or remote ftp files 
+	linestart	HY|E  		# match for start of event line ("GS" for ehdr, "E" for CUBE, etc.) 
+	account		jeakins@ucsd.edu	# email address for anonymous ftp
+	localdir	savefiles/current_mines # local directory where retrieved files are kept 
+  }
+
+  GSmines-monthly &Arr{
+	method		ftp
+	parser		mchdr
+	extractor	mchdr 	
+	src		NEIC/mines	# srcname will be /pf/$src/orb2dbt
+	auth		NEIC_mines	# auth == $auth	
+	ftphost		hazards.cr.usgs.gov	# remote host for ftp pickup
+	ftpdir		mineblast	# remote directory where files are kept 
+	ftpmatch	ex.dat 		# match string or remote ftp files 
+	linestart	HY|E  		# match for start of event line ("GS" for ehdr, "E" for CUBE, etc.) 
+	account		jeakins@ucsd.edu	# email address for anonymous ftp
+	localdir	savefiles/monthly_mines # local directory where retrieved files are kept 
+  }
+
+# END
+
+
+
+#
+# These should probably not be run from a daemonized bulletin2orb.
+# I suggest putting them in a separate pf and run bulletin2orb
+# as a monthly cronjob with the -1 option used 
+#
+
+#
+#  Create a bulletin2orb_multi.pf between START/END
+#
+# START
+
+  PNSN-rev &Arr{
+	method		ftp
+	parser		uwcard
+	src		PNSN/R    	# srcname will be /pf/$src/orb2dbt
+	auth		PNSN_R    	# auth == $auth	
+	ftphost		ftp.ess.washington.edu	# remote host for ftp pickup
+	ftpdir		pub/seis_net/	# remote directory where files are kept 
+	ftpmatch	loc.[0-9].* 		# match string or remote ftp files 
+	linestart	A   		# match for start of event line ("GS" for ehdr, "E" for CUBE, etc.) 
+	linelength	40  		# reject lines that are shorter than linelength 
+	account		jeakins@ucsd.edu	# email address for anonymous ftp
+	localdir	savefiles/pnsn_reviewed # local directory where retrieved files are kept 
+	defaultmagtype	md		# 
+  }
+
+  UUSS-lists &Arr{	# Reviwed(?) Utah region events
+	method		htmlnotags
+	parser		uussLIST
+	extractor	uussLIST
+	src		UUSS/utah	# srcname will be /pf/$src/orb2dbt
+	auth		UUSS      	# auth == $auth	
+	url		http://www.quake.utah.edu/EQCENTER/LISTINGS/UTAH/equtah_2009    
+  }
+
+  YELL-lists &Arr{	# Reviewed(?) Yellowstone region events
+	method		htmlnotags
+	parser		uussLIST
+	extractor	uussLIST
+	src		UUSS/yellowstone	# srcname will be /pf/$src/orb2dbt
+	auth		UUSS      	# auth == $auth	
+	url		http://www.quake.utah.edu/EQCENTER/LISTINGS/OTHER/yell_2009    
+  }
+
+# END
+#
+
+#
+#  Create a bulletin2orb_archived.pf between START/END
+#
+# START
+#
+# collect the databases you have locally and push to orb for downstream collection
+# should probably run infrequently
+# 
+
+  2008PDE &Arr{
+	method		dbsubset	
+	parser		dbsubset 
+	src		archived/NEIC/2008PDE		# srcname will be /pf/$src/orb2dbt
+	auth		dummy		# auth will be filled in with origin.auth after authsubset
+	db 		archived_catalogs/qed/qed_2008
+	authsubset	auth=~/.*/
+  }
+
+  2009PDE &Arr{
+	method		dbsubset	
+	parser		dbsubset 
+	src		archived/NEIC/2009PDE		# srcname will be /pf/$src/orb2dbt
+	auth		dummy		# auth will be filled in with origin.auth after authsubset
+	db 		qrchived_catalogs/pde/pde_2009
+	authsubset	auth=~/.*/
+  }
+
+  2009PNSN &Arr{
+	method		dbsubset	
+	parser		dbsubset 
+	src		archived/PNSN/2009		# srcname will be /pf/$src/orb2dbt
+	auth		dummy		# auth will be filled in with origin.auth after authsubset
+	db 		archived_catalogs/pnsn/pnsn_2009
+	authsubset	auth=~/.*/
+  }
+
+  2009UUSS &Arr{
+	method		dbsubset  
+	parser		dbsubset  
+	src		archived/UUSS/2009	# srcname will be /pf/$src/orb2dbt
+	auth		dummy     	# auth == $auth	
+	db 		archived_catalogs/utah/utah_2009
+	authsubset	auth=~/.*/
+  }
+
+  2009SCSN      &Arr{
+	method		dbsubset  
+	parser		dbsubset  
+	src		archived/SCSN/2009	# srcname will be /pf/$src/orb2dbt
+	auth		dummy     	# auth == $auth	
+	db 		archived_catalogs/cit/cit_2009
+	authsubset	auth=~/.*/
+  }
+
+  2009NCSN    &Arr{
+	method		dbsubset  
+	parser		dbsubset  
+	src		archived/NCSN/2009	# srcname will be /pf/$src/orb2dbt
+	auth		dummy     	# auth == $auth	
+	db 		archived_catalogs/ncec/ncec_2009
+	authsubset	auth=~/.*/
+  }
+
+  2009NESN       &Arr{
+	method		dbsubset  
+	parser		dbsubset  
+	src		archived/NESN/2009	# srcname will be /pf/$src/orb2dbt
+	auth		dummy     	# auth == $auth	
+	db 		archived_catalogs/nesn/nesn_2009
+	authsubset	auth=~/.*/
+  }
+
+  2009NBE  	&Arr{
+	method		dbsubset  
+	parser		dbsubset  
+	src		archived/NBE/2009 	# srcname will be /pf/$src/orb2dbt
+	auth		dummy     	# auth == $auth	
+	db 		archived_catalogs/unr/unr_2009
+	authsubset	auth=~/.*/
+  }
+
+# END
+#
+
+#
+#  Create a bulletin2orb_monthly.pf between START/END
+#
+# START
+#
+# these bulletins are either updated infrequently 
+# or take a longer time for requests to process and should probably
+# be run as an infrequent cron job
+#
+  
+  NEIC-PDE &Arr{
+	method		ftp
+	parser		ehdf	
+	src		NEIC/PDE	# srcname will be /pf/$src/orb2dbt
+	auth		PDE		# auth == $auth	
+	ftphost		hazards.cr.usgs.gov	# remote host for ftp pickup
+	ftpdir		/pde/	# remote directory where files are kept 
+	ftpmatch	ehdf2008.*|ehdf2009.* 		# match string or remote ftp files 
+	linestart	GS  		# match for start of event line ("GS" for ehdr, "E" for CUBE, etc.) 
+	account		jeakins@ucsd.edu	# email address for anonymous ftp
+	localdir	savefiles/pde	# local directory where retrieved files are kept 
+  }
+
+  SCSN-longsearch      &Arr{
+	method		search_qf
+	parser		HYPO2000	# calls will be to postqf_HYPO2000, extract_HYPO2000, parse_HYPO2000
+	extractor	HYPO2000	# extract_HYPO2000
+	src		SCSN		# srcname will be /pf/$src/orb2dbt
+	auth		SCSN		# auth == $auth	. "$evid"
+	url		http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl	
+	ndays		90		# used to set min/max time for search 
+  }
+
+   NCSN-longsearch    &Arr{
+ 	method		search_post 
+ 	parser		HYPO2000
+ 	extractor	HYPO2000	# extract_HYPO2000
+ 	src		NCSN		# srcname will be /pf/$src/orb2dbt
+ 	auth		NCSN		# auth == $auth	. "$nscn_evid" . "$rev_info"
+ 	url		http://www.ncedc.org/cgi-bin/catalog-search2.pl	
+ 	ndays		90 		# used to set min/max time for search 
+   }
+
+   NESN-longsearch   &Arr{
+ 	method		search_post
+ 	parser		NESN	
+ 	extractor	NESN    	# extract_NESN 
+ 	src		NESN		# srcname will be /pf/$src/orb2dbt
+ 	auth		NESN		# auth == $auth	
+ 	url		http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl	
+ 	ndays		90 		# used to set min/max time for search 
+   }
+
+  NBE-longsearch  	&Arr{
+	method		search_post
+	parser		NBEsearch
+	extractor	NBEsearch	# extract_NBE (different from extract_NBEwww)
+	src		NBE		# srcname will be /pf/$src/orb2dbt
+	auth		UNR_NBE		# auth == $auth	
+	url		http://www.seismo.unr.edu/cgi-bin/catalog-search	
+	ndays		180 		# used to set min/max time for search 
+  }
+  
+ ANF-longsubset	&Arr{
+	method		dbsubset	
+	parser		dbsubset 
+	src		ANF		# srcname will be /pf/$src/orb2dbt
+	auth		ANF		# auth will be filled in with origin.auth after authsubset
+	db 		/path/to/usarray/db/usarray
+	authsubset	auth=~/ANF.*/
+	ndays		90 		# used to set min/max time for search 
+   }
+
+# END
+# 
+}
+
+.ps
+.fi
+.ft R
+.in
+.LP
+Searchable bulletins and those using the \fIdbsubset\fP method need to have an \fIndays\fP
+parameter to define the time range of the search.
+.LP
+Whether or not a particular bulletin needs an \fIextractor\fP specified depends on the
+format and \fImethod\fP used to collect it.  Don't change the defaults.
+.LP
+Bulletins using the \fIftp\fP method need to have an \fIftphost\fP, \fIftpdir\fP, 
+\fIftpmatch\fP, \fIlinestart\fP, \fIaccount\fP, and \fIlocaldir\fP specified.
+
+.SH EXAMPLE
+.LP
+See \fBrtdemo(1)\fP \fIbulletins\fP for methodology for collecting the 
+bulletins from the server provided by the ANF.
+.LP
+  For earthquake bulletins that are updated rapidly and require no search of
+remote site:
+.in 2c
+.ft CW
+.nf
+
+%\fB bulletin2orb -p pf/bulletin2orb_rapid $ORB \fP
+
+.fi
+.ft R
+.in
+.LP
+  For earthquake bulletins that are updated frequently but may require searchs or
+other retreival mechanisms that are CPU intensive (on the remote side).  Collect 
+only once an hour.
+.in 2c
+.ft CW
+.nf
+
+%\fB bulletin2orb -s 3600 -p pf/bulletin2orb_multi $ORB \fP
+
+.fi
+.ft R
+.LP
+  For earthquake bulletins that are updated once less frequently, maybe once or twice
+a day, but contain multiple months of data, or otherwise don't need to be collected
+raidly, collect once per day: 
+.in 2c
+.ft CW
+.nf
+
+%\fB bulletin2orb -s 86400 -p pf/bulletin2orb_daily $ORB \fP
+
+.fi
+.ft R
+.LP
+  For earthquake bulletins that are updated infrequently, maybe once or twice
+a month, or for re-collecting long stretches of data from searchable bulletins, 
+collect via a cron job run monthly.  Use the non-daemon mode of operations. 
+.in 2c
+.ft CW
+.nf
+
+%\fB bulletin2orb -1 -p pf/bulletin2orb_monthly $ORB \fP
+
+.fi
+.ft R
+.in
+
+.SH DIAGNOSTICS
+.LP
+If you select a \fImethod\fP, \fIparser\fP, or \fIextractor\fP that is not defined in
+\fBbulletin.pm\fP the script fails in unexpected ways.
+.LP
+Error messages like:  
+
+.in 2c
+.ft CW
+.nf
+Use of uninitialized value $p in hash dereference at bin/bulletin2orb line 120.
+Use of uninitialized value $m in hash dereference at bin/bulletin2orb line 121.
+Use of uninitialized value $parsed_info{"or_time"} in string at bin/bulletin2orb line 349.
+.fi
+.ft R
+.in
+
+imply that critical information is not being retrieved from the bulletin
+collected via the \fIftp\fP method.  It is highly likely that the input 
+you are trying to read is a \fIshort\fP line placed by the originating 
+institution to signify a comment, a non-located event, or a deleted 
+event (\fBbulletin2orb\fP has no provisions to deal with deleted events).  
+You can review the retrieved file to see what might be going on.  
+To avoid the \fIshort\fP lines in the input file, specify a 
+\fIlinelength\fP parameter in the appropriate bulletin collection 
+task section of the parameter file.  Lines shorter than \fIlinelength\fP 
+are rejected.
+
+
+.SH "SEE ALSO"
+.nf
+mchedr2db(1)
+pde2origin(1)
+rtdemo(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The most important caveat:  Garbage In = Garbage Out.
+.LP
+I am still finding new and interesting ways to cause this program to fail.  
+Consider this an early beta release...  I suspect that there may be 
+memory issues when this program is run for a long time.  No long-term 
+testing has been completed yet.
+.LP
+The client must use Antelope version 4.11 (fully patched). 
+Previous versions of \fBorb2dbt(1)\fP do not write out origin rows 
+for non-associating events.
+.LP 
+There is no subsetting of the data collected from the remote sites.  For 
+instance, if you are only interested in teleseismic events but are 
+collecting the NEIC-CUBE bulletin, there is no way to subset the incoming
+list of events:  this program returns all events that are reported, including the 
+local ones.
+.LP
+If you are collecting many bulletins, or are running the script for the
+first time and have to collect many of the \fIftp\fP files, it can take
+significantly longer than the default 600 seconds between bulletin 
+collection passes.  
+.LP
+The \fIdbsubset\fP method is less than ideal as it does not perform an
+exact duplication of data that was in the input \fIdb\fP. Other methods
+have been put in to contrib to help with complete database replication.
+.LP
+Although this is a vast improvement over previous procedures to collect
+external bulletins, it is still a very complex procedure.  Further attempts
+at documentation would probably be a good idea.  I expect to present 
+something about this at a future Antelope User Group Meeting so a presentation
+will be available at some point.
+.LP
+After years of trying to collect random formats of bulletin data produced by
+multiple sources and finally making the "one script to rule them all", I am 
+reminded of a phrase that my daughter learned in
+kindergarten:  "You get what you get, and you don't throw a fit."  It seems
+appropriate for both the author and endusers to keep in mind.  
+.LP
+If you have a favorite bulletin that does not currently have a method for
+collection or parsing, feel free to contact me to see if I would consider 
+writing a parser for it.  However see previous caveat...
+
+.SH AUTHOR
+.nf
+Jennifer Eakins
+jeakins@ucsd.edu
+ANF
+University of California, San Diego
+.fi
+.\" $Id$
