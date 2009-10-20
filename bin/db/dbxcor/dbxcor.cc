@@ -373,11 +373,13 @@ void load_default_trace_attributes(TimeSeriesEnsemble& d)
     const double corr0(0.0);
     const double snr0(-1.0);
     const double sw0(1.0);
+    const double snrdb0(-10.0);
     for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
     {
         dptr->put(coherence_keyword,coh0);
         dptr->put(stack_weight_keyword,sw0);
         dptr->put(snr_keyword,snr0);
+        dptr->put(snrdb_keyword,snrdb0);
         dptr->put(peakxcor_keyword,corr0);
     }
 }
@@ -2248,6 +2250,8 @@ void restore_data(Widget w, void * client_data, void * userdata)
 	psm->session_state(NEXT_SUBARRAY);
     else
 	psm->session_state(NEXT_EVENT);
+    TimeSeriesEnsemble *tse=psm->xpe->get_waveforms_gui();
+    load_default_trace_attributes(*tse);
     ss << "Restoring original data"<<endl;
     psm->record(ss.str());
     XClearArea(XtDisplay(psm->seismic_widget),XtWindow(psm->seismic_widget),

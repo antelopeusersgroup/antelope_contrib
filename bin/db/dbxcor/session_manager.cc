@@ -535,11 +535,11 @@ bool SessionManager::validate_setting(stringstream & ss)
     }
 
     if(scase==1 && state != ANALYZE && state != REF) {
-	active_setting.result_sort_order=PREDARR_TIME;
+	active_setting.result_sort_order=DBARRIVAL_TIME;
 	ss << "You specified an initial sort order of "<<sort_order<<endl<<
 	    " which is not available before the analysis"<<endl<<
 	    " of the ensemble, "
-	    <<"the sort order was reset to "<<endl<<"predicted arrival time"<<endl;
+	    <<"the sort order was reset to "<<endl<<"arrival time"<<endl;
         if (display_initial_sort_box) return false;
     } else if (scase==0 && (state==ANALYZE || state==REF)) {
 	/* This originally was stack weight.  Switched to xcor peak as this seems normally
