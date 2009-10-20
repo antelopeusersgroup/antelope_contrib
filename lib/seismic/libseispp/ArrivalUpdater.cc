@@ -41,13 +41,26 @@ ArrivalUpdater::ArrivalUpdater(DatabaseHandle& dbhraw, MetadataList& mdl1,
 		// Now build the core match handles into working views
 		// These are core css tables so it is more than ok to hard wire this
 		dbh.lookup("event");
+                dbh.subset("evid>0");
 		dbh.natural_join("origin");
+                dbh.subset("orid>0");
 		list<string> sortkeys;
 		sortkeys.push_back("evid");
 		sortkeys.push_back("orid");
 		dbh.sort(sortkeys);
-		dbh.natural_join("assoc");
-		dbh.natural_join("arrival");
+                DatascopeHandle dbhrhj(dbh);
+                dbhrhj.lookup("assoc");
+                dbhrhj.subset("arid>0");
+                list<string> join_keys;
+                /* because we are joining a subset view we have
+                   to specify the join keys explicitly */
+                join_keys.push_back(string("orid"));
+                dbh.join(dbhrhj,join_keys,join_keys);
+                dbhrhj.lookup("arrival");
+                dbhrhj.subset("arid>0");
+                join_keys.clear();
+                join_keys.push_back(string("arid"));
+                dbh.join(dbhrhj,join_keys,join_keys);
 		/* Set this private boolean if this view has no data */
 		if(dbh.number_tuples()<=0) 
 		{
