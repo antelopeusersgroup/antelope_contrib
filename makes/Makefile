@@ -17,3 +17,5 @@ solaris-makes :  $M/antelopemake $M/antelopemake.var solaris-gcc solaris-gcc-mix
                    grep -hv 'CC=compile' solaris-gcc-mix $M/antelopemake $M/antelopemake.var | $G > $T-gcc-mix  ; \
 	esac ; \
 	touch solaris-makes
+	
+
