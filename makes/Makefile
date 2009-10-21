@@ -5,6 +5,8 @@ T=$(ANTELOPE)/include/antelopemake
 
 CLEAN=solaris-makes
 
+Include:: install
+
 install:: solaris-makes
 
 include $(ANTELOPEMAKE) 
