@@ -44,6 +44,8 @@ DATA= \
 	gs13z.pf \
 	gsv-111.pf \
 	hs10_horz.pf \
+	hs10_e.pf \
+	hs10_n.pf \
 	hs10_vert.pf \
 	ks54000.pf \
 	l22.pf \
