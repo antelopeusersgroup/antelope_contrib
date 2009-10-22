@@ -1,0 +1,25 @@
+originator     Frank Vernon, UCSD
+last_modified  2008-06-24
+
+category	Geospace
+configuration	HS-10 horizontal
+
+description	HS-10
+dfile	hs10_h
+
+rsptype			V	# velocity instrument
+band			s	# short period
+short_period_sensor	yes     # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	3.0e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+N	0	90
+}
+
+response	&datafile(responses/hs10_2hz) 
+
