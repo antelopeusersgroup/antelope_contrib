@@ -250,8 +250,13 @@ int ArrivalUpdater::update(Metadata& md)
 	if(view_has_data)
 	{
 		/* Only do this search if the aaview is not empty.
-		Seg fault results if we don't do this */
-		rowlist=aaview.find(md);
+		Seg fault results if we don't do this.
+                Modified Oct 20009:  added false qualifier.
+                This is essential since match keys are defined
+                with shorthand names in constructor.  false 
+                flag here tells the match handle to use it's 
+                internal alias list consistent with the constructor */
+		rowlist=aaview.find(md,false);
 		nrow=rowlist.size();
 	}
 	else
