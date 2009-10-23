@@ -1245,6 +1245,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	throw SeisppError(string("XcorProcessingEngine::load_data:  ")
 		+ string("Coding error.  Wrong method called."));
     try {
+        if(SEISPP_verbose) cout << "Starting to read data"<<endl;
 	// It is necessary to clear the contents of mcc in
 	// some situations.  In particular, in the gui dbxcor
 	// we desire sorting the data after it is read.  The
@@ -1324,6 +1325,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                            trace_mdl,
                            am));
 	}
+        if(SEISPP_verbose) cout << "Data loaded.  Forming working gather"<<endl;
 	StationTime predarr=ArrayPredictedArrivals(stations,h,
 		analysis_setting.phase_for_analysis);
 
@@ -1340,6 +1342,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	regular_gather->put("source_lon",deg(h.lon));
 	regular_gather->put("source_depth",deg(h.z));
 	regular_gather->put("source_time",deg(h.time));
+        if(SEISPP_verbose) cout << "Doing Housecleaning work"<<endl;
 	this->prep_gather();
     }
     catch (...) {throw;}
@@ -1539,6 +1542,12 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			atime=trace->get_double(arrival_time_key);
 			predtime=trace->get_double(predicted_time_key);
 			resid=atime-predtime;
+//DEBUG
+if(fabs(resid)>100.0)
+{
+    cout << "Residual calculation failed for sta="<<sta<<endl
+        <<"atime="<<strtime(atime)<<" and predtime="<<strtime(predtime)<<endl;
+}
 			xcorpeak=trace->get_double(peakxcor_keyword);
 			coh=trace->get_double(coherence_keyword);
 			stack_weight=trace->get_double(stack_weight_keyword);

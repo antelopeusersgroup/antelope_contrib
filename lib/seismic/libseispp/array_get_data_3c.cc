@@ -20,10 +20,6 @@ ThreeComponentEnsemble
 	MetadataList& ensemble_mdl, MetadataList& member_mdl,
         AttributeMap& am)
 {
-//DEBUG
-double entrytime,marktime;
-cout << "Enterin array_get_data for 3c data"<<endl;
-entrytime=now();
 	ThreeComponentEnsemble *result=NULL;
 	StationTime times=ArrayPredictedArrivals(stations,hypo,phase);
 	TimeWindow arrival_range=StationTimeRange(times);
@@ -37,15 +33,9 @@ entrytime=now();
 		rawdata=TimeSeriesEnsemble(dbwf,read_window,
 			"none","none",true,true,false);
 	} catch (...) {throw;}
-//DEBUG
-cout << "Time to construct raw data ensemble="<<now()-entrytime<<endl;
-marktime=now();
 	// This procedure can be called because we can assume the data are now
 	// segmented here.  i.e. each sta:chan defines a unique member
 	StaChanSort(rawdata);
-//DEBUG
-cout << "StaChanSort time="<<now()-marktime<<endl;
-marktime=now();
 	//
 	// Data are now assumed sorted by sta:chan.  This means we should be able
 	// to bundle all data in groups of 3.  As we work through data we use
@@ -214,9 +204,6 @@ marktime=now();
 			}
 			current_sta=nextsta;
 		}
-//DEBUG
-cout << "Time to unscramble 3c data="<<now()-marktime<<endl;
-cout << "Total time in array_get_data="<<now()-entrytime<<endl;
 		return(result);
 	}
 	catch(...) {throw;}
