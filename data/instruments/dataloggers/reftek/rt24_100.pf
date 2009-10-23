@@ -17,7 +17,8 @@ dfile rt24_100
 streams		250sps  
 
 # definitions of streams
-250sps	 250   RT24_100 a/d
+# 250sps	 250   RT24_100 a/d
+250sps	 250    a/d
 
 gains  3276.7
 
@@ -32,8 +33,10 @@ ounits		counts
 sn		datalogger
 }
 
-RT24_100	&Arr{
-gtype		analog_anti_alias
-response	&datafile(responses/RT24_100)
-}
+# analog_anti_alias have to be represented by the pre-amp field for dbbuild
+
+# RT24_100	&Arr{
+# gtype		analog_anti_alias
+# response	&datafile(responses/RT24_100)
+# }
 
