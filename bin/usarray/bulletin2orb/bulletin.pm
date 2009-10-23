@@ -396,6 +396,8 @@ sub collect_dbsubset {		#
  
   }
 
+  dbclose(@db) ;
+
   @outlist = list2search(@saved) ;
   return @outlist ;
 
