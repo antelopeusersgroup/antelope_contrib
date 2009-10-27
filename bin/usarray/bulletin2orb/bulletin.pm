@@ -284,7 +284,7 @@ sub collect_search_post  {	#
 
   if (! $res->is_success) {
      my $err = $res->error_as_HTML ;
-     elog_die ("$err\n" ) ;
+     elog_complain ("$err\n" ) ;
   }
 
   @textout = &$extract_handler($tmpfile);
@@ -3023,7 +3023,7 @@ sub read_url	{	# read_url ($url)
     my $response = $ua->request($request);
     if (! $response->is_success) {
         my $err = $response->error_as_HTML ;
-        elog_die ("$err\n" ) ;
+	elog_complain ("$err\n" ) ;
     }
    
     return htmltext ( $response ) ;
