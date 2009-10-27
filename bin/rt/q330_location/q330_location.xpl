@@ -4,28 +4,26 @@
 #  Need to account for q330hr
 #
 #   use diagnostics ;
-#   use strict ;
+    use warnings;
+    use strict ;
     use Datascope ;
+    use sysinfo;
     use orb ;
     use archive ;
     require "getopts.pl" ;
 
-    our ( $opt_v, $opt_c, $opt_m, $opt_n, $opt_p, $opt_s, $opt_t );
-    
-    my ($pgm,$host,$Problems,$subject,$cmd,$usage,$subset,$match);
-    my ($pfsource,$orbname,$dbname,$orb,$pktid,$srcname,$net,$sta,$chan,$loc);
-    my ($nbytes,$result,$pkt,$subcode,$desc,$type,$suffix,$pf);
-    my ($when,$src,$pkttime,$start, $nettmp, $statmp, $chantmp);
-    my ($ssident,$lat,$lon,$endtime,$now,$stime);
-    my ($km,$delta,$tolerance);
-    my ($commtype,$provider,$model,$nsta);
-    my ($dls);
-    my (@db,@dbsite,@dbdlsite);
+    our($pgm,$host,$Problems,$opt_v,$opt_d,$opt_c,$opt_m,$opt_n,$opt_f,$opt_p,$opt_s,$opt_t);
     my (@dbcomm,@dbcommscr,@dbcommnull,@dbsitesub,@dbsnet,@dbstage,@dbstagescr,@dbdls);
-    my (@sources,@dls,@stas,@matches);
-    my ($site,$ref,$tbl);
-    
-    my (%target,$new_ref,$log_file);#juan test 
+    my (%offline,$subset,$nbytes,$result,$pkt,$subcode,$desc,$type,$suffix,$pf);
+    my ($orbname,$cmd_orbname,$dbname,$cmd_orb,$orb,$pktid,$srcname,$net,$sta,$chan,$loc);
+    my ($fer,$when,$src,$pkttime,$start,$nettmp,$statmp,$chantmp);
+    my ($pfsource,$subject,$cmd,$usage,$match);
+    my ($long,$ssident,$lat,$lon,$endtime,$now,$stime);
+    my (@temp_dls,@sources,@stas,@matches);
+    my ($commtype,$provider,$model,$nsta);
+    my (%site,$ref,$tbl,%dls_hash,@dls_array,$dls,$log_file);
+    my (@keys,@db,@dbsite,@dbdlsite);
+    my ($km,$tolerance);
 
 #  Set up mail  
             
@@ -34,9 +32,9 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
 
-    if ( !  &Getopts('ndvfc:m:p:s:t:') || @ARGV != 2 ) { 
+    if ( !  &Getopts('ndvfc:m:p:s:t:') || @ARGV < 2 || @ARGV > 3) { 
         $usage  =  "\n\n\nUsage: $0 [-d] [-v] [-n] [-f] [-m mail_to] [-c chan_code] " ;
-        $usage .=  "[-p pf_sourcename] [-s sta_regex] [-t max_offset_meters] orb db\n"  ;
+        $usage .=  "[-p pf_sourcename] [-s sta_regex] [-t max_offset_meters] status_orb [cmd_orb] db\n"  ;
         
         elog_notify($cmd) ; 
         problem($usage);
@@ -51,23 +49,25 @@
     $start = strydtime(now());
     $now   = now();
         
-    chop ($host = `uname -n` ) ;
+    $host = my_hostname();
     elog_notify ("\nstarting execution on   $host   $start\n\n");
 
 #  Set up intial parameters
 
-    $orbname = $ARGV[0];
-    $dbname  = $ARGV[1];
+    ($orbname,$cmd_orbname,$dbname) = @ARGV if (@ARGV == 3);
+    ($orbname,$dbname) = @ARGV if (@ARGV == 2);
 
     $net       = "TA" ;
     $chan      = $opt_c || "BHZ" ;
     $pfsource  = $opt_p || ".*/pf/st" ;
-    $tolerance = ( $opt_t/1000 ) || 0.02 ;
+    $tolerance = $opt_t ? ($opt_t/1000) : 0.02;
+    #$tolerance = ( $opt_t/1000 ) || 0.02 ;
 
-    elog_notify ("net       $pfsource") if $opt_d;
-    elog_notify ("pfsource  $pfsource") if $opt_d;
-    elog_notify ("orb       $orbname")  if $opt_d;
-    elog_notify ("db        $dbname\n") if $opt_d;
+    elog_notify ("net       $pfsource")   if $opt_d;
+    elog_notify ("pfsource  $pfsource")   if $opt_d;
+    elog_notify ("status_orb$orbname")    if $opt_d;
+    elog_notify ("cmd_orb   $cmd_orbname")if $opt_d;
+    elog_notify ("db        $dbname\n")   if $opt_d;
     
 
 #  Set up default model.  Will need to change this when more dataloggers get put into this system.
@@ -75,7 +75,7 @@
     elog_notify ("logger model -  $model\n") if $opt_d;
 
 #
-#  open db
+#  open and check dbs
 #
     @db         = dbopen($dbname,"r+"); 
     @dbsite     = dblookup(@db,"","site","","");
@@ -87,18 +87,18 @@
     @dbstage    = dblookup(@db,"","stage","","");
     @dbstagescr = dblookup(@dbstage,"","","","dbSCRATCH");
     
-    $site_s     = "snet =~ /$net/ && (offdate == NULL || offdate > ".yearday($now).")";
-    $site_s    .= "&& sta =~ /$opt_s/" if $opt_s;
-    elog_notify ("$dbname.site subset $site_s") if $opt_d;
+    $subset     = "snet =~ /$net/ && (offdate == NULL || offdate > ".yearday($now).")";
+    $subset    .= "&& sta =~ /$opt_s/" if $opt_s;
+    elog_notify ("$dbname.site subset $subset") if $opt_d;
     @dbsitesub = dbjoin(@dbsite,@dbsnet);
-    @dbsitesub = dbsubset(@dbsitesub,$site_s);
+    @dbsitesub = dbsubset(@dbsitesub,$subset);
     @dbsitesub = dbsort(@dbsitesub,"sta");
     
 
-    $dlsite_s   = "endtime == NULL ";
-    $dlsite_s  .= "&& dlname =~ /.*_$opt_s/" if $opt_s;
-    elog_notify ("$dbname.dlsite subset $dlsite_s") if $opt_d;
-    @dbdls   = dbsubset(@dbdlsite,$dlsite_s);
+    $subset   = "endtime == NULL ";
+    $subset  .= "&& dlname =~ /.*_$opt_s/" if $opt_s;
+    elog_notify ("$dbname.dlsite subset $subset") if $opt_d;
+    @dbdls   = dbsubset(@dbdlsite,$subset);
     @dbdls   = dbsort(@dbdls,"dlname");
 
     table_check(\@dbsite);
@@ -109,19 +109,30 @@
 
     if ($Problems) { email_and_end(1); }
 
-
-        
 #
 #  open input orb
 #
-    $orb = orbopen($orbname,"r");
+    if ( defined $cmd_orbname ){
+        $cmd_orb = orbopen($cmd_orbname,"r");
+        if ( $cmd_orb < 0 ) { 
+            problem("Failed to open orb $cmd_orbname for reading");
+            email_and_end(1);
+        }
+        orbclose($cmd_orb);
+    }
+    else { $cmd_orbname = $orbname; }
 
-    if ( $orb < 0 ) { problem("Failed to open orb $orbname for reading"); }
+    $orb = orbopen($orbname,"r");
+    if ( $orb < 0 )     { 
+        problem("Failed to open orb $orbname for reading");
+        email_and_end(1);
+    }
 
     orbselect( $orb, $pfsource);
     ($when, @sources) = orbsources ( $orb );
+
 #
-#  Look over source names
+#  Look for sources in orb
 #
     if (!@sources) { 
         problem("No orbsorces inside $orbname"); 
@@ -158,12 +169,11 @@
             $ref = pfget($pf, "");
             @temp_dls = keys %{$ref->{dls}};
             @temp_dls = grep { /.*_$opt_s/ } @temp_dls if ($opt_s);
-            @dls = sort get_unique( (@dls,@temp_dls) );
+            @dls_array = sort get_unique( (@dls_array,@temp_dls) );
         }
+
 #
-#  process each net_station 
-#  using dlcmd to get status
-#  information from orb 
+#  process each net_station using dlcmd 
 #
         foreach $dls (@temp_dls) {
 
@@ -171,8 +181,11 @@
 
             $log_file = "/tmp/dlcmd_${dls}_$$.pf";
 
-            if ($opt_f) { $cmd = "dlcmd :qcmd $ref->{target} $model $dls getstatus -force 2>&1 >$log_file";  }
-            else { $cmd = "dlcmd :qcmd $ref->{target} $model $dls getstatus 2>&1 >$log_file";  }
+#
+# Use -f option to refresh data from station
+#
+            if ($opt_f) { $cmd = "dlcmd $cmd_orbname $ref->{target} $model $dls getstatus -force 2>&1 >$log_file";  }
+            else { $cmd = "dlcmd $cmd_orbname $ref->{target} $model $dls getstatus 2>&1 >$log_file";  }
 
             elog_notify("Running: $cmd") if $opt_d;
             $result = run($cmd);
@@ -186,57 +199,61 @@
                 print_pfe($ref,1);
             }
 
-            #fix $ref and $tbl
+#
+# Get all data into hashes
+#
             $fer = $ref->{dls}{$dls};
             @keys = keys %$tbl;
-            $tbl = $tbl->{@keys[0]}{status}{gps};
+            $tbl = $tbl->{$keys[0]}{status}{gps};
 
 
             if ( $tbl->{number_of_satellites_used} ) {;
-                $dls{$dls}{gps}         = $tbl->{gps_fix_string};
-                $dls{$dls}{lat}         = $tbl->{lat};
-                $dls{$dls}{lon}         = $tbl->{lon};
-                $dls{$dls}{elev}            = ($tbl->{elev})/1000;
-                $dls{$dls}{source}      = 'dlcmd getstatus';
-                $dls{$dls}{sat_used}        = $tbl->{number_of_satellites_used};
-                $dls{$dls}{sat_in_view} = $tbl->{number_of_satellites_in_view};
+                $dls_hash{$dls}{gps}         = $tbl->{gps_fix_string};
+                $dls_hash{$dls}{lat}         = $tbl->{lat};
+                $dls_hash{$dls}{lon}         = $tbl->{lon};
+                $dls_hash{$dls}{elev}            = ($tbl->{elev})/1000;
+                $dls_hash{$dls}{source}      = 'dlcmd getstatus';
+                $dls_hash{$dls}{sat_used}        = $tbl->{number_of_satellites_used};
+                $dls_hash{$dls}{sat_in_view} = $tbl->{number_of_satellites_in_view};
             }
             else {
-                $dls{$dls}{lat}     = $fer->{lat};
-                $dls{$dls}{lon}     = $fer->{lon};
-                $dls{$dls}{gps}     = $fer->{gps};
-                $dls{$dls}{elev}        = $fer->{elev};
-                $dls{$dls}{source}  = 'orb Pkt_pf';
+                $dls_hash{$dls}{lat}     = $fer->{lat};
+                $dls_hash{$dls}{lon}     = $fer->{lon};
+                $dls_hash{$dls}{gps}     = $fer->{gps};
+                $dls_hash{$dls}{elev}        = $fer->{elev};
+                $dls_hash{$dls}{source}  = 'orb Pkt_pf';
             }
 
-            $dls{$dls}{inp}     = $fer->{inp};
-            $dls{$dls}{thr}     = $fer->{thr};
-            $dls{$dls}{model}   = $model;
-            $dls{$dls}{idtag}   = $fer->{pt};
-            $dls{$dls}{status}  = 'on-line';
-            $dls{$dls}{pkttime} = $pkttime;
-            $dls{$dls}{ssident} = uc($fer->{sn});
+            $dls_hash{$dls}{inp}     = $fer->{inp};
+            $dls_hash{$dls}{thr}     = $fer->{thr};
+            $dls_hash{$dls}{model}   = $model;
+            $dls_hash{$dls}{idtag}   = $fer->{pt};
+            $dls_hash{$dls}{status}  = 'on-line';
+            $dls_hash{$dls}{pkttime} = $pkttime;
+            $dls_hash{$dls}{ssident} = uc($fer->{sn});
 
             if ($opt_v) {
-                $fer = $dls{$dls};
+                $fer = $dls_hash{$dls};
                 elog_notify("$dls:");
-                elog_notify( "\t$fer->{ssident} $fer->{idtag} $fer->{thr}");
-                elog_notify( "\t$fer->{lat} $fer->{lon} $fer->{elev}");
-                elog_notify( "\t$fer->{gps} $fer->{sat_used} $fer->{sat_in_view}");
+                elog_notify( "\t$dls_hash{$dls}{ssident} $dls_hash{$dls}{idtag} $dls_hash{$dls}{thr}");
+                elog_notify( "\t$dls_hash{$dls}{lat} $dls_hash{$dls}{lon} $dls_hash{$dls}{elev}");
+                elog_notify( "\t$dls_hash{$dls}{gps} $dls_hash{$dls}{source} ");
             }
 
-            next if ( ! $dls{$dls}{idtag} || $dls{$dls}{idtag} == 0 );
-            
+            next if ( ! $dls_hash{$dls}{idtag} || $dls_hash{$dls}{idtag} == 0 );
+#
+# hash $site needed to check site table
+#
             $sta = $dls ;
             $sta =~ s/.*_// ;
-
             $site{$sta} = $dls; 
-            
         }
-    }
+    } 
+    
+    orbclose($orb);
 
 
-    if (!@dls) { 
+    if (! %dls_hash) { 
         problem("No stations in orb $orbname") if ! $opt_s; 
         problem("No stations in orb $orbname matching regex /$opt_s/") if $opt_s; 
         email_and_end(1);
@@ -255,7 +272,7 @@
 
         if ( $site{$sta} ) { 
             $long = $site{$sta};
-            check_gps(\@dbsitesub,$dls{$long},'sta','site'); 
+            check_gps(\@dbsitesub,$dls_hash{$long},'sta','site'); 
         } 
         else { 
             $offline{$sta} = 1;
@@ -265,7 +282,7 @@
         delete( $site{$sta} );
     }
 
-    my @stas = sort keys %site;
+    @stas = sort keys %site;
     
     if ($#stas >= 0 && $opt_v) {
         elog_notify("\n");
@@ -287,43 +304,44 @@
         ($dls,$lat,$lon,$ssident,$commtype,$provider,$model) = 
             dbgetv(@dbdls,"dlname","lat","lon","ssident","commtype","provider","model");
             
-        $dls{$dls}{commtype} = $commtype;
-        $dls{$dls}{provider} = $provider;
+        $dls_hash{$dls}{commtype} = $commtype;
+        $dls_hash{$dls}{provider} = $provider;
         
-        elog_notify("$dls   $dls{$dls}{commtype}    $dls{$dls}{provider}") if $opt_d;
+        elog_notify("$dls   $dls_hash{$dls}{commtype}    $dls_hash{$dls}{provider}") if $opt_d;
         
         $sta = $dls ;
         $sta =~ s/.*_// ;
 
-        ($commtype,$profider) = comm_type($dls);
+        ($commtype,$provider) = comm_type($dls);
 
         if ($opt_d) {
             elog_notify("$sta:");
-            elog_notify("\tdlsite: $dls{$dls}{commtype} $dls{$dls}{provider}");
+            elog_notify("\tdlsite: $dls_hash{$dls}{commtype} $dls_hash{$dls}{provider}");
             elog_notify("\tcomm  : $commtype $provider");
         }
 
 
-        if (exists($dls{$dls}{idtag})) {
-            if ($dls{$dls}{idtag} == 0 ) {
-                if (! exists $offline{$sta} ) {
+        if ( defined $dls_hash{$dls}{idtag} ) {
+            if ($dls_hash{$dls}{idtag} eq 0 ) {
+                if (! defined $offline{$sta} ) {
                     problem("$sta off-line");
                 }
             }
-            elsif ($ssident != $dls{$dls}{ssident} ) {
+            elsif ($ssident ne $dls_hash{$dls}{ssident} ) {
 # do we want to use stage table change?
                 elog_notify("$dls changed datalogger, closing old record");
                 dbputv(@dbdls,"endtime",($now - 1)) unless $opt_n;
             }
-            elsif ($commtype !~ /$dls{$dls}{commtype}/ || ($provider !~ /$dls{$dls}{provider}/ ) ) {
+            elsif ($commtype !~ /$dls_hash{$dls}{commtype}/ || ($provider !~ /$dls_hash{$dls}{provider}/ ) ) {
                 elog_notify("$dls changed commtype or provider, closing old record");
                 dbputv(@dbdls,"endtime",($now - 1)) unless $opt_n;
             }
-            elsif ( check_gps(\@dbdls,$dls{$dls},'dlname','dlsite')) {
+            elsif ( check_gps(\@dbdls,$dls_hash{$dls},'dlname','dlsite')) {
                 elog_notify("Adding new values (lat,lon)=($lat,$lon) to table dlsite");
                 dbputv(@dbdls,"lat",$lat,"lon",$lon) unless $opt_n;
             }
-        } else {
+        } 
+        else {
             dbputv(@dbstagescr,"sta",$sta,"chan",$chan,"gtype","digitizer");
             @matches = dbmatches(@dbstagescr,@dbstage,"stage","sta","chan","gtype");
             $endtime = 0;
@@ -340,39 +358,39 @@
                         "Otherwise, please update metadata.") ;
             }
         }
-        elog_notify("delete $dls    $dls{$dls}") if $opt_d;
-        delete($dls{$dls});
+        elog_notify("delete $dls    $dls_hash{$dls}") if $opt_d;
+        delete($dls_hash{$dls});
     }
 #
 #  New stations not in dlsite table
 #
-    @dls = sort keys %dls;
+    @dls_array = sort keys %dls_hash;
 
-    if ($#dls >= 0 ) {
+    if ($#dls_array >= 0 ) {
         elog_notify("\n");
-        elog_notify("Remaining dlsite stations to process -     @dls") if $opt_v;
+        elog_notify("Remaining dlsite stations to process -     @dls_array") if $opt_v;
 
-        foreach $dls (@dls) {
+        foreach $dls (@dls_array) {
             elog_notify("$dls not in dlsite table, adding!") if $opt_v;
             
             $sta = $dls ;
             $sta =~ s/.*_// ;
 
-            ($commtype,$profider) = comm_type($dls);
+            ($commtype,$provider) = comm_type($dls);
 
             dbputv(@dbstagescr,"sta",$sta,"chan",$chan,"time",$now,"gtype","digitizer");
             @matches = dbmatches(@dbstagescr,@dbstage,"stage","sta","chan","gtype");
             
             if ($#matches == 0) {
                 elog_notify("\t$dls new record added to dlsite table");
-                dbaddv(@dbdlsite, "model",  $dls{$dls}{model},
-                                "ssident",  $dls{$dls}{ssident},
+                dbaddv(@dbdlsite, "model",  $dls_hash{$dls}{model},
+                                "ssident",  $dls_hash{$dls}{ssident},
                                 "time",  $now,
                                 "dlname",   $dls, 
-                                "idtag",    $dls{$dls}{idtag},
-                                "lat",    $dls{$dls}{lat},
-                                "lon",    $dls{$dls}{lon},
-                                "elev",  $dls{$dls}{elev},
+                                "idtag",    $dls_hash{$dls}{idtag},
+                                "lat",    $dls_hash{$dls}{lat},
+                                "lon",    $dls_hash{$dls}{lon},
+                                "elev",  $dls_hash{$dls}{elev},
                                 "commtype", $commtype,
                                 "provider", $provider) unless $opt_n;
             }  else {
@@ -389,10 +407,11 @@
 sub email_and_end {
     my $status = shift;
     my $title;
+    my $host = my_hostname();
 
     $stime = strydtime(now());
 
-    if ($Problems == 0 ) {
+    if (! defined $Problems ) {
         elog_notify ("Completed with SUCCESS status  $stime\n\n");
         $subject = sprintf("Success  $pgm  $host");
     } else { 
@@ -461,7 +480,7 @@ sub print_pfe { #use print_pfe($ref,0);
     #
     local *print_val = sub {
         my ($tab,$k,$v) = @_;
-        my $line;
+        my $line = '';
 
         my $length = length($k);
 

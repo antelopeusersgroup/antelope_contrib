@@ -5,14 +5,19 @@ q330_location \- attaches to orb and checks q330 locations
 .nf
 q330_location [-v] [-m mail_to] [-p pf_sourcename] 
               [-n] [-f] [-s sta_regex] [-c chan_code] 
-              [-t max_offset_meters] orb db
+              [-t max_offset_meters] status_orb [cmd_orb] db
 .fi
+
+.SH SUPPORT
+Contributed: NO BRTT support -- please contact author.
+
+
 .SH DESCRIPTION
 \fBq330_location\fP extracts q330 /pf/st files from an orb, finds the current lat and long 
 provided by the gps clock at each station, and compares the values to those in the 
 site and dlsite table.  
-There is a difference greater than \fImax_offset_meters\fP from the stated values in the 
-database and the current gps reading. 
+A second ORB capable of accepting dlcmd instructions can be specified at run time. Otherwise, 
+dlcmd will go to \fIstatus_orb\fP. 
 This program exits after reading each selected /pf/st file once.
 This program is designed to run as a cron program under rtexec.pf.
 .SH OPTIONS
@@ -47,7 +52,7 @@ q3302orb(1),dlmon(1)
 .SH AUTHORS
 Frank Vernon
 .br
-Modified by Juan Reyes 2009/07
+Modified by Juan Reyes <reyes@ucsd.edu> 2009/07 and 2009/10
 .br
 UCSD
 .\" $Id$
