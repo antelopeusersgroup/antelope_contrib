@@ -16,18 +16,21 @@ our (@origin_record, @event_record, @netmag_record) = () ;
 our ($Pf, $ref, $pktcnt, $pgm, $i, $parser, $time, $mag, $parsed_info) ;
 our %HoA = () ;
  
+$pgm = $0 ; 
+$pgm =~ s".*/"" ;
+elog_init ( $pgm, @ARGV) ;
+my $cmd = "\n$0 @ARGV" ;
+
 if ( ! &Getopts('1p:s:vV') || @ARGV < 1 || @ARGV > 1) { 
     die ( "Usage: $0 [-p pf] [-s secs] [-v] orb \n" ) ; 
 }
 
-$pgm = $0 ; 
-$pgm =~ s".*/"" ;
+elog_notify($cmd);
 
 $opt_s = 600 if ! $opt_s ;
 
 $opt_v = "1" if $opt_V ;
 
-elog_init ( $0, @ARGV) ;
 
 my $t;
 $t = time();
@@ -35,7 +38,7 @@ $t = strtime($t);
 
 our $orbname	= shift ; 
 
-elog_notify ("\nStarting $0\n");
+elog_notify("\nStarting $pgm at: $t");
 
 elog_notify ("\t *** User selected single execution of bulletin collection rather than daemon mode *** .\n") if $opt_1 ;
 
@@ -46,7 +49,6 @@ if ( (my $orb = orbopen($orbname,"w") ) < 0) {
 } 
 
 my $orb =  orbopen($orbname,"w&") ; 
-
 
 # get pf info to see what bulletins will be collected
 
@@ -69,8 +71,6 @@ my $num_keys = @keys;
 for $i (@keys) {
   $HoA{$i} = [ ] ;
 }
-
-elog_notify("\nStarting $pgm at: $t");
 
 for (;;)  {
   foreach our $key (keys %bulletins)  {		
