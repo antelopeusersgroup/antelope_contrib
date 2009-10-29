@@ -21,10 +21,11 @@ TimeSeries gaussian_wavelet(int n, double dt, double sigma,
 		gwavelet.s[i]=exp(-pow(gwavelet.time(i)/sigma,2.0));
 	}
 	double normfactor;
+	int peaksample;
 	switch (normalize)
 	{
 	case PEAK:
-                int peaksample=gwavelet.sample_number(0.0);
+                peaksample=gwavelet.sample_number(0.0);
 		normfactor=gwavelet.s[peaksample];
 		break;
 	case AREA:
@@ -61,10 +62,11 @@ TimeSeries ricker_wavelet(int n, double dt, double nu,
 				*exp(-pinu2*t2);
 	}
 	double normfactor;
+	int peaksample;
 	switch (normalize)
 	{
 	case PEAK:
-                int peaksample=rwavelet.sample_number(0.0);
+                peaksample=rwavelet.sample_number(0.0);
 		normfactor=rwavelet.s[peaksample];
 		break;
 	case NONE:
