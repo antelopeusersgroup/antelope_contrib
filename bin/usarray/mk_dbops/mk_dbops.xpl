@@ -13,9 +13,15 @@ require "getopts.pl";
 # jeakin@ucsd.edu
 #
 
-  elog_init ($0, @ARGV) ;
 
-  if ( !&Getopts('knvyIRUAm:w:W:s:S:p:P:') || @ARGV < 4 || @ARGV > 6 ) {
+  my $pgm = $0 ;
+  $pgm =~ s".*/"" ;
+  elog_init ( $pgm, @ARGV) ;
+  my $cmd = "\n$0 @ARGV" ;
+
+  elog_notify($cmd);
+
+  if ( !&Getopts('knvyIRUVAm:w:W:s:S:p:P:') || @ARGV < 4 || @ARGV > 6 ) {
     die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
