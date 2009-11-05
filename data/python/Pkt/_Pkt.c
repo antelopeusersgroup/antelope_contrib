@@ -271,6 +271,7 @@ python_split_srcname( PyObject *self, PyObject *args )
 {
 	char	*usage = "Usage: _split_srcname(srcname)\n";
 	char	*srcname;
+	char	srcname_copy[ORBSRCNAME_SIZE];
 	Srcname parts;
 	
 	if( ! PyArg_ParseTuple( args, "s", &srcname ) ) {
@@ -280,7 +281,9 @@ python_split_srcname( PyObject *self, PyObject *args )
 		return NULL;
 	} 
 
-	split_srcname( srcname, &parts );
+	strcpy( srcname_copy, srcname );
+
+	split_srcname( srcname_copy, &parts );
 
 	return Py_BuildValue( "ssssss", parts.src_net, 
 				        parts.src_sta,
@@ -347,7 +350,7 @@ _pkttype_new( PyObject *self, PyObject *args )
 	strcpy( ((_pktobject *) obj)->srcname, srcname );
 
 	allot( char *, ((_pktobject *) obj)->raw, nbytes_packet );
-	memcpy( ((_pktobject *) obj)->raw, packet, sizeof( char ) );
+	memcpy( ((_pktobject *) obj)->raw, packet, nbytes_packet * sizeof( char ) );
 
 	rc = unstuffPkt( ((_pktobject *) obj)->srcname, 
 			 ((_pktobject *) obj)->time, 
@@ -357,7 +360,8 @@ _pkttype_new( PyObject *self, PyObject *args )
 
 	if( rc < 0 ) {
 
-		elog_complain( 0, "Failure to unstuff packet\n" );
+		elog_complain( 0, "Failure to unstuff packet from %s (unstuffPkt return code %d)\n", 
+				((_pktobject *) obj)->srcname, rc );
 
 		((_pktobject *) obj)->pkt = NULL;
 		((_pktobject *) obj)->type = NULL;
@@ -612,8 +616,13 @@ python_pkt_channels( PyObject *self, PyObject *args )
 
 		return NULL;
 
-	} else if( ((_pktobject *) self)->pkt->channels == NULL ||
-	           ichannel >= maxtbl( ((_pktobject *) self)->pkt->channels )) {
+	} else if( ((_pktobject *) self)->pkt->channels == NULL ) {
+
+		PyErr_SetString( PyExc_RuntimeError, "no channels table in pkt structure\n" );
+
+		return NULL;
+
+	} else if( ichannel >= maxtbl( ((_pktobject *) self)->pkt->channels )) {
 
 		PyErr_SetString( PyExc_RuntimeError, "channel index exceeds number of available channels\n" );
 

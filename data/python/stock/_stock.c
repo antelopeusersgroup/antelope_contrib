@@ -43,6 +43,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "Python.h"
 #include "stock.h"
 #include "pfxml.h"
@@ -62,6 +63,9 @@ char *__progname = "Python";
 extern void proc2pidstat( void *kinfo, void *process );
 
 #endif
+
+char	**_stock_argv = NULL;
+int	_stock_argc = 0;
 
 static PyObject *python_elog_init( PyObject *self, PyObject *args );
 static PyObject *python_elog_notify( PyObject *self, PyObject *args );
@@ -181,14 +185,14 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 	if( obj == Py_None ) {
 
-		*atbl = 0;
+		*atbl = NULL;
 
 		return 1;
 	} 
 
 	if( PyString_Check( obj ) ) {
 
-		*atbl = strtbl( PyString_AsString( obj ), NULL );
+		*atbl = strtbl( strdup( PyString_AsString( obj ) ), NULL );
 
 		return 1;
 	}
@@ -197,6 +201,8 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		PyErr_SetString( PyExc_TypeError, 
 			"Attempt to convert sequence to table of strings failed: input argument is not a sequence" );
+
+		*atbl = NULL;
 
 		return 0;
 	}
@@ -211,9 +217,9 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		if( ! seqobj ) {
 
-			freetbl( *atbl, 0 );
+			freetbl( *atbl, free );
 
-			*atbl = 0;
+			*atbl = NULL;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -226,9 +232,9 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		if( ! PyString_Check( seqobj ) ) {
 
-			freetbl( *atbl, 0 );
+			freetbl( *atbl, free );
 
-			*atbl = 0;
+			*atbl = NULL;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -241,9 +247,9 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		if( ( astring = PyString_AsString( seqobj ) ) == NULL ) {
 
-			freetbl( *atbl, 0 );
+			freetbl( *atbl, free );
 
-			*atbl = 0;
+			*atbl = NULL;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -254,7 +260,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 			return 0;
 		}
 
-		pushtbl( *atbl, astring );
+		pushtbl( *atbl, strdup( astring ) );
 	}
 
 	return 1;
@@ -388,8 +394,6 @@ static PyObject *
 python_elog_init( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _elog_init( sys.argv )\n";
 	Tbl	*arglist;
-	char	**argv;
-	int	argc;
 	int	iarg;
 	int	rc;
 
@@ -400,20 +404,28 @@ python_elog_init( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	argc = maxtbl( arglist );
+	if( _stock_argv != (char **) NULL ) {
 
-	allot( char **, argv, argc );
+		for( iarg = 0; iarg < _stock_argc; iarg++ ) {
 
-	for( iarg = 0; iarg < argc; iarg++ ) {
+			free( _stock_argv[iarg] );
+		}
 
-		argv[iarg] = gettbl( arglist, iarg );
+		free( _stock_argv );
+	}
+
+	_stock_argc = maxtbl( arglist );
+
+	allot( char **, _stock_argv, _stock_argc );
+
+	for( iarg = 0; iarg < _stock_argc; iarg++ ) {
+
+		_stock_argv[iarg] = strdup( gettbl( arglist, iarg ) );
 	}
 	
-	rc = elog_init( argc, argv );
+	rc = elog_init( _stock_argc, _stock_argv );
 
-	freetbl( arglist, 0 );
-
-	free( argv );
+	freetbl( arglist, free );
 
 	return Py_BuildValue( "i", rc );
 }
@@ -430,7 +442,7 @@ python_elog_notify( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	elog_notify( 0, msg );
+	elog_notify( 0, "%s", msg );
 
 	return Py_BuildValue( "" );
 }

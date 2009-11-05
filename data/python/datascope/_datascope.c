@@ -44,6 +44,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include "Python.h"
 #include "db.h"
 #include "dbxml.h"
@@ -655,14 +656,14 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 	if( obj == Py_None ) {
 
-		*atbl = 0;
+		*atbl = NULL;
 
 		return 1;
 	} 
 
 	if( PyString_Check( obj ) ) {
 
-		*atbl = strtbl( PyString_AsString( obj ), NULL );
+		*atbl = strtbl( strdup( PyString_AsString( obj ) ),  NULL );
 
 		return 1;
 	}
@@ -671,6 +672,8 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		PyErr_SetString( PyExc_TypeError, 
 			"Attempt to convert sequence to table of strings failed: input argument is not a sequence" );
+
+		*atbl = NULL;
 
 		return 0;
 	}
@@ -685,9 +688,9 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		if( ! seqobj ) {
 
-			freetbl( *atbl, 0 );
+			freetbl( *atbl, free );
 
-			*atbl = 0;
+			*atbl = NULL;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -700,9 +703,9 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		if( ! PyString_Check( seqobj ) ) {
 
-			freetbl( *atbl, 0 );
+			freetbl( *atbl, free );
 
-			*atbl = 0;
+			*atbl = NULL;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -715,9 +718,9 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 		if( ( astring = PyString_AsString( seqobj ) ) == NULL ) {
 
-			freetbl( *atbl, 0 );
+			freetbl( *atbl, free );
 
-			*atbl = 0;
+			*atbl = NULL;
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
@@ -728,7 +731,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 			return 0;
 		}
 
-		pushtbl( *atbl, astring );
+		pushtbl( *atbl, strdup( astring ) );
 	}
 
 	return 1;
@@ -1286,12 +1289,12 @@ python_dbmatches( PyObject *self, PyObject *args ) {
 
 	if( kpattern != NULL ) {
 
-		freetbl( kpattern, 0 );
+		freetbl( kpattern, free );
 	} 
 
 	if( ( tpattern != NULL ) && ! duplicate_pattern ) {
 
-		freetbl( tpattern, 0 );
+		freetbl( tpattern, free );
 	} 
 
 	if( rc < 0 ) {
@@ -1330,6 +1333,8 @@ python_dbprocess( PyObject *self, PyObject *args ) {
 	}
 
 	db = dbprocess( db, list, 0 );
+
+	freetbl( list, free );
 
 	return Dbptr2PyObject( db );
 }
@@ -1390,7 +1395,7 @@ python_dbsort( PyObject *self, PyObject *args ) {
 
 	if( keys != NULL ) {
 
-		freetbl( keys, 0 );
+		freetbl( keys, free );
 	}
 
 	return Dbptr2PyObject( db );
@@ -1404,6 +1409,8 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 	Dbptr	dbout;
 	Tbl	*pattern1 = 0;
 	Tbl 	*pattern2 = 0;
+	int	pattern1_specified = 0;
+	int	pattern2_specified = 0;
 	int	outer = 0;
 	int	duplicate_pattern = 0;
 	char	*name = 0;
@@ -1423,7 +1430,17 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	if( pattern1 != 0 && pattern2 == 0 ) {
+	if( pattern1 != NULL ) {
+
+		pattern1_specified++;
+	}
+
+	if( pattern2 != NULL ) {
+
+		pattern2_specified++;
+	}
+
+	if( pattern1 != NULL && pattern2 == NULL ) {
 
 		pattern2 = pattern1; 
 
@@ -1434,13 +1451,28 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 
 	if( pattern1 != NULL ) {
 
-		freetbl( pattern1, 0 );
+		if( pattern1_specified ) {
+
+			freetbl( pattern1, free );
+
+		} else {
+
+			freetbl( pattern1, 0 );
+		}
 	}
 
 	if( pattern2 != NULL && ! duplicate_pattern ) {
 
-		freetbl( pattern2, 0 );
+		if( pattern2_specified ) {
+
+			freetbl( pattern2, free );
+
+		} else {
+
+			freetbl( pattern2, 0 );
+		}
 	}
+
 
 	return Dbptr2PyObject( dbout );
 }
@@ -1451,9 +1483,11 @@ python_dbnojoin( PyObject *self, PyObject *args ) {
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	dbout;
-	Tbl	*pattern1 = 0;
-	Tbl 	*pattern2 = 0;
+	Tbl	*pattern1 = NULL;
+	Tbl 	*pattern2 = NULL;
 	int	duplicate_pattern = 0;
+	int	pattern1_specified = 0;
+	int	pattern2_specified = 0;
 	char	*name = 0;
 
 	if( ! PyArg_ParseTuple( args, "O&O&O&O&z", parse_to_Dbptr, &db1, 
@@ -1470,7 +1504,17 @@ python_dbnojoin( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	if( pattern1 != 0 && pattern2 == 0 ) {
+	if( pattern1 != NULL ) {
+
+		pattern1_specified++;
+	}
+
+	if( pattern2 != NULL ) {
+
+		pattern2_specified++;
+	}
+
+	if( pattern1 != NULL && pattern2 == NULL ) {
 
 		pattern2 = pattern1; 
 
@@ -1481,12 +1525,26 @@ python_dbnojoin( PyObject *self, PyObject *args ) {
 
 	if( pattern1 != NULL ) {
 
-		freetbl( pattern1, 0 );
+		if( pattern1_specified ) {
+
+			freetbl( pattern1, free );
+
+		} else {
+
+			freetbl( pattern1, 0 );
+		}
 	}
 
 	if( pattern2 != NULL && ! duplicate_pattern ) {
 
-		freetbl( pattern2, 0 );
+		if( pattern2_specified ) {
+
+			freetbl( pattern2, free );
+
+		} else {
+
+			freetbl( pattern2, 0 );
+		}
 	}
 
 	return Dbptr2PyObject( dbout );
@@ -1578,7 +1636,7 @@ python_dbgroup( PyObject *self, PyObject *args ) {
 
 	if( groupfields != NULL ) {
 
-		freetbl( groupfields, 0 );
+		freetbl( groupfields, free );
 	}
 
 	return Dbptr2PyObject( db );
@@ -1654,12 +1712,12 @@ python_db2xml( PyObject *self, PyObject *args ) {
 
 	if( fields ) {
 
-		freetbl( fields, 0 );
+		freetbl( fields, free );
 	}
 
 	if( expressions ) {
 
-		freetbl( expressions, 0 );
+		freetbl( expressions, free );
 	}
 
 	if( rc < 0 || xml == NULL) {
