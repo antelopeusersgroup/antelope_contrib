@@ -103,6 +103,14 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
 
     if( $expr ne '' ) {
         @db_subset = dbprocess( @db, @{$expr} ) ;
+
+        if( $opt_v ) {
+            print( "Subset with the commands:\n" ) ;
+            foreach( @{$expr} ) {
+                print "- ".$_."\n" ;
+            }
+        }
+
     } else {
         @db_subset = @db ;
     }
@@ -121,8 +129,14 @@ while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
 
     my( @netstachans ) ;
     for( $db_subset[3]=0; $db_subset[3] < dbquery( @db_subset, "dbRECORD_COUNT" ); $db_subset[3]++ ) {
-        my( $snet, $staname,$chan ) = dbgetv( @db_subset, "snet", "sta", "chan" ) ;
+        my( $snet, $staname, $chan ) = dbgetv( @db_subset, "snet", "sta", "chan" ) ;
+
+        if( $opt_v ) {
+            print( "Values returned => Snet: ".$snet." Staname: ".$staname." Chan: ".$chan."\n" ) ;
+        }
+
         my( $snet_sta_chan ) = $snet."_".$staname."_".$chan ;
+
         if( defined $modulus && $modulus ne '' ) {
             if( $db_subset[3] % $modulus == 0 ) {
                 push @netstachans, trim($snet_sta_chan) ;
