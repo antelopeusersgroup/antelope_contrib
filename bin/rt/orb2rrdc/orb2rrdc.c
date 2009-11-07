@@ -320,6 +320,7 @@ main( int argc, char **argv )
 		
 		line = gettbl( dlslines, i );
 		
+		strtr( line, "\t", " " );
 		rras = split( line, ' ' );
 
 		dls_var = shifttbl( rras );
