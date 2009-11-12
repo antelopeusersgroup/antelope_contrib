@@ -1,0 +1,24 @@
+originator     Jennifer Eakins, UCSD
+last_modified  2009-11-03
+
+category	ANF	
+configuration	QEP dummy sensor 
+
+description	QEP dummy sensor	
+dfile		dummy
+
+rsptype		-	# 
+band		v	# 
+sensor_type_code	E	# 2nd character in channel code
+
+gtype		sensor
+sensitivity	1
+ounits		V
+iunits		counts
+
+orientations	&Tbl{
+P_EP       0       0 
+}
+
+response	&datafile(responses/dummy) 
+

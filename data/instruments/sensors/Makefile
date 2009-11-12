@@ -61,6 +61,7 @@ DATA= \
 	mb2000_raw.pf \
 	paroP.pf \
 	paroT.pf \
+	qep_dummy.pf \
 	null.pf \
 	ranger_horz.pf \
 	ranger_vert.pf \
