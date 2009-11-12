@@ -43,6 +43,7 @@ DATA= \
     FS2D5M \
     LP \
     MP \
+    qep \
     Q330_Description.pdf \
     README_quanterra \
     ULP \
