@@ -21,8 +21,8 @@ require "getopts.pl";
 
   elog_notify($cmd);
 
-  if ( !&Getopts('knvyIRUVAm:w:W:s:S:p:P:') || @ARGV < 4 || @ARGV > 6 ) {
-    die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
+  if ( !&Getopts('knvyIRUVAm:w:W:s:S:p:P:C:') || @ARGV < 4 || @ARGV > 6 ) {
+    die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
   $dbops	= $ARGV[0];
@@ -93,6 +93,7 @@ $packet_ext	= ".*M40" ;	# Look for data packets
   }
 
   $status_orb	= pfget($Pf, 'status_orb');
+  $cmd_orb	= pfget($Pf, 'cmd_orb');
   $prelim_orb	= pfget($Pf, 'prelim_orb');
   $wfdb 	= pfget($Pf, 'wfdb');
   $vnet  	= pfget($Pf, 'vnet');
@@ -103,6 +104,7 @@ $packet_ext	= ".*M40" ;	# Look for data packets
 
 # command line overrides 
   $status_orb	= $opt_S if ($opt_S) ;
+  $cmd_orb	= $opt_C if ($opt_C) ;
   $prelim_orb	= $opt_P if ($opt_P) ;
   $wfdb		= $opt_W if ($opt_W) ; 
   $prelimwf_db	= $opt_w if ($opt_w) ;
@@ -217,7 +219,7 @@ if ($opt_I && !$opt_w ) {
   }
 }
 
-# check for "alive" status orb if you are updating or installing.   
+# check for "alive" status and cmd orb if you are updating or installing.   
 #  not needed if you are using prelimwf_db
 
 if ($opt_U || $opt_I) {
@@ -226,6 +228,14 @@ if ($opt_U || $opt_I) {
  
   if ($statorb == -1) {
      elog_die("Can't open $status_orb\n") ;
+  }
+  if (!$opt_n) {
+    $cmdorb    = orbopen   ($cmd_orb, "r&" );
+    elog_notify("Cmd orb:  $cmd_orb\n") if $opt_v ;
+ 
+    if ($cmdorb == -1) {
+     elog_die("Can't open $cmd_orb\n") ;
+    }
   }
 }
 
@@ -454,7 +464,7 @@ if ($opt_U) {
   if (!$opt_n) {
      elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
      elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
-     $cmd = "q330_location -s $sta $status_orb $dbops" ;
+     $cmd = "q330_location -s $sta $status_orb $cmd_orb $dbops" ;
      &run($cmd)  ;
   } else {
      elog_notify("\n   You need to run q330_location to populate dlsite table\n\n") ;
@@ -680,7 +690,8 @@ sub add2dlsite	{		# add a new record to the dlsite table
 
   elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
   elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
-  $cmd = "q330_location $status_orb $dbops" ;
+  $cmd = "q330_location -s $sta $status_orb $cmd_orb $dbops" ;
+#  $cmd = "q330_location $status_orb $cmd_orb $dbops" ;
   &run($cmd)  ;
 
 }
@@ -800,7 +811,7 @@ sub usage {
 
    For a new installation:
 
-       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-m source_match] [-p pf] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
+       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
 
    For a comms update:    
 
