@@ -3,17 +3,14 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'		=> 'Datascope::pf2xml',
-    'FIRST_MAKEFILE' => 'perl_makefile',
-    'MAKEFILE' => 'perl_makefile',
-    'VERSION'	=> '1.0', # finds $VERSION
-    'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
-    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-      (ABSTRACT => 'perl interfact to the db2xml library', # retrieve abstract from module
-       AUTHOR     => 'AuthorField') : ()),
-    'LIBS'		=> ['LinkArguments'], # e.g., '-lm'
-    'DEFINE'		=> '', # e.g., '-DHAVE_SOMETHING'
-	# Insert -I. if you add *.h files later:
-    'INC'		=> 'CompileArguments', # e.g., '-I/usr/include/other'
-	# Un-comment this if you add C files to link with later:
-#'OBJECT'		=> '$(O_FILES)', # link all the C files too
+    'FIRST_MAKEFILE' 	=> 'perl_makefile',
+    'MAKEFILE' 		=> 'perl_makefile',
+    'VERSION'		=> '1.0', 
+    'PREREQ_PM'		=> {}, 
+    ($] >= 5.005 ?    
+      (ABSTRACT 	=> 'perl interfact to the db2xml library', 
+       AUTHOR     	=> 'AuthorField') : ()),
+    'LIBS'		=> ['LinkArguments'], 
+    'DEFINE'		=> '', 
+    'INC'		=> 'CompileArguments', 
 );
