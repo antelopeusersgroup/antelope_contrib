@@ -46,7 +46,7 @@ use Net::FTP ;
 
 
 our (%magnitude_info, %pfinfo, %parsed_info) = () ;
-our ($myauth,$auth)  = "" ;
+our ($myauth,$auth,$myenddate,$enddate)  = "" ;
 our ($mlid, $mbid, $msid, $mb, $ms, $ml, $mn, $mc, $mbsta, $mssta, $comment, $depthinfo) = "" ;
 our ($ftp,$myurl,$localdir,$algorithm, $file, $getnetmag) = "" ;
 our ($lat, $lon, $depth, $or_time, $nsta, $magid, $magtype, $magnitude, $mag_uncert, $mag_type, $mag, $etype, $dtype) = "" ;
@@ -148,6 +148,7 @@ sub collect_search_get {
 
   ($listref,%pfinfo) = @_ ;
   my $myndays = $pfinfo{ndays} ;
+  my $myenddate = $pfinfo{enddate} ;
   my $myurl = $pfinfo{url} ;
   $myauth = $pfinfo{auth};
 
@@ -159,8 +160,13 @@ sub collect_search_get {
   my @outlist ;
   my @saved ;
 
-  our $maxtime = time()  ;
-  our $mintime = time() - ($myndays * 86400) ;
+  if ($myenddate) {
+    our $maxtime = $enddate;  
+  } else {
+    our $maxtime = time()  ;
+  }
+
+  our $mintime = $maxtime - ($myndays * 86400) ;
 
   our ($syr, $smo, $sday, $shr, $smin, $ssec) = split(/\s+/,epoch2str($mintime,"%Y %m %d %H %M %S"));
   our ($eyr, $emo, $eday, $ehr, $emin, $esec) = split(/\s+/,epoch2str($maxtime,"%Y %m %d %H %M %S"));
@@ -208,8 +214,13 @@ sub collect_search_qf {		# formerly collect_scecHYPO2000
   my @outlist ;
   my @saved ;
 
-  our $maxtime = time()  ;
-  our $mintime = time() - ($myndays * 86400) ;
+  if ($myenddate) {
+    our $maxtime = $enddate;  
+  } else {
+    our $maxtime = time()  ;
+  }
+  
+  our $mintime = $maxtime - ($myndays * 86400) ;
 
   our ($syr, $smo, $sday, $shr, $smin, $ssec) = split(/\s+/,epoch2str($mintime,"%Y %m %d %H %M %S"));
   our ($eyr, $emo, $eday, $ehr, $emin, $esec) = split(/\s+/,epoch2str($maxtime,"%Y %m %d %H %M %S"));
@@ -258,8 +269,15 @@ sub collect_search_post  {	#
 # need to share with posrtreq_handler
 
   our $myurl = $pfinfo{url} ;
-  our $maxtime = time()  ;
-  our $mintime = time() - ($myndays * 86400) ;
+
+  if ($myenddate) {
+    our $maxtime = $enddate;  
+  } else {
+    our $maxtime = time()  ;
+  }
+  
+  our $mintime = $maxtime - ($myndays * 86400) ;
+  
   our ($syr, $smo, $sday, $shr, $smin, $ssec) = split(/\s+/,epoch2str($mintime,"%Y %m %d %H %M %S"));
   our ($eyr, $emo, $eday, $ehr, $emin, $esec) = split(/\s+/,epoch2str($maxtime,"%Y %m %d %H %M %S"));
 
@@ -347,8 +365,13 @@ sub collect_dbsubset {		#
   my @textout;
   my $nrecs ;
 
-  our $maxtime = time()  ;
-  our $mintime = time() - ($myndays * 86400) ;
+  if ($myenddate) {
+    our $maxtime = $enddate;  
+  } else {
+    our $maxtime = time()  ;
+  }
+  
+  our $mintime = $maxtime - ($myndays * 86400) ;
 
   my $timesubset = "time>='$mintime' && time<'$maxtime'" ;
   my ($lat, $lon, $depth, $or_time) ;

@@ -703,7 +703,7 @@ bulletins &Arr{
 	src		AEIC	# srcname will be /pf/$src/orb2dbt
 	auth		AEIC		# auth == $auth	
 	url		http://www.aeic.alaska.edu/cgi-bin/db2catalog.pl	
-	ndays		90		# used to set min/max time for search 
+	ndays		90		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
   }
 
   SCSN-search      &Arr{
@@ -713,7 +713,7 @@ bulletins &Arr{
 	src		SCSN		# srcname will be /pf/$src/orb2dbt
 	auth		SCSN		# auth == $auth	. "$evid"
 	url		http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl	
-	ndays		7 		# used to set min/max time for search 
+	ndays		7 		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
   }
 
    NCSN-search    &Arr{
@@ -723,7 +723,7 @@ bulletins &Arr{
  	src		NCSN	  	# srcname will be /pf/$src/orb2dbt
  	auth		NCSN		# auth == $auth	. "$nscn_evid" . "$rev_info"
  	url		http://www.ncedc.org/cgi-bin/catalog-search2.pl	
- 	ndays		7 		# used to set min/max time for search 
+ 	ndays		7 		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
    }
 
    BC-NESN       &Arr{
@@ -733,7 +733,7 @@ bulletins &Arr{
  	src		NESN		# srcname will be /pf/$src/orb2dbt
  	auth		NESN		# auth == $auth	
  	url		http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl	
-	ndays		31 		# used to set min/max time for search 
+	ndays		31 		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
    }
 
   NBE-search  	&Arr{
@@ -743,17 +743,28 @@ bulletins &Arr{
 	src		NBE		# srcname will be /pf/$src/orb2dbt
 	auth		UNR_NBE		# auth == $auth	
 	url		http://www.seismo.unr.edu/cgi-bin/catalog-search	
-	ndays		7  		# used to set min/max time for search 
+	ndays		7  		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
   }
   
- ANF	&Arr{
-	method		dbsubset	
-	parser		dbsubset 
-	src		ANF		# srcname will be /pf/$src/orb2dbt
-	auth		ANF		# auth will be filled in with origin.auth after authsubset
-	db 		/path/to/usarray/db/usarray
-	authsubset	auth=~/ANF.*/
-	ndays		7 		# used to set min/max time for search 
+ ANF_rt &Arr{
+        method          dbsubset
+        parser          dbsubset
+        src             ANF             # srcname will be /pf/$src/orb2dbt
+        auth            ANF             # auth will be filled in with origin.auth after authsubset
+        db              /path/to/anf/rt/db/usarray
+        authsubset      auth=~/ANF.*/
+        ndays           7               # used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
+   }
+
+ ANF_arch       &Arr{
+        method          dbsubset
+        parser          dbsubset
+        src             ANF             # srcname will be /pf/$src/orb2dbt
+        auth            ANF             # auth will be filled in with origin.auth after authsubset
+        db              /path/to/anf/archived/db/usarray
+        authsubset      auth=~/ANF.*/
+        enddate         2/1/2008        # used to set endtime for search.  Without enddate, endtime == now() 
+        ndays           31              # used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now 
    }
 
   UUSS-daily &Arr{	# utah daily updated solutions 
@@ -999,7 +1010,8 @@ bulletins &Arr{
 	src		SCSN		# srcname will be /pf/$src/orb2dbt
 	auth		SCSN		# auth == $auth	. "$evid"
 	url		http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl	
-	ndays		90		# used to set min/max time for search 
+#       enddate         4/1/2008        # used to set endtime for search.  Without enddate, endtime == now() 
+	ndays		90		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
   }
 
    NCSN-longsearch    &Arr{
@@ -1009,7 +1021,7 @@ bulletins &Arr{
  	src		NCSN		# srcname will be /pf/$src/orb2dbt
  	auth		NCSN		# auth == $auth	. "$nscn_evid" . "$rev_info"
  	url		http://www.ncedc.org/cgi-bin/catalog-search2.pl	
- 	ndays		90 		# used to set min/max time for search 
+ 	ndays		90 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
    }
 
    NESN-longsearch   &Arr{
@@ -1019,7 +1031,7 @@ bulletins &Arr{
  	src		NESN		# srcname will be /pf/$src/orb2dbt
  	auth		NESN		# auth == $auth	
  	url		http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl	
- 	ndays		90 		# used to set min/max time for search 
+ 	ndays		90 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
    }
 
   NBE-longsearch  	&Arr{
@@ -1029,7 +1041,7 @@ bulletins &Arr{
 	src		NBE		# srcname will be /pf/$src/orb2dbt
 	auth		UNR_NBE		# auth == $auth	
 	url		http://www.seismo.unr.edu/cgi-bin/catalog-search	
-	ndays		180 		# used to set min/max time for search 
+	ndays		180 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
   }
   
  ANF-longsubset	&Arr{
@@ -1039,7 +1051,7 @@ bulletins &Arr{
 	auth		ANF		# auth will be filled in with origin.auth after authsubset
 	db 		/path/to/usarray/db/usarray
 	authsubset	auth=~/ANF.*/
-	ndays		90 		# used to set min/max time for search 
+	ndays		90 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
    }
 
 # END
@@ -1053,6 +1065,10 @@ bulletins &Arr{
 .LP
 Searchable bulletins and those using the \fIdbsubset\fP method need to have an \fIndays\fP
 parameter to define the time range of the search.
+.LP
+Searchable bulletins and those using the \fIdbsubset\fP method can have an \fIenddate\fP
+parameter to define the ending time for the search.  If not specified, search looks for \fIndays\fP
+of data prior to \fBnow()\fI. 
 .LP
 Whether or not a particular bulletin needs an \fIextractor\fP specified depends on the
 format and \fImethod\fP used to collect it.  Don't change the defaults.
