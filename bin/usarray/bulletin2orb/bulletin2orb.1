@@ -153,7 +153,9 @@ expect that the search function may take more resources than a simply served HTM
 thus it is recommended that bulletin collections of this type be run at much less 
 frequent intervals.  In particular, you may not want to run \fBbulletin2orb\fP in
 the default daemon mode, but instead use the \fI-1\fP option for single execution
-and collect this type of bulletin via cronjob.
+and collect this type of bulletin via cronjob.  The maximum number of events that 
+you can have returned from a search is 20,000.  If you request a longer time window, 
+that may have more than 20,0000 events, the event list will be truncated at 20,0000.  
 
 .IP "\(bu \fBftp\fP:  plain text via ftp"
 .br
