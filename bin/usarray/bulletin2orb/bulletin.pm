@@ -104,7 +104,15 @@ sub collect_ftp	{
   my @saved ;
 
   $ftp = Net::FTP->new("$ftphost") or elog_complain("Can't connect: $@\n") ;
+  if (!$ftp) {
+    elog_complain("Not able to complete bulletin collection via ftp for: $ftphost\n") ;
+    next; 
+  }
   $ftp->login("anonymous",$account) or  elog_complain("Couldn't login\n") ;
+  if (!$ftp) {
+    elog_complain("Not able to complete bulletin collection via anonymous login for: $ftphost\n") ;
+    next; 
+  }
   my $remote_pwd = $ftp->pwd ;
   elog_notify ("CWD on $ftphost is: $remote_pwd\n");
   $ftp->cwd("$ftpdir") or elog_complain("Couldn't change to remote dir $ftpdir\n")  ;
@@ -161,7 +169,7 @@ sub collect_search_get {
   my @saved ;
 
   if ($myenddate) {
-    our $maxtime = $enddate;  
+    our $maxtime = str2epoch($myenddate);  
   } else {
     our $maxtime = time()  ;
   }
@@ -203,6 +211,7 @@ sub collect_search_qf {		# formerly collect_scecHYPO2000
 
   ($listref,%pfinfo) = @_ ;
   my $myndays = $pfinfo{ndays} ;
+  my $myenddate = $pfinfo{enddate} ;
   my $myurl = $pfinfo{url} ;
   $myauth = $pfinfo{auth};
 
@@ -215,7 +224,7 @@ sub collect_search_qf {		# formerly collect_scecHYPO2000
   my @saved ;
 
   if ($myenddate) {
-    our $maxtime = $enddate;  
+    our $maxtime = str2epoch($myenddate);  
   } else {
     our $maxtime = time()  ;
   }
@@ -257,6 +266,7 @@ sub collect_search_post  {	#
 
   ($listref,%pfinfo) = @_ ;
   my $myndays = $pfinfo{ndays} ;
+  my $myenddate = $pfinfo{enddate} ;
   $myauth = $pfinfo{auth};
   my $tmpfile = "/tmp/search_post$myauth" ;
   my $postreq_handler = "postreq_" . $pfinfo{parser} ;
@@ -271,7 +281,7 @@ sub collect_search_post  {	#
   our $myurl = $pfinfo{url} ;
 
   if ($myenddate) {
-    our $maxtime = $enddate;  
+    our $maxtime = str2epoch($myenddate);  
   } else {
     our $maxtime = time()  ;
   }
@@ -356,6 +366,7 @@ sub collect_dbsubset {		#
   my $mydb	= $pfinfo{db};
   $myauth	= $pfinfo{auth};
   my $myndays = $pfinfo{ndays} ;
+  my $myenddate = $pfinfo{enddate} ;
   my $authsubset	= $pfinfo{authsubset} ;
 
   my $postreq_handler = "postreq_" . $pfinfo{parser} ;
@@ -366,7 +377,7 @@ sub collect_dbsubset {		#
   my $nrecs ;
 
   if ($myenddate) {
-    our $maxtime = $enddate;  
+    our $maxtime = str2epoch($myenddate);  
   } else {
     our $maxtime = time()  ;
   }
@@ -2471,7 +2482,7 @@ sub extract_NBEsearch	{	#
       my $day	= substr ($line, 8, 2);
       my $hr	= substr ($line, 11, 2);
       my $min	= substr ($line, 13, 2);
-      my $sec	= substr ($line, 16, 8);
+      my $sec	= substr ($line, 16, 7);
 
       my $lat	= substr ($line, 25, 8);
       my $lon	= substr ($line, 34, 9);
@@ -2917,7 +2928,7 @@ sub postreq_NBEsearch {
 	     [
                  input           => "UNR2000-present.cat",
                  psoutput        => "text",
-                 nmax            => "10000",
+                 nmax            => "20000",
                  mintime         => "$mintime",
                  maxtime         => "$maxtime",
                  minmag          => "0.0",
@@ -2955,7 +2966,7 @@ sub postreq_HYPO2000 {
 		keywds		=> "",
 		outputloc	=> "web",
 		no_mag		=> "no_mag",
-		searchlimit	=> "10000",
+		searchlimit	=> "20000",
 	     ]; 
 
   return ($postreq) ;
@@ -2977,7 +2988,7 @@ sub postqf_AEIC {
 		mintime		=> "$smo"."/"."$sday"."/"."$syr",
 		maxtime		=> "$emo"."/"."$eday"."/"."$eyr",
 		minmag		=> "0.0",
-		maxnum		=> "5000",
+		maxnum		=> "20000",
 	     ); 
 
   return ($url) ; 

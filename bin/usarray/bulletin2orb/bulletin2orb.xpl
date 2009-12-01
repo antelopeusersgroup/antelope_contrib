@@ -1,4 +1,3 @@
-
 use strict 'vars' ; 
 use warnings ; 
 use Datascope ; 
