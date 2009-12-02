@@ -19,6 +19,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	char	errmsg[STRSZ];
 	Dbptr	db;
 
+	mexLock();
+
 	if( nrhs != 2 )
 	{
 		antelope_mexUsageMsgTxt( USAGE );
