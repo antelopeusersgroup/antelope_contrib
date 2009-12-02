@@ -9,6 +9,7 @@ use Carp;
 @EXPORT=qw( 	collect_htmltagged
 		collect_htmlnotags
 		collect_text 	
+		collect_file 	
 		collect_ftp
 		collect_search_post
 		collect_search_qf
@@ -22,6 +23,7 @@ use Carp;
 		parse_NESN
 		parse_NBEsearch 
 		parse_NBEwww 
+		parse_mtech_hypo71
 		parse_mtechAUTO 
 		parse_ehdf 
 		parse_mchdr
@@ -58,7 +60,7 @@ our (@listing, @convert_list, @lines, $upd_yr, $upd_time, $num_mo) = "" ;
 our (@mt, @mv, @ma) = "" ;
 our (@db, @dborigin, @dbnetmag, @dbevent, @dbj)  = "" ;
 our (@textout) = "" ;
-our ($TZ) = "" ;
+our ($TZ, $Q) = "" ;
 
 
 
@@ -358,6 +360,43 @@ sub collect_text {	# collect_text(@ref, %pfinfo)  # formerly collect_qedCUBE(@Ho
   return @outlist ;
 
 }
+
+sub collect_file	{		
+
+  ($listref,%pfinfo) = @_ ;
+
+  my $myfile	= $pfinfo{file} ;
+  $myauth	= $pfinfo{auth};
+  my $linestart	= $pfinfo{linestart};
+  my $extract_handler = ( defined $pfinfo{'extractor'} ) ? "extract_" . $pfinfo{extractor} : 0   ;
+
+  my ($mb, $ms, $partcnt, $ok, $ymd, $hour  ) ; 
+  my ($lat, $lon, $depth, $or_time) ;
+
+  my @outlist ;
+  my @saved ;
+
+# now have to populate @saved
+# open each file and make sure first line starts with "GS", or "E", or "whatever"
+
+  elog_notify("File is: $myfile \n") ;
+  open FILE, "<$myfile";
+  while (<FILE>) {
+      my $line = $_ ;
+      next if ( $line !~/^($linestart)/ ) ;	
+#      next if ( ($linelength > 0 ) && (length($line) < $linelength) ) ; 
+      push @saved, $line ;	# put all lines from file into @saved
+  }
+
+  my $x = $#saved + 1 ;
+  elog_notify("   Found $x events in file\n");
+  close FILE ;
+  @saved = &$extract_handler(@saved) if ($extract_handler) ;
+  @outlist = list2search(@saved) ;
+
+  return @outlist ;
+
+} 
 
 sub collect_dbsubset {		# 
 
@@ -1461,6 +1500,70 @@ sub parse_mchdr  {
 
 }
 
+sub parse_mtech_hypo71  {	
+
+    my $line = shift ; 
+
+    our %magnitude_info = () ;
+    our $mb  = "" ;
+    our $ms  = "" ;
+    our $ml  = "" ;
+    my @mt = (); 
+    my @mv = (); 
+    my @ma = (); 
+    my ($v, $a, $t) = "" ;
+
+    ($lat, $lon, $depth, $or_time, $nsta, $mv[1], $ma[1], $mt[1], $mv[2], $ma[2], $mt[2], $mv[3], $ma[3], $mt[3], $Q ) = split (",", $line);
+
+      for (my $m = 1; $m < 4; $m++) {
+
+        if ($mt[$m] eq "ml") {
+	   $magnitude_info{'ml'} =  $mv[$m].":".$ma[$m].":-1"  ;
+        }
+        if ($mt[$m] eq "M") {
+	   $magnitude_info{'M'} =  $mv[$m].":".$ma[$m].":-1"  ;
+        }
+        if ($mt[$m] eq "md") {
+	   $magnitude_info{'md'} =  $mv[$m].":".$ma[$m].":-1"  ;
+        }
+      }
+
+    ($ml,$mlid,$mb,$mbid,$ms,$msid,$magid) = &default_mags(%magnitude_info) ;
+
+    %parsed_info = (
+                or_time		=> $or_time ,
+                lat             => $lat ,
+                lon             => $lon ,
+                depth           => $depth ,
+                ndef		=> $nsta ,
+		orid		=> "1" ,
+        	evid		=> "1" ,
+                nass		=> "0"   ,
+                ndp 		=> "-1"   ,
+                etype		=> "-"   ,
+                depdp		=> "-999.0"   ,
+                review		=> "-"   ,
+                dtype 		=> "-"   ,
+                mag_nsta        => "0" ,
+                mag_uncert	=> "0" ,
+                magid		=> $magid ,
+                mb		=> $mb ,
+                mbid		=> $mbid ,
+                ml		=> $ml , 
+                mlid		=> $mlid ,
+                ms		=> $ms ,
+                msid		=> $msid ,
+                magtype		=> "-",
+                magnitude	=> "-99.99" ,
+		auth		=> $myauth , 
+		algorithm	=> "-"  
+    ) ;   
+
+  return (\%parsed_info, \%magnitude_info) ;
+
+}
+
+
 sub parse_uwcard {		# 
 
   my $line = shift ; 
@@ -1870,6 +1973,53 @@ sub extract_mchdr   	{	# card format with multi-line information
   return @saved; 
 }
 
+sub extract_mtech_hypo71   	{	# MTECHs modified hypo71 format 
+
+  my (@info) = @_ ;
+  my @saved = ();
+  
+  for (@info) {		# another hackery follows...
+    my $line = $_ ;
+    elog_notify("Line is: $line\n");
+    $year       = substr($line,0,2);	# non-Y2K compliant.  Assume year = 2000 + $year
+    elog_notify("Year is: $year\n");
+    $year 	= 2000 + $year ;
+    $month      = substr($line,3,2);
+    $day        = substr($line,6,2);
+    $hr         = substr($line,9,2);
+    $min        = substr($line,11,2);
+    $sec        = substr($line,14,4);
+    $lat        = substr($line, 19,6);
+    $latNS      = "N"; 
+    $lon        = substr($line, 26,7);
+    $lonEW      = "W"; 
+    $depth      = substr($line, 34,4);
+
+    $mv[1]	= trim(substr($line, 39,3));
+    $mt[1]	= ($mv[1]) ? "md" : "-" ; 
+    $ma[1]	=  "ESO" ;
+    $mv[2]	= trim(substr($line, 43,3));
+    $mt[2]	= ($mv[2]) ? "M" : "-" ; 
+    $ma[2]	=  "BUT"; 
+    $mv[3]	= trim(substr($line, 47,3));
+    $mt[3]	= ($mv[3]) ? "ml" : "-" ; 
+    $ma[3]	=  "BB"; 
+
+    $nsta       = substr($line, 51,2);
+    $Q          = substr($line, 79,1);
+
+    $or_time	= str2epoch( fix_time_values ($year,$month,$day,$hr,$min,$sec) ) ; 
+    ($lat,$lon) = fix_lat_lon ($lat,"0" ,$latNS,$lon,"0",$lonEW) ; 
+
+    push ( @saved, join(',' ,  ($lat, $lon, $depth, $or_time, $nsta, $mv[1], $ma[1], $mt[1], $mv[2], $ma[2], $mt[2], $mv[3], $ma[3], $mt[3], $Q ))) ;
+
+      next;
+
+  }
+  
+  close PARSE ;
+  return @saved; 
+}
 
 sub extract_EMSC {	
 

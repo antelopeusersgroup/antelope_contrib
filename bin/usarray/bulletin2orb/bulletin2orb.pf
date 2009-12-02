@@ -532,6 +532,30 @@ bulletins &Arr{
 
 # END
 # 
+
+#
+# This is an example of a single-use update for a non-daemonized bulletin2orb.
+# In this case, the user has a single local file that needs to be converted.
+#
+# I suggest putting them in a separate pf and run bulletin2orb
+# as a command line process with the -1 option used 
+#
+
+#
+#  Create a bulletin2orb_once.pf between START/END
+#
+# START
+
+  MTECH-file    &Arr{	# file from mtech 
+	method		file	
+	parser		mtech_hypo71
+	extractor	mtech_hypo71
+	linestart 	[0-9]	
+	src		flatfile  	# srcname will be /pf/$src/orb2dbt
+	auth		MTECH		#  auth == $auth . "$evid" 	
+	file		/file/location/2004-2009.qks	
+  }
+# END
 }
 
 

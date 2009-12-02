@@ -100,7 +100,16 @@ line can be run through a parser that checks to see if the collected line is
 new.  Each new line can then have the individual parts extracted and the info 
 placed into a hash for later processing.
 
-.IP "\(bu \fBcollect_htmltagged\fP or \fBcollect_htmlnotags\fP:  HTML text - web accessible"
+.IP "\(bu \fBfile\fP:  plain text file - locally accessible"
+.br
+
+This presumes you have access to an ascii file containing bulletin information.  
+Perhaps the file is saved to disk from an email attachment.  The text has no HTML 
+code embedded in it and tends to be fixed format.  
+Each new line of the file has the individual parts extracted and the info 
+placed into a hash for later processing.
+
+.IP "\(bu \fBhtmltagged\fP or \fBhtmlnotags\fP:  HTML text - web accessible"
 .br
 
 This is the most common format.  These methods deal with information that is returned within 
@@ -214,6 +223,7 @@ CERI-NMSN	maybe	Rapid	htmltagged	recenteqs	qedWWW
 Lamont-LCSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
 MTECH-auto	yes	Rapid	htmlnotags	mtechAUTO	mtechAUTO
 MTECH-rev 	no	Rapid	htmlnotags	recenteqs	simsum
+MTECH-file	no	Never	file	mtech_hypo71	mtech_hypo71
 PNSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
 NRCAN-PGC	maybe	Rapid	htmlnotags	recenteqs	simsum
 NRCAN-GSC	maybe	Rapid	htmlnotags	recenteqs	simsum
@@ -1058,6 +1068,29 @@ bulletins &Arr{
 
 # END
 # 
+#
+# This is an example of a single-use update for a non-daemonized bulletin2orb.
+# In this case, the user has a single local file that needs to be converted.
+#
+# I suggest putting this collection in a separate pf and run bulletin2orb
+# as a command line process with the -1 option used 
+#
+
+#
+#  Create a bulletin2orb_once.pf between START/END
+#
+# START
+
+  MTECH-file    &Arr{   # file from mtech 
+        method          file
+        parser          mtech_hypo71
+        extractor       mtech_hypo71
+        linestart       [0-9]
+        src             flatfile        # srcname will be /pf/$src/orb2dbt
+        auth            MTECH           #  auth == $auth . "$evid"      
+        file            /file/location/2004-2009.qks
+  }
+# END
 }
 
 .ps
