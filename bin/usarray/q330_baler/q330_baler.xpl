@@ -199,6 +199,7 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     my (@keys) ;
     my (%q330stat);
         
+    elog_notify("\nget_q330_stat");
     $Pf = "/tmp/TA_status";
     
     unlink "$Pf.pf" if (-e "$Pf.pf");
@@ -231,12 +232,16 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     &prettyprint(\%q330stat) if $opt_D;
     
     @keys = sort( keys %q330stat);
-    
+        
     foreach $key (@keys) {
+        if ( ref($q330stat{$key}) !~ /HASH/ ) {
+            delete( $q330stat{$key} ) ;
+            next;
+        }
         $q330stat{$key}{dlsta} = $q330stat{$key}{dlname};
         elog_notify("$key	$q330stat{$key}{dlsta}") if $opt_V;
     }
-    
+
     elog_notify(sprintf("%d status dlsta",$#keys+1)) if $opt_v;
     return ($problems,%q330stat);
 }
@@ -247,6 +252,8 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     my ($cmd, $Pf, $ref, $key, $subject,$cmd_sel);
     my (@keys) ;
     my (%q330config);
+    
+    elog_notify("\nget_q330_config");
     
     $Pf = "/tmp/TA_config";
     
@@ -281,6 +288,10 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     @keys = sort( keys %q330config);
     
     foreach $key (@keys) {
+        if ( ref($q330config{$key}) !~ /HASH/ ) {
+            delete( $q330config{$key} ) ;
+            next;
+        }
         $q330config{$key}{dlsta} = $q330config{$key}{dlname};
         elog_notify("$key	$q330config{$key}{dlsta}") if $opt_V;
     }
