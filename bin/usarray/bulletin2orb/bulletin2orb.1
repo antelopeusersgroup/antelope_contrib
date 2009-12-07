@@ -100,7 +100,16 @@ line can be run through a parser that checks to see if the collected line is
 new.  Each new line can then have the individual parts extracted and the info 
 placed into a hash for later processing.
 
-.IP "\(bu \fBcollect_htmltagged\fP or \fBcollect_htmlnotags\fP:  HTML text - web accessible"
+.IP "\(bu \fBfile\fP:  plain text file - locally accessible"
+.br
+
+This presumes you have access to an ascii file containing bulletin information.  
+Perhaps the file is saved to disk from an email attachment.  The text has no HTML 
+code embedded in it and tends to be fixed format.  
+Each new line of the file has the individual parts extracted and the info 
+placed into a hash for later processing.
+
+.IP "\(bu \fBhtmltagged\fP or \fBhtmlnotags\fP:  HTML text - web accessible"
 .br
 
 This is the most common format.  These methods deal with information that is returned within 
@@ -153,7 +162,9 @@ expect that the search function may take more resources than a simply served HTM
 thus it is recommended that bulletin collections of this type be run at much less 
 frequent intervals.  In particular, you may not want to run \fBbulletin2orb\fP in
 the default daemon mode, but instead use the \fI-1\fP option for single execution
-and collect this type of bulletin via cronjob.
+and collect this type of bulletin via cronjob.  The maximum number of events that 
+you can have returned from a search is 20,000.  If you request a longer time window, 
+that may have more than 20,0000 events, the event list will be truncated at 20,0000.  
 
 .IP "\(bu \fBftp\fP:  plain text via ftp"
 .br
@@ -212,6 +223,7 @@ CERI-NMSN	maybe	Rapid	htmltagged	recenteqs	qedWWW
 Lamont-LCSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
 MTECH-auto	yes	Rapid	htmlnotags	mtechAUTO	mtechAUTO
 MTECH-rev 	no	Rapid	htmlnotags	recenteqs	simsum
+MTECH-file	no	Never	file	mtech_hypo71	mtech_hypo71
 PNSN	maybe	Rapid	htmltagged	recenteqs	qedWWW	
 NRCAN-PGC	maybe	Rapid	htmlnotags	recenteqs	simsum
 NRCAN-GSC	maybe	Rapid	htmlnotags	recenteqs	simsum
@@ -703,7 +715,7 @@ bulletins &Arr{
 	src		AEIC	# srcname will be /pf/$src/orb2dbt
 	auth		AEIC		# auth == $auth	
 	url		http://www.aeic.alaska.edu/cgi-bin/db2catalog.pl	
-	ndays		90		# used to set min/max time for search 
+	ndays		90		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
   }
 
   SCSN-search      &Arr{
@@ -713,7 +725,7 @@ bulletins &Arr{
 	src		SCSN		# srcname will be /pf/$src/orb2dbt
 	auth		SCSN		# auth == $auth	. "$evid"
 	url		http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl	
-	ndays		7 		# used to set min/max time for search 
+	ndays		7 		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
   }
 
    NCSN-search    &Arr{
@@ -723,7 +735,7 @@ bulletins &Arr{
  	src		NCSN	  	# srcname will be /pf/$src/orb2dbt
  	auth		NCSN		# auth == $auth	. "$nscn_evid" . "$rev_info"
  	url		http://www.ncedc.org/cgi-bin/catalog-search2.pl	
- 	ndays		7 		# used to set min/max time for search 
+ 	ndays		7 		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
    }
 
    BC-NESN       &Arr{
@@ -733,7 +745,7 @@ bulletins &Arr{
  	src		NESN		# srcname will be /pf/$src/orb2dbt
  	auth		NESN		# auth == $auth	
  	url		http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl	
-	ndays		31 		# used to set min/max time for search 
+	ndays		31 		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
    }
 
   NBE-search  	&Arr{
@@ -743,17 +755,28 @@ bulletins &Arr{
 	src		NBE		# srcname will be /pf/$src/orb2dbt
 	auth		UNR_NBE		# auth == $auth	
 	url		http://www.seismo.unr.edu/cgi-bin/catalog-search	
-	ndays		7  		# used to set min/max time for search 
+	ndays		7  		# used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
   }
   
- ANF	&Arr{
-	method		dbsubset	
-	parser		dbsubset 
-	src		ANF		# srcname will be /pf/$src/orb2dbt
-	auth		ANF		# auth will be filled in with origin.auth after authsubset
-	db 		/path/to/usarray/db/usarray
-	authsubset	auth=~/ANF.*/
-	ndays		7 		# used to set min/max time for search 
+ ANF_rt &Arr{
+        method          dbsubset
+        parser          dbsubset
+        src             ANF             # srcname will be /pf/$src/orb2dbt
+        auth            ANF             # auth will be filled in with origin.auth after authsubset
+        db              /path/to/anf/rt/db/usarray
+        authsubset      auth=~/ANF.*/
+        ndays           7               # used to set min/max time for search. Search range w/o enddate:  now-86400*ndays::now  
+   }
+
+ ANF_arch       &Arr{
+        method          dbsubset
+        parser          dbsubset
+        src             ANF             # srcname will be /pf/$src/orb2dbt
+        auth            ANF             # auth will be filled in with origin.auth after authsubset
+        db              /path/to/anf/archived/db/usarray
+        authsubset      auth=~/ANF.*/
+        enddate         2/1/2008        # used to set endtime for search.  Without enddate, endtime == now() 
+        ndays           31              # used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now 
    }
 
   UUSS-daily &Arr{	# utah daily updated solutions 
@@ -999,7 +1022,8 @@ bulletins &Arr{
 	src		SCSN		# srcname will be /pf/$src/orb2dbt
 	auth		SCSN		# auth == $auth	. "$evid"
 	url		http://www.data.scec.org/cgi-bin/catalog/catalog_search.pl	
-	ndays		90		# used to set min/max time for search 
+#       enddate         4/1/2008        # used to set endtime for search.  Without enddate, endtime == now() 
+	ndays		90		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
   }
 
    NCSN-longsearch    &Arr{
@@ -1009,7 +1033,7 @@ bulletins &Arr{
  	src		NCSN		# srcname will be /pf/$src/orb2dbt
  	auth		NCSN		# auth == $auth	. "$nscn_evid" . "$rev_info"
  	url		http://www.ncedc.org/cgi-bin/catalog-search2.pl	
- 	ndays		90 		# used to set min/max time for search 
+ 	ndays		90 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
    }
 
    NESN-longsearch   &Arr{
@@ -1019,7 +1043,7 @@ bulletins &Arr{
  	src		NESN		# srcname will be /pf/$src/orb2dbt
  	auth		NESN		# auth == $auth	
  	url		http://quake.bc.edu:8000/cgi-bin/NESN/print_catalog.pl	
- 	ndays		90 		# used to set min/max time for search 
+ 	ndays		90 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
    }
 
   NBE-longsearch  	&Arr{
@@ -1029,7 +1053,7 @@ bulletins &Arr{
 	src		NBE		# srcname will be /pf/$src/orb2dbt
 	auth		UNR_NBE		# auth == $auth	
 	url		http://www.seismo.unr.edu/cgi-bin/catalog-search	
-	ndays		180 		# used to set min/max time for search 
+	ndays		180 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
   }
   
  ANF-longsubset	&Arr{
@@ -1039,11 +1063,34 @@ bulletins &Arr{
 	auth		ANF		# auth will be filled in with origin.auth after authsubset
 	db 		/path/to/usarray/db/usarray
 	authsubset	auth=~/ANF.*/
-	ndays		90 		# used to set min/max time for search 
+	ndays		90 		# used to set min/max time for search.  Search range w/o enddate:  now-86400*ndays::now
    }
 
 # END
 # 
+#
+# This is an example of a single-use update for a non-daemonized bulletin2orb.
+# In this case, the user has a single local file that needs to be converted.
+#
+# I suggest putting this collection in a separate pf and run bulletin2orb
+# as a command line process with the -1 option used 
+#
+
+#
+#  Create a bulletin2orb_once.pf between START/END
+#
+# START
+
+  MTECH-file    &Arr{   # file from mtech 
+        method          file
+        parser          mtech_hypo71
+        extractor       mtech_hypo71
+        linestart       [0-9]
+        src             flatfile        # srcname will be /pf/$src/orb2dbt
+        auth            MTECH           #  auth == $auth . "$evid"      
+        file            /file/location/2004-2009.qks
+  }
+# END
 }
 
 .ps
@@ -1053,6 +1100,10 @@ bulletins &Arr{
 .LP
 Searchable bulletins and those using the \fIdbsubset\fP method need to have an \fIndays\fP
 parameter to define the time range of the search.
+.LP
+Searchable bulletins and those using the \fIdbsubset\fP method can have an \fIenddate\fP
+parameter to define the ending time for the search.  If not specified, search looks for \fIndays\fP
+of data prior to \fBnow()\fI. 
 .LP
 Whether or not a particular bulletin needs an \fIextractor\fP specified depends on the
 format and \fImethod\fP used to collect it.  Don't change the defaults.

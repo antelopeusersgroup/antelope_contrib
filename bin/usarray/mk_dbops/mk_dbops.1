@@ -13,6 +13,7 @@ mk_dbops \- update dbops tables after station install, adoption, removal or comm
 	[-V \fIvnet\fP]
 	[-m \fIsource_match\fP]
 	[-p \fIpf\fP]
+	[-C \fIcmdORB\fP]
 	[-P \fIprelimORB\fP]
 	[-S \fIstatusORB\fP]
 	[-w \fIprelimwfDB\fP]
@@ -188,6 +189,8 @@ status_orb      somewhere.ucsd.edu:status	# orb where status packets exist, over
 
 prelim_orb      somewhere.ucsd.edu:prelim	# orb where prelim waveforms exist, override with -P
 
+cmd_orb         somewhere.ucsd.edu:prelim	# orb where dlcmds are sent, override with -C
+
 wfdb            db/usarray	# where certified waveforms are written to disk, override with -W
 
 vnet            _US-TA
@@ -222,6 +225,10 @@ is not selected.  If the orb is not operational or you do not have access, the p
 .IP \fIprelim_orb\fP
 Preliminary ORB used to gather the \fIdeployment.time\fP value during an installation, \fI-I\fP.
 If the orb is not operational or you do not have access, the program exits.
+.IP \fIcmd_orb\fP
+Command ORB used to send and receive \fBdlcmds\fP.  Used only during an installation (i.e.
+when the \fI-I\fP option is selected.  Ignored if the \fI-n\fP is used.
+If the orb is not operational or you do not have access, the program exits.
 .IP \fIwfdb\fP
 Use this certified waveform database during a removal, \fI-R\fP, to gather the 
 \fIdeployment.endtime\fP value.  
@@ -245,7 +252,7 @@ update, removal, or adoption.
 .LP
    For a new installation: 
 
-       mk_dbops -I [-k] [-v] [-n] [-V vnet] [-m source_match] [-p pf] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type 
+       mk_dbops -I [-k] [-v] [-n] [-V vnet] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type 
 
    For a comms update:
 

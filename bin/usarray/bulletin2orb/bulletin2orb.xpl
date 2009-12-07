@@ -1,4 +1,3 @@
-
 use strict 'vars' ; 
 use warnings ; 
 use Datascope ; 
@@ -164,6 +163,7 @@ sub get_newpf {
 	match	=> pfget ($Pf, "bulletins\{$task}\{match\}\}"), 
 	reject	=> pfget ($Pf, "bulletins\{$task}\{reject\}\}"), 
 	ndays	=> pfget ($Pf, "bulletins\{$task}\{ndays\}\}"),
+	enddate	=> pfget ($Pf, "bulletins\{$task}\{enddate\}\}"),
 	db	=> pfget ($Pf, "bulletins\{$task}\{db\}\}"),
 	authsubset	=> pfget ($Pf, "bulletins\{$task}\{authsubset\}\}")
     );

@@ -1,8 +1,11 @@
 #
 
+
 status_orb	somewhere.ucsd.edu:status		# orb where status packets exist, override with -S
 
 prelim_orb	somewhere.ucsd.edu:prelim		# orb where prelim waveforms exist, override with -P
+
+cmd_orb		somewhere.ucsd.edu:qcmd			# orb where dlcmd packets exist, override with -C
 
 wfdb		db/usarray		# where certified waveforms are written to disk, override with -W
 
