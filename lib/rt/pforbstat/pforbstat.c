@@ -11,6 +11,7 @@
 #include "coords.h"
 #include "orb.h"
 #include "pf.h"
+#include "md5.h"
 
 #include "pforbstat.h"
 
@@ -159,7 +160,6 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	char	thread[STRSZ];
 	char	name[STRSZ];
 	char	perm_string[2];
-	char	*ptr;
 	struct in_addr in;
 	double	latency_sec;
 
@@ -273,6 +273,8 @@ id_clients( Pf *pf )
 
 		pfset( pf, clientid_key, clientid );
 	}
+
+	freetbl( client_keys, 0 );
 
 	return;
 }
@@ -391,6 +393,11 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 		}
 	}
 
+	if( hook != (Hook *) NULL ) {
+
+		free_hook( &hook );
+	}
+
 	return;
 }
 
@@ -434,7 +441,7 @@ report_nonroutable( char *address )
 
 	if( getarr( Nonroutable, address ) == NULL ) {
 		
-		setarr( Nonroutable, address, 0x1 );
+		setarr( Nonroutable, address, (void *) 0x1 );
 
 		return 1;
 
@@ -609,6 +616,8 @@ orbdatabases2pf( Pf *pfanalyze )
 			pfput( pfdatabases, formal_name, pfdatabase, PFPF );
 		}
 	}
+
+	freetbl( client_keys, 0 );
 
 	free( serverhostcopy );
 
@@ -844,6 +853,8 @@ orbconnections2pf( Pf *pfanalyze )
 			pfput( pfconnections, formal_name, pfconnection, PFPF );
 		}
 	}
+
+	freetbl( client_keys, 0 );
 
 	pfput( pf, "connections", pfconnections, PFPF );
 
