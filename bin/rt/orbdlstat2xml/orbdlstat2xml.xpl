@@ -77,7 +77,7 @@ if( makedir( $dir ) < 0 ) {
 	die( "Failed to make directory '$dir'. Bye.\n" );
 }
 
-$orb = orbopen( $orbname, "r" );
+$orb = orbopen( $orbname, "r&" );
 
 if( $opt_a ) {
 
