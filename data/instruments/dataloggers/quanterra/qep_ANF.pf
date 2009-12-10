@@ -125,7 +125,6 @@ gnom		1.0
 iunits  	percent
 ounits		counts
 sn              datalogger
-rsptype		p
 }
 
 
@@ -146,9 +145,9 @@ rsptype		V
 }
 
 
-LCE_EP	&Arr{	# PLL offset in usecons, 1sps
+LCE_EP	&Arr{	# PLL offset in usec, 1sps
 stages 		epO	
-iunits  	T   
+iunits  	sec   
 ounits		counts
 samprate 	1.000	
 }
@@ -156,7 +155,7 @@ samprate 	1.000
 epO &Arr{
 gtype		QEP PLL offset
 gnom		0.000001
-iunits  	V
+iunits  	sec
 ounits		counts
 sn              datalogger
 rsptype		T
@@ -165,7 +164,7 @@ rsptype		T
 
 LCO_EP	&Arr{	# VCO in -5000 to +5000 counts, 1sps
 stages 		epC	
-iunits  	c   
+iunits  	counts   
 ounits		counts
 samprate 	1.000	
 }
@@ -173,10 +172,9 @@ samprate 	1.000
 epC &Arr{
 gtype		QEP VCO control
 gnom		1.0
-iunits  	V
+iunits  	counts	
 ounits		counts
 sn              datalogger
-rsptype		V
 }
 
 
