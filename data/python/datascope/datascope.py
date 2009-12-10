@@ -478,7 +478,7 @@ class Dbptr(list):
 
         return Dbptr(tr)
 
-    def sample(self, t0, t1, sta, chan, apply_calib = False):
+    def sample(self, t0, t1, sta, chan, apply_calib = False, filter = None):
         """Return time-series data for a given station, channel, and time-interval"""
 
         if(isinstance(t0, str)):
@@ -489,11 +489,11 @@ class Dbptr(list):
             
             t1 = _stock._str2epoch(t1)
 
-        v = _datascope._trsample(self, t0, t1, sta, chan, apply_calib)
+        v = _datascope._trsample(self, t0, t1, sta, chan, apply_calib, filter)
 
         return v
 
-    def samplebins(self, t0, t1, sta, chan, binsize, apply_calib = False):
+    def samplebins(self, t0, t1, sta, chan, binsize, apply_calib = False, filter = None):
         """Return binned time-series data for a given station, channel, and time-interval"""
 
         if(isinstance(t0, str)):
@@ -504,7 +504,7 @@ class Dbptr(list):
             
             t1 = _stock._str2epoch(t1)
 
-        v = _datascope._trsamplebins(self, t0, t1, sta, chan, binsize, apply_calib)
+        v = _datascope._trsamplebins(self, t0, t1, sta, chan, binsize, apply_calib, filter)
 
         return v
 
@@ -938,16 +938,16 @@ def trfilter(trin, filter_string):
     return trin.filter(filter_string)
 
 
-def trsample(dbin, t0, t1, sta, chan, apply_calib = False):
+def trsample(dbin, t0, t1, sta, chan, apply_calib = False, filter = None):
     """Return time-series data for a given station, channel, and time-interval"""
 
-    return dbin.sample(t0, t1, sta, chan, apply_calib)
+    return dbin.sample(t0, t1, sta, chan, apply_calib, filter)
 
 
-def trsamplebins(dbin, t0, t1, sta, chan, binsize, apply_calib = False):
+def trsamplebins(dbin, t0, t1, sta, chan, binsize, apply_calib = False, filter = None):
     """Return binned time-series data for a given station, channel, and time-interval"""
 
-    return dbin.samplebins(t0, t1, sta, chan, binsize, apply_calib)
+    return dbin.samplebins(t0, t1, sta, chan, binsize, apply_calib, filter)
 
 
 def trdata(trin):
@@ -2580,6 +2580,17 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[3][0], 706139719.19999993, 0.000000001))
             self.assertTrue(self.is_close(v[3][1], -1504.951904296875, 0.0001)) 
 
+            v = trsample(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", True, "BW 0.5 4 3 4")
+
+            self.assertTrue(self.is_close(v[0][0], 706139719.04999995, 0.000000001))
+            self.assertTrue(self.is_close(v[0][1], 0.0, 0.0001))
+            self.assertTrue(self.is_close(v[1][0], 706139719.0999999, 0.000000001))
+            self.assertTrue(self.is_close(v[1][1], 0.144542485476, 0.0001))
+            self.assertTrue(self.is_close(v[2][0], 706139719.14999998, 0.000000001))
+            self.assertTrue(self.is_close(v[2][1], 1.1072145700, 0.0001))
+            self.assertTrue(self.is_close(v[3][0], 706139719.19999993, 0.000000001))
+            self.assertTrue(self.is_close(v[3][1], 3.81420111656, 0.0001)) 
+
         def test_procedure_trsamplebins(self):
 
             db = dbopen(self.dbname)
@@ -2598,6 +2609,21 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[3][0], 706139726.54999995, 0.000000001))
             self.assertTrue(self.is_close(v[3][1], -1722.506591796875, 0.0001))
             self.assertTrue(self.is_close(v[3][2], -1576.6732177734375, 0.0001))
+
+            v = trsamplebins(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", 50, True, "BW 0.5 4 3 4")
+
+            self.assertTrue(self.is_close(v[0][0], 706139719.04999995, 0.000000001))
+            self.assertTrue(self.is_close(v[0][1], -17.536336898, 0.0001))
+            self.assertTrue(self.is_close(v[0][2], 20.2765827179, 0.0001))
+            self.assertTrue(self.is_close(v[1][0], 706139721.54999995, 0.000000001))
+            self.assertTrue(self.is_close(v[1][1], -17.1551303864, 0.0001))
+            self.assertTrue(self.is_close(v[1][2], 15.4751329422, 0.0001))
+            self.assertTrue(self.is_close(v[2][0], 706139724.04999995, 0.000000001))
+            self.assertTrue(self.is_close(v[2][1], -31.9407920837, 0.0001))
+            self.assertTrue(self.is_close(v[2][2], 30.6906642914, 0.0001))
+            self.assertTrue(self.is_close(v[3][0], 706139726.54999995, 0.000000001))
+            self.assertTrue(self.is_close(v[3][1], -24.7098751068, 0.0001))
+            self.assertTrue(self.is_close(v[3][2], 35.9503860474, 0.0001))
 
         def test_procedure_trsplice(self):
 

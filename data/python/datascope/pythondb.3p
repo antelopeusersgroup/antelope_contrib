@@ -742,7 +742,7 @@ fname = db.trwfname( pattern )
 .in
 .ft R
 
-.IP "\fBtrsample\fP (db, t0, t1, sta, chan, apply_calib = False)"
+.IP "\fBtrsample\fP (db, t0, t1, sta, chan, apply_calib = False, filter = None)"
 Return time-series data for a given station, channel, and time-interval
 .ft CW
 .in 2c
@@ -759,7 +759,7 @@ v = trsample(db, 706139719.05000, 706139855.95000, "TKM", "BHZ", True)
 .in
 .ft R
 
-.IP "\fBtrsamplebins\fP (db, t0, t1, sta, chan, binsize, apply_calib = False)"
+.IP "\fBtrsamplebins\fP (db, t0, t1, sta, chan, binsize, apply_calib = False, filter = None)"
 Return binned time-series data for a given station, channel, and time-interval
 .ft CW
 .in 2c

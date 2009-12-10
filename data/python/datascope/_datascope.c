@@ -2475,7 +2475,7 @@ python_trfilter( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_trsample( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _trsample(db, t0, t1, sta, chan, apply_calib)";
+	char	*usage = "Usage: _trsample(db, t0, t1, sta, chan, apply_calib, filter)";
 	Dbptr	db;
 	Dbptr	tr;
 	double	t0;
@@ -2486,6 +2486,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 	float	*data;
 	char	*sta;
 	char	*chan;
+	char	*filter = 0;
 	int	apply_calib = 0;
 	int	nrows = 0;
 	int	nsamp_total = 0;
@@ -2493,11 +2494,14 @@ python_trsample( PyObject *self, PyObject *args ) {
 	int	irow;
 	int	isamp_row = 0;
 	int	isamp_total = 0;
+	int	rc;
 	PyObject *obj;
 	PyObject *pair;
 
-	if( ! PyArg_ParseTuple( args, "O&ddssO&", parse_to_Dbptr, 
-				       &db, &t0, &t1, &sta, &chan, parse_from_Boolean, &apply_calib ) ) {
+	if( ! PyArg_ParseTuple( args, "O&ddssO&z", parse_to_Dbptr, 
+				       &db, &t0, &t1, &sta, &chan, 
+				       parse_from_Boolean, &apply_calib, 
+				       &filter) ) {
 
 		if( ! PyErr_Occurred() ) {
 
@@ -2517,6 +2521,26 @@ python_trsample( PyObject *self, PyObject *args ) {
 			"trsample: no data (no rows in trace object)\n" );
 
 		return NULL;
+	}
+
+	if( filter != (char *) NULL ) {
+		
+		rc = trfilter( tr, filter );
+
+		if( rc == -2 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, 
+				"trsample: error parsing filter string\n" );
+
+			return NULL;
+
+		} else if( rc < 0 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, 
+				"trsample: unknown error while attempting to filter data\n" );
+
+			return NULL;
+		}
 	}
 
 	if( apply_calib ) {
@@ -2582,7 +2606,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 static PyObject *
 python_trsamplebins( PyObject *self, PyObject *args ) {
-	char	*usage = "Usage: _trsamplebins(db, t0, t1, sta, chan, binsize, apply_calib)";
+	char	*usage = "Usage: _trsamplebins(db, t0, t1, sta, chan, binsize, apply_calib, filter)";
 	Dbptr	db;
 	Dbptr	tr;
 	double	t0;
@@ -2595,6 +2619,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	double	max;
 	char	*sta;
 	char	*chan;
+	char	*filter = 0;
 	int	apply_calib = 0;
 	int	binsize = 1;
 	int	nrows = 0;
@@ -2604,11 +2629,14 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	int	irow;
 	int	isamp_row = 0;
 	int	ireturn = 0;
+	int	rc;
 	PyObject *obj;
 	PyObject *triple;
 
-	if( ! PyArg_ParseTuple( args, "O&ddssiO&", parse_to_Dbptr, 
-				       &db, &t0, &t1, &sta, &chan, &binsize, parse_from_Boolean, &apply_calib ) ) {
+	if( ! PyArg_ParseTuple( args, "O&ddssiO&z", parse_to_Dbptr, 
+				       &db, &t0, &t1, &sta, &chan, 
+				       &binsize, parse_from_Boolean, &apply_calib,
+				       &filter ) ) {
 
 		if( ! PyErr_Occurred() ) {
 
@@ -2628,6 +2656,26 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 			"trsamplebins: no data (no rows in trace object)\n" );
 
 		return NULL;
+	}
+
+	if( filter != (char *) NULL ) {
+		
+		rc = trfilter( tr, filter );
+
+		if( rc == -2 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, 
+				"trsample: error parsing filter string\n" );
+
+			return NULL;
+
+		} else if( rc < 0 ) {
+
+			PyErr_SetString( PyExc_RuntimeError, 
+				"trsample: unknown error while attempting to filter data\n" );
+
+			return NULL;
+		}
 	}
 
 	if( apply_calib ) {
