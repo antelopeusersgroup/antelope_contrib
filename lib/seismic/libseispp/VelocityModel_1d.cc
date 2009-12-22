@@ -19,8 +19,8 @@ double VelocityModel_1d::getv(double zin)
 	{
 		if(zin<z[i]) 
 		{
-			if(i==1)
-				return(v[1]);
+                        if(zin<z[0])
+                                return(v[0]);
 			else
 			{
 				dz=zin-z[i-1];
