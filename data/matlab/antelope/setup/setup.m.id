@@ -1,0 +1,26 @@
+ATM_matlab_release = version( '-release' );
+
+ATM_prefix = [getenv( 'ANTELOPE' ), '/data/matlab/', ATM_matlab_release, '/antelope/'];
+
+if ~ strcmp( getenv( 'ANTELOPE' ), '/opt/antelope/$Version' )
+
+	display([sprintf('Please set the ANTELOPE environment variable to ') ...
+		 sprintf('"/opt/antelope/$Version"\n(instead of the current') ...
+		 '"' getenv( 'ANTELOPE' ) sprintf('")\n') ...
+		 'before running /opt/antelope/$Version/setup.m'] );
+
+elseif isempty( what( ATM_prefix ) )
+
+	display([sprintf('The Antelope Toolbox for Matlab does not appear to be compiled\n') ...
+		 sprintf('on this machine for the currently attempted combination of\n') ...
+		 'Matlab release ', ATM_matlab_release, sprintf(' and Antelope version $Version\n') ...
+		 sprintf('(Can''t find the directory "') ATM_prefix '")'])
+
+else
+
+	run( [ATM_prefix 'scripts/setup_antelope.m'] )
+
+end
+	
+clear ATM_prefix;
+clear ATM_matlab_release;

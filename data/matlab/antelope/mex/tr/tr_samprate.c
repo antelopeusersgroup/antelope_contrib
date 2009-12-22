@@ -40,5 +40,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
         }
 
-	plhs[0] = CreateDouble( SAMPRATE( time, (int) nsamp_double, endtime ) );
+	plhs[0] = CreateDouble( SAMPRATE( time, (long) nsamp_double, endtime ) );
 }

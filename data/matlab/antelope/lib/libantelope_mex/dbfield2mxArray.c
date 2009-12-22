@@ -14,7 +14,7 @@ mxArray *
 dbfield2mxArray( Dbptr db )
 {
 	mxArray	*result;
-	int	type;
+	long	type;
 	Dbvalue	value;
 	char	warning[STRSZ];
 
@@ -40,7 +40,7 @@ dbfield2mxArray( Dbptr db )
 	case dbINTEGER:
 	case dbYEARDAY:
 		copystrip( value.s, value.s, strlen( value.s ) );
-		result = CreateDouble( (double) atoi( value.s ) );
+		result = CreateDouble( (double) atol( value.s ) );
 		break;
 	case dbREAL:
 	case dbTIME:

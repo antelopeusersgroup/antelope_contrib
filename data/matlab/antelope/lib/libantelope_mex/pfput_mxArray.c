@@ -20,9 +20,9 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 	char	*fieldname;
 	mxArray	*mxfield;
 	mxArray	*mxcell;
-	int	M,N;
+	mwSize	M,N;
 	int	rc;
-	int	i;
+	long	i;
 
 	if( mxIsClass( array, "dbpf" ) )
 	{
@@ -44,7 +44,7 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
             		break ;
 
         	case PFTBL:
-            		settbl ( pf->value.tbl, (int) name, sub_pf ) ;
+            		settbl ( pf->value.tbl, (long) name, sub_pf ) ;
             		break ;
 	
         	default :
@@ -67,7 +67,7 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 	
 		if( mxIsLogicalScalarTrue( out[0] ) ) 
 		{
-			pfput_int( pf, name, (int) number );
+			pfput_int( pf, name, (long) number );
 		} 
 		else 
 		{
@@ -136,7 +136,7 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
             		break ;
 
         	case PFTBL:
-            		settbl ( pf->value.tbl, (int) name, sub_pf ) ;
+            		settbl ( pf->value.tbl, (long) name, sub_pf ) ;
             		break ;
 	
         	default :
@@ -177,7 +177,7 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
             		break ;
 
         	case PFTBL:
-            		settbl ( pf->value.tbl, (int) name, sub_pf ) ;
+            		settbl ( pf->value.tbl, (long) name, sub_pf ) ;
             		break ;
 	
         	default :

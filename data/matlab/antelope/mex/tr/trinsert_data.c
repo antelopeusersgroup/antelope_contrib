@@ -57,6 +57,6 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		data[i] = (float) pr[i];
 	}
 
-	dbputv( tr, 0, "nsamp", M*N, "data", data, 0 );
+	dbputv( tr, 0, "nsamp", M*N, "data", data, NULL );
 	antelope_mex_clear_register( 1 );
 }

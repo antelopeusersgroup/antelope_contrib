@@ -16,7 +16,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	db;
 	int	single_row;
-	int	nrows;
+	long	nrows;
 	int	code = 0;
 	int	rc = 0;
 	char	*expression;

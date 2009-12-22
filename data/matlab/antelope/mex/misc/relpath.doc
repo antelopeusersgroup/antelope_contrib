@@ -1,0 +1,6 @@
+RELPATH		Return a Unix path formatted relative to another
+
+REL = ABSPATH ( FROM, TO )
+
+RELPATH formats a Unix path to a file (TO), relative to another 
+path on the filesystem (FROM)

@@ -1,4 +1,4 @@
-DATADIR= matlab/antelope/scripts
+DATADIR= matlab/$(MATLAB_RELEASE)/antelope/scripts
 
 
 #
@@ -12,7 +12,7 @@ DATA= \
 # NOT HERE!!! User Matlab m-files go in data/matlab/antelope/user
 #
 
-HTMLDIR= matlab/antelope/html
+HTMLDIR= matlab/html
 HTML= $(DATA:.m=.html)
 
 CLEAN= 

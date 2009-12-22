@@ -1,4 +1,4 @@
-DLIB= libantelope_mex$(DSUFFIX)
+DLIB= libantelope_mex.$(MATLAB_RELEASE)$(DSUFFIX)
 INCLUDE= antelope_mex.h
 
 CLEAN=
@@ -9,8 +9,6 @@ ldflags=
 ldlibs=
 
 include $(ANTELOPE)/include/mex_antelope_makerules
-
-MEX=mex
 
 OBJS= 	  variables2mxArray.o \
 	  dbptr_struct.o \
@@ -38,5 +36,8 @@ OBJS= 	  variables2mxArray.o \
 	  orbpkt2mxArray.o \
 	  dbprocess_error.o 
 
-$(DLIB) : $(OBJS)
+$(DLIB) : $(OBJS) dsymutil_dir
 	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)
+
+dsymutil_dir:
+	mkdir -p $(ANTELOPE)/dsymutil

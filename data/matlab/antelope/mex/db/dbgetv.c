@@ -34,7 +34,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	db;
 	int	single_row;
-	int	nrows;
+	long	nrows;
 	int	nfields;
 	char	*field_name;
 	int	arg_index;

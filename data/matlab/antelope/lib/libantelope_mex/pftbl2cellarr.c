@@ -20,7 +20,7 @@ pftbl2cellarr( Pf *pftbl, int recursive )
 	void	*value;
 	int	type;
 	int	M;
-	int	i;
+	long	i;
 
 	if( pftbl->type != PFTBL )
 	{

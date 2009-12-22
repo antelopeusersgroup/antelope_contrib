@@ -15,9 +15,9 @@ Usage: IRECORD = DBFIND ( DBPTR, EXPRESSION [,FIRST [,COUNT]] [,'backwards'] )\n
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	db;
-	int	nrecords;
+	long	nrecords;
 	int	code = 0;
-	int	first, backwards;
+	long	first, backwards;
 	char	*direction;
 	Expression *expr;
 	Dbvalue	result;
@@ -26,7 +26,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	int	*intp;
 	char	*string;
 	char	*expression;
-	int	count = 0;
+	long	count = 0L;
 	int	rc;
 
 	if( nrhs < 2 || nrhs > 5 )
@@ -101,7 +101,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 		else
 		{
-			first = MAX( (int) scalar, 0 );
+			first = MAX( (long) scalar, 0L );
 			first = MIN( first, nrecords - 1 );
 		}
 
@@ -116,7 +116,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			}
 			else
 			{
-				count = (int) scalar;
+				count = (long) scalar;
 				count -= 1;
 				count = MAX( count, 0 );
 			}

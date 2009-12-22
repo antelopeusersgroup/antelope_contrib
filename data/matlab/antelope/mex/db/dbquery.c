@@ -22,7 +22,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	int	retcode;
 	char	*string;
 	Tbl	*tbl;
-	int	n;
+	long	n;
 	int	i;
 
 	if( nrhs != 2  )

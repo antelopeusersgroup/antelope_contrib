@@ -14,7 +14,7 @@ Usage: NRECS = DBNRECS ( DBPTR )\n"
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	db;
-	int	nrecs;
+	long	nrecs;
 
 	if( nrhs != 1 )
 	{

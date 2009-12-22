@@ -106,6 +106,7 @@ make &Arr{
 	^r -
 	^ar: creating
 	^ar: writing
+	^amakelocal:
 	^[[:alnum:]_]+\\.[fF]:$
 	^[[:space:]]*MAIN:$
 	^[[:space:]]+MAIN [[:alnum:]_]+:$
@@ -135,6 +136,7 @@ make &Arr{
 	^name=
 	^input=
 	^output=
+	^uninstalling
    }
    blue &Tbl{
 	^ar[[:space:]]
@@ -149,8 +151,8 @@ make &Arr{
 	^gfortran[[:space:]]
 	^gcc[[:space:]]
 	^g\\+\\+[[:space:]]
-	^-> gcc[[:space:]]
-	^cd[[:space:]]
+	^-> gcc([-.0-9]*)?[[:space:]]
+	^[( ]*cd[[:space:]]
 	^chmod[[:space:]]
 	^compile[[:space:]]
 	^purify[[:space:]]
@@ -182,7 +184,8 @@ make &Arr{
 	^[[:space:]]*config\\/install-sh[[:space:]]
 	^make[[:space:]]
 	^mkdir[[:space:]]
-	^mex[[:space:]]
+	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
+	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^mv[[:space:]]
 	^perl[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/perl[[:space:]]

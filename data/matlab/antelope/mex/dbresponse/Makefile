@@ -1,9 +1,9 @@
-DATADIR=matlab/antelope/antelope/@dbresponse
+DATADIR=matlab/$(MATLAB_RELEASE)/antelope/antelope/@dbresponse
 
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
       $(MEXSRCS:.c=.m)
 
-HTMLDIR= matlab/antelope/html
+HTMLDIR= matlab/html
 HTML= $(MEXSRCS:.c=.html)
 
 MEXSRCS= \

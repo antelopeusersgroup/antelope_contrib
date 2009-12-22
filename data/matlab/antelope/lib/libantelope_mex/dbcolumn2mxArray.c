@@ -15,8 +15,8 @@ dbcolumn2mxArray( Dbptr db )
 {
 	mxArray	*result;
 	mxArray	*cell;
-	int	nrows;
-	int	type;
+	long	nrows;
+	long	type;
 	double	*pr;
 	Dbvalue	value;
 	char	warning[STRSZ];
@@ -56,7 +56,7 @@ dbcolumn2mxArray( Dbptr db )
 				return (mxArray *) NULL;
 			}
 			copystrip( value.s, value.s, strlen( value.s ) );
-			pr[db.record] = (double) atoi( value.s );
+			pr[db.record] = (double) atol( value.s );
 		}
 		break;
 	case dbREAL:

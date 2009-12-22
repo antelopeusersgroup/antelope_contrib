@@ -16,7 +16,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	db;
 	char	*idname;
-	int	id;
+	long	id;
 
 	if( nrhs != 2 )
 	{

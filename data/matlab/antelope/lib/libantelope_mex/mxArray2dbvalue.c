@@ -11,7 +11,7 @@
 #include "antelope_mex.h"
 
 Dbvalue *
-mxArray2dbvalue( const mxArray *in, int type )
+mxArray2dbvalue( const mxArray *in, long type )
 {
 	Dbvalue	*value;
 	char	warning[STRSZ];
@@ -50,7 +50,7 @@ mxArray2dbvalue( const mxArray *in, int type )
 		}
 		else
 		{
-			value->i = (int) value->d;
+			value->i = (long) value->d;
 		}
 		break;
 	case dbREAL:

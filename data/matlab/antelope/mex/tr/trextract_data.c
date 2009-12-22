@@ -15,9 +15,9 @@ Usage: DATA = TREXTRACT_DATA ( TRPTR )\n"
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	tr;
-	int	nrecs;
+	long	nrecs;
 	int 	single_row;
-	int	nsamp = 0;
+	long	nsamp = 0;
 	float	*data = NULL;
 	double	*doublep;
 	int	rc;
@@ -63,7 +63,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		mexErrMsgTxt( "trextract_data: TRPTR  must have one row only" );
 	}
 
-	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
+	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, NULL );
 	antelope_mex_clear_register( 1 );
 
 	if( nsamp == 0 || data == NULL ) 
@@ -71,7 +71,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		mexErrMsgTxt( "trextract_data: No data" );
 	}
 
-	plhs[0] = mxCreateDoubleMatrix( nsamp, 1, mxREAL );
+	plhs[0] = mxCreateDoubleMatrix( (mwSize) nsamp, 1, mxREAL );
 	if( plhs[0] == NULL ) 
 	{
 		mexErrMsgTxt( "trextract_data: failed to allocate memory" );

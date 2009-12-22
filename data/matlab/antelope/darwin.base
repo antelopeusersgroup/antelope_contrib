@@ -1,4 +1,3 @@
-MEX=mex
 
 CGEOM_CFLAGS= $(shell if [ -r $(ANTELOPE)/include/cgeom.h ] && \
 		 grep cggrid_write $(ANTELOPE)/include/cgeom.h >&1 > /dev/null ; \
@@ -10,13 +9,15 @@ CGEOM_LIBS= $(shell if [ -r $(ANTELOPE)/include/cgeom.h ] && \
 	       then echo -lcgeom ; \
 	       fi)
 
-ldlibs= -lantelope_mex -lmex_orb $(CGEOM_LIBS) $(ORBLIBS)
+ldlibs= -lantelope_mex.$(MATLAB_RELEASE) -lmex_orb.$(MATLAB_RELEASE) $(CGEOM_LIBS) $(ORBLIBS)
 
-MEXEXT=mexmac
-MEX_CEXTRA=# -Dlinux
+MEX_CEXTRA=
 RPATH=-L
 
+ANTELOPEMAKELOCAL = $(ANTELOPEMAKE).local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
 
 # Suppress -KPIC, which mex compiler doesn't understand
 DCFLAGS= 
@@ -29,7 +30,7 @@ MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
   -L$(XLIB) LDFLAGS='$$LDFLAGS $(RPATH)$(ANTELOPE)/lib $(RPATH)$(DEST)/lib' $(DBG)
 
 clean ::
-	@-$(RM) *.$(MEXEXT) *.m *.html
+	@-$(RM) *.$(MEXEXT) *.mex* *.m *.html
 
 .SUFFIXES: .SUFFIXES .$(MEXEXT) .xm .doc .m .xhtml .html
 

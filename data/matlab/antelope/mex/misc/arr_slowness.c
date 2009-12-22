@@ -20,9 +20,9 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	char 	**phases = 0;
 	double	*slowness = 0;
 	double	*pr;
-	int	narrivals;
+	long	narrivals;
 	Tbl	*phasetbl;
-	int	i;
+	long	i;
 
 	if( nrhs != 2  )
 	{

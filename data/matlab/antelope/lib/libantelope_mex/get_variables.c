@@ -100,9 +100,9 @@ int
 get_inttbl( const mxArray *in, Tbl **tbl )
 {
 	double	*data;
-	int	myint;
-	int	npts;
-	int	i;
+	long	myint;
+	long	npts;
+	long	i;
 
 	if( ! mxIsNumeric( in ) ||
 	    ! mxIsDouble( in ) ||
@@ -121,7 +121,7 @@ get_inttbl( const mxArray *in, Tbl **tbl )
 
 	for( i = 0; i < npts; i++ ) 
 	{
-		myint = (int) data[i];
+		myint = (long) data[i];
 
 		pushtbl( *tbl, (char *) myint );
 	}

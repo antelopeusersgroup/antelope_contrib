@@ -71,8 +71,8 @@ mxArray *orbpkt2mxArray( char *srcname, double time, char *packet, int nbytes, c
 				       "calper", pktchan->calper,
 				       "nsamp", pktchan->nsamp,
 				       "endtime", ENDTIME( pktchan->time, pktchan->samprate, pktchan->nsamp ),
-				       "data", (unsigned int) trdata, 
-				       0 );
+				       "data", (unsigned long) trdata, 
+				       NULL );
 			antelope_mex_clear_register( 1 );
 		}
 

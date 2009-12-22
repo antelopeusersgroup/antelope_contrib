@@ -1,5 +1,6 @@
 display('Running dbexample_runall')
 
+dbexample_abspath
 dbexample_arr_slowness
 dbexample_arrtimes
 dbexample_cggrid
@@ -16,6 +17,7 @@ dbexample_cggrid2db
 dbexample_clear
 dbexample_clear_register
 dbexample_compare_response
+dbexample_concatpaths
 dbexample_db2struct
 dbexample_dbadd
 dbexample_dbadd_remark
@@ -109,6 +111,7 @@ dbexample_pfresolve
 dbexample_pftype
 dbexample_pfupdate
 dbexample_pfwrite
+dbexample_relpath
 dbexample_sort_and_subset
 dbexample_str2epoch
 dbexample_strdate

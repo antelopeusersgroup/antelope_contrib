@@ -21,7 +21,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	int	nfields;
 	int	retcode = 0;
 	int	rc;
-	int	type;
+	long	type;
 	int	fieldname_index;
 	int	fieldval_index;
 	int	i;
@@ -87,19 +87,19 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 		switch (type ) {
 		case dbDBPTR:
-			retcode |= dbputv( db, 0, field_name, value->db, 0 );
+			retcode |= dbputv( db, 0, field_name, value->db, NULL );
 			break;
 		case dbSTRING:
-			retcode |= dbputv( db, 0, field_name, value->s, 0 );
+			retcode |= dbputv( db, 0, field_name, value->s, NULL );
 			break;
 		case dbBOOLEAN:
 		case dbYEARDAY:
 		case dbINTEGER:
-			retcode |= dbputv( db, 0, field_name, value->i, 0 );
+			retcode |= dbputv( db, 0, field_name, value->i, NULL );
 			break;
 		case dbREAL:
 		case dbTIME:
-			retcode |= dbputv( db, 0, field_name, value->d, 0 );
+			retcode |= dbputv( db, 0, field_name, value->d, NULL );
 			break;
 		default:
 			retcode = -1;

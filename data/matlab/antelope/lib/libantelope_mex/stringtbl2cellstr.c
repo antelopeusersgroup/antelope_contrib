@@ -15,8 +15,8 @@ stringtbl2cellstr( Tbl *tbl )
 	mxArray *result;
 	mxArray *mystring;
 	char	*s;
-	int	M;
-	int	i;
+	long	M;
+	long	i;
 
 	M = maxtbl( tbl );
 

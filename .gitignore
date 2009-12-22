@@ -7,4 +7,5 @@
 *.o
 *.dylib
 *.so
+*.so.[0-9]
 *.dSYM

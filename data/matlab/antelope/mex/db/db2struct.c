@@ -24,9 +24,9 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	mxArray	*mxfield;
 	Dbptr	db;
 	int	nonnull = 1;
-	int	is_view;
+	long	is_view;
 	int	Nfields;
-	int	Nrecords;
+	long	Nrecords;
 	int	single_row;
 	int	first_record;
 	int	last_record;

@@ -1,7 +1,8 @@
-DATADIR= matlab/antelope/examples
+DATADIR= matlab/$(MATLAB_RELEASE)/antelope/examples
 DATA= \
 	Contents.m \
 	dbexample_runall.m \
+	dbexample_abspath.m \
 	dbexample_arr_slowness.m \
 	dbexample_arrtimes.m \
 	dbexample_cggrid.m \
@@ -18,6 +19,7 @@ DATA= \
 	dbexample_clear.m \
 	dbexample_clear_register.m \
 	dbexample_compare_response.m \
+	dbexample_concatpaths.m \
 	dbexample_db2struct.m \
 	dbexample_dbadd.m \
 	dbexample_dbadd_remark.m \
@@ -111,6 +113,7 @@ DATA= \
 	dbexample_pftype.m \
 	dbexample_pfupdate.m \
 	dbexample_pfwrite.m \
+	dbexample_relpath.m \
 	dbexample_sort_and_subset.m \
 	dbexample_str2epoch.m \
 	dbexample_strdate.m \
@@ -143,7 +146,7 @@ DATA= \
 	dbexample_yearday.m \
 	dbexample_zepoch2str.m 
 
-HTMLDIR= matlab/antelope/html/examples
+HTMLDIR= matlab/html/examples
 HTML= $(DATA:.m=.html)
 
 include $(ANTELOPE)/include/mex_antelope_makerules

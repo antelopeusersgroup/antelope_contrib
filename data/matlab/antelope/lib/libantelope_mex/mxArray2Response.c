@@ -34,7 +34,7 @@ Response *mxArray2Response( mxArray *array )
 		return (Response *) NULL;
 	}
 
-	response = (Response *) mxArrayToUint32( address );
+	response = (Response *) mxArrayToUlong( address );
 
 	if( response == (Response *) NULL )
 	{
@@ -58,7 +58,7 @@ mxArray *Response2mxArray( Response *response )
 
 	input[1] = mxCreateString("dbresponse");
 
-	address = Uint32ToMxArray( (unsigned int) response );
+	address = UlongToMxArray( (unsigned long) response );
 	if( address == NULL )
 	{
 		mxDestroyArray( input[0] );

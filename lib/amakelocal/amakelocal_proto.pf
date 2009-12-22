@@ -16,17 +16,19 @@ elements &Arr{
 		Linux 	-I/usr/X11R6/include
 	}
 	PYTHONINCLUDE &Arr{
-#		Darwin 	/sw/include/python2.5
-#		SunOS /usr/local/include/python2.5
 		Darwin 	
 		SunOS
 		Linux 
 	}
 	PHP_INC &Arr{
-#               Darwin /usr/include/php 
 		Darwin 	
 		SunOS
 		Linux 
+	}
+	MATLAB &Arr{
+		Darwin 
+		SunOS
+		Linux
 	}
 }
 

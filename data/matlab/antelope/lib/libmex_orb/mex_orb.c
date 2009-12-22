@@ -63,8 +63,8 @@ mex_orbget( int orbfd, int code, int *pktid, char *srcname, double *time,
 		char **packet, int *nbytes, int *bufsize )
 {
 
-	return orbget( (int) orbfd, code, pktid, srcname, time,
-			     packet, nbytes, bufsize );
+	return orbget( orbfd, code, pktid, srcname, time,
+		       packet, nbytes, bufsize );
 }
 
 int
@@ -72,8 +72,8 @@ mex_orbreap( int orbfd, int *pktid, char *srcname, double *time,
 		char **packet, int *nbytes, int *bufsize )
 {
 
-	return orbreap( (int) orbfd, pktid, srcname, time,
-			     packet, nbytes, bufsize );
+	return orbreap( orbfd, pktid, srcname, time,
+			packet, nbytes, bufsize );
 }
 
 int
@@ -81,6 +81,6 @@ mex_orbreap_nd( int orbfd, int *pktid, char *srcname, double *time,
 		char **packet, int *nbytes, int *bufsize )
 {
 
-	return orbreap_nd( (int) orbfd, pktid, srcname, time,
-			     packet, nbytes, bufsize );
+	return orbreap_nd( orbfd, pktid, srcname, time,
+			   packet, nbytes, bufsize );
 }

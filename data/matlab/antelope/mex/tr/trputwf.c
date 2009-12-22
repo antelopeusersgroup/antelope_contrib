@@ -17,7 +17,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	Dbptr	db;
 	float	*data = NULL;
 	double	*doublep;
-	int	*dims;
+	mwSize	*dims;
 	int	nsamp;
 	int	rc;
 	int	i;
@@ -45,7 +45,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
         }
 
-	dims = (int *) mxGetDimensions( prhs[1] );
+	dims = (mwSize *) mxGetDimensions( prhs[1] );
 	if( dims[1] != 1 && dims[0] != 1 ) 
 		mexErrMsgTxt ( "trputwf: DATA must have dimensions Nx1 or 1xN\n" );
 	if( dims[1] == 1 ) nsamp = dims[0];

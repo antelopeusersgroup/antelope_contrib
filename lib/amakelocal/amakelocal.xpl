@@ -12,12 +12,12 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'ip:s:v' ) ) {
+if( !Getopts( 'icp:s:v' ) ) {
 
-	elog_die( "Usage: amakelocal [-i] [-v] [-p pfname] [MACRO [MACRO ...]]\n" );
+	elog_die( "Usage: amakelocal [-i] [-v] [-c] [-p pfname] [MACRO [MACRO ...]]\n" );
 }
 
-if( @ARGV >= 1 ) {
+if( @ARGV >= 1 || $opt_c ) {
 
 	$runmode = "verify";
 
@@ -126,32 +126,88 @@ if( $runmode eq "construct" ) {
 
 if( $runmode eq "verify" ) {
 
+	if( ! -e "$dest/$output_file" ) {
+
+		$exitcode = 1;
+
+		if( $opt_c ) { 
+
+			elog_complain( 
+		   	"\n\n\t***********\n\n" .
+		   	"\tRequired macro(s) '" . join( ",", @ARGV ) . "' not found because " .
+		   	"\n\tlocal configuration file\n\t'$dest/$output_file'" .
+		   	"\n\tdoes not exist.\n" .
+		   	"\n\tUse amakelocal(1) to configure your local system" .
+		   	"\n\tso Antelope-contrib code will link properly to software" .
+		   	"\n\texternal to Antelope.\n" .
+		   	"\n\t***********\n\n" );
+
+		} else {
+
+			elog_complain( 
+		   	"\n\n\t***********\n\n" .
+		   	"\tRequired macro(s) '" . join( ",", @ARGV ) . "' not found because " .
+		   	"\n\tlocal configuration file\n\t'$dest/$output_file'" .
+		   	"\n\tdoes not exist.\n\n\tCancelling " .
+		   	"compilation in current subdirectory\n\t'" . cwd() . "'\n" .
+		   	"\n\tUse amakelocal(1) to configure your local system" .
+		   	"\n\tso code in this directory will link properly to software" .
+		   	"\n\texternal to Antelope.\n" .
+		   	"\n\t***********\n\n" );
+		}
+
+		exit( $exitcode );
+	}
+
 	open( A, "$dest/$output_file" );
 
-	@antelopemake = <A>;
+	@antelopemake_local = <A>;
 
 	close( A );
 
 	$exitcode = 0;
 
+	if( $opt_c && @ARGV <= 0 ) {
+
+		grep( s/\#.*//, @antelopemake_local );
+		grep( /^\s*$/ || print, @antelopemake_local );
+
+		exit( $exitcode );
+	}
+
 	foreach $macro ( @ARGV ) {
 	
-		if( ! grep( m/^$macro\s*=/, @antelopemake ) ) {
+		$result = grep( m/^$macro\s*=\s*(.*)/ && ($match = $1), @antelopemake_local );
+
+		if( ! $result ) {
 
 			$exitcode = 1;
 
-			elog_complain( 
-			   "\n\n\t***********\n\n" .
-			   "\tRequired macro '$macro' is undefined.\n\n\tCancelling " .
-			   "compilation in current subdirectory\n\t'" . cwd() . "'\n" .
-			   "\n\tUse amakelocal(1) to configure your local system.\n" .
-			   "\n\t***********\n\n" );
+			if( $opt_c ) { 
+
+				elog_complain( "Macro '$macro' is undefined\n" );
+
+			} else {
+
+				elog_complain( 
+			   	"\n\n\t***********\n\n" .
+			   	"\tRequired macro '$macro' is undefined.\n\n\tCancelling " .
+			   	"compilation in current subdirectory\n\t'" . cwd() . "'\n" .
+			   	"\n\tUse amakelocal(1) to configure your local system" .
+			   	"\n\tso code in this directory will link properly to software" .
+			   	"\n\texternal to Antelope.\n" .
+			   	"\n\t***********\n\n" );
+			}
 
 		} else {
+			
+			if( $opt_c ) {
+				
+				elog_notify( "$macro = $match\n" );
 
-			if( $opt_v ) {
+			} elsif( $opt_v ) {
 
-				elog_complain( "Required macro '$macro' is defined, continuing.\n" );
+				elog_complain( "Found required macro '$macro = $match'\n" );
 			}
 		}
 	}

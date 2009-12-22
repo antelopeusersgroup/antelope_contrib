@@ -1,4 +1,3 @@
-MEX=mex
 
 CGEOM_CFLAGS= $(shell if [ -r $(ANTELOPE)/include/cgeom.h ] && \
 		 grep cggrid_write $(ANTELOPE)/include/cgeom.h >&1 > /dev/null ; \
@@ -10,13 +9,18 @@ CGEOM_LIBS= $(shell if [ -r $(ANTELOPE)/include/cgeom.h ] && \
 	       then echo -lcgeom ; \
 	       fi)
 
-ldlibs= -lantelope_mex -lmex_orb $(CGEOM_LIBS) $(ORBLIBS)
+ldlibs= -lantelope_mex.$(MATLAB_RELEASE) -lmex_orb.$(MATLAB_RELEASE) $(CGEOM_LIBS) $(ORBLIBS)
 
-MEXEXT=mexglx
-MEX_CEXTRA=-Dlinux
-RPATH=-Wl,-rpath,
+MEX_CEXTRA=
+RPATH=-L
+
+ANTELOPEMAKELOCAL = $(ANTELOPEMAKE).local
 
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+# Get STOCKNEEDS away from mex, which doesn't understand -framework
+STOCKLIBS=-lcoords -lbanner -lstock -ldeviants -lbrttpool
 
 # Suppress -KPIC, which mex compiler doesn't understand
 DCFLAGS= 
@@ -26,10 +30,10 @@ CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(X
 
 # Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
 MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
-  -L$(XLIB) LDFLAGS='$$LDFLAGS $(RPATH)$(ANTELOPE)/lib $(RPATH)$(DEST)/lib' $(DBG)
+  -L$(XLIB) LDFLAGS='$$LDFLAGS $(STOCKNEEDS) $(RPATH)$(ANTELOPE)/lib $(RPATH)$(DEST)/lib' $(DBG)
 
 clean ::
-	@-$(RM) *.$(MEXEXT) *.m *.html
+	@-$(RM) *.$(MEXEXT) *.mex* *.m *.html
 
 .SUFFIXES: .SUFFIXES .$(MEXEXT) .xm .doc .m .xhtml .html
 

@@ -23,7 +23,7 @@ pfpeek( Pf *pf, char *name, Pf **value )
 		*value = (Pf *) getarr( pf->value.arr, name );
 		break;
 	case PFTBL:
-		*value = (Pf *) gettbl( pf->value.tbl, (int) name );
+		*value = (Pf *) gettbl( pf->value.tbl, (long) name );
 		break;
 #ifdef PFPROMPT
 	case PFPROMPT:

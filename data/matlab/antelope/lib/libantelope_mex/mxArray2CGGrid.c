@@ -23,7 +23,7 @@ int ATM_cggrid_register( CGGrid *cgg )
 	char	*key;
 
 	allot( char *, key, STRSZ );
-	sprintf( key, "%x", (unsigned int) cgg );
+	sprintf( key, "%x", (unsigned long) cgg );
 
 	if( ATM_CGGrid_Registry == (Arr *) NULL ) 
 	{
@@ -54,7 +54,7 @@ int ATM_cggrid_unregister( CGGrid *cgg )
 	}
 
 	allot( char *, key, STRSZ );
-	sprintf( key, "%x", (unsigned int) cgg );
+	sprintf( key, "%x", (unsigned long) cgg );
 
 	if( getarr( ATM_CGGrid_Registry, key ) == NULL ) 
 	{
@@ -83,7 +83,7 @@ int ATM_cggrid_is_registered( CGGrid *cgg )
 	}
 
 	allot( char *, key, STRSZ );
-	sprintf( key, "%x", (unsigned int) cgg );
+	sprintf( key, "%x", (unsigned long) cgg );
 
 	if( getarr( ATM_CGGrid_Registry, key ) != NULL ) 
 	{
@@ -117,7 +117,7 @@ CGGrid *mxArray2CGGrid( const mxArray *array )
 		return (CGGrid *) NULL;
 	}
 
-	cgg = (CGGrid *) mxArrayToUint32( address );
+	cgg = (CGGrid *) mxArrayToUlong( address );
 
 	if( ! ATM_cggrid_is_registered( cgg ) ) 
 	{
@@ -147,7 +147,7 @@ mxArray *CGGrid2mxArray( CGGrid *cgg )
 
 	input[1] = mxCreateString("cggrid");
 
-	address = Uint32ToMxArray( (unsigned int) cgg );
+	address = UlongToMxArray( (unsigned long) cgg );
 	if( address == NULL )
 	{
 		mxDestroyArray( input[0] );
@@ -175,14 +175,14 @@ mxArray *CGGrid2mxArray( CGGrid *cgg )
 	}
 }
 
-double cggrid_set_mx_triplets( CGGrid *cgg, int ix, int iy, void *private )
+double cggrid_set_mx_triplets( CGGrid *cgg, long ix, long iy, void *private )
 {
 	mxArray *result = (mxArray *) private;
 	double	*data;
-	int	triplet_row_number;
-	int	mxindex_ix;
-	int	mxindex_iy;
-	int	mxindex_iz;
+	long	triplet_row_number;
+	long	mxindex_ix;
+	long	mxindex_iy;
+	long	mxindex_iz;
 
 	data = mxGetPr( result );
 
@@ -199,7 +199,7 @@ double cggrid_set_mx_triplets( CGGrid *cgg, int ix, int iy, void *private )
 	return CGGRID_DATA( cgg, ix , iy );
 }
 
-double cggrid_set_mx_x( CGGrid *cgg, int ix, int iy, void *private )
+double cggrid_set_mx_x( CGGrid *cgg, long ix, long iy, void *private )
 {
 	mxArray *result = (mxArray *) private;
 	double	*data;
@@ -211,7 +211,7 @@ double cggrid_set_mx_x( CGGrid *cgg, int ix, int iy, void *private )
 	return CGGRID_DATA( cgg, ix , iy );
 }
 
-double cggrid_set_mx_y( CGGrid *cgg, int ix, int iy, void *private )
+double cggrid_set_mx_y( CGGrid *cgg, long ix, long iy, void *private )
 {
 	mxArray *result = (mxArray *) private;
 	double	*data;
@@ -223,7 +223,7 @@ double cggrid_set_mx_y( CGGrid *cgg, int ix, int iy, void *private )
 	return CGGRID_DATA( cgg, ix , iy );
 }
 
-double cggrid_set_mx_z( CGGrid *cgg, int ix, int iy, void *private )
+double cggrid_set_mx_z( CGGrid *cgg, long ix, long iy, void *private )
 {
 	mxArray *result = (mxArray *) private;
 	double	*data;
@@ -235,7 +235,7 @@ double cggrid_set_mx_z( CGGrid *cgg, int ix, int iy, void *private )
 	return CGGRID_DATA( cgg, ix , iy );
 }
 
-double cggrid_get_mx_z( CGGrid *cgg, int ix, int iy, void *private )
+double cggrid_get_mx_z( CGGrid *cgg, long ix, long iy, void *private )
 {
 	mxArray *source = (mxArray *) private;
 	double *data;
@@ -317,7 +317,7 @@ get_spacing( mxArray *in )
 {
 	double	*data;
 	double	spacing;
-	int	i;
+	long	i;
 
 	data = mxGetPr( in );
 

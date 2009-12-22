@@ -1,19 +1,22 @@
-DATADIR=matlab/antelope/antelope
+DATADIR=matlab/$(MATLAB_RELEASE)/antelope/antelope
 
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
       $(MEXSRCS:.c=.m) 
 
-HTMLDIR= matlab/antelope/html
+HTMLDIR= matlab/html
 HTML= $(MEXSRCS:.c=.html)
 
 MEXSRCS= \
+	abspath.c \
 	arrtimes.c \
 	arr_slowness.c \
 	cggrid_supported.c \
 	clear_register.c \
+	concatpaths.c \
 	getpid.c \
 	pffiles.c \
 	parsepath.c \
+	relpath.c \
 	elog_init.c \
 	elog_log.c \
 	elog_debug.c \

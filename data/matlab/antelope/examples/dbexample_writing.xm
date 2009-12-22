@@ -35,7 +35,7 @@ dbclose( db );
 
 % Now open a new database
 
-output_dbname_2 = ['newdb_2' getenv('USER')]
+output_dbname_2 = dbexample_get_tempname( 'newdb2', 'db' );
 
 unix( ['/bin/rm -f ' output_dbname_2 '*'] );
 

@@ -27,7 +27,7 @@ Pf *mxArray2Pf( mxArray *array )
 		return (Pf *) NULL;
 	}
 
-	pf = (Pf *) mxArrayToUint32( address );
+	pf = (Pf *) mxArrayToUlong( address );
 
 	if( pf == (Pf *) NULL )
 	{
@@ -52,7 +52,7 @@ mxArray *Pf2mxArray( Pf *pf, char *name )
 
 	input[1] = mxCreateString("dbpf");
 
-	address = Uint32ToMxArray( (unsigned int) pf );
+	address = UlongToMxArray( (unsigned long) pf );
 	if( address == NULL )
 	{
 		mxDestroyArray( input[0] );

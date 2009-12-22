@@ -1,0 +1,5 @@
+CONCATPATHS	Concatenate unix path elements into a single path
+
+RES = CONCATPATHS ( A, B [, ...] )
+
+CONCATPATHS concatenates unix path elements into a single path name

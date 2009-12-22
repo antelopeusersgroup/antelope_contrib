@@ -17,7 +17,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	Tbl	*groupfields = 0;
 	char	errmsg[STRSZ];
 	int	rhs_index;
-	int	type = 1;
+	long	type = 1;
 	double 	type_fp = 1;
 
 	if( nrhs < 2 || nrhs > 3  )
@@ -45,11 +45,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 		} else {
 
-			type = (int) type_fp;
+			type = (long) type_fp;
 		} 
 	}
 
-	db = dbgroup( db, groupfields, 0, type );
+	db = dbgroup( db, groupfields, NULL, type );
 	antelope_mex_clear_register( 1 );
 
 	freetbl( groupfields, 0 );

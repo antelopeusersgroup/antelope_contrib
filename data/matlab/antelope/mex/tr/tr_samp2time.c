@@ -42,7 +42,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         }
 
 	/* WAKE UP: index shifting */
-	n_indexed_by_0 = (int) n_indexed_by_1_double - 1;
+	n_indexed_by_0 = (long) n_indexed_by_1_double - 1;
 
 	plhs[0] = CreateDouble( SAMP2TIME( time, samprate, n_indexed_by_0 ) );
 }

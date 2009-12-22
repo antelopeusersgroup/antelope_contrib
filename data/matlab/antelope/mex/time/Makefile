@@ -1,8 +1,8 @@
-DATADIR=matlab/antelope/antelope
+DATADIR=matlab/$(MATLAB_RELEASE)/antelope/antelope
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
       $(MEXSRCS:.c=.m)
 
-HTMLDIR= matlab/antelope/html
+HTMLDIR= matlab/html
 HTML= $(MEXSRCS:.c=.html)
 
 MEXSRCS= \

@@ -1,9 +1,9 @@
-DATADIR= matlab/antelope/user
+DATADIR= matlab/$(MATLAB_RELEASE)/antelope/user
 DATA= \
 	trdisp.m \
 	dbcentral_dbnames.m
 
-HTMLDIR= matlab/antelope/html
+HTMLDIR= matlab/html
 HTML= $(DATA:.m=.html)
 
 CLEAN= 

@@ -1,5 +1,4 @@
-DIRS=matlabdoc lib doc examples mex scripts user
-# DIRS=
+DIRS=version matlabdoc lib doc examples mex setup scripts user
 
 Include :: $(ANTELOPE)/include/mex_antelope_makerules
 install :: $(ANTELOPE)/include/mex_antelope_makerules
@@ -10,6 +9,9 @@ all clean Include install installMAN pf relink tags :: FORCED
 	    printf "+    %-40s  %s\n" $$i "`date`" ; \
 	    if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
         done
+
+clean :: 
+	@-$(RM) solaris linux darwin darwin-intel
 
 uninstall :: FORCED
 	@-if [ -r $(ANTELOPE)/include/mex_antelope_makerules ] ; then \
@@ -35,3 +37,10 @@ $(ANTELOPE)/include/mex_antelope_makerules : solaris linux darwin darwin-intel
 	    *)  echo "Error: System type `uname -s` not recognized." ;;\
 	esac
 
+.SUFFIXES: .SUFFIXES .base
+
+% : %.base version/matlab_release
+	cat version/matlab_release $< > $@
+
+version/matlab_release: $(ANTELOPEMAKE).local
+	( cd version && $(MAKE) matlab_release ; )

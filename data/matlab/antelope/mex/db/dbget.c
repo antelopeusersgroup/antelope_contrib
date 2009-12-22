@@ -18,9 +18,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	char	*result = NULL;
 	char	*dbscratch_string;
 	int	use_dbscratch = 0;
-	int	n;
+	long	n;
 	int	rc;
-	int	type;
 	double	*doublep;
 	int	*intp;
 
@@ -52,13 +51,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			mxFree( dbscratch_string );
 			use_dbscratch = 1;
 		}
-
-
         }
 
 	if( use_dbscratch )
 	{
-		if( dbget( db, 0 ) < 0 )
+		if( dbget( db, NULL ) < 0 )
 		{
 			antelope_mex_clear_register( 1 );
 			mexErrMsgTxt( "dbget into scratch record failed" );

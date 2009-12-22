@@ -1,11 +1,11 @@
-DATADIR=matlab/antelope/antelope/@cggrid
+DATADIR=matlab/$(MATLAB_RELEASE)/antelope/antelope/@cggrid
 
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
       $(MEXSRCS:.c=.m) \
       cggrid_free.m \
       clear.m 
 
-HTMLDIR= matlab/antelope/html
+HTMLDIR= matlab/html
 HTML= $(MEXSRCS:.c=.html) \
       clear.html
 

@@ -127,16 +127,16 @@ CastDbptrStructToDbptr( const mxArray *DbptrStruct )
 	}
 
 	field = mxGetField( DbptrStruct, 0, "database" );
-	db.database = mxArrayToInt32( field );
+	db.database = mxArrayToLong( field );
 
 	field = mxGetField( DbptrStruct, 0, "table" );
-	db.table = mxArrayToInt32( field );
+	db.table = mxArrayToLong( field );
 
 	field = mxGetField( DbptrStruct, 0, "field" );
-	db.field = mxArrayToInt32( field );
+	db.field = mxArrayToLong( field );
 
 	field = mxGetField( DbptrStruct, 0, "record" );
-	db.record = mxArrayToInt32( field );
+	db.record = mxArrayToLong( field );
 
 	return db;
 }

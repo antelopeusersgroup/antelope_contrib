@@ -30,11 +30,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	Dbptr	db;
 	float	*data = NULL;
 	char	errmsg[STRSZ];
-	int	nmax = 0;
+	long	nmax = 0;
 	double	reqs, reqe;
 	double	t0, t1;
-	int	nrecs;
-	int	nsamp;
+	long	nrecs;
+	long	nsamp;
 	int	rc;
 	double	*doublep;
 	char	*string;
@@ -118,7 +118,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		mexErrMsgTxt( errmsg );
 	}
 
-	plhs[0] = mxCreateDoubleMatrix( nsamp, 1, mxREAL );
+	plhs[0] = mxCreateDoubleMatrix( (mwSize) nsamp, 1, mxREAL );
 	if( plhs[0] == NULL )
 	{
 		free( data );

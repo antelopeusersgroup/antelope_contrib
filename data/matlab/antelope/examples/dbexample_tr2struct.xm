@@ -21,7 +21,7 @@ tr = trload_css( db, time, endtime );
 s = tr2struct( tr );
 
 % Save the structure to a file to send elsewhere:
-save filename s
+save( filename, 's' )
 
 % Also plot one of the time-series as an example of structure access:
 subplot( 1, 1, 1 );

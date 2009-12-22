@@ -1,4 +1,4 @@
-DATADIR=matlab/antelope/antelope/@cggrid/private
+DATADIR=matlab/$(MATLAB_RELEASE)/antelope/antelope/@cggrid/private
 
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) 
 

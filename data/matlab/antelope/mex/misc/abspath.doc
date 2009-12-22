@@ -1,0 +1,6 @@
+ABSPATH		Return the format of a path starting from filesystem root
+
+ABS = ABSPATH ( REL )
+
+ABSPATH formats a Unix path to its canonical version starting 
+from the filesystem root. 

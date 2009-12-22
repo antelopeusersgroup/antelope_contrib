@@ -3,7 +3,7 @@
 amakelocal \- construct antelopemake.local for local site conditions
 .SH SYNOPSIS
 .nf
-amakelocal [-v] [-i] [-p pfname] [-s system] [MACRO [MACRO ...]]
+amakelocal [-v] [-i] [-c] [-p pfname] [-s system] [MACRO [MACRO ...]]
 .fi
 .SH DESCRIPTION
 Antelope has a self-contained compile mechanism and structure with
@@ -52,6 +52,10 @@ success at this control depends on setting up a certain Makefile
 structure, as shown in the example below.
 
 .SH OPTIONS
+.IP -c
+Echo the values configured for the macros specified on the command-line,
+or the values for all configured macros if no additional arguments are 
+given
 .IP -v 
 verbose
 .IP "-p pfname"
@@ -72,8 +76,6 @@ updating the driver parameter file.
 Override the automatic detection of system-type and generate a set of 
 make rules for the specified system type (e.g. Linux, Darwin, SunOS)
 
-.SH FILES
-.SH ENVIRONMENT
 .SH PARAMETER FILE
 The \fIamakelocal.pf\fP parameter file contains specifications for
 macros that will be custom-configured for the machine on which
@@ -209,10 +211,6 @@ FORCED:
 
 % 
 .fi
-.SH RETURN VALUES
-.SH LIBRARY
-.SH ATTRIBUTES
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 antelopemake(5), antelopemakelocal(5), localmake(1)

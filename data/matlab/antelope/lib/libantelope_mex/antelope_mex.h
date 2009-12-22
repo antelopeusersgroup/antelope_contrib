@@ -30,11 +30,10 @@
 
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 
-extern int mxArrayToInt32 PL_(( mxArray *array_ptr ));
-extern unsigned int mxArrayToUint32 PL_(( mxArray *array_ptr ));
+extern long mxArrayToLong PL_(( mxArray *array_ptr ));
+extern unsigned long mxArrayToUlong PL_(( mxArray *array_ptr ));
 extern mxArray *CreateDouble PL_(( double input_double ));
-extern mxArray *Int32ToMxArray PL_(( int input_int ));
-extern mxArray *Uint32ToMxArray PL_(( unsigned int input_uint ));
+extern mxArray *UlongToMxArray PL_(( unsigned long input_uint ));
 extern mxArray *Complex_tToMxArray PL_(( Complex_t *cx, int n ));
 extern mxArray *DoubleArrToMxArray PL_(( double *vals, int n ));
 extern mxArray *CreateNullDbptrStruct PL_(( void ));
@@ -81,7 +80,7 @@ extern int get_scalar PL_(( const mxArray *, double * ));
 extern void antelope_mex_clear_register PL_(( int ));
 extern mxArray *dbfield2mxArray PL_(( Dbptr ));
 extern mxArray *dbcolumn2mxArray PL_(( Dbptr ));
-extern Dbvalue *mxArray2dbvalue PL_(( const mxArray *, int ));
+extern Dbvalue *mxArray2dbvalue PL_(( const mxArray *, long ));
 extern void SCAFFOLD_fix_tr_endtime PL_(( Dbptr ));
 extern mxArray *orbpkt2mxArray PL_(( char *, double, char *, int, char * ));
 extern Dbptr dbprocess_error PL_(( Dbptr, char * ));

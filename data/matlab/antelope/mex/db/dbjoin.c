@@ -56,7 +56,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			}
 			else 
 			{
-				pattern1 = strtbl( laststring, 0 );
+				pattern1 = strtbl( laststring, NULL );
 
 				pattern2 = pattern1;
 				pattern1_p = &pattern1;
@@ -85,14 +85,14 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			}
 			else 
 			{
-				pattern2 = strtbl( laststring, 0 );
+				pattern2 = strtbl( laststring, NULL );
 
 				pattern2_p = &pattern2;
 			}
 
 			if( mtlb_get_string( prhs[2], &firststring ) )
 			{
-				pattern1 = strtbl( firststring, 0 );
+				pattern1 = strtbl( firststring, NULL );
 
 				pattern1_p = &pattern1;
 			} 
@@ -118,7 +118,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 			if( mtlb_get_string( prhs[2], &firststring ) )
 			{
-				pattern1 = strtbl( firststring, 0 );
+				pattern1 = strtbl( firststring, NULL );
 
 				pattern1_p = &pattern1;
 			} 
@@ -158,7 +158,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 		if( mtlb_get_string( prhs[3], &middlestring ) )
 		{
-			pattern2 = strtbl( middlestring, 0 );
+			pattern2 = strtbl( middlestring, NULL );
 			pattern2_p = &pattern2;
 		}
 		else if( get_stringtbl( prhs[3], &pattern2 ) )
@@ -173,7 +173,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 		if( mtlb_get_string( prhs[2], &firststring ) )
 		{
-			pattern1 = strtbl( firststring, 0 );
+			pattern1 = strtbl( firststring, NULL );
 			pattern1_p = &pattern1;
 		}
 		else if( get_stringtbl( prhs[2], &pattern1 ) )
