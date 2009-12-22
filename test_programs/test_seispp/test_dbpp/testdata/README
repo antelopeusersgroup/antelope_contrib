@@ -1,5 +1,15 @@
 To run this test type:
 ../test_dbpp > test_dbpp.new
 
+Note this will cause a harmless warning to be written to stderr:
+DatascopeHandle destructor (WARNING):  closing a database with other copies holding view pointers
+This can cause mysterious downstream problems and/or memory leaksCheck your code.
+
+Ignore this.
+
 then run a diff between test_dbpp.out and test_dbpp.new
+
+You will want to check the testout.site and compare it to testdb.site.
+They should be identical except for lddate.
 June 22, 2004 (GLP)
+Updated:  Dec. 2009 (GLP)

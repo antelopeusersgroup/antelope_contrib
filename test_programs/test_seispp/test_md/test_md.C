@@ -66,9 +66,8 @@ int main(int argc, char **argv)
 		cout <<"Trying db constructor in testdb"<<endl;
 		Dbptr db;
 		char *dbname="testdb";
-		ierr=dbopen(dbname,"r+",&db);
-		//db=dblookup(db,0,"wfdisc",0,0);
-		DatascopeHandle dbh(db,pf,string("dbprocess_list"));
+		DatascopeHandle dbh(dbname,pfname,string("dbprocess_list"),
+                        false);
 		dbh.rewind();
 		Metadata *mddb = new Metadata(dynamic_cast<DatabaseHandle&>(dbh),
 					mdl,am2);

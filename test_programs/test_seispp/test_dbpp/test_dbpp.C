@@ -9,6 +9,7 @@ void log_Dbptr(Dbptr db)
 	<< "field="<<db.field
 	<< "record="<<db.record<<endl;
 }
+bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
 	string dbname("testdb"), pfname("test_dbpp");
@@ -17,11 +18,11 @@ int main(int argc, char **argv)
 
 	try{
 	cout << "Testing simple open and close"<<endl;
-	Datascope_Handle dbh1(dbname,true);
+	DatascopeHandle dbh1(dbname,true);
 	log_Dbptr(dbh1.db);
 	dbh1.close();
 	}
-	catch (seispp_dberror sdberr)
+	catch (SeisppError& sdberr)
 	{
 		sdberr.log_error();
 		exit(-1);
@@ -29,7 +30,7 @@ int main(int argc, char **argv)
 
 	cout << "Testing full constructor with pf and one table" << endl;
 	try{
-		Datascope_Handle dbh2(dbname,pfname,pftag,false);
+		DatascopeHandle dbh2(dbname,pfname,pftag,false);
 		cout << dbname <<" view created by " << pftag << " has "
 			<< dbh2.number_tuples() << " rows" <<endl;
 		// assumes pf sets view to be assoc table
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
 		cout << "closing this database " << endl;
 		dbh2.close();
 	}
-	catch (seispp_dberror sdberr)
+	catch (SeisppError& sdberr)
 	{
 		sdberr.log_error();
 		exit(-1);
@@ -55,9 +56,9 @@ int main(int argc, char **argv)
 	cout << "Testing get and put functions"<<endl;
 	try {
 		// input db
-		Datascope_Handle dbh(dbname,true);
+		DatascopeHandle dbh(dbname,true);
 		//output db
-		Datascope_Handle dbho(string("testout"),false);
+		DatascopeHandle dbho(string("testout"),false);
 		dbh.lookup("site");
 		dbho.lookup("site");
 		dbh.rewind();
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 		dbh.close();
 		dbho.close();
 	}
-	catch (seispp_dberror sdberr)
+	catch (SeisppError& sdberr)
 	{
 		sdberr.log_error();
 		exit(-1);
@@ -103,7 +104,7 @@ int main(int argc, char **argv)
 	try{
 		// pftag2 should define an event->origin->assoc->arrival
 		// view with orid==prefor
-		Datascope_Handle dbh(dbname,pfname,pftag2,false);
+		DatascopeHandle dbh(dbname,pfname,pftag2,false);
 		list<string> sortkeys;
 		list<string> groupkeys;
 		string sstr("sta=~/PFO/");
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
 		cout << "Testing assignment operator to save base view"<<endl;
 		cout << "right hand side" << endl;
 		log_Dbptr(dbh.db);
-		Datascope_Handle dbhv=dbh;
+		DatascopeHandle dbhv=dbh;
 		cout << "left hand side result" << endl;
 		log_Dbptr(dbh.db);
 		
@@ -129,7 +130,7 @@ int main(int argc, char **argv)
 		cout << "Testing copy constructor"<<endl;
 		cout << "parent Dbptr " << endl;
 		log_Dbptr(dbh.db);
-		Datascope_Handle dbhgrp(dbh);
+		DatascopeHandle dbhgrp(dbh);
 		cout << "Result of copy constructor Dbptr " << endl;
 		log_Dbptr(dbhgrp.db);
 		cout << "Testing group function" << endl;
@@ -143,7 +144,7 @@ int main(int argc, char **argv)
 			<< " columns" << endl;
 		// Intentionally do not call close here
 	}
-	catch (seispp_dberror sdberr)
+	catch (SeisppError& sdberr)
 	{
 		sdberr.log_error();
 		exit(-1);
