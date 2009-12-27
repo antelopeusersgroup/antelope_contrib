@@ -1,14 +1,13 @@
 originator     Jennifer Eakins, UCSD
-last_modified  2009-11-03
+last_modified  2009-12-27
 
 category	ANF 
 configuration	QEP - Q330 Environmental Processor 
 
 description	QEP - Q330 Environmental Processor 
-#dfile 		dummy   	# no response
-#dfile 		paro6000	# no response, paro6000 = dummy
 dfile 		qep 		# no response, qep = dummy
 
+# 0.0000001sps = QEP
 streams		40sps 20sps 10sps 1sps 0.1sps 0.0000001sps
 
 # definitions of streams
@@ -106,8 +105,8 @@ rsptype		T
 
 epT &Arr{
 gtype		QEP temp 
-gnom		0.001
-iunits  	mbar
+gnom		0.1
+iunits  	C	
 ounits		counts
 sn              datalogger
 }
