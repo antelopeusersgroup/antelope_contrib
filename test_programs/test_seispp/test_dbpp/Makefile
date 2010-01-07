@@ -5,4 +5,4 @@ include $(ANTELOPEMAKE)
 OBJS=test_dbpp.o
 $(BIN) : $(OBJS)
 	$(RM) $@
-	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

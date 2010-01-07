@@ -79,7 +79,7 @@ $nullsub 	= "endtime=='9999999999.99900'";
 $commsub	= "$stasub && $nullsub";
 $dlsitesub	= "$dlstasub && $nullsub";
 $depsub		= "$stasub" ;
-$stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=='sensor'&&endtime!='9999999999.99900'" ;
+$stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
 $chansub	= "chan=~/BHZ|LHZ/" ;
 $wfsub 		= "$stasub && $chansub";
 $packet_ext	= ".*M40" ;	# Look for data packets
@@ -507,7 +507,7 @@ sub get_stageendtime {		# get the stage.endtime
 
 sub get_stagestarttime {		# get the stage.time
 
-  $stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=='sensor'" ;
+  $stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=~/sensor|seismometer/" ;
   @single_stage	= dbsubset (@stage, $stagesub) ;		
   @single_stage	= dbsort(@single_stage, "time") ;	# get single record that will be updated
   

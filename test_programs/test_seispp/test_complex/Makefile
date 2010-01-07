@@ -5,4 +5,4 @@ include $(ANTELOPEMAKE)
 OBJS=test_complex.o
 $(BIN) : $(OBJS)
 	$(RM) $@
-	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

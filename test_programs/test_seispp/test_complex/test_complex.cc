@@ -2,8 +2,10 @@
 #include "seispp.h"
 using namespace std;
 using namespace SEISPP;
+bool SEISPP::SEISPP_verbose(true);
 int main(int argc, char **argv)
 {
+    try {
 	cout << "Calling simple constructor"<<endl;
 	ComplexTimeSeries junk();
 	cout << "Creating two 10 point empty object"<<endl;
@@ -52,23 +54,26 @@ int main(int argc, char **argv)
 	Pf *pf;
 	pfread("test_complex",&pf);
 	MetadataList mdl=pfget_mdlist(pf,string("trace_metadata"));
-	AttributeMap am(string("pwmig1.1"));
-	Dbptr db;
-	dbopen("testdb","r+",&db);
+	AttributeMap am(string("css3.0"));
+        DatascopeHandle dbh(string("testdb"),false,false);
 	z1.put("wfprocess.dir",".");
 	z1.put("wfprocess.dfile","testdata.w");
 	z1.put("wfprocess.datatype","cx");
 	z1.put("wfprocess.timetype","relative");
 	z1.put("timetype","relative");
 	z1.put("wfprocess.algorithm","test_complex");
-	int foff;
-	foff=dbsave(z1,db,string("wfprocess"),mdl,am);
+        dbh.lookup("wfprocess");
+	long foff;
+	foff=dbsave(z1,dbh.db,string("wfprocess"),mdl,am);
 	cout << "z1 saved successfully.  Trying to read it back."<<endl;
 	MetadataList mdli=pfget_mdlist(pf,string("input_metadata"));
-	// Kind of a misuse of this constructor
-	DatascopeHandle dbh(db,db);
 	dbh.lookup("wfprocess");
 	dbh.db.record=0;
 	ComplexTimeSeries z1read(dynamic_cast<DatabaseHandle&>(dbh),mdli,am);
 	cout << z1read;
+    } 
+    catch (SeisppError& serr)
+    {
+        serr.log_error();
+    }
 }
