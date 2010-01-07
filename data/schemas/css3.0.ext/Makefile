@@ -1,5 +1,6 @@
 
 DATA = \
+	rsyncbaler \
 	dlevent \
 	gsnspec \
 	q330_calibration_weblog \

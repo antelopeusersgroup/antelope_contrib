@@ -1,0 +1,112 @@
+# css3.0 extension
+
+#
+# Table to track files 
+# downloaded from new 
+# Baler44 systems. 
+#
+
+Attribute media
+    String (15)
+    Format ( "%-15s" )
+    Null ( "-" )
+    Description ( "media in use on baler" )
+    Detail {
+        Media the baler is using to store data.
+    }
+    ;
+Attribute replace
+    String (1)
+    Format ( "%1s" )
+    Null ( "-" )
+    Range ( "replace =~ /y|n/" ) 
+    Description ( "flag to replace file on local archive Y/N" )
+    Detail {
+        Set this flag to Y and the system will include this 
+        file in the next download list of files. 
+    }
+    ;
+Attribute avoid
+    String (1)
+    Format ( "%1s" )
+    Null ( "-" )
+    Range ( "avoid =~ /y|n/" ) 
+    Description ( "flag to avoid download of file Y/N" )
+    Detail {
+        Set this flag to Y and the system will skip this
+        file from the download list. System will not test 
+        if file size match the local copy size. 
+    }
+    ;
+Attribute fixed
+    String (1)
+    Format ( "%1s" )
+    Null ( "-" )
+    Range ( "fixed =~ /y|n/" ) 
+    Description ( "miniSEED file header fixed Y/N" )
+    Detail {
+        Files from the baler44 will have corrupted headers.
+        This flag is set to Y if the system fixed the file 
+        after download and archive in the local system.
+    }
+    ;
+Attribute filebytes
+    Integer (10)
+    Format ( "%10ld" )
+    Null ( "-1" )
+    Range ( "filebytes > -1" )
+    Description ( "Size in Bytes of file" )
+    Detail {
+        Size of file in Bytes
+    }
+    ;
+Attribute attempts
+    Integer (4)
+    Format ( "%4d" )
+    Null ( "0" )
+    Range ( "attempts > -1" )
+    Description ( "Number of download attempts" )
+    Detail {
+        Number of download attempts for this file.
+    }
+    ;
+Attribute mseeddb
+    String (1)
+    Format ( "%1s" )
+    Null ( "-" )
+    Range ( "mseeddb =~ /y|n/" ) 
+    Description ( "miniSEED database creation Y/N" )
+    Detail {
+        Files from the baler44 can be reformat to a day base 
+        file structure. This flag is set to Y if this is done 
+        after the download of the file. 
+    }
+    ;
+Attribute status
+    String (15)
+    Format ( "%-15s" )
+    Null ( "-" )
+    Description ( "file status" )
+    Detail {
+        Status of mseed file on baler. Some of the options will
+        include downloaded, missing or error. Very flexible attribute
+        that will accept any string from the script. 
+    }
+    ;
+Attribute bandwidth
+    Real (6)
+    Format ( "%6.1f" )
+    Null ( "-" )
+    Units ( "Kb/s" )
+    Description ( "bandwidth" )
+    Detail {
+        Calculated bandwidth of link based on total time of 
+        download and size of file downloaded.
+    }
+    ;
+
+Relation rsyncbaler
+    Fields ( dlsta net sta dfile time endtime dir status attempts mseeddb bandwidth filebytes media fixed avoid replace )
+    Primary ( dlsta dfile )
+    Description ( "Track files downloaded from balers." )
+    ;
