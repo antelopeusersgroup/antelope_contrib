@@ -671,6 +671,8 @@ ostream& operator << (ostream& fout, GCLscalarfield& g)
 				<< " "
 				<< g.r(i,j)
 				<< " "
+				<< g.depth(i,j)
+				<< " "
 				<< g.val[i][j]
 				<< endl;
 		}
@@ -700,6 +702,8 @@ ostream& operator << (ostream& fout, GCLscalarfield3d& g)
 				<< " "
 					<< g.r(i,j,k)
 				<< " "
+					<< g.depth(i,j,k)
+				<< " "
 					<< g.val[i][j][k]
 					<< endl;
 			}
@@ -726,7 +730,9 @@ ostream& operator << (ostream& fout, GCLvectorfield& g)
 				<< " "
 				<< deg(g.lon(i,j))
 				<< " "
-				<< g.r(i,j); 
+				<< g.r(i,j) 
+				<< " "
+				<< g.depth(i,j); 
 			for(k=0;k<g.nv;++k)
 				fout<< " " << g.val[i][j][k];
 			fout << endl;
@@ -755,7 +761,9 @@ ostream& operator << (ostream& fout, GCLvectorfield3d& g)
 					<< " "
 					<< deg(g.lon(i,j,k))
 					<< " "
-					<< g.r(i,j,k);
+					<< g.r(i,j,k)
+					<< " "
+					<< g.depth(i,j,k);
 				for(l=0;l<g.nv;++l) fout << " " << g.val[i][j][k][l];
 				fout << endl;
 			}

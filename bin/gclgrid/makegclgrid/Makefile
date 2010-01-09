@@ -12,4 +12,4 @@ DIRS=
 
 OBJS=makegclgrid.o
 $(BIN) : $(OBJS)
-	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

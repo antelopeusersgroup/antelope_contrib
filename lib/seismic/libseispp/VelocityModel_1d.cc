@@ -13,22 +13,19 @@ using namespace SEISPP;
 double VelocityModel_1d::getv(double zin)
 {
 	double dz;
+        /* if above top, return top model value */
+        if(zin<z[0]) return(v[0]);
 	/* Assume at layer sigularity when within dz*this factor */
 	const double dzeqfactor(0.01);
 	for(int i=1;i<nlayers;++i)
 	{
 		if(zin<z[i]) 
 		{
-			if(i==1)
-				return(v[1]);
+                        dz=zin-z[i-1];
+			if(fabs((zin-z[i])/dz)<dzeqfactor)
+				return(v[i]);
 			else
-			{
-				dz=zin-z[i-1];
-				if(fabs((zin-z[i])/dz)<dzeqfactor)
-					return(v[i]);
-				else
-					return(v[i-1]+dz*grad[i-1]);
-			}
+				return(v[i-1]+dz*grad[i-1]);
 		}
 	}
 	dz=zin-v[nlayers-1];
@@ -77,7 +74,7 @@ VelocityModel_1d::VelocityModel_1d(Dbptr dbi,string name,string property)
 			double vin, zin, gradin;
 			if(dbgetv(dbs2,0,"paramval",&vin, 
 				"depth",&zin,
-				"grad",&gradin,0) == dbINVALID)
+				"grad",&gradin,NULL) == dbINVALID)
 			{
 				dbfree(dbs1);
 				dbfree(dbs2);

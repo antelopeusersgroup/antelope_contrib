@@ -7,4 +7,4 @@ include $(ANTELOPEMAKE)
 OBJS=gclfmath.o
 $(BIN) : $(OBJS)
 	$(RM) $@
-	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
