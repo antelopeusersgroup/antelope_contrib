@@ -1,0 +1,37 @@
+metadata_input &Tbl{
+sta string
+chan string
+time real
+endtime real
+nsamp int
+samprate real
+dfile string
+dir string
+hang real
+vang	real
+}
+metadata_wfdisc_output &Tbl{
+sta string
+chan string
+time real
+endtime real
+nsamp int
+samprate real
+dfile string
+dir string
+}
+metadata_wfprocess_output &Tbl{
+time real
+endtime real
+nsamp int
+samprate real
+timetype string
+dfile string
+dir string
+}
+test_tcs_view &Tbl{
+dbopen wfdisc 
+dbjoin sitechan
+dbjoin site
+dbsort time sta chan
+}

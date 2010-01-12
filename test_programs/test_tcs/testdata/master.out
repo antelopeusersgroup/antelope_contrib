@@ -1,0 +1,107 @@
+Testing simple constructors
+Success
+Testing space allocating constructor
+Success
+trying rotation
+one sample of (0,0,1) rotated by phi=0, theta=45 deg:0, -0.707107, 0.707107
+Restoring to standard
+One sample of restored (0,0,1): 0, 0, 1
+Trying theta=45 deg and phi=-45 deg 
+one sample of unit vector pointing  phi=-45, theta=45 deg after rotation:  0, 0, 1
+Should be approximately (0,0,1)
+Restoring to standard
+One sample of restored phi-45 theta=45 vector:  0.5, -0.5, 0.707107
+Trying unit vector rotation to (1,1,1) with (1,0,0) data
+one sample of (1,0,0) rotated to (1,1,1)0.707107, 0.408248, 0.57735
+one sample of (1,1,1) rotated to (1,1,1)1.11022e-16, 0, 1.73205
+Restoring to standard
+One sample of restored (1,0,0): 1, 0, 0
+One sample of restored (1,1,1): 1, 1, 1
+Trying spherical coordinate transformation to rotate phi=45 degrees,theta=0
+one sample of rotated (1,0,0)0.707107, 0.707107, 0
+one sample of rotated (1,1,0)1.11022e-16, 1.41421, 0
+one sample of rotated (0,0,1)-3.92523e-17, 3.92523e-17, 1
+Applying nonorthogonal transformation
+one sample of transformed (1,0,0)1, -1, 0
+one sample of transformed (1,1,0)2, 0, -1
+one sample of transformed (0,0,1)1, 1, -5.55112e-17
+Testing back conversion to standard coordinatesOne sample of restored (1,0,0): 1, 0, 0
+One sample of restored (1,1,1): 1, 1, 1
+One sample of restored (1,1,0): 1, 1, 0
+One sample of restored (0,0,1): 0, 5.55112e-17, 1
+Testing multiple, accumulated transformations
+One sample of restored (1,0,0): 1, 0, 0
+One sample of restored (1,1,1): 1, 1, 1
+One sample of restored (1,1,0): 1, 1, -2.22045e-16
+One sample of restored (0,0,1): -2.77556e-17, -2.77556e-17, 1
+Trying Db constructor
+Table number before group = 43
+Table number after group = 44
+Input data MetadataList Contents:
+sta is string attribute
+chan is string attribute
+time is real attribute
+endtime is real attribute
+nsamp is integer attribute
+samprate is real attribute
+dfile is string attribute
+dir is string attribute
+hang is real attribute
+vang is real attribute
+Test wfprocess output  MetadataList Contents:
+time is real attribute
+endtime is real attribute
+nsamp is integer attribute
+samprate is real attribute
+timetype is string attribute
+dfile is string attribute
+dir is string attribute
+Test wfdisc output  MetadataList Contents:
+sta is string attribute
+chan is string attribute
+time is real attribute
+endtime is real attribute
+nsamp is integer attribute
+samprate is real attribute
+dfile is string attribute
+dir is string attribute
+Success
+Metadata for 3c seismogram constructed from database
+chan BHE
+dfile testdata.w
+dir .
+sta UWM
+nsamp 6720
+endtime 1.0884e+09
+hang 90
+samprate 40
+time 1.0884e+09
+vang 90
+Transformation matrix of this seismogram
+1, 0, 0
+0, 1, 0
+0, 0, 1
+Testing dbsave function to wfprocess
+Successful write to testout database
+Trying to read another 3c object from database
+Metadata for next 3c trace read
+chan BHE
+dfile testdata_out.w
+dir .
+sta BLO
+nsamp 3360
+endtime 1.0884e+09
+hang 110
+samprate 20
+time 1.0884e+09
+vang 90
+Transformation matrix of this seismogram
+0.939693, -0.34202, 0
+0.34202, 0.939693, 0
+0, 0, -1
+Testing free_surface_transformation algorithm on first station read
+Successfully saved T,R,L data.
+Testing dbsave function with chanmap arguments
+Finished:  Verify that input B channel data match output exactly.  
+Final dbsave run in this program runs rotate_to_standard before writing result
+This is an important test of reversibility

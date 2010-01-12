@@ -1,0 +1,9 @@
+Note the BLO sitechan was intentionally altered to use nonorthogonal 
+coordinates.
+
+Run from this directory:
+
+../test_tcs > test.out
+
+Run diff on test.out with master.out.  Also read test.out and do as 
+instructed on the last few lines of the file.
