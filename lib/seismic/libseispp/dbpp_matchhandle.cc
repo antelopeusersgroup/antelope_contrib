@@ -176,15 +176,15 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 	// Intentionally did not put these in the above to make the
 	// algorithm exception safe.  
 	int nkeys=matchkeys.size();
-	kpattern=newtbl(nkeys);
-	tpattern=newtbl(nkeys);
+	kpattern=newtbl(static_cast<long>(nkeys));
+	tpattern=newtbl(static_cast<long>(nkeys));
 	for(int i=0;i<nkeys;++i)
 	{
-		settbl(kpattern,i,
+		settbl(kpattern,static_cast<long>(i),
 			static_cast<void *>(
 			const_cast<char *>(matchkeys[i]
 				.db_attribute_name.c_str())));
-		settbl(tpattern,i,
+		settbl(tpattern,static_cast<long>(i),
 			static_cast<void *>(
 			const_cast<char *>(matchkeys[i]
 				.db_attribute_name.c_str())));
@@ -196,9 +196,9 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 Tbl *copy_string_tbl(Tbl *parent)
 {
 	Tbl *t;
-	int n=maxtbl(parent);
+	long n=maxtbl(parent);
 	t=newtbl(n);
-	for(int i=0;i<n;++i)
+	for(long i=0;i<n;++i)
 	{
 		char *str;
 		str=(char *)gettbl(parent,i);
@@ -273,7 +273,7 @@ DatascopeMatchHandle::~DatascopeMatchHandle()
 }
 // should throw and exception when keys not found in metadata
 // algorithm will assume keys do 
-list<int> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
+list<long> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 {
 	const string base_error("DatascopeMatchHandle.find(): ");
 	int nscratch_records_set;
@@ -343,9 +343,9 @@ list<int> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 	{
 		throw SeisppError(base_error +"error inputs, cannot proceed");
 	}
-	int nmatches;
+	long nmatches;
 	Tbl *records;
-	list<int> result;
+	list<long> result;
 	nmatches=dbmatches(dbscratch_record,dbt,
 		&kpattern,&tpattern,&hook,&records);
 	if(nmatches==dbINVALID)
@@ -354,8 +354,8 @@ list<int> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 	// nothing matches (nmatches=0)
 	for(i=0;i<nmatches;++i)
 	{
-		int thisrecord;
-		thisrecord=(int)gettbl(records,i);
+		long thisrecord;
+		thisrecord=(long)gettbl(records,i);
 		result.push_back(thisrecord);
 	}
 	freetbl(records,0);

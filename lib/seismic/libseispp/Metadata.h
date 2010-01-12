@@ -240,6 +240,13 @@ public:
 **/
         int get_int(string key)throw(MetadataGetError);
 /*!
+// Get a long integer from the Metadata object.  
+// 
+//\exception MetadataGetError if requested parameter is not found.
+//\param key keyword associated with requested metadata member.
+**/
+        long get_long(string key)throw(MetadataGetError);
+/*!
 // Get a string from the Metadata object.  
 // 
 // Note the string in this case can be quite large.  If the string
@@ -270,6 +277,17 @@ public:
 //\param val value to load.
 **/
         void put(string key,double val);
+/*!
+// Place a long integer into the Metadata object.
+// 
+// Inserts a new, integer parameter into the Metadata object.
+// If the parameter was present before it will be replaced.  If not
+// it will be inserted.  
+//
+//\param key keyword to be used to reference this parameter.
+//\param val value to load.
+**/
+        void put(string key,long val);
 /*!
 // Place an integer into the Metadata object.
 // 
@@ -390,7 +408,7 @@ protected:
 	// key is not found in the typed version they try to
 	// fetch from mstring and convert 
 	map<string,double> mreal;
-	map<string,int> mint;
+	map<string,long> mint;
 	map<string,bool> mbool;
 	map<string,string> mstring;
 };

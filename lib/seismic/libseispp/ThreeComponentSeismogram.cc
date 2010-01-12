@@ -54,7 +54,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(Metadata& md,
 {
 	string stref;
 	string dfile, dir;
-	int foff;
+	long foff;
 	FILE *fp;
 	string dtype;
 	string data_order;
@@ -114,11 +114,11 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(Metadata& md,
 			
 			dir = this->get_string("dir");
 			dfile = this->get_string("dfile");
-			foff = this->get_int("foff");
+			foff = this->get_long("foff");
 			string fname=dir+"/"+dfile;
 			if((fp=fopen(fname.c_str(),"r")) == NULL) 
 				throw("Open failure for file "+fname);
-			if (foff>0)fseek(fp,(long)foff,SEEK_SET);
+			if (foff>0)fseek(fp,foff,SEEK_SET);
 			inbuffer = new double[3*ns];
 			if(fread((void *)(inbuffer),sizeof(double),ns,fp)
 					!= ns ) 
@@ -475,12 +475,12 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		string dfile=md.get_string("dfile");
 		string dir=md.get_string("dir");
 		string fname=dir+"/"+dfile;
-		int foff=md.get_int("foff");
+		long foff=md.get_long("foff");
 
 		FILE *fp=fopen(fname.c_str(),"r");
 		if(fp==NULL)
 			throw SeisppError("Open failed on file"+fname);
-		if(foff>0) fseek(fp,static_cast<long int>(foff),SEEK_SET);
+		if(foff>0) fseek(fp,foff,SEEK_SET);
 		int readsize=(this->ns)*3;
 
 		if(fread(static_cast<void *>(this->u.get_address(0,0)),
@@ -536,6 +536,8 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 	// Load up these temporary arrays inside this try block and arrange to 
 	// throw an exception if required metadata are missing
 	try {
+                // WARNING hang and vang attributes stored in metadata
+                // always assumed to be radians
 		hang[0]=ts[0].get_double("hang");
 		hang[1]=ts[1].get_double("hang");
 		hang[2]=ts[2].get_double("hang");
@@ -787,11 +789,8 @@ void ThreeComponentSeismogram::rotate_to_standard()
 		tmatrix[0][2] = a[6];
 		tmatrix[1][2] = a[7];
 		tmatrix[2][2] = a[8];
-		//
-		//Yes these two blocks of code are different
-		//Above multiplies with a transpose without building
-		//it.  Here we have the transformation matrix
-		//
+                /* The inverse is now in tmatrix so we reverse the 
+                   rows and columms from above loop */
  
 		for(i=0;i<3;++i)
 		{
@@ -889,33 +888,24 @@ void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 		theta = xsc.theta;
 		phi = xsc.phi;
 	}
-        a = cos(phi);
-        b = sin(phi);
+        /* Am using a formula here for azimuth with is pi/2 - phi*/
+        double azimuth=M_PI_2-phi;  
+        a = cos(azimuth);
+        b = sin(azimuth);
         c = cos(theta);
         d = sin(theta);
 
-/* Older, incorrect form depth for reference to check for
-// other similar errors in other programs
-	tmatrix[0][0] = a*c;
+	tmatrix[0][0] = a;
 	tmatrix[1][0] = b*c;
-	tmatrix[2][0] = d;
+	tmatrix[2][0] = b*d;
 	tmatrix[0][1] = -b;
-	tmatrix[1][1] = a;
-	tmatrix[2][1] = 0.0;
-	tmatrix[0][2] = -a*d;
-	tmatrix[1][2] = -b*d;
-	tmatrix[2][2] = c;
-*/
-	tmatrix[0][0] = a*c;
-	tmatrix[1][0] = -b;
-	tmatrix[2][0] = a*d;
-	tmatrix[0][1] = b*c;
-	tmatrix[1][1] = a;
-	tmatrix[2][1] = b*d;
-	tmatrix[0][2] = -d;
-	tmatrix[1][2] = 0.0;
+	tmatrix[1][1] = a*c;
+	tmatrix[2][1] = a*d;
+	tmatrix[0][2] = 0.0;
+	tmatrix[1][2] = -d;
 	tmatrix[2][2] = c;
 
+        /* Now multiply the data by this transformation matrix.  */
 	double *work[3];
 	for(i=0;i<3;++i)work[i] = new double[ns];
 	for(i=0;i<3;++i)
@@ -938,7 +928,7 @@ void ThreeComponentSeismogram::rotate(double nu[3])
 void ThreeComponentSeismogram::apply_transformation_matrix(double a[3][3])
 {
 	if( (ns<=0) || !live) return; // do nothing in these situations
-	int i;
+	int i,j,k;
 	double *work[3];
 	for(i=0;i<3;++i) work[i] = new double[ns];
 	double twork[3];
@@ -950,21 +940,28 @@ void ThreeComponentSeismogram::apply_transformation_matrix(double a[3][3])
 		daxpy(ns,a[i][2],u.get_address(2,0),3,work[i],1);
 	}
 	for(i=0;i<3;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
-	// update tmatrix -- note this is a matrix multiply
-	// so this accumulates transformations
-	for(i=0;i<3;++i)
-	{
-		twork[0]=tmatrix[0][i];
-		twork[1]=tmatrix[1][i];
-		twork[2]=tmatrix[2][i];
-		tmatrix[0][i]=ddot(3,a[0],1,twork,1);
-		tmatrix[1][i]=ddot(3,a[1],1,twork,1);
-		tmatrix[2][i]=ddot(3,a[2],1,twork,1);
-	}
 	 for(i=0;i<3;++i) delete [] work[i];
+         /* Hand code this rather than use dmatrix or other library.
+            Probably dumb, but this is just a 3x3 system.  This 
+            is simply a multiply of a*tmatrix with result replacing
+            the internal tmatrix */
+         double tmnew[3][3];
+         double prod;
+         for(i=0;i<3;++i)
+             for(j=0;j<3;++j)
+             {
+                 for(prod=0.0,k=0;k<3;++k)
+                     prod+=a[i][k]*tmatrix[k][j];
+                 tmnew[i][j]=prod;
+             }
+         for(i=0;i<3;++i)
+             for(j=0;j<3;++j)tmatrix[i][j]=tmnew[i][j];
 	components_are_cardinal = false;
-	// Only cost of making this always false is a small 
-	// matrix inversion if returning to standard
+        /* Rather than test to see if input matrix was orthogonal
+           and carry along such baggage will just set this false 
+           so calling rotate_to_standard involves a small matrix
+           inversion.  Assumed less costly than the baggage required
+           to sort this out here. */
 	components_are_orthogonal = false;
 }
 /* This function computes and applies the free surface tranformaton
@@ -1003,7 +1000,7 @@ void ThreeComponentSeismogram::free_surface_transformation(SlownessVector uvec,
 	SphericalCoordinate scor;
 	//rotation angle is - azimuth to put x2 (north in standard coord) 
 	//in radial direction
-	scor.phi=-uvec.azimuth();
+	scor.phi=atan2(uvec.uy,uvec.ux);
 	scor.theta=0.0;
 	scor.radius=1.0;
 	// after this transformation x1=transverse horizontal
@@ -1019,9 +1016,13 @@ void ThreeComponentSeismogram::free_surface_transformation(SlownessVector uvec,
 	vpr=pslow*b02/a0;
 	vsr=(1.0-2.0*b02*p2)/(2.0*b0*qb);
 	vsz=pslow*b0;
-	// Now construct the transformation matrix
-	// This is different from Bostock's original code
-	// in sign and order.  
+	/* Now construct the transformation matrix
+	 This is different from Bostock's original code
+	 in sign and order.  Also note this transformation
+         is not scaled to have a unit matrix norm so amplitudes
+         after the transformation are distorted.  rotate_to_standard,
+         however, should still restore original data within roundoff
+         error if called on the result. */
 	double fstran[3][3];
 	fstran[0][0]=0.5;  fstran[0][1]=0.0;  fstran[0][2]=0.0;
 	fstran[1][0]=0.0;  fstran[1][1]=vsr;  fstran[1][2]=vpr;

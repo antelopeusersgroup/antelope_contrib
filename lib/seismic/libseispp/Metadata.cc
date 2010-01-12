@@ -150,7 +150,7 @@ namespace SEISPP
             MDtype mdtype;
             char csval[128];                      // ugly to used fixed buffer, but no choice
             double fpval;
-            int ival;
+            long ival;
             map<string,AttributeProperties>::iterator ap;
             string dbattributename;
             string internal_name;
@@ -278,7 +278,16 @@ namespace SEISPP
     int Metadata::get_int(string s)
         throw(MetadataGetError)
     {
-        map<string,int>::iterator iptr;
+        try {
+            long lival;
+            lival=this->get_long(s);
+            return(static_cast<int>(lival));
+        } catch (MetadataGetError& mderr){throw mderr;};
+    }
+    long Metadata::get_long(string s)
+        throw(MetadataGetError)
+    {
+        map<string,long>::iterator iptr;
         iptr=mint.find(s);
         if(iptr!=mint.end()) return((*iptr).second);
         map<string,string>::iterator pfstyle;
@@ -286,7 +295,7 @@ namespace SEISPP
         if(pfstyle==mstring.end())
             throw MetadataGetError("int",s,"");
         string valstring=(*pfstyle).second;
-        return (  atoi(valstring.c_str()) );
+        return (  atol(valstring.c_str()) );
     }
     string Metadata::get_string(string s)
         throw(MetadataGetError)
@@ -319,8 +328,13 @@ namespace SEISPP
     {
         mreal[name]=val;
     }
+    void Metadata::put(string name, long val)
+    {
+        mint[name]=val;
+    }
     void Metadata::put(string name, int val)
     {
+        long newval=static_cast<long>(val);
         mint[name]=val;
     }
     void Metadata::put(string name, string val)
@@ -358,7 +372,7 @@ namespace SEISPP
         // We assume this is an uncommon operation for Metadata
         // so the approach used here is to search through all the
         // maps and destroying any entry with the key name
-        map<string,int>::iterator iptr;
+        map<string,long>::iterator iptr;
         iptr=mint.find(name);
         if(iptr!=mint.end()) mint.erase(iptr);
 
@@ -408,7 +422,7 @@ namespace SEISPP
         map<string,double>::iterator rptr;
         rptr=mreal.find(key);
         if(rptr!=mreal.end()) return(true);
-        map<string,int>::iterator iptr;
+        map<string,long>::iterator iptr;
         iptr=mint.find(key);
         if(iptr!=mint.end()) return(true);
         map<string,string>::iterator sptr;
@@ -433,7 +447,7 @@ namespace SEISPP
             member.mdt=MDstring;
             result.push_back(member);
         }
-        map<string,int>::iterator iptr;
+        map<string,long>::iterator iptr;
         for(iptr=mint.begin();iptr!=mint.end();++iptr)
         {
             member.tag=(*iptr).first;
@@ -530,7 +544,7 @@ namespace SEISPP
         {
             os << (*sptr).first <<" "<<(*sptr).second<<endl;
         }
-        map<string,int>::iterator iptr;
+        map<string,long>::iterator iptr;
         for(iptr=md.mint.begin();iptr!=md.mint.end();++iptr)
         {
             os << (*iptr).first <<" "<<(*iptr).second<<endl;

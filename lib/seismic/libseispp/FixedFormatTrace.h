@@ -155,38 +155,43 @@ template <class T> T FixedFormatTrace::get(string name)
 		 + string("data pointer for this object is NULL.\n")
 		 + string("Probable coding error.  Check documentation.") );
 	AttributeType rdtype=this->header.dtype(name);
+        long lival;
+        int ival;
+        short int sival;
+        bool bval;
+	unsigned char ucval;
+	float rval;
+        double dval;
 	T result;
 	switch (rdtype)
 	{
+	case INT64:
+		lival=this->header.get<long>(name,h);
+		result=static_cast<T>(lival);
+		break;
 	case INT32:
-		int ival;
 		ival=this->header.get<int>(name,h);
 		result=static_cast<T>(ival);
 		break;
 	case INT16:
-		short int sival;
 		ival=this->header.get<short int>(name,h);
 		result=static_cast<T>(sival);
 		break;
 	case BOOL:
-		bool bval;
 		bval=this->header.get_bool(name,h);
 		/* this does nothing but seems necessary to 
 		handle the general typing */
 		result=static_cast<T>(bval);
 		break;
 	case BYTE:
-		unsigned char ucval;
 		ucval=this->header.get<unsigned char>(name,h);
 		result=static_cast<T>(ucval);
 		break;
 	case REAL32:
-		float rval;
 		rval=this->header.get<float>(name,h);
 		result=static_cast<T>(rval);
 		break;
 	case REAL64:
-		double dval;
 		dval=this->header.get<double>(name,h);
 		result=static_cast<T>(dval);
 		break;
@@ -228,6 +233,13 @@ template <class T> void FixedFormatTrace::put(string name,T value)
 {
     try {
 	const string base_error("FixedFormatTrace::put method: ");
+        long *lival;
+	int *ival;
+	short int *sival;
+	unsigned char *ucval;
+	bool *bval;
+        float *rval;
+        double *dval;
 	if(h==NULL)
 		throw SeisppError(base_error
 		 + string("data pointer for this object is NULL.\n")
@@ -235,33 +247,32 @@ template <class T> void FixedFormatTrace::put(string name,T value)
 	AttributeType rdtype=this->header.dtype(name);
 	switch (rdtype)
 	{
+	case INT64:
+		/* this assumes int is 32 bits */
+		lival=reinterpret_cast<long *>(&value);
+		this->header.put<long>(name,*lival,h);
+		break;
 	case INT32:
 		/* this assumes int is 32 bits */
-		int *ival;
 		ival=reinterpret_cast<int *>(&value);
 		this->header.put<int>(name,*ival,h);
 		break;
 	case INT16:
-		short int *sival;
 		sival=reinterpret_cast<short int *>(&value);
 		this->header.put<short int>(name,*sival,h);
 		break;
 	case BYTE:
-		unsigned char *ucval;
 		ucval=reinterpret_cast<unsigned char *>(&value);
 		this->header.put<unsigned char>(name,*ucval,h);
 		break;
 	case BOOL:
-		bool *bval;
 		bval=reinterpret_cast<bool *>(&value);
 		this->header.put_bool(name,*bval,h);
 	case REAL32:
-		float *rval;
 		rval=reinterpret_cast<float *>(&value);
 		this->header.put<float>(name,*rval,h);
 		break;
 	case REAL64:
-		double *dval;
 		dval=reinterpret_cast<double *>(&value);
 		this->header.put<double>(name,*dval,h);
 		break;
@@ -319,6 +330,7 @@ template <class T>void FixedFormatTrace::load(vector<T> dvec)
                 bytes_per_sample=2;
                 break;
         case REAL64:
+        case INT64:
                 bytes_per_sample=8;
                 break;
         case INT32:
@@ -344,6 +356,7 @@ template <class T>void FixedFormatTrace::load(vector<T> dvec)
 		datasize=bytes_per_sample*ns;
 	}
 	int i;
+        long int *liptr;
 	short int *siptr;
 	int *iptr;
 	float *fptr;
@@ -360,7 +373,14 @@ template <class T>void FixedFormatTrace::load(vector<T> dvec)
 	case INT32:
 		iptr=new int[ns];
 		for(i=0;i<ns;++i) 
-			siptr[i]=static_cast<int>(dvec[i]);
+			iptr[i]=static_cast<int>(dvec[i]);
+		memcpy(static_cast<void *>(d),static_cast<const void *>(iptr),datasize);
+		delete [] iptr;
+		break;
+	case INT64:
+		liptr=new long[ns];
+		for(i=0;i<ns;++i) 
+			liptr[i]=static_cast<long>(dvec[i]);
 		memcpy(static_cast<void *>(d),static_cast<const void *>(iptr),datasize);
 		delete [] iptr;
 		break;

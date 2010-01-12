@@ -28,9 +28,9 @@ class DBBundle
 {
 public:
 /*! First record of bundle this object defines.*/
-	int start_record;
+	long start_record;
 /*! Final record of the bundle this object defines.*/
-	int end_record;
+	long end_record;
 /*! Dbptr for view that dbgroup was called on.  We always need to know
 * this to be able to extract more than the keys from the working view. */
 	Dbptr parent;
@@ -194,11 +194,22 @@ public:
 	\exception SeisppDberror is thrown if dbgetv fails.
 	*/
 	double get_double(string attribute_name);
-	/*! \brief Get an attribute from current tuple returning an integer.
+	/*! \brief Get a attribute from current tuple returning a long (64bit)  integer.
+
 	This method returns the value 
-	of an integer-valued attribute for the current tuple.  The result is always
-	returned as a standard int for simplicity.  A short int can be handled with a cast while
-	long would require an alternate interface.  
+	of an integer-valued attribute for the current tuple.  The result is 
+	returned as a long int.  A short int can be handled with a cast. 
+	A standard int can be cast or use the get_int method directly.
+	\param attribute_name name of the desired attribute in the schema associated with this handle.
+	\exception SeisppDberror is thrown if dbgetv fails.
+	*/
+	long get_long(string attribute_name);
+	/*! \brief Get an attribute from current tuple returning an integer.
+
+	This method returns the value 
+	of an integer-valued attribute for the current tuple.  The result is 
+	returned as a 32bit int.  A short int can be handled with a cast while
+	long should use the alternative interface get_long. 
 	\param attribute_name name of the desired attribute in the schema associated with this handle.
 	\exception SeisppDberror is thrown if dbgetv fails.
 	*/
@@ -237,6 +248,15 @@ public:
 	* \exception SeisppDberror is thrown if dbputv fails to put the requested variable.
 	*/
 	void put(string name, float value);
+	/*! Put a long integer variable to a database at the current record position.
+	* This method will put one attribute to a database table at the current 
+	* record position. 
+	* \param name attribute name of quantity to be saved to database.
+	* \param value value of this attribute to save to current tuple. 
+	*
+	* \exception SeisppDberror is thrown if dbputv fails to put the requested variable.
+	*/
+	void put(string name,long value);
 	/*! Put an integer variable to a database at the current record position.
 	* This method will put one attribute to a database table at the current 
 	* record position. 
@@ -286,16 +306,16 @@ public:
 	*    to which db.record of the handle's Dbptr is set.
 	* \exception SeisppDberror is thrown if dbaddnull fails.  
 	*/
-	int append();
+	long append();
 	/*! Return the current record number. */
-	int current_record(){return(db.record);};
+	long current_record(){return(db.record);};
 	/*! Explicitly reposition the record counter to a specified value.
 	*  This is an Antelope specific method that depends on Antelope's use of
 	* simple integers to index rows and columns of a view.  
 	* \param rec value to which the record pointer should be set.  This is not
 	*   checked for validity.
 	*/
-	void set_record(int rec){db.record=rec;};
+	void set_record(long rec){db.record=rec;};
 	/*! Make the handle point at a specific table.
 	* This is essentially a front end to dblookup.  If sucessful the pointer will
 	* be valid for accessing the raw table in the same sense as the result of 
@@ -314,7 +334,7 @@ public:
 	\return number of rows in the current view.
 	\exception SeisppDberror is thrown if the query fails.
 	*/
-	int number_tuples();
+	long number_tuples();
 	/*! Query to ask the number of columns (attributes) in the view to which this handle points.
 	\return number of columns in the current view.
 	\exception SeisppDberror is thrown if the query fails.
@@ -691,7 +711,7 @@ public:
 	\exception SeisppDberror is thrown if the internal call to dbmatches fails.
 
 	*/
-	list<int> find(Metadata& md, bool use_fullname=true);
+	list<long> find(Metadata& md, bool use_fullname=true);
 private:
 	Dbptr dbscratch_record;
 	Dbptr dbt;

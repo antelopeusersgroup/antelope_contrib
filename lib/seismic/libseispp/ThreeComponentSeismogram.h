@@ -55,7 +55,6 @@ public:
  to simplify common tests for properties of a given data series.
 **/
 	bool components_are_cardinal;  // true if x1=e, x2=n, x3=up
-	// This is the transformation matrix applied relative to standard
 /*!
  Transformation matrix. 
 
@@ -68,20 +67,27 @@ public:
  Holds the actual data.  
 
 Matrix is 3xns.  Thus the rows are the component number
- and columns define time position.NEEDS A LINK TO DMATRIX DEFINTION
+ and columns define time position.  Note there is a redundancy in
+ these definitions that must be watched if you manipulate the 
+ contents of this matrix.  That is, BasicTimeSeries defines ns, but
+ the u matrix has it's own internal size definitions.  Currently no
+ tests are done to validate this consistency.  All constructors handle
+ this, but again because u is public be very careful in altering u.
 **/
 	dmatrix u;
 /*!
  Default constructor.  
 
-Sets ns to zero and builds an empty matrix.
+Sets ns to zero and builds an empty matrix.  The live variable
+in BasicTimeSeries is also set false.
 **/
 	ThreeComponentSeismogram();
 /*!
  Simplest parameterized constructor. 
 
 Initializes data and sets aside memory for
- matrix of size 3xnsamples.  The data matrix is not initialized.  
+ matrix of size 3xnsamples.  The data matrix is not initialized
+ and the object is marked as not live.
 \param nsamples number of samples expected for holding data.
 **/
 	ThreeComponentSeismogram(int nsamples);
@@ -103,6 +109,14 @@ Initializes data and sets aside memory for
  union of the gaps found in all three.  The current algorithm for doing
  this is slow but running a sample by sample test on each component and
  marking gaps with the BasicTimeSeries add_gap methods.  
+
+ Note this constructor requires variables hang and vang, which are 
+ orientation angles defined in the CSS3.0 schema (NOT spherical 
+ coordinates by the way), by set for each component.  This is used to 
+ construct the transformation matrix for the object that allows,
+ for example, removing raw data orientation errors using rotate_to_standard.
+ The constructor will throw an exception if any component does not have 
+ these attributes set in their Metadata area. 
 
 \exception SeisppError exception can be throw for a variety of serious
     problems. 
@@ -130,9 +144,12 @@ Initializes data and sets aside memory for
  set of keywords that must be in the metadata:  TimeReferenceType, datatype,
  dir, dfile, and foff.  TimeReferenceType is a string that must be either "relative"
  or "absolute".  datatype, dir, dfile, and foff are exactly as in a wfdisc record.
- An important current limitation is that only host 4 byte float datatype (t4 or u4)
- are allowed by this constructor.  If datatype is anything else the constructor will
+ An important current limitation is that only host 8 byte float datatype in mulitplexed
+ or trace order are allowed by this constructor.  If datatype is anything else the constructor will
  throw an exception.  
+
+ Be aware this constructor has not been as heavily tested as it probably should be.  
+ It is known to have some limitations.  In particular, byte swapping has not been implemented.
 
 \exception MetadataError object is thrown if any of the metadata associated with the 
            keywords noted above are not defined.  
@@ -163,9 +180,12 @@ Initializes data and sets aside memory for
  in a simple binary dump of the u matrix contents.  
 
  The following attributes must be present in MetadataList structure passed to the
- constructor or the routine wil throw a MetadataError exception:  time, endtime,
- nsamp, samprate, datatype, dir, dfile, and foff. If the datatype is not 3c the
- attributes hang and vang (normally from sitechan) must be defined.  
+ constructor or the routine will throw a MetadataError exception:  time, endtime,
+ nsamp, samprate, datatype, dir, dfile, and foff. If the datatype is not 3c or c3 the
+ attributes hang and vang (normally from sitechan) must be defined in each row of the
+ input view.  3c (Sun byte order) and c3 (intel byte order) implies the data are 
+ raw binary doubles in a particular byte order multiplexed by 3 channels and in
+ cardinal directions (x1=E, x2=N, and x3=Z)..  
  
  Finally irregular start and end times for data read in single channel mode will
  cause gaps to be defined at the beginning and/or end of the data.  
@@ -233,10 +253,15 @@ Initializes data and sets aside memory for
 /*!
  Apply inverse transformation matrix to return data to cardinal direction components.
 
- It is frequently necessary to make certain as set of three component data are oriented
+ It is frequently necessary to make certain a set of three component data are oriented
  to the standard reference frame (EW, NS, Vertical).  This function does this.
  For efficiency it checks the components_are_cardinal variable and does nothing if 
- it is set true.  Otherwise, it applies the transformation and then sets this variable true.
+ it is set true.  Otherwise, it applies the inverse transformation and then sets this variable true.
+ Note even if the current transformation matrix is not orthogonal it will be put back into 
+ cardinal coordinates. 
+ \exception SeisppError thrown if the an inversion of the transformation matrix is required and that
+ matrix is singular.  This can happen if the transformation matrix is incorrectly defined or the
+ actual data are coplanar.
 **/
 	void rotate_to_standard() throw(SeisppError);
 	// This overloaded pair do the same thing for a vector
@@ -249,6 +274,8 @@ Initializes data and sets aside memory for
  direction passed through the argument.  The data are rotated such that x1 becomes 
  the transverse component, x2 becomes radial, and x3 becomes longitudinal.  In the 
  special case for a vector pointing in the x3 direction the data are not altered.
+ The transformation matrix is effectively the matrix product of two coordinate rotations:
+ (1) rotation around x3 by angle phi and (2) rotation around x1 by theta.  
 
 The sense of this transformation is confusing because of a difference in 
 convention between spherical coordinates and standard earth coordinates.
@@ -259,7 +286,14 @@ is measured counterclockwise relative to the x1 axis, which is east in
 standard earth coordinates. This transformation is computed using a phi
 angle.   To use this then to compute a transformation to standard ray 
 coordinates with x2 pointing in the direction of wavefront advance, 
-phi should be set to -1.0 times the azimuth of the propagation direction.
+phi should be set to pi/2-azimuth which gives the phi angle needed to rotate
+x2 to radial.  This is extremely confusing because in spherical coordinates
+it would be more intuitive to rotate x1 to radial, but this is NOT the 
+convention used here.  In general to use this feature the best way to avoid
+this confusion is to use the PMHalfSpaceModel procedure to compute a 
+SphericalCoordinate object consistent with given propagation direction
+defined by a slowness vector.  Alternatively, use the free_surface_transformation 
+method defined below.  
 
 \param sc defines final x3 direction (longitudinal) in a spherical coordinate structure.
 **/
@@ -274,6 +308,13 @@ phi should be set to -1.0 times the azimuth of the propagation direction.
  the transverse component, x2 becomes radial, and x3 becomes longitudinal.  In the 
  special case for a vector pointing in the x3 direction the data are not altered.
 
+ This method effectively turns nu into a SphericalCoordinate object and calles the
+ related rotate method that has a SphericalCoordinate object as an argument.  The 
+ potential confusion of orientation is not as extreme here.  After the transformation
+ x3prime will point in the direction of nu, x2 will be in the x3-x3prime plane (rotation by
+ theta) and orthogonal to x3prime, and x1 will be horizontal and perpendicular to x2prime
+ and x3prime.
+
 \param nu defines direction of x3 direction (longitudinal) as a unit vector with three components.
 **/
 	void rotate(double nu[3]);
@@ -284,6 +325,9 @@ phi should be set to -1.0 times the azimuth of the propagation direction.
 	// applying the transformation so this is accumulative.
 /*!
  Applies an arbitrary transformation matrix to the data.
+ i.e. after calling this method the data will have been multiplied by the matrix a
+ and the transformation matrix will be updated.  The later allows cascaded 
+ transformations to data.
 
 \param a is a C style 3x3 matrix.
 **/
@@ -293,7 +337,8 @@ phi should be set to -1.0 times the azimuth of the propagation direction.
 
  Kennett [1991] gives the form for a free surface transformation operator 
  that reduces to a nonorthogonal transformation matrix when the wavefield is
- not evanescent.  
+ not evanescent.  On output x1 will be transverse, x2 will be SV (radial),
+ and x3 will be longitudinal.  
 
 \param u slowness vector off the incident wavefield
 \param vp0 Surface P wave velocity

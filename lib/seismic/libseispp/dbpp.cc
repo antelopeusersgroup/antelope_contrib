@@ -11,7 +11,7 @@ namespace SEISPP
 {
 bool is_view_test(Dbptr db)
 {
-	int is_view;
+	long is_view;
 	/* This is probably redundant, but this avoids errors
 	returning true for dbINVALID which can cause downstream problems */
 	if(db.table<0) return(false);
@@ -30,8 +30,8 @@ bool dbgroup_used(Tbl *t)
 {
 	string s;
 	int ierr;
-	int n=maxtbl(t);
-	for(int i=0;i<n;++i)
+	long n=maxtbl(t);
+	for(long i=0;i<n;++i)
 	{
 		s = string(static_cast<char *>(gettbl(t,i)));
 		ierr=s.find("dbgroup");
@@ -67,7 +67,7 @@ string FindFirstValidTable(Dbptr db,list<string> tables_to_test)
 	for(tttptr=tables_to_test.begin();tttptr!=tables_to_test.end();++tttptr)
 	{
 		Dbptr dbtest;
-		ierr=dbgetv(db,0,tttptr->c_str(),&dbtest,0);
+		ierr=dbgetv(db,0,tttptr->c_str(),&dbtest,NULL);
 		if(ierr==0) return(*tttptr);
 	}
 	return(string("BAD"));
@@ -355,7 +355,7 @@ void DatascopeHandle::close()
 double DatascopeHandle::get_double(string name)
 {
 	double val;
-	if(dbgetv(db,0,name.c_str(),&val,0))
+	if(dbgetv(db,0,name.c_str(),&val,NULL))
 		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
 			db,complain);
@@ -363,8 +363,13 @@ double DatascopeHandle::get_double(string name)
 }
 int DatascopeHandle::get_int(string name)
 {
-	int val;
-	if(dbgetv(db,0,name.c_str(),&val,0))
+    long ival=this->get_long(name);
+    return(static_cast<int>(ival));
+}
+long DatascopeHandle::get_long(string name)
+{
+	long val;
+	if(dbgetv(db,0,name.c_str(),&val,NULL))
 		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
 			db,complain);
@@ -373,7 +378,7 @@ int DatascopeHandle::get_int(string name)
 string DatascopeHandle::get_string(string name)
 {
 	char val[128];
-	if(dbgetv(db,0,name.c_str(),&val,0))
+	if(dbgetv(db,0,name.c_str(),&val,NULL))
 		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
 			db,complain);
@@ -383,18 +388,18 @@ string  DatascopeHandle::get_filename()
 {
 	char str[256];
 
-	if(dbgetv(db,0,"dir",str,0) )
+	if(dbgetv(db,0,"dir",str,NULL ) )
 		throw SeisppDberror("dbgetv error trying to read dir",db,complain);
 	string dir(str);
-	if(dbgetv(db,0,"dfile",str,0) )
+	if(dbgetv(db,0,"dfile",str,NULL ) )
 		throw SeisppDberror("dbgetv error trying to read dfile",db,complain);
 	return(dir+"/"+string(str));
 }
 	
-int DatascopeHandle::number_tuples()
+long DatascopeHandle::number_tuples()
 {
 	int ierr;
-	int nrec;
+	long nrec;
 	ierr = dbquery(db,dbRECORD_COUNT,&nrec);
 	if(ierr<0)
 		throw SeisppDberror(string("dbquery of record count failed"),
@@ -404,12 +409,12 @@ int DatascopeHandle::number_tuples()
 int DatascopeHandle::number_attributes()
 {
 	int ierr;
-	int natt;
+	long natt;
 	ierr = dbquery(db,dbFIELD_COUNT,&natt);
 	if(ierr<0)
 		throw SeisppDberror(string("number_attributes:  dbquery failed"),
 			db,complain);
-	return(natt);
+	return(static_cast<int>(natt));
 }
 DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 {
@@ -442,9 +447,9 @@ void DatascopeHandle::operator ++()
 // record number of the new row.  Assumes Dbptr points at
 // one table.  Throws an exception if the add fails
 
-int DatascopeHandle::append()
+long DatascopeHandle::append()
 {
-	int row_added;
+	long row_added;
 	row_added = dbaddnull(db);
 	if(row_added==dbINVALID)
 		throw SeisppDberror(string("DatascopeHandle::append: dbaddnull failure"),
@@ -459,37 +464,43 @@ int DatascopeHandle::append()
 // Maybe there is a way around that but I don't know it
 void DatascopeHandle::put(string name, double value)
 {
-	if(dbputv(db,0,name.c_str(),value,0) == dbINVALID)
+	if(dbputv(db,0,name.c_str(),value,NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
 void DatascopeHandle::put(string name, float value)
 {
-	if(dbputv(db,0,name.c_str(),static_cast<double>(value),0) == dbINVALID)
+	if(dbputv(db,0,name.c_str(),static_cast<double>(value),NULL) == dbINVALID)
+		throw SeisppDberror(string("dbputv error with attribute "+name),
+				db, complain);
+}
+void DatascopeHandle::put(string name, long value)
+{
+	if(dbputv(db,0,name.c_str(),value,NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
 void DatascopeHandle::put(string name, int value)
 {
-	if(dbputv(db,0,name.c_str(),value,0) == dbINVALID)
+	if(dbputv(db,0,name.c_str(),static_cast<long>(value),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
 void DatascopeHandle::put(string name, string value)
 {
-	if(dbputv(db,0,name.c_str(),value.c_str(),0) == dbINVALID)
+	if(dbputv(db,0,name.c_str(),value.c_str(),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
 void DatascopeHandle::put(string name, char *value)
 {
-	if(dbputv(db,0,name.c_str(),value,0) == dbINVALID)
+	if(dbputv(db,0,name.c_str(),value,NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
 void DatascopeHandle::put(string name, const char *value)
 {
-	if(dbputv(db,0,name.c_str(),const_cast<char *>(value),0) == dbINVALID)
+	if(dbputv(db,0,name.c_str(),const_cast<char *>(value),NULL) == dbINVALID)
 		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
@@ -681,7 +692,7 @@ DBBundle DatascopeHandle::get_range()
 	{
 		Dbptr dbbundle;
 		int ierr;
-		ierr = dbgetv(db,0,"bundle",&dbbundle,0);
+		ierr = dbgetv(db,0,"bundle",&dbbundle,NULL );
 		if(ierr==dbINVALID)
 			throw SeisppDberror(emess,db,complain);
 		dbget_range(dbbundle,&s,&e);

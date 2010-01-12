@@ -822,8 +822,8 @@ SeiswLeaveProc(Widget wid,
 	XtVaGetValues((Widget)sw->seisw.hScrollBar, XmNheight, &hsize, NULL);
   if (sw->seisw.vScrollBar != NULL)
 	XtVaGetValues((Widget)sw->seisw.vScrollBar, XmNwidth, &vsize, NULL);
-  hsize=hsize+4;
-  vsize=vsize+4;
+  hsize=hsize+sizeof(int);
+  vsize=vsize+sizeof(int);
 
 
   if (sw->seisw.drag_enable != 1) return;
@@ -3814,7 +3814,7 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
                         sprintf(str,"%1.5g",anum);
                 lstr = (int) strlen(str);
                 tw = XTextWidth(fa,str,lstr);
-                XDrawString(dpy,win,gca,xa+numb-tw,ya+labelca/4,str,lstr);
+                XDrawString(dpy,win,gca,xa+numb-tw,ya+labelca/sizeof(int),str,lstr);
         }
 
 	if (origin != NULL) {
@@ -3834,11 +3834,11 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
         if (style==NORMAL)
                 XDrawString(dpy,win,gca,
                         x+ticb-9*labelcw,
-                        y+labelca/4-labelch,label,lstr);
+                        y+labelca/sizeof(int)-labelch,label,lstr);
         else
                 XDrawString(dpy,win,gca,
                         x+ticb-9*labelcw,
-                        y+height+labelca/4+labelch,label,lstr);
+                        y+height+labelca/sizeof(int)+labelch,label,lstr);
 
         /* draw title */
         lstr = (int) strlen(title);
@@ -3846,12 +3846,12 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
         if (style==NORMAL)
                 XDrawString(dpy,win,gct,
                         x+width/2-tw/2,
-			y+labelca/4-labelch,title,lstr);
+			y+labelca/sizeof(int)-labelch,title,lstr);
 //                        y+labelca/4-labelch-labelch,title,lstr);
         else
                 XDrawString(dpy,win,gct,
                         x+width/2-tw/2,
-                        y+height+labelca/4+labelch+titleca,title,lstr);
+                        y+height+labelca/sizeof(int)+labelch+titleca,title,lstr);
 
         /* draw axes box */
         XDrawRectangle(dpy,win,gca,x,y,width,height);

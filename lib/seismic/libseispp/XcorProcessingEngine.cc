@@ -160,7 +160,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			save_extensions=true;
 		// Verify site and sitechan are defined and abort if
 		// they are empty
-		int ntest;
+		long ntest;
 		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,(char *) "site",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0)
@@ -1379,7 +1379,7 @@ void set_nassoc(DatascopeHandle dbh,int orid)
 	list<string> joinkeys;
 	joinkeys.push_back("orid");
 	dbh.leftjoin("origin",joinkeys,joinkeys);
-	int nass=dbh.number_tuples();
+	long nass=dbh.number_tuples();
 
 	if(nass>0)
 	{
@@ -1426,7 +1426,7 @@ string set_chan_this_phase(string chan, XcorAnalysisSetting& a)
 void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 {
 	// First save the beam
-	int pwfid;
+	long pwfid;
 	string pchan(analysis_setting.component_name);
 	string filter(analysis_setting.filter_param.type_description(true));
 	string filter_param;
@@ -1700,7 +1700,7 @@ if(fabs(resid)>100.0)
 				analysis_setting.phase_for_analysis);
 			    trace->put("arrival.auth",auth);
 			    // KGL SCAFFOLD temporary cast to compile with new 64-bit-compliant headers
-			    trace->put("arrival.jdate",(int) yearday(atime));
+			    trace->put("arrival.jdate",yearday(atime));
 			    trace->put("arrival.deltim",deltim);
 			    try {
 			    	int arruerr=arru.update(*trace);

@@ -283,7 +283,7 @@ void save_metadata_for_object(Metadata& md,
 				else
 					ival = md.get_int(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
-					ival,0);
+					ival,NULL);
 				// In this case we need to push this back to metadata
 				// so it can be used downstream
 				md.put(ami->second.db_attribute_name,ival);
@@ -291,12 +291,12 @@ void save_metadata_for_object(Metadata& md,
 			case MDreal:
 				dval = md.get_double(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
-					dval,0);
+					dval,NULL);
 				break;
 			case MDstring:
 				cval = md.get_string(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
-					cval.c_str(),0);
+					cval.c_str(),NULL);
 				break;
 			case MDboolean:
 				// treat booleans as ints for external representation
@@ -307,7 +307,7 @@ void save_metadata_for_object(Metadata& md,
 				else
 					ival = 0;
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
-					ival,0);
+					ival,NULL);
 				break;
 				
 			case MDinvalid:
@@ -389,7 +389,7 @@ int dbsave(TimeSeries& ts,
 	dbputv(db,0,"time",ts.t0,
 		"endtime",etime,
 		"samprate",1.0/ts.dt,
-		"nsamp",ts.ns,0);
+		"nsamp",ts.ns,NULL);
 	
 	// Specifying the output data type is problematic
 	// Here I take a dogmatic view that the default should be
@@ -416,7 +416,7 @@ int dbsave(TimeSeries& ts,
 	char dtype[4];
 	char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
 	long int foff;  // actual foff reset in db record
-	dbgetv(db,0,"datatype",dtype,"dir",dir,"dfile",dfile,0);
+	dbgetv(db,0,"datatype",dtype,"dir",dir,"dfile",dfile,NULL);
 	// make sure the directory is present
 	if(makedir(dir))
 	{
@@ -437,7 +437,7 @@ int dbsave(TimeSeries& ts,
 		else
 		{
 			// note this uses sdtype set in indefs above
-			dbputv(db,0,"datatype",sdtype.c_str(),0);
+			dbputv(db,0,"datatype",sdtype.c_str(),NULL);
 			float *outbuf = new float[ts.ns];
 			for(int i=0;i<ts.ns;++i) 
 				outbuf[i]=static_cast<float>(ts.s[i]);
@@ -449,7 +449,7 @@ int dbsave(TimeSeries& ts,
 		// in the database as the absolutely correct value
 		// Reasons is that if the file exists these functions
 		// always append and return foff.
-		dbputv(db,0,"foff",static_cast<int>(foff),0);
+		dbputv(db,0,"foff",foff,NULL);
 		return(recnumber);
 	}
 	catch (SeisppError& serr)
@@ -572,11 +572,11 @@ int dbsave(ThreeComponentSeismogram& tcs,
 			"endtime",etime,
 			"samprate",1.0/tcs.dt,
 			"nsamp",tcs.ns,
-			"datatype",sdtype.c_str(),0);
+			"datatype",sdtype.c_str(),NULL);
 		char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
 		long int foff;  // actual foff reset in db record
 		// assume these were set in mdl.  probably should have a cross check
-		dbgetv(db,0,"dir",dir,"dfile",dfile,0);
+		dbgetv(db,0,"dir",dir,"dfile",dfile,NULL);
 		// make sure the directory is present
 		if(makedir(dir))
 		{
@@ -593,7 +593,7 @@ int dbsave(ThreeComponentSeismogram& tcs,
 		// in the database as the absolutely correct value
 		// Reasons is that if the file exists these functions
 		// always append and return foff.
-		dbputv(db,0,"foff",static_cast<int>(foff),0);
+		dbputv(db,0,"foff",foff,NULL);
 		return(recnumber);
 	}
 	catch (SeisppError& serr)
@@ -641,11 +641,11 @@ int dbsave(ComplexTimeSeries& tcs,
 			"endtime",etime,
 			"samprate",1.0/tcs.dt,
 			"nsamp",tcs.ns,
-			"datatype",sdtype.c_str(),0);
+			"datatype",sdtype.c_str(),NULL);
 		char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
 		long int foff;  // actual foff reset in db record
 		// assume these were set in mdl.  probably should have a cross check
-		dbgetv(db,0,"dir",dir,"dfile",dfile,0);
+		dbgetv(db,0,"dir",dir,"dfile",dfile,NULL);
 		// make sure the directory is present
 		if(makedir(dir))
 		{
@@ -668,7 +668,7 @@ int dbsave(ComplexTimeSeries& tcs,
 		// in the database as the absolutely correct value
 		// Reasons is that if the file exists these functions
 		// always append and return foff.
-		dbputv(db,0,"foff",static_cast<int>(foff),0);
+		dbputv(db,0,"foff",foff,NULL);
 		return(recnumber);
 	}
 	catch (SeisppError& serr)

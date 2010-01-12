@@ -11,12 +11,12 @@ namespace SEISPP
 void DatascopeProcessingQueue::save()
 {
 	rewind(fp);
-	int buf[3];
+	long buf[3];
 	buf[0]=records_in_this_view;
 	buf[1]=view_table;
 	buf[2]=current_record;
-	int count;
-	count=fwrite((void *)buf,sizeof(int),3,fp);
+	long count;
+	count=fwrite((void *)buf,sizeof(long),3,fp);
 	if(count!=3) throw SeisppError(string("DatascopeProcessingQueue:: fwrite error"));
 	count=fwrite((void *)(&(status[0])),
 		sizeof(ProcessingStatus),records_in_this_view,fp);
@@ -27,9 +27,9 @@ void DatascopeProcessingQueue::save()
 void DatascopeProcessingQueue::load()
 {
 	rewind(fp);
-	int buf[3];
-	int count;
-	count=fread((void *)buf,sizeof(int),3,fp);
+	long buf[3];
+	long count;
+	count=fread((void *)buf,sizeof(long),3,fp);
 	if(count!=3)
 		throw SeisppError(string("DatascopeProcessingQueue:: fread error"));
 	records_in_this_view=buf[0];
@@ -47,7 +47,7 @@ ostream& operator<<(ostream& os, DatascopeProcessingQueue& q)
 		<< " Current record is "<< q.current_record 
 		<< " of " << q.records_in_this_view << " total."<<endl
 		<<"Processing status of each member of queue:"<<endl;
-	int i;
+	long i;
 	for(i=0;i<q.status.size();++i)
 	{
 		os << i <<" ";
@@ -106,7 +106,7 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 				<< "Buildng queue with "<<records_in_this_view<<" entries"<<endl;
 		}
 		status.reserve(records_in_this_view);
-		for(int i=0;i<records_in_this_view;++i) status.push_back(TODO);
+		for(long i=0;i<records_in_this_view;++i) status.push_back(TODO);
 		current_record=0;
 		view_table=dbh.db.table;
 		status[0]=PROCESSING;
@@ -118,13 +118,13 @@ DatascopeProcessingQueue::DatascopeProcessingQueue(DatascopeHandle& dbh, string 
 	    }
 	    else
 	    {
-		int rtest=records_in_this_view;
+		long rtest=records_in_this_view;
 		/* We have to do a partial load to get number of records so we 
 		can initialize the status vector.  Once that is done we call
 		the load method. Note we don't need to mess with locking because
 		the size variable is never changed and it is the first entry in the file.*/
 		rewind(fp);
-		int count=fread((void *)&records_in_this_view,sizeof(int),1,fp);
+		long count=fread((void *)&records_in_this_view,sizeof(long),1,fp);
 		if(count!=1) throw SeisppError("DatascopeProcessingQueue constructor:  "
 			+ string("fread error on first read of existing queue file") );
 		if(records_in_this_view != rtest)
@@ -173,7 +173,7 @@ DatascopeProcessingQueue::~DatascopeProcessingQueue()
 }
 /* This is a private method used to search forward for next record marked
 as TODO.  Returns the index.  Returns -1 if called on the last record. */
-int DatascopeProcessingQueue::position_to_next(int rec)
+long DatascopeProcessingQueue::position_to_next(long rec)
 {
 	current_record=rec;
 	do {
@@ -213,7 +213,7 @@ void DatascopeProcessingQueue::mark(ProcessingStatus pstat)
 	//if(flock(fd,LOCK_EX) ) 
 		throw SeisppError(string("DatascopeProcessingQueue::mark:  ")
 			+ "Could not lock queue file.  Cannot proceed");
-	int my_current_record=current_record;
+	long my_current_record=current_record;
 	load();
 
 	status[my_current_record]=pstat;

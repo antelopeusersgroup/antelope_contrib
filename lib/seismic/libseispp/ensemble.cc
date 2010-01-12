@@ -276,7 +276,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	free(sta_expr);
 	free(chan_expr);
 
-	int ntraces;
+	long ntraces;
 	dbquery(dbtr,dbRECORD_COUNT,&ntraces);
 	if(ntraces<=0) 
 	{
@@ -352,7 +352,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 #endif
 			char sta[10],chan[10];  // We'll need to have these sometimes
 			dbgetv(dbtrgrp.db,0,
-				"sta",sta,"chan",chan,"bundle",&db_bundle,0);
+				"sta",sta,"chan",chan,"bundle",&db_bundle,NULL);
 			dbget_range(db_bundle,&is,&ie);
 			// For either case we assume we can get the
 			// main required attributes from the first
@@ -372,7 +372,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				"samprate",&samprate,
 					/* Assumes chans[k] is one on char like "E" */
 				"nsamp",&nsamp,
-				"calib",&calib,0);
+				"calib",&calib,NULL);
 			// Note the keys used here come from
 			// SeisppKeywords.h
 			trattributes.put(start_time_keyword,start_time);
@@ -405,7 +405,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 					"dnorth",&dnorth,
 					"deast",&deast,
 					"refsta",refsta,
-					0) == dbINVALID)
+					NULL) == dbINVALID)
 				{
 					trdestroy(&dbtr);
 					throw SeisppError(base_error_message
@@ -424,7 +424,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				if(dbgetv(dbtr_handle.db,0,
 					"hang",&hang,
 					"vang",&vang,
-					0) == dbINVALID)
+					NULL) == dbINVALID)
 				{
 					trdestroy(&dbtr);
 					throw SeisppError(base_error_message
@@ -454,7 +454,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			{
 				// Block for no gaps
 				dbgetv(dbtr_handle.db,0,"data",&tdata,
-					"nsamp",&(seis->ns),0);
+					"nsamp",&(seis->ns),NULL);
 				// NOTE we are applying calib here
 				// This is equivalent to trapply_calib
 				for(i=0;i<seis->ns;++i)
@@ -481,7 +481,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 						"nsamp",&ns_this_segment,
 						"time",&t0_this_segment,
 						"endtime",&etime_this_segment,
-						0);
+						NULL);
 					if(i==is)
 					{
 						// test for gap at t0

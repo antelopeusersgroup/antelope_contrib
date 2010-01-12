@@ -75,12 +75,13 @@ public:
 	All relational dbms systems have a string tag associated with the attribute defining
 	the "name" of that attribute within the dbms.  Integers are always
 	a standard type supported by any dbms.  This method returns the value 
-	of an integer-valued attribute for the current tuple.  The result is always
-	returned as a standard int for simplicity.  A short int can be handled with a cast while
-	long would require an alternate interface.  
+	of an integer-valued attribute for the current tuple.  The base
+        class defines only a long int as a required method.  Concrete 
+        implementations may want to add automated conversion routines for
+        short or standard int output.
 	\param attribute_name name of the desired attribute in the schema associated with this handle.
 	*/	
-	virtual int get_int(string attribute_name)=0;
+	virtual long get_long(string attribute_name)=0;
 	/*! \brief Get an attribute from current tuple returning a string.
 	All relational dbms systems have a string tag associated with the attribute defining
 	the "name" of that attribute within the dbms.   Strings are
@@ -105,7 +106,7 @@ public:
 	* this method.  
 	* \return a number defining the row index of this tuple.  
 	*/
-	virtual int append()=0;
+	virtual long append()=0;
 	/*! Put a real variable to a database at the current record position.
 	* This method will put one attribute to a database table at the current 
 	* record position. 
@@ -126,7 +127,7 @@ public:
 	* \param name attribute name of quantity to be saved to database.
 	* \param value value of this attribute to save to current tuple. 
 	*/
-	virtual void put(string name,int value)=0;
+	virtual void put(string name,long value)=0;
 	/*! Put a string variable to a database at the current record position.
 	* This method will put one attribute to a database table at the current 
 	* record position.  For this version the value is stored as an std string.
@@ -150,7 +151,7 @@ public:
 	*/
 	virtual void put(string name,const char *s)=0;
 	/*! Return number of tuples in current view (table). */
-	virtual int number_tuples()=0;
+	virtual long number_tuples()=0;
 	/*! Return the number of attributes in the current view. */
 	virtual int number_attributes()=0;
 	/*! \brief Set the table pointer to the top of the table.
