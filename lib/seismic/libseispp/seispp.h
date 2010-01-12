@@ -53,7 +53,7 @@ processing as binary data are used universally in external data formats.
 This lists the allowed attributes that can be extracted from header
 data.  It is also used in the interface to extract sample data from
 raw external format inputs.*/
-enum AttributeType {INT32, INT16, BYTE, REAL32, REAL64,
+enum AttributeType {INT64, INT32, INT16, BYTE, REAL32, REAL64,
         STRING, BOOL, HDRINVALID};
 
 

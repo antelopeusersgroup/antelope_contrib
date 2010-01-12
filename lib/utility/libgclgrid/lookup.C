@@ -710,8 +710,8 @@ int GCLgrid::lookup(double target_lat, double target_lon)
 
 		dxiunit = ddot(3,delta,1,dxi,1)/(nrmdxi*nrmdxi);
 		dxjunit = ddot(3,delta,1,dxj,1)/(nrmdxj*nrmdxj);
-		di = (int)dxiunit;
-		dj = (int)dxjunit;
+                di = static_cast<int>(dxiunit);
+                dj = static_cast<int>(dxjunit);
 		if(di<0) --di;
 		if(dj<0) --dj;
 		i += di;

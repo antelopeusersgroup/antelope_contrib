@@ -30,12 +30,12 @@ c------------------------------------------------------------
 
       subroutine fmeweights(xx,coord,fun,ierr)
       implicit none
+      integer*4 ierr
       integer i,itno,j
       double precision x(3),xx(3),xdum
       double precision coord(8,3)
       double precision der(3,8),fun(8),jac(3,3)
       double precision residual(3),solution(3),er,det,jac1(3,3)
-      integer ierr
       integer MAXIT
       double precision CONVTEST
       parameter(MAXIT=20)

@@ -51,7 +51,7 @@ TimeSeries::TimeSeries(const Metadata& md,bool load_data) : Metadata(md)
 {
 	string stref;
 	string dfile, dir;
-	int foff;
+	long foff;
 	FILE *fp;
 	string dtype;
 	float *inbuffer;
@@ -82,11 +82,11 @@ TimeSeries::TimeSeries(const Metadata& md,bool load_data) : Metadata(md)
 #endif
 			dir = this->get_string("dir");
 			dfile = this->get_string("dfile");
-			foff = this->get_int("foff");
+			foff = this->get_long("foff");
 			string fname=dir+"/"+dfile;
 			if((fp=fopen(fname.c_str(),"r")) == NULL) 
 				throw("Open failure for file "+fname);
-			if (foff>0)fseek(fp,(long)foff,SEEK_SET);
+			if (foff>0)fseek(fp,foff,SEEK_SET);
 			inbuffer = new float[ns];
 			if(fread((void *)(inbuffer),sizeof(float),ns,fp)
 					!= ns ) 

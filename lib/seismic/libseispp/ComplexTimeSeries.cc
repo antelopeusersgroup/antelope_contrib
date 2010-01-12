@@ -46,7 +46,7 @@ ComplexTimeSeries::ComplexTimeSeries(const Metadata& md,bool load_data) : Metada
 	const string required_datatype("cx");
 	string stref;
 	string dfile, dir;
-	int foff;
+	long foff;
 	FILE *fp;
 	string dtype;
 	Complex *inbuffer;
@@ -72,11 +72,11 @@ ComplexTimeSeries::ComplexTimeSeries(const Metadata& md,bool load_data) : Metada
 				throw(SeisppError("ComplexTimeSeries Metadata constructor:  Unsupported datatype\nMetadata-driven constructor only supports cx (single precision complex pairs)  data with external files"));
 			dir = this->get_string("dir");
 			dfile = this->get_string("dfile");
-			foff = this->get_int("foff");
+			foff = this->get_long("foff");
 			string fname=dir+"/"+dfile;
 			if((fp=fopen(fname.c_str(),"r")) == NULL) 
 				throw("Open failure for file "+fname);
-			if (foff>0)fseek(fp,(long)foff,SEEK_SET);
+			if (foff>0)fseek(fp,foff,SEEK_SET);
 			inbuffer = new Complex[ns];
 			if(fread((void *)(inbuffer),sizeof(float),ns,fp)
 					!= ns ) 
@@ -139,11 +139,11 @@ ComplexTimeSeries::ComplexTimeSeries(DatabaseHandle& rdb,
 			throw(SeisppError("ComplexTimeSeries Metadata constructor:  Unsupported datatype\nMetadata-driven constructor only supports cx (single precision complex pairs)  data with external files"));
 		string dir = this->get_string("dir");
 		string dfile = this->get_string("dfile");
-		int foff = this->get_int("foff");
+		long foff = this->get_long("foff");
 		string fname=dir+"/"+dfile;
 		if((fp=fopen(fname.c_str(),"r")) == NULL) 
 			throw("Open failure for file "+fname);
-		if (foff>0)fseek(fp,(long)foff,SEEK_SET);
+		if (foff>0)fseek(fp,foff,SEEK_SET);
 		// Portability consideration.  This freezes 
 		// this as complex<double>.  
 		int ns_to_read=2*ns;

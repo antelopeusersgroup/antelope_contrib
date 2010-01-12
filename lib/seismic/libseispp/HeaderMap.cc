@@ -47,6 +47,16 @@ HeaderAttributeProperties::HeaderAttributeProperties(char *line)
 			+ string("\nShould be 8"));
 		dtype=REAL64;
 	}
+	else if( tname=="LONG" || tname=="long" || tname=="int64"
+		|| tname=="INT64" )
+	{
+		if(nbytes!=8)
+			throw SeisppError(base_error
+			+ string("parameter=") + name
+			+ string(" has inconsistent size for specified type")
+			+ string("\nShould be 8"));
+		dtype=INT64;
+	}
 	else if( tname=="INT" || tname=="int" || tname=="int32"
 		|| tname=="INT32" )
 	{

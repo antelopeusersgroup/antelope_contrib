@@ -59,12 +59,12 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	char datatype[4];
 	char dir[65], dfile[36];
 	char filename[512];  
-	int foff;
+	long foff;
 	char *base_message=(char *)"Cannot create GCL3Dgrid object: ";
 	char *read_error=(char *)"fread failed";
-	int nrec;
+	long nrec;
 	int retcode;
-	int gridsize;  
+	long gridsize;  
 	FILE *fp;
 	double ***plat,***plon,***pr;
 	bool need_to_swap_bytes;
@@ -89,6 +89,7 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	name=gridname;
 	/* We intentionally ignore the dimension field because the subset
 	should have assured we match the right record */
+        long n1in,n2in,n3in,i0in,j0in,k0in;
 	if(dbgetv(dbgrd,0,
 		"lat",&(lat0),
 		"lon",&(lon0),
@@ -97,28 +98,34 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 		"dx1nom",&(dx1_nom),
 		"dx2nom",&(dx2_nom),
 		"dx3nom",&(dx3_nom),
-		"n1",&(n1),
-		"n2",&(n2),
-		"n3",&(n3),
+		"n1",&(n1in),
+		"n2",&(n2in),
+		"n3",&(n3in),
 		"xlow",&(x1low),
 		"xhigh",&(x1high),
 		"ylow",&(x2low),
 		"yhigh",&(x2high),
 		"zlow",&(x3low),
 		"zhigh",&(x3high),
-		"i0",&(i0),
-		"j0",&(j0),
-		"k0",&(k0),
+		"i0",&(i0in),
+		"j0",&(j0in),
+		"k0",&(k0in),
 		"datatype",datatype,
 		"dir",dir,
 		"dfile",dfile,
 		"foff",&foff,
-		0) == dbINVALID)
+		NULL) == dbINVALID)
 	{
 		elog_notify(0,(char *)"%s dbgetv error reading gclgdisk table\n",
 			base_message);
 		throw 1;
 	}
+        n1=n1in;
+        n2=n2in;
+        n3=n3in;
+        i0=i0in;
+        j0=j0in;
+        k0=k0in;
 	/* These parameters are stored in the database in degrees but
 	are converted to radians for internal use */
 	lat0 = rad(lat0);
@@ -223,12 +230,12 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	char datatype[4];
 	char dir[65], dfile[36];
 	char filename[512];  
-	int foff;
+	long foff;
 	char *base_message=(char *)"Cannot create GCL2Dgrid object: ";
 	char *read_error=(char *)"fread failed";
-	int nrec;
+	long nrec;
 	int retcode;
-	int gridsize;  
+	long gridsize;  
 	FILE *fp;
 	double **plat, **plon, **pr;
 	bool need_to_swap_bytes;
@@ -252,6 +259,7 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	name=gridname;
 	/* We intentionally ignore the dimension field because the subset
 	should have assured we match the right record */
+        long n1in,n2in,i0in,j0in;
 	if(dbgetv(dbgrd,0,
 		(char *)"lat",&(lat0),
 		(char *)"lon",&(lon0),
@@ -259,26 +267,30 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 		(char *)"azimuth_y",&(azimuth_y),
 		(char *)"dx1nom",&(dx1_nom),
 		(char *)"dx2nom",&(dx2_nom),
-		(char *)"n1",&(n1),
-		(char *)"n2",&(n2),
+		(char *)"n1",&(n1in),
+		(char *)"n2",&(n2in),
 		(char *)"xlow",&(x1low),
 		(char *)"xhigh",&(x1high),
 		(char *)"ylow",&(x2low),
 		(char *)"yhigh",&(x2high),
 		(char *)"zlow",&(x3low),
 		(char *)"zhigh",&(x3high),
-		(char *)"i0",&(i0),
-		(char *)"j0",&(j0),
+		(char *)"i0",&(i0in),
+		(char *)"j0",&(j0in),
 		(char *)"datatype",datatype,
 		(char *)"dir",dir,
 		(char *)"dfile",dfile,
 		(char *)"foff",&foff,
-		0) == dbINVALID)
+		NULL) == dbINVALID)
 	{
 		elog_notify(0,(char *)"%s dbgetv error reading gclgdisk table\n",
 			base_message);
 		throw 1;
 	}
+        n1=n1in;
+        n2=n2in;
+        i0=i0in;
+        j0=j0in;
 	/* These parameters are stored in the database in degrees but
 	are converted to radians for internal use */
 	lat0 = rad(lat0);
@@ -390,7 +402,7 @@ bool test_for_byteswap(Dbptr db, string gridname,int dim)
             "gridname =~ /%s/ && dimensions == %d",
                   gridname.c_str(),dim);
 	db=dbsubset(db,sstring,0);
-	int nrec;
+	long nrec;
 	dbquery(db,dbRECORD_COUNT,&nrec);
 	if(nrec<=0)
 	{
@@ -401,7 +413,7 @@ bool test_for_byteswap(Dbptr db, string gridname,int dim)
 	}
 	char dtype[4];
 	db.record=0;
-	dbgetv(db,0,"datatype",dtype,0);
+	dbgetv(db,0,"datatype",dtype,NULL);
 	string datatype(dtype);
 	dbfree(db);
 	bool little_endian=IntelByteOrder();
@@ -426,12 +438,12 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 	strncpy(gclgname,gclgnamein.c_str(),16);
 
 	char sstring[256];
-	int foff;
+	long foff;
 	char filename[512];
 	Dbptr dbgrd;
 	FILE *fp;
-	int gridsize;
-	int nrec;
+	long gridsize;
+	long nrec;
 
 	dbgrd = dblookup(db,0,(char *)"gclfield",0,0);
 	if(dbgrd.table == dbINVALID)
@@ -472,14 +484,13 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 			throw 2;
 		}
 		long foff;
-		int nv,dim,foffin;
-		if(dbgetv(dbgrd,0,"foff",&foffin,
-			"dimensions",&dim,"nv",&nv,0)==dbINVALID)
+		long nv,dim;
+		if(dbgetv(dbgrd,0,"foff",&foff,
+			"dimensions",&dim,"nv",&nv,NULL)==dbINVALID)
 		{
 			elog_notify(0,(char *)"dbgetv error fetching foff from gclfield table\n");
 			throw 2;
 		}
-		foff=(long)foffin;
 		if(nv>1)
 		{
 			elog_notify(0,(char *)"GCLscalarfield constructor nv=%d is illegal",
@@ -518,12 +529,12 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
 	char sstring[256];
-	int foff;
+	long foff;
 	char filename[512];
 	Dbptr dbgrd;
 	FILE *fp;
-	int gridsize;
-	int nrec;
+	long gridsize;
+	long nrec;
 
 	if(fieldname.length()==0)
 	{
@@ -565,15 +576,14 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 					filename,fieldname.c_str());
 			throw 2;
 		}
-		long foffin;
-		int nv,dim;
-		if(dbgetv(dbgrd,0,"foff",&foffin,
-			"dimensions",&dim,"nv",&nv,0)==dbINVALID)
+		long foff;
+		long nv,dim;
+		if(dbgetv(dbgrd,0,"foff",&foff,
+			"dimensions",&dim,"nv",&nv,NULL)==dbINVALID)
 		{
 			elog_notify(0,(char *)"dbgetv error fetching foff from gclfield table\n");
 			throw 2;
 		}
-		foff=(long)foffin;
 		if(nv>1)
 		{
 			elog_notify(0,(char *)"GCLscalarfield3d constructor nv=%d is illegal",
@@ -614,8 +624,8 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	char filename[512];
 	Dbptr dbgrd;
 	FILE *fp;
-	int gridsize;
-	int nrec;
+	long gridsize;
+	long nrec;
 	if(fieldname.length()==0)
 	{
 		if(nvsize<=0)
@@ -650,17 +660,16 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	                throw 1;
 	        }
 		dbgrd.record = 0;
-		int nvdb;
+		long nvdb;
 		long foff;
-		int dim,foffin;
-		if(dbgetv(dbgrd,0,"nv",&nvdb,"foff",&foffin,
-			"dimensions",&dim,0)==dbINVALID)
+		long dim;
+		if(dbgetv(dbgrd,0,"nv",&nvdb,"foff",&foff,
+			"dimensions",&dim,NULL)==dbINVALID)
 		{
 			elog_notify(0,(char *)"GCLvectorfield: dbgetv error fetching attributes from gclfield table for field=%s\n",
 				fieldname.c_str());
 			throw 2;
 		}
-		foff=(long)foffin;
 		if(dim!=2)
 		{
 			elog_notify(0,
@@ -717,13 +726,13 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
 	char sstring[256];
-	int foff;
+	long foff;
 	char dir[65],dfile[36];
 	char filename[512];
 	Dbptr dbgrd;
 	FILE *fp;
-	int gridsize;
-	int nrec;
+	long gridsize;
+	long nrec;
 
 	if(fieldname.length()==0)
 	{
@@ -760,17 +769,16 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	                throw 1;
 	        }
 		dbgrd.record = 0;
-		int nvdb;
+		long nvdb;
 		long foff;
-		int dim,foffin;
-		if(dbgetv(dbgrd,0,"nv",&nvdb,"foff",&foffin,
-			"dimensions",&dim,0)==dbINVALID)
+		long dim;
+		if(dbgetv(dbgrd,0,"nv",&nvdb,"foff",&foff,
+			"dimensions",&dim,NULL)==dbINVALID)
 		{
 			elog_notify(0,(char *)"GCLvectorfield3d: dbgetv error fetching attributes from gclfield table for field=%s\n",
 				fieldname.c_str());
 			throw 2;
 		}
-		foff=(long)foffin;
 		if(dim!=3)
 		{
 			elog_notify(0,
@@ -838,9 +846,8 @@ void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 	FILE *fp;
 	string filename;
 	int fssize;
-	long int fpos;
-	int foff;
-	int gridsize;
+	long foff;
+	long gridsize;
 	int dimensions=3;
 	char *fwerr=(char *)"fwrite error on file %s";
 	Dbptr db;
@@ -872,8 +879,7 @@ void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 	/* The use of the int cast is unnecessary on some machines,
 	but may be problematic on Solaris where they are switching from
 	32 to 64.   This is safe if overkill*/
-	fpos = ftell(fp);
-	foff = (int)fpos;
+	foff = ftell(fp);
 	gridsize = (n1)*(n2)*(n3);
 	// convert to external representation
 	double ***plat=create_3dgrid_contiguous(n1,n2,n3);
@@ -934,23 +940,23 @@ void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 		"dx1nom",dx1_nom,
 		"dx2nom",dx2_nom,
 		"dx3nom",dx3_nom,
-		"n1",n1,
-		"n2",n2,
-		"n3",n3,
+		"n1",static_cast<long>(n1),
+		"n2",static_cast<long>(n2),
+		"n3",static_cast<long>(n3),
 		"xlow",x1low,
 		"xhigh",x1high,
 		"ylow",x2low,
 		"yhigh",x2high,
 		"zlow",x3low,
 		"zhigh",x3high,
-		"i0",i0,
-		"j0",j0,
-		"k0",k0,
+		"i0",static_cast<long>(i0),
+		"j0",static_cast<long>(j0),
+		"k0",static_cast<long>(k0),
 		"datatype",datatype.c_str(),
 		"dir",dir,
 		"dfile",name.c_str(),
 		"foff",foff,
-		0) < 0)
+		NULL) < 0)
 	{
 		elog_notify(0,(char *)"dbaddv error for 3d grid into gclgdisk table\n");
 		throw 1;
@@ -964,9 +970,8 @@ void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 	FILE *fp;
 	string filename;
 	int fssize;
-	long int fpos;
-	int foff;
-	int gridsize;
+	long foff;
+	long gridsize;
 	int dimensions=2;
 	char *fwerr=(char *)"fwrite error on file %s";
 
@@ -996,8 +1001,7 @@ void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 	/* The use of the int cast is unnecessary on some machines,
 	but may be problematic on current versions of solaris so I'll
 	be safe */
-	fpos = ftell(fp);
-	foff = (int)fpos;
+	foff = ftell(fp);
 	gridsize = (n1)*(n2);
 	// convert to external representation
 	double **plat=create_2dgrid_contiguous(n1,n2);
@@ -1053,21 +1057,21 @@ void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 		"azimuth_y",deg(azimuth_y),
 		"dx1nom",dx1_nom,
 		"dx2nom",dx2_nom,
-		"n1",n1,
-		"n2",n2,
+		"n1",static_cast<long>(n1),
+		"n2",static_cast<long>(n2),
 		"xlow",x1low,
 		"xhigh",x1high,
 		"ylow",x2low,
 		"yhigh",x2high,
 		"zlow",x3low,
 		"zhigh",x3high,
-		"i0",i0,
-		"j0",j0,
+		"i0",static_cast<long>(i0),
+		"j0",static_cast<long>(j0),
 		"datatype",datatype.c_str(),
 		"dir",dir,
 		"dfile",name.c_str(),
 		"foff",foff,
-		0) < 0)
+		NULL) < 0)
 	{
 		elog_notify(0,(char *)"dbaddv error for 2d grid into gclgdisk table\n");
 		throw 1;
@@ -1092,11 +1096,10 @@ void GCLscalarfield::dbsave(Dbptr dbo,
 	string fieldname,
 	string dfile) throw(int)
 {
-	int gridsize;
+	long gridsize;
 	string filename;
 	FILE *fp;
-	long int fpos;
-	int foff;
+	long foff;
 	int dimensions=2;
 	int nv=1;
 
@@ -1146,8 +1149,7 @@ void GCLscalarfield::dbsave(Dbptr dbo,
 	/* The use of the int cast is unnecessary on some machines,
 	but may be problematic on current versions of solaris so I'll
 	be safe */
-	fpos = ftell(fp);
-	foff = (int)fpos;
+	foff = ftell(fp);
 	gridsize = n1*n2;	
 	if(fwrite(val[0],sizeof(double),gridsize,fp) != gridsize)
 	{
@@ -1160,12 +1162,12 @@ void GCLscalarfield::dbsave(Dbptr dbo,
 	if(dbaddv(db,0,
 		(char *)"gridname",name.c_str(),
 		(char *)"dimensions",dimensions,
-		(char *)"nv",nv,
+		(char *)"nv",static_cast<long>(nv),
 		(char *)"dir",fielddir.c_str(),
 		(char *)"dfile",dfile.c_str(),
 		(char *)"foff",foff,
 		(char *)"fieldname",fieldname.c_str(),
-		0)  < 0)
+		NULL)  < 0)
 	{
 		elog_notify(0,
 		  (char *)"dbaddv error for 2d grid into gclfield table\n");
@@ -1179,11 +1181,10 @@ void GCLscalarfield3d::dbsave(Dbptr dbo,
 	string fieldname,
 	string dfile) throw(int)
 {
-	int gridsize;
+	long gridsize;
 	string filename;
 	FILE *fp;
-	long int fpos;
-	int foff;
+	long foff;
 	int dimensions=3;
 	int nv=1;
 
@@ -1234,8 +1235,7 @@ void GCLscalarfield3d::dbsave(Dbptr dbo,
 	/* The use of the int cast is unnecessary on some machines,
 	but may be problematic on current versions of solaris so I'll
 	be safe */
-	fpos = ftell(fp);
-	foff = (int)fpos;
+	foff = ftell(fp);
 	gridsize = n1*n2*n3;	
 	if(fwrite(val[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
@@ -1248,12 +1248,12 @@ void GCLscalarfield3d::dbsave(Dbptr dbo,
 	if(dbaddv(db,0,
 		"gridname",name.c_str(),
 		"dimensions",dimensions,
-		"nv",nv,
+		"nv",static_cast<long>(nv),
 		"dir",fielddir.c_str(),
 		"dfile",dfile.c_str(),
 		"foff",foff,
 		"fieldname",fieldname.c_str(),
-		0)  < 0)
+		NULL)  < 0)
 	{
 		elog_notify(0,
 		  (char *)"dbaddv error for 3d grid into gclfield table\n");
@@ -1266,11 +1266,10 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 	string fieldname,
 	string dfile) throw(int)
 {
-	int gridsize;
+	long gridsize;
 	string filename;
 	FILE *fp;
-	long int fpos;
-	int foff;
+	long foff;
 	int dimensions=2;
 
 	//Save the parent GCLgrid when gclgdir is defined
@@ -1320,8 +1319,7 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 	/* The use of the int cast is unnecessary on some machines,
 	but may be problematic on current versions of solaris so I'll
 	be safe */
-	fpos = ftell(fp);
-	foff = (int)fpos;
+	foff = ftell(fp);
 	gridsize = n1*n2*nv;	
 	if(fwrite(val[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
@@ -1334,12 +1332,12 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 	if(dbaddv(db,0,
 		(char *)"gridname",name.c_str(),
 		(char *)"dimensions",dimensions,
-		(char *)"nv",nv,
+		(char *)"nv",static_cast<long>(nv),
 		(char *)"dir",fielddir.c_str(),
 		(char *)"dfile",dfile.c_str(),
 		(char *)"foff",foff,
 		(char *)"fieldname",fieldname.c_str(),
-		0)  < 0)
+		NULL)  < 0)
 	{
 		elog_notify(0,(char *)"dbaddv error for 2d grid into gclfield table\n");
 		throw 1;
@@ -1352,11 +1350,10 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 	string fieldname,
 	string dfile) throw(int)
 {
-	int gridsize;
+	long gridsize;
 	string filename;
 	FILE *fp;
-	long int fpos;
-	int foff;
+	long foff;
 	int dimensions=3;
 
 	//Save the parent GCLgrid when gclgdir is defined
@@ -1404,8 +1401,7 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 	/* The use of the int cast is unnecessary on some machines,
 	but may be problematic on current versions of solaris so I'll
 	be safe */
-	fpos = ftell(fp);
-	foff = (int)fpos;
+	foff = ftell(fp);
 	gridsize = n1*n2*n3*nv;	
 	if(fwrite(val[0][0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
@@ -1418,12 +1414,12 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 	if(dbaddv(db,0,
 		(char *)"gridname",name.c_str(),
 		(char *)"dimensions",dimensions,
-		(char *)"nv",nv,
+		(char *)"nv",static_cast<long>(nv),
 		(char *)"dir",fielddir.c_str(),
 		(char *)"dfile",dfile.c_str(),
 		(char *)"foff",foff,
 		(char *)"fieldname",fieldname.c_str(),
-		0)  < 0)
+		NULL)  < 0)
 	{
 		elog_notify(0,(char *)"dbaddv error for 2d grid into gclfield table\n");
 		throw 1;

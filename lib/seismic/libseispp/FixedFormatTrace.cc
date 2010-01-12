@@ -16,6 +16,7 @@ int stype_bytes_per_sample(AttributeType stype)
 		bytes_per_sample=2;
 		break;
 	case REAL64:
+        case INT64:
 		bytes_per_sample=8;
 		break;
 	case INT32:
@@ -72,6 +73,9 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 	else if(sample_type=="int32" || sample_type=="INT32" 
 		|| sample_type=="int")
 		stype=INT32;
+	else if(sample_type=="int64" || sample_type=="INT64" 
+		|| sample_type=="long")
+		stype=INT64;
 	else if(sample_type=="real32" || sample_type=="REAL32" 
 		|| sample_type=="float")
 		stype=REAL32;
@@ -268,15 +272,21 @@ double FixedFormatTrace::operator()(int i)
 	size_t soffset=static_cast<size_t>(i);
 	unsigned char *sptr=d;
 	double result;
+        long *liraw;
 	int *iraw;
 	short int *sraw;
 	float *fraw;
 	switch (stype)
 	{
+	case INT64:
+		sptr=sptr+8*soffset;
+		/* this assumes long means int64 */
+		liraw=reinterpret_cast<long *>(sptr);
+		result=static_cast<double>(*iraw);
+		break;
 	case INT32:
+                /* assumes int means int32 */
 		sptr=sptr+4*soffset;
-		/* this assumes int means int32.  Not sure
-		how this is evolving */
 		iraw=reinterpret_cast<int *>(sptr);
 		result=static_cast<double>(*iraw);
 		break;

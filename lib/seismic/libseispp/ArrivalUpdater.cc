@@ -182,7 +182,7 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 	int err=0;
 	try {
 		double dval;
-		int ival;
+		long ival;
 		string sval;
 		string dbattributename;
 		MetadataList::iterator mdptr;
@@ -214,7 +214,7 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 					dval,0) == dbINVALID) ++err;
 				break;
 			case MDint:
-				ival=md.get_int(mdptr->tag);
+				ival=md.get_long(mdptr->tag);
 				if(dbputv(db,0,dbattributename.c_str(),
 					ival,0) == dbINVALID) ++err;
 				break;
@@ -244,9 +244,9 @@ int ArrivalUpdater::update(Metadata& md)
 	const string base_error("ArrivalUpdater::update method: ");
 	int err=0;
 	Dbptr db;
-	list<int>::iterator rowptr;
+	list<long>::iterator rowptr;
 	int nrow;
-	list<int> rowlist;
+	list<long> rowlist;
 	if(view_has_data)
 	{
 		/* Only do this search if the aaview is not empty.
@@ -274,26 +274,26 @@ int ArrivalUpdater::update(Metadata& md)
 		// When we append we have to get a new arid and set
 		// it.  Assume we use old arid for record updates below
 		int arid=dbnextid(dbassoc,"arid");
-		dbputv(dbassoc,0,"arid",arid,0);
-		dbputv(dbarrival,0,"arid",arid,0);
+		dbputv(dbassoc,0,"arid",arid,NULL );
+		dbputv(dbarrival,0,"arid",arid,NULL );
 	}
 	else
 	{
 		rowptr=rowlist.begin();
 		aaview.db.record=*rowptr;
-		dbgetv(aaview.db,0,"assoc",&db,0);
+		dbgetv(aaview.db,0,"assoc",&db,NULL);
 		if(db.table==dbINVALID)
 			throw SeisppError(base_error
 			 + string(" failure in fetching assoc pointer from view"));
 		/* Must update lddate */
-		dbputv(db,0,"lddate",now(),0);
+		dbputv(db,0,"lddate",now(),NULL );
 		err+=put_attributes_to_db(md,db,mdlassoc,am);
-		dbgetv(aaview.db,0,"arrival",&db,0);
+		dbgetv(aaview.db,0,"arrival",&db,NULL);
 		if(db.table==dbINVALID)
 			throw SeisppError(base_error
 			 + string(" failure in fetching arrival pointer from view"));
 		err+=put_attributes_to_db(md,db,mdlarrival,am);
-		dbputv(db,0,"lddate",now(),0);
+		dbputv(db,0,"lddate",now(),NULL );
 	}
 	if(nrow>1)
 	{
@@ -306,9 +306,9 @@ int ArrivalUpdater::update(Metadata& md)
 		for(;rowptr!=rowlist.end();rowptr++)
 		{
 			aaview.db.record=*rowptr;
-			dbgetv(aaview.db,0,"assoc",&db,0);
+			dbgetv(aaview.db,0,"assoc",&db,NULL);
 			dbmark(db);
-			dbgetv(aaview.db,0,"arrival",&db,0);
+			dbgetv(aaview.db,0,"arrival",&db,NULL);
 			dbmark(db);
 		}
 	}
@@ -318,7 +318,7 @@ int ArrivalUpdater::clear_when_not_prefor(int evid_to_clear)
 {
 	Metadata md;
 	md.put("evid",evid_to_clear);
-	list<int> reclist=eogroup.find(md);
+	list<long> reclist=eogroup.find(md);
 	int nrec=reclist.size();
 	int ndeleted=0;
 	// This means there is nothing to do.  We'll do nothing silently
@@ -328,8 +328,8 @@ int ArrivalUpdater::clear_when_not_prefor(int evid_to_clear)
 	else
 	{
 		int rec;
-		list<int>::iterator irptr;
-		int prefor,orid,evid;
+		list<long>::iterator irptr;
+		long prefor,orid,evid;
 		/* This is actually very inefficient if there are lots of
 		arrivals in the working view.  The reason is the call to dbmark
 		is made or origin for every row in assoc that refers to an origin not
@@ -341,17 +341,17 @@ int ArrivalUpdater::clear_when_not_prefor(int evid_to_clear)
 			DBBundle bundle=eogroup.get_range();
 			db=bundle.parent;
 			db.record=bundle.start_record;
-			dbgetv(db,0,"prefor",&prefor,"orid",&orid,0);
+			dbgetv(db,0,"prefor",&prefor,"orid",&orid,NULL );
 			if(orid!=prefor)
 			{
 				for(db.record=bundle.start_record;
 					db.record<bundle.end_record;++db.record)
 				{
-					dbgetv(db,0,"assoc",&dbtokill,0);
+					dbgetv(db,0,"assoc",&dbtokill,NULL );
 					dbmark(dbtokill);
 				}
 				db.record=bundle.start_record;
-				dbgetv(db,0,"origin",&dbtokill,0);
+				dbgetv(db,0,"origin",&dbtokill,NULL );
 				dbmark(dbtokill);
 				++ndeleted;
 			}
@@ -386,10 +386,10 @@ int ArrivalUpdater::clear_old(int evid_to_clear,string phase)
 	processing object is based on CSS3.0 database concepts this
 	should not be an issue.  Still worth noting for maintenance.*/
 	md.put("evid",evid_to_clear);
-	list<int> reclist=eogroup.find(md,false);
+	list<long> reclist=eogroup.find(md,false);
 	/* Silently do nothing if no such evid exists in the database */
 	if(reclist.size()<=0) return(0);
-	list<int>::iterator irptr;
+	list<long>::iterator irptr;
 	int prefor,orid,evid;
 	ndeleted=0;
 	for(irptr=reclist.begin();irptr!=reclist.end();irptr++)
@@ -404,12 +404,12 @@ int ArrivalUpdater::clear_old(int evid_to_clear,string phase)
 				db.record<bundle.end_record;++db.record)
 		{
 			char iphase[10];
-			dbgetv(db,0,"arrival",&dbtokill,0);
-			dbgetv(dbtokill,0,"iphase",iphase,"lddate",&lddate);
+			dbgetv(db,0,"arrival",&dbtokill,NULL );
+			dbgetv(dbtokill,0,"iphase",iphase,"lddate",&lddate,NULL);
 			if( (lddate<timestamp) && (phase==iphase) )
 			{
 				dbmark(dbtokill);
-				dbgetv(db,0,"assoc",&dbtokill,0);
+				dbgetv(db,0,"assoc",&dbtokill,NULL );
 				dbmark(dbtokill);
 				++ndeleted;
 			}

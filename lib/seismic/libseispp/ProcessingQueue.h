@@ -129,9 +129,9 @@ public:
 	friend ostream& operator<<(ostream&, DatascopeProcessingQueue& q);
 private:
 	vector<ProcessingStatus> status;
-	int records_in_this_view;
-	int view_table;
-	int current_record;
+	long records_in_this_view;
+	long view_table;
+	long current_record;
 	bool AtEOF;
 	FILE *fp; 
 	/*! Saves the current queue in this instance.  Locking stuff is handled
@@ -147,7 +147,7 @@ private:
 	Returns the current_record.  When there is no data remaining to 
 	be processed returns -1 and sets AtEOF true.
 	*/
-	int position_to_next(int startrec);
+	long position_to_next(long startrec);
 };
 }
 #endif
