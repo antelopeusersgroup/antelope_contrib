@@ -178,5 +178,5 @@
 %	   [Antelope is a product of Boulder Real Time Technologies, Inc.]
 %       Kent Lindquist
 %       Lindquist Consulting
-%       1997-2003
+%       1997-2010
 %

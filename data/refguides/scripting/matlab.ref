@@ -413,8 +413,17 @@ REMARK = dbget_remark ( DBPTR )
 ID = dbnextid ( DBPTR, IDNAME )
     get the next integer id for id field from a database
 
+ABS = abspath( REL )
+    compute an absolute pathname
+
+RES = concatpaths( A, B [, ...] )
+    concatenate pathname elements to form a Unix path
+
 [DIR, BASE [,SUFFIX]] = parsepath ( PATH )
     separate a pathname into component parts
+
+REL = relpath( FROM, TO )
+    compute a relative pathname
 
 <subsection Time Conversion>
 TIMESTRING = epoch2str ( EPOCH, FORMAT )

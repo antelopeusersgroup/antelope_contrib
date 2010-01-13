@@ -33,4 +33,4 @@ print O "%\tAntelope Toolbox for Matlab\n";
 print O "%\t   [Antelope is a product of Boulder Real-Time Technologies, Inc.]\n";
 print O "%\tKent Lindquist\n";
 print O "%\tLindquist Consulting\n";
-print O "%\t1997-2003\n";
+print O "%\t1997-2010\n";
