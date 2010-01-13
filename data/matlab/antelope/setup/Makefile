@@ -8,7 +8,7 @@ all :: setup.m
 install :: $(ANTELOPE)/setup.m
 
 setup.m: setup.m.id
-	getid < $< > $@
+	getid < setup.m.id > $@
 
 $(ANTELOPE)/setup.m: setup.m
-	deposit $< $(ANTELOPE)	
+	deposit setup.m $(ANTELOPE)	
