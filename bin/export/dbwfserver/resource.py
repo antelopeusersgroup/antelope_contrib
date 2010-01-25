@@ -159,10 +159,21 @@ class Data(resource.Resource):
 
                     my_stachan = my_sta+'_'+my_chan # Define the STA_CHAN combination
 
-                    if config.verbose:
-                        log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter) )
+                    if config.apply_calib is True:
 
-                    [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter)
+                        if config.verbose:
+
+                            log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter,config.apply_calib) )
+
+                        [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter, config.apply_calib)
+
+                    else:
+
+                        if config.verbose:
+
+                            log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter) )
+
+                        [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter)
 
                     response_data.update({my_stachan:segment})
 

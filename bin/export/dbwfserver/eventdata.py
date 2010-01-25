@@ -282,7 +282,7 @@ class EventData():
         return time
 
 
-    def get_segment(self, sta, chan, canvas_size, orid=None, time_window=None, mintime=None, maxtime=None, filter=None):
+    def get_segment(self, sta, chan, canvas_size, orid=None, time_window=None, mintime=None, maxtime=None, filter=None, apply_calib=False):
 
         """
         Get a segment of waveform data.
@@ -324,6 +324,7 @@ class EventData():
             log.msg("\tmaxtime:\t%s"    % maxtime)
             log.msg("\tcanvas:\t%s"     % canvas_size)
             log.msg("\tfilter:\t%s"     % filter)
+            log.msg("\tapply_calib:\t%s"% apply_calib)
 
         if orid and not mintime and not maxtime:
 
@@ -373,11 +374,24 @@ class EventData():
 
             if filter is not None:
 
-                data = db.sample(mintime, maxtime, sta, chan, False, filter )
+                if apply_calib is True:
+
+                    data = db.sample(mintime, maxtime, sta, chan, True, filter )
+
+                else:
+
+                    data = db.sample(mintime, maxtime, sta, chan, False, filter )
 
             else:
 
-                data = db.sample(mintime, maxtime, sta, chan)
+                if apply_calib is True:
+
+                    data = db.sample(mintime, maxtime, sta, chan, True, None )
+
+                else:
+
+                    data = db.sample(mintime, maxtime, sta, chan, False, None )
+
 
             format = "points"
 
@@ -398,11 +412,23 @@ class EventData():
 
             if filter is not None:
 
-                data = db.samplebins(mintime, maxtime, sta, chan, binsize, False, filter)
+                if apply_calib is True:
+
+                    data = db.samplebins(mintime, maxtime, sta, chan, binsize, True, filter )
+
+                else:
+
+                    data = db.samplebins(mintime, maxtime, sta, chan, binsize, False, filter )
 
             else:
 
-                data = db.samplebins(mintime, maxtime, sta, chan, binsize)
+                if apply_calib is True:
+
+                    data = db.samplebins(mintime, maxtime, sta, chan, binsize, True )
+
+                else:
+
+                    data = db.samplebins(mintime, maxtime, sta, chan, binsize, False )
 
             format = "bins"
 

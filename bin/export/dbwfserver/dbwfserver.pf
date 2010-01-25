@@ -30,6 +30,8 @@ jquery_files &Tbl{
 
 display_tracebacks false 
 
+apply_calib	True
+
 import_paths &Tbl{
 }
 
