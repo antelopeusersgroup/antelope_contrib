@@ -1,7 +1,54 @@
-import _datascope
-import _stock
+#
+#   Copyright (c) 2007-2010 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   This software is licensed under the New BSD license: 
+#
+#   Redistribution and use in source and binary forms,
+#   with or without modification, are permitted provided
+#   that the following conditions are met:
+#   
+#   * Redistributions of source code must retain the above
+#   copyright notice, this list of conditions and the
+#   following disclaimer.
+#   
+#   * Redistributions in binary form must reproduce the
+#   above copyright notice, this list of conditions and
+#   the following disclaimer in the documentation and/or
+#   other materials provided with the distribution.
+#   
+#   * Neither the name of Lindquist Consulting, Inc. nor
+#   the names of its contributors may be used to endorse
+#   or promote products derived from this software without
+#   specific prior written permission.
+#
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+#   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+#   THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+#   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+#   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+#   IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+#   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+#   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#   POSSIBILITY OF SUCH DAMAGE.
+#
 
-from _datascope import *
+import _datascope
+import stock
+
+from stock import ElogException, ElogLog, ElogNotify, ElogComplain, ElogDie
+
+for _key in _datascope._constants:
+    exec( "%s = _datascope._constants['%s']" % (_key, _key) )
+
 
 class Dbptr(list):
     """Create a Datascope Database Pointer
@@ -94,7 +141,13 @@ class Dbptr(list):
 
         if(_dbname):
 
-            _value = _datascope._dbopen(_dbname, _perm)
+	    try:
+
+                _value = _datascope._dbopen(_dbname, _perm)
+            
+	    except _datascope._ElogException, _e:
+
+	        stock._raise_elog(_e)
 
         self.extend(_value)
 
@@ -225,88 +278,172 @@ class Dbptr(list):
     def close(self):
         """Close a Datascope database"""
 
-        _datascope._dbclose(self)
+	try:
+
+            _datascope._dbclose(self)
+
+	except _datascope._ElogException, _e:
+
+            stock._raise_elog(_e)
 
     def free(self):
         """free datascope memory"""
 
-        _datascope._dbfree(self)
+	try:
+
+            _datascope._dbfree(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
     def delete(self):
         """delete database rows"""
 
-        _datascope._dbdelete(self)
+        try:
+
+            _datascope._dbdelete(self)
+
+        except _datascope._ElogException, _e:
+
+            stock._raise_elog(_e)
 
     def mark(self):
         """mark database rows"""
 
-        _datascope._dbmark(self)
+	try:
+
+            _datascope._dbmark(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
     def crunch(self):
         """delete marked database rows"""
 
-        _datascope._dbcrunch(self)
+        try:
+
+            _datascope._dbcrunch(self)
+
+        except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
     def dbtruncate(self, nrecords):
         """Truncate a database table"""
 
-        _datascope._dbtruncate(self, nrecords)
+	try:
+
+            _datascope._dbtruncate(self, nrecords)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return
 
     def dbdestroy(self):
         """Completely eliminate all tables in a database"""
 
-        rc = _datascope._dbdestroy(self)
+	try:
 
-        return rc
+            ret = _datascope._dbdestroy(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def lookup(self, database = "", table = "", field = "", record = ""):
         """Aim a database pointer at part of a database"""
     
-        db = _datascope._dblookup(self, database, table, field, record)
+	try:
+	
+            db = _datascope._dblookup(self, database, table, field, record)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def sort(self, keys, unique = False, reverse = False, name = None):
         """Sort a database view"""
 
-        db = _datascope._dbsort(self, keys, unique, reverse, name)
+	try:
+	
+            db = _datascope._dbsort(self, keys, unique, reverse, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
         
     def subset(self, expr, name = None):
         """Subset a database view"""
 
-        db = _datascope._dbsubset(self, expr, name)
+	try:
+
+            db = _datascope._dbsubset(self, expr, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def list2subset(self, list = None):
         """Convert a list of records to a database subset"""
 
-        db = _datascope._dblist2subset(self, list)
+	try:
+
+            db = _datascope._dblist2subset(self, list)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def separate(self, tablename):
         """Extract a subset of a base table"""
 
-        db = _datascope._dbseparate(self, tablename)
+	try:
+
+            db = _datascope._dbseparate(self, tablename)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def sever(self, tablename, name = None):
         """Remove a table from a joined view"""
 
-        db = _datascope._dbsever(self, tablename, name)
+	try:
+
+            db = _datascope._dbsever(self, tablename, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def invalid(self):
         """Set database pointer to dbINVALID values"""
 
-        db = _datascope._dbinvalid()
+	try:
+
+            db = _datascope._dbinvalid()
+
+        except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
         
@@ -321,7 +458,13 @@ class Dbptr(list):
 
             db2 = db2in
 
-        db = _datascope._dbjoin(self, db2, pattern1, pattern2, outer, name)
+	try:
+
+            db = _datascope._dbjoin(self, db2, pattern1, pattern2, outer, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
@@ -336,21 +479,39 @@ class Dbptr(list):
 
             db2 = db2in
 
-        db = _datascope._dbtheta(self, db2, ex_str, outer, name)
+	try:
+
+            db = _datascope._dbtheta(self, db2, ex_str, outer, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def group(self, groupfields, name = None, type = 1):
         """Group a sorted table"""
 
-        db = _datascope._dbgroup(self, groupfields, name, type)
+	try:
+
+            db = _datascope._dbgroup(self, groupfields, name, type)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def ungroup(self, name = None):
         """Ungroup a grouped table"""
 
-        db = _datascope._dbungroup(self, name)
+	try:
+
+            db = _datascope._dbungroup(self, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
@@ -365,116 +526,268 @@ class Dbptr(list):
 
             db2 = db2in
 
-        db = _datascope._dbnojoin(self, db2, pattern1, pattern2, name)
+	try:
+
+            db = _datascope._dbnojoin(self, db2, pattern1, pattern2, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def unjoin(self, database_name, rewrite = False):
         """Create new tables from a joined table"""
 
-        _datascope._dbunjoin(self, database_name, rewrite)
+	try:
+
+            _datascope._dbunjoin(self, database_name, rewrite)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return
 
     def process(self, list):
         """Run a series of database operations"""
 
-        db = _datascope._dbprocess(self, list)
+	try:
+
+            db = _datascope._dbprocess(self, list)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         self[:] = db[:]
 
     def get(self, scratch = None):
         """Get a table, field, or record from a base table"""
 
-        return _datascope._dbget(self, scratch)
+	try:
+
+            ret = _datascope._dbget(self, scratch)
+
+        except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+        
+	return ret
     
     def put(self, record = None):
         """Put a table, field, or record into a base table"""
 
-        return _datascope._dbput(self, record)
+	try:
+
+            ret = _datascope._dbput(self, record)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
     
     def getv(self, *args):
         """Get values from a database row"""
 
-        return _datascope._dbgetv(self, *args)
+	try:
+
+            ret = _datascope._dbgetv(self, *args)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
     
     def addv(self, *args):
         """Add values in a new database row"""
 
-        return _datascope._dbaddv(self, *args)
+	try:
+
+            ret = _datascope._dbaddv(self, *args)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+ 
+        return ret
 
     def putv(self, *args):
         """Write fields in a database row"""
 
-        return _datascope._dbputv(self, *args)
+	try:
+
+            ret = _datascope._dbputv(self, *args)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def addnull(self):
         """Add a new, null row to a table"""
 
-        return _datascope._dbaddnull(self)
+	try:
+
+            ret = _datascope._dbaddnull(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
     
     def extfile(self, tablename = None):
         """Compose filename from database record for a given table"""
 
-        return _datascope._dbextfile(self, tablename)
+	try:
+
+            ret = _datascope._dbextfile(self, tablename)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def filename(self):
         """Compose filename from database record"""
 
-        return _datascope._dbextfile(self, None)
+	try:
+
+            ret = _datascope._dbextfile(self, None)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def query(self, dbcode):
         """Retrieve ancillary information about a database"""
 
-        return _datascope._dbquery(self, dbcode)
+	try:
+
+           ret = _datascope._dbquery(self, dbcode)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
         
     def nrecs(self):
         """Retrieve number of records in a database view"""
 
-        return _datascope._dbquery(self, dbRECORD_COUNT)
+	try:
+
+            ret = _datascope._dbquery(self, dbRECORD_COUNT)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
         
     def nextid(self, name):
         """Generate a unique id from the lastid table"""
 
-        return _datascope._dbnextid(self, name)
+	try:
+
+            ret = _datascope._dbnextid(self, name)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def ex_eval(self, expr):
         """Evaluate a database expression"""
 
-        return _datascope._dbex_eval(self, expr)
+	try:
+
+            ret = _datascope._dbex_eval(self, expr)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def matches(self, dbt, hookname, kpattern = None, tpattern = None):
         """find matching records in second table"""
 
-        return _datascope._dbmatches(self, dbt, hookname, kpattern, tpattern)
+	try:
+
+            ret = _datascope._dbmatches(self, dbt, hookname, kpattern, tpattern)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def find(self, expr, first = -1, reverse = False):
         """Search for matching record in a table"""
 
-        return _datascope._dbfind(self, expr, first, reverse)
+	try:
+
+            ret = _datascope._dbfind(self, expr, first, reverse)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def xml(self, rootnode = None, rownode = None, fields = None, expressions = None, primary = False):
         """convert a database view to XML"""
 
-        return _datascope._db2xml( self, rootnode, rownode, fields, expressions, primary )
+	try:
+	
+            ret = _datascope._db2xml( self, rootnode, rownode, fields, expressions, primary )
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def trwfname(self, pattern):
         """Generate waveform file names"""
 
-        return _datascope._trwfname(self, pattern)
+	try:
+
+            ret = _datascope._trwfname(self, pattern)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def loadchan(self, t0, t1, sta, chan):
         """Load time-series data for a given station, channel, and time-interval into memory"""
 
         if(isinstance(t0, str)):
             
-            t0 = _stock._str2epoch(t0)
+            t0 = stock.str2epoch(t0)
 
         if(isinstance(t1, str)):
             
-            t1 = _stock._str2epoch(t1)
+            t1 = stock.str2epoch(t1)
 
-        tr = _datascope._trloadchan(self, t0, t1, sta, chan)
+	try:
+
+            tr = _datascope._trloadchan(self, t0, t1, sta, chan)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return Dbptr(tr)
 
@@ -483,13 +796,19 @@ class Dbptr(list):
 
         if(isinstance(t0, str)):
             
-            t0 = _stock._str2epoch(t0)
+            t0 = stock.str2epoch(t0)
 
         if(isinstance(t1, str)):
             
-            t1 = _stock._str2epoch(t1)
+            t1 = stock.str2epoch(t1)
 
-        v = _datascope._trsample(self, t0, t1, sta, chan, apply_calib, filter)
+	try:
+
+            v = _datascope._trsample(self, t0, t1, sta, chan, apply_calib, filter)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return v
 
@@ -498,55 +817,97 @@ class Dbptr(list):
 
         if(isinstance(t0, str)):
             
-            t0 = _stock._str2epoch(t0)
+            t0 = stock.str2epoch(t0)
 
         if(isinstance(t1, str)):
             
-            t1 = _stock._str2epoch(t1)
+            t1 = stock.str2epoch(t1)
 
-        v = _datascope._trsamplebins(self, t0, t1, sta, chan, binsize, apply_calib, filter)
+	try:
+
+            v = _datascope._trsamplebins(self, t0, t1, sta, chan, binsize, apply_calib, filter)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return v
 
     def filter(self, filter_string):
         """Apply time-domain filters to waveform data"""
 
-        rc = _datascope._trfilter(self, filter_string)
+	try:
+
+            rc = _datascope._trfilter(self, filter_string)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return rc
 
     def data(self):
         """Obtain data points from a trace-table record"""
 
-        v = _datascope._trdata(self)
+	try:
+
+            v = _datascope._trdata(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return v
         
     def databins(self, binsize):
         """Obtain binned data points from a trace-table record"""
 
-        v = _datascope._trdatabins(self, binsize)
+	try:
+
+            v = _datascope._trdatabins(self, binsize)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return v
         
     def splice(self):
         """Splice together data segments"""
 
-        _datascope._trsplice(self)
+	try:
+
+            _datascope._trsplice(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return
 
     def split(self):
         """Split data segments with marked gaps"""
 
-        _datascope._trsplit(self)
+	try:
+
+            _datascope._trsplit(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return
 
     def trtruncate(self, leave):
         """Truncate a tr database table"""
 
-        _datascope._trtruncate(self, leave)
+	try:
+
+            _datascope._trtruncate(self, leave)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return
 
@@ -555,23 +916,47 @@ class Dbptr(list):
 
         if(trout == None):
 
-            trout = _datascope._dbinvalid()
+	    try:
 
-        trout = _datascope._trcopy(trout, self)
+                trout = _datascope._dbinvalid()
+
+	    except _datascope._ElogException, _e:
+
+	        stock._raise_elog(_e)
+
+	try:
+
+            trout = _datascope._trcopy(trout, self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return Dbptr(trout)
 
     def trfree(self):
         """Free up memory buffers and clear trace object tables"""
 
-        rc = _datascope._trfree(self)
+	try:
+
+            rc = _datascope._trfree(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return rc
 
     def trdestroy(self):
         """Close a trace database, cleaning up memory and files"""
 
-        rc = _datascope._trdestroy(self)
+	try:
+
+            rc = _datascope._trdestroy(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         return rc
 
@@ -600,7 +985,13 @@ class Response(object):
 
                 raise TypeError, 'Response constructor arguments not understood'
 
-        self._resp = _datascope._Response(_filename)
+	try:
+
+            self._resp = _datascope._Response(_filename)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
     def __getattr__(self, attrname):
 
@@ -622,7 +1013,13 @@ def eval_response(resp, omega):
 def dbcreate(filename, schema, dbpath = None, description = None, detail = None):
     """Create a new database descriptor file"""
 
-    _datascope._dbcreate(filename, schema, dbpath, description, detail)
+    try:
+
+        _datascope._dbcreate(filename, schema, dbpath, description, detail)
+
+    except _datascope._ElogException, _e:
+
+        stock._raise_elog(_e)
 
     return 
 
@@ -630,7 +1027,13 @@ def dbcreate(filename, schema, dbpath = None, description = None, detail = None)
 def dbtmp(schema):
     """Create a temporary database"""
 
-    db = _datascope._dbtmp(schema)
+    try:
+
+        db = _datascope._dbtmp(schema)
+
+    except _datascope._ElogException, _e:
+
+        stock._raise_elog(_e)
 
     return Dbptr(db)
 
@@ -1013,12 +1416,20 @@ def trdestroy(tr):
 def trlookup_segtype(segtype):
     """Lookup segtype in segtype table"""
 
-    return _datascope._trlookup_segtype(segtype)
+    try:
 
+        ret = _datascope._trlookup_segtype(segtype)
+
+    except _datascope._ElogException, _e:
+
+        stock._raise_elog(_e)
+
+    return ret
 
 if __name__ == '__main__':
     import unittest
     import operator
+    import warnings
     import os
     import math
     import re
@@ -1381,7 +1792,7 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-            tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/unjoined_db_' + str(os.getuid()) + str(os.getpid())
 
             db.process(["dbopen origin",
                         "dbjoin assoc",
@@ -1413,7 +1824,7 @@ if __name__ == '__main__':
             
         def test_method_addnull(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1431,7 +1842,7 @@ if __name__ == '__main__':
 
         def test_method_putv(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1441,7 +1852,7 @@ if __name__ == '__main__':
 
             db.record = db.addnull()
             
-            db.putv('lat', 61.5922, 'auth', os.environ["USER"])
+            db.putv('lat', 61.5922, 'auth', str(os.getuid()))
 
             self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
 
@@ -1451,7 +1862,7 @@ if __name__ == '__main__':
 
         def test_method_addv(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1474,7 +1885,7 @@ if __name__ == '__main__':
 
         def test_method_dbtruncate(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1504,7 +1915,7 @@ if __name__ == '__main__':
 
         def test_method_dbdestroy(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1525,7 +1936,7 @@ if __name__ == '__main__':
 
         def test_method_delete(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1577,7 +1988,7 @@ if __name__ == '__main__':
 
         def test_method_crunch(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1827,7 +2238,7 @@ if __name__ == '__main__':
 
         def test_method_nextid(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1875,7 +2286,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbdelete(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1928,7 +2339,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbcrunch(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -1983,7 +2394,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbtruncate(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2013,7 +2424,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbdestroy(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2130,7 +2541,7 @@ if __name__ == '__main__':
 
             db = Dbptr(self.dbname)
 
-            tempdbname = '/tmp/unjoined_db_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/unjoined_db_' + str(os.getuid()) + str(os.getpid())
 
             db.process(["dbopen origin",
                         "dbjoin assoc",
@@ -2164,8 +2575,13 @@ if __name__ == '__main__':
             self.assertEqual(dbout.field, dbALL)
             self.assertEqual(dbout.record, dbALL)
 
-            self.assertRaises(TypeError, dbjoin, dborigin, dbassoc, outer = 'non-boolean')
-            self.assertRaises(TypeError, dbjoin, dborigin, dbassoc, 42)
+            warnings.filterwarnings('ignore', 'Attempt to coerce non-Boolean.*', RuntimeWarning)
+            warnings.filterwarnings('ignore', 'Attempt to convert sequence.*', RuntimeWarning)
+
+            self.assertRaises(ElogComplain, dbjoin, dborigin, dbassoc, outer = 'non-boolean')
+            self.assertRaises(ElogComplain, dbjoin, dborigin, dbassoc, 42)
+
+            warnings.resetwarnings()
 
             dbout = dbjoin(dborigin, dbassoc, outer = True) 
 
@@ -2267,7 +2683,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbput(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2300,7 +2716,7 @@ if __name__ == '__main__':
             
         def test_procedure_dbaddnull(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2318,7 +2734,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbputv(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2328,7 +2744,7 @@ if __name__ == '__main__':
 
             db.record = dbaddnull(db)
             
-            dbputv(db, 'lat', 61.5922, 'auth', os.environ["USER"])
+            dbputv(db, 'lat', 61.5922, 'auth', str(os.getuid()))
 
             self.assertEqual(dbquery(db,dbRECORD_COUNT), 1)
 
@@ -2338,7 +2754,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbaddv(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2352,7 +2768,7 @@ if __name__ == '__main__':
                                    'time', '9/30/2002 11:15 AM',
                                    'nass', 0,
                                    'ndef', 0,
-                                   'auth', os.environ["USER"] )
+                                   'auth', str(os.getuid()))
 
             self.assertTrue(db.record >= 0)
 
@@ -2362,7 +2778,7 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(values[1], -149.130, 0.0001))
             self.assertEqual(values[2],  20)
             self.assertEqual(values[3], 1033384500)
-            self.assertEqual(values[4], os.environ["USER"])
+            self.assertEqual(values[4], str(os.getuid()))
 
             dbclose(db)
 
@@ -2703,11 +3119,11 @@ if __name__ == '__main__':
 
             self.assertEqual(t,("nm/sec", "velocity"))
 
-            self.assertRaises(RuntimeError, trlookup_segtype, "not a valid segtype")
+            self.assertRaises(ElogComplain, trlookup_segtype, "not a valid segtype")
 
         def test_procedure_dbcreate(self):
            
-            tempdbname = '/tmp/datascope_unittest_db_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/datascope_unittest_db_' + str(os.getuid()) + str(os.getpid())
 
             dbcreate(tempdbname, 'css3.0')
 
@@ -2715,7 +3131,7 @@ if __name__ == '__main__':
 
         def test_procedure_trwfname(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2738,7 +3154,7 @@ if __name__ == '__main__':
 
         def test_procedure_dbnextid(self):
 
-            tempdbname = '/tmp/newdb_' + os.environ["USER"] + str(os.getpid())
+            tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2798,3 +3214,4 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
 
     unittest.main()
+

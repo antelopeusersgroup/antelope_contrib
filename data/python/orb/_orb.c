@@ -47,6 +47,8 @@
 #include "orb.h"
 #include "forb.h"
 
+#define USAGE raise_elog( ELOG_COMPLAIN, usage )
+
 #ifdef __APPLE__
 
 /* The scaffold below works around a problem on Darwin */
@@ -78,6 +80,8 @@ typedef struct Orb_relic {
 
 static Arr *Orb_relics;
 
+static PyObject *_orb_ElogException;
+
 static PyObject *python_orbopen( PyObject *self, PyObject *args );
 static PyObject *python_orbclose( PyObject *self, PyObject *args );
 static PyObject *python_orbping( PyObject *self, PyObject *args );
@@ -102,6 +106,8 @@ static PyObject *python_orbbury( PyObject *self, PyObject *args );
 static PyObject *python_orbpkt_string( PyObject *self, PyObject *args );
 
 static void add_orb_constants( PyObject *mod );
+static void add_elog_exception( PyObject *mod );
+static void raise_elog( int severity, char *string );
 static Orb_relic *new_Orb_relic( int orbfd );
 static Orb_relic *get_Orb_relic( int orbfd );
 static void delete_Orb_relic( int orbfd );
@@ -144,6 +150,17 @@ proc2pidstat ( void *kinfo, void *process) {
 
 #endif
 
+static void
+raise_elog( int severity, char *string )
+{
+        PyObject_SetAttrString( _orb_ElogException, "severity", PyInt_FromLong( (long) severity ) );
+        PyObject_SetAttrString( _orb_ElogException, "string", PyString_FromString( string ) );
+
+        PyErr_SetObject( _orb_ElogException, _orb_ElogException );
+
+        return;
+}
+
 static PyObject *
 python_orbopen( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _orbopen(dbname, perm)\n";
@@ -153,7 +170,7 @@ python_orbopen( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "ss", &orbname, &perm ) ) {
 		
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -178,10 +195,7 @@ python_orbclose( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -192,7 +206,7 @@ python_orbclose( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error closing orb connection" );
+		raise_elog( ELOG_COMPLAIN, "error closing orb connection" );
 
 		return NULL;
 	}
@@ -209,10 +223,7 @@ python_orbselect( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "is", &orbfd, &select ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -231,10 +242,7 @@ python_orbreject( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "is", &orbfd, &reject ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -253,10 +261,7 @@ python_orbposition( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "is", &orbfd, &where ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -275,10 +280,7 @@ python_orbseek( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "ii", &orbfd, &whichpkt ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -297,10 +299,7 @@ python_orbafter( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "id", &orbfd, &epoch ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -315,23 +314,19 @@ python_orbtell( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _orbtell(orb)\n";
 	int	orbfd;
 	int	pktid;
-	int	rc;
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
 
 	pktid = orbtell( orbfd );
 
-	if( rc < 0 ) {
+	if( pktid < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error querying orb position" );
+		raise_elog( ELOG_COMPLAIN, "error querying orb position" );
 
 		return NULL;
 	}
@@ -348,10 +343,7 @@ python_orbping( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -360,7 +352,7 @@ python_orbping( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error pinging orb" );
+		raise_elog( ELOG_COMPLAIN, "error pinging orb" );
 
 		return NULL;
 	}
@@ -383,10 +375,7 @@ python_orbreap( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -397,7 +386,7 @@ python_orbreap( PyObject *self, PyObject *args ) {
 
 		elog_flush( 1, 0 );
 		
-		PyErr_SetString( PyExc_RuntimeError, "orbreap failed\n" );
+		raise_elog( ELOG_COMPLAIN, "orbreap failed\n" );
 
 		return NULL;
 	}
@@ -425,10 +414,7 @@ python_orbreap_timeout( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "ii", &orbfd, &maxseconds ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -471,10 +457,7 @@ python_orbget( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "ii", &orbfd, &whichpkt ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -502,10 +485,7 @@ python_orbput( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "isds#i", &orbfd, srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -528,10 +508,7 @@ python_orbputx( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "isds#i", &orbfd, srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -559,10 +536,7 @@ python_orblag( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "izz", &orbfd, &match, &reject) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -573,7 +547,7 @@ python_orblag( PyObject *self, PyObject *args ) {
 
 		sprintf( err, "Error: orblag returned %f\n", rc );
 
-		PyErr_SetString( PyExc_RuntimeError, err );
+		raise_elog( ELOG_COMPLAIN, err );
 
 		return NULL;
 	}
@@ -620,10 +594,7 @@ python_orbstat( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -632,7 +603,7 @@ python_orbstat( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error querying orb status" );
+		raise_elog( ELOG_COMPLAIN, "error querying orb status" );
 
 		return NULL;
 	}
@@ -680,10 +651,7 @@ python_orbsources( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -692,7 +660,7 @@ python_orbsources( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error querying orb sources" );
+		raise_elog( ELOG_COMPLAIN, "error querying orb sources" );
 
 		return NULL;
 	}
@@ -734,10 +702,7 @@ python_orbclients( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -746,7 +711,7 @@ python_orbclients( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error querying orb clients" );
+		raise_elog( ELOG_COMPLAIN, "error querying orb clients" );
 
 		return NULL;
 	}
@@ -874,10 +839,7 @@ python_orbresurrect( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "i", &orbfd ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -888,14 +850,14 @@ python_orbresurrect( PyObject *self, PyObject *args ) {
 
 	if( resurrect( or->pktid_relicname, relic, INT_RELIC ) == 0 ) {
 
-		elog_notify( 0, "resurrected pktid %d\n", or->pktid );
+		elog_log( 0, "resurrected pktid %d\n", or->pktid );
 	}
 
 	relic.dp = &or->pkttime;
 
 	if( resurrect( or->pkttime_relicname, relic, DOUBLE_RELIC ) == 0 ) {
 
-		elog_notify( 0, "resurrected pkttime %f\n", or->pkttime );
+		elog_log( 0, "resurrected pkttime %f\n", or->pkttime );
 	}
 
 	return Py_BuildValue( "id", or->pktid, or->pkttime );
@@ -912,10 +874,7 @@ python_orbbury( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "iid", &orbfd, &pktid, &pkttime ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -938,10 +897,7 @@ python_orbexhume( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "s", &filename ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -964,10 +920,7 @@ python_orbpkt_string( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "sds#i", srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -992,10 +945,15 @@ python_orbpkt_string( PyObject *self, PyObject *args ) {
 static void
 add_orb_constants( PyObject *mod ) {
 	int	i;
+	PyObject *named_constants;
+
+	named_constants = PyDict_New();
 
 	for( i = 0; i < Orbxlatn; i++ ) {
 
 		PyModule_AddIntConstant( mod, Orbxlat[i].name, Orbxlat[i].num );
+
+		PyDict_SetItemString( named_constants, Orbxlat[i].name, PyInt_FromLong( Orbxlat[i].num ) );
 	}
 
 	PyModule_AddIntConstant( mod, "ORBCURRENT", ORBCURRENT );
@@ -1007,7 +965,41 @@ add_orb_constants( PyObject *mod ) {
 	PyModule_AddIntConstant( mod, "ORBSTASH", ORBSTASH );
 	PyModule_AddIntConstant( mod, "ORBPREVSTASH", ORBPREVSTASH );
 
+	PyDict_SetItemString( named_constants, "ORBCURRENT", PyInt_FromLong( ORBCURRENT ) );
+	PyDict_SetItemString( named_constants, "ORBNEXT", PyInt_FromLong( ORBNEXT ) );
+	PyDict_SetItemString( named_constants, "ORBPREV", PyInt_FromLong( ORBPREV ) );
+	PyDict_SetItemString( named_constants, "ORBOLDEST", PyInt_FromLong( ORBOLDEST ) );
+	PyDict_SetItemString( named_constants, "ORBNEWEST", PyInt_FromLong( ORBNEWEST ) );
+	PyDict_SetItemString( named_constants, "ORBNEXT_WAIT", PyInt_FromLong( ORBNEXT_WAIT ) );
+	PyDict_SetItemString( named_constants, "ORBSTASH", PyInt_FromLong( ORBSTASH ) );
+	PyDict_SetItemString( named_constants, "ORBPREVSTASH", PyInt_FromLong( ORBPREVSTASH ) );
+
+	PyModule_AddObject( mod, "_constants", named_constants );
+
 	return;	
+}
+
+static void
+add_elog_exception( PyObject *mod ) {
+        PyObject *dict;
+
+        dict = PyDict_New();
+
+        PyDict_SetItemString( dict, "severity", Py_None );
+
+        Py_INCREF( Py_None );
+
+        PyDict_SetItemString( dict, "string", Py_None );
+
+        Py_INCREF( Py_None );
+
+        _orb_ElogException = PyErr_NewException( "_orb._ElogException", PyExc_Exception, dict );
+
+        Py_INCREF( _orb_ElogException );
+
+        PyModule_AddObject( mod, "_ElogException", _orb_ElogException );
+
+        return;
 }
 
 PyMODINIT_FUNC
@@ -1017,5 +1009,7 @@ init_orb( void ) {
 	mod = Py_InitModule( "_orb", _orb_methods );
 
 	add_orb_constants( mod );
+
+	add_elog_exception( mod );
 }
 

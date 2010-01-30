@@ -1,0 +1,24 @@
+
+orbserver: orbserver orbserver   Antelope Release 4.11 Mac OS X 10.5.6 2009-05-08  <#>
+orbserver:    bc585a170d7a17bfd8a682af32142fc17dc2fd08 (+1 files changed) <#>
+orbserver: orb last initialized  3/03/2010 (062) 23:45:58.023
+orbserver:   1000.000 Mbytes packet buffer
+orbserver:          0 of    2500010 maximum packets
+orbserver:   0 srcnames used of  1000 maximum
+..orbtail *debug*: #1 '/pf/rtexec':  3/03/2010 (062) 23:46:31.093 : 3034 bytes
+orbtail *debug*: #2 '/pf/rtexec':  3/03/2010 (062) 23:46:31.119 : 3034 bytes
+orbtail *debug*: #3 '/pf/rtexec':  3/03/2010 (062) 23:46:33.148 : 3034 bytes
+...orbtail *debug*: #1 '/pf/rtexec':  3/03/2010 (062) 23:46:31.093 : 3034 bytes
+orbtail *debug*: #2 '/pf/rtexec':  3/03/2010 (062) 23:46:31.119 : 3034 bytes
+orbtail *debug*: #3 '/pf/rtexec':  3/03/2010 (062) 23:46:33.148 : 3034 bytes
+orbtail *debug*: #4 '/pf/rtexec':  3/03/2010 (062) 23:46:33.184 : 3034 bytes
+orbtail *debug*: #5 '/pf/rtexec':  3/03/2010 (062) 23:46:33.222 : 3034 bytes
+orbtail *debug*: #6 '/pf/rtexec':  3/03/2010 (062) 23:46:33.249 : 3034 bytes
+orbtail *debug*: #7 '/pf/rtexec':  3/03/2010 (062) 23:46:35.277 : 3034 bytes
+................
+----------------------------------------------------------------------
+Ran 21 tests in 34.551s
+
+OK
+> orbserver: *halt      * thr#  0 kent@127.0.0.1:orbstat -i :dq (35015)
+Exiting due to halt

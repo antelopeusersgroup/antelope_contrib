@@ -1,6 +1,55 @@
-import _orb
+#
+#   Copyright (c) 2007-2010 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   This software is licensed under the New BSD license: 
+#
+#   Redistribution and use in source and binary forms,
+#   with or without modification, are permitted provided
+#   that the following conditions are met:
+#   
+#   * Redistributions of source code must retain the above
+#   copyright notice, this list of conditions and the
+#   following disclaimer.
+#   
+#   * Redistributions in binary form must reproduce the
+#   above copyright notice, this list of conditions and
+#   the following disclaimer in the documentation and/or
+#   other materials provided with the distribution.
+#   
+#   * Neither the name of Lindquist Consulting, Inc. nor
+#   the names of its contributors may be used to endorse
+#   or promote products derived from this software without
+#   specific prior written permission.
+#
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+#   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+#   THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+#   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+#   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+#   IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+#   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+#   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#   POSSIBILITY OF SUCH DAMAGE.
+#
 
-from _orb import *
+import _orb
+import stock
+
+from stock import ElogException, ElogLog, ElogNotify, ElogComplain, ElogDie
+
+
+for _key in _orb._constants:
+    exec( "%s = _orb._constants['%s']" % (_key, _key) )
+
 
 class Orb(object):
     """Create an Antelope Orb connection
@@ -33,7 +82,7 @@ class Orb(object):
 
             else:
 
-                raise TypeError, 'Orb constructor arguments not understood'
+                stock.elog_complain('Orb constructor arguments not understood')
 
         if(len(args) >= 2):
 
@@ -43,7 +92,7 @@ class Orb(object):
 
             else:
 
-                raise TypeError, 'Orb constructor arguments not understood'
+                stock.elog_complain('Orb constructor arguments not understood')
         
         if(self._orbname and not isinstance(self._orbname, str)):
             
@@ -55,11 +104,17 @@ class Orb(object):
 
         if(self._orbname):
 
-            self._orbfd = _orb._orbopen(self._orbname, self._perm)
+	    try:
+
+                self._orbfd = _orb._orbopen(self._orbname, self._perm)
+            
+	    except _orb._ElogException, _e: 
+
+                stock._raise_elog(_e)
 
             if(self._orbfd < 0):
 
-                raise RuntimeError, 'Failure opening orbserver %s' % self._orbname
+                stock.elog_complain('Failure opening orbserver "%s"' % self._orbname)
 
     def __str__(self):
         
@@ -71,97 +126,247 @@ class Orb(object):
     def close(self):
         """Close an Antelope orb connection"""
 
-        _orb._orbclose(self._orbfd)
+	try:
+
+            _orb._orbclose(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
 
     def ping(self):
         """Query orbserver version"""
 
-        return _orb._orbping(self._orbfd)
+	try:
+
+            ret = _orb._orbping(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def tell(self):
         """Query orb read-head position"""
 
-        return _orb._orbtell(self._orbfd)
+	try:
+
+            ret = _orb._orbtell(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def select(self, match):
         """Match orb source-names"""
 
-        return _orb._orbselect(self._orbfd, match)
+	try:
+
+            ret = _orb._orbselect(self._orbfd, match)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def reject(self, reject):
         """Reject orb source names"""
 
-        return _orb._orbreject(self._orbfd, reject)
+	try:
+
+            ret = _orb._orbreject(self._orbfd, reject)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def position(self, where):
         """Position orb connection packet pointer by time or code"""
 
-        return _orb._orbposition(self._orbfd, where)
+	try:
+
+            ret = _orb._orbposition(self._orbfd, where)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def seek(self, whichpkt):
         """Position orb connection packet pointer by pktid or code"""
 
-        return _orb._orbseek(self._orbfd, whichpkt)
+	try:
+
+            ret = _orb._orbseek(self._orbfd, whichpkt)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def after(self, time):
         """Position orb connection packet pointer by epoch time"""
 
-        return _orb._orbafter(self._orbfd, time)
+	try:
+
+            ret = _orb._orbafter(self._orbfd, time)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def reap(self):
         """Get the next packet from an orb"""
 
-        return _orb._orbreap(self._orbfd)
+	try:
+
+            ret = _orb._orbreap(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def reap_timeout(self, maxseconds):
         """Get the next packet from an orb, waiting a maximum number of seconds"""
 
-        return _orb._orbreap_timeout(self._orbfd, maxseconds)
+	try:
+
+            ret = _orb._orbreap_timeout(self._orbfd, maxseconds)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def get(self, whichpkt):
         """Get a specified packet from an orb"""
 
-        return _orb._orbget(self._orbfd, whichpkt)
+	try:
+
+            ret = _orb._orbget(self._orbfd, whichpkt)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def put(self, srcname, time, packet, nbytes):
         """Put a packet on an orb"""
 
-        return _orb._orbput(self._orbfd, srcname, time, packet, nbytes)
+	try:
+
+            ret = _orb._orbput(self._orbfd, srcname, time, packet, nbytes)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def lag(self, match = None, reject = None):
         """"Return parameters indicating degree to which clients are behind"""
 
-        return _orb._orblag(self._orbfd, match, reject)
+	try:
+
+            ret = _orb._orblag(self._orbfd, match, reject)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def stat(self):
         """"Return parameters about orb status"""
 
-        return _orb._orbstat(self._orbfd)
+	try:
+
+            ret = _orb._orbstat(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def sources(self):
         """"Return information on orb data-streams (source names)"""
 
-        return _orb._orbsources(self._orbfd)
+	try:
+
+            ret = _orb._orbsources(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def clients(self):
         """"Return information on orb clients"""
 
-        return _orb._orbclients(self._orbfd)
+	try:
+
+            ret = _orb._orbclients(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def putx(self, srcname, time, packet, nbytes):
         """Put a packet on an orb, returning the pktid of the output packet"""
 
-        return _orb._orbputx(self._orbfd, srcname, time, packet, nbytes)
+	try:
+
+            ret = _orb._orbputx(self._orbfd, srcname, time, packet, nbytes)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def resurrect(self):
         """restores previous orb position variables"""
 
-        return _orb._orbresurrect(self._orbfd)
+	try:
+
+            ret = _orb._orbresurrect(self._orbfd)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
     def bury(self, pktid, pkttime):
         """Save orb position variables"""
 
-        return _orb._orbbury(self._orbfd, pktid, pkttime)
+	try:
+
+            ret = _orb._orbbury(self._orbfd, pktid, pkttime)
+
+	except _orb._ElogException, _e: 
+
+            stock._raise_elog(_e)
+
+        return ret
 
 
 def orbopen(orbname, perm = 'r'):
@@ -289,13 +494,29 @@ def orbbury(orb, pktid, pkttime):
 def orbexhume(filename):
     """Read and initiate a statefile for orb tracking"""
 
-    return _orb._orbexhume(filename)
+    try:
+
+        ret = _orb._orbexhume(filename)
+
+    except _orb._ElogException, _e: 
+
+        stock._raise_elog(_e)
+
+    return ret
 
 
 def orbpkt_string(srcname, time, packet, nbytes):
     """Convert an orb packet to string representation"""
 
-    return _orb._orbpkt_string(srcname, time, packet, nbytes)
+    try:
+
+        ret = _orb._orbpkt_string(srcname, time, packet, nbytes)
+
+    except _orb._ElogException, _e: 
+
+        stock._raise_elog(_e)
+
+    return ret
 
 
 if __name__ == '__main__':
@@ -305,7 +526,7 @@ if __name__ == '__main__':
 
     class Testorb_fixture(object):
 
-        tempdir = '/tmp/python_orbtest_' + os.environ["USER"] + str(os.getpid())
+        tempdir = '/tmp/python_orbtest_' + str(os.getuid()) + str(os.getpid())
 
         def start(self):
 
@@ -331,7 +552,7 @@ if __name__ == '__main__':
 
             orb = Orb(orbname)
 
-            self.assertRaises(RuntimeError, Orb, 'not an orb')
+            self.assertRaises(ElogComplain, Orb, 'not an orb')
             
         def test_procedure_orbopen(self):
 
@@ -635,7 +856,7 @@ if __name__ == '__main__':
 
         def test_procedure_orbresurrect(self):
 
-            tempstate = '/tmp/python_orbtest_state_' + os.environ["USER"] + str(os.getpid())
+            tempstate = '/tmp/python_orbtest_state_' + str(os.getuid()) + str(os.getpid())
 
             rc = orbexhume( tempstate )
 

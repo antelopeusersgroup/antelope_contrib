@@ -51,6 +51,8 @@
 #include "tr.h"
 #include "response.h"
 
+#define USAGE raise_elog( ELOG_COMPLAIN, usage ) 
+
 static Arr *Hooks = 0;
 
 #ifdef __APPLE__
@@ -75,6 +77,8 @@ typedef struct {
 } _Responseobject;
 
 staticforward PyTypeObject _Responsetype;
+
+static PyObject *_datascope_ElogException;
 
 #define is__Responseobject( v ) ( (v)->ob_type == &_Responsetype )
 
@@ -132,6 +136,8 @@ static PyObject *python_trwfname( PyObject *self, PyObject *args );
 static PyObject *python_eval_response( PyObject *self, PyObject *args );
 
 static void add_datascope_constants( PyObject *mod );
+static void add_elog_exception( PyObject *mod );
+static void raise_elog( int severity, char *string );
 static int parse_to_Dbptr( PyObject *obj, void *addr );
 static PyObject *_Responsetype_new( PyObject *self, PyObject *args );
 static int _Response_print( _Responseobject *self, FILE *fp, int flags );
@@ -230,6 +236,17 @@ proc2pidstat ( void *kinfo, void *process) {
 }
 
 #endif
+
+static void
+raise_elog( int severity, char *string )
+{
+        PyObject_SetAttrString( _datascope_ElogException, "severity", PyInt_FromLong( (long) severity ) );
+        PyObject_SetAttrString( _datascope_ElogException, "string", PyString_FromString( string ) );
+
+        PyErr_SetObject( _datascope_ElogException, _datascope_ElogException );
+
+        return;
+}
 
 static PyObject *
 Dbptr2PyObject( Dbptr db )
@@ -518,8 +535,7 @@ parse_to_Dbptr( PyObject *obj, void *addr )
 
 	} else {
 
-		PyErr_SetString( PyExc_TypeError, 
-			"Dbptr is not a Dbptr object or 4-integer list" );
+		PyErr_WarnEx( NULL, "Dbptr is not a Dbptr object or 4-integer list", 1 );
 	}
 
 	return 0;
@@ -544,8 +560,7 @@ parse_from_Boolean( PyObject *obj, void *addr )
 
 	} else {
 
-		PyErr_SetString( PyExc_TypeError, 
-			"Attempt to coerce non-Boolean value into Boolean" );
+		PyErr_WarnEx( NULL, "Attempt to coerce non-Boolean value into Boolean", 1 );
 	}
 
 	return 0;
@@ -579,8 +594,8 @@ parse_to_inttbl( PyObject *obj, void *addr )
 
 	if( ! PySequence_Check( obj ) ) {
 
-		PyErr_SetString( PyExc_TypeError, 
-			"Attempt to convert sequence to table of integers failed: input argument is not a sequence" );
+		PyErr_WarnEx( NULL, "Attempt to convert sequence to table of "
+				    " integers failed: input argument is not a sequence", 1 );
 
 		return 0;
 	}
@@ -603,7 +618,7 @@ parse_to_inttbl( PyObject *obj, void *addr )
 				"Attempt to convert sequence to table of strings failed: "
 				"failed to extract item %d (counting from 0)", iitem );
 
-			PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_WarnEx( NULL, errmsg, 1 );
 
 			return 0;
 		}
@@ -618,7 +633,7 @@ parse_to_inttbl( PyObject *obj, void *addr )
 				"Attempt to convert sequence to table of strings failed: "
 				"item %d (counting from 0) is not an integer", iitem );
 
-			PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_WarnEx( NULL, errmsg, 1 );
 
 			return 0;
 		}
@@ -633,7 +648,7 @@ parse_to_inttbl( PyObject *obj, void *addr )
 				"Attempt to convert sequence to table of strings failed: "
 				"conversion of item %d (counting from 0) to long failed", iitem );
 
-			PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_WarnEx( NULL, errmsg, 1 );
 
 			return 0;
 		}
@@ -670,8 +685,8 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 	if( ! PySequence_Check( obj ) ) {
 
-		PyErr_SetString( PyExc_TypeError, 
-			"Attempt to convert sequence to table of strings failed: input argument is not a sequence" );
+		PyErr_WarnEx( NULL, "Attempt to convert sequence to table of strings "
+				    "failed: input argument is not a sequence", 1 );
 
 		*atbl = NULL;
 
@@ -696,7 +711,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 				"Attempt to convert sequence to table of strings failed: "
 				"failed to extract item %d (counting from 0)", iitem );
 
-			PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_WarnEx( NULL, errmsg, 1 );
 
 			return 0;
 		}
@@ -711,7 +726,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 				"Attempt to convert sequence to table of strings failed: "
 				"item %d (counting from 0) is not a string", iitem );
 
-			PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_WarnEx( NULL, errmsg, 1 );
 
 			return 0;
 		}
@@ -726,7 +741,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 				"Attempt to convert sequence to table of strings failed: "
 				"conversion of item %d (counting from 0) to string failed", iitem );
 
-			PyErr_SetString( PyExc_TypeError, errmsg );
+			PyErr_WarnEx( NULL, errmsg, 1 );
 
 			return 0;
 		}
@@ -747,7 +762,7 @@ python_dbopen( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "ss", &dbname, &perm ) ) {
 		
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -772,10 +787,7 @@ python_dbclose( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -784,7 +796,7 @@ python_dbclose( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error closing database" );
+		raise_elog( ELOG_COMPLAIN, "error closing database" );
 
 		return NULL;
 	}
@@ -800,10 +812,7 @@ python_dbdelete( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -812,7 +821,7 @@ python_dbdelete( PyObject *self, PyObject *args ) {
 
 	if( rc != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error deleting database rows" );
+		raise_elog( ELOG_COMPLAIN, "error deleting database rows" );
 
 		return NULL;
 	}
@@ -828,10 +837,7 @@ python_dbmark( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -840,7 +846,7 @@ python_dbmark( PyObject *self, PyObject *args ) {
 
 	if( rc != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error deleting database rows" );
+		raise_elog( ELOG_COMPLAIN, "error deleting database rows" );
 
 		return NULL;
 	}
@@ -856,10 +862,7 @@ python_dbcrunch( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -868,7 +871,7 @@ python_dbcrunch( PyObject *self, PyObject *args ) {
 
 	if( rc != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error deleting database rows" );
+		raise_elog( ELOG_COMPLAIN, "error deleting database rows" );
 
 		return NULL;
 	}
@@ -885,10 +888,7 @@ python_dbtruncate( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &db, &nrecords ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -897,7 +897,7 @@ python_dbtruncate( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbtruncate error" );
+		raise_elog( ELOG_COMPLAIN, "dbtruncate error" );
 
 		return NULL;
 	} 
@@ -913,10 +913,7 @@ python_dbdestroy( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -925,7 +922,7 @@ python_dbdestroy( PyObject *self, PyObject *args ) {
 
 	if( rc != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error destroying database" );
+		raise_elog( ELOG_COMPLAIN, "error destroying database" );
 
 		return NULL;
 	}
@@ -941,10 +938,7 @@ python_dbtmp( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "s", &schema ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -966,10 +960,7 @@ python_dbcreate( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "sszzz", &filename, &schema, &dbpath, &description, &detail) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -978,7 +969,7 @@ python_dbcreate( PyObject *self, PyObject *args ) {
 
 	if( rc != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error creating database" );
+		raise_elog( ELOG_COMPLAIN, "error creating database" );
 
 		return NULL;
 	}
@@ -994,10 +985,7 @@ python_dbfree( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1006,7 +994,7 @@ python_dbfree( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error freeing datascope memory" );
+		raise_elog( ELOG_COMPLAIN, "error freeing datascope memory" );
 
 		return NULL;
 	}
@@ -1026,10 +1014,7 @@ python_dblookup( PyObject *self, PyObject *args ) {
 	if( ! PyArg_ParseTuple( args, "O&ssss", parse_to_Dbptr, &db, 
 				      &database, &table, &field, &record ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1048,10 +1033,7 @@ python_dbsubset( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&sz", parse_to_Dbptr, &db, &expr, &name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1069,10 +1051,7 @@ python_dblist2subset( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &db, parse_to_inttbl, &list ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1091,10 +1070,7 @@ python_dbseparate( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &tablename ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1103,7 +1079,7 @@ python_dbseparate( PyObject *self, PyObject *args ) {
 
 	if( db.table < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbseparate failed" );
+		raise_elog( ELOG_COMPLAIN, "dbseparate failed" );
 	
 		obj = NULL;
 
@@ -1125,10 +1101,7 @@ python_dbsever( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&sz", parse_to_Dbptr, &db, &tablename, &view_name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1137,7 +1110,7 @@ python_dbsever( PyObject *self, PyObject *args ) {
 
 	if( db.table < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbsever failed" );
+		raise_elog( ELOG_COMPLAIN, "dbsever failed" );
 	
 		obj = NULL;
 
@@ -1160,10 +1133,7 @@ python_dbex_eval( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &expr ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1172,7 +1142,7 @@ python_dbex_eval( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbex_evalstr failed" );
+		raise_elog( ELOG_COMPLAIN, "dbex_evalstr failed" );
 	
 		obj = NULL;
 
@@ -1195,10 +1165,7 @@ python_dbextfile( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &tablename ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1222,10 +1189,7 @@ python_dbfind( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1263,10 +1227,7 @@ python_dbmatches( PyObject *self, PyObject *args ) {
 					parse_to_strtbl, &kpattern,
 					parse_to_strtbl, &tpattern ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1299,7 +1260,7 @@ python_dbmatches( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbmatches failed" );
+		raise_elog( ELOG_COMPLAIN, "dbmatches failed" );
 
 		return NULL;
 	}
@@ -1324,10 +1285,7 @@ python_dbprocess( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &db, parse_to_strtbl, &list ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1347,7 +1305,7 @@ python_dbinvalid( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1373,10 +1331,7 @@ python_dbsort( PyObject *self, PyObject *args ) {
 						   parse_from_Boolean, &reverse, 
 						   &name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1422,10 +1377,7 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 					       parse_from_Boolean, &outer, 
 					       &name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1496,10 +1448,7 @@ python_dbnojoin( PyObject *self, PyObject *args ) {
 					       parse_to_strtbl, &pattern2,
 					       &name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1566,10 +1515,7 @@ python_dbtheta( PyObject *self, PyObject *args ) {
 					       parse_from_Boolean, &outer, 
 					       &name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1591,10 +1537,7 @@ python_dbunjoin( PyObject *self, PyObject *args ) {
 					       &database_name,
 					       parse_from_Boolean, &rewrite ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1603,7 +1546,7 @@ python_dbunjoin( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbunjoin error" );
+		raise_elog( ELOG_COMPLAIN, "dbunjoin error" );
 
 		return NULL;
 	} 
@@ -1624,10 +1567,7 @@ python_dbgroup( PyObject *self, PyObject *args ) {
 					       &name,
 					       &type ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1651,10 +1591,7 @@ python_dbungroup( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &view_name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1663,7 +1600,7 @@ python_dbungroup( PyObject *self, PyObject *args ) {
 
 	if( db.table < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbungroup failed" );
+		raise_elog( ELOG_COMPLAIN, "dbungroup failed" );
 	
 		obj = NULL;
 
@@ -1695,10 +1632,7 @@ python_db2xml( PyObject *self, PyObject *args ) {
 						    parse_to_strtbl, &expressions, 
 						    parse_from_Boolean, &primary ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1722,7 +1656,7 @@ python_db2xml( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 || xml == NULL) {
 
-		PyErr_SetString( PyExc_RuntimeError, "db2xml failed" );
+		raise_elog( ELOG_COMPLAIN, "db2xml failed" );
 
 		return NULL;
 	}
@@ -1742,10 +1676,7 @@ python_dbaddnull( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1754,7 +1685,7 @@ python_dbaddnull( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "error adding null row" );
+		raise_elog( ELOG_COMPLAIN, "error adding null row" );
 
 		return NULL;
 	}
@@ -1782,16 +1713,13 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 	if( ( nargs < 3 ) || ( ( nargs - 1 ) % 2 != 0 ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 
 	} else if( ! parse_to_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1802,7 +1730,7 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 	if( rc == dbINVALID ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbaddv: failed to get null record" );
+		raise_elog( ELOG_COMPLAIN, "dbaddv: failed to get null record" );
 
 		return NULL;
 	}
@@ -1817,7 +1745,7 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 		if( ! PyString_Check( PyTuple_GetItem( args, fieldname_index ) ) ) {
 
-			PyErr_SetString( PyExc_RuntimeError, usage );
+			USAGE;
 
 			return NULL;
 		}
@@ -1838,7 +1766,7 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 			sprintf( errmsg, "dbaddv: dbquery failed for field %s", field_name );
 
-			PyErr_SetString( PyExc_RuntimeError, usage );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -1849,7 +1777,7 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 			
 			sprintf( errmsg, "dbaddv: failed to convert field %s", field_name );
 
-			PyErr_SetString( PyExc_RuntimeError, usage );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -1888,7 +1816,7 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 	if( retcode != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbaddv failed putting in one of the values\n" );
+		raise_elog( ELOG_COMPLAIN, "dbaddv failed putting in one of the values\n" );
 
 		return NULL;
 	}
@@ -1897,7 +1825,7 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 	if( retcode == dbINVALID ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbaddv failed at dbaddchk call\n" );
+		raise_elog( ELOG_COMPLAIN, "dbaddv failed at dbaddchk call\n" );
 
 		return NULL;
 	}
@@ -1917,10 +1845,7 @@ python_dbget( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &scratch ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1931,7 +1856,7 @@ python_dbget( PyObject *self, PyObject *args ) {
 
 		if( rc < 0 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, "dbget failed" );
+			raise_elog( ELOG_COMPLAIN, "dbget failed" );
 	
 			obj = NULL;
 
@@ -1957,7 +1882,7 @@ python_dbget( PyObject *self, PyObject *args ) {
 
 		if( rc < 0 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, "dbget failed" );
+			raise_elog( ELOG_COMPLAIN, "dbget failed" );
 
 			obj = NULL;
 
@@ -1984,10 +1909,7 @@ python_dbput( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &s ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -1996,7 +1918,7 @@ python_dbput( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbput failed" );
+		raise_elog( ELOG_COMPLAIN, "dbput failed" );
 	}
 
 	return Py_BuildValue( "" );
@@ -2020,7 +1942,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 
 	if( nargs < 2 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 
@@ -2073,7 +1995,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 
 			sprintf( errmsg, "_dbgetv: failed to find field named '%s' in database row", field );
 
-			PyErr_SetString( PyExc_RuntimeError, errmsg );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -2084,7 +2006,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 
 			sprintf( errmsg, "_dbgetv: failed to extract value for field named '%s' from database row", field );
 
-			PyErr_SetString( PyExc_RuntimeError, errmsg );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -2123,7 +2045,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 		default:
 			sprintf( errmsg, "_dbgetv internal error: type '%ld' for field named '%s' not understood", type, field );
 
-			PyErr_SetString( PyExc_RuntimeError, errmsg );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -2152,16 +2074,13 @@ python_dbputv( PyObject *self, PyObject *args ) {
 
 	if( ( nargs < 3 ) || ( ( nargs - 1 ) % 2 != 0 ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 
 	} else if( ! parse_to_Dbptr( PyTuple_GetItem( args, 0 ), &db ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2174,7 +2093,7 @@ python_dbputv( PyObject *self, PyObject *args ) {
 
 		if( ! PyString_Check( PyTuple_GetItem( args, fieldname_index ) ) ) {
 
-			PyErr_SetString( PyExc_RuntimeError, usage );
+			USAGE;
 
 			return NULL;
 		}
@@ -2195,7 +2114,7 @@ python_dbputv( PyObject *self, PyObject *args ) {
 
 			sprintf( errmsg, "dbputv: dbquery failed for field %s", field_name );
 
-			PyErr_SetString( PyExc_RuntimeError, usage );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -2206,7 +2125,7 @@ python_dbputv( PyObject *self, PyObject *args ) {
 			
 			sprintf( errmsg, "dbputv: failed to convert field %s", field_name );
 
-			PyErr_SetString( PyExc_RuntimeError, usage );
+			raise_elog( ELOG_COMPLAIN, errmsg );
 
 			return NULL;
 		}
@@ -2245,7 +2164,7 @@ python_dbputv( PyObject *self, PyObject *args ) {
 
 	if( retcode != 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "dbputv failed putting in one of the values\n" );
+		raise_elog( ELOG_COMPLAIN, "dbputv failed putting in one of the values\n" );
 
 		return NULL;
 	}
@@ -2270,10 +2189,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&O", parse_to_Dbptr, &db, &dbcode_obj ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2292,10 +2208,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 	} else {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2335,7 +2248,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 		} else {
 
-			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+			raise_elog( ELOG_COMPLAIN, "dbquery failed to extract value" );
 
 			obj = NULL;
 		}
@@ -2364,7 +2277,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 		} else {
 
-			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+			raise_elog( ELOG_COMPLAIN, "dbquery failed to extract value" );
 
 			obj = NULL;
 		}
@@ -2379,7 +2292,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 		} else {
 
-			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+			raise_elog( ELOG_COMPLAIN, "dbquery failed to extract value" );
 
 			obj = NULL;
 		}
@@ -2401,7 +2314,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 		} else {
 
-			PyErr_SetString( PyExc_RuntimeError, "dbquery failed to extract value" );
+			raise_elog( ELOG_COMPLAIN, "dbquery failed to extract value" );
 
 			obj = NULL;
 		}
@@ -2412,7 +2325,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 		sprintf( errmsg, "dbquery: bad code '%ld'", dbcode );
 
-		PyErr_SetString( PyExc_RuntimeError, errmsg );
+		raise_elog( ELOG_COMPLAIN, errmsg );
 
 		obj = NULL;
 
@@ -2431,10 +2344,7 @@ python_dbnextid( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &name ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2443,7 +2353,7 @@ python_dbnextid( PyObject *self, PyObject *args ) {
 
 	if( id == -1 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "unable to update lastid table" );
+		raise_elog( ELOG_COMPLAIN, "unable to update lastid table" );
 
 		return NULL;
 	}
@@ -2460,10 +2370,7 @@ python_trfilter( PyObject *self, PyObject *args ) {
 	
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &tr, &filter_string ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2503,10 +2410,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 				       parse_from_Boolean, &apply_calib, 
 				       &filter) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2517,8 +2421,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 	if( nrows <= 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trsample: no data (no rows in trace object)\n" );
+		raise_elog( ELOG_COMPLAIN, "trsample: no data (no rows in trace object)\n" );
 
 		return NULL;
 	}
@@ -2529,15 +2432,13 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 		if( rc == -2 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, 
-				"trsample: error parsing filter string\n" );
+			raise_elog( ELOG_COMPLAIN, "trsample: error parsing filter string\n" );
 
 			return NULL;
 
 		} else if( rc < 0 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, 
-				"trsample: unknown error while attempting to filter data\n" );
+			raise_elog( ELOG_COMPLAIN, "trsample: unknown error while attempting to filter data\n" );
 
 			return NULL;
 		}
@@ -2552,8 +2453,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 	if( nrows <= 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trsample: no data (no rows in trace object)\n" );
+		raise_elog( ELOG_COMPLAIN, "trsample: no data (no rows in trace object)\n" );
 
 		return NULL;
 	}
@@ -2569,8 +2469,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 	if( nsamp_total <= 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trsample: no data (no samples in trace object rows)\n" );
+		raise_elog( ELOG_COMPLAIN, "trsample: no data (no samples in trace object rows)\n" );
 
 		return NULL;
 	}
@@ -2638,10 +2537,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 				       &binsize, parse_from_Boolean, &apply_calib,
 				       &filter ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2652,8 +2548,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 
 	if( nrows <= 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trsamplebins: no data (no rows in trace object)\n" );
+		raise_elog( ELOG_COMPLAIN, "trsamplebins: no data (no rows in trace object)\n" );
 
 		return NULL;
 	}
@@ -2664,15 +2559,13 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 
 		if( rc == -2 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, 
-				"trsample: error parsing filter string\n" );
+			raise_elog( ELOG_COMPLAIN, "trsample: error parsing filter string\n" );
 
 			return NULL;
 
 		} else if( rc < 0 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, 
-				"trsample: unknown error while attempting to filter data\n" );
+			raise_elog( ELOG_COMPLAIN, "trsample: unknown error while attempting to filter data\n" );
 
 			return NULL;
 		}
@@ -2687,8 +2580,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 
 	if( nrows <= 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trsamplebins: no data (no rows in trace object)\n" );
+		raise_elog( ELOG_COMPLAIN, "trsamplebins: no data (no rows in trace object)\n" );
 
 		return NULL;
 	}
@@ -2711,8 +2603,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 
 	if( nsamp_total <= 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trsamplebins: no data (no samples in trace object rows)\n" );
+		raise_elog( ELOG_COMPLAIN, "trsamplebins: no data (no samples in trace object rows)\n" );
 
 		return NULL;
 	}
@@ -2788,10 +2679,7 @@ python_trloadchan( PyObject *self, PyObject *args ) {
 	if( ! PyArg_ParseTuple( args, "O&ddss", parse_to_Dbptr, 
 				       &db, &t0, &t1, &sta, &chan ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2813,18 +2701,14 @@ python_trdata( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
 
 	if( tr.record < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trdata requires a single record number in tr.record\n" );
+		raise_elog( ELOG_COMPLAIN, "trdata requires a single record number in tr.record\n" );
 
 		return NULL;
 	} 
@@ -2833,8 +2717,7 @@ python_trdata( PyObject *self, PyObject *args ) {
 
 	if( result != 0 || data == 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trdata failed to retrieve nsamp and data-pointer from record\n" );
+		raise_elog( ELOG_COMPLAIN, "trdata failed to retrieve nsamp and data-pointer from record\n" );
 
 		return NULL;
 	}
@@ -2867,18 +2750,14 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &tr, &binsize ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
 
 	if( tr.record < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trdata requires a single record number in tr.record\n" );
+		raise_elog( ELOG_COMPLAIN, "trdata requires a single record number in tr.record\n" );
 
 		return NULL;
 	} 
@@ -2887,8 +2766,7 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 
 	if( result != 0 || data == 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, 
-			"trdata failed to retrieve nsamp and data-pointer from record\n" );
+		raise_elog( ELOG_COMPLAIN, "trdata failed to retrieve nsamp and data-pointer from record\n" );
 
 		return NULL;
 	}
@@ -2952,10 +2830,7 @@ python_trsplice( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -2964,7 +2839,7 @@ python_trsplice( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "splice error" );
+		raise_elog( ELOG_COMPLAIN, "splice error" );
 
 		return NULL;
 	} 
@@ -2983,7 +2858,7 @@ python_trlookup_segtype( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "s", &segtype ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -2992,7 +2867,7 @@ python_trlookup_segtype( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "trlookup_segtype error" );
+		raise_elog( ELOG_COMPLAIN, "trlookup_segtype error" );
 
 		return NULL;
 	}
@@ -3016,10 +2891,7 @@ python_trwfname( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &pattern ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -3028,19 +2900,19 @@ python_trwfname( PyObject *self, PyObject *args ) {
 
 	if( rc == -1 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "trwfname error (problem with path)" );
+		raise_elog( ELOG_COMPLAIN, "trwfname error (problem with path)" );
 
 		return NULL;
 
 	} else if( rc == -2 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "trwfname error (dir or dfile too large for database fields)" );
+		raise_elog( ELOG_COMPLAIN, "trwfname error (dir or dfile too large for database fields)" );
 
 		return NULL;
 
 	} else if( path == NULL ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "trwfname error (empty path)" );
+		raise_elog( ELOG_COMPLAIN, "trwfname error (empty path)" );
 
 		return NULL;
 	}
@@ -3061,10 +2933,7 @@ python_trtruncate( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&i", parse_to_Dbptr, &tr, &leave ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -3073,7 +2942,7 @@ python_trtruncate( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "trtruncate error" );
+		raise_elog( ELOG_COMPLAIN, "trtruncate error" );
 
 		return NULL;
 	} 
@@ -3089,10 +2958,7 @@ python_trfree( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -3110,10 +2976,7 @@ python_trdestroy( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -3131,10 +2994,7 @@ python_trsplit( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -3143,7 +3003,7 @@ python_trsplit( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "split error" );
+		raise_elog( ELOG_COMPLAIN, "split error" );
 
 		return NULL;
 	} 
@@ -3160,10 +3020,7 @@ python_trcopy( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &trout, parse_to_Dbptr, &trin ) ) {
 
-		if( ! PyErr_Occurred() ) {
-
-			PyErr_SetString( PyExc_RuntimeError, usage );
-		}
+		USAGE;
 
 		return NULL;
 	}
@@ -3172,7 +3029,7 @@ python_trcopy( PyObject *self, PyObject *args ) {
 
 	if( rc < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "trcopy: unknown error\n" );
+		raise_elog( ELOG_COMPLAIN, "trcopy: unknown error\n" );
 
 		return NULL;
 
@@ -3185,13 +3042,43 @@ python_trcopy( PyObject *self, PyObject *args ) {
 static void
 add_datascope_constants( PyObject *mod ) {
 	int	i;
+	PyObject *named_constants;
+
+	named_constants = PyDict_New();
 
 	for( i = 0; i < NDbxlat; i++ ) {
 
 		PyModule_AddIntConstant( mod, Dbxlat[i].name, Dbxlat[i].num );
+
+		PyDict_SetItemString( named_constants, Dbxlat[i].name, PyInt_FromLong( Dbxlat[i].num ) );
 	}
+
+	PyModule_AddObject( mod, "_constants", named_constants );
 	
 	return;	
+}
+
+static void
+add_elog_exception( PyObject *mod ) {
+        PyObject *dict;
+
+        dict = PyDict_New();
+
+        PyDict_SetItemString( dict, "severity", Py_None );
+
+        Py_INCREF( Py_None );
+
+        PyDict_SetItemString( dict, "string", Py_None );
+
+        Py_INCREF( Py_None );
+
+        _datascope_ElogException = PyErr_NewException( "_datascope._ElogException", PyExc_Exception, dict );
+
+        Py_INCREF( _datascope_ElogException );
+
+        PyModule_AddObject( mod, "_ElogException", _datascope_ElogException );
+
+        return;
 }
 
 PyMODINIT_FUNC
@@ -3201,6 +3088,8 @@ init_datascope( void ) {
 	mod = Py_InitModule( "_datascope", _datascope_methods );
 
 	add_datascope_constants( mod );
+
+	add_elog_exception( mod );
 }
 
 static _Responseobject *
@@ -3242,7 +3131,7 @@ _Responsetype_new( PyObject *self, PyObject *args )
 
 		if( rc != 0 ) {
 
-			PyErr_SetString( PyExc_RuntimeError, "get_response failed" );
+			raise_elog( ELOG_COMPLAIN, "get_response failed" );
 
 			return NULL;
 		}
@@ -3298,7 +3187,7 @@ python_eval_response( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "d", &omega ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -3307,7 +3196,7 @@ python_eval_response( PyObject *self, PyObject *args )
 
 	if( rc != 0 ) {
 		
-		PyErr_SetString( PyExc_RuntimeError, "eval_response failed" );
+		raise_elog( ELOG_COMPLAIN, "eval_response failed" );
 
 		return NULL;
 	}

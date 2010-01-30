@@ -1,0 +1,6 @@
+^orbserver:.*
+^> orbserver:.*
+orb last initialized.*
+orbtail \*debug\*:.*
+^[.]*$
+Ran .* tests in .*s

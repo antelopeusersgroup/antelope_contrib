@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2007-2008 Lindquist Consulting, Inc.
+ *   Copyright (c) 2007-2010 Lindquist Consulting, Inc.
  *   All rights reserved. 
  *                                                                     
  *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
@@ -48,6 +48,8 @@
 #include "pf.h"
 #include "db.h"
 
+#define USAGE raise_elog( ELOG_COMPLAIN, usage )
+
 #ifdef __APPLE__
 
 /* The scaffold below works around a problem on Darwin */
@@ -84,6 +86,8 @@ typedef struct {
 
 staticforward PyTypeObject _pkttype;
 staticforward PyTypeObject _pktchanneltype;
+
+static PyObject *_Pkt_ElogException;
 
 #define is__pktobject( v ) ( (v)->ob_type == &_pkttype )
 #define is__pktchannelobject( v ) ( (v)->ob_type == &_pktchanneltype )
@@ -124,6 +128,8 @@ static PyObject *python_pktchannel_cuser1( PyObject *self, PyObject *args );
 static PyObject *python_pktchannel_cuser2( PyObject *self, PyObject *args );
 
 static void add_pkt_constants( PyObject *mod );
+static void add_elog_exception( PyObject *mod );
+static void raise_elog( int severity, char *string );
 static _pktobject *new_pktobject();
 static PyObject *_pkttype_new( PyObject *self, PyObject *args );
 static int _pkt_print( _pktobject *self, FILE *fp, int flags );
@@ -234,6 +240,17 @@ proc2pidstat ( void *kinfo, void *process) {
 
 #endif
 
+static void
+raise_elog( int severity, char *string )
+{
+        PyObject_SetAttrString( _Pkt_ElogException, "severity", PyInt_FromLong( (long) severity ) );
+        PyObject_SetAttrString( _Pkt_ElogException, "string", PyString_FromString( string ) );
+
+        PyErr_SetObject( _Pkt_ElogException, _Pkt_ElogException );
+
+        return;
+}
+
 static PyObject *
 python_join_srcname( PyObject *self, PyObject *args ) 
 {
@@ -249,7 +266,7 @@ python_join_srcname( PyObject *self, PyObject *args )
 	
 	if( ! PyArg_ParseTuple( args, "ssssss", &net, &sta, &chan, &loc, &suffix, &subcode ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	} 
@@ -276,7 +293,7 @@ python_split_srcname( PyObject *self, PyObject *args )
 	
 	if( ! PyArg_ParseTuple( args, "s", &srcname ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	} 
@@ -334,7 +351,7 @@ _pkttype_new( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "sds#ii", &srcname, &pkttime, &packet, &nbytes_packet, &nbytes, &pktid) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 
@@ -436,7 +453,7 @@ python_pkt_type( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -460,7 +477,7 @@ python_pkt_PacketType( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -485,7 +502,7 @@ python_pkt_show( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "i", &mode ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -508,7 +525,7 @@ python_pkt_srcname( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -524,7 +541,7 @@ python_pkt_time( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -549,7 +566,7 @@ python_pkt_parts( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -580,7 +597,7 @@ python_pkt_nchannels( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -606,25 +623,25 @@ python_pkt_channels( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "i", &ichannel ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 
 	} else if( ichannel < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "channel index must be >= 0\n" );
+		raise_elog( ELOG_COMPLAIN, "channel index must be >= 0\n" );
 
 		return NULL;
 
 	} else if( ((_pktobject *) self)->pkt->channels == NULL ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "no channels table in pkt structure\n" );
+		raise_elog( ELOG_COMPLAIN, "no channels table in pkt structure\n" );
 
 		return NULL;
 
 	} else if( ichannel >= maxtbl( ((_pktobject *) self)->pkt->channels )) {
 
-		PyErr_SetString( PyExc_RuntimeError, "channel index exceeds number of available channels\n" );
+		raise_elog( ELOG_COMPLAIN, "channel index exceeds number of available channels\n" );
 
 		return NULL;
 	}
@@ -642,7 +659,7 @@ python_pkt_string( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -668,7 +685,7 @@ python_pkt_version( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -693,7 +710,7 @@ python_pkt_dfile( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -723,7 +740,7 @@ python_pkt_pf( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -751,7 +768,7 @@ python_pkt_db( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -814,20 +831,20 @@ _pktchanneltype_new( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "Oi", &pktobj, &ichannel) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 
 	} else if( ichannel < 0 ) {
 
-		PyErr_SetString( PyExc_RuntimeError, "channel index must be >= 0\n" );
+		raise_elog( ELOG_COMPLAIN, "channel index must be >= 0\n" );
 
 		return NULL;
 
 	} else if( ((_pktobject *) pktobj)->pkt->channels == NULL ||
 	           ichannel >= maxtbl( ((_pktobject *) obj)->pkt->channels )) {
 
-		PyErr_SetString( PyExc_RuntimeError, "channel index exceeds number of available channels\n" );
+		raise_elog( ELOG_COMPLAIN, "channel index exceeds number of available channels\n" );
 
 		return NULL;
 	}
@@ -907,7 +924,7 @@ python_pktchannel_time( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -922,7 +939,7 @@ python_pktchannel_net( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -937,7 +954,7 @@ python_pktchannel_sta( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -952,7 +969,7 @@ python_pktchannel_chan( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -967,7 +984,7 @@ python_pktchannel_loc( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -982,7 +999,7 @@ python_pktchannel_nsamp( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -997,7 +1014,7 @@ python_pktchannel_samprate( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1012,7 +1029,7 @@ python_pktchannel_calib( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1027,7 +1044,7 @@ python_pktchannel_calper( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1042,7 +1059,7 @@ python_pktchannel_segtype( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1059,7 +1076,7 @@ python_pktchannel_data( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1081,7 +1098,7 @@ python_pktchannel_duser1( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1096,7 +1113,7 @@ python_pktchannel_duser2( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1111,7 +1128,7 @@ python_pktchannel_iuser1( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1126,7 +1143,7 @@ python_pktchannel_iuser2( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1141,7 +1158,7 @@ python_pktchannel_iuser3( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1156,7 +1173,7 @@ python_pktchannel_cuser1( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1171,7 +1188,7 @@ python_pktchannel_cuser2( PyObject *self, PyObject *args )
 
 	if( ! PyArg_ParseTuple( args, "" ) ) {
 
-		PyErr_SetString( PyExc_RuntimeError, usage );
+		USAGE;
 
 		return NULL;
 	}
@@ -1183,13 +1200,43 @@ static void
 add_pkt_constants( PyObject *mod ) 
 {
 	int	i;
+	PyObject *named_constants;
+
+	named_constants = PyDict_New();
 
 	for( i = 0; i < Pktxlatn; i++ ) {
 
 		PyModule_AddIntConstant( mod, Pktxlat[i].name, Pktxlat[i].num );
+
+		PyDict_SetItemString( named_constants, Pktxlat[i].name, PyInt_FromLong( Pktxlat[i].num ) );
 	}
 
+	PyModule_AddObject( mod, "_constants", named_constants );
+
 	return;
+}
+
+static void
+add_elog_exception( PyObject *mod ) {
+        PyObject *dict;
+
+        dict = PyDict_New();
+
+        PyDict_SetItemString( dict, "severity", Py_None );
+
+        Py_INCREF( Py_None );
+
+        PyDict_SetItemString( dict, "string", Py_None );
+
+        Py_INCREF( Py_None );
+
+        _Pkt_ElogException = PyErr_NewException( "_Pkt._ElogException", PyExc_Exception, dict );
+
+        Py_INCREF( _Pkt_ElogException );
+
+        PyModule_AddObject( mod, "_ElogException", _Pkt_ElogException );
+
+        return;
 }
 
 PyMODINIT_FUNC
@@ -1200,4 +1247,6 @@ init_Pkt( void )
 	mod = Py_InitModule( "_Pkt", _Pkt_methods );
 
 	add_pkt_constants( mod );
+
+	add_elog_exception( mod );
 }

@@ -7,24 +7,45 @@ from antelope.stock import *
 </man>
 
 <subsection Error Handling>
+ElogException
+    base class for Elog-facility exceptions thrown by 
+    Antelope Python interfaces, with attributes
+    e.severity (ELOG_LOG, ELOG_NOTIFY, ELOG_COMPLAIN,
+    ELOG_DIE, ELOG_ALERT, ELOG_FAULT, ELOG_DEBUGGING) 
+    and e.string
+
+ElogLog
+    subclass of ElogException for elog_log messages
+
+ElogNotify
+    subclass of ElogException for elog_notify messages
+
+ElogComplain
+    subclass of ElogException for elog_complain messages
+
+ElogDie
+    subclass of ElogException for elog_log messages
+
 elog_init (argv)
     initialize the elog message routines
 
-# elog_log (msg)
-#     save message on the elog message log
-# 
+elog_log (msg)
+    raise ElogLog exception
+
 # elog_debug (msg)
 elog_notify (msg)
+    raise ElogNotify exception
+
 # elog_alert (msg)
 elog_complain (msg)
-    send notify, complain message to the elog facility
+    raise ElogComplain exception
 
 elog_die (msg)
-    send message to the elog message facility and exit
+    raise ElogDie exception and exit
 
 # 
 # elog_callback(replacement)
-#     replace standard elog processing with perl routine
+#     replace standard elog processing with python routine
 #     replacement is called with two arguments: severity  code
 #     and a string containing the elog log.  it must return an
 #     integer; if return != 0, error log is cleared.
@@ -93,7 +114,7 @@ pf2xml(pfname)
 #     save the specified value into the pf object  with  name
 #     pfname under the specified key.  The value is converted
 #     to string if it's scalar; when it's a reference to
-#     a perl array or hash, the entire perl array or hash is
+#     a python list or dictionary, the entire python list or dictionary is
 #     stored in the pf object.
 # 
 pfwrite (pfname, filename)
@@ -260,9 +281,9 @@ strtime (epoch)
 strydtime (epoch)
     return epoch time formatted like "4/23/2001 (113) 15:35:15.000"
 
-# strdate (epoch)
-#     convert epoch time to date, eg "4/23/2001"
-# 
+strdate (epoch)
+    convert epoch time to date, eg "4/23/2001"
+
 strtdelta (dt)
     convert the time-difference dt (in seconds) to string, eg "30:35 minutes"
 

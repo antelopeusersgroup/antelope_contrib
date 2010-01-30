@@ -9,7 +9,8 @@ from antelope.orb import *
 
 orbopen(orbname, perm = 'r')
 Orb(orbname = address, perm = 'r')
-    open the specified orbserver name with permission perm ("r", "w", "r&", or "w&"), returning the open file descriptor orb
+    open the specified orbserver name with permission perm ("r", "w", "r&", or "w&"), 
+    returning the open file descriptor orb
 
 orbclose(orb)
 orb.close()

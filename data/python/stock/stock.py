@@ -1,95 +1,381 @@
+#
+#   Copyright (c) 2007-2010 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   This software is licensed under the New BSD license: 
+#
+#   Redistribution and use in source and binary forms,
+#   with or without modification, are permitted provided
+#   that the following conditions are met:
+#   
+#   * Redistributions of source code must retain the above
+#   copyright notice, this list of conditions and the
+#   following disclaimer.
+#   
+#   * Redistributions in binary form must reproduce the
+#   above copyright notice, this list of conditions and
+#   the following disclaimer in the documentation and/or
+#   other materials provided with the distribution.
+#   
+#   * Neither the name of Lindquist Consulting, Inc. nor
+#   the names of its contributors may be used to endorse
+#   or promote products derived from this software without
+#   specific prior written permission.
+#
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+#   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+#   THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+#   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+#   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+#   IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+#   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+#   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#   POSSIBILITY OF SUCH DAMAGE.
+#
+
+import exceptions
 import _stock
 
-from _stock import *
+for key in _stock._constants:
+    exec( "%s = _stock._constants['%s']" % (key, key) )
+
+
+class ElogException(exceptions.Exception):
+    """Raise an ElogException object of specified severity and string message
+
+       This constructor is used internally to stock.py and generally should not be invoked
+       directly by end-user code. 
+
+       ElogException( severity, string )
+    """
+
+    def __init__(self, severity, string):
+        self.args = (severity, string)
+	self.severity = severity
+	self.string = string
+
+
+class ElogLog(ElogException):
+    """Raise an ElogLog exception with specified string message
+
+       ElogLog( string )
+
+       This constructor is used internally to stock.py. To generate ElogLog exceptions, 
+       consider using the standard command
+
+           elog_log( string )
+    """
+
+    def __init__(self, string):
+        ElogException.__init__(self, ELOG_LOG, string)
+        self.args = (string,)
+
+
+class ElogNotify(ElogException):
+    """Raise an ElogNotify exception with specified string message
+
+       ElogNotify( string )
+
+       This constructor is used internally to stock.py. To generate ElogNotify exceptions, 
+       consider using the standard command
+
+           elog_notify( string )
+    """
+
+    def __init__(self, string):
+        ElogException.__init__(self, ELOG_NOTIFY, string)
+        self.args = (string,)
+
+
+class ElogComplain(ElogException):
+    """Raise an ElogComplain exception with specified string message
+
+       ElogComplain( string )
+
+       This constructor is used internally to stock.py. To generate ElogComplain exceptions, 
+       consider using the standard command
+
+           elog_complain( string )
+    """
+
+    def __init__(self, string):
+        ElogException.__init__(self, ELOG_COMPLAIN, string)
+        self.args = (string,)
+
+
+class ElogDie(ElogException,SystemError):
+    """Raise an ElogDie exception with specified string message
+
+       ElogDie( string )
+
+       This constructor is used internally to stock.py. To generate ElogDie exceptions, 
+       consider using the standard command
+
+           elog_die( string )
+    """
+
+    def __init__(self, string):
+        ElogException.__init__(self, ELOG_DIE, string)
+        self.args = (string,)
+
+
+def _raise_elog(e):
+    """Factory function to raise subclasses of ElogException.
+
+       This factory function is used internally to the Antelope Python modules and is not 
+       intended to be called external to them.
+    """
+
+    if( e.severity == ELOG_LOG ):
+
+        raise ElogLog(e.string)
+
+    elif( e.severity == ELOG_NOTIFY ):
+
+        raise ElogNotify(e.string)
+
+    elif( e.severity == ELOG_COMPLAIN ):
+
+        raise ElogComplain(e.string)
+
+    elif( e.severity == ELOG_DIE ):
+
+        raise ElogDie(e.string)
+
+    else:
+
+        raise ElogException(e.severity, e.string)
+
 
 def elog_init(argv):
     """Initialize the Antelope error log"""
 
-    return _stock._elog_init(argv)
+    try:
+
+        ret = _stock._elog_init(argv)
+
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
+
+
+def elog_log(msg):
+    """Put a log message on the Antelope error log"""
+
+    try:
+
+        ret = _stock._elog_log(msg)
+
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def elog_notify(msg):
     """Put a notification message on the Antelope error log"""
 
-    return _stock._elog_notify(msg)
+    try:
+
+        ret = _stock._elog_notify(msg)
+
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def elog_complain(msg):
     """Put a complaint message on the Antelope error log"""
 
-    return _stock._elog_complain(msg)
+    try:
+
+        ret = _stock._elog_complain(msg)
+
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def elog_die(msg):
     """Put a fatal message on the Antelope error log and exit"""
 
-    return _stock._elog_die(msg)
+    try:
+
+        ret = _stock._elog_die(msg)
+
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_string(pfname, pfkey):
     """Retrieve a string value from a parameter file"""
 
-    return _stock._pfget_string(pfname, pfkey)
+    try:
+
+        ret = _stock._pfget_string(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_int(pfname, pfkey):
     """Retrieve an integer value from a parameter file"""
 
-    return _stock._pfget_int(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_int(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_double(pfname, pfkey):
     """Retrieve a floating-point value from a parameter file"""
 
-    return _stock._pfget_double(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_double(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_size(pfname, pfkey):
     """Retrieve a size value from a parameter file"""
 
-    return _stock._pfget_size(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_size(pfname, pfkey)
 
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 def pfget_time(pfname, pfkey):
     """Retrieve a time value from a parameter file"""
 
-    return _stock._pfget_time(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_time(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_boolean(pfname, pfkey):
     """Retrieve a boolean value from a parameter file"""
 
-    return _stock._pfget_boolean(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_boolean(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_tbl(pfname, pfkey):
     """Retrieve a table value from a parameter file"""
 
-    return _stock._pfget_tbl(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_tbl(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget_arr(pfname, pfkey):
     """Retrieve an array value from a parameter file"""
 
-    return _stock._pfget_arr(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget_arr(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfget(pfname, pfkey = None):
     """Retrieve an arbitrary value from a parameter file, or retrieve the whole parameter file"""
 
-    return _stock._pfget(pfname, pfkey)
+    try:
+    
+        ret = _stock._pfget(pfname, pfkey)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfupdate(pfname):
     """Re-read and update a parameter-file"""
 
-    return _stock._pfupdate(pfname)
+    try:
+    
+        ret = _stock._pfupdate(pfname)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pffiles(pfname, all = False):
     """Return a list of parameter-file path names"""
 
-    return _stock._pffiles(pfname, all)
+    try:
+    
+        ret = _stock._pffiles(pfname, all)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pfout(pfname, file):
@@ -107,91 +393,204 @@ def pfwrite(pfname, filename):
 def pf2string(pfname):
     """Convert a parameter-file to a string representation"""
 
-    return _stock._pf2string(pfname)
+    try:
+    
+        ret = _stock._pf2string(pfname)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def pf2xml(pfname, flags = None, prolog = None, name = None ):
     """Convert a parameter-file to an XML string representation"""
 
-    return _stock._pf2xml(pfname, flags, prolog, name)
+    try:
+    
+        ret = _stock._pf2xml(pfname, flags, prolog, name)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strtime(epoch):
     """Convert an epoch time to a standard string"""
 
-    return _stock._strtime(epoch)
+    try:
+    
+        ret = _stock._strtime(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strtdelta(epoch):
     """Convert an epoch time difference to a string representation"""
 
-    return _stock._strtdelta(epoch)
+    try:
+    
+        ret = _stock._strtdelta(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strydtime(epoch):
     """Convert an epoch time to a string date and time, including julian day"""
 
-    return _stock._strydtime(epoch)
+    try:
+    
+        ret = _stock._strydtime(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strdate(epoch):
     """Convert an epoch time to a string date"""
 
-    return _stock._strdate(epoch)
+    try:
+    
+        ret = _stock._strdate(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strlocaltime(epoch):
     """Convert an epoch time to a string date and time in local time zone"""
 
-    return _stock._strlocaltime(epoch)
+    try:
+    
+        ret = _stock._strlocaltime(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strlocalydtime(epoch):
     """Convert an epoch time to a string date and time in local time zone, with julian day"""
 
-    return _stock._strlocalydtime(epoch)
+    try:
+    
+        ret = _stock._strlocalydtime(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def strlocaldate(epoch):
     """Convert an epoch time to a string date in local time zone"""
 
-    return _stock._strlocaldate(epoch)
+    try:
+    
+        ret = _stock._strlocaldate(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def str2epoch(astring):
     """Convert a string to an epoch time"""
 
-    return _stock._str2epoch(astring)
+    try:
+    
+        ret = _stock._str2epoch(astring)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def epoch2str(epoch, fmt, tz = None):
     """Convert an epoch time to a string"""
 
-    return _stock._epoch2str(epoch, fmt, tz)
+    try:
+    
+        ret = _stock._epoch2str(epoch, fmt, tz)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def epoch(yearday):
     """Convert a yearday value to an epoch time"""
 
-    return _stock._epoch(yearday)
+    try:
+    
+        ret = _stock._epoch(yearday)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def yearday(epoch):
     """Convert an epoch time to a yearday value """
 
-    return _stock._yearday(epoch)
+    try:
+    
+        ret = _stock._yearday(epoch)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 def now():
     """Return epoch time for local system clock"""
 
-    return _stock._now()
+    try:
+    
+        ret = _stock._now()
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
 
 
 if __name__ == '__main__':
     import unittest
     import operator
     import sys
+    import warnings
 
     class Teststock(unittest.TestCase):
 
@@ -283,6 +682,12 @@ if __name__ == '__main__':
             files = pffiles('rtexec')
 
             self.assertTrue(isinstance(files,tuple))
+
+	    warnings.filterwarnings('ignore', 'Attempt to coerce non-Boolean.*', RuntimeWarning)
+
+	    self.assertRaises(ElogComplain, pffiles, 'rtexec', 'moo')
+
+	    warnings.resetwarnings()
 
         def test_pfout(self):
 
@@ -403,16 +808,27 @@ if __name__ == '__main__':
 
             elog_init( sys.argv )
 
+	    warnings.filterwarnings('ignore', 'Attempt to convert sequence.*', RuntimeWarning)
+
+            self.assertRaises(ElogComplain, elog_init, {"a":1, "b":2})
+
+            warnings.resetwarnings()
+
+        def test_elog_log(self):
+
+            self.assertRaises(ElogLog, elog_log, "Test notification message")
+
         def test_elog_notify(self):
 
-            elog_notify( "Test notification message" )
+            self.assertRaises(ElogNotify, elog_notify, "Test notification message")
 
         def test_elog_complain(self):
 
-            elog_notify( "Test complaint message" )
+            self.assertRaises(ElogComplain, elog_complain, "Test complaint message")
 
         def test_elog_die(self):
 
-            self.assertRaises(SystemExit, elog_die, "Test fatal message")
+            self.assertRaises(SystemError, elog_die, "Test fatal message")
+            self.assertRaises(ElogDie, elog_die, "Test fatal message")
 
     unittest.main()

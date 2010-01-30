@@ -33,9 +33,19 @@ Pkt_ch  character string
 Pkt_tp  test packet
 </example>
     The packet object has the following methods which return various
-    values from the c Packet structure: parts, time, PacketType,
-    nchannels, channels(i), pf, string, db, dfile,
-    and version.
+    values from the c Packet structure: 
+<example>
+parts       
+time    
+PacketType
+nchannels
+channels(i) 
+pf
+string
+db
+dfile
+version
+</example>
 
     The parts method returns (net, sta, chan, loc, suffix, subcode)
 

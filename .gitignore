@@ -10,3 +10,6 @@
 *.dSYM
 *.dylib
 *.swp
+.%certify.*
+certify.history
+certify.log

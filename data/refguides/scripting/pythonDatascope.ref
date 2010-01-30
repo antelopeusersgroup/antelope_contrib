@@ -12,6 +12,12 @@ from antelope.datascope import *
 dbopen (dbname, perm = 'r')
 Dbptr(dbname = path, perm = 'r')
     return database pointer to the database
+
+Dbptr()
+    create a database pointer filled with dbINVALID values
+
+Dbptr(list)
+    create a database pointer from a list or another Dbptr
  
 # dbopen_database (database, permissions)
 #     open database (or database.table or "-" for view from stdin), return database pointer

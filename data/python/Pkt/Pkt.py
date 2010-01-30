@@ -1,7 +1,56 @@
-import _Pkt
+#
+#   Copyright (c) 2007-2010 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   This software is licensed under the New BSD license: 
+#
+#   Redistribution and use in source and binary forms,
+#   with or without modification, are permitted provided
+#   that the following conditions are met:
+#   
+#   * Redistributions of source code must retain the above
+#   copyright notice, this list of conditions and the
+#   following disclaimer.
+#   
+#   * Redistributions in binary form must reproduce the
+#   above copyright notice, this list of conditions and
+#   the following disclaimer in the documentation and/or
+#   other materials provided with the distribution.
+#   
+#   * Neither the name of Lindquist Consulting, Inc. nor
+#   the names of its contributors may be used to endorse
+#   or promote products derived from this software without
+#   specific prior written permission.
+#
+#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+#   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+#   THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+#   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+#   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+#   IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+#   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+#   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#   POSSIBILITY OF SUCH DAMAGE.
+#
 
-from _Pkt import *
-from datascope import *
+import _Pkt
+import datascope
+import stock
+
+from stock import ElogException, ElogLog, ElogNotify, ElogComplain, ElogDie
+
+
+for _key in _Pkt._constants:
+    exec( "%s = _Pkt._constants['%s']" % (_key, _key) )
+
 
 class PktChannel(object):
     """Create an Antelope PktChannel object. 
@@ -24,75 +73,219 @@ class PktChannel(object):
 
     def time(self):
        
-       return self._pktchannel.time()
+       try:
+
+           ret = self._pktchannel.time()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def net(self):
        
-       return self._pktchannel.net()
+       try:
+
+           ret = self._pktchannel.net()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def sta(self):
        
-       return self._pktchannel.sta()
+       try:
+
+           ret = self._pktchannel.sta()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def chan(self):
        
-       return self._pktchannel.chan()
+       try:
+
+           ret = self._pktchannel.chan()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def loc(self):
        
-       return self._pktchannel.loc()
+       try:
+
+           ret = self._pktchannel.loc()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def nsamp(self):
        
-       return self._pktchannel.nsamp()
+       try:
+
+           ret = self._pktchannel.nsamp()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def samprate(self):
        
-       return self._pktchannel.samprate()
+       try:
+
+           ret = self._pktchannel.samprate()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def calib(self):
        
-       return self._pktchannel.calib()
+       try:
+
+           ret = self._pktchannel.calib()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def calper(self):
        
-       return self._pktchannel.calper()
+       try:
+
+           ret = self._pktchannel.calper()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def segtype(self):
        
-       return self._pktchannel.segtype()
+       try:
+
+           ret = self._pktchannel.segtype()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def data(self):
        
-       return self._pktchannel.data()
+       try:
+
+           ret = self._pktchannel.data()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def duser1(self):
        
-       return self._pktchannel.duser1()
+       try:
+
+           ret = self._pktchannel.duser1()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def duser2(self):
        
-       return self._pktchannel.duser2()
+       try:
+
+           ret = self._pktchannel.duser2()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def iuser1(self):
        
-       return self._pktchannel.iuser1()
+       try:
+
+           ret = self._pktchannel.iuser1()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def iuser2(self):
        
-       return self._pktchannel.iuser2()
+       try:
+
+           ret = self._pktchannel.iuser2()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def iuser3(self):
        
-       return self._pktchannel.iuser3()
+       try:
+
+           ret = self._pktchannel.iuser3()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def cuser1(self):
        
-       return self._pktchannel.cuser1()
+       try:
+
+           ret = self._pktchannel.cuser1()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
     def cuser2(self):
        
-       return self._pktchannel.cuser2()
+       try:
+
+           ret = self._pktchannel.cuser2()
+
+       except _Pkt._ElogException, _e:
+
+           stock._raise_elog(_e)
+
+       return ret
 
 
 class Pkt(object):
@@ -133,7 +326,7 @@ class Pkt(object):
 
         else:
 
-                raise TypeError, 'Pkt constructor arguments not understood'
+                stock.elog_complain('Pkt constructor arguments not understood')
 
         srcname = args[0]
         time    = args[1]
@@ -145,7 +338,13 @@ class Pkt(object):
         else:
             pktid = -1
 
-        self._pkt = _Pkt._pkt( srcname, time, packet, nbytes, pktid )
+	try:
+
+            self._pkt = _Pkt._pkt( srcname, time, packet, nbytes, pktid )
+
+        except _Pkt._ElogException, _e:
+
+            stock._raise_elog(_e)
 
     def __str__(self):
         
@@ -156,59 +355,161 @@ class Pkt(object):
 
     def type(self):
 
-        return self._pkt.type()
+	try:
+
+            ret = self._pkt.type()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def PacketType(self):
 
-        return self._pkt.PacketType()
+	try:
+
+            ret = self._pkt.PacketType()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def show(self, mode = PKT_TERSE):
 
-        return self._pkt.show(mode)
+	try:
+
+            ret = self._pkt.show(mode)
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def srcname(self):
 
-        return self._pkt.srcname()
+	try:
+
+            ret = self._pkt.srcname()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def time(self):
 
-        return self._pkt.time()
+	try:
+
+            ret = self._pkt.time()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def parts(self):
 
-        return self._pkt.parts()
+	try:
+
+            ret = self._pkt.parts()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def nchannels(self):
 
-        return self._pkt.nchannels()
+	try:
+
+            ret = self._pkt.nchannels()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def channels(self, ichannel):
 
-        return PktChannel(self._pkt.channels(ichannel))
+	try:
+
+            pci = self._pkt.channels(ichannel)
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return PktChannel(pci)
 
     def string(self):
 
-        return self._pkt.string()
+	try:
+
+            ret = self._pkt.string()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def version(self):
 
-        return self._pkt.version()
+	try:
+
+            ret = self._pkt.version()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def dfile(self):
 
-        return self._pkt.dfile()
+	try:
+
+            ret = self._pkt.dfile()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def pf(self):
 
-        return self._pkt.pf()
+	try:
+
+            ret = self._pkt.pf()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return ret
 
     def db(self):
 
-        db = self._pkt.db()
+	try:
+
+            db = self._pkt.db()
+        
+	except _Pkt._ElogException, _e:
+
+	    stock._raise_elog(_e)
 
         if( isinstance(db, list)):
             
-            db = Dbptr(db)
+            db = datascope.Dbptr(db)
 
         return db
 
@@ -234,13 +535,29 @@ def showPkt(pktid, srcname, time, packet, nbytes, mode = PKT_TERSE):
 def join_srcname(net, sta, chan, loc, suffix, subcode):
     """Combine component parts into an Antelope srcname"""
 
-    return _Pkt._join_srcname(net, sta, chan, loc, suffix, subcode)
+    try:
+
+        ret = _Pkt._join_srcname(net, sta, chan, loc, suffix, subcode)
+
+    except _Pkt._ElogException, _e:
+
+        stock._raise_elog(_e)
+
+    return ret
 
 
 def split_srcname(srcname):
     """Render an Antelope srcname into its component parts"""
 
-    return _Pkt._split_srcname(srcname)
+    try:
+
+        ret = _Pkt._split_srcname(srcname)
+
+    except _Pkt._ElogException, _e:
+
+        stock._raise_elog(_e)
+
+    return ret
 
 
 if __name__ == '__main__':
@@ -252,7 +569,7 @@ if __name__ == '__main__':
 
     class TestPkt_fixture(object):
 
-        tempdir = '/tmp/python_Pkttest_' + os.environ["USER"] + str(os.getpid())
+        tempdir = '/tmp/python_Pkttest_' + str(os.getuid()) + str(os.getpid())
 
         def start(self):
 
@@ -275,7 +592,7 @@ if __name__ == '__main__':
 
         def test_Pkt_constructor(self):
 
-            self.assertRaises(TypeError, Pkt, 'Pkt constructor arguments not understood')
+            self.assertRaises(ElogComplain, Pkt, 'Pkt constructor arguments not understood')
             
         def test_procedure_unstuffPkt(self):
 

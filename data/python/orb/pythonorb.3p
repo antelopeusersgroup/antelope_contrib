@@ -10,6 +10,19 @@ from antelope.orb import *
 .SH DESCRIPTION
 The Python Interface to the Antelope Orb allows one to perform operations 
 on Antelope orbservers from the Python scripting language. 
+
+Upon encountering problems, these routines will raise exceptions
+from the \fIElogException\fP class of Python Exceptions defined in
+the antelope.stock module (see pythonstock(3P)), and incorporated
+internally into this module. This class of exceptions has the several
+subclasses \fIElogLog\fP, \fIElogNotify\fP, \fIElogComplain\fP, and
+\fIElogDie\fP. \fIElogException\fP objects define the two attributes
+e.\fIseverity\fP and e.\fIstring\fP, where e.\fIstring\fP is a
+string message associated with the exception and e.\fIseverity\fP
+is an integer severity indicator which will be one of ELOG_LOG,
+ELOG_NOTIFY, ELOG_COMPLAIN, ELOG_DIE, ELOG_FAULT, ELOG_ALERT, or
+ELOG_DEBUGGING.
+
 Following are brief descriptions of the functions implemented.
 
 .SS Orb functions
