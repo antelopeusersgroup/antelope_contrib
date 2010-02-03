@@ -118,6 +118,7 @@ make &Arr{
 	^make\\[[[:digit:]]+\\]:.*is up to date
 	^NOTICE:
 	^Current working directory
+	^Optimizing from Makefile
 	^Instrumenting:
 	^Purify engine:
 	^Purify.*Copyright
