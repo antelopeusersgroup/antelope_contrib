@@ -146,7 +146,7 @@ rsptype		V
 
 LCE_EP	&Arr{	# PLL offset in usec, 1sps
 stages 		epO	
-iunits  	sec   
+iunits  	s   
 ounits		counts
 samprate 	1.000	
 }
@@ -154,7 +154,7 @@ samprate 	1.000
 epO &Arr{
 gtype		QEP PLL offset
 gnom		0.000001
-iunits  	sec
+iunits  	s
 ounits		counts
 sn              datalogger
 rsptype		T
