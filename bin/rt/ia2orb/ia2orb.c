@@ -1011,6 +1011,11 @@ server_latest( Ia2orb_sta *ia )
 
 		free( ns );
 
+		if( result != NULL ) {
+			
+			free( result );
+		}
+
 		return -1;
 	}
 
