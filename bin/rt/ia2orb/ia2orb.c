@@ -402,7 +402,7 @@ runcmd_tbl( Tbl *args, char **result, int free_commands, int expect )
 	}
 
 	rc = runcmd( runargv, result ); 
-
+ 
 	if( Cf.veryverbose ) {
 
 		if( *result == (char *) NULL ) {
@@ -427,7 +427,7 @@ runcmd_tbl( Tbl *args, char **result, int free_commands, int expect )
 
 		free( string_results );
 
-	} else if( ! Cf.verbose && IA2ORB_EXPECT_ZERO && rc != 0 ) {
+	} else if( rc != expect ) {
 
 		if( *result == (char *) NULL ) {
 
@@ -991,6 +991,8 @@ server_latest( Ia2orb_sta *ia )
 	Tbl	*cmdargs;
 	Tbl	*files = 0;
 	char	*result = 0;
+	int	rc = 0;
+	char	*ns;
 
 	cmdargs = strtbl( Cf.ssh,
 			  "-p",
@@ -999,7 +1001,18 @@ server_latest( Ia2orb_sta *ia )
 			  "ls *MSD | tail -2",
 			  0 );
 
-	runcmd_tbl( cmdargs, &result, 0, IA2ORB_EXPECT_ZERO ); 
+	rc = runcmd_tbl( cmdargs, &result, 0, IA2ORB_EXPECT_ZERO ); 
+
+	if( rc != 0 ) {
+		
+		elog_complain( 0, 	
+			"[thread '%s']: Failed to list contents of %s:%s via ssh\n",
+			ns = thread_name(), ia->remoteloc, ia->relay_port );
+
+		free( ns );
+
+		return -1;
+	}
 
 	freetbl( cmdargs, 0 );
 
@@ -1027,6 +1040,11 @@ retrieve_next( Ia2orb_sta *ia )
 	    ia->latest_on_server <= *ia->latest_acquired ) {
 
 		ia->latest_on_server = server_latest( ia );
+
+		if( ia->latest_on_server < 0 ) {
+
+			return -1;
+		}
 	}
 
 	if( *ia->latest_acquired <= 0 ) {
@@ -1660,7 +1678,7 @@ ia2orb_acquire_continuous( void *iap )
 		*ia->latest_acquired = 0;
 	}
 
-	while( ! Iarun.Stop ) {
+	while( ! Iarun.Stop && ia->acq_mode == CONTINUOUS ) {
 		
 		pthread_testcancel();
 
@@ -1682,6 +1700,17 @@ ia2orb_acquire_continuous( void *iap )
 			}
 
 			wait_for_time( now() + estimated_sleeptime_sec, 0 );
+
+		} else if( estimated_sleeptime_sec < 0 ) {
+
+			elog_notify( 0, 	
+				"[thread '%s']: Shutting down continuous-acquisition thread "
+				"for '%s' due to unrecoverable problems\n\n",
+				ns = thread_name(), ia->netsta );
+				
+			free( ns );
+
+			ia->acq_mode = OFF;
 		}
 	}
 
