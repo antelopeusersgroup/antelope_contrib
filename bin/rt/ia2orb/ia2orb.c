@@ -1107,7 +1107,7 @@ filename2epoch( char *filename )
 		 "([0-9][0-9][0-9][0-9])([0-9][0-9])([0-9][0-9]).([0-9][0-9])([0-9][0-9])([0-9][0-9]).MSD", 
 		 REG_EXTENDED );
 
-	patsub( filename, pattern_buffer, "$2/$3/$1 $4:$5:$6", &new[0] );
+	patsub( filename, pattern_buffer, "$1-$2-$3 $4:$5:$6", &new[0] );
 
 	regfree( pattern_buffer );
 
