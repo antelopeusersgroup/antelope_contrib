@@ -44,6 +44,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "db.h"
 #include "stock.h"
 #include "db2sql.h"
@@ -119,6 +120,7 @@ generate_sqlrow_insert( Dbptr db, int flags )
 	char	*fformat;
 	char	part[STRSZ];
 	char	*sync;
+	char	*copy;
 
 	if( db.record < 0 && 
 	    db.record != dbSCRATCH && 
@@ -156,7 +158,14 @@ generate_sqlrow_insert( Dbptr db, int flags )
 
 		case dbSTRING:
 			pushstr( &stk, "'" );
-			pushstr( &stk, dbvalue.s );
+			if( strchr( dbvalue.s, '\'' ) == (char *) NULL ) {
+				pushstr( &stk, dbvalue.s );
+			} else {
+				allot( char *, copy, 2 * strlen( dbvalue.s ) );
+				strsub( dbvalue.s, "'", "\\'", copy );
+				pushstr( &stk, copy );
+				free( copy );
+			}
 			pushstr( &stk, "'" );
 			break;
 

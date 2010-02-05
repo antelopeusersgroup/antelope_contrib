@@ -34,10 +34,6 @@ a synchronization string that uniquely labels the contents of the input database
 be used in later operations to alter or delete SQL-database rows when their corresponding Datascope database
 rows change. 
 
-.SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -81,7 +77,7 @@ delrow( Dbptr db, char *table, char *sync, void *private )
 
 	allot( char *, sqlcmd, STRSZ );
 
-	sprintf( sqlcmd, "DELETE from `%s` WHERE %s = '%s';\n", 
+	sprintf( sqlcmd, "DELETE from `%s` WHERE %s = '%s';\\n", 
 			table, DB2SQL_SYNCFIELD_NAME, sync );
 
 	pushtbl( *sql, sqlcmd );
@@ -115,20 +111,20 @@ main(int argc, char **argv )
 
 	dbmon_status( stdout, dbmon_hook );
 
-	debugtbl( stdout, "\n\nSQL statement table:\n", sql );
+	debugtbl( stdout, "\\n\\nSQL statement table:\\n", sql );
 
 	clrtbl( sql, free );
 
 	fprintf( stdout, "Sleeping 5 sec before checking for updates..." );
 	fflush( stdout );
 	sleep( 5 );
-	fprintf( stdout, "awake again\n" );
+	fprintf( stdout, "awake again\\n" );
 
 	dbmon_update( dbmon_hook, (void *) &sql );
 
 	elog_flush( 1, 0 );
 
-	debugtbl( stdout, "\n\nSQL statement table:\n", sql );
+	debugtbl( stdout, "\\n\\nSQL statement table:\\n", sql );
 
 	dbmon_close( &dbmon_hook );
 	
@@ -138,11 +134,9 @@ main(int argc, char **argv )
 .fi
 .ft R
 .in
-.SH RETURN VALUES
-.SH LIBRARY
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
+db2sql(1), perldb2sql(3P)
 .fi
 .SH "BUGS AND CAVEATS"
 Primary keys indicating ranges in Datascope, e.g. "time::endtime", are decoupled and added to the SQL primary key 
