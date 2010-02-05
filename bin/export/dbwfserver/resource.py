@@ -52,7 +52,7 @@ class Data(resource.Resource):
 
     def _extract_request(self, request):
         
-        type        = request.args.get('type',        None)[0]
+        type        = request.args.get('type',        [None])[0]
         net_args    = request.args.get('net',         None)
         sta_args    = request.args.get('sta',         None)
         orid        = request.args.get('orid',        [None])[0]
@@ -90,7 +90,10 @@ class Data(resource.Resource):
             time_window = float(time_window)
 
         if orid: 
-            orid = int(orid)
+            try:
+                orid = int(orid)
+            except:
+                orid = False
 
         if canvas_size: 
             canvas_size = int(canvas_size)
@@ -147,7 +150,7 @@ class Data(resource.Resource):
 
                 http://localhost:8008/data?type=wf&sta=113A&ts=1230900154&te=1230900254
 
-            #DEBUG:
+            #DEBUG TOOL:
             #This line will output all vars as a json object:
 
             return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "filter":filter })
@@ -165,7 +168,14 @@ class Data(resource.Resource):
 
                             log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter,config.apply_calib) )
 
-                        [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter, config.apply_calib)
+                        try:
+                            [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter, config.apply_calib)
+                        except:
+                            request.setHeader("response-code", 500)
+                            log.msg("\n")
+                            log.msg("Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end) )
+                            log.msg("\n")
+                            return "Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end)
 
                     else:
 
@@ -173,7 +183,14 @@ class Data(resource.Resource):
 
                             log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter) )
 
-                        [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter)
+                        try:
+                            [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter)
+                        except:
+                            request.setHeader("response-code", 500)
+                            log.msg("\n")
+                            log.msg("Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end) )
+                            log.msg("\n")
+                            return "Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end)
 
                     response_data.update({my_stachan:segment})
 
@@ -254,7 +271,7 @@ class Data(resource.Resource):
 
 class Root(resource.Resource):
 
-    isLeaf = False
+    isLeaf = True
 
     def _jquery_includes(self):
 
@@ -291,6 +308,10 @@ class Root(resource.Resource):
 
     def render_GET(self, request):
 
+        """
+        Load template and substiude values. 
+        """
+
         tvals = {
             "dbname":config.dbname,
             "application_title":config.application_title,
@@ -301,4 +322,44 @@ class Root(resource.Resource):
 
         html = Template(open(template).read()).substitute(tvals)
 
-        return html
+        request.write( html )
+
+        """
+        If request.args defined...
+
+        request.path The path only (arguments not included).
+        request.args All of the arguments, including URL and POST arguments.
+        request.uri  The full URI that was requested (includes arguments). 
+            For request.args:
+                ?foo=bar&foo=baz&quux=spam 
+            results in: 
+                {'foo': ['bar', 'baz'], 'quux': ['spam']}. )
+        """
+
+        if request.args:
+            rqst =  '<script type="text/javascript">$(document).ready('
+
+            if len(request.args) > 1:
+                text = '{'
+                for arg in request.args:
+                    if arg == 'chans' or arg == 'sta':
+                        text = text + arg + ':' + str(request.args[arg]) + ','
+                    else:
+                        text = text + arg + ':"' + str(request.args[arg]) + '",'
+                text = text + 'url:"yes"}'
+                rqst =  rqst + 'PlotSelect.getData('+text+')'
+
+            elif 'orid' in request.args:
+                rqst =  rqst + 'PlotSelect.doQueryAjax("data","events","-","'+request.args['orid']+'")'
+
+            elif 'sta' in request.args:
+                rqst =  rqst + 'PlotSelect.doQueryAjax("data","events",'+str(request.args['sta'])+',-1)'
+
+            else:
+                reqst = rqst + 'alert("Problem on request for data: %s")' % request.args
+
+            rqst =  rqst + ');</script>'
+
+            request.write(rqst)
+
+        return ""

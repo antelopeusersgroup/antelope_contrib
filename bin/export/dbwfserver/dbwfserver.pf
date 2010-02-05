@@ -21,7 +21,6 @@ static_dir &datafilename(www/dbwfserver/static)
 
 jquery_files &Tbl{
 	IE excanvas.pack.js
-	jquery-1.3.2.min.js
 	jquery.flot.min.js
 	jquery.flot-selection.min.js
 	jquery.hotkeys-0.7.8-packed.js
