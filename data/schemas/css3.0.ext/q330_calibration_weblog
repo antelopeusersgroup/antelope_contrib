@@ -26,17 +26,28 @@ Attribute pid
         ;
 
 Attribute hostname
-	String (25)
-	Format ( "%-25s" )
-	Null ( "-" )
-	Description ( "computer host name" )
-	Detail {
-		Computer host name where processing was conducted.
-	}
-	;
+        String (25)
+        Format ( "%-25s" )
+        Null ( "-" )
+        Description ( "computer host name" )
+        Detail {
+                Computer host name where processing was conducted.
+        }
+        ;
+
+Attribute comment
+        String (180)
+        Format ( "%s" )
+        Null ( "-" )
+        Description ( "free format comment" )
+        Detail {
+                A single line of text commenting on the 
+    changes made in the dataless SEED volume.
+        }   
+        ;
 
 Relation q330_calibration_weblog
-	Fields ( email stastr time pid hostname lddate )
+	Fields ( email stastr time pid hostname comment lddate )
 	Primary ( email time pid )
 	Description ( "Table describing which users submitted calibration requests via the ANF website" )
 	Detail {
