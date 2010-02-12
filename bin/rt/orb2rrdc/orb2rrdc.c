@@ -34,6 +34,7 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 	char	datasource[STRSZ];
 	char	command[STRSZ];
 	char	response[STRSZ];
+	char	*resp_ptr;
 	int	i;
 
 	sprintf( key, "%s:%s:%s", net, sta, dls_var );
@@ -75,7 +76,16 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 
 		if( VeryVerbose ) { 
 
-			elog_notify( 0, "%s\n", getaline( Rrdfp, response, STRSZ ) );
+			resp_ptr = getaline( Rrdfp, response, STRSZ );
+
+			if( resp_ptr == (char *) NULL ) {
+
+				elog_notify( 0, "%s\n", "(null)" );
+
+			} else {
+
+				elog_notify( 0, "%s\n", resp_ptr );
+			}
 		}
 
 		setarr( Rrd_files, key, rrd );
@@ -87,15 +97,22 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 			time, val, net, sta, dls_var, rrd );
 	}
 
-	/* SCAFFOLD nul value handling */
-
 	sprintf( command, "update %s %d:%f", rrd, (int) floor( time ), val );
 
 	fprintf( Rrdfp, "%s\n", command );
 
 	if( VeryVerbose ) { 
 
-		elog_notify( 0, "%s\n", getaline( Rrdfp, response, STRSZ ) );
+		resp_ptr = getaline( Rrdfp, response, STRSZ );
+
+		if( resp_ptr == (char *) NULL ) {
+
+			elog_notify( 0, "%s\n", "(null)" );
+
+		} else {
+
+			elog_notify( 0, "%s\n", resp_ptr );
+		}
 	}
 }
 
