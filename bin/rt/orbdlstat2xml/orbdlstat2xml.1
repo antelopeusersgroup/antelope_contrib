@@ -3,7 +3,7 @@
 orbdlstat2xml \- Convert datalogger status packets from an orb to XML
 .SH SYNOPSIS
 .nf
-orbdlstat2xml [-v] [-a after] orbname dir
+orbdlstat2xml [-v] [-a after] [-m match] orbname dir
 .fi
 .SH DESCRIPTION
 The \fBorbdlstat2xml\fP program reads packets of type \fI.*/pf/st\fP
@@ -15,6 +15,9 @@ specified directory \fIdir\fP.
 This option takes a string interpretable by the str2epoch(3) command
 and rewinds the orbserver packet stream to the time specified. If this option
 is omitted, acquisition starts as of the newest packet on the orb. 
+.IP "-m match" 
+This option specifies the match expression to use against orb source names. 
+If left unspecified, the match expression defaults to \fI.*/pf/(st|vtw)\fP
 .IP -v
 verbose
 .SH FILES
@@ -28,8 +31,6 @@ target names with '+' signs appended, then moves them to the final
 target names when the files are complete. This back-buffering is intended
 to prevent partially built files from corrupting the web interfaces built 
 on them.
-.SH ENVIRONMENT
-.SH PARAMETER FILE
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -53,15 +54,10 @@ tadataV2_stash.xml
 .fi
 .ft R
 .in
-.SH RETURN VALUES
-.SH LIBRARY
-.SH ATTRIBUTES
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 pf2xml(1), dlmon(1)
 .fi
-.SH "BUGS AND CAVEATS"
 .SH AUTHOR
 .nf
 Kent Lindquist

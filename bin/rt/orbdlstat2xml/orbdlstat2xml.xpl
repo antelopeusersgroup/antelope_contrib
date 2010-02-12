@@ -59,10 +59,10 @@ sub inform {
 	return;
 }
 
-if ( ! &Getopts('a:v') || @ARGV != 2 ) { 
+if ( ! &Getopts('a:m:v') || @ARGV != 2 ) { 
 	my $pgm = $0 ; 
 	$pgm =~ s".*/"" ;
-	die ( "Usage: $pgm [-a after] orb dir\n" ) ; 
+	die ( "Usage: $pgm [-v] [-a after] [-m match] orb dir\n" ) ; 
 }
 
 elog_init( $pgm, @ARGV );
@@ -93,7 +93,14 @@ if( $orb < 0 ) {
 	die( "Failed to open $orbname\n" );
 }
 
-$match_regex = ".*/pf/st";
+if( $opt_m ) {
+
+	$match_regex = $opt_m;
+
+} else {
+
+	$match_regex = ".*/pf/(st|vtw)";
+}
 
 $nsources = orbselect( $orb, $match_regex );
 
@@ -123,7 +130,7 @@ for( ;; ) {
 		if( defined( $pfstring ) && $pfstring ne "" ) {
 
 			$file = $srcname;
-			$file =~ s@/pf/st@@;
+			$file =~ s@/pf/(st|vtw)@@;
 			$file .= "_stash.xml";
 		
 			$file = "$dir/$file";
@@ -160,7 +167,7 @@ for( ;; ) {
 		} else {
 
 			$file = $srcname;
-			$file =~ s@/pf/st@@;
+			$file =~ s@/pf/(st|vtw)@@;
 			$file .= ".xml";
 		
 			$file = "$dir/$file";
