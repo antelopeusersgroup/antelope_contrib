@@ -417,7 +417,7 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
         }
         $q330{$dlsta}{nreboot}        = $config{$key}{config}{fix}{total_number_of_reboots};
         $q330{$dlsta}{last_reboot}    = epoch(2000001)+$config{$key}{config}{fix}{time_of_last_reboot};
-        $q330{$dlsta}{q330_user_tag}  = oct($config{$key}{config}{glob}{user_tag});
+        $q330{$dlsta}{q330_user_tag}  = $config{$key}{config}{glob}{user_tag};
 
         $q330{$dlsta}{qap_1_3_type}   = $config{$key}{config}{man}{qapchp_1to3_type};
         $q330{$dlsta}{qap_1_3_ver}    = $config{$key}{config}{man}{qapchp_1to3_version};
@@ -618,12 +618,12 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
                 next if ($field =~ /dlsta|time|endtime|lddate|nreboot|last_reboot|LP1_buf|LP2_buf|LP3_buf|LP4_buf/);
                 
                 elog_notify("	$dlsta	$field	$q330{$dlsta}{$field}	$sta{$field}") if $opt_V;
-                if ($q330{$dlsta}{$field} != $sta{$field} && $field =~ /nchan|memory_size/ ) {
+                if ($q330{$dlsta}{$field} != $sta{$field} && $field =~ /nchan|memory_size|q330_user_tag/ ) {
                     elog_notify("	$dlsta	$field	q330	$q330{$dlsta}{$field}	db	$sta{field}"); # if $opt_V;
                     push(@list,$field);
                     $nchange++;
                 }
-                if ($q330{$dlsta}{$field} !~ /$sta{$field}/ && $field !~ /nchan|memory_size/ ) {
+                if ($q330{$dlsta}{$field} !~ /$sta{$field}/ && $field !~ /nchan|memory_size|q330_user_tag/ ) {
                     elog_notify("	$dlsta	$field	q330	$q330{$dlsta}{$field}	db	$sta{field}"); # if $opt_V;
                     push(@list,$field);
                     $nchange++;
