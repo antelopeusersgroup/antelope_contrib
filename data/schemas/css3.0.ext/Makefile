@@ -1,6 +1,7 @@
 
 DATA = \
-	dlevent \
+	dlcmd_cal \
+        dlevent \
 	gsnspec \
 	q330_calibration_weblog \
 	qctests \
