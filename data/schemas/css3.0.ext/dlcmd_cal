@@ -36,6 +36,13 @@ Attribute execution
         Description ( "execution line" )
         ;
 
+Attribute error
+        String (100)
+        Format ( "%-100s" )
+        Null ( "-" )
+        Description ( "error return" )
+        ;
+
 Attribute inp
         String (50)
         Format ( "%-50s" )
@@ -101,7 +108,7 @@ Attribute user
         ;
         
 Relation dlcmd_cal
-	Fields ( dlname time target model disposition execution ssident inp dlcalseq dlcalseqt hostname address pid user lddate )
+	Fields ( dlname time target model disposition execution error ssident inp dlcalseq dlcalseqt hostname address pid user lddate )
 	Primary ( dlname time )
 	Description ( "Table documenting return values from dlcmd calibrations" )
 	Detail {
