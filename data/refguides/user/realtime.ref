@@ -987,7 +987,7 @@ cdorb2db [options] orb db [start [end|period]]
 -w wfname	specify pattern for waveform file names
 </options>
 
-db2msd [-t age] [-1nv] db
+db2msd [-t ndays] [-1nv] db
      convert older waveform files to miniseed in place, used with cd2orb. with -1, use steim 1 compression
 
 orb2dbt [options] orb dbout [orbout]
