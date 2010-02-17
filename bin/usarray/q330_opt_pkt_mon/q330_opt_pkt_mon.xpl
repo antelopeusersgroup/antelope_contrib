@@ -1,11 +1,6 @@
 #
 #   program needs:
 #       open status orb
-#       access mst packets
-#       create simple rings for all VTW channels
-#       only populate changes of state
-#       start new clean rings option
-#       send TA_opt/pf/st packet into status orb every 5 minutes
 #
 #  Liberally copied from pktmon
 #
@@ -34,7 +29,7 @@
     
     if (  ! &Getopts('vV0dn:p:') || @ARGV != 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-d] [-0] \n" ;
-        $usage .=  "	[-p pf] [-n npkts]  [-S state]   \n" ;
+        $usage .=  "	[-p pf] [-n npkts]   \n" ;
         $usage .=  "	status_orb \n\n"  ; 
         
         elog_notify($cmd) ; 
