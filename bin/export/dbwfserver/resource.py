@@ -51,7 +51,7 @@ class Data(resource.Resource):
         resource.Resource.__init__(self)
 
     def _extract_request(self, request):
-        
+        #{{{
         type        = request.args.get('type',        [None])[0]
         net_args    = request.args.get('net',         None)
         sta_args    = request.args.get('sta',         None)
@@ -60,7 +60,7 @@ class Data(resource.Resource):
         orid_time   = request.args.get('orid_time',   [None])[0]
         time_start  = request.args.get('ts',          [None])[0]
         time_end    = request.args.get('te',          [None])[0]
-        chan_args   = request.args.get('chans',       config.default_chans) 
+        chan_args   = request.args.get('chan',       config.default_chans) 
         time_window = request.args.get('tw',          [config.default_time_window])[0]
         canvas_size = request.args.get('canvas_size', [config.canvas_size_default])[0] 
         filter      = request.args.get('filter',      [None])[0] 
@@ -114,17 +114,17 @@ class Data(resource.Resource):
             log.msg("\tfilter:\t%s" % filter)
 
         return type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, filter
-
+#}}}
     def getChild(self, name, request):
-
+#{{{
         if name == '':
 
             return self
 
         return resource.Resource.getChild(self, name, request)
-
+#}}}
     def render_GET(self, request):
-
+#{{{
         type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, filter = self._extract_request(request)
 
         """
@@ -156,53 +156,50 @@ class Data(resource.Resource):
             return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "filter":filter })
             """
 
-            for my_sta in sta:
+            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta),str(chan),canvas_size,orid,time_window,time_start,time_end,filter,config.apply_calib)
+            if config.debug: log.msg(function)
 
-                for my_chan in chan:
+            try:
+                return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, time_window, time_start, time_end, filter))
+            except:
+                request.setHeader("response-code", 500)
+                log.msg("\n")
+                log.msg("Problems on... " + function)
+                log.msg("\n")
+                return function
 
-                    my_stachan = my_sta+'_'+my_chan # Define the STA_CHAN combination
 
-                    if config.apply_calib is True:
+        elif type == 'coverage':
+            """
+            You can test this with:
+            http://localhost:8008/data?type=coverage 
+                        - list coverage tuples of (time,end_time) for all stations and default channels
+            or
+            http://localhost:8008/data?type=coverage&sta=X18A&chans=BHZ
+                        - list coverage tuples of (time,end_time) for station X18A chan BHZ
+            or
+            http://localhost:8008/data?type=coverage&te=1230940700
+                        - list coverage tuples of (time,end_time) until time_end
+            or
+            http://localhost:8008/data?type=coverage&chans=BHZ&ts=1230768001&te=1230940700
+                        - list coverage tuples of (time,end_time) between start and end times for all BHZ chans
+            or 
+            http://localhost:8008/data?type=coverage&sta=X18A&chans=BHZ&ts=1230768001&te=1230940700
+                    
+            Multiple stations/channels query...
+                http://localhost:8008/data?type=events&sta=113A&sta=123A&chan=BHZ&chan=BHE&chan=BHN
+            """
 
-                        if config.verbose:
+            if config.verbose:
+                log.msg("Query coverage. STA:%s CHAN:%s START:%s END:%s" % (str(sta),str(chan),str(time_start),str(time_end)) ) 
 
-                            log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter,config.apply_calib) )
+            response_data = {'type':'coverage'}
 
-                        try:
-                            [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter, config.apply_calib)
-                        except:
-                            request.setHeader("response-code", 500)
-                            log.msg("\n")
-                            log.msg("Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end) )
-                            log.msg("\n")
-                            return "Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end)
+            response_data.update({'format':'bars'})
 
-                    else:
-
-                        if config.verbose:
-
-                            log.msg("Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s)" % (my_sta,my_chan,canvas_size,orid,time_window,time_start,time_end,filter) )
-
-                        try:
-                            [format,segment] = eventdata.get_segment(my_sta, my_chan, canvas_size, orid, time_window, time_start, time_end, filter)
-                        except:
-                            request.setHeader("response-code", 500)
-                            log.msg("\n")
-                            log.msg("Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end) )
-                            log.msg("\n")
-                            return "Problems on query:get_segment(sta=%s,chan=%s,orid=%s,st=%s,et=%s)" % (my_sta,my_chan,orid,time_start,time_end)
-
-                    response_data.update({my_stachan:segment})
-
-            if orid:
-
-                this_metadata = eventdata.event_list(my_sta,orid)
-                response_data.update({"metadata":this_metadata})
-
-            response_data.update({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "format":format, "filter":filter})
+            response_data.update(eventdata.coverage(sta,chan,time_start,time_end))
 
             return json.dumps(response_data)
-
 
         elif type == 'events':
             """
@@ -223,31 +220,17 @@ class Data(resource.Resource):
             if config.verbose:
                 log.msg("Query events. STA:%s ORID:%s" % (str(sta),orid) ) 
 
-            if not sta:
-
-                return json.dumps(eventdata.event_list(None,orid))
-
-            for my_sta in sta:
-
-                if len(sta) == 1:
-
-                    response_data = eventdata.event_list(my_sta,orid)
-
-                else:
-
-                    response_data.update({my_sta:eventdata.event_list(my_sta,orid)})
-
-            return json.dumps(response_data)
-
+            return json.dumps(eventdata.event_list(sta,orid))
 
         elif type == 'stations':
 
             """
             You can test this with:
             http://localhost:8008/data?type=stations
+            http://localhost:8008/data?type=stations&sta=Y12C
             """
 
-            return json.dumps(eventdata.available_stations())
+            return json.dumps(eventdata.available_stations(sta))
 
         elif type == 'filters':
 
@@ -256,9 +239,7 @@ class Data(resource.Resource):
             http://localhost:8008/data?type=filters
             """
 
-            my_filters = eventdata.available_filters()
-
-            return json.dumps(my_filters, sort_keys=True)
+            return json.dumps(config.filters, sort_keys=True)
         
         else:
 
@@ -267,14 +248,14 @@ class Data(resource.Resource):
             return "Unknown query type:(%s)" % type
 
         return 0
-
+#}}}
 
 class Root(resource.Resource):
 
     isLeaf = True
 
     def _jquery_includes(self):
-
+#{{{
         jquery_includes = ''
 
         for jqf in config.jquery_files:
@@ -297,17 +278,17 @@ class Root(resource.Resource):
                 jquery_includes += '"></script>\n'
 
         return jquery_includes
-
+#}}}
     def getChild(self, name, request):
-
+#{{{
         if name == '':
 
             return self
 
         return resource.Resource.getChild(self, name, request)
-
+#}}}
     def render_GET(self, request):
-
+#{{{
         """
         Load template and substiude values. 
         """
@@ -363,3 +344,4 @@ class Root(resource.Resource):
             request.write(rqst)
 
         return ""
+#}}}

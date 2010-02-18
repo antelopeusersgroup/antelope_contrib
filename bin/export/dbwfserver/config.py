@@ -17,6 +17,7 @@ canvas_size_default = -1
 apply_calib         = False
 display_tracebacks  = False
 verbose             = False
+debug               = False
 daemonize           = False
 import_paths        = ()
 jquery_files        = ()
@@ -26,12 +27,12 @@ filters             = {}
 
 def usage():
 
-    print "Usage: dbwfserver [-dv] [-p pfname] [-P port] dbname\n"
+    print "Usage: dbwfserver [-dvV] [-p pfname] [-P port] dbname\n"
 
 def configure(args):
     try:
 
-        opts, pargs = getopt.getopt(sys.argv[1:], 'dp:P:v')
+        opts, pargs = getopt.getopt(sys.argv[1:], 'dp:P:vV')
 
     except getopt.GetoptError:
 
@@ -73,6 +74,10 @@ def configure(args):
 
         if option in  ('-d'):
             globals()['daemonize'] = True
+
+        if option in  ('-V'):
+            globals()['debug'] = True
+            globals()['verbose'] = True
 
         if option in  ('-v'):
             globals()['verbose'] = True

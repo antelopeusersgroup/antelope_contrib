@@ -91,6 +91,17 @@ PlotSelect = {
         // {{{ jQuery UI interface functions
 
         // Initialize the dialog
+        $("#config").dialog({
+            bgiframe: true,
+            autoOpen: false,
+            height: 300,
+            modal: false
+        });
+        // Open the dialog
+        $("a#config_link").click( function() {
+            $("#config").dialog("open");
+        });
+        // Initialize the dialog
         $("#info").dialog({
             bgiframe: true,
             autoOpen: false,
@@ -487,7 +498,9 @@ PlotSelect = {
         }
 
         // Define the data object arguments
-        var dataargs = {"type":"wf"};
+        var dataargs = {"type":$("select#type").val()}
+
+        if ('type' in args){         dataargs["type"]    = args.type ;}
 
         if ('sta' in args){         dataargs["sta"]     = args.sta ;}
         if ('orid' in args){        dataargs["orid"]    = args.orid ;}
@@ -539,9 +552,11 @@ PlotSelect = {
         // }}} Define graph defaults
 
         // Determine plot type
-        if( resp.format == 'bins' ) {
+        if( resp.type == 'coverage' ) {
+            opts0['bars'] = {show:true, horizontal:'true', barWidth:3};
+        } else if( resp.format == 'bars' ) {
             opts0['bars'] = {show:true,barWidth:0,align:'center'};
-        } else {
+        }else {
             opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
         }
 
@@ -553,17 +568,17 @@ PlotSelect = {
         chan_labels.empty();
         chan_plots.empty();
 
-        if( ( resp['time_start'] !== null ) && ( resp['time_end'] !== null ) ) {
-            PlotSelect.ts = resp['time_start'];
-            PlotSelect.te = resp['time_end'];
-        } else if( ( resp['metadata']['origin_time'] !== undefined ) && ( resp['time_window'] !== undefined ) ) {
-            // Must be the same as defined in eventdata.py
-            PlotSelect.ts = resp['metadata']['origin_time'] - (resp['time_window']/2);
-            PlotSelect.te = resp['metadata']['origin_time'] + (resp['time_window']/2);
-        } else {
-            PlotSelect.ts = 0;
-            PlotSelect.te = 0;
-        }
+        //if( ( resp['time_start'] !== null ) && ( resp['time_end'] !== null ) ) {
+        //    PlotSelect.ts = resp['time_start'];
+        //    PlotSelect.te = resp['time_end'];
+        //} else if( ( resp['metadata']['origin_time'] !== undefined ) && ( resp['time_window'] !== undefined ) ) {
+        //    // Must be the same as defined in eventdata.py
+        //    PlotSelect.ts = resp['metadata']['origin_time'] - (resp['time_window']/2);
+        //    PlotSelect.te = resp['metadata']['origin_time'] + (resp['time_window']/2);
+        //} else {
+        //    PlotSelect.ts = 0;
+        //    PlotSelect.te = 0;
+        //}
 
         $.each(resp.sta, function(i, mysta){
             $.each(resp.chan, function(ii, mychan){
@@ -588,9 +603,23 @@ PlotSelect = {
                     $("#interact").show();
 
                     // This is the actual plotting
-                    var plot = $.plot(chan_plot, [resp[stachan_data]], opts0);
+                    if (resp['type'] == 'coverage') {
+                        var data = [];
+                        for (var i in resp[mysta][mychan]['data']) {
+                            data.push([i,0,resp[mysta][mychan][i]]);
+                        }
+                        var plot = $.plot(chan_plot, data, opts0);
+                    }
+                    else {
+                        if( resp[mysta][mychan]['format'] == 'bins' ) {
+                            opts0['bars'] = {show:true,barWidth:0,align:'center'};
+                        }else {
+                            opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
+                        }
+                        var plot = $.plot(chan_plot, [resp[mysta][mychan]['data']], opts0);
+                    }
 
-                    if( resp['metadata'] !== undefined && resp['metadata']['phases'][mychan] ) {
+                    if( resp.type == 'coverage' && resp['metadata']['phases'][mychan] ) {
 
                         // {{{ Add arrival labels
 
