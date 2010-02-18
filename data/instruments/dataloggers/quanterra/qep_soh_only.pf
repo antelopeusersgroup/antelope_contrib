@@ -1,0 +1,119 @@
+originator     Jennifer Eakins, UCSD/Daniel Quinlan
+last_modified  2010-02-05
+
+category	ANF 
+configuration	Q330 w/Environmental Processor, fixed SOH 
+
+description	Q330 w/Environmental Processor, fixed State of Health channels
+dfile 		qep 		# no response, qep = dummy
+
+soh		LDM_EP LKM_EP LIM_EP LEP_EP LCE_EP LCO_EP
+soh_only	1
+
+#          stages        list of stages for the channel (no samprate)
+#          sensitivity   gnom for this sensor
+#          gains         a/d gain(s) for this datalogger
+#          iunits        natural units for this sensor
+#          samprate      input sample rate for this sensor
+
+
+LDM_EP	&Arr{	# pressure in ubar, 1sps
+stages 		epP	
+iunits  	mbar
+ounits		counts
+samprate 	1.000	
+rsptype		P
+}
+
+epP &Arr{
+gtype		QEP pressure
+gnom		0.001
+iunits  	mbar
+ounits		counts
+sn              datalogger
+}
+
+
+LKM_EP	&Arr{	# temperature in 0.1C, 1sps
+stages 		epT	
+iunits  	C   
+ounits		counts
+samprate 	1.000	
+rsptype		T
+}
+
+epT &Arr{
+gtype		QEP temp 
+gnom		0.1
+iunits  	C	
+ounits		counts
+sn              datalogger
+}
+
+LIM_EP	&Arr{	# humidity in percent, 1sps
+stages 		epH	
+iunits  	percent   
+ounits		counts
+samprate 	1.000	
+}
+
+epH &Arr{
+gtype		QEP humidity
+gnom		1.0
+iunits  	percent
+ounits		counts
+sn              datalogger
+}
+
+
+LEP_EP	&Arr{	# voltage in 0.1V, 1sps
+stages 		epV	
+iunits  	V   
+ounits		counts
+samprate 	1.000	
+}
+
+epV &Arr{
+gtype		QEP voltage 
+gnom		0.1
+iunits  	V
+ounits		counts
+sn              datalogger
+rsptype		V
+}
+
+
+LCE_EP	&Arr{	# PLL offset in usec, 1sps
+stages 		epO	
+iunits  	s   
+ounits		counts
+samprate 	1.000	
+}
+
+epO &Arr{
+gtype		QEP PLL offset
+gnom		0.000001
+iunits  	s
+ounits		counts
+sn              datalogger
+rsptype		T
+}
+
+LCO_EP	&Arr{	# LCO in -5000 to +5000 counts, 1sps
+stages 		epC	
+#iunits  	counts   
+iunits  	V	
+ounits		counts
+samprate 	1.000	
+}
+
+epC &Arr{
+gtype		QEP control voltage
+#gnom		1.0
+#iunits  	counts	
+gnom		6.66667
+iunits  	V	
+ounits		counts
+sn              datalogger
+}
+
