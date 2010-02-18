@@ -2857,6 +2857,7 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 	int	binsize = 1;
 	int	result;
 	int	nsamp;
+	int	nbins;
 	int	i;
 	int	ipair = 0;
 	double	min;
@@ -2892,7 +2893,14 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	obj = PyTuple_New( nsamp );
+	nbins = (int) floor( (double) nsamp / (double) binsize );
+
+	if( nsamp % binsize != 0 ) {
+
+		nbins += 1;
+	}
+
+	obj = PyTuple_New( nbins );
 
 	for( i = 0; i < nsamp; i++ ) {
 
