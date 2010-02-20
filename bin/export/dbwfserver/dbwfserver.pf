@@ -9,7 +9,7 @@ default_chans &Tbl{
     BHE
 }
 
-default_time_window 1200
+default_time_window 200
 
 binning_threshold 2
 canvas_size_default 800

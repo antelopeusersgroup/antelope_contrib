@@ -81,9 +81,7 @@ PlotSelect = {
             type: 'get',
             dataType: 'json',
             timeout: 120000,
-            error: function() {
-                alert("Sorry, query failed! Please retry or restart server");
-            }
+            error:PlotSelect.errorResponse
         });
 
         // }}} Set defaults
@@ -159,9 +157,7 @@ PlotSelect = {
             dataType:'json',
             url: dAUrl,
             data: queryData,
-            error: function() {
-                alert('Sorry, query failed. Please try again later');
-            },
+            error:PlotSelect.errorResponse,
             success: function(resp) {
                 PlotSelect.printListResult(resp,dAType,dASta,dAOrid);
                 PlotSelect.updateCrumbs(crumbTrail);
@@ -194,10 +190,8 @@ PlotSelect = {
             data: {
                 "type":"filters"
             },
-            error: function() {
-                alert("Sorry, filter query failed. Please retry or restart server");
-            },
-            success:PlotSelect.populateFilters
+            success:PlotSelect.populateFilters,
+            error:PlotSelect.errorResponse
         });
 
         // }}} Dynamically get filters
@@ -293,42 +287,59 @@ PlotSelect = {
 
         // {{{ Print list of stations or display event
 
+        var count = 0;
+
+        var temp_hash = [];
+
+        var output = "<ul class='ui-helper-reset ui-helper-clearfix'>";
+
         if( respType === "events" && respSta !== "-" && respOrid !== -1 ) {
 
             $("#subnav").empty();
 
             PlotSelect.getData( {sta:respSta,orid:respOrid,amount:'all'} ) ;
 
+        } else if( respType === "events" ) {
+
+            if  (respOrid === -1) {
+                for (var x in resp) {
+                    for (var i=0;i<resp[x].length;i++) {
+                        temp_hash[resp[x][i]] = 1;
+                    }
+                }
+            } else {
+                for (var x in resp['phases']) {
+                    temp_hash[x] = 1;
+                }
+            }
+
+            for (var i in temp_hash) {
+
+                output += "<li class='ui-state-active ui-corner-all'>";
+
+                if( respSta !== "-") {
+                    output += "<a href='data?type=events&sta="+respSta+"&orid="+i+"'>"+i+"</a>";
+                } else if (respOrid !== -1){
+                    output += "<a href='data?type=events&sta="+i+"&orid="+respOrid+"'>"+i+"</a>";
+                } else {
+                    output += "<a href='data?type=events&orid="+i+"'>"+i+"</a>";
+                }
+
+                output += "</li>";
+
+                count++;
+
+                if( count % 20 == 0 ) output += "<br/>";
+            }
+
         } else {
 
             // {{{ Create unordered list
 
-            var output = "<ul class='ui-helper-reset ui-helper-clearfix'>";
-
-            var count = 0;
-
             $.each(resp, function(i,val){
 
                 output += "<li class='ui-state-active ui-corner-all'>";
-
-                if( respType === "stations" && respSta === "-" && respOrid === -1 ) { // Display station list
-
-                    output += "<a href='data?type=events&sta="+val+"'>"+val+"</a>";
-
-                } else if( respType === "events" && respSta !== "-" && respOrid === -1 ) { // Events, stacode, no orid
-
-                    output += "<a href='data?type=events&sta="+respSta+"&orid="+val+"'>"+val+"</a>";
-
-                } else if( respType === "events" && respSta === "-" && respOrid === -1 ) { // Events, no stacode, orid
-
-                    output += "<a href='data?type=events&orid="+val+"'>"+val+"</a>";
-
-                } else { // Just events
-
-                    output += "<a href='data?type=events&sta="+val+"&orid="+respOrid+"'>"+val+"</a>";
-
-                }
-
+                output += "<a href='data?type=events&sta="+val+"'>"+val+"</a>";
                 output += "</li>";
 
                 count++;
@@ -337,13 +348,20 @@ PlotSelect = {
 
             });
 
-            output += "</ul>";
-
-            $("#subnav").html(output);
-
             // }}} Create unordered list
 
         }
+
+        output += "</ul>";
+
+        $("#subnav").html(output);
+
+        if (typeof(resp['phases']) != "undefined" ) {
+            PlotSelect.setEventData(resp);
+        } else {
+            $('#event').empty();
+        }
+
 
         PlotSelect.init();
         return false;
@@ -383,6 +401,40 @@ PlotSelect = {
         return increment * factor ;
 
         // }}} tickTranslator
+
+    },
+
+    errorResponse:function(x,e) {
+
+        // {{{ Report Errors to user
+
+        if(x.status==0){
+
+            alert('You are offline!!\n Please Check Your Network.');
+
+        }else if(x.status==404){
+
+            alert('Requested URL not found.');
+
+        }else if(x.status==500){
+
+            alert('Internel Server Error.');
+
+        }else if(e=='parsererror'){
+
+            alert('Error.\nParsing JSON Request failed.');
+
+        }else if(e=='timeout'){
+
+            alert('Request Time out.');
+
+        }else {
+
+            alert('Unknow Error.\n'+x.responseText);
+
+        }
+
+        // }}}
 
     },
 
@@ -530,34 +582,30 @@ PlotSelect = {
             dataType:'json',
             url:"data",
             data: dataargs,
-            success:PlotSelect.setData
+            success:PlotSelect.setData,
+            error:PlotSelect.errorResponse
         });
 
         // }}} Get data
 
     },
 
-    setData: function(resp){ 
+    setData: function(resp) {
 
-        // {{{ Build plots
 
         // {{{ Define graph defaults
         var opts0 = {
             colors: [PlotSelect.canvasLineColor], 
             selection: {mode:"x", color:PlotSelect.canvasSelection}, 
-            grid: {clickable:true, borderWidth:0, color:PlotSelect.canvasTickColor, tickColor:PlotSelect.canvasTickColor, backgroundColor:PlotSelect.canvasBgColor}, 
+            grid: {clickable:true, borderWidth:0, color:PlotSelect.canvasTickColor, tickColor:PlotSelect.canvasTickColor, backgroundColor:PlotSelect.canvasBgColor},
             xaxis: {ticks:5, labelWidth:20, labelHeight:20, mode:"time", timeformat:"%H:%M:%S<br/>%y-%m-%d"},
             yaxis: {ticks:4, labelWidth:25}
         };
         // }}} Define graph defaults
 
-        // Determine plot type
-        if( resp.type == 'coverage' ) {
-            opts0['bars'] = {show:true, horizontal:'true', barWidth:3};
-        } else if( resp.format == 'bars' ) {
-            opts0['bars'] = {show:true,barWidth:0,align:'center'};
-        }else {
-            opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
+        if (typeof(resp['type']) == "undefined" ) {
+            alert("Sorry, query failed! Please retry or restart server");
+            return;
         }
 
         PlotSelect.chans = resp.chan;
@@ -568,27 +616,14 @@ PlotSelect = {
         chan_labels.empty();
         chan_plots.empty();
 
-        //if( ( resp['time_start'] !== null ) && ( resp['time_end'] !== null ) ) {
-        //    PlotSelect.ts = resp['time_start'];
-        //    PlotSelect.te = resp['time_end'];
-        //} else if( ( resp['metadata']['origin_time'] !== undefined ) && ( resp['time_window'] !== undefined ) ) {
-        //    // Must be the same as defined in eventdata.py
-        //    PlotSelect.ts = resp['metadata']['origin_time'] - (resp['time_window']/2);
-        //    PlotSelect.te = resp['metadata']['origin_time'] + (resp['time_window']/2);
-        //} else {
-        //    PlotSelect.ts = 0;
-        //    PlotSelect.te = 0;
-        //}
+        PlotSelect.ts = opts0['xaxis']['min'] = resp['time_start'] * 1000;
+        PlotSelect.te = opts0['xaxis']['max'] = resp['time_end'] * 1000;
 
         $.each(resp.sta, function(i, mysta){
             $.each(resp.chan, function(ii, mychan){
 
-                // {{{ Plot wforms
 
                 stachan_data = mysta + '_' + mychan ; // Create the STA_CHAN data arrays from other response items
-                
-                if( null !== resp[stachan_data] ) {
-
                     var wrapper = $("<div>").attr("id", stachan_data+"_wrapper").attr("class","wrapper");
                     var lbltxt = $("<p>").attr("class","chantitle").text(stachan_data);
                     var lbl = $("<div>").attr("id", stachan_data+"_label").attr("class", "label").append(lbltxt);
@@ -602,106 +637,145 @@ PlotSelect = {
                     $("#wforms").show();
                     $("#interact").show();
 
+                
+                if (typeof(resp[mysta]) == "undefined" ) { 
+                        var plot = $.plot(chan_plot, [], opts0);
+                } else if (typeof(resp[mysta][mychan]) == "undefined" ) { 
+                        var plot = $.plot(chan_plot, [], opts0);
+                } else {
+
+                    
+                    
                     // This is the actual plotting
-                    if (resp['type'] == 'coverage') {
-                        var data = [];
-                        for (var i in resp[mysta][mychan]['data']) {
-                            data.push([i,0,resp[mysta][mychan][i]]);
+                    var flot_data = new Array();
+
+                    if ( resp['type'] == "coverage") {
+
+                        for (var start in resp[mysta][mychan] ) {
+                            var start_time = parseFloat(start) *1000;
+                            var end_time = parseFloat(resp[mysta][mychan][start]) *1000;
+                            flot_data.push([start_time,3,end_time]);
                         }
-                        var plot = $.plot(chan_plot, data, opts0);
+
+                        opts0['yaxis']['min'] = 1
+                        opts0['yaxis']['max'] = 6
+                        opts0['bars'] = {show:true, horizontal:'true', barWidth:1};
+
                     }
                     else {
+                        var st = resp[mysta][mychan]['start'];
+                        var et = resp[mysta][mychan]['end'];
+                        var period = (et-st)/resp[mysta][mychan]['data'].length;
+
                         if( resp[mysta][mychan]['format'] == 'bins' ) {
+
+                            for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
+                                temp_data = resp[mysta][mychan]['data'][i];
+                                flot_data[i] =  [((i*period)+st)*1000,temp_data[1],temp_data[0]];
+                            }
                             opts0['bars'] = {show:true,barWidth:0,align:'center'};
+
                         }else {
+
+                            for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
+                                flot_data[i] =  [((i*period)+st)*1000,resp[mysta][mychan]['data'][i]];
+                            }
                             opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
-                        }
-                        var plot = $.plot(chan_plot, [resp[mysta][mychan]['data']], opts0);
-                    }
-
-                    if( resp.type == 'coverage' && resp['metadata']['phases'][mychan] ) {
-
-                        // {{{ Add arrival labels
-
-                        // Check the arrival labels are within the time window of the canvas
-                        if( ( PlotSelect.ts > 0 && PlotSelect.te > 0 ) && ( resp['metadata']['phases'][mychan]['arrival_time'] > PlotSelect.ts ) && ( resp['metadata']['phases'][mychan]['arrival_time'] < PlotSelect.te ) ) {
-
-                            var o;
-                            o = plot.pointOffset( { x:(resp['metadata']['phases'][mychan]['arrival_time']*1000), y:1000 } ) ;
-                            var arrCss = {
-                                'border':'1px solid #FFF',
-                                'background-color':'#F00',
-                                'font-weight':'bold',
-                                'font-size':'smaller',
-                                'color':'#FFF',
-                                'padding':'3px',
-                                'position':'absolute'
-                            };
-
-                            // Force override as we want bar almost to top
-                            o.top = 20 ;
-
-                            arrCss['left'] = o.left + 4 + "px" ;
-                            arrCss['top'] = o.top + "px" ;
-                            var arrDiv = $("<div>").css(arrCss).append( resp['metadata']['phases'][mychan]['iphase'] );
-
-                            // Draw tail on arrival flag
-                            var ctx = plot.getCanvas().getContext("2d");
-                            ctx.beginPath();
-                            o.left += 4;
-                            ctx.moveTo(o.left,o.top);
-                            ctx.lineTo(o.left,o.top + 120);
-                            ctx.closePath();
-                            ctx.lineWidth = 1;
-                            ctx.strokeStyle = "#FFF";
-                            ctx.stroke();
-                        
-                            chan_plot.append(arrDiv);
 
                         }
-
-                        // }}} Add arrival labels
-
                     }
+
+                    var plot = $.plot(chan_plot, [ flot_data ], opts0 );
 
                     // Bind and store
                     chan_plot.bind("plotselected", PlotSelect.handleSelect);
                     PlotSelect.chan_plot_obj[stachan_data] = plot;
 
-                } else {
-
-                    $("#wforms").text('No waveforms available for this station and time').show();
-
-                }
-
-                // }}} Plot wforms
+                } 
 
             });
         });
 
-        // {{{ Plot event table
+        if (typeof(resp['orid']) != "undefined" ) {
 
-        $('#event').empty();
+            dataargs = {};
+            dataargs["type"]    = 'events' ;
+            dataargs["orid"]    = resp['orid'] ;
 
-        if ('metadata' in resp) {
-            var event_metadata = '<table id="eventTable">';
-            event_metadata += "<tr><th>Magnitude</th><td>"+resp['metadata']['magnitude']+" "+resp['metadata']['mtype']+"</td></tr>";
-            event_metadata += "<tr><th>Date-Time</th><td>"+resp['metadata']['readable_time']+"</td></tr>";
-            event_metadata += "<tr><th>Location</th><td>"+resp['metadata']['lat']+"&deg;N, "+resp['metadata']['lon']+"&deg;E</td></tr>";
-            event_metadata += "<tr><th>Depth</th><td>"+resp['metadata']['depth']+"km</td></tr>";
-            event_metadata += "<tr><th>Author</th><td>"+resp['metadata']['auth']+" [Review: "+resp['metadata']['review']+"]</td></tr>";
-            event_metadata += "</table>";
-
-            $('#event').append(event_metadata);
+            $.ajax({
+                type:'get',
+                dataType:'json',
+                url:"data",
+                data: dataargs,
+                success:PlotSelect.setEventData,
+                error:PlotSelect.errorResponse
+            });
         }
-
-        // }}} Plot event table
 
         $("#loading").fadeOut(500);
 
-        // }}} Build plots
+    },
+
+    setEventData: function(resp){
+        $('#event').empty();
+
+        // {{{ Plot event table
+
+        var event_metadata = '<table id="eventTable">';
+        event_metadata += "<tr><th>Magnitude</th><td>"+resp['magnitude']+" "+resp['mtype']+"</td></tr>";
+        event_metadata += "<tr><th>Date-Time</th><td>"+resp['readable_time']+"</td></tr>";
+        event_metadata += "<tr><th>Location</th><td>"+resp['lat']+"&deg;N, "+resp['lon']+"&deg;E</td></tr>";
+        event_metadata += "<tr><th>Depth</th><td>"+resp['depth']+"km</td></tr>";
+        event_metadata += "<tr><th>Author</th><td>"+resp['auth']+" [Review: "+resp['review']+"]</td></tr>";
+        event_metadata += "</table>";
+
+        $('#event').append(event_metadata);
+
+        // }}} Plot event table
 
     }
+//
+//            // {{{ Add arrival labels
+//
+//        // Check the arrival labels are within the time window of the canvas
+//        //    if( ( PlotSelect.ts > 0 && PlotSelect.te > 0 ) && ( resp['metadata']['phases'][mysta][mychan]['arrival_time'] > PlotSelect.ts ) && ( resp['metadata']['phases'][mysta][mychan]['arrival_time'] < PlotSelect.te ) ) {
+//
+//        //        var o;
+//        //        o = plot.pointOffset( { x:(resp['metadata']['phases'][mysta][mychan]['arrival_time']*1000), y:1000 } ) ;
+//        //        var arrCss = {
+//        //            'border':'1px solid #FFF',
+//        //            'background-color':'#F00',
+//        //            'font-weight':'bold',
+//        //            'font-size':'smaller',
+//        //            'color':'#FFF',
+//        //            'padding':'3px',
+//        //            'position':'absolute'
+//        //        };
+//
+//        //        // Force override as we want bar almost to top
+//        //        o.top = 20 ;
+//
+//        //        arrCss['left'] = o.left + 4 + "px" ;
+//        //        arrCss['top'] = o.top + "px" ;
+//        //        var arrDiv = $("<div>").css(arrCss).append( resp['metadata']['phases'][mysta][mychan]['iphase'] );
+//
+//        //        // Draw tail on arrival flag
+//        //        var ctx = plot.getCanvas().getContext("2d");
+//        //        ctx.beginPath();
+//        //        o.left += 4;
+//        //        ctx.moveTo(o.left,o.top);
+//        //        ctx.lineTo(o.left,o.top + 120);
+//        //        ctx.closePath();
+//        //        ctx.lineWidth = 1;
+//        //        ctx.strokeStyle = "#FFF";
+//        //        ctx.stroke();
+//        //    
+//        //        chan_plot.append(arrDiv);
+//
+//        //    }
+//
+//        //    // }}} Add arrival labels
+
 };
 
 $(document).ready(PlotSelect.init);

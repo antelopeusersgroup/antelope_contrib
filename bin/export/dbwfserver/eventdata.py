@@ -112,6 +112,13 @@ class EventData():
         ])
         origin_sub = dbsubset(db,'orid == %d' % (origin) ) # Subset on origin
 
+        if not origin_sub.query(dbRECORD_COUNT) > 0:
+            log.msg('\n')
+            log.msg("Error in orid:%s . NOT IN DATABASE!" % origin)
+            log.msg('\n')
+            return False
+
+
         origin_sub.sort('phase')
 
         origin = defaultdict(lambda: defaultdict(dict))
@@ -280,6 +287,10 @@ class EventData():
 
         if orid:
             resp_data = {'metadata':self._get_orid_data(orid)}
+            if not resp_data['metadata']['origin_time']:
+                log.msg("No origin time for this event:%s" % orid)
+                return False
+
             orid_time = resp_data['metadata']['origin_time']
             if config.verbose: log.msg( 'Looking for origin time: %s' % orid_time)
 
@@ -297,7 +308,6 @@ class EventData():
 
         if not maxtime or maxtime == -1 or mintime == -1 or not mintime:
             log.msg("Error in maxtime:%s or mintime:%s" % (maxtime,mintime))
-            request.setHeader("response-code", 500)
             return  
 
         res_data.update( {'type':'waveform'} )
@@ -356,7 +366,7 @@ class EventData():
                 else:
 
                     try:
-                        res_data[station][channel]['data'] = tr.databins(points/canvas_size)[0:canvas_size]
+                        res_data[station][channel]['data'] = tr.databins(points/canvas_size)
                     except Exception,e:
                         log.msg("Exceptionon databins: %s" % e)
 
@@ -454,7 +464,7 @@ class EventData():
 
             if config.verbose: log.msg("\tGot: %s %s %s %s" % (st,ch,time,endtime))
 
-            if start and start < time:
+            if start and start > time:
                 time = start
             
             if end and end < endtime:
