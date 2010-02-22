@@ -59,7 +59,9 @@ our ($listref, $remote_host, $partcnt, $ok)  = "" ;
 our (@listing, @convert_list, @lines, $upd_yr, $upd_time, $num_mo) = "" ;
 our (@mt, @mv, @ma) = "" ;
 our (@db, @dborigin, @dbnetmag, @dbevent, @dbj)  = "" ;
-our (@textout, @out) = "" ;
+#our (@textout, @out) = "" ;
+# this may cause multi-ftp grabs to fail miserably
+our (@textout) = "" ;
 our ($TZ, $Q) = "" ;
 
 
@@ -2825,6 +2827,8 @@ sub check_remote_list {		#&check_remote_list($match,@ll_of_remote_dir)  returns 
     my ($thismonth) = epoch2str( now(), "%m") ;
     my ($thisyear)  = epoch2str( now(), "%Y") ;
 
+    our @convert_list = () ;	# this may cause multi-ftp grabs to fail miserably
+
     foreach (@file_list) {
 
         my (@lsout)        = split(/\s+/, $_);
@@ -3047,6 +3051,7 @@ sub trim {
 sub list2search {	# list2search(@text)  returns @outlist
 
   my (@textlist)  = @_; 
+  my @out = () ;	# this may cause multi-ftp grabs to fail miserably
 
   foreach my $newline (@textlist) {
     my $linematch = 0;
