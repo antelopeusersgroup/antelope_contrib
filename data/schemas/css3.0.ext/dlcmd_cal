@@ -1,0 +1,117 @@
+# css3.0 extension
+
+Attribute target
+        String (16)
+        Format ( "%16s" )
+        Null ( "-" )
+        Description ( "q3302orb target name" )
+        Detail {
+                q3302orb target name which is acquiring dlname station data. 
+        }
+        ;
+        
+Attribute model
+        String (15)
+        Format ( "%-15s" )
+        Description ( "Model" )
+        Detail {
+                This string identifies a model.
+        }
+        ;
+
+Attribute disposition
+        String (16)
+        Format ( "%16s" )
+        Null ( "-" )
+        Description ( "disposition of command" )
+        Detail {
+                disposition of command.  Possible values are done, error, and others. 
+        }
+        ;
+        
+Attribute execution
+        String (100)
+        Format ( "%-100s" )
+        Null ( "-" )
+        Description ( "execution line" )
+        ;
+
+Attribute error
+        String (100)
+        Format ( "%-100s" )
+        Null ( "-" )
+        Description ( "error return" )
+        ;
+
+Attribute inp
+        String (50)
+        Format ( "%-50s" )
+        Null ( "-" )
+        Description ( "identification tag" )
+        Detail {
+                50-character string, which provides information about communications, ip address, port number, logical port number.
+        }
+        ;
+
+Attribute dlcalseq
+        String (30)
+        Format ( "%-30s" )
+        Description ( "Calibration sequence identifier" )
+        Detail {
+                This string identifies a particular calibration
+                sequence. It should be unique across all
+                calibration sequences. Generally a unique
+                sequence goes with a single calwfxx row. 
+        }
+        ;
+
+Attribute dlcalseqt
+        String (30)
+        Format ( "%-30s" )
+        Description ( "Calibration sequence target" )
+        ;
+
+Attribute hostname
+        String ( 25 )
+        Format ( "%-25s" ) 
+        Null  ( "-"  ) 
+        Description ( "computer host name" ) 
+        Detail {
+               Computer host name where processing was conducted.
+        }
+        ;
+
+Attribute address
+        String (32)
+        Format ( "%s" )
+        Null ( "-" )
+        Description ( "ip address (and sometimes port number)" )
+        Detail {
+            ip address (and optionally port number) for a station with DHCP.
+            The port number is specified in the standard manner, following
+            a colon ':' after the ip address.
+        }
+        ;
+
+Attribute pid
+        Integer (6)
+        Format ( "%6d" )
+        Null ( "-1" )
+        Description ( "process id" )
+        ;
+
+Attribute user
+        String (16)
+        Format ( "%16s" )
+        Null ( "-" )
+        Description ( "user name" )
+        ;
+        
+Relation dlcmd_cal
+	Fields ( dlname time target model disposition execution error ssident inp dlcalseq dlcalseqt hostname address pid user lddate )
+	Primary ( dlname time )
+	Description ( "Table documenting return values from dlcmd calibrations" )
+	Detail {
+		Table designed to provide a record of return values from q330_calibration dlcmd requests.
+		}
+	;
