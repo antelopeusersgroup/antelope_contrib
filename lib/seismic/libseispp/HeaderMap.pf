@@ -266,7 +266,7 @@ event_number int 4 8
 channel_number int 4 12
 energySourcePt int 4 16
 cdpEns int 4 20
-traceInEnsemble in 4 24
+traceInEnsemble int 4 24
 traceId short 2 30
 vertSum short 2 32
 horSum short 2 34
@@ -333,77 +333,77 @@ gapSize short 2 176
 taperOvertravel short 2 178
 } # end attributes Tbl
 attribute_defaults &Tbl{
-lineSeq  0
-reelSeq  0
-event_number  0
-channel_number  0
-energySourcePt  0
-cdpEns  0
-traceInEnsemble  0
-traceId  0
-vertSum  0
-horSum  0
-dataUse  0
-sourceToRecDist  0
-recElevation  0
-sourceSurfaceElevation  0
-sourceDepth  0
-datumElevRec  0
-datumElevSource  0
-recWaterDepth  0
-sourceWaterDepth  0
-elevationScale  0
-coordScale  0
-sourceLongOrX  0
-sourceLongOrY  0
-recLongOrX  0
-recLatOrY  0
-coordUnits  0
-weatheringVelocity  0
-subWeatheringVelocity  0
-sourceUpholeTime  0
-recUpholeTime  0
-sourceStaticCor  0
-recStaticCor  0
-totalStatic  0
-lagTimeA  0
-lagTimeB  0
-delay  0
-muteStart  0
-muteEnd  0
-sampleLength  0
-deltaSample  0
-gainType  0
-gainConst  0
-initialGain  0
-correlated  0
-sweepStart  0
-sweepEnd  0
-sweepLength  0
-sweepType  0
-sweepTaperAtStart  0
-sweepTaperAtEned  0
-taperType  0
-aliasFreq  0
-aliasSlope  0
-notchFreq  0
-notchSlope  0
-lowCutFreq  0
-hiCutFreq  0
-lowCutSlope  0
-hiCutSlope  0
-year  0
-day  0
-hour  0
-minute  0
-second  0
-timeBasisCode  0
-traceWeightingFactor  0
-phoneRollPos1  0
-phoneFirstTrace  0
-phoneLastTrace  0
-gapSize  0
-taperOvertravel  0
+lineSeq  int 0
+reelSeq  int 0
+event_number  int 0
+channel_number  int 0
+energySourcePt  int 0
+cdpEns  int 0
+traceInEnsemble  int 0
+traceId  int 2
+vertSum  int 0
+horSum  int 0
+dataUse  int 2
+sourceToRecDist  int 0
+recElevation  int 0
+sourceSurfaceElevation  int 0
+sourceDepth  int 0
+datumElevRec  int 0
+datumElevSource  int 0
+recWaterDepth  int 0
+sourceWaterDepth  int 0
+elevationScale  int 0
+coordScale  int 0
+sourceLongOrX  int 0
+sourceLongOrY  int 0
+recLongOrX  int 0
+recLatOrY  int 0
+coordUnits  int 0
+weatheringVelocity  int 0
+subWeatheringVelocity  int 0
+sourceUpholeTime  int 0
+recUpholeTime  int 0
+sourceStaticCor  int 0
+recStaticCor  int 0
+totalStatic  int 0
+lagTimeA  int 0
+lagTimeB  int 0
+delay  int 0
+muteStart  int 0
+muteEnd  int 0
+sampleLength  int 0
+deltaSample  int 0
+gainType  int 0
+gainConst  int 0
+initialGain  int 0
+correlated  int 0
+sweepStart  int 0
+sweepEnd  int 0
+sweepLength  int 0
+sweepType  int 0
+sweepTaperAtStart  int 0
+sweepTaperAtEned  int 0
+taperType  int 0
+aliasFreq  int 0
+aliasSlope  int 0
+notchFreq  int 0
+notchSlope  int 0
+lowCutFreq  int 0
+hiCutFreq  int 0
+lowCutSlope  int 0
+hiCutSlope  int 0
+year  int 0
+day  int 0
+hour  int 0
+minute  int 0
+second  int 0
+timeBasisCode  int 0
+traceWeightingFactor  int 0
+phoneRollPos1  int 0
+phoneFirstTrace  int 0
+phoneLastTrace  int 0
+gapSize  int 0
+taperOvertravel  int 0
 }
 }
 
