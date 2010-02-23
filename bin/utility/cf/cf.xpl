@@ -87,7 +87,7 @@ $Pf = "cf";
 
 if( ! &Getopts( "e:gnp:t" ) ) {
 
-	die( "Usage: cf [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [filename ... ]]" );
+	die( "Usage: cf [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [filename ... ]]\n" );
 }
 
 if( $opt_p ) {

@@ -236,9 +236,12 @@ ia2orb &Arr{
 	.*Connection closed by remote host
 	.*Permission denied
 	.*Connection refused
+	.*MSD not found
+	.*ia2orb.*fatal
    }
    green &Tbl{
    	.*Program started
+   	.*Program terminated
    }
    blue &Tbl{
    	.*Executing
@@ -254,6 +257,8 @@ ia2orb &Arr{
 	.*Attempted but failed to resurrect
 	.*Failed to reposition
 	.*Ignoring data request because
+	.*No such file or directory
+	.*Failed to acquire
    }
    cyan &Tbl{
 	.*command returned empty string
