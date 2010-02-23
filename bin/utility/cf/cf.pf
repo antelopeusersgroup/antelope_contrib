@@ -229,6 +229,53 @@ cvs &Arr{
    }
 }
 
+ia2orb &Arr{
+   red &Tbl{
+	.*Failed to list contents
+	.*Shutting down
+	.*Connection closed by remote host
+	.*Permission denied
+	.*Connection refused
+   }
+   green &Tbl{
+   	.*Program started
+   }
+   blue &Tbl{
+   	.*Executing
+	.*Command
+   	.*Acquiring
+	.*Launching thread
+	.*Retrieving state information
+	.*Opened.*orb
+	.*Configuring acquisition threads
+   }
+   magenta &Tbl{
+   	.*harmless--continuing
+	.*Attempted but failed to resurrect
+	.*Failed to reposition
+	.*Ignoring data request because
+   }
+   cyan &Tbl{
+	.*command returned empty string
+	^[[:digit:]]+.[[:digit:]]+.MSD
+	.*stations in the ia_network
+	.*Resurrected
+	.*Watching
+	.*orbseek to
+	.*orbafter returns packet
+	.*Initiated state tracking
+	.*Sleeping.*seconds
+	.*miniseed2orb.*notify
+	.*from.*files in
+	.*blocks.second
+	.*Mbyte.sec
+	.*Re-configuring acquisition threads
+	.*Cancelling acquisition thread
+	.*successfully cancelled
+	.*Continuing.*in response to resurrection request
+   }
+}
+
 template &Arr{
    red &Tbl{
    }
