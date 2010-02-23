@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <sstream>
 #include "FixedFormatTrace.h"
 using namespace std;
@@ -100,6 +101,9 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 		d=NULL;
 	else
 		d=h+headeroffset;
+	/* Initialize everything to 0 before default initialization because
+	parameter file defining defaults is not guaranteed to be complete.*/
+	for(int i=0;i<size_of_this;++i) h[i]='\0';
 	/* We already have pfa which is a handle to the parameter file
 	block bounded by type &Arr{ }.  Here we pull default parameters from
 	the same block.  parsed by the HeaderMap constructor.  That constructor,
@@ -141,7 +145,7 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 			else if(attribute_type=="string" || attribute_type=="STRING")
 			{
 				ss >>  svalue;
-				this->put<char *>(attribute_name,svalue);
+				this->put_string(attribute_name,svalue);
 			}
 		}
 		catch (SeisppError& serr)
@@ -272,28 +276,27 @@ double FixedFormatTrace::operator()(int i)
 	size_t soffset=static_cast<size_t>(i);
 	unsigned char *sptr=d;
 	double result;
-        long *liraw;
-	int *iraw;
-	short int *sraw;
+        int64_t *liraw;
+	int32_t *iraw;
+	int16_t *sraw;
 	float *fraw;
 	switch (stype)
 	{
 	case INT64:
 		sptr=sptr+8*soffset;
-		/* this assumes long means int64 */
-		liraw=reinterpret_cast<long *>(sptr);
+		liraw=reinterpret_cast<int64_t *>(sptr);
 		result=static_cast<double>(*iraw);
 		break;
 	case INT32:
                 /* assumes int means int32 */
 		sptr=sptr+4*soffset;
-		iraw=reinterpret_cast<int *>(sptr);
+		iraw=reinterpret_cast<int32_t *>(sptr);
 		result=static_cast<double>(*iraw);
 		break;
 	case INT16:
 		sptr=sptr+2*soffset;
 		/* this assumes short int means int16.  */
-		sraw=reinterpret_cast<short int *>(sptr);
+		sraw=reinterpret_cast<int16_t *>(sptr);
 		result=static_cast<double>(*sraw);
 		break;
 	case REAL64:
@@ -315,6 +318,8 @@ BasicTimeSeries.  Ultimately something like the method used
 in BRTT's trace library should be used to mark gaps. */
 void FixedFormatTrace::zero_gaps()
 {
+	cerr << "Warning call to FixedFormatTrace::zero_gaps.  "
+		<< "This method has not been implemented - doing nothing"<<endl;
 }
 vector<double> FixedFormatTrace::data()
 {
@@ -328,5 +333,115 @@ vector<double> FixedFormatTrace::data()
 	for(int i=0;i<ns;++i) result.push_back(thistrace(i));
 	return(result);
 }
-
+void FixedFormatTrace::zero()
+{
+	int32_t *iptr;
+	int64_t *lptr;
+	int16_t *sptr;
+	float *fptr;
+	double *dptr;
+	int i;
+	switch (stype)
+	{
+	case INT64:
+		lptr = reinterpret_cast<int64_t *>(d);		
+		for(i=0;i<ns;++i,lptr++) *lptr=0;
+		break;
+	case INT32:
+		iptr = reinterpret_cast<int32_t *>(d);		
+		for(i=0;i<ns;++i,iptr++) *iptr=0;
+		break;
+	case INT16:
+		sptr = reinterpret_cast<int16_t *>(d);		
+		for(i=0;i<ns;++i,sptr++) *sptr=0;
+		break;
+	case REAL32:
+		fptr = reinterpret_cast<float *>(d);		
+		for(i=0;i<ns;++i,fptr++) *fptr=0.0;
+		break;
+	case REAL64:
+		dptr = reinterpret_cast<double *>(d);		
+		for(i=0;i<ns;++i,dptr++) *dptr=0.0;
+	};
+}
+void FixedFormatTrace::put(int nsamp, int offset, double *dnew)
+{
+	if(offset<0) throw SeisppError(string("FixedFormatTrace::put double * method:")
+			+ "passed a negative offset shift which is not allowed");
+	int i;
+	int32_t *iptr;
+	int64_t *lptr;
+	int16_t *sptr;
+	float *fptr;
+	double *dptr;
+	int nstocopy=ns-offset;
+	if(nstocopy>nsamp) nstocopy=nsamp;
+	this->zero();
+	switch (stype)
+	{
+	case INT64:
+		lptr = reinterpret_cast<int64_t *>(d);		
+		lptr+=static_cast<size_t>(offset);
+		for(i=0;i<nstocopy;++i,lptr++) *lptr=static_cast<int64_t>(dnew[i]);
+		break;
+	case INT32:
+		iptr = reinterpret_cast<int32_t *>(d);		
+		iptr+=static_cast<size_t>(offset);
+		for(i=0;i<nstocopy;++i,iptr++) *iptr=static_cast<int32_t>(dnew[i]);
+		break;
+	case INT16:
+		sptr = reinterpret_cast<int16_t *>(d);		
+		sptr+=static_cast<size_t>(offset);
+		for(i=0;i<nstocopy;++i,sptr++) *sptr=static_cast<int16_t>(dnew[i]);
+		break;
+	case REAL32:
+		fptr = reinterpret_cast<float *>(d);		
+		fptr+=static_cast<size_t>(offset);
+		for(i=0;i<nstocopy;++i,fptr++) *fptr=static_cast<float>(dnew[i]);
+		break;
+	case REAL64:
+		dptr = reinterpret_cast<double *>(d);		
+		dptr+=static_cast<size_t>(offset);
+		for(i=0;i<nstocopy;++i,dptr++) *dptr=dnew[i];
+	};
+}
+void FixedFormatTrace::put(int offset, vector<double> dnew)
+{
+	if(offset<0)throw SeisppError(string("FixedFormatTrace::put vector<double> method:")
+                        + "passed a negative offset shift which is not allowed");
+	int nsamp=dnew.size();
+	this->put(nsamp,offset,&(dnew[0]));
+}
+void FixedFormatTrace::write(ostream& ostrm)
+{
+    try {
+	ostrm.write(reinterpret_cast<char *>(h),size_of_this);
+    } catch(...){throw;};
+}
+string FixedFormatTrace::get_string(string name)
+{
+	try {
+		return(this->header.get_string(name,h));
+	} catch(...){throw;};
+}
+string FixedFormatTrace::get_string(const char *name)
+{
+	try {
+		string sname(name);
+		return(this->header.get_string(sname,h));
+	} catch(...){throw;};
+}
+void FixedFormatTrace::put_string(string name, string s)
+{
+	try {
+		this->header.put_string(name,s,h);
+	} catch(...){throw;};
+}
+void FixedFormatTrace::put_string(string name, const char *s)
+{
+	try {
+		string strval(s);   //  could use s directly in HeaderMap but this avoids const issue
+		this->header.put_string(name,strval,h);
+	} catch(...){throw;};
+}
 }  // End SEISPP Namespace encapsulation

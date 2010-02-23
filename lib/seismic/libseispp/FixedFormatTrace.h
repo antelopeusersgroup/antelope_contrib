@@ -112,6 +112,49 @@ public:
 	template <class T> void put(string name, T value);
 	template <class T> T get(const char *name);
 	template <class T> void put(const char *name, T value);
+	string get_string(string name);
+	string get_string(const char *name);
+	void put_string(string name, const char *value);
+	void put_string(string name, string value);
+	/*! Initialize all data samples to 0.
+
+	When writing into this object is is nearly always desirable
+	to first initialize the contents to all zeros.  This method does this.
+	*/
+	void zero();
+	/*! General data copy for double array.
+
+	This method provides a general way to copy the contents of a data vector
+	into this object (e.g. before writing).  nsamp data samples are copied 
+	to internal storage beginning at offset.  i.e. sample 0 of d will be 
+	placed internally at vector position offset.  The internal contents
+	are cleared before the copy and and will be silently truncated if 
+	nsamp overflows internal trace length.  
+
+	\param nsamp is the length of the vector d
+	\param offset is the first position result to start copying d (see above).
+		Must be nonnegative.
+	\param d is the data vector to copy.
+
+	\exception SeisppError will be thrown if passed a negative offset.
+	*/
+	
+	void put(int nsamp,int offset, double *d);
+	/*! General data copy for stl double vector.
+
+	This method provides a general way to copy the contents of a data vector
+	into this object (e.g. before writing).  The samples in d are copied 
+	to internal storage beginning at position offset.  i.e. sample 0 of d will be 
+	placed internally at vector position offset.  The internal contents
+	are cleared before the copy and and will be silently truncated if 
+	nsamp overflows internal trace length.  
+
+	\param offset is the first position result to start copying d (see above).
+		Must be nonnegative.
+	\param d is the data vector to copy.
+	\exception SeisppError will be thrown if passed a negative offset.
+	*/
+	void put(int offset,vector<double> d);
 	/*! \brief Return sample data as an STL vector.
 
 	Usually one wants the entire vector of sample data to manipulate.
@@ -138,6 +181,17 @@ public:
         simply requires one supply a vector of some rational type. */
 	template <class T>void load(vector<T> d);
 	void zero_gaps();
+	/*! Binary write to an output stream.
+
+	This friend function will call the write method of ostream
+	to write the binary blob that is used internally as a 
+	direct image of the contents of this object.  Make sure
+	the output file has ios::binary set or results could be
+	unpredictable, but certainly system dependent. 
+
+	\param ostr output C++ stream object. 
+	*/
+	void write(ostream& ostrm);
 private:
 	HeaderMap header;
 	AttributeType stype;
@@ -233,13 +287,13 @@ template <class T> void FixedFormatTrace::put(string name,T value)
 {
     try {
 	const string base_error("FixedFormatTrace::put method: ");
-        long *lival;
-	int *ival;
-	short int *sival;
-	unsigned char *ucval;
-	bool *bval;
-        float *rval;
-        double *dval;
+	int64_t lival;
+	int32_t ival;
+	int16_t sival;
+	unsigned char ucval;
+	bool bval;
+        float rval;
+        double dval;
 	if(h==NULL)
 		throw SeisppError(base_error
 		 + string("data pointer for this object is NULL.\n")
@@ -249,56 +303,38 @@ template <class T> void FixedFormatTrace::put(string name,T value)
 	{
 	case INT64:
 		/* this assumes int is 32 bits */
-		lival=reinterpret_cast<long *>(&value);
-		this->header.put<long>(name,*lival,h);
+		lival=static_cast<int64_t>(value);
+		this->header.put<long>(name,lival,h);
 		break;
 	case INT32:
 		/* this assumes int is 32 bits */
-		ival=reinterpret_cast<int *>(&value);
-		this->header.put<int>(name,*ival,h);
+		ival=static_cast<int32_t>(value);
+		this->header.put<int>(name,ival,h);
 		break;
 	case INT16:
-		sival=reinterpret_cast<short int *>(&value);
-		this->header.put<short int>(name,*sival,h);
+		sival=static_cast<int16_t>(value);
+		this->header.put<short int>(name,sival,h);
 		break;
 	case BYTE:
-		ucval=reinterpret_cast<unsigned char *>(&value);
-		this->header.put<unsigned char>(name,*ucval,h);
+		ucval=static_cast<unsigned char>(value);
+		this->header.put<unsigned char >(name,ucval,h);
 		break;
 	case BOOL:
-		bval=reinterpret_cast<bool *>(&value);
-		this->header.put_bool(name,*bval,h);
+		bval=static_cast<bool>(value);
+		this->header.put_bool(name,bval,h);
 	case REAL32:
-		rval=reinterpret_cast<float *>(&value);
-		this->header.put<float>(name,*rval,h);
+		rval=static_cast<float>(value);
+		this->header.put<float>(name,rval,h);
 		break;
 	case REAL64:
-		dval=reinterpret_cast<double *>(&value);
-		this->header.put<double>(name,*dval,h);
+		dval=static_cast<double>(value);
+		this->header.put<double>(name,dval,h);
 		break;
 	case STRING:
-		/* Some sources say this is evil, but see no
-		alternative.  Works for both string and 
-		char * because HeaderMap overloads the 
-		put_string method.*/
-		if(typeid(T)==typeid(string))
-		{
-			string *stmp=reinterpret_cast<string *>(&value);
-			this->header.put_string(name,*stmp,h);
-		}
-		else if(typeid(T)==typeid(char *))
-		{
-			char **chtmp=reinterpret_cast<char **>(&value);
-			this->header.put_string(name,*chtmp,h);
-		}
-		else
-		{
-			throw SeisppError(base_error
-			 + string("cannot convert attribute=")
-			 + name 
-			 + string(" There is a type mistmach.  Check header definition.") );
-		}
-		break;
+		throw SeisppError(base_error
+			+ "Attribute with name="
+			+ name
+			+ " is a string variable.  Use put_string method instead of template");
 	case HDRINVALID:
 	default:
 		throw SeisppError(base_error
