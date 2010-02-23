@@ -232,6 +232,7 @@ cvs &Arr{
 ia2orb &Arr{
    red &Tbl{
 	.*Failed to list contents
+	.*Failed to open.*orbserver
 	.*Shutting down
 	.*Connection closed by remote host
 	.*Permission denied
@@ -245,24 +246,34 @@ ia2orb &Arr{
    }
    blue &Tbl{
    	.*Executing
-	.*Command
-   	.*Acquiring
+   	.*Acquiring file
 	.*Launching thread
 	.*Retrieving state information
 	.*Opened.*orb
 	.*Configuring acquisition threads
+	.*Received command packet
+	.*Issued acquisition-request
+	.*Deleted.*entries
    }
    magenta &Tbl{
    	.*harmless--continuing
 	.*Attempted but failed to resurrect
 	.*Failed to reposition
-	.*Ignoring data request because
+	.*Ignoring
 	.*No such file or directory
 	.*Failed to acquire
+	.*Failure parsing ia_network array row
+	.*Acquisition mode.*not understood
+	.*disappeared from ia_network array
+	.*Failed to upload.*to orbserver
+	.*Failed to exhume state information
+	.*Failed to reposition command-orb
+	.*miniseed2orb: Couldn.*open
+	.*Interrupted system call
    }
    cyan &Tbl{
 	.*command returned empty string
-	^[[:digit:]]+.[[:digit:]]+.MSD
+	^.*[[:digit:]]+.[[:digit:]]+.MSD
 	.*stations in the ia_network
 	.*Resurrected
 	.*Watching
@@ -271,13 +282,22 @@ ia2orb &Arr{
 	.*Initiated state tracking
 	.*Sleeping.*seconds
 	.*miniseed2orb.*notify
+	.*miniseed2orb: wrote
+	.*miniseed2orb:.*blocks.*from 
 	.*from.*files in
 	.*blocks.second
 	.*Mbyte.sec
 	.*Re-configuring acquisition threads
 	.*Cancelling acquisition thread
 	.*successfully cancelled
+	.*Command.*results
 	.*Continuing.*in response to resurrection request
+	.*Repositioned command-orb
+	.*Advancing acquisition point
+	^command[[:space:]]
+	^time[[:space:]]
+	^start[[:space:]]
+	^end[[:space:]]
    }
 }
 
