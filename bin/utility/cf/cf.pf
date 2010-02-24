@@ -294,6 +294,7 @@ ia2orb &Arr{
 	.*Continuing.*in response to resurrection request
 	.*Repositioned command-orb
 	.*Advancing acquisition point
+	.*No new files
 	^command[[:space:]]
 	^time[[:space:]]
 	^start[[:space:]]
