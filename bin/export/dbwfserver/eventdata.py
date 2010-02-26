@@ -346,15 +346,15 @@ class EventData():
                 res_data[station][channel].update({'end':maxtime})
                 res_data[station][channel].update({'metadata':self.stachan_cache[station][channel]})
 
-                if config.debug: log.msg("trloadchan(%s %s %s %s)" % (mintime,maxtime,station,channel))
+                if config.debug: log.msg("Get data for (%s %s %s %s)" % (mintime,maxtime,station,channel))
 
-                try:
-                    tr = db.loadchan(mintime,maxtime,station,channel)
-                except Exception,e:
-                    res_data['error'] = ("%s" % e)
-                    log.msg("Exceptionon trloadchan: %s" % e)
+                #try:
+                #    tr = db.loadchan(mintime,maxtime,station,channel)
+                #except Exception,e:
+                #    res_data['error'] = ("%s" % e)
+                #    log.msg("Exceptionon trloadchan: %s" % e)
 
-                tr.record = 0
+                #tr.record = 0
 
                 log.msg("samprate: %s" % self.stachan_cache[station][channel]['samprate'])
 
@@ -367,12 +367,12 @@ class EventData():
 
                 elif points <  (config.binning_threshold * canvas_size):
 
-                    if filter:
-                        log.msg("Filter is: %s" % (filter))
-                        tr.filter(filter)
+                    #if filter:
+                        #log.msg("Filter is: %s" % (filter))
+                        #tr.filter(filter)
 
                     try:
-                        res_data[station][channel]['data'] = tr.data()
+                        res_data[station][channel]['data'] = trsample(db,mintime,maxtime,station,channel,False,filter)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)
                         log.msg("Exceptionon data: %s" % e)
@@ -382,7 +382,8 @@ class EventData():
                 else:
 
                     try:
-                        res_data[station][channel]['data'] = tr.databins(points/canvas_size)
+                        #res_data[station][channel]['data'] = tr.databins(points/canvas_size)
+                        res_data[station][channel]['data'] = trsamplebins(db,mintime,maxtime,station,channel,points/canvas_size,False,filter)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)
                         log.msg("Exceptionon databins: %s" % e)
@@ -390,8 +391,8 @@ class EventData():
                     res_data[station][channel]['format'] = 'bins'
 
 
-                trfree(tr)
-                trdestroy(tr)
+                #trfree(tr)
+                #trdestroy(tr)
 
         return res_data
 

@@ -677,22 +677,23 @@ PlotSelect = {
                             var plot = $.plot(chan_plot, [], opts0);
                         }
                         else {
-                            var st = resp[mysta][mychan]['start'];
-                            var et = resp[mysta][mychan]['end'];
-                            var period = (et-st)/resp[mysta][mychan]['data'].length;
+                            //var st = resp[mysta][mychan]['start'];
+                            //var et = resp[mysta][mychan]['end'];
+                            //var period = (et-st)/resp[mysta][mychan]['data'].length;
 
                             if( resp[mysta][mychan]['format'] == 'bins' ) {
 
                                 for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
                                     temp_data = resp[mysta][mychan]['data'][i];
-                                    flot_data[i] =  [((i*period)+st)*1000,temp_data[1],temp_data[0]];
+                                    flot_data[i] =  [temp_data[0]*1000,temp_data[2],temp_data[1]];
                                 }
                                 opts0['bars'] = {show:true,barWidth:0,align:'center'};
 
                             }else {
 
                                 for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
-                                    flot_data[i] =  [((i*period)+st)*1000,resp[mysta][mychan]['data'][i]];
+                                    temp_data = resp[mysta][mychan]['data'][i];
+                                    flot_data[i] =  [temp_data[0]*1000,temp_data[1]];
                                 }
                                 opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
 
@@ -700,7 +701,7 @@ PlotSelect = {
                         }
                     }
 
-                    var plot = $.plot(chan_plot, [ flot_data ], opts0 );
+                    var plot = $.plot(chan_plot,[ flot_data ], opts0 );
 
                     // Bind and store
                     chan_plot.bind("plotselected", PlotSelect.handleSelect);
