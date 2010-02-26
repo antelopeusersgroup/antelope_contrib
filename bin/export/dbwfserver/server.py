@@ -148,7 +148,7 @@ def pathToArgs(request):
         if len(positions) == 1:
             stations = request.postpath[0].split('+')
             channels = request.postpath[1].split('+')
-            vars = {'sta':stations, 'chans':channels,'orid':request.postpath[2]}
+            vars = {'sta':stations, 'chan':channels,'orid':request.postpath[2]}
 
         elif len(positions) == 2:
             stations = request.postpath[0].split('+')
@@ -156,7 +156,7 @@ def pathToArgs(request):
         else:
             if config.verbose: log.msg('\n')
             if config.verbose: log.msg('ERROR: On 3 element query: %s' % parts)
-            if config.verbose: log.msg('Options:\n\t[sta],[chans],[orid]\n\tor\n\t[sta],[start],[end]')
+            if config.verbose: log.msg('Options:\n\t[sta],[chan],[orid]\n\tor\n\t[sta],[start],[end]')
             if config.verbose: log.msg('\n')
 
         if config.verbose: log.msg('Resource: /(Root) ? %s' % vars)
@@ -176,11 +176,11 @@ def pathToArgs(request):
         if len(positions) == 2:
             stations = request.postpath[0].split('+')
             channels = request.postpath[1].split('+')
-            vars = {'sta':stations, 'chans':channels,'time_start':request.postpath[2],'time_end':request.postpath[3]}
+            vars = {'sta':stations, 'chan':channels,'time_start':request.postpath[2],'time_end':request.postpath[3]}
         else:
             if config.verbose: log.msg('\n')
             if config.verbose: log.msg('ERROR: On 4 element query: %s' % parts)
-            if config.verbose: log.msg('Options:\n\t[sta],[chans],[start],[end]')
+            if config.verbose: log.msg('Options:\n\t[sta],[chan],[start],[end]')
             if config.verbose: log.msg('\n')
 
         if config.verbose: log.msg('Resource: /(Root) ? %s' % vars)
@@ -196,9 +196,9 @@ def pathToArgs(request):
         log.msg('\t[orid]')
         log.msg('\t[sta],[orid]')
         log.msg('\t[orid],[sta]')
-        log.msg('\t[sta],[chans],[orid]')
+        log.msg('\t[sta],[chan],[orid]')
         log.msg('\t[sta],[start],[end]')
-        log.msg('\t[sta],[chans],[start],[end]')
+        log.msg('\t[sta],[chan],[start],[end]')
         log.msg('\n')
 
         request.redirect(request.prePathURL())

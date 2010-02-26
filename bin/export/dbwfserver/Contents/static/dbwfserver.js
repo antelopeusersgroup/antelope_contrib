@@ -568,7 +568,7 @@ PlotSelect = {
         if ('orid' in args){        dataargs["orid"]    = args.orid ;}
         if ('time_start' in args){  dataargs["ts"]      = args.time_start ;}
         if ('time_end' in args) {   dataargs["te"]      = args.time_end ;}
-        if ('chans' in args) {      dataargs["chans"]   = args.chans ;}
+        if ('chan' in args) {       dataargs["chan"]    = args.chan ;}
         if ('amount' in args) {     dataargs["amount"]  = args.amount ;}
 
         // Test if filter defined

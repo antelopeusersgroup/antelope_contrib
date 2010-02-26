@@ -60,7 +60,7 @@ class Data(resource.Resource):
         orid_time   = request.args.get('orid_time',   [None])[0]
         time_start  = request.args.get('ts',          [None])[0]
         time_end    = request.args.get('te',          [None])[0]
-        chan_args   = request.args.get('chan',       config.default_chans) 
+        chan_args   = request.args.get('chan',        config.default_chans) 
         time_window = request.args.get('tw',          [config.default_time_window])[0]
         canvas_size = request.args.get('canvas_size', [config.canvas_size_default])[0] 
         filter      = request.args.get('filter',      [None])[0] 
@@ -146,7 +146,7 @@ class Data(resource.Resource):
             TEST:
                 http://localhost:8008/data?type=wf&sta=113A&orid=66554
 
-                http://localhost:8008/data?type=wf&sta=113A&orid=66554&ts=1230900154&te=1230900254&chans=BHZ
+                http://localhost:8008/data?type=wf&sta=113A&orid=66554&ts=1230900154&te=1230900254&chan=BHZ
 
                 http://localhost:8008/data?type=wf&sta=113A&ts=1230900154&te=1230900254
 
@@ -175,16 +175,16 @@ class Data(resource.Resource):
             http://localhost:8008/data?type=coverage 
                         - list coverage tuples of (time,end_time) for all stations and default channels
             or
-            http://localhost:8008/data?type=coverage&sta=X18A&chans=BHZ
+            http://localhost:8008/data?type=coverage&sta=X18A&chan=BHZ
                         - list coverage tuples of (time,end_time) for station X18A chan BHZ
             or
             http://localhost:8008/data?type=coverage&te=1230940700
                         - list coverage tuples of (time,end_time) until time_end
             or
-            http://localhost:8008/data?type=coverage&chans=BHZ&ts=1230768001&te=1230940700
+            http://localhost:8008/data?type=coverage&chan=BHZ&ts=1230768001&te=1230940700
                         - list coverage tuples of (time,end_time) between start and end times for all BHZ chans
             or 
-            http://localhost:8008/data?type=coverage&sta=X18A&chans=BHZ&ts=1230768001&te=1230940700
+            http://localhost:8008/data?type=coverage&sta=X18A&chan=BHZ&ts=1230768001&te=1230940700
                     
             Multiple stations/channels query...
                 http://localhost:8008/data?type=events&sta=113A&sta=123A&chan=BHZ&chan=BHE&chan=BHN
@@ -323,7 +323,7 @@ class Root(resource.Resource):
             if len(request.args) > 1:
                 text = '{'
                 for arg in request.args:
-                    if arg == 'chans' or arg == 'sta':
+                    if arg == 'chan' or arg == 'sta':
                         text = text + arg + ':' + str(request.args[arg]) + ','
                     else:
                         text = text + arg + ':"' + str(request.args[arg]) + '",'
