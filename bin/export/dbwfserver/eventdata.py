@@ -196,6 +196,12 @@ class EventData():
         if not self.stachan_cache:
             self._get_stachan_cache()
 
+        if  not self.stachan_cache.keys():
+            temp_dic['error'] = ("No stations out of DB query. Need a join of SITECHAN SENSOR and INSTRUMENT tables." )
+            log.msg("Exceptionon data: %s" % temp_dic['error'])
+            return temp_dic
+                
+
         if not sta:
             return self.stachan_cache.keys()
         else:
@@ -225,6 +231,11 @@ class EventData():
         temp_dic = {}
 
         log.msg("Event_list function. STA=%s ORID=%s" % (sta,orid) )
+
+        if  not self.event_cache.keys():
+            temp_dic['error'] = ("No events out of DB query. Need a join of [EVENT] ORIGIN and ASSOC tables." )
+            log.msg("Exceptionon data: %s" % temp_dic['error'])
+            return temp_dic
 
         if sta and orid:
 
@@ -340,6 +351,7 @@ class EventData():
                 try:
                     tr = db.loadchan(mintime,maxtime,station,channel)
                 except Exception,e:
+                    res_data['error'] = ("%s" % e)
                     log.msg("Exceptionon trloadchan: %s" % e)
 
                 tr.record = 0
@@ -350,7 +362,10 @@ class EventData():
 
                 log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,canvas_size,config.binning_threshold))
 
-                if points <  (config.binning_threshold * canvas_size):
+                if not points > 0:
+                    res_data[station][channel]['data'] = ()
+
+                elif points <  (config.binning_threshold * canvas_size):
 
                     if filter:
                         log.msg("Filter is: %s" % (filter))
@@ -359,6 +374,7 @@ class EventData():
                     try:
                         res_data[station][channel]['data'] = tr.data()
                     except Exception,e:
+                        res_data['error'] = ("%s" % e)
                         log.msg("Exceptionon data: %s" % e)
 
                     res_data[station][channel]['format'] = 'lines'
@@ -368,6 +384,7 @@ class EventData():
                     try:
                         res_data[station][channel]['data'] = tr.databins(points/canvas_size)
                     except Exception,e:
+                        res_data['error'] = ("%s" % e)
                         log.msg("Exceptionon databins: %s" % e)
 
                     res_data[station][channel]['format'] = 'bins'

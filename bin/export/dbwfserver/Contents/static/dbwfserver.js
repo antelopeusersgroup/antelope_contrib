@@ -202,6 +202,10 @@ PlotSelect = {
 
         // {{{ Populate filter in select boxes
 
+        if (typeof(fildata['error']) != "undefined" ) {
+            alert('ERROR ON SERVER:\n'+fildata['error']);
+        }
+
         var themerFilters = '<p>Select a filter:<select id="filter" name="filter">\n';
         themerFilters += '<option value="None" selected="selected">None</option>';
 
@@ -287,86 +291,92 @@ PlotSelect = {
 
         // {{{ Print list of stations or display event
 
-        var count = 0;
+        if (typeof(resp['error']) != "undefined" ) {
+            alert('ERROR ON SERVER:\n'+resp['error']);
+        }
+        else {
 
-        var temp_hash = [];
+            var count = 0;
 
-        var output = "<ul class='ui-helper-reset ui-helper-clearfix'>";
+            var temp_hash = [];
 
-        if( respType === "events" && respSta !== "-" && respOrid !== -1 ) {
+            var output = "<ul class='ui-helper-reset ui-helper-clearfix'>";
 
-            $("#subnav").empty();
+            if( respType === "events" && respSta !== "-" && respOrid !== -1 ) {
 
-            PlotSelect.getData( {sta:respSta,orid:respOrid,amount:'all'} ) ;
+                $("#subnav").empty();
 
-        } else if( respType === "events" ) {
+                PlotSelect.getData( {sta:respSta,orid:respOrid,amount:'all'} ) ;
 
-            if  (respOrid === -1) {
-                for (var x in resp) {
-                    for (var i=0;i<resp[x].length;i++) {
-                        temp_hash[resp[x][i]] = 1;
+            } else if( respType === "events" ) {
+
+                if  (respOrid === -1) {
+                    for (var x in resp) {
+                        for (var i=0;i<resp[x].length;i++) {
+                            temp_hash[resp[x][i]] = 1;
+                        }
+                    }
+                } else {
+                    for (var x in resp['phases']) {
+                        temp_hash[x] = 1;
                     }
                 }
+
+                for (var i in temp_hash) {
+
+                    output += "<li class='ui-state-active ui-corner-all'>";
+
+                    if( respSta !== "-") {
+                        output += "<a href='data?type=events&sta="+respSta+"&orid="+i+"'>"+i+"</a>";
+                    } else if (respOrid !== -1){
+                        output += "<a href='data?type=events&sta="+i+"&orid="+respOrid+"'>"+i+"</a>";
+                    } else {
+                        output += "<a href='data?type=events&orid="+i+"'>"+i+"</a>";
+                    }
+
+                    output += "</li>";
+
+                    count++;
+
+                    if( count % 20 == 0 ) output += "<br/>";
+                }
+
             } else {
-                for (var x in resp['phases']) {
-                    temp_hash[x] = 1;
-                }
+
+                // {{{ Create unordered list
+
+                $.each(resp, function(i,val){
+
+                    output += "<li class='ui-state-active ui-corner-all'>";
+                    output += "<a href='data?type=events&sta="+val+"'>"+val+"</a>";
+                    output += "</li>";
+
+                    count++;
+
+                    if( count % 20 == 0 ) output += "<br/>";
+
+                });
+
+                // }}} Create unordered list
+
             }
 
-            for (var i in temp_hash) {
+            output += "</ul>";
 
-                output += "<li class='ui-state-active ui-corner-all'>";
+            $("#subnav").html(output);
 
-                if( respSta !== "-") {
-                    output += "<a href='data?type=events&sta="+respSta+"&orid="+i+"'>"+i+"</a>";
-                } else if (respOrid !== -1){
-                    output += "<a href='data?type=events&sta="+i+"&orid="+respOrid+"'>"+i+"</a>";
-                } else {
-                    output += "<a href='data?type=events&orid="+i+"'>"+i+"</a>";
-                }
-
-                output += "</li>";
-
-                count++;
-
-                if( count % 20 == 0 ) output += "<br/>";
+            if (typeof(resp['phases']) != "undefined" ) {
+                PlotSelect.setEventData(resp);
+            } else {
+                $('#event').empty();
             }
 
-        } else {
 
-            // {{{ Create unordered list
+            PlotSelect.init();
+            return false;
 
-            $.each(resp, function(i,val){
-
-                output += "<li class='ui-state-active ui-corner-all'>";
-                output += "<a href='data?type=events&sta="+val+"'>"+val+"</a>";
-                output += "</li>";
-
-                count++;
-
-                if( count % 20 == 0 ) output += "<br/>";
-
-            });
-
-            // }}} Create unordered list
-
+            // }}} Print list of stations or display event
         }
-
-        output += "</ul>";
-
-        $("#subnav").html(output);
-
-        if (typeof(resp['phases']) != "undefined" ) {
-            PlotSelect.setEventData(resp);
-        } else {
-            $('#event').empty();
-        }
-
-
-        PlotSelect.init();
-        return false;
-
-        // }}} Print list of stations or display event
 
     },
 
@@ -663,25 +673,30 @@ PlotSelect = {
 
                     }
                     else {
-                        var st = resp[mysta][mychan]['start'];
-                        var et = resp[mysta][mychan]['end'];
-                        var period = (et-st)/resp[mysta][mychan]['data'].length;
+                        if (typeof(resp[mysta][mychan]['data']) == "undefined" ) { 
+                            var plot = $.plot(chan_plot, [], opts0);
+                        }
+                        else {
+                            var st = resp[mysta][mychan]['start'];
+                            var et = resp[mysta][mychan]['end'];
+                            var period = (et-st)/resp[mysta][mychan]['data'].length;
 
-                        if( resp[mysta][mychan]['format'] == 'bins' ) {
+                            if( resp[mysta][mychan]['format'] == 'bins' ) {
 
-                            for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
-                                temp_data = resp[mysta][mychan]['data'][i];
-                                flot_data[i] =  [((i*period)+st)*1000,temp_data[1],temp_data[0]];
+                                for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
+                                    temp_data = resp[mysta][mychan]['data'][i];
+                                    flot_data[i] =  [((i*period)+st)*1000,temp_data[1],temp_data[0]];
+                                }
+                                opts0['bars'] = {show:true,barWidth:0,align:'center'};
+
+                            }else {
+
+                                for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
+                                    flot_data[i] =  [((i*period)+st)*1000,resp[mysta][mychan]['data'][i]];
+                                }
+                                opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
+
                             }
-                            opts0['bars'] = {show:true,barWidth:0,align:'center'};
-
-                        }else {
-
-                            for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
-                                flot_data[i] =  [((i*period)+st)*1000,resp[mysta][mychan]['data'][i]];
-                            }
-                            opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
-
                         }
                     }
 
@@ -710,6 +725,10 @@ PlotSelect = {
                 success:PlotSelect.setEventData,
                 error:PlotSelect.errorResponse
             });
+        }
+
+        if (typeof(resp['error']) != "undefined" ) {
+            alert('ERROR ON SERVER:\n'+resp['error']);
         }
 
         $("#loading").fadeOut(500);
