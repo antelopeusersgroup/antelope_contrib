@@ -56,6 +56,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	rc = elog_init( argc, argv );
 
+	elog_set( ELOG_CALLBACK, 0, antelope_mex_elog_callback );
+
 	strcpy( Program_Name, argv[0] );
 
 	plhs[0] = CreateDouble( (double) rc );

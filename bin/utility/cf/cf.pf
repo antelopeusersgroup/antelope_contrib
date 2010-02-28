@@ -118,7 +118,7 @@ make &Arr{
 	^make\\[[[:digit:]]+\\]:.*is up to date
 	^NOTICE:
 	^Current working directory
-	^Optimizing from Makefile
+	^.*Optimizing from Makefile
 	^Instrumenting:
 	^Purify engine:
 	^Purify.*Copyright
@@ -153,6 +153,7 @@ make &Arr{
 	^gcc[[:space:]]
 	^g\\+\\+[[:space:]]
 	^-> gcc([-.0-9]*)?[[:space:]]
+	^dsymutil[[:space:]]
 	^[( ]*cd[[:space:]]
 	^chmod[[:space:]]
 	^compile[[:space:]]

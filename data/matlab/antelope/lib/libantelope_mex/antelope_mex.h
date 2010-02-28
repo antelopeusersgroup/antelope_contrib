@@ -78,6 +78,7 @@ extern int mtlb_get_response PL_(( const mxArray *, Response ** ));
 extern int mtlb_get_string PL_(( const mxArray *, char ** ));
 extern int get_scalar PL_(( const mxArray *, double * ));
 extern void antelope_mex_clear_register PL_(( int ));
+extern int antelope_mex_elog_callback( int severity, char *string, Tbl *Elog );
 extern mxArray *dbfield2mxArray PL_(( Dbptr ));
 extern mxArray *dbcolumn2mxArray PL_(( Dbptr ));
 extern Dbvalue *mxArray2dbvalue PL_(( const mxArray *, long ));
