@@ -549,8 +549,8 @@ python_orblag( PyObject *self, PyObject *args ) {
 	char	*reject = 0;
 	char	err[STRSZ];
 	double	rc;
-	int	ilaggard;
-	int	nlaggards;
+	long	ilaggard;
+	long	nlaggards;
 	ClientLag *cl = 0;
 	Laggards *laggards = 0;
 	PyObject *laggards_obj;
@@ -810,8 +810,8 @@ new_Orb_relic( int orbfd ) {
 
 	orbresurrect4perl( orbfd, &or->orbname, &or->orb_start );
 
-	or->pktid_relicname = strconcat( or->orbname, "{last_pktid}", 0 );
-	or->pkttime_relicname = strconcat( or->orbname, "{last_pkttime}", 0 );
+	or->pktid_relicname = strconcat( or->orbname, "{last_pktid}", NULL );
+	or->pkttime_relicname = strconcat( or->orbname, "{last_pkttime}", NULL );
 
 	if( Orb_relics == (Arr *) NULL ) {
 

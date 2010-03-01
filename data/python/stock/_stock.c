@@ -178,8 +178,8 @@ parse_to_strtbl( PyObject *obj, void *addr )
 {
 	Tbl	**atbl = (Tbl **) addr;
 	PyObject *seqobj;
-	int	nitems = 0;
-	int	iitem;
+	long	nitems = 0;
+	long	iitem;
 	char	*astring;
 	char	errmsg[STRSZ];
 
@@ -223,7 +223,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
-				"failed to extract item %d (counting from 0)", iitem );
+				"failed to extract item %ld (counting from 0)", iitem );
 
 			PyErr_SetString( PyExc_TypeError, errmsg );
 
@@ -238,7 +238,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
-				"item %d (counting from 0) is not a string", iitem );
+				"item %ld (counting from 0) is not a string", iitem );
 
 			PyErr_SetString( PyExc_TypeError, errmsg );
 
@@ -253,7 +253,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 
 			sprintf( errmsg, 
 				"Attempt to convert sequence to table of strings failed: "
-				"conversion of item %d (counting from 0) to string failed", iitem );
+				"conversion of item %ld (counting from 0) to string failed", iitem );
 
 			PyErr_SetString( PyExc_TypeError, errmsg );
 
@@ -295,7 +295,7 @@ string2PyObject( char *s )
 
 	if( strmatches( s, "^[-+]{0,1}[[:digit:]]{1,}$", 0 ) == 1 ) {
 
-		obj = Py_BuildValue( "i", atoi( s ) );
+		obj = Py_BuildValue( "i", atol( s ) );
 
 	} else if( ( tf = yesno( s ) ) <= 0 ) {
 
@@ -414,7 +414,7 @@ python_elog_init( PyObject *self, PyObject *args ) {
 		free( _stock_argv );
 	}
 
-	_stock_argc = maxtbl( arglist );
+	_stock_argc = (int) maxtbl( arglist );
 
 	allot( char **, _stock_argv, _stock_argc );
 
@@ -1237,7 +1237,7 @@ python_yearday( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _yearday( epoch )\n";
 	PyObject *obj;
 	double	e;
-	int	yd;
+	long	yd;
 
 	if( ! PyArg_ParseTuple( args, "d", &e ) ) {
 

@@ -331,7 +331,7 @@ if __name__ == '__main__':
             e = 0
             t = strtdelta(e)
 
-            self.assertEqual(t,' 0 microseconds      ')
+            self.assertTrue(t == ' 0 microseconds      ' or t == '  0 seconds          ')
 
         def test_str2epoch(self):
 

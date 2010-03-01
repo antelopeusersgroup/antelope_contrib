@@ -294,7 +294,7 @@ Dbvalue2PyObject( Dbvalue value, int type )
 }
 
 static int 
-PyObject2Dbvalue( PyObject *obj, int type, Dbvalue *value )
+PyObject2Dbvalue( PyObject *obj, long type, Dbvalue *value )
 {
 	int	retcode = 0;
 
@@ -509,10 +509,10 @@ parse_to_Dbptr( PyObject *obj, void *addr )
 	    PyInt_Check( PyList_GetItem( obj, 2 ) ) &&
 	    PyInt_Check( PyList_GetItem( obj, 3 ) ) ) {
 
-		db->database = (int) PyInt_AsLong( PyList_GetItem( obj, 0 ) );
-		db->table    = (int) PyInt_AsLong( PyList_GetItem( obj, 1 ) );
-		db->field    = (int) PyInt_AsLong( PyList_GetItem( obj, 2 ) );
-		db->record   = (int) PyInt_AsLong( PyList_GetItem( obj, 3 ) );
+		db->database = PyInt_AsLong( PyList_GetItem( obj, 0 ) );
+		db->table    = PyInt_AsLong( PyList_GetItem( obj, 1 ) );
+		db->field    = PyInt_AsLong( PyList_GetItem( obj, 2 ) );
+		db->record   = PyInt_AsLong( PyList_GetItem( obj, 3 ) );
 
 		return 1;
 
@@ -556,7 +556,7 @@ parse_to_inttbl( PyObject *obj, void *addr )
 {
 	Tbl	**atbl = (Tbl **) addr;
 	PyObject *seqobj;
-	int	nitems = 0;
+	long	nitems = 0;
 	int	iitem;
 	long	along;
 	char	errmsg[STRSZ];
@@ -649,7 +649,7 @@ parse_to_strtbl( PyObject *obj, void *addr )
 {
 	Tbl	**atbl = (Tbl **) addr;
 	PyObject *seqobj;
-	int	nitems = 0;
+	long	nitems = 0;
 	int	iitem;
 	char	*astring;
 	char	errmsg[STRSZ];
@@ -1218,7 +1218,7 @@ python_dbfind( PyObject *self, PyObject *args ) {
 	int	first;
 	int	reverse = 0;
 	int	flags = 0;
-	int	rc;
+	long	rc;
 
 	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
 
@@ -1254,7 +1254,7 @@ python_dbmatches( PyObject *self, PyObject *args ) {
 	Tbl	*list = 0;
 	Hook	*hook = 0;
 	int	duplicate_pattern = 0;
-	int	rc;
+	long	rc;
 
 	if( ! PyArg_ParseTuple( args, "O&O&sO&O&", 
 					parse_to_Dbptr, &dbk, 
@@ -1769,14 +1769,14 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 	Dbvalue	value;
 	char	errmsg[STRSZ];
 	char	*field_name;
-	int	nargs;
-	int	nfields;
-	int	i;
-	int	type;
-	int	fieldname_index;
-	int	fieldval_index;
-	int	retcode = 0;
-	int	rc;
+	long	nargs;
+	long	nfields;
+	long	i;
+	long	type;
+	long	fieldname_index;
+	long	fieldval_index;
+	long	retcode = 0;
+	long	rc;
 
 	nargs = PyTuple_Size( args );
 
@@ -1858,25 +1858,25 @@ python_dbaddv( PyObject *self, PyObject *args ) {
 
 		case dbDBPTR:
 
-			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			retcode |= dbputv( db, 0, field_name, value.db, NULL );
 			break;
 
 		case dbSTRING:
 
-			retcode |= dbputv( db, 0, field_name, value.t, 0 );
+			retcode |= dbputv( db, 0, field_name, value.t, NULL );
 			break;
 
 		case dbBOOLEAN:
 		case dbINTEGER:
 		case dbYEARDAY:
 
-			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			retcode |= dbputv( db, 0, field_name, value.i, NULL );
 			break;
 
 		case dbREAL:
 		case dbTIME:
 
-			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			retcode |= dbputv( db, 0, field_name, value.d, NULL );
 			break;
 
 		default:
@@ -2011,10 +2011,10 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 	PyObject *vals;
 	char	*field;
 	char	errmsg[STRSZ];
-	int	type;
-	int	nargs;
-	int	iarg;
-	int	rc;
+	long	type;
+	long	nargs;
+	long	iarg;
+	long	rc;
 
 	nargs = PyTuple_Size( args );
 
@@ -2055,7 +2055,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 
 			} else {
 
-				sprintf( errmsg, "%dth ", iarg );
+				sprintf( errmsg, "%ldth ", iarg );
 			}
 
 			strcat( errmsg, "field-name argument to _dbgetv must be a string" );
@@ -2078,7 +2078,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 			return NULL;
 		}
 
-		rc = dbgetv( db, 0, field, &val, 0 );
+		rc = dbgetv( db, 0, field, &val, NULL );
 
 		if( rc < 0 ) {
 
@@ -2121,7 +2121,7 @@ python_dbgetv( PyObject *self, PyObject *args ) {
 			break;
 
 		default:
-			sprintf( errmsg, "_dbgetv internal error: type '%d' for field named '%s' not understood", type, field );
+			sprintf( errmsg, "_dbgetv internal error: type '%ld' for field named '%s' not understood", type, field );
 
 			PyErr_SetString( PyExc_RuntimeError, errmsg );
 
@@ -2139,14 +2139,14 @@ python_dbputv( PyObject *self, PyObject *args ) {
 	Dbvalue	value;
 	char	errmsg[STRSZ];
 	char	*field_name;
-	int	nargs;
-	int	nfields;
-	int	i;
-	int	type;
-	int	fieldname_index;
-	int	fieldval_index;
-	int	retcode = 0;
-	int	rc;
+	long	nargs;
+	long	nfields;
+	long	i;
+	long	type;
+	long	fieldname_index;
+	long	fieldval_index;
+	long	retcode = 0;
+	long	rc;
 
 	nargs = PyTuple_Size( args );
 
@@ -2215,25 +2215,25 @@ python_dbputv( PyObject *self, PyObject *args ) {
 
 		case dbDBPTR:
 
-			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			retcode |= dbputv( db, 0, field_name, value.db, NULL );
 			break;
 
 		case dbSTRING:
 
-			retcode |= dbputv( db, 0, field_name, value.t, 0 );
+			retcode |= dbputv( db, 0, field_name, value.t, NULL );
 			break;
 
 		case dbBOOLEAN:
 		case dbINTEGER:
 		case dbYEARDAY:
 
-			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			retcode |= dbputv( db, 0, field_name, value.i, NULL );
 			break;
 
 		case dbREAL:
 		case dbTIME:
 
-			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			retcode |= dbputv( db, 0, field_name, value.d, NULL );
 			break;
 
 		default:
@@ -2264,9 +2264,9 @@ python_dbquery( PyObject *self, PyObject *args ) {
 	Arr	*arr;
 	PyObject *dbcode_obj;
 	char	*dbcode_str;
-	int	dbcode;
-	int	n;
-	int	rc;
+	long	dbcode;
+	long	n;
+	long	rc;
 
 	if( ! PyArg_ParseTuple( args, "O&O", parse_to_Dbptr, &db, &dbcode_obj ) ) {
 
@@ -2280,7 +2280,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 	if( PyInt_Check( dbcode_obj ) ) {
 
-		dbcode = (int) PyInt_AsLong( dbcode_obj );
+		dbcode = PyInt_AsLong( dbcode_obj );
 
 	} else if( PyString_Check( dbcode_obj ) ) {
 
@@ -2329,7 +2329,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
         case dbFIELD_BASE_TABLE:
         case dbUNIQUE_ID_NAME:
 
-		if( ( rc = dbquery(db, dbcode, &string) ) >= 0 ) {
+		if( ( rc = dbquery(db, (int) dbcode, &string) ) >= 0 ) {
 
 			obj = Py_BuildValue( "s", string );
 
@@ -2358,7 +2358,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 	case dbTABLE_IS_TRANSIENT:
         case dbFIELD_TYPE:
 
-		if( ( rc = dbquery(db, dbcode, &n) ) >= 0 ) {
+		if( ( rc = dbquery(db, (int) dbcode, &n) ) >= 0 ) {
 			
 			obj = Py_BuildValue( "i", n );
 
@@ -2373,7 +2373,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
         case dbLINK_FIELDS:
 
-		if( ( rc = dbquery(db, dbcode, &arr) ) >= 0 ) {
+		if( ( rc = dbquery(db, (int) dbcode, &arr) ) >= 0 ) {
 
 			obj = strarr2PyObject( arr );
 
@@ -2395,7 +2395,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
         case dbALTERNATE_KEY:
         case dbFOREIGN_KEYS:
 
-		if( ( rc = dbquery(db, dbcode, &tbl) ) >= 0 ) {
+		if( ( rc = dbquery(db, (int) dbcode, &tbl) ) >= 0 ) {
 
 			obj = strtbl2PyObject( tbl );
 
@@ -2410,7 +2410,7 @@ python_dbquery( PyObject *self, PyObject *args ) {
  
         default:
 
-		sprintf( errmsg, "dbquery: bad code '%d'", dbcode );
+		sprintf( errmsg, "dbquery: bad code '%ld'", dbcode );
 
 		PyErr_SetString( PyExc_RuntimeError, errmsg );
 
@@ -2488,13 +2488,13 @@ python_trsample( PyObject *self, PyObject *args ) {
 	char	*chan;
 	char	*filter = 0;
 	int	apply_calib = 0;
-	int	nrows = 0;
-	int	nsamp_total = 0;
-	int	nsamp_row = 0;
-	int	irow;
-	int	isamp_row = 0;
-	int	isamp_total = 0;
-	int	rc;
+	long	nrows = 0;
+	long	nsamp_total = 0;
+	long	nsamp_row = 0;
+	long	irow;
+	long	isamp_row = 0;
+	long	isamp_total = 0;
+	long	rc;
 	PyObject *obj;
 	PyObject *pair;
 
@@ -2562,7 +2562,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 
 		tr.record = irow;
 
-		dbgetv( tr, 0, "nsamp", &nsamp_row, 0 );
+		dbgetv( tr, 0, "nsamp", &nsamp_row, NULL );
 
 		nsamp_total += nsamp_row;
 	}
@@ -2584,7 +2584,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 		dbgetv( tr, 0, "nsamp", &nsamp_row, 
 			       "time", &row_starttime, 
 			       "samprate", &samprate, 
-			       "data", &data, 0 );
+			       "data", &data, NULL );
 		
 		for( isamp_row = 0; isamp_row < nsamp_row; isamp_row++ ) {
 
@@ -2622,14 +2622,14 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	char	*filter = 0;
 	int	apply_calib = 0;
 	int	binsize = 1;
-	int	nrows = 0;
-	int	nsamp_row = 0;
-	int	nsamp_total = 0;
-	int	nbins_total = 0;
-	int	irow;
-	int	isamp_row = 0;
-	int	ireturn = 0;
-	int	rc;
+	long	nrows = 0;
+	long	nsamp_row = 0;
+	long	nsamp_total = 0;
+	long	nbins_total = 0;
+	long	irow;
+	long	isamp_row = 0;
+	long	ireturn = 0;
+	long	rc;
 	PyObject *obj;
 	PyObject *triple;
 
@@ -2697,11 +2697,11 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 
 		tr.record = irow;
 
-		dbgetv( tr, 0, "nsamp", &nsamp_row, 0 );
+		dbgetv( tr, 0, "nsamp", &nsamp_row, NULL );
 
 		nsamp_total += nsamp_row;
 
-		nbins_total += (int) floor( (double) nsamp_row / (double) binsize );
+		nbins_total += (long) floor( (double) nsamp_row / (double) binsize );
 
 		if( nsamp_row % binsize != 0 ) {
 
@@ -2726,7 +2726,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 		dbgetv( tr, 0, "nsamp", &nsamp_row, 
 			       "time", &row_starttime, 
 			       "samprate", &samprate, 
-			       "data", &data, 0 );
+			       "data", &data, NULL );
 		
 		for( isamp_row = 0; isamp_row < nsamp_row; isamp_row++ ) {
 
@@ -2806,9 +2806,9 @@ python_trdata( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _trdata(tr)\n";
 	Dbptr	tr;
 	float	*data;
-	int	result;
-	int	nsamp;
-	int	i;
+	long	result;
+	long	nsamp;
+	long	i;
 	PyObject *obj;
 
 	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
@@ -2829,7 +2829,7 @@ python_trdata( PyObject *self, PyObject *args ) {
 		return NULL;
 	} 
 
-	result = dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
+	result = dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, NULL );
 
 	if( result != 0 || data == 0 ) {
 
@@ -2855,11 +2855,11 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 	Dbptr	tr;
 	float	*data;
 	int	binsize = 1;
-	int	result;
-	int	nsamp;
-	int	nbins;
-	int	i;
-	int	ipair = 0;
+	long	result;
+	long	nsamp;
+	long	nbins;
+	long	i;
+	long	ipair = 0;
 	double	min;
 	double	max;
 	PyObject *obj;
@@ -2883,7 +2883,7 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 		return NULL;
 	} 
 
-	result = dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
+	result = dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, NULL );
 
 	if( result != 0 || data == 0 ) {
 
@@ -2893,7 +2893,7 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	nbins = (int) floor( (double) nsamp / (double) binsize );
+	nbins = (long) floor( (double) nsamp / (double) binsize );
 
 	if( nsamp % binsize != 0 ) {
 
