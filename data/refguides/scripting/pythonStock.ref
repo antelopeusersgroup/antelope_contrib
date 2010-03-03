@@ -96,8 +96,11 @@ pf2xml(pfname)
 #     a perl array or hash, the entire perl array or hash is
 #     stored in the pf object.
 # 
-# pfwrite (filename, pfname)
-#     write out pf object pfname to filename
+pfwrite (pfname, filename)
+    write out pf object pfname to filename
+
+pfout (pfname, file)
+    write out pf object pfname to file object
 # 
 # pfrequire(pfname, atime)
 #     require pf_revision_time from last file pfname is later than atime.

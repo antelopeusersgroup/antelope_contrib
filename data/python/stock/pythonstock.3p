@@ -131,6 +131,32 @@ val = pfget( pfname, pfkey )
 .in
 .ft R
 
+.IP "\fBpfout\fP (pfname, file)"
+Write a file to the specified file object
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pfout( pfname, file )
+
+.fi
+.in
+.ft R
+
+.IP "\fBpfwrite\fP (pfname, filename)"
+Write a file to the named file 
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+pfwrite( pfname, filename )
+
+.fi
+.in
+.ft R
+
 .IP "\fBpf2xml\fP (pfname, flags = 0, prolog = None, name = None)"
 Convert a parameter-file to XML
 .ft CW

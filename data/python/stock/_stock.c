@@ -82,6 +82,8 @@ static PyObject *python_pfget_tbl( PyObject *self, PyObject *args );
 static PyObject *python_pfget( PyObject *self, PyObject *args );
 static PyObject *python_pfupdate( PyObject *self, PyObject *args );
 static PyObject *python_pffiles( PyObject *self, PyObject *args );
+static PyObject *python_pfout( PyObject *self, PyObject *args );
+static PyObject *python_pfwrite( PyObject *self, PyObject *args );
 static PyObject *python_pf2string( PyObject *self, PyObject *args );
 static PyObject *python_pf2xml( PyObject *self, PyObject *args );
 static PyObject *python_strtime( PyObject *self, PyObject *args );
@@ -120,6 +122,8 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_pfget",   		python_pfget,   	METH_VARARGS, "Get a value from a parameter file" },
 	{ "_pfupdate", 		python_pfupdate,   	METH_VARARGS, "Reread and update a parameter file" },
 	{ "_pffiles", 		python_pffiles,   	METH_VARARGS, "Return a list of parameter path names" },
+	{ "_pfout", 		python_pfout,   	METH_VARARGS, "Write a parameter file to a file object" },
+	{ "_pfwrite", 		python_pfwrite,   	METH_VARARGS, "Write a parameter file to the named file" },
 	{ "_pf2string",		python_pf2string,   	METH_VARARGS, "Convert a parameter-file to a string" },
 	{ "_pf2xml",		python_pf2xml,   	METH_VARARGS, "Convert a parameter-file to an xml string" },
 	{ "_strtdelta",   	python_strtdelta,   	METH_VARARGS, "Convert a time-difference to a string" },
@@ -529,6 +533,69 @@ python_pffiles( PyObject *self, PyObject *args ) {
 	freetbl( filestbl, 0 );
 
 	return obj;
+}
+
+static PyObject *
+python_pfout( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pfout( pfname, file )\n";
+	char	*pfname;
+	Pf	*pf;
+	FILE	*fp;
+	PyObject *fileobj;
+	char	errmsg[STRSZ];
+	long	rc;
+
+	if( ! PyArg_ParseTuple( args, "sO!", &pfname, &PyFile_Type, &fileobj ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	fp = PyFile_AsFile( fileobj );
+
+	rc = pfout( fp, pf );
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_pfwrite( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _pfwrite( pfname, filename )\n";
+	char	*pfname;
+	char	*filename;
+	Pf	*pf;
+	char	errmsg[STRSZ];
+	long	rc;
+
+	if( ! PyArg_ParseTuple( args, "ss", &pfname, &filename ) ) {
+
+		PyErr_SetString( PyExc_RuntimeError, usage );
+
+		return NULL;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+		
+		sprintf( errmsg, "Failure opening parameter file '%s'\n", pfname );
+
+		PyErr_SetString( PyExc_RuntimeError, errmsg );
+
+		return NULL;
+	}
+
+	rc = pfwrite( filename, pf );
+
+	return Py_BuildValue( "i", rc );
 }
 
 static PyObject *

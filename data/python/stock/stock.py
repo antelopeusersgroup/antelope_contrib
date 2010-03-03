@@ -92,6 +92,18 @@ def pffiles(pfname, all = False):
     return _stock._pffiles(pfname, all)
 
 
+def pfout(pfname, file):
+    """Output a parameter file to a file object"""
+
+    return _stock._pfout(pfname, file)
+
+
+def pfwrite(pfname, filename):
+    """Output a parameter file to a named file"""
+
+    return _stock._pfwrite(pfname, filename)
+
+
 def pf2string(pfname):
     """Convert a parameter-file to a string representation"""
 
@@ -271,6 +283,22 @@ if __name__ == '__main__':
             files = pffiles('rtexec')
 
             self.assertTrue(isinstance(files,tuple))
+
+        def test_pfout(self):
+
+            fp = open('/tmp/trdefaults_test.pf', 'w')
+
+            rc = pfout('trdefaults', fp)
+
+	    fp.close()
+
+	    self.assertEqual(rc, 0)
+
+        def test_pfwrite(self):
+
+            rc = pfwrite('trdefaults', '/tmp/trdefaults_test.pf')
+
+	    self.assertEqual(rc, 0)
 
         def test_pf2string(self):
            
