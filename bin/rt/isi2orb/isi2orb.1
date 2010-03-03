@@ -46,8 +46,6 @@ the server and rewind to the last saved data for each stream.
 Verbose
 .IP -V
 Very Verbose
-.SH FILES
-.SH ENVIRONMENT
 .SH PARAMETER FILE
 .IP net
 This is the SEED network code, usually \fIII\fP, to use for the orb 
@@ -71,6 +69,17 @@ This parameter sets the logging mode of the ISI libraries. If set to
 used. If set to \fIelog\fP, logging will be redirected to the Antelope 
 elog(3) facility. Note that this redirection only happens when 
 \fBisi2orb\fP is in verbose mode. 
+.IP isi_debug
+This parameter sets the integer debug level of the ISI libraries. The default, 
+for no debugging output, is 0. If set to 1, some debug information is 
+emitted. For further information, consult the ISI Toolkit documentation. 
+Note that this setting is entirely independent of the \fBisi2orb\fP logging
+behaviors controlled by the \fI-v\fP and \fI-V\fP options. 
+.IP iacp_timeout_msec
+This integer parameter sets the timeout allowance for the IDA Authenticated Communication
+Protocol (IACP), which currently defaults to 30,000 milliseconds. \fBisi2orb\fP
+will not allow this timeout to be configured below the minimum for the 
+IACP protocol, also currently 30,000 milliseconds. 
 .IP statefile_rewind_max_sec 
 This parameter specifies the maximum length of time \fBisi2orb\fP 
 will rewind dataflow based on state-file information. If this is exceeded, 
@@ -98,6 +107,8 @@ streams &Tbl{
 uppercase yes
 segtype V
 isi_logging elog
+isi_debug 0
+iacp_timeout_msec 30000
 statefile_rewind_max_sec 3600
 port 0
 too_old 72:00
@@ -122,9 +133,6 @@ isi2orb: Adding new channel aak.sln.00
 .fi
 .ft R
 .in
-.SH RETURN VALUES
-.SH LIBRARY
-.SH ATTRIBUTES
 .SH DIAGNOSTICS
 In verbose mode, \fBisi2orb\fP announces the program start time, announces the 
 actual data request string sent

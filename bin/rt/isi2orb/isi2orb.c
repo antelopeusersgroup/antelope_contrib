@@ -50,6 +50,7 @@
 #include "orb.h"
 #include "Pkt.h"
 #include "libisi_isi.h"
+#include "libisi_iacp.h"
 #include "libisi_util.h"
 
 #define ISI2ORB_NULL_CALIB 0.0
@@ -168,6 +169,7 @@ main( int argc, char **argv )
 	int	errflag = 0;
 	int	status = 0;
 	int	port = 0;
+	int	debug = 0;
 	int	rc = 0;
 
 	char	*pfname = "isi2orb";
@@ -177,6 +179,7 @@ main( int argc, char **argv )
 	double	too_new = ISI2ORB_NULL_TIME;
 	int	format = ISI_FORMAT_GENERIC;
 	int	compress = ISI_COMP_NONE;
+	int	timeout_msec = IACP_DEF_AT_TIMEO;
 	int	bury_counter = STATEFILE_BURY_INTERVAL_NPKTS;
 	int	uppercase = 1;
 	int	stop = 0;
@@ -332,6 +335,8 @@ main( int argc, char **argv )
 	isi_logging = pfget_string( pf, "isi_logging" );
 	uppercase = pfget_boolean( pf, "uppercase" );
 	port = pfget_int( pf, "port" );
+	debug = pfget_int( pf, "isi_debug" );
+	timeout_msec = pfget_int( pf, "iacp_timeout_msec" );
 	statefile_rewind_max_sec = pfget_double( pf, "statefile_rewind_max_sec" );
 	too_old_string = pfget_string( pf, "too_old" );
 	too_new_string = pfget_string( pf, "too_new" );
@@ -395,6 +400,11 @@ main( int argc, char **argv )
 
 	isiInitDefaultPar( &par );
 
+	if( debug > 0 ) {
+		
+		isiSetDebugFlag( &par, debug );
+	}
+
 	if( port != 0 ) {
 
 		isiSetServerPort( &par, port );
@@ -404,6 +414,23 @@ main( int argc, char **argv )
 			elog_notify( 0, "Server port reset to %d\n", port );
 		}
 	}
+
+	if( timeout_msec >= IACP_MINTIMEO ) {
+
+		par.attr.at_timeo = timeout_msec;
+
+		if( VeryVerbose ) {
+
+			elog_notify( 0, "IDA Protocol timeout (iacp_timeout_msec parameter) set to %d milliseconds\n", timeout_msec );
+		}
+
+	} else {
+
+		elog_complain( 0, "Ignoring attempt to set iacp_timeout_msec to %d, which is below "
+				  "IDA Protocol timeout minimum of %d milliseconds\n", 
+				  timeout_msec, IACP_MINTIMEO );
+	} 
+
 
 	if( ! strcmp( isi_logging, "elog" ) ) {
 

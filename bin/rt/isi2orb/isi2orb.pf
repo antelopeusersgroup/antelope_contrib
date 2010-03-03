@@ -5,6 +5,8 @@ streams &Tbl{
 uppercase yes
 segtype V
 isi_logging elog
+isi_debug 0
+iacp_timeout_msec 30000
 statefile_rewind_max_sec 3600
 port 0
 too_old  72:00
