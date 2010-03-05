@@ -543,7 +543,13 @@ python_orblag( PyObject *self, PyObject *args ) {
 
 	rc = orblag( orbfd, match, reject, &laggards );
 
-	if( rc < 0 ) {
+	if( rc == -1 ) {
+
+		PyErr_WarnEx( NULL, "orblag: no clients matched select/reject criteria", 1 );
+
+		return Py_BuildValue( "" );
+
+	} else if( rc < -1 ) {
 
 		sprintf( err, "Error: orblag returned %f\n", rc );
 
