@@ -2160,6 +2160,12 @@ if __name__ == '__main__':
 
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
 
+            tr = db.loadchan(506139719.05000, 506139855.95000, "TKM", "BHZ")
+
+            tr.record = 0
+
+            self.assertRaises( ElogComplain, tr.data )
+
         def test_method_filter(self):
 
             db = dbopen(self.dbname)
