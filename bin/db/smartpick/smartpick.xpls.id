@@ -1911,7 +1911,7 @@ sub bind_widgets {
  		eval "sub $command { send_to_dbpick( \"$command\" ); }";	
  	}
  
- 	my( @onoff_commands ) = qw( sw sa soa sf sd );
+ 	my( @onoff_commands ) = qw( sw sa soa sf sd sas );
  
  	foreach $command ( @onoff_commands ) {
  		

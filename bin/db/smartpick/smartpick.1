@@ -238,10 +238,19 @@ to the \fIsa off\fP command in the dbpick(1) command window.
 This button shows arrival pick flags in dbpick(1). This is equivalent
 to the \fIsa on\fP command in the dbpick(1) command window.
 
+.IP sas_off
+This button turns off the coloring of arrival pick flags according to association
+status in dbpick(1). This is equivalent to the \fIsas off\fP command in 
+the dbpick(1) command window.
+
+.IP sas_on
+This button turns on the coloring of arrival pick flags according to association
+status in dbpick(1). This is equivalent to the \fIsas on\fP command in 
+the dbpick(1) command window.
+
 .IP sd_off
 This button hides detection glyphs in dbpick(1). This is equivalent to
 the \fIsd off\fP command in the dbpick(1) command window.
-
 
 .IP sd_on
 This button shows detection glyphs in dbpick(1). This is equivalent to
@@ -1129,6 +1138,11 @@ possible to make quite a mess.
 If there's no waveform data for a station, choosing the button for that 
 station may not produce a sensible response (it may make the dbpick screen
 blank, or leave the previous display untouched). 
+
+As of Antelope 4.11, the dbpick 'sas off' and 'sas on' commands, and therefore
+their associated smartpick buttons, work if and only if the -showassocs 
+flag is given on the dbpick command line (i.e. included in the \fIdbpick_options\fP
+parameter in the \fBsmartpick\fP.pf parameter file).
 
 In principle it would be nice to make this work with tkdbpick as well. 
 .SH AUTHOR
