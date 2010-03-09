@@ -25,6 +25,13 @@ CHAR(40) DEFAULT '-'
 This syncronization field is used to hold values of a synchronization string computed by the 
 \fBdb2sqlinsert\fP function for updating changes made to the database. 
 
+The table returned by \fBdbschema2sqlcreate\fP is newly allocated, along with all string 
+fields it contains as entries, and must therefore be freed by the caller after use with a 
+command like
+.nf
+
+	freetbl( tbl, free );
+.fi
 
 The \fBdb2sqlinsert\fP function generates SQL insert commands for each row in the 
 specified database pointer. 
@@ -33,6 +40,15 @@ is used, an extra database field is computed and inserted by \fBdb2sqlinsert\fP,
 a synchronization string that uniquely labels the contents of the input database row. This can 
 be used in later operations to alter or delete SQL-database rows when their corresponding Datascope database
 rows change. 
+
+String entries added to the given table by \fBdb2sqlinsert\fP are newly allocated, and must be 
+freed by the caller when no longer needed. Similarly, if the \fItbl\fP pointer given to 
+\fBdb2sqlinsert\fP is NULL, \fBdb2sqlinsert\fP allocates a new table for the return results, which 
+must be freed after use with a command like 
+.nf
+
+	freetbl( tbl, free );
+.fi
 
 .SH EXAMPLE
 .in 2c
@@ -134,6 +150,12 @@ main(int argc, char **argv )
 .fi
 .ft R
 .in
+.SH RETURN VALUES
+\fBdbschema2sqlcreate\fP returns a table of SQL create statements. Both the table and the individual
+statements are newly allocated, and must be freed by the caller. 
+
+\fBdb2sqlinsert\fP returns the number of SQL commands successfully created. 
+
 .SH "SEE ALSO"
 .nf
 db2sql(1), perldb2sql(3P)
