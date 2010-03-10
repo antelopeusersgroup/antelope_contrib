@@ -59,6 +59,36 @@ sub inform {
 	return;
 }
 
+sub pfmorph {
+	my( $pfname ) = @_;
+
+	my( %dls ) = %{pfget( $pfname, "dls" )};
+
+	foreach my $sta ( keys( %dls ) ) {
+
+		if( defined( $dls{$sta}{opt} ) && $dls{$sta}{opt} ne "-" ) {
+
+			$dls{$sta}{acok} = $dls{$sta}{opt} =~ /acok/ ? 1 : 0;
+			$dls{$sta}{api}  = $dls{$sta}{opt} =~ /api/  ? 1 : 0;
+			$dls{$sta}{isp1} = $dls{$sta}{opt} =~ /isp1/ ? 1 : 0;
+			$dls{$sta}{isp2} = $dls{$sta}{opt} =~ /isp2/ ? 1 : 0;
+			$dls{$sta}{ti}   = $dls{$sta}{opt} =~ /ti/   ? 1 : 0;
+			
+		} else {
+			
+			$dls{$sta}{acok} = "-";
+			$dls{$sta}{api}  = "-";
+			$dls{$sta}{isp1} = "-";
+			$dls{$sta}{isp2} = "-";
+			$dls{$sta}{ti}   = "-";
+		}
+	}
+
+	pfput( "dls", \%dls, $pfname );
+
+	return;
+}
+
 if ( ! &Getopts('a:m:v') || @ARGV != 2 ) { 
 	my $pgm = $0 ; 
 	$pgm =~ s".*/"" ;
@@ -141,6 +171,8 @@ for( ;; ) {
 
 			pfcompile( $pfstring, $pfname );
 
+			pfmorph( $pfname );
+
 			$xmlstring = pf2xml( "-n", $pfname, "", $header );
 
 			pffree( $pfname );
@@ -175,6 +207,8 @@ for( ;; ) {
 			$pkt->pf();
 
 			$pfname = "Packet::pf";
+
+			pfmorph( $pfname );
 
 			$xmlstring = pf2xml( "-n", $pfname, "", $header );
 
