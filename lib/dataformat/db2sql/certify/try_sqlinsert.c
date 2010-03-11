@@ -8,20 +8,18 @@ main( int argc, char **argv )
 {
 	char	*dbname = "/opt/antelope/data/db/demo/demo";
 	Dbptr	db;
-	Tbl	*sql = (Tbl *) NULL;
+	Tbl	*sqlinsert = (Tbl *) NULL;
 	int	flags = 0;
 	
 	Program_Name = argv[0];
 
 	dbopen( dbname, "r", &db );
 
-	sql = dbschema2sqlcreate( db, flags );
+	db2sqlinsert( db, &sqlinsert, flags );
 
-	db2sqlinsert( db, &sql, flags );
+	debugtbl( stdout, "Conversion results:\n", sqlinsert );
 
-	debugtbl( stdout, "Conversion results:\n", sql );
-
-	freetbl( sql, free );
+	freetbl( sqlinsert, free );
 
 	return 0;
 }

@@ -1,6 +1,6 @@
 ldlibs = -ldb2sql $(DBLIBS)
 
-CLEAN = try_db2sql 
+CLEAN = try_sqlcreate try_sqlinsert
 
 include $(ANTELOPEMAKE)
 
