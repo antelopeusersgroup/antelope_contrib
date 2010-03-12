@@ -24,30 +24,6 @@ New Row 11 in 'affiliation' [sync '80384d76c1f6185291632654da1c8f98a4e719e4']: K
 
 New Row 12 in 'affiliation' [sync 'c3cf6419340ec39e47ca8789ad96869c92c9ba12']: KNET     WUS      830313128.00000
 
-New Row 0 in 'arrival' [sync '8a31aff746d21ec917e72cfbb14c3361526be0f6']: KMI      706139638.90564     4849  1992138       -1     1083 BHN      S        -  2.275   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 1 in 'arrival' [sync '0d61a9b8c25268acd002fc42f305f420a88733bb']: AAK      706139746.35000     4850  1992138       -1       28 BHZ      P        -  0.098   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.7    0.40 -999.00 - ..       6.40 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 2 in 'arrival' [sync '78614c3070304bc7422ef6c43052a33e9874eb28']: KBK      706139751.35000     4851  1992138       -1       25 BHZ      P        -  0.101   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.4    0.40 -999.00 - ..       3.22 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 3 in 'arrival' [sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1']: CHM      706139752.34740     4852  1992138       -1        1 BHZ      P        -  0.401   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        3.3    0.50 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 4 in 'arrival' [sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b']: USP      706139752.40005     4853  1992138       -1        7 BHZ      P        -  0.151   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.6    0.50 -999.00 - ..       3.89 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 5 in 'arrival' [sync 'fbdc86034c2b5f7c55bc263539bcbf47e43e8900']: TKM      706139755.45010     4854  1992138       -1       22 BHZ      P        -  0.316   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..       2.99 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 6 in 'arrival' [sync '6b3e2d7d1de31ff896879595e631757bbfb46a96']: AAK      706139775.33963     4855  1992138       -1       29 BHN      S        -  2.164   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 7 in 'arrival' [sync 'b958608cc4b39c0916739d05a93f0250f7c8c3ba']: KBK      706139784.43397     4856  1992138       -1       26 BHN      S        -  2.065   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 8 in 'arrival' [sync '544dbce313a6487571b45cfc804ce39e5cdc69b9']: CHM      706139787.28949     4857  1992138       -1        2 BHN      S        -  1.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 9 in 'arrival' [sync '11109ce7dbbae45f44983d83720b0e4c0ae76be7']: USP      706139788.12868     4858  1992138       -1        9 BHE      S        -  2.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
-
-New Row 10 in 'arrival' [sync '67766940da86bc7b5bf516d8d5757e26e2c5b7cb']: AAK      706139712.37677     4859  1992138       -1       -1 BHZ      del      -  2.222   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000    47276.3    0.10 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223377.00000
-
-New Row 11 in 'arrival' [sync '32b7c6233ba1ec0952d4a3f96ae0235327c78912']: EKS2     706139709.96670     4860  1992138       -1       -1 BHZ      del      - -1.000   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223373.00000
-
 New Row 0 in 'assoc' [sync '25770302586e3d57cf064634e898bbf5722f354d']:     4850      645 AAK    P        9.99    1.928  238.62   57.14   -0.050 d  -999.0 - -999.00 -  -999.0 -1.000 kyrghyz               -1   790465413.00000
 
 New Row 1 in 'assoc' [sync '81ebded7c27fc205c24fdf981a0d0a370ee5b4b7']:     4851      645 KBK    P        9.99    2.230  242.86   61.08    0.050 d  -999.0 - -999.00 -  -999.0 -1.000 kyrghyz               -1   790465413.00000
@@ -66,49 +42,49 @@ New Row 7 in 'assoc' [sync '3627e45fb135866dcb662b85406d4a397a7acdbb']:     4857
 
 New Row 8 in 'assoc' [sync '49cc1e3ade5cd09c31e55fcb00f7067592b7344f']:     4858      645 USP    S        9.99    2.325  225.22   43.73    2.600 d  -999.0 - -999.00 -  -999.0 -1.000 kyrghyz               -1   790465413.00000
 
-New Row 0 in 'instrument' [sync '31b387ca26156034574c18aa813c3124cbb62e69']:        1 sts2_vel:RT72A                                     sts2_v b d  20.0000000         0.000000         0.000000 response                                                         sts2_vel_RT72A.1                 V        789084698.00000
+New Row 0 in 'instrument' [sync 'b5c170795e5b09a80b34d57c92596616ef363615']:        1 sts2_vel:RT72A                                     sts2_v b d  20.0000000         0.000000         0.000000 /opt/antelope/data/db/demo/response                              sts2_vel_RT72A.1                 V        789084698.00000
 
-New Row 1 in 'instrument' [sync '4d829abffbe434c6c5a413d4babbda4629016317']:     1061 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.142450         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 1 in 'instrument' [sync '71d3b354a0562afe538b4f133c78239f198f3c18']:     1061 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.142450         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 2 in 'instrument' [sync 'fb9200b199000873d405e7603ec812c28c9a2cee']:     1062 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.142450         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 2 in 'instrument' [sync '5ecea4b7e9e1e60224bd9dc57941ccac17a41469']:     1062 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.142450         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 3 in 'instrument' [sync '3f0180f80abe6127a08df8b202075657c648948d']:     1063 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.140449         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 3 in 'instrument' [sync 'e6df30d8f93d21f8ff09bd10748b11d4fc6748d9']:     1063 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.140449         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 4 in 'instrument' [sync 'dd156043164265ffd34a2ac4f48b7267d59fe499']:     1076 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         2.230818         1.000000 response                                                         sts-1h-vbb.206                   V        789084698.00000
+New Row 4 in 'instrument' [sync 'e59fcaceef4367c465683d3fc8a9cfe7ead5d6f0']:     1076 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         2.230818         1.000000 /opt/antelope/data/db/demo/response                              sts-1h-vbb.206                   V        789084698.00000
 
-New Row 5 in 'instrument' [sync '8b49e9b6f721aa4f60c9f8d77ccc175f5871ac7f']:     1077 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         2.304519         1.000000 response                                                         sts-1h-vbb.206                   V        789084698.00000
+New Row 5 in 'instrument' [sync '803a79148f63342fcd1c48e55b939af5c1e448cf']:     1077 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         2.304519         1.000000 /opt/antelope/data/db/demo/response                              sts-1h-vbb.206                   V        789084698.00000
 
-New Row 6 in 'instrument' [sync '19c48328081ac9274f2a4a7e510dee4b5e031b40']:     1078 Streckeisen STS-1V/VBB Seismometer                 -      - -  20.0000000         2.329433         1.000000 response                                                         sts-1h-vbb.206                   V        789084698.00000
+New Row 6 in 'instrument' [sync '667f7b00b1e72af35ffa7c6853d156434340ac83']:     1078 Streckeisen STS-1V/VBB Seismometer                 -      - -  20.0000000         2.329433         1.000000 /opt/antelope/data/db/demo/response                              sts-1h-vbb.206                   V        789084698.00000
 
-New Row 7 in 'instrument' [sync '4ecf98e8b830b5fa9762a844017681dbb4d53b90']:     1082 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.142450         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 7 in 'instrument' [sync '08f9a7f57d4025a4c9bb49ebc77e88dd5181f2a5']:     1082 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.142450         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 8 in 'instrument' [sync 'b4603383ea0ef791d458d9598f7c9c56e4c72795']:     1083 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.143678         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 8 in 'instrument' [sync '830739d09380abba15b3720fc1126efdb1557ef4']:     1083 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.143678         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 9 in 'instrument' [sync '87767ca805ed783b10aee1e471da9d4ac2e57d16']:     1084 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.146843         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 9 in 'instrument' [sync '4ac4c370e35da01a269549d4043295fea8125b8d']:     1084 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.146843         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 10 in 'instrument' [sync '9143ab412aeb19ac7bdbac239bb4006f5a04f8e6']:     1091 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.138610         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 10 in 'instrument' [sync '62612a28dc0ab66035aabfaff9b5cb9800b1307d']:     1091 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.138610         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 11 in 'instrument' [sync '70a125d92da8a2b86b181f8c0abc966e1ad52617']:     1092 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.138731         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 11 in 'instrument' [sync '732101e1aafa4bf4914aa9466d0922c02facf6b7']:     1092 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.138731         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 12 in 'instrument' [sync 'efd8b28a39ba5c8da09ad83680519c3bad2bf9bf']:     1093 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.134591         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 12 in 'instrument' [sync '73a23720d0d834bd62b47ced21f80b396787026d']:     1093 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.134591         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 13 in 'instrument' [sync '2b9db2e97ad87691094f83ff5147af1882db34ce']:     1094 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.144928         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 13 in 'instrument' [sync '607072e6d741793ad8b0c66755041eb7cf8b164d']:     1094 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.144928         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 14 in 'instrument' [sync 'fa46da51883d4c94f06b2b6c2dddef2f18117ca6']:     1095 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.146413         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 14 in 'instrument' [sync 'e579d2185cc6ac9b1a475c7db156501d6bae70f4']:     1095 Streckeisen STS-1H Seismometer                     -      - -  20.0000000         0.146413         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 15 in 'instrument' [sync 'df378bc1890c330c6bb96b20e565a69dd44e7706']:     1096 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.133869         1.000000 response                                                         sts-1v.55                        D        789084698.00000
+New Row 15 in 'instrument' [sync '185e4b6e210193d3ee341afb399505fa3845fc53']:     1096 Streckeisen STS-1V Seismometer                     -      - -  20.0000000         0.133869         1.000000 /opt/antelope/data/db/demo/response                              sts-1v.55                        D        789084698.00000
 
-New Row 16 in 'instrument' [sync 'cb4be035a576a46173e6b9baf5a611220651419b']:     1112 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         1.954954         1.000000 response                                                         sts-1h-vbb.206                   V        789084698.00000
+New Row 16 in 'instrument' [sync '6e5bb0a3ac954aa06d66d3b2091005a6bb76270e']:     1112 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         1.954954         1.000000 /opt/antelope/data/db/demo/response                              sts-1h-vbb.206                   V        789084698.00000
 
-New Row 17 in 'instrument' [sync '275c9ce347fe1c2d51942c9b8eed62c025c07456']:     1113 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         1.946923         1.000000 response                                                         sts-1h-vbb.206                   V        789084698.00000
+New Row 17 in 'instrument' [sync '26507786aff2d671032234abc2d1b673f5792151']:     1113 Streckeisen STS-1H/VBB Seismometer                 -      - -  20.0000000         1.946923         1.000000 /opt/antelope/data/db/demo/response                              sts-1h-vbb.206                   V        789084698.00000
 
-New Row 18 in 'instrument' [sync '01fb8670e7fdedaa886c14380af338319a304ab2']:     1114 Streckeisen STS-1V/VBB Seismometer                 -      - -  20.0000000         1.942140         1.000000 response                                                         sts-1h-vbb.206                   V        789084698.00000
+New Row 18 in 'instrument' [sync '7bd7f4e5a4455d112607f74016093685bb5c5e1f']:     1114 Streckeisen STS-1V/VBB Seismometer                 -      - -  20.0000000         1.942140         1.000000 /opt/antelope/data/db/demo/response                              sts-1h-vbb.206                   V        789084698.00000
 
-New Row 19 in 'instrument' [sync '9fab1c6e88a3120f14fb4b183f632bf4bd69a099']:     2001 STRECKEISEN                                        -      - -  20.0000000         4.020747         1.000000 response                                                         streckeisen.1                    V        789084698.00000
+New Row 19 in 'instrument' [sync '4cb95ef1d669eebca991ccf909261efcec0b11c3']:     2001 STRECKEISEN                                        -      - -  20.0000000         4.020747         1.000000 /opt/antelope/data/db/demo/response                              streckeisen.1                    V        789084698.00000
 
-New Row 20 in 'instrument' [sync 'ea428b85323b9dc2e8c444db5fdf83a16be50553']:     2002 STRECKEISEN                                        -      - -  20.0000000         3.970145         1.000000 response                                                         streckeisen.2                    V        789084698.00000
+New Row 20 in 'instrument' [sync '913bdf01897be7d65617f810c723a37cc5293058']:     2002 STRECKEISEN                                        -      - -  20.0000000         3.970145         1.000000 /opt/antelope/data/db/demo/response                              streckeisen.2                    V        789084698.00000
 
-New Row 21 in 'instrument' [sync 'f55f6d918d45108dd4118dbf3a2f0333c4dd33c4']:     2003 STRECKEISEN                                        -      - -  20.0000000         4.018808         1.000000 response                                                         streckeisen.3                    V        789084698.00000
+New Row 21 in 'instrument' [sync 'dabaa0788472727795b50beb16d04516baa39c5a']:     2003 STRECKEISEN                                        -      - -  20.0000000         4.018808         1.000000 /opt/antelope/data/db/demo/response                              streckeisen.3                    V        789084698.00000
 
 New Row 0 in 'lastid' [sync '3de4eb1e0af4d60d2521bf11870479aebf562e03']: arid                4860   795223336.00000
 
@@ -3016,43 +2992,85 @@ New Row 2 in 'stamag' [sync '058f19a6c2449eea91d58b1aa015f30ea9f5e25b']:      60
 
 New Row 3 in 'stamag' [sync '6cb9724c6fa0342771da437c8f58ae5cfffa9bc2']:      600 USP        4853      645       -1 P        mb        3.13   -1.00 dbmag                 -1   790466871.00000
 
-New Row 0 in 'wfdisc' [sync 'fd0f9213c09cbf9733e5e5f6d25776c4c651ab70']: CHM    BHZ        706139715.20000    15871        1  1992138   706139841.50000     2527  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.15.CHM.BHZ                    0       -1   790465413.00000
+New Row 0 in 'wfdisc' [sync 'dd9e5762e648d1958864daaa9870f947bc85014b']: CHM    BHZ        706139715.20000    15871        1  1992138   706139841.50000     2527  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.15.CHM.BHZ                    0       -1   790465413.00000
 
-New Row 1 in 'wfdisc' [sync '475954a0c9c0c5e768fdfae742bca74bf6a77c7c']: CHM    BHN        706139715.20000    15872        2  1992138   706139841.50000     2527  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.15.CHM.BHN                    0       -1   790465413.00000
+New Row 1 in 'wfdisc' [sync '51ec43615b78c656d2c344de66f94c9cfad64ac2']: CHM    BHN        706139715.20000    15872        2  1992138   706139841.50000     2527  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.15.CHM.BHN                    0       -1   790465413.00000
 
-New Row 2 in 'wfdisc' [sync '2ea3dd734f66da04d4df25a6f633f13f60334619']: CHM    BHE        706139715.20000    15873        3  1992138   706139841.50000     2527  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.15.CHM.BHE                    0       -1   790465413.00000
+New Row 2 in 'wfdisc' [sync '2adb4112a7184a5363ba134c99a719e2c7602f5b']: CHM    BHE        706139715.20000    15873        3  1992138   706139841.50000     2527  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.15.CHM.BHE                    0       -1   790465413.00000
 
-New Row 3 in 'wfdisc' [sync 'e80847d6ba1b7e43ad821b214ee0b42cc2fec00c']: EKS2   BHZ        706139704.70000    15874        4  1992138   706139801.55000     1938  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.04.EKS2.BHZ                   0       -1   790465413.00000
+New Row 3 in 'wfdisc' [sync 'a1bffa5411e845f458138b1430dd6d783707176a']: EKS2   BHZ        706139704.70000    15874        4  1992138   706139801.55000     1938  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.04.EKS2.BHZ                   0       -1   790465413.00000
 
-New Row 4 in 'wfdisc' [sync 'e9182b8f1d48896512faf044f956db52e7ecf5b7']: EKS2   BHN        706139704.70000    15875        5  1992138   706139801.55000     1938  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.04.EKS2.BHN                   0       -1   790465413.00000
+New Row 4 in 'wfdisc' [sync 'ef6d7da6aea6437fc842a1509ec1380591f6e0ad']: EKS2   BHN        706139704.70000    15875        5  1992138   706139801.55000     1938  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.04.EKS2.BHN                   0       -1   790465413.00000
 
-New Row 5 in 'wfdisc' [sync '05a64c4a9615ecdd773bd88d54a94fe32b43df38']: EKS2   BHE        706139704.70000    15876        6  1992138   706139801.55000     1938  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.04.EKS2.BHE                   0       -1   790465413.00000
+New Row 5 in 'wfdisc' [sync 'af067db72c3832f0ff89b479efbef2112e5acd9a']: EKS2   BHE        706139704.70000    15876        6  1992138   706139801.55000     1938  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.04.EKS2.BHE                   0       -1   790465413.00000
 
-New Row 6 in 'wfdisc' [sync '342f6e0d7e64ba48e3c209fe120d4beae9b450bf']: USP    BHZ        706139715.70000    15877        7  1992138   706139843.35000     2554  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.15.USP.BHZ                    0       -1   790465413.00000
+New Row 6 in 'wfdisc' [sync 'ff073354b527d4199ba51bf0795d2001e8a5d728']: USP    BHZ        706139715.70000    15877        7  1992138   706139843.35000     2554  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.15.USP.BHZ                    0       -1   790465413.00000
 
-New Row 7 in 'wfdisc' [sync 'abb68c05094579527d53a9a265cc603d9ce46e26']: USP    BHN        706139715.70000    15878        8  1992138   706139843.35000     2554  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.15.USP.BHN                    0       -1   790465413.00000
+New Row 7 in 'wfdisc' [sync '9fce453f00df82529042a1a5d97589f99d76cbfc']: USP    BHN        706139715.70000    15878        8  1992138   706139843.35000     2554  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.15.USP.BHN                    0       -1   790465413.00000
 
-New Row 8 in 'wfdisc' [sync '679d8d7d1952fee55e811e3c3bfa1913d8b7f856']: USP    BHE        706139715.70000    15879        9  1992138   706139843.35000     2554  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.15.USP.BHE                    0       -1   790465413.00000
+New Row 8 in 'wfdisc' [sync '12e263b9cb6785d1baeb0e587e055181357c5f7d']: USP    BHE        706139715.70000    15879        9  1992138   706139843.35000     2554  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.15.USP.BHE                    0       -1   790465413.00000
 
-New Row 9 in 'wfdisc' [sync '65bd65f91127503ebb8c2ceaec16cbce400ddf18']: TKM    BHZ        706139719.05000    15880       22  1992138   706139855.95000     2739  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.19.TKM.BHZ                    0       -1   790465413.00000
+New Row 9 in 'wfdisc' [sync '5fa091bda5e269b83f712103349481e96638e3c0']: TKM    BHZ        706139719.05000    15880       22  1992138   706139855.95000     2739  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.19.TKM.BHZ                    0       -1   790465413.00000
 
-New Row 10 in 'wfdisc' [sync '165f71497d7612b3e0dcfd1d744a6a7296c79c1e']: TKM    BHN        706139719.05000    15881       23  1992138   706139855.95000     2739  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.19.TKM.BHN                    0       -1   790465413.00000
+New Row 10 in 'wfdisc' [sync '5012f0c872f0284bc61099584de93727fe87e502']: TKM    BHN        706139719.05000    15881       23  1992138   706139855.95000     2739  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.19.TKM.BHN                    0       -1   790465413.00000
 
-New Row 11 in 'wfdisc' [sync '028c0fcaa24fb0c2ded2de048174276bca75d1c4']: TKM    BHE        706139719.05000    15882       24  1992138   706139855.95000     2739  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.19.TKM.BHE                    0       -1   790465413.00000
+New Row 11 in 'wfdisc' [sync '730db49b0a3426f8e21f4f6a9f5ad6f2810e3185']: TKM    BHE        706139719.05000    15882       24  1992138   706139855.95000     2739  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.19.TKM.BHE                    0       -1   790465413.00000
 
-New Row 12 in 'wfdisc' [sync 'eee97a1d54903b98ef0c20daafc3a6cae38ce71a']: KBK    BHZ        706139714.40000    15883       25  1992138   706139838.45000     2482  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.14.KBK.BHZ                    0       -1   790465413.00000
+New Row 12 in 'wfdisc' [sync '4f1673ede324416f21c2236109f994a3d2dfa7d2']: KBK    BHZ        706139714.40000    15883       25  1992138   706139838.45000     2482  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.14.KBK.BHZ                    0       -1   790465413.00000
 
-New Row 13 in 'wfdisc' [sync 'c182bb690edc569ce1f168b314f34e932ca585d4']: KBK    BHN        706139714.40000    15884       26  1992138   706139838.45000     2482  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.14.KBK.BHN                    0       -1   790465413.00000
+New Row 13 in 'wfdisc' [sync '80d079498aa39a8102fe07fc0d273ec6448ef690']: KBK    BHN        706139714.40000    15884       26  1992138   706139838.45000     2482  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.14.KBK.BHN                    0       -1   790465413.00000
 
-New Row 14 in 'wfdisc' [sync 'a7c56c9c7abee7690507daf51c89268319461983']: KBK    BHE        706139714.40000    15885       27  1992138   706139838.45000     2482  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.14.KBK.BHE                    0       -1   790465413.00000
+New Row 14 in 'wfdisc' [sync 'e0ceb2ce0c8a8e4ad73002a76b8ee5bfea17dc7e']: KBK    BHE        706139714.40000    15885       27  1992138   706139838.45000     2482  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.14.KBK.BHE                    0       -1   790465413.00000
 
-New Row 15 in 'wfdisc' [sync 'c63336eb127d51c879efa9f931003aa7c83e1b82']: AAK    BHZ        706139710.25000    15886       28  1992138   706139822.65000     2249  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.10.AAK.BHZ                    0       -1   790465413.00000
+New Row 15 in 'wfdisc' [sync '004bfd78fce763025e92d46168fe567918888c18']: AAK    BHZ        706139710.25000    15886       28  1992138   706139822.65000     2249  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.10.AAK.BHZ                    0       -1   790465413.00000
 
-New Row 16 in 'wfdisc' [sync '277c1ee601c4e1a5b6f54e5601beb7f83689e160']: AAK    BHN        706139710.25000    15887       29  1992138   706139822.65000     2249  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.10.AAK.BHN                    0       -1   790465413.00000
+New Row 16 in 'wfdisc' [sync 'dd6252c897a7d802d626a6dc4e89f75c41553270']: AAK    BHN        706139710.25000    15887       29  1992138   706139822.65000     2249  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.10.AAK.BHN                    0       -1   790465413.00000
 
-New Row 17 in 'wfdisc' [sync 'a295719617b18058b70b8ca4b9b0e611c5c836fd']: AAK    BHE        706139710.25000    15888       30  1992138   706139822.65000     2249  20.0000000         1.195355         0.000000 RefTek V s2 - wf/knetc/1992/138/210426                                         19921382155.10.AAK.BHE                    0       -1   790465413.00000
+New Row 17 in 'wfdisc' [sync 'a5ff27bd2e49e6b0875b49fb945b232f5d979e0b']: AAK    BHE        706139710.25000    15888       30  1992138   706139822.65000     2249  20.0000000         1.195355         0.000000 RefTek V s2 - /opt/antelope/data/db/demo/wf/knetc/1992/138/210426              19921382155.10.AAK.BHE                    0       -1   790465413.00000
 
-Monitoring database: '/opt/antelope/data/db/demo/demo'
+Adding new arrival table:
+New Row 0 in 'arrival' [sync '8a31aff746d21ec917e72cfbb14c3361526be0f6']: KMI      706139638.90564     4849  1992138       -1     1083 BHN      S        -  2.275   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 1 in 'arrival' [sync '0d61a9b8c25268acd002fc42f305f420a88733bb']: AAK      706139746.35000     4850  1992138       -1       28 BHZ      P        -  0.098   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.7    0.40 -999.00 - ..       6.40 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 2 in 'arrival' [sync '78614c3070304bc7422ef6c43052a33e9874eb28']: KBK      706139751.35000     4851  1992138       -1       25 BHZ      P        -  0.101   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.4    0.40 -999.00 - ..       3.22 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 3 in 'arrival' [sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1']: CHM      706139752.34740     4852  1992138       -1        1 BHZ      P        -  0.401   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        3.3    0.50 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 4 in 'arrival' [sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b']: USP      706139752.40005     4853  1992138       -1        7 BHZ      P        -  0.151   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.6    0.50 -999.00 - ..       3.89 - dbp:rogerh:9333       -1   790465413.00000
+
+Shortening arrival table:
+Deleted row from 'arrival' with sync '8a31aff746d21ec917e72cfbb14c3361526be0f6'
+Deleted row from 'arrival' with sync '0d61a9b8c25268acd002fc42f305f420a88733bb'
+Deleted row from 'arrival' with sync '78614c3070304bc7422ef6c43052a33e9874eb28'
+Deleted row from 'arrival' with sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1'
+Deleted row from 'arrival' with sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b'
+New Row 0 in 'arrival' [sync '8a31aff746d21ec917e72cfbb14c3361526be0f6']: KMI      706139638.90564     4849  1992138       -1     1083 BHN      S        -  2.275   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Lengthening arrival table:
+New Row 1 in 'arrival' [sync '0d61a9b8c25268acd002fc42f305f420a88733bb']: AAK      706139746.35000     4850  1992138       -1       28 BHZ      P        -  0.098   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.7    0.40 -999.00 - ..       6.40 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 2 in 'arrival' [sync '78614c3070304bc7422ef6c43052a33e9874eb28']: KBK      706139751.35000     4851  1992138       -1       25 BHZ      P        -  0.101   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.4    0.40 -999.00 - ..       3.22 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 3 in 'arrival' [sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1']: CHM      706139752.34740     4852  1992138       -1        1 BHZ      P        -  0.401   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        3.3    0.50 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 4 in 'arrival' [sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b']: USP      706139752.40005     4853  1992138       -1        7 BHZ      P        -  0.151   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.6    0.50 -999.00 - ..       3.89 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 5 in 'arrival' [sync 'fbdc86034c2b5f7c55bc263539bcbf47e43e8900']: TKM      706139755.45010     4854  1992138       -1       22 BHZ      P        -  0.316   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..       2.99 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 6 in 'arrival' [sync '6b3e2d7d1de31ff896879595e631757bbfb46a96']: AAK      706139775.33963     4855  1992138       -1       29 BHN      S        -  2.164   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 7 in 'arrival' [sync 'b958608cc4b39c0916739d05a93f0250f7c8c3ba']: KBK      706139784.43397     4856  1992138       -1       26 BHN      S        -  2.065   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 8 in 'arrival' [sync '544dbce313a6487571b45cfc804ce39e5cdc69b9']: CHM      706139787.28949     4857  1992138       -1        2 BHN      S        -  1.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 9 in 'arrival' [sync '11109ce7dbbae45f44983d83720b0e4c0ae76be7']: USP      706139788.12868     4858  1992138       -1        9 BHE      S        -  2.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 10 in 'arrival' [sync '67766940da86bc7b5bf516d8d5757e26e2c5b7cb']: AAK      706139712.37677     4859  1992138       -1       -1 BHZ      del      -  2.222   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000    47276.3    0.10 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223377.00000
+
+New Row 11 in 'arrival' [sync '32b7c6233ba1ec0952d4a3f96ae0235327c78912']: EKS2     706139709.96670     4860  1992138       -1       -1 BHZ      del      - -1.000   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223373.00000
+
+Monitoring database: 'results/dbmon/demo'
 Cached database pointer: 0 -501 -501 -501
 Schema table 'achanaux':
 	Filename: ''
@@ -3069,9 +3087,9 @@ Schema table 'adoption':
 	Sync strings:
 	Watched: yes
 Schema table 'affiliation':
-	Filename: '/opt/antelope/data/db/demo/demo.affiliation'
+	Filename: 'results/dbmon/demo.affiliation'
 	Exists: yes
-	File modification time:  4/24/1996   2:33:53.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 13
 	Null-row sync string: b65fb9b9cb37f59e1bf5869c6c6c1f8c40b2e92f
 	Sync strings:
@@ -3118,9 +3136,9 @@ Schema table 'anetsta':
 	Sync strings:
 	Watched: yes
 Schema table 'arrival':
-	Filename: '/opt/antelope/data/db/demo/demo.arrival'
+	Filename: 'results/dbmon/demo.arrival'
 	Exists: yes
-	File modification time:  3/14/1995  23:23:26.000
+	File modification time:  3/12/2010  21:51:53.000
 	Number of records: 12
 	Null-row sync string: 29b3c2c8c162e1acb2bfe82bbc375acf860234fb
 	Sync strings:
@@ -3145,9 +3163,9 @@ Schema table 'arrival_tshift':
 	Sync strings:
 	Watched: yes
 Schema table 'assoc':
-	Filename: '/opt/antelope/data/db/demo/demo.assoc'
+	Filename: 'results/dbmon/demo.assoc'
 	Exists: yes
-	File modification time:  1/18/1995  22:29:29.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 9
 	Null-row sync string: 79029ac765971e2082efe5c7e9da6c16c6294037
 	Sync strings:
@@ -3442,34 +3460,34 @@ Schema table 'hypocentroid':
 	Sync strings:
 	Watched: yes
 Schema table 'instrument':
-	Filename: '/opt/antelope/data/db/demo/demo.instrument'
+	Filename: 'results/dbmon/demo.instrument'
 	Exists: yes
-	File modification time:  1/02/1995  22:12:04.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 22
 	Null-row sync string: 8b318f663c200e39e0819c3d0b7bbb469af71f7f
 	Sync strings:
-	  0 31b387ca26156034574c18aa813c3124cbb62e69
-	  1 4d829abffbe434c6c5a413d4babbda4629016317
-	  2 fb9200b199000873d405e7603ec812c28c9a2cee
-	  3 3f0180f80abe6127a08df8b202075657c648948d
-	  4 dd156043164265ffd34a2ac4f48b7267d59fe499
-	  5 8b49e9b6f721aa4f60c9f8d77ccc175f5871ac7f
-	  6 19c48328081ac9274f2a4a7e510dee4b5e031b40
-	  7 4ecf98e8b830b5fa9762a844017681dbb4d53b90
-	  8 b4603383ea0ef791d458d9598f7c9c56e4c72795
-	  9 87767ca805ed783b10aee1e471da9d4ac2e57d16
-	 10 9143ab412aeb19ac7bdbac239bb4006f5a04f8e6
-	 11 70a125d92da8a2b86b181f8c0abc966e1ad52617
-	 12 efd8b28a39ba5c8da09ad83680519c3bad2bf9bf
-	 13 2b9db2e97ad87691094f83ff5147af1882db34ce
-	 14 fa46da51883d4c94f06b2b6c2dddef2f18117ca6
-	 15 df378bc1890c330c6bb96b20e565a69dd44e7706
-	 16 cb4be035a576a46173e6b9baf5a611220651419b
-	 17 275c9ce347fe1c2d51942c9b8eed62c025c07456
-	 18 01fb8670e7fdedaa886c14380af338319a304ab2
-	 19 9fab1c6e88a3120f14fb4b183f632bf4bd69a099
-	 20 ea428b85323b9dc2e8c444db5fdf83a16be50553
-	 21 f55f6d918d45108dd4118dbf3a2f0333c4dd33c4
+	  0 b5c170795e5b09a80b34d57c92596616ef363615
+	  1 71d3b354a0562afe538b4f133c78239f198f3c18
+	  2 5ecea4b7e9e1e60224bd9dc57941ccac17a41469
+	  3 e6df30d8f93d21f8ff09bd10748b11d4fc6748d9
+	  4 e59fcaceef4367c465683d3fc8a9cfe7ead5d6f0
+	  5 803a79148f63342fcd1c48e55b939af5c1e448cf
+	  6 667f7b00b1e72af35ffa7c6853d156434340ac83
+	  7 08f9a7f57d4025a4c9bb49ebc77e88dd5181f2a5
+	  8 830739d09380abba15b3720fc1126efdb1557ef4
+	  9 4ac4c370e35da01a269549d4043295fea8125b8d
+	 10 62612a28dc0ab66035aabfaff9b5cb9800b1307d
+	 11 732101e1aafa4bf4914aa9466d0922c02facf6b7
+	 12 73a23720d0d834bd62b47ced21f80b396787026d
+	 13 607072e6d741793ad8b0c66755041eb7cf8b164d
+	 14 e579d2185cc6ac9b1a475c7db156501d6bae70f4
+	 15 185e4b6e210193d3ee341afb399505fa3845fc53
+	 16 6e5bb0a3ac954aa06d66d3b2091005a6bb76270e
+	 17 26507786aff2d671032234abc2d1b673f5792151
+	 18 7bd7f4e5a4455d112607f74016093685bb5c5e1f
+	 19 4cb95ef1d669eebca991ccf909261efcec0b11c3
+	 20 913bdf01897be7d65617f810c723a37cc5293058
+	 21 dabaa0788472727795b50beb16d04516baa39c5a
 	Watched: yes
 Schema table 'iptable':
 	Filename: ''
@@ -3479,9 +3497,9 @@ Schema table 'iptable':
 	Sync strings:
 	Watched: yes
 Schema table 'lastid':
-	Filename: '/opt/antelope/data/db/demo/demo.lastid'
+	Filename: 'results/dbmon/demo.lastid'
 	Exists: yes
-	File modification time:  3/14/1995  23:22:17.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 1
 	Null-row sync string: 61bffaae48e5fda103a28eee492dbf04585181c6
 	Sync strings:
@@ -3502,9 +3520,9 @@ Schema table 'moment':
 	Sync strings:
 	Watched: yes
 Schema table 'netmag':
-	Filename: '/opt/antelope/data/db/demo/demo.netmag'
+	Filename: 'results/dbmon/demo.netmag'
 	Exists: yes
-	File modification time:  1/18/1995  22:08:10.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 5
 	Null-row sync string: 19e36114fb9dd1775075601bae17ee52be5b9b62
 	Sync strings:
@@ -3522,9 +3540,9 @@ Schema table 'netperf':
 	Sync strings:
 	Watched: yes
 Schema table 'network':
-	Filename: '/opt/antelope/data/db/demo/demo.network'
+	Filename: 'results/dbmon/demo.network'
 	Exists: yes
-	File modification time: 10/08/1996  15:49:16.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 1
 	Null-row sync string: 9f91f56a05cd8cb4341c214e460b6abf6ce459b4
 	Sync strings:
@@ -3545,9 +3563,9 @@ Schema table 'origerr':
 	Sync strings:
 	Watched: yes
 Schema table 'origin':
-	Filename: '/opt/antelope/data/db/demo/demo.origin'
+	Filename: 'results/dbmon/demo.origin'
 	Exists: yes
-	File modification time:  1/18/1995  22:21:00.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 1351
 	Null-row sync string: 84c9613022ab9c74809ae97cb04bb3b260cedef9
 	Sync strings:
@@ -5030,9 +5048,9 @@ Schema table 'seismometer':
 	Sync strings:
 	Watched: yes
 Schema table 'sensor':
-	Filename: '/opt/antelope/data/db/demo/demo.sensor'
+	Filename: 'results/dbmon/demo.sensor'
 	Exists: yes
-	File modification time: 12/01/1994  22:58:09.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 39
 	Null-row sync string: d9b9c8a9b740554c6f376b3ea76f8440fe8760dd
 	Sync strings:
@@ -5091,9 +5109,9 @@ Schema table 'sensormodel':
 	Sync strings:
 	Watched: yes
 Schema table 'site':
-	Filename: '/opt/antelope/data/db/demo/demo.site'
+	Filename: 'results/dbmon/demo.site'
 	Exists: yes
-	File modification time: 12/01/1994  22:58:10.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 13
 	Null-row sync string: b6a7212b6cb2acdca46f89caf47569c934b62832
 	Sync strings:
@@ -5112,9 +5130,9 @@ Schema table 'site':
 	 12 375dc2fe5e35898d100c560180419512433e84db
 	Watched: yes
 Schema table 'sitechan':
-	Filename: '/opt/antelope/data/db/demo/demo.sitechan'
+	Filename: 'results/dbmon/demo.sitechan'
 	Exists: yes
-	File modification time: 12/01/1994  22:58:10.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 39
 	Null-row sync string: 57ba5e3ce2c0215793ac4f08a699fef883855022
 	Sync strings:
@@ -5201,9 +5219,9 @@ Schema table 'stage':
 	Sync strings:
 	Watched: yes
 Schema table 'stamag':
-	Filename: '/opt/antelope/data/db/demo/demo.stamag'
+	Filename: 'results/dbmon/demo.stamag'
 	Exists: yes
-	File modification time:  1/18/1995  22:30:50.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 4
 	Null-row sync string: fbc2c725344fdc6e9975b83810f1f75e6a5d6a0d
 	Sync strings:
@@ -5248,30 +5266,30 @@ Schema table 'trigger':
 	Sync strings:
 	Watched: yes
 Schema table 'wfdisc':
-	Filename: '/opt/antelope/data/db/demo/demo.wfdisc'
+	Filename: 'results/dbmon/demo.wfdisc'
 	Exists: yes
-	File modification time:  6/22/2004  11:28:02.000
+	File modification time:  3/12/2010  21:51:51.000
 	Number of records: 18
 	Null-row sync string: 67da46400fbc192b0d2981199ef3d02ab46adfcb
 	Sync strings:
-	  0 fd0f9213c09cbf9733e5e5f6d25776c4c651ab70
-	  1 475954a0c9c0c5e768fdfae742bca74bf6a77c7c
-	  2 2ea3dd734f66da04d4df25a6f633f13f60334619
-	  3 e80847d6ba1b7e43ad821b214ee0b42cc2fec00c
-	  4 e9182b8f1d48896512faf044f956db52e7ecf5b7
-	  5 05a64c4a9615ecdd773bd88d54a94fe32b43df38
-	  6 342f6e0d7e64ba48e3c209fe120d4beae9b450bf
-	  7 abb68c05094579527d53a9a265cc603d9ce46e26
-	  8 679d8d7d1952fee55e811e3c3bfa1913d8b7f856
-	  9 65bd65f91127503ebb8c2ceaec16cbce400ddf18
-	 10 165f71497d7612b3e0dcfd1d744a6a7296c79c1e
-	 11 028c0fcaa24fb0c2ded2de048174276bca75d1c4
-	 12 eee97a1d54903b98ef0c20daafc3a6cae38ce71a
-	 13 c182bb690edc569ce1f168b314f34e932ca585d4
-	 14 a7c56c9c7abee7690507daf51c89268319461983
-	 15 c63336eb127d51c879efa9f931003aa7c83e1b82
-	 16 277c1ee601c4e1a5b6f54e5601beb7f83689e160
-	 17 a295719617b18058b70b8ca4b9b0e611c5c836fd
+	  0 dd9e5762e648d1958864daaa9870f947bc85014b
+	  1 51ec43615b78c656d2c344de66f94c9cfad64ac2
+	  2 2adb4112a7184a5363ba134c99a719e2c7602f5b
+	  3 a1bffa5411e845f458138b1430dd6d783707176a
+	  4 ef6d7da6aea6437fc842a1509ec1380591f6e0ad
+	  5 af067db72c3832f0ff89b479efbef2112e5acd9a
+	  6 ff073354b527d4199ba51bf0795d2001e8a5d728
+	  7 9fce453f00df82529042a1a5d97589f99d76cbfc
+	  8 12e263b9cb6785d1baeb0e587e055181357c5f7d
+	  9 5fa091bda5e269b83f712103349481e96638e3c0
+	 10 5012f0c872f0284bc61099584de93727fe87e502
+	 11 730db49b0a3426f8e21f4f6a9f5ad6f2810e3185
+	 12 4f1673ede324416f21c2236109f994a3d2dfa7d2
+	 13 80d079498aa39a8102fe07fc0d273ec6448ef690
+	 14 e0ceb2ce0c8a8e4ad73002a76b8ee5bfea17dc7e
+	 15 004bfd78fce763025e92d46168fe567918888c18
+	 16 dd6252c897a7d802d626a6dc4e89f75c41553270
+	 17 a5ff27bd2e49e6b0875b49fb945b232f5d979e0b
 	Watched: yes
 Schema table 'wfdisc_tshift':
 	Filename: ''
