@@ -58,6 +58,15 @@ tadataV2_stash.xml
 .nf
 pf2xml(1), dlmon(1)
 .fi
+.SH "BUGS AND CAVEATS"
+\fBorbdlstat2xml\fP will translate the string field \fIopt\fP, if present in the input 
+parameter file, into the five fields \fIacok\fP, \fIapi\fP, \fIisp1\fP, \fIisp2\fP, 
+and \fIti\fP. If any of those string fields are present in the value of \fIopt\fP, 
+the corresponding added parameter will be assigned a value of 1. If \fIopt\fP is present 
+and non-null but does not contain the name of the new parameter, the newly added 
+parameter will be assigned a value of 0. If \fIopt\fP is missing or null ("-") for 
+a given station in an input parameter file, these five new parameters will be set to 
+"-". 
 .SH AUTHOR
 .nf
 Kent Lindquist
