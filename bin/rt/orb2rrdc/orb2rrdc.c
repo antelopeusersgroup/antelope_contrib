@@ -12,6 +12,8 @@ int	Verbose = 0;
 int 	VeryVerbose = 0;
 FILE	*Rrdfp;
 
+static void pfmorph( Pf *pf );
+
 static void
 usage( void )
 {
@@ -22,6 +24,95 @@ usage( void )
 		"kent@lindquistconsulting.com" );
 
 	exit( 1 );
+}
+
+static void
+pfmorph( Pf *pf ) {
+	Pf	*dlspf;
+	Pf	*stapf;
+	Tbl	*stas;
+	int	ista;
+	char	*sta;
+	char	*opt_string;
+
+	if( pfget( pf, "dls", (void **) &dlspf ) == PFINVALID ) {
+
+		return;
+	}
+
+	stas = pfkeys( dlspf );
+
+	for( ista = 0; ista < maxtbl( stas ); ista++ ) {
+
+		sta = gettbl( stas, ista );
+
+		if( pfget( dlspf, sta, (void **) &stapf ) == PFINVALID ) {
+			
+			continue;
+		}
+
+
+		if( ( opt_string = pfget_string( stapf, "opt" ) ) == (char *) NULL ||
+		    ! strcmp( opt_string, "-" ) ) {
+
+			pfset( stapf, "acok", "-" );
+			pfset( stapf, "api",  "-" );
+			pfset( stapf, "isp1", "-" );
+			pfset( stapf, "isp2", "-" );
+			pfset( stapf, "ti",   "-" );
+
+		} else {
+
+			if( strcontains( opt_string, "acok", NULL, NULL, NULL ) ) {
+
+				pfset( stapf, "acok", "1" );
+				
+			} else {
+
+				pfset( stapf, "acok", "0" );
+			}
+
+			if( strcontains( opt_string, "api", NULL, NULL, NULL ) ) {
+
+				pfset( stapf, "api", "1" );
+				
+			} else {
+
+				pfset( stapf, "api", "0" );
+			}
+
+			if( strcontains( opt_string, "isp1", NULL, NULL, NULL ) ) {
+
+				pfset( stapf, "isp1", "1" );
+				
+			} else {
+
+				pfset( stapf, "isp1", "0" );
+			}
+
+			if( strcontains( opt_string, "isp2", NULL, NULL, NULL ) ) {
+
+				pfset( stapf, "isp2", "1" );
+				
+			} else {
+
+				pfset( stapf, "isp2", "0" );
+			}
+
+			if( strcontains( opt_string, "ti", NULL, NULL, NULL ) ) {
+
+				pfset( stapf, "ti", "1" );
+				
+			} else {
+
+				pfset( stapf, "ti", "0" );
+			}
+		}
+	}
+
+	freetbl( stas, 0 );
+
+	return;
 }
 
 static void
@@ -388,6 +479,15 @@ main( int argc, char **argv )
 						srcname, s = strtime( time ) );
 
 				free( s );
+			}
+
+			pfmorph( pkt->pf );
+
+			if( VeryVerbose ) {
+
+				fprintf( stderr, "Morphed parameter-file '%s' to interpret 'opt':\n%s\n\n", 
+						srcname, 
+						pf2string( pkt->pf ) );
 			}
 
 			pfget( pkt->pf, "dls", (void **) &dlspf );
