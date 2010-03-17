@@ -373,7 +373,9 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			trunctbl( ttr->syncs, 0, free );
 
-			for( db.record = 0; db.record < new_nrecs; db.record++ ) {
+			/* Prevent bus error from reading past end of table that may still be shortening: */
+
+			for( db.record = 0; db.record < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); db.record++ ) {
 
 				sync = dbmon_compute_row_sync( db );
 
