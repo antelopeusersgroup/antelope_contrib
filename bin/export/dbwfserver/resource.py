@@ -288,7 +288,7 @@ class Root(resource.Resource):
         return resource.Resource.getChild(self, name, request)
 #}}}
     def render_GET(self, request):
-#{{{
+
         """
         Load template and substiude values. 
         """
@@ -300,6 +300,7 @@ class Root(resource.Resource):
         }
 
         template = config.index_html_template
+        log.msg( template )
 
         html = Template(open(template).read()).substitute(tvals)
 
@@ -315,6 +316,8 @@ class Root(resource.Resource):
                 ?foo=bar&foo=baz&quux=spam 
             results in: 
                 {'foo': ['bar', 'baz'], 'quux': ['spam']}. )
+        """
+
         """
 
         if request.args:
@@ -343,5 +346,85 @@ class Root(resource.Resource):
 
             request.write(rqst)
 
+        """
+
         return ""
-#}}}
+
+
+class QueryParser(resource.Resource):
+
+    def _jquery_includes(self):
+
+        # {{{
+        jquery_includes = ''
+
+        for jqf in config.jquery_files:
+
+            if(re.match(r'^IE\s+', jqf)):
+
+                re.sub(r'^IE\s+', '', jqf)
+                jquery_includes += '<!--[if IE]>\n'
+                jquery_includes += '<script language="javascript" '
+                jquery_includes += 'type="text/javascript" src="jquery/'
+                jquery_includes += jqf
+                jquery_includes += '"></script>\n'
+                jquery_includes += '<![endif]-->\n'
+
+            else:
+
+                jquery_includes += '<script type="text/javascript" '
+                jquery_includes += 'src="jquery/'
+                jquery_includes += jqf
+                jquery_includes += '"></script>\n'
+
+        return jquery_includes
+        # }}}
+
+    def getChild(self, name, request):
+
+        return self
+
+    def render(self, request):
+
+        args = request.uri.split("/")[1:]
+
+        template_child = config.index_html_child_template
+
+        my_list = '<ul class="ui-helper-reset ui-helper-clearfix">'
+
+        if args[0] == 'stations':
+
+            mystations = eventdata.available_stations()
+            mystations.sort()
+
+            for mys in mystations:
+
+                my_list += "<li class='ui-state-active ui-corner-all'><a href='/stations/%s'>%s</li>\n" % (mys,mys)
+
+        elif args[0] == 'events':
+
+            myevents = eventdata.event_list()
+            myevents.sort()
+
+            for mye in myevents:
+
+                my_list += "<li class='ui-state-active ui-corner-all'><a href='/events/%s'>%s</li>\n" % (mye,mye)
+
+        dir_dict = { 
+            "dbname":            config.dbname,
+            "application_title": config.application_title,
+            "jquery_includes":   self._jquery_includes(),
+            "dir":               args[0], 
+            "mylist":            my_list, 
+            "sta":               'H20A', 
+            "chan":              'BHZ',
+            "orid":              '66559'
+        }
+
+        log.msg(dir_dict['dir'])
+
+        html_stations = Template(open(template_child).read()).substitute(dir_dict)
+
+        request.write( html_stations )
+
+        return ""

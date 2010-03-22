@@ -12,7 +12,7 @@ h4 { text-align:center;font-family:sans-serif;padding:8px; }
 p.chantitle { margin:0;font-weight:bold;font-size:120%;padding:0; }
 
 /* Block level elements */
-div#content { margin:10px; }
+div#content { margin:0;padding:0; }
 div#container { width:800px; }
 div#event { position:absolute;top:1px;right:1px; }
 div#loading { position:absolute;top:0px;right:0px;min-height:33px;min-width:100px;padding:4px;margin:0;background: url(images/ajax-loader.gif) #FFA500 no-repeat center left;z-index:999; }
@@ -20,32 +20,36 @@ div#chan_labels { font-weight:bold;font-size:120%; }
 div#wforms { border:1px solid #C9C9EE;background-color:#FFF;margin:1.0em 0; }
 
 /* Inline elements */
-div#crumbs { margin:0;padding:0;border:1px solid #C9C9EE ; }
+div#crumbs { margin:0;padding:0;border:1px solid #C9C9EE;clear:both; }
 
-/* List definitions */
-div#conf ul { margin:10px 0;padding:0;text-align:left; }
-div#conf ul li { display:inline;list-style-type:none;margin:0 5px 0 0;}
-div#conf ul li a { padding: 5px 5px 5px 20px;position:relative;text-decoration:none;color:#000; }
-div#conf ul li a span.ui-icon { left:0.2em;margin:-8px 5px 0 0;position:absolute;top:50%; }
+/* Configuration header */
+div#conf { float:left;border:none;border-bottom:1px solid #7F7F7F;background: url(images/bkgrd_1x50.png) repeat-x #C9C9EE;width:100%;margin:0;padding:0;list-style:none; }
+div#conf div#left { float:left;margin:0;padding:10px; }
+div#conf div#right { float:right;margin:0;padding:10px; }
+div#conf div#left h1 { padding:0;margin:0;color:#7F7F7F; }
+div#conf div#right ul { margin:0;padding:0;text-align:left; }
+div#conf div#right ul li { display:inline;list-style-type:none;margin:0;border-right:1px solid #7F7F7F;padding:5px;}
+div#conf div#right ul li.last { border-right:none; }
+div#conf div#right ul li a { padding:0;color:#7F7F7F;text-decoration:underline; }
+div#conf div#right ul li a:hover { padding:0;color:#00F;text-decoration:underline; }
 
-div#nav ul, div#conf ul { margin:10px 0;padding:0; }
-div#nav ul li, div#conf ul li { display:inline;padding:5px;list-style-type:none; }
+/* Title div */
+div#title { clear:both;float:left;border-bottom: 1px solid #7F7F7F; background-color:#FFF;margin:0;padding:0;width:100%; }
+div#title div#dbpath { float:left;margin:0;padding:10px;font-weight:bold; }
+div#title div#nav { float:right;margin:0;padding:10px; }
+div#title div#nav ul { margin:0;padding:0; }
+div#title div#nav ul li { display:inline;padding:5px;list-style-type:none; }
 
-div#subnav ul { margin:10px 0;padding:0;text-align:left; }
-div#subnav ul li { display:inline;padding:5px;margin: 0 5px 0 0;list-style-type:none; }
+/* Subnav */
+div#subnav { clear:both;margin:0;padding:5px;}
+div#subnav ul { margin:0;padding:0;text-align:left; }
+div#subnav ul li { display:inline;padding:5px;margin:0 5px 5px 0;list-style-type:none;float:left;width:40px;text-align:center; }
 div#subnav ul br { margin-bottom:15px; }
-
-/* Crumbs trail */
-div#crumbs p { margin:0;padding:4px;border:1px solid #FFF;background:#C9C9EE url(images/ui-bg_highlight-soft_100_C9C9EE_1x100.png) repeat-x scroll 50% 50%;color:#000;font-size:100%;text-transform:capitalize;font-weight:bold; }
-div#crumbs p a { color: #0000FF; }
-div#crumbs p a:hover { color: #000000;background-color:#FFFFFF; }
 
 /* Text formatting */
 div#interact p { text-align:center;color:#696969;margin:14px; }
 div#loading p { margin: 8px 0 0 35px;font-size:14px;color:#FFF;font-weight:bold;text-align:left; }
 span#dbname { font-family: Courier, "Courier New", monospace }
-
-div#title { text-align:center;margin-top:8px;font-weight:bold; }
 
 /* Event metadata layout */
 div#event table#eventTable { font-weight:normal;color:#000;font-size:10px;border:1px solid #C9C9EE;background-color:#FFF; }

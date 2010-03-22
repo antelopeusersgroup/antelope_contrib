@@ -293,8 +293,7 @@ PlotSelect = {
 
         if (typeof(resp['error']) != "undefined" ) {
             alert('ERROR ON SERVER:\n'+resp['error']);
-        }
-        else {
+        } else {
 
             var count = 0;
 
@@ -322,6 +321,8 @@ PlotSelect = {
                     }
                 }
 
+                //temp_hash.sort();
+
                 for (var i in temp_hash) {
 
                     output += "<li class='ui-state-active ui-corner-all'>";
@@ -345,6 +346,7 @@ PlotSelect = {
 
                 // {{{ Create unordered list
 
+                resp.sort();
                 $.each(resp, function(i,val){
 
                     output += "<li class='ui-state-active ui-corner-all'>";
@@ -375,8 +377,8 @@ PlotSelect = {
             PlotSelect.init();
             return false;
 
-            // }}} Print list of stations or display event
         }
+        // }}} Print list of stations or display event
 
     },
 

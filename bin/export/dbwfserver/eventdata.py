@@ -227,12 +227,12 @@ class EventData():
         if not self.event_cache:
             self._get_event_cache()
 
-        list = []   # List of orids or stations
+        temp_list = []
         temp_dic = {}
 
         log.msg("Event_list function. STA=%s ORID=%s" % (sta,orid) )
 
-        if  not self.event_cache.keys():
+        if not self.event_cache.keys():
             temp_dic['error'] = ("No events out of DB query. Need a join of [EVENT] ORIGIN and ASSOC tables." )
             log.msg("Exceptionon data: %s" % temp_dic['error'])
             return temp_dic
@@ -253,7 +253,14 @@ class EventData():
 
         else:
 
-            return self.event_cache
+            ev_list = [] 
+
+            for st,ev in self.event_cache.iteritems():
+
+                temp_list.extend(ev)
+
+            ev_list = list(set(temp_list))
+            return ev_list
 
 
     def get_segment(self, sta, chan, canvas_size, orid=None, time_window=None, mintime=None, maxtime=None, filter=None):
