@@ -306,48 +306,6 @@ class Root(resource.Resource):
 
         request.write( html )
 
-        """
-        If request.args defined...
-
-        request.path The path only (arguments not included).
-        request.args All of the arguments, including URL and POST arguments.
-        request.uri  The full URI that was requested (includes arguments). 
-            For request.args:
-                ?foo=bar&foo=baz&quux=spam 
-            results in: 
-                {'foo': ['bar', 'baz'], 'quux': ['spam']}. )
-        """
-
-        """
-
-        if request.args:
-            rqst =  '<script type="text/javascript">$(document).ready('
-
-            if len(request.args) > 1:
-                text = '{'
-                for arg in request.args:
-                    if arg == 'chan' or arg == 'sta':
-                        text = text + arg + ':' + str(request.args[arg]) + ','
-                    else:
-                        text = text + arg + ':"' + str(request.args[arg]) + '",'
-                text = text + 'url:"yes"}'
-                rqst =  rqst + 'PlotSelect.getData('+text+')'
-
-            elif 'orid' in request.args:
-                rqst =  rqst + 'PlotSelect.doQueryAjax("data","events","-","'+request.args['orid']+'")'
-
-            elif 'sta' in request.args:
-                rqst =  rqst + 'PlotSelect.doQueryAjax("data","events",'+str(request.args['sta'])+',-1)'
-
-            else:
-                reqst = rqst + 'alert("Problem on request for data: %s")' % request.args
-
-            rqst =  rqst + ');</script>'
-
-            request.write(rqst)
-
-        """
-
         return ""
 
 
@@ -386,13 +344,13 @@ class QueryParser(resource.Resource):
 
     def render(self, request):
 
-        dir_dict = { 
+        tvals = { 
             "dbname":            config.dbname,
             "application_title": config.application_title,
             "jquery_includes":   self._jquery_includes(),
             "dir":               '', 
             "key":               '', 
-            "my_list":            ''
+            "my_list":           ''
         }
 
         args = request.uri.split("/")[1:]
@@ -404,13 +362,13 @@ class QueryParser(resource.Resource):
         if args:
 
             metadatatype = args[0]
-            dir_dict['dir'] = args[0]
+            tvals['dir'] = args[0]
 
             if metadatatype == 'stations':
 
                 if len(args) > 1:
 
-                    dir_dict['key'] = args[1]
+                    tvals['key'] = args[1]
                     args_list = args[1].split('+')
 
                     mydata = eventdata.event_list(args_list)
@@ -427,7 +385,7 @@ class QueryParser(resource.Resource):
 
                     mydata = eventdata.event_list(None,args[1])
                     metadatatype = 'wfs'
-                    dir_dict['key'] = args[1]
+                    tvals['key'] = args[1]
 
                     if not mydata:
                         request.setResponseCode(404)
@@ -458,14 +416,14 @@ class QueryParser(resource.Resource):
                 for mys in mydata:
                     my_list += "<li class='ui-state-active ui-corner-all'><a href='/%s/%s'>%s</a></li>\n" % (metadatatype,mys,mys)
 
-            dir_dict['my_list'] = my_list
+            tvals['my_list'] = my_list
 
         else:
 
             request.setResponseCode(404)
             return "Resource not found (404 error)"
 
-        html_stations = Template(open(template_child).read()).substitute(dir_dict)
+        html_stations = Template(open(template_child).read()).substitute(tvals)
 
         request.write( html_stations )
 
