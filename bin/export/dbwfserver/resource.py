@@ -2,6 +2,7 @@ from twisted.python import log
 import sys
 import os
 import re
+from time import gmtime, strftime
 
 from string import Template
 from twisted.web import resource
@@ -289,9 +290,7 @@ class Root(resource.Resource):
 #}}}
     def render_GET(self, request):
 
-        """
-        Load template and substiude values. 
-        """
+        # {{{ Load template and substiude values. 
 
         tvals = {
             "dbname":config.dbname,
@@ -301,6 +300,7 @@ class Root(resource.Resource):
 
         template = config.index_html_template
         log.msg( template )
+        # }}} Load template and substiude values. 
 
         html = Template(open(template).read()).substitute(tvals)
 
@@ -344,6 +344,8 @@ class QueryParser(resource.Resource):
 
     def render(self, request):
 
+        # {{{ Output based on URI query args
+
         tvals = { 
             "dbname":            config.dbname,
             "application_title": config.application_title,
@@ -385,11 +387,11 @@ class QueryParser(resource.Resource):
 
                     mydata = eventdata.event_list(None,args[1])
                     metadatatype = 'wfs'
-                    tvals['key'] = args[1]
+                    tvals['key'] = strftime("%Y-%m-%d %H:%M:%S",gmtime(float(args[1])))
 
                     if not mydata:
                         request.setResponseCode(404)
-                        return "Origin number code %s does not have any stations recording arrivals  (404 error)" % (args[1])
+                        return "Origin time %s does not have any stations recording arrivals (404 error)" % (args[1])
 
                 else:
                     mydata = eventdata.event_list()
@@ -405,16 +407,29 @@ class QueryParser(resource.Resource):
 
                 print "~ Test of mydata:", mydata
 
-                for staname,oridlist in mydata.iteritems():
+                for my_key,my_vals in mydata.iteritems():
 
-                    for my_orid in oridlist:
-                        my_list += "<li class='ui-state-active ui-corner-all'><a href='/wfs/%s/%s'>%s</a></li>\n" % (staname,my_orid,my_orid)
+                    my_vals.sort()
+
+                    for val in my_vals:
+                        if metadatatype == 'stations':
+                            val_readable = strftime("%Y-%m-%d %H:%M:%S",gmtime(float(val)))
+                            my_list += "<li class='ui-state-active ui-corner-all'><a href='/wfs/%s/%s'>%s</a></li>\n" % (my_key,val,val_readable)
+                        else:
+                            val_readable = val
+                            my_list += "<li class='ui-state-active ui-corner-all'><a href='/wfs/%s/%s'>%s</a></li>\n" % (val,my_key,val_readable)
 
             else:
 
                 mydata.sort()
                 for mys in mydata:
-                    my_list += "<li class='ui-state-active ui-corner-all'><a href='/%s/%s'>%s</a></li>\n" % (metadatatype,mys,mys)
+
+                    if metadatatype == 'events':
+                        mys_readable = strftime("%Y-%m-%d %H:%M:%S",gmtime(float(mys)))
+                    else:
+                        mys_readable = mys
+
+                    my_list += "<li class='ui-state-active ui-corner-all'><a href='/%s/%s'>%s</a></li>\n" % (metadatatype,mys,mys_readable)
 
             tvals['my_list'] = my_list
 
@@ -423,8 +438,20 @@ class QueryParser(resource.Resource):
             request.setResponseCode(404)
             return "Resource not found (404 error)"
 
+        # }}} Output based on URI query args
+
         html_stations = Template(open(template_child).read()).substitute(tvals)
 
         request.write( html_stations )
+
+        return ""
+
+class Waveform(resource.Resource):
+
+    def getChild(self, name, request):
+
+        return self
+
+    def render(self, request):
 
         return ""

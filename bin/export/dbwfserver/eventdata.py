@@ -83,12 +83,13 @@ class EventData():
 
             db.record = i
 
-            sta,orid = db.getv('sta', 'orid')
+            sta,orid_time_raw = db.getv('sta', 'origin.time')
+            orid_time = int(orid_time_raw)
 
             if config.debug:
-                log.msg("\tEvent:%s %s" % (sta,orid))
+                log.msg("\tEvent:%s %s" % (sta,orid_time))
 
-            self.event_cache[sta].append(orid)
+            self.event_cache[sta].append(orid_time)
 
         self.call = reactor.callLater(600, self._get_event_cache)
 
@@ -193,7 +194,7 @@ class EventData():
                 temp_dic[st] = self.stachan_cache[st]
             return temp_dic
 
-    def event_list(self, sta=None, orid=None):
+    def event_list(self, sta=None, orid_time=None):
 
         """
         Get a list of events from the database
@@ -214,34 +215,33 @@ class EventData():
         temp_list = []
         temp_dic = {}
 
-        log.msg("Event_list function. STA=%s ORID=%s" % (sta,orid) )
+        if config.debug:
+            log.msg("Event_list function. STA=%s ORID_TIME=%s" % (sta,orid_time) )
 
         if not self.event_cache.keys():
             temp_dic['error'] = ("No events out of DB query. Need a join of [EVENT] ORIGIN and ASSOC tables." )
             log.msg("Exception on data: %s" % temp_dic['error'])
             return temp_dic
 
-        if sta and orid:
+        if sta and orid_time:
 
-            return self._get_orid_data(orid,sta)
+            return self._get_orid_data(orid_time,sta)
 
-        elif sta and not orid:
+        elif sta and not orid_time:
 
             for st in sta:
                 temp_dic[st] = self.event_cache[st]
 
             return temp_dic
 
-        elif orid and not sta:
+        elif orid_time and not sta:
 
             temp_dic = defaultdict(list)
             # self._get_orid_data(orid)
-            for st,ev in self.event_cache.iteritems():
+            for st,orids in self.event_cache.iteritems():
 
-               print ev
-
-               if int(orid) in ev:
-                   temp_dic[orid].append(st)
+               if int(orid_time) in orids:
+                   temp_dic[orid_time].append(st)
 
             return temp_dic
 

@@ -43,7 +43,7 @@ div#title div#nav ul li { display:inline;padding:5px;list-style-type:none; }
 /* Subnav */
 div#subnav { clear:both;margin:0;padding:5px;}
 div#subnav ul { margin:0;padding:0;text-align:left; }
-div#subnav ul li { display:inline;padding:5px;margin:0 5px 5px 0;list-style-type:none;float:left;width:40px;text-align:center; }
+div#subnav ul li { display:inline;padding:5px;margin:0 5px 5px 0;list-style-type:none;float:left;text-align:center; }
 div#subnav ul br { margin-bottom:15px; }
 
 /* Text formatting */
