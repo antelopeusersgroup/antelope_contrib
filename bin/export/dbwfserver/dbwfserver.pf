@@ -17,15 +17,15 @@ canvas_size_default 800
 index_html_template &datafilename(www/dbwfserver/index.html.template)
 index_html_child_template &datafilename(www/dbwfserver/index.html.child.template)
 
-jquery_dir &datafilename(www/dbwfserver/jquery)
+jquery_dir &datafilename(www/dbwfserver/static/jquery)
 static_dir &datafilename(www/dbwfserver/static)
 
 jquery_files &Tbl{
-	IE excanvas.pack.js
-	jquery.flot.min.js
-	jquery.flot-selection.min.js
-	jquery.hotkeys-0.7.8-packed.js
-  jquery-ui-1.7.2.custom.min.js
+	/static/jquery/excanvas.pack.js
+	/static/jquery/jquery.flot.min.js
+	/static/jquery/jquery.flot-selection.min.js
+	/static/jquery/jquery.hotkeys-0.7.8-packed.js
+  /static/jquery/jquery-ui-1.7.2.custom.min.js
 }
 
 display_tracebacks false 

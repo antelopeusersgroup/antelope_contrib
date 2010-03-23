@@ -20,12 +20,10 @@ class EventData():
 
         self.dbname = dbname
         self.db = dbopen(self.dbname)
-        self.stachan_cache = defaultdict(lambda: defaultdict(dict))
-        self.event_cache = defaultdict(lambda: defaultdict(dict))
+        self.stachan_cache = defaultdict(dict)
+        self.event_cache = defaultdict(list)
 
     def _get_stachan_cache(self):
-
-        self.stachan_cache = defaultdict(lambda: defaultdict(dict))
 
         db = Dbptr(self.db)
         db.process([
@@ -43,6 +41,7 @@ class EventData():
             if config.debug:
                 log.msg("\tStation: %s %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
 
+            self.stachan_cache[sta][chan] = defaultdict(dict)
             self.stachan_cache[sta][chan]['insname'] = insname
             self.stachan_cache[sta][chan]['samprate'] = srate
             self.stachan_cache[sta][chan]['ncalib'] = ncalib
@@ -51,8 +50,6 @@ class EventData():
         self.call = reactor.callLater(600, self._get_stachan_cache)
 
     def _get_event_cache(self):
-
-        self.event_cache = defaultdict(lambda: defaultdict(dict))
 
         db = Dbptr(self.db)
 
@@ -91,8 +88,7 @@ class EventData():
             if config.debug:
                 log.msg("\tEvent:%s %s" % (sta,orid))
 
-            try: self.event_cache[sta].append(orid)
-            except: self.event_cache[sta] = [orid]
+            self.event_cache[sta].append(orid)
 
         self.call = reactor.callLater(600, self._get_event_cache)
 
@@ -110,7 +106,7 @@ class EventData():
             'dbjoin assoc',
             'dbjoin arrival'
         ])
-        origin_sub = dbsubset(db,'orid == %d' % (origin) ) # Subset on origin
+        origin_sub = dbsubset(db,'orid == %s' % (origin) ) # Subset on origin
 
         if not origin_sub.query(dbRECORD_COUNT) > 0:
             log.msg('\n')
@@ -121,18 +117,7 @@ class EventData():
 
         origin_sub.sort('phase')
 
-        origin = defaultdict(lambda: defaultdict(dict))
-
-        origin = { 
-            'origin_time':'', 
-            'lat':'', 
-            'lon':'', 
-            'depth':'', 
-            'magnitude':'', 
-            'mtype':'', 
-            'auth':'', 
-            'review':'',
-        }
+        origin = {}
 
         origin_sub.record = 0
 
@@ -159,8 +144,7 @@ class EventData():
             origin['magnitude'] = ml
             origin['mtype'] = 'Ml'
 
-
-        origin['phases'] = defaultdict(lambda: defaultdict(dict))
+        origin['phases'] = defaultdict(lambda:defaultdict(dict))
 
         for k in range(origin_sub.query(dbRECORD_COUNT)):
 
@@ -234,7 +218,7 @@ class EventData():
 
         if not self.event_cache.keys():
             temp_dic['error'] = ("No events out of DB query. Need a join of [EVENT] ORIGIN and ASSOC tables." )
-            log.msg("Exceptionon data: %s" % temp_dic['error'])
+            log.msg("Exception on data: %s" % temp_dic['error'])
             return temp_dic
 
         if sta and orid:
@@ -245,11 +229,21 @@ class EventData():
 
             for st in sta:
                 temp_dic[st] = self.event_cache[st]
+
             return temp_dic
 
         elif orid and not sta:
 
-            return self._get_orid_data(orid)
+            temp_dic = defaultdict(list)
+            # self._get_orid_data(orid)
+            for st,ev in self.event_cache.iteritems():
+
+               print ev
+
+               if int(orid) in ev:
+                   temp_dic[orid].append(st)
+
+            return temp_dic
 
         else:
 
@@ -287,7 +281,7 @@ class EventData():
         if not self.stachan_cache:
             self._get_stachan_cache()
 
-        res_data = defaultdict(lambda: defaultdict(dict))
+        res_data = defaultdict(dict)
 
         db = Dbptr(self.db)
         db.lookup(table="wfdisc")
@@ -418,7 +412,7 @@ class EventData():
         """
         sta_string = ''
         chan_string = ''
-        response_data = defaultdict(lambda: defaultdict(dict))
+        response_data = defaultdict(dict)
 
         if config.verbose:
             log.msg("Getting segment for:")

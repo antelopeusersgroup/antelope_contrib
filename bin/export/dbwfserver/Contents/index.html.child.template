@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$application_title : $dir</title>
+    <title>$application_title : $dir : $key</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 
@@ -16,37 +16,10 @@
 
     $jquery_includes
 
-    <script type="text/javascript" src="static/dbwfserver.js"></script>
+    <script type="text/javascript" src="/static/jquery/dbwfserver.js"></script>
 
-    <script type="text/javascript">
-    $$(document).ready({
-        var sta = '$sta' ;
-        var chan = '$chan' ;
-        var orid = '$orid' ;
-
-        // Do either getData or doQueryAjax
-        if( sta !== undefined  && chan !== undefined ) {
-
-            PlotSelect.getData( sta, chan);
-
-        } else if( orid !== undefined ) {
-
-            PlotSelect.doQueryAjax("data","events","-",orid);
-
-        } else if( sta !== undefined ) {
-
-            PlotSelect.doQueryAjax("data","events",sta,-1);
-
-        } else {
-
-            alert("Problem on request for data");
-
-        }
-    });
-    </script>
-
-    <link rel="stylesheet" type="text/css" href="static/dbwfserver.css">
-    <link rel="stylesheet" type="text/css" href="static/jquery-ui-1.7.2.custom.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-1.7.2.custom.css">
 
 </head>
 
@@ -109,7 +82,7 @@
         </ul>
         </div>
         <div id="left">
-            <h1>$application_title / $dir</h1>
+            <h1>$application_title / $dir / $key</h1>
         </div>
     </div>
 
@@ -124,7 +97,7 @@
     </div>
 
     <div id="subnav">
-    $mylist
+    $my_list
     </div>
 
     <div id="wforms">

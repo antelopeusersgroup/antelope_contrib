@@ -265,7 +265,7 @@ class Root(resource.Resource):
                 re.sub(r'^IE\s+', '', jqf)
                 jquery_includes += '<!--[if IE]>\n'
                 jquery_includes += '<script language="javascript" '
-                jquery_includes += 'type="text/javascript" src="jquery/'
+                jquery_includes += 'type="text/javascript" src="'
                 jquery_includes += jqf
                 jquery_includes += '"></script>\n'
                 jquery_includes += '<![endif]-->\n'
@@ -273,7 +273,7 @@ class Root(resource.Resource):
             else:
 
                 jquery_includes += '<script type="text/javascript" '
-                jquery_includes += 'src="jquery/'
+                jquery_includes += 'src="'
                 jquery_includes += jqf
                 jquery_includes += '"></script>\n'
 
@@ -365,7 +365,7 @@ class QueryParser(resource.Resource):
                 re.sub(r'^IE\s+', '', jqf)
                 jquery_includes += '<!--[if IE]>\n'
                 jquery_includes += '<script language="javascript" '
-                jquery_includes += 'type="text/javascript" src="jquery/'
+                jquery_includes += 'type="text/javascript" src="'
                 jquery_includes += jqf
                 jquery_includes += '"></script>\n'
                 jquery_includes += '<![endif]-->\n'
@@ -373,7 +373,7 @@ class QueryParser(resource.Resource):
             else:
 
                 jquery_includes += '<script type="text/javascript" '
-                jquery_includes += 'src="jquery/'
+                jquery_includes += 'src="'
                 jquery_includes += jqf
                 jquery_includes += '"></script>\n'
 
@@ -386,42 +386,84 @@ class QueryParser(resource.Resource):
 
     def render(self, request):
 
+        dir_dict = { 
+            "dbname":            config.dbname,
+            "application_title": config.application_title,
+            "jquery_includes":   self._jquery_includes(),
+            "dir":               '', 
+            "key":               '', 
+            "my_list":            ''
+        }
+
         args = request.uri.split("/")[1:]
 
         template_child = config.index_html_child_template
 
         my_list = '<ul class="ui-helper-reset ui-helper-clearfix">'
 
-        if args[0] == 'stations':
+        if args:
 
-            mystations = eventdata.available_stations()
-            mystations.sort()
+            metadatatype = args[0]
+            dir_dict['dir'] = args[0]
 
-            for mys in mystations:
+            if metadatatype == 'stations':
 
-                my_list += "<li class='ui-state-active ui-corner-all'><a href='/stations/%s'>%s</li>\n" % (mys,mys)
+                if len(args) > 1:
 
-        elif args[0] == 'events':
+                    dir_dict['key'] = args[1]
+                    args_list = args[1].split('+')
 
-            myevents = eventdata.event_list()
-            myevents.sort()
+                    mydata = eventdata.event_list(args_list)
+                    if not mydata:
+                        request.setResponseCode(404)
+                        return "Station code %s did not record any events (404 error)" % (args[1])
+                else:
 
-            for mye in myevents:
+                    mydata = eventdata.available_stations()
 
-                my_list += "<li class='ui-state-active ui-corner-all'><a href='/events/%s'>%s</li>\n" % (mye,mye)
+            elif metadatatype == 'events':
 
-        dir_dict = { 
-            "dbname":            config.dbname,
-            "application_title": config.application_title,
-            "jquery_includes":   self._jquery_includes(),
-            "dir":               args[0], 
-            "mylist":            my_list, 
-            "sta":               'H20A', 
-            "chan":              'BHZ',
-            "orid":              '66559'
-        }
+                if len(args) > 1:
 
-        log.msg(dir_dict['dir'])
+                    mydata = eventdata.event_list(None,args[1])
+                    metadatatype = 'wfs'
+                    dir_dict['key'] = args[1]
+
+                    if not mydata:
+                        request.setResponseCode(404)
+                        return "Origin number code %s does not have any stations recording arrivals  (404 error)" % (args[1])
+
+                else:
+                    mydata = eventdata.event_list()
+
+            else:
+    
+                request.setResponseCode(404)
+                return "Data type %s not found (404 error)" % (args[1])
+
+
+
+            if isinstance(mydata,dict):
+
+                print "~ Test of mydata:", mydata
+
+                for staname,oridlist in mydata.iteritems():
+
+                    for my_orid in oridlist:
+                        my_list += "<li class='ui-state-active ui-corner-all'><a href='/wfs/%s/%s'>%s</a></li>\n" % (staname,my_orid,my_orid)
+
+            else:
+
+                mydata.sort()
+                for mys in mydata:
+                    my_list += "<li class='ui-state-active ui-corner-all'><a href='/%s/%s'>%s</a></li>\n" % (metadatatype,mys,mys)
+
+            dir_dict['my_list'] = my_list
+
+        else:
+
+            request.setResponseCode(404)
+            return "Resource not found (404 error)"
 
         html_stations = Template(open(template_child).read()).substitute(dir_dict)
 

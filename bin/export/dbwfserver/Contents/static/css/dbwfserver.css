@@ -15,7 +15,7 @@ p.chantitle { margin:0;font-weight:bold;font-size:120%;padding:0; }
 div#content { margin:0;padding:0; }
 div#container { width:800px; }
 div#event { position:absolute;top:1px;right:1px; }
-div#loading { position:absolute;top:0px;right:0px;min-height:33px;min-width:100px;padding:4px;margin:0;background: url(images/ajax-loader.gif) #FFA500 no-repeat center left;z-index:999; }
+div#loading { position:absolute;top:0px;right:0px;min-height:33px;min-width:100px;padding:4px;margin:0;background: url(/static/images/ajax-loader.gif) #FFA500 no-repeat center left;z-index:999; }
 div#chan_labels { font-weight:bold;font-size:120%; }
 div#wforms { border:1px solid #C9C9EE;background-color:#FFF;margin:1.0em 0; }
 
@@ -23,7 +23,7 @@ div#wforms { border:1px solid #C9C9EE;background-color:#FFF;margin:1.0em 0; }
 div#crumbs { margin:0;padding:0;border:1px solid #C9C9EE;clear:both; }
 
 /* Configuration header */
-div#conf { float:left;border:none;border-bottom:1px solid #7F7F7F;background: url(images/bkgrd_1x50.png) repeat-x #C9C9EE;width:100%;margin:0;padding:0;list-style:none; }
+div#conf { float:left;border:none;border-bottom:1px solid #7F7F7F;background: url(/static/images/bkgrd_1x50.png) repeat-x #C9C9EE;width:100%;margin:0;padding:0;list-style:none; }
 div#conf div#left { float:left;margin:0;padding:10px; }
 div#conf div#right { float:right;margin:0;padding:10px; }
 div#conf div#left h1 { padding:0;margin:0;color:#7F7F7F; }

@@ -16,10 +16,10 @@
 
     $jquery_includes
 
-    <script type="text/javascript" src="static/dbwfserver.js"></script>
+    <script type="text/javascript" src="/static/jquery/dbwfserver.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="static/dbwfserver.css">
-    <link rel="stylesheet" type="text/css" href="static/jquery-ui-1.7.2.custom.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-1.7.2.custom.css">
 
 </head>
 
