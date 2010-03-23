@@ -257,7 +257,7 @@ class EventData():
             return ev_list
 
 
-    def get_segment(self, sta, chan, canvas_size, orid=None, time_window=None, mintime=None, maxtime=None, filter=None):
+    def get_segment(self, sta, chan, canvas_size, orid=None, origin_time=None,time_window=None, mintime=None, maxtime=None, filter=None):
 
         """
         Get a segment of waveform data.
@@ -281,7 +281,7 @@ class EventData():
         if not self.stachan_cache:
             self._get_stachan_cache()
 
-        res_data = defaultdict(dict)
+        res_data = defaultdict(lambda:defaultdict(dict))
 
         db = Dbptr(self.db)
         db.lookup(table="wfdisc")
@@ -297,7 +297,7 @@ class EventData():
             log.msg("\tcanvas:\t%s"     % canvas_size)
             log.msg("\tfilter:\t%s"     % filter)
 
-        if orid:
+        if orid and not origin_time:
             resp_data = {'metadata':self._get_orid_data(orid)}
             if not resp_data['metadata']['origin_time']:
                 log.msg("No origin time for this event:%s" % orid)
@@ -306,19 +306,23 @@ class EventData():
             orid_time = resp_data['metadata']['origin_time']
             if config.verbose: log.msg( 'Looking for origin time: %s' % orid_time)
 
-            if not mintime or not maxtime:
+        elif not orid and origin_time:
 
-                if not time_window: time_window = config.default_time_window
-
-                maxtime =  orid_time + ( time_window/2 )
-                mintime =  orid_time - ( time_window/2 )
-
-        else:
             if config.verbose: log.msg( 'No orid passed - ignore metadata' )
+
+            orid_time = origin_time
+
+
+        if not mintime or not maxtime:
+
+            if not time_window: time_window = config.default_time_window
+
+            maxtime =  orid_time + ( time_window/2 )
+            mintime =  orid_time - ( time_window/2 )
 
         # Use either passed min and maxtimes, or origin_time generated equivalents
 
-        if not maxtime or maxtime == -1 or mintime == -1 or not mintime:
+        if (not maxtime or maxtime == -1) or (mintime == -1 or not mintime):
             log.msg("Error in maxtime:%s or mintime:%s" % (maxtime,mintime))
             return  
 
@@ -327,6 +331,7 @@ class EventData():
         res_data.update( {'time_end':maxtime} )
         res_data.update( {'time_window':time_window} )
         res_data.update( {'orid':orid} )
+        res_data.update( {'orid_time':orid_time} )
         res_data.update( {'sta':sta} )
         res_data.update( {'chan':chan} )
 
@@ -376,7 +381,7 @@ class EventData():
                         res_data[station][channel]['data'] = trsample(db,mintime,maxtime,station,channel,False,filter)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)
-                        log.msg("Exceptionon data: %s" % e)
+                        log.msg("Exception on data: %s" % e)
 
                     res_data[station][channel]['format'] = 'lines'
 
@@ -387,7 +392,7 @@ class EventData():
                         res_data[station][channel]['data'] = trsamplebins(db,mintime,maxtime,station,channel,points/canvas_size,False,filter)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)
-                        log.msg("Exceptionon databins: %s" % e)
+                        log.msg("Exception on databins: %s" % e)
 
                     res_data[station][channel]['format'] = 'bins'
 

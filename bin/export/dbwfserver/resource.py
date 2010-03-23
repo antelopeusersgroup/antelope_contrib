@@ -28,6 +28,24 @@ else:
 
 eventdata = dbwfserver.eventdata.EventData(config.dbname)
 
+
+
+def isNumber(test):
+    """
+    Test if the string is a valid number 
+    and return the converted number. 
+    """
+    try:
+        try:
+            return int(test)
+        except:
+            return float(test)
+    except:
+        return False
+
+
+
+
 class Data(resource.Resource):
 
     """
@@ -157,11 +175,11 @@ class Data(resource.Resource):
             return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "filter":filter })
             """
 
-            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta),str(chan),canvas_size,orid,time_window,time_start,time_end,filter,config.apply_calib)
+            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta),str(chan),canvas_size,orid,orid_time,time_window,time_start,time_end,filter,config.apply_calib)
             if config.debug: log.msg(function)
 
             try:
-                return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, time_window, time_start, time_end, filter))
+                return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, None, time_window, time_start, time_end, filter))
             except:
                 request.setHeader("response-code", 500)
                 log.msg("\n")
@@ -405,8 +423,6 @@ class QueryParser(resource.Resource):
 
             if isinstance(mydata,dict):
 
-                print "~ Test of mydata:", mydata
-
                 for my_key,my_vals in mydata.iteritems():
 
                     my_vals.sort()
@@ -448,27 +464,87 @@ class QueryParser(resource.Resource):
 
 class Waveform(resource.Resource):
 
+    def _jquery_includes(self):
+
+        # {{{
+        jquery_includes = ''
+
+        for jqf in config.jquery_files:
+
+            if(re.match(r'^IE\s+', jqf)):
+
+                re.sub(r'^IE\s+', '', jqf)
+                jquery_includes += '<!--[if IE]>\n'
+                jquery_includes += '<script language="javascript" '
+                jquery_includes += 'type="text/javascript" src="'
+                jquery_includes += jqf
+                jquery_includes += '"></script>\n'
+                jquery_includes += '<![endif]-->\n'
+
+            else:
+
+                jquery_includes += '<script type="text/javascript" '
+                jquery_includes += 'src="'
+                jquery_includes += jqf
+                jquery_includes += '"></script>\n'
+
+        return jquery_includes
+        # }}}
+
     def getChild(self, name, request):
 
         return self
 
     def render(self, request):
 
-        tvals = {}
+        tvals = { 
+            "dbname":            config.dbname,
+            "application_title": config.application_title,
+            "jquery_includes":   self._jquery_includes(),
+            "dir":               'waveforms', 
+            "sta":               '', 
+            "time":              '',
+            "event_json":        ''
+        }
 
         template_waveform = config.waveform_html_template
 
         args = request.uri.split("/")[1:]
-        
-        if args:
 
-            tvals['dir'] = 'waveforms'
+        if len(args) >= 3:
+
+                tvals['type'] = args[0]
+
+                sta_list = args[1].split('+')
+
+                orid_time = isNumber(args[2])
+
+                tvals['sta'] = args[1]
+                tvals['time'] = strftime("%Y-%m-%d %H:%M:%S",gmtime(orid_time))
+
+                chan_args   = config.default_chans
+                time_window = config.default_time_window
+                canvas_size = config.canvas_size_default
+                apply_calib = config.apply_calib
+
+                chan = list(set([c.upper() for c in chan_args]))
+                chan.sort()
+
+                try:
+
+                    tvals['event_json'] = json.dumps(eventdata.get_segment(sta_list,chan,canvas_size,None,orid_time,time_window,orid_time,None,None))
+
+                except:
+
+                    tvals['event_json'] = "{ 'error': 'Not a valid query' }"
 
         else:
         
             request.setResponseCode(404)
-            return "If you request the wfs resource you must provide a station code and epoch time (404 error)"
+            return "If you request the waveforms resource (/wfs) you must provide a station code and epoch time (404 error)"
 
         html_stations = Template(open(template_waveform).read()).substitute(tvals)
+
+        request.write( html_stations )
 
         return ""
