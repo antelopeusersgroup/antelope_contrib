@@ -357,7 +357,7 @@ class QueryParser(resource.Resource):
 
         args = request.uri.split("/")[1:]
 
-        template_child = config.index_html_child_template
+        template_queryparser = config.queryparser_html_template
 
         my_list = '<ul class="ui-helper-reset ui-helper-clearfix">'
 
@@ -440,7 +440,7 @@ class QueryParser(resource.Resource):
 
         # }}} Output based on URI query args
 
-        html_stations = Template(open(template_child).read()).substitute(tvals)
+        html_stations = Template(open(template_queryparser).read()).substitute(tvals)
 
         request.write( html_stations )
 
@@ -453,5 +453,22 @@ class Waveform(resource.Resource):
         return self
 
     def render(self, request):
+
+        tvals = {}
+
+        template_waveform = config.waveform_html_template
+
+        args = request.uri.split("/")[1:]
+        
+        if args:
+
+            tvals['dir'] = 'waveforms'
+
+        else:
+        
+            request.setResponseCode(404)
+            return "If you request the wfs resource you must provide a station code and epoch time (404 error)"
+
+        html_stations = Template(open(template_waveform).read()).substitute(tvals)
 
         return ""

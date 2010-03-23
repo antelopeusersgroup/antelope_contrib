@@ -1,6 +1,7 @@
 DATADIR = www/dbwfserver
 DATA = index.html.template \
-       index.html.child.template
+       queryparser.html.template \
+       waveform.html.template
 
 include $(ANTELOPEMAKE)
 

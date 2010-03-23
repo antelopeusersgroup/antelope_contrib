@@ -15,7 +15,8 @@ binning_threshold 2
 canvas_size_default 800
 
 index_html_template &datafilename(www/dbwfserver/index.html.template)
-index_html_child_template &datafilename(www/dbwfserver/index.html.child.template)
+queryparser_html_template &datafilename(www/dbwfserver/queryparser.html.template)
+waveform_html_template &datafilename(www/dbwfserver/waveform.html.template)
 
 jquery_dir &datafilename(www/dbwfserver/static/jquery)
 static_dir &datafilename(www/dbwfserver/static)
