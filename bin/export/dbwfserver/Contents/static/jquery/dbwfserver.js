@@ -3,7 +3,7 @@ PlotSelect = {
 
     isShiftPressed: false,
 
-    init: function(){
+    init: function(sta){
 
         // {{{ Set defaults
 
@@ -12,9 +12,6 @@ PlotSelect = {
         $(document).bind("keydown", "right", PlotSelect.shiftPlotViewRight);
         $(window).bind("keydown", PlotSelect.toggleShift);
         $(window).bind("keyup", PlotSelect.toggleShift);
-
-        $("div#nav ul li a").click(PlotSelect.parseQuery);
-        $("div#subnav ul li a").click(PlotSelect.parseQuery);
 
         // Create initial plot with max values:
         $("#loading").hide();
@@ -186,7 +183,7 @@ PlotSelect = {
         $.ajax({
             type:'get',
             dataType:'json',
-            url:"data",
+            url:"/data",
             data: {
                 "type":"filters"
             },
@@ -216,7 +213,7 @@ PlotSelect = {
 
         $("#subnav").append(themerFilters);
 
-        //PlotSelect.filterChange();
+        PlotSelect.filterChange();
 
         // }}} Populate filter in select boxes
 
@@ -230,7 +227,7 @@ PlotSelect = {
             PlotSelect.myFilter = $(this).val();
             $(this).attr("selected","selected");
             if ( PlotSelect.stacode ) {
-                //PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,time_start:PlotSelect.ts,time_end:PlotSelect.te,amount:"slice"});
+                PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:PlotSelect.ts,time_end:PlotSelect.te,amount:PlotSelect.amount});
             }
         });
 
@@ -238,158 +235,10 @@ PlotSelect = {
 
     },
 
-    parseQuery: function(){
-
-        // {{{ Main parse metadata query
-
-        // Reset the filter
-        delete PlotSelect.myFilter;
-
-        $("#loading").show();
-
-        var qHrefParts = $(this).attr("href").split("?");
-        var qUrl = qHrefParts[0];
-        var qArgs = qHrefParts[1].split("&"); // Gets the args key/val pairs
-        var qType, qSta, qOrid ; // Set default values
-
-        $.each(qArgs, function(i,val){
-
-            var qArgsKV = val.split("="); // Gets the args key/val pairs
-
-            switch( qArgsKV[0] ) {
-                case "type":
-                    qType = qArgsKV[1];
-                    break;
-                case "sta":
-                    qSta = qArgsKV[1];
-                    break;
-                case "orid":
-                    qOrid = qArgsKV[1];
-                    break;
-                default:
-                    break;
-            }
-
-        });
-
-        if( typeof(qType) != 'undefined' && typeof(qSta) == 'undefined' && typeof(qOrid) == 'undefined' ) {
-            PlotSelect.doQueryAjax(qUrl,qType,"-",-1);
-        } else if( typeof(qType) != 'undefined' && typeof(qSta) != 'undefined' && typeof(qOrid) == 'undefined' ) {
-            PlotSelect.doQueryAjax(qUrl,qType,qSta,-1);
-        } else if( typeof(qType) != 'undefined' && typeof(qSta) == 'undefined' && typeof(qOrid) != 'undefined' ) {
-            PlotSelect.doQueryAjax(qUrl,qType,"-",qOrid);
-        } else if( typeof(qType) != 'undefined' && typeof(qSta) != 'undefined' && typeof(qOrid) != 'undefined' ) {
-            PlotSelect.doQueryAjax(qUrl,qType,qSta,qOrid);
-        }
-        return false;
-
-        // }}} Main parse metadata query
-
-    },
-
-    printListResult: function(resp,respType,respSta,respOrid){
-
-        // {{{ Print list of stations or display event
-
-        if (typeof(resp['error']) != "undefined" ) {
-            alert('ERROR ON SERVER:\n'+resp['error']);
-        } else {
-
-            var count = 0;
-
-            var temp_hash = [];
-
-            var output = "<ul class='ui-helper-reset ui-helper-clearfix'>";
-
-            if( respType === "events" && respSta !== "-" && respOrid !== -1 ) {
-
-                $("#subnav").empty();
-
-                PlotSelect.getData( {sta:respSta,orid:respOrid,amount:'all'} ) ;
-
-            } else if( respType === "events" ) {
-
-                if  (respOrid === -1) {
-                    for (var x in resp) {
-                        for (var i=0;i<resp[x].length;i++) {
-                            temp_hash[resp[x][i]] = 1;
-                        }
-                    }
-                } else {
-                    for (var x in resp['phases']) {
-                        temp_hash[x] = 1;
-                    }
-                }
-
-                //temp_hash.sort();
-
-                for (var i in temp_hash) {
-
-                    output += "<li class='ui-state-active ui-corner-all'>";
-
-                    if( respSta !== "-") {
-                        output += "<a href='data?type=events&sta="+respSta+"&orid="+i+"'>"+i+"</a>";
-                    } else if (respOrid !== -1){
-                        output += "<a href='data?type=events&sta="+i+"&orid="+respOrid+"'>"+i+"</a>";
-                    } else {
-                        output += "<a href='data?type=events&orid="+i+"'>"+i+"</a>";
-                    }
-
-                    output += "</li>";
-
-                    count++;
-
-                    if( count % 20 == 0 ) output += "<br/>";
-                }
-
-            } else {
-
-                // {{{ Create unordered list
-
-                resp.sort();
-                $.each(resp, function(i,val){
-
-                    output += "<li class='ui-state-active ui-corner-all'>";
-                    output += "<a href='data?type=events&sta="+val+"'>"+val+"</a>";
-                    output += "</li>";
-
-                    count++;
-
-                    if( count % 20 == 0 ) output += "<br/>";
-
-                });
-
-                // }}} Create unordered list
-
-            }
-
-            output += "</ul>";
-
-            $("#subnav").html(output);
-
-            if (typeof(resp['phases']) != "undefined" ) {
-                PlotSelect.setEventData(resp);
-            } else {
-                $('#event').empty();
-            }
-
-
-            PlotSelect.init();
-            return false;
-
-        }
-        // }}} Print list of stations or display event
-
-    },
-
     resetPlot: function(evt){
 
         // {{{ Reset plot
-
-        var mySta = PlotSelect.stacode;
-        var myOrid = PlotSelect.orid;
-        PlotSelect.getData({sta:mySta,orid:myOrid,amount:'all'});
-
+        PlotSelect.getData({type:'wf',sta:PlotSelect.stacode,orid_time:PlotSelect.orid_time,amount:'all'});
         // }}} Reset plot
 
     },
@@ -454,8 +303,7 @@ PlotSelect = {
 
         // {{{ Future data
 
-        var mySta = PlotSelect.stacode;
-        var firstchan = PlotSelect.chans[0]; // Get the axis range from one plot
+        var firstchan = PlotSelect.stacode+'_'+PlotSelect.chans[0]; // Get the axis range from one plot
         var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
         var xaxis = chanplot.getAxes().xaxis;
         var futureDelta = PlotSelect.tickTranslator( xaxis.tickSize );
@@ -464,11 +312,11 @@ PlotSelect = {
 
         if( PlotSelect.orid !== undefined ) {
 
-            PlotSelect.getData({sta:mySta,orid:PlotSelect.orid,time_start:x1,time_end:x2,amount:"slice"});
+            PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
 
         } else {
 
-            PlotSelect.getData({sta:mySta,time_start:x1,time_end:x2,amount:"slice"});
+            PlotSelect.getData({sta:PlotSelect.stacode,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
 
         }
 
@@ -480,8 +328,7 @@ PlotSelect = {
 
         // {{{ Past data
 
-        var mySta = PlotSelect.stacode;
-        var firstchan = PlotSelect.chans[0]; // Get the axis range from one plot
+        var firstchan = PlotSelect.stacode+"_"+PlotSelect.chans[0]; // Get the axis range from one plot
         var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
         var xaxis = chanplot.getAxes().xaxis;
         var pastDelta = PlotSelect.tickTranslator( xaxis.tickSize );
@@ -490,11 +337,11 @@ PlotSelect = {
 
         if( PlotSelect.orid !== undefined ) {
 
-            PlotSelect.getData({sta:mySta,orid:PlotSelect.orid,time_start:x1,time_end:x2,amount:"slice"});
+            PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
 
         } else {
 
-            PlotSelect.getData({sta:mySta,time_start:x1,time_end:x2,amount:"slice"});
+            PlotSelect.getData({sta:PlotSelect.stacode,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
 
         }
 
@@ -539,7 +386,7 @@ PlotSelect = {
             x2 = x2 + delta*pad;
         }
 
-        PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,time_start:x1,time_end:x2,amount:"slice"});
+        PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
 
         // }}} Selection zoom functionality
 
@@ -564,14 +411,14 @@ PlotSelect = {
         // Define the data object arguments
         var dataargs = {"type":$("select#type").val()}
 
-        if ('type' in args){         dataargs["type"]    = args.type ;}
-
-        if ('sta' in args){         dataargs["sta"]     = args.sta ;}
-        if ('orid' in args){        dataargs["orid"]    = args.orid ;}
-        if ('time_start' in args){  dataargs["ts"]      = args.time_start ;}
-        if ('time_end' in args) {   dataargs["te"]      = args.time_end ;}
-        if ('chan' in args) {       dataargs["chan"]    = args.chan ;}
-        if ('amount' in args) {     dataargs["amount"]  = args.amount ;}
+        if ('type' in args){        dataargs["type"]      = args.type ;}
+        if ('sta' in args){         dataargs["sta"]       = args.sta ;}
+        if ('orid' in args){        dataargs["orid"]      = args.orid ;}
+        if ('orid_time' in args){   dataargs["orid_time"] = args.orid_time ;}
+        if ('time_start' in args){  dataargs["ts"]        = args.time_start ;}
+        if ('time_end' in args) {   dataargs["te"]        = args.time_end ;}
+        if ('chan' in args) {       dataargs["chan"]      = args.chan ;}
+        if ('amount' in args) {     dataargs["amount"]    = args.amount ;}
 
         // Test if filter defined
         if( ( PlotSelect.myFilter !== undefined ) && ( PlotSelect.myFilter !== 'None' ) ) {
@@ -585,14 +432,16 @@ PlotSelect = {
         $("#loading").show();
 
         // Define globally for app
-        PlotSelect.stacode = args.sta;
-        PlotSelect.orid = args.orid;
+        PlotSelect.stacode   = args.sta;
+        PlotSelect.orid      = args.orid;
+        PlotSelect.orid_time = args.orid_time;
+        PlotSelect.amount    = args.amount;
 
         // Query
         $.ajax({
             type:'get',
             dataType:'json',
-            url:"data",
+            url:"/data",
             data: dataargs,
             success:PlotSelect.setData,
             error:PlotSelect.errorResponse
@@ -603,7 +452,6 @@ PlotSelect = {
     },
 
     setData: function(resp) {
-
 
         // {{{ Define graph defaults
         var opts0 = {
@@ -636,30 +484,27 @@ PlotSelect = {
 
 
                 stachan_data = mysta + '_' + mychan ; // Create the STA_CHAN data arrays from other response items
-                    var wrapper = $("<div>").attr("id", stachan_data+"_wrapper").attr("class","wrapper");
-                    var lbltxt = $("<p>").attr("class","chantitle").text(stachan_data);
-                    var lbl = $("<div>").attr("id", stachan_data+"_label").attr("class", "label").append(lbltxt);
-                    var plt = $("<div>").attr("id", stachan_data+"_plot").attr("class", "plot");
-                    wrapper.append(lbl);
-                    wrapper.append(plt);
-                    chan_plots.append(wrapper);
-                    chan_plot = $("#"+stachan_data+"_plot");
+                var wrapper = $("<div>").attr("id", stachan_data+"_wrapper").attr("class","wrapper");
+                var lbltxt = $("<p>").attr("class","chantitle").text(stachan_data);
+                var lbl = $("<div>").attr("id", stachan_data+"_label").attr("class", "label").append(lbltxt);
+                var plt = $("<div>").attr("id", stachan_data+"_plot").attr("class", "plot");
+                wrapper.append(lbl);
+                wrapper.append(plt);
+                chan_plots.append(wrapper);
+                chan_plot = $("#"+stachan_data+"_plot");
 
-                    // Show plots
-                    $("#wforms").show();
-                    $("#interact").show();
+                // Show plots
+                $("#wforms").show();
+                $("#interact").show();
 
-                
                 if (typeof(resp[mysta]) == "undefined" ) { 
                         var plot = $.plot(chan_plot, [], opts0);
                 } else if (typeof(resp[mysta][mychan]) == "undefined" ) { 
                         var plot = $.plot(chan_plot, [], opts0);
                 } else {
-
-                    
                     
                     // This is the actual plotting
-                    var flot_data = new Array();
+                    var flot_data = [];
 
                     if ( resp['type'] == "coverage") {
 
@@ -714,22 +559,6 @@ PlotSelect = {
             });
         });
 
-        if (typeof(resp['orid']) != "undefined" ) {
-
-            dataargs = {};
-            dataargs["type"]    = 'events' ;
-            dataargs["orid"]    = resp['orid'] ;
-
-            $.ajax({
-                type:'get',
-                dataType:'json',
-                url:"data",
-                data: dataargs,
-                success:PlotSelect.setEventData,
-                error:PlotSelect.errorResponse
-            });
-        }
-
         if (typeof(resp['error']) != "undefined" ) {
             alert('ERROR ON SERVER:\n'+resp['error']);
         }
@@ -739,19 +568,19 @@ PlotSelect = {
     },
 
     setEventData: function(resp){
-        $('#event').empty();
+        $('#subnav #event').empty();
 
         // {{{ Plot event table
 
         var event_metadata = '<table id="eventTable">';
-        event_metadata += "<tr><th>Magnitude</th><td>"+resp['magnitude']+" "+resp['mtype']+"</td></tr>";
-        event_metadata += "<tr><th>Date-Time</th><td>"+resp['readable_time']+"</td></tr>";
-        event_metadata += "<tr><th>Location</th><td>"+resp['lat']+"&deg;N, "+resp['lon']+"&deg;E</td></tr>";
-        event_metadata += "<tr><th>Depth</th><td>"+resp['depth']+"km</td></tr>";
-        event_metadata += "<tr><th>Author</th><td>"+resp['auth']+" [Review: "+resp['review']+"]</td></tr>";
+        event_metadata += "<tr><th>Magnitude</th><td>"+resp['magnitude']+" "+resp['mtype']+"</td>";
+        event_metadata += "<th>Date-Time</th><td>"+resp['readable_time']+"</td></tr>";
+        event_metadata += "<tr><th>Location</th><td>"+resp['lat']+"&deg;N, "+resp['lon']+"&deg;E</td>";
+        event_metadata += "<th>Depth</th><td>"+resp['depth']+"km</td></tr>";
+        event_metadata += "<tr><th colspan='2'>Author</th><td colspan='2'>"+resp['auth']+" [Review: "+resp['review']+"]</td></tr>";
         event_metadata += "</table>";
 
-        $('#event').append(event_metadata);
+        $('#subnav #event').append(event_metadata);
 
         // }}} Plot event table
 

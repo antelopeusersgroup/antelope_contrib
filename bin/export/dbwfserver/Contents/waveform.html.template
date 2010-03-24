@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$application_title : $dir : $sta : $time</title>
+    <title>$application_title : $dir : $sta : $orid_time_readable</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 
@@ -22,11 +22,27 @@
     <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-1.7.2.custom.css">
 
     <script type="text/javascript">
+    $$(function(){
 
-        var wfs = $event_json ;
+        var sta       = "$sta_list";
+        var chan      = "$chan";
+        var orid      = "$orid";
+        var orid_time = "$orid_time";
 
-        // Need to pass wfs JSON object to the plotting functions
+        // Global vars for object methods
+        PlotSelect.stacode   = sta ;
+        PlotSelect.orid_time = orid_time ;
 
+        /// Get data
+        if( sta !== 'None' && chan !== 'None' ) {
+            PlotSelect.getData({'type':'wf','sta':sta,'chan':chan,'url':'yes','amount':'all'});
+        } else if( sta !== 'None' && orid_time !== 'None' ) {
+            PlotSelect.getData({'type':'wf','sta':sta,'orid_time':orid_time,'url':'yes','amount':'all'});
+        } else {
+            alert('Problem on request for data');
+        }
+     
+    });
     </script>
 
 </head>
@@ -36,7 +52,6 @@
 <div id="content">
 
     <div id="loading"><p>Loading data ...</p></div>
-    <div id="event"></div>
 
     <div id="info" class="dialog" title="Dbwfserver information">
         <p>Welcome to the waveform server. Please click the
@@ -90,7 +105,7 @@
         </ul>
         </div>
         <div id="left">
-            <h1>$application_title / $dir / $sta / $time</h1>
+            <h1>$application_title / $dir / $sta / $orid_time_readable</h1>
         </div>
     </div>
 
@@ -104,7 +119,9 @@
         </div>
     </div>
 
-    <div id="subnav"></div>
+    <div id="subnav">
+        <div id="event"></div>
+    </div>
 
     <div id="wforms">
         <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>

@@ -183,7 +183,7 @@ class EventData():
 
         if  not self.stachan_cache.keys():
             temp_dic['error'] = ("No stations out of DB query. Need a join of SITECHAN SENSOR and INSTRUMENT tables." )
-            log.msg("Exceptionon data: %s" % temp_dic['error'])
+            log.msg("Exception on data: %s" % temp_dic['error'])
             return temp_dic
                 
 
@@ -257,7 +257,7 @@ class EventData():
             return ev_list
 
 
-    def get_segment(self, sta, chan, canvas_size, orid=None, origin_time=None,time_window=None, mintime=None, maxtime=None, filter=None):
+    def get_segment(self, sta, chan, canvas_size, orid=None, origin_time=None, time_window=None, mintime=None, maxtime=None, amount=None, filter=None):
 
         """
         Get a segment of waveform data.
@@ -278,6 +278,7 @@ class EventData():
 
         Also return event metadata
         """
+
         if not self.stachan_cache:
             self._get_stachan_cache()
 
@@ -291,34 +292,50 @@ class EventData():
             log.msg("\tsta:\t%s"        % sta)
             log.msg("\tchan:\t%s"       % chan)
             log.msg("\torid:\t%s"       % orid)
+            log.msg("\torigin_time:\t%s"% origin_time)
             log.msg("\ttime_window:\t%s"% time_window)
             log.msg("\tmintime:\t%s"    % mintime)
             log.msg("\tmaxtime:\t%s"    % maxtime)
             log.msg("\tcanvas:\t%s"     % canvas_size)
+            log.msg("\tamount:\t%s"     % amount)
             log.msg("\tfilter:\t%s"     % filter)
 
         if orid and not origin_time:
+
+            resp_data = {'metadata':self._get_orid_data(orid)}
+            log.msg("\tfilter:\t%s"     % filter)
+
+        if orid and not origin_time:
+
             resp_data = {'metadata':self._get_orid_data(orid)}
             if not resp_data['metadata']['origin_time']:
                 log.msg("No origin time for this event:%s" % orid)
                 return False
 
             orid_time = resp_data['metadata']['origin_time']
+
             if config.verbose: log.msg( 'Looking for origin time: %s' % orid_time)
 
         elif not orid and origin_time:
 
             if config.verbose: log.msg( 'No orid passed - ignore metadata' )
+            orid_time = int(origin_time) # Force into an integer
 
-            orid_time = origin_time
+        else:
 
+            # No origin time - use mintime - normally used by zoom in|out
+            orid_time = mintime
 
-        if not mintime or not maxtime:
+        if amount is "all" and orid_time and not mintime or not maxtime:
 
             if not time_window: time_window = config.default_time_window
 
             maxtime =  orid_time + ( time_window/2 )
             mintime =  orid_time - ( time_window/2 )
+
+        else:
+
+            log.msg("Just using mintime and maxtime for plotting")
 
         # Use either passed min and maxtimes, or origin_time generated equivalents
 
@@ -336,6 +353,7 @@ class EventData():
         res_data.update( {'chan':chan} )
 
         for station in sta:
+
             for channel in chan:
                 if config.debug: log.msg("Now: %s %s" % (station,channel))
                 if not self.stachan_cache[station][channel].get('samprate',False):
@@ -343,8 +361,6 @@ class EventData():
                     log.msg('ERROR: %s %s not a valid station and channel combination!' % (station,channel))
                     log.msg('\n')
                     continue
-
-                temp = []
 
                 if config.verbose: log.msg("Log times: %s %s" % (mintime,maxtime))
 
@@ -362,7 +378,7 @@ class EventData():
 
                 #tr.record = 0
 
-                log.msg("samprate: %s" % self.stachan_cache[station][channel]['samprate'])
+                log.msg("Samprate: %s" % self.stachan_cache[station][channel]['samprate'])
 
                 points = int( (maxtime-mintime)*self.stachan_cache[station][channel]['samprate'])
 

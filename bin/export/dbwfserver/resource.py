@@ -62,6 +62,7 @@ class Data(resource.Resource):
         * tw - Time Window in Seconds
         * availability - 'Lines' (True) or 'Waveforms' (False). 'Lines' only indicate Waveform availability. 
         * canvas_size - The number of pixels of the plotting Canvas, to be passed to 'get_segment'
+        * amount - Amount of data to be retrieved: can be 'all', 'slice'
         * filter - Waveform filter
     """
 
@@ -82,6 +83,7 @@ class Data(resource.Resource):
         chan_args   = request.args.get('chan',        config.default_chans) 
         time_window = request.args.get('tw',          [config.default_time_window])[0]
         canvas_size = request.args.get('canvas_size', [config.canvas_size_default])[0] 
+        amount      = request.args.get('amount',      [None])[0] 
         filter      = request.args.get('filter',      [None])[0] 
 
         if net_args:
@@ -94,7 +96,7 @@ class Data(resource.Resource):
             sta = list(set([s.upper() for s in sta_args]))
             sta.sort()
         else:
-            sta =  None
+            sta = None
 
         chan = list(set([c.upper() for c in chan_args]))
         chan.sort()
@@ -130,9 +132,10 @@ class Data(resource.Resource):
             log.msg("\ttime_end:\t%s" % time_end)
             log.msg("\tavailability:\t%s" % str(availability))
             log.msg("\tcanvas_size:\t%d" % canvas_size)
+            log.msg("\tamount:\t%s" % amount)
             log.msg("\tfilter:\t%s" % filter)
 
-        return type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, filter
+        return type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter
 #}}}
     def getChild(self, name, request):
 #{{{
@@ -144,7 +147,7 @@ class Data(resource.Resource):
 #}}}
     def render_GET(self, request):
 #{{{
-        type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, filter = self._extract_request(request)
+        type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter = self._extract_request(request)
 
         """
         Handle different type of data request
@@ -172,21 +175,20 @@ class Data(resource.Resource):
             #DEBUG TOOL:
             #This line will output all vars as a json object:
 
-            return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "filter":filter })
+            return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "amount":amount, "filter":filter })
             """
 
-            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta),str(chan),canvas_size,orid,orid_time,time_window,time_start,time_end,filter,config.apply_calib)
+            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta), str(chan), canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter)
             if config.debug: log.msg(function)
 
-            try:
-                return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, None, time_window, time_start, time_end, filter))
-            except:
-                request.setHeader("response-code", 500)
-                log.msg("\n")
-                log.msg("Problems on... " + function)
-                log.msg("\n")
-                return function
-
+            # try:
+            return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter))
+            # except:
+            #     request.setHeader("response-code", 500)
+            #     log.msg("\n")
+            #     log.msg("Problems on... " + function)
+            #     log.msg("\n")
+            #     return function
 
         elif type == 'coverage':
             """
@@ -498,13 +500,16 @@ class Waveform(resource.Resource):
     def render(self, request):
 
         tvals = { 
-            "dbname":            config.dbname,
-            "application_title": config.application_title,
-            "jquery_includes":   self._jquery_includes(),
-            "dir":               'waveforms', 
-            "sta":               '', 
-            "time":              '',
-            "event_json":        ''
+            "dbname":               config.dbname,
+            "application_title":    config.application_title,
+            "jquery_includes":      self._jquery_includes(),
+            "dir":                  'waveforms', 
+            "sta":                  None, 
+            "sta_list":             None, 
+            "chan":                 None, 
+            "orid":                 None, 
+            "orid_time":            None,
+            "orid_time_unreadable": None
         }
 
         template_waveform = config.waveform_html_template
@@ -519,24 +524,11 @@ class Waveform(resource.Resource):
 
                 orid_time = isNumber(args[2])
 
-                tvals['sta'] = args[1]
-                tvals['time'] = strftime("%Y-%m-%d %H:%M:%S",gmtime(orid_time))
-
-                chan_args   = config.default_chans
-                time_window = config.default_time_window
-                canvas_size = config.canvas_size_default
-                apply_calib = config.apply_calib
-
-                chan = list(set([c.upper() for c in chan_args]))
-                chan.sort()
-
-                try:
-
-                    tvals['event_json'] = json.dumps(eventdata.get_segment(sta_list,chan,canvas_size,None,orid_time,time_window,orid_time,None,None))
-
-                except:
-
-                    tvals['event_json'] = "{ 'error': 'Not a valid query' }"
+                tvals['sta']                = args[1]
+                # tvals['sta_list']           = sta_list
+                tvals['sta_list']           = args[1]
+                tvals['orid_time']          = orid_time
+                tvals['orid_time_readable'] = strftime("%Y-%m-%d %H:%M:%S",gmtime(orid_time))
 
         else:
         
