@@ -389,9 +389,8 @@ class EventData():
 
                 elif points <  (config.binning_threshold * canvas_size):
 
-                    #if filter:
-                        #log.msg("Filter is: %s" % (filter))
-                        #tr.filter(filter)
+                    if filter:
+                        log.msg("Filter is: %s" % (filter))
 
                     try:
                         res_data[station][channel]['data'] = trsample(db,mintime,maxtime,station,channel,False,filter)
@@ -404,7 +403,6 @@ class EventData():
                 else:
 
                     try:
-                        #res_data[station][channel]['data'] = tr.databins(points/canvas_size)
                         res_data[station][channel]['data'] = trsamplebins(db,mintime,maxtime,station,channel,points/canvas_size,False,filter)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)

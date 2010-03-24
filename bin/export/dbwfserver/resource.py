@@ -503,13 +503,8 @@ class Waveform(resource.Resource):
             "dbname":               config.dbname,
             "application_title":    config.application_title,
             "jquery_includes":      self._jquery_includes(),
-            "dir":                  'waveforms', 
-            "sta":                  None, 
-            "sta_list":             None, 
-            "chan":                 None, 
-            "orid":                 None, 
-            "orid_time":            None,
-            "orid_time_unreadable": None
+            "title":                '',
+            "jscript_vars":         ''
         }
 
         template_waveform = config.waveform_html_template
@@ -518,25 +513,42 @@ class Waveform(resource.Resource):
 
         if len(args) >= 3:
 
-                tvals['type'] = args[0]
+            sta_list = args[1].split('+')
 
-                sta_list = args[1].split('+')
+            if args[2]:
 
-                orid_time = isNumber(args[2])
+                if isNumber(args[2]):
+                    chan = False
+                    orid_time = isNumber(args[2])
+                else:
+                    chan = args[2]
+                    chan_split = args[2].split('+')
+                    orid_time = isNumber(args[3])
 
-                tvals['sta']                = args[1]
-                # tvals['sta_list']           = sta_list
-                tvals['sta_list']           = args[1]
-                tvals['orid_time']          = orid_time
-                tvals['orid_time_readable'] = strftime("%Y-%m-%d %H:%M:%S",gmtime(orid_time))
+            # Build javascript variables
+            jscript_vars = "dataObj['sta'] = " + '["' + '","'.join(sta_list) + '"]\n'
+            jscript_vars += "dataObj['orid_time'] = " + str(orid_time) + '\n'
+
+            # Build title
+            title = tvals["application_title"] + " / waveforms / " + args[1] + " / "
+
+            # Override channels
+            if chan:
+                title += chan + " / "
+                jscript_vars += "dataObj['chan'] = " + '["' + '","'.join(chan_split) + '"]'
+
+            if orid_time: title += strftime("%Y-%m-%d %H:%M:%S",gmtime(orid_time))
+
+            tvals['title']        = title
+            tvals['jscript_vars'] = jscript_vars
+
+            html_stations = Template(open(template_waveform).read()).substitute(tvals)
+
+            request.write( html_stations )
+
+            return ""
 
         else:
         
             request.setResponseCode(404)
             return "If you request the waveforms resource (/wfs) you must provide a station code and epoch time (404 error)"
-
-        html_stations = Template(open(template_waveform).read()).substitute(tvals)
-
-        request.write( html_stations )
-
-        return ""

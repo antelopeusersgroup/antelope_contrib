@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$application_title : $dir : $key</title>
+    <title>$application_title / $dir / $key</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 

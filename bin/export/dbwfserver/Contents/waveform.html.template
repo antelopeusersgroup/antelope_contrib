@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$application_title : $dir : $sta : $orid_time_readable</title>
+    <title>$title</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 
@@ -24,23 +24,16 @@
     <script type="text/javascript">
     $$(function(){
 
-        var sta       = "$sta_list";
-        var chan      = "$chan";
-        var orid      = "$orid";
-        var orid_time = "$orid_time";
+        dataObj = {
+            'type':'wf',
+            'url':'yes',
+            'amount':'all'
+        }
 
-        // Global vars for object methods
-        PlotSelect.stacode   = sta ;
-        PlotSelect.orid_time = orid_time ;
+        $jscript_vars
 
         /// Get data
-        if( sta !== 'None' && chan !== 'None' ) {
-            PlotSelect.getData({'type':'wf','sta':sta,'chan':chan,'url':'yes','amount':'all'});
-        } else if( sta !== 'None' && orid_time !== 'None' ) {
-            PlotSelect.getData({'type':'wf','sta':sta,'orid_time':orid_time,'url':'yes','amount':'all'});
-        } else {
-            alert('Problem on request for data');
-        }
+        PlotSelect.getData(dataObj);
      
     });
     </script>
@@ -105,7 +98,7 @@
         </ul>
         </div>
         <div id="left">
-            <h1>$application_title / $dir / $sta / $orid_time_readable</h1>
+            <h1>$title</h1>
         </div>
     </div>
 

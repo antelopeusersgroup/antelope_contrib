@@ -122,6 +122,13 @@ PlotSelect = {
 
         // }}} jQuery UI interface functions
 
+        // {{{ Canvas resize experiment
+        $(window).resize(function(){
+            console.log('resizing');
+            $('canvas').css({'width':'100%'});
+        });
+        // }}} Canvas resize experiment
+
         // }}} Set defaults
 
     },
@@ -227,7 +234,16 @@ PlotSelect = {
             PlotSelect.myFilter = $(this).val();
             $(this).attr("selected","selected");
             if ( PlotSelect.stacode ) {
-                PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:PlotSelect.ts,time_end:PlotSelect.te,amount:PlotSelect.amount});
+                PlotSelect.getData({
+                    sta:PlotSelect.stacode,
+                    orid:PlotSelect.orid,
+                    orid_time:PlotSelect.orid_time,
+                    chan:PlotSelect.chan,
+                    ts:parseInt(PlotSelect.ts,10),
+                    te:parseInt(PlotSelect.te,10),
+                    amount:PlotSelect.amount,
+                    filter:PlotSelect.myFilter
+                });
             }
         });
 
@@ -312,11 +328,11 @@ PlotSelect = {
 
         if( PlotSelect.orid !== undefined ) {
 
-            PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
+            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
 
         } else {
 
-            PlotSelect.getData({sta:PlotSelect.stacode,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
+            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
 
         }
 
@@ -337,11 +353,11 @@ PlotSelect = {
 
         if( PlotSelect.orid !== undefined ) {
 
-            PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
+            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
 
         } else {
 
-            PlotSelect.getData({sta:PlotSelect.stacode,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
+            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
 
         }
 
@@ -386,7 +402,7 @@ PlotSelect = {
             x2 = x2 + delta*pad;
         }
 
-        PlotSelect.getData({sta:PlotSelect.stacode,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,time_start:x1,time_end:x2,amount:"slice",filter:PlotSelect.filter});
+        PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
 
         // }}} Selection zoom functionality
 
@@ -415,8 +431,8 @@ PlotSelect = {
         if ('sta' in args){         dataargs["sta"]       = args.sta ;}
         if ('orid' in args){        dataargs["orid"]      = args.orid ;}
         if ('orid_time' in args){   dataargs["orid_time"] = args.orid_time ;}
-        if ('time_start' in args){  dataargs["ts"]        = args.time_start ;}
-        if ('time_end' in args) {   dataargs["te"]        = args.time_end ;}
+        if ('ts' in args){          dataargs["ts"]        = args.ts ;}
+        if ('te' in args) {         dataargs["te"]        = args.te ;}
         if ('chan' in args) {       dataargs["chan"]      = args.chan ;}
         if ('amount' in args) {     dataargs["amount"]    = args.amount ;}
 
@@ -433,6 +449,9 @@ PlotSelect = {
 
         // Define globally for app
         PlotSelect.stacode   = args.sta;
+        PlotSelect.chan      = args.chan;
+        PlotSelect.ts        = args.ts;
+        PlotSelect.te        = args.te;
         PlotSelect.orid      = args.orid;
         PlotSelect.orid_time = args.orid_time;
         PlotSelect.amount    = args.amount;
@@ -476,10 +495,13 @@ PlotSelect = {
         chan_labels.empty();
         chan_plots.empty();
 
-        PlotSelect.ts = opts0['xaxis']['min'] = resp['time_start'] * 1000;
-        PlotSelect.te = opts0['xaxis']['max'] = resp['time_end'] * 1000;
+        // PlotSelect.tsMilli = opts0['xaxis']['min'] = resp['time_start'] * 1000;
+        // PlotSelect.teMilli = opts0['xaxis']['max'] = resp['time_end'] * 1000;
+        opts0['xaxis']['min'] = resp['time_start'] * 1000;
+        opts0['xaxis']['max'] = resp['time_end'] * 1000;
 
         $.each(resp.sta, function(i, mysta){
+
             $.each(resp.chan, function(ii, mychan){
 
 
