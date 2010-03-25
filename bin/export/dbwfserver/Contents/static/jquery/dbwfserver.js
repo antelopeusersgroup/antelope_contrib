@@ -123,11 +123,23 @@ PlotSelect = {
         // }}} jQuery UI interface functions
 
         // {{{ Canvas resize experiment
-        $(window).resize(function(){
-            console.log('resizing');
-            $('canvas').css({'width':'100%'});
-        });
+        // Not used yet
+        // $(window).resize(function(){
+        //     $('canvas').css({'width':'100%'});
+        // });
         // }}} Canvas resize experiment
+
+        // {{{ Arrival flag CSS
+        PlotSelect.arrivalFlagCss = {
+            'border':'1px solid #FFF',
+            'background-color':'#F00',
+            'font-weight':'bold',
+            'font-size':'smaller',
+            'color':'#FFF',
+            'padding':'3px',
+            'position':'absolute'
+        };
+        // }}} Arrival flag CSS
 
         // }}} Set defaults
 
@@ -230,37 +242,66 @@ PlotSelect = {
 
         // {{{ Dynamic filter change data query
 
-        if( PlotSelect.ts !== undefined ) { var filter_ts = parseInt(PlotSelect.ts,10) ; } else { var filter_ts = "null" ; }
-        if( PlotSelect.te !== undefined ) { var filter_te = parseInt(PlotSelect.te,10) ; } else { var filter_te = "null" ; }
-
         dataObj = {
+            type:PlotSelect.type,
             sta:PlotSelect.stacode,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
-            chan:PlotSelect.chan,
-            amount:PlotSelect.amount,
-            filter:PlotSelect.myFilter
+            amount:PlotSelect.amount
         }
 
-        if( PlotSelect.ts !== undefined ) { dataObj['ts'] = parseInt(PlotSelect.ts,10) ; }
-        if( PlotSelect.te !== undefined ) { dataObj['te'] = parseInt(PlotSelect.te,10) ; }
+        if( PlotSelect.ts     !== undefined ) { dataObj['ts']     = parseInt(PlotSelect.ts,10) ; }
+        if( PlotSelect.te     !== undefined ) { dataObj['te']     = parseInt(PlotSelect.te,10) ; }
+        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
+        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
 
         $("select#filter").change( function() {
             PlotSelect.myFilter = $(this).val();
+            dataObj['filter'] = PlotSelect.myFilter ;
             $(this).attr("selected","selected");
-            if ( PlotSelect.stacode ) {
-                PlotSelect.getData(dataObj);
-            }
+            PlotSelect.getData(dataObj);
         });
 
         // }}} Dynamic filter change data query
 
     },
 
+    phaseSelector: function(evt){
+
+        // {{{ Dynamic phase selector
+        // console.log( $("input#phases:checked").val() );
+        $("input#phases").click( function() {
+            if( $(this).attr('checked') == 'true' ) { 
+                console.log('I am checked'); 
+            } else { 
+                console.log('I am not checked');
+            }
+        });
+        //     console.log('Checked');
+        // }, function() {
+        //     console.log('Unchecked');
+        // });
+        // }}} Dynamic phase selector
+
+    },
+
     resetPlot: function(evt){
 
         // {{{ Reset plot
-        PlotSelect.getData({type:'wf',sta:PlotSelect.stacode,orid_time:PlotSelect.orid_time,amount:'all'});
+        dataObj = {
+            type:PlotSelect.type,
+            sta:PlotSelect.stacode,
+            orid:PlotSelect.orid,
+            orid_time:PlotSelect.orid_time,
+            amount:'all'
+        }
+
+        if( PlotSelect.type   === undefined ) { dataObj['type']   = 'wf' ; }
+        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
+        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
+        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+
+        PlotSelect.getData(dataObj);
         // }}} Reset plot
 
     },
@@ -325,22 +366,27 @@ PlotSelect = {
 
         // {{{ Future data
 
-        var firstchan = PlotSelect.stacode+'_'+PlotSelect.chans[0]; // Get the axis range from one plot
+        var firstchan = PlotSelect.stacode[0]+'_'+PlotSelect.chans[0]; // Get the axis range from one plot
         var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
         var xaxis = chanplot.getAxes().xaxis;
         var futureDelta = PlotSelect.tickTranslator( xaxis.tickSize );
-        var x1 = (xaxis.datamin/1000) + futureDelta;
-        var x2 = (xaxis.datamax/1000) + futureDelta;
+        var x1 = parseInt((xaxis.datamin/1000) + futureDelta, 10);
+        var x2 = parseInt((xaxis.datamax/1000) + futureDelta, 10);
 
-        if( PlotSelect.orid !== undefined ) {
-
-            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
-
-        } else {
-
-            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
-
+        dataObj = {
+            sta:PlotSelect.stacode,
+            orid:PlotSelect.orid,
+            orid_time:PlotSelect.orid_time,
+            ts:x1,
+            te:x2,
+            amount:"slice"
         }
+
+        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
+        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
+        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+
+        PlotSelect.getData(dataObj);
 
         // }}} Future data
 
@@ -350,22 +396,27 @@ PlotSelect = {
 
         // {{{ Past data
 
-        var firstchan = PlotSelect.stacode+"_"+PlotSelect.chans[0]; // Get the axis range from one plot
+        var firstchan = PlotSelect.stacode[0]+"_"+PlotSelect.chans[0]; // Get the axis range from one plot
         var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
         var xaxis = chanplot.getAxes().xaxis;
         var pastDelta = PlotSelect.tickTranslator( xaxis.tickSize );
-        var x1 = (xaxis.datamin/1000) - pastDelta;
-        var x2 = (xaxis.datamax/1000) - pastDelta;
+        var x1 = parseInt( (xaxis.datamin/1000) - pastDelta, 10 );
+        var x2 = parseInt( (xaxis.datamax/1000) - pastDelta, 10 );
 
-        if( PlotSelect.orid !== undefined ) {
-
-            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
-
-        } else {
-
-            PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
-
+        dataObj = {
+            sta:PlotSelect.stacode,
+            orid:PlotSelect.orid,
+            orid_time:PlotSelect.orid_time,
+            ts:x1,
+            te:x2,
+            amount:"slice"
         }
+
+        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
+        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
+        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+
+        PlotSelect.getData(dataObj);
 
         // }}} Past data
 
@@ -379,7 +430,6 @@ PlotSelect = {
      event handler that Flot passes plot click position data to.
     */
     toggleShift: function(evt) {
-        // console.log('SHIFT is pressed');
         PlotSelect.isShiftPressed = evt.shiftKey;
     },
 
@@ -396,19 +446,32 @@ PlotSelect = {
         // Everything in milliseconds so divide by 1000 to get secs
         // var x1 = Math.round( pos.xaxis.from / 1000 ) ;
         // var x2 = Math.round( pos.xaxis.to / 1000 ) ;
-        var x1 = pos.xaxis.from / 1000 ;
-        var x2 = pos.xaxis.to / 1000 ;
+        var x1 = parseInt( pos.xaxis.from / 1000, 10 ) ;
+        var x2 = parseInt( pos.xaxis.to / 1000, 10 ) ;
 
         if (PlotSelect.isShiftPressed) { /*if the Shift Key is pressed, we zoom out. */
-            // console.log('Shift is pressed');
-            // console.dir("out", PlotSelect.isShiftPressed);
             var pad = 5;
             var delta = x2 - x1;
             x1 = x1 - delta*pad;
             x2 = x2 + delta*pad;
         }
 
-        PlotSelect.getData({sta:PlotSelect.stacode,chan:PlotSelect.chan,orid:PlotSelect.orid,orid_time:PlotSelect.orid_time,ts:x1,te:x2,amount:"slice",filter:PlotSelect.filter});
+        dataObj = {
+            type:PlotSelect.type,
+            sta:PlotSelect.stacode,
+            orid:PlotSelect.orid,
+            orid_time:PlotSelect.orid_time,
+            amount:PlotSelect.amount,
+            ts:x1,
+            te:x2,
+            amount:"slice"
+        }
+
+        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
+        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
+        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+
+        PlotSelect.getData(dataObj);
 
         // }}} Selection zoom functionality
 
@@ -441,6 +504,7 @@ PlotSelect = {
         if ('te' in args) {         dataargs["te"]        = args.te ;}
         if ('chan' in args) {       dataargs["chan"]      = args.chan ;}
         if ('amount' in args) {     dataargs["amount"]    = args.amount ;}
+        if ('phases' in args) {     dataargs["phases"]    = args.phases ;}
 
         // Test if filter defined
         if( ( PlotSelect.myFilter !== undefined ) && ( PlotSelect.myFilter !== 'None' ) ) {
@@ -453,7 +517,10 @@ PlotSelect = {
 
         $("#loading").show();
 
+        // PlotSelect.phaseSelector();
+
         // Define globally for app
+        PlotSelect.type      = args.type;
         PlotSelect.stacode   = args.sta;
         PlotSelect.chan      = args.chan;
         PlotSelect.ts        = args.ts;
@@ -461,6 +528,7 @@ PlotSelect = {
         PlotSelect.orid      = args.orid;
         PlotSelect.orid_time = args.orid_time;
         PlotSelect.amount    = args.amount;
+        PlotSelect.phases    = args.phases;
 
         // Query
         $.ajax({
@@ -582,6 +650,39 @@ PlotSelect = {
                     chan_plot.bind("plotselected", PlotSelect.handleSelect);
                     PlotSelect.chan_plot_obj[stachan_data] = plot;
 
+                    // {{{ Add arrival labels
+                    if( PlotSelect.phases !== undefined && resp['phases'][stachan_data] !== undefined ) {
+
+                        $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
+
+                            var o;
+                            o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
+                            var flagCss = PlotSelect.arrivalFlagCss;
+                            // Force override as we want bar almost to top
+                            o.top = 20 ;
+
+                            flagCss['left'] = o.left + 4 + "px" ;
+                            flagCss['top'] = o.top + "px" ;
+                            var arrDiv = $("<div>").css(flagCss).append( phaseFlag );
+
+                            // Draw tail on arrival flag
+                            var ctx = plot.getCanvas().getContext("2d");
+                            ctx.beginPath();
+                            o.left += 4;
+                            ctx.moveTo(o.left,o.top);
+                            ctx.lineTo(o.left,o.top + 120);
+                            ctx.closePath();
+                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = "#FFF";
+                            ctx.stroke();
+
+                            chan_plot.append(arrDiv);
+
+                        });
+
+                    }
+                    // }}} Add arrival labels
+
                 } 
 
             });
@@ -613,47 +714,6 @@ PlotSelect = {
         // }}} Plot event table
 
     }
-//
-//            // {{{ Add arrival labels
-//
-//        // Check the arrival labels are within the time window of the canvas
-//        //    if( ( PlotSelect.ts > 0 && PlotSelect.te > 0 ) && ( resp['metadata']['phases'][mysta][mychan]['arrival_time'] > PlotSelect.ts ) && ( resp['metadata']['phases'][mysta][mychan]['arrival_time'] < PlotSelect.te ) ) {
-//
-//        //        var o;
-//        //        o = plot.pointOffset( { x:(resp['metadata']['phases'][mysta][mychan]['arrival_time']*1000), y:1000 } ) ;
-//        //        var arrCss = {
-//        //            'border':'1px solid #FFF',
-//        //            'background-color':'#F00',
-//        //            'font-weight':'bold',
-//        //            'font-size':'smaller',
-//        //            'color':'#FFF',
-//        //            'padding':'3px',
-//        //            'position':'absolute'
-//        //        };
-//
-//        //        // Force override as we want bar almost to top
-//        //        o.top = 20 ;
-//
-//        //        arrCss['left'] = o.left + 4 + "px" ;
-//        //        arrCss['top'] = o.top + "px" ;
-//        //        var arrDiv = $("<div>").css(arrCss).append( resp['metadata']['phases'][mysta][mychan]['iphase'] );
-//
-//        //        // Draw tail on arrival flag
-//        //        var ctx = plot.getCanvas().getContext("2d");
-//        //        ctx.beginPath();
-//        //        o.left += 4;
-//        //        ctx.moveTo(o.left,o.top);
-//        //        ctx.lineTo(o.left,o.top + 120);
-//        //        ctx.closePath();
-//        //        ctx.lineWidth = 1;
-//        //        ctx.strokeStyle = "#FFF";
-//        //        ctx.stroke();
-//        //    
-//        //        chan_plot.append(arrDiv);
-//
-//        //    }
-//
-//        //    // }}} Add arrival labels
 
 };
 

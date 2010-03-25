@@ -64,6 +64,7 @@ class Data(resource.Resource):
         * canvas_size - The number of pixels of the plotting Canvas, to be passed to 'get_segment'
         * amount - Amount of data to be retrieved: can be 'all', 'slice'
         * filter - Waveform filter
+        * phases - Plot phase arrivals or not
     """
 
     def __init__(self):
@@ -85,6 +86,7 @@ class Data(resource.Resource):
         canvas_size = request.args.get('canvas_size', [config.canvas_size_default])[0] 
         amount      = request.args.get('amount',      [None])[0] 
         filter      = request.args.get('filter',      [None])[0] 
+        phases      = request.args.get('phases',      None)
 
         if net_args:
             net = list(set([n.upper() for n in net_args]))
@@ -134,8 +136,9 @@ class Data(resource.Resource):
             log.msg("\tcanvas_size:\t%d" % canvas_size)
             log.msg("\tamount:\t%s" % amount)
             log.msg("\tfilter:\t%s" % filter)
+            log.msg("\tphases:\t%s" % phases)
 
-        return type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter
+        return type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter, phases
 #}}}
     def getChild(self, name, request):
 #{{{
@@ -147,7 +150,7 @@ class Data(resource.Resource):
 #}}}
     def render_GET(self, request):
 #{{{
-        type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter = self._extract_request(request)
+        type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter, phases = self._extract_request(request)
 
         """
         Handle different type of data request
@@ -178,11 +181,11 @@ class Data(resource.Resource):
             return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "amount":amount, "filter":filter })
             """
 
-            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta), str(chan), canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter)
+            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta), str(chan), canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter, phases)
             if config.debug: log.msg(function)
 
             # try:
-            return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter))
+            return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter, phases))
             # except:
             #     request.setHeader("response-code", 500)
             #     log.msg("\n")

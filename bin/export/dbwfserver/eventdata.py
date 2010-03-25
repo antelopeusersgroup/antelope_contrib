@@ -94,6 +94,69 @@ class EventData():
         self.call = reactor.callLater(600, self._get_event_cache)
 
 
+    def _get_stachan_phases(self, sta, chan, mintime, maxtime):
+        """
+        Go through station channels to retrieve all
+        arrival phases
+        """
+
+        # Create a datascope OR statement
+        sta_str  = "|".join(sta)
+        chan_str = "|".join(chan)
+
+        log.msg( sta_str )
+        log.msg( chan_str )
+
+        db = Dbptr(self.db)
+
+        db.lookup(table='event')
+
+        if db.query(dbTABLE_PRESENT):
+
+            if config.debug:
+                log.msg("Event table present!")
+
+            db.process([
+                'dbopen event',
+                'dbjoin origin',
+                'dbsubset orid == prefor',
+                'dbjoin assoc',
+                'dbjoin arrival'
+            ])
+
+        else:
+
+            if config.debug:
+                log.msg("Event table NOT present")
+
+            db.process([
+                'dbopen origin',
+                'dbjoin assoc',
+                'dbjoin arrival'
+            ])
+
+        phase_sub = dbsubset(db,'sta=~/%s/ && chan=~/%s/ && arrival.time >= %s && arrival.time <= %s' % (sta_str,chan_str,int(mintime),int(maxtime)) )
+
+        phase_sub.sort(['sta','chan','arrival.time','iphase'],unique=True)
+
+        per_sta_chan_phases = {}
+
+        if phase_sub.query(dbRECORD_COUNT) > 0:
+
+            for p in range(phase_sub.query(dbRECORD_COUNT)):
+
+                phase_sub.record = p
+
+                pSta, pChan, pArrTime, pIphase = phase_sub.getv('sta','chan','arrival.time','iphase')
+                pStaChan = pSta+"_"+pChan
+
+                if not pStaChan in per_sta_chan_phases:
+                    per_sta_chan_phases[pStaChan] = {}
+
+                per_sta_chan_phases[pStaChan][pArrTime] = pIphase
+
+        return per_sta_chan_phases
+      
 
     def _get_orid_data(self, origin, stations=None):
         """
@@ -257,7 +320,7 @@ class EventData():
             return ev_list
 
 
-    def get_segment(self, sta, chan, canvas_size, orid=None, origin_time=None, time_window=None, mintime=None, maxtime=None, amount=None, filter=None):
+    def get_segment(self, sta, chan, canvas_size, orid=None, origin_time=None, time_window=None, mintime=None, maxtime=None, amount=None, filter=None, phases=None):
 
         """
         Get a segment of waveform data.
@@ -268,7 +331,7 @@ class EventData():
              [(t1, v1min, v1max), (t2, v2min, v2max), ...]
 
         TEST:
-            http://localhost:8008/data?type=wf&sta=113A&orid=66554
+            http://localhost:8008/data?type=wf&sta=113A&orid_time=1234512345
     
         Client-side plotting library, Flot, plots the following 
         [time,max,min] - hence need to rearrange
@@ -299,6 +362,7 @@ class EventData():
             log.msg("\tcanvas:\t%s"     % canvas_size)
             log.msg("\tamount:\t%s"     % amount)
             log.msg("\tfilter:\t%s"     % filter)
+            log.msg("\tphases:\t%s"     % phases)
 
         if orid and not origin_time:
 
@@ -351,6 +415,23 @@ class EventData():
         res_data.update( {'orid_time':orid_time} )
         res_data.update( {'sta':sta} )
         res_data.update( {'chan':chan} )
+
+        if phases:
+
+            log.msg('Getting phase arrival times')
+
+            phase_arrivals = self._get_stachan_phases(sta,chan,mintime,maxtime)
+            phase_keys = phase_arrivals.keys()
+            phase_keys.sort()
+
+            segment_phases = {}
+
+            for pKey in phase_arrivals:
+
+                segment_phases[pKey] = phase_arrivals[pKey]
+
+            res_data.update( {'phases':segment_phases } )
+
 
         for station in sta:
 

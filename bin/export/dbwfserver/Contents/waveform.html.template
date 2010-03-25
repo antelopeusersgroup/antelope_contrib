@@ -27,7 +27,8 @@
         dataObj = {
             'type':'wf',
             'url':'yes',
-            'amount':'all'
+            'amount':'all',
+            'phases':'True'
         }
 
         $jscript_vars
@@ -113,6 +114,7 @@
     </div>
 
     <div id="subnav">
+        Show phase arrivals: <input type="checkbox" name="phases" id="phases" value="off" />&nbsp;&nbsp;&nbsp;
         <div id="event"></div>
     </div>
 
