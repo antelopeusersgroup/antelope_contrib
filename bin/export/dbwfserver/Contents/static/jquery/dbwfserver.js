@@ -230,20 +230,26 @@ PlotSelect = {
 
         // {{{ Dynamic filter change data query
 
+        if( PlotSelect.ts !== undefined ) { var filter_ts = parseInt(PlotSelect.ts,10) ; } else { var filter_ts = "null" ; }
+        if( PlotSelect.te !== undefined ) { var filter_te = parseInt(PlotSelect.te,10) ; } else { var filter_te = "null" ; }
+
+        dataObj = {
+            sta:PlotSelect.stacode,
+            orid:PlotSelect.orid,
+            orid_time:PlotSelect.orid_time,
+            chan:PlotSelect.chan,
+            amount:PlotSelect.amount,
+            filter:PlotSelect.myFilter
+        }
+
+        if( PlotSelect.ts !== undefined ) { dataObj['ts'] = parseInt(PlotSelect.ts,10) ; }
+        if( PlotSelect.te !== undefined ) { dataObj['te'] = parseInt(PlotSelect.te,10) ; }
+
         $("select#filter").change( function() {
             PlotSelect.myFilter = $(this).val();
             $(this).attr("selected","selected");
             if ( PlotSelect.stacode ) {
-                PlotSelect.getData({
-                    sta:PlotSelect.stacode,
-                    orid:PlotSelect.orid,
-                    orid_time:PlotSelect.orid_time,
-                    chan:PlotSelect.chan,
-                    ts:parseInt(PlotSelect.ts,10),
-                    te:parseInt(PlotSelect.te,10),
-                    amount:PlotSelect.amount,
-                    filter:PlotSelect.myFilter
-                });
+                PlotSelect.getData(dataObj);
             }
         });
 

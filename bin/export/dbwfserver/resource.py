@@ -101,10 +101,10 @@ class Data(resource.Resource):
         chan = list(set([c.upper() for c in chan_args]))
         chan.sort()
 
-        if time_start: 
+        if time_start:
             time_start = float(time_start)
         
-        if time_end: 
+        if time_end:
             time_end = float(time_end)
 
         if time_window: 
