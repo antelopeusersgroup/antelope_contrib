@@ -133,11 +133,9 @@
 
     <div id="subnav">
         <form id="wformer" name="wformer">
-        <p>
-        Show phase arrivals:
+        <p>Show phase arrivals:
         <input type="checkbox" name="phases" id="phases" value="off" />
-        &nbsp;&nbsp;&nbsp;
-        Select a filter:
+        &nbsp;&nbsp;&nbsp;Select a filter:
         <select id="filter" name="filter">
             $filters
         </select>
@@ -159,7 +157,7 @@
             [zoom out: shift-click-drag] |
             [scroll left: left arrow] |
             [scroll right: right arrow] |
-            [reset: click 'r']
+            [reset: press 'r' key]
         </p>
     </div>
 
