@@ -507,7 +507,8 @@ class Waveform(resource.Resource):
             "application_title":    config.application_title,
             "jquery_includes":      self._jquery_includes(),
             "title":                '',
-            "jscript_vars":         ''
+            "jscript_vars":         '',
+            "filters":              ''
         }
 
         template_waveform = config.waveform_html_template
@@ -534,6 +535,12 @@ class Waveform(resource.Resource):
 
             # Build title
             title = tvals["application_title"] + " / waveforms / " + args[1] + " / "
+
+            # Build filter list
+            filterList = ''
+            for filterKey in sorted(config.filters.iterkeys()):
+                filterList += "\t<option value='%s'>%s</option>\n" % (config.filters[filterKey],filterKey)
+            tvals['filters'] = filterList
 
             # Override channels
             if chan:

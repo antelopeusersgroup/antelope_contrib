@@ -17,7 +17,7 @@ div#container { width:800px; }
 div#event { display:block;float:right }
 div#loading { position:absolute;top:0px;right:0px;min-height:33px;min-width:100px;padding:4px;margin:0;background: url(/static/images/ajax-loader.gif) #FFA500 no-repeat center left;z-index:999; }
 div#chan_labels { font-weight:bold;font-size:120%; }
-div#wforms { border:1px solid #C9C9EE;background-color:#FFF;margin:1.0em auto; }
+div#wforms { border:1px solid #C9C9EE;background-color:#FFF;margin:0 auto; }
 div#wforms div#chan_plots { display:block;margin:0 auto;}
 div#wrapper { margin:0 auto;}
 
@@ -44,7 +44,7 @@ div#title div#nav ul li { display:inline;padding:5px;list-style-type:none; }
 
 /* Subnav */
 div#subnav { clear:both;margin:0;padding:5px;}
-div#subnav ul { margin:0;padding:0;text-align:left; }
+div#subnav ul, div#subnav p { margin:0;padding:0;text-align:left; }
 div#subnav ul li { display:inline;padding:5px;margin:0 5px 5px 0;list-style-type:none;float:left;text-align:center; }
 div#subnav ul br { margin-bottom:15px; }
 div#subnav div#event { float:right;width:400px; }

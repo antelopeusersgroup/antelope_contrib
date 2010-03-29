@@ -141,6 +141,11 @@ PlotSelect = {
         };
         // }}} Arrival flag CSS
 
+        // {{{ Initialize functions
+        PlotSelect.filterChange();
+        PlotSelect.phaseSelector();
+        // }}} Initialize functions
+
         // }}} Set defaults
 
     },
@@ -195,49 +200,6 @@ PlotSelect = {
 
     },
 
-    getFilters: function(){
-
-        // {{{ Dynamically get filters
-
-        $.ajax({
-            type:'get',
-            dataType:'json',
-            url:"/data",
-            data: {
-                "type":"filters"
-            },
-            success:PlotSelect.populateFilters,
-            error:PlotSelect.errorResponse
-        });
-
-        // }}} Dynamically get filters
-
-    },
-
-    populateFilters: function(fildata){
-
-        // {{{ Populate filter in select boxes
-
-        if (typeof(fildata['error']) != "undefined" ) {
-            alert('ERROR ON SERVER:\n'+fildata['error']);
-        }
-
-        var themerFilters = '<p>Select a filter:<select id="filter" name="filter">\n';
-        themerFilters += '<option value="None" selected="selected">None</option>';
-
-        $.each(fildata, function(i,val){
-            themerFilters += '<option value="'+val+'">'+i+'</option>';
-        });
-        themerFilters += '</select>';
-
-        $("#subnav").append(themerFilters);
-
-        PlotSelect.filterChange();
-
-        // }}} Populate filter in select boxes
-
-    },
-
     filterChange: function(evt){
 
         // {{{ Dynamic filter change data query
@@ -255,7 +217,7 @@ PlotSelect = {
         if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
         if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
 
-        $("select#filter").change( function() {
+        $("form#wformer select#filter").change( function() {
             PlotSelect.myFilter = $(this).val();
             dataObj['filter'] = PlotSelect.myFilter ;
             $(this).attr("selected","selected");
@@ -269,18 +231,28 @@ PlotSelect = {
     phaseSelector: function(evt){
 
         // {{{ Dynamic phase selector
-        // console.log( $("input#phases:checked").val() );
-        $("input#phases").click( function() {
-            if( $(this).attr('checked') == 'true' ) { 
-                console.log('I am checked'); 
+
+        dataObj = {
+            type:PlotSelect.type,
+            sta:PlotSelect.stacode,
+            orid:PlotSelect.orid,
+            orid_time:PlotSelect.orid_time,
+            amount:PlotSelect.amount
+        }
+
+        if( PlotSelect.ts     !== undefined ) { dataObj['ts']     = parseInt(PlotSelect.ts,10) ; }
+        if( PlotSelect.te     !== undefined ) { dataObj['te']     = parseInt(PlotSelect.te,10) ; }
+        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
+        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+
+        $("input#phases").change( function() {
+            if( $(this).attr('checked') ) { 
+                dataObj['phases'] = 'True' ;
             } else { 
-                console.log('I am not checked');
+                dataObj['phases'] = 'False' ;
             }
+            PlotSelect.getData(dataObj);
         });
-        //     console.log('Checked');
-        // }, function() {
-        //     console.log('Unchecked');
-        // });
         // }}} Dynamic phase selector
 
     },
@@ -515,6 +487,11 @@ PlotSelect = {
             }
         }
 
+        // Test for phases
+        if( ( dataargs["phases"] !== undefined ) && ( dataargs['phases'] == 'True' ) ) {
+            $("form#wformer input#phases").attr('checked','checked');
+        }
+
         $("#loading").show();
 
         // PlotSelect.phaseSelector();
@@ -651,7 +628,7 @@ PlotSelect = {
                     PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                     // {{{ Add arrival labels
-                    if( PlotSelect.phases !== undefined && resp['phases'][stachan_data] !== undefined ) {
+                    if( PlotSelect.phases !== undefined && PlotSelect.phases != 'False' && resp['phases'][stachan_data] !== undefined ) {
 
                         $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
 

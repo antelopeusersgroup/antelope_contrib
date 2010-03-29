@@ -114,7 +114,18 @@
     </div>
 
     <div id="subnav">
-        Show phase arrivals: <input type="checkbox" name="phases" id="phases" value="off" />&nbsp;&nbsp;&nbsp;
+        <form id="wformer">
+        <p>
+        Show phase arrivals:
+        <input type="checkbox" name="phases" id="phases" value="off" />
+        &nbsp;&nbsp;&nbsp;
+        Select a filter:
+        <select id="filter" name="filter">
+            $filters
+        </select>
+        </p>
+
+
         <div id="event"></div>
     </div>
 
