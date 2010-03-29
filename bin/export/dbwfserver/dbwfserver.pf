@@ -26,7 +26,6 @@ jquery_files &Tbl{
 	/static/jquery/jquery.flot.min.js
 	/static/jquery/jquery.flot-selection.min.js
 	/static/jquery/jquery.hotkeys-0.7.8-packed.js
-  /static/jquery/jquery-ui-1.7.2.custom.min.js
 }
 
 display_tracebacks false 

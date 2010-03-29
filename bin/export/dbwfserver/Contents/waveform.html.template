@@ -49,6 +49,8 @@
 
     <div id="toppanel">
 
+        <!-- {{{ PANEL -->
+
         <div id="configpanel">
         <div class="panelcontent clearfix">
 
@@ -110,6 +112,8 @@
                 <li class="right"></li>
             </ul>
         </div>
+
+        <!-- }}} PANEL -->
 
     </div>
 
