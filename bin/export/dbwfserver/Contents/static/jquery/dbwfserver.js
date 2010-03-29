@@ -83,44 +83,17 @@ PlotSelect = {
 
         // }}} Set defaults
 
-        // {{{ jQuery UI interface functions
-
-        // Initialize the dialog
-        $("#config").dialog({
-            bgiframe: true,
-            autoOpen: false,
-            height: 300,
-            modal: false
+        // {{{ Open the config panel
+        $("a#configuration_open_link").click( function() {
+            $("#configpanel").slideToggle("slow", function() {
+                if( $(this).is(":hidden") ) {
+                    $("a#configuration_open_link").html('Show configuration');
+                } else {
+                    $("a#configuration_open_link").html('Hide configuration');
+                }
+            });
         });
-        // Open the dialog
-        $("a#config_link").click( function() {
-            $("#config").dialog("open");
-        });
-        // Initialize the dialog
-        $("#info").dialog({
-            bgiframe: true,
-            autoOpen: false,
-            height: 300,
-            modal: false
-        });
-        // Open the dialog
-        $("a#info_link").click( function() {
-            $("#info").dialog("open");
-        });
-        // Initialize the dialog
-        $("#themer").dialog({
-            bgiframe: true,
-            autoOpen: false,
-            height: 300,
-            modal: false
-        });
-        // Open the dialog
-        $("a#themer_link").click( function() {
-            $("#themer").dialog("open");
-            PlotSelect.themerColorScheme;
-        });
-
-        // }}} jQuery UI interface functions
+        // }}} Open the config panel
 
         // {{{ Canvas resize experiment
         // Not used yet
@@ -147,56 +120,6 @@ PlotSelect = {
         // }}} Initialize functions
 
         // }}} Set defaults
-
-    },
-
-    doQueryAjax: function(dAUrl,dAType,dASta,dAOrid){
-
-        // {{{ Process metadata query
-
-        // Define query object
-        var queryData = {} ;
-
-        // Build the crumbs
-        var crumbTrail ;
-
-        queryData["type"] = dAType ;
-        crumbTrail = dAType ;
-
-        // Add methods and build crumb trail based on args
-        if( dASta !== "-" ) {
-            queryData["sta"] = dASta ; 
-            crumbTrail += " &raquo; Stacode:" + dASta ;
-        }
-        if( dAOrid !== -1 ) {
-            queryData["orid"] = dAOrid ; 
-            crumbTrail += " &raquo; Orid:" + dAOrid ;
-        }
-
-        jQuery.ajax({
-            type:'get',
-            dataType:'json',
-            url: dAUrl,
-            data: queryData,
-            error:PlotSelect.errorResponse,
-            success: function(resp) {
-                PlotSelect.printListResult(resp,dAType,dASta,dAOrid);
-                PlotSelect.updateCrumbs(crumbTrail);
-                $("#loading").fadeOut(500);
-            }
-        });
-
-        // }}} Process metadata query
-
-    },
-
-    updateCrumbs: function(myCrumb){
-
-        // {{{ Update HTML in crumbs
-
-        $("#crumbspath").html(" &raquo; "+myCrumb);
-
-        // }}} Update HTML in crumbs
 
     },
 
@@ -346,6 +269,7 @@ PlotSelect = {
         var x2 = parseInt((xaxis.datamax/1000) + futureDelta, 10);
 
         dataObj = {
+            type:PlotSelect.type,
             sta:PlotSelect.stacode,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
@@ -376,6 +300,7 @@ PlotSelect = {
         var x2 = parseInt( (xaxis.datamax/1000) - pastDelta, 10 );
 
         dataObj = {
+            type:PlotSelect.type,
             sta:PlotSelect.stacode,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
@@ -439,6 +364,7 @@ PlotSelect = {
             amount:"slice"
         }
 
+        if( PlotSelect.type   !== undefined ) { dataObj['type']   = 'wf'; }
         if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
         if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
         if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }

@@ -15,6 +15,10 @@ DATA = ui-bg_diagonals-small_0_aaaaaa_40x40.png \
     ui-icons_D9D9EE_256x240.png \
     ui-icons_FFA500_256x240.png \
     ajax-loader.gif \
-    bkgrd_1x50.png
+    bkgrd_1x50.png \
+    config_bkgrd.png \
+    config_bkgrd_left.png \
+    config_bkgrd_center.png \
+    config_bkgrd_right.png
 
 include $(ANTELOPEMAKE)

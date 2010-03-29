@@ -47,61 +47,75 @@
 
     <div id="loading"><p>Loading data ...</p></div>
 
-    <div id="info" class="dialog" title="Dbwfserver information">
-        <p>Welcome to the waveform server. Please click the
-        <strong>'Stations'</strong> or <strong>'Events'</strong>
-        button to start exploring.</p>
-        <p>Clicking the <strong>'Stations'</strong>
-        button will display a list of stations in the arrival
-        database. Clicking the <strong>'Events'</strong> button
-        will display a list of event origin numbers in the origin
-        database. You can then subset the list by clicking either
-        the station code or origin number in the list.</p>
-        <p>Click the <strong>'Themer'</strong> button to choose a 
-        color scheme for the waveform display.</p>
+    <div id="toppanel">
+
+        <div id="configpanel">
+        <div class="panelcontent clearfix">
+
+            <!-- {{{ CONFIGURATION -->
+
+            <div id="info" title="Dbwfserver information">
+                <h1>Information</h1>
+                <p>Welcome to the waveform server. Please click the
+                <strong>'Stations'</strong> or <strong>'Events'</strong>
+                button to start exploring.</p>
+                <p>The <strong>'Stations'</strong>
+                button will display a list of stations in the arrival
+                database. The <strong>'Events'</strong> button
+                will display a list of event origins sorted by time.</p>
+            </div>
+
+            <div id="themer" title="Dbwfserver themer">
+                <h1>Color scheme</h1>
+                <p>Select your waveform color scheme:</p>
+                <form id="formtheme" name="formtheme">
+                <select id="cs" name="cs">
+                    <option value="yb">yellow on blue</option>
+                    <option value="bw">black on white</option>
+                    <option value="yg">yellow on green</option>
+                    <option value="wb">white on black</option>
+                    <option value="yp">yellow on purple</option>
+                    <option value="ob">orange on black</option>
+                </select>
+                </form>
+                <p>
+                    <span id="csFg" align="absmiddle" class="cs"></span>
+                    <span id="csBg" align="absmiddle" class="cs"></span>
+                </p>
+            </div>
+
+            <div id="plotType" title="Dbwfserver plot type">
+                <h1>Plot type</h1>
+                <p>Select the type of waveform representation to plot:</p>
+                <form id="conftype" name="conftype">
+                <select id="type" name="type">
+                    <option value="wf">Waveforms</option>
+                    <option value="coverage">Data coverage bars</option>
+                </select>
+                </form>
+                <p>[Changes will take effect on a page reload]</p>
+            </div>
+
+        <!-- }}} CONFIGURATION -->
+
+        </div>
+        </div>
+
+        <div id="tab">
+            <ul>
+                <li class="left"></li>
+                <li class="center">
+                    <a class="openconfig" id="configuration_open_link">Show configuration</a>
+                </li>
+                <li class="right"></li>
+            </ul>
+        </div>
+
     </div>
 
-    <div id="config" class="dialog" title="Configuration">
-        <form id="conftype" name="conftype">
-        <p>Select type of waveform representation. Plotting coverage bars or actual waveforms.</p>
-        <p>Plot:
-            <select id="type" name="type">
-                <option value="wf">Waveform</option>
-                <option value="coverage">Coverage</option>
-            </select>
-        </p>
-        </form>
-    </div>
-    <div id="themer" class="dialog" title="Dbwfserver themer">
-        <form id="formtheme" name="formtheme">
-        <p>Select your layout options below and close this window (click 'X' in top right).</p>
-        <p>Color scheme: 
-            <select id="cs" name="cs">
-                <option value="yb">yellow on blue</option>
-                <option value="bw">black on white</option>
-                <option value="yg">yellow on green</option>
-                <option value="wb">white on black</option>
-                <option value="yp">yellow on purple</option>
-                <option value="ob">orange on black</option>
-            </select>
-            <span id="csFg" align="absmiddle" style="border:1px solid #000;background-color:#FDFF4F;width:10px;height:10px;">&nbsp;&nbsp;</span>
-            <span id="csBg" align="absmiddle" style="border:1px solid #000;background-color:#00029F;width:10px;height:10px;">&nbsp;&nbsp;</span>
-        </p>
-        </form>
-    </div>
-
-    <div id="conf">
-        <div id="right">
-        <ul>
-            <li><a id="info_link">Info <span class="ui-icon-newwin" /></a></li>
-            <li><a id="themer_link">Themer <span class="ui-icon-newwin" /></a></li>
-            <li class="last"><a id="config_link">Configuration <span class="ui-icon-newwin" /></a></li>
-        </ul>
-        </div>
-        <div id="left">
-            <h1>$title</h1>
-        </div>
-    </div>
+   <div id="location">
+       <h1>$title</h1>
+   </div>
 
     <div id="title">
         <div id="dbpath">Current database: <span id="dbname">$dbname</span></div>
@@ -114,7 +128,7 @@
     </div>
 
     <div id="subnav">
-        <form id="wformer">
+        <form id="wformer" name="wformer">
         <p>
         Show phase arrivals:
         <input type="checkbox" name="phases" id="phases" value="off" />
