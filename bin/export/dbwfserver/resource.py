@@ -537,7 +537,7 @@ class Waveform(resource.Resource):
             title = tvals["application_title"] + " / waveforms / " + args[1] + " / "
 
             # Build filter list
-            filterList = ''
+            filterList = "<option value='None' selected>None</option>\n"
             for filterKey in sorted(config.filters.iterkeys()):
                 filterList += "\t<option value='%s'>%s</option>\n" % (config.filters[filterKey],filterKey)
             tvals['filters'] = filterList

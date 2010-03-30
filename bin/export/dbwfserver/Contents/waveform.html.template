@@ -95,7 +95,6 @@
                     <option value="coverage">Data coverage bars</option>
                 </select>
                 </form>
-                <p>[Changes will take effect on a page reload]</p>
             </div>
 
         <!-- }}} CONFIGURATION -->

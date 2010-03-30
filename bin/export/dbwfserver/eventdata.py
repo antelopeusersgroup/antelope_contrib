@@ -512,7 +512,7 @@ class EventData():
         """
         sta_string = ''
         chan_string = ''
-        response_data = defaultdict(dict)
+        response_data = defaultdict(lambda:defaultdict(dict))
 
         if config.verbose:
             log.msg("Getting segment for:")
@@ -552,15 +552,18 @@ class EventData():
         if not db.query(dbRECORD_COUNT):
             log.msg("\tRecords on DB:\t%s" % db.query(dbRECORD_COUNT))
             log.msg('No records on subset for sta:%s chan:%s st:%s et:%s' % (sta_string,chan_string,start,end))
-            response_data.update( {'time_start':0} )
-            response_data.update( {'time_end':0} )
+            response_data.update( {'time_start':start} )
+            response_data.update( {'time_end':end} )
             response_data.update( {'sta':sta} )
             response_data.update( {'chan':chan} )
             return response_data
 
+        db.sort(['sta','chan'])
 
         tmin = db.ex_eval('min(time)')
         tmax = db.ex_eval('max(endtime)')
+
+        log.msg( 'tmin: %s, tmax: %s' % (tmin,tmax) )
 
         if start:
             tmin = start
@@ -575,24 +578,29 @@ class EventData():
 
         response_data.update( {'chan':chan} )
 
+        # Group by sta chan
+        db.group(['sta','chan'])
+
         for i in range(db.query(dbRECORD_COUNT)):
 
             db.record = i
 
-            (st, ch, time, endtime) = db.getv('sta', 'chan', 'time', 'endtime')
+            (this_sta,this_chan) = db.getv('sta','chan')
 
-            if config.verbose: log.msg("\tGot: %s %s %s %s" % (st,ch,time,endtime))
+            response_data[this_sta][this_chan] = { 'data':[] }
 
-            if start and start > time:
-                time = start
-            
-            if end and end < endtime:
-                endtime = end
+            dbgrp_pointer = dbsubset(db,"sta=~/%s/ && chan=~/%s/" % (this_sta,this_chan))
 
-            if config.verbose: log.msg("\tresponse_data[%s][%s].update(%s,%s)" % (st,ch,time,endtime))
+            dbungrp_pointer = dbungroup(dbgrp_pointer)
 
-            response_data[st][ch].update( {time:endtime} )
+            dbungrp_pointer.sort("time")
 
+            for j in range(dbungrp_pointer.query(dbRECORD_COUNT)):
+
+                dbungrp_pointer.record = j
+ 
+                (time,endtime) = dbungrp_pointer.getv('time','endtime')
+
+                response_data[this_sta][this_chan]['data'].append([time,endtime])
 
         return response_data
-
