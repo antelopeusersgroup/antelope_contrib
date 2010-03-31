@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$application_title</title>
+    <title>$title</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 
@@ -20,6 +20,24 @@
 
     <link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css">
     <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-1.7.2.custom.css">
+
+    <script type="text/javascript">
+    $$(function(){
+
+        dataObj = {
+            'type':'wf',
+            'url':'yes',
+            'amount':'all',
+            'phases':'True'
+        }
+
+        $jscript_vars
+
+        /// Get data
+        PlotSelect.getData(dataObj);
+     
+    });
+    </script>
 
 </head>
 
@@ -99,7 +117,7 @@
     </div>
 
    <div id="location">
-       <h1>$application_title</h1>
+       <h1>$title</h1>
    </div>
 
     <div id="title">
@@ -112,7 +130,19 @@
         </div>
     </div>
 
-    <div id="subnav"></div>
+    <div id="subnav">
+        <form id="wformer" name="wformer">
+        <p>Show phase arrivals:
+        <input type="checkbox" name="phases" id="phases" value="off" />
+        &nbsp;&nbsp;&nbsp;Select a filter:
+        <select id="filter" name="filter">
+            $filters
+        </select>
+        </p>
+
+
+        <div id="event"></div>
+    </div>
 
     <div id="wforms">
         <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
@@ -126,7 +156,7 @@
             [zoom out: shift-click-drag] |
             [scroll left: left arrow] |
             [scroll right: right arrow] |
-            [reset: click 'r']
+            [reset: press 'r' key]
         </p>
     </div>
 

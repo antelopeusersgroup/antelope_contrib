@@ -9,22 +9,23 @@ default_chans &Tbl{
     BHE
 }
 
-default_time_window 1200
+default_time_window 200
 
 binning_threshold 2
 canvas_size_default 800
 
 index_html_template &datafilename(www/dbwfserver/index.html.template)
+queryparser_html_template &datafilename(www/dbwfserver/queryparser.html.template)
+waveform_html_template &datafilename(www/dbwfserver/waveform.html.template)
 
-jquery_dir &datafilename(www/dbwfserver/jquery)
+jquery_dir &datafilename(www/dbwfserver/static/jquery)
 static_dir &datafilename(www/dbwfserver/static)
 
 jquery_files &Tbl{
-	IE excanvas.pack.js
-	jquery.flot.min.js
-	jquery.flot-selection.min.js
-	jquery.hotkeys-0.7.8-packed.js
-  jquery-ui-1.7.2.custom.min.js
+	/static/jquery/excanvas.pack.js
+	/static/jquery/jquery.flot.min.js
+	/static/jquery/jquery.flot-selection.min.js
+	/static/jquery/jquery.hotkeys-0.7.8-packed.js
 }
 
 display_tracebacks false 

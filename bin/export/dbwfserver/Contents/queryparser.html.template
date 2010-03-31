@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$application_title</title>
+    <title>$application_title / $dir / $key</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 
@@ -28,6 +28,7 @@
 <div id="content">
 
     <div id="loading"><p>Loading data ...</p></div>
+
 
     <div id="toppanel">
 
@@ -98,9 +99,9 @@
 
     </div>
 
-   <div id="location">
-       <h1>$application_title</h1>
-   </div>
+    <div id="location">
+        <h1>$application_title / $dir / $key</h1>
+    </div>
 
     <div id="title">
         <div id="dbpath">Current database: <span id="dbname">$dbname</span></div>
@@ -112,7 +113,9 @@
         </div>
     </div>
 
-    <div id="subnav"></div>
+    <div id="subnav">
+    $my_list
+    </div>
 
     <div id="wforms">
         <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
