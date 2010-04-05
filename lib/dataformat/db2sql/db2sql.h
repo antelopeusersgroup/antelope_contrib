@@ -20,6 +20,7 @@ extern "C" {
 
 Tbl *dbschema2sqlcreate( Dbptr db, int mode );
 int db2sqlinsert( Dbptr db, Tbl **tbl, int flags );
+int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags );
 
 #ifdef	__cplusplus
 }

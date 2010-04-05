@@ -396,6 +396,39 @@ generate_sqltable_insert( Dbptr db, Tbl **tbl, int flags )
 	return nrecs;
 }
 
+int
+db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags )
+{
+	void	*stk = 0;
+	char	*table;
+	char	*cmd;
+
+	if( *tbl == (Tbl *) NULL ) {
+		
+		*tbl = newtbl( 0 );
+	}
+
+	dbquery( db, dbTABLE_NAME, &table );
+
+	pushstr( &stk, "DELETE from `" );
+	pushstr( &stk, table );
+
+	pushstr( &stk, "` WHERE " );
+
+	pushstr( &stk, "  `" );
+	pushstr( &stk, DB2SQL_SYNCFIELD_NAME );
+	pushstr( &stk, "` = '" );
+	pushstr( &stk, sync );
+	pushstr( &stk, "'" );
+	pushstr( &stk, ";\n" );
+
+	cmd = popstr( &stk, 1 );
+
+	pushtbl( *tbl, cmd );
+
+	return 1;
+}
+
 int 
 db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 {
