@@ -9,6 +9,10 @@ Tbl *dbschema2sqlcreate( Dbptr db, int flags );
 
 int db2sqlinsert( Dbptr db, Tbl **tbl, int flags );
 
+int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags );
+
+char * db2sql_compute_row_sync( Dbptr db );
+
 .fi
 .SH DESCRIPTION
 The \fBdbschema2sqlcreate\fP function converts the schema for the input database
@@ -50,6 +54,14 @@ must be freed after use with a command like
 	freetbl( tbl, free );
 .fi
 
+The \fBdb2sqldelete\fP function creates a SQL delete statement for a row in the table pointed to 
+by the input database pointer and described by the syncronization string given in the \fIsync\fP 
+argument. The SQL command is added to the input tbl, which, as in the other functions in this library, 
+is created if null and must be destroyed by the caller. 
+
+The \fBdb2sql_compute_row_sync\fP function computes a synchronization string which may be added to 
+each database row for tracking purposes. The returned character string should be freed by the 
+caller when no longer needed. 
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -167,6 +179,9 @@ as primary keys.
 
 The SQL format emitted by \fBdb2sql\fP is currently tailored for MySQL. The option is open in the future to expand 
 this to support other SQL variants. 
+
+The db2sql_compute_row_sync function may not belong in this library; it overlaps with an almost identical function
+in the dbmon library. 
 .SH AUTHOR
 .nf
 Kent Lindquist 

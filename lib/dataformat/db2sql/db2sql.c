@@ -53,10 +53,9 @@
 static int find_longest( void *s, void *private );
 static char *generate_sqltable_create( Dbptr db, int flags );
 static char *generate_sqlrow_insert( Dbptr db, int flags );
-static char *compute_row_sync( Dbptr db );
 
-static char *
-compute_row_sync( Dbptr db )
+char *
+db2sql_compute_row_sync( Dbptr db )
 {
 	unsigned int record_size;
 	unsigned char digest[20];
@@ -194,7 +193,7 @@ generate_sqlrow_insert( Dbptr db, int flags )
 
 	if( ! ( flags & DB2SQL_OMIT_SYNC ) ) {
 
-		sync = compute_row_sync( db );
+		sync = db2sql_compute_row_sync( db );
 
 		pushstr( &stk, ", '" );
 
