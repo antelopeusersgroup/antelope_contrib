@@ -52,7 +52,7 @@
 
 static int find_longest( void *s, void *private );
 static char *generate_sqltable_create( Dbptr db, int flags );
-static char *generate_sqlrow_insert( Dbptr db, int flags );
+static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags );
 
 char *
 db2sql_compute_row_sync( Dbptr db )
@@ -106,7 +106,7 @@ find_longest( void *s, void *longest )
 }
 
 static char *
-generate_sqlrow_insert( Dbptr db, int flags )
+generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags )
 {
 	void	*stk = 0;
 	char	*table;
@@ -378,7 +378,7 @@ generate_sqltable_create( Dbptr db, int flags )
 }
 
 static int
-generate_sqltable_insert( Dbptr db, Tbl **tbl, int flags ) 
+generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags ) 
 {
 	char	*cmd;
 	int	nrecs;
@@ -392,7 +392,7 @@ generate_sqltable_insert( Dbptr db, Tbl **tbl, int flags )
 
 	for( db.record = 0; db.record < nrecs; db.record++ ) {
 			
-		cmd = generate_sqlrow_insert( db, flags );
+		cmd = generate_sqlrow_insert( db, createsync, flags );
 
 		pushtbl( *tbl, cmd );
 	}
@@ -434,7 +434,7 @@ db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags )
 }
 
 int 
-db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
+db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags )
 {
 	char	*cmd;
 	int	ncmds = 0;
@@ -463,7 +463,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 
 			db = dblookup( db, "", table, "", "" );
 
-			ncmds += generate_sqltable_insert( db, tbl, flags );
+			ncmds += generate_sqltable_insert( db, tbl, createsync, flags );
 		}
 
 	} else if( db.table >= 0 ) {
@@ -482,7 +482,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 			    db.record == dbNULL || 
 			    db.record >= 0 ) {
 
-				cmd = generate_sqlrow_insert( db, flags );
+				cmd = generate_sqlrow_insert( db, createsync, flags );
 
 				pushtbl( *tbl, cmd );
 
@@ -490,7 +490,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 
 			} else {
 
-				ncmds += generate_sqltable_insert( db, tbl, flags );
+				ncmds += generate_sqltable_insert( db, tbl, createsync, flags );
 			}
 		}
 	}

@@ -20,7 +20,7 @@ main( int argc, char **argv )
 
 	db.record = 0;
 
-	db2sqlinsert( db, &sqlcommands, flags );
+	db2sqlinsert( db, &sqlcommands, db2sql_compute_row_sync, flags );
 
 	sync = db2sql_compute_row_sync( db );
 

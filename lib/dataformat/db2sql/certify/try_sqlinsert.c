@@ -15,7 +15,7 @@ main( int argc, char **argv )
 
 	dbopen( dbname, "r", &db );
 
-	db2sqlinsert( db, &sqlinsert, flags );
+	db2sqlinsert( db, &sqlinsert, db2sql_compute_row_sync, flags );
 
 	debugtbl( stdout, "Conversion results:\n", sqlinsert );
 
