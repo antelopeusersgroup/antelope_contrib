@@ -13,13 +13,15 @@ int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags );
 
 char * db2sql_compute_row_sync( Dbptr db );
 
+void db2sql_set_syncfield_name( char *name );
+
 .fi
 .SH DESCRIPTION
 The \fBdbschema2sqlcreate\fP function converts the schema for the input database
 into a Tbl of string values containing SQL create statements. 
 Currently, the only supported value for \fIflags\fP is \fIDB2SQL_OMIT_SYNC\fP. Unless this flag 
 is used, an extra database field is appended by \fBdbschema2sqlcreate\fP with the 
-value of the macro \fIDB2SQL_SYNCFIELD_NAME\fP, currently set to \fIsyncsha\fP in db2sql.h and 
+value of the macro \fIDB2SQL_SYNCFIELD_NAME_DEFAULT\fP, currently set to \fIsyncstring\fP in db2sql.h and 
 with the corresponding SQL schema format given by the macro \fIDB2SQL_SYNCFIELD_SPEC\fP as 
 .nf
 
@@ -27,7 +29,9 @@ CHAR(40) DEFAULT '-'
 
 .fi
 This syncronization field is used to hold values of a synchronization string computed by the 
-\fBdb2sqlinsert\fP function for updating changes made to the database. 
+\fBdb2sqlinsert\fP function for updating changes made to the database. The default name of the 
+synchronization string may be changed with the \fBdb2sql_set_syncfield_name\fP function 
+described below. 
 
 The table returned by \fBdbschema2sqlcreate\fP is newly allocated, along with all string 
 fields it contains as entries, and must therefore be freed by the caller after use with a 
@@ -62,6 +66,9 @@ is created if null and must be destroyed by the caller.
 The \fBdb2sql_compute_row_sync\fP function computes a synchronization string which may be added to 
 each database row for tracking purposes. The returned character string should be freed by the 
 caller when no longer needed. 
+
+The \fBdb2sql_set_syncfield_name\fP function allows the user to specify the name of the synchronization 
+field name in the SQL database, which defaults to \fIsyncstring\fP. 
 .SH EXAMPLE
 .in 2c
 .ft CW

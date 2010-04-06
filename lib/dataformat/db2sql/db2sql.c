@@ -244,6 +244,11 @@ generate_sqltable_create( Dbptr db, int flags )
 
 	applytbl( fields, find_longest, (void *) &longest );
 
+	if( ! ( flags & DB2SQL_OMIT_SYNC ) && longest < strlen( Db2sql_syncfield_name ) ) {
+
+		longest = strlen( Db2sql_syncfield_name );
+	}
+
 	for( ifield = 0; ifield < maxtbl( fields ); ifield++ ) {
 
 		if( ifield > 0 ) {
@@ -320,9 +325,9 @@ generate_sqltable_create( Dbptr db, int flags )
 		pushstr( &stk, ",\n" );
 
 		pushstr( &stk, "  `" );
-		pushstr( &stk, DB2SQL_SYNCFIELD_NAME );
+		pushstr( &stk, Db2sql_syncfield_name );
 		pushstr( &stk, "`" );
-		pushstr( &stk, spaces( longest - strlen(DB2SQL_SYNCFIELD_NAME) + 2 ) );
+		pushstr( &stk, spaces( longest - strlen(Db2sql_syncfield_name) + 2 ) );
 
 		pushstr( &stk, DB2SQL_SYNCFIELD_SPEC );
 	}
@@ -415,7 +420,7 @@ db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags )
 	pushstr( &stk, "` WHERE " );
 
 	pushstr( &stk, "  `" );
-	pushstr( &stk, DB2SQL_SYNCFIELD_NAME );
+	pushstr( &stk, Db2sql_syncfield_name );
 	pushstr( &stk, "` = '" );
 	pushstr( &stk, sync );
 	pushstr( &stk, "'" );
@@ -527,4 +532,19 @@ dbschema2sqlcreate( Dbptr db, int flags )
 	}
 
 	return sql;
+}
+
+void 
+db2sql_set_syncfield_name( char *name )
+{
+	if( name != (char *) NULL ) {
+
+		if( Db2sql_syncfield_name != (char *) NULL &&
+		    strcmp( Db2sql_syncfield_name, DB2SQL_SYNCFIELD_NAME_DEFAULT ) ) {
+
+			free( Db2sql_syncfield_name );    	
+		}
+
+		Db2sql_syncfield_name = strdup( name );
+	}
 }
