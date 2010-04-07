@@ -71,7 +71,6 @@ typedef struct Tabletrack {
 } Tabletrack;
 
 static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
-static char *dbmon_compute_row_sync( Dbptr db );
 static char *digest2hex( unsigned char *digest );
 static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
@@ -109,7 +108,7 @@ digest2hex( unsigned char *digest )
 	return hex;
 }
 
-static char *
+char *
 dbmon_compute_row_sync( Dbptr db )
 {
 	unsigned int record_size;

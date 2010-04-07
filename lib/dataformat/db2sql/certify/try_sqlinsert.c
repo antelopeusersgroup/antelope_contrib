@@ -2,6 +2,7 @@
 #include "db.h"
 #include "stock.h"
 #include "db2sql.h"
+#include "dbmon.h"
 
 int
 main( int argc, char **argv )
@@ -15,7 +16,7 @@ main( int argc, char **argv )
 
 	dbopen( dbname, "r", &db );
 
-	db2sqlinsert( db, &sqlinsert, db2sql_compute_row_sync, flags );
+	db2sqlinsert( db, &sqlinsert, dbmon_compute_row_sync, flags );
 
 	debugtbl( stdout, "Conversion results:\n", sqlinsert );
 

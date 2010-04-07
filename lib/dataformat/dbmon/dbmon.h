@@ -10,6 +10,7 @@ Hook *dbmon_init( Dbptr db, Tbl *table_subset, void (*newrow)(Dbptr db, char *ta
 int dbmon_update( Hook *dbmon_hook, void *private );
 void dbmon_status( FILE *fp, Hook *dbmon_hook );
 void dbmon_close( Hook **dbmon_hook );
+char *dbmon_compute_row_sync( Dbptr db );
 
 #ifdef	__cplusplus
 }

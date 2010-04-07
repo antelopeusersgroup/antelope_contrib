@@ -2,6 +2,7 @@
 #include "db.h"
 #include "stock.h"
 #include "db2sql.h"
+#include "dbmon.h"
 
 int
 main( int argc, char **argv )
@@ -20,9 +21,9 @@ main( int argc, char **argv )
 
 	db.record = 0;
 
-	db2sqlinsert( db, &sqlcommands, db2sql_compute_row_sync, flags );
+	db2sqlinsert( db, &sqlcommands, dbmon_compute_row_sync, flags );
 
-	sync = db2sql_compute_row_sync( db );
+	sync = dbmon_compute_row_sync( db );
 
 	db2sqldelete( db, sync, &sqlcommands, flags );		
 
