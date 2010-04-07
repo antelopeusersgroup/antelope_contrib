@@ -13,6 +13,8 @@ use Datascope::dbmon;
 
 \fBdbmon_close\fP( \fI$hookname\fP );
 
+\fBdbmon_compute_row_sync\fP( \fI@db\fP );
+
 .fi
 .SH DESCRIPTION
 The perl \fBdbmon\fP module mimics the c-callable dbmon(3) library,
@@ -54,8 +56,10 @@ private perl reference which can be used at the discretion of the programmer. Fo
 \fInewrow\fP callback, the syncronization string is that of the new row. For the \fIdelrow\fP
 callback, the synchronization string is that of the old row before it was deleted. The 
 \fIchangerow\fP callback receives copies of the synchronization strings from both before 
-and after the change.
+and after the change. 
 
+The value of the synchronization string for a given database row may be computed with the 
+function \fBdbmon_compute_row_sync\fP.
 
 .SH EXAMPLE
 The following example, omitting some ancillary details, shows the basic structure 

@@ -302,3 +302,26 @@ dbmon_close( hookname )
 	free( pdmtr );
 
 	}
+
+void
+dbmon_compute_row_sync( idatabase, itable, ifield, irecord )
+	long	idatabase
+	long	itable
+	long	ifield
+	long	irecord
+	PPCODE:
+	{
+	Dbptr	db;
+	char	*sync;
+
+	db.database = idatabase;
+	db.table = itable;
+	db.field = ifield;
+	db.record = irecord;
+
+	sync = dbmon_compute_row_sync( db );
+
+	XPUSHs( sv_2mortal( newSVpv( sync, strlen( sync ) ) ) );
+
+	free( sync );
+	}
