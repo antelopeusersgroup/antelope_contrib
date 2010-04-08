@@ -189,12 +189,12 @@ sub sql_insert_commands {
 			
 			@db = dblookup( @db, "", $table, "", "" );
 
-			push( @cmds, db2sqlinsert( @db ) );
+			push( @cmds, db2sqlinsert( @db, \&dbmon_compute_row_sync ) );
 		}
 
 	} else {
 
-		@cmds = db2sqlinsert( @db );
+		@cmds = db2sqlinsert( @db, \&dbmon_compute_row_sync );
 	}
 	
 	return @cmds;
@@ -204,7 +204,7 @@ sub newrow {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $dbh ) = @_;
 
-	my( $cmd ) = db2sqlinsert( @db );
+	my( $cmd ) = db2sqlinsert( @db, \&dbmon_compute_row_sync );
 
 	Inform( "Executing SQL Command:\n$cmd\n\n" );
 
