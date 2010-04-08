@@ -7,7 +7,7 @@ $flags = 0;
 	
 @db = dbopen( $dbname, "r" );
 
-@sqlinsert = db2sqlinsert( @db, \&Datascope::dbmon::dbmon_compute_row_sync, $flags );
+@sqlinsert = db2sqlinsert( @db, \&dbmon_compute_row_sync, $flags );
 
 printf "Conversion results:\n" . join( "\n", @sqlinsert );
 
