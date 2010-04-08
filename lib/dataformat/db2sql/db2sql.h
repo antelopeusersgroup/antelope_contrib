@@ -13,6 +13,7 @@
 #define DB2SQL_SQL_DEFAULT DB2SQL_SQL_MYSQL
 #define DB2SQL_SYNCFIELD_NAME_DEFAULT "syncstring"
 #define DB2SQL_SYNCFIELD_SPEC "CHAR(40) DEFAULT '-'"
+#define DB2SQL_SYNCFIELD_NULL "-"
 
 #ifdef	__cplusplus
 extern "C" {

@@ -1,6 +1,6 @@
 .TH DB2SQL 3 "$Date: 2007/08/23 16:24:12 $"
 .SH NAME
-dbschema2sqlcreate, db2sqlinsert \- routines to create SQL commands from Datascope databases
+dbschema2sqlcreate, db2sqlinsert, db2sqldelete, db2sql_set_syncfield_name \- routines to create SQL commands from Datascope databases
 .SH SYNOPSIS
 .nf
 #include "db2sql.h"
@@ -23,7 +23,7 @@ value of the macro \fIDB2SQL_SYNCFIELD_NAME_DEFAULT\fP, currently set to \fIsync
 with the corresponding SQL schema format given by the macro \fIDB2SQL_SYNCFIELD_SPEC\fP as 
 .nf
 
-CHAR(40) DEFAULT '-'
+        CHAR(40) DEFAULT '-'
 
 .fi
 This syncronization field is used to hold values of a synchronization string computed by the 
@@ -36,7 +36,7 @@ fields it contains as entries, and must therefore be freed by the caller after u
 command like
 .nf
 
-	freetbl( tbl, free );
+        freetbl( tbl, free );
 .fi
 
 The \fBdb2sqlinsert\fP function generates SQL insert commands for each row in the 
@@ -47,7 +47,15 @@ a synchronization string that uniquely labels the contents of the input database
 of the synchronization string for each database row is performed by the \fIcreatesync\fP function
 passed to \fBdb2sqlinsert\fP.  This synchronization string can 
 be used in later operations to alter or delete SQL-database rows when their corresponding Datascope database
-rows change. 
+rows change. The createsync function should be of the form
+.nf
+
+        char *\fIcreatesync\fP( Dbptr \fIdb\fP )
+
+.fi
+This function should return a newly allocated pointer to the synchronization string for the database 
+row pointed to by the input database-pointer \fIdb\fP, or a null string in the case of error. The
+\fBdb2sqlinsert\fP function will free this returned pointer if it is non-null. 
 
 String entries added to the given table by \fBdb2sqlinsert\fP are newly allocated, and must be 
 freed by the caller when no longer needed. Similarly, if the \fItbl\fP pointer given to 

@@ -53,6 +53,10 @@
 #include "stock.h"
 #include "db2sql.h"
 
+static char * perl_createsync( Dbptr db );
+
+CV *Createsync;
+
 static char *
 elogmsgs()
 {
@@ -60,6 +64,42 @@ elogmsgs()
 	log = elog_string( 0 );
 	elog_clear();
 	return log;
+}
+
+static char *
+perl_createsync( Dbptr db )
+{
+	int	n;
+	char	*sync;
+	dSP;
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK( sp );
+
+	XPUSHs(sv_2mortal(newSViv(db.database)));
+	XPUSHs(sv_2mortal(newSViv(db.table)));
+	XPUSHs(sv_2mortal(newSViv(db.field)));
+	XPUSHs(sv_2mortal(newSViv(db.record)));
+
+	PUTBACK;
+
+	n = perl_call_sv( (SV *) Createsync, G_SCALAR );
+
+	if( n != 1 ) {
+
+		croak( "db2sqlinsert: Failed to compute sync field via callback function provided\n%s", elogmsgs() );
+	}
+
+	SPAGAIN;
+
+	sync = strdup((char *) SvPV_nolen(POPs));
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+
+	return sync;
 }
 
 MODULE = Datascope::db2sql	PACKAGE = Datascope::db2sql
@@ -142,14 +182,21 @@ db2sqlinsert( idatabase, itable, ifield, irecord, ... )
 
 	next = 4;
 
-	if( items > next ) {
+	if( items >= 5 ) {
+
+		Createsync = (CV *) ST( next );
+
+		next++;
+	}
+
+	if( items >= 6 ) {
 
 		flags |= SvIV( ST( next ) );
 
 		next++;
 	}
 
-	rc = db2sqlinsert( db, &sql, flags );
+	rc = db2sqlinsert( db, &sql, perl_createsync, flags );
 
 	if( rc < 0 ) {
 
@@ -182,4 +229,12 @@ pfconfig_asknoecho()
 		croak( "db2sql_pfconfig_noecho: pfconfig fails\n%s", elogmsgs() );
 	}
 
+	}
+
+void 
+db2sql_set_syncfield_name( name )
+	char	*name
+	PPCODE:
+	{
+	db2sql_set_syncfield_name( name );
 	}

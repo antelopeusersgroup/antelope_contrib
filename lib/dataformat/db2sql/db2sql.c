@@ -161,11 +161,21 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags )
 
 		pushstr( &stk, ", '" );
 
-		pushstr( &stk, sync );
+		if( sync != (char *) NULL ) {
+
+			pushstr( &stk, sync );
+
+		} else {
+
+			pushstr( &stk, DB2SQL_SYNCFIELD_NULL );
+		}
 
 		pushstr( &stk, "'" );
 
-		free( sync );
+		if( sync != (char *) NULL ) {
+
+			free( sync );
+		}
 	}
 
 	pushstr( &stk, ");\n" );

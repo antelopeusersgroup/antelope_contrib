@@ -31,11 +31,11 @@ database schema are examined.  The arguments for the callback functions, explain
 in more detail below, are as follows:
 .nf
 
-      newrow( @db, $table, $sync, $private_ref );
+      \fInewrow\fP( \fI@db\fP, $table, $sync, \fI$private_ref\fP );
 
-      changerow( $oldsync, @db, $table, $newsync, $private_ref );
+      \fIchangerow\fP( $oldsync, \fI@db\fP, $table, $newsync, \fI$private_ref\fP );
 
-      delrow( @db, $table, $oldsync, $private_ref );
+      \fIdelrow\fP( \fI@db\fP, $table, $oldsync, \fI$private_ref\fP );
 
 .fi
 
