@@ -10,6 +10,8 @@ use Datascope::db2sql;
 
 @sql = db2sqlinsert( @db [, \\&createsync] [, $flags] );
 
+@sql = db2sqldelete( @db, $sync [, $flags] );
+
 db2sql_set_syncfield_name( $name );
 
 .fi
@@ -25,11 +27,15 @@ in the input database view, generating an array of strings containing
 The \fBdb2sqlinsert\fP function extracts all base-table rows referenced 
 in the input database view, generating an array of strings containing 
 \fIINSERT\fP statements for each row. If a \fIcreatesync\fP function is specified,
-\fBdb2sqlinsert\fI will pass a database pointer for each row to the 
+\fBdb2sqlinsert\fP will pass a database pointer for each row to the 
 \fIcreatesync\fP function and insert the  character-string 
 sync value returned by \fIcreatesync\fP. The default value of the sync field 
 name (currently \fIsyncstring\fP) will be used for this insertion 
 unless otherwise configured via \fBdb2sql_set_syncfield_name\fP.
+
+The \fBdb2sqldelete\fP function creates a SQL \fIDELETE\fP command for the 
+database row in the table specified by the input database pointer
+and described by the specified \fI$sync\fP string. 
 
 The \fBdb2sql_set_syncfield_name\fP function changes the name of the SQL 
 synchronization field (see db2sql(3)) from the default value, in the 

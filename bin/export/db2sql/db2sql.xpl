@@ -210,7 +210,7 @@ sub newrow {
 
 	unless( $dbh->do( $cmd ) ) {
 		
-		elog_complain( "Failed to create new database row\n" );
+		elog_complain( "Failed to create new database row in table '$table', record $db[3], sync '$sync'\n" );
 	}
 
 	return;
@@ -232,13 +232,13 @@ sub delrow {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $dbh ) = @_;
 
-	my( $cmd ) = sprintf( "DELETE from `%s` WHERE syncsha = '%s';\n", $table, $sync );
+	my( $cmd ) = db2sqldelete( @db, $sync );
 
 	Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_complain( "Failed to delete database row\n" );
+		elog_complain( "Failed to delete database row in table '$table', sync '$sync'\n" );
 	}
 
 	return;
