@@ -93,7 +93,7 @@ perl_createsync( Dbptr db )
 
 	SPAGAIN;
 
-	sync = strdup((char *) SvPV_nolen(POPs));
+	sync = strdup((char *) POPp);
 
 	PUTBACK;
 	FREETMPS;
@@ -220,14 +220,54 @@ db2sqlinsert( idatabase, itable, ifield, irecord, ... )
 	}
 
 void
-pfconfig_asknoecho()
+db2sqldelete( idatabase, itable, ifield, irecord, sync, ... )
+	long	idatabase
+	long	itable
+	long	ifield
+	long	irecord
+	char	*sync
 	PPCODE:
 	{
+	Dbptr	db;
+	Tbl	*sqltbl = (Tbl *) NULL;
+	char	*sqlcmd = (char *) NULL;
+	int	next;
+	int	flags = 0;
+	int	rc;
 
-	if( pfconfig( "ask", (void *) asknoecho ) ) {
+	db.database = idatabase;
+	db.table = itable;
+	db.field = ifield;
+	db.record = irecord;
 
-		croak( "db2sql_pfconfig_noecho: pfconfig fails\n%s", elogmsgs() );
+	next = 5;
+
+	if( items > 5 ) {
+
+		flags |= SvIV( ST( next ) );
+
+		next++;
 	}
+
+	rc = db2sqldelete( db, sync, &sqltbl, flags );
+
+	if( rc < 1 || sqltbl == (Tbl *) NULL || maxtbl( sqltbl ) < 1 ) {
+
+		croak( "db2sqldelete: Failed to create sql\n%s", elogmsgs() );
+	}
+
+	sqlcmd = (char *) poptbl( sqltbl );
+
+	if( sqlcmd == (char *) NULL ) {
+
+		croak( "db2sqldelete: Failed to create sql\n%s", elogmsgs() );
+	}
+
+	XPUSHs( sv_2mortal( newSVpv( sqlcmd, strlen(sqlcmd) ) ) );
+
+	free( sqlcmd );
+
+	freetbl( sqltbl, free );
 
 	}
 
@@ -237,4 +277,16 @@ db2sql_set_syncfield_name( name )
 	PPCODE:
 	{
 	db2sql_set_syncfield_name( name );
+	}
+
+void
+pfconfig_asknoecho()
+	PPCODE:
+	{
+
+	if( pfconfig( "ask", (void *) asknoecho ) ) {
+
+		croak( "db2sql_pfconfig_noecho: pfconfig fails\n%s", elogmsgs() );
+	}
+
 	}
