@@ -303,6 +303,32 @@ dbmon_close( hookname )
 
 	}
 
+void 
+dbmon_status( filename, hookname )
+	char	*filename
+	char	*hookname
+	PPCODE:
+	{
+	Perl_dbmon_track *pdmtr;
+	FILE	*fp;
+
+	if( Hooks == NULL || 
+	    ( pdmtr = (Perl_dbmon_track *) getarr( Hooks, hookname ) ) == NULL ) {
+
+		croak( "dbmon_status: Couldn't find hook by name of '%s'\n", hookname );
+	}
+
+	if( ( fp = fopen( filename, "w" ) ) == (FILE *) NULL ) {
+
+		croak( "dbmon_status: Failed to open file '%s' to record tracking status\n", filename );
+	}
+
+	dbmon_status( fp, pdmtr->dbmon_hook );
+
+	fclose( fp );
+
+	}
+
 void
 dbmon_compute_row_sync( idatabase, itable, ifield, irecord )
 	long	idatabase

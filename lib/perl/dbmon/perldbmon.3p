@@ -13,6 +13,8 @@ use Datascope::dbmon;
 
 \fBdbmon_close\fP( \fI$hookname\fP );
 
+\fBdbmon_status\fP( \fI$filename\fP, \fI$hookname\fP );
+
 \fBdbmon_compute_row_sync\fP( \fI@db\fP );
 
 .fi
@@ -60,6 +62,9 @@ and after the change.
 
 The value of the synchronization string for a given database row may be computed with the 
 function \fBdbmon_compute_row_sync\fP.
+
+The \fBdbmon_status\fP function is a debugging utility which prints current tracking information
+about the monitored database into the file named by \fI$filename\fP.
 
 .SH EXAMPLE
 The following example, omitting some ancillary details, shows the basic structure 
