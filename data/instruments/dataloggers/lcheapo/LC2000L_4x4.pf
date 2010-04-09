@@ -1,0 +1,250 @@
+originator     Juan Reyes, UCSD
+last_modified  2010-04-06
+
+category    LCheapo
+configuration   LCheapo 2000 Long Period 4x4
+
+description LCheapo 2000 4x4 Long Period Datalogger 
+dfile lc2000l_4x4
+
+info    &Literal{
+This is the configuration for a LCheapo 4x4, UCSD OBS datalogger.
+}
+
+streams 4000sps 2000sps 1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 5sps 1sps
+
+# Problems wiht samprate 333...
+# 512000/1536 = 333.3333333 and not 333
+#333sps    333  a/d_192   lch_4_f1 lch_4_f2
+
+# definitions of streams
+4000sps  4000  a/d_16    lch_4_f1 lch_4_f2
+2000sps  2000  a/d_32    lch_4_f1 lch_4_f2
+1000sps  1000  a/d_64    lch_4_f1 lch_4_f2
+500sps    500  a/d_128   lch_4_f1 lch_4_f2
+250sps    250  a/d_256   lch_4_f1 lch_4_f2
+200sps    200  a/d_320   lch_4_f1 lch_4_f2
+125sps    125  a/d_512   lch_4_f1 lch_4_f2
+100sps    100  a/d_640   lch_4_f1 lch_4_f2
+50sps      50  a/d_1280  lch_4_f1 lch_4_f2
+40sps      40  a/d_1600  lch_4_f1 lch_4_f2
+25sps      25  a/d_2560  lch_4_f1 lch_4_f2
+20sps      20  a/d_3200  lch_4_f1 lch_4_f2
+10sps      10  a/d_6400  lch_4_f1 lch_4_f2
+5sps        5  a/d_12800 lch_4_f1 lch_4_f2
+1sps        1  a/d_64000 lch_4_f1 lch_4_f2
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+    $chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"4000sps"} ) { 
+    @ok = qw(4000sps) ; 
+    } elsif ( defined $chosen{"2000sps"} ) { 
+    @ok = qw(2000sps) ; 
+    } elsif ( defined $chosen{"1000sps"} ) { 
+    @ok = qw(1000sps) ; 
+    } elsif ( defined $chosen{"500sps"} ) { 
+    @ok = qw(500sps) ; 
+    } elsif ( defined $chosen{"250sps"} ) { 
+    @ok = qw(250sps) ; 
+    } elsif ( defined $chosen{"200sps"} ) { 
+    @ok = qw(200sps) ; 
+    } elsif ( defined $chosen{"125sps"} ) { 
+    @ok = qw(125sps) ; 
+    } elsif ( defined $chosen{"100sps"} ) { 
+    @ok = qw(100sps) ; 
+    } elsif ( defined $chosen{"50sps"} ) { 
+    @ok = qw(50sps) ; 
+    } elsif ( defined $chosen{"40sps"} ) { 
+    @ok = qw(40sps) ; 
+    } elsif ( defined $chosen{"25sps"} ) { 
+    @ok = qw(25sps) ; 
+    } elsif ( defined $chosen{"20sps"} ) { 
+    @ok = qw(20sps) ; 
+    } elsif ( defined $chosen{"10sps"} ) { 
+    @ok = qw(10sps) ; 
+    } elsif ( defined $chosen{"5sps"} ) { 
+    @ok = qw(5sps) ; 
+    } elsif ( defined $chosen{"1sps"} ) { 
+    @ok = qw(1sps) ; 
+    } else { 
+    @ok = qw(4000sps 2000sps 1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 5sps 1sps ) ; 
+    }
+    return (@ok) ; 
+}
+
+# Gains: Nominal sensitivity (in ounits/iunits) for datalogger
+# Voltage range: +/- 2.5 V, max counts over this range of
+# -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
+# 0.000000298 V/count => 5000000 counts/V
+#
+
+gains 5000000
+
+
+# Stages
+
+# Note:
+# There is only one real a/d at 512 kHz. 
+# We are defining all combinations of the a/d and SINC filters as different a/d's.
+# SINC filters:
+#   SINC1 - single stage, fixed decimated by 8
+#   SINC2 - multi-stage, variable decimation
+#       stage 1: decimated by 2
+#       stage 2: decimated by 2
+#       stage 3: decimated by 2
+#       stage 4: decimated by 2
+#   SINC3 - multi-stage, variable decimation
+#       stage 1: decimated by 5
+#       stage 2: decimated by 5
+#       stage 3: decimated by 5
+#       stage 4: decimated by 2
+#       stage 5: decimated by 2
+#       stage 6: decimated by 3
+
+
+a/d_16  &Arr{
+    samprate    32000
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_32  &Arr{
+    samprate    16000
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_64  &Arr{
+    samprate    8000
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_128 &Arr{
+    samprate   4000    
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+# Problems wiht this samprate...
+# 512000/1536 = 333.3333333 and not 333
+#a/d_192 &Arr{
+#    samprate   2666    
+#    gtype       digitizer
+#    iunits      V
+#    ounits      counts
+#    sn          datalogger
+#}
+
+a/d_256 &Arr{
+    samprate   2000    
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_320 &Arr{
+    samprate   1600    
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_512 &Arr{
+    samprate   1000    
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_640 &Arr{
+    samprate   800 
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_1280    &Arr{
+    samprate   400 
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_1600    &Arr{
+    samprate   320 
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_2560    &Arr{
+    samprate   200 
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_3200    &Arr{
+    samprate   160 
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_6400    &Arr{
+    samprate   80  
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_12800   &Arr{
+    samprate   40  
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+a/d_64000   &Arr{
+    samprate   8   
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+lch_4_f1    &Arr{
+    gtype       FIR_decimator
+    decifac     4
+    response    &datafile(responses/lch_4_f1)
+}
+
+lch_4_f2    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_f2)
+}
