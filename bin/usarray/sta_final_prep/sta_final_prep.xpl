@@ -11,12 +11,14 @@
 #    DONE check to make sure correct channels are in file
 #
 #   check for overlaps
+#   
+#   check for pffile existance
 #
 #
     require "getopts.pl" ;
     use strict ;
     use Datascope ;
-    use archive ;
+    use archive;
     use timeslice ;
     use utilfunct ;
     use orb ;
@@ -26,11 +28,12 @@
     
 {    #  Main program
 
-    my ( $Pf, $cmd, $debug, $problems, $subject, $usage, $verbose );
-    my ( $bhname, $dbname, $dirname, $etime, $fsta, $line, $maxtime, $mintime, $mseedfile, $nrows ) ;
-    my ( $prob, $prob_check, $row, $snet, $sohname, $sta, $statmp, $stime, $table );
-    my ( @db, @dbbh, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles );
-    my ( %pf );
+    my ( $usage, $cmd, $subject, $verbose, $debug, $Pf, $problems);
+    my ( $bhname, $dbname, $dirname, $etime, $fsta, $line, $maxtime, $maxtime_baler, $maxtime_rt ) ; 
+    my ( $mintime, $mintime_baler, $mintime_rt, $mseedfile, $nrows, $prob, $prob_check, $row, $rtdb ) ;  
+    my ( $snet, $sohname, $sta, $statmp, $stime, $table ) ;
+    my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles ) ;
+    my (%pf);
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -54,13 +57,11 @@
 
     $Pf         = $opt_p || $pgm ;
     
-    
-
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
-
-    %pf = getparam( $Pf, $verbose, $debug ) ;
+    
+    %pf = getparam($Pf, $verbose, $debug);
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -116,6 +117,15 @@
                                \n	Skipping to next station") ;
             }
             dbclose(@dbtest);
+        }
+        
+        $rtdb   = "$pf{rt_sta_dir}\/$sta";
+        elog_notify("rtdb	$rtdb	") if $opt_v ;
+        if ( ! -e $rtdb ) {
+            $problems++ ;
+            elog_complain("\nProblem $problems
+                           \n	station rt data db $rtdb does not exist
+                           \n	Skipping to next station");
         }
         
         next if ($prob_check != $problems);
@@ -267,6 +277,12 @@
         unlink("$sta.lastid");
 
 #
+#  Set up descriptor file
+#
+        
+        &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+
+#
 #  Find start time and end times
 #
 
@@ -280,19 +296,32 @@
                                \n	Skipping to next station") ;
                 next;
             }
-            $mintime  = dbex_eval(@dbbh,"min(time)");
-            $maxtime  = dbex_eval(@dbbh,"max(endtime)");
-        }
-        dbclose(@db);
-        
-        $stime = strtime($mintime);
-        $etime = strtime($maxtime);
+            $mintime_baler  = dbex_eval( @dbbh, "min(time)" ) ;
+            $maxtime_baler  = dbex_eval( @dbbh, "max(endtime)" ) ;
+            
+            elog_notify(sprintf("Baler times  %s    %s", strydtime($mintime_baler), strydtime($maxtime_baler)));
+            
+            @dbrt        = dbopen   ( $rtdb, "r" ) ;
+            @dbrt        = dblookup ( @dbrt, 0, "wfdisc", 0, 0 ) ;
+            $mintime_rt  = dbex_eval( @dbrt, "min(time)" ) ;
+            $maxtime_rt  = dbex_eval( @dbrt, "max(endtime)" ) ;
+            dbclose( @dbrt ) ;
 
-#
-#  Set up descriptor file
-#
+            elog_notify(sprintf("Rt times     %s    %s", strydtime($mintime_rt), strydtime($maxtime_rt)));
+            
+            $mintime = $mintime_baler ;
+            $maxtime = $maxtime_baler ;
+            
+            $mintime = $mintime_rt if ($mintime_rt < $mintime) ;
+            $maxtime = $maxtime_rt if ($maxtime_rt > $maxtime) ;
+            
+            $maxtime = epoch(yearday($maxtime + 86400)) if ($maxtime > epoch(yearday($maxtime))) ;
+
+        }
+        dbclose( @db ) ;
         
-        &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+        $stime = strtime( $mintime ) ;
+        $etime = strtime( $maxtime ) ;
 
 #
 #  Check for anomolous channels
