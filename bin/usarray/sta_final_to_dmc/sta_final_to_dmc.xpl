@@ -19,6 +19,10 @@
 #
 #   DONE	need to put in a check that all expected channels operate from about the deployment dates
 #
+#   check for pffile existance
+#   put option in to skip gap filling
+#   graceful way to handle orb lag error?
+#
 #
     require "getopts.pl" ;
     use strict ;
