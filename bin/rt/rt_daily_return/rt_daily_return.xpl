@@ -104,7 +104,7 @@
         if ($deploy) {
             $cmd  = "dbjoin $dbin.deployment site | dbsubset - \"epoch(ondate) <= $time && deployment.endtime >= $time\" ";
         } else {
-            $cmd  = "dbsubset $dbin.site \"epoch(ondate) <= $time && epoch(offdate) >= $time\" ";
+            $cmd  = "dbsubset $dbin.site \"epoch(ondate) <= $time && (epoch(offdate) >= $time || offdate == -1 ) \" ";
         }
         $cmd .= "| dbjoin - sensor | dbsubset - \"sensor.time < $etime && sensor.endtime > $time\" ";
         $cmd .= "| dbseparate - sensor ";
