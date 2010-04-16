@@ -454,6 +454,7 @@ PlotSelect = {
         if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
         if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
         if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+        if( PlotSelect.sta    !== undefined ) { dataObj['sta']    = PlotSelect.stacode; }
 
         PlotSelect.getData(dataObj);
 
@@ -536,8 +537,8 @@ PlotSelect = {
         $.ajax({
             type:'get',
             dataType:'json',
-            url:"/data",
-            data: dataargs,
+            url:"/data/"+PlotSelect.type+"/"+PlotSelect.stacode+"/"+PlotSelect.ts+"/"+PlotSelect.te ,
+            //data: dataargs,
             success:PlotSelect.setData,
             error:PlotSelect.errorResponse
         });
@@ -556,6 +557,7 @@ PlotSelect = {
             xaxis: {ticks:5, labelWidth:20, labelHeight:20, mode:"time", timeformat:"%H:%M:%S<br/>%y-%m-%d"},
             yaxis: {ticks:4, labelWidth:25}
         };
+
         // }}} Define graph defaults
 
         if (typeof(resp['type']) == "undefined" ) {
@@ -575,6 +577,7 @@ PlotSelect = {
         // PlotSelect.teMilli = opts0['xaxis']['max'] = resp['time_end'] * 1000;
         opts0['xaxis']['min'] = resp['time_start'] * 1000;
         opts0['xaxis']['max'] = resp['time_end'] * 1000;
+
 
         if( resp.sta === undefined ) {
 
@@ -601,6 +604,7 @@ PlotSelect = {
                     wrapper.append(plt);
                     chan_plots.append(wrapper);
                     chan_plot = $("#"+stachan_data+"_plot");
+
 
                     // Show plots
                     $("#wforms").show();
@@ -660,14 +664,15 @@ PlotSelect = {
 
                                     var start_time = parseFloat(arr[0],10) *1000;
                                     var end_time   = parseFloat(arr[1],10) *1000;
-                                    flot_data.push([start_time,3,end_time]);
+                                    flot_data.push([start_time,1,end_time]);
 
                                 });
 
                             }
 
-                            opts0['yaxis']['min'] = 1 ;
-                            opts0['yaxis']['max'] = 6 ;
+                            opts0['yaxis']['ticks'] = 0;
+                            opts0['yaxis']['min'] = 0.8 ;
+                            opts0['yaxis']['max'] = 2.2 ;
                             opts0['bars'] = {show:true, horizontal:'true', barWidth:1};
 
                             // }}} Coverage plot
@@ -706,42 +711,61 @@ PlotSelect = {
 
                         }
 
+                        // Get the size of the screen
+                        //var p_width  = $("#wforms").width();
+
+                        // Resize waveform and label
+                        //if (p_width) {
+                        //    //$("#"+stachan_data+"_label").width(p_width*0.09);
+                        //    //$("#"+stachan_data+"_plot").width(p_width*0.80);
+                        //}
+
                         var plot = $.plot(chan_plot,[ flot_data ], opts0 );
+
+
+                        if ( resp['type'] == "coverage") {
+                            //$("canvas").css("height","20px");
+                            //$(".label").css("height","20px");
+                            //$(".plot").css("height","20px");
+                            //$(".wrapper").css("height","20px");
+                        }
 
                         // Bind and store
                         chan_plot.bind("plotselected", PlotSelect.handleSelect);
                         PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // {{{ Add arrival labels
-                        if( PlotSelect.phases !== undefined && resp['type'] === "waveform" && PlotSelect.phases == 'True' && resp['phases'][stachan_data] !== undefined ) {
+                        //if( PlotSelect.phases !== undefined && resp['type'] === "waveform" && PlotSelect.phases == 'True' && resp['phases'][stachan_data] !== undefined ) {
+                        if( resp['phases'] !== undefined && resp['phases'] !== null ) {
+                            if( resp['phases'][stachan_data] !== undefined ) {
 
-                            $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
+                                $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
 
-                                var o;
-                                o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
-                                var flagCss = PlotSelect.arrivalFlagCss;
-                                // Force override as we want bar almost to top
-                                o.top = 20 ;
+                                    var o;
+                                    o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
+                                    var flagCss = PlotSelect.arrivalFlagCss;
+                                    // Force override as we want bar almost to top
+                                    o.top = 20 ;
 
-                                flagCss['left'] = o.left + 4 + "px" ;
-                                flagCss['top'] = o.top + "px" ;
-                                var arrDiv = $("<div>").css(flagCss).append( phaseFlag );
+                                    flagCss['left'] = o.left + 4 + "px" ;
+                                    flagCss['top'] = o.top + "px" ;
+                                    var arrDiv = $("<div>").css(flagCss).append( phaseFlag );
 
-                                // Draw tail on arrival flag
-                                var ctx = plot.getCanvas().getContext("2d");
-                                ctx.beginPath();
-                                o.left += 4;
-                                ctx.moveTo(o.left,o.top);
-                                ctx.lineTo(o.left,o.top + 120);
-                                ctx.closePath();
-                                ctx.lineWidth = 1;
-                                ctx.strokeStyle = "#FFF";
-                                ctx.stroke();
+                                    // Draw tail on arrival flag
+                                    var ctx = plot.getCanvas().getContext("2d");
+                                    ctx.beginPath();
+                                    o.left += 4;
+                                    ctx.moveTo(o.left,o.top);
+                                    ctx.lineTo(o.left,o.top + 120);
+                                    ctx.closePath();
+                                    ctx.lineWidth = 1;
+                                    ctx.strokeStyle = "#FFF";
+                                    ctx.stroke();
 
-                                chan_plot.append(arrDiv);
+                                    chan_plot.append(arrDiv);
 
-                            });
-
+                                });
+                            }
                         }
 
                     // }}} Add arrival labels
@@ -780,10 +804,10 @@ PlotSelect = {
 
         var event_metadata = '<table id="eventTable">';
         event_metadata += "<tr><th>Magnitude</th><td>"+resp['magnitude']+" "+resp['mtype']+"</td>";
-        event_metadata += "<th>Date-Time</th><td>"+resp['readable_time']+"</td></tr>";
+        event_metadata += "<th>Date-Time</th><td>"+resp['time']+"</td></tr>";
         event_metadata += "<tr><th>Location</th><td>"+resp['lat']+"&deg;N, "+resp['lon']+"&deg;E</td>";
         event_metadata += "<th>Depth</th><td>"+resp['depth']+"km</td></tr>";
-        event_metadata += "<tr><th colspan='2'>Author</th><td colspan='2'>"+resp['auth']+" [Review: "+resp['review']+"]</td></tr>";
+        event_metadata += "<tr><th>Author</th><td>"+resp['auth']+"</td><th>nass</th><td>"+resp['nass']+"</td></tr>";
         event_metadata += "</table>";
 
         $('#subnav #event').append(event_metadata);

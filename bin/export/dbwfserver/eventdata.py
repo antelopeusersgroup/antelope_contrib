@@ -10,10 +10,23 @@ from antelope.stock import *
 
 import dbwfserver.config as config
     
-class EventData():
-
+def isNumber(test):
     """
-    Provide interaction with Datascope database
+    Test if the string is a valid number 
+    and return the converted number. 
+    """
+    try:
+        try:
+            return int(test)
+        except:
+            return float(test)
+    except:
+        return False
+
+
+class Stations():
+    """
+    Data structure and functions to query for stations
     """
 
     def __init__(self, dbname):
@@ -21,9 +34,54 @@ class EventData():
         self.dbname = dbname
         self.db = dbopen(self.dbname)
         self.stachan_cache = defaultdict(dict)
-        self.event_cache = defaultdict(list)
+        self.index = []
+        
+        self._get_stachan_cache()
+
+    def __iter__(self):
+        self.index = self.stachan_cache.keys()
+        return self
+
+    def next(self):
+        if len(self.index) == 0:
+            raise StopIteration
+        else:
+            return self.index.pop()
+
+    def __repr__(self):
+        """
+        low-level display for programmers o use during development.
+        call: repr(var)
+        """
+        log.msg("\tClass Stations(): Cache of stations. (%s) stations.", len(self.stachan_cache) )
+        log.msg("\t\t%s", (self.stachan_cache.keys()) )
+        for st in self.stachan_cache.keys():
+            log.msg("\t\t%s:" % st )
+            for ch in self.stachan_cache[st].keys():
+                log.msg("\t\t\t%s: %s" % (ch,self.stachan_cache[st][ch]) )
+
+    def __str__(self):
+        """
+        end-user/application display of content using print() or log.msg()
+        """
+        for st in self.stachan_cache.keys():
+            chans = self.stachan_cache[st].keys()
+            log.msg("\t%s: %s" % (st,chans) )
+
+    def __call__(self, station):
+        """
+        method to intercepts data requests.
+        """
+        if self.stachan_cache[station]:
+            return self.stachan_cache[station]
+
+        else:
+            log.msg("\n\tClass Stations(): No value for (%s)" % station)
+            return False
 
     def _get_stachan_cache(self):
+
+        self.stachan_cache = defaultdict(dict)
 
         db = Dbptr(self.db)
         db.process([
@@ -38,8 +96,8 @@ class EventData():
 
             sta, chan, insname, srate, ncalib, rsptype = db.getv('sta', 'chan', 'insname', 'samprate', 'ncalib','rsptype')
 
-            if config.debug:
-                log.msg("\tStation: %s %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
+            #if config.debug:
+            #    log.msg("\tStation: %s %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
 
             self.stachan_cache[sta][chan] = defaultdict(dict)
             self.stachan_cache[sta][chan]['insname'] = insname
@@ -47,116 +105,147 @@ class EventData():
             self.stachan_cache[sta][chan]['ncalib'] = ncalib
             self.stachan_cache[sta][chan]['rsptype'] = rsptype
 
-        self.call = reactor.callLater(600, self._get_stachan_cache)
+        if config.verbose:
+            log.msg("\tClass Stations(): Updating cache of stations. (%s) stations.", len(self.stachan_cache) )
+            self.__str__()
+
+
+        self.call = reactor.callLater(60, self._get_stachan_cache)
+
+    def list(self):
+            return self.stachan_cache.keys()
+
+class Events():
+    """
+    Data structure and functions to query for events
+    """
+
+    def __init__(self, dbname):
+
+        self.dbname = dbname
+        self.db = dbopen(self.dbname)
+        self.event_cache = defaultdict(list)
+        self.index = []
+        
+        self._get_event_cache()
+
+    def __iter__(self):
+        self.index = self.event_cache.keys()
+        return self
+
+    def next(self):
+        if len(self.index) == 0:
+            raise StopIteration
+        else:
+            return self.index.pop()
+
+    def __repr__(self):
+        """
+        low-level display for programmers o use during development.
+        call: repr(var)
+        """
+        log.msg("\tClass Events(): Cache of events. (%s) events.", len(self.event_cache) )
+        log.msg("\t\t%s", (self.event_cache.keys()) )
+        for event in self.event_cache.keys():
+            log.msg("\t\t%s: %s" % (event,self.event_cache[event]) )
+
+    def __str__(self):
+        """
+        end-user/application display of content using print() or log.msg()
+        """
+        log.msg("\t\tEvents: %s" % (self.event_cache.keys()) )
+
+    def __call__(self, value):
+        """
+        method to intercepts data requests.
+        """
+
+        value = isNumber(value)
+
+        if self.event_cache[value]:
+            return self.event_cache[value]
+        else:
+            log.msg("\n\tClass Events(): No value (%s)" % value)
+            return False
+
+    def list(self):
+        return self.event_cache.keys()
+
+    def table(self):
+        return self.event_cache
+
+    def time(self,orid_time,window=5):
+        """
+        Look for event id close to a value of epoch time + or - window time in seconds. 
+        If no widow time is provided the default is 5 secods.
+        """
+
+        results = defaultdict()
+        
+        start = int(orid_time)-window
+        end   = int(orid_time)+window
+
+        db = Dbptr(self.db)
+
+        db.process([ 
+            'dbopen origin' 
+            'dbsubset time > %f && time < %f' % (start,end)
+            ])
+
+        if db.query(dbRECORD_COUNT):
+
+            for i in range(db.query(dbRECORD_COUNT)):
+
+                db.record = i
+
+                (orid,time) = db.getv('orid','time')
+
+                results[orid] = time
+
+            return results
+
+        else:
+            return False
 
     def _get_event_cache(self):
+
+        self.event_cache = defaultdict(list)
 
         db = Dbptr(self.db)
 
         db.lookup( table='event')
 
-        if db.query(dbTABLE_PRESENT):
-
-            if config.debug:
-                log.msg("Event table present!")
-
-            db.process([
-                'dbopen event',
-                'dbjoin origin',
-                'dbsubset orid == prefor',
-                'dbjoin assoc',
-                'dbsort -u sta orid'
-            ])
-
+        if db.query(dbTABLE_PRESENT): 
+            db.process([ 'dbopen event' ])
+            db.process([ 'dbjoin origin' ])
+            db.process([ 'dbsubset orid == prefor' ])
         else:
+            if config.debug: log.msg("\n\tevent table NOT present!!!\n")
+            db.lookup( table='assoc')
 
-            if config.debug:
-                log.msg("Event table NOT present")
+            if db.query(dbTABLE_PRESENT): 
+                db.process([ 'dbopen origin' ])
+                db.process([ 'dbjoin assoc' ])
+                db.process([ 'dbsort -u sta orid' ])
+            else:
+                if config.debug: log.msg("\n\tassoc table NOT present!!!\n")
+                db.process([ 'dbopen origin' ])
 
-            db.process([
-                'dbopen origin',
-                'dbjoin assoc',
-                'dbsort -u sta orid'
-            ])
+        db.process([ 'dbsort -u orid' ])
 
         for i in range(db.query(dbRECORD_COUNT)):
 
             db.record = i
 
-            sta,orid_time_raw = db.getv('sta', 'origin.time')
-            orid_time = int(orid_time_raw)
+            (orid,time,lat,lon,depth,auth,mb,nass) = db.getv('orid','time','lat','lon','depth','auth','mb','nass')
 
-            if config.debug:
-                log.msg("\tEvent:%s %s" % (sta,orid_time))
+            self.event_cache[orid] = {'time':time, 'lat':lat, 'lon':lon, 'depth':depth, 'auth':auth, 'mb':mb, 'nass':nass}
 
-            self.event_cache[sta].append(orid_time)
+        if config.verbose:
+            log.msg("\tClass Events(): Updating cache of events. (%s) events.", len(self.event_cache) )
+            self.__str__()
 
-        self.call = reactor.callLater(600, self._get_event_cache)
-
-
-    def _get_stachan_phases(self, sta, chan, mintime, maxtime):
-        """
-        Go through station channels to retrieve all
-        arrival phases
-        """
-
-        # Create a datascope OR statement
-        sta_str  = "|".join(sta)
-        chan_str = "|".join(chan)
-
-        log.msg( sta_str )
-        log.msg( chan_str )
-
-        db = Dbptr(self.db)
-
-        db.lookup(table='event')
-
-        if db.query(dbTABLE_PRESENT):
-
-            if config.debug:
-                log.msg("Event table present!")
-
-            db.process([
-                'dbopen event',
-                'dbjoin origin',
-                'dbsubset orid == prefor',
-                'dbjoin assoc',
-                'dbjoin arrival'
-            ])
-
-        else:
-
-            if config.debug:
-                log.msg("Event table NOT present")
-
-            db.process([
-                'dbopen origin',
-                'dbjoin assoc',
-                'dbjoin arrival'
-            ])
-
-        phase_sub = dbsubset(db,'sta=~/%s/ && chan=~/%s/ && arrival.time >= %s && arrival.time <= %s' % (sta_str,chan_str,int(mintime),int(maxtime)) )
-
-        phase_sub.sort(['sta','chan','arrival.time','iphase'],unique=True)
-
-        per_sta_chan_phases = {}
-
-        if phase_sub.query(dbRECORD_COUNT) > 0:
-
-            for p in range(phase_sub.query(dbRECORD_COUNT)):
-
-                phase_sub.record = p
-
-                pSta, pChan, pArrTime, pIphase = phase_sub.getv('sta','chan','arrival.time','iphase')
-                pStaChan = pSta+"_"+pChan
-
-                if not pStaChan in per_sta_chan_phases:
-                    per_sta_chan_phases[pStaChan] = {}
-
-                per_sta_chan_phases[pStaChan][pArrTime] = pIphase
-
-        return per_sta_chan_phases
-      
+        self.call = reactor.callLater(60, self._get_event_cache)
 
     def _get_orid_data(self, origin, stations=None):
         """
@@ -190,7 +279,7 @@ class EventData():
         if config.debug:
             log.msg("\tEvent: %s %s %s %s %s %s %s %s %s" % (time,lat,lon,depth,auth,review,mb,ms,ml))
 
-        origin['origin_time'] = time
+        origin['orid_time'] = time
         origin['readable_time'] = epoch2str(time,"%Y-%m-%d %H:%M:%S UTC");
         origin['lat'] = lat
         origin['lon'] = lon
@@ -208,7 +297,7 @@ class EventData():
             origin['magnitude'] = ml
             origin['mtype'] = 'Ml'
 
-        origin['phases'] = defaultdict(lambda:defaultdict(dict))
+        origin['phases'] = defaultdict(dict)
 
         for k in range(origin_sub.query(dbRECORD_COUNT)):
 
@@ -233,94 +322,64 @@ class EventData():
         return origin
 
 
-    def available_stations(self,sta=None):
-
+    def phases(self, sta, mintime, maxtime):
         """
-        Get a list of stations that have data in the database
-        by just returning keys from _get_stachan_cache() query
-        """
-        temp_dic = {}
-
-        if not self.stachan_cache:
-            self._get_stachan_cache()
-
-        if  not self.stachan_cache.keys():
-            temp_dic['error'] = ("No stations out of DB query. Need a join of SITECHAN SENSOR and INSTRUMENT tables." )
-            log.msg("Exception on data: %s" % temp_dic['error'])
-            return temp_dic
-                
-
-        if not sta:
-            return self.stachan_cache.keys()
-        else:
-            for st in sta:
-                temp_dic[st] = self.stachan_cache[st]
-            return temp_dic
-
-    def event_list(self, sta=None, orid_time=None):
-
-        """
-        Get a list of events from the database
-        by just returning keys from _get_events_cache() query
-        Test with:
-        http://localhost:8008/data?type=events
-        or 
-        http://localhost:8008/data?type=events&sta=127A - list of events recorded by station 127A
-        or 
-        http://localhost:8008/data?type=events&orid=66484 - list of stations that recorded event 66484
-        or 
-        http://localhost:8008/data?type=events&sta=127A&orid=66484 - returns a floating point that is the arrival time
+        Go through station channels to retrieve all
+        arrival phases
         """
 
-        if not self.event_cache:
-            self._get_event_cache()
+        phases = defaultdict(dict)
 
-        temp_list = []
-        temp_dic = {}
+        # Create a datascope OR statement
+        sta_str  = "|".join(sta)
 
-        if config.debug:
-            log.msg("Event_list function. STA=%s ORID_TIME=%s" % (sta,orid_time) )
+        log.msg( sta_str )
 
-        if not self.event_cache.keys():
-            temp_dic['error'] = ("No events out of DB query. Need a join of [EVENT] ORIGIN and ASSOC tables." )
-            log.msg("Exception on data: %s" % temp_dic['error'])
-            return temp_dic
+        db = Dbptr(self.db)
 
-        if sta and orid_time:
+        db.lookup(table='arrival')
 
-            return self._get_orid_data(orid_time,sta)
+        if db.query(dbTABLE_PRESENT):
 
-        elif sta and not orid_time:
+            db.process([ 'dbopen arrival' ])
 
-            for st in sta:
-                temp_dic[st] = self.event_cache[st]
+            phase_sub = dbsubset(db,'sta=~/%s/ && time >= %s && time <= %s' % (sta_str,int(mintime),int(maxtime)) )
 
-            return temp_dic
+            if phase_sub.query(dbRECORD_COUNT) > 0:
 
-        elif orid_time and not sta:
+                phase_sub.sort(['sta','chan','time','iphase'],unique=True)
 
-            temp_dic = defaultdict(list)
-            # self._get_orid_data(orid)
-            for st,orids in self.event_cache.iteritems():
+                for p in range(phase_sub.query(dbRECORD_COUNT)):
 
-               if int(orid_time) in orids:
-                   temp_dic[orid_time].append(st)
+                    phase_sub.record = p
 
-            return temp_dic
+                    Sta, Chan, ArrTime, Iphase = phase_sub.getv('sta','chan','time','iphase')
+                    StaChan = Sta + '_' + Chan
+
+                    phases[StaChan][ArrTime] = Iphase
+
+                return phases
+            else:
+                log.msg("No arrivals in this time segment for the stations (%s): t1=%s t2=%s" % (sta_str,mintime,maxtime) )
 
         else:
 
-            ev_list = [] 
+            log.msg("Arrival table NOT present")
 
-            for st,ev in self.event_cache.iteritems():
+            return False
 
-                temp_list.extend(ev)
+class EventData():
 
-            ev_list = list(set(temp_list))
-            return ev_list
+    """
+    Provide interaction with Datascope database
+    """
 
+    def __init__(self, dbname):
 
-    def get_segment(self, sta, chan, canvas_size, orid=None, origin_time=None, time_window=None, mintime=None, maxtime=None, amount=None, filter=None, phases=None):
+        self.dbname = dbname
+        self.db = dbopen(self.dbname)
+
+    def get_segment(self, url_data, stations, events):
 
         """
         Get a segment of waveform data.
@@ -342,66 +401,42 @@ class EventData():
         Also return event metadata
         """
 
-        if not self.stachan_cache:
-            self._get_stachan_cache()
-
-        res_data = defaultdict(lambda:defaultdict(dict))
-
-        db = Dbptr(self.db)
-        db.lookup(table="wfdisc")
+        res_data = defaultdict(dict)
 
         if config.debug:
-            log.msg("Starting functions eventdata.get_segment")
-            log.msg("\tsta:\t%s"        % sta)
-            log.msg("\tchan:\t%s"       % chan)
-            log.msg("\torid:\t%s"       % orid)
-            log.msg("\torigin_time:\t%s"% origin_time)
-            log.msg("\ttime_window:\t%s"% time_window)
-            log.msg("\tmintime:\t%s"    % mintime)
-            log.msg("\tmaxtime:\t%s"    % maxtime)
-            log.msg("\tcanvas:\t%s"     % canvas_size)
-            log.msg("\tamount:\t%s"     % amount)
-            log.msg("\tfilter:\t%s"     % filter)
-            log.msg("\tphases:\t%s"     % phases)
+            log.msg("\nStarting functions eventdata.get_segment(): %s" % url_data)
 
-        if orid and not origin_time:
+        """
+        Setting the metadata for the event.
+        """
+        if url_data['orid_time']:
+            url_data['orid'] = events.time(url_data['orid_time']).keys()[0]
 
-            resp_data = {'metadata':self._get_orid_data(orid)}
-            log.msg("\tfilter:\t%s"     % filter)
 
-        if orid and not origin_time:
-
-            resp_data = {'metadata':self._get_orid_data(orid)}
-            if not resp_data['metadata']['origin_time']:
-                log.msg("No origin time for this event:%s" % orid)
-                return False
-
-            orid_time = resp_data['metadata']['origin_time']
-
-            if config.verbose: log.msg( 'Looking for origin time: %s' % orid_time)
-
-        elif not orid and origin_time:
-
-            if config.verbose: log.msg( 'No orid passed - ignore metadata' )
-            orid_time = int(origin_time) # Force into an integer
+        if url_data['orid']:
+            resp_data = {'metadata':events(url_data['orid'])}
+            url_data['orid_time'] = resp_data['metadata']['time']
 
         else:
+            if config.verbose: log.msg( 'No orid passed - ignore metadata' )
 
-            # No origin time - use mintime - normally used by zoom in|out
-            orid_time = mintime
 
-        if amount is "all" and orid_time and not mintime or not maxtime:
+        """
+        Setting time window of waveform.
+        """
+        mintime = isNumber(url_data['time_start'])
+        maxtime = isNumber(url_data['time_end'])
 
-            if not time_window: time_window = config.default_time_window
+        if url_data['orid_time'] and not mintime or not maxtime:
 
-            maxtime =  orid_time + ( time_window/2 )
-            mintime =  orid_time - ( time_window/2 )
+            maxtime =  isNumber( url_data['orid_time'] + ( url_data['time_window']/2 ) )
+            mintime =  isNumber( url_data['orid_time'] - ( url_data['time_window']/2 ) )
 
         else:
 
             log.msg("Just using mintime and maxtime for plotting")
 
-        # Use either passed min and maxtimes, or origin_time generated equivalents
+        # Use either passed min and maxtimes, or orid_time generated equivalents
 
         if (not maxtime or maxtime == -1) or (mintime == -1 or not mintime):
             log.msg("Error in maxtime:%s or mintime:%s" % (maxtime,mintime))
@@ -410,34 +445,35 @@ class EventData():
         res_data.update( {'type':'waveform'} )
         res_data.update( {'time_start':mintime} )
         res_data.update( {'time_end':maxtime} )
-        res_data.update( {'time_window':time_window} )
-        res_data.update( {'orid':orid} )
-        res_data.update( {'orid_time':orid_time} )
-        res_data.update( {'sta':sta} )
-        res_data.update( {'chan':chan} )
+        res_data.update( {'time_window':url_data['time_window']} )
+        res_data.update( {'orid':url_data['orid']} )
+        res_data.update( {'orid_time':url_data['orid_time']} )
+        res_data.update( {'sta':url_data['sta']} )
+        res_data.update( {'chan':url_data['chan']} )
 
-        if phases:
+        if True:
 
             log.msg('Getting phase arrival times')
 
-            phase_arrivals = self._get_stachan_phases(sta,chan,mintime,maxtime)
-            phase_keys = phase_arrivals.keys()
-            phase_keys.sort()
-
-            segment_phases = {}
-
-            for pKey in phase_arrivals:
-
-                segment_phases[pKey] = phase_arrivals[pKey]
-
-            res_data.update( {'phases':segment_phases } )
+            phase_arrivals = events.phases(url_data['sta'],mintime,maxtime)
+            res_data.update( {'phases':phase_arrivals } )
 
 
-        for station in sta:
+        for station in url_data['sta']:
 
-            for channel in chan:
+            temp_dic = stations(station)
+
+            if not temp_dic:
+                log.msg('\n')
+                log.msg('ERROR: %s not a valid station!' % (station))
+                log.msg('\n')
+                continue
+
+            for channel in url_data['chan']:
                 if config.debug: log.msg("Now: %s %s" % (station,channel))
-                if not self.stachan_cache[station][channel].get('samprate',False):
+
+
+                if not temp_dic[channel]:
                     log.msg('\n')
                     log.msg('ERROR: %s %s not a valid station and channel combination!' % (station,channel))
                     log.msg('\n')
@@ -445,36 +481,25 @@ class EventData():
 
                 if config.verbose: log.msg("Log times: %s %s" % (mintime,maxtime))
 
+                res_data[station][channel] = defaultdict(dict)
+
                 res_data[station][channel].update({'start':mintime})
                 res_data[station][channel].update({'end':maxtime})
-                res_data[station][channel].update({'metadata':self.stachan_cache[station][channel]})
+                res_data[station][channel].update({'metadata':temp_dic[channel]})
 
                 if config.debug: log.msg("Get data for (%s %s %s %s)" % (mintime,maxtime,station,channel))
 
-                #try:
-                #    tr = db.loadchan(mintime,maxtime,station,channel)
-                #except Exception,e:
-                #    res_data['error'] = ("%s" % e)
-                #    log.msg("Exceptionon trloadchan: %s" % e)
+                points = int( (maxtime-mintime)*res_data[station][channel]['metadata']['samprate'])
 
-                #tr.record = 0
-
-                log.msg("Samprate: %s" % self.stachan_cache[station][channel]['samprate'])
-
-                points = int( (maxtime-mintime)*self.stachan_cache[station][channel]['samprate'])
-
-                log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,canvas_size,config.binning_threshold))
+                log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,url_data['canvas_size'],config.binning_threshold))
 
                 if not points > 0:
                     res_data[station][channel]['data'] = ()
 
-                elif points <  (config.binning_threshold * canvas_size):
-
-                    if filter:
-                        log.msg("Filter is: %s" % (filter))
+                elif points <  (config.binning_threshold * url_data['canvas_size']):
 
                     try:
-                        res_data[station][channel]['data'] = trsample(db,mintime,maxtime,station,channel,False,filter)
+                        res_data[station][channel]['data'] = self.db.sample(mintime,maxtime,station,channel,False)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)
                         log.msg("Exception on data: %s" % e)
@@ -483,22 +508,19 @@ class EventData():
 
                 else:
 
+                    binsize = points/url_data['canvas_size']
                     try:
-                        res_data[station][channel]['data'] = trsamplebins(db,mintime,maxtime,station,channel,points/canvas_size,False,filter)
+                        res_data[station][channel]['data'] = self.db.samplebins(mintime, maxtime, station, channel, binsize, False)
                     except Exception,e:
                         res_data['error'] = ("%s" % e)
                         log.msg("Exception on databins: %s" % e)
 
                     res_data[station][channel]['format'] = 'bins'
 
-
-                #trfree(tr)
-                #trdestroy(tr)
-
         return res_data
 
 
-    def coverage(self, sta=None, chan=None, start=None, end=None):
+    def coverage(self, params=None):
 
         """
         Get list of segments of data for the respective station and channel
@@ -510,30 +532,52 @@ class EventData():
             http://localhost:8008/data?type=coverage&sta=113A&chan=BHZ
 
         """
+        log.msg("Getting segment for:")
+        if 'sta' in params:
+            sta = params['sta']
+            log.msg("\tsta:\t%s" % str(sta))
+        else:
+            sta = None
+            log.msg("\tsta:\tNone")
+
+        if 'chan' in params:
+            chan = params['chan']
+            log.msg("\tchan:\t%s" % str(chan))
+        else:
+            chan = None
+            log.msg("\tchan:\tNone")
+
+        if 'start' in params:
+            start = params['start']
+            log.msg("\tstart:\t%s" % start)
+        else:
+            start = None
+            log.msg("\tstart:\tNone")
+
+        if 'end' in params:
+            end = params['end']
+            log.msg("\tend:\t%s" % end)
+        else:
+            end = None
+            log.msg("\tend:\tNone")
+
         sta_string = ''
         chan_string = ''
-        response_data = defaultdict(lambda:defaultdict(dict))
+        response_data = defaultdict(dict)
 
-        if config.verbose:
-            log.msg("Getting segment for:")
-            log.msg("\tsta:\t%s"        % sta)
-            log.msg("\tchan:\t%s"       % chan)
-            log.msg("\tstart:\t%s"      % start)
-            log.msg("\tmintime:\t%s"    % end)
+        if sta:
+            for station in sta:
+                if sta_string: sta_string = sta_string + '|'
+                sta_string = sta_string + station
+        else:
+            sta_string = '.*'
 
-        if not sta:
-            sta = self.available_stations()
-
-        if not chan:
-            chan = config.default_chans
-
-        for station in sta:
-            if sta_string: sta_string = sta_string + '|'
-            sta_string = sta_string + station
-
-        for channel in chan:
-            if chan_string: chan_string = chan_string + '|'
-            chan_string = chan_string + channel
+        if chan:
+            for channel in chan:
+                if chan_string: chan_string = chan_string + '|'
+                chan_string = chan_string + channel
+        else:
+            chan_string = '.*'
 
         db = Dbptr(self.db)
         db.lookup(table="wfdisc")
@@ -604,3 +648,5 @@ class EventData():
                 response_data[this_sta][this_chan]['data'].append([time,endtime])
 
         return response_data
+
+

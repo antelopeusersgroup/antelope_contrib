@@ -12,25 +12,7 @@ import dbwfserver.config as config
 import dbwfserver.resource as resource
 
 
-def isNumber(test):
-    """
-    Test if the string is a valid number 
-    and return the converted number. 
-    """
-    try:
-        try:
-            return int(test)
-        except:
-            return float(test)
-    except:
-        return False
-
-root = resource.Root()
-
-root.putChild('data',     resource.Data()        )
-root.putChild('stations', resource.QueryParser() )
-root.putChild('events',   resource.QueryParser() )
-root.putChild('wfs',      resource.Waveform()    )
+root = resource.QueryParser()
 
 root.putChild('static',   static.File(config.static_dir))
 

@@ -114,7 +114,9 @@
     </div>
 
     <div id="subnav">
-    $my_list
+        <div id="event"></div>
+        <ul class="ui-helper-reset ui-helper-clearfix">
+        </ul>
     </div>
 
     <div id="wforms">
@@ -134,6 +136,84 @@
     </div>
 
 </div>
+
+<script type="text/javascript">
+    $$(function(){
+
+        var wf_data      =  $wf_data ;
+        var event_list   =  $event_list ;
+        var event_selc   =  $event_selc ;
+        var event_data   =  $event_data ;
+        var station_data =  $station_data ;
+        var station_list =  $station_list ;
+        var station_selc =  $station_selc ;
+        var error        =  $error ;
+
+        if (error) {
+            alert('ERROR ON SERVER:\n\t'+error);
+        }
+
+        else if (station_list && event_selc) {
+            jQuery.each(station_list, function() {
+                    $$("#subnav ul").append(
+                        "<li class='ui-state-active ui-corner-all'>" +
+                        "<a href='/wf/" + this + "/" + event_selc + "'>" +
+                        this + "</a></li>\n"
+                    );
+            });
+        }
+        else if (station_list) {
+            jQuery.each(station_list, function() {
+                    $$("#subnav ul").append(
+                        "<li class='ui-state-active ui-corner-all'>" +
+                        "<a href='/stations/" + this + "'>" +
+                        this + "</a></li>\n"
+                    );
+            });
+        }
+
+        else if (event_list && station_selc) {
+            jQuery.each(event_list, function(key, value) {
+                    var table = "";
+                    var date = new Date(value['time'] * 1000);
+                    for(var k in value) { table = table + " " + k + ": " + value[k] + " " }
+                    $$("#subnav ul").append(
+                        "<li class='ui-state-active ui-corner-all'>" +
+                        "<a href='/wf/" + station_selc + "/" + key + "'>" +
+                        date + "</a></li><p>"+ table + "</p>\n"
+                    );
+            });
+        }
+        else if (event_list) {
+            jQuery.each(event_list, function(key, value) {
+                    var table = "";
+                    var date = new Date(value['time'] * 1000);
+                    for(var k in value) { table = table + " " + k + ": " + value[k] + " " }
+                    $$("#subnav ul").append(
+                        "<li class='ui-state-active ui-corner-all'>" +
+                        "<a href='/events/" + key + "'>" +
+                        date + "</a></li><p>"+ table + "</p>\n"
+                    );
+            });
+        }
+        if (event_data) {
+             PlotSelect.setEventData(event_data);
+        }
+        if (wf_data) {
+             PlotSelect.setData(wf_data);
+        }
+
+
+        //jQuery.each(event_list, function() {
+        //    alert("Got:"+ this);
+        //});
+
+        //PlotSelect.getData(dataObj);
+
+    });
+</script>
+
+
 
 </body>
 
