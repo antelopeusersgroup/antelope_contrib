@@ -230,7 +230,13 @@ done in place on the files, so the files in the \fIdownload_dir\fP will
 be not quite identical to those on the IA itself.
 
 \fBia2orb\fP will not repeatedly attempt to retrieve a given file from the IA if 
-attempts to get that file are at first unsuccessful. 
+attempts to get that file are at first unsuccessful. The one exception to this is that 
+if the file to be acquired is for a station in \fIon-demand\fP mode, if the failure 
+to acquire is due simply to \fIscp\fP being unable to find or retrieve the file, and if the 
+request time is within one \fIIA\fP block-size of the system-clock time, the relevant thread will
+estimate an amount of time to sleep for that station, then re-post the request. This will hold off
+requests for earlier data from the same station, however that data will still be requested after the 
+sleep cycle elapses.
 
 .SH AUTHOR
 .nf
