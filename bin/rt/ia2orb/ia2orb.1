@@ -182,7 +182,7 @@ time 1177721659.872
 .in
 .SH "SEE ALSO"
 .nf
-iarequest(1), iatrigger(1), orbserver(1), miniseed2orb(1) 
+iarequest(1), iatrigger(1), orbserver(1), miniseed2orb(1), ssh(5)
 .fi
 .SH "BUGS AND CAVEATS"
 \fBia2orb\fP is strongly bound to the current naming convention and 
@@ -209,7 +209,12 @@ The above example is only a guide to further exploration. The authentication
 mechanisms for running \fBia2orb\fP (specifically, for running it continuously and 
 in an automated sense under the Antelope real-time system) will have to be
 constructed to match the security policies of the site at which \fBia2orb\fP
-is run. 
+is run. The intent here is to have the security engineering for the user's ssh
+connectivity be completely distinct from the internal engineering of the
+\fBia2orb\fP program. For a few introductory suggestions on setting up password-less 
+ssh logins, see the man-page ssh(5). For further information, consider referring to the
+book \fISSH, the Secure Shell: The Definitive Guide\fP by Daniel J. Barrett, 
+Richard E. Silverman, and Robert G. Byrnes, O'Reilly publications, 2005. 
 
 \fBia2orb\fP is currently set up to use only one relay server per station. 
 In principle it would be possible to expand it to use multiple relay servers, 
