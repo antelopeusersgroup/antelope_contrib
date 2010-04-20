@@ -47,7 +47,8 @@ static int signed_crossing_number(Point P1,Point P2) {
 }
 static int winding_number(Point *polygon, long n) {
 	int wn=0;
-	long i,scn;
+	int scn;
+	long i;
 	Point P1,P2;
 
 	for (i=0; i<n; i++) {
@@ -382,14 +383,14 @@ long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int clos
 				west = (lon<west) ? lon : west;
 				east = (lon>east) ? lon : east;
 				int1=lon * 1e6;
-				H2N4(&int2,&int1,1);
+				H2N4((char *)(&int2),(char *)(&int1),1);
 				fwrite(&int2,sizeof(int),1,dfh);
 
 				lat=poly[i].lat;
 				south = (lat < south) ? lat : south;
 				north = (lat > north) ? lat : north;
 				int1=lat * 1e6;
-				H2N4(&int2,&int1,1);
+				H2N4((char *)(&int2),(char *)(&int1),1);
 				fwrite(&int2,sizeof(int),1,dfh);
 			}
 			fclose(dfh);
@@ -426,14 +427,14 @@ long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int clos
 				west = (lon<west) ? lon : west;
 				east = (lon>east) ? lon : east;
 				float1=lon;
-				H2N4(&float2,&float1,1);
+				H2N4((char *)(&float2),(char *)(&float1),1);
 				fwrite(&float2,sizeof(float),1,dfh);
 
 				lat=poly[i].lat;
 				south = (lat < south) ? lat : south;
 				north = (lat > north) ? lat : north;
 				float1=lat;
-				H2N4(&float2,&float1,1);
+				H2N4((char *)(&float2),(char *)(&float1),1);
 				fwrite(&float2,sizeof(float),1,dfh);
 			}
 			fclose(dfh);
@@ -493,15 +494,15 @@ long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int clos
 	
 Dbptr inWhichPolygons(Dbptr db,Point P) {
 	Point *poly;
-	int i;
-	int nrec;
+	long i;
+	long nrec;
 	Dbptr dbr= dblookup(db,0,"polygon",0,0);
 	double lat,lon;
 	Dbptr dbs;
-	int npoints;
+	long npoints;
 	char expr[STRSZ];
 	char temp[STRSZ];
-	int pid;
+	long pid;
 	int first;
 	int found=0;
 	char name[STRSZ];
