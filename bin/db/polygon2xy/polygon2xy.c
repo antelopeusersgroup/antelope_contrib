@@ -34,7 +34,7 @@ main(int argc, char **argv)
 	long             nvertices;
 
 	Dbptr           db;
-	int             i;
+	long             i;
 	long 		 	nrecs;
 	char           *subset_expr=NULL;
 	char            pname[STRSZ], closed[STRSZ];
