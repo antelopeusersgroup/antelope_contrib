@@ -1,12 +1,13 @@
 
 #include "tr.h"
-#include "coords.h"
+#include "msd.h"
 
 int 
 UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, int *nsamp, 
 	    int **outp, int *datasz ) 
 {
-    int i, asamp, *out, npts, swap ; 
+    int i, asamp, *out, swap ; 
+    long npts ;
     Steim *conf ;
     char *indata ;
     int retcode = 0 ;
