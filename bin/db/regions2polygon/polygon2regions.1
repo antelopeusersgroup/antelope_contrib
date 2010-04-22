@@ -1,0 +1,29 @@
+.TH POLYGON2REGIONS 1 "$Date$"
+.SH NAME
+polygon2regions \- convert polygon information from binary format to database in places1.2 format
+.SH SYNOPSIS
+.nf
+\fBpolygon2regions \fP[-s \fIsubset\fP] \fIdbin\fP \fIdbout\fP
+.fi
+.SH DESCRIPTION
+Polygon2regions saves data from the polygon table of a database in polygon1.2 schema in places1.2 schema.
+.SH OPTIONS
+.IP "-s subset"
+restrict selection view according to the Datascope expression \fIsubset\fP
+.IP "dbin"
+Name of database in polygon1.2 schema. This argument is required. The table polygon MUST be present.
+.IP "dbout"
+Name of output database.
+.SH "BUGS AND CAVEATS"
+The data from database \fIdbin\fP are always added to database \fIdbout\fP, eventually creating duplicate entries.
+.SH "SEE ALSO"
+.nf
+polygon_schema(5), polygon(3), regions2polygon(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2010
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+

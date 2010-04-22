@@ -1,1 +1,0 @@
-ldflags= -L$(ANTELOPE)/local/lib -R$(ANTELOPE)/local/lib	# flags to linker/loader

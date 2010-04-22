@@ -19,9 +19,9 @@ int polycode (char *type);
 char *polytype(int code);
 /** returns strintype for polygon storage type */
 
-int readPolygon(Dbptr db, Point **Poly);
+long readPolygon(Dbptr db, Point **Poly);
 /** read vertices from database into array *Point */
-int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed, int level, char *ptype, char *auth, char *dir, char *dfile, int pcode);
+long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int closed, int level, char *ptype, char *auth, char *dir, char *dfile, int pcode);
 	/** writes polygon data into datafile
 		fills database record accordingly
 		returns record number or dbINVALID
@@ -32,4 +32,4 @@ Dbptr inWhichPolygons(Dbptr db,Point P);
 
 char *windrose(double azimuth);
 
-int isGeographicallyInside(Point P, Point *polygon, int n);
+int isGeographicallyInside(Point P, Point *polygon, long n);
