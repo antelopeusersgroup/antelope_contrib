@@ -99,8 +99,15 @@ Run \fBiatrigger\fP in verbose mode with hypocenter packets taken from the defau
 .in
 .SH "SEE ALSO"
 .nf
-ia2orb(1), iarequest(1)
+ia2orb(1), iarequest(1), rtexec(1)
 .fi
+.SH "BUGS AND CAVEATS"
+The \fBiatrigger\fP program does not dynamically monitor its parameter file for changes. If the 
+parameter file changes, \fBiatrigger\fP must be restarted for the changes to take effect. If 
+more automation is necessary, the user may consider putting the name of \fBiatrigger\fP's 
+parameter-file in the \fIPf_restart\fP array of the \fIrtexec.pf\fP file for the real-time 
+system under which \fBiatrigger\fP is running (for more details on that feature 
+see the rtexec(1) man-page). 
 .SH AUTHOR
 .nf
 Kent Lindquist

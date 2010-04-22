@@ -5,8 +5,9 @@
     require "getopts.pl" ;
     use strict ;
     use Datascope ;
-    use archive;
-    use orb;
+    use archive ;
+    use utilfunct ;
+    use orb ;
     
     our ($opt_v,$opt_V,$opt_d,$opt_i,$opt_m,$opt_N,$opt_n,$opt_o,$opt_p,$opt_t,$opt_2,$opt_3);
     our ($pgm,$host);
@@ -85,7 +86,7 @@
 #
     $Pf = $opt_p || $pgm ;
         
-    %pf = getparam($Pf);
+    %pf = getparam( $Pf, $verbose, $debug ) ;
 #
 #  open db
 #
@@ -352,90 +353,6 @@
     }
   
     exit(0);
-}
-
-
-sub prettyprint {
-	my $val = shift;
-	my $prefix = "";
-	if (@_) { $prefix = shift ; }
-
-	if (ref($val) eq "HASH") {
-		my @keys = sort ( keys  %$val );
-		my %hash = %$val;
-		foreach my $key (@keys) {
-			my $newprefix = $prefix . "{". $key . "}" ;
-			prettyprint ($hash{$key}, $newprefix) ;
-		}
-	} elsif (ref($val) eq "ARRAY") {
-		my $i = 0;
-		my @arr = @$val;
-		foreach my $entry ( @$val ) {
-			my $newprefix = $prefix . "[". $i . "]" ;
-			prettyprint ($arr[$i], $newprefix) ;
-			$i++;
-		}
-	} else {
-		print $prefix, " = ", $val, "\n";
-#        elog_notify("$prefix  =  $val");
-	}
-}
-
-
-sub dbdebug { #dbdebug(@db)
-    my(@db) = @_;
-    my($key,$field) ;
-    my(@fields) ;
-    my(%table) ;
-    
-    @fields = dbquery(@db,"dbTABLE_FIELDS");
-    
-    foreach $field (@fields) {
-        elog_notify(sprintf("%s	%s",$field,dbgetv(@db,$field)));
-    }
-}
-
-
-sub check_tables { # $problems = &check_tables($db,$problems,@tables);
-    my ($db,$problems,@tables) = @_ ;
-    my @db ; 
-    my $table;
-
-    @db = dbopen($db,"r") ;
-
-    foreach $table (@tables) {
-        @db      = dblookup(@db,0,$table,0,0);
-        if ($db[1] < 0) {
-            elog_complain("$table not defined in schema") ;
-            $problems++;
-        }        
-        if (! dbquery(@db,"dbTABLE_PRESENT")) {
-            elog_complain("No records in $table table of $db") ;
-            $problems++;
-        }
-    }
-    dbclose(@db);
-    return($problems);
-}
-
-sub getparam { # %pf = getparam($Pf);
-    my ($Pf) = @_ ;
-    my ($subject,$ref);
-    my (@keys);
-    my (%pf) ;
-    
-    $ref = pfget($Pf, "");
-    %pf = %$ref ;
-
-    elog_notify("$Pf	ref($ref)") if $opt_V;
-    
-    @keys = sort( keys %pf);
-
-    if ($opt_V) {
-        &prettyprint(\%pf);
-    }
-            
-    return (%pf) ;
 }
 
 sub calibrate { # ($sleep,$problems) = &calibrate($orbname,$sta,$mon_chan,$offset,$problems);

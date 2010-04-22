@@ -1,13 +1,14 @@
-.TH LISS2ORB 1 "$Date$"
+.TH LISS2ORB 1 
 .SH NAME
 liss2orb \- read data in LISS format
 .SH SYNOPSIS
 .nf
 .ne 4
 
-\fBliss2orb \fP[-d \fIdb\fP] 
+\fBliss2orb\fP [-D file]
+            [-d \fIdb\fP] 
             [-m \fImatch\fP] [-r] 
-	    [-s \fIpktsize\fP] 
+            [-s \fIpktsize\fP] 
             [-t \fItimeout\fP] 
             [-v] \fIliss-server\fP \fIorb\fP
 
@@ -16,6 +17,8 @@ liss2orb \- read data in LISS format
 \fBliss2orb\fP reads seismic data in LISS format from a \fIliss-server\fP
 and sends it to an \fIorb\fP ring buffer.
 .SH OPTIONS
+.IP "-D raw"
+write raw packets into file as they're received, for debugging.
 .IP "-d db"
 Copy calib, calper and segtype from the calibration table in the
 specified database \fIdb\fP.  (Since this information is not available from the

@@ -9,6 +9,7 @@
     use Datascope ;
     use archive;
     use timeslice ;
+    use utilfunct ;
     use orb ;
     
     our ($pgm,$host);
@@ -16,14 +17,13 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$subset,$ptmp);
-    my ($stime,$table,$sta,$chan,$dirname,$dbname);
-    my ($mintime,$maxtime);
-    my ($row,$nrows,$time,$endtime,$equip_install,$equip_remove,$decert_time,$totdays);
-    my ($line,$st1,$st2,$statmp,$chantmp,$dep,$prob);
-    my (@db,@dbwfdisc,@dbwf,@dbschan,@dbchanperf,@dbbh,@dbdeploy,@dbcd,@dbdeptmp,@dbtmp);
-    my (@dbdmcfiles,@dbscrdmc,@dbops);
-    my (%pf,%staperf);
+    my ( $Pf, $chan, $chantmp, $cmd, $dbname, $debug, $decert_time, $dep, $dirname, $endtime ) ;
+    my ( $equip_install, $equip_remove, $line, $maxtime, $mintime, $nrows, $prob, $problems ) ;
+    my ( $ptmp, $row, $st1, $st2, $sta, $statmp, $stime, $subject, $subset, $table, $time ) ;
+    my ( $totdays, $usage, $verbose );
+    my ( @db, @dbbh, @dbcd, @dbchanperf, @dbdeploy, @dbdeptmp, @dbdmcfiles, @dbops, @dbschan ) ;
+    my ( @dbscrdmc, @dbtmp, @dbwf, @dbwfdisc );
+    my ( %pf, %staperf );
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -47,13 +47,12 @@
 
     $Pf         = $opt_p || $pgm ;
     
-    
-    %pf = getparam($Pf);
-
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
     
+    %pf = getparam( $Pf, $verbose, $debug );
+
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
         &sendmail($subject, $opt_m) if $opt_m ; 
@@ -400,28 +399,3 @@
     exit(0);
 }
 
-sub getparam { # %pf = getparam($Pf);
-    my ($Pf) = @_ ;
-    my ($subject);
-    my (%pf) ;
-    
-    $pf{archivebase}		= pfget( $Pf, "archivebase" );
-    $pf{purgatory}	    	= pfget( $Pf, "purgatory" );
-    
-    $pf{dbops}     		    = pfget( $Pf, "dbops" );
-    
-    $pf{deploy_mail} 		= pfget( $Pf, "deploy_mail" );
-    $pf{prob_mail}    		= pfget( $Pf, "prob_mail" );
-    
-    if ($opt_V) {
-        elog_notify("\narchivebase      $pf{archivebase}");
-        elog_notify("purgatory        $pf{purgatory}" );
-        elog_notify("dbops            $pf{dbops}" );
-        elog_notify("deploy_mail      $pf{deploy_mail}" );
-        elog_notify("prob_mail        $pf{prob_mail}\n\n" );
-    }
-            
-    return (%pf) ;
-}
-
- 

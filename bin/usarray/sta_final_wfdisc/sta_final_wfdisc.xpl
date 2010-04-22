@@ -28,6 +28,7 @@
     use Datascope ;
     use archive;
     use timeslice ;
+    use utilfunct ;
     use orb ;
     
     our ($pgm,$host);
@@ -35,11 +36,10 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems);
-    my ($stime,$sta,$now,$dbops);
-    my (@db,@dbdeploy);
-    my ($row,$nrows,$rtsta);
-    my (%pf);
+    my ( $Pf, $cmd, $dbops, $debug, $now, $nrows, $problems, $row, $rtsta, $sta, $stime ) ; 
+    my ( $subject, $usage, $verbose );
+    my ( @db, @dbdeploy );
+    my ( %pf );
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -65,12 +65,13 @@
 
     $Pf         = $opt_p || $pgm ;
         
-    %pf = getparam($Pf);
-
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
     
+    %pf = getparam($Pf, $verbose, $debug);
+    makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
+
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
         &sendmail($subject, $opt_m) if $opt_m ; 
@@ -141,48 +142,3 @@
     exit(0);
 }
 
-sub getparam { # %pf = getparam($Pf);
-    my ($Pf) = @_ ;
-    my ($subject);
-    my (%pf) ;
-    
-    $pf{balerdirbase}		= pfget( $Pf, "balerdirbase" );
-    $pf{archivebase}		= pfget( $Pf, "archivebase" );
-    $pf{bhdata_dir}			= pfget( $Pf, "bhdata_dir" );
-    $pf{sohdata_dir}		= pfget( $Pf, "sohdata_dir" );
-    
-    $pf{dbops}     		    = pfget( $Pf, "dbops" );
-
-    $pf{dbpath}     		= pfget( $Pf, "dbpath" );
-    $pf{dbidserver} 		= pfget( $Pf, "dbidserver" );
-    $pf{dblocks}    		= pfget( $Pf, "dblocks" );
-    
-    $pf{wfclean}     		= pfget( $Pf, "wfclean" );
-    $pf{msd2db_pat} 		= pfget( $Pf, "msd2db_pat" );
-    $pf{rt_sta_dir}    		= pfget( $Pf, "rt_sta_dir" );
-    
-    $pf{deploy_mail} 		= pfget( $Pf, "deploy_mail" );
-    $pf{prob_mail}    		= pfget( $Pf, "prob_mail" );
-    
-    if ($opt_V) {
-        elog_notify("\nbalerdirbase     $pf{balerdirbase}");
-        elog_notify("archivebase      $pf{archivebase}");
-        elog_notify("bhdata_dir       $pf{bhdata_dir}");
-        elog_notify("sohdata_dir      $pf{sohdata_dir}");
-        elog_notify("dbops            $pf{dbops}" );
-        elog_notify("dbpath           $pf{dbpath}" );
-        elog_notify("dbidserver       $pf{dbidserver}" );
-        elog_notify("dblocks          $pf{dblocks}\n\n" );
-        elog_notify("wfclean          $pf{wfclean}" );
-        elog_notify("msd2db_pat       $pf{msd2db_pat}" );
-        elog_notify("rt_sta_dir       $pf{rt_sta_dir}\n\n" );
-        elog_notify("deploy_mail      $pf{deploy_mail}" );
-        elog_notify("prob_mail        $pf{prob_mail}\n\n" );
-    }
-    
-    makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
-        
-    return (%pf) ;
-}
-
- 

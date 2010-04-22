@@ -19,12 +19,17 @@
 #
 #   DONE	need to put in a check that all expected channels operate from about the deployment dates
 #
+#   check for pffile existance
+#   put option in to skip gap filling
+#   graceful way to handle orb lag error?
+#
 #
     require "getopts.pl" ;
     use strict ;
     use Datascope ;
-    use archive;
+    use archive ;
     use timeslice ;
+    use utilfunct ;
     use orb ;
     
     our ($pgm,$host);
@@ -32,19 +37,16 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$problem_check);
-    my ($stime,$table,$net,$sta,$chan,$subset);
-    my ($dir,$base,$suf,$dirname,$dbname,$orb,$orbname);
-    my ($mintime,$maxtime,$year,$mseedfile,$sync_file,$nsync,$sync_dir,$sync_dfile);
-    my ($n,$row,$nrows,$time,$endtime,$tgap,$gsta,$gchan,$rtsta,$equip_install,$equip_remove);
-    my ($ref,$line,$st1,$st2,$st3,$dep,$dbsize,$orbsize,$orbstat,$orbclient,$comment);
-    my ($old,$new,$max,$range,$mlag,$thread,$pktid,$who,$what);
-    my ($when,$found_sf,$found_oc,$found_xf,$client);
-    my (@dbtest,@db,@dbops,@dbdmcfiles,@dbdeploy,@dbscrdmc,@dbdeployment);
-    my (@dbgwf,@dbgap,@dbwfchk,@dbscr,@dbtmp);
-    my (@laggards,@rows,@dirs,@files,@chans,@msd,@line,@mseedfiles);
-    my (@dbsize,@pffiles,@clients);
-    my (%pf);
+    my ( $usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$problem_check );
+    my ( $base, $chan, $comment, $dbname, $dbsize, $dep, $dir, $dirname, $endtime ) ;
+    my ( $equip_install, $equip_remove, $gchan, $gsta, $line, $max, $maxtime, $mintime, $mlag ) ;
+    my ( $mseedfile, $n, $net, $new, $nrows, $nsync, $old, $orb, $orbclient, $orbname, $orbsize ) ;
+    my ( $pktid, $range, $ref, $row, $rtsta, $st1, $st2, $st3, $sta, $stime, $subset, $suf ) ;
+    my ( $sync_dfile, $sync_dir, $sync_file, $table, $tgap, $thread, $time, $what, $who, $year );
+    my ( @chans, @db, @dbdeploy, @dbdeployment, @dbdmcfiles, @dbgap, @dbgwf, @dbops, @dbscr ) ;
+    my ( @dbscrdmc, @dbsize, @dbtest, @dbtmp, @dbwfchk, @dirs, @files, @laggards, @line ) ;
+    my ( @msd, @mseedfiles, @pffiles, @rows );
+    my ( %pf );
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -70,12 +72,16 @@
     
     $orbname   = shift @ARGV;
     
-    %pf = getparam($Pf);
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
     $orbclient  = $opt_c || "orbmsd2days" ;
+    
+    
+    %pf = getparam($Pf, $verbose, $debug) ;
+    makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
+
 #
 #  check system
 #
@@ -671,39 +677,6 @@
     exit(0);
 }
 
-sub getparam { # %pf = getparam($Pf);
-    my ($Pf) = @_ ;
-    my ($ref);
-    my (@list) ; 
-    my (%pf) ;
-    
-    $pf{archivebase}		= pfget( $Pf, "archivebase" );
-    
-    $pf{dbops}     		    = pfget( $Pf, "dbops" );
-
-    $pf{non_wf_chan_proxy}  = pfget( $Pf, "non_wf_chan_proxy" );
-    $ref					= pfget( $Pf, "non_wf_chan" );
-    @list					= @$ref ; 
-    
-    $pf{rt_sta_dir}    		= pfget( $Pf, "rt_sta_dir" );
-    $pf{sync_dir}    		= pfget( $Pf, "sync_dir" );
-    
-    $pf{deploy_mail} 		= pfget( $Pf, "deploy_mail" );
-    
-    if ($opt_V) {
-        elog_notify("\narchivebase          $pf{archivebase}");
-        elog_notify("dbops                $pf{dbops}" );
-        elog_notify("non_wf_chan_proxy    $pf{non_wf_chan_proxy}" );
-        elog_notify("non_wf_chan          @list" );
-        elog_notify("rt_sta_dir           $pf{rt_sta_dir}\n\n" );
-        elog_notify("sync_dir             $pf{sync_dir}\n\n" );
-        elog_notify("deploy_mail          $pf{deploy_mail}" );
-    }
-    
-    makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
-        
-    return (%pf) ;
-}
 
 sub orbcheck { # ($orbsize,$problems) = orbcheck($orb,$orbname,$orbclient,$problems);
     my ($orb,$orbname,$orbclient,$problems) = @_ ;
