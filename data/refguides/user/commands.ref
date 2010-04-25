@@ -257,6 +257,7 @@ cmpdirs [options] dir1 dir2
 -C	ignore CVS directories
 -i re	ignore files/directories matching re
 -l	list format output
+-s	compare sizes only, error if difference > 10%
 -t	compare only text files
 -r	recursive
 -v	more verbose
@@ -389,6 +390,7 @@ certify [options] [dir|testid ...]
 -s	stop at first failure
 -u	update correct results from the output of this run
 -U	run the executable under ups 
+-w msg  update certify.updates with the specified msg
 -x path	add path to front of PATH environment variable
 -X results	add a line for each test to results file
 -Z	combine stderr/stdout into single output file

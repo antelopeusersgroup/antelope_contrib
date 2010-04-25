@@ -524,6 +524,9 @@ int elog_query ( enum Elog_code code, int severity, void **value )
 int elog_set ( enum Elog_code code, int severity, void *value )
     set various parameters for elog interface
 
+void show_stack_trace ( void )
+    print a stack trace from the current execution location
+
 <subsection Filename and Path Manipulation>
 <cdeclarations>
 int abspath ( char *relp, char *absp )
@@ -717,7 +720,7 @@ void isort ( char *a, long n, int size, int (*cmp)(char*, char*, void*), void *p
     sort list a of n elements each size bytes using the comparison function cmp and
     an insertion sort implementation
 
-void quicksort ( char *a, long n, int size, int (*cmp)(char*, char*, void*), void *pvt )
+void quicksort ( void *a, long n, int size, int (*cmp)(char*, char*, void*), void *pvt )
     sort list a of n elements each size bytes using the comparison function cmp and
     a quick sort implementation
 
@@ -1260,7 +1263,7 @@ double disordered()
 
 int legit_ip ( char *pfname, unsigned int ip, char **limit )
 int legit_ip_pf ( Pf *pf, unsigned int ip, char **limit )
-int legit_fd (char *pfname, Pf **pf, int fd, char **limit )  
+int legit_fd (char *pfname, Pf *pf, int fd, char **limit )  
     compare input ip address to list of valid_ip_addresses (and optional
     list of rejected_ip_addresses) in pf,
     returning 1 if valid, and remainder of matching line in limit

@@ -232,6 +232,7 @@ orb2disk [options] orb directory [start-time [end]]
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
 -n n	stop after n packets
+-N pktspersegment	specify max packets per segment
 -p period	approximate time length of files
 -s size	size limit for directory
 -v	more verbose
@@ -609,13 +610,12 @@ orb2orb [options] in out [start [period|end]]
 -c suffix	convert packets to suffix format
 -C rate	throttle to specified output rate: kbytes/sec or (with p suffix) pkts/sec.
 -d	print hex dump of each packet 
+-D seconds	delay copying packets for specified seconds
 -f	for file input, do not adjust time tags, and output packets as quickly as possible
 -i secs	save state file every secs seconds
--l	loop repeatedly over input forb(5) file
 -m re1	read only packets which match re1 
 -n n	stop after n packets
 -p pf	alternate parameter file
--R r	when saving to file, use forb(5) format r
 -r re2	don't read packets matching re2
 -S filename	save state in filename
 -s p	start after pktid #p
@@ -1269,7 +1269,6 @@ forbserver [options] filename
 -[a|b|f|x]	specify format in output forb(5) file
 -c   	adjust time tags to the current time.
 -s	meter out packets at real time rate
--U	run elog_debugger() to start a debugger on the process.
 -v	more verbose
 -w	overwrite existing file instead of appending
 </options>
