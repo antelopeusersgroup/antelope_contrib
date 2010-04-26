@@ -1,0 +1,23 @@
+# WR-1 seismometer
+#
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 7                   num of zeroes
+# 3                   num of poles
+# 1.0                 gain
+# sensitivity   160.0 v/m/sec
+theoretical   1 instrument   paz    mi-appnote-39c
+1.49E+10
+7             Poles
+-8.88E+01     8.88E+01    0.0000E+00    0.0000E+00
+-8.88E+01    -8.88E+01    0.0000E+00    0.0000E+00
+-1.00E+03     0.00E+00    0.0000E+00    0.0000E+00
+-1.03E+03     0.00E+00    0.0000E+00    0.0000E+00
+-3.14E-01     0.00E+00    0.0000E+00    0.0000E+00
+-6.45E+00     0.00E+00    0.0000E+00    0.0000E+00
+-3.00E-01     0.00E+00    0.0000E+00    0.0000E+00
+3             Zeros
+ 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+-7.2500E+00    0.0000E+00    0.0000E+00    0.0000E+00
+ 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
