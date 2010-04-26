@@ -5,7 +5,7 @@ Seismic Source Location
 dbloc2 [-r] [-p pf] database
     interactive hypocenter location
 
-dbloc_snapshot [-f output-file] [-v] database
+dbloc_snapshot [-d maxdb] [-f output-file] [-l maxlog] [-v] database
     creates snapshot of dbloc2 directory for problem resolution
 
 private dbloc_assoc arrival_db assoc_db origin_db [origin_db]
