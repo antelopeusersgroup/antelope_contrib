@@ -100,7 +100,7 @@
 #  loop over dbdlcalwf, keeping for processing any waveforms which have not already been processed  
 #    
     if ($nrows) {
-        compress_wfdisc("/tmp/tmp_cal_wf\_$$","600",$verbose);
+        compress_wfdisc( "/tmp/tmp_cal_wf\_$$", "600", 0, $verbose, $debug );
     
         @dbtmp = dbopen("/tmp/tmp_cal_wf\_$$","r+");
         @dbtmp = dblookup(@dbtmp,0,"wfdisc",0,0);
