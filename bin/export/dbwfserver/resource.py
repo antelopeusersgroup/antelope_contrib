@@ -454,7 +454,11 @@ class QueryParser(resource.Resource):
 #{{{
                 if len(args) == 3:
                     url_params['sta'] = [args[1]]
-                    url_params['orid'] = args[2]
+                    if self.events(args[2]):
+                        url_params['orid'] = args[2]
+                    else:
+                        url_params['orid_time'] = args[2]
+
                     tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
                 elif len(args) == 4:

@@ -182,15 +182,16 @@ class Events():
 
         results = defaultdict()
         
-        start = int(orid_time)-window
-        end   = int(orid_time)+window
+        start = float(orid_time)-float(window)
+        end   = float(orid_time)+float(window)
 
         db = Dbptr(self.db)
 
-        db.process([ 
-            'dbopen origin' 
-            'dbsubset time > %f && time < %f' % (start,end)
-            ])
+        db.lookup( table='origin')
+
+        db.process([ 'dbopen origin' ]) 
+        db.process([ 'dbsubset time >= %f' % start ])
+        db.process([ 'dbsubset time <= %f' % end ])
 
         if db.query(dbRECORD_COUNT):
 

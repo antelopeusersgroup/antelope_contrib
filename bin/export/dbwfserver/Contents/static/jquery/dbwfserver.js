@@ -152,7 +152,7 @@ PlotSelect = {
 
         dataObj = {
             type:PlotSelect.type,
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             amount:PlotSelect.amount
@@ -179,7 +179,7 @@ PlotSelect = {
         // {{{ Change colorscheme
 
         dataObj = {
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             amount:PlotSelect.amount
@@ -217,7 +217,7 @@ PlotSelect = {
 
         dataObj = {
             type:PlotSelect.type,
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             amount:PlotSelect.amount
@@ -245,7 +245,7 @@ PlotSelect = {
         // {{{ Dynamic type change data query
 
         dataObj = {
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             amount:PlotSelect.amount
@@ -273,7 +273,7 @@ PlotSelect = {
         // {{{ Reset plot
         dataObj = {
             type:PlotSelect.type,
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             amount:'all'
@@ -349,7 +349,7 @@ PlotSelect = {
 
         // {{{ Future data
 
-        var firstchan = PlotSelect.stacode[0]+'_'+PlotSelect.chans[0]; // Get the axis range from one plot
+        var firstchan = PlotSelect.stas[0]+'_'+PlotSelect.chans[0]; // Get the axis range from one plot
         var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
         var xaxis = chanplot.getAxes().xaxis;
         var futureDelta = PlotSelect.tickTranslator( xaxis.tickSize );
@@ -358,7 +358,7 @@ PlotSelect = {
 
         dataObj = {
             type:PlotSelect.type,
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             ts:x1,
@@ -380,7 +380,7 @@ PlotSelect = {
 
         // {{{ Past data
 
-        var firstchan = PlotSelect.stacode[0]+"_"+PlotSelect.chans[0]; // Get the axis range from one plot
+        var firstchan = PlotSelect.stas[0]+"_"+PlotSelect.chans[0]; // Get the axis range from one plot
         var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
         var xaxis = chanplot.getAxes().xaxis;
         var pastDelta = PlotSelect.tickTranslator( xaxis.tickSize );
@@ -389,7 +389,7 @@ PlotSelect = {
 
         dataObj = {
             type:PlotSelect.type,
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             ts:x1,
@@ -441,7 +441,7 @@ PlotSelect = {
 
         dataObj = {
             type:PlotSelect.type,
-            sta:PlotSelect.stacode,
+            sta:PlotSelect.stas,
             orid:PlotSelect.orid,
             orid_time:PlotSelect.orid_time,
             amount:PlotSelect.amount,
@@ -454,7 +454,7 @@ PlotSelect = {
         if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
         if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
         if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-        if( PlotSelect.sta    !== undefined ) { dataObj['sta']    = PlotSelect.stacode; }
+        if( PlotSelect.sta    !== undefined ) { dataObj['sta']    = PlotSelect.stas; }
 
         PlotSelect.getData(dataObj);
 
@@ -524,7 +524,7 @@ PlotSelect = {
 
         // Define globally for app
         PlotSelect.type      = dataargs.type;
-        PlotSelect.stacode   = dataargs.sta;
+        PlotSelect.stas      = dataargs.sta;
         PlotSelect.chan      = dataargs.chan;
         PlotSelect.ts        = dataargs.ts;
         PlotSelect.te        = dataargs.te;
@@ -537,7 +537,7 @@ PlotSelect = {
         $.ajax({
             type:'get',
             dataType:'json',
-            url:"/data/"+PlotSelect.type+"/"+PlotSelect.stacode+"/"+PlotSelect.ts+"/"+PlotSelect.te ,
+            url:"/data/"+PlotSelect.type+"/"+PlotSelect.stas+"/"+PlotSelect.ts+"/"+PlotSelect.te ,
             //data: dataargs,
             success:PlotSelect.setData,
             error:PlotSelect.errorResponse
@@ -565,6 +565,7 @@ PlotSelect = {
             return;
         }
 
+        PlotSelect.stas = resp.sta;
         PlotSelect.chans = resp.chan;
         PlotSelect.chan_plot_obj = {}; // A mapping from a named channel to it's associated 'flot' plot.
         PlotSelect.orid = resp.orid;
