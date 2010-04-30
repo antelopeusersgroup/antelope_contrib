@@ -29,4 +29,8 @@ DEMEAN
     Demean waveform
 G fac1 [fac2 [...]] [segtype]	
     Apply gain factor
+SPF type1 params1 [...] [,type2 params2 [...] [, ...]]
+    Filter specified as S-domain polynomial factors
+DECIMATE fir_file
+    Decimation FIR filter
 </List>
