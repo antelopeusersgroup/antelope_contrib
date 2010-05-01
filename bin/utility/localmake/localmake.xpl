@@ -101,6 +101,20 @@ foreach $step ( @steps ) {
 		elog_die( "Command 'make clean' failed in directory '$dir'\n" );
 	}
 
+	$cmd = "make Include 2>&1 | cf";
+
+	if( $opt_v ) {
+		
+		elog_notify( "Executing '$cmd'\n" );
+	}
+
+	$rc = system( $cmd );
+
+	if( $rc != 0 ) {
+
+		elog_die( "Command 'make Include' failed in directory '$dir'\n" );
+	}
+
 	$cmd = "make install 2>&1 | cf";
 
 	if( $opt_v ) {

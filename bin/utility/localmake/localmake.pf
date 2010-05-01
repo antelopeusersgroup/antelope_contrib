@@ -79,6 +79,16 @@ modules &Arr{
 			man/man3/glp_matrix_utils.3
 		}
 	}
+	matlab_antelope &Arr{
+		build &Tbl{
+			src/contrib/data/matlab
+		}
+	}
+	php_antelope &Arr{
+		build &Tbl{
+			src/contrib/data/php
+		}
+	}
 	python_antelope &Arr{
 		build &Tbl{
 			src/contrib/data/python
