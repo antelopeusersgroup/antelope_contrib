@@ -3,11 +3,13 @@ DATA= \
         matlab.ref \
 	perl.ref \
 	perlDatascope.ref \
-	perlTrace.ref \
-	perlScg.ref \
-	perlHistory.ref \
-	perlVector.ref \
 	perlGrid.ref \
+	perlHistory.ref \
+	perlResponse.ref \
+	perlSac.ref \
+	perlScg.ref \
+	perlTrace.ref \
+	perlVector.ref \
 	perltkBplot.ref \
 	php.ref \
 	scripting.ref \
