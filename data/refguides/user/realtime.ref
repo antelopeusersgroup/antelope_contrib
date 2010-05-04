@@ -776,22 +776,6 @@ orbwfproc [options] dbmaster [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -p pf
 </options>
 
-orbmag [options] orbwf orbdb dbname
-    real time magnitude computation
-<options>
--start {pktid|time|OLDEST|NEWEST}
--number number
--nowait
--state file	save state in file
--p pf
--auth_expr auth_expr
--target_orbmag torbmag
--make_magtables
--use_mean
--use_if_not_associated
--use_if_not_defining
-</options>
-
 orbampmag  [options] orbwf orbdb dbname
     real time computation of mb, ML or Ms magnitudes
 <options>

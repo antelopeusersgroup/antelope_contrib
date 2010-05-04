@@ -53,20 +53,6 @@ dbevproc [options] dbin dbout
 -v
 </options>
 
-dbmag db orid author net
-    compute mb magnitude for origin orid (or "all") in db, saving result in netmag and origin with specified author 
-
-dbml [options] db [orid]
-    database Richter magnitude computation
-<options>
--v
--p pf
--use_if_not_associated
--use_if_not_defining
--make_magtables
--use_mean
-</options>
-
 dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]
     make map of events from database db centered on sta, origin orid, or lat:lon within radius of range degrees; -c starts interactive mode, ^C kills window
 
