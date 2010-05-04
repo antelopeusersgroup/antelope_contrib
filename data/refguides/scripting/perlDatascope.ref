@@ -387,6 +387,9 @@ closering(rb)
 pushring(rb, time, value)
     add time/value pair to ring (in time order)
 
+cramring(rb, time, value, "collapse") 
+    add time/value pair to ring according to algorithm collapse
+
 getring(rb, i)
     return the i'th time/value pair from the ring; 
     0 is the most recent pair
@@ -412,6 +415,12 @@ countring(rb)
 findring(rb, value, tdelta)
      findring searches the ring buffer rb over the specified time
      period tdelta for the specific value.
+
+meanring(rb, tdelta) ;
+    returns #pts, mean and standard deviation for latest tdelta seconds
+
+linearfitring($rb, $tdelta) 
+    returns #pts, slope, y-intercept and correlation coefficient for latest tdelta seconds
 
 <subsection Time Conversion>
 

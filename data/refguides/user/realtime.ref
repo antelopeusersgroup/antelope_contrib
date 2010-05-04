@@ -79,6 +79,9 @@ dbevents [options] dbname [start [end]]
 -pf pfname	parameter file name
 </options>
 
+dbevents_new dbname
+    preliminary new version of dbevents
+
 dlreport [options] { -S | -E } db 
     summarize dlevents in mailable report 
 <options>
@@ -218,9 +221,6 @@ orbserver [options] pf
 -s size	ringsize, eg 150M
 -v[v]	verbose/doubly verbose
 </options>
-
-orbserver64 [options] pf
-    same as orbserver, but allows much larger ring buffers (32 bit Solaris only)
 
 diskserver [-p pf] [-v] dir[:port]
      emulate read-only orbserver on port using directory dir of special forb files
@@ -937,6 +937,24 @@ orbdisp [options] orbserver [start [range|end]]
 
 <subsection Saving Orb Data in Database>
 <commands>
+
+cdorb2db [options] orb db [start [end|period]]
+    copy gappy/out of order (CD1) waveform data from orbserver orb into integer waveform files of database db (starting at time start through end or for stated period)
+<options>
+-c re	save channel matching regular expression re
+-m re	select packets matching regular expression re
+-r re	reject packets matching regular expression re
+-p pf	specify parameter file
+-S file	save state in file
+-t timetags	create file of time tags from input packets
+-v	more verbose
+-vv	show every packet read.
+-w wfname	specify pattern for waveform file names
+</options>
+
+db2msd [-t ndays] [-1nv] db
+     convert older waveform files to miniseed in place, used with cd2orb. with -1, use steim 1 compression
+
 orb2db [options] orb db [start [end|period]]
     copy waveform data from orbserver orb into database db (starting at time start through end or for stated period)
 <options>
@@ -956,23 +974,6 @@ orb2db [options] orb db [start [end|period]]
 
 orb2db_flush [-nv] [-m match] [-r reject] orb
     cause orb2db to write out all waveform data for selected packets
-
-cdorb2db [options] orb db [start [end|period]]
-    copy gappy/out of order (CD1) waveform data from orbserver orb into integer waveform files of database db (starting at time start through end or for stated period)
-<options>
--c re	save channel matching regular expression re
--m re	select packets matching regular expression re
--r re	reject packets matching regular expression re
--p pf	specify parameter file
--S file	save state in file
--t timetags	create file of time tags from input packets
--v	more verbose
--vv	show every packet read.
--w wfname	specify pattern for waveform file names
-</options>
-
-db2msd [-t ndays] [-1nv] db
-     convert older waveform files to miniseed in place, used with cd2orb. with -1, use steim 1 compression
 
 orb2dbt [options] orb dbout [orbout]
     read database packets from an orb and write to database
