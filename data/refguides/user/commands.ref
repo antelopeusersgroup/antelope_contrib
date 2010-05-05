@@ -157,6 +157,9 @@ pfverify [-v] [pf-files]
 pfwhich pf 
     show what files are read for pf
 
+simple_ringstat [-i] simple-ring-file
+    interactively inspect simple ring buffer (such as pktmon creates)
+
 ttcalc method model phase distance depth
     print travel time and slowness calculation results for 
     method, model, and phases for an event at distance and depth.
