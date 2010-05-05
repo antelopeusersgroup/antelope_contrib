@@ -557,7 +557,6 @@ orb2ntp [-d delay] [-f freq] [-m match] [-n navg] [-o old] [-r reject] [-u unit]
 rtlogs orb
     display log messages from orbserver orb
 
-
 <subsection Other Orb Writers>
 <commands>
 pf2orb [-s sta] [-p subcode] pfile orb
@@ -944,6 +943,9 @@ orbdisp [options] orbserver [start [range|end]]
 -w t	make time window t seconds
 </options>
 
+tkorblag orb
+    graphical view of read client latency in orb 
+
 <subsection Saving Orb Data in Database>
 <commands>
 
@@ -1039,6 +1041,16 @@ orbmsd2days [options] orb
 -e et	save data only when block start time < et
 -w wf	pattern for the output miniseed files
 -v	Be more verbose.
+</options>
+
+q330logs2db  [options] orb db
+    add key q330 orb log output to db table
+<options>
+-p pf	parameter file
+-v	verbose 
+-l match_logname	regex for limiting log review
+-s {OLDEST|start_time} 	start here rather than newest packet
+-S state	statefile 
 </options>
 
 <subsection Orb Alarms>
