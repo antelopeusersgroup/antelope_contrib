@@ -346,9 +346,10 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -S statefile	
 -noipresolv	do not try to resolve ip addresses
 -v	verbose
+-poc_vampire	get pocs from other port
 </options>
 
-q330pocd [-i ip] [-p port] [-noipresolv] targetname orb
+q330pocd [options] targetname orb
     receive POC messages and save to orb
 <options>
 -i ip	bind to one of several local ip addresses
