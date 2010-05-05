@@ -22,7 +22,7 @@ dmcgap2db [-v] [-V] [-p [-D | -Y]] [-I idserver] [-P dbpath] [-d directory_base]
 fill_gaps [-v] [-V] [-T] [-n net ] [-r reject_stas ] [-s sta_match ] [-b clean_baler_db ] [-o dbout ] dbin [dmc_gap_db] start_time end_time
     build  database combining rt data with baler data to fill gaps
     
-gap_status [-v] [-n net ] [-s sta_match ] [-c chan_match ] gap_database baler_list_db recovered_data_db [filled_data_db]
+gap_status [-v] [-V] [-n net ] [-s sta_match ] [-c chan_match ] gap_database baler_list_db recovered_data_db [filled_data_db]
     identify status of gaps in realtime database wrt balers and recovered data
 
 replay_data [-v] [-V] [-n] [-d tmpdb] [-s start_time] [-t timestep] db orb

@@ -17,7 +17,7 @@ tksend [options] app_name [message]
 <options>
 -i	read stdin for more messages
 -p	wait for and print returned messages
--verbose	be more verbose
+-v	be more verbose
 -validate	validate application name and return disposition and version number
 -version {3|4|auto}
  	select older or newer tksend protocol; default is auto{matic}
@@ -51,6 +51,7 @@ private check_antelope_installation
 antelope_update [options] [url]
     update local antelope installation from standard BRTT patches or alternative url
 <options>
+-d 	additional logging 
 -i	ask before installing each patch
 -l	just list unapplied patches 
 -L	list all patches to terminal with '*' if patch is unapplied 
@@ -146,6 +147,7 @@ pfecho [options] name [ param ...]
 -i	interactive mode
 -q	don't echo key
 -R	show parameters overridden by later parameter files
+-v	verbose	
 -w	show all pf files read
 -W	show all filenames examined (may not exist)
 -x	expand all references inside pf
@@ -361,8 +363,14 @@ installman [-nv] manpage dir
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon
 
-fixman [-BInd] pages
+fixman [options] pages
     check man page, correct some problems, and suggest other changes
+<options>
+-B	don't emphasize function names
+-d	show changes	
+-I	don't emphasize parameters 
+-n	just show what would be changed
+</options>
 
 certify [options] [dir|testid ...]
     run regression tests 
