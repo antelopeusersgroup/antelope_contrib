@@ -12,6 +12,11 @@ DATA= \
 	perlVector.ref \
 	perltkBplot.ref \
 	php.ref \
+	python.ref \
+	pythonDatascope.ref \
+	pythonOrb.ref \
+	pythonPkt.ref \
+	pythonStock.ref \
 	scripting.ref \
 	scripting0.ref \
 	tcl.ref \

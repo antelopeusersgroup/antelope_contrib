@@ -370,6 +370,7 @@ fixman [options] pages
 -d	show changes	
 -I	don't emphasize parameters 
 -n	just show what would be changed
+</options>
 
 certify [options] [dir|testid ...]
     run regression tests 
