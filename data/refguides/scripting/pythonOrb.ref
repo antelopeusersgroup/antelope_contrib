@@ -61,14 +61,6 @@ orbping(orb)
 orb.ping()
     test if the specified orb responds; return version number.
 
-# orbwait(orb, re, mintime, timeout)
-#     wait for all reading clients of orb with program
-#     name which matches the regular expression re to have
-#     read packets younger than mintime. If timeout is
-#     non-zero, then orbwait return with an error code
-#     if the timeout expires before the specified program
-#     catches up.
-# 
 (pktid, srcname, pkttime, pkt, nbytes) = orbget(orbfd, which)
 (pktid, srcname, pkttime, pkt, nbytes) = orbfd.get(which)
     get single packet corresponding to which; this can be an
@@ -86,9 +78,6 @@ orb.ping()
     no packets have appeared in maxseconds. In this case,
     the returned pktid will be undef.
 
-# ($pkttime, $pkt, $nbytes) = orbgetstash(orb, srcname)
-#     get stash packet corresponding to srcname
-# 
 orbpkt_string(srcname, time, packet, nbytes)
     return forb(5) string representation of packet
 
@@ -96,21 +85,10 @@ orbput(orb, srcname, pkttime, pkt, nbytes)
 orb.put(srcname, pkttime, pkt, nbytes)
     put the specified packet onto the orb.
 
-# orbput_nolag(orb, srcname, pkttime, pkt, nbytes, lagparams)
-#     put the specified packet onto the orb, ensuring that
-#     no client matching the parameters in lagparams pf is too
-#     far behind
-# 
 orbputx(orb, srcname, pkttime, pkt, nbytes)
 orb.putx(srcname, pkttime, pkt, nbytes)
     put the specified packet onto the orb, with return acknowledgement
 
-# orbstashselect(orb,select)
-#     set the stash select parameter
-# 
-# ($name, $content, $desc) = suffix2pkttype(suffix)
-#     return name, content and description for packet type suffix.
-# 
 orbstat(orb)
 orb.stat()
     Get the standard status values from the orb; this

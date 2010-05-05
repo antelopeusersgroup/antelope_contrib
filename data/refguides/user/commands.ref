@@ -62,6 +62,7 @@ antelope_update [options] [url]
 -Q 	don't ask about stopping realtime systems (caveat emptor)
 -r id	specify a different antelope release   
 -t 	terminal mode (no gui)
+-d 	additional logging 
 -v 	verbose
 </options>
 
