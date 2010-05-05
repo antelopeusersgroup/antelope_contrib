@@ -348,12 +348,13 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -v	verbose
 </options>
 
-q330pocd [-i ip] [-p port] [-noipresolv] targetname orb
+q330pocd [options] targetname orb
     receive POC messages and save to orb
 <options>
 -i ip	bind to one of several local ip addresses
 -p port	specify alternative to port 2254
 -noipresolv	don't look up hostnames
+-poc_vampire	try to get pocs from other ports
 </options>
 
 q330_location [options] status_orb [cmd_orb] db
