@@ -74,6 +74,7 @@ if( defined( $ENV{'DISPLAY'} ) && $ENV{'DISPLAY'} =~ m@(.*\:.*)@ ) {
 	$ENV{'DISPLAY'} = $1;
 
 } else {
+
 	elog_die( "DISPLAY environment variable is defined and does not contain ':'. Failed taint-checking\n" );
 }
 
@@ -99,6 +100,9 @@ sub Tk::After::cancel
  my $w   = $obj->[0];
  if ($cancelid)
   {
+   if( defined( $w->{_TkValue_} ) && $w->{_TkValue_} =~ m@^(\..*)@ ) {
+      $w->{_TkValue_} = $1;
+   }
    $w->Tk::after('cancel'=> $cancelid) if Tk::Exists($w);
    delete $w->{_After_}{$cancelid} if exists $w->{_After_};
    $obj->[1] = undef;
@@ -129,6 +133,10 @@ sub rt::rtchildren {
         }
     }
    return @children ;
+}
+
+sub is_tainted {
+	return ! eval { eval("#" . substr(join("", @_), 0, 0)); 1 };
 }
 
 sub Usage {
