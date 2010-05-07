@@ -67,13 +67,13 @@ orb.ping()
     explicit pktid, or "ORBCURRENT", "ORBPREV", "ORBNEXT",
     "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". 
 
-($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbreap(orb)
-($pktid, $srcname, $pkttime, $pkt, $nbytes) = orb.reap()
+(pktid, srcname, pkttime, pkt, nbytes) = orbreap(orb)
+(pktid, srcname, pkttime, pkt, nbytes) = orb.reap()
     get the next packet from the orb; this is the fastest,
     most efficient way of reading packets.
 
-($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbreap_timeout(orb, maxseconds)
-($pktid, $srcname, $pkttime, $pkt, $nbytes) = orb.reap_timeout(maxseconds)
+(pktid, srcname, pkttime, pkt, nbytes) = orbreap_timeout(orb, maxseconds)
+(pktid, srcname, pkttime, pkt, nbytes) = orb.reap_timeout(maxseconds)
     get the next packet from the orb, but return early if
     no packets have appeared in maxseconds. In this case,
     the returned pktid will be undef.
@@ -105,7 +105,7 @@ when        who
 
 (when, clients) = orbclients(orb)
 (when, clients) = orb.clients()
-    $when is scalar; @clients is list of client
+    when is scalar; clients is list of client
     objects, one object per client. Each object has the
     following methods:
 <example>
@@ -120,9 +120,9 @@ reject      select      started
 thread      what        who         
 </example>
 
-orbsources(orb)
-orb.sources()
-    return (when, sources). when is scalar; sources is list of source
+(when, sources) = orbsources(orb)
+(when, sources) = orb.sources()
+    when is scalar; sources is list of source
     dictionaries,  one  dictionary  per source.  Each dictionary has the
     following keys:
 <example>

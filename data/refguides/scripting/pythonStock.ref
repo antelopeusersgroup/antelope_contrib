@@ -10,9 +10,9 @@ from antelope.stock import *
 ElogException
     base class for Elog-facility exceptions thrown by 
     Antelope Python interfaces, with attributes
-    e.severity (ELOG_LOG, ELOG_NOTIFY, ELOG_COMPLAIN,
-    ELOG_DIE, ELOG_ALERT, ELOG_FAULT, ELOG_DEBUGGING) 
-    and e.string
+    e.severity and e.string. The severity is one of
+    ELOG_LOG, ELOG_NOTIFY, ELOG_COMPLAIN, ELOG_DIE, 
+    ELOG_ALERT, ELOG_FAULT, ELOG_DEBUGGING
 
 ElogLog
     subclass of ElogException for elog_log messages
@@ -24,7 +24,7 @@ ElogComplain
     subclass of ElogException for elog_complain messages
 
 ElogDie
-    subclass of ElogException for elog_log messages
+    subclass of ElogException for elog_die messages
 
 elog_init (argv)
     initialize the elog message routines
