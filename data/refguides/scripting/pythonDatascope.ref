@@ -7,10 +7,10 @@ from antelope.datascope import *
 </man>
 
 <subsection Opening a Database>
-<function>
+<pythonfunction>
 
 dbopen (dbname, perm = 'r')
-Dbptr(dbname = path, perm = 'r')
+Dbptr(dbname, perm = 'r')
     return database pointer to the database
 
 Dbptr()

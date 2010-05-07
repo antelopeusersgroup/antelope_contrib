@@ -7,6 +7,7 @@ from antelope.stock import *
 </man>
 
 <subsection Error Handling>
+<pythonfunction>
 ElogException
     base class for Elog-facility exceptions thrown by 
     Antelope Python interfaces, with attributes

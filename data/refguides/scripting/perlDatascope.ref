@@ -484,7 +484,7 @@ r3mag(@x)
 r3dot(@x)
     returns the dot product of two 3-vectors
 
-r3norm
+r3norm(@x)
     returns the normalized 3-vector  
 
 r3cross(@x,@y)

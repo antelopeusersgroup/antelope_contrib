@@ -5,7 +5,7 @@ from antelope.Pkt import *
 <man>
 % man pythonPkt
 </man>
-<function>
+<pythonfunction>
 
 showPkt(srcname, pkttime, pkt, nbytes, mode = PKT_TERSE)
     print out packet summary, depending on mode:

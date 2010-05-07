@@ -460,7 +460,7 @@ k2cmd [options] orb target datalogger cmd
 -delayhangup delayhangup	delay digitizer hangup
 </options>
 
-q330util [options] {pollsn  q330tip | ping q330ip,lport,{info|<somestring>} | register q330ip,sn,lport | getconfig  q330ip,sn,lport,config | control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} | sauth q330ip,sn[,[port_1_auth[...]]] | sipaddr q330ip,sn,interface,newip | sbpwr q330ip,sn,interface,function,timeout | rqannc q330ip,sn | umsg q330ip,sn,lport,message | ident q330ip,sn[,tport[,lport]] | marmotfix q330ip,sn[,interface[,baudrate]]}
+q330util [options] cmd
     perform some utility functions for Q330
 <options>
 -port port	udp port
@@ -468,8 +468,23 @@ q330util [options] {pollsn  q330tip | ping q330ip,lport,{info|<somestring>} | re
 -auth auth	Q330 authorization code
 -sequence seq	starting sequence number for commands
 -timeout timeout	timeout for udp response
--i local_ip	address to binde local UDP sockets
+-i local_ip	address to bind local UDP sockets
 -pfout	display output in pf file format
+</options>
+    cmd is one of:
+<options>
+pollsn q330tip 
+ping q330ip,lport,{info|ECHO} 
+register q330ip,sn,lport 
+getconfig  q330ip,sn,lport,config 
+control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} 
+sauth q330ip,sn[,port_1_auth[...]] 
+sipaddr q330ip,sn,interface,newip 
+sbpwr q330ip,sn,interface,function,timeout 
+rqannc q330ip,sn 
+umsg q330ip,sn,lport,message 
+ident q330ip,sn[,tport[,lport]] 
+marmotfix q330ip,sn[,interface[,baudrate]]
 </options>
 
 qtcmd [options] cmdorb net_sta cmd [params]
