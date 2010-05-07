@@ -105,7 +105,7 @@ db.nojoin (db2, outer = False, pattern1 = None, pattern2 = None, name = None)
     return view of all rows in view db1 which don't join to db2. db2 may be a database pointer or table name
 
 dbprocess (db, commands)
-dbprocess (commands)
+db.process (commands)
     return new view which is the result of applying the dbprocess
     commands to the input view; possible operations are: dbopen,
     dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
