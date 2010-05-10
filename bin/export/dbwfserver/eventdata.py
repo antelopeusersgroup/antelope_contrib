@@ -201,6 +201,8 @@ class Events():
 
                 (orid,time) = db.getv('orid','time')
 
+                orid = isNumber(orid)
+                time = isNumber(time)
                 results[orid] = time
 
             return results
@@ -239,6 +241,14 @@ class Events():
             db.record = i
 
             (orid,time,lat,lon,depth,auth,mb,nass) = db.getv('orid','time','lat','lon','depth','auth','mb','nass')
+
+            orid  = isNumber(orid)
+            time  = isNumber(time)
+            lat   = isNumber(lat)
+            lon   = isNumber(lon)
+            depth = isNumber(depth)
+            mb    = isNumber(mb)
+            nass  = isNumber(nass)
 
             self.event_cache[orid] = {'time':time, 'lat':lat, 'lon':lon, 'depth':depth, 'auth':auth, 'mb':mb, 'nass':nass}
 
@@ -332,7 +342,7 @@ class Events():
         phases = defaultdict(dict)
 
         # Create a datascope OR statement
-        sta_str  = "|".join(sta)
+        sta_str  = "|".join(str(x) for x in sta)
 
         log.msg( sta_str )
 
@@ -410,54 +420,53 @@ class EventData():
         """
         Setting the metadata for the event.
         """
-        if url_data['orid_time']:
-            url_data['orid'] = events.time(url_data['orid_time']).keys()[0]
+        if 'orid' in url_data:
+            orid = isNumber(url_data['orid'])
+            if not orid in events.list() :
+                url_data['orid'] = events.time(orid)
+                url_data['time_start'] = orid
 
-
-        if url_data['orid']:
-            resp_data = {'metadata':events(url_data['orid'])}
-            url_data['orid_time'] = resp_data['metadata']['time']
+            res_data.update( {'metadata':events(orid)} )
+            res_data.update( {'orid':orid} )
 
         else:
             if config.verbose: log.msg( 'No orid passed - ignore metadata' )
 
-
         """
         Setting time window of waveform.
         """
-        mintime = isNumber(url_data['time_start'])
-        maxtime = isNumber(url_data['time_end'])
-
-        if url_data['orid_time'] and not mintime or not maxtime:
-
-            maxtime =  isNumber( url_data['orid_time'] + ( url_data['time_window']/2 ) )
-            mintime =  isNumber( url_data['orid_time'] - ( url_data['time_window']/2 ) )
-
+        if 'time_start' in url_data:
+            mintime = isNumber(url_data['time_start'])
         else:
+            mintime =  isNumber( res_data['metadata']['time'] - config.default_time_window )
 
-            log.msg("Just using mintime and maxtime for plotting")
+        if 'time_end' in url_data:
+            maxtime = isNumber(url_data['time_end'])
+        else:
+            maxtime =  isNumber( res_data['metadata']['time'] + config.default_time_window )
 
-        # Use either passed min and maxtimes, or orid_time generated equivalents
 
         if (not maxtime or maxtime == -1) or (mintime == -1 or not mintime):
             log.msg("Error in maxtime:%s or mintime:%s" % (maxtime,mintime))
+            res_data['error'] = ("Error in maxtime: %s or mintime:%s" % (maxtime,mintime))
             return  
 
         res_data.update( {'type':'waveform'} )
         res_data.update( {'time_start':mintime} )
         res_data.update( {'time_end':maxtime} )
-        res_data.update( {'time_window':url_data['time_window']} )
-        res_data.update( {'orid':url_data['orid']} )
-        res_data.update( {'orid_time':url_data['orid_time']} )
         res_data.update( {'sta':url_data['sta']} )
-        res_data.update( {'chan':url_data['chan']} )
 
-        if True:
+        if 'chans' in url_data:
+            res_data.update( {'chan':url_data['chans']} )
+        else:
+            res_data.update( {'chan':config.default_chans} )
 
-            log.msg('Getting phase arrival times')
+        if config.verbose: log.msg( '\n\nres_data object: %s' % res_data )
 
-            phase_arrivals = events.phases(url_data['sta'],mintime,maxtime)
-            res_data.update( {'phases':phase_arrivals } )
+        log.msg('Getting phase arrival times')
+
+        phase_arrivals = events.phases(url_data['sta'],mintime,maxtime)
+        res_data.update( {'phases':phase_arrivals } )
 
 
         for station in url_data['sta']:
@@ -470,7 +479,7 @@ class EventData():
                 log.msg('\n')
                 continue
 
-            for channel in url_data['chan']:
+            for channel in res_data['chan']:
                 if config.debug: log.msg("Now: %s %s" % (station,channel))
 
 
@@ -492,12 +501,12 @@ class EventData():
 
                 points = int( (maxtime-mintime)*res_data[station][channel]['metadata']['samprate'])
 
-                log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,url_data['canvas_size'],config.binning_threshold))
+                log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,config.canvas_size_default,config.binning_threshold))
 
                 if not points > 0:
                     res_data[station][channel]['data'] = ()
 
-                elif points <  (config.binning_threshold * url_data['canvas_size']):
+                elif points <  (config.binning_threshold * config.canvas_size_default):
 
                     try:
                         res_data[station][channel]['data'] = self.db.sample(mintime,maxtime,station,channel,False)
@@ -509,7 +518,7 @@ class EventData():
 
                 else:
 
-                    binsize = points/url_data['canvas_size']
+                    binsize = points/config.canvas_size_default
                     try:
                         res_data[station][channel]['data'] = self.db.samplebins(mintime, maxtime, station, channel, binsize, False)
                     except Exception,e:
@@ -533,121 +542,91 @@ class EventData():
             http://localhost:8008/data?type=coverage&sta=113A&chan=BHZ
 
         """
-        log.msg("Getting segment for:")
-        if 'sta' in params:
-            sta = params['sta']
-            log.msg("\tsta:\t%s" % str(sta))
-        else:
-            sta = None
-            log.msg("\tsta:\tNone")
+        sta_str  = ''
+        chan_str = ''
+        res_data = defaultdict(dict)
 
-        if 'chan' in params:
-            chan = params['chan']
-            log.msg("\tchan:\t%s" % str(chan))
-        else:
-            chan = None
-            log.msg("\tchan:\tNone")
+        res_data.update( {'type':'coverage'} )
+        res_data.update( {'format':'bars'} )
 
-        if 'start' in params:
-            start = params['start']
-            log.msg("\tstart:\t%s" % start)
-        else:
-            start = None
-            log.msg("\tstart:\tNone")
-
-        if 'end' in params:
-            end = params['end']
-            log.msg("\tend:\t%s" % end)
-        else:
-            end = None
-            log.msg("\tend:\tNone")
-
-        sta_string = ''
-        chan_string = ''
-        response_data = defaultdict(dict)
-
-        if sta:
-            for station in sta:
-                if sta_string: sta_string = sta_string + '|'
-                sta_string = sta_string + station
-        else:
-            sta_string = '.*'
-
-        if chan:
-            for channel in chan:
-                if chan_string: chan_string = chan_string + '|'
-                chan_string = chan_string + channel
-        else:
-            chan_string = '.*'
+        res_data['sta'] = []
+        res_data['chan'] = []
 
         db = Dbptr(self.db)
         db.lookup(table="wfdisc")
 
-        if config.verbose: log.msg("\tdbsubset: sta =~/%s/ && chan =~/%s/" % (sta_string, chan_string))
-        db.subset("sta =~/%s/ && chan =~/%s/" % (sta_string, chan_string))
+        if 'sta' in params:
+            sta_str  = "|".join(str(x) for x in params['sta'])
+            db.subset("sta =~/%s/" % sta_str)
+            log.msg("\n\nCoverage subset on sta =~/%s/ " % sta_str)
 
-        if start:
-            if config.verbose: log.msg("\tdbsubset: endtime >= %s" % start)
-            db.subset("endtime >= %s" % start)
+        if 'chans' in params:
+            chan_str  = "|".join(str(x) for x in params['chans'])
+            db.subset("chan =~/%s/" % chan_str)
+            log.msg("\n\nCoverage subset on chan =~/%s/ " % chan_str)
 
-        if end:
-            if config.verbose: log.msg("\tdbsubset: time <= %s" % end)
-            db.subset("time <= %s" % end)
+        if 'time_start' in params:
+            db.subset("time >= %s" % params['time_start'])
+            log.msg("\n\nCoverage subset on time >= %s " % params['time_start'])
+
+        if 'time_end' in params:
+            db.subset("time <= %s" % params['time_end'])
+            log.msg("\n\nCoverage subset on time_end <= %s " % params['time_end'])
 
         if not db.query(dbRECORD_COUNT):
             log.msg("\tRecords on DB:\t%s" % db.query(dbRECORD_COUNT))
-            log.msg('No records on subset for sta:%s chan:%s st:%s et:%s' % (sta_string,chan_string,start,end))
-            response_data.update( {'time_start':start} )
-            response_data.update( {'time_end':end} )
-            response_data.update( {'sta':sta} )
-            response_data.update( {'chan':chan} )
-            return response_data
+            log.msg('No records on subset for %s' % params)
+            res_data['error'] = 'No records for %s' %  params
+            return res_data
 
         db.sort(['sta','chan'])
 
-        tmin = db.ex_eval('min(time)')
-        tmax = db.ex_eval('max(endtime)')
-
-        log.msg( 'tmin: %s, tmax: %s' % (tmin,tmax) )
-
-        if start:
-            tmin = start
-        if end:
-            tmax = end
-
-        response_data.update( {'time_start':tmin} )
-
-        response_data.update( {'time_end':tmax} )
-
-        response_data.update( {'sta':sta} )
-
-        response_data.update( {'chan':chan} )
+        res_data.update( {'time_start': db.ex_eval('min(time)') })
+        res_data.update( {'time_end': db.ex_eval('max(endtime)') })
 
         # Group by sta chan
-        db.group(['sta','chan'])
+        #db.group(['sta','chan'])
 
         for i in range(db.query(dbRECORD_COUNT)):
 
             db.record = i
 
-            (this_sta,this_chan) = db.getv('sta','chan')
+            (this_sta,this_chan,time,endtime) = db.getv('sta','chan','time','endtime')
 
-            response_data[this_sta][this_chan] = { 'data':[] }
+            if not this_sta in res_data['sta']:
+                res_data['sta'].append(this_sta)
+            if not this_chan in res_data['chan']:
+                res_data['chan'].append(this_chan)
 
-            dbgrp_pointer = dbsubset(db,"sta=~/%s/ && chan=~/%s/" % (this_sta,this_chan))
+            res_data[this_sta][this_chan] = { 'data':[] }
 
-            dbungrp_pointer = dbungroup(dbgrp_pointer)
+            res_data[this_sta][this_chan]['data'].append([time,endtime])
+        #for i in range(db.query(dbRECORD_COUNT)):
 
-            dbungrp_pointer.sort("time")
+        #    db.record = i
 
-            for j in range(dbungrp_pointer.query(dbRECORD_COUNT)):
+        #    (this_sta,this_chan) = db.getv('sta','chan')
 
-                dbungrp_pointer.record = j
+        #    res_data['sta'].append(this_sta)
+        #    res_data['chan'].append(this_chan)
+        #    log.msg("\n\nPulling data for %s:%s " % (this_sta,this_chan))
+
+        #    res_data[this_sta][this_chan] = { 'data':[] }
+
+        #    dbgrp_pointer = dbsubset(db,"sta=~/%s/ && chan=~/%s/" % (this_sta,this_chan))
+
+        #    dbungrp_pointer = dbungroup(dbgrp_pointer)
+
+        #    dbungrp_pointer.sort("time")
+
+        #    for j in range(dbungrp_pointer.query(dbRECORD_COUNT)):
+
+        #        dbungrp_pointer.record = j
  
-                (time,endtime) = dbungrp_pointer.getv('time','endtime')
+        #        (time,endtime) = dbungrp_pointer.getv('time','endtime')
 
-                response_data[this_sta][this_chan]['data'].append([time,endtime])
+        #        res_data[this_sta][this_chan]['data'].append([time,endtime])
 
-        return response_data
+        return res_data
 
 

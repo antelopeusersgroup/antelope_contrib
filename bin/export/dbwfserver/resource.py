@@ -52,19 +52,19 @@ class QueryParser(resource.Resource):
     Serve Datascope query requests.
 
     Support following query arguments:
-        * type - Data Type - e.g. 'wf','events','stations'
-        * net - Network Code - e.g. 'TA'
-        * sta - Station Code - e.g. '109C'
-        * orid - Origin id - e.g. '66484'
-        * chan - Channel Code - 'BHZ'
-        * ts - Time Start in Epoch Seconds
-        * te - Time End in Epoch Seconds
-        * tw - Time Window in Seconds
-        * availability - 'Lines' (True) or 'Waveforms' (False). 'Lines' only indicate Waveform availability. 
-        * canvas_size - The number of pixels of the plotting Canvas, to be passed to 'get_segment'
-        * amount - Amount of data to be retrieved: can be 'all', 'slice'
-        * filter - Waveform filter
-        * phases - Plot phase arrivals or not
+        * type      - Data Type - e.g. 'wf','events','stations'
+        * net       - Network Code - e.g. 'TA'
+        * sta       - Station Code - e.g. '109C'
+        * orid      - Origin id - e.g. '66484'
+        * chan      - Channel Code - 'BHZ'
+        * ts        - Time Start in Epoch Seconds
+        * te        - Time End in Epoch Seconds
+        * tw        - Time Window in Seconds
+        * availability  - 'Lines' (True) or 'Waveforms' (False). 'Lines' only indicate Waveform availability. 
+        * canvas_size   - The number of pixels of the plotting Canvas, to be passed to 'get_segment'
+        * amount    - Amount of data to be retrieved: can be 'all', 'slice'
+        * filter    - Waveform filter
+        * phases    - Plot phase arrivals or not
     """
     def __init__(self):
 #{{{
@@ -77,117 +77,6 @@ class QueryParser(resource.Resource):
         self.events = dbwfserver.eventdata.Events(self.dbname)
 
         self.eventdata = dbwfserver.eventdata.EventData(self.dbname)
-#}}}
-
-    def _extract_request(self, request):
-        #{{{
-
-        url_data = defaultdict(dict)
-
-        type        = request.args.get('type',        [None])[0]
-        net_args    = request.args.get('net',          None)
-        sta_args    = request.args.get('sta',          None)
-        orid        = request.args.get('orid',        [None])[0]
-        availability= request.args.get('availability',[None])[0]
-        orid_time   = request.args.get('orid_time',   [None])[0]
-        time_start  = request.args.get('ts',          [None])[0]
-        time_end    = request.args.get('te',          [None])[0]
-        chan        = request.args.get('chan',         None) 
-        time_window = request.args.get('tw',          [None])[0]
-        canvas_size = request.args.get('canvas_size', [None])[0] 
-        amount      = request.args.get('amount',      [None])[0] 
-        filter      = request.args.get('filter',      [None])[0] 
-        phases      = request.args.get('phases',       None)
-
-        if type:
-            url_data['type'] = type
-        else:
-            url_data['type'] = False
-
-        if net_args:
-            net = list(set([n.upper() for n in net_args]))
-            net.sort()
-            url_data['net'] = net
-        else:
-            url_data['net'] = False
-
-        if sta_args:
-            sta = list(set([s.upper() for s in sta_args]))
-            sta.sort()
-            url_data['sta'] = sta
-        else:
-            url_data['sta'] = False
-
-        if chan:
-            chan = list(set([c.upper() for c in chan_args]))
-            chan.sort()
-            url_data['chan'] = chan
-        else:
-            url_data['chan'] = config.default_chans
-
-        if time_start:
-            url_data['time_start'] = isNumber(time_start)
-        else:
-            url_data['time_start'] = False
-        
-        if time_end:
-            url_data['time_end'] = isNumber(time_end)
-        else:
-            url_data['time_end'] = False
-
-        if time_window: 
-            url_data['time_window'] = isNumber(time_window)
-        else:
-            url_data['time_window'] = config.default_time_window
-
-        if orid: 
-            url_data['orid'] = isNumber(orid)
-        else:
-            url_data['orid'] = False
-
-        if orid: 
-            url_data['orid_time'] = isNumber(orid_time)
-        else:
-            url_data['orid_time'] = False
-
-        if canvas_size: 
-            url_data['canvas_size'] = isNumber(canvas_size)
-        else:
-            url_data['canvas_size'] = config.canvas_size_default
-
-        if amount: 
-            url_data['amount'] = amount
-        else:
-            url_data['amount'] = False
-
-        if filter: 
-            url_data['filter'] = filter
-        else:
-            url_data['filter'] = False
-
-        if availability: 
-            url_data['availability'] = availability
-        else:
-            url_data['availability'] = False
-
-        if config.verbose:
-            log.msg("URL vars:")
-            log.msg("\ttype:\t%s" % url_data['type'])
-            log.msg("\tnet:\t%s" % url_data['net'])
-            log.msg("\tsta:\t%s" % url_data['sta'])
-            log.msg("\torid:\t%s" % url_data['orid'])
-            log.msg("\toridtime:\t%s" % url_data['orid_time'])
-            log.msg("\tchan:\t%s" % str(url_data['chan']))
-            log.msg("\ttime_window:\t%s" % url_data['time_window'])
-            log.msg("\ttime_start:\t%s" % url_data['time_start'])
-            log.msg("\ttime_end:\t%s" % url_data['time_end'])
-            log.msg("\tavailability:\t%s" % url_data['availability'])
-            log.msg("\tcanvas_size:\t%s" % url_data['canvas_size'])
-            log.msg("\tamount:\t%s" % url_data['amount'])
-            log.msg("\tfilter:\t%s" % url_data['filter'])
-            log.msg("\tphases:\t%s" % url_data['phases'])
-
-        return url_data
 #}}}
 
     def _jquery_includes(self):
@@ -223,14 +112,14 @@ class QueryParser(resource.Resource):
 
     def render(self, request):
 
-        url_params = self._extract_request(request)
-
+#{{{ Setup template, init variables
         template_queryparser = config.queryparser_html_template
 
+        template = config.index_html_template
+
+        url_params = {}
 
         response_data = {}
-
-        # {{{ Load template and substiude values. 
 
         tvals = defaultdict(dict)
 
@@ -238,9 +127,9 @@ class QueryParser(resource.Resource):
             "dbname":            config.dbname,
             "application_title": config.application_title,
             "jquery_includes":   self._jquery_includes(),
-            "dir":               '',
-            "key":               '',
-            "my_list":           '',
+            "dir":               'false',
+            "key":               'false',
+            "my_list":           'false',
             "error":             'false',
             "wf_data":           'false',
             "event_list":        'false',
@@ -251,142 +140,145 @@ class QueryParser(resource.Resource):
             "station_list":      'false'
         }
 
-        template = config.index_html_template
-        #log.msg( template )
-        # }}} Load template and substiude values. 
-
         args = request.uri.split("/")[1:]
 
+        #
         # remove last element if it's empty... 
         # This (localhost:8008/stations/) is the same as 
         # (localhost:8008/stations) 
+        #
         if args[len(args)-1] == '':
             args.pop()
+#}}}
 
         if args:
 
-            metadatatype = args[0]
             tvals['dir'] = args[0]
             my_list = '<ul class="ui-helper-reset ui-helper-clearfix">'
 
             log.msg("ARGS: %s " % args)
 
-            if args[0] == 'data' or url_params['type']:
+            if args[0] == 'data':
                 #{{{
                 if config.verbose:
-                    log.msg("Data query of type: %s " % url_params['type'])
+                    log.msg("Data query of type: %s " % args[0])
 
                 request.setHeader("content-type", "application/json")
 
-                if url_params['type'] == 'wf' or 'wf' in args:
+                if 'wf' in args:
 
                     """
                     TEST:
-                        http://localhost:8008/data?type=wf&sta=113A&orid=66554
-                        http://localhost:8008/data?type=wf&sta=113A&orid=66554&ts=1230900154&te=1230900254&chan=BHZ
-                        http://localhost:8008/data?type=wf&sta=113A&ts=1230900154&te=1230900254
-                        OR
+
                         http://localhost:8008/data/wf/USP/645
                         http://localhost:8008/data/wf/USP/706139610/706139810
+                        http://localhost:8008/data/wf/USP+AAK/BHZ/706139710/706139810
 
                     """
                     if len(args) == 2:
                         return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
                     elif len(args) == 4:
-                        url_params['sta'] = [args[2]]
+                        args[2] = args[2].split('+')
+                        url_params['sta'] = args[2]
                         url_params['orid'] = args[3]
                         return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
                     elif len(args) == 5:
-                        url_params['sta'] = [args[2]]
-                        url_params['time_start'] = args[3]
-                        url_params['time_end'] = args[4]
+                        args[2] = args[2].split('+')
+                        url_params['sta'] = args[2]
+                        if isNumber( args[3] ):
+                            url_params['time_start'] = args[3]
+                            url_params['time_end'] = args[4]
+                        else:
+                            args[3] = args[3].split('+')
+                            url_params['chans'] = args[3]
+                            url_params['orid'] = args[4]
+
                         return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
-                elif url_params['type'] == 'coverage' or 'coverage' in args:
+                    elif len(args) == 6:
+                        args[2] = args[2].split('+')
+                        args[3] = args[3].split('+')
+                        url_params['sta'] = args[2]
+                        url_params['chans'] = args[3]
+                        url_params['time_start'] = args[4]
+                        url_params['time_end'] = args[5]
+                        return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
+                elif 'coverage' in args:
                     """
                     You can test this with:
-                    http://localhost:8008/data?type=coverage 
-                                - list coverage tuples of (time,end_time) for all stations and default channels
-                    or
-                    http://localhost:8008/data?type=coverage&sta=X18A&chan=BHZ
-                                - list coverage tuples of (time,end_time) for station X18A chan BHZ
-                    or
-                    http://localhost:8008/data?type=coverage&te=1230940700
-                                - list coverage tuples of (time,end_time) until time_end
-                    or
-                    http://localhost:8008/data?type=coverage&chan=BHZ&ts=1230768001&te=1230940700
-                                - list coverage tuples of (time,end_time) between start and end times for all BHZ chans
-                    or 
-                    http://localhost:8008/data?type=coverage&sta=X18A&chan=BHZ&ts=1230768001&te=1230940700
-                            
-                    Multiple stations/channels query...
-                        http://localhost:8008/data?type=events&sta=113A&sta=123A&chan=BHZ&chan=BHE&chan=BHN
+
                     """
 
-                    if len(args) >= 3:
-                        url_params['sta']        = [args[2]]
-                    if len(args) >= 4:
-                        url_params['chan']       = [args[3]]
-                    if len(args) >= 5:
+                    if len(args) == 5:
+                        args[2] = args[2].split('+')
+                        url_params['sta'] = args[2]
+                        if isNumber( args[3] ):
+                            url_params['time_start'] = args[3]
+                            url_params['time_end'] = args[4]
+                        else:
+                            args[3] = args[3].split('+')
+                            url_params['chans'] = args[3]
+                            url_params['time_start'] = args[4]
+
+                    elif len(args) == 6:
+                        args[2] = args[2].split('+')
+                        args[3] = args[3].split('+')
+                        url_params['sta'] = args[2]
+                        url_params['chans'] = args[3]
                         url_params['time_start'] = args[4]
-                    if len(args) >= 6:
-                        url_params['time_end']   = args[5]
+                        url_params['time_end'] = args[5]
 
                     if config.verbose:
                         log.msg("Query coverage. %s" % str(args) ) 
-
-                    response_data = {'type':'coverage'}
-
-                    response_data.update({'format':'bars'})
 
                     response_data.update(self.eventdata.coverage(url_params))
 
                     return json.dumps(response_data)
 
-                elif url_params['type'] == 'events' or 'events' in args:
+                elif 'events' in args:
                     """
                     You can test this with:
 
-                        http://localhost:8008/data?type=events - list of events
-                        http://localhost:8008/data?type=events&orid=66484 - list of stations that recorded event 66484
-                        OR
                         http://localhost:8008/data/events - list of events
                         http://localhost:8008/data/events/66484 - list of stations that recorded event 66484
+                        http://localhost:8008/data/events/645+655
                     """
 
-                    if url_params['orid']:
-                        return json.dumps(self.events(url_params['orid']))
+                    if len(args) == 3:
+                        args[2] = args[2].split('+')
 
-                    elif len(args) == 3:
-                        return json.dumps(self.events(args[2]))
+                        for event in args[2]:
+                            log.msg("\n\n\tcalling self.events(%s)\n\n" % event)
+                            response_data[event] = self.events(event)
+                        return json.dumps(response_data)
 
                     else:
                         return json.dumps(self.events.table())
-                        #return json.dumps(self.events.list())
 
-                elif url_params['type'] == 'stations' or 'stations' in args:
+                elif 'stations' in args:
                     """
                     You can test this with:
 
-                        http://localhost:8008/data?type=stations
-                        http://localhost:8008/data?type=stations&sta=Y12C
-                        OR
                         http://localhost:8008/data/stations
                         http://localhost:8008/data/stations/Y12C
+                        http://localhost:8008/data/stations/LZH+OBN+USP
                     """
 
-                    if url_params['sta']:
-                        return json.dumps(self.stations(url_params['sta']))
+                    if len(args) == 3:
+                        args[2] = args[2].split('+')
 
-                    elif len(args) == 3:
-                        return json.dumps(self.stations(args[2]))
+                        for sta in args[2]:
+                            log.msg("\n\n\tcalling self.stations(%s)\n\n" % sta)
+                            response_data[sta] = self.stations(sta)
+                        return json.dumps(response_data)
 
                     else:
                         return json.dumps(self.stations.list())
 
-                elif url_params['type'] == 'filters' or 'filters' in args:
+                elif 'filters' in args:
 
                     """
                     You can test this with:
@@ -399,8 +291,8 @@ class QueryParser(resource.Resource):
                     return json.dumps(config.filters, sort_keys=True)
 
                 request.setHeader("response-code", 500)
-                log.msg("ERROR in query. Unknown type:%s" % url_params['type'])
-                return "Unknown query type:(%s)" % type
+                log.msg("ERROR in query. Unknown type:%s" % args)
+                return "Unknown query type:(%s)" % args
 
                 #}}}
 
@@ -431,11 +323,12 @@ class QueryParser(resource.Resource):
                 if len(args) > 1:#{{{
 
                     tvals['key'] = args[1]
-                    #args_list = args[1].split('+')
+                    args[1] = args[1].split('+')
                     tvals['station_data'] = {}
 
-                    log.msg("\n\n\tcalling self.stations(%s)\n\n" % args[1])
-                    tvals['station_data'] = json.dumps( self.stations(args[1]) )
+                    for sta in args[1]:
+                        log.msg("\n\n\tcalling self.stations(%s)\n\n" % sta)
+                        tvals['station_data'][sta] = json.dumps( self.stations(sta) )
 
                     if not tvals['station_data']:
                         request.setResponseCode(404)
@@ -493,7 +386,7 @@ class QueryParser(resource.Resource):
 #}}}
 
             elif args[0] != '':
-                log.msg("ERROR in query. Unknown type:%s" % url_params['type'])
+                log.msg("ERROR in query. Unknown type:%s" % args)
                 tvals['error'] =  json.dumps( "Unknown query type:(%s)" % args )
 
         html_stations = Template(open(template_queryparser).read()).substitute(tvals)
