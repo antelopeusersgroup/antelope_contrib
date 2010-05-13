@@ -48,7 +48,7 @@ ftp://hazards.cr.usgs.gov/mineblast/read_me.
 .SH ENVIRONMENT
 Need to have sourced $ANTELOPE/setup.csh and environment variable $PFPATH set.
 .SH PARAMETER FILE
-Below is the default \fbmchedr2db\fP parameter file.
+Below is the default \fBmchedr2db\fP parameter file.
 .in 2c
 .ft CW
 .nf
@@ -142,11 +142,15 @@ mchedr_mines.pf file.
 
 .SH "SEE ALSO"
 .nf
+bulletin2orb(1)
 pde2origin(1)
 qed2origin(1)
 scec2db(1)
 .fi
 .SH "BUGS AND CAVEATS"
+.LP
+Please consider using the \fBbulletin2orb\fP program instead of this one!  \fBbulletin2orb\fP
+actually uses the netmag table.
 .LP
 This program has not been tested on any data other than the USGS mines and 
 explosion data.  I suspect it will work on other mchedr data files, but I have

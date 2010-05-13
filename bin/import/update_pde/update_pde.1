@@ -45,10 +45,10 @@ to completion.
 .SH OPTIONS
 
 
-.IP \fB-v\fR 
+.IP -v 
 verbosely report what the program is doing and any errors that may occur.
 
-.IP \fB-y\fR "year"
+.IP "-y year"
 4-digit year to retrieve.  PDE yearly files are availible from this
 site from 1990 to ~10-12 months prior to today.
 
@@ -152,21 +152,23 @@ As the real-time user, add the following to the crontab &Arr for a running rtexe
 
 .SH "SEE ALSO"
 .nf
+bulletin2orb(1)
 pde2origin(1)
 antelopeenv(5)
 update_weekly_qed(1)
 .fi
 .SH "BUGS AND CAVEATS"
-
+.LP
+You may want to use the \fBbulletin2orb\fP program instead as it utilizes the netmag table.
+.LP
 Env variables PFPATH and ANTELOPE must be set.
-
+.LP
 There is a hard-wired path to gzip in the code (/usr/bin/gzip).
-
+.LP
 Also hard-wired is the directory (pde/) where the PDE files are
 stored on the USGS ftp site.
-
+.LP
 This code has not been extensively tested.  It may fail in unexpected ways.
-
 .SH AUTHOR
 .nf
 .br
