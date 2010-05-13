@@ -79,4 +79,8 @@ div#subnav div#event table#eventTable { font-weight:normal;color:#000;font-size:
 div#subnav div#event table#eventTable tr { background-color:#CDCDEF;padding:3px; }
 div#subnav div#event table#eventTable td { background-color:#CCC;padding:3px; }
 
+div#subnav table.evListTable { font-weight:normal;color:#000;border:1px solid #C9C9EE;background-color:#FFF;text-transform:capitalize; }
+div#subnav table.evListTable tr { background-color:#CDCDEF;padding:5px; }
+div#subnav table.evListTable td { background-color:#CCC;padding:5px; }
+
 div#xlabel { text-align:center;margin:20px 0px 20px 40px; }

@@ -19,7 +19,6 @@ PlotSelect = {
         $("#interact").hide();
         $("#tools").hide();
 
-
         // {{{ Define colorschemes
 
         PlotSelect.colorschemes = {};
@@ -723,51 +722,110 @@ PlotSelect = {
     buildSelect: function(s_list,e_list,st,ev){
 
 //{{{
+       var subnavcontent = '';
+
        if (s_list && ev) {
+            s_list = s_list.sort() ;
+            subnavcontent = '<ul class="ui-helper-reset ui-helper-clearfix">';
             jQuery.each(s_list, function() {
-                    $("#subnav ul").append(
-                        "<li class='ui-state-active ui-corner-all'>" +
-                        "<a href='/wf/" + this + "/" + ev + "'>" +
-                        this + "</a></li>\n"
-                    );
+                subnavcontent += "<li class='ui-state-active ui-corner-all'>" + "<a href='/wf/" + this + "/" + ev + "'>" + this + "</a></li>\n";
             });
+            subnavcontent += '</ul>';
+            $("#subnavcontent").append(subnavcontent);
         }
 
         else if (s_list) {
+            s_list = s_list.sort() ;
+            subnavcontent = '<ul class="ui-helper-reset ui-helper-clearfix">';
             jQuery.each(s_list, function() {
-                    $("#subnav ul").append(
-                        "<li class='ui-state-active ui-corner-all'>" +
-                        "<a href='/stations/" + this + "'>" +
-                        this + "</a></li>\n"
-                    );
+                subnavcontent += "<li class='ui-state-active ui-corner-all'>" + "<a href='/stations/" + this + "'>" + this + "</a></li>\n";
             });
+            subnavcontent += '</ul>';
+            $("#subnavcontent").append(subnavcontent);
         }
 
         else if (e_list && st) {
-            jQuery.each(e_list, function(key, value) {
-                    var table = "";
-                    var date = new Date(value['time'] * 1000);
-                    for(var k in value) { table = table + " " + k + ": " + value[k] + " " }
-                    $("#subnav ul").append(
-                        "<li class='ui-state-active ui-corner-all'>" +
-                        "<a href='/wf/" + st + "/" + key + "'>" +
-                        date + "</a></li><p>"+ table + "</p>\n"
-                    );
+
+            sorted_e_list = [];
+            table_headers = [];
+
+            jQuery.each(e_list, function(key,value) {
+                sorted_e_list.push(key);
+                jQuery.each( value, function(sKey,sVal) {
+                    if( jQuery.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
+                });
             });
+            sorted_e_list = sorted_e_list.sort();
+            table_headers = table_headers.sort();
+
+            subnavcontent = '<table id="evsTbl" class="evListTable">';
+
+            subnavcontent += '<thead><tr>\n';
+            subnavcontent += '<th>time</th>\n';
+            jQuery.each(table_headers, function(thi, thv) {
+                if( thv !== 'time' ) {
+                    subnavcontent += '<th>'+thv+'</th>\n';
+                }
+            });
+            subnavcontent += '</tr></thead><tbody>\n';
+
+            jQuery.each(sorted_e_list, function(key, value) {
+                subnavcontent += "<tr>";
+                var tbl_date = new Date(e_list[value]['time'] * 1000);
+                subnavcontent += "<td>" + "<a href='/wf/" + st + "/" + value + "'>" + tbl_date + "</a></td>";
+                jQuery.each(table_headers, function(thi, thv) { 
+                    if( thv !== 'time' ) {
+                        subnavcontent += "<td>" + e_list[value][thv] + "</td>";
+                    }
+                });
+                subnavcontent += "</tr>";
+            });
+            subnavcontent += '</tbody></table>';
+            $("#subnavcontent").append(subnavcontent);
+            $("#subnavcontent #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
         }
 
         else if (e_list) {
-            jQuery.each(e_list, function(key, value) {
-                    var table = "";
-                    var date = new Date(value['time'] * 1000);
-                    for(var k in value) { table = table + " " + k + ": " + value[k] + " " }
-                    $("#subnav ul").append(
-                        "<li class='ui-state-active ui-corner-all'>" +
-                        "<a href='/events/" + key + "'>" +
-                        date + "</a></li><p>"+ table + "</p>\n"
-                    );
+
+            sorted_e_list = [];
+            table_headers = [];
+
+            jQuery.each(e_list, function(key,value) {
+                sorted_e_list.push(key);
+                jQuery.each( value, function(sKey,sVal) {
+                    if( jQuery.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
+                });
             });
+            sorted_e_list = sorted_e_list.sort();
+            table_headers = table_headers.sort();
+
+            subnavcontent = '<table id="evsTbl" class="evListTable">\n';
+
+            subnavcontent += '<thead><tr>\n';
+            subnavcontent += '<th>time</th>\n';
+            jQuery.each(table_headers, function(thi, thv) {
+                if( thv !== 'time' ) {
+                    subnavcontent += '<th>'+thv+'</th>\n';
+                }
+            });
+            subnavcontent += '</tr></thead><tbody>\n';
+
+            jQuery.each(sorted_e_list, function(key, value) {
+                subnavcontent += "<tr>";
+                var tbl_date = new Date(e_list[value]['time'] * 1000);
+                subnavcontent += "<td>" + "<a href='/events/" + value + "'>" + tbl_date + "</a></td>";
+                jQuery.each(table_headers, function(thi, thv) { 
+                    if( thv !== 'time' ) {
+                        subnavcontent += "<td>" + e_list[value][thv] + "</td>";
+                    }
+                });
+                subnavcontent += "</tr>";
+            });
+            subnavcontent += '</tbody></table>';
+            $("#subnavcontent").append(subnavcontent);
+            $("#subnavcontent #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
         }
+
 //}}}
 
     }

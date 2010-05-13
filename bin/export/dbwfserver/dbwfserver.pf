@@ -24,6 +24,7 @@ jquery_files &Tbl{
     /static/jquery/jquery.flot.min.js
     /static/jquery/jquery.flot-selection.min.js
     /static/jquery/jquery.hotkeys-0.7.8-packed.js
+    /static/jquery/jquery.tablesorter-2.0.3.min.js
 }
 
 display_tracebacks false 

@@ -115,8 +115,7 @@
 
     <div id="subnav">
         <div id="event"></div>
-        <ul class="ui-helper-reset ui-helper-clearfix">
-        </ul>
+        <div id="subnavcontent"></div>
     </div>
 
     <div id="wforms">
