@@ -1,5 +1,5 @@
-sts2-g1         V    c yes   1.4158000e-03   1       1500         1.000000 nom_response                                                     sts2-g1                           1207074369.06070
-sts2-g2         V    c yes   1.4158000e-03   1       1500         1.000000 nom_response                                                     sts2-g2                           1207074373.74180
+sts2_g1         V    c yes   1.4158000e-03   1       1500         1.000000 nom_response                                                     sts2-g1                           1207074369.06070
+sts2_g2         V    c yes   1.4158000e-03   1       1500         1.000000 nom_response                                                     sts2-g2                           1207074373.74180
 sts2_g3         V    c yes   3.0023787e-02   1       1500         1.000000 nom_response                                                     sts2-g3                           1207074378.49403
 sts2-g3-m1      V    c yes   3.0023787e-02   1       1500         1.000000 nom_response                                                     sts2-g3-mod                       1207074383.64595
 cmg3t           V    v yes   2.1730000e-02   1       1500         1.000000 nom_response                                                     cmg3t                             1207074627.28702
