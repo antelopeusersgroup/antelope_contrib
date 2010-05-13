@@ -5,7 +5,7 @@
 
 <head>
 
-    <title>$title</title>
+    <title>$application_title / $dir / $key</title>
 
     <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
 
@@ -21,24 +21,6 @@
     <link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css">
     <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-1.7.2.custom.css">
 
-    <script type="text/javascript">
-    $$(function(){
-
-        dataObj = {
-            'type':'wf',
-            'url':'yes',
-            'amount':'all',
-            'phases':'True'
-        }
-
-        $jscript_vars
-
-        /// Get data
-        PlotSelect.getData(dataObj);
-     
-    });
-    </script>
-
 </head>
 
 <body>
@@ -46,6 +28,7 @@
 <div id="content">
 
     <div id="loading"><p>Loading data ...</p></div>
+
 
     <div id="toppanel">
 
@@ -116,9 +99,9 @@
 
     </div>
 
-   <div id="location">
-       <h1>$title</h1>
-   </div>
+    <div id="location">
+        <h1>$application_title / $dir / $key</h1>
+    </div>
 
     <div id="title">
         <div id="dbpath">Current database: <span id="dbname">$dbname</span></div>
@@ -131,20 +114,23 @@
     </div>
 
     <div id="subnav">
-        <form id="wformer" name="wformer">
-        <p>Show phase arrivals:
-        <input type="checkbox" name="phases" id="phases" value="off" />
-        &nbsp;&nbsp;&nbsp;Select a filter:
-        <select id="filter" name="filter">
-            $filters
-        </select>
-        </p>
-
-
         <div id="event"></div>
+        <ul class="ui-helper-reset ui-helper-clearfix">
+        </ul>
     </div>
 
     <div id="wforms">
+        <div id="tools">
+            <!-- populated dynamically by dbwfserver.js -->
+            <label for="filter">Filter:</label>
+            <select name="filter" id="filter">
+                $filters
+            </select>
+            <!--
+            <label for="phases">Show Phases:</label>
+            <input type="checkbox" name="phases" id="phases" checked="yes"/>
+            -->
+        </div>
         <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
         <div id="chan_plots"><!-- populated dynamically by dbwfserver.js --></div>
     </div>
@@ -156,11 +142,45 @@
             [zoom out: shift-click-drag] |
             [scroll left: left arrow] |
             [scroll right: right arrow] |
-            [reset: press 'r' key]
+            [reset: click 'r']
         </p>
     </div>
 
 </div>
+
+<script type="text/javascript">
+    $$(function(){
+
+        var wf_data      =  $wf_data ;
+        var cv_data      =  $cv_data ;
+        var event_list   =  $event_list ;
+        var event_selc   =  $event_selc ;
+        var event_data   =  $event_data ;
+        var station_data =  $station_data ;
+        var station_list =  $station_list ;
+        var station_selc =  $station_selc ;
+        var error        =  $error ;
+
+        if (error) {
+             PlotSelect.errorResponse('parsererror',error);
+        }
+
+        if(station_list || event_list || station_selc || event_selc) {
+            PlotSelect.buildSelect(station_list,event_list,station_selc,event_selc);
+        }
+
+        if (event_data) {
+             PlotSelect.setEventData(event_data);
+        }
+
+        if (wf_data) {
+             PlotSelect.setData(wf_data);
+        }
+
+    });
+</script>
+
+
 
 </body>
 

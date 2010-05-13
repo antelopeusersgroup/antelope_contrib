@@ -2,8 +2,7 @@ BIN = dbwfserver
 PF = dbwfserver.pf
 MAN1 = dbwfserver.1
 DATADIR = python/dbwfserver
-DATA = __init__.py \
-       server.py \
+DATA = server.py \
        resource.py \
        eventdata.py \
        config.py 

@@ -450,11 +450,22 @@ class EventData():
             log.msg("Error in maxtime:%s or mintime:%s" % (maxtime,mintime))
             res_data['error'] = ("Error in maxtime: %s or mintime:%s" % (maxtime,mintime))
             return  
+        """
+        Setting the filter
+        """
+        if 'filter' in url_data:
+            if url_data['filter'] == 'None':
+                filter = None
+            else:
+                filter = url_data['filter'].replace('_',' ')
+        else:
+            filter = None
 
         res_data.update( {'type':'waveform'} )
         res_data.update( {'time_start':mintime} )
         res_data.update( {'time_end':maxtime} )
         res_data.update( {'sta':url_data['sta']} )
+        res_data.update( {'filter':filter} )
 
         if 'chans' in url_data:
             res_data.update( {'chan':url_data['chans']} )
@@ -509,9 +520,10 @@ class EventData():
                 elif points <  (config.binning_threshold * config.canvas_size_default):
 
                     try:
-                        res_data[station][channel]['data'] = self.db.sample(mintime,maxtime,station,channel,False)
+                        res_data[station][channel]['data'] = self.db.sample(mintime,maxtime,station,channel,False, filter)
                     except Exception,e:
-                        res_data['error'] = ("%s" % e)
+                        if config.debug:
+                            res_data['error'] = ("%s" % e)
                         log.msg("Exception on data: %s" % e)
 
                     res_data[station][channel]['format'] = 'lines'
@@ -520,9 +532,10 @@ class EventData():
 
                     binsize = points/config.canvas_size_default
                     try:
-                        res_data[station][channel]['data'] = self.db.samplebins(mintime, maxtime, station, channel, binsize, False)
+                        res_data[station][channel]['data'] = self.db.samplebins(mintime, maxtime, station, channel, binsize, False, filter)
                     except Exception,e:
-                        res_data['error'] = ("%s" % e)
+                        if config.debug:
+                            res_data['error'] = ("%s" % e)
                         log.msg("Exception on databins: %s" % e)
 
                     res_data[station][channel]['format'] = 'bins'
@@ -539,7 +552,12 @@ class EventData():
         e.g: [(s1, e1), (s2, e2), ...]
 
         TEST:
-            http://localhost:8008/data?type=coverage&sta=113A&chan=BHZ
+            http://localhost:8008/data/coverage/
+            http://localhost:8008/data/coverage/AAK+USP
+            http://localhost:8008/data/coverage/AAK+USP/BHZ+BHN
+            http://localhost:8008/data/coverage/AAK+USP/706139700
+            http://localhost:8008/data/coverage/AAK+USP/BHZ/706139700
+            http://localhost:8008/data/coverage/AAK+USP/BHZ/706139700/706139820
 
         """
         sta_str  = ''
@@ -566,10 +584,12 @@ class EventData():
             log.msg("\n\nCoverage subset on chan =~/%s/ " % chan_str)
 
         if 'time_start' in params:
-            db.subset("time >= %s" % params['time_start'])
+            res_data.update( {'time_start':params['time_start']} )
+            db.subset("endtime >= %s" % params['time_start'])
             log.msg("\n\nCoverage subset on time >= %s " % params['time_start'])
 
         if 'time_end' in params:
+            res_data.update( {'time_end':params['time_end']} )
             db.subset("time <= %s" % params['time_end'])
             log.msg("\n\nCoverage subset on time_end <= %s " % params['time_end'])
 
@@ -581,11 +601,10 @@ class EventData():
 
         db.sort(['sta','chan'])
 
-        res_data.update( {'time_start': db.ex_eval('min(time)') })
-        res_data.update( {'time_end': db.ex_eval('max(endtime)') })
-
-        # Group by sta chan
-        #db.group(['sta','chan'])
+        if not 'time_end' in res_data:
+            res_data.update( {'time_end': db.ex_eval('max(endtime)') })
+        if not 'time_start' in res_data:
+            res_data.update( {'time_start': db.ex_eval('min(time)') })
 
         for i in range(db.query(dbRECORD_COUNT)):
 
@@ -601,31 +620,6 @@ class EventData():
             res_data[this_sta][this_chan] = { 'data':[] }
 
             res_data[this_sta][this_chan]['data'].append([time,endtime])
-        #for i in range(db.query(dbRECORD_COUNT)):
-
-        #    db.record = i
-
-        #    (this_sta,this_chan) = db.getv('sta','chan')
-
-        #    res_data['sta'].append(this_sta)
-        #    res_data['chan'].append(this_chan)
-        #    log.msg("\n\nPulling data for %s:%s " % (this_sta,this_chan))
-
-        #    res_data[this_sta][this_chan] = { 'data':[] }
-
-        #    dbgrp_pointer = dbsubset(db,"sta=~/%s/ && chan=~/%s/" % (this_sta,this_chan))
-
-        #    dbungrp_pointer = dbungroup(dbgrp_pointer)
-
-        #    dbungrp_pointer.sort("time")
-
-        #    for j in range(dbungrp_pointer.query(dbRECORD_COUNT)):
-
-        #        dbungrp_pointer.record = j
- 
-        #        (time,endtime) = dbungrp_pointer.getv('time','endtime')
-
-        #        res_data[this_sta][this_chan]['data'].append([time,endtime])
 
         return res_data
 
