@@ -126,10 +126,8 @@
             <select name="filter" id="filter">
                 $filters
             </select>
-            <!--
             <label for="phases">Show Phases:</label>
-            <input type="checkbox" name="phases" id="phases" checked="yes"/>
-            -->
+            <input type="checkbox" name="phases" id="phases" $display_arrivals />
         </div>
         <div id="chan_labels"><!-- populated dynamically by dbwfserver.js --></div>
         <div id="chan_plots"><!-- populated dynamically by dbwfserver.js --></div>

@@ -16,6 +16,7 @@ binning_threshold   = -1
 canvas_size_default = -1
 apply_calib         = False
 display_tracebacks  = False
+display_arrivals    = True
 verbose             = False
 debug               = False
 daemonize           = False
@@ -65,6 +66,7 @@ def configure(args):
     globals()['application_title']   = stock.pfget_string( pfname, "application_title" )
     globals()['apply_calib']         = stock.pfget_boolean( pfname, "apply_calib" )
     globals()['display_tracebacks']  = stock.pfget_boolean( pfname, "display_tracebacks" )
+    globals()['display_arrivals']    = stock.pfget_boolean( pfname, "display_arrivals" )
     globals()['jquery_files']        = stock.pfget_tbl( pfname, "jquery_files" )
     globals()['default_chans']       = stock.pfget_tbl( pfname, "default_chans" )
     globals()['default_time_window'] = stock.pfget_tbl( pfname, "default_time_window" )

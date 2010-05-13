@@ -107,8 +107,8 @@ class QueryParser(resource.Resource):
         tvals = defaultdict(dict)
 
         tvals = { 
-            "dir":               'false',
-            "key":               'false',
+            "dir":               '&mdash;',
+            "key":               '&mdash;',
             "error":             'false',
             "wf_data":           'false',
             "cv_data":           'false',
@@ -129,7 +129,10 @@ class QueryParser(resource.Resource):
             tvals['filters'] += filter
             tvals['filters'] += '"</option>'
 
-
+        if config.display_arrivals:
+            tvals['display_arrivals'] = 'checked="checked"'
+        else:
+            tvals['display_arrivals'] = ''
 
         args = request.uri.split("/")[1:]
 
