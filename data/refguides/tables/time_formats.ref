@@ -52,5 +52,6 @@ To specify a previous day, use -Ndays:
 <Examples>
 2:00 -1day
 -10days 13:35
+5days
 
 
