@@ -71,11 +71,11 @@
 
             <div id="plotType" title="Dbwfserver plot type">
                 <h1>Plot type</h1>
-                <p>Select the type of waveform representation to plot:</p>
+                <p>Select the type of waveform representation to plot:(WIP)</p>
                 <form id="conftype" name="conftype">
                 <select id="type" name="type">
                     <option value="wf">Waveforms</option>
-                    <option value="coverage">Data coverage bars</option>
+                    <!-- <option value="coverage">Data coverage bars</option> -->
                 </select>
                 </form>
             </div>
