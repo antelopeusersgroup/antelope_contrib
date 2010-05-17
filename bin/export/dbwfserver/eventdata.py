@@ -33,7 +33,7 @@ def _isNumber(test):
         return False
 
 
-def _get_nulls(self, db=None):
+def _get_nulls(db=None):
     """
     Go through the tables on the database and return
     dictionary with NULL values for each field.
@@ -72,6 +72,7 @@ class Stations():
         self.db = dbopen(self.dbname)
         self.stachan_cache = defaultdict(dict)
         self.index = []
+        self.nulls = _get_nulls()
         
         self._get_stachan_cache()
 
@@ -120,14 +121,15 @@ class Stations():
 
         self.stachan_cache = defaultdict(dict)
 
+        if not self.nulls:
+            self.nulls = _get_nulls()
+
         db = Dbptr(self.db)
         db.process([
             'dbopen sitechan',
             'dbjoin sensor',
             'dbjoin instrument'
             ])
-
-        null_vals = _get_nulls(db)
 
         for i in range(db.query(dbRECORD_COUNT)):
 
@@ -138,16 +140,16 @@ class Stations():
             if config.debug:
                 log.msg("\tStation(%s): %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
 
-            if _isNumber(ncalib) == null_vals['ncalib']:
+            if _isNumber(ncalib) == self.nulls['ncalib']:
                 ncalib = '-'
 
-            if _isNumber(srate) == null_vals['srate']:
+            if _isNumber(srate) == self.nulls['srate']:
                 srate = '-'
 
-            if rsptype == null_vals['rsptype']:
+            if rsptype == self.nulls['rsptype']:
                 rsptype = '-'
 
-            if insname == null_vals['insname']:
+            if insname == self.nulls['insname']:
                 insname = '-'
 
             if config.debug:
@@ -180,6 +182,7 @@ class Events():
         self.db = dbopen(self.dbname)
         self.event_cache = defaultdict(list)
         self.index = []
+        self.nulls = _get_nulls()
         
         self._get_event_cache()
 
@@ -268,6 +271,9 @@ class Events():
 
         self.event_cache = defaultdict(list)
 
+        if not self.nulls:
+            self.nulls = _get_nulls()
+
         db = Dbptr(self.db)
 
         db.lookup( table='event')
@@ -290,42 +296,40 @@ class Events():
 
         db.process([ 'dbsort -u orid' ])
 
-        null_vals = _get_nulls(db)
-
         for i in range(db.query(dbRECORD_COUNT)):
 
             db.record = i
 
             (orid,time,lat,lon,depth,auth,mb,ml,ms,nass) = db.getv('orid','time','lat','lon','depth','auth','mb','ml','ms','nass')
 
-            if auth == null_vals['auth']:
+            if auth == self.nulls['auth']:
                 auth = '-'
 
-            if _isNumber(orid) == null_vals['orid']:
+            if _isNumber(orid) == self.nulls['orid']:
                 orid = '-'
 
-            if _isNumber(time) == null_vals['time']:
+            if _isNumber(time) == self.nulls['time']:
                 time = '-'
 
-            if _isNumber(lat) == null_vals['lat']:
+            if _isNumber(lat) == self.nulls['lat']:
                 lat = '-'
 
-            if _isNumber(lon) == null_vals['lon']:
+            if _isNumber(lon) == self.nulls['lon']:
                 lon = '-'
 
-            if _isNumber(depth) == null_vals['depth']:
+            if _isNumber(depth) == self.nulls['depth']:
                 depth = '-'
 
-            if _isNumber(mb) == null_vals['mb']:
+            if _isNumber(mb) == self.nulls['mb']:
                 mb = '-'
 
-            if _isNumber(ms) == null_vals['ms']:
+            if _isNumber(ms) == self.nulls['ms']:
                 ms = '-'
 
-            if _isNumber(ml) == null_vals['ml']:
+            if _isNumber(ml) == self.nulls['ml']:
                 ml = '-'
 
-            if _isNumber(nass) == null_vals['nass']:
+            if _isNumber(nass) == self.nulls['nass']:
                 nass = '-'
 
 
@@ -362,6 +366,8 @@ class Events():
 
         phases = defaultdict(dict)
 
+        assoc_present = False
+
         # Create a datascope OR statement
         sta_str  = "|".join(str(x) for x in sta)
 
@@ -369,48 +375,48 @@ class Events():
 
         db = Dbptr(self.db)
 
-        db.lookup(table='arrival')
+        db.lookup( table='assoc')
+
+        if db.query(dbTABLE_PRESENT): 
+            db.process([ 'dbopen arrival' ])
+            db.process([ 'dbjoin assoc' ])
+            assoc_present = True
+        else:
+            if config.verbose: log.msg("\n\tassoc table NOT present!!!\n")
+            db.process([ 'dbopen arrival' ])
+
 
         if db.query(dbTABLE_PRESENT):
 
-            db.process([ 'dbopen arrival' ])
+            phase_sub = dbsubset(db,'sta=~/%s/ && time >= %s && time <= %s' % (sta_str,float(mintime),float(maxtime)) )
 
-            phase_sub = dbsubset(db,'sta=~/%s/ && time >= %s && time <= %s' % (sta_str,int(mintime),int(maxtime)) )
-            phase_sub.sort(['sta','chan','time','iphase','phase'],unique=True)
+            for p in range(phase_sub.query(dbRECORD_COUNT)):
 
-            # for large times (1+ days) this query will crash. 
-            try:
-                count = phase_sub.query(dbRECORD_COUNT)
-                if config.debug:
-                    log.msg("events.phases(): query.dbRECORD_COUNT(%s,%s)" % (sta_str,count) )
-            except:
-                count = 0
-                if config.debug:
-                    log.msg("events.phases(): ERROR in query(dbRECORD_COUNT) for (%s,%s,%s)" % (sta_str,mintime,maxtime) )
+                phase_sub.record = p
 
-            if count > 0:
+                if assoc_present:
+                    Sta, Chan, ArrTime, Phase = phase_sub.getv('sta','chan','time','phase')
 
-                for p in range(count):
-
-                    phase_sub.record = p
-
-                    Sta, Chan, ArrTime, Iphase, Phase = phase_sub.getv('sta','chan','time','iphase','phase')
                     StaChan = Sta + '_' + Chan
 
-                    phases[StaChan][ArrTime] = [Iphase,Phase]
+                    phases[StaChan][ArrTime] = Phase
 
-                    if config.debug:
-                        log.msg("Phases(%s):%s" % (StaChan,[Iphase,Phase]) )
+                else:
+                    Sta, Chan, ArrTime, Phase = phase_sub.getv('sta','chan','time','iphase')
 
-                return phases
-            else:
+                    StaChan = Sta + '_' + Chan
+
+                    phases[StaChan][ArrTime] = 'i_' + Phase
+
+
+                if config.debug:
+                    log.msg("Phases(%s):%s" % (StaChan,Phase) )
+
+            if not phases:
                 log.msg("No arrivals in this time segment for the stations (%s): t1=%s t2=%s" % (sta_str,mintime,maxtime) )
 
-        else:
+            return phases
 
-            log.msg("Arrival table NOT present")
-
-            return False
 
 class EventData():
 
