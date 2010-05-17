@@ -530,7 +530,8 @@ sub collect_htmltagged {		#
   my @textout ;
   my @outlist ;
 
-  my $ok = 0 ;
+#  my $ok = 0 ;
+  $ok = 0 ;
 
   elog_notify("Attempting to connect to $myurl\n");
 
