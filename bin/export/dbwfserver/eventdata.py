@@ -406,7 +406,7 @@ class Events():
 
                     StaChan = Sta + '_' + Chan
 
-                    phases[StaChan][ArrTime] = 'i_' + Phase
+                    phases[StaChan][ArrTime] = '_' + Phase
 
 
                 if config.debug:
