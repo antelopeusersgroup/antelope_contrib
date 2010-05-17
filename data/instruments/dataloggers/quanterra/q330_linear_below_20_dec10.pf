@@ -2,28 +2,28 @@ originator     Frank Vernon, UCSD
 last_modified  2009-03-05
 
 category	Quanterra
-configuration	Q330 Linear Phase Below 40 Composite
+configuration	Q330 Linear Phase Below 20 Composite Baler Dec10
 
-description	Quanterra 330 Linear Phase Below 40 Composite
-dfile q330_lb40c
+description	Quanterra 330 Linear Phase Below 20 Composite Baler Dec10
+dfile q330_lb20c
 
 info    &Literal{
-This is the configuration for a Q330 datalogger with linear phase below 40sps,
+This is the configuration for a Q330 datalogger with linear phase below 20sps,
 and includes the special channels from a baler.
 }
 
-streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
+streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.1sps 0.01sps
 
 # definitions of streams
-200sps	200 a/d200 FLbelow40-200
-100sps	100 a/d100 FLbelow40-100
-50sps	 50 a/d50  FLbelow40-50
-40sps	 40 a/d40  FLbelow40-40
-20sps	 20 a/d20  FLbelow40-20
-10sps	 10 a/d10  FLbelow40-10
-1sps	  1 a/d1   FLbelow40-1
-0.1sps	0.1 a/d1   FLbelow40-1 VLP389 
-0.01sps 0.01 a/d1  FLbelow40-1 VLP389 ULP379
+200sps	200 a/d200 FLbelow20-200
+100sps	100 a/d100 FLbelow20-100
+50sps	 50 a/d50  FLbelow20-50
+40sps	 40 a/d40  FLbelow20-40
+20sps	 20 a/d20  FLbelow20-20
+10sps	 10 a/d10  FLbelow20-10
+1sps	  1 a/d1   FLbelow20-1
+0.1sps	0.1 a/d1   FLbelow20-1 BalerDec10
+0.01sps 0.01 a/d1  FLbelow20-1 BalerDec10 BalerDec10
 
 gains  419430     # in units of counts/volt
 
@@ -85,65 +85,59 @@ ounits		counts
 sn		datalogger
 }
 
-FLbelow40-200	&Arr{
+FLbelow20-200	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-200)
+response	&datafile(responses/FLbelow20-200)
 samprate	200
 }
 
-FLbelow40-100	&Arr{
+FLbelow20-100	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-100)
+response	&datafile(responses/FLbelow20-100)
 samprate	100
 }
 
-FLbelow40-50	&Arr{
+FLbelow20-50	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-50)
+response	&datafile(responses/FLbelow20-50)
 samprate	50
 }
 
-FLbelow40-40	&Arr{
+FLbelow20-40	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-40)
+response	&datafile(responses/FLbelow20-40)
 samprate	40
 }
 
-FLbelow40-20	&Arr{
+FLbelow20-20	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-20)
+response	&datafile(responses/FLbelow20-20)
 samprate	20
 }
 
-FLbelow40-10	&Arr{
+FLbelow20-10	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-10)
+response	&datafile(responses/FLbelow20-10)
 samprate	10
 }
 
-FLbelow40-1	&Arr{
+FLbelow20-1	&Arr{
 gtype		FIR_decimator
 decifac		1
-response	&datafile(responses/FLbelow40-1)
+response	&datafile(responses/FLbelow20-1)
 samprate	1
 }
 
-VLP389	&Arr{
+BalerDec10	&Arr{
 gtype		FIR_decimator
 decifac		10
-response	&datafile(responses/VLP389)
-}
-
-ULP379	&Arr{
-gtype		FIR_decimator
-decifac		10
-response	&datafile(responses/ULP379)
+response	&datafile(responses/BalerDec10)
 }
 
 

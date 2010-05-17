@@ -45,9 +45,12 @@ DATA= \
     MP \
     qep \
     Q330_Description.pdf \
+    q330decim.pdf \
     README_quanterra \
     ULP \
+    ULP379 \
     VLP \
+    VLP389 \
 	q-90s1 \
 	q-90s2 \
 	q-90s3 \
