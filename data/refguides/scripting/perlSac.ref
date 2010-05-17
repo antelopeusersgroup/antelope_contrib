@@ -21,7 +21,7 @@ $filename => sac filename
 -tag => tag
 </options>
 
-(@dbtrace, @dborigin) = sac_getevent ( $handle )
+(@dbtrace,@dborigin) = sac_getevent ( $handle )
     get sac file image object event and waveform data and return as trace database and origin database pointers
 
 sac_putevent ( $handle, @dbtrace, @dborigin )

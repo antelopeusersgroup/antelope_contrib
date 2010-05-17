@@ -1,5 +1,5 @@
 #
-#   Copyright (c) 2007 Lindquist Consulting, Inc.
+#   Copyright (c) 2007-2010 Lindquist Consulting, Inc.
 #   All rights reserved. 
 #                                                                     
 #   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
@@ -40,7 +40,10 @@
 #   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #   POSSIBILITY OF SUCH DAMAGE.
 
+use Carp;
 use POSIX ();
+use POSIX ":sys_wait_h";
+use POSIX qw(setsid setpgid) ;
 use Tk;
 use Tk::widgets qw(JPEG);
 use Tk::NoteBook;
@@ -52,16 +55,89 @@ use Tk::LabFrame;
 use Tk::FileSelect;
 use Tk::Table;
 
-require Tk::ErrorDialog;
-
 use Datascope;
+use children;
 use ptkform;
 use ptkalert;
+use staticsys;
 use rt;
 
 $HOME = $ENV{'HOME'};
+if( $HOME !~ m@^/@ ) {
+	exit( 0 );
+}
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+
+if( defined( $ENV{'DISPLAY'} ) && $ENV{'DISPLAY'} =~ m@(.*\:.*)@ ) {
+
+	$ENV{'DISPLAY'} = $1;
+
+} else {
+
+	elog_die( "DISPLAY environment variable is defined and does not contain ':'. Failed taint-checking\n" );
+}
+
+# Launder @INC to prevent taint-check death within Carp:
+for( $i = 0; $i < scalar( @INC ); $i++ ) {
+        if( $INC[$i] =~ m@^(/.*)@ ) {
+                $INC[$i] = $1;
+        } else {
+                $INC[$i] = undef;
+        }
+}
+
+require Tk::ErrorDialog;
+
+# Allow overload redefinitions: 
+no warnings 'redefine';
+
+# Overload to work around taint-check problems:
+sub Tk::After::cancel
+{
+ my $obj = shift;
+ my $cancelid  = $obj->[1];
+ my $w   = $obj->[0];
+ if ($cancelid)
+  {
+   if( defined( $w->{_TkValue_} ) && $w->{_TkValue_} =~ m@^(\..*)@ ) {
+      $w->{_TkValue_} = $1;
+   }
+   $w->Tk::after('cancel'=> $cancelid) if Tk::Exists($w);
+   delete $w->{_After_}{$cancelid} if exists $w->{_After_};
+   $obj->[1] = undef;
+  }
+ return $obj;
+}
+
+# Overload to work around taint-check problems:
+sub rt::rtchildren {
+    my ($pid) = @_ ;
+    my ($p, $child, $name, @children) ;
+    @children = () ;
+    my $ps = "/bin/ps -jax" ;
+    open ( PS, "$ps |" ) ;
+    @children = () ;
+    while ( <PS> ) {
+        $line = $_;
+        if( $line !~ /[ a-zA-Z0-9].*/ ) {
+                return ();
+        }
+        foreach $p ($pid,@children) {
+            if ( $line =~ /\w+\s+(\d+)\s+$p\s+\d+\s+\S+\s+\S \S+\s+\S+\s+\S+\s+(.*)/ ) {
+                $child= $1 ;
+                $name = $2 ;
+                next if $child eq $$ ;
+                push ( @children, $child ) ;
+            }
+        }
+    }
+   return @children ;
+}
+
+sub is_tainted {
+	return ! eval { eval("#" . substr(join("", @_), 0, 0)); 1 };
+}
 
 sub Usage {
 
@@ -75,6 +151,7 @@ sub Usage {
 	return( $usage );
 }
 
+# Overload to work around taint-check problems:
 sub ptkalert::position { 
     my($MW, $top) = @_ ; 
     my $x = $MW->rootx - int($top->width/2) ;
@@ -92,8 +169,7 @@ sub ptkalert::position {
     $top->geometry("+$x+$y") ;
 }
 
-# This method needs to be overloaded to ensure proper taint-checking:
-
+# Overload to work around taint-check problems:
 sub Tk::FileSelect::reread
 {
  my ($w) = @_;
@@ -252,7 +328,7 @@ sub parse_command_line {
 	foreach $arg qw( dbname trial_dbname nowait appname dbxcor_appname 
 			 comout winfile geom pf ) {
 
-		if( $State{$arg} =~ m@(.*)@ ) {
+		if( defined( $State{$arg} ) && $State{$arg} =~ m@(.*)@ ) {
 		
 			$State{$arg} = $1;
 		}
@@ -959,8 +1035,6 @@ sub init_database {
 			$net = dbgetv( @dbg, "net" );
 
 			$State{network_stations}->{$net} = [];
-
-			$nstas = dbquery( @dbg, dbRECORD_COUNT );
 
 			for( $dbg[3] = $first; $dbg[3] < $last; $dbg[3]++ ) {
 	
@@ -1783,7 +1857,7 @@ sub init_special {
 
 	} @dbprocess_commands;
 
-	if( ! defined( @dbprocess_commands ) ) {
+	if( ! @dbprocess_commands ) {
 		
 		elog_die( "Can't find table 'dbprocess_special{$oridcomb}' in '$State{pf}.pf'. Bye." );
 	}
@@ -2132,7 +2206,7 @@ foreach $param ( @booleans ) {
 	      dbpick_options 		[[:alnum:]_\-+]*
 	      smartpick_geometry 	[[:alnum:]_\-+]*
 	      smartpick_fontsize 	[[:alnum:]]*
-	      path			/[[:alnum:]_/:.]+
+	      path			/[[:alnum:]_/:.\-]+
 	      shell			/[[:alnum:]_/]+/(tc|c|ba|k)?sh
 	      print_command		[[:alnum:]_/:.]+
 	      default_postscript_file	[[:alnum:]_/:.]+
@@ -2277,7 +2351,14 @@ map {
 
 	while( $_ =~ m@^(\s*optionmenu\s+groups.*)<nettype\s+([a-z]+)>(.*)@ ) {
 
-		$_ = $1 . join( " ", @{$State{nettype_networks}->{$2}} ) . $3;
+		if( defined( $State{nettype_networks}->{$2} ) ) { 
+
+			$_ = $1 . join( " ", @{$State{nettype_networks}->{$2}} ) . $3;
+
+		} else {
+			
+			$_ = $1 . $3;
+		}
 	}
 
     } @specs;

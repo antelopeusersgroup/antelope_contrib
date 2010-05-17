@@ -12,6 +12,11 @@ DATA= \
 	perlVector.ref \
 	perltkBplot.ref \
 	php.ref \
+	python.ref \
+	pythonDatascope.ref \
+	pythonOrb.ref \
+	pythonPkt.ref \
+	pythonStock.ref \
 	scripting.ref \
 	scripting0.ref \
 	tcl.ref \
@@ -19,7 +24,6 @@ DATA= \
 	tclorb8.ref \
 	tkBrttPlot.ref \
 	tkPixmap.ref \
-	tkGpl.ref \
-	tkVogle.ref 
+	tkGpl.ref 
 
 include $(ANTELOPEMAKE)

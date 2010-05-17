@@ -130,4 +130,10 @@ modules &Arr{
 			man/man1/rtkill.1 
 		}
 	}
+	bootstrap &Arr{
+		build &Tbl{
+			src/contrib/lib/amakelocal
+			src/contrib/bin/utility/localmake
+		}
+	}
 }

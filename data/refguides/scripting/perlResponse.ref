@@ -7,71 +7,71 @@ use Response ;
 </man>
 
 get_response_from_file( filename )
-    Read respnse file filename
+    Read response file filename
     return an object with the following methods:
 <example>
-filename	returns resonse file name
-eval ( frequency) 	evaluates response at frequenchy hz
-groups	returns a list of response group objects
+filename - returns resp file name
+eval ( frequency)  - evaluates resp
+groups - returns resp group objects
 </example>
     Each response group object has the following methods which return various
     values from the resonse group structures:
 <example>
-id	returns response group type, one of PAZ, IIR, FIR, FAP, or FAP2
-sequence	returns response group sequence value
-description	returns response group description value
-author	returns response group author value
-eval ( frequency) 	evaluates response group at frequenchy hz
-params		returns another object reference to the filter parameters
+id - resp group type, one of PAZ, IIR, FIR, FAP, or FAP2
+sequence - resp group sequence
+description - resp group description 
+author - resp group author 
+eval ( frequency)  - evaluates resp group
+params - object reference to the filter parameters
 </example>
     For response group filter objects of type PAZ, the following methods return
     values from the Paz structures:
 <example>
-poles	returns a list of complex pole values
-pole_errors	returns a list of complex pole error values
-zeros	returns a list of complex zero values
-zero_errors	returns a list of complex zero error values
-normalization	returns the normalization value and normalization frequency
-sort	causes the poles and zeros to be sorted by increasing frequency
+poles - complex poles
+pole_errors - complex pole errors
+zeros - complex zeros
+zero_errors - complex zero errors
+normalization - normalization value freq
+sort - sorts poles and zeros
 </example>
     For response group filter objects of type IIR, the following methods return
     values from the Iir structures:
 <example>
-poles	returns a list of complex pole values
-pole_errors	returns a list of complex pole error values
-zeros	returns a list of complex zero values
-zero_errors	returns a list of complex zero error values
-normalization	returns the normalization value and normalization frequency
+poles - complex poles
+pole_errors - complex pole errors
+zeros - complex zeros
+zero_errors - complex zero errors
+normalization - normalization value freq
 </example>
     For response group filter objects of type FIR, the following methods return
     values from the Fir structures:
 <example>
-samplerate	returns Fir structure srate member
-decimation_factor	returns Fir structure dec_factor member
-seed_decimation_offset	returns Fir structure seed_dec_offset member
-midpoint	returns Fir structure midpoint member
-numerator_coefficients	returns a list of the numerator coefficients
-numerator_coefficient_errors	returns a list of the numerator coefficient errors
-denominator_coefficients	returns a list of the denominator coefficients
-denominator_coefficient_errors	returns a list of the denominator coefficient errors
+samplerate - sample rate
+decimation_factor - decimation
+seed_decimation_offset - seed offset
+midpoint - midpoint
+numerator_coefficients - numerator coefficients
+numerator_coefficient_errors - numerator coefficient errors
+denominator_coefficients - denominator coefficients
+denominator_coefficient_errors - denominator coefficient errors
 </example>
     For response group filter objects of type FAP, the following methods return
     values from the Fap structures:
 <example>
-frequencies	returns a list of the frequencies
-amplitudes	returns a list of the corresponding amplitudes
-amplitude_errors	returns a list of the corresponding amplitude errors
-phases	returns a list of the corresponding phases
-phase_errors	returns a list of the corresponding phase errors
+frequencies - frequencies
+amplitudes - amplitudes
+amplitude_errors - amplitude errors
+phases - phases
+phase_errors - phase errors
 </example>
     For response group filter objects of type FAP2, the following methods return
     values from the Fap2 structures:
 <example>
-frequencies	returns a list of the frequencies
-amplitudes	returns a list of the corresponding amplitudes
-amplitude_errors_high	returns a list of the corresponding high amplitude errors
-amplitude_errors_low	returns a list of the corresponding low amplitude errors
-phases	returns a list of the corresponding phases
-phase_errors_high	returns a list of the corresponding high phase errors
-phase_errors_low	returns a list of the corresponding low phase errors
+frequencies - frequencies
+amplitudes - amplitudes
+amplitude_errors_high - high amplitude errors
+amplitude_errors_low - low amplitude errors
+phases - phases
+phase_errors_high - high phase errors
+phase_errors_low - low phase errors
 </example>

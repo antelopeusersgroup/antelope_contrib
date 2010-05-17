@@ -31,7 +31,7 @@ cvs1.0
 Db2sd1.0
     additions to css3.0 for generating SEED volumes
 
-dbrecenteqs1.1
+dbrecenteqs1.2
     expansion of css3.0 and rt1.0 to support web-based mapping of 
     hypocenters and related information
 
@@ -53,7 +53,7 @@ Logs1.0
 models0.4
     prototype css3.0 expansion schema to store travel-time models 
 
-MWavelet1.1
+MWavelet1.4
     extension of css3.0 for multiwavelet array-processing 
 
 notify1.2
@@ -78,7 +78,7 @@ statrans1.1
     by some networks in the past) to css3.0-compatible station and
     channel names.
 
-Status1.0
+Status2.0
     monitoring and maintenance of one or more Antelope real-time systems
 
 strawman1.0

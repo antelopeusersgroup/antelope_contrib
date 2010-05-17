@@ -11,6 +11,7 @@ DATA= \
     mif_pathname.pl \
     parse_cdecl.pl \
     parse_fdecl.pl \
+    pythonfunctions.pl \
     section.pl \
     structures.pl
 

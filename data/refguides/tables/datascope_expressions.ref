@@ -106,6 +106,7 @@ yearday(epoch)
 
 <subsection Flinn-Engdahl Regions>
 <function>
+
 grname(lat,lon)
     geographic region name
 

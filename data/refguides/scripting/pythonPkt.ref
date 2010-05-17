@@ -5,16 +5,16 @@ from antelope.Pkt import *
 <man>
 % man pythonPkt
 </man>
-<function>
+<pythonfunction>
 
 showPkt(srcname, pkttime, pkt, nbytes, mode = PKT_TERSE)
     print out packet summary, depending on mode:
 <example>
-PKT_DUMP	hex dump
-PKT_UNSTUFF	unstuff, print all data samples
-PKT_NOSAMPLES	unstuff, print no data samples
-PKT_TERSE	just show the header information
-PKT_PEEK	show the first 10 values
+PKT_DUMP      hex dump
+PKT_UNSTUFF   unstuff, print all samples
+PKT_NOSAMPLES unstuff, print no samples
+PKT_TERSE     just show the header info
+PKT_PEEK      show the first 10 values
 </example>
 
 unstuffPkt(srcname, pkttime, pkt, nbytes)

@@ -268,6 +268,9 @@ dbverify [options] db[.table]
 -X pf	use alternate parameter file
 </options>
 
+dbassert [-r record#] [-v] database.table expr ...
+    evaluate each expr against the database table, with -v printing first record which fails
+
 dbcheck_responses [-t tolerance] [-v] database
 dbcheck_responses [-t tolerance] [-v] -f response-file ...
      perform simple checks on response files from instrument and stage 
