@@ -79,6 +79,9 @@ dbevents [options] dbname [start [end]]
 -pf pfname	parameter file name
 </options>
 
+dbevents_new dbname
+    preliminary new version of dbevents
+
 dlreport [options] { -S | -E } db 
     summarize dlevents in mailable report 
 <options>
@@ -219,9 +222,6 @@ orbserver [options] pf
 -v[v]	verbose/doubly verbose
 </options>
 
-orbserver64 [options] pf
-    same as orbserver, but allows much larger ring buffers (32 bit Solaris only)
-
 diskserver [-p pf] [-v] dir[:port]
      emulate read-only orbserver on port using directory dir of special forb files
 
@@ -232,6 +232,7 @@ orb2disk [options] orb directory [start-time [end]]
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
 -n n	stop after n packets
+-N pktspersegment	specify max packets per segment
 -p period	approximate time length of files
 -s size	size limit for directory
 -v	more verbose
@@ -275,9 +276,6 @@ pforbstat [options] orb [secs]
 -v	more verbose
 </options>
 
-orblook { start orbname interval | restart orbname interval | stop orbname }
-     Start/Stop orblookupd daemon for monitoring orb status
-
 <subsection Data Loggers: import to orb>
 <commands>
 deprecated adsend2orb orb port
@@ -299,12 +297,15 @@ guralp2orb [options] orbname
 guralplocate log1 log2 ...
     estimate station location from guralp log files
 
-ida2orb [-u] [-r sec] orb nrts selection
+deprecated ida2orb [-u] [-r sec] orb nrts selection
     copy selected data from IDA nrts to orbserver
 <options>
 -u change station and channel to uppercase
 -r sec	reject future packets 
 </options>
+
+isi2orb [-v] [-V] [-p pf] [-S state] server orb
+    copy data from IDA server to orb
 
 liss2orb [options] liss orb
     copy data from LISS server liss to orbserver orb
@@ -347,10 +348,11 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -pf pf	parameter file
 -S statefile	
 -noipresolv	do not try to resolve ip addresses
--v
+-v	verbose
+-poc_vampire	get pocs from other port
 </options>
 
-q330pocd [-i ip] [-p port] [-noipresolv] targetname orb
+q330pocd [options] targetname orb
     receive POC messages and save to orb
 <options>
 -i ip	bind to one of several local ip addresses
@@ -358,10 +360,20 @@ q330pocd [-i ip] [-p port] [-noipresolv] targetname orb
 -noipresolv	don't look up hostnames
 </options>
 
-q330_location [-m mail] [-p pf] [-t mmax] [-v] orb db
+q330_location [options] status_orb [cmd_orb] db
      alert if Q330 locations in status packets differ more than mmax from database location
+<options>
+-c chan_code	change default chan code from BHZ
+-f	force dlcmd to renew data
+-m mail	email address list
+-n	only show what would be done, no table updates
+-p pf_src	change default pf packets 	
+-s sta_regex	select sta code
+-t mmax	threshold for flagging of distance problems
+-v	verbose
+</options>
 
-q330coms [-n net] [-p pf] [-v] orb db
+q330coms [-n net] [-p pfsrcname] [-v] orb db
     compare Q330 status packets with Q330comm database table
 
 q330proxy [-v[v[v]]] [-help] [template]
@@ -448,7 +460,7 @@ k2cmd [options] orb target datalogger cmd
 -delayhangup delayhangup	delay digitizer hangup
 </options>
 
-q330util {pollsn  targetip | register targetip,sn,lport | getconfig  targetip,sn,lport,config | control targetip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs}}
+q330util [options] cmd
     perform some utility functions for Q330
 <options>
 -port port	udp port
@@ -456,6 +468,23 @@ q330util {pollsn  targetip | register targetip,sn,lport | getconfig  targetip,sn
 -auth auth	Q330 authorization code
 -sequence seq	starting sequence number for commands
 -timeout timeout	timeout for udp response
+-i local_ip	address to bind local UDP sockets
+-pfout	display output in pf file format
+</options>
+    cmd is one of:
+<options>
+pollsn q330tip 
+ping q330ip,lport,{info|ECHO} 
+register q330ip,sn,lport 
+getconfig  q330ip,sn,lport,config 
+control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} 
+sauth q330ip,sn[,port_1_auth[...]] 
+sipaddr q330ip,sn,interface,newip 
+sbpwr q330ip,sn,interface,function,timeout 
+rqannc q330ip,sn 
+umsg q330ip,sn,lport,message 
+ident q330ip,sn[,tport[,lport]] 
+marmotfix q330ip,sn[,interface[,baudrate]]
 </options>
 
 qtcmd [options] cmdorb net_sta cmd [params]
@@ -547,7 +576,6 @@ orb2ntp [-d delay] [-f freq] [-m match] [-n navg] [-o old] [-r reject] [-u unit]
 rtlogs orb
     display log messages from orbserver orb
 
-
 <subsection Other Orb Writers>
 <commands>
 pf2orb [-s sta] [-p subcode] pfile orb
@@ -609,13 +637,12 @@ orb2orb [options] in out [start [period|end]]
 -c suffix	convert packets to suffix format
 -C rate	throttle to specified output rate: kbytes/sec or (with p suffix) pkts/sec.
 -d	print hex dump of each packet 
+-D seconds	delay copying packets for specified seconds
 -f	for file input, do not adjust time tags, and output packets as quickly as possible
 -i secs	save state file every secs seconds
--l	loop repeatedly over input forb(5) file
 -m re1	read only packets which match re1 
 -n n	stop after n packets
 -p pf	alternate parameter file
--R r	when saving to file, use forb(5) format r
 -r re2	don't read packets matching re2
 -S filename	save state in filename
 -s p	start after pktid #p
@@ -776,43 +803,6 @@ orbwfproc [options] dbmaster [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -p pf
 </options>
 
-orbmag [options] orbwf orbdb dbname
-    real time magnitude computation
-<options>
--start {pktid|time|OLDEST|NEWEST}
--number number
--nowait
--state file	save state in file
--p pf
--auth_expr auth_expr
--target_orbmag torbmag
--make_magtables
--use_mean
--use_if_not_associated
--use_if_not_defining
-</options>
-
-orbampmag  [options] orbwf orbdb dbname
-    real time computation of mb, ML or Ms magnitudes
-<options>
--auth_expr auth	only use packets with matching author
--make_magtables	make netmag and stamag packets
--nowait	quit when no packets left to process
--number n	limit on packets to process
--pf pf
--start {pktid|time}
--state state
--target_orbmag orb1 
--next_target_orbmag orb2
--use_mean	use mean, not median statistics
--use_p2p 	use peak to peak, not maximum value 
--use_if_not_associated
-	use all stations
--use_if_not_defining
-	use all picks
--v
-</options>
-
 orbwfrms [options] dbname orbin [orbout]
     compute running rms estimates from waveform packets
 <options>
@@ -951,8 +941,29 @@ orbdisp [options] orbserver [start [range|end]]
 -w t	make time window t seconds
 </options>
 
+tkorblag orb
+    graphical view of read client latency in orb 
+
 <subsection Saving Orb Data in Database>
 <commands>
+
+cdorb2db [options] orb db [start [end|period]]
+    copy gappy/out of order (CD1) waveform data from orbserver orb into integer waveform files of database db (starting at time start through end or for stated period)
+<options>
+-c re	save channel matching regular expression re
+-m re	select packets matching regular expression re
+-r re	reject packets matching regular expression re
+-p pf	specify parameter file
+-S file	save state in file
+-t timetags	create file of time tags from input packets
+-v	more verbose
+-vv	show every packet read.
+-w wfname	specify pattern for waveform file names
+</options>
+
+db2msd [-t ndays] [-1nv] db
+     convert older waveform files to miniseed in place, used with cd2orb. with -1, use steim 1 compression
+
 orb2db [options] orb db [start [end|period]]
     copy waveform data from orbserver orb into database db (starting at time start through end or for stated period)
 <options>
@@ -972,23 +983,6 @@ orb2db [options] orb db [start [end|period]]
 
 orb2db_flush [-nv] [-m match] [-r reject] orb
     cause orb2db to write out all waveform data for selected packets
-
-cdorb2db [options] orb db [start [end|period]]
-    copy gappy/out of order (CD1) waveform data from orbserver orb into integer waveform files of database db (starting at time start through end or for stated period)
-<options>
--c re	save channel matching regular expression re
--m re	select packets matching regular expression re
--r re	reject packets matching regular expression re
--p pf	specify parameter file
--S file	save state in file
--t timetags	create file of time tags from input packets
--v	more verbose
--vv	show every packet read.
--w wfname	specify pattern for waveform file names
-</options>
-
-db2msd [-t ndays] [-1nv] db
-     convert older waveform files to miniseed in place, used with cd2orb. with -1, use steim 1 compression
 
 orb2dbt [options] orb dbout [orbout]
     read database packets from an orb and write to database
@@ -1045,6 +1039,16 @@ orbmsd2days [options] orb
 -e et	save data only when block start time < et
 -w wf	pattern for the output miniseed files
 -v	Be more verbose.
+</options>
+
+q330logs2db  [options] orb db
+    add key q330 orb log output to db table
+<options>
+-p pf	parameter file
+-v	verbose 
+-l match_logname	regex for limiting log review
+-s {OLDEST|start_time} 	start here rather than newest packet
+-S state	statefile 
 </options>
 
 <subsection Orb Alarms>
@@ -1269,7 +1273,6 @@ forbserver [options] filename
 -[a|b|f|x]	specify format in output forb(5) file
 -c   	adjust time tags to the current time.
 -s	meter out packets at real time rate
--U	run elog_debugger() to start a debugger on the process.
 -v	more verbose
 -w	overwrite existing file instead of appending
 </options>

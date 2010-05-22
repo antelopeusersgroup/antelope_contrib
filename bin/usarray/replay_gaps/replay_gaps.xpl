@@ -4,20 +4,20 @@
     require "getopts.pl" ;
     use strict ;
     use Datascope ;
-    use archive;
-    use timeslice;
+    use archive ;
+    use timeslice ;
+    use utilfunct ;
     
     our ($opt_v,$opt_V,$opt_f,$opt_m,$opt_n,$opt_p);
     our ($pgm,$host);
     
 {    #  Main program
 
-    my ($cmd,$problems,$subject,$Pf,$replay_orb,$year,$month,$debug,$verbose);
-    my ($starttime,$endtime,$stime,$str_start,$str_end);
-    my ($dirname,$dmcdbname,$exists,$dbname,$archive_db);
-    my ($dbout,$tmpwf,$dir,$base,$suff,$usage);
-    my (@db) ;
-    my (%pf) ;
+    my ( $Pf, $archive_db, $cmd, $dbname, $debug, $dirname, $dmcdbname, $endtime, $exists, $month ) ;
+    my ( $problems, $replay_orb, $starttime, $stime, $str_end, $str_start ) ;
+    my ( $subject, $usage, $verbose, $year );
+    my ( @db ) ;
+    my ( %pf ) ;
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -45,8 +45,6 @@
 
     $Pf         = $opt_p || "proc_gaps" ;
         
-    %pf = getparam($Pf);
-
     $replay_orb = $ARGV[0];
     $year       = $ARGV[1];
     $month      = $ARGV[2];
@@ -54,6 +52,15 @@
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
+    
+    %pf = &getparam($Pf, $verbose, $debug);
+
+    if ($pf{period} !~ /year|month/) {
+        elog_complain("\n\n Paremeter file error.\nperiod $pf{period} is not \"year\" or \"month\"");
+        $subject = "Problems - $pgm $host	Paremeter file error.";
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject");
+    }
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -203,50 +210,50 @@
     exit(0);
 }
 
-sub getparam { # %pf = getparam($Pf);
-    my ($Pf) = @_ ;
-    my ($subject);
-    my (%pf) ;
-    
-    $pf{rtdirbase}			= pfget( $Pf, "rtdirbase" );
-    $pf{dbbase}				= pfget( $Pf, "dbbase" );
-    $pf{dmcgapbase}			= pfget( $Pf, "dmcgapbase" );
-    $pf{archivebase}		= pfget( $Pf, "archivebase" );
-    $pf{period}				= pfget( $Pf, "period" );
-    $pf{balerdb_central}	= pfget( $Pf, "balerdb_central" );
-    $pf{clustername}		= pfget( $Pf, "clustername" );
-    $pf{balerwfdisc}		= pfget( $Pf, "balerwfdisc" );
-    $pf{cleanbalerdirbase}  = pfget( $Pf, "cleanbalerdirbase" );
-    
-    $pf{dbpath}     		= pfget( $Pf, "dbpath" );
-    $pf{dbidserver} 		= pfget( $Pf, "dbidserver" );
-    $pf{dblocks}    		= pfget( $Pf, "dblocks" );
-
-    
-
-    if ($pf{period} !~ /year|month/) {
-        elog_complain("\n\n Paremeter file error.\nperiod $pf{period} is not \"year\" or \"month\"");
-        $subject = "Problems - $pgm $host	Paremeter file error.";
-        &sendmail($subject, $opt_m) if $opt_m ; 
-        elog_die("\n$subject");
-    }
-    
-    if ($opt_V) {
-        elog_notify("\nrtdirbase        $pf{rtdirbase}");
-        elog_notify("dbbase           $pf{dbbase}");
-        elog_notify("dmcgapbase       $pf{dmcgapbase}");
-        elog_notify("archivebase      $pf{archivebase}");
-        elog_notify("period           $pf{period}" );
-        elog_notify("balerdb_central  $pf{balerdb_central}" );
-        elog_notify("clustername      $pf{clustername}" );
-        elog_notify("balerwfdisc      $pf{balerwfdisc}" );
-        elog_notify("dbpath           $pf{dbpath}" );
-        elog_notify("dbidserver       $pf{dbidserver}" );
-        elog_notify("dblocks          $pf{dblocks}\n\n" );
-    }
-        
-    return (%pf) ;
-}
+# sub getparam { # %pf = getparam($Pf);
+#     my ($Pf) = @_ ;
+#     my ($subject);
+#     my (%pf) ;
+#     
+#     $pf{rtdirbase}			= pfget( $Pf, "rtdirbase" );
+#     $pf{dbbase}				= pfget( $Pf, "dbbase" );
+#     $pf{dmcgapbase}			= pfget( $Pf, "dmcgapbase" );
+#     $pf{archivebase}		= pfget( $Pf, "archivebase" );
+#     $pf{period}				= pfget( $Pf, "period" );
+#     $pf{balerdb_central}	= pfget( $Pf, "balerdb_central" );
+#     $pf{clustername}		= pfget( $Pf, "clustername" );
+#     $pf{balerwfdisc}		= pfget( $Pf, "balerwfdisc" );
+#     $pf{cleanbalerdirbase}  = pfget( $Pf, "cleanbalerdirbase" );
+#     
+#     $pf{dbpath}     		= pfget( $Pf, "dbpath" );
+#     $pf{dbidserver} 		= pfget( $Pf, "dbidserver" );
+#     $pf{dblocks}    		= pfget( $Pf, "dblocks" );
+# 
+#     
+# 
+#     if ($pf{period} !~ /year|month/) {
+#         elog_complain("\n\n Paremeter file error.\nperiod $pf{period} is not \"year\" or \"month\"");
+#         $subject = "Problems - $pgm $host	Paremeter file error.";
+#         &sendmail($subject, $opt_m) if $opt_m ; 
+#         elog_die("\n$subject");
+#     }
+#     
+#     if ($opt_V) {
+#         elog_notify("\nrtdirbase        $pf{rtdirbase}");
+#         elog_notify("dbbase           $pf{dbbase}");
+#         elog_notify("dmcgapbase       $pf{dmcgapbase}");
+#         elog_notify("archivebase      $pf{archivebase}");
+#         elog_notify("period           $pf{period}" );
+#         elog_notify("balerdb_central  $pf{balerdb_central}" );
+#         elog_notify("clustername      $pf{clustername}" );
+#         elog_notify("balerwfdisc      $pf{balerwfdisc}" );
+#         elog_notify("dbpath           $pf{dbpath}" );
+#         elog_notify("dbidserver       $pf{dbidserver}" );
+#         elog_notify("dblocks          $pf{dblocks}\n\n" );
+#     }
+#         
+#     return (%pf) ;
+# }
    
 sub bad_exit { # &bad_exit($cmd) ;
     my ($cmd) = @_ ;

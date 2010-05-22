@@ -100,12 +100,32 @@ default_request_start -00:10
 .SH EXAMPLE
 .in 2c
 .ft CW
-Request waveforms covering the point in time 10 minutes ago:
+The example below shows a simple request for waveforms covering one distinct point in time. The argument, in 
+single quotes, is a time-string in any of the formats interpretable by the str2epoch(3) command and documented
+in that man-page: 
+.nf
+
+% iarequest '2010-04-18 3:00'
+iarequest: Received response from ia2orb:
+        [ia2orb thread 'command']: Issued acquisition-request to all on-demand stations for window overlapping ' 4/18/2010   3:00:00.000 UTC'
+
+% 
+
+.fi
+
+Because the str2epoch(3) command is able to interpret requests for data relative to the current system-clock time, 
+we can also use this feature to ask for relative times, such as to acquire waveforms containing the point in 
+time 10 minutes ago. Again, see the str2epoch(3) man-page for details on this formatting trick. As a small point
+of Unix trivia, in order to get this to work with relative (negative) times, one has to precede the time value 
+with a "--" to indicate to the \fBiarequest\fP command that all hyphenated option-arguments have been given 
+and the next item is a command-line argument that should not be interpreted as one of the OPTION items listed 
+above (this "--" trick is a standard Unix feature, though one perhaps not as widely known as some others): 
+
 .nf
 
 % iarequest -- '-00:10'
 iarequest: Received response from ia2orb:
-        [ia2orb thread 'command']: Issued acquisition-request to all on-demand stations for window overlapping '11/21/2009   0:49:52.541 UTC'
+        [ia2orb thread 'command']: Issued acquisition-request to all on-demand stations for window overlapping ' 4/18/2010   3:36:05.588 UTC'
 
 % 
 

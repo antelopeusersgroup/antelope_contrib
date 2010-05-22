@@ -154,24 +154,6 @@ correctdt [-m srcmatch] [-t stime] [-v] bdb
 
 <subsection Analysis>
 <commands>
-dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
-    database array processing program
-<options>
--script script_file
--dbout dbout
--v verbose
--ts tstart_time
--te end_time
--arid arid
--arid_t0 arid_t0
--arid_tw arid_tw
--chan chan
--filter filter
--samprate samprate
--azimuth azimuth
--slow slow
--name1 value1 [-name2 value2] [...]
-</options>
 
 dbcalibrate [options] dbin [sequence_id [sequence_id_cmp[,chan_cmp]]
     sensor and cross comparison calibration analysis program
@@ -325,7 +307,7 @@ tkdbpick [options] {dbname|-}
 -counts 
 </options>
 
-trdisp [-g geom] [-r] [-s subset] [-w hours] database[.table] [start [range]]
+trdisp [-g geom] [-hr] [-s subset] [-w hours] database[.table] [start [range]]
     display waveform data and arrivals from database or view
 
 dbheli [options] db sta chan tstart twinline nlines scale
@@ -356,6 +338,12 @@ dbversac database
 
 dbchkwf [ -v ] database
     file consistency check for wfdisc
+
+chkmsd [-v] db
+     checks all miniseed blocks to see db and miniseed agree
+
+dbchkwfdata [-av] db
+     read from each waveform in db, only last sample or entire waveform with -a
 
 dbcmpwf [-acmv]    db1[.table] record1 db2[.table] record2
 dbcmpwf [-acmsv]   db1[.table] db2[.table]

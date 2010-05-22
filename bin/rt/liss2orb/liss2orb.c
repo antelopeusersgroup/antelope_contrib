@@ -10,6 +10,7 @@ Arr *NewCh;
 int PSize;
 int Log;
 struct sockaddr_in peer_in;
+char *Debug = 0 ;
 
 static void 
 usage ()
@@ -107,13 +108,17 @@ main (int argc, char **argv)
     int		   remap = 0 ;
     Bns 	   *bns=0 ;
     Hook	   *hook=0 ;
-    int		   start, nchars ;
+    long	   start, nchars ;
 
     elog_init (argc, argv);
-    elog_notify ( 0, "%s $Revision$ $Date$\n", Program_Name ) ; 
+    announce(0,0) ;
 
-    while ((c = getopt (argc, argv, "d:m:n:rs:t:vV")) != -1) {
+    while ((c = getopt (argc, argv, "D:d:m:n:rs:t:vV")) != -1) {
 	switch (c) {
+	  case 'D':
+	    Debug = optarg ; 
+	    break ;
+
 	  case 'd':
 	    database = optarg ; 
 	    break ;
@@ -143,7 +148,7 @@ main (int argc, char **argv)
 	    break;
 
 	  case 'V':
-	    cbanner ( "$Revision$", 0,
+	    cbanner ( 0, 0,
 		"Daniel Quinlan", "BRTT", "danq@brtt.com" ) ;
 	    usage() ;
 	    break ;
@@ -197,6 +202,21 @@ main (int argc, char **argv)
 	}
 
 	if (getpkt(bns, &seed, fixedsize, &pktsize, &seedsize) == 0) { 
+	    if ( Debug != 0 ) { 
+		static int debug = -1 ; 
+		static long cnt = 0 ;
+		if ( debug < 0 ) { 
+		    debug = reopen (Debug, O_RDWR | O_CREAT, 0664);
+		    if ( debug < 0 ) { 
+			die ( 1, "Can't open %s to write out packets!", Debug ) ; 
+		    }
+		    printf ( "\n" ) ;
+		}
+		fprintf ( stderr, "\rPacket #%ld", cnt++ ) ; 
+		if ( write ( debug, seed, pktsize ) != pktsize ) { 
+		    die ( 1, "Failed to write %d bytes to %s", pktsize, Debug ) ; 
+		}
+	    }
 	    if ( liss2orbpkt ( seed, pktsize, database, remap,
 		    srcname, &time, &packet, &nbytes, &bufsize ) == 0 ) { 
 		if ( match == 0 || strcontains ( srcname, match, &hook, &start, &nchars) ) { 

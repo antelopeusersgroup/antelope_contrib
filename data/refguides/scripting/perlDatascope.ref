@@ -151,7 +151,7 @@ dbnextid (@db, id_name)
 
 dbstrtype (@db, string)
     classifies string, returning "strREAL", "strINTEGER", "strNULL", "strSTRING", 
-    "strTIME", "strFIELD", or "strUNKNOWN"
+    "strTIME", "strFIELD", "strEXPR", or "strUNKNOWN"
 
 dbfind (@db, string [, first [,reverse]])
     find first row matching expression, starting with first; if reverse, search backwards 
@@ -175,12 +175,20 @@ trloadchan(@db, $t0, $t1, $sta, $chan)
     load data for $sta/$chan between time $t0 and $t1.  
     returns database pointer to trace table.
 
+trcreate($sta, $chan, $time, $nsamp, $samprate)
+    create a temporary trace database with single row of 
+    $sta, $chan, $time, $nsamp, and $samprate
+
 trcopy(@dbout, @dbin)
     returns a temporary copy of a trace database table,
     possible appending to an existing table
 
 trdata(@db[, $i0[, $npts]])
     returns $npts data points starting at $i0 from trace table record @db
+
+trputdata(@db, @data)
+    logical inverse of trdata: puts @data that has changed into
+    array referenced by @db
 
 trsplit(@tr)
     eliminate marked gaps inside the trace table @tr by splitting
@@ -387,6 +395,9 @@ closering(rb)
 pushring(rb, time, value)
     add time/value pair to ring (in time order)
 
+cramring(rb, time, value, "collapse") 
+    add time/value pair to ring according to algorithm collapse
+
 getring(rb, i)
     return the i'th time/value pair from the ring; 
     0 is the most recent pair
@@ -412,6 +423,12 @@ countring(rb)
 findring(rb, value, tdelta)
      findring searches the ring buffer rb over the specified time
      period tdelta for the specific value.
+
+meanring(rb, tdelta) ;
+    returns #pts, mean and standard deviation for latest tdelta seconds
+
+linearfitring($rb, $tdelta) 
+    returns #pts, slope, y-intercept and correlation coefficient for latest tdelta seconds
 
 <subsection Time Conversion>
 
@@ -458,6 +475,36 @@ yearday (epoch)
 
 wait_for_time(time,verbose)
     wait for specified time
+
+<subsection Coordinate Transormations>
+
+r3mag(@x)
+    returns the magnitude of a 3-vector
+
+r3dot(@x)
+    returns the dot product of two 3-vectors
+
+r3norm(@x)
+    returns the normalized 3-vector  
+
+r3cross(@x,@y)
+    returns the cross product of two 3-vectors 
+
+r3orthonormal(@x,@y)
+    returns the unit vector perpendicular to @x in the direction of @y 
+
+deg(radians)
+rad(degrees)
+    conversions between degrees and radians
+
+dist(lat1,lon1,lat2,lon2)
+    returns distance and azimuth from lat1,lon1 to lat2,lon2
+
+latlon(lat1,lon1,delta,azimth)
+    returns lat and lon for point distance and azimuth from lat1,lon1 to lat2,lon2
+
+rotation(@axis,@vector,$theta)
+    returns vector rotated about axis by theta radians
 
 <subsection State Files>
 

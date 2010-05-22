@@ -39,10 +39,10 @@ main(int argc, char **argv)
 	unsigned long   ind;
 	int             maxpoints = 5000;
 	Point          *poly = malloc(maxpoints * sizeof(double));
-	int             noints = 0;
+	long             noints = 0;
 	double          lat, lon;
 
-	int             npoints;
+	long             npoints;
 	char           *auth = malloc(STRSZ);
 	char            ptype[STRSZ];
 	char           *dir = malloc(STRSZ), *dfile = malloc(STRSZ), *tname = malloc(STRSZ),

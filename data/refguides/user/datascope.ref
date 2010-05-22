@@ -65,7 +65,7 @@ dbsnapshot [options] db [start_time [end_time|period]]
 
 <subsection Creating and Editing Databases>
 <commands>
-dbe [-e] [-p pf] db[.table] [ db[.table] ...]
+dbe [-e] [-p pf] db[.table] [ db[.table] ...] [-f field ...]
     general purpose viewer/editor for databases 
 
 dberesp [db.table | -f response ..]
@@ -90,6 +90,7 @@ dbset [options] db[.table] field from [to]
     change value of attribute field throughout database
 <options>
 -c 	ask before changing ('all' accepts all changes)
+-C	force updating timestamp field
 -l	use literal value for comparison
 -v	show changes
 </options>
@@ -106,6 +107,7 @@ dbcp [options] dbin[.table] dbout
 -a alt	specify alternate subdir for external file copies
 -d	make descriptor file for dbout which references dbin
 -i	prompt for permission to overwrite existing tables
+-I table,...	skip copying specified tables
 -F	override ../ exclusion (caveat emptor)          
 -f	copy external files (default changes references)
 -l	create local symbolic links for external files
@@ -266,6 +268,9 @@ dbverify [options] db[.table]
 -X pf	use alternate parameter file
 </options>
 
+dbassert [-r record#] [-v] database.table expr ...
+    evaluate each expr against the database table, with -v printing first record which fails
+
 dbcheck_responses [-t tolerance] [-v] database
 dbcheck_responses [-t tolerance] [-v] -f response-file ...
      perform simple checks on response files from instrument and stage 
@@ -302,11 +307,12 @@ dbcentral [-dln] [-q query] [-t time] [database_cluster [task_nickname]]
 dbgraph [options] db[.tbl [ {yexpr|xexpr yexpr} ]]
     graph data from a database
 <options>
--h	hue
--p	pf
--s	saturation
--S 	symbol
--z	size
+-b batch	specify batch file
+-B log	log tk graphics commands
+-p pf	specify pf
+-C	debugging
+-d	debugging 
+-D	show coordinates
 </options>
 
 dbids [-p port] [-P pf] [-v] database

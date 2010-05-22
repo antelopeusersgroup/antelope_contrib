@@ -1,6 +1,6 @@
 
 DATA = \
-	rsyncbaler \
+	balerlist \
 	dlcmd_cal \
         dlevent \
 	gsnspec \
@@ -10,6 +10,7 @@ DATA = \
 	replayed \
 	rrdcache \
 	rrdgraph \
+	rsyncbaler \
 	sitephotos \
 	wfoffset \
 	wfsrb

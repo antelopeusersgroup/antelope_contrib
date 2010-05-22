@@ -67,8 +67,12 @@
 
 #define IA2ORB_EXPECT_ZERO 0
 #define IA2ORB_INTERNAL_TIMEOUT 5
+#define IA2ORB_RETRIEVE_SUCCEEDED 0
+#define IA2ORB_RETRIEVE_FAILED_PERMANENT -1
+#define IA2ORB_RETRIEVE_FAILED_TRANSIENT -2
 #define PFWATCH_SLEEPTIME_SEC 1
 #define IA_BLOCKSIZE_SEC 300
+#define IA_REASONABLE_WRITETIME_SEC 30
 #define EPSILON_SEC 2
 #define MAX_SLEEPTIME_SEC ( (int) ( 1.5 * (double) IA_BLOCKSIZE_SEC ) )
 #define EXHUME_SLEEPTIME_SEC 5
@@ -895,7 +899,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 		free( ds );
 		free( ns );
 
-		return -1;
+		return IA2ORB_RETRIEVE_FAILED_PERMANENT;
 	}
 
 	s = epoch2filename( reqtime );
@@ -915,7 +919,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 			free( ns );
 		}
 
-		return -1;
+		return IA2ORB_RETRIEVE_FAILED_PERMANENT;
 	}
 
 	sprintf( ia->msdfile_target, "%s/%s_%s",
@@ -959,7 +963,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 
 		free( ns );
 
-		return -1;
+		return IA2ORB_RETRIEVE_FAILED_TRANSIENT;
 	}
 
 	if( ia->byteswap_msd_timecorr ) {
@@ -976,7 +980,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 
 			free( ns );
 
-			return -1;
+			return IA2ORB_RETRIEVE_FAILED_PERMANENT;
 		}
 	}
 
@@ -1020,7 +1024,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 
 		free( ns );
 
-		return -1;
+		return IA2ORB_RETRIEVE_FAILED_PERMANENT;
 	}
 
 	*ia->latest_acquired = filename2epoch( msdfile_source );
@@ -1032,7 +1036,7 @@ retrieve_block( Ia2orb_sta *ia, double reqtime )
 		bury();
 	}
 
-	return 0;
+	return IA2ORB_RETRIEVE_SUCCEEDED;
 }
 
 int
@@ -1866,6 +1870,9 @@ ia2orb_acquire_on_demand( void *iap )
 	Ia2orb_sta *ia = (Ia2orb_sta *) iap;
 	Ia2orb_req *iar = NULL;
 	char	threadname[STRSZ];
+	char	*ns;
+	char	*s;
+	int	estimated_sleeptime_sec;
 	int	old;
 	int	rc;
 
@@ -1901,9 +1908,32 @@ ia2orb_acquire_on_demand( void *iap )
 
 		pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &old );
 
-		retrieve_block( ia, iar->reqtime );
+		rc = retrieve_block( ia, iar->reqtime );
 
-		if( iar != (Ia2orb_req *) NULL ) {
+		if( rc == IA2ORB_RETRIEVE_FAILED_TRANSIENT &&
+		    iar->reqtime > now() - IA_BLOCKSIZE_SEC - IA_REASONABLE_WRITETIME_SEC ) {
+
+			estimated_sleeptime_sec = 
+			    (int) rint( iar->reqtime + IA_BLOCKSIZE_SEC + IA_REASONABLE_WRITETIME_SEC - now() );
+
+			if( Cf.veryverbose ) {
+
+				elog_notify( 0, 	
+					"[thread '%s']: Sleeping %d seconds and re-posting on-demand data request "
+					"because start-time '%s UTC' is close to or less than one IA block-size "
+					"(%d sec) before system-clock time\n",
+					ns = thread_name(), estimated_sleeptime_sec,
+					s = strtime( iar->reqtime ), IA_BLOCKSIZE_SEC );
+
+				free( s );
+				free( ns );
+			}
+
+			sleep( estimated_sleeptime_sec );
+
+			pmtfifo_push( ia->mtf, (void *) iar );
+
+		} else if( iar != (Ia2orb_req *) NULL ) {
 
 			free( iar );
 		}

@@ -29,18 +29,19 @@ main(int argc, char **argv)
 	int             c, verbose = 0, errflg = 0;
 
 
-	char           *dbname = malloc(1024);
+	char           *dbname= NULL;
 	Point          *poly;
-	int             nvertices;
+	long             nvertices;
 
 	Dbptr           db;
-	int             i, nrecs;
+	long             i;
+	long 		 	nrecs;
 	char           *subset_expr=NULL;
 	char            pname[STRSZ], closed[STRSZ];
 
 	elog_init(argc, argv);
 
-	for (argc--, argv++; argc > 0; argc--, argv++) {
+	for (argc--, argv++; argc > 1; argc--, argv++) {
 		if (!strcmp(*argv, "-subset")) {
 			argc--;
 			argv++;
@@ -79,10 +80,11 @@ main(int argc, char **argv)
 	}
 
 	dbquery(db, dbRECORD_COUNT, &nrecs);
+	printf("records:%ld \n",nrecs);
 	for (db.record = 0; db.record < nrecs; db.record++) {
 		nvertices = readPolygon(db, &poly);
 		if (nvertices > 0) {
-			dbgetv(db, 0, "pname", &pname, "closed", &closed, 0);
+			dbgetv(db, 0, "pname", &pname, "closed", &closed, NULL );
 			printf(">\n");
 			for (i = 0; i < nvertices; i++) {
 				printf("%.4f %.4f\n", poly[i].lon, poly[i].lat);

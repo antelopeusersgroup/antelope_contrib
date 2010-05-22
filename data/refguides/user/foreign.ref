@@ -142,6 +142,26 @@ logs2dlevent [options] logdir db
 -l match_log	regex for files to search
 </options>
 
+mk_dbops { -I | -R | -A } [options] dbopsdb snet sta timestamp [comm_provider [comm_type]]
+<options>
+-I	installation, type of update
+-R	removal, type of update
+-A	adoption, type of update	
+-k	keep backup files
+-n	don't update tables
+-v	verbose
+-V vnet	Virtual Network Definition code
+-p pf
+-m match	pkt source match
+-P prelim_orb	
+-S status_orb
+-C cmd_orb
+-w prelim_wfDB
+-W wfDB
+-s siteDB
+</options>
+
+
 pick2db [-cvp] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname
     convert hypoellipse pickfile(s) to CSS3.0 database
 <options>
@@ -231,14 +251,11 @@ sachd [sac1 ...]
 sdd [-sv] sd
     dump blockettes (summary only if -s) from SEED volume sd
 
-msdd [-dovx] miniseed ...
+msdd [-bdhovx] [-n max] miniseed ...
     dump miniseed volume; -o shows opaque blockettes 
 
 msdd -i miniseed 
     interactive mode for inspecting miniseed
-
-chkmsd [-v] db
-     checks all miniseed blocks to see db and miniseed agree
 
 seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed
     dump certain blockettes from seed according to tlist:
@@ -347,7 +364,7 @@ db2miniseed [options] db [output]
 log2miniseed [-avV] [-c chan] [-l loc] [-n net] [-s sta] log ...
      read input log files and create miniseed
 
-fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed|dir ...
+fix_miniseed [-ifv] [-d db] [-{p|P} pf] miniseed|dir ...
     change network, station, channel and/or location codes in specified miniseed volumes or all miniseed found under specified directories
 
 deprecated chk_miniseed [-v] miniseed ...

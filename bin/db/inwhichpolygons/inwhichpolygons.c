@@ -7,7 +7,7 @@ Dbptr db;
 
 void where(double lat,double lon) {
 	Dbptr dbs;
-	int nrecords;
+	long nrecords;
 	char name[1024];	
 	Point p;
 	
@@ -17,7 +17,7 @@ void where(double lat,double lon) {
 	if (dbs.database >= 0) {
 		dbquery(dbs,dbRECORD_COUNT,&nrecords);
 		for (dbs.record=0; dbs.record < nrecords; dbs.record++) {
-			dbgetv(dbs,0,"pname",name,0);
+			dbgetv(dbs,0,"pname",name,NULL);
 			printf("%s\n",name);
 		}
 		dbfree(dbs);

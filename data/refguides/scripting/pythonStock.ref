@@ -7,12 +7,13 @@ from antelope.stock import *
 </man>
 
 <subsection Error Handling>
+<pythonfunction>
 ElogException
     base class for Elog-facility exceptions thrown by 
     Antelope Python interfaces, with attributes
-    e.severity (ELOG_LOG, ELOG_NOTIFY, ELOG_COMPLAIN,
-    ELOG_DIE, ELOG_ALERT, ELOG_FAULT, ELOG_DEBUGGING) 
-    and e.string
+    e.severity and e.string. The severity is one of
+    ELOG_LOG, ELOG_NOTIFY, ELOG_COMPLAIN, ELOG_DIE, 
+    ELOG_ALERT, ELOG_FAULT, ELOG_DEBUGGING
 
 ElogLog
     subclass of ElogException for elog_log messages
@@ -24,7 +25,7 @@ ElogComplain
     subclass of ElogException for elog_complain messages
 
 ElogDie
-    subclass of ElogException for elog_log messages
+    subclass of ElogException for elog_die messages
 
 elog_init (argv)
     initialize the elog message routines
@@ -32,41 +33,16 @@ elog_init (argv)
 elog_log (msg)
     raise ElogLog exception
 
-# elog_debug (msg)
 elog_notify (msg)
     raise ElogNotify exception
 
-# elog_alert (msg)
 elog_complain (msg)
     raise ElogComplain exception
 
 elog_die (msg)
     raise ElogDie exception and exit
 
-# 
-# elog_callback(replacement)
-#     replace standard elog processing with python routine
-#     replacement is called with two arguments: severity  code
-#     and a string containing the elog log.  it must return an
-#     integer; if return != 0, error log is cleared.
-# 
-# elog_string (n)
-#     return error log starting with message n
-# 
-# elog_clear ()
-#     clear the elog message log
-# 
-# 
-# elog_mark ()
-#     return the count of messages currently held in the error log
-# 
-# elog_flush (deliver, first)
-#     eliminate log messages after first, printing them if deliver is set
-# 
 <subsection Parameter Files>
-# pfget (pfname, key)
-#     return the value for the key from the parameter file pfname
-# 
 pfget_boolean (pfname, key)
     return 0 or 1 depending on the value of key in the parameter file pfname
 
@@ -104,171 +80,14 @@ pf2string(pfname)
 pf2xml(pfname)
     return XML string representation of the parameter file object pfname
 
-# pfnew(pfname)
-#     create a new empty parameter file object with name pfname
-# 
-# pfcompile (string, pfname)
-#   convert the specified string into parameter file object name pfname.
-#  
-# pfput (key, value, pfname)
-#     save the specified value into the pf object  with  name
-#     pfname under the specified key.  The value is converted
-#     to string if it's scalar; when it's a reference to
-#     a python list or dictionary, the entire python list or dictionary is
-#     stored in the pf object.
-# 
 pfwrite (pfname, filename)
     write out pf object pfname to filename
 
 pfout (pfname, file)
     write out pf object pfname to file object
-# 
-# pfrequire(pfname, atime)
-#     require pf_revision_time from last file pfname is later than atime.
-# 
-# pfdel (pfname, key)
-#     delete named key from pf object pfname
-# 
-# <subsection Special functions>
-# ask (string)
-#     pose question string at the controlling tty, and return the response
-# 
-# askyn (string)
-#     like ask, but require yes/no answer; return 0=false, 1=true
-# 
-# askynaq (string)
-#     like ask, but require yes/no/all/quit answer; return 
-#     0=false, 1=true, 2=all, 3=quit
-# 
-# yesno (s) 
-#     return -1 if $s =~ /yes|ok|y|true|1|on|t/i, 0 if $s =~ /no|n|false|0|off|f/i, 1 otherwise
-# 
-# datafile (env, file)
-#     find the specified file by looking first at the environment variable, then along the path
-# 
-# datapath (env, dir, file, suffix)
-#     find the specified file by looking first at the environment variable, then along the path
-# 
-# makedir(d)
-#     make the complete directory path d (like "mkdir -p") 
-# 
-# abspath (a)
-#     return the absolute path to the specified file a.
-# 
-# relpath (d, t)
-#     return relative path from directory f to t 
-# 
-# cleanpath (p [, nolinks])
-#     normalize the input path p, removing extra "..", "//", and
-#     "./" strings. With second argument,
-#     resolve any symbolic links along the path.
-# 
-# concatpaths (a,b)
-#     concatenate the two paths a and b properly, adding a
-#     slash if necessary.
-# 
-# parsepath (a)
-#     return directory, file basename, and suffix for path a.
-# 
-# close_descriptors()
-#     close all file descriptors after stderr; useful after fork
-# 
-# strsignal (code)
-#     return name for signal, given the integer code
-# 
-# is_nfs (path)
-#     return true if path is on an nfs-mounted filesystem.
-# 
-# limit (resource, [limit2set])
-#     return the current resource limit, or set new resource limit; possible
-#     resources are:
-# <example>
-# cputime      filesize     datasize      
-# stacksize    coredumpsize vmemoryuse    
-# </example>
-# 
-# grn (lat, lon)
-#     return the geographic region number
-# 
-# grname (lat, lon)
-#     return the geographic region name
-# 
-# srn (lat, lon)
-#     return the seismic region number
-# 
-# srname (lat, lon)
-#     return the seismic region name
-# 
-# sgsign(signer,data)
-#     returns signature for specified signer and data
-# 
-# sgverify(signer,data,signature)
-#     returns zero if signature is correct for signer and data
-# 
-# ($out, $units)=units_convert(input,want)
-#     returns value and units for specified input and requested units
-# 
-# @list=units_match(input)
-#     returns list of units matching input
-# 
-# $errno=errno()
-#     returns system errno, resetting errno to zero
-# 
-# ($result, $restriction) = legit_ip(pf,ip)
-#     checks ip address in valid_ip_addresses list from pf, returns 1
-#     for legitimate ip, -1 if no parameter file, 0 if invalid ip
-# 
-# <subsection Simple Ring Buffers>
-# 
-# openring(filename, id, depth, flags) ;
-#     open or create new simple ring buffer in filename with 
-#     (up to) 64 byte id field, maximum depth entries. if flags & 1 is
-#     set, open read-only, no locking; otherwise ring buffer must be
-#     on local filesystem. return handle to ring buffer.
-# 
-# newring(filename, id, depth, flags) ;
-#     create new simple ring buffer like openring, overwriting any old ring buffer
-# 
-# closering(rb)
-#     close specified ring buffer
-#     
-# pushring(rb, time, value)
-#     add time/value pair to ring (in time order)
-# 
-# getring(rb, i)
-#     return the i'th time/value pair from the ring; 
-#     0 is the most recent pair
-# 
-# avgring(rb, tdelta)
-#     return the average value in the ring rb for the latest
-#     tdelta seconds in the ring
-# 
-# minring(rb, tdelta)
-#     return the min value and the corresponding index in the ring 
-#     rb for the latest tdelta seconds in the ring
-# 
-# maxring(rb, tdelta)
-#     return the max value and the corresponding index in the ring 
-#     rb for the latest tdelta seconds in the ring
-# 
-# changedring(rb, tdelta) 
-#     returns 1 if ring buffer values have changed in past tdelta seconds
-#     
-# countring(rb)
-#     return the number of time/value pairs in the ring
-# 
-# findring(rb, value, tdelta)
-#      findring searches the ring buffer rb over the specified time
-#      period tdelta for the specific value.
-# 
-# <subsection Time Conversion>
-# 
 now()
     return current time to (usually) microseconds accuracy
 
-# is_epoch_string (string)
-#     return epoch time unless string is invalid; then returns undef and error message.
-# 
 epoch2str (epoch, fmt, tz = None)
     return the epoch time formatted according to the fmt string and converted to timezone
 
@@ -303,39 +122,3 @@ epoch (yearday)
 yearday (epoch)
     return the yearday corresponding to an epoch time
 
-# wait_for_time(time,verbose)
-#     wait for specified time
-# 
-# <subsection State Files>
-# 
-# exhume(filename,reference,seconds)
-#     specify filename of state file, reference to variable to be set when
-#     interrupted, and number of seconds to wait for program to terminate
-# 
-# resurrect(name, ref[, TIME_RELIC])
-#     select names and references to perl variables to save in state file. 
-#     (Optionally specify the type, may be useful for epoch times)
-# 
-# bury()
-#     Save the state file.
-# 
-# <subsection Foreign Keys>
-# <body>
-# map between CSS3.0 station/channel naming  conventions  and  the
-# different conventions of autodrm and SEED.
-# </body>
-# <function>
-# 
-# $sta = map_autodrm_netsta($anet, $fsta)
-# $chan = map_autodrm_chanaux($sta,$fchan,$aux)
-# ($anet, $fsta) = autodrm_net($sta)
-# ($fchan, $aux) = autodrm_aux(sta, chan)
-# 
-# $sta = map_seed_netsta($anet, $fsta)
-# $chan = map_seed_chanloc($sta,$fchan,$loc)
-# ($snet, $fsta) = seed_net($sta)
-# ($fchan, $loc) = seed_loc($sta,$chan)
-# 
-# finit_db(@db) 
-#     cause foreign key routines above to use specified database @db
-# 

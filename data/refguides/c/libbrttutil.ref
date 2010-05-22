@@ -182,6 +182,50 @@ int buhistory_eval(char *handle, double time, double *value)
 int buhistory_maxmin (char *handle, double *tmin, double *tmax, double *vmin, double *vmax)
     get the minimum and maximum time and data ranges for a time history
 
+<subsection Sac Utility>
+<cdeclarations>
+BUSac * busac_create (char *tag, char *handle)
+    create an empty sac file image object
+
+BUSac * busac_read_from_file_busac (char *filename, char *tag, char *handle)
+    read sac file filename and make a sac file image object from it
+
+BUSac * busac_get_busac (char *handle)
+    get the sac file image object pointer corresponding to handle
+
+void busac_free_busac (BUSac *busac)
+    free a sac file image object using object pointer
+
+long busac_free (char *handle)
+    free a sac file image object using object handle
+
+long busac_free_tag (char *tag)
+    free a sac file image object using object tag
+
+long busac_puthdr_busac (BUSac *busac, ...)
+    fill in sac file image header values
+
+long busac_gethdr_busac (BUSac *busac, ...)
+    get sac file image header values
+
+long busac_putdata_busac (BUSac *busac, int nsamp, double tstart, double samprate, float *data, char *segtype)
+    fill in sac file image waveform data
+
+long busac_getdata_busac (BUSac *busac, int *nsamp, double *tstart, double *samprate, float **data, char *segtype)
+    get sac file image waveform data
+
+long busac_getreftime_busac (BUSac *busac, double *rtime)
+    get sac file image reference time
+
+long busac_putevent_busac (BUSac *busac, Dbptr dbtrace, Dbptr dborigin)
+    fill in sac file image header and waveform data from event information in dborigin and dbtrace
+
+long busac_getevent_busac (BUSac *busac, Dbptr *dbtrace, Dbptr *dborigin)
+    get sac file image header and waveform data and put into dborigin and dbtrace
+
+long busac_write_to_file_busac (BUSac *busac, char *filename)
+    write a sac file image object into a file filename
+
 <subsection Vector Utility>
 <cdeclarations>
 BUVector * buvector_create (int nx, int ny, char *tag, char *handle)

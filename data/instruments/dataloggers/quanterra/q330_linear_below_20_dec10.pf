@@ -1,0 +1,284 @@
+originator     Frank Vernon, UCSD
+last_modified  2009-03-05
+
+category	Quanterra
+configuration	Q330 Linear Phase Below 20 Composite Baler Dec10
+
+description	Quanterra 330 Linear Phase Below 20 Composite Baler Dec10
+dfile q330_lb20c
+
+info    &Literal{
+This is the configuration for a Q330 datalogger with linear phase below 20sps,
+and includes the special channels from a baler.
+}
+
+streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.1sps 0.01sps
+
+# definitions of streams
+200sps	200 a/d200 FLbelow20-200
+100sps	100 a/d100 FLbelow20-100
+50sps	 50 a/d50  FLbelow20-50
+40sps	 40 a/d40  FLbelow20-40
+20sps	 20 a/d20  FLbelow20-20
+10sps	 10 a/d10  FLbelow20-10
+1sps	  1 a/d1   FLbelow20-1
+0.1sps	0.1 a/d1   FLbelow20-1 BalerDec10
+0.01sps 0.01 a/d1  FLbelow20-1 BalerDec10 BalerDec10
+
+gains  419430     # in units of counts/volt
+
+
+# Stages
+a/d200	&Arr{
+samprate	200
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d100	&Arr{
+samprate	100
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d50	&Arr{
+samprate	50
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d40	&Arr{
+samprate	40
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d20	&Arr{
+samprate	20
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d10	&Arr{
+samprate	10
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+a/d1	&Arr{
+samprate	1
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+FLbelow20-200	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-200)
+samprate	200
+}
+
+FLbelow20-100	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-100)
+samprate	100
+}
+
+FLbelow20-50	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-50)
+samprate	50
+}
+
+FLbelow20-40	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-40)
+samprate	40
+}
+
+FLbelow20-20	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-20)
+samprate	20
+}
+
+FLbelow20-10	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-10)
+samprate	10
+}
+
+FLbelow20-1	&Arr{
+gtype		FIR_decimator
+decifac		1
+response	&datafile(responses/FLbelow20-1)
+samprate	1
+}
+
+BalerDec10	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/BalerDec10)
+}
+
+
+
+soh		LCE LCQ VCO VEA VEC VEP VKI VMU VMV VMW VPB
+
+LCE	&Arr{
+stages 		phase 
+iunits  	s
+ounits		counts
+samprate 	1
+}
+ 
+LCQ	&Arr{
+stages 		clk_qual 
+iunits  	percent
+ounits		counts
+samprate 	1
+} 
+
+VCO      &Arr{
+stages 		vco 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+ 
+VEA       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+}
+
+VEC       &Arr{
+stages 		mamp 
+iunits  	A
+ounits		counts
+samprate 	.1
+}
+
+VEP       &Arr{
+stages		mvolt
+iunits		V
+ounits		counts
+samprate 	.1
+}
+
+VKI       &Arr{
+stages 		temp 
+iunits  	Celsius
+ounits		counts
+samprate 	.1
+}
+
+VMU       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VMV       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VMW       &Arr{
+stages 		mp 
+iunits  	V
+ounits		counts
+samprate 	.1
+}
+
+VPB      &Arr{
+stages 		buf_use 
+iunits  	percent
+ounits		counts
+samprate 	.1
+}
+
+phase &Arr{
+gtype		clock phase
+gnom		1000000
+iunits		s
+ounits		counts
+sn		datalogger
+}
+
+clk_qual &Arr{
+gtype		clock quality
+iunits		percent
+ounits		counts
+sn		datalogger
+}
+
+vco &Arr{
+gtype		VCO control voltage
+gnom		6.66667
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+mamp &Arr{
+gtype		current meter
+gnom		1000
+iunits		A
+ounits		counts
+sn		datalogger
+}
+
+mvolt &Arr{
+gtype		volt meter
+gnom		6.66667
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+temp &Arr{
+gtype		thermometer
+iunits		Celsius
+ounits		counts
+sn		datalogger
+}
+
+mp &Arr{
+gtype		mass position
+gnom		10
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+buf_use &Arr{
+gtype		Q330 buffer usage
+gnom		10
+iunits		percent
+ounits		counts
+sn		datalogger
+}

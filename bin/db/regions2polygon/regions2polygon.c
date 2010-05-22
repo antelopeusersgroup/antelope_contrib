@@ -12,7 +12,7 @@ static void
 usage ()
 {
 	char	*usage="[-v] dbin dbout";
-	char 	*version= "1.0";
+	char 	*version= "1.1";
 	char	*author= "Nikolaus Horn";
 	char	*location="ZAMG / Vienna";
 	char	*email = "Nikolaus.Horn@zamg.ac.at";
@@ -37,13 +37,13 @@ main (int argc, char **argv)
 	char *dir=strdup(".");
 	char *dfile=strdup("polygons");
 	int ftype=polyFLOAT;
-	char *name;
-	int nregions, nvertices;
+	char *name=malloc(100);
+	long nregions, nvertices;
 	Tbl *sortkeys, *groupkeys;
 			
-	Dbptr dbin,dbout,dbi,dbo,dbg,dbb;
-	int i,from,to,nv;
-	int vertex;
+	Dbptr dbin,dbout,dbi,dbo,dbg,dbs,dbb;
+	long i,from,to,nv;
+	long vertex;
 	
     elog_init ( argc, argv ) ; 
     while ((c = getopt (argc, argv, "vV")) != -1) {
@@ -82,8 +82,8 @@ main (int argc, char **argv)
 	groupkeys=newtbl(1);
 	pushtbl(groupkeys,"regname");
 	
-	dbi=dbsort(dbi,sortkeys,0,"regions.sorted");
-	dbg=dbgroup(dbi,groupkeys,0,0);
+	dbs=dbsort(dbi,sortkeys,0,"regions.sorted");
+	dbg=dbgroup(dbs,groupkeys,0,0);
 	dbquery(dbg,dbRECORD_COUNT,&nregions);
 	if (nregions <1) {
 		elog_die(0,"table regions seems to be empty (or not present)");
@@ -99,19 +99,19 @@ main (int argc, char **argv)
 	
 	for (i=0; i< nregions; i++) {
 		dbg.record=i;
-		dbgetv(dbg,0,"regname",name,"bundle",&dbb,0);
+		dbgetv(dbg,0,"regname",name,"bundle",&dbb,NULL );
 		dbget_range(dbb,&from,&to);
 		nvertices= to - from;
 		if (verbose) elog_notify(0,"%s (%i nvertices)",name,nvertices);
 		poly=malloc(2 * nvertices * sizeof(double));
 		nv=0;
 
-		for (dbi.record=from; dbi.record<to; dbi.record++) {
-			dbgetv(dbi,0,
+		for (dbs.record=from; dbs.record<to; dbs.record++) {
+			dbgetv(dbs,0,
 					"regname",name,
 					"vertex",&vertex,
 					"lat",&lat,"lon",&lon,
-					0);
+					NULL );
 			poly[nv].lat=lat;
 			poly[nv].lon=lon;
 			nv++;

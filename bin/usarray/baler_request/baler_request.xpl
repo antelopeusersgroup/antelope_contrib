@@ -144,7 +144,7 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     system ($cmd);
     
     $nsec = 1800;
-    &compress_wfdisc($tmpjunk,$nsec,$opt_v);
+    &compress_wfdisc($tmpjunk,$nsec,0,$opt_v,$opt_V);
     
 #
 #  build tmpba database

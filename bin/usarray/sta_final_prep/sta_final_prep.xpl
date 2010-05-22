@@ -11,6 +11,8 @@
 #    DONE check to make sure correct channels are in file
 #
 #   check for overlaps
+#   
+#   check for pffile existance
 #
 #
     require "getopts.pl" ;
@@ -18,6 +20,7 @@
     use Datascope ;
     use archive;
     use timeslice ;
+    use utilfunct ;
     use orb ;
     
     our ($pgm,$host);
@@ -25,13 +28,12 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$subject,$verbose,$debug,$Pf,$problems);
-    my ($dbops,$stime,$table,$sta,$chan,$bhname,$sohname,$dirname,$dbname);
-    my ($mintime,$maxtime,$etime,$mseedfile);
-    my (@dbtest,@db,@dbwfdisc,@dbbh,@dbdeploy,@dbsnet,@dbschan,@dbsensor,@dbchanperf,@dbcd,@mseedfiles);
-    my ($row,$nrows,$time,$endtime,$equip_install,$equip_remove);
-    my ($snet,$fsta,$statmp,$fchan,$chantmp,$ref,$line,$st1,$st2,$dep,$prob,$prob_check);
-    my (%pf,%staperf);
+    my ( $usage, $cmd, $subject, $verbose, $debug, $Pf, $problems);
+    my ( $bhname, $dbname, $dirname, $etime, $fsta, $line, $maxtime, $maxtime_baler, $maxtime_rt ) ; 
+    my ( $mintime, $mintime_baler, $mintime_rt, $mseedfile, $nrows, $prob, $prob_check, $row, $rtdb ) ;  
+    my ( $snet, $sohname, $sta, $statmp, $stime, $table ) ;
+    my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles ) ;
+    my (%pf);
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -55,12 +57,11 @@
 
     $Pf         = $opt_p || $pgm ;
     
-    
-    %pf = getparam($Pf);
-
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     $verbose    = $opt_v;
     $debug      = $opt_V;
+    
+    %pf = getparam($Pf, $verbose, $debug);
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -103,12 +104,6 @@
         }
                         
         $dirname  = "$pf{archivebase}\/$sta";
-#         if ( -d $dirname) {
-#             $problems++ ;
-#             elog_complain("\nProblem $problems
-#                            \n	directory $dirname already exists!
-#                            \n	Skipping to next station");        
-#         }
         
         $dbname   = "$pf{archivebase}\/$sta\/$sta";
         elog_notify("dirname	$dirname	dbname	$dbname") if $opt_v ;
@@ -122,6 +117,15 @@
                                \n	Skipping to next station") ;
             }
             dbclose(@dbtest);
+        }
+        
+        $rtdb   = "$pf{rt_sta_dir}\/$sta";
+        elog_notify("rtdb	$rtdb	") if $opt_v ;
+        if ( ! -e $rtdb ) {
+            $problems++ ;
+            elog_complain("\nProblem $problems
+                           \n	station rt data db $rtdb does not exist
+                           \n	Skipping to next station");
         }
         
         next if ($prob_check != $problems);
@@ -273,6 +277,12 @@
         unlink("$sta.lastid");
 
 #
+#  Set up descriptor file
+#
+        
+        &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+
+#
 #  Find start time and end times
 #
 
@@ -286,51 +296,38 @@
                                \n	Skipping to next station") ;
                 next;
             }
-            $mintime  = dbex_eval(@dbbh,"min(time)");
-            $maxtime  = dbex_eval(@dbbh,"max(endtime)");
-        }
-        dbclose(@db);
-        
-        $stime = strtime($mintime);
-        $etime = strtime($maxtime);
+            $mintime_baler  = dbex_eval( @dbbh, "min(time)" ) ;
+            $maxtime_baler  = dbex_eval( @dbbh, "max(endtime)" ) ;
+            
+            elog_notify(sprintf("Baler times  %s    %s", strydtime($mintime_baler), strydtime($maxtime_baler)));
+            
+            @dbrt        = dbopen   ( $rtdb, "r" ) ;
+            @dbrt        = dblookup ( @dbrt, 0, "wfdisc", 0, 0 ) ;
+            $mintime_rt  = dbex_eval( @dbrt, "min(time)" ) ;
+            $maxtime_rt  = dbex_eval( @dbrt, "max(endtime)" ) ;
+            dbclose( @dbrt ) ;
 
-#
-#  Set up descriptor file
-#
+            elog_notify(sprintf("Rt times     %s    %s", strydtime($mintime_rt), strydtime($maxtime_rt)));
+            
+            $mintime = $mintime_baler ;
+            $maxtime = $maxtime_baler ;
+            
+            $mintime = $mintime_rt if ($mintime_rt < $mintime) ;
+            $maxtime = $maxtime_rt if ($maxtime_rt > $maxtime) ;
+            
+            $maxtime = epoch(yearday($maxtime + 86400)) if ($maxtime > epoch(yearday($maxtime))) ;
+
+        }
+        dbclose( @db ) ;
         
-        &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+        $stime = strtime( $mintime ) ;
+        $etime = strtime( $maxtime ) ;
 
 #
 #  Check for anomolous channels
 #
         
         $prob = unwanted_channels($sta,$prob) unless $opt_n;
-#         @db       = dbopen($sta,'r');
-#         @dbschan  = dblookup(@db,0,"schanloc",0,0);
-#         @dbschan  = dbsubset(@dbschan,"chan !~ /UH./");
-#         @dbsensor = dblookup(@db,0,"sensor",0,0);
-#         @dbwfdisc = dblookup(@db,0,"wfdisc",0,0);
-#         @dbschan  = dbjoin(@dbschan,@dbwfdisc);
-#         @dbschan  = dbseparate(@dbschan,"schanloc");
-#         @dbschan  = dbnojoin(@dbschan,@dbsensor);
-#         $nrows    = dbquery(@dbschan,"dbRECORD_COUNT");
-#         if ($nrows > 0) {
-#             $line = "\nDatabase problem\n	$sta schanloc has $nrows channels which do not join with sensor table";
-#             elog_complain($line);
-#             print PROB "$line\n";
-#             for ($row = 0; $row<$nrows; $row++) {
-#                 $dbschan[3] = $row;
-#                 ($statmp,$fchan,$chantmp) = dbgetv(@dbschan,"sta","fchan","chan");
-#                 $line = "	sta	$statmp	fchan	$fchan	chan	$chantmp";
-#                 elog_complain($line) ;
-#                 print PROB "$line\n";
-#                 $prob++;
-#             }
-#         }
-#         dbclose(@db);
-#         
-#         unlink("$sta.snetsta");
-#         unlink("$sta.schanloc");
         
 #
 #  identify gaps in baler seismic data
@@ -353,55 +350,6 @@
 #  evaluate data return
 #
         ($prob,$problems) = eval_data_return ($sta,$prob,$problems) unless $opt_n;       
-#         elog_notify(" ");
-#         $staperf{max_ave_perf}  = 0;
-#         $staperf{max_nperfdays} = 0;
-#         $staperf{max_datadays} = 0;
-#         @db = dbopen($sta,"r");
-#         @db = dblookup(@db,0,"chanperf",0,0);
-#         @dbdeploy = dblookup(@db,0,"deployment",0,0);
-#         @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
-#         $dbdeploy[3] = 0;
-#         ($time,$endtime) = dbgetv(@dbdeploy,"time","endtime");
-#         $staperf{deploy_days} = int($endtime/86400) - int($time/86400.) ;
-# 
-#         foreach $chan (qw( BHZ BHN BHE LHZ LHN LHE)) {
-#             @dbchanperf                = dbsubset(@db,"chan =~ /$chan/");
-#             @dbcd                      = dbsubset(@dbchanperf,"perf > 0.0");
-#             $staperf{$chan}{days}      = dbquery(@dbcd,"dbRECORD_COUNT");
-#             $staperf{max_datadays}     = $staperf{$chan}{days} if ($staperf{$chan}{days} > $staperf{max_datadays});
-#             if ($staperf{$chan}{days} == 0.0) {
-#                 $staperf{$chan}{ave_perf}  = 0.0;
-#             } else {
-#                 $staperf{$chan}{ave_perf}  = (dbex_eval(@dbchanperf,"sum(perf)"))/$staperf{$chan}{days};
-#             }
-#             $staperf{max_ave_perf}     = $staperf{$chan}{ave_perf} if ($staperf{$chan}{ave_perf} > $staperf{max_ave_perf});
-#             @dbchanperf                = dbsubset(@dbchanperf,"perf == 100.");
-#             $staperf{$chan}{nperfdays} = dbquery(@dbchanperf,"dbRECORD_COUNT");
-#             $staperf{max_nperfdays}    = $staperf{$chan}{nperfdays} if ($staperf{$chan}{nperfdays} > $staperf{max_nperfdays}) ;
-#             $line = sprintf("%s  %s	%4d days with 100%% data return	with %5.1f%% average daily data return on days with data",
-#                                 $sta,$chan,$staperf{$chan}{nperfdays},$staperf{$chan}{ave_perf});
-#             elog_notify("	$line");
-#             print PROB "$line\n" ;
-#         }
-#         dbclose(@db);
-#         
-#         $staperf{deploy_days} = 0.1 if ($staperf{deploy_days} < 0.1) ;
-#         
-#         $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days",
-#                          $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
-#         
-#         if ($staperf{max_ave_perf} < 99.) {
-#             $prob++;
-#             print PROB "\n$line\n" ;
-#             $problems++ ;
-#             elog_complain("\nProblem $problems
-#                            \n	$line");
-#         } else {
-#             elog_notify("\n	$line\n\n");
-#         }
-#         
-#         %staperf = (); 
         
         close(PROB);
 
@@ -461,40 +409,6 @@
     exit(0);
 }
 
-sub getparam { # %pf = getparam($Pf);
-    my ($Pf) = @_ ;
-    my ($subject);
-    my (%pf) ;
-    
-    $pf{balerdirbase}		= pfget( $Pf, "balerdirbase" );
-    $pf{balerprocbase}		= pfget( $Pf, "balerprocbase" );
-    $pf{archivebase}		= pfget( $Pf, "archivebase" );
-    $pf{bhdata_dir}			= pfget( $Pf, "bhdata_dir" );
-    $pf{sohdata_dir}		= pfget( $Pf, "sohdata_dir" );
-    
-    $pf{dbpath}     		= pfget( $Pf, "dbpath" );
-    $pf{dbidserver} 		= pfget( $Pf, "dbidserver" );
-    $pf{dblocks}    		= pfget( $Pf, "dblocks" );
-    
-    $pf{wfclean}     		= pfget( $Pf, "wfclean" );
-
-    $pf{prob_mail}    		= pfget( $Pf, "prob_mail" );
-    
-    if ($opt_V) {
-        elog_notify("\nbalerdirbase     $pf{balerdirbase}");
-        elog_notify("balerprocbase    $pf{balerprocbase}");
-        elog_notify("archivebase      $pf{archivebase}");
-        elog_notify("bhdata_dir       $pf{bhdata_dir}");
-        elog_notify("sohdata_dir      $pf{sohdata_dir}");
-        elog_notify("dbpath           $pf{dbpath}" );
-        elog_notify("dbidserver       $pf{dbidserver}" );
-        elog_notify("dblocks          $pf{dblocks}\n\n" );
-        elog_notify("wfclean          $pf{wfclean}" );
-        elog_notify("prob_mail        $pf{prob_mail}\n\n" );
-    }
-            
-    return (%pf) ;
-}
 
 sub unwanted_channels { # $prob = unwanted_channels($sta,$prob);
     my ($sta,$prob) = @_ ; 

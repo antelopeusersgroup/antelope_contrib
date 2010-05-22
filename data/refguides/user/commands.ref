@@ -17,7 +17,7 @@ tksend [options] app_name [message]
 <options>
 -i	read stdin for more messages
 -p	wait for and print returned messages
--verbose	be more verbose
+-v	be more verbose
 -validate	validate application name and return disposition and version number
 -version {3|4|auto}
  	select older or newer tksend protocol; default is auto{matic}
@@ -51,6 +51,7 @@ private check_antelope_installation
 antelope_update [options] [url]
     update local antelope installation from standard BRTT patches or alternative url
 <options>
+-d 	additional logging 
 -i	ask before installing each patch
 -l	just list unapplied patches 
 -L	list all patches to terminal with '*' if patch is unapplied 
@@ -61,6 +62,7 @@ antelope_update [options] [url]
 -Q 	don't ask about stopping realtime systems (caveat emptor)
 -r id	specify a different antelope release   
 -t 	terminal mode (no gui)
+-d 	additional logging 
 -v 	verbose
 </options>
 
@@ -146,6 +148,7 @@ pfecho [options] name [ param ...]
 -i	interactive mode
 -q	don't echo key
 -R	show parameters overridden by later parameter files
+-v	verbose	
 -w	show all pf files read
 -W	show all filenames examined (may not exist)
 -x	expand all references inside pf
@@ -156,6 +159,9 @@ pfverify [-v] [pf-files]
 
 pfwhich pf 
     show what files are read for pf
+
+simple_ringstat [-i] simple-ring-file
+    interactively inspect simple ring buffer (such as pktmon creates)
 
 ttcalc method model phase distance depth
     print travel time and slowness calculation results for 
@@ -257,6 +263,7 @@ cmpdirs [options] dir1 dir2
 -C	ignore CVS directories
 -i re	ignore files/directories matching re
 -l	list format output
+-s	compare sizes only, error if difference > 10%
 -t	compare only text files
 -r	recursive
 -v	more verbose
@@ -357,8 +364,14 @@ installman [-nv] manpage dir
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon
 
-fixman [-BInd] pages
+fixman [options] pages
     check man page, correct some problems, and suggest other changes
+<options>
+-B	don't emphasize function names
+-d	show changes	
+-I	don't emphasize parameters 
+-n	just show what would be changed
+</options>
 
 certify [options] [dir|testid ...]
     run regression tests 
@@ -389,6 +402,7 @@ certify [options] [dir|testid ...]
 -s	stop at first failure
 -u	update correct results from the output of this run
 -U	run the executable under ups 
+-w msg  update certify.updates with the specified msg
 -x path	add path to front of PATH environment variable
 -X results	add a line for each test to results file
 -Z	combine stderr/stdout into single output file

@@ -7,10 +7,10 @@ from antelope.datascope import *
 </man>
 
 <subsection Opening a Database>
-<function>
+<pythonfunction>
 
 dbopen (dbname, perm = 'r')
-Dbptr(dbname = path, perm = 'r')
+Dbptr(dbname, perm = 'r')
     return database pointer to the database
 
 Dbptr()
@@ -19,12 +19,6 @@ Dbptr()
 Dbptr(list)
     create a database pointer from a list or another Dbptr
  
-# dbopen_database (database, permissions)
-#     open database (or database.table or "-" for view from stdin), return database pointer
-# 
-# dbopen_table (database.table, permissions)
-#     open database.table (or "-" for view from stdin), return database pointer 
-# 
 dbcreate(filename, schema, dbpath = None, description = None, detail = None)
     create database descriptor file filename with specified schema, dbpath, desc and detail
 
@@ -44,9 +38,6 @@ db.lookup (database = "", table = "", field = "", row = "")
     return database pointer for the specified database, table, field, and row.
 
 <subsection Manipulating Fields and Records>
-# dbadd (@db [, record])
-#     add the new record to the table in @db. If record is not specified, add the scratch record. return the new row number, or an error code < 0.
-# 
 dbaddnull (db)
 db.addnull ()
     add null row to table
@@ -55,9 +46,6 @@ dbaddv (db, *args)
 db.addv (*args)
     add new row with the specified values to table
 
-# dbaddchk (@db[, record]) 
-#     Attempt to add new record, first checking for conflict, like dbaddv
-# 
 dbmark (db)
 db.mark ()
     set the specified rows to all null values
@@ -75,7 +63,7 @@ db.dbtruncate (db, n)
     truncate table to specified number of rows
 
 dbdestroy (db)
-db.dbdestroy (db)
+db.dbdestroy ()
     delete all tables and the descriptor file for the specified database, but not external files
 
  
@@ -95,13 +83,6 @@ dbputv (db, *args)
 db.putv (*args)
     save values into the specified fields for row db
 
-# dbadd_remark (@db, remark)
-#     add comment in remark table for row @db
-# 
-# dbget_remark (@db)
-#     get any comment from remark table for row @db
-# 
-# 
 <subsection Forming Views>
 dbgroup (db, groupfields, name = None, type = 1)
 db.group (groupfields, name = None, type = 1)
@@ -124,6 +105,7 @@ db.nojoin (db2, outer = False, pattern1 = None, pattern2 = None, name = None)
     return view of all rows in view db1 which don't join to db2. db2 may be a database pointer or table name
 
 dbprocess (db, commands)
+db.process (commands)
     return new view which is the result of applying the dbprocess
     commands to the input view; possible operations are: dbopen,
     dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
@@ -143,12 +125,6 @@ dbsort (db, keys, unique = False, reverse = False, name = None)
 db.sort (keys, unique = False, reverse = False, name = None)
     sort the input table according to the specified key
 
-# dbselect (@db, expr[, expr[, expr..]])
-#     print table of expressions from view
-# 
-# dbselect_hdr (@db, expr[, expr[, expr..]])
-#     print headers for expressions
-# 
 dbsubset (db, expression, name = None)
 db.subset (expression, name = None)
     return new view which is the set of all rows which satisfy the expression
@@ -164,12 +140,10 @@ db.theta (db2, expression, outer = False, name = None)
     may be a database pointer or name of a table
 
 dbunjoin (db, database, rewrite = False)
+db.unjoin (database, rewrite = False)
     create new database, containing all the records referenced in the input view db
 
 
-# dbsave_view (@db, name)
-#     save the view into file named database.name
-# 
 <subsection Miscellaneous Datascope Functions>
 dbquery (db, code)
 db.query (code)
@@ -184,9 +158,6 @@ dbex_eval (db, expression)
 db.ex_eval (expression)
     evaluate expression for particular row
 
-# dbcompile (@db, string)
-#     add new attributes or relations to the schema directly from the perl script
-# 
 dbextfile (db, tablename = None)
 db.extfile (tablename = None)
     return the filename for an external file for particular row in view
@@ -203,10 +174,6 @@ dbnextid (db, id_name)
 db.nextid (id_name)
     gets the next free id value for the specified database and id_name
 
-# dbstrtype (@db, string)
-#     classifies string, returning "strREAL", "strINTEGER", "strNULL", "strSTRING", 
-#     "strTIME", "strFIELD", or "strUNKNOWN"
-# 
 dbfind (db, string, first = -1, reverse = False)
 db.find (string, first = -1, reverse = False)
     find first row matching expression, starting with first; if reverse, search backwards 
@@ -220,12 +187,6 @@ db.invalid()
 Dbptr()
     return database pointer of dbINVALID
 
-# dbget_range(@bundle)
-#     returns start, end of range for bundle db pointer
-# 
-# dbbase(@db[, table])
-#     returns base table database pointer corresponding to record @db
-# 
 <subsection Instrument Response Routines>
 Response(filename)
     return a response object representing the response curve in filename
@@ -267,7 +228,7 @@ tr.databins (binsize)
 
 trsplit(tr)
 tr.split()
-    eliminate marked gaps inside the trace table @tr by splitting
+    eliminate marked gaps inside the trace table tr by splitting
     segments containing marked values
 
 trsplice(tr)

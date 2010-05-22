@@ -120,7 +120,7 @@ class Orb(object):
         
         return ("\n[Orb:\n" +
             "\torbfd = %d\n" % self._orbfd +
-            "\torbname  = %d\n" % self._orbname +
+            "\torbname = %s\n" % self._orbname +
             "]\n")
 
     def close(self):

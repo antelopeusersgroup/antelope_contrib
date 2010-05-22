@@ -3,6 +3,7 @@
 #include "stock.h"
 #include "coords.h"
 #include "polygon.h"
+#include "swapbytes.h"
 	
 static int signed_crossing_number(Point P1,Point P2) {
 	double xintercept,slope,direction;
@@ -44,9 +45,10 @@ static int signed_crossing_number(Point P1,Point P2) {
 		return direction;
 	}
 }
-static int winding_number(Point *polygon, int n) {
+static int winding_number(Point *polygon, long n) {
 	int wn=0;
-	int i,scn;
+	int scn;
+	long i;
 	Point P1,P2;
 
 	for (i=0; i<n; i++) {
@@ -66,9 +68,9 @@ static int winding_number(Point *polygon, int n) {
 	return abs(wn / 2);
 	
 }
-static Point *shift_polygon(Point P, Point *polygon, int n) {
+static Point *shift_polygon(Point P, Point *polygon, long n) {
 	Point *shifted=malloc(sizeof(Point) * n);
-	int i;
+	long i;
 	
 	for (i=0; i<n; i++) {
 		shifted[i].lat= polygon[i].lat - P.lat;
@@ -76,7 +78,7 @@ static Point *shift_polygon(Point P, Point *polygon, int n) {
 	}
 	return shifted;
 }
-static int is_inside_polygon( Point P, Point *polygon, int n) {
+static int is_inside_polygon( Point P, Point *polygon, long n) {
 	int cleanup_needed=0;
 	int wn;
 	Point *copy=malloc((n+1)*sizeof(Point));
@@ -102,9 +104,9 @@ static int is_inside_polygon( Point P, Point *polygon, int n) {
 	}
 }
 
-int isGeographicallyInside(Point P, Point *polygon, int n) {
+int isGeographicallyInside(Point P, Point *polygon, long n) {
 
-	int i;
+	long i;
 	double distance,azi;
 	Point P_null;
 	Point *np=malloc(n*sizeof(Point));
@@ -177,16 +179,16 @@ typedef union {
 	double	*d;
 } Data;
 
-int readPolygon(Dbptr db, Point **Poly) {
+long readPolygon(Dbptr db, Point **Poly) {
 	char fname[PATH_MAX];
 	char ftype[6];
-	int npoints;
-	int foff;
+	long npoints;
+	long foff;
 	int pcode;
 	FILE *df;
 
 	Data dp; /* union of pointers, a pointer */
-	int i;
+	long i;
 
 	/*dbquery(db,dbRECORD_COUNT,&nrec);
 	if (nrec != 1) {
@@ -203,7 +205,7 @@ int readPolygon(Dbptr db, Point **Poly) {
 		return -1;
 	}
 
-	dbgetv(db,0,"ftype",&ftype,"npoints",&npoints,"foff",&foff,0);
+	dbgetv(db,0,"ftype",&ftype,"npoints",&npoints,"foff",&foff,NULL );
 
 
 	if ((pcode = polycode(ftype)) == -1) {
@@ -225,7 +227,7 @@ int readPolygon(Dbptr db, Point **Poly) {
 			N2H4(rawdata,dp.i,2 * npoints);
 			*/
 			fread(dp.i, sizeof(int), npoints*2, df);
-			N2H4(dp.i, dp.i, 2*npoints);
+			N2H4((char *) dp.i, (char *) dp.i, 2*npoints);
 			for (i=0; i< npoints; i++) {
 				(*Poly)[i].lon= dp.i[i*2] / 1.0e6;
 				(*Poly)[i].lat= dp.i[i*2+1] / 1.0e6;
@@ -245,7 +247,7 @@ int readPolygon(Dbptr db, Point **Poly) {
 			break;
 		case polyFLOAT:
 			fread( dp.f, sizeof(float), 2*npoints, df);
-			N2H4(dp.f,dp.f,2 * npoints);
+			N2H4((char *)dp.f,(char *)dp.f,2 * npoints);
 			for (i=0; i <npoints; i++) {
 				(*Poly)[i].lon= dp.f[i*2];
 				(*Poly)[i].lat= dp.f[i*2+1];
@@ -254,7 +256,7 @@ int readPolygon(Dbptr db, Point **Poly) {
 		case polyINTELFLOAT:
 			fread( dp.f, sizeof(float), 2*npoints, df);
 			#ifdef WORDS_BIGENDIAN
-				swap4(dp.f,dp.f,2 * npoints);
+				swap4((char *)dp.f,(char *)dp.f,2 * npoints);
 			#endif
 			for (i=0; i <npoints; i++) {
 				(*Poly)[i].lon= dp.f[i*2];
@@ -272,12 +274,12 @@ int readPolygon(Dbptr db, Point **Poly) {
 	return npoints;
 }
 	
-int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed, int level, char *ptype, char *auth, char *dir, char *dfile, int pcode) {
+long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int closed, int level, char *ptype, char *auth, char *dir, char *dfile, int pcode) {
 	/* writes poygon data into file
    		if dir and o dfile are NULL, use defaults
 		returns record number if successful,dbINVALID else
 	 */		
-	int i;
+	long i;
 	char datafilename[PATH_MAX];
 	FILE *dfh;
 	int foff;
@@ -313,7 +315,7 @@ int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed
 		free_dfile=0;
 	}
 
-	if (dbputv(db,0,"pid",pid,"dir",dir,"dfile",dfile,0) == dbINVALID) {
+	if (dbputv(db,0,"pid",pid,"dir",dir,"dfile",dfile,NULL ) == dbINVALID) {
 		elog_log(0,"writePolygonData: error putting dir %s & dfile %s",dir,dfile);
 		if (free_dir) free(dir);
 		if (free_dfile) free(dfile);
@@ -381,14 +383,14 @@ int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed
 				west = (lon<west) ? lon : west;
 				east = (lon>east) ? lon : east;
 				int1=lon * 1e6;
-				H2N4(&int2,&int1,1);
+				H2N4((char *)(&int2),(char *)(&int1),1);
 				fwrite(&int2,sizeof(int),1,dfh);
 
 				lat=poly[i].lat;
 				south = (lat < south) ? lat : south;
 				north = (lat > north) ? lat : north;
 				int1=lat * 1e6;
-				H2N4(&int2,&int1,1);
+				H2N4((char *)(&int2),(char *)(&int1),1);
 				fwrite(&int2,sizeof(int),1,dfh);
 			}
 			fclose(dfh);
@@ -425,14 +427,14 @@ int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed
 				west = (lon<west) ? lon : west;
 				east = (lon>east) ? lon : east;
 				float1=lon;
-				H2N4(&float2,&float1,1);
+				H2N4((char *)(&float2),(char *)(&float1),1);
 				fwrite(&float2,sizeof(float),1,dfh);
 
 				lat=poly[i].lat;
 				south = (lat < south) ? lat : south;
 				north = (lat > north) ? lat : north;
 				float1=lat;
-				H2N4(&float2,&float1,1);
+				H2N4((char *)(&float2),(char *)(&float1),1);
 				fwrite(&float2,sizeof(float),1,dfh);
 			}
 			fclose(dfh);
@@ -475,14 +477,14 @@ int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed
 			return dbINVALID;
 	}	
 	if (dbputv(db,0,"north",north, "east",east, "south",south, "west",west,
-			"pname",pname,"closed",closed_flag,"level",level,"ptype",ptype, "auth",auth,"npoints",npoints, "ftype",ftype,"foff",foff,0) == dbINVALID) {
+			"pname",pname,"closed",closed_flag,"level",level,"ptype",ptype, "auth",auth,"npoints",npoints, "ftype",ftype,"foff",foff,NULL ) == dbINVALID) {
 		elog_log(0,"writePolygonData: error putting values!");
-		free (ftype);
+		//free (ftype);
 		if (free_dir) free(dir);
 		if (free_dfile) free(dfile);
 		return dbINVALID;
 	} else {
-		free (ftype);
+		//free (ftype);
 		if (free_dir) free(dir);
 		if (free_dfile) free(dfile);
 		return db.record;
@@ -492,15 +494,15 @@ int writePolygonData(Dbptr db, Point *poly, int npoints, char *pname, int closed
 	
 Dbptr inWhichPolygons(Dbptr db,Point P) {
 	Point *poly;
-	int i;
-	int nrec;
+	long i;
+	long nrec;
 	Dbptr dbr= dblookup(db,0,"polygon",0,0);
 	double lat,lon;
 	Dbptr dbs;
-	int npoints;
+	long npoints;
 	char expr[STRSZ];
 	char temp[STRSZ];
-	int pid;
+	long pid;
 	int first;
 	int found=0;
 	char name[STRSZ];
@@ -527,12 +529,12 @@ Dbptr inWhichPolygons(Dbptr db,Point P) {
 	first=1;
 	for (i= 0; i< nrec; i++) {
 		dbs.record=i;
-		dbgetv(dbs,0,"pname",&name,0);
+		dbgetv(dbs,0,"pname",&name,NULL );
 
 		if ((npoints=readPolygon(dbs,&poly))>0) {
 			if (isGeographicallyInside(P,poly,npoints)) {
 				found=1;
-				dbgetv(dbs,0,"pid",&pid,0);
+				dbgetv(dbs,0,"pid",&pid,NULL );
 				if (first) {
 					sprintf(expr,"pid==%d",pid);
 					first=0;

@@ -5,7 +5,7 @@
     use strict ;
     use Datascope ;
 
-    my ($dbin,$dbout,$starttime,$endtime,$time,$etime,$cmd,$delay_days,$table,$wfend,$usage);
+    my ($dbin,$dbout,$deploy,$starttime,$endtime,$time,$etime,$cmd,$delay_days,$table,$wfend,$usage);
     my (@list,@dbin,@dbout);
     our ($opt_v,$opt_d,$opt_n,$opt_z,$opt_s,$opt_t,$opt_e);
 
@@ -56,9 +56,17 @@
         $starttime = epoch(yearday(dbgetv(@dbin,"time")));
     }
     
-    foreach $table (qw( deployment site sensor )) {
+    foreach $table (qw( site sensor )) {
         @dbin = dblookup(@dbin,0,$table,0,0);
         elog_die("Missing $table table in $dbin") unless dbquery(@dbin,"dbTABLE_PRESENT");
+    }
+
+    @dbin = dblookup(@dbin,0,"deployment",0,0);
+    if (dbquery(@dbin,"dbTABLE_PRESENT")) {
+        $deploy = 1 ;
+    } else {
+        $deploy = 0 ;
+        elog_complain("Missing deployment table in $dbin") ;
     }
 
     if ( $opt_t ) {
@@ -93,7 +101,11 @@
     while ($time < $endtime)  {
         elog_notify( sprintf ("\nprocessing gap for day %s",strydtime($time)));
         $etime = $time + 86399.999 ;
-        $cmd  = "dbjoin $dbin.deployment site | dbsubset - \"epoch(ondate) <= $time && deployment.endtime >= $time\" ";
+        if ($deploy) {
+            $cmd  = "dbjoin $dbin.deployment site | dbsubset - \"epoch(ondate) <= $time && deployment.endtime >= $time\" ";
+        } else {
+            $cmd  = "dbsubset $dbin.site \"epoch(ondate) <= $time && (epoch(offdate) >= $time || offdate == -1 ) \" ";
+        }
         $cmd .= "| dbjoin - sensor | dbsubset - \"sensor.time < $etime && sensor.endtime > $time\" ";
         $cmd .= "| dbseparate - sensor ";
         $cmd .= "| rtoutage -t -N -S -d $dbout ";
