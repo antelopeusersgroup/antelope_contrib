@@ -44,6 +44,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "db.h"
 #include "stock.h"
@@ -57,13 +58,13 @@ static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), in
 static int
 find_longest( void *s, void *longest )
 {
-	int	l;
+	long	l;
 
 	l = strlen( (char *) s );
 
-	if( l > *((int *) longest) ) {
+	if( l > *((long *) longest) ) {
 
-		*((int *) longest) = l;
+		*((long *) longest) = l;
 	}
 
 	return 0;
@@ -77,9 +78,9 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags )
 	Tbl	*fields;
 	Dbvalue	dbvalue;
 	char	*field;
-	int	ifield;
-	int	fsize;
-	int	ftype;
+	long	ifield;
+	long	fsize;
+	long	ftype;
 	char	*fformat;
 	char	part[STRSZ];
 	char	*sync;
@@ -116,6 +117,8 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags )
 
 			pushstr( &stk, ", " );
 		}
+
+		memset( part, '\0', STRSZ );
 
 		switch( ftype ) {
 
@@ -191,17 +194,17 @@ generate_sqltable_create( Dbptr db, int flags )
 	void	*stk = 0;
 	Tbl	*primary;
 	Tbl	*fields;
-	int	ifield;
+	long	ifield;
 	char	*field;
 	char	field_a[STRSZ];
 	char	field_b[STRSZ];
 	char	*fnull;
-	int	fsize;
-	int	ftype;
+	long	fsize;
+	long	ftype;
 	char	*fformat;
 	int	precision;
 	int	scale;
-	int	longest = 0;
+	long	longest = 0;
 
 	if( db.table < 0 ) {
 
@@ -244,13 +247,15 @@ generate_sqltable_create( Dbptr db, int flags )
 		dbquery( db, dbFIELD_FORMAT, &fformat );
 		dbquery( db, dbNULL, &fnull );
 
+		memset( part, '\0', STRSZ );
+
 		switch( ftype ) {
 
 		case dbSTRING:
 			if( fsize < 256 ) {
-				sprintf( part, "CHAR(%d)", fsize );
+				sprintf( part, "CHAR(%ld)", fsize );
 			} else {
-				sprintf( part, "TEXT(%d)", fsize );
+				sprintf( part, "TEXT(%ld)", fsize );
 			}
 			pushstr( &stk, part );
 			break;
@@ -268,7 +273,7 @@ generate_sqltable_create( Dbptr db, int flags )
 
 		case dbINTEGER:
 		case dbYEARDAY:
-			sprintf( part, "INTEGER(%d)", fsize );
+			sprintf( part, "INTEGER(%ld)", fsize );
 			pushstr( &stk, part );
 			break;
 
@@ -351,11 +356,11 @@ generate_sqltable_create( Dbptr db, int flags )
 	return popstr( &stk, 1 );
 }
 
-static int
+static long
 generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags ) 
 {
 	char	*cmd;
-	int	nrecs;
+	long	nrecs;
 
 	if( *tbl == (Tbl *) NULL ) {
 		
@@ -407,15 +412,15 @@ db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags )
 	return 1;
 }
 
-int 
+long 
 db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags )
 {
 	char	*cmd;
-	int	ncmds = 0;
-	int	table_is_view = 0;
+	long	ncmds = 0;
+	long	table_is_view = 0;
 	Tbl	*tables;
 	char	*table;
-	int	itable;
+	long	itable;
 
 	if( *tbl == (Tbl *) NULL ) {
 		
@@ -479,7 +484,7 @@ dbschema2sqlcreate( Dbptr db, int flags )
 	char	*cmd;
 	Tbl	*tables;
 	char	*table;
-	int	itable;
+	long	itable;
 
 	sql = newtbl( 0 );
 

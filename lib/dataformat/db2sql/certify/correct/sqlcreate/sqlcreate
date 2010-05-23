@@ -1298,7 +1298,55 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
-	 73 CREATE TABLE `gps`
+	 73 CREATE TABLE `gclfield`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `fieldname`   CHAR(15) DEFAULT '-',
+  `dimensions`  INTEGER(3) DEFAULT 0,
+  `nv`          INTEGER(4) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `fieldname`)
+  );
+
+	 74 CREATE TABLE `gclgdisk`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `dimensions`  INTEGER(3) DEFAULT 0,
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `radius`      DECIMAL(10,3) DEFAULT -1.0,
+  `azimuth_y`   DECIMAL(7,2) DEFAULT -1.00,
+  `dx1nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `dx2nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `dx3nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `n1`          INTEGER(4) DEFAULT -1,
+  `n2`          INTEGER(4) DEFAULT -1,
+  `n3`          INTEGER(4) DEFAULT -1,
+  `i0`          INTEGER(4) DEFAULT -1,
+  `j0`          INTEGER(4) DEFAULT -1,
+  `k0`          INTEGER(4) DEFAULT -1,
+  `xlow`        DECIMAL(10,3),
+  `xhigh`       DECIMAL(10,3),
+  `ylow`        DECIMAL(10,3),
+  `yhigh`       DECIMAL(10,3),
+  `zlow`        DECIMAL(10,3),
+  `zhigh`       DECIMAL(10,3),
+  `cdefined`    CHAR(1) DEFAULT '-',
+  `geodefined`  CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `dimensions`)
+  );
+
+	 75 CREATE TABLE `gps`
   (
   `net`         CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1314,7 +1362,7 @@ Conversion results:
   PRIMARY KEY (`net`, `sta`, `time`, `lat`, `lon`, `elev`)
   );
 
-	 74 CREATE TABLE `gridscor`
+	 76 CREATE TABLE `gridscor`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `phase`       CHAR(8) DEFAULT '-',
@@ -1329,7 +1377,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `phase`, `gridname`, `gridid`, `pmelrun`)
   );
 
-	 75 CREATE TABLE `gridstat`
+	 77 CREATE TABLE `gridstat`
   (
   `gridname`    CHAR(15) DEFAULT '-',
   `gridid`      INTEGER(8) DEFAULT -1,
@@ -1342,7 +1390,7 @@ Conversion results:
   PRIMARY KEY (`gridname`, `gridid`, `pmelrun`)
   );
 
-	 76 CREATE TABLE `gsnspec`
+	 78 CREATE TABLE `gsnspec`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1360,7 +1408,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `period`, `time`, `endtime`)
   );
 
-	 77 CREATE TABLE `hypocentroid`
+	 79 CREATE TABLE `hypocentroid`
   (
   `gridname`    CHAR(15) DEFAULT '-',
   `gridid`      INTEGER(8) DEFAULT -1,
@@ -1379,7 +1427,7 @@ Conversion results:
   PRIMARY KEY (`gridname`, `gridid`)
   );
 
-	 78 CREATE TABLE `iptable`
+	 80 CREATE TABLE `iptable`
   (
   `id`          CHAR(32) DEFAULT '-',
   `address`     CHAR(32) DEFAULT '-',
@@ -1388,7 +1436,7 @@ Conversion results:
   PRIMARY KEY (`id`)
   );
 
-	 79 CREATE TABLE `latency`
+	 81 CREATE TABLE `latency`
   (
   `snet`        CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1405,7 +1453,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`, `period`)
   );
 
-	 80 CREATE TABLE `netperf`
+	 82 CREATE TABLE `netperf`
   (
   `snet`        CHAR(8) DEFAULT '-',
   `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1418,7 +1466,7 @@ Conversion results:
   PRIMARY KEY (`snet`, `time`, `endtime`)
   );
 
-	 81 CREATE TABLE `nominalresp`
+	 83 CREATE TABLE `nominalresp`
   (
   `net`         CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1440,7 +1488,7 @@ Conversion results:
   PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
   );
 
-	 82 CREATE TABLE `pmelruns`
+	 84 CREATE TABLE `pmelruns`
   (
   `pmelrun`     CHAR(5) DEFAULT '-',
   `vmodel`      CHAR(15) DEFAULT '-',
@@ -1452,7 +1500,7 @@ Conversion results:
   PRIMARY KEY (`pmelrun`)
   );
 
-	 83 CREATE TABLE `q330_calibration_weblog`
+	 85 CREATE TABLE `q330_calibration_weblog`
   (
   `email`       CHAR(128) DEFAULT '-',
   `stastr`      CHAR(50) DEFAULT '-',
@@ -1465,7 +1513,7 @@ Conversion results:
   PRIMARY KEY (`email`, `time`, `pid`)
   );
 
-	 84 CREATE TABLE `q330comm`
+	 86 CREATE TABLE `q330comm`
   (
   `dlsta`       CHAR(16) DEFAULT '-',
   `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1482,7 +1530,7 @@ Conversion results:
   PRIMARY KEY (`dlsta`, `time`, `endtime`)
   );
 
-	 85 CREATE TABLE `q730b`
+	 87 CREATE TABLE `q730b`
   (
   `ssident`     CHAR(16) DEFAULT '-',
   `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1508,7 +1556,7 @@ Conversion results:
   PRIMARY KEY (`ssident`, `time`, `endtime`)
   );
 
-	 86 CREATE TABLE `qctests`
+	 88 CREATE TABLE `qctests`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1529,7 +1577,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`, `testtype`)
   );
 
-	 87 CREATE TABLE `qgrid`
+	 89 CREATE TABLE `qgrid`
   (
   `qgridname`   CHAR(30) DEFAULT '-',
   `recipe`      CHAR(15) DEFAULT '-',
@@ -1557,7 +1605,7 @@ Conversion results:
   PRIMARY KEY (`qgridname`, `recipe`, `time`, `endtime`)
   );
 
-	 88 CREATE TABLE `ratechange`
+	 90 CREATE TABLE `ratechange`
   (
   `tagname`     CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1571,7 +1619,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
-	 89 CREATE TABLE `replayed`
+	 91 CREATE TABLE `replayed`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1583,7 +1631,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
   );
 
-	 90 CREATE TABLE `retransmit`
+	 92 CREATE TABLE `retransmit`
   (
   `tagname`     CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1597,7 +1645,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`, `pktid`)
   );
 
-	 91 CREATE TABLE `rrdcache`
+	 93 CREATE TABLE `rrdcache`
   (
   `net`         CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1612,7 +1660,7 @@ Conversion results:
   PRIMARY KEY (`net`, `sta`, `rrdvar`, `time`, `endtime`)
   );
 
-	 92 CREATE TABLE `rrdgraph`
+	 94 CREATE TABLE `rrdgraph`
   (
   `net`           CHAR(8) DEFAULT '-',
   `sta`           CHAR(6) DEFAULT '-',
@@ -1627,7 +1675,7 @@ Conversion results:
   PRIMARY KEY (`net`, `sta`, `rrdvar`, `rrdgraphname`)
   );
 
-	 93 CREATE TABLE `rsyncbaler`
+	 95 CREATE TABLE `rsyncbaler`
   (
   `dlsta`       CHAR(16) DEFAULT '-',
   `net`         CHAR(8) DEFAULT '-',
@@ -1649,7 +1697,7 @@ Conversion results:
   PRIMARY KEY (`dlsta`, `dfile`)
   );
 
-	 94 CREATE TABLE `sclink`
+	 96 CREATE TABLE `sclink`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1659,7 +1707,7 @@ Conversion results:
   PRIMARY KEY (`pwfid`)
   );
 
-	 95 CREATE TABLE `seismometer`
+	 97 CREATE TABLE `seismometer`
   (
   `net`         CHAR(8) DEFAULT '-',
   `sta`         CHAR(6) DEFAULT '-',
@@ -1683,7 +1731,7 @@ Conversion results:
   PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
   );
 
-	 96 CREATE TABLE `sensorcal`
+	 98 CREATE TABLE `sensorcal`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1727,7 +1775,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `rsta`, `rchan`, `time`, `rtime`, `dlcaltype`, `runtime`)
   );
 
-	 97 CREATE TABLE `sensormodel`
+	 99 CREATE TABLE `sensormodel`
   (
   `snmodel`     CHAR(15),
   `sensortype`  CHAR(4),
@@ -1744,7 +1792,7 @@ Conversion results:
   PRIMARY KEY (`snmodel`)
   );
 
-	 98 CREATE TABLE `sitephotos`
+	100 CREATE TABLE `sitephotos`
   (
   `sta`            CHAR(6) DEFAULT '-',
   `time`           DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1761,7 +1809,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `time`, `imagename`, `imagesize`)
   );
 
-	 99 CREATE TABLE `stabaler`
+	101 CREATE TABLE `stabaler`
   (
   `dlsta`        CHAR(16) DEFAULT '-',
   `time`         DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1781,7 +1829,7 @@ Conversion results:
   PRIMARY KEY (`dlsta`, `time`, `endtime`)
   );
 
-	100 CREATE TABLE `stanotes`
+	102 CREATE TABLE `stanotes`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1795,7 +1843,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `lddate`, `time`, `endtime`)
   );
 
-	101 CREATE TABLE `staq330`
+	103 CREATE TABLE `staq330`
   (
   `dlsta`          CHAR(16) DEFAULT '-',
   `time`           DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1834,7 +1882,7 @@ Conversion results:
   PRIMARY KEY (`dlsta`, `time`, `endtime`)
   );
 
-	102 CREATE TABLE `trigger`
+	104 CREATE TABLE `trigger`
   (
   `time0`       DECIMAL(17,5) DEFAULT 9999999999.99900,
   `tagname`     CHAR(8) DEFAULT '-',
@@ -1848,7 +1896,7 @@ Conversion results:
   PRIMARY KEY (`time0`, `sta`, `chan`, `state`, `filter`)
   );
 
-	103 CREATE TABLE `wfdisc_tshift`
+	105 CREATE TABLE `wfdisc_tshift`
   (
   `wfid`               INTEGER(8) DEFAULT -1,
   `time`               DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1862,7 +1910,7 @@ Conversion results:
   PRIMARY KEY (`wfid`)
   );
 
-	104 CREATE TABLE `wfmgme`
+	106 CREATE TABLE `wfmgme`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `filter`      CHAR(30) DEFAULT '-',
@@ -1882,7 +1930,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `filter`, `time`)
   );
 
-	105 CREATE TABLE `wfoffset`
+	107 CREATE TABLE `wfoffset`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1894,7 +1942,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
   );
 
-	106 CREATE TABLE `wfprocess`
+	108 CREATE TABLE `wfprocess`
   (
   `pwfid`       INTEGER(8) DEFAULT -1,
   `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
@@ -1912,7 +1960,7 @@ Conversion results:
   PRIMARY KEY (`pwfid`)
   );
 
-	107 CREATE TABLE `wfsrb`
+	109 CREATE TABLE `wfsrb`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1939,7 +1987,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
   );
 
-	108 CREATE TABLE `xcorarrival`
+	110 CREATE TABLE `xcorarrival`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1960,7 +2008,7 @@ Conversion results:
   PRIMARY KEY (`sta`, `phase`, `pwfid`)
   );
 
-	109 CREATE TABLE `xcorbeam`
+	111 CREATE TABLE `xcorbeam`
   (
   `netname`     CHAR(80) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',
@@ -1977,7 +2025,7 @@ Conversion results:
   PRIMARY KEY (`netname`, `pwfid`)
   );
 
-	110 CREATE TABLE `xsaa`
+	112 CREATE TABLE `xsaa`
   (
   `sta`         CHAR(6) DEFAULT '-',
   `chan`        CHAR(8) DEFAULT '-',

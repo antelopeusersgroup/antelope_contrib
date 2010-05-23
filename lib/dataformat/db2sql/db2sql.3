@@ -7,7 +7,7 @@ dbschema2sqlcreate, db2sqlinsert, db2sqldelete, db2sql_set_syncfield_name \- rou
 
 Tbl *dbschema2sqlcreate( Dbptr db, int flags );
 
-int db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags );
+long db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags );
 
 int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags );
 
