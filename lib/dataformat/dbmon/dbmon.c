@@ -398,7 +398,13 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 				sync = dbmon_compute_row_sync( db );
 
-				if( ! strcmp( oldsync, sync ) ) {			/* same row */
+				if( oldsync == (char *) NULL ) {			/* new row */
+
+					settbl( ttr->syncs, db.record, sync );
+
+					dbtr->newrow( db, ttr->table_name, sync, private );	
+
+				} else if( ! strcmp( oldsync, sync ) ) {		/* same row */
 
 					free( sync );
 
