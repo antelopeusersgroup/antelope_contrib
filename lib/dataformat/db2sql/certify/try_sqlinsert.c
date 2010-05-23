@@ -2,7 +2,8 @@
 #include "db.h"
 #include "stock.h"
 #include "db2sql.h"
-#include "dbmon.h"
+
+char *private_compute_row_sync( Dbptr db );
 
 int
 main( int argc, char **argv )
@@ -25,7 +26,7 @@ main( int argc, char **argv )
 
 	dbopen( dbname, "r", &db );
 
-	db2sqlinsert( db, &sqlinsert, dbmon_compute_row_sync, flags );
+	db2sqlinsert( db, &sqlinsert, private_compute_row_sync, flags );
 
 	debugtbl( stdout, "Conversion results:\n", sqlinsert );
 
