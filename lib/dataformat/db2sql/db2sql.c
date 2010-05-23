@@ -52,8 +52,8 @@
 #include "crc.h"
 
 static int find_longest( void *s, void *private );
-static char *generate_sqltable_create( Dbptr db, int flags );
-static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags );
+static char *generate_sqltable_create( Dbptr db, long flags );
+static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags );
 
 static int
 find_longest( void *s, void *longest )
@@ -71,7 +71,7 @@ find_longest( void *s, void *longest )
 }
 
 static char *
-generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags )
+generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 {
 	void	*stk = 0;
 	char	*table;
@@ -187,7 +187,7 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), int flags )
 }
 
 static char *
-generate_sqltable_create( Dbptr db, int flags )
+generate_sqltable_create( Dbptr db, long flags )
 {
 	char	*table;
 	char	part[STRSZ];
@@ -357,7 +357,7 @@ generate_sqltable_create( Dbptr db, int flags )
 }
 
 static long
-generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags ) 
+generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags ) 
 {
 	char	*cmd;
 	long	nrecs;
@@ -380,7 +380,7 @@ generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), in
 }
 
 int
-db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags )
+db2sqldelete( Dbptr db, char *sync, Tbl **tbl, long flags )
 {
 	void	*stk = 0;
 	char	*table;
@@ -413,7 +413,7 @@ db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags )
 }
 
 long 
-db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags )
+db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags )
 {
 	char	*cmd;
 	long	ncmds = 0;
@@ -478,7 +478,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags )
 }
 
 Tbl *
-dbschema2sqlcreate( Dbptr db, int flags )
+dbschema2sqlcreate( Dbptr db, long flags )
 {
 	Tbl	*sql;
 	char	*cmd;

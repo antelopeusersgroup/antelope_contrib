@@ -19,9 +19,9 @@
 extern "C" {
 #endif
 
-Tbl *dbschema2sqlcreate( Dbptr db, int mode );
-long db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), int flags );
-int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, int flags );
+Tbl *dbschema2sqlcreate( Dbptr db, long flags );
+long db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags );
+int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, long flags );
 char *db2sql_compute_row_sync( Dbptr db );
 void db2sql_set_syncfield_name( char *name );
 
