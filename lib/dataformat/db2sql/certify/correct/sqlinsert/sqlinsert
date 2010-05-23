@@ -67,49 +67,49 @@ Conversion results:
 
 	 33 INSERT INTO `assoc` VALUES(    4858,      645, 'USP', 'S', 9.99,    2.325,  225.22,   43.73,    2.600, 'd',  -999.0, '-', -999.00, '-',  -999.0, -1.000, 'kyrghyz',       -1,   790465413.00000, '49cc1e3ade5cd09c31e55fcb00f7067592b7344f');
 
-	 34 INSERT INTO `instrument` VALUES(       1, 'sts2_vel:RT72A', 'sts2_v', 'b', 'd',  20.0000000,         0.000000,         0.000000, 'response', 'sts2_vel_RT72A.1', 'V',   789084698.00000, '31b387ca26156034574c18aa813c3124cbb62e69');
+	 34 INSERT INTO `instrument` VALUES(       1, 'sts2_vel:RT72A', 'sts2_v', 'b', 'd',  20.0000000,         0.000000,         0.000000, '/opt/antelope/data/db/demo/response', 'sts2_vel_RT72A.1', 'V',   789084698.00000, 'b5c170795e5b09a80b34d57c92596616ef363615');
 
-	 35 INSERT INTO `instrument` VALUES(    1061, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.142450,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '4d829abffbe434c6c5a413d4babbda4629016317');
+	 35 INSERT INTO `instrument` VALUES(    1061, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.142450,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '71d3b354a0562afe538b4f133c78239f198f3c18');
 
-	 36 INSERT INTO `instrument` VALUES(    1062, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.142450,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, 'fb9200b199000873d405e7603ec812c28c9a2cee');
+	 36 INSERT INTO `instrument` VALUES(    1062, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.142450,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '5ecea4b7e9e1e60224bd9dc57941ccac17a41469');
 
-	 37 INSERT INTO `instrument` VALUES(    1063, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.140449,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '3f0180f80abe6127a08df8b202075657c648948d');
+	 37 INSERT INTO `instrument` VALUES(    1063, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.140449,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, 'e6df30d8f93d21f8ff09bd10748b11d4fc6748d9');
 
-	 38 INSERT INTO `instrument` VALUES(    1076, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         2.230818,         1.000000, 'response', 'sts-1h-vbb.206', 'V',   789084698.00000, 'dd156043164265ffd34a2ac4f48b7267d59fe499');
+	 38 INSERT INTO `instrument` VALUES(    1076, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         2.230818,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1h-vbb.206', 'V',   789084698.00000, 'e59fcaceef4367c465683d3fc8a9cfe7ead5d6f0');
 
-	 39 INSERT INTO `instrument` VALUES(    1077, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         2.304519,         1.000000, 'response', 'sts-1h-vbb.206', 'V',   789084698.00000, '8b49e9b6f721aa4f60c9f8d77ccc175f5871ac7f');
+	 39 INSERT INTO `instrument` VALUES(    1077, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         2.304519,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1h-vbb.206', 'V',   789084698.00000, '803a79148f63342fcd1c48e55b939af5c1e448cf');
 
-	 40 INSERT INTO `instrument` VALUES(    1078, 'Streckeisen STS-1V/VBB Seismometer', '-', '-', '-',  20.0000000,         2.329433,         1.000000, 'response', 'sts-1h-vbb.206', 'V',   789084698.00000, '19c48328081ac9274f2a4a7e510dee4b5e031b40');
+	 40 INSERT INTO `instrument` VALUES(    1078, 'Streckeisen STS-1V/VBB Seismometer', '-', '-', '-',  20.0000000,         2.329433,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1h-vbb.206', 'V',   789084698.00000, '667f7b00b1e72af35ffa7c6853d156434340ac83');
 
-	 41 INSERT INTO `instrument` VALUES(    1082, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.142450,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '4ecf98e8b830b5fa9762a844017681dbb4d53b90');
+	 41 INSERT INTO `instrument` VALUES(    1082, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.142450,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '08f9a7f57d4025a4c9bb49ebc77e88dd5181f2a5');
 
-	 42 INSERT INTO `instrument` VALUES(    1083, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.143678,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, 'b4603383ea0ef791d458d9598f7c9c56e4c72795');
+	 42 INSERT INTO `instrument` VALUES(    1083, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.143678,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '830739d09380abba15b3720fc1126efdb1557ef4');
 
-	 43 INSERT INTO `instrument` VALUES(    1084, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.146843,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '87767ca805ed783b10aee1e471da9d4ac2e57d16');
+	 43 INSERT INTO `instrument` VALUES(    1084, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.146843,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '4ac4c370e35da01a269549d4043295fea8125b8d');
 
-	 44 INSERT INTO `instrument` VALUES(    1091, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.138610,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '9143ab412aeb19ac7bdbac239bb4006f5a04f8e6');
+	 44 INSERT INTO `instrument` VALUES(    1091, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.138610,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '62612a28dc0ab66035aabfaff9b5cb9800b1307d');
 
-	 45 INSERT INTO `instrument` VALUES(    1092, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.138731,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '70a125d92da8a2b86b181f8c0abc966e1ad52617');
+	 45 INSERT INTO `instrument` VALUES(    1092, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.138731,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '732101e1aafa4bf4914aa9466d0922c02facf6b7');
 
-	 46 INSERT INTO `instrument` VALUES(    1093, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.134591,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, 'efd8b28a39ba5c8da09ad83680519c3bad2bf9bf');
+	 46 INSERT INTO `instrument` VALUES(    1093, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.134591,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '73a23720d0d834bd62b47ced21f80b396787026d');
 
-	 47 INSERT INTO `instrument` VALUES(    1094, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.144928,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, '2b9db2e97ad87691094f83ff5147af1882db34ce');
+	 47 INSERT INTO `instrument` VALUES(    1094, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.144928,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '607072e6d741793ad8b0c66755041eb7cf8b164d');
 
-	 48 INSERT INTO `instrument` VALUES(    1095, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.146413,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, 'fa46da51883d4c94f06b2b6c2dddef2f18117ca6');
+	 48 INSERT INTO `instrument` VALUES(    1095, 'Streckeisen STS-1H Seismometer', '-', '-', '-',  20.0000000,         0.146413,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, 'e579d2185cc6ac9b1a475c7db156501d6bae70f4');
 
-	 49 INSERT INTO `instrument` VALUES(    1096, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.133869,         1.000000, 'response', 'sts-1v.55', 'D',   789084698.00000, 'df378bc1890c330c6bb96b20e565a69dd44e7706');
+	 49 INSERT INTO `instrument` VALUES(    1096, 'Streckeisen STS-1V Seismometer', '-', '-', '-',  20.0000000,         0.133869,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1v.55', 'D',   789084698.00000, '185e4b6e210193d3ee341afb399505fa3845fc53');
 
-	 50 INSERT INTO `instrument` VALUES(    1112, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         1.954954,         1.000000, 'response', 'sts-1h-vbb.206', 'V',   789084698.00000, 'cb4be035a576a46173e6b9baf5a611220651419b');
+	 50 INSERT INTO `instrument` VALUES(    1112, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         1.954954,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1h-vbb.206', 'V',   789084698.00000, '6e5bb0a3ac954aa06d66d3b2091005a6bb76270e');
 
-	 51 INSERT INTO `instrument` VALUES(    1113, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         1.946923,         1.000000, 'response', 'sts-1h-vbb.206', 'V',   789084698.00000, '275c9ce347fe1c2d51942c9b8eed62c025c07456');
+	 51 INSERT INTO `instrument` VALUES(    1113, 'Streckeisen STS-1H/VBB Seismometer', '-', '-', '-',  20.0000000,         1.946923,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1h-vbb.206', 'V',   789084698.00000, '26507786aff2d671032234abc2d1b673f5792151');
 
-	 52 INSERT INTO `instrument` VALUES(    1114, 'Streckeisen STS-1V/VBB Seismometer', '-', '-', '-',  20.0000000,         1.942140,         1.000000, 'response', 'sts-1h-vbb.206', 'V',   789084698.00000, '01fb8670e7fdedaa886c14380af338319a304ab2');
+	 52 INSERT INTO `instrument` VALUES(    1114, 'Streckeisen STS-1V/VBB Seismometer', '-', '-', '-',  20.0000000,         1.942140,         1.000000, '/opt/antelope/data/db/demo/response', 'sts-1h-vbb.206', 'V',   789084698.00000, '7bd7f4e5a4455d112607f74016093685bb5c5e1f');
 
-	 53 INSERT INTO `instrument` VALUES(    2001, 'STRECKEISEN', '-', '-', '-',  20.0000000,         4.020747,         1.000000, 'response', 'streckeisen.1', 'V',   789084698.00000, '9fab1c6e88a3120f14fb4b183f632bf4bd69a099');
+	 53 INSERT INTO `instrument` VALUES(    2001, 'STRECKEISEN', '-', '-', '-',  20.0000000,         4.020747,         1.000000, '/opt/antelope/data/db/demo/response', 'streckeisen.1', 'V',   789084698.00000, '4cb95ef1d669eebca991ccf909261efcec0b11c3');
 
-	 54 INSERT INTO `instrument` VALUES(    2002, 'STRECKEISEN', '-', '-', '-',  20.0000000,         3.970145,         1.000000, 'response', 'streckeisen.2', 'V',   789084698.00000, 'ea428b85323b9dc2e8c444db5fdf83a16be50553');
+	 54 INSERT INTO `instrument` VALUES(    2002, 'STRECKEISEN', '-', '-', '-',  20.0000000,         3.970145,         1.000000, '/opt/antelope/data/db/demo/response', 'streckeisen.2', 'V',   789084698.00000, '913bdf01897be7d65617f810c723a37cc5293058');
 
-	 55 INSERT INTO `instrument` VALUES(    2003, 'STRECKEISEN', '-', '-', '-',  20.0000000,         4.018808,         1.000000, 'response', 'streckeisen.3', 'V',   789084698.00000, 'f55f6d918d45108dd4118dbf3a2f0333c4dd33c4');
+	 55 INSERT INTO `instrument` VALUES(    2003, 'STRECKEISEN', '-', '-', '-',  20.0000000,         4.018808,         1.000000, '/opt/antelope/data/db/demo/response', 'streckeisen.3', 'V',   789084698.00000, 'dabaa0788472727795b50beb16d04516baa39c5a');
 
 	 56 INSERT INTO `lastid` VALUES('arid',     4860,   795223336.00000, '3de4eb1e0af4d60d2521bf11870479aebf562e03');
 
@@ -3017,39 +3017,39 @@ Conversion results:
 
 	1508 INSERT INTO `stamag` VALUES(     600, 'USP',     4853,      645,       -1, 'P', 'mb',    3.13,   -1.00, 'dbmag',       -1,   790466871.00000, '6cb9724c6fa0342771da437c8f58ae5cfffa9bc2');
 
-	1509 INSERT INTO `wfdisc` VALUES('CHM', 'BHZ',   706139715.20000,    15871,        1,  1992138,   706139841.50000,     2527,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.15.CHM.BHZ',          0,       -1,   790465413.00000, 'fd0f9213c09cbf9733e5e5f6d25776c4c651ab70');
+	1509 INSERT INTO `wfdisc` VALUES('CHM', 'BHZ',   706139715.20000,    15871,        1,  1992138,   706139841.50000,     2527,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.15.CHM.BHZ',          0,       -1,   790465413.00000, 'dd9e5762e648d1958864daaa9870f947bc85014b');
 
-	1510 INSERT INTO `wfdisc` VALUES('CHM', 'BHN',   706139715.20000,    15872,        2,  1992138,   706139841.50000,     2527,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.15.CHM.BHN',          0,       -1,   790465413.00000, '475954a0c9c0c5e768fdfae742bca74bf6a77c7c');
+	1510 INSERT INTO `wfdisc` VALUES('CHM', 'BHN',   706139715.20000,    15872,        2,  1992138,   706139841.50000,     2527,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.15.CHM.BHN',          0,       -1,   790465413.00000, '51ec43615b78c656d2c344de66f94c9cfad64ac2');
 
-	1511 INSERT INTO `wfdisc` VALUES('CHM', 'BHE',   706139715.20000,    15873,        3,  1992138,   706139841.50000,     2527,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.15.CHM.BHE',          0,       -1,   790465413.00000, '2ea3dd734f66da04d4df25a6f633f13f60334619');
+	1511 INSERT INTO `wfdisc` VALUES('CHM', 'BHE',   706139715.20000,    15873,        3,  1992138,   706139841.50000,     2527,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.15.CHM.BHE',          0,       -1,   790465413.00000, '2adb4112a7184a5363ba134c99a719e2c7602f5b');
 
-	1512 INSERT INTO `wfdisc` VALUES('EKS2', 'BHZ',   706139704.70000,    15874,        4,  1992138,   706139801.55000,     1938,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.04.EKS2.BHZ',          0,       -1,   790465413.00000, 'e80847d6ba1b7e43ad821b214ee0b42cc2fec00c');
+	1512 INSERT INTO `wfdisc` VALUES('EKS2', 'BHZ',   706139704.70000,    15874,        4,  1992138,   706139801.55000,     1938,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.04.EKS2.BHZ',          0,       -1,   790465413.00000, 'a1bffa5411e845f458138b1430dd6d783707176a');
 
-	1513 INSERT INTO `wfdisc` VALUES('EKS2', 'BHN',   706139704.70000,    15875,        5,  1992138,   706139801.55000,     1938,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.04.EKS2.BHN',          0,       -1,   790465413.00000, 'e9182b8f1d48896512faf044f956db52e7ecf5b7');
+	1513 INSERT INTO `wfdisc` VALUES('EKS2', 'BHN',   706139704.70000,    15875,        5,  1992138,   706139801.55000,     1938,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.04.EKS2.BHN',          0,       -1,   790465413.00000, 'ef6d7da6aea6437fc842a1509ec1380591f6e0ad');
 
-	1514 INSERT INTO `wfdisc` VALUES('EKS2', 'BHE',   706139704.70000,    15876,        6,  1992138,   706139801.55000,     1938,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.04.EKS2.BHE',          0,       -1,   790465413.00000, '05a64c4a9615ecdd773bd88d54a94fe32b43df38');
+	1514 INSERT INTO `wfdisc` VALUES('EKS2', 'BHE',   706139704.70000,    15876,        6,  1992138,   706139801.55000,     1938,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.04.EKS2.BHE',          0,       -1,   790465413.00000, 'af067db72c3832f0ff89b479efbef2112e5acd9a');
 
-	1515 INSERT INTO `wfdisc` VALUES('USP', 'BHZ',   706139715.70000,    15877,        7,  1992138,   706139843.35000,     2554,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.15.USP.BHZ',          0,       -1,   790465413.00000, '342f6e0d7e64ba48e3c209fe120d4beae9b450bf');
+	1515 INSERT INTO `wfdisc` VALUES('USP', 'BHZ',   706139715.70000,    15877,        7,  1992138,   706139843.35000,     2554,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.15.USP.BHZ',          0,       -1,   790465413.00000, 'ff073354b527d4199ba51bf0795d2001e8a5d728');
 
-	1516 INSERT INTO `wfdisc` VALUES('USP', 'BHN',   706139715.70000,    15878,        8,  1992138,   706139843.35000,     2554,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.15.USP.BHN',          0,       -1,   790465413.00000, 'abb68c05094579527d53a9a265cc603d9ce46e26');
+	1516 INSERT INTO `wfdisc` VALUES('USP', 'BHN',   706139715.70000,    15878,        8,  1992138,   706139843.35000,     2554,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.15.USP.BHN',          0,       -1,   790465413.00000, '9fce453f00df82529042a1a5d97589f99d76cbfc');
 
-	1517 INSERT INTO `wfdisc` VALUES('USP', 'BHE',   706139715.70000,    15879,        9,  1992138,   706139843.35000,     2554,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.15.USP.BHE',          0,       -1,   790465413.00000, '679d8d7d1952fee55e811e3c3bfa1913d8b7f856');
+	1517 INSERT INTO `wfdisc` VALUES('USP', 'BHE',   706139715.70000,    15879,        9,  1992138,   706139843.35000,     2554,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.15.USP.BHE',          0,       -1,   790465413.00000, '12e263b9cb6785d1baeb0e587e055181357c5f7d');
 
-	1518 INSERT INTO `wfdisc` VALUES('TKM', 'BHZ',   706139719.05000,    15880,       22,  1992138,   706139855.95000,     2739,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.19.TKM.BHZ',          0,       -1,   790465413.00000, '65bd65f91127503ebb8c2ceaec16cbce400ddf18');
+	1518 INSERT INTO `wfdisc` VALUES('TKM', 'BHZ',   706139719.05000,    15880,       22,  1992138,   706139855.95000,     2739,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.19.TKM.BHZ',          0,       -1,   790465413.00000, '5fa091bda5e269b83f712103349481e96638e3c0');
 
-	1519 INSERT INTO `wfdisc` VALUES('TKM', 'BHN',   706139719.05000,    15881,       23,  1992138,   706139855.95000,     2739,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.19.TKM.BHN',          0,       -1,   790465413.00000, '165f71497d7612b3e0dcfd1d744a6a7296c79c1e');
+	1519 INSERT INTO `wfdisc` VALUES('TKM', 'BHN',   706139719.05000,    15881,       23,  1992138,   706139855.95000,     2739,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.19.TKM.BHN',          0,       -1,   790465413.00000, '5012f0c872f0284bc61099584de93727fe87e502');
 
-	1520 INSERT INTO `wfdisc` VALUES('TKM', 'BHE',   706139719.05000,    15882,       24,  1992138,   706139855.95000,     2739,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.19.TKM.BHE',          0,       -1,   790465413.00000, '028c0fcaa24fb0c2ded2de048174276bca75d1c4');
+	1520 INSERT INTO `wfdisc` VALUES('TKM', 'BHE',   706139719.05000,    15882,       24,  1992138,   706139855.95000,     2739,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.19.TKM.BHE',          0,       -1,   790465413.00000, '730db49b0a3426f8e21f4f6a9f5ad6f2810e3185');
 
-	1521 INSERT INTO `wfdisc` VALUES('KBK', 'BHZ',   706139714.40000,    15883,       25,  1992138,   706139838.45000,     2482,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.14.KBK.BHZ',          0,       -1,   790465413.00000, 'eee97a1d54903b98ef0c20daafc3a6cae38ce71a');
+	1521 INSERT INTO `wfdisc` VALUES('KBK', 'BHZ',   706139714.40000,    15883,       25,  1992138,   706139838.45000,     2482,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.14.KBK.BHZ',          0,       -1,   790465413.00000, '4f1673ede324416f21c2236109f994a3d2dfa7d2');
 
-	1522 INSERT INTO `wfdisc` VALUES('KBK', 'BHN',   706139714.40000,    15884,       26,  1992138,   706139838.45000,     2482,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.14.KBK.BHN',          0,       -1,   790465413.00000, 'c182bb690edc569ce1f168b314f34e932ca585d4');
+	1522 INSERT INTO `wfdisc` VALUES('KBK', 'BHN',   706139714.40000,    15884,       26,  1992138,   706139838.45000,     2482,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.14.KBK.BHN',          0,       -1,   790465413.00000, '80d079498aa39a8102fe07fc0d273ec6448ef690');
 
-	1523 INSERT INTO `wfdisc` VALUES('KBK', 'BHE',   706139714.40000,    15885,       27,  1992138,   706139838.45000,     2482,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.14.KBK.BHE',          0,       -1,   790465413.00000, 'a7c56c9c7abee7690507daf51c89268319461983');
+	1523 INSERT INTO `wfdisc` VALUES('KBK', 'BHE',   706139714.40000,    15885,       27,  1992138,   706139838.45000,     2482,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.14.KBK.BHE',          0,       -1,   790465413.00000, 'e0ceb2ce0c8a8e4ad73002a76b8ee5bfea17dc7e');
 
-	1524 INSERT INTO `wfdisc` VALUES('AAK', 'BHZ',   706139710.25000,    15886,       28,  1992138,   706139822.65000,     2249,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.10.AAK.BHZ',          0,       -1,   790465413.00000, 'c63336eb127d51c879efa9f931003aa7c83e1b82');
+	1524 INSERT INTO `wfdisc` VALUES('AAK', 'BHZ',   706139710.25000,    15886,       28,  1992138,   706139822.65000,     2249,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.10.AAK.BHZ',          0,       -1,   790465413.00000, '004bfd78fce763025e92d46168fe567918888c18');
 
-	1525 INSERT INTO `wfdisc` VALUES('AAK', 'BHN',   706139710.25000,    15887,       29,  1992138,   706139822.65000,     2249,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.10.AAK.BHN',          0,       -1,   790465413.00000, '277c1ee601c4e1a5b6f54e5601beb7f83689e160');
+	1525 INSERT INTO `wfdisc` VALUES('AAK', 'BHN',   706139710.25000,    15887,       29,  1992138,   706139822.65000,     2249,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.10.AAK.BHN',          0,       -1,   790465413.00000, 'dd6252c897a7d802d626a6dc4e89f75c41553270');
 
-	1526 INSERT INTO `wfdisc` VALUES('AAK', 'BHE',   706139710.25000,    15888,       30,  1992138,   706139822.65000,     2249,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', 'wf/knetc/1992/138/210426', '19921382155.10.AAK.BHE',          0,       -1,   790465413.00000, 'a295719617b18058b70b8ca4b9b0e611c5c836fd');
+	1526 INSERT INTO `wfdisc` VALUES('AAK', 'BHE',   706139710.25000,    15888,       30,  1992138,   706139822.65000,     2249,  20.0000000,         1.195355,         0.000000, 'RefTek', 'V', 's2', '-', '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426', '19921382155.10.AAK.BHE',          0,       -1,   790465413.00000, 'a5ff27bd2e49e6b0875b49fb945b232f5d979e0b');
 

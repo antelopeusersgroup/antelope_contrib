@@ -5,3 +5,4 @@ sqlinsert   1268441418.00000 raptor     kent       Darwin/4.1 improve input data
 sqlcreate   1270590249.00000 raptor     kent       Darwin/4.1 changed syncsha to syncstring                                  1270590250
 sqlcreate   1270593700.00000 raptor     kent       Darwin/4.1 fix syncstring spacing                                         1270593701
 sqlcreate   1274582235.00000 raptor     kent       Darwin/5.0 New gclfield and gclgrid schema tables in Antelope 5.0-64      1274582236
+sqlinsert   1274583163.00000 raptor     kent       Darwin/5.0 Change to local demo database                                  1274583163
