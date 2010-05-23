@@ -210,7 +210,9 @@ sub newrow {
 
 	unless( $dbh->do( $cmd ) ) {
 		
-		elog_complain( "Failed to create new database row in table '$table', record $db[3], sync '$sync'\n" );
+		elog_complain( "Failed to create new database row in table '$table'\n" .
+			       "record $db[3], sync '$sync'\n" .
+			       "while executing command '$cmd'\n" );
 	}
 
 	return;
@@ -238,7 +240,8 @@ sub delrow {
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_complain( "Failed to delete database row in table '$table', sync '$sync'\n" );
+		elog_complain( "Failed to delete database row in table '$table', sync '$sync'\n" .
+			       "while executing command '$cmd'\n" );
 	}
 
 	return;
