@@ -2,7 +2,7 @@
 eval 'exec perl -S $0 "$@"'
 if 0;
 
-$arch = "-arch i386";
+$arch = "-arch x86_64";
 
 print "Adding $arch\n";
 
