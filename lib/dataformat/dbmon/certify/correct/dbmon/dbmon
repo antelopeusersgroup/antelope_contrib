@@ -3089,7 +3089,7 @@ Schema table 'adoption':
 Schema table 'affiliation':
 	Filename: 'results/dbmon/demo.affiliation'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 13
 	Null-row sync string: b65fb9b9cb37f59e1bf5869c6c6c1f8c40b2e92f
 	Sync strings:
@@ -3138,7 +3138,7 @@ Schema table 'anetsta':
 Schema table 'arrival':
 	Filename: 'results/dbmon/demo.arrival'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:53.000
+	File modification time:  5/23/2010   4:31:01.000
 	Number of records: 12
 	Null-row sync string: 29b3c2c8c162e1acb2bfe82bbc375acf860234fb
 	Sync strings:
@@ -3165,7 +3165,7 @@ Schema table 'arrival_tshift':
 Schema table 'assoc':
 	Filename: 'results/dbmon/demo.assoc'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 9
 	Null-row sync string: 79029ac765971e2082efe5c7e9da6c16c6294037
 	Sync strings:
@@ -3417,6 +3417,20 @@ Schema table 'gap':
 	Null-row sync string: 4472c33cdbb1344821ee1cc3d838003b3cafcf24
 	Sync strings:
 	Watched: yes
+Schema table 'gclfield':
+	Filename: ''
+	Exists: no
+	Number of records: 0
+	Null-row sync string: 330947e1c170ca5b0a22c1008597b71955203bd7
+	Sync strings:
+	Watched: yes
+Schema table 'gclgdisk':
+	Filename: ''
+	Exists: no
+	Number of records: 0
+	Null-row sync string: 68bd63bb0e81fc04063d886562a8fa8426b45c1f
+	Sync strings:
+	Watched: yes
 Schema table 'gps':
 	Filename: ''
 	Exists: no
@@ -3462,7 +3476,7 @@ Schema table 'hypocentroid':
 Schema table 'instrument':
 	Filename: 'results/dbmon/demo.instrument'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 22
 	Null-row sync string: 8b318f663c200e39e0819c3d0b7bbb469af71f7f
 	Sync strings:
@@ -3499,7 +3513,7 @@ Schema table 'iptable':
 Schema table 'lastid':
 	Filename: 'results/dbmon/demo.lastid'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 1
 	Null-row sync string: 61bffaae48e5fda103a28eee492dbf04585181c6
 	Sync strings:
@@ -3522,7 +3536,7 @@ Schema table 'moment':
 Schema table 'netmag':
 	Filename: 'results/dbmon/demo.netmag'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 5
 	Null-row sync string: 19e36114fb9dd1775075601bae17ee52be5b9b62
 	Sync strings:
@@ -3542,7 +3556,7 @@ Schema table 'netperf':
 Schema table 'network':
 	Filename: 'results/dbmon/demo.network'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 1
 	Null-row sync string: 9f91f56a05cd8cb4341c214e460b6abf6ce459b4
 	Sync strings:
@@ -3565,7 +3579,7 @@ Schema table 'origerr':
 Schema table 'origin':
 	Filename: 'results/dbmon/demo.origin'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 1351
 	Null-row sync string: 84c9613022ab9c74809ae97cb04bb3b260cedef9
 	Sync strings:
@@ -5050,7 +5064,7 @@ Schema table 'seismometer':
 Schema table 'sensor':
 	Filename: 'results/dbmon/demo.sensor'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 39
 	Null-row sync string: d9b9c8a9b740554c6f376b3ea76f8440fe8760dd
 	Sync strings:
@@ -5111,7 +5125,7 @@ Schema table 'sensormodel':
 Schema table 'site':
 	Filename: 'results/dbmon/demo.site'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 13
 	Null-row sync string: b6a7212b6cb2acdca46f89caf47569c934b62832
 	Sync strings:
@@ -5132,7 +5146,7 @@ Schema table 'site':
 Schema table 'sitechan':
 	Filename: 'results/dbmon/demo.sitechan'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 39
 	Null-row sync string: 57ba5e3ce2c0215793ac4f08a699fef883855022
 	Sync strings:
@@ -5221,7 +5235,7 @@ Schema table 'stage':
 Schema table 'stamag':
 	Filename: 'results/dbmon/demo.stamag'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 4
 	Null-row sync string: fbc2c725344fdc6e9975b83810f1f75e6a5d6a0d
 	Sync strings:
@@ -5268,7 +5282,7 @@ Schema table 'trigger':
 Schema table 'wfdisc':
 	Filename: 'results/dbmon/demo.wfdisc'
 	Exists: yes
-	File modification time:  3/12/2010  21:51:51.000
+	File modification time:  5/23/2010   4:30:59.000
 	Number of records: 18
 	Null-row sync string: 67da46400fbc192b0d2981199ef3d02ab46adfcb
 	Sync strings:

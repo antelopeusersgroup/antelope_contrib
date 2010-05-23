@@ -63,7 +63,7 @@ typedef struct Tabletrack {
 	char	table_filename[FILENAME_MAX];
 	Dbptr	db;
 	int	table_exists;
-	int	table_nrecs;
+	long	table_nrecs;
 	unsigned long table_modtime;
 	char	*null_sync;
 	Tbl	*syncs;
@@ -187,8 +187,10 @@ new_tabletrack( char *table_name )
 
 	strcpy( ttr->table_name, table_name );
 
+	memset( ttr->table_filename, '\0', FILENAME_MAX );
+
 	ttr->table_exists = 0;
-	ttr->table_nrecs = 0;
+	ttr->table_nrecs = 0L;
 	ttr->watch_table = 0;
 	ttr->table_modtime = 0L;
 
@@ -303,7 +305,7 @@ dbmon_update( Hook *dbmon_hook, void *private )
 	int	ikey;
 	int	isync;
 	int	retcode = 0;
-	int	new_nrecs = 0;
+	long	new_nrecs = 0;
 	char	*sync;
 	char	*oldsync;
 
@@ -360,7 +362,7 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 		} else if( new_nrecs < ttr->table_nrecs ) { 				/* Table shortened */
 
-			elog_log( 0, "Table '%s' inappropriately shortened from %d to %d rows; rebuilding\n", 
+			elog_log( 0, "Table '%s' inappropriately shortened from %ld to %ld rows; rebuilding\n", 
 				     ttr->table_filename, ttr->table_nrecs, new_nrecs );
 
 			db = ttr->db;
@@ -497,7 +499,7 @@ dbmon_status( FILE *fp, Hook *dbmon_hook )
 			free( s );
 		}
 
-		fprintf( fp, "\tNumber of records: %d\n", ttr->table_nrecs );
+		fprintf( fp, "\tNumber of records: %ld\n", ttr->table_nrecs );
 
 		if( ttr->null_sync != (char *) NULL ) {
 

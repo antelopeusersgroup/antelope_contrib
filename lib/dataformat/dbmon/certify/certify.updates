@@ -1,3 +1,4 @@
 dbmon       1268428502.00000 raptor     kent       Darwin/4.1 changed input database                                         1268428503
 dbmon       1268429167.00000 raptor     kent       Darwin/4.1 enhance tests                                                  1268429167
 dbmon       1268430723.00000 raptor     kent       Darwin/4.1 Expand to test all features                                    1268430724
+dbmon       1274589073.00000 raptor     kent       Darwin/5.0 Schema tables added gclfield and gclgdisk                      1274589073
