@@ -1298,6 +1298,54 @@ CREATE TABLE `gap`
   PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
+CREATE TABLE `gclfield`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `fieldname`   CHAR(15) DEFAULT '-',
+  `dimensions`  INTEGER(3) DEFAULT 0,
+  `nv`          INTEGER(4) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `fieldname`)
+  );
+
+CREATE TABLE `gclgdisk`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `dimensions`  INTEGER(3) DEFAULT 0,
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `radius`      DECIMAL(10,3) DEFAULT -1.0,
+  `azimuth_y`   DECIMAL(7,2) DEFAULT -1.00,
+  `dx1nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `dx2nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `dx3nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `n1`          INTEGER(4) DEFAULT -1,
+  `n2`          INTEGER(4) DEFAULT -1,
+  `n3`          INTEGER(4) DEFAULT -1,
+  `i0`          INTEGER(4) DEFAULT -1,
+  `j0`          INTEGER(4) DEFAULT -1,
+  `k0`          INTEGER(4) DEFAULT -1,
+  `xlow`        DECIMAL(10,3),
+  `xhigh`       DECIMAL(10,3),
+  `ylow`        DECIMAL(10,3),
+  `yhigh`       DECIMAL(10,3),
+  `zlow`        DECIMAL(10,3),
+  `zhigh`       DECIMAL(10,3),
+  `cdefined`    CHAR(1) DEFAULT '-',
+  `geodefined`  CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `dimensions`)
+  );
+
 CREATE TABLE `gps`
   (
   `net`         CHAR(8) DEFAULT '-',

@@ -118,7 +118,7 @@ dbschema2sqlcreate( idatabase, itable, ifield, irecord, ... )
 	char	*stmt = 0;
 	long	istmt;
 	long	nstmts;
-	int	flags = 0;
+	long	flags = 0;
 	int	next;
 
 	db.database = idatabase;
@@ -171,9 +171,9 @@ db2sqlinsert( idatabase, itable, ifield, irecord, ... )
 	char	*stmt = 0;
 	long	istmt;
 	long	nstmts;
-	int	flags = 0;
+	long	flags = 0;
 	int	next;
-	int	rc;
+	long	rc;
 
 	db.database = idatabase;
 	db.table = itable;
@@ -232,7 +232,7 @@ db2sqldelete( idatabase, itable, ifield, irecord, sync, ... )
 	Tbl	*sqltbl = (Tbl *) NULL;
 	char	*sqlcmd = (char *) NULL;
 	int	next;
-	int	flags = 0;
+	long	flags = 0;
 	int	rc;
 
 	db.database = idatabase;
