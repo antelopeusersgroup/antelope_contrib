@@ -1,14 +1,16 @@
 tarball_time_format %Y_%m_%d
 tar_command tar
 
+contrib_srcdir src/contrib
+
 modules &Arr{
 	dbxcor &Arr{
 		build &Tbl{
-			src/contrib/lib/graphics/seisw
-			src/contrib/lib/seismic/libseispp
-			src/contrib/lib/utility/libgclgrid
-			src/contrib/lib/perf
-			src/contrib/bin/db/dbxcor
+			&contrib_srcdir/lib/graphics/seisw
+			&contrib_srcdir/lib/seismic/libseispp
+			&contrib_srcdir/lib/utility/libgclgrid
+			&contrib_srcdir/lib/perf
+			&contrib_srcdir/bin/db/dbxcor
 		}
 		package &Tbl{
 			static/libsciplot.a
@@ -81,7 +83,7 @@ modules &Arr{
 	}
 	python_antelope &Arr{
 		build &Tbl{
-			src/contrib/data/python
+			&contrib_srcdir/data/python
 		}
 		package &Tbl{
 			lib/python__datascope.dylib 
@@ -101,7 +103,7 @@ modules &Arr{
 	}
 	isi2orb &Arr{
 		build &Tbl{
-			src/contrib/bin/rt/isi2orb
+			&contrib_srcdir/bin/rt/isi2orb
 		}
 		package &Tbl{
 			include/libisi_iacp.h 
@@ -122,7 +124,7 @@ modules &Arr{
 	}
 	rtkill &Arr{
 		build &Tbl{
-			src/contrib/bin/rt/rtkill
+			&contrib_srcdir/bin/rt/rtkill
 		}
 		package &Tbl{
 			bin/rtkill 
@@ -130,10 +132,19 @@ modules &Arr{
 			man/man1/rtkill.1 
 		}
 	}
+	db2sql &Arr{
+		build &Tbl{
+			&contrib_srcdir/lib/dataformat/db2sql
+			&contrib_srcdir/lib/dataformat/dbmon
+			&contrib_srcdir/lib/perl/db2sql
+			&contrib_srcdir/lib/perl/dbmon
+			&contrib_srcdir/bin/export/db2sql
+		}
+	}
 	bootstrap &Arr{
 		build &Tbl{
-			src/contrib/lib/amakelocal
-			src/contrib/bin/utility/localmake
+			&contrib_srcdir/lib/amakelocal
+			&contrib_srcdir/bin/utility/localmake
 		}
 	}
 }
