@@ -648,8 +648,9 @@ PlotSelect = {
                         PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // {{{ Add arrival labels
+
                         if( resp['phases'] !== undefined && resp['phases'] !== null ) {
-                            if( resp['phases'][stachan_data] !== undefined ) {
+                            if( resp['phases'][stachan_data] !== undefined && ( $("input#phases").attr('checked') == true || PlotSelect.phases == 'True' ) ) {
 
                                 $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
 
