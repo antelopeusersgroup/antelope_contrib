@@ -139,6 +139,7 @@ modules &Arr{
 			&contrib_srcdir/lib/perl/db2sql
 			&contrib_srcdir/lib/perl/dbmon
 			&contrib_srcdir/bin/export/db2sql
+			&contrib_srcdir/bin/export/dbschema2sql
 		}
 	}
 	bootstrap &Arr{
