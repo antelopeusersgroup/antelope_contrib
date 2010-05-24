@@ -1,0 +1,40 @@
+.TH DBSCHEMA2SQL 1
+.SH NAME
+dbschema2sql \- Convert a Datascope schema to SQL CREATE statements
+.SH SYNOPSIS
+.nf
+dbschema2sql schema
+.fi
+.SH DESCRIPTION
+The dbschema2sql program converts a Datascope schema to a sequence of SQL CREATE statements. 
+The resulting SQL statements are printed to standard-out. 
+.SH OPTIONS
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% dbschema2sql Id1.0
+CREATE TABLE `lastid`
+  (
+  `keyname`     CHAR(64) DEFAULT '-',
+  `keyvalue`    INTEGER(10) DEFAULT -1,
+  `timestamp`   DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`keyname`)
+  );
+% 
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+db2sql(3), Datascope::db2sql(3p), db2sql(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The SQL statements may be parochial to one particular database type, currently MySQL (though some 
+underlying support is in place for other SQL databases).
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
