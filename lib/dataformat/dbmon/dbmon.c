@@ -342,7 +342,10 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 				sync = dbmon_compute_row_sync( db );
 
-				settbl( ttr->syncs, db.record, sync );
+				if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+
+					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+				}
 
 				dbtr->newrow( db, ttr->table_name, sync, private );	
 			}
@@ -382,7 +385,10 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 				sync = dbmon_compute_row_sync( db );
 
-				settbl( ttr->syncs, db.record, sync );
+				if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+
+					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+				}
 
 				dbtr->newrow( db, ttr->table_name, sync, private );	
 			}
@@ -400,7 +406,10 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 				if( oldsync == (char *) NULL ) {			/* new row */
 
-					settbl( ttr->syncs, db.record, sync );
+					if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+					}
 
 					dbtr->newrow( db, ttr->table_name, sync, private );	
 
@@ -412,7 +421,10 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 					dbtr->delrow( db, ttr->table_name, oldsync, private );
 
-					settbl( ttr->syncs, db.record, strdup( ttr->null_sync ) );
+					if( settbl( ttr->syncs, db.record, strdup( ttr->null_sync ) ) != db.record ) {
+
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+					}
 
 					free( oldsync );
 
@@ -420,7 +432,10 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 					dbtr->changerow( oldsync, db, ttr->table_name, sync, private );	
 
-					settbl( ttr->syncs, db.record, sync );
+					if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+					}
 
 					free( oldsync );
 				}
@@ -434,7 +449,10 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 					sync = dbmon_compute_row_sync( db );
 
-					settbl( ttr->syncs, db.record, sync );
+					if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+					}
 
 					dbtr->newrow( db, ttr->table_name, sync, private );	
 				}
