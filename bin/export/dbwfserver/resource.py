@@ -8,9 +8,12 @@ from string import Template
 from twisted.web import resource
 
 import antelope.stock as stock
+from antelope.datascope import *
 
 import dbwfserver.eventdata 
 import dbwfserver.config as config
+
+from collections import defaultdict 
 
 """
 Import Python module JSON or SimpleJSON to 
@@ -26,11 +29,10 @@ else:
 
     import simplejson as json
 
-eventdata = dbwfserver.eventdata.EventData(config.dbname)
-
 
 
 def isNumber(test):
+#{{{
     """
     Test if the string is a valid number 
     and return the converted number. 
@@ -42,523 +44,417 @@ def isNumber(test):
             return float(test)
     except:
         return False
+#}}}
 
-
-
-
-class Data(resource.Resource):
-
+class QueryParser(resource.Resource):
     """
     Serve Datascope query requests.
-
-    Support following query arguments:
-        * type - Data Type - e.g. 'wf','events','stations'
-        * net - Network Code - e.g. 'TA'
-        * sta - Station Code - e.g. '109C'
-        * orid - Origin id - e.g. '66484'
-        * chan - Channel Code - 'BHZ'
-        * ts - Time Start in Epoch Seconds
-        * te - Time End in Epoch Seconds
-        * tw - Time Window in Seconds
-        * availability - 'Lines' (True) or 'Waveforms' (False). 'Lines' only indicate Waveform availability. 
-        * canvas_size - The number of pixels of the plotting Canvas, to be passed to 'get_segment'
-        * amount - Amount of data to be retrieved: can be 'all', 'slice'
-        * filter - Waveform filter
-        * phases - Plot phase arrivals or not
     """
-
     def __init__(self):
-
+#{{{
         resource.Resource.__init__(self)
 
-    def _extract_request(self, request):
-        #{{{
-        type        = request.args.get('type',        [None])[0]
-        net_args    = request.args.get('net',         None)
-        sta_args    = request.args.get('sta',         None)
-        orid        = request.args.get('orid',        [None])[0]
-        availability= request.args.get('availability',[None])[0]
-        orid_time   = request.args.get('orid_time',   [None])[0]
-        time_start  = request.args.get('ts',          [None])[0]
-        time_end    = request.args.get('te',          [None])[0]
-        chan_args   = request.args.get('chan',        config.default_chans) 
-        time_window = request.args.get('tw',          [config.default_time_window])[0]
-        canvas_size = request.args.get('canvas_size', [config.canvas_size_default])[0] 
-        amount      = request.args.get('amount',      [None])[0] 
-        filter      = request.args.get('filter',      [None])[0] 
-        phases      = request.args.get('phases',      None)
+        self.dbname = config.dbname
+        self.db = dbopen(self.dbname)
 
-        if net_args:
-            net = list(set([n.upper() for n in net_args]))
-            net.sort()
-        else:
-            net =  None
+        self.stations = dbwfserver.eventdata.Stations(self.dbname)
+        self.events = dbwfserver.eventdata.Events(self.dbname)
 
-        if sta_args:
-            sta = list(set([s.upper() for s in sta_args]))
-            sta.sort()
-        else:
-            sta = None
-
-        chan = list(set([c.upper() for c in chan_args]))
-        chan.sort()
-
-        if time_start:
-            time_start = float(time_start)
-        
-        if time_end:
-            time_end = float(time_end)
-
-        if time_window: 
-            time_window = float(time_window)
-
-        if orid: 
-            try:
-                orid = int(orid)
-            except:
-                orid = False
-
-        if canvas_size: 
-            canvas_size = int(canvas_size)
-
-        if config.verbose:
-            log.msg("Received request for:")
-            log.msg("\ttype:\t%s" % type)
-            log.msg("\tnet:\t%s" % str(net))
-            log.msg("\tsta:\t%s" % str(sta))
-            log.msg("\torid:\t%s" % orid)
-            log.msg("\toridtime:\t%s" % orid_time)
-            log.msg("\tchan:\t%s" % str(chan))
-            log.msg("\ttime_window:\t%s" % stock.strtdelta(time_window))
-            log.msg("\ttime_start:\t%s" % time_start)
-            log.msg("\ttime_end:\t%s" % time_end)
-            log.msg("\tavailability:\t%s" % str(availability))
-            log.msg("\tcanvas_size:\t%d" % canvas_size)
-            log.msg("\tamount:\t%s" % amount)
-            log.msg("\tfilter:\t%s" % filter)
-            log.msg("\tphases:\t%s" % phases)
-
-        return type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter, phases
+        self.eventdata = dbwfserver.eventdata.EventData(self.dbname)
 #}}}
+
+    def _jquery_includes(self):
+        # {{{
+        jquery_includes = ''
+
+        for jqf in config.jquery_files:
+
+            if(re.match(r'^IE\s+', jqf)):
+
+                re.sub(r'^IE\s+', '', jqf)
+                jquery_includes += '<!--[if IE]>\n'
+                jquery_includes += '<script language="javascript" '
+                jquery_includes += 'type="text/javascript" src="'
+                jquery_includes += jqf
+                jquery_includes += '"></script>\n'
+                jquery_includes += '<![endif]-->\n'
+
+            else:
+
+                jquery_includes += '<script type="text/javascript" '
+                jquery_includes += 'src="'
+                jquery_includes += jqf
+                jquery_includes += '"></script>\n'
+
+        return jquery_includes
+        # }}}
+
     def getChild(self, name, request):
 #{{{
-        if name == '':
-
-            return self
-
-        return resource.Resource.getChild(self, name, request)
+        return self
 #}}}
-    def render_GET(self, request):
-#{{{
-        type, net, sta, orid, chan, orid_time, time_window, time_start, time_end, availability, canvas_size, amount, filter, phases = self._extract_request(request)
 
-        """
-        Handle different type of data request
-        such as metadata (stations, events)
-        and waveform data
-        """
+    def render(self, request):
 
-        request.setHeader("content-type", "application/json")
+#{{{ Setup template, init variables
+        template = config.html_template
+
+        url_params = {}
 
         response_data = {}
 
-        if config.verbose:
-            log.msg("Type of query:%s " % type)
-
-        if type == 'wf':
-
-            """
-            TEST:
-                http://localhost:8008/data?type=wf&sta=113A&orid=66554
-
-                http://localhost:8008/data?type=wf&sta=113A&orid=66554&ts=1230900154&te=1230900254&chan=BHZ
-
-                http://localhost:8008/data?type=wf&sta=113A&ts=1230900154&te=1230900254
-
-            #DEBUG TOOL:
-            #This line will output all vars as a json object:
-
-            return json.dumps({"net": net, "sta": sta, "chan":chan, "orid":orid, "orid_time":orid_time, "time_window":time_window, "time_start":time_start, "time_end":time_end, "availability":availability, "canvas_size":canvas_size, "amount":amount, "filter":filter })
-            """
-
-            function = "Function: get_segment(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (str(sta), str(chan), canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter, phases)
-            if config.debug: log.msg(function)
-
-            # try:
-            return json.dumps(eventdata.get_segment(sta, chan, canvas_size, orid, orid_time, time_window, time_start, time_end, amount, filter, phases))
-            # except:
-            #     request.setHeader("response-code", 500)
-            #     log.msg("\n")
-            #     log.msg("Problems on... " + function)
-            #     log.msg("\n")
-            #     return function
-
-        elif type == 'coverage':
-            """
-            You can test this with:
-            http://localhost:8008/data?type=coverage 
-                        - list coverage tuples of (time,end_time) for all stations and default channels
-            or
-            http://localhost:8008/data?type=coverage&sta=X18A&chan=BHZ
-                        - list coverage tuples of (time,end_time) for station X18A chan BHZ
-            or
-            http://localhost:8008/data?type=coverage&te=1230940700
-                        - list coverage tuples of (time,end_time) until time_end
-            or
-            http://localhost:8008/data?type=coverage&chan=BHZ&ts=1230768001&te=1230940700
-                        - list coverage tuples of (time,end_time) between start and end times for all BHZ chans
-            or 
-            http://localhost:8008/data?type=coverage&sta=X18A&chan=BHZ&ts=1230768001&te=1230940700
-                    
-            Multiple stations/channels query...
-                http://localhost:8008/data?type=events&sta=113A&sta=123A&chan=BHZ&chan=BHE&chan=BHN
-            """
-
-            if config.verbose:
-                log.msg("Query coverage. STA:%s CHAN:%s START:%s END:%s" % (str(sta),str(chan),str(time_start),str(time_end)) ) 
-
-            response_data = {'type':'coverage'}
-
-            response_data.update({'format':'bars'})
-
-            response_data.update(eventdata.coverage(sta,chan,time_start,time_end))
-
-            return json.dumps(response_data)
-
-        elif type == 'events':
-            """
-            You can test this with:
-            http://localhost:8008/data?type=events - list of events
-            or 
-            http://localhost:8008/data?type=events&sta=127A - dict. of events recorded by station 127A
-            or 
-            http://localhost:8008/data?type=events&orid=66484 - list of stations that recorded event 66484
-            or 
-            http://localhost:8008/data?type=events&sta=127A&orid=66484 - returns a floating point that is the arrival time
-
-            UPDATE:
-                Multiple stations query...
-                http://localhost:8008/data?type=events&sta=113A&sta=123A
-            """
-
-            if config.verbose:
-                log.msg("Query events. STA:%s ORID:%s" % (str(sta),orid) ) 
-
-            return json.dumps(eventdata.event_list(sta,orid))
-
-        elif type == 'stations':
-
-            """
-            You can test this with:
-            http://localhost:8008/data?type=stations
-            http://localhost:8008/data?type=stations&sta=Y12C
-            """
-
-            return json.dumps(eventdata.available_stations(sta))
-
-        elif type == 'filters':
-
-            """
-            You can test this with:
-            http://localhost:8008/data?type=filters
-            """
-
-            return json.dumps(config.filters, sort_keys=True)
-        
-        else:
-
-            request.setHeader("response-code", 500)
-            log.msg("ERROR in query. Unknown type:%s" % type)
-            return "Unknown query type:(%s)" % type
-
-        return 0
-#}}}
-
-class Root(resource.Resource):
-
-    isLeaf = True
-
-    def _jquery_includes(self):
-#{{{
-        jquery_includes = ''
-
-        for jqf in config.jquery_files:
-
-            if(re.match(r'^IE\s+', jqf)):
-
-                re.sub(r'^IE\s+', '', jqf)
-                jquery_includes += '<!--[if IE]>\n'
-                jquery_includes += '<script language="javascript" '
-                jquery_includes += 'type="text/javascript" src="'
-                jquery_includes += jqf
-                jquery_includes += '"></script>\n'
-                jquery_includes += '<![endif]-->\n'
-
-            else:
-
-                jquery_includes += '<script type="text/javascript" '
-                jquery_includes += 'src="'
-                jquery_includes += jqf
-                jquery_includes += '"></script>\n'
-
-        return jquery_includes
-#}}}
-    def getChild(self, name, request):
-#{{{
-        if name == '':
-
-            return self
-
-        return resource.Resource.getChild(self, name, request)
-#}}}
-    def render_GET(self, request):
-
-        # {{{ Load template and substiude values. 
-
-        tvals = {
-            "dbname":config.dbname,
-            "application_title":config.application_title,
-            "jquery_includes":self._jquery_includes(),
-        }
-
-        template = config.index_html_template
-        log.msg( template )
-        # }}} Load template and substiude values. 
-
-        html = Template(open(template).read()).substitute(tvals)
-
-        request.write( html )
-
-        return ""
-
-
-class QueryParser(resource.Resource):
-
-    def _jquery_includes(self):
-
-        # {{{
-        jquery_includes = ''
-
-        for jqf in config.jquery_files:
-
-            if(re.match(r'^IE\s+', jqf)):
-
-                re.sub(r'^IE\s+', '', jqf)
-                jquery_includes += '<!--[if IE]>\n'
-                jquery_includes += '<script language="javascript" '
-                jquery_includes += 'type="text/javascript" src="'
-                jquery_includes += jqf
-                jquery_includes += '"></script>\n'
-                jquery_includes += '<![endif]-->\n'
-
-            else:
-
-                jquery_includes += '<script type="text/javascript" '
-                jquery_includes += 'src="'
-                jquery_includes += jqf
-                jquery_includes += '"></script>\n'
-
-        return jquery_includes
-        # }}}
-
-    def getChild(self, name, request):
-
-        return self
-
-    def render(self, request):
-
-        # {{{ Output based on URI query args
+        tvals = defaultdict(dict)
 
         tvals = { 
+            "dir":               '&mdash;',
+            "key":               '&mdash;',
+            "error":             'false',
+            "wf_data":           'false',
+            "cv_data":           'false',
+            "event_list":        'false',
+            "event_data":        'false',
+            "event_selc":        'false',
+            "station_selc":      'false',
+            "station_data":      'false',
+            "station_list":      'false',
             "dbname":            config.dbname,
             "application_title": config.application_title,
             "jquery_includes":   self._jquery_includes(),
-            "dir":               '', 
-            "key":               '', 
-            "my_list":           ''
+            "filters":           '<option value="None">None</option>'
         }
+
+        for filter in config.filters:
+            tvals['filters'] += '<option value="'+config.filters[filter].replace(' ','_')+'">'
+            tvals['filters'] += filter
+            tvals['filters'] += '"</option>'
+
+        if config.display_arrivals:
+            tvals['display_arrivals'] = 'checked="checked"'
+        else:
+            tvals['display_arrivals'] = ''
 
         args = request.uri.split("/")[1:]
 
-        template_queryparser = config.queryparser_html_template
-
-        my_list = '<ul class="ui-helper-reset ui-helper-clearfix">'
+        #
+        # remove last element if it's empty... 
+        # This (localhost:8008/stations/) is the same as 
+        # (localhost:8008/stations) 
+        #
+        if args[len(args)-1] == '':
+            args.pop()
+#}}}
 
         if args:
 
-            metadatatype = args[0]
             tvals['dir'] = args[0]
 
-            if metadatatype == 'stations':
+            log.msg("ARGS: %s " % args)
 
-                if len(args) > 1:
+            if args[0] == 'data':
+                #{{{
+                if config.verbose:
+                    log.msg("Data query of type: %s " % args[0])
+
+                request.setHeader("content-type", "application/json")
+
+                if 'wf' in args:
+
+                    """
+                    TEST:
+
+                        http://localhost:8008/data/wf/USP/645
+                        http://localhost:8008/data/wf/AAK+BBC/BHZ/645
+                        http://localhost:8008/data/wf/USP/706139610/706139810
+                        http://localhost:8008/data/wf/USP+AAK/BHZ/706139710/706139810
+                        http://localhost:8008/data/wf/USP+AAK/BHZ/706139710/706139810/0.3-1_BP
+
+                    """
+                    if len(args) == 2:
+                        return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
+                    elif len(args) == 4:
+                        url_params['sta'] = args[2].split('+')
+                        url_params['orid'] = args[3]
+                        return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
+                    elif len(args) == 5:
+                        url_params['sta'] = args[2].split('+')
+                        if isNumber( args[3] ):
+                            url_params['time_start'] = args[3]
+                            url_params['time_end'] = args[4]
+                        else:
+                            url_params['chans'] = args[3].split('+')
+                            url_params['orid'] = args[4]
+
+                        return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
+                    elif len(args) == 6:
+                        url_params['sta'] = args[2].split('+')
+                        url_params['chans'] = args[3].split('+')
+                        url_params['time_start'] = args[4]
+                        url_params['time_end'] = args[5]
+                        return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
+                    elif len(args) == 7:
+                        url_params['sta'] = args[2].split('+')
+                        url_params['chans'] = args[3].split('+')
+                        url_params['time_start'] = args[4]
+                        url_params['time_end'] = args[5]
+                        url_params['filter'] = args[6]
+                        return json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
+                elif 'coverage' in args:
+                    """
+                    You can test this with:
+                        http://localhost:8008/data/coverage/
+                        http://localhost:8008/data/coverage/AAK+USP
+                        http://localhost:8008/data/coverage/AAK+USP/BHZ+BHN
+                        http://localhost:8008/data/coverage/AAK+USP/706139700
+                        http://localhost:8008/data/coverage/AAK+USP/BHZ/706139700
+                        http://localhost:8008/data/coverage/AAK+USP/BHZ/706139700/706139820
+
+                    """
+
+                    if len(args) == 3:
+                        url_params['sta'] = args[2].split('+')
+
+                    elif len(args) == 4:
+                        url_params['sta'] = args[2].split('+')
+                        if isNumber( args[3] ):
+                            url_params['time_start'] = args[3]
+                        else:
+                            url_params['chans'] = args[3].split('+')
+
+                    elif len(args) == 5:
+                        url_params['sta'] = args[2].split('+')
+                        if isNumber( args[3] ):
+                            url_params['time_start'] = args[3]
+                            url_params['time_end'] = args[4]
+                        else:
+                            url_params['chans'] = args[3].split('+')
+                            url_params['time_start'] = args[4]
+
+                    elif len(args) == 6:
+                        url_params['sta'] = args[2].split('+')
+                        url_params['chans'] = args[3].split('+')
+                        url_params['time_start'] = args[4]
+                        url_params['time_end'] = args[5]
+
+                    if config.verbose:
+                        log.msg("Query coverage. %s" % str(args) ) 
+
+                    response_data.update(self.eventdata.coverage(url_params))
+
+                    return json.dumps(response_data)
+
+                elif 'events' in args:
+                    """
+                    You can test this with:
+
+                        http://localhost:8008/data/events - list of events
+                        http://localhost:8008/data/events/66484 - list of stations that recorded event 66484
+                        http://localhost:8008/data/events/645+655
+                    """
+
+                    if len(args) == 3:
+                        args[2] = args[2].split('+')
+
+                        for event in args[2]:
+                            log.msg("\n\n\tcalling self.events(%s)\n\n" % event)
+                            response_data[event] = self.events(event)
+                        return json.dumps(response_data)
+
+                    else:
+                        return json.dumps(self.events.table())
+
+                elif 'stations' in args:
+                    """
+                    You can test this with:
+
+                        http://localhost:8008/data/stations
+                        http://localhost:8008/data/stations/Y12C
+                        http://localhost:8008/data/stations/LZH+OBN+USP
+                    """
+
+                    if len(args) == 3:
+                        args[2] = args[2].split('+')
+
+                        for sta in args[2]:
+                            log.msg("\n\n\tcalling self.stations(%s)\n\n" % sta)
+                            response_data[sta] = self.stations(sta)
+                        return json.dumps(response_data)
+
+                    else:
+                        return json.dumps(self.stations.list())
+
+                elif 'filters' in args:
+
+                    """
+                    You can test this with:
+
+                        http://localhost:8008/data?type=filters
+                        OR
+                        http://localhost:8008/data/filters
+                    """
+
+                    return json.dumps(config.filters, sort_keys=True)
+
+                else:
+                    request.setHeader("content-type", "text/html")
+                    request.setHeader("response-code", 500)
+                    dbwfserver.eventdata._error("Unknown type of query: %s" % args)
+                    tvals['error'] =  json.dumps( "Unknown query type:(%s)" % args )
+
+                #}}}
+
+            elif args[0] == 'events':
+                if len(args) > 1:#{{{
 
                     tvals['key'] = args[1]
-                    args_list = args[1].split('+')
+                    tvals['event_data'] = {}
 
-                    mydata = eventdata.event_list(args_list)
-                    if not mydata:
+                    log.msg("\n\n\tcalling self.events(%s)\n\n" % args[1])
+                    tvals['event_data'] = self.events(args[1])
+
+                    if not tvals['event_data']:
                         request.setResponseCode(404)
-                        return "Station code %s did not record any events (404 error)" % (args[1])
+                        return "No origin %s in database (404 error)" % (args[1])
+
+                    tvals['event_selc'] = args[1]
+                    tvals['station_list'] = self.stations.list()
+
                 else:
 
-                    mydata = eventdata.available_stations()
+                    tvals['event_list'] = json.dumps(self.events.table())
 
-            elif metadatatype == 'events':
+#}}}
 
-                if len(args) > 1:
+            elif args[0] == 'stations':
+                if len(args) > 1:#{{{
 
-                    mydata = eventdata.event_list(None,args[1])
-                    metadatatype = 'wfs'
-                    tvals['key'] = strftime("%Y-%m-%d %H:%M:%S",gmtime(float(args[1])))
+                    tvals['key'] = args[1]
+                    args[1] = args[1].split('+')
+                    tvals['station_data'] = {}
 
-                    if not mydata:
+                    for sta in args[1]:
+                        log.msg("\n\n\tcalling self.stations(%s)\n\n" % sta)
+                        tvals['station_data'][sta] = json.dumps( self.stations(sta) )
+
+                    if not tvals['station_data']:
                         request.setResponseCode(404)
-                        return "Origin time %s does not have any stations recording arrivals (404 error)" % (args[1])
+                        return "No station %s in database (404 error)" % (args[1])
+
+                    tvals['station_selc'] = json.dumps( args[1] )
+                    tvals['event_list'] = json.dumps(self.events.table())
 
                 else:
-                    mydata = eventdata.event_list()
 
-            else:
-    
-                request.setResponseCode(404)
-                return "Data type %s not found (404 error)" % (args[1])
+                    tvals['station_list'] = json.dumps( self.stations.list() )
 
+                #}}}
 
+            elif args[0] == 'wf':
+#{{{
+                """
+                TEST:
 
-            if isinstance(mydata,dict):
+                    http://localhost:8008/wf/USP/645
+                    http://localhost:8008/wf/AAK+BBC/BHZ/645
+                    http://localhost:8008/wf/USP/706139610/706139810
+                    http://localhost:8008/wf/USP+AAK/BHZ/706139710/706139810
 
-                for my_key,my_vals in mydata.iteritems():
+                """
+                if len(args) == 3:
+                    url_params['sta'] = args[1].split('+')
+                    url_params['orid'] = args[2]
+                    tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+                    tvals['key'] = args[1] + ' / ' + args[2]
 
-                    my_vals.sort()
-
-                    for val in my_vals:
-                        if metadatatype == 'stations':
-                            val_readable = strftime("%Y-%m-%d %H:%M:%S",gmtime(float(val)))
-                            my_list += "<li class='ui-state-active ui-corner-all'><a href='/wfs/%s/%s'>%s</a></li>\n" % (my_key,val,val_readable)
-                        else:
-                            val_readable = val
-                            my_list += "<li class='ui-state-active ui-corner-all'><a href='/wfs/%s/%s'>%s</a></li>\n" % (val,my_key,val_readable)
-
-            else:
-
-                mydata.sort()
-                for mys in mydata:
-
-                    if metadatatype == 'events':
-                        mys_readable = strftime("%Y-%m-%d %H:%M:%S",gmtime(float(mys)))
+                elif len(args) == 4:
+                    url_params['sta'] = args[1].split('+')
+                    if isNumber( args[2] ):
+                        url_params['time_start'] = args[2]
+                        url_params['time_end'] = args[3]
                     else:
-                        mys_readable = mys
+                        url_params['chans'] = args[2].split('+')
+                        url_params['orid'] = args[3]
+                    tvals['key'] = args[1] + ' / ' + args[2] + ' / ' + args[3]
+                    tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
-                    my_list += "<li class='ui-state-active ui-corner-all'><a href='/%s/%s'>%s</a></li>\n" % (metadatatype,mys,mys_readable)
+                elif len(args) == 5:
+                    url_params['sta'] = args[1].split('+')
+                    url_params['chans'] = args[2].split('+')
+                    url_params['time_start'] = args[3]
+                    url_params['time_end'] = args[4]
+                    tvals['key'] = args[1] + ' / ' + args[2] + ' / ' + args[3] + ' / ' + args[4]
+                    tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
-            tvals['my_list'] = my_list
+                elif len(args) == 6:
+                    url_params['sta'] = args[1].split('+')
+                    url_params['chans'] = args[2].split('+')
+                    url_params['time_start'] = args[3]
+                    url_params['time_end'] = args[4]
+                    url_params['filter'] = args[5]
+                    tvals['key'] = args[1] + ' / ' + args[2] + ' / ' + args[3] + ' / ' + args[4] + ' / ' + args[5]
+                    tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
-        else:
+                else:
+                    request.setResponseCode(404)
+                    return "If you request the waveforms resource (/wfs) you must provide a station code and epoch time (404 error)"
 
-            request.setResponseCode(404)
-            return "Resource not found (404 error)"
+#}}}
 
-        # }}} Output based on URI query args
+            elif args[0] == 'coverage':
+#{{{
+                """
+                You can test this with:
+                    http://localhost:8008/coverage/
+                    http://localhost:8008/coverage/AAK+USP
+                    http://localhost:8008/coverage/AAK+USP/BHZ+BHN
+                    http://localhost:8008/coverage/AAK+USP/706139700
+                    http://localhost:8008/coverage/AAK+USP/BHZ/706139700
+                    http://localhost:8008/coverage/AAK+USP/BHZ/706139700/706139820
 
-        html_stations = Template(open(template_queryparser).read()).substitute(tvals)
+                """
+
+                if len(args) == 2:
+                    url_params['sta'] = args[1].split('+')
+
+                elif len(args) == 3:
+                    url_params['sta'] = args[1].split('+')
+                    if isNumber( args[2] ):
+                        url_params['time_start'] = args[2]
+                    else:
+                        url_params['chans'] = args[2].split('+')
+
+                elif len(args) == 4:
+                    url_params['sta'] = args[1].split('+')
+                    if isNumber( args[2] ):
+                        url_params['time_start'] = args[2]
+                        url_params['time_end'] = args[3]
+                    else:
+                        url_params['chans'] = args[2].split('+')
+                        url_params['time_start'] = args[3]
+
+                elif len(args) == 5:
+                    url_params['sta'] = args[1].split('+')
+                    url_params['chans'] = args[2].split('+')
+                    url_params['time_start'] = args[3]
+                    url_params['time_end'] = args[4]
+
+                if config.verbose:
+                    log.msg("Query coverage. %s" % str(args) ) 
+
+
+                tvals['cv_data'] =  json.dumps(self.eventdata.coverage(url_params))
+#}}}
+
+            elif args[0] != '':
+                request.setHeader("response-code", 500)
+                dbwfserver.eventdata._error("Unknown type of query: %s" % args)
+                tvals['error'] =  json.dumps( "Unknown query type:(%s)" % args )
+
+        html_stations = Template(open(template).read()).substitute(tvals)
 
         request.write( html_stations )
-
-        return ""
-
-class Waveform(resource.Resource):
-
-    def _jquery_includes(self):
-
-        # {{{
-        jquery_includes = ''
-
-        for jqf in config.jquery_files:
-
-            if(re.match(r'^IE\s+', jqf)):
-
-                re.sub(r'^IE\s+', '', jqf)
-                jquery_includes += '<!--[if IE]>\n'
-                jquery_includes += '<script language="javascript" '
-                jquery_includes += 'type="text/javascript" src="'
-                jquery_includes += jqf
-                jquery_includes += '"></script>\n'
-                jquery_includes += '<![endif]-->\n'
-
-            else:
-
-                jquery_includes += '<script type="text/javascript" '
-                jquery_includes += 'src="'
-                jquery_includes += jqf
-                jquery_includes += '"></script>\n'
-
-        return jquery_includes
-        # }}}
-
-    def getChild(self, name, request):
-
-        return self
-
-    def render(self, request):
-
-        tvals = { 
-            "dbname":               config.dbname,
-            "application_title":    config.application_title,
-            "jquery_includes":      self._jquery_includes(),
-            "title":                '',
-            "jscript_vars":         '',
-            "filters":              ''
-        }
-
-        template_waveform = config.waveform_html_template
-
-        args = request.uri.split("/")[1:]
-
-        if len(args) >= 3:
-
-            sta_list = args[1].split('+')
-
-            if args[2]:
-
-                if isNumber(args[2]):
-                    chan = False
-                    orid_time = isNumber(args[2])
-                else:
-                    chan = args[2]
-                    chan_split = args[2].split('+')
-                    orid_time = isNumber(args[3])
-
-            # Build javascript variables
-            jscript_vars = "dataObj['sta'] = " + '["' + '","'.join(sta_list) + '"]\n'
-            jscript_vars += "dataObj['orid_time'] = " + str(orid_time) + '\n'
-
-            # Build title
-            title = tvals["application_title"] + " / waveforms / " + args[1] + " / "
-
-            # Build filter list
-            filterList = "<option value='None' selected>None</option>\n"
-            for filterKey in sorted(config.filters.iterkeys()):
-                filterList += "\t<option value='%s'>%s</option>\n" % (config.filters[filterKey],filterKey)
-            tvals['filters'] = filterList
-
-            # Override channels
-            if chan:
-                title += chan + " / "
-                jscript_vars += "dataObj['chan'] = " + '["' + '","'.join(chan_split) + '"]'
-
-            if orid_time: title += strftime("%Y-%m-%d %H:%M:%S",gmtime(orid_time))
-
-            tvals['title']        = title
-            tvals['jscript_vars'] = jscript_vars
-
-            html_stations = Template(open(template_waveform).read()).substitute(tvals)
-
-            request.write( html_stations )
-
-            return ""
-
-        else:
-        
-            request.setResponseCode(404)
-            return "If you request the waveforms resource (/wfs) you must provide a station code and epoch time (404 error)"
+        request.finish()
