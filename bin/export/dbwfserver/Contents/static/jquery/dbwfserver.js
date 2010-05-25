@@ -96,7 +96,6 @@ PlotSelect = {
         });
         // }}} Open the config panel
 
-
         // {{{ Canvas resize experiment
         // Not used yet
         // $(window).resize(function(){
@@ -121,7 +120,7 @@ PlotSelect = {
             'margin':'0',
             'padding':'0',
             'width':'1px'
-        }
+        };
         // }}} Arrival flag CSS
 
         // {{{ Initialize functions
@@ -158,7 +157,7 @@ PlotSelect = {
 
     resetPlot: function(evt){
 
-        PlotSelect.getData();
+        location.reload(true);
 
     },
 
@@ -364,7 +363,6 @@ PlotSelect = {
 
     },
 
-    //getData: function(passedArgsObj){
     getData: function(args){
 
         // {{{ Get data

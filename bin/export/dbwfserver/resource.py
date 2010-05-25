@@ -368,6 +368,7 @@ class QueryParser(resource.Resource):
                     url_params['sta'] = args[1].split('+')
                     url_params['orid'] = args[2]
                     tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+                    tvals['key'] = args[1] + ' / ' + args[2]
 
                 elif len(args) == 4:
                     url_params['sta'] = args[1].split('+')
@@ -377,21 +378,24 @@ class QueryParser(resource.Resource):
                     else:
                         url_params['chans'] = args[2].split('+')
                         url_params['orid'] = args[3]
+                    tvals['key'] = args[1] + ' / ' + args[2] + ' / ' + args[3]
                     tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
-
 
                 elif len(args) == 5:
                     url_params['sta'] = args[1].split('+')
                     url_params['chans'] = args[2].split('+')
                     url_params['time_start'] = args[3]
                     url_params['time_end'] = args[4]
+                    tvals['key'] = args[1] + ' / ' + args[2] + ' / ' + args[3] + ' / ' + args[4]
                     tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
+
                 elif len(args) == 6:
                     url_params['sta'] = args[1].split('+')
                     url_params['chans'] = args[2].split('+')
                     url_params['time_start'] = args[3]
                     url_params['time_end'] = args[4]
                     url_params['filter'] = args[5]
+                    tvals['key'] = args[1] + ' / ' + args[2] + ' / ' + args[3] + ' / ' + args[4] + ' / ' + args[5]
                     tvals['wf_data'] = json.dumps(self.eventdata.get_segment(url_params, self.stations, self.events))
 
                 else:
