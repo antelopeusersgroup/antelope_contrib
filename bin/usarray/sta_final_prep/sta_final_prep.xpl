@@ -29,9 +29,9 @@
 {    #  Main program
 
     my ( $usage, $cmd, $subject, $verbose, $debug, $Pf, $problems);
-    my ( $bhname, $dbname, $dirname, $etime, $fsta, $line, $maxtime, $maxtime_baler, $maxtime_rt ) ; 
+    my ( $bhname, $dbname, $dirname, $dbdevice, $dbavail, $etime, $fsta, $line, $maxtime, $maxtime_baler, $maxtime_rt ) ; 
     my ( $mintime, $mintime_baler, $mintime_rt, $mseedfile, $nrows, $prob, $prob_check, $row, $rtdb ) ;  
-    my ( $snet, $sohname, $sta, $statmp, $stime, $table ) ;
+    my ( $snet, $sohname, $sta, $sta_base, $sta_size, $statmp, $stime, $table ) ;
     my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles ) ;
     my (%pf);
 
@@ -80,6 +80,30 @@
     $table = "wfdisc";
     foreach $sta ( sort (@ARGV) ) {
         $stime = strydtime(now());
+        
+        ( $dbdevice, $dbavail ) = &df( $pf{archivebase} );
+        
+        $sta_base = "$pf{balerdirbase}\/$sta";
+        
+        $sta_size =  `du -sk $sta_base` ;
+        
+        $sta_size =~ /^(\d+)/ ;
+        
+        $sta_size = ( $sta_size / 1024 ) + (2 * 1024) ;  # make sure 2 Gbytes free space
+
+        elog_notify( "Only $dbavail available on $pf{archivebase} " );
+        elog_notify( "Need $sta_size megabytes available " );
+
+        if ($dbavail < $sta_size ) {
+            $problems++ ;
+            elog_complain( "Problem #$problems" );
+            elog_complain( "Only $dbavail available on $pf{archivebase} " );
+            elog_complain( "Need $sta_size megabytes available " );
+            $subject = "Problems - $pgm $host	$problems problems" ;
+            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_die("\n$subject") ;
+        }
+
         elog_notify ("\nstarting processing station $sta\n\n");
     
 #
@@ -507,10 +531,10 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     dbclose(@db);
         
         
-    $line = sprintf("maximimum average data return on seismic channels is %5.1f%% - less than 99%%",
+    $line = sprintf("maximimum average data return on seismic channels is %5.1f%% - less than 95%%",
                      $staperf{max_ave_perf});
         
-    if ($staperf{max_ave_perf} < 99.) {
+    if ($staperf{max_ave_perf} < 95.) {
         $prob++;
         print PROB "\n$line\n" ;
         $problems++ ;
@@ -525,7 +549,7 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days\n	Check deployment table",
                      $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
         
-    if ($staperf{deploy_days} < $staperf{max_datadays}) {
+    if ($staperf{deploy_days} < ($staperf{max_datadays} * 1.05) ) {  # Don't worry if within 5%
         $prob++;
         print PROB "\n$line\n" ;
         $problems++ ;
