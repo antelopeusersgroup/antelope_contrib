@@ -130,11 +130,10 @@ our ( $pgm, $host);
 
 sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug);
     my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug) = @_ ;
-    my ( $first_event, $last_event, $n, $ts, $current, $next_ts, $nrecs, $narrivals, $nevents, $norigins );
-    my ( $subset, $dirname, $dbname, $noassoc, $cmd, $dtmp, $dbexist, $origin_dir, $msg, $exists, $subject);
-    my ( $wftmp, $wfpath, $wfdir, $base, $suffix) ; 
-    my ( @dbin, @dbevent, @dborigin, @dbarrival, @dbtmp, @dbj, @dbout);
-    my ( @ts );
+    my ( $arr_no_join, $base, $cmd, $current, $dbexist, $dbname, $dirname, $dtmp, $exists );
+    my ( $first_event, $last_event, $msg, $n, $narrivals, $nevents, $next_ts, $noassoc, $norigins );
+    my ( $nrecs, $origin_dir, $subject, $subset, $suffix, $ts, $wfdir, $wfpath, $wftmp );
+    my ( @dbarrival, @dbevent, @dbin, @dbj, @dbnj, @dbnj2, @dborigin, @dbout, @dbtmp, @ts) ;
     
 #
 #  open database tables
@@ -164,7 +163,10 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
     @dborigin 	= dbsubset(@dborigin,"time < \_$last_time\_ && time >= \_$start_time\_" );
     $origin_dir = dbquery(@dborigin,"dbTABLE_DIRNAME");
     $nrecs      = dbquery(@dborigin,"dbRECORD_COUNT");
+
     elog_notify ("process_events	nrecs	$nrecs		origin_dir $origin_dir") if $opt_V;
+    return if ($nrecs == 0);
+
 #
 #  find first and last preferred origins in database
 #
@@ -185,7 +187,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
     
     @ts = &time_splits($period, $debug, @dbj) ;
     dbclose(@dbin);
-
+    
 #
 #  process each unique year-month event information
 #
@@ -240,16 +242,16 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject");
         }
-
-        @dbtmp 		   = dbopen($dbname,'r+');
-        @dbtmp   	   = dblookup(@dbtmp,0,"arrival",0,0);
-        $narrivals     = dbquery (@dbtmp,dbRECORD_COUNT);
-        @dbtmp   	   = dblookup(@dbtmp,0,"origin",0,0);
-        $norigins      = dbquery (@dbtmp,dbRECORD_COUNT);
-        @dbtmp   	   = dblookup(@dbtmp,0,"event",0,0);
-        $nevents       = dbquery (@dbtmp,dbRECORD_COUNT);
         
-        elog_notify("process_events	$current - $next_ts	events	$nevents	origins	$norigins	arrivals	$narrivals") if $opt_v;
+        @dbtmp 		   = dbopen  ( $dbname, 'r+' );
+        @dbtmp   	   = dblookup( @dbtmp, 0, "arrival", 0, 0 );
+        $narrivals     = dbquery ( @dbtmp, dbRECORD_COUNT );
+        @dbtmp   	   = dblookup( @dbtmp, 0, "origin", 0, 0 );
+        $norigins      = dbquery ( @dbtmp, dbRECORD_COUNT );
+        @dbtmp   	   = dblookup( @dbtmp, 0, "event", 0, 0 );
+        $nevents       = dbquery ( @dbtmp, dbRECORD_COUNT );
+        
+        elog_notify(sprintf("process_events  %s    events  %6d    origins  %6d      assoc arrivals  %8d", epoch2str(epoch($ts),"%Y_%m"), $nevents, $norigins, $narrivals)) if $opt_v;
 
         if ($opt_C) {
             $msg  = "orb2db_msg $dbin pause";
@@ -262,7 +264,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
             }
             
             $cmd  = "dbjoin $dbin.origin event | ";
-            $cmd .= "dbsubset - \" $subset \" | dbjoin -o - assoc arrival origerr stamag netmag emodel predarr | ";
+            $cmd .= "dbsubset - \" $subset \" | dbjoin -o - assoc arrival stamag netmag emodel predarr | ";
             $cmd .= "dbdelete - ";
 
             elog_notify( "$cmd") if $opt_v;
@@ -282,20 +284,33 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
             run($msg,0);
         }
 
-#  find all unassociated arrivals and append       
-        
-        $cmd = "dbsubset $dbin.arrival \" $subset && iphase !~ /del/ \" | dbnojoin - assoc | dbunjoin -o /tmp/tmp_$$ -";
+#  find all unassociated arrivals and append
 
-        elog_notify( "process_events	$cmd ") if $opt_V;
+        @dbnj  = dbopen  ( $dbin, 'r' ) ;
+        @dbnj  = dblookup( @dbnj, 0, "arrival", 0, 0 ) ;
+        @dbnj2 = dblookup( @dbnj, 0, "assoc", 0, 0 ) ;
+        
+        @dbnj  = dbsubset ( @dbnj, " $subset && iphase !~ /del/ " ) ;
+        @dbnj  = dbnojoin ( @dbnj, @dbnj2 ) ;
+        
+        $arr_no_join =  dbquery ( @dbnj, dbRECORD_COUNT) ;
+        
+        dbclose ( @dbnj ) ;
+        
+        if ( $arr_no_join > 0 ) {
+            $cmd = "dbsubset $dbin.arrival \" $subset && iphase !~ /del/ \" | dbnojoin - assoc | dbunjoin -o /tmp/tmp_$$ -";
+
+            elog_notify( "process_events	$cmd ") if $opt_V;
          
-        if (run($cmd,0)) {
-            elog_notify ("process_events	Cmd failed: $cmd");
+            if (run($cmd,0)) {
+                elog_notify ("process_events	Cmd failed: $cmd");
+            }
         }
 
         @dbtmp 		   = dbopen("/tmp/tmp_$$",'r+');
         @dbarrival 	   = dblookup(@dbtmp,0,"arrival",0,0);
         $noassoc       = dbquery(@dbarrival,dbRECORD_COUNT);
-        elog_notify("process_events	$current - $next_ts unassociated arrivals - $noassoc") if $opt_v;
+        elog_notify(sprintf("process_events  %s                                         noassoc arrivals  %8d", epoch2str(epoch($ts),"%Y_%m"), $noassoc )) if $opt_v;
 
         @dbout             = dbopen($dbname,"r+");
         @dbout             = dblookup(@dbout,0,"arrival",0,0);
@@ -307,7 +322,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
         dbclose( @dbout );
         dbdestroy( @dbtmp );
         
-        if ($opt_C) {
+        if ( $opt_C && ( $arr_no_join > 0 ) ) {
             $msg  = "orb2db_msg $dbin pause";
             elog_notify("process_events	$msg") if $opt_v;
             if (run($msg,0)) {
@@ -373,7 +388,8 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
     @dbwfdisc 	= dbsubset(@dbwfdisc,$subset);
     $nrecs      = dbquery(@dbwfdisc,"dbRECORD_COUNT");
     elog_notify ("process_wfdisc	nrecs	$nrecs") if $opt_V;
-            
+    return if ($nrecs == 0);
+    
     @ts = ();
     @ts = &time_splits($period,$debug,@dbwfdisc) ;
     elog_notify ("process_wfdisc	time_splits	@ts") if $opt_V;
