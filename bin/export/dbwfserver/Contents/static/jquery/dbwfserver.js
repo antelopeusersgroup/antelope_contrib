@@ -114,6 +114,14 @@ PlotSelect = {
             'padding':'3px',
             'position':'absolute'
         };
+        PlotSelect.arrivalTailCss = {
+            'position':'absolute',
+            'border':'none',
+            'border-left':'1px solid #FFF',
+            'margin':'0',
+            'padding':'0',
+            'width':'1px'
+        }
         // }}} Arrival flag CSS
 
         // {{{ Initialize functions
@@ -203,6 +211,7 @@ PlotSelect = {
                 PlotSelect.phases = 'False' ;
             }
             $(".flag").toggle();
+            $(".flagTail").toggle();
         });
         // }}} Dynamic phase selector
 
@@ -655,32 +664,30 @@ PlotSelect = {
                         PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // {{{ Add arrival labels
+
                         if( resp['phases'] !== undefined && resp['phases'] !== null ) {
-                            if( resp['phases'][stachan_data] !== undefined ) {
+                            if( resp['phases'][stachan_data] !== undefined && ( $("input#phases").attr('checked') == true || PlotSelect.phases == 'True' ) ) {
 
                                 $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
 
                                     var o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
+
+                                    var flagTop = plot.getPlotOffset() ;
+
                                     var flagCss = PlotSelect.arrivalFlagCss;
-                                    // Force override as we want bar almost to top
-                                    o.top = 20 ;
+                                    flagCss['left'] = o.left + "px" ;
+                                    flagCss['top'] = flagTop.top + "px" ;
 
-                                    flagCss['left'] = o.left + 4 + "px" ;
-                                    flagCss['top'] = o.top + "px" ;
+                                    var flagTail = PlotSelect.arrivalTailCss;
+                                    flagTail['left'] = flagCss['left'] ;
+                                    flagTail['top'] = flagCss['top'] ;
+                                    flagTail['height'] = plot.height() + 'px';
+
                                     var arrDiv = $("<div class='flag'>").css(flagCss).append( phaseFlag );
+                                    var arrTailDiv = $("<div class='flagTail'>").css(flagTail);
 
-                                    // Draw tail on arrival flag
-                                    var ctx = plot.getCanvas().getContext("2d");
-                                    ctx.beginPath();
-                                    o.left += 4;
-                                    ctx.moveTo(o.left,o.top);
-                                    ctx.lineTo(o.left,o.top + 120);
-                                    ctx.closePath();
-                                    ctx.lineWidth = 1;
-                                    ctx.strokeStyle = "#FFF";
-                                    ctx.stroke();
-
-                                    chan_plot.append(arrDiv);
+                                    chan_plot.append(arrDiv);     // Flag
+                                    chan_plot.append(arrTailDiv); // Flag tail
 
                                 });
                             }
