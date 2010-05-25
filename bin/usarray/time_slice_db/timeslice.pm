@@ -27,31 +27,39 @@ sub time_splits { # @ts = &time_splits( $period, $debug, @db ) ;
 #  find unique periods in dbtable
 #
     my ( $period, $debug, @db ) = @_;
-    my ( $ts, $y, $m, $j, $tse, $ye, $me, $je, $last_rec, $t, $tmp );
+    my ( $ts, $y, $m, $j, $tse, $ye, $me, $je, $last_rec, $t, $tmp, $yearday );
     my ( @ts );
+    my ( %yearday ) ;
         
     elog_notify("time_splits	period	$period	debug	$debug	db	@db") if $debug;
     
-    @ts = ();
-    @db = dbsort(@db,"time");
-    $last_rec = dbquery(@db,dbRECORD_COUNT);
+    @ts       = () ;
+    %yearday  = () ;
+    @db       = dbsort(@db,"time") ;
+    $last_rec = dbquery(@db,dbRECORD_COUNT) ;
 
-    $db[3] = 0;
+    $db[3]    = 0 ;
     
-    elog_notify("time_splits	period	$period	last_rec	$last_rec	db	@db") if $debug;
-    $ts   = yearday(dbgetv(@db,"time")) ;
-    elog_notify("time_splits	ts	$ts	db	@db") if $debug;
+    elog_notify("time_splits	period	$period	last_rec	$last_rec	db	@db") if $debug ;
+    $ts       = yearday(dbgetv(@db,"time")) ;
+    elog_notify("time_splits	ts	$ts	db	@db") if $debug ;
 
-    $db[3] = $last_rec - 1;
+    $db[3]    = $last_rec - 1;
     
-    $tse   = yearday(dbgetv(@db,"time")) ;
+    $tse      = yearday(dbgetv(@db,"time")) ;
     elog_notify("time_splits	tse	$tse	db	@db") if $debug;
-
-    while ($ts <= $tse) {
-        push @ts, $ts ;
-        ($tmp,$ts) =  &border($ts, $period, $debug);
-        elog_notify("time_splits	tmp	$tmp	ts	$ts") if $debug;
+    
+    for ( $db[3] = 0; $db[3] < $last_rec ; $db[3]++ ) {
+        $yearday = yearday( dbgetv( @db, "time" ) );
+        $yearday{$yearday} = $yearday ;
     }
+
+    foreach $ts ( keys ( %yearday ) ) {
+        ($ts,$tmp) =  &border($ts, $period, $debug);
+        push @ts, $ts ;
+    }
+    @ts = sort ( &get_unique ( @ts ) );
+    
 
     if ($debug) {
         elog_notify("time_splits	time periods - $#ts");
@@ -62,6 +70,7 @@ sub time_splits { # @ts = &time_splits( $period, $debug, @db ) ;
     
     return @ts;
 }
+
 
 sub border { # ($current,$next_ts) =  &border($ts, $period, $debug);
 #
