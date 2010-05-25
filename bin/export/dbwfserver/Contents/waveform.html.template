@@ -47,7 +47,11 @@
                 <p>The <strong>'Stations'</strong>
                 button will display a list of stations in the arrival
                 database. The <strong>'Events'</strong> button
-                will display a list of event origins sorted by time.</p>
+                will display a table of events sorted by time.
+                You can sort the event table by any 
+                column by simply clicking the column
+                header; one click for a forward sort, two clicks for
+                a reverse sort.</p>
             </div>
 
             <div id="themer" title="Dbwfserver themer">

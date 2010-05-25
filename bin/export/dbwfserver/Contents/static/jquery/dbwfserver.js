@@ -793,7 +793,7 @@ PlotSelect = {
             jQuery.each(sorted_e_list, function(key, value) {
                 subnavcontent += "<tr>";
                 var tbl_date = new Date(e_list[value]['time'] * 1000);
-                subnavcontent += "<td>" + "<a href='/wf/" + st + "/" + value + "'>" + tbl_date + "</a></td>";
+                subnavcontent += "<td><span style='display:none;'>" + e_list[value]['time'] * 1000 + "</span><a href='/wf/" + st + "/" + value + "'>" + tbl_date + "</a></td>";
                 jQuery.each(table_headers, function(thi, thv) { 
                     if( thv !== 'time' ) {
                         subnavcontent += "<td>" + e_list[value][thv] + "</td>";
@@ -834,7 +834,7 @@ PlotSelect = {
             jQuery.each(sorted_e_list, function(key, value) {
                 subnavcontent += "<tr>";
                 var tbl_date = new Date(e_list[value]['time'] * 1000);
-                subnavcontent += "<td>" + "<a href='/events/" + value + "'>" + tbl_date + "</a></td>";
+                subnavcontent += "<td><span style='display:none;'>" + e_list[value]['time'] * 1000 + "</span><a href='/events/" + value + "'>" + tbl_date + "</a></td>";
                 jQuery.each(table_headers, function(thi, thv) { 
                     if( thv !== 'time' ) {
                         subnavcontent += "<td>" + e_list[value][thv] + "</td>";
