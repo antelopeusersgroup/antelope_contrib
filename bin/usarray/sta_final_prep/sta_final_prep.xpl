@@ -91,14 +91,11 @@
         
         $sta_size = ( $sta_size / 1024 ) + (2 * 1024) ;  # make sure 2 Gbytes free space
 
-        elog_notify( "Only $dbavail available on $pf{archivebase} " );
-        elog_notify( "Need $sta_size megabytes available " );
-
         if ($dbavail < $sta_size ) {
             $problems++ ;
             elog_complain( "Problem #$problems" );
-            elog_complain( "Only $dbavail available on $pf{archivebase} " );
-            elog_complain( "Need $sta_size megabytes available " );
+            elog_complain( sprintf( "Only %d available on $pf{archivebase} ", $dbavail) );
+            elog_complain( sprintf( "Need %d megabytes available ", $sta_size) );
             $subject = "Problems - $pgm $host	$problems problems" ;
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject") ;
@@ -531,7 +528,7 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     dbclose(@db);
         
         
-    $line = sprintf("maximimum average data return on seismic channels is %5.1f%% - less than 95%%",
+    $line = sprintf("maximimum average data return on seismic channels is %5.1f%% - desire 95%% or better",
                      $staperf{max_ave_perf});
         
     if ($staperf{max_ave_perf} < 95.) {
@@ -549,7 +546,7 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days\n	Check deployment table",
                      $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
         
-    if ($staperf{deploy_days} < ($staperf{max_datadays} * 1.05) ) {  # Don't worry if within 5%
+    if ( ( $staperf{deploy_days} * 1.05) < $staperf{max_datadays} ) {  # Don't worry if within 5%
         $prob++;
         print PROB "\n$line\n" ;
         $problems++ ;
