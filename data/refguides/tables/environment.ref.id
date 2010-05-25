@@ -91,9 +91,6 @@ TAUP_PATH
 TAUP_TABLE
   override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel time tables and the default tau-p model iasp91.  Deprecated in favor of TTMETHOD and TTMODEL.
 
-VFONTLIB
-   override default hershey font file directory used by vogle graphics library
-
 ZONEINFO
    override default directory for timezone files (default depends on platform)
 

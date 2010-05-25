@@ -44,6 +44,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "db.h"
 #include "stock.h"
@@ -51,72 +52,35 @@
 #include "crc.h"
 
 static int find_longest( void *s, void *private );
-static char *generate_sqltable_create( Dbptr db, int flags );
-static char *generate_sqlrow_insert( Dbptr db, int flags );
-static char *compute_row_sync( Dbptr db );
-
-static char *
-compute_row_sync( Dbptr db )
-{
-	unsigned int record_size;
-	unsigned char digest[20];
-	char	*sync;
-	char	*row;
-	struct sha_ctx ctx;
-	int	i;
-
-	db.field = dbALL;
-
-	dbquery( db, dbRECORD_SIZE, &record_size );
-
-	allot( char *, row, record_size + 2 );
-	allot( char *, sync, 41 );
-
-	dbget( db, row );
-
-	sha_init( &ctx );
-	sha_update( &ctx, (unsigned char *) row, record_size );
-	sha_final( &ctx );
-	sha_digest( &ctx, digest );
-
-	free( row );
-
-	for( i=0; i<20; i++ ) {
-		
-		sprintf( &sync[2*i], "%02x", digest[i] );
-	}
-
-	sync[40] = '\0';
-
-	return sync;
-}
+static char *generate_sqltable_create( Dbptr db, long flags );
+static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags );
 
 static int
 find_longest( void *s, void *longest )
 {
-	int	l;
+	long	l;
 
 	l = strlen( (char *) s );
 
-	if( l > *((int *) longest) ) {
+	if( l > *((long *) longest) ) {
 
-		*((int *) longest) = l;
+		*((long *) longest) = l;
 	}
 
 	return 0;
 }
 
 static char *
-generate_sqlrow_insert( Dbptr db, int flags )
+generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 {
 	void	*stk = 0;
 	char	*table;
 	Tbl	*fields;
 	Dbvalue	dbvalue;
 	char	*field;
-	int	ifield;
-	int	fsize;
-	int	ftype;
+	long	ifield;
+	long	fsize;
+	long	ftype;
 	char	*fformat;
 	char	part[STRSZ];
 	char	*sync;
@@ -153,6 +117,8 @@ generate_sqlrow_insert( Dbptr db, int flags )
 
 			pushstr( &stk, ", " );
 		}
+
+		memset( part, '\0', STRSZ );
 
 		switch( ftype ) {
 
@@ -194,15 +160,25 @@ generate_sqlrow_insert( Dbptr db, int flags )
 
 	if( ! ( flags & DB2SQL_OMIT_SYNC ) ) {
 
-		sync = compute_row_sync( db );
+		sync = (*createsync)( db );
 
 		pushstr( &stk, ", '" );
 
-		pushstr( &stk, sync );
+		if( sync != (char *) NULL ) {
+
+			pushstr( &stk, sync );
+
+		} else {
+
+			pushstr( &stk, DB2SQL_SYNCFIELD_NULL );
+		}
 
 		pushstr( &stk, "'" );
 
-		free( sync );
+		if( sync != (char *) NULL ) {
+
+			free( sync );
+		}
 	}
 
 	pushstr( &stk, ");\n" );
@@ -211,24 +187,24 @@ generate_sqlrow_insert( Dbptr db, int flags )
 }
 
 static char *
-generate_sqltable_create( Dbptr db, int flags )
+generate_sqltable_create( Dbptr db, long flags )
 {
 	char	*table;
 	char	part[STRSZ];
 	void	*stk = 0;
 	Tbl	*primary;
 	Tbl	*fields;
-	int	ifield;
+	long	ifield;
 	char	*field;
 	char	field_a[STRSZ];
 	char	field_b[STRSZ];
 	char	*fnull;
-	int	fsize;
-	int	ftype;
+	long	fsize;
+	long	ftype;
 	char	*fformat;
 	int	precision;
 	int	scale;
-	int	longest = 0;
+	long	longest = 0;
 
 	if( db.table < 0 ) {
 
@@ -244,6 +220,11 @@ generate_sqltable_create( Dbptr db, int flags )
 	dbquery( db, dbTABLE_FIELDS, &fields );
 
 	applytbl( fields, find_longest, (void *) &longest );
+
+	if( ! ( flags & DB2SQL_OMIT_SYNC ) && longest < strlen( Db2sql_syncfield_name ) ) {
+
+		longest = strlen( Db2sql_syncfield_name );
+	}
 
 	for( ifield = 0; ifield < maxtbl( fields ); ifield++ ) {
 
@@ -266,13 +247,15 @@ generate_sqltable_create( Dbptr db, int flags )
 		dbquery( db, dbFIELD_FORMAT, &fformat );
 		dbquery( db, dbNULL, &fnull );
 
+		memset( part, '\0', STRSZ );
+
 		switch( ftype ) {
 
 		case dbSTRING:
 			if( fsize < 256 ) {
-				sprintf( part, "CHAR(%d)", fsize );
+				sprintf( part, "CHAR(%ld)", fsize );
 			} else {
-				sprintf( part, "TEXT(%d)", fsize );
+				sprintf( part, "TEXT(%ld)", fsize );
 			}
 			pushstr( &stk, part );
 			break;
@@ -290,7 +273,7 @@ generate_sqltable_create( Dbptr db, int flags )
 
 		case dbINTEGER:
 		case dbYEARDAY:
-			sprintf( part, "INTEGER(%d)", fsize );
+			sprintf( part, "INTEGER(%ld)", fsize );
 			pushstr( &stk, part );
 			break;
 
@@ -321,9 +304,9 @@ generate_sqltable_create( Dbptr db, int flags )
 		pushstr( &stk, ",\n" );
 
 		pushstr( &stk, "  `" );
-		pushstr( &stk, DB2SQL_SYNCFIELD_NAME );
+		pushstr( &stk, Db2sql_syncfield_name );
 		pushstr( &stk, "`" );
-		pushstr( &stk, spaces( longest - strlen(DB2SQL_SYNCFIELD_NAME) + 2 ) );
+		pushstr( &stk, spaces( longest - strlen(Db2sql_syncfield_name) + 2 ) );
 
 		pushstr( &stk, DB2SQL_SYNCFIELD_SPEC );
 	}
@@ -373,11 +356,11 @@ generate_sqltable_create( Dbptr db, int flags )
 	return popstr( &stk, 1 );
 }
 
-static int
-generate_sqltable_insert( Dbptr db, Tbl **tbl, int flags ) 
+static long
+generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags ) 
 {
 	char	*cmd;
-	int	nrecs;
+	long	nrecs;
 
 	if( *tbl == (Tbl *) NULL ) {
 		
@@ -388,7 +371,7 @@ generate_sqltable_insert( Dbptr db, Tbl **tbl, int flags )
 
 	for( db.record = 0; db.record < nrecs; db.record++ ) {
 			
-		cmd = generate_sqlrow_insert( db, flags );
+		cmd = generate_sqlrow_insert( db, createsync, flags );
 
 		pushtbl( *tbl, cmd );
 	}
@@ -396,15 +379,48 @@ generate_sqltable_insert( Dbptr db, Tbl **tbl, int flags )
 	return nrecs;
 }
 
-int 
-db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
+int
+db2sqldelete( Dbptr db, char *sync, Tbl **tbl, long flags )
+{
+	void	*stk = 0;
+	char	*table;
+	char	*cmd;
+
+	if( *tbl == (Tbl *) NULL ) {
+		
+		*tbl = newtbl( 0 );
+	}
+
+	dbquery( db, dbTABLE_NAME, &table );
+
+	pushstr( &stk, "DELETE from `" );
+	pushstr( &stk, table );
+
+	pushstr( &stk, "` WHERE " );
+
+	pushstr( &stk, "  `" );
+	pushstr( &stk, Db2sql_syncfield_name );
+	pushstr( &stk, "` = '" );
+	pushstr( &stk, sync );
+	pushstr( &stk, "'" );
+	pushstr( &stk, ";\n" );
+
+	cmd = popstr( &stk, 1 );
+
+	pushtbl( *tbl, cmd );
+
+	return 1;
+}
+
+long 
+db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags )
 {
 	char	*cmd;
-	int	ncmds = 0;
-	int	table_is_view = 0;
+	long	ncmds = 0;
+	long	table_is_view = 0;
 	Tbl	*tables;
 	char	*table;
-	int	itable;
+	long	itable;
 
 	if( *tbl == (Tbl *) NULL ) {
 		
@@ -426,7 +442,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 
 			db = dblookup( db, "", table, "", "" );
 
-			ncmds += generate_sqltable_insert( db, tbl, flags );
+			ncmds += generate_sqltable_insert( db, tbl, createsync, flags );
 		}
 
 	} else if( db.table >= 0 ) {
@@ -445,7 +461,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 			    db.record == dbNULL || 
 			    db.record >= 0 ) {
 
-				cmd = generate_sqlrow_insert( db, flags );
+				cmd = generate_sqlrow_insert( db, createsync, flags );
 
 				pushtbl( *tbl, cmd );
 
@@ -453,7 +469,7 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 
 			} else {
 
-				ncmds += generate_sqltable_insert( db, tbl, flags );
+				ncmds += generate_sqltable_insert( db, tbl, createsync, flags );
 			}
 		}
 	}
@@ -462,13 +478,13 @@ db2sqlinsert( Dbptr db, Tbl **tbl, int flags )
 }
 
 Tbl *
-dbschema2sqlcreate( Dbptr db, int flags )
+dbschema2sqlcreate( Dbptr db, long flags )
 {
 	Tbl	*sql;
 	char	*cmd;
 	Tbl	*tables;
 	char	*table;
-	int	itable;
+	long	itable;
 
 	sql = newtbl( 0 );
 
@@ -495,4 +511,19 @@ dbschema2sqlcreate( Dbptr db, int flags )
 	}
 
 	return sql;
+}
+
+void 
+db2sql_set_syncfield_name( char *name )
+{
+	if( name != (char *) NULL ) {
+
+		if( Db2sql_syncfield_name != (char *) NULL &&
+		    strcmp( Db2sql_syncfield_name, DB2SQL_SYNCFIELD_NAME_DEFAULT ) ) {
+
+			free( Db2sql_syncfield_name );    	
+		}
+
+		Db2sql_syncfield_name = strdup( name );
+	}
 }

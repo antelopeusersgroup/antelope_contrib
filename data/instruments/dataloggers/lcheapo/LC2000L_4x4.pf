@@ -80,10 +80,10 @@ possible_streams &Literal{
 # Gains: Nominal sensitivity (in ounits/iunits) for datalogger
 # Voltage range: +/- 2.5 V, max counts over this range of
 # -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
-# 0.000000298 V/count => 5000000 counts/V
+# 0.000000298 V/count => 3355443 counts/V
 #
 
-gains 5000000
+gains 3355443
 
 
 # Stages

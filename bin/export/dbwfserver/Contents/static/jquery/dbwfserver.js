@@ -17,6 +17,7 @@ PlotSelect = {
         $("#loading").hide();
         $("#wforms").hide();
         $("#interact").hide();
+        $("#tools").hide();
 
         // {{{ Define colorschemes
 
@@ -112,6 +113,14 @@ PlotSelect = {
             'padding':'3px',
             'position':'absolute'
         };
+        PlotSelect.arrivalTailCss = {
+            'position':'absolute',
+            'border':'none',
+            'border-left':'1px solid #FFF',
+            'margin':'0',
+            'padding':'0',
+            'width':'1px'
+        };
         // }}} Arrival flag CSS
 
         // {{{ Initialize functions
@@ -146,29 +155,21 @@ PlotSelect = {
 
     },
 
+    resetPlot: function(evt){
+
+        location.reload(true);
+
+    },
+
     filterChange: function(evt){
 
         // {{{ Dynamic filter change data query
 
-        dataObj = {
-            type:PlotSelect.type,
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            amount:PlotSelect.amount
-        }
 
-        if( PlotSelect.ts     !== undefined ) { dataObj['ts']     = parseInt(PlotSelect.ts,10) ; }
-        if( PlotSelect.te     !== undefined ) { dataObj['te']     = parseInt(PlotSelect.te,10) ; }
-        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-
-        $("form#wformer select#filter").change( function() {
-            PlotSelect.myFilter = $(this).val();
-            dataObj['filter'] = PlotSelect.myFilter ;
-            $(this).attr("selected","selected");
-            PlotSelect.getData(dataObj);
+        $("select#filter").change( function() {
+            PlotSelect.getData();
         });
+
 
         // }}} Dynamic filter change data query
 
@@ -177,19 +178,6 @@ PlotSelect = {
     colorschemeChange: function(evt){
 
         // {{{ Change colorscheme
-
-        dataObj = {
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            amount:PlotSelect.amount
-        }
-
-        if( PlotSelect.ts     !== undefined ) { dataObj['ts']     = parseInt(PlotSelect.ts,10) ; }
-        if( PlotSelect.te     !== undefined ) { dataObj['te']     = parseInt(PlotSelect.te,10) ; }
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-
 
         $("select#cs").change(function(){
 
@@ -203,7 +191,7 @@ PlotSelect = {
             $("span#csFg").css("background-color",PlotSelect.canvasLineColor);
             $("span#csBg").css("background-color",PlotSelect.canvasBgColor);
 
-            if( PlotSelect.urlPath !== undefined || PlotSelect.urlPath !== false ) { PlotSelect.getData(dataObj); }
+            PlotSelect.getData();
 
         });
 
@@ -215,26 +203,14 @@ PlotSelect = {
 
         // {{{ Dynamic phase selector
 
-        dataObj = {
-            type:PlotSelect.type,
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            amount:PlotSelect.amount
-        }
-
-        if( PlotSelect.ts     !== undefined ) { dataObj['ts']     = parseInt(PlotSelect.ts,10) ; }
-        if( PlotSelect.te     !== undefined ) { dataObj['te']     = parseInt(PlotSelect.te,10) ; }
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-
         $("input#phases").change( function() {
             if( $(this).attr('checked') ) { 
-                dataObj['phases'] = 'True' ;
+                PlotSelect.phases = 'True' ;
             } else { 
-                dataObj['phases'] = 'False' ;
+                PlotSelect.phases = 'False' ;
             }
-            PlotSelect.getData(dataObj);
+            $(".flag").toggle();
+            $(".flagTail").toggle();
         });
         // }}} Dynamic phase selector
 
@@ -244,48 +220,12 @@ PlotSelect = {
 
         // {{{ Dynamic type change data query
 
-        dataObj = {
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            amount:PlotSelect.amount
-        }
-
-        if( PlotSelect.ts     !== undefined ) { dataObj['ts']     = parseInt(PlotSelect.ts,10) ; }
-        if( PlotSelect.te     !== undefined ) { dataObj['te']     = parseInt(PlotSelect.te,10) ; }
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-
         $("form#conftype select#type").change( function() {
             PlotSelect.type = $(this).val();
-            dataObj['type'] = PlotSelect.type ;
-            $(this).attr("selected","selected");
-
-            if( PlotSelect.urlPath !== undefined || PlotSelect.urlPath !== false ) { PlotSelect.getData(dataObj); }
+            PlotSelect.getData();
 
         });
         // }}} Dynamic type change data query
-
-    },
-
-    resetPlot: function(evt){
-
-        // {{{ Reset plot
-        dataObj = {
-            type:PlotSelect.type,
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            amount:'all'
-        }
-
-        if( PlotSelect.type   === undefined ) { dataObj['type']   = 'wf' ; }
-        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-
-        PlotSelect.getData(dataObj);
-        // }}} Reset plot
 
     },
 
@@ -317,27 +257,28 @@ PlotSelect = {
 
         if(x.status==0){
 
-            alert('You are offline!!\n Please Check Your Network.');
+            alert('You are offline!!\n Please Check Your Network.' + '\n\n' + e);
 
         }else if(x.status==404){
 
-            alert('Requested URL not found.');
+            alert('Requested URL not found.' + '\n\n' + e);
 
         }else if(x.status==500){
 
-            alert('Internel Server Error.');
+            alert('Internel Server Error.' + '\n\n' + e);
 
         }else if(e=='parsererror'){
 
-            alert('Error.\nParsing JSON Request failed.');
+            alert('Error.\nParsing JSON Request failed.' + '\n\n' + e);
 
         }else if(e=='timeout'){
 
-            alert('Request Time out.');
+            alert('Request Time out.' + '\n\n' + e);
 
         }else {
 
-            alert('Unknow Error.\n'+x.responseText);
+            //alert('Error.\n'+ x.responseText);
+            alert('Error:'+ x + '\n\n' + e);
 
         }
 
@@ -349,28 +290,15 @@ PlotSelect = {
 
         // {{{ Future data
 
-        var firstchan = PlotSelect.stacode[0]+'_'+PlotSelect.chans[0]; // Get the axis range from one plot
-        var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
-        var xaxis = chanplot.getAxes().xaxis;
-        var futureDelta = PlotSelect.tickTranslator( xaxis.tickSize );
-        var x1 = parseInt((xaxis.datamin/1000) + futureDelta, 10);
-        var x2 = parseInt((xaxis.datamax/1000) + futureDelta, 10);
+        var delta = PlotSelect.te - PlotSelect.ts ;
 
-        dataObj = {
-            type:PlotSelect.type,
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            ts:x1,
-            te:x2,
-            amount:"slice"
-        }
+        dleta = delta/4;
 
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+        PlotSelect.ts += delta;
 
-        PlotSelect.getData(dataObj);
+        PlotSelect.te += delta;
+
+        PlotSelect.getData();
 
         // }}} Future data
 
@@ -380,28 +308,15 @@ PlotSelect = {
 
         // {{{ Past data
 
-        var firstchan = PlotSelect.stacode[0]+"_"+PlotSelect.chans[0]; // Get the axis range from one plot
-        var chanplot = PlotSelect.chan_plot_obj[firstchan]; 
-        var xaxis = chanplot.getAxes().xaxis;
-        var pastDelta = PlotSelect.tickTranslator( xaxis.tickSize );
-        var x1 = parseInt( (xaxis.datamin/1000) - pastDelta, 10 );
-        var x2 = parseInt( (xaxis.datamax/1000) - pastDelta, 10 );
+        var delta = PlotSelect.te - PlotSelect.ts ;
 
-        dataObj = {
-            type:PlotSelect.type,
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            ts:x1,
-            te:x2,
-            amount:"slice"
-        }
+        dleta = delta/4;
 
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
+        PlotSelect.ts -= delta;
 
-        PlotSelect.getData(dataObj);
+        PlotSelect.te -= delta;
+
+        PlotSelect.getData();
 
         // }}} Past data
 
@@ -418,131 +333,109 @@ PlotSelect = {
         PlotSelect.isShiftPressed = evt.shiftKey;
     },
 
-    shiftGraph: function(dir){
-        var glabels = $(".gridLabel");
-        var v1 = $(glabels[0]).text();
-        var v2 = $(glabels[1]).text();
-    },
-
     handleSelect: function(evt, pos){
 
         // {{{ Selection zoom functionality
 
-        // Everything in milliseconds so divide by 1000 to get secs
-        var x1 = parseInt( pos.xaxis.from / 1000, 10 ) ;
-        var x2 = parseInt( pos.xaxis.to / 1000, 10 ) ;
-
         if (PlotSelect.isShiftPressed) { /*if the Shift Key is pressed, we zoom out. */
-            var pad = 5;
-            var delta = x2 - x1;
-            x1 = x1 - delta*pad;
-            x2 = x2 + delta*pad;
+            var delta = 0;
+
+            delta = parseInt( pos.xaxis.from / 1000, 10 ) - PlotSelect.ts ;
+
+            PlotSelect.ts -= delta;
+
+            delta = PlotSelect.te - parseInt( pos.xaxis.to / 1000, 10 ) ;
+
+            PlotSelect.te += delta;
+
+        }
+        else { 
+
+            PlotSelect.ts = parseInt( pos.xaxis.from / 1000, 10 ) ;
+
+            PlotSelect.te = parseInt( pos.xaxis.to / 1000, 10 ) ;
+
         }
 
-        dataObj = {
-            type:PlotSelect.type,
-            sta:PlotSelect.stacode,
-            orid:PlotSelect.orid,
-            orid_time:PlotSelect.orid_time,
-            amount:PlotSelect.amount,
-            ts:x1,
-            te:x2,
-            amount:"slice"
-        }
-
-        if( PlotSelect.type   !== undefined ) { dataObj['type']   = 'wf'; }
-        if( PlotSelect.filter !== undefined ) { dataObj['filter'] = PlotSelect.filter; }
-        if( PlotSelect.phases !== undefined ) { dataObj['phases'] = PlotSelect.phases; }
-        if( PlotSelect.chan   !== undefined ) { dataObj['chan']   = PlotSelect.chan; }
-
-        PlotSelect.getData(dataObj);
+        PlotSelect.getData();
 
         // }}} Selection zoom functionality
 
     },
 
-    getData: function(passedArgsObj){
+    getData: function(args){
 
         // {{{ Get data
 
-        // Defaults
-        var args = {};
+        if ( typeof(args) == "undefined" ) {
+            // PlotSelect is define globally for app
+            args = {};
 
-        if ( typeof(passedArgsObj) == "undefined" ) {
-                alert("Function getData called with no arguments...");
-                return 'ERROR calling getData()';
+            args.type   = PlotSelect.type,
+            args.stas   = PlotSelect.stas,
+            args.chans  = PlotSelect.chans,
+            args.ts     = PlotSelect.ts,
+            args.te     = PlotSelect.te,
+            args.phases = PlotSelect.phases
         }
-        // Override defaults if necessary
-        for( var argName in passedArgsObj ) {
-            args[argName] = passedArgsObj[argName];
-        }
-
-        // Define the data object arguments
-        var dataargs = {};
-
-        if ('type' in args){        dataargs["type"]      = args.type ;}
-        if ('sta' in args){         dataargs["sta"]       = args.sta ;}
-        if ('orid' in args){        dataargs["orid"]      = args.orid ;}
-        if ('orid_time' in args){   dataargs["orid_time"] = args.orid_time ;}
-        if ('ts' in args){          dataargs["ts"]        = args.ts ;}
-        if ('te' in args) {         dataargs["te"]        = args.te ;}
-        if ('chan' in args) {       dataargs["chan"]      = args.chan ;}
-        if ('amount' in args) {     dataargs["amount"]    = args.amount ;}
-        if ('phases' in args) {     dataargs["phases"]    = args.phases ;}
 
         // Test if filter defined
-        if( ( PlotSelect.myFilter !== undefined ) && ( PlotSelect.myFilter !== 'None' ) ) {
-            dataargs["filter"] = PlotSelect.myFilter;
+        if( args.filter !== $("select#filter option:selected").val() ) {
+            args.filter = $("select#filter option:selected").val();
         }
 
         // Test for type over-ride
-        if( dataargs["type"] !== $("select#type").val() ) {
-            dataargs["type"] = $("select#type").val();
+        if( args.type !== $("select#type").val() ) {
+            args.type = $("select#type").val();
         }
 
         // Update phases checkbox
-        if( ( dataargs["phases"] !== undefined ) && ( dataargs['phases'] == 'True' ) ) {
+        if(  args.phases == 'True' ) {
             $("form#wformer input#phases").attr('checked','checked');
         } else {
             $("form#wformer input#phases").attr('checked','');
         }
 
         // Override phases if coverage requested
-        if( dataargs["type"] === 'coverage' ) {
+        if( args.type === 'coverage' ) {
             $("form#wformer input#phases").attr('checked','');
-            dataargs["phases"] = 'False';
+            args.phases = 'False';
         } else {
             if( $("form#wformer input#phases").attr('checked') ) {
-                dataargs["phases"] = 'True';
+                args.phases = 'True';
             } else {
-                dataargs["phases"] = 'False';
+                args.phases = 'False';
             }
         }
 
         $("#loading").show();
 
-        // Define globally for app
-        PlotSelect.type      = dataargs.type;
-        PlotSelect.stacode   = dataargs.sta;
-        PlotSelect.chan      = dataargs.chan;
-        PlotSelect.ts        = dataargs.ts;
-        PlotSelect.te        = dataargs.te;
-        PlotSelect.orid      = dataargs.orid;
-        PlotSelect.orid_time = dataargs.orid_time;
-        PlotSelect.amount    = dataargs.amount;
-        PlotSelect.phases    = dataargs.phases;
 
         // Query
+        // Change arrays to strings w/ + 
+        var sta_list = ''; 
+        var chan_list = ''; 
+
+        $.each(args.stas, function(iterator,mysta){
+            sta_list = sta_list + '+' + mysta ;
+        });
+        $.each(args.chans, function(iterator,mychan){
+            chan_list = chan_list + '+' + mychan ;
+        });
+        // use substring(1) to remove first character '+' on new string
+
+
         $.ajax({
             type:'get',
             dataType:'json',
-            url:"/data",
-            data: dataargs,
+            url:"/data/"+args.type+"/"+sta_list.substring(1)+"/"+chan_list.substring(1)+"/"+args.ts+"/"+args.te+"/"+args.filter ,
             success:PlotSelect.setData,
             error:PlotSelect.errorResponse
         });
 
         // }}} Get data
+
+        $("#loading").hide();
 
     },
 
@@ -556,6 +449,7 @@ PlotSelect = {
             xaxis: {ticks:5, labelWidth:20, labelHeight:20, mode:"time", timeformat:"%H:%M:%S<br/>%y-%m-%d"},
             yaxis: {ticks:4, labelWidth:25}
         };
+
         // }}} Define graph defaults
 
         if (typeof(resp['type']) == "undefined" ) {
@@ -563,9 +457,15 @@ PlotSelect = {
             return;
         }
 
-        PlotSelect.chans = resp.chan;
+        // Define globally for app
+        PlotSelect.ts       = resp['time_start'];
+        PlotSelect.te       = resp['time_end'];
+        PlotSelect.type     = resp['type'];
+        PlotSelect.stas     = resp.sta;
+        PlotSelect.chans    = resp.chan;
+        PlotSelect.orid     = resp.orid;
+
         PlotSelect.chan_plot_obj = {}; // A mapping from a named channel to it's associated 'flot' plot.
-        PlotSelect.orid = resp.orid;
 
         var chan_labels = $("#chan_labels"), chan_plots = $("#chan_plots"); 
         chan_labels.empty();
@@ -575,6 +475,7 @@ PlotSelect = {
         // PlotSelect.teMilli = opts0['xaxis']['max'] = resp['time_end'] * 1000;
         opts0['xaxis']['min'] = resp['time_start'] * 1000;
         opts0['xaxis']['max'] = resp['time_end'] * 1000;
+
 
         if( resp.sta === undefined ) {
 
@@ -597,10 +498,11 @@ PlotSelect = {
                     var lbltxt = $("<p>").attr("class","chantitle").text(stachan_data);
                     var lbl = $("<div>").attr("id", stachan_data+"_label").attr("class", "label").append(lbltxt);
                     var plt = $("<div>").attr("id", stachan_data+"_plot").attr("class", "plot");
-                    wrapper.append(lbl);
-                    wrapper.append(plt);
-                    chan_plots.append(wrapper);
-                    chan_plot = $("#"+stachan_data+"_plot");
+                    //wrapper.append(lbl);
+                    //wrapper.append(plt);
+                    //chan_plots.append(wrapper);
+                    //chan_plot = $("#"+stachan_data+"_plot");
+
 
                     // Show plots
                     $("#wforms").show();
@@ -610,16 +512,20 @@ PlotSelect = {
 
                         // {{{ No station defined
 
-                        var flot_data = [];
-                        opts0['yaxis']['min'] = 0;
-                        opts0['yaxis']['max'] = 1;
-                        flot_data[0] = resp['time_start'] *1000;
-                        flot_data[1] = resp['time_end']   *1000;
-                        var plot = $.plot(chan_plot, [ flot_data ], opts0);
+                        //
+                        // This station is not valid.
+                        // Avoid plotting...
+                        //
+                        //var flot_data = [];
+                        //opts0['yaxis']['min'] = 0;
+                        //opts0['yaxis']['max'] = 1;
+                        //flot_data[0] = resp['time_start'] *1000;
+                        //flot_data[1] = resp['time_end']   *1000;
+                        //var plot = $.plot(chan_plot, [ flot_data ], opts0);
 
                         // Bind and store
-                        chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        PlotSelect.chan_plot_obj[stachan_data] = plot;
+                        //chan_plot.bind("plotselected", PlotSelect.handleSelect);
+                        //PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // }}}  No station defined
 
@@ -627,22 +533,31 @@ PlotSelect = {
 
                         // {{{ No channel defined
 
-                        var flot_data = [];
-                        opts0['yaxis']['min'] = 0;
-                        opts0['yaxis']['max'] = 1;
-                        flot_data[0] = resp['time_start'] *1000;
-                        flot_data[1] = resp['time_end']   *1000;
-                        var plot = $.plot(chan_plot, [ flot_data ], opts0);
+                        //
+                        // This channel is not valid for the station. 
+                        // Avoid plotting...
+                        //
+                        //var flot_data = [];
+                        //opts0['yaxis']['min'] = 0;
+                        //opts0['yaxis']['max'] = 1;
+                        //flot_data[0] = resp['time_start'] *1000;
+                        //flot_data[1] = resp['time_end']   *1000;
+                        //var plot = $.plot(chan_plot, [ flot_data ], opts0);
 
                         // Bind and store
-                        chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        PlotSelect.chan_plot_obj[stachan_data] = plot;
+                        //chan_plot.bind("plotselected", PlotSelect.handleSelect);
+                        //PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // }}} No channel defined
 
                     } else {
                     
                         // {{{ Plotting
+
+                        wrapper.append(lbl);
+                        wrapper.append(plt);
+                        chan_plots.append(wrapper);
+                        chan_plot = $("#"+stachan_data+"_plot");
 
                         var flot_data = [];
 
@@ -660,15 +575,18 @@ PlotSelect = {
 
                                     var start_time = parseFloat(arr[0],10) *1000;
                                     var end_time   = parseFloat(arr[1],10) *1000;
-                                    flot_data.push([start_time,3,end_time]);
+                                    flot_data.push([start_time,1,end_time]);
 
                                 });
 
                             }
 
-                            opts0['yaxis']['min'] = 1 ;
-                            opts0['yaxis']['max'] = 6 ;
+                            opts0['yaxis']['ticks'] = 0;
+                            opts0['yaxis']['min'] = 0.8 ;
+                            opts0['yaxis']['max'] = 2.2 ;
                             opts0['bars'] = {show:true, horizontal:'true', barWidth:1};
+
+                            var plot = $.plot(chan_plot,[ flot_data ], opts0 );
 
                             // }}} Coverage plot
 
@@ -678,6 +596,17 @@ PlotSelect = {
 
                             if (typeof(resp[mysta][mychan]['data']) == "undefined" ) { 
                                 var plot = $.plot(chan_plot, [], opts0);
+
+                                var flagCss = {};
+                                flagCss['color'] = 'red';
+                                flagCss['position'] = 'absolute';
+                                flagCss['left'] =  '250px';
+                                flagCss['bottom'] = '50px';
+                                flagCss['font-size'] = 'large';
+                                var arrDiv = $("<div>").css(flagCss).append('No data in time segment: ('+resp['time_start']+','+resp['time_end']+').');
+
+                                chan_plot.append(arrDiv);
+
                             } else {
                                 //var st = resp[mysta][mychan]['start'];
                                 //var et = resp[mysta][mychan]['end'];
@@ -690,6 +619,7 @@ PlotSelect = {
                                         flot_data[i] =  [temp_data[0]*1000,temp_data[2],temp_data[1]];
                                     }
                                     opts0['bars'] = {show:true,barWidth:0,align:'center'};
+                                    opts0['lines'] = {show:false};
 
                                 } else {
 
@@ -698,50 +628,67 @@ PlotSelect = {
                                         flot_data[i] =  [temp_data[0]*1000,temp_data[1]];
                                     }
                                     opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
+                                    opts0['bars'] = {show:false};
 
                                 }
+
+                                var plot = $.plot(chan_plot,[ flot_data ], opts0 );
+
                             }
 
                             // }}} Waveform plot
 
                         }
 
-                        var plot = $.plot(chan_plot,[ flot_data ], opts0 );
+                        // Get the size of the screen
+                        //var p_width  = $("#wforms").width();
+
+                        // Resize waveform and label
+                        //if (p_width) {
+                        //    //$("#"+stachan_data+"_label").width(p_width*0.09);
+                        //    //$("#"+stachan_data+"_plot").width(p_width*0.80);
+                        //}
+
+
+                        if ( resp['type'] == "coverage") {
+                            //$("canvas").css("height","20px");
+                            //$(".label").css("height","20px");
+                            //$(".plot").css("height","20px");
+                            //$(".wrapper").css("height","20px");
+                        }
 
                         // Bind and store
                         chan_plot.bind("plotselected", PlotSelect.handleSelect);
                         PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // {{{ Add arrival labels
-                        if( PlotSelect.phases !== undefined && resp['type'] === "waveform" && PlotSelect.phases == 'True' && resp['phases'][stachan_data] !== undefined ) {
 
-                            $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
+                        if( resp['phases'] !== undefined && resp['phases'] !== null ) {
+                            if( resp['phases'][stachan_data] !== undefined && ( $("input#phases").attr('checked') == true || PlotSelect.phases == 'True' ) ) {
 
-                                var o;
-                                o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
-                                var flagCss = PlotSelect.arrivalFlagCss;
-                                // Force override as we want bar almost to top
-                                o.top = 20 ;
+                                $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
 
-                                flagCss['left'] = o.left + 4 + "px" ;
-                                flagCss['top'] = o.top + "px" ;
-                                var arrDiv = $("<div>").css(flagCss).append( phaseFlag );
+                                    var o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
 
-                                // Draw tail on arrival flag
-                                var ctx = plot.getCanvas().getContext("2d");
-                                ctx.beginPath();
-                                o.left += 4;
-                                ctx.moveTo(o.left,o.top);
-                                ctx.lineTo(o.left,o.top + 120);
-                                ctx.closePath();
-                                ctx.lineWidth = 1;
-                                ctx.strokeStyle = "#FFF";
-                                ctx.stroke();
+                                    var flagTop = plot.getPlotOffset() ;
 
-                                chan_plot.append(arrDiv);
+                                    var flagCss = PlotSelect.arrivalFlagCss;
+                                    flagCss['left'] = o.left + "px" ;
+                                    flagCss['top'] = flagTop.top + "px" ;
 
-                            });
+                                    var flagTail = PlotSelect.arrivalTailCss;
+                                    flagTail['left'] = flagCss['left'] ;
+                                    flagTail['top'] = flagCss['top'] ;
+                                    flagTail['height'] = plot.height() + 'px';
 
+                                    var arrDiv = $("<div class='flag'>").css(flagCss).append( phaseFlag );
+                                    var arrTailDiv = $("<div class='flagTail'>").css(flagTail);
+
+                                    chan_plot.append(arrDiv);     // Flag
+                                    chan_plot.append(arrTailDiv); // Flag tail
+
+                                });
+                            }
                         }
 
                     // }}} Add arrival labels
@@ -767,12 +714,13 @@ PlotSelect = {
         }
 
         $("#loading").fadeOut(500);
+        
+
+        $("#tools").show();
 
     },
 
     setEventData: function(resp){
-
-        // Currently not used
 
         $('#subnav #event').empty();
 
@@ -780,15 +728,126 @@ PlotSelect = {
 
         var event_metadata = '<table id="eventTable">';
         event_metadata += "<tr><th>Magnitude</th><td>"+resp['magnitude']+" "+resp['mtype']+"</td>";
-        event_metadata += "<th>Date-Time</th><td>"+resp['readable_time']+"</td></tr>";
+        event_metadata += "<th>Date-Time</th><td>"+resp['time']+"</td></tr>";
         event_metadata += "<tr><th>Location</th><td>"+resp['lat']+"&deg;N, "+resp['lon']+"&deg;E</td>";
         event_metadata += "<th>Depth</th><td>"+resp['depth']+"km</td></tr>";
-        event_metadata += "<tr><th colspan='2'>Author</th><td colspan='2'>"+resp['auth']+" [Review: "+resp['review']+"]</td></tr>";
+        event_metadata += "<tr><th>Author</th><td>"+resp['auth']+"</td><th>nass</th><td>"+resp['nass']+"</td></tr>";
         event_metadata += "</table>";
 
         $('#subnav #event').append(event_metadata);
 
         // }}} Plot event table
+
+    },
+
+    buildSelect: function(s_list,e_list,st,ev){
+
+//{{{
+       var subnavcontent = '';
+
+       if (s_list && ev) {
+            s_list = s_list.sort() ;
+            subnavcontent = '<ul class="ui-helper-reset ui-helper-clearfix">';
+            jQuery.each(s_list, function() {
+                subnavcontent += "<li class='ui-state-active ui-corner-all'>" + "<a href='/wf/" + this + "/" + ev + "'>" + this + "</a></li>\n";
+            });
+            subnavcontent += '</ul>';
+            $("#subnavcontent").append(subnavcontent);
+        }
+
+        else if (s_list) {
+            s_list = s_list.sort() ;
+            subnavcontent = '<ul class="ui-helper-reset ui-helper-clearfix">';
+            jQuery.each(s_list, function() {
+                subnavcontent += "<li class='ui-state-active ui-corner-all'>" + "<a href='/stations/" + this + "'>" + this + "</a></li>\n";
+            });
+            subnavcontent += '</ul>';
+            $("#subnavcontent").append(subnavcontent);
+        }
+
+        else if (e_list && st) {
+
+            sorted_e_list = [];
+            table_headers = [];
+
+            jQuery.each(e_list, function(key,value) {
+                sorted_e_list.push(key);
+                jQuery.each( value, function(sKey,sVal) {
+                    if( jQuery.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
+                });
+            });
+            sorted_e_list = sorted_e_list.sort();
+            table_headers = table_headers.sort();
+
+            subnavcontent = '<table id="evsTbl" class="evListTable">';
+
+            subnavcontent += '<thead><tr>\n';
+            subnavcontent += '<th>time</th>\n';
+            jQuery.each(table_headers, function(thi, thv) {
+                if( thv !== 'time' ) {
+                    subnavcontent += '<th>'+thv+'</th>\n';
+                }
+            });
+            subnavcontent += '</tr></thead><tbody>\n';
+
+            jQuery.each(sorted_e_list, function(key, value) {
+                subnavcontent += "<tr>";
+                var tbl_date = new Date(e_list[value]['time'] * 1000);
+                subnavcontent += "<td><span style='display:none;'>" + e_list[value]['time'] * 1000 + "</span><a href='/wf/" + st + "/" + value + "'>" + tbl_date + "</a></td>";
+                jQuery.each(table_headers, function(thi, thv) { 
+                    if( thv !== 'time' ) {
+                        subnavcontent += "<td>" + e_list[value][thv] + "</td>";
+                    }
+                });
+                subnavcontent += "</tr>";
+            });
+            subnavcontent += '</tbody></table>';
+            $("#subnavcontent").append(subnavcontent);
+            $("#subnavcontent #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
+        }
+
+        else if (e_list) {
+
+            sorted_e_list = [];
+            table_headers = [];
+
+            jQuery.each(e_list, function(key,value) {
+                sorted_e_list.push(key);
+                jQuery.each( value, function(sKey,sVal) {
+                    if( jQuery.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
+                });
+            });
+            sorted_e_list = sorted_e_list.sort();
+            table_headers = table_headers.sort();
+
+            subnavcontent = '<table id="evsTbl" class="evListTable">\n';
+
+            subnavcontent += '<thead><tr>\n';
+            subnavcontent += '<th>time</th>\n';
+            jQuery.each(table_headers, function(thi, thv) {
+                if( thv !== 'time' ) {
+                    subnavcontent += '<th>'+thv+'</th>\n';
+                }
+            });
+            subnavcontent += '</tr></thead><tbody>\n';
+
+            jQuery.each(sorted_e_list, function(key, value) {
+                subnavcontent += "<tr>";
+                var tbl_date = new Date(e_list[value]['time'] * 1000);
+                subnavcontent += "<td><span style='display:none;'>" + e_list[value]['time'] * 1000 + "</span><a href='/events/" + value + "'>" + tbl_date + "</a></td>";
+                jQuery.each(table_headers, function(thi, thv) { 
+                    if( thv !== 'time' ) {
+                        subnavcontent += "<td>" + e_list[value][thv] + "</td>";
+                    }
+                });
+                subnavcontent += "</tr>";
+            });
+            subnavcontent += '</tbody></table>';
+            $("#subnavcontent").append(subnavcontent);
+            $("#subnavcontent #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
+        }
+
+//}}}
 
     }
 

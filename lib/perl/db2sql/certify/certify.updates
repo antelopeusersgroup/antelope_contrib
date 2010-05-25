@@ -1,0 +1,5 @@
+sqlcreate   1270690600.00000 raptor     kent       Darwin/4.1 change strategy from c to perl                                 1270690600
+sqlinsert   1270692889.00000 raptor     kent       Darwin/4.1 change printout line                                           1270692890
+sqldelete   1270698012.00000 raptor     kent       Darwin/4.1 change print statement                                         1270698012
+syncfield   1270698342.00000 raptor     kent       Darwin/4.1 change print statement                                         1270698343
+sqlcreate   1274590173.00000 raptor     kent       Darwin/5.0 Added css3.0 gcl* schema tables                                1274590173

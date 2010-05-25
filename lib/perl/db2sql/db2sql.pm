@@ -22,6 +22,8 @@ our @ISA = qw(Exporter DynaLoader);
 our @EXPORT = qw(
 	dbschema2sqlcreate
 	db2sqlinsert
+	db2sqldelete
+	db2sql_set_syncfield_name
 	pfconfig_asknoecho
 );
 our $VERSION = '1.0';

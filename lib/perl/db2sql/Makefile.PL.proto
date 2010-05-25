@@ -11,7 +11,7 @@ WriteMakefile(
       (ABSTRACT 	=> 'perl interface to the db2sql library', 
        AUTHOR     	=> 'AuthorField') : ()),
     'LIBS'		=> ['LinkArguments'], 
-    'DEFINE'		=> '', 
+    'DEFINE'		=> '-DPERL_GCC_PEDANTIC', 
     'INC'		=> 'CompileArguments', 
     #'OBJECT'		=> '$(O_FILES)', 
 );

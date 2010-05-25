@@ -1,0 +1,14 @@
+Conversion results:
+	  0 CREATE TABLE `lastid`
+  (
+  `keyname`          CHAR(15) DEFAULT '-',
+  `keyvalue`         INTEGER(8) DEFAULT -1,
+  `lddate`           DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `mytestsyncfield`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`keyname`)
+  );
+
+	  1 INSERT INTO `lastid` VALUES('arid',     4860,   795223336.00000, '3de4eb1e0af4d60d2521bf11870479aebf562e03');
+
+	  2 DELETE from `lastid` WHERE   `mytestsyncfield` = '3de4eb1e0af4d60d2521bf11870479aebf562e03';
+

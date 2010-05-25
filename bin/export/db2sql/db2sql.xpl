@@ -189,12 +189,12 @@ sub sql_insert_commands {
 			
 			@db = dblookup( @db, "", $table, "", "" );
 
-			push( @cmds, db2sqlinsert( @db ) );
+			push( @cmds, db2sqlinsert( @db, \&dbmon_compute_row_sync ) );
 		}
 
 	} else {
 
-		@cmds = db2sqlinsert( @db );
+		@cmds = db2sqlinsert( @db, \&dbmon_compute_row_sync );
 	}
 	
 	return @cmds;
@@ -204,13 +204,15 @@ sub newrow {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $dbh ) = @_;
 
-	my( $cmd ) = db2sqlinsert( @db );
+	my( $cmd ) = db2sqlinsert( @db, \&dbmon_compute_row_sync );
 
 	Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 	unless( $dbh->do( $cmd ) ) {
 		
-		elog_complain( "Failed to create new database row\n" );
+		elog_complain( "Failed to create new database row in table '$table'\n" .
+			       "record $db[3], sync '$sync'\n" .
+			       "while executing command '$cmd'\n" );
 	}
 
 	return;
@@ -232,13 +234,14 @@ sub delrow {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $dbh ) = @_;
 
-	my( $cmd ) = sprintf( "DELETE from `%s` WHERE syncsha = '%s';\n", $table, $sync );
+	my( $cmd ) = db2sqldelete( @db, $sync );
 
 	Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_complain( "Failed to delete database row\n" );
+		elog_complain( "Failed to delete database row in table '$table', sync '$sync'\n" .
+			       "while executing command '$cmd'\n" );
 	}
 
 	return;

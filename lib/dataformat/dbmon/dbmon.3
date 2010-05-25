@@ -1,6 +1,6 @@
 .TH DBMON 3
 .SH NAME
-dbmon_init, dbmon_update, dbmon_status, dbmon_close \- monitor a Datascope database for changes
+dbmon_init, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- monitor a Datascope database for changes
 .SH SYNOPSIS
 .nf
 
@@ -17,6 +17,8 @@ int dbmon_update( Hook *dbmon_hook, void *private );
 void dbmon_status( FILE *fp, Hook *dbmon_hook );
 
 void dbmon_close( Hook **dbmon_hook );
+
+char * dbmon_compute_row_sync( Dbptr db );
 
 .fi
 .SH DESCRIPTION
@@ -58,6 +60,11 @@ to the library about the current status of the database represented by the track
 
 The \fBdbmon_close\fP function stops tracking a previously tracked Datascope databases, 
 freeing all tracking structures. 
+
+The \fBdbmon_compute_row_sync\fP function computes a synchronization string for a given database row,
+used internally for tracking functions and possibly useful externally as well to coordinate
+with other operations. The returned character string should be freed by the 
+caller when no longer needed. 
 
 .SH OPTIONS
 .SH FILES

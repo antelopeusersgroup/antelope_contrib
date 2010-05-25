@@ -262,7 +262,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
             }
             
             $cmd  = "dbjoin $dbin.origin event | ";
-            $cmd .= "dbsubset - \" $subset \" | dbjoin -o - assoc arrival stamag netmag emodel predarr | ";
+            $cmd .= "dbsubset - \" $subset \" | dbjoin -o - assoc arrival origerr stamag netmag emodel predarr | ";
             $cmd .= "dbdelete - ";
 
             elog_notify( "$cmd") if $opt_v;

@@ -16,7 +16,6 @@ awish
 
 <commands>
 Tclx
-Tkx
     extended tcl/tk -- variety of extensions to unix functions
 
 BLT
@@ -55,5 +54,3 @@ Rtm
 Ttgrid
     extensions for the time travel grid file used by orbassoc and dbgrassoc
 
-Vogle
-    3-d graphics extension for "Very Ordinary Graphics Library"

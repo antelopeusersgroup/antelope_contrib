@@ -1,0 +1,2050 @@
+Conversion results:
+CREATE TABLE `achanaux`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `fchan`       CHAR(8) DEFAULT '-',
+  `aux`         CHAR(8) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `fchan`, `aux`)
+  );
+
+CREATE TABLE `affiliation`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `net`)
+  );
+
+CREATE TABLE `anetsta`
+  (
+  `anet`        CHAR(9) DEFAULT '-',
+  `fsta`        CHAR(6) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`anet`, `fsta`)
+  );
+
+CREATE TABLE `arrival`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `arid`        INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `stassid`     INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `chan`        CHAR(8) DEFAULT '-',
+  `iphase`      CHAR(8) DEFAULT '-',
+  `stype`       CHAR(1) DEFAULT '-',
+  `deltim`      DECIMAL(6,3) DEFAULT -1.000,
+  `azimuth`     DECIMAL(7,2) DEFAULT -1.00,
+  `delaz`       DECIMAL(7,2) DEFAULT -1.00,
+  `slow`        DECIMAL(7,2) DEFAULT -1.00,
+  `delslo`      DECIMAL(7,2) DEFAULT -1.00,
+  `ema`         DECIMAL(7,2) DEFAULT -1.00,
+  `rect`        DECIMAL(7,3) DEFAULT -1.000,
+  `amp`         DECIMAL(10,1) DEFAULT -1.0,
+  `per`         DECIMAL(7,2) DEFAULT -1.00,
+  `logat`       DECIMAL(7,2) DEFAULT -999.00,
+  `clip`        CHAR(1) DEFAULT '-',
+  `fm`          CHAR(2) DEFAULT '-',
+  `snr`         DECIMAL(10,5) DEFAULT -1.00,
+  `qual`        CHAR(1) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `time`)
+  );
+
+CREATE TABLE `assoc`
+  (
+  `arid`        INTEGER(8) DEFAULT -1,
+  `orid`        INTEGER(8) DEFAULT -1,
+  `sta`         CHAR(6) DEFAULT '-',
+  `phase`       CHAR(8) DEFAULT '-',
+  `belief`      DECIMAL(4,2) DEFAULT 9.99,
+  `delta`       DECIMAL(8,3) DEFAULT -1.000,
+  `seaz`        DECIMAL(7,2) DEFAULT -999.00,
+  `esaz`        DECIMAL(7,2) DEFAULT -999.00,
+  `timeres`     DECIMAL(8,3) DEFAULT -999.000,
+  `timedef`     CHAR(1) DEFAULT '-',
+  `azres`       DECIMAL(7,1) DEFAULT -999.0,
+  `azdef`       CHAR(1) DEFAULT '-',
+  `slores`      DECIMAL(7,2) DEFAULT -999.00,
+  `slodef`      CHAR(1) DEFAULT '-',
+  `emares`      DECIMAL(7,1) DEFAULT -999.0,
+  `wgt`         DECIMAL(6,3) DEFAULT -1.000,
+  `vmodel`      CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`arid`, `orid`)
+  );
+
+CREATE TABLE `beam`
+  (
+  `wfid`        INTEGER(8) DEFAULT -1,
+  `azimuth`     DECIMAL(7,2) DEFAULT -1.00,
+  `slo`         DECIMAL(7,4) DEFAULT -1.0000,
+  `filter`      CHAR(30) DEFAULT '-',
+  `recipe`      CHAR(15) DEFAULT '-',
+  `algorithm`   CHAR(15) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`wfid`)
+  );
+
+CREATE TABLE `calibration`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `insname`     CHAR(50) DEFAULT '-',
+  `snname`      CHAR(32) DEFAULT '-',
+  `dlname`      CHAR(32) DEFAULT '-',
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `segtype`     CHAR(1) DEFAULT '-',
+  `dlsta`       CHAR(16) DEFAULT '-',
+  `dlchan`      CHAR(16) DEFAULT '-',
+  `lead`        CHAR(4) DEFAULT '-',
+  `stream`      INTEGER(8) DEFAULT -1,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `fc`          DECIMAL(11,6) DEFAULT -1.000000,
+  `units`       CHAR(12) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `centryd`
+  (
+  `orid`         INTEGER(8) DEFAULT -1,
+  `jdate`        INTEGER(8) DEFAULT -1,
+  `timecentryd`  DECIMAL(15,3) DEFAULT -9999999999.999,
+  `lat`          DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`          DECIMAL(9,4) DEFAULT -999.0000,
+  `depth`        DECIMAL(9,4) DEFAULT -999.0000,
+  `coterr`       DECIMAL(5,1),
+  `claerr`       DECIMAL(5,1),
+  `cloerr`       DECIMAL(5,1),
+  `cdperr`       DECIMAL(5,1),
+  `durat`        DECIMAL(5,1),
+  `nslpb`        INTEGER(3),
+  `nrlpb`        INTEGER(3),
+  `tmnlpb`       DECIMAL(5,1),
+  `nsmw`         INTEGER(3),
+  `nrmw`         INTEGER(3),
+  `tmnmw`        DECIMAL(5,1),
+  `dused`        CHAR(10),
+  `auth`         CHAR(15) DEFAULT '-',
+  `commid`       INTEGER(8) DEFAULT -1,
+  `lddate`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`   CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`orid`)
+  );
+
+CREATE TABLE `emodel`
+  (
+  `orid`        INTEGER(8) DEFAULT -1,
+  `emodelx`     DECIMAL(15,6) DEFAULT -1,
+  `emodely`     DECIMAL(15,6) DEFAULT -1,
+  `emodelz`     DECIMAL(15,6) DEFAULT -1,
+  `emodelt`     DECIMAL(15,6) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`orid`)
+  );
+
+CREATE TABLE `event`
+  (
+  `evid`        INTEGER(8) DEFAULT -1,
+  `evname`      CHAR(15) DEFAULT '-',
+  `prefor`      INTEGER(8) DEFAULT -1,
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`evid`)
+  );
+
+CREATE TABLE `fkgrid`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `refsta`      CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `filter`      CHAR(30) DEFAULT '-',
+  `dtime`       DECIMAL(9,2) DEFAULT 0.00,
+  `nt`          INTEGER(8) DEFAULT -1,
+  `azimuth`     DECIMAL(7,2) DEFAULT -1.00,
+  `slo`         DECIMAL(7,4) DEFAULT -1.0000,
+  `slowd`       DECIMAL(7,4) DEFAULT -1.0000,
+  `ppower`      DECIMAL(7,4) DEFAULT -1.0000,
+  `semin`       DECIMAL(7,4) DEFAULT -9.9999,
+  `semax`       DECIMAL(7,4) DEFAULT -9.9999,
+  `ne`          INTEGER(8) DEFAULT -1,
+  `snmin`       DECIMAL(7,4) DEFAULT -9.9999,
+  `snmax`       DECIMAL(7,4) DEFAULT -9.9999,
+  `nn`          INTEGER(8) DEFAULT -1,
+  `datatype`    CHAR(2) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `filter`, `time`, `endtime`)
+  );
+
+CREATE TABLE `fplane`
+  (
+  `orid`        INTEGER(8) DEFAULT -1,
+  `mechid`      INTEGER(8) DEFAULT -1,
+  `str1`        DECIMAL(5,1),
+  `dip1`        DECIMAL(5,1),
+  `rake1`       DECIMAL(6,1),
+  `str2`        DECIMAL(5,1),
+  `dip2`        DECIMAL(5,1),
+  `rake2`       DECIMAL(6,1),
+  `taxazm`      DECIMAL(5,1),
+  `taxplg`      DECIMAL(5,1),
+  `paxazm`      DECIMAL(5,1),
+  `paxplg`      DECIMAL(5,1),
+  `algorithm`   CHAR(15) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`mechid`)
+  );
+
+CREATE TABLE `gregion`
+  (
+  `grn`         INTEGER(8) DEFAULT -1,
+  `grname`      CHAR(40) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`grn`)
+  );
+
+CREATE TABLE `instrument`
+  (
+  `inid`        INTEGER(8) DEFAULT -1,
+  `insname`     CHAR(50) DEFAULT '-',
+  `instype`     CHAR(6) DEFAULT '-',
+  `band`        CHAR(1) DEFAULT '-',
+  `digital`     CHAR(1) DEFAULT '-',
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `ncalib`      DECIMAL(16,6) DEFAULT -99.999999,
+  `ncalper`     DECIMAL(16,6) DEFAULT -1.000000,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `rsptype`     CHAR(6) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`inid`)
+  );
+
+CREATE TABLE `lastid`
+  (
+  `keyname`     CHAR(15) DEFAULT '-',
+  `keyvalue`    INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`keyname`)
+  );
+
+CREATE TABLE `moment`
+  (
+  `orid`        INTEGER(8) DEFAULT -1,
+  `mexpon`      INTEGER(3),
+  `mrr`         DECIMAL(5,2),
+  `mtt`         DECIMAL(5,2),
+  `mff`         DECIMAL(5,2),
+  `mrt`         DECIMAL(5,2),
+  `mrf`         DECIMAL(5,2),
+  `mtf`         DECIMAL(5,2),
+  `mrrerr`      DECIMAL(5,2),
+  `mtterr`      DECIMAL(5,2),
+  `mfferr`      DECIMAL(5,2),
+  `mrterr`      DECIMAL(5,2),
+  `mrferr`      DECIMAL(5,2),
+  `mtferr`      DECIMAL(5,2),
+  `taxval`      DECIMAL(6,2),
+  `taxplg`      DECIMAL(5,1),
+  `taxazm`      DECIMAL(5,1),
+  `paxval`      DECIMAL(5,2),
+  `paxplg`      DECIMAL(5,1),
+  `paxazm`      DECIMAL(5,1),
+  `naxval`      DECIMAL(5,2),
+  `naxplg`      DECIMAL(5,1),
+  `naxazm`      DECIMAL(5,1),
+  `bestdc`      DECIMAL(5,2),
+  `str1`        DECIMAL(5,1),
+  `dip1`        DECIMAL(5,1),
+  `rake1`       DECIMAL(6,1),
+  `str2`        DECIMAL(5,1),
+  `dip2`        DECIMAL(5,1),
+  `rake2`       DECIMAL(6,1),
+  `dused`       CHAR(10),
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`orid`)
+  );
+
+CREATE TABLE `netmag`
+  (
+  `magid`        INTEGER(8) DEFAULT -1,
+  `net`          CHAR(8) DEFAULT '-',
+  `orid`         INTEGER(8) DEFAULT -1,
+  `evid`         INTEGER(8) DEFAULT -1,
+  `magtype`      CHAR(6) DEFAULT '-',
+  `nsta`         INTEGER(8) DEFAULT -1,
+  `magnitude`    DECIMAL(7,2) DEFAULT -99.99,
+  `uncertainty`  DECIMAL(7,2) DEFAULT -1.00,
+  `auth`         CHAR(15) DEFAULT '-',
+  `commid`       INTEGER(8) DEFAULT -1,
+  `lddate`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`   CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`magid`)
+  );
+
+CREATE TABLE `network`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `netname`     CHAR(80) DEFAULT '-',
+  `nettype`     CHAR(4) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`)
+  );
+
+CREATE TABLE `origerr`
+  (
+  `orid`        INTEGER(8) DEFAULT -1,
+  `sxx`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `syy`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `szz`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `stt`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `sxy`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `sxz`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `syz`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `stx`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `sty`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `stz`         DECIMAL(15,4) DEFAULT -999999999.9999,
+  `sdobs`       DECIMAL(9,4) DEFAULT -1.0000,
+  `smajax`      DECIMAL(9,4) DEFAULT -1.0000,
+  `sminax`      DECIMAL(9,4) DEFAULT -1.0000,
+  `strike`      DECIMAL(6,2) DEFAULT -1.00,
+  `sdepth`      DECIMAL(9,4) DEFAULT -1.0000,
+  `stime`       DECIMAL(8,2) DEFAULT -1.00,
+  `conf`        DECIMAL(5,3) DEFAULT 0.000,
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`orid`)
+  );
+
+CREATE TABLE `origin`
+  (
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `depth`       DECIMAL(9,4) DEFAULT -999.0000,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `orid`        INTEGER(8) DEFAULT -1,
+  `evid`        INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `nass`        INTEGER(4) DEFAULT -1,
+  `ndef`        INTEGER(4) DEFAULT -1,
+  `ndp`         INTEGER(4) DEFAULT -1,
+  `grn`         INTEGER(8) DEFAULT -1,
+  `srn`         INTEGER(8) DEFAULT -1,
+  `etype`       CHAR(2) DEFAULT '-',
+  `review`      CHAR(4) DEFAULT '-',
+  `depdp`       DECIMAL(9,4) DEFAULT -999.0000,
+  `dtype`       CHAR(1) DEFAULT '-',
+  `mb`          DECIMAL(7,2) DEFAULT -999.00,
+  `mbid`        INTEGER(8) DEFAULT -1,
+  `ms`          DECIMAL(7,2) DEFAULT -999.00,
+  `msid`        INTEGER(8) DEFAULT -1,
+  `ml`          DECIMAL(7,2) DEFAULT -999.00,
+  `mlid`        INTEGER(8) DEFAULT -1,
+  `algorithm`   CHAR(15) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`time`, `lat`, `lon`, `depth`, `ndef`, `nass`)
+  );
+
+CREATE TABLE `predarr`
+  (
+  `arid`        INTEGER(8) DEFAULT -1,
+  `orid`        INTEGER(8) DEFAULT -1,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `slow`        DECIMAL(7,2) DEFAULT -1.00,
+  `seaz`        DECIMAL(7,2) DEFAULT -999.00,
+  `ema`         DECIMAL(7,2) DEFAULT -1.00,
+  `esaz`        DECIMAL(7,2) DEFAULT -999.00,
+  `dip`         DECIMAL(5,1),
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`arid`, `orid`)
+  );
+
+CREATE TABLE `predmech`
+  (
+  `arid`        INTEGER(8) DEFAULT -1,
+  `orid`        INTEGER(8) DEFAULT -1,
+  `mechid`      INTEGER(8) DEFAULT -1,
+  `fm`          CHAR(2) DEFAULT '-',
+  `radamp`      DECIMAL(10,7) DEFAULT -1.0000000,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`arid`, `orid`, `mechid`)
+  );
+
+CREATE TABLE `remark`
+  (
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lineno`      INTEGER(8) DEFAULT -1,
+  `remark`      CHAR(80) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`commid`, `lineno`)
+  );
+
+CREATE TABLE `schanloc`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `fchan`       CHAR(8) DEFAULT '-',
+  `loc`         CHAR(8) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`)
+  );
+
+CREATE TABLE `sensor`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `inid`        INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `calratio`    DECIMAL(16,6) DEFAULT 1.000000,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `tshift`      DECIMAL(6,2) DEFAULT 0.00,
+  `instant`     CHAR(1) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `site`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `ondate`      INTEGER(8) DEFAULT -1,
+  `offdate`     INTEGER(8) DEFAULT -1,
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `elev`        DECIMAL(9,4) DEFAULT -999.0000,
+  `staname`     CHAR(50) DEFAULT '-',
+  `statype`     CHAR(4) DEFAULT '-',
+  `refsta`      CHAR(6) DEFAULT '-',
+  `dnorth`      DECIMAL(9,4) DEFAULT 0.0000,
+  `deast`       DECIMAL(9,4) DEFAULT 0.0000,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `ondate`, `offdate`)
+  );
+
+CREATE TABLE `sitechan`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `ondate`      INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `offdate`     INTEGER(8) DEFAULT -1,
+  `ctype`       CHAR(4) DEFAULT '-',
+  `edepth`      DECIMAL(9,4) DEFAULT -9.9999,
+  `hang`        DECIMAL(6,1) DEFAULT -999.9,
+  `vang`        DECIMAL(6,1) DEFAULT -999.9,
+  `descrip`     CHAR(50) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`chanid`)
+  );
+
+CREATE TABLE `snetsta`
+  (
+  `snet`        CHAR(8) DEFAULT '-',
+  `fsta`        CHAR(6) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`)
+  );
+
+CREATE TABLE `specdisc`
+  (
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `phase`       CHAR(8) DEFAULT '-',
+  `arid`        INTEGER(8) DEFAULT -1,
+  `rsptype`     CHAR(6) DEFAULT '-',
+  `freqmin`     DECIMAL(15,6) DEFAULT -1,
+  `freqmax`     DECIMAL(15,6) DEFAULT -1,
+  `nfreq`       INTEGER(8) DEFAULT -1,
+  `df`          DECIMAL(15,6) DEFAULT -1,
+  `rayleigh`    DECIMAL(15,6) DEFAULT -1,
+  `tbp`         DECIMAL(10,1) DEFAULT -1.0,
+  `scalib`      DECIMAL(15,6) DEFAULT 0,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `nwin`        INTEGER(6) DEFAULT -1,
+  `offset`      DECIMAL(6,2) DEFAULT -1.00,
+  `totdur`      DECIMAL(12,2) DEFAULT -1.00,
+  `demean`      CHAR(1) DEFAULT '-',
+  `rsprm`       CHAR(1) DEFAULT '-',
+  `taper`       CHAR(12) DEFAULT '-',
+  `method`      CHAR(12) DEFAULT '-',
+  `spectype`    CHAR(8),
+  `units`       CHAR(12) DEFAULT '-',
+  `specfmt`     CHAR(12) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `twin`, `spectype`, `rsptype`)
+  );
+
+CREATE TABLE `sregion`
+  (
+  `srn`         INTEGER(8) DEFAULT -1,
+  `srname`      CHAR(40) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`srn`)
+  );
+
+CREATE TABLE `stage`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `stageid`     INTEGER(8) DEFAULT -1,
+  `ssident`     CHAR(16) DEFAULT '-',
+  `gnom`        DECIMAL(10,5) DEFAULT 0,
+  `iunits`      CHAR(16) DEFAULT '-',
+  `ounits`      CHAR(16) DEFAULT '-',
+  `gcalib`      DECIMAL(10,6) DEFAULT 0.000000,
+  `gtype`       CHAR(20) DEFAULT '-',
+  `izero`       INTEGER(8) DEFAULT 0,
+  `decifac`     INTEGER(8) DEFAULT -1,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `leadfac`     DECIMAL(11,7) DEFAULT 0.0000000,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `stageid`, `time`, `endtime`)
+  );
+
+CREATE TABLE `stamag`
+  (
+  `magid`        INTEGER(8) DEFAULT -1,
+  `sta`          CHAR(6) DEFAULT '-',
+  `arid`         INTEGER(8) DEFAULT -1,
+  `orid`         INTEGER(8) DEFAULT -1,
+  `evid`         INTEGER(8) DEFAULT -1,
+  `phase`        CHAR(8) DEFAULT '-',
+  `magtype`      CHAR(6) DEFAULT '-',
+  `magnitude`    DECIMAL(7,2) DEFAULT -99.99,
+  `uncertainty`  DECIMAL(7,2) DEFAULT -1.00,
+  `auth`         CHAR(15) DEFAULT '-',
+  `commid`       INTEGER(8) DEFAULT -1,
+  `lddate`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`   CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`magid`, `magtype`, `sta`, `orid`)
+  );
+
+CREATE TABLE `stassoc`
+  (
+  `stassid`     INTEGER(8) DEFAULT -1,
+  `sta`         CHAR(6) DEFAULT '-',
+  `etype`       CHAR(2) DEFAULT '-',
+  `review`      CHAR(4) DEFAULT '-',
+  `location`    CHAR(32) DEFAULT '-',
+  `dist`        DECIMAL(7,2) DEFAULT -1.00,
+  `azimuth`     DECIMAL(7,2) DEFAULT -1.00,
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `depth`       DECIMAL(9,4) DEFAULT -999.0000,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `imb`         DECIMAL(7,2) DEFAULT -999.00,
+  `ims`         DECIMAL(7,2) DEFAULT -999.00,
+  `iml`         DECIMAL(7,2) DEFAULT -999.00,
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`stassid`)
+  );
+
+CREATE TABLE `stgrid`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `refsta`      CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `filter`      CHAR(30) DEFAULT '-',
+  `azimuth`     DECIMAL(7,2) DEFAULT -1.00,
+  `smin`        DECIMAL(7,4) DEFAULT -9.9999,
+  `smax`        DECIMAL(7,4) DEFAULT -9.9999,
+  `ns`          INTEGER(8) DEFAULT -1,
+  `dtime`       DECIMAL(9,2) DEFAULT 0.00,
+  `nt`          INTEGER(8) DEFAULT -1,
+  `datatype`    CHAR(2) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `filter`, `azimuth`, `time`, `endtime`)
+  );
+
+CREATE TABLE `wfdisc`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `wfid`        INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `nsamp`       INTEGER(8) DEFAULT -1,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `instype`     CHAR(6) DEFAULT '-',
+  `segtype`     CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `clip`        CHAR(1) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `wfedit`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `edid`        INTEGER(8) DEFAULT -1,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `probtype`    CHAR(8) DEFAULT '-',
+  `edittype`    CHAR(8) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `wfmeas`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `meastype`    CHAR(10),
+  `filter`      CHAR(30) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `tmeas`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `val1`        DECIMAL(12,3),
+  `val2`        DECIMAL(12,3),
+  `units1`      CHAR(12) DEFAULT '-',
+  `units2`      CHAR(12) DEFAULT '-',
+  `arid`        INTEGER(8) DEFAULT -1,
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `meastype`, `filter`, `time`, `endtime`)
+  );
+
+CREATE TABLE `wfrms`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `filter`      CHAR(30) DEFAULT '-',
+  `fc`          DECIMAL(11,6) DEFAULT -1.000000,
+  `arid`        INTEGER(8) DEFAULT -1,
+  `stype`       CHAR(1) DEFAULT '-',
+  `segtype`     CHAR(1) DEFAULT '-',
+  `rms`         DOUBLE DEFAULT -9.000000e+99,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `twin`, `filter`)
+  );
+
+CREATE TABLE `wftag`
+  (
+  `tagname`     CHAR(8) DEFAULT '-',
+  `tagid`       INTEGER(8) DEFAULT -1,
+  `wfid`        INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`tagname`, `tagid`, `wfid`)
+  );
+
+CREATE TABLE `wftape`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `wfid`        INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `nsamp`       INTEGER(8) DEFAULT -1,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `instype`     CHAR(6) DEFAULT '-',
+  `segtype`     CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `clip`        CHAR(1) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `volname`     CHAR(6) DEFAULT '-',
+  `tapefile`    INTEGER(5) DEFAULT -1,
+  `tapeblock`   INTEGER(5) DEFAULT -1,
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `wftar`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `wfid`        INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `nsamp`       INTEGER(8) DEFAULT -1,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `instype`     CHAR(6) DEFAULT '-',
+  `segtype`     CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `clip`        CHAR(1) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `tapename`    CHAR(20) DEFAULT '-',
+  `fileno`      INTEGER(6) DEFAULT -1,
+  `tfile`       CHAR(64) DEFAULT '-',
+  `tfoff`       INTEGER(10) DEFAULT 0,
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `adoption`
+  (
+  `snet`        CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `newsnet`     CHAR(8) DEFAULT '-',
+  `newsta`      CHAR(6) DEFAULT '-',
+  `atype`       CHAR(50) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`snet`, `sta`, `time`)
+  );
+
+CREATE TABLE `alarmcache`
+  (
+  `alarmid`     INTEGER(8) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-'
+  );
+
+CREATE TABLE `alarmcomm`
+  (
+  `alarmid`     INTEGER(8) DEFAULT -1,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `recipient`   CHAR(80) DEFAULT '-',
+  `delaysec`    DECIMAL(8,1) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`time`, `recipient`)
+  );
+
+CREATE TABLE `alarms`
+  (
+  `alarmid`       INTEGER(8) DEFAULT -1,
+  `alarmkey`      CHAR(30) DEFAULT '-',
+  `alarmclass`    CHAR(20) DEFAULT '-',
+  `alarmname`     CHAR(30) DEFAULT '-',
+  `time`          DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `subject`       CHAR(80) DEFAULT '-',
+  `evid`          INTEGER(8) DEFAULT -1,
+  `orid`          INTEGER(8) DEFAULT -1,
+  `acknowledged`  CHAR(2) DEFAULT '-',
+  `acktime`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `ackauth`       CHAR(50) DEFAULT '-',
+  `dir`           CHAR(64) DEFAULT '-',
+  `dfile`         CHAR(32) DEFAULT '-',
+  `foff`          INTEGER(10) DEFAULT 0,
+  `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`    CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`alarmkey`, `alarmclass`, `alarmname`)
+  );
+
+CREATE TABLE `arrival_tshift`
+  (
+  `arid`           INTEGER(8) DEFAULT -1,
+  `time`           DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `original_time`  DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `lddate`         DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`     CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`arid`)
+  );
+
+CREATE TABLE `b051`
+  (
+  `sta`           CHAR(6) DEFAULT '-',
+  `time`          DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`       DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `seed_comment`  CHAR(70),
+  `seed_class`    CHAR(1),
+  `seed_units`    CHAR(20),
+  `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`    CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `seed_comment`, `time`, `endtime`)
+  );
+
+CREATE TABLE `b059`
+  (
+  `sta`           CHAR(6) DEFAULT '-',
+  `chan`          CHAR(8) DEFAULT '-',
+  `time`          DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`       DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `seed_comment`  CHAR(70),
+  `seed_class`    CHAR(1),
+  `seed_units`    CHAR(20),
+  `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`    CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `seed_comment`, `time`, `endtime`)
+  );
+
+CREATE TABLE `balerlist`
+  (
+  `dlname`      CHAR(32) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `target`      CHAR(16) DEFAULT '-',
+  `connection`  CHAR(16) DEFAULT '-',
+  `q330sn`      CHAR(16) DEFAULT '-',
+  `inp`         CHAR(50) DEFAULT '-',
+  `balersn`     CHAR(6) DEFAULT '-',
+  `balerfirm`   CHAR(10) DEFAULT '-',
+  `baleron`     CHAR(3) DEFAULT '-',
+  `onsecs`      INTEGER(6) DEFAULT -1,
+  `htmlinfo`    CHAR(3) DEFAULT '-',
+  `htmlsecs`    INTEGER(6) DEFAULT -1,
+  `msdinfo`     CHAR(3) DEFAULT '-',
+  `msdsecs`     INTEGER(6) DEFAULT -1,
+  `data_start`  DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `data_end`    DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlname`, `time`)
+  );
+
+CREATE TABLE `calresult`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `calseq`      CHAR(25),
+  `caltype`     CHAR(8) DEFAULT '-',
+  `runtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `auth`        CHAR(15) DEFAULT '-',
+  `hostname`    CHAR(25) DEFAULT '-',
+  `calinput`    CHAR(1) DEFAULT '-',
+  `caldampr`    DOUBLE DEFAULT -1.000000e+00,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `fp`          DECIMAL(10,5) DEFAULT 0.000,
+  `damp0`       DECIMAL(8,5) DEFAULT -1.00000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `rsptype`     CHAR(6) DEFAULT '-',
+  `caliberr`    DECIMAL(10,3) DEFAULT -1.000,
+  `calcmp`      CHAR(3) DEFAULT '-',
+  `rspcmp`      CHAR(3) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `dfilee`      CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `chan`, `caltype`, `runtime`, `time`, `endtime`)
+  );
+
+CREATE TABLE `calwf`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `calseq`      CHAR(25),
+  `caltype`     CHAR(8) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `calerr`      CHAR(3) DEFAULT '-',
+  `tsettle`     DECIMAL(8,5) DEFAULT 0.00000,
+  `trecov`      DECIMAL(8,5) DEFAULT 0.00000,
+  `calamp`      DECIMAL(10,6) DEFAULT 999.999999,
+  `calinput`    CHAR(1) DEFAULT '-',
+  `caldrive`    CHAR(1) DEFAULT '-',
+  `caldampr`    DOUBLE DEFAULT -1.000000e+00,
+  `calseed`     CHAR(10) DEFAULT '-',
+  `perdac`      DECIMAL(8,5) DEFAULT 0.00000,
+  `calfreq`     DECIMAL(8,2) DEFAULT 0.00,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `changed`
+  (
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `param`       CHAR(1) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `param`)
+  );
+
+CREATE TABLE `chanperf`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `perf`        DECIMAL(6,2) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `cluster`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `gridid`      INTEGER(8) DEFAULT -1,
+  `evid`        INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `gridid`, `evid`)
+  );
+
+CREATE TABLE `comm`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `commtype`    CHAR(50) DEFAULT '-',
+  `provider`    CHAR(30) DEFAULT '-',
+  `power`       CHAR(30) DEFAULT '-',
+  `dutycycle`   CHAR(8) DEFAULT '-',
+  `equiptype`   CHAR(30) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `time`, `endtime`)
+  );
+
+CREATE TABLE `deployment`
+  (
+  `vnet`           CHAR(18) DEFAULT '-',
+  `snet`           CHAR(8) DEFAULT '-',
+  `sta`            CHAR(6) DEFAULT '-',
+  `time`           DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`        DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `equip_install`  DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `equip_remove`   DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `cert_time`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `decert_time`    DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `pdcc`           CHAR(15) DEFAULT '-',
+  `sdcc`           CHAR(15) DEFAULT '-',
+  `lddate`         DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`     CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `time`, `endtime`)
+  );
+
+CREATE TABLE `detection`
+  (
+  `srcid`       CHAR(64) DEFAULT '-',
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `arid`        INTEGER(8) DEFAULT -1,
+  `state`       CHAR(3) DEFAULT '-',
+  `filter`      CHAR(30) DEFAULT '-',
+  `snr`         DECIMAL(10,5) DEFAULT -1.00,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`time`, `sta`, `chan`, `filter`, `state`)
+  );
+
+CREATE TABLE `detev`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `filter`      CHAR(30) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `tron`        DECIMAL(12,5) DEFAULT -99999.99999,
+  `troff`       DECIMAL(12,5) DEFAULT 99999.99999,
+  `iphase`      CHAR(8) DEFAULT '-',
+  `snr`         DECIMAL(10,5) DEFAULT -1.00,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `filter`, `time`)
+  );
+
+CREATE TABLE `digitizer`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `model`       CHAR(15),
+  `manu`        CHAR(15),
+  `ssident`     CHAR(16) DEFAULT '-',
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `phchan`      INTEGER(3) DEFAULT 999,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `dlacq`
+  (
+  `model`       CHAR(15),
+  `ssident`     CHAR(16) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dlname`      CHAR(32) DEFAULT '-',
+  `dlnet`       CHAR(2) DEFAULT '-',
+  `dlsta`       CHAR(16) DEFAULT '-',
+  `dlauth`      CHAR(16) DEFAULT '-',
+  `dlip`        CHAR(32) DEFAULT '-',
+  `dlport`      CHAR(8) DEFAULT '-',
+  `acqparams`   CHAR(16) DEFAULT '-',
+  `acqmode`     CHAR(16) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`model`, `ssident`, `time`, `endtime`)
+  );
+
+CREATE TABLE `dlcalwf`
+  (
+  `snet`          CHAR(8) DEFAULT '-',
+  `fsta`          CHAR(6) DEFAULT '-',
+  `fchan`         CHAR(8) DEFAULT '-',
+  `loc`           CHAR(8) DEFAULT '-',
+  `time`          DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`       DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `model`         CHAR(15),
+  `ssident`       CHAR(16) DEFAULT '-',
+  `dlcalseq`      CHAR(30),
+  `dlcaltype`     CHAR(16) DEFAULT '-',
+  `dlcalerr`      CHAR(3) DEFAULT '-',
+  `dlcalinput`    CHAR(1) DEFAULT '-',
+  `dlcalchanbm`   CHAR(8) DEFAULT '-',
+  `phchan`        INTEGER(3) DEFAULT 999,
+  `samprate`      DECIMAL(11,7) DEFAULT -1.0000000,
+  `dlcalamp`      DECIMAL(10,8) DEFAULT 0.00000000,
+  `dlcalfreq`     DECIMAL(8,6) DEFAULT 0.000000,
+  `dlcalsettle`   DECIMAL(8,5) DEFAULT -1.00000,
+  `dlcaltrailer`  DECIMAL(8,5) DEFAULT -1.00000,
+  `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`    CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`snet`, `fsta`, `fchan`, `loc`, `time`, `endtime`)
+  );
+
+CREATE TABLE `dlchannel`
+  (
+  `snet`        CHAR(8) DEFAULT '-',
+  `fsta`        CHAR(6) DEFAULT '-',
+  `fchan`       CHAR(8) DEFAULT '-',
+  `loc`         CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `model`       CHAR(15),
+  `ssident`     CHAR(16) DEFAULT '-',
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `phchan`      INTEGER(3) DEFAULT 999,
+  `stream`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`snet`, `fsta`, `fchan`, `loc`, `time`, `endtime`)
+  );
+
+CREATE TABLE `dlcmd_cal`
+  (
+  `dlname`       CHAR(32) DEFAULT '-',
+  `time`         DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `target`       CHAR(16) DEFAULT '-',
+  `model`        CHAR(15),
+  `disposition`  CHAR(16) DEFAULT '-',
+  `execution`    CHAR(100) DEFAULT '-',
+  `error`        CHAR(100) DEFAULT '-',
+  `ssident`      CHAR(16) DEFAULT '-',
+  `inp`          CHAR(50) DEFAULT '-',
+  `dlcalseq`     CHAR(30),
+  `dlcalseqt`    CHAR(30),
+  `hostname`     CHAR(25) DEFAULT '-',
+  `address`      CHAR(32) DEFAULT '-',
+  `pid`          INTEGER(6) DEFAULT -1,
+  `user`         CHAR(16) DEFAULT '-',
+  `lddate`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`   CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlname`, `time`)
+  );
+
+CREATE TABLE `dlevent`
+  (
+  `dlname`      CHAR(32) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `dlevtype`    CHAR(30) DEFAULT '-',
+  `dlcomment`   CHAR(180) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlname`, `dlevtype`, `time`)
+  );
+
+CREATE TABLE `dlsensor`
+  (
+  `dlmodel`     CHAR(15),
+  `dlident`     CHAR(16) DEFAULT '-',
+  `chident`     CHAR(16) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `snmodel`     CHAR(15),
+  `snident`     CHAR(16) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlmodel`, `dlident`, `chident`, `time`, `endtime`)
+  );
+
+CREATE TABLE `dlsite`
+  (
+  `model`       CHAR(15),
+  `ssident`     CHAR(16) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dlname`      CHAR(32) DEFAULT '-',
+  `idtag`       CHAR(12) DEFAULT '-',
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `elev`        DECIMAL(9,4) DEFAULT -999.0000,
+  `commtype`    CHAR(50) DEFAULT '-',
+  `provider`    CHAR(30) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`model`, `ssident`, `time`, `endtime`)
+  );
+
+CREATE TABLE `dmcbull`
+  (
+  `data_start`  DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `data_end`    DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `nev`         INTEGER(8) DEFAULT -1,
+  `nor`         INTEGER(8) DEFAULT -1,
+  `nph`         INTEGER(8) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`data_start`, `data_end`, `time`)
+  );
+
+CREATE TABLE `dmcfiles`
+  (
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `comment`     CHAR(180) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `orb`         CHAR(50) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`time`, `dfile`)
+  );
+
+CREATE TABLE `dmcseed`
+  (
+  `dfile`       CHAR(32) DEFAULT '-',
+  `dmcid`       INTEGER(5) DEFAULT -1,
+  `net`         CHAR(8) DEFAULT '-',
+  `yearday`     INTEGER(8) DEFAULT -1,
+  `cksum`       DECIMAL(12,0) DEFAULT 0,
+  `totbytes`    INTEGER(10) DEFAULT -1,
+  `hostname`    CHAR(25) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `outdev`      CHAR(15) DEFAULT '-',
+  `tapename`    CHAR(20) DEFAULT '-',
+  `fileno`      INTEGER(6) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dfile`)
+  );
+
+CREATE TABLE `dmcwf`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `nsamp`       INTEGER(8) DEFAULT -1,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `segtype`     CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `dfile`       CHAR(32) DEFAULT '-',
+  `timever`     DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `eids`
+  (
+  `orid`        INTEGER(8) DEFAULT -1,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`orid`, `time`)
+  );
+
+CREATE TABLE `evlink`
+  (
+  `pwfid`       INTEGER(8) DEFAULT -1,
+  `evid`        INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`pwfid`, `evid`)
+  );
+
+CREATE TABLE `gap`
+  (
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `tgap`        DECIMAL(17,5) DEFAULT -9999999999999.99,
+  `filled`      CHAR(1) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`)
+  );
+
+CREATE TABLE `gclfield`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `fieldname`   CHAR(15) DEFAULT '-',
+  `dimensions`  INTEGER(3) DEFAULT 0,
+  `nv`          INTEGER(4) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `fieldname`)
+  );
+
+CREATE TABLE `gclgdisk`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `dimensions`  INTEGER(3) DEFAULT 0,
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `radius`      DECIMAL(10,3) DEFAULT -1.0,
+  `azimuth_y`   DECIMAL(7,2) DEFAULT -1.00,
+  `dx1nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `dx2nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `dx3nom`      DECIMAL(7,2) DEFAULT -1.00,
+  `n1`          INTEGER(4) DEFAULT -1,
+  `n2`          INTEGER(4) DEFAULT -1,
+  `n3`          INTEGER(4) DEFAULT -1,
+  `i0`          INTEGER(4) DEFAULT -1,
+  `j0`          INTEGER(4) DEFAULT -1,
+  `k0`          INTEGER(4) DEFAULT -1,
+  `xlow`        DECIMAL(10,3),
+  `xhigh`       DECIMAL(10,3),
+  `ylow`        DECIMAL(10,3),
+  `yhigh`       DECIMAL(10,3),
+  `zlow`        DECIMAL(10,3),
+  `zhigh`       DECIMAL(10,3),
+  `cdefined`    CHAR(1) DEFAULT '-',
+  `geodefined`  CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `dimensions`)
+  );
+
+CREATE TABLE `gps`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `elev`        DECIMAL(9,4) DEFAULT -999.0000,
+  `nsat`        INTEGER(6) DEFAULT -1,
+  `gpsqual`     CHAR(6) DEFAULT '-',
+  `insname`     CHAR(50) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `time`, `lat`, `lon`, `elev`)
+  );
+
+CREATE TABLE `gridscor`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `phase`       CHAR(8) DEFAULT '-',
+  `gridname`    CHAR(15) DEFAULT '-',
+  `gridid`      INTEGER(8) DEFAULT -1,
+  `pmelrun`     CHAR(5) DEFAULT '-',
+  `tsc`         DECIMAL(10,3) DEFAULT -999.0000,
+  `tscref`      DECIMAL(10,3) DEFAULT -999.0000,
+  `tscbias`     DECIMAL(10,3) DEFAULT -999.0000,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `phase`, `gridname`, `gridid`, `pmelrun`)
+  );
+
+CREATE TABLE `gridstat`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `gridid`      INTEGER(8) DEFAULT -1,
+  `pmelrun`     CHAR(5) DEFAULT '-',
+  `sswrodgf`    DECIMAL(15,6) DEFAULT -999.0000,
+  `ndgf`        INTEGER(4) DEFAULT -1,
+  `sdobs`       DECIMAL(9,4) DEFAULT -1.0000,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `gridid`, `pmelrun`)
+  );
+
+CREATE TABLE `gsnspec`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `insname`     CHAR(50) DEFAULT '-',
+  `period`      DECIMAL(12,3) DEFAULT -89999999999,
+  `fc`          DECIMAL(11,6) DEFAULT -1.000000,
+  `pc_1`        DECIMAL(12,3) DEFAULT -999.000,
+  `pc_5`        DECIMAL(12,3) DEFAULT -999.000,
+  `pc_25`       DECIMAL(12,3) DEFAULT -999.000,
+  `pc_50`       DECIMAL(12,3) DEFAULT -999.000,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `period`, `time`, `endtime`)
+  );
+
+CREATE TABLE `hypocentroid`
+  (
+  `gridname`    CHAR(15) DEFAULT '-',
+  `gridid`      INTEGER(8) DEFAULT -1,
+  `dlat`        DECIMAL(15,9) DEFAULT -999.0000,
+  `dlon`        DECIMAL(15,9) DEFAULT -999.0000,
+  `depth`       DECIMAL(9,4) DEFAULT -999.0000,
+  `hclat`       DECIMAL(15,9) DEFAULT -999.0000,
+  `hclon`       DECIMAL(15,9) DEFAULT -999.0000,
+  `hcdepth`     DECIMAL(9,4) DEFAULT -999.0000,
+  `nass`        INTEGER(4) DEFAULT -1,
+  `delta`       DECIMAL(8,3) DEFAULT -1.000,
+  `ztop`        DECIMAL(9,4) DEFAULT -999.0000,
+  `zbot`        DECIMAL(9,4) DEFAULT -999.0000,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`gridname`, `gridid`)
+  );
+
+CREATE TABLE `iptable`
+  (
+  `id`          CHAR(32) DEFAULT '-',
+  `address`     CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`id`)
+  );
+
+CREATE TABLE `latency`
+  (
+  `snet`        CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `period`      DECIMAL(12,3) DEFAULT -89999999999,
+  `cnt`         INTEGER(10) DEFAULT -1,
+  `mean`        DECIMAL(12,3) DEFAULT -89999999999,
+  `stddev`      DECIMAL(12,3) DEFAULT -89999999999,
+  `latmin`      DECIMAL(12,3) DEFAULT -89999999999,
+  `latmax`      DECIMAL(12,3) DEFAULT -89999999999,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `period`)
+  );
+
+CREATE TABLE `netperf`
+  (
+  `snet`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `npsta`       INTEGER(5) DEFAULT 0,
+  `npchan`      INTEGER(5) DEFAULT 0,
+  `perf`        DECIMAL(6,2) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`snet`, `time`, `endtime`)
+  );
+
+CREATE TABLE `nominalresp`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `fp`          DECIMAL(10,5) DEFAULT 0.000,
+  `damp0`       DECIMAL(8,5) DEFAULT -1.00000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `calibl`      DECIMAL(16,6) DEFAULT 0.000000,
+  `rsptype`     CHAR(6) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `dfilel`      CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `pmelruns`
+  (
+  `pmelrun`     CHAR(5) DEFAULT '-',
+  `vmodel`      CHAR(15) DEFAULT '-',
+  `vmodel3d`    CHAR(15) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`pmelrun`)
+  );
+
+CREATE TABLE `q330_calibration_weblog`
+  (
+  `email`       CHAR(128) DEFAULT '-',
+  `stastr`      CHAR(50) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `pid`         INTEGER(6) DEFAULT -1,
+  `hostname`    CHAR(25) DEFAULT '-',
+  `comment`     CHAR(180) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`email`, `time`, `pid`)
+  );
+
+CREATE TABLE `q330comm`
+  (
+  `dlsta`       CHAR(16) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `inp`         CHAR(50) DEFAULT '-',
+  `ssident`     CHAR(16) DEFAULT '-',
+  `idtag`       CHAR(12) DEFAULT '-',
+  `lat`         DECIMAL(9,4) DEFAULT -999.0000,
+  `lon`         DECIMAL(9,4) DEFAULT -999.0000,
+  `elev`        DECIMAL(9,4) DEFAULT -999.0000,
+  `thr`         INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlsta`, `time`, `endtime`)
+  );
+
+CREATE TABLE `q730b`
+  (
+  `ssident`     CHAR(16) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `rsettings`   INTEGER(10) DEFAULT -1,
+  `dsettings`   INTEGER(10) DEFAULT -1,
+  `nchans`      INTEGER(3) DEFAULT 999,
+  `preamp`      CHAR(3) DEFAULT '-',
+  `vd`          CHAR(3) DEFAULT '-',
+  `preampgain`  DECIMAL(10,3) DEFAULT 0.000,
+  `rcurrent`    DOUBLE DEFAULT -1.000000e+00,
+  `rpreamp`     DOUBLE DEFAULT -1.000000e+00,
+  `rfdamp`      DOUBLE DEFAULT -1.000000e+00,
+  `rterm`       DOUBLE DEFAULT -1.000000e+00,
+  `rvfdamp`     DOUBLE DEFAULT -1.000000e+00,
+  `rvdampmin`   DOUBLE DEFAULT -1.000000e+00,
+  `rvdampmax`   DOUBLE DEFAULT -1.000000e+00,
+  `vdamprperc`  DOUBLE DEFAULT 0.00000000e+00,
+  `dacvperc`    DOUBLE DEFAULT 0.00000000e+00,
+  `dacvmax`     DOUBLE DEFAULT 0.00000000e+00,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`ssident`, `time`, `endtime`)
+  );
+
+CREATE TABLE `qctests`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `testtype`    CHAR(24) DEFAULT '-',
+  `qcresult`    CHAR(32) DEFAULT '-',
+  `data_start`  DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `data_end`    DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `revsamp`     INTEGER(16) DEFAULT -1,
+  `revp`        DECIMAL(7,4) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `hostname`    CHAR(25) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `testtype`)
+  );
+
+CREATE TABLE `qgrid`
+  (
+  `qgridname`   CHAR(30) DEFAULT '-',
+  `recipe`      CHAR(15) DEFAULT '-',
+  `qgridtype`   CHAR(20),
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `minlat`      DECIMAL(9,4) DEFAULT -999.0000,
+  `maxlat`      DECIMAL(9,4) DEFAULT -999.0000,
+  `minlon`      DECIMAL(9,4) DEFAULT -999.0000,
+  `maxlon`      DECIMAL(9,4) DEFAULT -999.0000,
+  `qdlat`       DECIMAL(12,6) DEFAULT -999.000000,
+  `qdlon`       DECIMAL(12,6) DEFAULT -999.000000,
+  `nlat`        INTEGER(10) DEFAULT -1,
+  `nlon`        INTEGER(10) DEFAULT -1,
+  `qgridfmt`    CHAR(10) DEFAULT '-',
+  `units`       CHAR(12) DEFAULT '-',
+  `maxval`      DECIMAL(12,3) DEFAULT -9999999.000,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `orid`        INTEGER(8) DEFAULT -1,
+  `auth`        CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`qgridname`, `recipe`, `time`, `endtime`)
+  );
+
+CREATE TABLE `ratechange`
+  (
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `minrate`     DECIMAL(11,7) DEFAULT -1.0000000,
+  `maxrate`     DECIMAL(11,7) DEFAULT -1.0000000,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`)
+  );
+
+CREATE TABLE `replayed`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `orb`         CHAR(50) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `retransmit`
+  (
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `pktid`       INTEGER(10) DEFAULT -1,
+  `dup_pktid`   INTEGER(10) DEFAULT -1,
+  `stray`       CHAR(1) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `pktid`)
+  );
+
+CREATE TABLE `rrdcache`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `rrdvar`      CHAR(30) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `rrdvar`, `time`, `endtime`)
+  );
+
+CREATE TABLE `rrdgraph`
+  (
+  `net`           CHAR(8) DEFAULT '-',
+  `sta`           CHAR(6) DEFAULT '-',
+  `rrdvar`        CHAR(30) DEFAULT '-',
+  `rrdgraphname`  CHAR(30) DEFAULT '-',
+  `time`          DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`       DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dir`           CHAR(64) DEFAULT '-',
+  `dfile`         CHAR(32) DEFAULT '-',
+  `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`    CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `rrdvar`, `rrdgraphname`)
+  );
+
+CREATE TABLE `rsyncbaler`
+  (
+  `dlsta`       CHAR(16) DEFAULT '-',
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dir`         CHAR(64) DEFAULT '-',
+  `status`      CHAR(15) DEFAULT '-',
+  `attempts`    INTEGER(4) DEFAULT 0,
+  `mseeddb`     CHAR(1) DEFAULT '-',
+  `bandwidth`   DECIMAL(6,1) DEFAULT -,
+  `filebytes`   INTEGER(10) DEFAULT -1,
+  `media`       CHAR(15) DEFAULT '-',
+  `fixed`       CHAR(1) DEFAULT '-',
+  `avoid`       CHAR(1) DEFAULT '-',
+  `replace`     CHAR(1) DEFAULT '-',
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlsta`, `dfile`)
+  );
+
+CREATE TABLE `sclink`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `pwfid`       INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`pwfid`)
+  );
+
+CREATE TABLE `seismometer`
+  (
+  `net`         CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `model`       CHAR(15),
+  `manu`        CHAR(15),
+  `ssident`     CHAR(16) DEFAULT '-',
+  `sensortype`  CHAR(4),
+  `caldrive`    CHAR(1) DEFAULT '-',
+  `active`      CHAR(3),
+  `calgen`      DOUBLE DEFAULT 0.0000000e+00,
+  `cal2rsp`     INTEGER(3) DEFAULT 999,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `rsptype`     CHAR(6) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `sensorcal`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `rsta`        CHAR(6) DEFAULT '-',
+  `rchan`       CHAR(8) DEFAULT '-',
+  `tstart`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `tend`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `rtime`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dlcalseq`    CHAR(30),
+  `dlcalseqr`   CHAR(30),
+  `dlcaltype`   CHAR(16) DEFAULT '-',
+  `ptype`       CHAR(16) DEFAULT '-',
+  `pnoise`      CHAR(4) DEFAULT '-',
+  `runtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `auth`        CHAR(15) DEFAULT '-',
+  `hostname`    CHAR(25) DEFAULT '-',
+  `dlcalref`    CHAR(3) DEFAULT '-',
+  `dlmodel`     CHAR(15),
+  `dlident`     CHAR(16) DEFAULT '-',
+  `snmodel`     CHAR(15),
+  `snident`     CHAR(16) DEFAULT '-',
+  `dlmodelr`    CHAR(15),
+  `dlidentr`    CHAR(16) DEFAULT '-',
+  `snmodelr`    CHAR(15),
+  `snidentr`    CHAR(16) DEFAULT '-',
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `sngen`       DECIMAL(10,5) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `rsptype`     CHAR(6) DEFAULT '-',
+  `sngenerr`    DECIMAL(10,3) DEFAULT -1.000,
+  `sngcmp`      CHAR(3) DEFAULT '-',
+  `rspcmp`      CHAR(3) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `dfilee`      CHAR(32) DEFAULT '-',
+  `dfilen`      CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `rsta`, `rchan`, `time`, `rtime`, `dlcaltype`, `runtime`)
+  );
+
+CREATE TABLE `sensormodel`
+  (
+  `snmodel`     CHAR(15),
+  `sensortype`  CHAR(4),
+  `caldrive`    CHAR(1) DEFAULT '-',
+  `active`      CHAR(3),
+  `calgen`      DOUBLE DEFAULT 0.0000000e+00,
+  `cal2rsp`     INTEGER(3) DEFAULT 999,
+  `sngen`       DECIMAL(10,5) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`snmodel`)
+  );
+
+CREATE TABLE `sitephotos`
+  (
+  `sta`            CHAR(6) DEFAULT '-',
+  `time`           DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `siteimagetype`  CHAR(20) DEFAULT '-',
+  `imagename`      CHAR(64) DEFAULT '-',
+  `imagesize`      CHAR(25) DEFAULT '-',
+  `imagedescrip`   CHAR(64) DEFAULT '-',
+  `format`         CHAR(10) DEFAULT '-',
+  `dir`            CHAR(64) DEFAULT '-',
+  `dfile`          CHAR(32) DEFAULT '-',
+  `auth`           CHAR(15) DEFAULT '-',
+  `lddate`         DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`     CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `time`, `imagename`, `imagesize`)
+  );
+
+CREATE TABLE `stabaler`
+  (
+  `dlsta`        CHAR(16) DEFAULT '-',
+  `time`         DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`      DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `net`          CHAR(8) DEFAULT '-',
+  `sta`          CHAR(6) DEFAULT '-',
+  `inp`          CHAR(50) DEFAULT '-',
+  `model`        CHAR(15),
+  `ssident`      CHAR(16) DEFAULT '-',
+  `firm`         CHAR(30) DEFAULT '-',
+  `nreg24`       INTEGER(6) DEFAULT -1,
+  `last_reg`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `nreboot`      INTEGER(6) DEFAULT -1,
+  `last_reboot`  DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `lddate`       DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`   CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlsta`, `time`, `endtime`)
+  );
+
+CREATE TABLE `stanotes`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `auth`        CHAR(15) DEFAULT '-',
+  `format`      CHAR(10) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `lddate`, `time`, `endtime`)
+  );
+
+CREATE TABLE `staq330`
+  (
+  `dlsta`          CHAR(16) DEFAULT '-',
+  `time`           DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`        DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `target`         CHAR(16) DEFAULT '-',
+  `net`            CHAR(8) DEFAULT '-',
+  `sta`            CHAR(6) DEFAULT '-',
+  `inp`            CHAR(50) DEFAULT '-',
+  `model`          CHAR(15),
+  `ssident`        CHAR(16) DEFAULT '-',
+  `idtag`          CHAR(12) DEFAULT '-',
+  `firm`           CHAR(30) DEFAULT '-',
+  `nchan`          INTEGER(3) DEFAULT -1,
+  `nreboot`        INTEGER(6) DEFAULT -1,
+  `last_reboot`    DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `q330_user_tag`  INTEGER(6) DEFAULT -1,
+  `memory_size`    INTEGER(10) DEFAULT -1,
+  `qap_1_3_type`   INTEGER(6) DEFAULT -1,
+  `qap_1_3_ver`    CHAR(10) DEFAULT '-',
+  `qap_4_6_type`   INTEGER(6) DEFAULT -1,
+  `qap_4_6_ver`    CHAR(10) DEFAULT '-',
+  `ch1_3_filter`   CHAR(50) DEFAULT '-',
+  `ch4_6_filter`   CHAR(50) DEFAULT '-',
+  `ch1_preamp`     CHAR(24) DEFAULT '-',
+  `ch2_preamp`     CHAR(24) DEFAULT '-',
+  `ch3_preamp`     CHAR(24) DEFAULT '-',
+  `ch4_preamp`     CHAR(24) DEFAULT '-',
+  `ch5_preamp`     CHAR(24) DEFAULT '-',
+  `ch6_preamp`     CHAR(24) DEFAULT '-',
+  `LP1_buf`        INTEGER(4) DEFAULT -1,
+  `LP2_buf`        INTEGER(4) DEFAULT -1,
+  `LP3_buf`        INTEGER(4) DEFAULT -1,
+  `LP4_buf`        INTEGER(4) DEFAULT -1,
+  `lddate`         DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`     CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`dlsta`, `time`, `endtime`)
+  );
+
+CREATE TABLE `trigger`
+  (
+  `time0`       DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `tagname`     CHAR(8) DEFAULT '-',
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `state`       CHAR(3) DEFAULT '-',
+  `filter`      CHAR(30) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`time0`, `sta`, `chan`, `state`, `filter`)
+  );
+
+CREATE TABLE `wfdisc_tshift`
+  (
+  `wfid`               INTEGER(8) DEFAULT -1,
+  `time`               DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `original_time`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`            DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `original_endtime`   DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `original_samprate`  DECIMAL(11,7) DEFAULT -1.0000000,
+  `straddle`           CHAR(1) DEFAULT '-',
+  `lddate`             DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`         CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`wfid`)
+  );
+
+CREATE TABLE `wfmgme`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `filter`      CHAR(30) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `pva`         DOUBLE DEFAULT -9.000000e+99,
+  `trpva`       DECIMAL(12,5) DEFAULT -99999.99999,
+  `snrpva`      DECIMAL(10,2) DEFAULT -1.00,
+  `pvv`         DOUBLE DEFAULT -9.000000e+99,
+  `trpvv`       DECIMAL(12,5) DEFAULT -99999.99999,
+  `snrpvv`      DECIMAL(10,2) DEFAULT -1.00,
+  `wa`          DOUBLE DEFAULT -9.000000e+99,
+  `trwa`        DECIMAL(12,5) DEFAULT -99999.99999,
+  `snrwa`       DECIMAL(10,2) DEFAULT -1.00,
+  `chanwa`      CHAR(8) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `filter`, `time`)
+  );
+
+CREATE TABLE `wfoffset`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `valoffset`   DECIMAL(20,12) DEFAULT 0.0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `wfprocess`
+  (
+  `pwfid`       INTEGER(8) DEFAULT -1,
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `timetype`    CHAR(1) DEFAULT '-',
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `datatype`    CHAR(2) DEFAULT '-',
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `nsamp`       INTEGER(8) DEFAULT -1,
+  `algorithm`   CHAR(15) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`pwfid`)
+  );
+
+CREATE TABLE `wfsrb`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `wfid`        INTEGER(8) DEFAULT -1,
+  `chanid`      INTEGER(8) DEFAULT -1,
+  `jdate`       INTEGER(8) DEFAULT -1,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `nsamp`       INTEGER(8) DEFAULT -1,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `calib`       DECIMAL(16,9) DEFAULT 0,
+  `calper`      DECIMAL(16,6) DEFAULT -1.000000,
+  `instype`     CHAR(6) DEFAULT '-',
+  `segtype`     CHAR(1) DEFAULT '-',
+  `datatype`    CHAR(2) DEFAULT '-',
+  `clip`        CHAR(1) DEFAULT '-',
+  `Szone`       CHAR(30) DEFAULT '-',
+  `Scoll`       TEXT(256) DEFAULT '-',
+  `Sobj`        CHAR(64) DEFAULT '-',
+  `foff`        INTEGER(10) DEFAULT 0,
+  `commid`      INTEGER(8) DEFAULT -1,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  );
+
+CREATE TABLE `xcorarrival`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `phase`       CHAR(8) DEFAULT '-',
+  `pwfid`       INTEGER(8) DEFAULT -1,
+  `filter`      CHAR(30) DEFAULT '-',
+  `algorithm`   CHAR(15) DEFAULT '-',
+  `pchan`       CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `stackwgt`    DECIMAL(6,3) DEFAULT -1.000,
+  `coherence`   DECIMAL(7,3) DEFAULT -1.0,
+  `xcorpeak`    DECIMAL(7,3) DEFAULT -1.0,
+  `relamp`      DECIMAL(10,4) DEFAULT -1.0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `phase`, `pwfid`)
+  );
+
+CREATE TABLE `xcorbeam`
+  (
+  `netname`     CHAR(80) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `pchan`       CHAR(8) DEFAULT '-',
+  `phase`       CHAR(8) DEFAULT '-',
+  `pwfid`       INTEGER(8) DEFAULT -1,
+  `filter`      CHAR(30) DEFAULT '-',
+  `robustt0`    DECIMAL(10,5) DEFAULT -9999.99999,
+  `robusttwin`  DECIMAL(9,2) DEFAULT 0.00,
+  `fold`        INTEGER(4) DEFAULT -1,
+  `amp`         DECIMAL(10,1) DEFAULT -1.0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`netname`, `pwfid`)
+  );
+
+CREATE TABLE `xsaa`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `phase`       CHAR(8) DEFAULT '-',
+  `evid`        INTEGER(8) DEFAULT -1,
+  `orid`        INTEGER(8) DEFAULT -1,
+  `pwfid`       INTEGER(8) DEFAULT -1,
+  `gridid`      INTEGER(8) DEFAULT -1,
+  `filter`      CHAR(30) DEFAULT '-',
+  `algorithm`   CHAR(15) DEFAULT '-',
+  `pchan`       CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `twin`        DECIMAL(9,2) DEFAULT 0.00,
+  `samprate`    DECIMAL(11,7) DEFAULT -1.0000000,
+  `stackwgt`    DECIMAL(6,3) DEFAULT -1.000,
+  `coherence`   DECIMAL(7,3) DEFAULT -1.0,
+  `xcorpeak`    DECIMAL(7,3) DEFAULT -1.0,
+  `relamp`      DECIMAL(10,4) DEFAULT -1.0,
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `pwfid`, `orid`)
+  );

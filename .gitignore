@@ -1,6 +1,7 @@
 .optimize.db
 .optimize.pag
 .optimize.dir
+.optimize
 .DS_Store
 .make.state
 *.a

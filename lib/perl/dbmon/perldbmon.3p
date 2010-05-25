@@ -13,6 +13,10 @@ use Datascope::dbmon;
 
 \fBdbmon_close\fP( \fI$hookname\fP );
 
+\fBdbmon_status\fP( \fI$filename\fP, \fI$hookname\fP );
+
+\fBdbmon_compute_row_sync\fP( \fI@db\fP );
+
 .fi
 .SH DESCRIPTION
 The perl \fBdbmon\fP module mimics the c-callable dbmon(3) library,
@@ -29,11 +33,11 @@ database schema are examined.  The arguments for the callback functions, explain
 in more detail below, are as follows:
 .nf
 
-      newrow( @db, $table, $sync, $private_ref );
+      \fInewrow\fP( \fI@db\fP, $table, $sync, \fI$private_ref\fP );
 
-      changerow( $oldsync, @db, $table, $newsync, $private_ref );
+      \fIchangerow\fP( $oldsync, \fI@db\fP, $table, $newsync, \fI$private_ref\fP );
 
-      delrow( @db, $table, $oldsync, $private_ref );
+      \fIdelrow\fP( \fI@db\fP, $table, $oldsync, \fI$private_ref\fP );
 
 .fi
 
@@ -54,8 +58,13 @@ private perl reference which can be used at the discretion of the programmer. Fo
 \fInewrow\fP callback, the syncronization string is that of the new row. For the \fIdelrow\fP
 callback, the synchronization string is that of the old row before it was deleted. The 
 \fIchangerow\fP callback receives copies of the synchronization strings from both before 
-and after the change.
+and after the change. 
 
+The value of the synchronization string for a given database row may be computed with the 
+function \fBdbmon_compute_row_sync\fP.
+
+The \fBdbmon_status\fP function is a debugging utility which prints current tracking information
+about the monitored database into the file named by \fI$filename\fP.
 
 .SH EXAMPLE
 The following example, omitting some ancillary details, shows the basic structure 

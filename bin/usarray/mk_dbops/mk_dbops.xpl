@@ -21,7 +21,7 @@ require "getopts.pl";
 
   elog_notify($cmd);
 
-  if ( !&Getopts('knvyIRUVAm:w:W:s:S:p:P:C:') || @ARGV < 4 || @ARGV > 6 ) {
+  if ( !&Getopts('knvyIRUAm:w:W:s:S:p:P:C:V:') || @ARGV < 4 || @ARGV > 6 ) {
     die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 

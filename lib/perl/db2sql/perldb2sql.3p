@@ -8,7 +8,11 @@ use Datascope::db2sql;
 
 @sql = dbschema2sqlcreate( @db [, $flags] );
 
-@sql = db2sqlinsert( @db [, $flags] );
+@sql = db2sqlinsert( @db [, \\&createsync] [, $flags] );
+
+@sql = db2sqldelete( @db, $sync [, $flags] );
+
+db2sql_set_syncfield_name( $name );
 
 .fi
 .SH DESCRIPTION
@@ -22,7 +26,20 @@ in the input database view, generating an array of strings containing
 
 The \fBdb2sqlinsert\fP function extracts all base-table rows referenced 
 in the input database view, generating an array of strings containing 
-\fIINSERT\fP statements for each row. 
+\fIINSERT\fP statements for each row. If a \fIcreatesync\fP function is specified,
+\fBdb2sqlinsert\fP will pass a database pointer for each row to the 
+\fIcreatesync\fP function and insert the  character-string 
+sync value returned by \fIcreatesync\fP. The default value of the sync field 
+name (currently \fIsyncstring\fP) will be used for this insertion 
+unless otherwise configured via \fBdb2sql_set_syncfield_name\fP.
+
+The \fBdb2sqldelete\fP function creates a SQL \fIDELETE\fP command for the 
+database row in the table specified by the input database pointer
+and described by the specified \fI$sync\fP string. 
+
+The \fBdb2sql_set_syncfield_name\fP function changes the name of the SQL 
+synchronization field (see db2sql(3)) from the default value, in the 
+rare cases in which this may be necessary. 
 
 .SH OPTIONS
 .SH FILES
@@ -112,7 +129,6 @@ INSERT INTO `origin` VALUES(  36.9340,   71.0010,    0.0000,   704397756.21221, 
 db2sql(3), db2sql(1), perldb(3P)
 .fi
 .SH "BUGS AND CAVEATS"
-The macro DB2SQL_SYNCFIELD_NAME from db2sql.h should be expressed in this module as a named constant. 
 .SH AUTHOR
 .nf
 Kent Lindquist

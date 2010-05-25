@@ -23,6 +23,8 @@ our @EXPORT = qw(
 	dbmon_init
 	dbmon_update
 	dbmon_close
+	dbmon_status
+	dbmon_compute_row_sync
 );
 our $VERSION = '1.0';
 

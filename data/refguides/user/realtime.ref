@@ -304,6 +304,9 @@ deprecated ida2orb [-u] [-r sec] orb nrts selection
 -r sec	reject future packets 
 </options>
 
+isi2orb [-v] [-V] [-p pf] [-S state] server orb
+    copy data from IDA server to orb
+
 liss2orb [options] liss orb
     copy data from LISS server liss to orbserver orb
 <options>
@@ -457,7 +460,7 @@ k2cmd [options] orb target datalogger cmd
 -delayhangup delayhangup	delay digitizer hangup
 </options>
 
-q330util [options] {pollsn  q330tip | ping q330ip,lport,{info|<somestring>} | register q330ip,sn,lport | getconfig  q330ip,sn,lport,config | control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} | sauth q330ip,sn[,[port_1_auth[...]]] | sipaddr q330ip,sn,interface,newip | sbpwr q330ip,sn,interface,function,timeout | rqannc q330ip,sn | umsg q330ip,sn,lport,message | ident q330ip,sn[,tport[,lport]] | marmotfix q330ip,sn[,interface[,baudrate]]}
+q330util [options] cmd
     perform some utility functions for Q330
 <options>
 -port port	udp port
@@ -465,8 +468,23 @@ q330util [options] {pollsn  q330tip | ping q330ip,lport,{info|<somestring>} | re
 -auth auth	Q330 authorization code
 -sequence seq	starting sequence number for commands
 -timeout timeout	timeout for udp response
--i local_ip	address to binde local UDP sockets
+-i local_ip	address to bind local UDP sockets
 -pfout	display output in pf file format
+</options>
+    cmd is one of:
+<options>
+pollsn q330tip 
+ping q330ip,lport,{info|ECHO} 
+register q330ip,sn,lport 
+getconfig  q330ip,sn,lport,config 
+control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} 
+sauth q330ip,sn[,port_1_auth[...]] 
+sipaddr q330ip,sn,interface,newip 
+sbpwr q330ip,sn,interface,function,timeout 
+rqannc q330ip,sn 
+umsg q330ip,sn,lport,message 
+ident q330ip,sn[,tport[,lport]] 
+marmotfix q330ip,sn[,interface[,baudrate]]
 </options>
 
 qtcmd [options] cmdorb net_sta cmd [params]
@@ -783,27 +801,6 @@ orbwfproc [options] dbmaster [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -reject expr	input reject expression
 -state file	save state in file
 -p pf
-</options>
-
-orbampmag  [options] orbwf orbdb dbname
-    real time computation of mb, ML or Ms magnitudes
-<options>
--auth_expr auth	only use packets with matching author
--make_magtables	make netmag and stamag packets
--nowait	quit when no packets left to process
--number n	limit on packets to process
--pf pf
--start {pktid|time}
--state state
--target_orbmag orb1 
--next_target_orbmag orb2
--use_mean	use mean, not median statistics
--use_p2p 	use peak to peak, not maximum value 
--use_if_not_associated
-	use all stations
--use_if_not_defining
-	use all picks
--v
 </options>
 
 orbwfrms [options] dbname orbin [orbout]

@@ -53,6 +53,10 @@
 #include "stock.h"
 #include "db2sql.h"
 
+static char * perl_createsync( Dbptr db );
+
+CV *Createsync;
+
 static char *
 elogmsgs()
 {
@@ -60,6 +64,42 @@ elogmsgs()
 	log = elog_string( 0 );
 	elog_clear();
 	return log;
+}
+
+static char *
+perl_createsync( Dbptr db )
+{
+	int	n;
+	char	*sync;
+	dSP;
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK( sp );
+
+	XPUSHs(sv_2mortal(newSViv(db.database)));
+	XPUSHs(sv_2mortal(newSViv(db.table)));
+	XPUSHs(sv_2mortal(newSViv(db.field)));
+	XPUSHs(sv_2mortal(newSViv(db.record)));
+
+	PUTBACK;
+
+	n = perl_call_sv( (SV *) Createsync, G_SCALAR );
+
+	if( n != 1 ) {
+
+		croak( "db2sqlinsert: Failed to compute sync field via callback function provided\n%s", elogmsgs() );
+	}
+
+	SPAGAIN;
+
+	sync = strdup((char *) POPp);
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+
+	return sync;
 }
 
 MODULE = Datascope::db2sql	PACKAGE = Datascope::db2sql
@@ -78,7 +118,7 @@ dbschema2sqlcreate( idatabase, itable, ifield, irecord, ... )
 	char	*stmt = 0;
 	long	istmt;
 	long	nstmts;
-	int	flags = 0;
+	long	flags = 0;
 	int	next;
 
 	db.database = idatabase;
@@ -131,9 +171,9 @@ db2sqlinsert( idatabase, itable, ifield, irecord, ... )
 	char	*stmt = 0;
 	long	istmt;
 	long	nstmts;
-	int	flags = 0;
+	long	flags = 0;
 	int	next;
-	int	rc;
+	long	rc;
 
 	db.database = idatabase;
 	db.table = itable;
@@ -142,14 +182,21 @@ db2sqlinsert( idatabase, itable, ifield, irecord, ... )
 
 	next = 4;
 
-	if( items > next ) {
+	if( items >= 5 ) {
+
+		Createsync = (CV *) ST( next );
+
+		next++;
+	}
+
+	if( items >= 6 ) {
 
 		flags |= SvIV( ST( next ) );
 
 		next++;
 	}
 
-	rc = db2sqlinsert( db, &sql, flags );
+	rc = db2sqlinsert( db, &sql, perl_createsync, flags );
 
 	if( rc < 0 ) {
 
@@ -170,6 +217,66 @@ db2sqlinsert( idatabase, itable, ifield, irecord, ... )
 		freetbl( sql, free );
 	}
 
+	}
+
+void
+db2sqldelete( idatabase, itable, ifield, irecord, sync, ... )
+	long	idatabase
+	long	itable
+	long	ifield
+	long	irecord
+	char	*sync
+	PPCODE:
+	{
+	Dbptr	db;
+	Tbl	*sqltbl = (Tbl *) NULL;
+	char	*sqlcmd = (char *) NULL;
+	int	next;
+	long	flags = 0;
+	int	rc;
+
+	db.database = idatabase;
+	db.table = itable;
+	db.field = ifield;
+	db.record = irecord;
+
+	next = 5;
+
+	if( items > 5 ) {
+
+		flags |= SvIV( ST( next ) );
+
+		next++;
+	}
+
+	rc = db2sqldelete( db, sync, &sqltbl, flags );
+
+	if( rc < 1 || sqltbl == (Tbl *) NULL || maxtbl( sqltbl ) < 1 ) {
+
+		croak( "db2sqldelete: Failed to create sql\n%s", elogmsgs() );
+	}
+
+	sqlcmd = (char *) poptbl( sqltbl );
+
+	if( sqlcmd == (char *) NULL ) {
+
+		croak( "db2sqldelete: Failed to create sql\n%s", elogmsgs() );
+	}
+
+	XPUSHs( sv_2mortal( newSVpv( sqlcmd, strlen(sqlcmd) ) ) );
+
+	free( sqlcmd );
+
+	freetbl( sqltbl, free );
+
+	}
+
+void 
+db2sql_set_syncfield_name( name )
+	char	*name
+	PPCODE:
+	{
+	db2sql_set_syncfield_name( name );
 	}
 
 void

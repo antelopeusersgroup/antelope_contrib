@@ -8,7 +8,7 @@ PM=$(ANTELOPE)/man
 
 ldlibs=-ldb2sql $(DBLIBS)
 include $(ANTELOPEMAKE)
-DIRS=
+DIRS= hints
 
 SRCS= db2sql.pm db2sql.xs
 

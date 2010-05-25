@@ -4,9 +4,11 @@ application_name waveform_explorer
 port 8008
 
 default_chans &Tbl{
-    BHZ
-    BHN
-    BHE
+#    BHZ
+#    BHN
+#    BHE
+#    ..Z.*
+    .*
 }
 
 default_time_window 200
@@ -14,44 +16,45 @@ default_time_window 200
 binning_threshold 2
 canvas_size_default 800
 
-index_html_template &datafilename(www/dbwfserver/index.html.template)
-queryparser_html_template &datafilename(www/dbwfserver/queryparser.html.template)
-waveform_html_template &datafilename(www/dbwfserver/waveform.html.template)
+html_template &datafilename(www/dbwfserver/waveform.html.template)
 
 jquery_dir &datafilename(www/dbwfserver/static/jquery)
 static_dir &datafilename(www/dbwfserver/static)
 
 jquery_files &Tbl{
-	/static/jquery/excanvas.pack.js
-	/static/jquery/jquery.flot.min.js
-	/static/jquery/jquery.flot-selection.min.js
-	/static/jquery/jquery.hotkeys-0.7.8-packed.js
+    /static/jquery/excanvas.pack.js
+    /static/jquery/jquery.flot.min.js
+    /static/jquery/jquery.flot-selection.min.js
+    /static/jquery/jquery.hotkeys-0.7.8-packed.js
+    /static/jquery/jquery.tablesorter-2.0.3.min.js
 }
 
-display_tracebacks false 
+display_tracebacks False 
 
-apply_calib	True
+apply_calib True
+
+display_arrivals True
 
 import_paths &Tbl{
 }
 
 filters &Arr{ # filter specifications
-#label		filter
-WAV				WAV 1
-WAA				WAA 1
-0.3_HP		BW 0.3 5 0.0 0
-0.5_HP		BW 0.5 5 0.0 0
-1_HP			BW 1.0 2 0.0 0
-5_HP			BW 5.0 2 0.0 0
-0.3-1_BP	BW 0.3 5 1.0 5
-0.5-2_BP	BW 0.5 5 1.0 5
-0.8-3_BP	BW 0.8 5 3.0 5
-1-5_BP		BW 1.0 5 5.0 5
-1-12_BP		BW 1.0 5 12.0 5
-3-10_BP		BW 3.0 4 10.0 4
-INT				DEMEAN ; INT
-INT-			BW 0.1 2 0.0 0 ; INT
-INT2			DEMEAN ; INT2
-DIF				DIF
-DIF2			DIF2
+#label      filter
+WAV             WAV 1
+WAA             WAA 1
+0.3_HP          BW 0.3 5 0.0 0
+0.5_HP          BW 0.5 5 0.0 0
+1_HP            BW 1.0 2 0.0 0
+5_HP            BW 5.0 2 0.0 0
+0.3-1_BP        BW 0.3 5 1.0 5
+0.5-2_BP        BW 0.5 5 1.0 5
+0.8-3_BP        BW 0.8 5 3.0 5
+1-5_BP          BW 1.0 5 5.0 5
+1-12_BP         BW 1.0 5 12.0 5
+3-10_BP         BW 3.0 4 10.0 4
+INT             DEMEAN ; INT
+INT-            BW 0.1 2 0.0 0 ; INT
+INT2            DEMEAN ; INT2
+DIF             DIF
+DIF2            DIF2
 }

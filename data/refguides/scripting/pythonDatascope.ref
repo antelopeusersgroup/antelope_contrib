@@ -7,10 +7,10 @@ from antelope.datascope import *
 </man>
 
 <subsection Opening a Database>
-<function>
+<pythonfunction>
 
 dbopen (dbname, perm = 'r')
-Dbptr(dbname = path, perm = 'r')
+Dbptr(dbname, perm = 'r')
     return database pointer to the database
 
 Dbptr()
@@ -63,7 +63,7 @@ db.dbtruncate (db, n)
     truncate table to specified number of rows
 
 dbdestroy (db)
-db.dbdestroy (db)
+db.dbdestroy ()
     delete all tables and the descriptor file for the specified database, but not external files
 
  
@@ -105,6 +105,7 @@ db.nojoin (db2, outer = False, pattern1 = None, pattern2 = None, name = None)
     return view of all rows in view db1 which don't join to db2. db2 may be a database pointer or table name
 
 dbprocess (db, commands)
+db.process (commands)
     return new view which is the result of applying the dbprocess
     commands to the input view; possible operations are: dbopen,
     dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
@@ -139,6 +140,7 @@ db.theta (db2, expression, outer = False, name = None)
     may be a database pointer or name of a table
 
 dbunjoin (db, database, rewrite = False)
+db.unjoin (database, rewrite = False)
     create new database, containing all the records referenced in the input view db
 
 
@@ -226,7 +228,7 @@ tr.databins (binsize)
 
 trsplit(tr)
 tr.split()
-    eliminate marked gaps inside the trace table @tr by splitting
+    eliminate marked gaps inside the trace table tr by splitting
     segments containing marked values
 
 trsplice(tr)

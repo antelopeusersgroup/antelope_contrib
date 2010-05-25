@@ -101,7 +101,7 @@ sn		datalogger
 
 taurus_std_aa	&Arr{
 gtype           analog_anti_alias
-response        &datafile(responses/taurus_std)
+response        &datafile(responses/taurus_std_aa)
 }
 
 trident_1000sps_fir3    &Arr{ 

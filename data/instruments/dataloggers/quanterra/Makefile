@@ -9,6 +9,12 @@ DATA= 	qx80-90.pf \
     q330_linear_below_100_ANF.pf \
     q330_linear_below_20.pf \
     q330_linear_below_40.pf \
+    q330_linear_dec10.pf \
+    q330_linear_ANF_dec10.pf \
+    q330_linear_below_100_dec10.pf \
+    q330_linear_below_100_ANF_dec10.pf \
+    q330_linear_below_20_dec10.pf \
+    q330_linear_below_40_dec10.pf \
     q330hr_linear.pf \
     q330hr_linear_ANF.pf \
     q330hr_linear_below_100.pf \

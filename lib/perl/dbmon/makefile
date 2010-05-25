@@ -8,7 +8,7 @@ PM=$(ANTELOPE)/man
 
 ldlibs=-ldbmon $(DBLIBS)
 include $(ANTELOPEMAKE)
-DIRS=
+DIRS= hints
 
 SRCS= dbmon.pm dbmon.xs
 
