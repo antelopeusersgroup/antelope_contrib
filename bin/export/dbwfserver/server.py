@@ -2,11 +2,8 @@ import sys
 import os
 import re
 
-from twisted.python import log 
 from twisted.web import server, static, rewrite
 from twisted.application import service, internet
-
-import antelope.stock as stock
 
 import dbwfserver.config as config
 import dbwfserver.resource as resource

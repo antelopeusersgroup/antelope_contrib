@@ -4,9 +4,11 @@ application_name waveform_explorer
 port 8008
 
 default_chans &Tbl{
-    BHZ
-    BHN
-    BHE
+#    BHZ
+#    BHN
+#    BHE
+#    ..Z.*
+    .*
 }
 
 default_time_window 200
@@ -27,7 +29,7 @@ jquery_files &Tbl{
     /static/jquery/jquery.tablesorter-2.0.3.min.js
 }
 
-display_tracebacks false 
+display_tracebacks False 
 
 apply_calib True
 

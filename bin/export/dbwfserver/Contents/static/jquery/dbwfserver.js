@@ -249,27 +249,28 @@ PlotSelect = {
 
         if(x.status==0){
 
-            alert('You are offline!!\n Please Check Your Network.');
+            alert('You are offline!!\n Please Check Your Network.' + '\n\n' + e);
 
         }else if(x.status==404){
 
-            alert('Requested URL not found.');
+            alert('Requested URL not found.' + '\n\n' + e);
 
         }else if(x.status==500){
 
-            alert('Internel Server Error.');
+            alert('Internel Server Error.' + '\n\n' + e);
 
         }else if(e=='parsererror'){
 
-            alert('Error.\nParsing JSON Request failed.');
+            alert('Error.\nParsing JSON Request failed.' + '\n\n' + e);
 
         }else if(e=='timeout'){
 
-            alert('Request Time out.');
+            alert('Request Time out.' + '\n\n' + e);
 
         }else {
 
-            alert('Unknow Error.\n'+x.responseText);
+            //alert('Error.\n'+ x.responseText);
+            alert('Error:'+ x + '\n\n' + e);
 
         }
 
@@ -490,10 +491,10 @@ PlotSelect = {
                     var lbltxt = $("<p>").attr("class","chantitle").text(stachan_data);
                     var lbl = $("<div>").attr("id", stachan_data+"_label").attr("class", "label").append(lbltxt);
                     var plt = $("<div>").attr("id", stachan_data+"_plot").attr("class", "plot");
-                    wrapper.append(lbl);
-                    wrapper.append(plt);
-                    chan_plots.append(wrapper);
-                    chan_plot = $("#"+stachan_data+"_plot");
+                    //wrapper.append(lbl);
+                    //wrapper.append(plt);
+                    //chan_plots.append(wrapper);
+                    //chan_plot = $("#"+stachan_data+"_plot");
 
 
                     // Show plots
@@ -504,16 +505,20 @@ PlotSelect = {
 
                         // {{{ No station defined
 
-                        var flot_data = [];
-                        opts0['yaxis']['min'] = 0;
-                        opts0['yaxis']['max'] = 1;
-                        flot_data[0] = resp['time_start'] *1000;
-                        flot_data[1] = resp['time_end']   *1000;
-                        var plot = $.plot(chan_plot, [ flot_data ], opts0);
+                        //
+                        // This station is not valid.
+                        // Avoid plotting...
+                        //
+                        //var flot_data = [];
+                        //opts0['yaxis']['min'] = 0;
+                        //opts0['yaxis']['max'] = 1;
+                        //flot_data[0] = resp['time_start'] *1000;
+                        //flot_data[1] = resp['time_end']   *1000;
+                        //var plot = $.plot(chan_plot, [ flot_data ], opts0);
 
                         // Bind and store
-                        chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        PlotSelect.chan_plot_obj[stachan_data] = plot;
+                        //chan_plot.bind("plotselected", PlotSelect.handleSelect);
+                        //PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // }}}  No station defined
 
@@ -521,22 +526,31 @@ PlotSelect = {
 
                         // {{{ No channel defined
 
-                        var flot_data = [];
-                        opts0['yaxis']['min'] = 0;
-                        opts0['yaxis']['max'] = 1;
-                        flot_data[0] = resp['time_start'] *1000;
-                        flot_data[1] = resp['time_end']   *1000;
-                        var plot = $.plot(chan_plot, [ flot_data ], opts0);
+                        //
+                        // This channel is not valid for the station. 
+                        // Avoid plotting...
+                        //
+                        //var flot_data = [];
+                        //opts0['yaxis']['min'] = 0;
+                        //opts0['yaxis']['max'] = 1;
+                        //flot_data[0] = resp['time_start'] *1000;
+                        //flot_data[1] = resp['time_end']   *1000;
+                        //var plot = $.plot(chan_plot, [ flot_data ], opts0);
 
                         // Bind and store
-                        chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        PlotSelect.chan_plot_obj[stachan_data] = plot;
+                        //chan_plot.bind("plotselected", PlotSelect.handleSelect);
+                        //PlotSelect.chan_plot_obj[stachan_data] = plot;
 
                         // }}} No channel defined
 
                     } else {
                     
                         // {{{ Plotting
+
+                        wrapper.append(lbl);
+                        wrapper.append(plt);
+                        chan_plots.append(wrapper);
+                        chan_plot = $("#"+stachan_data+"_plot");
 
                         var flot_data = [];
 
@@ -598,6 +612,7 @@ PlotSelect = {
                                         flot_data[i] =  [temp_data[0]*1000,temp_data[2],temp_data[1]];
                                     }
                                     opts0['bars'] = {show:true,barWidth:0,align:'center'};
+                                    opts0['lines'] = {show:false};
 
                                 } else {
 
@@ -606,6 +621,7 @@ PlotSelect = {
                                         flot_data[i] =  [temp_data[0]*1000,temp_data[1]];
                                     }
                                     opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
+                                    opts0['bars'] = {show:false};
 
                                 }
 

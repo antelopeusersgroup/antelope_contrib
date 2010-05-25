@@ -1,8 +1,9 @@
-from twisted.python import log 
-from twisted.internet import reactor
 import sys
 import os
 import re
+
+from twisted.python import log 
+from twisted.internet import reactor
 
 from collections import defaultdict 
 
@@ -11,6 +12,23 @@ from antelope.stock import *
 
 import dbwfserver.config as config
     
+def _error(text,dictionary=None,quiet=False):
+    """
+    Test if the 'error' is defined in the dictionary and append text.
+    Return updated dictionary.
+    """
+
+    log.msg("\n\n\tERROR:\n\t\t%s\n" % text)
+
+    if dictionary and not quiet:
+        if 'error' in dictionary:
+            dictionary['error'] = str(dictionary['error']) + '\n'+ text 
+        else:
+            dictionary['error'] = '\n' + text
+
+        return dictionary
+
+
 def _isNumber(test):
     """
     Test if the string is a valid number 
@@ -22,44 +40,77 @@ def _isNumber(test):
             try:
                 return float(test)
             except:
-                return False
+                return None
 
         else:
             try:
                 return int(test)
             except:
-                return False
+                return None
     except:
-        return False
+        return None
 
 
-def _get_nulls(db=None):
+class db_nulls():
     """
-    Go through the tables on the database and return
-    dictionary with NULL values for each field.
+    db_nulls tools.
     """
 
-    null_vals = defaultdict(dict)
+    def __init__(self):
 
-    if not db:
-        db = dbopen(config.dbname)
-        for table in db.query(dbSCHEMA_TABLES):
-            db.lookup( '',table,'','')
-            for field in db.query(dbTABLE_FIELDS):
-                db.lookup( '',table,field,'dbNULL')
-                null_vals[field] = _isNumber(db.get(''))
-                if config.debug: log.msg("Null_Val(%s):%s" % (field,null_vals[field]))
+        self.dbname = config.dbname
+        self.db = dbopen(self.dbname)
+        self._get_nulls()
+        
+    def __str__(self):
+        """
+        end-user/application display of content using print() or log.msg()
+        """
+        text = 'Null values for (%s):' % config.dbname
 
-    else:
-        for field in db.query(dbTABLE_FIELDS):
-            db.lookup( '','',field,'dbNULL')
-            null_vals[field] = _isNumber(db.get(''))
-            if config.debug: log.msg("Null_Val(%s):%s" % (field,null_vals[field]))
+        for value in self.null_vals.keys():
+            text += "\t%s: %s" % (value,self.null_vals[value])
+
+        return text
+
+    def __call__(self, element):
+        """
+        method to intercepts data requests.
+        """
+        if element in self.null_vals:
+            if config.debug:
+                log.msg("\tNULLS(%s): %s" % (element,self.null_vals[element]))
+            return self.null_vals[element]
+
+        else:
+            _error("Class db_nulls(): No value for (%s)" % element)
+            return ''
+
+    def _get_nulls(self):
+        """
+        Go through the tables on the database and return
+        dictionary with NULL values for each field.
+        """
+
+        self.null_vals = defaultdict(dict)
+
+        for table in self.db.query(dbSCHEMA_TABLES):
+            self.db.lookup( '',table,'','')
+            for field in self.db.query(dbTABLE_FIELDS):
+                self.db.lookup( '',table,field,'dbNULL')
+                self.null_vals[field] = _isNumber(self.db.get(''))
+                if config.debug: log.msg("Class Db_Nulls: set(%s):%s" % (field,self.null_vals[field]))
 
 
-    if config.verbose: log.msg("Null_Val:%s" % null_vals)
+#
+# Initiate db_nulls here to be access by Stations and Events classes simultaneously
+# This will turn 'nulls' into a global object inside eventdata.py
+# We can do this on resources.py but that will prevent direct access from Stations or Events classes
+#   and from other servers using this library. This will change in the next version of the server. 
+#
+nulls = db_nulls()
 
-    return null_vals
+
 
 class Stations():
     """
@@ -72,8 +123,6 @@ class Stations():
         self.db = dbopen(self.dbname)
         self.stachan_cache = defaultdict(dict)
         self.index = []
-        self.nulls = _get_nulls()
-        
         self._get_stachan_cache()
 
     def __iter__(self):
@@ -91,8 +140,8 @@ class Stations():
         low-level display for programmers o use during development.
         call: repr(var)
         """
-        log.msg("\tClass Stations(): Cache of stations. (%s) stations.", len(self.stachan_cache) )
-        log.msg("\t\t%s", (self.stachan_cache.keys()) )
+        log.msg("\tClass Stations(): Cache of stations. (%s) stations." %  self.stachan_cache.keys())
+
         for st in self.stachan_cache.keys():
             log.msg("\t\t%s:" % st )
             for ch in self.stachan_cache[st].keys():
@@ -114,15 +163,12 @@ class Stations():
             return self.stachan_cache[station]
 
         else:
-            log.msg("\n\tClass Stations(): No value for (%s)" % station)
+            log.msg("Class Stations(): No value for (%s)" % station)
             return False
 
     def _get_stachan_cache(self):
 
         self.stachan_cache = defaultdict(dict)
-
-        if not self.nulls:
-            self.nulls = _get_nulls()
 
         db = Dbptr(self.db)
         db.process([
@@ -137,23 +183,20 @@ class Stations():
 
             sta, chan, insname, srate, ncalib, rsptype = db.getv('sta', 'chan', 'insname', 'samprate', 'ncalib','rsptype')
 
-            if config.debug:
-                log.msg("\tStation(%s): %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
-
-            if _isNumber(ncalib) == self.nulls['ncalib']:
+            if _isNumber(ncalib) == nulls('ncalib'):
                 ncalib = '-'
 
-            if _isNumber(srate) == self.nulls['srate']:
+            if _isNumber(srate) == nulls('samprate'):
                 srate = '-'
 
-            if rsptype == self.nulls['rsptype']:
+            if rsptype == nulls('rsptype'):
                 rsptype = '-'
 
-            if insname == self.nulls['insname']:
+            if insname == nulls('insname'):
                 insname = '-'
 
             if config.debug:
-                log.msg("\tStation(%s) Fixed: %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
+                log.msg("\tStation(%s): %s %s %s %s %s" % (sta,chan,insname,srate,ncalib,rsptype))
 
             self.stachan_cache[sta][chan] = defaultdict(dict)
             self.stachan_cache[sta][chan]['insname'] = insname
@@ -162,8 +205,9 @@ class Stations():
             self.stachan_cache[sta][chan]['rsptype'] = rsptype
 
         if config.verbose:
-            log.msg("\tClass Stations(): Updating cache of stations. (%s) stations.", len(self.stachan_cache) )
-            self.__str__()
+            log.msg("\tClass Stations(): Updating cache of stations. (%s) stations." % len(self.list()) )
+
+        if config.debug: self.__str__()
 
 
         self.call = reactor.callLater(60, self._get_stachan_cache)
@@ -182,8 +226,6 @@ class Events():
         self.db = dbopen(self.dbname)
         self.event_cache = defaultdict(list)
         self.index = []
-        self.nulls = _get_nulls()
-        
         self._get_event_cache()
 
     def __iter__(self):
@@ -222,7 +264,7 @@ class Events():
         if self.event_cache[value]:
             return self.event_cache[value]
         else:
-            log.msg("\n\tClass Events(): No value (%s)" % value)
+            log.msg("Class Events(): No value (%s)" % value)
             return False
 
     def list(self):
@@ -271,9 +313,6 @@ class Events():
 
         self.event_cache = defaultdict(list)
 
-        if not self.nulls:
-            self.nulls = _get_nulls()
-
         db = Dbptr(self.db)
 
         db.lookup( table='event')
@@ -302,34 +341,35 @@ class Events():
 
             (orid,time,lat,lon,depth,auth,mb,ml,ms,nass) = db.getv('orid','time','lat','lon','depth','auth','mb','ml','ms','nass')
 
-            if auth == self.nulls['auth']:
+
+            if auth == nulls('auth'):
                 auth = '-'
 
-            if _isNumber(orid) == self.nulls['orid']:
+            if _isNumber(orid) == nulls('orid'):
                 orid = '-'
 
-            if _isNumber(time) == self.nulls['time']:
+            if _isNumber(time) == nulls('time'):
                 time = '-'
 
-            if _isNumber(lat) == self.nulls['lat']:
+            if _isNumber(lat) == nulls('lat'):
                 lat = '-'
 
-            if _isNumber(lon) == self.nulls['lon']:
+            if _isNumber(lon) == nulls('lon'):
                 lon = '-'
 
-            if _isNumber(depth) == self.nulls['depth']:
+            if _isNumber(depth) == nulls('depth'):
                 depth = '-'
 
-            if _isNumber(mb) == self.nulls['mb']:
+            if _isNumber(mb) == nulls('mb'):
                 mb = '-'
 
-            if _isNumber(ms) == self.nulls['ms']:
+            if _isNumber(ms) == nulls('ms'):
                 ms = '-'
 
-            if _isNumber(ml) == self.nulls['ml']:
+            if _isNumber(ml) == nulls('ml'):
                 ml = '-'
 
-            if _isNumber(nass) == self.nulls['nass']:
+            if _isNumber(nass) == nulls('nass'):
                 nass = '-'
 
 
@@ -354,6 +394,8 @@ class Events():
 
         if config.verbose:
             log.msg("\tClass Events(): Updating cache of events. (%s) events." % len(self.event_cache) )
+
+        if config.debug:
             self.__str__()
 
         self.call = reactor.callLater(60, self._get_event_cache)
@@ -363,6 +405,8 @@ class Events():
         Go through station channels to retrieve all
         arrival phases
         """
+
+        if config.debug: log.msg("Getting phases.")
 
         phases = defaultdict(dict)
 
@@ -388,21 +432,33 @@ class Events():
 
         if db.query(dbTABLE_PRESENT):
 
-            phase_sub = dbsubset(db,'sta=~/%s/ && time >= %s && time <= %s' % (sta_str,float(mintime),float(maxtime)) )
+            try:
+                phase_sub = dbsubset(db,'sta=~/%s/ && time >= %s && time <= %s' % (sta_str,float(mintime),float(maxtime)) )
+            except Exception,e:
+                _error("Exception on phases: %s" % e,phases)
+                return phases
 
             for p in range(phase_sub.query(dbRECORD_COUNT)):
 
                 phase_sub.record = p
 
                 if assoc_present:
-                    Sta, Chan, ArrTime, Phase = phase_sub.getv('sta','chan','time','phase')
+                    try:
+                        Sta, Chan, ArrTime, Phase = phase_sub.getv('sta','chan','time','phase')
+                    except Exception,e:
+                        _error("Exception on phases: %s" % e,phases)
+                        return phases
 
                     StaChan = Sta + '_' + Chan
 
                     phases[StaChan][ArrTime] = Phase
 
                 else:
-                    Sta, Chan, ArrTime, Phase = phase_sub.getv('sta','chan','time','iphase')
+                    try:
+                        Sta, Chan, ArrTime, Phase = phase_sub.getv('sta','chan','time','iphase')
+                    except Exception,e:
+                        _error("Exception on phases: %s" % e,phases)
+                        return phases
 
                     StaChan = Sta + '_' + Chan
 
@@ -413,7 +469,7 @@ class Events():
                     log.msg("Phases(%s):%s" % (StaChan,Phase) )
 
             if not phases:
-                log.msg("No arrivals in this time segment for the stations (%s): t1=%s t2=%s" % (sta_str,mintime,maxtime) )
+                _error("No arrivals in this time segment for the stations (%s): t1=%s t2=%s" % (sta_str,mintime,maxtime),phases)
 
             return phases
 
@@ -462,11 +518,12 @@ class EventData():
         if 'orid' in url_data:
             orid = _isNumber(url_data['orid'])
             if not orid in events.list() :
-                url_data['orid'] = events.time(orid)
                 url_data['time_start'] = orid
+                url_data['time_end'] = orid + config.default_time_window
 
-            res_data.update( {'metadata':events(orid)} )
-            res_data.update( {'orid':orid} )
+            else:
+                res_data.update( {'metadata':events(orid)} )
+                res_data.update( {'orid':orid} )
 
         else:
             if config.verbose: log.msg( 'No orid passed - ignore metadata' )
@@ -474,21 +531,23 @@ class EventData():
         """
         Setting time window of waveform.
         """
+        maxtime = -1
+        mintime = -1
+
         if 'time_start' in url_data:
             mintime = _isNumber(url_data['time_start'])
-        else:
-            mintime =  _isNumber( res_data['metadata']['time'] - config.default_time_window )
+        elif 'time' in res_data['metadata']:
+            mintime =  _isNumber( res_data['metadata']['time'])
 
         if 'time_end' in url_data:
             maxtime = _isNumber(url_data['time_end'])
-        else:
-            maxtime =  _isNumber( res_data['metadata']['time'] + config.default_time_window )
-
+        elif 'time' in res_data['metadata']:
+            maxtime =  _isNumber( res_data['metadata']['time'] + config.default_time_window)
 
         if (not maxtime or maxtime == -1) or (mintime == -1 or not mintime):
-            log.msg("Error in maxtime:%s or mintime:%s" % (maxtime,mintime))
-            res_data['error'] = ("Error in maxtime: %s or mintime:%s" % (maxtime,mintime))
+            _error("Error in maxtime:%s or mintime:%s" % (maxtime,mintime),res_data)
             return  
+
         """
         Setting the filter
         """
@@ -503,40 +562,93 @@ class EventData():
         res_data.update( {'type':'waveform'} )
         res_data.update( {'time_start':mintime} )
         res_data.update( {'time_end':maxtime} )
-        res_data.update( {'sta':url_data['sta']} )
         res_data.update( {'filter':filter} )
 
-        if 'chans' in url_data:
-            res_data.update( {'chan':url_data['chans']} )
+        # Handle wildcards on station value
+        sta_str  = "|".join(str(x) for x in url_data['sta'])
+        if sta_str.find('.') or sta_str.find('*') :
+            res_data.update( {'sta':[]} )
+            db = Dbptr(self.db)
+            db.lookup(table="sitechan")
+
+            db.subset("sta =~/%s/" % sta_str)
+            if config.debug: log.msg("Wildcard for statioin sta =~/%s/ " % sta_str)
+
+            db.process([ 'dbsort -u sta' ])
+
+
+            if db.query(dbRECORD_COUNT) == 0:
+                _error('%s not a valid station regex' % (sta_str),res_data)
+                return res_data
+
+            for i in range(db.query(dbRECORD_COUNT)):
+                db.record = i
+                res_data['sta'].append(db.getv('sta')[0])
         else:
+            res_data.update( {'sta':url_data['sta']} )
+
+
+        # Lets try to get channels from URL, or from PF file, or just everything in the DB
+        if 'chans' in url_data:
+            if config.debug: log.msg("Query for channels(from URL): %s" % url_data['chans'])
+            res_data.update( {'chan':url_data['chans']} )
+        elif config.default_chans: 
+            if config.debug: log.msg("Query for channels(from pf): %s" % config.default_chans)
             res_data.update( {'chan':config.default_chans} )
+        else:
+            temp_chan = defaultdict()
+            for sta in url_data['sta']:
+                for cha in stations(sta).keys():
+                    temp_chan[cha] = 1
+            if config.debug: log.msg("Query for channels(from db:ALL): %s" % temp_chan.keys())
+            res_data.update( {'chan':temp_chan.keys()} )
 
-        if config.verbose: log.msg( '\n\nres_data object: %s' % res_data )
+        # Handle wildcards on channel value
+        chan_str  = "|".join(str(x) for x in res_data['chan'])
+        if chan_str.find('.') or chan_str.find('*') :
+            res_data.update( {'chan':[]} )
+            temp_chan = defaultdict()
 
-        log.msg('Getting phase arrival times')
+            db = Dbptr(self.db)
+            for station in res_data['sta']:
+                db.lookup(table="sitechan")
 
+                db.subset("sta =~ /%s/ && chan =~ /%s/" % (station,chan_str))
+                if config.debug: log.msg("Wildcard for sta =~ /%s/ && chan =~/%s/ " % (station,chan_str))
+
+                db.process([ 'dbjoin sensor', 'dbjoin instrument', 'dbsort -u chan' ])
+
+                #db.process([ 'dbsort -u chan' ])
+
+                for i in range(db.query(dbRECORD_COUNT)):
+                    db.record = i
+                    temp_chan[db.getv('chan')[0]] = 1
+
+        res_data['chan'] = temp_chan.keys()
+
+        if len(res_data['chan']) == 0:
+            _error('%s not a valid channel regex' % (sta_str),res_data)
+            return res_data
+
+        # Getting phase arrival times.
         phase_arrivals = events.phases(url_data['sta'],mintime,maxtime)
         res_data.update( {'phases':phase_arrivals } )
 
 
-        for station in url_data['sta']:
+        for station in res_data['sta']:
 
-            temp_dic = stations(station)
+            temp_dic = stations(str(station))
 
             if not temp_dic:
-                log.msg('\n')
-                log.msg('ERROR: %s not a valid station!' % (station))
-                log.msg('\n')
+                _error('%s not a valid station' % (station),res_data)
                 continue
 
             for channel in res_data['chan']:
                 if config.debug: log.msg("Now: %s %s" % (station,channel))
 
 
-                if not temp_dic[channel]:
-                    log.msg('\n')
-                    log.msg('ERROR: %s %s not a valid station and channel combination!' % (station,channel))
-                    log.msg('\n')
+                if not channel in  temp_dic:
+                    _error("%s not valid channel for station %s" % (channel,station),res_data)
                     continue
 
                 if config.verbose: log.msg("Log times: %s %s" % (mintime,maxtime))
@@ -551,7 +663,7 @@ class EventData():
 
                 points = int( (maxtime-mintime)*res_data[station][channel]['metadata']['samprate'])
 
-                log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,config.canvas_size_default,config.binning_threshold))
+                if config.debug: log.msg("Total points:%s Canvas Size:%s Binning threshold:%s" % (points,config.canvas_size_default,config.binning_threshold))
 
                 if not points > 0:
                     res_data[station][channel]['data'] = ()
@@ -561,9 +673,7 @@ class EventData():
                     try:
                         res_data[station][channel]['data'] = self.db.sample(mintime,maxtime,station,channel,False, filter)
                     except Exception,e:
-                        if config.debug:
-                            res_data['error'] = ("%s" % e)
-                        log.msg("Exception on data: %s" % e)
+                        _error("Exception on data: %s" % e,res_data,True)
 
                     res_data[station][channel]['format'] = 'lines'
 
@@ -573,11 +683,12 @@ class EventData():
                     try:
                         res_data[station][channel]['data'] = self.db.samplebins(mintime, maxtime, station, channel, binsize, False, filter)
                     except Exception,e:
-                        if config.debug:
-                            res_data['error'] = ("%s" % e)
-                        log.msg("Exception on databins: %s" % e)
+                        _error("Exception on data: %s" % e,res_data,True)
 
                     res_data[station][channel]['format'] = 'bins'
+
+        if not res_data:
+            _error("No data out of db.sample or db.samplebins",res_data)
 
         return res_data
 
@@ -615,27 +726,25 @@ class EventData():
         if 'sta' in params:
             sta_str  = "|".join(str(x) for x in params['sta'])
             db.subset("sta =~/%s/" % sta_str)
-            log.msg("\n\nCoverage subset on sta =~/%s/ " % sta_str)
+            if config.debug: log.msg("\n\nCoverage subset on sta =~/%s/ " % sta_str)
 
         if 'chans' in params:
             chan_str  = "|".join(str(x) for x in params['chans'])
             db.subset("chan =~/%s/" % chan_str)
-            log.msg("\n\nCoverage subset on chan =~/%s/ " % chan_str)
+            if config.debug: log.msg("\n\nCoverage subset on chan =~/%s/ " % chan_str)
 
         if 'time_start' in params:
             res_data.update( {'time_start':params['time_start']} )
             db.subset("endtime >= %s" % params['time_start'])
-            log.msg("\n\nCoverage subset on time >= %s " % params['time_start'])
+            if config.debug: log.msg("\n\nCoverage subset on time >= %s " % params['time_start'])
 
         if 'time_end' in params:
             res_data.update( {'time_end':params['time_end']} )
             db.subset("time <= %s" % params['time_end'])
-            log.msg("\n\nCoverage subset on time_end <= %s " % params['time_end'])
+            if config.debug: log.msg("\n\nCoverage subset on time_end <= %s " % params['time_end'])
 
         if not db.query(dbRECORD_COUNT):
-            log.msg("\tRecords on DB:\t%s" % db.query(dbRECORD_COUNT))
-            log.msg('No records on subset for %s' % params)
-            res_data['error'] = 'No records for %s' %  params
+            _error('No records for: %s' %  params, res_data)
             return res_data
 
         db.sort(['sta','chan'])
@@ -649,7 +758,10 @@ class EventData():
 
             db.record = i
 
-            (this_sta,this_chan,time,endtime) = db.getv('sta','chan','time','endtime')
+            try:
+                (this_sta,this_chan,time,endtime) = db.getv('sta','chan','time','endtime')
+            except Exception,e:
+                _error("Exception on data: %s" % e,res_data)
 
             if not this_sta in res_data['sta']:
                 res_data['sta'].append(this_sta)

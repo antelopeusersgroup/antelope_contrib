@@ -47,7 +47,6 @@ def isNumber(test):
 #}}}
 
 class QueryParser(resource.Resource):
-
     """
     Serve Datascope query requests.
     """
@@ -300,9 +299,11 @@ class QueryParser(resource.Resource):
 
                     return json.dumps(config.filters, sort_keys=True)
 
-                request.setHeader("response-code", 500)
-                log.msg("ERROR in query. Unknown type:%s" % args)
-                return "Unknown query type:(%s)" % args
+                else:
+                    request.setHeader("content-type", "text/html")
+                    request.setHeader("response-code", 500)
+                    dbwfserver.eventdata._error("Unknown type of query: %s" % args)
+                    tvals['error'] =  json.dumps( "Unknown query type:(%s)" % args )
 
                 #}}}
 
@@ -445,11 +446,11 @@ class QueryParser(resource.Resource):
 #}}}
 
             elif args[0] != '':
-                log.msg("ERROR in query. Unknown type:%s" % args)
+                request.setHeader("response-code", 500)
+                dbwfserver.eventdata._error("Unknown type of query: %s" % args)
                 tvals['error'] =  json.dumps( "Unknown query type:(%s)" % args )
 
         html_stations = Template(open(template).read()).substitute(tvals)
 
         request.write( html_stations )
-
-        return ""
+        request.finish()
