@@ -1,6 +1,6 @@
 antelope &env(ANTELOPE)
 
-dest &antelope/include
+dest &antelope/local/include
 
 output_file antelopemake.local
 

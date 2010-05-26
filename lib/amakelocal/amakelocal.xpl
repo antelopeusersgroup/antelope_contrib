@@ -113,6 +113,8 @@ if( $runmode eq "construct" ) {
 			elog_notify( "Installing '$output_file' in $dest" );
 		} 
 
+		makedir( $dest );
+
 		system( "deposit $output_file $dest" );
 
 		unless( cwd() eq "$dest" ) {
