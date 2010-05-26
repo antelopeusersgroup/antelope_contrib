@@ -18,7 +18,9 @@ ldflags=
 ldlibs= $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKE).local
+include $(ANTELOPE)/local/include/antelopemake.local
+
+SUBDIR= /local
 
 ORBOBJS= _Pkt.o
 

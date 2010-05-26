@@ -1,0 +1,7 @@
+#!/opt/antelope/$id/local/bin/python
+
+import sys
+import os
+
+sys.path.append( os.environ['ANTELOPE'] + '/local/data/python' )
+

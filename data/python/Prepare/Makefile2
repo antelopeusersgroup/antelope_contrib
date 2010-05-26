@@ -1,0 +1,35 @@
+include $(ANTELOPEMAKE)
+
+SUBDIR= /local
+
+install :: $(DEST)/man 
+
+uninstall :: remove_old_interface
+
+$(DEST)/man:
+	@mkdir $(DEST)/man
+
+remove_old_interface:
+	@-$(RM) $(ANTELOPE)/data/python/antelope/_stock.so
+	@-$(RM) $(ANTELOPE)/data/python/antelope/_datascope.so
+	@-$(RM) $(ANTELOPE)/data/python/antelope/_orb.so
+	@-$(RM) $(ANTELOPE)/data/python/antelope/_Pkt.so
+	@-$(RM) $(ANTELOPE)/data/python/antelope/__init__.py
+	@-$(RM) $(ANTELOPE)/data/python/antelope/stock.py
+	@-$(RM) $(ANTELOPE)/data/python/antelope/datascope.py
+	@-$(RM) $(ANTELOPE)/data/python/antelope/orb.py
+	@-$(RM) $(ANTELOPE)/data/python/antelope/Pkt.py
+	@-$(RM) $(ANTELOPE)/data/python/antelope/__init__.pyc
+	@-$(RM) $(ANTELOPE)/data/python/antelope/stock.pyc
+	@-$(RM) $(ANTELOPE)/data/python/antelope/datascope.pyc
+	@-$(RM) $(ANTELOPE)/data/python/antelope/orb.pyc
+	@-$(RM) $(ANTELOPE)/data/python/antelope/Pkt.pyc
+	@-if [ -d $(ANTELOPE)/data/python/antelope ] ; then \
+		( rmdir $(ANTELOPE)/data/python/antelope ) \
+	fi
+	@-$(RM) $(ANTELOPE)/lib/python__*
+	@-$(RM) man/man3/pythonPkt.3p
+	@-$(RM) man/man3/pythondb.3p
+	@-$(RM) man/man3/pythonorb.3p
+	@-$(RM) man/man3/pythonstock.3p
+

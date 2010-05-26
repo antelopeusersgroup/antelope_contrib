@@ -1,0 +1,11 @@
+
+DATADIR= templates
+DATA= xpy
+
+CLEAN= xpy
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPE)/local/include/antelopemake.local
+
+xpy: xpy.id
+	getid < xpy.id > xpy

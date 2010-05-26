@@ -18,7 +18,9 @@ ldflags=
 ldlibs= -ldbxml $(TRLIBS)
 
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKE).local
+include $(ANTELOPE)/local/include/antelopemake.local
+
+SUBDIR= /local
 
 DSOBJS= _datascope.o
 

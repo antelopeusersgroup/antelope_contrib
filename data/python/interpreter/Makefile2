@@ -1,0 +1,11 @@
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPE)/local/include/antelopemake.local
+
+SUBDIR= /local
+
+install :: install_python_link
+
+install_python_link: $(PYTHON_EXECUTABLE)
+	$(RM) $(DEST)/bin/python
+	@ln -s $(PYTHON_EXECUTABLE) $(DEST)/bin/python

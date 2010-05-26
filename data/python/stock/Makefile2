@@ -16,7 +16,9 @@ ldflags=
 ldlibs= -lpfxml $(TRLIBS)
 
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKE).local
+include $(ANTELOPE)/local/include/antelopemake.local
+
+SUBDIR= /local
 
 STOCKOBJS= _stock.o
 

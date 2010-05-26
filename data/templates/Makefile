@@ -1,4 +1,4 @@
-DATA = wphp xphp xpy
+DATA = wphp xphp 
 DATADIR = templates
 
 CLEAN= wphp
