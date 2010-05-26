@@ -9,26 +9,63 @@ elements &Arr{
 		Darwin 	
 		SunOS -L/usr/openwin/lib
 		Linux 	-L/usr/X11R6/lib
+		Description Location of X-Motif link libraries
 	}
 	XMOTIFINCLUDE &Arr{
 		Darwin 	
 		SunOS -I/usr/openwin/include
 		Linux 	-I/usr/X11R6/include
+		Description Location of X-Motif header files
 	}
 	PYTHONINCLUDE &Arr{
 		Darwin 	
 		SunOS
 		Linux 
+		Description Location of Python header files
+		Detail &Literal{
+		     The PYTHONINCLUDE macro specifies the location of 
+		     the include files (header files) for the Python 
+		     interpreter to be used with Antelope (and against which 
+		     the Python interface to Antelope will compile locally). 
+		     The directory specified by this macro should contain, 
+		     among other things, the file Python.h. For the Antelope 
+		     Python toolbox to work correctly, the include files 
+		     specified by the PYTHONINCLUDE macro must be consistent 
+		     with the Python executable specified by the 
+		     PYTHON_EXECUTABLE macro. An example value for the 
+		     PYTHONINCLUDE macro might be '/usr/include/python2.6'
+		     on a Maciontosh computer, or perhaps '/sw/include/python2.6' 
+		     if the Fink python interpreter is being used. 
+		}
+	}
+	PYTHON_EXECUTABLE &Arr{
+		Darwin 	
+		SunOS
+		Linux 
+		Description Absolute pathname of Python interpreter
+		Detail &Literal{
+		     The PYTHON_EXECUTABLE macro specifies the absolute 
+		     pathname of the Python interpreter to be used for
+		     the Antelope python interface. The PYTHONINCLUDE
+		     and PYTHON_EXECUTABLE macros must be set consistent 
+		     with each other, i.e. referring to python header files 
+		     and python executable that belong together. An example 
+		     value for the PYTHON_EXECUTABLE macro might be '/usr/bin/python'
+		     on a Macintosh computer, or perhaps '/sw/bin/python' if the 
+		     Fink python interpreter is being used. 
+		}
 	}
 	PHP_INC &Arr{
 		Darwin 	
 		SunOS
 		Linux 
+		Description Location of PHP header files
 	}
 	MATLAB &Arr{
 		Darwin 
 		SunOS
 		Linux
+		Description Top-level directory of Matlab installation
 	}
 }
 
@@ -41,4 +78,3 @@ header &Literal{
 # your location and re-run amakelocal(1) to regenerate antelopemake.local 
 # if necessary. See the amakelocal(1)  man page for further details. 
 }
-
