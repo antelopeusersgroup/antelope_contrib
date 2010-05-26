@@ -7,5 +7,7 @@ CLEAN= xpy
 include $(ANTELOPEMAKE)
 include $(ANTELOPE)/local/include/antelopemake.local
 
+SUBDIR= /local
+
 xpy: xpy.id
 	getid < xpy.id > xpy
