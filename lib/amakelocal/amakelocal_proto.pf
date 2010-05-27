@@ -4,7 +4,32 @@ dest &antelope/local/include
 
 output_file antelopemake.local
 
-elements &Arr{
+capabilities &Arr{
+	python &Arr{
+		enable no
+		require_macros &Tbl{
+			PYTHONINCLUDE
+			PYTHON_EXECUTABLE
+		}
+		Description Antelope Python Interface and Python-based Antelope tools
+	}
+	php &Arr{
+		enable no
+		require_macros &Tbl{
+			PHP_INC
+		}
+		Description Antelope PHP Interface and PHP-based Antelope tools
+	}
+	matlab &Arr{
+		enable no
+		require_macros &Tbl{
+			MATLAB
+		}
+		Description Antelope Matlab Interface and Matlab-based Antelope tools
+	}
+}
+
+macros &Arr{
 	XMOTIFLIB &Arr{
 		Darwin 	
 		SunOS -L/usr/openwin/lib
@@ -35,7 +60,7 @@ elements &Arr{
 		     PYTHON_EXECUTABLE macro. An example value for the 
 		     PYTHONINCLUDE macro might be '/usr/include/python2.6'
 		     on a Maciontosh computer, or perhaps '/sw/include/python2.6' 
-		     if the Fink python interpreter is being used. 
+		     if the 'Fink' python interpreter is being used. 
 		}
 	}
 	PYTHON_EXECUTABLE &Arr{
@@ -52,7 +77,7 @@ elements &Arr{
 		     and python executable that belong together. An example 
 		     value for the PYTHON_EXECUTABLE macro might be '/usr/bin/python'
 		     on a Macintosh computer, or perhaps '/sw/bin/python' if the 
-		     Fink python interpreter is being used. 
+		     'Fink' python interpreter is being used. 
 		}
 	}
 	PHP_INC &Arr{

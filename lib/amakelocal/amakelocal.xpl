@@ -4,6 +4,15 @@ use Cwd;
 
 require "getopts.pl";
 
+sub inform {
+	my( $msg ) = @_;
+
+	if( $opt_v ) {
+
+		elog_notify( $msg );
+	}
+}
+
 $Pf = "amakelocal";
 $Pf_proto = "amakelocal_proto";
 
@@ -12,207 +21,92 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'icp:s:v' ) ) {
+if( ! Getopts( 'lv' ) ) {
 
-	elog_die( "Usage: amakelocal [-i] [-v] [-c] [-p pfname] [MACRO [MACRO ...]]\n" );
+	elog_die( "Usage: amakelocal [-lv] [capability [, capability...]]\n" );
 }
 
-if( @ARGV >= 1 || $opt_c ) {
+$localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
 
-	$runmode = "verify";
+if( ! -e "$localpf_dir/$Pf.pf" ) {
 
-} else {
+	makedir( $localpf_dir );
 
-	$runmode = "construct";
+	system( "cd $localpf_dir; pfcp $Pf_proto $Pf" );
+
+	inform( "Copied '$Pf_proto' to '$localpf_dir/$Pf' since the latter didn't exist\n" );
 }
 
-if( $opt_p ) {
+#SCAFFOLD warn if proto Pf is newer
+#SCAFFOLD fill in antelopemake.local
 
-	$Pf_proto = $Pf = $opt_p;
+%capabilities = %{pfget( $Pf, "capabilities" )};
 
-	if( ! pffiles( $Pf ) ) {
+format STDOUT = 
+   @<<<<<<<<<<<<<<< @<<<<<<<<<<<< @*
+   $enabled_string, $c, $capabilities{$c}{Description}
+.
 
-		elog_die( "Couldn't find specified '$Pf.pf'. Bye.\n" );
-	}
-}
+if( $opt_l ) {
 
-if( pffiles( $Pf ) ) {
+	print "\nCapabilities are:\n\n";
 
-	if( $opt_v && $runmode eq "construct" ) {
+	foreach $c ( keys( %capabilities ) ) {
+
+		$enabled = pfget_boolean( $Pf, "capabilities{$c}{enable}" );
 		
-		elog_notify( "Using parameter-file '$Pf.pf'\n" );
+		$enabled_string = $enabled ? "[ enabled]" : "[disabled]";
+
+		write;
 	}
 
-} else {
-
-	if( $opt_v && $runmode eq "construct" ) {
-		
-		elog_notify( "Couldn't find '$Pf.pf'; Using parameter-file '$Pf_proto.pf'\n" );
-	}
-
-	$Pf = $Pf_proto;
-}
-
-if( $opt_s ) {
-
-	$Os = $opt_s;
-
-} else {
-
-	$Os = my_os();
-}
-
-$output_file = pfget( $Pf, "output_file" );
-$dest = pfget( $Pf, "dest" );
-
-if( $runmode eq "construct" ) {
-
-	%elements = %{pfget($Pf,"elements")}; 
-	$header = pfget( $Pf, "header" );
-
-	open( O, ">$output_file" );
-
-	print O "$header\n\n";
-
-	foreach $element ( keys( %elements ) ) {
-		
-		if( ! defined( $elements{$element} ) ) {
-
-			next;
-
-		} else {
-			
-			$contents = $elements{$element};
-		}
-
-		if( ref( $contents ) eq "HASH" ) {
-		
-			if( defined( $contents->{$Os} ) && 
-			    $contents->{$Os} ne "" ) {
-
-				print O "$element = $contents->{$Os}\n";
-			}
-
-		} else {
-
-			print O "$element = $contents\n";
-		}
-	}
-
-	close( O );
-
-	if( $opt_v ) {
-		
-		elog_notify( "Generated '$output_file' from parameter-file '$Pf'\n" );
-	}
-
-	if( $opt_i ) {
-
-		if( $opt_v ) {
-
-			elog_notify( "Installing '$output_file' in $dest" );
-		} 
-
-		makedir( $dest );
-
-		system( "deposit $output_file $dest" );
-
-		unless( cwd() eq "$dest" ) {
-
-			unlink( $output_file );
-		}
-	}
+	print "\n";
 
 	exit( 0 );
 }
 
-if( $runmode eq "verify" ) {
+if( @ARGV >= 1 ) {
 
-	if( ! -e "$dest/$output_file" ) {
+	$runmode = "verify";
 
-		$exitcode = 1;
+	$compile_ok = 1;
 
-		if( $opt_c ) { 
+	while( $r = shift( @ARGV ) ) {
 
-			elog_complain( 
-		   	"\n\n\t***********\n\n" .
-		   	"\tRequired macro(s) '" . join( ",", @ARGV ) . "' not found because " .
-		   	"\n\tlocal configuration file\n\t'$dest/$output_file'" .
-		   	"\n\tdoes not exist.\n" .
-		   	"\n\tUse amakelocal(1) to configure your local system" .
-		   	"\n\tso Antelope-contrib code will link properly to software" .
-		   	"\n\texternal to Antelope.\n" .
-		   	"\n\t***********\n\n" );
+		push( @requested, $r );
+	}
+
+	foreach $r ( @requested ) {
+
+		if( ! defined( $capabilities{$r} ) ) {
+
+			elog_complain( "Requested capability '$r' not defined in '$Pf'. " .
+					"Preventing compilation.\n" );
+
+			$compile_ok = 0;
+
+		} elsif( ! pfget_boolean( $Pf, "capabilities{$r}{enable}" ) ) {
+
+			elog_complain( "Requested capability '$r' marked as disabled in '$Pf'. " .
+				"Preventing compilation. Run amakelocal(1) to configure '$r' " .
+				"for compilation if desired.\n" );
+
+			$compile_ok = 0;
+		}
+
+		if( $compile_ok ) {
+
+			exit( 0 );
 
 		} else {
 
-			elog_complain( 
-		   	"\n\n\t***********\n\n" .
-		   	"\tRequired macro(s) '" . join( ",", @ARGV ) . "' not found because " .
-		   	"\n\tlocal configuration file\n\t'$dest/$output_file'" .
-		   	"\n\tdoes not exist.\n\n\tCancelling " .
-		   	"compilation in current subdirectory\n\t'" . cwd() . "'\n" .
-		   	"\n\tUse amakelocal(1) to configure your local system" .
-		   	"\n\tso code in this directory will link properly to software" .
-		   	"\n\texternal to Antelope.\n" .
-		   	"\n\t***********\n\n" );
-		}
-
-		exit( $exitcode );
-	}
-
-	open( A, "$dest/$output_file" );
-
-	@antelopemake_local = <A>;
-
-	close( A );
-
-	$exitcode = 0;
-
-	if( $opt_c && @ARGV <= 0 ) {
-
-		grep( s/\#.*//, @antelopemake_local );
-		grep( /^\s*$/ || print, @antelopemake_local );
-
-		exit( $exitcode );
-	}
-
-	foreach $macro ( @ARGV ) {
-	
-		$result = grep( m/^$macro\s*=\s*(.*)/ && ($match = $1), @antelopemake_local );
-
-		if( ! $result ) {
-
-			$exitcode = 1;
-
-			if( $opt_c ) { 
-
-				elog_complain( "Macro '$macro' is undefined\n" );
-
-			} else {
-
-				elog_complain( 
-			   	"\n\n\t***********\n\n" .
-			   	"\tRequired macro '$macro' is undefined.\n\n\tCancelling " .
-			   	"compilation in current subdirectory\n\t'" . cwd() . "'\n" .
-			   	"\n\tUse amakelocal(1) to configure your local system" .
-			   	"\n\tso code in this directory will link properly to software" .
-			   	"\n\texternal to Antelope.\n" .
-			   	"\n\t***********\n\n" );
-			}
-
-		} else {
-			
-			if( $opt_c ) {
-				
-				elog_notify( "$macro = $match\n" );
-
-			} elsif( $opt_v ) {
-
-				elog_complain( "Found required macro '$macro = $match'\n" );
-			}
+			exit( -1 );
 		}
 	}
 
-	exit( $exitcode );
+} else {
+
+	$runmode = "configure";
 }
+
+exit( 0 );
