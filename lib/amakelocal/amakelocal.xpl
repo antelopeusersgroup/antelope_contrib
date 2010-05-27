@@ -39,6 +39,7 @@ if( ! -e "$localpf_dir/$Pf.pf" ) {
 
 #SCAFFOLD warn if proto Pf is newer
 #SCAFFOLD fill in antelopemake.local
+#SCAFFOLD warn if non-approved amakelocal.pf parameter-files are on PFPATH
 
 %capabilities = %{pfget( $Pf, "capabilities" )};
 
