@@ -5,6 +5,41 @@ amakelocal \- Manage connections between Antelope-contrib code and software exte
 .nf
 .fi
 .SH DESCRIPTION
+Most source-code in the Antelope contributed-code repository compiles without any dependencies 
+on software outside of the self-contained Antelope directory hierarchy. Such code is thus able to 
+use the standard Antelope make-rules and build mechanisms documented in antelopemake(5) and 
+antelopemakefile(5). Occasionally, however, tools in the Antelope contributed-code repository have been
+written to link against and use tools that are not part of the self-contained Antelope distribution. 
+The \fBamakelocal\fP program represents an attempt to standardize how such external dependencies are 
+configured and built within the Antelope contributed-code distribution.
+
+The \fBamakelocal\fP program runs in two quite distinct modes, serving two separate purposes. 
+The first, \fIconfigure\fP, mode allows the user to specify how dependencies external to the 
+Antelope distribution are set up on their system. The second, \fIverify\fP, mode is invoked internal
+to the compilation process and entirely automatically to allow the configured choices to take effect.
+
+The local configuration of external components, as well as the behaviour of the \fBamakelocal\fP program
+itself, are controlled by a parameter file on the local system which is kept in 
+.nf
+
+      $ANTELOPE/local/data/pf/amakelocal.pf
+
+.fi
+If this does not exist, \fBamakelocal\fP when it first runs makes an initial version of the file,
+with all external dependencies disabled, by copying the file 
+.nf
+
+	$ANTELOPE/data/pf/amakelocal_proto.pf
+
+.fi
+Once configured, \fBamakelocal\fP creates a set of local make-rules to handle all configured 
+dependencies. By default, these local make-rules are stored in 
+.nf
+
+        $ANTELOPE/local/include/antelopemake.local
+
+.fi
+
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -21,10 +56,12 @@ amakelocal \- Manage connections between Antelope-contrib code and software exte
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-localmake(1), antelopemake(5)
+localmake(1), antelopemake(5), antelopemakefile(5)
 .fi
 .SH "BUGS AND CAVEATS"
-The name of this program has proven to be somewhat confusing. 
+The name of this program has proven to be somewhat confusing. Initial versions of the mechanism 
+also proved to be quite confusing. Hopefully the current rewrite comes closer to creating a smooth 
+administrator experience (feedback welcome).  
 .SH AUTHOR
 .nf
 Kent Lindquist

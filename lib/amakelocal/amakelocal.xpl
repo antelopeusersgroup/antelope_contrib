@@ -11,10 +11,82 @@ sub inform {
 
 		elog_notify( $msg );
 	}
+
+	return;
+}
+
+sub write_amakelocal {
+
+	$Os = my_os();
+
+	$output_file = pfget( $Pf, "output_file" );
+	$dest = pfget( $Pf, "dest" );
+
+	$dest_output_file = "$dest/$output_file";
+	$temp_output_file = "/tmp/$output_file_$$\_$>";
+
+	if( -M "$dest_output_file" <= "$Pf_file" ) {
+
+		return;
+
+	} else {
+
+		inform( "Rebuilding '$dest_output_file' since it is older than '$Pf_file'\n" );
+	}
+
+	%macros = %{pfget($Pf,"macros")}; 
+	$header = pfget( $Pf, "header" );
+
+	open( O, ">$temp_output_file" );
+
+	print O "$header\n\n";
+
+	foreach $macro ( keys( %macros ) ) {
+		
+		if( ! defined( $macros{$macro} ) ) {
+
+			next;
+
+		} else {
+			
+			$contents = $macros{$macro};
+		}
+
+		if( ref( $contents ) eq "HASH" ) {
+		
+			if( defined( $contents->{$Os} ) && 
+			    $contents->{$Os} ne "" ) {
+
+				print O "$macro = $contents->{$Os}\n";
+
+				$$macro = "$contents->{$Os}";
+			}
+
+		} else {
+
+			print O "$macro = $contents\n";
+		}
+	}
+
+	close( O );
+
+	makedir( $dest );
+
+	system( "/bin/cp $temp_output_file $dest_output_file" );
+
+	inform( "Generated '$dest_output_file' from parameter-file '$Pf'\n" );
+
+	unlink( $temp_output_file );
+
+	return;
 }
 
 $Pf = "amakelocal";
 $Pf_proto = "amakelocal_proto";
+
+$localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
+$Pf_file = "$localpf_dir/$Pf.pf";
+$Pf_proto_file = "$ENV{'ANTELOPE'}/data/pf/$Pf_proto.pf";
 
 $Program = $0;
 $Program =~ s@.*/@@;
@@ -26,7 +98,41 @@ if( ! Getopts( 'lv' ) ) {
 	elog_die( "Usage: amakelocal [-lv] [capability [, capability...]]\n" );
 }
 
-$localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
+@pfproto_files = pffiles( $Pf_proto );
+@pf_files = pffiles( $Pf );
+
+$pffiles_ok = 1;
+
+while( $f = shift( @pfproto_files ) ) {
+
+	$f = abspath( $f );
+
+	if( $f ne $Pf_proto_file ) {
+		
+		elog_complain( "Please move or remove the file '$f'\n" );
+
+		$pffiles_ok = 0;
+	}
+}
+
+while( $f = shift( @pf_files ) ) {
+
+	$f = abspath( $f );
+
+	if( $f ne $Pf_file ) {
+		
+		elog_complain( "Please move or remove the file '$f'\n" );
+
+		$pffiles_ok = 0;
+	}
+}
+
+if( ! $pffiles_ok ) {
+
+	elog_die( "$Program relies on\n\t'$ENV{'ANTELOPE'}/data/pf/$Pf_proto.pf' and\n\t" .
+		  "'$ENV{'ANTELOPE'}/local/data/pf/$Pf.pf'\n" .
+		  "exclusively. Other versions along PFPATH need to be removed. Exiting.\n" );
+}
 
 if( ! -e "$localpf_dir/$Pf.pf" ) {
 
@@ -34,12 +140,18 @@ if( ! -e "$localpf_dir/$Pf.pf" ) {
 
 	system( "cd $localpf_dir; pfcp $Pf_proto $Pf" );
 
-	inform( "Copied '$Pf_proto' to '$localpf_dir/$Pf' since the latter didn't exist\n" );
+	inform( "Copied '$Pf_proto.pf' to '$localpf_dir/$Pf.pf' since the latter didn't exist\n" );
 }
 
-#SCAFFOLD warn if proto Pf is newer
-#SCAFFOLD fill in antelopemake.local
-#SCAFFOLD warn if non-approved amakelocal.pf parameter-files are on PFPATH
+if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
+	
+	system( "pfdiff $Pf_proto_file $Pf_file" );
+
+	elog_die( "The pf_revision_time in '$Pf_file' predates that in '$Pf_proto_file'. Please check " .
+		  "the former for added features and update it before proceeding. Exiting.\n" );
+}
+
+write_amakelocal();
 
 %capabilities = %{pfget( $Pf, "capabilities" )};
 
@@ -70,12 +182,12 @@ if( @ARGV >= 1 ) {
 
 	$runmode = "verify";
 
-	$compile_ok = 1;
-
 	while( $r = shift( @ARGV ) ) {
 
 		push( @requested, $r );
 	}
+
+	$enable_ok = 1;
 
 	foreach $r ( @requested ) {
 
@@ -84,25 +196,60 @@ if( @ARGV >= 1 ) {
 			elog_complain( "Requested capability '$r' not defined in '$Pf'. " .
 					"Preventing compilation.\n" );
 
-			$compile_ok = 0;
+			$enable_ok = 0;
 
 		} elsif( ! pfget_boolean( $Pf, "capabilities{$r}{enable}" ) ) {
 
-			elog_complain( "Requested capability '$r' marked as disabled in '$Pf'. " .
-				"Preventing compilation. Run amakelocal(1) to configure '$r' " .
-				"for compilation if desired.\n" );
+			elog_complain( "Requested capability '$r' marked as disabled in '$Pf'.\n" .
+				"Run amakelocal(1) to enable and configure '$r' if desired.\n" );
 
-			$compile_ok = 0;
+			$enable_ok = 0;
+		}
+	}
+
+	if( ! $enable_ok ) {
+
+		exit( -1 );
+	}
+
+	foreach $r ( @requested ) {
+
+		@required_macros = @{pfget( $Pf, "capabilities{$r}{required_macros}" )};
+		@tests = @{pfget( $Pf, "capabilities{$r}{tests}" )};
+
+		$test_ok = 1;
+
+		while( $required_macro = shift( @required_macros ) ) {
+
+			if( ! defined( $$required_macro ) || $$required_macro eq "" ) {
+				
+				elog_complain( "Macro '$required_macro', required for '$r' capability, " .
+						"is not defined. Run amakelocal(1) to configure.\n" );
+				
+				$test_ok = 0;
+			}
 		}
 
-		if( $compile_ok ) {
-
-			exit( 0 );
-
-		} else {
+		if( ! $test_ok ) {
 
 			exit( -1 );
 		}
+
+		while( $test = shift( @tests ) ) {
+			
+			if( ! eval( $test ) ) {
+
+				elog_complain( "Test failed for capability '$r': $failure_msg\n" );
+
+				$test_ok = 0;
+			}
+		}
+
+		if( ! $test_ok ) {
+
+			exit( -1 );
+		}
+
 	}
 
 } else {
