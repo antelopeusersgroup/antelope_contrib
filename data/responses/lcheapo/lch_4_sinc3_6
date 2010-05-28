@@ -1,0 +1,29 @@
+# LCheapo 2000 4x4 Long Period Datalogger SINC3 filter 
+# Single stage, fixed decimated by 3. Linear phase. 
+#
+# Divide Coeffiients provided by Cirrus Logic by 729
+# to get the normalize coefficients with peak mag = 1.00
+#
+# type          2 
+# npoles        0 
+# input sample rate:  512000
+# decimal factor    3
+# normalization factor  1.0 
+# gain factor       1 
+theoretical  1  anti_alias   fir    OBS-SIO-UCSD/CIRRUS_LOGIC
+1000 3 
+13 
+     1.371742112482853e-03  0.0
+     8.230452674897120e-03  0.0
+     2.880658436213992e-02  0.0
+     6.858710562414266e-02  0.0
+     1.234567901234568e-01  0.0
+     1.728395061728395e-01  0.0
+     1.934156378600823e-01  0.0
+     1.728395061728395e-01  0.0
+     1.234567901234568e-01  0.0
+     6.858710562414266e-02  0.0
+     2.880658436213992e-02  0.0
+     8.230452674897120e-03  0.0
+     1.371742112482853e-03  0.0
+0

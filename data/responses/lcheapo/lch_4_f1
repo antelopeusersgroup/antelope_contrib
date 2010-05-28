@@ -10,7 +10,6 @@
 # decimal factor    4 
 # normalization factor  1.0 
 # gain factor       1 
-# normalization factor: 56019356.0000000
 #
 theoretical  1  anti_alias   fir    OBS-SIO-UCSD/CIRRUS_LOGIC
 1000 4
