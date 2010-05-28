@@ -1,5 +1,5 @@
 originator     Juan Reyes, UCSD
-last_modified  2010-04-06
+last_modified  2010-05-28
 
 category    LCheapo
 configuration   LCheapo 2000 Long Period 4x4
@@ -15,24 +15,24 @@ streams 4000sps 2000sps 1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 2
 
 # Problems wiht samprate 333...
 # 512000/1536 = 333.3333333 and not 333
-#333sps    333  a/d_192   lch_4_f1 lch_4_f2
+#333sps    333  a/d_192   f1 f2
 
 # definitions of streams
-4000sps  4000  a/d_16    lch_4_f1 lch_4_f2
-2000sps  2000  a/d_32    lch_4_f1 lch_4_f2
-1000sps  1000  a/d_64    lch_4_f1 lch_4_f2
-500sps    500  a/d_128   lch_4_f1 lch_4_f2
-250sps    250  a/d_256   lch_4_f1 lch_4_f2
-200sps    200  a/d_320   lch_4_f1 lch_4_f2
-125sps    125  a/d_512   lch_4_f1 lch_4_f2
-100sps    100  a/d_640   lch_4_f1 lch_4_f2
-50sps      50  a/d_1280  lch_4_f1 lch_4_f2
-40sps      40  a/d_1600  lch_4_f1 lch_4_f2
-25sps      25  a/d_2560  lch_4_f1 lch_4_f2
-20sps      20  a/d_3200  lch_4_f1 lch_4_f2
-10sps      10  a/d_6400  lch_4_f1 lch_4_f2
-5sps        5  a/d_12800 lch_4_f1 lch_4_f2
-1sps        1  a/d_64000 lch_4_f1 lch_4_f2
+4000sps  4000  a/d sinc1 sinc2_4 f1 f2
+2000sps  2000  a/d sinc1 sinc2_3 sinc2_4 f1 f2
+1000sps  1000  a/d sinc1 sinc2 sinc2_3 sinc2_4 f1 f2
+500sps    500  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 f1 f2
+250sps    250  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3_5 f1 f2
+200sps    200  a/d sinc1 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
+125sps    125  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3_4 sinc3_5 f1 f2
+100sps    100  a/d sinc1 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
+50sps      50  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
+40sps      40  a/d sinc1 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
+25sps      25  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
+20sps      20  a/d sinc1 sinc2_3 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
+10sps      10  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
+5sps        5  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
+1sps        1  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
 
 possible_streams &Literal{
     my @chosen = @_ ; 
@@ -81,169 +81,75 @@ possible_streams &Literal{
 # Voltage range: +/- 2.5 V, max counts over this range of
 # -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
 # 0.000000298 V/count => 3355443 counts/V
-#
 
 gains 3355443
 
 
 # Stages
 
-# Note:
-# There is only one real a/d at 512 kHz. 
-# We are defining all combinations of the a/d and SINC filters as different a/d's.
-# SINC filters:
-#   SINC1 - single stage, fixed decimated by 8
-#   SINC2 - multi-stage, variable decimation
-#       stage 1: decimated by 2
-#       stage 2: decimated by 2
-#       stage 3: decimated by 2
-#       stage 4: decimated by 2
-#   SINC3 - multi-stage, variable decimation
-#       stage 1: decimated by 5
-#       stage 2: decimated by 5
-#       stage 3: decimated by 5
-#       stage 4: decimated by 2
-#       stage 5: decimated by 2
-#       stage 6: decimated by 3
-
-
-a/d_16  &Arr{
-    samprate    32000
+a/d&Arr{
+    samprate    512000
     gtype       digitizer
     iunits      V
     ounits      counts
     sn          datalogger
 }
 
-a/d_32  &Arr{
-    samprate    16000
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc1    &Arr{
+    gtype       FIR_decimator
+    decifac     8
+    response    &datafile(responses/lch_4_sinc1)
 }
 
-a/d_64  &Arr{
-    samprate    8000
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc2      &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2)
 }
 
-a/d_128 &Arr{
-    samprate   4000    
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc2_3    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_3)
 }
 
-# Problems wiht this samprate...
-# 512000/1536 = 333.3333333 and not 333
-#a/d_192 &Arr{
-#    samprate   2666    
-#    gtype       digitizer
-#    iunits      V
-#    ounits      counts
-#    sn          datalogger
-#}
-
-a/d_256 &Arr{
-    samprate   2000    
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc2_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_4)
 }
 
-a/d_320 &Arr{
-    samprate   1600    
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc3       &Arr{
+    gtype       FIR_decimator
+    decifac     5
+    response    &datafile(responses/lch_4_sinc3)
 }
 
-a/d_512 &Arr{
-    samprate   1000    
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc3_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_4)
 }
 
-a/d_640 &Arr{
-    samprate   800 
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc3_5    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_5)
 }
 
-a/d_1280    &Arr{
-    samprate   400 
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
+sinc3_6    &Arr{
+    gtype       FIR_decimator
+    decifac     3
+    response    &datafile(responses/lch_4_sinc3_6)
 }
 
-a/d_1600    &Arr{
-    samprate   320 
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
-}
-
-a/d_2560    &Arr{
-    samprate   200 
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
-}
-
-a/d_3200    &Arr{
-    samprate   160 
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
-}
-
-a/d_6400    &Arr{
-    samprate   80  
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
-}
-
-a/d_12800   &Arr{
-    samprate   40  
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
-}
-
-a/d_64000   &Arr{
-    samprate   8   
-    gtype       digitizer
-    iunits      V
-    ounits      counts
-    sn          datalogger
-}
-
-lch_4_f1    &Arr{
+f1    &Arr{
     gtype       FIR_decimator
     decifac     4
     response    &datafile(responses/lch_4_f1)
 }
 
-lch_4_f2    &Arr{
+f2    &Arr{
     gtype       FIR_decimator
     decifac     2
     response    &datafile(responses/lch_4_f2)
