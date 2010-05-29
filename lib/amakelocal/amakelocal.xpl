@@ -189,10 +189,14 @@ if( ! -e "$localpf_dir/$Pf.pf" ) {
 
 if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 	
-	system( "pfdiff $Pf_proto_file $Pf_file" );
+	elog_complain( "The file '$Pf_file' appears out of date. The file '$Pf_proto_file' is " .
+		       "newer than it, and may contain added features. The differences are as " .
+		       "follows:\n\n" );
 
-	elog_die( "The pf_revision_time in '$Pf_file' predates that in '$Pf_proto_file'. Please check " .
-		  "the former for added features and update it before proceeding. Exiting.\n" );
+	system( "pfdiff $Pf_file $Pf_proto_file" );
+
+	elog_die( "Please check '$Pf_file' for missing features (compared to the newer '$Pf_proto_file') " .
+		  "and update the pf_revision_time in '$Pf_file' in order to proceed. Exiting.\n" );
 }
 
 $Os = my_os();
@@ -235,7 +239,8 @@ if( @ARGV >= 1 ) {
 		} elsif( ! pfget_boolean( $Pf, "capabilities{$r}{enable}" ) ) {
 
 			elog_complain( "Requested capability '$r' marked as disabled in '$Pf'.\n" .
-				"Run amakelocal(1) to enable and configure '$r' if desired.\n" );
+				"Run amakelocal(1) (or edit '$Pf_file')\nto enable and configure " .
+				"'$r' if desired.\n" );
 
 			$enable_ok = 0;
 		}
@@ -258,7 +263,8 @@ if( @ARGV >= 1 ) {
 			if( ! defined( $$required_macro ) || $$required_macro eq "" ) {
 				
 				elog_complain( "Macro '$required_macro', required for '$r' capability, " .
-						"is not defined. Run amakelocal(1) to configure.\n" );
+						"is not defined. Run amakelocal(1) (or edit '$Pf_file')\n" .
+						"to configure.\n" );
 				
 				$test_ok = 0;
 			}

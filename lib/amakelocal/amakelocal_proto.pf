@@ -1,24 +1,23 @@
-antelope &env(ANTELOPE)
-
-dest &antelope/local/include
-
+antelope    &env(ANTELOPE)
+dest 	    &antelope/local/include
 output_file antelopemake.local
 
 macros &Arr{
-	XMOTIFLIB &Arr{
-		Darwin 	
-		SunOS -L/usr/openwin/lib
-		Linux 	-L/usr/X11R6/lib
-		Description Location of X-Motif link libraries
-	}
-	XMOTIFINCLUDE &Arr{
-		Darwin 	
-		SunOS -I/usr/openwin/include
-		Linux 	-I/usr/X11R6/include
-		Description Location of X-Motif header files
+	MATLAB &Arr{
+		Darwin 
+		SunOS
+		Linux
+		Description Top-level directory of Matlab installation
+		Detail &Literal{
+			The MATLAB macro specifies the top-level directory
+			of the Matlab installation on the local machine. 
+			On Solaris or Linux, this may be something like 
+			'/usr/local/matlab'. On Mac, it may be something
+			like '/Applications/MATLAB_R2009b.app'.
+		}
 	}
 	PYTHONINCLUDE &Arr{
-		Darwin 	/sw/include/python2.6
+		Darwin 	
 		SunOS
 		Linux 
 		Description Location of Python header files
@@ -39,7 +38,7 @@ macros &Arr{
 		}
 	}
 	PYTHON_EXECUTABLE &Arr{
-		Darwin /sw/bin/python
+		Darwin 
 		SunOS
 		Linux 
 		Description Absolute pathname of Python interpreter
@@ -60,19 +59,55 @@ macros &Arr{
 		SunOS
 		Linux 
 		Description Location of PHP header files
+		Detail &Literal{
+		     The PHP_INC macro specifies the location of 
+		     the include files (header files) for the PHP 
+		     interpreter to be used with Antelope (and against which 
+		     the Antelope interface to PHP will compile locally). 
+		     The directory specified by this macro should contain, 
+		     among other things, the directories Zend/, TSRM/, and include/ 
+		     (at least for versions of PHP current at the time of this writing). 
+		     For the Antelope PHP toolbox to work correctly, the include files 
+		     specified by the PHP_INC macro must be consistent 
+		     with the PHP executable specified by the 
+		     PHP_EXECUTABLE macro. An example value for the 
+		     PYTHONINCLUDE macro might be '/usr/include/php', although this 
+		     of course depends on local system configuration.
+		}
 	}
-	MATLAB &Arr{
+	PHP_EXECUTABLE &Arr{
 		Darwin 
 		SunOS
-		Linux
-		Description Top-level directory of Matlab installation
+		Linux 
+		Description Absolute pathname of PHP interpreter
+		Detail &Literal{
+		     The PHP_EXECUTABLE macro specifies the absolute 
+		     pathname of the PHP interpreter to be used for
+		     the Antelope PHP interface. The PHP_INC
+		     and PHP_EXECUTABLE macros must be set consistent 
+		     with each other, i.e. referring to PHP header files 
+		     and PHP executable that belong together. An example 
+		     value for the PHP_EXECUTABLE macro might be '/usr/bin/php', although
+		     this of course depends on local system configuration.
+		}
+	}
+	XMOTIFLIB &Arr{
+		Darwin 	
+		SunOS -L/usr/openwin/lib
+		Linux 	-L/usr/X11R6/lib
+		Description Location of X-Motif link libraries
+	}
+	XMOTIFINCLUDE &Arr{
+		Darwin 	
+		SunOS -I/usr/openwin/include
+		Linux 	-I/usr/X11R6/include
+		Description Location of X-Motif header files
 	}
 }
 
 capabilities &Arr{
-# DO NOT EDIT this 'capabilities' array unless you are writing new source-code with new external linkages
 	python &Arr{
-		enable yes
+		enable no
 		required_macros &Tbl{
 			PYTHONINCLUDE
 			PYTHON_EXECUTABLE
@@ -80,12 +115,13 @@ capabilities &Arr{
 		tests &Tbl{
 			&Literal{
 				$failure_msg = "Couldn't find header-file '$PYTHONINCLUDE/Python.h' " .
-					"implied by currently configured value of PYTHONINCLUDE macro";
+					       "implied by currently configured value of PYTHONINCLUDE " .
+					       "macro";
 				-e "$PYTHONINCLUDE/Python.h"
 			}
 			&Literal{
 				$failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
-					"PYTHON_EXECUTABLE macro is not present or not executable'";
+					       "PYTHON_EXECUTABLE macro is not present or not executable'";
 				-x "$PYTHON_EXECUTABLE"
 			}
 		}
@@ -95,12 +131,18 @@ capabilities &Arr{
 		enable no
 		required_macros &Tbl{
 			PHP_INC
+			PHP_EXECUTABLE
 		}
 		tests &Tbl{
 			&Literal{
 				$failure_msg = "Couldn't find header-file directory '$PHP_INC/Zend' " . 
-					"implied by currently configured value of PHP_INC macro";
+					       "implied by currently configured value of PHP_INC macro";
 				-d "$PHP_INC/Zend"
+			}
+			&Literal{
+				$failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
+					       "PHP_EXECUTABLE macro is not present or not executable'";
+				-x "$PHP_EXECUTABLE"
 			}
 		}
 		Description Antelope PHP Interface and PHP-based Antelope tools
@@ -113,7 +155,7 @@ capabilities &Arr{
 		tests &Tbl{
 			&Literal{
 				$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
-					"implied by currently configured value of MATLAB macro";
+					       "implied by currently configured value of MATLAB macro";
 				-d "$MATLAB"
 			}
 		}

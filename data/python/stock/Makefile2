@@ -15,8 +15,10 @@ fflags=
 ldflags= 
 ldlibs= -lpfxml $(TRLIBS)
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
-include $(ANTELOPE)/local/include/antelopemake.local
+include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
 
