@@ -1,6 +1,6 @@
 
 all clean Include install installMAN pf relink tags uninstall :: FORCED
-	@-if amakelocal PHP_INC ; then \
+	@-if amakelocal php ; then \
 	    $(MAKE) -f Makefile2 $@ ; \
 	fi
 

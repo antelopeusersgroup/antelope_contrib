@@ -38,6 +38,27 @@ sub set_macros {
 	}
 }
 
+sub show_capabilities {
+
+format STDOUT = 
+   @<<<<<<<<<<<<<<< @<<<<<<<<<<<< @*
+   $enabled_string, $c, $capabilities{$c}{Description}
+.
+
+	print "\nCapabilities are:\n\n";
+
+	foreach $c ( keys( %capabilities ) ) {
+
+		$enabled = pfget_boolean( $Pf, "capabilities{$c}{enable}" );
+	
+		$enabled_string = $enabled ? "[ enabled]" : "[disabled]";
+
+		write;
+	}
+
+	print "\n";
+}
+
 sub write_amakelocal {
 
 	$output_file = pfget( $Pf, "output_file" );
@@ -184,25 +205,9 @@ set_macros();
 
 write_amakelocal();
 
-format STDOUT = 
-   @<<<<<<<<<<<<<<< @<<<<<<<<<<<< @*
-   $enabled_string, $c, $capabilities{$c}{Description}
-.
-
 if( $opt_l ) {
 
-	print "\nCapabilities are:\n\n";
-
-	foreach $c ( keys( %capabilities ) ) {
-
-		$enabled = pfget_boolean( $Pf, "capabilities{$c}{enable}" );
-		
-		$enabled_string = $enabled ? "[ enabled]" : "[disabled]";
-
-		write;
-	}
-
-	print "\n";
+	show_capabilities();
 
 	exit( 0 );
 }
@@ -223,7 +228,7 @@ if( @ARGV >= 1 ) {
 		if( ! defined( $capabilities{$r} ) ) {
 
 			elog_complain( "Requested capability '$r' not defined in '$Pf'. " .
-					"Preventing compilation.\n" );
+					"Stopping compilation.\n" );
 
 			$enable_ok = 0;
 
