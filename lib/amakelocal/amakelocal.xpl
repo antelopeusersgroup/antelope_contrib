@@ -15,17 +15,38 @@ sub inform {
 	return;
 }
 
-sub write_amakelocal {
+sub set_macros {
+	foreach $macro ( keys( %macros ) ) {
+		
+		if( ! defined( $macros{$macro} ) ) {
 
-	$Os = my_os();
+			next;
+
+		} else {
+			
+			$contents = $macros{$macro};
+		}
+
+		if( ref( $contents ) eq "HASH" ) {
+		
+			if( defined( $contents->{$Os} ) && 
+			    $contents->{$Os} ne "" ) {
+
+				$$macro = "$contents->{$Os}";
+			}
+		}
+	}
+}
+
+sub write_amakelocal {
 
 	$output_file = pfget( $Pf, "output_file" );
 	$dest = pfget( $Pf, "dest" );
 
 	$dest_output_file = "$dest/$output_file";
-	$temp_output_file = "/tmp/$output_file_$$\_$>";
+	$temp_output_file = "/tmp/$output_file\_$$\_$>";
 
-	if( -M "$dest_output_file" <= "$Pf_file" ) {
+	if( -e "$dest_output_file" && ( -M "$dest_output_file" <= -M "$Pf_file" ) ) {
 
 		return;
 
@@ -33,9 +54,6 @@ sub write_amakelocal {
 
 		inform( "Rebuilding '$dest_output_file' since it is older than '$Pf_file'\n" );
 	}
-
-	%macros = %{pfget($Pf,"macros")}; 
-	$header = pfget( $Pf, "header" );
 
 	open( O, ">$temp_output_file" );
 
@@ -141,6 +159,11 @@ if( ! -e "$localpf_dir/$Pf.pf" ) {
 	system( "cd $localpf_dir; pfcp $Pf_proto $Pf" );
 
 	inform( "Copied '$Pf_proto.pf' to '$localpf_dir/$Pf.pf' since the latter didn't exist\n" );
+
+	if( ! -e "$localpf_dir/$Pf.pf" ) {
+
+		elog_die( "Failed to make '$localpf_dir/$Pf.pf'; Exiting.\n" );
+	}
 }
 
 if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
@@ -151,9 +174,15 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 		  "the former for added features and update it before proceeding. Exiting.\n" );
 }
 
-write_amakelocal();
+$Os = my_os();
 
+%macros = %{pfget($Pf,"macros")}; 
+$header = pfget( $Pf, "header" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
+
+set_macros();
+
+write_amakelocal();
 
 format STDOUT = 
    @<<<<<<<<<<<<<<< @<<<<<<<<<<<< @*

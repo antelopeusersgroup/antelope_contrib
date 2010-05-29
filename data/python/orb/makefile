@@ -1,6 +1,6 @@
 
 all clean Include install installMAN pf relink tags uninstall test :: FORCED
-	@-if amakelocal PYTHONINCLUDE ; then \
+	@-if amakelocal python ; then \
 	    $(MAKE) -f Makefile2 $@ ; \
 	fi
 
