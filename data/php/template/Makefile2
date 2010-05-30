@@ -1,0 +1,18 @@
+
+DATADIR= templates
+DATA= xphp wphp
+
+CLEAN= xphp wphp
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
+
+xphp: xphp.id
+	getid < xphp.id > xphp
+
+wphp : wphp.id
+	getid < wphp.id > wphp
