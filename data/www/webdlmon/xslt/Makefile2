@@ -1,0 +1,11 @@
+DATADIR= www/xslt
+
+DATA= webdlmon.xsl \
+      webdlmon.xml
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local

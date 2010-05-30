@@ -1,10 +1,8 @@
 DATADIR= www/cgibin
 
-DATA= examples_datascope_php.php \
-      examples_orb_php.php
+DATA= wfplotter.php
 
-MAN3H= examples_datascope_php.3h \
-       examples_orb_php.3h
+MAN3H= wfplotter.3h
 
 CLEAN = *.php
 
@@ -14,5 +12,3 @@ include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
-
-DIRS=

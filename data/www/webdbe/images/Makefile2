@@ -1,0 +1,11 @@
+DATADIR = www/images
+
+DATA = webdbe_bkgrd.gif \
+       webdbe_title.gif
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local

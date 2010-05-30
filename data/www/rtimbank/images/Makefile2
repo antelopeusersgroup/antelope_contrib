@@ -6,4 +6,9 @@ DATA= roadnet_bottom_line.gif \
       roadnet_page_bkgrd.gif \
       roadnet_sorry.gif
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local

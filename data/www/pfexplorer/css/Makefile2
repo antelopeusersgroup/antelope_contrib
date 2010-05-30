@@ -1,0 +1,10 @@
+DATADIR= www/css
+
+DATA= pfexplorer.css
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local

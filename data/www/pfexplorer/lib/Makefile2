@@ -1,0 +1,12 @@
+DATADIR= php/library
+
+DATA= pfexplore.inc
+
+MAN3H= pfexplore.3h
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local

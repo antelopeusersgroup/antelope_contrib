@@ -1,8 +1,8 @@
 
 DATADIR= templates
-DATA= xphp wphp
+DATA= xphp wwwphp
 
-CLEAN= xphp wphp
+CLEAN= xphp wwwphp
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
@@ -14,5 +14,5 @@ SUBDIR= /local
 xphp: xphp.id
 	getid < xphp.id > xphp
 
-wphp : wphp.id
-	getid < wphp.id > wphp
+wwwphp : wwwphp.id
+	getid < wwwphp.id > wwwphp

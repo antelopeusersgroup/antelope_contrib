@@ -4,4 +4,9 @@ DATA = webdbe.inc \
        webdbe_menubar.inc \
        webdbe_subwin.inc
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
