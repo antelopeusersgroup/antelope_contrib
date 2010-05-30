@@ -107,6 +107,8 @@ sub write_amakelocal {
 		}
 	}
 
+	print O "\n$extra_rules\n";
+
 	close( O );
 
 	makedir( $dest );
@@ -203,6 +205,7 @@ $Os = my_os();
 
 %macros = %{pfget($Pf,"macros")}; 
 $header = pfget( $Pf, "header" );
+$extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
 
 set_macros();

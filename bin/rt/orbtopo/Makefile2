@@ -1,0 +1,16 @@
+
+BIN= orbtopo
+PF= orbtopo.pf
+
+MAN1= orbtopo.1
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+DIRS=
+
+echo:
+	echo $(ANTELOPEMAKELOCAL)
+	cat $(ANTELOPEMAKELOCAL)

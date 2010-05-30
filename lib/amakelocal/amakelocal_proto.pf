@@ -4,7 +4,7 @@ output_file antelopemake.local
 
 macros &Arr{
 	MATLAB &Arr{
-		Darwin 
+		Darwin
 		SunOS
 		Linux
 		Description Top-level directory of Matlab installation
@@ -17,9 +17,9 @@ macros &Arr{
 		}
 	}
 	PYTHONINCLUDE &Arr{
-		Darwin 	
+		Darwin
 		SunOS
-		Linux 
+		Linux
 		Description Location of Python header files
 		Detail &Literal{
 		     The PYTHONINCLUDE macro specifies the location of 
@@ -38,9 +38,9 @@ macros &Arr{
 		}
 	}
 	PYTHON_EXECUTABLE &Arr{
-		Darwin 
+		Darwin
 		SunOS
-		Linux 
+		Linux
 		Description Absolute pathname of Python interpreter
 		Detail &Literal{
 		     The PYTHON_EXECUTABLE macro specifies the absolute 
@@ -55,9 +55,9 @@ macros &Arr{
 		}
 	}
 	PHP_INC &Arr{
-		Darwin 	
+		Darwin
 		SunOS
-		Linux 
+		Linux
 		Description Location of PHP header files
 		Detail &Literal{
 		     The PHP_INC macro specifies the location of 
@@ -76,9 +76,9 @@ macros &Arr{
 		}
 	}
 	PHP_EXECUTABLE &Arr{
-		Darwin 
+		Darwin
 		SunOS
-		Linux 
+		Linux
 		Description Absolute pathname of PHP interpreter
 		Detail &Literal{
 		     The PHP_EXECUTABLE macro specifies the absolute 
@@ -92,13 +92,13 @@ macros &Arr{
 		}
 	}
 	XMOTIFLIB &Arr{
-		Darwin 	
+		Darwin
 		SunOS -L/usr/openwin/lib
 		Linux 	-L/usr/X11R6/lib
 		Description Location of X-Motif link libraries
 	}
 	XMOTIFINCLUDE &Arr{
-		Darwin 	
+		Darwin
 		SunOS -I/usr/openwin/include
 		Linux 	-I/usr/X11R6/include
 		Description Location of X-Motif header files
@@ -171,4 +171,14 @@ header &Literal{
 # See the amakelocal(1)  man page for further details. 
 }
 
-pf_revision_time 1275082615
+extra_rules &Literal{
+.SUFFIXES: .SUFFIXES .xpy .xphp
+
+% : %.xpy $(ANTELOPE)/local/data/templates/xpy
+	cat $(ANTELOPE)/local/data/templates/xpy $< > $@
+	chmod a+x $@
+
+% : %.xphp $(ANTELOPE)/local/data/templates/xphp
+	cat $(ANTELOPE)/local/data/templates/xphp $< > $@
+	chmod a+x $@
+}
