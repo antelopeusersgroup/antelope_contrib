@@ -11,12 +11,11 @@ DATA = __init__.py \
 CLEAN = *.pyc
 UNINSTALL = $(ANTELOPE)/data/$(DATADIR)/*.pyc
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
 
 DIRS = Contents
-
-.SUFFIXES: .SUFFIXES .xpy
-
-% : %.xpy $(ANTELOPE)/data/templates/xpy
-	cat $(ANTELOPE)/data/templates/xpy $< > $@
-	chmod a+x $@
