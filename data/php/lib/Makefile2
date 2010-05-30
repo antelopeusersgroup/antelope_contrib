@@ -6,4 +6,9 @@ DATA=  stanote.inc \
 MAN3H= stanote.3h \
        colorstr2rgb.3h
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
