@@ -1,6 +1,6 @@
 
 all Include install installMAN pf relink tags test :: FORCED
-	@-if amakelocal php ; then \
+	@-if localmake_config php ; then \
 	    $(MAKE) -f Makefile2 $@ ; \
 	fi
 

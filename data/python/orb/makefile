@@ -1,6 +1,6 @@
 
 all Include install installMAN pf relink tags test :: FORCED
-	@-if amakelocal python ; then \
+	@-if localmake_config python ; then \
 	    $(MAKE) -f Makefile2 $@ ; \
 	fi
 

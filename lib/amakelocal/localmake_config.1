@@ -1,9 +1,9 @@
-.TH AMAKELOCAL 1
+.TH LOCALMAKE_CONFIG 1
 .SH NAME
-amakelocal \- Manage connections between Antelope-contrib code and software external to Antelope
+localmake_config \- Manage connections between Antelope-contrib code and software external to Antelope
 .SH SYNOPSIS
 .nf
-\fBamakelocal\fP [-lv] [\fIcapability\fP [, \fIcapability\fP...]]
+\fBlocalmake_config\fP [-lv] [\fIcapability\fP [, \fIcapability\fP...]]
 .fi
 .SH DESCRIPTION
 Most source-code in the Antelope contributed-code repository compiles without any dependencies 
@@ -11,35 +11,35 @@ on software outside of the self-contained Antelope directory hierarchy. Such cod
 use the standard Antelope make-rules and build mechanisms documented in antelopemake(5) and 
 antelopemakefile(5). Occasionally, however, tools in the Antelope contributed-code repository have been
 written to link against and use tools that are not part of the self-contained Antelope distribution. 
-The \fBamakelocal\fP program represents an attempt to standardize how such external dependencies are 
+The \fBlocalmake_config\fP program represents an attempt to standardize how such external dependencies are 
 configured and built within the Antelope contributed-code distribution.
 
-The \fBamakelocal\fP program runs in two quite distinct modes, serving two separate purposes. 
+The \fBlocalmake_config\fP program runs in two quite distinct modes, serving two separate purposes. 
 The first, \fIconfigure\fP, mode allows the user to specify how dependencies external to the 
 Antelope distribution are set up on their system. The second, \fIverify\fP, mode is invoked internal
 to the compilation process and entirely automatically to allow the configured choices to take effect.
 
 .SS Configuration mode
-When \fBamakelocal\fP is run without any \fIcapability\fP arguments on the command-line, it 
+When \fBlocalmake_config\fP is run without any \fIcapability\fP arguments on the command-line, it 
 starts in a \fIconfiguration\fP mode. In \fIconfiguration\fP mode, the user can specify which
 externally-dependent capabilities to enable, and where to find the necessary supporting components 
 on their system.
 
-The local configuration of external components (as well as the behaviour of the \fBamakelocal\fP program
+The local configuration of external components (as well as the behaviour of the \fBlocalmake_config\fP program
 itself), are controlled by a parameter file on the local system which is kept in 
 .nf
 
-      $ANTELOPE/local/data/pf/amakelocal.pf
+      $ANTELOPE/local/data/pf/localmake_config.pf
 
 .fi
-If this does not exist, \fBamakelocal\fP when it first runs makes an initial version of the file,
+If this does not exist, \fBlocalmake_config\fP when it first runs makes an initial version of the file,
 with all external dependencies disabled, by copying the file 
 .nf
 
-	$ANTELOPE/data/pf/amakelocal_proto.pf
+	$ANTELOPE/data/pf/localmake_config_proto.pf
 
 .fi
-Once configured, \fBamakelocal\fP creates a set of local make-rules to handle all configured 
+Once configured, \fBlocalmake_config\fP creates a set of local make-rules to handle all configured 
 dependencies. By default, these local make-rules are stored in 
 .nf
 
@@ -64,7 +64,7 @@ Verbose
 .ft R
 .in
 .SH RETURN VALUES
-\fBamakelocal\fP exits with a status of 0 if compilation based on the named capabilities is 
+\fBlocalmake_config\fP exits with a status of 0 if compilation based on the named capabilities is 
 approved to proceed, or with a non-zero status if compilation should not proceed (\fIcapability\fP 
 is disabled or failed one or more of its tests). 
 .SH LIBRARY

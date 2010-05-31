@@ -65,7 +65,7 @@ macros &Arr{
 		     interpreter to be used with Antelope (and against which 
 		     the Antelope interface to PHP will compile locally). 
 		     The directory specified by this macro should contain, 
-		     among other things, the directories Zend/, TSRM/, and include/ 
+		     among other things, the sub-directories Zend/, TSRM/, and include/ 
 		     (at least for versions of PHP current at the time of this writing). 
 		     For the Antelope PHP toolbox to work correctly, the include files 
 		     specified by the PHP_INC macro must be consistent 
@@ -114,15 +114,15 @@ capabilities &Arr{
 		}
 		tests &Tbl{
 			&Literal{
-				$failure_msg = "Couldn't find header-file '$PYTHONINCLUDE/Python.h' " .
-					       "implied by currently configured value of PYTHONINCLUDE " .
-					       "macro";
-				-e "$PYTHONINCLUDE/Python.h"
+			$failure_msg = "Couldn't find header-file '$PYTHONINCLUDE/Python.h' " .
+				       "implied by currently configured value of PYTHONINCLUDE " .
+				       "macro";
+			-e "$PYTHONINCLUDE/Python.h"
 			}
 			&Literal{
-				$failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
-					       "PYTHON_EXECUTABLE macro is not present or not executable'";
-				-x "$PYTHON_EXECUTABLE"
+			$failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
+				       "PYTHON_EXECUTABLE macro is not present or not executable'";
+			-x "$PYTHON_EXECUTABLE"
 			}
 		}
 		Description Antelope Python Interface and Python-based Antelope tools
@@ -135,14 +135,14 @@ capabilities &Arr{
 		}
 		tests &Tbl{
 			&Literal{
-				$failure_msg = "Couldn't find header-file directory '$PHP_INC/Zend' " . 
-					       "implied by currently configured value of PHP_INC macro";
-				-d "$PHP_INC/Zend"
+			$failure_msg = "Couldn't find header-file directory '$PHP_INC/Zend' " . 
+				       "implied by currently configured value of PHP_INC macro";
+			-d "$PHP_INC/Zend"
 			}
 			&Literal{
-				$failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
-					       "PHP_EXECUTABLE macro is not present or not executable'";
-				-x "$PHP_EXECUTABLE"
+			$failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
+				       "PHP_EXECUTABLE macro is not present or not executable'";
+			-x "$PHP_EXECUTABLE"
 			}
 		}
 		Description Antelope PHP Interface and PHP-based Antelope tools
@@ -154,9 +154,9 @@ capabilities &Arr{
 		}
 		tests &Tbl{
 			&Literal{
-				$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
-					       "implied by currently configured value of MATLAB macro";
-				-d "$MATLAB"
+			$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
+				       "implied by currently configured value of MATLAB macro";
+			-d "$MATLAB"
 			}
 		}
 		Description Antelope Matlab Interface and Matlab-based Antelope tools
