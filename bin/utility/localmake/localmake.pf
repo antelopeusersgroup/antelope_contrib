@@ -22,11 +22,8 @@ modules &Arr{
 			data/schemas/css3.0.ext/xcorarrival
 			data/schemas/css3.0.ext/xcorbeam
 			man/man1/dbxcor.1
-			bin/smartpick_classic
 			bin/smartpick
-			data/pf/smartpick_classic.pf
 			data/pf/smartpick.pf
-			man/man1/smartpick_classic.1
 			man/man1/smartpick.1
 			static/libseispp.a
 			static/libseisw.a
@@ -96,19 +93,19 @@ modules &Arr{
 			&contrib_srcdir/data/python
 		}
 		package &Tbl{
-			lib/python__datascope.dylib 
-			lib/python__orb.dylib
-			lib/python__stock.dylib
-			data/python/antelope/_orb.so
-			data/python/antelope/_datascope.so
-			data/python/antelope/_stock.so
-			data/python/antelope/datascope.py
-			data/python/antelope/orb.py
-			data/python/antelope/stock.py
-			data/python/antelope/__init__.py
-			man/man3/pythondb.3p
-			man/man3/pythonorb.3p
-			man/man3/pythonstock.3p
+			local/lib/python__datascope.dylib 
+			local/lib/python__orb.dylib
+			local/lib/python__stock.dylib
+			local/data/python/antelope/_orb.so
+			local/data/python/antelope/_datascope.so
+			local/data/python/antelope/_stock.so
+			local/data/python/antelope/datascope.py
+			local/data/python/antelope/orb.py
+			local/data/python/antelope/stock.py
+			local/data/python/antelope/__init__.py
+			local/man/man3/pythondb.3p
+			local/man/man3/pythonorb.3p
+			local/man/man3/pythonstock.3p
 		}
 	}
 	isi2orb &Arr{
