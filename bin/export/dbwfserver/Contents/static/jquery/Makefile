@@ -9,4 +9,9 @@ DATA = excanvas.pack.js \
     dbwfserver.js
     
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local

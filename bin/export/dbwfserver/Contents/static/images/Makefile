@@ -21,4 +21,9 @@ DATA = ui-bg_diagonals-small_0_aaaaaa_40x40.png \
     config_bkgrd_center.png \
     config_bkgrd_right.png
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
