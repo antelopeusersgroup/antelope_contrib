@@ -1,4 +1,4 @@
-ATM_prefix = [getenv( 'ANTELOPE' ), '/data/matlab/', version( '-release' ), '/antelope/'];
+ATM_prefix = [getenv( 'ANTELOPE' ), '/local/data/matlab/', version( '-release' ), '/antelope/'];
 
 % Sun JVM throws and traps SIGILL and SIGSEGV, which must be removed 
 % from the default ELOG_SIGNALS mask to prevent elog_fault(3) crashes 
