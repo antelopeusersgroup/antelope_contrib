@@ -93,15 +93,42 @@ macros &Arr{
 	}
 	XMOTIFLIB &Arr{
 		Darwin
-		SunOS -L/usr/openwin/lib
-		Linux 	-L/usr/X11R6/lib
+		SunOS /usr/openwin/lib
+		Linux /usr/X11R6/lib
 		Description Location of X-Motif link libraries
+		Detail &Literal{
+			The XMOTIFLIB macro specifies the location 
+			of the link libraries for the X/Motif graphics toolkit. 
+			This macro must be set to a value which is consistent with
+			the location given in the XMOTIFINCLUDE macro, i.e. the header
+			files and the library files pointed to by these two macros must 
+			correspond to each other. An example value for XMOTIFLIB
+			might be '/usr/openwin/lib' on Solaris; sometimes 
+			'/usr/X11R6/lib' on Linux; and perhaps '/sw/lib' on 
+			Macintosh, if the 'Fink' distribution of X/Motif has been 
+			installed there.  
+		}
 	}
 	XMOTIFINCLUDE &Arr{
 		Darwin
-		SunOS -I/usr/openwin/include
-		Linux 	-I/usr/X11R6/include
+		SunOS /usr/openwin/include
+		Linux /usr/X11R6/include
 		Description Location of X-Motif header files
+		Detail &Literal{
+			The XMOTIFINCLUDE macro specifies the location 
+			of the include files (header files) for the 
+			X/Motif graphics toolkit. The directory specified 
+			by this macro should contain a subdirectory called Xm/ 
+			which has the actual toolkit header files. This macro must 
+			be set to a value which is consistent with the location 
+			given in the XMOTIFLIB macro, i.e. the header files and the 
+			library files pointed to by these two macros must 
+			correspond to each other. An example value for XMOTIFINCLUDE
+			might be '/usr/openwin/include' on Solaris; sometimes 
+			'/usr/X11R6/include' on Linux; and perhaps '/sw/include' on 
+			Macintosh, if the 'Fink' distribution of X/Motif has been 
+			installed there.  
+		}
 	}
 }
 
@@ -160,6 +187,26 @@ capabilities &Arr{
 			}
 		}
 		Description Antelope Matlab Interface and Matlab-based Antelope tools
+	}
+	xmotif &Arr{
+		enable yes
+		required_macros &Tbl{
+			XMOTIFINCLUDE
+			XMOTIFLIB
+		}
+		tests &Tbl{
+			&Literal{
+			$failure_msg = "Couldn't find header-file directory '$XMOTIFINCLUDE/Xm' " . 
+				       "implied by currently configured value of XMOTIFINCLUDE macro";
+			-d "$XMOTIFINCLUDE/Xm"
+			}
+			&Literal{
+			$failure_msg = "Couldn't find library-file directory '$XMOTIFLIB' " . 
+				       "implied by currently configured value of XMOTIFLIB macro";
+			-d "$XMOTIFLIB"
+			}
+		}
+		Description X/Motif Graphics toolkit links
 	}
 }
 

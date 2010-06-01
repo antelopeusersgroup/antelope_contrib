@@ -6,10 +6,12 @@ INCLUDE=Seisw.h SeismicPick.h xplot.h display_marker.h
 #Needed eventually
 #MAN3=
 
-include $(ANTELOPEMAKE)  	
-include $(ANTELOPEMAKE).local 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
-CXXFLAGS += $(XMOTIFINCLUDE)
+include $(ANTELOPEMAKE)  	
+include $(ANTELOPEMAKELOCAL)
+
+CXXFLAGS += -I$(XMOTIFINCLUDE)
 
 OBJS=	SeismicPick.o Seisw.o colormap.o parameters.o
 $(LIB) : $(OBJS)

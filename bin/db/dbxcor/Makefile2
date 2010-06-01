@@ -8,15 +8,17 @@ MAN1=dbxcor.1
 DBG=-g
 cxxflags=-g 
 
-ldlibs= -L./SciPlot $(XMOTIFLIB) -lseisw -lsciplot -lXm -lXt \
+ldlibs= -L./SciPlot -L$(XMOTIFLIB) -lseisw -lsciplot -lXm -lXt \
   -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp 
 
 CLEAN = 
 
-include $(ANTELOPEMAKE)  	
-include $(ANTELOPEMAKE).local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
-CXXFLAGS += $(XMOTIFINCLUDE)
+include $(ANTELOPEMAKE)  	
+include $(ANTELOPEMAKELOCAL)
+
+CXXFLAGS += -I$(XMOTIFINCLUDE)
 
 OBJS=	dbxcor.o \
   session_manager.o 

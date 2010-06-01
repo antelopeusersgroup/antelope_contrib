@@ -1,9 +1,11 @@
 LIB=libsciplot.a
 
-cflags = $(XMOTIFINCLUDE)
+cflags = -I$(XMOTIFINCLUDE)
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
 include $(ANTELOPEMAKE)  	
-include $(ANTELOPEMAKE).local
+include $(ANTELOPEMAKELOCAL)
 
 #cflags=-Dsun -Dsparc -DSVR4 -DSYSV
 #cflags=-Xc -xF -xarch=v8

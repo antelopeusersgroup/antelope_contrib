@@ -290,7 +290,8 @@ sub init_File_menu {
 
 	$filemenu = $menubutton->Menu( -tearoff => 0 );
 
-	$filemenu->add( "command", -label => "Quit", -command => \&exit );
+	$filemenu->add( "command", -label => "Quit without saving", -command => \&quit );
+	$filemenu->add( "command", -label => "Save and Quit", -command => \&save_and_quit );
 
 	$menubutton->configure( -menu => $filemenu );
 
@@ -433,7 +434,7 @@ sub explain {
 	$text->insert( "end", $detail );
 
 	my( $b ) = $w->Button( -text => "Dismiss", 
-		    	       -command => \&quit );
+		    	       -command => sub { $w->destroy } );
 
 	$b->pack( -side => "top",
 	      	  -fill => "both", 
@@ -442,6 +443,13 @@ sub explain {
 	$w->waitWindow();
 
 	return;
+}
+
+sub save_and_quit {
+
+	commit_configuration();
+
+	quit();
 }
 
 sub quit {
