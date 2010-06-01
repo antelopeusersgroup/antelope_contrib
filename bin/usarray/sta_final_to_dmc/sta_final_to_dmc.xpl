@@ -680,7 +680,9 @@
         elog_notify( "pffiles	@pffiles" ) ;
         unlink( "orbxfer2.pf" ) if ( -e "orbxfer2.pf" ) ;
         $cmd = "pfcp -d orbxfer2 ." ;
-        system( $cmd ) ;
+        elog_notify( "$cmd" ) ;        
+        $problems = run( $cmd, $problems ) ;
+#        system( $cmd ) ;
 
         open(  OXF, ">>orbxfer2.pf" ) ;
         print  OXF  "wait_match \n" ;
