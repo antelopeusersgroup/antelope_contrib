@@ -141,33 +141,52 @@ sub commit_configuration {
 }
 
 sub test_capability {
+	if( ref( $_[0] ) ) { shift( @_ ); }
 	my( $c, $mode ) = @_;
+	
+	my( $passed ) = 1;
 
-	if( ! defined( $capabilities{$r} ) ) {
+	if( $mode eq "configure" ) {
+
+		$Widgets{"t$c"}->delete( '0.0', 'end' );
+	}
+
+	if( ! defined( $capabilities{$c} ) ) {
 
 		if( $mode eq "verify" ) {
 
-			elog_complain( "Requested capability '$r' not defined in '$Pf'. " .
+			elog_complain( "Requested capability '$c' not defined in '$Pf'. " .
 					"Stopping compilation.\n" );
 
 			exit( -1 );
 		}
 	}
 
-	if( ! pfget_boolean( $Pf, "capabilities{$r}{enable}" ) ) {
+	if( ! pfget_boolean( $Pf, "capabilities{$c}{enable}" ) && $mode eq "verify" ) {
 
-		if( $mode eq "verify" ) {
+		elog_complain( "Requested capability '$c' marked as disabled in '$Pf'.\n" .
+			"Run localmake_config(1) (or edit '$Pf_file')\nto enable and configure " .
+			"'$c' if desired.\n" );
 
-			elog_complain( "Requested capability '$r' marked as disabled in '$Pf'.\n" .
-				"Run localmake_config(1) (or edit '$Pf_file')\nto enable and configure " .
-				"'$r' if desired.\n" );
+		exit( -1 );
 
-			exit( -1 );
-		}
 	}
 
-	@required_macros = @{pfget( $Pf, "capabilities{$r}{required_macros}" )};
-	@tests = @{pfget( $Pf, "capabilities{$r}{tests}" )};
+	if( ! $capabilities{$c}{enable} && $mode eq "configure" ) {
+
+		$Widgets{"t$c"}->insert( "end", "Capability '$c' disabled\n", 'disabled' );
+
+		$passed = 0;
+
+		$Var{"en$c"} = "Capability '$c' is disabled";
+
+		$Widgets{"en$c"}->configure( -fg => "grey30" );
+
+		return $passed;
+	} 
+
+	@required_macros = @{pfget( $Pf, "capabilities{$c}{required_macros}" )};
+	@tests = @{pfget( $Pf, "capabilities{$c}{tests}" )};
 
 	while( $required_macro = shift( @required_macros ) ) {
 
@@ -175,11 +194,24 @@ sub test_capability {
 				
 			if( $mode eq "verify" ) {
 
-				elog_complain( "Macro '$required_macro', required for '$r' capability, " .
+				elog_complain( "Macro '$required_macro', required for '$c' capability, " .
 						"is not defined.\nRun localmake_config(1) (or edit '$Pf_file')\n" .
 						"to configure.\n" );
 
 				exit( -1 );
+
+			} else {
+
+				$Widgets{"t$c"}->insert( "end", "Failed: Required macro '$required_macro' is not defined\n\n", 'failed' );
+
+				$passed = 0;
+			}
+
+		} else {
+
+			if( $mode eq "configure" ) {
+
+				$Widgets{"t$c"}->insert( "end", "Passed: Required macro '$required_macro' is defined\n\n", 'passed' );
 			}
 		}
 	}
@@ -190,11 +222,36 @@ sub test_capability {
 
 			if( $mode eq "verify" ) {
 
-				elog_complain( "Test failed for capability '$r': $failure_msg\n" );
+				elog_complain( "Test failed for capability '$c': $failure_msg\n" );
 
 				exit( -1 );
+				
+			} else {
+
+				$Widgets{"t$c"}->insert( "end", "Failed: Test failed for capability '$c': $failure_msg\n\n", 'failed' );
+
+				$passed = 0;
+			}
+		} else {
+
+			if( $mode eq "configure" ) {
+
+				$Widgets{"t$c"}->insert( "end", "Passed: Test succeeded for capability '$c'\n\n", 'passed' );
 			}
 		}
+	}
+
+	if( $passed ) {
+
+		$Var{"en$c"} = "Capability '$c' is enabled";
+
+		$Widgets{"en$c"}->configure( -fg => "green" );
+
+	} else {
+
+		$Var{"en$c"} = "Capability '$c' is enabled but failed test(s)";
+
+		$Widgets{"en$c"}->configure( -fg => "red" );
 	}
 
 	return;
@@ -271,10 +328,10 @@ sub init_capabilities {
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
 
 			push( @specs, "entry e$c$m 80 +,0:2 $m { $macros{$m}{Description} }" );
-			push( @specs, "button b$c$m - =,2 Explain" );
+			push( @specs, "button b$c$m - =,2 Explain $m" );
 		}
 
-		push( @specs, "rotext t$c - +,0:3 Tests:" );
+		push( @specs, "rotext t$c - +,0:4 Tests:" );
 	}
 
 	push( @specs, "endnotebook" );
@@ -283,9 +340,11 @@ sub init_capabilities {
 
 	foreach $c ( keys( %capabilities ) ) {
 
-		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
+		$Widgets{"t$c"}->tagConfigure( 'failed', -foreground => "red" );
+		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "green" );
+		$Widgets{"t$c"}->tagConfigure( 'disabled', -foreground => "grey30" );
 
-		$Widgets{"t$c"}->insert( "end", "SCAFFOLD pretend to test $c" );
+		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
 
 		$Widgets{"b$c"}->configure( -command => [\&toggle_capability, $c] );
 
@@ -293,22 +352,27 @@ sub init_capabilities {
 
 			$capabilities{$c}{enable} = 1;
 
-			$Var{"en$c"} = "Capability '$c' is enabled";
+			$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Disable $c" );
+			$Widgets{"b$c"}->configure( -text => "Disable $c", -bg => "red" );
 
 		} else {
 
 			$capabilities{$c}{enable} = 0;
 
-			$Var{"en$c"} = "Capability '$c' is disabled";
+			$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Enable $c" );
+			$Widgets{"b$c"}->configure( -text => "Enable $c", -bg => "green" );
 		}
 
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
+
 			$Widgets{"b$c$m"}->configure( -command => [ \&explain, $m ] );
 			$Widgets{"e$c$m"}->configure( -textvariable => \$$m );
+
+			$Widgets{"e$c$m"}->bind( "<KeyPress-Return>", [ \&test_capability, $c, "configure" ] );
+			$Widgets{"e$c$m"}->bind( "<KeyPress-Tab>", [ \&test_capability, $c, "configure" ] );
+			$Widgets{"e$c$m"}->bind( "<Leave>", [ \&test_capability, $c, "configure" ] );
 		}
 	}
 
@@ -318,22 +382,22 @@ sub init_capabilities {
 sub toggle_capability {
 	my( $c ) = @_;
 
-		if( $capabilities{$c}{enable} ) {
+	if( $capabilities{$c}{enable} ) {
 
-			$capabilities{$c}{enable} = 0;
+		$capabilities{$c}{enable} = 0;
 
-			$Var{"en$c"} = "Capability '$c' is disabled";
+		$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Enable $c" );
+		$Widgets{"b$c"}->configure( -text => "Enable $c", -bg => "green" );
 
-		} else {
+	} else {
 
-			$capabilities{$c}{enable} = 1;
+		$capabilities{$c}{enable} = 1;
 
-			$Var{"en$c"} = "Capability '$c' is enabled";
+		$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Disable $c" );
-		}
+		$Widgets{"b$c"}->configure( -text => "Disable $c", -bg => "red" );
+	}
 
 	return;
 }
@@ -366,7 +430,7 @@ sub explain {
 	$text->insert( "end", $detail );
 
 	my( $b ) = $w->Button( -text => "Dismiss", 
-		    	       -command => sub { $w->destroy } );
+		    	       -command => \&quit );
 
 	$b->pack( -side => "top",
 	      	  -fill => "both", 
@@ -375,6 +439,11 @@ sub explain {
 	$w->waitWindow();
 
 	return;
+}
+
+sub quit {
+
+	$Windows{"Main"}->destroy();
 }
 
 sub run_configure {
@@ -391,6 +460,9 @@ sub run_configure {
 	elog_gui_init( MW => $Windows{"Main"} );
 	elog_callback( "::elog_gui" );
 
+	$Windows{"Main"}->bind( "<Control-c>", \&quit );
+	$Windows{"Main"}->bind( "<Control-C>", \&quit );
+
 	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
 
 	$Windows{"menubar"}->grid( -row => 0,
@@ -399,7 +471,8 @@ sub run_configure {
 				 );
 
 	$b = $Windows{"Main"}->Button( -text => "save configuration",
-				       -command => \&commit_configuration );
+				       -command => \&commit_configuration, 
+				       -bg => "green" );
 
 	$b->grid( -row => 1,
 		  -column => 0,
