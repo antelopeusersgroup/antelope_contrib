@@ -1,7 +1,7 @@
 DIRS=antelope
 
 all clean Include install installMAN pf relink tags uninstall :: FORCED
-	@-if localmake_config -v MATLAB ; then \
+	@-if localmake_config matlab ; then \
 	    DIRS="$(DIRS)" ;\
 	    for i in $$DIRS ; do \
 		printf "+    %-40s  %s\n" $$i "`date`" ; \

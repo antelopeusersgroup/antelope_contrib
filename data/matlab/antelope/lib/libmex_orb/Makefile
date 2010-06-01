@@ -8,7 +8,7 @@ fflags=
 ldflags=
 ldlibs=
 
-include $(ANTELOPE)/include/mex_antelope_makerules
+include $(ANTELOPE)/local/include/mex_antelope_makerules
 OBJS= mex_orb.o
 
 $(DLIB) : $(OBJS) dsymutil_dir

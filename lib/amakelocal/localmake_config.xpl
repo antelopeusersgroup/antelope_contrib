@@ -241,17 +241,20 @@ sub test_capability {
 		}
 	}
 
-	if( $passed ) {
+	if( $mode eq "configure" ) {
 
-		$Var{"en$c"} = "Capability '$c' is enabled";
+		if( $passed ) {
 
-		$Widgets{"en$c"}->configure( -fg => "green" );
+			$Var{"en$c"} = "Capability '$c' is enabled";
 
-	} else {
+			$Widgets{"en$c"}->configure( -fg => "green" );
 
-		$Var{"en$c"} = "Capability '$c' is enabled but failed test(s)";
+		} else {
 
-		$Widgets{"en$c"}->configure( -fg => "red" );
+			$Var{"en$c"} = "Capability '$c' is enabled but failed test(s)";
+
+			$Widgets{"en$c"}->configure( -fg => "red" );
+		}
 	}
 
 	return;

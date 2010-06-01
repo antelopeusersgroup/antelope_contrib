@@ -14,10 +14,12 @@ ldlibs= -lantelope_mex.$(MATLAB_RELEASE) -lmex_orb.$(MATLAB_RELEASE) $(CGEOM_LIB
 MEX_CEXTRA=
 RPATH=-L
 
-ANTELOPEMAKELOCAL = $(ANTELOPEMAKE).local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
 
 # Get STOCKNEEDS away from mex, which doesn't understand -framework
 STOCKLIBS=-lcoords -lbanner -lstock -ldeviants -lbrttpool
@@ -26,7 +28,7 @@ STOCKLIBS=-lcoords -lbanner -lstock -ldeviants -lbrttpool
 DCFLAGS= 
 
 # Suppress -i, which mex compiler doesn't understand 
-CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) $(MEX_CEXTRA) $(CGEOM_CFLAGS)
+CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(ANTELOPE)/local/include -I$(XINCLUDE) $(DCFLAGS) $(MEX_CEXTRA) $(CGEOM_CFLAGS)
 
 # Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
 MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \

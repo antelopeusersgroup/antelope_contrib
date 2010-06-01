@@ -28,4 +28,4 @@ MEXSRCS= \
 	pfupdate.c \
 	pfwrite.c
 
-include $(ANTELOPE)/include/mex_antelope_makerules
+include $(ANTELOPE)/local/include/mex_antelope_makerules

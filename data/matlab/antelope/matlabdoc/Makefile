@@ -10,3 +10,5 @@ ldflags=
 ldlibs=
 
 include $(ANTELOPEMAKE)
+
+SUBDIR= /local
