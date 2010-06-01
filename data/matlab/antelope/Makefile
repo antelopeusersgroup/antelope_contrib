@@ -3,7 +3,7 @@ DIRS=version matlabdoc lib doc examples mex setup scripts user
 Include :: $(ANTELOPE)/local/include/mex_antelope_makerules
 install :: $(ANTELOPE)/local/include/mex_antelope_makerules
 
-all clean Include install installMAN pf relink tags :: FORCED
+all clean Include install installMAN pf relink tags :: FORCED $(ANTELOPE)/local/include/mex_antelope_makerules
 	@-DIRS="$(DIRS)" ;\
 	for i in $$DIRS ; do \
 	    printf "+    %-40s  %s\n" $$i "`date`" ; \
