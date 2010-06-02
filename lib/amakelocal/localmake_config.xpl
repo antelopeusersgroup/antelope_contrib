@@ -504,6 +504,9 @@ $Pf = "localmake_config";
 $Pf_proto = "localmake_config_proto";
 
 $localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
+
+$ENV{'PFPATH'} = "$localpf_dir:$ENV{'PFPATH'}";
+
 $Pf_file = "$localpf_dir/$Pf.pf";
 $Pf_proto_file = "$ENV{'ANTELOPE'}/data/pf/$Pf_proto.pf";
 
