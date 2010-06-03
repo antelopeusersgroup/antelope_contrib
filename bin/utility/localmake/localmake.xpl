@@ -75,6 +75,13 @@ foreach $step ( @steps ) {
 	
 	$dir = "$ENV{ANTELOPE}/$step";
 
+	if( ! -d "$dir" ) {
+
+		elog_die( "Directory '$dir' does not exist (Have you downloaded the Antelope " .
+			  "contributed source-code distribution and is it in the right place?). " .
+			  "Exiting.\n" );
+	}
+
 	if( $opt_v ) {
 		
 		elog_notify( "Changing directory to '$dir'\n" );
@@ -84,7 +91,7 @@ foreach $step ( @steps ) {
 
 	if( ! $rc ) {
 
-		elog_die( "Couldn't change directory to '$dir'\n" );
+		elog_die( "Couldn't change directory to '$dir'. Exiting.\n" );
 	}
 
 	$cmd = "make clean 2>&1 | cf";
