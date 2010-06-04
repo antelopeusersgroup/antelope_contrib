@@ -17,7 +17,10 @@ the \fBlocalmake\fP parameter file) on which a particular software
 component depends. If the \fI-t\fP option is used, \fBlocalmake\fP will 
 further assemble the resulting compiled components into a platform-specific
 tar file which may be distributed for use on identically configured 
-machines elsewhere. 
+machines elsewhere. Depending on the components being compiled and how 
+their makefiles are structured, the location into which results are 
+installed may be $ANTELOPE/local rather than $ANTELOPE. 
+
 .SH OPTIONS
 .IP -l
 Print a list of available modules and exit. 
@@ -51,14 +54,16 @@ all pieces of compiled code and supporting files comprising a given software
 
 tarball_time_format %Y_%m_%d
 
+contrib_src_subdir src/contrib
+
 modules &Arr{
 	dbxcor &Arr{
 		build &Tbl{
-			src/contrib/lib/graphics/seisw
-			src/contrib/lib/seismic/libseispp
-			src/contrib/lib/utility/libgclgrid
-			src/contrib/lib/perf
-			src/contrib/bin/db/dbxcor
+			&contrib_src_subdir/lib/graphics/seisw
+			&contrib_src_subdir/lib/seismic/libseispp
+			&contrib_src_subdir/lib/utility/libgclgrid
+			&contrib_src_subdir/lib/perf
+			&contrib_src_subdir/bin/db/dbxcor
 		}
 		package &Tbl{
 			static/libsciplot.a
@@ -131,7 +136,7 @@ modules &Arr{
 	}
 	python_antelope &Arr{
 		build &Tbl{
-			src/contrib/data/python
+			&contrib_src_subdir/data/python
 		}
 		package &Tbl{
 			lib/python__datascope.dylib 

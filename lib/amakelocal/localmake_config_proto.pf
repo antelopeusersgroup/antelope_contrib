@@ -133,8 +133,35 @@ macros &Arr{
 }
 
 capabilities &Arr{
+	matlab &Arr{
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
+		required_macros &Tbl{
+			MATLAB
+		}
+		tests &Tbl{
+			&Literal{
+			$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
+				       "implied by currently configured value of MATLAB macro";
+			-d "$MATLAB"
+			}
+		}
+		Description Antelope Matlab Interface and Matlab-based Antelope tools
+		Detail &Literal{
+			The 'matlab' capability provides linkage to the Matlab interpreter on the
+			local machine. These is used within Antelope-contrib primarily for compilation
+			of the Antelope Toolbox for Matlab. 
+		}
+	}
 	python &Arr{
-		enable no
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
 		required_macros &Tbl{
 			PYTHONINCLUDE
 			PYTHON_EXECUTABLE
@@ -149,13 +176,25 @@ capabilities &Arr{
 			&Literal{
 			$failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
 				       "PYTHON_EXECUTABLE macro is not present or not executable'";
-			-x "$PYTHON_EXECUTABLE"
+			-f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE"
 			}
 		}
 		Description Antelope Python Interface and Python-based Antelope tools
+		Detail &Literal{
+			The 'python' capability provides linkage to the Python interpreter on the
+			local machine (if there are several Python interpreters, this capability 
+			identifies which one has been chosen to be used with Antelope). This capability 
+			is used within Antelope-contrib primarily for compilation of the Antelope Python 
+			interface, though it also controls whether other Python-dependent Antelope-contrib 
+			tools get installed (e.g. dbwfserver(1) and orbtopo(1)). 
+		}
 	}
 	php &Arr{
-		enable no
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
 		required_macros &Tbl{
 			PHP_INC
 			PHP_EXECUTABLE
@@ -169,27 +208,26 @@ capabilities &Arr{
 			&Literal{
 			$failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
 				       "PHP_EXECUTABLE macro is not present or not executable'";
-			-x "$PHP_EXECUTABLE"
+			-f "$PHP_EXECUTABLE" && -x "$PHP_EXECUTABLE"
 			}
 		}
 		Description Antelope PHP Interface and PHP-based Antelope tools
-	}
-	matlab &Arr{
-		enable no
-		required_macros &Tbl{
-			MATLAB
+		Detail &Literal{
+			The 'php' capability provides linkage to the PHP interpreter on the
+			local machine (if there are several PHP interpreters, this capability 
+			identifies which one has been chosen to be used with Antelope). This 
+			capability is used within Antelope-contrib primarily for compilation of 
+			the Antelope PHP interface, though it also controls whether other 
+			PHP-dependent Antelope-contrib tools get installed (e.g. webdlmon(3H) 
+			and webdbe(3H)). 
 		}
-		tests &Tbl{
-			&Literal{
-			$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
-				       "implied by currently configured value of MATLAB macro";
-			-d "$MATLAB"
-			}
-		}
-		Description Antelope Matlab Interface and Matlab-based Antelope tools
 	}
 	xmotif &Arr{
-		enable yes
+		enable &Arr{
+			Darwin no
+			SunOS yes
+			Linux yes
+		}
 		required_macros &Tbl{
 			XMOTIFINCLUDE
 			XMOTIFLIB
@@ -207,6 +245,12 @@ capabilities &Arr{
 			}
 		}
 		Description X/Motif Graphics toolkit links
+		Detail &Literal{
+			The 'xmotif' capability provides linkage to the X/Motif include files and 
+			link libraries on the local machine. These are used within Antelope-contrib
+			for the dbxcor(1) application as well as supporting libraries such as
+			libseisw. 
+		}
 	}
 }
 

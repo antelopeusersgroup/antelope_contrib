@@ -50,7 +50,7 @@ format STDOUT =
 
 	foreach $c ( keys( %capabilities ) ) {
 
-		$enabled = pfget_boolean( $Pf, "capabilities{$c}{enable}" );
+		$enabled = pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" );
 	
 		$enabled_string = $enabled ? "[ enabled]" : "[disabled]";
 
@@ -162,7 +162,7 @@ sub test_capability {
 		}
 	}
 
-	if( ! pfget_boolean( $Pf, "capabilities{$c}{enable}" ) && $mode eq "verify" ) {
+	if( ! pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" ) && $mode eq "verify" ) {
 
 		elog_complain( "Requested capability '$c' marked as disabled in '$Pf'.\n" .
 			"Run localmake_config(1) (or edit '$Pf_file')\nto enable and configure " .
@@ -172,7 +172,7 @@ sub test_capability {
 
 	}
 
-	if( ! $capabilities{$c}{enable} && $mode eq "configure" ) {
+	if( ! $capabilities{$c}{enable}{$Os} && $mode eq "configure" ) {
 
 		$Widgets{"t$c"}->insert( "end", "Capability '$c' disabled\n", 'disabled' );
 
@@ -247,7 +247,7 @@ sub test_capability {
 
 			$Var{"en$c"} = "Capability '$c' is enabled";
 
-			$Widgets{"en$c"}->configure( -fg => "green" );
+			$Widgets{"en$c"}->configure( -fg => "darkgreen" );
 
 		} else {
 
@@ -315,7 +315,8 @@ sub init_capabilities {
 	my( $w ) = @_;
 
 	my( $capabilities_window );
-	my( @specs, $i );
+	my( @specs, @lefttop, @righttop, @leftbottom, @rightbottom, $i );
+	my( $leftwidth ) = 80;
 
 	$capabilities_window = $w->Frame( -relief => 'raised', 
 					  -borderwidth => 2 );
@@ -325,17 +326,49 @@ sub init_capabilities {
 	foreach $c ( keys( %capabilities ) ) {
 
 		push( @specs, "notebookpage $c - xxx $c" );
-		push( @specs, "label np$c - 0,0:3 Capability:" );
-		push( @specs, "label en$c - +,0 Status:" );
-		push( @specs, "button b$c - =,1 Toggle" );
+
+		@lefttop = ();
+		@righttop = ();
+		@leftbottom = ();
+		@rightbottom = ();
+
+		push( @lefttop, "label np$c $leftwidth 0,0 Capability:" );
+		push( @lefttop, "label en$c $leftwidth +,0 Status:" );
+
+		push( @righttop, "button b$c - 0,0 Toggle" );
+		push( @righttop, "button e$c - +,0 Explain '$c' capability" );
 
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
 
-			push( @specs, "entry e$c$m 80 +,0:2 $m { $macros{$m}{Description} }" );
-			push( @specs, "button b$c$m - =,2 Explain $m" );
+			push( @leftbottom, "entry e$c$m $leftwidth +,0 $m { $macros{$m}{Description} }" );
+			push( @rightbottom, "button b$c$m - +,0 Explain '$m' macro" );
 		}
 
-		push( @specs, "rotext t$c - +,0:4 Tests:" );
+		push( @specs, "frame top - 0,0" );
+
+		push( @specs, "frame lefttop - 0,0" );
+		push( @specs, @lefttop );
+		push( @specs, "endframe" );
+
+		push( @specs, "frame righttop - 0,1" );
+		push( @specs, @righttop );
+		push( @specs, "endframe" );
+
+		push( @specs, "endframe" );
+
+		push( @specs, "frame bottom - 1,0" );
+
+		push( @specs, "frame leftbottom - 0,0" );
+		push( @specs, @leftbottom );
+		push( @specs, "endframe" );
+
+		push( @specs, "frame rightbottom - 0,1" );
+		push( @specs, @rightbottom );
+		push( @specs, "endframe" );
+
+		push( @specs, "endframe" );
+
+		push( @specs, "rotext t$c - 2,0 Tests:" );
 	}
 
 	push( @specs, "endnotebook" );
@@ -345,33 +378,42 @@ sub init_capabilities {
 	foreach $c ( keys( %capabilities ) ) {
 
 		$Widgets{"t$c"}->tagConfigure( 'failed', -foreground => "red" );
-		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "green" );
+		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "darkgreen" );
 		$Widgets{"t$c"}->tagConfigure( 'disabled', -foreground => "grey30" );
+
+		my( $parent ) = $Widgets{"t$c"}->parent();
+		my( %params ) = $parent->gridInfo();
+		$params{"-sticky"} = "nsew";
+		$parent->gridForget();
+		$parent->grid( %params );
 
 		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
 
 		$Widgets{"b$c"}->configure( -command => [\&toggle_capability, $c] );
 
-		if( pfget_boolean( $Pf, "capabilities{$c}{enable}" ) ) {
+		if( pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" ) ) {
 
-			$capabilities{$c}{enable} = 1;
+			$capabilities{$c}{enable}{$Os} = 1;
 
 			$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Disable $c", -bg => "red" );
+			$Widgets{"b$c"}->configure( -text => "Disable $c compilation", -bg => "green" );
 
 		} else {
 
-			$capabilities{$c}{enable} = 0;
+			$capabilities{$c}{enable}{$Os} = 0;
 
 			$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Enable $c", -bg => "green" );
+			$Widgets{"b$c"}->configure( -text => "Enable $c compilation", -bg => "orange" );
 		}
+
+		$Widgets{"e$c"}->configure( -command => [ \&explain, $capabilities{$c}{Detail} ] );
 
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
 
-			$Widgets{"b$c$m"}->configure( -command => [ \&explain, $m ] );
+			$Widgets{"b$c$m"}->configure( -command => [ \&explain, $macros{$m}{Detail} ] );
+
 			$Widgets{"e$c$m"}->configure( -textvariable => \$$m );
 
 			$Widgets{"e$c$m"}->bind( "<KeyPress-Return>", [ \&test_capability, $c, "configure" ] );
@@ -386,30 +428,29 @@ sub init_capabilities {
 sub toggle_capability {
 	my( $c ) = @_;
 
-	if( $capabilities{$c}{enable} ) {
+	if( $capabilities{$c}{enable}{$Os} ) {
 
-		$capabilities{$c}{enable} = 0;
+		$capabilities{$c}{enable}{$Os} = 0;
 
 		$test_result = test_capability( $c, "configure" );
 
-		$Widgets{"b$c"}->configure( -text => "Enable $c", -bg => "green" );
+		$Widgets{"b$c"}->configure( -text => "Enable $c compilation", -bg => "orange" );
 
 	} else {
 
-		$capabilities{$c}{enable} = 1;
+		$capabilities{$c}{enable}{$Os} = 1;
 
 		$test_result = test_capability( $c, "configure" );
 
-		$Widgets{"b$c"}->configure( -text => "Disable $c", -bg => "red" );
+		$Widgets{"b$c"}->configure( -text => "Disable $c compilation", -bg => "green" );
 	}
 
 	return;
 }
 
 sub explain {
-	my( $macro ) = @_;
+	my( $detail ) = @_;
 
-	my( $detail ) = $macros{$macro}{Detail};
 	$detail =~ s/\n//g;
 	$detail =~ s/[[:space:]]+/ /g;
 	$detail =~ s/^[[:space:]]+//;
@@ -592,13 +633,16 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 			       "newer than it, and may contain added features.\n" );
 
 		while( ( $ans = ask( "What to do:\n" .
-				     "            [c] continue anyway;\n" .
+				     "            [c] continue anyway, risking using the old parameter file;\n" .
 				     "            [l] list differences with pfdiff;\n" .
 				     "            [r] replace existing configuration with new defaults;\n" .
 				     "            [q] quit and update by hand\n" .
 				     "?: " ) ) !~ /^[crq]$/ ) {
 
 			if( $ans eq "l" ) {
+
+				elog_notify( "Your configuration file\n\t$Pf_file\ndiffers from the new " .
+					     "default file\n\t$Pf_proto_file\nin the following ways:\n\n" );
 
 				system( "pfdiff $Pf_file $Pf_proto_file" );
 			}
@@ -615,6 +659,9 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 			; # Fall through
 
 		} elsif( $ans eq "q" ) {
+
+			elog_notify( "Please update your file\n\t$Pf_file\nto follow the pattern of the " .
+				     "new default file\n\t$Pf_proto_file\nExiting.\n" );
 
 			exit( 0 );
 
