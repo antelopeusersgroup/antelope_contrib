@@ -151,7 +151,7 @@ modules &Arr{
 	}
 	bootstrap &Arr{
 		build &Tbl{
-			&contrib_src_subdir/lib/amakelocal
+			&contrib_src_subdir/lib/localmake_config
 			&contrib_src_subdir/bin/utility/localmake
 		}
 	}
