@@ -1,0 +1,15 @@
+BIN = orb2amqp amqp2orb
+PF = orb2amqp.pf amqp2orb.pf
+MAN1 = orb2amqp.1 amqp2orb.1
+
+CLEAN = *.pyc
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
+
+DIRS=
+

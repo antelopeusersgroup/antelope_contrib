@@ -1,0 +1,7 @@
+virtual_host	/
+queue		reap
+exchange	orbmirror
+routing_key	testkey
+userid		&ask(Userid)
+password	&ask(Password)
+consumer_tag	reaptag

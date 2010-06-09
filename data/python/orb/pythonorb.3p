@@ -326,7 +326,10 @@ orbexhume( filename )
 .in
 .ft R
 .IP "\fBorbresurrect\fP (orbfd)"
-Restore previous orb position variables
+Restore previous orb position variables. This function will 
+raise an ElogLog exception even when successful, announcing the 
+repositioning, which exception should be trapped and handled 
+by the calling program.
 .ft CW
 .in 2c
 .nf

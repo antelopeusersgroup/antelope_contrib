@@ -1,0 +1,8 @@
+port		5672
+virtual_host	/
+exchange	orbmirror
+routing_key	testkey
+delivery_mode	2
+time_encoding_format %17.5lf
+userid		&ask(Userid)
+password	&ask(Password)

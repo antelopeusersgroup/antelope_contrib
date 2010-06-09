@@ -1,0 +1,126 @@
+.TH ORB2AMQP 1 
+.SH NAME
+orb2amqp \- Transfer orb packets from Antelope orbserver to AMQP server
+.SH SYNOPSIS
+.nf
+\fBorb2amqp\fP [-p \fIpfname\fP] [-P \fIport\fP] [-S \fIstatefile\fP] [-v] [-V] 
+         [-m \fImatch\fP] [-r \fIreject\fP] [-n \fInpkts\fP] [-u \fIuserid\fP] 
+         [-s \fIpassword\fP] \fIorbname\fP \fIamqphost\fP 
+.fi
+.SH DESCRIPTION
+The \fBorb2amqp\fP program transfers orbserver packets from an Antelope orbserver to 
+an Advanced Message Queueing Protocol (\fIAMQP\fP) server. Similar to the \fBorb2orb(1)\fP 
+program, \fBorb2amqp\fP connects to an orbserver, reads successive packets from it according to 
+the specified \fImatch\fP and \fIreject\fP expressions, casts them into AMQP packets, and 
+sends them to the AMQP server instance. 
+.SH OPTIONS
+.IP "-m match"
+Select sources matching the regular expression given by \fImatch\fP
+.IP "-n npkts"
+Collect \fInpkts\fP packets from orbserver \fIorbname\fP, then exit
+.IP "-p npkts"
+Transfer the specified number of packets, then exit.
+.IP "-p pfname"
+Change the parameter file to something other than the default of \fIorb2amqp\fP.pf
+.IP "-P port"
+Attach to the target AMQP server via a port other than the default of 5672.
+.IP "-r reject"
+Reject sources matching the regular expression given by \fIreject\fP
+.IP "-u userid" 
+Specify the \fIuserid\fP for access to the \fIamqphost\fP. If given, this command-line 
+argument overrides the value specified in the parameter-file. 
+.IP "-s password" 
+Specify the \fIpassword\fP for access to the \fIamqphost\fP. If given, this command-line 
+argument overrides the value specified in the parameter-file. 
+.IP "-S statefile" 
+If  the  -S  option  is  specified, \fBorb2amqp\fP attempts to save the time and pktid of the last packet it copied into the
+\fIstatefile\fP file whenever it quits abnormally due to a signal.  When it is restarted, (if the -S option is  specified),
+\fBorb2amqp\fP attempts to read this file and reposition itself to the same packet, so that there are no gaps in the copy.
+.IP -v
+Be verbose
+.IP -V
+Be very verbose
+.SH PARAMETER FILE
+.SS Parameters
+.IP delivery_mode
+The \fIdelivery_mode\fP parameter marks whether to publish AMQP messages as persistent (\fIdelivery_mode = 2\fP) 
+.IP exchange
+This parameter specifies the AMQP \fIexchange\fP to which orb packet messages are to be published. 
+.IP password
+If a \fIpassword\fP for the AMQP server is not specified on the command-line, this parameter specifies the \fIpassword\fP to 
+use to connect
+.IP port
+The default AMQP \fIport\fP of 5672 may be modified with this parameter, unless overridden on the command-line which takes precedence
+.IP routing_key
+This parameter gives the \fIrouting_key\fP with which to publish orb messages
+.IP time_encoding_format
+Orb packet timestamps are encoded into the AMQP application headers in string format. The \fItime_encoding_format\fP parameter
+specifies the default format, usually \fI17.5lf\fP. 
+.IP userid
+If a user-id for the AMQP server is not specified on the command-line, this parameter specifies the user-id to 
+use to connect
+.IP virtual_host
+
+.SS Sample parameter file
+
+.nf
+
+port		5672
+virtual_host	/
+exchange	orbmirror
+routing_key	testkey
+delivery_mode	2
+time_encoding_format %17.5lf
+userid		&ask(Userid)
+password	&ask(Password)
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+% orb2amqp -V -n 5 -r '.*/HS' -m '.*S' 192.168.0.220 localhost:5672
+Userid : rmqtest
+Password : ********
+Orb Select request to select sources matching '.*S' returned 4 sources
+
+Orb Reject request to reject sources matching '.*/HS' returned 3 sources
+
+Got an orb message with srcname: AZ_PFO/BBA/BS time: 1277167875.000000 pktid: 206879 bytes: 698
+
+Got an orb message with srcname: AZ_PFO/BBA/BS time: 1277167880.000000 pktid: 206885 bytes: 700
+
+Got an orb message with srcname: AZ_PFO/BBA/BS time: 1277167885.000000 pktid: 206891 bytes: 694
+
+Got an orb message with srcname: AZ_PFO/BBA/LS time: 1277167815.000000 pktid: 206892 bytes: 362
+
+Got an orb message with srcname: AZ_PFO/BBA/BS time: 1277167890.000000 pktid: 206898 bytes: 694
+
+%
+
+.fi
+.ft R
+.in
+.SH LIBRARY
+\fBorb2amqp\fP uses the Python \fIamqplib\fP from http://code.google.com/p/py-amqplib/, 
+designed to connect to the RabbitMQ AMQP server via AMQP Protocol version 0.8.
+.SH "SEE ALSO"
+.nf
+amqp2orb(1), pf(5)
+
+http://www.amqp.org
+
+http://www.rabbitmq.com
+.fi
+.SH "BUGS AND CAVEATS"
+\fBorb2amqp\fP has been written for and tested only with the RabbitMQ AMQP server and AMQP protocol version 
+0.8.
+
+Password echo suppression is not yet implemented. 
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi

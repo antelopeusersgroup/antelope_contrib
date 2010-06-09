@@ -476,14 +476,14 @@ static PyObject *
 python_orbput( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _orbput(orb, srcname, time, packet, nbytes)\n";
 	int	orbfd;
-	char	srcname[ORBSRCNAME_SIZE];
+	char	*srcname = 0;
 	double	pkttime;
 	char	*pkt = 0;
 	int	nbytes = 0;
 	int	nbytes_pkt = 0;
 	int	rc;
 
-	if( ! PyArg_ParseTuple( args, "isds#i", &orbfd, srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
+	if( ! PyArg_ParseTuple( args, "isds#i", &orbfd, &srcname, &pkttime, &pkt, &nbytes_pkt, &nbytes) ) {
 
 		USAGE;
 
