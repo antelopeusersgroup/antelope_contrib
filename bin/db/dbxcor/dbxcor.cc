@@ -408,7 +408,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 	{
 		const string base_error("handle_next_event:  ");
 		mdfinder.put("orid",orid);
-		list<int> recs=psm->dbh.find(mdfinder);
+		list<long> recs=psm->dbh.find(mdfinder);
 		if(recs.size()<=0)
 		{
 			ss << orid << " not found in input database"<<endl
@@ -836,7 +836,6 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
     psm->record(ss.str());
 
     psm->xpe->change_analysis_setting(psm->active_setting);
-
 
     Metadata data_md=psm->xpe->get_data_md();
 
