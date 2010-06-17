@@ -55,7 +55,14 @@ sub pf2grammar {
 				next;
 			}
 
-			$$ref .= "\\033[$part\\m";
+			if( $opt_c ) {
+
+				$$ref .= "ANSICODE_$part ";
+
+			} else {
+
+				$$ref .= "\\033[$part\\m";
+			}
 		}
 
 		@clauses = @{pfget($pf,"$expressions\{$color}")};
@@ -81,18 +88,25 @@ sub pf2grammar {
 	return $grammar;
 }
 
-$normal = "\033[00\m";
-
 $Pf = "cf";
 
-if( ! &Getopts( "e:gnp:t" ) ) {
+if( ! &Getopts( "ce:gnp:t" ) ) {
 
-	die( "Usage: cf [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [filename ... ]]\n" );
+	die( "Usage: cf [-n] [-t] [-c] [-g] [-e expressions] [-p pfname] [filename [filename ... ]]\n" );
 }
 
 if( $opt_p ) {
 	
 	$Pf = $opt_p;
+}
+
+if( $opt_c ) {
+
+	$normal = "ANSICODE_00 ";
+
+} else {
+
+	$normal = "\033[00\m";
 }
 
 if( $opt_e ) {

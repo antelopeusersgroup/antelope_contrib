@@ -146,7 +146,14 @@ capabilities &Arr{
 			&Literal{
 			$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
 				       "implied by currently configured value of MATLAB macro";
+			$success_msg = "Matlab directory '$MATLAB' exists";
 			-d "$MATLAB"
+			}
+			&Literal{
+			$failure_msg = "Couldn't find Matlab launch script '$MATLAB/bin/matlab' " .
+				       "implied by currently configured value of MATLAB macro";
+			$success_msg = "Matlab launch script '$MATLAB/bin/matlab' is executable";
+			-x "$MATLAB/bin/matlab"
 			}
 		}
 		Description Antelope Matlab Interface and Matlab-based Antelope tools
@@ -171,11 +178,13 @@ capabilities &Arr{
 			$failure_msg = "Couldn't find header-file '$PYTHONINCLUDE/Python.h' " .
 				       "implied by currently configured value of PYTHONINCLUDE " .
 				       "macro";
+			$success_msg = "Found header file '$PYTHONINCLUDE/Python.h'";
 			-e "$PYTHONINCLUDE/Python.h"
 			}
 			&Literal{
 			$failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
 				       "PYTHON_EXECUTABLE macro is not present or not executable'";
+			$success_msg = "Found python executable '$PYTHON_EXECUTABLE'";
 			-f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE"
 			}
 		}
@@ -187,6 +196,28 @@ capabilities &Arr{
 			is used within Antelope-contrib primarily for compilation of the Antelope Python 
 			interface, though it also controls whether other Python-dependent Antelope-contrib 
 			tools get installed (e.g. dbwfserver(1) and orbtopo(1)). 
+		}
+	}
+	python_amqplib &Arr{
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
+		required_macros &Tbl{
+		}
+		tests &Tbl{
+			&Literal{
+			$failure_msg = "Python 'amqplib' is not available within " .
+				       "Python interpreter '$PYTHON_EXECUTABLE'";
+			$success_msg = "Python 'amqplib' is available within '$PYTHON_EXECUTABLE'";
+			-f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE" && system( "$PYTHON_EXECUTABLE -c 'import amqplib'" ) == 0
+			}
+		}
+		Description AMQP interface library for Python
+		Detail &Literal{
+			The 'python_amqplib' capability supports usage of the py-amqplib Python 
+			client library available from http://code.google.com/p/py-amqplib/.
 		}
 	}
 	php &Arr{
@@ -203,11 +234,13 @@ capabilities &Arr{
 			&Literal{
 			$failure_msg = "Couldn't find header-file directory '$PHP_INC/Zend' " . 
 				       "implied by currently configured value of PHP_INC macro";
+			$success_msg = "Found header-file directory '$PHP_INC'";
 			-d "$PHP_INC/Zend"
 			}
 			&Literal{
 			$failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
 				       "PHP_EXECUTABLE macro is not present or not executable'";
+			$success_msg = "Found php executable '$PHP_EXECUTABLE'";
 			-f "$PHP_EXECUTABLE" && -x "$PHP_EXECUTABLE"
 			}
 		}
@@ -236,11 +269,13 @@ capabilities &Arr{
 			&Literal{
 			$failure_msg = "Couldn't find header-file directory '$XMOTIFINCLUDE/Xm' " . 
 				       "implied by currently configured value of XMOTIFINCLUDE macro";
+			$success_msg = "Found header-file directory for X-Motif";
 			-d "$XMOTIFINCLUDE/Xm"
 			}
 			&Literal{
 			$failure_msg = "Couldn't find library-file directory '$XMOTIFLIB' " . 
 				       "implied by currently configured value of XMOTIFLIB macro";
+			$success_msg = "Found library-file directory for X-motif";
 			-d "$XMOTIFLIB"
 			}
 		}

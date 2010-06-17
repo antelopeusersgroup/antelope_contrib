@@ -3,7 +3,7 @@
 cf \- colorize text based on filters specified in a parameter file
 .SH SYNOPSIS
 .nf
-cf [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [...]]
+cf [-c] [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [...]]
 .fi
 .SH DESCRIPTION
 The color-filter program \fBcf\fP is a simple line-based scanner that 
@@ -88,6 +88,11 @@ has no matching expression in the parameter file, that line will be
 displayed normally). 
 
 .SH OPTIONS
+.IP "-c"
+Emit raw escape codes prefaced with \fIANSICODE_\fP, rather than creating
+the actual colorizing escape sequences. This is useful if colorizing needs 
+to be done by another application (for example localmake(1)), based on the 
+analysis done by \fBcf\fP. 
 .IP "-e expressions"
 Specify the name of an array of regular expressions to use, which should 
 match one of the array names in the parameter file. If this option is 

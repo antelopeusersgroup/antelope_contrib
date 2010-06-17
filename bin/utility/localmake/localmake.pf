@@ -5,6 +5,9 @@ contrib_src_subdir src/contrib
 
 modules &Arr{
 	dbxcor &Arr{
+		capabilities_required &Tbl{
+			xmotif
+		}
 		build &Tbl{
 			&contrib_src_subdir/lib/graphics/seisw
 			&contrib_src_subdir/lib/seismic/libseispp
@@ -78,17 +81,26 @@ modules &Arr{
 			man/man3/glp_matrix_utils.3
 		}
 	}
-	matlab_antelope &Arr{
+	antelope_matlab &Arr{
+		capabilities_required &Tbl{
+			matlab
+		}
 		build &Tbl{
 			src/contrib/data/matlab
 		}
 	}
-	php_antelope &Arr{
+	antelope_php &Arr{
+		capabilities_required &Tbl{
+			php
+		}
 		build &Tbl{
 			src/contrib/data/php
 		}
 	}
-	python_antelope &Arr{
+	antelope_python &Arr{
+		capabilities_required &Tbl{
+			python
+		}
 		build &Tbl{
 			&contrib_src_subdir/data/python
 		}
@@ -108,7 +120,18 @@ modules &Arr{
 			local/man/man3/pythonstock.3p
 		}
 	}
+	orb2amqp &Arr{
+		capabilities_required &Tbl{
+			python
+			python_amqplib
+		}
+		build &Tbl{
+			&contrib_src_subdir/bin/rt/orb2amqp
+		}
+	}
 	isi2orb &Arr{
+		capabilities_required &Tbl{
+		}
 		build &Tbl{
 			&contrib_src_subdir/bin/rt/isi2orb
 		}
@@ -130,6 +153,8 @@ modules &Arr{
 		}
 	}
 	rtkill &Arr{
+		capabilities_required &Tbl{
+		}
 		build &Tbl{
 			&contrib_src_subdir/bin/rt/rtkill
 		}
@@ -140,6 +165,8 @@ modules &Arr{
 		}
 	}
 	db2sql &Arr{
+		capabilities_required &Tbl{
+		}
 		build &Tbl{
 			&contrib_src_subdir/lib/dataformat/db2sql
 			&contrib_src_subdir/lib/dataformat/dbmon
@@ -150,8 +177,11 @@ modules &Arr{
 		}
 	}
 	bootstrap &Arr{
+		capabilities_required &Tbl{
+		}
 		build &Tbl{
 			&contrib_src_subdir/lib/localmake_config
+			&contrib_src_subdir/bin/utility/cf
 			&contrib_src_subdir/bin/utility/localmake
 		}
 	}

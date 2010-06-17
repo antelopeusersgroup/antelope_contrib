@@ -24,7 +24,7 @@ escapes &Tbl{
 default_expressions make
 
 make &Arr{
-   red &Tbl{
+   red &Tbl{							# Serious problems
 	^\\*\\*\\* Error code
 	^.* error:
 	^Error:
@@ -55,13 +55,14 @@ make &Arr{
 	^[[:digit:]]+ errors$
 	^[[:space:]]*format_type can't format
 	^[[:space:]]*parse_function doesn't understand 
+	^localmake_config:.*is not defined
    }
-   green &Tbl{
+   green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
 	^make.*: Entering directory
 	^make.*: Leaving directory
    }
-   magenta &Tbl{
+   magenta &Tbl{						# Warning and potential problems
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
 	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
@@ -91,8 +92,13 @@ make &Arr{
 	^Undefined[[:space:]]+first referenced
 	^[[:space:]]symbol[[:space:]]+in file
 	^WARNING:
+	^Unsupported system
+	^localmake_config:.*pf_revision_time
+	^but program requires date after
+	^localmake_config:.*appears out of date
+	^You may be missing features
    }
-   cyan &Tbl{
+   cyan &Tbl{							# Routine command output
 	^---+
 	^->[[:space:]]+[[:upper:]]+[[:space:]]+=[[:space:]]
 	^->[[:space:]]+[[:upper:]] flags: 
@@ -107,6 +113,11 @@ make &Arr{
 	^ar: creating
 	^ar: writing
 	^amakelocal:
+	^localmake_config:.*marked as disabled
+	^localmake:
+	^Run localmake_config
+	^to enable and configure
+	^to configure
 	^[[:alnum:]_]+\\.[fF]:$
 	^[[:space:]]*MAIN:$
 	^[[:space:]]+MAIN [[:alnum:]_]+:$
@@ -139,7 +150,7 @@ make &Arr{
 	^output=
 	^uninstalling
    }
-   blue &Tbl{
+   blue &Tbl{							# Commands executed
 	^ar[[:space:]]
 	^awk[[:space:]]
 	^[[:space:]]*cat

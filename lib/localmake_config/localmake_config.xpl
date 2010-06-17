@@ -123,6 +123,62 @@ sub write_makerules {
 	return;
 }
 
+sub set_orig_enabled {
+
+	foreach $capability ( keys( %capabilities ) ) {
+
+		$orig_enabled{$capability} = $capabilities{$capability}{enable}{$Os};
+	}
+}
+
+sub test_configuration_unsaved {
+
+	my( $tf ) = "false";
+
+	foreach $macro ( keys( %macros_orig ) ) {
+
+		if( $$macro ne $macros_orig{$macro}{$Os} ) {
+
+			$tf = "true";
+
+			return $tf;
+		}
+	}
+
+	foreach $capability ( keys( %capabilities ) ) {
+
+		if( $capabilities{$capability}{enable}{$Os} != $orig_enabled{$capability} ) {
+
+			$tf = "true";
+
+			return $tf;
+		}
+	}
+
+	return $tf;
+}
+
+sub mark_configuration_unsaved {
+	my( $tft ) = @_;
+
+	if( $tft eq "test" ) {
+
+		$tft = test_configuration_unsaved();
+	}
+
+	if( $tft eq "true" ) {
+
+		$Windows{"save_config"}->configure( -text => "save configuration (SOME CHANGES UNSAVED)",
+				       		    -bg => "yellow",
+						    -state => "normal" );
+	} else {
+
+		$Windows{"save_config"}->configure( -text => "save configuration",
+				       		    -bg => "gray",
+						    -state => "disabled" );
+	}
+}
+
 sub commit_configuration {
 
 	foreach $macro ( keys( %macros ) ) {
@@ -137,7 +193,20 @@ sub commit_configuration {
 
 	write_makerules();
 
+	mark_configuration_unsaved( "false" );
+
+	%macros_orig = %macros;
+
+	set_orig_enabled();
+
 	return;
+}
+
+sub tweak_capability {
+	
+	mark_configuration_unsaved( "test" );
+
+	test_capability( @_ );
 }
 
 sub test_capability {
@@ -202,7 +271,10 @@ sub test_capability {
 
 			} else {
 
-				$Widgets{"t$c"}->insert( "end", "Failed: Required macro '$required_macro' is not defined\n\n", 'failed' );
+				$Widgets{"t$c"}->insert( "end", 
+					"Failed check for capability '$c': " .
+					"Required macro '$required_macro' is not defined\n\n", 
+					'failed' );
 
 				$passed = 0;
 			}
@@ -211,7 +283,10 @@ sub test_capability {
 
 			if( $mode eq "configure" ) {
 
-				$Widgets{"t$c"}->insert( "end", "Passed: Required macro '$required_macro' is defined\n\n", 'passed' );
+				$Widgets{"t$c"}->insert( "end", 
+					"Passed check for capability '$c': " .
+					"Required macro '$required_macro' is defined\n\n", 
+					'passed' );
 			}
 		}
 	}
@@ -228,7 +303,9 @@ sub test_capability {
 				
 			} else {
 
-				$Widgets{"t$c"}->insert( "end", "Failed: Test failed for capability '$c': $failure_msg\n\n", 'failed' );
+				$Widgets{"t$c"}->insert( "end", 
+					"Failed: Test failed for capability '$c': $failure_msg\n\n", 
+					'failed' );
 
 				$passed = 0;
 			}
@@ -236,7 +313,9 @@ sub test_capability {
 
 			if( $mode eq "configure" ) {
 
-				$Widgets{"t$c"}->insert( "end", "Passed: Test succeeded for capability '$c'\n\n", 'passed' );
+				$Widgets{"t$c"}->insert( "end", 
+					"Passed test for capability '$c': $success_msg\n\n", 
+					'passed' );
 			}
 		}
 	}
@@ -277,6 +356,11 @@ sub run_verify {
 	return;
 }
 
+sub freeze_size {
+
+	$Windows{"Main"}->resizable( 0, 0 );
+}
+
 sub init_File_menu {
 	my( $w ) = @_;
 
@@ -286,7 +370,9 @@ sub init_File_menu {
 			    -text => 'File',
 			    -pady => 0, 
 			    -anchor => 'w', 
-			    )->pack( -side => "left" );
+			    );
+			    
+	$menubutton->pack( -side => "left" );
 
 	$filemenu = $menubutton->Menu( -tearoff => 0 );
 
@@ -308,7 +394,29 @@ sub init_menubar {
 
 	init_File_menu( $menubar );
 
+	my( $b ) = $menubar->Button( -text => "Run localmake",
+				     -bg => "green",
+			       	     -command => sub { system( "localmake &" ); } );
+
+	$b->pack( -side => "right" );
+
 	return $menubar;
+}
+
+sub resticky {
+	my( $w, $sticky ) = @_;
+
+	my( $parent ) = $w->parent();
+
+	my( %params ) = $parent->gridInfo();
+
+	$params{"-sticky"} = $sticky;
+
+	$parent->gridForget();
+
+	$parent->grid( %params );
+
+	return;
 }
 
 sub init_capabilities {
@@ -323,7 +431,7 @@ sub init_capabilities {
 
 	push( @specs, "notebook capabilities - 0,0 Capabilities" );
 
-	foreach $c ( keys( %capabilities ) ) {
+	foreach $c ( sort( keys( %capabilities ) ) ) {
 
 		push( @specs, "notebookpage $c - xxx $c" );
 
@@ -344,25 +452,25 @@ sub init_capabilities {
 			push( @rightbottom, "button b$c$m - +,0 Explain '$m' macro" );
 		}
 
-		push( @specs, "frame top - 0,0" );
+		push( @specs, "frame top$c - 0,0" );
 
-		push( @specs, "frame lefttop - 0,0" );
+		push( @specs, "frame lefttop$c - 0,0" );
 		push( @specs, @lefttop );
 		push( @specs, "endframe" );
 
-		push( @specs, "frame righttop - 0,1" );
+		push( @specs, "frame righttop$c - 0,1" );
 		push( @specs, @righttop );
 		push( @specs, "endframe" );
 
 		push( @specs, "endframe" );
 
-		push( @specs, "frame bottom - 1,0" );
+		push( @specs, "frame bottom$c - 1,0" );
 
-		push( @specs, "frame leftbottom - 0,0" );
+		push( @specs, "frame leftbottom$c - 0,0" );
 		push( @specs, @leftbottom );
 		push( @specs, "endframe" );
 
-		push( @specs, "frame rightbottom - 0,1" );
+		push( @specs, "frame rightbottom$c - 0,1" );
 		push( @specs, @rightbottom );
 		push( @specs, "endframe" );
 
@@ -381,11 +489,9 @@ sub init_capabilities {
 		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "darkgreen" );
 		$Widgets{"t$c"}->tagConfigure( 'disabled', -foreground => "grey30" );
 
-		my( $parent ) = $Widgets{"t$c"}->parent();
-		my( %params ) = $parent->gridInfo();
-		$params{"-sticky"} = "nsew";
-		$parent->gridForget();
-		$parent->grid( %params );
+		resticky( $Widgets{"t$c"}, "nsew" );
+
+		resticky( $Widgets{"b$c"}, "ew" );
 
 		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
 
@@ -397,7 +503,7 @@ sub init_capabilities {
 
 			$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Disable $c compilation", -bg => "green" );
+			$Widgets{"b$c"}->configure( -text => "Disable '$c' capability", -bg => "#ffdddd" );
 
 		} else {
 
@@ -405,7 +511,7 @@ sub init_capabilities {
 
 			$test_result = test_capability( $c, "configure" );
 
-			$Widgets{"b$c"}->configure( -text => "Enable $c compilation", -bg => "orange" );
+			$Widgets{"b$c"}->configure( -text => "Enable '$c' capability", -bg => "light green" );
 		}
 
 		$Widgets{"e$c"}->configure( -command => [ \&explain, $capabilities{$c}{Detail} ] );
@@ -416,9 +522,9 @@ sub init_capabilities {
 
 			$Widgets{"e$c$m"}->configure( -textvariable => \$$m );
 
-			$Widgets{"e$c$m"}->bind( "<KeyPress-Return>", [ \&test_capability, $c, "configure" ] );
-			$Widgets{"e$c$m"}->bind( "<KeyPress-Tab>", [ \&test_capability, $c, "configure" ] );
-			$Widgets{"e$c$m"}->bind( "<Leave>", [ \&test_capability, $c, "configure" ] );
+			$Widgets{"e$c$m"}->bind( "<KeyPress-Return>", [ \&tweak_capability, $c, "configure" ] );
+			$Widgets{"e$c$m"}->bind( "<KeyPress-Tab>", [ \&tweak_capability, $c, "configure" ] );
+			$Widgets{"e$c$m"}->bind( "<Leave>", [ \&tweak_capability, $c, "configure" ] );
 		}
 	}
 
@@ -434,7 +540,7 @@ sub toggle_capability {
 
 		$test_result = test_capability( $c, "configure" );
 
-		$Widgets{"b$c"}->configure( -text => "Enable $c compilation", -bg => "orange" );
+		$Widgets{"b$c"}->configure( -text => "Enable '$c' capability", -bg => "light green" );
 
 	} else {
 
@@ -442,8 +548,10 @@ sub toggle_capability {
 
 		$test_result = test_capability( $c, "configure" );
 
-		$Widgets{"b$c"}->configure( -text => "Disable $c compilation", -bg => "green" );
+		$Widgets{"b$c"}->configure( -text => "Disable '$c' capability", -bg => "#ffdddd" );
 	}
+
+	mark_configuration_unsaved( "true" );
 
 	return;
 }
@@ -505,8 +613,6 @@ sub run_configure {
 	use ptkform;
 	use elog_gui;
 
-	my( $b );
-
 	$Windows{"Main"} = MainWindow->new();
 
 	elog_gui_init( MW => $Windows{"Main"} );
@@ -522,21 +628,27 @@ sub run_configure {
 				   -sticky => 'new',
 				 );
 
-	$b = $Windows{"Main"}->Button( -text => "save configuration",
+	$Windows{"save_config"} = $Windows{"Main"}->Button( -text => "save configuration",
 				       -command => \&commit_configuration, 
-				       -bg => "green" );
+				       -bg => "gray",
+				       -state => "disabled" );
 
-	$b->grid( -row => 1,
-		  -column => 0,
-		  -sticky => 'new',
-		 );
+	$Windows{"save_config"}->grid( -row => 1,
+		  		       -column => 0,
+		  		       -sticky => 'new',
+		 			);
 
 	$Windows{"capabilities"} = init_capabilities( $Windows{"Main"} );
 
 	$Windows{"capabilities"}->grid( -row => 2,
 				   	-column => 0,
-				   	-sticky => 'new',
+				   	-sticky => 'nsew',
 				 	);
+
+	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
+	$Windows{"Main"}->gridRowconfigure( 2, -weight => 1 );
+
+	$Windows{"Main"}->afterIdle( \&freeze_size );
 
 	MainLoop;
 }
@@ -624,12 +736,12 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 
 	if( $mode eq "verify" ) {
 
-		elog_complain( "The file '$Pf_file' appears out of date. The file '$Pf_proto_file' is " .
+		elog_complain( "Your file '$Pf_file' appears out of date. The default file '$Pf_proto_file' is " .
 			       "newer than it. You may be missing features. Continuing.\n" );
 
 	} else {
 	
-		elog_complain( "The file '$Pf_file' appears out of date. The file '$Pf_proto_file' is " .
+		elog_complain( "Your file '$Pf_file' appears out of date. The default file '$Pf_proto_file' is " .
 			       "newer than it, and may contain added features.\n" );
 
 		while( ( $ans = ask( "What to do:\n" .
@@ -678,6 +790,10 @@ $Os = my_os();
 $header = pfget( $Pf, "header" );
 $extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
+
+%macros_orig = %macros;
+
+set_orig_enabled();
 
 set_macros();
 
