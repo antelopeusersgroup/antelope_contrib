@@ -175,13 +175,20 @@ sub make_target {
 
 	my( $cf );
 
-	if( $Gui_mode ) {
+	if( -x "$ENV{'ANTELOPE'}/bin/cf" ) {
 
-		$cf = "| cf -c";
+		if( $Gui_mode ) {
+
+			$cf = "| cf -c";
+
+		} else {
+
+			$cf = "| cf";
+		}
 
 	} else {
 
-		$cf = "| cf";
+		$cf = "";
 	}
 
 	my( $cmd, $quiet );
