@@ -93,8 +93,8 @@ make &Arr{
 	^[[:space:]]symbol[[:space:]]+in file
 	^WARNING:
 	^Unsupported system
-	^localmake_config:.*pf_revision_time
-	^but program requires date after
+	^localmake_config:.*pf_revision_time.*
+	^.*but program requires date after.*
 	^localmake_config:.*appears out of date
 	^You may be missing features
    }
