@@ -233,6 +233,7 @@ void SessionManager::record( string s)
     XmTextInsert(msg_w,XmTextGetLastPosition(msg_w),(char *)(s.c_str()));
     XClearWindow(XtDisplay(msg_w),XtWindow(msg_w));
     log_stream << s <<endl;
+    cout << s <<endl;
 }
 
 void SessionManager::session_state()
@@ -535,11 +536,11 @@ bool SessionManager::validate_setting(stringstream & ss)
     }
 
     if(scase==1 && state != ANALYZE && state != REF) {
-	active_setting.result_sort_order=DBARRIVAL_TIME;
+	active_setting.result_sort_order=DISTANCE;
 	ss << "You specified an initial sort order of "<<sort_order<<endl<<
 	    " which is not available before the analysis"<<endl<<
 	    " of the ensemble, "
-	    <<"the sort order was reset to "<<endl<<"arrival time"<<endl;
+	    <<"the sort order was reset to "<<endl<<"epicentral distance"<<endl;
         if (display_initial_sort_box) return false;
     } else if (scase==0 && (state==ANALYZE || state==REF)) {
 	/* This originally was stack weight.  Switched to xcor peak as this seems normally
