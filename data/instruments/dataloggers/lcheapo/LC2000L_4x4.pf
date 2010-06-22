@@ -87,7 +87,7 @@ gains 3355443
 
 # Stages
 
-a/d&Arr{
+a/d     &Arr{
     samprate    512000
     gtype       digitizer
     iunits      V
@@ -143,13 +143,13 @@ sinc3_6    &Arr{
     response    &datafile(responses/lch_4_sinc3_6)
 }
 
-f1    &Arr{
+f1          &Arr{
     gtype       FIR_decimator
     decifac     4
     response    &datafile(responses/lch_4_f1)
 }
 
-f2    &Arr{
+f2          &Arr{
     gtype       FIR_decimator
     decifac     2
     response    &datafile(responses/lch_4_f2)
