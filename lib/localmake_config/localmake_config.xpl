@@ -42,7 +42,7 @@ sub set_macros {
 sub show_capabilities {
 
 format STDOUT = 
-   @<<<<<<<<<<<<<<< @<<<<<<<<<<<< @*
+   @<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<< @*
    $enabled_string, $c, $capabilities{$c}{Description}
 .
 
@@ -309,6 +309,7 @@ sub test_capability {
 
 				$passed = 0;
 			}
+
 		} else {
 
 			if( $mode eq "configure" ) {
