@@ -155,6 +155,12 @@ capabilities &Arr{
 			$success_msg = "Matlab launch script '$MATLAB/bin/matlab' is executable";
 			-x "$MATLAB/bin/matlab"
 			}
+			&Literal{
+			$failure_msg = "MATLAB environment variable is defined as '$ENV{MATLAB}' which " .
+				       "doesn't match MATLAB macro setting of '$MATLAB'";
+			$success_msg = "MATLAB environment variable is not defined or matches macro setting";
+			! defined( $ENV{'MATLAB'} ) || $ENV{'MATLAB'} eq "$MATLAB"
+			}
 		}
 		Description Antelope Matlab Interface and Matlab-based Antelope tools
 		Detail &Literal{
