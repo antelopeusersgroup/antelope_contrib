@@ -205,7 +205,7 @@ sub make_target {
 
 	} else {
 
-		$cmd = "make $target 2>&1 $cf";
+		$cmd = "make $target 2>&1 < /dev/null $cf";
 	}
 
 	inform( "localmake: executing '$cmd'\n" );
@@ -249,7 +249,7 @@ sub make_target {
 
 		if( $rc != 0 ) {
 
-			elog_die( "Command '$cmd' failed in directory '$dir'\n" );
+			elog_die( "Command '$cmd' failed in directory '$Dir'\n" );
 		}
 	}
 
@@ -299,31 +299,29 @@ sub localmake_module {
 
 	foreach $step ( @steps ) {
 		
-		my( $dir );
-
 		if( $step =~ m@^/.*@ ) {
 
-			$dir = $step;
+			$Dir = $step;
 
 		} else {
 
-			$dir = "$ENV{ANTELOPE}/$step";
+			$Dir = "$ENV{ANTELOPE}/$step";
 		}
 
-		if( ! -d "$dir" ) {
+		if( ! -d "$Dir" ) {
 
-			elog_die( "Directory '$dir' does not exist (Have you downloaded the Antelope " .
+			elog_die( "Directory '$Dir' does not exist (Have you downloaded the Antelope " .
 				  "contributed source-code distribution and is it in the right place?). " .
 				  "Exiting.\n" );
 		}
 
-		inform( "localmake: changing directory to '$dir'\n" );
+		inform( "localmake: changing directory to '$Dir'\n" );
 
-		my( $rc ) = chdir( $dir );
+		my( $rc ) = chdir( $Dir );
 
 		if( ! $rc ) {
 
-			elog_die( "Couldn't change directory to '$dir'. Exiting.\n" );
+			elog_die( "Couldn't change directory to '$Dir'. Exiting.\n" );
 		}
 
 		make_target( "clean" );
