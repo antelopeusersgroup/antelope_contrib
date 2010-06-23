@@ -56,6 +56,7 @@ make &Arr{
 	^[[:space:]]*format_type can't format
 	^[[:space:]]*parse_function doesn't understand 
 	^localmake_config:.*is not defined
+	^localmake_config:.*Test failed
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
