@@ -198,10 +198,8 @@ sub make_target {
 		$cmd = $target;
 		$cmd =~ s/VERIFY/localmake_config/;
 
-		$cmd .= " 2>&1";
-
-		$quiet = $cmd . " >& /dev/null";
-		$cmd   = $cmd . " $cf";
+		$quiet = $cmd . " > /dev/null 2>&1";
+		$cmd   = $cmd . " 2>&1 $cf";
 
 	} else {
 
