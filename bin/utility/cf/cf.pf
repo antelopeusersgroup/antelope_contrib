@@ -79,6 +79,9 @@ make &Arr{
 	^.*parameter redeclared
 	^.*zero-sized struct\\/union
 	^.*Please specify prototyping behavior
+	^.*unrecognized compile argument
+	^.*Dropping empty section
+	^Unrecognized argument.*ignored
 	^[[:space:]]*declaration[[:space:]]*:
 	^[[:space:]]*parameter[[:space:]]*:
 	^[[:space:]]*prototype[[:space:]]*:
@@ -110,6 +113,8 @@ make &Arr{
 	^tsort:
 	^a -
 	^r -
+	^[[:space:]]+-e[[:space:]]
+	^[[:space:]]+-L\\/[a-z]
 	^ar: creating
 	^ar: writing
 	^amakelocal:
@@ -149,6 +154,8 @@ make &Arr{
 	^input=
 	^output=
 	^uninstalling
+	^Adding -arch
+	^Processing hints file
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
@@ -172,8 +179,8 @@ make &Arr{
 	^cp[[:space:]]
 	^deposit[[:space:]]
 	^tclindex[[:space:]]
-	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/deposit[[:space:]]
-	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
+	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/deposit[[:space:]]
+	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
 	^done[[:space:]]
 	^[[:space:]]*echo[[:space:]]
 	^flex[[:space:]]
@@ -201,7 +208,7 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^mv[[:space:]]
 	^perl[[:space:]]
-	^\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/perl[[:space:]]
+	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^produce[[:space:]]
 	^(\\.\\/)?runmake[[:space:]]
 	^ranlib[[:space:]]
