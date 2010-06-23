@@ -313,4 +313,12 @@ extra_rules &Literal{
 .wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
 	$(RM) $@
 	cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
+
+install :: 
+	@mkdir -p $(ANTELOPE)/local/bin
+	@mkdir -p $(ANTELOPE)/local/man
+	@mkdir -p $(ANTELOPE)/local/lib
+	@mkdir -p $(ANTELOPE)/local/static
+	@mkdir -p $(ANTELOPE)/local/data
+	@mkdir -p $(ANTELOPE)/local/include
 }
