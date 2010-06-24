@@ -222,8 +222,61 @@ capabilities &Arr{
 		}
 		Description AMQP interface library for Python
 		Detail &Literal{
-			The 'python_amqplib' capability supports usage of the py-amqplib Python 
+			The 'python_amqplib' capability supports usage of the 'py-amqplib' Python 
 			client library available from http://code.google.com/p/py-amqplib/.
+			Depending on your local system configuration and administration policies, 
+			you may be able to install this package by typing "easy_install amqplib" on 
+			the command-line. 
+		}
+	}
+	python_matplotlib &Arr{
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
+		required_macros &Tbl{
+		}
+		tests &Tbl{
+			&Literal{
+			$failure_msg = "Python 'matplotlib' is not available within " .
+				       "Python interpreter '$PYTHON_EXECUTABLE'";
+			$success_msg = "Python 'matplotlib' is available within '$PYTHON_EXECUTABLE'";
+			-f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE" && system( "$PYTHON_EXECUTABLE -c 'import matplotlib'" ) == 0
+			}
+		}
+		Description Matlab-emulation library for Python
+		Detail &Literal{
+			The 'python_matplotlib' capability supports usage of the 'matplotlib' Python 
+			client library available from http://matplotlib.sourceforge.net/.
+			Depending on your local system configuration and administration policies, 
+			you may be able to install this package by typing "easy_install matplotlib" on 
+			the command-line. 
+		}
+	}
+	python_pygraphviz &Arr{
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
+		required_macros &Tbl{
+		}
+		tests &Tbl{
+			&Literal{
+			$failure_msg = "Python 'pygraphviz' is not available within " .
+				       "Python interpreter '$PYTHON_EXECUTABLE'";
+			$success_msg = "Python 'pygraphviz' is available within '$PYTHON_EXECUTABLE'";
+			-f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE" && system( "$PYTHON_EXECUTABLE -c 'import pygraphviz'" ) == 0
+			}
+		}
+		Description Graphviz graph-analysis library for Python
+		Detail &Literal{
+			The 'python_pygraphviz' capability supports usage of the 'pygraphviz' Python 
+			client library available from http://networkx.lanl.gov/pygraphviz.
+			Depending on your local system configuration and administration policies, 
+			you may be able to install this package by typing "easy_install pygraphviz" on 
+			the command-line. 
 		}
 	}
 	php &Arr{
