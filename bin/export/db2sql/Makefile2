@@ -11,7 +11,12 @@ fflags=
 ldflags=
 ldlibs= -ldb2sql $(DBLIBS)
 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
 
 DIRS=
 
