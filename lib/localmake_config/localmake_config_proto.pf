@@ -279,6 +279,31 @@ capabilities &Arr{
 			the command-line. 
 		}
 	}
+	perl_DBI &Arr{
+		enable &Arr{
+			Darwin no
+			SunOS no
+			Linux no
+		}
+		required_macros &Tbl{
+		}
+		tests &Tbl{
+			&Literal{
+			$failure_msg = "Perl 'DBI' module is not available";
+			$success_msg = "Perl 'DBI' module is available";
+			eval { use DBI; 1; }
+			}
+		}
+		Description Perl DBI database-connectivity CPAN module
+		Detail &Literal{
+			The 'perl_DBI' capability supports usage of the Perl-CPAN 'DBI' Perl 
+			module available from http://www.cpan.org.
+			Depending on your local system configuration and administration policies, 
+			you may be able to install this package by typing 
+			"perl -MCPAN -e 'install DBI'" on the command-line, making sure to use 
+			the Antelope perl interpreter when doing so. 
+		}
+	}
 	php &Arr{
 		enable &Arr{
 			Darwin no
