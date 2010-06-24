@@ -105,19 +105,25 @@ modules &Arr{
 			&contrib_src_subdir/data/python
 		}
 		package &Tbl{
+			local/bin/python
 			local/lib/python__datascope.dylib 
 			local/lib/python__orb.dylib
 			local/lib/python__stock.dylib
+			local/lib/python__Pkt.dylib
 			local/data/python/antelope/_orb.so
 			local/data/python/antelope/_datascope.so
 			local/data/python/antelope/_stock.so
+			local/data/python/antelope/_Pkt.so
 			local/data/python/antelope/datascope.py
 			local/data/python/antelope/orb.py
 			local/data/python/antelope/stock.py
+			local/data/python/antelope/Pkt.py
 			local/data/python/antelope/__init__.py
+			local/data/templates/xpy
 			local/man/man3/pythondb.3p
 			local/man/man3/pythonorb.3p
 			local/man/man3/pythonstock.3p
+			local/man/man3/pythonPkt.3p
 		}
 	}
 	orb2amqp &Arr{
@@ -127,6 +133,14 @@ modules &Arr{
 		}
 		build &Tbl{
 			&contrib_src_subdir/bin/rt/orb2amqp
+		}
+		package &Tbl{
+			local/bin/orb2amqp
+			local/bin/amqp2orb
+			local/data/pf/orb2amqp.pf
+			local/data/pf/amqp2orb.pf
+			local/man/man1/orb2amqp.1
+			local/man/man1/amqp2orb.1
 		}
 	}
 	isi2orb &Arr{

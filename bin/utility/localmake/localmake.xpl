@@ -289,7 +289,7 @@ sub localmake_module {
 				$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
 			}
 
-			return;
+			return -1;
 		}
 	}
 
@@ -349,7 +349,7 @@ sub localmake_module {
 		exit( 0 );
 	}
 
-	return;
+	return 0;
 }
 
 sub create_compile_button {
@@ -522,7 +522,10 @@ if( $opt_l ) {
 
 $module = pop( @ARGV );
 
-localmake_module( $module );
+if( localmake_module( $module ) < 0 && ! $Gui_mode ) {
+
+	elog_die( "Build of module '$module' failed. Exiting.\n" );
+}
 
 if( $opt_t ) {
 	
@@ -541,7 +544,16 @@ if( $opt_t ) {
 	$tarfile .= "_" . my_os();
 	$tarfile .= "_tarball.tar";
 
-	$cmd = "$Tar_command -T $tarfilelist -P -c -v -f $tarfile";
+	if( $opt_v ) {
+
+		$v = "-v";
+
+	} else {
+		
+		$v = "";
+	}
+
+	$cmd = "$Tar_command -T $tarfilelist -P -c $v -f $tarfile";
 
 	inform( "localmake: executing '$cmd'\n" );
 
