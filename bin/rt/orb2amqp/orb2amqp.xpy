@@ -68,6 +68,8 @@ verbose			= False
 veryverbose		= False
 virtual_host		= '/'
 
+orbamqp_repr_version = '1.00'
+
 def usage():
 
     print "Usage: orb2amqp [-p pfname] [-S statefile] [-P port] [-v] [-V] [-m match] [-r reject] [-n npkts] [-u userid] [-s password] orbname amqphost"
@@ -212,7 +214,8 @@ while npkts != 0:
 
     appheaders = { 'srcname' : srcname, 
 		   'time'    : time_encoding_format % ( time ),
-                   'nbytes'  : nbytes }
+                   'nbytes'  : nbytes,
+		   'oarvers' : orbamqp_repr_version }
 
     msg = amqp.Message( packet, application_headers = appheaders )
 

@@ -3,17 +3,77 @@
 amqp2orb \- Transfer packets from AMQP server to Antelope orbserver
 .SH SYNOPSIS
 .nf
-\fBamqp2orb\fP
+\fBamqp2orb\fP [-p \fIpfname\fP] [-v] [-V] [-n \fInpkts\fP] [-u \fIuserid\fP] [-s \fIpassword\fP] \fIamqphost\fP \fIorbname\fP
 .fi
 .SH DESCRIPTION
+The \fBamqp2orb\fP program, a companion to \fBorb2amqp\fP, connects to an Advanced Message Queuing Protocol
+(\fIAMQP\fP) server named by \fIamqphost\fP, acquires opaque binary packets, and puts them on the Antelope
+orbserver given by \fIorbname\fP. 
 .SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
+.IP "-n npkts"
+Collect \fInpkts\fP packets from orbserver \fIorbname\fP, then exit
+.IP "-s password"
+Specify the \fIpassword\fP for access to the \fIamqphost\fP. If given, this command-line 
+argument overrides the value specified in the parameter-file. 
+.IP "-p pfname"
+Change the parameter file to something other than the default of \fIorb2amqp\fP.pf
+.IP "-u userid"
+Specify the \fIuserid\fP for access to the \fIamqphost\fP. If given, this command-line 
+argument overrides the value specified in the parameter-file. 
+.IP -v
+Be verbose
+.IP -V
+Be very verbose
 .SH PARAMETER FILE
+.SS Parameters
+.IP consumer_tag
+This parameter specifies a tag for the consuming channel through which \fBamqp2orb\fP acquires packets
+.IP exchange
+This parameter specifies the AMQP \fIexchange\fP from which orb packet messages are to be acquired. 
+.IP password
+If a \fIpassword\fP for the AMQP server is not specified on the command-line, this parameter specifies the \fIpassword\fP to 
+use to connect
+.IP routing_key
+This parameter gives the \fIrouting_key\fP with which to acquire orb messages
+.IP userid
+If a user-id for the AMQP server is not specified on the command-line, this parameter specifies the user-id to 
+use to connect
+.IP virtual_host
+This specifies the AMQP virtual host under which to connect
+
+.SS Sample parameter file
+
+.nf
+
+virtual_host	/
+queue		reap
+exchange	orbmirror
+routing_key	testkey
+consumer_tag	reaptag
+userid		&ask(Userid)
+password	&ask(Password)
+
+.fi
 .SH EXAMPLE
 .in 2c
 .ft CW
 .nf
+
+% amqp2orb -v -n 5 localhost:5672 :
+Userid : rmqtest
+Password : ********
+Received message with srcname AZ_PFO/BBA/HS, time 1277516606.000000, nbytes 886
+
+Received message with srcname AZ_PFO/BBA/HS, time 1277516607.000000, nbytes 890
+
+Received message with srcname AZ_PFO/BBA/HS, time 1277516608.000000, nbytes 890
+
+Received message with srcname AZ_PFO/BBA/HS, time 1277516609.000000, nbytes 888
+
+Received message with srcname AZ_PFO/BBA/BS, time 1277516605.000000, nbytes 696
+
+% 
+
 .fi
 .ft R
 .in
@@ -22,8 +82,11 @@ amqp2orb \- Transfer packets from AMQP server to Antelope orbserver
 orb2amqp(1)
 .fi
 .SH "BUGS AND CAVEATS"
-\fBorb2amqp\fP has been written for and tested only with the RabbitMQ AMQP server and AMQP protocol version 
+\fBamqp2orb\fP has been written for and tested only with the RabbitMQ AMQP server and AMQP protocol version 
 0.8.
+
+It is presumed that the packets received contain the application-headers appropriate for 
+orb packet transmission, as filled in by the\fBorb2amqp\fP program. 
 .SH AUTHOR
 .nf
 Kent Lindquist

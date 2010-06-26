@@ -157,6 +157,18 @@ orb = o.orbopen( orbname, "w" )
 
 def recv_callback( msg ):
 
+    oarvers_needed = '1.00'
+
+    try:
+        orb2amqp_repr_version = msg.application_headers['oarvers']
+    except KeyError:
+        print "Received a packet without an orb2amqp representation version in header (need oarvers = '%s'). Skipping packet\n" % (oarvers_needed)
+	return
+
+    if( orb2amqp_repr_version != '1.00' ):
+        print "Received orb2amqp representation version %s; need %s. Skipping packet\n" % (orb2amqp_repr_version, oarvers_needed)
+	return
+
     srcname = msg.application_headers['srcname']
     time = float(msg.application_headers['time'])
     nbytes = msg.application_headers['nbytes']
