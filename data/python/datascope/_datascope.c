@@ -80,7 +80,9 @@ staticforward PyTypeObject _Responsetype;
 
 static PyObject *_datascope_ElogException;
 
+/* Reserve for later use
 #define is__Responseobject( v ) ( (v)->ob_type == &_Responsetype )
+*/
 
 static PyObject *python_dbopen( PyObject *self, PyObject *args );
 static PyObject *python_dbinvalid( PyObject *self, PyObject *args );

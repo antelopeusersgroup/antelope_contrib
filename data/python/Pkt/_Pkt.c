@@ -89,8 +89,10 @@ staticforward PyTypeObject _pktchanneltype;
 
 static PyObject *_Pkt_ElogException;
 
+/* Reserve for later use
 #define is__pktobject( v ) ( (v)->ob_type == &_pkttype )
 #define is__pktchannelobject( v ) ( (v)->ob_type == &_pktchanneltype )
+*/
 
 static PyObject *python_join_srcname( PyObject *self, PyObject *args );
 static PyObject *python_split_srcname( PyObject *self, PyObject *args );
