@@ -30,6 +30,9 @@ Be very verbose
 This parameter specifies a tag for the consuming channel through which \fBamqp2orb\fP acquires packets
 .IP exchange
 This parameter specifies the AMQP \fIexchange\fP from which orb packet messages are to be acquired. 
+.IP exchange_type
+This parameter specifies the type of the AMQP \fIexchange\fP from which orb packet messages are to be acquired, e.g. 
+\fIdirect\fP, \fIfanout\fP, or \fItopic\fP.
 .IP password
 If a \fIpassword\fP for the AMQP server is not specified on the command-line, this parameter specifies the \fIpassword\fP to 
 use to connect
@@ -48,6 +51,7 @@ This specifies the AMQP virtual host under which to connect
 virtual_host	/
 queue		reap
 exchange	orbmirror
+exchange_type	direct
 routing_key	testkey
 consumer_tag	reaptag
 userid		&ask(Userid)

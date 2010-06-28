@@ -1,6 +1,7 @@
 virtual_host	/
 queue		reap
 exchange	orbmirror
+exchange_type	direct
 routing_key	testkey
 userid		&ask(Userid)
 password	&ask(Password)

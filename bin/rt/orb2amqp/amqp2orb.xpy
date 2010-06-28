@@ -57,6 +57,7 @@ userid = ''
 password = ''
 routing_key = ''
 exchange = '' 
+exchange_type = '' 
 queue = '' 
 consumer_tag = '' 
 npkts = -1
@@ -125,6 +126,7 @@ def configure(args):
 
     globals()['virtual_host']         = s.pfget_string( pfname, "virtual_host" )
     globals()['exchange']             = s.pfget_string( pfname, "exchange" )
+    globals()['exchange_type']        = s.pfget_string( pfname, "exchange_type" )
     globals()['queue']                = s.pfget_string( pfname, "queue" )
     globals()['consumer_tag']         = s.pfget_string( pfname, "consumer_tag" )
     globals()['routing_key']          = s.pfget_string( pfname, "routing_key" )
@@ -144,14 +146,14 @@ chan.queue_declare( queue = queue,
 		    exclusive = False,
 		    auto_delete = False )
 
-chan.exchange_declare( exchange = "orbmirror", 
-                       type = "direct", 
+chan.exchange_declare( exchange = exchange,
+                       type = exchange_type,
 		       durable = True,
 		       auto_delete = False )
 
 chan.queue_bind( queue = queue,
-                 exchange = "orbmirror",
-		 routing_key = "testkey" )
+                 exchange = exchange,
+		 routing_key = routing_key )
 
 orb = o.orbopen( orbname, "w" )
 
