@@ -15,29 +15,6 @@ Attribute media
         Media the baler is using to store data.
     }
     ;
-Attribute replace
-    String (1)
-    Format ( "%1s" )
-    Null ( "-" )
-    Range ( "replace =~ /y|n/" ) 
-    Description ( "flag to replace file on local archive Y/N" )
-    Detail {
-        Set this flag to Y and the system will include this 
-        file in the next download list of files. 
-    }
-    ;
-Attribute avoid
-    String (1)
-    Format ( "%1s" )
-    Null ( "-" )
-    Range ( "avoid =~ /y|n/" ) 
-    Description ( "flag to avoid download of file Y/N" )
-    Detail {
-        Set this flag to Y and the system will skip this
-        file from the download list. System will not test 
-        if file size match the local copy size. 
-    }
-    ;
 Attribute fixed
     String (1)
     Format ( "%1s" )
@@ -70,16 +47,13 @@ Attribute attempts
         Number of download attempts for this file.
     }
     ;
-Attribute mseeddb
-    String (1)
-    Format ( "%1s" )
+Attribute md5
+    String (32)
+    Format ( "%-32s" )
     Null ( "-" )
-    Range ( "mseeddb =~ /y|n/" ) 
-    Description ( "miniSEED database creation Y/N" )
+    Description ( "Message-Digest algorithm 5" )
     Detail {
-        Files from the baler44 can be reformat to a day base 
-        file structure. This flag is set to Y if this is done 
-        after the download of the file. 
+        Cryptographic hash function for checking files integrity.
     }
     ;
 Attribute status
@@ -104,9 +78,22 @@ Attribute bandwidth
         download and size of file downloaded.
     }
     ;
+Attribute msdtime
+    Time (17)
+    Format ( "%17.5f" )
+    Null ( "-9999999999.99900" )
+    Units ( "Seconds" )
+    Description ( "epoch time" )
+    Detail {
+        Time that the file was converted into a miniseed database. 
+        This time is given as seconds and fractions of a second
+        since hour 0 January 1, 1970, and stored in a double
+        precision floating number.
+    }
+    ;
 
 Relation rsyncbaler
-    Fields ( dlsta net sta dfile time endtime dir status attempts mseeddb bandwidth filebytes media fixed avoid replace )
-    Primary ( dlsta dfile )
+    Fields ( dlsta net sta dfile time endtime dir status attempts msdtime bandwidth filebytes media fixed md5 lddate)
+    Primary ( dlsta dfile status)
     Description ( "Track files downloaded from balers." )
     ;
