@@ -210,6 +210,8 @@ make &Arr{
 	^mv[[:space:]]
 	^perl[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
+	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
+	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
 	^produce[[:space:]]
 	^(\\.\\/)?runmake[[:space:]]
 	^ranlib[[:space:]]
