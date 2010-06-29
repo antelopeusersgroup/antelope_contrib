@@ -9,7 +9,7 @@ main( int argc, char **argv )
 	char	*dbname;
 	Dbptr	db;
 	Tbl	*sqlcreate = (Tbl *) NULL;
-	int	flags = 0;
+	int	flags = DB2SQL_USE_DATASCOPE_NULLS;
 	
 	Program_Name = argv[0];
 

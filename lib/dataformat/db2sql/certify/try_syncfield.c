@@ -12,7 +12,7 @@ main( int argc, char **argv )
 	Dbptr	db;
 	Tbl	*sqlcommands = (Tbl *) NULL;
 	char	*sync;
-	int	flags = 0;
+	int	flags = DB2SQL_USE_DATASCOPE_NULLS;
 	
 	Program_Name = argv[0];
 

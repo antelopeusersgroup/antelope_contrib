@@ -17,8 +17,9 @@ void db2sql_set_syncfield_name( char *name );
 .SH DESCRIPTION
 The \fBdbschema2sqlcreate\fP function converts the schema for the input database
 into a Tbl of string values containing SQL create statements. 
-Currently, the only supported value for \fIflags\fP is \fIDB2SQL_OMIT_SYNC\fP. Unless this flag 
-is used, an extra database field is appended by \fBdbschema2sqlcreate\fP with the 
+Currently, the only supported values for \fIflags\fP are \fIDB2SQL_OMIT_SYNC\fP and
+\fIDB2SQL_USE_DATASCOPE_NULLS\fP. Unless the \fIDB2SQL_OMIT_SYNC\fP flag 
+is given, an extra database field is appended by \fBdbschema2sqlcreate\fP with the 
 value of the macro \fIDB2SQL_SYNCFIELD_NAME_DEFAULT\fP, currently set to \fIsyncstring\fP in db2sql.h and 
 with the corresponding SQL schema format given by the macro \fIDB2SQL_SYNCFIELD_SPEC\fP as 
 .nf
@@ -30,6 +31,10 @@ This syncronization field is used to hold values of a synchronization string com
 \fBdb2sqlinsert\fP function for updating changes made to the database. The default name of the 
 synchronization string may be changed with the \fBdb2sql_set_syncfield_name\fP function 
 described below. 
+
+Unless the flag \fIDB2SQL_USE_DATASCOPE_NULLS\fP is given, \fBdb2sql\fP converts all Datascope 
+null values into official SQL \fINULL\fP values. With the \fIDB2SQL_USE_DATASCOPE_NULLS\fP flag
+set, Datascope Null values are inserted into the SQL tables verbatim. 
 
 The table returned by \fBdbschema2sqlcreate\fP is newly allocated, along with all string 
 fields it contains as entries, and must therefore be freed by the caller after use with a 
@@ -195,6 +200,12 @@ The \fBdb2sql_compute_row_sync\fP function may not belong in this library; it ov
 in the dbmon library. 
 
 If no \fIcreatesync\fP function is specified to \fBdb2sqlinsert\fP, the synchronization string will be left as NULL.
+
+MySQL SQL does not allow a default value for fields of type \fITEXT\fP, therefore none is used for fields of this type. 
+
+If default values are being defined in the SQL version of the Datascope schema, invalid null values in the Datascope 
+schema (i.e. null values not conforming to the stated format of the attribute) will prevent the corresponding table 
+from being created in the SQL database. 
 .SH AUTHOR
 .nf
 Kent Lindquist 

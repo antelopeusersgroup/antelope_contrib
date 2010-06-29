@@ -121,7 +121,7 @@ Conversion results:
   `units`       CHAR(12) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	  7 CREATE TABLE `centryd`
@@ -202,7 +202,7 @@ Conversion results:
   `foff`        INTEGER(10) DEFAULT 0,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `filter`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `filter`, `time`)
   );
 
 	 11 CREATE TABLE `fplane`
@@ -452,7 +452,7 @@ Conversion results:
   `instant`     CHAR(1) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 25 CREATE TABLE `site`
@@ -470,7 +470,7 @@ Conversion results:
   `deast`       DECIMAL(9,4) DEFAULT 0.0000,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `ondate`, `offdate`)
+  PRIMARY KEY (`sta`, `ondate`)
   );
 
 	 26 CREATE TABLE `sitechan`
@@ -567,7 +567,7 @@ Conversion results:
   `dfile`       CHAR(32) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `stageid`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `stageid`, `time`)
   );
 
 	 31 CREATE TABLE `stamag`
@@ -632,7 +632,7 @@ Conversion results:
   `foff`        INTEGER(10) DEFAULT 0,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `filter`, `azimuth`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `filter`, `azimuth`, `time`)
   );
 
 	 34 CREATE TABLE `wfdisc`
@@ -658,7 +658,7 @@ Conversion results:
   `commid`      INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 35 CREATE TABLE `wfedit`
@@ -674,7 +674,7 @@ Conversion results:
   `commid`      INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 36 CREATE TABLE `wfmeas`
@@ -750,7 +750,7 @@ Conversion results:
   `commid`      INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 40 CREATE TABLE `wftar`
@@ -780,7 +780,7 @@ Conversion results:
   `commid`      INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 41 CREATE TABLE `adoption`
@@ -858,7 +858,7 @@ Conversion results:
   `seed_units`    CHAR(20),
   `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`    CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `seed_comment`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `seed_comment`, `time`)
   );
 
 	 47 CREATE TABLE `b059`
@@ -872,7 +872,7 @@ Conversion results:
   `seed_units`    CHAR(20),
   `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`    CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `seed_comment`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `seed_comment`, `time`)
   );
 
 	 48 CREATE TABLE `balerlist`
@@ -927,7 +927,7 @@ Conversion results:
   `dfilee`      CHAR(32) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`net`, `sta`, `chan`, `caltype`, `runtime`, `time`, `endtime`)
+  PRIMARY KEY (`net`, `sta`, `chan`, `caltype`, `runtime`, `time`)
   );
 
 	 50 CREATE TABLE `calwf`
@@ -952,7 +952,7 @@ Conversion results:
   `calfreq`     DECIMAL(8,2) DEFAULT 0.00,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`)
   );
 
 	 51 CREATE TABLE `changed`
@@ -1001,7 +1001,7 @@ Conversion results:
   `equiptype`   CHAR(30) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `time`)
   );
 
 	 55 CREATE TABLE `deployment`
@@ -1019,7 +1019,7 @@ Conversion results:
   `sdcc`           CHAR(15) DEFAULT '-',
   `lddate`         DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`     CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `time`)
   );
 
 	 56 CREATE TABLE `detection`
@@ -1067,7 +1067,7 @@ Conversion results:
   `phchan`      INTEGER(3) DEFAULT 999,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`)
   );
 
 	 59 CREATE TABLE `dlacq`
@@ -1086,7 +1086,7 @@ Conversion results:
   `acqmode`     CHAR(16) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`model`, `ssident`, `time`, `endtime`)
+  PRIMARY KEY (`model`, `ssident`, `time`)
   );
 
 	 60 CREATE TABLE `dlcalwf`
@@ -1112,7 +1112,7 @@ Conversion results:
   `dlcaltrailer`  DECIMAL(8,5) DEFAULT -1.00000,
   `lddate`        DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`    CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`snet`, `fsta`, `fchan`, `loc`, `time`, `endtime`)
+  PRIMARY KEY (`snet`, `fsta`, `fchan`, `loc`, `time`)
   );
 
 	 61 CREATE TABLE `dlchannel`
@@ -1130,7 +1130,7 @@ Conversion results:
   `stream`      INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`snet`, `fsta`, `fchan`, `loc`, `time`, `endtime`)
+  PRIMARY KEY (`snet`, `fsta`, `fchan`, `loc`, `time`)
   );
 
 	 62 CREATE TABLE `dlcmd_cal`
@@ -1177,7 +1177,7 @@ Conversion results:
   `snident`     CHAR(16) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`dlmodel`, `dlident`, `chident`, `time`, `endtime`)
+  PRIMARY KEY (`dlmodel`, `dlident`, `chident`, `time`)
   );
 
 	 65 CREATE TABLE `dlsite`
@@ -1195,7 +1195,7 @@ Conversion results:
   `provider`    CHAR(30) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`model`, `ssident`, `time`, `endtime`)
+  PRIMARY KEY (`model`, `ssident`, `time`)
   );
 
 	 66 CREATE TABLE `dmcbull`
@@ -1262,7 +1262,7 @@ Conversion results:
   `timever`     DECIMAL(17,5) DEFAULT -9999999999.99900,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 70 CREATE TABLE `eids`
@@ -1405,7 +1405,7 @@ Conversion results:
   `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `period`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `period`, `time`)
   );
 
 	 79 CREATE TABLE `hypocentroid`
@@ -1485,7 +1485,7 @@ Conversion results:
   `dfilel`      CHAR(32) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`)
   );
 
 	 84 CREATE TABLE `pmelruns`
@@ -1527,7 +1527,7 @@ Conversion results:
   `thr`         INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`dlsta`, `time`, `endtime`)
+  PRIMARY KEY (`dlsta`, `time`)
   );
 
 	 87 CREATE TABLE `q730b`
@@ -1553,7 +1553,7 @@ Conversion results:
   `dacvmax`     DOUBLE DEFAULT 0.00000000e+00,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`ssident`, `time`, `endtime`)
+  PRIMARY KEY (`ssident`, `time`)
   );
 
 	 88 CREATE TABLE `qctests`
@@ -1602,7 +1602,7 @@ Conversion results:
   `auth`        CHAR(15) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`qgridname`, `recipe`, `time`, `endtime`)
+  PRIMARY KEY (`qgridname`, `recipe`, `time`)
   );
 
 	 90 CREATE TABLE `ratechange`
@@ -1628,7 +1628,7 @@ Conversion results:
   `orb`         CHAR(50) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	 92 CREATE TABLE `retransmit`
@@ -1657,7 +1657,7 @@ Conversion results:
   `dfile`       CHAR(32) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`net`, `sta`, `rrdvar`, `time`, `endtime`)
+  PRIMARY KEY (`net`, `sta`, `rrdvar`, `time`)
   );
 
 	 94 CREATE TABLE `rrdgraph`
@@ -1728,7 +1728,7 @@ Conversion results:
   `rsptype`     CHAR(6) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`net`, `sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`net`, `sta`, `chan`, `time`)
   );
 
 	 98 CREATE TABLE `sensorcal`
@@ -1826,7 +1826,7 @@ Conversion results:
   `last_reboot`  DECIMAL(17,5) DEFAULT 9999999999.99900,
   `lddate`       DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`   CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`dlsta`, `time`, `endtime`)
+  PRIMARY KEY (`dlsta`, `time`)
   );
 
 	102 CREATE TABLE `stanotes`
@@ -1840,7 +1840,7 @@ Conversion results:
   `dfile`       CHAR(32) DEFAULT '-',
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `lddate`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `lddate`, `time`)
   );
 
 	103 CREATE TABLE `staq330`
@@ -1879,7 +1879,7 @@ Conversion results:
   `LP4_buf`        INTEGER(4) DEFAULT -1,
   `lddate`         DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`     CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`dlsta`, `time`, `endtime`)
+  PRIMARY KEY (`dlsta`, `time`)
   );
 
 	104 CREATE TABLE `trigger`
@@ -1978,13 +1978,13 @@ Conversion results:
   `datatype`    CHAR(2) DEFAULT '-',
   `clip`        CHAR(1) DEFAULT '-',
   `Szone`       CHAR(30) DEFAULT '-',
-  `Scoll`       TEXT(256) DEFAULT '-',
+  `Scoll`       TEXT(256),
   `Sobj`        CHAR(64) DEFAULT '-',
   `foff`        INTEGER(10) DEFAULT 0,
   `commid`      INTEGER(8) DEFAULT -1,
   `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`sta`, `chan`, `time`, `endtime`)
+  PRIMARY KEY (`sta`, `chan`, `time`)
   );
 
 	110 CREATE TABLE `xcorarrival`
