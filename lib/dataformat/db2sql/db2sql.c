@@ -52,6 +52,7 @@
 #include "crc.h"
 
 static int find_longest( void *s, void *private );
+static int dbfield_isnull( Dbptr db );
 static char *generate_sqltable_create( Dbptr db, long flags );
 static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags );
 
@@ -70,6 +71,35 @@ find_longest( void *s, void *longest )
 	return 0;
 }
 
+static int
+dbfield_isnull( Dbptr db )
+{
+	char	*fnull;
+	long	fsize;
+	char	*stringval;
+	int	isnull = 0;
+
+	dbquery( db, dbFIELD_SIZE, &fsize );
+	dbquery( db, dbNULL, &fnull );
+
+	allot( char *, stringval, fsize + 2 );
+
+	dbget( db, stringval );
+
+	strtrim( stringval );
+
+	if( ! strcmp( stringval, fnull ) ) {
+
+		isnull = 1;
+
+	} else {
+
+		isnull = 0;
+	}
+
+	return isnull;
+}
+
 static char *
 generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 {
@@ -79,7 +109,6 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 	Dbvalue	dbvalue;
 	char	*field;
 	long	ifield;
-	long	fsize;
 	long	ftype;
 	char	*fformat;
 	char	part[STRSZ];
@@ -107,7 +136,6 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 
 		db = dblookup( db, "", "", field, "" );
 
-		dbquery( db, dbFIELD_SIZE, &fsize );
 		dbquery( db, dbFIELD_TYPE, &ftype );
 		dbquery( db, dbFIELD_FORMAT, &fformat );
 
@@ -116,6 +144,13 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 		if( ifield > 0 ) {
 
 			pushstr( &stk, ", " );
+		}
+
+		if( ! ( flags & DB2SQL_USE_DATASCOPE_NULLS ) && dbfield_isnull( db ) ) {
+
+			pushstr( &stk, "NULL" );
+
+			continue;
 		}
 
 		memset( part, '\0', STRSZ );
@@ -282,7 +317,9 @@ generate_sqltable_create( Dbptr db, long flags )
 			break;
 		}
 
-		if( fnull != (char *) NULL ) {
+		/* Disallow defaults for SQL TEXT fields */
+
+		if( fnull != (char *) NULL && strncmp( part, "TEXT", 4 ) ) {
 
 			pushstr( &stk, " DEFAULT " );
 
@@ -336,9 +373,13 @@ generate_sqltable_create( Dbptr db, long flags )
 				pushstr( &stk, field_a );
 				pushstr( &stk, "`" );
 
+				/* end-of-range keys can be NULL in Datascope,
+				   so don't use it as primary in SQL: 
+
 				pushstr( &stk, ", `" );
 				pushstr( &stk, field_b );
 				pushstr( &stk, "`" );
+				*/
 
 			} else {
 
