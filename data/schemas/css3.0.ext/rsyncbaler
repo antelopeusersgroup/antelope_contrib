@@ -1,5 +1,10 @@
 # css3.0 extension
 
+# by Juan C. Reyes
+# reyes@ucsd.edu
+#
+# Version 2
+# June 29, 2010
 #
 # Table to track files 
 # downloaded from new 
@@ -70,7 +75,7 @@ Attribute status
 Attribute bandwidth
     Real (6)
     Format ( "%6.1f" )
-    Null ( "-" )
+    Null ( "0.0" )
     Units ( "Kb/s" )
     Description ( "bandwidth" )
     Detail {
@@ -94,6 +99,6 @@ Attribute msdtime
 
 Relation rsyncbaler
     Fields ( dlsta net sta dfile time endtime dir status attempts msdtime bandwidth filebytes media fixed md5 lddate)
-    Primary ( dlsta dfile status)
+    Primary ( dlsta dfile status time)
     Description ( "Track files downloaded from balers." )
     ;
