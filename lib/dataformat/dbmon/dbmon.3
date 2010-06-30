@@ -6,19 +6,19 @@ dbmon_init, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- m
 
 #include "dbmon.h"
 
-Hook *dbmon_init( Dbptr db, Tbl *table_subset, 
-                  void (*newrow)(Dbptr db, char *table, char *sync, void *private), 
-		  void (*changerow)(char *oldsync, Dbptr db, char *table, char *newsync, void *private), 
-		  void (*delrow)(Dbptr db, char *table, char *oldsync, void *private), 
-		  int flags );
+Hook *\fBdbmon_init\fP( Dbptr \fIdb\fP, Tbl *\fItable_subset\fP, 
+                  void (*\fInewrow\fP)(Dbptr db, char *table, char *sync, void *private), 
+                  void (*\fIchangerow\fP)(char *oldsync, Dbptr db, char *table, char *newsync, void *private), 
+                  void (*\fIdelrow\fP)(Dbptr db, char *table, char *oldsync, void *private), 
+                  int \fIflags\fP );
 
-int dbmon_update( Hook *dbmon_hook, void *private );
+int \fBdbmon_update\fP( Hook *\fIdbmon_hook\fP, void *\fIprivate\fP );
 
-void dbmon_status( FILE *fp, Hook *dbmon_hook );
+void \fBdbmon_status\fP( FILE *\fIfp\fP, Hook *\fIdbmon_hook\fP );
 
-void dbmon_close( Hook **dbmon_hook );
+void \fBdbmon_close\fP( Hook **\fIdbmon_hook\fP );
 
-char * dbmon_compute_row_sync( Dbptr db );
+char *\fBdbmon_compute_row_sync\fP( Dbptr \fIdb\fP );
 
 .fi
 .SH DESCRIPTION
@@ -45,8 +45,8 @@ example the \fIprivate\fP pointer may reference a data structure for transformed
 to another utility. 
 
 For each changed database row detected by \fBdbmon_update\fP, the \fIchangerow\fP callback is 
-invoked. The first argument to \fIchangerow\fP is the \fIsync\fP string value from the row 
-before the change. The rest of the arguments to \fIchangerow\fP are the same as the arguments to \fInewrow\fP,
+invoked. The first argument to \fIchangerow\fP is the \fIsync\fP string value for the row 
+before the row was changed. The rest of the arguments to \fIchangerow\fP are the same as the arguments to \fInewrow\fP,
 with the database pointer and the \fIsync\fP string referring to the new version of the row. 
 
 For database rows that \fBdbmon_update\fP concludes have been marked for deletion, the \fIdelrow\fP
@@ -58,7 +58,7 @@ does not contain any information about the row from before it was marked for del
 The \fBdbmon_status\fP function is a debugging utility which prints what is known internal 
 to the library about the current status of the database represented by the tracking hook. 
 
-The \fBdbmon_close\fP function stops tracking a previously tracked Datascope databases, 
+The \fBdbmon_close\fP function stops tracking a previously tracked Datascope database, 
 freeing all tracking structures. 
 
 The \fBdbmon_compute_row_sync\fP function computes a synchronization string for a given database row,
@@ -66,23 +66,135 @@ used internally for tracking functions and possibly useful externally as well to
 with other operations. The returned character string should be freed by the 
 caller when no longer needed. 
 
-.SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
 .SH EXAMPLE
+The example below, taken from the certify(1) tests for the dbmon library, shows a database being monitored, 
+with some artificial updates accomplished via system calls to copy alternate versions of one of the database
+tables over the initial copy:
 .in 2c
 .ft CW
 .nf
+
+%cat certify/try_dbmon.c
+
+#include <stdlib.h>
+#include "db.h"
+#include "stock.h"
+#include "dbmon.h"
+#include "db2sql.h"
+
+void newrow( Dbptr db, char *table, char *sync, void *private );
+void changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private );
+void delrow( Dbptr db, char *table, char *sync, void *private );
+
+void
+newrow( Dbptr db, char *table, char *sync, void *private )
+{ 
+	char	row[10*STRSZ];
+	FILE	*fp = (FILE *) private;
+
+	dbget( db, row );
+	
+	fprintf( fp, "New Row %ld in '%s' [sync '%s']: %s\\n", db.record, table, sync, row );
+
+	return;
+}
+
+void
+changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
+{ 
+	char	row[10*STRSZ];
+	FILE	*fp = (FILE *) private;
+
+	dbget( db, row );
+	
+	fprintf( fp, "Changed Row %ld in '%s' [Old sync '%s', New sync '%s']: %s\\n", 
+		 db.record, table, oldsync, sync, row );
+
+	return;
+}
+
+void
+delrow( Dbptr db, char *table, char *sync, void *private )
+{ 
+	FILE	*fp = (FILE *) private;
+
+	fprintf( fp, "Deleted row from '%s' with sync '%s'\\n", table, sync );
+
+	return;
+}
+
+int
+main(int argc, char **argv )
+{
+	Dbptr	db;
+	char	dbname[FILENAME_MAX];
+	Hook	*dbmon_hook = NULL;
+	Tbl	*tables = (Tbl *) NULL; 
+
+	if( argc != 2 ) {
+
+		elog_die( 0, "Usage: %s dbname\\n", argv[0] );
+
+	} else {
+		
+		strcpy( dbname, argv[1] );
+	}
+
+	dbopen_database( dbname, "r", &db );
+
+	dbmon_hook = dbmon_init( db, tables, newrow, changerow, delrow, 0 );
+
+	dbmon_update( dbmon_hook, (void *) stdout );
+
+	fprintf( stdout, "Adding new arrival table:\\n" );
+
+	system( "cp data/mod.new.demo.arrival results/dbmon/demo.arrival" );
+
+	sleep( 1 );
+
+	dbmon_update( dbmon_hook, (void *) stdout );
+
+	fprintf( stdout, "Shortening arrival table:\\n" );
+
+	system( "cp data/mod.shorter.demo.arrival results/dbmon/demo.arrival" );
+
+	sleep( 1 );
+
+	dbmon_update( dbmon_hook, (void *) stdout );
+
+	fprintf( stdout, "Lengthening arrival table:\\n" );
+
+	system( "cp data/mod.longer.demo.arrival results/dbmon/demo.arrival" );
+
+	sleep( 1 );
+
+	dbmon_update( dbmon_hook, (void *) stdout );
+
+	dbmon_status( stdout, dbmon_hook );
+
+	clear_register( 1 );
+
+	free_hook( &dbmon_hook );
+
+	dbclose( db );
+
+	exit( 0 );
+}
 .fi
 .ft R
 .in
 .SH RETURN VALUES
+\fBdbmon_init\fP returns a hook(3) pointer used in subsequent calls to the dbmon library. 
+
+\fBdbmon_update\fP returns 0. \fBdbmon_status\fP and \fBdbmon_close\fP do not return anything. 
+
+\fBdbmon_compute_row_sync\fP returns a char pointer with a string representation of the sync value 
+for the given database row. The pointer must be freed by the caller. 
 .SH LIBRARY
-.SH ATTRIBUTES
-.SH DIAGNOSTICS
+-ldbmon
 .SH "SEE ALSO"
 .nf
+perldbmon(3p), db2sql(3)
 .fi
 .SH "BUGS AND CAVEATS"
 The \fIflags\fP argument to \fBdbmon_init\fP is not yet used and should be set to 0. 
@@ -90,10 +202,17 @@ The \fIflags\fP argument to \fBdbmon_init\fP is not yet used and should be set t
 If the database descriptor-file changes such that the underlying files referenced for each database 
 table change, the dbmon library will not adjust dynamically. 
 
-Rows may not be deleted from database tables being monitored. They must be marked with dbmark(3) and left 
-in place. Currently, state-file based post-cleanup reconnection is not supported. 
+If rows are deleted from a database table being monitored, the dbmon library will recompute the signatures 
+for all rows in the table. In general, for databases being modified and read by multiple processes (e.g. 
+real-time databases), rows for deletion should be marked with dbmark(3) and left 
+in place. 
+
+Currently, state-file based post-cleanup reconnection (synchronization of an existing Datascope database
+with a previously created SQL mirror of that database) is not supported. 
 
 The dbmon library does not yet support a state file, though perhaps should. 
+
+The dbmon library does not yet monitor external files, though perhaps should. 
 
 In addition to the database pointer for a given row, the corresponding table name is passed to the callback functions,
 even though the table name could also be derived from a dbquery(3) call on the database pointer. This is 

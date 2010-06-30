@@ -15,10 +15,15 @@ void db2sql_set_syncfield_name( char *name );
 
 .fi
 .SH DESCRIPTION
+These routines create Structured Query Language (SQL) representations of Datascope databases 
+and schemata. \fBdbschema2sqlcreate\fP maps a database schema from Datascope to SQL. 
+\fBdb2sqlinsert\fP maps individual database rows from Datascope to SQL. 
+
 The \fBdbschema2sqlcreate\fP function converts the schema for the input database
-into a Tbl of string values containing SQL create statements. 
-Currently, the only supported values for \fIflags\fP are \fIDB2SQL_OMIT_SYNC\fP and
-\fIDB2SQL_USE_DATASCOPE_NULLS\fP. Unless the \fIDB2SQL_OMIT_SYNC\fP flag 
+into a Tbl (see tbl(3)) of string values containing SQL create statements. 
+
+Currently, the only supported value for \fIflags\fP given to \fBdbschema2sqlcreate\fP is \fIDB2SQL_OMIT_SYNC\fP.
+Unless the \fIDB2SQL_OMIT_SYNC\fP flag 
 is given, an extra database field is appended by \fBdbschema2sqlcreate\fP with the 
 value of the macro \fIDB2SQL_SYNCFIELD_NAME_DEFAULT\fP, currently set to \fIsyncstring\fP in db2sql.h and 
 with the corresponding SQL schema format given by the macro \fIDB2SQL_SYNCFIELD_SPEC\fP as 
@@ -32,10 +37,6 @@ This syncronization field is used to hold values of a synchronization string com
 synchronization string may be changed with the \fBdb2sql_set_syncfield_name\fP function 
 described below. 
 
-Unless the flag \fIDB2SQL_USE_DATASCOPE_NULLS\fP is given, \fBdb2sql\fP converts all Datascope 
-null values into official SQL \fINULL\fP values. With the \fIDB2SQL_USE_DATASCOPE_NULLS\fP flag
-set, Datascope Null values are inserted into the SQL tables verbatim. 
-
 The table returned by \fBdbschema2sqlcreate\fP is newly allocated, along with all string 
 fields it contains as entries, and must therefore be freed by the caller after use with a 
 command like
@@ -46,7 +47,11 @@ command like
 
 The \fBdb2sqlinsert\fP function generates SQL insert commands for each row in the 
 specified database pointer. 
-Currently, the only supported value for \fIflags\fP is \fIDB2SQL_OMIT_SYNC\fP. Unless this flag 
+
+Currently, the only supported values for \fIflags\fP given to \fBdb2sqlinsert\fP are \fIDB2SQL_OMIT_SYNC\fP and 
+\fIDB2SQL_USE_DATASCOPE_NULLS\fP. 
+
+Unless the \fIDB2SQL_OMIT_SYNC\fP flag 
 is used, an extra database field is computed and inserted by \fBdb2sqlinsert\fP, containing
 a synchronization string that uniquely labels the contents of the input database row. The construction 
 of the synchronization string for each database row is performed by the \fIcreatesync\fP function
@@ -61,6 +66,10 @@ rows change. The createsync function should be of the form
 This function should return a newly allocated pointer to the synchronization string for the database 
 row pointed to by the input database-pointer \fIdb\fP, or a null string in the case of error. The
 \fBdb2sqlinsert\fP function will free this returned pointer if it is non-null. 
+
+Unless the flag \fIDB2SQL_USE_DATASCOPE_NULLS\fP is given, \fBdb2sqlinsert\fP converts all Datascope 
+null values into official SQL \fINULL\fP values. With the \fIDB2SQL_USE_DATASCOPE_NULLS\fP flag
+set, Datascope Null values are inserted into the SQL tables verbatim. 
 
 String entries added to the given table by \fBdb2sqlinsert\fP are newly allocated, and must be 
 freed by the caller when no longer needed. Similarly, if the \fItbl\fP pointer given to 
@@ -98,7 +107,7 @@ newrow( Dbptr db, char *table, char *sync, void *private )
 { 
 	Tbl	**sql = (Tbl **) private;
 
-	db2sqlinsert( db, sql, 0L );
+	db2sqlinsert( db, sql, dbmon_compute_row_sync, 0L );
 
 	return;
 }
@@ -195,9 +204,6 @@ as primary keys.
 
 The SQL format emitted by \fBdb2sql\fP is currently tailored for MySQL. The option is open in the future to expand 
 this to support other SQL variants. 
-
-The \fBdb2sql_compute_row_sync\fP function may not belong in this library; it overlaps with an almost identical function
-in the dbmon library. 
 
 If no \fIcreatesync\fP function is specified to \fBdb2sqlinsert\fP, the synchronization string will be left as NULL.
 

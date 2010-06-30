@@ -55,6 +55,7 @@ static int find_longest( void *s, void *private );
 static int dbfield_isnull( Dbptr db );
 static char *generate_sqltable_create( Dbptr db, long flags );
 static char *generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags );
+static long generate_sqltable_insert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags );
 
 static int
 find_longest( void *s, void *longest )
@@ -195,7 +196,14 @@ generate_sqlrow_insert( Dbptr db, char *(*createsync)(Dbptr db), long flags )
 
 	if( ! ( flags & DB2SQL_OMIT_SYNC ) ) {
 
-		sync = (*createsync)( db );
+		if( createsync != (char *(*)(Dbptr db)) NULL ) {
+
+			sync = (*createsync)( db );
+
+		} else {
+
+			sync = (char *) NULL;
+		}
 
 		pushstr( &stk, ", '" );
 
