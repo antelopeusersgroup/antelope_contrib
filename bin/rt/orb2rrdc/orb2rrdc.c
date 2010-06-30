@@ -165,6 +165,9 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 	
 		fprintf( Rrdfp, "%s\n", command );
 
+		/* Disable response printing for now since popen() bi-directional pipes 
+		   are not supported across all platforms:
+
 		if( VeryVerbose ) { 
 
 			resp_ptr = getaline( Rrdfp, response, STRSZ );
@@ -178,6 +181,7 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 				elog_notify( 0, "%s\n", resp_ptr );
 			}
 		}
+		*/
 
 		setarr( Rrd_files, key, rrd );
 	}
@@ -192,6 +196,9 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 
 	fprintf( Rrdfp, "%s\n", command );
 
+	/* Disable response printing for now since popen() bi-directional pipes 
+	   are not supported across all platforms:
+
 	if( VeryVerbose ) { 
 
 		resp_ptr = getaline( Rrdfp, response, STRSZ );
@@ -205,6 +212,7 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 			elog_notify( 0, "%s\n", resp_ptr );
 		}
 	}
+	*/
 }
 
 int
@@ -334,7 +342,7 @@ main( int argc, char **argv )
 		sprintf( command, "rrdtool -" );
 	}
 
-	Rrdfp = popen( command, "r+" );
+	Rrdfp = popen( command, "w" );
 
 	if( Rrdfp == (FILE *) NULL ) {
 
