@@ -124,8 +124,10 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 	Dbptr	dbt;
 	char	datasource[STRSZ];
 	char	command[STRSZ];
+/* Disable response printing for now (see below)
 	char	response[STRSZ];
 	char	*resp_ptr;
+*/
 	int	i;
 
 	sprintf( key, "%s:%s:%s", net, sta, dls_var );
@@ -143,7 +145,7 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 				"sta", sta,
 				"rrdvar", dls_var,
 				"time", start_time,
-				0 );
+				NULL );
 
 		trwfname( dbt, Rrdfile_pattern, &rrd );
 
@@ -222,7 +224,7 @@ main( int argc, char **argv )
 	int	errflag = 0;
 	int	orb;
 	int	stop = 0;
-	int	nrecs;
+	long	nrecs;
 	char	*match = ".*/pf/st";
 	char	*from = 0;
 	char	*statefile = 0;
