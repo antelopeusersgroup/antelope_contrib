@@ -2499,6 +2499,77 @@ sub extract_AEIC {
   return @saved; 
 }
 
+sub extract_newNBE {	
+
+  my (@info) = @_ ;
+  my @saved =  () ;
+
+  my ($lat,$lon,$depth,$mag,$nph,$magval) ;
+  my ($text, $tz) ;
+  my $partcnt = 0 ;
+  my ($date,$time,$or_time) ; 
+
+  my $magtype = ( defined $pfinfo{'defaultmt'} ) ? $pfinfo{defaultmt} : "ml"  ;
+
+  my @evinfo = () ;
+
+  for (@info) {		# another hackery follows...
+    my $line = $_ ;
+
+    if ($line =~ /^\n|^</ ) {
+      next;
+
+    } elsif  ($line =~ /The Nevada.*/)  {	# Start of listing, maybe 
+      if ($ok == 0) {
+	$ok++ ;
+      } else {
+	$ok = 0 ;
+      }
+
+    } elsif    ($ok && ($line =~ /^\d{2}\-\d{2}\-\d{4}/) ) {	# match 07-06-2010
+	$date   = trim($line);
+	$date	=~  s/\-/\//g ;
+	$partcnt = 1 ;
+    } elsif ( ($line =~ /^\d{2}\:/) && ($partcnt == 1) ) { 
+	($time,$tz) = split(/\s+/,$line) ;  # morons use PDT (or PST)
+        $or_time = fix_or_time ($date, $time, $tz) ;
+	$partcnt++;
+    } elsif ( $partcnt == 2) {
+	$text   = trim($line);
+	$partcnt++;
+    } elsif ( $partcnt == 3) {
+	$lat    = trim($line);
+	$partcnt++;
+    } elsif ( $partcnt == 4) {
+	$lon    = trim($line);
+	$partcnt++;
+    } elsif ( $partcnt == 5) {
+	$depth  = trim($line);
+	$partcnt++;
+    } elsif ( $partcnt == 6) {
+	$mag	= trim($line);	
+	$partcnt++;
+    } elsif ( $partcnt == 7) {
+	$nph	= trim($line);	
+	$partcnt++;
+    } elsif ( $partcnt == 8) {
+	$comment	= trim($line);	
+	$partcnt++;
+    } elsif ( $partcnt == 9 && $line =~ /[0-9]*/ ) {
+	$evid	= trim($line); 
+	push (@saved, join(',', ($lat, $lon, $depth, $or_time, $magtype, $mag, $nph, $comment, $evid) ) ) ; 
+	$partcnt = 0 ;
+    } else {
+	next;
+    }
+	     
+  }
+  
+  close PARSE ;
+  return @saved; 
+}
+
+
 sub extract_NBEwww {	# &extract_NBEwww($file) 
 
   my ($file)  = @_; 

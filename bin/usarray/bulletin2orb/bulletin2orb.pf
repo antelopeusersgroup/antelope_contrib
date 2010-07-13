@@ -60,13 +60,14 @@ bulletins &Arr{
   }
 
   UNR-NBE    	&Arr{	# both prelim and reviewed solutions from the Nevada Broadcast of Earthquakes
-	method		htmlnotags
-	extractor	NBEwww		# extract_nbeWWW
+	method		htmltagged
+	extractor	newNBE		# extract_newNBE
 	parser		NBEwww		# parse_nbeWWW
 	src		NBE		# srcname will be /pf/$src/orb2dbt
 	auth		NBE 		# auth == $auth	. "$NBE_evid"
-	url		http://www.seismo.unr.edu/Catalog/nbe.html	
+	url		http://www.seismo.unr.edu/Earthquake
 	defaultmagtype	ml		# not coded yet, "local magnitudes"
+	TZ		US/Pacific
   }
 
 
