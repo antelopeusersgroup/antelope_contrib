@@ -1,0 +1,87 @@
+.TH PR_ORIGIN "$Date: 2005/03/05 22:23:53 $"
+
+.SH NAME
+pr_origin \- Press-release origin; puts an origin into an orb.
+
+.SH SYNOPSIS
+.nf
+\fBpr_origin \fP[-v] [-V] [-pf \fIparameter_file\fP] \fIorb\fP \fIidserver\fP
+.fi
+
+.SH DESCRIPTION
+\fBpr_origin\fP puts a hypocenter, as defined in the parameter file, into a db/origin packet in an orb.  An orbserver is required to issue evids and orids. This can be coupled with another program such as \fBorb2dbt\fP, to write the origin to a database, or \fBorb_quake_alarm\fP, to issue a press-release for a significant event.
+.IP \fIorb\fP 
+Destination orb for the hypocentral information.
+.IP \fIidserver\fP 
+Idserver used to issue evids and orids.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -pf parameter_file
+Name of parameter file to use.  $PFPATH is searched to find parameter file.
+The default parameter file name is \fBpr_origin\fP.
+
+.SH PARAMETER FILE
+The \fBpr_origin\fP parameter file contains the hypocentral parameters
+that define a row in a css3.0 origin table.
+The following is an example of a \fBpr_origin\fP parameter file.
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+lat             51.61
+lon             -116.36
+depth           50
+time  &Literal{
+                2010-07-06 00:01
+               }                     # UT origin time of hypocenter.
+mag             44.4
+mag_type        Ms                   # ml,mb,Ms - all other mag types default to ml
+auth            GSC                  # Reporting agency (author).
+review          y                    # Reviewed soln = y, automatic soln = auto
+
+.br
+.fi
+.ft R
+.in
+\fBpr_origin\fP parameter file elements are:
+.IP lat
+Latitude of hypocentre.
+.IP lon
+Longitude of hypocentre.
+.IP depth
+Depth in km of hypocentre.
+.IP time
+UT origin time of hypcentre.
+.IP mag
+Magnitude of hypocentre.
+.IP mag_type
+Magnitude type of hypocentre.  The css3.0 schema only allows ml,mb,Ms as magnitude entries in the origin table. All other magnitude types will default to ml and will be entered as such into the origin.
+.IP auth
+Reporting agency
+.IP review
+Reviewed solution, "y", automatic solution, "auto".
+.fi
+.ft R
+.in
+
+.SH EXAMPLES
+$ pr_origin -v :55551 :2500
+
+.SH "SEE ALSO"
+.nf
+orb2dbt(1)
+orb_quake_alarm(1)
+.fi
+
+.SH "BUGS AND CAVEATS"
+At this time, only /db/origin packet types are supported, due to interface with orb_quake_alarm which only reads /db/origin packets.  Future developments include /pf packet format and possible incorporation of other magnitude types into netmag.
+
+.SH AUTHOR
+Taimi Mulder
+.br
+Geological Survey of Canada, Pacific Subdivision, NRCan.
