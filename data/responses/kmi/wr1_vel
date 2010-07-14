@@ -7,7 +7,7 @@
 # 3                   num of poles
 # 1.0                 gain
 # sensitivity   160.0 v/m/sec
-theoretical   1 instrument   paz    mi-appnote-39c
+theoretical   1 instrument   paz    kmi-appnote-39c
 1.49E+10
 7             Poles
 -8.88E+01     8.88E+01    0.0000E+00    0.0000E+00

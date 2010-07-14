@@ -89,7 +89,8 @@ DATA= \
 	unknown-displacement.pf \
 	unknown-velocity-1d.pf \
 	unknown-velocity.pf \
-	validyne.pf 
+	validyne.pf \
+	wr1.pf 
 
 include $(ANTELOPEMAKE)
 DIRS=

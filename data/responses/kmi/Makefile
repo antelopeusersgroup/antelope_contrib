@@ -26,7 +26,8 @@ DATA= \
     ranger \
     range_vel \
     sh \
-    sh_vel 
+    sh_vel \
+    wr1_vel
                                
 include $(ANTELOPEMAKE)  	
 DIRS=
