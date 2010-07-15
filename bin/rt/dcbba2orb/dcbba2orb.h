@@ -52,6 +52,7 @@
 #define MAX_BUFFER_SIZE         5000
 #define DATA_RD_BUF_SZ			1024
 #define DEFAULT_BBA_PKT_BUF_SZ	16384
+#define BBA_ORB_MAX_CHNAMES_SZ  128
 
 /*
  * BBA Packet Sync Character
@@ -87,39 +88,43 @@
  * Holds configuration data from command line and parameter file.
  */
 struct stConfigData {
-	int bVerboseModeFlag;			/* Print debug information */
-	int bPFValidateFlag;			/* Validate the parameter file and exit if true */
-	int iConnectionType;			/* Connection type - either CONNECT_TCP_IP or CONNECT_FILE */
-	char *sNetworkName;				/* Network code - AZ, TA, etc */
-	char *sOrbName;					/* Orbserver to output packets to */
+	int bVerboseModeFlag;	/* Print debug information */
+	int bPFValidateFlag;	/* Validate the parameter file and exit if true */
+	int iConnectionType;	/* Connection type - either CONNECT_TCP_IP or CONNECT_FILE */
+	char *sNetworkName;		/* Network code - AZ, TA, etc */
+	char *sOrbName;			/* Orbserver to output packets to */
 	char *sDCConnectionParams [3];	/* Array to hold connection parameters for the Data concentrator */
-	char *sDCControlPort;			/* Port number for the data concentrator's control port */
-	char *sParamFileName;			/* Parameter File Name */
-	char *sStateFileName;			/* State file name - Unused currently */
-	Pf *oConfigPf;					/* Pf struct holding the configuration as read from sParamFileName */
-	Tbl *oSiteTbl;					/* Tbl 'Site' as read from sParamFileName */
-	Arr *oStaName;					/* List of station names by DAS/Station Id */
-	Arr *oStaCh;					/* List of Site structs by PktType, SID, and SensorID */
-	Arr *oDasID;					/* Arr 'Das_Stat' as read from sParamFileName */
-	Arr *oDcID;						/* Arr 'DC_Stat' as read from sParamFileName */
-	Arr *oRTXID;					/* Arr 'RTX_Stat' as read from sParamFileName */
-	int iBBAPktBufSz;				/* How big to set the string buffer for reading in BBA packets */
+	char *sDCControlPort;		/* Port number for the data concentrator's control port */
+	char *sParamFileName;		/* Parameter File Name */
+	char *sStateFileName;		/* State file name - Unused currently */
+	Pf *oConfigPf;			/* Pf struct holding the configuration as read from sParamFileName */
+	Tbl *oSiteTbl;			/* Tbl 'Site' as read from sParamFileName */
+	Arr *oStaName;			/* List of station names by DAS/Station Id */
+	Arr *oStaCh;			/* List of Site structs by PktType, SID, and SensorID */
+	Arr *oDasID;			/* Arr 'Das_Stat' as read from sParamFileName */
+	Arr *oDcID;			/* Arr 'DC_Stat' as read from sParamFileName */
+	Arr *oRTXID;			/* Arr 'RTX_Stat' as read from sParamFileName */
+	size_t iBBAPktBufSz;		/* How big to set the string buffer for reading in BBA packets */
 };
 
+/* 
+ * Structure to hold the results of a parsed BBA format packet from the Data 
+ * Concentrator 
+ */
 struct stBBAPacketInfo {
-	unsigned short usRawPktType;
+	uint16_t usRawPktType; /* Software sync pattern */
 	Srcname oSrcname;	/* Struct containing Net/Sta/Chan info */
 	char sSrcname[500];	/* String to hold generated source name derived from oSrcname */
 	double dPktTime;	/* Packet Timestamp */
 	int iPktSize;		/* Packet Size in Bytes */
-	int iStaID;			/* Station ID - needs to be translated to a string via the parameter file */
-	int iNSamp;			/* Packet Size in Bytes */
-	int iNChan;			/* Number of Channels */
+	int iStaID;		/* Station ID - needs to be translated to a string via the parameter file */
+	int iNSamp;		/* Packet Size in Bytes */
+	int iNChan;		/* Number of Channels */
 	float fSrate;		/* Sample Rate */
 	int iHdrSize;		/* Size of the header before the data points */
-    char sDataType[4];	/* Data type of packet in orb header format. One of: s2, s4, t4, c0 */
-    char sPktType[12];  /* Pkt type - UCSDDP,UCSDSP, UCSDCP,etc*/
-    char sChNames[128]; /* Names of the channels, formatted for the orb header */
+	char sDataType[4];	/* Data type of packet in orb header format. One of: s2, s4, t4, c0 */
+	char sPktType[12];	/* Pkt type - UCSDDP,UCSDSP, UCSDCP,etc*/
+	char sChNames[BBA_ORB_MAX_CHNAMES_SZ];	/* Names of the channels, formatted for the orb header */
 };
 
 #define TRIM(s,l) {int i;for(i=l-1;i>0,s[i-1]==' ';i--);s[i]='\0';}
@@ -127,9 +132,9 @@ struct stBBAPacketInfo {
 /* A row from the Site Table in pkt.pf */
 struct stSiteEntry {
 	char sDTYPE[12];		/* Packet type - CBBHS, CBBLS, etc */
-	int iSID;				/* DAS/Station ID (StaID) */
+	int iSID;			/* DAS/Station ID (StaID) */
 	char sNAME[8];			/* Site name */
-	int iCOMP;				/* Sensor ID, referred to as sensid in old _pkt2.h */
+	int iCOMP;			/* Sensor ID, referred to as sensid in old _pkt2.h */
 	char sSENS[12];			/* Sensor name */
 };
 
