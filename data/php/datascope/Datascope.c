@@ -1332,7 +1332,7 @@ PHP_FUNCTION(concatpaths)
 		return;
 	}
 
-	new = concatpaths( a, b, 0 );
+	new = concatpaths( a, b, NULL );
 
 	new_safe_copy = estrdup( new );
 
@@ -2590,7 +2590,7 @@ PHP_FUNCTION(trdata)
 	float	*data = NULL;
 	int	argc = ZEND_NUM_ARGS();
 	int 	single_row = 0;
-	int	nrecs;
+	long	nrecs;
 	int	nsamp_retrieve = 0;
 	int	nsamp_available = 0;
 	long 	nsamp_requested = -1;
@@ -2645,7 +2645,7 @@ PHP_FUNCTION(trdata)
 			"trace-object point at or contain only a single row\n");
 	}
 
-	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, 0 );
+	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, NULL );
 
 	if( nsamp_available == 0 || data == NULL ) {
 	
@@ -2687,16 +2687,16 @@ PHP_FUNCTION(trdatabins)
 	float	*data = NULL;
 	int	argc = ZEND_NUM_ARGS();
 	int 	single_row = 0;
-	int	nrecs;
-	int	nsamp_retrieve = 0;
-	int	nsamp_available = 0;
+	long	nrecs;
+	long	nsamp_retrieve = 0;
+	long	nsamp_available = 0;
 	long 	nsamp_requested = -1;
 	long	binsize = 1;
 	long	i0 = 0;
 	double	min;
 	double	max;
-	int	isource;
-	int	idest;
+	long	isource;
+	long	idest;
 
 	if( argc < 2 || argc > 4 ) {
 
@@ -2745,7 +2745,7 @@ PHP_FUNCTION(trdatabins)
 			"trace-object point at or contain only a single row\n");
 	}
 
-	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, 0 );
+	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, NULL );
 
 	if( nsamp_available == 0 || data == NULL ) {
 	
@@ -2808,10 +2808,10 @@ PHP_FUNCTION(trextract_data)
 	Dbptr	tr;
 	int	argc = ZEND_NUM_ARGS();
 	int 	single_row = 0;
-	int	nrecs;
-	int	nsamp = 0;
+	long	nrecs;
+	long	nsamp = 0;
 	float	*data = NULL;
-	int	i;
+	long	i;
 
 	if( argc != 1 ) {
 
@@ -2847,7 +2847,7 @@ PHP_FUNCTION(trextract_data)
 			"trace-object point at or contain only a single row\n");
 	}
 
-	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
+	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, NULL );
 
 	if( nsamp == 0 || data == NULL ) {
 	
@@ -3194,9 +3194,9 @@ PHP_FUNCTION(trsample)
 	char	*sta = 0;
 	char	*chan = 0;
 	int	apply_calib = 0;
-	int	nrecs;
-	int	nsamp;
-	int	itrace;
+	long	nrecs;
+	long	nsamp;
+	long	itrace;
 	int	ireturn = 0;
 	double	time;
 	double	samprate;
@@ -3349,7 +3349,7 @@ PHP_FUNCTION(trsample)
 			       "nsamp", &nsamp,
 			       "samprate", &samprate,
 			       "data", &data,
-			       0 );
+			       NULL );
 
 		for( itrace = 0; itrace < nsamp; itrace++ ) {
 
@@ -3386,9 +3386,9 @@ PHP_FUNCTION(trsamplebins)
 	char	*sta = 0;
 	char	*chan = 0;
 	int	apply_calib = 0;
-	int	nrecs;
-	int	nsamp;
-	int	itrace;
+	long	nrecs;
+	long	nsamp;
+	long	itrace;
 	int	ireturn = 0;
 	double	time;
 	double	samprate;
@@ -3554,7 +3554,7 @@ PHP_FUNCTION(trsamplebins)
 			       "nsamp", &nsamp,
 			       "samprate", &samprate,
 			       "data", &data,
-			       0 );
+			       NULL );
 
 		for( itrace = 0; itrace < nsamp; itrace++ ) {
 
@@ -3712,7 +3712,7 @@ PHP_FUNCTION(dbget)
 	zval	*db_array;
 	Dbptr	db;
 	char	*item = 0;
-	int	item_size = 0;
+	long	item_size = 0;
 	int	argc = ZEND_NUM_ARGS();
 	long	scratch = 0;
 	int	rc;
@@ -5914,7 +5914,7 @@ PHP_FUNCTION(dbnrecs)
 	zval	*db_array;
 	Dbptr	db;
 	int	argc = ZEND_NUM_ARGS();
-	int	nrecs;
+	long	nrecs;
 
 	if( argc != 1 ) {
 
@@ -5943,7 +5943,7 @@ PHP_FUNCTION(dbputv)
 	zval	*db_array_in;
 	Dbptr	db;
 	zval	***args;
-	int	type;
+	long	type;
 	Dbvalue	value;
 	int	argc = ZEND_NUM_ARGS();
 	int	i;
@@ -6009,19 +6009,19 @@ PHP_FUNCTION(dbputv)
 
 		switch( type ) {
 		case dbDBPTR:
-			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			retcode |= dbputv( db, 0, field_name, value.db, NULL );
 			break;
 		case dbSTRING:
-			retcode |= dbputv( db, 0, field_name, value.s, 0 );
+			retcode |= dbputv( db, 0, field_name, value.s, NULL );
 			break;
 		case dbBOOLEAN:
 		case dbINTEGER:
 		case dbYEARDAY:
-			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			retcode |= dbputv( db, 0, field_name, value.i, NULL );
 			break;
 		case dbREAL:
 		case dbTIME:
-			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			retcode |= dbputv( db, 0, field_name, value.d, NULL );
 			break;
 		default:
 			retcode = dbINVALID;
@@ -6046,7 +6046,7 @@ PHP_FUNCTION(dbaddv)
 	zval	*db_array_in;
 	Dbptr	db;
 	zval	***args;
-	int	type;
+	long	type;
 	Dbvalue	value;
 	int	argc = ZEND_NUM_ARGS();
 	int	i;
@@ -6123,19 +6123,19 @@ PHP_FUNCTION(dbaddv)
 
 		switch( type ) {
 		case dbDBPTR:
-			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			retcode |= dbputv( db, 0, field_name, value.db, NULL );
 			break;
 		case dbSTRING:
-			retcode |= dbputv( db, 0, field_name, value.s, 0 );
+			retcode |= dbputv( db, 0, field_name, value.s, NULL );
 			break;
 		case dbBOOLEAN:
 		case dbINTEGER:
 		case dbYEARDAY:
-			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			retcode |= dbputv( db, 0, field_name, value.i, NULL );
 			break;
 		case dbREAL:
 		case dbTIME:
-			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			retcode |= dbputv( db, 0, field_name, value.d, NULL );
 			break;
 		default:
 			retcode = -1;
@@ -6167,7 +6167,7 @@ PHP_FUNCTION(dbgetv)
 	zval	*db_array;
 	Dbptr	db;
 	zval	***args;
-	int	type;
+	long	type;
 	Dbvalue	value;
 	int	argc = ZEND_NUM_ARGS();
 	int	single = 0;
