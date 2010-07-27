@@ -86,7 +86,7 @@ modules &Arr{
 			matlab
 		}
 		build &Tbl{
-			src/contrib/data/matlab
+			&contrib_src_subdir/data/matlab
 		}
 	}
 	antelope_php &Arr{
@@ -94,7 +94,7 @@ modules &Arr{
 			php
 		}
 		build &Tbl{
-			src/contrib/data/php
+			&contrib_src_subdir/data/php
 		}
 	}
 	antelope_python &Arr{
