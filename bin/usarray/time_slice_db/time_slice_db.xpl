@@ -231,7 +231,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
 #  subset data, selecting for all events with prefor in specific month, write out to dbname
                 
         $cmd  = "dbjoin $dbin.origin event | dbsubset - \" prefor==orid && $subset \" | dbseparate - event | ";
-        $cmd .= "dbjoin - origin | dbjoin -o - assoc arrival origerr stamag netmag emodel predarr | ";
+        $cmd .= "dbjoin - origin | dbjoin -o - assoc arrival origerr netmag stamag | ";
         $cmd .= "dbunjoin -o $dbname -";
 
         elog_notify( "process_events	$cmd ") if $opt_V;
