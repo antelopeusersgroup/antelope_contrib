@@ -10,6 +10,7 @@ double	Status_stepsize_sec = 0;
 char	*Rrdfile_pattern = 0;
 int	Verbose = 0;
 int 	VeryVerbose = 0;
+int 	Suppress_OK = 0;
 FILE	*Rrdfp;
 
 static void pfmorph( Pf *pf );
@@ -134,7 +135,11 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 
 	rrd = getarr( Rrd_files, key );
 
-	if( rrd == NULL || ! is_present( rrd ) ) {
+/*	rrdtool in server-mode apparently does not write files until a request occurs to switch to the next
+	file, so the test below doesn't work right. Trust the database to report existing files:
+ 	if( rrd == NULL || ! is_present( rrd ) ) {
+*/
+	if( rrd == NULL ) {
 
 		start_time = time - Status_stepsize_sec;
 
@@ -185,7 +190,7 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 		}
 		*/
 
-		setarr( Rrd_files, key, rrd );
+		setarr( Rrd_files, key, strdup( rrd ) );
 	}
 
 	if( VeryVerbose ) {
@@ -344,6 +349,16 @@ main( int argc, char **argv )
 		sprintf( command, "rrdtool -" );
 	}
 
+	if( Suppress_OK && ! VeryVerbose ) {
+
+		strcat( command, " | egrep -v ^OK" );
+	}
+
+	if( VeryVerbose ) {
+
+		elog_notify( 0, "Executing command: %s\n", command );
+	}
+
 	Rrdfp = popen( command, "w" );
 
 	if( Rrdfp == (FILE *) NULL ) {
@@ -419,16 +434,22 @@ main( int argc, char **argv )
 
 		dbgetv( dbt, 0, "net", &net, "sta", &sta, "rrdvar", &rrdvar, NULL );
 
-		dbfilename( db, (char *) &path );
+		dbfilename( dbt, (char *) &path );
 
 		sprintf( key, "%s:%s:%s", net, sta, rrdvar );
 
-		setarr( Rrd_files, key, path );
+		setarr( Rrd_files, key, strdup( path ) );
+
+		if( VeryVerbose ) {
+
+			elog_notify( 0, "Re-using rrd file '%s' for '%s'\n", path, key );
+		}
 	}
 
 	Rrdfile_pattern = pfget_string( pf, "rrdfile_pattern" );
 	Status_stepsize_sec = pfget_double( pf, "status_stepsize_sec" );
 	Default_network = pfget_string( pf, "default_network" );
+	Suppress_OK = pfget_boolean( pf, "suppress_OK" );
 	dlslines = pfget_tbl( pf, "dls_vars" );
 
 	Dls_vars_dsparams = newarr( 0 );

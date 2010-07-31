@@ -66,6 +66,8 @@ status_stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
 
 default_network &ref(site,default_seed_network)
 
+suppress_OK 	0
+
 dls_vars	&Tbl{
 br24   GAUGE:&status_heartbeat_sec:U:U   &archives
 lcq    GAUGE:&status_heartbeat_sec:U:U   &archives
