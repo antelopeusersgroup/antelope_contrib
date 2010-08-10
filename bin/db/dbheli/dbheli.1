@@ -1,0 +1,74 @@
+.TH DBHELI 1 "$Date$"
+.SH NAME
+dbheli \- Make helicorder type plot of waveform
+.SH SYNOPSIS
+.nf
+\fBdbheli \fP\fIdbname\fP \fIsta\fP \fIchan\fP \fItstart\fP \fItwinline\fP
+                \fInlines\fP \fIscale\fP [-f \fIfilter\fP] 
+		[-o \fIdborigin\fP]
+                [-ps \fIpsfile\fP]
+.fi
+.SH DESCRIPTION
+.B dbheli
+makes a PostScript output file that contains a helicorder
+style display of a single station-channel. The output file
+name begins with \fBdbheli.\fP and ends with \fB.ps\fP and
+is unique to avoid collisions with previously created PostScript
+files.
+.SS Command line arguments
+.IP \fIdbname\fP
+The name of the input database.
+.IP \fIsta\fP
+The station code.
+.IP \fIchan\fP
+The channel code.
+.IP \fItstart\fP
+The start time for the display.
+.IP \fItwinline\fP
+The time window for each line in the display in seconds.
+.IP \fInlines\fP
+The number of lines in the display.
+.IP \fIscale\fP
+The amplitude \fIscale\fP factor in data units per inch.
+The data units are defined within the database and are
+typically something like nm/sec.
+.SH OPTIONS
+.IP "-f filter"
+A \fIfilter\fP specification. This \fIfilter\fP is applied to
+the waveform before it is plotted.
+The \fIfilter\fP specification is a character string like
+"BW 0.1 5 1.0 5" which would be a 5 order butterworth filter
+with a low corner frequency of 0.1 hz and a high corner
+frequency of 1.0 hz. Note that specifications such as
+this with embedded blanks must be quoted in the command line.
+This argument is optional and if not specified, then
+no filtering is done.
+.IP "-o dborigin"
+The name of a database for displaying predicted event P-times.
+This argument is optional and if not specified, then
+no predicted times are displayed.
+.IP "-ps psfile"
+The output PostScript file name.
+This argument is optional and if not specified, then
+a unique PostScript file name is created by the program.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+: 13200 seconds of data on 10 lines for station AAK channel BHE
+%\fB dbheli /opt/antelope/data/db/demo2/demo2 AAK BHE \\
+                    793266000.00000 1320 10 100000 \\
+                    -display -ps /tmp/a.ps\fP
+
+%\fB lp /tmp/a.ps\fP
+
+: 24 hours of data, 1 hour per line for station PFO channel HHZ
+%\fB dbheli anza PFO HHZ 2003:021:00:00:00 3600 24 10000\fP
+
+.fi
+.ft R
+.in
+.SH AUTHOR
+Danny Harvey
+.\" $Id$
