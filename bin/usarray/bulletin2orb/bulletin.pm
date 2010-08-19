@@ -609,7 +609,7 @@ sub parse_EMSC {
 
     ($lat, $lon, $depth, $or_time, $mag, $magtype) = split(",",$line) ;
 
-    %magnitude_info = ( $magtype, $mag ) ;
+    %magnitude_info = ( $magtype, $mag ) if ($magtype !~ /-/) ;
 
     ($ml,$mlid,$mb,$mbid,$ms,$msid,$magid) = &default_mags(%magnitude_info) ;
 
@@ -2052,10 +2052,9 @@ sub extract_EMSC {
     } elsif    ($ok && ($line =~ /^\d{4}\-\d{2}\-\d{2}/) ) {	# match 2009-09-08
       if (length($line) > 20 ) { 
         $date = substr($line, 0, 10);
-        $time = substr($line, 12, 10);
+        $time = substr($line, 13, 10);
 	push ( @evinfo, "$date", "$time" ) ; 
       } else {	# this is a lddate, add info for event
-
 	$date = $evinfo[0];
 	$time = $evinfo[1];
 	$latd  = $evinfo[2];
@@ -2063,27 +2062,19 @@ sub extract_EMSC {
 	$lond  = $evinfo[4];
 	$lonEW  = $evinfo[5];
 
-	if ($#evinfo == 9 ) 	{ 	# event listing + dtype
-	   $depth = $evinfo[6];
-	   $dtype = $evinfo[7];
-	   $magtype = $evinfo[8];
-	   $mag	    = $evinfo[9] ;	# don't need comment line
-	} elsif ($#evinfo == 8)  {	# event listing w/ no dtype
-	   $depth = $evinfo[6];
+	if ($#evinfo == 8 ) 	{ 	# event listing + dtype
+	   $depth   = $evinfo[6];
 	   $magtype = $evinfo[7];
 	   $mag	    = $evinfo[8] ;	# don't need comment line
-	} elsif ($#evinfo == 7)  {	# event listing w/ no depth 
+	} elsif ($#evinfo == 7)  {	# event listing w/ no depth
+	   $depth   = -999.0 ;		
 	   $magtype = $evinfo[6];
-	   $mag	    = $evinfo[7] ;	# don't need comment line
-	   $depth = "-999.0";
+	   $mag	    = $evinfo[7] ;	
+	} elsif ($#evinfo == 6)  {	# event listing w/ no maginfo
+	   $depth   = $evinfo[6];
+	   $magtype = "-" ;	
+	   $mag     = "-99.99";
 	}
-
-	if ( $latNS eq "S" ) {
-	   $latd = -$latd ;
-	} 
-        if ( $lonEW eq "W" ) {
-           $lond = -$lond ;
-	} 
 
 	if ($magtype=~/ML|MD/) {
 	   $magtype = lc($magtype) ;
@@ -2097,11 +2088,13 @@ sub extract_EMSC {
 	next; 
 	
       }
-    } elsif ( $ok && $line =~ /^\d|^[A-Z,a-z]/ )  {
+    } elsif ( $ok && $line =~ /^\d|^[A-Z,a-z]/ && $line !~ /.*ago.*|F/ )  {
         $line =~ s/|//g ;
         $line = encode_entities($line) ; 
         $line =~ s/&nbsp;//g;
-	push (@evinfo, $line) ;
+	push (@evinfo, $line) if ($#evinfo >=1 )  ;
+    } elsif ( $ok && $line =~ /.*recent.*/ )  {
+	last; 
     } else {
 	next;
     }
