@@ -975,7 +975,7 @@ ggnloc (Hypocenter initial_location,
 	                ndata_used,
 	                ndata_feq;
 	Robust_statistics test;
-	char            message[80];
+	char            message[100];
 
 	hypo_history = (Hypocenter *) malloc (sizeof (Hypocenter));
 	if (hypo_history == NULL)
@@ -1320,7 +1320,7 @@ lat_lon_grid_setup (Pf * pf, Point ** pts, int *gridsize)
     center_latitude = pfget_double (pf, "center_latitude");
     if ((s = pfget_string (pf, "center_longitude")) == NULL) {
 	register_error (1, "%s%s\n", err, "center_longitude");
-	return (NULL);
+	return (0);
     }
     center_longitude = pfget_double (pf, "center_longitude");
     if ((s = pfget_string (pf, "center_depth")) == NULL) {
