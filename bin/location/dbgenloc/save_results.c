@@ -89,7 +89,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 	float *emodel )
 {
     long             i, n, orid, grn, srn, retcode = 0;
-    char algorithm[15];
+    char algorithm[32];
     char *str;
     double delta, esaz, seaz, slores, duphi, azres, azimuth ;
     double smajax, sminax, strike, sdepth, stime;

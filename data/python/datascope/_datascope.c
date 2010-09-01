@@ -2204,8 +2204,6 @@ python_dbquery( PyObject *self, PyObject *args ) {
 
 		dbcode_str = PyString_AsString( dbcode_obj );
 
-		fprintf( stderr, "dbcode_str is %s\n", dbcode_str );
-
 		dbcode = xlatname( dbcode_str, Dbxlat, Dbxlatn );
 
 	} else {
