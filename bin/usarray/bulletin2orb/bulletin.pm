@@ -1610,7 +1610,7 @@ sub parse_uwcard {		#
   my $depth  	= substr($line,37, 6);
   my $depthinfo	= substr($line,43, 1);
 
-  my $mag	= substr($line,45, 3);
+  my $mag	= substr($line,44, 4);	# there may be a leading "-"
   my $nph 	= substr($line,52, 3) ;
   $nph =~ s/^0*//; 
 
