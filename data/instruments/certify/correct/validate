@@ -88,6 +88,7 @@
 --> /opt/antelope/dev-64/data/instruments/sensors/unknown-velocity-1d.pf
 --> /opt/antelope/dev-64/data/instruments/sensors/unknown-velocity.pf
 --> /opt/antelope/dev-64/data/instruments/sensors/validyne.pf
+--> /opt/antelope/dev-64/data/instruments/sensors/wr1.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/cmg6d.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/dm24.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/etna.pf
@@ -128,6 +129,7 @@
 --> /opt/antelope/dev-64/data/instruments/dataloggers/k2_whitney_c.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/k2_whitney_nc.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/LC2000L.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/LC2000L_4x4.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/makalu_c.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/makalu_nc.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/parosci.pf
@@ -137,10 +139,16 @@
 --> /opt/antelope/dev-64/data/instruments/dataloggers/peppv_classic.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_ANF.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_ANF_dec10.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_100.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_100_ANF.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_100_ANF_dec10.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_100_dec10.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_20.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_20_dec10.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_40.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_below_40_dec10.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/q330_linear_dec10.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330hr_linear.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330hr_linear_ANF.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q330hr_linear_below_100.pf
@@ -150,6 +158,7 @@
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q4120.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/q730.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/qep_ANF.pf
+--> /opt/antelope/dev-64/data/instruments/dataloggers/qep_soh_only.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/qx80-90.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/qx80-92.pf
 --> /opt/antelope/dev-64/data/instruments/dataloggers/rt130.pf

@@ -101,7 +101,9 @@ dbcheck_responses: bad response file './Readme.Qx80'
      0.52            1.00           1e-05            0.04         1.6e+02 ./SSA2_50
      3.06            1.00           1e-05            0.03              73 ./SSR1_50
      11.6            1.01                            0.02                 ./ULP
+     28.3            1.01                            0.02                 ./ULP379
      11.6            1.01                            0.02                 ./VLP
+     28.5            1.01                            0.02                 ./VLP389
   0.00335            1.00                            0.03                 ./cf1
   0.00827            1.00                            0.05                 ./cf2
       194            2.05                            0.05                 ./cf3
@@ -211,6 +213,16 @@ dbcheck_responses:    ** Consider normalization of 5.15e+15 in ./cmg40t_1hz PAZ 
      31.8            1.00             1.4           4e+01           1e+03 ./l28_vel
       500            1.00            0.32           2e+01           1e+03 ./l4c
       1.1            1.75            0.39           2e+01           1e+03 ./l4c_3damp
+     58.4            1.00                            0.04                 ./lch_4_f1
+      156            1.00                            0.05                 ./lch_4_f2
+  0.00335            1.00                            0.03                 ./lch_4_sinc1
+   0.0216            1.00                            0.05                 ./lch_4_sinc2
+   0.0134            1.00                            0.05                 ./lch_4_sinc2_3
+   0.0134            1.00                            0.05                 ./lch_4_sinc2_4
+  0.00536            1.00                            0.03                 ./lch_4_sinc3
+   0.0134            1.00                            0.05                 ./lch_4_sinc3_4
+   0.0134            1.00                            0.05                 ./lch_4_sinc3_5
+  0.00892            1.00                            0.04                 ./lch_4_sinc3_6
       500            1.00           0.022               5           1e+03 ./le3d_20
       500            1.00           0.023               5           1e+03 ./le_3d_20s
       500            1.00           0.074               9           1e+03 ./le_3d_5s
@@ -297,6 +309,7 @@ dbcheck_responses: ./trident_50sps_fir3 not normalized: average of 3 with peak o
       500            1.00           1e-05             0.1           1e+03 ./unkn_vel
      1.44            1.00           1e-05            0.02              27 ./uwiseismic
       500            1.00         0.00028             0.5           1e+03 ./validyne
+    0.421            1.00           0.016               1              57 ./wr1_vel
      7.37            1.00                            0.02                 ./yka_bb_fir1
      3.87            1.00                            0.01                 ./yka_bb_fir2
      21.2            1.00                            0.03                 ./yka_hf_fir1
