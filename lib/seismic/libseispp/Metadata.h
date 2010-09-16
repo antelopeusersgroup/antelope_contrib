@@ -219,8 +219,11 @@ public:
 //\param mdold - parent object to be copied
 **/
 	Metadata(const Metadata& mdold);
-	// Same for operator = .  Let the compiler generate it.
-	//Metadata& operator=(const Metadata& );
+
+/*! Standard assignment operator.
+  \param mdold - parent object to copy 
+  */
+	Metadata& operator=(const Metadata& mdold);
 	// In this implementation destructor can be defaulted.
 	// There is thus no need to declare it.
         // ~Metadata();
