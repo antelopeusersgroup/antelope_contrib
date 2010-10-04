@@ -292,7 +292,8 @@ int change_id(Pf_ensemble *pfe,
 	return(0);
 }
 	
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	Dbptr db;
 	char *pfi=NULL;

@@ -131,7 +131,8 @@ void usage()
 	elog_die(0,"Usage:  dbpmel db gridlist [-sift expression -pf file]\n\twhere gridlist is a comma seperated list of grid points\n");
 }
 /* main for dbpmel*/	
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	char *dbin;  /* Input db name */
 	Tbl *gridlist;

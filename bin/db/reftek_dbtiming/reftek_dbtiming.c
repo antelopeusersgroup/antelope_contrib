@@ -265,7 +265,8 @@ void closeout_das(int das, double dbtime, double lastlock, double etime,
 	return;
 }
 
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	char *dbname;
 	Dbptr db,dbt;

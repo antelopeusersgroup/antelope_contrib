@@ -166,7 +166,8 @@ void log_error_list(Tbl *t)
 	
 
 int DB2PFS_verbose;
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	Dbptr db, dbv, dbge, dbgg;
 	/*ensemble_mode is primary grouping, grouping_on set if secondary on*/

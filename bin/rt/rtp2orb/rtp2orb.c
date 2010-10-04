@@ -38,7 +38,8 @@ static void usage(char *prog)
     exit(1);
 }
 
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 int i, verbose=0;
 char *pfpath = NULL;
