@@ -161,8 +161,8 @@ indicate that whatever depends on the \fIcapability\fP should be compiled, \fBlo
 exit-code of 0. Otherwise, \fBlocalmake_config\fP exits with an exit code of -1, which is intended to stop compilation
 in the current directory. 
 
-The way this is used in the Antelope-contrib compilation structure (based on antelopemake(1)) is as follows. First, instead 
-of implementing one \fIMakefile\fP in the style of antelopemake(1), the developer implements two separate files: \fImakefile\fP
+The way this is used in the Antelope-contrib compilation structure (based on antelopemake(5)) is as follows. First, instead 
+of implementing one \fIMakefile\fP in the style of antelopemake(5), the developer implements two separate files: \fImakefile\fP
 and \fIMakefile2\fP. The former executes \fBlocalmake_config\fP, naming the desired capability on the command-line, and 
 determining whether or not to proceed with compilation. For example, in a directory that depends on the \fIpython\fP
 capability, \fImakefile\fP would look like this:
