@@ -396,6 +396,8 @@ Arr *parse_phase_parameter_file(Pf *);
 Tbl *read_arrivals(Pf *, Arr *, Arr *);
 Tbl *read_slowness_vectors(Pf *, Arr *, Arr *);
 void free_phase_handle(void *);
+int destroy_network_geometry_tables(Arr *sta,Arr *sarray);
+int destroy_data_tables(Tbl *a, Tbl *u);
 
 /* linear algebra functions - numerical recipe variants */
 float **matrix(int, int, int, int);
