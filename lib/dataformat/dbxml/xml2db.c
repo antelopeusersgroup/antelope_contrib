@@ -55,13 +55,13 @@
 #define XML2DB_END 2
 #define XML2DB_EMPTY 3
 
-int 
+static int 
 get_token( char *source, char *next )
 {
 	static Hook *hook = 0;
 	char	*pattern = "</?[^>]+/?>";
-	int	start;
-	int	nchars;
+	long	start;
+	long	nchars;
 	int	rc;
 
 	rc = strcontains( source, pattern, &hook, &start, &nchars);
@@ -92,7 +92,6 @@ get_token( char *source, char *next )
 int
 xml2db( Dbptr db, char *xml )
 {
-	char	*p; 
 	char	*string;
 	char	*next;
 	int	rc;
@@ -102,4 +101,6 @@ xml2db( Dbptr db, char *xml )
 	rc = get_token( string, next );
 
 	printf( "tag '%s': rc %d\n", string, rc );
+
+	return rc;
 }

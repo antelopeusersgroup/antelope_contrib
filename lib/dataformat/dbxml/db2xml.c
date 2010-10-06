@@ -139,8 +139,8 @@ get_fieldnames( Dbptr db, int flags )
 	int	itable;
 	int	ifield;
 	static Hook *hook = 0;
-	int	start;
-	int	nchars;
+	long	start;
+	long	nchars;
 	int	is_view;
 
 	fieldnames = newtbl( 0 );
@@ -233,7 +233,7 @@ int 	flags;
 	Dbvalue	result;
 	char	temp[STRSZ]; 
 	int 	retcode = 0; 
-	int	ns, ne; 
+	long	ns, ne; 
 	int	free_fieldnames = 0;
 
 	if( db.table < 0 ) {
@@ -337,7 +337,7 @@ int 	flags;
 			    		break;
 				case dbYEARDAY:
 				case dbINTEGER:  
-			    		sprintf ( temp, "%8d", result.i ); 
+			    		sprintf ( temp, "%8ld", result.i ); 
 			    		break;
 				case dbTIME:
 			    		sprintf ( temp, "%17.5lf", result.d ); 
