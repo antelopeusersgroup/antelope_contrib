@@ -75,6 +75,10 @@ sub setup_web_config_pf {
 	remap_target( \$loader_location );
 	remap_target( \$loader_contents );
 
+	my( $loader_location_dir ) = parsepath( $loader_location );
+
+	makedir( $loader_location_dir );
+
 	if( -e "$loader_contents" ) {
 
 		deposit_file( $loader_contents, 1, "", $loader_location, "-r" );
