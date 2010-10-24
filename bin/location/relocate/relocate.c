@@ -37,7 +37,7 @@ Hypocenter db_load_initial(Dbptr dbv,long row)
 		"origin.lon", &(h.lon),
 		"origin.depth",&(h.z),
 		"origin.time", &(h.time),
-		0) == dbINVALID)
+		NULL) == dbINVALID)
 			die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %ld of database view\n",row);
 	/* This initializes parts of the hypocenter stucture that define
         this as an initial location. */
@@ -133,7 +133,7 @@ long save_origin(Dbptr dbi, long is, long ie, int depth_fixed,
 		"origin.msid", &msid,
 		"origin.ml", &ml,
 		"origin.mlid", &mlid,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 	{
 		die(1,"save_origin: dbgetv error reading origin fields of input view at record %ld\n",
 				is);
@@ -183,7 +183,7 @@ long save_origin(Dbptr dbi, long is, long ie, int depth_fixed,
                 "algorithm",algorithm,
                 "auth",auth,
                 "lddate",lddate,
-			0) == dbINVALID)
+			NULL) == dbINVALID)
 	{
 		die(1,"save_origin: dbaddv error writing orid %ld\n",
 				orid);
@@ -225,7 +225,7 @@ long save_event(Dbptr dbi, long is, long ie, long orid, Dbptr dbo)
 	if( dbgetv(dbi,0,
 		"event.evid",&evid,
 		"event.evname",evname,	
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 	{
 		die(1,"save_event: dbgetv error reading event fields of input view at record %ld\n",
 				is);
@@ -290,7 +290,7 @@ void save_origerr(long orid, Hypocenter h, double **C, Dbptr dbo)
                 "stz",C[2][3],
 		"sdobs",sdobs,
                 "lddate",lddate,
-			0) == dbINVALID)
+			NULL) == dbINVALID)
 	{
 		die(1,"save_origerr: dbaddv error writing origerr record for orid %ld\n",
 				orid);
@@ -405,7 +405,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
           		"assoc.sta",sta,
           		"assoc.phase",phase,
           		"assoc.belief",&belief,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 		{
 		  die(1,"save_assoc: dbgetv error reading assoc fields of input view at record %ld\n",
 				dbi.record);
@@ -413,7 +413,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 		if( dbgetv(dbi,0,
 			"site.lat",&stalat,
 			"site.lon",&stalon,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 		{
 		  die(1,"save_assoc: dbgetv error reading site fields of input view at record %ld\n",
 				dbi.record);
@@ -469,7 +469,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 			if( dbgetv(dbi,0,
 				"arrival.slow",&u,
 				"arrival.azimuth",&phi,
-					0) == dbINVALID)
+					NULL) == dbINVALID)
 			{
 		  	  die(1,"save_assoc: dbgetv error reading arrival fields of input view at record %ld\n",
 				dbi.record);
