@@ -420,7 +420,7 @@ main( int argc, char **argv )
 
 		if( db.table < 0 ) {
 
-			elog_die( 0, "Failed to lookup 'rrdcache' table in '%s'. Bye.\n" );
+			elog_die( 0, "Failed to lookup 'rrdcache' table in '%s'. Bye.\n", dbcache );
 		}
 	}
 
