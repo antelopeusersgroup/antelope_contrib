@@ -163,6 +163,7 @@ make &Arr{
 	^awk[[:space:]]
 	^[[:space:]]*cat
 	^cc[[:space:]]
+	^clang[[:space:]]
 	^\\/opt\\/SUNWspro\\/bin\\/cc[[:space:]]
 	^CC[[:space:]]
 	^-> cc[[:space:]]
