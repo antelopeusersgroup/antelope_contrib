@@ -3,7 +3,7 @@
 orb2rrdc \- populate a round-robin database from an orbserver
 .SH SYNOPSIS
 .nf
-orb2rrdc [-vV] [-s statefile] [-p pffile] [-m match] 
+orb2rrdc [-vV] [-d cachedaemon] [-s statefile] [-p pffile] [-m match] 
         [-f from] orb dbcache
 .fi
 .SH DESCRIPTION
@@ -21,6 +21,12 @@ status packets, should they be from a k22orb(1) instance or other application
 that does not use the \fIsta_chan\fP form for \fIdls\fP array entries. 
 
 .SH OPTIONS
+.IP "-d cachedaemon" 
+If this option is given, the \fIupdate\fP commands issued to rrdtool(1) 
+include an argument --daemon=\fIcachedaemon\fP, intended to direct actual file 
+updates through the rrdcached(1) program. See the man-page for rrdcached(1) for 
+further information. The rrdcached daemon is assumed to be already running. 
+
 .IP "-s statefile"
 Specify a state-file to use for tracking and synchronizing the current 
 read position in the orb.
@@ -126,6 +132,24 @@ and non-null but does not contain the name of the new parameter, the newly added
 parameter will be assigned a value of 0. If \fIopt\fP is missing or null ("-") for 
 a given station in an input parameter file, these five new parameters will be set to 
 "-". 
+
+When using the \fI-d\fP option, \fBorb2rrdc\fP assumes the rrdcached(1) daemon has been 
+separately started and is already running. For example, rrdcached(1) might be started 
+under rtexec(1) with something like
+.nf
+
+	rrdcached -F -g -l unix:/home/rt/rrdcached.sock
+
+.fi
+In that case, orb2rrdc would be started with the option \fI-d unix:/home/rt/rrdcached.sock\fP.
+
+At this time, rrdtool updates appear to experience problems if the rrdcached is restarted 
+and the rrdtool server launched by orb2rrdc is not restarted (the solution being to restart
+\fBorb2rrdc\fP also if rrdcached is restarted).
+
+\fBorb2rrdc\fP deliberately does not send \fIcreate\fP commands through the rrdcached daemon, since 
+at the time of writing the daemon does not support them. 
+
 .SH AUTHOR
 .nf
 Kent Lindquist

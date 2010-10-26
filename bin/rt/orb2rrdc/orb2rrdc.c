@@ -8,6 +8,7 @@
 Arr	*Rrd_files = 0;
 double	Status_stepsize_sec = 0;
 char	*Rrdfile_pattern = 0;
+char	*CacheDaemon = 0;
 int	Verbose = 0;
 int 	VeryVerbose = 0;
 int 	Suppress_OK = 0;
@@ -19,7 +20,7 @@ static void
 usage( void )
 {
 	cbanner( "$Date$",
-		"[-vV] [-s statefile] [-p pffile] [-m match] [-f from]  orbname dbcache\n",
+		"[-vV] [-d cachedaemon] [-s statefile] [-p pffile] [-m match] [-f from]  orbname dbcache\n",
 		"Dr. Kent Lindquist",
 		"Lindquist Consulting, Inc.",
 		"kent@lindquistconsulting.com" );
@@ -125,10 +126,11 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 	Dbptr	dbt;
 	char	datasource[STRSZ];
 	char	command[STRSZ];
+	char	cacheopt[FILENAME_MAX];
 /* Disable response printing for now (see below)
 	char	response[STRSZ];
 	char	*resp_ptr;
-*/
+ */
 	int	i;
 
 	sprintf( key, "%s:%s:%s", net, sta, dls_var );
@@ -173,7 +175,7 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 		fprintf( Rrdfp, "%s\n", command );
 
 		/* Disable response printing for now since popen() bi-directional pipes 
-		   are not supported across all platforms:
+		   are not supported across all platforms: 
 
 		if( VeryVerbose ) { 
 
@@ -199,12 +201,22 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 			time, val, net, sta, dls_var, rrd );
 	}
 
-	sprintf( command, "update %s %d:%f", rrd, (int) floor( time ), val );
+	if( CacheDaemon == NULL ) {
+
+		sprintf( cacheopt, "%s", "" );
+
+	} else {
+
+		sprintf( cacheopt, "--daemon=%s", CacheDaemon );
+
+	}
+
+	sprintf( command, "update %s %s %d:%f", cacheopt, rrd, (int) floor( time ), val );
 
 	fprintf( Rrdfp, "%s\n", command );
 
 	/* Disable response printing for now since popen() bi-directional pipes 
-	   are not supported across all platforms:
+	   are not supported across all platforms: 
 
 	if( VeryVerbose ) { 
 
@@ -276,9 +288,13 @@ main( int argc, char **argv )
 
 	elog_init( argc, argv );
 
-	while( ( c = getopt( argc, argv, "vVs:p:m:f:" ) ) != -1 ) {
+	while( ( c = getopt( argc, argv, "vVd:s:p:m:f:" ) ) != -1 ) {
 
 		switch( c ) {
+
+		case 'd':
+			CacheDaemon = optarg;
+			break;
 
 		case 'f':
 			from = optarg;
@@ -424,6 +440,8 @@ main( int argc, char **argv )
 		}
 	}
 
+	dbcrunch( db );
+
 	dbt = dbsubset( db, "endtime == NULL", NULL );
 
 	Rrd_files = newarr( 0 );
@@ -438,11 +456,21 @@ main( int argc, char **argv )
 
 		sprintf( key, "%s:%s:%s", net, sta, rrdvar );
 
-		setarr( Rrd_files, key, strdup( path ) );
+		if( ! is_present( path ) ) {
+			
+			elog_complain( 0, "WARNING: rrd file '%s', listed in database, does not exist. "
+				"Removing database entry.\n", path );
 
-		if( VeryVerbose ) {
+			dbmark( dbt );
 
-			elog_notify( 0, "Re-using rrd file '%s' for '%s'\n", path, key );
+		} else {
+
+			setarr( Rrd_files, key, strdup( path ) );
+
+			if( VeryVerbose ) {
+
+				elog_notify( 0, "Re-using rrd file '%s' for '%s'\n", path, key );
+			}
 		}
 	}
 
