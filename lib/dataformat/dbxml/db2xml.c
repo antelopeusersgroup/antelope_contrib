@@ -136,12 +136,12 @@ get_fieldnames( Dbptr db, int flags )
 	char	*fieldname;
 	char	afield[STRSZ];
 	Dbvalue	result;
-	int	itable;
-	int	ifield;
+	long	itable;
+	long	ifield;
 	static Hook *hook = 0;
 	long	start;
 	long	nchars;
-	int	is_view;
+	long	is_view;
 
 	fieldnames = newtbl( 0 );
 	view_tables = newtbl( 0 );
@@ -158,7 +158,7 @@ get_fieldnames( Dbptr db, int flags )
 
 		dbquery( db, dbTABLE_NAME, &result );
 
-		view_tables = strtbl( strdup( result.t ), 0 );
+		view_tables = strtbl( strdup( result.t ), NULL );
 	}
 
 	for( itable = 0; itable < maxtbl( view_tables ); itable++ ) {

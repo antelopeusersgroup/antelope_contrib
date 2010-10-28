@@ -218,6 +218,10 @@ tr.trcopy(trout = None)
     returns a temporary copy of a trace database table,
     possible appending to an existing table
 
+trapply_calib (tr)
+tr.apply_calib ()
+    apply calibration value to data-points in trace table record tr
+
 trdata (tr)
 tr.data ()
     returns data points from trace table record tr

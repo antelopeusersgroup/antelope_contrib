@@ -846,6 +846,19 @@ class Dbptr(list):
 
         return rc
 
+    def apply_calib(self):
+        """Apply calibration values to data-points in a trace object"""
+
+	try:
+
+            v = _datascope._trapply_calib(self)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return v
+        
     def data(self):
         """Obtain data points from a trace-table record"""
 
@@ -1351,6 +1364,12 @@ def trsamplebins(dbin, t0, t1, sta, chan, binsize, apply_calib = False, filter =
     """Return binned time-series data for a given station, channel, and time-interval"""
 
     return dbin.samplebins(t0, t1, sta, chan, binsize, apply_calib, filter)
+
+
+def trapply_calib(trin):
+    """Apply calibration values to data-points in a trace object"""
+
+    return trin.apply_calib()
 
 
 def trdata(trin):
@@ -2147,6 +2166,23 @@ if __name__ == '__main__':
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
             tr.trdestroy()
+
+        def test_method_apply_calib(self):
+
+            db = dbopen(self.dbname)
+
+            tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            tr.record = 0
+
+	    tr.apply_calib()
+
+            v = tr.data()
+
+            self.assertTrue(self.is_close(v[0], -1530.05444, 0.0001))
+            self.assertTrue(self.is_close(v[1], -1520.49157, 0.0001))
+            self.assertTrue(self.is_close(v[2], -1506.14733, 0.0001))
+            self.assertTrue(self.is_close(v[3], -1504.95190, 0.0001))
 
         def test_method_data(self):
 
@@ -3091,6 +3127,23 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[1], 0.003023, 0.001))
             self.assertTrue(self.is_close(v[2], 0.0292, 0.001))
             self.assertTrue(self.is_close(v[3], 0.1321, 0.001))
+
+        def test_procedure_trapply_calib(self):
+
+            db = dbopen(self.dbname)
+
+            tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
+
+            tr.record = 0
+
+	    trapply_calib(tr)
+
+            v = trdata(tr)
+
+            self.assertTrue(self.is_close(v[0], -1530.05444, 0.0001))
+            self.assertTrue(self.is_close(v[1], -1520.49157, 0.0001))
+            self.assertTrue(self.is_close(v[2], -1506.14733, 0.0001))
+            self.assertTrue(self.is_close(v[3], -1504.95190, 0.0001))
 
         def test_procedure_trdata(self):
 

@@ -125,6 +125,7 @@ static PyObject *python_trloadchan( PyObject *self, PyObject *args );
 static PyObject *python_trsample( PyObject *self, PyObject *args );
 static PyObject *python_trsamplebins( PyObject *self, PyObject *args );
 static PyObject *python_trfilter( PyObject *self, PyObject *args );
+static PyObject *python_trapply_calib( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static PyObject *python_trdatabins( PyObject *self, PyObject *args );
 static PyObject *python_trcopy( PyObject *self, PyObject *args );
@@ -210,6 +211,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_trsample",  python_trsample,	METH_VARARGS, "Return channel waveform data" },
 	{ "_trsamplebins", python_trsamplebins,	METH_VARARGS, "Return channel waveform data in binned time/min/max triplets" },
 	{ "_trfilter",  python_trfilter,	METH_VARARGS, "Apply time-domain filters to waveform data" },
+	{ "_trapply_calib", python_trapply_calib, METH_VARARGS, "Apply calibration value to data points in trace object" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
 	{ "_trdatabins", python_trdatabins,	METH_VARARGS, "Extract binned data points from trace table record" },
 	{ "_trcopy",	python_trcopy,		METH_VARARGS, "Make copy of a trace table including the trace data" },
@@ -2687,6 +2689,24 @@ python_trloadchan( PyObject *self, PyObject *args ) {
 	tr = trloadchan( db, t0, t1, sta, chan ); 
 
 	return Dbptr2PyObject( tr );
+}
+
+static PyObject *
+python_trapply_calib( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trapply_calib(tr)\n";
+	Dbptr	tr;
+	long	result;
+
+	if( ! PyArg_ParseTuple( args, "O&", parse_to_Dbptr, &tr ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	result = trapply_calib( tr );
+
+	return Py_BuildValue( "i", result );
 }
 
 static PyObject *
