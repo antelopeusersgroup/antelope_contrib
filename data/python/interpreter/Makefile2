@@ -10,4 +10,5 @@ install :: install_python_link
 
 install_python_link: $(PYTHON_EXECUTABLE)
 	$(RM) $(DEST)/bin/python
+	mkdir -p $(DEST)/bin
 	ln -s $(PYTHON_EXECUTABLE) $(DEST)/bin/python

@@ -509,7 +509,7 @@ python_elog_complain( PyObject *self, PyObject *args ) {
 		return NULL;
 	}
 
-	elog_complain( 0, msg );
+	elog_complain( 0, "%s", msg );
 
 	return NULL;
 }
