@@ -171,6 +171,11 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 			strcat( command, " " );
 			strcat( command, (char *) gettbl( rras, i ) );
 		}
+
+		if( VeryVerbose ) {
+			
+			elog_notify( 0, "Issuing rrdtool command: '%s'\n", command );
+		}
 	
 		fprintf( Rrdfp, "%s\n", command );
 
@@ -213,6 +218,11 @@ archive_dlsvar( Dbptr db, char *net, char *sta, char *dls_var, char *dsparams, T
 
 	sprintf( command, "update %s %s %d:%f", cacheopt, rrd, (int) floor( time ), val );
 
+	if( VeryVerbose ) {
+			
+		elog_notify( 0, "Issuing rrdtool command: '%s'\n", command );
+	}
+	
 	fprintf( Rrdfp, "%s\n", command );
 
 	/* Disable response printing for now since popen() bi-directional pipes 
