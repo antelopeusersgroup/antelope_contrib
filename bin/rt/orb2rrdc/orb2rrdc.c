@@ -604,6 +604,21 @@ main( int argc, char **argv )
 
 					continue;
 
+				} else if( pfval != (Pf *) NULL &&
+					   pfval->value.s != (char *) NULL &&
+					   ! strcmp( pfval->value.s, "-" ) ) {
+
+					if( VeryVerbose ) {
+
+						elog_notify( 0, "Non-floating point value '-' in variable '%s', "
+							"in packet from '%s', timestamped '%s'; Skipping data point\n",
+							key, srcname, s = strtime( time ) );
+
+						free( s );
+					}
+
+					continue;
+
 				} else {
 
 					val = pfget_double( dlspf, key );
