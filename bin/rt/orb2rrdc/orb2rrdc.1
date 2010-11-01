@@ -34,7 +34,9 @@ read position in the orb.
 .IP "-f from"
 Specify a starting position for reading the orb stream. This may be 
 a string time interpretable by str2epoch(3), or the string \fInewest\fP or
-\fIoldest\fP. 
+\fIoldest\fP. To avoid confusion, the \fI-f\fP argument is ignored if the \fI-s\fP 
+option is also given (i.e. if a statefile is used). 
+
 
 .IP "-m match"
 Specify a regular-expression subset of orb source-names to monitor. 
@@ -149,6 +151,9 @@ and the rrdtool server launched by orb2rrdc is not restarted (the solution being
 
 \fBorb2rrdc\fP deliberately does not send \fIcreate\fP commands through the rrdcached daemon, since 
 at the time of writing the daemon does not support them. 
+
+The \fI-f\fP and \fI-s\fP options provide potentially conflicting messages. Thus, if both are given, 
+the \fI-f\fP option is ignored. 
 
 .SH AUTHOR
 .nf
