@@ -153,7 +153,14 @@ and the rrdtool server launched by orb2rrdc is not restarted (the solution being
 at the time of writing the daemon does not support them. 
 
 The \fI-f\fP and \fI-s\fP options provide potentially conflicting messages. Thus, if both are given, 
-the \fI-f\fP option is ignored. 
+the \fI-f\fP option is ignored. In principle, one could allow both options to be specified, acting on the 
+\fI-f\fP option if and only if a state file were specified  but not present. That would allow the user 
+to rewind to a given point to start catching up, then continue on once caught up without a restart. This 
+has not been implemented, however. 
+
+\fBorb2rrdc\fP currently ignores values of \fI-\fP in input parameter files from the orbserver, since those 
+cannot be added as floating-point values to round-robin databases. Alternatively, \fBorb2rrdc\fP could 
+add \fIU\fP i.e. "UNKNOWN" values to the round-robin databases, however this also has not been implemented.
 
 .SH AUTHOR
 .nf
