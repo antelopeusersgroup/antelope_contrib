@@ -31,6 +31,22 @@ sub quit {
 	$Windows{"Main"}->destroy();
 }
 
+sub save_as {
+
+	$FSref = $Windows{"Main"}->FileSelect( -directory => getcwd() );
+
+	$file = $FSref->Show;
+
+	if( defined( $file ) && $file ne "" ) {
+		
+		open( S, "> $file" );
+
+		print S $Windows{"CompileOut"}->Contents();
+
+		close( S );
+	}
+}
+
 sub inform {
 	my( $msg ) = @_;
 
@@ -375,6 +391,7 @@ sub init_File_menu {
 
 	$filemenu = $menubutton->Menu( -tearoff => 0 );
 
+	$filemenu->add( "command", -label => "Save as...", -command => \&save_as );
 	$filemenu->add( "command", -label => "Quit", -command => \&quit );
 
 	$menubutton->configure( -menu => $filemenu );
@@ -407,6 +424,7 @@ sub init_window {
 	use Tk;
 	use Tk::ROText;
 	use Tk::Font;
+	use Tk::FileSelect;
 	use elog_gui;
 	
 	$Windows{"Main"} = MainWindow->new();
