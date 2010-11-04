@@ -9,9 +9,9 @@ Arr	*Rrd_files = 0;
 double	Status_stepsize_sec = 0;
 char	*Rrdfile_pattern = 0;
 char	*CacheDaemon = 0;
+char	*Suppress_egrep = 0;
 int	Verbose = 0;
 int 	VeryVerbose = 0;
-int 	Suppress_OK = 0;
 FILE	*Rrdfp;
 
 static void pfmorph( Pf *pf );
@@ -375,9 +375,18 @@ main( int argc, char **argv )
 		sprintf( command, "rrdtool -" );
 	}
 
-	if( Suppress_OK && ! VeryVerbose ) {
+	Suppress_egrep = pfget_string( pf, "suppress_egrep" );
 
-		strcat( command, " | egrep -v ^OK" );
+	if( Suppress_egrep != NULL && strcmp( Suppress_egrep, "" ) ) {
+		
+		if( ! datafile( "PATH", "egrep" ) ) {
+
+			elog_complain( 0, "Ignoring suppress_egrep parameter: can't find egrep on path\n" ); 
+
+		} else {
+
+			sprintf( command, "%s 2>&1 | egrep -v '%s'", command, Suppress_egrep );
+		}
 	}
 
 	if( VeryVerbose ) {
@@ -487,7 +496,6 @@ main( int argc, char **argv )
 	Rrdfile_pattern = pfget_string( pf, "rrdfile_pattern" );
 	Status_stepsize_sec = pfget_double( pf, "status_stepsize_sec" );
 	Default_network = pfget_string( pf, "default_network" );
-	Suppress_OK = pfget_boolean( pf, "suppress_OK" );
 	dlslines = pfget_tbl( pf, "dls_vars" );
 
 	Dls_vars_dsparams = newarr( 0 );
