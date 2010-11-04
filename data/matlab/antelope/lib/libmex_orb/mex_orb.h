@@ -7,8 +7,10 @@
  * 1999
  */
 
-#include <mex.h>
 #include <stdlib.h>
+#include <mex.h>
+/* Matlab R2010b defines printf as mexPrintf: */
+#undef printf
 #include "stock.h"
 #include "orb.h"
 #include "Pkt.h"

@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <time.h>
 #include "mex.h"
+/* Matlab R2010b defines printf as mexPrintf: */
+#undef printf
 #include "db.h"
 #include "tr.h"
 #include "stock.h"
