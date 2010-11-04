@@ -34,6 +34,9 @@ CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(A
 MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
   -L$(XLIB) LDFLAGS='$$LDFLAGS $(STOCKNEEDS) $(RPATH)$(ANTELOPE)/lib $(RPATH)$(DEST)/lib' $(DBG)
 
+# Change install_name for DLDFLAGS
+DLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(ANTELOPE)/local/lib/$(DLIB) $(LDEXTRA) $(LDPATH)
+
 clean ::
 	@-$(RM) *.$(MEXEXT) *.mex* *.m *.html
 
