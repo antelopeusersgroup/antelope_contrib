@@ -524,6 +524,25 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 	freearr(residual_array,0);
 }
 
+//DEBUG - delete me when finished
+void dump_arrivaltbl(Tbl *t)
+{
+    Arrival *a;
+    printf("Arrival table read from db\n");
+    for(int i=0;i<maxtbl(t);++i)
+    {
+        a=(Arrival *)gettbl(t,i);
+        printf("%s %s %s %f %f %f\n",
+                a->sta->name,
+                a->phase->name,
+                strtime(a->time),
+                a->deltat,
+                a->res.other_weights,
+                a->res.residual_weight);
+    }
+}
+
+
 	
 int main(int argc, char **argv)
 {
@@ -739,6 +758,10 @@ Which picks will be used here is unpredictable\n\
 						is,ie,pf);
 		ta = dbload_arrival_table(dbv,
 				is,ie,station_table, arr_phase);
+
+                //DEBUG
+                //dump_arrivaltbl(ta);
+
 		tu = dbload_slowness_table(dbv,
 				is,ie,array_table, arr_phase);
 		/* this actually sets up the minus phase feature for bad clocks*/
@@ -777,6 +800,16 @@ Which picks will be used here is unpredictable\n\
 				ret_code);
 			
 			niterations = maxtbl(converge_history);
+                        //DEBUG
+                        for(int foo=0;foo<niterations;++foo)
+                        {
+                            hypos=(Hypocenter *) gettbl(converge_history,foo);
+                            fprintf(stderr,"Iteration %d: %lf %lf %lf %s %lf %d\n",
+                                    foo,hypos->lat,hypos->lon,
+                                    hypos->z,strtime(hypos->time),
+                                    hypos->rms_raw,
+                                    hypos->degrees_of_freedom);
+                        }
 	
 			hypos = (Hypocenter *)gettbl(converge_history,
 								niterations-1);
@@ -803,6 +836,8 @@ Which picks will be used here is unpredictable\n\
 			save_predarr(dbo,ta,tu,*hypos,orid,vmodel);
 		}
 		o.fix[2]=global_fix_depth;
+                //DEBUG
+                dump_arrivaltbl(ta);
 	
 		if(maxtbl(converge_history)>0)freetbl(converge_history,free);
 		if(maxtbl(reason_converged)>0)freetbl(reason_converged,free);

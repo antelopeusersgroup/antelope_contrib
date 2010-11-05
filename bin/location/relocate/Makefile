@@ -1,6 +1,7 @@
 MAN1=relocate.1
 BIN=relocate
 PF=relocate.pf
+DBX=-g
 cflags = 
 ldflags = 
 
@@ -18,7 +19,6 @@ include $(ANTELOPEMAKE)
 DIRS=
 
 OBJS= relocate.o
-CC=cc
 $(BIN):$(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 

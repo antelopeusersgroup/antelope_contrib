@@ -975,7 +975,7 @@ ggnloc (Hypocenter initial_location,
 	                ndata_used,
 	                ndata_feq;
 	Robust_statistics test;
-	char            message[80];
+	char            message[256];
 
 	hypo_history = (Hypocenter *) malloc (sizeof (Hypocenter));
 	if (hypo_history == NULL)
