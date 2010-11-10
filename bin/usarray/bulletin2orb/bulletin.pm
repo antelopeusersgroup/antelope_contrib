@@ -146,7 +146,7 @@ sub collect_ftp	{
     }
 
     my $x = $#saved + 1 ;
-    elog_notify("   Found $x events in file\n");
+    elog_notify("   Found $x events from recovered file\(s\)\n");
     close FILE ;
     @saved = &$extract_handler($tmpfilename) if ($extract_handler) ;
     @outlist = list2search(@saved) ;
@@ -391,7 +391,7 @@ sub collect_file	{
   }
 
   my $x = $#saved + 1 ;
-  elog_notify("   Found $x events in file\n");
+  elog_notify("   Found $x events from recovered file\(s\)\n");
   close FILE ;
   @saved = &$extract_handler(@saved) if ($extract_handler) ;
   @outlist = list2search(@saved) ;
@@ -2897,17 +2897,20 @@ sub check_remote_list {		#&check_remote_list($match,@ll_of_remote_dir)  returns 
     foreach (@file_list) {
 
         my (@lsout)        = split(/\s+/, $_);
+	my $lsfile ;
+	my $last_remote_update ;
 
         if ($lsout[0] =~ /total/) {
             next;
-        } elsif ($lsout[8] =~ /$match/) {  
+        } elsif ( ((scalar @lsout == 9) && $lsout[8] =~ /$match/) || ((scalar @lsout == 4) && $lsout[3] =~ /$match/) ) {  
 	    
-            my $lsfile       = $lsout[8]  ; 
-            my $upd_mo     = $lsout[5];
-            my $upd_dy     = $lsout[6];
-            my $upd_t_yr   = $lsout[7];
+	    if (scalar @lsout == 9) {
+               $lsfile     = $lsout[8];   
+               my $upd_mo     = $lsout[5];
+               my $upd_dy     = $lsout[6];
+               my $upd_t_yr   = $lsout[7];
 
-            my %mo_names = (
+               my %mo_names = (
                             Jan => 1,
                             Feb => 2,
                             Mar => 3,
@@ -2920,39 +2923,43 @@ sub check_remote_list {		#&check_remote_list($match,@ll_of_remote_dir)  returns 
                             Oct => 10,
                             Nov => 11,
                             Dec => 12,
-            );
+               );
 
 # looks like it will be year if time is gt 6 months previous to now, time if less than 6 mos.
-            if ($upd_t_yr !~ /\d{4}/ ) {
-                $num_mo = $mo_names{$upd_mo};
+               if ($upd_t_yr !~ /\d{4}/ ) {
+                   $num_mo = $mo_names{$upd_mo};
 
-                if ($num_mo <= $thismonth) {
-                    $upd_yr = $thisyear;
-                } else {
-#                    my $upd_yr = $thisyear-- ;
-                    --$upd_yr ; 
-                }
+                   if ($num_mo <= $thismonth) {
+                       $upd_yr = $thisyear;
+                   } else {
+                       --$upd_yr ; 
+                   }
 
 
 # need to get abreviated month converted to 1-12 and current month converted to 1-12.
 # if ab_month >1 and < cur_month than set upd_yr = this_yr
 # else set upd_yr = this_yr - 1
 
-                $upd_time       = $upd_t_yr;		# because of the differences in ls results...
-            } else {
-                $upd_yr         = $upd_t_yr;
-                $upd_time       = "00:00:00";
-                $num_mo         = $mo_names{$upd_mo};
-            }
+                   $upd_time       = $upd_t_yr;		# because of the differences in ls results...
+               } else {
+                   $upd_yr         = $upd_t_yr;
+                   $upd_time       = "00:00:00";
+                   $num_mo         = $mo_names{$upd_mo};
+               }
 # get last update time of remote file (this could be replaced by an ftp->mdtm if permissions allow)
 #          $last_remote_update  = $ftp->mdtm( $test_run )  || die "Couldn't get modify time on remote $lsfile \n";
 
-           my $last_remote_update  = str2epoch("$upd_mo $upd_dy $upd_yr $upd_time") || elog_complain("Couldn't find last update time of $lsfile \n" ) ;
+               $last_remote_update  = str2epoch("$upd_mo $upd_dy $upd_yr $upd_time") || elog_complain("Couldn't find last update time of $lsfile \n" ) ;
+
+           } else {
+               $lsfile     = $lsout[3];   
+               $last_remote_update  = str2epoch("$lsout[0] $lsout[1]") || elog_complain("Couldn't find last update time of $lsfile \n" ) ;
+	   }
 
            my $gzipfile    = $localdir."/".$lsfile.".gz";
            if (-e $localdir."/".$lsfile) {
                 my $local_update   = (stat($localdir."/".$lsfile))[9]  || elog_complain("Couldn't find last update time for $localdir."/".$lsfile \n") ;
-#                elog_notify("file: $lsfile \tlast remote update: $last_remote_update last local update: $local_update\n") ;  
+#               elog_notify("file: $lsfile \tlast remote update: $last_remote_update last local update: $local_update\n") ;  
                 if ($local_update < $last_remote_update) {
                     @convert_list = get_remote_ftpfile($lsfile) ;
                     next;
