@@ -523,26 +523,6 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 	}
 	freearr(residual_array,0);
 }
-
-//DEBUG - delete me when finished
-void dump_arrivaltbl(Tbl *t)
-{
-    Arrival *a;
-    printf("Arrival table read from db\n");
-    for(int i=0;i<maxtbl(t);++i)
-    {
-        a=(Arrival *)gettbl(t,i);
-        printf("%s %s %s %f %f %f\n",
-                a->sta->name,
-                a->phase->name,
-                strtime(a->time),
-                a->deltat,
-                a->res.other_weights,
-                a->res.residual_weight);
-    }
-}
-
-
 	
 int main(int argc, char **argv)
 {
@@ -697,10 +677,10 @@ Which picks will be used here is unpredictable\n\
 	sortkeys = newtbl(3);
 	pushtbl(sortkeys,"evid");
 	pushtbl(sortkeys,"orid");
-	pushtbl(sortkeys,"time");
+	pushtbl(sortkeys,"arrival.time");
 	dbv = dbsort(dbv,sortkeys,0,0);
 	if(dbv.record == dbINVALID)
-		die(1,"dbsort on evid,orig,time failed\n");
+		die(1,"dbsort on evid,orid,arrival.time failed\n");
 
 	/* Set up grouping by events */
 	origin_group = newtbl(0);
@@ -759,8 +739,6 @@ Which picks will be used here is unpredictable\n\
 		ta = dbload_arrival_table(dbv,
 				is,ie,station_table, arr_phase);
 
-                //DEBUG
-                //dump_arrivaltbl(ta);
 
 		tu = dbload_slowness_table(dbv,
 				is,ie,array_table, arr_phase);
@@ -800,17 +778,6 @@ Which picks will be used here is unpredictable\n\
 				ret_code);
 			
 			niterations = maxtbl(converge_history);
-                        //DEBUG
-                        for(int foo=0;foo<niterations;++foo)
-                        {
-                            hypos=(Hypocenter *) gettbl(converge_history,foo);
-                            fprintf(stderr,"Iteration %d: %lf %lf %lf %s %lf %d\n",
-                                    foo,hypos->lat,hypos->lon,
-                                    hypos->z,strtime(hypos->time),
-                                    hypos->rms_raw,
-                                    hypos->degrees_of_freedom);
-                        }
-	
 			hypos = (Hypocenter *)gettbl(converge_history,
 								niterations-1);
 			predicted_errors(*hypos,ta,tu,o,C,emodel);
@@ -836,9 +803,6 @@ Which picks will be used here is unpredictable\n\
 			save_predarr(dbo,ta,tu,*hypos,orid,vmodel);
 		}
 		o.fix[2]=global_fix_depth;
-                //DEBUG
-                dump_arrivaltbl(ta);
-	
 		if(maxtbl(converge_history)>0)freetbl(converge_history,free);
 		if(maxtbl(reason_converged)>0)freetbl(reason_converged,free);
 		if(maxtbl(residual)>0)freetbl(residual,free);
