@@ -680,10 +680,10 @@ Which picks will be used here is unpredictable\n\
 	sortkeys = newtbl(3);
 	pushtbl(sortkeys,"evid");
 	pushtbl(sortkeys,"orid");
-	pushtbl(sortkeys,"time");
+	pushtbl(sortkeys,"arrival.time");
 	dbv = dbsort(dbv,sortkeys,0,0);
 	if(dbv.record == dbINVALID)
-		die(1,"dbsort on evid,orig,time failed\n");
+		die(1,"dbsort on evid,orid,arrival.time failed\n");
 
 	/* Set up grouping by events */
 	origin_group = newtbl(0);

@@ -115,6 +115,15 @@ Arr *dbload_array_table(Dbptr db,int row_start,int row_end,Pf *pf)
 	}
 	return(a);
 }
+/* Helper for below.  Initialize residual structure to appropriate
+   values */
+void InitializeResidual(Residual *r)
+{
+    r->weighted_residual=0.0;
+    r->raw_residual=0.0;
+    r->residual_weight=1.0;
+    r->other_weights=1.0;
+}
 /* Loads and forms Tbl of pointers to arrival structures  (this is
 what is returned) from input database view pointed to by 
 db.  The routine scans the db view from row_start to row_end
@@ -162,6 +171,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 		if(a == NULL)
 				die(1,"%s:  Cannot malloc Arrival structure\n",
 					prog);
+                InitializeResidual(&(a->res));
 		if((dbgetv( db, 0,
 			"arid",&(a->arid),
 			"sta",staname,
