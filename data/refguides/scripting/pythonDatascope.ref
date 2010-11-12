@@ -213,6 +213,16 @@ db.loadchan(t0, t1, sta, chan)
     load data for $sta/$chan between time t0 and t1.  
     returns database pointer to trace table.
 
+trload_css(db, t0, t1, tr = None, table = None)
+db.load_css(t0, t1, tr = None, table = None)
+    load waveform data between expressions time t0 and t1.  
+    returns database pointer to trace table.
+
+trload_cssgrp(db, t0, t1, tr = None, table = None)
+db.load_cssgrp(t0, t1, tr = None, table = None)
+    load sorted waveform data between expressions time t0 and t1.  
+    returns database pointer to trace table.
+
 trcopy(tr, trout = None)
 tr.trcopy(trout = None)
     returns a temporary copy of a trace database table,

@@ -812,6 +812,27 @@ class Dbptr(list):
 
         return Dbptr(tr)
 
+    def load_cssgrp(self, t0, t1, tr = None, table = None):
+        """Load sorted data corresponding to time expressions into memory"""
+
+	if( not isinstance(t0, str)):
+
+            t0 = str(t0)
+
+	if( not isinstance(t1, str)):
+            
+	    t1 = str(t1)
+
+        try:
+
+	    tr = _datascope._trload_cssgrp(self, t0, t1, tr, table)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return Dbptr(tr)
+
     def sample(self, t0, t1, sta, chan, apply_calib = False, filter = None):
         """Return time-series data for a given station, channel, and time-interval"""
 
@@ -1373,6 +1394,12 @@ def trload_css(dbin, t0, t1, tr = None, table = None):
     """Load data corresponding to time expressions into memory"""
 
     return dbin.load_css(t0, t1, tr, table)
+
+
+def trload_cssgrp(dbin, t0, t1, tr = None, table = None):
+    """Load sorted data corresponding to time expressions into memory"""
+
+    return dbin.load_cssgrp(t0, t1, tr, table)
 
 
 def trfilter(trin, filter_string):
@@ -2185,6 +2212,22 @@ if __name__ == '__main__':
             db.lookup(table = 'wfdisc')
 
 	    tr = db.load_css("706139719.05000", "706139855.95000")
+
+            self.assert_(isinstance(tr, Dbptr))
+
+            self.assertTrue(tr.database >= 0)
+
+	    self.assertEqual(dbnrecs(tr), 18)
+
+        def test_method_load_cssgrp(self):
+
+	    db = dbopen(self.dbname)
+
+            db.lookup(table = 'wfdisc')
+
+	    db.sort( ["sta", "chan", "time"] )
+
+	    tr = db.load_cssgrp("706139719.05000", "706139855.95000")
 
             self.assert_(isinstance(tr, Dbptr))
 
@@ -3023,13 +3066,45 @@ if __name__ == '__main__':
 
             db = dblookup(db, table = 'wfdisc')
 
-	    tr = trload_css(db, "706139719.05000", "706139855.95000")
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
 
             self.assert_(isinstance(tr, Dbptr))
 
             self.assertTrue(tr.database >= 0)
 
 	    self.assertEqual(dbnrecs(tr), 18)
+
+	    tr = trload_css(db, "706139800.0000", "706139855.95000", tr, "wfdisc")
+
+	    self.assertEqual(dbnrecs(tr), 36)
+
+	    tr = trload_css(db, "500139800.0000", "500139855.95000")
+
+	    self.assertEqual(dbnrecs(tr), 0)
+
+        def test_procedure_trload_cssgrp(self):
+
+	    db = dbopen(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+	    db = dbsort(db, ["sta", "chan", "time"] )
+
+	    tr = trload_cssgrp(db, "706139719.05000", "706139799.95000")
+
+            self.assert_(isinstance(tr, Dbptr))
+
+            self.assertTrue(tr.database >= 0)
+
+	    self.assertEqual(dbnrecs(tr), 18)
+
+	    tr = trload_cssgrp(db, "706139800.0000", "706139855.95000", tr, "wfdisc")
+
+	    self.assertEqual(dbnrecs(tr), 36)
+
+	    tr = trload_cssgrp(db, "500139800.0000", "500139855.95000")
+
+	    self.assertEqual(dbnrecs(tr), 0)
 
         def test_procedure_trfree(self):
 
