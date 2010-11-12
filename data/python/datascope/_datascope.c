@@ -122,6 +122,8 @@ static PyObject *python_dbnextid( PyObject *self, PyObject *args );
 static PyObject *python_dbtmp( PyObject *self, PyObject *args );
 static PyObject *python_dbcreate( PyObject *self, PyObject *args );
 static PyObject *python_trloadchan( PyObject *self, PyObject *args );
+static PyObject *python_trload_css( PyObject *self, PyObject *args );
+static PyObject *python_trload_cssgrp( PyObject *self, PyObject *args );
 static PyObject *python_trsample( PyObject *self, PyObject *args );
 static PyObject *python_trsamplebins( PyObject *self, PyObject *args );
 static PyObject *python_trfilter( PyObject *self, PyObject *args );
@@ -207,7 +209,9 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_dbnextid",  python_dbnextid,   	METH_VARARGS, "Generate a unique id from the lastid table" },
 	{ "_dbtmp",     python_dbtmp,  		METH_VARARGS, "Create a new database descriptor" },
 	{ "_dbcreate",  python_dbcreate,   	METH_VARARGS, "Create a temporary database" },
-	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Read channel waveform data" },
+	{ "_trloadchan", python_trloadchan,	METH_VARARGS, "Load a station-channel of waveform data" },
+	{ "_trload_css", python_trload_css,	METH_VARARGS, "Load waveform data" },
+	{ "_trload_cssgrp", python_trload_cssgrp, METH_VARARGS, "Load sorted waveform data" },
 	{ "_trsample",  python_trsample,	METH_VARARGS, "Return channel waveform data" },
 	{ "_trsamplebins", python_trsamplebins,	METH_VARARGS, "Return channel waveform data in binned time/min/max triplets" },
 	{ "_trfilter",  python_trfilter,	METH_VARARGS, "Apply time-domain filters to waveform data" },
@@ -522,6 +526,13 @@ static int
 parse_to_Dbptr( PyObject *obj, void *addr )
 {
 	Dbptr	*db = (Dbptr *) addr;
+
+	if( obj == Py_None ) {
+
+		*db = dbinvalid();
+
+		return 1;
+	}
 
 	if( PyList_Check( obj ) &&
 	    PyList_Size( obj ) == 4 &&
@@ -2687,6 +2698,72 @@ python_trloadchan( PyObject *self, PyObject *args ) {
 	}
 
 	tr = trloadchan( db, t0, t1, sta, chan ); 
+
+	return Dbptr2PyObject( tr );
+}
+
+static PyObject *
+python_trload_css( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trload_css(db, t0, t1, tr, table)\n";
+	Dbptr	db;
+	Dbptr	tr;
+	char	*t0;
+	char	*t1;
+	char	*table;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&ssO&z", parse_to_Dbptr,
+				      &db, &t0, &t1, parse_to_Dbptr,
+				      &tr, &table) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	rc = trload_css( db, t0, t1, &tr, table, NULL );
+
+	/* consider rc == -1, i.e. no data matching time frame, to be a no-error condition */
+
+	if( rc < -1 ) {
+
+		raise_elog( ELOG_COMPLAIN, "trload_css: problems loading data\n" );
+
+		return NULL;
+	}
+
+	return Dbptr2PyObject( tr );
+}
+
+static PyObject *
+python_trload_cssgrp( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trload_cssgrp(db, t0, t1, tr, table)\n";
+	Dbptr	db;
+	Dbptr	tr;
+	char	*t0;
+	char	*t1;
+	char	*table;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&ssO&z", parse_to_Dbptr,
+				      &db, &t0, &t1, parse_to_Dbptr,
+				      &tr, &table) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	rc = trload_cssgrp( db, t0, t1, &tr, table, NULL );
+
+	/* consider rc == -1, i.e. no data matching time frame, to be a no-error condition */
+
+	if( rc < -1 ) {
+
+		raise_elog( ELOG_COMPLAIN, "trload_css: problems loading data\n" );
+
+		return NULL;
+	}
 
 	return Dbptr2PyObject( tr );
 }
