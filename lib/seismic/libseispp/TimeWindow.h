@@ -104,7 +104,7 @@ public:
 	\param ns value for nstart
 	\param ne value for nend
 	*/
-	SampleRange::SampleRange(int ns, int ne)
+	SampleRange(int ns, int ne)
 	{
 		nstart=ns;
 		nend=ne;
