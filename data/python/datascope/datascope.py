@@ -1562,6 +1562,8 @@ if __name__ == '__main__':
             self.assertEqual(db3[2], dbALL)
             self.assertEqual(db3[3], dbALL)
 
+	    dbclose(db3)
+
             db4 = Dbptr(self.dbname, 'r')
 
             self.assert_(isinstance(db4, Dbptr))
@@ -1569,6 +1571,8 @@ if __name__ == '__main__':
             self.assertEqual(db4[1], dbALL)
             self.assertEqual(db4[2], dbALL)
             self.assertEqual(db4[3], dbALL)
+
+	    dbclose(db4)
 
             db5 = Dbptr(dbname = self.dbname)
 
@@ -1578,6 +1582,8 @@ if __name__ == '__main__':
             self.assertEqual(db5[2], dbALL)
             self.assertEqual(db5[3], dbALL)
 
+	    dbclose(db5)
+
             db6 = Dbptr(dbname = self.dbname, perm = 'r')
 
             self.assert_(isinstance(db6, Dbptr))
@@ -1585,6 +1591,8 @@ if __name__ == '__main__':
             self.assertEqual(db6[1], dbALL)
             self.assertEqual(db6[2], dbALL)
             self.assertEqual(db6[3], dbALL)
+
+	    dbclose(db6)
 
             self.assertRaises(TypeError, Dbptr, [dbINVALID,dbINVALID])
             self.assertRaises(TypeError, Dbptr, [dbINVALID,dbINVALID,dbINVALID,dbINVALID,dbINVALID])
@@ -1684,6 +1692,8 @@ if __name__ == '__main__':
 
             db.free()
 
+	    db.close()
+
         def test_method_lookup(self):
 
             db = Dbptr(self.dbname)
@@ -1696,9 +1706,13 @@ if __name__ == '__main__':
             self.assertEqual(db[2], dbALL)
             self.assertEqual(db[3], dbALL)
 
+	    db.close()
+
         def test_method_invalid(self):
 
             db = Dbptr(self.dbname)
+
+	    dbt = Dbptr(db)
         
             db.invalid()
 
@@ -1706,6 +1720,8 @@ if __name__ == '__main__':
             self.assertEqual(db[1], dbINVALID)
             self.assertEqual(db[2], dbINVALID)
             self.assertEqual(db[3], dbINVALID)
+
+	    dbt.close()
 
         def test_method_sort(self):
 
@@ -1724,6 +1740,8 @@ if __name__ == '__main__':
 
             self.assertEqual(db.table, db2.table)
 
+	    db.close()
+
         def test_method_subset(self):
 
             db = Dbptr(self.dbname)
@@ -1732,6 +1750,8 @@ if __name__ == '__main__':
             db.subset('mb > 3')
 
             self.assertTrue(db[1] >= 0)
+
+	    db.close()
 
         def test_method_list2subset(self):
 
@@ -1743,6 +1763,8 @@ if __name__ == '__main__':
 
             self.assertTrue(db[1] >= 0)
             self.assertEqual(db.query(dbRECORD_COUNT), 3)
+
+	    db.close()
 
         def test_method_join(self):
 
@@ -1759,6 +1781,8 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+	    db.close()
+
         def test_method_nojoin(self):
 
             db = Dbptr(self.dbname)
@@ -1774,6 +1798,8 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+	    db.close()
+
         def test_method_theta(self):
 
             db = Dbptr(self.dbname)
@@ -1789,6 +1815,8 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+	    db.close()
+
         def test_method_group(self):
 
             db = Dbptr(self.dbname)
@@ -1803,6 +1831,8 @@ if __name__ == '__main__':
             self.assertTrue(db.table >= 0)
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
+
+	    db.close()
 
         def test_method_ungroup(self):
 
@@ -1820,6 +1850,8 @@ if __name__ == '__main__':
             self.assertTrue(db.table >= 0)
             self.assertEqual(db.field, dbALL)
 
+	    db.close()
+
         def test_method_process(self):
 
             db = Dbptr(self.dbname)
@@ -1833,6 +1865,8 @@ if __name__ == '__main__':
 
             self.assertTrue(db.query(dbRECORD_COUNT) > 0)
             
+	    db.close()
+
         def test_method_separate(self):
 
             db = Dbptr(self.dbname)
@@ -1847,6 +1881,8 @@ if __name__ == '__main__':
 
             self.assertEqual(dbquery(db,dbVIEW_TABLES),("wfdisc",))
 
+	    db.close()
+
         def test_method_sever(self):
 
             db = Dbptr(self.dbname)
@@ -1860,6 +1896,8 @@ if __name__ == '__main__':
             db.sever("stamag")
 
             self.assertEqual(dbquery(db,dbVIEW_TABLES),("origin",))
+
+	    db.close()
 
         def test_method_unjoin(self):
 
@@ -1880,6 +1918,8 @@ if __name__ == '__main__':
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
+	    db.close()
+
         def test_method_getv(self):
 
             db = Dbptr(self.dbname)
@@ -1895,6 +1935,8 @@ if __name__ == '__main__':
             self.assertEqual(values[2], 7)
             self.assertTrue(self.is_close(values[3], 704371900.67, 0.00000001))
             
+	    db.close()
+
         def test_method_addnull(self):
 
             tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
@@ -2122,11 +2164,15 @@ if __name__ == '__main__':
 
             self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
             
+	    db.close()
+
         def test_method_query(self):
 
             db = Dbptr(self.dbname)
 
             self.assertEqual(self.dbname, db.query(dbDATABASE_NAME))
+
+	    db.close()
 
         def test_method_nrecs(self):
 
@@ -2135,6 +2181,8 @@ if __name__ == '__main__':
             db.lookup(table='origin')
 
             self.assertEqual(db.nrecs(), 1351)
+
+	    db.close()
 
         def test_method_ex_eval(self):
 
@@ -2152,6 +2200,8 @@ if __name__ == '__main__':
             self.assertEqual(total, 14)
             self.assertTrue(tf)
 
+	    db.close()
+
         def test_method_matches(self):
 
             db = Dbptr(self.dbname)
@@ -2163,6 +2213,8 @@ if __name__ == '__main__':
 
             self.assertTrue(len(values) > 0)
 
+	    db.close()
+
         def test_method_find(self):
 
             db = Dbptr(self.dbname)
@@ -2173,6 +2225,8 @@ if __name__ == '__main__':
 
             self.assertTrue(rc > 0)
 
+	    db.close()
+
         def test_method_xml(self):
 
             db = Dbptr(self.dbname)
@@ -2182,6 +2236,8 @@ if __name__ == '__main__':
             xml = db.xml()
 
             self.assert_(isinstance(xml,str))
+
+	    db.close()
 
         def test_method_loadchan(self):
 
@@ -2205,6 +2261,8 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.field, dbINVALID)
             self.assertNotEqual(tr.record, dbINVALID)
 
+	    db.close()
+
         def test_method_load_css(self):
 
 	    db = dbopen(self.dbname)
@@ -2218,6 +2276,8 @@ if __name__ == '__main__':
             self.assertTrue(tr.database >= 0)
 
 	    self.assertEqual(dbnrecs(tr), 18)
+
+	    db.close()
 
         def test_method_load_cssgrp(self):
 
@@ -2235,6 +2295,8 @@ if __name__ == '__main__':
 
 	    self.assertEqual(dbnrecs(tr), 18)
 
+	    db.close()
+
         def test_method_trfree(self):
 
             db = Dbptr(self.dbname)
@@ -2243,6 +2305,8 @@ if __name__ == '__main__':
 
             tr.trfree()
 
+	    db.close()
+
         def test_method_trdestroy(self):
 
             db = Dbptr(self.dbname)
@@ -2250,6 +2314,8 @@ if __name__ == '__main__':
             tr = db.loadchan(706139719.05000, 706139855.95000, "TKM", "BHZ")
 
             tr.trdestroy()
+
+	    db.close()
 
         def test_method_apply_calib(self):
 
@@ -2267,6 +2333,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[1], -1520.49157, 0.0001))
             self.assertTrue(self.is_close(v[2], -1506.14733, 0.0001))
             self.assertTrue(self.is_close(v[3], -1504.95190, 0.0001))
+
+	    db.close()
 
         def test_method_data(self):
 
@@ -2286,6 +2354,8 @@ if __name__ == '__main__':
 
             self.assertRaises( ElogComplain, tr.data )
 
+	    db.close()
+
         def test_method_filter(self):
 
             db = dbopen(self.dbname)
@@ -2303,6 +2373,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[2], 0.0292, 0.001))
             self.assertTrue(self.is_close(v[3], 0.1321, 0.001))
 
+	    db.close()
+
         def test_method_splice(self):
 
             db = dbopen(self.dbname)
@@ -2317,6 +2389,8 @@ if __name__ == '__main__':
 
             self.assertTrue(nrecs_after <= nrecs_before)
          
+	    db.close()
+
         def test_method_split(self):
 
             db = dbopen(self.dbname)
@@ -2331,6 +2405,8 @@ if __name__ == '__main__':
 
             self.assertTrue(nrecs_after >= nrecs_before)
          
+	    db.close()
+
         def test_method_trtruncate(self):
 
             db = dbopen(self.dbname)
@@ -2346,6 +2422,8 @@ if __name__ == '__main__':
             self.assertTrue(nrecs_before > 0)
             self.assertTrue(nrecs_after == 0)
          
+	    db.close()
+
         def test_method_trcopy(self):
 
             db = dbopen(self.dbname)
@@ -2361,6 +2439,8 @@ if __name__ == '__main__':
             self.assertNotEqual(trout.table, dbINVALID)
             self.assertNotEqual(trout.field, dbINVALID)
             self.assertNotEqual(trout.record, dbINVALID)
+
+	    db.close()
 
         def test_method_nextid(self):
 
@@ -2394,6 +2474,8 @@ if __name__ == '__main__':
             self.assertTrue(db.database >= 0)
             self.assertEqual(db[1:], [dbALL, dbALL, dbALL])
 
+	    dbclose(db)
+
         def test_procedure_dbclose(self):
 
             db = Dbptr(self.dbname)
@@ -2409,6 +2491,8 @@ if __name__ == '__main__':
             db = dbsort(db, 'time')
 
             dbfree(db)
+
+	    dbclose(db)
 
         def test_procedure_dbdelete(self):
 
@@ -2459,7 +2543,7 @@ if __name__ == '__main__':
             self.assertEqual(nrecs_before, 4)
             self.assertEqual(nrecs_after, 3)
 
-            db.close()
+            dbclose(db)
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2514,7 +2598,7 @@ if __name__ == '__main__':
             self.assertEqual(nrecs_before, 4)
             self.assertEqual(nrecs_after, 3)
 
-            db.close()
+            dbclose(db)
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2544,7 +2628,7 @@ if __name__ == '__main__':
             self.assertEqual(nrecs_before, 1)
             self.assertEqual(nrecs_after, 0)
 
-            db.close()
+            dbclose(db)
 
             os.system('/bin/rm -f ' + tempdbname + '*')
 
@@ -2580,9 +2664,13 @@ if __name__ == '__main__':
             self.assertEqual(dbout[1:], [19, dbALL, dbALL])
             self.assertFalse(dbout is db)
 
+	    dbclose(db)
+
         def test_procedure_dbinvalid(self):
 
             db = Dbptr(self.dbname)
+
+	    dbt = Dbptr(db)
         
             db = dbinvalid()
 
@@ -2590,6 +2678,8 @@ if __name__ == '__main__':
             self.assertEqual(db[1], dbINVALID)
             self.assertEqual(db[2], dbINVALID)
             self.assertEqual(db[3], dbINVALID)
+
+	    dbclose(dbt)
 
         def test_procedure_dbsort(self):
 
@@ -2614,6 +2704,8 @@ if __name__ == '__main__':
 
             self.assertTrue(dbout.table >= 0)
 
+	    dbclose(db)
+
         def test_procedure_dbsubset(self):
 
             db = dbopen(self.dbname)
@@ -2623,6 +2715,8 @@ if __name__ == '__main__':
 
             self.assertTrue(dbout.table >= 0)
             self.assertFalse(dbout is db)
+
+            dbclose(db)
 
         def test_procedure_dblist2subset(self):
 
@@ -2634,6 +2728,8 @@ if __name__ == '__main__':
 
             self.assertTrue(db3[1] >= 0)
             self.assertEqual(db3.query(dbRECORD_COUNT), 3)
+
+	    dbclose(db)
 
         def test_procedure_dbseparate(self):
 
@@ -2649,6 +2745,8 @@ if __name__ == '__main__':
 
             self.assertEqual(dbquery(dbout,dbVIEW_TABLES),("wfdisc",))
 
+            dbclose(db)
+
         def test_procedure_dbsever(self):
 
             db = Dbptr(self.dbname)
@@ -2662,6 +2760,8 @@ if __name__ == '__main__':
             db = dbsever(db, "stamag")
 
             self.assertEqual(dbquery(db,dbVIEW_TABLES),("origin",))
+
+            dbclose(db)
 
         def test_procedure_dbunjoin(self):
 
@@ -2681,6 +2781,8 @@ if __name__ == '__main__':
             os.stat(tempdbname + '.arrival')
 
             os.system('/bin/rm -f ' + tempdbname + '*')
+
+            dbclose(db)
 
         def test_procedure_dbjoin(self):
 
@@ -2721,6 +2823,8 @@ if __name__ == '__main__':
 
             self.assertTrue(dbout.table >= 0)
 
+            dbclose(db)
+
         def test_procedure_dbnojoin(self):
 
             db = Dbptr(self.dbname)
@@ -2736,6 +2840,8 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+            dbclose(db)
+
         def test_procedure_dbtheta(self):
 
             db = Dbptr(self.dbname)
@@ -2751,6 +2857,8 @@ if __name__ == '__main__':
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
             
+            dbclose(db)
+
         def test_procedure_dbgroup(self):
 
             db = Dbptr(self.dbname)
@@ -2765,6 +2873,8 @@ if __name__ == '__main__':
             self.assertTrue(db.table >= 0)
             self.assertEqual(db.field, dbALL)
             self.assertEqual(db.record, dbALL)
+
+            dbclose(db)
 
         def test_procedure_dbungroup(self):
 
@@ -2782,6 +2892,8 @@ if __name__ == '__main__':
             self.assertTrue(db.table >= 0)
             self.assertEqual(db.field, dbALL)
 
+            dbclose(db)
+
         def test_procedure_dbprocess(self):
 
             db = Dbptr(self.dbname)
@@ -2795,6 +2907,8 @@ if __name__ == '__main__':
 
             self.assertTrue(db2.query(dbRECORD_COUNT) > 0)
             
+            dbclose(db)
+
         def test_procedure_dbget(self):
 
             db = Dbptr(self.dbname)
@@ -2806,6 +2920,8 @@ if __name__ == '__main__':
             value = dbget(db)
 
             self.assertEqual(value, '  40.0740   69.1640  155.1660   704371900.66886        1       -1  1992118    7    7   -1      715       48 -       -999.0000 f    2.62        1 -999.00       -1 -999.00       -1 locsat:kyrghyz  JSPC                  -1   790466871.00000\n')
+
+            dbclose(db)
 
         def test_procedure_dbput(self):
 
@@ -2840,6 +2956,8 @@ if __name__ == '__main__':
             self.assertEqual(values[2], 7)
             self.assertTrue(self.is_close(values[3], 704371900.67, 0.00000001))
             
+            dbclose(db)
+
         def test_procedure_dbaddnull(self):
 
             tempdbname = '/tmp/newdb_' + str(os.getuid()) + str(os.getpid())
@@ -2934,6 +3052,8 @@ if __name__ == '__main__':
 
             self.assertEqual(fname, '/opt/antelope/data/db/demo/response/sts2_vel_RT72A.1')
 
+            dbclose(db)
+
         def test_procedure_dbfilename(self):
 
             db = Dbptr(self.dbname)
@@ -2958,6 +3078,8 @@ if __name__ == '__main__':
 
             self.assertEqual(fname, '/opt/antelope/data/db/demo/wf/knetc/1992/138/210426/19921382155.15.CHM.BHZ')
 
+            dbclose(db)
+
         def test_procedure_dbex_eval(self):
 
             db = Dbptr(self.dbname)
@@ -2973,6 +3095,8 @@ if __name__ == '__main__':
             self.assertEqual(mash, 'JSPC::locsat:kyrghyz')
             self.assertEqual(total, 14)
             self.assertTrue(tf)
+
+            dbclose(db)
 
         def test_procedure_dbquery(self):
 
@@ -3000,6 +3124,8 @@ if __name__ == '__main__':
 
             self.assertTrue(isinstance(value,tuple))
 
+            dbclose(db)
+
         def test_procedure_dbnrecs(self):
 
             db = Dbptr(self.dbname)
@@ -3014,6 +3140,8 @@ if __name__ == '__main__':
 
             self.assertEqual(value, 1351)
 
+            dbclose(db)
+
         def test_procedure_dbmatches(self):
 
             db = Dbptr(self.dbname)
@@ -3025,6 +3153,8 @@ if __name__ == '__main__':
 
             self.assertTrue(len(values) > 0)
 
+            dbclose(db)
+
         def test_procedure_dbfind(self):
 
             db = Dbptr(self.dbname)
@@ -3034,6 +3164,8 @@ if __name__ == '__main__':
             rc = dbfind(db, 'orid == 645')
 
             self.assertTrue(rc > 0)
+
+            dbclose(db)
 
         def test_procedure_db2xml(self):
 
@@ -3047,6 +3179,8 @@ if __name__ == '__main__':
 
             self.assert_(isinstance(xml,str))
 
+            dbclose(db)
+
         def test_procedure_trloadchan(self):
 
             db = dbopen(self.dbname)
@@ -3059,6 +3193,8 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.table, dbINVALID)
             self.assertNotEqual(tr.field, dbINVALID)
             self.assertNotEqual(tr.record, dbINVALID)
+
+            dbclose(db)
 
         def test_procedure_trload_css(self):
 
@@ -3081,6 +3217,8 @@ if __name__ == '__main__':
 	    tr = trload_css(db, "500139800.0000", "500139855.95000")
 
 	    self.assertEqual(dbnrecs(tr), 0)
+
+            dbclose(db)
 
         def test_procedure_trload_cssgrp(self):
 
@@ -3106,6 +3244,8 @@ if __name__ == '__main__':
 
 	    self.assertEqual(dbnrecs(tr), 0)
 
+            dbclose(db)
+
         def test_procedure_trfree(self):
 
             db = dbopen(self.dbname)
@@ -3114,6 +3254,8 @@ if __name__ == '__main__':
 
             trfree(tr)
 
+            dbclose(db)
+
         def test_procedure_trdestroy(self):
 
             db = dbopen(self.dbname)
@@ -3121,6 +3263,8 @@ if __name__ == '__main__':
             tr = trloadchan(db, 706139719.05000, 706139855.95000, "TKM", "BHZ")
 
             trdestroy(tr)
+
+            dbclose(db)
 
         def test_procedure_trtruncate(self):
 
@@ -3137,6 +3281,8 @@ if __name__ == '__main__':
             self.assertTrue(nrecs_before > 0)
             self.assertTrue(nrecs_after == 0)
          
+            dbclose(db)
+
         def test_procedure_trcopy(self):
 
             db = dbopen(self.dbname)
@@ -3152,6 +3298,8 @@ if __name__ == '__main__':
             self.assertNotEqual(trout.table, dbINVALID)
             self.assertNotEqual(trout.field, dbINVALID)
             self.assertNotEqual(trout.record, dbINVALID)
+
+            dbclose(db)
 
         def test_procedure_trsample(self):
 
@@ -3178,6 +3326,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[2][1], 1.1072145700, 0.0001))
             self.assertTrue(self.is_close(v[3][0], 706139719.19999993, 0.000000001))
             self.assertTrue(self.is_close(v[3][1], 3.81420111656, 0.0001)) 
+
+            dbclose(db)
 
         def test_procedure_trsamplebins(self):
 
@@ -3213,6 +3363,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[3][1], -24.7098751068, 0.0001))
             self.assertTrue(self.is_close(v[3][2], 35.9503860474, 0.0001))
 
+            dbclose(db)
+
         def test_procedure_trsplice(self):
 
             db = dbopen(self.dbname)
@@ -3227,6 +3379,8 @@ if __name__ == '__main__':
 
             self.assertTrue(nrecs_after <= nrecs_before)
          
+            dbclose(db)
+
         def test_procedure_trsplit(self):
 
             db = dbopen(self.dbname)
@@ -3241,6 +3395,8 @@ if __name__ == '__main__':
 
             self.assertTrue(nrecs_after >= nrecs_before)
          
+            dbclose(db)
+
         def test_procedure_trfilter(self):
 
             db = dbopen(self.dbname)
@@ -3257,6 +3413,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[1], 0.003023, 0.001))
             self.assertTrue(self.is_close(v[2], 0.0292, 0.001))
             self.assertTrue(self.is_close(v[3], 0.1321, 0.001))
+
+            dbclose(db)
 
         def test_procedure_trapply_calib(self):
 
@@ -3275,6 +3433,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(v[2], -1506.14733, 0.0001))
             self.assertTrue(self.is_close(v[3], -1504.95190, 0.0001))
 
+            dbclose(db)
+
         def test_procedure_trdata(self):
 
             db = dbopen(self.dbname)
@@ -3286,6 +3446,8 @@ if __name__ == '__main__':
             v = trdata(tr)
 
             self.assertEqual(v[0:4], (-1280.0, -1272.0, -1260.0, -1259.0))
+
+            dbclose(db)
 
         def test_procedure_trdatabins(self):
 
@@ -3301,6 +3463,8 @@ if __name__ == '__main__':
             self.assertEqual(v[1], (-1397.0, -1281.0))
             self.assertEqual(v[2], (-1353.0, -1287.0))
             self.assertEqual(v[3], (-1441.0, -1319.0))
+
+            dbclose(db)
 
         def test_procedure_trlookup_segtype(self):
 
@@ -3384,6 +3548,8 @@ if __name__ == '__main__':
             self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
             self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
 
+            dbclose(db)
+
         def test_procedure_eval_response(self):
 
             db = Dbptr(self.dbname)
@@ -3401,6 +3567,8 @@ if __name__ == '__main__':
 
             self.assertTrue(self.is_close(r.real, 0.9969, 0.001))
             self.assertTrue(self.is_close(r.imag, -0.0749, 0.001))
+
+            dbclose(db)
 
     unittest.main()
 
