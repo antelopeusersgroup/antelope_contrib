@@ -805,6 +805,40 @@ tr = db.loadchan( 706139719.05000, 706139855.95000, "TKM", "BHZ" )
 .in
 .ft R
 
+.IP "\fBtrload_css\fP (db, t0, t1, tr = None, table = None)"
+Load waveform data into memory
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tr = trload_css( db, 706139719.05000, 706139855.95000 )
+
+or
+
+tr = db.load_css( 706139719.05000, 706139855.95000 )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrload_cssgrp\fP (db, t0, t1, tr = None, table = None)"
+Load sorted waveform data into memory
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+tr = trload_cssgrp( db, 706139719.05000, 706139855.95000 )
+
+or
+
+tr = db.load_cssgrp( 706139719.05000, 706139855.95000 )
+
+.fi
+.in
+.ft R
+
 .IP "\fBtrfilter\fP (tr, filter_string)"
 Apply time-domain filters to waveform data
 .ft CW

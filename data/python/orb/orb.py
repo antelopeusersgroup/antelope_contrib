@@ -839,6 +839,8 @@ if __name__ == '__main__':
 
             os.system( "pf2orb rtexec " + orbname )
 
+            os.system( "sleep 2" )
+
             ( oldest, newest, maxpktid, range, clients ) = orblag( orb )
 
             os.system( "pf2orb rtexec " + orbname )
