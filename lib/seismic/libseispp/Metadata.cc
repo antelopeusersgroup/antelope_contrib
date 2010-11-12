@@ -85,7 +85,7 @@ namespace SEISPP
         }
         freetbl(t,0);
     }
-    /* Begin member functions */
+    // constructors
     Metadata::Metadata(const Metadata& mdold)
     {
         mreal=mdold.mreal;
@@ -532,6 +532,17 @@ namespace SEISPP
                 throw;
             }
         }
+    }
+    Metadata& Metadata::operator=(const Metadata& mdold)
+    {
+        if(this!=&mdold)
+        {
+	        mreal=mdold.mreal;
+	        mint=mdold.mint;
+	        mbool=mdold.mbool;
+	        mstring=mdold.mstring;
+        }
+        return(*this);
     }
     // output stream operator.  Originally was in ignorance made
     // a named function called print_all_metadata (older versions may
