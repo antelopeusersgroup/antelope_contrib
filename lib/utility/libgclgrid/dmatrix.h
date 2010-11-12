@@ -164,11 +164,6 @@ public:
 //@}
   friend dmatrix operator*(const dmatrix&, const dmatrix&);
 //@{
-// Multiply matrix with a vector A*x
-// @throws dmatrix_size_error is thrown if columns in A != rows of B.
-//@}
-  friend dvector operator*(const dmatrix&, const dvector&);
-//@{
 // Scale a matrix by a constant.  X=c*A where c is a constant.
 //@}
   friend dmatrix operator*(const double&, const dmatrix&);
@@ -234,6 +229,11 @@ public:
 	double &operator()(int rowindex);
 	dvector(int nrv) : dmatrix(nrv,1){};
 	dvector(const dvector& other);
+//@{
+// Multiply matrix with a vector A*x
+// @throws dmatrix_size_error is thrown if columns in A != rows of B.
+//@}
+        friend dvector operator*(const dmatrix&, const dvector&);
 };
 	
 #endif

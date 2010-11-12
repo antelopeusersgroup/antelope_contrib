@@ -119,7 +119,7 @@ return tempmat;
 }
 
 dmatrix operator*(const dmatrix& x1,const dmatrix& b)
-	{
+{
 	int i,j,k;
 	double xval,bval;
 	if(x1.ncc!=b.nrr)
@@ -131,19 +131,6 @@ dmatrix operator*(const dmatrix& x1,const dmatrix& b)
 		prod(i,j)=ddot(x1.ncc,&(x1.ary[i]),x1.nrr,
 			&(b.ary[j*(b.nrr)]),1);
 	  }
-	return prod;
-	}
-dvector operator*(const dmatrix& x1,const dvector& b)
-{
-	int i,j,k;
-	double xval,bval;
-	if(x1.ncc!=b.nrr)
-		throw dmatrix_size_error(x1.nrr, x1.ncc, b.nrr, b.length);
-	dvector prod(x1.nrr);
-	for(i=0;i<x1.nrr;i++)
-		prod(i)=ddot(b.nrr,
-			const_cast<dmatrix&>(x1).get_address(i,0),x1.ncc,
-			const_cast<dvector&>(b).get_address(0,0),1);
 	return prod;
 }
 
@@ -250,3 +237,19 @@ double &dvector::operator()(int rowindex)
 	throw dmatrix_index_error(nrr,1,rowindex,1);
   return (ary[rowindex]);
 }		
+dvector operator*(const dmatrix& x1,const dvector& b)
+{
+	int i,j,k;
+	double xval,bval;
+        int ncx1=const_cast<dmatrix&>(x1).columns();
+        int nrx1=const_cast<dmatrix&>(x1).rows();
+        int nrb=const_cast<dvector&>(b).rows();
+	if(ncx1!=nrb)
+		throw dmatrix_size_error(nrx1, ncx1, nrb, 1);
+	dvector prod(nrx1);
+	for(i=0;i<nrx1;i++)
+		prod(i)=ddot(nrb,
+			const_cast<dmatrix&>(x1).get_address(i,0),ncx1,
+			const_cast<dvector&>(b).get_address(0,0),1);
+	return prod;
+}
