@@ -730,11 +730,13 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	}
 }
 
-void sort_picked(Widget w, void * client_data, void * userdata)
+void sort_picked(Widget w, XtPointer client_data, XtPointer userdata)
 {
     Widget pane=XtParent(XtParent(w));
 
-    int n=(int)client_data;
+    long int ln;
+    ln=reinterpret_cast<long>(client_data);
+    int n=ln;
 
     XmToggleButtonCallbackStruct *cbs=(XmToggleButtonCallbackStruct *)userdata;
 
@@ -883,10 +885,12 @@ void apply_sort_reverse(Widget w, void * client_data, void * userdata)
     apply_sort_order(w,client_data,userdata);
 }
 
-void toggled(Widget w, void * client_data, void * userdata)
+void toggled(Widget w, XtPointer client_data, XtPointer userdata)
 {
     SessionManager * psm;
-    int i=(int)client_data;
+    long int ln;
+    ln=reinterpret_cast<long>(client_data);
+    int i=ln;
 
     XtVaGetValues(XtParent(XtParent(w)),XmNuserData,&psm,NULL);
 
