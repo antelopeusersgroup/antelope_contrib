@@ -791,6 +791,27 @@ class Dbptr(list):
 
         return Dbptr(tr)
 
+    def load_css(self, t0, t1, tr = None, table = None):
+        """Load data corresponding to time expressions into memory"""
+
+	if( not isinstance(t0, str)):
+
+            t0 = str(t0)
+
+	if( not isinstance(t1, str)):
+            
+	    t1 = str(t1)
+
+        try:
+
+	    tr = _datascope._trload_css(self, t0, t1, tr, table)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return Dbptr(tr)
+
     def sample(self, t0, t1, sta, chan, apply_calib = False, filter = None):
         """Return time-series data for a given station, channel, and time-interval"""
 
@@ -1346,6 +1367,12 @@ def trloadchan(dbin, t0, t1, sta, chan):
     """Load time-series data for a given station, channel, and time-interval into memory"""
 
     return dbin.loadchan(t0, t1, sta, chan)
+
+
+def trload_css(dbin, t0, t1, tr = None, table = None):
+    """Load data corresponding to time expressions into memory"""
+
+    return dbin.load_css(t0, t1, tr, table)
 
 
 def trfilter(trin, filter_string):
@@ -2150,6 +2177,20 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.table, dbINVALID)
             self.assertNotEqual(tr.field, dbINVALID)
             self.assertNotEqual(tr.record, dbINVALID)
+
+        def test_method_load_css(self):
+
+	    db = dbopen(self.dbname)
+
+            db.lookup(table = 'wfdisc')
+
+	    tr = db.load_css("706139719.05000", "706139855.95000")
+
+            self.assert_(isinstance(tr, Dbptr))
+
+            self.assertTrue(tr.database >= 0)
+
+	    self.assertEqual(dbnrecs(tr), 18)
 
         def test_method_trfree(self):
 
@@ -2975,6 +3016,20 @@ if __name__ == '__main__':
             self.assertNotEqual(tr.table, dbINVALID)
             self.assertNotEqual(tr.field, dbINVALID)
             self.assertNotEqual(tr.record, dbINVALID)
+
+        def test_procedure_trload_css(self):
+
+	    db = dbopen(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+	    tr = trload_css(db, "706139719.05000", "706139855.95000")
+
+            self.assert_(isinstance(tr, Dbptr))
+
+            self.assertTrue(tr.database >= 0)
+
+	    self.assertEqual(dbnrecs(tr), 18)
 
         def test_procedure_trfree(self):
 
