@@ -454,9 +454,14 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 	/* Note sunperf implementation of blas returns an index based
 	from 0 ala C while the FORTRAN version uses 1.  Dangerous
 	inconsistency to watch out for. */
-	*sdepth = fabs(vwork[2+i*4]);
+        /* This is the sunperf version 
+	*sdepth = fabs(vwork[2+i*4]); 
+        This is the correct version for perf which returns 1-4 */
+        *sdepth =fabs(fwork[2+(i-1)*4]);
 	i = idamax(4,vwork+3,4);
-	*stime = fabs(vwork[3+i*4]);
+        /* other old sunperf version 
+	*stime = fabs(vwork[3+i*4]); */
+        *stime = fabs(vwork[3+(i-1)*4]);
 	switch(model)
 	{
 	case(F_DIST):
