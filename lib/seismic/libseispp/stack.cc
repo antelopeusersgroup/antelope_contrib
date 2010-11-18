@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <float.h>
 #include "perf.h"
 #include "dmatrix.h"
 #include "seispp.h"
@@ -95,6 +96,11 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 	double moveout;
 	TimeWindow twd;
 	const string basemessage("Stack object constructor:  ");
+        // Used to test for a zero vector.  10.0 is a conservative fudge factor
+        const double zero_test_scale(DBL_EPSILON*10.0); 
+        // a floor in the residual weight is useful to avoid Inf and NaN results
+        const double rweight_floor(0.00001);
+        double vzerotest;
 	if( (robust_twin.start<stack_twin.start) || (robust_twin.end>stack_twin.end) )
 		throw SeisppError(basemessage
 		  +string("Illegal time window specified\nStack time window must enclose window used for applying penalty function\n")); 
@@ -238,7 +244,12 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 				for(i=0;i<nsamp;++i) work[i]=stack.s[i0+i];
 				// Stack must be normalized
 				ampscale=dnrm2(nsamp,&(work[0]),1);
-				dscal(nsamp,1.0/ampscale,&(work[0]),1);
+                                // careful of zero vector stacks
+                                // would make 1/ampscale inf
+                                vzerotest=zero_test_scale
+                                    *static_cast<double>(nsamp);
+                                if(ampscale>=vzerotest)
+				    dscal(nsamp,1.0/ampscale,&(work[0]),1);
 				lastbeam=work;
 				iteration_count=0;
 				
@@ -258,7 +269,14 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 						//weights[j]=ampscale/dnrm2(nsamp,r.get_address(0,j),1);
 						nrmd=dnrm2(nsamp,raw_data.get_address(0,j),1);
 						nrmr=dnrm2(nsamp,r.get_address(0,j),1);
-						rweight[j]=ampscale/(nrmd*nrmr);
+                                                /* set weight to the floor if any of these
+                                                   quantities are zero */
+                                                if(ampscale<=vzerotest || nrmd<=vzerotest
+                                                        || nrmr<=vzerotest)
+                                                    rweight[j]=rweight_floor;
+                                                else
+						    rweight[j]=ampscale/(nrmd*nrmr);
+
 						if(power!=1.0)
 							rweight[j]=pow(rweight[j],power);
 						if(nrmr==nrmd)
@@ -277,10 +295,14 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 						daxpy(nsamp,rweight[j],raw_data.get_address(0,j),1,
 								&(work[0]),1);
 					}
-					// Stack must be normalized
+					/* Stack must be normalized
+                                           Do so carefully to avoid Inf or NaN with zero vectors.*/
 					ampscale=dnrm2(nsamp,&(work[0]),1);
-					dscal(nsamp,1.0/ampscale,&(work[0]),1);
-					// using a loop here to avoid unnecessary creation of another
+                                        if(ampscale>=vzerotest)
+					    dscal(nsamp,1.0/ampscale,&(work[0]),1);
+                                        else
+                                            break;  // no use continuing if stack is zeros
+				// using a loop here to avoid unnecessary creation of another
 				// temporary vector.  This is a L1 norm of delta data computation.
 				// lastbeam and beam are normalized so this
 				// convergence criteria is relative to 1
@@ -306,7 +328,8 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 				daxpy(stack.ns,rweight[i],&(stackdata[i].s[0]),
 					1,&(stack.s[0]),1);
 			}
-			dscal(stack.ns,1/sumwt,&(stack.s[0]),1);
+                        if(sumwt>=vzerotest)
+			    dscal(stack.ns,1/sumwt,&(stack.s[0]),1);
 			//
 			// A simple algorithm for initializing 
 			// outputs.  This is quite inefficient, but we'll
