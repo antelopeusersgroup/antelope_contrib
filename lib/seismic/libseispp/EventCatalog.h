@@ -1,6 +1,7 @@
 #ifndef _EVENT_CATALOG_H_
 #define _EVENT_CATALOG_H_
 #include <map>
+#include <memory>
 #include "TimeWindow.h"
 #include "Hypocenter.h"
 #include "Metadata.h"

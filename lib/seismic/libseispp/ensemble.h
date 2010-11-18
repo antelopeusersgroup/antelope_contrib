@@ -12,6 +12,7 @@
  * spectra.  
  */
 
+#include <memory>
 #include <vector>
 #include "coords.h"
 #include "perf.h"
