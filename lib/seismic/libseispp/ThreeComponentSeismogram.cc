@@ -117,7 +117,8 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(Metadata& md,
 			foff = this->get_long("foff");
 			string fname=dir+"/"+dfile;
 			if((fp=fopen(fname.c_str(),"r")) == NULL) 
-				throw("Open failure for file "+fname);
+				throw(
+				SeisppError("Open failure for file "+fname));
 			if (foff>0)fseek(fp,foff,SEEK_SET);
 			inbuffer = new double[3*ns];
 			if(fread((void *)(inbuffer),sizeof(double),ns,fp)

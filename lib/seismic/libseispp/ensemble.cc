@@ -68,11 +68,8 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 				cerr << "Data for this member skipped" << endl;
 				continue;
 			}
-			catch (MetadataError& mderr)
-			{
-				mderr.log_error();
-				throw SeisppError(string("Metadata problem"));
-			}
+			//other errors require aborting
+			catch (...){throw;};
 			member.push_back(*d);
 			delete d;
 			// copy global metadata only for the first 
@@ -655,11 +652,8 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 				cerr << "Data for this member skipped" << endl;
 				continue;
 			}
-			catch (MetadataError& mderr)
-			{
-				mderr.log_error();
-				throw SeisppError(string("Metadata problem"));
-			}
+			//With any other error we cannot continue
+			catch(...) {throw;};
 			member.push_back(*data3c);
 			delete data3c;
 			// copy global metadata only for the first 
