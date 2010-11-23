@@ -41,6 +41,8 @@
 #define DATABASE_WATCH_SLEEPTIME_SEC 1
 
 extern int is_changed( char *path ); /* missing in Antelope 4.7 stock.h */
+void process_db( Dbptr db );
+void process_pf( char *srcname, Pf *pf );
 
 typedef struct Alarm {
 	long	alarmid;
@@ -89,7 +91,7 @@ Arr	*Regions = 0;
 double	Regions_branchcut;
 
 char	*Orbname;
-char	*Match = "/db/origin";
+char	*Match = "(/pf/orb2dbt|/db/origin)";
 char	*Reject = 0;
 char	*Statefile = 0;
 int	Specified_after = 0;
@@ -1334,6 +1336,47 @@ process_origin( Dbptr db )
 	return;
 }
 
+void 
+process_pf( char *srcname, Pf *pf )
+{
+	char	*origin;
+	Dbptr	dbtemp;
+
+	if( ! strcmp( srcname, "/pf/orb2dbt" ) ) {
+		
+		origin = pfget_string( pf, "origin" );
+
+		if( origin == (char *) NULL ) {
+
+			elog_complain( 0, "[%s]: Couldn't find origin row in "
+					"input parameter-file object '%s'\n",
+					get_threadname(), 
+					srcname );
+
+			return;						
+		}
+
+		dbtemp = dbtmp( NULL );
+
+		dbtemp = dblookup( dbtemp, "", "origin", "", "dbSCRATCH" );
+
+		dbput( dbtemp, origin );
+
+		process_db( dbtemp );
+
+		dbclose( dbtemp );
+
+	} else if( VeryVerbose ) {
+
+		elog_complain( 0, "[%s]: No handler for parameter-file packet "
+				  "'%s'\n", 
+				  get_threadname(),
+				  srcname );
+	}
+
+	return;
+}
+
 void
 process_db( Dbptr db ) 
 {
@@ -1759,6 +1802,13 @@ network_watch( void *arg )
 				"[%s]: select '%s' returned %d sources\n",
 				get_threadname(), 
 				Match, nmatch );
+
+		} else if( VeryVerbose ) {
+
+			elog_notify( 1, 
+				"[%s]: select '%s' returned %d sources\n",
+				get_threadname(), 
+				Match, nmatch );
 		}
 	}
 
@@ -1772,6 +1822,13 @@ network_watch( void *arg )
 				"[%s]: reject '%s' returned %d sources\n",
 				get_threadname(),
 				Reject, nmatch);
+
+		} else if( VeryVerbose ) {
+
+			elog_notify( 1, 
+				"[%s]: reject '%s' returned %d sources\n",
+				get_threadname(), 
+				Reject, nmatch );
 		}
 	}
 
@@ -1855,13 +1912,16 @@ network_watch( void *arg )
 
 			switch( pkttype ) {
 			case Pkt_wf:
-			case Pkt_pf:
 			case Pkt_ch:
 			default:
 				continue;
 
 			case Pkt_db:
 				process_db( unstuffed->db );
+				break;
+
+			case Pkt_pf:
+				process_pf( srcname, unstuffed->pf );
 				break;
 			}
 
@@ -2075,11 +2135,7 @@ main( int argc, char **argv )
 
 		switch (c) {
 	  	case 'm':
-			elog_complain( 0, 
-				"Warning: the '-m' option is "
-				"reserved for future capabilities "
-				"and disabled in the current release\n" );
-	    		/* Match = optarg; */
+	    		Match = optarg;
 	    		break;
 
 	  	case 'n':

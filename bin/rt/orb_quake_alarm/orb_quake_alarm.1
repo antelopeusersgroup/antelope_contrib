@@ -60,7 +60,8 @@ Before proceeding further with configuration details, it is helpful to
 explain the taxonomy of alarms as defined in the \fIalarms\fP table of the
 css3.0 database. First, every alarm belongs to an \fIalarmclass\fP. This
 indicates the broad class of alarms, for example alarms based on
-\fI/db/origin\fP rows belong to the class of alarms with \fIalarmclass\fP
+\fI/db/origin\fP rows and/or \fI/pf/orb2dbt\fP packets belong to the class 
+of alarms with \fIalarmclass\fP
 of \fIhypocenter\fP. Within each \fIalarmclass\fP, there may be several
 different reasons for \fBorb_quake_alarm\fP to raise the attention of the
 lab-operations staff. Each one of these situations is labeled with its
@@ -72,7 +73,7 @@ for each \fIalarmclass\fP and \fIalarmname\fP, each time an alarm
 condition is successfully activated, \fBorb_quake_alarm\fP assigns a
 unique \fIalarmkey\fP to the event. For the case of \fIalarmclass\fP =
 \fIhypocenter\fP alarms, the \fIalarmkey\fP is based on the \fIevid\fP for the
-event. This means that even if multiple \fI/db/origin\fP rows are
+event. This means that even if multiple \fI/db/origin\fP rows or \fI/pf/orb2dbt\fP packets are
 produced for a given event, at most one set of calls will be issued for
 any given \fIevid\fP (this may be implicitly overridden by specifying
 multiple alarms for different levels of trigger conditions, for example
@@ -92,7 +93,7 @@ effect without restarting the program.
 The main part of the \fBorb_quake_alarm\fP parameter file is the \fIalarms\fP
 array. Within this array there is a sub-array for each \fIalarmclass\fP.
 Currently there is only one \fIalarmclass\fP implemented, i.e. \fIhypocenter\fP
-for \fI/db/origin\fP rows. Within the \fIhypocenter\fP subarray
+for \fI/db/origin\fP rows and \fI/pf/orb2dbt\fP packets. Within the \fIhypocenter\fP subarray
 is one array for each \fIalarmname\fP (see the parameter-file example below).
 The names of the \fIalarmname\fP subarrays must be unique.
 
@@ -229,8 +230,7 @@ alarm cancellation, and calldown features.
 Specify an alternate parameter-file name. The default is \fBorb_quake_alarm\fP.pf
 .IP "-m match"
 Specify a \fImatch\fP expression for input orb packets. The default is
-\fI/db/origin\fP. This option is a placeholder, currently disabled
-since \fBorb_quake_alarm\fP only processes \fI/db/origin\fP rows.
+\fI(/pf/orb2dbt|/db/origin)\fP. 
 .IP "-r reject"
 Specify a \fIreject\fP expression for input orb packets. The default is not
 to \fIreject\fP any packets other than those not encompassed by the \fImatch\fP expression.
@@ -419,10 +419,6 @@ configured in a single parameter file. If multiple instances of \fBorb_quake_ala
 are run on the same database, the results will be undetermined and probably
 undesirable. Also, users of \fBorb_quake_alarm\fP may wish to set the \fIdblocks\fP 
 parameter or environment variable as explained in the dbdescriptor(5) man page. 
-
-No good reason yet exists for end-users to apply \fImatch\fP and \fIreject\fP expressions
-via the -m and -r options. These are implemented for completeness to
-support possible future uses with different types of alarms.
 
 If an \fIend-time\fP is specified, either as an explicit time or as an interval
 past the \fIstart-time\fP, \fBorb_quake_alarm\fP stops acquiring new
