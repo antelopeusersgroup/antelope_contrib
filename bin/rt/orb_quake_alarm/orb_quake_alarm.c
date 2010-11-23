@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <strings.h>
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -35,14 +36,14 @@
 #include "db.h"
 #include "cgeom.h"
 
-#define VERY_LARGE_NUMBER   1e36
+#define VERY_LARGE_DOUBLE   1e36
 #define STAFF_NOTIFY_SLEEPTIME_SEC 1
 #define DATABASE_WATCH_SLEEPTIME_SEC 1
 
 extern int is_changed( char *path ); /* missing in Antelope 4.7 stock.h */
 
 typedef struct Alarm {
-	int	alarmid;
+	long	alarmid;
 	char	*alarmkey;
 	char	*alarmclass;
 	char	*alarmname;
@@ -52,8 +53,8 @@ typedef struct Alarm {
 	char	*ack_subject_template;
 	char	*ack_body_template;
 	double	time;
-	int	evid;
-	int	orid;
+	long	evid;
+	long	orid;
 	int	wait_ack;
 	Tbl	*unsent_callblocks;
 	Tbl	*sent_callblocks;
@@ -93,8 +94,8 @@ char	*Reject = 0;
 char	*Statefile = 0;
 int	Specified_after = 0;
 double	After = 0.0;
-double	Until = VERY_LARGE_NUMBER;
-double	Maxpkts = VERY_LARGE_NUMBER;
+double	Until = VERY_LARGE_DOUBLE;
+long	Maxpkts = LONG_MAX;
 double	Max_ack_wait_sec = 7200;
 int	Done = 0;
 
@@ -120,7 +121,7 @@ register_threadname( thread_t tid, char *threadname )
 {
 	char	key[STRSZ];
 
-	sprintf( key, "%d", tid );
+	sprintf( key, "%ld", (long) tid );
 
 	mutex_lock( &Threadnames_mutex );
 
@@ -145,7 +146,7 @@ get_threadname()
 
 	tid = thr_self();
 
-	sprintf( key, "%d", tid );
+	sprintf( key, "%ld", (long) tid );
 
 	mutex_lock( &Threadnames_mutex );
 
@@ -214,7 +215,7 @@ is_inside( Dbptr db, char *function_string )
 		return inside;
 	}
 
-	dbgetv( db, 0, "lon", &lon, "lat", &lat, 0 );
+	dbgetv( db, 0, "lon", &lon, "lat", &lat, NULL );
 
 	lon = wrap_phase( lon, Regions_branchcut );
 
@@ -315,8 +316,8 @@ add_nearest( void *vstack, Dbptr db, char *function_string )
 	char	place[STRSZ];
 	double	lat;
 	double	lon;
-	int	nseq = 0;
-	int	nrecs = 0;
+	long	nseq = 0;
+	long	nrecs = 0;
 	Expression *dist_expr;
 	Expression *az_expr;
 	Tbl     *expr_tbl;
@@ -335,7 +336,7 @@ add_nearest( void *vstack, Dbptr db, char *function_string )
 		return;
 	} 
 
-	dbgetv( db, 0, "lat", &lat, "lon", &lon, 0 );
+	dbgetv( db, 0, "lat", &lat, "lon", &lon, NULL );
 
 	dbplaces = dblookup( Dbplaces, 0, "places", 0, 0 );
 
@@ -345,7 +346,7 @@ add_nearest( void *vstack, Dbptr db, char *function_string )
 
 	args[strlen(args)-1] = 0;
 
-	nseq = atoi( args );
+	nseq = atol( args );
 	nseq -= 1;
 
 	if( nseq >= nrecs ) {
@@ -365,7 +366,7 @@ add_nearest( void *vstack, Dbptr db, char *function_string )
 	sprintf( expr, "distance(lat,lon,%f,%f)*111.195", lat, lon );
 	dbex_compile( dbplaces, expr, &dist_expr, 0 );
 
-	expr_tbl = strtbl( expr, 0 );
+	expr_tbl = strtbl( expr, NULL );
 	dbplaces = dbsort( dbplaces, expr_tbl, 0, 0 );
 	freetbl( expr_tbl, 0 );
 
@@ -376,7 +377,7 @@ add_nearest( void *vstack, Dbptr db, char *function_string )
 	dbex_eval( dbplaces, az_expr, 0, &azimuth );
 	compass = compass_from_azimuth( azimuth );
 
-	dbgetv( dbplaces, 0, "place", place, 0 );
+	dbgetv( dbplaces, 0, "place", place, NULL );
 
 	sprintf( expr, "%.0f km %3s of %s", 
 		   dist_km, compass, place );
@@ -561,7 +562,7 @@ send_message( Alarm *alarm, Callblock *callblock )
 
 		elog_notify( 0, 
 			"[%s]: Using rtmail to send message to '%s' with "
-			"subject+body length %d bytes. (This is "
+			"subject+body length %ld bytes. (This is "
 			"at delay %.1lf seconds):\n"
 			"\tsubject: %s\n"
 			"\tbody: {\n%s\n\t}\n",
@@ -609,7 +610,7 @@ Alarm *
 new_alarm()
 {
 	Alarm *alarm;
-	static int fake_alarmid = 1;
+	static long fake_alarmid = 1;
 
 	allot( Alarm *, alarm, 1 );
 
@@ -781,7 +782,7 @@ dbarchive_notification( Alarm *alarm, Callblock *callblock )
 		
 		elog_complain( 1, 
 			"[%s]: Failed to add null row to alarmcomm table "
-			"for alarmid %d!\n",
+			"for alarmid %ld!\n",
 			get_threadname(), alarm->alarmid );
 		
 		return;
@@ -792,13 +793,13 @@ dbarchive_notification( Alarm *alarm, Callblock *callblock )
 			"time", callblock->time,
 			"recipient", callblock->to, 
 			"delaysec", callblock->delay_sec,
-			0 );
+			NULL );
 
 	if( rc != 0 ) {
 
 		elog_complain( 1, 
 			"[%s]: Failed to fill in alarmcomm table row "
-			"for alarmid %d, recipient %s, delay %f!\n",
+			"for alarmid %ld, recipient %s, delay %f!\n",
 			get_threadname(), alarm->alarmid,
 			callblock->to, callblock->delay_sec );
 	}
@@ -834,7 +835,7 @@ dbarchive_alarm( Alarm *alarm )
 		
 		elog_complain( 1, 
 			"[%s]: Failed to add null row to alarms table "
-			"for alarmid %d!\n",
+			"for alarmid %ld!\n",
 			get_threadname(), alarm->alarmid );
 		
 		return;
@@ -847,25 +848,25 @@ dbarchive_alarm( Alarm *alarm )
 			"alarmname", alarm->alarmname,
 			"time", alarm->time,
 			"subject", alarm->subject,
-			0 );
+			NULL );
 
 	if( rc != 0 ) {
 
 		elog_complain( 1, 
 			"[%s]: Failed to fill in alarms table row "
-			"for alarmid %d!\n",
+			"for alarmid %ld!\n",
 			get_threadname(), alarm->alarmid );
 	}
 	
 	if( alarm->evid != -1 ) {
 
-		rc = dbputv( dbalarms, 0, "evid", alarm->evid, 0 );
+		rc = dbputv( dbalarms, 0, "evid", alarm->evid, NULL );
 
 		if( rc != 0 ) {
 
 			elog_complain( 1, 
 				"[%s]: Failed to fill in alarms table evid "
-				"%d for alarmid %d!\n",
+				"%ld for alarmid %ld!\n",
 				get_threadname(), alarm->evid,
 				alarm->alarmid );
 		}
@@ -873,13 +874,13 @@ dbarchive_alarm( Alarm *alarm )
 
 	if( alarm->orid != -1 ) {
 
-		rc = dbputv( dbalarms, 0, "orid", alarm->orid, 0 );
+		rc = dbputv( dbalarms, 0, "orid", alarm->orid, NULL );
 
 		if( rc != 0 ) {
 
 			elog_complain( 1, 
 				"[%s]: Failed to fill in alarms table orid "
-				"%d for alarmid %d!\n",
+				"%ld for alarmid %ld!\n",
 				get_threadname(), alarm->orid,
 				alarm->alarmid );
 		}
@@ -891,14 +892,14 @@ dbarchive_alarm( Alarm *alarm )
 
 		elog_complain( 1, 
 			"[%s]: Failed to create filename to save body "
-			"of alarm for alarmid %d!\n",
+			"of alarm for alarmid %ld!\n",
 			get_threadname(), alarm->alarmid );
 
 	} else if( rc == -2 ) {
 
 		elog_complain( 1, 
 			"[%s]: Filename for body "
-			"of alarm for alarmid %d is too long for database "
+			"of alarm for alarmid %ld is too long for database "
 			"(Database error!)\n",
 			get_threadname(), alarm->alarmid );
 
@@ -907,7 +908,7 @@ dbarchive_alarm( Alarm *alarm )
 		if( VeryVerbose ) {
 			
 			elog_notify( 0, 
-				"[%s]: Saving body of alarm for alarmid %d"
+				"[%s]: Saving body of alarm for alarmid %ld"
 				" to file '%s'\n",
 				get_threadname(), 
 				alarm->alarmid,
@@ -920,7 +921,7 @@ dbarchive_alarm( Alarm *alarm )
 
 			elog_complain( 1, 
 				"[%s]: Failed to open file '%s' to save "
-				"body of alarmid %d!\n", 
+				"body of alarmid %ld!\n", 
 				get_threadname(), 
 				alarm_filename, 
 				alarm->alarmid );
@@ -950,7 +951,7 @@ register_alarm( Alarm *alarm )
 
 	alarm->time = now();
 
-	sprintf( alarmid, "%d", alarm->alarmid );
+	sprintf( alarmid, "%ld", alarm->alarmid );
 
 	mutex_lock( &Alarms_mutex );
 
@@ -1011,7 +1012,7 @@ deregister_alarm_nolocks( char *alarmid, char *reason )
 int
 alarm_count()
 {
-	int	nalarms;
+	long	nalarms;
 	Tbl	*keys;
 
 	mutex_lock( &Alarms_mutex );
@@ -1048,8 +1049,8 @@ int
 verify_unique( char *alarmname, char *alarmkey )
 {
 	char	key[STRSZ];
-	int	val;
-	int	one = 1;
+	long	val;
+	long	one = 1;
 
 	if( Registered == 0 ) {
 
@@ -1058,7 +1059,7 @@ verify_unique( char *alarmname, char *alarmkey )
 
 	sprintf( key, "%s:%s", alarmname, alarmkey );
 
-	if( ( val = (int) getarr( Registered, key ) ) == 0 ) {
+	if( ( val = (long) getarr( Registered, key ) ) == 0 ) {
 
 		setarr( Registered, key, (void *) one );
 
@@ -1086,15 +1087,15 @@ process_origin( Dbptr db )
 	char	literal[STRSZ];
 	char	*trigger_condition_template;
 	char	*trigger_condition;
-	int	triggered;
+	long	triggered;
 	char	*subject_template;
 	char	*body_template;
 	Arr	*recipients;
 	Tbl	*recipient_keys;
 	char	*recipient;
 	int	irecipient;
-	int	evid;
-	int	orid;
+	long	evid;
+	long	orid;
 	int	rc;
 
 	Callblock *callblock;
@@ -1192,9 +1193,9 @@ process_origin( Dbptr db )
 		}
 
 		dbgetv( db, 0, "evid", &evid, 
-			       "orid", &orid, 0 );
+			       "orid", &orid, NULL );
 
-		sprintf( alarmkey, "evid%d", evid );
+		sprintf( alarmkey, "evid%ld", evid );
 
 		if( ! verify_unique( alarmname, alarmkey ) ) {
 
@@ -1227,7 +1228,7 @@ process_origin( Dbptr db )
 
 		alarm->alarmname = strdup( alarmname );
 
-		sprintf( alarmid, "%d", alarm->alarmid );
+		sprintf( alarmid, "%ld", alarm->alarmid );
 
 		alarm->wait_ack = pfget_boolean( pfcandidate, "wait_ack" );
 
@@ -1240,7 +1241,7 @@ process_origin( Dbptr db )
 		if( Dbname == 0 ) {
 
 			elog_complain( 0, 
-				"[%s]: Turning off wait_ack for alarm %d "
+				"[%s]: Turning off wait_ack for alarm %ld "
 				"because database is not specified! "
 				"(use the -d option to fix this, or turn "
 				"off wait_ack in the parameter file)\n",
@@ -1321,7 +1322,7 @@ process_origin( Dbptr db )
 		freearr( recipients, 0 );
 
 		sorttbl( alarm->unsent_callblocks, 
-			(int (*)(void *, void *, void *)) by_delay, 0 );
+			(int (*)(char *, char *, void *)) by_delay, 0 );
 		
 		register_alarm( alarm );
 	}
@@ -1406,7 +1407,7 @@ send_cancellation_ack( Alarm *alarm, double acktime, char *ackauth )
 		if( VeryVerbose ) {
 		elog_notify( 0, 
 			"[%s]: Using rtmail to send acknowledgment message "
-			"to '%s' with subject+body length %d bytes:\n"
+			"to '%s' with subject+body length %ld bytes:\n"
 			"\tsubject: %s\n"
 			"\tbody: {\n%s\n\t}\n",
 			get_threadname(),
@@ -1433,11 +1434,11 @@ database_watch( void *arg )
 	Alarm	*alarm;
 	char	*alarmid;
 	int	true = 1;
-	int	nalarms;
-	int	ialarm;
+	long	nalarms;
+	long	ialarm;
 	Tbl	*keys;
 	char	expr[STRSZ];
-	int	nrecs;
+	long	nrecs;
 	char	acknowledged[2];
 	char	ackauth[STRSZ];
 	char	tempstr[STRSZ];
@@ -1490,7 +1491,7 @@ database_watch( void *arg )
 		if( VeryVerbose ) {
 
 			elog_notify( 0, 
-				"[%s]: Searching %d alarm rows for matching entries\n",
+				"[%s]: Searching %ld alarm rows for matching entries\n",
 				get_threadname(), nalarms );
 		}
 
@@ -1518,7 +1519,7 @@ database_watch( void *arg )
 				dbgetv( db, 0, "acknowledged", &acknowledged,
 					       "acktime", &acktime, 
 					       "ackauth", &ackauth,
-					       0 );
+					       NULL );
 
 				if( strcmp( acknowledged, "y" ) != 0 ) {
 
@@ -1687,7 +1688,7 @@ network_watch( void *arg )
 	double	decent_interval = 300.0;
 	int	mode = PKT_NOSAMPLES;
 	double	delta_t;
-	double	totpkts = 0;
+	long	totpkts = 0;
 	double	totbytes = 0;
 	static int last_pktid = -1;
 	static double last_pkttime = 0.0;
@@ -1891,7 +1892,7 @@ network_watch( void *arg )
 
 			elog_notify( 0, 
 				"[%s]: Done monitoring. Summary statistics:\n"
-				"\t%.0f %.2f byte packets "
+				"\t%ld %.2f byte packets "
 				"(%.1f kbytes) in "
 				"%.3f seconds\n\t%10.3f kbytes/s\n\t%10.3f "
 				"kbaud\n\t%10.3f pkts/s\n",
@@ -1948,7 +1949,7 @@ fill_regions()
 	Dbptr	dbregions;
 	Dbptr	dbpolygon;
 	Tbl	*cmds;
-	int	nrecs;
+	long	nrecs;
 	char	region[STRSZ];
 	char	expr[STRSZ];
 
@@ -2008,7 +2009,7 @@ fill_regions()
 	cmds = strtbl( "dbopen regions", 
 		       "dbsort regname vertex", 
 		       "dbgroup regname", 
-		       0 );
+		       NULL );
 
 	dbregions = dbprocess( dbregions, cmds, 0 );
 
@@ -2020,11 +2021,11 @@ fill_regions()
 	       dbregions.record < nrecs; 
 		 dbregions.record++ ) {
 
-		dbgetv( dbregions, 0, "regname", &region, 0 );
+		dbgetv( dbregions, 0, "regname", &region, NULL );
 
 		sprintf( expr, "dbsubset regname == \"%s\"", region );
 
-		cmds = strtbl( expr, "dbungroup", 0 );
+		cmds = strtbl( expr, "dbungroup", NULL );
 
 		dbpolygon = dbprocess( dbregions, cmds, 0 );
 
@@ -2047,7 +2048,6 @@ fill_regions()
 int
 main( int argc, char **argv )
 {
-	Dbptr	db;
 	int	c;
 	int	errflag = 0;
 	int	rc;
@@ -2083,7 +2083,7 @@ main( int argc, char **argv )
 	    		break;
 
 	  	case 'n':
-	    		Maxpkts = atoi( optarg );
+	    		Maxpkts = atol( optarg );
 	    		break;
 
 		case 'd':
