@@ -28,7 +28,7 @@ Written:  January 1997
 */ 
 #define UNIQUE 2  /* magic number for dbsort sort unique */
 
-Hypocenter db_load_initial(Dbptr dbv,int row)
+Hypocenter db_load_initial(Dbptr dbv,long row)
 {
 	Hypocenter h;
 	dbv.record = row;
@@ -37,8 +37,8 @@ Hypocenter db_load_initial(Dbptr dbv,int row)
 		"origin.lon", &(h.lon),
 		"origin.depth",&(h.z),
 		"origin.time", &(h.time),
-		0) == dbINVALID)
-			die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %d of database view\n",row);
+		NULL) == dbINVALID)
+			die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %ld of database view\n",row);
 	/* This initializes parts of the hypocenter stucture that define
         this as an initial location. */
         h.dz = 0.0;
@@ -81,27 +81,27 @@ Author:  Gary L. Pavlis
 Written:  February 1997
 */
 
-int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
+long save_origin(Dbptr dbi, long is, long ie, int depth_fixed,
 	Hypocenter h, Dbptr dbo)
 {
-	int orid;
+	long orid;
 
 	/* These are parameters copied from input db -- names = css names */
-	int evid;
-	int jdate;
-	int grn;
-	int srn;
+	long evid;
+	long jdate;
+	long grn;
+	long srn;
 	char etype[8];
 	double mb;
-	int mbid;
+	long mbid;
 	double ms;
-	int msid;
+	long msid;
 	double ml;
-	int mlid;
+	long mlid;
 	/* These obtained from this solution */
 
-	int nass;
-	int ndef;
+	long nass;
+	long ndef;
 	char dtype[2];
 	char algorithm[16]="genloc-nlls";
 	char auth[20];
@@ -133,9 +133,9 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
 		"origin.msid", &msid,
 		"origin.ml", &ml,
 		"origin.mlid", &mlid,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 	{
-		die(1,"save_origin: dbgetv error reading origin fields of input view at record %d\n",
+		die(1,"save_origin: dbgetv error reading origin fields of input view at record %ld\n",
 				is);
 	}
 	nass = ie - is;
@@ -183,9 +183,9 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
                 "algorithm",algorithm,
                 "auth",auth,
                 "lddate",lddate,
-			0) == dbINVALID)
+			NULL) == dbINVALID)
 	{
-		die(1,"save_origin: dbaddv error writing orid %d\n",
+		die(1,"save_origin: dbaddv error writing orid %ld\n",
 				orid);
 	}
 	return(orid);
@@ -206,15 +206,15 @@ Written:  February 1997
 */
 
 /* Changed to int from void by JN in order to return evid. */
-int save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
+long save_event(Dbptr dbi, long is, long ie, long orid, Dbptr dbo)
 
 {
 	/* these are variables in dbi copied to dbo */
-	int evid;
+	long evid;
 	char evname[16];
 	
 	/*altered in output by this program */
-	int prefor;
+	long prefor;
 	char auth[20];
 	double lddate;
 
@@ -225,9 +225,9 @@ int save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 	if( dbgetv(dbi,0,
 		"event.evid",&evid,
 		"event.evname",evname,	
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 	{
-		die(1,"save_event: dbgetv error reading event fields of input view at record %d\n",
+		die(1,"save_event: dbgetv error reading event fields of input view at record %ld\n",
 				is);
 	}
 	prefor = orid;
@@ -239,9 +239,9 @@ int save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 		"prefor",prefor,
                 "auth",auth,
                 "lddate",lddate,
-			0) == dbINVALID)
+			NULL ) == dbINVALID)
 	{
-		die(1,"save_event: dbaddv error writing event record for orid %d\n",
+		die(1,"save_event: dbaddv error writing event record for orid %ld\n",
 				orid);
 	}
         /* Added by JN */
@@ -261,7 +261,7 @@ written yet.
 Author:  Gary L. Pavlis
 Written:  February 1997
 */
-void save_origerr(int orid, Hypocenter h, double **C, Dbptr dbo)
+void save_origerr(long orid, Hypocenter h, double **C, Dbptr dbo)
 {
 	double sdobs; 
 	double lddate;
@@ -290,9 +290,9 @@ void save_origerr(int orid, Hypocenter h, double **C, Dbptr dbo)
                 "stz",C[2][3],
 		"sdobs",sdobs,
                 "lddate",lddate,
-			0) == dbINVALID)
+			NULL) == dbINVALID)
 	{
-		die(1,"save_origerr: dbaddv error writing origerr record for orid %d\n",
+		die(1,"save_origerr: dbaddv error writing origerr record for orid %ld\n",
 				orid);
 	}
 }
@@ -320,11 +320,11 @@ Author:  Gary L. Pavlis
 Written:  February 1997
 */
 #define TIMENULL -999.000
-void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
+void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 	Tbl *residual,Hypocenter h, Dbptr dbo)
 {
 	/* These fields are copied from input assoc table */
-	int arid;
+	long arid;
 	char sta[8];
 	char phase[10];
 	double belief;
@@ -348,7 +348,7 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 	list passed into here as a Tbl */
 
 	Arr *residual_array;
-	int i;
+	long i;
 	char key[40]; 
 
 	double r, w, reswt,uxresid, uyresid;
@@ -405,17 +405,17 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
           		"assoc.sta",sta,
           		"assoc.phase",phase,
           		"assoc.belief",&belief,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 		{
-		  die(1,"save_assoc: dbgetv error reading assoc fields of input view at record %d\n",
+		  die(1,"save_assoc: dbgetv error reading assoc fields of input view at record %ld\n",
 				dbi.record);
 		}
 		if( dbgetv(dbi,0,
 			"site.lat",&stalat,
 			"site.lon",&stalon,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 		{
-		  die(1,"save_assoc: dbgetv error reading site fields of input view at record %d\n",
+		  die(1,"save_assoc: dbgetv error reading site fields of input view at record %ld\n",
 				dbi.record);
 		}
 		/* Find the time residual record for this arrival */
@@ -454,7 +454,7 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 			the record filed to dbNULL, and then calling dbgetv
 			each of the fields will be set to their NULL value */
 			dbo.record = dbNULL;
-			dbgetv(dbo,0,"azres",&azres,"slores",&slores,0);
+			dbgetv(dbo,0,"azres",&azres,"slores",&slores,NULL );
 			strcpy(azdef,"n");
 			strcpy(slodef,"n");
 		}
@@ -469,9 +469,9 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 			if( dbgetv(dbi,0,
 				"arrival.slow",&u,
 				"arrival.azimuth",&phi,
-					0) == dbINVALID)
+					NULL) == dbINVALID)
 			{
-		  	  die(1,"save_assoc: dbgetv error reading arrival fields of input view at record %d\n",
+		  	  die(1,"save_assoc: dbgetv error reading arrival fields of input view at record %ld\n",
 				dbi.record);
 			}
 			/* css stores slowness in s/deg, but we use
@@ -515,15 +515,14 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
                         "wgt",wgt,
                         "vmodel",vmodel,
                         "lddate",lddate,
-			0) == dbINVALID)
+			NULL ) == dbINVALID)
 		{
-			die(1,"save_assoc: dbaddv error writing assoc record for arid %d\n",
+			die(1,"save_assoc: dbaddv error writing assoc record for arid %ld\n",
 				arid);
 		}
 	}
 	freearr(residual_array,0);
 }
-
 	
 int main(int argc, char **argv)
 {
@@ -541,11 +540,10 @@ int main(int argc, char **argv)
 	respectively */
 	Dbptr dborigin_group;
 	Tbl *origin_group;  /* relation keys used in grouping*/
-	int nevents;
+	long nevents;
 	/* db row variables */
-	int rows_in_view;
-	int evid,orid,prefor;
-	int nrows, nrows_raw;
+	long evid;
+	long nrows, nrows_raw;
 
 	int useold=0;
 	Pf *pf;
@@ -555,11 +553,10 @@ int main(int argc, char **argv)
 	Arr *arr_phase;
 	int i;
 	Tbl *converge_history;
-	char *line;
 
 	Hypocenter h0;
 	Hypocenter *hypos;
-	int niterations;
+	long niterations;
 
 	char *vmodel;
 
@@ -568,7 +565,7 @@ int main(int argc, char **argv)
 	float emodel[4];  
 
 	/* entries for S-P feature */
-	int nbcs;
+	long nbcs;
 	Arr *badclocks;
 	/* need global setting of this to handle fixed depth solutions*/
 	int global_fix_depth;
@@ -673,7 +670,7 @@ int main(int argc, char **argv)
 	if(nrows != nrows_raw)
 		complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
 Which picks will be used here is unpredictable\n\
-%d total picks, %d unique\nContinuing\n", nrows_raw, nrows);
+%ld total picks, %ld unique\nContinuing\n", nrows_raw, nrows);
 
 	/* This sort is the required one for the grouping that follows*/
 
@@ -693,7 +690,7 @@ Which picks will be used here is unpredictable\n\
 		die(1,"dbgroup by origin failed\n");
 
 	dbquery(dborigin_group,dbRECORD_COUNT,&nevents);
-	elog_notify(0,"Attempting to relocate %d events in subsetted database\n",
+	elog_notify(0,"Attempting to relocate %ld events in subsetted database\n",
 		nevents);
 	
 
@@ -726,12 +723,12 @@ Which picks will be used here is unpredictable\n\
 				of dborigin_group for current event */
 		Arr *station_table;
 		Arr *array_table;
-		int is, ie; 
-		int orid;  /* orid assigned relocated event in output db */
+		long is, ie; 
+		long orid;  /* orid assigned relocated event in output db */
 
 		if(dbgetv(dborigin_group,0,"evid", &evid,
-			"bundle", &db_bundle,0) == dbINVALID)
-			complain(1,"dbgetv error for row %d of event group\n",
+			"bundle", &db_bundle,NULL ) == dbINVALID)
+			complain(1,"dbgetv error for row %ld of event group\n",
 				dborigin_group.record);
 		dbget_range(db_bundle,&is,&ie);
 
@@ -741,6 +738,8 @@ Which picks will be used here is unpredictable\n\
 						is,ie,pf);
 		ta = dbload_arrival_table(dbv,
 				is,ie,station_table, arr_phase);
+
+
 		tu = dbload_slowness_table(dbv,
 				is,ie,array_table, arr_phase);
 		/* this actually sets up the minus phase feature for bad clocks*/
@@ -757,7 +756,7 @@ Which picks will be used here is unpredictable\n\
 			setting dbv.record here is a bit of
 			a potential maintenance problem */
 			dbv.record=is;
-			dbgetv(dbv,0,"dtype",dtype,0);
+			dbgetv(dbv,0,"dtype",dtype,NULL );
 			if( (!strcmp(dtype,"g")) || (!strcmp(dtype,"r")) )
 				o.fix[2]=1;
 			
@@ -779,7 +778,6 @@ Which picks will be used here is unpredictable\n\
 				ret_code);
 			
 			niterations = maxtbl(converge_history);
-	
 			hypos = (Hypocenter *)gettbl(converge_history,
 								niterations-1);
 			predicted_errors(*hypos,ta,tu,o,C,emodel);
@@ -788,7 +786,7 @@ Which picks will be used here is unpredictable\n\
 			orid = save_origin(dbv,is,ie,o.fix[3],*hypos,dbo);
 			evid = save_event(dbv,is,ie,orid,dbo);
 
-			fprintf(stdout,"%d %d %lf %lf %lf %lf %g %g %g %d %d %d\n",
+			fprintf(stdout,"%ld %ld %lf %lf %lf %lf %g %g %g %d %d %ld\n",
 					evid,
 					orid,
 					hypos->lat,hypos->lon,hypos->z,hypos->time,
@@ -805,7 +803,6 @@ Which picks will be used here is unpredictable\n\
 			save_predarr(dbo,ta,tu,*hypos,orid,vmodel);
 		}
 		o.fix[2]=global_fix_depth;
-	
 		if(maxtbl(converge_history)>0)freetbl(converge_history,free);
 		if(maxtbl(reason_converged)>0)freetbl(reason_converged,free);
 		if(maxtbl(residual)>0)freetbl(residual,free);

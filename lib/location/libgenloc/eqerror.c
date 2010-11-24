@@ -370,8 +370,8 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 	/* These are chisquare critical values.  First index is critical
 	level and second is degrees of freedom.  e.g. 
 	chisq_crit[1][2] is 90% level for 3 dgf*/
-	double chisq_crit[2][3]={1.001284,2.297707,3.529159,
-				2.705543, 4.60517, 6.251389};
+	double chisq_crit[2][3]={{1.001284,2.297707,3.529159},
+               {2.705543, 4.60517, 6.251389}};
 	double evals[4];
 	double vwork[16];
 	int info,ecount=0;
@@ -454,9 +454,14 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 	/* Note sunperf implementation of blas returns an index based
 	from 0 ala C while the FORTRAN version uses 1.  Dangerous
 	inconsistency to watch out for. */
-	*sdepth = fabs(vwork[2+i*4]);
+        /* This is the sunperf version 
+	*sdepth = fabs(vwork[2+i*4]); 
+        This is the correct version for perf which returns 1-4 */
+        *sdepth =fabs(vwork[2+(i-1)*4]);
 	i = idamax(4,vwork+3,4);
-	*stime = fabs(vwork[3+i*4]);
+        /* other old sunperf version 
+	*stime = fabs(vwork[3+i*4]); */
+        *stime = fabs(vwork[3+(i-1)*4]);
 	switch(model)
 	{
 	case(F_DIST):

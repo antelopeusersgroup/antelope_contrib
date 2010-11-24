@@ -1,5 +1,6 @@
 #ifndef _BASICTIMESERIES_H_
 #define _BASICTIMESERIES_H_
+#include <ostream>
 #include <set>
 #include "TimeWindow.h"
 namespace SEISPP
