@@ -84,7 +84,7 @@ our  (@no_power, @no_info, @no_mseed_info, @no_connection);
 #
     $Pf = $opt_p || "rt_baler_info" ;
     
-    elog_notify ("\n    version:	\$Revision$\ \$Date$\  \n")    if ($opt_v||$opt_V) ;
+    elog_notify ("\n    " . announce_str() . "\n" )   if ($opt_v||$opt_V) ; 
     elog_notify ("    orb		$orbname")    if ($opt_v||$opt_V) ;
     elog_notify ("    cmdorb		$cmdorb")     if ($opt_v||$opt_V) ;
     elog_notify ("    srcname		$srcname")    if ($opt_v||$opt_V) ;
