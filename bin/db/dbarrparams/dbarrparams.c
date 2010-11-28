@@ -20,11 +20,21 @@
 #include "csstime.h"
 #include "math.h"
 
-main (argc, argv)
+void
+usage()
 
-int argc;
-char **argv;
+{
+	fprintf (stderr, 
+		"usage: dbarrparams dbname [-pol tlead_pol tlag_pol] [-ap tmin_ap tmax_ap]\n");
+	fprintf (stderr, 
+		"                          [-fm tmin_fm tmax_fm] [-snr tlead_snr tlag_snr]\n");
+	fprintf (stderr, 
+		"                          [-filter type lco hco lord hord tpad]\n");
+}
 
+
+int
+main (int argc, char **argv)
 {
 	char *prog, *dbname, *stachan=NULL, *tstart=NULL, *tend=NULL;
 	int pol=0,ap=0,fm=0,snr=0,fil=0;
@@ -58,7 +68,7 @@ char **argv;
 	}
 	Program_Name = argv[0] ; 
 	if (strcmp(argv[1], "-V" ) == 0 ) {
-	    banner ( Program_Name, "Version $Revision$ $Date$\n" ) ; 
+	    banner ( Program_Name, 0) ;
 	    exit(0); 
 	}
 	prog = *argv;
@@ -906,16 +916,3 @@ int **iextrema;
 	*iextrema = iextr;
 	return (1);
 }
-
-usage()
-
-{
-	fprintf (stderr, 
-		"usage: dbarrparams dbname [-pol tlead_pol tlag_pol] [-ap tmin_ap tmax_ap]\n");
-	fprintf (stderr, 
-		"                          [-fm tmin_fm tmax_fm] [-snr tlead_snr tlag_snr]\n");
-	fprintf (stderr, 
-		"                          [-filter type lco hco lord hord tpad]\n");
-}
-
-/* $Id$ */
