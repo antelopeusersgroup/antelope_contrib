@@ -2905,6 +2905,7 @@ sub check_remote_list {		#&check_remote_list($match,@ll_of_remote_dir)  returns 
         } elsif ( ((scalar @lsout == 9) && $lsout[8] =~ /$match/) || ((scalar @lsout == 4) && $lsout[3] =~ /$match/) ) {  
 	    
 	    if (scalar @lsout == 9) {
+		print "Found a 9 length line: @lsout\n";
                $lsfile     = $lsout[8];   
                my $upd_mo     = $lsout[5];
                my $upd_dy     = $lsout[6];
@@ -2952,8 +2953,11 @@ sub check_remote_list {		#&check_remote_list($match,@ll_of_remote_dir)  returns 
                $last_remote_update  = str2epoch("$upd_mo $upd_dy $upd_yr $upd_time") || elog_complain("Couldn't find last update time of $lsfile \n" ) ;
 
            } else {
-               $lsfile     = $lsout[3];   
-               $last_remote_update  = str2epoch("$lsout[0] $lsout[1]") || elog_complain("Couldn't find last update time of $lsfile \n" ) ;
+		$lsfile     = $lsout[3];   
+		if ($lsout[0] =~/-/ ) {
+		   $lsout[0] =~ s/\-/\//g ;
+		}
+		$last_remote_update  = str2epoch("$lsout[0] $lsout[1]") || elog_complain("Couldn't find last update time of $lsfile \n" ) ;
 	   }
 
            my $gzipfile    = $localdir."/".$lsfile.".gz";
