@@ -12,11 +12,15 @@ The Python Interface to Datascope allows one to perform operations
 on Datascope databases from the Python scripting language. 
 Following are brief descriptions of the functions implemented.
 
-Many of these python functions are direct wrappers around the C-language interfaces 
-in the Datascope library. Further information on how to use any given command may 
-therefore be obtained from the man pages on the relevant commands. For example, 
-this man page will explain the syntax of the python \fIdbsubset\fP function. However, for 
-a full explanation of dbsubset, see the dbsubset(3) man page. 
+Many of these python functions are direct wrappers around the
+C-language interfaces in the Datascope library. This man-page
+documents the syntax of these commands as represented in this Python
+interface. Further information on how to use any given command and
+the actual work it performs may be obtained from the man
+page for the C-language version of the respective command. For
+example, this man page will explain the syntax of the python
+\fIdbsubset\fP function. However, for a full explanation of dbsubset,
+see the dbsubset(3) man page.
 
 The python calls may be used in two ways, either in a procedural 
 style or in an object style invocation. Either way, a database pointer 
@@ -902,6 +906,58 @@ v = trdatabins( tr, binsize )
 or
 
 v = tr.databins( binsize )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrrotate\fP (tr, phi_deg, theta_deg, newchan)"
+Rotate traces to new orientantion and component names
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+phi_deg = 45
+
+theta_deg = -75
+
+newchan = ( "A", "B", "C" )
+
+trrotate( tr, phi_deg, theta_deg, newchan )
+
+or
+
+tr.rotate( phi_deg, theta_deg, newchan )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrrotate_to_standard\fP (tr, newchan = ('E', 'N', 'Z'))"
+Rotate traces to standard orientantion
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trrotate_to_standard( tr )
+
+or 
+
+newchan = ( "A", "B", "C" )
+
+trrotate_to_standard( tr, newchan )
+
+or
+
+tr.rotate_to_standard()
+
+or
+
+newchan = ( "A", "B", "C" )
+
+tr.rotate_to_standard( newchan )
 
 .fi
 .in
