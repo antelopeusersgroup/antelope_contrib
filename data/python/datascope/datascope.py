@@ -927,6 +927,19 @@ class Dbptr(list):
 
         return v
         
+    def rotate(self, phi_deg, theta_deg, newchan):
+        """Rotate traces to new orientation with new component names"""
+
+	try:
+
+	    v = _datascope._trrotate(self, phi_deg, theta_deg, newchan)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return v
+
     def splice(self):
         """Splice together data segments"""
 
@@ -1436,6 +1449,12 @@ def trdatabins(trin, binsize):
     """Obtain binned data points from a trace-table record"""
 
     return trin.databins(binsize)
+
+
+def trrotate(trin, phi_deg, theta_deg, newchan):
+    """Rotate traces to new orientation with new component names"""
+
+    return trin.rotate(phi_deg, theta_deg, newchan)
 
 
 def trcopy(trin, trout = None):
@@ -2277,6 +2296,8 @@ if __name__ == '__main__':
 
 	    self.assertEqual(dbnrecs(tr), 18)
 
+	    tr.free()
+
 	    db.close()
 
         def test_method_load_cssgrp(self):
@@ -2294,6 +2315,8 @@ if __name__ == '__main__':
             self.assertTrue(tr.database >= 0)
 
 	    self.assertEqual(dbnrecs(tr), 18)
+
+	    tr.free()
 
 	    db.close()
 
@@ -2355,6 +2378,34 @@ if __name__ == '__main__':
             self.assertRaises( ElogComplain, tr.data )
 
 	    db.close()
+
+        def test_method_rotate(self):
+
+            db = dbopen(self.dbname)
+
+            db.lookup(table = 'wfdisc')
+
+	    db.subset('sta == "TKM"')
+
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
+
+	    self.assertEqual(tr.nrecs(),3)
+
+	    tr.apply_calib()
+
+            phi_deg = 45
+
+	    theta_deg = -75
+
+	    newchan = ("A", "B", "C")
+
+	    tr.rotate(phi_deg, theta_deg, newchan)
+
+	    self.assertEqual(tr.nrecs(),6)
+
+	    tr.free()
+
+            db.close()
 
         def test_method_filter(self):
 
@@ -3218,6 +3269,8 @@ if __name__ == '__main__':
 
 	    self.assertEqual(dbnrecs(tr), 0)
 
+            trfree(tr)
+
             dbclose(db)
 
         def test_procedure_trload_cssgrp(self):
@@ -3243,6 +3296,8 @@ if __name__ == '__main__':
 	    tr = trload_cssgrp(db, "500139800.0000", "500139855.95000")
 
 	    self.assertEqual(dbnrecs(tr), 0)
+
+	    trfree(tr)
 
             dbclose(db)
 
@@ -3463,6 +3518,34 @@ if __name__ == '__main__':
             self.assertEqual(v[1], (-1397.0, -1281.0))
             self.assertEqual(v[2], (-1353.0, -1287.0))
             self.assertEqual(v[3], (-1441.0, -1319.0))
+
+            dbclose(db)
+
+        def test_procedure_trrotate(self):
+
+            db = dbopen(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+	    db = dbsubset(db, 'sta == "TKM"')
+
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
+
+	    self.assertEqual(tr.nrecs(),3)
+
+            trapply_calib( tr )
+
+            phi_deg = 45
+
+	    theta_deg = -75
+
+	    newchan = ("A", "B", "C")
+
+	    trrotate(tr, phi_deg, theta_deg, newchan)
+
+	    self.assertEqual(tr.nrecs(),6)
+
+	    trfree(tr)
 
             dbclose(db)
 

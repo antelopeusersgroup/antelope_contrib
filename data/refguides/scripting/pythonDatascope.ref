@@ -240,6 +240,10 @@ trdatabins (tr, binsize)
 tr.databins (binsize)
     returns binned data points from trace table record tr
 
+trrotate(tr, phi_deg, theta_deg, newchan)
+tr.rotate( phi_deg, theta_deg, newchan)
+    rotate traces to new orientation with new component names
+
 trsplit(tr)
 tr.split()
     eliminate marked gaps inside the trace table tr by splitting
