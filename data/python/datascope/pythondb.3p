@@ -911,7 +911,7 @@ v = tr.databins( binsize )
 .in
 .ft R
 
-.IP "\fBtrrotate\fP (tr)"
+.IP "\fBtrrotate\fP (tr, phi_deg, theta_deg, newchan)"
 Rotate traces to new orientantion and component names
 .ft CW
 .in 2c
@@ -929,6 +929,35 @@ trrotate( tr, phi_deg, theta_deg, newchan )
 or
 
 tr.rotate( phi_deg, theta_deg, newchan )
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrrotate_to_standard\fP (tr, newchan = ('E', 'N', 'Z'))"
+Rotate traces to standard orientantion
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+trrotate_to_standard( tr )
+
+or 
+
+newchan = ( "A", "B", "C" )
+
+trrotate_to_standard( tr, newchan )
+
+or
+
+tr.rotate_to_standard()
+
+or
+
+newchan = ( "A", "B", "C" )
+
+tr.rotate_to_standard( newchan )
 
 .fi
 .in

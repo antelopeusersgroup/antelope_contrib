@@ -131,6 +131,7 @@ static PyObject *python_trapply_calib( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static PyObject *python_trdatabins( PyObject *self, PyObject *args );
 static PyObject *python_trrotate( PyObject *self, PyObject *args );
+static PyObject *python_trrotate_to_standard( PyObject *self, PyObject *args );
 static PyObject *python_trcopy( PyObject *self, PyObject *args );
 static PyObject *python_trsplice( PyObject *self, PyObject *args );
 static PyObject *python_trsplit( PyObject *self, PyObject *args );
@@ -220,6 +221,7 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
 	{ "_trdatabins", python_trdatabins,	METH_VARARGS, "Extract binned data points from trace table record" },
 	{ "_trrotate",	python_trrotate,	METH_VARARGS, "Rotate traces to new orientation with new component names" },
+	{ "_trrotate_to_standard", python_trrotate_to_standard,	METH_VARARGS, "Rotate traces to standard orientation" },
 	{ "_trcopy",	python_trcopy,		METH_VARARGS, "Make copy of a trace table including the trace data" },
 	{ "_trsplice",	python_trsplice,	METH_VARARGS, "Splice together data segments" },
 	{ "_trsplit",	python_trsplit,		METH_VARARGS, "Split data segments which contain marked gaps" },
@@ -2969,6 +2971,57 @@ python_trrotate( PyObject *self, PyObject *args ) {
 	free( newchan );
 
 	/* Questionable whether trrotate should throw an exception here for nonzero trrotate 
+	   return-codes. Omit exception for now. */
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_trrotate_to_standard( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trrotate_to_standard(tr, newchan)\n";
+	Dbptr	tr;
+	Tbl	*newchans_tbl = NULL;
+	char	**newchan = NULL;
+	int	istring = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &tr, parse_to_strtbl, &newchans_tbl ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	if( maxtbl( newchans_tbl ) != 3 ) {
+
+		freetbl( newchans_tbl, free );
+
+		raise_elog( ELOG_COMPLAIN, "Argument 'newchan' to _trrotate must be a three-element tuple of strings e.g. (\"A\", \"B\", \"C\")" );
+
+		return NULL;
+
+	} else {
+
+		allot( char **, newchan, 1 );
+		
+		for( istring = 0; istring < 3; istring++ ) {
+
+			newchan[istring] = strdup( gettbl( newchans_tbl, istring ) );
+		}
+
+		freetbl( newchans_tbl, free );
+	}
+
+	rc = rotate_to_standard( tr, newchan );
+
+	for( istring = 0; istring < 3; istring++ ) {
+
+		free( newchan[istring] );
+	}
+
+	free( newchan );
+
+	/* Questionable whether rotate_to_standard should throw an exception here for nonzero trrotate 
 	   return-codes. Omit exception for now. */
 
 	return Py_BuildValue( "i", rc );

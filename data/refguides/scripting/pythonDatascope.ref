@@ -241,7 +241,11 @@ tr.databins (binsize)
     returns binned data points from trace table record tr
 
 trrotate(tr, phi_deg, theta_deg, newchan)
-tr.rotate( phi_deg, theta_deg, newchan)
+tr.rotate(phi_deg, theta_deg, newchan)
+    rotate traces to new orientation with new component names
+
+trrotate_to_standard(tr, newchan = ("E", "N", "Z"))
+tr.rotate_to_standard(newchan = ("E", "N", "Z"))
     rotate traces to new orientation with new component names
 
 trsplit(tr)

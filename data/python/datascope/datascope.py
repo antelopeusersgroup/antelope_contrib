@@ -940,6 +940,19 @@ class Dbptr(list):
 
         return v
 
+    def rotate_to_standard(self, newchan = ("E", "N", "Z")):
+        """Rotate traces to standard orientation"""
+
+	try:
+
+	    v = _datascope._trrotate_to_standard(self, newchan)
+
+	except _datascope._ElogException, _e:
+
+	    stock._raise_elog(_e)
+
+        return v
+
     def splice(self):
         """Splice together data segments"""
 
@@ -1455,6 +1468,12 @@ def trrotate(trin, phi_deg, theta_deg, newchan):
     """Rotate traces to new orientation with new component names"""
 
     return trin.rotate(phi_deg, theta_deg, newchan)
+
+
+def trrotate_to_standard(trin, newchan = ("E", "N", "Z")):
+    """Rotate traces to standard orientation"""
+
+    return trin.rotate_to_standard(newchan)
 
 
 def trcopy(trin, trout = None):
@@ -2400,6 +2419,50 @@ if __name__ == '__main__':
 	    newchan = ("A", "B", "C")
 
 	    tr.rotate(phi_deg, theta_deg, newchan)
+
+	    self.assertEqual(tr.nrecs(),6)
+
+	    tr.free()
+
+            db.close()
+
+        def test_method_rotate_to_standard(self):
+
+            db = dbopen(self.dbname)
+
+            db.lookup(table = 'wfdisc')
+
+	    db.subset('sta == "TKM"')
+
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
+
+	    self.assertEqual(tr.nrecs(),3)
+
+	    tr.apply_calib()
+
+	    tr.rotate_to_standard()
+
+	    self.assertEqual(tr.nrecs(),6)
+
+	    tr.free()
+
+            db.close()
+
+            db = dbopen(self.dbname)
+
+            db.lookup(table = 'wfdisc')
+
+	    db.subset('sta == "TKM"')
+
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
+
+	    self.assertEqual(tr.nrecs(),3)
+
+	    tr.apply_calib()
+
+            newchan = ( "A", "B", "C" )
+
+	    tr.rotate_to_standard(newchan)
 
 	    self.assertEqual(tr.nrecs(),6)
 
@@ -3542,6 +3605,50 @@ if __name__ == '__main__':
 	    newchan = ("A", "B", "C")
 
 	    trrotate(tr, phi_deg, theta_deg, newchan)
+
+	    self.assertEqual(tr.nrecs(),6)
+
+	    trfree(tr)
+
+            dbclose(db)
+
+        def test_procedure_trrotate_to_standard(self):
+
+            db = dbopen(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+	    db = dbsubset(db, 'sta == "TKM"')
+
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
+
+	    self.assertEqual(tr.nrecs(),3)
+
+            trapply_calib( tr )
+
+	    trrotate_to_standard(tr)
+
+	    self.assertEqual(tr.nrecs(),6)
+
+	    trfree(tr)
+
+            dbclose(db)
+
+            db = dbopen(self.dbname)
+
+            db = dblookup(db, table = 'wfdisc')
+
+	    db = dbsubset(db, 'sta == "TKM"')
+
+	    tr = trload_css(db, "706139719.05000", "706139799.95000")
+
+	    self.assertEqual(tr.nrecs(),3)
+
+            trapply_calib( tr )
+
+            newchan = ("A", "B", "C")
+
+	    trrotate_to_standard(tr, newchan)
 
 	    self.assertEqual(tr.nrecs(),6)
 
