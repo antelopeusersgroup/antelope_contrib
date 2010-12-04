@@ -493,14 +493,14 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		}
 		if(nv>1)
 		{
-			elog_notify(0,(char *)"GCLscalarfield constructor nv=%d is illegal",
+			elog_notify(0,(char *)"GCLscalarfield constructor nv=%ld is illegal",
 				nv);
 			throw 2;
 		}
 		if(dim!=2)
 		{
 			elog_notify(0,
-			 (char *)"GCLscalarfield: database dimension %d mismatch for fieldname=%s",
+			 (char *)"GCLscalarfield: database dimension %ld mismatch for fieldname=%s",
 				dim,fieldname.c_str());
 			throw 2;
 		}
@@ -586,14 +586,14 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 		}
 		if(nv>1)
 		{
-			elog_notify(0,(char *)"GCLscalarfield3d constructor nv=%d is illegal",
+			elog_notify(0,(char *)"GCLscalarfield3d constructor nv=%ld is illegal",
 				nv);
 			throw 2;
 		}
 		if(dim!=3)
 		{
 			elog_notify(0,
-			 (char *)"GCLscalarfield3d: database dimension %d mismatch for fieldname=%s",
+			 (char *)"GCLscalarfield3d: database dimension %ld mismatch for fieldname=%s",
 				dim,fieldname.c_str());
 			throw 2;
 		}
@@ -673,7 +673,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		if(dim!=2)
 		{
 			elog_notify(0,
-			 (char *)"GCLvectorfield: database dimension %d mismatch for fieldname=%s",
+			 (char *)"GCLvectorfield: database dimension %ld mismatch for fieldname=%s",
 				dim,fieldname.c_str());
 			throw 2;
 		}
@@ -681,7 +681,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		{
 			if(nvdb!=nvsize)
 			{
-				elog_notify(0,(char *)"GCLvectorfield database constructor warning:\nnvsize=%d passed to constructor does not match nv in database = %d\nUsing database value\n",
+				elog_notify(0,(char *)"GCLvectorfield database constructor warning:\nnvsize=%ld passed to constructor does not match nv in database = %ld\nUsing database value\n",
 					nvsize,nvdb);
 			}
 		}
@@ -738,7 +738,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	{
 		if(nvsize<=0)
 		{
-			elog_notify(0,"GCLvectorfield3d database constructor:  invalid vector length request = %d\n",
+			elog_notify(0,"GCLvectorfield3d database constructor:  invalid vector length request = %ld\n",
 				nvsize);
 			throw 3;
 		}
@@ -782,7 +782,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		if(dim!=3)
 		{
 			elog_notify(0,
-			 (char *)"GCLvectorfield3d: database dimension %d mismatch for fieldname=%s",
+			 (char *)"GCLvectorfield3d: database dimension %ld mismatch for fieldname=%s",
 				dim,fieldname.c_str());
 			throw 2;
 		}
@@ -790,7 +790,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		{
 			if(nvdb!=nvsize)
 			{
-				elog_notify(0,(char *)"GCLvectorfield3d database constructor warning:\nnvsize=%d passed to constructor does not match nv in database = %d\nUsing database value\n",
+				elog_notify(0,(char *)"GCLvectorfield3d database constructor warning:\nnvsize=%ld passed to constructor does not match nv in database = %ld\nUsing database value\n",
 					nvsize,nvdb);
 			}
 		}
