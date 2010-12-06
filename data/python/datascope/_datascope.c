@@ -1217,7 +1217,7 @@ python_dbfind( PyObject *self, PyObject *args ) {
 
 		flags++;
 	} 
-	
+
 	db.record = first;
 
 	rc = dbfind( db, expr, flags, 0 );
@@ -2951,7 +2951,7 @@ python_trrotate( PyObject *self, PyObject *args ) {
 
 	} else {
 
-		allot( char **, newchan, 1 );
+		allot( char **, newchan, 3 );
 		
 		for( istring = 0; istring < 3; istring++ ) {
 
@@ -3002,7 +3002,7 @@ python_trrotate_to_standard( PyObject *self, PyObject *args ) {
 
 	} else {
 
-		allot( char **, newchan, 1 );
+		allot( char **, newchan, 3 );
 		
 		for( istring = 0; istring < 3; istring++ ) {
 
