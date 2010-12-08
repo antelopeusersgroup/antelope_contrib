@@ -1200,7 +1200,7 @@ static PyObject *
 python_dbfind( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbfind(db, expr, first, reverse)\n";
 	Dbptr	db;
-	char	*expr;
+	char	*expr = NULL;
 	int	first;
 	int	reverse = 0;
 	int	flags = 0;
@@ -1208,7 +1208,7 @@ python_dbfind( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
 
-		USAGE;
+		/* USAGE; DEBUG*/
 
 		return NULL;
 	}
