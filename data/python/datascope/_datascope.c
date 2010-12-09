@@ -1208,7 +1208,7 @@ python_dbfind( PyObject *self, PyObject *args ) {
 
 	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
 
-		/* USAGE; DEBUG*/
+		USAGE;
 
 		return NULL;
 	}
