@@ -32,20 +32,19 @@
     use utilfunct ;
     use orb ;
     
-    our ($pgm,$host);
-    our ($opt_v,$opt_V,$opt_c,$opt_m,$opt_n,$opt_p);
+    our ( $pgm, $host ) ;
+    our ( $opt_v, $opt_V, $opt_c, $opt_m, $opt_n, $opt_p );
     
 {    #  Main program
 
-    my ( $usage,$cmd,$subject,$verbose,$debug,$Pf,$problems,$problem_check );
-    my ( $base, $chan, $comment, $dbname, $dbsize, $dep, $dir, $dirname, $endtime ) ;
-    my ( $equip_install, $equip_remove, $gchan, $gsta, $line, $max, $maxtime, $mintime, $mlag ) ;
-    my ( $mseedfile, $n, $net, $new, $nrows, $nsync, $old, $orb, $orbclient, $orbname, $orbsize ) ;
-    my ( $pktid, $range, $ref, $row, $rtsta, $st1, $st2, $st3, $sta, $stime, $subset, $suf ) ;
-    my ( $sync_dfile, $sync_dir, $sync_file, $table, $tgap, $thread, $time, $what, $who, $year );
-    my ( @chans, @db, @dbdeploy, @dbdeployment, @dbdmcfiles, @dbgap, @dbgwf, @dbops, @dbscr ) ;
-    my ( @dbscrdmc, @dbsize, @dbtest, @dbtmp, @dbwfchk, @dirs, @files, @laggards, @line ) ;
-    my ( @msd, @mseedfiles, @pffiles, @rows );
+    my ( $Pf, $base, $chan, $cmd, $comment, $dbname, $dbsize, $debug, $dep, $dir, $dirname ) ;
+    my ( $endtime, $gchan, $gsta, $line, $max, $maxtime, $mintime, $mlag, $mseedfile, $n ) ;
+    my ( $net, $new, $nrows, $nsync, $old, $orb, $orbclient, $orbname, $orbsize, $pktid ) ;
+    my ( $problem_check, $problems, $range, $ref, $row, $st1, $st2, $st3, $sta, $stime ) ;
+    my ( $subject, $success, $suf, $sync_dfile, $sync_dir, $sync_file, $table, $tgap ) ;
+    my ( $thread, $time, $usage, $verbose, $what, $who );
+    my ( @chans, @db, @dbdmcfiles, @dbgap, @dbgwf, @dbops, @dbscr, @dbsize, @dbtest, @dbwfchk ) ;
+    my ( @dirs, @files, @laggards, @line, @msd, @mseedfiles, @output, @pffiles, @rows ) ;
     my ( %pf, %sta );
 
     $pgm = $0 ; 
@@ -97,31 +96,14 @@
     
     prettyprint( \%sta ) if $opt_V ;
     
-#     
-# #
-# #  open dbops and check that dbops dmcfiles table exists.
-# #
-#     @dbops         = dbopen($pf{dbops},"r+");
-#     @dbdeployment  = dblookup(@dbops,0,"deployment",0,0);
-#     @dbdmcfiles    = dblookup(@dbops,0,"dmcfiles",0,0);
-#     @dbscrdmc      = dblookup(@dbdmcfiles,0,0,0,"dbSCRATCH");
-#     if (! dbquery(@dbdmcfiles,"dbTABLE_PRESENT") ) {
-#         $problems++ ;
-#         elog_complain("\nProblem $problems
-#                        \n	database table $pf{dbops}.dmcfiles does not exist!") ;
-#         $subject = "Problems - $pgm $host	dbops problem" ;
-#         &sendmail($subject, $opt_m) if $opt_m ; 
-#         elog_die("\n$subject");
-#     }
-#     if (! dbquery(@dbdeployment,"dbTABLE_PRESENT") ) {
-#         $problems++ ;
-#         elog_complain("\nProblem $problems
-#                        \n	database table $pf{dbops}.deployment does not exist!") ;
-#         $subject = "Problems - $pgm $host	dbops problem" ;
-#         &sendmail($subject, $opt_m) if $opt_m ; 
-#         elog_die("\n$subject");
-#     }
-
+    if ( $problems ) {
+        elog_complain("\nProblem $problems
+                       \n	Problem in dbops ");
+        $subject = "Problems - $pgm $host	" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
+    
 
 #
 #  check orb
@@ -146,31 +128,14 @@
 #
 
     $nsync = 0;
-   foreach $sta ( sort keys (%sta) ) {
-#    foreach $sta (@ARGV) {
-#         $subset = "comment =~ /$sta final baler data sent to DMC.*/";
-#         @dbtmp = dbsubset(@dbdmcfiles,$subset);
-#         if (dbquery(@dbtmp,"dbRECORD_COUNT")) {
-#             $dbtmp[3] = 0 ;
-#             $stime = strydtime(dbgetv(@dbtmp,"time"));
-#             elog_notify("$sta already processed at $stime") if $opt_v;
-#             next;
-#         }
-#         
-#         $stime = strydtime(now());
-#         $year  = epoch2str(now(),"%Y");
+    foreach $sta ( sort keys (%sta) ) {
+
         elog_notify ("\nstarting processing station $sta");
     
 #
 #  perform database and file existance checks
 #
-                        
-#         $dirname    = "$pf{archivebase}\/$sta";
-#         $dbname     = "$pf{archivebase}\/$sta\/$sta";
-#         $sync_dir   = "$pf{sync_dir}\/$year";
-#         $sync_dfile = "$sta\_final.sync";
-#         $sync_file  = "$sync_dir/$sync_dfile";
-        
+                                
         $dirname    = $sta{$sta}{dirname} ;
         $dbname     = $sta{$sta}{dbname} ;
         $sync_dir   = $sta{$sta}{sync_dir} ;
@@ -222,42 +187,6 @@
                             \n	Skipping to next station") ;
             next unless $opt_n;                
         }
-#     
-# #
-# #  verify sync file does not exist
-# #
-#         dbputv(@dbscrdmc,"dfile",$sync_dfile);
-#         @rows = dbmatches(@dbscrdmc,@dbdmcfiles,"dfile_hook","dfile");
-#         if ($#rows > -1) {
-#             elog_notify("$sta already processed");
-#             next;
-#         }
-# 
-#         if (-e $sync_file)  { 
-#             $problems++ ;
-#             elog_complain("\nProblem $problems
-#                            \n	$sync_file exists!
-#                            \n	Station $sta has already been processed.
-#                            \n	Skipping to next station");
-#             next unless $opt_n;                
-#         }
-# 
-#         makedir($sync_dir) if (! -d $sync_dir );
-#         makedir("sync") if (! -d "sync" );
-# 
-# 
-# #
-# #  verify rt db exists
-# #
-#         $rtsta = "$pf{rt_sta_dir}/$sta";
-#         if ( ! -e $rtsta )  {
-#             $problems++ ;
-#             elog_complain("\nProblem $problems
-#                            \n	$rtsta does not exist!
-#                            \n	Station $sta has not been closed in the deployment table.
-#                            \n	Skipping to next station");
-#             next;                
-#         }
 
 #
 #  Build explicit gap filling request while verifying that gap is not filled
@@ -348,26 +277,39 @@
 #  Build rt station wfdisc (this is in a different wf naming format for ease of debugging)
 #
 
+        $cmd  = "trexcerpt ";
+        $cmd  .= "-v  " if $opt_V;
+        $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta tmp_gap_$sta\_$$.wfdisc $dbname " ;
+               
         if ( $nrows > 0 || $opt_n ) {
-            
-            $cmd  = "trexcerpt ";
-            $cmd  .= "-v  " if $opt_V;
-            $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta tmp_gap_$sta\_$$.wfdisc $dbname ";
-#             $cmd  .= "-a -D -E -m explicit -W $rtsta tmp_gap_$sta\_$$.wfdisc $dbname ";
-        
-            if  (! $opt_n && ($nrows > 0) ) {
-                elog_notify( "$cmd" ) ;        
-                $problem_check = $problems ;
-                $problems = run($cmd,$problems) ;
-                if ( $problem_check != $problems ) {
-                    elog_complain( "\n	Skipping to next station" ) ;
-                    next unless $opt_n ; 
-                }
-            } else {
-                elog_notify( "skipping $cmd" ) ;
+            ( $success, @output )  = &run_cmd( $cmd );
+            if ( ! $success ) {
+                $problems++ ;
+                elog_complain( "\n	Skipping to next station" ) ;
+                next unless $opt_n ; 
             }
-        
-        }
+            @output = () ;
+        } 
+
+#         if ( $nrows > 0 || $opt_n ) {
+#             
+#             $cmd  = "trexcerpt ";
+#             $cmd  .= "-v  " if $opt_V;
+#             $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta tmp_gap_$sta\_$$.wfdisc $dbname ";
+#         
+#             if  (! $opt_n && ($nrows > 0) ) {
+#                 elog_notify( "$cmd" ) ;        
+#                 $problem_check = $problems ;
+#                 $problems = run($cmd,$problems) ;
+#                 if ( $problem_check != $problems ) {
+#                     elog_complain( "\n	Skipping to next station" ) ;
+#                     next unless $opt_n ; 
+#                 }
+#             } else {
+#                 elog_notify( "skipping $cmd" ) ;
+#             }
+#         
+#         }
         
         unlink( "tmp_gap_$sta\_$$.wfdisc" ) unless $opt_V ;
         unlink( "tmp_gap_$sta\_$$.lastid" ) unless $opt_V ;
@@ -381,21 +323,30 @@
         $cmd  .= "-n " if $opt_n ;
         $cmd  .= "-X $orbname $dbname" if ($orbsize >= $dbsize) ;
         $cmd  .= "-c $orbclient $orbname $dbname" if ($orbsize < $dbsize) ;
-        $cmd  .= " > /tmp/tmp_obsip2orb\_$sta\_$$ 2>&1 " ;
-        
-        if  (! $opt_n ) {
-            elog_notify( "$cmd" ) ;
-            $problem_check = $problems ;
-            $problems      = run( $cmd, $problems ) ;
-            
-            if ( $problem_check != $problems ) {
-                $subject = "Problems - $pgm $host	obsip2orb $sta" ;
-                &sendmail($subject, $opt_m) if $opt_m ; 
-                elog_die("\n$subject") ;
-            }
-        } else {
-            elog_notify( "skipping $cmd" ) ;
+#         $cmd  .= " > /tmp/tmp_obsip2orb\_$sta\_$$ 2>&1 " ;
+ 
+        ( $success, @output )  = &run_cmd( $cmd );
+        if ( ! $success ) {
+            $problems++ ;
+            $subject = "Problems - $pgm $host	obsip2orb $sta" ;
+            &sendmail($subject, $opt_m) if $opt_m ; 
+            elog_die("\n$subject") ;
         }
+        @output = () ;
+
+#         if  (! $opt_n ) {
+#             elog_notify( "$cmd" ) ;
+#             $problem_check = $problems ;
+#             $problems      = run( $cmd, $problems ) ;
+#             
+#             if ( $problem_check != $problems ) {
+#                 $subject = "Problems - $pgm $host	obsip2orb $sta" ;
+#                 &sendmail($subject, $opt_m) if $opt_m ; 
+#                 elog_die("\n$subject") ;
+#             }
+#         } else {
+#             elog_notify( "skipping $cmd" ) ;
+#         }
         
                  
 #
@@ -488,18 +439,28 @@
 #  Send data to export orb
 #
             $cmd = "miniseed2orb -p miniseed2orb_sta_final -u $mseedfile $orbname";
-            if  (! $opt_n ) {
-                elog_notify( "$cmd" ) ;
-                $problem_check = $problems ;
-                $problems      = run( $cmd, $problems ) ;
-                if ( $problem_check != $problems ) {
-                    $subject = "Problems - $pgm $host	miniseed2orb $mseedfile" ;
-                    &sendmail($subject, $opt_m) if $opt_m ; 
-                    elog_die("\n$subject") ;
-                }
-            } else {
-                elog_notify("skipping $cmd") ;
+            
+            ( $success, @output )  = &run_cmd( $cmd );
+            if ( ! $success ) {
+                $problems++ ;
+                $subject = "Problems - $pgm $host	miniseed2orb $mseedfile" ;
+                &sendmail($subject, $opt_m) if $opt_m ; 
+                elog_die("\n$subject") ;
             }
+            @output = () ;
+            
+#             if  (! $opt_n ) {
+#                 elog_notify( "$cmd" ) ;
+#                 $problem_check = $problems ;
+#                 $problems      = run( $cmd, $problems ) ;
+#                 if ( $problem_check != $problems ) {
+#                     $subject = "Problems - $pgm $host	miniseed2orb $mseedfile" ;
+#                     &sendmail($subject, $opt_m) if $opt_m ; 
+#                     elog_die("\n$subject") ;
+#                 }
+#             } else {
+#                 elog_notify("skipping $cmd") ;
+#             }
 
             $st3 = epoch2str( now(), "%Y,%j" ) ;
             print SYNC "$net|$sta||$chan|$st1|$st2||||||||||$st3\n" ;
@@ -512,31 +473,53 @@
 #
     
         $cmd = "db2sync -h $dbname sync/$sync_dfile" ;
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        @output = () ;
+        sleep 5 ;
 
-        if  ( ! $opt_n ) {
-            elog_notify( "$cmd" ) ;        
-            $problems = run( $cmd, $problems ) ;
-            sleep 5 ;
-        } else {
-            elog_notify( "skipping $cmd" ) ;
-        } 
+#         if  ( ! $opt_n ) {
+#             elog_notify( "$cmd" ) ;        
+#             $problems = run( $cmd, $problems ) ;
+#             sleep 5 ;
+#         } else {
+#             elog_notify( "skipping $cmd" ) ;
+#         } 
         
         $cmd = "cat  sync/tmp_sync >> sync/$sync_dfile" ;
+        
+        if ( ! -e "sync/$sync_dfile" ) {
+            elog_complain( "sync/$sync_dfile does not exist!" ) ;
+            elog_complain( "$cmd	will fail!" ) ;
+            $problems++ ;
+            $subject = "Problems - $pgm $host	$problems problems" ;
+            &sendmail( $subject, $opt_m ) if $opt_m ; 
+            elog_die( "\n$subject" ) ;
+        }
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        @output = () ;
 
-        if  ( ! $opt_n ) {
-            if ( ! -e "sync/$sync_dfile" ) {
-                elog_complain( "sync/$sync_dfile does not exist!" ) ;
-                elog_complain( "$cmd	will fail!" ) ;
-                $problems++ ;
-                $subject = "Problems - $pgm $host	$problems problems" ;
-                &sendmail( $subject, $opt_m ) if $opt_m ; 
-                elog_die( "\n$subject" ) ;
-            }
-            elog_notify( "$cmd" ) ;        
-            $problems = run( $cmd, $problems ) ;
-        } else {
-            elog_notify( "skipping $cmd" ) ;
-        } 
+#         if  ( ! $opt_n ) {
+#             if ( ! -e "sync/$sync_dfile" ) {
+#                 elog_complain( "sync/$sync_dfile does not exist!" ) ;
+#                 elog_complain( "$cmd	will fail!" ) ;
+#                 $problems++ ;
+#                 $subject = "Problems - $pgm $host	$problems problems" ;
+#                 &sendmail( $subject, $opt_m ) if $opt_m ; 
+#                 elog_die( "\n$subject" ) ;
+#             }
+#             elog_notify( "$cmd" ) ;        
+#             $problems = run( $cmd, $problems ) ;
+#         } else {
+#             elog_notify( "skipping $cmd" ) ;
+#         } 
 
 
     
@@ -583,65 +566,24 @@
         }
                 
         close( DEP );
-#         
-# #
-# #  Verify start and end times in deployment table
-# #
-#         @dbdeploy    = dbsubset( @dbdeployment, "sta=~/$sta/" ) ;
-#         $dbdeploy[3] = 0 ;
-#         ( $time, $endtime, $equip_install, $equip_remove ) = 
-#                                 dbgetv( @dbdeploy, "time", "endtime", "equip_install", "equip_remove" ) ;
-#                                 
-#         $dep = 0 ;
-#         open( DEP, "> /tmp/deploy" ) ;
-#         if ( $mintime < $time ) {
-#             $st1 = strydtime( $mintime ) ;
-#             $st2 = strydtime( $time );
-#             $line =  "Deployment table time field may need changing " ;
-#             $line .= "-	$sta db time $st2	new suggested time $st1" ;
-#             print DEP "$line\n" ;
-#             elog_notify( $line ) ;
-#             $dep++ ;
-#         }
-#         if ( $mintime < $equip_install ) {
-#             $st1 = strydtime( $mintime ) ;
-#             $st2 = strydtime( $time ) ;
-#             $line = "Deployment table equip_install field may need changing " ;
-#             $line .= "-	$sta db equip_install $st2	new suggested equip_install $st1" ;
-#             print DEP "$line\n" ;
-#             elog_notify( $line ) ;
-#             $dep++ ;
-#         }
-#         if ( $maxtime > $endtime ) {
-#             $st1 = strydtime( $maxtime );
-#             $st2 = strydtime( $endtime );
-#             $line = "Deployment table endtime field may need changing " ;
-#             $line .= "-	$sta db endtime $st2	new suggested endtime $st1" ; 
-#             print DEP "$line\n" ; 
-#             elog_notify( $line ) ;
-#             $dep++ ;
-#         }
-#         if ( $maxtime > $equip_remove ) {
-#             $st1 = strydtime( $maxtime ) ;
-#             $st2 = strydtime( $equip_remove ) ;
-#             $line = "Deployment table equip_remove field may need changing " ;
-#             $line = "-	$sta db equip_remove $st2	new suggested equip_remove $st1" ;
-#             print DEP "$line\n" ;
-#             elog_notify( $line );
-#             $dep++;
-#         }
-#                 
-#         close( DEP );
-        
+
         $subject = "ANF TA Deployment table change - $sta" ;
         $cmd     = "rtmail -C -s '$subject' $pf{deploy_mail} < /tmp/deploy" ;
         
-        if  ( ! $opt_n ) {
-            elog_notify( "$cmd" ) if $dep ;        
-            $problems = run( $cmd, $problems ) if $dep ;
-        } else {
-            elog_notify( "skipping $cmd" ) if $dep ;
-        } 
+        if  ( $dep ) {
+            ( $success, @output )  = &run_cmd( $cmd );
+            if ( ! $success ) {
+                $problems++ ;
+            }
+            @output = () ;
+        }
+
+#         if  ( ! $opt_n ) {
+#             elog_notify( "$cmd" ) if $dep ;        
+#             $problems = run( $cmd, $problems ) if $dep ;
+#         } else {
+#             elog_notify( "skipping $cmd" ) if $dep ;
+#         } 
  
 #
 #  wait until orblag value become acceptable
@@ -680,9 +622,15 @@
         elog_notify( "pffiles	@pffiles" ) ;
         unlink( "orbxfer2.pf" ) if ( -e "orbxfer2.pf" ) ;
         $cmd = "pfcp -d orbxfer2 ." ;
-        elog_notify( "$cmd" ) ;        
-        $problems = run( $cmd, $problems ) ;
-#        system( $cmd ) ;
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        @output = () ;
+
+#         elog_notify( "$cmd" ) ;        
+#         $problems = run( $cmd, $problems ) ;
 
         open(  OXF, ">>orbxfer2.pf" ) ;
         print  OXF  "wait_match \n" ;
@@ -690,23 +638,43 @@
         elog_notify( "running in expert mode - no wait_match " ) ;
 
         $cmd = "orbxfer2 -N sync sync/$sync_dfile  $orbname" ;
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        @output = () ;
+        
+        unless ( $nsync ) {
+            ( $success, @output )  = &run_cmd( $cmd );
+            if ( ! $success ) {
+                $problems++ ;
+            }
+            @output = () ;
+        }
 
-        if  ( ! $opt_n ) {
-            elog_notify( "$cmd" ) ;        
-            $problems = run( $cmd, $problems ) ;
-            $problems = run( $cmd, $problems ) unless $nsync ;            
-        } else {
-            elog_notify( "skipping $cmd" ) ;
-        } 
+#         if  ( ! $opt_n ) {
+#             elog_notify( "$cmd" ) ;        
+#             $problems = run( $cmd, $problems ) ;
+#             $problems = run( $cmd, $problems ) unless $nsync ;            
+#         } else {
+#             elog_notify( "skipping $cmd" ) ;
+#         } 
             
         $cmd = "mv sync/$sync_dfile $sync_file" ;
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        @output = () ;
 
-        if  ( ! $opt_n ) {
-            elog_notify( "$cmd" );        
-            $problems = run( $cmd, $problems ) ;
-        } else {
-            elog_notify( "skipping $cmd" ) ;
-        } 
+#         if  ( ! $opt_n ) {
+#             elog_notify( "$cmd" );        
+#             $problems = run( $cmd, $problems ) ;
+#         } else {
+#             elog_notify( "skipping $cmd" ) ;
+#         } 
 
         @dbops         = dbopen($pf{dbops},"r+");
         @dbdmcfiles    = dblookup(@dbops,0,"dmcfiles",0,0);
@@ -720,12 +688,21 @@
         
         $subject = "$pgm $host	$sta transmission completed" ;
         $cmd     = "rtmail -s '$subject' $opt_m < /tmp/sta" ;
-        if  ( ! $opt_n && $opt_m) {
-            elog_notify( "$cmd" ) ;        
-            $problems = run( $cmd, $problems ) ;
-        } else {
-            elog_notify( "skipping $cmd" ) if $opt_m ;
-        } 
+        
+        if  ( $opt_m ) {
+            ( $success, @output )  = &run_cmd( $cmd );
+            if ( ! $success ) {
+                $problems++ ;
+            }
+            @output = () ;
+        }
+
+#         if  ( ! $opt_n && $opt_m) {
+#             elog_notify( "$cmd" ) ;        
+#             $problems = run( $cmd, $problems ) ;
+#         } else {
+#             elog_notify( "skipping $cmd" ) if $opt_m ;
+#         } 
 
         unlink ( "sync/tmp_sync" )                unless $opt_V ;
         unlink ( "miniseed2orb_sta_final.pf" )    unless $opt_V ;
@@ -839,7 +816,8 @@ sub orbcheck { # ( $orbsize, $problems ) = orbcheck( $orb, $orbname, $orbclient,
 
 sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
     my ( $orbname, $problems ) = @_ ;
-    my ( $cmd );
+    my ( $cmd, $success );
+    my ( @output );
     
     unlink "/tmp/JUNK.mseed"      if ( -e "/tmp/JUNK.mseed" ) ;
     unlink "JUNK.lastid"          if ( -e "JUNK.lastid" ) ;
@@ -848,9 +826,15 @@ sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
     unlink "miniseed2orb_JUNK.pf" if ( -e "miniseed2orb_JUNK.pf" ) ;
 
     $cmd = "trsignal -d sd -r 40 -s JUNK -w /tmp/JUNK.mseed JUNK";
+        
+    ( $success, @output )  = &run_cmd( $cmd );
+    if ( ! $success ) {
+        $problems++ ;
+    }
+    @output = () ;
     
-    elog_notify( $cmd ) if $opt_v ;        
-    $problems = run( $cmd, $problems ) ;
+#     elog_notify( $cmd ) if $opt_v ;        
+#     $problems = run( $cmd, $problems ) ;
         
     unlink "JUNK.lastid" ;
     unlink "JUNK.wfdisc" ;
@@ -861,28 +845,52 @@ sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
     print  PF "\}\n" ;
     close( PF ) ;
 
-    $cmd = "fix_miniseed -p JUNK /tmp/JUNK.mseed > /tmp/fix_miniseed_$$ 2>&1 " ;
-    elog_notify( $cmd) if $opt_v ;        
-    $problems = run( $cmd, $problems ) ;
+#     $cmd = "fix_miniseed -p JUNK /tmp/JUNK.mseed > /tmp/fix_miniseed_$$ 2>&1 " ;
+    $cmd = "fix_miniseed -p JUNK /tmp/JUNK.mseed " ;
+        
+    ( $success, @output )  = &run_cmd( $cmd );
+    if ( ! $success ) {
+        $problems++ ;
+    }
+    @output = () ;
+
+#     elog_notify( $cmd) if $opt_v ;        
+#     $problems = run( $cmd, $problems ) ;
     unlink "JUNK.pf" ;
     
-    $cmd = "pfcp miniseed2orb miniseed2orb_JUNK > /tmp/pfcp_JUNK_$$ 2>&1 " ;
-    elog_notify( $cmd ) if $opt_v ;        
-    $problems = run( $cmd, $problems ) ;
+#     $cmd = "pfcp miniseed2orb miniseed2orb_JUNK > /tmp/pfcp_JUNK_$$ 2>&1 " ;
+    $cmd = "pfcp miniseed2orb miniseed2orb_JUNK " ;
+        
+    ( $success, @output )  = &run_cmd( $cmd );
+    if ( ! $success ) {
+        $problems++ ;
+    }
+    @output = () ;
+
+#     elog_notify( $cmd ) if $opt_v ;        
+#     $problems = run( $cmd, $problems ) ;
         
     open(  MS, ">>miniseed2orb_JUNK.pf") ;
     print  MS  "wait_match \n" ;
     close( MS ) ;
             
-    $cmd = "miniseed2orb -p miniseed2orb_JUNK -u /tmp/JUNK.mseed $orbname > /tmp/miniseed2orb_JUNK_$$ 2>&1" ;
-    elog_notify( $cmd ) if $opt_v ;        
-    $problems = run($cmd,$problems) ;
+#     $cmd = "miniseed2orb -p miniseed2orb_JUNK -u /tmp/JUNK.mseed $orbname > /tmp/miniseed2orb_JUNK_$$ 2>&1" ;
+    $cmd = "miniseed2orb -p miniseed2orb_JUNK -u /tmp/JUNK.mseed $orbname " ;
+        
+    ( $success, @output )  = &run_cmd( $cmd );
+    if ( ! $success ) {
+        $problems++ ;
+    }
+    @output = () ;
+
+#     elog_notify( $cmd ) if $opt_v ;        
+#     $problems = run($cmd,$problems) ;
         
     unlink "/tmp/JUNK.mseed" ;
     unlink "miniseed2orb_JUNK.pf" ;
-    unlink "/tmp/fix_miniseed_$$" ;
-    unlink "/tmp/pfcp_JUNK_$$" ;
-    unlink "/tmp/miniseed2orb_JUNK_$$" ;
+#     unlink "/tmp/fix_miniseed_$$" ;
+#     unlink "/tmp/pfcp_JUNK_$$" ;
+#     unlink "/tmp/miniseed2orb_JUNK_$$" ;
 
     return( $problems ) ;
 }
@@ -943,8 +951,6 @@ sub dbops { #  ( $problems, %sta ) = &dbops( $problems, %pf ) ;
         $sync_dir   = "$pf{sync_dir}\/$year";
         $sync_dfile = "$sta\_final.sync";
         $sync_file  = "$sync_dir/$sync_dfile";
-#         elog_notify( "dirname	$sta{$sta}{dirname}	dbname	$sta{$sta}{dbname}" ) if $opt_V;
-#         elog_notify( "	synch_dir	$sta{$sta}{sync_dir}	sync_dfile	$sta{$sta}{sync_dfile}	sync_file	$sta{$sta}{sync_file}" ) if $opt_V;
 
 #
 #  verify sync file does not exist
