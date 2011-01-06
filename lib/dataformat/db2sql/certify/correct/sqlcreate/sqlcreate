@@ -1686,15 +1686,15 @@ Conversion results:
   `dir`         CHAR(64) DEFAULT '-',
   `status`      CHAR(15) DEFAULT '-',
   `attempts`    INTEGER(4) DEFAULT 0,
-  `mseeddb`     CHAR(1) DEFAULT '-',
-  `bandwidth`   DECIMAL(6,1) DEFAULT -,
+  `msdtime`     DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `bandwidth`   DECIMAL(6,1) DEFAULT 0.0,
   `filebytes`   INTEGER(10) DEFAULT -1,
   `media`       CHAR(15) DEFAULT '-',
   `fixed`       CHAR(1) DEFAULT '-',
-  `avoid`       CHAR(1) DEFAULT '-',
-  `replace`     CHAR(1) DEFAULT '-',
+  `md5`         CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
   `syncstring`  CHAR(40) DEFAULT '-',
-  PRIMARY KEY (`dlsta`, `dfile`)
+  PRIMARY KEY (`dlsta`, `dfile`, `status`, `time`)
   );
 
 	 96 CREATE TABLE `sclink`

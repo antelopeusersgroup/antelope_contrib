@@ -7,3 +7,4 @@ sqlcreate   1270593700.00000 raptor     kent       Darwin/4.1 fix syncstring spa
 sqlcreate   1274582235.00000 raptor     kent       Darwin/5.0 New gclfield and gclgrid schema tables in Antelope 5.0-64      1274582236
 sqlinsert   1274583163.00000 raptor     kent       Darwin/5.0 Change to local demo database                                  1274583163
 sqlcreate   1277849951.00000 raptor     kent       Darwin/4.1 Changed some primary keys and defaults                         1277849952
+sqlcreate   1294350948.00000 raptor     kent       Darwin/5.0 Account for changes to rsyncbaler table                        1294350949
