@@ -50,6 +50,7 @@ main(int argc, char **argv )
 {
 	Dbptr	db;
 	char	dbname[FILENAME_MAX];
+	char	command[STRSZ];
 	Hook	*dbmon_hook = NULL;
 	Tbl	*tables = (Tbl *) NULL; 
 
@@ -70,7 +71,8 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Adding new arrival table:\n" );
 
-	system( "cp data/mod.new.demo.arrival results/dbmon/demo.arrival" );
+	sprintf( command, "cp data/mod.new.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
 
 	sleep( 1 );
 
@@ -78,7 +80,8 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Shortening arrival table:\n" );
 
-	system( "cp data/mod.shorter.demo.arrival results/dbmon/demo.arrival" );
+	sprintf( command, "cp data/mod.shorter.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
 
 	sleep( 1 );
 
@@ -86,7 +89,8 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Lengthening arrival table:\n" );
 
-	system( "cp data/mod.longer.demo.arrival results/dbmon/demo.arrival" );
+	sprintf( command, "cp data/mod.longer.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
 
 	sleep( 1 );
 
