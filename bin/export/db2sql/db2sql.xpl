@@ -44,10 +44,18 @@
 
 require "getopts.pl";
 
+use strict;
+
 use DBI;
 use Datascope;
 use Datascope::db2sql;
 use Datascope::dbmon;
+
+our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
+
+our( $datascope_dbname, $sql_dbname );
+our( $refresh_interval_sec, $schema_create_errors_nonfatal, @table_subset );
+our( $dbh, $hookname );
 
 sub inform {
 	my( $msg ) = @_;
@@ -86,52 +94,52 @@ sub sqldb_is_present {
 sub init_sql_database {
 	my( $dbh, $sqldbname, $rebuild, @db ) = @_;
 
-	if( sqldb_is_present( $dbh, $sql_dbname ) ) {
+	if( sqldb_is_present( $dbh, $sqldbname ) ) {
 
 		if( ! $rebuild ) {
 
-			$cmd = "USE $sql_dbname;";
+			my( $cmd ) = "USE $sqldbname;";
 
 			Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 			unless( $dbh->do( $cmd ) ) {
 
-				elog_die( "Failed to switch to database '$sql_dbname'. Bye.\n" );
+				elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
 			}
 
 			return;
 
 		} else {
 
-			inform( "Database '$sql_dbname' already exists. Dropping '$sql_dbname'\n" );
+			inform( "Database '$sqldbname' already exists. Dropping '$sqldbname'\n" );
 
-			$cmd = "DROP DATABASE $sql_dbname;";
+			my( $cmd ) = "DROP DATABASE $sqldbname;";
 
 			Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 			unless( $dbh->do( $cmd ) ) {
 
-				elog_die( "Failed to drop pre-existing database '$sql_dbname'. Bye.\n" );
+				elog_die( "Failed to drop pre-existing database '$sqldbname'. Bye.\n" );
 			}
 		}
 	}
 
-	$cmd = "CREATE DATABASE $sql_dbname;";
+	my( $cmd ) = "CREATE DATABASE $sqldbname;";
 
 	Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_die( "Failed to create database '$sql_dbname'. Bye.\n" );
+		elog_die( "Failed to create database '$sqldbname'. Bye.\n" );
 	}
 
-	$cmd = "USE $sql_dbname;";
+	$cmd = "USE $sqldbname;";
 
 	Inform( "Executing SQL Command:\n$cmd\n\n" );
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_die( "Failed to switch to database '$sql_dbname'. Bye.\n" );
+		elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
 	}
 
 	foreach $cmd ( sql_create_commands( @db, @table_subset ) ) {
@@ -142,11 +150,11 @@ sub init_sql_database {
 
 			if( $schema_create_errors_nonfatal ) {
 
-				elog_complain( "Table creation failed for '$sql_dbname' using command\n\n$cmd\n\nContinuing.\n\n" );
+				elog_complain( "Table creation failed for '$sqldbname' using command\n\n$cmd\n\nContinuing.\n\n" );
 
 			} else {
 
-				elog_die( "Table creation failed for '$sql_dbname' using command\n\n$cmd\n\nBye.\n\n" );
+				elog_die( "Table creation failed for '$sqldbname' using command\n\n$cmd\n\nBye.\n\n" );
 			}
 		}
 	}
@@ -158,7 +166,7 @@ sub sql_create_commands {
 	my( @db ) = splice( @_, 0, 4 );
 	my( @table_subset ) = @_;
 
-	my( @cmds );
+	my( @cmds, $table );
 
 	if( @table_subset > 0 ) {
 
@@ -181,7 +189,7 @@ sub sql_insert_commands {
 	my( @db ) = splice( @_, 0, 4 );
 	my( @table_subset ) = @_;
 
-	my( @cmds );
+	my( @cmds, $table );
 
 	if( @table_subset > 0 ) {
 
@@ -251,11 +259,9 @@ my( $path, $Program_name ) = parsepath( $0 );
 
 elog_init( $Program_name, @ARGV );
 
-our( $opt_l, $opt_n, $opt_p, $opt_r );
-
 our( $Pf ) = "db2sql";
 
-$Usage = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
+our( $Usage ) = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
 
 if( ! Getopts( '1lp:rvV' ) ) { 
 
@@ -291,11 +297,11 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
-@db = dbopen_database( $datascope_dbname, "r" );
+our( @db ) = dbopen_database( $datascope_dbname, "r" );
 
 if( $db[0] < 0 ) {
 
-	elog_die( "Failed to open database '$dbname' for reading. Bye.\n" );
+	elog_die( "Failed to open database '$datascope_dbname' for reading. Bye.\n" );
 }
 
 if( $db[1] >= 0 ) {
