@@ -1,2 +1,4 @@
 sqlcreate
 sqlinsert
+sqldelete
+syncfield
