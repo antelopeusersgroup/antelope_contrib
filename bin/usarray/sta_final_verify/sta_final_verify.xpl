@@ -19,10 +19,10 @@
 
     my ( $Pf, $chan, $chantmp, $cmd, $dbname, $debug, $decert_time, $dep, $dirname, $endtime ) ;
     my ( $equip_install, $equip_remove, $line, $maxtime, $mintime, $nrows, $prob, $problems ) ;
-    my ( $ptmp, $row, $st1, $st2, $sta, $statmp, $stime, $subject, $subset, $table, $time ) ;
+    my ( $ptmp, $row, $st1, $st2, $sta, $statmp, $stime, $subject, $subset, $success, $table, $time ) ;
     my ( $totdays, $usage, $verbose );
     my ( @db, @dbbh, @dbcd, @dbchanperf, @dbdeploy, @dbdeptmp, @dbdmcfiles, @dbops, @dbschan ) ;
-    my ( @dbscrdmc, @dbtmp, @dbwf, @dbwfdisc );
+    my ( @dbscrdmc, @dbtmp, @dbwf, @dbwfdisc, @output );
     my ( %pf, %staperf );
 
     $pgm = $0 ; 
@@ -51,7 +51,7 @@
     $verbose    = $opt_v;
     $debug      = $opt_V;
     
-    %pf = getparam( $Pf, $verbose, $debug );
+    %pf = getparam( $Pf );
 
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -265,12 +265,20 @@
         $subject = "ANF TA Deployment table change - $sta";
         $cmd     = "rtmail -C -s '$subject' $pf{deploy_mail} < /tmp/deploy_$sta\_$$";
         
-        if  ( ! $opt_n ) {
-            elog_notify("\n$cmd") if ($dep  && $opt_v);        
-            $problems = run($cmd,$problems) if $dep ;
-        } else {
-            elog_notify("\nskipping $cmd") if $dep ;
-        } 
+#         if  ( ! $opt_n ) {
+#             elog_notify("\n$cmd") if ($dep  && $opt_v);        
+#             $problems = run($cmd,$problems) if $dep ;
+#         } else {
+#             elog_notify("\nskipping $cmd") if $dep ;
+#         }
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ;
  
 #
 #  evaluate data return
@@ -360,12 +368,20 @@
         $subject = "TA $sta baler data problem";
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
         
-        if  ( ! $opt_n ) {
-            elog_notify("\n$cmd") if ($prob && $opt_v) ;        
-            $problems = run($cmd,$problems) if $prob ;
-        } else {
-            elog_notify("\nskipping $cmd") if $prob ;
-        } 
+#         if  ( ! $opt_n ) {
+#             elog_notify("\n$cmd") if ($prob && $opt_v) ;        
+#             $problems = run($cmd,$problems) if $prob ;
+#         } else {
+#             elog_notify("\nskipping $cmd") if $prob ;
+#         } 
+
+        ( $success, @output )  = &run_cmd( $cmd );
+
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ;
 
         unlink "/tmp/$sta\_return_$$" unless $opt_V;
         unlink "/tmp/tmp_miniseed2db\_$$" unless $opt_V;
@@ -375,8 +391,16 @@
         if ($prob) {
             makedir($pf{purgatory});
             $cmd = "mv $dirname $pf{purgatory}";
-            elog_notify("\n$cmd");        
-            $problems = run($cmd,$problems);
+#             elog_notify("\n$cmd");        
+#             $problems = run($cmd,$problems);
+
+            ( $success, @output )  = &run_cmd( $cmd );
+
+            if ( ! $success ) {
+                $problems++ ;
+            }
+        
+            @output = () ;
         }
         %staperf = ();        
     }

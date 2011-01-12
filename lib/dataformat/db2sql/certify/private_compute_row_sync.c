@@ -86,7 +86,7 @@ digest2hex( unsigned char *digest )
 char *
 private_compute_row_sync( Dbptr db )
 {
-	unsigned int record_size;
+	unsigned long record_size;
 	unsigned char digest[20];
 	char	*sync = (char *) NULL;
 	char	*row = (char *) NULL;

@@ -75,9 +75,9 @@ find_longest( void *s, void *longest )
 static int
 dbfield_isnull( Dbptr db )
 {
-	char	*fnull;
+	char	*fnull = NULL;
 	long	fsize;
-	char	*stringval;
+	char	*stringval = NULL;
 	int	isnull = 0;
 
 	dbquery( db, dbFIELD_SIZE, &fsize );
@@ -97,6 +97,8 @@ dbfield_isnull( Dbptr db )
 
 		isnull = 0;
 	}
+
+	free( stringval );
 
 	return isnull;
 }

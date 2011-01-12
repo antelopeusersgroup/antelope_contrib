@@ -53,8 +53,8 @@ typedef struct Dbtrack {
 	char	dbname[FILENAME_MAX];
 	Dbptr	db;
 	Arr	*tables;
-	void 	(*newrow)(Dbptr, char *, char *, void *);
-	void 	(*changerow)(char *, Dbptr, char *, char *, void *);
+	void 	(*newrow)(Dbptr, char *, long, char *, void *);
+	void 	(*changerow)(char *, Dbptr, char *, long, char *, void *);
 	void 	(*delrow)(Dbptr, char *, char *, void *);
 } Dbtrack;
 
@@ -111,7 +111,7 @@ digest2hex( unsigned char *digest )
 char *
 dbmon_compute_row_sync( Dbptr db )
 {
-	unsigned int record_size;
+	unsigned long record_size;
 	unsigned char digest[20];
 	char	*sync = (char *) NULL;
 	char	*row = (char *) NULL;
@@ -271,8 +271,8 @@ focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
 
 Hook *
 dbmon_init( Dbptr db, Tbl *table_subset, 
-	    void (*newrow)(Dbptr, char *, char *, void *), 
-	    void (*changerow)(char *, Dbptr, char *, char *, void *), 
+	    void (*newrow)(Dbptr, char *, long, char *, void *), 
+	    void (*changerow)(char *, Dbptr, char *, long, char *, void *), 
 	    void (*delrow)(Dbptr, char *, char *, void *), 
 	    int flags )
 {
@@ -301,10 +301,12 @@ dbmon_update( Hook *dbmon_hook, void *private )
 	Tabletrack *ttr;
 	Tbl	*keys;
 	Dbptr	db;
+	Dbptr	dbscratch;
 	Dbvalue val;
 	int	ikey;
 	int	isync;
 	int	retcode = 0;
+	long	irecord = 0;
 	long	new_nrecs = 0;
 	char	*sync;
 	char	*oldsync;
@@ -338,16 +340,22 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			db = ttr->db;
 
-			for( db.record = 0; db.record < new_nrecs; db.record++ ) {
+			dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
 
-				sync = dbmon_compute_row_sync( db );
+			for( irecord = 0; irecord < new_nrecs; irecord++ ) {
 
-				if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+				db.record = irecord;
 
-					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+				dbget( db, NULL );
+
+				sync = dbmon_compute_row_sync( dbscratch );
+
+				if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
+
+					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
 				}
 
-				dbtr->newrow( db, ttr->table_name, sync, private );	
+				dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
 			}
 
 		} else if( ttr->table_nrecs > 0 && new_nrecs <= 0 ) { 			/* Table disappeared */
@@ -370,6 +378,8 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			db = ttr->db;
 
+			dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
+
 			for( isync = 0; isync < maxtbl( ttr->syncs ); isync++ ) {
 
 				sync = (char *) gettbl( ttr->syncs, isync );
@@ -379,18 +389,22 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			trunctbl( ttr->syncs, 0, free );
 
-			/* Attempt to prevent bus error from reading past end of table that may still be shortening: */
+			/* Use dbquery in attempt to prevent bus error from reading past end of table that may still be shortening: */
 
-			for( db.record = 0; db.record < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); db.record++ ) {
+			for( irecord = 0; irecord < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); irecord++ ) {
 
-				sync = dbmon_compute_row_sync( db );
+				db.record = irecord;
 
-				if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+				dbget( db, NULL );
 
-					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+				sync = dbmon_compute_row_sync( dbscratch );
+
+				if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
+
+					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
 				}
 
-				dbtr->newrow( db, ttr->table_name, sync, private );	
+				dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
 			}
 
 		} else if( new_nrecs >= ttr->table_nrecs && 
@@ -398,20 +412,26 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			db = ttr->db;
 
-			for( db.record = 0; db.record < ttr->table_nrecs; db.record++ ) {
+			dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
 
-				oldsync = (char *) gettbl( ttr->syncs, db.record );
+			for( irecord = 0; irecord < ttr->table_nrecs; irecord++ ) {
 
-				sync = dbmon_compute_row_sync( db );
+				db.record = irecord;
+
+				oldsync = (char *) gettbl( ttr->syncs, irecord );
+
+				dbget( db, NULL );
+
+				sync = dbmon_compute_row_sync( dbscratch );
 
 				if( oldsync == (char *) NULL ) {			/* new row */
 
-					if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+					if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
 
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
 					}
 
-					dbtr->newrow( db, ttr->table_name, sync, private );	
+					dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
 
 				} else if( ! strcmp( oldsync, sync ) ) {		/* same row */
 
@@ -421,20 +441,20 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 					dbtr->delrow( db, ttr->table_name, oldsync, private );
 
-					if( settbl( ttr->syncs, db.record, strdup( ttr->null_sync ) ) != db.record ) {
+					if( settbl( ttr->syncs, irecord, strdup( ttr->null_sync ) ) != irecord ) {
 
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
 					}
 
 					free( oldsync );
 
 				} else {						/* changed row */
 
-					dbtr->changerow( oldsync, db, ttr->table_name, sync, private );	
+					dbtr->changerow( oldsync, dbscratch, ttr->table_name, irecord, sync, private );	
 
-					if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+					if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
 
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
 					}
 
 					free( oldsync );
@@ -443,18 +463,22 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			if( new_nrecs > ttr->table_nrecs ) {
 
-				for( db.record = ttr->table_nrecs; 
-				      db.record < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); 
-				       db.record++ ) {
+				for( irecord = ttr->table_nrecs; 
+				      irecord < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); 
+				       irecord++ ) {
 
-					sync = dbmon_compute_row_sync( db );
+				       	db.record = irecord;
 
-					if( settbl( ttr->syncs, db.record, sync ) != db.record ) {
+					dbget( db, NULL );
 
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", db.record );
+					sync = dbmon_compute_row_sync( dbscratch );
+
+					if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
+
+						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
 					}
 
-					dbtr->newrow( db, ttr->table_name, sync, private );	
+					dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
 				}
 			}
 

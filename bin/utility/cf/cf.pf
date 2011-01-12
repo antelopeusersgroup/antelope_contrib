@@ -124,6 +124,8 @@ make &Arr{
 	^Run localmake_config
 	^to enable and configure
 	^to configure
+	^Extracted
+	^Manifying
 	^[[:alnum:]_]+\\.[fF]:$
 	^[[:space:]]*MAIN:$
 	^[[:space:]]+MAIN [[:alnum:]_]+:$

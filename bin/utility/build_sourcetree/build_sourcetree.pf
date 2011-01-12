@@ -126,7 +126,7 @@ if ( $?MANPATH ) then
     end
     setenv MANPATH `echo $a | sed 's/ /:/g' ` 
 else
-    setenv MANPATH $__PROJECT__/man:$ANTELOPE/man:$ANTELOPE:h/../$tcltk/man:$ANTELOPE:h/../$perl/man
+    setenv MANPATH $__PROJECT__/man:$ANTELOPE/man:$ANTELOPE/local/man:$ANTELOPE:h/../$tcltk/man:$ANTELOPE:h/../$perl/man
 endif
 
 if ( $?PFPATH ) then
@@ -144,7 +144,7 @@ if ( $?PFPATH ) then
 	setenv PFPATH `echo $p | sed 's/ /:/g' `
     endif
 else
-    setenv PFPATH $ANTELOPE/data/pf:$__PROJECT__/data/pf:.
+    setenv PFPATH $ANTELOPE/data/pf:$ANTELOPE/local/data/pf:$__PROJECT__/data/pf:./pf:.
 endif
 
 if ( $?DATAPATH ) then
@@ -162,7 +162,19 @@ if ( $?DATAPATH ) then
 	setenv DATAPATH `echo $p | sed 's/ /:/g' `
     endif
 else
-    setenv DATAPATH $ANTELOPE/data:$__PROJECT__/data
+    setenv DATAPATH $ANTELOPE/data:$ANTELOPE/local/data:$__PROJECT__/data
+endif
+
+if ( $?SCHEMA_DIR ) then
+    set a=$__PROJECT__/data/schemas
+    foreach i ( `echo $SCHEMA_DIR | sed 's/:/ /g'` )
+        if ( "$i" !~ __BASEDIR__/__project__/* ) then
+            set a=($a $i)
+        endif
+    end
+    setenv SCHEMA_DIR `echo $a | sed 's/ /:/g' ` 
+else
+    setenv SCHEMA_DIR $__PROJECT__/data/schemas:$ANTELOPE/data/schemas:$ANTELOPE/local/data/schemas
 endif
 
 unset a
@@ -205,7 +217,7 @@ if [ "x$MANPATH" != x ] ; then
   MANPATH=$a ; export MANPATH
   unset a
 else
-  MANPATH="$__PROJECT__/man:$ANTELOPE/man:$ANTELOPE/../$tcltk/man:$ANTELOPE/../$perl/man" ; export MANPATH
+  MANPATH="$__PROJECT__/man:$ANTELOPE/man:$ANTELOPE/local/man:$ANTELOPE/../$tcltk/man:$ANTELOPE/../$perl/man" ; export MANPATH
 fi
 
 if [ "x$PFPATH" != x ] ; then
@@ -225,7 +237,7 @@ if [ "x$PFPATH" != x ] ; then
     ;;
   esac
 else
-  PFPATH="$ANTELOPE/data/pf:$__PROJECT__/data/pf:." ; export PFPATH
+  PFPATH="$ANTELOPE/data/pf:$ANTELOPE/local/data/pf:$__PROJECT__/data/pf:./pf:." ; export PFPATH
 fi
 
 if [ "x$DATAPATH" != x ] ; then
@@ -245,7 +257,21 @@ if [ "x$DATAPATH" != x ] ; then
     ;;
   esac
 else
-  DATAPATH="$ANTELOPE/data:$__PROJECT__/data" ; export DATAPATH
+  DATAPATH="$ANTELOPE/data:$ANTELOPE/local/data:$__PROJECT__/data" ; export DATAPATH
+fi
+
+if [ "x$SCHEMA_DIR" != x ] ; then
+  a=$__PROJECT__/data/schemas
+  for i in `echo $SCHEMA_DIR | sed 's/:/ /g'`; do
+    case $i in
+      /opt/__project__/*)  ;;
+      *)                a="$a:$i"
+    esac
+  done
+  SCHEMA_DIR=$a ; export SCHEMA_DIR
+  unset a
+else
+  SCHEMA_DIR="$__PROJECT__/data/schemas:$ANTELOPE/data/schemas:$ANTELOPE/local/data/schemas" ; export SCHEMA_DIR
 fi
 
 unset a

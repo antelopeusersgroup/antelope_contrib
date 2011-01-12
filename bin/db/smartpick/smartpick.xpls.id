@@ -169,6 +169,19 @@ sub ptkalert::position {
     $top->geometry("+$x+$y") ;
 }
 
+sub safe_ptkalert {
+	my( $w, $msg ) = @_;
+
+	if( defined( $w ) ) {
+
+		ptkalert( $w, $msg );
+		
+	} else {
+
+		elog_complain( $msg );
+	}
+}
+
 # Overload to work around taint-check problems:
 sub Tk::FileSelect::reread
 {
@@ -341,7 +354,7 @@ sub finish_pspipe {
 	
 	if( ! -e $State{pspipe_tempfile} || -z $State{pspipe_tempfile} ) {
 
-		ptkalert( $MW, 
+		safe_ptkalert( $MW, 
 			"Dbpick postscript file '$State{pspipe_tempfile}' " . 
 			"is non-existent or empty. Cancelling request." );
 
@@ -701,7 +714,7 @@ sub send_to_dbpick {
 
 	} elsif( ! $silent ) {
 		
-		ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
+		safe_ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
 			"name '$State{appname}'. Is dbpick running?" );
 	}
 }
@@ -719,7 +732,7 @@ sub send_to_dbxcor {
 
 	} elsif( ! $silent ) {
 		
-		ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
+		safe_ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
 			"name '$State{dbxcor_appname}'. Is dbxcor running?" );
 	}
 }
@@ -739,7 +752,7 @@ sub send_to_dbloc {
 
 	} elsif( ! $silent ) {
 		
-		ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
+		safe_ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
 				"name 'dbloc_buttons'. Is dbloc2 running?" );
 
 		return -1;
@@ -825,7 +838,7 @@ sub process_dbxcor_phase {
 
 	if( $State{orid} < 0 ) {
 		
-		ptkalert( $MW, "NULL orid in dbpick" );
+		safe_ptkalert( $MW, "NULL orid in dbpick" );
 
 		return ();
 	}
@@ -860,7 +873,7 @@ sub get_channels_expr {
 
 	if( ! defined( $State{channels} ) ) {
 		
-		ptkalert( $MW, "No channels option-menu defined. " .
+		safe_ptkalert( $MW, "No channels option-menu defined. " .
 			"Defaulting to .* for channels" );
 
 		return ".*";
@@ -884,7 +897,7 @@ sub get_channels_expr {
 
 	if( ! defined( $expr ) ) {
 		
-		ptkalert( $MW, "No channel-expression " .
+		safe_ptkalert( $MW, "No channel-expression " .
 				"'$State{var}->{channels} found in " .
 			        " parameter file. Defaulting to .*" );
 
@@ -924,7 +937,7 @@ sub cts {
 
 	} else {
 
-		ptkalert( $MW, "Unrecognized Units '$State{var}->{cts}' in" .
+		safe_ptkalert( $MW, "Unrecognized Units '$State{var}->{cts}' in" .
 			"parameter file (must be 'Counts' or 'Physical'); " .
 			"Ignoring request" );
 	}
@@ -942,7 +955,7 @@ sub mg {
 
 	} else {
 
-		ptkalert( $MW, "Unrecognized Acceleration units " .
+		safe_ptkalert( $MW, "Unrecognized Acceleration units " .
 			"'$State{var}->{mg}' in parameter file " . 
 			"(must be 'milli_g' or 'nm_per_sec_2'); " .
 			"Ignoring request" );
@@ -961,7 +974,7 @@ sub pal {
 
 	} else {
 
-		ptkalert( $MW, "Unrecognized Waveforms mode " .
+		safe_ptkalert( $MW, "Unrecognized Waveforms mode " .
 			"'$State{var}->{pal}' in parameter file " . 
 			"(must be 'on' or 'off'); " .
 			"Ignoring request" );
@@ -980,7 +993,7 @@ sub sw {
 
 	} else {
 
-		ptkalert( $MW, "Unrecognized Waveforms mode " .
+		safe_ptkalert( $MW, "Unrecognized Waveforms mode " .
 			"'$State{var}->{sw}' in parameter file " . 
 			"(must be 'Show' or 'Hide'); " .
 			"Ignoring request" );
@@ -1046,7 +1059,7 @@ sub init_database {
 	
 				} else {
 		
-					ptkalert( $MW, "Station name '$sta' " .
+					safe_ptkalert( $MW, "Station name '$sta' " .
 					"contains unexpected characters; " .
 					"omitting.\n" );
 				}
@@ -1095,7 +1108,7 @@ sub init_database {
 
 				} else {
 	
-					ptkalert( $MW, "Network name '$net' " .
+					safe_ptkalert( $MW, "Network name '$net' " .
 					"contains unexpected characters; " .
 					"omitting.\n" );
 				}
@@ -1145,7 +1158,7 @@ sub extract_subset {
 
 	if( $State{orid} < 0 ) {
 		
-		ptkalert( $MW, "NULL orid in dbpick" );
+		safe_ptkalert( $MW, "NULL orid in dbpick" );
 
 		return ();
 	}
@@ -1164,7 +1177,7 @@ sub extract_subset {
 
 	if( $nstas <= 0 ) {
 
-		ptkalert( $MW, "No stations matching subset expression" );
+		safe_ptkalert( $MW, "No stations matching subset expression" );
 
 		return ();
 	}
@@ -1187,7 +1200,7 @@ sub extract_net {
 	if( ( ! defined( $State{network_stations}->{$net} ) ) || 
 	    ( scalar( @{$State{network_stations}->{$net}} ) < 1 ) ) {
 
-		ptkalert( $MW, "No stations for network '$net' in " .
+		safe_ptkalert( $MW, "No stations for network '$net' in " .
 			"affiliation table of $State{dbname}" );
 
 		@stas = ();
@@ -1209,7 +1222,7 @@ sub show_group {
 
 	if( ! defined( $State{groups}->{$group} ) ) {
 	
-		ptkalert( $MW, "Can't find group '$group' in parameter-file. " .
+		safe_ptkalert( $MW, "Can't find group '$group' in parameter-file. " .
 			"Ignoring request.\n" );
 
 		return;
@@ -1222,7 +1235,7 @@ sub show_group {
 
 		if( scalar( @stas ) <= 0 ) {
 
-			ptkalert( $MW, "No stations found for network " .
+			safe_ptkalert( $MW, "No stations found for network " .
 				"'$net'. Ignoring request.\n" );
 
 			return; 
@@ -1238,7 +1251,7 @@ sub show_group {
 
 		if( scalar( @stas ) <= 0 ) {
 
-			ptkalert( $MW, "No stations found for subset " .
+			safe_ptkalert( $MW, "No stations found for subset " .
 				"'$subset_expr'. Ignoring request.\n" );
 
 			return; 
@@ -1268,7 +1281,7 @@ sub set_dbpick_tc {
 
 	} else {
 
-		ptkalert( $MW, "Invalid time-correction '$State{tc}'" );
+		safe_ptkalert( $MW, "Invalid time-correction '$State{tc}'" );
 	}
 	
 	send_to_dbpick( "tc $State{tc}" );
@@ -1282,7 +1295,7 @@ sub set_dbpick_cm {
 
 	} else {
 
-		ptkalert( $MW, "Invalid max-traces value '$State{cm}'" );
+		safe_ptkalert( $MW, "Invalid max-traces value '$State{cm}'" );
 	}
 	
 	send_to_dbpick( "cm $State{cm}" );
@@ -1296,7 +1309,7 @@ sub set_dbpick_cw {
 
 	} else {
 
-		ptkalert( $MW, 
+		safe_ptkalert( $MW, 
 			"Invalid choose-waveforms values '$State{cw}': " .
 			"Must be two integer values separated by a space " .
 			"(starting trace number, then number of traces)" );
@@ -1313,7 +1326,7 @@ sub set_dbpick_orid {
 
 	} else {
 
-		ptkalert( $MW, "Invalid orid '$State{orid}'" );
+		safe_ptkalert( $MW, "Invalid orid '$State{orid}'" );
 	}
 	
 	send_to_dbpick( "se $State{orid}" );
@@ -1329,7 +1342,7 @@ sub set_dbpick_ts {
 
 	} else {
 	
-		ptkalert( $MW, "Time string '$State{ts} contains invalid " .
+		safe_ptkalert( $MW, "Time string '$State{ts} contains invalid " .
 			"characters" );
 
 		return;
@@ -1344,7 +1357,7 @@ sub set_dbpick_ts {
 
 	if( $@ ) {
 		
-		ptkalert( $MW, "Time string '$State{ts}' not understood" );
+		safe_ptkalert( $MW, "Time string '$State{ts}' not understood" );
 
 		return;
 	}
@@ -1360,7 +1373,7 @@ sub set_dbpick_tw {
 
 	} else {
 	
-		ptkalert( $MW, "Time string interval State{tw} contains " .
+		safe_ptkalert( $MW, "Time string interval State{tw} contains " .
 			"invalid characters" );
 
 		return;
@@ -1870,7 +1883,7 @@ sub init_special {
 
 	if( $nrecs <= 0 ) {
 
-		ptkalert( $MW, "No rows for view specified by 'dbprocess_special{$oridcomb}'" );
+		safe_ptkalert( $MW, "No rows for view specified by 'dbprocess_special{$oridcomb}'" );
 
 		return -1;
 	}
@@ -1918,7 +1931,7 @@ sub next_special {
 
 	} else {
 
-		ptkalert( $MW, "Already at last origin for special sequence '$oridcomb'" );
+		safe_ptkalert( $MW, "Already at last origin for special sequence '$oridcomb'" );
 
 		$State{"current_index_$oridcomb"} = $#{$State{"oridcomb_$oridcomb"}};
 	}
@@ -1944,7 +1957,7 @@ sub previous_special {
 
 	} else {
 
-		ptkalert( $MW, "Already at first origin for special sequence '$oridcomb'" );
+		safe_ptkalert( $MW, "Already at first origin for special sequence '$oridcomb'" );
 
 		$State{"current_index_$oridcomb"} = 0;
 	}

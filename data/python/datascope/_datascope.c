@@ -1200,11 +1200,15 @@ static PyObject *
 python_dbfind( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbfind(db, expr, first, reverse)\n";
 	Dbptr	db;
-	char	*expr;
+	char	*expr = NULL;
 	int	first;
 	int	reverse = 0;
 	int	flags = 0;
 	long	rc;
+	PyObject *ptype;
+	PyObject *pvalue;
+	PyObject *ptraceback;
+	PyObject *estring;
 
 	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
 
@@ -1217,12 +1221,38 @@ python_dbfind( PyObject *self, PyObject *args ) {
 
 		flags++;
 	} 
-	
+
 	db.record = first;
 
 	rc = dbfind( db, expr, flags, 0 );
 
-	return Py_BuildValue( "i", rc );
+	/* The expression calculator runs the expression through str2epoch() as part of its evaluation 
+	   process, which may fail even if the further compilation process succeeds. This unfortunately 
+	   registers a str2epoch() interpretation error which must be caught lest a thrown exception 
+	   make a successful dbfind call appear to fail. */
+
+	PyErr_Fetch( &ptype, &pvalue, &ptraceback );
+
+	if( ptype == (PyObject *) NULL ) {
+
+		return Py_BuildValue( "i", rc );
+	
+	} else if( ( estring = PyObject_GetAttrString( pvalue, "string" ) ) == (PyObject *) NULL ) {
+
+		PyErr_Restore( ptype, pvalue, ptraceback );
+
+		return NULL;
+
+	} else if( strcontains( PyString_AsString( estring ), "str2epoch", NULL, NULL, NULL ) ) {
+
+		return Py_BuildValue( "i", rc );
+
+	} else {
+
+		PyErr_Restore( ptype, pvalue, ptraceback );
+
+		return NULL;
+	}
 }
 
 static PyObject *
@@ -2951,7 +2981,7 @@ python_trrotate( PyObject *self, PyObject *args ) {
 
 	} else {
 
-		allot( char **, newchan, 1 );
+		allot( char **, newchan, 3 );
 		
 		for( istring = 0; istring < 3; istring++ ) {
 
@@ -3002,7 +3032,7 @@ python_trrotate_to_standard( PyObject *self, PyObject *args ) {
 
 	} else {
 
-		allot( char **, newchan, 1 );
+		allot( char **, newchan, 3 );
 		
 		for( istring = 0; istring < 3; istring++ ) {
 

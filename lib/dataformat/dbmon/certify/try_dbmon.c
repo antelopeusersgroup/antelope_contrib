@@ -4,25 +4,25 @@
 #include "dbmon.h"
 #include "db2sql.h"
 
-void newrow( Dbptr db, char *table, char *sync, void *private );
-void changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private );
+void newrow( Dbptr db, char *table, long irecord, char *sync, void *private );
+void changerow( char *oldsync, Dbptr db, char *table, long irecord, char *sync, void *private );
 void delrow( Dbptr db, char *table, char *sync, void *private );
 
 void
-newrow( Dbptr db, char *table, char *sync, void *private )
+newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 { 
 	char	row[10*STRSZ];
 	FILE	*fp = (FILE *) private;
 
 	dbget( db, row );
 	
-	fprintf( fp, "New Row %ld in '%s' [sync '%s']: %s\n", db.record, table, sync, row );
+	fprintf( fp, "New Row %ld in '%s' [sync '%s']: %s\n", irecord, table, sync, row );
 
 	return;
 }
 
 void
-changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
+changerow( char *oldsync, Dbptr db, char *table, long irecord, char *sync, void *private )
 { 
 	char	row[10*STRSZ];
 	FILE	*fp = (FILE *) private;
@@ -30,7 +30,7 @@ changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
 	dbget( db, row );
 	
 	fprintf( fp, "Changed Row %ld in '%s' [Old sync '%s', New sync '%s']: %s\n", 
-		 db.record, table, oldsync, sync, row );
+		 irecord, table, oldsync, sync, row );
 
 	return;
 }
@@ -50,6 +50,7 @@ main(int argc, char **argv )
 {
 	Dbptr	db;
 	char	dbname[FILENAME_MAX];
+	char	command[STRSZ];
 	Hook	*dbmon_hook = NULL;
 	Tbl	*tables = (Tbl *) NULL; 
 
@@ -70,7 +71,8 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Adding new arrival table:\n" );
 
-	system( "cp data/mod.new.demo.arrival results/dbmon/demo.arrival" );
+	sprintf( command, "cp data/mod.new.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
 
 	sleep( 1 );
 
@@ -78,7 +80,8 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Shortening arrival table:\n" );
 
-	system( "cp data/mod.shorter.demo.arrival results/dbmon/demo.arrival" );
+	sprintf( command, "cp data/mod.shorter.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
 
 	sleep( 1 );
 
@@ -86,7 +89,8 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Lengthening arrival table:\n" );
 
-	system( "cp data/mod.longer.demo.arrival results/dbmon/demo.arrival" );
+	sprintf( command, "cp data/mod.longer.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
 
 	sleep( 1 );
 

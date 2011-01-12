@@ -96,7 +96,7 @@ free_perl_dbmon_track( Perl_dbmon_track *pdmtr )
 }
 
 static void
-perl_newrow( Dbptr db, char *table, char *sync, void *private )
+perl_newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 {
 	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) private;
 	int	n;
@@ -112,6 +112,9 @@ perl_newrow( Dbptr db, char *table, char *sync, void *private )
 	XPUSHs(sv_2mortal(newSViv(db.record)));
 
 	XPUSHs(sv_2mortal(newSVpv(table, 0)));
+
+	XPUSHs(sv_2mortal(newSViv(irecord)));
+
 	XPUSHs(sv_2mortal(newSVpv(sync, 0)));
 
 	XPUSHs(sv_mortalcopy(pdmtr->ref));
@@ -128,7 +131,7 @@ perl_newrow( Dbptr db, char *table, char *sync, void *private )
 }
 
 static void
-perl_changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
+perl_changerow( char *oldsync, Dbptr db, char *table, long irecord, char *sync, void *private )
 {
 	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) private;
 	int	n;
@@ -146,6 +149,9 @@ perl_changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private 
 	XPUSHs(sv_2mortal(newSViv(db.record)));
 
 	XPUSHs(sv_2mortal(newSVpv(table, 0)));
+
+	XPUSHs(sv_2mortal(newSViv(irecord)));
+
 	XPUSHs(sv_2mortal(newSVpv(sync, 0)));
 
 	XPUSHs(sv_mortalcopy(pdmtr->ref));
