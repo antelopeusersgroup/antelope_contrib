@@ -38,6 +38,7 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 {
 	const string base_error("FixedFormatTrace initialization constructor  ");
 	const string header_map_pf("HeaderMap");
+        dataformat=type;
 	Pf *pf;
 	if(pfread(const_cast<char *>(header_map_pf.c_str()),&pf))
 		throw SeisppError(base_error
@@ -62,7 +63,8 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 	because the HeaderMap constructor does this same thing. */
 	Pf *pfa;
 	pfget(pf,const_cast<char *>(type.c_str()),(void **)&pfa);
-	char *stypename=pfget_string(pfa,"sample_data_type");
+	char *stypename=pfget_string(pfa,
+                const_cast<char *>("sample_data_type"));
 	if(stypename==NULL)
 		throw SeisppError(base_error
 		 + string("missing required parameter sample_data_type for trace type=")
@@ -87,6 +89,25 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 		throw SeisppError(base_error
 		 + string("Invalid entry for sample_data_type for trace type=")
 		 + type);
+        /* These overall format parameters are required and we abort
+           if we can't parse them. */
+        char *treftest=pfget_string(pfa,
+                const_cast<char *>("timetype"));
+        if(treftest==NULL) throw SeisppError(base_error
+                + "Required parameter timetype missing");
+        if(!strcmp(treftest,"absolute"))
+            tref=absolute;
+        else if(!strcmp(treftest,"relative"))
+            tref=relative;
+        else 
+            // This may be dogmatic, but probably should not allow
+            // variance on this because the pf files are global
+            throw SeisppError(base_error
+                    + "Illegal value for parameter timetype\n"
+                    + string("Must be either absolute or relative"));
+
+        t0_default=pfget_double(pfa,const_cast<char *>("t0_default"));
+        t0=t0_default;
 	/* First we have to create the block of memory used to hold
 	data for ns samples and the header.  We use malloc here 
 	with opaque pointers to access pieces of the result.  */
@@ -162,6 +183,7 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent)
 	: BasicTimeSeries(parent)
 {
+        dataformat=parent.dataformat;
 	header=parent.header;
 	stype=parent.stype;
 	ns=parent.ns;
@@ -192,6 +214,7 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 	FILE *fp,int nsamp,string key, bool key_is_dt)
 {
 	const string base_error("FixedFormatTrace constructor:  ");
+        dataformat=parent.dataformat;
 	header=parent.header;
 	stype=parent.stype;
 	ns=nsamp;
@@ -224,6 +247,7 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 		bool key_is_dt)
 {
 	const string base_error("FixedFormatTrace constructor:  ");
+        dataformat=parent.dataformat;
 	header=parent.header;
 	stype=parent.stype;
 	h=static_cast<unsigned char *>(malloc(header.size()));
@@ -256,6 +280,17 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 	t0=0.0;
 	tref=relative;
 }
+long FixedFormatTrace::resize(int nsnew)
+{
+    size_t datasize=(size_t)(stype_bytes_per_sample(stype)*nsnew);
+    size_of_this=datasize+header.size();
+    h=static_cast<unsigned char *>(realloc(h,size_of_this));
+    if(h==NULL)
+        throw SeisppError("FixedFormatTrace::resize:  realloc failed");
+    d=h+header.size();
+    return(size_of_this);
+}
+
 FixedFormatTrace::~FixedFormatTrace()
 {
 	/* Note we must absolutely not free d as in all uses here d is a
