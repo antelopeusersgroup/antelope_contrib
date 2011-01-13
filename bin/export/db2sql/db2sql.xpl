@@ -210,7 +210,7 @@ sub sql_insert_commands {
 
 sub newrow {
 	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $sync, $dbh ) = @_;
+	my( $table, $irecord, $sync, $dbh ) = @_;
 
 	my( $cmd ) = db2sqlinsert( @db, \&dbmon_compute_row_sync );
 
@@ -219,7 +219,7 @@ sub newrow {
 	unless( $dbh->do( $cmd ) ) {
 		
 		elog_complain( "Failed to create new database row in table '$table'\n" .
-			       "record $db[3], sync '$sync'\n" .
+			       "record $irecord, sync '$sync'\n" .
 			       "while executing command '$cmd'\n" );
 	}
 
@@ -229,11 +229,11 @@ sub newrow {
 sub changerow {
 	my( $oldsync ) = shift( @_ );
 	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $sync, $dbh ) = @_;
+	my( $table, $irecord, $sync, $dbh ) = @_;
 
 	delrow( @db, $table, $oldsync, $dbh );
 
-	newrow( @db, $table, $sync, $dbh );
+	newrow( @db, $table, $irecord, $sync, $dbh );
 
 	return;
 }
