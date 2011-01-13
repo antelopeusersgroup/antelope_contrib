@@ -89,8 +89,9 @@ void ttregions_init()
 
 }
 
-static void free_TTregions_volume(TTregions_volume *r)
+static void free_TTregions_volume(void *rp)
 {
+	TTregions_volume *r = (TTregions_volume *) rp;
 	int i;
 	free(r->name);
 	free(r->lat); free(r->lon);
@@ -101,8 +102,10 @@ static void free_TTregions_volume(TTregions_volume *r)
 	free(r);
 }
 
-static void ttregions_free_hook(TTregions_hook *h)
+static void ttregions_free_hook(void *hp)
 {
+	TTregions_hook *h = (TTregions_hook *) hp;
+
 	if( h->regions != NULL ) {
 		freetbl(h->regions,free_TTregions_volume);
 	}
@@ -134,7 +137,6 @@ char *get_full_method_string(char *shortname)
 	char *method;
 	char workstr[100];
 	char libname[32],ttentry[32],uentry[32];
-	int nrec;
 	db = dblookup(modeldb,0,"ttcalc",0,0);
 	if(db.record == dbINVALID)
 	{
@@ -149,8 +151,9 @@ char *get_full_method_string(char *shortname)
 		db = dblookup(db,0,"ttcalc","algorithm",shortname);
 		if(db.record == dbINVALID)
 		{
-			elog_notify(0,"ttregions:  no entry in ttcalc table for algorithm = %s\nAttempting to use short form = %s\n",
-				shortname);
+			elog_notify(0,"ttregions:  no entry in ttcalc table for algorithm = %s\n"
+				      "Attempting to use short form = %s\n",
+				      shortname, shortname);
 			method = strdup(shortname);
 		}
 		else
@@ -203,11 +206,8 @@ Tbl *load_regions(char *modelset)
 	static Hook *reg_hook=NULL, *sc_hook=NULL;
 	int i;
 	TTregions_volume *r;
-	int ndepths,idepth;
-	char sta[8],phase[10];
-	double test,ceiling,floor;
-	double *scor;
-	char *key;
+	int ndepths;
+	double test,ceiling;
 
 	sprintf(sstring,"modelset =~ /%s/",modelset);
 	dbs = dblookup(modeldb,0,"regmodel",0,0);
@@ -255,8 +255,9 @@ Tbl *load_regions(char *modelset)
 			"modname",modname,
 			NULL) == dbINVALID)
 		{
-			elog_complain(0,"dbgetv error on record %d of subsetted regmodel table for model set %s\nTrucation of model data likely\n",
-				dbs.record,modelset);
+			elog_complain(0,"dbgetv error on record %ld of subsetted regmodel table for model set %s\n"
+					"Trucation of model data likely\n",
+					dbs.record, modelset);
 			continue;
 		}
 		nmatch_reg = dbmatches(dbs,dbreg2,&keyreg,&keyreg,
@@ -343,8 +344,9 @@ Tbl *load_regions(char *modelset)
 		}
 		else
 		{
-			elog_notify(0,"Warning(libttregions):  No match in regions table for regname defined in regmodel\nMismatch on record %d of sorted rebmodel table\n",
-				dbs.record);
+			elog_notify(0,"Warning(libttregions):  No match in regions table for regname defined in regmodel\n"
+				      "Mismatch on record %ld of sorted rebmodel table\n", 
+				      dbs.record);
 		}
 		freetbl(reg_match,0);
 		freetbl(sc_match,0);
@@ -380,11 +382,8 @@ Author:  G Pavlis
 int load_sitecor(TTregions_volume *r, char *model, char *phase)
 {
 	Dbptr dbsitecor,dbsc2;  
-	long nrecs;
 	Tbl *sortkeys, *keysc;
-	char regname[21],algorithm[16],modname[21];
-	long level;
-	static Tbl *result,  *sc_match;
+	static Tbl *sc_match;
 	int nmatch_sc;
 	static Hook  *sc_hook=NULL;
 	int i;
@@ -441,8 +440,9 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 			"paramval",scor,NULL)
 				  == dbINVALID)
 		{
-			elog_complain(0,"dbgetv error reading sitecor table record %d\nStation correction data probably truncated\n",
-						  dbsc2.record);
+			elog_complain(0,"dbgetv error reading sitecor table record %ld\n"
+					"Station correction data probably truncated\n",
+					dbsc2.record);
 			break;
 		}
 		if(i==0) 
@@ -508,7 +508,9 @@ int point_is_inside(TTregions_volume *rv,TTGeometry *geometry)
 			rad(rv->lat[i]),rad(rv->lon[i]),&distance,&azimuth);
 		if(deg(distance)>90.0)
 		{
-			elog_log(0,"Polygon for model %s located more than 90 degrees from test point at\n%latitude:  %lf,%lf\nWinging number algorithm not called assuming test point is outside polygon\n",
+			elog_log(0,"Polygon for model %s located more than 90 degrees from test point at\n"
+				   "latitude:  %lf, longitude%lf\n"
+				   "Winding number algorithm not called assuming test point is outside polygon\n",
 				rv->modelname,lat,lon);
 			free(polygon);
 			return (0);

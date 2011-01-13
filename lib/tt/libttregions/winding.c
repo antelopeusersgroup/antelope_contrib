@@ -163,7 +163,6 @@ shift_polygon( double x, double y, double *polygon, int ncoords )
 int
 is_inside( double x, double y, double *polygon, int ncoords )
 {
-	int 	result;
 	double *shifted_polygon;
 	int	winding_num;
 
@@ -176,7 +175,9 @@ is_inside( double x, double y, double *polygon, int ncoords )
 	if( winding_num )
 	{
 		return 1;
+
 	} else {
+
 		return 0;
 	}
 }
