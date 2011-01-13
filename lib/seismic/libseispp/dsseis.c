@@ -61,19 +61,9 @@ static Arr *resp_arr=NULL;
  *	0 if OK or -1 if ERROR.
  */
 
-int
-grdb_sc_loadcss (dbin, net_expr, sta_expr, chan_expr, tstart, tend,
-		 coords, ir, orient, dbscgr, dbsc)
-
-Dbptr            dbin;
-char *                 net_expr;
-char *                           sta_expr;
-char *                                     chan_expr;
-double                                                tstart, tend;
-int              coords, ir, orient;
-Dbptr *                              dbscgr;
-Dbptr *                                      dbsc;
-
+int rdb_sc_loadcss (Dbptr dbin, char *net_expr, char *sta_expr,
+        char *chan_expr, double tstart, double tend, 
+        int coords, int ir, int orient, Dbptr *dbscgr, Dbptr *dbsc)
 {
 	Dbptr dbout, db, dbout2;
 	char string[1024];
@@ -231,9 +221,6 @@ Dbptr *                                      dbsc;
 		if(is_view)db_to_clear=dbout;
         	db = dblookup (dbin, 0, "sitechan", 0, 0);
         	dbout2 = dbjoin (dbout, db, 0, 0, 1, 0, 0);
-//fprintf(stderr,"Top of offending section.  About to create dbout2\n");
-//fprintf(stderr,"new table =%d  This table is freed later %d\n",
-//	dbout2.table, db_to_clear.table);
 		is_view=1;
         	dbquery (dbout2, dbRECORD_COUNT, &n);
         	if (n < 1) {
@@ -252,17 +239,11 @@ Dbptr *                                      dbsc;
 		if (ok) {
 			dbout = dbout2;
 			if(is_view) dbfree(db_to_clear);
-//fprintf(stderr,"In ok block, freeing table=%d\n",db_to_clear.table);
 		} else {
 			if (!sensor) {
         			db = dblookup (dbin, 0, "sensor", 0, 0);
 				if(is_view)db_to_clear=dbout;
-//fprintf(stderr,"Before problem dbjoin, dbout.table=%d\n",dbout.table);
 	       			dbout = dbjoin (dbout, db, 0, 0, 1, 0, 0);
-//fprintf(stderr,"In if not sensor block\n");
-//fprintf(stderr,"new table =%d  About to free table %d\n",
-//	dbout.table, db_to_clear.table);
-//fprintf(stderr,"Also freeing table=%d\n",dbout2.table);
 				if(is_view) 
 				{
 					dbfree(dbout2);
@@ -303,8 +284,6 @@ Dbptr *                                      dbsc;
         		settbl (pat1, 0, strdup("sensor.chanid"));
         		settbl (pat2, 0, strdup("sitechan.chanid"));
         		dbout = dbjoin (dbout, db, &pat1, &pat2, 1, 0, 0);
-//fprintf(stderr,"new table =%d  About to free table %d\n",
-//dbout.table, db_to_clear.table);
 			if(is_view) dbfree(db_to_clear);
 			is_view=1;
         		freetbl (pat1, free);
@@ -343,8 +322,6 @@ Dbptr *                                      dbsc;
 	settbl (sortfields, 1, strdup("wfdisc.chan"));
 	settbl (sortfields, 2, strdup("wfdisc.time"));
         *dbsc = dbsort (dbout, sortfields, 0, 0);
-//fprintf(stderr,"new table =%d  About to free table %d\n",
-//	dbsc->table, db_to_clear.table);
 	if(is_view) dbfree(db_to_clear);
 	groupfields = newtbl (2);
 	if (groupfields == NULL) {
@@ -392,20 +369,11 @@ Dbptr *                                      dbsc;
  *	0 if OK or -1 if ERROR.
  */
 
-int
-grdb_sc_getstachan (dbscgr, record, sta, chan, nsegs, time, endtime)
-
-Dbptr               dbscgr;
-int			    record;
-char *				    sta;
-char *				         chan;
-int *                                          nsegs;
-double *                                              time;
-double *                                                    endtime;
-
+int grdb_sc_getstachan(Dbptr dbscgr, int record, char *sta, char *chan,
+        int *nsegs, double *time, double *endtime)
 {
 	Dbptr db;
-	int is, ie;
+	long is, ie;
 
 	if (record >= 0) dbscgr.record = record;
 	if (dbgetv (dbscgr, 0, "sta", sta, "chan", chan, "bundle", &db, 0) == dbINVALID) {
@@ -413,7 +381,7 @@ double *                                                    endtime;
         	return (-1);
 	}
         dbget_range (db, &is, &ie);
-	*nsegs = ie - is;
+	*nsegs = (int)(ie - is);
         db.record = is;
 	dbgetv (db, 0, "time", time, 0);
         db.record = ie-1;
@@ -479,19 +447,9 @@ double *                                                    endtime;
  *	0 if OK or -1 if ERROR.
  */
 
-grtr_sc_create (dbsc, net_expr, sta_expr, chan_expr, tstart, tend, 
-		gap, calib, ir, trscgr)
-
-Dbptr           dbsc;
-char *                net_expr;
-char *                          sta_expr;
-char *                                    chan_expr;
-double                                               tstart, tend;
-char *          gap;
-int                  calib;
-int                         ir;
-Dbptr *                            trscgr;
-
+int grtr_sc_create(Dbptr dbsc, char *net_expr, char *sta_expr, 
+        char *chan_expr, double tstart, double tend, char *gap,
+        int calib, int ir, Dbptr *trscgr)
 {
 	char time_str[100];
 	char endtime_str[100];
@@ -555,13 +513,6 @@ Dbptr *                            trscgr;
         sprintf (endtime_str, "(%.5f)", tend);
 	dbsc.record = dbALL;
         ret = trload_css (dbsc, time_str, endtime_str, trscgr, "wfdisc", 0);
-/* DEBUG: Bypass this error for now
-        if (ret != 0) {
-        	register_error (0, "grtr_sc_create: trload_cssgrp() error.\n");
-		if (new_view) dbfree (dbsc);
-        	return (-1);
-	}
-*/
 
 	/* Split, splice, apply calib */
 
