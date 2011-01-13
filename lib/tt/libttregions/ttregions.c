@@ -31,7 +31,7 @@ Note the polygon is defined in a multiplexed type format
 in the poly vector */
 typedef struct TTregions_volume {
 	char *name;  /* the name of this region */
-	int level;   /*hierarchic level -- 1 is lowest, higher numbers
+	long level;   /*hierarchic level -- 1 is lowest, higher numbers
 			get higher precedence. */
 	int nvertices;  
 	double *lat,*lon;
@@ -158,7 +158,7 @@ char *get_full_method_string(char *shortname)
 			db.record = 0;
 			dbgetv(db,0,"libname",libname,
 				"ttentry",ttentry,
-				"uentry", uentry, 0);
+				"uentry", uentry, NULL);
 			strcpy(workstr,libname);
 			strcat(workstr," ");
 			strcat(workstr,ttentry);
@@ -194,10 +194,10 @@ Tbl *load_regions(char *modelset)
 {
 	Dbptr dbs, dbreg, dbreg2, dbsitecor,dbsc2;  
 	char sstring[40];  
-	int nrecs;
+	long nrecs;
 	Tbl *sortkeys, *keyreg, *keysc;
 	char regname[21],algorithm[16],modname[21];
-	int level;
+	long level;
 	static Tbl *result, *reg_match, *sc_match;
 	int nmatch_reg,nmatch_sc;
 	static Hook *reg_hook=NULL, *sc_hook=NULL;
@@ -229,13 +229,13 @@ Tbl *load_regions(char *modelset)
 	}
 	/* It is necessary to sort the regions table to make sure
 	the vertices are ordered correctly. */
-	sortkeys = strtbl("regname","vertex",0);
+	sortkeys = strtbl("regname","vertex",NULL);
 	dbreg2 = dbsort(dbreg,sortkeys,0,0);
 	clrtbl(sortkeys,0);
 
 	/* similarly we have to sort the sitecor table to make
 	a linear load below work correctly */
-	sortkeys = strtbl("modname","regname","ceiling","sta",0);
+	sortkeys = strtbl("modname","regname","ceiling","sta",NULL);
 	dbsc2 = dbsort(dbsitecor,sortkeys,0,0);
 	freetbl(sortkeys,0);
 
@@ -244,8 +244,8 @@ Tbl *load_regions(char *modelset)
 	regions table and the sitecor table.  Before the loop
 	we set up the key tbls for dbmatches explicitly rather
 	than depend upon primary keys */
-	keyreg = strtbl("regname",0);
-	keysc = strtbl("regname","modname",0);
+	keyreg = strtbl("regname",NULL);
+	keysc = strtbl("regname","modname",NULL);
 	result=newtbl(nrecs);
 	for(dbs.record=0;dbs.record<nrecs;++dbs.record)
 	{
@@ -253,7 +253,7 @@ Tbl *load_regions(char *modelset)
 			"level",&level,
 			"algorithm",&algorithm,
 			"modname",modname,
-			0) == dbINVALID)
+			NULL) == dbINVALID)
 		{
 			elog_complain(0,"dbgetv error on record %d of subsetted regmodel table for model set %s\nTrucation of model data likely\n",
 				dbs.record,modelset);
@@ -273,7 +273,7 @@ Tbl *load_regions(char *modelset)
 				i<maxtbl(sc_match);++i)
 			{
 				dbsc2.record = (int )gettbl(sc_match,i);
-				if(dbgetv(dbsc2,0,"ceiling",&ceiling,0)
+				if(dbgetv(dbsc2,0,"ceiling",&ceiling,NULL)
 					== dbINVALID)
 				{
 					elog_complain(0,"dbgetv error reading sitecor table\nStation corrections read will probably be wrong\n");
@@ -308,11 +308,11 @@ Tbl *load_regions(char *modelset)
 			/* First we run through the regions table */
 			for(i=0;i<maxtbl(reg_match);++i)
 			{
-				dbreg2.record = (int)gettbl(reg_match,i);
+				dbreg2.record = (long)gettbl(reg_match,i);
 				if(dbgetv(dbreg2,0,
 					"lat",(r->lat)+i,
 					"lon",(r->lon)+i,
-					0) == dbINVALID)
+					NULL) == dbINVALID)
 				{
 					r->nvertices = i;
 					elog_notify(0,"dbgetv error on regions table for region %s\nPolygon truncated to %d points\n",
@@ -380,10 +380,10 @@ Author:  G Pavlis
 int load_sitecor(TTregions_volume *r, char *model, char *phase)
 {
 	Dbptr dbsitecor,dbsc2;  
-	int nrecs;
+	long nrecs;
 	Tbl *sortkeys, *keysc;
 	char regname[21],algorithm[16],modname[21];
-	int level;
+	long level;
 	static Tbl *result,  *sc_match;
 	int nmatch_sc;
 	static Hook  *sc_hook=NULL;
@@ -403,14 +403,14 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	}
 	/* We have to sort the sitecor table to make
 	a linear load below work correctly */
-	sortkeys = strtbl("modname","regname","ceiling","sta",0);
+	sortkeys = strtbl("modname","regname","ceiling","sta",NULL);
 	dbsc2 = dbsort(dbsitecor,sortkeys,0,0);
 	freetbl(sortkeys,0);
 
 	/* set up for dbmatches by building key tbls and loading
 	keys into the scratch record of the sitecor table */
 	dbsitecor.record = dbSCRATCH;
-	if(dbputv(dbsitecor,0,"modname",model,"regname",r->name,"phase",phase,0)
+	if(dbputv(dbsitecor,0,"modname",model,"regname",r->name,"phase",phase,NULL)
 		== dbINVALID)
 	{
 		elog_complain(0,"ttregions:  dbputv error while trying to load sitecor entries for model=%s,region=%s, and phase=%s\nNo station corrections loaded for this region\n",
@@ -418,7 +418,7 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 		return(-2);
 	}
 
-	keysc = strtbl("regname","modname",0);
+	keysc = strtbl("regname","modname",NULL);
 	nmatch_sc = dbmatches(dbsitecor,dbsc2,&keysc,&keysc,
 			&sc_hook,&sc_match);
 	if(nmatch_sc <= 0)
@@ -431,14 +431,14 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 
 	for(i=0,idepth=0;i<maxtbl(sc_match);++i)
 	{
-		dbsc2.record = (int)gettbl(sc_match,i);
+		dbsc2.record = (long)gettbl(sc_match,i);
 		allot(double *,scor,1);
 		if(dbgetv(dbsc2,0,
 			 "sta",sta,
 			"phase",phase,
 			"ceiling",&ceiling,
 			"floor",&floor,
-			"paramval",scor,0)
+			"paramval",scor,NULL)
 				  == dbINVALID)
 		{
 			elog_complain(0,"dbgetv error reading sitecor table record %d\nStation correction data probably truncated\n",
