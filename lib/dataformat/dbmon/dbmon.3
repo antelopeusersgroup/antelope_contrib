@@ -244,6 +244,9 @@ internal to the dbmon library. This is necessary for databases that may be chang
 of the dbmon library. An alternative solution would be to force all other database-write operations to suspend during 
 a dbmon refresh operation, however that forces a more stringent trade-off between real-time process latency and 
 dbmon latency, which seems less desirable if it can be avoided. 
+
+The \fBdbmon_update\fP function assumes \fBorb2db_msg\fP is on the execution path and runs that command with the 
+\fIwait\fP option on the tracked database before proceeding. 
 .SH AUTHOR
 .nf
 Dr. Kent Lindquist 
