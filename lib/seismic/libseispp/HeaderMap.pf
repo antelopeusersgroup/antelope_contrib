@@ -4,6 +4,8 @@ headersize 632
 boolean_true 1
 boolean_false 0
 boolean_default false
+t0_default 0.0
+timetype absolute
 #
 # The sac header like most formats has extra fields not
 # in this map.  If you want to use these as auxiliary metadata
@@ -259,6 +261,8 @@ headersize 240
 boolean_true 1
 boolean_false 2
 boolean_default true
+t0_default 0.0
+timetype relative
 attributes &Tbl{
 lineSeq int 4 0
 reelSeq int 4 4
@@ -282,7 +286,7 @@ sourceWaterDepth int 4 64
 elevationScale short 2 68
 coordScale short 2 70
 sourceLongOrX int 4 72
-sourceLongOrY int 4 76
+sourceLatOrY int 4 76
 recLongOrX int 4 80
 recLatOrY int 4 84
 coordUnits short 2 88
@@ -355,7 +359,7 @@ sourceWaterDepth  int 0
 elevationScale  int 0
 coordScale  int 0
 sourceLongOrX  int 0
-sourceLongOrY  int 0
+sourceLatOrY  int 0
 recLongOrX  int 0
 recLatOrY  int 0
 coordUnits  int 0

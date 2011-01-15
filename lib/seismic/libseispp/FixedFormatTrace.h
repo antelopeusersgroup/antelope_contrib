@@ -108,6 +108,38 @@ public:
 	/*! Standard destructor.  Not trivial here because this
 	object has hidden raw pointers. */
 	~FixedFormatTrace(); 
+        /*! Get a name that defines this format.
+
+          This is a query routine that is linked to constructors.
+          That is, one will sometimes want to know some tag
+          that defines the format this object is linked to.  For
+          example, this can allow an application to not have frozen
+          in a format type.  In any case this method returns the
+          name given that defines this format to the original 
+          constructor.
+
+          \return Name of this format.
+          */
+        string format_name()
+        {
+            return dataformat;
+        };
+        /*! Change trace size for variable ns data.
+
+          Some formats allow variable length data while some 
+          require all data to have the same length.  Variable length
+          formats will need to call this method when writing to 
+          change the buffer size.  This should normally called before 
+          loading data or one cannot guarantee the integrity of the 
+          header data let alone the danger of writing to the data 
+          vector when the size is wrong.  
+
+          \param nsnew new number of samples 
+          \return size of newly created data buffer in bytes = size
+             in bytes of new data buffer.
+          */
+        long int resize(int ns);
+
 	template <class T> T get(string name);
 	template <class T> void put(string name, T value);
 	template <class T> T get(const char *name);
@@ -192,13 +224,48 @@ public:
 	\param ostr output C++ stream object. 
 	*/
 	void write(ostream& ostrm);
+        /* Return start time = time of first sample. 
+
+           Different formats store time differently.  For example,
+           in segy start time is not really stored but is implicitly assumed
+           to be a shot time.  In contrast, SAC stores time in
+           multiple header attributes used to store a date string.
+           As a result this is a virtual method that is expected
+           to return an epoch time.  The expectation is specific
+           implementations would use polymophism to define this 
+           method that are format dependent.  For the two examples
+           above, segy can just always return 0 while a SAC 
+           version will require computing an epoch time from the
+           suite of header values used in SAC to define time 0. 
+           Note this method also closely links to the public 
+           attribute tref used to define the time standard.  That is,
+           if tref is relative the time returned is "relative" to 
+           some implicit time standard like shot time while "absolute"
+           implies a real epoch time. */
+        virtual double tstart(){
+            return t0;
+        };
 private:
 	HeaderMap header;
 	AttributeType stype;
+        string dataformat;
 	unsigned char *h;  /* points to start of header data */
 	unsigned char *d;  /* points to start of data samples */
 	bool data_loaded;
 	size_t size_of_this;
+        /* This attribute is tightly linked to the t0 attribute 
+           inherited from BasicTimeSeries and the related attribute tref.
+           t0_default should be loaded by any constructor as teh default
+           start time for this seismogram.  That should almost always be
+           zero, but still best defined explicitly.  When the object
+           referenced actually contains data the BasicTimeSeries 
+           attribute t0 may or may not be relevant.  For formats like
+           SEGY t0 should just always be set to 0 and this base object
+           can be used directly.  Formats like SAC, in contrast, should
+           use polymorphism to redefine the start method to compute
+           t0 from header entries.  In this case, t0_default can be
+           used only as a possible recovery to blunder on. */
+        double t0_default;
 };
 template <class T> T FixedFormatTrace::get(string name)
 {
