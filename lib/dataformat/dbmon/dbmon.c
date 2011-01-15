@@ -310,6 +310,11 @@ dbmon_update( Hook *dbmon_hook, void *private )
 	long	new_nrecs = 0;
 	char	*sync;
 	char	*oldsync;
+	char	cmd[FILENAME_MAX+STRSZ];
+
+	sprintf( cmd, "orb2db_msg %s wait", dbtr->dbname );
+
+	system( cmd );
 
 	keys = keysarr( dbtr->tables );
 

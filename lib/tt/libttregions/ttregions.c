@@ -273,7 +273,7 @@ Tbl *load_regions(char *modelset)
 			for(i=0,ndepths=0,test=-999999.0;
 				i<maxtbl(sc_match);++i)
 			{
-				dbsc2.record = (int )gettbl(sc_match,i);
+				dbsc2.record = (long )gettbl(sc_match,i);
 				if(dbgetv(dbsc2,0,"ceiling",&ceiling,NULL)
 					== dbINVALID)
 				{
