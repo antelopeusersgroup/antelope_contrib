@@ -96,6 +96,15 @@ main(int argc, char **argv )
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 
+	fprintf( stdout, "Chimney-collapsing arrival table:\n" );
+
+	sprintf( command, "cp data/mod.chimney.demo.arrival results/dbmon/demo.arrival" );
+	system( command );
+
+	sleep( 1 );
+
+	dbmon_update( dbmon_hook, (void *) stdout );
+
 	dbmon_status( stdout, dbmon_hook );
 
 	clear_register( 1 );
