@@ -72,7 +72,7 @@ typedef struct Tabletrack {
 
 static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
-static int sort_aslong( char *ap, char *bp, void *pvt );
+static int sort_aslong( char **ap, char **bp, void *pvt );
 static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
 static char *digest2hex( unsigned char *digest );
 static void free_tabletrack( void *ttrp );
@@ -303,10 +303,10 @@ dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 }
 
 static int
-sort_aslong( char *ap, char *bp, void *pvt )
+sort_aslong( char **ap, char **bp, void *pvt )
 {
-	long	a = (long) ap;
-	long	b = (long) ap;
+	long	a = (long) *ap;
+	long	b = (long) *bp;
 	int	retcode = 0;
 
 	if( a < b ) {
