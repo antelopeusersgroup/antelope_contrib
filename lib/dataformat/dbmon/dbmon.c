@@ -1,6 +1,6 @@
 
 /*
- *   Copyright (c) 2009-2010 Lindquist Consulting, Inc.
+ *   Copyright (c) 2009-2011 Lindquist Consulting, Inc.
  *   All rights reserved. 
  *                                                                     
  *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
@@ -70,13 +70,17 @@ typedef struct Tabletrack {
 	int	watch_table;
 } Tabletrack;
 
-static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
-static char *digest2hex( unsigned char *digest );
 static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
+static int sort_aslong( char *ap, char *bp, void *pvt );
+static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
+static char *digest2hex( unsigned char *digest );
 static void free_tabletrack( void *ttrp );
 static void free_dbtrack( void *dbtrp );
 static void focus_tableset( Dbtrack *dbtr, Tbl *table_subset );
+static void dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static void dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static void dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 
 static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest )
 {
@@ -93,8 +97,8 @@ static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *
 static char *
 digest2hex( unsigned char *digest )
 {
-	char	*hex;
-	int	i;
+	char	*hex = NULL;
+	int	i = 0;
 
 	allot( char *, hex, 41 );
 	
@@ -108,40 +112,15 @@ digest2hex( unsigned char *digest )
 	return hex;
 }
 
-char *
-dbmon_compute_row_sync( Dbptr db )
-{
-	unsigned long record_size;
-	unsigned char digest[20];
-	char	*sync = (char *) NULL;
-	char	*row = (char *) NULL;
-
-	db.field = dbALL;
-
-	dbquery( db, dbRECORD_SIZE, &record_size );
-
-	allot( char *, row, record_size + 2 );
-
-	dbget( db, row );
-
-	compute_digest( (unsigned char *) row, record_size, &digest[0] );
-
-	free( row ); 
-
-	sync = digest2hex( digest );
-
-	return sync;
-}
-
 static Dbtrack *
 new_dbtrack( Dbptr db )
 {
-	Dbtrack *dbtr = 0;
+	Dbtrack *dbtr = NULL;
 	Dbvalue val;
-	Tabletrack *ttr = 0;
-	Tbl	*schema_tables = 0;
-	char	*table_name = 0;
-	int	itable;
+	Tabletrack *ttr = NULL;
+	Tbl	*schema_tables = NULL;
+	char	*table_name = NULL;
+	long	itable = 0L;
 
 	allot( Dbtrack *, dbtr, 1 );
 
@@ -181,7 +160,7 @@ new_dbtrack( Dbptr db )
 static Tabletrack *
 new_tabletrack( char *table_name )
 {
-	Tabletrack *ttr = 0;
+	Tabletrack *ttr = NULL;
 
 	allot( Tabletrack *, ttr, 1 );
 
@@ -235,11 +214,11 @@ free_dbtrack( void *dbtrp )
 static void
 focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
 {
-	Tbl	*keys;
-	int	ikey;
-	int	itable;
-	char	*table_name;
-	Tabletrack *ttr;
+	Tbl	*keys = NULL;
+	long	ikey = 0L;
+	long	itable = 0L;
+	char	*table_name = NULL;
+	Tabletrack *ttr = NULL;
 
 	if( table_subset == (Tbl *) NULL ) {
 
@@ -247,7 +226,8 @@ focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
 
 		for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
 		
-			ttr = (Tabletrack *) getarr( dbtr->tables, gettbl( keys, ikey ) );
+			ttr = (Tabletrack *) getarr( dbtr->tables, 
+						     gettbl( keys, ikey ) );
 
 			ttr->watch_table = 1;
 		}
@@ -269,6 +249,245 @@ focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
 	return;
 }
 
+static void
+dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
+{
+	Dbptr	db;
+	Dbptr	dbscratch;
+	long	irecord = 0L;
+	long	new_nrecs = 0L;
+	char	*sync = NULL;
+
+	db = ttr->db;
+
+	dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
+
+	dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs );	
+
+	for( irecord = 0; irecord < new_nrecs; irecord++ ) {
+
+		db.record = irecord;
+
+		dbget( db, NULL );
+
+		sync = dbmon_compute_row_sync( dbscratch );
+
+		if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
+
+			elog_complain( 0, "Unexpected failure of settbl for "
+					  "index %ld\n", irecord );
+		}
+
+		dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, pvt );	
+	}
+
+	return;
+}
+
+static void
+dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
+{
+	long	isync;
+	char	*sync;
+
+	for( isync = 0; isync < maxtbl( ttr->syncs ); isync++ ) {
+
+		sync = (char *) gettbl( ttr->syncs, isync );
+
+		dbtr->delrow( ttr->db, ttr->table_name, sync, pvt );
+	}
+
+	trunctbl( ttr->syncs, 0, free );
+
+	return;
+}
+
+static int
+sort_aslong( char *ap, char *bp, void *pvt )
+{
+	long	a = (long) ap;
+	long	b = (long) ap;
+	int	retcode = 0;
+
+	if( a < b ) {
+
+		retcode = -1;
+
+	} else if( a == b ) {
+	
+		retcode = 0;
+
+	} else {
+
+		retcode = 1;
+	}
+
+	return retcode;
+}
+
+static void
+dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
+{
+	long	isync = 0L;
+	long	irecord = 0L;
+	long	new_nrecs = 0L;
+	long	old_nsyncs = 0L;
+	long	imatch = 0L;
+	long	nmatches = 0L;
+	char	*oldsync = NULL;
+	char	*newsync = NULL;
+	Tbl	*newsyncs = NULL;
+	Tbl	*oldrows_preserve = NULL;
+	Tbl	*matches = NULL;
+	int	oldrows_preserve_first = 0;
+	Dbptr	db;
+	Dbptr	dbscratch;
+
+	db = ttr->db;
+
+	dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
+
+	old_nsyncs = maxtbl( ttr->syncs );
+
+	newsyncs = newtbl( 0 );
+
+	oldrows_preserve = newtbl( 0 );
+
+	/* Use dbquery in attempt to prevent bus error from reading past end 
+	   of table that may still be shortening: */
+
+	for( irecord = 0; 
+		irecord < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); 
+		   irecord++ ) {
+
+		db.record = irecord;
+
+		dbget( db, NULL );
+
+		newsync = dbmon_compute_row_sync( dbscratch );
+
+		if( settbl( newsyncs, irecord, newsync ) != irecord ) {
+
+			elog_complain( 0, "Unexpected failure of settbl for "
+					  "index %ld\n", irecord );
+		}
+
+		if( ! strcmp( newsync, ttr->null_sync ) ) {
+
+			; /* Do nothing with null row */
+
+		} else if( irecord < old_nsyncs &&
+			   ( oldsync = gettbl( ttr->syncs, irecord ) ) != (char *) NULL &&
+			   ! strcmp( newsync, oldsync ) ) {
+
+			if( irecord == 0L ) {
+
+				oldrows_preserve_first = 1;
+			
+			} else {
+
+				pushtbl( oldrows_preserve, (void *) irecord );
+			}
+
+		} else {
+
+			matches = greptbl( newsync, ttr->syncs );
+
+			nmatches = maxtbl( matches );
+
+			if( nmatches <= 0 ) {
+
+				dbtr->newrow( dbscratch, ttr->table_name, irecord, newsync, pvt );	
+
+			} else {
+
+				if( nmatches > 1 ) {
+
+					elog_complain( 0, 
+						"Warning: there were multiple matches "
+						"(%ld of them) for sync '%s' in libdbmon's "
+						"previous view of table '%s'\n",
+						nmatches, newsync, ttr->table_name );
+
+					sorttbl( matches, sort_aslong, NULL );
+				}
+
+				for( imatch = 0; imatch < nmatches; imatch++ ) {
+
+					isync = (long) gettbl( matches, imatch );
+
+					pushtbl( oldrows_preserve, (void *) isync );
+				}
+			}
+
+			freetbl( matches, NULL );
+		}
+	}
+
+	while( ( isync = (long) poptbl( oldrows_preserve ) ) != 0L ) {
+
+		oldsync = deltbl( ttr->syncs, isync );
+
+		if( oldsync != (char *) NULL ) {
+
+			free( oldsync );
+		}
+	}
+
+	if( oldrows_preserve_first ) {
+
+		oldsync = (char *) deltbl( ttr->syncs, 0L );
+
+		if( oldsync != (char *) NULL ) {
+
+			free( oldsync );
+		}
+	}
+
+	for( isync = 0L; isync < maxtbl( ttr->syncs ); isync++ ) {
+
+		oldsync = (char *) gettbl( ttr->syncs, isync );
+
+		if( strcmp( oldsync, ttr->null_sync ) ) {
+
+			dbtr->delrow( db, ttr->table_name, oldsync, pvt );
+		}
+	}
+
+	freetbl( oldrows_preserve, NULL );
+
+	freetbl( ttr->syncs, free );
+
+	ttr->syncs = newsyncs;
+
+	return;
+}
+
+char *
+dbmon_compute_row_sync( Dbptr db )
+{
+	unsigned long record_size = 0L;
+	unsigned char digest[20];
+	char	*sync = (char *) NULL;
+	char	*row = (char *) NULL;
+
+	db.field = dbALL;
+
+	dbquery( db, dbRECORD_SIZE, &record_size );
+
+	allot( char *, row, record_size + 2 );
+
+	dbget( db, row );
+
+	compute_digest( (unsigned char *) row, record_size, &digest[0] );
+
+	free( row ); 
+
+	sync = digest2hex( digest );
+
+	return sync;
+}
+
 Hook *
 dbmon_init( Dbptr db, Tbl *table_subset, 
 	    void (*newrow)(Dbptr, char *, long, char *, void *), 
@@ -276,8 +495,8 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 	    void (*delrow)(Dbptr, char *, char *, void *), 
 	    int flags )
 {
-	Hook	*dbmon_hook = 0;
-	Dbtrack *dbtr = 0;
+	Hook	*dbmon_hook = NULL;
+	Dbtrack *dbtr = NULL;
 
 	dbmon_hook = new_hook( free_dbtrack );
 
@@ -295,21 +514,15 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 }
 
 int 
-dbmon_update( Hook *dbmon_hook, void *private )
+dbmon_update( Hook *dbmon_hook, void *pvt )
 {
 	Dbtrack *dbtr = (Dbtrack *) dbmon_hook->p;
 	Tabletrack *ttr;
 	Tbl	*keys;
-	Dbptr	db;
-	Dbptr	dbscratch;
 	Dbvalue val;
-	int	ikey;
-	int	isync;
 	int	retcode = 0;
-	long	irecord = 0;
-	long	new_nrecs = 0;
-	char	*sync;
-	char	*oldsync;
+	long	ikey;
+	long	new_nrecs = 0L;
 	char	cmd[FILENAME_MAX+STRSZ];
 
 	sprintf( cmd, "orb2db_msg %s wait", dbtr->dbname );
@@ -345,155 +558,21 @@ dbmon_update( Hook *dbmon_hook, void *private )
 
 			ttr->table_exists = 1;
 
-			db = ttr->db;
-
-			dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
-
-			for( irecord = 0; irecord < new_nrecs; irecord++ ) {
-
-				db.record = irecord;
-
-				dbget( db, NULL );
-
-				sync = dbmon_compute_row_sync( dbscratch );
-
-				if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
-
-					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
-				}
-
-				dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
-			}
+			dbmon_build_table( dbtr, ttr, pvt );
 
 		} else if( ttr->table_nrecs > 0 && new_nrecs <= 0 ) { 			/* Table disappeared */
 
 			elog_notify( 0, "DBMON DEBUG: Table %s disappeared\n", ttr->table_name );
 
-			for( isync = 0; isync < maxtbl( ttr->syncs ); isync++ ) {
-
-				sync = (char *) gettbl( ttr->syncs, isync );
-
-				dbtr->delrow( ttr->db, ttr->table_name, sync, private );
-			}
-
-			trunctbl( ttr->syncs, 0, free );
+			dbmon_delete_table( dbtr, ttr, pvt );
 
 			ttr->table_exists = 0;
 
-		} else if( new_nrecs < ttr->table_nrecs ) { 				/* Table shortened */
+		} else if( ttr->table_modtime != filetime( ttr->table_filename ) ) { 	/* Table changed */
 
-			elog_notify( 0, "DBMON DEBUG: Table %s shortened\n", ttr->table_name );
+			elog_notify( 0, "DBMON DEBUG: Table %s changed\n", ttr->table_name );
 
-			elog_log( 0, "Table '%s' inappropriately shortened from %ld to %ld rows; rebuilding\n", 
-				     ttr->table_filename, ttr->table_nrecs, new_nrecs );
-
-			db = ttr->db;
-
-			dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
-
-			for( isync = 0; isync < maxtbl( ttr->syncs ); isync++ ) {
-
-				sync = (char *) gettbl( ttr->syncs, isync );
-
-				dbtr->delrow( db, ttr->table_name, sync, private );
-			}
-
-			trunctbl( ttr->syncs, 0, free );
-
-			/* Use dbquery in attempt to prevent bus error from reading past end of table that may still be shortening: */
-
-			for( irecord = 0; irecord < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); irecord++ ) {
-
-				db.record = irecord;
-
-				dbget( db, NULL );
-
-				sync = dbmon_compute_row_sync( dbscratch );
-
-				if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
-
-					elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
-				}
-
-				dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
-			}
-
-		} else if( new_nrecs >= ttr->table_nrecs && 
-		           ttr->table_modtime != filetime( ttr->table_filename ) ) { 	/* Table modified */
-
-			elog_notify( 0, "DBMON DEBUG: Table %s modified\n", ttr->table_name );
-
-			db = ttr->db;
-
-			dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
-
-			for( irecord = 0; irecord < ttr->table_nrecs; irecord++ ) {
-
-				db.record = irecord;
-
-				oldsync = (char *) gettbl( ttr->syncs, irecord );
-
-				dbget( db, NULL );
-
-				sync = dbmon_compute_row_sync( dbscratch );
-
-				if( oldsync == (char *) NULL ) {			/* new row */
-
-					if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
-
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
-					}
-
-					dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
-
-				} else if( ! strcmp( oldsync, sync ) ) {		/* same row */
-
-					free( sync );
-
-				} else if( ! strcmp( sync, ttr->null_sync ) ) {		/* marked row */
-
-					dbtr->delrow( db, ttr->table_name, oldsync, private );
-
-					if( settbl( ttr->syncs, irecord, strdup( ttr->null_sync ) ) != irecord ) {
-
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
-					}
-
-					free( oldsync );
-
-				} else {						/* changed row */
-
-					dbtr->changerow( oldsync, dbscratch, ttr->table_name, irecord, sync, private );	
-
-					if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
-
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
-					}
-
-					free( oldsync );
-				}
-			}
-
-			if( new_nrecs > ttr->table_nrecs ) {
-
-				for( irecord = ttr->table_nrecs; 
-				      irecord < dbquery( ttr->db, dbRECORD_COUNT, &new_nrecs ); 
-				       irecord++ ) {
-
-				       	db.record = irecord;
-
-					dbget( db, NULL );
-
-					sync = dbmon_compute_row_sync( dbscratch );
-
-					if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
-
-						elog_complain( 0, "Unexpected failure of settbl for index %ld\n", irecord );
-					}
-
-					dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, private );	
-				}
-			}
+			dbmon_resync_table( dbtr, ttr, pvt );
 
 		} else {								 /* Table unchanged */
 
@@ -526,10 +605,10 @@ void
 dbmon_status( FILE *fp, Hook *dbmon_hook ) 
 {
 	Dbtrack *dbtr = (Dbtrack *) dbmon_hook->p;
-	Tabletrack *ttr;
-	Tbl	*keys;
-	int	ikey;
-	char	*s;
+	Tabletrack *ttr = NULL;
+	Tbl	*keys = NULL;
+	long	ikey = 0L;
+	char	*s = NULL;
 
 	fprintf( fp, "Monitoring database: '%s'\n", dbtr->dbname );
 	fprintf( fp, "Cached database pointer: %ld %ld %ld %ld\n", 

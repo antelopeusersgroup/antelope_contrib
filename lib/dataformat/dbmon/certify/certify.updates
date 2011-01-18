@@ -5,3 +5,4 @@ dbmon       1274589073.00000 raptor     kent       Darwin/5.0 Schema tables adde
 dbmon       1294346380.00000 raptor     kent       Darwin/5.0 Reflect update to rsyncbaler null                              1294346380
 dbmon       1295047220.00000 raptor     kent       Darwin/5.0 Adjust for new orb2db_msg in libdbmon                          1295047221
 dbmon       1295321655.00000 raptor     kent       Darwin/5.0 Add test for chimney-collapse change                           1295321655
+dbmon       1295372044.00000 raptor     kent       Darwin/5.0 Change modification-tracking strategy                          1295372045

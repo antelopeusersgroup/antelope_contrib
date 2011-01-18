@@ -25,8 +25,7 @@ try_dbmon: DBMON DEBUG: Table sitechan unchanged
 try_dbmon: DBMON DEBUG: Table stamag unchanged
 try_dbmon: DBMON DEBUG: Table wfdisc unchanged
 try_dbmon: DBMON DEBUG: Table affiliation unchanged
-try_dbmon: DBMON DEBUG: Table arrival shortened
-try_dbmon: Table 'results/dbmon/demo.arrival' inappropriately shortened from 5 to 1 rows; rebuilding
+try_dbmon: DBMON DEBUG: Table arrival changed
 try_dbmon: DBMON DEBUG: Table assoc unchanged
 try_dbmon: DBMON DEBUG: Table instrument unchanged
 try_dbmon: DBMON DEBUG: Table lastid unchanged
@@ -39,7 +38,7 @@ try_dbmon: DBMON DEBUG: Table sitechan unchanged
 try_dbmon: DBMON DEBUG: Table stamag unchanged
 try_dbmon: DBMON DEBUG: Table wfdisc unchanged
 try_dbmon: DBMON DEBUG: Table affiliation unchanged
-try_dbmon: DBMON DEBUG: Table arrival modified
+try_dbmon: DBMON DEBUG: Table arrival changed
 try_dbmon: DBMON DEBUG: Table assoc unchanged
 try_dbmon: DBMON DEBUG: Table instrument unchanged
 try_dbmon: DBMON DEBUG: Table lastid unchanged
@@ -52,7 +51,7 @@ try_dbmon: DBMON DEBUG: Table sitechan unchanged
 try_dbmon: DBMON DEBUG: Table stamag unchanged
 try_dbmon: DBMON DEBUG: Table wfdisc unchanged
 try_dbmon: DBMON DEBUG: Table affiliation unchanged
-try_dbmon: DBMON DEBUG: Table arrival modified
+try_dbmon: DBMON DEBUG: Table arrival changed
 try_dbmon: DBMON DEBUG: Table assoc unchanged
 try_dbmon: DBMON DEBUG: Table instrument unchanged
 try_dbmon: DBMON DEBUG: Table lastid unchanged
