@@ -3070,6 +3070,37 @@ New Row 10 in 'arrival' [sync '67766940da86bc7b5bf516d8d5757e26e2c5b7cb']: AAK  
 
 New Row 11 in 'arrival' [sync '32b7c6233ba1ec0952d4a3f96ae0235327c78912']: EKS2     706139709.96670     4860  1992138       -1       -1 BHZ      del      - -1.000   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223373.00000
 
+Chimney-collapsing arrival table:
+Changed Row 0 in 'arrival' [Old sync '8a31aff746d21ec917e72cfbb14c3361526be0f6', New sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1']: CHM      706139752.34740     4852  1992138       -1        1 BHZ      P        -  0.401   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        3.3    0.50 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 1 in 'arrival' [Old sync '0d61a9b8c25268acd002fc42f305f420a88733bb', New sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b']: USP      706139752.40005     4853  1992138       -1        7 BHZ      P        -  0.151   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.6    0.50 -999.00 - ..       3.89 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 2 in 'arrival' [Old sync '78614c3070304bc7422ef6c43052a33e9874eb28', New sync 'fbdc86034c2b5f7c55bc263539bcbf47e43e8900']: TKM      706139755.45010     4854  1992138       -1       22 BHZ      P        -  0.316   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..       2.99 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 3 in 'arrival' [Old sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1', New sync '6b3e2d7d1de31ff896879595e631757bbfb46a96']: AAK      706139775.33963     4855  1992138       -1       29 BHN      S        -  2.164   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 4 in 'arrival' [Old sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b', New sync 'b958608cc4b39c0916739d05a93f0250f7c8c3ba']: KBK      706139784.43397     4856  1992138       -1       26 BHN      S        -  2.065   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 5 in 'arrival' [Old sync 'fbdc86034c2b5f7c55bc263539bcbf47e43e8900', New sync '544dbce313a6487571b45cfc804ce39e5cdc69b9']: CHM      706139787.28949     4857  1992138       -1        2 BHN      S        -  1.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 6 in 'arrival' [Old sync '6b3e2d7d1de31ff896879595e631757bbfb46a96', New sync '11109ce7dbbae45f44983d83720b0e4c0ae76be7']: USP      706139788.12868     4858  1992138       -1        9 BHE      S        -  2.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 7 in 'arrival' [Old sync 'b958608cc4b39c0916739d05a93f0250f7c8c3ba', New sync '67766940da86bc7b5bf516d8d5757e26e2c5b7cb']: AAK      706139712.37677     4859  1992138       -1       -1 BHZ      del      -  2.222   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000    47276.3    0.10 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223377.00000
+
+Changed Row 8 in 'arrival' [Old sync '544dbce313a6487571b45cfc804ce39e5cdc69b9', New sync '32b7c6233ba1ec0952d4a3f96ae0235327c78912']: EKS2     706139709.96670     4860  1992138       -1       -1 BHZ      del      - -1.000   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223373.00000
+
+Changed Row 9 in 'arrival' [Old sync '11109ce7dbbae45f44983d83720b0e4c0ae76be7', New sync '1be505a7e20bf0a93b35586c92a5c68e3a71bb70']: CHM      706139887.28949     4861  1992138       -1        2 BHN      S        -  1.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 10 in 'arrival' [Old sync '67766940da86bc7b5bf516d8d5757e26e2c5b7cb', New sync '97fccdfccacd7d55990d8257b0dd23891d4c990f']: USP      706139888.12868     4862  1992138       -1        9 BHE      S        -  2.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+Changed Row 11 in 'arrival' [Old sync '32b7c6233ba1ec0952d4a3f96ae0235327c78912', New sync 'aa78e141ced3e22e8998eda1680891f10d23b344']: AAK      706139812.37677     4863  1992138       -1       -1 BHZ      del      -  2.222   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000    47276.3    0.10 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223377.00000
+
+New Row 12 in 'arrival' [sync '8bc149f5e144f790049528a9e3d4af37eeec805d']: EKS2     706139809.96670     4864  1992138       -1       -1 BHZ      del      - -1.000   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223373.00000
+
+New Row 13 in 'arrival' [sync '20a6c96d7d30c8a3c86ebd22c2a131f6916af0ef']: AAK      706139875.33963     4865  1992138       -1       29 BHN      S        -  2.164   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 14 in 'arrival' [sync '098986777d0777a130b3e64ba498ca0b6410d8e2']: KBK      706139884.43397     4866  1992138       -1       26 BHN      S        -  2.065   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
 Monitoring database: 'results/dbmon/demo'
 Cached database pointer: 0 -501 -501 -501
 Schema table 'achanaux':
@@ -3089,7 +3120,7 @@ Schema table 'adoption':
 Schema table 'affiliation':
 	Filename: 'results/dbmon/demo.affiliation'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 13
 	Null-row sync string: b65fb9b9cb37f59e1bf5869c6c6c1f8c40b2e92f
 	Sync strings:
@@ -3138,22 +3169,25 @@ Schema table 'anetsta':
 Schema table 'arrival':
 	Filename: 'results/dbmon/demo.arrival'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:10.000
-	Number of records: 12
+	File modification time:  1/18/2011   3:33:58.000
+	Number of records: 15
 	Null-row sync string: 29b3c2c8c162e1acb2bfe82bbc375acf860234fb
 	Sync strings:
-	  0 8a31aff746d21ec917e72cfbb14c3361526be0f6
-	  1 0d61a9b8c25268acd002fc42f305f420a88733bb
-	  2 78614c3070304bc7422ef6c43052a33e9874eb28
-	  3 d19ef347f1c5c11aa2eb817f03e72d154ba1abb1
-	  4 b8c8cf5affadae025a5f0708091d1117bd8c5c7b
-	  5 fbdc86034c2b5f7c55bc263539bcbf47e43e8900
-	  6 6b3e2d7d1de31ff896879595e631757bbfb46a96
-	  7 b958608cc4b39c0916739d05a93f0250f7c8c3ba
-	  8 544dbce313a6487571b45cfc804ce39e5cdc69b9
-	  9 11109ce7dbbae45f44983d83720b0e4c0ae76be7
-	 10 67766940da86bc7b5bf516d8d5757e26e2c5b7cb
-	 11 32b7c6233ba1ec0952d4a3f96ae0235327c78912
+	  0 d19ef347f1c5c11aa2eb817f03e72d154ba1abb1
+	  1 b8c8cf5affadae025a5f0708091d1117bd8c5c7b
+	  2 fbdc86034c2b5f7c55bc263539bcbf47e43e8900
+	  3 6b3e2d7d1de31ff896879595e631757bbfb46a96
+	  4 b958608cc4b39c0916739d05a93f0250f7c8c3ba
+	  5 544dbce313a6487571b45cfc804ce39e5cdc69b9
+	  6 11109ce7dbbae45f44983d83720b0e4c0ae76be7
+	  7 67766940da86bc7b5bf516d8d5757e26e2c5b7cb
+	  8 32b7c6233ba1ec0952d4a3f96ae0235327c78912
+	  9 1be505a7e20bf0a93b35586c92a5c68e3a71bb70
+	 10 97fccdfccacd7d55990d8257b0dd23891d4c990f
+	 11 aa78e141ced3e22e8998eda1680891f10d23b344
+	 12 8bc149f5e144f790049528a9e3d4af37eeec805d
+	 13 20a6c96d7d30c8a3c86ebd22c2a131f6916af0ef
+	 14 098986777d0777a130b3e64ba498ca0b6410d8e2
 	Watched: yes
 Schema table 'arrival_tshift':
 	Filename: ''
@@ -3165,7 +3199,7 @@ Schema table 'arrival_tshift':
 Schema table 'assoc':
 	Filename: 'results/dbmon/demo.assoc'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 9
 	Null-row sync string: 79029ac765971e2082efe5c7e9da6c16c6294037
 	Sync strings:
@@ -3476,7 +3510,7 @@ Schema table 'hypocentroid':
 Schema table 'instrument':
 	Filename: 'results/dbmon/demo.instrument'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 22
 	Null-row sync string: 8b318f663c200e39e0819c3d0b7bbb469af71f7f
 	Sync strings:
@@ -3513,7 +3547,7 @@ Schema table 'iptable':
 Schema table 'lastid':
 	Filename: 'results/dbmon/demo.lastid'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 1
 	Null-row sync string: 61bffaae48e5fda103a28eee492dbf04585181c6
 	Sync strings:
@@ -3536,7 +3570,7 @@ Schema table 'moment':
 Schema table 'netmag':
 	Filename: 'results/dbmon/demo.netmag'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 5
 	Null-row sync string: 19e36114fb9dd1775075601bae17ee52be5b9b62
 	Sync strings:
@@ -3556,7 +3590,7 @@ Schema table 'netperf':
 Schema table 'network':
 	Filename: 'results/dbmon/demo.network'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 1
 	Null-row sync string: 9f91f56a05cd8cb4341c214e460b6abf6ce459b4
 	Sync strings:
@@ -3579,7 +3613,7 @@ Schema table 'origerr':
 Schema table 'origin':
 	Filename: 'results/dbmon/demo.origin'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 1351
 	Null-row sync string: 84c9613022ab9c74809ae97cb04bb3b260cedef9
 	Sync strings:
@@ -5064,7 +5098,7 @@ Schema table 'seismometer':
 Schema table 'sensor':
 	Filename: 'results/dbmon/demo.sensor'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 39
 	Null-row sync string: d9b9c8a9b740554c6f376b3ea76f8440fe8760dd
 	Sync strings:
@@ -5125,7 +5159,7 @@ Schema table 'sensormodel':
 Schema table 'site':
 	Filename: 'results/dbmon/demo.site'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 13
 	Null-row sync string: b6a7212b6cb2acdca46f89caf47569c934b62832
 	Sync strings:
@@ -5146,7 +5180,7 @@ Schema table 'site':
 Schema table 'sitechan':
 	Filename: 'results/dbmon/demo.sitechan'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 39
 	Null-row sync string: 57ba5e3ce2c0215793ac4f08a699fef883855022
 	Sync strings:
@@ -5235,7 +5269,7 @@ Schema table 'stage':
 Schema table 'stamag':
 	Filename: 'results/dbmon/demo.stamag'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 4
 	Null-row sync string: fbc2c725344fdc6e9975b83810f1f75e6a5d6a0d
 	Sync strings:
@@ -5282,7 +5316,7 @@ Schema table 'trigger':
 Schema table 'wfdisc':
 	Filename: 'results/dbmon/demo.wfdisc'
 	Exists: yes
-	File modification time:  1/14/2011  23:20:08.000
+	File modification time:  1/18/2011   3:33:55.000
 	Number of records: 18
 	Null-row sync string: 67da46400fbc192b0d2981199ef3d02ab46adfcb
 	Sync strings:
