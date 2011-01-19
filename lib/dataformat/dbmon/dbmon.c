@@ -371,6 +371,8 @@ synctrack_certain_delete( void *strp, void *strcxtp )
 
 	delstbl( strcxt->ttr->syncs, str );
 
+	free_synctrack( (void *) str );
+
 	return 0;
 }
 
@@ -478,7 +480,7 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 			newstr->add = 1;
 		}
 
-		addstbl( ttr->syncs, newstr );
+		addstbl( ttr->syncs, (void *) newstr );
 	}
 
 	strcxt = new_synctrack_context( dbtr, ttr, pvt );
@@ -560,7 +562,7 @@ dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 			newstr->add = 1;
 		}
 
-		addstbl( ttr->syncs, newstr );
+		addstbl( ttr->syncs, (void *) newstr );
 	}
 
 	strcxt = new_synctrack_context( dbtr, ttr, pvt );
