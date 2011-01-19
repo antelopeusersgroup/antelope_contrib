@@ -6,3 +6,4 @@ dbmon       1294346380.00000 raptor     kent       Darwin/5.0 Reflect update to 
 dbmon       1295047220.00000 raptor     kent       Darwin/5.0 Adjust for new orb2db_msg in libdbmon                          1295047221
 dbmon       1295321655.00000 raptor     kent       Darwin/5.0 Add test for chimney-collapse change                           1295321655
 dbmon       1295372044.00000 raptor     kent       Darwin/5.0 Change modification-tracking strategy                          1295372045
+dbmon       1295424822.00000 raptor     kent       Darwin/5.0 Change table update strategy                                   1295424822

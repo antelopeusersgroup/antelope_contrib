@@ -77,28 +77,28 @@ typedef struct Synctrack {
 	int	irecord;
 } Synctrack;
 
-typedef struct SynctrackPrivate {
+typedef struct SynctrackCtxt {
 	Dbtrack *dbtr;
 	Tabletrack *ttr;
 	void	*pvt;
-} SynctrackPrivate;
+} SynctrackCtxt;
 
 static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
 static Synctrack *new_synctrack( Dbptr db, long irecord );
-static SynctrackPrivate *new_synctrack_private( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static SynctrackCtxt *new_synctrack_context( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 static int cmp_synctracks( void *ap, void *bp );
 static int synctrack_reset_conditionals( void *strp, void *pvt );
-static int synctrack_conditional_add( void *strp, void *strpvtp );
-static int synctrack_conditional_delete( void *strp, void *strpvtp );
-static int synctrack_certain_delete( void *strp, void *strpvtp );
+static int synctrack_conditional_add( void *strp, void *strcxtp );
+static int synctrack_conditional_delete( void *strp, void *strcxtp );
+static int synctrack_certain_delete( void *strp, void *strcxtp );
 static int synctrack_print( void *strp, void *fpp );
 static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
 static char *digest2hex( unsigned char *digest );
 static void free_tabletrack( void *ttrp );
 static void free_dbtrack( void *dbtrp );
 static void free_synctrack( void *strp );
-static void free_synctrack_private( SynctrackPrivate *strp );
+static void free_synctrack_context( SynctrackCtxt *strp );
 static void focus_tableset( Dbtrack *dbtr, Tbl *table_subset );
 static void dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 static void dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
@@ -228,22 +228,22 @@ new_synctrack( Dbptr db, long irecord )
 	return str;
 }
 
-static SynctrackPrivate *
-new_synctrack_private( Dbtrack *dbtr, Tabletrack *ttr, void *pvt ) 
+static SynctrackCtxt *
+new_synctrack_context( Dbtrack *dbtr, Tabletrack *ttr, void *pvt ) 
 {
-	SynctrackPrivate *strpvt = NULL;
+	SynctrackCtxt *strcxt = NULL;
 
-	allot( SynctrackPrivate *, strpvt, 1 );
+	allot( SynctrackCtxt *, strcxt, 1 );
 
-	strpvt->dbtr = dbtr;
-	strpvt->ttr = ttr;
-	strpvt->pvt = pvt;
+	strcxt->dbtr = dbtr;
+	strcxt->ttr = ttr;
+	strcxt->pvt = pvt;
 
-	return strpvt;
+	return strcxt;
 }
 
 static void
-free_synctrack_private( SynctrackPrivate *strp )
+free_synctrack_context( SynctrackCtxt *strp )
 {
 	free( strp );
 
@@ -359,40 +359,40 @@ synctrack_reset_conditionals( void *strp, void *pvt )
 }
 
 static int
-synctrack_certain_delete( void *strp, void *strpvtp )
+synctrack_certain_delete( void *strp, void *strcxtp )
 {
 	Synctrack *str = (Synctrack *) strp;
-	SynctrackPrivate *strpvt = (SynctrackPrivate *) strpvtp;
+	SynctrackCtxt *strcxt = (SynctrackCtxt *) strcxtp;
 
-	strpvt->dbtr->delrow( strpvt->ttr->db, 
-		      	      strpvt->ttr->table_name, 
+	strcxt->dbtr->delrow( strcxt->ttr->db, 
+		      	      strcxt->ttr->table_name, 
 		      	      str->sync, 
-		      	      strpvt->pvt );
+		      	      strcxt->pvt );
 
-	delstbl( strpvt->ttr->syncs, str );
+	delstbl( strcxt->ttr->syncs, str );
 
 	return 0;
 }
 
 static int
-synctrack_conditional_delete( void *strp, void *strpvtp )
+synctrack_conditional_delete( void *strp, void *strcxtp )
 {
 	Synctrack *str = (Synctrack *) strp;
 	int	rc = 0;
 
 	if( ! str->keep ) {
 
-		rc = synctrack_certain_delete( strp, strpvtp );
+		rc = synctrack_certain_delete( strp, strcxtp );
 	}
 
 	return rc;
 }
 
 static int
-synctrack_conditional_add( void *strp, void *strpvtp )
+synctrack_conditional_add( void *strp, void *strcxtp )
 {
 	Synctrack *str = (Synctrack *) strp;
-	SynctrackPrivate *strpvt = (SynctrackPrivate *) strpvtp;
+	SynctrackCtxt *strcxt = (SynctrackCtxt *) strcxtp;
 	Dbptr	db;
 	Dbptr	dbscratch;
 	char	*checksync = NULL;
@@ -403,7 +403,7 @@ synctrack_conditional_add( void *strp, void *strpvtp )
 		return rc;
 	}
 
-	db = strpvt->ttr->db;
+	db = strcxt->ttr->db;
 
 	db.record = str->irecord;
 
@@ -424,7 +424,7 @@ synctrack_conditional_add( void *strp, void *strpvtp )
 
 	free( checksync );
 
-	strpvt->dbtr->newrow( dbscratch, strpvt->ttr->table_name, str->irecord, str->sync, strpvt->pvt );	
+	strcxt->dbtr->newrow( dbscratch, strcxt->ttr->table_name, str->irecord, str->sync, strcxt->pvt );	
 
 	return rc;
 }
@@ -469,13 +469,13 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 static void
 dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 {
-	SynctrackPrivate *strpvt = NULL;
+	SynctrackCtxt *strcxt = NULL;
 
-	strpvt = new_synctrack_private( dbtr, ttr, pvt );
+	strcxt = new_synctrack_context( dbtr, ttr, pvt );
 
-	applystbl( ttr->syncs, synctrack_certain_delete, (void *) strpvt );
+	applystbl( ttr->syncs, synctrack_certain_delete, (void *) strcxt );
 
-	free_synctrack_private( strpvt );
+	free_synctrack_context( strcxt );
 
 	return;
 }
@@ -489,7 +489,7 @@ dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 	Dbptr	dbscratch;
 	Synctrack *oldstr = NULL;
 	Synctrack *newstr = NULL;
-	SynctrackPrivate *strpvt = NULL;
+	SynctrackCtxt *strcxt = NULL;
 
 	db = ttr->db;
 
@@ -519,25 +519,31 @@ dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		newstr->keep = 1;
 
-		if( ( oldstr = addstbl( ttr->syncs, newstr ) ) != newstr ) {
+		oldstr = (Synctrack *) tststbl( ttr->syncs, newstr );
+
+		if( oldstr != (Synctrack *) NULL ) {
+
+			delstbl( ttr->syncs, oldstr );
+
+			free_synctrack( (void *) oldstr );
 
 			newstr->add = 0;
-
-			/* DEBUG free_synctrack( (void *) oldstr ); */
 
 		} else {
 
 			newstr->add = 1;
 		}
+
+		addstbl( ttr->syncs, newstr );
 	}
 
-	strpvt = new_synctrack_private( dbtr, ttr, pvt );
+	strcxt = new_synctrack_context( dbtr, ttr, pvt );
 
-	applystbl( ttr->syncs, synctrack_conditional_delete, (void *) strpvt );
+	applystbl( ttr->syncs, synctrack_conditional_delete, (void *) strcxt );
 
-	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strpvt );
+	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
 
-	free_synctrack_private( strpvt );
+	free_synctrack_context( strcxt );
 		
 	return;
 }
