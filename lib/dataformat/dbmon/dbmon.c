@@ -66,17 +66,39 @@ typedef struct Tabletrack {
 	long	table_nrecs;
 	unsigned long table_modtime;
 	char	*null_sync;
-	Tbl	*syncs;
+	Stbl	*syncs;
 	int	watch_table;
 } Tabletrack;
 
+typedef struct Synctrack {
+	char	*sync;
+	int	keep;
+	int	add;
+	int	irecord;
+} Synctrack;
+
+typedef struct SynctrackPrivate {
+	Dbtrack *dbtr;
+	Tabletrack *ttr;
+	void	*pvt;
+} SynctrackPrivate;
+
 static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
-static int sort_aslong( char **ap, char **bp, void *pvt );
+static Synctrack *new_synctrack( Dbptr db, long irecord );
+static SynctrackPrivate *new_synctrack_private( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static int cmp_synctracks( void *ap, void *bp );
+static int synctrack_reset_conditionals( void *strp, void *pvt );
+static int synctrack_conditional_add( void *strp, void *strpvtp );
+static int synctrack_conditional_delete( void *strp, void *strpvtp );
+static int synctrack_certain_delete( void *strp, void *strpvtp );
+static int synctrack_print( void *strp, void *fpp );
 static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
 static char *digest2hex( unsigned char *digest );
 static void free_tabletrack( void *ttrp );
 static void free_dbtrack( void *dbtrp );
+static void free_synctrack( void *strp );
+static void free_synctrack_private( SynctrackPrivate *strp );
 static void focus_tableset( Dbtrack *dbtr, Tbl *table_subset );
 static void dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 static void dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
@@ -110,6 +132,15 @@ digest2hex( unsigned char *digest )
 	hex[40] = '\0';
 
 	return hex;
+}
+
+static int
+cmp_synctracks( void *ap, void *bp )
+{
+	Synctrack *a = (Synctrack *) ap;
+	Synctrack *b = (Synctrack *) bp;
+
+	return strcmp( a->sync, b->sync );
 }
 
 static Dbtrack *
@@ -174,9 +205,64 @@ new_tabletrack( char *table_name )
 	ttr->table_modtime = 0L;
 
 	ttr->null_sync = NULL;
-	ttr->syncs = newtbl( 0 );
+
+	ttr->syncs = newstbl( cmp_synctracks );
 
 	return ttr;
+}
+
+static Synctrack *
+new_synctrack( Dbptr db, long irecord )
+{
+	Synctrack *str = NULL;
+
+	allot( Synctrack *, str, 1 );
+
+	str->sync = dbmon_compute_row_sync( db );
+
+	str->irecord = irecord;
+
+	str->keep = 0;
+	str->add = 0;
+
+	return str;
+}
+
+static SynctrackPrivate *
+new_synctrack_private( Dbtrack *dbtr, Tabletrack *ttr, void *pvt ) 
+{
+	SynctrackPrivate *strpvt = NULL;
+
+	allot( SynctrackPrivate *, strpvt, 1 );
+
+	strpvt->dbtr = dbtr;
+	strpvt->ttr = ttr;
+	strpvt->pvt = pvt;
+
+	return strpvt;
+}
+
+static void
+free_synctrack_private( SynctrackPrivate *strp )
+{
+	free( strp );
+
+	return;
+}
+
+static void
+free_synctrack( void *strp )
+{
+	Synctrack *str = (Synctrack *) strp;
+
+	if( str->sync != (char *) NULL ) {
+
+		free( str->sync );
+	}
+
+	free( str );
+
+	return;
 }
 
 static void
@@ -189,9 +275,9 @@ free_tabletrack( void *ttrp )
 		free( ttr->null_sync );
 	}
 
-	if( ttr->syncs != (Tbl *) NULL ) {
+	if( ttr->syncs != (Stbl *) NULL ) {
 		
-		freetbl( ttr->syncs, free );
+		freestbl( ttr->syncs, free_synctrack );
 	}
 
 	free( ttr );
@@ -249,6 +335,100 @@ focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
 	return;
 }
 
+static int
+synctrack_print( void *strp, void *fpp )
+{
+	Synctrack *str = (Synctrack *) strp;
+	FILE	*fp = (FILE *) fpp;
+
+	fprintf( fp, "\t%s\n", str->sync );
+
+	return 0;
+}
+
+static int
+synctrack_reset_conditionals( void *strp, void *pvt )
+{
+	Synctrack *str = (Synctrack *) strp;
+
+	str->add = 0;
+
+	str->keep = 0;
+
+	return 0;
+}
+
+static int
+synctrack_certain_delete( void *strp, void *strpvtp )
+{
+	Synctrack *str = (Synctrack *) strp;
+	SynctrackPrivate *strpvt = (SynctrackPrivate *) strpvtp;
+
+	strpvt->dbtr->delrow( strpvt->ttr->db, 
+		      	      strpvt->ttr->table_name, 
+		      	      str->sync, 
+		      	      strpvt->pvt );
+
+	delstbl( strpvt->ttr->syncs, str );
+
+	return 0;
+}
+
+static int
+synctrack_conditional_delete( void *strp, void *strpvtp )
+{
+	Synctrack *str = (Synctrack *) strp;
+	int	rc = 0;
+
+	if( ! str->keep ) {
+
+		rc = synctrack_certain_delete( strp, strpvtp );
+	}
+
+	return rc;
+}
+
+static int
+synctrack_conditional_add( void *strp, void *strpvtp )
+{
+	Synctrack *str = (Synctrack *) strp;
+	SynctrackPrivate *strpvt = (SynctrackPrivate *) strpvtp;
+	Dbptr	db;
+	Dbptr	dbscratch;
+	char	*checksync = NULL;
+	int	rc = 0;
+
+	if( ! str->add ) {
+
+		return rc;
+	}
+
+	db = strpvt->ttr->db;
+
+	db.record = str->irecord;
+
+	dbget( db, NULL );
+
+	dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
+
+	checksync = dbmon_compute_row_sync( dbscratch );
+
+	if( strcmp( str->sync, checksync ) ) {
+
+		/* Row changed; leave for next iteration */
+
+		free( checksync );
+
+		return rc;
+	}
+
+	free( checksync );
+
+	strpvt->dbtr->newrow( dbscratch, strpvt->ttr->table_name, str->irecord, str->sync, strpvt->pvt );	
+
+	return rc;
+}
+
 static void
 dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 {
@@ -256,7 +436,8 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 	Dbptr	dbscratch;
 	long	irecord = 0L;
 	long	new_nrecs = 0L;
-	char	*sync = NULL;
+	Synctrack *str = NULL;
+	Synctrack *old = NULL;
 
 	db = ttr->db;
 
@@ -270,15 +451,16 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		dbget( db, NULL );
 
-		sync = dbmon_compute_row_sync( dbscratch );
+		str = new_synctrack( dbscratch, irecord );
 
-		if( settbl( ttr->syncs, irecord, sync ) != irecord ) {
+		if( ( old = (Synctrack *) addstbl( ttr->syncs, str ) ) != str ) {
 
-			elog_complain( 0, "Unexpected failure of settbl for "
-					  "index %ld\n", irecord );
+			elog_complain( 0, "Unexpected failure adding index %ld: "
+					  "record with matching sync already exists!\n", 
+					  irecord );
 		}
 
-		dbtr->newrow( dbscratch, ttr->table_name, irecord, sync, pvt );	
+		dbtr->newrow( dbscratch, ttr->table_name, irecord, str->sync, pvt );	
 	}
 
 	return;
@@ -287,71 +469,33 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 static void
 dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 {
-	long	isync;
-	char	*sync;
+	SynctrackPrivate *strpvt = NULL;
 
-	for( isync = 0; isync < maxtbl( ttr->syncs ); isync++ ) {
+	strpvt = new_synctrack_private( dbtr, ttr, pvt );
 
-		sync = (char *) gettbl( ttr->syncs, isync );
+	applystbl( ttr->syncs, synctrack_certain_delete, (void *) strpvt );
 
-		dbtr->delrow( ttr->db, ttr->table_name, sync, pvt );
-	}
-
-	trunctbl( ttr->syncs, 0, free );
+	free_synctrack_private( strpvt );
 
 	return;
-}
-
-static int
-sort_aslong( char **ap, char **bp, void *pvt )
-{
-	long	a = (long) *ap;
-	long	b = (long) *bp;
-	int	retcode = 0;
-
-	if( a < b ) {
-
-		retcode = -1;
-
-	} else if( a == b ) {
-	
-		retcode = 0;
-
-	} else {
-
-		retcode = 1;
-	}
-
-	return retcode;
 }
 
 static void
 dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 {
-	long	isync = 0L;
 	long	irecord = 0L;
 	long	new_nrecs = 0L;
-	long	old_nsyncs = 0L;
-	long	imatch = 0L;
-	long	nmatches = 0L;
-	char	*oldsync = NULL;
-	char	*newsync = NULL;
-	Tbl	*newsyncs = NULL;
-	Tbl	*oldrows_preserve = NULL;
-	Tbl	*matches = NULL;
-	int	oldrows_preserve_first = 0;
 	Dbptr	db;
 	Dbptr	dbscratch;
+	Synctrack *oldstr = NULL;
+	Synctrack *newstr = NULL;
+	SynctrackPrivate *strpvt = NULL;
 
 	db = ttr->db;
 
 	dbscratch = dblookup( db, "", "", "", "dbSCRATCH" );
 
-	old_nsyncs = maxtbl( ttr->syncs );
-
-	newsyncs = newtbl( 0 );
-
-	oldrows_preserve = newtbl( 0 );
+	applystbl( ttr->syncs, synctrack_reset_conditionals, NULL );
 
 	/* Use dbquery in attempt to prevent bus error from reading past end 
 	   of table that may still be shortening: */
@@ -364,102 +508,37 @@ dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		dbget( db, NULL );
 
-		newsync = dbmon_compute_row_sync( dbscratch );
+		newstr = new_synctrack( dbscratch, irecord );
 
-		if( settbl( newsyncs, irecord, newsync ) != irecord ) {
+		if( ! strcmp( newstr->sync, ttr->null_sync ) ) {
 
-			elog_complain( 0, "Unexpected failure of settbl for "
-					  "index %ld\n", irecord );
+			free_synctrack( newstr );
+
+			continue;
 		}
 
-		if( ! strcmp( newsync, ttr->null_sync ) ) {
+		newstr->keep = 1;
 
-			; /* Do nothing with null row */
+		if( ( oldstr = addstbl( ttr->syncs, newstr ) ) != newstr ) {
 
-		} else if( irecord < old_nsyncs &&
-			   ( oldsync = gettbl( ttr->syncs, irecord ) ) != (char *) NULL &&
-			   ! strcmp( newsync, oldsync ) ) {
+			newstr->add = 0;
 
-			if( irecord == 0L ) {
-
-				oldrows_preserve_first = 1;
-			
-			} else {
-
-				pushtbl( oldrows_preserve, (void *) irecord );
-			}
+			free_synctrack( (void *) oldstr );
 
 		} else {
 
-			matches = greptbl( newsync, ttr->syncs );
-
-			nmatches = maxtbl( matches );
-
-			if( nmatches <= 0 ) {
-
-				dbtr->newrow( dbscratch, ttr->table_name, irecord, newsync, pvt );	
-
-			} else {
-
-				if( nmatches > 1 ) {
-
-					elog_complain( 0, 
-						"Warning: there were multiple matches "
-						"(%ld of them) for sync '%s' in libdbmon's "
-						"previous view of table '%s'\n",
-						nmatches, newsync, ttr->table_name );
-
-					sorttbl( matches, sort_aslong, NULL );
-				}
-
-				for( imatch = 0; imatch < nmatches; imatch++ ) {
-
-					isync = (long) gettbl( matches, imatch );
-
-					pushtbl( oldrows_preserve, (void *) isync );
-				}
-			}
-
-			freetbl( matches, NULL );
+			newstr->add = 1;
 		}
 	}
 
-	while( ( isync = (long) poptbl( oldrows_preserve ) ) != 0L ) {
+	strpvt = new_synctrack_private( dbtr, ttr, pvt );
 
-		oldsync = deltbl( ttr->syncs, isync );
+	applystbl( ttr->syncs, synctrack_conditional_delete, (void *) strpvt );
 
-		if( oldsync != (char *) NULL ) {
+	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strpvt );
 
-			free( oldsync );
-		}
-	}
-
-	if( oldrows_preserve_first ) {
-
-		oldsync = (char *) deltbl( ttr->syncs, 0L );
-
-		if( oldsync != (char *) NULL ) {
-
-			free( oldsync );
-		}
-	}
-
-	for( isync = 0L; isync < maxtbl( ttr->syncs ); isync++ ) {
-
-		oldsync = (char *) gettbl( ttr->syncs, isync );
-
-		if( strcmp( oldsync, ttr->null_sync ) ) {
-
-			dbtr->delrow( db, ttr->table_name, oldsync, pvt );
-		}
-	}
-
-	freetbl( oldrows_preserve, NULL );
-
-	freetbl( ttr->syncs, free );
-
-	ttr->syncs = newsyncs;
-
+	free_synctrack_private( strpvt );
+		
 	return;
 }
 
@@ -648,9 +727,11 @@ dbmon_status( FILE *fp, Hook *dbmon_hook )
 			fprintf( fp, "\tNull-row sync string: %s\n", ttr->null_sync );
 		}
 
-		if( ttr->syncs != (Tbl *) NULL ) {
+		if( ttr->syncs != (Stbl *) NULL ) {
 
-			debugtbl( fp, "\tSync strings:\n", ttr->syncs ); 
+			fprintf( fp, "\tSync strings:\n" );
+
+			applystbl( ttr->syncs, synctrack_print, (void *) fp );
 		}
 
 		fprintf( fp, "\tWatched: yes\n" );
