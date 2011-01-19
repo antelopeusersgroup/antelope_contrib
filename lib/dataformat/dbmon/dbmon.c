@@ -523,7 +523,7 @@ dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 			newstr->add = 0;
 
-			free_synctrack( (void *) oldstr );
+			/* DEBUG free_synctrack( (void *) oldstr ); */
 
 		} else {
 
