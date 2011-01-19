@@ -436,8 +436,9 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 	Dbptr	dbscratch;
 	long	irecord = 0L;
 	long	new_nrecs = 0L;
-	Synctrack *str = NULL;
-	Synctrack *old = NULL;
+	Synctrack *oldstr = NULL;
+	Synctrack *newstr = NULL;
+	SynctrackCtxt *strcxt = NULL;
 
 	db = ttr->db;
 
@@ -451,17 +452,42 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		dbget( db, NULL );
 
-		str = new_synctrack( dbscratch, irecord );
+		newstr = new_synctrack( dbscratch, irecord );
 
-		if( ( old = (Synctrack *) addstbl( ttr->syncs, str ) ) != str ) {
+		if( ! strcmp( newstr->sync, ttr->null_sync ) ) {
 
-			elog_complain( 0, "Unexpected failure adding index %ld: "
-					  "record with matching sync already exists!\n", 
-					  irecord );
+			free_synctrack( newstr );
+
+			continue;
 		}
 
-		dbtr->newrow( dbscratch, ttr->table_name, irecord, str->sync, pvt );	
+		newstr->keep = 1;
+
+		oldstr = (Synctrack *) tststbl( ttr->syncs, newstr );
+
+		if( oldstr != (Synctrack *) NULL ) {
+
+			delstbl( ttr->syncs, oldstr );
+
+			free_synctrack( (void *) oldstr );
+
+			newstr->add = 0;
+
+		} else {
+
+			newstr->add = 1;
+		}
+
+		addstbl( ttr->syncs, newstr );
 	}
+
+	strcxt = new_synctrack_context( dbtr, ttr, pvt );
+
+	applystbl( ttr->syncs, synctrack_conditional_delete, (void *) strcxt );
+
+	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
+
+	free_synctrack_context( strcxt );
 
 	return;
 }
