@@ -12,7 +12,7 @@ band        l   #
 sensor_type_code    D
 
 gtype       sensor
-sensitivity 2.32414E-03
+sensitivity -2.32414E-03
 ounits      V   
 iunits      Pa    
 
