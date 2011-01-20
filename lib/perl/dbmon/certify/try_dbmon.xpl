@@ -13,18 +13,6 @@ sub newrow {
 	return;
 }
 
-sub changerow { 
-	my( $oldsync ) = shift( @_ );
-	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $irecord, $sync, $fhref ) = @_;
-
-	$row = dbget( @db );
-	
-	printf $fhref "Changed Row $irecord in '$table' [Old sync '$oldsync', New sync '$sync']: $row\n";
-
-	return;
-}
-
 sub delrow { 
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $fhref ) = @_;
@@ -55,7 +43,7 @@ if( scalar( @ARGV ) != 2 ) {
 
 $fh = \*STDOUT;
 
-dbmon_init( @db, $hookname, \&newrow, \&changerow, \&delrow );
+dbmon_init( @db, $hookname, \&newrow, \&delrow );
 
 dbmon_update( $hookname, $fh );
 
