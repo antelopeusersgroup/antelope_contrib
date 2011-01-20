@@ -48,7 +48,17 @@ static Dbptr modeldb;
 #define ENVNAME "VELOCITY_MODEL_DATABASE"
 #define DEFAULT_DB "vmodel"
 
-#pragma init (tt1dcvl_init)
+int _tt1dcvl_has_run = 0;
+
+void tt1dcvl_init();
+
+void __attribute__ ((constructor))
+_tt1dcvl_init()
+{
+    tt1dcvl_init() ;
+
+    _tt1dcvl_has_run++;
+}
 
 void tt1dcvl_init()
 {
