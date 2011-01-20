@@ -660,8 +660,6 @@ dbmon_update( Hook *dbmon_hook, void *pvt )
 
 		} else if( ttr->table_nrecs == 0 && new_nrecs >= 0 ) {			/* Table appeared */
 
-			elog_notify( 0, "DBMON DEBUG: Table %s appeared\n", ttr->table_name );
-
 			dbquery( ttr->db, dbTABLE_FILENAME, &val );
 
 			strcpy( ttr->table_filename, val.t );
@@ -672,21 +670,15 @@ dbmon_update( Hook *dbmon_hook, void *pvt )
 
 		} else if( ttr->table_nrecs > 0 && new_nrecs <= 0 ) { 			/* Table disappeared */
 
-			elog_notify( 0, "DBMON DEBUG: Table %s disappeared\n", ttr->table_name );
-
 			dbmon_delete_table( dbtr, ttr, pvt );
 
 			ttr->table_exists = 0;
 
 		} else if( ttr->table_modtime != filetime( ttr->table_filename ) ) { 	/* Table changed */
 
-			elog_notify( 0, "DBMON DEBUG: Table %s changed\n", ttr->table_name );
-
 			dbmon_resync_table( dbtr, ttr, pvt );
 
 		} else {								 /* Table unchanged */
-
-			elog_notify( 0, "DBMON DEBUG: Table %s unchanged\n", ttr->table_name );
 
 			; 	/* Do nothing */
 		}
