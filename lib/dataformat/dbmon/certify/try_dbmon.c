@@ -5,7 +5,6 @@
 #include "db2sql.h"
 
 void newrow( Dbptr db, char *table, long irecord, char *sync, void *private );
-void changerow( char *oldsync, Dbptr db, char *table, long irecord, char *sync, void *private );
 void delrow( Dbptr db, char *table, char *sync, void *private );
 
 void
@@ -17,20 +16,6 @@ newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 	dbget( db, row );
 	
 	fprintf( fp, "New Row %ld in '%s' [sync '%s']: %s\n", irecord, table, sync, row );
-
-	return;
-}
-
-void
-changerow( char *oldsync, Dbptr db, char *table, long irecord, char *sync, void *private )
-{ 
-	char	row[10*STRSZ];
-	FILE	*fp = (FILE *) private;
-
-	dbget( db, row );
-	
-	fprintf( fp, "Changed Row %ld in '%s' [Old sync '%s', New sync '%s']: %s\n", 
-		 irecord, table, oldsync, sync, row );
 
 	return;
 }
@@ -65,7 +50,7 @@ main(int argc, char **argv )
 
 	dbopen_database( dbname, "r", &db );
 
-	dbmon_hook = dbmon_init( db, tables, newrow, changerow, delrow, 0 );
+	dbmon_hook = dbmon_init( db, tables, newrow, delrow, 0 );
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 

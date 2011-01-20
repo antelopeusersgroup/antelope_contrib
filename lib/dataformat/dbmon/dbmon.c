@@ -54,7 +54,6 @@ typedef struct Dbtrack {
 	Dbptr	db;
 	Arr	*tables;
 	void 	(*newrow)(Dbptr, char *, long, char *, void *);
-	void 	(*changerow)(char *, Dbptr, char *, long, char *, void *);
 	void 	(*delrow)(Dbptr, char *, char *, void *);
 } Dbtrack;
 
@@ -604,7 +603,6 @@ dbmon_compute_row_sync( Dbptr db )
 Hook *
 dbmon_init( Dbptr db, Tbl *table_subset, 
 	    void (*newrow)(Dbptr, char *, long, char *, void *), 
-	    void (*changerow)(char *, Dbptr, char *, long, char *, void *), 
 	    void (*delrow)(Dbptr, char *, char *, void *), 
 	    int flags )
 {
@@ -618,7 +616,6 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 	focus_tableset( dbtr, table_subset );
 
 	dbtr->newrow = newrow;
-	dbtr->changerow = changerow;
 	dbtr->delrow = delrow;
 
 	dbmon_hook->p = (void *) dbtr;
