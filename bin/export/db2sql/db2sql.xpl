@@ -226,18 +226,6 @@ sub newrow {
 	return;
 }
 
-sub changerow {
-	my( $oldsync ) = shift( @_ );
-	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $irecord, $sync, $dbh ) = @_;
-
-	delrow( @db, $table, $oldsync, $dbh );
-
-	newrow( @db, $table, $irecord, $sync, $dbh );
-
-	return;
-}
-
 sub delrow {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $dbh ) = @_;
@@ -345,7 +333,7 @@ init_sql_database( $dbh, $sql_dbname, $opt_r, @db );
 
 $hookname = "dbmon_hook";
 
-dbmon_init( @db, $hookname, \&newrow, \&changerow, \&delrow, @table_subset );
+dbmon_init( @db, $hookname, \&newrow, \&delrow, @table_subset );
 
 dbmon_update( $hookname, $dbh );
 
