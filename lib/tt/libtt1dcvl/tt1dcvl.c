@@ -81,16 +81,20 @@ void tt1dcvl_init()
 
 }
 
-static void free_Vmodel(Vmodel *mod)
+static void free_Vmodel(void *modp)
 {
+	Vmodel *mod = (Vmodel *) modp;
+
 	free(mod->name);
 	free(mod->property);
 	free(mod->velocity);
 	free(mod->ztop);
 	free(mod);
 }
-static void tt1dcvl_free_hook(tt1dcvl_hook *old)
+static void tt1dcvl_free_hook(void *oldp)
 {
+	tt1dcvl_hook *old = (tt1dcvl_hook *) oldp;
+
 	freearr(old->ttlvz_models,free_Vmodel);
 }
 char *make_vmodel_key(char *model,char *property)
@@ -435,7 +439,6 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 		int mode, Hook **hookp)
 {
 	double z0;  /* hold first layer depth (see below)  */
-	TTTime *t;
 	Vmodel *mod;
 
 	double *v, *z;
@@ -775,11 +778,9 @@ int tt1dcvl (
 	double d_km;
 	char *property;  
 	
-	int result;
 	char *plist;
 	char *phase;
 	TTTime *atime;
-	int iphase = 0; /* count of number of phases actually computed */
 
 	dist(rad(geometry->source.lat), rad(geometry->source.lon),
 		rad(geometry->receiver.lat), rad(geometry->receiver.lon),
@@ -840,11 +841,9 @@ int tt1dcvl_ucalc (
 				(uaz != s2raz on a spherical earth) */
 	char *property;  
 	
-	int result;
 	char *plist;
 	char *phase;
 	TTSlow *slowness;
-	int iphase = 0; /* count of number of phases actually computed */
 
 	/* First we compute the epicentral distance and azimuth.  We need
 	azimuth and both ends of the ray path for slowness partial 
