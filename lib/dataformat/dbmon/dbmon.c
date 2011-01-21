@@ -101,9 +101,10 @@ static void free_synctrack_context( SynctrackCtxt *strp );
 static void focus_tableset( Dbtrack *dbtr, Tbl *table_subset );
 static void dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 static void dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
-static void dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static void dbmon_update_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 
-static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest )
+static int 
+compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest )
 {
 	struct sha_ctx ctx;
 
@@ -131,15 +132,6 @@ digest2hex( unsigned char *digest )
 	hex[40] = '\0';
 
 	return hex;
-}
-
-static int
-cmp_synctracks( void *ap, void *bp )
-{
-	Synctrack *a = (Synctrack *) ap;
-	Synctrack *b = (Synctrack *) bp;
-
-	return strcmp( a->sync, b->sync );
 }
 
 static Dbtrack *
@@ -296,42 +288,13 @@ free_dbtrack( void *dbtrp )
 	return;
 }
 
-static void
-focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
+static int
+cmp_synctracks( void *ap, void *bp )
 {
-	Tbl	*keys = NULL;
-	long	ikey = 0L;
-	long	itable = 0L;
-	char	*table_name = NULL;
-	Tabletrack *ttr = NULL;
+	Synctrack *a = (Synctrack *) ap;
+	Synctrack *b = (Synctrack *) bp;
 
-	if( table_subset == (Tbl *) NULL ) {
-
-		keys = keysarr( dbtr->tables );
-
-		for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
-		
-			ttr = (Tabletrack *) getarr( dbtr->tables, 
-						     gettbl( keys, ikey ) );
-
-			ttr->watch_table = 1;
-		}
-
-		freetbl( keys, 0 );
-
-	} else {
-
-		for( itable = 0; itable < maxtbl( table_subset ); itable++ ) {
-
-			table_name = gettbl( table_subset, itable );	
-
-			ttr = (Tabletrack *) getarr( dbtr->tables, table_name );
-
-			ttr->watch_table = 1;
-		}
-	}
-
-	return;
+	return strcmp( a->sync, b->sync );
 }
 
 static int
@@ -431,6 +394,44 @@ synctrack_conditional_add( void *strp, void *strcxtp )
 }
 
 static void
+focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
+{
+	Tbl	*keys = NULL;
+	long	ikey = 0L;
+	long	itable = 0L;
+	char	*table_name = NULL;
+	Tabletrack *ttr = NULL;
+
+	if( table_subset == (Tbl *) NULL ) {
+
+		keys = keysarr( dbtr->tables );
+
+		for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
+		
+			ttr = (Tabletrack *) getarr( dbtr->tables, 
+						     gettbl( keys, ikey ) );
+
+			ttr->watch_table = 1;
+		}
+
+		freetbl( keys, 0 );
+
+	} else {
+
+		for( itable = 0; itable < maxtbl( table_subset ); itable++ ) {
+
+			table_name = gettbl( table_subset, itable );	
+
+			ttr = (Tabletrack *) getarr( dbtr->tables, table_name );
+
+			ttr->watch_table = 1;
+		}
+	}
+
+	return;
+}
+
+static void
 dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 {
 	Dbptr	db;
@@ -494,21 +495,7 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 }
 
 static void
-dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
-{
-	SynctrackCtxt *strcxt = NULL;
-
-	strcxt = new_synctrack_context( dbtr, ttr, pvt );
-
-	applystbl( ttr->syncs, synctrack_certain_delete, (void *) strcxt );
-
-	free_synctrack_context( strcxt );
-
-	return;
-}
-
-static void
-dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
+dbmon_update_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 {
 	long	irecord = 0L;
 	long	new_nrecs = 0L;
@@ -572,6 +559,20 @@ dbmon_resync_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 	free_synctrack_context( strcxt );
 		
+	return;
+}
+
+static void
+dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
+{
+	SynctrackCtxt *strcxt = NULL;
+
+	strcxt = new_synctrack_context( dbtr, ttr, pvt );
+
+	applystbl( ttr->syncs, synctrack_certain_delete, (void *) strcxt );
+
+	free_synctrack_context( strcxt );
+
 	return;
 }
 
@@ -676,7 +677,7 @@ dbmon_update( Hook *dbmon_hook, void *pvt )
 
 		} else if( ttr->table_modtime != filetime( ttr->table_filename ) ) { 	/* Table changed */
 
-			dbmon_resync_table( dbtr, ttr, pvt );
+			dbmon_update_table( dbtr, ttr, pvt );
 
 		} else {								 /* Table unchanged */
 
@@ -691,16 +692,6 @@ dbmon_update( Hook *dbmon_hook, void *pvt )
 	freetbl( keys, 0 );
 
 	return retcode;
-}
-
-void 
-dbmon_close( Hook **dbmon_hook )
-{
-	free_hook( dbmon_hook );
-
-	*dbmon_hook = NULL;
-
-	return;
 }
 
 void 
@@ -761,6 +752,16 @@ dbmon_status( FILE *fp, Hook *dbmon_hook )
 	}
 
 	freetbl( keys, 0 );
+
+	return;
+}
+
+void 
+dbmon_close( Hook **dbmon_hook )
+{
+	free_hook( dbmon_hook );
+
+	*dbmon_hook = NULL;
 
 	return;
 }
