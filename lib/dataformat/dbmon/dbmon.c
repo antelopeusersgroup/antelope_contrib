@@ -86,6 +86,8 @@ static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
 static Synctrack *new_synctrack( Dbptr db, long irecord );
 static SynctrackCtxt *new_synctrack_context( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static int sort_byirecord( char **ap, char **bp, void *pvt );
+static int applystbl_sorted( Stbl *stbl, int (*function)(void *, void *), void *pvt );
 static int cmp_synctracks( void *ap, void *bp );
 static int synctrack_reset_conditionals( void *strp, void *pvt );
 static int synctrack_conditional_add( void *strp, void *strcxtp );
@@ -303,7 +305,7 @@ synctrack_print( void *strp, void *fpp )
 	Synctrack *str = (Synctrack *) strp;
 	FILE	*fp = (FILE *) fpp;
 
-	fprintf( fp, "\t%s\n", str->sync );
+	fprintf( fp, "\t%d\t%s\n", str->irecord, str->sync );
 
 	return 0;
 }
@@ -393,6 +395,46 @@ synctrack_conditional_add( void *strp, void *strcxtp )
 	return rc;
 }
 
+static int
+sort_byirecord( char **ap, char **bp, void *pvt )
+{
+	Synctrack *a = (Synctrack *) *ap;
+	Synctrack *b = (Synctrack *) *bp;
+	int	rc;
+
+	if( a->irecord < b->irecord ) {
+
+		rc = -1;
+
+	} else if( a->irecord == b->irecord ) {
+
+		rc = 0;
+
+	} else {
+
+		rc = 1;
+	}
+
+	return rc;
+}
+
+static int 
+applystbl_sorted( Stbl *stbl, int (*afunction)(void *, void *), void *pvt )
+{
+	Tbl	*tbl;
+	int	rc = 0;
+
+	tbl = tblstbl( stbl );
+
+	sorttbl( tbl, sort_byirecord, NULL );
+
+	applytbl( tbl, afunction, pvt );
+
+	freetbl( tbl, NULL );
+
+	return rc;
+}
+
 static void
 focus_tableset( Dbtrack *dbtr, Tbl *table_subset )
 {
@@ -471,7 +513,7 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 	strcxt = new_synctrack_context( dbtr, ttr, pvt );
 
-	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
+	applystbl_sorted( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
 
 	free_synctrack_context( strcxt );
 
@@ -537,9 +579,9 @@ dbmon_update_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 	strcxt = new_synctrack_context( dbtr, ttr, pvt );
 
-	applystbl( ttr->syncs, synctrack_conditional_delete, (void *) strcxt );
+	applystbl_sorted( ttr->syncs, synctrack_conditional_delete, (void *) strcxt );
 
-	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
+	applystbl_sorted( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
 
 	free_synctrack_context( strcxt );
 		
@@ -729,7 +771,7 @@ dbmon_status( FILE *fp, Hook *dbmon_hook )
 
 			fprintf( fp, "\tSync strings:\n" );
 
-			applystbl( ttr->syncs, synctrack_print, (void *) fp );
+			applystbl_sorted( ttr->syncs, synctrack_print, (void *) fp );
 		}
 
 		fprintf( fp, "\tWatched: yes\n" );
