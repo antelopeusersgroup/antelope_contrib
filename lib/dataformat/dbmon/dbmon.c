@@ -100,8 +100,8 @@ static void free_synctrack( void *strp );
 static void free_synctrack_context( SynctrackCtxt *strp );
 static void focus_tableset( Dbtrack *dbtr, Tbl *table_subset );
 static void dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
-static void dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 static void dbmon_update_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
+static void dbmon_delete_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 
 static int 
 compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest )
@@ -438,7 +438,6 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 	Dbptr	dbscratch;
 	long	irecord = 0L;
 	long	new_nrecs = 0L;
-	Synctrack *oldstr = NULL;
 	Synctrack *newstr = NULL;
 	SynctrackCtxt *strcxt = NULL;
 
@@ -465,27 +464,12 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		newstr->keep = 1;
 
-		oldstr = (Synctrack *) tststbl( ttr->syncs, newstr );
-
-		if( oldstr != (Synctrack *) NULL ) {
-
-			delstbl( ttr->syncs, oldstr );
-
-			free_synctrack( (void *) oldstr );
-
-			newstr->add = 0;
-
-		} else {
-
-			newstr->add = 1;
-		}
+		newstr->add = 1;
 
 		addstbl( ttr->syncs, (void *) newstr );
 	}
 
 	strcxt = new_synctrack_context( dbtr, ttr, pvt );
-
-	applystbl( ttr->syncs, synctrack_conditional_delete, (void *) strcxt );
 
 	applystbl( ttr->syncs, synctrack_conditional_add, (void *) strcxt );
 
@@ -665,9 +649,9 @@ dbmon_update( Hook *dbmon_hook, void *pvt )
 
 			strcpy( ttr->table_filename, val.t );
 
-			ttr->table_exists = 1;
-
 			dbmon_build_table( dbtr, ttr, pvt );
+
+			ttr->table_exists = 1;
 
 		} else if( ttr->table_nrecs > 0 && new_nrecs <= 0 ) { 			/* Table disappeared */
 
