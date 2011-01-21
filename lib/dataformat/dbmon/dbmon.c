@@ -430,8 +430,6 @@ applystbl_sorted( Stbl *stbl, int (*afunction)(void *, void *), void *pvt )
 
 	applytbl( tbl, afunction, pvt );
 
-	freetbl( tbl, NULL );
-
 	return rc;
 }
 
