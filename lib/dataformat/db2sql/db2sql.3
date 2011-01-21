@@ -98,26 +98,15 @@ field name in the SQL database, which defaults to \fIsyncstring\fP.
 #include "dbmon.h"
 #include "db2sql.h"
 
-void newrow( Dbptr db, char *table, char *sync, void *private );
-void changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private );
+void newrow( Dbptr db, char *table, long irecord, char *sync, void *private );
 void delrow( Dbptr db, char *table, char *sync, void *private );
 
 void
-newrow( Dbptr db, char *table, char *sync, void *private )
+newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 { 
 	Tbl	**sql = (Tbl **) private;
 
 	db2sqlinsert( db, sql, dbmon_compute_row_sync, 0L );
-
-	return;
-}
-
-void
-changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
-{ 
-	delrow( db, table, oldsync, private );
-
-	newrow( db, table, sync, private );
 
 	return;
 }
@@ -158,7 +147,7 @@ main(int argc, char **argv )
 
 	dbopen_database( dbname, "r", &db );
 
-	dbmon_hook = dbmon_init( db, tables, newrow, changerow, delrow, 0 );
+	dbmon_hook = dbmon_init( db, tables, newrow, delrow, 0 );
 
 	dbmon_update( dbmon_hook, (void *) &sql );
 

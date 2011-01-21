@@ -75,7 +75,18 @@ will happen whenever this routine calls the libtt1dcvl calculators.
 static Dbptr modeldb;
 #define ENVNAME "VELOCITY_MODEL_DATABASE"
 #define DEFAULT_DB "vmodel"
-#pragma init (ttregions_init)
+
+static void ttregions_init();
+
+int _ttregions_init_ran = 0;
+
+void __attribute__ ((constructor))
+_ttregions_init()
+{
+    ttregions_init() ;
+
+    _ttregions_init_ran++;
+}
 
 void ttregions_init()
 {
