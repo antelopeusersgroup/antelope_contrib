@@ -90,15 +90,25 @@ _ttregions_init()
 
 void ttregions_init()
 {
+	char *dbpath;
 	char *dbname;
+
+	dbname=getenv(ENVNAME);
+	if(dbname==NULL)
+		dbpath = datapath (NULL,"tables/genloc/db",DEFAULT_DB,NULL);
+	else
+		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	
-	dbname = datapath (ENVNAME,"tables/genloc/db",DEFAULT_DB,0);
-
-	if(dbopen(dbname,"r",&modeldb) == dbINVALID)
-		elog_complain(0,"WARNING: could not open velocity model database %s during libttregions initialization\nAll calls to this calculator will fail\n",
-			dbname);
-
+	if (dbpath == NULL) { 
+	    die ( 0, "ttregions database open failed\n" ) ; 
+	}
+	if(dbopen(dbpath,"r",&modeldb) == dbINVALID) {
+	    die(0,"Could not open velocity model database '%s' during libttregions initialization\n"
+	    	  "Exiting because all calls to this calculator will fail\n",
+		  dbpath);
+	}
 }
+
 
 static void free_TTregions_volume(void *rp)
 {
@@ -226,16 +236,18 @@ Tbl *load_regions(char *modelset)
 	dbquery(dbs,dbRECORD_COUNT,&nrecs);
 	if(nrecs <= 0)
 	{
-		elog_complain(0,"ttregions:  model set %s not found in model database\nCheck setting of environment variable %s\n",
-			modelset,ENVNAME);
+		elog_complain(0,"ttregions:  model set '%s' not found in model database"
+				"\nCheck setting of environment variable %s\n",
+				modelset,ENVNAME);
 		return(NULL);
 	}
 	dbreg = dblookup(modeldb,0,"regions",0,0);
 	dbsitecor = dblookup(modeldb,0,"sitecor",0,0);
 	if((dbreg.record == dbINVALID) || (dbsitecor.record == dbINVALID))
 	{
-		elog_complain(0,"ttregions:  database error\nregions and sitecor tables are required\nCheck setting of environment variable %s\n",
-			ENVNAME);
+		elog_complain(0,"ttregions:  database error\nregions and sitecor tables are required\n"
+				"Check setting of environment variable %s\n",
+				ENVNAME);
 		return(NULL);
 	}
 	/* It is necessary to sort the regions table to make sure
