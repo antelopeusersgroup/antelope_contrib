@@ -268,12 +268,21 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 		 + string("failure fetching BasicTimeSeries attributes from header"));
 	}
 	size_t datasize=(size_t)(stype_bytes_per_sample(stype)*ns);
-	realloc(h,datasize+header.size());
+        /* This is effectively realloc done manually.  Done because 
+           realloc in this context seems to create problems so we 
+           do this explicitly*/
+        unsigned char *htmp;
+        size_of_this=header.size()+datasize;
+        htmp=static_cast<unsigned char *>(malloc(size_of_this));
+        if(htmp==NULL) throw SeisppError(base_error
+                + "malloc failure");
+        memcpy(htmp,h,header.size());
+        h=htmp;
 	d=h+header.size();
 	test=fread((void *)d,datasize,1,fp);
 	if(test!=1)
 		throw SeisppError(base_error
-		 + string("fread error reading daa block"));
+		 + string("fread error reading data block"));
 	data_loaded=true;
 	data_loaded=true;
 	live=true;

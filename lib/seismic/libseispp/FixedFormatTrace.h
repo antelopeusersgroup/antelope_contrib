@@ -295,7 +295,7 @@ template <class T> T FixedFormatTrace::get(string name)
 		result=static_cast<T>(ival);
 		break;
 	case INT16:
-		ival=this->header.get<short int>(name,h);
+		sival=this->header.get<short int>(name,h);
 		result=static_cast<T>(sival);
 		break;
 	case BOOL:
