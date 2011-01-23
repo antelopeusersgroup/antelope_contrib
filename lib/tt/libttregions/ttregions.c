@@ -244,7 +244,7 @@ Tbl *load_regions(char *modelset)
 				"a velocity-model database name, and make sure that database "
 				"is present in the tables/genloc/db subdirectory of $ANTELOPE/data "
 				"or of a directory listed in the DATAPATH environment variable\n",
-				database_filename,modelset,VMODEL_DBNAME_CUSTOM);
+				modelset,database_filename,VMODEL_DBNAME_CUSTOM);
 		return(NULL);
 	}
 	dbreg = dblookup(modeldb,0,"regions",0,0);
@@ -288,7 +288,7 @@ Tbl *load_regions(char *modelset)
 			"modname",modname,
 			NULL) == dbINVALID)
 		{
-			elog_complain(0,"dbgetv error on record %ld of subsetted regmodel table for model set %s"
+			elog_complain(0,"dbgetv error on record %ld of subsetted regmodel table for model set '%s'"
 					"In database '%s'\nTrucation of model data likely\n",
 					dbs.record, modelset, database_filename);
 			continue;
@@ -465,7 +465,7 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	{
 		/* This is likely to be common enough we only log
 		it and not view it as an error */
-		elog_notify(0,"No sitecor entries found for model:region:phase=%s:%s:%s in database '%s'\n",model,r->name,phase,database_filename);
+		elog_notify(0,"No sitecor entries found for model:region:phase='%s:%s:%s' in database '%s'\n",model,r->name,phase,database_filename);
 		return(0);
 	}
 
@@ -550,7 +550,7 @@ int point_is_inside(TTregions_volume *rv,TTGeometry *geometry)
 			rad(rv->lat[i]),rad(rv->lon[i]),&distance,&azimuth);
 		if(deg(distance)>90.0)
 		{
-			elog_log(0,"Polygon for model %s located more than 90 degrees from test point at\n"
+			elog_log(0,"Polygon for model '%s' located more than 90 degrees from test point at\n"
 				   "latitude:  %lf, longitude%lf\n"
 				   "Winding number algorithm not called assuming test point is outside polygon\n",
 				rv->modelname,lat,lon);
