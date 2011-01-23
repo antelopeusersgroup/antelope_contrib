@@ -45,8 +45,8 @@ name from the environment using a default if the variable is
 not set.  
 */
 static Dbptr modeldb;
-#define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "vmodel"
+#define VMODEL_DBNAME_CUSTOM "VELOCITY_MODEL_DATABASE"
+#define VMODEL_DBNAME_DEFAULT "vmodel"
 
 int _tt1dcvl_has_run = 0;
 
@@ -65,9 +65,9 @@ void tt1dcvl_init()
 	char *dbpath;
 	char *dbname;
 
-	dbname=getenv(ENVNAME);
+	dbname=getenv(VMODEL_DBNAME_CUSTOM);
 	if(dbname==NULL)
-		dbpath = datapath (NULL,"tables/genloc/db",DEFAULT_DB,NULL);
+		dbpath = datapath (NULL,"tables/genloc/db",VMODEL_DBNAME_DEFAULT,NULL);
 	else
 		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	

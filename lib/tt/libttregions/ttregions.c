@@ -73,8 +73,8 @@ db pointer and not fail when the model database is already open.  This
 will happen whenever this routine calls the libtt1dcvl calculators.  
 */
 static Dbptr modeldb;
-#define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "vmodel"
+#define VMODEL_DBNAME_CUSTOM "VELOCITY_MODEL_DATABASE"
+#define VMODEL_DBNAME_DEFAULT "vmodel"
 
 static void ttregions_init();
 
@@ -93,9 +93,9 @@ void ttregions_init()
 	char *dbpath;
 	char *dbname;
 
-	dbname=getenv(ENVNAME);
+	dbname=getenv(VMODEL_DBNAME_CUSTOM);
 	if(dbname==NULL)
-		dbpath = datapath (NULL,"tables/genloc/db",DEFAULT_DB,NULL);
+		dbpath = datapath (NULL,"tables/genloc/db",VMODEL_DBNAME_DEFAULT,NULL);
 	else
 		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	
@@ -237,8 +237,11 @@ Tbl *load_regions(char *modelset)
 	if(nrecs <= 0)
 	{
 		elog_complain(0,"ttregions:  model set '%s' not found in model database"
-				"\nCheck setting of environment variable %s\n",
-				modelset,ENVNAME);
+				"\nCheck setting of environment variable '%s', which specifies "
+				"a velocity-model database name, and make sure that database "
+				"is present in the tables/genloc/db subdirectory of $ANTELOPE/data "
+				"or of a directory listed in the DATAPATH environment variable\n",
+				modelset,VMODEL_DBNAME_CUSTOM);
 		return(NULL);
 	}
 	dbreg = dblookup(modeldb,0,"regions",0,0);
@@ -246,8 +249,11 @@ Tbl *load_regions(char *modelset)
 	if((dbreg.record == dbINVALID) || (dbsitecor.record == dbINVALID))
 	{
 		elog_complain(0,"ttregions:  database error\nregions and sitecor tables are required\n"
-				"Check setting of environment variable %s\n",
-				ENVNAME);
+				"Check setting of environment variable '%s', which specifies "
+				"a velocity-model database name, and make sure that database "
+				"is present in the tables/genloc/db subdirectory of $ANTELOPE/data "
+				"or of a directory listed in the DATAPATH environment variable\n",
+				VMODEL_DBNAME_CUSTOM);
 		return(NULL);
 	}
 	/* It is necessary to sort the regions table to make sure
@@ -420,7 +426,7 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	if(dbsitecor.record == dbINVALID)
 	{
 		elog_complain(0,"ttregions:  database error\nCannot access sitecor table\nCheck setting of environment variable %s\n",
-			ENVNAME);
+			VMODEL_DBNAME_CUSTOM);
 		return(-1);
 	}
 	/* We have to sort the sitecor table to make
