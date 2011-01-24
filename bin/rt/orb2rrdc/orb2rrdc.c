@@ -30,12 +30,17 @@ usage( void )
 
 static void
 pfmorph( Pf *pf ) {
-	Pf	*dlspf;
-	Pf	*stapf;
-	Tbl	*stas;
+	Pf	*dlspf = NULL;
+	Pf	*stapf = NULL;
+	Tbl	*stas = NULL;
 	int	ista;
-	char	*sta;
-	char	*opt_string;
+	char	*sta = NULL;
+	char	*opt_string = NULL;
+	char	*acok_string = NULL;
+	char	*api_string = NULL;
+	char	*isp1_string = NULL;
+	char	*isp2_string = NULL;
+	char	*ti_string = NULL;
 
 	if( pfget( pf, "dls", (void **) &dlspf ) == PFINVALID ) {
 
@@ -57,11 +62,31 @@ pfmorph( Pf *pf ) {
 		if( ( opt_string = pfget_string( stapf, "opt" ) ) == (char *) NULL ||
 		    ! strcmp( opt_string, "-" ) ) {
 
-			pfset( stapf, "acok", "-" );
-			pfset( stapf, "api",  "-" );
-			pfset( stapf, "isp1", "-" );
-			pfset( stapf, "isp2", "-" );
-			pfset( stapf, "ti",   "-" );
+			if( ( acok_string = pfget_string( stapf, "acok" ) ) == (char *) NULL ) {
+
+				pfset( stapf, "acok", "-" );
+			}
+
+			if( ( api_string = pfget_string( stapf, "api" ) ) == (char *) NULL ) {
+
+				pfset( stapf, "api",  "-" );
+			}
+
+			if( ( isp1_string = pfget_string( stapf, "isp1" ) ) == (char *) NULL ) {
+
+				pfset( stapf, "isp1", "-" );
+			}
+
+			if( ( isp2_string = pfget_string( stapf, "isp2" ) ) == (char *) NULL ) {
+
+				pfset( stapf, "isp2", "-" );
+			}
+
+			if( ( ti_string = pfget_string( stapf, "ti" ) ) == (char *) NULL ) {
+
+				pfset( stapf, "ti",   "-" );
+			}
+
 
 		} else {
 
