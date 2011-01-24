@@ -73,8 +73,8 @@ db pointer and not fail when the model database is already open.  This
 will happen whenever this routine calls the libtt1dcvl calculators.  
 */
 static Dbptr modeldb;
-#define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "vmodel"
+#define VMODEL_DBNAME_CUSTOM "VELOCITY_MODEL_DATABASE"
+#define VMODEL_DBNAME_DEFAULT "vmodel"
 
 static void ttregions_init();
 
@@ -90,15 +90,25 @@ _ttregions_init()
 
 void ttregions_init()
 {
+	char *dbpath;
 	char *dbname;
+
+	dbname=getenv(VMODEL_DBNAME_CUSTOM);
+	if(dbname==NULL)
+		dbpath = datapath (NULL,"tables/genloc/db",VMODEL_DBNAME_DEFAULT,NULL);
+	else
+		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	
-	dbname = datapath (ENVNAME,"tables/genloc/db",DEFAULT_DB,0);
-
-	if(dbopen(dbname,"r",&modeldb) == dbINVALID)
-		elog_complain(0,"WARNING: could not open velocity model database %s during libttregions initialization\nAll calls to this calculator will fail\n",
-			dbname);
-
+	if (dbpath == NULL) { 
+	    die ( 0, "ttregions database open failed\n" ) ; 
+	}
+	if(dbopen(dbpath,"r",&modeldb) == dbINVALID) {
+	    die(0,"Could not open velocity model database '%s' during libttregions initialization\n"
+	    	  "Exiting because all calls to this calculator will fail\n",
+		  dbpath);
+	}
 }
+
 
 static void free_TTregions_volume(void *rp)
 {
@@ -151,7 +161,8 @@ char *get_full_method_string(char *shortname)
 	db = dblookup(modeldb,0,"ttcalc",0,0);
 	if(db.record == dbINVALID)
 	{
-		elog_notify(0,"ttregions:  cannot find ttcalc table\nAssuming short form of method string for ttcalc=%s\n",
+		elog_notify(0,"ttregions:  cannot find ttcalc table\n"
+			      "Assuming short form of method string for ttcalc=%s\n",
 			shortname);
 		method = strdup(shortname);
 	}
@@ -211,6 +222,7 @@ Tbl *load_regions(char *modelset)
 	long nrecs;
 	Tbl *sortkeys, *keyreg, *keysc;
 	char regname[21],algorithm[16],modname[21];
+	char *database_filename;
 	long level;
 	static Tbl *result, *reg_match, *sc_match;
 	int nmatch_reg,nmatch_sc;
@@ -220,22 +232,32 @@ Tbl *load_regions(char *modelset)
 	int ndepths;
 	double test,ceiling;
 
+	dbquery(modeldb,dbDATABASE_FILENAME,&database_filename);
 	sprintf(sstring,"modelset =~ /%s/",modelset);
 	dbs = dblookup(modeldb,0,"regmodel",0,0);
 	dbs = dbsubset(dbs,sstring,0);
 	dbquery(dbs,dbRECORD_COUNT,&nrecs);
 	if(nrecs <= 0)
 	{
-		elog_complain(0,"ttregions:  model set %s not found in model database\nCheck setting of environment variable %s\n",
-			modelset,ENVNAME);
+		elog_complain(0,"ttregions:  model set '%s' not found in model database '%s'"
+				"\nCheck setting of environment variable '%s', which specifies "
+				"a velocity-model database name, and make sure that database "
+				"is present in the tables/genloc/db subdirectory of $ANTELOPE/data "
+				"or of a directory listed in the DATAPATH environment variable\n",
+				modelset,database_filename,VMODEL_DBNAME_CUSTOM);
 		return(NULL);
 	}
 	dbreg = dblookup(modeldb,0,"regions",0,0);
 	dbsitecor = dblookup(modeldb,0,"sitecor",0,0);
 	if((dbreg.record == dbINVALID) || (dbsitecor.record == dbINVALID))
 	{
-		elog_complain(0,"ttregions:  database error\nregions and sitecor tables are required\nCheck setting of environment variable %s\n",
-			ENVNAME);
+		elog_complain(0,"ttregions:  database error in velocity-model database '%s'\n"
+				"regions and sitecor tables are required\n"
+				"Check setting of environment variable '%s', which specifies "
+				"a velocity-model database name, and make sure that database "
+				"is present in the tables/genloc/db subdirectory of $ANTELOPE/data "
+				"or of a directory listed in the DATAPATH environment variable\n",
+				database_filename,VMODEL_DBNAME_CUSTOM);
 		return(NULL);
 	}
 	/* It is necessary to sort the regions table to make sure
@@ -266,9 +288,9 @@ Tbl *load_regions(char *modelset)
 			"modname",modname,
 			NULL) == dbINVALID)
 		{
-			elog_complain(0,"dbgetv error on record %ld of subsetted regmodel table for model set %s\n"
-					"Trucation of model data likely\n",
-					dbs.record, modelset);
+			elog_complain(0,"dbgetv error on record %ld of subsetted regmodel table for model set '%s'"
+					"In database '%s'\nTrucation of model data likely\n",
+					dbs.record, modelset, database_filename);
 			continue;
 		}
 		nmatch_reg = dbmatches(dbs,dbreg2,&keyreg,&keyreg,
@@ -288,7 +310,9 @@ Tbl *load_regions(char *modelset)
 				if(dbgetv(dbsc2,0,"ceiling",&ceiling,NULL)
 					== dbINVALID)
 				{
-					elog_complain(0,"dbgetv error reading sitecor table\nStation corrections read will probably be wrong\n");
+					elog_complain(0,"dbgetv error reading sitecor table in database '%s'\n"
+							"Station corrections read will probably be wrong\n",
+							database_filename);
 					break;
 				}
 				if(test != ceiling)
@@ -327,8 +351,9 @@ Tbl *load_regions(char *modelset)
 					NULL) == dbINVALID)
 				{
 					r->nvertices = i;
-					elog_notify(0,"dbgetv error on regions table for region %s\nPolygon truncated to %d points\n",
-						r->name,i);
+					elog_notify(0,"dbgetv error on regions table of database '%s' for region '%s'\n"
+						      "Polygon truncated to %d points\n",
+						      database_filename,r->name,i);
 				}
 			}
 			/* The explicitly null pointers for the sitecors
@@ -355,9 +380,9 @@ Tbl *load_regions(char *modelset)
 		}
 		else
 		{
-			elog_notify(0,"Warning(libttregions):  No match in regions table for regname defined in regmodel\n"
-				      "Mismatch on record %ld of sorted rebmodel table\n", 
-				      dbs.record);
+			elog_notify(0,"Warning(libttregions):  No match in regions table of database '%s' for regname defined in regmodel\n"
+				      "Mismatch on record %ld of sorted regmodel table\n",
+				      database_filename, dbs.record);
 		}
 		freetbl(reg_match,0);
 		freetbl(sc_match,0);
@@ -403,12 +428,16 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	double test,ceiling,floor;
 	double *scor;
 	char *key;
+	char *database_filename;
 
+	dbquery(modeldb,dbDATABASE_FILENAME,&database_filename);
 	dbsitecor = dblookup(modeldb,0,"sitecor",0,0);
 	if(dbsitecor.record == dbINVALID)
 	{
-		elog_complain(0,"ttregions:  database error\nCannot access sitecor table\nCheck setting of environment variable %s\n",
-			ENVNAME);
+		elog_complain(0,"ttregions:  database error in '%s'\n"
+				"Cannot access sitecor table\n"
+				"Check setting of environment variable '%s'\n",
+			database_filename,VMODEL_DBNAME_CUSTOM);
 		return(-1);
 	}
 	/* We have to sort the sitecor table to make
@@ -423,8 +452,9 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	if(dbputv(dbsitecor,0,"modname",model,"regname",r->name,"phase",phase,NULL)
 		== dbINVALID)
 	{
-		elog_complain(0,"ttregions:  dbputv error while trying to load sitecor entries for model=%s,region=%s, and phase=%s\nNo station corrections loaded for this region\n",
-			model, r->name, phase);
+		elog_complain(0,"ttregions:  dbputv error while trying to load sitecor entries from database '%s' for model='%s',region='%s', and phase='%s'\n"
+				"No station corrections loaded for this region\n",
+				database_filename,model, r->name, phase);
 		return(-2);
 	}
 
@@ -435,7 +465,7 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	{
 		/* This is likely to be common enough we only log
 		it and not view it as an error */
-		elog_notify(0,"No sitecor entries found for model:region:phase=%s:%s:%s\n",model,r->name,phase);
+		elog_notify(0,"No sitecor entries found for model:region:phase='%s:%s:%s' in database '%s'\n",model,r->name,phase,database_filename);
 		return(0);
 	}
 
@@ -451,9 +481,9 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 			"paramval",scor,NULL)
 				  == dbINVALID)
 		{
-			elog_complain(0,"dbgetv error reading sitecor table record %ld\n"
+			elog_complain(0,"dbgetv error reading sitecor table record %ld in database '%s'\n"
 					"Station correction data probably truncated\n",
-					dbsc2.record);
+					dbsc2.record,database_filename);
 			break;
 		}
 		if(i==0) 
@@ -469,8 +499,9 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 			if(idepth >= ndepths)
 			{
 				elog_complain(0,
-				  "sitecor table mismatch in depth count for region %s\nOverflow of depth arrays prevented at ndepth = %d\n",
-					  r->name, idepth);
+				  "sitecor table mismatch in depth count for region '%s' in database '%s'\n"
+				  "Overflow of depth arrays prevented at ndepth = %d\n",
+					  r->name, database_filename, idepth);
 				break;
 			}
 			r->sitecors[idepth]=newarr(0);
@@ -519,7 +550,7 @@ int point_is_inside(TTregions_volume *rv,TTGeometry *geometry)
 			rad(rv->lat[i]),rad(rv->lon[i]),&distance,&azimuth);
 		if(deg(distance)>90.0)
 		{
-			elog_log(0,"Polygon for model %s located more than 90 degrees from test point at\n"
+			elog_log(0,"Polygon for model '%s' located more than 90 degrees from test point at\n"
 				   "latitude:  %lf, longitude%lf\n"
 				   "Winding number algorithm not called assuming test point is outside polygon\n",
 				rv->modelname,lat,lon);

@@ -45,8 +45,8 @@ name from the environment using a default if the variable is
 not set.  
 */
 static Dbptr modeldb;
-#define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "vmodel"
+#define VMODEL_DBNAME_CUSTOM "VELOCITY_MODEL_DATABASE"
+#define VMODEL_DBNAME_DEFAULT "vmodel"
 
 int _tt1dcvl_has_run = 0;
 
@@ -65,20 +65,20 @@ void tt1dcvl_init()
 	char *dbpath;
 	char *dbname;
 
-	dbname=getenv(ENVNAME);
+	dbname=getenv(VMODEL_DBNAME_CUSTOM);
 	if(dbname==NULL)
-		dbpath = datapath (0,"tables/genloc/db",DEFAULT_DB,0);
+		dbpath = datapath (NULL,"tables/genloc/db",VMODEL_DBNAME_DEFAULT,NULL);
 	else
-		dbpath = datapath (0,"tables/genloc/db",dbname,0);
+		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	
-	if (dbpath == 0) { 
+	if (dbpath == NULL) { 
 	    die ( 0, "tt1dcvl database open failed\n" ) ; 
 	}
 	if(dbopen(dbpath,"r",&modeldb) == dbINVALID) {
-	    die(0,"Could not open velocity model database %s during libtt1dcvl initialization\nExiting because all calls to this calculator will fail\n",
-			dbpath);
+	    die(0,"Could not open velocity model database '%s' during libtt1dcvl initialization\n"
+	    	  "Exiting because all calls to this calculator will fail\n",
+		  dbpath);
 	}
-
 }
 
 static void free_Vmodel(void *modp)

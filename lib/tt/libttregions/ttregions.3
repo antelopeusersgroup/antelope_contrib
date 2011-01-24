@@ -1,0 +1,71 @@
+.TH TTREGIONS  3 "$Date$"
+.SH NAME
+ttregions - generic interface to
+regionalized velocity model travel time calculator
+.SH SYNOPSIS
+.nf
+int ttregions (char *model,char *phase_code,int mode,TTGeometry *geometry,
+    Tbl **timesp,Hook **hookp);
+int ttregions_ucalc (char *model,char *phase_code,int mode,TTGeometry *geometry,
+    Tbl **timesp,Hook **hookp);
+
+.fi
+.SH DESCRIPTION
+.LP
+This is a generic tt interface (see tt(3)) to a regionalized 
+velocity model calculator called \fBttregions\fP.  
+
+This library is loaded dynamically by the generic travel time
+interface when a ttcalc or ucalc (see ttcalc(3)) is
+called with the method field set as \fBttregions\fP.  Note, however, you should NOT
+call \fBttregions\fP or \fBttregions_ucalc\fP directly, but you
+should instead call ttcalc with the method set to \fBttregions\fP.  The
+ttcalc interface handles the translation.
+
+The ttregions calculator uses the \fIregions\fP table of the velocity-model
+database to decide which geographic region contains the path for which to compute 
+a travel-time. Then the \fIregmodel\fP table specifies which travel-time calculator 
+and model to use for that region. Once these are identified, the \fBttregions\fP 
+calculator delegates to the specified calculator library (e.g. \fItt1dcvl(3)\fP
+or \fItttaup(3)\fP) and travel-time model. 
+
+.SH FILES
+.LP
+A valid Datascope velocity-model database containing a descriptor file and
+associated \fIregions\fP, \fIregmodel\fP, and \fIttcalc\fP tables are necessary
+or these functions will only return errors. Further tables may be necessary 
+depending on the calculators to which the \fBttregions\fP library delegates (e.g. 
+the \fImod1d\fP table for the \fItt1dcvl(3)\fP calculator).
+.SH ENVIRONMENT
+.LP
+The default velocity model database is
+.nf
+
+$ANTELOPE/data/tables/genloc/db/vmodel.  
+
+.fi
+This can be changed to a different database by setting the 
+environment variable VELOCITY_MODEL_DATABASE, which specifies 
+the alternate base-name of the database descriptor, e.g. \fIvmodel_changed\fP
+instead of \fIvmodel\fP. To allow the modified database to be accessed 
+outside the $ANTELOPE tree, put it in a subdirectory called 
+\fItables/genloc/db\fP in an alternate location, then use the environment
+variable $DATAPATH to specify that alternate location (see antelopeenv(5) 
+for more information on $DATAPATH).
+.SH RETURN VALUES
+.LP
+See ttcalc(3) for generic error return codes for the tt interface.
+.SH LIBRARY
+.nf
+-lttregions -ltrvltm $(DBLIBS)
+.fi
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+ttcalc(3), genloc_ttinterface(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Gary L. Pavlis
+with some contributions from Kent Lindquist
+.\" $Id$

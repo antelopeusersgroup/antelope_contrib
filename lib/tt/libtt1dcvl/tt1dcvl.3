@@ -55,9 +55,19 @@ or these functions will only return errors.
 .SH ENVIRONMENT
 .LP
 The default velocity model database is
+.nf
+
 $ANTELOPE/data/tables/genloc/db/vmodel.  
+
+.fi
 This can be changed to a different database by setting the 
-environment variable VELOCITY_MODEL_DATABASE.
+environment variable VELOCITY_MODEL_DATABASE, which specifies 
+the alternate base-name of the database descriptor, e.g. \fIvmodel_changed\fP
+instead of \fIvmodel\fP. To allow the modified database to be accessed 
+outside the $ANTELOPE tree, put it in a subdirectory called 
+\fItables/genloc/db\fP in an alternate location, then use the environment
+variable $DATAPATH to specify that alternate location (see antelopeenv(5) 
+for more information on $DATAPATH).
 .SH RETURN VALUES
 .LP
 See ttcalc(3) for generic error return codes for the tt interface.
