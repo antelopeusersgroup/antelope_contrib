@@ -58,9 +58,11 @@ pfmorph( Pf *pf ) {
 			continue;
 		}
 
+		if( ( opt_string = pfget_string( stapf, "opt" ) ) == (char *) NULL ) {
+			
+			continue;
 
-		if( ( opt_string = pfget_string( stapf, "opt" ) ) == (char *) NULL ||
-		    ! strcmp( opt_string, "-" ) ) {
+		} else if( ! strcmp( opt_string, "-" ) ) {
 
 			if( ( acok_string = pfget_string( stapf, "acok" ) ) == (char *) NULL ) {
 
