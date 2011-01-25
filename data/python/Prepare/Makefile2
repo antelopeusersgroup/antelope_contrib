@@ -7,7 +7,7 @@ install :: $(DEST)/man
 uninstall :: remove_old_interface
 
 $(DEST)/man:
-	@mkdir $(DEST)/man
+	@mkdir -p $(DEST)/man
 
 remove_old_interface:
 	@-$(RM) $(ANTELOPE)/data/python/antelope/_stock.so
