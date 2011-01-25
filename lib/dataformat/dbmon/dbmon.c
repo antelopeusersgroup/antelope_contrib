@@ -53,6 +53,7 @@ typedef struct Dbtrack {
 	char	dbname[FILENAME_MAX];
 	Dbptr	db;
 	Arr	*tables;
+	Tbl	*(*querysyncs)(Dbptr, char *, void *);
 	void 	(*newrow)(Dbptr, char *, long, char *, void *);
 	void 	(*delrow)(Dbptr, char *, char *, void *);
 } Dbtrack;
@@ -400,7 +401,7 @@ sort_byirecord( char **ap, char **bp, void *pvt )
 {
 	Synctrack *a = (Synctrack *) *ap;
 	Synctrack *b = (Synctrack *) *bp;
-	int	rc;
+	int	rc = 0;
 
 	if( a->irecord < b->irecord ) {
 
@@ -421,7 +422,7 @@ sort_byirecord( char **ap, char **bp, void *pvt )
 static int 
 applystbl_sorted( Stbl *stbl, int (*afunction)(void *, void *), void *pvt )
 {
-	Tbl	*tbl;
+	Tbl	*tbl = NULL;
 	int	rc = 0;
 
 	tbl = tblstbl( stbl );
@@ -629,6 +630,7 @@ Hook *
 dbmon_init( Dbptr db, Tbl *table_subset, 
 	    void (*newrow)(Dbptr, char *, long, char *, void *), 
 	    void (*delrow)(Dbptr, char *, char *, void *), 
+	    Tbl *(*querysyncs)(Dbptr, char *, void *),
 	    int flags )
 {
 	Hook	*dbmon_hook = NULL;
@@ -642,6 +644,7 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 
 	dbtr->newrow = newrow;
 	dbtr->delrow = delrow;
+	dbtr->querysyncs = querysyncs;
 
 	dbmon_hook->p = (void *) dbtr;
 
@@ -649,14 +652,64 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 }
 
 int 
+dbmon_resync( Hook *dbmon_hook, void *pvt )
+{
+	Dbtrack *dbtr = (Dbtrack *) dbmon_hook->p;
+	Tabletrack *ttr = NULL;
+	Tbl	*keys = NULL;
+	Tbl	*known_syncs = NULL;
+	long	ikey = 0L;
+	char	*table = NULL;
+	int	retcode = 0;
+
+	if( dbtr->querysyncs == NULL ) {
+
+		elog_log( 0, "dbmon_resync: querysyncs callback not specified\n" );
+			
+		return 0;
+	}
+
+	keys = keysarr( dbtr->tables );
+
+	for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
+
+		table = gettbl( keys, ikey );
+
+		ttr = (Tabletrack *) getarr( dbtr->tables, table );
+
+		if( ! ttr->watch_table ) {
+
+			continue;
+		}
+
+		known_syncs = dbtr->querysyncs( ttr->db, ttr->table_name, pvt );
+
+		if( known_syncs == (Tbl *) NULL ) {
+
+			elog_log( 0, "dbmon_resync: querysyncs failed to return known sync "
+				     "values for table '%s'\n",
+				     ttr->table_name );
+			
+			return -1;
+		}
+	}
+
+	freetbl( keys, 0 );
+
+	retcode += dbmon_update( dbmon_hook, pvt );
+
+	return retcode;
+}
+
+int 
 dbmon_update( Hook *dbmon_hook, void *pvt )
 {
 	Dbtrack *dbtr = (Dbtrack *) dbmon_hook->p;
-	Tabletrack *ttr;
-	Tbl	*keys;
+	Tabletrack *ttr = NULL;
+	Tbl	*keys = NULL;
 	Dbvalue val;
 	int	retcode = 0;
-	long	ikey;
+	long	ikey = 0L;
 	long	new_nrecs = 0L;
 	char	cmd[FILENAME_MAX+STRSZ];
 

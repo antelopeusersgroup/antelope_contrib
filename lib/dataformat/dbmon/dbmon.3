@@ -9,7 +9,10 @@ dbmon_init, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- m
 Hook *\fBdbmon_init\fP( Dbptr \fIdb\fP, Tbl *\fItable_subset\fP, 
                   void (*\fInewrow\fP)(Dbptr db, char *table, long irecord, char *sync, void *pvt), 
                   void (*\fIdelrow\fP)(Dbptr db, char *table, char *oldsync, void *pvt), 
+                  Tbl *(*\fIquerysyncs\fP)(Dbptr db, char *table, void *pvt),
                   int \fIflags\fP );
+
+int \fBdbmon_resync\fP( Hook *\fIdbmon_hook\fP, void *\fIpvt\fP );
 
 int \fBdbmon_update\fP( Hook *\fIdbmon_hook\fP, void *\fIpvt\fP );
 
@@ -28,13 +31,38 @@ tables are tracked.  If this argument is a list of string names for
 database tables (see strtbl(3)), tracking is limited to the named
 tables.  \fBdbmon_init\fP returns a hook(3) pointer which is used
 in subsequent calls to interact with the tracked monitoring status
-of the database. Two callbacks are registered when invoking
-\fBdbmon_init\fP: \fInewrow\fP and \fIdelrow\fP.
+of the database. Three callbacks are registered when invoking
+\fBdbmon_init\fP: \fInewrow\fP, \fIdelrow\fP, and \fIquerysyncs\fP.
+The pointer to the \fIquerysyncs\fP callback function is allowed to be 
+\fINULL\fP, effectively disabling the \fBdbmon_resync\fP function described
+below. 
 
-After calling \fBdbmon_init\fP, the calling program must call the
-\fBdbmon_update\fP function to begin monitoring of the database.
-Following that, the calling program must call the \fBdbmon_update\fP
-function repeatedly to trigger subsequent updates.
+After calling \fBdbmon_init\fP, the calling program may call the \fBdbmon_resync\fP
+function, if desired, to compare results from past monitoring with 
+the current database and respond to any changes.  After that, the calling 
+program must call the \fBdbmon_update\fP function at desired intervals to trigger 
+updates based on changes to the monitored database. (If the calling 
+program omits the call to \fBdbmon_resync\fP, the first call
+to \fBdbmon_update\fP assumes the calling application knows nothing about 
+the monitored database).
+
+If the \fBdbmon_resync\fP function is called, the \fIquerysyncs\fP callback 
+is invoked for each monitored table, asking the calling program for 
+a table of the synchronization strings the program already knows about 
+for that table (presumably from state saved by a previous execution of 
+the program). The \fIquerysyncs\fP function is given the database pointer 
+for the database (merely for informational purposes; in most cases said pointer
+would not be used), the name of the table for which the sync strings are 
+being requested, and the private pointer \fIpvt\fP which was passed 
+to \fBdbmon_resync\fP. The \fIquerysyncs\fP callback must return a 
+newly allocated \fITbl\fP (see tbl(3)) containing newly allocated copies of all known 
+synchronization strings for the table in question After using said 
+\fITbl\fP, \fBdbmon_resync\fP will free it with a call to 
+.nf
+
+freetbl( atbl, free );
+
+.fi
 
 For each Datascope database row newly detected by \fBdbmon_update\fP,
 a database pointer pointing to the scratch record,
@@ -137,7 +165,7 @@ main(int argc, char **argv )
 
 	dbopen_database( dbname, "r", &db );
 
-	dbmon_hook = dbmon_init( db, tables, newrow, delrow, 0 );
+	dbmon_hook = dbmon_init( db, tables, newrow, delrow, NULL, 0 );
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 
