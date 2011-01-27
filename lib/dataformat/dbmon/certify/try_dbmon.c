@@ -79,7 +79,7 @@ main(int argc, char **argv )
 
 	fprintf( stdout, "Resyncronizing with alleged previous results:\n" );
 
-	dbmon_resync( dbmon_hook, NULL );
+	dbmon_resync( dbmon_hook, (void *) stdout );
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 
