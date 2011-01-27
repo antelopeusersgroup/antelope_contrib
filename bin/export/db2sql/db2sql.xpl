@@ -329,6 +329,8 @@ unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
 
 undef( $pw );
 
+$dbh->{mysql_auto_reconnect} = 1;
+
 init_sql_database( $dbh, $sql_dbname, $opt_r, @db );
 
 $hookname = "dbmon_hook";
