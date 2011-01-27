@@ -739,6 +739,8 @@ dbmon_resync( Hook *dbmon_hook, void *pvt )
 
 		} else if( maxtbl( known_syncs ) <= 0 ) {
 
+			freetbl( known_syncs, free );
+
 			continue;
 		}
 
