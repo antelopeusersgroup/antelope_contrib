@@ -3,7 +3,7 @@
 dbwfserver \- serve URLs of explorable waveform data based on network requests
 .SH SYNOPSIS
 .nf
-dbwfserver [-dv] [-p pfname] [-P port] dbname
+dbwfserver [-dvVe] [-p pfname] [-P port] dbname
 .fi
 .SH DESCRIPTION
 The dbwfserver application launches and runs a server that takes
@@ -20,6 +20,15 @@ Override the default parameter-file name of \fIdbwfserver\fP.pf
 Override the port specified in the parameter file
 .IP -v
 Verbose output 
+.IP -V
+Debug output 
+.IP -e
+Load event data. Query the arrivals table and keep that in memory. 
+Not recommended for big databases. 
+.IP "-n nickname"
+If database in 'dbname' is a dbcentral database you need to specify
+the nickname of the database that we are using.
+
 .SH PARAMETER FILE
 .IP application_title
 The \fIapplication_title\fP parameter contains the string used as the 
