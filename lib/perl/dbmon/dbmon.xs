@@ -239,13 +239,13 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 	db.field = ifield;
 	db.record = irecord;
 
-	if( items > 8 ) {
+	if( items >= 8 ) {
 
-		table_subset = newtbl( items - 8 );
+		table_subset = newtbl( items - 7 );
 
-		for( i = 8; i < items; i++ ) {
+		for( i = 7; i < items; i++ ) {
 
-			if( i == 8 && SvTYPE(ST(i)) == SVt_PVCV ) {
+			if( i == 7 && SvROK(ST(i)) ) { /* Reference to a CV */
 
 				querysyncs = (CV *) ST(i);
 

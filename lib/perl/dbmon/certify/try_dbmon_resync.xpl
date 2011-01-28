@@ -64,9 +64,9 @@ if( scalar( @ARGV ) != 2 ) {
 
 $fh = \*STDOUT;
 
-@table_subset = ( "arrival", "affiliation" );
+@tables = ( "affiliation", "arrival" );
 
-dbmon_init( @db, $hookname, \&newrow, \&delrow, \&querysyncs, @table_subset );
+dbmon_init( @db, $hookname, \&newrow, \&delrow, \&querysyncs, @tables );
 
 dbmon_update( $hookname, $fh );
 
