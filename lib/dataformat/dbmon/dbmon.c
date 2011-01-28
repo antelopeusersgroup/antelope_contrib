@@ -53,9 +53,9 @@ typedef struct Dbtrack {
 	char	dbname[FILENAME_MAX];
 	Dbptr	db;
 	Arr	*tables;
-	Tbl	*(*querysyncs)(Dbptr, char *, void *);
 	void 	(*newrow)(Dbptr, char *, long, char *, void *);
 	void 	(*delrow)(Dbptr, char *, char *, void *);
+	Tbl	*(*querysyncs)(Dbptr, char *, void *);
 } Dbtrack;
 
 typedef struct Tabletrack {

@@ -1,6 +1,6 @@
 
 /*
- *   Copyright (c) 2010 Lindquist Consulting, Inc.
+ *   Copyright (c) 2010-2011 Lindquist Consulting, Inc.
  *   All rights reserved. 
  *                                                                     
  *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
@@ -57,6 +57,7 @@ typedef struct Perl_dbmon_track {
 	Hook	*dbmon_hook;
 	CV	*newrow;
 	CV	*delrow;
+	CV	*querysyncs;
 	SV	*ref;
 } Perl_dbmon_track;
 
@@ -95,9 +96,9 @@ free_perl_dbmon_track( Perl_dbmon_track *pdmtr )
 }
 
 static void
-perl_newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
+perl_newrow( Dbptr db, char *table, long irecord, char *sync, void *pvt )
 {
-	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) private;
+	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) pvt;
 	int	n;
 	dSP;
 
@@ -127,12 +128,14 @@ perl_newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 	PUTBACK;
 	FREETMPS;
 	LEAVE;
+
+	return;
 }
 
 static void
-perl_delrow( Dbptr db, char *table, char *sync, void *private )
+perl_delrow( Dbptr db, char *table, char *sync, void *pvt )
 {
-	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) private;
+	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) pvt;
 	int	n;
 	dSP;
 
@@ -159,6 +162,53 @@ perl_delrow( Dbptr db, char *table, char *sync, void *private )
 	PUTBACK;
 	FREETMPS;
 	LEAVE;
+
+	return;
+}
+
+static Tbl *
+perl_querysyncs( Dbptr db, char *table, void *pvt ) 
+{
+	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) pvt;
+	int	n;
+	int	i;
+	Tbl	*syncs = NULL;
+	char	*sync = NULL;
+	dSP;
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK( sp );
+
+	XPUSHs(sv_2mortal(newSViv(db.database)));
+	XPUSHs(sv_2mortal(newSViv(db.table)));
+	XPUSHs(sv_2mortal(newSViv(db.field)));
+	XPUSHs(sv_2mortal(newSViv(db.record)));
+
+	XPUSHs(sv_2mortal(newSVpv(table, 0)));
+
+	XPUSHs(sv_mortalcopy(pdmtr->ref));
+
+	PUTBACK;
+
+	n = perl_call_sv( (SV *) pdmtr->querysyncs, G_ARRAY );
+
+	SPAGAIN;
+
+	syncs = newtbl( 0 );
+
+	for( i = 0; i < n; i++ ) {
+
+		sync = POPp;
+
+		unshifttbl( syncs, strdup( sync ) );
+	}
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+
+	return syncs;
 }
 
 MODULE = Datascope::dbmon	PACKAGE = Datascope::dbmon
@@ -178,7 +228,9 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 	Dbptr	db;
 	Perl_dbmon_track *pdmtr = NULL;
 	Perl_dbmon_track *old = NULL;
-	Tbl	*table_subset = NULL;;
+	Tbl	*table_subset = NULL;
+	CV	*querysyncs = NULL;
+	Tbl	*(*querysyncs_callback)(Dbptr,char *,void *) = NULL;
 	long	i;
 	int	flags = 0;
 
@@ -193,7 +245,16 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 
 		for( i = 8; i < items; i++ ) {
 
-			pushtbl( table_subset, SvPV_nolen( ST(i) ) );
+			if( i == 8 && SvTYPE(ST(i)) == SVt_PVCV ) {
+
+				querysyncs = (CV *) ST(i);
+
+				querysyncs_callback = perl_querysyncs;
+
+			} else {
+
+				pushtbl( table_subset, SvPV_nolen( ST(i) ) );
+			}
 		}
 	}
 
@@ -201,8 +262,9 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 
 	pdmtr->newrow = newrow;
 	pdmtr->delrow = delrow;
+	pdmtr->querysyncs = querysyncs;
 
-	pdmtr->dbmon_hook = dbmon_init( db, table_subset, perl_newrow, perl_delrow, flags );
+	pdmtr->dbmon_hook = dbmon_init( db, table_subset, perl_newrow, perl_delrow, querysyncs_callback, flags );
 
 	if( table_subset != (Tbl *) NULL ) {
 		
