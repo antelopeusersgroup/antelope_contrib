@@ -1,6 +1,6 @@
 
-archivebase			/anf/TA/wf/station_final	# absolute path name for station baler archive name
-purgatory			/anf/TA/wf/purgatory				# absolute path name for station baler archive name
+archivebase			/anf/TA/dbs/wfs/station_final	# absolute path name for station baler archive name
+purgatory			/anf/TA/dbs/wfs/purgatory				# absolute path name for station baler archive name
 
 dbops				/anf/TA/dbs/dbops/usarray
 

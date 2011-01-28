@@ -1,1 +1,1 @@
-try_dbmon: Table 'results/dbmon/demo.arrival' inappropriately shortened from 5 to 1 rows; rebuilding
+orb2db_msg: created new message file '/opt/antelope/5.0-64/src/contrib/lib/dataformat/dbmon/certify/results/dbmon/demo.MSGFILE'

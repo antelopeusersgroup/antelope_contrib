@@ -1,4 +1,4 @@
-archivebase			/anf/TA/wf/station_final	# absolute path name for station baler archive name
+archivebase			/anf/TA/dbs/wfs/station_final	# absolute path name for station baler archive name
 
 dbops				/anf/TA/dbs/dbops/usarray	# path to dbops database which includes dmcfiles 
 												# and deployment tables 
@@ -13,7 +13,7 @@ non_wf_chan			&Tbl{
 					}							# list of non-waveform miniseed channel codes to be 
 												# processed.
 
-rt_sta_dir			/anf/TA/wf/rt_stas			# Absolute path name for directory containing 
+rt_sta_dir			/anf/TA/dbs/wfs/rt_stas			# Absolute path name for directory containing 
 												# real-time station database wfdiscs
 
 sync_dir			/anf/TA/products/sync/sta_final	# Absolute path name for directory to store sync files

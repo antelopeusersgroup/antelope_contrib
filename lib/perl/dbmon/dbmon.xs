@@ -56,7 +56,6 @@
 typedef struct Perl_dbmon_track {
 	Hook	*dbmon_hook;
 	CV	*newrow;
-	CV	*changerow;
 	CV	*delrow;
 	SV	*ref;
 } Perl_dbmon_track;
@@ -96,7 +95,7 @@ free_perl_dbmon_track( Perl_dbmon_track *pdmtr )
 }
 
 static void
-perl_newrow( Dbptr db, char *table, char *sync, void *private )
+perl_newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 {
 	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) private;
 	int	n;
@@ -112,6 +111,9 @@ perl_newrow( Dbptr db, char *table, char *sync, void *private )
 	XPUSHs(sv_2mortal(newSViv(db.record)));
 
 	XPUSHs(sv_2mortal(newSVpv(table, 0)));
+
+	XPUSHs(sv_2mortal(newSViv(irecord)));
+
 	XPUSHs(sv_2mortal(newSVpv(sync, 0)));
 
 	XPUSHs(sv_mortalcopy(pdmtr->ref));
@@ -119,40 +121,6 @@ perl_newrow( Dbptr db, char *table, char *sync, void *private )
 	PUTBACK;
 
 	n = perl_call_sv( (SV *) pdmtr->newrow, G_DISCARD );
-
-	SPAGAIN;
-
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
-}
-
-static void
-perl_changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
-{
-	Perl_dbmon_track *pdmtr = (Perl_dbmon_track *) private;
-	int	n;
-	dSP;
-
-	ENTER;
-	SAVETMPS;
-	PUSHMARK( sp );
-
-	XPUSHs(sv_2mortal(newSVpv(oldsync, 0)));
-
-	XPUSHs(sv_2mortal(newSViv(db.database)));
-	XPUSHs(sv_2mortal(newSViv(db.table)));
-	XPUSHs(sv_2mortal(newSViv(db.field)));
-	XPUSHs(sv_2mortal(newSViv(db.record)));
-
-	XPUSHs(sv_2mortal(newSVpv(table, 0)));
-	XPUSHs(sv_2mortal(newSVpv(sync, 0)));
-
-	XPUSHs(sv_mortalcopy(pdmtr->ref));
-
-	PUTBACK;
-
-	n = perl_call_sv( (SV *) pdmtr->changerow, G_DISCARD );
 
 	SPAGAIN;
 
@@ -197,14 +165,13 @@ MODULE = Datascope::dbmon	PACKAGE = Datascope::dbmon
 PROTOTYPES: DISABLE
 
 void
-dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, changerow, delrow, ... )
+dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 	long	idatabase
 	long	itable
 	long	ifield
 	long	irecord
 	char	*hookname
 	CV	*newrow
-	CV 	*changerow
 	CV 	*delrow
 	PPCODE:
 	{
@@ -233,10 +200,9 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, changerow, del
 	pdmtr = new_perl_dbmon_track();
 
 	pdmtr->newrow = newrow;
-	pdmtr->changerow = changerow;
 	pdmtr->delrow = delrow;
 
-	pdmtr->dbmon_hook = dbmon_init( db, table_subset, perl_newrow, perl_changerow, perl_delrow, flags );
+	pdmtr->dbmon_hook = dbmon_init( db, table_subset, perl_newrow, perl_delrow, flags );
 
 	if( table_subset != (Tbl *) NULL ) {
 		

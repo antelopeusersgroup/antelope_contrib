@@ -53,7 +53,7 @@
 
 #define USAGE raise_elog( ELOG_COMPLAIN, usage ) 
 
-static Arr *Hooks = 0;
+static Arr *Hooks = NULL;
 
 #ifdef __APPLE__
 
@@ -130,6 +130,8 @@ static PyObject *python_trfilter( PyObject *self, PyObject *args );
 static PyObject *python_trapply_calib( PyObject *self, PyObject *args );
 static PyObject *python_trdata( PyObject *self, PyObject *args );
 static PyObject *python_trdatabins( PyObject *self, PyObject *args );
+static PyObject *python_trrotate( PyObject *self, PyObject *args );
+static PyObject *python_trrotate_to_standard( PyObject *self, PyObject *args );
 static PyObject *python_trcopy( PyObject *self, PyObject *args );
 static PyObject *python_trsplice( PyObject *self, PyObject *args );
 static PyObject *python_trsplit( PyObject *self, PyObject *args );
@@ -218,6 +220,8 @@ static struct PyMethodDef _datascope_methods[] = {
 	{ "_trapply_calib", python_trapply_calib, METH_VARARGS, "Apply calibration value to data points in trace object" },
 	{ "_trdata",	python_trdata,		METH_VARARGS, "Extract data points from trace table record" },
 	{ "_trdatabins", python_trdatabins,	METH_VARARGS, "Extract binned data points from trace table record" },
+	{ "_trrotate",	python_trrotate,	METH_VARARGS, "Rotate traces to new orientation with new component names" },
+	{ "_trrotate_to_standard", python_trrotate_to_standard,	METH_VARARGS, "Rotate traces to standard orientation" },
 	{ "_trcopy",	python_trcopy,		METH_VARARGS, "Make copy of a trace table including the trace data" },
 	{ "_trsplice",	python_trsplice,	METH_VARARGS, "Splice together data segments" },
 	{ "_trsplit",	python_trsplit,		METH_VARARGS, "Split data segments which contain marked gaps" },
@@ -949,7 +953,7 @@ static PyObject *
 python_dbtmp( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbtmp(schema)\n";
 	Dbptr	db;
-	char	*schema = 0;   
+	char	*schema = NULL;   
 
 	if( ! PyArg_ParseTuple( args, "s", &schema ) ) {
 
@@ -966,11 +970,11 @@ python_dbtmp( PyObject *self, PyObject *args ) {
 static PyObject *
 python_dbcreate( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbcreate(filename, schema, dbpath, description, detail)\n";
-	char	*filename = 0;   
-	char	*schema = 0;   
-	char	*dbpath = 0;   
-	char	*description = 0;   
-	char	*detail = 0;   
+	char	*filename = NULL;   
+	char	*schema = NULL;   
+	char	*dbpath = NULL;   
+	char	*description = NULL;   
+	char	*detail = NULL;   
 	int	rc;
 
 	if( ! PyArg_ParseTuple( args, "sszzz", &filename, &schema, &dbpath, &description, &detail) ) {
@@ -1021,10 +1025,10 @@ static PyObject *
 python_dblookup( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dblookup(db, database, table, field, record)\n";
 	Dbptr	db;
-	char	*database = 0;
-	char	*table = 0;
-	char	*field = 0;
-	char	*record = 0;
+	char	*database = NULL;
+	char	*table = NULL;
+	char	*field = NULL;
+	char	*record = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&ssss", parse_to_Dbptr, &db, 
 				      &database, &table, &field, &record ) ) {
@@ -1043,8 +1047,8 @@ static PyObject *
 python_dbsubset( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbsubset(db, expr, name)\n";
 	Dbptr	db;
-	char	*expr = 0;
-	char	*name = 0;
+	char	*expr = NULL;
+	char	*name = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&sz", parse_to_Dbptr, &db, &expr, &name ) ) {
 
@@ -1081,7 +1085,7 @@ python_dbseparate( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbseparate(db, tablename)\n";
 	PyObject *obj;
 	Dbptr	db;
-	char	*tablename = 0;
+	char	*tablename = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &tablename ) ) {
 
@@ -1111,8 +1115,8 @@ python_dbsever( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbsever(db, tablename, name)\n";
 	PyObject *obj;
 	Dbptr	db;
-	char	*tablename = 0;
-	char	*view_name = 0;
+	char	*tablename = NULL;
+	char	*view_name = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&sz", parse_to_Dbptr, &db, &tablename, &view_name ) ) {
 
@@ -1143,7 +1147,7 @@ python_dbex_eval( PyObject *self, PyObject *args ) {
 	PyObject *obj;
 	Dbptr	db;
 	Dbvalue value;
-	char	*expr = 0;
+	char	*expr = NULL;
 	int	rc;
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &expr ) ) {
@@ -1174,7 +1178,7 @@ python_dbextfile( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbextfile(db, tablename)\n";
 	PyObject *obj;
 	Dbptr	db;
-	char	*tablename = 0;
+	char	*tablename = NULL;
 	char	filename[FILENAME_MAX];
 	int	rc;
 
@@ -1196,11 +1200,15 @@ static PyObject *
 python_dbfind( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbfind(db, expr, first, reverse)\n";
 	Dbptr	db;
-	char	*expr;
+	char	*expr = NULL;
 	int	first;
 	int	reverse = 0;
 	int	flags = 0;
 	long	rc;
+	PyObject *ptype;
+	PyObject *pvalue;
+	PyObject *ptraceback;
+	PyObject *estring;
 
 	if( ! PyArg_ParseTuple( args, "O&siO&", parse_to_Dbptr, &db, &expr, &first, parse_from_Boolean, &reverse ) ) {
 
@@ -1213,12 +1221,38 @@ python_dbfind( PyObject *self, PyObject *args ) {
 
 		flags++;
 	} 
-	
+
 	db.record = first;
 
 	rc = dbfind( db, expr, flags, 0 );
 
-	return Py_BuildValue( "i", rc );
+	/* The expression calculator runs the expression through str2epoch() as part of its evaluation 
+	   process, which may fail even if the further compilation process succeeds. This unfortunately 
+	   registers a str2epoch() interpretation error which must be caught lest a thrown exception 
+	   make a successful dbfind call appear to fail. */
+
+	PyErr_Fetch( &ptype, &pvalue, &ptraceback );
+
+	if( ptype == (PyObject *) NULL ) {
+
+		return Py_BuildValue( "i", rc );
+	
+	} else if( ( estring = PyObject_GetAttrString( pvalue, "string" ) ) == (PyObject *) NULL ) {
+
+		PyErr_Restore( ptype, pvalue, ptraceback );
+
+		return NULL;
+
+	} else if( strcontains( PyString_AsString( estring ), "str2epoch", NULL, NULL, NULL ) ) {
+
+		return Py_BuildValue( "i", rc );
+
+	} else {
+
+		PyErr_Restore( ptype, pvalue, ptraceback );
+
+		return NULL;
+	}
 }
 
 static PyObject *
@@ -1227,11 +1261,11 @@ python_dbmatches( PyObject *self, PyObject *args ) {
 	PyObject *obj;
 	Dbptr	dbk;
 	Dbptr	dbt;
-	char	*hookname = 0;
-	Tbl	*kpattern = 0;
-	Tbl 	*tpattern = 0;
-	Tbl	*list = 0;
-	Hook	*hook = 0;
+	char	*hookname = NULL;
+	Tbl	*kpattern = NULL;
+	Tbl 	*tpattern = NULL;
+	Tbl	*list = NULL;
+	Hook	*hook = NULL;
 	int	duplicate_pattern = 0;
 	long	rc;
 
@@ -1254,7 +1288,7 @@ python_dbmatches( PyObject *self, PyObject *args ) {
 		duplicate_pattern++;
 	}
 
-	if( Hooks == 0 ) {
+	if( Hooks == NULL ) {
 
 		Hooks = newarr( 0 );
 	}
@@ -1296,7 +1330,7 @@ static PyObject *
 python_dbprocess( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbprocess(db, list)\n";
 	Dbptr	db;
-	Tbl	*list = 0;
+	Tbl	*list = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &db, parse_to_strtbl, &list ) ) {
 
@@ -1334,8 +1368,8 @@ static PyObject *
 python_dbsort( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbsort(db, keys, unique, reverse, name)\n";
 	Dbptr	db;
-	Tbl 	*keys = 0;
-	char	*name = 0;
+	Tbl 	*keys = NULL;
+	char	*name = NULL;
 	int	flags = 0;
 	int	reverse = 0;
 	int	unique = 0;
@@ -1377,13 +1411,13 @@ python_dbjoin( PyObject *self, PyObject *args ) {
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	dbout;
-	Tbl	*pattern1 = 0;
-	Tbl 	*pattern2 = 0;
+	Tbl	*pattern1 = NULL;
+	Tbl 	*pattern2 = NULL;
 	int	pattern1_specified = 0;
 	int	pattern2_specified = 0;
 	int	outer = 0;
 	int	duplicate_pattern = 0;
-	char	*name = 0;
+	char	*name = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&O&O&O&O&z", parse_to_Dbptr, &db1, 
 					       parse_to_Dbptr, &db2, 
@@ -1455,7 +1489,7 @@ python_dbnojoin( PyObject *self, PyObject *args ) {
 	int	duplicate_pattern = 0;
 	int	pattern1_specified = 0;
 	int	pattern2_specified = 0;
-	char	*name = 0;
+	char	*name = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&O&O&O&z", parse_to_Dbptr, &db1, 
 					       parse_to_Dbptr, &db2, 
@@ -1521,8 +1555,8 @@ python_dbtheta( PyObject *self, PyObject *args ) {
 	Dbptr	db2;
 	Dbptr	dbout;
 	int	outer = 0;
-	char	*ex_str = 0;
-	char	*name = 0;
+	char	*ex_str = NULL;
+	char	*name = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&O&sO&z", parse_to_Dbptr, &db1, 
 					       parse_to_Dbptr, &db2, 
@@ -1544,7 +1578,7 @@ static PyObject *
 python_dbunjoin( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbunjoin(db, database_name, rewrite)\n";
 	Dbptr	db;
-	char	*database_name = 0;
+	char	*database_name = NULL;
 	int	rewrite = 0;
 	int	rc;
 
@@ -1573,8 +1607,8 @@ static PyObject *
 python_dbgroup( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbgroup(db, groupfields, name, type)\n";
 	Dbptr	db;
-	Tbl	*groupfields = 0;
-	char	*name = 0;
+	Tbl	*groupfields = NULL;
+	char	*name = NULL;
 	long	type;
 
 	if( ! PyArg_ParseTuple( args, "O&O&zi", parse_to_Dbptr, &db, 
@@ -1602,7 +1636,7 @@ python_dbungroup( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbungroup(db, name)\n";
 	PyObject *obj;
 	Dbptr	db;
-	char	*view_name = 0;
+	char	*view_name = NULL;
 
 	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &view_name ) ) {
 
@@ -1632,11 +1666,11 @@ python_db2xml( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _db2xml(db, rootnode, rownode, fields, expressions, primary)\n";
 	PyObject *obj;
 	Dbptr	db;
-	char	*rootnode = 0;
-	char	*rownode = 0; 
-	char	*xml = 0;
-	Tbl	*fields = 0;
-	Tbl	*expressions = 0;
+	char	*rootnode = NULL;
+	char	*rownode = NULL; 
+	char	*xml = NULL;
+	Tbl	*fields = NULL;
+	Tbl	*expressions = NULL;
 	int 	flags = 0;
 	int	primary = 0;
 	int	rc;
@@ -1853,8 +1887,8 @@ python_dbget( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbget(db, scratch)\n";
 	PyObject *obj;
 	Dbptr	db;
-	char	*s = 0;
-	char	*scratch = 0;
+	char	*s = NULL;
+	char	*scratch = NULL;
 	long	size;
 	int	rc;
 
@@ -1919,7 +1953,7 @@ static PyObject *
 python_dbput( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _dbput(db, string )\n";
 	Dbptr	db;
-	char	*s = 0;
+	char	*s = NULL;
 	int	rc;
 
 	if( ! PyArg_ParseTuple( args, "O&z", parse_to_Dbptr, &db, &s ) ) {
@@ -2406,7 +2440,7 @@ python_trsample( PyObject *self, PyObject *args ) {
 	float	*data;
 	char	*sta;
 	char	*chan;
-	char	*filter = 0;
+	char	*filter = NULL;
 	int	apply_calib = 0;
 	long	nrows = 0;
 	long	nsamp_total = 0;
@@ -2531,7 +2565,7 @@ python_trsamplebins( PyObject *self, PyObject *args ) {
 	double	max;
 	char	*sta;
 	char	*chan;
-	char	*filter = 0;
+	char	*filter = NULL;
 	int	apply_calib = 0;
 	int	binsize = 1;
 	long	nrows = 0;
@@ -2920,6 +2954,110 @@ python_trdatabins( PyObject *self, PyObject *args ) {
 }
 
 static PyObject *
+python_trrotate( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trrotate(tr, phi_deg, theta_deg, newchan)\n";
+	Dbptr	tr;
+	double	phi_deg;
+	double 	theta_deg;
+	Tbl	*newchans_tbl = NULL;
+	char	**newchan = NULL;
+	int	istring = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&ddO&", parse_to_Dbptr, &tr, &phi_deg, &theta_deg, parse_to_strtbl, &newchans_tbl ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	if( maxtbl( newchans_tbl ) != 3 ) {
+
+		freetbl( newchans_tbl, free );
+
+		raise_elog( ELOG_COMPLAIN, "Argument 'newchan' to _trrotate must be a three-element tuple of strings e.g. (\"A\", \"B\", \"C\")" );
+
+		return NULL;
+
+	} else {
+
+		allot( char **, newchan, 3 );
+		
+		for( istring = 0; istring < 3; istring++ ) {
+
+			newchan[istring] = strdup( gettbl( newchans_tbl, istring ) );
+		}
+
+		freetbl( newchans_tbl, free );
+	}
+
+	rc = trrotate( tr, phi_deg, theta_deg, newchan );
+
+	for( istring = 0; istring < 3; istring++ ) {
+
+		free( newchan[istring] );
+	}
+
+	free( newchan );
+
+	/* Questionable whether trrotate should throw an exception here for nonzero trrotate 
+	   return-codes. Omit exception for now. */
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
+python_trrotate_to_standard( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _trrotate_to_standard(tr, newchan)\n";
+	Dbptr	tr;
+	Tbl	*newchans_tbl = NULL;
+	char	**newchan = NULL;
+	int	istring = 0;
+	int	rc;
+
+	if( ! PyArg_ParseTuple( args, "O&O&", parse_to_Dbptr, &tr, parse_to_strtbl, &newchans_tbl ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	if( maxtbl( newchans_tbl ) != 3 ) {
+
+		freetbl( newchans_tbl, free );
+
+		raise_elog( ELOG_COMPLAIN, "Argument 'newchan' to _trrotate must be a three-element tuple of strings e.g. (\"A\", \"B\", \"C\")" );
+
+		return NULL;
+
+	} else {
+
+		allot( char **, newchan, 3 );
+		
+		for( istring = 0; istring < 3; istring++ ) {
+
+			newchan[istring] = strdup( gettbl( newchans_tbl, istring ) );
+		}
+
+		freetbl( newchans_tbl, free );
+	}
+
+	rc = rotate_to_standard( tr, newchan );
+
+	for( istring = 0; istring < 3; istring++ ) {
+
+		free( newchan[istring] );
+	}
+
+	free( newchan );
+
+	/* Questionable whether rotate_to_standard should throw an exception here for nonzero trrotate 
+	   return-codes. Omit exception for now. */
+
+	return Py_BuildValue( "i", rc );
+}
+
+static PyObject *
 python_trsplice( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _trsplice(tr)\n";
 	Dbptr	tr;
@@ -2948,8 +3086,8 @@ static PyObject *
 python_trlookup_segtype( PyObject *self, PyObject *args ) {
 	char	*usage = "Usage: _trlookup_segtype(segtype)\n";
 	char	*segtype;
-	char	*segunits = 0;
-	char	*segdesc = 0;
+	char	*segunits = NULL;
+	char	*segdesc = NULL;
 	PyObject *obj;
 	int	rc;
 
@@ -2983,7 +3121,7 @@ python_trwfname( PyObject *self, PyObject *args ) {
 	Dbptr	db;
 	int	rc;
 	char	*pattern;
-	char	*path = 0;
+	char	*path = NULL;
 	PyObject *obj;
 
 	if( ! PyArg_ParseTuple( args, "O&s", parse_to_Dbptr, &db, &pattern ) ) {

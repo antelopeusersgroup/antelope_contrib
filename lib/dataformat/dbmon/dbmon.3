@@ -7,12 +7,11 @@ dbmon_init, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- m
 #include "dbmon.h"
 
 Hook *\fBdbmon_init\fP( Dbptr \fIdb\fP, Tbl *\fItable_subset\fP, 
-                  void (*\fInewrow\fP)(Dbptr db, char *table, char *sync, void *private), 
-                  void (*\fIchangerow\fP)(char *oldsync, Dbptr db, char *table, char *newsync, void *private), 
-                  void (*\fIdelrow\fP)(Dbptr db, char *table, char *oldsync, void *private), 
+                  void (*\fInewrow\fP)(Dbptr db, char *table, long irecord, char *sync, void *pvt), 
+                  void (*\fIdelrow\fP)(Dbptr db, char *table, char *oldsync, void *pvt), 
                   int \fIflags\fP );
 
-int \fBdbmon_update\fP( Hook *\fIdbmon_hook\fP, void *\fIprivate\fP );
+int \fBdbmon_update\fP( Hook *\fIdbmon_hook\fP, void *\fIpvt\fP );
 
 void \fBdbmon_status\fP( FILE *\fIfp\fP, Hook *\fIdbmon_hook\fP );
 
@@ -22,54 +21,65 @@ char *\fBdbmon_compute_row_sync\fP( Dbptr \fIdb\fP );
 
 .fi
 .SH DESCRIPTION
-The \fBdbmon_init\fP function begins tracking a dynamically updating Datascope database. The 
-\fIdb\fP database pointer indicates the database to be tracked. If the \fItable_subset\fP is 
-null, all tables are tracked.  If this argument is a list of string names for database 
-tables (see strtbl(3)), tracking is limited to the named tables.  \fBdbmon_init\fP returns a hook(3) 
-pointer which is used in subsequent calls to interact with the tracked monitoring status of the 
-database. Three callbacks are registered when invoking \fBdbmon_init\fP: \fInewrow\fP, \fIchangerow\fP, 
-and \fIdelrow\fP. 
+The \fBdbmon_init\fP function begins tracking a dynamically updating
+Datascope database. The \fIdb\fP database pointer indicates the
+database to be tracked. If the \fItable_subset\fP is null, all
+tables are tracked.  If this argument is a list of string names for
+database tables (see strtbl(3)), tracking is limited to the named
+tables.  \fBdbmon_init\fP returns a hook(3) pointer which is used
+in subsequent calls to interact with the tracked monitoring status
+of the database. Two callbacks are registered when invoking
+\fBdbmon_init\fP: \fInewrow\fP and \fIdelrow\fP.
 
-After \fBdbmon_init\fP is called, the \fBdbmon_update\fP function is called to begin monitoring 
-of the database. Also, subsequent updates are triggered by calling the \fBdbmon_update\fP function. 
+After calling \fBdbmon_init\fP, the calling program must call the
+\fBdbmon_update\fP function to begin monitoring of the database.
+Following that, the calling program must call the \fBdbmon_update\fP
+function repeatedly to trigger subsequent updates.
 
-For each Datascope database row newly detected by \fBdbmon_update\fP, a database pointer pointing to 
-the new row is given as the first argument to the \fInewrow\fP callback. The second argument to the 
-\fInewrow\fP callback is the Datascope table-name containing the row in question. The third argument 
-is a string computed by \fBdbmon_update\fP intended to be a unique hash of the database row. This can 
-be used as desired by the calling application to identify the returned row in future operations. The fourth
-argument to the \fInewrow\fP callback is a \fIprivate\fP void pointer, the same as the \fIprivate\fP
-pointer provided to the \fBdbmon_update\fP function. This \fIprivate\fP pointer may be used by the 
-application programmer writing callbacks to handle more complex behavior for each database row, for 
-example the \fIprivate\fP pointer may reference a data structure for transformed rows or instructions 
-to another utility. 
+For each Datascope database row newly detected by \fBdbmon_update\fP,
+a database pointer pointing to the scratch record,
+which will contain a copy of the new row, is given by \fBdbmon_update\fP as the first argument
+to the \fInewrow\fP callback. The second argument to the \fInewrow\fP
+callback is the Datascope table-name containing the row in question.
+The third argument is the actual row number of the row in the table.
+The fourth argument is a string computed by \fBdbmon_update\fP
+intended to be a unique signature of the database row. This can be used
+as desired by the calling application to identify the returned row
+in future operations. The fifth argument to the \fInewrow\fP callback
+is a void pointer \fIpvt\fP, the same as the \fIpvt\fP
+pointer provided to the \fBdbmon_update\fP function. This private
+pointer may be used by the application programmer writing callbacks
+to handle more complex behavior for each database row, for example
+the \fIpvt\fP pointer may reference a data structure for
+transformed rows or instructions to another utility.
 
-For each changed database row detected by \fBdbmon_update\fP, the \fIchangerow\fP callback is 
-invoked. The first argument to \fIchangerow\fP is the \fIsync\fP string value for the row 
-before the row was changed. The rest of the arguments to \fIchangerow\fP are the same as the arguments to \fInewrow\fP,
-with the database pointer and the \fIsync\fP string referring to the new version of the row. 
+For database rows that \fBdbmon_update\fP concludes have been marked
+for deletion, the \fIdelrow\fP callback is invoked, with the
+\fIoldsync\fP string holding the value of the synchronization string
+from before the row was marked. The \fItable\fP-name argument
+indicates the database table from which the row was deleted. The
+database pointer is provided as a convenience to the programmer and
+does not contain any information about the row from before it was
+marked for deletion.
 
-For database rows that \fBdbmon_update\fP concludes have been marked for deletion, the \fIdelrow\fP
-callback is invoked, with the \fIoldsync\fP string holding the value of the synchronization string
-from before the row was marked. The \fItable\fP-name argument indicates the database table from 
-which the row was deleted. The database pointer is provided as a convenience to the programmer and 
-does not contain any information about the row from before it was marked for deletion. 
+The \fBdbmon_status\fP function is a debugging utility which prints
+what is known internal to the library about the current status of
+the database represented by the tracking hook.
 
-The \fBdbmon_status\fP function is a debugging utility which prints what is known internal 
-to the library about the current status of the database represented by the tracking hook. 
+The \fBdbmon_close\fP function stops tracking a previously tracked
+Datascope database, freeing all tracking structures.
 
-The \fBdbmon_close\fP function stops tracking a previously tracked Datascope database, 
-freeing all tracking structures. 
-
-The \fBdbmon_compute_row_sync\fP function computes a synchronization string for a given database row,
-used internally for tracking functions and possibly useful externally as well to coordinate
-with other operations. The returned character string should be freed by the 
-caller when no longer needed. 
+The \fBdbmon_compute_row_sync\fP function computes a synchronization
+string for a given database row, used internally for tracking
+functions and possibly useful externally as well to coordinate with
+other operations. The returned character string should be freed by
+the caller when no longer needed.
 
 .SH EXAMPLE
-The example below, taken from the certify(1) tests for the dbmon library, shows a database being monitored, 
-with some artificial updates accomplished via system calls to copy alternate versions of one of the database
-tables over the initial copy:
+The example below, taken from the certify(1) tests for the dbmon
+library, shows a database being monitored, with some artificial
+updates accomplished via system calls to copy alternate versions
+of one of the database tables over the initial copy:
 .in 2c
 .ft CW
 .nf
@@ -82,41 +92,26 @@ tables over the initial copy:
 #include "dbmon.h"
 #include "db2sql.h"
 
-void newrow( Dbptr db, char *table, char *sync, void *private );
-void changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private );
-void delrow( Dbptr db, char *table, char *sync, void *private );
+void newrow( Dbptr db, char *table, long irecord, char *sync, void *pvt );
+void delrow( Dbptr db, char *table, char *sync, void *pvt );
 
 void
-newrow( Dbptr db, char *table, char *sync, void *private )
+newrow( Dbptr db, char *table, long irecord, char *sync, void *pvt )
 { 
 	char	row[10*STRSZ];
-	FILE	*fp = (FILE *) private;
+	FILE	*fp = (FILE *) pvt;
 
 	dbget( db, row );
 	
-	fprintf( fp, "New Row %ld in '%s' [sync '%s']: %s\\n", db.record, table, sync, row );
+	fprintf( fp, "New Row %ld in '%s' [sync '%s']: %s\\n", irecord, table, sync, row );
 
 	return;
 }
 
 void
-changerow( char *oldsync, Dbptr db, char *table, char *sync, void *private )
+delrow( Dbptr db, char *table, char *sync, void *pvt )
 { 
-	char	row[10*STRSZ];
-	FILE	*fp = (FILE *) private;
-
-	dbget( db, row );
-	
-	fprintf( fp, "Changed Row %ld in '%s' [Old sync '%s', New sync '%s']: %s\\n", 
-		 db.record, table, oldsync, sync, row );
-
-	return;
-}
-
-void
-delrow( Dbptr db, char *table, char *sync, void *private )
-{ 
-	FILE	*fp = (FILE *) private;
+	FILE	*fp = (FILE *) pvt;
 
 	fprintf( fp, "Deleted row from '%s' with sync '%s'\\n", table, sync );
 
@@ -142,7 +137,7 @@ main(int argc, char **argv )
 
 	dbopen_database( dbname, "r", &db );
 
-	dbmon_hook = dbmon_init( db, tables, newrow, changerow, delrow, 0 );
+	dbmon_hook = dbmon_init( db, tables, newrow, delrow, 0 );
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 
@@ -217,6 +212,17 @@ The dbmon library does not yet monitor external files, though perhaps should.
 In addition to the database pointer for a given row, the corresponding table name is passed to the callback functions,
 even though the table name could also be derived from a dbquery(3) call on the database pointer. This is 
 done as a convenience to the programmer implementing the callbacks. 
+
+The \fInewrow\fP callback is given scratch records with copies of the new rows, rather than
+being given the new rows themselves, in order to keep the transactions atomic: i.e. to make sure the operation 
+performed on the database row in the callback is done on exactly the same row for which the sync string was computed
+internal to the dbmon library. This is necessary for databases that may be changing more rapidly than the refresh rate
+of the dbmon library. An alternative solution would be to force all other database-write operations to suspend during 
+a dbmon refresh operation, however that demands a more stringent trade-off between real-time process latency and 
+dbmon latency, which seems less desirable if it can be avoided. 
+
+The \fBdbmon_update\fP function assumes \fBorb2db_msg\fP is on the execution path and runs that command with the 
+\fIwait\fP option on the tracked database before proceeding. 
 .SH AUTHOR
 .nf
 Dr. Kent Lindquist 

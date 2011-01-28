@@ -37,8 +37,8 @@
 {    #  Main program
 
     my ( $Pf, $cmd, $dbops, $debug, $now, $nrows, $problems, $row, $rtsta, $sta, $stime ) ; 
-    my ( $subject, $usage, $verbose );
-    my ( @db, @dbdeploy );
+    my ( $subject, $success, $usage, $verbose );
+    my ( @db, @dbdeploy, @output );
     my ( %pf );
 
     $pgm = $0 ; 
@@ -69,7 +69,7 @@
     $verbose    = $opt_v;
     $debug      = $opt_V;
     
-    %pf = getparam($Pf, $verbose, $debug);
+    %pf = getparam( $Pf );
     makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
 
     if (system_check(0)) {
@@ -113,15 +113,23 @@
         $cmd  = "miniseed2db ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "$pf{msd2db_pat} $rtsta ";
-        $cmd .= "> /dev/null 2>&1 " unless $opt_V ;
+#         $cmd .= "> /dev/null 2>&1 " unless $opt_V ;
         $cmd =~ s/STA/$sta/;
             
-        if  ( ! $opt_n ) {
-            elog_notify("\n$cmd");        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("\nskipping $cmd") ;
-        } 
+#         if  ( ! $opt_n ) {
+#             elog_notify("\n$cmd");        
+#             $problems = run($cmd,$problems) ;
+#         } else {
+#             elog_notify("\nskipping $cmd") ;
+#         } 
+        
+        ( $success, @output )  = &run_cmd( $cmd );
+
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ;
             
         unlink("$rtsta");
         unlink("$rtsta.snetsta");

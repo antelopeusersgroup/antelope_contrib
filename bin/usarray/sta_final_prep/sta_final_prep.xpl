@@ -31,9 +31,9 @@
     my ( $usage, $cmd, $subject, $verbose, $debug, $Pf, $problems);
     my ( $bhname, $dbname, $dirname, $dbdevice, $dbavail, $etime, $fsta, $line, $maxtime, $maxtime_baler, $maxtime_rt ) ; 
     my ( $mintime, $mintime_baler, $mintime_rt, $mseedfile, $nrows, $prob, $prob_check, $row, $rtdb ) ;  
-    my ( $snet, $sohname, $sta, $sta_base, $sta_size, $statmp, $stime, $table ) ;
-    my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles ) ;
-    my (%pf);
+    my ( $snet, $sohname, $sta, $sta_base, $sta_size, $statmp, $stime, $success, $table ) ;
+    my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles, @output ) ;
+    my ( %pf );
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -61,7 +61,7 @@
     $verbose    = $opt_v;
     $debug      = $opt_V;
     
-    %pf = getparam($Pf, $verbose, $debug);
+    %pf = getparam( $Pf );
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -177,15 +177,23 @@
             $cmd  = "miniseed2days -c -U -m \".*_.*_[BL]H._.*\" ";
             $cmd .= "-v " if $opt_V;
             $cmd .= " - < $bhname/$mseedfile ";
-            $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
+#             $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
+#         
+#             if  ( ! $opt_n ) {
+#                 elog_notify("\n$cmd") if $opt_v ;        
+#                 $problems = run($cmd,$problems) ;
+#             } else {
+#                 elog_notify("\nskipping $cmd") if $opt_v ;
+#             } 
+#             unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
+            
+            ( $success, @output )  = &run_cmd( $cmd );
+
+            if ( ! $success ) {
+                $problems++ ;
+            }
         
-            if  ( ! $opt_n ) {
-                elog_notify("\n$cmd") if $opt_v ;        
-                $problems = run($cmd,$problems) ;
-            } else {
-                elog_notify("\nskipping $cmd") if $opt_v ;
-            } 
-            unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
+            @output = () ;
         }
         
 #
@@ -208,15 +216,23 @@
             $cmd  = "miniseed2days -c -U -r \".*_.*_[BHL]H[ZNE12]_.*\" -w %Y/%{net}_%{sta}_%{chan}.msd ";
             $cmd .= "-v " if $opt_V;
             $cmd .= " - < $sohname/$mseedfile ";
-            $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
+#             $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
+#             
+#             if  ( ! $opt_n ) {
+#                 elog_notify("\n$cmd") if $opt_v ;        
+#                 $problems = run($cmd,$problems) ;
+#             } else {
+#                 elog_notify("\nskipping $cmd") if $opt_v ;
+#             }
+#             unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
             
-            if  ( ! $opt_n ) {
-                elog_notify("\n$cmd") if $opt_v ;        
-                $problems = run($cmd,$problems) ;
-            } else {
-                elog_notify("\nskipping $cmd") if $opt_v ;
+            ( $success, @output )  = &run_cmd( $cmd );
+
+            if ( ! $success ) {
+                $problems++ ;
             }
-            unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
+        
+            @output = () ;
         }
 
 #
@@ -232,27 +248,43 @@
         $cmd  = "miniseed2db ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "20\*/[0-3][0-9][0-9] $sta ";
-        $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
+#         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
+#         
+#         if  ( ! $opt_n ) {
+#             elog_notify("\n$cmd") if $opt_v ;        
+#             $problems = run($cmd,$problems) ;
+#         } else {
+#             elog_notify("\nskipping $cmd") if $opt_v ;
+#         }
         
-        if  ( ! $opt_n ) {
-            elog_notify("\n$cmd") if $opt_v ;        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("\nskipping $cmd") if $opt_v ;
-        } 
+        ( $success, @output )  = &run_cmd( $cmd );
+
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ; 
         
         $cmd  = "miniseed2db -T 0.001 ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "20\*/\*.msd $sta ";
-        $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
+#         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
+#         
+#         if  ( ! $opt_n ) {
+#             elog_notify("\n$cmd") if $opt_v ;        
+#             $problems = run($cmd,$problems) ;
+#         } else {
+#             elog_notify("\nskipping $cmd") if $opt_v ;
+#         } 
         
-        if  ( ! $opt_n ) {
-            elog_notify("\n$cmd") if $opt_v ;        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("\nskipping $cmd") if $opt_v ;
-        } 
+        ( $success, @output )  = &run_cmd( $cmd );
+
+        if ( ! $success ) {
+            $problems++ ;
+        }
         
+        @output = () ; 
+
         unlink("trdefaults.pf");
 
 #
@@ -261,12 +293,20 @@
         
         $cmd = "dbsubset $sta.wfdisc \"$pf{wfclean}\" | dbdelete -";
         
-        if  (! $opt_n ) {
-            elog_notify("\n$cmd") if $opt_v ;        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("\nskipping $cmd") if $opt_v ;
-        }        
+#         if  (! $opt_n ) {
+#             elog_notify("\n$cmd") if $opt_v ;        
+#             $problems = run($cmd,$problems) ;
+#         } else {
+#             elog_notify("\nskipping $cmd") if $opt_v ;
+#         }        
+
+        ( $success, @output )  = &run_cmd( $cmd );
+
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ; 
 
 
 #
@@ -358,14 +398,22 @@
         $cmd .= "-v " if $debug ;
         $cmd .= "-t \"$stime\" -e \"$etime\" ";
         $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $dbname $dbname";
-        $cmd .= " >/tmp/$sta\_return_$$ 2>&1" unless $opt_V;
+#         $cmd .= " >/tmp/$sta\_return_$$ 2>&1" unless $opt_V;
+# 
+#         if  (! $opt_n ) {
+#             elog_notify("\n$cmd") if $opt_v ;        
+#             $problems = run($cmd,$problems) ;
+#         } else {
+#             elog_notify("\nskipping $cmd") if $opt_v ;
+#         }
+        
+        ( $success, @output )  = &run_cmd( $cmd );
 
-        if  (! $opt_n ) {
-            elog_notify("\n$cmd") if $opt_v ;        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("\nskipping $cmd") if $opt_v ;
+        if ( ! $success ) {
+            $problems++ ;
         }
+        
+        @output = () ; 
  
 #
 #  evaluate data return
@@ -382,13 +430,21 @@
         $subject = "TA $sta baler data net, station, channel problem";
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
         
-        if  ( ! $opt_n ) {
-            elog_notify("\n$cmd") if $prob ;        
-            $problems = run($cmd,$problems) if $prob ;
+#         if  ( ! $opt_n ) {
+#             elog_notify("\n$cmd") if $prob ;        
+#             $problems = run($cmd,$problems) if $prob ;
+# 
+#         } else {
+#             elog_notify("\nskipping $cmd") if $prob ;
+#         } 
+        
+        ( $success, @output )  = &run_cmd( $cmd );
 
-        } else {
-            elog_notify("\nskipping $cmd") if $prob ;
-        } 
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ; 
 
         if  ( -d "$pf{balerprocbase}\/$sta" ) {
             $prob++ ;
@@ -398,14 +454,21 @@
         } 
         
         $cmd  = "mv $pf{balerdirbase}\/$sta $pf{balerprocbase}";
-        if  ( ! $opt_n && ! $prob) {
-            elog_notify("\n$cmd") ;        
-            $problems = run($cmd,$problems) ;
+#         if  ( ! $opt_n && ! $prob) {
+#             elog_notify("\n$cmd") ;        
+#             $problems = run($cmd,$problems) ;
+# 
+#         } else {
+#             elog_notify("\nskipping $cmd") ;
+#         } 
 
-        } else {
-            elog_notify("\nskipping $cmd") ;
-        } 
+        ( $success, @output )  = &run_cmd( $cmd ) if  ( ! $prob );
 
+        if ( ! $success ) {
+            $problems++ ;
+        }
+        
+        @output = () ; 
 
         unlink "/tmp/$sta\_return_$$" unless $opt_V;
         unlink "/tmp/tmp_miniseed2db\_$$" unless $opt_V;

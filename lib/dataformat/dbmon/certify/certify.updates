@@ -2,3 +2,10 @@ dbmon       1268428502.00000 raptor     kent       Darwin/4.1 changed input data
 dbmon       1268429167.00000 raptor     kent       Darwin/4.1 enhance tests                                                  1268429167
 dbmon       1268430723.00000 raptor     kent       Darwin/4.1 Expand to test all features                                    1268430724
 dbmon       1274589073.00000 raptor     kent       Darwin/5.0 Schema tables added gclfield and gclgdisk                      1274589073
+dbmon       1294346380.00000 raptor     kent       Darwin/5.0 Reflect update to rsyncbaler null                              1294346380
+dbmon       1295047220.00000 raptor     kent       Darwin/5.0 Adjust for new orb2db_msg in libdbmon                          1295047221
+dbmon       1295321655.00000 raptor     kent       Darwin/5.0 Add test for chimney-collapse change                           1295321655
+dbmon       1295372044.00000 raptor     kent       Darwin/5.0 Change modification-tracking strategy                          1295372045
+dbmon       1295424822.00000 raptor     kent       Darwin/5.0 Change table update strategy                                   1295424822
+dbmon       1295425682.00000 raptor     kent       Darwin/5.0 More changes in update strategy                                1295425682
+dbmon       1295630759.00000 raptor     kent       Darwin/5.0 Re-establish row-order preservation in dbmon                   1295630760

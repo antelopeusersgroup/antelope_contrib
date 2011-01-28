@@ -4,23 +4,11 @@ use Datascope::dbmon;
 
 sub newrow { 
 	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $sync, $fhref ) = @_;
+	my( $table, $irecord, $sync, $fhref ) = @_;
 
 	$row = dbget( @db );
 	
-	printf $fhref "New Row $db[3] in '$table' [sync '$sync']: $row\n";
-
-	return;
-}
-
-sub changerow { 
-	my( $oldsync ) = shift( @_ );
-	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $sync, $fhref ) = @_;
-
-	$row = dbget( @db );
-	
-	printf $fhref "Changed Row $db[3] in '$table' [Old sync '$oldsync', New sync '$sync']: $row\n";
+	printf $fhref "New Row $irecord in '$table' [sync '$sync']: $row\n";
 
 	return;
 }
@@ -55,7 +43,7 @@ if( scalar( @ARGV ) != 2 ) {
 
 $fh = \*STDOUT;
 
-dbmon_init( @db, $hookname, \&newrow, \&changerow, \&delrow );
+dbmon_init( @db, $hookname, \&newrow, \&delrow );
 
 dbmon_update( $hookname, $fh );
 

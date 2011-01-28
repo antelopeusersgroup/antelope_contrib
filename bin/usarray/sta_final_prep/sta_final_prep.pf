@@ -1,7 +1,7 @@
 balerdirbase		/anf/TA/baler/station_aof_dumps/new			# absolute path name for station miniseed base name
 balerprocbase		/anf/TA/baler/station_aof_dumps/processed	# absolute path name for processed station miniseed base name
-archivebase			/anf/TA/wf/station_final				    # absolute path name for station baler archive name
-rt_sta_dir          /anf/TA/wf/rt_stas                          # absolute path name for completed stations rt wfdisc directory
+archivebase		/anf/TA/wf/station_final				    # absolute path name for station baler archive name
+rt_sta_dir		/anf/TA/dbs/wfs/rt_stas                          # absolute path name for completed stations rt wfdisc directory
 
 bhdata_dir			BVLAOU                                      # subdirectory name for BH and LH data
 sohdata_dir			VLAOU                                       # subdirectory name for VH, UH, and SOH data 

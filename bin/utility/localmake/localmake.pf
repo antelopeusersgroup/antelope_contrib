@@ -102,9 +102,13 @@ modules &Arr{
 			python
 		}
 		build &Tbl{
+			&contrib_src_subdir/lib/dataformat/dbxml
 			&contrib_src_subdir/data/python
 		}
 		package &Tbl{
+			lib/libdbxml.dylib
+			static/libdbxml.a
+			man/man3/db2xml.3
 			local/bin/python
 			local/lib/python__datascope.dylib 
 			local/lib/python__orb.dylib
