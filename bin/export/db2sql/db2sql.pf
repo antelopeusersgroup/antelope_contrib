@@ -4,6 +4,7 @@ password &ask(Password: )
 
 refresh_interval_sec 5
 schema_create_errors_nonfatal true
+enable_mysql_auto_reconnect true
 
 table_subset &Tbl{
 }
