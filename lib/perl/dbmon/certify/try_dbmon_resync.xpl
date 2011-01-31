@@ -68,6 +68,8 @@ $fh = \*STDOUT;
 
 dbmon_init( @db, $hookname, \&newrow, \&delrow, \&querysyncs, @tables );
 
+dbmon_resync( $hookname, $fh );
+
 dbmon_update( $hookname, $fh );
 
 printf STDOUT "Adding new arrival table:\n";

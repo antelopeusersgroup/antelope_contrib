@@ -57,7 +57,7 @@ typedef struct Perl_dbmon_track {
 	Hook	*dbmon_hook;
 	CV	*newrow;
 	CV	*delrow;
-	CV	*querysyncs;
+	SV	*querysyncs;
 	SV	*ref;
 } Perl_dbmon_track;
 
@@ -191,7 +191,7 @@ perl_querysyncs( Dbptr db, char *table, void *pvt )
 
 	PUTBACK;
 
-	n = perl_call_sv( (SV *) pdmtr->querysyncs, G_ARRAY );
+	n = perl_call_sv( pdmtr->querysyncs, G_ARRAY );
 
 	SPAGAIN;
 
@@ -229,7 +229,7 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 	Perl_dbmon_track *pdmtr = NULL;
 	Perl_dbmon_track *old = NULL;
 	Tbl	*table_subset = NULL;
-	CV	*querysyncs = NULL;
+	SV	*querysyncs = NULL;
 	Tbl	*(*querysyncs_callback)(Dbptr,char *,void *) = NULL;
 	long	i;
 	int	flags = 0;
@@ -247,7 +247,7 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 
 			if( i == 7 && SvROK(ST(i)) ) { /* Reference to a CV */
 
-				querysyncs = (CV *) ST(i);
+				querysyncs = newSVsv(ST(i));
 
 				querysyncs_callback = perl_querysyncs;
 
@@ -287,6 +287,26 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 
 		free_perl_dbmon_track( old );
 	}
+
+	}
+
+void 
+dbmon_resync( hookname, ref ) 
+	char	*hookname
+	SV	*ref
+	PPCODE:
+	{
+	Perl_dbmon_track *pdmtr;
+
+	if( Hooks == NULL || 
+	    ( pdmtr = (Perl_dbmon_track *) getarr( Hooks, hookname ) ) == NULL ) {
+
+		croak( "dbmon_resync: Couldn't find hook by name of '%s'\n", hookname );
+	}
+
+	pdmtr->ref = ref;
+
+	dbmon_resync( pdmtr->dbmon_hook, (void *) pdmtr );
 
 	}
 

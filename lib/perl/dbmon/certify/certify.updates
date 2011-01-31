@@ -3,3 +3,5 @@ dbmon       1274590332.00000 raptor     kent       Darwin/5.0 Add new gcl* schem
 dbmon       1294860487.00000 raptor     kent       Darwin/5.0 reflect changed rsyncbaler null values                         1294860488
 dbmon       1295542609.00000 raptor     kent       Darwin/5.0 Remove changerow function                                      1295542610
 dbmon       1296162214.00000 raptor     kent       Darwin/5.0 Update to reflect dbmon row-sorting                            1296162214
+dbmon_sub   1296492292.00000 raptor     kent       Darwin/5.0 Add test for table subsetting                                  1296492292
+dbmon_sync  1296492302.00000 raptor     kent       Darwin/5.0 Add test for resynchronization                                 1296492303
