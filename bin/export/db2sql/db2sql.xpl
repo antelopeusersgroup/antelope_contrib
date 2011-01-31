@@ -316,6 +316,7 @@ pfconfig_asknoecho();
 
 $refresh_interval_sec = pfget( $Pf, "refresh_interval_sec" );
 $schema_create_errors_nonfatal = pfget_boolean( $Pf, "schema_create_errors_nonfatal" );
+$enable_mysql_auto_reconnect = pfget_boolean( $Pf, "enable_mysql_auto_reconnect" );
 
 my( $dsn ) = pfget( $Pf, "dsn" );
 my( $user ) = pfget( $Pf, "user" );
@@ -329,7 +330,12 @@ unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
 
 undef( $pw );
 
-$dbh->{mysql_auto_reconnect} = 1;
+if( $enable_mysql_auto_reconnect ) {
+
+	Inform( "Enabling 'mysql_auto_reconnect'\n" );
+
+	$dbh->{mysql_auto_reconnect} = 1;
+}
 
 init_sql_database( $dbh, $sql_dbname, $opt_r, @db );
 

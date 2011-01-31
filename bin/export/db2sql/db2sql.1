@@ -39,6 +39,9 @@ Be very verbose
 The \fIdsn\fP parameter specifies a Perl DBI Data Source Name, usually listing the database driver 
 and connection properties of the target SQL server. Do not include the SQL database name in 
 the \fIdsn\fP parameter, as the database name is entered on the command line. 
+.IP enable_mysql_auto_reconnect
+When this boolean value is \fItrue\fP, the \fImysql_auto_reconnect\fP capability of the MySQL server 
+will be enabled.
 .IP user
 The \fIuser\fP parameter specifies the database username under which to connect to the 
 SQL server. 
@@ -68,6 +71,7 @@ password &ask(Password: )
 
 refresh_interval_sec 5
 schema_create_errors_nonfatal true
+enable_mysql_auto_reconnect true
 
 table_subset &Tbl{
 }
