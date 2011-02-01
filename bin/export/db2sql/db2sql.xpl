@@ -54,7 +54,7 @@ use Datascope::dbmon;
 our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
 
 our( $datascope_dbname, $sql_dbname );
-our( $refresh_interval_sec, $schema_create_errors_nonfatal, @table_subset );
+our( $refresh_interval_sec, $schema_create_errors_nonfatal, $enable_mysql_auto_reconnect, @table_subset );
 our( $dbh, $hookname );
 
 sub inform {
