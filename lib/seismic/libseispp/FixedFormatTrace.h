@@ -8,7 +8,7 @@ using namespace std;
 using namespace SEISPP;
 
 /*! \brief Generic object that can be used to easily access seismic data
-in a number of common external formats.
+in a number of common external formats or user defined formats.
 
 Most seismic data is stored externally in files with trace header
 having a fixed set of attributes in specific spots.  Classic examples
@@ -17,6 +17,21 @@ into any seismic data format that is structured as a header in one
 distinct binary block and data in another.  The concept used here is
 to simply read the data in as a raw binary object and provide 
 an series of indices into the the binary blob through the API.  
+
+This object is also a low level interface for three component 
+seismgrams stored with the same concept:  header followed by
+data.  This is a low level interface because it assumes the data
+are still stored as a vector of sample data.  An attribute is 
+used to define the order of the sample data for this case.  
+In the SEISPP library 3c data are abstracted as a 3xns matrix.
+For a matrix the data can be stored in either column order 
+(ala fortran) or in row order (ala C 2d arrays).  The interface
+handles this through a public boolean attribute.  The constructors
+set this when parsing the format description.  The most important
+thing to reiterate is that the interface here will only view the
+sample data as a vector of data.  The caller will in a higher 
+level interface should simplify this user to build 3C data objects.
+This was done intentionally to make this object more general.
 
 The construction of one of these beasts is a bit unusual and 
 worth noting up front.  Because the mapping operation of data
@@ -31,6 +46,13 @@ actual data with raw binary read (putting flesh on the bones).
 class FixedFormatTrace : public BasicTimeSeries
 {
 public:
+        /*! The default constructor.
+
+          This exists to avoid default behaviour which for the
+          current implementation is problematic.  Creates an 
+          empty and invalid container.
+          */
+        FixedFormatTrace();
 	/*! Construct an empty trace object defined by name type.
 
 	This constructor is used in two very different contexts.
@@ -245,6 +267,32 @@ public:
         virtual double tstart(){
             return t0;
         };
+        /*! Switch that says if the format is for three component data.
+
+          Although there are no common three component seismogram
+          data formats this is intended as a low level inteface that
+          allows this model.  See overview of this object for more
+          details. When this attribute is true the data samples
+          are assumed to define three component seismgrams. */
+        bool data_are_3c;
+        /*! Define order of three component data.
+
+           3C data can be in one of two orders.  Because 3c data are
+           abstracted in this library as a 3xns matrix one can think
+           of the two orders as column order or row order.  Alternatively
+           one can talk about channel order of time multiplexed format.
+           When this boolean is true the data are presume to be in
+           channel order.  When false they data are assumed time 
+           multiplexed. */
+        bool channel_order;
+        /*! Return format description of this data object.
+
+          Sometimes we want some kind of description of what type 
+          of data object this refers to.  Necessary, for example,
+          if a program was handling several formats.  This simply
+          returns a string that describes the format.  Up to 
+          implementation to define what that is */
+        string format_description(){return(dataformat);};
 private:
 	HeaderMap header;
 	AttributeType stype;
@@ -295,7 +343,7 @@ template <class T> T FixedFormatTrace::get(string name)
 		result=static_cast<T>(ival);
 		break;
 	case INT16:
-		ival=this->header.get<short int>(name,h);
+		sival=this->header.get<short int>(name,h);
 		result=static_cast<T>(sival);
 		break;
 	case BOOL:

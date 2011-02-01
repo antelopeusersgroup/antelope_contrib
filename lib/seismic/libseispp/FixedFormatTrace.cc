@@ -27,6 +27,13 @@ int stype_bytes_per_sample(AttributeType stype)
 	}
 	return(bytes_per_sample);
 }
+FixedFormatTrace::FixedFormatTrace()
+{
+    dataformat=string("INVALID");
+    // Intentionally only initialize these dangerous pointers
+    h=NULL;
+    d=NULL;
+}
 
 /* This constructor only builds a skeleton with no data.
 It is normally used to build a template that is copied, 
@@ -46,7 +53,7 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 			+ header_map_pf
 			+ string(".pf used to store header definitions"));
 	try {
-		header=HeaderMap(pf,type);
+	header=HeaderMap(pf,type);
 	} catch (...) {throw;}
 	data_loaded=false;
 	size_of_this=0;
@@ -108,6 +115,23 @@ FixedFormatTrace::FixedFormatTrace(string type, int nsamp)
 
         t0_default=pfget_double(pfa,const_cast<char *>("t0_default"));
         t0=t0_default;
+        /* three component parameters */
+        int itmp=pfget_boolean(pfa,const_cast<char *>("data_are_3c"));
+        if(itmp)
+            data_are_3c=true;
+        else
+            data_are_3c=false;
+        if(data_are_3c) 
+        {
+            int itmp2=pfget_boolean(pfa,
+                    const_cast<char *>("data_are_channel_order"));
+            if(itmp2)
+                channel_order=true;
+            else
+                channel_order=false;
+        }
+        else
+            channel_order=false;  // need a default this is always initialized.
 	/* First we have to create the block of memory used to hold
 	data for ns samples and the header.  We use malloc here 
 	with opaque pointers to access pieces of the result.  */
@@ -187,7 +211,10 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent)
 	header=parent.header;
 	stype=parent.stype;
 	ns=parent.ns;
+        t0=parent.t0;
 	data_loaded=parent.data_loaded;
+        data_are_3c=parent.data_are_3c;
+        channel_order=parent.channel_order;
 	/* This requires h always be initialized NULL by the constructor that
 	produced parent in the event there is not data loaded. */
 	if( parent.h==NULL)
@@ -217,8 +244,12 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
         dataformat=parent.dataformat;
 	header=parent.header;
 	stype=parent.stype;
+        t0=parent.t0;
+	data_loaded=parent.data_loaded;
+        data_are_3c=parent.data_are_3c;
 	ns=nsamp;
 	size_t datasize=(size_t)(stype_bytes_per_sample(stype)*ns);
+        if(data_are_3c) datasize *= 3;
 	size_of_this=header.size()+datasize;
 	h=static_cast<unsigned char *>(malloc(size_of_this));
 	if(h==NULL) throw SeisppError(string("FixedFormatTrace constructor:  malloc failure"));
@@ -250,6 +281,9 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
         dataformat=parent.dataformat;
 	header=parent.header;
 	stype=parent.stype;
+        t0=parent.t0;
+	data_loaded=parent.data_loaded;
+        data_are_3c=parent.data_are_3c;
 	h=static_cast<unsigned char *>(malloc(header.size()));
 	if(h==NULL) throw SeisppError(base_error
 		+ string("malloc failure trying to alloc space for header."));
@@ -268,12 +302,22 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 		 + string("failure fetching BasicTimeSeries attributes from header"));
 	}
 	size_t datasize=(size_t)(stype_bytes_per_sample(stype)*ns);
-	realloc(h,datasize+header.size());
+        if(data_are_3c) datasize *= 3;
+        /* This is effectively realloc done manually.  Done because 
+           realloc in this context seems to create problems so we 
+           do this explicitly*/
+        unsigned char *htmp;
+        size_of_this=header.size()+datasize;
+        htmp=static_cast<unsigned char *>(malloc(size_of_this));
+        if(htmp==NULL) throw SeisppError(base_error
+                + "malloc failure");
+        memcpy(htmp,h,header.size());
+        h=htmp;
 	d=h+header.size();
 	test=fread((void *)d,datasize,1,fp);
 	if(test!=1)
 		throw SeisppError(base_error
-		 + string("fread error reading daa block"));
+		 + string("fread error reading data block"));
 	data_loaded=true;
 	data_loaded=true;
 	live=true;
@@ -283,6 +327,7 @@ FixedFormatTrace::FixedFormatTrace(const FixedFormatTrace& parent,
 long FixedFormatTrace::resize(int nsnew)
 {
     size_t datasize=(size_t)(stype_bytes_per_sample(stype)*nsnew);
+    if(data_are_3c) datasize *= 3;
     size_of_this=datasize+header.size();
     h=static_cast<unsigned char *>(realloc(h,size_of_this));
     if(h==NULL)
@@ -359,13 +404,18 @@ void FixedFormatTrace::zero_gaps()
 vector<double> FixedFormatTrace::data()
 {
 	vector<double> result;
+        int nstotal;
 	/* ns comes from BasicTimeSeries */
-	result.reserve(ns);
+        if(data_are_3c)
+            nstotal=3*ns;
+        else
+            nstotal=ns;
+	result.reserve(nstotal);
 	/* I can't figure out the obscure syntax it would take
 	to do this with the raw this pointer so we do this 
 	conversion to a reference.  Clearer in the long run anyway.*/
 	FixedFormatTrace& thistrace=(*this);
-	for(int i=0;i<ns;++i) result.push_back(thistrace(i));
+	for(int i=0;i<nstotal;++i) result.push_back(thistrace(i));
 	return(result);
 }
 void FixedFormatTrace::zero()
@@ -376,27 +426,32 @@ void FixedFormatTrace::zero()
 	float *fptr;
 	double *dptr;
 	int i;
+        int ntotal;
+        if(data_are_3c)
+            ntotal=3*ns;
+        else
+            ntotal=ns;
 	switch (stype)
 	{
 	case INT64:
 		lptr = reinterpret_cast<int64_t *>(d);		
-		for(i=0;i<ns;++i,lptr++) *lptr=0;
+		for(i=0;i<ntotal;++i,lptr++) *lptr=0;
 		break;
 	case INT32:
 		iptr = reinterpret_cast<int32_t *>(d);		
-		for(i=0;i<ns;++i,iptr++) *iptr=0;
+		for(i=0;i<ntotal;++i,iptr++) *iptr=0;
 		break;
 	case INT16:
 		sptr = reinterpret_cast<int16_t *>(d);		
-		for(i=0;i<ns;++i,sptr++) *sptr=0;
+		for(i=0;i<ntotal;++i,sptr++) *sptr=0;
 		break;
 	case REAL32:
 		fptr = reinterpret_cast<float *>(d);		
-		for(i=0;i<ns;++i,fptr++) *fptr=0.0;
+		for(i=0;i<ntotal;++i,fptr++) *fptr=0.0;
 		break;
 	case REAL64:
 		dptr = reinterpret_cast<double *>(d);		
-		for(i=0;i<ns;++i,dptr++) *dptr=0.0;
+		for(i=0;i<ntotal;++i,dptr++) *dptr=0.0;
 	};
 }
 void FixedFormatTrace::put(int nsamp, int offset, double *dnew)
@@ -411,6 +466,7 @@ void FixedFormatTrace::put(int nsamp, int offset, double *dnew)
 	double *dptr;
 	int nstocopy=ns-offset;
 	if(nstocopy>nsamp) nstocopy=nsamp;
+        if(data_are_3c) nstocopy *= 3;
 	this->zero();
 	switch (stype)
 	{
