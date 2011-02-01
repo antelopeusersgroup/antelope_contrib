@@ -3,11 +3,13 @@ LIB=libseispp.a
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
 INCLUDE=ArrivalUpdater.h \
+  AttributeCrossReference.h \
   AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
   EventCatalog.h \
   FixedFormatTrace.h \
+  GenericFileHandle.h \
   HeaderMap.h \
   Hypocenter.h\
   Metadata.h\
@@ -62,11 +64,13 @@ DBG=-g
 include $(ANTELOPEMAKE)  	
 
 OBJS=ArrivalUpdater.o \
+  AttributeCrossReference.o \
   AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \
   EventCatalog.o \
   FixedFormatTrace.o  \
+  GenericFileHandle.o \
   HeaderMap.o \
   Hypocenter.o \
   Metadata.o \
