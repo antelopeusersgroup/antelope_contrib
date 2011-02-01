@@ -11,16 +11,12 @@ sub newrow {
 	print "Processing new row\n";
 }
 
-sub changerow {
-	print "Processing changed row\n";
-}
-
 sub delrow {
 	print "Processing deleted row\n";
 }
 
 @db = dbopen( "/opt/antelope/data/db/demo/demo", "r" );
 
-dbmon_init( @db, "dbmon_hook", \&newrow, \&changerow, \&delrow );
+dbmon_init( @db, "dbmon_hook", \&newrow, \&delrow );
 
 dbmon_update( "dbmon_hook", undef );

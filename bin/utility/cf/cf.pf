@@ -226,6 +226,12 @@ make &Arr{
 	^touch[[:space:]]
 	^tsort[[:space:]]
 	^[[:space:]]*unix_rm[[:space:]]
+	^case.*in
+	^[[:space:]]esac
+	^[[:space:]]*SunOS\\)
+	^[[:space:]]*Linux\\)
+	^[[:space:]]*Darwin\\)
+	^[[:space:]]*\\*\\)
    }
 }
 

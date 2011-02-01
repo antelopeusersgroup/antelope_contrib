@@ -24,6 +24,7 @@ DATA= \
 	cmg40t_60sec.pf \
 	cmg6t.pf \
 	dpg2_water.pf \
+	dpg_obsip.pf \
 	episensor_10vpg.pf \
 	episensor_1_25vpg.pf \
 	episensor_20vpg.pf \

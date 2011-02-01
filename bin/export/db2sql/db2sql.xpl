@@ -54,7 +54,7 @@ use Datascope::dbmon;
 our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
 
 our( $datascope_dbname, $sql_dbname );
-our( $refresh_interval_sec, $schema_create_errors_nonfatal, @table_subset );
+our( $refresh_interval_sec, $schema_create_errors_nonfatal, $enable_mysql_auto_reconnect, @table_subset );
 our( $dbh, $hookname );
 
 sub inform {
@@ -226,18 +226,6 @@ sub newrow {
 	return;
 }
 
-sub changerow {
-	my( $oldsync ) = shift( @_ );
-	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $irecord, $sync, $dbh ) = @_;
-
-	delrow( @db, $table, $oldsync, $dbh );
-
-	newrow( @db, $table, $irecord, $sync, $dbh );
-
-	return;
-}
-
 sub delrow {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $sync, $dbh ) = @_;
@@ -328,6 +316,7 @@ pfconfig_asknoecho();
 
 $refresh_interval_sec = pfget( $Pf, "refresh_interval_sec" );
 $schema_create_errors_nonfatal = pfget_boolean( $Pf, "schema_create_errors_nonfatal" );
+$enable_mysql_auto_reconnect = pfget_boolean( $Pf, "enable_mysql_auto_reconnect" );
 
 my( $dsn ) = pfget( $Pf, "dsn" );
 my( $user ) = pfget( $Pf, "user" );
@@ -341,11 +330,18 @@ unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
 
 undef( $pw );
 
+if( $enable_mysql_auto_reconnect ) {
+
+	Inform( "Enabling 'mysql_auto_reconnect'\n" );
+
+	$dbh->{mysql_auto_reconnect} = 1;
+}
+
 init_sql_database( $dbh, $sql_dbname, $opt_r, @db );
 
 $hookname = "dbmon_hook";
 
-dbmon_init( @db, $hookname, \&newrow, \&changerow, \&delrow, @table_subset );
+dbmon_init( @db, $hookname, \&newrow, \&delrow, @table_subset );
 
 dbmon_update( $hookname, $dbh );
 
