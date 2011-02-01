@@ -6,6 +6,8 @@
 #include "ensemble.h"
 #include "FixedFormatTrace.h"
 #include "AttributeCrossReference.h"
+namespace SEISPP
+{
 using namespace std;
 using namespace SEISPP;
 /* \brief Generic file handle for seismic data stored with fixed length headers.
@@ -264,4 +266,5 @@ class GenericFileHandle
         void lock();
         void unlock();
 };
+} // end SEISPP namespace encapsulation
 #endif

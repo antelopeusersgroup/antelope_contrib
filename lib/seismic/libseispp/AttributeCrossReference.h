@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 #include "Metadata.h"
+namespace SEISPP
+{
 using namespace std;
 using namespace SEISPP;
 /*! \brief Cross reference between external and internal names.
@@ -75,4 +77,5 @@ class AttributeCrossReference
         /* keyed by internal names.  Get type of this attribute*/
         map<string,MDtype> imdtypemap;
 };
+} // end SEISPP namespace encapsulation
 #endif

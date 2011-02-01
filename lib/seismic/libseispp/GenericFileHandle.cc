@@ -6,6 +6,8 @@
 #include "GenericFileHandle.h"
 using namespace std;
 using namespace SEISPP;
+namespace SEISPP
+{
 
 GenericFileHandle::GenericFileHandle(string filename,
       string tracetype, AttributeCrossReference& namemap,
@@ -701,3 +703,6 @@ void GenericFileHandle::unlock()
         }
     }
 }
+
+
+} // end SEISPP namespace encapsulation

@@ -2,6 +2,7 @@
 #include "AttributeCrossReference.h"
 using namespace std;
 using namespace SEISPP;
+namespace SEISPP {
 AttributeCrossReference::AttributeCrossReference(string lines_to_parse)
 {
     istringstream instrm(lines_to_parse);
@@ -108,3 +109,5 @@ void AttributeCrossReference::put(string i, string e)
     itoe.insert(pair<string,string>(i,e));
     etoi.insert(pair<string,string>(e,i));
 }
+
+} // end SEISPP namespace encapsulation
