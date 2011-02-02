@@ -8,7 +8,7 @@ using namespace std;
 using namespace SEISPP;
 
 /*! \brief Generic object that can be used to easily access seismic data
-in a number of common external formats.
+in a number of common external formats or user defined formats.
 
 Most seismic data is stored externally in files with trace header
 having a fixed set of attributes in specific spots.  Classic examples
@@ -17,6 +17,21 @@ into any seismic data format that is structured as a header in one
 distinct binary block and data in another.  The concept used here is
 to simply read the data in as a raw binary object and provide 
 an series of indices into the the binary blob through the API.  
+
+This object is also a low level interface for three component 
+seismgrams stored with the same concept:  header followed by
+data.  This is a low level interface because it assumes the data
+are still stored as a vector of sample data.  An attribute is 
+used to define the order of the sample data for this case.  
+In the SEISPP library 3c data are abstracted as a 3xns matrix.
+For a matrix the data can be stored in either column order 
+(ala fortran) or in row order (ala C 2d arrays).  The interface
+handles this through a public boolean attribute.  The constructors
+set this when parsing the format description.  The most important
+thing to reiterate is that the interface here will only view the
+sample data as a vector of data.  The caller will in a higher 
+level interface should simplify this user to build 3C data objects.
+This was done intentionally to make this object more general.
 
 The construction of one of these beasts is a bit unusual and 
 worth noting up front.  Because the mapping operation of data
@@ -31,6 +46,13 @@ actual data with raw binary read (putting flesh on the bones).
 class FixedFormatTrace : public BasicTimeSeries
 {
 public:
+        /*! The default constructor.
+
+          This exists to avoid default behaviour which for the
+          current implementation is problematic.  Creates an 
+          empty and invalid container.
+          */
+        FixedFormatTrace();
 	/*! Construct an empty trace object defined by name type.
 
 	This constructor is used in two very different contexts.
@@ -108,6 +130,38 @@ public:
 	/*! Standard destructor.  Not trivial here because this
 	object has hidden raw pointers. */
 	~FixedFormatTrace(); 
+        /*! Get a name that defines this format.
+
+          This is a query routine that is linked to constructors.
+          That is, one will sometimes want to know some tag
+          that defines the format this object is linked to.  For
+          example, this can allow an application to not have frozen
+          in a format type.  In any case this method returns the
+          name given that defines this format to the original 
+          constructor.
+
+          \return Name of this format.
+          */
+        string format_name()
+        {
+            return dataformat;
+        };
+        /*! Change trace size for variable ns data.
+
+          Some formats allow variable length data while some 
+          require all data to have the same length.  Variable length
+          formats will need to call this method when writing to 
+          change the buffer size.  This should normally called before 
+          loading data or one cannot guarantee the integrity of the 
+          header data let alone the danger of writing to the data 
+          vector when the size is wrong.  
+
+          \param nsnew new number of samples 
+          \return size of newly created data buffer in bytes = size
+             in bytes of new data buffer.
+          */
+        long int resize(int ns);
+
 	template <class T> T get(string name);
 	template <class T> void put(string name, T value);
 	template <class T> T get(const char *name);
@@ -192,13 +246,74 @@ public:
 	\param ostr output C++ stream object. 
 	*/
 	void write(ostream& ostrm);
+        /* Return start time = time of first sample. 
+
+           Different formats store time differently.  For example,
+           in segy start time is not really stored but is implicitly assumed
+           to be a shot time.  In contrast, SAC stores time in
+           multiple header attributes used to store a date string.
+           As a result this is a virtual method that is expected
+           to return an epoch time.  The expectation is specific
+           implementations would use polymophism to define this 
+           method that are format dependent.  For the two examples
+           above, segy can just always return 0 while a SAC 
+           version will require computing an epoch time from the
+           suite of header values used in SAC to define time 0. 
+           Note this method also closely links to the public 
+           attribute tref used to define the time standard.  That is,
+           if tref is relative the time returned is "relative" to 
+           some implicit time standard like shot time while "absolute"
+           implies a real epoch time. */
+        virtual double tstart(){
+            return t0;
+        };
+        /*! Switch that says if the format is for three component data.
+
+          Although there are no common three component seismogram
+          data formats this is intended as a low level inteface that
+          allows this model.  See overview of this object for more
+          details. When this attribute is true the data samples
+          are assumed to define three component seismgrams. */
+        bool data_are_3c;
+        /*! Define order of three component data.
+
+           3C data can be in one of two orders.  Because 3c data are
+           abstracted in this library as a 3xns matrix one can think
+           of the two orders as column order or row order.  Alternatively
+           one can talk about channel order of time multiplexed format.
+           When this boolean is true the data are presume to be in
+           channel order.  When false they data are assumed time 
+           multiplexed. */
+        bool channel_order;
+        /*! Return format description of this data object.
+
+          Sometimes we want some kind of description of what type 
+          of data object this refers to.  Necessary, for example,
+          if a program was handling several formats.  This simply
+          returns a string that describes the format.  Up to 
+          implementation to define what that is */
+        string format_description(){return(dataformat);};
 private:
 	HeaderMap header;
 	AttributeType stype;
+        string dataformat;
 	unsigned char *h;  /* points to start of header data */
 	unsigned char *d;  /* points to start of data samples */
 	bool data_loaded;
 	size_t size_of_this;
+        /* This attribute is tightly linked to the t0 attribute 
+           inherited from BasicTimeSeries and the related attribute tref.
+           t0_default should be loaded by any constructor as teh default
+           start time for this seismogram.  That should almost always be
+           zero, but still best defined explicitly.  When the object
+           referenced actually contains data the BasicTimeSeries 
+           attribute t0 may or may not be relevant.  For formats like
+           SEGY t0 should just always be set to 0 and this base object
+           can be used directly.  Formats like SAC, in contrast, should
+           use polymorphism to redefine the start method to compute
+           t0 from header entries.  In this case, t0_default can be
+           used only as a possible recovery to blunder on. */
+        double t0_default;
 };
 template <class T> T FixedFormatTrace::get(string name)
 {
@@ -228,7 +343,7 @@ template <class T> T FixedFormatTrace::get(string name)
 		result=static_cast<T>(ival);
 		break;
 	case INT16:
-		ival=this->header.get<short int>(name,h);
+		sival=this->header.get<short int>(name,h);
 		result=static_cast<T>(sival);
 		break;
 	case BOOL:

@@ -4,6 +4,10 @@ headersize 632
 boolean_true 1
 boolean_false 0
 boolean_default false
+t0_default 0.0
+timetype absolute
+data_are_3c false
+data_are_channel_order false
 #
 # The sac header like most formats has extra fields not
 # in this map.  If you want to use these as auxiliary metadata
@@ -259,6 +263,10 @@ headersize 240
 boolean_true 1
 boolean_false 2
 boolean_default true
+t0_default 0.0
+timetype relative
+data_are_3c false
+data_are_channel_order false
 attributes &Tbl{
 lineSeq int 4 0
 reelSeq int 4 4
@@ -282,7 +290,7 @@ sourceWaterDepth int 4 64
 elevationScale short 2 68
 coordScale short 2 70
 sourceLongOrX int 4 72
-sourceLongOrY int 4 76
+sourceLatOrY int 4 76
 recLongOrX int 4 80
 recLatOrY int 4 84
 coordUnits short 2 88
@@ -355,7 +363,7 @@ sourceWaterDepth  int 0
 elevationScale  int 0
 coordScale  int 0
 sourceLongOrX  int 0
-sourceLongOrY  int 0
+sourceLatOrY  int 0
 recLongOrX  int 0
 recLatOrY  int 0
 coordUnits  int 0
@@ -407,3 +415,55 @@ taperOvertravel  int 0
 }
 }
 
+# Special format for plane wave migration code pwstack
+PWSTACKINPUT &Arr{
+sample_data_type real64
+headersize 120
+boolean_true 1
+boolean_false 0
+boolean_default true
+t0_default 0.0
+timetype absolute
+data_are_3c true
+data_are_channel_order false
+attributes &Tbl{
+    sta string 10 0
+    time real64 8 10
+    endtime real64 8  18
+    nsamp int 4 26
+    samprate real32 4 30
+    atime real64 8 34
+    phase string 8 42
+    rlat real64 8 50
+    rlon real64 8 58
+    elev real32 4 66
+    refsta string 10 70
+    dnorth real64 8 80
+    deast real64 8 88
+    evid int 4 96
+    slat real64 8 100
+    slon real64 8 108
+    depth real32 4 116
+} # end attributes Tbl
+attribute_defaults &Tbl{
+    sta string XXX
+    time real  0.0
+    endtime real 0.0
+    nsamp int  0
+    samprate real  1.0
+    atime real  0.0
+    phase string  P
+    rlat real 0.0
+    rlon real 0.0
+    elev real 0.0
+    refsta string XXX
+    dnorth real 0.0
+    deast real 0.0
+    evid int 0
+    slat real 0.0
+    slon real 0.0
+    depth real 0.0
+} # end attributes Tbl
+}
+
+pf_revision_time 1295713195
