@@ -256,16 +256,16 @@ vector<double> MatlabProcessor::retrieve_vector(string name)
 	int nsize=nrow*ncol;
 	if( !( (nrow==nsize) || (ncol==nsize) ))
 	{
-		mxFree(VectorReturned);
+		mxDestroyArray(VectorReturned);
 		throw SeisppError(base_error
 			+ name +string(" is not a vector"));
 	}
-	// Need to copy result to avoid external need for specialized mxFree
+	// Need to copy result to avoid external need for matlab structures
 	vector<double> result;
 	result.reserve(nsize);
 	double *vptr=mxGetPr(VectorReturned);
 	for(int i=0;i<nsize;++i,++vptr) result.push_back(*vptr);
-	mxFree(VectorReturned);
+	mxDestroyArray(VectorReturned);
 	return(result);
 }
 	
@@ -289,7 +289,7 @@ auto_ptr<dmatrix> MatlabProcessor::retrieve_matrix(string name)
 	auto_ptr<dmatrix> result(new dmatrix(nrow,ncol));
 	double *mpptr=mxGetPr(mp);
 	dcopy(nrow*ncol,mpptr,1,result->get_address(0,0),1);
-	mxFree(mp);
+	mxDestroyArray(mp);
 	return(result);	
 }
 void MatlabProcessor::run_interactive()
