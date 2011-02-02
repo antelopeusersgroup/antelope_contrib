@@ -53,7 +53,7 @@ use Datascope::dbmon;
 
 our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
 
-our( $Datascope_dbname, $Sql_dbname );
+our( $Datascope_dbname, $Sql_dbname, $Syncstring );
 our( $refresh_interval_sec, $schema_create_errors_nonfatal, $enable_mysql_auto_reconnect, @table_subset );
 our( $dbh, $hookname );
 
@@ -257,7 +257,9 @@ sub querysyncs {
 
 	my( @syncs ) = ();
 
-	my( $query ) = "SELECT syncstring FROM $table";
+	my( $query ) = "SELECT $Syncstring FROM $table;";
+
+	Inform( "Executing SQL Query:\n$query\n\n" );
 
 	my( $ref ) = $dbh->selectcol_arrayref( $query );
 
@@ -266,7 +268,7 @@ sub querysyncs {
 		@syncs = @{$ref};
 	}
 
-	Inform( sprintf( "Resynchronizing with %d sync strings for table '$table'\n", scalar(@syncs) ) );
+	Inform( sprintf( "Resynchronizing with %d sync strings for table '$table'\n\n", scalar(@syncs) ) );
 
 	return @syncs;
 }
@@ -346,6 +348,8 @@ if( $opt_l ) {
 }
 
 inform( "Importing '$Datascope_dbname' into '$Sql_dbname' starting at " . strtime(now()) . " UTC\n" );
+
+$Syncstring = db2sql_get_syncfield_name();
 
 pfconfig_asknoecho();
 

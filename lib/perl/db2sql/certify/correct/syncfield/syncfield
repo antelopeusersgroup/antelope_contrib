@@ -1,3 +1,5 @@
+Check of sync-field name before modification: syncstring
+Check of sync-field name after modification: mytestsyncfield
 Conversion results:
 CREATE TABLE `lastid`
   (
