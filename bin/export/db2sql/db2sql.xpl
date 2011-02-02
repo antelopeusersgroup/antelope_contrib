@@ -53,7 +53,7 @@ use Datascope::dbmon;
 
 our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
 
-our( $datascope_dbname, $sql_dbname );
+our( $Datascope_dbname, $Sql_dbname );
 our( $refresh_interval_sec, $schema_create_errors_nonfatal, $enable_mysql_auto_reconnect, @table_subset );
 our( $dbh, $hookname );
 
@@ -92,24 +92,13 @@ sub sqldb_is_present {
 }
 
 sub init_sql_database {
-	my( $dbh, $sqldbname, $rebuild, @db ) = @_;
+	my( $dbh, $sqldbname, $rebuild ) = splice( @_, 0, 3 );
+	my( @db ) = splice( @_, 0, 4 );
+	my( $hookname ) = pop( @_ );
 
 	if( sqldb_is_present( $dbh, $sqldbname ) ) {
 
-		if( ! $rebuild ) {
-
-			my( $cmd ) = "USE $sqldbname;";
-
-			Inform( "Executing SQL Command:\n$cmd\n\n" );
-
-			unless( $dbh->do( $cmd ) ) {
-
-				elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
-			}
-
-			return;
-
-		} else {
+		if( $rebuild ) {
 
 			inform( "Database '$sqldbname' already exists. Dropping '$sqldbname'\n" );
 
@@ -121,6 +110,25 @@ sub init_sql_database {
 
 				elog_die( "Failed to drop pre-existing database '$sqldbname'. Bye.\n" );
 			}
+
+			# Fall through to re-create database
+
+		} else {
+
+			my( $cmd ) = "USE $sqldbname;";
+
+			Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+			unless( $dbh->do( $cmd ) ) {
+
+				elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
+			}
+
+			inform( "Resynchronizing '$sqldbname' with '$Datascope_dbname'\n" );
+
+			dbmon_resync( $hookname, $dbh );
+
+			return;
 		}
 	}
 
@@ -243,11 +251,33 @@ sub delrow {
 	return;
 }
 
+sub querysyncs {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $table, $dbh ) = @_;
+
+	my( @syncs ) = ();
+
+	my( $query ) = "SELECT syncstring FROM $table";
+
+	my( $ref ) = $dbh->selectcol_arrayref( $query );
+
+	if( defined( $ref ) ) {
+
+		@syncs = @{$ref};
+	}
+
+	Inform( sprintf( "Resynchronizing with %d sync strings for table '$table'\n", scalar(@syncs) ) );
+
+	return @syncs;
+}
+
 my( $path, $Program_name ) = parsepath( $0 );
 
 elog_init( $Program_name, @ARGV );
 
 our( $Pf ) = "db2sql";
+
+our( $Rebuild ) = 0;
 
 our( $Usage ) = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
 
@@ -264,7 +294,7 @@ if( $opt_l ) {
 
 	} else {
 
-		$datascope_dbname = pop( @ARGV );
+		$Datascope_dbname = pop( @ARGV );
 	}
 
 } else {
@@ -275,9 +305,14 @@ if( $opt_l ) {
 
 	} else {
 
-		$sql_dbname = pop( @ARGV );
-		$datascope_dbname = pop( @ARGV );
+		$Sql_dbname = pop( @ARGV );
+		$Datascope_dbname = pop( @ARGV );
 	}
+}
+
+if( $opt_r ) {
+
+	$Rebuild = 1;
 }
 
 if( $opt_p ) {
@@ -285,11 +320,11 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
-our( @db ) = dbopen_database( $datascope_dbname, "r" );
+our( @db ) = dbopen_database( $Datascope_dbname, "r" );
 
 if( $db[0] < 0 ) {
 
-	elog_die( "Failed to open database '$datascope_dbname' for reading. Bye.\n" );
+	elog_die( "Failed to open database '$Datascope_dbname' for reading. Bye.\n" );
 }
 
 if( $db[1] >= 0 ) {
@@ -310,7 +345,7 @@ if( $opt_l ) {
 	exit( 0 );
 }
 
-inform( "Importing '$datascope_dbname' into '$sql_dbname' starting at " . strtime(now()) . " UTC\n" );
+inform( "Importing '$Datascope_dbname' into '$Sql_dbname' starting at " . strtime(now()) . " UTC\n" );
 
 pfconfig_asknoecho();
 
@@ -337,15 +372,15 @@ if( $enable_mysql_auto_reconnect ) {
 	$dbh->{mysql_auto_reconnect} = 1;
 }
 
-init_sql_database( $dbh, $sql_dbname, $opt_r, @db );
-
 $hookname = "dbmon_hook";
 
-dbmon_init( @db, $hookname, \&newrow, \&delrow, @table_subset );
+dbmon_init( @db, $hookname, \&newrow, \&delrow, \&querysyncs, @table_subset );
+
+init_sql_database( $dbh, $Sql_dbname, $Rebuild, @db, $hookname );
 
 dbmon_update( $hookname, $dbh );
 
-inform( "Imported first snapshot of '$datascope_dbname' into '$sql_dbname' at " . strtime(now()) . " UTC\n" );
+inform( "Imported first snapshot of '$Datascope_dbname' into '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 
 while( ! $opt_1 ) {
 
@@ -353,13 +388,13 @@ while( ! $opt_1 ) {
 
 	dbmon_update( $hookname, $dbh );
 
-	Inform( "Updated snapshot of '$datascope_dbname' into '$sql_dbname' at " . strtime(now()) . " UTC\n" );
+	Inform( "Updated snapshot of '$Datascope_dbname' into '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 }
 
 $dbh->disconnect();
 
 dbmon_close( $hookname );
 
-inform( "Done importing '$datascope_dbname' into '$sql_dbname' at " . strtime(now()) . " UTC\n" );
+inform( "Done importing '$Datascope_dbname' into '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 
 exit( 0 );

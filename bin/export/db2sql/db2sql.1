@@ -28,7 +28,9 @@ argument is neither required nor allowed.
 Specify a parameter file other than the default \fBdb2sql\fP.pf
 .IP -r
 Rebuild the database if it already exists. This command executes a \fIDROP DATABASE\fP command to the 
-SQL server for the named target database, so should be used with caution.
+SQL server for the named target database, so should be used with caution. If this option is not 
+specified and the SQL database already exists, \fBdb2sql\fP will attempt to synchronize with the 
+previously-created SQL database.
 .IP -v
 Be verbose
 .IP -V
