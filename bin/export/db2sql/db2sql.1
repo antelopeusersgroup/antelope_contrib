@@ -169,6 +169,9 @@ db2sql: Done importing '/opt/antelope/data/db/demo/demo.site' into 'sample' at  
 .nf
 db2sql(3), perldb2sql(3P), DBI(3), DBD::mysql(3)
 .fi
+.SH "BUGS AND CAVEATS"
+When resynchronizing with a previous SQL Database, \fBdb2sql\fP assumes the schema has not changed incompatibly 
+from the one it originally loaded. 
 .SH AUTHOR
 .nf
 Kent Lindquist
