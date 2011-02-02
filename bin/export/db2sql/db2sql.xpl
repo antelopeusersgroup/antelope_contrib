@@ -124,7 +124,7 @@ sub init_sql_database {
 				elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
 			}
 
-			inform( "Resynchronizing '$sqldbname' with '$Datascope_dbname'\n" );
+			inform( "Resynchronizing SQL database '$sqldbname' with Datascope database '$Datascope_dbname'\n" );
 
 			dbmon_resync( $hookname, $dbh );
 
