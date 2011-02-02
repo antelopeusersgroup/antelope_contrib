@@ -241,17 +241,31 @@ dbmon_init( idatabase, itable, ifield, irecord, hookname, newrow, delrow, ... )
 
 	if( items >= 8 ) {
 
-		table_subset = newtbl( items - 7 );
+		i = 7;
 
-		for( i = 7; i < items; i++ ) {
+		if( SvROK(ST(i)) ) {
 
-			if( i == 7 && SvROK(ST(i)) ) { /* Reference to a CV */
+			querysyncs = newSVsv(ST(i));
 
-				querysyncs = newSVsv(ST(i));
+			querysyncs_callback = perl_querysyncs;
 
-				querysyncs_callback = perl_querysyncs;
+		} else {
 
-			} else {
+			table_subset = newtbl( items - i );
+
+			pushtbl( table_subset, SvPV_nolen( ST(i) ) );
+		}
+
+		if( items > 8 ) {
+
+			i = 8;
+
+			if( querysyncs ) {
+
+				table_subset = newtbl( items - i );
+			}
+
+			for( i = 8 ; i < items; i++ ) {
 
 				pushtbl( table_subset, SvPV_nolen( ST(i) ) );
 			}
