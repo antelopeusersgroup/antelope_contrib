@@ -316,7 +316,7 @@ Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables)
 	int *ilogic;
 	Tbl *t;
 	Dbptr dbj;
-	int nrec;
+	long int nrec;
 	int i;
 	int ntables=0;
 
@@ -343,7 +343,7 @@ Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables)
 				dbj = dblookup(db,0,table_name,0,0);
 			else
 				dbj=dbjoin(dbj,dblookup(db,0,table_name,0,0),
-					0,0,0,0,0);
+					NULL,NULL,0,NULL,0);
 			++ntables;
 			dbquery(dbj,dbRECORD_COUNT,&nrec);
 			if(nrec == 0)
@@ -841,9 +841,12 @@ r
 				trdb.record,sta,chan);
 				continue;
 			}
-			if(samprate != samprate0)
+			/* Allow 1 percent samprate error before killing */
+			double fsrskew=fabs((samprate-samprate0)/samprate0);
+			double frskewcut=0.01;
+			if(fsrskew>frskewcut) 
 			{
-				elog_complain(0,"%s:%s sample rate %f != base sample rate of %f\nTrace skipped -- segy requires fixed sample rates\n",
+				elog_complain(0,"%s:%s sample rate %f is significantly different from base sample rate of %f\nTrace skipped -- segy requires fixed sample rates\n",
 					sta,chan,samprate,samprate0);
 				continue;
 			}
