@@ -586,6 +586,62 @@ def now():
     return ret
 
 
+def grn(lat, lon):
+    """Return geographic region number for coordinates"""
+
+    try:
+    
+        ret = _stock._grn(lat, lon)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
+
+
+def srn(lat, lon):
+    """Return seismic region number for coordinates"""
+
+    try:
+    
+        ret = _stock._srn(lat, lon)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
+
+
+def grname(lat, lon):
+    """Return geographic region name for coordinates"""
+
+    try:
+    
+        ret = _stock._grname(lat, lon)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
+
+
+def srname(lat, lon):
+    """Return seismic region name for coordinates"""
+
+    try:
+    
+        ret = _stock._srname(lat, lon)
+    
+    except _stock._ElogException, _e:
+
+        _raise_elog(_e)
+
+    return ret
+
+
 if __name__ == '__main__':
     import unittest
     import operator
@@ -803,6 +859,30 @@ if __name__ == '__main__':
             e = now()
 
             self.assertTrue(isinstance(e,float))
+
+        def test_grname(self):
+
+	    name = grname(65, -150)
+
+	    self.assertEqual(name, "NORTHERN ALASKA" )
+
+        def test_srname(self):
+
+	    name = srname(65, -150)
+
+	    self.assertEqual(name, "NORTHEASTERN ASIA, NORTHERN ALASKA TO GREENLAND" )
+
+        def test_grn(self):
+
+	    num = grn(65, -150)
+
+	    self.assertEqual(num, 676)
+
+        def test_srn(self):
+
+	    num = srn(65, -150)
+
+	    self.assertEqual(num, 42)
 
         def test_elog_init(self):
 

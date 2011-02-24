@@ -257,6 +257,83 @@ yd = yearday(e)
 .in
 .ft R
 
+.IP "\fBnow\fP ()"
+Returns the current epoch time
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+e = now()
+
+.fi
+.in
+.ft R
+
+.IP "\fBgrn\fP (lat, lon)"
+Returns the geographic region number for the given coordinates
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+lat = 65
+lon = -150
+
+n = grn(lat, lon)
+
+.fi
+.in
+.ft R
+
+.IP "\fBsrn\fP (lat, lon)"
+Returns the seismic region number for the given coordinates
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+lat = 65
+lon = -150
+
+n = srn(lat, lon)
+
+.fi
+.in
+.ft R
+
+.IP "\fBgrname\fP (lat, lon)"
+Returns the geographic region name for the given coordinates
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+lat = 65
+lon = -150
+
+name = grname(lat, lon)
+
+.fi
+.in
+.ft R
+
+.IP "\fBsrname\fP (lat, lon)"
+Returns the seismic region name for the given coordinates
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+lat = 65
+lon = -150
+
+name = srname(lat, lon)
+
+.fi
+.in
+.ft R
+
 .IP "\fBelog_init\fP (sys.argv)"
 Initialize the Antelope error-logging facility
 .ft CW

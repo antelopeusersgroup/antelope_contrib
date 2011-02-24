@@ -46,6 +46,7 @@
 #include <string.h>
 #include "Python.h"
 #include "stock.h"
+#include "coords.h"
 #include "pfxml.h"
 #include "elog.h"
 
@@ -105,6 +106,10 @@ static PyObject *python_epoch2str( PyObject *self, PyObject *args );
 static PyObject *python_epoch( PyObject *self, PyObject *args );
 static PyObject *python_yearday( PyObject *self, PyObject *args );
 static PyObject *python_now( PyObject *self, PyObject *args );
+static PyObject *python_grn( PyObject *self, PyObject *args );
+static PyObject *python_srn( PyObject *self, PyObject *args );
+static PyObject *python_grname( PyObject *self, PyObject *args );
+static PyObject *python_srname( PyObject *self, PyObject *args );
 static PyObject *pf2PyObject( Pf *pfvalue );
 static PyObject *string2PyObject( char *s );
 static PyObject *strtbl2PyObject( Tbl *atbl );
@@ -149,6 +154,10 @@ static struct PyMethodDef stock_methods[] = {
 	{ "_epoch",	   	python_epoch,   	METH_VARARGS, "Convert a year-day value to an epoch time" },
 	{ "_yearday",   	python_yearday,   	METH_VARARGS, "Convert epoch time to a year-day value" },
 	{ "_now",   		python_now,   		METH_VARARGS, "Return epoch time for local system clock" },
+	{ "_grn",   		python_grn,   		METH_VARARGS, "Return geographic region number for coordinates" },
+	{ "_srn",   		python_srn,   		METH_VARARGS, "Return seismic region number for coordinates" },
+	{ "_grname",   		python_grname, 		METH_VARARGS, "Return geographic region name for coordinates" },
+	{ "_srname",   		python_srname, 		METH_VARARGS, "Return seismic region name for coordinates" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -1385,6 +1394,108 @@ python_now( PyObject *self, PyObject *args ) {
 	epoch = now();
 
 	obj = Py_BuildValue( "d", epoch );
+
+	return obj;
+}
+
+static PyObject *
+python_grn( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _stock._grn( lat, lon )\n";
+	PyObject *obj;
+	double	lat;
+	double	lon;
+	int	grnum;
+
+	if( ! PyArg_ParseTuple( args, "dd", &lat, &lon ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	grnum = grnumber( lat, lon );
+
+	obj = Py_BuildValue( "i", grnum );
+
+	return obj;
+}
+
+static PyObject *
+python_srn( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _stock._srn( lat, lon )\n";
+	PyObject *obj;
+	double	lat;
+	double	lon;
+	int	grnum;
+	int	srnum;
+
+	if( ! PyArg_ParseTuple( args, "dd", &lat, &lon ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	grnum = grnumber( lat, lon );
+
+	srnum = srnumber( grnum );
+
+	obj = Py_BuildValue( "i", srnum );
+
+	return obj;
+}
+
+static PyObject *
+python_grname( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _stock._grname( lat, lon )\n";
+	PyObject *obj;
+	double	lat;
+	double	lon;
+	int	grnum;
+	int	rc;
+	char	name[STRSZ];
+
+	if( ! PyArg_ParseTuple( args, "dd", &lat, &lon ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	grnum = grnumber( lat, lon );
+
+	rc = grname( grnum, name );
+
+	obj = Py_BuildValue( "s", name );
+
+	return obj;
+}
+
+static PyObject *
+python_srname( PyObject *self, PyObject *args ) {
+	char	*usage = "Usage: _stock._srname( lat, lon )\n";
+	PyObject *obj;
+	double	lat;
+	double	lon;
+	int	grnum;
+	int	srnum;
+	int	rc;
+	char	name[STRSZ];
+
+	if( ! PyArg_ParseTuple( args, "dd", &lat, &lon ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+
+	grnum = grnumber( lat, lon );
+
+	srnum = srnumber( grnum );
+
+	rc = srname( srnum, name );
+
+	obj = Py_BuildValue( "s", name );
 
 	return obj;
 }
