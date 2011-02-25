@@ -180,7 +180,6 @@ char *get_full_method_string(char *shortname)
 		}
 		else
 		{
-			db.record = 0;
 			dbgetv(db,0,"libname",libname,
 				"ttentry",ttentry,
 				"uentry", uentry, NULL);
@@ -380,9 +379,10 @@ Tbl *load_regions(char *modelset)
 		}
 		else
 		{
-			elog_notify(0,"Warning(libttregions):  No match in regions table of database '%s' for regname defined in regmodel\n"
+			elog_notify(0,"Warning(libttregions):  No match in regions table of database '%s' "
+				      "for regname '%s' defined in regmodel for modelset '%s'\n"
 				      "Mismatch on record %ld of sorted regmodel table\n",
-				      database_filename, dbs.record);
+				      database_filename, regname, modelset, dbs.record);
 		}
 		freetbl(reg_match,0);
 		freetbl(sc_match,0);
