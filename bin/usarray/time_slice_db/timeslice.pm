@@ -3,13 +3,24 @@ package timeslice ;
 require Exporter;   
 @ISA = ('Exporter');
 
-@EXPORT=qw(backup_dbin time_splits border mk_db_des mk_d last_time sort_events times) ;
+@EXPORT=qw( backup_dbin time_splits border mk_db_des mk_d last_time sort_events times next_jdate prev_jdate ) ;
+
+# &backup_dbin( $dbin, $dbbase, $verbose, $debug) ;
+# @ts                          =  &time_splits( $period, $debug, @db ) ;
+# ($current,$next_ts)          =  &border($ts, $period, $debug);
+# ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbase,$period,$table,$dbpath, $dblocks, $dbidserver, $debug);
+# ($dirname, $dbname)          =  &mk_d($dirbase,$dbbase,$period,$ts,$debug);
+# $end_time                    = &last_time($end_time, $lag, $period, $debug);
+# &sort_events($dbname, $debug) ;
+# ($starttime,$endtime)        = &times($year,$month,$debug);
+# $next_jdate                  = &next_jdate ( $jdate ) ;
+# $prev_jdate                  = &prev_jdate ( $jdate ) ;
 
 use strict ;
 use Datascope ;
 use archive ;
 
-sub backup_dbin { # &backup_dbin( $dbin, $dbbase, $verbose, $debug);
+sub backup_dbin { # &backup_dbin( $dbin, $dbbase, $verbose, $debug) ;
     my ( $dbin, $dbbase, $verbose, $debug) = @_ ;
     my ( $cmd ) ;
     
@@ -282,3 +293,20 @@ sub times {  # ($starttime,$endtime) = &times($year,$month,$debug);
     
     return ($starttime,$endtime) ;
 }
+
+sub next_jdate {  # $next_jdate = &next_jdate ( $jdate ) ;
+    my ( $jdate ) = @_ ;
+    my ( $next_jdate ) ;
+    
+    $next_jdate = yearday( epoch( $jdate ) + 86400 ) ;
+    return $next_jdate ;
+}
+
+sub prev_jdate {  # $prev_jdate = &prev_jdate ( $jdate ) ;
+    my ( $jdate ) = @_ ;
+    my ( $prev_jdate ) ;
+    
+    $prev_jdate = yearday( epoch( $jdate)  - 86400 ) ;
+    return $prev_jdate ;
+}
+
