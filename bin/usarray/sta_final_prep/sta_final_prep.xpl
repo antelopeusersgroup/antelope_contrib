@@ -18,13 +18,13 @@
     require "getopts.pl" ;
     use strict ;
     use Datascope ;
-    use archive;
+    use archive ;
     use timeslice ;
     use utilfunct ;
     use orb ;
     
-    our ($pgm,$host);
-    our ($opt_v,$opt_V,$opt_m,$opt_n,$opt_p);
+    our ( $pgm, $host );
+    our ( $opt_v, $opt_V, $opt_m, $opt_n, $opt_p );
     
 {    #  Main program
 
@@ -33,11 +33,11 @@
     my ( $mintime, $mintime_baler, $mintime_rt, $mseedfile, $nrows, $prob, $prob_check, $row, $rtdb ) ;  
     my ( $snet, $sohname, $sta, $sta_base, $sta_size, $statmp, $stime, $success, $table ) ;
     my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles, @output ) ;
-    my ( %pf );
+    my ( %pf ) ;
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
-    elog_init($pgm, @ARGV);
+    elog_init( $pgm, @ARGV) ;
     $cmd = "\n$0 @ARGV" ;
     
     if (  ! &Getopts('vVnm:p:') || @ARGV < 1 ) { 
@@ -78,8 +78,8 @@
 #
 
     $table = "wfdisc";
-    foreach $sta ( sort (@ARGV) ) {
-        $stime = strydtime(now());
+    foreach $sta ( sort ( @ARGV ) ) {
+        $stime = strydtime( now() );
         
         ( $dbdevice, $dbavail ) = &df( $pf{archivebase} );
         
@@ -140,9 +140,9 @@
             dbclose(@dbtest);
         }
         
-        $rtdb   = "$pf{rt_sta_dir}\/$sta";
+        $rtdb   = "$pf{rt_sta_dir}\/$sta/$sta";
         elog_notify("rtdb	$rtdb	") if $opt_v ;
-        if ( ! -e $rtdb ) {
+        if ( ! -f $rtdb ) {
             $problems++ ;
             elog_complain("\nProblem $problems
                            \n	station rt data db $rtdb does not exist
@@ -161,9 +161,9 @@
 #  build station-channel-day seed files from baler final seismic miniseed directory  
 #
 
-        opendir(DIR,$bhname);
+        opendir( DIR, $bhname );
         @mseedfiles = grep { /C.*\.bms.*/  } readdir(DIR);
-        closedir(DIR);
+        closedir( DIR );
         
         if ($#mseedfiles == -1 ) {
             $problems++ ;
@@ -200,9 +200,9 @@
 #  build station-channel-year seed files from baler final soh, VH, UH miniseed directory  
 #
 
-        opendir(DIR,$sohname);
+        opendir( DIR, $sohname );
         @mseedfiles = grep { /C.*\.bms.*/  } readdir(DIR);
-        closedir(DIR);
+        closedir( DIR );
                 
         if ($#mseedfiles == -1 ) {
             $problems++ ;
@@ -241,9 +241,9 @@
 #
         unlink($sta) if (-e $sta);
         
-        open(TR,">trdefaults.pf");
+        open( TR, ">trdefaults.pf" );
         print TR "miniseed_segment_seconds 0\n";
-        close(TR);
+        close( TR );
         
         $cmd  = "miniseed2db ";
         $cmd .= "-v " if $opt_V;
@@ -315,9 +315,9 @@
         $prob = 0;
         open(PROB,"> /tmp/prob_$sta\_$$");
         
-        @db     = dbopen($sta,'r');
-        @dbsnet = dblookup(@db,0,"snetsta",0,0);
-        $nrows  = dbquery(@dbsnet,"dbRECORD_COUNT");
+        @db     = dbopen(   $sta, 'r' );
+        @dbsnet = dblookup( @db, 0, "snetsta", 0, 0 );
+        $nrows  = dbquery(  @dbsnet, "dbRECORD_COUNT" );
         
         if ($nrows > 1) {
             $line = "\nDatabase problem\n	$sta database has $nrows unique net-sta pairs";
@@ -341,16 +341,16 @@
 #  Set up descriptor file
 #
         
-        &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+        &cssdescriptor ( $sta, $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} ) unless $opt_n;
 
 #
 #  Find start time and end times
 #
 
         unless ($opt_n) {
-            @dbwfdisc = dblookup(@db,0,"wfdisc",0,0);
-            @dbbh     = dbsubset(@dbwfdisc,"sta =~/$sta/ && chan =~ /[BL]H[ZNE]/");
-            if (dbquery(@dbbh,"dbRECORD_COUNT") == 0 ) {
+            @dbwfdisc = dblookup( @db, 0, "wfdisc", 0, 0);
+            @dbbh     = dbsubset( @dbwfdisc, "sta =~/$sta/ && chan =~ /[BL]H[ZNE]/");
+            if (dbquery( @dbbh, "dbRECORD_COUNT" ) == 0 ) {
                 $problems++ ;
                 elog_complain("\nProblem $problems
                                \n	$dbname\.wfdisc has no chan =~ /[BL]H[ZNE]/! 
@@ -360,7 +360,7 @@
             $mintime_baler  = dbex_eval( @dbbh, "min(time)" ) ;
             $maxtime_baler  = dbex_eval( @dbbh, "max(endtime)" ) ;
             
-            elog_notify(sprintf("Baler times  %s    %s", strydtime($mintime_baler), strydtime($maxtime_baler)));
+            elog_notify(sprintf("Baler times  %s    %s", strydtime( $mintime_baler ), strydtime( $maxtime_baler )));
             
             @dbrt        = dbopen   ( $rtdb, "r" ) ;
             @dbrt        = dblookup ( @dbrt, 0, "wfdisc", 0, 0 ) ;
@@ -368,15 +368,15 @@
             $maxtime_rt  = dbex_eval( @dbrt, "max(endtime)" ) ;
             dbclose( @dbrt ) ;
 
-            elog_notify(sprintf("Rt times     %s    %s", strydtime($mintime_rt), strydtime($maxtime_rt)));
+            elog_notify(sprintf("Rt times     %s    %s", strydtime( $mintime_rt ), strydtime( $maxtime_rt )));
             
             $mintime = $mintime_baler ;
             $maxtime = $maxtime_baler ;
             
-            $mintime = $mintime_rt if ($mintime_rt < $mintime) ;
-            $maxtime = $maxtime_rt if ($maxtime_rt > $maxtime) ;
+            $mintime = $mintime_rt if ( $mintime_rt < $mintime ) ;
+            $maxtime = $maxtime_rt if ( $maxtime_rt > $maxtime ) ;
             
-            $maxtime = epoch(yearday($maxtime + 86400)) if ($maxtime > epoch(yearday($maxtime))) ;
+            $maxtime = epoch( yearday( $maxtime + 86400 ) ) if ($maxtime > epoch( yearday( $maxtime ) ) ) ;
 
         }
         dbclose( @db ) ;
@@ -418,7 +418,7 @@
 #
 #  evaluate data return
 #
-        ($prob,$problems) = eval_data_return ($sta,$prob,$problems) unless $opt_n;       
+        ( $prob, $problems ) = eval_data_return ( $sta, $prob, $problems ) unless $opt_n;       
         
         close(PROB);
 
@@ -494,47 +494,46 @@
 }
 
 
-sub unwanted_channels { # $prob = unwanted_channels($sta,$prob);
-    my ($sta,$prob) = @_ ; 
-    my ($nrows,$row,$line,$statmp,$fchan,$chantmp) ;
-    my (@db,@dbschan,@dbsensor,@dbwfdisc);
+sub unwanted_channels { # $prob = unwanted_channels( $sta, $prob );
+    my ( $sta, $prob ) = @_ ; 
+    my ( $nrows, $row, $line, $statmp, $fchan, $chantmp ) ;
+    my ( @db, @dbschan, @dbsensor, @dbwfdisc );
         
-    @db       = dbopen($sta,'r');
-    @dbschan  = dblookup(@db,0,"schanloc",0,0);
-    @dbschan  = dbsubset(@dbschan,"chan !~ /UH./");
-    @dbsensor = dblookup(@db,0,"sensor",0,0);
-    @dbwfdisc = dblookup(@db,0,"wfdisc",0,0);
-    @dbschan  = dbjoin(@dbschan,@dbwfdisc);
-    @dbschan  = dbseparate(@dbschan,"schanloc");
-    @dbschan  = dbnojoin(@dbschan,@dbsensor);
-    $nrows    = dbquery(@dbschan,"dbRECORD_COUNT");
+    @db       = dbopen( $sta, 'r' );
+    @dbschan  = dblookup( @db, 0, "schanloc", 0, 0 );
+    @dbschan  = dbsubset( @dbschan, "chan !~ /UH./" );
+    @dbsensor = dblookup( @db, 0, "sensor", 0, 0 );
+    @dbwfdisc = dblookup( @db, 0, "wfdisc", 0, 0 );
+    @dbschan  = dbjoin(   @dbschan, @dbwfdisc );
+    @dbschan  = dbseparate( @dbschan, "schanloc" );
+    @dbschan  = dbnojoin( @dbschan, @dbsensor );
+    $nrows    = dbquery(  @dbschan, "dbRECORD_COUNT" );
     if ($nrows > 0) {
         $line = "\nDatabase problem\n	$sta schanloc has $nrows channels which do not join with sensor table";
         elog_complain($line);
         print PROB "$line\n";
         for ($row = 0; $row<$nrows; $row++) {
             $dbschan[3] = $row;
-            ($statmp,$fchan,$chantmp) = dbgetv(@dbschan,"sta","fchan","chan");
+            ( $statmp, $fchan, $chantmp) = dbgetv( @dbschan, "sta", "fchan", "chan" );
             $line = "	sta	$statmp	fchan	$fchan	chan	$chantmp";
-            elog_complain($line) ;
+            elog_complain( $line ) ;
             print PROB "$line\n";
             $prob++;
         }
     }
     dbclose(@db);
         
-    unlink("$sta.snetsta");
-    unlink("$sta.schanloc");
+    unlink( "$sta.snetsta" );
+    unlink( "$sta.schanloc" );
     return ($prob);
 
 }
 
-sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
-    my ($sta,$prob,$problems) = @_ ;
-    my ($time,$endtime,$chan,$line) ;
-    my (@db,@dbdeploy,@dbchanperf,@dbcd) ;
-    
-    my (%staperf);
+sub eval_data_return { # $prob = eval_data_return ( $sta, $prob, $problems ) ;
+    my ( $sta, $prob, $problems ) = @_ ;
+    my ( $time, $endtime, $chan, $line ) ;
+    my ( @db, @dbdeploy, @dbchanperf, @dbcd ) ;
+    my ( %staperf );
     
     %staperf = (); 
 
@@ -543,11 +542,11 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     $staperf{max_nperfdays} = 0;
     $staperf{max_datadays}  = 0;
     
-    @db = dbopen($sta,"r");
+    @db = dbopen( $sta, "r" );
     
-    @dbdeploy = dblookup(@db,0,"deployment",0,0);
-    @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
-    if (! dbquery(@dbdeploy,"dbRECORD_COUNT")) {
+    @dbdeploy = dblookup( @db, 0, "deployment", 0, 0 );
+    @dbdeploy = dbsubset( @dbdeploy, "sta=~/$sta/" );
+    if (! dbquery( @dbdeploy, "dbRECORD_COUNT" ) ) {
         $prob++;
         $problems++;
         $line = "$sta does not exist in deployment table!";
@@ -556,23 +555,23 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
         return ($prob,$problems);
     }
     $dbdeploy[3] = 0;
-    ($time,$endtime) = dbgetv(@dbdeploy,"time","endtime");
-    $staperf{deploy_days} = int($endtime/86400) - int($time/86400.) ;
+    ( $time, $endtime ) = dbgetv( @dbdeploy, "time", "endtime" );
+    $staperf{deploy_days} = int( $endtime/86400 ) - int( $time/86400. ) ;
 
-    @db = dblookup(@db,0,"chanperf",0,0);
-    if (! dbquery(@db,"dbTABLE_PRESENT")) {
+    @db = dblookup( @db, 0, "chanperf", 0, 0 );
+    if (! dbquery( @db, "dbTABLE_PRESENT" ) ) {
         $prob++;
         $problems++;
         $line = "$sta\.chanperf table has no records!";
         elog_notify("	$line");
         print PROB "$line\n" ;
-        return ($prob,$problems);
+        return ( $prob, $problems );
     }
 
     foreach $chan (qw( BHZ BHN BHE LHZ LHN LHE)) {
-        @dbchanperf                = dbsubset(@db,"chan =~ /$chan/");
-        @dbcd                      = dbsubset(@dbchanperf,"perf > 0.0");
-        $staperf{$chan}{days}      = dbquery(@dbcd,"dbRECORD_COUNT");
+        @dbchanperf                = dbsubset( @db, "chan =~ /$chan/" );
+        @dbcd                      = dbsubset( @dbchanperf, "perf > 0.0" );
+        $staperf{$chan}{days}      = dbquery( @dbcd, "dbRECORD_COUNT" );
         $staperf{max_datadays}     = $staperf{$chan}{days} if ($staperf{$chan}{days} > $staperf{max_datadays});
         if ($staperf{$chan}{days} == 0.0) {
             $staperf{$chan}{ave_perf}  = 0.0;
@@ -580,11 +579,11 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
             $staperf{$chan}{ave_perf}  = (dbex_eval(@dbchanperf,"sum(perf)"))/$staperf{$chan}{days};
         }
         $staperf{max_ave_perf}     = $staperf{$chan}{ave_perf} if ($staperf{$chan}{ave_perf} > $staperf{max_ave_perf});
-        @dbchanperf                = dbsubset(@dbchanperf,"perf == 100.");
-        $staperf{$chan}{nperfdays} = dbquery(@dbchanperf,"dbRECORD_COUNT");
+        @dbchanperf                = dbsubset( @dbchanperf, "perf == 100." );
+        $staperf{$chan}{nperfdays} = dbquery( @dbchanperf, "dbRECORD_COUNT" );
         $staperf{max_nperfdays}    = $staperf{$chan}{nperfdays} if ($staperf{$chan}{nperfdays} > $staperf{max_nperfdays}) ;
         $line = sprintf("%s  %s	%4d days with 100%% data return	with %5.1f%% average daily data return on days with data",
-                         $sta,$chan,$staperf{$chan}{nperfdays},$staperf{$chan}{ave_perf});
+                         $sta, $chan, $staperf{$chan}{nperfdays}, $staperf{$chan}{ave_perf} );
         elog_notify("	$line");
         print PROB "$line\n" ;
     }
@@ -607,7 +606,7 @@ sub eval_data_return { # $prob = eval_data_return ($sta,$prob,$problems) ;
     $staperf{deploy_days} = 0.1 if ($staperf{deploy_days} < 0.1) ;
 
     $line = sprintf("%s	%4d deployment days	%4d days with data return	%5.1f%% of possible days\n	Check deployment table",
-                     $sta,$staperf{deploy_days},$staperf{max_datadays},(100*$staperf{max_datadays}/$staperf{deploy_days}));
+                     $sta, $staperf{deploy_days}, $staperf{max_datadays}, (100*$staperf{max_datadays}/$staperf{deploy_days}));
         
     if ( ( $staperf{deploy_days} * 1.05) < $staperf{max_datadays} ) {  # Don't worry if within 5%
         $prob++;

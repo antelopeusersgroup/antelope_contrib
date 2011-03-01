@@ -238,7 +238,7 @@ Arr *check_tables(Dbptr db, Pf *pf)
 	Tbl *t;
 	Dbptr dbtmp;
 	int table_ok;
-	int nrec;
+	long int nrec;
 	Arr *a;
 
 	a = newarr(0);
@@ -316,7 +316,7 @@ Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables)
 	int *ilogic;
 	Tbl *t;
 	Dbptr dbj;
-	int nrec;
+	long int nrec;
 	int i;
 	int ntables=0;
 
@@ -343,7 +343,7 @@ Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables)
 				dbj = dblookup(db,0,table_name,0,0);
 			else
 				dbj=dbjoin(dbj,dblookup(db,0,table_name,0,0),
-					0,0,0,0,0);
+					NULL,NULL,0,NULL,0);
 			++ntables;
 			dbquery(dbj,dbRECORD_COUNT,&nrec);
 			if(nrec == 0)
@@ -365,7 +365,7 @@ void set_shot_variable(Dbptr db, Arr *tables, int evid, SegyHead *h)
 {
 	int *ok;
 	char ss_string[30];
-	int ntest;
+	long int ntest;
 	double dnorth, deast, elev, edepth;
 
 	ok = getarr(tables,"shot");
@@ -393,7 +393,7 @@ void set_shot_variable(Dbptr db, Arr *tables, int evid, SegyHead *h)
 			"deast", &deast,
 			"elev", &elev,
 			"edepth",&edepth,
-				0) == dbINVALID) 
+				NULL) == dbINVALID) 
 		{
 			elog_complain(0,"dbgetv error for evid %d\nShot coordinates will not be saved in segy headers\n",
 				evid);
@@ -427,9 +427,9 @@ flipping the sign when appopriate.
 void repair_gaps(Dbptr trdb)
 {
 	Trsample *trdata;
-	int nsamp;
+	long int nsamp;
 	char datatype[4];
-	int ntraces;
+	long int ntraces;
 	int i,i0;
 	Wftype *g;
 
@@ -440,7 +440,7 @@ void repair_gaps(Dbptr trdb)
 			"datatype",datatype,
 			"data",&trdata,
 			"nsamp",&nsamp,
-		0) == dbINVALID)
+		NULL) == dbINVALID)
 		{
 			die(0,"dbgetv error during gap processing\n");
 		}
@@ -523,7 +523,7 @@ int main(int argc, char **argv)
 	Dbptr trdbss;  
 	int nsamp0;
 	double time0, endtime0, samprate0;
-	int nsamp;
+	long int nsamp;
 	double samprate;
 	int i,j;
 	char stime[30],etime[30];
@@ -539,9 +539,10 @@ int main(int argc, char **argv)
 	char refsta[10];
 	int total_traces=0;
 	char *time_str;
-	int evid,shotid=1;
+	long int evid,shotid=1;
 	int rotate=0;
-	int ntraces, ichan;
+	long int ntraces;
+        int ichan;
 	int map_to_cdp;  /* logical switch to output data like cdp stacked data */
 	char *fmt="%Y %j %H %M %S %s";
 	char *pfname;
@@ -668,7 +669,7 @@ r
 	dbj = join_tables(db,pf,table_list);
 	if(dbj.record == dbINVALID) die(0,"dbjoin error\n");
 	if(substr!=NULL) dbj=dbsubset(dbj,substr,0);
-	int ndbrows;
+	long int ndbrows;
 	dbquery(dbj,dbRECORD_COUNT,&ndbrows);
 	if(ndbrows<=0)
 	{
@@ -770,7 +771,7 @@ r
 		if(input_source_coordinates)
 		{
 			char stmp[40];
-			sscanf(s,"%s%d%lf%lf%lf",stmp,&shotid,&slon,&slat,&selev);
+			sscanf(s,"%s%ld%lf%lf%lf",stmp,&shotid,&slon,&slat,&selev);
 			time0=str2epoch(stmp);
 		}
 		else
@@ -785,7 +786,7 @@ r
 		{
 			if(Verbose) 
 			{
-			  fprintf(stdout,"trload_css failed for shotid=%d",shotid);
+			  fprintf(stdout,"trload_css failed for shotid=%ld",shotid);
 			  fprintf(stdout,"  No data in time range %s to %s\n",
 			  	strtime(time0),strtime(endtime0) );
 			  fprintf(stdout,"No data written for this shotid block.");
@@ -815,7 +816,7 @@ r
 			fprintf(stdout,"Station  chan_name  chan_number seq_number shotid  evid\n");
 		trdb = dbsort(trdb,sortkeys,0,0);
 		dbquery(trdb,dbRECORD_COUNT,&ntraces);
-		if(Verbose) fprintf(stdout,"Read %d traces for event at time%s\n",
+		if(Verbose) fprintf(stdout,"Read %ld traces for event at time%s\n",
 			ntraces,strtime(time0));
 		for(trdb.record=0;trdb.record<ntraces;++trdb.record)
 		{
@@ -834,27 +835,30 @@ r
 			    "dnorth",&dnorth,
 			    "deast",&deast,
 			    "edepth",&edepth,
-					0) == dbINVALID)
+					NULL) == dbINVALID)
 			{
-				elog_complain(0," dbgetv error reading record %d\nTrace will be skipped for station %s and channel %s\n",
+				elog_complain(0," dbgetv error reading record %ld\nTrace will be skipped for station %s and channel %s\n",
 				trdb.record,sta,chan);
 				continue;
 			}
-			if(samprate != samprate0)
+			/* Allow 1 percent samprate error before killing */
+			double fsrskew=fabs((samprate-samprate0)/samprate0);
+			double frskewcut=0.01;
+			if(fsrskew>frskewcut) 
 			{
-				elog_complain(0,"%s:%s sample rate %f != base sample rate of %f\nTrace skipped -- segy requires fixed sample rates\n",
+				elog_complain(0,"%s:%s sample rate %f is significantly different from base sample rate of %f\nTrace skipped -- segy requires fixed sample rates\n",
 					sta,chan,samprate,samprate0);
 				continue;
 			}
 			if(nsamp > nsamp0)
 			{
-				elog_complain(0,"%s:%s trace has extra samples=%d\nTruncated to length %d\n",
+				elog_complain(0,"%s:%s trace has extra samples=%ld\nTruncated to length %d\n",
 					sta, chan, nsamp, nsamp0);
 				nsamp = nsamp0;
 			}
 			else if(nsamp < nsamp0)
 			{
-				elog_complain(0,"%s:%s trace is shorter than expected %d samples\nZero padded after sample %d\n",
+				elog_complain(0,"%s:%s trace is shorter than expected %d samples\nZero padded after sample %ld\n",
 					sta, chan, nsamp0, nsamp);
 			}
 
@@ -864,7 +868,7 @@ r
 			if(ichan >= 0)
 			{
 				if(Verbose) 
-				   fprintf(stdout,"%s:%s\t%-d\t%-d\t%-d\t%-d\n",
+				   fprintf(stdout,"%s:%s\t%-d\t%-d\t%-ld\t%-ld\n",
 					sta,chan,ichan+1,
                                         header[ichan].reelSeq,
 					shotid, evid);

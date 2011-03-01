@@ -38,7 +38,7 @@
 {    #  Main program
 
     my ( $Pf, $base, $chan, $cmd, $comment, $dbname, $dbsize, $debug, $dep, $dir, $dirname ) ;
-    my ( $endtime, $gchan, $gsta, $line, $max, $maxtime, $mintime, $mlag, $mseedfile, $n ) ;
+    my ( $endtime, $gchan, $gsta, $line, $max, $maxtime, $mintime, $mlag, $mseedfile, $n, $nerror ) ;
     my ( $net, $new, $nrows, $nsync, $old, $orb, $orbclient, $orbname, $orbsize, $pktid ) ;
     my ( $problem_check, $problems, $range, $ref, $row, $st1, $st2, $st3, $sta, $stime ) ;
     my ( $subject, $success, $suf, $sync_dfile, $sync_dir, $sync_file, $table, $tgap ) ;
@@ -79,7 +79,11 @@
     
     
     %pf = getparam($Pf, $verbose, $debug) ;
-    makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
+    if (! -d $pf{rt_sta_dir}) {
+        $subject = "Problems - $pgm $host	rt_sta_dir $pf{rt_sta_dir} does not exist!" ;
+        &sendmail( $subject, $opt_m ) if $opt_m ; 
+        elog_die( "\n$subject" ) ;
+    }
 
 #
 #  check system
@@ -279,7 +283,7 @@
 
         $cmd  = "trexcerpt ";
         $cmd  .= "-v  " if $opt_V;
-        $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta tmp_gap_$sta\_$$.wfdisc $dbname " ;
+        $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta/$sta tmp_gap_$sta\_$$.wfdisc $dbname " ;
                
         if ( $nrows > 0 || $opt_n ) {
             ( $success, @output )  = &run_cmd( $cmd );
@@ -399,9 +403,9 @@
 #  Process each non-waveform miniseed file
 #
 
-        makedir("sync") if (! -d "sync" );
+        makedir("sync") if (! -d "sync" && ! $opt_n);
         
-        open( SYNC, ">sync/tmp_sync" ) ;
+        open( SYNC, ">sync/tmp_sync" ) unless $opt_n ;
         
         foreach $mseedfile ( @files ) {
         
@@ -463,11 +467,11 @@
 #             }
 
             $st3 = epoch2str( now(), "%Y,%j" ) ;
-            print SYNC "$net|$sta||$chan|$st1|$st2||||||||||$st3\n" ;
+            print SYNC "$net|$sta||$chan|$st1|$st2||||||||||$st3\n" unless $opt_n ;
             
         }
         
-        close SYNC;
+        close SYNC unless $opt_n ;
 #
 #  Make DMC sync file
 #
@@ -491,7 +495,7 @@
         
         $cmd = "cat  sync/tmp_sync >> sync/$sync_dfile" ;
         
-        if ( ! -e "sync/$sync_dfile" ) {
+        if ( ! -e "sync/$sync_dfile" && ! $opt_n ) {
             elog_complain( "sync/$sync_dfile does not exist!" ) ;
             elog_complain( "$cmd	will fail!" ) ;
             $problems++ ;
@@ -598,10 +602,22 @@
             elog_die( "\n$subject" ) ;
         }
     
-        $mlag = 1.0;
-        $n = 0;
+        $mlag   = 1.0 ;
+        $n      = 0 ;
+        $nerror = 0 ;
         while ( $mlag > 0.01 ) {
-            ( $old, $new, $max, $range, @laggards ) = orblag( $orb, "orbmsd2days", 0 ) ;
+            eval { ( $old, $new, $max, $range, @laggards ) = orblag( $orb, "orbmsd2days", 0 ) } ;
+            if ( $@ ne "" ) {
+                if ( $nerror > 2 ) {
+                    elog_complain( "orblag orbmsd2days failed 3 times, check $orbname" ) ;
+                    $subject = "Problems - $pgm $host	$problems problems" ;
+                    &sendmail( $subject, $opt_m ) if $opt_m ; 
+                    elog_die( "\n$subject" ) ;
+                }
+                sleep 300 ;
+                $nerror++ ;
+                next ;
+            }
             elog_notify( "	orbmsd2days	$old	$new	$max	$range	@laggards" ) if $opt_V ;
             ( $mlag, $thread, $pktid, $who, $what ) =  split ( ' ', $laggards[0], 5) ;
             elog_notify( "	orbmsd2days	$mlag" ) unless ( $n %= 10) ;
@@ -974,15 +990,12 @@ sub dbops { #  ( $problems, %sta ) = &dbops( $problems, %pf ) ;
             }
         }
 
-        
-
         makedir( $sync_dir ) if (! -d $sync_dir );
-        makedir( "sync" ) if (! -d "sync" );
 #
 #  verify rt db exists
 #
-        $rtsta = "$pf{rt_sta_dir}/$sta";
-        if ( ! -e $rtsta )  {
+        $rtsta = "$pf{rt_sta_dir}/$sta/$sta";
+        if ( ! -f $rtsta )  {
             $problems++ ;
             elog_complain("\nProblem $problems
                            \n	$rtsta does not exist!

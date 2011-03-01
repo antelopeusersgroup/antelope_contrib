@@ -61,7 +61,7 @@ static Arr *resp_arr=NULL;
  *	0 if OK or -1 if ERROR.
  */
 
-int rdb_sc_loadcss (Dbptr dbin, char *net_expr, char *sta_expr,
+int grdb_sc_loadcss (Dbptr dbin, char *net_expr, char *sta_expr,
         char *chan_expr, double tstart, double tend, 
         int coords, int ir, int orient, Dbptr *dbscgr, Dbptr *dbsc)
 {

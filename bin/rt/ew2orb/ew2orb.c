@@ -135,7 +135,7 @@ static struct {
 
 Arr	*Import_Threads;
 rwlock_t Import_Threads_rwlock;
-Mtfifo	*E2oPackets_mtf;
+Pmtfifo	*E2oPackets_mtf;
 int	Orbfd = -1;
 char	*Pfname = "ew2orb";
 
@@ -943,7 +943,7 @@ buf_intake( ImportThread *it )
 
 		e2opkt->it->npacketrefs++;
 
-		mtfifo_push( E2oPackets_mtf, (void *) e2opkt ); 
+		pmtfifo_push( E2oPackets_mtf, (void *) e2opkt ); 
 	}
 
 	return 0;
@@ -2587,7 +2587,7 @@ ew2orb_convert( void *arg )
 
 	thr_setprio( thr_self(), THR_PRIORITY_CONVERT );
 
-	while( mtfifo_pop( E2oPackets_mtf, (void **) &e2opkt ) != 0 ) {
+	while( pmtfifo_pop( E2oPackets_mtf, (void **) &e2opkt ) != 0 ) {
 
 		if( crack_packet( e2opkt ) < 0 ) {
 			
@@ -2738,7 +2738,7 @@ main( int argc, char **argv )
 
 	sigignore( SIGPIPE );
 
-	E2oPackets_mtf = mtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
+	E2oPackets_mtf = pmtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
 
 	rc = thr_create( NULL, 0, ew2orb_pfwatch, 0, 0, &pfwatch_tid );
 
