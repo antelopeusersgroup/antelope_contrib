@@ -564,6 +564,23 @@ dbschema2sqlcreate( Dbptr db, long flags )
 	return sql;
 }
 
+char *
+db2sql_get_syncfield_name( void )
+{
+	char	*name = NULL;
+
+	if( Db2sql_syncfield_name == (char *) NULL ) {
+
+		name = strdup( DB2SQL_SYNCFIELD_NAME_DEFAULT );
+
+	} else {
+
+		name = strdup( Db2sql_syncfield_name );
+	}
+
+	return name;
+}
+
 void 
 db2sql_set_syncfield_name( char *name )
 {

@@ -28,7 +28,9 @@ argument is neither required nor allowed.
 Specify a parameter file other than the default \fBdb2sql\fP.pf
 .IP -r
 Rebuild the database if it already exists. This command executes a \fIDROP DATABASE\fP command to the 
-SQL server for the named target database, so should be used with caution.
+SQL server for the named target database, so should be used with caution. If this option is not 
+specified and the SQL database already exists, \fBdb2sql\fP will attempt to synchronize with the 
+previously-created SQL database.
 .IP -v
 Be verbose
 .IP -V
@@ -169,6 +171,9 @@ db2sql: Done importing '/opt/antelope/data/db/demo/demo.site' into 'sample' at  
 .nf
 db2sql(3), perldb2sql(3P), DBI(3), DBD::mysql(3)
 .fi
+.SH "BUGS AND CAVEATS"
+When resynchronizing with a previous SQL Database, \fBdb2sql\fP assumes the schema has not changed incompatibly 
+from the one it originally loaded. 
 .SH AUTHOR
 .nf
 Kent Lindquist

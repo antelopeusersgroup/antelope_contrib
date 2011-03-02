@@ -1,4 +1,4 @@
 Conversion results:
-INSERT INTO `origin` VALUES(  40.0740,   69.1640,  155.1660,   704371900.66886,        1,       -1,  1992118,    7,    7,   -1,      715,       48, '-', '', -999.0000, 'f',    2.62,        1, -999.00,       -1, -999.00,       -1, 'locsat:kyrghyz', 'JSPC',       -1,   790466871.00000, '78817c738b787e6c9bd0e25924e8911dbddb4224');
+INSERT INTO `origin` VALUES(  40.0740,   69.1640,  155.1660,   704371900.66886,        1, NULL,  1992118,    7,    7, NULL,      715,       48, NULL, '', NULL, 'f',    2.62,        1, NULL, NULL, NULL, NULL, 'locsat:kyrghyz', 'JSPC', NULL,   790466871.00000, '78817c738b787e6c9bd0e25924e8911dbddb4224');
 
 DELETE from `origin` WHERE   `syncstring` = '78817c738b787e6c9bd0e25924e8911dbddb4224';

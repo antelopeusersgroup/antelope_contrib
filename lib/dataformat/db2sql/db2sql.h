@@ -24,6 +24,7 @@ Tbl *dbschema2sqlcreate( Dbptr db, long flags );
 long db2sqlinsert( Dbptr db, Tbl **tbl, char *(*createsync)(Dbptr db), long flags );
 int db2sqldelete( Dbptr db, char *sync, Tbl **tbl, long flags );
 char *db2sql_compute_row_sync( Dbptr db );
+char *db2sql_get_syncfield_name( void );
 void db2sql_set_syncfield_name( char *name );
 
 char *Db2sql_syncfield_name = DB2SQL_SYNCFIELD_NAME_DEFAULT;

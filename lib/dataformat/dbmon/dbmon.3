@@ -1,6 +1,6 @@
 .TH DBMON 3
 .SH NAME
-dbmon_init, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- monitor a Datascope database for changes
+dbmon_init, dbmon_resync, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- monitor a Datascope database for changes
 .SH SYNOPSIS
 .nf
 
@@ -9,7 +9,10 @@ dbmon_init, dbmon_update, dbmon_status, dbmon_close, dbmon_compute_row_sync \- m
 Hook *\fBdbmon_init\fP( Dbptr \fIdb\fP, Tbl *\fItable_subset\fP, 
                   void (*\fInewrow\fP)(Dbptr db, char *table, long irecord, char *sync, void *pvt), 
                   void (*\fIdelrow\fP)(Dbptr db, char *table, char *oldsync, void *pvt), 
+                  Tbl *(*\fIquerysyncs\fP)(Dbptr db, char *table, void *pvt),
                   int \fIflags\fP );
+
+int \fBdbmon_resync\fP( Hook *\fIdbmon_hook\fP, void *\fIpvt\fP );
 
 int \fBdbmon_update\fP( Hook *\fIdbmon_hook\fP, void *\fIpvt\fP );
 
@@ -28,13 +31,38 @@ tables are tracked.  If this argument is a list of string names for
 database tables (see strtbl(3)), tracking is limited to the named
 tables.  \fBdbmon_init\fP returns a hook(3) pointer which is used
 in subsequent calls to interact with the tracked monitoring status
-of the database. Two callbacks are registered when invoking
-\fBdbmon_init\fP: \fInewrow\fP and \fIdelrow\fP.
+of the database. Three callbacks are registered when invoking
+\fBdbmon_init\fP: \fInewrow\fP, \fIdelrow\fP, and \fIquerysyncs\fP.
+The pointer to the \fIquerysyncs\fP callback function is allowed to be 
+\fINULL\fP, effectively disabling the \fBdbmon_resync\fP function described
+below. 
 
-After calling \fBdbmon_init\fP, the calling program must call the
-\fBdbmon_update\fP function to begin monitoring of the database.
-Following that, the calling program must call the \fBdbmon_update\fP
-function repeatedly to trigger subsequent updates.
+After calling \fBdbmon_init\fP, the calling program may call the \fBdbmon_resync\fP
+function, if desired, to compare results from past monitoring with 
+the current database and respond to any changes.  After that, the calling 
+program must call the \fBdbmon_update\fP function at desired intervals to trigger 
+updates based on changes to the monitored database. (If the calling 
+program omits the call to \fBdbmon_resync\fP, the first call
+to \fBdbmon_update\fP assumes the calling application knows nothing about 
+the monitored database).
+
+If the \fBdbmon_resync\fP function is called, the \fIquerysyncs\fP callback 
+is invoked for each monitored table, asking the calling program for 
+a table of the synchronization strings the program already knows about 
+for that table (presumably from state saved by a previous execution of 
+the program). The \fIquerysyncs\fP function is given the database pointer 
+for the database (merely for informational purposes; in most cases said pointer
+would not be used), the name of the table for which the sync strings are 
+being requested, and the private pointer \fIpvt\fP which was passed 
+to \fBdbmon_resync\fP. The \fIquerysyncs\fP callback must return a 
+newly allocated \fITbl\fP (see tbl(3)) containing newly allocated copies of all known 
+synchronization strings for the table in question After using said 
+\fITbl\fP, \fBdbmon_resync\fP will free it with a call to 
+.nf
+
+freetbl( atbl, free );
+
+.fi
 
 For each Datascope database row newly detected by \fBdbmon_update\fP,
 a database pointer pointing to the scratch record,
@@ -137,7 +165,7 @@ main(int argc, char **argv )
 
 	dbopen_database( dbname, "r", &db );
 
-	dbmon_hook = dbmon_init( db, tables, newrow, delrow, 0 );
+	dbmon_hook = dbmon_init( db, tables, newrow, delrow, NULL, 0 );
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 
@@ -194,35 +222,40 @@ perldbmon(3p), db2sql(3)
 .SH "BUGS AND CAVEATS"
 The \fIflags\fP argument to \fBdbmon_init\fP is not yet used and should be set to 0. 
 
-If the database descriptor-file changes such that the underlying files referenced for each database 
-table change, the dbmon library will not adjust dynamically. 
+If the database descriptor-file changes such that there is a change
+to which underlying files are referenced for each database table,
+the dbmon library will not adjust dynamically.
 
-If rows are deleted from a database table being monitored, the dbmon library will recompute the signatures 
-for all rows in the table. In general, for databases being modified and read by multiple processes (e.g. 
-real-time databases), rows for deletion should be marked with dbmark(3) and left 
-in place. 
-
-Currently, state-file based post-cleanup reconnection (synchronization of an existing Datascope database
-with a previously created SQL mirror of that database) is not supported. 
-
-The dbmon library does not yet support a state file, though perhaps should. 
+For databases being modified and read by multiple processes (e.g.
+real-time databases), rows for deletion should be marked with
+dbmark(3) and left in place. The \fBdbmon_update\fP function does
+assume the \fBorb2db_msg\fP program is on the execution path, running
+that command with the \fIwait\fP option on the database before
+proceeding with each table.  This allows other real-time processes
+to execute cleanup operations provided they invoke \fBorb2db_msg(1)\fP
+before doing so.
 
 The dbmon library does not yet monitor external files, though perhaps should. 
 
-In addition to the database pointer for a given row, the corresponding table name is passed to the callback functions,
-even though the table name could also be derived from a dbquery(3) call on the database pointer. This is 
-done as a convenience to the programmer implementing the callbacks. 
+In addition to the database pointer for a given row, the corresponding
+table name is passed to the callback functions, even though the
+table name could also be derived from a dbquery(3) call on the
+database pointer. This is done as a convenience to the programmer
+implementing the callbacks.
 
-The \fInewrow\fP callback is given scratch records with copies of the new rows, rather than
-being given the new rows themselves, in order to keep the transactions atomic: i.e. to make sure the operation 
-performed on the database row in the callback is done on exactly the same row for which the sync string was computed
-internal to the dbmon library. This is necessary for databases that may be changing more rapidly than the refresh rate
-of the dbmon library. An alternative solution would be to force all other database-write operations to suspend during 
-a dbmon refresh operation, however that demands a more stringent trade-off between real-time process latency and 
-dbmon latency, which seems less desirable if it can be avoided. 
+The \fInewrow\fP callback is given scratch records with copies of
+the new rows, rather than being given the new rows themselves, in
+order to keep the transactions atomic: i.e. to make sure the operation
+performed on the database row in the callback is done on exactly
+the same row for which the sync string was computed internal to the
+dbmon library. This is necessary for databases that may be changing
+more rapidly than the refresh rate of the dbmon library. An alternative
+solution would be to force all other database-write operations to
+suspend during a dbmon refresh operation, however that demands a
+more stringent trade-off between real-time process latency and dbmon
+latency, which seems less desirable.
 
-The \fBdbmon_update\fP function assumes \fBorb2db_msg\fP is on the execution path and runs that command with the 
-\fIwait\fP option on the tracked database before proceeding. 
+
 .SH AUTHOR
 .nf
 Dr. Kent Lindquist 

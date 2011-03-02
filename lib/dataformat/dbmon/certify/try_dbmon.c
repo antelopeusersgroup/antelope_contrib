@@ -4,14 +4,15 @@
 #include "dbmon.h"
 #include "db2sql.h"
 
-void newrow( Dbptr db, char *table, long irecord, char *sync, void *private );
-void delrow( Dbptr db, char *table, char *sync, void *private );
+void newrow( Dbptr db, char *table, long irecord, char *sync, void *pvt );
+void delrow( Dbptr db, char *table, char *sync, void *pvt );
+Tbl *querysyncs( Dbptr db, char *table, void *pvt );
 
 void
-newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
+newrow( Dbptr db, char *table, long irecord, char *sync, void *pvt )
 { 
 	char	row[10*STRSZ];
-	FILE	*fp = (FILE *) private;
+	FILE	*fp = (FILE *) pvt;
 
 	dbget( db, row );
 	
@@ -21,13 +22,37 @@ newrow( Dbptr db, char *table, long irecord, char *sync, void *private )
 }
 
 void
-delrow( Dbptr db, char *table, char *sync, void *private )
+delrow( Dbptr db, char *table, char *sync, void *pvt )
 { 
-	FILE	*fp = (FILE *) private;
+	FILE	*fp = (FILE *) pvt;
 
 	fprintf( fp, "Deleted row from '%s' with sync '%s'\n", table, sync );
 
 	return;
+}
+
+Tbl *
+querysyncs( Dbptr db, char *table, void *pvt )
+{
+	Tbl	*syncs = NULL;
+	char	*sync = NULL;
+	long	nrecs = 0L;
+
+	syncs = newtbl( 0 );
+
+	/* Pretend to already know about first record in each table, 
+	   if the table exists */
+
+	if( dbquery( db, dbRECORD_COUNT, &nrecs ) > 0 ) {
+
+		db.record = 0;
+	
+		sync = dbmon_compute_row_sync( db );
+
+		pushtbl( syncs, (void *) sync );
+	} 
+
+	return syncs;
 }
 
 int
@@ -50,7 +75,11 @@ main(int argc, char **argv )
 
 	dbopen_database( dbname, "r", &db );
 
-	dbmon_hook = dbmon_init( db, tables, newrow, delrow, 0 );
+	dbmon_hook = dbmon_init( db, tables, newrow, delrow, querysyncs, 0 );
+
+	fprintf( stdout, "Resyncronizing with alleged previous results:\n" );
+
+	dbmon_resync( dbmon_hook, (void *) stdout );
 
 	dbmon_update( dbmon_hook, (void *) stdout );
 

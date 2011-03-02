@@ -3,3 +3,7 @@ sqlinsert   1270692889.00000 raptor     kent       Darwin/4.1 change printout li
 sqldelete   1270698012.00000 raptor     kent       Darwin/4.1 change print statement                                         1270698012
 syncfield   1270698342.00000 raptor     kent       Darwin/4.1 change print statement                                         1270698343
 sqlcreate   1274590173.00000 raptor     kent       Darwin/5.0 Added css3.0 gcl* schema tables                                1274590173
+sqlcreate   1296681587.00000 raptor     kent       Darwin/5.0 Change null behavior                                           1296681588
+sqlinsert   1296681592.00000 raptor     kent       Darwin/5.0 Change null behavior                                           1296681592
+sqldelete   1296681595.00000 raptor     kent       Darwin/5.0 Change null behavior                                           1296681596
+syncfield   1296681798.00000 raptor     kent       Darwin/5.0 Add db2sql_get_syncfield_name                                  1296681798

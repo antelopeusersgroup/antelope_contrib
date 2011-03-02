@@ -21,6 +21,7 @@ our @ISA = qw(Exporter DynaLoader);
 
 our @EXPORT = qw(
 	dbmon_init
+	dbmon_resync
 	dbmon_update
 	dbmon_close
 	dbmon_status
