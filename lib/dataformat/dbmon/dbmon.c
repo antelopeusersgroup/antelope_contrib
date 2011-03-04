@@ -55,6 +55,7 @@ typedef struct Dbtrack {
 	Arr	*tables;
 	void 	(*newrow)(Dbptr, char *, long, char *, void *);
 	void 	(*delrow)(Dbptr, char *, char *, void *);
+	Tbl	*(*querysyncs)(Dbptr, char *, void *);
 } Dbtrack;
 
 typedef struct Tabletrack {
@@ -84,7 +85,9 @@ typedef struct SynctrackCtxt {
 
 static Dbtrack *new_dbtrack( Dbptr db );
 static Tabletrack *new_tabletrack( char *table_name );
-static Synctrack *new_synctrack( Dbptr db, long irecord );
+static Synctrack *new_synctrack( void );
+static Synctrack *new_synctrack_fromdb( Dbptr db, long irecord );
+static Synctrack *new_synctrack_fromsync( char *sync );
 static SynctrackCtxt *new_synctrack_context( Dbtrack *dbtr, Tabletrack *ttr, void *pvt );
 static int sort_byirecord( char **ap, char **bp, void *pvt );
 static int applystbl_sorted( Stbl *stbl, int (*function)(void *, void *), void *pvt );
@@ -94,6 +97,7 @@ static int synctrack_conditional_add( void *strp, void *strcxtp );
 static int synctrack_conditional_delete( void *strp, void *strcxtp );
 static int synctrack_certain_delete( void *strp, void *strcxtp );
 static int synctrack_print( void *strp, void *fpp );
+static int synctrack_insert( void *syncp, void *syncsp );
 static int compute_digest( unsigned char *buf, unsigned int len, unsigned char *digest );
 static char *digest2hex( unsigned char *digest );
 static void free_tabletrack( void *ttrp );
@@ -205,18 +209,44 @@ new_tabletrack( char *table_name )
 }
 
 static Synctrack *
-new_synctrack( Dbptr db, long irecord )
+new_synctrack( void )
 {
 	Synctrack *str = NULL;
 
 	allot( Synctrack *, str, 1 );
 
+	str->sync = NULL;
+
+	str->irecord = dbINVALID;
+
+	str->keep = 0;
+	str->add = 0;
+
+	return str;
+}
+
+static Synctrack *
+new_synctrack_fromdb( Dbptr db, long irecord )
+{
+	Synctrack *str = NULL;
+
+	str = new_synctrack();
+
 	str->sync = dbmon_compute_row_sync( db );
 
 	str->irecord = irecord;
 
-	str->keep = 0;
-	str->add = 0;
+	return str;
+}
+
+static Synctrack *
+new_synctrack_fromsync( char *sync )
+{
+	Synctrack *str = NULL;
+
+	str = new_synctrack();
+
+	str->sync = strdup( sync );
 
 	return str;
 }
@@ -396,11 +426,25 @@ synctrack_conditional_add( void *strp, void *strcxtp )
 }
 
 static int
+synctrack_insert( void *syncp, void *syncsp )
+{
+	char	*sync = (char *) syncp;
+	Stbl	*syncs = (Stbl *) syncsp;
+	Synctrack *str = NULL;
+
+	str = new_synctrack_fromsync( sync );
+
+	addstbl( syncs, (void *) str );
+
+	return 0;
+}
+
+static int
 sort_byirecord( char **ap, char **bp, void *pvt )
 {
 	Synctrack *a = (Synctrack *) *ap;
 	Synctrack *b = (Synctrack *) *bp;
-	int	rc;
+	int	rc = 0;
 
 	if( a->irecord < b->irecord ) {
 
@@ -421,7 +465,7 @@ sort_byirecord( char **ap, char **bp, void *pvt )
 static int 
 applystbl_sorted( Stbl *stbl, int (*afunction)(void *, void *), void *pvt )
 {
-	Tbl	*tbl;
+	Tbl	*tbl = NULL;
 	int	rc = 0;
 
 	tbl = tblstbl( stbl );
@@ -493,7 +537,7 @@ dbmon_build_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		dbget( db, NULL );
 
-		newstr = new_synctrack( dbscratch, irecord );
+		newstr = new_synctrack_fromdb( dbscratch, irecord );
 
 		if( ! strcmp( newstr->sync, ttr->null_sync ) ) {
 
@@ -546,7 +590,7 @@ dbmon_update_table( Dbtrack *dbtr, Tabletrack *ttr, void *pvt )
 
 		dbget( db, NULL );
 
-		newstr = new_synctrack( dbscratch, irecord );
+		newstr = new_synctrack_fromdb( dbscratch, irecord );
 
 		if( ! strcmp( newstr->sync, ttr->null_sync ) ) {
 
@@ -629,6 +673,7 @@ Hook *
 dbmon_init( Dbptr db, Tbl *table_subset, 
 	    void (*newrow)(Dbptr, char *, long, char *, void *), 
 	    void (*delrow)(Dbptr, char *, char *, void *), 
+	    Tbl *(*querysyncs)(Dbptr, char *, void *),
 	    int flags )
 {
 	Hook	*dbmon_hook = NULL;
@@ -642,6 +687,7 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 
 	dbtr->newrow = newrow;
 	dbtr->delrow = delrow;
+	dbtr->querysyncs = querysyncs;
 
 	dbmon_hook->p = (void *) dbtr;
 
@@ -649,20 +695,92 @@ dbmon_init( Dbptr db, Tbl *table_subset,
 }
 
 int 
+dbmon_resync( Hook *dbmon_hook, void *pvt )
+{
+	Dbtrack *dbtr = (Dbtrack *) dbmon_hook->p;
+	Tabletrack *ttr = NULL;
+	Tbl	*keys = NULL;
+	Tbl	*known_syncs = NULL;
+	Dbvalue	val;
+	char	*table = NULL;
+	long	ikey = 0L;
+	int	retcode = 0;
+
+	if( dbtr->querysyncs == NULL ) {
+
+		elog_log( 0, "dbmon_resync: querysyncs callback set to NULL; "
+			     "ignoring resynchronization request\n" );
+			
+		return 0;
+	}
+
+	keys = keysarr( dbtr->tables );
+
+	for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
+
+		table = gettbl( keys, ikey );
+
+		ttr = (Tabletrack *) getarr( dbtr->tables, table );
+
+		if( ! ttr->watch_table ) {
+
+			continue;
+		}
+
+		known_syncs = dbtr->querysyncs( ttr->db, ttr->table_name, pvt );
+
+		if( known_syncs == (Tbl *) NULL ) {
+
+			elog_log( 0, "dbmon_resync: querysyncs failed to return known sync "
+				     "values for table '%s'\n",
+				     ttr->table_name );
+			
+			continue;
+
+		} else if( maxtbl( known_syncs ) <= 0 ) {
+
+			freetbl( known_syncs, free );
+
+			continue;
+		}
+
+		/* ASSUME for now that dbmon_resync is called immediately after dbmon_init 
+		   and that there won't be any existing previous history */
+
+		dbquery( ttr->db, dbTABLE_FILENAME, &val );
+
+		strcpy( ttr->table_filename, val.t );
+
+
+		applytbl( known_syncs, synctrack_insert, (void *) ttr->syncs );
+
+		ttr->table_nrecs = maxstbl( ttr->syncs );
+
+		ttr->table_exists = 1;
+
+		freetbl( known_syncs, free );
+	}
+
+	freetbl( keys, 0 );
+
+	retcode += dbmon_update( dbmon_hook, pvt );
+
+	return retcode;
+}
+
+int 
 dbmon_update( Hook *dbmon_hook, void *pvt )
 {
 	Dbtrack *dbtr = (Dbtrack *) dbmon_hook->p;
-	Tabletrack *ttr;
-	Tbl	*keys;
+	Tabletrack *ttr = NULL;
+	Tbl	*keys = NULL;
 	Dbvalue val;
 	int	retcode = 0;
-	long	ikey;
+	long	ikey = 0L;
 	long	new_nrecs = 0L;
-	char	cmd[FILENAME_MAX+STRSZ];
+	char	waitcmd[FILENAME_MAX+STRSZ];
 
-	sprintf( cmd, "orb2db_msg %s wait", dbtr->dbname );
-
-	system( cmd );
+	sprintf( waitcmd, "orb2db_msg %s wait", dbtr->dbname );
 
 	keys = keysarr( dbtr->tables );
 
@@ -674,6 +792,8 @@ dbmon_update( Hook *dbmon_hook, void *pvt )
 
 			continue;
 		}
+
+		system( waitcmd );
 
 		dbflush_indexes( ttr->db );
 

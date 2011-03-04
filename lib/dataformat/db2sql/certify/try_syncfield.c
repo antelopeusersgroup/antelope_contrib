@@ -8,10 +8,11 @@ char *private_compute_row_sync( Dbptr db );
 int
 main( int argc, char **argv )
 {
-	char	*dbname;
+	char	*dbname = NULL;
 	Dbptr	db;
 	Tbl	*sqlcommands = (Tbl *) NULL;
-	char	*sync;
+	char	*sync = NULL;
+	char	*checkname = NULL;
 	int	flags = DB2SQL_USE_DATASCOPE_NULLS;
 	
 	Program_Name = argv[0];
@@ -25,7 +26,19 @@ main( int argc, char **argv )
 		dbname = argv[1];
 	}
 
+	checkname = db2sql_get_syncfield_name();
+
+	fprintf( stdout, "Check of sync-field name before modification: %s\n", checkname );
+
+	free( checkname );
+
 	db2sql_set_syncfield_name( "mytestsyncfield" );
+
+	checkname = db2sql_get_syncfield_name();
+
+	fprintf( stdout, "Check of sync-field name after modification: %s\n", checkname );
+
+	free( checkname );
 
 	dbopen( dbname, "r", &db );
 

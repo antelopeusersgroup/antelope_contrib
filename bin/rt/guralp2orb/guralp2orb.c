@@ -139,8 +139,8 @@ static struct {
 
 Arr *ul_arr; 
 Arr *ui_arr; 
-Mtfifo *Packets_mtf;
-Mtfifo *Recover_mtf;
+Pmtfifo *Packets_mtf;
+Pmtfifo *Recover_mtf;
 
 int maxpacketqueue = -1;
 mutex_t mpq_mutex;
@@ -254,7 +254,7 @@ retry_recovery( Recoverreq *rr )
 			rr->udpsource);
 	}
 
-	mtfifo_push( Recover_mtf, (void *) rr );
+	pmtfifo_push( Recover_mtf, (void *) rr );
 }
 
 static void 
@@ -310,7 +310,7 @@ register_packet( G2orbpkt *gpkt )
 			if((number_to_recover>0) 
 				&& (number_to_recover<Max_Packets_to_Recover)
 				&& (nrecovery_threads > 0 ) ) {
-				mtfifo_push( Recover_mtf, (void *) rr );
+				pmtfifo_push( Recover_mtf, (void *) rr );
 			} else {
 				if(number_to_recover>0)
 					elog_notify(0,"Absurd recovery request for ip %s dropped\nRequested recovery of %d packets\n",
@@ -335,7 +335,7 @@ register_packet( G2orbpkt *gpkt )
 }
 
 static int
-mtfifo_getqueue( Mtfifo *mtf )
+pmtfifo_getqueue( Pmtfifo *mtf )
 {
 	int	queue = 0;
 
@@ -354,7 +354,7 @@ report_queuemax( void )
 	FILE	*fp;
 	int	queue;
 
-	queue = mtfifo_getqueue( Packets_mtf );
+	queue = pmtfifo_getqueue( Packets_mtf );
 
 	mutex_lock( &mpq_mutex );
 
@@ -1307,12 +1307,12 @@ recover_packetsequence( Recoverreq *rr )
 /*fprintf(stderr,"guralp2orb(DEBUG):  recovery ok, entering possible wait loop\n");*/
 			mutex_lock( &prthrottle_mutex );
 
-			while( mtfifo_getqueue( Packets_mtf ) > PRTHROTTLE_TRIGGER )
+			while( pmtfifo_getqueue( Packets_mtf ) > PRTHROTTLE_TRIGGER )
 				cond_wait( &prthrottle, &prthrottle_mutex );
 			mutex_unlock( &prthrottle_mutex );
 /*fprintf(stderr,"guralp2orb(DEBUG):  Ok, got past wait loop\n");*/
 
-			mtfifo_push( Packets_mtf, (void *) gpkt );
+			pmtfifo_push( Packets_mtf, (void *) gpkt );
 /*fprintf(stderr,"guralp2org(DEBUG):  Successful recovery from %s\n",rr->udpip);*/
 
 			recovery_succeeded( rr->udpsource );
@@ -1334,7 +1334,7 @@ guralp2orb_packetrecover( void *arg )
 {
 	Recoverreq *rr;
 
-	while( mtfifo_pop( Recover_mtf, (void **) &rr ) != 0 ) { 
+	while( pmtfifo_pop( Recover_mtf, (void **) &rr ) != 0 ) { 
 
 		recover_packetsequence( rr );
 	}
@@ -1354,7 +1354,7 @@ guralp2orb_packettrans( void *arg )
 	FILE	*fp;
 	char	cmd[STRSZ];
 
-	while( mtfifo_pop( Packets_mtf, (void **) &gpkt ) != 0 ) { 
+	while( pmtfifo_pop( Packets_mtf, (void **) &gpkt ) != 0 ) { 
 
 		split_srcname( gpkt->srcname, &parts );
 
@@ -1439,7 +1439,7 @@ guralp2orb_packettrans( void *arg )
 		free( gpkt );
 
 		mutex_lock( &prthrottle_mutex );
-		if( mtfifo_getqueue( Packets_mtf ) <= PRTHROTTLE_RELEASE ) {
+		if( pmtfifo_getqueue( Packets_mtf ) <= PRTHROTTLE_RELEASE ) {
 			cond_signal( &prthrottle );
 		}
 		mutex_unlock( &prthrottle_mutex );
@@ -1636,7 +1636,7 @@ guralp2orb_udplisten( void *arg )
 
 		report_queuemax();
 
-		mtfifo_push( Packets_mtf, (void *) gpkt );
+		pmtfifo_push( Packets_mtf, (void *) gpkt );
 	}
 
 	return( NULL );
@@ -2351,8 +2351,8 @@ main( int argc, char **argv )
 	Recovery_failures = newarr( 0 );
 	mutex_init( &rf_mutex, USYNC_THREAD, NULL );
 
-	Packets_mtf = mtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
-	Recover_mtf = mtfifo_create( RECOVERY_QUEUE_SIZE, 1, 0 );
+	Packets_mtf = pmtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
+	Recover_mtf = pmtfifo_create( RECOVERY_QUEUE_SIZE, 1, 0 );
 
 	ignoreSIGPIPE();
 

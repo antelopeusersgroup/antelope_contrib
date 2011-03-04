@@ -6,7 +6,11 @@ use Datascope::dbmon;
 $dbname = "/opt/antelope/data/db/demo/demo";
 $flags = 0;
 	
+print STDOUT sprintf( "Check of sync-field name before modification: %s\n", db2sql_get_syncfield_name() );
+
 db2sql_set_syncfield_name( "mytestsyncfield" );
+
+print STDOUT sprintf( "Check of sync-field name after modification: %s\n", db2sql_get_syncfield_name() );
 
 @db = dbopen( $dbname, "r" );
 

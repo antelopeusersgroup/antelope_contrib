@@ -1,3 +1,9 @@
 dbmon/dbmon*
 dbmon/demo*
 dbmon/statusfile
+dbmon_sub/dbmon*
+dbmon_sub/demo*
+dbmon_sub/statusfile
+dbmon_sync/dbmon*
+dbmon_sync/demo*
+dbmon_sync/statusfile

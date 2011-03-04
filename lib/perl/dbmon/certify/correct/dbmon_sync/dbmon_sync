@@ -1,0 +1,65 @@
+Resynchronizing table 'affiliation'
+Resynchronizing table 'arrival'
+New Row 1 in 'affiliation' [sync '7090b10a98fa541bddc9bdf6528ff4c1138eb62a']: KNET     EKS2   06/27/94         
+
+New Row 2 in 'affiliation' [sync 'a0a3eac8fbb33e487991583d77d68c54fa33d41d']: KNET     USP    06/27/94         
+
+New Row 3 in 'affiliation' [sync '9a02bbdf02bf1bb13e251edfc834ff1a0db0fc57']: KNET     TKM    06/27/94         
+
+New Row 4 in 'affiliation' [sync 'f55cdcb18ca10afa7953a98d49e5d734cce8ab24']: KNET     KBK    06/27/94         
+
+New Row 5 in 'affiliation' [sync '7574e22f978cfc7466efba31efa9576e8b32604f']: KNET     AAK    06/27/94         
+
+New Row 6 in 'affiliation' [sync 'ffd60b1ea86d04a967daec42e94a99b86faa2cf4']: KNET     HIA      830313069.00000
+
+New Row 7 in 'affiliation' [sync '52c987a1807283565cc36108b5655d068e449845']: KNET     KIV      830313079.00000
+
+New Row 8 in 'affiliation' [sync '3c3f5c4b7d32006de296eaadf9eced6b738d8fc0']: KNET     KMI      830313090.00000
+
+New Row 9 in 'affiliation' [sync '894696421f32ab789f4bfc03aeadda6ffb8abfac']: KNET     LSA      830313100.00000
+
+New Row 10 in 'affiliation' [sync '9138a3351240ca9728103a8483e66c8c3e329076']: KNET     LZH      830313109.00000
+
+New Row 11 in 'affiliation' [sync '80384d76c1f6185291632654da1c8f98a4e719e4']: KNET     OBN      830313119.00000
+
+New Row 12 in 'affiliation' [sync 'c3cf6419340ec39e47ca8789ad96869c92c9ba12']: KNET     WUS      830313128.00000
+
+Adding new arrival table:
+New Row 0 in 'arrival' [sync '8a31aff746d21ec917e72cfbb14c3361526be0f6']: KMI      706139638.90564     4849  1992138       -1     1083 BHN      S        -  2.275   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 1 in 'arrival' [sync '0d61a9b8c25268acd002fc42f305f420a88733bb']: AAK      706139746.35000     4850  1992138       -1       28 BHZ      P        -  0.098   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.7    0.40 -999.00 - ..       6.40 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 2 in 'arrival' [sync '78614c3070304bc7422ef6c43052a33e9874eb28']: KBK      706139751.35000     4851  1992138       -1       25 BHZ      P        -  0.101   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.4    0.40 -999.00 - ..       3.22 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 3 in 'arrival' [sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1']: CHM      706139752.34740     4852  1992138       -1        1 BHZ      P        -  0.401   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        3.3    0.50 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 4 in 'arrival' [sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b']: USP      706139752.40005     4853  1992138       -1        7 BHZ      P        -  0.151   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.6    0.50 -999.00 - ..       3.89 - dbp:rogerh:9333       -1   790465413.00000
+
+Shortening arrival table:
+Deleted row from 'arrival' with sync '0d61a9b8c25268acd002fc42f305f420a88733bb'
+Deleted row from 'arrival' with sync '78614c3070304bc7422ef6c43052a33e9874eb28'
+Deleted row from 'arrival' with sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1'
+Deleted row from 'arrival' with sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b'
+Lengthening arrival table:
+New Row 1 in 'arrival' [sync '0d61a9b8c25268acd002fc42f305f420a88733bb']: AAK      706139746.35000     4850  1992138       -1       28 BHZ      P        -  0.098   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.7    0.40 -999.00 - ..       6.40 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 2 in 'arrival' [sync '78614c3070304bc7422ef6c43052a33e9874eb28']: KBK      706139751.35000     4851  1992138       -1       25 BHZ      P        -  0.101   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.4    0.40 -999.00 - ..       3.22 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 3 in 'arrival' [sync 'd19ef347f1c5c11aa2eb817f03e72d154ba1abb1']: CHM      706139752.34740     4852  1992138       -1        1 BHZ      P        -  0.401   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        3.3    0.50 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 4 in 'arrival' [sync 'b8c8cf5affadae025a5f0708091d1117bd8c5c7b']: USP      706139752.40005     4853  1992138       -1        7 BHZ      P        -  0.151   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000        2.6    0.50 -999.00 - ..       3.89 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 5 in 'arrival' [sync 'fbdc86034c2b5f7c55bc263539bcbf47e43e8900']: TKM      706139755.45010     4854  1992138       -1       22 BHZ      P        -  0.316   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..       2.99 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 6 in 'arrival' [sync '6b3e2d7d1de31ff896879595e631757bbfb46a96']: AAK      706139775.33963     4855  1992138       -1       29 BHN      S        -  2.164   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 7 in 'arrival' [sync 'b958608cc4b39c0916739d05a93f0250f7c8c3ba']: KBK      706139784.43397     4856  1992138       -1       26 BHN      S        -  2.065   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 8 in 'arrival' [sync '544dbce313a6487571b45cfc804ce39e5cdc69b9']: CHM      706139787.28949     4857  1992138       -1        2 BHN      S        -  1.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 9 in 'arrival' [sync '11109ce7dbbae45f44983d83720b0e4c0ae76be7']: USP      706139788.12868     4858  1992138       -1        9 BHE      S        -  2.779   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - ..      -1.00 - dbp:rogerh:9333       -1   790465413.00000
+
+New Row 10 in 'arrival' [sync '67766940da86bc7b5bf516d8d5757e26e2c5b7cb']: AAK      706139712.37677     4859  1992138       -1       -1 BHZ      del      -  2.222   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000    47276.3    0.10 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223377.00000
+
+New Row 11 in 'arrival' [sync '32b7c6233ba1ec0952d4a3f96ae0235327c78912']: EKS2     706139709.96670     4860  1992138       -1       -1 BHZ      del      - -1.000   -1.00   -1.00   -1.00   -1.00   -1.00  -1.000       -1.0   -1.00 -999.00 - c.      -1.00 - dbp:danq:95073        -1   795223373.00000
+

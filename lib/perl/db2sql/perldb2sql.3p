@@ -12,6 +12,8 @@ use Datascope::db2sql;
 
 @sql = \fBdb2sqldelete\fP( @db, $sync [, $flags] );
 
+$name = \fBdb2sql_get_syncfield_name\fP();
+
 \fBdb2sql_set_syncfield_name\fP( $name );
 
 .fi
@@ -36,6 +38,9 @@ unless otherwise configured via \fBdb2sql_set_syncfield_name\fP.
 The \fBdb2sqldelete\fP function creates a SQL \fIDELETE\fP command for the 
 database row in the table specified by the input database pointer
 and described by the specified \fI$sync\fP string. 
+
+The \fBdb2sql_get_syncfield_name\fP function returns the name 
+of the SQL syncronization field, currently defaulting to the value \fIsyncstring\fP.
 
 The \fBdb2sql_set_syncfield_name\fP function changes the name of the SQL 
 synchronization field (see db2sql(3)) from the default value, in the 
@@ -117,6 +122,8 @@ INSERT INTO `origin` VALUES(  36.9340,   71.0010,    0.0000,   704397756.21221, 
 .SH RETURN VALUES
 \fBdbschema2sqlcreate\fP, \fBdb2sqlinsert\fP, and \fBdb2sqldelete\fP all return Perl lists of SQL string commands
 to be delivered to a SQL interpreter. 
+
+\fBdb2sql_get_syncfield_name\fP returns the current value of the SQL synchronization string name. 
 .SH "SEE ALSO"
 .nf
 db2sql(3), db2sql(1), perldb(3P), perldbmon(3P)
