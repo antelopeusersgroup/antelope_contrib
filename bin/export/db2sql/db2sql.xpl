@@ -56,6 +56,10 @@ our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
 our( $Datascope_dbname, $Sql_dbname, $Syncstring );
 our( $refresh_interval_sec, $schema_create_errors_nonfatal, $enable_mysql_auto_reconnect, @table_subset );
 our( $dbh, $hookname );
+our( $dsn, $user );
+
+our( $Pf ) = "db2sql";
+
 
 sub inform {
 	my( $msg ) = @_;
@@ -170,6 +174,55 @@ sub init_sql_database {
 	return;
 }
 
+sub verify_sql_handle {
+	my( $dbh, $sqldbname ) = @_;
+
+	if( $dbh->ping() ) {
+
+		if( $dbh->selectrow_array( "SELECT DATABASE()" ) ne $sqldbname ) {
+
+			inform( "Lost SQL database selection, re-selecting SQL database '$sqldbname'\n" );
+
+			my( $cmd ) = "USE $sqldbname;";
+
+			Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+			unless( $dbh->do( $cmd ) ) {
+
+				elog_die( "Failed to re-establish selection of database '$sqldbname'. Bye.\n" );
+			}
+		}
+
+	} else {
+
+		inform( "Lost SQL server connection, re-establishing\n" );
+
+		$dbh->disconnect();
+
+		my( $pw ) = pfget( $Pf, "password" );
+
+		unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
+
+			elog_die( "Failed to re-connect to '$dsn' as user '$user'. Bye.\n" );
+		}
+
+		undef( $pw );
+
+		inform( "Re-selecting SQL database '$sqldbname'\n" );
+
+		my( $cmd ) = "USE $sqldbname;";
+
+		Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+		unless( $dbh->do( $cmd ) ) {
+
+			elog_die( "Failed to re-select SQL database '$sqldbname'. Bye.\n" );
+		}
+	}
+
+	return $dbh;
+}
+
 sub sql_create_commands {
 	my( @db ) = splice( @_, 0, 4 );
 	my( @table_subset ) = @_;
@@ -277,8 +330,6 @@ my( $path, $Program_name ) = parsepath( $0 );
 
 elog_init( $Program_name, @ARGV );
 
-our( $Pf ) = "db2sql";
-
 our( $Rebuild ) = 0;
 
 our( $Usage ) = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
@@ -357,8 +408,8 @@ $refresh_interval_sec = pfget( $Pf, "refresh_interval_sec" );
 $schema_create_errors_nonfatal = pfget_boolean( $Pf, "schema_create_errors_nonfatal" );
 $enable_mysql_auto_reconnect = pfget_boolean( $Pf, "enable_mysql_auto_reconnect" );
 
-my( $dsn ) = pfget( $Pf, "dsn" );
-my( $user ) = pfget( $Pf, "user" );
+$dsn = pfget( $Pf, "dsn" );
+$user = pfget( $Pf, "user" );
 
 my( $pw ) = pfget( $Pf, "password" );
 
@@ -389,6 +440,8 @@ inform( "Imported first snapshot of '$Datascope_dbname' into '$Sql_dbname' at " 
 while( ! $opt_1 ) {
 
 	sleep( $refresh_interval_sec );
+
+	$dbh = verify_sql_handle( $dbh, $Sql_dbname );
 
 	dbmon_update( $hookname, $dbh );
 
