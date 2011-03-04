@@ -104,7 +104,7 @@ sub init_sql_database {
 
 		if( $rebuild ) {
 
-			inform( "Database '$sqldbname' already exists. Dropping '$sqldbname'\n" );
+			inform( "SQL database '$sqldbname' already exists. Dropping '$sqldbname'\n" );
 
 			my( $cmd ) = "DROP DATABASE $sqldbname;";
 
@@ -112,7 +112,7 @@ sub init_sql_database {
 
 			unless( $dbh->do( $cmd ) ) {
 
-				elog_die( "Failed to drop pre-existing database '$sqldbname'. Bye.\n" );
+				elog_die( "Failed to drop pre-existing SQL database '$sqldbname'. Bye.\n" );
 			}
 
 			# Fall through to re-create database
@@ -125,7 +125,7 @@ sub init_sql_database {
 
 			unless( $dbh->do( $cmd ) ) {
 
-				elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
+				elog_die( "Failed to switch to SQL database '$sqldbname'. Bye.\n" );
 			}
 
 			inform( "Resynchronizing SQL database '$sqldbname' with Datascope database '$Datascope_dbname'\n" );
@@ -142,7 +142,7 @@ sub init_sql_database {
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_die( "Failed to create database '$sqldbname'. Bye.\n" );
+		elog_die( "Failed to create SQL database '$sqldbname'. Bye.\n" );
 	}
 
 	$cmd = "USE $sqldbname;";
@@ -151,7 +151,7 @@ sub init_sql_database {
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
+		elog_die( "Failed to switch to SQL database '$sqldbname'. Bye.\n" );
 	}
 
 	foreach $cmd ( sql_create_commands( @db, @table_subset ) ) {
@@ -162,11 +162,11 @@ sub init_sql_database {
 
 			if( $schema_create_errors_nonfatal ) {
 
-				elog_complain( "Table creation failed for '$sqldbname' using command\n\n$cmd\n\nContinuing.\n\n" );
+				elog_complain( "Table creation failed for SQL '$sqldbname' using command\n\n$cmd\n\nContinuing.\n\n" );
 
 			} else {
 
-				elog_die( "Table creation failed for '$sqldbname' using command\n\n$cmd\n\nBye.\n\n" );
+				elog_die( "Table creation failed for SQL '$sqldbname' using command\n\n$cmd\n\nBye.\n\n" );
 			}
 		}
 	}
@@ -189,7 +189,7 @@ sub verify_sql_handle {
 
 			unless( $dbh->do( $cmd ) ) {
 
-				elog_die( "Failed to re-establish selection of database '$sqldbname'. Bye.\n" );
+				elog_die( "Failed to re-establish selection of SQL database '$sqldbname'. Bye.\n" );
 			}
 		}
 
@@ -203,7 +203,7 @@ sub verify_sql_handle {
 
 		unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
 
-			elog_die( "Failed to re-connect to '$dsn' as user '$user'. Bye.\n" );
+			elog_die( "Failed to re-connect to SQL '$dsn' as user '$user'. Bye.\n" );
 		}
 
 		undef( $pw );
@@ -279,8 +279,8 @@ sub newrow {
 
 	unless( $dbh->do( $cmd ) ) {
 		
-		elog_complain( "Failed to create new database row in table '$table'\n" .
-			       "record $irecord, sync '$sync'\n" .
+		elog_complain( "Failed to create new SQL database row in table '$table'\n" .
+			       "(Datascope record $irecord, sync '$sync')\n" .
 			       "while executing command '$cmd'\n" );
 	}
 
@@ -297,7 +297,7 @@ sub delrow {
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_complain( "Failed to delete database row in table '$table', sync '$sync'\n" .
+		elog_complain( "Failed to delete SQL database row in table '$table', sync '$sync'\n" .
 			       "while executing command '$cmd'\n" );
 	}
 
@@ -377,7 +377,7 @@ our( @db ) = dbopen_database( $Datascope_dbname, "r" );
 
 if( $db[0] < 0 ) {
 
-	elog_die( "Failed to open database '$Datascope_dbname' for reading. Bye.\n" );
+	elog_die( "Failed to open Datascope database '$Datascope_dbname' for reading. Bye.\n" );
 }
 
 if( $db[1] >= 0 ) {
@@ -398,7 +398,7 @@ if( $opt_l ) {
 	exit( 0 );
 }
 
-inform( "Importing '$Datascope_dbname' into '$Sql_dbname' starting at " . strtime(now()) . " UTC\n" );
+inform( "Importing Datascope '$Datascope_dbname' into SQL '$Sql_dbname' starting at " . strtime(now()) . " UTC\n" );
 
 $Syncstring = db2sql_get_syncfield_name();
 
@@ -415,7 +415,7 @@ my( $pw ) = pfget( $Pf, "password" );
 
 unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
 
-	elog_die( "Failed to connect to '$dsn' as user '$user'. Bye.\n" );
+	elog_die( "Failed to connect to SQL '$dsn' as user '$user'. Bye.\n" );
 }
 
 undef( $pw );
@@ -435,7 +435,7 @@ init_sql_database( $dbh, $Sql_dbname, $Rebuild, @db, $hookname );
 
 dbmon_update( $hookname, $dbh );
 
-inform( "Imported first snapshot of '$Datascope_dbname' into '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
+inform( "Imported first snapshot of Datascope '$Datascope_dbname' into SQL '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 
 while( ! $opt_1 ) {
 
@@ -445,13 +445,13 @@ while( ! $opt_1 ) {
 
 	dbmon_update( $hookname, $dbh );
 
-	Inform( "Updated snapshot of '$Datascope_dbname' into '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
+	Inform( "Updated snapshot of Datascope '$Datascope_dbname' into SQL '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 }
 
 $dbh->disconnect();
 
 dbmon_close( $hookname );
 
-inform( "Done importing '$Datascope_dbname' into '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
+inform( "Done importing Datascope '$Datascope_dbname' into SQL '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 
 exit( 0 );
