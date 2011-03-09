@@ -57,19 +57,60 @@ use lib "$ENV{ANTELOPE}/data/perl";
 use Datascope;
 
 sub new {
+	printf STDERR "SCAFFOLD In Fmfpfit new\n";
+
 	return Focmec::new @_;
+}
+
+sub setup_parameters {
+	my $obj = shift;
+
+	if( ! defined $obj->{params}{fpfit_executable} ) {
+		
+		addlog( $obj, 0, "fpfit_executable not defined in parameter file" );
+		return "skip";
+	}
+	
+	my $fpfit_executable = datafile( "PATH", $obj->{params}{fpfit_executable} );
+
+	if( ! defined( $fpfit_executable ) ) {
+
+		addlog( $obj, 0, "fpfit_executable '$obj->{params}{fpfit_executable}' not found on path" );
+		return "skip";
+
+	} elsif( ! -x "$fpfit_executable" ) {
+
+		addlog( $obj, 0, "fpfit_executable '$obj->{params}{fpfit_executable}' not executable" );
+		return "skip";
+	}
+
+	return "ok";
 }
 
 sub getwftimes {
 	my $self = shift;
-	my $ret = $self->SUPER::getwftimes( @_ );
 
-	return $ret;
+	printf STDERR "SCAFFOLD In Fmfpfit getwftimes\n";
+
+	my $ret = setup_parameters( $self );
+
+	if( $ret ne "ok" ) {
+
+		return makereturn( $self, $ret );
+	}
+
+	$self->{stations} = {};
+
+	$self->{expire_time} = now() + $self->{params}{maximum_wait_time};
+
+	return makereturn( $self, "ok", "stations" => $self->{stations}, "expire_time" => $self->{expire_time} ); 
 }
 
 sub process_channel {
 	my $self = shift;
 	my $ret = $self->SUPER::process_channel( @_ );
+
+	printf STDERR "SCAFFOLD In Fmfpfit process_channel\n";
 
 	return $ret;
 }
@@ -78,12 +119,22 @@ sub process_station {
 	my $self = shift;
 	my $ret = $self->SUPER::process_station( @_ );
 
+	printf STDERR "SCAFFOLD In Fmfpfit process_station\n";
+
 	return $ret;
 }
 
 sub process_network {
 	my $self = shift;
 	my $ret = $self->SUPER::process_network( @_ );
+
+	printf STDERR "SCAFFOLD In Fmfpfit process_network\n";
+
+	print STDERR "SCAFFOLD: executing fpfit\n";
+
+	open( F, "|$self->{params}{fpfit_executable} > fpout_$self->{event_id}.out" );
+	print F "sto\n";
+	close( F );
 
 	return $ret;
 }

@@ -61,17 +61,57 @@ sub new {
 	$self->put(@_);
 	$self->{class} = $class;
 
+	printf STDERR "SCAFFOLD In Focmec new\n";
+
 	$self->{output}{logs} = [];
+
+	@{$self->{dbo}} = dblookup( @{$self->{db}}, 0, "origin", 0, 0 );
+
+	if( $self->{dbo}[1] == dbINVALID ) {
+
+		addlog( $self, 1, "origin undefined" );
+		return( $self, makereturn( $self, "skip" ) );
+	}
+
+	$self->{norigin} = dbquery( @{$self->{dbo}}, "dbRECORD_COUNT" );
+
+	if( $self->{norigin} != 1 ) {
+		
+		addlog( $self, 1, "Only one origin allowed" );
+		return( $self, makereturn( $self, "skip" ) );
+	}
+
+	@{$self->{dboe}} = dblookup( @{$self->{db}}, 0, "origerr", 0, 0 );
+
+	if( $self->{dboe}[1] == dbINVALID ) {
+
+		addlog( $self, 1, "origerr undefined" );
+		return( $self, makereturn( $self, "skip" ) );
+	}
+
+	@{$self->{dbar}} = dblookup( @{$self->{db}}, 0, "arrival", 0, 0 );
+
+	if( $self->{dbar}[1] == dbINVALID ) {
+
+		addlog( $self, 1, "arrival undefined" );
+		return( $self, makereturn( $self, "skip" ) );
+	}
+
+	$self->{narrival} = dbquery( @{$self->{dbar}}, "dbRECORD_COUNT" );
+
+	@{$self->{dbas}} = dblookup( @{$self->{db}}, 0, "assoc", 0, 0 );
+
+	if( $self->{dbas}[1] == dbINVALID ) {
+
+		addlog( $self, 1, "assoc undefined" );
+		return( $self, makereturn( $self, "skip" ) );
+	}
+
+	$self->{nassoc} = dbquery( @{$self->{dbas}}, "dbRECORD_COUNT" );
 
 	elog_notify $self->{event_id} . ": " . $self->{class} . ": CREATING PERL INSTANCE\n";
 
 	return( $self, makereturn( $self, "ok" ) );
-}
-
-sub getwftimes {
-	my $self = shift;
-
-	return makereturn( $self, "ok" ); # SCAFFOLD And stations, expire_time
 }
 
 sub DESTROY {
@@ -110,9 +150,12 @@ sub process_channel {
 	my $dbref = shift;
 	my $flush = shift;
 
+	printf STDERR "SCAFFOLD In Focmec process_channel\n";
+
 	my( $sta ) = "FAKE";
 	my( $chan ) = "FAKE";
 	my( $disp ) = "ok";
+	# my( $disp ) = "processdone";
 
 	return makereturn( $self, $disp, "sta" => $sta, "chan" => $chan );
 }
@@ -122,12 +165,16 @@ sub process_station {
 	my $sta = shift;
 	my $flush = shift;
 
+	printf STDERR "SCAFFOLD In Focmec process_station\n";
+
 	return makereturn( $self, "ok" );
 }
 
 sub process_network {
 	my $self = shift;
 	my $flush = shift;
+
+	printf STDERR "SCAFFOLD In Focmec process_network\n";
 
 	my $disp = "ok";
 
