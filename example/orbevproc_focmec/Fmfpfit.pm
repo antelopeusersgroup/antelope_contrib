@@ -52,6 +52,7 @@ use evproc;
 use strict;
 use warnings;
 use POSIX;
+use Math::Trig;
 
 use lib "$ENV{ANTELOPE}/data/perl";
 
@@ -153,23 +154,148 @@ sub process_station {
 	return $ret;
 }
 
-sub process_network {
+sub prepare_fpfit_input {
 	my $self = shift;
-	my $ret = $self->SUPER::process_network( @_ );
+	my $disp = "ok";
+	
+	my( $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag, $nprecs, $rms );
+	my( @dbo, @dboe, @dbj );
+	my( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms );
+	my( $sta, $phase, $fm, $snr, $arrival_time, $deltim, $delta, $esaz, $timeres );
+	my( $sdobs, $angle, $tobs, $imp, $pwt, $ptime );
 
-	print STDERR "SCAFFOLD In Fmfpfit process_network\n";
-	print STDERR "SCAFFOLD: executing fpfit\n";
+	$self->{fpfit_hyp_block} = "";
+
+	@dbo = @{$self->{dbo}};
+	$dbo[3] = 0;
+
+	( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms ) =
+		dbgetv( @dbo, "time", "lat", "lon", "depth", "ml", "mb", "ms" );
+
+	@dboe = @{$self->{dboe}};
+	$dboe[3] = 0;
+
+	$sdobs = dbgetv( @dboe, "sdobs" );
+
+	$stime = epoch2str( $origin_time, "%y%m%d %H%M " ) . sprintf( "%05.2f", epoch2str( $origin_time, "%S.%s" ) );
+
+	$mlat = 60 * substr( $lat, index( $lat, "." ) );
+	$ns = $lat >= 0 ? "n" : "s";
+	$ilat = int( abs( $lat ) );
+
+	$mlon = 60 * substr( $lon, index( $lon, "." ) );
+	$ew = $lon >= 0 ? "e" : "w";
+	$ilon = int( abs( $lon ) );
+
+	$dkm = sprintf( "%.2f", $depth );
+	$rms = sprintf( "%.2f", $sdobs );
+
+	if( $ms != -999.00 ) {
+
+		$mag = $ms;
+
+	} elsif( $mb != -999.00 ) {
+
+		$mag = $mb;
+
+	} elsif( $ml != -999.00 ) {
+
+		$mag = $ml;
+
+	} else {
+
+		$mag = 0.0;
+	}
+
+	@dbj = dbjoin( @{$self->{dbar}}, @{$self->{dbas}} );
+
+	@dbj = dbsubset( @dbj, "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km} && strlen(chan) <= 4" );
+
+	$nprecs = dbquery( @dbj, "dbRECORD_COUNT" );
+
+	$self->{fpfit_hyp_block} .= "  DATE    ORIGIN   LATITUDE LONGITUDE  DEPTH    MAG NO           RMS\n";
+	$self->{fpfit_hyp_block} .= sprintf( " %17s%3d%1s%5.2f%4d%1s%5.2f%7.2f  %5.2f%3d         %5.2f\n",
+				    	     $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag, $nprecs, $rms );
+
+	$self->{fpfit_hyp_block} .= "\n  STN  DIST  AZ TOA PRMK HRMN  PSEC TPOBS              PRES  PWT\n";
+
+	for( $dbj[3] = 0; $dbj[3] < $nprecs; $dbj[3]++ ) {
+
+		( $sta, $phase, $fm, $snr, $arrival_time, $deltim ) = 
+			dbgetv( @dbj, "sta", "phase", "fm", "snr", "time", "deltim" );
+
+		( $delta, $esaz, $timeres ) = dbgetv( @dbj, "delta", "esaz", "timeres" );
+
+		$delta *= 111.191;
+
+		my( $angle ) = atan2( $delta, $depth ) * 180 / pi;
+
+		my( $tobs ) = $arrival_time - $origin_time;
+
+		if( substr( $fm, 0, 1 ) eq "c" ) {
+
+			$fm = "U";
+
+		} elsif( substr( $fm, 0, 1 ) eq "d" ) {
+			
+			$fm = "D";
+
+		} else {
+
+			$fm = " ";
+		}
+
+		if( $deltim < 0.05 ) {
+
+			$pwt = "0";
+			$imp = "I";
+
+		} elsif( $deltim < 0.1 ) {
+
+			$pwt = "1";
+			$imp = " ";
+
+		} elsif( $deltim < 0.2 ) {
+
+			$pwt = "2";
+			$imp = " ";
+
+		} else {
+
+			$pwt = "4";
+			$imp = " ";
+		}
+
+		$ptime = epoch2str( $arrival_time, "%H%M " ) . sprintf( "%05.2f", epoch2str( $arrival_time, "%S.%s" ) );
+
+		$self->{fpfit_hyp_block} .= sprintf( " %4s%6.1f %3d %3d %1s%1s%1s%1s %10s%6.2f             %5.2f  1.00\n",
+						     $sta, $delta, $esaz, $angle, $imp, $phase, $fm, $pwt, $ptime, $tobs, $deltim );
+	}
+
+	return $disp;
+}
+
+sub invoke_fpfit {
+	my $self = shift;
 
 	my $startdir = POSIX::getcwd();
 
 	POSIX::chdir( $self->{params}{tempdir} );
+
+	my $fpfit_inputfile = "fpfit_in_$self->{event_id}.hyp";
+
+	open( I, "> $fpfit_inputfile" );
+
+	print I $self->{fpfit_hyp_block};
+
+	close( I );
 
 	open( F, "| $self->{params}{fpfit_executable} > fpfit_out_$self->{event_id}.out" );
 
 	# Use default title, hypo filename plus date, i.e. choice "1"
 	print F "ttl 1 none\n";
 
-	print F "hyp fpfit_in_$self->{event_id}.hyp\n";
+	print F "hyp $fpfit_inputfile\n";
 	print F "out fpfit_out_$self->{event_id}.out\n";
 	print F "sum fpfit_out_$self->{event_id}.sum\n";
 	print F "pol fpfit_out_$self->{event_id}.pol\n";
@@ -218,6 +344,26 @@ sub process_network {
 	close( F );
 
 	POSIX::chdir( $startdir );
+
+	return;
+}
+
+sub process_network {
+	my $self = shift;
+	my $ret = $self->SUPER::process_network( @_ );
+
+	print STDERR "SCAFFOLD In Fmfpfit process_network\n";
+	print STDERR "SCAFFOLD: executing fpfit\n";
+
+	my $disp = prepare_fpfit_input( $self );
+
+	if( $disp ne "ok" ) {
+
+		addlog( $self, 0, "Failed to prepare fpfit input file\n" );
+		return "skip";
+	}
+
+	invoke_fpfit( $self );
 
 	return $ret;
 }
