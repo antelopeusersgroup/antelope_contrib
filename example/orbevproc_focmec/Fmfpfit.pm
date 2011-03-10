@@ -51,6 +51,7 @@ use evproc;
 
 use strict;
 use warnings;
+use POSIX;
 
 use lib "$ENV{ANTELOPE}/data/perl";
 
@@ -65,10 +66,38 @@ sub new {
 sub setup_parameters {
 	my $obj = shift;
 
-	if( ! defined $obj->{params}{fpfit_executable} ) {
+	my @expected = qw( fpfit_executable
+			   maximum_wait_time
+			   tempdir
+			   use_radiation_pattern_weighting
+			   perform_fine_search
+			   min_magnitude
+			   min_observations
+			   distance_cutoff_km
+			   presidual_cutoff_sec
+			   incidence_angle_min_deg
+			   incidence_angle_max_deg 
+			   strike_search_min_deg 
+			   strike_search_max_deg
+			   strike_search_coarse_incr
+			   strike_search_fine_incr
+			   dip_search_min_deg 
+			   dip_search_max_deg
+			   dip_search_coarse_incr
+			   dip_search_fine_incr
+			   rake_search_min_deg 
+			   rake_search_max_deg
+			   rake_search_coarse_incr
+			   rake_search_fine_incr
+			   pweight_percentages );
+
+	foreach my $param ( @expected ) {
+
+		if( ! defined $obj->{params}{$param} ) {
 		
-		addlog( $obj, 0, "fpfit_executable not defined in parameter file" );
-		return "skip";
+			addlog( $obj, 0, "Parameter '$param' not defined in parameter file" );
+			return "skip";
+		}
 	}
 	
 	my $fpfit_executable = datafile( "PATH", $obj->{params}{fpfit_executable} );
@@ -128,49 +157,67 @@ sub process_network {
 	my $self = shift;
 	my $ret = $self->SUPER::process_network( @_ );
 
-	printf STDERR "SCAFFOLD In Fmfpfit process_network\n";
-
+	print STDERR "SCAFFOLD In Fmfpfit process_network\n";
 	print STDERR "SCAFFOLD: executing fpfit\n";
 
-	open( F, "|$self->{params}{fpfit_executable} > fpout_$self->{event_id}.out" );
-	#HACK HACK HACk
-	print F "ttl   1 none\n";
-	print F "hyp fpinput_2596\n";
-	print F "out fp_2596.out\n";
-	print F "sum fp_2596.sum\n";
-	print F "pol fp_2596.pol\n";
+	my $startdir = POSIX::getcwd();
+
+	POSIX::chdir( $self->{params}{tempdir} );
+
+	open( F, "| $self->{params}{fpfit_executable} > fpfit_out_$self->{event_id}.out" );
+
+	# Use default title, hypo filename plus date, i.e. choice "1"
+	print F "ttl 1 none\n";
+
+	print F "hyp fpfit_in_$self->{event_id}.hyp\n";
+	print F "out fpfit_out_$self->{event_id}.out\n";
+	print F "sum fpfit_out_$self->{event_id}.sum\n";
+	print F "pol fpfit_out_$self->{event_id}.pol\n";
 	print F "fit none\n";
-	print F "for 1\n";
-	#no radiation pattern weighting
-	print F "amp 0\n";
-	#perform fine search
-	print F "fin 0\n";
-	#output only best solution
+
+	# Set to "hypo71 print listing" i.e. input format "1"
+	print F "for 1\n";	
+
+	print F "amp $self->{params}{use_radiation_pattern_weighting}\n";
+	print F "fin $self->{params}{perform_fine_search}\n";
+
+	#Output only the best solution
 	print F "bst 1\n";
-	#single (not composite) solutions
+
+	#Output single (not composite) solutions
 	print F "cmp 0\n";
-	#minimum acceptable magnitude
-	print F "mag 0.\n";
-	#minimum observations allowed
-	print F "obs 8\n";
-	#distance cutoff
-	print F "dis 9999.\n";
-	#p residual cutoff
-	print F "res 100.\n";
-	#acceptable range of incident angles
-	print F "ain 0. 180.\n";
-	#strike search range
-	print F "dir    0.00      360.0      20.00      2.000\n";
-	#dip search range
-	print F "dip    0.00      90.00      10.00      1.000\n";
-	#rake search range
-	print F "rak  -180.0      180.0      20.00      2.00\n";
-	#error rates estimated for hand picked data
-	print F "hdr .01 .10 .20 .30\n";
+
+	print F "mag $self->{params}{min_magnitude}\n";
+	print F "obs $self->{params}{min_observations}\n";
+	print F "dis $self->{params}{distance_cutoff_km}\n";
+
+	print F "res $self->{params}{presidual_cutoff_sec}\n";
+
+	print F "ain $self->{params}{incidence_angle_min_deg} " .
+		    "$self->{params}{incidence_angle_max_deg}\n";
+
+	print F "dir $self->{params}{strike_search_min_deg} " .
+		    "$self->{params}{strike_search_max_deg} " .
+		    "$self->{params}{strike_search_coarse_incr} " .
+		    "$self->{params}{strike_search_fine_incr}\n";
+
+	print F "dip $self->{params}{dip_search_min_deg} " .
+		    "$self->{params}{dip_search_max_deg} " .
+		    "$self->{params}{dip_search_coarse_incr} " .
+		    "$self->{params}{dip_search_fine_incr}\n";
+
+	print F "rak $self->{params}{rake_search_min_deg} " .
+		    "$self->{params}{rake_search_max_deg} " .
+		    "$self->{params}{rake_search_coarse_incr} " .
+		    "$self->{params}{rake_search_fine_incr}\n";
+
+	print F "hdr $self->{params}{pweight_percentages}\n";
 
 	print F "fps\n";
 	print F "sto\n";
 	close( F );
+
+	POSIX::chdir( $startdir );
 
 	return $ret;
 }
