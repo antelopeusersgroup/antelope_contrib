@@ -164,6 +164,12 @@ sub prepare_fpfit_input {
 	my( $sta, $phase, $fm, $snr, $arrival_time, $deltim, $delta, $esaz, $timeres );
 	my( $sdobs, $angle, $tobs, $imp, $pwt, $ptime );
 
+	$self->{fpfit_inputfile_hyp} = "fpfit_in_$self->{event_id}.hyp";
+	$self->{fpfit_outputfile_out} = "fpfit_out_$self->{event_id}.out";
+	$self->{fpfit_outputfile_sum} = "fpfit_out_$self->{event_id}.sum";
+	$self->{fpfit_outputfile_pol} = "fpfit_out_$self->{event_id}.pol";
+	$self->{fpfit_outputfile_stdout} = "fpfit_out_$self->{event_id}.stdout";
+
 	$self->{fpfit_hyp_block} = "";
 
 	@dbo = @{$self->{dbo}};
@@ -282,23 +288,21 @@ sub invoke_fpfit {
 
 	POSIX::chdir( $self->{params}{tempdir} );
 
-	my $fpfit_inputfile = "fpfit_in_$self->{event_id}.hyp";
-
-	open( I, "> $fpfit_inputfile" );
+	open( I, "> $self->{fpfit_inputfile_hyp}" );
 
 	print I $self->{fpfit_hyp_block};
 
 	close( I );
 
-	open( F, "| $self->{params}{fpfit_executable} > fpfit_out_$self->{event_id}.out" );
+	open( F, "| $self->{params}{fpfit_executable} > $self->{fpfit_outputfile_stdout}" );
 
 	# Use default title, hypo filename plus date, i.e. choice "1"
 	print F "ttl 1 none\n";
 
-	print F "hyp $fpfit_inputfile\n";
-	print F "out fpfit_out_$self->{event_id}.out\n";
-	print F "sum fpfit_out_$self->{event_id}.sum\n";
-	print F "pol fpfit_out_$self->{event_id}.pol\n";
+	print F "hyp $self->{fpfit_inputfile_hyp}\n";
+	print F "out $self->{fpfit_outputfile_out}\n";
+	print F "sum $self->{fpfit_outputfile_sum}\n";
+	print F "pol $self->{fpfit_outputfile_pol}\n";
 	print F "fit none\n";
 
 	# Set to "hypo71 print listing" i.e. input format "1"
@@ -348,6 +352,27 @@ sub invoke_fpfit {
 	return;
 }
 
+sub harvest_fpfit {
+	my $self = shift;
+
+	my( $strike, $dip, $rake, $fj );
+
+	open( O, concatpaths( $self->{params}{tempdir}, $self->{fpfit_outputfile_sum} ) );
+
+	my $summary_line = <O>;
+
+	close( O );
+
+	$strike = substr( $summary_line, 83, 3 );
+	$dip = substr( $summary_line, 87, 2 );
+	$rake = substr( $summary_line, 90, 3 );
+	$fj = substr( $summary_line, 94, 5 );
+
+	print STDERR "SCAFFOLD: SDR is $strike $dip $rake $fj\n";
+
+	return;
+}
+
 sub process_network {
 	my $self = shift;
 	my $ret = $self->SUPER::process_network( @_ );
@@ -364,6 +389,8 @@ sub process_network {
 	}
 
 	invoke_fpfit( $self );
+
+	harvest_fpfit( $self );
 
 	return $ret;
 }
