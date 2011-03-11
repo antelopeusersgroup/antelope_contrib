@@ -368,7 +368,19 @@ sub harvest_fpfit {
 	$rake = substr( $summary_line, 90, 3 );
 	$fj = substr( $summary_line, 94, 5 );
 
-	print STDERR "SCAFFOLD: SDR is $strike $dip $rake $fj\n";
+	my @dbfplane = dblookup( @{$self->{db}}, 0, "fplane", "", "dbSCRATCH" );
+
+	dbputv( @dbfplane, "orid", $self->{orid},
+		   	   "str1", $strike,
+			   "dip1", $dip, 
+			   "rake1", $rake );
+
+	my $rec = dbadd( @dbfplane );
+
+	$dbfplane[3] = $rec;
+	$dbfplane[2] = $rec + 1;
+
+	push @{$self->{output}{db}{tables}}, \@dbfplane;
 
 	return;
 }
@@ -392,7 +404,15 @@ sub process_network {
 
 	harvest_fpfit( $self );
 
-	return $ret;
+	#HACK
+	my( @db ) = @{$self->{dbo}};
+	$db[3] = 0;
+	my( $hacktime ) = dbgetv( @db, "time" );
+	dbputv( @db, "time", $hacktime + 2 );
+
+	$disp = "ok";
+
+	return makereturn( $self, $disp );
 }
 
 1;

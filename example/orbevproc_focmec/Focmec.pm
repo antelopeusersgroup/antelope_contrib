@@ -81,6 +81,10 @@ sub new {
 		return( $self, makereturn( $self, "skip" ) );
 	}
 
+	$self->{dbo}[3] = 0;
+
+	$self->{orid} = dbgetv( @{$self->{dbo}}, "orid" );
+
 	@{$self->{dboe}} = dblookup( @{$self->{db}}, 0, "origerr", 0, 0 );
 
 	if( $self->{dboe}[1] == dbINVALID ) {
@@ -175,6 +179,10 @@ sub process_network {
 	my $flush = shift;
 
 	printf STDERR "SCAFFOLD In Focmec process_network\n";
+
+	$self->{output}{db}{assoc_params}{smart_assoc} = "yes";
+
+	push @{$self->{output}{db}{tables}}, $self->{dbo};
 
 	my $disp = "ok";
 
