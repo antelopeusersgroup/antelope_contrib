@@ -20,6 +20,8 @@ DATA= \
 	dbexample_clear_register.m \
 	dbexample_compare_response.m \
 	dbexample_concatpaths.m \
+	dbexample_datafile.m \
+	dbexample_datapath.m \
 	dbexample_db2struct.m \
 	dbexample_dbadd.m \
 	dbexample_dbadd_remark.m \
