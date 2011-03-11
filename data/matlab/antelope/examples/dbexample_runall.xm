@@ -18,6 +18,8 @@ dbexample_clear
 dbexample_clear_register
 dbexample_compare_response
 dbexample_concatpaths
+dbexample_datafile
+dbexample_datapath
 dbexample_db2struct
 dbexample_dbadd
 dbexample_dbadd_remark

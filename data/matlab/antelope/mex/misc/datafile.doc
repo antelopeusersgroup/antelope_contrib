@@ -1,0 +1,6 @@
+DATAFILE	Look for a private data file
+
+FNAME = DATAFILE ( ENVNAME, FILENAME )
+
+DATAFILE looks for a data-file named FILENAME in $ANTELOPE/data or along the 
+path specified by ENVNAME

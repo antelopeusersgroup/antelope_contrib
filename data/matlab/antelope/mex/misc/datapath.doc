@@ -1,0 +1,7 @@
+DATAPATH	Look for a private data file
+
+FNAME = DATAPATH ( ENVNAME, DIRNAME, FILENAME, SUFFIX )
+
+DATAPATH looks for a data-file with name concatenated from
+DIRNAME, FILENAME, and SUFFIX in $ANTELOPE/data or along the 
+path specified by ENVNAME

@@ -13,6 +13,8 @@ MEXSRCS= \
 	cggrid_supported.c \
 	clear_register.c \
 	concatpaths.c \
+	datafile.c \
+	datapath.c \
 	getpid.c \
 	pffiles.c \
 	parsepath.c \
