@@ -1,0 +1,16 @@
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
+
+MATLAB_EXECUTABLE = $(MATLAB)/bin/matlab
+
+install :: install_matlab_link
+
+install_matlab_link: $(MATLAB_EXECUTABLE)
+	$(RM) $(DEST)/bin/matlab
+	mkdir -p $(DEST)/bin
+	ln -s $(MATLAB_EXECUTABLE) $(DEST)/bin/matlab
