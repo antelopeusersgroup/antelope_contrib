@@ -60,7 +60,7 @@ DATA= \
 	le3d_20sec.pf \
 	mb2000_fil.pf \
 	mb2000_raw.pf \
-	ncap.pf \
+	ncpa.pf \
 	paroP.pf \
 	paroT.pf \
 	qep_dummy.pf \
