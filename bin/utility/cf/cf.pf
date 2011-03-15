@@ -148,6 +148,7 @@ make &Arr{
 	^.*: At top level:$
 	^[aA]ppending[[:space:]]
 	^[bB]uilding[[:space:]]
+	^[bB]yte-compiling[[:space:]]
 	^[cC]hanging[[:space:]]
 	^[cC]hecking[[:space:]]
 	^[cC]ompiling[[:space:]]
