@@ -146,10 +146,19 @@ make &Arr{
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
 	^.*: At top level:$
-	^Installing[[:space:]]
-	^Writing[[:space:]]
-	^Appending[[:space:]]
-	^Running[[:space:]]
+	^[aA]ppending[[:space:]]
+	^[bB]uilding[[:space:]]
+	^[bB]yte-compiling[[:space:]]
+	^[cC]hanging[[:space:]]
+	^[cC]hecking[[:space:]]
+	^[cC]ompiling[[:space:]]
+	^[cC]opying[[:space:]]
+	^[cC]reating[[:space:]]
+	^[iI]nstalling[[:space:]]
+	^[lL]isting[[:space:]]
+	^[rR]emoving[[:space:]]
+	^[rR]unning[[:space:]]
+	^[wW]riting[[:space:]]
 	^Skip[[:space:]]
 	^Files found in blib\\/arch: 
 	^LD_RUN_PATH=
