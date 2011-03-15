@@ -151,6 +151,7 @@ make &Arr{
 	^[cC]hanging[[:space:]]
 	^[cC]ompiling[[:space:]]
 	^[cC]opying[[:space:]]
+	^[cC]reating[[:space:]]
 	^[iI]nstalling[[:space:]]
 	^[lL]isting[[:space:]]
 	^[rR]emoving[[:space:]]
