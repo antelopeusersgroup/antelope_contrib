@@ -19,7 +19,7 @@ fflags=
 ldflags=
 ldlibs=
 
-include $(ANTELOPE)/include/antelopemake-gcc
+include $(ANTELOPEMAKE)
 
 DIRS=
 
