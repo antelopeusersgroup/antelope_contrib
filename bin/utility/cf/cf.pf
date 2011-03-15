@@ -149,6 +149,7 @@ make &Arr{
 	^[aA]ppending[[:space:]]
 	^[bB]uilding[[:space:]]
 	^[cC]hanging[[:space:]]
+	^[cC]hecking[[:space:]]
 	^[cC]ompiling[[:space:]]
 	^[cC]opying[[:space:]]
 	^[cC]reating[[:space:]]
