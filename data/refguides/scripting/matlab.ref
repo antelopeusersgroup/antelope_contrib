@@ -425,6 +425,12 @@ RES = concatpaths( A, B [, ...] )
 REL = relpath( FROM, TO )
     compute a relative pathname
 
+FNAME = datafile( ENVNAME, FILENAME )
+    find a data file in the data directory
+
+FNAME = datapath( ENVNAME, DIRNAME, FILENAME, SUFFIX )
+    find a data file in the data directory
+
 <subsection Time Conversion>
 TIMESTRING = epoch2str ( EPOCH, FORMAT )
     convert epoch time to a string

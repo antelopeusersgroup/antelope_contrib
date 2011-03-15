@@ -1,0 +1,83 @@
+.TH RECOVER_CDORB2DB_WFDISC 1 
+.SH NAME
+recover_cdorb2db_wfdisc \- create wfdisc table from s4 files written by cdorb2db
+.SH SYNOPSIS
+.nf
+\fBrecover_cdorb2db_wfdisc \fP{-d \fIdirs\fP | -f \fIfiles\fP } [-v] \fInewdb\fP 
+.fi
+.SH DESCRIPTION
+\fBrecover_cdorb2db_wfdisc \fP collects a listing of s4 files written by \fBcdorb2db(1)\fR
+and creates wfdisc records which reference those files in the output database \fInewdb\fP.
+If \fI-d\fP  is used, then all files below that directory are examined.  Files are expected 
+to follow the \fBcdorb2db\fR naming convention which is:  YYYY/JJJ/STA.CHAN.YYYY.JJJ.00.00.00=.
+.LP
+To create the wfdisc records, \fBrecover_cdorb2db_wfdisc\fP assumes that waveform files
+contain a single day of data and were written out using the \fBcdorb2db\fP program.  
+The samprate, time and endtime fields used in the output wfdisc rows are calculated 
+based on the assumed daylong length of the waveform files.
+.LP
+It is left to the user to take the newly created wfdisc and merge it into any 
+pre-existing wfdisc.  No attempt is made to run dbfixids, so caution must be use if
+one chooses to combine the output \fInewdb.wfdisc\fP with any pre-existing wfdisc. 
+.LP
+If you are looking to convert s4 waveforms to miniseed, see the program \fBdb2msd(1)\fR.
+.SH OPTIONS
+.IP "-f files"
+specify a file or regex \fIfiles\fP from which to recover a wfdisc. If the file regex
+does not end with a "=", it will be appended when looking for files to use.
+.IP "-d dir(s)"
+specify a directory or regex \fIdirs\fP from which to recover a wfdisc.  All files 
+in the directories that end with "=" will have wfdisc rows recovered.
+.IP -v
+Be more verbose.
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+% recover_cdorb2db_wfdisc -f '2011/050/A[MN]*' recovered_wf 
+~/rtsystems/usarray/bin/recover_cdorb2db_wfdisc -f '2011/050/A[MN]*' recovered_wf
+
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Starting program at:  3/04/2011   1:03:15.000
+2011-063 01:03:15 recover_cdorb2db_wfdisc *complain*: Selected file does not end with '=' as expected.  Appending...
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/AMTX.BHE.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/AMTX.BHN.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/AMTX.BHZ.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/AMTX.LHE.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/AMTX.LHN.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/AMTX.LHZ.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/ANMO.BH1_10.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/ANMO.BH2_10.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/ANMO.BHZ_10.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/ANMO.LH1_10.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/ANMO.LH2_10.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Recovering: 2011/050/ANMO.LHZ_10.2011.050.00.00.00=
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*:      12 new wfdisc records
+2011-063 01:03:15 recover_cdorb2db_wfdisc *notify*: Finished.
+% ls -l recovered_wf*
+-rw-rw-r--   1 rt       antelope      43 Mar  4 01:03 recovered_wf.lastid
+-rw-rw-r--   1 rt       antelope    3408 Mar  4 01:03 recovered_wf.wfdisc
+.fi
+.in
+.ft R
+.SH "SEE ALSO"
+.nf
+cdorb2db(1)
+miniseed2db(1)
+db2msd(1)
+.fi
+.SH BUGS AND CAVEATS
+Output files are assumed to be from cdorb2db and are assumed to be written out as one-day-long files.
+.LP
+The output database must have no pre-existing records.
+.LP
+No values are filled in for chanid, calib, calper, instype, or segtype.  These values might be filled in 
+if/when the output wfdisc is carefully added to a real-time database that has \fBrtdbclean(1)\fR run nightly.
+.SH AUTHOR
+.nf
+Jennifer Eakins
+jeakins@ucsd.edu
+ANF
+University of California, San Diego
+.fi
+
