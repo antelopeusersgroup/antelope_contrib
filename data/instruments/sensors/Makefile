@@ -60,6 +60,7 @@ DATA= \
 	le3d_20sec.pf \
 	mb2000_fil.pf \
 	mb2000_raw.pf \
+	ncpa.pf \
 	paroP.pf \
 	paroT.pf \
 	qep_dummy.pf \
@@ -72,6 +73,8 @@ DATA= \
 	s13n.pf \
 	s13z.pf \
 	s6000.pf \
+	setra278.pf \
+	setra278HA.pf \
 	sh1.pf \
 	sm6-b.pf \
 	sts1_e.pf \
