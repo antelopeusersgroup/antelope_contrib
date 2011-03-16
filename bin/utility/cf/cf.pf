@@ -200,13 +200,13 @@ make &Arr{
 	^flex[[:space:]]
 	^for[[:space:]]
 	^getid[[:space:]]
-	^if[[:space:]]
+	^[[:space:]]*if[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*install[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*installman[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*cpp[[:space:]]
-	^else[[:space:]]
-	^fi[[:space:]]
-	^fi[^[:alnum:]]
+	^[[:space:]]*else[[:space:]]
+	^[[:space:]]*fi[[:space:]]
+	^[[:space:]]*fi[^[:alnum:]]
 	^javac[[:space:]]
 	^ln[[:space:]]
 	^[[:alnum:]\\/]*ld[[:space:]]
@@ -237,7 +237,7 @@ make &Arr{
 	^tsort[[:space:]]
 	^[[:space:]]*unix_rm[[:space:]]
 	^case.*in
-	^[[:space:]]esac
+	^[[:space:]]*esac
 	^[[:space:]]*SunOS\\)
 	^[[:space:]]*Linux\\)
 	^[[:space:]]*Darwin\\)
