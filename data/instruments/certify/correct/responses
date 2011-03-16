@@ -232,6 +232,7 @@ dbcheck_responses:    ** Consider normalization of 5.15e+15 in ./cmg40t_1hz PAZ 
      13.4            1.00                            0.02                 ./m8.3
     0.607            1.00           0.001             0.4         1.8e+02 ./mb2000_fil
       130           19.34           1e-05            0.04         1.4e+02 ./mb2000_raw
+      500            1.00           1e-05             0.1           1e+03 ./ncpa
      64.8            0.97          0.0026             0.6         1.5e+02 ./old_sts2
      64.8            0.97          0.0026             0.6         1.5e+02 ./old_sts2_vel
       500            1.00           1e-05             0.1           1e+03 ./paroP6000
@@ -257,6 +258,8 @@ dbcheck_responses: bad response file './peppv'
       500            1.00            0.32           2e+01           1e+03 ./range_vel
       500            1.00            0.32           2e+01           1e+03 ./ranger
       4.7            1.02            0.63           3e+01           1e+03 ./s6000
+      500            1.00           1e-05             0.1           1e+03 ./setra278
+      500            1.00           1e-05             0.1           1e+03 ./setra278HA
       500            1.00           0.063               8           1e+03 ./sh
       500            1.00           0.063               8           1e+03 ./sh_vel
      7.37            0.99             1.5           4e+01           1e+03 ./sm6-b
