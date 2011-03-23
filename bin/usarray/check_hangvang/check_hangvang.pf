@@ -1,0 +1,6 @@
+# Parameter file for check_hangvang script
+
+vert	[LB]HZ
+north	[LB]HN
+east 	[LB]HE
+
