@@ -658,7 +658,6 @@ $Pf = "localmake_config";
 $Pf_proto = "localmake_config_proto";
 
 $localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
-$pfcp = "$ENV{'ANTELOPE'}/bin/pfcp";
 
 $ENV{'PFPATH'} = "$localpf_dir:$ENV{'PFPATH'}";
 
@@ -724,7 +723,7 @@ if( ! -e "$localpf_dir/$Pf.pf" ) {
 
 	makedir( $localpf_dir );
 
-	system( "cd $localpf_dir; $pfcp $Pf_proto $Pf" );
+	system( "cd $localpf_dir; cp $Pf_proto_file $Pf.pf" );
 
 	inform( "Copied '$Pf_proto.pf' to '$localpf_dir/$Pf.pf' since the latter didn't exist\n" );
 
@@ -766,7 +765,7 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 
 			unlink( $Pf_file );
 
-			system( "cd $localpf_dir; $pfcp $Pf_proto $Pf" );
+			system( "cd $localpf_dir; cp $Pf_proto_file $Pf.pf" );
 
 		} elsif( $ans eq "c" ) {
 
