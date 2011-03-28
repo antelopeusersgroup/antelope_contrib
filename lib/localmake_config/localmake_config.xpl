@@ -669,9 +669,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( ! Getopts( 'lv' ) ) {
+if( ! Getopts( 'ilv' ) ) {
 
-	elog_die( "Usage: localmake_config [-lv] [capability [, capability...]]\n" );
+	elog_die( "Usage: localmake_config [-ilv] [capability [, capability...]]\n" );
 }
 
 if( @ARGV >= 1 ) {
@@ -799,6 +799,11 @@ set_orig_enabled();
 set_macros();
 
 write_makerules();
+
+if( $opt_i ) {
+
+	exit( 0 );
+}
 
 if( $opt_l ) {
 

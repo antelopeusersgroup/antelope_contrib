@@ -3,7 +3,7 @@
 localmake_config \- Manage connections between Antelope-contrib code and software external to Antelope
 .SH SYNOPSIS
 .nf
-\fBlocalmake_config\fP [-lv] [\fIcapability\fP [, \fIcapability\fP...]]
+\fBlocalmake_config\fP [-ilv] [\fIcapability\fP [, \fIcapability\fP...]]
 .fi
 .SH DESCRIPTION
 Most source-code in the Antelope contributed-code repository compiles without any dependencies 
@@ -206,6 +206,8 @@ the macros supporting the \fIpython\fP \fIcapability\fP (as configured in \fIloc
 \fIPYTHONINCLUDE\fP and \fPPYTHON_EXECUTABLE\fP) will now be available for use in \fIMakefile2\fP. 
 
 .SH OPTIONS
+.IP -i 
+Install make rules and exit.
 .IP -l
 List available capabilities and whether they're enabled or disabled, then exit.
 .IP -v 
