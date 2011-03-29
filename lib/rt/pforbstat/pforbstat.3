@@ -48,9 +48,6 @@ forming an array of information on each database utility.
 The user must call pffree to free the parameter file objects returned
 by these routines.
 
-.SH OPTIONS
-.SH FILES
-.SH ENVIRONMENT
 .SH PARAMETER FILE
 The libpforbstat.pf parameter file gives a table of search expressions 
 which are used to identify database-writing utilities. Each expression 
@@ -105,7 +102,6 @@ localhost% try
             lastpkt	1026776757.426
             lastrequest	5
             latency_sec	0
-            mymessages	0
             nreads	7
             nreject	0
             nrequests	7
@@ -197,7 +193,6 @@ occurs, they return a pointer to NULL. The user is responsible for freeing the
 parameter files returned by these routines. 
 .SH LIBRARY
 -lpforbstat $(ORBLIBS)
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 pforbstat(1), orbserver(1), orbstat(3), orbsources(3), orbclients(3), 

@@ -86,7 +86,7 @@ orbstat2pf( Orbstat *orbstat, int orbversion )
 	pfput_int( pf, "nsources", orbstat->nsources );
 	pfput_int( pf, "nclients", orbstat->nclients );
 	pfput_int( pf, "maxsrc", orbstat->maxsrc );
-	pfput_int( pf, "maxpkts", orbstat->maxpktid );
+	pfput_int( pf, "maxpkts", orbstat->maxpkts );
 
 	s = strdup( orbstat->version );
 	strtrim( s );
@@ -198,7 +198,6 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 		pfput_int( clientpf, "errors", aclient->errors );
 		pfput_int( clientpf, "priority", aclient->priority );
 		pfput_int( clientpf, "lastrequest", aclient->lastrequest );
-		pfput_int( clientpf, "mymessages", aclient->mymessages );
 		pfput_int( clientpf, "nrequests", aclient->nrequests );
 		pfput_int( clientpf, "nwrites", aclient->nwrites );
 		pfput_int( clientpf, "nreads", aclient->nreads );
