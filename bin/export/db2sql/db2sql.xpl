@@ -82,17 +82,45 @@ sub Inform {
 sub sqldb_is_present {
 	my( $dbh, $sqldbname ) = @_;
 
+	my( $present );
+
 	my @dbnames = map { @$_ } @{$dbh->selectall_arrayref( "SHOW DATABASES" )};
 
 	if( grep( /^$sqldbname$/, @dbnames ) ) {
 		
-		return 1;
+		$present = 1;
 
 	} else {
 
-		return 0;
+		$present = 0;
 	}
 
+	return $present;
+}
+
+sub create_tables {
+	my( $dbh ) = shift;
+	my( @db ) = splice( @_, 0, 4 );
+	my( @table_subset ) = @_;
+
+	my( $cmd );
+
+	foreach $cmd ( sql_create_commands( @db, @table_subset ) ) {
+
+		Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+		unless( $dbh->do( $cmd ) ) {
+
+			if( $schema_create_errors_nonfatal ) {
+
+				elog_complain( "SQL table creation failed using command\n\n$cmd\n\nContinuing.\n\n" );
+
+			} else {
+
+				elog_die( "SQL table creation failed using command\n\n$cmd\n\nBye.\n\n" );
+			}
+		}
+	}
 }
 
 sub init_sql_database {
@@ -154,22 +182,7 @@ sub init_sql_database {
 		elog_die( "Failed to switch to SQL database '$sqldbname'. Bye.\n" );
 	}
 
-	foreach $cmd ( sql_create_commands( @db, @table_subset ) ) {
-
-		Inform( "Executing SQL Command:\n$cmd\n\n" );
-
-		unless( $dbh->do( $cmd ) ) {
-
-			if( $schema_create_errors_nonfatal ) {
-
-				elog_complain( "Table creation failed for SQL '$sqldbname' using command\n\n$cmd\n\nContinuing.\n\n" );
-
-			} else {
-
-				elog_die( "Table creation failed for SQL '$sqldbname' using command\n\n$cmd\n\nBye.\n\n" );
-			}
-		}
-	}
+	create_tables( $dbh, @db, @table_subset );
 
 	return;
 }
@@ -304,11 +317,51 @@ sub delrow {
 	return;
 }
 
+sub sql_table_is_present {
+	my( $table, $dbh ) = splice( @_, 0, 2 );
+	my( @db ) = @_;
+
+	my( $present ) = 0;
+	
+	my( $query ) = "SHOW TABLES LIKE '$table';";
+
+	my( @res ) = $dbh->selectrow_array( $query );
+
+	if( scalar( @res ) > 0 ) {
+		
+		$present = 1;
+
+	} else {
+
+		$present = 0;
+	}
+
+	Inform( sprintf( "Table '$table' is %s (%d responses to \"$query\")\n\n", 
+			 $present ? "present" : "not present",
+			 scalar( @res ) ) );
+
+	if( $present == 0 ) {
+
+		Inform( "Attempting to re-create table '$table'\n" );
+
+		create_tables( $dbh, @db, $table );
+	}
+
+	return $present;
+}
+
 sub querysyncs {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $table, $dbh ) = @_;
 
 	my( @syncs ) = ();
+
+	unless( sql_table_is_present( $table, $dbh, @db ) ) {
+
+		Inform( "Resynchronizing with 0 sync strings for table '$table' because it disappeared from the SQL database\n\n" );
+
+		return @syncs;
+	}
 
 	my( $query ) = "SELECT $Syncstring FROM $table;";
 
