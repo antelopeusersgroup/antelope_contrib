@@ -52,6 +52,8 @@
 %   dbeval		- Evaluate an expression on a Datascope database
 %
 % Special functions
+%   datafile		- Find a data file 
+%   datapath		- Find a data file with directory and suffix specified
 %   dbadd_remark	- Add a remark to a datascope Database
 %   dbget_remark	- Get a remark from a Datascope Database
 %   dbfind		- Locate a database row satisfying some condition 

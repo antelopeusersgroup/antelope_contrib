@@ -1,6 +1,6 @@
 
 /*
- *   Copyright (c) 2010 Lindquist Consulting, Inc.
+ *   Copyright (c) 2010-2011 Lindquist Consulting, Inc.
  *   All rights reserved. 
  *                                                                     
  *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
@@ -271,12 +271,28 @@ db2sqldelete( idatabase, itable, ifield, irecord, sync, ... )
 
 	}
 
+void
+db2sql_get_syncfield_name()
+	PPCODE:
+	{
+	char	*name = (char *) NULL;
+
+	name = db2sql_get_syncfield_name();
+
+	XPUSHs( sv_2mortal( newSVpv( name, strlen(name) ) ) );
+
+	free( name );
+
+	}
+
 void 
 db2sql_set_syncfield_name( name )
 	char	*name
 	PPCODE:
 	{
+
 	db2sql_set_syncfield_name( name );
+
 	}
 
 void

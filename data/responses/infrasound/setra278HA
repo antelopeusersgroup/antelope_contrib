@@ -1,0 +1,11 @@
+# Setra 270 microbarometer - Pressure
+#
+# 0                   num of zeroes
+# 0                   num of poles
+# 1                   normalization factor
+# 1.0                 gain
+#theoretical   1 sensor    	  paz    eakins  
+theoretical   1 anti-alias	  paz    eakins  
+1.00
+0	Poles
+0	Zeros

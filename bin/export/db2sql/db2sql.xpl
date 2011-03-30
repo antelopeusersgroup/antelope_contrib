@@ -53,9 +53,13 @@ use Datascope::dbmon;
 
 our( $opt_1, $opt_l, $opt_n, $opt_p, $opt_r, $opt_v, $opt_V );
 
-our( $datascope_dbname, $sql_dbname );
+our( $Datascope_dbname, $Sql_dbname, $Syncstring );
 our( $refresh_interval_sec, $schema_create_errors_nonfatal, $enable_mysql_auto_reconnect, @table_subset );
 our( $dbh, $hookname );
+our( $dsn, $user );
+
+our( $Pf ) = "db2sql";
+
 
 sub inform {
 	my( $msg ) = @_;
@@ -78,69 +82,28 @@ sub Inform {
 sub sqldb_is_present {
 	my( $dbh, $sqldbname ) = @_;
 
+	my( $present );
+
 	my @dbnames = map { @$_ } @{$dbh->selectall_arrayref( "SHOW DATABASES" )};
 
 	if( grep( /^$sqldbname$/, @dbnames ) ) {
 		
-		return 1;
+		$present = 1;
 
 	} else {
 
-		return 0;
+		$present = 0;
 	}
 
+	return $present;
 }
 
-sub init_sql_database {
-	my( $dbh, $sqldbname, $rebuild, @db ) = @_;
+sub create_tables {
+	my( $dbh ) = shift;
+	my( @db ) = splice( @_, 0, 4 );
+	my( @table_subset ) = @_;
 
-	if( sqldb_is_present( $dbh, $sqldbname ) ) {
-
-		if( ! $rebuild ) {
-
-			my( $cmd ) = "USE $sqldbname;";
-
-			Inform( "Executing SQL Command:\n$cmd\n\n" );
-
-			unless( $dbh->do( $cmd ) ) {
-
-				elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
-			}
-
-			return;
-
-		} else {
-
-			inform( "Database '$sqldbname' already exists. Dropping '$sqldbname'\n" );
-
-			my( $cmd ) = "DROP DATABASE $sqldbname;";
-
-			Inform( "Executing SQL Command:\n$cmd\n\n" );
-
-			unless( $dbh->do( $cmd ) ) {
-
-				elog_die( "Failed to drop pre-existing database '$sqldbname'. Bye.\n" );
-			}
-		}
-	}
-
-	my( $cmd ) = "CREATE DATABASE $sqldbname;";
-
-	Inform( "Executing SQL Command:\n$cmd\n\n" );
-
-	unless( $dbh->do( $cmd ) ) {
-
-		elog_die( "Failed to create database '$sqldbname'. Bye.\n" );
-	}
-
-	$cmd = "USE $sqldbname;";
-
-	Inform( "Executing SQL Command:\n$cmd\n\n" );
-
-	unless( $dbh->do( $cmd ) ) {
-
-		elog_die( "Failed to switch to database '$sqldbname'. Bye.\n" );
-	}
+	my( $cmd );
 
 	foreach $cmd ( sql_create_commands( @db, @table_subset ) ) {
 
@@ -150,16 +113,127 @@ sub init_sql_database {
 
 			if( $schema_create_errors_nonfatal ) {
 
-				elog_complain( "Table creation failed for '$sqldbname' using command\n\n$cmd\n\nContinuing.\n\n" );
+				elog_complain( "SQL table creation failed using command\n\n$cmd\n\nContinuing.\n\n" );
 
 			} else {
 
-				elog_die( "Table creation failed for '$sqldbname' using command\n\n$cmd\n\nBye.\n\n" );
+				elog_die( "SQL table creation failed using command\n\n$cmd\n\nBye.\n\n" );
 			}
 		}
 	}
+}
+
+sub init_sql_database {
+	my( $dbh, $sqldbname, $rebuild ) = splice( @_, 0, 3 );
+	my( @db ) = splice( @_, 0, 4 );
+	my( $hookname ) = pop( @_ );
+
+	if( sqldb_is_present( $dbh, $sqldbname ) ) {
+
+		if( $rebuild ) {
+
+			inform( "SQL database '$sqldbname' already exists. Dropping '$sqldbname'\n" );
+
+			my( $cmd ) = "DROP DATABASE $sqldbname;";
+
+			Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+			unless( $dbh->do( $cmd ) ) {
+
+				elog_die( "Failed to drop pre-existing SQL database '$sqldbname'. Bye.\n" );
+			}
+
+			# Fall through to re-create database
+
+		} else {
+
+			my( $cmd ) = "USE $sqldbname;";
+
+			Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+			unless( $dbh->do( $cmd ) ) {
+
+				elog_die( "Failed to switch to SQL database '$sqldbname'. Bye.\n" );
+			}
+
+			inform( "Resynchronizing SQL database '$sqldbname' with Datascope database '$Datascope_dbname'\n" );
+
+			dbmon_resync( $hookname, $dbh );
+
+			return;
+		}
+	}
+
+	my( $cmd ) = "CREATE DATABASE $sqldbname;";
+
+	Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+	unless( $dbh->do( $cmd ) ) {
+
+		elog_die( "Failed to create SQL database '$sqldbname'. Bye.\n" );
+	}
+
+	$cmd = "USE $sqldbname;";
+
+	Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+	unless( $dbh->do( $cmd ) ) {
+
+		elog_die( "Failed to switch to SQL database '$sqldbname'. Bye.\n" );
+	}
+
+	create_tables( $dbh, @db, @table_subset );
 
 	return;
+}
+
+sub verify_sql_handle {
+	my( $dbh, $sqldbname ) = @_;
+
+	if( $dbh->ping() ) {
+
+		if( $dbh->selectrow_array( "SELECT DATABASE()" ) ne $sqldbname ) {
+
+			inform( "Lost SQL database selection, re-selecting SQL database '$sqldbname'\n" );
+
+			my( $cmd ) = "USE $sqldbname;";
+
+			Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+			unless( $dbh->do( $cmd ) ) {
+
+				elog_die( "Failed to re-establish selection of SQL database '$sqldbname'. Bye.\n" );
+			}
+		}
+
+	} else {
+
+		inform( "Lost SQL server connection, re-establishing\n" );
+
+		$dbh->disconnect();
+
+		my( $pw ) = pfget( $Pf, "password" );
+
+		unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
+
+			elog_die( "Failed to re-connect to SQL '$dsn' as user '$user'. Bye.\n" );
+		}
+
+		undef( $pw );
+
+		inform( "Re-selecting SQL database '$sqldbname'\n" );
+
+		my( $cmd ) = "USE $sqldbname;";
+
+		Inform( "Executing SQL Command:\n$cmd\n\n" );
+
+		unless( $dbh->do( $cmd ) ) {
+
+			elog_die( "Failed to re-select SQL database '$sqldbname'. Bye.\n" );
+		}
+	}
+
+	return $dbh;
 }
 
 sub sql_create_commands {
@@ -218,8 +292,8 @@ sub newrow {
 
 	unless( $dbh->do( $cmd ) ) {
 		
-		elog_complain( "Failed to create new database row in table '$table'\n" .
-			       "record $irecord, sync '$sync'\n" .
+		elog_complain( "Failed to create new SQL database row in table '$table'\n" .
+			       "(Datascope record $irecord, sync '$sync')\n" .
 			       "while executing command '$cmd'\n" );
 	}
 
@@ -236,18 +310,80 @@ sub delrow {
 
 	unless( $dbh->do( $cmd ) ) {
 
-		elog_complain( "Failed to delete database row in table '$table', sync '$sync'\n" .
+		elog_complain( "Failed to delete SQL database row in table '$table', sync '$sync'\n" .
 			       "while executing command '$cmd'\n" );
 	}
 
 	return;
 }
 
+sub sql_table_is_present {
+	my( $table, $dbh ) = splice( @_, 0, 2 );
+	my( @db ) = @_;
+
+	my( $present ) = 0;
+	
+	my( $query ) = "SHOW TABLES LIKE '$table';";
+
+	my( @res ) = $dbh->selectrow_array( $query );
+
+	if( scalar( @res ) > 0 ) {
+		
+		$present = 1;
+
+	} else {
+
+		$present = 0;
+	}
+
+	Inform( sprintf( "Table '$table' is %s (%d responses to \"$query\")\n\n", 
+			 $present ? "present" : "not present",
+			 scalar( @res ) ) );
+
+	if( $present == 0 ) {
+
+		Inform( "Attempting to re-create table '$table'\n" );
+
+		create_tables( $dbh, @db, $table );
+	}
+
+	return $present;
+}
+
+sub querysyncs {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $table, $dbh ) = @_;
+
+	my( @syncs ) = ();
+
+	unless( sql_table_is_present( $table, $dbh, @db ) ) {
+
+		Inform( "Resynchronizing with 0 sync strings for table '$table' because it disappeared from the SQL database\n\n" );
+
+		return @syncs;
+	}
+
+	my( $query ) = "SELECT $Syncstring FROM $table;";
+
+	Inform( "Executing SQL Query:\n$query\n\n" );
+
+	my( $ref ) = $dbh->selectcol_arrayref( $query );
+
+	if( defined( $ref ) ) {
+
+		@syncs = @{$ref};
+	}
+
+	Inform( sprintf( "Resynchronizing with %d sync strings for table '$table'\n\n", scalar(@syncs) ) );
+
+	return @syncs;
+}
+
 my( $path, $Program_name ) = parsepath( $0 );
 
 elog_init( $Program_name, @ARGV );
 
-our( $Pf ) = "db2sql";
+our( $Rebuild ) = 0;
 
 our( $Usage ) = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
 
@@ -264,7 +400,7 @@ if( $opt_l ) {
 
 	} else {
 
-		$datascope_dbname = pop( @ARGV );
+		$Datascope_dbname = pop( @ARGV );
 	}
 
 } else {
@@ -275,9 +411,14 @@ if( $opt_l ) {
 
 	} else {
 
-		$sql_dbname = pop( @ARGV );
-		$datascope_dbname = pop( @ARGV );
+		$Sql_dbname = pop( @ARGV );
+		$Datascope_dbname = pop( @ARGV );
 	}
+}
+
+if( $opt_r ) {
+
+	$Rebuild = 1;
 }
 
 if( $opt_p ) {
@@ -285,11 +426,11 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
-our( @db ) = dbopen_database( $datascope_dbname, "r" );
+our( @db ) = dbopen_database( $Datascope_dbname, "r" );
 
 if( $db[0] < 0 ) {
 
-	elog_die( "Failed to open database '$datascope_dbname' for reading. Bye.\n" );
+	elog_die( "Failed to open Datascope database '$Datascope_dbname' for reading. Bye.\n" );
 }
 
 if( $db[1] >= 0 ) {
@@ -310,7 +451,9 @@ if( $opt_l ) {
 	exit( 0 );
 }
 
-inform( "Importing '$datascope_dbname' into '$sql_dbname' starting at " . strtime(now()) . " UTC\n" );
+inform( "Importing Datascope '$Datascope_dbname' into SQL '$Sql_dbname' starting at " . strtime(now()) . " UTC\n" );
+
+$Syncstring = db2sql_get_syncfield_name();
 
 pfconfig_asknoecho();
 
@@ -318,14 +461,14 @@ $refresh_interval_sec = pfget( $Pf, "refresh_interval_sec" );
 $schema_create_errors_nonfatal = pfget_boolean( $Pf, "schema_create_errors_nonfatal" );
 $enable_mysql_auto_reconnect = pfget_boolean( $Pf, "enable_mysql_auto_reconnect" );
 
-my( $dsn ) = pfget( $Pf, "dsn" );
-my( $user ) = pfget( $Pf, "user" );
+$dsn = pfget( $Pf, "dsn" );
+$user = pfget( $Pf, "user" );
 
 my( $pw ) = pfget( $Pf, "password" );
 
 unless( $dbh = DBI->connect( $dsn, $user, $pw ) ) {
 
-	elog_die( "Failed to connect to '$dsn' as user '$user'. Bye.\n" );
+	elog_die( "Failed to connect to SQL '$dsn' as user '$user'. Bye.\n" );
 }
 
 undef( $pw );
@@ -337,29 +480,31 @@ if( $enable_mysql_auto_reconnect ) {
 	$dbh->{mysql_auto_reconnect} = 1;
 }
 
-init_sql_database( $dbh, $sql_dbname, $opt_r, @db );
-
 $hookname = "dbmon_hook";
 
-dbmon_init( @db, $hookname, \&newrow, \&delrow, @table_subset );
+dbmon_init( @db, $hookname, \&newrow, \&delrow, \&querysyncs, @table_subset );
+
+init_sql_database( $dbh, $Sql_dbname, $Rebuild, @db, $hookname );
 
 dbmon_update( $hookname, $dbh );
 
-inform( "Imported first snapshot of '$datascope_dbname' into '$sql_dbname' at " . strtime(now()) . " UTC\n" );
+inform( "Imported first snapshot of Datascope '$Datascope_dbname' into SQL '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 
 while( ! $opt_1 ) {
 
 	sleep( $refresh_interval_sec );
 
+	$dbh = verify_sql_handle( $dbh, $Sql_dbname );
+
 	dbmon_update( $hookname, $dbh );
 
-	Inform( "Updated snapshot of '$datascope_dbname' into '$sql_dbname' at " . strtime(now()) . " UTC\n" );
+	Inform( "Updated snapshot of Datascope '$Datascope_dbname' into SQL '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 }
 
 $dbh->disconnect();
 
 dbmon_close( $hookname );
 
-inform( "Done importing '$datascope_dbname' into '$sql_dbname' at " . strtime(now()) . " UTC\n" );
+inform( "Done importing Datascope '$Datascope_dbname' into SQL '$Sql_dbname' at " . strtime(now()) . " UTC\n" );
 
 exit( 0 );

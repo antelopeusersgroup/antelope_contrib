@@ -7,7 +7,9 @@ perldbmon \- Perl extension of dbmon database monitoring library
 use Datascope;
 use Datascope::dbmon;
 
-\fBdbmon_init\fP( \fI@db\fP, \fI$hookname\fP, \fI\\&newrow\fP, \fI\\&delrow\fP [, \fI@tables\fP] );
+\fBdbmon_init\fP( \fI@db\fP, \fI$hookname\fP, \fI\\&newrow\fP, \fI\\&delrow\fP [, \fI\\&querysyncs\fP] [, \fI@tables\fP] );
+
+\fBdbmon_resync\fP( \fI$hookname\fP, \fI$private_ref\fP );
 
 \fBdbmon_update\fP( \fI$hookname\fP, \fI$private_ref\fP );
 
@@ -20,65 +22,90 @@ use Datascope::dbmon;
 .fi
 .SH DESCRIPTION
 The perl \fBdbmon\fP module mimics the c-callable dbmon(3) library,
-allowing a Datascope database to be tracked for added, deleted, and changed 
-rows, with user-specified actions to take place upon each modification. 
+allowing a Datascope database to be tracked for added, deleted, and
+changed rows, with user-specified actions to take place upon each
+modification.
 
-The first call made should be to \fBdbmon_init\fP, which takes as arguments a 
-pointer to an already open database, a unique string name to a hook(3) to be used
-internally for status tracking, and references to two callback functions, 
-\fInewrow\fP and \fIdelrow\fP. If the \fI@tables\fP array is given 
-to \fBdbmon_init\fP, tracking and updating activities 
-are limited to the database tables listed in the array. Otherwise, all tables in the 
-database schema are examined.  The arguments for the callback functions, explained 
+The first call made should be to \fBdbmon_init\fP, which takes as
+arguments a pointer to an already open database, a unique string
+name to a hook(3) to be used internally for status tracking, and
+references to at least two callback functions, \fInewrow\fP and
+\fIdelrow\fP. If the \fBdbmon_resync\fP function will be used (see
+below), a third callback to a \fIquerysyncs\fP function must be
+provided.  If the \fI@tables\fP array is given to \fBdbmon_init\fP,
+tracking and updating activities are limited to the database tables
+listed in the array. Otherwise, all tables in the database schema
+are examined.  The arguments for the callback functions, explained
 in more detail below, are as follows:
+
 .nf
 
       \fInewrow\fP( \fI@db\fP, $table, $irecord, $sync, \fI$private_ref\fP );
 
       \fIdelrow\fP( \fI@db\fP, $table, $oldsync, \fI$private_ref\fP );
 
+      \fIquerysyncs\fP( \fI@db\fP, $table, \fI$private_ref\fP );
+
 .fi
 
-After initialization of a database via the \fBdbmon_init\fP function, the 
-\fBdbmon_update\fP function is called one or more times to update the status of the 
-monitored database. When new, changed, or deleted rows are detected by \fBdbmon_update\fP, 
-\fBdbmon_update\fP invokes the respective callback function(s) to process the modifications
-as desired. 
+After initialization of a database via the \fBdbmon_init\fP function,
+the user may call the \fBdbmon_resync\fP function once if desired to
+synchronize the \fBdbmon\fP library with the results of previous
+execution.  After these initial steps, the \fBdbmon_update\fP
+function is called one or more times to update the status of the
+monitored database. When new, changed, or deleted rows are detected
+by \fBdbmon_update\fP, \fBdbmon_update\fP invokes the respective
+callback function(s) to process the modifications as desired. (A
+changed row is treated as a deletion of the old row followed by an
+insertion of the new version.)
 
-As with the C-callable \fBdbmon\fP library, the perl version computes a synchronization 
-string for each database row which uniquely identifies a row with given 
-contents. These syncronization values are handed to the callback routines, along with a 
-database pointer indicating the row in question, in order for the callback author to 
-decide on and impose the fate of any other data entities based on the row. For the \fInewrow\fP
-callback, the third argument is the original record number of the passed-in row (since the database
-pointer may just be a copy of that row in the scratch record for the table). Two further 
-arguments are passed to the callbacks: the name of the database table in which the row
-resides (even though this could in principle be derived from the database pointer), and a 
-private perl reference which can be used at the discretion of the programmer. For the 
-\fInewrow\fP callback, the syncronization string is that of the new row. For the \fIdelrow\fP
-callback, the synchronization string is that of the old row before it was deleted. 
+As with the C-callable \fBdbmon\fP library, the perl version computes
+a synchronization string for each database row. Each synchronization
+string uniquely identifies a row with given contents. These
+syncronization values are handed to the callback routines, along
+with a database pointer indicating the row in question, in order
+for the callback author to decide on and impose the fate of any
+other data entities based on the row. For the \fInewrow\fP callback,
+the third argument is the original record number of the passed-in
+row (since the database pointer may just be a copy of that row in
+the scratch record for the table). Two further arguments are passed
+to the callbacks: the name of the database table in which the row
+resides (even though this could in principle be derived from the
+database pointer), and a private perl reference which can be used
+at the discretion of the programmer. For the \fInewrow\fP callback,
+the syncronization string is that of the new row. For the \fIdelrow\fP
+callback, the synchronization string is that of the old row before
+it was deleted.  The \fInewrow\fP and \fIdelrow\fP callbacks are
+not expected to return any values. The \fIquerysyncs\fP callback
+receives a pointer to the database (as ancillary information for
+the calling program), the name of the table, and a copy of the
+private reference. It is expected to return an array of synchronization
+string values for the rows the calling program already knows about
+for the given table. This then allows the \fBdbmon\fP library to 
+compare these to the existing, possibly updated Datascope database and
+act on any changes that may have occurred, presumably during the
+gap between a previous execution and the current execution of the
+calling program.
 
-The value of the synchronization string for a given database row may be computed with the 
-function \fBdbmon_compute_row_sync\fP.
+The value of the synchronization string for a given database row
+may be computed with the function \fBdbmon_compute_row_sync\fP.
 
-The \fBdbmon_status\fP function is a debugging utility which prints current tracking information
-about the monitored database into the file named by \fI$filename\fP.
+The \fBdbmon_status\fP function is a debugging utility which prints
+current tracking information about the monitored database into the
+file named by \fI$filename\fP.
 
 .SH EXAMPLE
-The following example, omitting some ancillary details, shows the basic structure 
-of \fBperldbmon\fP usage: 
+The following example, omitting some ancillary details, shows the
+basic structure of \fBperldbmon\fP usage:
 .in 2c
 .ft CW
 .nf
 
-use DBI;
-use Datascope;
-use Datascope::db2sql;
-use Datascope::dbmon;
+use DBI; use Datascope; use Datascope::db2sql; use Datascope::dbmon;
 
 sub newrow {
-	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $irecord, $sync, $dbh ) = @_;
+	my( @db ) = splice( @_, 0, 4 ); my( $table, $irecord, $sync,
+	$dbh ) = @_;
 
 	my( $cmd ) = db2sqlinsert( @db );
 
@@ -88,10 +115,11 @@ sub newrow {
 }
 
 sub delrow {
-	my( @db ) = splice( @_, 0, 4 );
-	my( $table, $sync, $dbh ) = @_;
+	my( @db ) = splice( @_, 0, 4 ); my( $table, $sync, $dbh )
+	= @_;
 
-	my( $cmd ) = sprintf( "DELETE from `%s` WHERE syncsha = '%s';\\n", $table, $sync );
+	my( $cmd ) = sprintf( "DELETE from `%s` WHERE syncsha =
+	'%s';\\n", $table, $sync );
 
 	$dbh->do( $cmd );
 
@@ -131,9 +159,10 @@ dbmon_close( $hookname );
 .nf
 dbmon(3), perldb(3P), db2sql(3), db2sql(1)
 .fi
+.SH "BUGS AND CAVEATS"
+It is advisable to direct this library only at locally-mounted databases. 
 .SH AUTHOR
 .nf
-Kent Lindquist
-Lindquist Consulting, Inc.
+Kent Lindquist Lindquist Consulting, Inc.
 .fi
 .\" $Id$

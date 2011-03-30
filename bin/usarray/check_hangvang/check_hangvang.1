@@ -1,0 +1,83 @@
+.TH check_hangvang 1
+.SH NAME
+check_hangvang \- check for errors in hang and vang 
+.SH SYNOPSIS
+.nf
+
+\fBcheck_hangvang \fP
+	[-v]
+	[-V]
+	[-o]
+	[-n \fIsnet\fP]
+	[-s \fIsta\fP]
+	[-x \fIsubset_expression\fP]
+	[-p \fIpf\fP]
+	\fIdatabase\fP
+
+.fi
+.SH DESCRIPTION
+\fBcheck_hangvang\fP checks the sitechan table hang and vang values to make sure north and east 
+components are 90° apart.  A standard vertical component would have a hang and vang of 0, a N/S 
+component would have a hang of 0 and vang of 90, an E/W component would have a hang of 90 and vang 
+of 90.
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+overly verbose
+.IP -o
+Only repot problems, not success
+.IP "-n snet"
+The subset snet=~/\fIsnet\fP/ will be applied to the joined sitechan and snetsta table.
+.IP "-s sta"
+The subset sta=~/\fIsta\fP/ will be applied to the sitechan table.
+.IP "-x subset_expresssion"
+A futher subset to be applied to the joined snetsta and sitechan tables.  Must specify a complete valid expression like:  'offdate == NULL'
+.IP "database"
+The database to be checked.  Must have both a sitechan and snetsta table.
+.SH FILES
+Requires sitechan and snetsta database tables.
+.SH ENVIRONMENT
+Needs to be run under an ANTELOPE environment.
+.SH PARAMETER FILE
+Here is an example pf file:
+.in 2c
+.ft CW
+.nf
+
+.ne 5
+# Parameter file for check_hangvang script
+vert    [LB]HZ
+north   [LB]HN
+east    [LB]HE
+
+.fi
+.ft R
+.in
+.LP
+This basic parameter file maps the channels for the vertical and two horizontal components.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.ne 3 
+
+%\fB check_hangvang -o -n TA db/usarray \fP
+2011-082 21:39:38 check_hangvang *notify*: check_hangvang -n TA -o db/usarray
+2011-082 21:39:42 check_hangvang *notify*: No problems found.
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+dbverify(1)
+.fi
+.SH "BUGS AND CAVEATS"
+A similar check could probably be developed within dbverify(1).
+.SH AUTHOR
+Jennifer Eakins
+.br
+ANF-IGPP-SIO-UCSD
+.br
+jeakins@ucsd.edu

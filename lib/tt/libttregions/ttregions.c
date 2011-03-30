@@ -423,7 +423,8 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 	int nmatch_sc;
 	static Hook  *sc_hook=NULL;
 	int i;
-	int ndepths,idepth;
+	int ndepths=0;
+	int idepth=0;
 	char sta[8];
 	double test,ceiling,floor;
 	double *scor;
@@ -496,6 +497,7 @@ int load_sitecor(TTregions_volume *r, char *model, char *phase)
 		else if(test != ceiling)
 		{
 			++idepth;
+			/* The line below looks like a clear MISTAKE since ndepths is not computed previously */
 			if(idepth >= ndepths)
 			{
 				elog_complain(0,

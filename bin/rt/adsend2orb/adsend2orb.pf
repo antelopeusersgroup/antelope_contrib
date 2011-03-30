@@ -1,7 +1,0 @@
-swap_adbuf_bytes 1
-compress 1
-ewADBUF_TYPE 1
-ewTRACEBUF_TYPE 20
-pinno_as_adchan 1
-rt_priority 10
-reject_future_packets_sec 120

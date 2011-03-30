@@ -58,11 +58,11 @@
 static int 
 get_token( char *source, char *next )
 {
-	static Hook *hook = 0;
+	static Hook *hook = NULL;
 	char	*pattern = "</?[^>]+/?>";
-	long	start;
-	long	nchars;
-	int	rc;
+	long	start = 0;
+	long	nchars = 0;
+	int	rc = 0;
 
 	rc = strcontains( source, pattern, &hook, &start, &nchars);
 
@@ -92,9 +92,9 @@ get_token( char *source, char *next )
 int
 xml2db( Dbptr db, char *xml )
 {
-	char	*string;
-	char	*next;
-	int	rc;
+	char	*string = NULL;
+	char	*next = NULL;
+	int	rc = 0;
 
 	string = xml;
 

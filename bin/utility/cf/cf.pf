@@ -146,11 +146,21 @@ make &Arr{
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
 	^.*: At top level:$
-	^Installing[[:space:]]
-	^Writing[[:space:]]
-	^Appending[[:space:]]
-	^Running[[:space:]]
+	^[aA]ppending[[:space:]]
+	^[bB]uilding[[:space:]]
+	^[bB]yte-compiling[[:space:]]
+	^[cC]hanging[[:space:]]
+	^[cC]hecking[[:space:]]
+	^[cC]ompiling[[:space:]]
+	^[cC]opying[[:space:]]
+	^[cC]reating[[:space:]]
+	^[iI]nstalling[[:space:]]
+	^[lL]isting[[:space:]]
+	^[rR]emoving[[:space:]]
+	^[rR]unning[[:space:]]
+	^[wW]riting[[:space:]]
 	^Skip[[:space:]]
+	^x[[:space:]]
 	^Files found in blib\\/arch: 
 	^LD_RUN_PATH=
 	^name=
@@ -190,13 +200,13 @@ make &Arr{
 	^flex[[:space:]]
 	^for[[:space:]]
 	^getid[[:space:]]
-	^if[[:space:]]
+	^[[:space:]]*if[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*install[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*installman[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*cpp[[:space:]]
-	^else[[:space:]]
-	^fi[[:space:]]
-	^fi[^[:alnum:]]
+	^[[:space:]]*else[[:space:]]
+	^[[:space:]]*fi[[:space:]]
+	^[[:space:]]*fi[^[:alnum:]]
 	^javac[[:space:]]
 	^ln[[:space:]]
 	^[[:alnum:]\\/]*ld[[:space:]]
@@ -227,7 +237,7 @@ make &Arr{
 	^tsort[[:space:]]
 	^[[:space:]]*unix_rm[[:space:]]
 	^case.*in
-	^[[:space:]]esac
+	^[[:space:]]*esac
 	^[[:space:]]*SunOS\\)
 	^[[:space:]]*Linux\\)
 	^[[:space:]]*Darwin\\)

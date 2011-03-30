@@ -669,9 +669,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( ! Getopts( 'lv' ) ) {
+if( ! Getopts( 'ilv' ) ) {
 
-	elog_die( "Usage: localmake_config [-lv] [capability [, capability...]]\n" );
+	elog_die( "Usage: localmake_config [-ilv] [capability [, capability...]]\n" );
 }
 
 if( @ARGV >= 1 ) {
@@ -723,7 +723,7 @@ if( ! -e "$localpf_dir/$Pf.pf" ) {
 
 	makedir( $localpf_dir );
 
-	system( "cd $localpf_dir; pfcp $Pf_proto $Pf" );
+	system( "cd $localpf_dir; cp $Pf_proto_file $Pf.pf" );
 
 	inform( "Copied '$Pf_proto.pf' to '$localpf_dir/$Pf.pf' since the latter didn't exist\n" );
 
@@ -765,7 +765,7 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 
 			unlink( $Pf_file );
 
-			system( "cd $localpf_dir; pfcp $Pf_proto $Pf" );
+			system( "cd $localpf_dir; cp $Pf_proto_file $Pf.pf" );
 
 		} elsif( $ans eq "c" ) {
 
@@ -799,6 +799,11 @@ set_orig_enabled();
 set_macros();
 
 write_makerules();
+
+if( $opt_i ) {
+
+	exit( 0 );
+}
 
 if( $opt_l ) {
 
