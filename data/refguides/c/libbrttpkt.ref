@@ -126,3 +126,37 @@ int pktchannel2trace_put (PktChannel2Trace *pt, PktChannel *pchan, int calibfrom
 
 int pktchannel2trace_get_stats (PktChannel2Trace *pt, char *sta, char *chan, int *ngood, int *nbad)
     determine the numbers of good and gap sample values in a pktchannel2trace object
+
+<subsection Packet-Channel Buffering>
+<cdeclarations>
+PktChannel2Buffer *pktchannel2buffer_create (int (*flush_callback) (PktChannel2BufferChan *bchan, void *user_data), void *flush_callback_user_data)
+    create a new pktchannel2buffer object
+
+void pktchannel2buffer_free (PktChannel2Buffer *pbuf)
+    free a pktchannel2buffer object
+
+int pktchannel2buffer_put (PktChannel2Buffer *pbuf, PktChannel *pktchan, long maxheap, double maxduration, int verbose)
+    fill a pktchannel2buffer object from an ORB Packet-Channel
+
+int pktchannel2buffer_flush (PktChannel2Buffer *pbuf)
+    flush all currently active buffers
+
+PktChannel2BufferChan *pktchannel2buffer_chan_copy (PktChannel2BufferChan *cbuf)
+    copy PktChannel2BufferChan objects
+
+void pktchannel2buffer_chan_free (PktChannel2BufferChan *cbuf)
+    free PktChannel2BufferChan objects
+
+<subsection Packet-Channel Output To A Database>
+<cdeclarations>
+PktChannel2Db *pktchannel2db_create (Dbptr dbwfdisc, Pf *params)
+    create a new pktchannel2db object
+
+void pktchannel2db_free (PktChannel2Db *pdb)
+    free a pktchannel2db object
+
+int pktchannel2db_put (PktChannel2Db *pdb, PktChannel *chan, size_t maxheap, double maxduration)
+    put an ORB Packet-Channel into a database
+
+void pktchannel2db_convert_wf (int convert_type, int *buf, long nsamp, float fgap_value, int igap_value)
+    convert waveform buffer to various formats

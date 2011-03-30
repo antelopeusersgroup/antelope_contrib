@@ -792,7 +792,7 @@ orbevproc [options] orbwf orbev dbname
 -dbwf dbwf	archive waveform database
 </options>
 
-orbwfproc [options] dbmaster [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
+orbwfproc [options] dbmaster [datatag1 dataname1 [datatag2 dataname2 [...]]]
     generalized real-time waveform processor
 <options>
 -start {pktid|time}
@@ -801,6 +801,7 @@ orbwfproc [options] dbmaster [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -reject expr	input reject expression
 -state file	save state in file
 -p pf
+-v
 </options>
 
 orbwfrms [options] dbname orbin [orbout]
