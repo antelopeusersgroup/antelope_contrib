@@ -86,7 +86,7 @@ orbstat2pf( Orbstat *orbstat, int orbversion )
 	pfput_int( pf, "nsources", orbstat->nsources );
 	pfput_int( pf, "nclients", orbstat->nclients );
 	pfput_int( pf, "maxsrc", orbstat->maxsrc );
-	pfput_int( pf, "maxpkts", orbstat->maxpkts );
+	pfput_int( pf, "maxpkts", orbstat->maxpktid );
 
 	s = strdup( orbstat->version );
 	strtrim( s );
