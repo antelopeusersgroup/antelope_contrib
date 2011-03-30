@@ -55,7 +55,6 @@ pfreplace( Pf *sourcepf, Pf *destpf,
 void
 refresh_earthworm_info() 
 {
-	Pf	*pfval;
 	Arr	*anarr;
 	int	anint;
 	char	*akey;

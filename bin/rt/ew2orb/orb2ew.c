@@ -321,7 +321,7 @@ new_ExportServerThread( char *name )
 	es->bufsize = 0;
 	es->nbytes = 0;
 	es->loglevel = QUIET;
-	es->thread_id = -1;
+	es->thread_id = (pthread_t) -1;
 	es->so = -1;
 	es->last_heartbeat_sent = 0;
 	es->last_heartbeat_received = 0;
@@ -498,7 +498,7 @@ static void
 stop_export_server_thread( char *name )
 {
 	ExportServerThread *es;
-	int	*statusp;
+	int	*statusp = 0;
 
 	if( ( es = find_export_server_thread_byname( name ) ) == 0 ) { 
 
@@ -511,7 +511,7 @@ stop_export_server_thread( char *name )
 	if( Flags.VeryVerbose ) {
 
 		elog_notify( 0, "'%s': Request sent to stop export_server thread, "
-			     "thread-id %d\n", name, es->thread_id );
+			     "thread-id %ld\n", name, (long) es->thread_id );
 	}
 
 	es->stop = 1;
@@ -520,9 +520,9 @@ stop_export_server_thread( char *name )
 
 	if( Flags.verbose ) {
 
-		elog_notify( 0, "'%s': Export_server thread (thread-id %d) "
+		elog_notify( 0, "'%s': Export_server thread (thread-id %ld) "
 			     "stopped with status %d\n",
-			     name, es->thread_id, *statusp );
+			     name, (long) es->thread_id, *statusp );
 	} 
 
 	return;
@@ -607,8 +607,8 @@ orb2ew_export_server_shutdown()
 
 	if( ( es = find_export_server_thread_byid( thr_self() ) ) == NULL ) {
 
-		elog_complain( 0, "Couldn't find thread %d in registry!\n",
-			  	  thr_self() );
+		elog_complain( 0, "Couldn't find thread %ld in registry!\n",
+			  	  (long) thr_self() );
 
 	} else {
 	
@@ -623,8 +623,8 @@ orb2ew_export_server_shutdown()
 	if( Flags.verbose ) {
 
 		elog_notify( 0, 
-		"'%s': Export Server Thread (thread-id %d) stopping at user request\n",
-		  name, thr_self() );
+		"'%s': Export Server Thread (thread-id %ld) stopping at user request\n",
+		  name, (long) thr_self() );
 	}
 
 	delete_export_server_thread( es );
@@ -834,7 +834,6 @@ pktchan_send( void *etp, PktChannel *pktchan,
 	int	nbytes_tp = 0;
 	TracePacket tp;
 	int	rc;
-	char	*s;
 
 	sprintf( netstachanloc, "%s_%s_%s_%s", 
 			pktchan->net,
@@ -894,17 +893,16 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 	ExportThread *et = (ExportThread *) etp;
 	int	nbytes_tp_predicted = 0;
 	char    netstachanloc[STRSZ];
-	char	*s;
-	char	*t;
-	int	is;
-	int	ns;
-	int	nsamp_split;
-	double	pktchan_time_orig;
-	double	pktchan_endtime_orig;
-	int	*pktchan_datap_orig;
-	int	pktchan_datasz_orig;
-	int	pktchan_nsamp_orig;
-	int	pktchan_nsamp_remaining;
+	char	*s = NULL;
+	char	*t = NULL;
+	long	is = 0;
+	long	ns = 0;
+	long	nsamp_split = 0;
+	double	pktchan_time_orig = 0.0;
+	int	*pktchan_datap_orig = 0;
+	int	pktchan_datasz_orig = 0;
+	int	pktchan_nsamp_orig = 0;
+	int	pktchan_nsamp_remaining = 0;
 
 	sprintf( netstachanloc, "%s_%s_%s_%s", 
 			pktchan->net,
@@ -961,7 +959,7 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 				elog_notify( 0, 
 					"'%s': Splitting packets "
-					"down to %d samples each\n", 
+					"down to %ld samples each\n", 
 					et->name, nsamp_split );
 			}
 
@@ -985,7 +983,7 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 					elog_complain( 0, 
 					"'%s': Rejecting packet, size %d of "
-					"sub-packet after splitting to %d "
+					"sub-packet after splitting to %ld "
 					"samples is still too large "
 					"(configured maximum is %d)\n", 
 					et->name, nbytes_tp_predicted, 
@@ -1083,7 +1081,6 @@ orb2ew_export( void *arg )
 	char    srcname[STRSZ];
 	double  mytime;
 	char    *rawpkt = NULL;
-	struct Packet *Pkt = NULL;
 	int     bufsize = 0;
 	int	nbytes_orb = 0;
 	int	status = 0;
@@ -1438,8 +1435,8 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		} else {
 
-			sprintf( et->name, "%s#tid_%d", 
-				 es->name, et->thread_id );
+			sprintf( et->name, "%s#tid_%ld", 
+				 es->name, (long) et->thread_id );
 
 			if( ( es->loglevel >= VERBOSE ) || Flags.verbose ) {
 
@@ -1464,7 +1461,6 @@ orb2ew_export_server( void *arg )
 	sigjmp_buf sigusr1_buf;
 	sigjmp_buf sigusr2_buf;
 	int	status = 0;
-	int	rc;
 
 	set_sigusr1_handler( sigusr1_handler );
 	set_sigusr2_handler( sigusr2_handler );
@@ -1484,8 +1480,8 @@ orb2ew_export_server( void *arg )
 	if( ( es = find_export_server_thread_byid( thr_self() ) ) == NULL ) {
 
 		elog_complain( 1, 
-			"Couldn't find thread id %d in registry!\n",
-			 thr_self() );
+			"Couldn't find thread id %ld in registry!\n",
+			 (long) thr_self() );
 
 		status = -1;
 
@@ -1727,21 +1723,21 @@ update_export_server_thread( char *name, Pf *pf )
 		if( es->new ) {
 
 			elog_notify( 0,
-				"'%s': Started export_server thread '%s' as thread-id %d\n", 
-				es->name, es->name, es->thread_id );
+				"'%s': Started export_server thread '%s' as thread-id %ld\n", 
+				es->name, es->name, (long) es->thread_id );
 
 		} else if( es->update ) {
 
 			elog_notify( 0,
 				"'%s': Posted updates for export_server thread "
-				"(thread-id %d)\n", 
-				es->name, es->thread_id );
+				"(thread-id %ld)\n", 
+				es->name, (long) es->thread_id );
 
 		} else {
 
 			elog_notify( 0,
-				"'%s': ExportServerThread thread (thread-id %d) unchanged\n",
-				es->name, es->thread_id );
+				"'%s': ExportServerThread thread (thread-id %ld) unchanged\n",
+				es->name, (long) es->thread_id );
 		}
 	}
 
