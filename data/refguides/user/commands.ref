@@ -97,6 +97,9 @@ datafile [-ae] {name | dir name | env dir name}
 <subsection Antelope facilities>
 <commands>
 
+dynctl [-crv] [program [name[=value] ...]]
+    display and set dynamic controls
+
 epoch [options] [ +format ] [ time/date components ]
     convert time formats.
 <options>
@@ -108,7 +111,7 @@ epoch [options] [ +format ] [ time/date components ]
 +format	specify format of output (refer to epoch escapes table)
 </options>
 
-elog [-cdlnS] [-f fault] [message]
+elog [-acdlnS] [-f fault] [message]
     exhibit behavior of elog error routines with message
 
 elog -e errno
@@ -273,6 +276,7 @@ cntlines [options] filename
    helper script for certify to count bad/good lines
 <options>
 -c re m	contains at least m lines containing re	
+-C re,re,re m	contains at least m lines containing each re
 -n re m	no more than m lines containing re	
 </options>
 
@@ -314,7 +318,7 @@ deprecated reflectd [-p port] [-v]
 <subsection Programming aides>
 <commands>
 
-getid [-aNv] < in > out
+getid [-aNv] [key=value ...] < in > out
     substitute special values into source files; used to centralize some info and help architecture independence
 
 ldlibs [options] names
