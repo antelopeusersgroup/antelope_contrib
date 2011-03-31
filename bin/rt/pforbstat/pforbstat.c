@@ -26,7 +26,6 @@ main (int argc, char **argv)
 {
 	Pf 	*pf;
 	Packet	*pkt;
-	FILE	*fp = NULL;
     	int	c;
 	int	nargs;
 	int	nsources;
@@ -183,7 +182,7 @@ main (int argc, char **argv)
 
 			} else {
 				
-				sprintf( srcname, "%s:%d%s",
+				sprintf( srcname, "%s:%ld%s",
 					 pfget_string( pf, "server{address}" ),
 					 pfget_int( pf, "server{port}" ),
 					 SRCNAME_DEFAULT );

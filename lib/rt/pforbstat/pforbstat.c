@@ -198,7 +198,6 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 		pfput_int( clientpf, "errors", aclient->errors );
 		pfput_int( clientpf, "priority", aclient->priority );
 		pfput_int( clientpf, "lastrequest", aclient->lastrequest );
-		pfput_int( clientpf, "mymessages", aclient->mymessages );
 		pfput_int( clientpf, "nrequests", aclient->nrequests );
 		pfput_int( clientpf, "nwrites", aclient->nwrites );
 		pfput_int( clientpf, "nreads", aclient->nreads );

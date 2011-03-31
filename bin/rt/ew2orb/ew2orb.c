@@ -453,6 +453,10 @@ table_check( char *table, Tabletrack **ttrk )
 			return (*ttrk)->statbuf;
 		}
 	}
+
+	/* Unused fallthrough to silence compiler complaint: */
+
+	return (struct stat *) NULL;
 }
 
 static int	
@@ -460,7 +464,6 @@ init_calibinfo( void )
 {
 	Dbptr 	db;
 	int	ret;
-	struct stat *statbuf;
 
 	Calibinfo.usedbcalib = 1;
 	Calibinfo.usedbsegtype = 1;
@@ -641,7 +644,6 @@ static void
 update_segtypevals( double time, char *default_segtype, enum Loglevel loglevel )
 {
 	Dbptr	db;
-	Srcname	parts;
 	Tbl	*keys;
 	char	*key;
 	char	*s;	
@@ -743,7 +745,6 @@ static void
 update_calibvals( double time, enum Loglevel loglevel )
 {
 	Dbptr	db;
-	Srcname	parts;
 	Tbl	*keys;
 	char	*key;
 	char	*s;	
@@ -854,14 +855,7 @@ buf_intake( ImportThread *it )
 {
 	Ew2orbPacket *e2opkt;
 	char	*cp;
-	TRACE_HEADER th;
 	char	astring[STRSZ];
-	int	inst;
-	int	mod;
-	int	type;
-	char	inststr[STRSZ];
-	char	modstr[STRSZ];
-	char	typestr[STRSZ];
 	char	*s;
 
 	e2opkt = new_Ew2orbPacket();
@@ -1034,7 +1028,7 @@ stop_import_thread( char *name )
 	if( Flags.VeryVerbose ) {
 
 		elog_notify( 0, "'%s': Request sent to stop import thread, "
-			     "thread-id %d\n", name, it->thread_id );
+			     "thread-id %ld\n", name, (long) it->thread_id );
 	}
 
 	mutex_lock( &it->it_mutex );
@@ -1203,8 +1197,8 @@ ew2orb_import_shutdown()
 
 	if( ( it = find_import_thread_byid( thr_self() ) ) == NULL ) {
 
-		complain( 0, "Couldn't find thread %d in registry!\n",
-			  	  thr_self() );
+		complain( 0, "Couldn't find thread %ld in registry!\n",
+			  	  (long) thr_self() );
 
 	} else {
 	
@@ -1222,8 +1216,8 @@ ew2orb_import_shutdown()
 	if( Flags.verbose ) {
 
 		elog_notify( 0, 
-		"'%s': Thread (thread-id %d) stopping at user request\n",
-		  name, thr_self() );
+		"'%s': Thread (thread-id %ld) stopping at user request\n",
+		  name, (long) thr_self() );
 	}
 
 	delete_import_thread( it );
@@ -1712,8 +1706,8 @@ ew2orb_import( void *arg )
 	if( ( it = find_import_thread_byid( thr_self() ) ) == NULL ) {
 
 		complain( 1, 
-			"Couldn't find thread id %d in registry!\n",
-			 thr_self() );
+			"Couldn't find thread id %ld in registry!\n",
+			 (long) thr_self() );
 
 		status = -1;
 
@@ -1757,7 +1751,7 @@ new_ImportThread( char *name )
 	it->nbytes = 0;
 	it->sync_state = STREAM_SEARCH;
 	it->loglevel = QUIET;
-	it->thread_id = -1;
+	it->thread_id = (pthread_t) -1;
 	it->last_heartbeat_sent = 0;
 	it->last_heartbeat_received = 0;
 	it->expect_heartbeat_hook = NULL;
@@ -1954,21 +1948,21 @@ update_import_thread( char *name, Pf *pf )
 		if( it->new ) {
 
 			elog_notify( 0,
-				"'%s': Started import thread as thread-id %d\n", 
-				it->name, it->thread_id );
+				"'%s': Started import thread as thread-id %ld\n", 
+				it->name, (long) it->thread_id );
 
 		} else if( it->update ) {
 
 			elog_notify( 0,
 				"'%s': Posted updates for import thread "
-				"(thread-id %d)\n", 
-				it->name, it->thread_id );
+				"(thread-id %ld)\n", 
+				it->name, (long) it->thread_id );
 
 		} else {
 
 			elog_notify( 0,
-				"'%s': Import thread (thread-id %d) unchanged\n",
-				it->name, it->thread_id );
+				"'%s': Import thread (thread-id %ld) unchanged\n",
+				it->name, (long) it->thread_id );
 		}
 	}
 
@@ -2067,9 +2061,6 @@ static int
 crack_packet( Ew2orbPacket *e2opkt )
 {
 	int	retcode = 0;
-	int	*out = 0;
-	int	outsize = 0;
-	int	nout = 0;
 	PktChannel *pktchan;
 	char	*dp;
 	char	*sp;

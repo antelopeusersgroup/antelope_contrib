@@ -167,15 +167,8 @@ which the descriptor file should refer. Multiple reference databases
 may be specified as a colon-separated list with no spaces. Do
 not include any squiggly-brackets (the standard datascope 
 syntax for the dbpath), since pick2db expects to do it for you. 
-.SH QUESTIONS
-.LP
-does a fixed-location code of 7 indicate the location was 
-fixed by the location program or by a geophysicist? Right now
-this code will result in origin.dtype = dbNULL.
-.SH FILES
 .SH ENVIRONMENT
 pick2db expects $ANTELOPE to be defined.
-.SH PARAMETER FILE
 .SH EXAMPLE
 .nf
 % ls 95*
@@ -205,7 +198,7 @@ No such file or directory
 % 
 
 .fi
-....you forgot to give it a database name, so it interpreted
+ ....you forgot to give it a database name, so it interpreted
 the last named pickfile as the descriptor file for the database.
 .SH "SEE ALSO"
 .nf
@@ -252,6 +245,9 @@ If it doesn't find one, it complains and skips the row.
 pickfiles do not contain channel names, though many programs
 using the css database will expect them (hence the -c option).
 
+does a fixed-location code of 7 indicate the location was 
+fixed by the location program or by a geophysicist? Right now
+this code will result in origin.dtype = dbNULL.
 .SH AUTHOR
 Kent Lindquist. 
 The Datascope package was written by the Joint Seismic Program 

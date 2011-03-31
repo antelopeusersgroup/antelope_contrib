@@ -85,6 +85,7 @@ pfwrite (pfname, filename)
 
 pfout (pfname, file)
     write out pf object pfname to file object
+
 now()
     return current time to (usually) microseconds accuracy
 
@@ -115,10 +116,20 @@ strlocalydtime (epoch)
 strlocaldate (epoch)
     convert epoch time to date, eg "4/23/2001" in local timezone
 
-
 epoch (yearday)
     return the epoch time corresponding to the integer yearday
 
 yearday (epoch)
     return the yearday corresponding to an epoch time
 
+grn (lat, lon)
+    return the geographic region number for the given coordinates
+
+srn (lat, lon)
+    return the seismic region number for the given coordinates
+
+grname (lat, lon)
+    return the geographic region name for the given coordinates
+
+srname (lat, lon)
+    return the seismic region name for the given coordinates

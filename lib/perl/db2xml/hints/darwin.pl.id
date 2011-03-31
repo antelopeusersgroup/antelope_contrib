@@ -1,0 +1,25 @@
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+# $bits is set by getid(1) during the 'make' process to '32' or '64':
+
+if( $bits == 32 ) {
+
+	$arch = "-arch i386";
+
+} elsif( $bits == 64 ) {
+
+	$arch = "-arch x86_64";
+
+} else {
+
+	print "Unexpected failure in darwin.pl. Attempting to proceed.\n";
+
+	exit( 0 );
+}
+
+print "Adding $arch\n";
+
+$self->{LDDLFLAGS} = "$arch $Config{lddlflags}";
+

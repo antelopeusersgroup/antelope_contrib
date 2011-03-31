@@ -307,7 +307,7 @@ tkdbpick [options] {dbname|-}
 -counts 
 </options>
 
-trdisp [-g geom] [-hr] [-s subset] [-w hours] database[.table] [start [range]]
+trdisp [-g geom] [-hrW] [-s subset] [-w hours] database[.table] [start [range]]
     display waveform data and arrivals from database or view
 
 dbheli [options] db sta chan tstart twinline nlines scale
@@ -342,7 +342,7 @@ dbchkwf [ -v ] database
 chkmsd [-v] db
      checks all miniseed blocks to see db and miniseed agree
 
-dbchkwfdata [-av] db
+dbchkwfdata [-av] [-s subset] db
      read from each waveform in db, only last sample or entire waveform with -a
 
 dbcmpwf [-acmv]    db1[.table] record1 db2[.table] record2

@@ -27,4 +27,6 @@ $(PERLMAKEFILE) : Makefile.PL
 Makefile.PL : Makefile.PL.proto 
 	sed -e 's@LinkArguments@$(LDFLAGS) $(LDLIBS)@' \
 	    -e 's@AuthorField@$(AUTHOR_FIELD)@' \
-	    -e 's@CompileArguments@$(CFLAGS)@' < Makefile.PL.proto > $@
+	    -e 's@CompileArguments@$(CFLAGS)@' \
+	    -e 's@-framework IOKit@@' \
+	    -e 's@-framework CoreFoundation@@' < Makefile.PL.proto > $@

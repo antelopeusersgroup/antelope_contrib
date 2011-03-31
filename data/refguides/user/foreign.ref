@@ -321,6 +321,7 @@ miniseed2days [options] miniseed ...
 -C file	chuck blocks with bad time or compress errors into file
 -d db 	create output db by running miniseed2db on output files
 -D 	retain duplicate seed blocks in output
+-f 	ignore mixed block size and out of time order miniseed errors 
 -I 	inclulsive time screening 
 -S dir	alternate output directory
 -e end	ignore data after endtime
