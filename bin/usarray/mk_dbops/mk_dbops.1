@@ -197,6 +197,10 @@ vnet            _US-TA
 
 pdcc            IRIS DMC
 
+packet_match    .*M40|.*M100                    # packet match for those in the prelim orb
+
+channel_match   BHZ|LHZ                         # channels to check wfdisc start/end times and open records in stage table
+
 # Only 3 adoption types supported: E, T, R.  
 # Do not change or add to list of codes below.
 # atype_phrase can be modified 
@@ -237,6 +241,15 @@ Virtual network code to be used in the deployment table.
 .IP \fIpdcc\fP
 Data center to be filled in for \fIdeployment.pdcc\fP.  If not filled in, the pdcc is set to -.  
 The DMC has some limitation on what can be put in this field.  Contact them for a full definition of a PDCC.
+.IP \fIpacket_match\fP
+Match statement for packets in the preliminary orb.  These packets are used for start times when using the \fI-I\fP option
+for new installations.
+.IP \fIchannel_match\fP
+Channel subset to use for checking start/end times in wfdisc for installations and removals.  The stage table is also subset
+to review for equipment install times using this subset.  Ideally, this would be one vertical channel.  If you have multiple 
+sensors with different channel codes installed at different times, the earliest start time in the stage table for the given
+station and \fIchannel_match\fP will be used.
+
 .IP \fIadoption_types\fP
 Only three adoption types are accepted \fIE\fP, \fIT\fP, and \fIR\fP.  These correspond to an EARN transition,
 a transition to regional/national lab network operator, and a transition to operation as a REFNET
@@ -402,7 +415,7 @@ the prelim orb, you must have permission to access the orb.
 If using \fI-I\fP or \fI-U\fP mode that checks the status orb, 
 you must have permission to access the orb.
 
-User must have write access to dbops tables.
+User must have write access to dbops tables (adoption, comm, deployment, and dlsite).
 
 If a record cannot be added to a table the program dies.  This could be a problem,
 for instance, if one table had a successful update (i.e. comm) and then the update 
@@ -424,10 +437,6 @@ When running in \fI-I\fP mode, if the newly certified stations have no data
 in the default \fIstatus_orb\fP you will have to run \fIq330_location(1)\fP 
 by hand.  Alternatively, use the \fI-S\fP option to point at the orb that has the
 necessary .*/st packets, likely the \fIprelimORB\fP.
-
-Subsets of the stage table require BHZ channel data.  Wfdisc subsets look for 
-both BHZ and LHZ data to find the oldest and newest waveform data.  At some point 
-I should probably put this into the pf file as an option.
 
 This script does not fill in the dutycycle or power fields in the comm table.  I 
 plan on working on that at some future date.
