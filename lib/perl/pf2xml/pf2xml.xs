@@ -47,6 +47,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#undef die
 #include "db.h"
 #include "stock.h"
 #include "pfxml.h"
