@@ -1,0 +1,26 @@
+This directory (contrib/data/dbbuild-batch) is intended to provide a
+location for network operators to put dbbuild batch files representing
+stations.  These files might be useful both as guides to constructing
+batch files for other networks, and for creating master database
+tables for data imported from external networks.
+
+It's important to have some degree of organization at this level; the
+first suggestion is to create a directory for each network.  Within
+that directory, put individual dbbuild batch files for each station,
+and add a README file with some information about the network and
+people to contact.
+
+If special parameter files and response files are needed to run
+dbbuild with these files, they could be placed in the network
+directory.  However, it would probably be better to add these files to
+the main set, as follows:
+
+    datalogger.pf   contrib/data/instruments/dataloggers/
+    sensor.pf	    contrib/data/instruments/sensors/
+    responses	    contrib/data/responses/ 
+
+Each of these directories are further subdivided by manufacturer.
+
+Participation and the level of detail in this area is entirely up to
+the operators.  But some degree of cooperation might be helpful for
+everyone.
