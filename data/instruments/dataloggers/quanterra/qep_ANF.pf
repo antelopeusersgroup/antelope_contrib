@@ -1,5 +1,5 @@
 originator     Jennifer Eakins, UCSD
-last_modified  2010-02-05
+last_modified  2011-04-04
 
 category	ANF 
 configuration	QEP - Q330 Environmental Processor 
@@ -88,7 +88,7 @@ rsptype		P
 
 epP &Arr{
 gtype		QEP pressure
-gnom		0.001
+gnom		1000
 iunits  	mbar
 ounits		counts
 sn              datalogger
@@ -100,12 +100,12 @@ stages 		epT
 iunits  	C   
 ounits		counts
 samprate 	1.000	
-rsptype		T
+rsptype		t
 }
 
 epT &Arr{
 gtype		QEP temp 
-gnom		0.1
+gnom		10 
 iunits  	C	
 ounits		counts
 sn              datalogger
@@ -116,6 +116,7 @@ stages 		epH
 iunits  	percent   
 ounits		counts
 samprate 	1.000	
+rsptype		p
 }
 
 epH &Arr{
@@ -132,47 +133,45 @@ stages 		epV
 iunits  	V   
 ounits		counts
 samprate 	1.000	
+rsptype		v
 }
 
 epV &Arr{
 gtype		QEP voltage 
-gnom		0.1
+gnom		10
 iunits  	V
 ounits		counts
 sn              datalogger
-rsptype		V
 }
 
 
 LCE_EP	&Arr{	# PLL offset in usec, 1sps
 stages 		epO	
-iunits  	s   
+iunits  	sec
 ounits		counts
 samprate 	1.000	
+rsptype		T
 }
 
 epO &Arr{
 gtype		QEP PLL offset
-gnom		0.000001
-iunits  	s
+gnom		1e6
+iunits  	sec
 ounits		counts
 sn              datalogger
-rsptype		T
 }
 
 LCO_EP	&Arr{	# LCO in -5000 to +5000 counts, 1sps
 stages 		epC	
-#iunits  	counts   
 iunits  	V	
 ounits		counts
 samprate 	1.000	
+rsptype		c
 }
 
 epC &Arr{
 gtype		QEP control voltage
-#gnom		1.0
-#iunits  	counts	
-gnom		6.66667
+gnom		1.0
 iunits  	V	
 ounits		counts
 sn              datalogger

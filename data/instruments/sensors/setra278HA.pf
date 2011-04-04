@@ -7,12 +7,11 @@ configuration	Setra 278 microbarometer - High Altitude
 description	Setra 278 microbarometer - High Altitude
 dfile		setra278HA 
 
-rsptype		I	# infrasound instrument
+rsptype		P	# infrasound instrument
 band		l	# broadband
 sensor_type_code	D
 
 gtype		sensor
-#sensitivity	100		#  mbar/V
 sensitivity     0.01		#  sensitivity is in V/mbar
 
 iunits		mbar
