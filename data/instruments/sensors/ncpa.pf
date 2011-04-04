@@ -7,7 +7,7 @@ configuration	NCPA microbarometer
 description	NCPA microbarometer 
 dfile		ncpa 
 
-rsptype		I	# infrasound instrument
+rsptype		P	# infrasound instrument
 band		l	# broadband
 sensor_type_code	D
 

@@ -79,10 +79,8 @@ $nullsub 	= "endtime=='9999999999.99900'";
 $commsub	= "$stasub && $nullsub";
 $dlsitesub	= "$dlstasub && $nullsub";
 $depsub		= "$stasub" ;
-$stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
-$chansub	= "chan=~/BHZ|LHZ/" ;
-$wfsub 		= "$stasub && $chansub";
-$packet_ext	= ".*M40" ;	# Look for data packets
+#$stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
+#$chansub	= "chan=~/BHZ|LHZ/" ;
 
 # read pf file to get default orbs and wf dbs
 
@@ -97,10 +95,19 @@ $packet_ext	= ".*M40" ;	# Look for data packets
   $prelim_orb	= pfget($Pf, 'prelim_orb');
   $wfdb 	= pfget($Pf, 'wfdb');
   $vnet  	= pfget($Pf, 'vnet');
-  $pdcc  	= pfget($Pf, "pdcc");
+  $pdcc  	= pfget($Pf, 'pdcc');
+  $status_orb	= pfget($Pf, 'status_orb');
+  $packet_ext	= pfget($Pf, 'packet_match') ;  
+  $chansub	= pfget($Pf, 'channel_match')  ;
+  $chansub	= "chan=~/$chansub/" ;
+
+  $status_orb	= pfget($Pf, 'status_orb');
 
   $ref		= pfget($Pf, 'adoption_types' ) ;
   %adoption_types = %$ref; 
+
+  $stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
+  $wfsub 	= "$stasub && $chansub";
 
 # command line overrides 
   $status_orb	= $opt_S if ($opt_S) ;
@@ -249,7 +256,6 @@ if ($opt_s) {
 
 @ops		= dbopen ( $dbops, "r+") ; 
 @stage 		= dbopen_table ( $sitedb.".stage", "r") ; 
-#@wfdisc		= dbopen_table ($wfdb.".wfdisc", "r") if ($opt_R || $opt_W ) ;
 # only opt_A and non-EARN
 @wfdisc		= dbopen_table ($wfdb.".wfdisc", "r") if ($opt_R || $opt_W || !$newvnet) ; 
 
@@ -381,19 +387,20 @@ if ($opt_U) {
 	elog_die ("  ERROR!  Data exists after endtime for $sta specified in $sitedb.stage !!\n Fix input metadata!\n") ; 
   }
 
+# close_deployment used to be after close_dlsite, but if q330_location had been run 
+#  when a removed station was not running, updates to deployment table would fail.
+# Changed 3/31/2011 --J.Eakins
+
+  &close_deployment($wfendtime, $sendtime, $mytime) ; 
   &close_comm($sendtime) ; # we want endtime to be $sendtime
 
   elog_notify("Closed comm record in database: $dbops\n")  if (opt_v) ;
 
-  
 # get dlsite.endtime from (last time in wfdisc?  stage.endtime? last data in orb?)
 #   chose to use stage.endtime
 #  NOTE:  if opt_A, -A, dlsite.endtime is set to NULL
 
   &close_dlsite($sendtime) ; 
-
-  &close_deployment($wfendtime, $sendtime, $mytime) ; 
-
 
 } elsif ($opt_I) {
 
@@ -426,7 +433,7 @@ if ($opt_U) {
      @prewf 	= dbopen_table ( $prelimwf_db.".wfdisc", "r") ; 
      @prewf	= dbsubset (@prewf, $wfsub) ;
 
-     elog_die("No records in prelim wfdisc matching station $sta and chan BHZ or LHZ\n") if (!dbquery(@prewf, "dbRECORD_COUNT") ) ; 
+     elog_die("No records in prelim wfdisc matching station $sta and $chansub  \n") if (!dbquery(@prewf, "dbRECORD_COUNT") ) ; 
 
      @prewf 	= dbsort (@prewf, "time") ;	# get single record that will be updated
 
@@ -507,7 +514,7 @@ sub get_stageendtime {		# get the stage.endtime
 
 sub get_stagestarttime {		# get the stage.time
 
-  $stagesub	= "sta=='$sta'&&chan=='BHZ'&&gtype=~/sensor|seismometer/" ;
+  $stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/" ;
   @single_stage	= dbsubset (@stage, $stagesub) ;		
   @single_stage	= dbsort(@single_stage, "time") ;	# get single record that will be updated
   
@@ -526,7 +533,7 @@ sub get_wfendtime {		# get the last time of available data from DB
     @wfdisc	= dbsubset (@wfdisc, $wfsub) ;
     @wfdisc 	= dbsort   (@wfdisc, "endtime") ;	# get single record that will be updated
 
-    elog_die("No records in certified wf db matching $sta for BHZ or LHZ  \n") if (!dbquery(@wfdisc, "dbRECORD_COUNT") ) ; 
+    elog_die("No records in certified wf db matching $sta for $chansub \n") if (!dbquery(@wfdisc, "dbRECORD_COUNT") ) ; 
 
     $wfdisc[3] 	= dbquery(@wfdisc, "dbRECORD_COUNT") - 1  ;
     $wfendtime = dbgetv(@wfdisc, qw( endtime ) );
@@ -627,7 +634,6 @@ my ($endtime)  = @_ ;
   dbputv(@single_dlsite,endtime,$endtime) ; 
   elog_notify("Closed dlsite record in database: $dbops\n")  if ($opt_v) ;
 
-
 } 
 
 sub modifycomm {  # &modifycomm($time)		
@@ -642,15 +648,6 @@ my ($endcommtime)  = @_ ;
   $single_comm[3] = 0 ;
 
   ($ctime,$cendtime,$commtype,$provider) = dbgetv(@single_comm, qw(time endtime commtype provider) );
-
-
-#  if ( ($mytime - 1) > $ctime ) {
-#     dbputv(@single_comm,endtime,$mytime-1);
-#     elog_notify("Modified comm  record for sta: $sta in $dbops comm table\n")  ;
-#  } else {
-#     elog_notify("Time of comms change:  " . &strydtime($mytime) . "\n") ;
-#     elog_die("Urk...  Check your requested input time!! \n\t Starting time of previous record is: " . &strydtime($ctime)  ); 
-#  }
 
   if ( $endcommtime > $ctime ) {
      dbputv(@single_comm,endtime,$endcommtime);
@@ -691,7 +688,6 @@ sub add2dlsite	{		# add a new record to the dlsite table
   elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
   elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
   $cmd = "q330_location -s $sta $status_orb $cmd_orb $dbops" ;
-#  $cmd = "q330_location $status_orb $cmd_orb $dbops" ;
   &run($cmd)  ;
 
 }

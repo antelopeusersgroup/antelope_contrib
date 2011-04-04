@@ -13,6 +13,9 @@ vnet		_US-TA
 
 pdcc		IRIS DMC
 
+packet_match	.*M40|.*M100			# packet match for those in the prelim orb
+channel_match	HNZ|HHZ				# channels to check wfdisc start/end times and open records in stage table
+
 # Only 3 adoption types supported: E, T, R.  
 # Do not change or add to list of codes below.
 # atype_phrase can be modified 

@@ -33,6 +33,24 @@ rtrun [-nv] command-line
 cronrun [-nv] command line
     run command line immediately, reproducing cron environment 
 
+rtmanage [options] 
+    scriptable lightweight cousin to rtexec for running collection of programs temporarily
+<options>
+-9 secs 	how long to wait before killing programs with -9 signal
+-C		no timetags
+-D subdir 	run in specified subdirectory
+-T timeout 	maximum time to run
+-b secs 	interval between running commands (default=0)
+-c commands 	read commands from file or commandline
+-d		run in subdirectory #RTMANAGED
+-l		save command output in individual log files in logs directory
+-p pf 		specify alternate parameter file
+-q program,program	quit if one of these programs dies
+-t secs 	how long to wait after termination event to shut down
+-v		more verbose
+-x		on macs, start in background with /usr/libexec/StartupItemContext
+</options>
+
 ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
@@ -214,6 +232,7 @@ tcpmonitor [options] host
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
+-h	stop after creating the new ring buffers
 -k	don't reset ring buffer
 -p port	use port instead of 6510
 -P prefix	alternate names for orb files
@@ -261,6 +280,9 @@ orbstat [options] orb [secs]
 
 orbclients [-t] orb 
     show organized view of orbserver/diskserver clients
+
+orbport [-m] port
+    look up port by name, number, or regular expression
 
 pforbstat [options] orb [secs]
     Create parameter files of orb status
@@ -400,6 +422,9 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
 
 cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] station orbout
     copy data from comserv to an orbserver orb
+
+dlcollector [-p pf] [-S state] [-v] central-orb
+    collect data from Kinemetrics Basalt data loggers
 
 private cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
@@ -951,7 +976,9 @@ tkorblag orb
 cdorb2db [options] orb db [start [end|period]]
     copy gappy/out of order (CD1) waveform data from orbserver orb into integer waveform files of database db (starting at time start through end or for stated period)
 <options>
+-C	check for overlaps and duplicates in packet data
 -c re	save channel matching regular expression re
+-M	memory map all waveform files (instead of seek/write)
 -m re	select packets matching regular expression re
 -r re	reject packets matching regular expression re
 -p pf	specify parameter file
@@ -1276,6 +1303,7 @@ forbserver [options] filename
 -s	meter out packets at real time rate
 -v	more verbose
 -w	overwrite existing file instead of appending
+-V	show orb requests and pktids
 </options>
 
 pkttypes [-c]
