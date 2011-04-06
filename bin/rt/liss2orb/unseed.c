@@ -3,12 +3,12 @@
 #include "msd.h"
 
 int 
-UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, int *nsamp, 
+UNSEED ( char *seed, int size, Msd **confp, double *time, double *samprate, int *nsamp, 
 	    int **outp, int *datasz ) 
 {
     int i, asamp, *out, swap ; 
     long npts ;
-    Steim *conf ;
+    Msd *conf ;
     char *indata ;
     int retcode = 0 ;
     static int 
@@ -24,13 +24,13 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 	notified_Steim3=0,
 	notified_HGLP=0 ;
 
-    conf = newsteim() ; 
+    conf = msdnew() ; 
     *confp = conf ;
     conf->record = seed ;
 
-    if ( parse_seed_data_header(conf) ) {
+    if ( unpack_sdh(conf) ) {
 
-	if ( conf->has_s1000 && conf->s1000.dataformat == 0 ) {
+	if ( conf->flags.has_b1000 && conf->b1000.dataformat == 0 ) {
 	    elog_clear ();
 	    retcode = -4 ;
 	} else {
@@ -39,7 +39,7 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 	    retcode = -2 ;
 	}
 	conf->record = 0 ; 
-	freesteim(conf) ;
+	msdfree(conf) ;
 
     } else {
 
@@ -49,17 +49,17 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 
 	SIZE_BUFFER(int *, *outp, *datasz, *nsamp ) ;
 	out = *outp ;
-	if ( conf->has_s1000 ) { 
+	if ( conf->flags.has_b1000 ) { 
 
 	    indata = conf->record + conf->sdh.data_offset ;
 
 #ifdef WORDS_BIGENDIAN
-	    swap = (conf->s1000.sparc_order == 0 ) ;
+	    swap = (conf->b1000.sparc_order == 0 ) ;
 #else
-	    swap = (conf->s1000.sparc_order != 0 ) ;
+	    swap = (conf->b1000.sparc_order != 0 ) ;
 #endif
 
-	    switch (conf->s1000.dataformat) { 
+	    switch (conf->b1000.dataformat) { 
 		case 0:	/* ASCII text !? */
 		    if ( ! notified_ASCII ) { 
 			notified_ASCII = 1 ;
@@ -126,7 +126,7 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		case 11:	/* Steim(2) compression */
 		case 20:	/* Liss code for Steim(2) compression !? */
 		    conf->data = out ;
-		    retcode = usteim (conf, outp, &npts ) ;
+		    retcode = umsd (conf, outp, &npts ) ;
 		    break ;
 
 		case 12:	/* GEOSCOPE Multiplexed */
@@ -242,7 +242,7 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		default:
 		    register_error ( 0, 
 			"unrecognized SEED 1000 encoding format %d", 
-			conf->s1000.dataformat );
+			conf->b1000.dataformat );
 		    retcode = -1 ;
 		    break; 
 
@@ -254,4 +254,3 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
     return retcode ;
 }
 
-/* $Id$ */

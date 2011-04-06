@@ -1,0 +1,4 @@
+#!/bin/sh -v
+# liss2orb -m '.._.*_[BLHES]H[ZNE12]_00/LISS' -s 512 -t 600 slbs.iu.liss.org:4000 ./orb
+liss2orb -vv -D packets -m '.._.*_[BLHES]H[ZNE12]_00/LISS' -t 600 slbs.iu.liss.org:4000 ./orb
+
