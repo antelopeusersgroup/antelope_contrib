@@ -161,7 +161,7 @@ int pscl_ucompress(
 
 {
 
-   Steim *conf ;
+   Msd *conf ;
    int *sud;
    int npts, nerr;
    int psize;
@@ -169,27 +169,25 @@ int pscl_ucompress(
 
 
        npts = 0;
-       conf = (Steim *) newsteim() ;
+       conf = (Msd *) msdnew() ;
        conf->frames_per_record = 15;
-       conf->level = 1;
+       conf->b1000.dataformat = 10 ;
        conf->sdh.data_offset = 0;
        conf->sdh.nsamp = nsamp;
-       conf->data_offset = 0;
        conf->record_size = 960;
        conf->record = *data;
        conf->data = 0;
 
 
-       if ( nerr = usteim ( conf, &sud, &npts) )  {
-         freesteim( conf ) ;
-         complain ( 0, "Steim decompression reports %d errors\n", nerr ) ;
+       if ( nerr = ustc ( conf, &sud, &npts) )  {
+         msdfree( conf ) ;
+         complain ( 0, "Msd decompression reports %d errors\n", nerr ) ;
          return 0;
        }
        psize =  npts*sizeof(int) ;
        memcpy( (char *) *data, (char *)sud, psize );
-       freesteim( conf ) ;
+       msdfree( conf ) ;
        return psize;
 
 }
 
-/* $Id$ */

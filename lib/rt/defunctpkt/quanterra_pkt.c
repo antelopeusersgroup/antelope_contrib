@@ -11,7 +11,7 @@
    Q730 digitizer. Note that contrary to popular belief, the
    data packets returned from modern Quanterra digitizers are
    definitely NOT in SEED format. The waveform sample values are 
-   normally compressed using Steim 1,2,3 formats, as in SEED. 
+   normally compressed using Msd 1,2,3 formats, as in SEED. 
    However, the packet header information is not even remotely an
    approximation of the SEED data blockette header. It turns
    out that the hallowed SEED data blockette, advertised as
@@ -409,7 +409,7 @@ unstuffqorbpkt (double time,
 	int npts;
 	char station[6];
 	char segtype[6];
-	Steim *conf;
+	Msd *conf;
 	char *data;
 	int *idata;
 
@@ -513,19 +513,31 @@ unstuffqorbpkt (double time,
 	if (level == 0) {
 		N2H4 (pktch->data, data, nsamp);
 	} else {
-		conf = newsteim();
+		conf = msdnew();
 		conf->record = data;
 		conf->record_size = 448;
 		conf->sdh.data_offset = 0;
 		conf->sdh.nsamp = nsamp;
-		conf->level = level;
-		if ( usteim (conf, &idata, &npts) ) {
-			register_error (0, "unstuffqorbpkt: usteim() error.\n");
+		switch ( level ) {
+		    case 1:
+			conf->b1000.dataformat = 10 ;
+			break ;
+
+		    case 2:
+			conf->b1000.dataformat = 11 ;
+			break; 
+		 
+	            default:
+			elog_log ( 0, "steim level %d not implemented", level ) ; 
+			return 0 ; 
+		}
+		if ( ustc (conf, &idata, &npts) ) {
+			register_error (0, "unstuffqorbpkt: ustc() error.\n");
 			return (0);
 		}
 		memcpy (pktch->data, idata, nsamp*4);
 		conf->record = NULL;
-		freesteim(conf);
+		msdfree(conf);
 	}
 
 	return (1);
