@@ -6,6 +6,8 @@
 # 1.0                 gain
 #theoretical   1 sensor    	  paz    eakins  
 theoretical   1 anti-alias	  paz    eakins  
-1.00
-0	Poles
+0.0413
+1	Poles
+-0.041281   0.0000e+00    0.0000E+00    0.0000E+00
+
 0	Zeros
