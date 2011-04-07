@@ -12,14 +12,8 @@ band		l	# broadband
 sensor_type_code	D
 
 gtype		sensor
-#sensitivity	5.1e-6		# try 1/5.1e-6
-#sensitivity	196078.4
-#sensitivity	1.52		# try 1/( (5.1e6 * 5) / 2^24 )
-#sensitivity	0.75		# try 1/( (5.1e6 * 2.5) / 2^24 )
-#sensitivity	3.28965		# try 1/( (5.1e3counts/microbar * 2.5V/2^24counts ) * 1e3 microbar/mbar
-#sensitivity	8.224e-2	# try 1/( (5.1e3counts/microbar * 40V/2^24counts ) * 1e3 microbar/mbar
-sensitivity	0.408   	# try 1/( (0.0245 V/Pa) * 100 Pa/mbar =  0.408 mbar/V
-# email from 8/7/2010 say NCPA is 5.1 counts/nanobar
+#sensitivity	0.408   	# try 1/( (0.0245 V/Pa) * 100 Pa/mbar =  0.408 mbar/V
+sensitivity	0.4926  	# try 1/( (0.0203 V/Pa) * 100 Pa/mbar =  0.4926 mbar/V
 iunits		mbar
 ounits		V  
 
