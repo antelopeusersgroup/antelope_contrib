@@ -100,6 +100,9 @@ datafile [-ae] {name | dir name | env dir name}
 dynctl [-crv] [program [name[=value] ...]]
     display and set dynamic controls
 
+tkdynctl [program]
+    examine a dynamic control file
+
 epoch [options] [ +format ] [ time/date components ]
     convert time formats.
 <options>
@@ -119,6 +122,9 @@ elog -e errno
 
 elog -s signal#
     print signal description
+
+filetbl [-v] filename
+    show contents of Tbl list saved in filename
 
 pfe [-X] [-font font] [-level level] [{ - | pfname1 [pfname2 [...]]}]
     parameter file navigator GUI
@@ -156,6 +162,9 @@ pfecho [options] name [ param ...]
 -W	show all filenames examined (may not exist)
 -x	expand all references inside pf
 </options>
+
+pfinterpolate  pf filename ...
+    replace expressions like $\\w+ in files with corresponding value from pf
 
 pfverify [-v] [pf-files]
     check resolution of all plain references in parameter files
@@ -218,7 +227,7 @@ restrict searches to certain files by using any combination of:
 ffilter [-aBbCcDdEelLnoOpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
     filter list of files according to various options
 <options>
-Combinatorial options
+ Combinatorial options
 -a	autosplit input lines
 -b	binary files
 -B	basename 
@@ -242,15 +251,15 @@ Combinatorial options
 -X	execute each result
 -v	invert result of all tests 
 -z	zero size
-Regular expression matching
+ Regular expression matching
 -m re	keep matching files
 -r re	reject matching  files
-Operations on filenames
+ Operations on filenames
 -D dirname	extract dirname
 -B basename	extract basename
 -S suffix	extract suffix
 -E px	execute perl code px on each filename
-Other options
+ Other options
 -X	execute each result
 -n	only show command, don't execute
 -u	print only unique paths
@@ -364,6 +373,15 @@ produce [-v] exec [exec2 ...]
 
 installman [-nv] manpage dir
     install manpage into directory dir, modifying .TH line appropriately
+
+screen_makesw [options] [input]
+    look through compilation output, extracting just the error messages
+<options>
+-t	show most time consuming directories
+-v	show directories
+-w	show compiler warnings
+-W 	show special priority warnings
+</options>
 	
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon

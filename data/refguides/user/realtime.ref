@@ -51,6 +51,24 @@ rtmanage [options]
 -x		on macs, start in background with /usr/libexec/StartupItemContext
 </options>
 
+is_idle [-v] filename
+    rtmanage helper script which waits for a file to stop changing
+
+leak_detector [options] 
+    attempt to detect and announce programs with leaks
+<options>
+-1	show which current processes would be tracked
+-D	print data at each iteration
+-v	show when starting to track a process
+-V 	show leak details at every iteration
+-d depth	specify depth of ring buffers in state file
+-i secs	specify how often to run ps
+-m re	track only processes matching re
+-n niter	run only niter iterations
+-p pid	track only specified pid
+-S state	specify alternate state file
+</options>
+
 ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
@@ -420,7 +438,7 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
 -v	verbose
 </options>
 
-cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] station orbout
+deprecated cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] station orbout
     copy data from comserv to an orbserver orb
 
 dlcollector [-p pf] [-S state] [-v] central-orb
@@ -497,20 +515,20 @@ q330util [options] cmd
 -pfout	display output in pf file format
 </options>
     cmd is one of:
-<options>
-pollsn q330tip 
-ping q330ip,lport,{info|ECHO} 
-register q330ip,sn,lport 
-getconfig  q330ip,sn,lport,config 
-control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} 
-sauth q330ip,sn[,port_1_auth[...]] 
-sipaddr q330ip,sn,interface,newip 
-sbpwr q330ip,sn,interface,function,timeout 
-rqannc q330ip,sn 
-umsg q330ip,sn,lport,message 
-ident q330ip,sn[,tport[,lport]] 
-marmotfix q330ip,sn[,interface[,baudrate]]
-</options>
+<List>
+    pollsn q330tip 
+    ping q330ip,lport,{info|ECHO} 
+    register q330ip,sn,lport 
+    getconfig  q330ip,sn,lport,config 
+    control q330ip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs} 
+    sauth q330ip,sn[,port_1_auth[...]] 
+    sipaddr q330ip,sn,interface,newip 
+    sbpwr q330ip,sn,interface,function,timeout 
+    rqannc q330ip,sn 
+    umsg q330ip,sn,lport,message 
+    ident q330ip,sn[,tport[,lport]] 
+    marmotfix q330ip,sn[,interface[,baudrate]]
+</List>
 
 qtcmd [options] cmdorb net_sta cmd [params]
     execute commands on remote Quanterra digitizer
@@ -1081,12 +1099,6 @@ q330logs2db  [options] orb db
 
 <subsection Orb Alarms>
 <commands>
-acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
-    send mail when AC power fails in DC packets
-
-battalarm [-d] [-m srcmatch ] orbin mail_add
-    send mail when battery power drops in DC packets
-
 pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
     read packets, send alarms for specified conditions 
 <options>
@@ -1165,7 +1177,7 @@ online_backup [options] [directories]
 
 <subsection Orb Diagnostic Tools>
 <commands>
-private orbreap [options] orb [start [end|range]]
+orbreap [options] orb [start [end|range]]
     multipurpose orb dumping program
 <options>
 -a time
