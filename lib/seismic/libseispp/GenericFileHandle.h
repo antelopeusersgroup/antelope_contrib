@@ -184,6 +184,8 @@ class GenericFileHandle
         int put(ThreeComponentEnsemble& d);
         /*! return current file size in bytes. */
         long filesize();
+        /*! Position file pointer to beginning of file.  */
+        void rewind();
     private:
         FixedFormatTrace dbuffer;
         AttributeCrossReference xref;

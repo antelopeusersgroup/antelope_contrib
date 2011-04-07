@@ -76,6 +76,7 @@ GenericFileHandle::GenericFileHandle(string filename,
                 + filename
                 + " for reading");
         fsize=this->filesize();
+        current_file_position=0;
     }
     else
     {
@@ -86,6 +87,7 @@ GenericFileHandle::GenericFileHandle(string filename,
                 + "Cannot open file "
                 + filename
                 + " for output in append mode");
+        current_file_position=outstrm.tellp();
         fp=NULL;
     }
 }
@@ -702,6 +704,21 @@ void GenericFileHandle::unlock()
                     +"\nRemove manually and beware deadlocks if caller blunders on");
         }
     }
+}
+void GenericFileHandle::rewind()
+{
+    if(readmode)
+    {
+        std::rewind(this->fp);
+    }
+    else
+    {
+        outstrm.seekp(0L);
+        if(SEISPP_verbose) cerr << "WARNING:  "
+            "GenericFileHandle.rewind called on an output file"<<endl;
+    }
+    current_file_position=0;
+
 }
 
 
