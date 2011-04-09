@@ -527,6 +527,34 @@ int elog_set ( enum Elog_code code, int severity, void *value )
 void show_stack_trace ( void )
     print a stack trace from the current execution location
 
+<subsection rtlog routines>
+<cdeclarations>
+void rtlog_instance (int severity, char *type, char *id, char *fmt, ...)
+    record instance event with specified severity, type, id, and (optional) message
+
+void rtlog_scalar (int severity, char *type, char *id, double value, char *fmt, ...)
+    record event with specified severity, type, id, 1 scalar value, and (optional) message
+
+<subsection Dynamic Controls>
+<cdeclarations>
+int dcsetupbyt(char *aname, long value) 
+int dcsetupint(char *aname, long value) 
+int dcsetupflt(char *aname, double value) 
+int dcsetupstr(char *aname, char * value) 
+    setup a control of type byte, int, double or string, returning index; value is used to initialize if not already set
+
+int dcgetb(int index) 
+double dcgetf(int index) 
+long dcgeti(int index) 
+char *dcgets(int index) 
+    return the value for the specified control byte, int, double or string
+
+int dctrigger(int index)
+    return the value for the specified control byte, resetting it to zero
+
+long dcchanged()
+    returns integer which is incremented when any control is set
+
 <subsection Filename and Path Manipulation>
 <cdeclarations>
 int abspath ( char *relp, char *absp )
@@ -911,6 +939,9 @@ void bt_crc16 ( short *crc, uchar *buf, int size );
 void bt_crc32 ( int *crc, uchar *buf, int size );
     accumulate 32 bit crc over size chars in buf in *crc
 
+void bt_crc64 ( long *crc, uchar *buf, int size );
+    accumulate 64 bit crc over size chars in buf in *crc
+
 FILE *gz_cat ( char *name)
     return FILE opened for reading on the output of "zcat name"
 
@@ -1115,6 +1146,9 @@ int resurrect ( char *name, Relic value, Relic_type type )
     recover old value for name from state file, set up to save on later
     calls to bury. type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
 
+char *gravesite ()
+    returns filename for state file
+
 <subsection Buffered Network Stream I/O>
 <cdeclarations>
 Bns *bnsnew ( int fd, long sz )
@@ -1198,10 +1232,14 @@ int pbnsSync ( Bns *bns, char *sync, int nsync )
 
 <subsection Miscellaneous>
 <cdeclarations>
-private void banner ( char *program, char *version )
-    print header with program name, version, BRTT address
+void banner ( char *program, char *version )
+    print header with program name, version; if 0, program & version are taken from elog_init args
 
-void cbanner ( char *version, char *usage, char *author, char *location, char *email )
+void announce ( char *program, char *version )
+char *announce_str ( char *program, char *version ) ;
+    announce start of execution
+
+deprecated void cbanner ( char *version, char *usage, char *author, char *location, char *email )
     print header with program name, version, usage, and author contact information
 
 void *usermethod ( char *method )

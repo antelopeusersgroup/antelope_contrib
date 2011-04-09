@@ -38,7 +38,6 @@ int orbresurrect ( int orb, int *last_pktid, double *last_t)
     sets up and uses a bury(3) state file to save and restore a packet
     position for the connection orb.
 
-
 <subsection Reading>
 <cdeclarations>
 int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char **pkt, int *nbytes, int *bufsize )
