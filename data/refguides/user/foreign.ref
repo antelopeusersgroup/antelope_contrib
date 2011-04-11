@@ -373,3 +373,6 @@ deprecated chk_miniseed [-v] miniseed ...
 
 patch_miniseed [-nvv] miniseed ...
     look for and fix bad reverse integration constants, unless -n
+
+altusevt2db evtfilename [dbname sta n1=chan1 [n2=chan2 [...]]]
+     read Kinemetrics EVT file format and convert to a database

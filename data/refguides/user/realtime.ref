@@ -447,7 +447,7 @@ dlcollector [-p pf] [-S state] [-v] central-orb
 private cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
 
-k22orb [options] target orbdata [orbcmd]
+altus2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
     transfer data from Kinemetrics Altus digitizer to an orb
 <options>
 -pf pf	specify alternate parameter file
@@ -490,16 +490,6 @@ dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
 -noreply	don't generate response packets
 -prm	delete parameter files
 -replytarget replytarget
--delayhangup delayhangup	delay digitizer hangup
-</options>
-
-k2cmd [options] orb target datalogger cmd
-    execute command cmd on remote Kinemetrics Altus digitizer
-<options>
--timeout timeout	timeout waiting for response
--noblock	don't wait for response
--noreply	don't generate response packets
--prm	delete parameter files
 -delayhangup delayhangup	delay digitizer hangup
 </options>
 
