@@ -82,21 +82,20 @@ int orbclients ( int orb, double *when, Orbclient **client, int *nclient )
 int orbsources ( int orb, double *when, Orbsrc **source, int *nsource )
     get list of srcnames available from orb
 
-int orbstat ( int orb, Orbstat **orbstat )
-    get some status information from orb
-
-double orblag(int orb, char *match, char *reject, Laggards **laggards)
+deprecated double orblag(int orb, char *match, char *reject, Laggards **laggards)
      return stats showing how far behind clients are 
 
-void freeLaggards ( Laggards *laggards )
+deprecated void freeLaggards ( Laggards *laggards )
      free Laggards structure returned by orblag
 
 private int orbset_logging ( int orb, int level )
     set the level of logging for an orbserver
-
 
 deprecated int orbpkt2pf ( char *packet, int packet_size, Pf **pf )
     extracts parameter file from an orb packet
 
 deprecated int pf2orbpkt ( Pf *pf, char *name, int orb )
     places a parameter file on an orbserver
+
+int orbstat ( int orb, Orbstat **orbstat )
+    get some status information from orb

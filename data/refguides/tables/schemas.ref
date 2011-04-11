@@ -24,15 +24,8 @@ css3.0
 css_vel
     supports the dblocgrad program
 
-cvs1.0
-    alternative representation for CVS (Concurrent 
-    Version System) log information
-
-Db2sd1.0
-    additions to css3.0 for generating SEED volumes
-
 dbrecenteqs1.2
-    expansion of css3.0 and rt1.0 to support web-based mapping of 
+    expansion of css3.0 to support web-based mapping of 
     hypocenters and related information
 
 genloc1.0
@@ -67,16 +60,8 @@ places1.2
     Describes places on the earth: cities, populated places, summits etc.
     Includes support for specifying polygonal regions.
 
-rt1.0
-    Depricated:  use css3.0 instead
-
 rtexec1.0
     supports Antelope real-time executive program rtexec 
-
-statrans1.1
-    Supports translation of station-names from station-name-only (used 
-    by some networks in the past) to css3.0-compatible station and
-    channel names.
 
 Status2.0
     monitoring and maintenance of one or more Antelope real-time systems

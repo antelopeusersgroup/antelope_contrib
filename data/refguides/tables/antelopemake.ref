@@ -17,37 +17,39 @@ MAN 	install man pages
 
 <subsection User Macros>
 <List>
-BIN	executables to install into $(DEST)/bin 
-LIB	static libraries to install into $(DEST)/static 
-DLIB	dynamic libraries to install into $(DEST)/lib 
-INCLUDE	include files to install into $(DEST)/include 
-PF	parameter files to install into $(DEST)/data/pf 
-DATA	data files to install into $(DEST)/data/$(DATADIR)
-DEMO	demos to install into $(DEST)/data/$(DEMODIR)
-DOC	documents to install into $(DEST)/doc/$(DOCDIR)
-MAN1	program man pages for $(DEST)/man/man1
-MAN3	c interface man pages for $(DEST)/man/man3
-MAN3F	fortran man pages for $(DEST)/man/man3f
-MAN3H	files to install into $(DEST)/man/man3h
-MAN3P	perl man pages for $(DEST)/man/man3p
-MAN3T	tcl man pages for $(DEST)/man/man3t
-MAN5	format man pages for $(DEST)/man/man5
+BIN     bin     executables 
+LIB     static static libraries 
+DLIB    lib     dynamic libraries 
+INCLUDE include include files 
+PF      data/pf parameter files 
+DATA    data/$DATADIR   data files 
+DEMO    data/$DEMODIR   demos 
+DOC     doc/$DOCDIR     pdf documents 
+MAN1    man/man1        program man pages 
+MAN3    man/man3        c interface man pages 
+MAN3F   man/man3c       fortran man pages 
+MAN3H   man/man3h       php man pages 
+MAN3O   man/man3o       subsidiary orbwfproc man pages
+MAN3P   man/man3p       perl man pages 
+MAN3T   man/man3t       tcl/tk man pages 
+MAN3Y   man/man3y       python man pages
+MAN5    man/man5        files and formats man pages 
 
-cflags	special c compilation flags
-fflags	special fortran compilation flags 
-ldflags	special linker flags 
-ldlibs	libraries to be linked with the executable
+cflags  special c compilation flags
+fflags  special fortran compilation flags 
+ldflags special linker flags 
+ldlibs  libraries to be linked with the executable
 
-DIRS	sub directories (in order) into which make descends
-DEST	installation directory: $(ANTELOPE)$(SUBDIR)
-SUBDIR	alternate destination hierarchy below $ANTELOPE, often local
+DIRS    sub directories (in order) into which make descends
+DEST    installation directory: $(ANTELOPE)$(SUBDIR)
+SUBDIR  alternate destination hierarchy below $ANTELOPE
 
 <subsection Predefined Link Library Macros>
 <List>
-STOCKLIBS	-lcoords -lstock + required libraries
-DBLIBS	-lds + required libraries
-TRLIBS	-ltr + required libraries
-ORBLIBS	-lPkt -lorb -lforb + required libraries
-THREAD	multi-threading libraries
-X11LIBS	X libraries
-F77LIBS	fortran libraries
+STOCKLIBS       -lcoords -lstock + required libraries
+DBLIBS  -lds + required libraries
+TRLIBS  -ltr + required libraries
+ORBLIBS -lPkt -lorb -lforb + required libraries
+THREAD  multi-threading libraries
+X11LIBS X libraries
+F77LIBS fortran libraries

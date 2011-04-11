@@ -2,7 +2,6 @@
 <List>
 aea	Albers Equal Area
 aeqd	Azimuthal equidistant
-alsk	Alaska Mod.-Stereographics
 apian	Apian Globular
 bipc	Bipolar Conic
 bonne	Bonne
@@ -18,15 +17,11 @@ eck5	Eckert V
 eck6	Eckert VI
 eqc	Equidistant Cylindrical
 eqdc	Equidistant Conic
-gall	Gall (Stereographic)
 gnom	Gnomonic
-gs50	50 State U.S. Mod.-Stereographic
-gs48	48 State U.S. Mod.-Stereographic
 hataea	Hatano Asymmetrical Equal Area
 labrd	Laborde
 laea	Lambert Azimuthal Equal Area
 leac	Lambert Equal Area Conic
-lee	os Lee Oblate Stereographics Pacific
 lcc	Lambert Conformal Conic
 loxim	Loximuthal
 lsat	LANDSAT Space Oblique Mercator
@@ -35,12 +30,10 @@ mbtfps	McBryde-Thomas Flat-Polar Sinusoidal
 mbtfpq	McBryde-Thomas Flat-Polar Quartic
 merc	Mercator
 mill	Miller
-mil	os Miller Oblate Stereographics Eur-Africa
 moll	Mollweides
 mtm	Mercator Transverse Modifiee (Quebec)
 nsper	General Vertical Persepective
 nzmg	New Zealand Map Grid
-ocea	Oblique Cylindrical Equal Area
 omerc	Oblique Mercator
 ortho	Orthographic
 parab	Caster Parabolic 
@@ -50,12 +43,10 @@ putp5	Putnins	P5
 quau	Quartic	Authalic
 robin	Robinson
 sinu	Sinusoidal
-stere	Stereographic
 tcc	Transverse Central Cylindrical
 tcea	Transverse Cylindrical Equal Area
 tmerc	Transverse Mercator
 tpers	Tilted Perspective
-ups	Universal Polar Stereographic
 utm	Universal Transverse Mercator
 vandg	Van der Grinten
 wink1	Winkel 1

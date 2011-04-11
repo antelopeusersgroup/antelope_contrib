@@ -96,7 +96,7 @@ dbTABLE_IS_TRANSIENT
 dbTABLE_COUNT
     count of relations in database
 dbTABLE_CREATION
-    returns a dbprocess like string whigh shows how the view was created
+    returns a dbprocess-like string which shows how the view was created
     
 
 

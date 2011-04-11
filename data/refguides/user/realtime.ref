@@ -36,19 +36,19 @@ cronrun [-nv] command line
 rtmanage [options] 
     scriptable lightweight cousin to rtexec for running collection of programs temporarily
 <options>
--9 secs 	how long to wait before killing programs with -9 signal
--C		no timetags
+-9 nsecs 	wait nsecs before killing programs with -9 signal
+-C	no timetags
 -D subdir 	run in specified subdirectory
 -T timeout 	maximum time to run
 -b secs 	interval between running commands (default=0)
 -c commands 	read commands from file or commandline
--d		run in subdirectory #RTMANAGED
--l		save command output in individual log files in logs directory
--p pf 		specify alternate parameter file
+-d	run in subdirectory #RTMANAGED
+-l	save command output in individual log files in logs directory
+-p pf 	specify alternate parameter file
 -q program,program	quit if one of these programs dies
--t secs 	how long to wait after termination event to shut down
--v		more verbose
--x		on macs, start in background with /usr/libexec/StartupItemContext
+-t nsecs 	wait nsecs after termination event to shut down
+-v	more verbose
+-x	on macs, start in background with /usr/libexec/StartupItemContext
 </options>
 
 is_idle [-v] filename
@@ -57,7 +57,7 @@ is_idle [-v] filename
 leak_detector [options] 
     attempt to detect and announce programs with leaks
 <options>
--1	show which current processes would be tracked
+-1	show processes which would be tracked
 -D	print data at each iteration
 -v	show when starting to track a process
 -V 	show leak details at every iteration
@@ -1305,17 +1305,6 @@ deprecated old_orb2orb in out [start [period|end]]
 -s pktid
 -S statefile
 -v more verbose
-</options>
-
-forbserver [options] filename
-    file orbserver emulator
-<options>
--[a|b|f|x]	specify format in output forb(5) file
--c   	adjust time tags to the current time.
--s	meter out packets at real time rate
--v	more verbose
--w	overwrite existing file instead of appending
--V	show orb requests and pktids
 </options>
 
 pkttypes [-c]
