@@ -160,3 +160,6 @@ int pktchannel2db_put (PktChannel2Db *pdb, PktChannel *chan, size_t maxheap, dou
 
 void pktchannel2db_convert_wf (int convert_type, int *buf, long nsamp, float fgap_value, int igap_value)
     convert waveform buffer to various formats
+
+int pktchannel2wfdisc (PktChannel *pktchan, char *wfname_template, int convert, double maximum_flagged_gap_duration, Dbptr dbout)
+    put an ORB Packet-Channel directly into a database without buffering
