@@ -1,10 +1,6 @@
 <chapter Miscellaneous Utilities>
 <commands>
 
-build [pf] [pf_dependent_arguments]
-    framework for constructing simple gui interfaces based on
-    parameter files and perl scripts
-
 children pid ...
     returns children of process pid
 
