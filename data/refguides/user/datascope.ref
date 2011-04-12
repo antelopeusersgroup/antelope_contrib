@@ -10,13 +10,14 @@ dbbuild [-bv] [-p pf] db [input]
 dbbuild_validate [-dsv] [file ..]
     verify that referenced  parameter files contain all required fields
 
-mk_dbops [options] {-I | -U | -R | -A} db snet sta [timestamp [comm_provider [comm_type]]]
-    update adoption, deployment, comms, dlsite aftre install, adoption or removal
+mk_dbops [options] {-I | -U | -R | -A} db snet sta timestamp [comm_provider [comm_type]]
+    update adoption, deployment, comms, dlsite after install, adoption or removal
 <options>
 -A	adoption
 -I	installation
 -R	removal
 -U	update
+-n	no update to dlsite
 -v	verbose
 -V vnet	virtual network code
 -m match	source match
