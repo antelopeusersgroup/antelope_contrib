@@ -50,20 +50,6 @@ dbinfer file [file...]
 dbquery [-isv] [-f fld] db[.tbl] [query ...]
     query database/schema for parameters like field size
 
-dbsnapshot [options] db [start_time [end_time|period]]
-    create tar snapshot of database (for debugging)
-<options>
--d d	copy output to dir d rather than tar file
--e e	related to event evid e
--f file	name of tar file
--n m	max records (per table) to include
--r	include response files
--R	include stage response files
--s s	subset expression for stations/channels
--v	more verbose
--w M	minutes M of data before now
-</options>
-
 <subsection Creating and Editing Databases>
 <commands>
 dbe [-e] [-p pf] db[.table] [ db[.table] ...] [-f field ...]
@@ -78,7 +64,7 @@ db_extfile_proc -m mode [-u] [-w nmax] [-t table] db.table
 db_textedit db.table
     run by dbe to edit external text files
 
-db_xvimage db.table
+deprecated db_xvimage db.table
     run by dbe to show external image files
 
 db_showurl db.table

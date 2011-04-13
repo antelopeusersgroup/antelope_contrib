@@ -187,37 +187,34 @@ trwfname [input]
 private unregister window_name
     eliminate defunct tk send registries
 
-comsim connection
-    monitor, test and debug serial or ip communications
-
 xunits [-amqv] [from [to]]
     convert values from one unit to another, eg newtons to lbs
 
 <subsection File utilities>
 <commands>
 
-grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
-    look through certain files below dir for pattern; useful for finding occurrences of call to function, or for many other problems
+check_path [-v] [path]
+    check path to ensure that 'other' users can traverse it
+
+cmpdirs [options] dir1 dir2
+    compare directories by filenames
 <options>
--i	case insensitive
--l	show only filenames with matching lines.
--v	show find command, and list files searched.
--w	show all matches, not just word matches.
-restrict searches to certain files by using any combination of:
--A	include directories named junk and ending in -
--c	c source files
--C	c++ source files
--f	fortran source 
--g glob	files matching glob
--h	include files 
--M	Makefile or makefile
--m	manual pages 
--P	parameter files
--p	perl source 
--s	shell source 
--T	all text files
--t	tcl source 
--y	(f)lex and yacc source
+-c	compare files
+-C	ignore CVS directories
+-i re	ignore files/directories matching re
+-l	list format output
+-s	compare sizes only, error if difference > 10%
+-t	compare only text files
+-r	recursive
+-v	more verbose
+</options>
+
+cntlines [options] filename
+   helper script for certify to count bad/good lines
+<options>
+-c re m	contains at least m lines containing re	
+-C re,re,re m	contains at least m lines containing each re
+-n re m	no more than m lines containing re	
 </options>
 
 ffilter [-aBbCcDdEelLnoOpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
@@ -261,28 +258,28 @@ ffilter [-aBbCcDdEelLnoOpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
 -u	print only unique paths
 </options>
 
-check_path [-v] [path]
-    check path to ensure that 'other' users can traverse it
-
-cmpdirs [options] dir1 dir2
-    compare directories by filenames
+grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
+    look through certain files below dir for pattern; useful for finding occurrences of call to function, or for many other problems
 <options>
--c	compare files
--C	ignore CVS directories
--i re	ignore files/directories matching re
--l	list format output
--s	compare sizes only, error if difference > 10%
--t	compare only text files
--r	recursive
--v	more verbose
-</options>
-
-cntlines [options] filename
-   helper script for certify to count bad/good lines
-<options>
--c re m	contains at least m lines containing re	
--C re,re,re m	contains at least m lines containing each re
--n re m	no more than m lines containing re	
+-i	case insensitive
+-l	show only filenames with matching lines.
+-v	show find command, and list files searched.
+-w	show all matches, not just word matches.
+restrict searches to certain files by using any combination of:
+-A	include directories named junk and ending in -
+-c	c source files
+-C	c++ source files
+-f	fortran source 
+-g glob	files matching glob
+-h	include files 
+-M	Makefile or makefile
+-m	manual pages 
+-P	parameter files
+-p	perl source 
+-s	shell source 
+-T	all text files
+-t	tcl source 
+-y	(f)lex and yacc source
 </options>
 
 xdiff [options] dir1 dir2
@@ -320,76 +317,8 @@ deprecated reflect [-d dir] [-v] remote_host[:port] remote_file
 deprecated reflectd [-p port] [-v] 
     server companion to reflect
 
-<subsection Programming aides>
+<subsection Programming aids>
 <commands>
-
-getid [-aNv] [key=value ...] < in > out
-    substitute special values into source files; used to centralize some info and help architecture independence
-
-ldlibs [options] names
-    suggest link libraries; provide information about object libraries 
-<options>
-Modifying Options
--f	generate fortran ldlibs line (default is c)
--i	initialize database, eg, completely rebuild it
--k	rebuild database, if it's out of date
--n	don't use macros to collapse dependency list
--v	be more verbose
--x	specify entry points on command line, rather than object files
--X lib1 lib2	show all multiply defined entry pts or global variables between lib1 and lib2
-Different Modes
--D lib	show refs defined in lib
--N lib	show refs not defined in lib
--L lib	show libraries which load lib
--l lib	show libraries loaded by lib
--r lib1 lib2	show refs from lib1 which are resolved in lib2
--R a.o b.o ..	lib show undefined refs from .o files which are resolved in lib
--S lib1 lib2	show shared undefined refs between lib1 and lib2
--s lib1 lib2	show shared definitions between lib1 and lib2
--T lib1 lib2	show needs unique in each library
--t lib1 lib2	show definitions unique in each library
--U lib	show libraries which need lib
--u lib	show libraries which are needed by lib
--V lib	index a single library, verbosely
--w routine	show what libraries define routine
--W routine	show what libraries require routine
-</options>
-
-compile cc-arguments
-    used by BRTT to compile with optional optimization on different architectures
-
-deposit [-rx] file dir
-    installs file in directory dir with appropriate permissions; -r installs file with new name dest; -x makes installed file executable
-
-deposit [-i re] idir dir
-    installs directory idir into dir except for files matching re, CVS and .depends files
-
-produce [-v] exec [exec2 ...]
-    use standard headers from template directory to create executable script exec from files with proper suffix
-
-installman [-nv] manpage dir
-    install manpage into directory dir, modifying .TH line appropriately
-
-screen_makesw [options] [input]
-    look through compilation output, extracting just the error messages
-<options>
--t	show most time consuming directories
--v	show directories
--w	show compiler warnings
--W 	show special priority warnings
-</options>
-	
-private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
-    X-windows plotting daemon
-
-fixman [options] pages
-    check man page, correct some problems, and suggest other changes
-<options>
--B	don't emphasize function names
--d	show changes	
--I	don't emphasize parameters 
--n	just show what would be changed
-</options>
 
 certify [options] [dir|testid ...]
     run regression tests 
@@ -427,3 +356,71 @@ certify [options] [dir|testid ...]
 -v	more verbose
 -V	show all commands
 </options>
+
+compile cc-arguments
+    used by BRTT to compile with optional optimization on different architectures
+
+deposit [-rx] file dir
+    installs file in directory dir with appropriate permissions; -r installs file with new name dest; -x makes installed file executable
+
+deposit [-i re] idir dir
+    installs directory idir into dir except for files matching re, CVS and .depends files
+
+fixman [options] pages
+    check man page, correct some problems, and suggest other changes
+<options>
+-B	don't emphasize function names
+-d	show changes	
+-I	don't emphasize parameters 
+-n	just show what would be changed
+</options>
+
+getid [-aNv] [key=value ...] < in > out
+    substitute special values into source files; used to centralize some info and help architecture independence
+
+installman [-nv] manpage dir
+    install manpage into directory dir, modifying .TH line appropriately
+
+ldlibs [options] names
+    suggest link libraries; provide information about object libraries 
+<options>
+Modifying Options
+-f	generate fortran ldlibs line (default is c)
+-i	initialize database, eg, completely rebuild it
+-k	rebuild database, if it's out of date
+-n	don't use macros to collapse dependency list
+-v	be more verbose
+-x	specify entry points on command line, rather than object files
+-X lib1 lib2	show all multiply defined entry pts or global variables between lib1 and lib2
+Different Modes
+-D lib	show refs defined in lib
+-N lib	show refs not defined in lib
+-L lib	show libraries which load lib
+-l lib	show libraries loaded by lib
+-r lib1 lib2	show refs from lib1 which are resolved in lib2
+-R a.o b.o ..	lib show undefined refs from .o files which are resolved in lib
+-S lib1 lib2	show shared undefined refs between lib1 and lib2
+-s lib1 lib2	show shared definitions between lib1 and lib2
+-T lib1 lib2	show needs unique in each library
+-t lib1 lib2	show definitions unique in each library
+-U lib	show libraries which need lib
+-u lib	show libraries which are needed by lib
+-V lib	index a single library, verbosely
+-w routine	show what libraries define routine
+-W routine	show what libraries require routine
+</options>
+
+produce [-v] exec [exec2 ...]
+    use standard headers from template directory to create executable script exec from files with proper suffix
+
+screen_makesw [options] [input]
+    look through compilation output, extracting just the error messages
+<options>
+-t	show most time consuming directories
+-v	show directories
+-w	show compiler warnings
+-W 	show special priority warnings
+</options>
+	
+private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
+    X-windows plotting daemon

@@ -207,6 +207,9 @@ deprecated psd2db [options] sd dbout
 sac2db [-v] sac1 [sac2 ... ] dbout
     create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
 
+sachd [sac1 ...]
+    print header information from SAC files sac1, ...
+
 scec2db [options] dbname
     retrieval and conversion of SCEC bulletin
 <options>
@@ -220,86 +223,35 @@ scec2db [options] dbname
 -c	{catread|scecdc|hypo71|hypo2000}
 </options>
 
-deprecated sd2db [options] sd dbout
-    read SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
-<options>
--d	print out each blockette as it is read
--f n	skip to file n (of input tape)
--c n	read just n files from input tape
--i	create wfdisc and extract wave form data without using other header information
--r dir	save response files in directory dir
--s	sweep identical time adjacent tuples into single tuple
--S stachan	extract waveforms only for station/channel pairs matching dbpick style pseudo-glob stachan
--t	don't create wfdisc table
--v	print summary of blockettes read and processed
--w dir	save waveforms in directory dir
--x id	write entries in seedindex table showing stations and time range contained on tape id
--z	compress waveform files (using compress(1)) after they are complete
-</options>
-
 segy2css [-event] [-ftbl] fname ..
     convert PASSCAL SEGY format data to CSS format
 
 Xphase2db db [-phase name]
     convert an input Xphase pick file to css3.0 arrivals
 
-<subsection Examining Foreign Files>
-<commands>
-sachd [sac1 ...]
-    print header information from SAC files sac1, ...
-
-<subsection Reading seed/miniseed>
+<subsection Seed and Miniseed>
 <commands>
 
-sdd [-sv] sd
-    dump blockettes (summary only if -s) from SEED volume sd
+deprecated chk_miniseed [-v] miniseed ...
+    inspects miniseed files for blocks where net, sta, chan, or loc don't match first block and for blocks where times are out of order.
 
-msdd [-bdhovx] [-n max] miniseed ...
-    dump miniseed volume; -o shows opaque blockettes 
-
-msdd -i miniseed 
-    interactive mode for inspecting miniseed
-
-seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed
-    dump certain blockettes from seed according to tlist:
-    (V=Volume, A=Abbreviation, S=Station, T=Time span, D|R|Q=Data)
-
-seed2db [options] seed [db]
-    read SEED volume seed, produce validation commentary and optionally database tables 
+db2miniseed [options] db [output]
+    create miniseed from input database
 <options>
--lsize	size	specify logical record size
--vvv		be increasingly verbose
--respdir rdir	save responses into rdir
--stagedir sdir  create stage table; save stage responses into sdir
--chansift pf	select specific sta/chan pairs through pf
--tstart t0	start at time t0
--tend   t1	stop at time t1
--nodata		create no wfdisc table
--nodataless	only create wfdisc
--nofirerrors	shut up about fir errors
+-r size	specify record size (default 4096)
+-l {1|2}	specify steim compression level (default 2)
+-n net	specify default network
+-v	verbose
 </options>
 
-qtunbale [options] url [time [endtime|period]]
-    unload data from Quanterra baler
-<options>
--a	just show time range available
--c chan	only channel chan (??-???)
--d db	make wfdisc with miniseed2db
--f w	size of time window for requests
--i info	where to save info files from baler
--o orb	pass directly to orb using miniseed2orb
--q	wait quietly for baler to wake up
--Q	don't ping baler
--r	raw output, no miniseed2days or miniseed2orb
--S dir	subdirectory for miniseed day files
--t to	timeout for ping response from baler
--u 	show all URLs used
--v	more verbose
--w wfname	specify pattern for miniseed files
-</options>
+db2sd [-cv] [-n net] [-l lbl] db sd
+    create SEED volume sd from database db (db must contain affiliation, network, sensor, site, stage, calibration and wfdisc tables)
 
-qtunbale2 [options] url [time [endtime|period]]
-	like qtunbale, but using wget instead of perl http
+fix_miniseed [-ifv] [-d db] [-{p|P} pf] miniseed|dir ...
+    change network, station, channel and/or location codes in specified miniseed volumes or all miniseed found under specified directories
+
+log2miniseed [-avV] [-c chan] [-l loc] [-n net] [-s sta] log ...
+     read input log files and create miniseed
 
 miniseed2db [-T tolerance] [-v] miniseed|dir [msd2|dir2 ...] db
     create wfdisc rows in db for miniseed volume(s), or miniseed volumes under directories
@@ -338,12 +290,6 @@ miniseed2days [options] miniseed ...
 -w wfname	alternate pattern for output file names
 </options>
 
-<subsection Writing/Patching SEED/miniseed>
-<commands>
-
-db2sd [-cv] [-n net] [-l lbl] db sd
-    create SEED volume sd from database db (db must contain affiliation, network, sensor, site, stage, calibration and wfdisc tables)
-
 private mk_dataless_wfdisc [-v] [-p pf] dbin
     make fake wfdisc file in order to create dataless seed file
 
@@ -356,23 +302,72 @@ mk_dataless_seed [-n re] [-o dataless_seed] [-p pf] [-s re] [-vk] db
 mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tape] [-d dir] rt_db
     build IRIS DMC files on tape or disk
 
-db2miniseed [options] db [output]
-    create miniseed from input database
-<options>
--r size	specify record size (default 4096)
--l {1|2}	specify steim compression level (default 2)
--n net	specify default network
--v	verbose
-</options>
+msdd [-bdhovx] [-n max] miniseed ...
+    dump miniseed volume; -o shows opaque blockettes 
 
-log2miniseed [-avV] [-c chan] [-l loc] [-n net] [-s sta] log ...
-     read input log files and create miniseed
-
-fix_miniseed [-ifv] [-d db] [-{p|P} pf] miniseed|dir ...
-    change network, station, channel and/or location codes in specified miniseed volumes or all miniseed found under specified directories
-
-deprecated chk_miniseed [-v] miniseed ...
-    inspects miniseed files for blocks where net, sta, chan, or loc don't match first block and for blocks where times are out of order.
+msdd -i miniseed 
+    interactive mode for inspecting miniseed
 
 patch_miniseed [-nvv] miniseed ...
     look for and fix bad reverse integration constants, unless -n
+
+qtunbale [options] url [time [endtime|period]]
+    unload data from Quanterra baler
+<options>
+-a	just show time range available
+-c chan	only channel chan (??-???)
+-d db	make wfdisc with miniseed2db
+-f w	size of time window for requests
+-i info	where to save info files from baler
+-o orb	pass directly to orb using miniseed2orb
+-q	wait quietly for baler to wake up
+-Q	don't ping baler
+-r	raw output, no miniseed2days or miniseed2orb
+-S dir	subdirectory for miniseed day files
+-t to	timeout for ping response from baler
+-u 	show all URLs used
+-v	more verbose
+-w wfname	specify pattern for miniseed files
+</options>
+
+qtunbale2 [options] url [time [endtime|period]]
+	like qtunbale, but using wget instead of perl http
+
+deprecated sd2db [options] sd dbout
+    read SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
+<options>
+-d	print out each blockette as it is read
+-f n	skip to file n (of input tape)
+-c n	read just n files from input tape
+-i	create wfdisc and extract wave form data without using other header information
+-r dir	save response files in directory dir
+-s	sweep identical time adjacent tuples into single tuple
+-S stachan	extract waveforms only for station/channel pairs matching dbpick style pseudo-glob stachan
+-t	don't create wfdisc table
+-v	print summary of blockettes read and processed
+-w dir	save waveforms in directory dir
+-x id	write entries in seedindex table showing stations and time range contained on tape id
+-z	compress waveform files (using compress(1)) after they are complete
+</options>
+
+sdd [-sv] sd
+    dump blockettes (summary only if -s) from SEED volume sd
+
+seed2db [options] seed [db]
+    read SEED volume seed, produce validation commentary and optionally database tables 
+<options>
+-lsize	size	specify logical record size
+-vvv		be increasingly verbose
+-respdir rdir	save responses into rdir
+-stagedir sdir  create stage table; save stage responses into sdir
+-chansift pf	select specific sta/chan pairs through pf
+-tstart t0	start at time t0
+-tend   t1	stop at time t1
+-nodata		create no wfdisc table
+-nodataless	only create wfdisc
+-nofirerrors	shut up about fir errors
+</options>
+
+seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed
+    dump certain blockettes from seed according to tlist:
+    (V=Volume, A=Abbreviation, S=Station, T=Time span, D|R|Q=Data)

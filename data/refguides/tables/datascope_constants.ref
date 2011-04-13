@@ -118,6 +118,8 @@ dbRECORD_COUNT
 dbRECORD_SIZE
     return size in bytes of a record in the table
 
+
+
 dbTABLE_IS_VIEW
     returns non-zero if table is a view
 dbVIEW_TABLE_COUNT

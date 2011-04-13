@@ -1,6 +1,12 @@
 <chapter Processing Database Data>
 <commands>
 
+assoc_rayleigh [-v] dbout dbin
+    associate rayleigh wave picks from dbout to origins from dbin, copying matching origins into dbout and creating assoc records
+
+dbassoc_arrival [-p delta_p] [-s delta_s] dbout dbin
+    search for arrivals from dbout which match origins in dbin, copying matching origins into dbout and creating assoc records
+
 dbdetect [options] dbin dbout
     run multifrequency STA/LTA detector on dbin, writing detections into dbout.
 <options>
@@ -10,6 +16,14 @@ dbdetect [options] dbin dbout
 -pf pf	pf specifies channels and filters
 -tstart t0	start at t0
 -twin T	for T minutes
+-v
+</options>
+
+dbevproc [options] dbin dbout
+    generalized database-driven event processor
+<options>
+-p pf
+-tmpdbdir dir	directory for temp databases
 -v
 </options>
 
@@ -23,22 +37,11 @@ dbgrassoc [options] dbin dbout ttgridf1 [ttgridf2 [...]]
 -v
 </options>
 
-dbassoc_arrival [-p delta_p] [-s delta_s] dbout dbin
-    search for arrivals from dbout which match origins in dbin, copying matching origins into dbout and creating assoc records
-
-assoc_rayleigh [-v] dbout dbin
-    associate rayleigh wave picks from dbout to origins from dbin, copying matching origins into dbout and creating assoc records
-
 dbgme [-vfd] [-p pf] -r recipe [-r recipe...] [-o orid] dbname
      2-D ground-motion estimation from hypocenters and waveform measurements
 
-dbevproc [options] dbin dbout
-    generalized database-driven event processor
-<options>
--p pf
--tmpdbdir dir	directory for temp databases
--v
-</options>
+dbrecenteqs [-p pf] [-v] [-h] [-u] [-e evid] [-c sourcedb] dbname
+    maintain web-site of earthquake maps for for database dbname
 
 dbwfproc [options] dbin dbout
     generalized waveform processor
@@ -49,8 +52,5 @@ dbwfproc [options] dbin dbout
 -v
 </options>
 
-dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]
+deprecated dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]
     make map of events from database db centered on sta, origin orid, or lat:lon within radius of range degrees; -c starts interactive mode, ^C kills window
-
-dbrecenteqs [-p pf] [-v] [-h] [-u] [-e evid] [-c sourcedb] dbname
-    maintain web-site of earthquake maps for for database dbname

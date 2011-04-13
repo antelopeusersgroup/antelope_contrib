@@ -15,20 +15,9 @@ awish
 </info>
 
 <commands>
-Tclx
-    extended tcl/tk -- variety of extensions to unix functions
 
 BLT
     primarily 2d graphics 
-
-Itcl
-    object oriented extensions
-
-Itk
-    object oriented widget extensions
-
-Iwidgets
-    extended widgets
 
 Brttplot
     extensions for drawing graphs on a tk canvas.
@@ -38,6 +27,12 @@ Datascope
 
 Dbe
     extensions for implementing dbe
+
+Itcl
+    object oriented extensions
+
+Itk
+    object oriented widget extensions
 
 Orb
     extensions for reading and writing to an orbserver
@@ -50,6 +45,9 @@ Rtd
 
 Rtm
     extensions for implementing rtm
+
+Tclx
+    extended tcl/tk -- variety of extensions to unix functions
 
 Ttgrid
     extensions for the time travel grid file used by orbassoc and dbgrassoc

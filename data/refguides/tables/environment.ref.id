@@ -6,7 +6,7 @@ more information.
 
 <commands>
 ANTELOPE
-    identifies the Antelope base directory, eg, "/opt/antelope/$id"
+    identifies the Antelope base directory, e.g., "/opt/antelope/$id"
 
 ANTELOPEMAKE
     specifies file with standard make(1) rules for Antelope
@@ -24,30 +24,32 @@ EDITOR
 XEDITOR
     specify an editor to use when editing pf files from rtm
 
-ELOG_DELIVER
-    list of error message destinations: filenames, "stderr" or "stdout", or "orb:hostname:port".
-
 ELOG_DEBUG
     when set, a debugger is started for program faults
 
-ELOG_SIGNALS
-    signals for which handlers are set up; default is "ILL:TRAP:FPE:BUS:SEGV:SYS". if null, don't install any handlers.
+ELOG_DELIVER
+    list of error message destinations: filenames, "stderr" or "stdout", or "orb:hostname:port".
 
 ELOG_MAXMSG
     maximum number of messages allowed on the error log.
     If zero, no limit.
 
+ELOG_SIGNALS
+    signals for which handlers are set up; default is "ILL:TRAP:FPE:BUS:SEGV:SYS". if null, don't install any handlers.
+
 ELOG_TAG
     tag prepended to each message; see elog.pf for default.
 <options>
 %a argument list
+%e elapsed time
 %h host name
 %p pid
 %P program name
 %r complete path to program
-%t local time tag, eg "Thu May 29 15:27:59 1997"
+%t local time tag, e.g. "Thu May 29 15:27:59 1997"
+%s severity level, e.g. "notify", "complain", ...
 %T thread id
-%u UTC time code, eg "1997-149 21:27:59"
+%u UTC time code, e.g. "1997-149 21:27:59"
 </options>
 
 EUROPEAN_DATE
@@ -57,7 +59,7 @@ FORBRECVTIME
   when set, record time packet is received in forb(5) files
 
 GRX_PSCOLOR
-  affects niceplot hardcopy output, eg from dbpick:
+  affects niceplot hardcopy output, e.g. from dbpick:
   full     full color PostScript 
   fore     color PostScript for contour images, but background is white
   color    color PostScript only for color contour images
@@ -65,6 +67,15 @@ GRX_PSCOLOR
 
 GRX_FONTPATH
   overrides the default location $ANTELOPE/data/fonts.bin for the binary font file used by niceplot 
+
+LD_LIBRARY_PATH
+   NEVER set this shell variable.  Leads to unpredictable failures and mysterious results.
+
+OLDMAPDATA
+    set to path of old mapdata data file used in releases before 5.0-64
+
+OPTIMIZATION
+    compile script optimizes if OPTIMIZATION != 0, no optimization if OPTIMIZATION == 0
 
 ORB_IP_ADDRESS
   cause orb client connections to bind to the specified ip address
@@ -76,10 +87,14 @@ PFPATH
   overrides the default path to parameter files: "$(ANTELOPE)/data/pf:."
 
 SCHEMA_DEFAULT
-  overrides the default schema (css3.0) to use when no descriptor file is present.   
+  overrides the default schema (css3.0) to use when no descriptor file is present. 
 
 SCHEMA_DIR
   overrides the default location ($(ANTELOPE)/data/schemas) for Datascope schema files
+
+TAUP_PATH
+TAUP_TABLE
+  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel time tables and the default tau-p model iasp91.  Deprecated in favor of TTMETHOD and TTMODEL.
 
 TTMETHOD
   override default travel time method (tttaup)
@@ -87,12 +102,5 @@ TTMETHOD
 TTMODEL
   override default travel time model (iasp91)
 
-TAUP_PATH
-TAUP_TABLE
-  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel time tables and the default tau-p model iasp91.  Deprecated in favor of TTMETHOD and TTMODEL.
-
 ZONEINFO
    override default directory for timezone files (default depends on platform)
-
-LD_LIBRARY_PATH
-   NEVER set this shell variable.  Leads to unpredictable failures and mysterious results.

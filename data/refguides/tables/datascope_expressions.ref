@@ -178,7 +178,7 @@ deg2km(deg)
     convert degrees to (nominal) kilometers
 
 <subsection Strings>
-<expression>
+<function>
 strlen(str)
     number of characters in str
 
@@ -192,7 +192,7 @@ null("fieldname")
     return null value for a field
 
 <subsection External Files and Commands>
-<expression>
+<function>
 is_present(filename)
 
 concatpaths(dir,dfile)
@@ -204,6 +204,7 @@ dirname(path)
 basename(path)
     return last component of path
 
+<expression>
 ["wc" extfile()]
     execute a unix command, as in this example
 
@@ -249,6 +250,7 @@ A =~ /regular-expression/
 A !~ /regular-expression/
     regular expression does not match
 
+<function>
 patsub(old, pattern, replacement)
     replaces the first pattern matched in old with replacement
 

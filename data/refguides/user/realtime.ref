@@ -2,8 +2,42 @@
 
 <subsection Administration and Control>
 <commands>
-rtm [-icon iconname] [-title title] [-procwin] [-netwin]
-    monitor real-time tasks and resource usage
+
+cronrun [-nv] command line
+    run command line immediately, reproducing cron environment 
+
+orbpftrigger [options] orb [cmdstring]
+    parameter file trigger of program execution
+<options>
+-select expr
+-start {pktid|time}
+-number number
+-nowait
+</options>
+
+orbptrigger [options] orb command ...
+    orb packet trigger of program execution
+<options>
+-select packet
+-start {pktid|time}
+-number number
+-state file
+-background
+</options>
+
+pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
+    read packets, send alarms for specified conditions 
+<options>
+-0	start at first packet in orb
+-S state	specify alternate directory to save history files 
+-d	print debugging information.
+-n npkts	stop after npkts packets
+-p pf	specify alternate parameter  file
+-v	print each packet read.
+</options>
+
+rtdemo [-t] [name]
+     setup to run an Antelope realtime demo; -t suppresses gui
 
 rtexec [options] [comment]
     real time system executive; runs all other real time processes
@@ -27,11 +61,18 @@ rtexec [options] [comment]
 rtinit [-q] [-v] [db]
     initialize directory for rtexec/rtm by creating directories and copying pf files
 
+rtkill [options] [procname]
+    stop, start, or restart a process running under rtexec
+<options>
+-l	list process names from the rtexec.pf Run array
+-r	restart the specified process
+-s 	start the specified process
+-q 	query whether the specified process name is set to run
+-v	verbose
+</options>
+
 rtrun [-nv] command-line
     run command-line using rtexec environment (like an rtexec cron job)
-
-cronrun [-nv] command line
-    run command line immediately, reproducing cron environment 
 
 rtmanage [options] 
     scriptable lightweight cousin to rtexec for running collection of programs temporarily
@@ -51,60 +92,14 @@ rtmanage [options]
 -x	on macs, start in background with /usr/libexec/StartupItemContext
 </options>
 
-is_idle [-v] filename
-    rtmanage helper script which waits for a file to stop changing
-
-leak_detector [options] 
-    attempt to detect and announce programs with leaks
-<options>
--1	show processes which would be tracked
--D	print data at each iteration
--v	show when starting to track a process
--V 	show leak details at every iteration
--d depth	specify depth of ring buffers in state file
--i secs	specify how often to run ps
--m re	track only processes matching re
--n niter	run only niter iterations
--p pid	track only specified pid
--S state	specify alternate state file
-</options>
-
-ecrontab [-r] [file]
-    gui interface for editing crontab files; -r option for rtexec style crontab
-
-rtkill [options] [procname]
-    stop, start, or restart a process running under rtexec
-<options>
--l	list process names from the rtexec.pf Run array
--r	restart the specified process
--s 	start the specified process
--q 	query whether the specified process name is set to run
--v	verbose
-</options>
-
-rtdemo [-t] [name]
-     setup to run an Antelope realtime demo; -t suppresses gui
-
-truncate_log [options] log [log..]
-    eliminate old lines in log files
-<options>
--c	also remove lines without time tags
--d n	trim lines before n days ago
--f	force truncation sooner than 8 days
--h h	specify max records in rtsys tables
--m m	trim files so maximum size is m kbytes 
--r	suppress saving removed lines in new file
--s n	only trim files larger than n kbytes
--v	be more verbose
-</options>
-
 rtorbcmd [-d] [-p pf] target command
     client program for sending commands to remote orb
 
 rtorbcmd [-d] [-n npkts] [-p pf] [-S state] orb
     server program for reading and executing commands at remote orb
 
-<subsection Reports>
+<subsection Real Time Display>
+<commands>
 
 dbevents [options] dbname [start [end]]
     display map of seismic events and waveforms (between times start and end)
@@ -117,6 +112,87 @@ dbevents [options] dbname [start [end]]
 
 dbevents_new dbname
     preliminary new version of dbevents
+
+dlmon [options] orb [cmdorb]
+    monitor/control generic digitizers
+<options>
+-dump period
+-dump_image file
+-model model	data logger model
+-pf pffile	parameter file
+-select_status expr_status
+-select_log expr_log
+-show_map 	
+-state {Icons|Multi|Single}	initial display state
+-sort name	initial sort name
+-subset subs_expr	initial expression for subsetting stations
+</options>
+
+ecrontab [-r] [file]
+    gui interface for editing crontab files; -r option for rtexec style crontab
+
+inspect_snapshot snapshot
+    gui to help read output from rtincident or other snapshots
+
+pingmeister
+    display network connectivity
+
+deprecated qtmon dataorb data2orb cmdorbname [database]
+    monitor Quanterra digitizers
+
+orbdisp [options] orbserver [start [range|end]]
+    inspect waveform data on orb server
+<options>
+-c re	save channel matching regular expression re
+-m re	select packets matching regular expression re
+-r re	reject packets matching regular expression re
+-l latency	expected max latency for packets
+-n	show network on display
+-p period	specify minimum packet period
+-w t	make time window t seconds
+</options>
+
+orbmonrtd [options] orb
+    real time waveform trace display
+<options>
+-dump dt gif	dump image to gif every dt seconds
+-filter filter	
+-height pixels	single trace window height in pixels
+-hmax hmax	maximum height of main window in pixels
+-ntinc nt	number of traces between time scales
+-pf pf	use alternate parameter file
+-redraw	start with oldest orb packet
+-reject re	reject channels matching re
+-select re	select channels matching re
+-source net_sta_chan
+ 	select display channels on command line
+-title title	title for orbmonrtd window
+-tshift_time t0	specify t0 for right edge of window
+	use t0="-" to use first packet time
+-twin minutes	window size in minutes
+-unmap	remove controls from display (for vnc in browser)
+-width pixels	trace width in pixels
+-wmax wmax	maximum width of main window in pixels
+-reverse_labels	put station labels on right
+</options>
+
+rtm [-icon iconname] [-title title] [-procwin] [-netwin]
+    monitor real-time tasks and resource usage
+
+tkorblag orb
+    graphical view of read client latency in orb 
+
+<subsection Reports>
+
+dlmontxt [options] orbname [orbname2 [...]]
+     generate terse status summary for data loggers
+<options>
+-m re1	read only packets which match re1 
+-r re2	don't read packets matching re2
+-d dl_re	match data logger names
+-M email	list of email addresses, or @filename for addresses in filename
+-s subject 	subject line for email report	
+</options>
 
 dlreport [options] { -S | -E } db 
     summarize dlevents in mailable report 
@@ -131,6 +207,21 @@ dlreport [options] { -S | -E } db
 -C dlsta	write a closure report for dlsta
 -S	station based subset
 -E	dlevent type subset
+</options>
+
+leak_detector [options] 
+    attempt to detect and announce programs with leaks
+<options>
+-1	show processes which would be tracked
+-D	print data at each iteration
+-v	show when starting to track a process
+-V 	show leak details at every iteration
+-d depth	specify depth of ring buffers in state file
+-i secs	specify how often to run ps
+-m re	track only processes matching re
+-n niter	run only niter iterations
+-p pid	track only specified pid
+-S state	specify alternate state file
 </options>
 
 rtreport [options] [directory]
@@ -187,19 +278,37 @@ rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-f from] [-r replyto] [-dv] 
 stanote [-{f|F} file] [-r range] [-t time] [database] [sta [note]]
     simple method for adding note about station, to appear in gap report in rtreport
 
-rtsnapshot [options] 
-    collect some pertinent info from real time system into tar file for problem report
+truncate_log [options] log [log..]
+    eliminate old lines in log files
 <options>
--c	include core files
--d #rows	max rows from database tables
--f filename	specify output filename
--l #loglines	max lines from log files
--p re	collect 50 packets matching re
--v	more verbose
+-c	also remove lines without time tags
+-d n	trim lines before n days ago
+-f	force truncation sooner than 8 days
+-h h	specify max records in rtsys tables
+-m m	trim files so maximum size is m kbytes 
+-r	suppress saving removed lines in new file
+-s n	only trim files larger than n kbytes
+-v	be more verbose
 </options>
 
-syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
-    create tar snapshot of system configuration 
+<subsection Snapshots>
+
+dbloc_snapshot [-d maxdb] [-f output-file] [-l maxlog] [-v] database
+    creates snapshot of dbloc2 directory for problem resolution
+
+dbsnapshot [options] db [start_time [end_time|period]]
+    create tar snapshot of database (for debugging)
+<options>
+-d d	copy output to dir d rather than tar file
+-e e	related to event evid e
+-f file	name of tar file
+-n m	max records (per table) to include
+-r	include response files
+-R	include stage response files
+-s s	subset expression for stations/channels
+-v	more verbose
+-w M	minutes M of data before now
+</options>
 
 rtincident [options] [output_file]
     collect some system related information into report; rtexec
@@ -216,34 +325,19 @@ rtincident [options] [output_file]
 -x	append corefile to email
 </options>
 
-inspect_snapshot snapshot
-    gui to help read output from rtincident or other snapshots
-
-<subsection IP network monitoring>
-<commands>
-pingmeister
-    display network connectivity
-
-tcpmonitor [options] host
-    monitor tcp connections for stability and throughput
+rtsnapshot [options] 
+    collect some pertinent info from real time system into tar file for problem report
 <options>
--B sz	specify packet size
--d db	save statistics in database db
--f	send bursts only from server 
--2	send bursts only to server 
--N #pkts	set #packets in burst
--m	run in monitor (server) mode
--n #loops	# of bursts to send
--p port	alternate port
--P #ping	# of pings between bursts
--r lrsz	set size of client receive buffer
--R rrsz	set size of server receive buffer
--s lssz	set size of client send buffer
--S rssz	set size of server send buffer
--t timeout	set timeout (in  seconds) for  socket reads  
+-c	include core files
+-d #rows	max rows from database tables
+-f filename	specify output filename
+-l #loglines	max lines from log files
+-p re	collect 50 packets matching re
 -v	more verbose
--W sec/ping	set number of seconds between "pings"  
 </options>
+
+syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
+    create tar snapshot of system configuration 
 
 <subsection Orbserver and Utilities>
 <commands>
@@ -321,6 +415,36 @@ pforbstat [options] orb [secs]
 deprecated adsend2orb orb port
     read earthworm packets from udp port and copy to orbserver orb
 
+altus2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
+    transfer data from Kinemetrics Altus digitizer to an orb
+<options>
+-pf pf	specify alternate parameter file
+-db db	specify database for calib information
+-dlclock dlname
+-v	be more verbose
+-state file	save state in filename
+-start time	only get events after time
+</options>
+
+comsim connection
+    monitor, test and debug serial or ip communications
+
+dcbba2orb [options] 
+    copy data from RefTek DAS port to orbserver orb
+<options>
+-V	usage 
+-r	validate pf file
+-v	verbose
+-a ip	data concentrator IP
+-t file	data test file
+-d port	data port of data concentrator
+-o orb	orb for output
+-g pf	parameter file
+</options>
+
+dlcollector [-p pf] [-S state] [-v] central-orb
+    collect data from Kinemetrics Basalt data loggers
+
 deprecated eworm2orb pf
     copy earthworm packets from memory ring buffer to orbserver
 
@@ -357,19 +481,6 @@ liss2orb [options] liss orb
 -v
 </options>
 
-dcbba2orb [options] 
-    copy data from RefTek DAS port to orbserver orb
-<options>
--V	usage 
--r	validate pf file
--v	verbose
--a ip	data concentrator IP
--t file	data test file
--d port	data port of data concentrator
--o orb	orb for output
--g pf	parameter file
-</options>
-
 rddas [options] port orb
     copy data from RefTek DAS port to orbserver orb
 <options>
@@ -392,6 +503,9 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -poc_vampire	get pocs from other port
 </options>
 
+q330gpslocate log1 log2 ...
+     estimate station location from Q330 log file
+
 q330pocd [options] targetname orb
     receive POC messages and save to orb
 <options>
@@ -399,6 +513,12 @@ q330pocd [options] targetname orb
 -p port	specify alternative to port 2254
 -noipresolv	don't look up hostnames
 </options>
+
+q330proxy [-v[v[v]]] [-help] [template]
+    internet to SLIP proxy utility for Q330 data loggers
+
+q330snoop [-noeth] [-noip] [-snoop] prefix_expr
+     used with snoop to parse and print raw UDP Q330 packets 
 
 q330_location [options] status_orb [cmd_orb] db
      alert if Q330 locations in status packets differ more than mmax from database location
@@ -413,21 +533,6 @@ q330_location [options] status_orb [cmd_orb] db
 -v	verbose
 </options>
 
-q330coms [-n net] [-p pfsrcname] [-v] orb db
-    compare Q330 status packets with Q330comm database table
-
-q330proxy [-v[v[v]]] [-help] [template]
-    internet to SLIP proxy utility for Q330 data loggers
-
-q330snoop [-noeth] [-noip] [-snoop] prefix_expr
-     used with snoop to parse and print raw UDP Q330 packets 
-
-q330gpslocate log1 log2 ...
-     estimate station location from Q330 log file
-
-qtbsetaddr ipaddr [timeout]
-    set Quanterra baler ip-address
-
 qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
@@ -438,25 +543,14 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
 -v	verbose
 </options>
 
+qtbsetaddr ipaddr [timeout]
+    set Quanterra baler ip-address
+
 deprecated cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] station orbout
     copy data from comserv to an orbserver orb
 
-dlcollector [-p pf] [-S state] [-v] central-orb
-    collect data from Kinemetrics Basalt data loggers
-
 private cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
-
-altus2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
-    transfer data from Kinemetrics Altus digitizer to an orb
-<options>
--pf pf	specify alternate parameter file
--db db	specify database for calib information
--dlclock dlname
--v	be more verbose
--state file	save state in filename
--start time	only get events after time
-</options>
 
 rtp2orb [-v] configuration_file
      collect data from RefTek data server (RTPD) and writes to orb 
@@ -481,6 +575,34 @@ slink2orb [options] SeedLink orb
 
 <subsection Datalogger Commanding>
 <commands>
+
+automrc [options] orbname dc_name
+    automatically send mass recentering command to RefTek DAS
+<options>
+-m srcmatch
+-p pf
+-s sleep
+-t tperiod
+-V verbatim
+-v max_lta
+</options>
+
+dlautomrc [options] cmdorb orb [target]
+    issue mass recenter commands to remote data loggers
+<options>
+-a vlt	out of range voltage value
+-d dl 	data logger type
+-D db 	use sensor types from db for voltage trigger level
+-f  	force mass recenter (with -s, not with -a)
+-m add	email notification list  
+-n  	no mrc, only report what would be done 
+-p pf 	parameter file 
+-s dl_sta1,dl_sta2,... 	comma separated list of data loggers
+-t n 	number of retries 
+-v 	verbose 
+-x dl_sta1,dl_sta2,...	comma separated list of rejected data loggers
+</options>
+
 dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
     execute command cmd on generic data loggers
 <options>
@@ -529,33 +651,6 @@ qtcmd [options] cmdorb net_sta cmd [params]
 -noreply
 </options>
 
-automrc [options] orbname dc_name
-    automatically send mass recentering command to RefTek DAS
-<options>
--m srcmatch
--p pf
--s sleep
--t tperiod
--V verbatim
--v max_lta
-</options>
-
-dlautomrc [options] cmdorb orb [target]
-    issue mass recenter commands to remote data loggers
-<options>
--a vlt	out of range voltage value
--d dl 	data logger type
--D db 	use sensor types from db for voltage trigger level
--f  	force mass recenter (with -s, not with -a)
--m add	email notification list  
--n  	no mrc, only report what would be done 
--p pf 	parameter file 
--s dl_sta1,dl_sta2,... 	comma separated list of data loggers
--t n 	number of retries 
--v 	verbose 
--x dl_sta1,dl_sta2,...	comma separated list of rejected data loggers
-</options>
-
 <subsection Real Time Status to orb>
 <commands>
 cpu2orb [-i t] [-vv] orb
@@ -566,6 +661,20 @@ df2orb [-i t] [-p pf] [-vv] orb
 
 heartbeat [-i interval] [-N net_sta] [-v] orb
      creates periodic condensed status packets with system info
+
+orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [stop|period]]
+    save logs packets (from tail2orb or from data logger acquisition) back into 
+    corresponding plain files divided by epoch day boundaries (and by data logger).
+
+orb2ntp [-d delay] [-f freq] [-m match] [-n navg] [-o old] [-r reject] [-u unit] [-Mv] orb
+    use orb packet times as (very rough) ntp clock
+
+orblog [-f file] [-s subcode] orb [log info]
+    write single log packet to orb; packet contents are
+    remainder of command line, stdin, or -f file
+
+orbtail [-f] [-m match] [-r reject] [-number] orb [start [end|period]]
+    read and print log packets from orb 
 
 ps2orb [options] orb
     save process information from ps(1) to orb at interval t seconds
@@ -591,20 +700,6 @@ tail2orb [options] orb [file ...]
 -S state	specify alternate state file 
 -vv	print lines on stderr also
 </options>
-
-orblog [-f file] [-s subcode] orb [log info]
-    write single log packet to orb; packet contents are
-    remainder of command line, stdin, or -f file
-
-orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [stop|period]]
-    save logs packets (from tail2orb or from data logger acquisition) back into 
-    corresponding plain files divided by epoch day boundaries (and by data logger).
-
-orbtail [-f] [-m match] [-r reject] [-number] orb [start [end|period]]
-    read and print log packets from orb 
-
-orb2ntp [-d delay] [-f freq] [-m match] [-n navg] [-o old] [-r reject] [-u unit] [-Mv] orb
-    use orb packet times as (very rough) ntp clock
 
 rtlogs orb
     display log messages from orbserver orb
@@ -745,21 +840,6 @@ orbstaseg [options] csssta orbdetect orbwfin orbwfout
 -v
 </options>
 
-orbdetect [options] orbname dbname
-    multi-frequency STA/LTA detector
-<options>
--nopending	suppress pending detection packets
--onlypicks	only output onset time packets
--out orb
--out_detev orb	output orb for detev packets
--pf pf
--reject re
--select re
--tstart t0
--twin minutes
--v
-</options>
-
 orbdetev2detection [options] dbfkeys orbin orbout
     convert detev database rows to detection rows
 <options>
@@ -769,6 +849,8 @@ orbdetev2detection [options] dbfkeys orbin orbout
 -v
 </options>
 
+<subsection Real Time Event Detection and Location>
+<commands>
 deprecated orbtrigger [options] orbname
     real time network trigger algorithm
 <options>
@@ -792,6 +874,21 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 -v
 </options>
 
+orbdetect [options] orbname dbname
+    multi-frequency STA/LTA detector
+<options>
+-nopending	suppress pending detection packets
+-onlypicks	only output onset time packets
+-out orb
+-out_detev orb	output orb for detev packets
+-pf pf
+-reject re
+-select re
+-tstart t0
+-twin minutes
+-v
+</options>
+
 ttgrid [-pf pf] [-time {timestr|all}] db
     compute travel time grid file for use by orbassoc and dbgrassoc
 
@@ -812,6 +909,8 @@ ttgrid_show [-adDgnNPsSv] ttgridfile
 -S	show S arrival times
 </options>
 
+<subsection Real Time Waveform Processing>
+<commands>
 orbevproc [options] orbwf orbev dbname
     generalized real-time event processor
 <options>
@@ -849,25 +948,6 @@ orbwfrms [options] dbname orbin [orbout]
 -v
 </options>
 
-orbpftrigger [options] orb [cmdstring]
-    parameter file trigger of program execution
-<options>
--select expr
--start {pktid|time}
--number number
--nowait
-</options>
-
-orbptrigger [options] orb command ...
-    orb packet trigger of program execution
-<options>
--select packet
--start {pktid|time}
--number number
--state file
--background
-</options>
-
 orbwfmeas [options] orbwf orbdb dbname
     make waveform measurements from an orb
 <options>
@@ -881,7 +961,7 @@ orbwfmeas [options] orbwf orbdb dbname
 -dbsift_expr dbsift_expr
 </options>
 
-qedd [options] dbname
+deprecated qedd [options] dbname
     daemon to get realtime QED data from finger site
 <options>
 -l
@@ -891,94 +971,13 @@ qedd [options] dbname
 -author author
 </options>
 
-orb2sms [-v] [-m match] [-r reject] [-M prog] orb {cell#|email}
+deprecated orb2sms [-v] [-m match] [-r reject] [-M prog] orb {cell#|email}
      reformat packets from orb as sms messages
 
-sms2orb [-dv] queue orb
+deprecated sms2orb [-dv] queue orb
      read incoming sms email from queue directory and write packets to orb
 
-<subsection Orb Real Time Display>
-<commands>
-dlmon [options] orb [cmdorb]
-    monitor/control generic digitizers
-<options>
--dump period
--dump_image file
--model model	data logger model
--pf pffile	parameter file
--select_status expr_status
--select_log expr_log
--show_map 	
--state {Icons|Multi|Single}	initial display state
--sort name	initial sort name
--subset subs_expr	initial expression for subsetting stations
-</options>
-
-old_dlmon [options] orb [-cmd cmdorb]
-    legacy version of monitor/control generic digitizers
-<options>
--model model	data logger model
--start_status {OLDEST|pktid|time}
--start_log {OLDEST|pktid|time}
--select_status expr_status
--select_log expr_log
--dump period imagefile
--pf pffile	parameter file
-</options>
-
-dlmontxt [options] orbname [orbname2 [...]]
-     generate terse status summary for data loggers
-<options>
--m re1	read only packets which match re1 
--r re2	don't read packets matching re2
--d dl_re	match data logger names
--M email	list of email addresses, or @filename for addresses in filename
--s subject 	subject line for email report	
-</options>
-
-deprecated qtmon dataorb data2orb cmdorbname [database]
-    monitor Quanterra digitizers
-
-orbmonrtd [options] orb
-    real time waveform trace display
-<options>
--dump dt gif	dump image to gif every dt seconds
--filter filter	
--height pixels	single trace window height in pixels
--hmax hmax	maximum height of main window in pixels
--ntinc nt	number of traces between time scales
--pf pf	use alternate parameter file
--redraw	start with oldest orb packet
--reject re	reject channels matching re
--select re	select channels matching re
--source net_sta_chan
- 	select display channels on command line
--title title	title for orbmonrtd window
--tshift_time t0	specify t0 for right edge of window
-	use t0="-" to use first packet time
--twin minutes	window size in minutes
--unmap	remove controls from display (for vnc in browser)
--width pixels	trace width in pixels
--wmax wmax	maximum width of main window in pixels
--reverse_labels	put station labels on right
-</options>
-
-orbdisp [options] orbserver [start [range|end]]
-    inspect waveform data on orb server
-<options>
--c re	save channel matching regular expression re
--m re	select packets matching regular expression re
--r re	reject packets matching regular expression re
--l latency	expected max latency for packets
--n	show network on display
--p period	specify minimum packet period
--w t	make time window t seconds
-</options>
-
-tkorblag orb
-    graphical view of read client latency in orb 
-
-<subsection Saving Orb Data in Database>
+<subsection Saving Orb Data to Database>
 <commands>
 
 cdorb2db [options] orb db [start [end|period]]
@@ -1087,22 +1086,9 @@ q330logs2db  [options] orb db
 -S state	statefile 
 </options>
 
-<subsection Orb Alarms>
-<commands>
-pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
-    read packets, send alarms for specified conditions 
-<options>
--0	start at first packet in orb
--S state	specify alternate directory to save history files 
--d	print debugging information.
--n npkts	stop after npkts packets
--p pf	specify alternate parameter  file
--v	print each packet read.
-</options>
-
 <subsection Miscellaneous>
 <commands>
-resetnetblazer hostname line timeout
+deprecated resetnetblazer hostname line timeout
     reset Telebit Netblazer terminal server
 
 deprecated orb2eworm parameter_file.d
@@ -1129,15 +1115,33 @@ mail_parser [options] [file [file...]]
 
 <subsection Archiving Data>
 <commands>
+
+event_archive [options] dbin dbout
+    copy event information (arrivals, origins, and waveforms) from continuous database dbin to archive dbout
+<options>
+-I idserver	specify idserver
+-l n	wait n days before copying an event
+-M db 	db containing site, sitechan: used only on initial archive to dbout
+-m addr	send errors as email to addr
+-s t1	process events after time t1
+-e t2	process events before time t2
+-n	ignore check for reviewed events
+-p pf	use parameter file pf
+-t tdb	use temporary database tdb
+-w wff	output waveform format    
+-v	be verbose
+-V	be extremely verbose
+</options>
+
 rtbackup [-v] [-V] [-n] 
          [-p pf] [-r reject_stas] [-s sta_match]
          [-t start_time ] [-e end_time] rt_db 
     backup waveform and database data from rt_db to independent disk directory
 
-rtbackup2tape [-v] [-m who] [-p pf] db drive
+deprecated rtbackup2tape [-v] [-m who] [-p pf] db drive
     original rtbackup (renamed)- backup waveform and database data from db to (tape) drive
 
-get_archive [options] db dbout drive [t0 [t1]]
+deprecated get_archive [options] db dbout drive [t0 [t1]]
     restore waveforms (between t0 and t1) to dbout using db.wftar from rtbackup tape on drive
 <options>
 -c re	select channels with regular expression
@@ -1148,7 +1152,7 @@ get_archive [options] db dbout drive [t0 [t1]]
 rtdbclean [-n] [-v] [-V] [-w] [-p pf] orb rt_db
     remove old waveform data and associated database records
 
-get_wftar -v dbmaster tape_drive
+deprecated get_wftar -v dbmaster tape_drive
     extracts wftar table from an ARTS archive tar tape
 
 online_backup [options] [directories]

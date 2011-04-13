@@ -2,6 +2,29 @@
 
 <subsection Waveform manipulation>
 <commands>
+
+alter_timestamps [-demnquv] [-p pf] db[.table]
+alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
+    change waveform and arrival timestamps for clock problems
+<options>
+-d	dump corrections table
+-e	expert mode: ignore checks on corrections table
+-f foreign	specify foreignkeys database
+-m	correct the miniseed along with the wfdisc table
+-n	just show what would happen
+-p pf	use an alternate parameter file pf
+-q	interactively examine time corrections by entering a station and time
+-u	undo previously applied corrections
+-v	be more verbose
+</options>
+
+correctdt [-m srcmatch] [-t stime] [-v] bdb
+    using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
+
+dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
+    create time correction table by comparing good source gdb:...
+    with bad source bdb:...
+
 trexcerpt [options] dbin dbout [start {duration|end}]
     extract waveform segments from database
 <options>
@@ -25,9 +48,6 @@ trexcerpt [options] dbin dbout [start {duration|end}]
  	specify mode (default = time)
 -W db	specify database from which waveforms come
 </options>
-
-trtally [-d output] [-ekv] [-r start stop] db1 [{+|-|!|&|^|a} [db2]]
-    compute intersections and other operations on two sets of waveform time ranges
 
 trmapnames [-anv] db [net fsta fchan {loc|aux}]
 trmapnames -u [-anv] db [sta [chan]]
@@ -59,23 +79,6 @@ deprecated dbwfexcerpt [options] dbin[.table] dbout
 -sfactor f	end time is f*(p-s) + predicted s arrival time
 -tolerance x	splice waveform segments together when sample time mismatch is less than x*sample period
 -v	verbose
-</options>
-
-event_archive [options] dbin dbout
-    copy event information (arrivals, origins, and waveforms) from continuous database dbin to archive dbout
-<options>
--I idserver	specify idserver
--l n	wait n days before copying an event
--M db 	db containing site, sitechan: used only on initial archive to dbout
--m addr	send errors as email to addr
--s t1	process events after time t1
--e t2	process events before time t2
--n	ignore check for reviewed events
--p pf	use parameter file pf
--t tdb	use temporary database tdb
--w wff	output waveform format    
--v	be verbose
--V	be extremely verbose
 </options>
 
 trsample [options] database[.table] [time [end|period]]
@@ -112,6 +115,9 @@ trsignal [options] database
 -y yaw	constant signal drift
 </options>
 
+trtally [-d output] [-ekv] [-r start stop] db1 [{+|-|!|&|^|a} [db2]]
+    compute intersections and other operations on two sets of waveform time ranges
+
 deprecated extrd dbname|wfd_dir|"wfd_fnames" stime etime
     extract specified segment of CSS data
 <options>
@@ -121,7 +127,7 @@ deprecated extrd dbname|wfd_dir|"wfd_fnames" stime etime
 -s sta
 </options>
 
-dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
+deprecated dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
     decimate waveform data
 <options>
 -sift expr
@@ -129,28 +135,6 @@ dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
 -wfdir wfdir
 -f format
 </options>
-
-alter_timestamps [-demnquv] [-p pf] db[.table]
-alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
-    change waveform and arrival timestamps for clock problems
-<options>
--d	dump corrections table
--e	expert mode: ignore checks on corrections table
--f foreign	specify foreignkeys database
--m	correct the miniseed along with the wfdisc table
--n	just show what would happen
--p pf	use an alternate parameter file pf
--q	interactively examine time corrections by entering a station and time
--u	undo previously applied corrections
--v	be more verbose
-</options>
-
-dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
-    create time correction table by comparing good source gdb:...
-    with bad source bdb:...
-
-correctdt [-m srcmatch] [-t stime] [-v] bdb
-    using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
 
 <subsection Analysis>
 <commands>
@@ -204,36 +188,28 @@ trstack dbin dbout subset imode [-azmin=xx] [-azmax=xx] [-delmin=xx] [-delmax=xx
 
 <subsection Waveform display>
 <commands>
-dbplotcov database sta:chan tstart tend [-h[scale]] [-wftar]
+deprecated dbplotcov database sta:chan tstart tend [-h[scale]] [-wftar]
     make plot and listing of waveform coverage from database
 
-dbrsec [options] db
-    make record section plot of waveforms
+dbheli [options] db sta chan tstart twinline nlines scale
+    make helicorder type plot of channel waveforms
 <options>
--sc sta:chan
--orid orid:chan
--top top
--bot bot
--tstart tstart
--twin twin
--filter filter
--sift sift
--clip {on|off}
--vred vred
--gain gain
--amp amp
+-f filter
+-o dborigin
+-ps psfile
 </options>
 
-dbspgram dbname sta chan tstart twin [options] 
-    compute time varying spectragram
+dbpick_combine [options] db1 db2
+    combine subset of two separate databases and view in dbpick
 <options>
--fmin fmin	min freq in hz
--fmax fmax	max freq in hz
--units {D|V|A}	displacement, velocity, acceleration
--thalf thalf	1/2 width of gaussian time window
--noic	no instrument correction
--ampdecades ampdecades	# decades in amplitude to plot
--ps psfile
+-v	verbose
+-keep db	keep all temporary dbs
+-chan subset	basic channel subset applied to wfdisc and arrival
+-start time	start time of data to review
+-end time	end time of data to review
+-sta subset	station subset
+-nearby sta	subset dbs for stations with in 2 degrees or dist
+-dist ndeg	subset distance for -nearby
 </options>
 
 dbpick [options] dbname
@@ -265,6 +241,35 @@ dbpick [options] dbname
 -fgsa color	selected arrival foreground color
 -fgdt color	detection foreground color
 -fgtm color	timemark foreground color
+</options>
+
+dbrsec [options] db
+    make record section plot of waveforms
+<options>
+-sc sta:chan
+-orid orid:chan
+-top top
+-bot bot
+-tstart tstart
+-twin twin
+-filter filter
+-sift sift
+-clip {on|off}
+-vred vred
+-gain gain
+-amp amp
+</options>
+
+dbspgram dbname sta chan tstart twin [options] 
+    compute time varying spectragram
+<options>
+-fmin fmin	min freq in hz
+-fmax fmax	max freq in hz
+-units {D|V|A}	displacement, velocity, acceleration
+-thalf thalf	1/2 width of gaussian time window
+-noic	no instrument correction
+-ampdecades ampdecades	# decades in amplitude to plot
+-ps psfile
 </options>
 
 tkdbpick [options] {dbname|-}
@@ -310,37 +315,14 @@ tkdbpick [options] {dbname|-}
 trdisp [-g geom] [-hrW] [-s subset] [-w hours] database[.table] [start [range]]
     display waveform data and arrivals from database or view
 
-dbheli [options] db sta chan tstart twinline nlines scale
-    make helicorder type plot of channel waveforms
-<options>
--f filter
--o dborigin
--ps psfile
-</options>
-
-dbpick_combine [options] db1 db2
-    combine subset of two separate databases and view in dbpick
-<options>
--v	verbose
--keep db	keep all temporary dbs
--chan subset	basic channel subset applied to wfdisc and arrival
--start time	start time of data to review
--end time	end time of data to review
--sta subset	station subset
--nearby sta	subset dbs for stations with in 2 degrees or dist
--dist ndeg	subset distance for -nearby
-</options>
-
 <subsection Waveform Verification>
 <commands>
-dbversac database
-    compare sac file headers with CSS database
-
-dbchkwf [ -v ] database
-    file consistency check for wfdisc
 
 chkmsd [-v] db
      checks all miniseed blocks to see db and miniseed agree
+
+dbchkwf [ -v ] database
+    file consistency check for wfdisc
 
 dbchkwfdata [-av] [-s subset] db
      read from each waveform in db, only last sample or entire waveform with -a
@@ -350,6 +332,9 @@ dbcmpwf [-acmsv]   db1[.table] db2[.table]
 dbcmpwf [-acmv] -i db1[.table] [db2[.table]]
 dbcmpwf [-cmtv]    db1[.table] db2[.table] t0 {t1|range}
     compare waveform files from two database records or tables.
+
+dbversac database
+    compare sac file headers with CSS database
 
 dbversdwf [-s subset] [-T maxtdelta] [-dftuvwxX] database
     check SEED format waveform files for consistency with wfdisc
