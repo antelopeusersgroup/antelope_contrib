@@ -30,8 +30,7 @@ sub init_database {
 	my( $version, $compsect, $manpage, $mansect, $linecount );
 	my( @db, @dbt );
 
-	if( $ENV{ANTELOPE} =~ m@/opt/antelope/(\d\..*)@ ) {
-
+	if( $ENV{ANTELOPE} =~ m@/opt/antelope/([^/]+)@ ) {
 		$version = $1;
 	}
 
@@ -267,7 +266,7 @@ if( $opt_t ) {
 # intended to prevent duplicate presentation of man pages that 
 # are really just cross-linked references to each other:
 
-@files = split( /\s+/, `find $ENV{ANTELOPE}/man/html -type f -print` );
+@files = split( /\s+/, `find $ENV{ANTELOPE}/html -type f -print` );
 
 
 $Pf = "dbrtfm";
@@ -413,7 +412,7 @@ if( ! -e "$nroff" ) {
 	elog_die( "Page $nroff not found. Bye.\n" );
 }
 
-$html = "$ENV{ANTELOPE}/man/html/$manpage.$mansect.html";
+$html = "$ENV{ANTELOPE}/html/$manpage.$mansect.html";
 
 eval( $showman_cmd );
 
