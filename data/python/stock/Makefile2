@@ -6,7 +6,7 @@ DATADIR= python/antelope
 
 DATA= $(STOCKDLIB) stock.py
 
-MAN3P= pythonstock.3p
+MAN3Y= pythonstock.3y
 
 CLEAN= *.pyc *.so
 

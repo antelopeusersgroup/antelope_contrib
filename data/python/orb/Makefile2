@@ -7,7 +7,7 @@ DATADIR= python/antelope
 DATA= $(ORBDLIB) orb.py 
 
 MAN1=
-MAN3P= pythonorb.3p
+MAN3Y= pythonorb.3y
 MAN5=
 
 CLEAN= *.pyc *.so
