@@ -4,7 +4,7 @@ DLIB=python__orb$(DSUFFIX)
 
 DATADIR= python/antelope
 
-DATA= $(ORBDLIB) orb.py 
+DATA= $(ORBDLIB) orb.pyc
 
 MAN1=
 MAN3Y= pythonorb.3y

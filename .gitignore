@@ -11,6 +11,7 @@
 *.dSYM
 *.dylib
 *.swp
+*.pyc
 .%certify.*
 certify.history
 certify.log

@@ -382,7 +382,7 @@ header &Literal{
 }
 
 extra_rules &Literal{
-.SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp
+.SUFFIXES: .SUFFIXES .py .pyc .xpy .xphp .wwwphp
 
 % : %.xpy $(ANTELOPE)/local/data/templates/xpy
 	$(RM) $@
@@ -397,6 +397,10 @@ extra_rules &Literal{
 .wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
 	$(RM) $@
 	cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
+
+.py.pyc :
+	$(RM) $@
+	$(PYTHON_EXECUTABLE) -c 'import py_compile; py_compile.compile("$<")'
 
 install :: 
 	@mkdir -p $(ANTELOPE)/local/bin

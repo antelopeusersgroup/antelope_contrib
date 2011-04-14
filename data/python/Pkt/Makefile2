@@ -4,7 +4,7 @@ DLIB=python__Pkt$(DSUFFIX)
 
 DATADIR= python/antelope
 
-DATA= $(ORBDLIB) Pkt.py 
+DATA= $(ORBDLIB) Pkt.pyc
 
 MAN1=
 MAN3Y= pythonPkt.3y

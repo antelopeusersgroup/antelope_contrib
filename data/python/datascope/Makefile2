@@ -4,7 +4,7 @@ DLIB=python__datascope$(DSUFFIX)
 
 DATADIR= python/antelope
 
-DATA= $(DSDLIB) datascope.py 
+DATA= $(DSDLIB) datascope.pyc 
 
 MAN1=
 MAN3Y= pythondb.3y
@@ -33,3 +33,4 @@ $(DSDLIB) : $(DSOBJS)
 $(DLIB): $(DSDLIB)
 	$(RM) $@
 	@cp $(DSDLIB) $(DLIB)
+

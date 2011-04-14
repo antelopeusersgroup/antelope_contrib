@@ -242,6 +242,7 @@ make &Arr{
 	^[[:space:]]*Linux\\)
 	^[[:space:]]*Darwin\\)
 	^[[:space:]]*\\*\\)
+	.*py_compile.compile
    }
 }
 

@@ -1,9 +1,12 @@
 
 DATADIR= python/antelope
 
-DATA= __init__.py
+DATA= __init__.pyc
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
 include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
 
