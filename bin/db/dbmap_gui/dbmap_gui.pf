@@ -11,9 +11,9 @@ dot_color	red
 label_color black
 circle_color red
 
-overlay_dot_color magenta
+overlay_dot_color green
 overlay_label_color magenta
-overlay_circle_color magenta
+overlay_circle_color blue
 tables &Arr{
 	site &Arr{
 		label	sta
@@ -29,7 +29,7 @@ tables &Arr{
 	}
 	known_source &Arr{
 		label	placename
-		circle	radius
+		circle	sradius
 	}
 	place &Arr{
 		label	placename
@@ -46,3 +46,5 @@ tables &Arr{
 	}
 		
 }	
+window_layout &Tbl{
+}
