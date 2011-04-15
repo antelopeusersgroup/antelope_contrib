@@ -421,6 +421,15 @@ pf2PyObject( Pf *pf )
 
 		break;
 
+	case PFFCT:
+
+		/* SCAFFOLD fill in proper behaviour for function */
+		/* SCAFFOLD the approach below won't work for references etc. */
+
+		obj = string2PyObject( pfexpand( pf ) );
+
+		break;
+
 	case PFINVALID:
 	default:
 
