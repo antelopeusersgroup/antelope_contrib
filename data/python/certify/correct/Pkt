@@ -1,14 +1,18 @@
 
-orbserver: orbserver orbserver   Antelope Release 4.11 Mac OS X 10.5.6 2009-05-08  <#>
-orbserver:    bc585a170d7a17bfd8a682af32142fc17dc2fd08 (+1 files changed) <#>
-orbserver: orb last initialized  3/03/2010 (062) 23:45:41.130
+orbserver: orbserver orbserver   Antelope 5.1-64 *Pre*Release Mac OS X 10.6.6 2011-04-12  <#>
+orbserver:    c802e96e5dd448ef6abd6eed7f0562b317685305 (+2 files changed) <#>
+orbserver:     Tue Apr 12 03:16:06 2011 <#>
+
+--> orbserver -p :dq orbserver <#>
+
+...orbserver: orb last initialized  4/16/2011 (106) 11:21:41.572
 orbserver:   1000.000 Mbytes packet buffer
-orbserver:          0 of    2500010 maximum packets
-orbserver:   0 srcnames used of  1000 maximum
-....
+orbserver:          0 of    3333343 maximum packets
+orbserver:   0 srcnames used of 10000 maximum
+.
 ----------------------------------------------------------------------
-Ran 4 tests in 0.078s
+Ran 4 tests in 18.974s
 
 OK
-> orbserver: *halt      * thr#  0 kent@127.0.0.1:orbstat -i :dq (34869)
+> orbserver: *halt      * thr#  3 kent@127.0.0.1:orbstat -i :dq (68568)
 Exiting due to halt
