@@ -53,23 +53,23 @@
     use baler ;
     use utilfunct ;
     
-    our ($opt_v,$opt_V,$opt_D,$opt_a,$opt_b,$opt_m,$opt_M,$opt_n,$opt_p,$opt_q,$opt_s);
-    our ($pgm,$host);
-    our (@targets);
-    our (%pb,%q330,%stas);
+    our ( $opt_v, $opt_V, $opt_D, $opt_a, $opt_m, $opt_P, $opt_n, $opt_p, $opt_q, $opt_s );
+    our ( $pgm, $host );
+    our ( @targets );
+    our ( %pb, %pf, %q330, %stas);
         
 {    #  Main program
 
-    my ($cmd, $cmdorb, $dbops, $debug, $orb, $orbname, $pfsource, $problems, $stime, $subject, $subset, $usage, $verbose);
+    my ( $Pf, $cmd, $cmdorb, $dbops, $debug, $orb, $orbname, $pfsource, $problems, $stime, $subject, $subset, $usage, $verbose );
 
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVDabnm:M:p:qs:') || @ARGV != 3 ) { 
-        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] [-a] [-b] [-q]\n" ;
-        $usage .=  "	[-s subset] [-p pfsource_name] [-m mail_to_operator] [-M mail_to_field_ops]  \n" ;
+    if (  ! &Getopts('vVDabnm:M:P:p:qs:') || @ARGV != 3 ) { 
+        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] [-a] [-q]\n" ;
+        $usage .=  "	[-s sta_subset] [-p pf] [-P pfsource_name] [-m mail_to_operator]  \n" ;
         $usage .=  "	status_orb cmdorb db \n\n"  ; 
 
         elog_notify($cmd) ; 
@@ -78,20 +78,22 @@
     
     &savemail() if $opt_m ; 
     elog_notify($cmd) ; 
+    announce( 0, 0 ) ;
     $stime = strydtime(now());
     chop ($host = `uname -n` ) ;
     elog_notify ("\nstarting execution on	$host	$stime\n\n");
     
     $subset     = $opt_s || ".*" ;
-    $pfsource   = $opt_p || ".*/pf/st" ;
+    $pfsource   = $opt_P || ".*/pf/st" ;
             
     $orbname    = $ARGV[0] ;
     $cmdorb     = $ARGV[1] ;
     $dbops      = $ARGV[2] ;
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v ;
-    $debug      = $opt_V ;
+
+    $Pf         = $opt_p || $pgm ;
+    %pf         = getparam( $Pf ) ;
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources" ;
@@ -115,7 +117,7 @@
     &sta_info($orb,$pfsource);
     elog_notify("q3302orb targets -	@targets");
     
-    $problems = q330_proc($cmdorb,$dbops,$subset,$problems) unless $opt_b;
+    $problems = q330_proc($cmdorb,$dbops,$subset,$problems) ;
     $problems = pb_proc($orb,$dbops,$subset) unless $opt_q;
         
     orbclose($orb);
@@ -123,9 +125,9 @@
     &cleanup_files;
          
     $subject = "ANF TA Q330 and Baler status";
-    $cmd     = "rtmail -C -s '$subject' $opt_M < /tmp/tmp_noreg_$$";
+    $cmd     = "rtmail -C -s '$subject' $pf{status_mail} < /tmp/tmp_noreg_$$";
         
-    if  ( ! $opt_n  && $opt_M) {
+    if  ( ! $opt_n  && $pf{status_mail} =~ /[A-Za-z].*/ ) {
         elog_notify("\n$cmd");        
         $problems = run($cmd,$problems) ;
     } else {
@@ -143,8 +145,7 @@
   
     exit(0);
 }
-
-   
+ 
 sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     my ( $cmdorb, $problems ) = @_;
     my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject );
@@ -179,7 +180,7 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     $ref = pfget($Pf, "");
     %q330stat = %$ref ;
 
-    elog_notify("$Pf	ref($ref)") if $opt_D; 
+    elog_debug("$Pf	ref($ref)") if $opt_D; 
 
     &prettyprint(\%q330stat) if $opt_D;
     
@@ -197,7 +198,6 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     elog_notify(sprintf("%d status dlsta",$#keys+1)) if $opt_v;
     return ($problems,%q330stat);
 }
-
 
 sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     my ( $cmdorb, $problems ) = @_;
@@ -235,7 +235,7 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     $ref = pfget($Pf, "");
     %q330config = %$ref ;
 
-    elog_notify("$Pf	ref($ref)") if $opt_D;
+    elog_debug("$Pf	ref($ref)") if $opt_D;
     
     @keys = sort( keys %q330config);
     
@@ -252,16 +252,15 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     return ($problems,%q330config);
 }
 
-
-sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
+sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems );
     my ( $cmdorb, $dbops, $subset, $problems ) = @_;
-    my ( $Notes, $ctime, $dl, $dlname, $dlsta, $endtime, $field, $filter, $key, $line, $model );
-    my ( $nchange, $nconf, $nrec, $nstat, $rec, $row, $sta, $subject );
-    my ( @db, @dbcal, @dbdeploy, @dbdepnull, @dbdepscr, @dbnull, @dbq330, @dbscratch, @dbtest ) ;
-    my ( @dl, @dlcom, @f, @fields, @keys, @list, @rows );
+    my ( $Notes, $ctime, $dlname, $dlsta, $endnull, $field, $filter, $ignore_sta, $key, $line );
+    my ( $model, $nchange, $nconf, $nrec, $nstat, $rec, $row, $sta, $subject );
+    my ( @db, @dbcal, @dbcheck, @dbdeploy, @dbdepnull, @dbdepscr, @dbnull, @dbq330, @dbscratch ) ;
+    my ( @dbsq_close, @dbsq_open, @dl, @dlcom, @f, @fields, @keys, @list, @rows, @sq_close, @sq_open );
     my ( %config, %sta, %stat );
 
-    elog_notify("\nQ330 processing");
+    elog_notify("\nQ330 processing    $cmdorb    $dbops    $subset    $problems ");
 
     $nstat = 0;
     $nconf = 1;
@@ -289,7 +288,6 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
 #
 #  notify for stations which have not connected
 #
-    elog_notify("");
     foreach $key (@keys) {
         $dlsta                        = $stat{$key}{dlsta};
         next unless ($dlsta =~ /$subset/);
@@ -458,59 +456,92 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
 #
 #  open db for writing staq330 table
 #
-    @db        = dbopen($dbops,"r+");
-    @db        = dblookup(@db,0,"staq330",0,0);
-    @dbscratch = dblookup(@db,0,0,0,"dbSCRATCH");
-    @dbnull    = dblookup(@db,0,0,0,"dbNULL");
-    $endtime   = dbgetv(@dbnull,"endtime");
-    @fields    = dbquery(@db,"dbTABLE_FIELDS");
+    @db            = dbopen(   $dbops, "r+" ) ;
+    @db            = dblookup( @db, 0, "staq330", 0, 0 ) ;
+    @dbscratch     = dblookup( @db, 0, 0, 0, "dbSCRATCH" ) ;
+    @dbnull        = dblookup( @db, 0, 0, 0, "dbNULL" ) ;
+    $endnull       = dbgetv(   @dbnull, "endtime" ) ;
+    @fields        = dbquery(  @db, "dbTABLE_FIELDS" ) ;
     
-    @dbdeploy  = dblookup(@db,0,"deployment",0,0);
-    @dbdepscr  = dblookup(@dbdeploy,0,0,0,"dbSCRATCH");
-    @dbdepnull = dblookup(@dbdeploy,0,0,0,"dbNULL");
+    @dbdeploy      = dblookup( @db, 0, "deployment", 0, 0 ) ;
+    @dbdeploy      = dbsubset( @dbdeploy, "endtime == NULL" ) ;
+    @dbdeploy      = dbsubset( @dbdeploy, "snet =~ /$pf{net}/" ) ;
+    @dbdepscr      = dblookup( @dbdeploy, 0, 0, 0, "dbSCRATCH" ) ;
+    @dbdepnull     = dblookup( @dbdeploy, 0, 0, 0, "dbNULL" ) ;
 
-    @dbtest    = dbsubset(@db,"endtime == NULL");
-    @dbtest    = dbsort(@dbtest,"dlsta","time");
+    @dbsq_open     = dbsubset( @db, "endtime == NULL" ) ;
+    @dbsq_open     = dbsort(   @dbsq_open, "dlsta", "time" ) ;
     
-    $nrec      = dbquery(@dbtest,"dbRECORD_COUNT");
-    $ctime     = now() ;
+    $nrec          = dbquery(  @dbsq_open, "dbRECORD_COUNT" ) ;
+    $ctime         = now() ;
     
-    @keys = sort( keys %q330);
-    elog_notify(sprintf("%d proc dlsta",$#keys+1));
-    elog_notify(sprintf("%d rows with no endtime",$nrec)) if $opt_V;
+    @keys = sort( keys %q330 ) ;
+    elog_debug( sprintf( "%d proc dlsta", $#keys+1 ) ) if $opt_D ;
+    elog_debug( sprintf( "%d rows with no endtime", $nrec ) ) if $opt_D ;
 #
 #  update closed stations in staq330 table
 #    
 
     if (dbquery(@dbdeploy,"dbTABLE_PRESENT")) {
-    
-        for ($rec = 0 ; $rec < $nrec ; $rec++) {
-            $dbtest[3] = $rec ;
-            $dl        = dbgetv(@dbtest,"dlsta") ;
-            next unless ($dl =~ /$subset/) ;
-            $sta       = dbgetv(@dbtest,"sta") ;
-            dbputv(@dbdepscr,"sta",     dbgetv(@dbtest,"sta"),
-                             "time",    $ctime,
-                             "endtime", dbgetv(@dbdepnull,"endtime"));
-                             
-            @rows = dbmatches(@dbdepscr,@dbdeploy,"sta","time::endtime") ;
-            if ($#rows == - 1) {
-                dbputv(@dbtest,"endtime", $ctime) ;
-                elog_notify ("\nNotification #$Notes") if ( $opt_D || $opt_V ) ;
-                $line = "$dl	closed in staq330 table" ;
-                elog_notify ( $line ) if ( $opt_D || $opt_V ) ;
-                print Q330NOTES "$line\n" ;
+        
+        @dbsq_close = dbnojoin( @dbsq_open, @dbdeploy, "sta" ) ;
+        $nrec       = dbquery(  @dbsq_close, "dbRECORD_COUNT" ) ;
+        
+        @sq_close = ();
+        STA: for ($dbsq_close[3] = 0 ; $dbsq_close[3] < $nrec ; $dbsq_close[3]++) {
+            $sta = dbgetv( @dbsq_close, "sta" ) ;
+            push( @sq_close, $sta ) ;
+            foreach $ignore_sta ( @{$pf{ignore_sta}} ) {
+                if ( $ignore_sta =~ /$sta/ ) {
+                    elog_notify "$sta ignored, not closed" if $opt_V ;
+                    next STA;
+                }
             }
-        }    
+            dbputv( @dbsq_close, "endtime", $ctime ) ;
+        }
+        
+        if ( $nrec ) {
+            @sq_close = sort ( @sq_close ) ;
+            $line = "$nrec open records in staq330 nojoin to open records in deployment - @sq_close" ;
+            elog_notify ( "\n$line" ) ;
+            print Q330NOTES "$line\n";
+        }
+
+        @dbsq_open  = dbjoin(     @dbsq_open, @dbdeploy, "sta" ) ;
+        @dbsq_open  = dbseparate( @dbsq_open, "staq330" ) ;
+        @dbcheck    = dbnojoin(   @dbdeploy, @dbsq_open, "sta" ) ;  
+        $nrec       = dbquery(    @dbcheck, "dbRECORD_COUNT" ) ;
+
+        @sq_open = ();
+        for ( $dbcheck[3] = 0 ; $dbcheck[3] < $nrec ; $dbcheck[3]++) {
+            push( @sq_open, dbgetv( @dbcheck, "sta" ) ) ; 
+        }
+
+        if ( $nrec ) {
+            @sq_open = sort ( @sq_open ) ;
+            $line = "$nrec open records in deployment nojoin to open records in staq330 - @sq_open"  ;
+            elog_notify ( $line ) ;
+            print Q330NOTES "$line\n";
+        }
+
     }
 #
 #  update station data in staq330 table
 #
-    foreach $dlsta (@keys) {
+    foreach $dlsta ( @keys ) {
+        elog_debug ( "dlsta	$dlsta" )  if $opt_D ;
+        elog_debug ( sprintf("time	%s	endtime	%s", strydtime( $q330{$dlsta}{time} ), strydtime( $endnull ) ) ) if $opt_D ;
+        
+        if ( $q330{$dlsta}{sta} =~ /EXMP/ ) {
+            $line = "$dlsta Q330 has internal station code of $q330{$dlsta}{sta} "  ;
+            elog_notify ( $line ) ;
+            print Q330NOTES "$line\n" ;
+        }
+
         dbput(@dbscratch,dbget(@dbnull));
         dbputv(@dbscratch, "dlsta",          $dlsta,
                            "time",           $q330{$dlsta}{time},
-                           "endtime",        $endtime,
+                           "endtime",        $endnull,
                            "target",         $q330{$dlsta}{target} ,
                            "net",            $q330{$dlsta}{net},
                            "sta",            $q330{$dlsta}{sta},
@@ -554,33 +585,43 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
             $q330{$dlsta}{ch5_preamp}   = dbgetv(@dbnull,"ch5_preamp");
             $q330{$dlsta}{ch6_preamp}   = dbgetv(@dbnull,"ch6_preamp");
         }
-        @rows = dbmatches(@dbscratch,@db,"q330","dlsta","time::endtime");
+        @rows = dbmatches( @dbscratch, @db, "q330", "dlsta", "endtime" );
+        elog_debug ( "#rows	$#rows" ) if $opt_D ;
+        
         if ($#rows == -1) {
-            dbadd(@db);
-            elog_notify("	Adding	$dlsta") if $opt_V;
+            dbadd(@db) ;
+            elog_notify("	Adding	$dlsta") if $opt_V ;
             $Notes++ ;
-            elog_notify ("\nNotification #$Notes") if $opt_V;
-            $line = "$dlsta added to staq330 table";
-            elog_notify ( $line ) if $opt_V;
-            print Q330NOTES "$line\n";
+            elog_notify ("\nNotification #$Notes") if $opt_V ;
+            $line = "$dlsta added to staq330 table" ;
+            elog_notify ( $line ) ; 
+            print Q330NOTES "$line\n" ;
         } elsif ($#rows == 0) {
-            $db[3] = $rows[0];
-            %sta = ();
-            $nchange = 0;
-            @list = ();
+            elog_debug ( "row	$rows[0]" ) if $opt_D ;
+
+            $db[3] = $rows[0] ;
+
+            elog_debug ( sprintf ("dlsta	%s	time	%s	endtime	%s", dbgetv( @db, "dlsta" ), strydtime( dbgetv( @db, "time") ), strydtime( dbgetv( @db, "endtime") ) ) ) if $opt_D ;
+            %sta     = () ;
+            $nchange = 0 ;
+            @list    = () ;
             foreach $field (@fields) {
-                elog_notify("	$field") if $opt_V;
-                $sta{$field} = dbgetv(@db,$field);
+                elog_notify( "	$field" ) if $opt_V ;
+                $sta{$field} = dbgetv( @db, $field ) ;
+                if ( $field =~ /endtime/ && $sta{$field} != $endnull ) {
+                    elog_notify ( sprintf ("dlsta  %s q330 match has time    %s    endtime    %s,  reopening", $dlsta, strydtime( dbgetv( @db, "time") ), strydtime( dbgetv( @db, "endtime") ) ) ) ;
+                    $nchange++;
+                }
                 next if ($field =~ /dlsta|time|endtime|lddate|LP1_buf|LP2_buf|LP3_buf|LP4_buf/);
                 
                 elog_notify("	$dlsta	$field	$q330{$dlsta}{$field}	$sta{$field}") if $opt_V;
                 if ($q330{$dlsta}{$field} != $sta{$field} && $field =~ /nchan|memory_size|nreboot|last_reboot/ ) {
-                    elog_notify("	$dlsta	$field	q330	$q330{$dlsta}{$field}	db	$sta{field}"); # if $opt_V;
+                    elog_notify("	$dlsta	$field	q330	$q330{$dlsta}{$field}	db	$sta{field}")  if $opt_V;
                     push(@list,$field);
                     $nchange++;
                 }
                 if ($q330{$dlsta}{$field} !~ /$sta{$field}/ && $field !~ /nchan|memory_size|nreboot|last_reboot/ ) {
-                    elog_notify("	$dlsta	$field	q330	$q330{$dlsta}{$field}	db	$sta{field}"); # if $opt_V;
+                    elog_notify("	$dlsta	$field	q330	$q330{$dlsta}{$field}	db	$sta{field}") if $opt_V;
                     push(@list,$field);
                     $nchange++;
                 }
@@ -591,7 +632,7 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
                 $Notes++ ;
                 elog_notify ("\nNotification #$Notes") if $opt_V;
                 $line = "$dlsta - @list fields changed, starting new record";
-                elog_notify ( $line ) if $opt_V;
+                elog_notify ( $line ) ; # if $opt_V;
                 print Q330NOTES "$line\n";
                 next;
             }
@@ -631,25 +672,26 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
 
     for ($rec = 0; $rec < $nrec; $rec++) {
         $dbq330[3] = $rec ; 
-        ($dlsta,$dlname,$model,$filter) = dbgetv(@dbq330,"dlsta","calibration.dlname","model","ch1_3_filter");
-        @dl = split(/_/,$dlname);
-        @f  = split(/ /,$filter);
+        ($dlsta,$dlname,$model,$filter) = dbgetv(@dbq330,"dlsta","calibration.dlname","model","ch1_3_filter") ;
+        next if ( $dlname =~ /\-/ ) ; 
+        @dl = split(/_/,$dlname) ;
+        @f  = split(/ /,$filter) ;
         if ($model !~ /^$dl[0]$/) {
-            $line = sprintf("$dlsta calibration table dlname - %-25s |	q330 model  - 	%s",$dlname,$model);
-            elog_notify($line);
-            print DBMASTER "$line\n";
+            $line = sprintf("$dlsta calibration table dlname - %-25s |	q330 model  - 	%s",$dlname,$model) ;
+            elog_notify($line) ;
+            print DBMASTER "$line\n" ;
         } 
         if ($dlname =~ /.*below.*/) {
             if ( $dlname !~ /.*$f[4].*/ ) {
-                $line = sprintf("$dlsta calibration table dlname - %-25s |	q330 filter - 	%s",$dlname,$filter);
-                elog_notify($line);
-                print DBMASTER "$line\n";
+                $line = sprintf("$dlsta calibration table dlname - %-25s |	q330 filter - 	%s",$dlname,$filter) ;
+                elog_notify($line) ;
+                print DBMASTER "$line\n" ;
             } 
         } else {
             if ($filter =~ /below/ ) {
-                $line = sprintf("$dlsta calibration table dlname - %-25s |	q330 filter - 	%s",$dlname,$filter);
-                elog_notify($line);
-                print DBMASTER "$line\n";
+                $line = sprintf("$dlsta calibration table dlname - %-25s |	q330 filter - 	%s",$dlname,$filter) ;
+                elog_notify($line) ;
+                print DBMASTER "$line\n" ;
             } 
         }
     }
@@ -664,208 +706,235 @@ sub q330_proc { # ($problems) = q330_proc($cmdorb,$dbops,$subset,$problems);
 
 sub pb_proc { # ($problems) = pb_proc($orb,$dbops,$subset);
     my ( $orb,$dbops,$subset ) = @_ ;
-    my ( $Notes, $chan, $ctime, $desc, $dl, $dlsta, $endtime, $field, $line, $loc, $n, $nbytes ) ;
-    my ( $nchange, $net, $npkts, $nrec, $packet, $pkt, $pktid, $pkttime, $rec, $result, $row ) ;
+    my ( $Notes, $chan, $ctime, $desc, $dlsta, $endnull, $field, $ignore_sta, $line, $loc, $n ) ;
+    my ( $nbytes, $nchange, $net, $npkts, $nrec, $packet, $pkt, $pktid, $pkttime, $result, $row ) ;
     my ( $source, $srcname, $sta, $strtmp, $subcode, $suffix, $type, $when );
-    my ( @baler, @db, @dbdeploy, @dbdepnull, @dbdepscr, @dbnull, @dbscratch, @dbtest, @fields ) ;
-    my ( @keys, @list, @noq330, @q330, @rows, @sources );
+    my ( @baler, @db, @dbcheck, @dbdeploy, @dbdepnull, @dbdepscr, @dbnull, @dbpb_close, @dbpb_open ) ;
+    my ( @dbscratch, @fields, @keys, @list, @noq330, @pb_close, @pb_open, @q330, @rows, @sources ) ;
     my ( %sta );
     
-    elog_notify("\nBaler processing");
+    elog_notify( "\nBaler processing" );
 #
 #  get log packets from status orb
 #
-    $srcname = $subset . "/log";
+    $srcname = $subset . "/log" ;
 
-    elog_notify("orb	$orb	srcname	$srcname	") if $opt_V;
+    elog_notify( "orb	$orb	srcname	$srcname	" ) if $opt_V ;
     
-#    orbreject($orb,$reject);
+    orbreject( $orb, $pf{baler_orb_reject} ) ;
     
-    $npkts = orbselect($orb,$srcname);
-    ($when, @sources) = orbsources($orb) ;
+    $npkts = orbselect( $orb, $srcname ) ;
+    ( $when, @sources ) = orbsources( $orb ) ;
     
-    $pktid = orbafter($orb,(now()-86400));
+    $pktid = orbafter( $orb, ( now() - 86400 ) );
     $npkts = 0 ;
     
-    foreach $source (@sources) {
+    foreach $source ( @sources ) {
         elog_notify (sprintf "%-15s %8d %6.0f %s",
                 $source->srcname, $source->npkts, $source->nbytes/1024.,
-                strtdelta($when-$source->slatest_time) ) if $opt_D;
-        $npkts += $source->npkts;
-        ($net,$sta,$chan,$loc,$suffix,$subcode) = split_srcname($source->srcname);
-        elog_notify("$net	$sta	$chan	$loc	$suffix	$subcode") if $opt_D;
-        $dlsta = join("_",$net,$sta);
-        elog_notify("dlsta	$dlsta") if $opt_D;
-        $pb{$dlsta}{nreg24}  = 0;
-        $pb{$dlsta}{nmsg24}  = 0;
-        $pb{$dlsta}{nusmg24} = 0;
-        $pb{$dlsta}{nlog24}  = 0;
-        $pb{$dlsta}{ndbt24}  = 0;
+                strtdelta($when-$source->slatest_time) ) if $opt_D ;
+        $npkts += $source->npkts ;
+        ($net,$sta,$chan,$loc,$suffix,$subcode) = split_srcname($source->srcname) ;
+        elog_debug("$net	$sta	$chan	$loc	$suffix	$subcode") if $opt_D ;
+        $dlsta = join( "_", $net, $sta ) ;
+        elog_debug( "dlsta	$dlsta" ) if $opt_D;
+        $pb{$dlsta}{nreg24}  = 0 ;
+        $pb{$dlsta}{nmsg24}  = 0 ;
+        $pb{$dlsta}{nusmg24} = 0 ;
+        $pb{$dlsta}{nlog24}  = 0 ;
+        $pb{$dlsta}{ndbt24}  = 0 ;
     }
 
-    $line =  "\nBaler processing - number of log packets in status orb over past 24 hours:";
-    $line .= "	$npkts	\n";
+    $line =  "\nBaler processing - number of log packets in status orb over past 24 hours:" ;
+    $line .= "	$npkts	\n" ;
     elog_notify($line) ;
 
-    return if $opt_n;
+    return if $opt_n ;
 #
 #  load %pb
 #
     $n = 0;
-    while ($pktid > -1) {
+    while ( $pktid > -1 ) {
         $n++;
-        ($pktid, $source, $pkttime, $packet, $nbytes) = orbget($orb,$pktid) ;
-        elog_notify("$n	pktid	$pktid	srcname	$srcname	source	$source	time	$pkttime	" . 
-                    "nbytes	$nbytes") if $opt_D;
+        ( $pktid, $source, $pkttime, $packet, $nbytes ) = orbget( $orb, $pktid ) ;
+        elog_debug( "$n	pktid	$pktid	srcname	$srcname	source	$source	time	$pkttime	" . 
+                    "nbytes	$nbytes" ) if $opt_D ;
         
-        ($net,$sta,$chan,$loc,$suffix,$subcode) = split_srcname($source);
-        elog_notify("$net	$sta	$chan	$loc	$suffix	$subcode") if $opt_D;
+        ( $net, $sta, $chan, $loc, $suffix, $subcode ) = split_srcname( $source ) ;
+        elog_debug( "$net	$sta	$chan	$loc	$suffix	$subcode" ) if $opt_D ;
         
-        $dlsta = join("_",$net,$sta);
-        elog_notify("dlsta	$dlsta") if $opt_D;
+        $dlsta = join( "_", $net, $sta );
+        elog_debug( "dlsta	$dlsta" ) if $opt_D;
         
-        ($result, $pkt) = unstuffPkt($srcname, $pkttime, $packet, $nbytes) ;
-        ($type, $desc) = $pkt->PacketType() ;
+        ( $result, $pkt ) = unstuffPkt( $srcname, $pkttime, $packet, $nbytes ) ;
+        ( $type, $desc ) = $pkt->PacketType() ;
     
         $strtmp = $pkt->string ;
         if ( defined $strtmp ) {
-            elog_notify("strtmp	$strtmp") if (($opt_a && ($strtmp =~ /tag/)) || $opt_D ) ;
-            if ($strtmp =~ /tag/) {
+            elog_debug("strtmp	$strtmp") if ( ( $opt_a && ( $strtmp =~ /tag/ ) ) || $opt_D ) ;
+            if ( $strtmp =~ /tag/ ) {
                 $pb{$dlsta}{string} = $strtmp ;
-                $pb{$dlsta}{nreg24}++;
-                $pb{$dlsta}{ptime} = $pkttime;
+                $pb{$dlsta}{nreg24}++ ;
+                $pb{$dlsta}{ptime} = $pkttime ;
             }
-            if ($strtmp =~ /127.0.0.1/) {
+            if ( $strtmp =~ /127.0.0.1/ ) {
                 $pb{$dlsta}{string} = $strtmp ;
-                $pb{$dlsta}{ptime} = $pkttime;
+                $pb{$dlsta}{ptime} = $pkttime ;
             }
-            if ($strtmp =~ /UMSG/) {
-                elog_notify($strtmp) if $opt_V;
-                $pb{$dlsta}{nusmg24}++;
+            if ( $strtmp =~ /UMSG/ ) {
+                elog_notify($strtmp) if $opt_V ;
+                $pb{$dlsta}{nusmg24}++ ;
             }
-            if ($strtmp =~ /LOG/) {
-                $pb{$dlsta}{nlog24}++;
+            if ( $strtmp =~ /LOG/ ) {
+                $pb{$dlsta}{nlog24}++ ;
             }
-            if ($strtmp =~ /DEBUGT/) {
-                $pb{$dlsta}{ndbt24}++;
+            if ( $strtmp =~ /DEBUGT/ ) {
+                $pb{$dlsta}{ndbt24}++ ;
             }
-            if ($strtmp =~ /UMSG: ip = 20.210.0.1/ && $strtmp =~ /UMSG: ip = registered/ ) {
+            if ( $strtmp =~ /UMSG: ip = 20.210.0.1/ && $strtmp =~ /UMSG: ip = registered/ ) {
                 @baler = split ( ' ', $strtmp ) ;
                 $pb{$dlsta}{last_reg}     = join " ", $baler[0],	$baler[1] ;
             }
             $pb{$dlsta}{nmsg24}++;
         }
         
-        $pktid = orbseek($orb,"ORBNEXT") ;
-        elog_notify("$n	pktid	$pktid") if $opt_D;
+        $pktid = orbseek( $orb, "ORBNEXT" ) ;
+        elog_debug( "$n	pktid	$pktid" ) if $opt_D;
 
     }
 
-    elog_notify("\n\n		TEST")  if $opt_D;    
-    &prettyprint(\%pb)              if $opt_D;
-    elog_notify("\n\n		")      if $opt_D;
+    elog_notify ( "baler data from orb loaded" ) if $opt_v ;
+    elog_debug( "\n\n		TEST" )   if $opt_D;    
+    &prettyprint( \%pb )              if $opt_D;
+    elog_debug( "\n\n		" )       if $opt_D;
 #
 #  Compare keys of %q330 and %pb
 #
-    @keys   = sort( keys %pb);
+    @keys   = sort( keys %pb );
     @noq330 = ();
     @q330   = ();
-    unless ($opt_b) {
-        foreach $dlsta (@keys) {
-            push(@noq330,$dlsta) unless exists $q330{$dlsta};
-            push(@q330,$dlsta)   if     exists $q330{$dlsta};        
-        }
-        @keys = @q330;
+    foreach $dlsta (@keys) {
+        push( @noq330, $dlsta ) unless exists $q330{$dlsta};
+        push( @q330, $dlsta )   if     exists $q330{$dlsta};        
     }
+    @keys = @q330 ;
     
-    elog_notify("	Baler info with no Q330 - 	@noq330");
+    elog_notify( "Baler info with no Q330 - 	@noq330" ) if $opt_V ; # can happen if source name status orb is > 1 day old like when a station was pulled in the last week
+
 #
 #  Open db to update stabaler table
 #
-    @db        = dbopen($dbops,"r+");
-    @db        = dblookup(@db,0,"stabaler",0,0);
-    @dbscratch = dblookup(@db,0,0,0,"dbSCRATCH");
-    @dbnull    = dblookup(@db,0,0,0,"dbNULL");
-    $endtime   = dbgetv(@dbnull,"endtime");
-    @fields    = dbquery(@db,"dbTABLE_FIELDS");
+    @db        = dbopen(   $dbops, "r+" ) ;
+    @db        = dblookup( @db, 0, "stabaler", 0, 0 ) ;
+    @dbscratch = dblookup( @db, 0, 0, 0, "dbSCRATCH" ) ;
+    @dbnull    = dblookup( @db, 0, 0, 0, "dbNULL" ) ;
+    $endnull   = dbgetv(   @dbnull, "endtime" ) ;
+    @fields    = dbquery(  @db, "dbTABLE_FIELDS" ) ;
 
-    @dbdeploy  = dblookup(@db,0,"deployment",0,0);
-    @dbdepscr  = dblookup(@dbdeploy,0,0,0,"dbSCRATCH");
-    @dbdepnull = dblookup(@dbdeploy,0,0,0,"dbNULL");
+    @dbdeploy  = dblookup( @db, 0, "deployment", 0, 0 ) ;
+    @dbdeploy  = dbsubset( @dbdeploy, "endtime == NULL" ) ;
+    @dbdeploy  = dbsubset( @dbdeploy, "snet =~ /$pf{net}/" ) ;
+    @dbdepscr  = dblookup( @dbdeploy, 0, 0, 0, "dbSCRATCH" ) ;
+    @dbdepnull = dblookup( @dbdeploy, 0, 0, 0, "dbNULL" ) ;
 
+    elog_debug( "\n\n		keys	@keys" ) if $opt_D ;
     
-    elog_notify("\n\n		keys	@keys") if $opt_D;
+    @dbpb_open  = dbsubset( @db, "endtime == NULL" ) ;
+    @dbpb_open  = dbsort(   @dbpb_open, "dlsta", "time" ) ;
     
-    @dbtest    = dbsubset(@db,"endtime == NULL");
-    @dbtest    = dbsort(@dbtest,"dlsta","time");
+    $nrec       = dbquery( @dbpb_open, "dbRECORD_COUNT" ) ;
+    $ctime      = now() ;
     
-    $nrec      = dbquery(@dbtest,"dbRECORD_COUNT");
-    $ctime     = now() ;
-    
-    elog_notify(sprintf("%d proc dlsta",$#keys+1));
-    elog_notify(sprintf("%d rows with no endtime",$nrec)) if ( $opt_D || $opt_V );
+    elog_notify( sprintf( "%d proc dlsta", $#keys+1 ) ) ;
+    elog_debug(  sprintf( "%d rows with no endtime", $nrec ) ) if ( $opt_D || $opt_V ) ;
 #
 #  update closed stations in stabaler table
 #
 
     if (dbquery(@dbdeploy,"dbTABLE_PRESENT")) {
-    
-        for ($rec = 0 ; $rec < $nrec ; $rec++) {
-            $dbtest[3] = $rec ;
-            $dl        = dbgetv(@dbtest,"dlsta") ;
-            next unless ($dl =~ /$subset/) ;
-            $sta       = dbgetv(@dbtest,"sta") ;
-            dbputv(@dbdepscr,"sta",     dbgetv(@dbtest,"sta"),
-                             "time",    $ctime,
-                             "endtime", dbgetv(@dbdepnull,"endtime"));
-                             
-            @rows = dbmatches(@dbdepscr,@dbdeploy,"sta","time::endtime") ;
-            if ($#rows == - 1) {
-                dbputv(@dbtest,"endtime", $ctime) ;
-                elog_notify ("\nNotification #$Notes") if ( $opt_D || $opt_V ) ;
-                $line = "$dl	closed in stabaler table" ;
-                elog_notify ( $line ) if ( $opt_D || $opt_V ) ;
-                print BALERNOTES "$line\n" ;
+
+        @dbpb_close = dbnojoin( @dbpb_open, @dbdeploy, "sta" ) ;
+        $nrec       = dbquery(  @dbpb_close, "dbRECORD_COUNT" ) ;
+        
+        elog_debug ( "$nrec records in dbpb_close" ) if $opt_D ; 
+        
+        @pb_close = ();
+        STA: for ($dbpb_close[3] = 0 ; $dbpb_close[3] < $nrec ; $dbpb_close[3]++) {
+            $sta = dbgetv( @dbpb_close, "sta" ) ;
+            push( @pb_close, $sta ) ;
+            foreach $ignore_sta ( @{$pf{ignore_sta}} ) {
+                if ( $ignore_sta =~ /$sta/ ) {
+                    elog_notify "$sta ignored, not closed" if $opt_V ;
+                    next STA;
+                }
             }
-        }    
+            dbputv( @dbpb_close, "endtime", $ctime ) ;
+        }
+        
+        if ( $nrec ) {
+            @pb_close = sort ( @pb_close ) ;
+            $line = "$nrec open records in stabaler nojoin to open records in deployment - @pb_close" ;
+            elog_notify ( $line ) ;
+            print BALERNOTES "$line\n";
+        }
+
+        @dbpb_open  = dbjoin(  @dbpb_open, @dbdeploy, "sta" ) ;
+        $nrec       = dbquery( @dbpb_open, "dbRECORD_COUNT" ) ;
+        elog_debug ( "$nrec records in dbpb_open" ) if $opt_D ; 
+        
+        @dbpb_open  = dbseparate( @dbpb_open, "stabaler" ) ;
+        @dbcheck    = dbnojoin(   @dbdeploy, @dbpb_open, "sta" ) ;  
+        $nrec       = dbquery(    @dbcheck, "dbRECORD_COUNT" ) ;
+
+        @pb_open = ();
+        for ( $dbcheck[3] = 0 ; $dbcheck[3] < $nrec ; $dbcheck[3]++) {
+            push( @pb_open, dbgetv( @dbcheck, "sta" ) ) ; 
+        }
+        
+        if ( $nrec ) {
+            @pb_open = sort ( @pb_open ) ;
+            $line = "$nrec open records in deployment nojoin to open records in stabaler - @pb_open"  ;
+            elog_notify ( $line ) ;
+            print BALERNOTES "$line\n";
+        }
     }
 #
 #  update station baler data in stabaler table
 #
     foreach $dlsta (@keys) {
-        dbput(@dbscratch,dbget(@dbnull));
-        if ($pb{$dlsta}{string} =~ /tag/) {
-            &pb14($dlsta);
+        dbput( @dbscratch, dbget(@dbnull) ) ;
+        if ( $pb{$dlsta}{string} =~ /tag/ ) {
+            &pb14( $dlsta ) ;
         }
-        if ($pb{$dlsta}{string} =~ /127.0.0.1/) {
-            &pb44($q330{$dlsta}{inp});
+        if ( $pb{$dlsta}{string} =~ /127.0.0.1/ ) {
+            &pb44( $q330{$dlsta}{inp} ) ;
         }
-        elog_notify("$dlsta	$pb{$dlsta}{net}	$pb{$dlsta}{sta}	$pb{$dlsta}{inp}	" .	
-        "$pb{$dlsta}{model}	$pb{$dlsta}{ssident}	$pb{$dlsta}{firm}	$pb{$dlsta}{last_reg}") if ( $opt_D || $opt_V );
-        if ($pb{$dlsta}{nreg24} == 0 ) {
-            $line = "$dlsta -	No baler registrations in the last 24 hours, $pb{$dlsta}{nusmg24} umsgs";
-            elog_notify("\n$line");
-            $line  = "$dlsta	nreg24	$pb{$dlsta}{nreg24}	nmsg24	$pb{$dlsta}{nmsg24}	nusmg24	";
-            $line .= "$pb{$dlsta}{nusmg24}	nlog24	$pb{$dlsta}{nlog24}	ndbt24	$pb{$dlsta}{ndbt24}";
-            $line .= sprintf("	data latency %s",strtdelta($stas{$dlsta}{dlt}));
-            elog_notify($line);
+        elog_debug( "$dlsta	$pb{$dlsta}{net}	$pb{$dlsta}{sta}	$pb{$dlsta}{inp}	" .	
+        "$pb{$dlsta}{model}	$pb{$dlsta}{ssident}	$pb{$dlsta}{firm}	$pb{$dlsta}{last_reg}" ) if ( $opt_D || $opt_V ) ;
+        if ( $pb{$dlsta}{nreg24} == 0 ) {
+            $line = "$dlsta -	No baler registrations in the last 24 hours, $pb{$dlsta}{nusmg24} umsgs" ;
+            elog_notify( "\n$line" ) ;
+            $line  = "$dlsta	nreg24	$pb{$dlsta}{nreg24}	nmsg24	$pb{$dlsta}{nmsg24}	nusmg24	" ;
+            $line .= "$pb{$dlsta}{nusmg24}	nlog24	$pb{$dlsta}{nlog24}	ndbt24	$pb{$dlsta}{ndbt24}" ;
+            $line .= sprintf( "	data latency %s", strtdelta($stas{$dlsta}{dlt} ) ) ;
+            elog_notify($line) ;
         
-            if ($pb{$dlsta}{nusmg24}) {
-                print NOREG "$line\n" if (exists($pb{$dlsta}{nreg24}) && $pb{$dlsta}{model} !~ /Baler44/);
+            if ( $pb{$dlsta}{nusmg24} ) {
+                print NOREG "$line\n" if (exists($pb{$dlsta}{nreg24}) && $pb{$dlsta}{model} !~ /Baler44/) ;
             } else {
-                $line = "$dlsta -	No baler registrations and no UMSG messages in the last 24 hours";
-                $line .= sprintf(" -	data latency %s",strtdelta($stas{$dlsta}{dlt}));
+                $line = "$dlsta -	No baler registrations and no UMSG messages in the last 24 hours" ;
+                $line .= sprintf( " -	data latency %s", strtdelta($stas{$dlsta}{dlt} ) ) ;
                 print NOMSG "$line\n";
-                elog_notify("$line");
+                elog_notify( "$line" ) ;
             }
         }
         if ($pb{$dlsta}{ssident} < 1) {
-            elog_notify("$dlsta	- No Baler information");
-            next;
+            elog_notify( "$dlsta	- No Baler information" ) ;
+            next ;
         }
         dbputv(@dbscratch, "dlsta",          $dlsta,
                            "time",           $pb{$dlsta}{ptime},
-                           "endtime",        $endtime,
+                           "endtime",        $endnull,
                            "net",            $pb{$dlsta}{net},
                            "sta",            $pb{$dlsta}{sta},
                            "inp",            $pb{$dlsta}{inp},
@@ -873,83 +942,86 @@ sub pb_proc { # ($problems) = pb_proc($orb,$dbops,$subset);
                            "ssident",        $pb{$dlsta}{ssident},
                            "nreg24",         $pb{$dlsta}{nreg24},
                            "firm",           $pb{$dlsta}{firm} );
-        if (exists($pb{$dlsta}{last_reg})) {
-            dbputv(@dbscratch,"last_reg",str2epoch($pb{$dlsta}{last_reg}));
+        if ( exists( $pb{$dlsta}{last_reg} ) ) {
+            dbputv( @dbscratch, "last_reg", str2epoch($pb{$dlsta}{last_reg} ) );
         }
-        if (exists($pb{$dlsta}{last_reboot})) {
-            dbputv(@dbscratch,"last_reboot",$pb{$dlsta}{last_reboot});
+        if ( exists( $pb{$dlsta}{last_reboot} ) ) {
+            dbputv( @dbscratch, "last_reboot", $pb{$dlsta}{last_reboot} ) ;
         }
-        if (exists($pb{$dlsta}{nreboot})) {
-            dbputv(@dbscratch,"nreboot",$pb{$dlsta}{nreboot});
+        if ( exists( $pb{$dlsta}{nreboot} ) ) {
+            dbputv( @dbscratch, "nreboot", $pb{$dlsta}{nreboot} ) ;
         }
-        @rows = dbmatches(@dbscratch,@db,"pb","dlsta","time::endtime");
-        if ($#rows == -1) {
-            dbadd(@db);
-            elog_notify("	Adding	$dlsta") if ( $opt_D || $opt_V );
+        @rows = dbmatches( @dbscratch, @db, "pb", "dlsta", "endtime" ) ;
+        if ( $#rows == -1 ) {
+            dbadd( @db );
+            elog_debug( "	Adding	$dlsta" ) if ( $opt_D || $opt_V ) ;
             $Notes++ ;
-            elog_notify ("\nNotification #$Notes") if ( $opt_D || $opt_V );
-            $line = "$dlsta added to stabaler table";
-            elog_notify ( $line ) if $opt_V;
-            print BALERNOTES "$line\n";
-        } elsif ($#rows == 0) {
-            $db[3] = $rows[0];
-            %sta = ();
-            $nchange = 0;
-            @list = ();
-            foreach $field (@fields) {
-                $sta{$field} = dbgetv(@db,$field);
-                elog_notify("	$field	baler	$pb{$dlsta}{$field}	db	$sta{$field}") if ( $opt_D || $opt_V );
-                next if ($field =~ /dlsta|time|endtime|lddate|nreg24|last_reg/);
-                next if ($field =~ /nreboot|last_reboot/ && $pb{$dlsta}{model} =~ /Baler14/);
-                next if ($field =~ /last_reboot/ && str2epoch($pb{$dlsta}{last_reboot}) == $sta{$field}) ;
-                if ($pb{$dlsta}{$field} !~ /$sta{$field}/) {
-                    elog_notify("	$field	baler	$pb{$dlsta}{$field}	db	$sta{$field}"); # if ( $opt_D || $opt_V );
-                    push(@list,$field);
+            elog_debug ( "\nNotification #$Notes" ) if ( $opt_D || $opt_V ) ;
+            $line = "$dlsta added to stabaler table" ;
+            elog_notify ( $line ) if $opt_V ;
+            print BALERNOTES "$line\n" ;
+        } elsif ( $#rows == 0 ) {
+            $db[3] = $rows[0] ;
+            %sta = () ;
+            $nchange = 0 ;
+            @list = () ;
+            foreach $field ( @fields ) {
+                $sta{$field} = dbgetv( @db, $field ) ;
+                if ( $field =~ /endtime/ && $sta{$field} != $endnull ) {
+                    elog_notify ( sprintf ("dlsta  %s baler match has time    %s    endtime    %s,  reopening", $dlsta, strydtime( dbgetv( @db, "time") ), strydtime( dbgetv( @db, "endtime") ) ) ) ;
                     $nchange++;
                 }
+                elog_debug( "	$field	baler	$pb{$dlsta}{$field}	db	$sta{$field}" ) if ( $opt_D || $opt_V ) ;
+                next if ( $field =~ /dlsta|time|endtime|lddate|nreg24|last_reg/ ) ;
+                next if ( $field =~ /nreboot|last_reboot/ && $pb{$dlsta}{model} =~ /Baler14/ ) ;
+                next if ( $field =~ /last_reboot/ && str2epoch($pb{$dlsta}{last_reboot}) == $sta{$field} ) ;
+                if ( $pb{$dlsta}{$field} !~ /$sta{$field}/ ) {
+                    elog_debug( "	$field	baler	$pb{$dlsta}{$field}	db	$sta{$field}" ) ; # if ( $opt_D || $opt_V ) ;
+                    push( @list, $field ) ;
+                    $nchange++ ;
+                }
             }
-            if ($nchange) {
-                dbputv(@db,"endtime",($pb{$dlsta}{ptime} - 1));
-                dbadd(@db);
+            if ( $nchange ) {
+                dbputv( @db, "endtime", ( $pb{$dlsta}{ptime} - 1 ) ) ;
+                dbadd( @db );
                 $Notes++ ;
-                elog_notify ("\nNotification #$Notes")  if ( $opt_D || $opt_V );
-                $line = "$dlsta - @list fields changed, starting new record";
-                elog_notify ( $line ) if $opt_V;
-                print BALERNOTES "$line\n";
-                next;
-            } elsif  ( exists($pb{$dlsta}{last_reg}) && str2epoch($pb{$dlsta}{last_reg}) != $sta{last_reg} ) {
-                dbputv(@db,"nreg24",$pb{$dlsta}{nreg24},"last_reg",$pb{$dlsta}{last_reg});
-                elog_notify("$dlsta - nreboot and last_reg fields changed, updating record") if ( $opt_D || $opt_V );
+                elog_debug ("\nNotification #$Notes")  if ( $opt_D || $opt_V ) ;
+                $line = "$dlsta - @list fields changed, starting new record" ;
+                elog_notify ( $line ) if $opt_V ;
+                print BALERNOTES "$line\n" ;
+                next ;
+            } elsif  ( exists( $pb{$dlsta}{last_reg} ) && str2epoch( $pb{$dlsta}{last_reg} ) != $sta{last_reg} ) {
+                dbputv( @db, "nreg24", $pb{$dlsta}{nreg24}, "last_reg", $pb{$dlsta}{last_reg} ) ;
+                elog_debug( "$dlsta - nreboot and last_reg fields changed, updating record" ) if ( $opt_D || $opt_V ) ;
             }
         } else {
             $Notes++ ;
-            elog_notify ("\nNotification #$Notes") ;
+            elog_notify ( "\nNotification #$Notes" ) ;
             $line = "\n	Too many open rows for $dlsta in $dbops table stabaler." . 
-                          "\n	Closing open records and adding new row";
-            elog_notify ( $line );
-            print BALERNOTES "$line\n";
-            foreach $row (@rows) {
-                $db[3] = $row;
-                dbputv(@db,"endtime",($pb{$dlsta}{ptime} - 1));
+                          "\n	Closing open records and adding new row" ;
+            elog_notify ( $line ) ;
+            print BALERNOTES "$line\n" ;
+            foreach $row ( @rows ) {
+                $db[3] = $row ;
+                dbputv( @db, "endtime", ( $pb{$dlsta}{ptime} - 1 ) ) ;
             }
-            dbadd(@db);
+            dbadd( @db ) ;
         }
-        if ($pb{$dlsta}{nreg24} >= 8 ) {
-            $line = "$dlsta -	$pb{$dlsta}{nreg24} baler registrations in the last 24 hours";
-            elog_notify("\n	$line");
-            $line =  "$dlsta	nreg24	$pb{$dlsta}{nreg24}	nmsg24	$pb{$dlsta}{nmsg24}	nusmg	";
-            $line .= "$pb{$dlsta}{nusmg24}	nlog24	$pb{$dlsta}{nlog24}	ndbt24	$pb{$dlsta}{ndbt24}";
-            elog_notify($line);
-            print MAXREG "$line\n";
+        if ( $pb{$dlsta}{nreg24} >= 8 ) {
+            $line = "$dlsta -	$pb{$dlsta}{nreg24} baler registrations in the last 24 hours" ;
+            elog_notify("\n	$line") ;
+            $line =  "$dlsta	nreg24	$pb{$dlsta}{nreg24}	nmsg24	$pb{$dlsta}{nmsg24}	nusmg	" ;
+            $line .= "$pb{$dlsta}{nusmg24}	nlog24	$pb{$dlsta}{nlog24}	ndbt24	$pb{$dlsta}{ndbt24}" ;
+            elog_notify( $line ) ;
+            print MAXREG "$line\n" ;
         }
     }
-    elog_notify("\n\n")  if $opt_V;    
-    &prettyprint(\%pb)   if $opt_V;
-    elog_notify("\n\n")  if $opt_V;
+    elog_notify("\n\n")  if $opt_V ;    
+    &prettyprint(\%pb)   if $opt_V ;
+    elog_notify("\n\n")  if $opt_V ;
 
     return;
 }
-
 
 sub pb14 { # &pb14( $dlsta );
     my ( $dlsta ) = @_ ;
@@ -980,16 +1052,16 @@ sub pb44 { # ($model,$net,$sta,$inp,$ssident,$firm,$nreboot,$last_reboot) = $pb(
 
     $inp =~ s/:.*//;
     $inp .= ":5381";
-    elog_notify("pb44 inp	$inp") if ( $opt_D || $opt_V );
+    elog_debug("pb44 inp	$inp") if ( $opt_D || $opt_V );
 
     $url = "http://$inp";
     
     ($good,@text) = &get_text($url, "stats.html") ; 
 
-    elog_notify ("	$#text - Number of text rows\n") if ( $opt_D || $opt_V );
+    elog_debug ("	$#text - Number of text rows\n") if ( $opt_D || $opt_V );
     
     foreach $text (@text) {
-        elog_notify ("	$text") if ( $opt_D || $opt_V );
+        elog_debug ("	$text") if ( $opt_D || $opt_V );
 
 	    if ( $text =~ /PB44 Status PacketBaler44 Tag (\d+) - Station (\D\D)-(\S+)/ ) { 
             @tmp = split(" ",$text);
@@ -999,35 +1071,34 @@ sub pb44 { # ($model,$net,$sta,$inp,$ssident,$firm,$nreboot,$last_reboot) = $pb(
             $pb{$dlsta}{sta}   = $3;
             $pb{$dlsta}{ssident} = $1;
             
-            elog_notify ("	$dlsta	$pb{$dlsta}{net}	$pb{$dlsta}{sta}	$pb{$dlsta}{model}" . 
+            elog_debug ("	$dlsta	$pb{$dlsta}{net}	$pb{$dlsta}{sta}	$pb{$dlsta}{model}" . 
                          "	$pb{$dlsta}{ssident}\n") if ( $opt_D || $opt_V );
         }
 	    if ( $text =~ /Copyright Quanterra, Inc. (\S+) tag (\d+) at (\S+ \S+)/ ) { 
             $pb{$dlsta}{firm} = $1;
             $pb{$dlsta}{firm} =~ s"BALER44-"";
             
-            elog_notify ("	$pb{$dlsta}{firm}\n") if ( $opt_D || $opt_V );
+            elog_debug ("	$pb{$dlsta}{firm}\n") if ( $opt_D || $opt_V );
         }
 	    if ( $text =~ /last baler reboot: (\S+ \S+)   reboots: (\d+)   runtime: (\S+)/ ) { 
             $pb{$dlsta}{last_reboot} = $1;
             $pb{$dlsta}{nreboot} = $2;
             
-            elog_notify ("	$pb{$dlsta}{last_reg}	$pb{$dlsta}{nreboot}\n") if ( $opt_D || $opt_V );
+            elog_debug ("	$pb{$dlsta}{last_reg}	$pb{$dlsta}{nreboot}\n") if ( $opt_D || $opt_V );
         }
 	    if ( $text =~ /MEDIA site (\d+) (\S+ \S+) state: (\S+)  media capacity=(\S+)Mb  mediafree=(\S+)%/ ) { 
             $pb{$dlsta}{media_capacity} = $4;
             $pb{$dlsta}{media_free} = $5;
             
-            elog_notify ("	$pb{$dlsta}{media_capacity}	$pb{$dlsta}{media_free}\n") if ( $opt_D || $opt_V );
+            elog_debug ("	$pb{$dlsta}{media_capacity}	$pb{$dlsta}{media_free}\n") if ( $opt_D || $opt_V );
         }
 	    if ( $text =~ /public ip discovered: (\S+)/ ) { 
             $pb{$dlsta}{inp} = $1;
-            elog_notify ("	$pb{$dlsta}{inp}\n") if ( $opt_D || $opt_V );
+            elog_debug ("	$pb{$dlsta}{inp}\n") if ( $opt_D || $opt_V );
         }
     }
     return
 }
-
 
 sub sta_info { #&sta_info($orb,$pfsource);
     my ( $orb, $pfsource ) = @_ ;
@@ -1174,7 +1245,6 @@ sub cleanup_files {
     $cmd = "cat /tmp/tmp_q330notes_$$ >> /tmp/tmp_noreg_$$";
     system($cmd);
 }
-
 
 sub rm_files {
     unlink "/tmp/tmp_noq330_$$" ;
