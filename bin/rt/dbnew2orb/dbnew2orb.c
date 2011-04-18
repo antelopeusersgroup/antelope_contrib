@@ -18,7 +18,7 @@ int             Stop = 0;
 char           *dbname;
 double         *bury_times;
 int            *static_flags;
-int             ntables;
+long            ntables;
 int             verbose = 0;
 
 void
@@ -62,7 +62,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	char           *packet;
 	int             nbytes, packetsize = 0;
 	Dbptr           tmpdb;
-	int             t, nrecords, r, ntables;
+	long            t, nrecords, r, ntables;
 	Arr            *records = NULL;
 	Tbl            *tables = NULL, *static_tables;
 	char           *thistablename;
@@ -84,7 +84,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 		nrecords = maxstbl(stbl);
 		if (nrecords > 0) {
 			for (r = 0; r < nrecords; r++) {
-				tmpdb.record = (int) getstbl(stbl, r);
+				tmpdb.record = (long) getstbl(stbl, r);
 				pkt->db = tmpdb;
 				if (stuffPkt(pkt, srcname, &time, &packet, &nbytes, &packetsize) < 0) {
 					elog_complain(0, "stuffPkt fails for pf packet");
@@ -124,7 +124,7 @@ main(int argc, char **argv)
 	int             i;
 	Tbl            *tablenames, *tables_containing_dfile, *check_tables = NULL,
 	               *ignore_tables = NULL;
-	int             table_present, recc, is_view;
+	long            table_present, recc, is_view;
 	char           *tablename, *schemaname;
 	char           *filename;
 	int             counter = 0, force_check = 0;
@@ -312,7 +312,7 @@ main(int argc, char **argv)
 	mtimes = malloc(ntables * sizeof(double));
 	lddates = malloc(ntables * sizeof(double));
 	bury_times = malloc(ntables * sizeof(double));
-	static_flags = malloc(ntables * sizeof(int));
+	static_flags = malloc(ntables * sizeof(long));
 	if (statefilename) {
 		if (exhume(statefilename, &Stop, 10, mortician)) {
 			elog_notify(0, "read old state file\n");

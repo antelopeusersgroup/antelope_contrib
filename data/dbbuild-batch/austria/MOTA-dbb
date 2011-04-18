@@ -1,0 +1,15 @@
+
+# horn@zagsun9  Nikolaus Horn  Thursday December 21, 2006 10:50:41.140 GMT(10:50:41.140 UTC)
+# Sankt Quirin
+time  1991-02-09
+
+net OE Austrian Seismic Network
+sta MOTA 47.3448 11.1037 1.5750 Moosalm, Tirol, Austria
+
+datalogger SPCMU unk MOTA # Dummy Datalogger used in ignorance
+
+sensor s13 0.0 unk  # Geotech S-13 short-period seismometer
+   samplerate 100sps
+   	channel  N   off
+    channel  E   off
+add

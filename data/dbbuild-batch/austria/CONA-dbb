@@ -1,0 +1,45 @@
+
+# horn@zagsun9  Nikolaus Horn  Monday May 14, 2007 16:29:16.181 GMT(16:29:16.181 UTC)
+time  1/01/2007   0:00:00.000
+
+net OE Austrian Seismic Network
+sta CONA   47.92824   15.86175 1.046 Conrad Observatorium, Muggendorf, Lower Austria
+
+datalogger q330_linear_below_100 664 CONA # Quanterra 330 Linear Phase Below 100 Composite
+
+sensor sts2_g3 0.0 90326  # Streckeisen STS-2
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   axis Z - - - 3
+   axis N - - - 4
+   axis E - - - 5
+
+sensor episensor_20vpg 0.0 1561  # Episensor 200 Hz 20 Volt per g
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   axis Z - - - 0
+   axis N - - - 1
+   axis E - - - 2
+   
+add
+
+datalogger qx80-92 109840 CONA # Quanterra Qx80 Datalogger with 19920812 (new) Firmware
+
+sensor sts2_g3 0.0 stollen 15 # Streckeisen STS-2
+     axis2 Z 0 0 15e-7 415371 - - 3
+     axis2 N 0 90 15e-7 413543 - - 4
+     axis2 E 90 90 15e-7 413178 - - 5
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+
+sensor sts2_g3 0.0 gravimeterraum 51 # Streckeisen STS-2
+     axis2 Z 0 0 15e-7 415690 - - 0
+     axis2 N 0 90 15e-7 415603 - - 1
+     axis2 E 90 90 15e-7 410418 - - 2
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+add
