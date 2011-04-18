@@ -1,0 +1,29 @@
+baler_active	   /anf/TA/dbs/wfs/station_active               # absolute path name for active station baler directory base name
+baler_final  	   /anf/TA/dbs/wfs/station_final_44             # absolute path name for archive station baler directory base name
+
+dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+dbidserver			            								# default dbidserver
+dblocks				none										# default dblocks
+
+net                 TA
+
+non_wf_chan_proxy	LCQ                                         # channel code with of waveform file which is in the 
+                                                                # same directory as non-waveform miniseed files. 
+
+non_wf_chan			&Tbl{						
+						ACE
+						LOG
+						OCF
+					}                                           # list of non-waveform miniseed channel codes to be 
+                                                                # processed.
+                                                                
+wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                      # remove these channels from transmission 
+
+sync_dir			/anf/TA/products/sync/sta_active            # Absolute path name for directory to store sync files
+
+deploy_mail			flvernon@ucsd.edu,jeakins@ucsd.edu          # email addresses to send notification of 
+                                                                # deployment table checks
+
+#prob_mail			your@email.edu							# email addresses to send notification of problems
+success_mail		flvernon@ucsd.edu							# email addresses to send notification of station success
+prob_mail			flvernon@ucsd.edu							# email addresses to send notification of problems

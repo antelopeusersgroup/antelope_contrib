@@ -1,0 +1,16 @@
+wfbase        /anf/TA/dbs/wfs/certified    # absolute path name for waveform directory base name
+
+rt_sta_dir    /anf/TA/dbs/wfs/rt_stas      # absolute path name for rt wfdisc directory base name
+
+days_delay    7                            # Number of days of data to reside on disk before processing
+
+net           TA                           # Network Code
+
+dbpath        /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+
+dbidserver                                 # default dbidserver
+dblocks       none                         # default dblocks
+
+#prob_mail			your@email.edu         # email addresses to send notification of problems
+success_mail  flvernon@ucsd.edu            # email addresses to send notification of station success
+prob_mail     flvernon@ucsd.edu            # email addresses to send notification of problems

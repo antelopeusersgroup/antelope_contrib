@@ -1,0 +1,28 @@
+baler14dirbase     /anf/TA/baler/station_aof_dumps/hold_for_station_closure         # absolute path name for station baler 14 miniseed directory base name
+baler14procbase    /anf/TA/baler/station_aof_dumps/processed_44                     # absolute path name for processed baler 14 miniseed directory base name
+baler44dirbase     /anf/TA/baler/work                                               # absolute path name for station baler 44 miniseed directory base name
+
+archivebase	       /anf/TA/dbs/wfs/station_active                                   # absolute path name for station baler directory base name for data to be written to
+
+bhdata_dir			BVLAOU                                      # subdirectory name for BH and LH data
+sohdata_dir			VLAOU                                       # subdirectory name for VH, UH, and SOH data
+
+net                TA                                           # Network Code
+
+dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+
+dbidserver			            								# default dbidserver
+dblocks				none										# default dblocks
+
+#prob_mail			your@email.edu							# email addresses to send notification of problems
+success_mail		flvernon@ucsd.edu							# email addresses to send notification of station success
+prob_mail			flvernon@ucsd.edu,reyes@ucsd.edu            # email addresses to send notification of problems
+
+net_sta_chan_loc        &Tbl{
+TA_([A-Z0-9]+)_(L[DIK]M)_      TA_\$1_\$2_EP
+TA_([A-Z0-9]+)_([BL]D[FO])_EP  TA_\$1_\$2_
+}
+
+sta        &Tbl{
+EXMP       CURRENT_STATION
+}

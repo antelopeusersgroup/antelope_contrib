@@ -1,0 +1,136 @@
+.TH RT_STA_WFDISC 1 "$Date$"
+.SH NAME
+rt_sta_wfdisc \- writes wfdiscs for real time miniseed data and identifies gaps 
+.SH SYNOPSIS
+.nf
+\fBrt_sta_wfdisc \fP  [-v] [-V] [-n] [-p \fIpf\fP] [-m \fImail_to\fP] [-f \fInforks\fP] [-s \fIsta_regex\fP] \fIdb\fP
+
+\fBrt_sta_wfdisc \fP  [-v] [-V] [-n] [-p \fIpf\fP] \fIsta\fP \fIyearday_start\fP  \fIyearday_end\fP 
+
+\fBrt_sta_wfdisc \fP  [-v] [-V] [-n] [-p \fIpf\fP] \fIsta\fP \fIyearday_start\fP  \fIyearday_end\fP \fIparent_pid\fP
+.fi
+.SH DESCRIPTION
+This is the first in a series of 5 programs for processing baler 44 miniseed data.  The programs are
+\fBrt_sta_wfdisc\fP, \fBrsync_baler\fP, \fBbaler_msd_proc\fP, \fBbaler_wf_proc\fP, and \fBbaler_active_to_dmc\fP.
+
+\fBrt_sta_wfdisc\fP is designed make a wfdisc for miniseed data acquired through the rt system and organized 
+in station-channel-day files for BH and LH seismic data and BD and LD infrasound/pressure data. All other SOH (state-of-health) 
+channels as well as VH and UH seismic data are ignored.  
+
+\fBrt_sta_wfdisc\fP can be operated in three modes.  In normal usage top command line is used.  In this 
+mode the program opens the \fIdb.deployment\fP table to determine which stations need to be processed.
+To process multiple stations simultaneously on multi-processor machines, \fBrt_sta_wfdisc\fP will fork 
+itself for each station using the second or the third command line.  This is done because the Mac OSX requires a forked
+process to be exec'ed internally to work properly.  This construction also works on other Unix platforms.
+\fBThe second or third command lines are only used in debugging\fP.
+
+\fBrt_sta_wfdisc\fP will limit itself to use only half the cores available up to 20 total with a minimum of 1. 
+
+\fBrt_sta_wfdisc\fP creates a wfdisc row in the db \fIrt_sta_dir/sta/sta\fP.  The miniseed data
+reside in the parent directory \fIwfbase\fP in files written as follows:
+.IP 
+[BL][HD] station-channel-day files are written in YYYY/DDD directories
+.IP 
+
+For each complete day of data, a gap list is calculated and stored in the db \fIrt_sta_dir/sta/sta\fP.
+No gapes are filled by this program.  The assumption is that these data are used to fill any gaps in the 
+baler data by later routines.
+
+A dbdescriptor file is created for the db \fIrt_sta_dir/sta/sta\fP with pointers back to the appropriate
+dbmaster. \fIchanid\fP and \fIcalibs\fP are set in the \fIrt_sta_dir/sta/sta.wfdisc\fP.  
+
+.SH OPTIONS
+.IP -v
+Verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Test mode.  Does not execute commands.
+.IP "-p parameter_file"
+Name of parameter file to use.  $PFPATH is searched to find parameter file.
+The default parameter file is \fBrt_sta_wfdisc\fP.
+.IP "-m mail_to"
+Email address list to send results.  Multiple email addresses should be comma delimited without
+white space.
+.IP "-f nforks"
+Limit the number of forked processes.
+.IP "-s sta_regex"
+Regular expression of stations to process.
+
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+.IP wfbase
+Absolute path name for waveform directory base name
+.IP rt_sta_dir
+Absolute path name for rt wfdisc directory base name
+.IP days_delay
+Number of days to delay processing for missing data to show up 
+.IP net
+Net code to process 
+.IP dbidserver
+Name of idserver to be written into descriptor file for output database to use.
+.IP dbpath    
+dbpath to be written into descriptor file for output database to use.
+.IP dblocks
+dblocking type for database
+.IP success_mail
+Email addresses to send notification of station success. Multiple email addresses should be comma delimited without
+white space.
+.IP prob_mail
+Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
+white space.
+.fi
+.ft R
+.in
+.SH EXAMPLE PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+wfbase           /anf/TA/dbs/wfs/certified       # absolute path name for waveform directory base name
+
+rt_sta_dir       /anf/TA/dbs/wfs/rt_stas         # absolute path name for rt wfdisc directory base name
+
+days_delay       7                               # Number of days for data to reside on disk before processing
+
+net              TA                              # Network Code
+
+dbpath           /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}   # default dbpath
+
+dbidserver                                       # default dbidserver
+dblocks          none                            # default dblocks
+
+success_mail     your@email.edu                  # email addresses to send notification of station success
+prob_mail        your@email.edu                  # email addresses to send notification of problems
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+rt_sta_wfdisc(1)
+rsync_baler(1)
+baler_msd_proc(1)
+baler_active_to_dmc(1)
+miniseed2db(1)
+rt_daily_return(1)
+dbfixchanids(1)
+dbjoin(1)
+dbsubset(1)
+dbselect(1)
+trexcerpt(1)
+rtmail(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+.SH AUTHOR
+Frank Vernon
+.br
