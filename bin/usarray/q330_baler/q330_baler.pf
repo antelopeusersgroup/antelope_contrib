@@ -1,0 +1,11 @@
+net                TA                                           # Network Code
+
+#prob_mail			your@email.edu							# email addresses to send notification of problems
+status_mail			flvernon@ucsd.edu,jeakins@ucsd.edu,busby@iris.edu,allan.sauter@gmail.com,reyes@ucsd.edu           # email addresses to send notification of problems
+
+ignore_sta        &Tbl{                     # stations to ignore in q330 processing
+BLY                                         # used when q330 thinks it is a different station code than the rt system
+EXMP
+}
+
+baler_orb_reject   ta.*                    # reject packets from baler orb processing 

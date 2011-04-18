@@ -3,6 +3,8 @@ DATADIR= python/antelope
 
 DATA= __init__.pyc
 
+CLEAN= __init__.pyc
+
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
 include $(ANTELOPEMAKE)

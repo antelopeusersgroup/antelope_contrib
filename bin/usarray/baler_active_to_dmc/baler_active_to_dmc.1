@@ -1,0 +1,142 @@
+.TH BALER_ACTIVE_TO_DMC 1 "$Date$"
+.SH NAME
+baler_active_to_dmc \- sends Baler 14 and Baler 44 miniseed dbs to DMC
+.SH SYNOPSIS
+.nf
+\fBbaler_active_to_dmc \fP  [-v] [-V] [-n] [-p \fIpf\fP] [-m \fImail_to\fP] [-c \fIorbclient\fP] [-s \fIsta_regex\fP] \fIdb\fP \fIorb\fP
+
+.fi
+.SH DESCRIPTION
+This is the fifth in a series of 5 programs for processing baler 44 miniseed data.  The programs are
+\fBrt_sta_wfdisc\fP, \fBrsync_baler\fP, \fBbaler_msd_proc\fP, \fBbaler_wf_proc\fP, and \fBbaler_active_to_dmc\fP.
+
+\fBbaler_active_to_dmc\fP is designed to send unsent data to the DMC from balers with any possible 
+gaps filled from the rt waveforms.  \fBobsip2orb\fP is used to send all data in the \fIbaler_active/sta/sta.wfdisc\fP
+using \fIorb\fP.
+\fBminiseed2orb\fP is used to send data to \fIorb\fP for the \fInon_wf_chan\fP channels. These channels reside in the same directories as the 
+\fInon_wf_chan_proxy\fP channel.  Channels described by \fIwfclean\fP are not sent and are not expected
+to have metadata.
+
+Once a station is sent to the orb, and the DMC has drained that orb, then a sync file is created and sent to
+the orb to signify the end of data transmission for that station.  Then the next station is processed.  
+Sync files are stored in the \fIsync_dir\fP and are listed in the \fIdb.dmcfiles\fP table.
+
+Once a station is closed and all data sent to the DMC, then the directory \fIbaler_active/sta\fP 
+is moved to \fIbaler_final/sta\fP
+
+.SH OPTIONS
+.IP -v
+Verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Test mode.  Does not execute commands.
+.IP "-p parameter_file"
+Name of parameter file to use.  $PFPATH is searched to find parameter file.
+The default parameter file is \fBbaler_active_to_dmc\fP.
+.IP "-m mail_to"
+Email address list to send results.  Multiple email addresses should be comma delimited without
+white space.
+.IP "-c orbclient"
+DMC orbclient to track.  Default is \fBorbmsd2days\fP.
+.IP "-s sta_regex"
+Regular expression of stations to process.
+
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+.IP baler_active
+Absolute path name for station baler archive directory base name
+.IP baler_final
+Absolute path name for station baler final archive base name
+.IP wfclean
+Regex defining which channels to remove from transmission 
+.IP net
+Net code to process 
+.IP non_wf_chan_proxy
+channel code of waveform file which is in the same directory as non-waveform miniseed files.
+.IP non_wf_chan
+list of non-waveform miniseed channel codes to be processed.
+.IP dbidserver
+Name of idserver to be written into descriptor file for output database to use.
+.IP dbpath    
+dbpath to be written into descriptor file for output database to use.
+.IP dblocks
+dblocking type for database
+.IP deploy_mail
+Email addresses to send notification of possible deployment table problems. Multiple email addresses should be comma delimited without
+white space.
+.IP success_mail
+Email addresses to send notification of station success. Multiple email addresses should be comma delimited without
+white space.
+.IP prob_mail
+Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
+white space.
+.fi
+.ft R
+.in
+.SH EXAMPLE PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+baler_active        /anf/TA/dbs/wfs/station_active      # absolute path name for active station baler directory base name
+baler_final         /anf/TA/dbs/wfs/station_final_44    # absolute path name for archive station baler directory base name
+
+dbpath              /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+
+dbidserver                                              # default dbidserver
+dblocks             none                                # default dblocks
+
+net                  TA
+
+non_wf_chan_proxy    LCQ                                # channel code of waveform file which is in the 
+                                                        # same directory as non-waveform miniseed files. 
+
+non_wf_chan          &Tbl{                              
+                         ACE
+                         LOG
+                         OCF
+                     }                                  # list of non-waveform miniseed channel codes to be 
+                                                        # processed.
+                                                                
+wfclean              LTW|VCE|VCQ|VFP|VQR|VTW            # remove these channels from transmission 
+
+sync_dir             /anf/TA/products/sync/sta_active   # Absolute path name for directory to store sync files
+
+deploy_mail          your@email.edu                     # email addresses to send notification of 
+                                                        # deployment table checks
+
+success_mail         your@email.edu                     # email addresses to send notification of station success
+prob_mail            your@email.edu                     # email addresses to send notification of problems
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+rt_sta_wfdisc(1)
+rsync_baler(1)
+baler_msd_proc(1)
+baler_wf_proc(1)
+trsignal(1)
+fix_miniseed(1)
+pfcp(1)
+miniseed2orb(1)
+obsip2orb(1)
+db2sync(1)
+orbxfer2(1)
+rtmail(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

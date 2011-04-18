@@ -1,9 +1,11 @@
 
 use strict ; 
+use warnings ;
 
 use Datascope ; 
 use orb ;
 use archive;
+use utilfunct ;
 require "getopts.pl" ;
 
 our ( $opt_c, $opt_n, $opt_X, $opt_v) ; 
@@ -34,7 +36,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
     elog_notify($cmd) ; 
     $stime = strydtime(now());
     chop ($host = `uname -n` ) ;
-    elog_notify ("\nstarting execution on	$host	$stime");
+    elog_notify ("\nstarting $pgm on	$host	$stime");
     
     $orbclient  = $opt_c || "orbmsd2days" ;
 
@@ -90,21 +92,20 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
 #    
     
     foreach $dbin (@ARGV) {
-        @dbin 		= dbopen($dbin,'r');
-        @dbwfdisc 	= dblookup(@dbin,0,"wfdisc",0,0);
-        @dbwfdisc   = dbsubset(@dbwfdisc,"datatype =~ /sd/");
-        @dbwfdisc   = dbsort(@dbwfdisc,"-u","dir","dfile");
-        @dbwfdisc   = dbsort(@dbwfdisc,"sta","chan","time");
+        @dbin 		= dbopen  ( $dbin, 'r' ) ;
+        @dbwfdisc 	= dblookup( @dbin, 0, "wfdisc", 0, 0 ) ;
+        @dbwfdisc   = dbsubset( @dbwfdisc, "datatype =~ /sd|MS/" ) ;
+        @dbwfdisc   = dbsort  ( @dbwfdisc, "-u", "dir", "dfile" ) ;
+        @dbwfdisc   = dbsort  ( @dbwfdisc, "sta","chan", "time" ) ;
         
-        $nfiles = dbquery(@dbwfdisc,"dbRECORD_COUNT");
+        $nfiles = dbquery( @dbwfdisc, "dbRECORD_COUNT" ) ;
+        elog_notify( "processing $nfiles miniseed files" ) if  ( $opt_v ) ;
         
         foreach $row (0..$nfiles-1) {
             $dbwfdisc[3] = $row;
-            $file = dbextfile(@dbwfdisc);
+            $file = dbextfile( @dbwfdisc );
             $cmd  = "miniseed2orb -p miniseed2orb_obsip -u $file $orbname";
             $cmd .= "> /tmp/tmp_obsip2orb_miniseed2orb 2>&1 " unless $opt_v ;
-#            elog_notify("\n$cmd") if $opt_v;
-#            system($cmd) unless $opt_n;
             if  (! $opt_n ) {
                 elog_notify("$cmd");
                 $problem_check = $problems;
@@ -118,7 +119,6 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
                     $problems = run($cmd,$problems) ;
                     if ( $problem_check != $problems ) {
                         $subject = "Problems - $pgm $host	miniseed2orb $file" ;
-#                        &sendmail($subject, $opt_m) if $opt_m ; 
                         elog_die("\n$subject") ;
                     }
                 }
