@@ -2,8 +2,9 @@
 DATA = \
 	balerlist \
 	calplot \
+	calib_request \
 	dlcmd_cal \
-        dlevent \
+	dlevent \
 	gsnspec \
 	q330_calibration_weblog \
 	qctests \
