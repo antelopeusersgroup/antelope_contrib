@@ -60,8 +60,9 @@
         
 {    #  Main program
 
-    my ( $Pf, $cmd, $cmdorb, $dbops, $debug, $orb, $orbname, $pfsource, $problems, $stime, $subject, $subset, $usage, $verbose );
-
+    my ( $Pf, $cmd, $cmdorb, $dbops, $debug, $orb, $orbname, $pfsource, $problems, $stime, $subject, $subset, $success, $usage, $verbose );
+    my ( @output ) ;
+    
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
@@ -127,12 +128,7 @@
     $subject = "ANF TA Q330 and Baler status";
     $cmd     = "rtmail -C -s '$subject' $pf{status_mail} < /tmp/tmp_noreg_$$";
         
-    if  ( ! $opt_n  && $pf{status_mail} =~ /[A-Za-z].*/ ) {
-        elog_notify("\n$cmd");        
-        $problems = run($cmd,$problems) ;
-    } else {
-        elog_notify("\nskipping $cmd") ;
-    }
+    ( $success, @output )  = &run_cmd( $cmd ) if  ( $pf{status_mail} =~ /[A-Za-z].*/ ) ;
     
     &rm_files  unless $opt_V;
     
@@ -148,8 +144,8 @@
  
 sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     my ( $cmdorb, $problems ) = @_;
-    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject );
-    my ( @keys ) ;
+    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject, $success );
+    my ( @keys, @output ) ;
     my ( %q330stat );
         
     elog_notify("\nget_q330_stat");
@@ -159,16 +155,9 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
 
     foreach $cmd_sel (@targets) {
         $cmd     = "dlcmd $cmdorb $cmd_sel q330 - getstatus >> $Pf.pf 2>&1 " ; 
-        if  ( ! $opt_n ) {
-            elog_notify("$cmd") if $opt_v;        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("skipping $cmd") ;
-        }
-    
-        if ($problems) {
-            elog_notify($cmd);
-            $subject = "Problems - $pgm $host	dlcmd getstatus failed";
+        ( $success, @output )  = &run_cmd( $cmd ) ;
+        if ( ! $success ) {
+            $subject = "Problems - $pgm $host	dlcmd getconfig failed";
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject");
         }
@@ -201,8 +190,8 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
 
 sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     my ( $cmdorb, $problems ) = @_;
-    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject );
-    my ( @keys ) ;
+    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject, $success );
+    my ( @keys, @output ) ;
     my ( %q330config );
     
     elog_notify("\nget_q330_config");
@@ -214,19 +203,13 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     foreach $cmd_sel (@targets) {
         $cmd     = "dlcmd $cmdorb $cmd_sel q330 - getconfig >> $Pf.pf 2>&1 " ; 
 
-        if  ( ! $opt_n ) {
-            elog_notify("$cmd") if $opt_v;        
-            $problems = run($cmd,$problems) ;
-        } else {
-            elog_notify("skipping $cmd") ;
-        }
-
-        if ($problems) {
-            elog_notify($cmd);
+        ( $success, @output )  = &run_cmd( $cmd ) ;
+        if ( ! $success ) {
             $subject = "Problems - $pgm $host	dlcmd getconfig failed";
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject");
         }
+
         sleep 5;
     }
 
@@ -255,9 +238,9 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
 sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems );
     my ( $cmdorb, $dbops, $subset, $problems ) = @_;
     my ( $Notes, $ctime, $dlname, $dlsta, $endnull, $field, $filter, $ignore_sta, $key, $line );
-    my ( $model, $nchange, $nconf, $nrec, $nstat, $rec, $row, $sta, $subject );
+    my ( $model, $nchange, $nconf, $nrec, $nstat, $rec, $row, $sta, $subject, $success );
     my ( @db, @dbcal, @dbcheck, @dbdeploy, @dbdepnull, @dbdepscr, @dbnull, @dbq330, @dbscratch ) ;
-    my ( @dbsq_close, @dbsq_open, @dl, @dlcom, @f, @fields, @keys, @list, @rows, @sq_close, @sq_open );
+    my ( @dbsq_close, @dbsq_open, @dl, @dlcom, @f, @fields, @keys, @list, @output, @rows, @sq_close, @sq_open );
     my ( %config, %sta, %stat );
 
     elog_notify("\nQ330 processing    $cmdorb    $dbops    $subset    $problems ");
@@ -317,7 +300,10 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
             elog_complain($line);
             $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig -force",
             elog_notify($line);
-            $problems = run($line,$problems) ;
+            ( $success, @output )  = &run_cmd( $line ) ;
+            if ( ! $success ) {
+                $problems++ ;
+            }
             next;
         }
         if ($config{$key}{config}{dptokens}{4}{sta} !~ /\w+/) {
@@ -326,7 +312,11 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
             elog_complain($line);
             $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig -force",
             elog_notify($line);
-            $problems = run($line,$problems) ;
+            ( $success, @output )  = &run_cmd( $line ) ;
+            if ( ! $success ) {
+                $problems++ ;
+            }
+
             next;
         }
 #
