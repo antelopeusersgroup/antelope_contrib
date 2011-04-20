@@ -47,4 +47,12 @@ tables &Arr{
 		
 }	
 window_layout &Tbl{
+	frame info	-	0,0
+	label  help     -     +,0 I/i=zoom in, O/o=zoom out, right-click-drag
+	label  latlon	-     =,+ LatLon
+	endframe	
+	canvas mycanvas   900x900 +,0
+	button print - +,0	Print
+	button quit  - =,+ Quit
+
 }
