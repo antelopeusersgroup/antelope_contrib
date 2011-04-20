@@ -1,0 +1,35 @@
+originator	Nikolaus Horn, ZAMG
+last_modified	2011-04-11
+
+category	ZAMG
+configuration	SPCMU
+
+description	SPCMU digitizer
+dfile spcmu
+
+streams		100sps
+
+# definitions of streams
+ 100sps     100   preamp a/d aa
+
+gains		6186089
+
+preamp &Arr{
+	gtype	preamp
+	iunits	V
+	ounits	V
+	gain	100	
+}
+a/d	&Arr{
+samprate	100
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+aa &Arr{
+	gtype	Anti-Alias 
+	gain	1
+	response	&datafile(responses/spcmu_aa)
+}

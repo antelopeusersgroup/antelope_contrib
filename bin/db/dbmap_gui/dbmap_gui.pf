@@ -7,7 +7,7 @@ pageheight_mm	297	#
 pagemargin_mm	5
 range_degrees	10
 
-dot_color	red
+dot_color	orange1
 label_color black
 circle_color red
 
