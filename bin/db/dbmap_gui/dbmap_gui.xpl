@@ -35,13 +35,13 @@ use Vector;
 
 use Encode 'from_to';
 
-our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_f );
+our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_r, $opt_f );
 our $items;
 require "getopts.pl";
 
-if ( !&Getopts('f:o:O:p:v') || @ARGV < 1 ) {
+if ( !&Getopts('f:o:O:p:r:v') || @ARGV < 1 ) {
     die (
-"Usage: $0 [-v] [-f psfile] [-o dboverlay.table|-O table] database[.table]\n"
+"Usage: $0 [-v] [-p pf] [-r range] [-f psfile] [-o dboverlay.table|-O table] database[.table]\n"
     );
 }
 
@@ -53,11 +53,11 @@ my $pagemargin_mm = pfget( $Pf, "pagemargin_mm" );
 our $printcmd = pfget( $Pf, "printcmd" );
 my $dot_color            = pfget( $Pf, "dot_color" );
 my $label_color          = pfget( $Pf, "label_color" );
-my $circle_color         = pfget( $Pf, "circle_color" );
+our $circle_color         = pfget( $Pf, "circle_color" );
 my $overlay_dot_color    = pfget( $Pf, "overlay_dot_color" );
 my $overlay_label_color  = pfget( $Pf, "overlay_label_color" );
-my $overlay_circle_color = pfget( $Pf, "overlay_circle_color" );
-my $range_degrees        = pfget( $Pf, "range_degrees" );
+our $overlay_circle_color = pfget( $Pf, "overlay_circle_color" );
+my $range_degrees        =  ($opt_r) // pfget( $Pf, "range_degrees" );
 my %tables        = %{ pfget( $Pf, "tables" ) };
 my @window_layout = @{ pfget( $Pf, "window_layout" ) };
 
@@ -221,16 +221,21 @@ if ( $opt_o || $opt_O ) {
                 my $steps = 20;
 
                 #circle_vector($lat,$lon,$radius,20,$circles);		
+				my ($x1,$y1);
                 for ( my $i = 0 ; $i < $steps ; $i++ ) {
-                    my $x1 = $lon + $radius * cos( rad( $i * 360.0 / $steps ) );
-                    my $y1 = $lat + $radius * sin( rad( $i * 360.0 / $steps ) );
+                    $x1 = $lon + $radius * cos( rad( $i * 360.0 / $steps ) );
+                    $y1 = $lat + $radius * sin( rad( $i * 360.0 / $steps ) );
                     vector_append $circle, -1, $x1, $y1;
                 }
+				$x1 = $lon + $radius * cos( 0 );
+				$y1 = $lat + $radius * sin( 0 );
+				vector_append $circle, -1, $x1, $y1;
+
                 $canvas->create(
                   'bppolyline', 'vp', -vector => $circle,
-                  -fill      => $overlay_dot_color,
+                  -fill      => $overlay_circle_color,
                   -visible   => 1,
-                  -outline   => 'blue',
+                  -outline   => $overlay_circle_color,
                   -linewidth => 2,
                   -tags      => 'xxxxxx'
                 );
@@ -377,6 +382,7 @@ sub postscript {
     our $printcmd;
 
     our $psfile;
+	my $result;
     $canvas->postscript(
       -colormode  => 'color',
       -file       => $psfile,
@@ -388,8 +394,11 @@ sub postscript {
     if ($printflag) {
         my $cmd         = "$printcmd " . $psfile . ' >/dev/null';
 		eval {
-			my $printresult = system $cmd;
+			$result = system $cmd;
 		};
+		if ($@) {
+			ptkalert $mw, "alert $@\n";
+		}
     }
 
 }
@@ -555,6 +564,7 @@ sub togglelabels {
     my $vp   = shift;
     my $flag = shift;
     our $canvas;
+    our $circlecolor;
     my $switch;
 
     if ( $flag eq "all" || $flag eq "items" ) {
@@ -590,17 +600,31 @@ sub togglelabels {
 
         if ( $flag eq "fillcircles" || $flag eq "hidecircles" ) {
             $switch = $canvas->itemcget( $mycircles[0], -visible );
-            print "visible $mycircles[0] :$switch:\n";
             if ( $switch == 0 ) {
                 $switch = 1;
             }
             else {
                 $switch = 0;
             }
-
-            foreach my $i (@mycircles) {
-                $canvas->itemconfigure( $i, -visible, $switch );
+            my $color = $canvas->itemcget( $mycircles[0], -fill );
+            if ( $color ) {
+                $color = '';
             }
+            else {
+                $color = $overlay_circle_color;
+            }
+
+
+			if ($flag eq "hidecircles") {
+				foreach my $i (@mycircles) {
+					$canvas->itemconfigure( $i, -visible, $switch );
+				}
+			}
+			if ($flag eq "fillcircles") {
+				foreach my $i (@mycircles) {
+					$canvas->itemconfigure( $i, -fill, $color );
+				}
+			}
         }
     }
 
