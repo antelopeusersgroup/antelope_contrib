@@ -1,6 +1,7 @@
 
 DATA = \
 	balerlist \
+	calplot \
 	dlcmd_cal \
         dlevent \
 	gsnspec \

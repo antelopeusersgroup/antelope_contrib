@@ -421,6 +421,14 @@ pf2PyObject( Pf *pf )
 
 		break;
 
+	case PFFCT:
+
+		pf = pfinterpret( pf );
+
+		obj = pf2PyObject( pf );
+
+		break;
+
 	case PFINVALID:
 	default:
 
