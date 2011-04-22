@@ -15,7 +15,18 @@ DATA= \
     FIRBCDP \
     FIRBNC \
     FIRBNCDP \
-    README_KMI_appnote39c.pdf \
+    README_KMI_appnote39D.pdf \
+    coefA2-20 \
+    coefA3-50 \
+    coefA4-50 \
+    coefA5-50 \
+    coefA5-50-s5c \
+    coefB2-80 \
+    coefB2-80-140 \
+    coefB2C-80 \
+    coefB2C-80-140 \
+    coefB3-80 \
+    coefB3C-80 \
     episensor \
     fba11 \
     fba23_100 \
