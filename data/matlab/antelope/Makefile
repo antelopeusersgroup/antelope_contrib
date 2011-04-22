@@ -1,4 +1,4 @@
-DIRS=version matlabdoc lib doc examples mex setup scripts user
+DIRS=version interpreter matlabdoc lib doc examples mex setup scripts user
 
 Include :: $(ANTELOPE)/local/include/mex_antelope_makerules
 install :: $(ANTELOPE)/local/include/mex_antelope_makerules
