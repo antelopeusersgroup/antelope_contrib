@@ -36,6 +36,7 @@ DATA= taurus_inf_aa \
       trillium_240_1          \
       trillium_240_2          \
       trillium_40           \
+      Taurus_UserGuide_15148R7.pdf \
       Trillium120P-PA_UserGuide_15149R6.pdf \
       Trillium240_UserGuide_15672R6.pdf   \
       Trillium40_UserGuide_13912R11.pdf \
