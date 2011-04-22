@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-#include "stock.h"
+#include "liss2orb.h"
 
 static void
 parsename ( char *name, int default_port, char *server, int *port )
@@ -21,7 +21,8 @@ parsename ( char *name, int default_port, char *server, int *port )
     char *port_string ;
 
     strcpy(server, name ) ; 
-    if ( port_string = strchr(server, ':' ) ) {
+    port_string = strchr(server, ':' ) ;
+    if ( port_string != 0 ) {
 	*port_string++ = 0 ; 
 	if ( *port_string != 0 ) { 
 	    *port = atoi(port_string) ; 
@@ -41,11 +42,8 @@ open_socket ( char *name, int default_port )
 {
     int fd ; 
     struct sockaddr_in serv_addr ; 
-    struct hostent hostent, *hostentp ; 
     char server[256] ;
-    char buffer[256] ; 
     char ipc[32] ;
-    int error ;
     int port ;
 
     memset ( (char *) &serv_addr, 0, sizeof(serv_addr) ) ; 

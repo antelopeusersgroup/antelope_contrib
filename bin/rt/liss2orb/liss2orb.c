@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <unistd.h>
 
-#include "stock.h"
-#include "orb.h"
-#include "coords.h"
 #include "liss2orb.h"
 
 Arr *NewCh;

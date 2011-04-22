@@ -8,6 +8,10 @@ include $(ANTELOPEMAKE)
 DIRS=
 
 SRCS= \
+    seed.o \
+    csteim.o \
+    newsteim.o \
+    usteim.o \
     liss2orb.c \
     liss2orbpkt.c \
     socket.c \
