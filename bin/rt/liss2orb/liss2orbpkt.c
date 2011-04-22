@@ -1,14 +1,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "Pkt.h"
-#include "stock.h"
-#include "coords.h"
-#include "xtra.h"
-#include "tr.h"
 #include "liss2orb.h"
 
-extern int UNSEED ( char *seed, int size, Msd **confp, double *time, double *samprate, int *nsamp, int **outp, int *datasz );
+extern int UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, int *nsamp, int **outp, int *datasz );
 
 int
 liss2orbpkt ( char *seed, int size, char *database, int remap, 
@@ -24,7 +19,7 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
     char sta[16], chan[16] ;
     static int *data, datasz=0 ;
     int nsamp ;
-    Msd *conf ;
+    Steim *conf ;
     Srcname parts ;
     int retcode = 0 ;
 
@@ -95,7 +90,7 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    memcpy (cp, seed, size) ;
 	    cp += size ;
 	    *nbytes = cp-*packet ; 
-	    msdfree(conf) ;
+	    freesteim(conf) ;
 	    break ;
 
 	case -2:  /* got garbage */

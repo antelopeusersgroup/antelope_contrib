@@ -1,0 +1,37 @@
+# css3.0 extension
+
+#Include css3.0  # uncomment to complete schema
+
+Attribute pid
+                Integer (6)
+                Format ( "%6d" )
+                Null ( "-1" )
+                Description ( "process id" )
+                ;
+
+Attribute user
+                String (16)
+                Format ( "%16s" )
+                Null ( "-" )
+                Description ( "user name" )
+                ;
+
+Attribute hostname
+                String ( 25 )
+                Format ( "%-25s" )
+                Null  ( "-"  )
+                Description ( "computer host name" )
+                Detail {
+                           Computer host name where processing was conducted.
+                }
+                ;
+
+Relation calib_request
+                Fields ( sta chan time acktime hostname user auth pid dir dfile lddate )
+                Primary ( sta chan time )
+                Description ( "Table logging calibration requests sent via q330_calib" )
+                Detail {
+                           This table is designed to allow q330_calib to log and monitor who
+                           submitted a q330_calib request and how the request was sent.
+                }
+                ;
