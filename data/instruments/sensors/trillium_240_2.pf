@@ -1,0 +1,33 @@
+originator     Frank Vernon, UCSD
+last_modified  2011-02-23
+
+category	Nanometrics
+configuration	Trillium 240 Sec Response sn 400 and above
+
+description	Nanometrics Trillium 240 Sec Response sn 400 and above
+dfile	trillium_240_2
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	11.682e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/trillium_240_2) 
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+

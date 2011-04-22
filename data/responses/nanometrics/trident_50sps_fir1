@@ -1,14 +1,14 @@
 # Nanometric Trident nano_50sps_dec20_fir1 FIR filter file  
-# $Id$
+# $Id$/Users/eliana/Desktop/trident_50sps_fir1
 # coefficients are symetric, listed in time order 
 # type                  2  
 # npoles                0  
-# input sample rate     2000  
+# input sample rate     30000
 # decimation factor     20 
 # normalization factor  1.0 
 # gain factor           1.000000 
 theoretical  1  anti_alias   fir    coef_conv 
-2000 20 101
+30000 20 101
 203
 -5.148550518595382e-010	0.0 
 -5.503820912979381e-010	0.0 
