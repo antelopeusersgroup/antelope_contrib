@@ -172,6 +172,10 @@ make &Arr{
 	^uninstalling
 	^Adding -arch
 	^Processing hints file
+	^configure: creating
+	^config.status: creating
+	^config.status: executing
+	^config.status: linking
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
@@ -246,10 +250,6 @@ make &Arr{
 	^[[:space:]]*Darwin\\)
 	^[[:space:]]*\\*\\)
 	.*py_compile.compile
-	^configure: creating
-	^config.status: creating
-	^config.status: executing
-	^config.status: linking
    }
 }
 
