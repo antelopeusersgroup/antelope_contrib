@@ -30,6 +30,8 @@ make &Arr{
 	^Error:
 	^.*undefined symbol:
 	^.*: Failed
+	^Failed
+	^cc: assembler failed
 	^.*Permission denied
 	^.*does not exist
 	^.*syntax error
@@ -57,6 +59,7 @@ make &Arr{
 	^[[:space:]]*parse_function doesn't understand 
 	^localmake_config:.*is not defined
 	^localmake_config:.*Test failed
+	^.*Can.t locate
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
@@ -207,8 +210,8 @@ make &Arr{
 	^[[:space:]]*else[[:space:]]
 	^[[:space:]]*fi[[:space:]]
 	^[[:space:]]*fi[^[:alnum:]]
-	^javac[[:space:]]
-	^ln[[:space:]]
+	^[[:space:]]*javac[[:space:]]
+	^[[:space:]]*ln[[:space:]]
 	^[[:alnum:]\\/]*ld[[:space:]]
 	^[[:space:]]*matdoc2dotm[[:space:]]
 	^[[:space:]]*matdoc2html[[:space:]]
@@ -217,10 +220,10 @@ make &Arr{
 	^[[:space:]]*\\/bin\\/bash[[:space:]]
 	^[[:space:]]*config\\/install-sh[[:space:]]
 	^make[[:space:]]
-	^mkdir[[:space:]]
+	^[[:space:]]*mkdir[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
-	^mv[[:space:]]
+	^[[:space:]]*mv[[:space:]]
 	^perl[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
@@ -243,6 +246,10 @@ make &Arr{
 	^[[:space:]]*Darwin\\)
 	^[[:space:]]*\\*\\)
 	.*py_compile.compile
+	^configure: creating
+	^config.status: creating
+	^config.status: executing
+	^config.status: linking
    }
 }
 
