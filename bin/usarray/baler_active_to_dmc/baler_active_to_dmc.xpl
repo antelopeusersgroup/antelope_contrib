@@ -542,6 +542,8 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize ) = &build_tmp_db( $sta ) ;
     
     $tmpdb = "tmp_replay_$sta\_$$" ;
     
+    elog_debug( "build_tmp_db $sta begins" ) if $opt_V ;
+    
     @db           = dbopen  ( $sta, "r" ) ; 
     @dbwfdisc     = dblookup( @db, 0, "wfdisc", 0, 0 ) ;
     @dbwfdisc     = dbsubset( @dbwfdisc, "chan !~ /$pf{wfclean}/ " ) ;
@@ -554,6 +556,7 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize ) = &build_tmp_db( $sta ) ;
     $nwfs         = dbquery( @dbwfdisc, "dbRECORD_COUNT" ) ;
     $replay       = dbquery( @dbreplayed, "dbTABLE_PRESENT" ) ;
     
+    elog_debug( "open	$tmpdb" ) if $opt_V ;
 #
 #  load tmp wfdisc with all non-replayed waveforms 
 #
@@ -600,6 +603,8 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize ) = &build_tmp_db( $sta ) ;
 
     }
     
+    elog_debug( "$tmpdb.wfdisc built" ) if $opt_V ;
+    
     if ( ! dbquery( @dbtwf, "dbTABLE_PRESENT" ) ) {
         elog_notify ( "$sta has no new data to process " ) ;
         print PROB  "$sta has no new data to process\n" ;
@@ -608,6 +613,7 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize ) = &build_tmp_db( $sta ) ;
         
     &cssdescriptor ( $tmpdb, $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} ) ;
 
+    elog_debug( "$tmpdb descriptor" ) if $opt_V ;
     
 #  Find directory range
 
@@ -623,13 +629,19 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize ) = &build_tmp_db( $sta ) ;
 
     @dbsoh      = dbsubset ( @dbtwf, "dir =~ /.*month.*/" ) ;
     
-    @dbsoh      = dbsort   ( @dbsoh, "dir", "-u" ) ; 
-    $dbsoh[3]   = 0 ;
-    $min_month  = dbgetv ( @dbsoh, "dir" ) ;
+    if  ( dbquery( @dbsoh, "dbRECORD_COUNT" ) ) {
     
-    @dbsoh      = dbsort   ( @dbsoh, "dir", "-r", "-u" ) ; 
-    $dbsoh[3]   = 0 ;
-    $max_month  = dbgetv ( @dbsoh, "dir" ) ;
+        @dbsoh      = dbsort   ( @dbsoh, "dir", "-u" ) ; 
+        $dbsoh[3]   = 0 ;
+        $min_month  = dbgetv ( @dbsoh, "dir" ) ;
+    
+        @dbsoh      = dbsort   ( @dbsoh, "dir", "-r", "-u" ) ; 
+        $dbsoh[3]   = 0 ;
+        $max_month  = dbgetv ( @dbsoh, "dir" ) ; 
+    
+    } else {
+        $min_month  = $max_month  = "" ;
+    }
 
 #  Check the aggregate size of data files
 
