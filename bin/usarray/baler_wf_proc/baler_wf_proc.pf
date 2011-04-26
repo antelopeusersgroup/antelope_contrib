@@ -1,0 +1,19 @@
+baler_active	   /anf/TA/dbs/wfs/station_active              # absolute path name for active station baler directory base name
+baler_final  	   /anf/TA/dbs/wfs/station_final_44            # absolute path name for archive station baler directory base name
+
+rt_sta_dir         /anf/TA/dbs/wfs/rt_stas                     # absolute path name for station rt wfdisc directory base name
+
+wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                     # remove these wfdisc rows
+
+days_delay         7                                           # Number of days for data to reside on disk before processing
+
+net                TA                                          # Network Code
+
+dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+
+dbidserver                                                     # default dbidserver
+dblocks				none                                       # default dblocks
+
+#prob_mail			your@email.edu							# email addresses to send notification of problems
+success_mail		flvernon@ucsd.edu							# email addresses to send notification of station success
+prob_mail			flvernon@ucsd.edu							# email addresses to send notification of problems

@@ -9,7 +9,7 @@
 # 0.3667E+16         normalization factor                   
 # 1.0                 gain
 theoretical   1 anti-alias   paz    pz6pbut
-1.036270e+004
+1.333889e+04
 1             Poles
--1.036269e+004    0.0000E+00    0.0000E+00    0.0000E+00
+-1.333888e+004    0.0000E+00    0.0000E+00    0.0000E+00
 0             Zeros

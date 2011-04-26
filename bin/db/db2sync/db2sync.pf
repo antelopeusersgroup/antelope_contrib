@@ -11,9 +11,9 @@
 #  '1' means include these values. 
 #  '0' means print a blank value in that field
 
-LOCATION		0
-SAMPLE_RATE		0
-NUMBER_OF_SAMPLES	0
+LOCATION		1
+SAMPLE_RATE		1
+NUMBER_OF_SAMPLES	1
 DCC_TAPE_NUMBER		0
 DATE_LINE_MOD_DMC	0
 DATE_LINE_MOD_DCC	1

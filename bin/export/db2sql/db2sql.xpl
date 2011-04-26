@@ -294,7 +294,14 @@ sub newrow {
 		
 		elog_complain( "Failed to create new SQL database row in table '$table'\n" .
 			       "(Datascope record $irecord, sync '$sync')\n" .
-			       "while executing command '$cmd'\n" );
+			       "while executing command '$cmd'. Retrying.\n" );
+
+		$dbh = verify_sql_handle( $dbh, $Sql_dbname );
+
+		unless( $dbh->do( $cmd ) ) {
+			
+			elog_complain( "Failed twice, giving up\n" );
+		}
 	}
 
 	return;
@@ -311,7 +318,14 @@ sub delrow {
 	unless( $dbh->do( $cmd ) ) {
 
 		elog_complain( "Failed to delete SQL database row in table '$table', sync '$sync'\n" .
-			       "while executing command '$cmd'\n" );
+			       "while executing command '$cmd'. Retrying.\n" );
+
+		$dbh = verify_sql_handle( $dbh, $Sql_dbname );
+
+		unless( $dbh->do( $cmd ) ) {
+			
+			elog_complain( "Failed twice, giving up\n" );
+		}
 	}
 
 	return;

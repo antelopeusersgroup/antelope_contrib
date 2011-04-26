@@ -60,7 +60,6 @@ use children;
 use ptkform;
 use ptkalert;
 use staticsys;
-use rt;
 
 $HOME = $ENV{'HOME'};
 if( $HOME !~ m@^/@ ) {
@@ -111,28 +110,38 @@ sub Tk::After::cancel
 }
 
 # Overload to work around taint-check problems:
-sub rt::rtchildren {
-    my ($pid) = @_ ;
-    my ($p, $child, $name, @children) ;
-    @children = () ;
-    my $ps = "/bin/ps -jax" ;
-    open ( PS, "$ps |" ) ;
-    @children = () ;
-    while ( <PS> ) {
-        $line = $_;
-        if( $line !~ /[ a-zA-Z0-9].*/ ) {
-                return ();
-        }
-        foreach $p ($pid,@children) {
-            if ( $line =~ /\w+\s+(\d+)\s+$p\s+\d+\s+\S+\s+\S \S+\s+\S+\s+\S+\s+(.*)/ ) {
-                $child= $1 ;
-                $name = $2 ;
-                next if $child eq $$ ;
-                push ( @children, $child ) ;
-            }
-        }
+sub rtbkg { 
+    my ( $cmd, $stdout, $stderr ) = @_ ; 
+    # printf STDERR "rtbkg: '$cmd' > %s 2> %s\n", $stdout // "<stdout>", $stderr // "<stderr>" ;
+    my ( $pid ) ;
+    if ( $pid = fork ) { 
+	# parent
+	return  $pid ; 
+    } elsif ( defined $pid ) {
+	# child
+	setsid() ;
+	open ( STDIN, "/dev/null" ) ; 
+	if (defined $stdout) { 
+	    open ( STDOUT, ">$stdout" ) or
+	    	warn "Can't open '$stdout' for writing : $!\n" ; 
+	    STDOUT->autoflush(1);
+	    if (defined $stderr) { 
+		open ( STDERR, ">$stderr" ) or
+		    warn "Can't open '$stderr' for writing : $!\n" ; 
+		STDERR->autoflush(1);
+	    } else { 
+		open ( STDERR, ">&STDOUT" ) ;
+	    }
+	}
+	# print STDERR "exec'ing '$cmd'\n" ;
+        exec $cmd 
+	    or print STDERR ( "Can't exec '$cmd' : $!\n" ) ; 
+	exit 1 ; 
+    } else {
+	# fork failure
+        print STDERR "Can't fork '$cmd'\n" ; 
+	return -1 ; 
     }
-   return @children ;
 }
 
 sub is_tainted {

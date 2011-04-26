@@ -1,0 +1,94 @@
+.TH RSYNC_BALER"$Date:  2009/10/1 20:00:00 $"
+.SH NAME
+rsync_baler \- tool to create local copies of Baler44's archives     
+.SH SYNOPSIS
+.nf
+\fBrsync_baler \fP [-h] [-v] [-V] [-f] [-x] [-R]
+                [-p \fIpf_file\fP] [-j \fIJSON_FILE\fP] 
+                [-m \fIemail\fP ] [-s \fIregex\fP ] 
+                [-r \fIregex\fP ]
+.fi
+
+.SH SUPPORT
+Contributed: NO BRTT support -- please contact author. 
+
+.SH DESCRIPTION
+\fBrsync_baler\fP is designed to create and maintain a local archive 
+of miniseed files from balers with ftp and http access (Baler44).
+The script will get the list of active stations and IPs from a database. 
+After creating the list of targets the script will spawn multiple copies
+of itself to connect to each station and download the data.
+Each child will connect to a single station and a single directory archive.
+Multiple connection utilities are used during the retrieval process. 
+The list in order is:
+.TP 
+.B http   =>  LWP, wget, curl, lynx
+.LP
+.TP 
+.B ftp    =>  LWP, Net::FTP, wget, curl, ncftp, ftp
+.LP
+
+.PP 
+The default mode for the script is archival. In this mode the system will connect 
+to the stations and will download as many files as possible the the allowed time
+by the parameter file. The downloads are done in alphabetical order. If some files 
+are missing at the end of the allowed time the system will output an error for the 
+station. 
+.LP
+.PP 
+A second mode is to run the script with the -R or -j flags. This will produce reports 
+for the databases present in the main directory. A list of stations is produce from
+the database before looking into the folders. If running with the -j flag the report will
+get dump into the specified file as a JSON formatted object. 
+.LP
+.PP 
+A third option is to run with the -x flag to review every entry on the databases and fix
+any errors. Each file in the directory that does not match the name of the file gets thrown
+into a trash folder in the archive. Other folders are exempt of this test. The rest of the 
+files in the folder are verified on the database. If missing from the database with an entry
+in the status field of "downloaded" one is created for it. Then the script verifies every 
+entry on the database with status "downloaded" and checks for the file in the directory. 
+.LP
+.PP 
+If the file is missing in the directory the entry on the database gets deleted. 
+Sometimes balers will produce files with wrong headers. Set pf value for fix_mseed_cmd to run 
+that parameter as a system call to fix the files after each download.
+.LP
+
+
+.SH OPTIONS
+.IP -v
+Verbose. 
+.IP -V
+Debugging mode. Super verbose.
+.IP -h
+Help. Prints a script synopsis to screen. 
+.IP -s
+Select station regex
+.IP -r
+Reject station regex
+.IP -R 
+Run report mode.
+.IP "-j file.json" 
+Run report mode and export table to file in json format.
+.IP "-m email1,email2,email3"
+Email (or list of emails) address to send log at the end of script.
+
+.SH NOTES
+Before the main process spawns a new copy to handle a specific station the system gets 
+tested for available resources. If not enough resources are found the system limits the 
+value of maximum allowed processes to run to -1 the actual value of running processes. 
+First the function will test the memory in the system. The memory in use should be 90%
+or less the total REAL memory of the system. Then the number of open files gets compare
+to the total allowed by the system. This needs to be below 90% to continue. Then each 
+CPU in the system gets tested until one is found with at least 25% idle time. 
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+
+.SH BUGS AND CAVEATS
+Only anonymous ftp/http connections.
+.LP
+.SH AUTHOR
+Juan C. Reyes <reyes@ucsd.edu>
+.br

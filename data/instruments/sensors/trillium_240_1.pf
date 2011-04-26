@@ -1,11 +1,13 @@
-originator     Frank Vernon, UCSD
-last_modified  2008-06-24
+# $Response file for Trillium 240 sn 0-399 modified 2011-02-23 $
+
+originator  	 Pnina Miller, Sensor Group PASSCAL
+last_modified 	 2011-02-23
 
 category	Nanometrics
-configuration	Trillium 240 Sec Response
+configuration	Trillium 240 Sec Response sn 0-399
 
-description	Nanometrics Trillium 240 Sec Response
-dfile	trillium_240
+description	Nanometrics Trillium 240 Sec Response sn 0-399
+dfile	trillium_240_1
 
 rsptype                 V       # velocity instrument
 band                    b       # broad band
@@ -13,7 +15,7 @@ short_period_sensor     no      # Sets first character of SEED channel code
 sensor_type_code        H       # 2nd character in SEED channel code
 
 gtype		sensor
-sensitivity	12e-7
+sensitivity	11.966e-7
 iunits		nm/s
 ounits		V
 
@@ -23,7 +25,7 @@ N	0	90
 E	90	90
 }
 
-response	&datafile(responses/trillium_240) 
+response	&datafile(responses/trillium_240_1) 
 
 caldrive        c
 active          yes

@@ -1,6 +1,10 @@
 DATADIR=responses
-DATA= README_guralp_fir.pdf  \
-    README_Guralp_Poles_and_Zeros.pdf  \
+DATA=  \
+    README_CMG-DM24_mk2_2011_04_21.pdf \
+    README_CMG-DM24_mk3_2011_04_21.pdf \
+    README_Guralp_Poles_and_Zeros_2006_04_08.pdf \
+    README_Guralp_Poles_and_Zeros_2011_04_24.pdf \
+    README_guralp_fir_2001_03_23.pdf \
     cmg1t \
     cmg1t_100sec \
     cmg1t_120sec \
@@ -38,7 +42,24 @@ DATA= README_guralp_fir.pdf  \
     guralp_4 \
     guralp_5 \
     guralp_8 \
-    peppv
+    peppv \
+    SWA-D24-2D01 \
+    SWA-D24-2D02 \
+    SWA-D24-2D03 \
+    SWA-D24-2D04 \
+    SWA-D24-2D05 \
+    SWA-D24-2D06 \
+    SWA-D24-2D07 \
+    SWA-D24-2D08 \
+    SWA-D24-3D01 \
+    SWA-D24-3D02 \
+    SWA-D24-3D03 \
+    SWA-D24-3D04 \
+    SWA-D24-3D05 \
+    SWA-D24-3D06 \
+    SWA-D24-3D07 \
+    SWA-D24-3D08
+
                        
 include $(ANTELOPEMAKE)  	
 DIRS=

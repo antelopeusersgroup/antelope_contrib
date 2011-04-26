@@ -76,6 +76,7 @@ typedef struct Orb_relic {
 	double	orb_start;
 	int	pktid;
 	double	pkttime;
+	double	maxpkttime;
 } Orb_relic;
 
 static Arr *Orb_relics;
@@ -635,7 +636,7 @@ python_orbstat( PyObject *self, PyObject *args ) {
 	PyDict_SetItemString( obj, "nsources", Py_BuildValue( "i", os->nsources ) );
 	PyDict_SetItemString( obj, "nclients", Py_BuildValue( "i", os->nclients ) );
 	PyDict_SetItemString( obj, "maxsrc", Py_BuildValue( "i", os->maxsrc ) );
-	PyDict_SetItemString( obj, "maxpkts", Py_BuildValue( "i", os->maxpkts ) );
+	PyDict_SetItemString( obj, "maxpkts", Py_BuildValue( "i", os->maxpktid ) );
 	PyDict_SetItemString( obj, "version", Py_BuildValue( "s", os->version ) );
 	PyDict_SetItemString( obj, "who", Py_BuildValue( "s", os->who ) );
 	PyDict_SetItemString( obj, "host", Py_BuildValue( "s", os->host ) );
@@ -747,7 +748,6 @@ python_orbclients( PyObject *self, PyObject *args ) {
 		PyDict_SetItemString( client_obj, "errors", Py_BuildValue( "i", oc[iclient].errors ) );
 		PyDict_SetItemString( client_obj, "priority", Py_BuildValue( "i", oc[iclient].priority ) );
 		PyDict_SetItemString( client_obj, "lastrequest", Py_BuildValue( "i", oc[iclient].lastrequest ) );
-		PyDict_SetItemString( client_obj, "mymessages", Py_BuildValue( "i", oc[iclient].mymessages ) );
 		PyDict_SetItemString( client_obj, "nrequests", PyInt_FromLong( (long) oc[iclient].nrequests ) );
 		PyDict_SetItemString( client_obj, "nwrites", PyInt_FromLong( (long) oc[iclient].nwrites ) );
 		PyDict_SetItemString( client_obj, "nreads", PyInt_FromLong( (long) oc[iclient].nreads ) );
@@ -775,11 +775,12 @@ new_Orb_relic( int orbfd ) {
 	or->orbname = NULL;
 	or->orb_start = PYTHONORB_NULL_PKTTIME;
 	or->pkttime = PYTHONORB_NULL_PKTTIME;
+	or->maxpkttime = PYTHONORB_NULL_PKTTIME;
 	or->pktid = -1;
 
 	sprintf( or->orbfd_str, "%d", or->orbfd );
 
-	orbresurrect4perl( orbfd, &or->orbname, &or->orb_start );
+	orbresurrect4perl( orbfd, &or->orbname, &or->orb_start, &or->maxpkttime );
 
 	or->pktid_relicname = strconcat( or->orbname, "{last_pktid}", NULL );
 	or->pkttime_relicname = strconcat( or->orbname, "{last_pkttime}", NULL );

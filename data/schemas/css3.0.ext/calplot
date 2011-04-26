@@ -1,0 +1,11 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+	
+
+Relation calplot
+	Fields ( sta chan time endtime dir dfile lddate )
+	Primary ( sta chan  dir dfile time::endtime)
+	Description ( "calibration plot archive" )
+	;
+
