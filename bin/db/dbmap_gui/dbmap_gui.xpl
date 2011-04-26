@@ -6,18 +6,14 @@
 # *
 # * dbmap_gui, now in perl-tk
 # *
-# * Created on 2010-04-22
+# * Created on 2010-04-22, fixed later
+# * based again on the bplot manpage
 # *
 
 package main;
 
 use strict;
 use warnings;
-
-#    need Tk::Bplot package - it is a good idea to always
-#    use Tk::Canvas first to make sure the generic perltk
-#    canvas dynamic link library is loaded before trying
-#    to load Tk::Bplot
 
 use Datascope;
 
@@ -35,27 +31,39 @@ use Vector;
 
 use Encode 'from_to';
 
-our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_r, $opt_f );
+our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_r, $opt_f, $opt_l, $opt_L );
 our $items;
 require "getopts.pl";
+my $line=sprintf("%d agrs\n",@#ARGV);
+print "line: $line\n";
 
-if ( !&Getopts('f:o:O:p:r:v') || @ARGV < 1 ) {
+if ( !&Getopts('f:l:L:o:O:p:r:v') || @ARGV < 1 ) {
     die (
-"Usage: $0 [-v] [-p pf] [-r range] [-f psfile] [-o dboverlay.table|-O table] database[.table]\n"
+"Usage: $0 [-v] [-p pf] [-l field] [-r range] [-f psfile] [-o dboverlay.table|-O table] database[.table]\n"
     );
 }
 
-our $psfile = ($opt_f) ? $opt_f : "/tmp/dbmap_gui.ps";
-my $Pf = ($opt_p) ? $opt_p : "dbmap_gui";
+our $psfile = ($opt_f) // "/tmp/dbmap_gui.ps";
+my $Pf = ($opt_p) // "dbmap_gui";
 my $pagewidth_mm  = pfget( $Pf, "pagewidth_mm" );
 my $pageheight_mm = pfget( $Pf, "pageheight_mm" );
 my $pagemargin_mm = pfget( $Pf, "pagemargin_mm" );
 our $printcmd = pfget( $Pf, "printcmd" );
-my $dot_color            = pfget( $Pf, "dot_color" );
+my $symbol            = pfget( $Pf, "symbol" );
+my $symbol_color            = pfget( $Pf, "symbol_color" );
+my $symbol_fill_color            = pfget( $Pf, "symbol_fill_color" );
+my $symbol_size            = pfget( $Pf, "symbol_size" );
 my $label_color          = pfget( $Pf, "label_color" );
+my $label_font          = pfget( $Pf, "label_font" );
+my $label_font_color          = pfget( $Pf, "label_font_color" );
 our $circle_color         = pfget( $Pf, "circle_color" );
-my $overlay_dot_color    = pfget( $Pf, "overlay_dot_color" );
+my $overlay_symbol    = pfget( $Pf, "overlay_symbol" );
+my $overlay_symbol_size    = pfget( $Pf, "overlay_symbol_size" );
+my $overlay_symbol_color    = pfget( $Pf, "overlay_symbol_color" );
+my $overlay_symbol_fill_color    = pfget( $Pf, "overlay_symbol_fill_color" );
 my $overlay_label_color  = pfget( $Pf, "overlay_label_color" );
+my $overlay_label_font  = pfget( $Pf, "overlay_label_font" );
+my $overlay_label_font_color  = pfget( $Pf, "overlay_label_font_color" );
 our $overlay_circle_color = pfget( $Pf, "overlay_circle_color" );
 my $range_degrees        =  ($opt_r) // pfget( $Pf, "range_degrees" );
 my %tables        = %{ pfget( $Pf, "tables" ) };
@@ -95,12 +103,13 @@ $canvas->create(
   -lonr       => 0.0,
   -width      => $cwidth,
   -height     => $cheight,
-  -xleft      => -180.0,
-  -xright     => 180.0,
-  -ybottom    => -90.0,
-  -ytop       => 90.0,
-  -fill       => 'gray',
-  -fill_frame => '#ecffec',
+  -xleft      => -10.0,
+  -xright     => 10.0,
+  -ybottom    => -10.0,
+  -ytop       => 10.0,
+  -mleft	=> 10,
+  #-fill       => 'lightsteelblu',
+  -fill_frame => 'lightsteelblue',
   -tags       => [ 'vp', 'map' ],
 );
 
@@ -146,8 +155,6 @@ $canvas->CanvasBind( '<KeyPress>'            => \\&bindzoommap );
 $canvas->CanvasBind( '<ButtonPress-3>'       => \\&bindstartdrag );
 $canvas->CanvasBind( '<Button3-Motion>'      => \\&binddrag );
 $canvas->CanvasBind( '<ButtonRelease-3>'     => \\&bindstopdrag );
-$canvas->CanvasBind( '<Shift-ButtonPress-3>' => \\&bindpanmap );
-
 #$canvas->CanvasBind ( '<ButtonPress-1>' => \\&bindfindclosest ) ;
 $canvas->CanvasBind( '<ButtonPress-1>'   => \\&bindstartdrag );
 $canvas->CanvasBind( '<Button1-Motion>'  => \\&binddrag );
@@ -156,7 +163,7 @@ $canvas->CanvasBind( '<Motion>'          => \\&showlatlon );
 $canvas->CanvasBind( '<Any-Enter>'       => \\&bindenter );
 
 $widget{quit}->configure( -command=>sub { POSIX::_exit(0) ; }, -bg =>"red", -fg =>"white" ) if defined $widget{quit} ;
-$widget{print}->configure( -command=>sub{ postscript(1) } , -bg =>"lightblue", -fg =>"white" ) if defined $widget{print} ;
+$widget{print}->configure( -command=>sub{ postscript(1) } , -bg =>"lightblue", -fg =>"blue" ) if defined $widget{print} ;
 
 # open database and do stuff
 $items = vector_create;
@@ -177,6 +184,7 @@ my @db = dbopen_database( $dbname, 'r' );
 my $nrecs = dbquery @db, 'dbRECORD_COUNT';
 
 if ( $opt_o || $opt_O ) {
+	my $tablename;
     my $fieldname  = 0;
     my $circlename = 0;
     my @dbo;
@@ -184,18 +192,19 @@ if ( $opt_o || $opt_O ) {
         my $ntables = dbquery( @db, "dbVIEW_TABLE_COUNT" );
         print "not enough tables for $opt_O" if ( $ntables < 2 );
         @dbo = dbseparate( @db, $opt_O );
+		$tablename = $opt_O;
     }
     else {
         @dbo = dbopen_database( $opt_o, "r" );
+		$tablename = dbquery( @dbo, "dbTABLE_NAME" );
     }
-    my $tablename = dbquery( @dbo, "dbTABLE_NAME" );
 
-    if ( defined( $tables{$tablename} )
-      && defined( $tables{$tablename}{label} ) )
-    {
+    if ( $opt_L) {
+        $fieldname = $opt_L;
+	} elsif ( defined( $tables{$tablename} )
+      && defined( $tables{$tablename}{label} ) ) {
         $fieldname = $tables{$tablename}{label};
-    }
-    else {
+    } else {
         print "no label for table $tablename defined!\n";
     }
 
@@ -237,17 +246,19 @@ if ( $opt_o || $opt_O ) {
                   -visible   => 1,
                   -outline   => $overlay_circle_color,
                   -linewidth => 2,
-                  -tags      => 'xxxxxx'
+                  -tags      => 'overlay_circle'
                 );
                 vector_free($circle);
             }
         }
         $canvas->create(
           'bppolypoint', 'vp', -vector => $overlay,
-          -symbol   => 'cross',
-          -fill     => $overlay_dot_color,
-          -outline  => '',
-          -size     => 5,
+          -symbol   => $overlay_symbol,
+          -outline     => $overlay_symbol_color,
+          -fill     => $overlay_symbol_fill_color,
+          -size     => $overlay_symbol_size,
+		  -font => $overlay_label_font,
+		  -textforeground => $overlay_label_font_color,
           -showtext => 1,
           -tags     => 'overlay',
         );
@@ -266,15 +277,14 @@ else {
     $mapcenter_lon = dbex_eval( @db, "sum(lon)/count()" );
 }
 
-if ( defined( $tables{$tablename} ) && defined( $tables{$tablename}{label} ) ) {
-    my $fieldname = $tables{$tablename}{label};
+if ( ($opt_l) ||(defined( $tables{$tablename} ) && defined( $tables{$tablename}{label} ) )) {
+    my $fieldname = $opt_l // $tables{$tablename}{label};
     for ( $db[3] = 0 ; $db[3] < $nrecs ; $db[3]++ ) {
         my ( $lat, $lon, $label ) = dbgetv( @db, 'lat', 'lon', $fieldname );
         from_to( $label, "iso-8859-1", "utf-8" );
         vector_append( $items, -1, $lon, $lat, sprintf( '%s', $label ) );
     }
-}
-else {
+} else {
 
     for ( $db[3] = 0 ; $db[3] < $nrecs ; $db[3]++ ) {
         my ( $lat, $lon ) = dbgetv( @db, 'lat', 'lon' );
@@ -284,39 +294,26 @@ else {
 
 $canvas->create(
   'bppolypoint', 'vp', -vector => $items,
-  -symbol   => 'square',
-  -fill     => $dot_color,
-  -outline  => '',
-  -size     => 3,
+  -symbol   => $symbol,
+  -fill     => $symbol_color,
+  -outline  => $symbol_color,
+  -size     => $symbol_size,
+  -font => $label_font,
+  -textforeground => $label_font_color,
   -showtext => 1,
   -tags     => 'items',
 );
 
 
-my $xl = $mapcenter_lon - $range_degrees / 2.0;
-my $xr = $mapcenter_lon + $range_degrees / 2.0;
-my $yb = $mapcenter_lat - $range_degrees / 2.0;
-my $yt = $mapcenter_lat + $range_degrees / 2.0;
-
-my $range = $range_degrees / 2.0;
-my $mrange = 0.0 - $range;
 $canvas->itemconfigure(
   'vp', 
-  -xleft => $mrange,
-  -xright  => $range,
-  -ybottom => $mrange,
-  -ytop    => $range,
+  -xleft => -$range_degrees,
+  -xright  => $range_degrees,
+  -ybottom => -$range_degrees,
+  -ytop    => $range_degrees,
 -latr => $mapcenter_lat,
 -lonr => $mapcenter_lon
 	);
-
-#$canvas->itemconfigure(
-#  'vp', 
-#  -xleft => $xl,
-#  -xright  => $xr,
-#  -ybottom => $yb,
-#  -ytop    => $yt,
-#);
 
 $mw->resizable( 0, 0 );
 $mw->title($dbname);
@@ -403,16 +400,6 @@ sub postscript {
 
 }
 
-sub circle_vector {
-    my ( $y, $x, $r, $steps, $vector ) = @_;
-
-    for ( my $i = 0 ; $i < $steps ; $i++ ) {
-        my $x1 = $x + $r * cos( rad( $i * 360.0 / $steps ) );
-        my $y1 = $y + $r * sin( rad( $i * 360.0 / $steps ) );
-        vector_append $vector, -1, $x1, $y1;
-    }
-}
-
 sub showlatlon {
     my ($w) = @_;
 
@@ -444,61 +431,6 @@ sub showlatlon {
     }
 
     $var{latlon} = $lat . " " . $lon;
-}
-
-sub panmap {
-    my $vp = shift;
-    my $x  = shift;
-    my $y  = shift;
-
-    our $canvas;
-
-    my ( $lon, $lat ) = viewport_pixels2wcoords( $vp, $x, $y );
-
-    if ( $vp eq "vp" ) {
-        $canvas->itemconfigure(
-          $vp, -latr => $lat,
-          -lonr => $lon
-        );
-
-    }
-    else {
-        my ($xl) = $canvas->itemcget( $vp, -xleft );
-        my ($xr) = $canvas->itemcget( $vp, -xright );
-        my ($yb) = $canvas->itemcget( $vp, -ybottom );
-        my ($yt) = $canvas->itemcget( $vp, -ytop );
-
-        my $lonr = ( $xr - $xl );
-        my $latr = ( $yt - $yb );
-
-        $xl = $lon - 0.5 * $lonr;
-        $xr = $lon + 0.5 * $lonr;
-        $yb = $lat - 0.5 * $latr;
-        $yt = $lat + 0.5 * $latr;
-
-        while ( $xr > 180.0 ) {
-            $xl -= 360.0;
-            $xr -= 360.0;
-        }
-        while ( $xl < -360.0 ) {
-            $xl += 360.0;
-            $xr += 360.0;
-        }
-
-        $canvas->itemconfigure(
-          $vp, -xleft => $xl,
-          -xright  => $xr,
-          -ybottom => $yb,
-          -ytop    => $yt,
-        );
-    }
-}
-
-sub bindpanmap {
-    my ($w) = @_;
-    my $e = $w->XEvent;
-    my ( $vp, $inside ) = bplot_locate($w);
-    if ( defined $inside && $inside == 1 ) { panmap( $vp, $e->x, $e->y ); }
 }
 
 sub zoommap {
@@ -546,7 +478,7 @@ sub bindzoommap {
     if ( $key eq "I" ) { zoommap( $vp, $e->x, $e->y, 0.5 ); }
     if ( $key eq "i" ) { zoommap( $vp, $e->x, $e->y, 0.8 ); }
 
-    if ($opt_o) {
+    if ($opt_o || $opt_O) {
         if ( $key eq "L" ) { togglelabels( $vp, 'overlay' ); }
         if ( $key eq "l" ) { togglelabels( $vp, 'items' ); }
         if ( $key eq "c" ) { togglelabels( $vp, 'fillcircles' ); }
@@ -558,6 +490,7 @@ sub bindzoommap {
     }
     if ( $key eq "p" ) { postscript(0); }
     if ( $key eq "P" ) { postscript(1); }
+    if ( $key eq "Q" ) { POSIX::_exit(0); }
 }
 
 sub togglelabels {
