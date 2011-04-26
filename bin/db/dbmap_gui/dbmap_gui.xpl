@@ -34,8 +34,6 @@ use Encode 'from_to';
 our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_r, $opt_f, $opt_l, $opt_L );
 our $items;
 require "getopts.pl";
-my $line=sprintf("%d agrs\n",@#ARGV);
-print "line: $line\n";
 
 if ( !&Getopts('f:l:L:o:O:p:r:v') || @ARGV < 1 ) {
     die (
