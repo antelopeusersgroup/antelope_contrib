@@ -1,0 +1,15 @@
+
+# horn@zagsun9  Nikolaus Horn  Thursday December 21, 2006 10:50:41.140 GMT(10:50:41.140 UTC)
+# Sankt Quirin
+time  5/01/1989   0:00:00.000
+
+net OE Austrian Seismic Network
+sta SQTA 47.2205 11.2087 1.3070 Sankt Quirin, Tirol, Austria
+
+datalogger SPCMU unk SQTA # Dummy Datalogger used in ignorance
+
+sensor s13 0.0 unk  # Geotech S-13 short-period seismometer
+   samplerate 100sps
+   	channel  N   off
+    channel  E   off
+add

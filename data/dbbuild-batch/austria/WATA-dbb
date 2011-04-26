@@ -1,0 +1,14 @@
+
+# horn@zagsun9  Nikolaus Horn  Thursday December 21, 2006 10:50:41.140 GMT(10:50:41.140 UTC)
+time  1989-10-01
+
+net OE Austrian Seismic Network
+sta WATA 47.3357 11.5763 1.4920 Walderalm, Tirol, Austria
+
+datalogger SPCMU unk # 
+
+sensor s13 0.0 unk  # Geotech S-13 short-period seismometer
+   samplerate 100sps
+   	channel  N   off
+    channel  E   off
+add

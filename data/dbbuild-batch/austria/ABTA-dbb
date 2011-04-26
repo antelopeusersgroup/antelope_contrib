@@ -1,0 +1,21 @@
+
+# horn@zagsun9  Nikolaus Horn  Thursday May 18, 2006 11:19:16.270 GMT(11:19:16.270 UTC)
+# Interreg AT/IT
+time  2006-10-17 17:04:17
+
+net OE Austrian Seismic Network
+sta ABTA     46.74742     12.51229 1.041 Abfaltersbach / Pustertal, Tirol, Austria
+
+#datalogger q330_linear_below_100 1082 ABTA # Quanterra 330 Linear Phase Below 100 Composite
+datalogger q330_linear_below_100_ANF 0100000A28765845 ABTA # Quanterra 330 Linear Phase Below 100 Composite
+
+sensor sts2_g3 0.0 90311  # Streckeisen STS-2
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+
+sensor episensor_20vpg 0.0 1855  # Episensor 200 Hz 20 Volt per g
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+add

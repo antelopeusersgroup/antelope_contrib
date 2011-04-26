@@ -1,0 +1,16 @@
+
+# horn@zagsun9  Nikolaus Horn  Wednesday December 20, 2006 10:30:18.410 GMT(10:30:18.410 UTC)
+# remark
+time  1996001
+
+net OE Austrian Seismic Network
+sta MOA 47.8495 14.2659 0.5720 Molln, Austria
+
+datalogger qx80-90 unk MOA # Quanterra Qx80 Datalogger with 19900616 (old) Firmware
+
+sensor sts2_g3 0.0 unk  # Streckeisen STS-2
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+   samplerate 0.1sps
+add

@@ -1,0 +1,21 @@
+
+# horn@zagsun9  Nikolaus Horn  Wednesday December 20, 2006 15:22:06.429 GMT(15:22:06.429 UTC)
+time 12/04/1998   0:00:00.000
+
+net OE Austrian Seismic Network
+sta OBKA 46.50917 14.54889 1.0747 Hochobir, Kaernten, Austria
+
+datalogger qx80-92 unk OBKA # Quanterra Qx80 Datalogger with 19920812 (new) Firmware
+
+sensor sts2_g3 0.0 unk  # Streckeisen STS-2
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+   samplerate 0.1sps
+add
+
+sensor episensor_40vpg 0.0 unk  # Episensor 200 Hz 40 Volt per g
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+add

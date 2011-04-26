@@ -1,19 +1,29 @@
-.TH DBMAP_GUI 1 "$Date$"
+.TH DBMAP_GUI 1
 .SH NAME
 dbmap_gui \- display geographical information on a map-gui
 .SH SYNOPSIS
 .nf
-\fBdbmap_gui \fP[-pf \fIparameterfile\fP] [-ps \fIfilename\fP] [-dboverlay
-                \fIdb.table\fP] \fIdb\fP[.\fItable\fP] [\fIrecord\fP]
+\fBdbmap_gui \fP[-p \fIpf\fP] [-r \fIrange\fP] [-f \fIfilename\fP]
+                [-o \fIdb.table\fP|-O \fItable\fP] [-l/L field] 
+				\fIdb\fP[.\fItable\fP] [\fIrecord\fP]
 .fi
 .SH DESCRIPTION
 The script \fBdbmap_gui\fP displays geographical information stored in database tables on a map-gui. Data from a second database can be displayed for comparison. The syntax was choosen so that it can be invoked from the commandline, from dbe and from dbloc2.
 .SH OPTIONS
-.IP "-ps filename"
-optional name of postscript file. Default name is /tmp/\fBdbmap_gui\fP.ps
-.IP "-dboverlay db.table"
-This option also displays data from the database \fItable\fP db2.\fItable\fP.
+.IP "-p pf"
+Parameter file name.
+.IP "-r range"
+This option specifies the mapwidth in degrees and overrides the value from the parameterfile.
+.IP "-l/-L field"
+This option selects the field for the labels. This overrides the fieldname from the parameter file list \fItables\fP.
+The option -L select the fieldnames for the overlay.
+.IP "-f filename"
+optional name of postscript file. Default name is \fB/tmp/\fBdbmap_gui\fP.ps\fP
+.IP "-o db.table"
+This option also displays data from the database \fItable\fP \fBdb2.\fPtable.
 This \fItable\fP must contain at least the fields lat and lon. Other fields for the label and eventually radius (of the circle drawn around each lat,lon pair) can be specified in the \fIparameterfile\fP.
+.IP "-O table"
+this option selects on of the tables in the input view to be shown as overlay.
 .IP "db"
 Database name. This is the only required argument. Additionally, a tablename can be specified, otherwise information from the \fItable\fP \fBsite\fP is displayed.
 Possible tables are (currently) those with fields lat and lon: site, origin, place, idp
@@ -25,57 +35,21 @@ The currently implemented commands are:
 Zoom out.
 .IP "I/i"
 Zoom in.
-.IP "a"
-antipodmap.
 .IP "L/l"
 Toggle display of labels.
-.IP "n"
-Restore initial display
+.IP "C/c"
+Toggle filling and display of circles.
 .IP "p/P"
-Create postscript output of window or plot immediately.
+Create postscript output of window or plot immediately. If not specified on the commandline, the name of the postscript file defaults to \fI/tmp/dbmap_gui.pf\fP.
 .IP "q"
 Quit
-.IP "Middle-Click"
-Define new center.
-.IP "Left-Drag"
-Define zooming region using the mouse.
+.IP "Click-Drag"
+Pan the window following the mouse.
 .SH "PARAMETER FILE"
 the \fIparameterfile\fP for \fBdbmap_gui\fP contains the array \fBtables\fP to select fieldnames displayed as labels.
-The mandatory entry label defines the text displayed for each entry.
-The optional entry circle defines a field which is expected to hold a radius in km.
+The mandatory entry \fIlabel\fP defines the text displayed for each entry.
+The optional entry \fIcircle\fP defines a field which is expected to hold a radius in km.
 Different colors can be selected for the dot marking the exact position, the label and the circles. Circles are only drawn for tables where the entry \fIcircle\fP is specified below.
-example \fIparameterfile\fP:
-.in 2c
-.ft CW
-.nf
-
-.ne 23
-
-print_command lp -c
-dot_color red
-label_colour red
-circle_colour red
-overlay_dot_color magenta
-overlay_label_color green
-overlay_circle_color magenta
-tables &Arr{
-        site &Arr{
-                label   sta
-        }
-        origin &Arr{
-                label orid
-        }
-        places &Arr{
-                label   place
-        }
-        idp     &Arr{
-                label   placename
-        }
-}
-
-.fi
-.ft R
-.in
 .SH EXAMPLE
 This program can be run from the commandline, from dbe and from dbloc2.
 .IP commandline
@@ -83,24 +57,31 @@ This program can be run from the commandline, from dbe and from dbloc2.
 .ft CW
 .nf
 
-.ne 7
-
+.ne 3
 Display site-table from a database
-dbmag_gui /path/to/my/database
+dbmag_gui /opt/antelope/data/db/demo/demo
 
+.ne 3
 Same, but display only 1st record
-dbmap_gui /path/to/my/database 0
+dbmap_gui /opt/antelope/data/db/demo/demo 0
 
-.ne 5
+.ne 3
 display origins
 dbmap_gui mydb.origin
 
+.ne 3
 display some origins
 dbsubset mydb.origin "time >'2/2/2003/'"| dbmap_gui -
 
+.ne 4 
 same, but display also some places
 dbsubset mydb.origin "time >'2/2/2003/'"| \\
-   dbmap_gui -dboverlay /path/to/known_places.place -
+   dbmap_gui -o /path/to/known_places.place -
+
+.ne 4   
+display origins and associated stations
+dbjoin $DEMODB.origin assoc arrival site | \\
+   dbmap_gui -r 10 -O site -
 
 .fi
 .ft R
@@ -115,12 +96,12 @@ dbsubset mydb.origin "time >'2/2/2003/'"| \\
 graphics &Arr{
         origin &Tbl{
                 Map dbmap_gui -
-                Quarry? dbmap_gui -dboverlay /path/to/quarries.tablename -
-                Where? dbmap_gui -dboverlay /path/to/places.tablename -
+                Quarry? dbmap_gui -o /path/to/quarries.tablename -
+                Where? dbmap_gui -o /path/to/places.tablename -
         }
         site &Tbl{
                 Map dbmap_gui -
-                Where? dbmap_gui -dboverlay /path/to/places.tablename -
+                Where? dbmap_gui -o /path/to/places.tablename -
         }
 }
 
@@ -136,22 +117,22 @@ graphics &Arr{
 
 origin_menu_items &Tbl{
         Map    dbmap_gui
-                Where? dbmap_gui -dboverlay /path/to/places.tablename
-                Blast?  dbmap_gui -dboverlay /path/to/quarries.tablename
+                Where? dbmap_gui -o /path/to/places.tablename
+                Blast?  dbmap_gui -o /path/to/quarries.tablename
 }
 station_menu_items &Tbl{
         Map    dbmap_gui
-                Where? dbmap_gui -dboverlay /path/to/places.tablename
+                Where? dbmap_gui -o /path/to/places.tablename
 }
 
 .fi
 .ft R
 .in
 .SH "BUGS AND CAVEATS"
-Prinintg on Macs is untested.
+Circle overlays on Solaris may cause problems.
 .SH "SEE ALSO"
-dbe(1), dbloc2(1), dbloc_map(1), brttplot(3t).
+dbe(1), dbloc2(1), dbloc_map(1), ptkform(3p), bplot(3p).
 .SH AUTHOR
-Nikolaus Horn, using the example from the brttplot manpage.
+Nikolaus Horn, using the example from the bplot manpage.
 .br
 ZAMG / Vienna, nikolaus.horn@zamg.ac.at
