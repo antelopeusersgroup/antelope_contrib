@@ -208,6 +208,7 @@ make &Arr{
 	^flex[[:space:]]
 	^for[[:space:]]
 	^getid[[:space:]]
+	^[[:space:]]*gunzip[[:space:]]
 	^[[:space:]]*bunzip2[[:space:]]
 	^[[:space:]]*tar[[:space:]]
 	^[[:space:]]*if[[:space:]]
