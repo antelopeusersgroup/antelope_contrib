@@ -162,6 +162,7 @@ make &Arr{
 	^[rR]emoving[[:space:]]
 	^[rR]unning[[:space:]]
 	^[wW]riting[[:space:]]
+	^[uU]sing[[:space:]]
 	^Skip[[:space:]]
 	^x[[:space:]]
 	^Files found in blib\\/arch: 
@@ -207,6 +208,8 @@ make &Arr{
 	^flex[[:space:]]
 	^for[[:space:]]
 	^getid[[:space:]]
+	^[[:space:]]*bunzip2[[:space:]]
+	^[[:space:]]*tar[[:space:]]
 	^[[:space:]]*if[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*install[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*installman[[:space:]]
