@@ -36,7 +36,6 @@
  * the name of the PHP function */
 #undef now
 
-static int le_Datascope;
 static int le_dbresponse;
 
 static Arr *Hooks = 0;
@@ -841,7 +840,7 @@ PHP_FUNCTION(elog_log)
 		return;
 	}
 
-	elog_log( 0, msg );
+	elog_log( 0, "%s", msg );
 
 	return;
 }
@@ -865,7 +864,7 @@ PHP_FUNCTION(elog_debug)
 		return;
 	}
 
-	elog_debug( 0, msg );
+	elog_debug( 0, "%s", msg );
 
 	return;
 }
@@ -889,7 +888,7 @@ PHP_FUNCTION(elog_alert)
 		return;
 	}
 
-	elog_alert( 0, msg );
+	elog_alert( 0, "%s", msg );
 
 	return;
 }
@@ -913,7 +912,7 @@ PHP_FUNCTION(elog_complain)
 		return;
 	}
 
-	elog_complain( 0, msg );
+	elog_complain( 0, "%s", msg );
 
 	return;
 }
@@ -937,7 +936,7 @@ PHP_FUNCTION(elog_notify)
 		return;
 	}
 
-	elog_notify( 0, msg );
+	elog_notify( 0, "%s", msg );
 
 	return;
 }
@@ -961,7 +960,7 @@ PHP_FUNCTION(elog_die)
 		return;
 	}
 
-	elog_die( 0, msg );
+	elog_die( 0, "%s", msg );
 
 	return;
 }
@@ -5879,8 +5878,8 @@ PHP_FUNCTION(dbget_range)
 {
 	zval	*db_array;
 	Dbptr	db;
-	int	first;
-	int	last;
+	long	first;
+	long	last;
 	int	argc = ZEND_NUM_ARGS();
 
 	if( argc != 1 ) {
