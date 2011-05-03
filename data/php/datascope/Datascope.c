@@ -421,7 +421,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 		break;
 	case dbBOOLEAN:
 		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
-			value->i = (int) Z_DVAL_PP( zvalue );
+			value->i = (long) Z_DVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
 			value->i = Z_LVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
@@ -435,13 +435,13 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 	case dbINTEGER:
 	case dbYEARDAY:
 		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
-			value->i = (int) Z_DVAL_PP( zvalue );
+			value->i = (long) Z_DVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
 			value->i = Z_LVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
 			value->i = Z_BVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
-			value->i = atoi( Z_STRVAL_PP( zvalue ) );
+			value->i = atol( Z_STRVAL_PP( zvalue ) );
 		} else {
 			return -1;
 		}
@@ -2039,7 +2039,7 @@ PHP_FUNCTION(trnsamp)
 	double	time0;
 	double	samprate;
 	double	endtime;
-	int	nsamp;
+	long	nsamp;
 
 	if( argc != 3 ) {
 
@@ -2590,8 +2590,8 @@ PHP_FUNCTION(trdata)
 	int	argc = ZEND_NUM_ARGS();
 	int 	single_row = 0;
 	long	nrecs;
-	int	nsamp_retrieve = 0;
-	int	nsamp_available = 0;
+	long	nsamp_retrieve = 0;
+	long	nsamp_available = 0;
 	long 	nsamp_requested = -1;
 	long	i0 = 0;
 	int	isource;
@@ -4905,7 +4905,7 @@ PHP_FUNCTION(dbsubset)
 		return;
 	}
 
-	db = dbsubset( db, expr, 0 );
+	db = dbsubset( db, expr, NULL );
 
 	RETURN_DBPTR( db );
 }
@@ -5303,7 +5303,7 @@ PHP_FUNCTION(dbgroup)
 
 	key = Z_STRVAL_PP( args[1] );
 
-	groupfields = strtbl( key, 0 );
+	groupfields = strtbl( key, NULL );
 
 	for( i = 2; i < argc; i++ ) {
 
@@ -6165,7 +6165,7 @@ PHP_FUNCTION(dbgetv)
 	zval	*db_array_in;
 	zval	*db_array;
 	Dbptr	db;
-	zval	***args;
+	zval	***args = NULL;
 	long	type;
 	Dbvalue	value;
 	int	argc = ZEND_NUM_ARGS();
@@ -6173,7 +6173,7 @@ PHP_FUNCTION(dbgetv)
 	int	i;
 	int	array_mode = 0;
 	char	warning[STRSZ];
-	char	*fieldname;
+	char	*fieldname = NULL;
 	Tbl	*fieldnames = 0;
 	int	loopstart;
 	int	loopmax;
@@ -6304,18 +6304,18 @@ PHP_FUNCTION(dbgetv)
 		case dbBOOLEAN:
 			copystrip( value.s, value.s, strlen( value.s ) );
 			if( single ) {
-				RETVAL_BOOL( atoi( value.s ) );
+				RETVAL_BOOL( atol( value.s ) );
 			} else {
-				add_next_index_bool( return_value, atoi( value.s ) );
+				add_next_index_bool( return_value, atol( value.s ) );
 			}
 			break;
 		case dbINTEGER:
 		case dbYEARDAY:
 			copystrip( value.s, value.s, strlen( value.s ) );
 			if( single ) {
-				RETVAL_LONG( atoi( value.s ) );
+				RETVAL_LONG( atol( value.s ) );
 			} else {
-				add_next_index_long( return_value, atoi( value.s ) );
+				add_next_index_long( return_value, atol( value.s ) );
 			}
 			break;
 		case dbREAL:
