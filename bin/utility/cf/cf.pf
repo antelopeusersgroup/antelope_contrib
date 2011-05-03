@@ -94,7 +94,7 @@ make &Arr{
 	^[[:digit:]]+ Warning\\(s\\) detected\\.
 	^.*ld: warning
 	^.*: warning,
-	^.*Warning:
+	^.*Warning
 	^.* warning:    
 	^Undefined[[:space:]]+first referenced
 	^[[:space:]]symbol[[:space:]]+in file
