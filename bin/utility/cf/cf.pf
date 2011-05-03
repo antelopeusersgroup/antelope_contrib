@@ -172,7 +172,9 @@ make &Arr{
 	^output=
 	^uninstalling
 	^Adding -arch
-	^Processing hints file
+	^Processing
+	^Installed
+	^Finished
 	^configure: creating
 	^config.status: creating
 	^config.status: executing
