@@ -95,7 +95,7 @@ make &Arr{
 	^.*ld: warning
 	^.*: warning,
 	^.*Warning
-	^.* warning:    
+	^.*[[:space:]]*warning:    
 	^Undefined[[:space:]]+first referenced
 	^[[:space:]]symbol[[:space:]]+in file
 	^WARNING:
@@ -104,6 +104,8 @@ make &Arr{
 	^.*but program requires date after.*
 	^localmake_config:.*appears out of date
 	^You may be missing features
+	^Downloading
+	^no previously-included directories found
    }
    cyan &Tbl{							# Routine command output
 	^---+
@@ -149,6 +151,7 @@ make &Arr{
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
 	^.*: At top level:$
+	^[aA]dding[[:space:]]
 	^[aA]ppending[[:space:]]
 	^[bB]uilding[[:space:]]
 	^[bB]yte-compiling[[:space:]]
@@ -157,10 +160,14 @@ make &Arr{
 	^[cC]ompiling[[:space:]]
 	^[cC]opying[[:space:]]
 	^[cC]reating[[:space:]]
+	^[eE]xtracting[[:space:]]
 	^[iI]nstalling[[:space:]]
 	^[lL]isting[[:space:]]
+	^[pP]rocessing[[:space:]]
+	^[rR]eading[[:space:]]
 	^[rR]emoving[[:space:]]
 	^[rR]unning[[:space:]]
+	^[sS]earching[[:space:]]
 	^[wW]riting[[:space:]]
 	^[uU]sing[[:space:]]
 	^Skip[[:space:]]
@@ -171,10 +178,10 @@ make &Arr{
 	^input=
 	^output=
 	^uninstalling
-	^Adding -arch
-	^Processing
 	^Installed
 	^Finished
+	^Best match
+	^.*is already the active version
 	^configure: creating
 	^config.status: creating
 	^config.status: executing
