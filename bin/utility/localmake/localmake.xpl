@@ -189,7 +189,7 @@ sub ansicolored_to_tagged {
 sub make_target {
 	my( $target ) = @_;
 
-	my( $cf );
+	my( $cf, $rc );
 
 	if( -x "$ENV{'ANTELOPE'}/bin/cf" ) {
 
@@ -259,11 +259,25 @@ sub make_target {
 
 	} else {
 
-		my( $rc ) = system( $cmd );
+		if( $target =~ /^VERIFY/ ) {
 
-		if( $rc != 0 ) {
+			$rc = system( $quiet );
 
-			elog_die( "Command '$cmd' failed in directory '$Dir'\n" );
+			if( $rc != 0 ) {
+
+				# Re-run to show output without overwriting return code: 
+
+				system( $cmd );
+			}
+
+		} else {
+
+			$rc = system( $cmd );
+
+			if( $rc != 0 ) {
+
+				elog_die( "Command '$cmd' failed in directory '$Dir'\n" );
+			}
 		}
 	}
 
