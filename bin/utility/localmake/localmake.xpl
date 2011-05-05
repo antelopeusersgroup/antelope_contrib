@@ -549,6 +549,11 @@ if( $opt_t ) {
 	
 	$tarfilelist = "/tmp/localmake_$<_$$";
 
+	if( scalar( @{$Modules{$module}{package}} ) <= 0 ) {
+
+		elog_die( "No package files defined in $Pf.pf for module '$module'. Exiting.\n" );
+	}
+
 	open( T, ">$tarfilelist" );
 	
 	print T map { "$ENV{ANTELOPE}/$_\n" } @{$Modules{$module}{package}};
