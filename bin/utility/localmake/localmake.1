@@ -3,7 +3,7 @@
 localmake \- build subsections of the Antelope-contrib code base
 .SH SYNOPSIS
 .nf
-localmake [-v] [-l] [-p pfname] [-t] module
+localmake [-v] [-l] [-p pfname] [-s src_subdir] [-t] module
 .fi
 .SH DESCRIPTION
 The \fBlocalmake\fP program is designed to build and install coherent
@@ -28,6 +28,9 @@ the main \fBlocalmake\fP window, may be saved to a file with the
 .SH OPTIONS
 .IP -l
 Print a list of available modules and exit. 
+.IP "-s subdirectory"
+This parameter overrides the \fIsrc_subdir\fP parameter in the parameter file. For further details, 
+see the PARAMETER FILE section below. 
 .IP -v 
 verbose
 .IP "-p pfname"
@@ -43,6 +46,20 @@ The \fImodules\fP array contains descriptions of all the software \fImodules\fP 
 \fBlocalmake\fP knows how to build and package. The keys in the array
 should be unique, descriptive names for the software \fImodules\fP. The values 
 are arrays with the parameters for how to build and package each \fImodule\fP. 
+.IP "modules{<module_name>}{src_subdir}"
+This parameter specifies the top-level sub-directory in which to
+find source-code for the entire software distribution out of which
+the module comes.  Usually it is a path relative to the destination
+(e.g. \fI$ANTELOPE\fP) in which the results will be installed. For
+example, for the Antelope contributed-code repository, a common
+value for \fIsrc_subdir\fP would be \fIsrc/contrib\fP to indicate
+source-code stored in the directory \fI$ANTELOPE/src/contrib\fP.
+In this normal case, the destination directory (\fI$ANTELOPE\fP)
+will be prepended to the \fIsrc_subdir\fP value in order to find
+the necessary source-code during compilation.  If the \fIsrc_subdir\fP
+parameter is an absolute path, it is treated as such and no other
+absolute path is prepended. The \fIsrc_subdir\fP assignment may be
+overridden on the command-line with the \fI-s\fP option.
 .IP "modules{<module_name>}{build}"
 This parameter is a table of directories relative to $ANTELOPE containing the 
 source code for the software \fImodule\fP and all of its dependencies (although 

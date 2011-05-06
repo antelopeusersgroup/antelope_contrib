@@ -5,15 +5,16 @@ contrib_src_subdir src/contrib
 
 modules &Arr{
 	dbxcor &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 			xmotif
 		}
 		build &Tbl{
-			&contrib_src_subdir/lib/graphics/seisw
-			&contrib_src_subdir/lib/seismic/libseispp
-			&contrib_src_subdir/lib/utility/libgclgrid
-			&contrib_src_subdir/lib/perf
-			&contrib_src_subdir/bin/db/dbxcor
+			lib/graphics/seisw
+			lib/seismic/libseispp
+			lib/utility/libgclgrid
+			lib/perf
+			bin/db/dbxcor
 		}
 		package &Tbl{
 			static/libsciplot.a
@@ -82,28 +83,31 @@ modules &Arr{
 		}
 	}
 	antelope_matlab &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 			matlab
 		}
 		build &Tbl{
-			&contrib_src_subdir/data/matlab
+			data/matlab
 		}
 	}
 	antelope_php &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 			php
 		}
 		build &Tbl{
-			&contrib_src_subdir/data/php
+			data/php
 		}
 	}
 	antelope_python &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 			python
 		}
 		build &Tbl{
-			&contrib_src_subdir/lib/dataformat/dbxml
-			&contrib_src_subdir/data/python
+			lib/dataformat/dbxml
+			data/python
 		}
 		package &Tbl{
 			lib/libdbxml.dylib
@@ -131,12 +135,13 @@ modules &Arr{
 		}
 	}
 	orb2amqp &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 			python
 			python_amqplib
 		}
 		build &Tbl{
-			&contrib_src_subdir/bin/rt/orb2amqp
+			bin/rt/orb2amqp
 		}
 		package &Tbl{
 			local/bin/orb2amqp
@@ -148,10 +153,11 @@ modules &Arr{
 		}
 	}
 	isi2orb &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 		}
 		build &Tbl{
-			&contrib_src_subdir/bin/rt/isi2orb
+			bin/rt/isi2orb
 		}
 		package &Tbl{
 			include/libisi_iacp.h 
@@ -171,10 +177,11 @@ modules &Arr{
 		}
 	}
 	rtkill &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 		}
 		build &Tbl{
-			&contrib_src_subdir/bin/rt/rtkill
+			bin/rt/rtkill
 		}
 		package &Tbl{
 			bin/rtkill 
@@ -183,24 +190,26 @@ modules &Arr{
 		}
 	}
 	db2sql &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 		}
 		build &Tbl{
-			&contrib_src_subdir/lib/dataformat/db2sql
-			&contrib_src_subdir/lib/dataformat/dbmon
-			&contrib_src_subdir/lib/perl/db2sql
-			&contrib_src_subdir/lib/perl/dbmon
-			&contrib_src_subdir/bin/export/db2sql
-			&contrib_src_subdir/bin/export/dbschema2sql
+			lib/dataformat/db2sql
+			lib/dataformat/dbmon
+			lib/perl/db2sql
+			lib/perl/dbmon
+			bin/export/db2sql
+			bin/export/dbschema2sql
 		}
 	}
 	bootstrap &Arr{
+		src_subdir	&contrib_src_subdir
 		capabilities_required &Tbl{
 		}
 		build &Tbl{
-			&contrib_src_subdir/lib/localmake_config
-			&contrib_src_subdir/bin/utility/cf
-			&contrib_src_subdir/bin/utility/localmake
+			lib/localmake_config
+			bin/utility/cf
+			bin/utility/localmake
 		}
 	}
 }

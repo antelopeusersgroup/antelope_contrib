@@ -304,6 +304,17 @@ sub localmake_module {
 		elog_die( "No steps listed for module '$module' in parameter-file '$Pf'\n" );
 	}
 
+	my( $src_subdir );
+	
+	if( $opt_s ) {
+		
+		$src_subdir = $opt_s;
+
+	} else { 
+		
+		$src_subdir = $Modules{$module}{src_subdir};
+	}
+
 	inform( "localmake: making module '$module'\n" );
 
 	my( @capabilities ) = @{$Modules{$module}{capabilities_required}};
@@ -331,9 +342,13 @@ sub localmake_module {
 
 			$Dir = $step;
 
+		} elsif( $src_subdir =~ m@^/.*@ ) {
+
+			$Dir = "$src_subdir/$step";
+
 		} else {
 
-			$Dir = "$ENV{ANTELOPE}/$step";
+			$Dir = "$ENV{ANTELOPE}/$src_subdir/$step";
 		}
 
 		if( ! -d "$Dir" ) {
@@ -512,9 +527,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'lp:tv' ) || scalar( @ARGV ) > 1 ) {
+if( !Getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
 
-	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [module]\n" );
+	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [-s src_subdir] [module]\n" );
 }
 
 if( $opt_l && scalar( @ARGV ) > 0 ) {
