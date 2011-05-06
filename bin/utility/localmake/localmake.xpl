@@ -69,6 +69,46 @@ sub inform {
 	return;
 }
 
+sub load_modules {
+
+	my( %modules, $val, $p );
+
+	my( @exclude ) = ( "tarball_time_format",
+			   "tar_command",
+			   "pf_revision_time" );
+
+	$p = pfget( $Pf, "" );
+
+	foreach $key ( keys( %$p ) ) {
+
+		next if( grep( /^$key$/, @exclude ) );
+
+		next if( $key =~ /src_subdir/ );
+
+		if( $key eq "modules" ) {
+			
+			elog_die( "Your $Pf.pf file still contains the 'modules' array, indicating " .
+				  "that it is out of date. Please update $Pf.pf per the localmake(1) " .
+				  "documentation. Exiting.\n" );
+
+		} 
+		
+		$val = pfget( $Pf, $key );
+
+		if( ref( $val ) eq "HASH" ) {
+
+			$modules{$key} = $val;
+
+		} else {
+			
+			elog_complain( "Unexpected parameter '$key' in $Pf.pf. " .
+				       "Ignoring and attempting to continue \n" );
+		}
+	}
+
+	return %modules;
+}
+
 sub ansicolored_to_tagged {
 	my( $line ) = @_;
 
@@ -544,9 +584,10 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
-%Modules = %{pfget($Pf,"modules")};
 $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
+
+%Modules = load_modules();
 
 @Module_names = sort( keys( %Modules ) );
 
