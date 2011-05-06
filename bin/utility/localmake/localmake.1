@@ -46,6 +46,10 @@ The \fImodules\fP array contains descriptions of all the software \fImodules\fP 
 \fBlocalmake\fP knows how to build and package. The keys in the array
 should be unique, descriptive names for the software \fImodules\fP. The values 
 are arrays with the parameters for how to build and package each \fImodule\fP. 
+.IP "modules{<module_name>}{product}"
+This parameter file specifies the top-level directory to which the modules being 
+built are being directed. For example, for the Antelope contributed-code, the \fIproduct\fP
+parameter will be the same as the \fI$ANTELOPE\fP environment variable. 
 .IP "modules{<module_name>}{src_subdir}"
 This parameter specifies the top-level sub-directory in which to
 find source-code for the entire software distribution out of which
@@ -79,6 +83,8 @@ contrib_src_subdir src/contrib
 
 modules &Arr{
 	dbxcor &Arr{
+		dest	&env(ANTELOPE)
+		src_subdir	&contrib_src_subdir
 		build &Tbl{
 			&contrib_src_subdir/lib/graphics/seisw
 			&contrib_src_subdir/lib/seismic/libseispp
@@ -156,6 +162,8 @@ modules &Arr{
 		}
 	}
 	python_antelope &Arr{
+		dest	&env(ANTELOPE)
+		src_subdir	&contrib_src_subdir
 		build &Tbl{
 			&contrib_src_subdir/data/python
 		}
@@ -215,6 +223,12 @@ way it spawns subsidiary make commands, a weakness which could be fixed but at a
 not yet allocated. Make sure to scan compilation output for evidence of errors (these 
 should be fairly prominent in the colored-output when running \fBlocalmake\fP
 as a GUI). 
+
+Note that the \fIproduct\fP parameter does not control the actual compilation target of 
+the files in a module. The \fIproduct\fP parameter is meant to describe the context in which the 
+module belongs, to aid software packaging if the \fI-t\fP option is used, and, 
+if \fIsrc_subdir\fI is a relative path, as an aid to finding the correct source-code files.
+The actual install directory for the software is controlled by the Makefiles for the source-code. 
 .SH AUTHOR
 Kent Lindquist
 Lindquist Consulting, Inc.

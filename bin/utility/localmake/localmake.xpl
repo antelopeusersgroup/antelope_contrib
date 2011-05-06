@@ -304,7 +304,9 @@ sub localmake_module {
 		elog_die( "No steps listed for module '$module' in parameter-file '$Pf'\n" );
 	}
 
-	my( $src_subdir );
+	my( $src_subdir, $product );
+
+	$product = $Modules{$module}{product};
 	
 	if( $opt_s ) {
 		
@@ -348,7 +350,7 @@ sub localmake_module {
 
 		} else {
 
-			$Dir = "$ENV{ANTELOPE}/$src_subdir/$step";
+			$Dir = "$product/$src_subdir/$step";
 		}
 
 		if( ! -d "$Dir" ) {
@@ -585,7 +587,7 @@ if( $opt_t ) {
 
 	open( T, ">$tarfilelist" );
 	
-	print T map { "$ENV{ANTELOPE}/$_\n" } @{$Modules{$module}{package}};
+	print T map { "$Modules{$module}{product}/$_\n" } @{$Modules{$module}{package}};
 
 	close( T );
 
