@@ -5337,11 +5337,12 @@ PHP_FUNCTION(dbjoin)
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	db;
-	char	*key;
-	Tbl	*pattern1 = 0;
-	Tbl	*pattern2 = 0;
-	Tbl	*halves;
+	char	*key = NULL;
+	Tbl	*pattern1 = NULL;
+	Tbl	*pattern2 = NULL;
+	Tbl	*halves = NULL;
 	int	outer = 0;
+	int	patterns_allocated = 0;
 	int	i;
 
 	if( argc < 2 ) {
@@ -5398,6 +5399,8 @@ PHP_FUNCTION(dbjoin)
 			continue;
 		}
 
+		patterns_allocated = 1;
+
 		if( pattern1 == (Tbl *) NULL ) {
 
 			pattern1 = newtbl( 0 );
@@ -5422,22 +5425,36 @@ PHP_FUNCTION(dbjoin)
 			pushtbl( pattern1, strdup( shifttbl( halves ) ) );
 			pushtbl( pattern2, strdup( poptbl( halves ) ) );
 
-			freetbl( halves, 0 );
+			freetbl( halves, NULL );
 
 			free( key );
 		}
 	}
 
-	db = dbjoin( db1, db2, &pattern1, &pattern2, outer, 0, 0 );
+	db = dbjoin( db1, db2, &pattern1, &pattern2, outer, NULL, NULL );
 
 	if( pattern1 != (Tbl *) NULL ) {
-	
-		freetbl( pattern1, free );
+
+		if( patterns_allocated ) {
+
+			freetbl( pattern1, free );
+
+		} else {
+
+			freetbl( pattern1, NULL );
+		}
 	}
 
 	if( pattern2 != (Tbl *) NULL ) {
 	
-		freetbl( pattern2, free );
+		if( patterns_allocated ) {
+
+			freetbl( pattern2, free );
+
+		} else {
+
+			freetbl( pattern2, NULL );
+		}
 	}
 
 	efree( args );
@@ -5992,7 +6009,7 @@ PHP_FUNCTION(dbputv)
 
 		field_name = Z_STRVAL_PP( args[fieldname_index] );
 
-		db = dblookup( db, 0, 0, field_name, 0 );
+		db = dblookup( db, NULL, NULL, field_name, NULL );
 
 		rc = dbquery( db, dbFIELD_TYPE, &type );
 
@@ -6106,7 +6123,7 @@ PHP_FUNCTION(dbaddv)
 
 		field_name = Z_STRVAL_PP( args[fieldname_index] );
 
-		db = dblookup( db, 0, 0, field_name, 0 );
+		db = dblookup( db, NULL, NULL, field_name, NULL );
 
 		rc = dbquery( db, dbFIELD_TYPE, &type );
 
@@ -6267,7 +6284,7 @@ PHP_FUNCTION(dbgetv)
 			}
 		}
 
-		db = dblookup( db, 0, 0, fieldname, 0 );
+		db = dblookup( db, NULL, NULL, fieldname, NULL );
 
 		dbquery( db, dbFIELD_TYPE, &type );
 
