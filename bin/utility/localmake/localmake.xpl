@@ -69,6 +69,46 @@ sub inform {
 	return;
 }
 
+sub load_modules {
+
+	my( %modules, $val, $p );
+
+	my( @exclude ) = ( "tarball_time_format",
+			   "tar_command",
+			   "pf_revision_time" );
+
+	$p = pfget( $Pf, "" );
+
+	foreach $key ( keys( %$p ) ) {
+
+		next if( grep( /^$key$/, @exclude ) );
+
+		next if( $key =~ /src_subdir/ );
+
+		if( $key eq "modules" ) {
+			
+			elog_die( "Your $Pf.pf file still contains the 'modules' array, indicating " .
+				  "that it is out of date. Please update $Pf.pf per the localmake(1) " .
+				  "documentation. Exiting.\n" );
+
+		} 
+		
+		$val = pfget( $Pf, $key );
+
+		if( ref( $val ) eq "HASH" ) {
+
+			$modules{$key} = $val;
+
+		} else {
+			
+			elog_complain( "Unexpected parameter '$key' in $Pf.pf. " .
+				       "Ignoring and attempting to continue \n" );
+		}
+	}
+
+	return %modules;
+}
+
 sub ansicolored_to_tagged {
 	my( $line ) = @_;
 
@@ -189,7 +229,7 @@ sub ansicolored_to_tagged {
 sub make_target {
 	my( $target ) = @_;
 
-	my( $cf );
+	my( $cf, $rc );
 
 	if( -x "$ENV{'ANTELOPE'}/bin/cf" ) {
 
@@ -259,11 +299,25 @@ sub make_target {
 
 	} else {
 
-		my( $rc ) = system( $cmd );
+		if( $target =~ /^VERIFY/ ) {
 
-		if( $rc != 0 ) {
+			$rc = system( $quiet );
 
-			elog_die( "Command '$cmd' failed in directory '$Dir'\n" );
+			if( $rc != 0 ) {
+
+				# Re-run to show output without overwriting return code: 
+
+				system( $cmd );
+			}
+
+		} else {
+
+			$rc = system( $cmd );
+
+			if( $rc != 0 ) {
+
+				elog_die( "Command '$cmd' failed in directory '$Dir'\n" );
+			}
 		}
 	}
 
@@ -288,6 +342,19 @@ sub localmake_module {
 		show_available();
 
 		elog_die( "No steps listed for module '$module' in parameter-file '$Pf'\n" );
+	}
+
+	my( $src_subdir, $product );
+
+	$product = $Modules{$module}{product};
+	
+	if( $opt_s ) {
+		
+		$src_subdir = $opt_s;
+
+	} else { 
+		
+		$src_subdir = $Modules{$module}{src_subdir};
 	}
 
 	inform( "localmake: making module '$module'\n" );
@@ -317,9 +384,13 @@ sub localmake_module {
 
 			$Dir = $step;
 
+		} elsif( $src_subdir =~ m@^/.*@ ) {
+
+			$Dir = "$src_subdir/$step";
+
 		} else {
 
-			$Dir = "$ENV{ANTELOPE}/$step";
+			$Dir = "$product/$src_subdir/$step";
 		}
 
 		if( ! -d "$Dir" ) {
@@ -498,9 +569,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'lp:tv' ) || scalar( @ARGV ) > 1 ) {
+if( !Getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
 
-	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [module]\n" );
+	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [-s src_subdir] [module]\n" );
 }
 
 if( $opt_l && scalar( @ARGV ) > 0 ) {
@@ -513,9 +584,10 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
-%Modules = %{pfget($Pf,"modules")};
 $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
+
+%Modules = load_modules();
 
 @Module_names = sort( keys( %Modules ) );
 
@@ -549,9 +621,14 @@ if( $opt_t ) {
 	
 	$tarfilelist = "/tmp/localmake_$<_$$";
 
+	if( scalar( @{$Modules{$module}{package}} ) <= 0 ) {
+
+		elog_die( "No package files defined in $Pf.pf for module '$module'. Exiting.\n" );
+	}
+
 	open( T, ">$tarfilelist" );
 	
-	print T map { "$ENV{ANTELOPE}/$_\n" } @{$Modules{$module}{package}};
+	print T map { "$Modules{$module}{product}/$_\n" } @{$Modules{$module}{package}};
 
 	close( T );
 

@@ -3,204 +3,220 @@ tar_command tar
 
 contrib_src_subdir src/contrib
 
-modules &Arr{
-	dbxcor &Arr{
-		capabilities_required &Tbl{
-			xmotif
-		}
-		build &Tbl{
-			&contrib_src_subdir/lib/graphics/seisw
-			&contrib_src_subdir/lib/seismic/libseispp
-			&contrib_src_subdir/lib/utility/libgclgrid
-			&contrib_src_subdir/lib/perf
-			&contrib_src_subdir/bin/db/dbxcor
-		}
-		package &Tbl{
-			static/libsciplot.a
-			bin/dbxcor
-			data/pf/dbxcor.pf
-			data/schemas/css3.0.ext/evlink
-			data/schemas/css3.0.ext/sclink
-			data/schemas/css3.0.ext/wfprocess
-			data/schemas/css3.0.ext/xcorarrival
-			data/schemas/css3.0.ext/xcorbeam
-			man/man1/dbxcor.1
-			bin/smartpick
-			data/pf/smartpick.pf
-			man/man1/smartpick.1
-			static/libseispp.a
-			static/libseisw.a
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_3dgrid_contiguous.checksum.880250e9.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_4dgrid_contiguous.checksum.30144256.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.extract_gridline.checksum.d8861568.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.fme_weights_.checksum.ee6cf964.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_3dgrid_contiguous.checksum.9cd6ef36.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_4dgrid_contiguous.checksum.970b2485.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.9756fa5d.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.d3dde98f.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pathintegral.checksum.18f3459b.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.r0_ellipse.double.r0_ellipse.-28.double.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.remap_path.checksum.9d7961f7.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.pkg.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatvel.double.flatvel.-28.double.v.-2c.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatz.double.flatz.-28.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatz.double.uflatz.-28.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.class_summary.html
-			doc/seispp/gclgrid/gclgrid.db
-			doc/seispp/gclgrid/index.html
-			include/gclgrid.h
-			include/dmatrix.h
-			static/libgclgrid.a
-			man/man3/gclgrid.3
-			man/man3/dmatrix.3
-			man/man3/pathintegral.3
-			man/man3/ustrans.3
-			man/man3/extract_gridline.3
-			include/glputil.h
-			lib/libglputil.dylib
-			static/libglputil.a
-			man/man3/check_required_pf.3
-			man/man3/ftest.3
-			man/man3/dbform_working_view.3
-			man/man3/glp_matrix_utils.3
-		}
+dbxcor &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+		xmotif
 	}
-	antelope_matlab &Arr{
-		capabilities_required &Tbl{
-			matlab
-		}
-		build &Tbl{
-			&contrib_src_subdir/data/matlab
-		}
+	build &Tbl{
+		lib/graphics/seisw
+		lib/seismic/libseispp
+		lib/utility/libgclgrid
+		lib/perf
+		bin/db/dbxcor
 	}
-	antelope_php &Arr{
-		capabilities_required &Tbl{
-			php
-		}
-		build &Tbl{
-			&contrib_src_subdir/data/php
-		}
+	package &Tbl{
+		static/libsciplot.a
+		bin/dbxcor
+		data/pf/dbxcor.pf
+		data/schemas/css3.0.ext/evlink
+		data/schemas/css3.0.ext/sclink
+		data/schemas/css3.0.ext/wfprocess
+		data/schemas/css3.0.ext/xcorarrival
+		data/schemas/css3.0.ext/xcorbeam
+		man/man1/dbxcor.1
+		bin/smartpick
+		data/pf/smartpick.pf
+		man/man1/smartpick.1
+		static/libseispp.a
+		static/libseisw.a
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_3dgrid_contiguous.checksum.880250e9.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_4dgrid_contiguous.checksum.30144256.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.extract_gridline.checksum.d8861568.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.fme_weights_.checksum.ee6cf964.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_3dgrid_contiguous.checksum.9cd6ef36.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_4dgrid_contiguous.checksum.970b2485.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.9756fa5d.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.d3dde98f.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pathintegral.checksum.18f3459b.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.r0_ellipse.double.r0_ellipse.-28.double.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.remap_path.checksum.9d7961f7.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.pkg.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatvel.double.flatvel.-28.double.v.-2c.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatz.double.flatz.-28.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatz.double.uflatz.-28.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.class_summary.html
+		doc/seispp/gclgrid/gclgrid.db
+		doc/seispp/gclgrid/index.html
+		include/gclgrid.h
+		include/dmatrix.h
+		static/libgclgrid.a
+		man/man3/gclgrid.3
+		man/man3/dmatrix.3
+		man/man3/pathintegral.3
+		man/man3/ustrans.3
+		man/man3/extract_gridline.3
+		include/glputil.h
+		lib/libglputil.dylib
+		static/libglputil.a
+		man/man3/check_required_pf.3
+		man/man3/ftest.3
+		man/man3/dbform_working_view.3
+		man/man3/glp_matrix_utils.3
 	}
-	antelope_python &Arr{
-		capabilities_required &Tbl{
-			python
-		}
-		build &Tbl{
-			&contrib_src_subdir/lib/dataformat/dbxml
-			&contrib_src_subdir/data/python
-		}
-		package &Tbl{
-			lib/libdbxml.dylib
-			static/libdbxml.a
-			man/man3/db2xml.3
-			local/bin/python
-			local/lib/python__datascope.dylib 
-			local/lib/python__orb.dylib
-			local/lib/python__stock.dylib
-			local/lib/python__Pkt.dylib
-			local/data/python/antelope/_orb.so
-			local/data/python/antelope/_datascope.so
-			local/data/python/antelope/_stock.so
-			local/data/python/antelope/_Pkt.so
-			local/data/python/antelope/datascope.py
-			local/data/python/antelope/orb.py
-			local/data/python/antelope/stock.py
-			local/data/python/antelope/Pkt.py
-			local/data/python/antelope/__init__.py
-			local/data/templates/xpy
-			local/man/man3/pythondb.3p
-			local/man/man3/pythonorb.3p
-			local/man/man3/pythonstock.3p
-			local/man/man3/pythonPkt.3p
-		}
+}
+antelope_matlab &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+		matlab
 	}
-	orb2amqp &Arr{
-		capabilities_required &Tbl{
-			python
-			python_amqplib
-		}
-		build &Tbl{
-			&contrib_src_subdir/bin/rt/orb2amqp
-		}
-		package &Tbl{
-			local/bin/orb2amqp
-			local/bin/amqp2orb
-			local/data/pf/orb2amqp.pf
-			local/data/pf/amqp2orb.pf
-			local/man/man1/orb2amqp.1
-			local/man/man1/amqp2orb.1
-		}
+	build &Tbl{
+		data/matlab
 	}
-	isi2orb &Arr{
-		capabilities_required &Tbl{
-		}
-		build &Tbl{
-			&contrib_src_subdir/bin/rt/isi2orb
-		}
-		package &Tbl{
-			include/libisi_iacp.h 
-			include/libisi_isi.h 
-			include/libisi_logio.h 
-			include/libisi_list.h 
-			include/libisi_platform.h 
-			include/libisi_stdtypes.h 
-			include/libisi_util.h 
-			static/libisi.a 
-			man/man3/libisi.3 
-			doc/ext/isi/isi.pdf 
-			doc/ext/isi/iacp.pdf 
-			bin/isi2orb 
-			data/pf/isi2orb.pf 
-			man/man1/isi2orb.1 
-		}
+}
+antelope_php &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+		php
 	}
-	rtkill &Arr{
-		capabilities_required &Tbl{
-		}
-		build &Tbl{
-			&contrib_src_subdir/bin/rt/rtkill
-		}
-		package &Tbl{
-			bin/rtkill 
-			data/pf/rtkill.pf 
-			man/man1/rtkill.1 
-		}
+	build &Tbl{
+		data/php
 	}
-	db2sql &Arr{
-		capabilities_required &Tbl{
-		}
-		build &Tbl{
-			&contrib_src_subdir/lib/dataformat/db2sql
-			&contrib_src_subdir/lib/dataformat/dbmon
-			&contrib_src_subdir/lib/perl/db2sql
-			&contrib_src_subdir/lib/perl/dbmon
-			&contrib_src_subdir/bin/export/db2sql
-			&contrib_src_subdir/bin/export/dbschema2sql
-		}
+}
+antelope_python &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+		python
 	}
-	bootstrap &Arr{
-		capabilities_required &Tbl{
-		}
-		build &Tbl{
-			&contrib_src_subdir/lib/localmake_config
-			&contrib_src_subdir/bin/utility/cf
-			&contrib_src_subdir/bin/utility/localmake
-		}
+	build &Tbl{
+		lib/dataformat/dbxml
+		data/python
+	}
+	package &Tbl{
+		lib/libdbxml.dylib
+		static/libdbxml.a
+		man/man3/db2xml.3
+		local/bin/python
+		local/lib/python__datascope.dylib 
+		local/lib/python__orb.dylib
+		local/lib/python__stock.dylib
+		local/lib/python__Pkt.dylib
+		local/data/python/antelope/_orb.so
+		local/data/python/antelope/_datascope.so
+		local/data/python/antelope/_stock.so
+		local/data/python/antelope/_Pkt.so
+		local/data/python/antelope/datascope.py
+		local/data/python/antelope/orb.py
+		local/data/python/antelope/stock.py
+		local/data/python/antelope/Pkt.py
+		local/data/python/antelope/__init__.py
+		local/data/templates/xpy
+		local/man/man3/pythondb.3p
+		local/man/man3/pythonorb.3p
+		local/man/man3/pythonstock.3p
+		local/man/man3/pythonPkt.3p
+	}
+}
+orb2amqp &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+		python
+		python_amqplib
+	}
+	build &Tbl{
+		bin/rt/orb2amqp
+	}
+	package &Tbl{
+		local/bin/orb2amqp
+		local/bin/amqp2orb
+		local/data/pf/orb2amqp.pf
+		local/data/pf/amqp2orb.pf
+		local/man/man1/orb2amqp.1
+		local/man/man1/amqp2orb.1
+	}
+}
+isi2orb &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+	}
+	build &Tbl{
+		bin/rt/isi2orb
+	}
+	package &Tbl{
+		include/libisi_iacp.h 
+		include/libisi_isi.h 
+		include/libisi_logio.h 
+		include/libisi_list.h 
+		include/libisi_platform.h 
+		include/libisi_stdtypes.h 
+		include/libisi_util.h 
+		static/libisi.a 
+		man/man3/libisi.3 
+		doc/ext/isi/isi.pdf 
+		doc/ext/isi/iacp.pdf 
+		bin/isi2orb 
+		data/pf/isi2orb.pf 
+		man/man1/isi2orb.1 
+	}
+}
+rtkill &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+	}
+	build &Tbl{
+		bin/rt/rtkill
+	}
+	package &Tbl{
+		bin/rtkill 
+		data/pf/rtkill.pf 
+		man/man1/rtkill.1 
+	}
+}
+db2sql &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+	}
+	build &Tbl{
+		lib/dataformat/db2sql
+		lib/dataformat/dbmon
+		lib/perl/db2sql
+		lib/perl/dbmon
+		bin/export/db2sql
+		bin/export/dbschema2sql
+	}
+}
+bootstrap &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+	}
+	build &Tbl{
+		lib/localmake_config
+		bin/utility/cf
+		bin/utility/localmake
 	}
 }

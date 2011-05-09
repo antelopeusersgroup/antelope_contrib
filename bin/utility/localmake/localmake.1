@@ -3,7 +3,7 @@
 localmake \- build subsections of the Antelope-contrib code base
 .SH SYNOPSIS
 .nf
-localmake [-v] [-l] [-p pfname] [-t] module
+localmake [-v] [-l] [-p pfname] [-s src_subdir] [-t] module
 .fi
 .SH DESCRIPTION
 The \fBlocalmake\fP program is designed to build and install coherent
@@ -28,6 +28,9 @@ the main \fBlocalmake\fP window, may be saved to a file with the
 .SH OPTIONS
 .IP -l
 Print a list of available modules and exit. 
+.IP "-s subdirectory"
+This parameter overrides the \fIsrc_subdir\fP parameter in the parameter file. For further details, 
+see the PARAMETER FILE section below. 
 .IP -v 
 verbose
 .IP "-p pfname"
@@ -38,19 +41,41 @@ Create a tarball of the compiled \fImodule\fP and files on which it depends
 .IP tarball_time_format
 This parameter specifies the time format (in the format of epoch2str(3))
 to be used in naming tar files with compiled code after it has been built. 
-.IP modules
-The \fImodules\fP array contains descriptions of all the software \fImodules\fP that 
-\fBlocalmake\fP knows how to build and package. The keys in the array
-should be unique, descriptive names for the software \fImodules\fP. The values 
-are arrays with the parameters for how to build and package each \fImodule\fP. 
-.IP "modules{<module_name>}{build}"
+.IP <module_name>
+The parameter file should contain one parameter-file array (see pf(5)) for each software 
+module to be built. The array for a given module describes how to build the module and if
+desired how to package it (e.g. in a tarball with the \fI-t\fP option). The name of 
+each array should be a unique, descriptive name for the software module. The values 
+are arrays with the parameters for how to build and package each module. [Note that the 
+angle brackets are used here just to indicate that this parameter's actual name is 
+chosen by the user or programmer for the given software module; these angle brackets should 
+not appear in localmake.pf itself].
+.IP "<module_name>{product}"
+This parameter file specifies the top-level directory to which the modules being 
+built are being directed. For example, for the Antelope contributed-code, the \fIproduct\fP
+parameter will be the same as the \fI$ANTELOPE\fP environment variable. 
+.IP "<module_name>{src_subdir}"
+This parameter specifies the top-level sub-directory in which to
+find source-code for the entire software distribution out of which
+the module comes.  Usually it is a path relative to the destination
+(e.g. \fI$ANTELOPE\fP) in which the results will be installed. For
+example, for the Antelope contributed-code repository, a common
+value for \fIsrc_subdir\fP would be \fIsrc/contrib\fP to indicate
+source-code stored in the directory \fI$ANTELOPE/src/contrib\fP.
+In this normal case, the destination directory (\fI$ANTELOPE\fP)
+will be prepended to the \fIsrc_subdir\fP value in order to find
+the necessary source-code during compilation.  If the \fIsrc_subdir\fP
+parameter is an absolute path, it is treated as such and no other
+absolute path is prepended. The \fIsrc_subdir\fP assignment may be
+overridden on the command-line with the \fI-s\fP option.
+.IP "<module_name>{build}"
 This parameter is a table of directories relative to $ANTELOPE containing the 
 source code for the software \fImodule\fP and all of its dependencies (although 
 if any of the directory names begins with a '/' character it is assumed to be 
 an absolute path, and $ANTELOPE is not prepended). When 
 \fBlocalmake\fP is told to build a given software package, it enters each of 
 these directories in turn and executes 'make install'. 
-.IP "modules{<module_name>}{package}"
+.IP "<module_name>{package}"
 This parameter is a table of files relative to $ANTELOPE containing 
 all pieces of compiled code and supporting files comprising a given software
 \fImodule\fP. 
@@ -60,103 +85,105 @@ tarball_time_format %Y_%m_%d
 
 contrib_src_subdir src/contrib
 
-modules &Arr{
-	dbxcor &Arr{
-		build &Tbl{
-			&contrib_src_subdir/lib/graphics/seisw
-			&contrib_src_subdir/lib/seismic/libseispp
-			&contrib_src_subdir/lib/utility/libgclgrid
-			&contrib_src_subdir/lib/perf
-			&contrib_src_subdir/bin/db/dbxcor
-		}
-		package &Tbl{
-			static/libsciplot.a
-			bin/dbxcor
-			data/pf/dbxcor.pf
-			data/schemas/css3.0.ext/evlink
-			data/schemas/css3.0.ext/sclink
-			data/schemas/css3.0.ext/wfprocess
-			data/schemas/css3.0.ext/xcorarrival
-			data/schemas/css3.0.ext/xcorbeam
-			man/man1/dbxcor.1
-			bin/smartpick_classic
-			bin/smartpick
-			data/pf/smartpick_classic.pf
-			data/pf/smartpick.pf
-			man/man1/smartpick_classic.1
-			man/man1/smartpick.1
-			static/libseispp.a
-			static/libseisw.a
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_3dgrid_contiguous.checksum.880250e9.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_4dgrid_contiguous.checksum.30144256.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.extract_gridline.checksum.d8861568.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.fme_weights_.checksum.ee6cf964.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_3dgrid_contiguous.checksum.9cd6ef36.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_4dgrid_contiguous.checksum.970b2485.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.9756fa5d.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.d3dde98f.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pathintegral.checksum.18f3459b.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.r0_ellipse.double.r0_ellipse.-28.double.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.remap_path.checksum.9d7961f7.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.pkg.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatvel.double.flatvel.-28.double.v.-2c.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatz.double.flatz.-28.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatz.double.uflatz.-28.double.z.-29.fct.html
-			doc/seispp/gclgrid/ccdoc.class_summary.html
-			doc/seispp/gclgrid/gclgrid.db
-			doc/seispp/gclgrid/index.html
-			include/gclgrid.h
-			include/dmatrix.h
-			static/libgclgrid.a
-			man/man3/gclgrid.3
-			man/man3/dmatrix.3
-			man/man3/pathintegral.3
-			man/man3/ustrans.3
-			man/man3/extract_gridline.3
-			include/glputil.h
-			lib/libglputil.dylib
-			static/libglputil.a
-			man/man3/check_required_pf.3
-			man/man3/ftest.3
-			man/man3/dbform_working_view.3
-			man/man3/glp_matrix_utils.3
-		}
+dbxcor &Arr{
+	dest	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	build &Tbl{
+		lib/graphics/seisw
+		lib/seismic/libseispp
+		lib/utility/libgclgrid
+		lib/perf
+		bin/db/dbxcor
 	}
-	python_antelope &Arr{
-		build &Tbl{
-			&contrib_src_subdir/data/python
-		}
-		package &Tbl{
-			lib/python__datascope.dylib 
-			lib/python__orb.dylib
-			lib/python__stock.dylib
-			data/python/antelope/_orb.so
-			data/python/antelope/_datascope.so
-			data/python/antelope/_stock.so
-			data/python/antelope/datascope.py
-			data/python/antelope/orb.py
-			data/python/antelope/stock.py
-			data/python/antelope/__init__.py
-			man/man3/pythondb.3p
-			man/man3/pythonorb.3p
-			man/man3/pythonstock.3p
-		}
+	package &Tbl{
+		static/libsciplot.a
+		bin/dbxcor
+		data/pf/dbxcor.pf
+		data/schemas/css3.0.ext/evlink
+		data/schemas/css3.0.ext/sclink
+		data/schemas/css3.0.ext/wfprocess
+		data/schemas/css3.0.ext/xcorarrival
+		data/schemas/css3.0.ext/xcorbeam
+		man/man1/dbxcor.1
+		bin/smartpick_classic
+		bin/smartpick
+		data/pf/smartpick_classic.pf
+		data/pf/smartpick.pf
+		man/man1/smartpick_classic.1
+		man/man1/smartpick.1
+		static/libseispp.a
+		static/libseisw.a
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLgrid_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_3dgrid_contiguous.checksum.880250e9.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.create_4dgrid_contiguous.checksum.30144256.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.extract_gridline.checksum.d8861568.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.fme_weights_.checksum.ee6cf964.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_3dgrid_contiguous.checksum.9cd6ef36.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.free_4dgrid_contiguous.checksum.970b2485.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.9756fa5d.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.initialize_1Dscalar.checksum.d3dde98f.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pathintegral.checksum.18f3459b.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.r0_ellipse.double.r0_ellipse.-28.double.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.remap_path.checksum.9d7961f7.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.dmatrix.pkg.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatvel.double.flatvel.-28.double.v.-2c.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.flatz.double.flatz.-28.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.GCLgrid.GCLgrid.uflatz.double.uflatz.-28.double.z.-29.fct.html
+		doc/seispp/gclgrid/ccdoc.class_summary.html
+		doc/seispp/gclgrid/gclgrid.db
+		doc/seispp/gclgrid/index.html
+		include/gclgrid.h
+		include/dmatrix.h
+		static/libgclgrid.a
+		man/man3/gclgrid.3
+		man/man3/dmatrix.3
+		man/man3/pathintegral.3
+		man/man3/ustrans.3
+		man/man3/extract_gridline.3
+		include/glputil.h
+		lib/libglputil.dylib
+		static/libglputil.a
+		man/man3/check_required_pf.3
+		man/man3/ftest.3
+		man/man3/dbform_working_view.3
+		man/man3/glp_matrix_utils.3
+	}
+}
+python_antelope &Arr{
+	dest	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	build &Tbl{
+		data/python
+	}
+	package &Tbl{
+		lib/python__datascope.dylib 
+		lib/python__orb.dylib
+		lib/python__stock.dylib
+		data/python/antelope/_orb.so
+		data/python/antelope/_datascope.so
+		data/python/antelope/_stock.so
+		data/python/antelope/datascope.py
+		data/python/antelope/orb.py
+		data/python/antelope/stock.py
+		data/python/antelope/__init__.py
+		man/man3/pythondb.3p
+		man/man3/pythonorb.3p
+		man/man3/pythonstock.3p
 	}
 }
 .fi
@@ -198,6 +225,17 @@ way it spawns subsidiary make commands, a weakness which could be fixed but at a
 not yet allocated. Make sure to scan compilation output for evidence of errors (these 
 should be fairly prominent in the colored-output when running \fBlocalmake\fP
 as a GUI). 
+
+Note that the \fIproduct\fP parameter does not control the actual compilation target of 
+the files in a module. The \fIproduct\fP parameter is meant to describe the context in which the 
+module belongs, to aid software packaging if the \fI-t\fP option is used, and, 
+if \fIsrc_subdir\fP is a relative path, as an aid to finding the correct source-code files.
+The actual install directory for the software is controlled by the Makefiles for the source-code. 
+
+The array name for a given module must not contain the string \fIsrc_subdir\fP. All top-level parameters 
+containing \fIsrc_subdir\fP in their parameter names are ignored, allowing sophisticated users to use 
+several of them as parameter-file \fIbare references\fP (see pf(5)) when managing multiple repositories and 
+source-code trees. 
 .SH AUTHOR
 Kent Lindquist
 Lindquist Consulting, Inc.
