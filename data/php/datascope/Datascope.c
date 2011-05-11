@@ -772,7 +772,7 @@ elog_callback( int severity, char *logstring, Tbl *Elog )
 		sprintf( msg, "Elog callback to function '%s' failed!\n", 
 			 Elog_replacement );
 
-		zend_error( E_WARNING, msg );
+		zend_error( E_WARNING, "%s", msg );
 
 		return 0;
 	}
@@ -783,7 +783,7 @@ elog_callback( int severity, char *logstring, Tbl *Elog )
 			      "integer! Callback failed.\n", 
 			      Elog_replacement );
 
-		zend_error( E_WARNING, msg );
+		zend_error( E_WARNING, "%s", msg );
 
 		return 0;
 	}
@@ -2365,7 +2365,7 @@ PHP_FUNCTION(pfdel)
 			"parameter '%s' not found in parameter-file '%s'\n",
 			key, pfname );
 
-		zend_error( E_ERROR, errstring );
+		zend_error( E_ERROR, "%s", errstring );
 	} 
 	
 	if( pf2zval( pfvalue, return_value ) < 0 ) {
@@ -2488,7 +2488,7 @@ PHP_FUNCTION(pfget)
 			"parameter '%s' not found in parameter-file '%s'\n",
 			key, pfname );
 
-		zend_error( E_ERROR, errstring );
+		zend_error( E_ERROR, "%s", errstring );
 	} 
 	
 	if( pf2zval( pfvalue, return_value ) < 0 ) {
@@ -4006,7 +4006,7 @@ PHP_FUNCTION(dbwrite_view)
 	if( ( fpview = fopen( filename, "w" ) ) == NULL ) {
 		
 		sprintf( errmsg, "Failed to open file '%s'", filename );
-		zend_error( E_ERROR, errmsg );
+		zend_error( E_ERROR, "%s", errmsg );
 	}
 
 	rc = dbwrite_view( db, fpview );
@@ -4084,7 +4084,7 @@ PHP_FUNCTION(dbread_view)
 	if( ( fpview = fopen( filename, "r" ) ) == NULL ) {
 		
 		sprintf( errmsg, "Failed to open file '%s'", filename );
-		zend_error( E_ERROR, errmsg );
+		zend_error( E_ERROR, "%s", errmsg );
 	}
 
 	rc = dbread_view( fpview, &db, name );
@@ -4810,7 +4810,7 @@ PHP_FUNCTION(dbquery)
  
         default:
 		sprintf( errmsg, "dbquery: bad code '%d'", dbcode );
-		zend_error( E_ERROR, errmsg );
+		zend_error( E_ERROR, "%s", errmsg );
 		break ;
 	}
 }
@@ -5063,7 +5063,7 @@ PHP_FUNCTION(dbex_eval)
 		sprintf( warning, 
 			"Can't interpret field of type %s",
 			xlatnum( type, Dbxlat, NDbxlat ) );
-		zend_error( E_WARNING, warning );
+		zend_error( E_WARNING, "%s", warning );
 		break;
 	}
 }
@@ -6348,7 +6348,7 @@ PHP_FUNCTION(dbgetv)
 			sprintf( warning, 
 				"dbgetv can't interpret field of type %s",
 				xlatnum( type, Dbxlat, NDbxlat ) );
-			zend_error( E_WARNING, warning );
+			zend_error( E_WARNING, "%s", warning );
 			break;
 		}
 	}
