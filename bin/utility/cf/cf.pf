@@ -140,6 +140,8 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]_]+.o$
 	^make\\[[[:digit:]]+\\]: Nothing to be done for
 	^make\\[[[:digit:]]+\\]:.*is up to date
+	^making[[:space:]]
+	^created directory[[:space:]]
 	^NOTICE:
 	^Current working directory
 	^.*Optimizing from Makefile
@@ -189,9 +191,11 @@ make &Arr{
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
+	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^awk[[:space:]]
 	^[[:space:]]*cat
 	^cc[[:space:]]
+	^m4[[:space:]]
 	^clang[[:space:]]
 	^\\/opt\\/SUNWspro\\/bin\\/cc[[:space:]]
 	^CC[[:space:]]
