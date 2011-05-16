@@ -182,12 +182,16 @@ make &Arr{
 	^uninstalling
 	^Installed
 	^Finished
+	^Configuring
+	^Configured
 	^Best match
 	^.*is already the active version
 	^configure: creating
+	^configure: checking for
 	^config.status: creating
 	^config.status: executing
 	^config.status: linking
+	installing alias
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
@@ -248,6 +252,8 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^[[:space:]]*mv[[:space:]]
 	^perl[[:space:]]
+	^sh[[:space:]]
+	^nawk[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
