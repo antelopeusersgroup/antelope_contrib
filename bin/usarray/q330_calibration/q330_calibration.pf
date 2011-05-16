@@ -20,4 +20,18 @@ sensors &Arr{
         waveform       white 
         amplitude      4        # V = 0.3125 - amplitude in volts is equal to 5 V / 2 ** amplitude
     }
+    trillium_240_1 &Arr{
+        duration       7200    # duration <= 16380; q330 limitation
+        settling_time  900 
+        trailer_time   900 
+        waveform       white 
+        amplitude      4        # V = 0.3125 - amplitude in volts is equal to 5 V / 2 ** amplitude
+    }
+    trillium_240_2 &Arr{
+        duration       7200    # duration <= 16380; q330 limitation
+        settling_time  900 
+        trailer_time   900 
+        waveform       white 
+        amplitude      4        # V = 0.3125 - amplitude in volts is equal to 5 V / 2 ** amplitude
+    }
 }
