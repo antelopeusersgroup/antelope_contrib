@@ -191,7 +191,8 @@ make &Arr{
 	^config.status: creating
 	^config.status: executing
 	^config.status: linking
-	installing alias
+	^.*installing alias
+	^.*removing
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
