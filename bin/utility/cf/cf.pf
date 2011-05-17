@@ -123,6 +123,8 @@ make &Arr{
 	^[[:space:]]+-L\\/[a-z]
 	^ar: creating
 	^ar: writing
+	^ar: adding
+	^C compiler:
 	^amakelocal:
 	^localmake_config:.*marked as disabled
 	^localmake:
