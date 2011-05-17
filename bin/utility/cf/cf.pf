@@ -170,6 +170,7 @@ make &Arr{
 	^[rR]emoving[[:space:]]
 	^[rR]unning[[:space:]]
 	^[sS]earching[[:space:]]
+	^[sS]kipping[[:space:]]
 	^[wW]riting[[:space:]]
 	^[uU]sing[[:space:]]
 	^Skip[[:space:]]
@@ -277,6 +278,7 @@ make &Arr{
 	^[[:space:]]*Linux\\)
 	^[[:space:]]*Darwin\\)
 	^[[:space:]]*\\*\\)
+	^exit[[:space:]]*$
 	.*py_compile.compile
    }
 }
