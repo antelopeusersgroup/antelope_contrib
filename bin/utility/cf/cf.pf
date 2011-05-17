@@ -254,7 +254,7 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^[[:space:]]*mv[[:space:]]
-	^perl[[:space:]]
+	^[[:space:]]*perl[[:space:]]
 	^sh[[:space:]]
 	^nawk[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
