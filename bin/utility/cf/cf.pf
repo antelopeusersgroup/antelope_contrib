@@ -28,6 +28,7 @@ make &Arr{
 	^\\*\\*\\* Error code
 	^.* error:
 	^Error:
+	^SyntaxError:
 	^.*undefined symbol:
 	^.*: Failed
 	^Failed
