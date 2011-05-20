@@ -21,24 +21,24 @@ maketmpdb (char *schema, Dbptr *db, char *dbname)
 	sprintf (dbname, "/tmp/db%d", getpid());
 	f = fopen(dbname, "w");
 	if (f == NULL) {
-		register_error (1, "maketmpdb: fopen(%s) error.\n", dbname);
+		elog_log(1, "maketmpdb: fopen(%s) error.\n", dbname);
 		return (-1);
 	}
 	if (fwrite (schema, strlen(schema), 1, f) != 1) {
-		register_error (1, "maketmpdb: fwrite(%s) error.\n", dbname);
+		elog_log(1, "maketmpdb: fwrite(%s) error.\n", dbname);
 		fclose (f);
 		unlink (dbname);
 		return (-1);
 	}
 	if (fwrite ("\n\n", 2, 1, f) != 1) {
-		register_error (1, "maketmpdb: fwrite(%s) error.\n", dbname);
+		elog_log(1, "maketmpdb: fwrite(%s) error.\n", dbname);
 		fclose (f);
 		unlink (dbname);
 		return (-1);
 	}
 	fclose (f);
 	if (dbopen (dbname, "r+", db) == dbINVALID) {
-		register_error (1, "maketmpdb: dbopen(%s) error.\n", dbname);
+		elog_log(1, "maketmpdb: dbopen(%s) error.\n", dbname);
 		unlink (dbname);
 		return (-1);
 	}

@@ -179,12 +179,12 @@ otherwise 0 will be returned.
 /* open & read RB  */
 
         if (fpread (orbname, &pf) != 0)
-          die( 0, "Can't read PF file ");
+          elog_die( 0, "Can't read PF file ");
         if( (orb = orbopen( server, "read" )) < 0)
-          die(0, "Can't open ring buffer.");
+          elog_die(0, "Can't open ring buffer.");
         pktid = orblatest( orb, orbANY);
         if( orbget( orb, pktid, &srcid, &time, &buffer, &psize) < 0)
-           complain( 0, "Can't get packet from a RB\\n");
+           elog_complain( 0, "Can't get packet from a RB\\n");
 
 
 /* Get pkttype from srcidmap table  */

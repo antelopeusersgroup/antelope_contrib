@@ -116,7 +116,7 @@ main( int argc, char **argv )
 		}
 
 		if( fp == (FILE *) NULL ) {
-			die( 1, "pf2xml: Failed to open header_file %s\n", header_file );
+			elog_die( 1, "pf2xml: Failed to open header_file %s\n", header_file );
 		}
 
 		allot( char *, prolog, STRSZ );
@@ -142,9 +142,9 @@ main( int argc, char **argv )
 
 	rc = pfread( pfname, &pf );
 	if( rc == -1 ) {
-		die( 1, "pf2xml: Couldn't find parameter file %s\n", pfname );
+		elog_die( 1, "pf2xml: Couldn't find parameter file %s\n", pfname );
 	} else if( rc < 0 ) {
-		die( 1, "pf2xml: problem reading parameter file %s\n", pfname );
+		elog_die( 1, "pf2xml: problem reading parameter file %s\n", pfname );
 	}
 	
 	parsepath( pfname, dir, base, suffix );
@@ -152,7 +152,7 @@ main( int argc, char **argv )
 	xml = pf2xml( pf, base, prolog, flags );
 
 	if( xml == NULL ) {
-		die( 1, "pf2xml: conversion failed\n" );
+		elog_die( 1, "pf2xml: conversion failed\n" );
 	} else {
 		printf( "%s", xml );
 	}

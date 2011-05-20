@@ -28,7 +28,7 @@ Packet **Pkt;
   pkttype = ntohl (hdr->pkttype) ;
 
   if( pkttype == -1 )  {
-    complain( 0, "Can't get packet type.\n" );
+    elog_complain( 0, "Can't get packet type.\n" );
     return 0;
   }
  
@@ -83,7 +83,7 @@ Packet **Pkt;
 	  break ;
 
     default:
-	complain( 0, "Unknown packet type - %d\n", hdr->pkttype);
+	elog_complain( 0, "Unknown packet type - %d\n", hdr->pkttype);
 	retcode = 0 ; 
 	break ;
   } 

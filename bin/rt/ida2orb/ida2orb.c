@@ -100,7 +100,7 @@ main( int argc, char **argv )
 				reject_future_packets_sec );
 			break;
 		default:
-			die( 1,
+			elog_die( 1,
 			 "Usage: %s [-r seconds] [-u] orbname idahost importstring\n",
 			 argv[0] );
             		break;
@@ -116,7 +116,7 @@ main( int argc, char **argv )
 		optind = 1;
 	}
 	if( argc - optind != 3 )
-	die( 1, "Usage: %s [-r seconds] [-u] orbname idahost importstring\n", argv[0] );
+	elog_die( 1, "Usage: %s [-r seconds] [-u] orbname idahost importstring\n", argv[0] );
 
 	strcpy( orbname, argv[optind] );
 	strcpy( idahost, argv[optind + 1] );
@@ -125,7 +125,7 @@ main( int argc, char **argv )
 	orbfd = orbopen( orbname, "w&" );
 	if( orbfd < 0 )
 	{
-		clear_register( 1 );
+		elog_clear_register( 1 );
 		exit( 1 );
 	}
 
@@ -151,7 +151,7 @@ main( int argc, char **argv )
 		    pkt->nchannels =1 ; 
 		    settbl(pkt->channels, 0, pktchan ) ;
 		    if ( stuffPkt(  pkt, srcid, &pkttime, &packet, &nbytes, &bufsize ) < 0 ) { 
-			die ( 0, "can't stuff packet" ) ;
+			elog_die( 0, "can't stuff packet" ) ;
 		    }
 		    if( Log )  {
 			fprintf( stderr, "%s %lf \n", srcid, pktchan->time );
@@ -164,7 +164,7 @@ main( int argc, char **argv )
 		    tdelta = endtime - now() ;
 
 		    if( reject_future_packets && tdelta > reject_future_packets_sec ) {
-			complain( 1,
+			elog_complain( 1,
 				"ida2orb: rejecting packet from %s, which ends %s into the future\n", 	
 				srcid, ( s = strtdelta( tdelta ) ) );
 			free( s );
@@ -172,12 +172,12 @@ main( int argc, char **argv )
 		    	rc = orbput( orbfd, srcid, pktchan->time,
 				     packet, nbytes );
 		    	orbflush( orbfd );
-			if( rc ) complain( 1,
+			if( rc ) elog_complain( 1,
 				"ida2orb: orbput failed for %s\n",
 				srcid );
 		    }
 		    status = XFER_OK;  
-		 }  else complain( 0, "Xfer_Read return code is %d\n", status );
+		 }  else elog_complain( 0, "Xfer_Read return code is %d\n", status );
 	}
 	
 	Xfer_Close( xp );

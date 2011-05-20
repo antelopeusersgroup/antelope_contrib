@@ -38,13 +38,13 @@ int valid_pkt( unsigned char **data,
    if( RawPkts == NULL) init_RawPkts();
    sprintf( key, "%d\0", code );
    if( code == 0 )  {
-        complain( 0, " valid_pkt(): Can't recognize a packet type %s\n", key );
+        elog_complain( 0, " valid_pkt(): Can't recognize a packet type %s\n", key );
         return -1;
    }
  
    raw = ( Raw *) getarr( RawPkts, (char *) &key[0] );
    if( raw == NULL ) {
-        complain( 0, " valid_pkt(): Can't get RawPkts info for %s\n", key );
+        elog_complain( 0, " valid_pkt(): Can't get RawPkts info for %s\n", key );
         return -1;
    }
    memcpy( (char *) &Par.raw, (char *) raw, sizeof( Raw ) );
@@ -53,7 +53,7 @@ int valid_pkt( unsigned char **data,
    switch(  parse_raw( *data, raw->parse, raw->pkttype ) ) {
  
         case -1:
-          complain( 0, " valid_pkt(): Can't get RawPkts info for %s\n", key );
+          elog_complain( 0, " valid_pkt(): Can't get RawPkts info for %s\n", key );
           return -1;
         case 0:
           return 0;
@@ -81,7 +81,7 @@ int valid_pkt( unsigned char **data,
 
     if( length > 0 ) Par.packet.size = length; 
     if( !(*psize = hdr2packet( (char **) data, Par.hdrtype,  srcname )) )  {
-	complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
+	elog_complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
 	return -1;
     } else return 1;
 
@@ -118,20 +118,20 @@ int record_eh_et( uchar_t *packet , int pkttype )
 
      if( !timerr )
          if ((timerr = fopen (timerr_fname, "a+")) == 0) {
-         die (1, "Can't open time errors log file %s.\n", timerr_fname );
+         elog_die(1, "Can't open time errors log file %s.\n", timerr_fname );
      }
  
      
      switch( pkttype )  {
         case PSCLEH:
             if( stream->etime == 0.0 ) 
-                complain( 0, "There is no ET record for event #%d.\n", stream->ev_num ); 
+                elog_complain( 0, "There is no ET record for event #%d.\n", stream->ev_num ); 
             if(  pkt.fsmp_time[0] != ' ')  {
                sscanf( pkt.fsmp_time, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
                sprintf( sstring,"%04d%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
               stream->stime = str2epoch(&sstring[0]);
             }  else  {
-              complain(0, "Can't get First Sample Time ( %.6s )\n", &pkt.fsmp_time[0] );
+              elog_complain(0, "Can't get First Sample Time ( %.6s )\n", &pkt.fsmp_time[0] );
               return 0;
             }
 
@@ -161,13 +161,13 @@ fflush(stdout);
        case PSCLET: 
 
           if( stream->stime == 0.0 ) 
-                complain( 0, "There is no EH record for event #%d.\n", stream->ev_num ); 
+                elog_complain( 0, "There is no EH record for event #%d.\n", stream->ev_num ); 
           if(  pkt.lsmp_time[0] != ' ')  {
              sscanf( pkt.lsmp_time, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
              sprintf( sstring,"%04d%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
              stream->etime = str2epoch( &sstring[0] );
           } else  {
-             complain(0, "Can't get last sample time.\n");
+             elog_complain(0, "Can't get last sample time.\n");
              return 0;
           }
 
@@ -197,7 +197,7 @@ int check_dt( uchar_t *packet, int byevent )
    sprintf( str_key, "%d_%d\0", Par.staid, streamid );
          
    if( ( stream = (Stream *) getarr( PsclSTRM, str_key ) ) == 0 )  {
-         complain( 0, "Can't get %s stream info\n",str_key);
+         elog_complain( 0, "Can't get %s stream info\n",str_key);
          return 0;
    }
 
@@ -238,7 +238,7 @@ fflush(stdout);
    if( tshift )  {
           if( !timerr )
              if ((timerr = fopen (timerr_fname, "a+")) == 0) {
-                die (1, "Can't open time errors log file %s.\n", timerr_fname );
+                elog_die(1, "Can't open time errors log file %s.\n", timerr_fname );
              }
  
 
@@ -253,7 +253,7 @@ fflush(stdout);
     }
 
     if( !TRSAMERATE( comp->srate, Par.packet.srate ) )  {
-      complain( 0, "samprate changed from %f to %f\n", comp->srate, Par.packet.srate);
+      elog_complain( 0, "samprate changed from %f to %f\n", comp->srate, Par.packet.srate);
       comp->srate = Par.packet.srate;
     }
     comp->nsamp += Par.packet.nsamp;

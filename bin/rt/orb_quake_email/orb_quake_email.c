@@ -124,7 +124,7 @@ char	*subject;
 		       0 );
 
 	if( rc ) {
-		clear_register( 1 );
+		elog_clear_register( 1 );
 		elog_complain( 1, "Failed to get info from database pointer\n" );
 		return -1;
 	}
@@ -308,13 +308,13 @@ main( int argc, char **argv )
 	}
 
 	if( argc - optind != 1 ) {
-		die( 1, "Usage: %s [-pf pffile] [-n npkts] [-start {OLDEST|NEWEST|time}] orbname\n", Program_Name );
+		elog_die( 1, "Usage: %s [-pf pffile] [-n npkts] [-start {OLDEST|NEWEST|time}] orbname\n", Program_Name );
 	} else {
 		strcpy( orbname, argv[optind++] );
 	}
 
 	if( pfupdate( pffile, &pf ) < 0 ) {
-		die( 1, "%s: no parameter file %s", Program_Name, pffile );
+		elog_die( 1, "%s: no parameter file %s", Program_Name, pffile );
 	}
 
 	orbfd = orbopen( orbname, "r&" );
@@ -356,7 +356,7 @@ main( int argc, char **argv )
 
 	        dbgetv( db, 0, "orid", &orid, "evid", &evid, 0);
 
-		clear_register( 1 );
+		elog_clear_register( 1 );
 
 		pfupdate( pffile, &pf );
 		header = pfget_string( pf, "header" );

@@ -28,20 +28,20 @@ delegate_to_matlab( Dbptr db, Pf *delegate_pf )
 
 	if( ( mypath = datafile( "PATH", "matlab" ) ) == 0 ) {
 
-		complain( 0, "Couldn't find matlab on path.\n" );
+		elog_complain( 0, "Couldn't find matlab on path.\n" );
 
 		return -1;
 
 	} else if( access( mypath, R_OK|X_OK ) ) {
 
-		complain( 0, "Couldn't find matlab on path.\n" );
+		elog_complain( 0, "Couldn't find matlab on path.\n" );
 		
 		return -1;
 	}
 
 	if( ( commands = pfget_string( delegate_pf, "commands" ) ) == NULL ) {
 
-		complain( 0, "No commands &Literal in parameter file\n" );
+		elog_complain( 0, "No commands &Literal in parameter file\n" );
 
 		return -1;
 	}
@@ -85,7 +85,7 @@ delegate_to_matlab( Dbptr db, Pf *delegate_pf )
 			"run %s, "
 		"catch, "
 			"lasterr, "
-			"clear_register('print'), "
+			"elog_clear_register('print'), "
 			"unix(['kill -9 ' num2str(getpid)]), "
 		"end", 
 		scriptfile );

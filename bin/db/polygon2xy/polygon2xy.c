@@ -63,7 +63,7 @@ main(int argc, char **argv)
 		}
 	}
 	if (argc < 1) {
-		complain(0, "Need db argument.\n");
+		elog_complain(0, "Need db argument.\n");
 		usage();
 		exit(1);
 	}

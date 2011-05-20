@@ -7,7 +7,7 @@ FILE *MWpin=0,*MWpout=0;
 
 void usage(char *prog)
 {
-	die(0,"usage: %s db [-phase phase -sift expression -pf pfname]\n",
+	elog_die(0,"usage: %s db [-phase phase -sift expression -pf pfname]\n",
 		prog);
 } 
 /* This is ugly, but necessary because I want to avoid a mixed tcl and
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 	if(phase == NULL) phase = strdup("P");
 
 	i = pfread(pfin,&pf);
-        if(i != 0) die(1,"Pfread error\n");
+        if(i != 0) elog_die(1,"Pfread error\n");
 	MWopen_pipes(pf);
 
 	/* This utility causes the program to die if required parameters
@@ -101,20 +101,20 @@ int main(int argc, char **argv)
 	sift parameter (if given) and grouped by station/channel */
 
 	if(dbopen(dbname,"r+",&db) == dbINVALID)
-                die(1,"Unable to open input database %s\n",dbname);
+                elog_die(1,"Unable to open input database %s\n",dbname);
 	dbj = dbjoin ( dblookup(db,0,"event",0,0),
                 dblookup(db,0,"origin",0,0),
                 0,0,0,0,0);
  	if(dbj.table == dbINVALID)
-                die(1,"event->origin join failed\n");
+                elog_die(1,"event->origin join failed\n");
         dbj = dbjoin ( dbj, dblookup(db,0,"assoc",0,0),
                         0,0,0,0,0);
         if(dbj.table == dbINVALID)
-                die(1,"event->origin->assoc join failed\n");
+                elog_die(1,"event->origin->assoc join failed\n");
         dbj = dbjoin ( dbj, dblookup(db,0,"arrival",0,0),
                         0,0,0,0,0);
         if(dbj.table == dbINVALID)
-                die(1,"event->origin->assoc->arrival join failed\n");
+                elog_die(1,"event->origin->assoc->arrival join failed\n");
 	sprintf(subset_string,
 		"(arrival.iphase =~ /%s/) && (orid==prefor)",phase);
 	if(sift_exp != NULL)
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 	}
 	dbj = dbsubset(dbj,subset_string,0);
 	if(dbj.record == dbINVALID)
-               die(1,"dbsubset of %s with expression %s failed\n",
+               elog_die(1,"dbsubset of %s with expression %s failed\n",
                              dbname, sift_exp);
 	dbquery(dbj,dbRECORD_COUNT,&nrows_total);
 	fprintf(stdout,"Working database has %d arrivals\n",nrows_total);
@@ -136,13 +136,13 @@ int main(int argc, char **argv)
 	pushtbl(sortkeys,"chan");
 	dbj = dbsort(dbj,sortkeys,0,0);
 	if(dbj.record == dbINVALID)
-		die(0,"dbsort of input db failed\n");
+		elog_die(0,"dbsort of input db failed\n");
 
 	grp_tbl = newtbl(2);
 	pushtbl(grp_tbl,"evid");
 	dbevid_group = dbgroup(dbj,grp_tbl,EVIDBDLNAME,EVIDBUNDLE);
 	dbquery(dbevid_group,dbRECORD_COUNT,&nevents);
-	if(nevents <= 0) die(0,"dbgroup failed -- no data to process\n");
+	if(nevents <= 0) elog_die(0,"dbgroup failed -- no data to process\n");
 	fprintf(stdout,"%s will attempt to process %d events in this run\n",argv[0],nevents);
 	/*This view is used repeatedly, so we create it here and
 	then look it up later.  It is a join of wfdisc and sitechan 
@@ -151,12 +151,12 @@ int main(int argc, char **argv)
                 dblookup(db,0,"sitechan",0,0),
                 0,0,0,0,0);
 	if(db.table == dbINVALID)
-                die(1,"wfdisc->sitechan join failed\n");
+                elog_die(1,"wfdisc->sitechan join failed\n");
 	clrtbl(sortkeys,0);
 	sortkeys=strtbl("sta","chan","time",0);
 	db = dbsort(db,sortkeys,0,WFVIEW);
 	if(db.record == dbINVALID)
-		die(0,"dbsort of input db failed\n");
+		elog_die(0,"dbsort of input db failed\n");
 
 	freetbl(sortkeys,0);
 	freetbl(grp_tbl,0);

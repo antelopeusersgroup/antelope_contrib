@@ -122,7 +122,7 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 		if(hook_is_null)setarr(TThooks,method,hook);
 		if((result < 0) || ( (result == 1) && (mode == ALL) ))
 		{
-			complain(1,"Station %s:  ttcalc returned error %d for phase %s of composite phase %s\nDatum skipped\n",
+			elog_complain(1,"Station %s:  ttcalc returned error %d for phase %s of composite phase %s\nDatum skipped\n",
 				x.sta, result, phase1,phase);
 			o.time = TIME_INVALID;
 			o.dtdx = 0.0;
@@ -147,7 +147,7 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 		result = ttcalc(method,model,phase2,TTmode,&geometry,&t,&hook);
 		if((result < 0) || ( (result == 1) && (mode == ALL) ))
 		{
-			complain(1,"Station %s:  ttcalc returned error %d for phase %s of composite phase %s\nDatum skipped\n",
+			elog_complain(1,"Station %s:  ttcalc returned error %d for phase %s of composite phase %s\nDatum skipped\n",
 				x.sta, result, phase2,phase);
 			o.time = TIME_INVALID;
 			o.dtdx = 0.0;
@@ -178,7 +178,7 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 	
 		if((result < 0) || ( (result == 1) && (mode == ALL) ))
 		{
-			complain(1,"Station %s:  ttcalc returns error %d for phase %s\nDatum skipped\n",
+			elog_complain(1,"Station %s:  ttcalc returns error %d for phase %s\nDatum skipped\n",
 				x.sta, result, phase);
 			o.time = TIME_INVALID;
 			o.dtdx = 0.0;
@@ -243,7 +243,7 @@ Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase
 	if(hook_is_null)setarr(TThooks,method,hook);
 	if((result < 0) || ( (result == 1) && (mode == ALL) ))
 	{
-		complain(1,"Station %s:  ucalc returns error %d for phase %s\nDatum skipped\n",
+		elog_complain(1,"Station %s:  ucalc returns error %d for phase %s\nDatum skipped\n",
 			x.sta, result, phase);
 		o.ux = SLOWNESS_INVALID;
 		o.uy = SLOWNESS_INVALID;

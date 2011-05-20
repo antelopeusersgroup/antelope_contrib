@@ -681,7 +681,7 @@ eworm2orb_tracebuf( TracePacket *tp, long size )
 
 			data = (int *) malloc (tp->trh.nsamp*sizeof(int));
 			if (data == NULL) {
-				register_error (0, "eworm2orb_tracebuf: malloc() error.\n");
+				elog_log(0, "eworm2orb_tracebuf: malloc() error.\n");
 				return;
 			}
 
@@ -711,14 +711,14 @@ eworm2orb_tracebuf( TracePacket *tp, long size )
 			}
 			else
 			{
-				register_error( 0, "eworm2orb_tracebuf: Datatype %s not understood\n",
+				elog_log( 0, "eworm2orb_tracebuf: Datatype %s not understood\n",
 						   tp->trh.datatype );
 				return;
 			}
 
 			if( gencompress (&buf, &nout, &bsize, data, tp->trh.nsamp, 25) < 0)
 			{
-				register_error (0, "eworm2orb_tracebuf: gencompress() error.\n");
+				elog_log(0, "eworm2orb_tracebuf: gencompress() error.\n");
 				return;
 			}
 

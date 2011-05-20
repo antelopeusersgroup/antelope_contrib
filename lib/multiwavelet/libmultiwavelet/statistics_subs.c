@@ -116,7 +116,7 @@ MW_scalar_statistics MW_calc_statistics_float(float *y,int ny)
 	/* We can't do anything if ny < 2 so return an error in this case */
 	if(ny < 2) 
 	{
-		register_error(0,"calculate_statistics:  Insufficient data to calculate meaningful statistics\nReceived only %d data to process\n",ny);
+		elog_log(0,"calculate_statistics:  Insufficient data to calculate meaningful statistics\nReceived only %d data to process\n",ny);
 		stats.median = MAXDOUBLE;
 		stats.q1_4 = MAXDOUBLE;
 		stats.q3_4 = MAXDOUBLE;
@@ -186,7 +186,7 @@ MW_scalar_statistics MW_calc_statistics_double(double *y,int ny)
 	/* We can't do anything if ny < 2 so return an error in this case */
 	if(ny < 2) 
 	{
-		register_error(0,"calculate_statistics:  Insufficient data to calculate meaningful statistics\nReceived only %d data to process\n",ny);
+		elog_log(0,"calculate_statistics:  Insufficient data to calculate meaningful statistics\nReceived only %d data to process\n",ny);
 		stats.median = MAXDOUBLE;
 		stats.q1_4 = MAXDOUBLE;
 		stats.q3_4 = MAXDOUBLE;

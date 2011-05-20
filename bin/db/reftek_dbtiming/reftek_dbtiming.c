@@ -324,7 +324,7 @@ main(int argc, char **argv)
 			{
 				/* refteks do strange backward jumps by 1 s a lot so we ignore small backward jumps */
 				if((lastlock-time)>1.5)
-					die(0,"PCF file for station %d is corrupted\nTime jumps backward from %s to %s at line %d of pcf file\n",
+					elog_die(0,"PCF file for station %d is corrupted\nTime jumps backward from %s to %s at line %d of pcf file\n",
 						das_sn,strtime(lastlock),strtime(time),linecount);
 				continue;
 			}

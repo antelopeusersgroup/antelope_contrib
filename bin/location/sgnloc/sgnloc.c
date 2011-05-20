@@ -9,7 +9,7 @@ char *format_hypo(Hypocenter *h)
 {
 	char *s;
 	s = malloc(512);
-	if(s == NULL) die(1,"malloc error for output table\n");
+	if(s == NULL) elog_die(1,"malloc error for output table\n");
 	sprintf(s,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g %d %d",
 		h->lat0,h->lon0,h->z0,h->t0,
 		h->lat,h->lon,h->z,h->time,
@@ -55,7 +55,7 @@ main(int argc, char **argv)
 	
 	/* First let's try to read the options parameter file */
 	i = pfread(inpf,&pf);
-	if(i != 0) die(1,"Pfread error\n");
+	if(i != 0) elog_die(1,"Pfread error\n");
 
 	o = parse_options_pf (pf);
 	a = load_station_table(pf);
@@ -69,11 +69,11 @@ main(int argc, char **argv)
 	ret_code = ggnloc(h0,ta,tu,o,&converge_history,&reason_converged,&residual);
 	if(ret_code < 0)
 	{
-		die(1,"ggnloc failed to produce a solution\n");
+		elog_die(1,"ggnloc failed to produce a solution\n");
 	}
 	else if(ret_code > 0) 
 	{
-		complain(1,"%d travel time failures in ggnloc\nSolution ok\n",
+		elog_complain(1,"%d travel time failures in ggnloc\nSolution ok\n",
 			ret_code);
 	}
 	else

@@ -68,7 +68,7 @@ main (int argc, char **argv)
 	
 	if( dbopen_table( database, "r+", &db ) < 0 ) { 
 
-		die( 0, "Can't open database %s\n", database ); 
+		elog_die( 0, "Can't open database %s\n", database ); 
 	}
 
 	if( argc - optind > 0 ) {
@@ -82,7 +82,7 @@ main (int argc, char **argv)
 		}
 		
 		if( primary ) {
-			complain( 1, 
+			elog_complain( 1, 
 			"Useless use of '-p' with specified expressions\n" );
 		}
 

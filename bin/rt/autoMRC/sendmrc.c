@@ -34,41 +34,41 @@ int sendmrc( int dasid, int timeout, int rep )
 
     iport = (char *) gettbl(DC, num );
     if( open_dc( iport) <= 0 )               
-       die(1, "Can't open command DC port\n");
+       elog_die(1, "Can't open command DC port\n");
 		    
     for( i = 0; i < rep; i++ )  {
         nbytes = write ( Ls, (char *) buffer, LEN );
         if ( nbytes == LEN ) {
             if ( logname )
                 if (fwrite (buffer, LEN, 1, fplog ) != 1)  
-	              die (1, "can't log a DC command  to log file %s\n", logname );
+	              elog_die(1, "can't log a DC command  to log file %s\n", logname );
             nbytes = read( Ls, (char *) echo_buf, LEN);
             if( nbytes != LEN )  {
-               complain (0, "can't get an echo of a DC command - %s\n", buffer );
+               elog_complain(0, "can't get an echo of a DC command - %s\n", buffer );
 	       close( Ls );
 	       if( open_dc( iport) <= 0 )               
-	          die( 1, "can't reopen DC port: %s\n", iport );
+	          elog_die( 1, "can't reopen DC port: %s\n", iport );
             } 
 	    if( strncmp( buffer, echo_buf, strlen( buffer ))!= 0 )  {
-                complain (0, "echo != command (%s != %s)\n", buffer, echo_buf);
+                elog_complain(0, "echo != command (%s != %s)\n", buffer, echo_buf);
 		if( strncmp( echo_buf, "EE", 2) == 0 ) {
-		    complain( 0, "DC rejected command:%s\n", buffer);
-		    complain(0, "re-sending...\n");
+		    elog_complain( 0, "DC rejected command:%s\n", buffer);
+		    elog_complain(0, "re-sending...\n");
 		} else {
 		    close( Ls );
 		    if( open_dc( iport) <= 0 )               
-		         die( 1, "can't reopen DC port: %s\n", iport );
+		         elog_die( 1, "can't reopen DC port: %s\n", iport );
 		}
             }
-            complain( 0, "%s: send %s to %d on %s\n", 
+            elog_complain( 0, "%s: send %s to %d on %s\n", 
 	              s=strtime(now()), buffer, dasid, iport );
             free(s);
 
         } else { 
-	   complain (0, "can't send a DC command - %s on %s\n", buffer, iport );
+	   elog_complain(0, "can't send a DC command - %s on %s\n", buffer, iport );
            close( Ls );
            if( open_dc( iport) <= 0 )               
-              die( 1, "can't reopen DC port: %s\n", iport);
+              elog_die( 1, "can't reopen DC port: %s\n", iport);
         }
         sleep(timeout); 
 

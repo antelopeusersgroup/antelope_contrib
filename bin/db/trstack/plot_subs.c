@@ -300,7 +300,7 @@ int nplt;			/* # of records in tr or plist */
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"plot_tr:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"plot_tr:bundletype != 0");
 		if (dbgetv(bundle, 0,
 */	
 		if (dbgetv(tr, 0,
@@ -308,7 +308,7 @@ int nplt;			/* # of records in tr or plist */
 		  "nsamp", &nsamp,
 		  "samprate", &samprate,
 		  "time", &t1,
-		   0)!=0) die (0,"plot_tr:dbgetv problem\n");
+		   0)!=0) elog_die(0,"plot_tr:dbgetv problem\n");
 		if (nsamp>nptmax) nptmax=nsamp;
 
 	/* RELATIVE times */
@@ -348,7 +348,7 @@ int nplt;			/* # of records in tr or plist */
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"plot_tr:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"plot_tr:bundletype != 0");
 	
 		if (dbgetv(bundle, 0,
  */
@@ -358,7 +358,7 @@ int nplt;			/* # of records in tr or plist */
 		  "samprate", &samprate,
 		  "chan", chan,
 		  "time", &t1,
-		   0)!=0) die (0,"plot_tr:dbgetv problem\n");
+		   0)!=0) elog_die(0,"plot_tr:dbgetv problem\n");
 
 	/* RELATIVE times */
 		t1 = 0.;
@@ -402,7 +402,7 @@ int nplt;			/* # of records in tr or plist */
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"plot_tr:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"plot_tr:bundletype != 0");
 	
 		if (dbgetv(bundle, 0,
 */
@@ -410,7 +410,7 @@ int nplt;			/* # of records in tr or plist */
 		  "sta",  sta,
 		  "chan", chan,
 		  "time", &time1,
-		   0)!=0) die (0,"plot_tr:dbgetv problem\n");
+		   0)!=0) elog_die(0,"plot_tr:dbgetv problem\n");
 
 		 ywin2 = ywin1 + ywinht;
 		y1 = y1ar[ii] - 0.5*(ampmax-ampar[ii]);

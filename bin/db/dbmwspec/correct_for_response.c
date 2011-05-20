@@ -34,18 +34,18 @@ int correct_for_response(float *f, float *s, int nf, Dbptr trace)
 	ierr = dbextfile(trace,"instrument",response_file_name);
 	if(ierr<=0) 
 	{
-		register_error(0,"Response file %s could not be openned\n",response_file_name);
+		elog_log(0,"Response file %s could not be openned\n",response_file_name);
 		return(1);
 	}
 	insfile = fopen(response_file_name,"r");
 	if(insfile == NULL)
 	{
-		register_error(0,"Response file %s fopen failure\n",response_file_name);
+		elog_log(0,"Response file %s fopen failure\n",response_file_name);
 		return(1);
 	}
 	if( read_response(insfile,&response))
 	{
-		register_error(0,"read_response from file %s failed\n",response_file_name);
+		elog_log(0,"read_response from file %s failed\n",response_file_name);
 		fclose(insfile);
 		return(2);
 	}
@@ -54,7 +54,7 @@ int correct_for_response(float *f, float *s, int nf, Dbptr trace)
 		omega = 2.0 * M_PI * ((double) f[i]);
 		if(eval_response(omega,response,&real,&imag))
 		{
-			register_error(0,"Eval_response of file %s failed for omega=%f\n",
+			elog_log(0,"Eval_response of file %s failed for omega=%f\n",
 				response_file_name,omega);
 			++error_count;
 			continue;

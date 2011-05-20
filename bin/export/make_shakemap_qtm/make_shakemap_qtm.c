@@ -38,7 +38,7 @@ main( int argc, char **argv ) {
 
 	if( argc != 9 ) {
 		
-		die( 0, "Usage: make_shakemap_qtm cggrid_file outfile lonmin lonmax lonincrement latmin latmax latincrement\n" );
+		elog_die( 0, "Usage: make_shakemap_qtm cggrid_file outfile lonmin lonmax lonincrement latmin latmax latincrement\n" );
 
 	} else {
 	
@@ -59,14 +59,14 @@ main( int argc, char **argv ) {
 
 	if( C == (FILE *) NULL ) {
 		
-		die( 1, "Failed to open cggrid file %s. Bye.\n", cggrid_file );
+		elog_die( 1, "Failed to open cggrid file %s. Bye.\n", cggrid_file );
 	} 
 
 	cgg = cggrid_read( C );
 
 	if( cgg == (CGGrid *) NULL ) {
 		
-		die( 1, "Failed to read cggrid from file %s. Bye.\n", cggrid_file );
+		elog_die( 1, "Failed to read cggrid from file %s. Bye.\n", cggrid_file );
 	} 
 	fclose( C );
 
@@ -78,7 +78,7 @@ main( int argc, char **argv ) {
 
 	if( B == (FILE *) NULL ) {
 		
-		die( 1, "Failed to open file %s for output. Bye.\n", cggrid_file );
+		elog_die( 1, "Failed to open file %s for output. Bye.\n", cggrid_file );
 	} 
 	
 	fwrite( (void *) &lonmin, sizeof( float ), 1, B );

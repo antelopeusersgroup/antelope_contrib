@@ -60,17 +60,17 @@ int ntoken, link_size, i;
     if(stat(subpath, &buf) != 0)  {
         if(ENOENT)  {	/* Doesn't exist; create */
           if(mkdir(subpath, 0775) == -1)  {
-             complain(1, "Can't create directory %s\n", subpath);
+             elog_complain(1, "Can't create directory %s\n", subpath);
              return -1;
           }
         }  else  {
-           complain( 1, "create_dir():can't stat. \n");
+           elog_complain( 1, "create_dir():can't stat. \n");
            return -1;
        }
     } else if(S_ISLNK(buf.st_mode) != 0)  {	/* It's link; find the real path  */
        link_size = readlink(subpath, link_path, 512);
        if(link_size < 0)  {
-           complain(1, "read link error %s\n", subpath);
+           elog_complain(1, "read link error %s\n", subpath);
            return -1;
        }
        link_path[link_size] = '\0';
@@ -87,15 +87,15 @@ int ntoken, link_size, i;
       strcat(subpath,"/");
       strcpy(real_path, subpath);
    } else if(S_ISREG(buf.st_mode) != 0)  {  /* Regular file */
-      complain( 0, "%s is a REGULAR file and already exist!\n", subpath);
+      elog_complain( 0, "%s is a REGULAR file and already exist!\n", subpath);
             return 0;
    } else if(S_ISCHR(buf.st_mode))  {
-      complain( 0, " %s is a CHR device!\n", subpath);
+      elog_complain( 0, " %s is a CHR device!\n", subpath);
             return 0;
       
  
    }  else {
-       complain( 0,"%s is not a path to the data file\n", subpath);
+       elog_complain( 0,"%s is not a path to the data file\n", subpath);
        free(tmp_str); free(subpath); free(link_path); free(real_path);
        return -1;
    }
@@ -103,19 +103,19 @@ int ntoken, link_size, i;
 /*  get absolute path to the data file(s)  */
  
     if ((home = getcwd((char *)NULL, 256)) == NULL) {
-        complain(1, " getcwd failed\n");
+        elog_complain(1, " getcwd failed\n");
         return 0;
     }
     if(chdir(subpath) != 0) {
-       complain(1," chdir error:%s \n", subpath );
+       elog_complain(1," chdir error:%s \n", subpath );
         return 0;
     }
     if ((new_home = getcwd((char *)NULL, 256)) == NULL) {
-        complain(1, "getcwd error\n");
+        elog_complain(1, "getcwd error\n");
         return 0;
     }
     if(chdir(home) != 0) {
-       complain(1," chdir error:%s \n", home );
+       elog_complain(1," chdir error:%s \n", home );
         return 0;
     }
 

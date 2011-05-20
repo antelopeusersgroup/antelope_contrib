@@ -68,7 +68,7 @@ buf2int_unsigned (int *dst, char *src, int n)
 	    break ;
 
 	default : 
-	    die ( 0, "Bad call to buf2int_unsigned: n=%d\n", n ) ; 
+	    elog_die( 0, "Bad call to buf2int_unsigned: n=%d\n", n ) ; 
     }
     *dst = copy ; 
     return 0 ; 
@@ -110,7 +110,7 @@ buf2int (int *dst, char *src, int n)
 	    break ;
 
 	default : 
-	    die ( 0, "Bad call to buf2int: n=%d\n", n ) ; 
+	    elog_die( 0, "Bad call to buf2int: n=%d\n", n ) ; 
     }
     *dst = copy ; 
     return 0 ; 
@@ -137,7 +137,7 @@ int2buf (char *dst, int value, int n)
 	    break ;
 
 	default : 
-	    die ( 0, "Bad call to int2buf: n=%d\n", n ) ; 
+	    elog_die( 0, "Bad call to int2buf: n=%d\n", n ) ; 
     }
     return 0 ; 
 }
@@ -207,7 +207,7 @@ samprate2seed (double samprate, int *factor, int *multiplier)
 
     if (seed2samprate (*factor, *multiplier, &rate2)
 	    || ABS(1.0 - rate2/samprate) > .0001) {
-	complain (0, "Bad sample rate conversion: samprate = %10.3f factor=%d multiplier=%d new rate=%10.3f\n",
+	elog_complain(0, "Bad sample rate conversion: samprate = %10.3f factor=%d multiplier=%d new rate=%10.3f\n",
 		  samprate, *factor, *multiplier, rate2);
 	return -1;
     }
@@ -226,7 +226,7 @@ seed2samprate (int factor, int multiplier, double *samprate)
     else if ((factor < 0) && (multiplier < 0))
 	*samprate = 1.0 / ((double) multiplier * (double) factor);
     else {
-	register_error (0, "seed2samprate: bad values: factor=%d, multiplier=%d\n",
+	elog_log(0, "seed2samprate: bad values: factor=%d, multiplier=%d\n",
 			factor, multiplier);
 	*samprate = 1.0;
 	return -1;

@@ -154,7 +154,7 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc < 1) {
-				complain(0, "Need -modified_after argument.\n");
+				elog_complain(0, "Need -modified_after argument.\n");
 				usage();
 				exit(1);
 			}
@@ -163,7 +163,7 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc < 1) {
-				complain(0, "Need -prefix argument.\n");
+				elog_complain(0, "Need -prefix argument.\n");
 				usage();
 				exit(1);
 			}
@@ -172,7 +172,7 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc < 1) {
-				complain(0, "Need -pf argument.\n");
+				elog_complain(0, "Need -pf argument.\n");
 				usage();
 				exit(1);
 			}
@@ -181,7 +181,7 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc < 1) {
-				complain(0, "Need -state argument.\n");
+				elog_complain(0, "Need -state argument.\n");
 				usage();
 				exit(1);
 			}
@@ -190,7 +190,7 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc < 1) {
-				complain(0, "Need -sleep argument.\n");
+				elog_complain(0, "Need -sleep argument.\n");
 				usage();
 				exit(1);
 			}
@@ -199,7 +199,7 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc < 1) {
-				complain(0, "Need -check_lddate_interval argument.\n");
+				elog_complain(0, "Need -check_lddate_interval argument.\n");
 				usage();
 				exit(1);
 			}
@@ -209,7 +209,7 @@ main(int argc, char **argv)
 		} else if (**argv != '-') {
 			break;
 		} else {
-			complain(0, "Unrecognized argument '%s'.\n", *argv);
+			elog_complain(0, "Unrecognized argument '%s'.\n", *argv);
 			usage();
 			exit(1);
 		}
@@ -262,7 +262,7 @@ main(int argc, char **argv)
 	 */
 
 	if (argc < 1) {
-		complain(0, "Need db argument.\n");
+		elog_complain(0, "Need db argument.\n");
 		usage();
 		exit(1);
 	}
@@ -271,7 +271,7 @@ main(int argc, char **argv)
 	argc--;
 	argv++;
 	if (argc < 1) {
-		complain(0, "Need orb argument.\n");
+		elog_complain(0, "Need orb argument.\n");
 		usage();
 		exit(1);
 	}
@@ -279,7 +279,7 @@ main(int argc, char **argv)
 	argc--;
 	argv++;
 	if (argc > 0) {
-		complain(0, "Unrecognized argument '%s'.\n", *argv);
+		elog_complain(0, "Unrecognized argument '%s'.\n", *argv);
 		usage();
 		exit(1);
 	}

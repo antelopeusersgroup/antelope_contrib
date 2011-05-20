@@ -45,24 +45,24 @@ int main(int argc, char **argv)
 	int i,j;
 
 
-	if(argc < 2) die(0,"usage:  %s dbout [-phase x]\n",progname);
+	if(argc < 2) elog_die(0,"usage:  %s dbout [-phase x]\n",progname);
 	if(argc == 4)
 	{
 		if(!strcmp(argv[2],"-phase"))
-			die(0,"usage:  %s dbout [-phase x]\n",progname);
+			elog_die(0,"usage:  %s dbout [-phase x]\n",progname);
 		phase = argv[3];
 	}
 	else
 		phase = strdup("P");
 	dbname = argv[1];
 	if(pfread(progname,&pf))
-		die(0,"Failure reading parameter file %s.pf\n",
+		elog_die(0,"Failure reading parameter file %s.pf\n",
 				progname);
 	if(dbopen(dbname,"r+",&db) == dbINVALID)
-		die(0,"dbopen failure for database %s\n",dbname);
+		elog_die(0,"dbopen failure for database %s\n",dbname);
 	db = dblookup(db,0,"arrival",0,0);
 	seperators = pfget_string(pf,"seperators");
-	if(seperators == NULL) die(0,"required parameter separators no in parameter file\n");
+	if(seperators == NULL) elog_die(0,"required parameter separators no in parameter file\n");
 	ista = pfget_int(pf,"station_token_number");
 	ichan = pfget_int(pf,"chan_token_number");
 

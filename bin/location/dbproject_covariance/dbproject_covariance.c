@@ -11,7 +11,7 @@
 
 void 
 Usage() {
-	die( 1, "Usage: dbproject_covariance [-v] [-c conf] dbname\n" );
+	elog_die( 1, "Usage: dbproject_covariance [-v] [-c conf] dbname\n" );
 }
 
 main( argc, argv )
@@ -149,7 +149,7 @@ char	*argv[];
 			&smajax, &sminax, &strike_deg, &sdepth, &stime );
 
 		if( rc != 0 ) {
-			complain(0, "project_covariance failed." );
+			elog_complain(0, "project_covariance failed." );
 			smajax = -1;
 			sminax = -1;
 			strike_deg = -1;
@@ -166,7 +166,7 @@ char	*argv[];
 			       "stime", stime,
 			       0 );
 		if( rc < 0 ) {
-			complain( 1, "dbputv failed on orid %d.\n", orid );
+			elog_complain( 1, "dbputv failed on orid %d.\n", orid );
 		} else if( verbose ) {
 		printf( "orid %d\tndef %d\tdtype %s\tconf %5.3f\n",
 			orid, ndef, dtype, conf );

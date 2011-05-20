@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 
   rowtemp = malloc(ROW_MAX_LENGTH);
   
-  if (rowtemp == NULL) die(1,"malloc() error.\n");
+  if (rowtemp == NULL) elog_die(1,"malloc() error.\n");
 
   /* read in command line options */
 
@@ -121,11 +121,11 @@ int main(int argc, char **argv)
 
          /* copy the row from what could be a view into the scratch record of the
             input database, so as to avoid putting a view on the ORB */
-         if ( dbget( db,        rowtemp) == dbINVALID ) die(1,"dbget error.\n");
-         if ( dbput( dbscratch, rowtemp) == dbINVALID ) die(1,"dbput error.\n");
+         if ( dbget( db,        rowtemp) == dbINVALID ) elog_die(1,"dbget error.\n");
+         if ( dbput( dbscratch, rowtemp) == dbINVALID ) elog_die(1,"dbput error.\n");
 
          if ( db2orbpkt( dbscratch, orb ) < 0 )
-            { complain ( 0, "Couldn't write record #%d to %s.\n",
+            { elog_complain( 0, "Couldn't write record #%d to %s.\n",
               	   db.record, orbname); } 
          totalrecords++;
        }

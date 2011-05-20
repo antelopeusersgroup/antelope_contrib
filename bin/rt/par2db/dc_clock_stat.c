@@ -53,13 +53,13 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
     
    if( clcsel )  {
        if(  mon == 0  )  {
-           complain( 0, "MAIN is selected, but it's OFF!\n");
+           elog_complain( 0, "MAIN is selected, but it's OFF!\n");
            return 0;
        } 
        
    }  else  {  
        if( aon == 0 )  {
-           complain( 0, "AUX is selected, but it's OFF!\n");
+           elog_complain( 0, "AUX is selected, but it's OFF!\n");
            return 0;
        } 
       
@@ -103,7 +103,7 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
             default:
                 val = TRGAP_VALUE_S4;
 		if( Log) 
-                   complain( 0, "unknown MAIN clock status %0x-%c\n", mclc_stat, mclc_stat);
+                   elog_complain( 0, "unknown MAIN clock status %0x-%c\n", mclc_stat, mclc_stat);
                break;       
          }  
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
@@ -130,7 +130,7 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
             default:
                 val = TRGAP_VALUE_S4;
                if(Log)
-	          complain( 0, "unknown AUX clock status %0x-%c\n", aclc_stat, aclc_stat);
+	          elog_complain( 0, "unknown AUX clock status %0x-%c\n", aclc_stat, aclc_stat);
                break;
          }  
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;

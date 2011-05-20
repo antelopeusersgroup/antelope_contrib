@@ -53,7 +53,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
     *error = "" ; 
 
     if (pfread (pfname, &pf) < 0) {
-	complain (1, "Can't open parameter file %s\n", pfname);
+	elog_complain(1, "Can't open parameter file %s\n", pfname);
 	*error = "Can't read parameter file";
 	return -1;
     }
@@ -73,7 +73,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
 
     vmodel = pfget_string (pf, "travel_time_model");
     if ( vmodel == 0 ) {
-	complain ( 0, "travel_time_model not specified in parameter file\n") ;
+	elog_complain( 0, "travel_time_model not specified in parameter file\n") ;
 	*error = "travel_time_model not specified in parameter file" ; 
 	return -1 ; 
     } 
@@ -102,7 +102,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
 
     if ( load_observations ( pf, dbin, arr_phase, 
 	    &stations, &arrays, &ta, &tu, &taro, &turo ) < 1 ) {
-	complain (0, "No data to locate\n" ) ; 
+	elog_complain(0, "No data to locate\n" ) ; 
 	*error = "No arrival data for a location" ; 
 	return -1 ;
     }
@@ -131,7 +131,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
             a = (Arrival *) gettbl(ta, 0) ;
             time = a->time ;
         } else {
-            complain ( 0, "No time data for location\n" ) ; 
+            elog_complain( 0, "No time data for location\n" ) ; 
             *error = "No time data for location" ; 
             return -1 ;
         }
@@ -145,7 +145,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
 	C = dmatrix(0,3,0,3);
 	emodel = (float *) calloc(4,sizeof(float));
 	if((*C==NULL) || (emodel == NULL))
-	                die(0,"malloc failed for error arrays\n");
+	                elog_die(0,"malloc failed for error arrays\n");
 	hypo = (Hypocenter *) gettbl (converge_history, 
  			maxtbl(converge_history)-1);
 	/*Bypass this function when all coordinates are fixed

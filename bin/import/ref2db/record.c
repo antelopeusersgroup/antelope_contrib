@@ -13,9 +13,9 @@ void wrt_last_rec ( Ch_data *buf )
    
 	    result = csteim (buf->steim, save_seed, 0, 0) ;
 	    if ( result < 0 ) 
-		die ( 1, "steim compression failed to write final bytes\n" ) ;
+		elog_die( 1, "steim compression failed to write final bytes\n" ) ;
 	    else if ( result > 0 ) {
-		complain ( 1, "steim compression problems for %s_%s_%s at %s\n",
+		elog_complain( 1, "steim compression problems for %s_%s_%s at %s\n",
 			    buf->net, buf->sta, buf->chan, s=strtime(buf->crnt_time) );
 		free(s) ; 
 	    }
@@ -41,11 +41,11 @@ record (Ch_data *buf, PktChannel *new )
 
     if (buf->db.record < 0) {
 	if ( !new_dfile (buf, new, new->time ) ) 
-	    die (0, "Couldn't add new record to database.\n" ) ; 
+	    elog_die(0, "Couldn't add new record to database.\n" ) ; 
     } 
     npts = TIME2SAMP (buf->crnt_time, buf->samprate, new->time);
     if ( npts < 0 ) {
-        complain ( 0, "%s_%s_%s : dropping data at time=%lf\n"
+        elog_complain( 0, "%s_%s_%s : dropping data at time=%lf\n"
             "data starts before current time=%lf\n", 
             buf->net, buf->sta, buf->chan, new->time, buf->crnt_time );
         return -1 ; 
@@ -78,7 +78,7 @@ fflush(stderr);
     }
 
     if (!TRSAMERATE (buf->samprate, new->samprate)) {
-	complain ( 0, "sample rate changed from %.2f to %.2f for %s_%s_%s at %s\n", 
+	elog_complain( 0, "sample rate changed from %.2f to %.2f for %s_%s_%s at %s\n", 
 		buf->samprate, new->samprate, 
 		buf->net, buf->sta, buf->chan, s=strtime(new->time) ) ;
 	flush = 1;
@@ -89,7 +89,7 @@ fflush(stderr);
         wrt_last_rec ( buf ) ; 
         if( buf->tmax < new->time ) new_dfile( buf, new, new->time );
         else if ( !new_dbrecord (buf, new, new->time ) ) 
-            die (0, "Couldn't add new record to database.\n" ) ; 
+            elog_die(0, "Couldn't add new record to database.\n" ) ; 
     }
     doff = 0;
     nsamp_now = 0;
@@ -114,9 +114,9 @@ fflush(stderr);
 	      result = csteim (buf->steim, save_seed, data+doff, nsamp_now) ;
   
 	      if ( result < 0 ) 
-		    die (0, "steim compression failed\n" ) ;
+		    elog_die(0, "steim compression failed\n" ) ;
 	      else if ( result > 0 ) {
-	          complain ( 1, "steim compression problems for %s_%s_%s at %s\n", 
+	          elog_complain( 1, "steim compression problems for %s_%s_%s at %s\n", 
 			buf->net, buf->sta, buf->chan, s=strtime(crnt_time) ) ;
 	          free(s) ; 
 	      }
@@ -128,11 +128,11 @@ fflush(stderr);
           case trINT:
 	      if ((npts = fwrite (data+doff, sizeof(int), 
 		    nsamp_now, buf->file)) != nsamp_now) {
-	            die (1, " write %d instead of %d samples to %s.\n",
+	            elog_die(1, " write %d instead of %d samples to %s.\n",
 		      npts, nsamp_now, buf->path ) ; 
 	      }
 	      if ( fflush(buf->file) != 0 ) 
-	          die ( 1, "Can't flush %s\n", buf->path ) ; ;
+	          elog_die( 1, "Can't flush %s\n", buf->path ) ; ;
 
 	      buf->nsamp += nsamp_now ; 
 	      buf->crnt_time = ENDTIME(buf->stime, buf->samprate, buf->nsamp);
@@ -140,12 +140,12 @@ fflush(stderr);
 	          "nsamp", buf->nsamp,
 	          "endtime", buf->crnt_time,
 	          0 ) < 0 ) 
-	          die (0, "Couldn't write to database\n") ; 
+	          elog_die(0, "Couldn't write to database\n") ; 
 
 	  break;
 
         default:
- 	   die (0, "Can't reccognize datacode %d\n", buf->params->datacode);
+ 	   elog_die(0, "Can't reccognize datacode %d\n", buf->params->datacode);
 	   break;
        }
        doff += nsamp_now;

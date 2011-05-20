@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
   strcat(arrayfile,".arr");
   if ( (fp = fopen(arrayfile,"r")) == NULL)
   {
-    complain(0,"Could not open array file.\n");
+    elog_complain(0,"Could not open array file.\n");
     return 1;
   }
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
   if (dbopen(dbname,"r",&db) < 0)
   {
-    complain(0,"Could not open database.\n");
+    elog_complain(0,"Could not open database.\n");
     return 1;
   }
 
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 
   if ( (fp = fopen(dfile,"w")) == NULL)
   {
-    complain(0,"Could not open output file.\n");
+    elog_complain(0,"Could not open output file.\n");
     return 1;
   }
 

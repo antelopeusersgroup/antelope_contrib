@@ -99,12 +99,12 @@ main ( int argc, char **argv)
       dbin = argv[optind++];
 
       if (( code=regcomp(&orig_match, want_orig, REG_EXTENDED|REG_NOSUB)) != 0) 
-            die( 1, "regcomp error #%d for orig_match - %s\n", code, want_orig );
+            elog_die( 1, "regcomp error #%d for orig_match - %s\n", code, want_orig );
       if (( code=regcomp(&auth_match, oauth, REG_EXTENDED|REG_NOSUB)) != 0) 
-            die( 1, "regcomp error #%d for auth_match - %s\n", code, oauth );
+            elog_die( 1, "regcomp error #%d for auth_match - %s\n", code, oauth );
 
       if (( code=regcomp(&net_match, net, REG_EXTENDED|REG_NOSUB)) != 0) 
-            die( 1, "regcomp error #%d for net_match - %s\n", code, net );
+            elog_die( 1, "regcomp error #%d for net_match - %s\n", code, net );
 
       EvArr=newarr(0);
       AllEv=newarr(0);
@@ -116,18 +116,18 @@ main ( int argc, char **argv)
       /*  Open database.  */
 
       if (dbopen_database (dbin, "r+", &db) == dbINVALID )  
-         die (0, "Can't open database %s\n", dbin );
+         elog_die(0, "Can't open database %s\n", dbin );
 
       dbw = dblookup (db, 0, "wfdisc", 0, 0);
       dba = dblookup (db, 0, "arrival", 0, 0);
       if ( dbw.table == dbINVALID || dba.table == dbINVALID )  
-          die (0, "Can't open '%s' wfdisc/arrival table.\n", dbin );
+          elog_die(0, "Can't open '%s' wfdisc/arrival table.\n", dbin );
 
       dbwa = dbjoin( dbw, dba, 0, 0, 0, 0, 0);
 
       dbquery (dbwa, dbRECORD_COUNT, &nrec);
       if( nrec <= 0 ) 
-         die( 0, " no record after wfdisc/arrival join\n");
+         elog_die( 0, " no record after wfdisc/arrival join\n");
 
       /* Select vertical channels only  */
 
@@ -138,16 +138,16 @@ main ( int argc, char **argv)
  
       dbquery (dbwa, dbRECORD_COUNT, &nrec);
       if( nrec <= 0 )
-            die( 0, " no record with Z component in wfdisc/arrival join\n") ;      
+            elog_die( 0, " no record with Z component in wfdisc/arrival join\n") ;      
          
       /* Join assoc&origin&event&arrival tables  */
 
       if( ( jrec = join_db ( db, want_orig )) <= 0 )
-          die( 0, "There are no records in joined table.\n");
+          elog_die( 0, "There are no records in joined table.\n");
 
       EvTbl = keysarr( EvArr );
       evnum = maxtbl( EvTbl );
-      if( evnum <= 0 ) die (0, "event TBL is empty.\n");
+      if( evnum <= 0 ) elog_die(0, "event TBL is empty.\n");
 
       for ( i = 0; i < evnum; i++) {
           str = ( char *) gettbl( EvTbl, i );
@@ -210,7 +210,7 @@ main ( int argc, char **argv)
 
                 if( gotone ) 
 		    if (!save_ms (db) ) 
-			complain ( 0, "Can't save ms for orid=%d.\n", orid );
+			elog_complain( 0, "Can't save ms for orid=%d.\n", orid );
             }
         }
  	exit (0);

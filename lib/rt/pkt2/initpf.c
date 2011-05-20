@@ -34,7 +34,7 @@ void initpf( char *pf )
  
  
    if( (pfile = (char *) malloc(256)) == NULL)  
-     die( 1, "initpf(): malloc error\n");
+     elog_die( 1, "initpf(): malloc error\n");
  
 /* Get today's time  */
  
@@ -51,7 +51,7 @@ void initpf( char *pf )
          sprintf( pfile, "%04d%03d%02d%02d\0", yr, day, hr, min);
          dirp = opendir(path);
          if(dirp == NULL) 
-            die(1, "initIP():Can't open %s directory.\n", path);
+            elog_die(1, "initIP():Can't open %s directory.\n", path);
          pfarr = newarr( 0 );
          while ( (direntp = readdir(dirp)) != NULL ) {
             istr = direntp->d_name;

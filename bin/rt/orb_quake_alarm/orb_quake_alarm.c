@@ -24,8 +24,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <thread.h>
-#include <synch.h>
+#include <pthread.h>
+#include <pthread.h>
 #include <errno.h>
 
 #include "Pkt.h"
@@ -71,19 +71,19 @@ typedef struct Callblock {
 } Callblock;
 
 Arr	*Alarms;
-mutex_t	Alarms_mutex; 
+pthread_mutex_t	Alarms_mutex; 
 
 Arr	*Registered;
 
 Arr	*Threadnames;
-mutex_t	Threadnames_mutex;
+pthread_mutex_t	Threadnames_mutex;
 
 int	Verbose = 0;
 int	VeryVerbose = 0;
 
 char	*Dbname = 0;
 Dbptr	Db;
-mutex_t Db_mutex;
+pthread_mutex_t Db_mutex;
 
 Dbptr	Dbplaces;
 char	*Places_dbname = 0;
@@ -115,17 +115,17 @@ usage()
 	      "Lindquist Consulting, Inc.", 
 	      "kent@lindquistconsulting.com" ) ;
 
-    	exit (1);
+    	exit(1);
 }
 
 void
-register_threadname( thread_t tid, char *threadname ) 
+register_threadname( pthread_t tid, char *threadname ) 
 {
 	char	key[STRSZ];
 
 	sprintf( key, "%ld", (long) tid );
 
-	mutex_lock( &Threadnames_mutex );
+	pthread_mutex_lock(&Threadnames_mutex );
 
 	if( Threadnames == (Arr *) NULL ) {
 
@@ -134,7 +134,7 @@ register_threadname( thread_t tid, char *threadname )
 
 	setarr( Threadnames, key, strdup( threadname ) );
 
-	mutex_unlock( &Threadnames_mutex );
+	pthread_mutex_unlock(&Threadnames_mutex );
 
 	return;
 }
@@ -144,13 +144,13 @@ get_threadname()
 {
 	char	key[STRSZ];
 	char	*threadname;
-	thread_t tid;
+	pthread_t tid;
 
-	tid = thr_self();
+	tid = pthread_self();
 
 	sprintf( key, "%ld", (long) tid );
 
-	mutex_lock( &Threadnames_mutex );
+	pthread_mutex_lock(&Threadnames_mutex );
 
 	if( Threadnames == (Arr *) NULL || 
 	    ( threadname = getarr( Threadnames, key ) ) == NULL ) {
@@ -158,7 +158,7 @@ get_threadname()
 		threadname = strdup( "unregistered thread" );
 	}
 
-	mutex_unlock( &Threadnames_mutex );
+	pthread_mutex_unlock(&Threadnames_mutex );
 
 	return threadname;
 }
@@ -616,7 +616,7 @@ new_alarm()
 
 	allot( Alarm *, alarm, 1 );
 
-	mutex_lock( &Db_mutex );
+	pthread_mutex_lock(&Db_mutex );
 
 	if( Dbname != NULL ) {
 
@@ -645,7 +645,7 @@ new_alarm()
 
 	alarm->message_expressions = 0;
 
-	mutex_unlock( &Db_mutex );
+	pthread_mutex_unlock(&Db_mutex );
 
 	return alarm;
 }
@@ -774,7 +774,7 @@ dbarchive_notification( Alarm *alarm, Callblock *callblock )
 		return;
 	}
 
-	mutex_lock( &Db_mutex );
+	pthread_mutex_lock(&Db_mutex );
 
 	dbalarmcomm = dblookup( Db, 0, "alarmcomm", 0, 0 );
 
@@ -806,7 +806,7 @@ dbarchive_notification( Alarm *alarm, Callblock *callblock )
 			callblock->to, callblock->delay_sec );
 	}
 
-	mutex_unlock( &Db_mutex );
+	pthread_mutex_unlock(&Db_mutex );
 
 	return;
 }
@@ -827,7 +827,7 @@ dbarchive_alarm( Alarm *alarm )
 
 	alarm_dbfilenames = pfget_string( pf, "alarm_dbfilenames" );
 
-	mutex_lock( &Db_mutex );
+	pthread_mutex_lock(&Db_mutex );
 
 	dbalarms = dblookup( Db, 0, "alarms", 0, 0 );
 
@@ -941,7 +941,7 @@ dbarchive_alarm( Alarm *alarm )
 		free( alarm_filename );
 	}
 
-	mutex_unlock( &Db_mutex );
+	pthread_mutex_unlock(&Db_mutex );
 
 	return;
 }
@@ -955,7 +955,7 @@ register_alarm( Alarm *alarm )
 
 	sprintf( alarmid, "%ld", alarm->alarmid );
 
-	mutex_lock( &Alarms_mutex );
+	pthread_mutex_lock(&Alarms_mutex );
 
 	setarr( Alarms, alarmid, (void *) alarm );
 
@@ -969,7 +969,7 @@ register_alarm( Alarm *alarm )
 
 	dbarchive_alarm( alarm );
 
-	mutex_unlock( &Alarms_mutex );
+	pthread_mutex_unlock(&Alarms_mutex );
 
 	return;
 }
@@ -1017,7 +1017,7 @@ alarm_count()
 	long	nalarms;
 	Tbl	*keys;
 
-	mutex_lock( &Alarms_mutex );
+	pthread_mutex_lock(&Alarms_mutex );
 
 	keys = keysarr( Alarms );
 
@@ -1025,7 +1025,7 @@ alarm_count()
 
 	freetbl( keys, 0 );
 
-	mutex_unlock( &Alarms_mutex );
+	pthread_mutex_unlock(&Alarms_mutex );
 
 	return nalarms;
 }
@@ -1108,7 +1108,7 @@ process_origin( Dbptr db )
 
 	rc = pfresolve( pf, "alarms{hypocenter}", 0, &pfcandidates );
 
-	clear_register( 1 );
+	elog_clear_register( 1 );
 
 	alarmnames = pfkeys( pfcandidates );
 
@@ -1159,7 +1159,7 @@ process_origin( Dbptr db )
 				get_threadname(),
 				trigger_condition );
 
-			clear_register( 1 );
+			elog_clear_register( 1 );
 
 			continue;
 		}
@@ -1406,7 +1406,7 @@ database_changed()
 	char	*tablepath;
 	int	retcode;
 
-	mutex_lock( &Db_mutex );
+	pthread_mutex_lock(&Db_mutex );
 
 	db = dblookup( Db, "", "alarms", "", "" );
 
@@ -1414,7 +1414,7 @@ database_changed()
 	
 	retcode = is_changed( tablepath );
 
-	mutex_unlock( &Db_mutex );
+	pthread_mutex_unlock(&Db_mutex );
 
 	return retcode;
 }
@@ -1488,7 +1488,7 @@ database_watch( void *arg )
 	double	acktime;
 	char	*s = 0;
 
-	register_threadname( thr_self(), "database_watch" );
+	register_threadname( pthread_self(), "database_watch" );
 
 	if( Dbname == 0 ) {
 		
@@ -1519,9 +1519,9 @@ database_watch( void *arg )
 				get_threadname() );
 		}
 
-		mutex_lock( &Alarms_mutex );
+		pthread_mutex_lock(&Alarms_mutex );
 
-		mutex_lock( &Db_mutex );
+		pthread_mutex_lock(&Db_mutex );
 
 		db = dblookup( Db, "", "alarms", "", "" );
 
@@ -1648,8 +1648,8 @@ database_watch( void *arg )
 
 		freetbl( keys, 0 );
 		
-		mutex_unlock( &Db_mutex );
-		mutex_unlock( &Alarms_mutex );
+		pthread_mutex_unlock(&Db_mutex );
+		pthread_mutex_unlock(&Alarms_mutex );
 	}
 
 	return NULL;
@@ -1666,11 +1666,11 @@ staff_notify( void *arg )
 	char	expr[STRSZ];
 	char	*s;
 
-	register_threadname( thr_self(), "staff_notify" );
+	register_threadname( pthread_self(), "staff_notify" );
 
 	while( alarm_count() > 0 || ! Done ) {
 
-		mutex_lock( &Alarms_mutex );
+		pthread_mutex_lock(&Alarms_mutex );
 
 		keys = keysarr( Alarms );
 
@@ -1715,7 +1715,7 @@ staff_notify( void *arg )
 
 		freetbl( keys, 0 );
 
-		mutex_unlock( &Alarms_mutex );
+		pthread_mutex_unlock(&Alarms_mutex );
 
 		sleep( STAFF_NOTIFY_SLEEPTIME_SEC );
 	}
@@ -1750,7 +1750,7 @@ network_watch( void *arg )
 	char	*s;
 	int	rc;
 
-	register_threadname( thr_self(), "network_watch" );
+	register_threadname( pthread_self(), "network_watch" );
 
 	if( ( orbfd = orbopen( Orbname, "r&" ) ) < 0) {
 
@@ -1928,7 +1928,7 @@ network_watch( void *arg )
 			break;
 		}
 
-		clear_register( 1 );
+		elog_clear_register( 1 );
 
 		if( unstuffed ) { 
 		
@@ -2112,19 +2112,19 @@ main( int argc, char **argv )
 	int	errflag = 0;
 	int	rc;
 	char 	*rtmail_path = 0;
-	thread_t network_watch_tid;
-	thread_t staff_notify_tid;
+	pthread_t network_watch_tid;
+	pthread_t staff_notify_tid;
 	char	*s;
 
 	elog_init( argc, argv );
 
-	mutex_init( &Threadnames_mutex, USYNC_THREAD, NULL );
+	pthread_mutex_init(&Threadnames_mutex,0);
 
-	mutex_init( &Db_mutex, USYNC_THREAD, NULL );
+	pthread_mutex_init(&Db_mutex,0);
 
-	mutex_init( &Alarms_mutex, USYNC_THREAD, NULL );
+	pthread_mutex_init(&Alarms_mutex,0);
 
-	register_threadname( thr_self(), "main" );
+	register_threadname( pthread_self(), "main" );
 
 	elog_notify(0, 
 		"[%s]: %s $Revision$ $Date$\n",
@@ -2266,7 +2266,7 @@ main( int argc, char **argv )
 
 	if( pfread( Pfname, &pf ) < 0 ) {
 		
-		clear_register( 1 );
+		elog_clear_register( 1 );
 		elog_die( 1, "[%s]: Problem reading parameter file '%s'\n", 
 			get_threadname(),
 			Pfname );
@@ -2276,13 +2276,13 @@ main( int argc, char **argv )
 
 	Max_ack_wait_sec = pfget_double( pf, "max_ack_wait_sec" );
 
-	rc = thr_create( NULL, 0, network_watch, 0, 0, &network_watch_tid );
+	rc = pthread_create(&network_watch_tid ,0, network_watch, 0);
 
-	rc = thr_create( NULL, 0, database_watch, 0, 0, &staff_notify_tid );
+	rc = pthread_create(&staff_notify_tid ,0, database_watch, 0);
 
-	rc = thr_create( NULL, 0, staff_notify, 0, 0, &staff_notify_tid );
+	rc = pthread_create(&staff_notify_tid ,0, staff_notify, 0);
 
-	thr_join( staff_notify_tid, (thread_t *) NULL, (void **) NULL );
+	pthread_join(staff_notify_tid, (void **) NULL );
 
 	if( Verbose ) {
 

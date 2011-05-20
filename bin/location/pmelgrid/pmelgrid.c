@@ -34,7 +34,7 @@ void save_run_parameters(Dbptr db,Pf *pf)
 	int ierr;
 	
 	dir = pfget_string(pf,"pmelrun_archive_directory");
-	if(dir==NULL)register_error(0,"Parameter pmelrun_archive_directory not in parameter file\nUsing default of current directory");
+	if(dir==NULL)elog_log(0,"Parameter pmelrun_archive_directory not in parameter file\nUsing default of current directory");
 	dir=strdup(".");
 	if(makedir(dir))
 		elog_die(0,"makedir failed on directory %s\n",dir);
@@ -43,7 +43,7 @@ void save_run_parameters(Dbptr db,Pf *pf)
 	{
 		dfile=(char *)malloc(20);
 		sprintf(dfile,"%dpmel",getpid());
-		register_error(0,"Missing parameter:  pmel_run_name\nControl pf will be saved to %s\n",
+		elog_log(0,"Missing parameter:  pmel_run_name\nControl pf will be saved to %s\n",
 				dfile);
 		pfput_string(pf,"pmel_run_name",dfile);
 	}
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
 	}
 	/* this set's default pf  name */
 	if(pfinfl==NULL) pfinfl=(char *)strdup("pmelgrid");
-	if(pfread(pfinfl,&pf)) die(1,"pfread error from %s\n",pfinfl);
+	if(pfread(pfinfl,&pf)) elog_die(1,"pfread error from %s\n",pfinfl);
 	o = parse_options_pf(pf);
 	/* Pmel is known to fail if this option is turned on */
 	if(((o.generalized_inverse)==PSEUDO_RECENTERED)

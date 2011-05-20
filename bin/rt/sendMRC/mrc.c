@@ -75,7 +75,7 @@ char *argv[];
         case 'V':
             logname = optarg; 
             if ( ( fplog = fopen ( logname, "a+" ) ) == NULL ) 
-              die ( 1, "Can't open '%s' for logs \n", logname ) ; 
+              elog_die( 1, "Can't open '%s' for logs \n", logname ) ; 
             break ;
 
         case 'R':
@@ -90,7 +90,7 @@ char *argv[];
             break;
         case 'd':
             if( staname != 0 )  {
-	      complain( 0, "Staname was pecified already. Will ignore 'dasid'.\n");
+	      elog_complain( 0, "Staname was pecified already. Will ignore 'dasid'.\n");
 	    } else
 	      dasid = atoi(optarg);
             break;
@@ -102,7 +102,7 @@ char *argv[];
             break;
         case 's':
             if( dasid > 0 )  {
-	      complain( 0, "'dasid' was pecified already. Will ignore 'staname'.\n");
+	      elog_complain( 0, "'dasid' was pecified already. Will ignore 'staname'.\n");
 	    } else
             staname = optarg;
             break;
@@ -122,7 +122,7 @@ char *argv[];
 
 
        if( pfread ( pffile, &pf) != 0 )
-         die (0, "Can't read parameter file\n");
+         elog_die(0, "Can't read parameter file\n");
 
        timstr = pfget_string( pf, "start_time");
        nrepeat = pfget_int( pf, "num_repeats");
@@ -151,18 +151,18 @@ char *argv[];
          val = ( int *) getarr(Dasid, staname) ;
 	 if( val != 0 && *val > 0 )
 	    dasid = *val;
-	 else die( 0, "Can't get dasid number for $s\n", staname );
+	 else elog_die( 0, "Can't get dasid number for $s\n", staname );
        }
        while( !done || until >  crnt_time )  {
 
           portnum = 5001;
 	  if( open_dc( &Ports, portnum ) <= 0 )
-	     die(1, "Can't open command DC port\n");
+	     elog_die(1, "Can't open command DC port\n");
           if( !dasid )   {
              keys = ( Tbl *) keysarr( Dases );
              dasnum = maxtbl( keys );
 	     if( dasnum <= 0 )  {
-	       complain( 0, "No DASes collected on RT system.\n");
+	       elog_complain( 0, "No DASes collected on RT system.\n");
 	       sleep(10);
 	       continue;
 	     }
@@ -176,8 +176,8 @@ char *argv[];
              nbytes = write ( Ls, (char *) buffer, 4 );
  	     close( Ls ); 
              if ( nbytes != 4 ) 
-	        die( 0, "can't send RESET to DC\n");
-	     else die ( 0, "RESET was sent to %s\n", iport );  
+	        elog_die( 0, "can't send RESET to DC\n");
+	     else elog_die( 0, "RESET was sent to %s\n", iport );  
 
 	  }
           if( resetDAS )  {
@@ -188,22 +188,22 @@ char *argv[];
              nbytes = write ( Ls, (char *) buffer, LEN );
              if ( nbytes != LEN )  {
  	        close( Ls ); 
-	        die( 0, "can't send %s to DAS %d(%d)\n", buffer, dasid, nbytes);
+	        elog_die( 0, "can't send %s to DAS %d(%d)\n", buffer, dasid, nbytes);
 	     } else {
 		
                 nbytes = read( Ls, (char *) echo_buf, LEN);
 		close( Ls );
 	        if( nbytes != LEN )  {
 	          send_err = 1;
-	          die (0, "can't get an echo of a DC command - %s\n", buffer );
+	          elog_die(0, "can't get an echo of a DC command - %s\n", buffer );
                 }
                 if( strncmp( buffer, echo_buf, strlen( buffer ))!= 0 )  {
 		    send_err = 1;
-	            complain (0, "echo != command (%s != %s)\n", buffer, echo_buf);
+	            elog_complain(0, "echo != command (%s != %s)\n", buffer, echo_buf);
 		    if( strncmp( echo_buf, "EE", 2) == 0 ) 
-		       complain( 0, "DC rejected command:%s\n", buffer);
+		       elog_complain( 0, "DC rejected command:%s\n", buffer);
 		
-	        } else complain( 0, "send %s to %d\n", buffer, dasid );
+	        } else elog_complain( 0, "send %s to %d\n", buffer, dasid );
 	    } 
 	    exit(0);
 	  }
@@ -213,7 +213,7 @@ char *argv[];
 	          das = ( DAS * ) getarr( Dases, key );
 	      }
 	      if( das == 0 && !dasid )
-	         complain( 0, "corrupted DAS array ( das = 0 for %s )\n",key);
+	         elog_complain( 0, "corrupted DAS array ( das = 0 for %s )\n",key);
 	      else  {
 		  if( dasid  && !das )  {
 		     sprintf( unit_ascii, "%d\0", dasid);
@@ -232,35 +232,35 @@ char *argv[];
                         if ( nbytes == LEN ) {
                             if ( logname )
                                if (fwrite (buffer, LEN, 1, fplog ) != 1)  
-	                          die (1, "failed to copy DC command  to log file %s\n", logname );
+	                          elog_die(1, "failed to copy DC command  to log file %s\n", logname );
                             nbytes = read( Ls, (char *) echo_buf, LEN);
 	                    if( nbytes != LEN )  {
 			       send_err = 1;
-	                       complain (0, "can't get an echo of a DC command - %s\n", buffer );
+	                       elog_complain(0, "can't get an echo of a DC command - %s\n", buffer );
 			       close( Ls );
 			       if( open_dc( &Ports, portnum ) <= 0 )
-			          die( 1, "can't reopen DC port: %s:%d\n", Ports.ip_name, portnum );
+			          elog_die( 1, "can't reopen DC port: %s:%d\n", Ports.ip_name, portnum );
                             } if( strncmp( buffer, echo_buf, strlen( buffer ))!= 0 )  {
 				send_err = 1;
-	                        complain (0, 
+	                        elog_complain(0, 
 				"echo != command (%s != %s)\n", buffer, echo_buf);
 				if( strncmp( echo_buf, "EE", 2) == 0 ) {
-				    complain( 0, "DC rejected command:%s\n", buffer);
-				    complain(0, "re-sending...\n");
+				    elog_complain( 0, "DC rejected command:%s\n", buffer);
+				    elog_complain(0, "re-sending...\n");
 				} else {
 				    close( Ls );
 				    if( open_dc( &Ports, portnum ) <= 0 )
-				      die( 1, "can't reopen DC port: %s\n", Ports.ip_name);
+				      elog_die( 1, "can't reopen DC port: %s\n", Ports.ip_name);
 				}
 			    }
-			    complain( 0, "send %s to %d\n", buffer, das->unit );
+			    elog_complain( 0, "send %s to %d\n", buffer, das->unit );
    
                         } else { 
 	                   send_err = 1;
-			   complain (0, "can't send a DC command - %s\n", buffer );
+			   elog_complain(0, "can't send a DC command - %s\n", buffer );
 	    	           close( Ls );
 			   if( open_dc( &Ports, portnum ) <= 0 )
-			      die( 1, "can't reopen DC port: %s\n", Ports.ip_name);
+			      elog_die( 1, "can't reopen DC port: %s\n", Ports.ip_name);
                         }
 	                if( dasid ) exit(0);
 			if( !send_err )  {

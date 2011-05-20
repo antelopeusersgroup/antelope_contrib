@@ -40,7 +40,7 @@ Arr *get_arrivals(Dbptr dbbundle)
 		if(getarr(a,sta) == NULL)
 		{
 			t=malloc(sizeof(double));
-			if(t==NULL)die(0,"get_arrivals malloc failure for simple double\n");
+			if(t==NULL)elog_die(0,"get_arrivals malloc failure for simple double\n");
 			*t = time;
 			setarr(a,sta,(void *)t);
 		}
@@ -62,7 +62,7 @@ void check_gather_consistency(MWgather **gathers,int nwavelets)
 	for(i=1;i<nwavelets;++i)
 	{
 		if(gathers[i]->nsta != gathers[i-1]->nsta)
-			die(0,"Mismatch in station count for wavelets in a single frequency band.  Wavelet %d gather has %d stations while wavelet %d has %d\nCannot continue -- exiting\n",
+			elog_die(0,"Mismatch in station count for wavelets in a single frequency band.  Wavelet %d gather has %d stations while wavelet %d has %d\nCannot continue -- exiting\n",
 				i,gathers[i]->nsta,i-1,gathers[i-1]->nsta);
 	}
 }	
@@ -481,7 +481,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	lookups */
 	dbmps = dblookup(dbv,0,"mwpredslow",0,0);
 	if(dbmps.record == dbINVALID)
-		die(0,"db lookup failed for mwpredslow table\nMWavelet schema extensions are required\n");
+		elog_die(0,"db lookup failed for mwpredslow table\nMWavelet schema extensions are required\n");
 
 	/* Now we loop through the outer loop event by event.  
 	This is structured here by using a dbgroup defined db pointer
@@ -491,7 +491,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	a defined name to look up the evid grouped table. */
 	dbgrp = dblookup(dbv,0,EVIDBDLNAME,0,0);
 	if (dbgrp.record == dbINVALID)
-		die(0,"Error in dblookup for named evid group table = %s\n",
+		elog_die(0,"Error in dblookup for named evid group table = %s\n",
 			EVIDBDLNAME);
         dbquery(dbgrp,dbRECORD_COUNT,&nevents);
         fprintf(stdout,"Processing begins for %d events\n",nevents);

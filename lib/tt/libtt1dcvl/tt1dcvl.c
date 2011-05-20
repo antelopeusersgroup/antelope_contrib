@@ -72,10 +72,10 @@ void tt1dcvl_init()
 		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	
 	if (dbpath == NULL) { 
-	    die ( 0, "tt1dcvl database open failed\n" ) ; 
+	    elog_die( 0, "tt1dcvl database open failed\n" ) ; 
 	}
 	if(dbopen(dbpath,"r",&modeldb) == dbINVALID) {
-	    die(0,"Could not open velocity model database '%s' during libtt1dcvl initialization\n"
+	    elog_die(0,"Could not open velocity model database '%s' during libtt1dcvl initialization\n"
 	    	  "Exiting because all calls to this calculator will fail\n",
 		  dbpath);
 	}
@@ -325,7 +325,7 @@ TTTime *tt1dcvl_compute_atime(TTGeometry *x,double d_km,double azimuth,
 		mod->ztop[0] = x->receiver.z;
 	else
 	{
-		register_error(0,"Warning (ttlvz_time_exec):  elevation correction error\nStation elevation %lf lies below first layer depth %lf\nElevation ignored\n",
+		elog_log(0,"Warning (ttlvz_time_exec):  elevation correction error\nStation elevation %lf lies below first layer depth %lf\nElevation ignored\n",
 			x->receiver.z, mod->ztop[1]);
 	}
 	/* This could be avoided, but it is a relic of the earlier code,
@@ -482,7 +482,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 		mod->ztop[0] = x->receiver.z;
 	else
 	{
-		register_error(0,"Warning (ttlvz_slowness_exec):  elevation correction error\nStation elevation %lf lies below first layer depth %lf\nElevation ignored\n",
+		elog_log(0,"Warning (ttlvz_slowness_exec):  elevation correction error\nStation elevation %lf lies below first layer depth %lf\nElevation ignored\n",
 			x->receiver.z, mod->ztop[1]);
 	}
 	/* This could be avoided, but it is a relic of the earlier code */
@@ -493,7 +493,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 	work1 = (double *) calloc(2*nz,sizeof(double));
 	work2 = (double *) calloc(2*nz,sizeof(double));
 	if( (work1 == NULL) || (work2 == NULL) )
-		die(1,"ttlvz_slow_exec:  Cannot alloc work arrays for phase %s\n",
+		elog_die(1,"ttlvz_slow_exec:  Cannot alloc work arrays for phase %s\n",
 			phase);
 
 	ttlvz_(&d_km, &(x->source.z), &nz, v, z, work1, work2, &time, &p, &up);
@@ -568,7 +568,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p4, &up);
         		if (time < 0.0)
         		{
-                		register_error(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
    				free(slow);
 				free(work1);
 				free(work2);

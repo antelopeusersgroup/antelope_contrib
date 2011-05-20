@@ -783,7 +783,7 @@ int fdkey ( int fd )
 int fdwait ( int fd, int msec )
     wait up to msec milliseconds for pending input
 
-int is_tty(int fd)
+deprecated int is_tty(int fd)
      return 1 if fd is open to a terminal, 0 otherwise.
 
 int tty_byline(int fd)

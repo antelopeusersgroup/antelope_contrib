@@ -64,7 +64,7 @@ int  hdr2packet(
     		psize = hsiz + Par.packet.size;       
     
     		if( (nchan = stapar( (uchar_t *) *packet, &sta[0], &chan[0], &chanlen, &calib )) == 0) {
-       		    complain( 0, "Can't get stapar from CF.\n");
+       		    elog_complain( 0, "Can't get stapar from CF.\n");
        		    return 0;
     		}
 		
@@ -87,7 +87,7 @@ int  hdr2packet(
     	        phdr = &hdrbuf[0];	
     		memset( (char *) &chan[0], 0, 64);
 		if( (nchan = (short ) stapar( (uchar_t *) *packet, &sta[0], &chan[0], &chanlen, &calib )) == 0) {
-       		    complain( 0, "Can't get stapar from CF.\n");
+       		    elog_complain( 0, "Can't get stapar from CF.\n");
        		    return 0;
     		}
                
@@ -150,7 +150,7 @@ int  hdr2packet(
 	   case IPH :
 
     		if( ! read_raw( 0, 0, (uchar_t *)*packet, 0, 0, Par.raw.read ))  {
-       		    complain(0, "Can't read IP|SP raw packet - %d\n", 
+       		    elog_complain(0, "Can't read IP|SP raw packet - %d\n", 
 		                                       Par.raw.pkttype);
        	       	    return 0;
     		}
@@ -174,7 +174,7 @@ int  hdr2packet(
 		break;
 
           default:
-            complain(0, "hdr2packet():Unknown HDR type - %d. Can't prepend to a packet.\n",
+            elog_complain(0, "hdr2packet():Unknown HDR type - %d. Can't prepend to a packet.\n",
                     hdrtype);
             return 0;
       }  

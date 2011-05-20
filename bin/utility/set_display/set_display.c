@@ -9,7 +9,7 @@
 static void 
 usage()
 {
-	die( 1, "Usage: set_display [-o] [-a #]\n" );
+	elog_die( 1, "Usage: set_display [-o] [-a #]\n" );
 }
 
 int

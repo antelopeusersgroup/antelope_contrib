@@ -6,7 +6,7 @@ Datascope_PHP \- Datascope interface for PHP
 
 <?php
 if( ! extension_loaded( "Datascope" ) ) {
-	die( "Module 'Datascope' is not loaded, unable to continue" );
+	elog_die( "Module 'Datascope' is not loaded, unable to continue" );
 }
 ?>
 

@@ -20,7 +20,7 @@ to by the database pointer db.  Otherwise it returns a 1.
 This allows a general way to safely check for the validity of 
 extension tables to a common schema like css3.0.  General usage would be:
 
-if(dbtable_invalid(db,t)) die(0,"blah blah");
+if(dbtable_invalid(db,t)) elog_die(0,"blah blah");
 
 Generally this routine should be called once for a given table, but
 it can be called repeatedly at the cost of efficiency.  The later
@@ -147,7 +147,7 @@ double compute_ema (Slowness_vector *u, Slowness_Function_Output *ucalc,
 	nmatches = maxtbl(matches);
 	if(nmatches >= 1)
 	{
-		if(nmatches > 1) register_error(0,"warning(compute_ema):  multiple records found in stavel table with same primary key\n");  
+		if(nmatches > 1) elog_log(0,"warning(compute_ema):  multiple records found in stavel table with same primary key\n");  
 		dbsv.record = (long) gettbl(matches,0);
 		dbgetv(dbsv,0,"velocity",&velocity,NULL );
 	}
@@ -174,7 +174,7 @@ double compute_ema (Slowness_vector *u, Slowness_Function_Output *ucalc,
 					break;
 				}
 			}
-			register_error(0,"compute_ema:  no matching entry found in stavel table for station/phase/vmodel = %s/%s/%s\n"
+			elog_log(0,"compute_ema:  no matching entry found in stavel table for station/phase/vmodel = %s/%s/%s\n"
 			"Reverting to default surface velocity of %f\n",
 				u->array->name,u->phase->name,vmodel,velocity);
 		}
@@ -276,7 +276,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 	if(natimes > 0)
 	{
 		allarids = (long *)calloc(natimes,sizeof(long));
-		if(allarids == NULL) die(0,"save_predarr cannot alloc %d long integers\n",
+		if(allarids == NULL) elog_die(0,"save_predarr cannot alloc %d long integers\n",
 					natimes);
 	}
 	/* These quantities need to be explicitly initialized at the top
@@ -296,7 +296,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 		tto = calculate_travel_time(*atimes,h,ALL);
 		if(tto.time == TIME_INVALID)
 		{
-			register_error(0,"save_predarr failed to compute predicted arrival times for station %s and phase %s\n", 
+			elog_log(0,"save_predarr failed to compute predicted arrival times for station %s and phase %s\n", 
 				atimes->sta->name, atimes->phase->name);
 			++errors;
 			continue;
@@ -320,7 +320,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 		u_calc = calculate_slowness_vector(u,h,RESIDUALS_ONLY);
 		if(u_calc.ux == SLOWNESS_INVALID)
 		{
-			register_error(0,"predarr failed to compute slowness vector for station %s and phase %s\n",
+			elog_log(0,"predarr failed to compute slowness vector for station %s and phase %s\n",
 				atimes->sta->name, atimes->phase->name);
 			++errors;
 			if(dbaddv(db,0,
@@ -331,7 +331,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 				"dip",dip,
 				NULL ) == dbINVALID)
 			{
-				register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
+				elog_log(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
 				++errors;
 			}
@@ -357,7 +357,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 				"dip",dip,
 				NULL ) == dbINVALID)
 			{
-				register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
+				elog_log(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
 				++errors;
 			}
@@ -389,7 +389,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 			tto = calculate_travel_time(a,h,ALL);
 			if(tto.time == TIME_INVALID)
 			{
-				register_error(0,"save_predarr failed to compute predicted arrival times for station %s and phase %s\n", 
+				elog_log(0,"save_predarr failed to compute predicted arrival times for station %s and phase %s\n", 
 					atimes->sta->name, atimes->phase->name);
 				++errors;
 				continue;
@@ -400,7 +400,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 			u_calc = calculate_slowness_vector(*slow,h,RESIDUALS_ONLY);
 			if(u_calc.ux == SLOWNESS_INVALID)
 			{
-				register_error(0,"predarr failed to compute slowness vector for station %s and phase %s\n",
+				elog_log(0,"predarr failed to compute slowness vector for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
 				++errors;
 				if(dbaddv(db,0,
@@ -411,7 +411,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 					"dip",dip,
 					NULL ) == dbINVALID)
 				{
-				    register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
+				    elog_log(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
 				    ++errors;
 				}
@@ -435,7 +435,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 					"dip",dip,
 					NULL ) == dbINVALID)
 				{
-				    register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
+				    elog_log(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
 				    ++errors;
 				}

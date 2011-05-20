@@ -47,11 +47,11 @@ int get_data( double stime, double etime, int nrec )
           "instype", new.instype,
           "segtype", new.segtype,
            0 )) == dbINVALID )
-           die( 0, "dbgetv faild for record #%d\n", db.record );
+           elog_die( 0, "dbgetv faild for record #%d\n", db.record );
         
        if( !Network )  {
            if( (dbgetv( db, 0, "net", new.net, 0 )) == dbINVALID )
-               die( 0, "dbgetv 'net' faild for record #%d\n", db.record );
+               elog_die( 0, "dbgetv 'net' faild for record #%d\n", db.record );
        }  else strcpy(new.net, Network);
 
 #ifdef DEBUG
@@ -116,16 +116,16 @@ crnt_time, et, ts, te, stime, etime, npts );
 
 
            if( buf == 0 )  { 
-              complain( 0, "can't get data for %s_%s_%s from %f to %f\n", 
+              elog_complain( 0, "can't get data for %s_%s_%s from %f to %f\n", 
                         new.net, new.sta, new.chan, crnt_time, et ); 
               continue;
            }
            if( te <= crnt_time ) continue;
            if( ( skip = TIME2SAMP( ts, new.samprate, crnt_time ) ) > 0 )  {
 
-                 complain( 0, "overlapped traces %s_%s_%s: last time = %f\tnew_t0=%f new_te=%f\n", 
+                 elog_complain( 0, "overlapped traces %s_%s_%s: last time = %f\tnew_t0=%f new_te=%f\n", 
                            new.net, new.sta, new.chan, crnt_time, ts, te );
-                 complain( 0, "will skip %d points\n", skip);
+                 elog_complain( 0, "will skip %d points\n", skip);
 
            } else  skip = 0;
 
@@ -145,7 +145,7 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
            if( fabs( ts - crnt_time ) > 1.0/new.samprate )  {
 
 #ifdef DEBUG
-	      complain( 0, "problem get data. Ask %f -  got %f\n", 
+	      elog_complain( 0, "problem get data. Ask %f -  got %f\n", 
                             crnt_time, ts );
 #endif
 
@@ -173,7 +173,7 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
 	   }
 								   
            if(!wrt_data( &segment, crnt_time, save_npts, mydata.i ))   {
-               complain(0, "can't save data for %s_%s_%s at %f.\n",
+               elog_complain(0, "can't save data for %s_%s_%s at %f.\n",
                   segment.net, segment.sta, segment.chan, crnt_time);
                fflush(Df);
                fclose(Df);

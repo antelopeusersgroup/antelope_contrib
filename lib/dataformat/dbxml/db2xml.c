@@ -237,14 +237,14 @@ int 	flags;
 	int	free_fieldnames = 0;
 
 	if( db.table < 0 ) {
-		register_error( 0, "db2xml: not a view or a table\n" );
+		elog_log( 0, "db2xml: not a view or a table\n" );
 		return -1;
 	}
 
 	if( ( flags & DBXML_PRIMARY ) && 
 	    ( fields_in != 0 || expressions_in != 0 ) ) {
 
-		register_error( 0, "db2xml: fields are explicitly specified; "
+		elog_log( 0, "db2xml: fields are explicitly specified; "
 				   "ignoring useless request for primary keys\n" );
 	}
 
@@ -281,7 +281,7 @@ int 	flags;
 
 	} else if( fields_in == 0 ) {
 
-		register_error( 0, 
+		elog_log( 0, 
 		"db2xml: must specify field names with nonzero list "
 		"of expressions\n" );
 		return -1;
@@ -294,7 +294,7 @@ int 	flags;
 
 	if( maxtbl( fields ) != maxtbl( expressions ) ) {
 
-		register_error( 0, 
+		elog_log( 0, 
 		"db2xml: number of fields must match number of expressions\n" );
 		return -1;
 	}

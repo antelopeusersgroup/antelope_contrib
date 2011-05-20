@@ -50,7 +50,7 @@ int pseudo_inv_solver(double *U,
 	int i, j;
 
 	work = (double *)calloc(n,sizeof(double));
-	if(work == NULL) die(0,"pseudoinverse solver cannot alloc array of %d doubles\n",
+	if(work == NULL) elog_die(0,"pseudoinverse solver cannot alloc array of %d doubles\n",
 		n);
 
 	/*dgesvd returns singular values in descending order so

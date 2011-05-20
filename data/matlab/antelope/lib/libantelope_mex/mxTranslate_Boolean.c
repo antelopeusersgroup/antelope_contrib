@@ -81,7 +81,7 @@ mxTranslate_Boolean( const mxArray *mxboolean )
 	}
 
 	if ( retcode == 1 ) {
-		complain ( 0, "Bad boolean value '%s'\n",
+		elog_complain( 0, "Bad boolean value '%s'\n",
 		    (char *) boolean_str); 
 	}
 

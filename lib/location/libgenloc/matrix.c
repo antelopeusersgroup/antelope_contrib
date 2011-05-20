@@ -27,7 +27,7 @@ float **matrix(int nrl, int nrh, int ncl,int nch)
 	m=(float**) calloc(nrh-nrl+1,sizeof(float*));
 	if(m == NULL) 
 	{
-		register_error(1,"matrix:  Cannot alloc matrix vector of pointers\n");
+		elog_log(1,"matrix:  Cannot alloc matrix vector of pointers\n");
 		return (NULL);
 	}
 	m-=nrl;
@@ -36,7 +36,7 @@ float **matrix(int nrl, int nrh, int ncl,int nch)
 		m[i] = (float *) calloc(nch-ncl+1,sizeof(float));
 		if(m[i] == NULL)
 		{
-			register_error(1,"matrix:  Cannot alloc row %d of matrix of length %d\n",
+			elog_log(1,"matrix:  Cannot alloc row %d of matrix of length %d\n",
 				i,nch-ncl+1);
 			/* cleanup in case you want to continue*/
 			if(i!=nrl)
@@ -60,7 +60,7 @@ double **dmatrix(int nrl, int nrh, int ncl,int nch)
 	m=(double**) calloc(nrh-nrl+1,sizeof(double*));
 	if(m == NULL) 
 	{
-		register_error(1,"dmatrix:  Cannot alloc matrix vector of pointers\n");
+		elog_log(1,"dmatrix:  Cannot alloc matrix vector of pointers\n");
 		return (NULL);
 	}
 	m-=nrl;
@@ -69,7 +69,7 @@ double **dmatrix(int nrl, int nrh, int ncl,int nch)
 		m[i] = (double *) calloc(nch-ncl+1,sizeof(double));
 		if(m[i] == NULL)
 		{
-			register_error(1,"dmatrix:  Cannot alloc row %d of matrix of length %d\n",
+			elog_log(1,"dmatrix:  Cannot alloc row %d of matrix of length %d\n",
 				i,nch-ncl+1);
 			/* cleanup in case you want to continue*/
 			if(i!=nrl)
@@ -93,7 +93,7 @@ char **cmatrix(int nrl, int nrh, int ncl,int nch)
 	m=(char**) calloc(nrh-nrl+1,sizeof(char*));
 	if(m == NULL) 
 	{
-		register_error(1,"cmatrix:  Cannot alloc matrix vector of pointers\n");
+		elog_log(1,"cmatrix:  Cannot alloc matrix vector of pointers\n");
 		return (NULL);
 	}
 	m-=nrl;
@@ -110,7 +110,7 @@ always required, but is safer. */
                 m[i] = (char *) calloc(nch-ncl+2,sizeof(char));
 		if(m[i] == NULL)
 		{
-			register_error(1,"cmatrix:  Cannot alloc row %d of matrix of length %d\n",
+			elog_log(1,"cmatrix:  Cannot alloc row %d of matrix of length %d\n",
 				i,nch-ncl+1);
 			/* cleanup in case you want to continue*/
 			if(i!=nrl)

@@ -85,7 +85,7 @@ Arr *create_station_objects(Pf *pf, int nbands)
 	char *white=" \t";
 
 	t = pfget_tbl(pf,"station_weights");
-	if(t == NULL) die(0,"station_weights table not in parameter file\n");
+	if(t == NULL) elog_die(0,"station_weights table not in parameter file\n");
 
 	a = newarr(0);
 
@@ -96,7 +96,7 @@ Arr *create_station_objects(Pf *pf, int nbands)
 
 		s = (MWstation *)malloc(sizeof(MWstation));
 		if(s==NULL) 
-		  die(0,"Cannot malloc MWstation structure for station %s\n",sta);
+		  elog_die(0,"Cannot malloc MWstation structure for station %s\n",sta);
 		initialize_MWstation(s,nbands);
 		allot(double *,s->weights,nbands);
 		s->sta = strdup(sta);
@@ -156,7 +156,7 @@ int load_surface_velocity(Pf *pf, Arr *a)
 	int i;
 
 	t = pfget_tbl(pf,"surface_velocities");
-	if(t == NULL) die(0,"surface_velocities table missing from parameter file\n");
+	if(t == NULL) elog_die(0,"surface_velocities table missing from parameter file\n");
 
 	for(i=0,nset=0;i<maxtbl(t);i++)
 	{
@@ -279,7 +279,7 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 		dbputv(dbs,0,"sta",s->sta,0);
 		nmatch = dbmatches(dbs,db,0,0,&hook,&match_tbl);
 		if(nmatch == dbINVALID)
-			die(0,"dbmatches error looking for entries for station %s\n",s->sta);
+			elog_die(0,"dbmatches error looking for entries for station %s\n",s->sta);
 		else if(nmatch < 1)
 		{
 			elog_notify(0,"load_station_geometry:  cannot find station %s in site table -- deleted from geometry list\n",
@@ -337,7 +337,7 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 				{
 					if(((s->dnorth)!=0.0) 
 						|| ((s->deast)!=0.0))
-						die(0,"load_station_geometry:  reference station in site table must have dnorth and deast set to 0.0\nFound refstat = %s with (dnorth,deast)=(%lf,%lf)\n",
+						elog_die(0,"load_station_geometry:  reference station in site table must have dnorth and deast set to 0.0\nFound refstat = %s with (dnorth,deast)=(%lf,%lf)\n",
 							s->sta,s->dnorth,
 							s->deast);
 					++nset;
@@ -354,7 +354,7 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 						free_MWstation(s);
 					}
 					else if(strcmp(refsta0,refsta))
-						die(0,"load_station_geometry:  reference station change not allowed.\nAll stations to be processed must have a common refsta in site table\n");
+						elog_die(0,"load_station_geometry:  reference station change not allowed.\nAll stations to be processed must have a common refsta in site table\n");
 					else
 						++nset;
 				}
@@ -442,12 +442,12 @@ Arr *build_station_objects(Dbptr db, Pf *pf, double time)
 	nsta_pf = cntarr(a);
 	nsta = load_surface_velocity(pf, a);
 	if(nsta != nsta_pf)
-		complain(0,"Surface velocity defined for only %d of %d stations\n",
+		elog_complain(0,"Surface velocity defined for only %d of %d stations\n",
 			nsta,nsta_pf);
 
 	nsta = load_station_geometry(db,a,time);
 	if(nsta<=0) 
-		die(0,"load_station_geometry failed to match any stations in parameter file with database site table\n");
+		elog_die(0,"load_station_geometry failed to match any stations in parameter file with database site table\n");
 	if(nsta != nsta_pf)
 		elog_complain(0,"Missing entries in site table\nMatched only %d of %d defined in the parameter file\n",
 			nsta,nsta_pf);
@@ -456,7 +456,7 @@ Arr *build_station_objects(Dbptr db, Pf *pf, double time)
 	site table or all hell will break loose. */
 	refsta = get_refsta(a);
 	s = (MWstation *)getarr(a,refsta);
-	if(s == NULL) die(0,"Station site table error:  reference station %s must appear in site table\n",
+	if(s == NULL) elog_die(0,"Station site table error:  reference station %s must appear in site table\n",
 		refsta);
 	free(refsta);
 

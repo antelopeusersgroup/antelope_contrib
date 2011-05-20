@@ -1886,7 +1886,7 @@ ryo2orb_convert( void *arg )
 		case PMTFIFO_ERROR:
 			elog_complain( 0,
 				"pmtfifo_pop returned PMTFIFO_ERROR!\n" );
-			clear_register( 1 );
+			elog_clear_register( 1 );
 			continue;
 			break;
 		case PMTFIFO_RELEASED:
@@ -2120,7 +2120,7 @@ main( int argc, char **argv )
 		case '?':
 		default:
 			usage();
-			die( 0, "option %c not understood\n", c );
+			elog_die( 0, "option %c not understood\n", c );
 		}
 	}
 
@@ -2199,13 +2199,13 @@ main( int argc, char **argv )
 
 	if( rc != 0 ) {
 
-		die( 1, "Failed to create ryo_status thread, "
+		elog_die( 1, "Failed to create ryo_status thread, "
 			"thr_create error %d\n", rc );
 	}
 
 	if( ( Orbfd = orbopen( orbname, "w&" ) ) < 0 ) {
 		
-		die( 0, "Failed to open orb '%s' for writing\n", orbname );
+		elog_die( 0, "Failed to open orb '%s' for writing\n", orbname );
 
 	} else {
 
@@ -2222,7 +2222,7 @@ main( int argc, char **argv )
 
 	if( rc != 0 ) {
 
-		die( 1, "Failed to create ryo_convert thread, "
+		elog_die( 1, "Failed to create ryo_convert thread, "
 			"thr_create error %d\n", rc );
 	}
 
@@ -2230,7 +2230,7 @@ main( int argc, char **argv )
 
 	if( rc != 0 ) {
 
-		die( 1, "Failed to create rtd_import thread, "
+		elog_die( 1, "Failed to create rtd_import thread, "
 			"thr_create error %d\n", rc );
 	}
 

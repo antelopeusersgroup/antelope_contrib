@@ -49,14 +49,14 @@ int unstuffpkt( double time, char *srcid, char *packet, Packet **Pkt )
   dphdr.pkttype = pkttype;
   
   if( hdrtype == -1 )  {
-     complain( 0, "Can't get packet/header type.\n" );
+     elog_complain( 0, "Can't get packet/header type.\n" );
      return 0;
   }
   sprintf( key, "%d\0", pkttype );
   if( RawPkts == NULL ) init_RawPkts();
   raw = ( Raw *) getarr( RawPkts, (char *) &key[0] );
   if( raw == NULL ) { 
-      complain( 0, " unstuffpkt(): Can't get RawPkts info for %s\n", key );
+      elog_complain( 0, " unstuffpkt(): Can't get RawPkts info for %s\n", key );
       return 0;
   }
  

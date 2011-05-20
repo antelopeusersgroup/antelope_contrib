@@ -90,7 +90,7 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 
 	if(*decimators == NULL) *decimators = newtbl(0);
 	if (resp == NULL) {
-		die(0, "read_dec_files: Malloc error on decimation response structure.\n");
+		elog_die(0, "read_dec_files: Malloc error on decimation response structure.\n");
 		return (0);
 	}
 	for (i=0,(*dec_fac)=1; i<maxtbl(decdef); i++) {
@@ -121,7 +121,7 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 			return (0);
 		}
 		if (read_response (file, &rsp)) {
-			clear_register (1);
+			elog_clear_register(1);
 			elog_notify(0, "read_dec_files: read_response() error on stage file '%s'.\n",
 							decfile);
 			return (0);
@@ -199,7 +199,7 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 		decptr->decfac = dec_factor;
 		decptr->coefs = calloc(nnum,sizeof(float));
 		if((decptr->coefs) == NULL)
-			die(0,"read_dec_files:  can't alloc filter coef array of length %d\n",nnum);
+			elog_die(0,"read_dec_files:  can't alloc filter coef array of length %d\n",nnum);
 		for(j=0; j<nnum;j++) decptr->coefs[j] = coefsi[j];
 		pushtbl(*decimators,decptr);
 	}
@@ -336,7 +336,7 @@ int decimate_trace(Tbl *dectbl,float *in, int nin, double dt0, double t0,
 	/* finally the output vector is created here */
 	*out = (float *)calloc(*nout,sizeof(float));
 	if(*out == NULL)
-		die(0,"decimate_trace:  cannot malloc output vector of length %d\n",
+		elog_die(0,"decimate_trace:  cannot malloc output vector of length %d\n",
 			*nout);
 	scopy(*nout,buf2,1,*out,1);
 	*t0out = t0 + deltat0;
@@ -377,7 +377,7 @@ Tbl **build_decimation_objects(Tbl **filelists, int nbands, int *decfac)
 	int dec_this_stage,dec_previous;
 
 	fir = (Tbl **)calloc(nbands,sizeof(Tbl *));
-	if(fir == NULL) die(0,"build_decimation_objects:  cannot alloc pointer array of length %d\n",nbands);
+	if(fir == NULL) elog_die(0,"build_decimation_objects:  cannot alloc pointer array of length %d\n",nbands);
 
 	for(i=0,dec_previous=1;i<nbands;i++)
 	{
@@ -385,7 +385,7 @@ Tbl **build_decimation_objects(Tbl **filelists, int nbands, int *decfac)
 		ret_code = read_dec_files(filelists[i],&dec_this_stage,
 				(fir+i));
 		if(ret_code == 0) 
-			die(0,"fatal: read_dec_files returned error code %d\n",
+			elog_die(0,"fatal: read_dec_files returned error code %d\n",
 				ret_code);	
 		decfac[i] = dec_this_stage*dec_previous;
 		dec_previous = decfac[i];

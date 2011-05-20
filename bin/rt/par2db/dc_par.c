@@ -37,12 +37,12 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
     if( Ste == 0 ) { 
          DasId_toNam = newarr(0);
 	 if(pfread( Pfile, &pf) != 0)
-              die(0, "Can't read %s parameter file\n", Pfile );
+              elog_die(0, "Can't read %s parameter file\n", Pfile );
 	                    
            Ste = pfget_tbl( pf, "Site" );
 	   dasnum = maxtbl( Ste );
 	   if( dasnum <= 0 )
- 	      die(0, "can't get Site table from a %s parameter file.\n", Pfile);
+ 	      elog_die(0, "can't get Site table from a %s parameter file.\n", Pfile);
            for( i = 0; i < dasnum; i++)  {
 	        istr = (char *) gettbl(Ste, i);
 	        sscanf(istr, STE_SCS,  STE_RVL(&site));
@@ -126,7 +126,7 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
    /* Get DASes parameters  */
    
    if( numdas <= 0 || numdas > 48 )  {
-     complain( 0, "wrong number of dases - %d\n", numdas );
+     elog_complain( 0, "wrong number of dases - %d\n", numdas );
      return 0;
    }
 
@@ -138,7 +138,7 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
       memcpy( (char *) &sval, (char *) &daspkt[off], 2 );
       sprintf( (char *) &name[0], "%d\0", sval );
       if( ( s = getarr( DasId_toNam, name ) ) == 0 ) {
-	 complain( 0, "Can't get DAS name for %d DAS id\n", sval );
+	 elog_complain( 0, "Can't get DAS name for %d DAS id\n", sval );
 	 continue;
       }
       for( ds = 0; ds < MAXDAS; ds++, ch++ )  {

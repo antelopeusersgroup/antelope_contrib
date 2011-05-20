@@ -50,7 +50,7 @@ int ntoken, link_size, size, i;
   for(i = 0; i < ntoken; i++)  {
     strcat(subpath, tmp[i]);
     if(lstat(subpath, &buf) != 0)  {
-         complain(1,"Find_path:can't stat. \n");
+         elog_complain(1,"Find_path:can't stat. \n");
          return -1;
     } else if(S_ISLNK(buf.st_mode) != 0)  {
        link_size = readlink(subpath, (void *)link_path, size);
@@ -73,7 +73,7 @@ int ntoken, link_size, size, i;
       strcat(subpath,"/");
       strcpy(*real_path, subpath);
    } else {
-       complain( 0, "%s is not a path to the data file\n", subpath);
+       elog_complain( 0, "%s is not a path to the data file\n", subpath);
        free(subpath); free(link_path); free(orig_path);
        return 0;
    }

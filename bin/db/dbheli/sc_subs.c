@@ -16,7 +16,7 @@ make_scs (Dbptr db, char *stai, char *chani, double tstart, double tend, Tbl **s
 	*scs = NULL;
 	*scs = newtbl(0);
 	if ((*scs) == NULL) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "make_scs: newtbl() error.\n");
 		return (0);
 	}
@@ -51,7 +51,7 @@ make_scs (Dbptr db, char *stai, char *chani, double tstart, double tend, Tbl **s
 			sc->db = dbi;
 			sc->recstart = dbi.record;
 			if (settbl ((*scs), -1, sc) < 0) {
-				clear_register (1);
+				elog_clear_register(1);
 				fprintf (stderr, "make_scs: settbl() error.\n");
 				return (0);
 			}

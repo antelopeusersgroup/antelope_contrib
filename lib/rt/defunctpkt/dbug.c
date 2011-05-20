@@ -188,7 +188,7 @@ un_dbug ( double time,
 	cp += nbytes ;
     }
     if ( cp - stuffed != hdrsize + datasize ) {
-	register_error ( 0, "packet sizes don't add up: %d != %d + %d\n",
+	elog_log( 0, "packet sizes don't add up: %d != %d + %d\n",
 	    cp - stuffed, hdrsize, datasize ) ; 
 	retcode = 0 ;
     }

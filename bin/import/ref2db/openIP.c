@@ -18,10 +18,10 @@ open_IN_ports( RunArg *par )
 
 	if((stat(par->iport, &buf)) != 0)  {
   	   if(ENOENT)  {
-                complain(0, "open_IN_ports():Port:%s doesn't exist!\n", par->iport );
+                elog_complain(0, "open_IN_ports():Port:%s doesn't exist!\n", par->iport );
                 return 0; 
            } else {
-                complain(1, "open_IN_ports():can't stat %s.", par->iport );
+                elog_complain(1, "open_IN_ports():can't stat %s.", par->iport );
                 return 0; 
            }
        }  else if( S_ISCHR(buf.st_mode) )  {
@@ -39,7 +39,7 @@ open_IN_ports( RunArg *par )
  
                return open_chr( par );
       }  else {
-	       complain(0, "open_IN_ports():%s can't be Input Port!", par->iport);
+	       elog_complain(0, "open_IN_ports():%s can't be Input Port!", par->iport);
                return 0; 
       }
 }
@@ -64,21 +64,21 @@ int open_disk( RunArg *par )
 
 
 	if (( par->ifp = open( par->iport, O_RDONLY ) ) < 0)  {
-	  complain(1,"open_IN_ports():Can't open %s disk.\n", par->iport );
+	  elog_complain(1,"open_IN_ports():Can't open %s disk.\n", par->iport );
 	  return 0; 
         }
    
            /* get disk geometry  */
 
    	if( ioctl(par->ifp, DKIOCGGEOM, &geom) )  {
-       	  complain( 1, "openIP: Can't get disk geometry:" );
+       	  elog_complain( 1, "openIP: Can't get disk geometry:" );
           return 0; 
         }
 
         /* get partition table of the disk */
 
 	  if( ioctl( par->ifp, DKIOCGAPART, &part) )  { 
-	     complain( 1, " openIP: Can't get disk partition table:" );
+	     elog_complain( 1, " openIP: Can't get disk partition table:" );
              return 0; 
           }
 
@@ -104,14 +104,14 @@ int open_disk( RunArg *par )
         	 geom.dkg_intrlv = label.dkl_intrlv;
         
 		if (ioctl( par->ifp, DKIOCSGEOM, &geom) == -1) {
-              	   complain( 1, "openIP: Can't reset disk geometry");
+              	   elog_complain( 1, "openIP: Can't reset disk geometry");
          	   return 0; 
 		}
  
 	/* reset kernel's disk partition table */
 
         	if (ioctl( par->ifp, DKIOCSAPART, &label.dkl_map) == -1) {
-                  complain(  1, "openIP: Can't reset disk  partitoon" );
+                  elog_complain(  1, "openIP: Can't reset disk  partitoon" );
                   return 0; 
                 }
   	}
@@ -119,17 +119,17 @@ int open_disk( RunArg *par )
   	close( par->ifp );
 
   	if (( par->ifp = open( par->iport, O_RDONLY ) ) < 0)  {
-            complain( 1,"open_IN_ports():Can't open %s disk.\n", par->iport);
+            elog_complain( 1,"open_IN_ports():Can't open %s disk.\n", par->iport);
             return 0; 
    	}
    
   	if( (nbytes = read( par->ifp, (char *) &buffer[0], 1024)) != 1024)  {
-     	   complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
+     	   elog_complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
      	   return 0; 
   	}
     
   	if( (nbytes = read( par->ifp, (char *) &buffer[0], 1024)) != 1024)  {
-     	   complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
+     	   elog_complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
      	   return 0; 
   	}
 
@@ -161,7 +161,7 @@ int open_chr( RunArg *par )
   
 
 	if (( par->ifp = open( par->iport, O_RDONLY ) ) < 0)  {
-           complain(1,"open_IN_ports():Can't open %s data stream.\n", par->iport);
+           elog_complain(1,"open_IN_ports():Can't open %s data stream.\n", par->iport);
            return 0; 
         }  else  return IN_CHR;
 

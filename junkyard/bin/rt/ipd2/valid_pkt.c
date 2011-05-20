@@ -42,18 +42,18 @@ int hdrtype;
 	if( timnow - check_time > chrate )  {
 	    newpf( pffile );
             if( !(*psize = hdr2packet( (char **) data, Par.hdrtype,  srcname )) )  {
-	        complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
+	        elog_complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
   	        err = 1;
 	    } else err = 0;
 	    check_time = timnow;
 	} else {
-	    complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
+	    elog_complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
   	    err = 1;
         }
     } else err = 0;
 
    if( Log ) 
-       complain( 0, "SRCNAME: %s-%lf \n", srcname, *epoch );
+       elog_complain( 0, "SRCNAME: %s-%lf \n", srcname, *epoch );
 
     return err; 
  

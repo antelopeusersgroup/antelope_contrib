@@ -156,7 +156,7 @@ qdata2qorbpkt (unsigned char *qdata_pkt, int ndata,
 		level = 2;
 		break;
 	default:
-		register_error (0, "qdata2qorbpkt: Unknown Quanterra message or compression level (%d).\n", 
+		elog_log(0, "qdata2qorbpkt: Unknown Quanterra message or compression level (%d).\n", 
 						msg_type);
 		return (-1);
 	}
@@ -217,14 +217,14 @@ qdata2qorbpkt (unsigned char *qdata_pkt, int ndata,
 	if (*packet == NULL) {
 		*packet = (char *) malloc (bsize);
 		if (*packet == NULL) {
-			register_error (1, "qdata2qorbpkt: malloc() error.\n");
+			elog_log(1, "qdata2qorbpkt: malloc() error.\n");
 			return (-1);
 		}
 		*bufsize = bsize;
 	} else if (bsize > *bufsize) {
 		*packet = (char *) realloc (*packet, bsize);
 		if (*packet == NULL) {
-			register_error (1, "qdata2qorbpkt: realloc() error.\n");
+			elog_log(1, "qdata2qorbpkt: realloc() error.\n");
 			return (-1);
 		}
 		*bufsize = bsize;
@@ -312,7 +312,7 @@ qcomment2qorbpkt (unsigned char *qdata_pkt,
 	*time = h2e (year, doy, hour, minute, second);
 
 	if (log2orbpkt (comment, packet, nbytes, bufsize) < 0) {
-		register_error (0, "qcomment2qorbpkt: log2orbpkt() error.\n");
+		elog_log(0, "qcomment2qorbpkt: log2orbpkt() error.\n");
 		return (-1);
 	}
 
@@ -340,14 +340,14 @@ log2orbpkt (char *comment, char **packet, int *nbytes, int *bufsize)
 	if (*packet == NULL) {
 		*packet = (char *) malloc (bsize);
 		if (*packet == NULL) {
-			register_error (1, "log2orbpkt: malloc() error.\n");
+			elog_log(1, "log2orbpkt: malloc() error.\n");
 			return (-1);
 		}
 		*bufsize = bsize;
 	} else if (bsize > *bufsize) {
 		*packet = (char *) realloc (*packet, bsize);
 		if (*packet == NULL) {
-			register_error (1, "log2orbpkt: realloc() error.\n");
+			elog_log(1, "log2orbpkt: realloc() error.\n");
 			return (-1);
 		}
 		*bufsize = bsize;
@@ -376,11 +376,11 @@ setupqorbpkt ()
 
 {
 	if (register_pkt_handler (QUANTERRA_DATA_PKT_TYPE, NULL, unstuffqorbpkt) < 0) {
-		register_error (0, "setupqorbpkt: register_pkt_handler() error.\n");
+		elog_log(0, "setupqorbpkt: register_pkt_handler() error.\n");
 		return (-1);
 	}
 	if (register_pkt_handler (QUANTERRA_DATA_PKT_TYPE2, NULL, unstuffqorbpkt) < 0) {
-		register_error (0, "setupqorbpkt: register_pkt_handler() error.\n");
+		elog_log(0, "setupqorbpkt: register_pkt_handler() error.\n");
 		return (-1);
 	}
 
@@ -424,12 +424,12 @@ unstuffqorbpkt (double time,
 	ptr += 2;
 	if (pkttyp != (unsigned short int)QUANTERRA_DATA_PKT_TYPE &&
 			pkttyp != (unsigned short int)QUANTERRA_DATA_PKT_TYPE2) {
-		register_error (0, "unstuffqorbpkt: Wrong pkttyp.\n");
+		elog_log(0, "unstuffqorbpkt: Wrong pkttyp.\n");
 		return (0);
 	}
 	if (hdrtyp != (unsigned short int)QUANTERRA_DATA_HDR_TYPE &&
 			hdrtyp != (unsigned short int)QUANTERRA_DATA_HDR_TYPE2) {
-		register_error (0, "unstuffqorbpkt: Wrong hdrtyp.\n");
+		elog_log(0, "unstuffqorbpkt: Wrong hdrtyp.\n");
 		return (0);
 	}
 	size = pktsiz - hdrsiz;
@@ -456,7 +456,7 @@ unstuffqorbpkt (double time,
 	if (*pkt == NULL) {
 		*pkt = newpkt();
 		if (*pkt == NULL) {
-			register_error (0, "unstuffqorbpkt: newpkt() error.\n");
+			elog_log(0, "unstuffqorbpkt: newpkt() error.\n");
 			return (0);
 		}
 		(*pkt)->chan = NULL;
@@ -468,7 +468,7 @@ unstuffqorbpkt (double time,
 	if ((*pkt)->chan == NULL) {
 		(*pkt)->chan = newtbl (1);
 		if ((*pkt)->chan == NULL) {
-			register_error (0, "unstuffqorbpkt: newtbl() error.\n");
+			elog_log(0, "unstuffqorbpkt: newtbl() error.\n");
 			return (0);
 		}
 	}
@@ -477,7 +477,7 @@ unstuffqorbpkt (double time,
 	if (pktch == NULL) {
 		pktch = (PktChannel *) malloc (sizeof(PktChannel));
 		if (pktch == NULL) {
-			register_error (1, "unstuffqorbpkt: malloc() error.\n");
+			elog_log(1, "unstuffqorbpkt: malloc() error.\n");
 			return (0);
 		}
 		settbl ((*pkt)->chan, 0, pktch);
@@ -489,7 +489,7 @@ unstuffqorbpkt (double time,
 			pktch->nbytes = nsamp*4;
 			pktch->data = (void *) realloc (pktch->data , pktch->nbytes);
 			if (pktch->data == NULL) {
-				register_error (1, "unstuffqorbpkt: realloc() error.\n");
+				elog_log(1, "unstuffqorbpkt: realloc() error.\n");
 				return (0);
 			}
 		}
@@ -497,7 +497,7 @@ unstuffqorbpkt (double time,
 		pktch->nbytes = nsamp*4;
 		pktch->data = (void *) malloc (pktch->nbytes);
 		if (pktch->data == NULL) {
-			register_error (1, "unstuffqorbpkt: malloc() error.\n");
+			elog_log(1, "unstuffqorbpkt: malloc() error.\n");
 			return (0);
 		}
 	}
@@ -520,7 +520,7 @@ unstuffqorbpkt (double time,
 		conf->sdh.nsamp = nsamp;
 		conf->level = level;
 		if ( usteim (conf, &idata, &npts) ) {
-			register_error (0, "unstuffqorbpkt: usteim() error.\n");
+			elog_log(0, "unstuffqorbpkt: usteim() error.\n");
 			return (0);
 		}
 		memcpy (pktch->data, idata, nsamp*4);
@@ -552,11 +552,11 @@ orbpkt2log (char *packet, char **comment)
 	N2H2 (&pkttyp, ptr, 1);
 	ptr += 2;
 	if (pkttyp != (unsigned short int)QUANTERRA_LOG_PKT_TYPE) {
-		register_error (0, "orbpkt2log: Wrong pkttyp.\n");
+		elog_log(0, "orbpkt2log: Wrong pkttyp.\n");
 		return (0);
 	}
 	if (hdrtyp != (unsigned short int)QUANTERRA_LOG_HDR_TYPE) {
-		register_error (0, "orbpkt2log: Wrong hdrtyp.\n");
+		elog_log(0, "orbpkt2log: Wrong hdrtyp.\n");
 		return (0);
 	}
 	*comment = ptr;

@@ -23,14 +23,14 @@ void sig_hdlr(signo)
 int signo;
  {
  
-     complain( 0, "sig_hdlr(): Got signal %d.\n", signo);
-     complain( 0, "Re-reading parameter file to get new settings..." );
+     elog_complain( 0, "sig_hdlr(): Got signal %d.\n", signo);
+     elog_complain( 0, "Re-reading parameter file to get new settings..." );
  
      Packets == NULL; init_packets();
      StaID == NULL; init_StaID();
      StaCh == NULL; init_StaCh();
      
-     complain( 0, "Done.\n");
+     elog_complain( 0, "Done.\n");
      signal(SIGUSR1, sig_hdlr );
    return;
  }

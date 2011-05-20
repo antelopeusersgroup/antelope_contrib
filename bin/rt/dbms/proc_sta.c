@@ -32,7 +32,7 @@ int proc_sta( Dbptr db, int nrec, Event *event )
           "nsamp", &nsamp,
           "sta", sta,
            0 )) == dbINVALID )
-           die( 0, "dbgetv faild for record #%d\n", db.record );
+           elog_die( 0, "dbgetv faild for record #%d\n", db.record );
 
 /*
 fprintf( stderr, "%s: %lf %lf %d %lf \n", sta, stime, endtime, nsamp,event->otime );
@@ -40,7 +40,7 @@ fprintf( stderr, "%s: %lf %lf %d %lf \n", sta, stime, endtime, nsamp,event->otim
        if( strncmp( event->sta, sta, strlen(sta) )) continue;
 
        if( stime >= event->etime )   {
-           complain( 0, "can't get data for %s %lf - %lf.\n", 
+           elog_complain( 0, "can't get data for %s %lf - %lf.\n", 
                          sta, event->otime, event->etime);
            return 0;
        }
@@ -61,13 +61,13 @@ fprintf( stderr, "%lf %lf - %lf %lf %d \n",
 
 */
        if( buf == 0 )  { 
-           complain( 0, "can't get data for %s from %lf to %lf\n", 
+           elog_complain( 0, "can't get data for %s from %lf to %lf\n", 
                         event->sta, event->otime, event->etime ); 
            continue;
        }
        if( te <= event->otime ) continue;
        if( ts > event->stime ) {
-           complain( 0, "trace start time is more than SWA time. %lf > %lf\n",
+           elog_complain( 0, "trace start time is more than SWA time. %lf > %lf\n",
                      ts, event->stime );
            if(buf) {
 	    	free(buf);
@@ -76,7 +76,7 @@ fprintf( stderr, "%lf %lf - %lf %lf %d \n",
 	   return 0;
        }  else {
            if( ( pos = (int) ( event->stime - ts ) * samprate) >= npts ) {
-               complain( 0,  
+               elog_complain( 0,  
                "no data for %s from %lf to %lf.\n", sta, event->stime, event->etime ); 
            	if(buf) {
 	 	   free(buf);
@@ -86,7 +86,7 @@ fprintf( stderr, "%lf %lf - %lf %lf %d \n",
            }
 
            if( !(retcode = domag( buf, ts, samprate, npts, pos, calib, event)) ) 
-               complain( 0,  
+               elog_complain( 0,  
                "can't calculate MS for %s. ( no data or too many FULL scale values).\n", sta); 
            if( buf != 0 && *buf != 0 ) free( buf );
            return retcode;

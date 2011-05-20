@@ -133,7 +133,7 @@ main(int argc, char **argv)
 	    counts = 1 ;
 	    break;
 	case ('h'):
-	    clear_register(1);
+	    elog_clear_register(1);
 	    usage();
 	case ('V'):
 	case ('v'):
@@ -159,8 +159,8 @@ main(int argc, char **argv)
     	Tstart_sift, Tend_sift, 1, &nscvs);
     if ((scvs == NULL) || (nscvs == 0))
       {
-	clear_register(1);
-	die(1, "No corresponding waveform data found");
+	elog_clear_register(1);
+	elog_die(1, "No corresponding waveform data found");
       }
 
     for (scv_index = 0; scv_index < nscvs; scv_index++)

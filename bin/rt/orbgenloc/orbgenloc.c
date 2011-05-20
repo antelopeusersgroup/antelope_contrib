@@ -17,7 +17,7 @@
 
 static void usage (char *Program_Name)
 {
-	die(0,"Usage:  %s orbserver [-S statefile -pf pffile]\n", 
+	elog_die(0,"Usage:  %s orbserver [-S statefile -pf pffile]\n", 
 		Program_Name);
 }
 /* Special function used in orbgenloc for repeated task sending a db record 
@@ -43,7 +43,7 @@ int save_dbrecord(Dbptr db, int orb)
 	if(db2orbpkt(db,orb)) 
 	{
 		dbquery(db,dbTABLE_NAME,table_name);
-		register_error(0,"Error writing a record for table %s to orb\n",
+		elog_log(0,"Error writing a record for table %s to orb\n",
 			table_name);
 		--ret_code;
 	}
@@ -151,7 +151,7 @@ int save_origin(int nass, int evid, Dbptr master_db, Dbptr dbtmp,
 
 	orid = dbnextid(master_db,"orid");
 	if(orid  < 0 )
-		die(1,"save_origin:  dbnextid failure asking for new orid\n");
+		elog_die(1,"save_origin:  dbnextid failure asking for new orid\n");
         if(o.fix[2])
         {
                 ndef = h.degrees_of_freedom + 3;
@@ -182,13 +182,13 @@ int save_origin(int nass, int evid, Dbptr master_db, Dbptr dbtmp,
 		"auth",auth,0))
 			 == dbINVALID)
 	{
-		complain(0,"dbputv error while building origin record for orid %d\nNo results saved\n",
+		elog_complain(0,"dbputv error while building origin record for orid %d\nNo results saved\n",
 			orid);
 	}
 	else
 	{
 		if(save_dbrecord(dbtmp,orb))
-			complain(0,"Errors saving orid %d\n",orid);
+			elog_complain(0,"Errors saving orid %d\n",orid);
 	}
 	return(orid);
 }
@@ -248,13 +248,13 @@ void save_origerr(int orid, Hypocenter h, double **C, Dbptr db, int orb)
 		"conf",conf,
 			0) == dbINVALID)
 	{
-		complain(0,"save_origerr: dbputv error writing origerr record for orid %d\norigerr record not saved anywhere\n",
+		elog_complain(0,"save_origerr: dbputv error writing origerr record for orid %d\norigerr record not saved anywhere\n",
 				orid);
 	}
 	else
 	{
 		if(save_dbrecord(db,orb))
-			complain(0,"Error saving origerr record for orid %d\n",
+			elog_complain(0,"Error saving origerr record for orid %d\n",
 				orid);
 	}
 
@@ -327,7 +327,7 @@ void save_assoc(Tbl *ta, Tbl *tu,
 			"wgt",(double)a->res.residual_weight,
 		  	0)<0)
 		    {
-			  complain(0,
+			  elog_complain(0,
 			    "Can't add assoc record for station %s arid = %d orid = %d to working db scratch record\nRecord skipped and not saved anywhere\n",
 				a->sta->name,a->arid,orid);
 			  continue;
@@ -360,7 +360,7 @@ void save_assoc(Tbl *ta, Tbl *tu,
 				"wgt",(double)a->res.residual_weight,
 		  	  0)<0)
 			{
-			  	complain(0,
+			  	elog_complain(0,
 				  "Can't add assoc record for station %s arid = %d orid = %d to working db scratch record\nRecord skipped and not saved anywhere\n",
 				a->sta->name,a->arid,orid);
 				delarr(u_arr,key_arid);
@@ -371,7 +371,7 @@ void save_assoc(Tbl *ta, Tbl *tu,
 			delarr(u_arr,key_arid);
 		}
 		if(save_dbrecord(db,orb))
-			complain(0,"Error saving assoc record for arid %d\n",
+			elog_complain(0,"Error saving assoc record for arid %d\n",
 				a->arid);
 	}
 	/* Since it is possible that slowness vectors can be measured
@@ -417,12 +417,12 @@ void save_assoc(Tbl *ta, Tbl *tu,
 			"wgt",(double)u->xres.residual_weight,
 	  	  0)<0)
 		{
-		  	complain(0,"Can't add assoc record for array slowness vector with %s arid = %d and orid = %d to working db scratch record\nNothing saved\n",
+		  	elog_complain(0,"Can't add assoc record for array slowness vector with %s arid = %d and orid = %d to working db scratch record\nNothing saved\n",
 			u->array->name,u->arid,orid);
 			continue;
 		}
 		if(save_dbrecord(db,orb))
-			complain(0,"Error saving assoc record for arid %d\n",
+			elog_complain(0,"Error saving assoc record for arid %d\n",
 				u->arid);		
 
 	}
@@ -439,7 +439,7 @@ char *format_hypo(Hypocenter *h)
 {
         char *s;
         s = malloc(512);
-        if(s == NULL) die(1,"malloc error for hypocenter output tabulation\n");
+        if(s == NULL) elog_die(1,"malloc error for hypocenter output tabulation\n");
         sprintf(s,"%lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %d %d",
                 h->lat0,h->lon0,h->z0,h->t0,
                 h->lat,h->lon,h->z,h->time,
@@ -507,7 +507,7 @@ int write_to_logfile(RTlocate_Options rtopts, int orid, int evid,
 	stuff written above. */
 	if((fp=fopen(fname,"a")) == NULL)
 	{
-		complain(1,"Cannot open log file %s\n",fname);
+		elog_complain(1,"Cannot open log file %s\n",fname);
 		return(1);
 	}
 	fseek(fp,0L,SEEK_END);
@@ -625,7 +625,7 @@ void compute_location(Location_options o,
 			C = dmatrix(0,3,0,3);
 			emodel = (float *) calloc(4,sizeof(float));
 			if((emodel == NULL) || (*C == NULL) )
-				die(0,"Malloc error for error arrays\n");
+				elog_die(0,"Malloc error for error arrays\n");
 			niterations = maxtbl(converge_history);
                 	hypo = (Hypocenter *)gettbl(converge_history,
 							niterations-1);
@@ -665,19 +665,19 @@ void exhume_state(int ecode)
 	switch (ecode)
 	{
 	case (-1):
-		complain(0,"Cannot open state file for writing\n");
+		elog_complain(0,"Cannot open state file for writing\n");
 		break;
 	case (0):
-		complain(0,"State file not found, new one will be created\n");
+		elog_complain(0,"State file not found, new one will be created\n");
 		break;
 	case (1):
-		complain(0,"Found old state file\n");
+		elog_complain(0,"Found old state file\n");
 		break;
 	case (2):
-		complain(0,"Old state file found, but it was corrupted\n");
+		elog_complain(0,"Old state file found, but it was corrupted\n");
 		break;
 	default:
-		complain(0,"Unrecognized error return by exhume\n");
+		elog_complain(0,"Unrecognized error return by exhume\n");
 	}
 	return;
 }
@@ -735,7 +735,7 @@ int main (int argc, char **argv)
 		{
 /* For this kind of program it seems wise to make it a fatal error to 
 have the arguments botched */
-			complain(0,"Unrecognized argument %s\n",argv[i]);
+			elog_complain(0,"Unrecognized argument %s\n",argv[i]);
 			usage(argv[0]);
 		}
 	}
@@ -746,7 +746,7 @@ have the arguments botched */
 	/* parse parameter file and form all the genloc control and
 	internal static data structures */
 	i = pfread(pffile,&pf);
-	if(i != 0) die(1,"Pfread error\n");
+	if(i != 0) elog_die(1,"Pfread error\n");
 	o = parse_options_pf (pf);
 	arr_sta = load_station_table(pf);
 	arr_a = load_array_table(pf);
@@ -765,16 +765,16 @@ have the arguments botched */
 	rt_opts = parse_rt_options(pf);
 
 	if(dbopen(rt_opts.work_db,"r+",&master_db ) == dbINVALID)
-                die(1,"Unable to open master database %s\n",
+                elog_die(1,"Unable to open master database %s\n",
 			rt_opts.work_db);
 
 
 	/* Now we open the orb server connections */
 	if( (orbin=orbopen(orbname,"r&")) < 0)
-		die(0,"Cannot open ring buffer %s for reading\n",orbname);
+		elog_die(0,"Cannot open ring buffer %s for reading\n",orbname);
 	
 	if(orbselect(orbin,"/db/event|/db/origin|/db/assoc|/db/arrival") < 0)
-		die(0,"Cannot select any db records from ring buffer %s\n",
+		elog_die(0,"Cannot select any db records from ring buffer %s\n",
 			orbname);
 
 	/* These are the state saving routines.  quit is set nonzero 
@@ -785,12 +785,12 @@ have the arguments botched */
 	exhume_rcode = exhume ( statefile, 0, 0, 0 );
 	exhume_state(exhume_rcode);  
         if ( orbresurrect ( orbin, &last_pktid, &last_pkttime ) == 0 )
-		complain ( 0, "resurrection successful: repositioned to pktid #%d\n", last_pktid ) ;
+		elog_complain( 0, "resurrection successful: repositioned to pktid #%d\n", last_pktid ) ;
         else
 	{
 		orbseek (orbin, ORBOLDEST);
 		last_pktid = orbtell(orbin);
-		complain ( 0, "resurrection unsuccessful\nStarting at beginning of current orb at packet id %d\n",last_pktid ) ;
+		elog_complain( 0, "resurrection unsuccessful\nStarting at beginning of current orb at packet id %d\n",last_pktid ) ;
 	}
 	/* The following is basically a trick to create a db pointer that
 	never references any tables.  This is the preferred approach for
@@ -798,7 +798,7 @@ have the arguments botched */
 	pointer.  The fact that we destroy the file this creates turns
 	out to be a feature of datascope we can exploit here.  */
 	if (maketmpdb ("css3.0", &dbtmp, dbname) < 0) {
-		complain (0, "maketmpdb() error.\n");
+		elog_complain(0, "maketmpdb() error.\n");
 		exit (1);
 	}
 	/* This little routine initilizes the null record for each table 
@@ -806,14 +806,14 @@ have the arguments botched */
 	scratch record.  This sets proper nulls in fields that are not
 	referenced by this program. */
 	if(initialize_scratch_records(dbtmp) == dbINVALID)
-		complain(0,"Warning:  errors initializing null records in tables.  May generate invalid data in some fields\n");
+		elog_complain(0,"Warning:  errors initializing null records in tables.  May generate invalid data in some fields\n");
 /*
 	unlink (dbname);
 */
 	
 
 	if( (orbout=orbopen(orbname,"w&")) < 0)
-		die(0,"Cannot open ring buffer %s for writing\n",orbname);
+		elog_die(0,"Cannot open ring buffer %s for writing\n",orbname);
 
 	/* This loop is broken only by an error.  We call bury after each 
 	event is processed saving the current packet id.  This should 
@@ -828,13 +828,13 @@ have the arguments botched */
 		if(return_code)
 		{
 		    if(return_code < 0)
-			complain(0,"Error reading db records from orb\nCurrent event skipped\n");
+			elog_complain(0,"Error reading db records from orb\nCurrent event skipped\n");
 		    else
-			complain(0,"Sequencing error reading db packets from orbassoc.\nOne or more events were probably skipped\n");
+			elog_complain(0,"Sequencing error reading db packets from orbassoc.\nOne or more events were probably skipped\n");
 		    continue;
 		}
 		if(bury())
-			complain(0,
+			elog_complain(0,
 			  "bury failed writing statefile %s\n",statefile);
 
 		compute_location(o,rt_opts,arr_sta,arr_a,arr_phase,

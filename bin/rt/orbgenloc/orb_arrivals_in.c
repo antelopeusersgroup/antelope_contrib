@@ -105,7 +105,7 @@ int *last_pktid, RTlocate_Options opt)
 		if(orbreap (orb, &pktid, srcname, &time, 
 					&packet, &nbytes, &bufsize)) 
 		{
-			register_error(0,"orbreap error at packet id %d\nContinuing\n",pktid);
+			elog_log(0,"orbreap error at packet id %d\nContinuing\n",pktid);
 			continue;
 		}
 		if (strncmp(srcname, "/db/", 4)) continue;
@@ -117,7 +117,7 @@ int *last_pktid, RTlocate_Options opt)
 				"evid", &(hyp->evid),
 				"prefor", &prefor,
 				0) == dbINVALID) {
-			register_error (0, "orbin: dbgetv() error.\n");
+			elog_log(0, "orbin: dbgetv() error.\n");
 			return (-1);
 		}
 		if (strcmp(hyp->auth, "orbassoc")) continue;
@@ -142,7 +142,7 @@ int *last_pktid, RTlocate_Options opt)
 					"lon", &(hyp->lon),
 					"depth", &(hyp->depth),
 					0) == dbINVALID) {
-				register_error (0, "orbin: dbgetv() error.\n");
+				elog_log(0, "orbin: dbgetv() error.\n");
 				return (-1);
 			}
 			if (strcmp(auth, "orbassoc")) continue;
@@ -152,7 +152,7 @@ int *last_pktid, RTlocate_Options opt)
 				if (hyp->assocs) free (hyp->assocs);
 				hyp->assocs = (Association *) malloc (hyp->nass*sizeof(Association));
 				if (hyp->assocs == NULL) {
-					register_error (1, "orbin: malloc() error.\n");
+					elog_log(1, "orbin: malloc() error.\n");
 					return (-1);
 				}
 				hyp->assocs_size = hyp->nass;
@@ -176,7 +176,7 @@ int *last_pktid, RTlocate_Options opt)
 						"timeres", &(hyp->assocs[n].timeres),
 						"timedef", hyp->assocs[n].timedef,
 						0) == dbINVALID) {
-					register_error (0, "orbin: dbgetv() error.\n");
+					elog_log(0, "orbin: dbgetv() error.\n");
 					return (-1);
 				}
 				if (orid != hyp->orid) continue;
@@ -200,14 +200,14 @@ int *last_pktid, RTlocate_Options opt)
 							"chan", hyp->assocs[n].chan,
 							"iphase", hyp->assocs[n].iphase,
 							0) == dbINVALID) {
-						register_error (0, "orbin: dbgetv() error.\n");
+						elog_log(0, "orbin: dbgetv() error.\n");
 						return (-1);
 					}
 					if (arid == hyp->assocs[n].arid) break;
 				}
 				if(number_skipped >= opt.db_record_skip_timeout) 
 				{
-					register_error(0,"Record skipping limit reached while hunting for arrival row to match assoc row.\nResynching\nOne or more events were probably skipped\n");
+					elog_log(0,"Record skipping limit reached while hunting for arrival row to match assoc row.\nResynching\nOne or more events were probably skipped\n");
 					return(1);
 				}
 				n++; 
@@ -243,11 +243,11 @@ Tbl *orbhypo_to_genloc(ORB_Hypocenter *hyp, Arr *arrphase, Arr *stations)
 	{
 		a = (Arrival *) malloc(sizeof(Arrival));
 		if(a == NULL)
-		   die(1,"orbhypo_to_genloc cannot malloc Arrival structure\n");
+		   elog_die(1,"orbhypo_to_genloc cannot malloc Arrival structure\n");
 		a->sta = (Station *) getarr(stations,hyp->assocs[i].sta);
 		if(a->sta == NULL)
 		{
-			complain(1,"Cannot find coordinates for station %s\n%s phase arrival for this station skipped\n",
+			elog_complain(1,"Cannot find coordinates for station %s\n%s phase arrival for this station skipped\n",
 				hyp->assocs[i].sta, hyp->assocs[i].iphase);
 			free(a);
 			continue;

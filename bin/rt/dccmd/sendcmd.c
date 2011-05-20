@@ -14,15 +14,15 @@ int sendcmd( int dcfp, char *cmd, int len, int echo )
         if( echo )  {
              nbytes = read( dcfp, (char *) echo_buf, len );
              if( nbytes != len  )  {
-                  complain(1, "\nCan't get an echo of %s.\n", cmd );
+                  elog_complain(1, "\nCan't get an echo of %s.\n", cmd );
                   return 0;
              }
              if( strncmp( echo_buf, "EE", 2) == 0 )  { 
-                    complain( 0, "\nDC rejected %s command.\n", cmd );
+                    elog_complain( 0, "\nDC rejected %s command.\n", cmd );
 	            return 0;	
              } 
              if( strncmp( cmd, echo_buf, len )!= 0 )  {
-                 complain( 0, "\necho != command (%s != %s).\n", cmd, echo_buf );
+                 elog_complain( 0, "\necho != command (%s != %s).\n", cmd, echo_buf );
 	         return 0;
 	     }
         }

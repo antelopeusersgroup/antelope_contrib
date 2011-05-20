@@ -127,7 +127,7 @@ char *argv[];
         }
   }
   if( pfread ( pfile, &pf) != 0 )
-      die (0, "Can't read parameter file %s\n", pfile );
+      elog_die(0, "Can't read parameter file %s\n", pfile );
 
   daslist = pfget_tbl( pf, "Site" );
   dasnum = maxtbl( daslist );
@@ -137,11 +137,11 @@ char *argv[];
   par.datacode = trdatacode (par.datatype);
 
   if (dbopen_database ( arg.dbname, "r+", &db) < 0)
-	die (0, "Can't open output database %s\n",  arg.dbname);
+	elog_die(0, "Can't open output database %s\n",  arg.dbname);
   if (db.table < 0) {
 	db = dblookup (db, 0, "wfdisc", 0, 0);
 	if (db.table < 0)
-	    die (0, "Can't open output table '%s'\n",  arg.dbname);
+	    elog_die(0, "Can't open output table '%s'\n",  arg.dbname);
   }
   par.db = db ;
 
@@ -160,7 +160,7 @@ char *argv[];
   if( (arg.dev_type = open_IN_ports( &arg ) ) > 0 )   {
        read_input( &par, &arg );
   }    else 
-       die( 0, "can't open iport %\n", arg.iport );
+       elog_die( 0, "can't open iport %\n", arg.iport );
 
 
 }

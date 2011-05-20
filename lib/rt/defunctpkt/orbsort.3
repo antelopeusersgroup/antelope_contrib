@@ -113,21 +113,21 @@ The following test program is an example of how to use orbpipe.
 		case 1:
 		    printf ( "%2d @%6f\\n", rpktid, time ) ; 
 		    if ( rpacket != (char *) -1 ) 
-			complain ( 0, "Bad returned address for packet = %x\\n", 
+			elog_complain( 0, "Bad returned address for packet = %x\\n", 
 			    rpacket ) ; 
 		    break ;
      
 		case 2:
 		    printf ( "%2d @%6f ** out of order **\\n", rpktid, time ) ; 
 		    if ( rpacket != (char *) -1 ) 
-			complain ( 0, "Bad returned address for packet = %x\\n", 
+			elog_complain( 0, "Bad returned address for packet = %x\\n", 
 			    rpacket ) ; 
 		    break ;
      
 		case 3:
 		    printf ( "%2d @%6f ** duplicate **\\n", rpktid, time ) ; 
 		    if ( rpacket != (char *) -1 ) 
-			complain ( 0, "Bad returned address for packet = %x\\n", 
+			elog_complain( 0, "Bad returned address for packet = %x\\n", 
 			    rpacket ) ; 
 		    break ;
      
