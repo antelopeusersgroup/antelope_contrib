@@ -1386,13 +1386,13 @@ void set_nassoc(DatascopeHandle dbh,int orid)
 		Dbptr db;
 		dbh.db.record=0;
 		int ierr;
-		ierr=dbgetv(dbh.db,0,"origin",&db,0);
+		ierr=dbgetv(dbh.db,0,"origin",&db,NULL);
 		if(ierr==dbINVALID)
 		{
 			throw SeisppError(string("XcorProcessingEngine::save_results->set_nassoc:")
 				+ "  dbgetv error attempting to fetch Dbptr for origin");
 		}
-		dbputv(db,0,"nass",nass,0);
+		dbputv(db,0,"nass",nass,NULL);
 	}
 	else
 		cerr << "save_results (WARNING):  orid="
@@ -1432,10 +1432,10 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	string filter_param;
 	if(save_extensions)
 	{   try {
-		int record;
+		long record;
 		// First get and save the array beam
 		TimeSeries beam=mcc->ArrayBeam();
-		int fold=beam.get_int("fold");
+		long fold=beam.get_int("fold");
 		filter_param=beam.get_string("filter_spec");
 		// Set dir and dfile
 		beam.put("wfprocess.dir",beam_directory);
@@ -1445,7 +1445,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		record=dbsave(beam,dbwfprocess,string("wfprocess"),
 				beam_mdl,am);
 		dbwfprocess.record=record;
-		dbgetv(dbwfprocess,0,"pwfid",&pwfid,0);
+		dbgetv(dbwfprocess,0,"pwfid",&pwfid,NULL);
 		double beam_amplitude=beam.get_double(beam_rms_key);
 		//
 		// For the present the chan code will be the same
@@ -1462,12 +1462,12 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			"robusttwin",analysis_setting.robust_tw.length(),
 			"fold",fold,
 			"amp",beam_amplitude,
-				0);
+				NULL);
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
 		/* We don't write this in GenericGather mode as then every seismogram may have
 		a different evid associated with it */
-		if(processing_mode!=GenericGathers) dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,0);
+		if(processing_mode!=GenericGathers) dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,NULL);
 	    }
 	    catch (MetadataGetError& mderr)
 	    {
@@ -1591,11 +1591,11 @@ if(fabs(resid)>100.0)
 			      dbxcorarrival.record=addrecord;
 			      if(processing_mode==GenericGathers)
 			      {
-				int ggevid,ggorid,gridid;
+				long ggevid,ggorid,gridid;
 				try {
-				    ggevid=trace->get_int("evid");
-				    ggorid=trace->get_int("orid");
-				    gridid=trace->get_int("gridid");
+				    ggevid=trace->get_long("evid");
+				    ggorid=trace->get_long("orid");
+				    gridid=trace->get_long("gridid");
 				    record=dbputv(dbxcorarrival,0,"sta",sta.c_str(),
 					"chan",chan.c_str(),
 					"phase",analysis_setting.phase_for_analysis.c_str(),
@@ -1612,7 +1612,7 @@ if(fabs(resid)>100.0)
 					"stackwgt",stack_weight,
 					"coherence",coh,
 					"relamp",ampdb,
-					"xcorpeak",xcorpeak,0);
+					"xcorpeak",xcorpeak,NULL);
 				    if(record<0) cerr << "XcorProcessingEngine::save_results(WARNING):  "
 							<< "dbaddv failed writing xsaa table for station="
 							<< sta<<" evid="<<ggevid<<endl;
@@ -1637,7 +1637,7 @@ if(fabs(resid)>100.0)
 					"stackwgt",stack_weight,
 					"coherence",coh,
 					"relamp",amplitude,
-					"xcorpeak",xcorpeak,0);
+					"xcorpeak",xcorpeak,NULL);
 			         if(record<0)
 			         {
 				   cerr << "save_results(warning):  problems saving xcorarrival table"
