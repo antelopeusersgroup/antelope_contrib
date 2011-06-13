@@ -3,6 +3,14 @@ vnd_dir			vnd			# year based directories will be created under here
 dataless_dir		dataless_all		# year based directories will be created under here
 sta_dataless_dir	dataless_sta		# station based directories will be created under here
 
+product_dir		/anf/TA/products	# path where data products are stored.  
+						#	i.e. ending location would be a station dataless volume is:  $product_dir/$dataless_sta/$sta/
+						# Only used with -C option.  
+						# If left blank, products appear in ./ under appropriate vnd|dataless|sta_statless directories
+
+mailto			someone@ucsd.edu,someone@iris.washington.edu	# comma separated list of email recipients, overridden by command line -m
+
+
 # comment must be a single line less than 180 characters
 
 default_comment	&Literal{
