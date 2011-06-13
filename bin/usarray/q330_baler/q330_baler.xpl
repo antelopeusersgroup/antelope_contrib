@@ -60,8 +60,7 @@
         
 {    #  Main program
 
-    my ( $Pf, $cmd, $cmdorb, $dbops, $debug, $orb, $orbname, $pfsource, $problems, $stime, $subject, $subset, $success, $usage, $verbose );
-    my ( @output ) ;
+    my ( $Pf, $cmd, $cmdorb, $dbops, $orb, $orbname, $pfsource, $problems, $stime, $subject, $subset, $success, $usage );
     
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -128,7 +127,7 @@
     $subject = "ANF TA Q330 and Baler status";
     $cmd     = "rtmail -C -s '$subject' $pf{status_mail} < /tmp/tmp_noreg_$$";
         
-    ( $success, @output )  = &run_cmd( $cmd ) if  ( $pf{status_mail} =~ /[A-Za-z].*/ ) ;
+    &run_cmd( $cmd ) if  ( $pf{status_mail} =~ /[A-Za-z].*/ ) ;
     
     &rm_files  unless $opt_V;
     
@@ -144,8 +143,8 @@
  
 sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     my ( $cmdorb, $problems ) = @_;
-    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject, $success );
-    my ( @keys, @output ) ;
+    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject );
+    my ( @keys ) ;
     my ( %q330stat );
         
     elog_notify("\nget_q330_stat");
@@ -155,8 +154,7 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
 
     foreach $cmd_sel (@targets) {
         $cmd     = "dlcmd $cmdorb $cmd_sel q330 - getstatus >> $Pf.pf 2>&1 " ; 
-        ( $success, @output )  = &run_cmd( $cmd ) ;
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $subject = "Problems - $pgm $host	dlcmd getconfig failed";
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject");
@@ -190,8 +188,8 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
 
 sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     my ( $cmdorb, $problems ) = @_;
-    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject, $success );
-    my ( @keys, @output ) ;
+    my ( $Pf, $cmd, $cmd_sel, $key, $ref, $subject );
+    my ( @keys ) ;
     my ( %q330config );
     
     elog_notify("\nget_q330_config");
@@ -203,8 +201,7 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
     foreach $cmd_sel (@targets) {
         $cmd     = "dlcmd $cmdorb $cmd_sel q330 - getconfig >> $Pf.pf 2>&1 " ; 
 
-        ( $success, @output )  = &run_cmd( $cmd ) ;
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $subject = "Problems - $pgm $host	dlcmd getconfig failed";
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject");
@@ -238,9 +235,9 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
 sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems );
     my ( $cmdorb, $dbops, $subset, $problems ) = @_;
     my ( $Notes, $ctime, $dlname, $dlsta, $endnull, $field, $filter, $ignore_sta, $key, $line );
-    my ( $model, $nchange, $nconf, $nrec, $nstat, $rec, $row, $sta, $subject, $success );
+    my ( $model, $nchange, $nconf, $nrec, $nstat, $rec, $row, $sta, $subject );
     my ( @db, @dbcal, @dbcheck, @dbdeploy, @dbdepnull, @dbdepscr, @dbnull, @dbq330, @dbscratch ) ;
-    my ( @dbsq_close, @dbsq_open, @dl, @dlcom, @f, @fields, @keys, @list, @output, @rows, @sq_close, @sq_open );
+    my ( @dbsq_close, @dbsq_open, @dl, @dlcom, @f, @fields, @keys, @list, @rows, @sq_close, @sq_open );
     my ( %config, %sta, %stat );
 
     elog_notify("\nQ330 processing    $cmdorb    $dbops    $subset    $problems ");
@@ -300,8 +297,7 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
             elog_complain($line);
             $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig -force",
             elog_notify($line);
-            ( $success, @output )  = &run_cmd( $line ) ;
-            if ( ! $success ) {
+            if ( ! &run_cmd( $line ) ) {
                 $problems++ ;
             }
             next;
@@ -312,8 +308,7 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
             elog_complain($line);
             $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig -force",
             elog_notify($line);
-            ( $success, @output )  = &run_cmd( $line ) ;
-            if ( ! $success ) {
+            if ( ! &run_cmd( $line ) ) {
                 $problems++ ;
             }
 
