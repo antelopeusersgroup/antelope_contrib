@@ -1469,8 +1469,6 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			"fold",fold,
 			"amp",beam_amplitude,
 				NULL);
-//DEBUG
-cerr << "saved xcorbeam table"<<endl;
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
 		/* We don't write this in GenericGather mode as then every seismogram may have
@@ -1512,8 +1510,6 @@ cerr << "saved xcorbeam table"<<endl;
 	try {
 		deltim=waveform_ensemble.get_double("deltim");
 	} catch (...) {deltim=deltimnull;};
-//DEBUG
-cerr << "Entering trace loop"<<endl;
 	// Since this is hidden behind the interface I'm going
 	// to use the standard datascope API instead of going
 	// through the DatascopeHandle API.  Since this code
@@ -1649,8 +1645,6 @@ cerr << "Entering trace loop"<<endl;
 				     << sta
 					<<endl;
 			         }
-//DEBUG
-cerr << "Saved arrival info in xcorarrival table"<<endl;
 			      }
 			    }
 			    /* Do not save arrival/assoc if subarray mode is enabled.  In that
@@ -1708,8 +1702,6 @@ cerr << "Saved arrival info in xcorarrival table"<<endl;
 			    // KGL SCAFFOLD temporary cast to compile with new 64-bit-compliant headers
 			    trace->put("arrival.jdate",yearday(atime));
 			    trace->put("arrival.deltim",deltim);
-//DEBUG
-cerr << "Calling arrival updater methods"<<endl;
 			    try {
 			    	int arruerr=arru.update(*trace);
 			        if(arruerr)
