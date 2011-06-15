@@ -753,8 +753,12 @@ MGSKS  BW 0.02 2 0.5 2
 integration	INT
 }
 LoadArrivals true
-
+# Processing mode can be one of:  ContinuousData, EventGathers, GenericGathers
+# When ContinousData mode is set, GatherTimeAlignmentKey must be predarr_time
+# dbxcor will abort with an error if this is not true
 processing_mode ContinuousData
+GatherTimeAlignmentKey predarr_time
+
 dbprocess_commands &Tbl{
 dbopen wfprocess
 dbjoin sclink 
@@ -765,7 +769,6 @@ dbjoin site sta
 dbsort evid
 dbgroup evid
 }
-GatherTimeAlignmentKey arrival.time
 TTmethod tttaup
 TTmodel iasp91
 delete_old_arrivals true
