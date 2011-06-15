@@ -363,7 +363,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			// need to be forced here.
 			double samprate,start_time;
 			double calib;
-			int nsamp;
+			long int nsamp;
 			dbgetv(dbtr_handle.db,0,
 				"time",&start_time,
 				"samprate",&samprate,
