@@ -73,7 +73,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 {
 	int i, j;
 	try {
-
+		const string base_error("XcorProcessingEngine constructor:  ");
 		global_md=Metadata(global_pf);
 		pf_used_by_engine = pfdup(global_pf);
 		string schema=global_md.get_string("schema");
@@ -106,6 +106,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			dpq=NULL;
 		}
 		time_align_key=global_md.get_string("GatherTimeAlignmentKey");
+		/* Experience showed this combination is required */
+		if(processing_mode==ContinuousDB) 
+			if(time_align_key!=predicted_time_key)
+				throw SeisppError(base_error
+				 + "GatherTimeAlignment parameter must be set"
+				 + " to predarr_time in continuous mode");
 		ttmethod=global_md.get_string("TTmethod");
 		ttmodel=global_md.get_string("TTmodel");
 		// deal with possibility that output db is the same
@@ -134,7 +140,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			|| (dbarrival.table==dbINVALID))
 		{
 			waveform_db_handle.close();
-			throw SeisppError(string("XcorProcessingEngine:")
+			throw SeisppError(base_error
 				+string("  constructor had problems opening one or more database tables"));
 		}
 		if( (dbxcorarrival.table==dbINVALID)
@@ -144,7 +150,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		{
 		   if(processing_mode==GenericGathers)
 		   {
-			throw SeisppError(string("XcorProcessingEngine: ")
+			throw SeisppError(base_error
 			 + "Required extension tables (evlink, wfprocess, xcorbeam, xcorarrival)"
 			 + " are not defined.\n"
 			 + "With Generic Gather mode processing these are required.");
@@ -164,12 +170,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,(char *) "site",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0)
-			throw SeisppError(string("XcorProcessingEngine:")
+			throw SeisppError(base_error
 				+string(" required site table is empty"));
 		dbtmp=dblookup(waveform_db_handle.db,0,(char *) "sitechan",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0)
-			throw SeisppError(string("XcorProcessingEngine:")
+			throw SeisppError(base_error
 				+string(" required sitechan table is empty"));
 		// These two lists are largely fixed, but an example of the
 		// use of pf to increase flexibility in future reuse.
@@ -189,7 +195,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		stations= SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
                                         treference,netname);
 		if(stations.array.size()<=0)
-			throw SeisppError(string("XcorProcessingEngine:  ")
+			throw SeisppError(base_error
 			  + string("Found no stations marked on at event time"));
 
 		use_subarrays=global_md.get_bool("use_subarrays");
@@ -199,7 +205,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		load_subarrays_from_pf(stations,global_pf);
 		current_subarray=0;
 		if(stations.number_subarrays()<=0)
-			throw SeisppError(string("XcorProcessingEngine: ")
+			throw SeisppError(base_error
 			 +string("pf error.  subarray definitions are required even if subarrays are initially off\n")
 			+string("Add entries for virtual_arrays &Arr{} and try again"));
 		// A bit inefficient, but useful to test up front to be sure this works for
@@ -239,7 +245,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		if( (processing_mode==GenericGathers)
 			&& load_arrivals)
 		{
-			throw SeisppError(string("XcorProcessingEngine:  ")
+			throw SeisppError(base_error
 			 + "illegal parameter combination\n"
 			 + "LoadArrivals=true not allowed if "
 			 + "processing_mode=GenreicGathers");
@@ -1463,6 +1469,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			"fold",fold,
 			"amp",beam_amplitude,
 				NULL);
+//DEBUG
+cerr << "saved xcorbeam table"<<endl;
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
 		/* We don't write this in GenericGather mode as then every seismogram may have
@@ -1504,6 +1512,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	try {
 		deltim=waveform_ensemble.get_double("deltim");
 	} catch (...) {deltim=deltimnull;};
+//DEBUG
+cerr << "Entering trace loop"<<endl;
 	// Since this is hidden behind the interface I'm going
 	// to use the standard datascope API instead of going
 	// through the DatascopeHandle API.  Since this code
@@ -1542,12 +1552,6 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			atime=trace->get_double(arrival_time_key);
 			predtime=trace->get_double(predicted_time_key);
 			resid=atime-predtime;
-//DEBUG
-if(fabs(resid)>100.0)
-{
-    cout << "Residual calculation failed for sta="<<sta<<endl
-        <<"atime="<<strtime(atime)<<" and predtime="<<strtime(predtime)<<endl;
-}
 			xcorpeak=trace->get_double(peakxcor_keyword);
 			coh=trace->get_double(coherence_keyword);
 			stack_weight=trace->get_double(stack_weight_keyword);
@@ -1645,6 +1649,8 @@ if(fabs(resid)>100.0)
 				     << sta
 					<<endl;
 			         }
+//DEBUG
+cerr << "Saved arrival info in xcorarrival table"<<endl;
 			      }
 			    }
 			    /* Do not save arrival/assoc if subarray mode is enabled.  In that
@@ -1702,6 +1708,8 @@ if(fabs(resid)>100.0)
 			    // KGL SCAFFOLD temporary cast to compile with new 64-bit-compliant headers
 			    trace->put("arrival.jdate",yearday(atime));
 			    trace->put("arrival.deltim",deltim);
+//DEBUG
+cerr << "Calling arrival updater methods"<<endl;
 			    try {
 			    	int arruerr=arru.update(*trace);
 			        if(arruerr)
