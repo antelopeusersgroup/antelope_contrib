@@ -47,7 +47,7 @@ static void
 usage()
 {
 	cbanner("$Date$",
-		"[-sleep seconds] [-pf pfname] \n\t\t\t[-prefix prefix] [-modified_after time] [-v] db orb",
+		"[-sleep seconds] [-pf pfname] [-state] statefile \n\t\t\t[-prefix prefix] [-modified_after time] [-v] db orb",
 		"Nikolaus Horn",
 		"ZAMG / Vienna",
 		"nikolaus.horn@zamg.ac.at");
