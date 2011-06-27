@@ -465,9 +465,6 @@ orbreject (orbfd, regex)
 (pktid, srcname, time, packet, nbytes) = orbreap (orbfd)
     get the next packet from the orb
 
-(pktid, srcname, time, packet, nbytes) = orbreap_nd (orbfd)
-    get the next packet from the orb, returning if none is available
-
 (pktid, srcname, time, packet, nbytes) = orbreap_timeout (orbfd, maxseconds)
     get the next packet from the orb, returning if timeout is exceeded
 

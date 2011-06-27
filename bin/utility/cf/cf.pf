@@ -28,6 +28,7 @@ make &Arr{
 	^\\*\\*\\* Error code
 	^.* error:
 	^Error:
+	^SyntaxError:
 	^.*undefined symbol:
 	^.*: Failed
 	^Failed
@@ -94,16 +95,18 @@ make &Arr{
 	^[[:digit:]]+ Warning\\(s\\) detected\\.
 	^.*ld: warning
 	^.*: warning,
-	^.*Warning:
-	^.* warning:    
+	^.*Warning
+	^.*[[:space:]]*warning:    
 	^Undefined[[:space:]]+first referenced
 	^[[:space:]]symbol[[:space:]]+in file
-	^WARNING:
+	^.*WARNING:
 	^Unsupported system
 	^.*localmake_config:.*pf_revision_time.*
 	^.*but program requires date after.*
 	^localmake_config:.*appears out of date
 	^You may be missing features
+	^Downloading
+	^no previously-included directories found
    }
    cyan &Tbl{							# Routine command output
 	^---+
@@ -121,6 +124,8 @@ make &Arr{
 	^[[:space:]]+-L\\/[a-z]
 	^ar: creating
 	^ar: writing
+	^ar: adding
+	^C compiler:
 	^amakelocal:
 	^localmake_config:.*marked as disabled
 	^localmake:
@@ -138,6 +143,8 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]_]+.o$
 	^make\\[[[:digit:]]+\\]: Nothing to be done for
 	^make\\[[[:digit:]]+\\]:.*is up to date
+	^making[[:space:]]
+	^created directory[[:space:]]
 	^NOTICE:
 	^Current working directory
 	^.*Optimizing from Makefile
@@ -149,6 +156,7 @@ make &Arr{
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
 	^.*: At top level:$
+	^[aA]dding[[:space:]]
 	^[aA]ppending[[:space:]]
 	^[bB]uilding[[:space:]]
 	^[bB]yte-compiling[[:space:]]
@@ -157,10 +165,15 @@ make &Arr{
 	^[cC]ompiling[[:space:]]
 	^[cC]opying[[:space:]]
 	^[cC]reating[[:space:]]
+	^[eE]xtracting[[:space:]]
 	^[iI]nstalling[[:space:]]
 	^[lL]isting[[:space:]]
+	^[pP]rocessing[[:space:]]
+	^[rR]eading[[:space:]]
 	^[rR]emoving[[:space:]]
 	^[rR]unning[[:space:]]
+	^[sS]earching[[:space:]]
+	^[sS]kipping[[:space:]]
 	^[wW]riting[[:space:]]
 	^[uU]sing[[:space:]]
 	^Skip[[:space:]]
@@ -171,18 +184,28 @@ make &Arr{
 	^input=
 	^output=
 	^uninstalling
-	^Adding -arch
-	^Processing hints file
+	^Installed
+	^Finished
+	^Configuring
+	^Configured
+	^Best match
+	^.*is already the active version
 	^configure: creating
+	^configure: checking for
 	^config.status: creating
 	^config.status: executing
 	^config.status: linking
+	^.*installing alias
+	^.*removing
+	^linking
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
+	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^awk[[:space:]]
 	^[[:space:]]*cat
 	^cc[[:space:]]
+	^m4[[:space:]]
 	^clang[[:space:]]
 	^\\/opt\\/SUNWspro\\/bin\\/cc[[:space:]]
 	^CC[[:space:]]
@@ -194,13 +217,14 @@ make &Arr{
 	^g\\+\\+[[:space:]]
 	^-> gcc([-.0-9]*)?[[:space:]]
 	^dsymutil[[:space:]]
-	^[( ]*cd[[:space:]]
+	^[[:space:]]*[( ]*cd[[:space:]]
 	^chmod[[:space:]]
 	^compile[[:space:]]
 	^purify[[:space:]]
-	^cp[[:space:]]
+	^[[:space:]]*cp[[:space:]]
 	^deposit[[:space:]]
 	^tclindex[[:space:]]
+	^find[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/deposit[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
 	^done[[:space:]]
@@ -208,13 +232,16 @@ make &Arr{
 	^flex[[:space:]]
 	^for[[:space:]]
 	^getid[[:space:]]
+	^[[:space:]]*gunzip[[:space:]]
 	^[[:space:]]*bunzip2[[:space:]]
 	^[[:space:]]*tar[[:space:]]
 	^[[:space:]]*if[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*install[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*installman[[:space:]]
 	^[[:space:]]*[[:alnum:]\\/]*cpp[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/]*g\\+\\+[[:space:]]
 	^[[:space:]]*else[[:space:]]
+	^[[:space:]]*then[[:space:]]
 	^[[:space:]]*fi[[:space:]]
 	^[[:space:]]*fi[^[:alnum:]]
 	^[[:space:]]*javac[[:space:]]
@@ -231,7 +258,9 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^[[:space:]]*mv[[:space:]]
-	^perl[[:space:]]
+	^[[:space:]]*perl[[:space:]]
+	^sh[[:space:]]
+	^nawk[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
@@ -252,6 +281,7 @@ make &Arr{
 	^[[:space:]]*Linux\\)
 	^[[:space:]]*Darwin\\)
 	^[[:space:]]*\\*\\)
+	^exit[[:space:]]*$
 	.*py_compile.compile
    }
 }

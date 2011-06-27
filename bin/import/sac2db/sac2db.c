@@ -259,7 +259,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 			 NULL);
     }
     if (result < 0) {
-	complain (0, "couldn't add sta='%s' ondate=%d lat=%10.3f lon=%10.3f elev=%10.3f from %s to site\n",
+	complain (0, "couldn't add sta='%s' ondate=%ld lat=%10.3f lon=%10.3f elev=%10.3f from %s to site\n",
 		  sta, yearday (reftime), sac->stla, sac->stlo, sac->stel / 1000.0, sac_name);
     } else {
 	clear_register (0);
@@ -315,7 +315,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
     }
 
     if (record < 0) {
-	complain (0, "couldn't add sta='%s' chan='%s' ondate=%d hang=%10.3f vang=%10.3f edepth=%10.3f from %s to sitechan\n",
+	complain (0, "couldn't add sta='%s' chan='%s' ondate=%ld hang=%10.3f vang=%10.3f edepth=%10.3f from %s to sitechan\n",
 		  sta, chan, yearday (reftime), hang, vang, sac->stdp / 1000.0, sac_name);
     } else {
 	clear_register (0);
@@ -483,7 +483,7 @@ main (int argc, char **argv)
 	    break;
 
 	  case 'V':
-	    banner (Program_Name, 0L) ;
+	    usage() ;
 	    break;
 
 	  case '?':
