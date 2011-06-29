@@ -106,7 +106,6 @@ int main(int iArgCount, char *aArgList[]) {
 	uint8_t *aBBAPkt; /* Buffer to hold a bba packet read from the wire */
 	struct stBBAPacketInfo oPktInfo; /* Struct to hold information from the packet header */
 	double dPrevTime;
-	char *sTimeStamp;
 	int bOKToSend;
 	char *sOutPkt; /* Packet to put onto the orb */
 	int iOutPktLen; /* Length of sOutPkt */
