@@ -1130,7 +1130,7 @@ static int parseBBAPacket(uint8_t *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
 	int32_t iYear, iDay, iHour, iMin;
 	uint32_t ysec;
 	char sTMPNameCmpt[PKT_TYPESIZE];
-	int8_t *sChName, aChan[128];
+	char *sChName, aChan[128];
 	uint32_t iChId, iChBytes, iChIdx, iDataOffset, i;
 	uint8_t ucBBAPktType;
 
