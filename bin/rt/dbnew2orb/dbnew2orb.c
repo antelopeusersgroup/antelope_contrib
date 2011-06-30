@@ -64,7 +64,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	Dbptr           tmpdb;
 	long            t, nrecords, r, ntables;
 	Arr            *records = NULL;
-	Tbl            *tables = NULL, *static_tables;
+	Tbl            *tables = NULL;
 	char           *thistablename;
 	Stbl           *stbl;
 	char           *s;
@@ -101,7 +101,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	dbfree_untangle(records);
 	freePkt(pkt);
 	if (verbose) {
-		elog_notify(0, "%s: %d patcket(s) sent with sourcename: %s\n", s = strtime(now()), nrecords, srcname);
+		elog_notify(0, "%s: %ld patcket(s) sent with sourcename: %s\n", s = strtime(now()), nrecords, srcname);
 		free(s);
 	}
 	return (0);
@@ -131,11 +131,6 @@ main(int argc, char **argv)
 	char            expr[512];
 	char           *statefilename = NULL, *pfname = "dbnew2orb";
 	Pf             *pf = NULL;
-	void           *priv_dfile = (void *) NULL;
-	void           *private = (void *) NULL;
-	int             pmsi;	/* poor man's string index, replacment for
-				 * searchtbl... */
-	char           *pmsp;
 	double          lastburytime;
 	Relic           relic;
 	char           *s;
