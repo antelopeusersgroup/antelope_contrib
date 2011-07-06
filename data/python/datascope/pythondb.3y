@@ -1,4 +1,4 @@
-.TH PYTHONDB 3P "$Date$"
+.TH PYTHONDB 3P 
 .SH NAME
 pythondb \- Python interface to Datascope
 .SH SYNOPSIS
@@ -26,7 +26,7 @@ The python calls may be used in two ways, either in a procedural
 style or in an object style invocation. Either way, a database pointer 
 is returned, which is a Python object containing four fields, 
 the standard database, table, field, and record indices (for further 
-information see dbintro(1)). Database pointers may be addressed one of 
+information see dbintro(3)). Database pointers may be addressed one of 
 several ways. For example, to address the record number, you can use 
 .nf
 
@@ -1116,11 +1116,10 @@ os.system( "open dataplot.png" )
 .in
 .SH "SEE ALSO"
 .nf
-pythonorb(3p), pythonstock(3p)
+pythonorb(3y), pythonstock(3y)
 .fi
 .SH AUTHOR
 .nf
 Kent Lindquist
 Lindquist Consulting, Inc. 
 .fi
-.\" $Id$

@@ -1,4 +1,4 @@
-.TH PYTHONORB 3P "$Date$"
+.TH PYTHONORB 3P 
 .SH NAME
 pythonorb \- Python interface to Antelope Orbserver
 .SH SYNOPSIS
@@ -374,7 +374,7 @@ packet_string = orbpkt_string( srcname, time, packet, nbytes )
 .ft R
 .SH "SEE ALSO"
 .nf
-pythondb(3p), pythonstock(3p)
+pythondb(3y), pythonstock(3y)
 .fi
 .SH "BUGS AND CAVEATS" 
 Not all error conditions are wrapped to emit Python Exceptions, as they probably should be. 
@@ -383,4 +383,3 @@ Not all error conditions are wrapped to emit Python Exceptions, as they probably
 Kent Lindquist
 Lindquist Consulting, Inc. 
 .fi
-.\" $Id$
