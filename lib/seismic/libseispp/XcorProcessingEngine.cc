@@ -73,7 +73,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 {
 	int i, j;
 	try {
-
+		const string base_error("XcorProcessingEngine constructor:  ");
 		global_md=Metadata(global_pf);
 		pf_used_by_engine = pfdup(global_pf);
 		string schema=global_md.get_string("schema");
@@ -106,6 +106,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			dpq=NULL;
 		}
 		time_align_key=global_md.get_string("GatherTimeAlignmentKey");
+		/* Experience showed this combination is required */
+		if(processing_mode==ContinuousDB) 
+			if(time_align_key!=predicted_time_key)
+				throw SeisppError(base_error
+				 + "GatherTimeAlignment parameter must be set"
+				 + " to predarr_time in continuous mode");
 		ttmethod=global_md.get_string("TTmethod");
 		ttmodel=global_md.get_string("TTmodel");
 		// deal with possibility that output db is the same
@@ -134,7 +140,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			|| (dbarrival.table==dbINVALID))
 		{
 			waveform_db_handle.close();
-			throw SeisppError(string("XcorProcessingEngine:")
+			throw SeisppError(base_error
 				+string("  constructor had problems opening one or more database tables"));
 		}
 		if( (dbxcorarrival.table==dbINVALID)
@@ -144,7 +150,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		{
 		   if(processing_mode==GenericGathers)
 		   {
-			throw SeisppError(string("XcorProcessingEngine: ")
+			throw SeisppError(base_error
 			 + "Required extension tables (evlink, wfprocess, xcorbeam, xcorarrival)"
 			 + " are not defined.\n"
 			 + "With Generic Gather mode processing these are required.");
@@ -164,12 +170,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,(char *) "site",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0)
-			throw SeisppError(string("XcorProcessingEngine:")
+			throw SeisppError(base_error
 				+string(" required site table is empty"));
 		dbtmp=dblookup(waveform_db_handle.db,0,(char *) "sitechan",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0)
-			throw SeisppError(string("XcorProcessingEngine:")
+			throw SeisppError(base_error
 				+string(" required sitechan table is empty"));
 		// These two lists are largely fixed, but an example of the
 		// use of pf to increase flexibility in future reuse.
@@ -189,7 +195,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		stations= SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
                                         treference,netname);
 		if(stations.array.size()<=0)
-			throw SeisppError(string("XcorProcessingEngine:  ")
+			throw SeisppError(base_error
 			  + string("Found no stations marked on at event time"));
 
 		use_subarrays=global_md.get_bool("use_subarrays");
@@ -199,7 +205,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		load_subarrays_from_pf(stations,global_pf);
 		current_subarray=0;
 		if(stations.number_subarrays()<=0)
-			throw SeisppError(string("XcorProcessingEngine: ")
+			throw SeisppError(base_error
 			 +string("pf error.  subarray definitions are required even if subarrays are initially off\n")
 			+string("Add entries for virtual_arrays &Arr{} and try again"));
 		// A bit inefficient, but useful to test up front to be sure this works for
@@ -239,7 +245,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		if( (processing_mode==GenericGathers)
 			&& load_arrivals)
 		{
-			throw SeisppError(string("XcorProcessingEngine:  ")
+			throw SeisppError(base_error
 			 + "illegal parameter combination\n"
 			 + "LoadArrivals=true not allowed if "
 			 + "processing_mode=GenreicGathers");
@@ -1386,13 +1392,13 @@ void set_nassoc(DatascopeHandle dbh,int orid)
 		Dbptr db;
 		dbh.db.record=0;
 		int ierr;
-		ierr=dbgetv(dbh.db,0,"origin",&db,0);
+		ierr=dbgetv(dbh.db,0,"origin",&db,NULL);
 		if(ierr==dbINVALID)
 		{
 			throw SeisppError(string("XcorProcessingEngine::save_results->set_nassoc:")
 				+ "  dbgetv error attempting to fetch Dbptr for origin");
 		}
-		dbputv(db,0,"nass",nass,0);
+		dbputv(db,0,"nass",nass,NULL);
 	}
 	else
 		cerr << "save_results (WARNING):  orid="
@@ -1432,10 +1438,10 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	string filter_param;
 	if(save_extensions)
 	{   try {
-		int record;
+		long record;
 		// First get and save the array beam
 		TimeSeries beam=mcc->ArrayBeam();
-		int fold=beam.get_int("fold");
+		long fold=beam.get_int("fold");
 		filter_param=beam.get_string("filter_spec");
 		// Set dir and dfile
 		beam.put("wfprocess.dir",beam_directory);
@@ -1445,7 +1451,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		record=dbsave(beam,dbwfprocess,string("wfprocess"),
 				beam_mdl,am);
 		dbwfprocess.record=record;
-		dbgetv(dbwfprocess,0,"pwfid",&pwfid,0);
+		dbgetv(dbwfprocess,0,"pwfid",&pwfid,NULL);
 		double beam_amplitude=beam.get_double(beam_rms_key);
 		//
 		// For the present the chan code will be the same
@@ -1462,12 +1468,12 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			"robusttwin",analysis_setting.robust_tw.length(),
 			"fold",fold,
 			"amp",beam_amplitude,
-				0);
+				NULL);
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
 		/* We don't write this in GenericGather mode as then every seismogram may have
 		a different evid associated with it */
-		if(processing_mode!=GenericGathers) dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,0);
+		if(processing_mode!=GenericGathers) dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,NULL);
 	    }
 	    catch (MetadataGetError& mderr)
 	    {
@@ -1542,12 +1548,6 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			atime=trace->get_double(arrival_time_key);
 			predtime=trace->get_double(predicted_time_key);
 			resid=atime-predtime;
-//DEBUG
-if(fabs(resid)>100.0)
-{
-    cout << "Residual calculation failed for sta="<<sta<<endl
-        <<"atime="<<strtime(atime)<<" and predtime="<<strtime(predtime)<<endl;
-}
 			xcorpeak=trace->get_double(peakxcor_keyword);
 			coh=trace->get_double(coherence_keyword);
 			stack_weight=trace->get_double(stack_weight_keyword);
@@ -1591,11 +1591,11 @@ if(fabs(resid)>100.0)
 			      dbxcorarrival.record=addrecord;
 			      if(processing_mode==GenericGathers)
 			      {
-				int ggevid,ggorid,gridid;
+				long ggevid,ggorid,gridid;
 				try {
-				    ggevid=trace->get_int("evid");
-				    ggorid=trace->get_int("orid");
-				    gridid=trace->get_int("gridid");
+				    ggevid=trace->get_long("evid");
+				    ggorid=trace->get_long("orid");
+				    gridid=trace->get_long("gridid");
 				    record=dbputv(dbxcorarrival,0,"sta",sta.c_str(),
 					"chan",chan.c_str(),
 					"phase",analysis_setting.phase_for_analysis.c_str(),
@@ -1612,7 +1612,7 @@ if(fabs(resid)>100.0)
 					"stackwgt",stack_weight,
 					"coherence",coh,
 					"relamp",ampdb,
-					"xcorpeak",xcorpeak,0);
+					"xcorpeak",xcorpeak,NULL);
 				    if(record<0) cerr << "XcorProcessingEngine::save_results(WARNING):  "
 							<< "dbaddv failed writing xsaa table for station="
 							<< sta<<" evid="<<ggevid<<endl;
@@ -1637,7 +1637,7 @@ if(fabs(resid)>100.0)
 					"stackwgt",stack_weight,
 					"coherence",coh,
 					"relamp",amplitude,
-					"xcorpeak",xcorpeak,0);
+					"xcorpeak",xcorpeak,NULL);
 			         if(record<0)
 			         {
 				   cerr << "save_results(warning):  problems saving xcorarrival table"

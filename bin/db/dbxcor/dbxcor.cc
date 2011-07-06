@@ -384,10 +384,10 @@ void load_default_trace_attributes(TimeSeriesEnsemble& d)
     }
 }
 
-void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
+void handle_next_event( long orid, string phase_to_analyze, Widget w, SessionManager *psm )
 {
 	stringstream ss;
-	int evid;
+	long evid;
         double lat,lon,depth,otime;
         const string method("tttaup");
         const string model("iasp91");
@@ -425,7 +425,7 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 			"lat",&lat,
 			"lon",&lon,
 			"depth",&depth,
-			"time",&otime,0)==dbINVALID)
+			"time",&otime,NULL)==dbINVALID)
 		{
 			throw SeisppError(base_error
 				+string("error reading origin data from input db"));
@@ -3107,7 +3107,7 @@ main (int argc, char **argv)
 	char	*msg = 0;
 	int	replyrequest = 0;
 	XtAppNextEvent(AppContext,&event);
-	int	orid;
+	long	orid;
 	Tbl	*parts;
 	if( !Tks_GetmsgEventProc( tks, &event, &msg, &replyrequest ) ) {
       		fprintf (stderr,"\n%s:  Tks_GetmsgEventProc() error\n", argv[0]);
@@ -3128,7 +3128,7 @@ main (int argc, char **argv)
 			Tks_ClearAppName( tks, const_cast<char *>(appname.c_str()) );
 			exit(1);
 		}
-		orid = atoi( (char *) gettbl( parts, 0 ) );
+		orid = atol( (char *) gettbl( parts, 0 ) );
 		string phase_to_analyze( (char *) gettbl( parts, 1 ) );
 		handle_next_event( orid, phase_to_analyze, NULL, &sm );
 		freetbl( parts, 0 );

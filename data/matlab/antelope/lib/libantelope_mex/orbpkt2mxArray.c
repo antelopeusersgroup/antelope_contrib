@@ -13,17 +13,18 @@
 
 mxArray *orbpkt2mxArray( char *srcname, double time, char *packet, int nbytes, char *pkttype )
 {
-	mxArray	*array;
-	Packet  *pkt = 0;
-	PktChannel *pktchan;
+	mxArray	*array = NULL;
+	Packet  *pkt = NULL;
+	PktChannel *pktchan = NULL;
 	int	type;	
 	mxArray *in[2], *out[1];
 	int	dims[2];
-	char	*pdata;
+	char	*pdata = NULL;
 	Dbptr	tr;
-	Trsample *trdata;
-	char    *tr_path = 0;
-	char    *schema_name = 0;
+	Trsample *trdata = NULL;
+	double	endtime;
+	char    *tr_path = NULL;
+	char    *schema_name = NULL;
 	char    errmsg[STRSZ];
 	int	ichannel;
 	int	idata;
@@ -60,19 +61,22 @@ mxArray *orbpkt2mxArray( char *srcname, double time, char *packet, int nbytes, c
 				trdata[idata] = (Trsample) pktchan->data[idata];
 			}
 
-			dbaddv( tr, "trace",
-				       "net", pktchan->net,
-				       "sta", pktchan->sta, 
-				       "chan", pktchan->chan,
-				       "segtype", pktchan->segtype,
-				       "time", pktchan->time,
-				       "samprate", pktchan->samprate,
-				       "calib", pktchan->calib,
-				       "calper", pktchan->calper,
-				       "nsamp", pktchan->nsamp,
-				       "endtime", ENDTIME( pktchan->time, pktchan->samprate, pktchan->nsamp ),
-				       "data", (unsigned long) trdata, 
-				       NULL );
+			endtime = ENDTIME( pktchan->time, pktchan->samprate, pktchan->nsamp );
+
+			tr.record = dbaddv( tr, NULL, 
+					  "net", pktchan->net,
+					  "sta", pktchan->sta,
+					  "chan", pktchan->chan,
+					  "segtype", pktchan->segtype,
+					  "time", pktchan->time,
+					  "samprate", pktchan->samprate,
+					  "calib", pktchan->calib,
+					  "calper", pktchan->calper,
+					  "nsamp", (long) pktchan->nsamp,
+					  "endtime", endtime,
+					  "data", trdata,
+					  NULL );
+
 			antelope_mex_clear_register( 1 );
 		}
 
