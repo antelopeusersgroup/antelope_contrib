@@ -252,7 +252,7 @@ double	        critical ;
 		   "lweights", lweights,
 		   "ljackknife", ljackknife,
 		   0)  < 0)  
-	    complain( 0, "Couldn't save to table.\n" ) ;
+	    elog_complain( 0, "Couldn't save to table.\n" ) ;
 
       }
     free(dpsw) ;

@@ -28,7 +28,7 @@ Hypocenter db_load_initial(Dbptr dbv,int row)
 		"origin.depth",&(h.z),
 		"origin.time", &(h.time),
 		0) == dbINVALID)
-			die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %d of database view\n",row);
+			elog_die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %d of database view\n",row);
 	/* This initializes parts of the hypocenter stucture that define
         this as an initial location. */
         h.dz = 0.0;
@@ -222,7 +222,7 @@ record for orid %d prefor of event %d\n",
 		modtype = pfget_string(pf,"ellipse_type");
      		if(modtype == NULL)
      		{
-        		complain(0,"parameter ellipse_type not defined--default to chi_square");
+        		elog_complain(0,"parameter ellipse_type not defined--default to chi_square");
         		model = CHI_SQUARE;
      		}
      		else if( strcmp( modtype, "chi_square" ) == 0 )
@@ -235,7 +235,7 @@ record for orid %d prefor of event %d\n",
      		}
      		else
      		{
-        		complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
+        		elog_complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
         		model = CHI_SQUARE;
      		}
 		predicted_errors(h[i],ta[i],utbl,o,C,emodel);
@@ -245,7 +245,7 @@ record for orid %d prefor of event %d\n",
 
     		if( rc != 0 )
     		{
-        		complain(0, "project_covariance failed." );
+        		elog_complain(0, "project_covariance failed." );
         		smajax = -1;
         		sminax = -1;
         		strike = -1;

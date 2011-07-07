@@ -181,7 +181,7 @@ int pscl_ucompress(
 
        if ( nerr = ustc ( conf, &sud, &npts) )  {
          msdfree( conf ) ;
-         complain ( 0, "Msd decompression reports %d errors\n", nerr ) ;
+         elog_complain( 0, "Msd decompression reports %d errors\n", nerr ) ;
          return 0;
        }
        psize =  npts*sizeof(int) ;

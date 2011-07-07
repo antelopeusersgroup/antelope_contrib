@@ -7,7 +7,7 @@
 use Datascope;
 use Fcntl ':flock';
 
-require "getopts.pl";
+use Getopt::Std;
 
 sub my_system {
 	my( $command ) = @_;
@@ -166,7 +166,7 @@ sub increment_jdate {
 
 elog_init( $0, @ARGV );
 
-if( ! &Getopts( 'j:vn' ) || @ARGV != 0 ) {
+if( ! getopts( 'j:vn' ) || @ARGV != 0 ) {
 	
 	elog_die( "Usage: rtbackup_wfdisc [-j jdate] [-v] [-n]\n" );
 }

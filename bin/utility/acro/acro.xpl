@@ -1,6 +1,6 @@
 
 use Datascope;
-require "getopts.pl";
+use Getopt::Std;
 
 sub addacro {
 	local( $findacro, $force, @dbacro ) = @_;
@@ -81,7 +81,7 @@ sub printacros {
 
 $Usage = "Usage: acro [-d] [-f] [-n] [-g] [-c] [-e] [-o] [acronym | expression]\n";
 
-if( ! &Getopts('dfngceo') || $#ARGV > 0 ) {
+if( ! getopts('dfngceo') || $#ARGV > 0 ) {
 	die( $Usage );
 } elsif( $#ARGV != 0 && ! $opt_n && ! $opt_d ) {
 	die( $Usage );

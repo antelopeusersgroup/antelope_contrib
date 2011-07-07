@@ -1,7 +1,7 @@
 
 use Datascope;
 
-require "getopts.pl";
+use Getopt::Std;
 
 #
 # here comes the main program
@@ -17,7 +17,7 @@ require "getopts.pl";
 
 
 
-  if ( !&Getopts('tc') || @ARGV != 2 ) {
+  if ( !getopts('tc') || @ARGV != 2 ) {
     die ("USAGE: $0 {-t | -c} file database\n");
   }
 

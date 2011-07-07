@@ -139,7 +139,7 @@ double        **tapers_p;
 	    lw);
 
     if ( ierr ) 
-	die ( 0, "Failure computing discrete prolate spheroidal functions error code = %d\n", 
+	elog_die( 0, "Failure computing discrete prolate spheroidal functions error code = %d\n", 
 		ierr ) ; 
 
     /*  compute odd eigenfunctions */
@@ -164,7 +164,7 @@ double        **tapers_p;
 		 &ierr,
 		 lw);
     if ( ierr ) 
-	die ( 0, "Failure computing discrete prolate spheroidal functions error code = %d\n", 
+	elog_die( 0, "Failure computing discrete prolate spheroidal functions error code = %d\n", 
 		ierr ) ; 
     free ( theta ) ; 
 

@@ -78,18 +78,18 @@ void ttlvz_parse_vmodel(Tbl *t,double **v, double **z, int *n)
 
 	nlayers = maxtbl(t);
 	if(nlayers <= 0) 
-		die(0,"ttlvz_parse_vmodel:  No velocity model parameters for calculating travel times\n");
+		elog_die(0,"ttlvz_parse_vmodel:  No velocity model parameters for calculating travel times\n");
 
 	/* the 100 here is an arbitrary constant, and this is only a warning */
 	if(nlayers > 100) 
 	{
-		complain(0,"Warning (ttlvz_parse_vmodel):  read data for %d layer velocity model\nConsider using a different travel time calculator for better performance\n", nlayers);
+		elog_complain(0,"Warning (ttlvz_parse_vmodel):  read data for %d layer velocity model\nConsider using a different travel time calculator for better performance\n", nlayers);
 	}
 	*v = (double *) calloc(nlayers, sizeof(double));
 	*z = (double *) calloc(nlayers,sizeof(double));
 
 	if( (*v == NULL) || (*z == NULL) )
-		die(1,"Cannot alloc memory in ttlvz_parse_vmodel function for %d layer model\n", nlayers);
+		elog_die(1,"Cannot alloc memory in ttlvz_parse_vmodel function for %d layer model\n", nlayers);
 
 	for(i=0;i<nlayers;++i)
 	{
@@ -125,7 +125,7 @@ int ttlvz_init(char *phase, Pf *pf)
 
 	if(ttlvz_models == NULL) ttlvz_models = newarr(0);
 	mod = (Vmodel *)malloc(sizeof(Vmodel));
-	if(mod == NULL) die(1,"ttlvz_init:  cannot malloc Vmodel structure for phase %s\n",phase);
+	if(mod == NULL) elog_die(1,"ttlvz_init:  cannot malloc Vmodel structure for phase %s\n",phase);
 	t = pfget_tbl(pf,"velocity_model");
 	if(t == NULL) 
 	{
@@ -206,7 +206,7 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 	work1 = (double *) calloc(2*nz,sizeof(double));
 	work2 = (double *) calloc(2*nz,sizeof(double));
 	if( (work1 == NULL) || (work2 == NULL) )
-		die(1,"ttlvz_time_exec:  Cannot alloc work arrays for phase %s\n",
+		elog_die(1,"ttlvz_time_exec:  Cannot alloc work arrays for phase %s\n",
 			phase);
 
 
@@ -357,7 +357,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 	work1 = (double *) calloc(2*nz,sizeof(double));
 	work2 = (double *) calloc(2*nz,sizeof(double));
 	if( (work1 == NULL) || (work2 == NULL) )
-		die(1,"ttlvz_slow_exec:  Cannot alloc work arrays for phase %s\n",
+		elog_die(1,"ttlvz_slow_exec:  Cannot alloc work arrays for phase %s\n",
 			phase);
 
 	ttlvz_(&d_km, &x.sz, &nz, v, z, work1, work2, &time, &p, &up);

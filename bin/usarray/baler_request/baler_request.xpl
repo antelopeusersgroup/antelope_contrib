@@ -4,7 +4,7 @@
 #
 
 
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
 #    use diagnostics ;
     use Datascope ;
@@ -23,7 +23,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
    
-    if (  ! &Getopts('vVn:r:s:t:e:d:') || (@ARGV < 1 || @ARGV > 2 )) { 
+    if (  ! getopts('vVn:r:s:t:e:d:') || (@ARGV < 1 || @ARGV > 2 )) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V]  \n" ;
         $usage .=  "	[-n net] [-r reject_stas] [-s sta_match] \n" ;
         $usage .=  "	[-t start_time] [-e end_time] [-d directory] \n" ;

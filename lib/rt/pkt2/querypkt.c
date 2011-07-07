@@ -46,16 +46,16 @@ int querypkt(
            strcpy((*val).t, "NONE");
            break;
         default :
-          complain(0, "Invalid parameter code.\n");
+          elog_complain(0, "Invalid parameter code.\n");
           return 0;    
     }
 
     if( !get_packet(pkttype, &packet ) )  {
-	complain(0, "querypkt(): Can't get packet info for %d.\n", pkttype);
+	elog_complain(0, "querypkt(): Can't get packet info for %d.\n", pkttype);
 	return 0;
     }
    if( packet.pkttype == 0 || packet.net_type == 0 )  {
-       complain( 0, "Can't get parameters for %d packet type \n", pkttype);
+       elog_complain( 0, "Can't get parameters for %d packet type \n", pkttype);
        return 0;
     }  
     switch (pcode)  {

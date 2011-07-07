@@ -41,7 +41,7 @@ Tbl **                      scs;
 	*scs = NULL;
 	*scs = newtbl(0);
 	if ((*scs) == NULL) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "make_scs: newtbl() error.\n");
 		return (0);
 	}
@@ -78,7 +78,7 @@ Tbl **                      scs;
 			sc->db = dbi;
 			sc->recstart = dbi.record;
 			if (settbl ((*scs), -1, sc) < 0) {
-				clear_register (1);
+				elog_clear_register(1);
 				fprintf (stderr, "make_scs: settbl() error.\n");
 				return (0);
 			}

@@ -1,0 +1,22 @@
+EXAMPLEDIR=dbbuild-batch/austria
+EXAMPLE=
+include $(ANTELOPEMAKE)
+ABTA-dbb \
+ARSA-dbb \
+CONA-dbb \
+CSNA-dbb \
+DAVA-dbb \
+FETA-dbb \
+KBA-dbb \
+MOA-dbb \
+MOTA-dbb \
+MYKA-dbb \
+Makefile \
+OBKA-dbb \
+README \
+README~ \
+RETA-dbb \
+SOKA-dbb \
+SQTA-dbb \
+WATA-dbb \
+WTTA-dbb \

@@ -84,7 +84,7 @@ int *get_decimation_factors(Tbl **d, Pf *pf)
 	nbands = pfget_int(pf, "number_frequency_bands");
 	decfac = (int *) calloc(nbands,sizeof(int));
 	if(decfac == NULL) 
-		die(0,"Cannot alloc int array of length %d\n",nbands);
+		elog_die(0,"Cannot alloc int array of length %d\n",nbands);
 	for(i=0;i<nbands;++i) decfac[i] = 1;
 
 	for(i=0;i<nbands;++i)
@@ -145,7 +145,7 @@ int *compute_tpad(Tbl **d, MWbasis *mw, Arr *sta, Pf *pf)
 
 	nbands = pfget_int(pf,"number_frequency_bands");
 	pad = (int *) calloc(nbands,sizeof(int));
-	if(pad == NULL) die(0,"Cannot alloc int tpad array of length %d\n",
+	if(pad == NULL) elog_die(0,"Cannot alloc int tpad array of length %d\n",
 				nbands);
 
 	
@@ -209,10 +209,10 @@ Time_Window *get_signal_windows(int *decfac, int *pad, Pf *pf)
 	si = pfget_double(pf,"sample_interval");
 
 	t = pfget_tbl(pf,"signal_analysis_windows");
-	if(t == NULL) die(0,"signal_analysis_windows parameter not found\n");
+	if(t == NULL) elog_die(0,"signal_analysis_windows parameter not found\n");
 
 	win = (Time_Window *)calloc(nbands, sizeof(Time_Window));
-	if(win == NULL) die(0,"Cannot alloc memory for %d time window structures\n",
+	if(win == NULL) elog_die(0,"Cannot alloc memory for %d time window structures\n",
 				nbands);
 
 	nt = maxtbl(t);
@@ -259,10 +259,10 @@ Time_Window *get_noise_windows(int *decfac, int *pad, Pf *pf)
 	nbands = pfget_int(pf,"number_frequency_bands");
 	si = pfget_double(pf, "sample_interval");
 	t = pfget_tbl(pf, "noise_analysis_windows");
-	if(t == NULL) die(0,"noise_analysis_windows parameter not found\n");
+	if(t == NULL) elog_die(0,"noise_analysis_windows parameter not found\n");
 
 	win = (Time_Window *)calloc(nbands, sizeof(Time_Window));
-	if(win == NULL) die(0,"Cannot alloc memory for %d noise time window structures\n",
+	if(win == NULL) elog_die(0,"Cannot alloc memory for %d noise time window structures\n",
 				nbands);
 
 	nt = maxtbl(t);
@@ -328,7 +328,7 @@ Time_Window compute_time_window(Time_Window *win, int *decfac, int n)
 	Time_Window t;
 	double s,e;  /* temporaries for start and end time in seconds */
 
-	if(n<1)die(0,"Invalid array length %d passed to compute_time_window\n",
+	if(n<1)elog_die(0,"Invalid array length %d passed to compute_time_window\n",
 				n);
 	/* Note tpad is time pad for each that the decimators and
 	wavelet truncate the signal.  Hence we pad both left and

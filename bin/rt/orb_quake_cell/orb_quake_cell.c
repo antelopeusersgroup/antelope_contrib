@@ -97,7 +97,7 @@ char	*timezone;
 		       0 );
 
 	if( rc ) {
-		complain( 1, "Failed to get info from database pointer\n" );
+		elog_complain( 1, "Failed to get info from database pointer\n" );
 		return -1;
 	}
 
@@ -225,7 +225,7 @@ main( int argc, char **argv )
 	int	debug = 0;
 	int	rc;
 
-	clear_register( 0 );
+	elog_clear_register( 0 );
 	dirbase( argv[0], dir, base );
 	Program_Name = base;
 	strcpy( pffile, Program_Name );
@@ -245,7 +245,7 @@ main( int argc, char **argv )
 	}
 
 	if( argc - optind != 1 ) {
-		die( 1, "Usage: %s [-d] [-pf pffile] orbname\n", Program_Name );
+		elog_die( 1, "Usage: %s [-d] [-pf pffile] orbname\n", Program_Name );
 	} else {
 		strcpy( orbname, argv[optind++] );
 	}
@@ -253,7 +253,7 @@ main( int argc, char **argv )
 	putenv( "postmark=" );
 
 	if( pfread( pffile, &pf ) < 0 ) {
-		die( 1, "%s: no parameter file %s", Program_Name, pffile );
+		elog_die( 1, "%s: no parameter file %s", Program_Name, pffile );
 	}
 
 	sprintf( tmpdb, "/tmp/orbdb_%d", getpid() );
@@ -279,7 +279,7 @@ main( int argc, char **argv )
 			 &packet, &nbytes, &bufsize );
     
 		db = orbpkt2db( packet, bufsize, db );
-		clear_register( 1 );
+		elog_clear_register( 1 );
 
 		pfread( pffile, &pf );
 		recipients = pfget_arr( pf, "recipients" );

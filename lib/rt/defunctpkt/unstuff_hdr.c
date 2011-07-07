@@ -104,7 +104,7 @@ int unstuff_BBAHdr(
     
     while ( name != 0 ) {
       if( ch > nchan )  {
-        complain( 0,"There are more chan names ( %s ) than channels (%d)\n", chnames, nchan );
+        elog_complain( 0,"There are more chan names ( %s ) than channels (%d)\n", chnames, nchan );
 	return 0;
       }
       achan = (PktChannel *) gettbl((*Pkt)->chan, ch) ;
@@ -166,7 +166,7 @@ int unstuff_DPhdr(
     name = strtok( hdr.channels, "_" ) ;
     while ( name != 0 ) {
       if( ch > nchan )  {
-           complain( 0,"There are more chan names ( %s ) than channels (%d)\n", chnames, nchan );
+           elog_complain( 0,"There are more chan names ( %s ) than channels (%d)\n", chnames, nchan );
            return 0;
       }
 
@@ -224,7 +224,7 @@ int unstuff_IPhdr( uchar_t *packet )
     if( RawPkts == NULL ) init_RawPkts();
     raw = ( Raw *) getarr( RawPkts, (char *) &key[0] );
     if( raw == NULL )  { 
-        complain( 0, " unstuff_IPhdr(): Can't get RawPkts info\n");
+        elog_complain( 0, " unstuff_IPhdr(): Can't get RawPkts info\n");
         return 0;
     }
     

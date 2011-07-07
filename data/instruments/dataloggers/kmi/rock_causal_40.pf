@@ -1,0 +1,91 @@
+category	Kinemetrics
+configuration	Rock Causal Filter 40Vpp Input
+
+originator	Mathias Franke
+last_modified	October 13, 2009
+
+description	KMI Rock Causal w 40Vpp Input
+dfile rock_c_40pp
+info &Literal{
+This are the decimation FIR filters with a final causal brickwall filter.
+This is the configuration for a Rock recorder set to 40Vpp input.
+The information was derived from Kinemetrics Application Note 39D
+}
+
+
+streams		2000sps 1000sps 500sps 200sps 100sps 50sps 20sps 10sps 1sps
+
+# definitions of streams
+2000sps	  2000 a/d coefA5_50_s5c coefB3C_80
+1000sps	  1000 a/d coefA5_50_s5c coefA3_50 coefB2C_80_140
+500sps	  500 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefB2C_80
+200sps	  200 a/d coefA5_50_s5c coefA3_50 coefA5_50 coefB2C_80
+100sps	  100 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefA5_50 coefB2C_80
+50sps	  50 a/d coefA5_50_s5c coefA3_50 coefA4_50 coefA5_50 coefB2C_80
+20sps	  20 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefA5_50 coefA5_50 coefB2C_80
+10sps	  10 a/d coefA5_50_s5c coefA3_50 coefA4_50 coefA5_50 coefA5_50 coefB2C_80
+1sps	  1 a/d coefA5_50_s5c coefA3_50 coefA2_20 coefA4_50 coefA5_50 coefA5_50 coefA5_50 coefB2C_80
+
+gains		419430		# in units of counts/volt
+# Stages
+a/d	&Arr{
+samprate	30000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+coefA5_50_s5c &Arr{ # a filter with sinc^5 compensation used in the Rock family in the first stage.
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/coefA5-50-s5c)
+samplerate	6000
+}
+
+coefA3_50	&Arr{ # an intermediate filter
+gtype	FIR_decimator
+decifac	3
+response	&datafile(responses/coefA3-50)
+samplerate	2000
+}
+
+coefB3C_80	&Arr{ # a causal brickwall filter
+gtype	FIR_decimator
+decifac	3
+response	&datafile(responses/coefB3C-80)
+samplerate	2000
+}
+
+coefA2_20	&Arr{ # an intermediate filter
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/coefA2-20)
+samplerate	1000
+}
+
+coefA4_50	&Arr{ # an intermediate filter
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/coefA4-50)
+}
+
+coefA5_50	&Arr{ # an intermediate filter
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/coefA5-50)
+}
+
+coefB2C_80	&Arr{ # a causal brickwall filter
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/coefB2C-80)
+}
+
+coefB2C_80_140	&Arr{ # a causal brickwall filter
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/coefB2C-80-140)
+samplerate	1000
+}
+

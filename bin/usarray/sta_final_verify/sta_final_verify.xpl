@@ -4,7 +4,7 @@
 #   check overlaps with realtime data
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -17,12 +17,12 @@
     
 {    #  Main program
 
-    my ( $Pf, $chan, $chantmp, $cmd, $dbname, $debug, $decert_time, $dep, $dirname, $endtime ) ;
+    my ( $Pf, $chan, $chantmp, $cmd, $dbname, $decert_time, $dep, $dirname, $endtime ) ;
     my ( $equip_install, $equip_remove, $line, $maxtime, $mintime, $nrows, $prob, $problems ) ;
-    my ( $ptmp, $row, $st1, $st2, $sta, $statmp, $stime, $subject, $subset, $success, $table, $time ) ;
-    my ( $totdays, $usage, $verbose );
+    my ( $ptmp, $row, $st1, $st2, $sta, $statmp, $stime, $subject, $subset, $table, $time ) ;
+    my ( $totdays, $usage );
     my ( @db, @dbbh, @dbcd, @dbchanperf, @dbdeploy, @dbdeptmp, @dbdmcfiles, @dbops, @dbschan ) ;
-    my ( @dbscrdmc, @dbtmp, @dbwf, @dbwfdisc, @output );
+    my ( @dbscrdmc, @dbtmp, @dbwf, @dbwfdisc );
     my ( %pf, %staperf );
 
     $pgm = $0 ; 
@@ -30,7 +30,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnm:p:') || @ARGV < 1 ) { 
+    if (  ! getopts('vVnm:p:') || @ARGV < 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-p pf] [-m mail_to]  \n" ;
         $usage .=  "	 sta [sta1 sta2 ...]\n\n"  ; 
@@ -48,8 +48,6 @@
     $Pf         = $opt_p || $pgm ;
     
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
     %pf = getparam( $Pf );
 
@@ -184,9 +182,7 @@
 #
 #  Verify start and end times in deployment table
 #
-#         @db = dbopen($pf{dbops},"r+");
-#         @dbdeploy = dblookup(@db,0,"deployment",0,0);
-#         @dbdeploy = dbsubset(@dbdeploy,"sta=~/$sta/");
+
         @dbdeptmp = dbsubset(@dbdeploy,"sta=~/$sta/");
         $dbdeptmp[3] = 0;
         ($time,$endtime,$equip_install,$equip_remove,$decert_time) = 
@@ -258,28 +254,16 @@
             elog_notify($line);
             $dep++;
         }
-#         dbclose(@db);
         
         close(DEP);
         
         $subject = "ANF TA Deployment table change - $sta";
         $cmd     = "rtmail -C -s '$subject' $pf{deploy_mail} < /tmp/deploy_$sta\_$$";
         
-#         if  ( ! $opt_n ) {
-#             elog_notify("\n$cmd") if ($dep  && $opt_v);        
-#             $problems = run($cmd,$problems) if $dep ;
-#         } else {
-#             elog_notify("\nskipping $cmd") if $dep ;
-#         }
-        
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
-        
-        @output = () ;
- 
+         
 #
 #  evaluate data return
 #
@@ -368,21 +352,10 @@
         $subject = "TA $sta baler data problem";
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
         
-#         if  ( ! $opt_n ) {
-#             elog_notify("\n$cmd") if ($prob && $opt_v) ;        
-#             $problems = run($cmd,$problems) if $prob ;
-#         } else {
-#             elog_notify("\nskipping $cmd") if $prob ;
-#         } 
-
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
         
-        @output = () ;
-
         unlink "/tmp/$sta\_return_$$" unless $opt_V;
         unlink "/tmp/tmp_miniseed2db\_$$" unless $opt_V;
         unlink "/tmp/prob_$sta\_$$" unless $opt_V;
@@ -391,16 +364,10 @@
         if ($prob) {
             makedir($pf{purgatory});
             $cmd = "mv $dirname $pf{purgatory}";
-#             elog_notify("\n$cmd");        
-#             $problems = run($cmd,$problems);
 
-            ( $success, @output )  = &run_cmd( $cmd );
-
-            if ( ! $success ) {
+            if ( ! &run_cmd( $cmd ) ) {
                 $problems++ ;
             }
-        
-            @output = () ;
         }
         %staperf = ();        
     }

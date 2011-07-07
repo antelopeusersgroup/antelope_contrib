@@ -50,7 +50,7 @@
 /*
  * Constants
  */
-#define VERSION "dcbba2orb 1.1.1"
+#define VERSION "dcbba2orb 1.1.2"
 /* State variables for use in readFromDC() */
 #define ST_WAIT_FOR_SYNC 0
 #define ST_READ_PKTTYPE 1
@@ -106,7 +106,6 @@ int main(int iArgCount, char *aArgList[]) {
 	uint8_t *aBBAPkt; /* Buffer to hold a bba packet read from the wire */
 	struct stBBAPacketInfo oPktInfo; /* Struct to hold information from the packet header */
 	double dPrevTime;
-	char *sTimeStamp;
 	int bOKToSend;
 	char *sOutPkt; /* Packet to put onto the orb */
 	int iOutPktLen; /* Length of sOutPkt */
@@ -178,7 +177,7 @@ int main(int iArgCount, char *aArgList[]) {
 								1,
 								"An error occurred while adding the ORB header to the raw packet. Not submitting to the orb.");
 					} else if (sOutPkt == 0) {
-						die(1,
+						elog_die(1,
 								"Output packet length was non-zero but pointer to Output packet is null");
 					} else {
 
@@ -751,7 +750,7 @@ static int initSiteLookupArrays() {
 		/* Handle the StaName table */
 		sprintf(sKey, "%d", oSiteEntry.iSID);
 
-		if (getarr(oConfig.oStaName,sKey) == 0) {
+		if (getarr(oConfig.oStaName,sKey) == NULL) {
 			/* If we haven't seen this key before, add an entry in the array */
 			setarr(oConfig.oStaName, sKey, strdup(oSiteEntry.sNAME));
 		}
@@ -759,7 +758,7 @@ static int initSiteLookupArrays() {
 		/* Handle the StaCh table */
 		sprintf(sKey, "%s_%d_%d", oSiteEntry.sDTYPE, oSiteEntry.iSID, oSiteEntry.iCOMP);
 
-		if ( (struct stSiteEntry *) getarr( oConfig.oStaCh, sKey ) == 0 ) {
+		if ( (struct stSiteEntry *) getarr( oConfig.oStaCh, sKey ) == NULL ) {
 			allot( struct stSiteEntry *, oNewSiteEntry, sizeof(struct stSiteEntry));
 			memcpy( oNewSiteEntry, &oSiteEntry, sizeof (struct stSiteEntry));
 			setarr(oConfig.oStaCh, sKey, oNewSiteEntry);
@@ -797,6 +796,7 @@ static int paramFileRead(void) {
 		/* Check to make sure the parameter file version matches #PFVER */
 		pfver_read = pfget_string(oConfig.oConfigPf, "dcbba2orb_pf_ver");
 		if (pfver_read == 0) {
+                  /* pfget_string returns 0 (not NULL) if the key is not found */
 			elog_log(0,
 					"pfupdate(): no version number found in parameter file %s",
 					oConfig.sParamFileName);
@@ -810,6 +810,7 @@ static int paramFileRead(void) {
 			free(pfver_read);
 			return RESULT_FAILURE;
 		}
+                /* If we get here, pfver_read should not be null or zero*/
 		free(pfver_read);
 
 		/* Read in the Network Name from the parameter file */
@@ -1129,7 +1130,7 @@ static int parseBBAPacket(uint8_t *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
 	int32_t iYear, iDay, iHour, iMin;
 	uint32_t ysec;
 	char sTMPNameCmpt[PKT_TYPESIZE];
-	int8_t *sChName, aChan[128];
+	char *sChName, aChan[128];
 	uint32_t iChId, iChBytes, iChIdx, iDataOffset, i;
 	uint8_t ucBBAPktType;
 
@@ -1319,7 +1320,7 @@ static int parseBBAPacket(uint8_t *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
 
 		sChName = getBBAChNameFromId(ucBBAPktType,
 				oPktInfo->oSrcname.src_subcode, oPktInfo->iStaID, iChId);
-		if (sChName == 0) {
+		if (sChName == NULL) {
 			elog_complain(0,
 					"parseBBAPacket(): an error occured retrieving the channel name");
 			return RESULT_FAILURE;
@@ -1361,7 +1362,7 @@ static int parseBBAPacket(uint8_t *aBBAPkt, struct stBBAPacketInfo* oPktInfo) {
  */
 static char *getBBAChNameFromId(uint8_t ucBBAPktType, char *sSubCode,
 		int iStaId, int iChId) {
-	char key[64], *name = 0, *cherr = 0;
+	char key[64], *name = NULL, *cherr = NULL;
 	struct stSiteEntry *oSiteEntry;
 	static Arr *oErrMsg;
 
@@ -1371,7 +1372,7 @@ static char *getBBAChNameFromId(uint8_t ucBBAPktType, char *sSubCode,
 
 		sprintf(key, "BBA/%s_%d_%d", sSubCode, iStaId, iChId);
 		if ((oSiteEntry = (struct stSiteEntry *) getarr(oConfig.oStaCh, key))
-				!= 0) {
+				!= NULL) {
 			name = oSiteEntry->sSENS;
 		} else {
 			/* We can't find an entry so we'll make up a fake channel Id */
@@ -1380,10 +1381,10 @@ static char *getBBAChNameFromId(uint8_t ucBBAPktType, char *sSubCode,
 
 			/* To prevent excessive noise in the logs, only complain
 			 * if we haven't tried looking this up before */
-			if (oErrMsg == 0)
+			if (oErrMsg == NULL)
 				oErrMsg = newarr(0);
 			cherr = (char *) getarr(oErrMsg, key);
-			if (cherr == 0) {
+			if (cherr == NULL) {
 				elog_complain(
 						0,
 						"getBBAChNameFromId: can't get channel name (SubCode=%s StaID=%d, ChId=%d)\n",
@@ -1397,7 +1398,7 @@ static char *getBBAChNameFromId(uint8_t ucBBAPktType, char *sSubCode,
 	case BBA_DAS_STATUS:
 
 		sprintf(key, "%d", iChId);
-		if ((name = getarr(oConfig.oDasID, key)) == 0) {
+		if ((name = getarr(oConfig.oDasID, key)) == NULL) {
 			elog_log(
 					0,
 					"getBBAChNameFromId: can't get DAS parameter name (StaID=%d, ChId=%d)\n",
@@ -1408,7 +1409,7 @@ static char *getBBAChNameFromId(uint8_t ucBBAPktType, char *sSubCode,
 	case BBA_DC_STATUS:
 
 		sprintf(key, "%d", iChId);
-		if ((name = getarr(oConfig.oDcID, key)) == 0) {
+		if ((name = getarr(oConfig.oDcID, key)) == NULL) {
 			elog_log(
 					0,
 					"getBBAChNameFromId: can't get DC parameter name (StaID=%d, ChId=%d)\n",
@@ -1419,7 +1420,7 @@ static char *getBBAChNameFromId(uint8_t ucBBAPktType, char *sSubCode,
 	case BBA_RTX_STATUS:
 
 		sprintf(key, "%d", iChId);
-		if ((name = getarr(oConfig.oRTXID, key)) == 0) {
+		if ((name = getarr(oConfig.oRTXID, key)) == NULL) {
 			elog_log(
 					0,
 					"getBBAChNameFromId: can't get RTX parameter name (StaID=%d, ChId=%d)\n",

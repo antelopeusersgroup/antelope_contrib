@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-#include "stock.h"
+#include "liss2orb.h"
 
 static void
 parsename ( char *name, int default_port, char *server, int *port )
@@ -21,7 +21,8 @@ parsename ( char *name, int default_port, char *server, int *port )
     char *port_string ;
 
     strcpy(server, name ) ; 
-    if ( port_string = strchr(server, ':' ) ) {
+    port_string = strchr(server, ':' ) ;
+    if ( port_string != 0 ) {
 	*port_string++ = 0 ; 
 	if ( *port_string != 0 ) { 
 	    *port = atoi(port_string) ; 
@@ -41,11 +42,8 @@ open_socket ( char *name, int default_port )
 {
     int fd ; 
     struct sockaddr_in serv_addr ; 
-    struct hostent hostent, *hostentp ; 
     char server[256] ;
-    char buffer[256] ; 
     char ipc[32] ;
-    int error ;
     int port ;
 
     memset ( (char *) &serv_addr, 0, sizeof(serv_addr) ) ; 
@@ -56,7 +54,7 @@ open_socket ( char *name, int default_port )
     serv_addr.sin_port = htons ( port ) ; 
 
     if ( (fd = socket(PF_INET, SOCK_STREAM, 0 )) < 0 ) {
-	register_error ( 1, "Can't open stream socket\n" ) ; 
+	elog_log( 1, "Can't open stream socket\n" ) ; 
 	fd = -1 ;
     } else if ( connect(fd, 
 		(struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0 ) {

@@ -1,0 +1,48 @@
+
+# horn@zagsun9  Nikolaus Horn  Wednesday December 20, 2006 15:47:38.978 GMT(15:47:38.978 UTC)
+# Wattenberg SP
+time  1/01/1996   0:00:00.000
+
+net OE Austrian Seismic Network
+sta WTTA 47.2638 11.6363 1.7640 Wattenberg, Tirol, Austria
+
+datalogger unknown unk WTTA # Dummy Datalogger used in ignorance
+
+sensor s13 0.0 unk  # Geotech S-13 short-period seismometer
+   samplerate 100sps
+    channel  N   off
+    channel  E   off
+add
+
+# horn@zagsun9  Nikolaus Horn  Wednesday December 20, 2006 15:58:33.325 GMT(15:58:33.325 UTC)
+# Wattenberg BB
+time 10/25/2002   0:00:00.000
+
+net OE Austrian Seismic Network
+sta WTTA 47.2638 11.6363 1.7640 Wattenberg, Tirol, Austria
+
+datalogger q4120 961118 WTTA # Quanterra 4120 Datalogger
+
+sensor sts2_g3 0.0 unk  # Streckeisen STS-2
+     axis2 Z 0 0 15e-7 409937
+     axis2 N 0 90 15e-7 403887
+     axis2 E 90 90 15e-7 413092
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   samplerate 0.1sps
+
+sensor episensor_40vpg 0.0 unk  # Episensor 200 Hz 40 Volt per g
+     axis2 Z 0 0 4.08e-09 407779
+     axis2 N 0 90 4.08e-09 408138
+     axis2 E 90 90 4.08e-09 411859
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+
+sensor s13 0.0 unk  # Geotech S-13 short-period seismometer
+     axis2 Z 0 0 6.29e-7 387623
+   samplerate 100sps
+    channel  N   off
+    channel  E   off
+add

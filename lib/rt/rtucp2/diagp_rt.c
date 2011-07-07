@@ -66,13 +66,13 @@ int dprtCmd(clientData, interp, argc, argv)
     orbname = strdup(argv[2]);
     orb = orbopen ( orbname, "r&" );
     if ( orb < 0) {
-  	clear_register (1);
+  	elog_clear_register(1);
 	Tcl_AppendResult(interp, argv[0], ": orbopen() error on ", orbname, (char *) NULL);
 	return TCL_ERROR;
     }
                 
     if( ( pktid = orbseek (orb, ORBNEWEST) ) < 0 )  {
-   	clear_register (1);
+   	elog_clear_register(1);
 	Tcl_AppendResult(interp, argv[0], ": orbseek() ORBNEWEST error", (char *) NULL);
 	return TCL_ERROR;
     }
@@ -156,13 +156,13 @@ int dcrtCmd(clientData, interp, argc, argv)
     orbname = strdup( argv[2]);
     orb = orbopen ( orbname, "r&" );
     if (orb < 0) {
-  	clear_register (1);
+  	elog_clear_register(1);
 	Tcl_AppendResult(interp, argv[0], ": orbopen() error on ", orbname, (char *) NULL);
 	return TCL_ERROR;
     }
                 
     if( (pktid = orbseek (orb, ORBNEWEST)) < 0 )  {
-   	clear_register (1);
+   	elog_clear_register(1);
 	Tcl_AppendResult(interp, argv[0], ": orbseek() ORBNEWEST error", (char *) NULL);
 	return TCL_ERROR;
     }
@@ -316,7 +316,7 @@ dp_tclCmd(clientData, interp, argc, argv)
 
 
          if( orbselect (tclorb->orbid, srcname ) < 0) {
-             clear_register (1);
+             elog_clear_register(1);
              Tcl_AppendResult(interp, argv[0], ": orbselect() error", (char *) NULL);
              return TCL_ERROR;
          }
@@ -441,7 +441,7 @@ if(pfread( str, &pf) != 0)  {
     }  else if (!strcmp(command, "getdcpar")) {
     	DcStop = 0;
          if( orbselect (tclorb->orbid, ".*BBA/DC" ) < 0) {
-             clear_register (1);
+             elog_clear_register(1);
              Tcl_AppendResult(interp, argv[0], ": orbselect() error", (char *) NULL);
              return TCL_ERROR;
          }
@@ -499,7 +499,7 @@ if(pfread( str, &pf) != 0)  {
 	str = (char *) strdup (*argv);
         after = str2epoch (str);
         if( ( tclorb->pktid = orbafter (tclorb->orbid, after-0.001 )) < 0) {
-   	   clear_register (1);
+   	   elog_clear_register(1);
 	   Tcl_AppendResult(interp, argv[0], ": orbafter() ", str, (char *) NULL);
 	   return TCL_ERROR;
         }

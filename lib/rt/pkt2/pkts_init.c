@@ -85,14 +85,14 @@ void init_StaCh()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     Ste = pfget_tbl(Param, "Site");
     elnum = maxtbl(Ste);
 
     if ( elnum > 0 ) StaCh = newarr( 0 );
-    else die( 0, "Can't get site parameters. Check parameter file!\n");
+    else elog_die( 0, "Can't get site parameters. Check parameter file!\n");
  
     for(i = 0; i < elnum; i++)  {
         istr = (char *) gettbl(Ste, i);
@@ -123,16 +123,16 @@ void init_StaName()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     if((Ste = pfget_tbl(Param, "Site")) == 0)
-       die(0, "Can't find Site table in parameter file\n");
+       elog_die(0, "Can't find Site table in parameter file\n");
         
     elnum = maxtbl(Ste);
 
     if ( elnum > 0 ) StaName = newarr( 0 );
-    else die( 0, "Can't get site parameters. Check parameter file!\n");
+    else elog_die( 0, "Can't get site parameters. Check parameter file!\n");
  
     for(i = 0; i < elnum; i++)  {
         istr = (char *) gettbl(Ste, i);
@@ -160,16 +160,16 @@ void init_DasID()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     if((Ste = pfget_tbl(Param, "Das_Stat")) == 0) 
-       die(0, "Can't find Das_Stat table in parameter file\n");
+       elog_die(0, "Can't find Das_Stat table in parameter file\n");
     
     elnum = maxtbl(Ste);
    
     if ( elnum > 0 ) DasID = newarr( 0 );
-    else die( 0, "Can't get DAS status parameters. Check parameter file!\n");
+    else elog_die( 0, "Can't get DAS status parameters. Check parameter file!\n");
 
     if(StaName == 0) init_StaName();
  
@@ -197,16 +197,16 @@ void init_DcID()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     if((Ste = pfget_tbl(Param, "DC_Stat")) == 0) 
-       die(0, "Can't find DC_Stat table in parameter file\n");
+       elog_die(0, "Can't find DC_Stat table in parameter file\n");
     
     elnum = maxtbl(Ste);
    
     if ( elnum > 0 ) DcID = newarr( 0 );
-    else die( 0, "Can't get DC status parameters. Check parameter file!\n");
+    else elog_die( 0, "Can't get DC status parameters. Check parameter file!\n");
 
     if(StaName == 0) init_StaName();
  
@@ -234,16 +234,16 @@ void init_RTXID()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     if((Ste = pfget_tbl(Param, "RTX_Stat")) == 0) 
-       die(0, "Can't find RTX_Stat table in parameter file\n");
+       elog_die(0, "Can't find RTX_Stat table in parameter file\n");
     
     elnum = maxtbl(Ste);
    
     if ( elnum > 0 ) RTXID = newarr( 0 );
-    else die( 0, "Can't get RTX status parameters. Check parameter file!\n");
+    else elog_die( 0, "Can't get RTX status parameters. Check parameter file!\n");
 
     if(StaName == 0) init_StaName();
  
@@ -271,14 +271,14 @@ void init_StaID()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     Ste = pfget_tbl(Param, "Site");
     elnum = maxtbl(Ste);
    
     if ( elnum > 0 ) StaID = newarr( 0 );
-    else die( 0, "Can't get packet parameters. Check parameter file!\n");
+    else elog_die( 0, "Can't get packet parameters. Check parameter file!\n");
  
     for(i = 0; i < elnum; i++)  {
         istr = (char *) gettbl(Ste, i);
@@ -328,7 +328,7 @@ void init_packets()
    if( DASPF == 0 ) initpf( 0 );
  
    if(pfread( DASPF, &Param) != 0)  {
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
    }
  
     Inputs = pfget_tbl(Param, "Inputs");
@@ -336,7 +336,7 @@ void init_packets()
  
     if ( elnum > 0 )  {
        Packets = newarr( 0 );
-    } else die( 0, "Can't get packet parameters. Check parameter file!\n");
+    } else elog_die( 0, "Can't get packet parameters. Check parameter file!\n");
    
     for(i = 0; i < elnum; i++)  {
         istr = (char *) gettbl(Inputs, i);
@@ -370,7 +370,7 @@ int get_site(
 
    ste = ( struct Site *)  getarr( StaCh, key );
    if( ste == 0 )  {
-       complain( 0, "Can't get site parameters for %s_%d_%d.\n", pkttype, staid, chid);
+       elog_complain( 0, "Can't get site parameters for %s_%d_%d.\n", pkttype, staid, chid);
        return 0;
     }  else 
        memcpy( (char *) site, (char *) ste, sizeof( struct Site ) );
@@ -391,7 +391,7 @@ int get_staid(
  
    site =  (Site *) getarr( StaID, key );
    if( site == 0 )  {
-       complain( 0, "Can't get site parameters for %s_%s.\n", pkttype, sta);
+       elog_complain( 0, "Can't get site parameters for %s_%s.\n", pkttype, sta);
        return 0;
     }  
    return 1;
@@ -428,7 +428,7 @@ register_pkt_handler (int pkttype, int (*parse_handler)(), int (*read_handler)()
 
 	raw = (Raw *) malloc (sizeof(Raw));
 	if (raw == 0) {
-		register_error (1, "register_pkt_handler: malloc() error.\n");
+		elog_log(1, "register_pkt_handler: malloc() error.\n");
 		return (-1);
 	}
 	raw->pkttype = pkttype;

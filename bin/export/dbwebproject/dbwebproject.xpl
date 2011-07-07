@@ -17,7 +17,7 @@
 #   the copyright statement above is not removed. 
 #
 
-require "getopts.pl";
+use Getopt::Std;
 use Datascope;
 
 sub remap_target {
@@ -348,7 +348,7 @@ $Program =~ s".*/"";
 
 $Pfname = $Program;
 
-if ( ! &Getopts('nr:p:v') || @ARGV > 1 ) { 
+if ( ! getopts('nr:p:v') || @ARGV > 1 ) { 
 
     	elog_die ( "Usage: $Program [-v] [-n] [-p pfname] [-r TargetRoot] [recipe]\n" ); 
 

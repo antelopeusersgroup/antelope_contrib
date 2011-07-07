@@ -6,7 +6,7 @@
     use Datascope ;
     use orb ;
     use archive ;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     our ( $opt_v, $opt_m, $opt_n, $opt_p );
     
@@ -28,7 +28,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
 
-    if ( !  &Getopts('vm:n:p:') || @ARGV != 2 ) { 
+    if ( !  getopts('vm:n:p:') || @ARGV != 2 ) { 
         $usage  =  "\n\n\nUsage: $0 [-v] [-m mail_to] [-n net] [-p pf_sourcename] orb db\n"  ;
         
         elog_notify($cmd) ; 

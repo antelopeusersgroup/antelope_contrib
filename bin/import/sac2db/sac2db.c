@@ -97,7 +97,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	    || sac->nzmin == SAC_NULL_INT
 	    || sac->nzsec == SAC_NULL_INT
 	    || sac->nzmsec == SAC_NULL_INT) {
-	complain (0, "time not properly specified in %s\n", sac_name);
+	elog_complain(0, "time not properly specified in %s\n", sac_name);
 	return -1;
     }
     if (sac->nzyear < 100) {
@@ -106,7 +106,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	} else {
 	    sac->nzyear += 1900;
 	}
-	complain (0, "NZYEAR has value in the first century\n\tchanging it to %d.", sac->nzyear);
+	elog_complain(0, "NZYEAR has value in the first century\n\tchanging it to %d.", sac->nzyear);
     }
     reftime = h2e (sac->nzyear, sac->nzjday, sac->nzhour, sac->nzmin,
 		   (double) sac->nzsec + .001 * (double) sac->nzmsec);
@@ -114,14 +114,14 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	time = reftime + sac->b;
     }
     if (sac->npts == SAC_NULL_INT) {
-	complain (0, "# data points (npts) undefined in %s\n", sac_name);
+	elog_complain(0, "# data points (npts) undefined in %s\n", sac_name);
 	return -1;
     }
     nsamp = sac->npts;
 
 
     if (sac->delta == SAC_NULL_FLOAT) {
-	complain (0, "Sample rate (1/delta) undefined in %s\n", sac_name);
+	elog_complain(0, "Sample rate (1/delta) undefined in %s\n", sac_name);
 	return -1;
     }
     samprate = 1.0 / sac->delta;
@@ -133,7 +133,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
     dirbase (sac_name, dir, base);
 
     if (strncmp (sac->kstnm, SAC_NULL_STRING, SAC_STRING_LENGTH) == 0) {
-	complain (0, "station name (kstnm) undefined in %s\n", sac_name);
+	elog_complain(0, "station name (kstnm) undefined in %s\n", sac_name);
 	return -1;
     }
     copystrip (sta, sac->kstnm, SAC_STRING_LENGTH);
@@ -162,7 +162,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	    break;
 
 	  default:
-	    complain (0, "can't figure out channel name for %s\n", sac_name);
+	    elog_complain(0, "can't figure out channel name for %s\n", sac_name);
 	    freetbl (pieces, 0);
 	    return -1;
 	}
@@ -194,17 +194,17 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
     dbwfdisc = dblookup (dbwfdisc, 0, 0, "dir", 0);
     dbquery (dbwfdisc, dbFIELD_SIZE, &size);
     if (strlen (dir) > size) {
-	complain (0, "'%s' is too large for %ld chars in dir field in wfdisc: please shorten it", dir, size);
+	elog_complain(0, "'%s' is too large for %ld chars in dir field in wfdisc: please shorten it", dir, size);
 	return -1;
     }
     dbwfdisc = dblookup (dbwfdisc, 0, 0, "dfile", 0);
     dbquery (dbwfdisc, dbFIELD_SIZE, &size);
     if (strlen (base) > size) {
-	complain (0, "'%s' is too large for %ld chars in dfile field in wfdisc: please shorten it", base, size);
+	elog_complain(0, "'%s' is too large for %ld chars in dfile field in wfdisc: please shorten it", base, size);
 	return -1;
     }
     if ((dbwfdisc.record = dbaddnull (dbwfdisc)) < 0) {
-	die (0, "couldn't add new record to wfdisc for '%s'\n", sac_name);
+	elog_die(0, "couldn't add new record to wfdisc for '%s'\n", sac_name);
     }
     if (dbputv (dbwfdisc, 0,
 		"sta", sta,
@@ -223,20 +223,20 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 		"dfile", base,
 		NULL
 		) < 0) {
-	die (0, "couldn't write to new null record #%ld in wfdisc for '%s'\n",
+	elog_die(0, "couldn't write to new null record #%ld in wfdisc for '%s'\n",
 	     dbwfdisc.record, sac_name);
     } else {
-	clear_register (0);
+	elog_clear_register(0);
     }
 
     if (sac->stla == SAC_NULL_FLOAT) {
-	complain (0, "station latitude is null in %s\n", sac_name);
+	elog_complain(0, "station latitude is null in %s\n", sac_name);
     }
     if (sac->stlo == SAC_NULL_FLOAT) {
-	complain (0, "station longitude is null in %s\n", sac_name);
+	elog_complain(0, "station longitude is null in %s\n", sac_name);
     }
     if (sac->stel == SAC_NULL_FLOAT) {
-	complain (0, "station elevation is null in %s\n", sac_name);
+	elog_complain(0, "station elevation is null in %s\n", sac_name);
     }
     if (sac->user[7] != SAC_NULL_FLOAT
 	    && sac->user[8] != SAC_NULL_FLOAT) {
@@ -259,10 +259,10 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 			 NULL);
     }
     if (result < 0) {
-	complain (0, "couldn't add sta='%s' ondate=%d lat=%10.3f lon=%10.3f elev=%10.3f from %s to site\n",
+	elog_complain(0, "couldn't add sta='%s' ondate=%ld lat=%10.3f lon=%10.3f elev=%10.3f from %s to site\n",
 		  sta, yearday (reftime), sac->stla, sac->stlo, sac->stel / 1000.0, sac_name);
     } else {
-	clear_register (0);
+	elog_clear_register(0);
     }
 
     if (sac->cmpaz != SAC_NULL_FLOAT
@@ -270,7 +270,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	hang = sac->cmpaz;
 	vang = sac->cmpinc;
     } else {
-	complain (0, "channel orientation not present in %s\n", sac_name);
+	elog_complain(0, "channel orientation not present in %s\n", sac_name);
 	switch (chan[strlen (chan) - 1]) {
 	  case 'Z':
 	    hang = 0.0;
@@ -315,10 +315,10 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
     }
 
     if (record < 0) {
-	complain (0, "couldn't add sta='%s' chan='%s' ondate=%d hang=%10.3f vang=%10.3f edepth=%10.3f from %s to sitechan\n",
+	elog_complain(0, "couldn't add sta='%s' chan='%s' ondate=%ld hang=%10.3f vang=%10.3f edepth=%10.3f from %s to sitechan\n",
 		  sta, chan, yearday (reftime), hang, vang, sac->stdp / 1000.0, sac_name);
     } else {
-	clear_register (0);
+	elog_clear_register(0);
     }
 
     if (sac->evla != SAC_NULL_FLOAT
@@ -328,7 +328,7 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	lon = sac->evlo;
 	if (sac->o == SAC_NULL_FLOAT) {
 	    if (sac->iztype != IO) {
-		complain (0, "Origin time not specified in %s, using reference time instead.\n", sac_name);
+		elog_complain(0, "Origin time not specified in %s, using reference time instead.\n", sac_name);
 	    }
 	    evtime = reftime;
 	} else {
@@ -364,11 +364,11 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 				 NULL);
 
 	if (dbo.record < 0) {
-	    complain (0, "couldn't add time=%s lat=%10.3f lon=%10.3f depth=%10.3f from %s to origin\n",
+	    elog_complain(0, "couldn't add time=%s lat=%10.3f lon=%10.3f depth=%10.3f from %s to origin\n",
 		      strtime (evtime), lat, lon, depth, sac_name);
 	} else if (dbo.record >= norigin) {
 	    /* add new event only when new origin has been added */
-	    clear_register (0);
+	    elog_clear_register(0);
 	    dbgetv (dbo, 0, "orid", &orid, NULL);
 	    dbe = dblookup (db, 0, "event", 0, 0);
 	    copystrip (evname, sac->ko, SAC_STRING_LENGTH);
@@ -384,9 +384,9 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 	    }
 
 	    if (dbe.record < 0) {
-		complain (0, "couldn't add a new event for file %s\n", sac_name);
+		elog_complain(0, "couldn't add a new event for file %s\n", sac_name);
 	    } else {
-		clear_register (0);
+		elog_clear_register(0);
 		dbgetv (dbe, 0, "evid", &evid, NULL);
 		dbputv (dbo, "origin", "evid", evid, NULL);
 	    }
@@ -408,10 +408,10 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 				  "sta", sta,
 				  "iphase", iphase,
 				  NULL)) < 0) {
-	    complain (0, "couldn't add sta='%s' time=%s iphase='%s' from %s to arrival\n",
+	    elog_complain(0, "couldn't add sta='%s' time=%s iphase='%s' from %s to arrival\n",
 		      sta, strtime (sac->a + reftime), iphase, sac_name);
 	} else {
-	    clear_register (0);
+	    elog_clear_register(0);
 	    dbputv (dba, 0, "chan", chan, NULL);
 	}
     }
@@ -431,12 +431,12 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 				 NULL);
 
 	    if (dba.record < 0) {
-		complain (0, "couldn't add sta='%s' time=%s iphase='%s' from %s to arrival\n",
+		elog_complain(0, "couldn't add sta='%s' time=%s iphase='%s' from %s to arrival\n",
 			  sta, strtime (sac->a + reftime), iphase, sac_name);
 	    } else {
 		dbputv (dba, 0, "chan", chan, NULL);
 		if (orid >= 0) {
-		    clear_register (0);
+		    elog_clear_register(0);
 		    dbgetv (dba, 0, "arid", &arid, NULL);
 		    if (dbaddv (db, "assoc",
 				"arid", arid,
@@ -444,10 +444,10 @@ sac2db (char *sac_name, sac_t * sac, int intel, Dbptr db)
 				"sta", sta,
 				"phase", iphase,
 				NULL) < 0) {
-			complain (0, "couldn't add arid=%ld orid=%ld %s to assoc\n",
+			elog_complain(0, "couldn't add arid=%ld orid=%ld %s to assoc\n",
 				  arid, orid, sac_name);
 		    } else {
-			clear_register (0);
+			elog_clear_register(0);
 		    }
 		}
 	    }
@@ -483,7 +483,7 @@ main (int argc, char **argv)
 	    break;
 
 	  case 'V':
-	    banner (Program_Name, 0L) ;
+	    usage() ;
 	    break;
 
 	  case '?':
@@ -513,14 +513,14 @@ main (int argc, char **argv)
 	    sac_name = argv[i];
 	}
 	if ((file = fopen (sac_name, "r")) == 0)
-	    complain (1, "Can't open sac file %s\n", sac_name);
+	    elog_complain(1, "Can't open sac file %s\n", sac_name);
 	else {
 	    if (fread (&sac_header, sizeof (sac_t), 1, file) != 1) {
-		complain (1, "Can't read sac file %s\n", sac_name);
+		elog_complain(1, "Can't read sac file %s\n", sac_name);
 	    } else {
 		intel = swap_sac (&sac_header);
 		if (sac2db (sac_name, &sac_header, intel, db) != 0)
-		    complain (0, "SAC file %s not incorporated.\n",
+		    elog_complain(0, "SAC file %s not incorporated.\n",
 			      sac_name);
 	    }
 	    fclose (file);

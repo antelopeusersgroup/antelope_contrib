@@ -47,7 +47,7 @@ char **argv;
 	/* Open database */
 
 	if (dbopen (dbname, "r+", &db) == dbINVALID) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "dbs2n: Unable to open database '%s'\n",
 								dbname);
 		exit (1);

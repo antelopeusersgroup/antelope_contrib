@@ -1,0 +1,21 @@
+
+# horn@zagsun9  Nikolaus Horn  Wednesday December 20, 2006 14:01:01.869 GMT(14:01:01.869 UTC)
+time 11/24/1997   0:00:00.000
+
+net OE Austrian Seismic Network
+sta KBA 47.0784 13.3447 1.7210 Koelnbreinsperre, Kaernten, Austria
+
+datalogger qx80-92 920610 KBA # Quanterra Qx80 Datalogger with 19920812 (new) Firmware
+
+sensor sts2_g3 0.0 89319  # Streckeisen STS-2
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+   samplerate 0.1sps
+add
+
+sensor fba23_0_5g 0.0 45757  # KMI FBA23 50 Hz FS 1g
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+add

@@ -15,7 +15,7 @@ main( int argc, char **argv )
 
 	if( argc != 2 ) {
 		
-		die( 0, "Usage: %s dbname\n", Program_Name );
+		elog_die( 0, "Usage: %s dbname\n", Program_Name );
 
 	} else {
 

@@ -383,7 +383,7 @@ main( int argc, char **argv )
 
 	if( ( orbfd = orbopen( orbname, "r&" ) ) < 0 ) {
 		
-		die( 0, "Failed to open %s for writing. Bye.\n", orbname );
+		elog_die( 0, "Failed to open %s for writing. Bye.\n", orbname );
 	}
 
 	pkt = newPkt();
@@ -827,13 +827,13 @@ main( int argc, char **argv )
 
 		if( rc < 0 ) {
 			
-			complain( 0, "stuffPkt routine failed\n" );
+			elog_complain( 0, "stuffPkt routine failed\n" );
 
 			continue;
 
 		} else if( orbput( orbfd, srcname, t, packet, nbytes ) ) {
 
-			complain( 0, "orbput fails\n" );
+			elog_complain( 0, "orbput fails\n" );
 		}
 
 		if( statefile && bury_counter-- <= 0 ) {

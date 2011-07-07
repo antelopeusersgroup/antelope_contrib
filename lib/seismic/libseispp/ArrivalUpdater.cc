@@ -211,17 +211,17 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 			case MDreal:
 				dval=md.get_double(mdptr->tag);
 				if(dbputv(db,0,dbattributename.c_str(),
-					dval,0) == dbINVALID) ++err;
+					dval,NULL) == dbINVALID) ++err;
 				break;
 			case MDint:
 				ival=md.get_long(mdptr->tag);
 				if(dbputv(db,0,dbattributename.c_str(),
-					ival,0) == dbINVALID) ++err;
+					ival,NULL) == dbINVALID) ++err;
 				break;
 			case MDstring:
 				sval=md.get_string(mdptr->tag);
 				if(dbputv(db,0,dbattributename.c_str(),
-					sval.c_str(),0) == dbINVALID) ++err;
+					sval.c_str(),NULL) == dbINVALID) ++err;
 				break;
 			default:
 				char buf[128];
@@ -273,7 +273,7 @@ int ArrivalUpdater::update(Metadata& md)
 		err+=put_attributes_to_db(md,dbarrival,mdlarrival,am);
 		// When we append we have to get a new arid and set
 		// it.  Assume we use old arid for record updates below
-		int arid=dbnextid(dbassoc,"arid");
+		long arid=dbnextid(dbassoc,"arid");
 		dbputv(dbassoc,0,"arid",arid,NULL );
 		dbputv(dbarrival,0,"arid",arid,NULL );
 	}

@@ -22,10 +22,10 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 use Datascope;
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
 
-  if (! &Getopts('fvp:') || @ARGV != 1)	{
+  if (! getopts('fvp:') || @ARGV != 1)	{
 	&usage;
   }
 

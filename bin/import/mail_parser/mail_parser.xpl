@@ -1,6 +1,6 @@
 use Mail::Internet;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
 $ENV{'PATH'} = "/bin:/usr/bin:$ENV{'ANTELOPE'}/bin:$ENV{'ANTELOPE'}/local/bin";
@@ -91,7 +91,7 @@ if( $antelope =~ m@^(/opt/antelope/.*)$@ ) {
 $Program = $0;
 $Program =~ s@^.*/@@;
 
-if ( ! &Getopts('f:l:p:vm') ) {
+if ( ! getopts('f:l:p:vm') ) {
 	die( "Usage: $Program [-f output_file] [-l lib_dir] " .
 	      "[-p pffile] [-v] [-m] [file [file...]]\n" ); 
 } else {

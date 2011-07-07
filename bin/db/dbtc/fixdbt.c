@@ -51,7 +51,7 @@ char **argv;
     dbname = strdup( argv[optind++]); 
  
     if( pfread ( pfile, &pf) != 0 )
-         die (0, "Can't read %s parameter file\n", pfile );
+         elog_die(0, "Can't read %s parameter file\n", pfile );
  
     timoff = pfget_int( pf, "allowed_time_err_offset");
     cor_win = pfget_int( pf, "correlation_window");
@@ -77,7 +77,7 @@ char **argv;
     opendb ( &bad_set );           
     
     if( !get_data( &bad_set ))
-       die(0, "can't process corrupted data set - %s.\n", bad );
+       elog_die(0, "can't process corrupted data set - %s.\n", bad );
     dbclose( bad_set.db); 
 /*
     bad_set.npts -= cor_win*bad_set.srate;
@@ -88,7 +88,7 @@ char **argv;
     good_set.etime = bad_set.etime;
 
     if( !get_data( &good_set ))
-       die(0, "can't process control data set - %s.\n", good );
+       elog_die(0, "can't process control data set - %s.\n", good );
  
     dbclose( good_set.db );
     

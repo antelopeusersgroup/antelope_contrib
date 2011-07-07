@@ -1,0 +1,16 @@
+
+# horn@zagsun9  Nikolaus Horn  Wednesday December 20, 2006 10:30:18.410 GMT(10:30:18.410 UTC)
+# remark
+time  1999176
+
+net OE Austrian Seismic Network
+sta DAVA 47.28667 9.88028 1.6020 Damuels, Vorarlberg, Austria
+
+datalogger qx80-90 unk DAVA # Quanterra Qx80 Datalogger with 19900616 (old) Firmware
+
+sensor sts2_g3 0.0 unk  # Streckeisen STS-2
+   samplerate 80sps
+   samplerate 20sps
+   samplerate 1sps
+   samplerate 0.1sps
+add

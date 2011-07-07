@@ -23,7 +23,7 @@
 #   check for overlaps
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -36,9 +36,9 @@
     
 {    #  Main program
 
-    my ( $Pf, $cmd, $dbops, $debug, $now, $nrows, $problems, $row, $rtsta, $sta, $stime ) ; 
-    my ( $subject, $success, $usage, $verbose );
-    my ( @db, @dbdeploy, @output );
+    my ( $Pf, $cmd, $dbops, $now, $nrows, $problems, $row, $rtsta, $sta, $stime ) ; 
+    my ( $subject, $usage );
+    my ( @db, @dbdeploy );
     my ( %pf );
 
     $pgm = $0 ; 
@@ -46,7 +46,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnm:p:') || @ARGV != 1 ) { 
+    if (  ! getopts('vVnm:p:') || @ARGV != 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-p pf] [-m mail_to]  \n" ;
         $usage .=  "	dbops\n\n"  ; 
@@ -66,8 +66,6 @@
     $Pf         = $opt_p || $pgm ;
         
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
     %pf = getparam( $Pf );
     makedir $pf{rt_sta_dir} if (! -d $pf{rt_sta_dir});
@@ -96,7 +94,6 @@
 
     for ($row = 0; $row<$nrows; $row++) {
         $stime = strydtime(now());
-#        elog_notify ("\nstarting processing station $sta\n\n");
      
         $dbdeploy[3] = $row;
         $sta = dbgetv(@dbdeploy,"sta");
@@ -113,24 +110,12 @@
         $cmd  = "miniseed2db ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "$pf{msd2db_pat} $rtsta ";
-#         $cmd .= "> /dev/null 2>&1 " unless $opt_V ;
         $cmd =~ s/STA/$sta/;
             
-#         if  ( ! $opt_n ) {
-#             elog_notify("\n$cmd");        
-#             $problems = run($cmd,$problems) ;
-#         } else {
-#             elog_notify("\nskipping $cmd") ;
-#         } 
-        
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
-        
-        @output = () ;
-            
+                    
         unlink("$rtsta");
         unlink("$rtsta.snetsta");
         unlink("$rtsta.schanloc");

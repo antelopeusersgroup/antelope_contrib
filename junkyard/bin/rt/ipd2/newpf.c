@@ -19,13 +19,13 @@ extern char *pffile;
 void newpf( char *pfile)
  {
  
-     complain( 0, "Re-reading parameter file to get new settings..." );
+     elog_complain( 0, "Re-reading parameter file to get new settings..." );
      initpf( pffile ); 
      Packets == NULL; init_packets();
      StaID == NULL; init_StaID();
      StaCh == NULL; init_StaCh();
      
-     complain( 0, "Done.\n");
+     elog_complain( 0, "Done.\n");
    return;
  }
                

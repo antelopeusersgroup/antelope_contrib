@@ -368,7 +368,7 @@ main(argc, argv)
 	 * Open database.
 	 */
 	if (dbopen(dbname, "r", &db) == dbINVALID) {
-		clear_register(1);
+		elog_clear_register(1);
 		fprintf(stderr, "%s: Unable to open database.\n", Program_Name);
 		exit(1);
 	}
@@ -429,12 +429,12 @@ main(argc, argv)
 	}
 	dbquery(_db, dbRECORD_COUNT, &n);
 	if (n < 1) {
-		register_error(0, "grdb_sc_loadcss: No wfdisc rows to process.\n");
+		elog_log(0, "grdb_sc_loadcss: No wfdisc rows to process.\n");
 		return (-1);
 	}
 	sortfields = newtbl(3);
 	if (sortfields == NULL) {
-		register_error(0, "grdb_sc_loadcss: newtbl() error.\n");
+		elog_log(0, "grdb_sc_loadcss: newtbl() error.\n");
 		return (-1);
 	}
 	settbl(sortfields, 0, strdup("wfdisc.sta"));
@@ -443,7 +443,7 @@ main(argc, argv)
 	_db = dbsort(_db, sortfields, 0, 0);
 	groupfields = newtbl(2);
 	if (groupfields == NULL) {
-		register_error(0, "grdb_sc_loadcss: newtbl() error.\n");
+		elog_log(0, "grdb_sc_loadcss: newtbl() error.\n");
 		return (-1);
 	}
 	settbl(groupfields, 0, strdup("sta"));
@@ -674,7 +674,7 @@ main(argc, argv)
 		 */
 
 		if (!make_scs(db, sta_s, chan_s, ts, te, &sc[i])) {
-			clear_register(1);
+			elog_clear_register(1);
 
 			fprintf(stderr, "%s: Unable to make sc.\n", Program_Name);
 			exit(1);
@@ -701,7 +701,7 @@ main(argc, argv)
 		strcat(stachan[i], ":");
 		strcat(stachan[i], thisstachanstruct->chan);
 	}
-	clear_register(1);
+	elog_clear_register(1);
 	/*
 	 * Initialize plot
 	 */

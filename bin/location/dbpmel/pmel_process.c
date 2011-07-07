@@ -253,7 +253,7 @@ option which is know to cause problems\nrecenter set off\n");
 	grdidtbl = strtbl("gridid",0);  /* used below */
 	dbevid_grp = dbgroup(db,grptbl,EVIDGRP,1);
 	if(dbevid_grp.record == dbINVALID)
-		die(0,"dbgroup failed on gridid:evid bundling\n");
+		elog_die(0,"dbgroup failed on gridid:evid bundling\n");
 	dbgs = dblookup(db,0,EVIDGRP,0,0);
 	dbgs.record = dbSCRATCH;
 

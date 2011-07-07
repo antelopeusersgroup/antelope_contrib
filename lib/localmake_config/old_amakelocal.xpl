@@ -2,7 +2,7 @@ use Datascope;
 use sysinfo;
 use Cwd;
 
-require "getopts.pl";
+use Getopt::Std;
 
 $Pf = "amakelocal";
 $Pf_proto = "amakelocal_proto";
@@ -12,7 +12,7 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'icp:s:v' ) ) {
+if( !getopts( 'icp:s:v' ) ) {
 
 	elog_die( "Usage: amakelocal [-i] [-v] [-c] [-p pfname] [MACRO [MACRO ...]]\n" );
 }

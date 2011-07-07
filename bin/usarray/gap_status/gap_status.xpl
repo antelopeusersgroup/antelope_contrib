@@ -1,7 +1,7 @@
 #
 #   program to identify status of gaps in realtime database wrt balers and recovered data
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -23,7 +23,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
 
-    if (  ! &Getopts('vVn:c:s:') || ( @ARGV < 3 || @ARGV > 4 ) ) { 
+    if (  ! getopts('vVn:c:s:') || ( @ARGV < 3 || @ARGV > 4 ) ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] \n" ;
         $usage .=  "	[-n net] [-s sta_match] [-c chan] \n" ;
         $usage .=  "	gapdb baler_list_db recovered_data_db [filled_data_db] \n\n"  ; 

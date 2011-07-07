@@ -5,7 +5,7 @@
 # Kent Lindquist and Taimi Mulder
 # February, 2005
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope ;
  
 sub format_pickfile {
@@ -478,7 +478,7 @@ $Pf = $program;
 
 elog_init( $0, @ARGV );
 
-if ( ! &Getopts('mil:s:o:p:d:') || @ARGV < 1 || @ARGV > 2 ) {
+if ( ! getopts('mil:s:o:p:d:') || @ARGV < 1 || @ARGV > 2 ) {
 
 	die ( "Usage: $program [-m] [-i] [-l lddate_cutoff] [-s origin_subset_expr] [-d dbout] [-o orid] [-p pffile] database [filename]\n" );
 

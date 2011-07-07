@@ -1,4 +1,4 @@
-.TH DBSHOW_MAIL 1 "$Date$"
+.TH DBSHOW_MAIL 1 
 .SH NAME
 dbshow_mail \- show mail messages in a database view
 .SH SYNOPSIS
@@ -104,7 +104,7 @@ filemail(1), dbe(1)
 
 Before matching the -f argument to actual email addresses in the \fIin\fP
 table, \fBdbshow_mail\fP converts the input address or regular expression 
-to all lowercase. This is done for compatibility with the filemail(3) 
+to all lowercase. This is done for compatibility with the filemail(3p) 
 routines, which file all addresses in lowercase. If the mail database was
 built with something other than the filemail(1) tools, and if the addresses
 contain uppercase letters, this mode will not work. Instead, -f should be 
@@ -115,4 +115,3 @@ table.
 Kent Lindquist
 Lindquist Consulting, Inc.
 .fi
-.\" $Id$

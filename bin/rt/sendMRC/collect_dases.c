@@ -34,7 +34,7 @@ void init( )
    int 		*num = 0;
 
    if(pfread( pfile, &Param) != 0)
-       die(0, "Can't read parameter file\n");
+       elog_die(0, "Can't read parameter file\n");
  
 	/* Get Input & Network tables  */
 	 
@@ -42,7 +42,7 @@ void init( )
    nsite = maxtbl(Site);
     
    if( nsite <= 0  )
-     die( 0, "init(): parameter file is not complete.\n");
+     elog_die( 0, "init(): parameter file is not complete.\n");
  
   Dases = newarr( 0 );
   Dasid = newarr( 0 );

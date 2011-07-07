@@ -1,0 +1,23 @@
+
+# horn@zagsun9  Nikolaus Horn  Thursday May 18, 2006 11:19:16.270 GMT(11:19:16.270 UTC)
+# Interreg AT/IT
+time  2006-10-19 13:09:52
+
+net OE Austrian Seismic Network
+sta MYKA     46.62992     13.64161 0.909 Terra Mystika / Bad Bleiberg, Kärnten, Austria
+
+#datalogger q330_linear_below_100 1080 MYKA # Quanterra 330 Linear Phase Below 100 Composite
+datalogger q330_linear_below_100 0100000A1B72DA1E MYKA # Quanterra 330 Linear Phase Below 100 Composite
+
+sensor sts2_g3 0.0 80422  # Streckeisen STS-2
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   
+
+sensor episensor_20vpg 0.0 1856  # Episensor 200 Hz 20 Volt per g
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   
+add

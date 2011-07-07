@@ -7,13 +7,24 @@ pageheight_mm	297	#
 pagemargin_mm	5
 range_degrees	10
 
-dot_color	red
+symbol star
+symbol_size	9
+symbol_color	Purple
+symbol_fill_color	Purple
 label_color black
+label_font helvetica 15 bold
+label_font_color black
 circle_color red
 
-overlay_dot_color magenta
-overlay_label_color magenta
-overlay_circle_color magenta
+overlay_symbol triangle # one of "point", "cross", "x", "triangle", "square", "circle", "star", or "diamond"
+overlay_symbol_color orange1
+overlay_symbol_fill_color orange1
+overlay_symbol_size 7
+overlay_label_color DarkBlue
+overlay_label_font helvetica 10 italic
+overlay_label_font_color black
+overlay_circle_color blue
+
 tables &Arr{
 	site &Arr{
 		label	sta
@@ -29,7 +40,7 @@ tables &Arr{
 	}
 	known_source &Arr{
 		label	placename
-		circle	radius
+		circle	sradius
 	}
 	place &Arr{
 		label	placename
@@ -46,3 +57,12 @@ tables &Arr{
 	}
 		
 }	
+window_layout &Tbl{
+	#frame info	-	0,0
+	label  latlon	-     +,0 LatLon
+	#endframe	
+	canvas mycanvas   500x500 +,0
+	label  help     -     +,0 I/i=zoom in, O/o=zoom out, L/l=toggle labels C/c=toggle/fill circles, right-click-drag
+	button print - +,0	Print
+	button quit  - =,+ Quit
+}

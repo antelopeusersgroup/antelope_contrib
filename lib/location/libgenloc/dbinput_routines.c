@@ -44,13 +44,13 @@ Arr *dbload_station_table(Dbptr db,int row_start,int row_end,Pf *pf)
 			"site.lat",&lat,
 			"site.lon",&lon,
 			"site.elev",&elev,
-			NULL )) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			NULL )) == dbINVALID) elog_die(1,"%s:  dbgetv error\n",prog);
 		if(db.record == row_start) strcpy(laststa,staname);
 		if( (db.record == row_start) || strcmp(staname,laststa))
 		{
 			s = (Station *) malloc(sizeof(Station));
                 	if(s == NULL) 
-				die(1,"%s:  Cannot malloc Station structure\n",
+				elog_die(1,"%s:  Cannot malloc Station structure\n",
 					prog);
 			strcpy(laststa,staname);
 			strcpy(s->name,staname);
@@ -96,13 +96,13 @@ Arr *dbload_array_table(Dbptr db,int row_start,int row_end,Pf *pf)
 			"lat",&lat,
 			"lon",&lon,
 			"elev",&elev,
-			NULL )) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			NULL )) == dbINVALID) elog_die(1,"%s:  dbgetv error\n",prog);
 		if(db.record == row_start) strcpy(laststa,staname);
 		if( (db.record == row_start) || strcmp(staname,laststa))
 		{
 			s = (Seismic_Array *) malloc(sizeof(Seismic_Array));
                 	if(s == NULL) 
-				die(1,"%s:  Cannot malloc Seismic_Array structure\n",
+				elog_die(1,"%s:  Cannot malloc Seismic_Array structure\n",
 					prog);
 			strcpy(laststa,staname);
 			strcpy(s->name,staname);
@@ -169,7 +169,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 	{
 		a = (Arrival *) malloc(sizeof(Arrival));
 		if(a == NULL)
-				die(1,"%s:  Cannot malloc Arrival structure\n",
+				elog_die(1,"%s:  Cannot malloc Arrival structure\n",
 					prog);
                 InitializeResidual(&(a->res));
 		if((dbgetv( db, 0,
@@ -179,7 +179,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 			"arrival.time",&time,
 			"arrival.deltim",&deltat,
 			"timedef",timedef,
-			NULL )) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			NULL )) == dbINVALID) elog_die(1,"%s:  dbgetv error\n",prog);
 
 		/* Added to skip arrivals with timedef set to turn off */
 		if(!strcmp(timedef,"n"))
@@ -194,7 +194,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 		code so we only make it a warning */
 		if(a->sta == NULL)
 		{
-			complain(1,"%s:  Cannot find coordinates for station %s\n%s phase arrival for this station skipped\n",
+			elog_complain(1,"%s:  Cannot find coordinates for station %s\n%s phase arrival for this station skipped\n",
 				prog, staname, phase_name);
 			free(a);
 			continue;
@@ -203,7 +203,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 		a->phase = (Phase_handle *) getarr(arrphase,phase_name);
 		if(a->phase == NULL)
 		{
-			complain(1,"%s:  Don't know how to handle phase %s\nArrival at %s at time %f skipped\n",
+			elog_complain(1,"%s:  Don't know how to handle phase %s\nArrival at %s at time %f skipped\n",
 				prog,phase_name,staname,time);
 			free(a);
 			continue;
@@ -258,7 +258,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	    char slodef[2],azdef[2];
 	    /* First make sure def is set for slowness vectors */
 	    retcode=dbgetv(db,0,"slodef",slodef,"azdef",azdef,NULL );
-	    if(retcode==dbINVALID) die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
+	    if(retcode==dbINVALID) elog_die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
 	    /* don't load data unless slowness vector is defined */
 	    if( (!strcmp(slodef,"d")) && (!strcmp(azdef,"d")) )
 	    {
@@ -277,7 +277,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 			"slow",&slow,
 			"delslo",&delslo,
 			"azimuth",&azimuth,NULL );
-		if(retcode==dbINVALID) die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
+		if(retcode==dbINVALID) elog_die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
 
 		/* The current schema says slow is set to -1.0 for a null
 		value.  I'll use a safer test for >= 0 since negative 
@@ -286,7 +286,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 		{
 			u = (Slowness_vector *) malloc(sizeof(Slowness_vector));
 			if(u == NULL)
-				die(1,"%s:  Cannot malloc Slowness_vector structure\n",
+				elog_die(1,"%s:  Cannot malloc Slowness_vector structure\n",
 					prog);
 			u->arid=arid;
 			u->array = (Seismic_Array *)  getarr(arrays,staname);
@@ -296,7 +296,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 		code so we only make it a warning */
 			if(u->array == NULL)
 			{
-				complain(1,"%s:  Cannot find coordinates for station %s\n%s phase arrival for this station skipped\n",
+				elog_complain(1,"%s:  Cannot find coordinates for station %s\n%s phase arrival for this station skipped\n",
 				    prog, staname, phase_name);
 				free(u);
 				continue;
@@ -304,7 +304,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 			u->phase = (Phase_handle *) getarr(arrphase,phase_name);
 			if(u->phase == NULL)
 			{
-				complain(1,"Warning (%s):  No phase handle for phase name %s\nSlowness vector for array %s skipped\n",
+				elog_complain(1,"Warning (%s):  No phase handle for phase name %s\nSlowness vector for array %s skipped\n",
 				   prog,phase_name,staname);
 				free(u);
 				continue;

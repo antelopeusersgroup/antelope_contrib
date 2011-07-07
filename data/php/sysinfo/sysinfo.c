@@ -31,8 +31,6 @@
  * the name of the PHP function */
 #undef now
 
-static int le_sysinfo;
-
 function_entry sysinfo_functions[] = {
 	PHP_FE(my_ip, NULL)		
 	PHP_FE(my_hardware, NULL)		
@@ -94,7 +92,7 @@ PHP_FUNCTION(my_ip)
 	int	argc = ZEND_NUM_ARGS();
 	char	hostname[STRSZ];
 	char	ipc[STRSZ];
-	long	ip;
+	int	ip;
 
 	if( argc != 0 ) {
 

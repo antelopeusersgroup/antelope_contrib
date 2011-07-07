@@ -64,7 +64,7 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 	    dbmatches ( dbarr, dbsite, 0, 0, &hook, &matching ) ;
 	    if ( maxtbl(matching) < 1 ) {
 		char *t ;
-		complain ( 0, "No site table record for %s at time %s\n", 
+		elog_complain( 0, "No site table record for %s at time %s\n", 
 		    sta, t=strtime(time));
 		free(t) ;
 		continue ;
@@ -85,7 +85,7 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 	}
       
 	if ( (phase = (Phase_handle *) getarr(arr_phase,iphase)) == 0 ) {
-	    complain ( 0, "Can't compute travel time for phase %s\n", iphase ) ;
+	    elog_complain( 0, "Can't compute travel time for phase %s\n", iphase ) ;
 	} else {
 
 	    if (time>0.0)

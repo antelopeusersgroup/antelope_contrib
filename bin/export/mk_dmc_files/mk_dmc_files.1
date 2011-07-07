@@ -3,12 +3,13 @@
 mk_dmc_files \- generate network or single station dataless or VND file with comment on changes
 .SH SYNOPSIS
 .nf
-\fB mk_dmc_files \fP 
+\fBmk_dmc_files \fP 
 	[-v] 
 	[-z] 
+	[-C] 
+	[-m] 
 	[-p \fIpf\fP] 
 	[-d \fIoutput_dir\fP] 
-	[-C \fIproduct_dir\fP] 
 	[-N \fInet\fP] 
 	[-s \fIsta\fP] 
 	[-f \fIoutput_file\fP] 
@@ -27,7 +28,7 @@ This script generates either (1) a single station or combined network dataless
 SEED volume or (2) a virtual network definition file.  It allows for a comment on 
 why the update was made to be tracked in an extension table, \fIdmcfiles\fP.
 The output table can then be queried to retrieve the comment for products
-such as webpages.  Of course, the results of such a query will only be as good 
+such as webpages.  Of course, the results of such a query can only be as good 
 as the comments that are entered.  The output \fIdmcfiles\fP extension table 
 is also used by the \fBims2dmc\fP program.
 
@@ -39,42 +40,46 @@ is called to generate a Virtual Network Definition file.
 Verbose output.  
 .IP -z
 Use gzip to compress the output dataless SEED volume.
+.IP "-C "
+Use a product directory underneath which \fIvnc_dir\fP, \fIsta_dataless_dir\fP or \fIdataless_dir\fP are created.  The 
+default is to create the \fIvnd_dir\fP, \fIsta_dataless_dir\fP and \fIdataless_dir\fP in the current directory.
+This is very useful when used in conjunction with the \fI-o\fP option.  With \fI-o\fP,
+the file to be transferred is stored in the \fIproduct_dir/vnc_dir\fP \fIproduct_dir/dataless_sta\fP or
+\fIproduct_dir/dataless_dir\fP area, but the file transferred via orbxfer appears as 
+\fIvnd_dir/YYYY/VNET_YYYYMMMDD.csv/\fP on the remote server.  Ignored if -d is used.  The directory to be
+used is specified in the \fImk_dmc_files.pf\fP parameter file.  Previous versions of this script made you
+specify the directory on the command line for each run of the program.  See EXAMPLES.
+.IP "-m "
+Generate an automated email informing the \fImail_list\fP of an updated file.  The filename,
+comment, and orb (if -o) are included in the text of the email.  The recipient list is specified in the
+\fImk_dmc_files.pf\fP parameter file.  Previous versions of this script made you specify the recipients
+on the command line for each run of the program.
 .IP "-p parameter_file"
 Parameter file to use.  The default parameter file name is \fBmk_dmc_files\fP.
 .IP "-d output_dir"
 Output directory for dataless SEED volume or vnd file.  This overrides the default
 directory, \fIdataless_dir\fP , \fIsta_dataless_dir\fP, or \fIvnd_dir\fP, in the 
 parameter file and no year or station directory is created.  Cannot use with -C.
-.IP "-C product_dir"
-Directory underneath which \fIvnc_dir\fP, \fIsta_dataless_dir\fP or \fIdataless_dir\fP are created.  The 
-default is to create the \fIvnd_dir\fP, \fIsta_dataless_dir\fP and \fIdataless_dir\fP in the current directory.
-This is very useful when used in conjunction with the \fI-o\fP option.  With \fI-o\fP,
-the file to be transferred is stored in the \fIproduct_dir/vnc_dir\fP \fIproduct_dir/dataless_sta\fP or
-\fIproduct_dir/dataless_dir\fP area, but the file transferred appears as 
-\fIvnd_dir/YYYY/VNET_YYYYMMMDD.csv/\fP for example.  Ignored if -D is used.  See EXAMPLES.
 .IP "-N net"
 Network code to use in the output dataless SEED name.  This overrides the default
 net code from the site.pf parameter file.  Irrelevant if -V option is selected.
-.IP "-m mail_list"
-Generate an automated email informing the \fImail_list\fP of an updated file.  The filename,
-comment, and orb (if -o) are included in the text of the email.
 .IP "-s sta"
-Generate a dataless seed for this single station.  Single station dataless will be stored 
+Generate a dataless seed for this single station.  Single station dataless are stored 
 in the \fIsta_dataless_dir\fP directory.  Irrelevant if -V option is selected.
 .IP "-f filename"
 Output dataless SEED or VND filename.  The default filename for a dataless SEED
 volume is: \fIDATALESS.XX.YYYY.MM.DD\fP or \fIDATALESS.XX_STA.YYYY.MM.DD\fP where
-XX is replaced with the value of \fI-N\fP, the default_seed_network from site.pf, 
-or is left as "XX" if these other two values are undefined.  The default filename
+\fIXX\fP is replaced with the value of \fI-N\fP, the default_seed_network from site.pf, 
+or is left as \fIXX\fP if these other two values are undefined.  The default filename
 for a VND is: \fIVNET_YYYYMMDD.csv\fP where VNET is replaced with the value given 
-to -V.  If the -z option is used the output file name will have .gz appended to it.  See 
+to -V.  If the -z option is used the output file name has .gz appended to it.  See 
 BUGS AND CAVEATS below if using -z with the -o option.
 .IP "-o orb"
 Output orb for \fBorbxfer2\fP(1).  Files are placed into the \fBorbxfer2\fP server orb 
 using the \fIvnd_dir\fP and \fIdataless_dir\fP from the pf file.  Because of this, 
 you might not want to use a path containing the filesystem root.  Anyone on the receiving
 side of \fBorbxfer2\fP that is attempting to write the files out using the same directory 
-structure will have a long path to look down if a root level directory structure is used.
+structure would have a long path to look down if a root level directory structure is used.
 Note however that the absolute path is placed into the dir field in the output
 dmcfiles table.  Look at the \fI-C\fP option if you have a long path to where the 
 files are stored, but do not want to transfer that full path with orbxfer.  Also 
@@ -82,8 +87,8 @@ see BUGS AND CAVEATS below.
 .IP "-V vnet"
 Generate a Virtual Network Definition (VND) file using the specified virtual network
 code.  These codes are created and maintained by the DMC.  Example vnets include: _US-TA, 
-_US-BB, _OBSIP, _ANSS, etc.  See http://www.iris.edu/vnets.  Either -V or -D must be specified
-on the command line.
+_US-EARN, _CASCADIA-TA, _US-BB, _OBSIP, _ANSS, etc.  See http://www.iris.edu/vnets.  
+Either -V or -D must be specified on the command line.
 .IP -D
 Generate a dataless SEED volume rather than a VND file. Either -V or -D must be specified
 on the command line.
@@ -92,12 +97,14 @@ Input database from which the dataless or VND is generated.  See \fBmk_dataless_
 \fBdeployment2vnd\fP(1) for requirements.  This argument is required.
 .IP dbtrack
 Database where the tracking table, \fIdmcfiles\fP exists.  This may be different 
-than \fIdbin\fP.  This argument is required.	
+than \fIdbin\fP.  This argument is required. 
 .IP comment
 A descriptive comment that describes what prompted you to make a new 
 dataless SEED volume or changes to the VND.  The maximum string length is 180 characters.  The 
 parameter file has a very generic default comment if you do not specify one
-on the command line.  The maximum comment length is 180 characters.
+on the command line.  You might consider attempting to use consistent comments for ease in
+use of subsetting for web page or other scripts that interact with the \fIdmcfiles\fP 
+table.  The maximum comment length is 180 characters.
 .SH ENVIRONMENT
 Need to have sourced $ANTELOPE/setup.csh and environment variable
 $PFPATH set.
@@ -111,8 +118,14 @@ Below is the default \fBmk_dmc_files\fP parameter file.
 # mk_dmc_files.pf
 
 vnd_dir         vnd        # year based directories are created under here
-
 dataless_dir    dataless   # station or year based directories are created under here
+sta_dataless_dir        dataless_sta            # station based directories will be created under here
+
+product_dir             /anf/TA/products        # path where data products are stored.
+                                                #       i.e. ending location would be a station dataless volume is:  $product_dir/$dataless_sta/$sta/
+                                                # Only used with -C option.  If left blank, products appear in ./ under appropriate vnd|dataless|sta_statless directories
+                                        
+mailto                  someone@ucsd.edu,someone@iris.washington.edu    # comma separated list of email recipients, overridden by command line -m
 
 # comment must be a single line less than 180 characters
 
@@ -133,11 +146,20 @@ directories and a basic comment.
 Output directory where VND files are saved.  If using the \fBorbxfer2\fP
 -o option, this is the base directory that the receiver catches
 the files in.  Do not use a directory starting at the root level if
-the files will be transferred with \fBorbxfer2\fP.  Use the -C option if
+the files are going to be transferred with \fBorbxfer2\fP.  Use the -C option if
 you wish to transfer files with orbxfer2 that will be received below the
 \fIvnc_dir\fP, but reside under a different directory on your storage system.
 .IP \fIdataless_dir\fP
-Output directory where dataless files are saved.
+Output directory where whole network dataless files are saved.
+.IP \fIsta_dataless_dir\fP
+Output directory where single station dataless files are saved.
+.IP \fIproduct_dir\fP
+Top level directory where product files are saved.  When the \fI-C\fP option is used, all
+\fIdataless_dir\fP, \fIvnd_dir\fP, and \fIsta_dataless_dir\fP directories are created 
+under \fIproduct_dir\fP.  The intent is that when the \fI-o\fP option is used, \fBorbxfer(1)\fP 
+will not include this top level directory with the file transfer.
+.IP \fImailto\fP
+Comma separated list of email addresses which receive notification of updated files.
 .IP \fIdefault_comment\fP
 The default comment to be placed in the \fIdmcfiles\fP table.  The 
 maximum length of this string is 180 characters.
@@ -149,8 +171,14 @@ format after a datalogger swap.  Do not transfer it via orbxfer2.
 .ft CW
 .nf
 
-%\fB mk_dmc_files -D -z -s 109C dbmaster/ta_only \\
+%\fB mk_dmc_files -D -z -s 109C dbmaster/ta_only \
 	dbops/usarray "109C datalogger swap"\fP
+
+%\fB ls dataless_sta\fP
+109C/
+
+%\fB ls dataless_sta/109C/\fP
+DATALESS.TA_109C.2011.04.01
 .fi
 .ft R
 .in
@@ -170,16 +198,25 @@ it via orbxfer2.
 
 .LP Generate a single station dataless, store it in a product directory
  and inform people why the dataless was generated.  The dataless will 
-end up in the directory: /raid/space/products/TA/dataless_sta/L08A and
+end up in the directory: /raid/data/products/TA/dataless_sta/L08A and
 will not be transferred via orbxfer2.
 .in 2c
 .ft CW
 .nf
 
-%\fB mk_dmc_files -D -s L08A anfexport:meta \\
-	-m "jeakins@ucsd.edu,someone@iris.edu" \\
-	-C /raid/space/products/TA
+%\fB mk_dmc_files -m -C -D -s L08A anfexport:meta \\
 	dbmaster/anf dbops/anf "L08A station closed"\fP
+
+%\fB pfecho mk_dmc_files \fP
+dataless_dir    dataless_all
+default_comment &Literal{
+Metadata change
+}
+mailto  jeakins@ucsd.edu,someone@iris.washington.edu
+product_dir     /raid/data/products
+sta_dataless_dir        dataless_sta
+vnd_dir vnd
+
 .fi
 .ft R
 .in
@@ -192,8 +229,8 @@ with only the dataless_dir appearing for the receiver.
 .ft CW
 .nf
 
-%\fB mk_dmc_files -D -C /raid/data/products -o anfexport:meta \\
-	dbmaster/ta_only /raid/db/anf "Added X21A Z22A"\fP
+%\fB mk_dmc_files -D -C -o anfexport:meta \
+	dbmaster/ta_only dbops/usarray "Added X21A Z22A" \fP
 .fi
 .ft R
 .in
@@ -225,7 +262,7 @@ host as:
 
 .SH DIAGNOSTICS
 .LP
-Errors from the system calls to \fBmk_dataless_seed\fP or \fBdeployment2vnd\fP are 
+Errors from the system calls to \fBmk_dataless_seed(1)\fP or \fBdeployment2vnd(1)\fP are 
 not trapped properly by the elog routines.
 .LP
 Make sure your input database has no egregious errors.  
@@ -240,18 +277,22 @@ ims2dmc(1)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP
-This has not been extensively tested.
+Earlier versions (prior to 5.1-64) required arguments after the \fI-m\fP and \fI-C\fP
+options.  Those arguments have been pushed into the parameter file.
+.LP
+This is an in-house script necessary for the functionality of the USArray 
+Transportable array.  Please let me know if you find it useful, or seriously
+lacking in features that might help your group's needs.
 .LP
 If there is no reader attached to the specified output orb with -o, the program 
-will hang until a reader is attached.  To avoid this behavior, the wait_match 
+hangs until a reader is attached.  To avoid this behavior, the \fIwait_match\fP
 parameter in the orbxfer2.pf file must be blank.
 .LP
 The 4.9 and earlier versions of orbxfer2 had a bug such that compressed files
-pushed into the orb would retain there file names (i.e. myfile.gz), but would 
+pushed into the orb would retain there file names (i.e. \fImyfile.gz\fP), but would 
 actually be uncompressed before placement in the orb.  The receiver would then
-get "myfile.gz" out of the orb, but it would be an uncompressed file.  Until this
-bug is resolved in the next Antelope release, do not use the -z and -o options
-together.
+get \fImyfile.gz\fP out of the orb, but it would be an uncompressed file.  I believe 
+this bug has been resolved. 
 .LP
 If there are permissions problems with the output orb used with -o, the transfer
 of the file to the orb may fail silently.  Review the orbserver logs to see if

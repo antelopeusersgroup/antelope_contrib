@@ -68,7 +68,7 @@ refresh_earthworm_info()
 
 	if( ( rc = pfupdate( Ewinfo.pfname, &Ewinfo.pf ) ) < 0 ) {
 
-		complain( 1, "pfupdate of parameter-file '%s' failed\n",
+		elog_complain( 1, "pfupdate of parameter-file '%s' failed\n",
 			  Ewinfo.pfname );
 	} 
 
@@ -248,7 +248,7 @@ set_program_loglevel( Pf *pf )
 
 		if( loglevel != old ) {
 
-			complain( 0, "entering 'quiet' mode\n" );
+			elog_complain( 0, "entering 'quiet' mode\n" );
 		}
 
 		Flags.verbose = 0;
@@ -258,7 +258,7 @@ set_program_loglevel( Pf *pf )
 
 		if( loglevel != old ) {
 
-			complain( 0, "entering 'verbose' mode\n" );
+			elog_complain( 0, "entering 'verbose' mode\n" );
 		}
 
 		Flags.verbose = 1;
@@ -268,7 +268,7 @@ set_program_loglevel( Pf *pf )
 
 		if( loglevel != old ) {
 
-			complain( 0, "entering 'veryverbose' mode\n" );
+			elog_complain( 0, "entering 'veryverbose' mode\n" );
 		}
 
 		Flags.verbose = 1;
@@ -295,7 +295,7 @@ translate_loglevel( char *loglevel )
 
 	} else {
 
-		complain( 0, 
+		elog_complain( 0, 
 			"Unknown loglevel '%s' from parameter file; "
 			"setting to 'verbose'\n", 
 			loglevel );
@@ -322,7 +322,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 
 	}  else {
 	
-		complain( 0, "Failed to translate '%s'; "
+		elog_complain( 0, "Failed to translate '%s'; "
 			     "please update %s.pf\n", 
 			     inststr, DEFAULT_EARTHWORM_PFNAME );
 	}
@@ -337,7 +337,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 
 	}  else {
 	
-		complain( 0, "Failed to translate '%s'; "
+		elog_complain( 0, "Failed to translate '%s'; "
 			     "please update %s.pf\n", 
 			     modstr, DEFAULT_EARTHWORM_PFNAME );
 	}
@@ -352,7 +352,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 
 	}  else {
 	
-		complain( 0, "Failed to translate '%s'; "
+		elog_complain( 0, "Failed to translate '%s'; "
 			     "please update %s.pf\n", 
 			     typestr, DEFAULT_EARTHWORM_PFNAME );
 	}

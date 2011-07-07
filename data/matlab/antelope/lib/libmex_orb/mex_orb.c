@@ -81,6 +81,6 @@ mex_orbreap_nd( int orbfd, int *pktid, char *srcname, double *time,
 		char **packet, int *nbytes, int *bufsize )
 {
 
-	return orbreap_nd( orbfd, pktid, srcname, time,
+	return orbreap_timeout( orbfd, 0, pktid, srcname, time,
 			   packet, nbytes, bufsize );
 }

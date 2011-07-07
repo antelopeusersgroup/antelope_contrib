@@ -15,7 +15,7 @@
 #   check for pffile existance
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -28,11 +28,11 @@
     
 {    #  Main program
 
-    my ( $usage, $cmd, $subject, $verbose, $debug, $Pf, $problems);
-    my ( $bhname, $dbname, $dirname, $dbdevice, $dbavail, $etime, $fsta, $line, $maxtime, $maxtime_baler, $maxtime_rt ) ; 
-    my ( $mintime, $mintime_baler, $mintime_rt, $mseedfile, $nrows, $prob, $prob_check, $row, $rtdb ) ;  
-    my ( $snet, $sohname, $sta, $sta_base, $sta_size, $statmp, $stime, $success, $table ) ;
-    my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles, @output ) ;
+    my ( $Pf, $bhname, $cmd, $dbavail, $dbdevice, $dbname, $dirname, $etime, $fsta, $line ) ;
+    my ( $maxtime, $maxtime_baler, $maxtime_rt, $mintime, $mintime_baler, $mintime_rt, $mseedfile ) ;
+    my ( $nrows, $prob, $prob_check, $problems, $row, $rtdb, $snet, $sohname, $sta, $sta_base ) ;
+    my ( $sta_size, $statmp, $stime, $subject, $table, $usage ) ;
+    my ( @db, @dbbh, @dbrt, @dbsnet, @dbtest, @dbwfdisc, @mseedfiles ) ;
     my ( %pf ) ;
 
     $pgm = $0 ; 
@@ -40,7 +40,7 @@
     elog_init( $pgm, @ARGV) ;
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnm:p:') || @ARGV < 1 ) { 
+    if (  ! getopts('vVnm:p:') || @ARGV < 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-p pf] [-m mail_to]  \n" ;
         $usage .=  "	 sta [sta_1 sta_2 ...]\n\n"  ; 
@@ -58,8 +58,6 @@
     $Pf         = $opt_p || $pgm ;
     
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
     %pf = getparam( $Pf );
     
@@ -177,23 +175,11 @@
             $cmd  = "miniseed2days -c -U -m \".*_.*_[BL]H._.*\" ";
             $cmd .= "-v " if $opt_V;
             $cmd .= " - < $bhname/$mseedfile ";
-#             $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
-#         
-#             if  ( ! $opt_n ) {
-#                 elog_notify("\n$cmd") if $opt_v ;        
-#                 $problems = run($cmd,$problems) ;
-#             } else {
-#                 elog_notify("\nskipping $cmd") if $opt_v ;
-#             } 
-#             unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
-            
-            ( $success, @output )  = &run_cmd( $cmd );
 
-            if ( ! $success ) {
+            if ( ! &run_cmd( $cmd ) ) {
                 $problems++ ;
             }
         
-            @output = () ;
         }
         
 #
@@ -216,23 +202,10 @@
             $cmd  = "miniseed2days -c -U -r \".*_.*_[BHL]H[ZNE12]_.*\" -w %Y/%{net}_%{sta}_%{chan}.msd ";
             $cmd .= "-v " if $opt_V;
             $cmd .= " - < $sohname/$mseedfile ";
-#             $cmd .= "> /tmp/tmp_$mseedfile\_$$ 2>&1 " unless $opt_V ;
-#             
-#             if  ( ! $opt_n ) {
-#                 elog_notify("\n$cmd") if $opt_v ;        
-#                 $problems = run($cmd,$problems) ;
-#             } else {
-#                 elog_notify("\nskipping $cmd") if $opt_v ;
-#             }
-#             unlink "/tmp/tmp_$mseedfile\_$$" unless $opt_V ;
-            
-            ( $success, @output )  = &run_cmd( $cmd );
 
-            if ( ! $success ) {
+            if ( ! &run_cmd( $cmd ) ) {
                 $problems++ ;
             }
-        
-            @output = () ;
         }
 
 #
@@ -248,43 +221,19 @@
         $cmd  = "miniseed2db ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "20\*/[0-3][0-9][0-9] $sta ";
-#         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
-#         
-#         if  ( ! $opt_n ) {
-#             elog_notify("\n$cmd") if $opt_v ;        
-#             $problems = run($cmd,$problems) ;
-#         } else {
-#             elog_notify("\nskipping $cmd") if $opt_v ;
-#         }
         
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
-        
-        @output = () ; 
         
         $cmd  = "miniseed2db -T 0.001 ";
         $cmd .= "-v " if $opt_V;
         $cmd .= "20\*/\*.msd $sta ";
-#         $cmd .= "> /tmp/tmp_miniseed2db\_$$ 2>&1 " unless $opt_V ;
-#         
-#         if  ( ! $opt_n ) {
-#             elog_notify("\n$cmd") if $opt_v ;        
-#             $problems = run($cmd,$problems) ;
-#         } else {
-#             elog_notify("\nskipping $cmd") if $opt_v ;
-#         } 
         
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
         
-        @output = () ; 
-
         unlink("trdefaults.pf");
 
 #
@@ -292,23 +241,11 @@
 #
         
         $cmd = "dbsubset $sta.wfdisc \"$pf{wfclean}\" | dbdelete -";
-        
-#         if  (! $opt_n ) {
-#             elog_notify("\n$cmd") if $opt_v ;        
-#             $problems = run($cmd,$problems) ;
-#         } else {
-#             elog_notify("\nskipping $cmd") if $opt_v ;
-#         }        
-
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+                
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
         
-        @output = () ; 
-
-
 #
 #  Check for anomolous net and sta
 #
@@ -395,26 +332,14 @@
 #
 
         $cmd  = "rt_daily_return ";
-        $cmd .= "-v " if $debug ;
+        $cmd .= "-v " if $opt_V ;
         $cmd .= "-t \"$stime\" -e \"$etime\" ";
         $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $dbname $dbname";
-#         $cmd .= " >/tmp/$sta\_return_$$ 2>&1" unless $opt_V;
-# 
-#         if  (! $opt_n ) {
-#             elog_notify("\n$cmd") if $opt_v ;        
-#             $problems = run($cmd,$problems) ;
-#         } else {
-#             elog_notify("\nskipping $cmd") if $opt_v ;
-#         }
         
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
-        
-        @output = () ; 
- 
+         
 #
 #  evaluate data return
 #
@@ -430,22 +355,10 @@
         $subject = "TA $sta baler data net, station, channel problem";
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
         
-#         if  ( ! $opt_n ) {
-#             elog_notify("\n$cmd") if $prob ;        
-#             $problems = run($cmd,$problems) if $prob ;
-# 
-#         } else {
-#             elog_notify("\nskipping $cmd") if $prob ;
-#         } 
-        
-        ( $success, @output )  = &run_cmd( $cmd );
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
         
-        @output = () ; 
-
         if  ( -d "$pf{balerprocbase}\/$sta" ) {
             $prob++ ;
             $problems++ ;
@@ -454,22 +367,11 @@
         } 
         
         $cmd  = "mv $pf{balerdirbase}\/$sta $pf{balerprocbase}";
-#         if  ( ! $opt_n && ! $prob) {
-#             elog_notify("\n$cmd") ;        
-#             $problems = run($cmd,$problems) ;
-# 
-#         } else {
-#             elog_notify("\nskipping $cmd") ;
-#         } 
-
-        ( $success, @output )  = &run_cmd( $cmd ) if  ( ! $prob );
-
-        if ( ! $success ) {
+        
+        if ( ! &run_cmd( $cmd ) ) {
             $problems++ ;
         }
         
-        @output = () ; 
-
         unlink "/tmp/$sta\_return_$$" unless $opt_V;
         unlink "/tmp/tmp_miniseed2db\_$$" unless $opt_V;
         unlink "/tmp/prob_$sta\_$$" unless $opt_V;
@@ -496,7 +398,7 @@
 
 sub unwanted_channels { # $prob = unwanted_channels( $sta, $prob );
     my ( $sta, $prob ) = @_ ; 
-    my ( $nrows, $row, $line, $statmp, $fchan, $chantmp ) ;
+    my ( $chantmp, $fchan, $line, $nrows, $row, $statmp ) ;
     my ( @db, @dbschan, @dbsensor, @dbwfdisc );
         
     @db       = dbopen( $sta, 'r' );
@@ -531,8 +433,8 @@ sub unwanted_channels { # $prob = unwanted_channels( $sta, $prob );
 
 sub eval_data_return { # $prob = eval_data_return ( $sta, $prob, $problems ) ;
     my ( $sta, $prob, $problems ) = @_ ;
-    my ( $time, $endtime, $chan, $line ) ;
-    my ( @db, @dbdeploy, @dbchanperf, @dbcd ) ;
+    my ( $chan, $endtime, $line, $time ) ;
+    my ( @db, @dbcd, @dbchanperf, @dbdeploy ) ;
     my ( %staperf );
     
     %staperf = (); 

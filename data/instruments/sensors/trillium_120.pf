@@ -1,5 +1,7 @@
-originator     Frank Vernon, UCSD
-last_modified  2008-06-24
+# $Response file for Trillium 120 modified 2011-03-01 $
+
+originator     Sensor Group PASSCAL
+last_modified  2011-03-01
 
 category	Nanometrics
 configuration	Trillium 120 Sec Response
@@ -13,7 +15,7 @@ short_period_sensor     no      # Sets first character of SEED channel code
 sensor_type_code        H       # 2nd character in SEED channel code
 
 gtype		sensor
-sensitivity	12e-7
+sensitivity	12.01e-7
 iunits		nm/s
 ounits		V
 

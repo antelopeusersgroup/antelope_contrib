@@ -31,7 +31,7 @@ int compute_residual_only_results(Hypocenter hypo,
 		atimes = (Arrival *) gettbl (attbl, ii);
 		tto = calculate_travel_time (*atimes, hypo, RESIDUALS_ONLY);
 		if (tto.time == TIME_INVALID) {
-			register_error(1,"Station: %s, Phase: %s Travel time calculator failed\n",
+			elog_log(1,"Station: %s, Phase: %s Travel time calculator failed\n",
 				atimes->sta->name, atimes->phase->name);
 			deltbl(attbl,ii);
 			/* Tbl index is stale and needs to be decremented
@@ -54,7 +54,7 @@ int compute_residual_only_results(Hypocenter hypo,
 		slow = (Slowness_vector *) gettbl (utbl, ii);
 		u_calc = calculate_slowness_vector (*slow,hypo,RESIDUALS_ONLY);
 		if (u_calc.ux == SLOWNESS_INVALID) {
-			register_error(1,"Array: %s, Phase: %s Slowness vector calculator failed\n",
+			elog_log(1,"Array: %s, Phase: %s Slowness vector calculator failed\n",
 				atimes->sta->name, atimes->phase->name);
 			deltbl(utbl,ii);
 			--ii;
@@ -106,7 +106,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 
     *oridp = orid = dbnextid(dbin, "orid" ) ;
     if ( orid < 1 ) {
-        complain ( 0, "Can't write to lastid table\n" ) ;
+        elog_complain( 0, "Can't write to lastid table\n" ) ;
 	return -1 ;
     }
 
@@ -137,7 +137,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 	   "algorithm", algorithm,
 	   "auth", pfget_string ( pf, "author" ),
 	   NULL )  ) {
-	complain(0, "Couldn't add origin record to database.\n");
+	elog_complain(0, "Couldn't add origin record to database.\n");
 	retcode = -1;
       }
      /* Bypass all error calculations when all coordinates are fixed.
@@ -150,7 +150,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     
          if(modtype == NULL)
          {
-    	complain(0,"parameter ellipse_type not defined--default to chi_square");
+    	elog_complain(0,"parameter ellipse_type not defined--default to chi_square");
     	model = CHI_SQUARE;
          }
          else if( strcmp( modtype, "chi_square" ) == 0 ) 
@@ -163,7 +163,7 @@ save_results (Dbptr dbin, Dbptr dbout,
          }
          else
          {
-            complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
+            elog_complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
             model = CHI_SQUARE;
          }
     
@@ -173,7 +173,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     
         if( rc != 0 ) 
         {
-    	complain(0, "project_covariance failed." );
+    	elog_complain(0, "project_covariance failed." );
             smajax = -1;
             sminax = -1;
     	strike = -1;
@@ -202,11 +202,11 @@ save_results (Dbptr dbin, Dbptr dbout,
     		"stime", stime,
     		"conf", conf,
     		NULL ) < 0 ) {
-    	complain (1,"couldn't add origerr record to database\n" ) ;
+    	elog_complain(1,"couldn't add origerr record to database\n" ) ;
     	retcode = -1 ;
         }
         if(save_emodel(orid, emodel, dbout))
-    	complain(0,"Problems saving emodel vector\n");
+    	elog_complain(0,"Problems saving emodel vector\n");
     }    	
 
     dbassoc = dblookup ( dbout, 0, "assoc", 0, 0 ) ; 
@@ -309,7 +309,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"vmodel", vmodel,
 		"wgt", wgt,
 		NULL ) < 0 ) 
-	    	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
+	    	    elog_complain( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    			a->sta->name, a->arid, orid ) ;
 	}
     }
@@ -324,7 +324,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"arid", u->arid, 
 		"vmodel", vmodel,
 		NULL )) < 0 ) {
-	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
+	    elog_complain( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    	a->sta->name, a->arid, orid ) ;
 	} else {
 	    slores = deg2km(sqrt(sqr(u->xres.raw_residual) + sqr(u->yres.raw_residual))) ;
@@ -338,7 +338,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"azres", azres,
 		"azdef", "d", 
 		NULL ) < 0 ) 
-		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%ld\n",
+		elog_complain( 0, "Can't add slowness and azimuth residuals to assoc record #%ld\n",
 			dbout.record ) ; 
 	}
     }
@@ -364,7 +364,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"vmodel", vmodel,
 		"wgt", wgt,
 	    				NULL ) < 0 ) 
-	    	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
+	    	    elog_complain( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    			a->sta->name, a->arid, orid ) ;
     }
     n = maxtbl(turo) ;
@@ -375,7 +375,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"arid", u->arid, 
 		"vmodel", vmodel,
 		NULL )) < 0 ) {
-	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
+	    elog_complain( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    	a->sta->name, a->arid, orid ) ;
 	} else {
 	    slores = deg2km(sqrt(sqr(u->xres.raw_residual) + sqr(u->yres.raw_residual))) ;
@@ -389,7 +389,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"azres", azres,
 		"azdef", "n", 
 		NULL ) < 0 ) 
-		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%ld\n",
+		elog_complain( 0, "Can't add slowness and azimuth residuals to assoc record #%ld\n",
 			dbout.record ) ; 
 	}
     }   
@@ -406,7 +406,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     This should interact correctly with the stavel table to allow generic
     naming of a velocity model computed by multiple calculators */
     if(save_predarr(dbout,ta,tu,*hypo,orid,str))
-    	complain(0,"save_results:  problems saving predarr table\n");
+    	elog_complain(0,"save_results:  problems saving predarr table\n");
 
     return retcode ;
 }

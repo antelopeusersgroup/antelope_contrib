@@ -63,7 +63,7 @@ main(int argc, char **argv)
 		}
 	}
 	if (argc < 1) {
-		complain(0, "Need db argument.\n");
+		elog_complain(0, "Need db argument.\n");
 		usage();
 		exit(1);
 	}
@@ -80,7 +80,6 @@ main(int argc, char **argv)
 	}
 
 	dbquery(db, dbRECORD_COUNT, &nrecs);
-	printf("records:%ld \n",nrecs);
 	for (db.record = 0; db.record < nrecs; db.record++) {
 		nvertices = readPolygon(db, &poly);
 		if (nvertices > 0) {

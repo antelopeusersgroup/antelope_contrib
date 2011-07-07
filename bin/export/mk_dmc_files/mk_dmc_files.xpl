@@ -11,7 +11,7 @@
 
 use Datascope ;
 use archive;
-require "getopts.pl" ;
+use Getopt::Std ;
 use File::Path;
 use Cwd;
 use orb ;
@@ -21,7 +21,7 @@ elog_init ( $0, @ARGV) ;
 
 our ($opt_d, $opt_m, $opt_p, $opt_v, $opt_s, $opt_o, $opt_f, $opt_z, $opt_C) ;
 our ($opt_D, $opt_V, $opt_N);
-our ($pf, $VNDdir, $DLdir, $STADLdir) ;
+our ($pf, $VNDdir, $DLdir, $STADLdir, $mailto, $product_dir) ;
 our (@db, @dmcfiles, @dmcfiles_record) ;
 our ($dfile, $comment, $dbin, $dbtrack, $vnet, $net, $mycwd);
 our ($sta, $year, $month, $day, $dir, $fulldir) ;
@@ -34,8 +34,8 @@ my ($mailtmp,$host);
 my $pgm = $0 ; 
 $pgm =~ s".*/"" ;
 
-if ( ! &Getopts('Dvzp:d:s:m:N:o:V:C:') || @ARGV < 2 || @ARGV > 4) { 
-    die ( "Usage: $pgm [-v] [-z] [-p pf] [-d output_dir] [-C product_dir] [-N net] [-s sta] [-f output_file] [-m email1,email2,...] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
+if ( ! getopts('CDvzp:d:s:mN:o:V:') || @ARGV < 2 || @ARGV > 4) { 
+    die ( "Usage: $pgm [-v] [-z] [-C] [-m] [-p pf] [-d output_dir] [-N net] [-s sta] [-f output_file] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
 } else {
     $dbin	= $ARGV[0];
     $dbtrack	 = $ARGV[1];
@@ -59,7 +59,7 @@ chop ($host = `uname -n` ) ;
 
 elog_notify(0,"\nStarting $pgm at: $t");
 
-&cmdline() if $opt_m;
+&cmdline() if $opt_v;
 
 elog_notify(0,"Current working directory: $mycwd\n");
 
@@ -83,20 +83,14 @@ if ($opt_s) {
    elog_die("Can't use -s with -V\n") if $opt_V ;
 }
 
-if ($opt_V) {
-   $vnet = $opt_V ;
-}
-
-if ($opt_v) {
-   $opt_v = "-v";
-}
+$vnet = $opt_V if $opt_V ;
+$opt_v = "-v" if $opt_v ;
 
 if ( (!$opt_D && !$opt_V) || ( $opt_D && $opt_V) ) {
    elog_die("Must specify either -D or -V vnet. \n") ;
 } 
 
 &get_pf ;
-
 
 if ($opt_s) {
    $STADLdir = $STADLdir . "/" . $sta  ;	# this forces single station dataless into a station directory
@@ -115,14 +109,14 @@ if ($opt_d) {
     $DLdir	=  $opt_d ; 
     $STADLdir	=  $opt_d ; 
     if ($opt_C) {
-	elog_complain("Cannot use -C with -d.  Ignoring product directory $opt_C.\n");
+	elog_complain("Cannot use -C with -d.  Ignoring product directory from pf file. \n");
     }
 }
 
 if ( $opt_V ) {
    $dir = $VNDdir ;
    if ($opt_C) {
-        $fulldir = cleanpath($opt_C, nolinks) . "/" . $dir ;
+        $fulldir = cleanpath($product_dir, nolinks) . "/" . $dir ;
    } else {
 	$fulldir = $dir ;
    }
@@ -132,7 +126,7 @@ if ( $opt_D ) {
    $dir = $DLdir ;
    $dir = $STADLdir if $opt_s;
    if ($opt_C) {
-	$fulldir = cleanpath($opt_C) . "/" . $dir ;
+	$fulldir = cleanpath($product_dir) . "/" . $dir ;
    } else {
 	$fulldir = $dir ;
    }
@@ -188,10 +182,8 @@ while (-e "$fulldir/$filename" || -e "$fulldir/$filename.gz") {
 
 if ($opt_D) {
    if ($opt_s) {
-#      $mkdl	= "mk_dataless_seed -o $dir/$filename $opt_v -s $opt_s $dbin " ;
       $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v -s $opt_s $dbin " ;
    } else {
-#      $mkdl	= "mk_dataless_seed -o $dir/$filename $opt_v $dbin " ;
       $mkdl	= "mk_dataless_seed -o $fulldir/$filename $opt_v $dbin " ;
    }
 
@@ -214,7 +206,6 @@ if ($opt_D) {
 # zip, or don't zip, dataless
 
 if ($opt_z) {
-#  $zip	= "gzip $dir/$filename";
   $zip	= "gzip $fulldir/$filename";
   &run($zip);
   $filename = $filename . ".gz";
@@ -229,7 +220,7 @@ if ($opt_z) {
 if ($opt_o) {
   $orb = $opt_o ;
   $xfer = "orbxfer2 $opt_v $dir/$filename $orb";
-  chdir $opt_C if ($opt_C) ;
+  chdir $product_dir if ($opt_C) ;
   &run($xfer);
   chdir $mycwd if ($opt_C) ;
 
@@ -243,7 +234,7 @@ if ($opt_o) {
 
   close TEMP;
 
-  &sendmail($subject, $opt_m, $mailtmp) if $opt_m ;
+  &sendmail($subject, $mailto, $mailtmp) if $opt_m ;
 
 } else {
   $orb = "-";
@@ -253,15 +244,13 @@ if ($opt_o) {
   open TEMP, ">$mailtmp" or die "Can't open '$mailtmp', stopped";
 
   print TEMP "\nStored $dir/$filename locally" ; 
-  print TEMP " under $opt_C\n " if $opt_C ; 
+  print TEMP " under $product_dir\n " if $opt_C ; 
   print TEMP "\n\nReason for update: $comment \n"; 
 
   close TEMP;
 
-  &sendmail($subject, $opt_m, $mailtmp) if $opt_m ;
+  &sendmail($subject, $mailto, $mailtmp) if $opt_m ;
 }
-
-# open up tracking db
 
 @db		= dbopen($dbtrack, "r+");
 @dmcfiles	= dblookup(@db, "", "dmcfiles", "", "");
@@ -283,7 +272,6 @@ eval { dbaddv(@dmcfiles,@dmcfiles_record) };
 if ($@) {
     warn $@;
     elog_notify(0, "Duplicate comment. Dfile: $dfile, Comment: $comment\n");
-#    elog_complain(0, "Duplicate comment.  Will ignore.\n") if ($opt_v);
 }
 
 
@@ -303,6 +291,8 @@ sub get_pf {
   $VNDdir		= pfget($pf, 'vnd_dir');
   $DLdir		= pfget($pf, 'dataless_dir');
   $STADLdir		= pfget($pf, 'sta_dataless_dir');
+  $product_dir		= pfget($pf, 'product_dir') if $opt_C ;
+  $mailto		= pfget($pf, 'mailto')  if $opt_m ;
 
   if (!$comment) {	# only take default if comment is undef
       $comment	= pfget($pf, 'default_comment') ;
@@ -324,13 +314,13 @@ sub cmdline {	# &cmdline();
     print STDERR "\ncommand line: \t $0" ;
     print STDERR " -v " if $opt_v  ;
     print STDERR " -z " if $opt_z  ;
+    print STDERR " -C " if $opt_C  ;
+    print STDERR " -m " if $opt_m  ;
     print STDERR " -p $opt_p" if $opt_p  ;
     print STDERR " -d $opt_d" if $opt_d  ;
-    print STDERR " -C $opt_C" if $opt_C  ;
     print STDERR " -N $opt_N" if $opt_N  ;
     print STDERR " -s $opt_s" if $opt_s  ;
     print STDERR " -f $opt_f" if $opt_f  ;
-    print STDERR " -m $opt_m" if $opt_m  ;
     print STDERR " -o $opt_o" if $opt_o  ;
     print STDERR " -D " if $opt_D  ;
     print STDERR " -V $opt_V" if $opt_V  ;

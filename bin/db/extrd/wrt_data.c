@@ -21,18 +21,18 @@ int wrt_data(
              
      if( segment->dcode == trSEED )  {
          if( (code = csteim ( segment->steim, save_seed, data, npts) )  < 0 ) 
-              die ( 1, " steim compression error for %s_%s at %lf\n", 
+              elog_die( 1, " steim compression error for %s_%s at %lf\n", 
                        segment->sta, segment->chan, dtime ) ;
         else if ( code > 0 ) 
-            complain ( 1, " steim compression problems for %s_%s at %lf\n", 
+            elog_complain( 1, " steim compression problems for %s_%s at %lf\n", 
                        segment->sta, segment->chan, dtime ) ;
 
      }  else  {
          wrt_pnts = fwrite( data, sizeof(int), npts,  Df );
          if (wrt_pnts != npts)  {
-               complain( 1, "write error for %s_%s at %lf \n", 
+               elog_complain( 1, "write error for %s_%s at %lf \n", 
                          segment->sta, segment->chan, dtime);
-               complain(  0, "write %ld samples insted of %ld \n", 
+               elog_complain(  0, "write %ld samples insted of %ld \n", 
                           wrt_pnts, npts);
                return 0;
          }

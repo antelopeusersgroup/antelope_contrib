@@ -33,7 +33,7 @@
 	BUFFER[NBYTES-1] = C;
 	
 #define BAD_BYTE(WHERE,C) \
-	complain( 0, "Bad byte in parser at location '%s': ", WHERE ); \
+	elog_complain( 0, "Bad byte in parser at location '%s': ", WHERE ); \
 	{ int bad = (C); hexdump( stderr, &bad, 1 ); } \
 	fprintf( stderr, "\n" );
 
@@ -327,7 +327,7 @@ describe_packet( Ew2orbPacket *e2opkt )
 
 	} else {
 
-		complain( 0, "'%s':\tunpacked Unknown data\n", e2opkt->itname  );
+		elog_complain( 0, "'%s':\tunpacked Unknown data\n", e2opkt->itname  );
 	}
 
 	return;
@@ -351,7 +351,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 		if( ret < 0 || db.database < 0 ) {
 
-			complain( 1, "Failed to open %s\n",
+			elog_complain( 1, "Failed to open %s\n",
 				 Calibinfo.dbname );
 			
 			(*ttrk)->use = 0;
@@ -368,7 +368,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			complain( 1, "Failed to lookup %s.%s\n", 
+			elog_complain( 1, "Failed to lookup %s.%s\n", 
 		  	     	Calibinfo.dbname,
 		  	     	table );
 
@@ -389,7 +389,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			complain( 1, "%s does not exist\n", (*ttrk)->filename );
+			elog_complain( 1, "%s does not exist\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -401,7 +401,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+			elog_complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -416,7 +416,7 @@ table_check( char *table, Tabletrack **ttrk )
 			
 			dbclose( db );
 
-			complain( 1, "No records in %s\n", (*ttrk)->filename );
+			elog_complain( 1, "No records in %s\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -442,7 +442,7 @@ table_check( char *table, Tabletrack **ttrk )
 		ret = stat( (*ttrk)->filename, (*ttrk)->statbuf );
 
 		if( ret < 0 ) {
-			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+			elog_complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -483,7 +483,7 @@ init_calibinfo( void )
 
 	if( ret < 0 || db.database < 0 ) {
 
-		complain( 1, "%s %s; %s\n",
+		elog_complain( 1, "%s %s; %s\n",
 		  "Failed to open database",
 		  Calibinfo.dbname,
   		  "calib, calper, and segtype will be default values" );
@@ -498,7 +498,7 @@ init_calibinfo( void )
 
 	if( table_check( "calibration", &Calibinfo.ctrk ) == (struct stat *) NULL ) {
 
-		complain( 1, "Using default values for calib and calper.\n" );
+		elog_complain( 1, "Using default values for calib and calper.\n" );
 
 		Calibinfo.usedbcalib = 0;
 	}
@@ -506,7 +506,7 @@ init_calibinfo( void )
 	if( table_check( "sensor", &Calibinfo.strk ) == (struct stat *) NULL || 
 	    table_check( "instrument", &Calibinfo.itrk ) == (struct stat *) NULL ) {
 
-		complain( 1, "Using default value for segtype.\n" );
+		elog_complain( 1, "Using default value for segtype.\n" );
 
 		Calibinfo.usedbsegtype = 0;
 	}
@@ -533,7 +533,7 @@ set_calibration_database( Pf *pf )
 
 		strcpy( Calibinfo.dbname, "" );
 
-		complain( 0,
+		elog_complain( 0,
 		     "WARNING: no calibration_database specified "
 		     "in parameter file!!\n" );
 
@@ -613,7 +613,7 @@ add_segtype( char *sta, char *chan, double time, char *default_segtype,
 	}
 
 	if( ret < 0 || nrecs <= 0 ) {
-		complain( 1, "Failed to get segtype from database for %s\n", key );
+		elog_complain( 1, "Failed to get segtype from database for %s\n", key );
 		strcpy( segtype, default_segtype );
 	}
 
@@ -722,7 +722,7 @@ add_current_calibvals( char *sta, char *chan, double time,
 	}
 
 	if( ret < 0 || nrecs <= 0 ) {
-		complain( 1, "Failed to get calib and calper from database for %s\n", key );
+		elog_complain( 1, "Failed to get calib and calper from database for %s\n", key );
 		cv->calib = DEFAULT_CALIB;
 		cv->calper = DEFAULT_CALPER;
 		cv->validuntil = 9999999999.999;
@@ -904,7 +904,7 @@ buf_intake( ImportThread *it )
 				  it->expect_heartbeat_string, 
 				  &it->expect_heartbeat_hook ) ) {
 
-			complain( 0, 
+			elog_complain( 0, 
 				"'%s': Warning: Received heartbeat '%s' doesn't "
 				"match expected pattern '%s'\n",
 				it->name, cp, it->expect_heartbeat_string );
@@ -1019,7 +1019,7 @@ stop_import_thread( char *name )
 
 	if( ( it = find_import_thread_byname( name ) ) == 0 ) { 
 
-		complain( 1, "stop_import_thread: "
+		elog_complain( 1, "stop_import_thread: "
 			  "Couldn't find import thread '%s' in registry\n",
 			  name );
 		return;
@@ -1197,7 +1197,7 @@ ew2orb_import_shutdown()
 
 	if( ( it = find_import_thread_byid( thr_self() ) ) == NULL ) {
 
-		complain( 0, "Couldn't find thread %ld in registry!\n",
+		elog_complain( 0, "Couldn't find thread %ld in registry!\n",
 			  	  (long) thr_self() );
 
 	} else {
@@ -1379,7 +1379,7 @@ refresh_import_thread( ImportThread *it )
 		it->so = socket( PF_INET, SOCK_STREAM, 0 );
 		if( it->so < 0 ) {
 
-			complain( 1,
+			elog_complain( 1,
 		 	  "'%s': Failed to open socket to %s:%d\n", 
 			  it->name, it->server_ipaddress, it->server_port );
 
@@ -1396,13 +1396,13 @@ refresh_import_thread( ImportThread *it )
 		                                   sizeof( it->sin ) ) ) {
 			if( it->bindfail < NCOMPLAIN_MAX ) {
 
-				complain( 1, "'%s': Couldn't bind socket\n",
+				elog_complain( 1, "'%s': Couldn't bind socket\n",
 					  it->name );
 			}
 
 			if( it->bindfail++ == NCOMPLAIN_MAX ) {
 					
-				complain( 0, 
+				elog_complain( 0, 
 					"'%s': Last message repeated %d "
 					"times; will keep retrying "
 					"every %d sec\n",
@@ -1437,7 +1437,7 @@ refresh_import_thread( ImportThread *it )
 		if( connect( it->so, (struct sockaddr *) &it->sin, sizeof( it->sin ) ) ) {
 			if( it->connectfail < NCOMPLAIN_MAX ) {
 
-				complain( 1, 
+				elog_complain( 1, 
 					"'%s': Failed to connect socket for %s:%d\n",
 					it->name,
 					it->server_ipaddress, it->server_port );
@@ -1445,7 +1445,7 @@ refresh_import_thread( ImportThread *it )
 
 			if( it->connectfail++ == NCOMPLAIN_MAX ) {
 					
-				complain( 0, 
+				elog_complain( 0, 
 					"'%s': Last message repeated %d "
 					"times; will keep retrying "
 					"every %d sec\n",
@@ -1644,7 +1644,7 @@ more_packet_data( ImportThread *it )
 
 		  if( bns_errno == ECONNRESET ) {
 
-			complain( 1, 
+			elog_complain( 1, 
 				  "'%s': Connection reset by peer\n",
 				  it->name );
 
@@ -1655,7 +1655,7 @@ more_packet_data( ImportThread *it )
 
 		  } else {
 
-			complain( 1, 
+			elog_complain( 1, 
 				  "'%s': bns error %d\n", 
 				  it->name, bns_errno );
 		  }
@@ -1667,7 +1667,7 @@ more_packet_data( ImportThread *it )
 
 		if( ( it->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-			complain( 1, 
+			elog_complain( 1, 
 				  "'%s': Connection closed by remote "
 				  "export module\n",
 				  it->name );
@@ -1705,7 +1705,7 @@ ew2orb_import( void *arg )
 
 	if( ( it = find_import_thread_byid( thr_self() ) ) == NULL ) {
 
-		complain( 1, 
+		elog_complain( 1, 
 			"Couldn't find thread id %ld in registry!\n",
 			 (long) thr_self() );
 
@@ -1920,7 +1920,7 @@ update_import_thread( char *name, Pf *pf )
 
 		if( ret != 0 ) {
 
-			complain( 1,
+			elog_complain( 1,
 			    "'%s': Failed to create import thread: "
 			    "thr_create error %d\n", name, ret );
 			
@@ -1983,14 +1983,14 @@ reconfigure_import_threads( Pf *pf )
 
 	if( pfget( pf, "import_from", (void **) &pfimport_from ) != PFARR ) {
 
-		complain( 1, 
+		elog_complain( 1, 
 		   "parameter 'import_from' not present or not an array\n" );
 
 		stop_all_import_threads();
 		
 		if( Flags.verbose && num_import_threads() <= 0 ) {
 
-			complain( 0, 
+			elog_complain( 0, 
 			"Warning: no import threads defined; nothing to do\n" );
 		}
 
@@ -2005,7 +2005,7 @@ reconfigure_import_threads( Pf *pf )
 		
 		if( Flags.verbose && num_import_threads() <= 0 ) {
 
-			complain( 0, 
+			elog_complain( 0, 
 			"Warning: no import threads defined; nothing to do\n" );
 		}
 
@@ -2048,7 +2048,7 @@ reconfigure_import_threads( Pf *pf )
 
 	if( Flags.verbose && num_import_threads() <= 0 ) {
 
-		complain( 0, 
+		elog_complain( 0, 
 		"Warning: no import threads defined; nothing to do\n" );
 	}
 
@@ -2075,7 +2075,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) &&
 	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
-		complain( 0, 
+		elog_complain( 0, 
 			"convert: Don't know how to crack type <%s>\n",
 			e2opkt->typestr );
 
@@ -2216,7 +2216,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		if( n < 0 ) { 
 
-			complain( 0, 
+			elog_complain( 0, 
 			"Couldn't compile reject expression '%s'\n",
 			e2opkt->it->reject );
 
@@ -2243,7 +2243,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		if( n < 0 ) { 
 
-			complain( 0, 
+			elog_complain( 0, 
 			"Couldn't compile select expression '%s'\n",
 			e2opkt->it->select );
 
@@ -2383,7 +2383,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		} else {
 
-			complain( 0, 
+			elog_complain( 0, 
 				"convert: Don't know how to translate datatype <%s>\n",
 				e2opkt->th2->datatype );
 			
@@ -2468,7 +2468,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		} else {
 
-			complain( 0, 
+			elog_complain( 0, 
 				"convert: Don't know how to translate datatype <%s>\n",
 				e2opkt->th->datatype );
 
@@ -2640,7 +2640,7 @@ ew2orb_pfwatch( void *arg )
 
 		if( rc < 0 ) {
 			
-			complain( 1, "pfupdate pf parameter file '%s' failed\n",
+			elog_complain( 1, "pfupdate pf parameter file '%s' failed\n",
 				  Pfname );
 
 		} else if( rc == 0 ) {
@@ -2706,14 +2706,14 @@ main( int argc, char **argv )
 		case '?':
 		default:
 			usage();
-			die( 0, "option not understood\n" );
+			elog_die( 0, "option not understood\n" );
 		}
 	}
 
 	if( argc - optind != 1 ) {
 
 		usage();
-		die( 0, "Must specify an output orb name\n" );
+		elog_die( 0, "Must specify an output orb name\n" );
 
 	} else {
 		
@@ -2722,7 +2722,7 @@ main( int argc, char **argv )
 
 	if( ( Orbfd = orbopen( orbname, "w&" ) ) < 0 ) {
 		
-		die( 0, "Failed to open orb '%s' for writing\n", orbname );
+		elog_die( 0, "Failed to open orb '%s' for writing\n", orbname );
 	}
 
 	Flags.have_banner = have_banner();
@@ -2735,7 +2735,7 @@ main( int argc, char **argv )
 
 	if( rc != 0 ) {
 
-		die( 1, "Failed to create parameter-file watch thread, "
+		elog_die( 1, "Failed to create parameter-file watch thread, "
 			"thr_create error %d\n", rc );
 	}
 
@@ -2743,7 +2743,7 @@ main( int argc, char **argv )
 
 	if( rc != 0 ) {
 
-		die( 1, "Failed to create packet-conversion thread, "
+		elog_die( 1, "Failed to create packet-conversion thread, "
 			"thr_create error %d\n", rc );
 	}
 

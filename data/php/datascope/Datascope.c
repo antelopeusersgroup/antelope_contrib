@@ -36,7 +36,6 @@
  * the name of the PHP function */
 #undef now
 
-static int le_Datascope;
 static int le_dbresponse;
 
 static Arr *Hooks = 0;
@@ -422,7 +421,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 		break;
 	case dbBOOLEAN:
 		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
-			value->i = (int) Z_DVAL_PP( zvalue );
+			value->i = (long) Z_DVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
 			value->i = Z_LVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
@@ -436,13 +435,13 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 	case dbINTEGER:
 	case dbYEARDAY:
 		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
-			value->i = (int) Z_DVAL_PP( zvalue );
+			value->i = (long) Z_DVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
 			value->i = Z_LVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
 			value->i = Z_BVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
-			value->i = atoi( Z_STRVAL_PP( zvalue ) );
+			value->i = atol( Z_STRVAL_PP( zvalue ) );
 		} else {
 			return -1;
 		}
@@ -773,7 +772,7 @@ elog_callback( int severity, char *logstring, Tbl *Elog )
 		sprintf( msg, "Elog callback to function '%s' failed!\n", 
 			 Elog_replacement );
 
-		zend_error( E_WARNING, msg );
+		zend_error( E_WARNING, "%s", msg );
 
 		return 0;
 	}
@@ -784,7 +783,7 @@ elog_callback( int severity, char *logstring, Tbl *Elog )
 			      "integer! Callback failed.\n", 
 			      Elog_replacement );
 
-		zend_error( E_WARNING, msg );
+		zend_error( E_WARNING, "%s", msg );
 
 		return 0;
 	}
@@ -841,7 +840,7 @@ PHP_FUNCTION(elog_log)
 		return;
 	}
 
-	elog_log( 0, msg );
+	elog_log( 0, "%s", msg );
 
 	return;
 }
@@ -865,7 +864,7 @@ PHP_FUNCTION(elog_debug)
 		return;
 	}
 
-	elog_debug( 0, msg );
+	elog_debug( 0, "%s", msg );
 
 	return;
 }
@@ -889,7 +888,7 @@ PHP_FUNCTION(elog_alert)
 		return;
 	}
 
-	elog_alert( 0, msg );
+	elog_alert( 0, "%s", msg );
 
 	return;
 }
@@ -913,7 +912,7 @@ PHP_FUNCTION(elog_complain)
 		return;
 	}
 
-	elog_complain( 0, msg );
+	elog_complain( 0, "%s", msg );
 
 	return;
 }
@@ -937,7 +936,7 @@ PHP_FUNCTION(elog_notify)
 		return;
 	}
 
-	elog_notify( 0, msg );
+	elog_notify( 0, "%s", msg );
 
 	return;
 }
@@ -961,7 +960,7 @@ PHP_FUNCTION(elog_die)
 		return;
 	}
 
-	elog_die( 0, msg );
+	elog_die( 0, "%s", msg );
 
 	return;
 }
@@ -2040,7 +2039,7 @@ PHP_FUNCTION(trnsamp)
 	double	time0;
 	double	samprate;
 	double	endtime;
-	int	nsamp;
+	long	nsamp;
 
 	if( argc != 3 ) {
 
@@ -2366,7 +2365,7 @@ PHP_FUNCTION(pfdel)
 			"parameter '%s' not found in parameter-file '%s'\n",
 			key, pfname );
 
-		zend_error( E_ERROR, errstring );
+		zend_error( E_ERROR, "%s", errstring );
 	} 
 	
 	if( pf2zval( pfvalue, return_value ) < 0 ) {
@@ -2489,7 +2488,7 @@ PHP_FUNCTION(pfget)
 			"parameter '%s' not found in parameter-file '%s'\n",
 			key, pfname );
 
-		zend_error( E_ERROR, errstring );
+		zend_error( E_ERROR, "%s", errstring );
 	} 
 	
 	if( pf2zval( pfvalue, return_value ) < 0 ) {
@@ -2591,8 +2590,8 @@ PHP_FUNCTION(trdata)
 	int	argc = ZEND_NUM_ARGS();
 	int 	single_row = 0;
 	long	nrecs;
-	int	nsamp_retrieve = 0;
-	int	nsamp_available = 0;
+	long	nsamp_retrieve = 0;
+	long	nsamp_available = 0;
 	long 	nsamp_requested = -1;
 	long	i0 = 0;
 	int	isource;
@@ -4007,7 +4006,7 @@ PHP_FUNCTION(dbwrite_view)
 	if( ( fpview = fopen( filename, "w" ) ) == NULL ) {
 		
 		sprintf( errmsg, "Failed to open file '%s'", filename );
-		zend_error( E_ERROR, errmsg );
+		zend_error( E_ERROR, "%s", errmsg );
 	}
 
 	rc = dbwrite_view( db, fpview );
@@ -4085,12 +4084,12 @@ PHP_FUNCTION(dbread_view)
 	if( ( fpview = fopen( filename, "r" ) ) == NULL ) {
 		
 		sprintf( errmsg, "Failed to open file '%s'", filename );
-		zend_error( E_ERROR, errmsg );
+		zend_error( E_ERROR, "%s", errmsg );
 	}
 
 	rc = dbread_view( fpview, &db, name );
 
-	clear_register( 1 );
+	elog_clear_register( 1 );
 
 	RETURN_DBPTR( db );
 }
@@ -4811,7 +4810,7 @@ PHP_FUNCTION(dbquery)
  
         default:
 		sprintf( errmsg, "dbquery: bad code '%d'", dbcode );
-		zend_error( E_ERROR, errmsg );
+		zend_error( E_ERROR, "%s", errmsg );
 		break ;
 	}
 }
@@ -4906,7 +4905,7 @@ PHP_FUNCTION(dbsubset)
 		return;
 	}
 
-	db = dbsubset( db, expr, 0 );
+	db = dbsubset( db, expr, NULL );
 
 	RETURN_DBPTR( db );
 }
@@ -5064,7 +5063,7 @@ PHP_FUNCTION(dbex_eval)
 		sprintf( warning, 
 			"Can't interpret field of type %s",
 			xlatnum( type, Dbxlat, NDbxlat ) );
-		zend_error( E_WARNING, warning );
+		zend_error( E_WARNING, "%s", warning );
 		break;
 	}
 }
@@ -5304,7 +5303,7 @@ PHP_FUNCTION(dbgroup)
 
 	key = Z_STRVAL_PP( args[1] );
 
-	groupfields = strtbl( key, 0 );
+	groupfields = strtbl( key, NULL );
 
 	for( i = 2; i < argc; i++ ) {
 
@@ -5338,11 +5337,12 @@ PHP_FUNCTION(dbjoin)
 	Dbptr	db1;
 	Dbptr	db2;
 	Dbptr	db;
-	char	*key;
-	Tbl	*pattern1 = 0;
-	Tbl	*pattern2 = 0;
-	Tbl	*halves;
+	char	*key = NULL;
+	Tbl	*pattern1 = NULL;
+	Tbl	*pattern2 = NULL;
+	Tbl	*halves = NULL;
 	int	outer = 0;
+	int	patterns_allocated = 0;
 	int	i;
 
 	if( argc < 2 ) {
@@ -5399,6 +5399,8 @@ PHP_FUNCTION(dbjoin)
 			continue;
 		}
 
+		patterns_allocated = 1;
+
 		if( pattern1 == (Tbl *) NULL ) {
 
 			pattern1 = newtbl( 0 );
@@ -5423,22 +5425,36 @@ PHP_FUNCTION(dbjoin)
 			pushtbl( pattern1, strdup( shifttbl( halves ) ) );
 			pushtbl( pattern2, strdup( poptbl( halves ) ) );
 
-			freetbl( halves, 0 );
+			freetbl( halves, NULL );
 
 			free( key );
 		}
 	}
 
-	db = dbjoin( db1, db2, &pattern1, &pattern2, outer, 0, 0 );
+	db = dbjoin( db1, db2, &pattern1, &pattern2, outer, NULL, NULL );
 
 	if( pattern1 != (Tbl *) NULL ) {
-	
-		freetbl( pattern1, free );
+
+		if( patterns_allocated ) {
+
+			freetbl( pattern1, free );
+
+		} else {
+
+			freetbl( pattern1, NULL );
+		}
 	}
 
 	if( pattern2 != (Tbl *) NULL ) {
 	
-		freetbl( pattern2, free );
+		if( patterns_allocated ) {
+
+			freetbl( pattern2, free );
+
+		} else {
+
+			freetbl( pattern2, NULL );
+		}
 	}
 
 	efree( args );
@@ -5879,8 +5895,8 @@ PHP_FUNCTION(dbget_range)
 {
 	zval	*db_array;
 	Dbptr	db;
-	int	first;
-	int	last;
+	long	first;
+	long	last;
 	int	argc = ZEND_NUM_ARGS();
 
 	if( argc != 1 ) {
@@ -5993,7 +6009,7 @@ PHP_FUNCTION(dbputv)
 
 		field_name = Z_STRVAL_PP( args[fieldname_index] );
 
-		db = dblookup( db, 0, 0, field_name, 0 );
+		db = dblookup( db, NULL, NULL, field_name, NULL );
 
 		rc = dbquery( db, dbFIELD_TYPE, &type );
 
@@ -6107,7 +6123,7 @@ PHP_FUNCTION(dbaddv)
 
 		field_name = Z_STRVAL_PP( args[fieldname_index] );
 
-		db = dblookup( db, 0, 0, field_name, 0 );
+		db = dblookup( db, NULL, NULL, field_name, NULL );
 
 		rc = dbquery( db, dbFIELD_TYPE, &type );
 
@@ -6150,7 +6166,7 @@ PHP_FUNCTION(dbaddv)
 	retcode = dbaddchk( db, 0 );
 
 	if( retcode < 0 ) {
-		clear_register( 1 );
+		elog_clear_register( 1 );
 		zend_error( E_ERROR, "Error with addchk in dbaddv\n" );
 	}
 
@@ -6166,7 +6182,7 @@ PHP_FUNCTION(dbgetv)
 	zval	*db_array_in;
 	zval	*db_array;
 	Dbptr	db;
-	zval	***args;
+	zval	***args = NULL;
 	long	type;
 	Dbvalue	value;
 	int	argc = ZEND_NUM_ARGS();
@@ -6174,7 +6190,7 @@ PHP_FUNCTION(dbgetv)
 	int	i;
 	int	array_mode = 0;
 	char	warning[STRSZ];
-	char	*fieldname;
+	char	*fieldname = NULL;
 	Tbl	*fieldnames = 0;
 	int	loopstart;
 	int	loopmax;
@@ -6268,7 +6284,7 @@ PHP_FUNCTION(dbgetv)
 			}
 		}
 
-		db = dblookup( db, 0, 0, fieldname, 0 );
+		db = dblookup( db, NULL, NULL, fieldname, NULL );
 
 		dbquery( db, dbFIELD_TYPE, &type );
 
@@ -6305,18 +6321,18 @@ PHP_FUNCTION(dbgetv)
 		case dbBOOLEAN:
 			copystrip( value.s, value.s, strlen( value.s ) );
 			if( single ) {
-				RETVAL_BOOL( atoi( value.s ) );
+				RETVAL_BOOL( atol( value.s ) );
 			} else {
-				add_next_index_bool( return_value, atoi( value.s ) );
+				add_next_index_bool( return_value, atol( value.s ) );
 			}
 			break;
 		case dbINTEGER:
 		case dbYEARDAY:
 			copystrip( value.s, value.s, strlen( value.s ) );
 			if( single ) {
-				RETVAL_LONG( atoi( value.s ) );
+				RETVAL_LONG( atol( value.s ) );
 			} else {
-				add_next_index_long( return_value, atoi( value.s ) );
+				add_next_index_long( return_value, atol( value.s ) );
 			}
 			break;
 		case dbREAL:
@@ -6332,7 +6348,7 @@ PHP_FUNCTION(dbgetv)
 			sprintf( warning, 
 				"dbgetv can't interpret field of type %s",
 				xlatnum( type, Dbxlat, NDbxlat ) );
-			zend_error( E_WARNING, warning );
+			zend_error( E_WARNING, "%s", warning );
 			break;
 		}
 	}

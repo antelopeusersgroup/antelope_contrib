@@ -28,17 +28,17 @@ MWbasis  *load_multiwavelets_pf(Pf *pf,int *nwavelets)
 	w = pfget_tbl(pf,"wavelets");
 	nrows = maxtbl(w);
 	if(nrows != (nsamples*(*nwavelets)))
-		die(0,"Size mismatch in wavelet parameter file\nExpected %d from %d wavelets each %d long\nFound %d instead\n",
+		elog_die(0,"Size mismatch in wavelet parameter file\nExpected %d from %d wavelets each %d long\nFound %d instead\n",
 			nsamples*(*nwavelets),*nwavelets,nsamples,nrows);
 	mw = (MWbasis *)calloc(*nwavelets, sizeof(MWbasis));
 	if(mw == NULL)
-		die(0,"Cannot alloc %d multiwavelet structures\n",nwavelets);
+		elog_die(0,"Cannot alloc %d multiwavelet structures\n",nwavelets);
 	for(i=0,k=0;i<(*nwavelets);++i)
 	{
 		mw[i].r = calloc(nsamples,sizeof(float));
 		mw[i].i = calloc(nsamples,sizeof(float));
 		if((mw[i].r == NULL) || (mw[i].i == NULL) )
-			die(0,"Cannot alloc %d samples for complex wavelet %d\n",
+			elog_die(0,"Cannot alloc %d samples for complex wavelet %d\n",
 				nsamples,i);
 		mw[i].n = nsamples;
 		mw[i].f0 = f0;
@@ -47,7 +47,7 @@ MWbasis  *load_multiwavelets_pf(Pf *pf,int *nwavelets)
 		{
 			line = gettbl(w,k);
 			if(sscanf(line,"%g%g",&(mw[i].r[j]),&(mw[i].i[j])) != 2)
-				die(0,"Error reading wavelets from parameter file on line %d of wavelet tbl\n",
+				elog_die(0,"Error reading wavelets from parameter file on line %d of wavelet tbl\n",
 					k);
 		}
 	}
@@ -63,7 +63,7 @@ MWtrace **MWmatrix(int nrl, int nrh, int ncl,int nch)
 	t = (MWtrace **)calloc(nrh-nrl+1,sizeof(MWtrace *));
         if(t == NULL) 
         {
-                register_error(1,"MWmatrix:  Cannot alloc MWmatrix vector of pointers\n");
+                elog_log(1,"MWmatrix:  Cannot alloc MWmatrix vector of pointers\n");
                 return (NULL);
         }
         t-=nrl;
@@ -72,7 +72,7 @@ MWtrace **MWmatrix(int nrl, int nrh, int ncl,int nch)
                 t[i] = (MWtrace *) calloc(nch-ncl+1,sizeof(MWtrace));
                 if(t[i] == NULL)
                 {
-                        register_error(1,"MWmatrix:  Cannot alloc row %d of matrix of length %d\n",
+                        elog_log(1,"MWmatrix:  Cannot alloc row %d of matrix of length %d\n",
                                 i,nch-ncl+1);
                         /* cleanup in case you want to continue*/
                         if(i!=nrl)
@@ -176,7 +176,7 @@ MWtrace **MWtransform(float *trace, double dt, double starttime, int nsamples,
 
 	work = (float *)calloc(nsamples,sizeof(float));
 	if(work == NULL)
-		die(0,"MWtranform:  cannot alloc work array of length %d\n",
+		elog_die(0,"MWtranform:  cannot alloc work array of length %d\n",
 			nsamples);
 
 
@@ -244,14 +244,14 @@ MWtrace **MWtransform(float *trace, double dt, double starttime, int nsamples,
 			re_work = (float *)calloc(n,sizeof(float));
 			im_work = (float *)calloc(n,sizeof(float));
 			if( (re_work == NULL) || (im_work == NULL))
-				die(0,"MWtransform:  malloc fails for two work spaces of length %d\n",n);
+				elog_die(0,"MWtransform:  malloc fails for two work spaces of length %d\n",n);
 			/* both real and imag parts of basis must the same length so 
 			we overwrite nout the second call below and don't trap this 
 			condition */
 			if((sconv(newtrace,n,basis[j].r,basis[j].n,0,1,re_work,&nout) < 0)
 				|| (sconv(newtrace,n,basis[j].i,basis[j].n,0,1,im_work,&nout)<0))
 			{
-				register_error(0,"Multiwavelet transform for wavelet %d in band %d has zero length\n",
+				elog_log(0,"Multiwavelet transform for wavelet %d in band %d has zero length\n",
 						j,i);
 				allmw[i][j].nz = 0;
 			}

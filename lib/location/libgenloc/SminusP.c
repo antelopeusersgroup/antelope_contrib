@@ -219,7 +219,7 @@ char *make_staphase_key(char *sta,char *phase)
 	char *key;
 	size = strlen(sta) + strlen(phase) + 2;
 	key = malloc(size);
-        if(key == NULL) die(0,
+        if(key == NULL) elog_die(0,
                 "makez_staphase_key: malloc failure for string of length %d\n",size);
         strcpy(key,sta);
         strcat(key,":");

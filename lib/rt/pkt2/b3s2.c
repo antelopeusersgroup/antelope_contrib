@@ -155,7 +155,7 @@ int read_b3s2_DP(
            break;
 				       
        default:
-           complain( 0, "can't recognize data packet header - %d\n", hdr->hdrtype );
+           elog_complain( 0, "can't recognize data packet header - %d\n", hdr->hdrtype );
            return 0;
     }
 

@@ -10,7 +10,7 @@
  
  
        if( (dbgetv( dba, 0, "time", &stime, 0 )) == dbINVALID )  
-           die( 0, "dbgetv faild for record #%d\n", dba.record );  
+           elog_die( 0, "dbgetv faild for record #%d\n", dba.record );  
        
        for( dbc.record = 0; dbc.record < dbrec; dbc.record++) {
 	            
@@ -20,7 +20,7 @@
 	         "bchan", chan,
 	         "bnet", net,
 	         "bsta", sta, 0 )) == dbINVALID )
-	          die( 0, "dbgetv faild for record #%d\n", dbc.record );
+	          elog_die( 0, "dbgetv faild for record #%d\n", dbc.record );
 	        
 	    sprintf( key, "%s_%s_%s\0", net, sta, chan );
 
@@ -61,11 +61,11 @@ int change_arr( int dbrec, int wfrec )
  
      
     if (dbopen_database ( NEW, "r+", &dbout ) == dbINVALID )
-         die (0, "Can't open database %s\n",  NEW );
+         elog_die(0, "Can't open database %s\n",  NEW );
  
     dbout = dblookup (dbout, 0, "wfdisc", 0, 0);
     if (dbout.table < 0)  {
-        die (0, "Can't open wfdisc table '%s'\n", dbname );
+        elog_die(0, "Can't open wfdisc table '%s'\n", dbname );
     }
     
     
@@ -83,7 +83,7 @@ int change_arr( int dbrec, int wfrec )
           "chan", chan,
           "datatype", datatype,
            0 )) == dbINVALID )
-           die( 0, "dbgetv faild for record #%d\n", dbin.record );
+           elog_die( 0, "dbgetv faild for record #%d\n", dbin.record );
 
        dcode = trdatacode ( datatype);
        if( Log )  {
@@ -102,21 +102,21 @@ int change_arr( int dbrec, int wfrec )
           if(!seed )  {
              sprintf( tmpname, "tmp.w\0" );
              outfp = fopen (tmpname, "w");
-             if (outfp == 0) die ( 1, "Unable to open '%s'\n", tmpname);
+             if (outfp == 0) elog_die( 1, "Unable to open '%s'\n", tmpname);
              seed = 1;
           }
           if (dbfilename (dbin, dfname) < 1) 
-                  die (1, "Unable to find input file '%s'\n", dfname);
+                  elog_die(1, "Unable to find input file '%s'\n", dfname);
           if( strncmp( old_fname, dfname, sizeof(dfname) ) ) {
              if(infp != 0 )  fclose(infp);
              infp = zopen (dfname);
              if (infp == 0) 
-                  die ( 1, "Unable to open '%s'\n", dfname);
+                  elog_die( 1, "Unable to open '%s'\n", dfname);
           } 
           strcpy( old_fname, dfname);
           if (fseek(infp, foff, 0) < 0) {
                 fclose (infp);
-                die ( 0, "fseek() error on '%s'\n", dfname);
+                elog_die( 0, "fseek() error on '%s'\n", dfname);
           }  
  
       
@@ -124,7 +124,7 @@ int change_arr( int dbrec, int wfrec )
  
               if ( (nread=fread ( seed_buf, 1, 48, infp)) != 48 ) {
                     if( nread == 0 ) break;
-                    else  die( 1, "Can't read first 48 bytes of a SEED record.\n" );
+                    else  elog_die( 1, "Can't read first 48 bytes of a SEED record.\n" );
               }
               memcpy(ssta,  seed_buf+8, 5 ) ;
               TRIM(ssta,6);
@@ -144,20 +144,20 @@ int change_arr( int dbrec, int wfrec )
                     change_time( seed_buf, rectime, nread, &rec );
   
                     if( !wrt_data( outfp, rec, 48) )  
-                        die( 1, "write error for %s_%s SEEDHDR. \n", sta, chan );  
+                        elog_die( 1, "write error for %s_%s SEEDHDR. \n", sta, chan );  
                 
                     nleft = doff - 48;
                     if( doff <= 0 ) break;   
                     if ( (nread=fread ( seed_buf, 1, nleft, infp)) != nleft ) 
-                          die( 1, "Can't read SEED headers.\n" );
+                          elog_die( 1, "Can't read SEED headers.\n" );
                     if( !wrt_data( outfp, seed_buf, nread ) )  
-                          die( 1, "write error for %s_%s SEEDHDR.\n", sta, chan);  
+                          elog_die( 1, "write error for %s_%s SEEDHDR.\n", sta, chan);  
                
                     nleft = 4096 - doff; 
                     if ( (nread=fread ( seed_buf, 1, nleft, infp)) != nleft ) 
-                          die( 1, "Can't read SEED headers.\n" );
+                          elog_die( 1, "Can't read SEED headers.\n" );
                     if( !wrt_data( outfp, seed_buf, nread) )  
-                          die( 1, "write error for %s_%s at %lf.\n", sta, chan, rectime );  
+                          elog_die( 1, "write error for %s_%s at %lf.\n", sta, chan, rectime );  
              
               }
 
@@ -188,17 +188,17 @@ int change_arr( int dbrec, int wfrec )
  
     sprintf( newnm, "%s.w\0", dbname );
     if( stat( newnm, &stat_buf) != 0 ) {
-        if(!ENOENT) die(1, "stat error\n");
+        if(!ENOENT) elog_die(1, "stat error\n");
     }  else {
         sprintf( str, "mv %s.w old_%s.w\0", dbname, dbname );
         if( system(str) == -1 ) 
-          die( 1, "can't save an original data file - %s.w\n", set->dbname );
+          elog_die( 1, "can't save an original data file - %s.w\n", set->dbname );
     
     } 
  
     sprintf( str, "mv %s %s\0", tmpname, Dfile );
     if( system(str) == -1 ) 
-       die( 1, "can't rename new data file - %s\n", Dfile);
+       elog_die( 1, "can't rename new data file - %s\n", Dfile);
     
   }
   return 1;

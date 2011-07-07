@@ -8,7 +8,7 @@
 #
 
 use Datascope;
-require "getopts.pl";
+use Getopt::Std;
 
 sub set_globals {
 	
@@ -193,7 +193,7 @@ sub write_dbsplit_pffile {
 
 &set_globals();
 
-if( ! &Getopts('vo:') || $#ARGV != 1 ) {
+if( ! getopts('vo:') || $#ARGV != 1 ) {
 
 	die( "Usage: split_archive_database [-v] dbname Leave_N_days\n" );
 

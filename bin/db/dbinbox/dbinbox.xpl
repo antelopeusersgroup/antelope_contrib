@@ -16,11 +16,11 @@ use Mail::Internet;
 use Datascope ;
 use filemail;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 $schema = "Mail1.2";
 
-if ( ! &Getopts('1v') || @ARGV != 2 ) { 
+if ( ! getopts('1v') || @ARGV != 2 ) { 
 
     	die ( "Usage: $0 [-v] [-1] mail_file dbname\n" ) ; 
 

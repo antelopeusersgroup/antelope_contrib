@@ -46,7 +46,7 @@ $rc = dbgmtgrid( @db, $rectangle, $outfile, verbose => 1 );
 
 if( $rc ) {
         elog_flush( 1, 0 );
-        die( "dbgmtgrid failed\\n" );
+        elog_die( "dbgmtgrid failed\\n" );
 }
 .fi
 .in

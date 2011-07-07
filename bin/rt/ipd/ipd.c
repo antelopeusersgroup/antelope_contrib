@@ -94,7 +94,7 @@ char *argv[];
 
        if( hdrtype != 0 )
          if( (htype = ( int ) decode( hdrtype )) < 0 ) 
-	    die( 0, "Can't recognize hdrtype - %s\n", hdrtype );
+	    elog_die( 0, "Can't recognize hdrtype - %s\n", hdrtype );
 
        strcpy( Ports.ip_name, iport );
        Ports.ip_name[strlen(iport)] = '\0';

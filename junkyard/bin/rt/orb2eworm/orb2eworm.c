@@ -173,7 +173,7 @@ main( int argc, char **argv )
 			&rawpkt, (int *)&nbytes_orb, &bufsize );
 		if( rc < 0 )
 		{
-			clear_register( 1 );
+			elog_clear_register( 1 );
 			continue;
 		}
 
@@ -181,7 +181,7 @@ main( int argc, char **argv )
 		if( rc == 0 )
 		{
 			logit( "et", "Unstuff failure in orb2eworm for %s\n", srcname );
-			clear_register( 1 );
+			elog_clear_register( 1 );
 			continue;
 		}
 

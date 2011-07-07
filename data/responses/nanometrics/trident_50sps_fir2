@@ -3,12 +3,12 @@
 # coefficients are symetric, listed in time order 
 # type                  2  
 # npoles                0  
-# input sample rate     2000  
+# input sample rate     1500
 # decimation factor     15 
 # normalization factor  1.0 
 # gain factor           1.000000 
 theoretical  1  anti_alias   fir    coef_conv 
-2000 15 122
+1500 15 122
 245
 -2.248424117774393e-008	0.0 
 -4.642643587439857e-008	0.0 

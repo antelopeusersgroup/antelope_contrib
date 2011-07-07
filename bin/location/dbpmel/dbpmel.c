@@ -184,7 +184,7 @@ main(int argc, char **argv)
 	/* set default this way*/
 	if(pfin == NULL) pfin = (char *)strdup("dbpmel");
 	i = pfread(pfin,&pf);
-	if(i != 0) die(1,"Pfread error\n");
+	if(i != 0) elog_die(1,"Pfread error\n");
 	check_required_pf(pf);
 
 
@@ -226,7 +226,7 @@ main(int argc, char **argv)
 	{
 		dbv = dbsubset(dbv,sift_exp,0);
 		if(dbv.record == dbINVALID)
-			die(1,"dbsubset of %s with expression %s failed\n",
+			elog_die(1,"dbsubset of %s with expression %s failed\n",
 				dbin, sift_exp);
 	}
 
@@ -244,7 +244,7 @@ main(int argc, char **argv)
 	dbquery(dbv, dbRECORD_COUNT, &nrows);
 
 	if(nrows != nrows_raw)
-		complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
+		elog_complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
 Which picks will be used here is unpredictable\n\
 %d total picks, %d unique\nContinuing\n", nrows_raw, nrows);
 

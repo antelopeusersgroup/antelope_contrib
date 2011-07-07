@@ -52,11 +52,11 @@ char *argv[];
        dcname = strdup(argv[optind++]);
         
        if ( (code = regcomp( &argument, name, REG_EXTENDED|REG_NOSUB)) != 0)
-	          die( 1, "\nregcomp error #%d for %s\n", code, name );
+	          elog_die( 1, "\nregcomp error #%d for %s\n", code, name );
      
     
        if(!open_dc( dcname, &dcfp  ) )  
-           die(0, "\nCan open %s DC.\n", dcname );
+           elog_die(0, "\nCan open %s DC.\n", dcname );
 
        CmdArg=0; Dases=0; Dasid=0; Dlist=0;
        pfile = "pkt";
@@ -69,11 +69,11 @@ char *argv[];
              cmdlen = 4; echo = 0; 
              if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
-                  die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
+                  elog_die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
              }
-	     complain(0, "\n%s command was sent to %s.\n", cmd, dcname);
+	     elog_complain(0, "\n%s command was sent to %s.\n", cmd, dcname);
 
-	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
+	  }  else elog_die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
 
      }  else if ( strncmp( cmd, "IP", 2 ) == 0 )  {            
 
@@ -83,11 +83,11 @@ char *argv[];
               cmdlen = strlen(buffer); echo = 0;
               if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
-                  die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
+                  elog_die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
               }
-	     complain(0, "\n%s was sent to %s.\n", buffer, dcname);
+	     elog_complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 
-	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
+	  }  else elog_die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
 
 
      }  else if ( !strncmp( cmd, "CF", 2 ) ||
@@ -97,15 +97,15 @@ char *argv[];
 	       else if ( strncmp( name, "AUX", 3 ) == 0 )
                    sprintf( &buffer[0], "%2s02%2s\0", cmd, cmd );
 	       else 
-	       die( 0, 
+	       elog_die( 0, 
 	       "\n%s command has illegal argument - %s\n. \nOnly \'MAIN\' or \'AUX\' must be specified.", cmd, name );
               
 	    cmdlen = strlen(buffer); echo = 1;
             if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
-                  die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
+                  elog_die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
             }
-	    complain(0, "\n%s was sent to %s.\n", buffer, dcname);
+	    elog_complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 
 
      }  else if ( !strncmp( cmd, "RO", 2 ) ||
@@ -119,12 +119,12 @@ char *argv[];
                  cmdlen = 6; echo = 1;
                  if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	               close(dcfp);
-                       die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
+                       elog_die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
                  }
-	         complain(0, "\n%s was sent to %s.\n", buffer, dcname);
+	         elog_complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 		 sleep(30);
 	      }
-	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
+	  }  else elog_die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
            
      }  else if ( !strncmp( cmd, "RC", 2 ) ||           
                !strncmp( cmd, "RS", 2 ) ||
@@ -140,12 +140,12 @@ char *argv[];
                  cmdlen = 8; echo = 1;
                  if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	               close(dcfp);
-                       die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
+                       elog_die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
                  }
-	         complain(0, "\n%s was sent to %s.\n", buffer, dcname);
+	         elog_complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 		 sleep(30);
 	      }
-	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
+	  }  else elog_die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
      } 
 
 

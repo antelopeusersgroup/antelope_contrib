@@ -18,9 +18,9 @@ use Datascope ;
 
 use vars qw($opt_d);
 
-require "getopts.pl";
+use Getopt::Std;
 
-if ( ! &Getopts('d') || @ARGV < 2 ) {
+if ( ! getopts('d') || @ARGV < 2 ) {
 
 	die( "Usage: $0 [-d] filename [filename ...] database\n" );
 

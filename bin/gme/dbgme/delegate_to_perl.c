@@ -39,20 +39,20 @@ delegate_to_perl( Dbptr db, Pf *delegate_pf )
 
 	if( ( mypath = datafile( "PATH", "perl" ) ) == 0 ) {
 
-		complain( 0, "Couldn't find perl on path.\n" );
+		elog_complain( 0, "Couldn't find perl on path.\n" );
 
 		return -1;
 
 	} else if( access( mypath, R_OK|X_OK ) ) {
 
-		complain( 0, "Couldn't find perl on path.\n" );
+		elog_complain( 0, "Couldn't find perl on path.\n" );
 		
 		return -1;
 	}
 
 	if( ( commands = pfget_string( delegate_pf, "commands" ) ) == NULL ) {
 
-		complain( 0, "No commands &Literal in parameter file\n" );
+		elog_complain( 0, "No commands &Literal in parameter file\n" );
 
 		return -1;
 	}

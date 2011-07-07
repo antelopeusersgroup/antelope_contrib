@@ -6,10 +6,10 @@ orb_PHP \- Antelope Orb interface for PHP
 
 <?php
 if( ! extension_loaded( "Datascope" ) ) {
-	die( "Module 'Datascope' is not loaded, unable to continue" );
+	elog_die( "Module 'Datascope' is not loaded, unable to continue" );
 }
 if( ! extension_loaded( "Orb" ) ) {
-	die( "Module 'Orb' is not loaded, unable to continue" );
+	elog_die( "Module 'Orb' is not loaded, unable to continue" );
 }
 ?>
 
@@ -445,7 +445,6 @@ Array
 .fi
 .in
 .ft R
-.SH LIBRARY
 .SH "SEE ALSO"
 .nf
 perlsysinfo(3P), datascope_php(3H), sysinfo_php(3H)

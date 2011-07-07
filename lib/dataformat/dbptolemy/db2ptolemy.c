@@ -94,7 +94,7 @@ int 	flags;
 	int	ns, ne; 
 
 	if( db.table < 0 ) {
-		complain( 0, "%s: not a view or a table\n", Library_Name );
+		elog_complain( 0, "%s: not a view or a table\n", Library_Name );
 		return -1;
 	}
 
@@ -110,7 +110,7 @@ int 	flags;
 
 	} else if( fields_in == 0 ) {
 
-		complain( 0, 
+		elog_complain( 0, 
 		"%s: must specify field names with nonzero list "
 		"of expressions\n", Library_Name );
 		return -1;
@@ -123,7 +123,7 @@ int 	flags;
 
 	if( maxtbl( fields ) != maxtbl( expressions ) ) {
 
-		complain( 0, 
+		elog_complain( 0, 
 		"%s: number of fields must match number of expressions\n",
                 Library_Name );
 		return -1;

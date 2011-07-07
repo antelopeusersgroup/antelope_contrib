@@ -9,9 +9,9 @@
 
 use Datascope ;
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
-if ( ! &Getopts('v') || @ARGV != 1 ) {
+if ( ! getopts('v') || @ARGV != 1 ) {
 	die ( "Usage: $0 [-v] database\n" ) ; 
 } else {
 	$database = $ARGV[0];

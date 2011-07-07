@@ -1,4 +1,4 @@
-.TH PYTHONPKT 3P "$Date$"
+.TH PYTHONPKT 3P 
 .SH NAME
 pythonPkt \- Python interface to Antelope Packet library
 .SH SYNOPSIS
@@ -123,11 +123,10 @@ showPkt(pktid, srcname, time, packet, nbytes, PKT_DUMP)
 .ft R
 .SH "SEE ALSO"
 .nf
-pythondb(3p), pythonorb(3p), pythonstock(3p)
+pythondb(3y), pythonorb(3y), pythonstock(3y)
 .fi
 .SH AUTHOR
 .nf
 Kent Lindquist
 Lindquist Consulting, Inc. 
 .fi
-.\" $Id$

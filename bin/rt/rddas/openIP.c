@@ -19,10 +19,10 @@ open_IN_ports( struct Prts *inport)
 
 	if((stat(inport->ip_name, &buf)) != 0)  {
   	   if(ENOENT)  {
-                complain( 1, "open_IN_ports():Port:%s doesn't exist!\n", inport->ip_name );
+                elog_complain( 1, "open_IN_ports():Port:%s doesn't exist!\n", inport->ip_name );
                 return -1; 
            } else {
-                complain( 1, "open_IN_ports():can't stat %s.", inport->ip_name );
+                elog_complain( 1, "open_IN_ports():can't stat %s.", inport->ip_name );
                 return -1; 
            }
         }  else if( S_ISCHR(buf.st_mode) )  {
@@ -32,7 +32,7 @@ open_IN_ports( struct Prts *inport)
    
         } 
  
-       complain( 0, "open_IN_ports():%s can't be Input Port!", inport->ip_name);
+       elog_complain( 0, "open_IN_ports():%s can't be Input Port!", inport->ip_name);
        return -1; 
      
 }
@@ -49,11 +49,11 @@ struct Prts *inport;
 	inport->ifp = open( inport->ip_name, O_RDWR | O_NOCTTY  );
 
 	if ( inport->ifp == -1) {
-		die( 1, "FATAL ERROR: Cannot open data port... Exiting program\n");
+		elog_die( 1, "FATAL ERROR: Cannot open data port... Exiting program\n");
 	}
 
 	if( (i = ioctl( inport->ifp, TCGETS, &termios)) < 0 )  {
-	   die( 1, "TCGETS error\n");
+	   elog_die( 1, "TCGETS error\n");
 	}
 
 	termios.c_iflag &= ~ICRNL;	/* map CR to NL on input  */
@@ -71,17 +71,17 @@ struct Prts *inport;
 	    case 9600:
 	        termios.c_cflag &= ~CBAUD;	
 		termios.c_cflag |= B9600;
-		complain(  0,"baudrate set to 9600\n");
+		elog_complain(  0,"baudrate set to 9600\n");
 		break;
 	    case 19200:
 	        termios.c_cflag &= ~CBAUD;	
 		termios.c_cflag |= B19200;
-		complain(  0,"baudrate set to 19200\n");
+		elog_complain(  0,"baudrate set to 19200\n");
 		break;
 	    case 38400:
 	        termios.c_cflag &= ~CBAUD;	
 		termios.c_cflag |= B38400;
-		complain( 0,"baudrate set to 38400\n");
+		elog_complain( 0,"baudrate set to 38400\n");
 		break;
 	    case 57600:
 	        termios.c_cflag &= ~CBAUD;	
@@ -93,13 +93,13 @@ struct Prts *inport;
 #else
 	        termios.c_cflag &= ~CBAUDEX;
 #endif
-		complain(  0,"baudrate set to 57600\n");
+		elog_complain(  0,"baudrate set to 57600\n");
 		break;
 	
             default:
 	        termios.c_cflag &= ~CBAUD;	
 		termios.c_cflag |= B19200;
-		complain(  0,"baudrate set to 19200\n");
+		elog_complain(  0,"baudrate set to 19200\n");
                 break;
 	}
    	        
@@ -162,20 +162,20 @@ struct Prts *inport;
 	termios.c_cc[VTIME] = 10;
 	
 	if( (i = ioctl( inport->ifp, TCSETS, &termios)) < 0 )  {
-	   die( 1, "TCSETA error on %s port\n", inport->ip_name );
+	   elog_die( 1, "TCSETA error on %s port\n", inport->ip_name );
 	}
         if( ioctl( inport->ifp, TCGETS, &termios) < 0 )
-	   die( 1, "TCGETS error on %s port\n", inport->ip_name );
+	   elog_die( 1, "TCGETS error on %s port\n", inport->ip_name );
 	
 	if( (i = ioctl( inport->ifp, TCFLSH, TCIOFLUSH)) < 0 ) {
-	   die( 1, "TCFLSH error on %s port\n", inport->ip_name );
+	   elog_die( 1, "TCFLSH error on %s port\n", inport->ip_name );
 
 	}
 	if( (i = ioctl( inport->ifp, TCXONC, TCOON))  < 0 ) {
-	   die( 1, "TCXONC/TCOON error on %s port\n", inport->ip_name );
+	   elog_die( 1, "TCXONC/TCOON error on %s port\n", inport->ip_name );
 	}
 	if( (i = ioctl( inport->ifp, TCXONC, TCION)) < 0 ) {
-	   die( 1, "TCXONC/TCION error on %s port\n", inport->ip_name );
+	   elog_die( 1, "TCXONC/TCION error on %s port\n", inport->ip_name );
 	
 	}
 

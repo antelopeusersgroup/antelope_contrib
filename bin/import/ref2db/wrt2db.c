@@ -39,7 +39,7 @@ int wrt2db ( double pkttime,
          
             default:
                
-                complain( 0, "unstuff error\n");
+                elog_complain( 0, "unstuff error\n");
 	        return 0;
     }
 

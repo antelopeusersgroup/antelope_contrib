@@ -47,7 +47,7 @@ int read_psclDP(
              break;
 								   
         default:
-             complain( 0, "can't recognize data packet header - %d\n", hdr->hdrtype );
+             elog_complain( 0, "can't recognize data packet header - %d\n", hdr->hdrtype );
              return 0;
     }
 														    
@@ -77,7 +77,7 @@ int read_psclDP(
 	    cptr = &data[0];
             memcpy ( cptr, (char *) (packet + doff), 1024 - hdr->doff );
             if( (nbytes = pscl_ucompress( &cptr, hdr->nsamp, hdr->doff ) )<= 0 )  {
-                complain( 0, "Can't uncompress PSCL data for %s_%s_%s.\n", net, sta, chan );
+                elog_complain( 0, "Can't uncompress PSCL data for %s_%s_%s.\n", net, sta, chan );
                 return 0;
             }
 	    memcpy( (char *) &udata[0], cptr, nbytes ) ;

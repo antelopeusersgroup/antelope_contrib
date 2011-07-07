@@ -83,14 +83,14 @@ char **argv;
 	if (doorid) printf("Az range %.1f - %.1f Del range %.1f - %.1f\n", azmin,azmax,delmin,delmax);
 	  
 	if (argc>1) {
-            if (pfread(argv[1], &pf)) die (0, " pfread error..");
+            if (pfread(argv[1], &pf)) elog_die(0, " pfread error..");
             if (pfget(pf, "hpfreq", &pfstr)!= PFINVALID) hpfreq = pfget_double(pf, "hpfreq");
             if (pfget(pf, "lpfreq", &pfstr)!= PFINVALID) lpfreq = pfget_double(pf, "lpfreq");
 	}
  /*	Open database.
  */
 	if (dbopen (dbname, "r+", &db) == dbINVALID) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "dbspgram: Unable to open database.\n");
 		exit (1);
 	}
@@ -108,11 +108,11 @@ char **argv;
 	    dbs=dblookup(db,0, "site", 0, 0);
 	    dbos=dbtheta(dbo, dbs, 0, 0, 0 ) ;
             if ( dbos.table == dbINVALID )
-                 die ( 1, "Join fails at table site + origin\n"  ) ;
+                 elog_die( 1, "Join fails at table site + origin\n"  ) ;
 	    dbquery(dbos, dbRECORD_COUNT, &nos);
 		printf("%d records in site-origin jooin...\n ",nos);
-	    if ((ptims= (double *)calloc(nos, sizeof(double)) )==0) die (0," calloc failed for %d\n",nos);
-	    if ((ikeeps= (int *)calloc(nos, sizeof(int)) )==0) die (0," calloc failed for %d\n",nos);
+	    if ((ptims= (double *)calloc(nos, sizeof(double)) )==0) elog_die(0," calloc failed for %d\n",nos);
+	    if ((ikeeps= (int *)calloc(nos, sizeof(int)) )==0) elog_die(0," calloc failed for %d\n",nos);
 	    for (i=0; i<nos; i++) {
 	  	dbos.record = i;
 		dbgetv(dbos, 0, "site.lat", &slat, "site.lon", &slon, 
@@ -188,20 +188,20 @@ char **argv;
 	tr = dbinvalid();
 
 	if (trload_css ( dbwf, time_str, endtime_str, &tr, 0, 0) < 0) 
-		die ( 0, "Problems loading traces\n") ;
+		elog_die( 0, "Problems loading traces\n") ;
 
 	/* printf ("  Retrieved %d traces\n",num_traces(tr)); */
 	trdump(tr);
 
 	/* Do the stacking */
 	dbget_range(tr, &rs, &re);
-	if (re - rs < 2 ) die (0," Not enough records to be worthwhile");
+	if (re - rs < 2 ) elog_die(0," Not enough records to be worthwhile");
 	for (tr.record = rs; tr.record < re; tr.record++)  {
 	
 	    dbgetv(tr, 0,
 	       "bundletype", &bundletype,
 	       0);
-	    if (bundletype != 0) die(0,"trstack: bundletype != 0");
+	    if (bundletype != 0) elog_die(0,"trstack: bundletype != 0");
 	    dbgetv(tr, 0, 
 		   "nsamp", &nsamp,
 		   "data", &data,
@@ -215,7 +215,7 @@ char **argv;
 	    }
 	    ntr += 1;
 	}
-	if (ntr==0) die(0," Number of processed traces = 0");
+	if (ntr==0) elog_die(0," Number of processed traces = 0");
 	printf(" Processed %d traces \n",ntr);
 	summ1 = 0.;
 	summ2 = 0.;
@@ -296,13 +296,13 @@ char **argv;
 		0);
 
 	    if ( dbopen ( output_database, "r+", &dbout ) )
-		die ( 0, "Can't open database %s\n", output_database ) ;
+		elog_die( 0, "Can't open database %s\n", output_database ) ;
 
 	    dbout = dblookup ( dbout, 0, "wfdisc", 0, 0 ) ;
 	    /* trwfname(tr, 0, &newpath); DOES NOTHING */
 	    /* if ( trsave_wf ( tr, dbout, 0, "rfstack" ) ) */
 	    if ( trsave_wf ( tr, dbout, "t4", outpath, 0 ) )
-		die ( 0, "Couldn't save waveforms\n" ) ;
+		elog_die( 0, "Couldn't save waveforms\n" ) ;
 
 
 	if (imode != 1) killbutton(itran);  

@@ -6,7 +6,7 @@ sysinfo_PHP \- Antelope sysinfo interface for PHP
 
 <?php
 if( ! extension_loaded( "sysinfo" ) ) {
-	die( "Module 'sysinfo' is not loaded, unable to continue" );
+	elog_die( "Module 'sysinfo' is not loaded, unable to continue" );
 }
 ?>
 
@@ -287,21 +287,10 @@ $stats  = statvfs( '/' );
 .fi
 .in
 .ft R
-.SH EXAMPLE
-.ft CW
-.in 2c
-.nf
-
-.fi
-.in
-.ft R
-.SH LIBRARY
 .SH "SEE ALSO"
 .nf
 perlsysinfo(3P), datascope_php(3H), orb_php(3H)
 .fi
-.SH "BUGS AND CAVEATS"
-
 .SH AUTHOR
 .nf
 Kent Lindquist

@@ -1,0 +1,23 @@
+
+# horn@zagsun9  Nikolaus Horn  Thursday May 18, 2006 11:19:16.270 GMT(11:19:16.270 UTC)
+# Interreg AT/IT
+time  5/18/2006  11:19:16.308
+
+net OE Austrian Seismic Network
+sta SOKA     46.67796     15.03269 1.00853 Soboth, Kärnten, Austria
+
+#datalogger q330_linear_below_100 1032 SOKA # Quanterra 330 Linear Phase Below 100 Composite
+datalogger q330_linear_below_100 0100000A27AFFA40 SOKA # Quanterra 330 Linear Phase Below 100 Composite
+
+sensor sts2_g3 0.0 80451  # Streckeisen STS-2
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   
+
+sensor episensor_20vpg 0.0 1558  # Episensor 200 Hz 20 Volt per g
+   samplerate 100sps
+   samplerate 20sps
+   samplerate 1sps
+   
+add

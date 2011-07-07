@@ -118,7 +118,7 @@ char *argv[];
        initpf( pffile );
 
        if (pfread (pffile, &pf) != 0)
-        die (0, "Can't read parameter file\n");
+        elog_die(0, "Can't read parameter file\n");
       
        if((tmpname = pfget_string(pf, "Network_Name")) != 0)
 	  Network_Name = strdup(tmpname);
@@ -136,7 +136,7 @@ char *argv[];
        
        if( hdrtype != 0 )
          if( (htype = ( int ) decode( hdrtype )) < 0 ) 
-	    die( 0, "Can't recognize hdrtype - %s\n", hdrtype );
+	    elog_die( 0, "Can't recognize hdrtype - %s\n", hdrtype );
 
        strcpy( Ports.ip_name, iport );
        Ports.ip_name[strlen(iport)] = '\0';

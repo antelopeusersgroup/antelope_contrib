@@ -232,7 +232,7 @@ read_descriptrace( FILE *fp, Suds_tag header, Suds_descriptrace *d, int swap, lo
 
 	if( d->datatype != '2' ) {
 
-		complain( 1, "Datatype %s not understood--skipping\n", d->datatype );
+		elog_complain( 1, "Datatype %s not understood--skipping\n", d->datatype );
 		fseek( fp, header.data_length_bytes, SEEK_CUR );
 
 	} else {
@@ -325,7 +325,7 @@ send_to_orb( Suds_tag header,
 
 	sprintf( channel, "channels{%d}", s.channel );
 	if( pfresolve( pf, channel, 0, &chanpf ) < 0 ) {
-		complain( 1, "Didn't find channel %d in parameter file\n",
+		elog_complain( 1, "Didn't find channel %d in parameter file\n",
 				s.channel );
 		return;
 	}
@@ -371,11 +371,11 @@ send_to_orb( Suds_tag header,
 		pktchan->datasz = segment_nsamps;
 
 		if( stuffPkt( pkt, srcname, &pkt->time, &packet, &nbytes, &packetsz ) < 0 ) {
-			complain( 1, "Failed to stuff %s packet starting %s\n",
+			elog_complain( 1, "Failed to stuff %s packet starting %s\n",
 			     srcname, t = strtime( d.begintime ) );
 			free( t );
 		} else if( orbput( orbfd, srcname, pkt->time, packet, nbytes ) < 0 ) {
-			complain( 1, "Failed to put %s packet starting %s on orb\n",
+			elog_complain( 1, "Failed to put %s packet starting %s on orb\n",
 			     srcname, t = strtime( d.begintime ) );
 			free( t );
 		}
@@ -410,7 +410,7 @@ main( int argc, char **argv ) {
 	int	bufsiz = 0;
 
 	if( argc != 3 ) {
-		die( 1, "Usage: %s filename orbname\n", argv[0] );
+		elog_die( 1, "Usage: %s filename orbname\n", argv[0] );
 	} else {
 		filename = argv[1];
 		orbname = argv[2];
@@ -419,7 +419,7 @@ main( int argc, char **argv ) {
 	pfread( "dmx2orb", &pf );
 
 	if( ( orbfd = orbopen( orbname, "r&" ) ) < 0 ) {
-		die( 1, "Failed to connect to orb %s\n", orbname );
+		elog_die( 1, "Failed to connect to orb %s\n", orbname );
 	}
 
 	fp = fopen( filename, "r" );
@@ -444,7 +444,7 @@ main( int argc, char **argv ) {
 		default:
 			fseek( fp, header.struct_length_bytes, SEEK_CUR );
 			fseek( fp, header.data_length_bytes, SEEK_CUR );
-			complain( 1, "Unknown Suds-structure type %d, skipping\n",
+			elog_complain( 1, "Unknown Suds-structure type %d, skipping\n",
 				header.struct_type );
 			break;
 		}

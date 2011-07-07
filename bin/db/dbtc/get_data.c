@@ -24,7 +24,7 @@ int get_data( Dset *set, Param *par )
           "samprate", &(set->srate),
           "nsamp", &nsamp,
           "sta", sta, 0 )) == dbINVALID )
-           die( 0, "dbgetv faild for record #%d\n", db.record );
+           elog_die( 0, "dbgetv faild for record #%d\n", db.record );
  
 /*
 fprintf( stderr, "%s: %lf %lf %d %lf \n", sta, stime, endtime, nsamp,set->stime );
@@ -36,7 +36,7 @@ fprintf( stderr, "%s: %lf %lf %d %lf \n", sta, stime, endtime, nsamp,set->stime 
        }
  
        if( stime > set->etime )   {
-           complain( 0, 
+           elog_complain( 0, 
 	      "can't get data for %s %lf - %lf; first sample is at %lf.\n", 
                set->key, set->stime, set->etime, stime );
            return 0;
@@ -46,7 +46,7 @@ fprintf( stderr, "%s: %lf %lf %d %lf \n", sta, stime, endtime, nsamp,set->stime 
        if( buf != 0 && *buf != 0 ) free( buf );
        buf = trgetwf( db, 0, 0, 0, set->stime, set->etime, &ts, &te, &npts, 0, 0) ; 
        if( buf == 0 || npts <= 0 )  {
-           complain( 0, "can't get data for %s from %lf to %lf\n", 
+           elog_complain( 0, "can't get data for %s from %lf to %lf\n", 
                         set->key, set->stime, set->etime ); 
            buf = 0;
            continue;
@@ -58,7 +58,7 @@ fprintf( stderr, "%lf %lf - %lf %lf %d \n",
 
        if( te <= set->stime ) continue;
        if( ts > set->etime ) {
-           complain( 0, "returned time is more than requested etime. %lf > %lf\n",
+           elog_complain( 0, "returned time is more than requested etime. %lf > %lf\n",
                      ts, set->etime );
            return 0;
        }  else {

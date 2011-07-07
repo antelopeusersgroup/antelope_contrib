@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <unistd.h>
 
-#include "stock.h"
-#include "orb.h"
-#include "coords.h"
 #include "liss2orb.h"
 
 Arr *NewCh;
@@ -69,13 +64,13 @@ getpkt (Bns *bns, char **seedp, int fixedsize, int *pktsize, int *seedsize)
 	    if ( *pktsize > 0 && *pktsize < 1<<14 ) {
 		retcode = bnsget(bns, *seedp+64, BYTES, size-64 ) ;
 	    } else { 
-		complain ( 0, "read record length=%d => packet size=%d", 
+		elog_complain( 0, "read record length=%d => packet size=%d", 
 			log2_record_length, *pktsize ) ; 
 		hexdump ( stderr, *seedp, 64 ) ; 
 		retcode = -1; 
 	    }
 	} else { 
-	    complain ( 0, "no blockette 1000!" ) ; 
+	    elog_complain( 0, "no blockette 1000!" ) ; 
 	    hexdump ( stderr, *seedp, 64 ) ; 
 	    retcode = -1 ; 
 	}
@@ -165,14 +160,14 @@ main (int argc, char **argv)
 
     orb = orbopen(orbname, "w&" ) ; 
     if ( orb < 0 ) { 
-	die (0, "Can't open output orb %s", orbname ) ; 
+	elog_die(0, "Can't open output orb %s", orbname ) ; 
     }
 
     if (database) {
 	Dbptr db;
 
 	if (dbopen(database, "r+", &db) == dbINVALID) {
-		die (0, "dbopen(%s) error.\n", database);
+		elog_die(0, "dbopen(%s) error.\n", database);
 	}
 	finit_db (db);
     }
@@ -183,7 +178,7 @@ main (int argc, char **argv)
 	    fd = open_socket ( liss_server, defaultport ) ; 
 	    if ( fd < 0 ) { 
 		if ( failures==0) {
-		    complain ( 1, "Can't open liss server %s", liss_server ) ;
+		    elog_complain( 1, "Can't open liss server %s", liss_server ) ;
 		}
 		snooze ( 60. ) ;
 		failures++ ;
@@ -208,13 +203,13 @@ main (int argc, char **argv)
 		if ( debug < 0 ) { 
 		    debug = reopen (Debug, O_RDWR | O_CREAT, 0664);
 		    if ( debug < 0 ) { 
-			die ( 1, "Can't open %s to write out packets!", Debug ) ; 
+			elog_die( 1, "Can't open %s to write out packets!", Debug ) ; 
 		    }
 		    printf ( "\n" ) ;
 		}
 		fprintf ( stderr, "\rPacket #%ld", cnt++ ) ; 
 		if ( write ( debug, seed, pktsize ) != pktsize ) { 
-		    die ( 1, "Failed to write %d bytes to %s", pktsize, Debug ) ; 
+		    elog_die( 1, "Failed to write %d bytes to %s", pktsize, Debug ) ; 
 		}
 	    }
 	    if ( liss2orbpkt ( seed, pktsize, database, remap,
@@ -233,7 +228,7 @@ main (int argc, char **argv)
 		}
 	    }
 	} else { 
-	    complain ( 1, "Closing connection to liss server %s", liss_server ) ;
+	    elog_complain( 1, "Closing connection to liss server %s", liss_server ) ;
 	    bnsclose ( bns ) ;
 	    fd = -1 ; 
 	}

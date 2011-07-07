@@ -127,7 +127,7 @@ Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 			"elev",&elev,
 			"dnorth",&dnorth,
 			"deast",&deast,0) == dbINVALID)
-			die(0,"pmel_dbload_stations:  dbgetv error scaning site table at row %d of working view\n",dbs.record);
+			elog_die(0,"pmel_dbload_stations:  dbgetv error scaning site table at row %d of working view\n",dbs.record);
 
 		if(usednde) apply_dnde(dnorth,deast,&lat,&lon);
 		if(strcmp(staname,laststa) )
@@ -149,7 +149,7 @@ Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 		else
 		{
 			if( (lastlat != lat) || (lastlon != lon) )
-			  die(0,"Fatal(pmel_dbload_stations):  station location for %s is not constant in site table\nFound lat,lon pairs of (%lf,%lf) and (%lf,%lf)\n",
+			  elog_die(0,"Fatal(pmel_dbload_stations):  station location for %s is not constant in site table\nFound lat,lon pairs of (%lf,%lf) and (%lf,%lf)\n",
 				staname,lat,lon,lastlat,lastlon);
 		}
 	}

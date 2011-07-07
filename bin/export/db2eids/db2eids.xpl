@@ -42,7 +42,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
 #Fake the trwfname call since it's not in the perldb interface
 sub trwfname {
@@ -150,7 +150,7 @@ $Program =~ s".*/"" ;
 
 elog_init( $Program, @ARGV );
 
-if ( ! &Getopts('1p:vV') || @ARGV != 1 ) { 
+if ( ! getopts('1p:vV') || @ARGV != 1 ) { 
 
 	die ( "Usage: $pgm [-1] [-p pfname] [-vV] database\n" ) ; 
 

@@ -1,7 +1,7 @@
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
-if ( ! &Getopts('coSs:') || @ARGV < 1 ) { 
+if ( ! getopts('coSs:') || @ARGV < 1 ) { 
     die ( "Usage: $0 [-o] [-c] [-S] [-s subset] db [startdate] [enddate]\n" ) ; 
 }
 

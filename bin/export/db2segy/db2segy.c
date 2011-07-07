@@ -180,7 +180,7 @@ Arr *build_stachan_list(Pf *pf, int *nchan,int verbose)
 		fprintf(stdout,"Station   Channel_code    Channel_number\n");
 	a = newarr(0);
 	t = pfget_tbl(pf,"channels");
-	if(t==NULL) die(0,"Parameter file error:  no channels table\n");
+	if(t==NULL) elog_die(0,"Parameter file error:  no channels table\n");
 	for(i=0;i<maxtbl(t);++i)
 	{
 		line = gettbl(t,i);
@@ -188,7 +188,7 @@ Arr *build_stachan_list(Pf *pf, int *nchan,int verbose)
 		key = make_key(sta,chan);
 		channel_number = (int *) malloc(sizeof(int));
 		if(channel_number == NULL) 
-			die(0,"malloc error for channel_number\n");
+			elog_die(0,"malloc error for channel_number\n");
 		*channel_number = i;
 		setarr(a,key,(void *)channel_number);
 		if(verbose)
@@ -245,7 +245,7 @@ Arr *check_tables(Dbptr db, Pf *pf)
 	t = pfget_tbl(pf,"join_tables");
 	if(t == NULL)
 	{
-		die(0,"No list of tables to be joined\n");
+		elog_die(0,"No list of tables to be joined\n");
 	}
 	for(i=0;i<maxtbl(t);++i)
 	{
@@ -267,7 +267,7 @@ Arr *check_tables(Dbptr db, Pf *pf)
 				table_ok = 0;
 		}
 		ilogic = (int *) malloc(sizeof(int));
-		if(ilogic == NULL) die(0,"malloc error\n");
+		if(ilogic == NULL) elog_die(0,"malloc error\n");
 		*ilogic = table_ok;
 		setarr(a,table,ilogic);
 	}
@@ -290,7 +290,7 @@ void check_for_required_tables(Arr *tabarray)
 		elog_complain(0,"Cannot find required table wfdisc in db\n");
 		++need_to_die;
 	}
-	if(need_to_die) die(0,"Cannot proceed without required tables\n");
+	if(need_to_die) elog_die(0,"Cannot proceed without required tables\n");
 }
 
 /* This routine cautiously joins tables defined by "join_tables"
@@ -326,7 +326,7 @@ Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables)
 	t = pfget_tbl(pf,"join_tables");
 	if(t == NULL)
 	{
-		die(0,"No list of tables to be joined\n");
+		elog_die(0,"No list of tables to be joined\n");
 	}
 	for(i=0;i<maxtbl(t);++i)
 	{
@@ -334,7 +334,7 @@ Dbptr join_tables(Dbptr db, Pf *pf, Arr *tables)
 		ilogic = (int *)getarr(tables,table_name);
 		if(ilogic == NULL) 
 		{
-			die(0,"Table %s was not handled previously by check_tables.\nProgramming logic error\n",
+			elog_die(0,"Table %s was not handled previously by check_tables.\nProgramming logic error\n",
 				table_name);
 		}
 		else if(*ilogic)
@@ -442,7 +442,7 @@ void repair_gaps(Dbptr trdb)
 			"nsamp",&nsamp,
 		NULL) == dbINVALID)
 		{
-			die(0,"dbgetv error during gap processing\n");
+			elog_die(0,"dbgetv error during gap processing\n");
 		}
 		g = trwftype(datatype);
 		/* this function is supposed to set values to g->fill*/
@@ -604,7 +604,7 @@ r
 	elog_init(argc, argv);
 
 	if(pfread(pfname,&pf)) 
-		die(0,"pfread error for pf file %s.pf\n",argv[0]);
+		elog_die(0,"pfread error for pf file %s.pf\n",argv[0]);
 	/* rotation parameters */
 	rotate=pfget_boolean(pf,"rotate");
 	if(rotate)
@@ -667,7 +667,7 @@ r
 	table_list = check_tables(db,pf);
 	check_for_required_tables(table_list);
 	dbj = join_tables(db,pf,table_list);
-	if(dbj.record == dbINVALID) die(0,"dbjoin error\n");
+	if(dbj.record == dbINVALID) elog_die(0,"dbjoin error\n");
 	if(substr!=NULL) dbj=dbsubset(dbj,substr,0);
 	long int ndbrows;
 	dbquery(dbj,dbRECORD_COUNT,&ndbrows);
@@ -705,11 +705,11 @@ r
 	algorithm a lot. */
 	traces = matrix(0,nchan,0,nsamp0);
 	if(traces == NULL) 
-		die(0,"Cannot alloc trace data matrix work space of size %d by %d\n",
+		elog_die(0,"Cannot alloc trace data matrix work space of size %d by %d\n",
 			nchan, nsamp0);
 	header = (SegyHead *)calloc((size_t)nchan,sizeof(SegyHead));
 	if(header == NULL)
-			die(0,"Cannot alloc memory for %d segy header workspace\n",nchan);
+			elog_die(0,"Cannot alloc memory for %d segy header workspace\n",nchan);
 	if(write_reel_headers)
 	{
 
@@ -863,7 +863,7 @@ r
 			}
 
 			ichan = get_channel_index(channels,sta,chan);
-			if(ichan > nchan) die(0,"Channel index %d outside limit of %d\nCannot continue\n",
+			if(ichan > nchan) elog_die(0,"Channel index %d outside limit of %d\nCannot continue\n",
 					ichan, nchan);
 			if(ichan >= 0)
 			{
@@ -982,10 +982,10 @@ r
 		for(i=0;i<nchan;++i)
 		{
 			if(fwrite((void *)(&(header[i])),sizeof(SegyHead),1,fp) != 1)
-				die(0,"Write error on header for trace %d\n",total_traces+i);		
+				elog_die(0,"Write error on header for trace %d\n",total_traces+i);		
 			if(fwrite((void *)traces[i],sizeof(float),
 					(size_t)nsamp0,fp) != nsamp0)
-				die(0,"Write error while writing data for trace %d\n",
+				elog_die(0,"Write error while writing data for trace %d\n",
 					total_traces+i);
 		}
 		total_traces += nchan;

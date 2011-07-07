@@ -60,7 +60,7 @@ fflush(stdout);
         buf->path = 0 ;
     }
     if ((buf->db.record = dbaddnull (buf->db)) < 0) {
-	register_error (0, "Couldn't add new record.\n");
+	elog_log(0, "Couldn't add new record.\n");
 	return 0; 
     } else {
 	if (dbputv (buf->db, 0,
@@ -72,12 +72,12 @@ fflush(stdout);
 	    "samprate", new->samprate,        
 	    "datatype", buf->params->datatype,
 	    0) < 0) {
-	    register_error (0, "Couldn't write to table\n");
+	    elog_log(0, "Couldn't write to table\n");
 	    return 0; 
 	} else if (trwfname (buf->db, buf->params->wfname, &(buf->path)) < 0) {
 	    return 0; 
 	} else if ( (buf->file = fopen (buf->path, "w+")) == 0) {
-	    register_error (1, "Can't open %s data file.\n", 
+	    elog_log(1, "Can't open %s data file.\n", 
 		buf->path);
 	    return 0; 
 	}
@@ -116,12 +116,12 @@ fflush(stdout);
     if(stat(buf->path, &sbuf) == 0)  
        foff = sbuf.st_size;                 
     else  {
-        complain(1,"Can't stat %s\n",buf->path);
+        elog_complain(1,"Can't stat %s\n",buf->path);
       return 0;
     }
 
     if ((buf->db.record = dbaddnull (buf->db)) < 0) {
-	register_error (0, "Couldn't add new record.\n");
+	elog_log(0, "Couldn't add new record.\n");
 	return 0; 
     } else {
 	if (dbputv (buf->db, 0,
@@ -136,7 +136,7 @@ fflush(stdout);
 	    "samprate", new->samprate,        
 	    "datatype", buf->params->datatype,
 	    0) < 0) {
-	    register_error (0, "Couldn't write to table\n");
+	    elog_log(0, "Couldn't write to table\n");
 	    return 0; 
 	} 
 	buf->nsamp = 0 ; 
@@ -161,12 +161,12 @@ int rec_end_of_event( )
   if( wantcmp == 0 ) return 1;
 
   if( Par.staid < 0  )  {
-      complain( 0, "Wrong STAID - %d\n", Par.staid);
+      elog_complain( 0, "Wrong STAID - %d\n", Par.staid);
       return 0;   
   }
  
   if( !get_site( Par.packet.pkttype, Par.staid, Par.chan, &site))  {
-       complain( 0, "can't get site info for STAID:%d CHID:%d PKTTYPE:%s\n",
+       elog_complain( 0, "can't get site info for STAID:%d CHID:%d PKTTYPE:%s\n",
                  Par.staid, Par.chan, Par.packet.pkttype);
        return 0;
   }

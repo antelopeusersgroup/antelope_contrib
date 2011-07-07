@@ -6,7 +6,7 @@
 #      fill gaps on day files, mark in gap table, "y|n|p"
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use POSIX;    
     use strict ;
     use Datascope ;
@@ -33,7 +33,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 9 && @ARGV != 10 ) ) { 
+    if (  ! getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 9 && @ARGV != 10 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf] [-m mail_to] [-f nforks] [-s sta_regex] db  \n\n" ;
         $usage .=  "Usage: $0  [-v] [-V] [-n] " ;
