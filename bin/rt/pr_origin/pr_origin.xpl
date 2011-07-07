@@ -4,7 +4,7 @@
 # TO DO:
 # Put /pf packet into orb, this program only puts /db/origin packets into orb.
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use strict ; 
 use Datascope ;
 use orb ;
@@ -26,7 +26,7 @@ our ( $opt_pf, $opt_v, $opt_V ) ;
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if ( ! &Getopts('vVp:') || @ARGV != 2 ) { 
+    if ( ! getopts('vVp:') || @ARGV != 2 ) { 
         $usage  =  "\n\n\nUsage: $0 [-v] [-pf pf] orb idserver"  ;         
         elog_notify( $cmd ) ; 
         elog_die   ( $usage ) ; 

@@ -1,4 +1,4 @@
-require "getopts.pl";
+use Getopt::Std;
 
 use Datascope;
 use atws_mwp ':all';

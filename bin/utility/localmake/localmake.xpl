@@ -5,7 +5,7 @@ use Term::ANSIColor qw/uncolor/;
 use POSIX;
 use FileHandle;
 
-require "getopts.pl";
+use Getopt::Std;
 
 sub show_available {
 
@@ -569,7 +569,7 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
+if( !getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
 
 	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [-s src_subdir] [module]\n" );
 }

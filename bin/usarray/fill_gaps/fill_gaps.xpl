@@ -8,7 +8,7 @@
 #   program needs:
 #   
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use orb ;
@@ -38,7 +38,7 @@
 #  program initialization
 #
 
-    if (  ! &Getopts('vVb:n:o:r:s:t:e:T') || ( @ARGV < 3 || @ARGV > 4 )) { 
+    if (  ! getopts('vVb:n:o:r:s:t:e:T') || ( @ARGV < 3 || @ARGV > 4 )) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V]  [-T] \n" ;
         $usage .=  "	[-n net] [-r reject_stas] [-s sta_match] \n" ;
         $usage .=  "	[-b clean_baler_db] [-o dbout]  \n" ;

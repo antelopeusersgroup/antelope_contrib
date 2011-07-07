@@ -1,7 +1,7 @@
 use Datascope;
 use Tk;
 require Tk::Dialog;
-require "getopts.pl";
+use Getopt::Std;
 
 sub proceed { 
 	
@@ -132,7 +132,7 @@ $Pf = "dbshow_mail";
 
 $Usage = "dbshow_mail [-n] [-a] [-w nmax] {-f from|-m messageid|dbtable}\n";
 
-if( ! &Getopts( 'naf:w:m:' ) || @ARGV > 1 ) {
+if( ! getopts( 'naf:w:m:' ) || @ARGV > 1 ) {
 
 	die( "$Usage" );	
 } 

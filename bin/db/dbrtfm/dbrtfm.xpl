@@ -21,7 +21,7 @@ use Datascope;
 use sysinfo;
 use Tk;
 require Tk::Dialog;
-require "getopts.pl";
+use Getopt::Std;
  
 sub init_database {
 	my( $dbname ) = @_;
@@ -233,7 +233,7 @@ sub record_asread {
 	return;
 }
 
-if ( ! &Getopts('lmqsSt') || @ARGV > 2 ) { 
+if ( ! getopts('lmqsSt') || @ARGV > 2 ) { 
 
 	die( "Usage: dbrtfm [-t] [-s] [-l] [-S] [-m mode] [+n] [-q] [manpage [mansect]]\n" );
 }

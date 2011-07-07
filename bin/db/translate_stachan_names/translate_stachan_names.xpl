@@ -6,9 +6,9 @@
 # January, 1999
 
 use Datascope;
-require "getopts.pl";
+use Getopt::Std;
 
-if( ! Getopts( 'vn' ) || $#ARGV < 1 ) {
+if( ! getopts( 'vn' ) || $#ARGV < 1 ) {
 	$Program = `basename $0`;
 	chop( $Program );
 	die( "Usage: $Program [-v] [-n] translation_db dbname [dbname...]\n" );

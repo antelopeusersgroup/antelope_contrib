@@ -4,7 +4,7 @@
 #
 #  Liberally copied from pktmon
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -27,7 +27,7 @@
     elog_init($Pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vV0dn:p:') || @ARGV != 1 ) { 
+    if (  ! getopts('vV0dn:p:') || @ARGV != 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-d] [-0] \n" ;
         $usage .=  "	[-p pf] [-n npkts]   \n" ;
         $usage .=  "	status_orb \n\n"  ; 

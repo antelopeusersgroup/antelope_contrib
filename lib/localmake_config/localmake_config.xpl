@@ -2,7 +2,7 @@ use Datascope;
 use sysinfo;
 use Cwd;
 
-require "getopts.pl";
+use Getopt::Std;
 
 sub inform {
 	my( $msg ) = @_;
@@ -669,7 +669,7 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( ! Getopts( 'ilv' ) ) {
+if( ! getopts( 'ilv' ) ) {
 
 	elog_die( "Usage: localmake_config [-ilv] [capability [, capability...]]\n" );
 }

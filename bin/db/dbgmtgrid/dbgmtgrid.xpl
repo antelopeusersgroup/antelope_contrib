@@ -7,11 +7,11 @@
 #   the copyright statement above is not removed. 
 
 require "dbgmtgrid.pl";
-require "getopts.pl";
+use Getopt::Std;
 
 $Usage = "Usage: dbgmtgrid [-V] [-Idx[m|c][/dy[m|c]]] -Rwest/east/south/north griddb outfile\n";
 
-if ( ! &Getopts( "VR:I:" ) || @ARGV != 2 ) { 
+if ( ! getopts( "VR:I:" ) || @ARGV != 2 ) { 
 
     die ( $Usage );
 

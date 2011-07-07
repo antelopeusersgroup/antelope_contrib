@@ -3,7 +3,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 use Datascope ;
 
-require "getopts.pl";
+use Getopt::Std;
 
 
 #
@@ -16,7 +16,7 @@ require "getopts.pl";
 #
 
 
-    if (! &Getopts('s:e:S:p:dhovwal')  || @ARGV != 2 ) {
+    if (! getopts('s:e:S:p:dhovwal')  || @ARGV != 2 ) {
 	    &usage;
     }
 

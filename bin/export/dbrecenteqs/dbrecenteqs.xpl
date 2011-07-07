@@ -6,7 +6,7 @@
 # Lindquist Consulting
 # 2003
 
-require "getopts.pl" ;
+use Getopt::Std ;
 require "dbrecenteqs.pl";
 require "dbgmtgrid.pl";
 require "winding.pl";
@@ -2063,7 +2063,7 @@ elog_init( $Program, @ARGV );
 elog_notify( "$Program started at " . 
 	     epoch2str( str2epoch( "now" ),  "%D %T %Z", "" ) . "\n" );
 
-if ( ! &Getopts('ve:p:huc:') || @ARGV != 1 ) {
+if ( ! getopts('ve:p:huc:') || @ARGV != 1 ) {
 
 	die ( "Usage: $Program [-v] [-h] [-u] [-p pffile] " .
 	      "[-e evid] [-c sourcedb] database\n" ); 

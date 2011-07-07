@@ -28,10 +28,10 @@ use Cwd;
 
 require "flush.pl";
 require "css30.pl";
-require "getopts.pl";
+use Getopt::Std;
 require "pf2.pl";
 
-    if (! &Getopts('v') || @ARGV != 1 ) {
+    if (! getopts('v') || @ARGV != 1 ) {
         &usage;
     }
 

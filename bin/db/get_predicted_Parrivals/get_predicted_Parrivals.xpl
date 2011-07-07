@@ -2,14 +2,14 @@
 use Datascope ;
 use strict;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 our ($opt_a, $opt_c, $opt_d, $opt_n, $opt_p, $opt_s, $opt_v, $opt_V) ;
 our ($starecs, $nrecs, $chan, $subset) ;
 our ($orid, $lat, $lon, $depth, $predP, $time) ;
 our ($dbcat, $dbsta, $dbout, @dbo, @dbs, @dbc, @dbsite, @dbdeployment, @sta_dbs, @arrival_record) ;
 
-if ( ! &Getopts('a:s:t:dnvV') || @ARGV < 3 || @ARGV > 3) {
+if ( ! getopts('a:s:t:dnvV') || @ARGV < 3 || @ARGV > 3) {
    die ("Usage: $0  [ -s orid_subset|evid_subset|time_subset|auth_subset ] [-c chan] [-a site_subset] [-d] [-n] dbcat  dbsite dbout \n" ) ;
 }
 

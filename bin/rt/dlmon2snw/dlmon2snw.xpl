@@ -5,7 +5,7 @@
     use strict ;
     use Datascope ;
     use orb;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     our ( $opt_v, $opt_p, $opt_i );
     my ($pfsource,$orbname,$orb,$pktid,$srcname,$pkttime,$net,$sta,$chan,$loc);
@@ -14,7 +14,7 @@
     my (@sources);
     my (%pf,%dls,%par);
 
-    if ( !  &Getopts('vip:') || @ARGV != 1 )
+    if ( !  getopts('vip:') || @ARGV != 1 )
         { die ( "Usage: $0 [-v] [-i] [-p pf_sourcename] orb \n" ) ; }
 
     $orbname   = $ARGV[0];

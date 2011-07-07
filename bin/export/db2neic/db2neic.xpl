@@ -7,7 +7,7 @@
 # University of Alaska, Fairbanks
 # February, 2000
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope ;
  
 sub day_start {
@@ -19,7 +19,7 @@ sub day_start {
 $program = `basename $0`;
 chomp( $program );
 
-if ( ! &Getopts('sc:a:') || @ARGV != 1 ) {
+if ( ! getopts('sc:a:') || @ARGV != 1 ) {
 	die ( "Usage: $program [-s] [-c mail_address] [-a mail_address] database\n" );
 } else {
 	$dbname = pop( @ARGV );

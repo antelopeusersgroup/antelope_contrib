@@ -10,7 +10,7 @@
     use sysinfo;
     use orb ;
     use archive ;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     our($pgm,$host,$Problems,$opt_v,$opt_d,$opt_c,$opt_m,$opt_n,$opt_f,$opt_p,$opt_s,$opt_t);
     my (@dbcomm,@dbcommscr,@dbcommnull,@dbsitesub,@dbsnet,@dbstage,@dbstagescr,@dbdls);
@@ -32,7 +32,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
 
-    if ( !  &Getopts('ndvfc:m:p:s:t:') || @ARGV < 2 || @ARGV > 3) { 
+    if ( !  getopts('ndvfc:m:p:s:t:') || @ARGV < 2 || @ARGV > 3) { 
         $usage  =  "\n\n\nUsage: $0 [-d] [-v] [-n] [-f] [-m mail_to] [-c chan_code] " ;
         $usage .=  "[-p pf_sourcename] [-s sta_regex] [-t max_offset_meters] status_orb [cmd_orb] db\n"  ;
         

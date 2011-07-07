@@ -9,7 +9,7 @@
 
 use Datascope ;
 use Expect;
-require "getopts.pl" ;
+use Getopt::Std ;
  
 sub extract_data {
 
@@ -467,7 +467,7 @@ sub cat_results {
 
 $pfname = "dbrmt";
 
-if ( ! &Getopts('pv') || @ARGV != 2 ) { 
+if ( ! getopts('pv') || @ARGV != 2 ) { 
 
 	my $pgm = $0 ; 
 	$pgm =~ s".*/"" ;

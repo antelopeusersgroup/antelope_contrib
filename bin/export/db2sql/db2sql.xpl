@@ -42,7 +42,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "getopts.pl";
+use Getopt::Std;
 
 use strict;
 
@@ -401,7 +401,7 @@ our( $Rebuild ) = 0;
 
 our( $Usage ) = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
 
-if( ! Getopts( '1lp:rvV' ) ) { 
+if( ! getopts( '1lp:rvV' ) ) { 
 
 	elog_die( $Usage );
 } 

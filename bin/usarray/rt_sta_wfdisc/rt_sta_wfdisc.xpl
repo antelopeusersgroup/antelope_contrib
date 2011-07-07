@@ -2,7 +2,7 @@
 #   program needs:
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use POSIX;    
     use strict ;
     use Datascope ;
@@ -29,7 +29,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 3 && @ARGV != 4 ) ) { 
+    if (  ! getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 3 && @ARGV != 4 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf] [-m mail_to] [-f nforks] [-s sta_regex] db  \n\n" ;
         $usage .=  "Usage: $0  [-v] [-V] [-n] " ;

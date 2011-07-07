@@ -1,4 +1,4 @@
-require "getopts.pl" ;
+use Getopt::Std ;
 
 use Datascope ;
 
@@ -7,7 +7,7 @@ sub die_n_weep {
 } #die
 
  
-if ( ! &Getopts('nvp:') || @ARGV != 1 ) { 
+if ( ! getopts('nvp:') || @ARGV != 1 ) { 
     &die_n_weep(); 
 }
 

@@ -13,7 +13,7 @@
     use Datascope ;
     use orb ;
     use archive ;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     our ( $opt_a, $opt_d, $opt_D, $opt_f, $opt_m, $opt_n, $opt_N, $opt_p, $opt_s, $opt_S, $opt_t, $opt_V, $opt_v, $opt_x );
     our (%recenter);
@@ -38,8 +38,8 @@
     my ($now, $t) ;
 
  
-    if (! &Getopts('a:d:D:m:N:p:S:s:t:x:fnvV')  || (@ARGV < 2 || @ARGV > 3 )) {
-        print STDERR "Getopts or number of arguments failure.\n";
+    if (! getopts('a:d:D:m:N:p:S:s:t:x:fnvV')  || (@ARGV < 2 || @ARGV > 3 )) {
+        print STDERR "getopts or number of arguments failure.\n";
         &usage;
     }
     

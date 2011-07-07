@@ -6,7 +6,7 @@ use Datascope ;
 use orb ;
 use archive;
 use utilfunct ;
-require "getopts.pl" ;
+use Getopt::Std ;
 
 our ( $opt_c, $opt_n, $opt_X, $opt_v) ; 
 
@@ -24,7 +24,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
 #
 #  get arguments
 #
-    if ( ! &Getopts('Xc:nv') || @ARGV < 2 ) { 
+    if ( ! getopts('Xc:nv') || @ARGV < 2 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-X] [-n] \n" ;
         $usage .=  "	[-c orbclient]  \n" ;
         $usage .=  "	orb dbin [dbin2 [dbin3 ...]]\n\n"  ; 

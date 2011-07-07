@@ -2,7 +2,7 @@
 #
 #
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use strict ;
 use Datascope ;
 use archive ;
@@ -22,7 +22,7 @@ our ( $dbpath, $dblocks, $dbidserver) ;
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
    
-    if (  ! &Getopts('Dd:e:I:pP:t:vVY') || @ARGV != 1) { 
+    if (  ! getopts('Dd:e:I:pP:t:vVY') || @ARGV != 1) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-p [-D | -Y]] \n" ;
         $usage .=  "	[-I idserver] [-P dbpath] [-d directory_base] \n" ;
         $usage .=  "	[-t start_time ] [-e end_time]  \n" ;

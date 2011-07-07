@@ -12,7 +12,7 @@
 #   make anfarchive.pf for making descriptor file - idservers dbpath locking 
 #   modify appropriate programs to accept this anfarchive.pf
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -37,7 +37,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnm:p:r') || ( @ARGV < 1 || @ARGV > 2 ) { 
+    if (  ! getopts('vVnm:p:r') || ( @ARGV < 1 || @ARGV > 2 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-p pf] [-m mail_to]  \n" ;
         $usage .=  "	YYYY MM \n                            #_months\n\n"  ;         

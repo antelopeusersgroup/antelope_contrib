@@ -27,10 +27,10 @@ use Cwd;
 
 require "flush.pl";
 require "css30.pl";
-require "getopts.pl";
+use Getopt::Std;
 require "pf2.pl";
 
-    if (! &Getopts('Vvy:p:') || @ARGV != 0 ) {
+    if (! getopts('Vvy:p:') || @ARGV != 0 ) {
         &usage;
     }
 

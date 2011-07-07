@@ -1,7 +1,7 @@
 use Datascope;
 use Tk;
 require Tk::Dialog;
-require "getopts.pl";
+use Getopt::Std;
 
 sub max_specific_filenum {
 	my( @commands ) = @_;
@@ -116,7 +116,7 @@ sub proceed {
 
 $Usage = "db_extfile_proc -m mode [-u] [-w nmax] dbtable\n";
 
-if( ! &Getopts( 'uw:m:t:' ) || @ARGV != 1 ) {
+if( ! getopts( 'uw:m:t:' ) || @ARGV != 1 ) {
 
 	die( "$Usage" );	
 
