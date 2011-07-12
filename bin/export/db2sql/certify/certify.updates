@@ -2,3 +2,4 @@ db2sql      1270708988.00000 raptor     kent       Darwin/4.1 initial test setup
 db2sql      1270709081.00000 raptor     kent       Darwin/4.1 fix blunder                                                    1270709081
 db2sql      1274591126.00000 raptor     kent       Darwin/5.0 Update for added schema tables                                 1274591127
 db2sql      1294429839.00000 raptor     kent       Darwin/5.0 Reflect change to default behaviour for NULL fields in certi   1294429840
+db2sql      1310486156.00000 raptor     kent       Darwin/5.1 Reflect new schemata                                           1310486156
