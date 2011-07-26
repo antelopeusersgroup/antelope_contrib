@@ -1,0 +1,2 @@
+set_deltim_in_arrival true
+arrival_deltim 0.01
