@@ -21,7 +21,7 @@ all the things we need here.
 */
 typedef struct evloc {
 	double lat, lon, z;
-	int evid;
+	long evid;
 } EVENTlocation;
 /* This function loads up the full event catalog of EVENTlocation structures
 for the database view pointed to by db.  Note this should be a database
@@ -31,7 +31,7 @@ It returns a Tbl loaded with these pointers.
 Tbl *load_full_catalog(Dbptr db)
 {
 	Tbl *t;
-	int nrecords;
+	long nrecords;
 	int i;
 	EVENTlocation *e;
 
@@ -43,7 +43,7 @@ Tbl *load_full_catalog(Dbptr db)
 		dbgetv(db,0,"origin.lat",&(e->lat),
 			"origin.lon",&(e->lon),
 			"origin.depth",&(e->z),
-			"evid",&(e->evid),0);
+			"evid",&(e->evid),NULL);
 		e->lat = rad(e->lat);
 		e->lon = rad(e->lon);
 		pushtbl(t,e);
@@ -126,15 +126,15 @@ main(int argc, char **argv)
 	Pf *pf;
 
 	char *gridname;
-	int gridid;
+	long gridid;
 	/* search control parameters */
 	double rmin, rmax, dr,dz;
 	int minimum_events;
 	double gridlat,gridlon,gridr,gridz;
 	double zmin,zmax;
 	double search_radius,search_radius_km;
-	int nrecs;
-	int evid;
+	long nrecs;
+	long evid;
 	double hypocen_lat,hypocen_lon,hypocen_z;
 	
 	EVENTlocation *e;
@@ -185,13 +185,13 @@ main(int argc, char **argv)
 	GCLgrid3d *grd=new GCLgrid3d(db,gridname);
 
 	if(grd == NULL) elog_die(0,"Problems in GCL3Dgrid_load_db\n");
-	proctbl = strtbl("dbopen event","dbjoin origin","dbsubset orid==prefor",0);
-	dbv = dbprocess(db,proctbl,0);
+	proctbl = strtbl("dbopen event","dbjoin origin","dbsubset orid==prefor",NULL);
+	dbv = dbprocess(db,proctbl,NULL);
 	dbquery(dbv,dbRECORD_COUNT,&nrecs);
 	if(nrecs<=0)
 		elog_die(0,"Working view is empty\nCheck event->origin join\n");
 	else
-		if(Verbose)fprintf(stdout,"Working view has %d events\n",nrecs);
+		if(Verbose)fprintf(stdout,"Working view has %ld events\n",nrecs);
 	dbc = dblookup(db,0,"cluster",0,0);
 	dbh = dblookup(db,0,"hypocentroid",0,0);
 
@@ -199,7 +199,7 @@ main(int argc, char **argv)
 	allevents = load_full_catalog(dbv);
 
 	/*3d looping */
-	if(Verbose)fprintf(stdout,"Grid point hit counts (lat, long, count)\n");
+	if(Verbose)fprintf(stdout,"Grid point hit counts (lat, lon, count)\n");
 	for(i=0,gridid=0;i<(grd->n1);++i)
 	    for(j=0;j<(grd->n2);++j)
 		for(k=0;k<(grd->n3);++k)
@@ -235,7 +235,7 @@ main(int argc, char **argv)
 			hypocen_lon = 0.0;
 			hypocen_z = 0.0;
 			if(Verbose)
-			    fprintf(stdout,"%lf %lf %d\n",deg(grd->lat(i,j,k)),
+			    fprintf(stdout,"%lf %lf %ld\n",deg(grd->lat(i,j,k)),
 			                   deg(grd->lon(i,j,k)),nrecs);
 			for(ie=0;ie<nrecs;++ie)
 			{
@@ -274,7 +274,7 @@ main(int argc, char **argv)
 			if(dbaddv(dbc,0,"gridname",gridname,
 				"gridid",gridid,
 				"evid",e->evid,
-					0)<0) elog_die(0,"Error appending to cluster table for gridid %d and evid %d\n",
+					NULL)<0) elog_die(0,"Error appending to cluster table for gridid %ld and evid %ld\n",
 					gridid,evid);
 			}
 			hypocen_lat /= (double)nrecs;
@@ -301,7 +301,7 @@ main(int argc, char **argv)
 			"nass",nrecs,
 			"delta",search_radius,
 			"ztop",zmin,
-			"zbot",zmax,0) < 0) elog_die(0,
+			"zbot",zmax,NULL) < 0) elog_die(0,
 			    "Error updating hypocentroid table for grid point %d,%d,%d\n",
 					i,j,k);
 		    }
