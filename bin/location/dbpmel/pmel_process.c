@@ -33,7 +33,7 @@ int load_hypocentroid(Dbptr dbv,int rec, Hypocenter *h)
 	dbv.record = rec;
 	if(dbgetv(dbv,0,"hypocentroid.dlat",&lat,
 		"hypocentroid.dlon",&lon,
-		"hypocentroid.depth",&depth,0) == dbINVALID)
+		"hypocentroid.depth",&depth,NULL ) == dbINVALID)
 	{
 		elog_complain(0,"dbgetv error reading hypocentroid coordinates from row %d of working view\n",
 			rec);
@@ -249,8 +249,8 @@ option which is know to cause problems\nrecenter set off\n");
 	gridids and the record list from dbmatches is the set
 	of group pointers for the collection of events matching
 	a given gridid.*/
-	grptbl = strtbl("gridid","evid",0);
-	grdidtbl = strtbl("gridid",0);  /* used below */
+	grptbl = strtbl("gridid","evid",NULL );
+	grdidtbl = strtbl("gridid",NULL );  /* used below */
 	dbevid_grp = dbgroup(db,grptbl,EVIDGRP,1);
 	if(dbevid_grp.record == dbINVALID)
 		elog_die(0,"dbgroup failed on gridid:evid bundling\n");
@@ -261,16 +261,16 @@ option which is know to cause problems\nrecenter set off\n");
 	
 	for(i=0;i<maxtbl(gridlist);++i)
 	{
-		int gridid;
+		long gridid;
 		int nevents;
 		int is,ie;
 		int ndata;
 		int ierr;
 
-		gridid = (int)gettbl(gridlist,i);
+		gridid = (long)gettbl(gridlist,i);
 
 
-		dbputv(dbgs,0,"gridid",gridid,0);
+		dbputv(dbgs,0,"gridid",gridid,NULL );
 		dbevid_grp.record=dbALL;
 		dbmatches(dbgs,dbevid_grp,&grdidtbl,&grdidtbl,&hook,
 					&reclist);
@@ -289,9 +289,9 @@ option which is know to cause problems\nrecenter set off\n");
 		for gridid:evid grouped parts of the working view. */
 		for(j=0,ndata=0;j<nevents;++j)
 		{
-			dbevid_grp.record = (int)gettbl(reclist,j);
+			dbevid_grp.record = (long)gettbl(reclist,j);
 			dbgetv(dbevid_grp,0,"evid",evid+j,
-				"bundle",&dbbundle,0);
+				"bundle",&dbbundle,NULL );
 			dbget_range(dbbundle,&is,&ie);
 
 			ta[j] = dbload_arrival_table(dbbundle,
@@ -428,7 +428,7 @@ for cluster id %d\n",
 				"pmelrun",runname,
 				"sswrodgf",smatrix->sswrodgf,
 				"ndgf",smatrix->ndgf,
-				"sdobs",smatrix->rmsraw,0) == dbINVALID)
+				"sdobs",smatrix->rmsraw,NULL ) == dbINVALID)
 			{
 				elog_complain(0,"dbaddv error for gridid %d adding to gridstat table\n",
 				gridid);
