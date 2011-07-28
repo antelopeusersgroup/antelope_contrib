@@ -15,7 +15,7 @@ int signo;
  {
  
       if( unlink( in_dbase ) < 0 )
-           die( 1, "can't remove %s\n", in_dbase);
+           elog_die( 1, "can't remove %s\n", in_dbase);
 	    
        return;
  }

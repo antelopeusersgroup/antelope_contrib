@@ -150,7 +150,7 @@ main(int argc, char **argv)
 
 	elog_init(argc, argv);
 
-	if(pfread("wavelets",&pf)) die(0,"pfread error\\n");
+	if(pfread("wavelets",&pf)) elog_die(0,"pfread error\\n");
 
 
 	mw = load_multiwavelets_pf(pf,&nwavelets);
@@ -178,7 +178,7 @@ main(int argc, char **argv)
 		
 	}
         if (dbopen("testmwdb", "r+", &db) == dbINVALID) {
-                clear_register(1);
+                elog_clear_register(1);
                 fprintf(stderr, "dbmwspec: Unable to open database testmwdb\\n");
                 exit(1);
         }
@@ -220,7 +220,7 @@ main(int argc, char **argv)
 			"calib", calib,
 			"dir",dir,
 			"dfile",dfile,0) < 0)
-				die(0,"dbaddv error\\n");
+				elog_die(0,"dbaddv error\\n");
 		/* same for imaginery part */
 		sprintf(fname,"%s/band%d_wavelet%d_imag.w",dir,i,j);
 		sprintf(dfile,"band%d_wavelet%d_imag.w",i,j);
@@ -239,7 +239,7 @@ main(int argc, char **argv)
 			"calib", calib,
 			"dir",dir,
 			"dfile",dfile,0) < 0)
-				die(0,"dbaddv error\\n");
+				elog_die(0,"dbaddv error\\n");
 	}
 	free_MWtrace_matrix(mwtrace,0,nbands-1,0,nwavelets-1);
 }

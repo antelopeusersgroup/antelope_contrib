@@ -76,7 +76,7 @@ main(int argc, char **argv)
 			argv++;
 			argc--;
 			if (argc < 1) {
-				complain(0, "Need argument for -pf\n");
+				elog_complain(0, "Need argument for -pf\n");
 				usage();
 			}
 			strcpy(pfname, *argv);
@@ -84,7 +84,7 @@ main(int argc, char **argv)
 			argv++;
 			argc--;
 			if (argc < 1) {
-				complain(0, "Need argument for -sitedb\n");
+				elog_complain(0, "Need argument for -sitedb\n");
 				usage();
 			}
 			sitedbname = *argv;
@@ -102,7 +102,7 @@ main(int argc, char **argv)
 		} else if (!strcmp(*argv, "-quiet")) {
 			quiet = 1;
 		} else {
-			complain(0, "Unrecognized argument '%s'.\n", *argv);
+			elog_complain(0, "Unrecognized argument '%s'.\n", *argv);
 			usage();
 		}
 	}
@@ -110,7 +110,7 @@ main(int argc, char **argv)
 
 
 	if (argc < 1) {
-		complain(0, "Need dbname argument.\n");
+		elog_complain(0, "Need dbname argument.\n");
 		usage();
 	}
 	dbname = *argv;
@@ -157,20 +157,20 @@ main(int argc, char **argv)
 	}
 	if (strcmp(dbname, "-")) {
 		if (dbopen(dbname, "r+", &db) == dbINVALID) {
-			complain(0, "dbopen(%s) error.\n", dbname);
+			elog_complain(0, "dbopen(%s) error.\n", dbname);
 			usage();
 		}
 		dborigin = dblookup(db, 0, "origin", 0, 0);
 	} else {
 		if (dbread_view(stdin, &db, NULL) != 0) {
-			complain(0, "dbread_view() error.\n");
+			elog_complain(0, "dbread_view() error.\n");
 			usage();
 		}
 		dborigin = db;
 	}
 	if (sitedbname) {
 		if (dbopen(sitedbname, "r", &dbs) < 0) {
-			die(0, "can't open sitedb %s\n", sitedbname);
+			elog_die(0, "can't open sitedb %s\n", sitedbname);
 		} else {
 			dbs = dblookup(dbs, 0, "site", 0, 0);
 		}

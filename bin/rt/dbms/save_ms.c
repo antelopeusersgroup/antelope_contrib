@@ -33,7 +33,7 @@ save_ms ( Dbptr dborig ) {
      AllMs = keysarr( AllEv );
      numms = maxtbl( AllMs );
      if( numms <= 0 )  {
-         complain (0, "Ther are no MS found for current orid.\n");
+         elog_complain(0, "Ther are no MS found for current orid.\n");
          return 0 ;
      }
 

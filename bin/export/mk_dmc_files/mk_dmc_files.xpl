@@ -11,7 +11,7 @@
 
 use Datascope ;
 use archive;
-require "getopts.pl" ;
+use Getopt::Std ;
 use File::Path;
 use Cwd;
 use orb ;
@@ -34,7 +34,7 @@ my ($mailtmp,$host);
 my $pgm = $0 ; 
 $pgm =~ s".*/"" ;
 
-if ( ! &Getopts('CDvzp:d:s:mN:o:V:') || @ARGV < 2 || @ARGV > 4) { 
+if ( ! getopts('CDvzp:d:s:mN:o:V:') || @ARGV < 2 || @ARGV > 4) { 
     die ( "Usage: $pgm [-v] [-z] [-C] [-m] [-p pf] [-d output_dir] [-N net] [-s sta] [-f output_file] [-o orb] { -D | -V vnet } dbin dbtrack [comment] \n" ) ; 
 } else {
     $dbin	= $ARGV[0];

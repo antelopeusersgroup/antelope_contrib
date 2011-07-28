@@ -6,7 +6,7 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 
 sub check_for_executable {
@@ -28,7 +28,7 @@ my $pgm = $0 ;
 $pgm =~ s".*/"" ;
 $Pfname = $pgm;
 
-if ( ! &Getopts('V') || @ARGV != 2 ) { 
+if ( ! getopts('V') || @ARGV != 2 ) { 
 
 	die ( "Usage: $pgm [-V] grd cggrid\n" ) ; 
 

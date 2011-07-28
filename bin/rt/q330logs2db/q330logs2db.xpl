@@ -20,7 +20,7 @@
     use orb;
     use Cwd;
     use File::Find;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     elog_init ( $0, @ARGV) ;
 
@@ -45,7 +45,7 @@
 # -S state file.  
 # -S overrides -s; if no -S or -s, starts with newest packet.
 
-if (! &Getopts('p:l:s:S:vV')  || @ARGV != 2 ) {
+if (! getopts('p:l:s:S:vV')  || @ARGV != 2 ) {
     elog_complain("\nGetopts or number of arguments failure.\n");
     &usage;
 } else {

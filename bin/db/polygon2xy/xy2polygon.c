@@ -130,7 +130,7 @@ main(int argc, char **argv)
 		}
 	}
 	if (argc < 2) {
-		complain(0, "Need datfile and db arguments.\n");
+		elog_complain(0, "Need datfile and db arguments.\n");
 		usage();
 		exit(1);
 	}

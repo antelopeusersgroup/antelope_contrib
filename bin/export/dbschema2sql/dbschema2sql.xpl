@@ -41,7 +41,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "getopts.pl";
+use Getopt::Std;
 
 use Datascope;
 use Datascope::db2sql;
@@ -52,7 +52,7 @@ elog_init( $Program_name, @ARGV );
 
 $Usage = "Usage: dbschema2sql schema\n";
 
-if( ! Getopts( '' ) || @ARGV != 1 ) {
+if( ! getopts( '' ) || @ARGV != 1 ) {
 
 	elog_die( $Usage );
 

@@ -60,7 +60,7 @@ char *make_mw_key(char *sta, char *chan)
 	char *key;
 	size = strlen(sta) + strlen(chan) + 2;
 	key = malloc(size);  
-	if(key == NULL) die(0,
+	if(key == NULL) elog_die(0,
 		"make_mw_key: malloc failure for string of length %d\n",size);
 	strcpy(key,sta);
 	strcat(key,"/");
@@ -291,7 +291,7 @@ MWgather *MWgather_alloc(int nsta)
 	MWgather *gather;
 
 	gather = (MWgather *)malloc(sizeof(MWgather));
-	if(gather == NULL) die(0,"MWgather_alloc cannot alloc MWgather struc\n");
+	if(gather == NULL) elog_die(0,"MWgather_alloc cannot alloc MWgather struc\n");
 	gather->sta = (MWstation **)calloc(nsta, sizeof(MWstation *));
 	gather->x1 = (MWtrace **)calloc(nsta,sizeof(MWtrace *));
 	gather->x2 = (MWtrace **)calloc(nsta,sizeof(MWtrace *));
@@ -954,7 +954,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 			to compute s/n statistics */
 
 	snrarr_vector = (Arr **)calloc(nbands,sizeof(Arr *));
-	if(snrarr_vector == NULL) die(0,"compute_signal_to_noise:  cannot alloc memory for %d Arr pointers\n",nbands);
+	if(snrarr_vector == NULL) elog_die(0,"compute_signal_to_noise:  cannot alloc memory for %d Arr pointers\n",nbands);
 	for(i=0;i<nbands;++i) snrarr_vector[i] = newarr(0);
 	allot(float *,snr_wavelet,nwavelets);
 	allot(float *,sig3c,nwavelets);

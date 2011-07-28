@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
       argv++; argc--;
       if (argc < 1) 
       {
-        complain (0, "Need argument for -p\n");
+        elog_complain(0, "Need argument for -p\n");
         usage();
         return 1;
       }
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     }
     else 
     {
-      complain (0, "Unrecognized argument '%s'.\n", *argv);
+      elog_complain(0, "Unrecognized argument '%s'.\n", *argv);
       usage();
       return 1;
     }
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 
   if (argc < 1) 
   {
-    complain (0, "Need dbname argument.\n");
+    elog_complain(0, "Need dbname argument.\n");
     usage();
     return 1;
   }
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
   argv++; argc--;
   if (argc < 1) 
   {
-    complain (0, "Need orid argument.\n");
+    elog_complain(0, "Need orid argument.\n");
     usage();
     return 1;
   }
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
     sscanf(*argv,"%c",&eqsize);
     if ( (eqsize != 'S')  && (eqsize != 'M')  && (eqsize != 'L') )  
     {
-      complain (0, "EQ size must be 'S', 'M', or 'L'.\n");
+      elog_complain(0, "EQ size must be 'S', 'M', or 'L'.\n");
       usage();
       return 1;
     }
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 
   if (dbopen(database,"r+",&db) < 0)
   {
-    complain(0,"Could not open database.\n");
+    elog_complain(0,"Could not open database.\n");
     return 1;
   }
 
@@ -193,13 +193,13 @@ int main(int argc, char *argv[])
 
   if (pfread (pfname, &pf) < 0) 
   {
-    complain (0, "pfread(%s) error.\n", pfname);
+    elog_complain(0, "pfread(%s) error.\n", pfname);
     exit (1);
   }
   tbl = pfget_tbl(pf,"stachans");
   if (tbl == NULL)
   {
-    complain (0, "pfget_tbl error.\n");
+    elog_complain(0, "pfget_tbl error.\n");
     exit (1);
   }
   nsta = maxtbl(tbl);
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
     ireturn = sscanf (line, "%s %s", sta[i], chan[i]);
     if (ireturn < 2) 
     {
-      complain (0, "Cannot parse parameter file line: %s", line);
+      elog_complain(0, "Cannot parse parameter file line: %s", line);
       return;
     }
   }

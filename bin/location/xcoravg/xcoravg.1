@@ -1,0 +1,66 @@
+.TH XCORAVG 1
+.SH NAME
+xcoravg - average redundant arrivals in dbxcor source array processing
+.SH SYNOPSIS
+.nf
+xcoravg db [-u -v -pf pffile]
+.fi
+.SH DESCRIPTION
+.LP
+This program is a companion to the dbxcor (3) program when it is run
+in source array processing mode.  Source array processing is an alternative
+to cluster style cross correlation of local events.  Instead of correlating
+all pairs dbxcor allows processing of ensembles of events from a common 
+source region.  The groups, however, are rarely orthogonal so it is 
+necessary to resolve duplicate arrival estimates when the
+same seismogram is correlated with two groups of events.  This program
+uses a simple averaging method.  This is not theoretically correct, but is
+an approximation that will work reasonably well if groups do not
+overlap too drastically.  The exact solution is a generalization of the
+method commonly used for pairs of events to a form that is virtually 
+identical to that used in seismic reflection processing in what is
+called surface consistent static estimates.  I (GLP) have not yet implemented 
+such a procedure, however, so for now this is the only way to resolve
+redundant arrival estimates.  In fact, running this program is currently the
+only way to transfer the output of dbxcor to the master arrival table. 
+.LP
+The program has only one required parameter of the database name db.  Note,
+however, that the program will look for extension tables special to dbxcor
+when run in source array processing mode.  
+The main required table is one called xsaa 
+(intended to be mnemonic for xcor source array analysis).  
+.SH OPTIONS
+.IP -u
+This option is used to enable update mode. The default will do nothing and
+run the program in a dry run mode.  The user is strongly urged to first
+run the program in dry run mode looking carefully at the output for 
+any errors that might indicate a problem.  Rerun the program with the
+-u option when ready and the arrival table will be altered.  
+In general, it would probably also be good practice to always copy the
+arrival table before running this program in either mode to allow one
+to back out the original picks if something goes wrong.  
+.IP -v
+Be more verbose about errors.
+.IP -pf
+Use alternate parameter file pffile.
+.SH PARAMETER FILE
+.LP 
+By default the program sets all deltim attributes in arrivals it computes
+to a fixed constant defined by the parameter \fIarrival_deltim\fR.  
+Set the boolean \fIset_deltim_in_arrival\fR to false to retain the deltim
+of the original arrival table entry for each pick being changes.  
+.SH "BUGS AND CAVEATS"
+.LP
+This is a relatively crude program that has not been extensively exercised.
+Proceed with caution and make sure you always retain an original arrival 
+table before running this program.  As noted in the description the algorithm
+used to estimate each new arrival is an approximation whose validity has not 
+been thoroughly investigated.
+.SH AUTHOR
+.LP
+.nf
+Prof. Gary L. Pavlis
+Department of Geological Sciences
+Indiana University 
+pavlis@indiana.edu
+.fi

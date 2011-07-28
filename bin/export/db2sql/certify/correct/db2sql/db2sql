@@ -898,6 +898,36 @@ CREATE TABLE `balerlist`
   PRIMARY KEY (`dlname`, `time`)
   );
 
+CREATE TABLE `calib_request`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `acktime`     DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `hostname`    CHAR(25) DEFAULT '-',
+  `user`        CHAR(16) DEFAULT '-',
+  `auth`        CHAR(15) DEFAULT '-',
+  `pid`         INTEGER(6) DEFAULT -1,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `time`)
+  );
+
+CREATE TABLE `calplot`
+  (
+  `sta`         CHAR(6) DEFAULT '-',
+  `chan`        CHAR(8) DEFAULT '-',
+  `time`        DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `endtime`     DECIMAL(17,5) DEFAULT 9999999999.99900,
+  `dir`         CHAR(64) DEFAULT '-',
+  `dfile`       CHAR(32) DEFAULT '-',
+  `lddate`      DECIMAL(17,5) DEFAULT -9999999999.99900,
+  `syncstring`  CHAR(40) DEFAULT '-',
+  PRIMARY KEY (`sta`, `chan`, `dir`, `dfile`, `time`)
+  );
+
 CREATE TABLE `calresult`
   (
   `net`         CHAR(8) DEFAULT '-',

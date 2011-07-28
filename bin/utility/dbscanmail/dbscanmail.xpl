@@ -17,7 +17,7 @@ use filemail;
 use MIME::Parser;
 use MIME::Entity;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 
 @valid_operations = ( "set_messageid", 
@@ -412,7 +412,7 @@ sub find_attachments {
 
 elog_init( "dbscanmail", @ARGV );
 
-if ( ! &Getopts('a:vVo') || @ARGV != 2 ) { 
+if ( ! getopts('a:vVo') || @ARGV != 2 ) { 
 
     	die ( "Usage: $0 [-a after] [-vo] dbname operation\n" ) ; 
 

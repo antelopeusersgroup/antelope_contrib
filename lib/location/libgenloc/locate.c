@@ -112,7 +112,7 @@ form_equations (int mode, Hypocenter current_location,
 	    if (mode == ALL)
 		for (k = 0; k < npar; ++k)
 		    A[i][k] = 0.0;
-	    register_error (1, "Station: %s, Phase: %s Travel time calculator failed\n",
+	    elog_log(1, "Station: %s, Phase: %s Travel time calculator failed\n",
 			    atimes->sta->name, atimes->phase->name);
 	} else {
 	    /* We have to handle phases like S-P specially because these do
@@ -172,7 +172,7 @@ form_equations (int mode, Hypocenter current_location,
 		    A[j + 1][k] = 0.0;
 		}
 	    }
-	    register_error (1, "Station: %s, Phase: %s Slowness vector calculator failed\n",
+	    elog_log(1, "Station: %s, Phase: %s Slowness vector calculator failed\n",
 			    atimes->sta->name, atimes->phase->name);
 	} else {
 	    r[j] = (float) (slow->ux - u_calc.ux);
@@ -629,7 +629,7 @@ lminverse_solver (float **U, float *s, float **V, float *b,
     damp *= smax;
 
     if ((work = (float *) calloc (n, sizeof (float))) == NULL)
-	die (1, "Inverse solver cannot alloc work array of length %d\n",
+	elog_die(1, "Inverse solver cannot alloc work array of length %d\n",
 	     n);
 
     for (j = 0; j < n; ++j) {
@@ -700,7 +700,7 @@ pseudoinverse_solver (float **U, float *s, float **V, float *b,
 #endif
 
     if ((work = (float *) calloc (n, sizeof (float))) == NULL)
-	die (1, "Inverse solver cannot alloc work array of length %d\n",
+	elog_die(1, "Inverse solver cannot alloc work array of length %d\n",
 	     n);
 
     /* first find the larges singular value, then just zero all those smaller
@@ -930,7 +930,7 @@ ggnloc (Hypocenter initial_location,
 	    ++npar;
     }
     if (m < npar) {
-	register_error (0, "Insufficient data to locate event at epoch time %f\n",
+	elog_log(0, "Insufficient data to locate event at epoch time %f\n",
 			initial_location.time);
 	stack_mesg = strdup ("Error:  insufficient data");
 	pushtbl (*reason_converged, stack_mesg);
@@ -958,7 +958,7 @@ ggnloc (Hypocenter initial_location,
 	    || (w == NULL) || (reswt == NULL) || (work == NULL)
 	    || (btmp == NULL) || (rtmp == NULL)
 	    || (wtmp == NULL) || (reswttmp == NULL))
-	die (1, "Alloc errors in main location function\n");
+	elog_die(1, "Alloc errors in main location function\n");
 
 
     /* This initializes both of these work objects correctly */
@@ -979,14 +979,14 @@ ggnloc (Hypocenter initial_location,
 
 	hypo_history = (Hypocenter *) malloc (sizeof (Hypocenter));
 	if (hypo_history == NULL)
-	    die (1, "Malloc error in location routine\n");
+	    elog_die(1, "Malloc error in location routine\n");
 	copy_hypocenter (&current_location, hypo_history);
 	pushtbl (*convergence_history, hypo_history);
 
 	statistics = form_equations (ALL, current_location, attbl, utbl,
 				     options, A, b, r, w, reswt, &ndata_feq);
 	if (ndata_feq < npar) {
-	    register_error (0, "Data loss leading to insufficient data for event %f\n",
+	    elog_log(0, "Data loss leading to insufficient data for event %f\n",
 			    current_location.time);
 	    stack_mesg = strdup ("Error:  critical data loss");
 	    pushtbl (*reason_converged, stack_mesg);
@@ -1034,10 +1034,10 @@ ggnloc (Hypocenter initial_location,
 	if (np > 0) {
 	    i = svdcmp (U, m, np, s, V);
 	    if (i < 0) {
-		complain (0, "ggnloc irreconcilable problem with svd routine\nCannot generate solution\n");
+		elog_complain(0, "ggnloc irreconcilable problem with svd routine\nCannot generate solution\n");
 		return (-4);
 	    } else if (i > 0) {
-		complain (0, "svd convergence error in iteration %d\nCannot compute solution\n",
+		elog_complain(0, "svd convergence error in iteration %d\nCannot compute solution\n",
 			  iteration);
 		return (-4);
 	    }
@@ -1115,7 +1115,7 @@ ggnloc (Hypocenter initial_location,
 		    damp = options.min_relative_damp;
 	    }
 	    if (ndata_feq < np) {
-		register_error (0, "Data loss leading to insufficient data for event %f\n",
+		elog_log(0, "Data loss leading to insufficient data for event %f\n",
 				current_location.time);
 		stack_mesg = strdup ("Error:  critical data loss");
 		pushtbl (*reason_converged, stack_mesg);
@@ -1203,7 +1203,7 @@ ggnloc (Hypocenter initial_location,
     /* Dont' forget to push the final hypocenter onto the convergence stack */
     hypo_history = (Hypocenter *) malloc (sizeof (Hypocenter));
     if (hypo_history == NULL)
-	die (1, "Malloc error in location routine\n");
+	elog_die(1, "Malloc error in location routine\n");
     copy_hypocenter (&current_location, hypo_history);
     pushtbl (*convergence_history, hypo_history);
 
@@ -1314,47 +1314,47 @@ lat_lon_grid_setup (Pf * pf, Point ** pts, int *gridsize)
                     n;		       /* counters */
 
     if ((s = pfget_string (pf, "center_latitude")) == NULL) {
-	register_error (1, "%s%s\n", err, "center_latitude");
+	elog_log(1, "%s%s\n", err, "center_latitude");
 	return (-1);
     }
     center_latitude = pfget_double (pf, "center_latitude");
     if ((s = pfget_string (pf, "center_longitude")) == NULL) {
-	register_error (1, "%s%s\n", err, "center_longitude");
+	elog_log(1, "%s%s\n", err, "center_longitude");
 	return (0);
     }
     center_longitude = pfget_double (pf, "center_longitude");
     if ((s = pfget_string (pf, "center_depth")) == NULL) {
-	register_error (1, "%s%s\n", err, "center_depth");
+	elog_log(1, "%s%s\n", err, "center_depth");
 	return (-1);
     }
     center_depth = pfget_double (pf, "center_depth");
     if ((s = pfget_string (pf, "latitude_range")) == NULL) {
-	register_error (1, "%s%s\n", err, "latitude_range");
+	elog_log(1, "%s%s\n", err, "latitude_range");
 	return (-1);
     }
     latitude_range = pfget_double (pf, "latitude_range");
     if ((s = pfget_string (pf, "longitude_range")) == NULL) {
-	register_error (1, "%s%s\n", err, "longitude_range");
+	elog_log(1, "%s%s\n", err, "longitude_range");
 	return (-1);
     }
     longitude_range = pfget_double (pf, "longitude_range");
     if ((s = pfget_string (pf, "depth_range")) == NULL) {
-	register_error (1, "%s%s\n", err, "depth_range");
+	elog_log(1, "%s%s\n", err, "depth_range");
 	return (-1);
     }
     depth_range = pfget_double (pf, "depth_range");
     if ((s = pfget_string (pf, "nlat")) == NULL) {
-	register_error (1, "%s%s\n", err, "nlat");
+	elog_log(1, "%s%s\n", err, "nlat");
 	return (-1);
     }
     nlat = pfget_int (pf, "nlat");
     if ((s = pfget_string (pf, "nlon")) == NULL) {
-	register_error (1, "%s%s\n", err, "nlon");
+	elog_log(1, "%s%s\n", err, "nlon");
 	return (-1);
     }
     nlon = pfget_int (pf, "nlon");
     if ((s = pfget_string (pf, "ndepths")) == NULL) {
-	register_error (1, "%s%s\n", err, "ndepths");
+	elog_log(1, "%s%s\n", err, "ndepths");
 	return (-1);
     }
     ndepths = pfget_int (pf, "ndepths");
@@ -1367,7 +1367,7 @@ lat_lon_grid_setup (Pf * pf, Point ** pts, int *gridsize)
     else
 	z0 = center_depth - depth_range / 2.0;
     if (z0 < 0.0) {
-	register_error (0, "Warning (lat_lon_grid_setup:  depth grid range reset to start at 0.0\n");
+	elog_log(0, "Warning (lat_lon_grid_setup:  depth grid range reset to start at 0.0\n");
 	z0 = 0.0;
     }
     if (ndepths <= 1)
@@ -1392,7 +1392,7 @@ lat_lon_grid_setup (Pf * pf, Point ** pts, int *gridsize)
 		if ((p[n].lat > 90.0)
 			|| (p[n].lat < -90.0)) {
 		    free (p);
-		    register_error (1, "lat_lon_grid_setup[n]. cannot form grid over poles\n");
+		    elog_log(1, "lat_lon_grid_setup[n]. cannot form grid over poles\n");
 		    return (-1);
 		}
 		p[n].z = (double) k *dz + z0;
@@ -1431,68 +1431,68 @@ radial_grid_setup (Pf * pf, Point ** pts, int *gridsize)
                     k,
                     n;		       /* counters */
     if ((s = pfget_string (pf, "center_latitude")) == NULL) {
-	register_error (1, "%s%s\n", err, "center_latitude");
+	elog_log(1, "%s%s\n", err, "center_latitude");
 	return (-1);
     }
     center_latitude = pfget_double (pf, "center_latitude");
     if ((s = pfget_string (pf, "center_longitude")) == NULL) {
-	register_error (1, "%s%s\n", err, "center_longitude");
+	elog_log(1, "%s%s\n", err, "center_longitude");
 	return (-1);
     }
     center_longitude = pfget_double (pf, "center_longitude");
     if ((s = pfget_string (pf, "center_depth")) == NULL) {
-	register_error (1, "%s%s\n", err, "center_depth");
+	elog_log(1, "%s%s\n", err, "center_depth");
 	return (-1);
     }
     center_depth = pfget_double (pf, "center_depth");
     if ((s = pfget_string (pf, "minimum_distance")) == NULL) {
-	register_error (1, "%s%s\n", err, "minimum_distance");
+	elog_log(1, "%s%s\n", err, "minimum_distance");
 	return (-1);
     }
     rmin = pfget_double (pf, "minimum_distance");
     if ((s = pfget_string (pf, "maximum_distance")) == NULL) {
-	register_error (1, "%s%s\n", err, "maximum_distance");
+	elog_log(1, "%s%s\n", err, "maximum_distance");
 	return (-1);
     }
     rmax = pfget_double (pf, "maximum_distance");
     if ((s = pfget_string (pf, "minimum_azimuth")) == NULL) {
-	register_error (1, "%s%s\n", err, "minimum_azimuth");
+	elog_log(1, "%s%s\n", err, "minimum_azimuth");
 	return (-1);
     }
     phimin = pfget_double (pf, "minimum_azimuth");
     if ((s = pfget_string (pf, "maximum_azimuth")) == NULL) {
-	register_error (1, "%s%s\n", err, "maximum_azimuth");
+	elog_log(1, "%s%s\n", err, "maximum_azimuth");
 	return (-1);
     }
     phimax = pfget_double (pf, "maximum_azimuth");
     if ((s = pfget_string (pf, "depth_range")) == NULL) {
-	register_error (1, "%s%s\n", err, "depth_range");
+	elog_log(1, "%s%s\n", err, "depth_range");
 	return (-1);
     }
     depth_range = pfget_double (pf, "depth_range");
     if ((s = pfget_string (pf, "number_points_r")) == NULL) {
-	register_error (1, "%s%s\n", err, "number_points_r");
+	elog_log(1, "%s%s\n", err, "number_points_r");
 	return (-1);
     }
     nr = pfget_int (pf, "number_points_r");
     if ((s = pfget_string (pf, "number_points_azimuth")) == NULL) {
-	register_error (1, "%s%s\n", err, "number_points_azimuth");
+	elog_log(1, "%s%s\n", err, "number_points_azimuth");
 	return (-1);
     }
     nphi = pfget_int (pf, "number_points_azimuth");
     if ((s = pfget_string (pf, "ndepths")) == NULL) {
-	register_error (1, "%s%s\n", err, "ndepths");
+	elog_log(1, "%s%s\n", err, "ndepths");
 	return (-1);
     }
     ndepths = pfget_int (pf, "ndepths");
     /* error checks that yield a null return -- no recovery */
     if ((rmax < rmin) || (rmax <= 0.0) || (rmin <= 0.0)) {
-	register_error (1, "radial_grid_setup:  illegal specification of radii %g to %g\n",
+	elog_log(1, "radial_grid_setup:  illegal specification of radii %g to %g\n",
 			rmin, rmax);
 	return (-1);
     }
     if (((phimax - phimin) > 360.0) || (phimin > phimax)) {
-	register_error (1, "radial_grid_setup:  illegal specification of azimuthal angles %g to %g\n",
+	elog_log(1, "radial_grid_setup:  illegal specification of azimuthal angles %g to %g\n",
 			phimin, phimax);
 	return (-1);
     }
@@ -1516,7 +1516,7 @@ radial_grid_setup (Pf * pf, Point ** pts, int *gridsize)
     else
 	z0 = center_depth - depth_range / 2.0;
     if (z0 < 0.0) {
-	register_error (0, "Warning (lat_lon_grid_setup:  depth grid range reset to start at 0.0\n");
+	elog_log(0, "Warning (lat_lon_grid_setup:  depth grid range reset to start at 0.0\n");
 	z0 = 0.0;
     }
     if (ndepths <= 1)
@@ -1642,7 +1642,7 @@ gridloc (Tbl * attbl, Tbl * utbl, Point * grid, int ngrid,
     hypo.dx = 0.0;
 
     if ((natimes <= 0) || (ngrid <= 0)) {
-	register_error (1, "gridloc:  unrecoverable error.  Illegal input.\n");
+	elog_log(1, "gridloc:  unrecoverable error.  Illegal input.\n");
 	hypo.lat = 0.0;
 	hypo.lon = 0.0;
 	hypo.z = 0.0;
@@ -1658,7 +1658,7 @@ gridloc (Tbl * attbl, Tbl * utbl, Point * grid, int ngrid,
     /* After all those allocs we need to check if it all worked */
     if ((b == NULL) || (r == NULL) || (reswt == NULL)
 	    || (w == NULL) || (work == NULL))
-	die (1, "Alloc error in grid location function\n");
+	elog_die(1, "Alloc error in grid location function\n");
 
     /* Since we are working with a copy of the options structure, we will
      * just alter the control parameters we need that assure the
@@ -1693,7 +1693,7 @@ gridloc (Tbl * attbl, Tbl * utbl, Point * grid, int ngrid,
 	tto = calculate_travel_time (*a, hypo, RESIDUALS_ONLY);
 	if (tto.time == TIME_INVALID) {
 	    reset_ot = 1;
-	    complain (1, "gridloc:  travel time calculator failed in computing reference time\nThis may cause convergence problems\n");
+	    elog_complain(1, "gridloc:  travel time calculator failed in computing reference time\nThis may cause convergence problems\n");
 	} else {
 	    reset_ot = 0;
 	    hypo.time -= tto.time;

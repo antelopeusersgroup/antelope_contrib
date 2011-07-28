@@ -9,7 +9,7 @@
 
 use Datascope;
 
-require "getopts.pl";
+use Getopt::Std;
 require "winding.pl";
 
 $Pf = "eqrelease.pf";
@@ -1046,7 +1046,7 @@ $opt_n = "";
 $opt_o = "";
 $opt_e = "";
 $opt_g = "";
-if( ! &Getopts('gno:e:') || $#ARGV != 0 ) {
+if( ! getopts('gno:e:') || $#ARGV != 0 ) {
 	die( "$Usage" );
 
 } else {

@@ -464,13 +464,13 @@ is_dbprogram( char *what, char *dbprogram, char *dbpath )
 
 	if( rc < 0 || pflib == NULL ) {
 
-		register_error( 0, "pforbstat: failed to load libpforbstat.pf "
+		elog_log( 0, "pforbstat: failed to load libpforbstat.pf "
 				   "during database analysis\n" );
 		return 0;
 
 	}  else if( rc == 0 && morphmap == NULL ) {
 
-		register_error( 0, "pforbstat: no morphmap present for database analysis\n" );
+		elog_log( 0, "pforbstat: no morphmap present for database analysis\n" );
 		return 0;
 	}
 
@@ -487,7 +487,7 @@ is_dbprogram( char *what, char *dbprogram, char *dbpath )
 
 		if( morphlist == NULL ) {
 			
-			register_error( 0, "pforbstat: failed to get dbprograms_morph "
+			elog_log( 0, "pforbstat: failed to get dbprograms_morph "
 					"from libpforbstat.pf during database analysis\n" );
 			return 0;
 		}
@@ -498,7 +498,7 @@ is_dbprogram( char *what, char *dbprogram, char *dbpath )
 
 		if( rc != 0 ) {
 
-			register_error( 0, "pforbstat: %d errors translating dbprograms_morph "
+			elog_log( 0, "pforbstat: %d errors translating dbprograms_morph "
 					"from libpforbstat.pf during database analysis\n", rc );
 			return 0;
 		}

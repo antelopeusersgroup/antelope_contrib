@@ -2,7 +2,7 @@
 #   program needs:
 #   
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use orb ;
@@ -27,7 +27,7 @@
 #  program initialization
 #
 
-    if (  ! &Getopts('vVnd:s:t:') || @ARGV != 2 ) { 
+    if (  ! getopts('vVnd:s:t:') || @ARGV != 2 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n]  \n" ;
         $usage .=  "	[-d tmpdb] [-s start_time] [-t timestep]  \n" ;
         $usage .=  "	db orb \n\n"  ; 

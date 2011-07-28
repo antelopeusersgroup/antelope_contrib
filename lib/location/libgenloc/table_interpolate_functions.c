@@ -107,7 +107,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 
 
 	if( (ttable == NULL) || (utable == NULL) )
-		die(1,"Can't alloc memory in uniform_table_interpolate_init\n");
+		elog_die(1,"Can't alloc memory in uniform_table_interpolate_init\n");
 	
 	/* This version requires t and u tables to be parallel.  This
 	restriction would not be necessary, but it simplifies things
@@ -153,29 +153,29 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 
 	ttable->values = dmatrix(0,(ttable->nx)-1,0,(ttable->nz)-1);
 	if(ttable->values == NULL) 
-		die(1,"Cannot alloc memory for travel time table of size %d by %d for phase %s\n",
+		elog_die(1,"Cannot alloc memory for travel time table of size %d by %d for phase %s\n",
 			ttable->nx, ttable->nz, phase);
 	ttable->slopes = dmatrix(0,(ttable->nx)-1,0,(ttable->nz)-1);
 	if(ttable->slopes == NULL) 
-		die(1,"Cannot alloc memory for slowness table of size %d by %d for phase %s\n",
+		elog_die(1,"Cannot alloc memory for slowness table of size %d by %d for phase %s\n",
 			ttable->nx, ttable->nz, phase);	
 	ttable->branch = cmatrix(0,(ttable->nx)-1,0,(ttable->nz)-1);
 	if(ttable->branch == NULL) 
-		die(1,"Cannot alloc memory for time branch table for phase %s\n",
+		elog_die(1,"Cannot alloc memory for time branch table for phase %s\n",
 				phase);
 	utable->branch = cmatrix(0,(utable->nx)-1,0,(utable->nz)-1);
 	if(utable->branch == NULL) 
-		die(1,"Cannot alloc memory for slowness branch table for phase %s\n",
+		elog_die(1,"Cannot alloc memory for slowness branch table for phase %s\n",
 				phase);
 
 	ttable->velocity = (double *) calloc(ttable->nz,sizeof(double));
 	if(ttable->velocity == NULL) 
-		die(1,"Cannot alloc memory for velocity model for phase %s\n",
+		elog_die(1,"Cannot alloc memory for velocity model for phase %s\n",
 				phase);
 
 	utable->slopes = dmatrix(0,(utable->nx)-1,0,(utable->nz)-1);
 	if(utable->slopes == NULL) 
-		die(1,"Cannot alloc memory for dudr table of size %d by %d for phase %s\n",
+		elog_die(1,"Cannot alloc memory for dudr table of size %d by %d for phase %s\n",
 			utable->nx, utable->nz, phase);
 
 	/* here is where we set the redundant pointers */
@@ -191,7 +191,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
  	t = pfget_tbl(pf,"uniform_grid_time_slowness_table");
 	if(t == NULL)
 	{
-		register_error (1,"Can't find travel time-slowness table for phase %s\n",
+		elog_log(1,"Can't find travel time-slowness table for phase %s\n",
 			phase);
 		free_uniform_table(ttable, utable);
 		return(1);
@@ -199,7 +199,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 
 	if( maxtbl(t) != ( (ttable->nx)*(ttable->nz) ) )
 	{
-		register_error(1,"Table size mismatch for phase %s\nTable should have %d rows\nFound %ld\n",
+		elog_log(1,"Table size mismatch for phase %s\nTable should have %d rows\nFound %ld\n",
 			phase, (ttable->nx)*(ttable->nz), maxtbl(t));
 		free_uniform_table(ttable, utable);
 		return(1);
@@ -218,7 +218,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 				&tt, &u, &dudx,&b);
 			if(nitems !=4)
 			{
-				register_error(1,"Syntax error reading table for phase %s, Problem read value for i=%d, j=%d\n",
+				elog_log(1,"Syntax error reading table for phase %s, Problem read value for i=%d, j=%d\n",
 					phase,i,j);
 				free_uniform_table(ttable, utable);
 				return(1);
@@ -253,7 +253,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 			|| (ttable->branch[0][j] == JUMP) )
 		{
 
-			register_error(1,
+			elog_log(1,
 			  "Error in travel time table for phase %s\nFirst point cannot be marked as a crossover or jump discontinuity\n",phase);
 			free_uniform_table(ttable, utable);
 			return(1);
@@ -262,7 +262,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 	t = pfget_tbl(pf,"velocities");
 	if((ttable->nz) != maxtbl(t))
 	{
-		register_error(1,"Error in phase parameter file.  \
+		elog_log(1,"Error in phase parameter file.  \
 Mismatch between velocity entries and table entries\n\
 Tables have %d depth entries, but velocity vector is of length %ld\n",
 			ttable->nz, maxtbl(t));
@@ -285,7 +285,7 @@ Tables have %d depth entries, but velocity vector is of length %ld\n",
 Travel_Time_Function_Output set_time_table_error(char *error)
 {
 	Travel_Time_Function_Output o;
-	register_error(0,"uniform_time_table_interpolate: %s\n",error);
+	elog_log(0,"uniform_time_table_interpolate: %s\n",error);
 	o.time = TIME_INVALID; 
 	o.dtdx = 0.0;
 	o.dtdy = 0.0;
@@ -612,7 +612,7 @@ Travel_Time_Function_Output uniform_time_table_interpolate(Ray_Endpoints x, char
 Slowness_Function_Output set_slowness_table_error(char *error)
 {
 	Slowness_Function_Output o;
-	register_error(0,"uniform_slowness_table_interpolate: %s\n",error);
+	elog_log(0,"uniform_slowness_table_interpolate: %s\n",error);
 	o.ux = SLOWNESS_INVALID; 
 	o.uy = SLOWNESS_INVALID; 
 	o.duxdx = 0.0;

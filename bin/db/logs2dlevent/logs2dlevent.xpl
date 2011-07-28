@@ -17,7 +17,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
     use archive;
     use Cwd;
     use File::Find;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     elog_init ( $0, @ARGV) ;
 
@@ -57,9 +57,9 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 # -d time to start search 
 
-if (! &Getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
-    print STDERR "Getopts or number of arguments failure.\n";
-    elog_complain("Getopts or number of arguments failure.\n");
+if (! getopts('p:m:M:n:l:w:d:vV')  || @ARGV != 2 ) {
+    print STDERR "getopts or number of arguments failure.\n";
+    elog_complain("getopts or number of arguments failure.\n");
     &usage;
 } else {
     $logdir	=  $ARGV[0]  ;

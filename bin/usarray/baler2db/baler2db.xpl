@@ -1,6 +1,6 @@
 #
 #  
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -29,7 +29,7 @@
 #  program initialization
 #
 
-    if (  ! &Getopts('vp:d:') || @ARGV != 3 ) { 
+    if (  ! getopts('vp:d:') || @ARGV != 3 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] \n" ;
         $usage .=  "	[-d dbout] [-p pf]  \n" ;
         $usage .=  "	mseed_dir dbmaster dbcentral \n\n"  ; 

@@ -47,11 +47,11 @@ int             ntapers;
     dbget_range (tr, &rs, &re);
 
     if (dbex_compile (tr, time_str, &time_expr, dbTIME) < 0) {
-	register_error (0, "Can't compile start time: '%s'\n", time_str);
+	elog_log(0, "Can't compile start time: '%s'\n", time_str);
 	return dbINVALID;
     }
     if (dbex_compile (tr, endtime_str, &endtime_expr, dbTIME) < 0) {
-	register_error (0, "Can't compile end time: '%s'\n", endtime_str);
+	elog_log(0, "Can't compile end time: '%s'\n", endtime_str);
 	return dbINVALID;
     }
 

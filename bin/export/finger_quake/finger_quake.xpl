@@ -19,9 +19,9 @@ use File::Copy;
 use File::stat;
 use English; 
 
-require "getopts.pl";
+use Getopt::Std;
 
-  if (! &Getopts('ogvVs:l:p:d:e:a:t:y:i:') || @ARGV != 1 ) {
+  if (! getopts('ogvVs:l:p:d:e:a:t:y:i:') || @ARGV != 1 ) {
         &usage;
   }
 

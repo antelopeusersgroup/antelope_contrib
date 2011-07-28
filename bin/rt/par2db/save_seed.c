@@ -84,20 +84,20 @@ int save_seed ( Steim *conf,
    
     if( abuf->file == 0 ) 
       if ((abuf->file = fopen (abuf->path, "a+")) == 0) {
-              complain (1, "Can't open %s.\n", abuf->path);
+              elog_complain(1, "Can't open %s.\n", abuf->path);
               return -1;
        }
 
     if (fwrite (conf->record, conf->record_size, 1, abuf->file) != 1) {
-	register_error (1, "Couldn't save seed data\n");
+	elog_log(1, "Couldn't save seed data\n");
 	return -1;
     }
 
     if ( fflush(abuf->file) ) 
-	die ( 1, "Can't flush %s\n", abuf->path ) ;
+	elog_die( 1, "Can't flush %s\n", abuf->path ) ;
   
     if ( fclose ( abuf->file ) != 0 ) {
-	die ( 1, "Couldn't close output file '%s'\n", abuf->path ) ; 
+	elog_die( 1, "Couldn't close output file '%s'\n", abuf->path ) ; 
     }
     abuf->file = 0;
 
@@ -107,7 +107,7 @@ int save_seed ( Steim *conf,
 	"nsamp", n1,
 	"endtime", ENDTIME(abuf->stime, abuf->samprate, n1), 
 	0 ) < 0 ) 
-	die (0, "Couldn't write to database\n") ; 
+	elog_die(0, "Couldn't write to database\n") ; 
 
     return 0;
 }

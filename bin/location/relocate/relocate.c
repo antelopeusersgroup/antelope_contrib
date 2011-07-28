@@ -38,7 +38,7 @@ Hypocenter db_load_initial(Dbptr dbv,long row)
 		"origin.depth",&(h.z),
 		"origin.time", &(h.time),
 		NULL) == dbINVALID)
-			die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %ld of database view\n",row);
+			elog_die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %ld of database view\n",row);
 	/* This initializes parts of the hypocenter stucture that define
         this as an initial location. */
         h.dz = 0.0;
@@ -135,7 +135,7 @@ long save_origin(Dbptr dbi, long is, long ie, int depth_fixed,
 		"origin.mlid", &mlid,
 				NULL) == dbINVALID)
 	{
-		die(1,"save_origin: dbgetv error reading origin fields of input view at record %ld\n",
+		elog_die(1,"save_origin: dbgetv error reading origin fields of input view at record %ld\n",
 				is);
 	}
 	nass = ie - is;
@@ -185,7 +185,7 @@ long save_origin(Dbptr dbi, long is, long ie, int depth_fixed,
                 "lddate",lddate,
 			NULL) == dbINVALID)
 	{
-		die(1,"save_origin: dbaddv error writing orid %ld\n",
+		elog_die(1,"save_origin: dbaddv error writing orid %ld\n",
 				orid);
 	}
 	return(orid);
@@ -227,7 +227,7 @@ long save_event(Dbptr dbi, long is, long ie, long orid, Dbptr dbo)
 		"event.evname",evname,	
 				NULL) == dbINVALID)
 	{
-		die(1,"save_event: dbgetv error reading event fields of input view at record %ld\n",
+		elog_die(1,"save_event: dbgetv error reading event fields of input view at record %ld\n",
 				is);
 	}
 	prefor = orid;
@@ -241,7 +241,7 @@ long save_event(Dbptr dbi, long is, long ie, long orid, Dbptr dbo)
                 "lddate",lddate,
 			NULL ) == dbINVALID)
 	{
-		die(1,"save_event: dbaddv error writing event record for orid %ld\n",
+		elog_die(1,"save_event: dbaddv error writing event record for orid %ld\n",
 				orid);
 	}
         /* Added by JN */
@@ -292,7 +292,7 @@ void save_origerr(long orid, Hypocenter h, double **C, Dbptr dbo)
                 "lddate",lddate,
 			NULL) == dbINVALID)
 	{
-		die(1,"save_origerr: dbaddv error writing origerr record for orid %ld\n",
+		elog_die(1,"save_origerr: dbaddv error writing origerr record for orid %ld\n",
 				orid);
 	}
 }
@@ -407,7 +407,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
           		"assoc.belief",&belief,
 				NULL) == dbINVALID)
 		{
-		  die(1,"save_assoc: dbgetv error reading assoc fields of input view at record %ld\n",
+		  elog_die(1,"save_assoc: dbgetv error reading assoc fields of input view at record %ld\n",
 				dbi.record);
 		}
 		if( dbgetv(dbi,0,
@@ -415,7 +415,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 			"site.lon",&stalon,
 				NULL) == dbINVALID)
 		{
-		  die(1,"save_assoc: dbgetv error reading site fields of input view at record %ld\n",
+		  elog_die(1,"save_assoc: dbgetv error reading site fields of input view at record %ld\n",
 				dbi.record);
 		}
 		/* Find the time residual record for this arrival */
@@ -423,7 +423,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 		time_residual_record = (char *)getarr(residual_array,key);
 		if(time_residual_record == NULL)
 		{
-			complain(1,"save_assoc:  getarr mismatch for key %s\nCannot set residual\n",key);
+			elog_complain(1,"save_assoc:  getarr mismatch for key %s\nCannot set residual\n",key);
 			timeres = TIMENULL;
 			wgt = 0.0;
 			strcpy(timedef,"n");
@@ -471,7 +471,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
 				"arrival.azimuth",&phi,
 					NULL) == dbINVALID)
 			{
-		  	  die(1,"save_assoc: dbgetv error reading arrival fields of input view at record %ld\n",
+		  	  elog_die(1,"save_assoc: dbgetv error reading arrival fields of input view at record %ld\n",
 				dbi.record);
 			}
 			/* css stores slowness in s/deg, but we use
@@ -517,7 +517,7 @@ void save_assoc(Dbptr dbi, long is, long ie, long orid, char *vmodel,
                         "lddate",lddate,
 			NULL ) == dbINVALID)
 		{
-			die(1,"save_assoc: dbaddv error writing assoc record for arid %ld\n",
+			elog_die(1,"save_assoc: dbaddv error writing assoc record for arid %ld\n",
 				arid);
 		}
 	}
@@ -614,23 +614,23 @@ int main(int argc, char **argv)
 
 
 	if(dbopen(dbin,"r",&db) == dbINVALID) 
-		die(1,"Unable to open input database %s\n",dbin);
+		elog_die(1,"Unable to open input database %s\n",dbin);
 	if(dbopen(dbout,"r+",&dbo) == dbINVALID) 
-		die(1,"Unable to open output database %s\n",dbout);
+		elog_die(1,"Unable to open output database %s\n",dbout);
 
 	dbv = dbjoin ( dblookup(db,0,"event",0,0),
 		dblookup(db,0,"origin",0,0),
 		0,0,0,0,0);
 	if(dbv.table == dbINVALID)
-		die(1,"event->origin join failed\n");
+		elog_die(1,"event->origin join failed\n");
 	dbv = dbjoin ( dbv, dblookup(db,0,"assoc",0,0),
 			0,0,0,0,0);
 	if(dbv.table == dbINVALID)
-		die(1,"event->origin->assoc join failed\n");
+		elog_die(1,"event->origin->assoc join failed\n");
 	dbv = dbjoin ( dbv, dblookup(db,0,"arrival",0,0),
 			0,0,0,0,0);
 	if(dbv.table == dbINVALID)
-		die(1,"event->origin->assoc->arrival join failed\n");
+		elog_die(1,"event->origin->assoc->arrival join failed\n");
 	/* We will explicitly set the keys for this join because it
 	was found to fail sometimes */
 	joinkey1 = newtbl(0);
@@ -642,20 +642,20 @@ int main(int argc, char **argv)
 	dbv = dbjoin ( dbv, dblookup(db,0,"site",0,0),
 			&joinkey1,&joinkey2,0,0,0);
 	if(dbv.table == dbINVALID)
-		die(1,"event->origin->assoc->arrival->site join failed\n");
+		elog_die(1,"event->origin->assoc->arrival->site join failed\n");
 
 	/* Subset using sift_key if requested */
 	if(sift)
 	{
 		dbv = dbsubset(dbv,sift_exp,0);
 		if(dbv.record == dbINVALID)
-			die(1,"dbsubset of %s with expression %s failed\n",
+			elog_die(1,"dbsubset of %s with expression %s failed\n",
 				dbin, sift_exp);
 	}
 	/* This keeps only the prefered origin records intact */
 	dbv = dbsubset(dbv,"orid == prefor", 0);
 	if(dbv.record == dbINVALID)
-			die(1,"Subset to preferred origin records failed\n");
+			elog_die(1,"Subset to preferred origin records failed\n");
 
 	/* First we have to run a unique key sort in the following order
 	to remove redundant picks made on multiple channels.  We will
@@ -668,7 +668,7 @@ int main(int argc, char **argv)
 	dbv = dbsort(dbv,sortkeys,UNIQUE,0);
 	dbquery(dbv, dbRECORD_COUNT, &nrows);
 	if(nrows != nrows_raw)
-		complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
+		elog_complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
 Which picks will be used here is unpredictable\n\
 %ld total picks, %ld unique\nContinuing\n", nrows_raw, nrows);
 
@@ -680,14 +680,14 @@ Which picks will be used here is unpredictable\n\
 	pushtbl(sortkeys,"arrival.time");
 	dbv = dbsort(dbv,sortkeys,0,0);
 	if(dbv.record == dbINVALID)
-		die(1,"dbsort on evid,orid,arrival.time failed\n");
+		elog_die(1,"dbsort on evid,orid,arrival.time failed\n");
 
 	/* Set up grouping by events */
 	origin_group = newtbl(0);
 	pushtbl(origin_group, "evid");
 	dborigin_group = dbgroup(dbv, origin_group, "origin_group",1);
 	if(dborigin_group.record == dbINVALID)
-		die(1,"dbgroup by origin failed\n");
+		elog_die(1,"dbgroup by origin failed\n");
 
 	dbquery(dborigin_group,dbRECORD_COUNT,&nevents);
 	elog_notify(0,"Attempting to relocate %ld events in subsetted database\n",
@@ -696,7 +696,7 @@ Which picks will be used here is unpredictable\n\
 
 	/* DB is now set up correctly, now we turn to the parameter files */
 	i = pfread(pfin,&pf);
-	if(i != 0) die(1,"Pfread error\n");
+	if(i != 0) elog_die(1,"Pfread error\n");
 
 	o = parse_options_pf (pf);
 	global_fix_depth=o.fix[2];
@@ -728,7 +728,7 @@ Which picks will be used here is unpredictable\n\
 
 		if(dbgetv(dborigin_group,0,"evid", &evid,
 			"bundle", &db_bundle,NULL ) == dbINVALID)
-			complain(1,"dbgetv error for row %ld of event group\n",
+			elog_complain(1,"dbgetv error for row %ld of event group\n",
 				dborigin_group.record);
 		dbget_range(db_bundle,&is,&ie);
 
@@ -769,12 +769,12 @@ Which picks will be used here is unpredictable\n\
 			
 		if(ret_code < 0)
 		{
-			complain(1,"ggnloc failed to produce a solution\n");
+			elog_complain(1,"ggnloc failed to produce a solution\n");
 		}
 		else 
 		{
 			if(ret_code > 0)
-			    complain(1,"%d travel time calculator failures in ggnloc\nSolution ok\n",
+			    elog_complain(1,"%d travel time calculator failures in ggnloc\nSolution ok\n",
 				ret_code);
 			
 			niterations = maxtbl(converge_history);

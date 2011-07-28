@@ -168,34 +168,34 @@ char *chname, chan[128];
 
       memcpy((char *) &val, &packet[PSIZE_OFF],  2);   /* packet size  */
       if(val == 0) { 
- 	 complain(0, "Wrong header. Zero packet size detected.\n");
+ 	 elog_complain(0, "Wrong header. Zero packet size detected.\n");
 	 return(-1);
       } else pack.size = ntohs(val);
       memcpy((char *) &val, &packet[STAID_OFF],  2);   /* sta ID  */
       if(pack.size == 0) { 
- 	 complain(0, "Wrong header. Zero packet size detected.\n");
+ 	 elog_complain(0, "Wrong header. Zero packet size detected.\n");
 	 return(-1);
       } else Par.staid = ntohs(val);
       memcpy((char *) &val, &packet[NSAMP_OFF],  2);  /* # of samples */
       if(val == 0) { 
- 	 complain(0, "Wrong header. Zero number of samples detected.\n");
+ 	 elog_complain(0, "Wrong header. Zero number of samples detected.\n");
 	 return(-1);
       } else pack.nsamp = ntohs(val);
       memcpy((char *) &val, &packet[SRATE_OFF],  2);  /* Sample rate  */
       if(val == 0) { 
- 	 complain(0, "Wrong header. Zero sample rate detected.\n");
+ 	 elog_complain(0, "Wrong header. Zero sample rate detected.\n");
 	 return(-1);
       }  else pack.srate = ntohs(val);
 
       val = packet[HSIZE_OFF]*256 + packet[HSIZE_OFF+1]; /* header size */
       if(val == 0) { 
- 	 complain(0, "Wrong header. Zero header size detected.\n");
+ 	 elog_complain(0, "Wrong header. Zero header size detected.\n");
 	 return(-1);
       }  else pack.hdrsiz = val;
 
       pack.nchan = packet[NCHAN_OFF];  /* Number of channels */
       if(pack.nchan == 0) { 
- 	 complain(0, "Wrong header. Zero number of channels detected.\n");
+ 	 elog_complain(0, "Wrong header. Zero number of channels detected.\n");
 	 return(-1);
       }
 
@@ -221,7 +221,7 @@ fflush(stderr);
              strcpy(pack.datatype, "c0");
 	     break;
           default:
-             complain(0, "Can't recognize a data type - %d(%02x)\n", 
+             elog_complain(0, "Can't recognize a data type - %d(%02x)\n", 
                       packet[DTYPE_OFF], packet[DTYPE_OFF]);
              return -1;
       }
@@ -266,7 +266,7 @@ fflush(stderr);
             get_sta_name();
 	    break;
          default:
-            complain(0, "Can't recognize a data packet type - %d(%02x)\n",
+            elog_complain(0, "Can't recognize a data packet type - %d(%02x)\n",
 	             pkttype, pkttype);
 	    return(-1);
       }
@@ -411,7 +411,7 @@ int parse_pscl_DP (
    if( PsclSTRM == NULL ) return 0;
    stream = ( Stream *) getarr( PsclSTRM, (char *)&skey[0]);
    if( stream == NULL ) {
-      complain( 0, "Can't get %s stream info\n", skey); 
+      elog_complain( 0, "Can't get %s stream info\n", skey); 
       hexdump( stderr, packet, 64 );
       return 0;
    }
@@ -454,7 +454,7 @@ int parse_pscl_DP (
        break;
 
     default:
-       complain( 0, "Can't recognize a PASSCAL data packet type. HS?LS?\n");
+       elog_complain( 0, "Can't recognize a PASSCAL data packet type. HS?LS?\n");
        return -1;
    }
    
@@ -512,20 +512,20 @@ int whatis_pkttype( uchar_t *packet )
      if( RawPkts == NULL) init_RawPkts();
      sprintf( key, "%d\0", code );
      if( code == 0 )  {
-        complain( 0, " whatis_pkttype(): Can't recognize a packet type %s\n", key );
+        elog_complain( 0, " whatis_pkttype(): Can't recognize a packet type %s\n", key );
         return -1;
      }
 
      raw = ( Raw *) getarr( RawPkts, (char *) &key[0] );
      if( raw == NULL ) { 
-        complain( 0, " whatis_pkttype(): Can't get RawPkts info for %s\n", key );
+        elog_complain( 0, " whatis_pkttype(): Can't get RawPkts info for %s\n", key );
         return -1;
      }
      memcpy( (char *) &Par.raw, (char *) raw, sizeof( Raw ) );
      switch(  parse_raw( packet, raw->parse, raw->pkttype ) ) {
 
 	case -1:
-          complain( 0, " whatis_pkttype(): Can't get RawPkts info for %s\n", key );
+          elog_complain( 0, " whatis_pkttype(): Can't get RawPkts info for %s\n", key );
           return -1;
 	case 0:
           return 0;

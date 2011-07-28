@@ -1,7 +1,7 @@
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
-if ( ! &Getopts('nv') || @ARGV != 1 ) { 
+if ( ! getopts('nv') || @ARGV != 1 ) { 
     die ( "Usage: $0 database\n" ) ; 
 }
 sub compare_band {

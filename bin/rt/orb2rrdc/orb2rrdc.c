@@ -558,7 +558,7 @@ main( int argc, char **argv )
 					"(are there two orb2rrdc's running with the same state" 
 					"file?)\n" );
 
-				clear_register( 1 );
+				elog_clear_register( 1 );
 			}
 		}
 

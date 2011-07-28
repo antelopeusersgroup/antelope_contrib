@@ -103,7 +103,7 @@ char **argv;
 	    /* Open and read pf file */
 	    if ( (ier=pfread(argv[5], &pf))<0 ) {
 		  printf(" pf error %d on %s\n",ier, pfile);
-		  die (0, " pfread error.. %s", argv[5]);
+		  elog_die(0, " pfread error.. %s", argv[5]);
 	    }
 	    printf ("pfile %s\n",pfile);
 	    if (pfget(pf, "tstart", &pfstr)!= PFINVALID) tst = pfget_double(pf, "tstart");
@@ -124,7 +124,7 @@ char **argv;
  *	Open database.
  */
 	if (dbopen (dbname, "r+", &db) == dbINVALID) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "dbspgram: Unable to open database.\n");
 		exit (1);
 	}
@@ -135,7 +135,7 @@ char **argv;
 	    printf ("Doing orid %s station %s in db %s\n", oridstr, sta, dbname);
 	    dbo = dblookup (db, 0, "origin", "orid", oridstr);
  		if (dbo.record == dbINVALID) {
- 			clear_register (1);
+ 			elog_clear_register(1);
  			fprintf (stderr, "dbrfcn: Cannot find orid %d in %s.\n", orid, dbname);
  			usage();
  			exit (1);
@@ -144,7 +144,7 @@ char **argv;
 	    dbgetv (dbo, 0, "lat", &evlat, "lon", &evlon, "depth",&dep, "time",&evtime, 0);
 	    dbs = dblookup (db, 0, "site", "sta", sta);
  	    if (dbs.record == dbINVALID) {
- 		clear_register (1);
+ 		elog_clear_register(1);
  		fprintf (stderr, "dbspgram: Cannot find sta %s in %s.\n", sta, dbname);
  		usage();
  		exit (1);
@@ -164,7 +164,7 @@ char **argv;
 	} else {
 	    dbo = dblookup(db, 0, "arrival", "arid", aridstr);
  		if (dbo.record == dbINVALID) {
- 			clear_register (1);
+ 			elog_clear_register(1);
  			fprintf (stderr, "dbrfcn: Cannot find arid %d in %s.\n", arid, dbname);
  			usage();
  			exit (1);
@@ -236,7 +236,7 @@ char **argv;
 	sprintf(time_str,"%f",t0);
 	sprintf(endtime_str,"%f",t1);
 	if (trload_css ( dbwf, time_str, endtime_str, &tr, 0, 0) < 0) 
-		die ( 0, "Problems loading traces\n") ;
+		elog_die( 0, "Problems loading traces\n") ;
 	/* For CNET:  Split out datagaps */
 	trsplit (tr, 0, 0);
 	dbquery (tr, dbRECORD_COUNT, &nwf);
@@ -337,12 +337,12 @@ char **argv;
 
 	    printf ("  ..saving %d to %s via %s\n ",nplt,output_database,line);
 	    if ( dbopen ( output_database, "r+", &dbout ) )
-		die ( 0, "Can't open database %s\n", output_database ) ;
+		elog_die( 0, "Can't open database %s\n", output_database ) ;
 
 	    dbout = dblookup ( dbout, 0, "wfdisc", 0, 0 ) ;
 	    dbquery (dbout, dbRECORD_COUNT, &nwfo);
 	    if ( trsave_wf ( tr, dbout, "t4", outpath, 0 ) )
-		die ( 0, "Couldn't save waveforms\n" ) ;
+		elog_die( 0, "Couldn't save waveforms\n" ) ;
 	    dbquery (dbout, dbRECORD_COUNT, &nwf);
 	    for (dbout.record=nwfo; dbout.record<nwf; dbout.record ++) {
 		wfid = dbnextid(dbout, "wfid");

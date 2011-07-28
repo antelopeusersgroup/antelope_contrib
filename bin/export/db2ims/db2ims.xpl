@@ -20,7 +20,7 @@
 # finally program magnitudes
 #  J.Eakins 5/2009
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 use File::Path;
 
@@ -63,7 +63,7 @@ our ($Pf,$ref,%accept_magtypes,$mag_origin_auth,$mag_netmag_auth,$auth_reject,$m
 our ($netmagtype,$nsta,$netmag,$magerr,$stamag,$mag_auth,$minmaxind);
 
 
-  if ( ! &Getopts('d:f:t:s:e:l:p:mvVy') || @ARGV < 1 || @ARGV > 1) { 
+  if ( ! getopts('d:f:t:s:e:l:p:mvVy') || @ARGV < 1 || @ARGV > 1) { 
 	&usage;
   }
 

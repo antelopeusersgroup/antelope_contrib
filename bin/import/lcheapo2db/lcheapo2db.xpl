@@ -1,9 +1,9 @@
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     our ( $opt_d, $opt_v ) ;
     
-    if ( ! &Getopts('d:v') || $#ARGV != 1 )
+    if ( ! getopts('d:v') || $#ARGV != 1 )
         { die ( "Usage: $0  [-d datadir] -v lcheapo_listing dbout \n" ) ; }
 
     use Datascope ;

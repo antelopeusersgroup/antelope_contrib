@@ -80,7 +80,7 @@ Dbptr           mw;
 		    &ier
 	    ) ;
 	    if ( ier == 129 || ier == 130 ) 
-		complain ( 0, "mdfd returns error code = %d\n", ier ) ; 
+		elog_complain( 0, "mdfd returns error code = %d\n", ier ) ; 
 	}
 
 	dbputv(mw, 0,

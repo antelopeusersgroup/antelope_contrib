@@ -5,7 +5,7 @@
 # Kent Lindquist and Taimi Mulder
 # October, 2000
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope ;
  
 sub algorithm_to_model {
@@ -34,7 +34,7 @@ sub algorithm_to_locator {
 $program = `basename $0`;
 chomp( $program );
 
-if ( ! &Getopts('sc:a:') || @ARGV != 1 ) {
+if ( ! getopts('sc:a:') || @ARGV != 1 ) {
 	die ( "Usage: $program [-s] [-c mail_address] [-a mail_address] database\n" );
 } else {
 	$dbname = pop( @ARGV );

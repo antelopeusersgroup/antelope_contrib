@@ -38,16 +38,16 @@ void dbserve(char *database, FILE *in_stream, FILE *out_stream) {
     fprintf(out_stream, "HELLO\n");
 
     if ( dbopen(database, "r", &db ) != 0)
-	die (0, "Couldn't open database %s\n", database ) ;
+	elog_die(0, "Couldn't open database %s\n", database ) ;
     
     if (pfin(in_stream, &pf) != 0)
-	die(0, "Can't read parameter file\n");
+	elog_die(0, "Can't read parameter file\n");
 
     elog_debug(0, "reading the recipe.\n");
     recipe = pfget_tbl (pf, "recipe" ) ;
 
     if (recipe == 0) 
-	die(0, "Didn't find a 'recipe' entry in the parameter file." );
+	elog_die(0, "Didn't find a 'recipe' entry in the parameter file." );
 
     elog_debug(0, "performing dbprocess.\n");
     db = dbprocess ( db, recipe, 0 ) ;
@@ -100,10 +100,10 @@ void daemonize(char *database, int port) {
     
     if (-1 == bind(sock, (struct sockaddr *)(&local_addr), 
 		   sizeof(struct sockaddr_in) )) 
-	die(1, "could not bind to socket.");
+	elog_die(1, "could not bind to socket.");
     
     if (-1 == listen(sock, SOMAXCONN)) 
-	die(1, "could not listen on socket.");
+	elog_die(1, "could not listen on socket.");
     
     while (1) {
 	int connection;
@@ -114,7 +114,7 @@ void daemonize(char *database, int port) {
 	connection = accept(sock, (struct sockaddr *)&remote_addr, &addrlen);
 	
 	if (-1 == connection) 
-	    die(1, "accept() failed.");
+	    elog_die(1, "accept() failed.");
 	
 	elog_log(0, "incoming connection from %s:%u\n",
 		 inet_ntoa(remote_addr.sin_addr),
@@ -130,7 +130,7 @@ void daemonize(char *database, int port) {
 		exit( 0 );
 	    }
 	    case -1: 
-		die(1, "fork() failed. (%s)", strerror(errno));
+		elog_die(1, "fork() failed. (%s)", strerror(errno));
 	    default:
 		/* success */
 		break;

@@ -7,13 +7,13 @@
 # USAGE : db2ph database -p pffile					   #
 ############################################################################
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Switch ;
 use lib "$ENV{ANTELOPE}/data/perl" ;
 use FileHandle;
 use Datascope ;
  
-if ( ! &Getopts('p:') || @ARGV != 1 ) { 
+if ( ! getopts('p:') || @ARGV != 1 ) { 
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     die ( "Usage: $pgm [-p pffile] database\n" ) ; 

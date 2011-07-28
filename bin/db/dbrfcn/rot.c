@@ -48,7 +48,7 @@ double 		angle;
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"rot:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"rot:bundletype != 0");
 
 		if (dbgetv(bundle, 0,
 		 "data", &data,
@@ -58,7 +58,7 @@ double 		angle;
 		  "calib", &calib,
 		  "hang", &hang,
 		  "vang", &vang,
-		   0)!=0) die (0,"rot:dbgetv problem\n");
+		   0)!=0) elog_die(0,"rot:dbgetv problem\n");
 
 		if (calib!=0.0) {
 	    		for ( i=0 ; i<nsamp ; i++ ){ 
@@ -134,7 +134,7 @@ double 		angle;
 	  	"nsamp", &nsamp,
 	  	"samprate", &samprate,
 	  	"chan", chan,
-	   	0)!=0) die (0,"rot:dbgetv problem\n");
+	   	0)!=0) elog_die(0,"rot:dbgetv problem\n");
 
 	    /*	if ((strcmp(chan,"HHE")==0)||(strcmp(chan,"BHE")==0)||(strcmp(chan,"BLE")==0)||(strcmp(chan,"HLE")==0)){ */
 	    	if (chan[2]=='E'){

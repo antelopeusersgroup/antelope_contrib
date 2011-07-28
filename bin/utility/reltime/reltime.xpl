@@ -1,7 +1,7 @@
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
-if ( ! &Getopts('f:o:') || @ARGV < 1 ) { 
+if ( ! getopts('f:o:') || @ARGV < 1 ) { 
     die ( "Usage: $0 [-f time] [-o fmt] [sign] [count] [interval]\ne.g $0 - 1 day gives you the last day\n" ) ; 
 }
 

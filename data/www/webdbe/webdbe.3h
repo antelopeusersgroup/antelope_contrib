@@ -57,7 +57,7 @@ $db = "/opt/antelope/data/db/demo/demo" ; // Database pointer
 $recs_per_page = "20" ; // Records per page returned
 
 if( ! extension_loaded( "Datascope" ) ) {
-	die( "Module 'Datascope' not loaded. Bye." );
+	elog_die( "Module 'Datascope' not loaded. Bye." );
 }
 require_once( 'webdbe.inc' ) ; // Get the functionality
 $mydb = ds_dbopen( $db,'r' ) ; // Open the database

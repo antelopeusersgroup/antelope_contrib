@@ -25,24 +25,24 @@ int err;
 
     if( *orb >= 0 )  {
       if( orbput( *orb, srcname, epoch, packet, psize ) < 0) { 
-	 complain( 0, "send2orb(): Can't send a packet to orbserver.\n"); 
+	 elog_complain( 0, "send2orb(): Can't send a packet to orbserver.\n"); 
 	 err++; 
 	 if(err >= 30)  { 
 	    err = 0; 
 	    if( orbclose( *orb) || ( *orb = orbopen( orbname, "w" )) < 0 )  { 
 	        *orb = -1;
-	        complain(0,"send2orb(): Can't re-open ORB!\n"); 
+	        elog_complain(0,"send2orb(): Can't re-open ORB!\n"); 
             }
          }
       } else err = 0; 
     }  else { 
         err = 0;
         if( Log )
-           complain( 0, "send2orb(): Can't send a packet %s-%lf to orbserver.\n", 
+           elog_complain( 0, "send2orb(): Can't send a packet %s-%lf to orbserver.\n", 
 	                                                  &srcname[0], epoch );
         if( ( *orb = orbopen( orbname, "w" )) < 0 ) 
             if( Log ) 
-	       complain(0,"send2orb(): Can't re-open ORB!\n");
+	       elog_complain(0,"send2orb(): Can't re-open ORB!\n");
     } 
     return err;
 

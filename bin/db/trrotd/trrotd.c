@@ -91,7 +91,7 @@ char **argv;
 	if (argc == 7) {
 		strcpy(pfile, argv[6]);
 		/* Open and read pf file */
-		if (pfread(pfile, &pf)) die (0, " pfread error on %s\n", pfile);
+		if (pfread(pfile, &pf)) elog_die(0, " pfread error on %s\n", pfile);
 		if (pfget(pf, "tstart", &pfstr)!= PFINVALID) tst = pfget_double(pf, "tstart");
 		if (pfget(pf, "tend", &pfstr)!= PFINVALID) ten = pfget_double(pf, "tend");
 		if (pfget(pf, "decimate", &pfstr)!= PFINVALID) idecim = pfget_int(pf, "decimate");
@@ -104,7 +104,7 @@ char **argv;
  *	Open database.
  */
 	if (dbopen (dbname, "r+", &db) == dbINVALID) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "trrotd: Unable to open database.\n");
 		exit (1);
 	}
@@ -114,7 +114,7 @@ char **argv;
 	if (!doarid) {
 	    dbo = dblookup (db, 0, "origin", "orid", oridstr);
  		if (dbo.record == dbINVALID) {
- 			clear_register (1);
+ 			elog_clear_register(1);
  			fprintf (stderr, "trrotd: Cannot find orid %d in %s.\n", orid, dbname);
  			usage();
  			exit (1);
@@ -123,7 +123,7 @@ char **argv;
 	    dbgetv (dbo, 0, "lat", &evlat, "lon", &evlon, "depth",&dep, "time",&evtime, 0);
 	    dbs = dblookup (db, 0, "site", "sta", sta);
  	    if (dbs.record == dbINVALID) {
- 		clear_register (1);
+ 		elog_clear_register(1);
  		fprintf (stderr, "dbspgram: Cannot find sta %s in %s.\n", sta, dbname);
  		usage();
  		exit (1);
@@ -143,7 +143,7 @@ char **argv;
 	} else {
 	    dbo = dblookup(db, 0, "arrival", "arid", aridstr);
  		if (dbo.record == dbINVALID) {
- 			clear_register (1);
+ 			elog_clear_register(1);
  			fprintf (stderr, "dbrfcn: Cannot find arid %d in %s.\n", arid, dbname);
  			usage();
  			exit (1);
@@ -223,7 +223,7 @@ char **argv;
 	sprintf(endtime_str,"%f",t1);
 	printf(" ... Asking trload for data from %s to %s should be %f s\n",time_str, endtime_str, t1-t0);
 	if (trload_css ( dbwf, time_str, endtime_str, &tr, 0, 0) < 0) 
-		die ( 0, "Problems loading traces\n") ;
+		elog_die( 0, "Problems loading traces\n") ;
 
 	/* PROBLEM:  trsplice is setting added points to a very bad value */
 	/* trsplice( tr, 1.0, 0, 0); */
@@ -290,14 +290,14 @@ char **argv;
 	    nplt = num_traces(tr);
 	    printf ("  ..saving %d to %s via %s\n ",nplt,output_database,line);
 	    if ( dbopen ( output_database, "r+", &dbout ) )
-		die ( 0, "Can't open database %s\n", output_database ) ;
+		elog_die( 0, "Can't open database %s\n", output_database ) ;
 
 	    dbout = dblookup ( dbout, 0, "wfdisc", 0, 0 ) ;
 	    printf ("Last Check of data before save: \n");
 	    trwavestats(tr);
 
 	    if ( trsave_wf ( tr, dbout, "t4", outpath , 0) )
-		die ( 0, "Couldn't save waveforms\n" ) ;
+		elog_die( 0, "Couldn't save waveforms\n" ) ;
 	    dbquery (dbout, dbRECORD_COUNT, &nwf);
 	    for (dbout.record=0; dbout.record<nwf; dbout.record ++) {
 		wfid = dbnextid(dbout, "wfid");

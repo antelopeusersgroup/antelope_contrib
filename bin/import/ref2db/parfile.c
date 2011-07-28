@@ -157,7 +157,7 @@ update_site ( )
            dasnum = maxtbl(DasList);
            for( i = 0; i < dasnum; i++ )  {
               das = (Daslist *) gettbl( DasList, i );
-	      if( das == 0 ) die( 0, "DasList is corrupted\n");
+	      if( das == 0 ) elog_die( 0, "DasList is corrupted\n");
               if( das->dasid == Par.staid &&             
                   Par.time >= das->stime &&
                   Par.time <= das->etime )          

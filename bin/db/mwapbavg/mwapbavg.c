@@ -111,7 +111,7 @@ void MWcompute_average_slowness(Dbptr dbb,
 		ux[i] = slow*sin(rad(azimuth));
 		uy[i] = slow*cos(rad(azimuth));
 	}
-	if(i<=0)die(0,"Multiple read errors from mwslow table\nNo data to process\nCannot continue\n");
+	if(i<=0)elog_die(0,"Multiple read errors from mwslow table\nNo data to process\nCannot continue\n");
 	/* I don't think this can actually happen in the current version
 	of datascope, but it is a safe algorithm*/
 	if(i!=nest)
@@ -1061,10 +1061,10 @@ main(int argc, char **argv)
 	if(phase == NULL) phase = strdup("P");
 
         i = pfread(pfin,&pf);
-        if(i != 0) die(1,"Pfread error\n");
+        if(i != 0) elog_die(1,"Pfread error\n");
 
         if(dbopen(dbname,"r+",&db) == dbINVALID)
-                die(1,"Unable to open input database %s\n",dbname);
+                elog_die(1,"Unable to open input database %s\n",dbname);
 
 	/* We first call the multiwavelet library routine that
 	builds an associative array of station objects.  That 
@@ -1107,7 +1107,7 @@ main(int argc, char **argv)
 	grp_tbl = newtbl(1);
 	pushtbl(grp_tbl,"evid");
 	dbgrp = dbgroup(db,grp_tbl,0,0);
-	if(dbgrp.record == dbINVALID) die(0,"Problems forming mwslow view\n");
+	if(dbgrp.record == dbINVALID) elog_die(0,"Problems forming mwslow view\n");
 
 	/* The algorithm below is simpler if we form a sorted view 
 	of the mwtstatic table.  Sorted this way we can just work
@@ -1117,18 +1117,18 @@ main(int argc, char **argv)
 	dbtsv = dblookup(db,0,"mwtstatic",0,0);
 	dbtsv = dbsort(dbtsv,sortkeys,0,0);
 	if(dbtsv.record == dbINVALID) 
-		die(0,"Problems forming mwtstatic view\n");
+		elog_die(0,"Problems forming mwtstatic view\n");
 
 	/* We need the standard event->origin->assoc->arrival view
 	below.  This forms it */
 	dbav = dbarrival_view(db);
 	if(dbav.record == dbINVALID)
-		die(0,"Problems forming arrival view\n");
+		elog_die(0,"Problems forming arrival view\n");
 	/* This has to be subsetted for one phase only also */
 	dbav = dbsubset(dbav,sset,0);
 
         dbquery(dbgrp,dbRECORD_COUNT,&nevents);
-	if(nevents<=0) die(0,"No data to process in mwslow table\n");
+	if(nevents<=0) elog_die(0,"No data to process in mwslow table\n");
         fprintf(stdout,"%s:  start processing for %d events\n",
 		argv[0],nevents);
 

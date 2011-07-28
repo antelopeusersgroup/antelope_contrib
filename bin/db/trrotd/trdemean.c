@@ -29,7 +29,7 @@ Dbptr           tr;
 	       "bundletype", &bundletype,
 	       0);
 
-	    if (bundletype != 0) die(0,"trdemean:bundletype != 0");
+	    if (bundletype != 0) elog_die(0,"trdemean:bundletype != 0");
 	    dbgetv(tr, 0,
 		       "data", &data,
 		       "nsamp", &nsamp,

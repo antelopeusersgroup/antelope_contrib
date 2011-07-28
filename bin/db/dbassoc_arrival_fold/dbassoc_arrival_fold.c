@@ -3,7 +3,7 @@
 #include "db.h"
  
 usage() {
-	die( 0, "Usage: dbassoc_arrival_fold [-p pdelta] [-s sdelta] arrival_db origin_db\n" );
+	elog_die( 0, "Usage: dbassoc_arrival_fold [-p pdelta] [-s sdelta] arrival_db origin_db\n" );
 }
 
 main( int argc, char **argv )
@@ -76,13 +76,13 @@ main( int argc, char **argv )
 	dbar_assoc = dblookup( dbar, "", "assoc", "", "" );
 	dbquery( dbar_assoc, dbTABLE_PRESENT, &is_present );
 	if( is_present ) {
-		die( 0, "Cannot proceed: %s.assoc is already present\n", arrival_dbname );
+		elog_die( 0, "Cannot proceed: %s.assoc is already present\n", arrival_dbname );
 	}
 
 	dbar_origin = dblookup( dbar, "", "origin", "", "" );
 	dbquery( dbar_origin, dbTABLE_PRESENT, &is_present );
 	if( is_present ) {
-		die( 0, "Cannot proceed: %s.origin is already present\n", arrival_dbname );
+		elog_die( 0, "Cannot proceed: %s.origin is already present\n", arrival_dbname );
 	}
 
 	sprintf( cmd, "dbassoc_arrival" );
@@ -99,7 +99,7 @@ main( int argc, char **argv )
 
 	dbquery( dbar_origin, dbRECORD_COUNT, &norigins );
 	if( norigins <= 0 ) {
-		die( 0, "No origins in %s assoc'd with picks in %s\n", 
+		elog_die( 0, "No origins in %s assoc'd with picks in %s\n", 
 			origin_dbname, arrival_dbname );
 	}
 

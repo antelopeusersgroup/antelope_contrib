@@ -42,7 +42,7 @@ int read_DP(
            break;
 
         default:
-	    complain( 0, "can't recognize data packet header - %d\n", hdr->hdrtype );
+	    elog_complain( 0, "can't recognize data packet header - %d\n", hdr->hdrtype );
 	    return 0;
 	
     }
@@ -69,7 +69,7 @@ int read_DP(
             memcpy( (char *) &data[0], packet + doff, nbytes );
             if( ucsd_ucompress( &udata[0], (char *) &data[0], hdr->nsamp, 
 	                                    (*Pkt)->nchannels ) <= 0 )  {
-                complain( 0, "Can't uncompress EDP data.\n");
+                elog_complain( 0, "Can't uncompress EDP data.\n");
                 return 0;
             }  
 	    break;
@@ -208,7 +208,7 @@ int read_newbba_DP(
         case 0: 
             memcpy( (char *) &data[0], packet + doff, nbytes );
             if(ucsd_ucompress(&udata[0], (char *) &data[0], hdr->nsamp, 1) <= 0)  {
-                 complain(0, "Can't uncompress EDP data.\n");
+                 elog_complain(0, "Can't uncompress EDP data.\n");
                  return 0;
             }
 	    break;

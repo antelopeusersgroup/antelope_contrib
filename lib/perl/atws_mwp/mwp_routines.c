@@ -105,7 +105,7 @@ int mwp_prepare (Dbptr db, int orid, char* sta, double stime, double etime, floa
 	sprintf (endtime_str, "(%.5f)", etime);
 
 	if (trload_css (db, time_str, endtime_str, &tr, 0, 0) < 0)
-		die (0, "Problems loading traces\n");
+		elog_die(0, "Problems loading traces\n");
 
 //	printf("%s:%i\n", __FILE__, __LINE__);
 
@@ -132,10 +132,10 @@ int mwp_prepare (Dbptr db, int orid, char* sta, double stime, double etime, floa
 			//printf("Doing Bundle: %i\n", bundle.record);
 			dbgetv (bundle, 0, "bundletype", &bundletype, 0);
 			if (bundletype != 0)
-				die (0, "bundletype != 0");
+				elog_die(0, "bundletype != 0");
 
 			if (dbgetv (bundle, 0, "data", &data, "nsamp", &nsamp, "samprate", &samprate, "calib", &calib, 0) != 0)
-				die (0, "dbgetv data problem\n");
+				elog_die(0, "dbgetv data problem\n");
 
 			delta = 1. / samprate;
 			}

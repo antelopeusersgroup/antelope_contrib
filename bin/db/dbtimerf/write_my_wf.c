@@ -33,9 +33,9 @@ float 	*data;
 	"instype", instype, "datatype", datatype,
 	"dir", dir, "dfile", dfile,
 	0);
-	if (added<0) complain(0, "dbaddv wf error");
+	if (added<0) elog_complain(0, "dbaddv wf error");
 	db->record = added;
 
-	if (trputwf(*db, data)<0) complain(0, "dbputwf wf error");
+	if (trputwf(*db, data)<0) elog_complain(0, "dbputwf wf error");
 
 }

@@ -44,7 +44,7 @@ void check_required_pf(Pf *pf)
 	at all.  This assumes you wouldn't call this routine if you
 	weren't serious about checking */
 	if(pfget(pf,"require",(void **)&pf_required) != PFARR)
-		die(0,"Arr of required parameters (require &Arr) missing from parameter space\nMust be present to execute this program\n");
+		elog_die(0,"Arr of required parameters (require &Arr) missing from parameter space\nMust be present to execute this program\n");
 	t=pfkeys(pf_required);
 	for(i=0;i<maxtbl(t);++i)
 	{
@@ -61,7 +61,7 @@ void check_required_pf(Pf *pf)
 				if(nitems == 3)
 				{
 					if( (itest < ilowcheck)
-					  || (itest > ihighcheck) ) die(0,
+					  || (itest > ihighcheck) ) elog_die(0,
 						"Parameter %s has value %d which is outside required range of %d to %d\n",
 						   name,itest,ilowcheck,ihighcheck);
 				}
@@ -79,7 +79,7 @@ void check_required_pf(Pf *pf)
 				if(nitems == 3)
 				{
 					if( (dtest < dlowcheck)
-					  || (dtest > dhighcheck) ) die(0,
+					  || (dtest > dhighcheck) ) elog_die(0,
 						"Parameter %s has value %lg which is outside required range of %lg to %lg\n",
 						   name,dtest,dlowcheck,dhighcheck);
 				}
@@ -102,7 +102,7 @@ void check_required_pf(Pf *pf)
 				line = gettbl(testtbl,i);
 				ctest = pfget_string(pf,line);
 				if(ctest == NULL)
-					die(0,"Missing required string variable = %s\n",
+					elog_die(0,"Missing required string variable = %s\n",
 						line);
 			}
 		}

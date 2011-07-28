@@ -20,7 +20,7 @@ int save_emodel(int orid, float *emodel, Dbptr db)
 	dbemod = dblookup(db, 0,"emodel",0,0);
 	if(dbemod.table == dbINVALID)
 	{
-		register_error(0,"emodel table not defined for output database\nAdd genloc mods\n");
+		elog_log(0,"emodel table not defined for output database\nAdd genloc mods\n");
 		return(1);
 	}
 	else
@@ -33,7 +33,7 @@ int save_emodel(int orid, float *emodel, Dbptr db)
 			"emodelt",emodel[3],
 				NULL ) == dbINVALID)
 		{
-			register_error(0,"dbaddv error for emodel table\n");
+			elog_log(0,"dbaddv error for emodel table\n");
 			return(-1);
 		}
 	}
@@ -69,7 +69,7 @@ int pseudoinverse(float **U, float *s, float **V, int m, int n, float **Agi)
 
 
         if((work=(float *)calloc(n,sizeof(float))) == NULL)
-                die(1,"Pseudoinverse computation: cannot alloc work array of length %d\n",
+                elog_die(1,"Pseudoinverse computation: cannot alloc work array of length %d\n",
                         n);
 
 	/* first find the larges singular value, then just zero
@@ -271,7 +271,7 @@ void predicted_errors(Hypocenter h,
 
 	if ( (b==NULL) || (r==NULL)
 		|| (w==NULL) || (reswt==NULL) )
-		die(1,"Alloc errors in location error function\n");
+		elog_die(1,"Alloc errors in location error function\n");
 
 	statistics = form_equations(ALL, h, attbl,utbl,
 			o, U, b, r, w, reswt,&ndata_feq);
@@ -284,7 +284,7 @@ void predicted_errors(Hypocenter h,
 	nused = pseudoinverse(U,s,V,m,npar,Agi);
 	if(nused != npar ) 
 	{
-		register_error(0,"predicted_errors function found system of equations was singular, Errors estimates are unreliable\n");
+		elog_log(0,"predicted_errors function found system of equations was singular, Errors estimates are unreliable\n");
 	}
 	compute_covariance(Agi,m,npar,4,C,o.fix);
 

@@ -86,7 +86,7 @@ dbserr(error, s, c, t, flag)
 		s, c, year, day, hour, minute, sec);
 	elog_notify(0, "%s\n", error);
 	if (flag)
-		clear_register(1);
+		elog_clear_register(1);
 }
 /* This small function returns a tbl of Spectra_phase_specification
 structures that define the window and multitaper spectra properties
@@ -106,7 +106,7 @@ void parse_spectra_windows(Pf *pf,Tbl **phases)
 
 	t = pfget_tbl(pf,"spectra_windows");
 	*phases = newtbl(0);
-	if((*phases)==NULL) die(0,"newtbl for spectra list failed\n");
+	if((*phases)==NULL) elog_die(0,"newtbl for spectra list failed\n");
 	for(i=0;i<maxtbl(t);++i)
 	{
 		double start,end,tbwp;
@@ -116,7 +116,7 @@ void parse_spectra_windows(Pf *pf,Tbl **phases)
 		sps = (Spectra_phase_specification *)
 			 malloc(sizeof(Spectra_phase_specification));
 		if (sps == NULL) 
-			die(0,"malloc failed for Spectra_phase_specification structure\n");
+			elog_die(0,"malloc failed for Spectra_phase_specification structure\n");
 		sps->phase_reference = strdup(phase);
 		sps->start = start;
 		sps->end = end;
@@ -322,15 +322,15 @@ int main(int argc, char **argv)
 		spec_dir = strdup("./spectra");
 	/* Create spec_dir and die if this can't be done */
 	if (makedir(spec_dir) == -1) {
-		die(0, "Cannot open spectral output directory %s\n", spec_dir);
+		elog_die(0, "Cannot open spectral output directory %s\n", spec_dir);
 	}
 
-	if(pfread(pffile,&pf)) die(0,"pfread error\n");
+	if(pfread(pffile,&pf)) elog_die(0,"pfread error\n");
 	parse_spectra_windows(pf,&phases);
 
 	/* Open input database */
 	if (dbopen(dbin, "r+", &dbi) == dbINVALID) {
-		clear_register(1);
+		elog_clear_register(1);
 		elog_die(0, "dbmwspec: Unable to open database '%s'.\n", dbin);
 	}
 	/* join the full wfdisc and arrival tables.  We keep the pointer
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
 */
 	
 	dbquery(dball,dbRECORD_COUNT, &narr);
-	if(narr<=0) die(0,"Working view has no data after dbjoins\n");
+	if(narr<=0) elog_die(0,"Working view has no data after dbjoins\n");
 	fprintf(stdout,"dbmwpec:  wfdisc->arrival->sensor->instrument->affiliation join of %s has %d rows\n",
 				dbin,narr);
 
@@ -448,7 +448,7 @@ int main(int argc, char **argv)
 			if(ierr)
 			{
 				trgetwf_error(db_this_phase,ierr);
-				clear_register(1);
+				elog_clear_register(1);
 				continue;
 			}
 			/* delete traces with gaps */
@@ -557,13 +557,13 @@ int main(int argc, char **argv)
 					  (nfft / 2 + 1), db_this_phase)) {
 					if(ierr<0)
 					{
-						complain(0,"correct_response failed completely for %s %s %s\n",
+						elog_complain(0,"correct_response failed completely for %s %s %s\n",
 							sta,chan,pick);
 
 					}
 					else if(ierr> 0)
 					{
-						complain(0,"%d eval_response errors for %s %s %s\n",
+						elog_complain(0,"%d eval_response errors for %s %s %s\n",
 							sta,chan,pick);
 					}
 				}

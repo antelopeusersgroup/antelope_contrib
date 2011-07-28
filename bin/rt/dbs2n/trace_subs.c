@@ -104,11 +104,11 @@ double                  tend;
 
 	size = atoi(&dtype[strlen(dtype)-1]);
 	if( time > tend ) {
-	     complain( 0, "record starts at %lf but requested etime %lf\n", time, tend);
+	     elog_complain( 0, "record starts at %lf but requested etime %lf\n", time, tend);
 	     free(buf); buf = 0;
 	}
 	if ( endtime < tstart )  { 
-	     complain( 0, "record ends at %lf but requested stime %lf\n", endtime, tstart);
+	     elog_complain( 0, "record ends at %lf but requested stime %lf\n", endtime, tstart);
 	     free(buf); buf = 0;
 	}
 	
@@ -119,16 +119,16 @@ double                  tend;
 	   
 	   buf = trgetwf(db, 0, 0, 0,tstart, tend, &ts, &te, &nsamp, 0, 0) ; 
            if( buf == 0 )  { 
-                complain( 0, "can't get %s_%s data from %lf to %lf\n", 
+                elog_complain( 0, "can't get %s_%s data from %lf to %lf\n", 
                              sta, chan, tstart, tend ); 
                 return 0;
            }
            if( fabs( ts - tstart ) > 1.0/samprate ) 
-               complain( 0, "problem get data. Ask %lf-%lf - got %lf-%lf\n", 
+               elog_complain( 0, "problem get data. Ask %lf-%lf - got %lf-%lf\n", 
 	                 tstart, tend, ts, te );
 					       
            if( fabs( tend - te ) > 1.0/samprate ) 
-               complain( 0, "problem get data. Ask %lf-%lf - got %lf-%lf\n", 
+               elog_complain( 0, "problem get data. Ask %lf-%lf - got %lf-%lf\n", 
 	                 tstart, tend, ts, te );
 					       
 

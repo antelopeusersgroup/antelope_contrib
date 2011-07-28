@@ -3,7 +3,7 @@
 #    testing of trexcertp failure when 99999999
 #    add dbmaster (snetsta, schanloc) to descriptor to $tmpwf
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -22,7 +22,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnd:') || @ARGV != 4 ) { 
+    if (  ! getopts('vVnd:') || @ARGV != 4 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-d clean_baler_db]  \n" ;
         $usage .=  "	balerdb_central clustername start_time end_time \n\n"  ; 

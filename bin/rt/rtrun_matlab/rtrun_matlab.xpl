@@ -17,7 +17,7 @@
 #   the copyright statement above is not removed. 
 #
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Fcntl ':flock';
 use Datascope ;
 use rt;
@@ -97,7 +97,7 @@ $Pf = $pgm;
 
 elog_init( $pgm, @ARGV );
 
-if ( ! &Getopts('svp:l:') || @ARGV != 0 ) { 
+if ( ! getopts('svp:l:') || @ARGV != 0 ) { 
 
 	elog_die ( "Usage: $pgm [-s] [-v] [-p pfname] [-l lockfile]\n" ) ; 
 

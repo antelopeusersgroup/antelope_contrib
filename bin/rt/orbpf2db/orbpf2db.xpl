@@ -1,4 +1,4 @@
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 use orb;
 use strict;
@@ -86,7 +86,7 @@ $pktid = 0;
 $time = -9999999999.999;
 $pfmin = 1233000000.000;
 
-if ( ! &Getopts('s:w:f:p:m:vV') || @ARGV != 2 ) { 
+if ( ! getopts('s:w:f:p:m:vV') || @ARGV != 2 ) { 
 
     	die ( "Usage: orbpf2db [-vV] [-p pffile] [-s statefile] [-m match] [-f from] [-w mode] orb database\n" ) ; 
 

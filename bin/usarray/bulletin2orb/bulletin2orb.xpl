@@ -4,7 +4,7 @@ use Datascope ;
 use orb ;
 use bulletin; 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 our ( $opt_1, $opt_s, $opt_p, $opt_v, $opt_V ) ; 
 our %magnitude_info =  () ; 
@@ -20,7 +20,7 @@ $pgm =~ s".*/"" ;
 elog_init ( $pgm, @ARGV) ;
 my $cmd = "\n$0 @ARGV" ;
 
-if ( ! &Getopts('1p:s:vV') || @ARGV < 1 || @ARGV > 1) { 
+if ( ! getopts('1p:s:vV') || @ARGV < 1 || @ARGV > 1) { 
     die ( "Usage: $0 [-p pf] [-s secs] [-v] orb \n" ) ; 
 }
 

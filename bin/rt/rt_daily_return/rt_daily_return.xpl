@@ -1,7 +1,7 @@
 #
 #  Program to build daily gaps database  
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
 
@@ -23,7 +23,7 @@
 #  program initialization
 #
 
-    if (  ! &Getopts('d:n:s:t:e:vz') || @ARGV != 2 ) { 
+    if (  ! getopts('d:n:s:t:e:vz') || @ARGV != 2 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-z] [-n net] [-s subset] [-d delay_days]  \n" ;
         $usage .=  "	[-t start_time] [-e end_time] \n" ;
         $usage .=  "	dbin dbout \n\n"  ; 

@@ -82,7 +82,7 @@ main(argc, argv)
 	    case 's':
 		capture_flag = 1;
 		silent_flag = 1;
-		complain( 0,
+		elog_complain( 0,
 		  "!!! B3S2 will run in silent mode and start recording data !!!\n");
 		break ;
 	    
@@ -109,14 +109,14 @@ main(argc, argv)
 	if( orb || silent_flag )  {
 	    orb = 1;
 	    if( ( orbfp = orbopen( orbname, "w" )) < 0)
-                die(0," Can't open ORB!\n");   
+                elog_die(0," Can't open ORB!\n");   
         }
 
 	/* receive data port */
 	data_port = open( iport, O_RDWR | O_NOCTTY);
 
 	if (data_port == -1) {
-		die( 1, "FATAL ERROR: Cannot open data port... Exiting program\n");
+		elog_die( 1, "FATAL ERROR: Cannot open data port... Exiting program\n");
 	}
 
 	/* make tty port RAW with no translation */
@@ -150,7 +150,7 @@ main(argc, argv)
 	cmnd_port = open(cmdport, O_RDWR | O_NOCTTY);
 
 	if (cmnd_port == -1) {
-		die(1, "FATAL ERROR: Cannot open command port... Exiting program\n");
+		elog_die(1, "FATAL ERROR: Cannot open command port... Exiting program\n");
 	}
 
 	/* make tty port RAW with no translation */
@@ -294,7 +294,7 @@ main(argc, argv)
 		              if(!send2orb( orbfp, buffer )) {
                                   orberr++;
 			          if( orberr > ORBERR ) 
-			            die( 0, "Too many errors! \n");
+			            elog_die( 0, "Too many errors! \n");
 		              }  else orberr = 0;
                            }
 			}
@@ -314,10 +314,10 @@ main(argc, argv)
 		                if(!send2orb( orbfp, buffer )) {
                                     orberr++;
 			            if( orberr > ORBERR ) 
-			              die( 0, "Too many errors! \n");
+			              elog_die( 0, "Too many errors! \n");
 		                }  else orberr = 0;
 		             }  else 
-			     complain( 0, "orbname is not specified. Restart 'b3s2orb -o orbname'\n");
+			     elog_complain( 0, "orbname is not specified. Restart 'b3s2orb -o orbname'\n");
 		        }
 
  	                update_data_display(&packet_buffer[0]);
@@ -364,14 +364,14 @@ capture_data(item, event)
 	        if( !orb || orbfp < 0 )  {
 	            orb = 1;
 	            if( ( orbfp = orbopen( orbname, "w" )) < 0)
-                        die(0," Can't open ORB!\n");   
+                        elog_die(0," Can't open ORB!\n");   
                 }
 		xv_set(Uic_window1->record, PANEL_LABEL_STRING, ">>> RECORDING <<<", NULL);
 	} else {
 		capture_flag = 0;
 	        if( orb || orbfp >= 0 )  {
 	            if( orbclose( orbfp) )
-                        complain(1," Can't close ORB!\n");   
+                        elog_complain(1," Can't close ORB!\n");   
                 }
 		orb = 0;
 		orbfp = -1;

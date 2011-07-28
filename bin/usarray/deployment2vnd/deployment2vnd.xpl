@@ -1,13 +1,13 @@
 
 use Datascope;
 
-require "getopts.pl";
+use Getopt::Std;
 
 #
 # here comes the main program
 #
 
-  if ( !&Getopts('tvhs:') || @ARGV != 2 ) {
+  if ( !getopts('tvhs:') || @ARGV != 2 ) {
     die ("USAGE: $0 [-v] [-t] [-h] [-s subset_expression] database file \n");
   }
 

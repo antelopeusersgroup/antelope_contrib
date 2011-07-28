@@ -1,10 +1,10 @@
 
 use Datascope;
-require "getopts.pl";
+use Getopt::Std;
 
 elog_init( $0, @ARGV );
 
-if( ! Getopts( 'nl:p:s:' ) || $#ARGV < 1 ) {
+if( ! getopts( 'nl:p:s:' ) || $#ARGV < 1 ) {
 	die( "Usage: $0 [-l seconds] [-n] " .
 		"[-s catalog_subset_expression] dbcat dbname\n" );
 } else {

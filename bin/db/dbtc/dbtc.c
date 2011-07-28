@@ -60,17 +60,17 @@ char **argv;
     bad = strdup( argv[optind++]); 
  
     if( !parse_key( good, &good_set ))
-       die( 0, 
+       elog_die( 0, 
           "bad name of a control db - %s.\n (Should be in form of db:sta:ch.)\n",
            good );
  
     if( !parse_key( bad, &bad_set ))
-       die( 0, 
+       elog_die( 0, 
           "bad name of a corrupted db - %s.\n(Should be in form of db:sta:ch.)\n", 
           bad );
  
     if( pfread ( pfile, &pf) != 0 )
-         die (0, "Can't read %s parameter file\n", pfile );
+         elog_die(0, "Can't read %s parameter file\n", pfile );
  
     par.datseg  = pfget_int( pf, "data_segment_window");
     par.err_win = pfget_int( pf, "allowed_time_err_offset");
@@ -92,7 +92,7 @@ char **argv;
     opendb ( &bad_set );           
     Dbtc = dblookup ( bad_set.db, 0, "tcorrection", 0, 0);
     if (Dbtc.table < 0)  
-        die (0, "Can't open tcorrection table '%s'\n", bad_set.dbname );
+        elog_die(0, "Can't open tcorrection table '%s'\n", bad_set.dbname );
 
     etime = stime + par.datseg ;
  
@@ -105,7 +105,7 @@ char **argv;
 	  case 0:
              dbclose( bad_set.db); 
              dbclose( good_set.db); 
-             die(0, "can't get %s data for %lf - %lf time period.\n", 
+             elog_die(0, "can't get %s data for %lf - %lf time period.\n", 
 	             bad, stime, etime );
           case -1:
              done = 1; 
@@ -118,7 +118,7 @@ char **argv;
        	    good_set.etime = good_set.stime + par.cor_win;
 
        	    if( !get_data( &good_set, &par ))
-          	    die(0, "can't get %s data for %lf - %lf time period.\n", 
+          	    elog_die(0, "can't get %s data for %lf - %lf time period.\n", 
 	          	    good, good_set.stime, good_set.etime );
 
 
@@ -129,9 +129,9 @@ char **argv;
        	    if( fabs( good_set.srate - bad_set.srate ) >= 1.0 )  {
 	     
            	    if( Log )  {
-      	     	       complain( 0, "data sets have a different sample rate - %lf != %lf\n",
+      	     	       elog_complain( 0, "data sets have a different sample rate - %lf != %lf\n",
                  	       good_set.srate, bad_set.srate );
-       	    	       complain( 0, "will resample \'bad\' data set from %lf to %lf...",
+       	    	       elog_complain( 0, "will resample \'bad\' data set from %lf to %lf...",
                  	       bad_set.srate, good_set.srate );
 	   	    }
 	   	    dtg = 1.0/good_set.srate;
@@ -148,7 +148,7 @@ char **argv;
        	    if( bad_set.npts <= good_set.npts )  {
            	  dbclose( bad_set.db); 
            	  dbclose( good_set.db); 
-           	  die(0, 
+           	  elog_die(0, 
 		  "can't process data.\nNot enough data points (%d) for corrupted db %s.\n",
 	           bad_set.npts, bad );
        	    }

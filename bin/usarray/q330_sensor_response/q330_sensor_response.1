@@ -1,0 +1,68 @@
+.TH Q330_SENSOR_RESPONSE 1 "$Date: 2005/03/05 22:23:53 $"
+.SH NAME
+q330_sensor_response \- calculates responses from calibrations
+.SH SYNOPSIS
+.nf
+\fBq330_sensor_response\fP [-v] [-V] [-n] [-C] [-P]
+                     [-d calibration_directory] [-D display] [-m mail_to] [-M mail_to_field_ops] [-g] 
+                     \fIdb\fP [\fIsta_regex\fP] 
+.fi
+.SH DESCRIPTION
+\fBq330_sensor_response\fP calculates responses from calibrations on sensors connected to Q330 dataloggers.
+\fBq330_sensor_response\fP first verifies that the 
+\fIdlcalwf, dlsensor, sensormodel, wfdisc\fP tables exist in \fIdb\fP.
+An optional \fIsta_regex\fP (station regular expression) can be used to run \fBq330_sensor_response\fP.
+\fBq330_sensor_response\fP runs \fBdbcalibrate\fP and \fBdisplayscal\fP.  
+The ps plots created by  \fBdisplayscal\fP are converted to pdf files by \fBps2pdf14\fP and are
+reported in the \fIdb.calplot\fP table.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP -n
+Test mode.  No operations executed. 
+.IP -C
+only run dbcalibrate, skip displayscal and building calplot table
+.IP -P
+only run displayscal and build calplot table, skip dbcalibrate
+.IP "-d calibration_directory"
+Directory where station calibrations pdf files are stored.  Each calibration is stored in \fIcalibration_directory/STA\fP
+The default \fIcalibration_directory\fP is \fI/anf/TA/products/calibrations\fP.
+.IP "-D vnc_display_number"
+vnc_display_number where graphics are displayed on when run in background mode on server machines at the ANF.  
+This option kills the \fIvnc_display_number\fP once the run is complete.
+.IP "-m mail_to"
+Email address list to send results.  Multiple email addresses should be comma delimited without
+white space.
+.IP "-M mail_to_field_ops"
+Email address list to send results.  Multiple email addresses should be comma delimited without
+white space. This email list will send calibration plots of problem sensors to email addresses.  
+This option will not work if the \fB-C\fP option is specified.
+.IP -g
+If \fB-M\fP option is specified and \fB-C\fP option is not specified, all calibration plots will be sent to \fB-M\fP 
+email addresses.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+
+.SH RETURN VALUES
+0 if successful, 1 if not.
+
+.SH "SEE ALSO"
+.nf
+q330_calibration(1)
+dbcalibrate(1)
+displayscal(1)
+ps2pdf14(1)
+.fi
+
+.SH "BUGS AND CAVEATS"
+If \fBq330_sensor_response\fP is run under rtexec without a display, then a vnc server needs to be implemented.  
+This has been done at the ANF and example configurations can be provided.  In general, this mode of operation
+is not recommended and in normal network operations is not needed.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

@@ -171,30 +171,30 @@ main(int argc, char **argv)
   }
   nadd = maxtbl(MailAdd);
   if( nadd <= 0 ) 
-     die( 0, "can't get a mail recipients addresses\n");
+     elog_die( 0, "can't get a mail recipients addresses\n");
  
 
   /* Set signal to handle USER interupt  */
    
   if( (rorb = orbopen( inorbname, "r")) < 0)
-     die( 0, "Can't open ORB\n");
+     elog_die( 0, "Can't open ORB\n");
      
   if ( match ) {
      if ((orbselect ( rorb, match)) < 1 )
-        die (1, "orbselect '%s' failed\n", match);
+        elog_die(1, "orbselect '%s' failed\n", match);
   }
 
   if ( regcomp(&dcmatch, match, REG_EXTENDED|REG_NOSUB) != 0)   {
-            die( 1, "regcomp error for %s\n", match );
+            elog_die( 1, "regcomp error for %s\n", match );
   }
 
   if ( (argc - optind) == 1) {
         after_str = argv[optind++] ; 
         after = str2epoch (after_str);
         if ( orbafter (rorb, after-0.001) < 0) 
-            die (1, "orbafter to %s failed\n", strtime (after));
+            elog_die(1, "orbafter to %s failed\n", strtime (after));
   }  else if (orbget (rorb, ORBCURRENT, &id, srcid, &after, &packet, &nbytes, &bsize)) 
-        die(0,"fails to get ORBCURRENT time.\n") ; 
+        elog_die(0,"fails to get ORBCURRENT time.\n") ; 
 
 /* Loop through RB; runnin triggering algorithm  */
 
@@ -254,7 +254,7 @@ main(int argc, char **argv)
    
          save_time = pkttime; 
       }  else {
-	  complain( 0, "Can't get packet after %lf.\n", save_time );
+	  elog_complain( 0, "Can't get packet after %lf.\n", save_time );
 
      }
 

@@ -71,11 +71,11 @@ main (int argc, char **argv)
 
     in = argv[optind++];
     if (dbopen (in, "r+", &dbin))
-	die (1, "Can't open input database %s\n", in);
+	elog_die(1, "Can't open input database %s\n", in);
 
     out = argv[optind++];
     if (dbopen (out, "r+", &dbout))
-	die (1, "Unable to open output database %s\n", out);
+	elog_die(1, "Unable to open output database %s\n", out);
 
 
     while (nostdin || gets (aline)) {

@@ -46,7 +46,7 @@ int match_stream( Stream **saved, Stream *old )
 
         if(  old->id != -1 )
            if( new->id != -1 &&  old->id != new->id ) {
-              complain( 0, "id missmatch: new %d != old %d.\n", 
+              elog_complain( 0, "id missmatch: new %d != old %d.\n", 
 	                new->id, old->id);
 
               return 0; 
@@ -54,7 +54,7 @@ int match_stream( Stream **saved, Stream *old )
 	   
         if(  old->dasid != -1 )
            if( new->dasid != -1 &&  old->dasid != new->dasid ) {
-              complain( 0, "dasid missmatch: new %d != old %d.\n", 
+              elog_complain( 0, "dasid missmatch: new %d != old %d.\n", 
 	                new->dasid, old->dasid);
 
               return 0;          
@@ -63,7 +63,7 @@ int match_stream( Stream **saved, Stream *old )
 
         if(  old->ev_num != -1 )  
            if( new->ev_num != -1 &&  old->ev_num != new->ev_num )  {
-              complain( 0, "ev_num missmatch: new %d != old %d.\n",
+              elog_complain( 0, "ev_num missmatch: new %d != old %d.\n",
 	                new->ev_num, old->ev_num);
               new->nsamp = 0;
 	   }
@@ -71,7 +71,7 @@ int match_stream( Stream **saved, Stream *old )
 
         if(  old->samprate != -1 )  
            if( new->samprate != -1 &&  old->samprate != new->samprate )  {
-              complain( 0, "samprate missmatch: new %d != old %d.\n", 
+              elog_complain( 0, "samprate missmatch: new %d != old %d.\n", 
 	                new->samprate, old->samprate);
               return 0;            
 	   }
@@ -79,7 +79,7 @@ int match_stream( Stream **saved, Stream *old )
 
         if(  old->datatype != -1 )  
            if( new->datatype != -1 &&  old->datatype != new->datatype )  {
-              complain( 0, "datatype missmatch: new %d != old %d\n",
+              elog_complain( 0, "datatype missmatch: new %d != old %d\n",
 	                new->datatype, old->datatype );
               return 0;             
 	   }
@@ -87,7 +87,7 @@ int match_stream( Stream **saved, Stream *old )
 
         if(  old->nchan != -1 )  
            if( new->nchan != -1 &&  old->nchan != new->nchan )  {
-              complain( 0, "nchan missmatch: new %d != old %d. \n",
+              elog_complain( 0, "nchan missmatch: new %d != old %d. \n",
 	                new->nchan, old->nchan );
              return 0;              
 	   }
@@ -128,14 +128,14 @@ DASPar *getDAS( int dasid )
 
    tmpdas = ( DASPar *) malloc( sizeof(DASPar ));
    if( tmpdas == 0 ) {
-      complain( 1, "malloc error \n");
+      elog_complain( 1, "malloc error \n");
       return 0;
    }
    sprintf( tmpdas->daslog, "%d_log\0", dasid );
    tmpdas->dasid = dasid;
  
    if( (tmpdas->daslog_fp = fopen( tmpdas->daslog, "a")) == 0 ) {
-        complain( 0, "Can't open LOG file for DAS# %s\n", tmpdas->daslog);
+        elog_complain( 0, "Can't open LOG file for DAS# %s\n", tmpdas->daslog);
         return 0;
    }
    sprintf( &key[0], "%d\0", dasid ); 
@@ -190,7 +190,7 @@ int read_pscl_CD(
     if( das == 0 )  {
         das = ( DASPar *) getDAS( dasid );
         if( das == 0 ) {
-           complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+           elog_complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
            return 0;
 	}
     } 
@@ -289,7 +289,7 @@ int read_pscl_DS(
         if( das == 0 )  {
             das = ( DASPar *) getDAS( dasid );
             if( das == 0 ) {
-               complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+               elog_complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
                return 0;
 	    }
         } 
@@ -467,7 +467,7 @@ int read_pscl_EH(
         if( das == 0 )  {
             das = ( DASPar *) getDAS( dasid );
             if( das == 0 ) {
-               complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+               elog_complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
                return 0;
 	    }
         } 
@@ -486,7 +486,7 @@ int read_pscl_EH(
        sprintf( sstring,"%04d%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
       stream->stime = str2epoch(&sstring[0]);
     }  else  {
-      complain(0, "Can't get First Sample Time ( %.6s )\n", &pkt.fsmp_time[0] );
+      elog_complain(0, "Can't get First Sample Time ( %.6s )\n", &pkt.fsmp_time[0] );
       return 0;
     } 
     stream->ev_num = event_num; 
@@ -565,7 +565,7 @@ int read_pscl_ET(
         if( das == 0 )  {
             das = ( DASPar *) getDAS( dasid );
             if( das == 0 ) {
-               complain( 0, "Can't record ET for DAS#%d to the LOG file.\n", dasid);
+               elog_complain( 0, "Can't record ET for DAS#%d to the LOG file.\n", dasid);
                return 0;
 	    }
         } 
@@ -584,7 +584,7 @@ int read_pscl_ET(
        sprintf( estring,"%04d%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
        etime = str2epoch( &estring[0] );
     } else  {
-       complain(0, "Can't get last sample time.\n");
+       elog_complain(0, "Can't get last sample time.\n");
        return 0;
     }
     if( PsclLog  )  {
@@ -638,7 +638,7 @@ int read_pscl_OM(
     if( das == 0 )  {
         das = ( DASPar *) getDAS( dasid );
         if( das == 0 ) {
-           complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+           elog_complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
            return 0;
 	}
     } 
@@ -715,7 +715,7 @@ int read_pscl_SH(
     if( das == 0 )  {
         das = ( DASPar *) getDAS( dasid );
         if( das == 0 ) {
-           complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+           elog_complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
            return 0;
 	}
     } 
@@ -730,7 +730,7 @@ int read_pscl_SH(
             fprintf( das->daslog_fp, "  %s\n ", line ); 
             line  = (cline + 2);
         } else {
-                complain(0, "Warning: CR/LF missing in SOH block\n");
+                elog_complain(0, "Warning: CR/LF missing in SOH block\n");
             line  = (cline + 2);
         }
     }
@@ -775,7 +775,7 @@ int read_pscl_SC(
     if( das == 0 )  {
         das = ( DASPar *) getDAS( dasid );
         if( das == 0 ) {
-           complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+           elog_complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
            return 0;
 	}
     } 

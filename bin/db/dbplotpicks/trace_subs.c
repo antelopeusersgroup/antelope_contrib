@@ -561,7 +561,7 @@ double                  tend;
 		break;
 
 	case -9: /* no data */
-	    clear_register (0); 
+	    elog_clear_register(0); 
 	    data = NULL;
 	    break; 
 
@@ -572,7 +572,7 @@ double                  tend;
 	case -6:
 	case -7:
 	case -8:
-		complain (0, 
+		elog_complain(0, 
 		"read_trace: trgetwf() error.\n");
 		return (NULL);
 	}
@@ -582,7 +582,7 @@ double                  tend;
 	}
 
 	if (data == (void *) -2) {
-		clear_register (0);
+		elog_clear_register(0);
 		data = NULL;
 	}
 	trace = newtrace();

@@ -1,10 +1,10 @@
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use File::Glob;
 
 $days_before = 7;
  
-if ( ! &Getopts('nvd:') || @ARGV != 1 ) { 
+if ( ! getopts('nvd:') || @ARGV != 1 ) { 
     die ( "Usage: $0 [-nv] [-d days] database\n" ) ; 
 }
 

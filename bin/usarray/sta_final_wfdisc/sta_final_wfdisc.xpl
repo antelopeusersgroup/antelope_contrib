@@ -23,7 +23,7 @@
 #   check for overlaps
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -46,7 +46,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnm:p:') || @ARGV != 1 ) { 
+    if (  ! getopts('vVnm:p:') || @ARGV != 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-p pf] [-m mail_to]  \n" ;
         $usage .=  "	dbops\n\n"  ; 

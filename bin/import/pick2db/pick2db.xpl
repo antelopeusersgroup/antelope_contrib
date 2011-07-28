@@ -4,7 +4,7 @@
 # 11/95
 
 use Datascope ; 
-require "getopts.pl";
+use Getopt::Std;
 require "getcwd.pl";
 
 sub clear_globals {
@@ -901,7 +901,7 @@ $Project_Ellipse = "project_ellipse";
 $Usage = "Usage: $0 [-cv] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname\n";
 
 $opt_v = $opt_c = $opt_r = $opt_p = 0; # Kill "variable used once" error
-if ( ! &Getopts('cpvr:') || $#ARGV < 1 ) {
+if ( ! getopts('cpvr:') || $#ARGV < 1 ) {
 	die ( "$Usage" );
 } else {
 	$database = pop(@ARGV);

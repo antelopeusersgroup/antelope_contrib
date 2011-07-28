@@ -142,14 +142,14 @@ init_recipe( Pf *pf, char *recipe_name )
 
 	if( pfresolve( pf, "recipes", 0, &pfrecipes ) < 0 ) {
 
-		die( 0, 
+		elog_die( 0, 
 		     "Couldn't find recipes array in parameter-file '%s'\n",
 		     Pfname );
 	}
 
 	if( pfresolve( pfrecipes, recipe_name, 0, &pfrecipe ) < 0 ) {
 
-		complain( 0, "Couldn't find recipe '%s'\n", recipe_name );
+		elog_complain( 0, "Couldn't find recipe '%s'\n", recipe_name );
 		return 0;
 	}
 
@@ -157,21 +157,21 @@ init_recipe( Pf *pf, char *recipe_name )
 		   "delegate_pf_defaults", 
 		   (void **) &pfdelegate_defaults ) == PFINVALID ) {
 		
-		die( 0, 
+		elog_die( 0, 
 		     "Couldn't find 'delegate_pf_defaults' in " 
 		     "parameter-file '%s'\n", Pfname );
 	}
 
 	if( pfget_string( pfdelegate_defaults, "output_file" ) == 0 ) {
 
-		die( 0, 
+		elog_die( 0, 
 		     "Couldn't find 'output_file' in delegate_pf_defaults, "
 		     "parameter-file '%s'\n", Pfname );
 	}
 
 	if( pfget_string( pfdelegate_defaults, "qgridfmt" ) == 0 ) {
 
-		die( 0, 
+		elog_die( 0, 
 		     "Couldn't find 'qgridfmt' in delegate_pf_defaults, "
 		     "parameter-file '%s'\n", Pfname );
 	}
@@ -184,7 +184,7 @@ init_recipe( Pf *pf, char *recipe_name )
 	if( ( recipe->delegate_name == 0 ) ||
 	    ( ! strcmp( recipe->delegate_name, "" ) ) ) {
 
-		complain( 0, "no delegate specified for recipe '%s'\n", 
+		elog_complain( 0, "no delegate specified for recipe '%s'\n", 
 			     recipe_name );
 		free_recipe( &recipe );
 		return 0;
@@ -212,7 +212,7 @@ init_recipe( Pf *pf, char *recipe_name )
 	
 	if( recipe->delegate_fn == NULL ) {
 
-		complain( 0, "Delegate type '%s' not supported "
+		elog_complain( 0, "Delegate type '%s' not supported "
 			     "and not found in libuser.\n",
 			     recipe->delegate_name );
 		free_recipe( &recipe );
@@ -334,7 +334,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 	if( nrecs <= 0 ) {
 
-		complain( 0, "Origin %d not found in %s.origin.\n",
+		elog_complain( 0, "Origin %d not found in %s.origin.\n",
 			orid, database );
 
 		free_views( db, views );
@@ -343,7 +343,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 	} else if( nrecs > 1 ) {
 		
-		complain( 0, 
+		elog_complain( 0, 
 		     "Multiple entries in %s.origin for orid %d. \n",
 		     database, orid );
 
@@ -358,7 +358,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 	if( nrecs <= 0 ) {
 
-		complain( 0, "No assoc rows for orid %d in %s.\n",
+		elog_complain( 0, "No assoc rows for orid %d in %s.\n",
 			orid, database );
 
 		free_views( db, views );
@@ -371,7 +371,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 	if( nrecs <= 0 ) {
 
-		complain( 0, "No arrival rows for orid %d in %s.\n",
+		elog_complain( 0, "No arrival rows for orid %d in %s.\n",
 			orid, database );
 
 		free_views( db, views );
@@ -409,7 +409,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 	} else {
 
-		complain( 0, "No wfmgme or wfmeas rows for orid %d in %s.\n",
+		elog_complain( 0, "No wfmgme or wfmeas rows for orid %d in %s.\n",
 			orid, database );
 
 		free_views( db, views );
@@ -422,7 +422,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 	if( nrecs <= 0 ) {
 
-		complain( 0, "No wfmgme/wfmeas rows for orid %d after joining "
+		elog_complain( 0, "No wfmgme/wfmeas rows for orid %d after joining "
 			"to site.\n", orid );
 
 		free_views( db, views );
@@ -451,7 +451,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 			dbquery( db, dbRECORD_COUNT, &nrecs );
 			if( nrecs <= 0 ) { 
 
-				complain( 0, "No rows for filter '%s'\n",
+				elog_complain( 0, "No rows for filter '%s'\n",
 					recipe->filter );
 				continue;
 			}
@@ -465,7 +465,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 			dbquery( db, dbRECORD_COUNT, &nrecs );
 			if( nrecs <= 0 ) { 
 
-				complain( 0, "No rows for expression '%s'\n",
+				elog_complain( 0, "No rows for expression '%s'\n",
 					recipe->select );
 				continue;
 			}
@@ -475,7 +475,7 @@ process_orid( Dbptr db, Tbl *recipes, int orid )
 
 		if( rc != 0 ) {
 		
-			complain( 0, "Recipe %s failed for orid %d\n", 
+			elog_complain( 0, "Recipe %s failed for orid %d\n", 
 				recipe_name, orid );
 
 		} else if( Verbose ) {
@@ -518,7 +518,7 @@ process_gridless_orids( Dbptr *dbin, Tbl *requested_recipes )
 
 	if( dbopen_database( dbname, "r+", dbin ) < 0 ) { 
 
-		die ( 0, "Failed to re-open database %s\n", dbname ) ; 
+		elog_die( 0, "Failed to re-open database %s\n", dbname ) ; 
 
 	} else {
 
@@ -578,7 +578,7 @@ process_gridless_orids( Dbptr *dbin, Tbl *requested_recipes )
 		rc = process_orid( db, requested_recipes, orid );
 
 		if( rc < 0 ) {
-			complain( 0, "Problems processing orid %d\n", orid );
+			elog_complain( 0, "Problems processing orid %d\n", orid );
 		}
 
 		setarr( Tried, orid_string, (void *) 0x1 );
@@ -649,7 +649,7 @@ main (int argc, char **argv)
 		case 'o':
 			orid = atoi( optarg );
 			if( orid <= 0 ) {
-				die( 0, "orid must be greater than 0. Bye.\n" );
+				elog_die( 0, "orid must be greater than 0. Bye.\n" );
 			}
 			break;
 		case 'r':
@@ -671,7 +671,7 @@ main (int argc, char **argv)
 	} 
 
 	if( maxtbl( requested_recipes ) < 1 ) {
-		complain( 1 , "Must specify at least one recipe. Bye.\n" );
+		elog_complain( 1 , "Must specify at least one recipe. Bye.\n" );
 		usage();
 	}
 
@@ -679,14 +679,14 @@ main (int argc, char **argv)
 
 	if( dbopen_database( database, "r+", &db ) < 0 ) { 
 
-		die ( 0, "Can't open database %s\n", database ) ; 
+		elog_die( 0, "Can't open database %s\n", database ) ; 
 	}
 
 	db = dblookup( db, 0, "qgrid", 0, 0 );
 
 	if( db.table < 0 ) {
 
-		die( 0, "Table qgrid not in schema. Please verify that "
+		elog_die( 0, "Table qgrid not in schema. Please verify that "
 			"%s has the gme1.0 expansion schema.\n",
 			database );
 	}
@@ -696,7 +696,7 @@ main (int argc, char **argv)
 
 	if( ! daemon && dbwfmeas.table < 0 && dbwfmgme.table < 0 ) {
 
-		die( 0, "Failed to open %s.wfmeas and %s.wfmgme. Bye.\n",
+		elog_die( 0, "Failed to open %s.wfmeas and %s.wfmgme. Bye.\n",
 			database, database );
 	} 
 
@@ -705,13 +705,13 @@ main (int argc, char **argv)
 
 	if( ! daemon && nrecs_wfmeas <= 0 && nrecs_wfmgme <= 0 )  {
 
-		die( 0, "No records in %s.wfmeas or %s.wfmgme. Bye.\n",
+		elog_die( 0, "No records in %s.wfmeas or %s.wfmgme. Bye.\n",
 			database, database );
 	}
 
 	if( pfread( Pfname, &Pfdbgme ) != 0 ) {
 
-		die( 0, "Can't read parameter file %s\n", Pfname );
+		elog_die( 0, "Can't read parameter file %s\n", Pfname );
 	}
 
 	Daemon_sleep_time_sec = pfget_int( Pfdbgme, "daemon_sleep_time_sec" );
@@ -723,7 +723,7 @@ main (int argc, char **argv)
 
 		if( ( recipe = init_recipe( Pfdbgme, recipe_name ) ) == 0 ) {
 
-			complain( 0, 
+			elog_complain( 0, 
 			     "Couldn't initialize recipe '%s' "
 			     "from parameter file '%s', skipping\n",
 			     recipe_name, Pfname );
@@ -734,14 +734,14 @@ main (int argc, char **argv)
 
 	if( maxtbl( requested_recipes ) < 1 ) {
 
-		die( 0, "No more recipes to process, Bye.\n" );
+		elog_die( 0, "No more recipes to process, Bye.\n" );
 	}
 
 	if( orid != ORID_NULL ) {
 
 		if( process_orid( db, requested_recipes, orid ) < 0 ) {
 
-			complain( 0, "Problems processing orid %d\n", orid );
+			elog_complain( 0, "Problems processing orid %d\n", orid );
 		}
 
 	} else {
@@ -768,7 +768,7 @@ main (int argc, char **argv)
 		   "Not in daemon mode, exiting.\n" );
 	}
 
-	clear_register( 1 );
+	elog_clear_register( 1 );
 
 	return 0;
 }

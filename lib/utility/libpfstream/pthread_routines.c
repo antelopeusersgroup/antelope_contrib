@@ -109,7 +109,7 @@ Pfstream_handle *pfstream_start_read_thread(char *fname)
 	pfh->mtf = pmtfifo_create(PFSTREAM_MAXQUEUE,1,0); 
 	if(pfh->mtf == NULL) 
 	{
-		register_error(1,"pfstream_start_read_thead:  Could not create mtfifo\n");
+		elog_log(1,"pfstream_start_read_thead:  Could not create mtfifo\n");
 		free(pfh);
 		free(pfsc);
 		return(NULL);
@@ -120,7 +120,7 @@ Pfstream_handle *pfstream_start_read_thread(char *fname)
 	pfsc->fp = fopen(fname,"r");
 	if(pfsc->fp==NULL)
 	{
-		register_error(1,"pfstream_start_read_thread:  Cannot open input stream %s\n",
+		elog_log(1,"pfstream_start_read_thread:  Cannot open input stream %s\n",
 			fname);
 		pmtfifo_destroy(pfh->mtf,free);
 		free(pfh);
@@ -133,7 +133,7 @@ Pfstream_handle *pfstream_start_read_thread(char *fname)
 	if(pthread_create(&(pfh->thread_id),NULL,
 		pfstream_read_data,(void *)pfsc)!=0)
 	{
-		register_error(1,"pfstream_start_read_thread: cannot create read thread\n");
+		elog_log(1,"pfstream_start_read_thread: cannot create read thread\n");
 		pmtfifo_destroy(pfh->mtf,free);
 		fclose(pfsc->fp);
 		free(pfh);
@@ -162,7 +162,7 @@ Pfstream_handle *pfstream_start_write_thread(char *fname)
 	pfh->mtf = pmtfifo_create(PFSTREAM_MAXQUEUE,1,0); 
 	if(pfh->mtf == NULL) 
 	{
-		register_error(1,"pfstream_start_write_thead:  Could not create mtfifo\n");
+		elog_log(1,"pfstream_start_write_thead:  Could not create mtfifo\n");
 		free(pfh);
 		free(pfsc);
 		return(NULL);
@@ -173,7 +173,7 @@ Pfstream_handle *pfstream_start_write_thread(char *fname)
 	pfsc->fp = fopen(fname,"r+");
 	if(pfsc->fp==NULL)
 	{
-		register_error(1,"pfstream_start_write_thread:  Cannot open output stream %s\n",
+		elog_log(1,"pfstream_start_write_thread:  Cannot open output stream %s\n",
 			fname);
 		pmtfifo_destroy(pfh->mtf,free);
 		free(pfh);
@@ -187,7 +187,7 @@ Pfstream_handle *pfstream_start_write_thread(char *fname)
 	stream now open as fp */
 	if(pthread_create(&(pfh->thread_id),NULL,pfstream_write_data,(void *)pfsc)!=0)
 	{
-		register_error(1,"pfstream_start_write_thread: cannot create write thread\n");
+		elog_log(1,"pfstream_start_write_thread: cannot create write thread\n");
 		pmtfifo_destroy(pfh->mtf,free);
 		fclose(pfsc->fp);
 		free(pfh);

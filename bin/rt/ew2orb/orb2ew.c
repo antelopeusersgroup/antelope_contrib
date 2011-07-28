@@ -1167,7 +1167,7 @@ orb2ew_export( void *arg )
 
 		if( rc < 0 )
 		{
-			clear_register( 1 );
+			elog_clear_register( 1 );
 			continue;
 		}
 
@@ -1313,7 +1313,7 @@ refresh_export_server_thread( ExportServerThread *es )
 		} else {
 
 			es->starttime = str2epoch( starttime_string );
-			clear_register( 1 );
+			elog_clear_register( 1 );
 		}
 
 		es->update = 0;
@@ -1964,14 +1964,14 @@ main( int argc, char **argv )
 		case '?':
 		default:
 			usage();
-			die( 0, "option not understood\n" );
+			elog_die( 0, "option not understood\n" );
 		}
 	}
 
 	if( argc - optind != 1 ) {
 
 		usage();
-		die( 0, "Must specify an output orb name\n" );
+		elog_die( 0, "Must specify an output orb name\n" );
 
 	} else {
 		
@@ -1996,7 +1996,7 @@ main( int argc, char **argv )
 
 	if( rc != 0 ) {
 
-		die( 1, "Failed to create parameter-file watch thread, "
+		elog_die( 1, "Failed to create parameter-file watch thread, "
 			"thr_create error %d\n", rc );
 	}
 

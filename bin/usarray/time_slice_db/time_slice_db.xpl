@@ -45,7 +45,7 @@ use sysinfo ;
 use Datascope ; 
 use archive ;
 use timeslice ;
-require "getopts.pl" ;
+use Getopt::Std ;
 
 our ( $opt_B, $opt_C, $opt_E, $opt_V, $opt_W, $Pf ) ; 
 our ( $opt_e, $opt_f, $opt_m, $opt_p, $opt_s, $opt_t, $opt_v ) ; 
@@ -63,7 +63,7 @@ our ( $pgm, $host);
 #
 #  get arguments
 #
-    if ( ! &Getopts('BCEe:fm:p:st:vVW') || @ARGV != 1 ) { 
+    if ( ! getopts('BCEe:fm:p:st:vVW') || @ARGV != 1 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-s] [-f] [-C]\n" ;
         $usage .=  "	[-p pf] [-m mail_to] [-t start_time ] [-e end_time]  \n" ;
         $usage .=  "	(-B | -E | -W)   \n" ;

@@ -115,26 +115,26 @@ char          **argv;
 
     orbname = argv[optind++];
     if ((rdorb = orbopen (orbname, "r")) < 0)
-	die (0, "Can't open ring buffer '%s'\n", orbname);
+	elog_die(0, "Can't open ring buffer '%s'\n", orbname);
 
     database = argv[optind++];
     if (dbopen_database (database, "r+", &db) < 0)
-	die (0, "Can't open output database %s\n", database);
+	elog_die(0, "Can't open output database %s\n", database);
     if (db.table < 0) {
 	db = dblookup (db, 0, "wfdisc", 0, 0);
 	if (db.table < 0)
-	    die (0, "Can't open output table '%s'\n", database);
+	    elog_die(0, "Can't open output table '%s'\n", database);
     }
     par.db = db ;
     par.datacode = trdatacode (par.datatype);
 
     sprintf( lcmdfile, "%s.LCMD\0", database);
     if( ( fplcmd = fopen( lcmdfile, "a+")) == NULL )
-       die( 1, "can't open '%s' for LAST COMMAND rerords.\n", lcmdfile);
+       elog_die( 1, "can't open '%s' for LAST COMMAND rerords.\n", lcmdfile);
     
     if (match) {
 	if ((nselect = orbselect (rdorb, match)) < 0)
-	    die (1, "orbselect '%s' failed\n", match);
+	    elog_die(1, "orbselect '%s' failed\n", match);
     }
 
     Pkt = newpkt();
@@ -148,10 +148,10 @@ char          **argv;
 	} else {
 	    if (orbget (rdorb, ORBCURRENT,
 		    &pktid, srcname, &after, &packet, &nbytes, &bufsize)) 
-		die(0,"orbget to get current server time fails\n") ; 
+		elog_die(0,"orbget to get current server time fails\n") ; 
 	}
 	if ((pktid = orbafter (rdorb, after-0.001)) < 0) 
-	    die (1, "orbafter to %s failed\n", strtime (after));
+	    elog_die(1, "orbafter to %s failed\n", strtime (after));
 	else  {
 	    printf ("starting collect data at %s\n", s=strtime(after) );
 	    free(s);
@@ -159,7 +159,7 @@ char          **argv;
     } else {
 	after = ( double) get_last_dbtimes (db);
 	if ((pktid = orbafter (rdorb, after)) < 0) {
-	    die (1, "orbafter to %s failed\n", strtime (after));
+	    elog_die(1, "orbafter to %s failed\n", strtime (after));
 	} else  {
 	    printf ("starting collect data at %s\n", s=strtime(after) );
 	    free(s);
@@ -179,16 +179,16 @@ char          **argv;
 
 	if (orbreap (rdorb, &pktid, srcname, &pkttime, &packet, &nbytes, &bufsize)) {
 	    err++; 
-            complain( 0, "orbreap failed.\n" );
+            elog_complain( 0, "orbreap failed.\n" );
             if( err > 900 )  {
                    orbclose( rdorb );
 		   if( (rdorb = orbopen( orbname, "r")) < 0)
-		       die( 0, "Can't open ORB\n");
+		       elog_die( 0, "Can't open ORB\n");
 		   if( match )
 		       if ((nselect = orbselect ( rdorb, match)) < 1 )
-		           die (1, "orbselect '%s' failed\n", match); 
+		           elog_die(1, "orbselect '%s' failed\n", match); 
 		   if (orbseek (rdorb, ORBCURRENT ) < 0 ) 
-		       die(0,"orbseek to ORBCURRENT failed .\n") ; 
+		       elog_die(0,"orbseek to ORBCURRENT failed .\n") ; 
 		    
     	    }
 	} else  {
@@ -197,7 +197,7 @@ char          **argv;
              if( pkttime - loctime > 86400.0 )  {
                  loctime = now();
                  if( pkttime - loctime > 86400.0 ) {
-                   complain( 0, "%s: pkttime is too big - %s.\nWill drop %s packet\n",
+                   elog_complain( 0, "%s: pkttime is too big - %s.\nWill drop %s packet\n",
                       s= strtime(loctime), s1=strtime(pkttime), srcname);
                    free(s); free(s1);
                    continue;

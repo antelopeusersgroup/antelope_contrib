@@ -16,7 +16,7 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 use orb;
 use RRDs;
@@ -245,7 +245,7 @@ $match = ".*/pf/st";
 $pktid = 0;
 $time = -9999999999.999;
 
-if ( ! &Getopts('s:f:p:m:vV') || @ARGV != 2 ) { 
+if ( ! getopts('s:f:p:m:vV') || @ARGV != 2 ) { 
 
     	die ( "Usage: orb2rrd [-vV] [-s statefile] [-p pffile] " .
 	      "[-m match] [-f from] orb dbcache\n" ) ; 

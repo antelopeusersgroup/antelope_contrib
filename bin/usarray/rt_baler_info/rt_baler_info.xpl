@@ -18,7 +18,7 @@ use archive ;
 use sysinfo ;
 use Datascope ; 
 use orb ;
-require "getopts.pl" ;
+use Getopt::Std ;
 
 our ( $opt_d, $opt_n, $opt_p, $opt_s, $opt_t, $opt_v, $opt_V ) ; 
 our ( $QTFORMAT, $Max ) ;
@@ -63,7 +63,7 @@ our  (@no_power, @no_info, @no_mseed_info, @no_connection);
     elog_init($pgm, @ARGV);
     elog_notify("$0 @ARGV");
 
-    if ( ! &Getopts('d:np:s:t:vV') || @ARGV != 3 ) { 
+    if ( ! getopts('d:np:s:t:vV') || @ARGV != 3 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-n]   \n" ;
         $usage .=  "	[-d deployment_db] [-p pf]  \n" ;
         $usage .=  "	[-s net_sta_regex ] [-t q3302orb_target ] \n" ;

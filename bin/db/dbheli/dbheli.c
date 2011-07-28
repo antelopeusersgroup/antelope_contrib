@@ -139,7 +139,7 @@ main (int argc, char **argv)
  *	Open database.
  */
 	if (dbopen (dbname, "r+", &db) == dbINVALID) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "dbheli: Unable to open database.\n");
 		exit (1);
 	}
@@ -147,7 +147,7 @@ main (int argc, char **argv)
  *	Make sc table
  */
  	if (!make_scs (db, sta, chan, ts, te, &sc)) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "dbheli: Unable to make sc.\n");
 		exit (1);
  	}
@@ -204,7 +204,7 @@ main (int argc, char **argv)
 	slat *= M_PI/180.0;
 	slon *= M_PI/180.0;
 	if (dbopen (dborigin, "r+", &db) == dbINVALID) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "dbheli: Unable to open database.\n");
 		exit (1);
 	}

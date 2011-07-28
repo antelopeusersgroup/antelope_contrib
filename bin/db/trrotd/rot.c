@@ -33,7 +33,7 @@ double 		angle;
 
     for (tr.record = rs; tr.record < re; tr.record++) {
 	dbgetv ( tr, 0, "bundletype", &bundletype, 0 ) ;
-	if (bundletype != 0 ) die (0, "rot: bundletype != 0");
+	if (bundletype != 0 ) elog_die(0, "rot: bundletype != 0");
 
 	if (dbgetv(tr, 0,
 	 "data", &data,
@@ -43,7 +43,7 @@ double 		angle;
 	  "calib", &calib,
 		  "hang", &hang,
 		  "vang", &vang,
-	   0)!=0) die (0,"rot:dbgetv problem\n");
+	   0)!=0) elog_die(0,"rot:dbgetv problem\n");
 
 	if (calib!=0.0) {
     		for ( i=0 ; i<nsamp ; i++ ){ 
@@ -113,7 +113,7 @@ double 		angle;
 	  	"nsamp", &nsamp,
 	  	"samprate", &samprate,
 	  	"chan", chan,
-	   	0)!=0) die (0,"rot:dbgetv problem\n");
+	   	0)!=0) elog_die(0,"rot:dbgetv problem\n");
 
 	    	if  ((chan[2]=='E') || (chan[2]=='2')) {
 			for ( i=0 ; i<nsamp ; i++ ){

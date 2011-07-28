@@ -123,7 +123,7 @@ Location_options parse_options_pf (Pf *pf)
 			"min_relative_damp",o.min_relative_damp);
 		if(o.min_relative_damp < FLT_EPSILON)
 		{
-			register_error(0,"Warning:  minimum relative damping must be at least single precision epsilon.\nParameter file wanted %f\nReset to %f\n",
+			elog_log(0,"Warning:  minimum relative damping must be at least single precision epsilon.\nParameter file wanted %f\nReset to %f\n",
 				o.min_relative_damp, FLT_EPSILON);
 			o.min_relative_damp = FLT_EPSILON;
 		}
@@ -156,13 +156,13 @@ Location_options parse_options_pf (Pf *pf)
 			"min_step_length_scale",o.min_step_length_scale);
 	if(o.step_length_scale_factor >= 1.0) 
 	{
-		register_error(0,"Step length damping factors reset\nScale factors must be less than 1.0\nResetting to default of %f\n",DEFAULT_SLSF);
+		elog_log(0,"Step length damping factors reset\nScale factors must be less than 1.0\nResetting to default of %f\n",DEFAULT_SLSF);
 		o.step_length_scale_factor = DEFAULT_SLSF;
 		if(o.min_step_length_scale >= o.step_length_scale_factor)
 		{
 			
 			o.min_step_length_scale = (float)pow(DEFAULT_SLSF,SLSF_POW_MIN);
-			register_error(0,"Min step length scale also reset to %f\n",
+			elog_log(0,"Min step length scale also reset to %f\n",
 					o.min_step_length_scale);
 		}
 	}
@@ -170,7 +170,7 @@ Location_options parse_options_pf (Pf *pf)
 	{
 		o.min_step_length_scale = (float)pow(o.step_length_scale_factor,
 								SLSF_POW_MIN);
-		register_error(0,"Min step length scale is not consistent with step length scale factor parameter\nReset to %f\n",
+		elog_log(0,"Min step length scale is not consistent with step length scale factor parameter\nReset to %f\n",
 			o.min_step_length_scale);
 	}
 	o.max_hypo_adjustments = pfget_int_wdef(pf,
@@ -205,11 +205,11 @@ Arr *load_station_table(Pf *pf)
 	for(i=0;i<maxtbl(t);++i)
 	{
 		s = (Station *) malloc(sizeof(Station));
-		if(s == NULL) die(1,"load_station_table:  Cannot malloc station structure entry\n");
+		if(s == NULL) elog_die(1,"load_station_table:  Cannot malloc station structure entry\n");
 		value = gettbl(t,i);
 		if(sscanf(value,"%s %lf %lf %lf",s->name,
 			&(s->lat),&(s->lon),&(s->elev)) != 4)
-			complain(1,"Warning(load_station_table):  \
+			elog_complain(1,"Warning(load_station_table):  \
 Read error in station tbl read from parameter file\n\
 The following line of the station table was skipped\n%s\n",
 				value);
@@ -242,11 +242,11 @@ Arr *load_array_table(Pf *pf)
 	for(i=0;i<maxtbl(t);++i)
 	{
 		s = (Seismic_Array *) malloc(sizeof(Seismic_Array));
-		if(s == NULL) die(1,"load_array_table:  Cannot malloc Seismic_Array structure entry\n");
+		if(s == NULL) elog_die(1,"load_array_table:  Cannot malloc Seismic_Array structure entry\n");
 		value = gettbl(t,i);
 		if(sscanf(value,"%s %lf %lf %lf",s->name,
 			&(s->lat),&(s->lon),&(s->elev)) != 4)
-			complain(1,"Warning(load_array_table):  \
+			elog_complain(1,"Warning(load_array_table):  \
 Read error in array tbl read from parameter file\n\
 The following line of the array table was skipped\n%s\n",
 				value);
@@ -281,7 +281,7 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 	to 1.0 for all distances */
 	if(t == NULL)
 	{
-		complain(1,"error reading parameter file:  missing distance weight function definition\n");
+		elog_complain(1,"error reading parameter file:  missing distance weight function definition\n");
 		f = (Distance_weight_function *)calloc(2,sizeof(Distance_weight_function));
 		f[0].delta = 0.0;
 		f[0].weight = 1.0;
@@ -297,14 +297,14 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 		We could realloc, but this makes the code simpler */
 		if((f=(Distance_weight_function *)calloc(number_entries+1,
 				sizeof(Distance_weight_function))) == NULL)
-			die(1,"Cannot alloc memory for distance weight function with %d elements\n",
+			elog_die(1,"Cannot alloc memory for distance weight function with %d elements\n",
 				number_entries);
 		for(i=0,ii=0;i<number_entries;++i)
 		{
 			entry = gettbl(t,i);
 			if(sscanf(entry,"%f %f",&f[ii].delta,&f[ii].weight) != 2)
 			{
-				complain(0,"Warning:  error reading weight function definition\nRead error from scanf while parsing line %d.  Entries should be ordered pairs.\nEntry skipped\n",i);
+				elog_complain(0,"Warning:  error reading weight function definition\nRead error from scanf while parsing line %d.  Entries should be ordered pairs.\nEntry skipped\n",i);
 				continue;
 			}
 			if(ii==0)
@@ -314,7 +314,7 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 				if(f[ii].delta > f[ii-1].delta)
 					++ii;
 				else
-					complain(0,"Warning:  error reading weight function definition\nDeleting entries with nonincreasing distance.  Check phase definition parameter file.\n");
+					elog_complain(0,"Warning:  error reading weight function definition\nDeleting entries with nonincreasing distance.  Check phase definition parameter file.\n");
 			}
 		}
 	}
@@ -323,7 +323,7 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 	be a fatal error */
 	if(ii<= 0)
 	{
-		complain(0,"WARNING:  weight function definition totally botched\nSetting weights to 1.0 for all distances\n");
+		elog_complain(0,"WARNING:  weight function definition totally botched\nSetting weights to 1.0 for all distances\n");
 		f[0].delta = 0.0;
 		f[0].weight = 1.0;
 		f[1].delta = 180.0;
@@ -332,7 +332,7 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 	}
 	if(f[ii].delta < 180.0)
 	{
-		complain(0,"Warning:  weight function definition incorrect.\n\
+		elog_complain(0,"Warning:  weight function definition incorrect.\n\
 Last point in the definition should be set to distance of 180.0\n\
 Setting 180.0 with a weight of 0 and continuing\n");
 		++ii;
@@ -374,7 +374,7 @@ Arr *parse_station_correction_table(Tbl *t)
 		value = malloc(sizeof(double));
 		entry = gettbl(t,i);
 		if(sscanf(entry,"%s %lf",key,value) != 2)
-			complain(1,"Warning(parse_station_correction_table): Read error\nCould not parse line->%s",entry);
+			elog_complain(1,"Warning(parse_station_correction_table): Read error\nCould not parse line->%s",entry);
 		else
 			setarr(a,key,value);
 	}
@@ -421,7 +421,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 
 	if(pfget(pfall,"phases",(void **)&pf_phase) != PFARR)
 	{
-		die(1,"Syntax error in parameter file in phase descriptions\n");
+		elog_die(1,"Syntax error in parameter file in phase descriptions\n");
 	}
 	t = pfkeys(pf_phase);
 
@@ -431,15 +431,15 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		a handle to Pf at the level of the phase name key */
 		key = gettbl(t,i);
 		if(pfget(pf_phase,key,(void **)&pf) != PFARR)
-			die(1,"Syntax error in parameter file description for phase %s\n",key);
+			elog_die(1,"Syntax error in parameter file description for phase %s\n",key);
 
 		p = malloc(sizeof(Phase_handle));
-		if(p == NULL) die(1,"Cannot malloc Phase_handle structure\n");
+		if(p == NULL) elog_die(1,"Cannot malloc Phase_handle structure\n");
 
 		p->name = strdup(key);
 		tv = pfget_tbl(pf,"time_distance_weight_function");
 		if(tv == NULL)
-			register_error(0,"Phase %s, travel time distance weighting input\n",key);
+			elog_log(0,"Phase %s, travel time distance weighting input\n",key);
 		/* we call this routine even if tv is null because it does a generic recover, and
 		calls complain to dump the previous message along with a more generic one */
 		
@@ -449,11 +449,11 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 
 		tv = pfget_tbl(pf,"ux_distance_weight_function");
 		if(tv == NULL)
-			register_error(0,"Phase %s, ux time distance weighting input\n",key);
+			elog_log(0,"Phase %s, ux time distance weighting input\n",key);
 		p->ux = setup_weight_function(tv);
 		tv = pfget_tbl(pf,"uy_distance_weight_function");
 		if(tv == NULL)
-			register_error(0,"Phase %s, uy time distance weighting input\n",key);
+			elog_log(0,"Phase %s, uy time distance weighting input\n",key);
 		p->uy = setup_weight_function(tv);
 		p->deltat0 = (float) pfget_double(pf,
 				"default_time_uncertainty");
@@ -464,7 +464,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		tv = pfget_tbl(pf,"time_station_corrections");
 		if(tv == NULL)
 		{
-			complain(1,"No time station corrections found for phase %s\nUsing 0.0 for all corrections\n",key);
+			elog_complain(1,"No time station corrections found for phase %s\nUsing 0.0 for all corrections\n",key);
 			/* we load an empty Arr structure in this case to
 			avoid explicit error tests in later code.  Not
 			finding a station correction will be a common 
@@ -479,7 +479,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		tv = pfget_tbl(pf,"ux_station_corrections");
 		if(tv == NULL)
 		{
-			complain(1,"No ux station corrections found for phase %s\nUsing 0.0 for all corrections\n",key);
+			elog_complain(1,"No ux station corrections found for phase %s\nUsing 0.0 for all corrections\n",key);
 			p->ux_sc = newarr(0);
 		}
 		else
@@ -488,7 +488,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		tv = pfget_tbl(pf,"uy_station_corrections");
 		if(tv == NULL)
 		{
-			complain(1,"No uy station corrections found for phase %s\nUsing 0.0 for all corrections\n",key);
+			elog_complain(1,"No uy station corrections found for phase %s\nUsing 0.0 for all corrections\n",key);
 			p->uy_sc = newarr(0);
 		}
 		else
@@ -511,7 +511,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		{
 			if(ttlvz_init(key,pf))
 			{
-				complain(0,"ttlvz can't calculate travel times for phase %s\nData from this phase will be ignored\n",key);
+				elog_complain(0,"ttlvz can't calculate travel times for phase %s\nData from this phase will be ignored\n",key);
 				free(p);
 				continue;
 			}
@@ -525,20 +525,20 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 			tabfil = pfget_string(pf,"table_file");
 			if(tabfil == NULL)
 			{
-				complain(0,"Missing parameter table_file\nTable for phase %s not loaded.  Data for this phase will be ignored\n",key);
+				elog_complain(0,"Missing parameter table_file\nTable for phase %s not loaded.  Data for this phase will be ignored\n",key);
 				continue;
 			}
 
 			if(pfload("GENLOC_MODELS", "tables/genloc", tabfil, &pftable) != 0)
 			{
-				complain(1,"Pfread error reading travel time table parameter file %s\nData for phase %s will be ignored\n",
+				elog_complain(1,"Pfread error reading travel time table parameter file %s\nData for phase %s will be ignored\n",
 					tabfil,key);
 				continue;
 			}
 
 			if(uniform_table_interpolate_init(key,pftable))
 			{
-				complain(0,"Error in init function for uniform table interpolator for phase %s\nDAta from this phase will be ignored\n",key);
+				elog_complain(0,"Error in init function for uniform table interpolator for phase %s\nDAta from this phase will be ignored\n",key);
 				free(p);
 				continue;
 			}
@@ -551,7 +551,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		{
 			if(ttcalc_interface_init(key,pf))
 			{
-				complain(1,"Cannot initialize generic travel time calculator for phase %s\n"
+				elog_complain(1,"Cannot initialize generic travel time calculator for phase %s\n"
 					   "Data from this phase will be skipped\n", key);
 				free(p);
 				continue;
@@ -562,7 +562,7 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		}
 		else
 		{
-			complain(0,"Unrecognized keyword for travel_time_calculator parameter = %s\nData from phase %s will be ignored\n",
+			elog_complain(0,"Unrecognized keyword for travel_time_calculator parameter = %s\nData from phase %s will be ignored\n",
 					string,key);
 			free(p);
 			continue;
@@ -609,13 +609,13 @@ Tbl *read_arrivals(Pf *pf, Arr *phases, Arr *stations)
 	{
 		row = gettbl(tin,i);
 		a = (Arrival *)malloc(sizeof(Arrival));
-		if(a == NULL) die(1,"read_arrivals:  cannot alloc memory for Arrival structure\n");
+		if(a == NULL) elog_die(1,"read_arrivals:  cannot alloc memory for Arrival structure\n");
 		sscanf(row,"%s %s %lf %lf %d",phase_name,sta,&(a->time),
 						&(a->deltat),&(a->arid));
 		a->sta = (Station *) getarr(stations,sta);
 		if(a->sta == NULL)
 		{
-			complain(1,"Warning (read_arrivals):  Can't find coordinates for station %s\n%s phase arrival for this station skipped\n",
+			elog_complain(1,"Warning (read_arrivals):  Can't find coordinates for station %s\n%s phase arrival for this station skipped\n",
 				sta, phase_name);
 			free(a);
 			continue;
@@ -623,7 +623,7 @@ Tbl *read_arrivals(Pf *pf, Arr *phases, Arr *stations)
 		a->phase = (Phase_handle *) getarr(phases,phase_name);
 		if(a->phase == NULL)
 		{
-			complain(1,"Warning (read_arrivals):  No phase handle for phase name %s\nArrival for station %s skipped\n",
+			elog_complain(1,"Warning (read_arrivals):  No phase handle for phase name %s\nArrival for station %s skipped\n",
 				phase_name,sta);
 			free(a);
 			continue;
@@ -684,14 +684,14 @@ Tbl *read_slowness_vectors(Pf *pf, Arr *phases, Arr *seismic_array)
 		double u1, u2;
 		row = gettbl(tin,i);
 		u = (Slowness_vector *)malloc(sizeof(Slowness_vector));
-		if(u == NULL) die(1,"read_arrivals:  cannot alloc memory for Slowness vector structure\n");
+		if(u == NULL) elog_die(1,"read_arrivals:  cannot alloc memory for Slowness vector structure\n");
 		sscanf(row,"%s %s %lf %lf %lf %lf %d",
 			phase_name,array_name,&u1,&u2,
 			&(u->deltaux),&(u->deltauy),&(u->arid));
 		u->array = (Seismic_Array *) getarr(seismic_array,array_name);
 		if(u->array == NULL)
 		{
-			complain(1,"Warning (read_arrivals):  Can't find coordinates for array %s\n%s phase slowness vector for this array skipped\n",
+			elog_complain(1,"Warning (read_arrivals):  Can't find coordinates for array %s\n%s phase slowness vector for this array skipped\n",
 				array_name, phase_name);
 			free(u);
 			continue;
@@ -699,7 +699,7 @@ Tbl *read_slowness_vectors(Pf *pf, Arr *phases, Arr *seismic_array)
 		u->phase = (Phase_handle *) getarr(phases,phase_name);
 		if(u->phase == NULL)
 		{
-			complain(1,"Warning (read_arrivals):  No phase handle for phase name %s\nSlowness vector for array %s skipped\n",
+			elog_complain(1,"Warning (read_arrivals):  No phase handle for phase name %s\nSlowness vector for array %s skipped\n",
 				phase_name,array_name);
 			free(u);
 			continue;

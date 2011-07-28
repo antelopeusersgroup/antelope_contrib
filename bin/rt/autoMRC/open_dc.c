@@ -42,7 +42,7 @@ int open_dc( char *inport )
 			     
            hp = gethostbyname (hostname);
            if (hp == NULL) {
-              complain (0, "openID(): Can't get info for HOST - %s.\n", hostname);
+              elog_complain(0, "openID(): Can't get info for HOST - %s.\n", hostname);
               return 0;
            }
     }
@@ -61,20 +61,20 @@ int open_dc( char *inport )
 	/* create a socket  */
  
        if( (Ls = socket(AF_INET, SOCK_STREAM, 0)) < 0 )  {
-    	    die ( 1, "Can't open stream socket\n" ) ; 
+    	    elog_die( 1, "Can't open stream socket\n" ) ; 
        }
 
   /* Convert IP address from a.b.c.d to the hexadecimal number  */
 	   
        if ((int)(addr = inet_addr(server_name)) == -1) {
-          complain(0, "IPD/open_socket():IP-address must be of the form a.b.c.d\n");
+          elog_complain(0, "IPD/open_socket():IP-address must be of the form a.b.c.d\n");
           return 0;
        }
 
        hp = gethostbyaddr((char *)&addr, sizeof (addr), AF_INET);
        if(hp == NULL)
           /*peer_in.sin_addr.s_addr = htonl( ADDR ); */
-	  die( 0, "gethostbyaddr() failed for %s\n", inport ); 
+	  elog_die( 0, "gethostbyaddr() failed for %s\n", inport ); 
        else 
            peer_in.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
   
@@ -86,9 +86,9 @@ int open_dc( char *inport )
        if ( connect (Ls, (struct sockaddr *) & peer_in, addrlen) == -1) {
            if( !tried )  {
 	      tried = 1;
-	      complain( 1, "waiting for connection \n");
+	      elog_complain( 1, "waiting for connection \n");
               sleep(1);
-	      complain( 1, "can't connect %s\n", inport );
+	      elog_complain( 1, "can't connect %s\n", inport );
 	   }
 	   close(Ls);
         } else done = 1;	

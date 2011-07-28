@@ -68,7 +68,7 @@ int             verbose;
 	fd = 0;
     } else {
 	if ((fd = open (filename, O_RDONLY)) < 0) {
-	    complain (1, "Can't open '%s'\n", filename);
+	    elog_complain(1, "Can't open '%s'\n", filename);
 	    return -1 ;
 	}
     }

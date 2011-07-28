@@ -3,7 +3,7 @@ use strict ;
 use lib "$ENV{ANTELOPE}/data/perl" ;
 use Datascope ; 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 elog_init("batch_evproc", @ARGV ) ;
 
@@ -12,7 +12,7 @@ our ($db, $tmpdir, $nonos, $norigin, $cmd) ;
 our ($dir, $base, $suf, $dbpath, $sitefile, $wffile, $dblocks, $dbidserver ) ;
 our (@db, @nomags, @origin, @netmag, @assoc, @arrival, @site, @wfdisc) ;
 
-if ( ! &Getopts('l:p:s:t:vV') || @ARGV !=1  ) {
+if ( ! getopts('l:p:s:t:vV') || @ARGV !=1  ) {
     my $pgm = $0 ;
     $pgm =~ s".*/"" ;
     die ( "Usage: $pgm [-l lddate_days_lag] [-p dbevprocpf] [-s origin_subset_expression] [-t tmpdir] [-v] [-V] db\n" ) ;

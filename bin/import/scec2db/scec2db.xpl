@@ -22,7 +22,7 @@ use LWP::Simple;
 use URI::URL;
 use HTTP::Request::Common;
 
-require "getopts.pl";
+use Getopt::Std;
 
   #
   # default address for scec catalog websearch
@@ -32,7 +32,7 @@ require "getopts.pl";
   $scec = "iron.gps.caltech.edu";
   $scec_prog = "http://$scec/cgi-bin/catalog/catalog_search.pl";
 
-  if ( !&Getopts('vVkdwmyc:s:e:f:') || @ARGV != 1 ) {
+  if ( !getopts('vVkdwmyc:s:e:f:') || @ARGV != 1 ) {
 	print STDERR "\n";
 	  &usage;
   }    

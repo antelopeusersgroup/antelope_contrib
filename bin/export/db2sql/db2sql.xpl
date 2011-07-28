@@ -42,7 +42,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "getopts.pl";
+use Getopt::Std;
 
 use strict;
 
@@ -298,9 +298,15 @@ sub newrow {
 
 		$dbh = verify_sql_handle( $dbh, $Sql_dbname );
 
-		unless( $dbh->do( $cmd ) ) {
+		if( $dbh->do( $cmd ) ) {
+
+			elog_complain( "Succeeded on second try to create new SQL database row in table '$table'\n" .
+				       "(Datascope record $irecord, sync '$sync')\n" .
+				       "by executing command '$cmd'.\n" );
 			
-			elog_complain( "Failed twice, giving up\n" );
+		} else {
+			
+			elog_complain( "Failed twice to execute command '$cmd', giving up on that command\n" );
 		}
 	}
 
@@ -322,9 +328,14 @@ sub delrow {
 
 		$dbh = verify_sql_handle( $dbh, $Sql_dbname );
 
-		unless( $dbh->do( $cmd ) ) {
+		if( $dbh->do( $cmd ) ) {
+
+			elog_complain( "Succeeded on second try to delete SQL database row in table '$table', sync '$sync'\n" .
+				       "by executing command '$cmd'.\n" );
+
+		} else {
 			
-			elog_complain( "Failed twice, giving up\n" );
+			elog_complain( "Failed twice to execute command '$cmd', giving up on that command\n" );
 		}
 	}
 
@@ -401,7 +412,7 @@ our( $Rebuild ) = 0;
 
 our( $Usage ) = "Usage: db2sql [-lrvV] [-p pfname] datascope_dbname[.table] [sql_dbname]\n";
 
-if( ! Getopts( '1lp:rvV' ) ) { 
+if( ! getopts( '1lp:rvV' ) ) { 
 
 	elog_die( $Usage );
 } 

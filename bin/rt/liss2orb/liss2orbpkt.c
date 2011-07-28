@@ -96,14 +96,14 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	case -2:  /* got garbage */
 	    if (   conf->sdh.samprate_factor != 0 
 		|| conf->sdh.samprate_multiplier != 0) {
-		complain ( 0, "Can't decode this packet:"  ) ;
+		elog_complain( 0, "Can't decode this packet:"  ) ;
 		hexdump ( stderr, seed, size ) ;
 	    }
 	    break; 
 
 	default:
 	case -1:
-	    complain ( 0, "failed to decode packet." ) ; 
+	    elog_complain( 0, "failed to decode packet." ) ; 
 	    hexdump ( stderr, seed, size ) ;
 	    break; 
 

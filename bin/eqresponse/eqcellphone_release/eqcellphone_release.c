@@ -94,7 +94,7 @@ char	*timezone;
 		       0 );
 
 	if( rc ) {
-		complain( 1, "Failed to get info from database pointer\n" );
+		elog_complain( 1, "Failed to get info from database pointer\n" );
 		return -1;
 	}
 
@@ -215,7 +215,7 @@ main( int argc, char **argv )
 	char 	*gmt = "GMT";
 	int	rc;
 
-	clear_register( 0 );
+	elog_clear_register( 0 );
 	dirbase( argv[0], dir, base );
 	Program_Name = base;
 	strcpy( pffile, Program_Name );
@@ -231,7 +231,7 @@ main( int argc, char **argv )
 	}
 
 	if( argc - optind != 1 ) {
-		die( 1, "Usage: %s [-pf pffile] dbname\n", Program_Name );
+		elog_die( 1, "Usage: %s [-pf pffile] dbname\n", Program_Name );
 	} else {
 		strcpy( dbname, argv[optind++] );
 	}
@@ -239,7 +239,7 @@ main( int argc, char **argv )
 	putenv( "postmark=" );
 
 	if( pfread( pffile, &pf ) < 0 ) {
-		die( 1, "%s: no parameter file %s", Program_Name, pffile );
+		elog_die( 1, "%s: no parameter file %s", Program_Name, pffile );
 	}
 
 	dbopen( dbname, "r+", &db );
@@ -249,9 +249,9 @@ main( int argc, char **argv )
 		db = dblookup( db, 0, "origin", 0, 0 );
 		dbquery( db, dbRECORD_COUNT, &nrecs );
 		if( nrecs == 0 ) {
-			die( 1, "No hypocenters in %s\n", dbname );
+			elog_die( 1, "No hypocenters in %s\n", dbname );
 		} else if( nrecs != 1 ) {
-			die( 1, "Ambiguous choice of hypocenter in %s\n",
+			elog_die( 1, "Ambiguous choice of hypocenter in %s\n",
 				dbname );
 		}
 	} else {
@@ -260,9 +260,9 @@ main( int argc, char **argv )
 		db = dbsubset( db, "orid == prefor", 0 );
 		dbquery( db, dbRECORD_COUNT, &nrecs );
 		if( nrecs == 0 ) {
-			die( 1, "No hypocenters for events in %s\n", dbname );
+			elog_die( 1, "No hypocenters for events in %s\n", dbname );
 		} else if( nrecs != 1 ) {
-			die( 1, "Ambiguous choice of hypocenter in %s\n",
+			elog_die( 1, "Ambiguous choice of hypocenter in %s\n",
 				dbname );
 		} 
 	}
@@ -270,7 +270,7 @@ main( int argc, char **argv )
 
 	if( ( recipients = pfget_arr( pf, "cellphone_mail_recipients" ) )
 	   == NULL ) {
-		die( 1, "Failed to find cellphone_mail_recipients in %s.pf\n",
+		elog_die( 1, "Failed to find cellphone_mail_recipients in %s.pf\n",
 			pffile );
 	}
 
@@ -283,7 +283,7 @@ main( int argc, char **argv )
 			     subject, timezone );
 
 	if( rc ) {
-		die( 1, "Skipping message due to conversion failure\n" );
+		elog_die( 1, "Skipping message due to conversion failure\n" );
 	}
 
 	addresses_string = filter_recipients( db, recipients );

@@ -94,18 +94,18 @@ int join_db ( Dbptr db, char *want_orig )
  
         dbor = dblookup (db, 0, "origin", 0, 0);
         if( dbor.table < 0)  {
-           die (0, "Can't open origin table.\n" );
+           elog_die(0, "Can't open origin table.\n" );
         }
  
         dbquery ( dbor, dbRECORD_COUNT, &num );
-        if ( num < 1) die ( 0, "No origins.\n");
+        if ( num < 1) elog_die( 0, "No origins.\n");
       
         dbaf = dblookup (db, 0, "affiliation", 0, 0);
         if( dbaf.table < 0)  {
-           die (0, "Database is not complete. Can't open affiliation table.\n" );
+           elog_die(0, "Database is not complete. Can't open affiliation table.\n" );
         }
         dbquery ( dbaf, dbRECORD_COUNT, &num );
-        if ( num < 1) die ( 0, "Can't open affiliation table.\nBuild affiliation table or use -n option.\n");
+        if ( num < 1) elog_die( 0, "Can't open affiliation table.\nBuild affiliation table or use -n option.\n");
         
         dbarr  = dblookup (db, 0, "arrival", 0, 0);
         dbas  = dblookup (db, 0, "assoc", 0, 0);
@@ -122,7 +122,7 @@ int join_db ( Dbptr db, char *want_orig )
         dball = dbsubset( dball, key, 0 );
         dbquery (dball, dbRECORD_COUNT, &jrec);
         if( jrec <= 0 )
-            die( 0, " no record with chan=*Z\n") ;
+            elog_die( 0, " no record with chan=*Z\n") ;
 
         /* Sort joined table by event&origin&arrival IDs  */                 
  
@@ -142,7 +142,7 @@ int join_db ( Dbptr db, char *want_orig )
                    continue;
 
                 if( evid < 0 )
-                    die (0, "found NULL evid.\n");
+                    elog_die(0, "found NULL evid.\n");
                         
                 sprintf( key, "%d\0", evid );
  

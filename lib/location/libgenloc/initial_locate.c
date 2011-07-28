@@ -105,7 +105,7 @@ Hypocenter initial_locate(Tbl *attbl, Tbl *utbl,
 
 	if((s=pfget_string(pf,"initial_location_method"))==NULL)
 	{
-		register_error(0,"warning(initial_locate):  no method specified.  using default of nearest station method\n");
+		elog_log(0,"warning(initial_locate):  no method specified.  using default of nearest station method\n");
 		method = NEAREST_STATION;
 	}
 
@@ -121,7 +121,7 @@ Hypocenter initial_locate(Tbl *attbl, Tbl *utbl,
 		method = RADIAL_GRIDSEARCH;
 	else
 	{
-		register_error(0,"warning(initial_locate): unrecognized method keyword %s\nUsing default of nearest station method\n",
+		elog_log(0,"warning(initial_locate): unrecognized method keyword %s\nUsing default of nearest station method\n",
 			s);
 		method = NEAREST_STATION;
 	}
@@ -198,7 +198,7 @@ Hypocenter initial_locate(Tbl *attbl, Tbl *utbl,
 			h = gridloc(attbl, utbl, p, ngrid, use_raw, options);
                         if((h.lat == 0.0) && (h.lon == 0.0) && (h.time == 0.0))
 			{
-                                complain(1,"error in gridloc during radial grid scan\nSetting initial location to S-P station location\n");
+                                elog_complain(1,"error in gridloc during radial grid scan\nSetting initial location to S-P station location\n");
 				h.lat = clat;
                         	h.lon = clon;
                         	h.time = ptime - sptime;
@@ -220,7 +220,7 @@ format of the two setup routines.*/
 		{
 			h = gridloc(attbl, utbl, p, ngrid, use_raw, options);
 			if((h.lat == 0.0) && (h.lon == 0.0) && (h.time == 0.0))
-				complain(1,"gridloc failure\nReverting to nearest station metho\n");
+				elog_complain(1,"gridloc failure\nReverting to nearest station metho\n");
 			else
 			{
 				free(p);
@@ -229,7 +229,7 @@ format of the two setup routines.*/
 		}
 		else
 		{
-			complain(1,"inital location setup problem\nReverting to default of nearest station method\n");
+			elog_complain(1,"inital location setup problem\nReverting to default of nearest station method\n");
 		}		
 	default:
 		ifirst = find_first_arrival(attbl);

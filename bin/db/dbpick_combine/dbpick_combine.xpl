@@ -1,7 +1,7 @@
 use Datascope ;
 #use diagnostics;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 #
 # This is a quick set of commands that takes two databases, subsets them and  
