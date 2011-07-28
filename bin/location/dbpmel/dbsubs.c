@@ -27,7 +27,7 @@ Hypocenter db_load_initial(Dbptr dbv,int row)
 		"origin.lon", &(h.lon),
 		"origin.depth",&(h.z),
 		"origin.time", &(h.time),
-		0) == dbINVALID)
+		NULL ) == dbINVALID)
 			elog_die(1,"relocate:  dbgetv error fetching previous location data\nFailure at line %d of database view\n",row);
 	/* This initializes parts of the hypocenter stucture that define
         this as an initial location. */
@@ -124,11 +124,11 @@ int dbpmel_save_results(Dbptr db,
 	/* Dan Q advises it is wise to have a separate hook for each
 	table passed through dbmatches */
 	Hook *hooke=NULL,*hooko=NULL,*hooka=NULL,*hooka2=NULL;
-	int prefor;
+	long prefor;
 	int i,j;
 	char *auth;
 	Arrival *a;
-	int orid;
+	long orid;
 	int nmatch;
 	double **C;
 	float emodel[4];
@@ -159,9 +159,9 @@ int dbpmel_save_results(Dbptr db,
 	dbos.record = dbSCRATCH;
 	dbas.record = dbSCRATCH;
 
-	opat = strtbl("orid",0);
-	aspat = strtbl("orid",0);
-	aspat2 = strtbl("arid","orid","sta",0);
+	opat = strtbl("orid",NULL );
+	aspat = strtbl("orid",NULL );
+	aspat2 = strtbl("arid","orid","sta",NULL );
 
 	auth = pfget_string(pf,"author");
 
@@ -178,12 +178,12 @@ int dbpmel_save_results(Dbptr db,
 		/* Save nothing for events marked no use */
 		if(h[i].used==0) continue;  
 		/* Start with event table to get prefor */
-		dbputv(dbes,0,"evid",evid[i],0);
+		dbputv(dbes,0,"evid",evid[i],NULL );
 		dbe.record = dbALL;
 		if(dbmatches(dbes,dbe,0,0,&hooke,&matches)!=1)
 			elog_complain(0,"WARNING:  multiple records in event table have evid=%d.\nThis is a serious database problem that should be corrected.  Using first one found in table\n",
 				evid[i]);
-		dbe.record = (int)gettbl(matches,0);
+		dbe.record = (long)gettbl(matches,0);
 		/* this is excessively paranoid, but better safe than sorry*/
 		if(dbe.record<0)
 		{
@@ -191,11 +191,11 @@ int dbpmel_save_results(Dbptr db,
 				dbe.record,evid[i]);
 			continue;
 		}
-		dbgetv(dbe,0,"prefor",&prefor,0);
+		dbgetv(dbe,0,"prefor",&prefor,NULL );
 		freetbl(matches,0);
 		matches=NULL;
 
-		dbputv(dbos,0,"orid",prefor,0);
+		dbputv(dbos,0,"orid",prefor,NULL );
 		dbo.record = dbALL;
 		nmatch=dbmatches(dbos,dbo,&opat,&opat,&hooko,&matches);
 		if(nmatch>1)
@@ -207,7 +207,7 @@ int dbpmel_save_results(Dbptr db,
 record for orid %d prefor of event %d\n",
 				prefor,evid[i]);
 		}
-		dbo.record = (int)gettbl(matches,0);
+		dbo.record = (long)gettbl(matches,0);
 		if(dbget(dbo,0)==dbINVALID)
 		{
 			elog_complain(0,"dbget error on origin table for orid %d\nData for evid %d will not be saved\n",
@@ -274,7 +274,7 @@ record for orid %d prefor of event %d\n",
                 	"sdepth", sdepth,
                 	"stime", stime,
                 	"conf", conf,
-                		0) < 0 )
+                		NULL ) < 0 )
 		{
 			elog_complain(0,"Problem adding origerr record for evid %d\n",
 				evid[i]);
@@ -289,7 +289,7 @@ record for orid %d prefor of event %d\n",
 				"depth",h[i].z,
 				"time",h[i].time,
 				"algorithm",alg,
-				"auth",auth,0);
+				"auth",auth,NULL );
 
 /*
 		printf("Added to origin table: %8d %9.4lf %9.4lf %9.4lf"
@@ -310,7 +310,7 @@ for new orid %d of evid %d\n",
 		Untested but from previous experience with dbmatches on
 		large tables I'm fairly sure this is a necessary 
 		complication to keep this from be very slow*/
-		dbputv(dbas,0,"orid",prefor,0);
+		dbputv(dbas,0,"orid",prefor,NULL );
 		dba.record = dbALL;
 		nmatch=dbmatches(dbas,dba,&aspat,&aspat,&hooka,&matches);
 		if(nmatch<=0)
@@ -335,7 +335,7 @@ found\nFail to create new assoc records for orid %d\n",
 			dbputv(dbas,0,
 				"arid",a->arid,
 				"orid",prefor,
-				"sta",a->sta->name,0);
+				"sta",a->sta->name,NULL );
 			dbs.record = dbALL;
 			nmatch =dbmatches(dbas,dbs,&aspat2,&aspat2,&hooka2,&match2);
 			if(nmatch<=0)
@@ -352,7 +352,7 @@ found\nFail to create new assoc records for orid %d\n",
 			}
 
 
-			dbs.record = (int)gettbl(match2,0);
+			dbs.record = (long)gettbl(match2,0);
 			/* These variables have to be copied so we
 			fetch them here */
 			if(dbgetv(dbs,0,"belief",&belief,
@@ -361,7 +361,7 @@ found\nFail to create new assoc records for orid %d\n",
 				"azdef",azdef,
 				"azres",&azres,
 				"slores",&slores,
-				"emares",&emares,0)
+				"emares",&emares,NULL )
 						==dbINVALID)
 			{
 				elog_complain(0,"dbgetv error on assoc table for orid %d\nData for evid %d will not be saved\n",
@@ -416,7 +416,7 @@ found\nFail to create new assoc records for orid %d\n",
 				"seaz",deg(seaz),
 				"esaz",deg(esaz),
 				"timeres",(double) a->res.raw_residual,
-				"wgt",wgt,0)==dbINVALID)
+				"wgt",wgt,NULL )==dbINVALID)
 					elog_complain(0,
 					"Error adding to assoc table\
  for arid %d, orid %d, evid %d\n",
@@ -486,7 +486,7 @@ void dbpmel_save_sc(int gridid, Dbptr db,SCMatrix *s,Pf *pf)
 					"pmelrun",pmelrun,
 					"tsc",s->sc[icol],
 					"tscref",s->scref[icol],
-					"tscbias",s->scbias[icol],0);
+					"tscbias",s->scbias[icol],NULL );
 			else
 				elog_die(0,"dbpmel_save_sc:  computed index %d for accessing station correction vector is outside range of 1 to %d\nProbably access violation making continuation ill advised\n",
 					icol+1,s->ncol);
