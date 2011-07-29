@@ -1429,7 +1429,7 @@ string set_chan_this_phase(string chan, XcorAnalysisSetting& a)
 		return(root+a.arrival_chan_code+tail);
 	}
 }
-void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
+void XcorProcessingEngine::save_results(long evid, long orid ,Hypocenter& h)
 {
 	// First save the beam
 	long pwfid;
