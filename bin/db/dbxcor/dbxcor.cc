@@ -2161,7 +2161,7 @@ void save_event(Widget w, void * client_data, void * userdata)
 	return;
     }
 
-    int evid,orid;
+    long evid,orid;
     evid=psm->get_evid();
     orid=psm->get_orid();
     Hypocenter h=psm->get_hypo();

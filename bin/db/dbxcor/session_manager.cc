@@ -176,7 +176,7 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 	throw SeisppError("Error getting beam window setup parameters");
     }
     Tbl *t;
-    t=pfget_tbl(pf,"filters");
+    t=pfget_tbl(pf,const_cast<char *>("filters"));
     if(t==NULL)
     {
 		throw SeisppError("pf error:  required parameter filters &Tbl missing");
@@ -554,11 +554,11 @@ bool SessionManager::validate_setting(stringstream & ss)
     return true;
 }
 /* These are needed to deal with CSS3.0 database ids. */
-void SessionManager::set_evid(int event_id)
+void SessionManager::set_evid(long event_id)
 {
 	evid=event_id;;
 }
-void SessionManager::set_orid(int origin_id)
+void SessionManager::set_orid(long origin_id)
 {
 	orid=origin_id;;
 }
