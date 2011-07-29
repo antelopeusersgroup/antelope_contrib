@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <limits.h>
 #include "stock.h"
 #include "pf.h"
 #include <string>
@@ -212,7 +213,7 @@ namespace SEISPP
             {
                 case MDreal:
                     if(dbgetv(db,0,dbattributename.c_str(),
-                        &fpval,0)!=dbINVALID)
+                        &fpval,NULL)!=dbINVALID)
                     {
                         put(internal_name,fpval);
 		        success=true;
@@ -223,7 +224,7 @@ namespace SEISPP
                 case MDint:
                     if(dbgetv(db,0,
                         dbattributename.c_str(),
-                        &ival,0)!=dbINVALID)
+                        &ival,NULL)!=dbINVALID)
                     {
                         put(internal_name,ival);
 		        success=true;
@@ -234,7 +235,7 @@ namespace SEISPP
                 case MDstring:
                     if(dbgetv(db,0,
                         dbattributename.c_str(),
-                        csval,0)!=dbINVALID)
+                        csval,NULL)!=dbINVALID)
                     {
                         put(internal_name,csval);
 		        success=true;
@@ -279,8 +280,16 @@ namespace SEISPP
         throw(MetadataGetError)
     {
         try {
+            const string base_error("Metadata::get_int:  long to int conversion error ->");
+            const string mdt_this("int");
             long lival;
             lival=this->get_long(s);
+            if(lival>INT_MAX)
+                throw MetadataGetError(mdt_this,s,
+                        base_error+"overflow");
+            else if (lival<INT_MIN)
+                throw MetadataGetError(mdt_this,s,
+                        base_error+"underflow");
             return(static_cast<int>(lival));
         } catch (MetadataGetError& mderr){throw mderr;};
     }
