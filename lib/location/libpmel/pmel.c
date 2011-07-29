@@ -421,7 +421,7 @@ Nevents Nevents_used\n");
             {
                 if(locrcode>0)
                 {
-                    elog_notify(0,"%d travel time errors locating event %d of current group for iteration %d\n",
+                    elog_notify(0,"%d travel time errors locating event %ld of current group for iteration %d\n",
                         locrcode,evid[i],sc_iterations);
                 }
 		elog_clear_register(1);
