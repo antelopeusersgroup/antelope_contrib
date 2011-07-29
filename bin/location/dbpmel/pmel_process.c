@@ -151,7 +151,7 @@ int dbpmel_process(Dbptr db, Tbl *gridlist,Pf *pf)
 	Tbl **ta;  /* We use an array of Tbls for arrival times to 
 			allow a simple loop through an event group.*/
 	Hypocenter *h0;  
-	int *evid;  /* parallel array to h0 of event ids for each h0[i]*/
+	long *evid;  /* parallel array to h0 of event ids for each h0[i]*/
 	Hypocenter hypocentroid;
 	/* The associative array here is loaded from the pf and contains
 	information on which events are to be treated as calibration events.
@@ -283,7 +283,7 @@ option which is know to cause problems\nrecenter set off\n");
 		}
 		allot(Tbl **,ta,nevents);
 		allot(Hypocenter *,h0,nevents);
-		allot(int *,evid,nevents);
+		allot(long *,evid,nevents);
 		
 		/* reclist now contains a collection of record numbers
 		for gridid:evid grouped parts of the working view. */
