@@ -183,14 +183,14 @@ do_sw(Widget parent, SessionManager & sm)
 			Metadata mdphase(pfrda,thisphase);
 			XcorAnalysisSetting asphase(mdphase);
 			sm.asetting_default[thisphase]=asphase;
-		} catch (MetadataParseError mde)
+		} catch (MetadataParseError& mde)
 		{
 			cerr << "Problems parsing parameter file for phase="<<key<<endl
 				<< "dbxcor will not be able to process this phase."  <<endl
 				<< "Error from constructor"<<endl;
 			mde.log_error();
 		}
-		catch (SeisppError serr)
+		catch (SeisppError& serr)
 		{
 			cerr << "Problems parsing parameter file for phase="<<key<<endl
 				<< "dbxcor will not be able to process this phase."  <<endl
@@ -254,7 +254,7 @@ do_sw(Widget parent, SessionManager & sm)
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
 	}
-        catch (SeisppError serr)
+        catch (SeisppError& serr)
         {
                 serr.log_error();
                 cerr << "Fatal error:  exiting"<<endl;
@@ -438,7 +438,7 @@ void handle_next_event( long orid, string phase_to_analyze, Widget w, SessionMan
 		{
 		    try {
 			modify_asetting_for_phase(*psm,phase_to_analyze);
-		    } catch (SeisppError serr) {
+		    } catch (SeisppError& serr) {
 			serr.log_error();
 			ss << "Do no know how to handle phase = "<<phase_to_analyze<<endl;
 			psm->record(ss.str());
@@ -499,7 +499,7 @@ void handle_next_event( long orid, string phase_to_analyze, Widget w, SessionMan
 
                 try {
         	    psm->xpe->sort_ensemble();
-    		} catch (SeisppError serr) {
+    		} catch (SeisppError& serr) {
 		    serr.log_error();
         	    ss << "Fatal error occured! Sort was unsuccessful."<<endl;
         	    psm->record(ss.str());
@@ -531,7 +531,7 @@ void handle_next_event( long orid, string phase_to_analyze, Widget w, SessionMan
 		psm->record(string("Done\n"));
 	}
 
-	} catch (SeisppError serr) {
+	} catch (SeisppError& serr) {
                 serr.log_error();
                 cerr << "Fatal error:  exiting"<<endl;
 		exit(-1);
@@ -554,7 +554,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		{
 		    try {
 			modify_asetting_for_phase(*psm,phase_to_analyze);
-		    } catch (SeisppError serr) {
+		    } catch (SeisppError& serr) {
 			serr.log_error();
 			ss << "Do no know how to handle phase = "<<phase_to_analyze<<endl;
 			psm->record(ss.str());
@@ -660,7 +660,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 
                 try {
         	    psm->xpe->sort_ensemble();
-    		} catch (SeisppError serr) {
+    		} catch (SeisppError& serr) {
 		    serr.log_error();
         	    ss << "Fatal error occured! Sort was unsuccessful."<<endl;
         	    psm->record(ss.str());
@@ -692,7 +692,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
-	} catch (SeisppError serr) {
+	} catch (SeisppError& serr) {
                 serr.log_error();
                 cerr << "Fatal error in loading data:  exiting"<<endl;
 		exit(-1);
@@ -723,7 +723,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	    handle_next_ensemble(phase_to_analyze,w,psm);
 	}
 
-	} catch (SeisppError serr) {
+	} catch (SeisppError& serr) {
                 serr.log_error();
                 cerr << "Fatal error:  exiting"<<endl;
 		exit(-1);
@@ -843,7 +843,7 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 
     try {
     	psm->xpe->sort_ensemble();
-    } catch (SeisppError serr) {
+    } catch (SeisppError& serr) {
 	serr.log_error();
 	ss << "Fatal error occured! Sort was unsuccessful."<<endl;
 	psm->record(ss.str());
@@ -1304,7 +1304,7 @@ void apply_filter(Widget w, void * client_data, void * userdata)
 	   psm->xpe->filter_data(cf);
 	   psm->xpe->sort_ensemble();
 
-       } catch (SeisppError serr) {
+       } catch (SeisppError& serr) {
            ss   << "Filter_data failed using "
                 << psm->get_filter_label(psm->current_filter())
 		<<":"<<psm->filter_description()
@@ -1645,7 +1645,7 @@ void do_analyze(Widget w, void * client_data, void * userdata)
         psm->xpe->change_analysis_setting(psm->active_setting);
     	psm->mcc=psm->xpe->analyze();
         psm->xpe->sort_ensemble();
-    } catch (SeisppError serr) {
+    } catch (SeisppError& serr) {
 	serr.log_error();
 	psm->record(string("Fatal error encountered during analysis...\n"));
 	psm->restore_previous_state();
@@ -1872,7 +1872,7 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 		   // throwing an exception
 		   try {
                       x1[i-begin]=tse->member[i-1].get_double(name.c_str());
-		   } catch (MetadataGetError mderr)
+		   } catch (SeisppError& mderr)
 		   {
 			cerr << "dbxcor(update_attributes_display) warning:"<<endl;
 			mderr.log_error();
@@ -1974,7 +1974,7 @@ void refresh_attr_win(Widget w, void * client_data, void * userdata)
 	    if ((XtIsManaged(wdgt)==True) && psm->attributes_info[i].enabled) {
 		try {
 	 		update_attributes_display(wdgt,client_data,NULL);
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			/* there may be a way to handle this error, but for now
 			we force an exit.  Debugging found this led to inconsistency
@@ -2232,7 +2232,7 @@ void save_event(Widget w, void * client_data, void * userdata)
 			
 		  }
 	  }
-    } catch (SeisppError serr) {
+    } catch (SeisppError& serr) {
           ss << "Problems in save_results routine"<<endl;
           serr.log_error();
           ss << "Try again or exit"<<endl;
@@ -2284,7 +2284,7 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 			XtVaSetValues(psm->seismic_widget,
 			  ExmNseiswMetadata, (XtPointer)(&data_md),
 			  ExmNdisplayMarkers,&(psm->markers),NULL);
-		} catch (SeisppError serr)
+		} catch (SeisppError& serr)
 		{
 			serr.log_error();
 			ss << "Error trying to load subarray number "
@@ -3140,7 +3140,7 @@ main (int argc, char **argv)
   }
   else
 	XtAppMainLoop(AppContext);
-  } catch (SeisppError serr)
+  } catch (SeisppError& serr)
   {
 	serr.log_error();
 	exit(-1);
