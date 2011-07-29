@@ -23,8 +23,8 @@ main(int argc, char **argv)
 	Pf *pf;
 	int i;
 	double rmin;
-	int nevents;
-	int evid, orid, prefor;
+	long nevents;
+	long evid, orid, prefor;
 	double dr,az,d,r,wt,sumwt;
 	double h[4],havg[4],hc[4];
 	Tbl *gtbl,*epat,*opat;
@@ -68,21 +68,21 @@ main(int argc, char **argv)
 	dbos.record=dbSCRATCH;
 
 	/* used in loop below for dbmatches */
-	epat = strtbl("evid",0);
-	opat = strtbl("orid",0);
+	epat = strtbl("evid",NULL );
+	opat = strtbl("orid",NULL );
 
 	/* This assumes the pf that defines the working view here
 	includes a sort by evid */
-	gtbl=strtbl("evid",0);
+	gtbl=strtbl("evid",NULL );
 	dbgrp=dbgroup(dbv,gtbl,0,1);
 	rmin = pfget_double(pf,"full_weight_distance");
 	dbquery(dbgrp,dbRECORD_COUNT,&nevents);
 
 	for(dbgrp.record=0;dbgrp.record<nevents;++dbgrp.record)
 	{
-		int is,ie;
+		long is,ie;
 		Dbptr db_bundle;
-		dbgetv(dbgrp,0,"evid",&evid,"bundle",&db_bundle,0);
+		dbgetv(dbgrp,0,"evid",&evid,"bundle",&db_bundle,NULL );
 		dbget_range(db_bundle,&is,&ie);
 		for(i=0;i<4;++i) havg[i]=0.0;
 
@@ -99,7 +99,7 @@ main(int argc, char **argv)
 				"origin.lon",h+1,
 				"origin.depth",h+2,
 				"origin.time",h+3,
-				"prefor",&prefor,0) == dbINVALID) 
+				"prefor",&prefor,NULL ) == dbINVALID) 
 					get_error(dbv.record);
 				/* this accumulates a weighted sum with weights
 				set as 1/r where r is distance between hypo and
@@ -123,7 +123,7 @@ main(int argc, char **argv)
                                 "origin.depth",h+2,
 				"origin.time",h+3,
 				"sdobs",&sdobs,
-                                "prefor",&prefor,0) == dbINVALID)
+                                "prefor",&prefor,NULL ) == dbINVALID)
 					get_error(dbv.record);
 
 			    if(sdobs<=0.0) 
@@ -139,12 +139,12 @@ main(int argc, char **argv)
 		if(orid<0) elog_die(0,"dbnextid failed to get orid\nThe lastid tables is probably locked or read only\n");
 		/* get record number of origin table of current prefor 
 		so we can clone it */
-		dbputv(dbos,0,"orid",prefor,0);
+		dbputv(dbos,0,"orid",prefor,NULL );
 		ierr = dbmatches(dbos,dbo,&opat,&opat,&hooko,&matchlist);
 		if(ierr==dbINVALID) elog_die(0,"dbmatches threw an error exception\nRun dbverify on database\n");
 		if(ierr>0)
 		{
-			dbo.record = (int)gettbl(matchlist,0);
+			dbo.record = (long)gettbl(matchlist,0);
 			freetbl(matchlist,0);
 			dbget(dbo,0);
 			dbputv(dbos,0,"orid",orid,
@@ -152,24 +152,24 @@ main(int argc, char **argv)
 				"lon",havg[1],
 				"depth",havg[2],
 				"time",havg[3],
-				"algorithm","pmelavg",0);
+				"algorithm","pmelavg",NULL );
 			dbadd(dbo,0);
 			/* Now we set the prefor to new orid */
-			dbputv(dbevs,0,"evid",evid,0);
+			dbputv(dbevs,0,"evid",evid,NULL );
 			if(dbmatches(dbevs,dbev,&epat,&epat,&hooke,&matchlist))
 			{
-				dbev.record=(int)gettbl(matchlist,0);
-				dbputv(dbev,0,"prefor",orid,0);
+				dbev.record=(long)gettbl(matchlist,0);
+				dbputv(dbev,0,"prefor",orid,NULL );
 				freetbl(matchlist,0);
 			}
 			else
-				elog_complain(0,"Match failed for evid %d in event table\nThis should not happen and indicates the database is probably corrupted\n",
+				elog_complain(0,"Match failed for evid %ld in event table\nThis should not happen and indicates the database is probably corrupted\n",
 					evid);
 
 		}
 		else
 		{
-			elog_complain(0,"No matching origin found for existing preferred origin = %d\nDatabase is probably corrupted for this to happen\n",
+			elog_complain(0,"No matching origin found for existing preferred origin = %ld\nDatabase is probably corrupted for this to happen\n",
 				prefor);
 		}
 	}
