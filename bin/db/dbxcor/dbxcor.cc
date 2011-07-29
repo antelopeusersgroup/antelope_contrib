@@ -1918,8 +1918,8 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 		if (SciPlotQuickUpdate(psm->attributes_info[index].graph_widget))
 		    SciPlotUpdate(psm->attributes_info[index].graph_widget);
 
-                delete x1;
-                delete x2;
+                delete [] x1;
+                delete [] x2;
        } else {
 
 	    XtCreateWindow(w,(unsigned int) InputOutput, (Visual *) CopyFromParent,0,NULL);
