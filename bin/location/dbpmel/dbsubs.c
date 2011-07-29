@@ -101,7 +101,7 @@ with a link back to the parent grid.
 */
 int dbpmel_save_results(Dbptr db,
 	int nevents,
-	int *evid,
+	long *evid,
 	Hypocenter *h,
 	Tbl **ta,
 	Location_options o,
@@ -109,7 +109,7 @@ int dbpmel_save_results(Dbptr db,
 #else
 int dbpmel_save_results(Dbptr db,
 	int nevents,
-	int *evid,
+	long *evid,
 	Hypocenter *h,
 	Tbl **ta,
 	Location_options o,
@@ -181,13 +181,13 @@ int dbpmel_save_results(Dbptr db,
 		dbputv(dbes,0,"evid",evid[i],NULL );
 		dbe.record = dbALL;
 		if(dbmatches(dbes,dbe,0,0,&hooke,&matches)!=1)
-			elog_complain(0,"WARNING:  multiple records in event table have evid=%d.\nThis is a serious database problem that should be corrected.  Using first one found in table\n",
+			elog_complain(0,"WARNING:  multiple records in event table have evid=%ld.\nThis is a serious database problem that should be corrected.  Using first one found in table\n",
 				evid[i]);
 		dbe.record = (long)gettbl(matches,0);
 		/* this is excessively paranoid, but better safe than sorry*/
 		if(dbe.record<0)
 		{
-			elog_complain(0,"dbmatches invalid record %d\nSkip saving evid %d\n",
+			elog_complain(0,"dbmatches invalid record %ld\nSkip saving evid %ld\n",
 				dbe.record,evid[i]);
 			continue;
 		}
@@ -199,18 +199,18 @@ int dbpmel_save_results(Dbptr db,
 		dbo.record = dbALL;
 		nmatch=dbmatches(dbos,dbo,&opat,&opat,&hooko,&matches);
 		if(nmatch>1)
-			elog_complain(0,"WARNING:  multiple records in origin table match orid=%d.\nThis is a serious database problem that should be corrected.  Using first one found in table\n",
+			elog_complain(0,"WARNING:  multiple records in origin table match orid=%ld.\nThis is a serious database problem that should be corrected.  Using first one found in table\n",
 				prefor);
 		else if(nmatch<=0)
 		{
 			elog_complain(0,"Cannot find matching origin\
-record for orid %d prefor of event %d\n",
+record for orid %ld prefor of event %ld\n",
 				prefor,evid[i]);
 		}
 		dbo.record = (long)gettbl(matches,0);
 		if(dbget(dbo,0)==dbINVALID)
 		{
-			elog_complain(0,"dbget error on origin table for orid %d\nData for evid %d will not be saved\n",
+			elog_complain(0,"dbget error on origin table for orid %ld\nData for evid %ld will not be saved\n",
 				prefor,evid[i]);
 			continue;
 		}
@@ -276,7 +276,7 @@ record for orid %d prefor of event %d\n",
                 	"conf", conf,
                 		NULL ) < 0 )
 		{
-			elog_complain(0,"Problem adding origerr record for evid %d\n",
+			elog_complain(0,"Problem adding origerr record for evid %ld\n",
 				evid[i]);
 		} 
 
@@ -299,7 +299,7 @@ record for orid %d prefor of event %d\n",
 
 		if(dbadd(dbo,0)==dbINVALID)
 			elog_complain(0,"dbadd error for origin table\
-for new orid %d of evid %d\n",
+for new orid %ld of evid %ld\n",
 				orid,evid[i]);
 		/* The assoc tables is much more complex.  Rather than
 		do a row for row match against each arrival in ta, I
@@ -315,8 +315,8 @@ for new orid %d of evid %d\n",
 		nmatch=dbmatches(dbas,dba,&aspat,&aspat,&hooka,&matches);
 		if(nmatch<=0)
 		{
-			elog_complain(0,"No assoc records for orid %d\
-found\nFail to create new assoc records for orid %d\n",
+			elog_complain(0,"No assoc records for orid %ld\
+found\nFail to create new assoc records for orid %ld\n",
 				prefor,orid);
 			freetbl(matches,0);
 			continue;
@@ -341,13 +341,13 @@ found\nFail to create new assoc records for orid %d\n",
 			if(nmatch<=0)
 
 			{
-				elog_complain(0,"Cannot find station %s arrival for phase %s in assoc table for evid %d.\nArrival will not be associated\n",
+				elog_complain(0,"Cannot find station %s arrival for phase %s in assoc table for evid %ld.\nArrival will not be associated\n",
 					a->sta->name,a->phase->name,evid[i]);
 				continue;
 			}
 			else if(nmatch>1)
 			{
-				elog_complain(0,"Warning(save_results):  multiple rows in assoc match station %s and phase %s for evid %d\nCloning first found\n",
+				elog_complain(0,"Warning(save_results):  multiple rows in assoc match station %s and phase %s for evid %ld\nCloning first found\n",
 					a->sta->name,a->phase->name,evid[i]);
 			}
 
@@ -364,7 +364,7 @@ found\nFail to create new assoc records for orid %d\n",
 				"emares",&emares,NULL )
 						==dbINVALID)
 			{
-				elog_complain(0,"dbgetv error on assoc table for orid %d\nData for evid %d will not be saved\n",
+				elog_complain(0,"dbgetv error on assoc table for orid %ld\nData for evid %ld will not be saved\n",
 				    prefor,evid[i]);
 				continue;
 			}
@@ -419,7 +419,7 @@ found\nFail to create new assoc records for orid %d\n",
 				"wgt",wgt,NULL )==dbINVALID)
 					elog_complain(0,
 					"Error adding to assoc table\
- for arid %d, orid %d, evid %d\n",
+ for arid %ld, orid %ld, evid %ld\n",
 					a->arid,orid,evid[i]);
 			dbadd(dba,0);
 

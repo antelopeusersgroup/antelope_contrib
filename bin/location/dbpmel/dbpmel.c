@@ -208,7 +208,7 @@ main(int argc, char **argv)
 	db = dbsubset(db,sstring,0);
 	dbquery(db, dbRECORD_COUNT, &nrows);
 	if(nrows<=0) 
-		elog_die(0,"No hypocentroid records in requested gridid range of %d to %ld for grid called %s\n",
+		elog_die(0,"No hypocentroid records in requested gridid range of %ld to %ld for grid called %s\n",
 				gmin,gmax,gridname);
 	/* This forms the working view for this program */
 	proctbl = strtbl("dbjoin cluster",

@@ -263,7 +263,7 @@ option which is know to cause problems\nrecenter set off\n");
 	{
 		long gridid;
 		int nevents;
-		int is,ie;
+		long is,ie;
 		int ndata;
 		int ierr;
 
@@ -277,7 +277,7 @@ option which is know to cause problems\nrecenter set off\n");
 		nevents = maxtbl(reclist);
 		if(nevents<=0)
 		{
-			fprintf(stdout,"No data for gridid = %d\n",gridid);
+			fprintf(stdout,"No data for gridid = %ld\n",gridid);
 			freetbl(reclist,0);
 			continue;
 		}
@@ -313,7 +313,7 @@ option which is know to cause problems\nrecenter set off\n");
 		to get the hypocentroid location for this group. */
 		if(load_hypocentroid(dbbundle,is,&hypocentroid))
 		{
-			elog_complain(0,"Error loading hypocentroid from working view for gridid=%d;  Skipping to next gridid in processing list\n",
+			elog_complain(0,"Error loading hypocentroid from working view for gridid=%ld;  Skipping to next gridid in processing list\n",
 				gridid);
 			for(k=0;k<nevents;++k) freetbl(ta[i],free);
 			continue;
@@ -327,12 +327,12 @@ option which is know to cause problems\nrecenter set off\n");
 			stations,&hypocentroid);
 		if(ierr>0)
 		{
-			elog_complain(0,"%d problems setting path anomaly corrections for gridid=%d\n",
+			elog_complain(0,"%d problems setting path anomaly corrections for gridid=%ld\n",
 				ierr,gridid);
 		}
 		else if(ierr<0)
 		{
-			elog_complain(0,"Cannot compute any path anomaly corrections for gridid=%d\nSkipping to next grid point\n",
+			elog_complain(0,"Cannot compute any path anomaly corrections for gridid=%ld\nSkipping to next grid point\n",
 				gridid);
 			for(k=0;k<nevents;++k) freetbl(ta[k],free);
 			free(evid);
@@ -387,13 +387,13 @@ option which is know to cause problems\nrecenter set off\n");
 			arr_phase,&o,pf,&converge,&pmelhistory))
 		{
 			elog_notify(0,
-			  "No solution from pmel for cluster id = %d\n",
+			  "No solution from pmel for cluster id = %ld\n",
 				gridid);
 			freearr(fixarrtmp,free);
 			continue;
 		}
 		freearr(fixarrtmp,free);
-		fprintf(stdout,"Cluster id=%d pmel convergence reason\n",
+		fprintf(stdout,"Cluster id=%ld pmel convergence reason\n",
 			gridid);
 		for(k=0,pmelfail=0;k<maxtbl(converge);++k)
 		{
@@ -415,7 +415,7 @@ option which is know to cause problems\nrecenter set off\n");
 
 			{
 				elog_complain(0,"Problems saving results\
-for cluster id %d\n",
+for cluster id %ld\n",
 					gridid);
 			}
 
@@ -430,7 +430,7 @@ for cluster id %d\n",
 				"ndgf",smatrix->ndgf,
 				"sdobs",smatrix->rmsraw,NULL ) == dbINVALID)
 			{
-				elog_complain(0,"dbaddv error for gridid %d adding to gridstat table\n",
+				elog_complain(0,"dbaddv error for gridid %ld adding to gridstat table\n",
 				gridid);
 			}
 		}
