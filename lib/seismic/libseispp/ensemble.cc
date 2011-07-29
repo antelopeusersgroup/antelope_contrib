@@ -464,7 +464,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			{
 				// land here if there are gaps in this
 				// time interal.
-				int ns_this_segment;
+				long ns_this_segment;
 				double t0_this_segment;
 				double etime_this_segment;
 				double etime_last_segment;
