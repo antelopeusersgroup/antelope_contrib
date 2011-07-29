@@ -215,7 +215,7 @@ Written:  October 2000
 */
 
 int pmel(int nevents,
-    int *evid,
+    long *evid,
         Tbl **ta,
             Hypocenter *h0, 
 		Arr *fixarr,
