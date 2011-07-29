@@ -217,7 +217,7 @@ void save_metadata_for_object(Metadata& md,
 	for(mdli=mdl.begin();mdli!=mdl.end();++mdli)
 	{
 		double dval;
-		int ival;
+		long ival;
 		string mdkey;
 		if(am.is_alias((*mdli).tag))
 		{
@@ -281,7 +281,7 @@ void save_metadata_for_object(Metadata& md,
 					
 				}
 				else
-					ival = md.get_int(mdkey);
+					ival = md.get_long(mdkey);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					ival,NULL);
 				// In this case we need to push this back to metadata
@@ -539,7 +539,7 @@ int dbsave(ThreeComponentSeismogram& tcs,
 			MetadataList& mdl, 
 				AttributeMap& am)
 {
-	int recnumber;
+	long recnumber;
 	string field_name;
 
 	if(!tcs.live) return(-1);  // return immediately if this is marked dead
