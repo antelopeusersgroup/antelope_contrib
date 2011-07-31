@@ -20,7 +20,7 @@ StationChannelMap::StationChannelMap(Pf *pf)
 	Pf *pfsta,*pftbl,*pfchan;
 	Tbl *t;
 	ThreeComponentChannelMap *tccm;
-	if(pfget(pf,"StationChannelMap",(void **)&pfsta) != PFARR)
+	if(pfget(pf,const_cast<char *>("StationChannelMap"),(void **)&pfsta) != PFARR)
 		throw SeisppError(base_error
 			+ string("Missing StationChannelMap Arr&{}"));
 	t = pfkeys(pfsta);
@@ -61,7 +61,7 @@ StationChannelMap::StationChannelMap(string fname)
 {
 	FILE *fp;
 	char sta[40],statest[40];
-	char line[128];
+	char line[256];
 	char buffer[2048];
 	ostringstream sstr(buffer);
 	string base_error("StationChannelMap file constructor:  ");
@@ -71,7 +71,7 @@ StationChannelMap::StationChannelMap(string fname)
 		+ string("Cannot open file ")+fname);
 	fscanf(fp,"%s",sta);
 	rewind(fp);
-	while(fgets(line,1024,fp)!=NULL)
+	while(fgets(line,256,fp)!=NULL)
 	{
 		int ichan,lev;
 		char chan[40];
@@ -87,8 +87,11 @@ StationChannelMap::StationChannelMap(string fname)
 		}
 		// reformat line here
 		if(sscanf(line,"%s%s%d%d",sta,chan,&ichan,&lev)!=4)
-			throw SeisppError(base_error
+                {
+                    fclose(fp);
+		    throw SeisppError(base_error
 			 + string("file format error.  Check data"));
+                }
 		sstr << chan <<" "<<ichan<<" "<<lev<<endl;
 	}
 	chanmap.insert(map<string,ThreeComponentChannelMap>
