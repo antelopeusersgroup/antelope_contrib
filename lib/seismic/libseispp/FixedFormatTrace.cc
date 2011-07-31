@@ -365,7 +365,7 @@ double FixedFormatTrace::operator()(int i)
 	case INT64:
 		sptr=sptr+8*soffset;
 		liraw=reinterpret_cast<int64_t *>(sptr);
-		result=static_cast<double>(*iraw);
+		result=static_cast<double>(*liraw);
 		break;
 	case INT32:
                 /* assumes int means int32 */
