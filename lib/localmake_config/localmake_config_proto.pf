@@ -98,9 +98,9 @@ capabilities	&Arr{
 			libseisw. 
 		}
         enable	&Arr{
-            Darwin	1
-            Linux	yes
-            SunOS	yes
+            Darwin	no
+            Linux	no
+            SunOS	no
         }
         required_macros	&Tbl{
             XMOTIFINCLUDE
@@ -129,8 +129,8 @@ capabilities	&Arr{
                     Gary Pavlis use this library. 
 		}
         enable	&Arr{
-            Darwin	1
-            Linux	yes
+            Darwin	no
+            Linux	no
             SunOS	no
         }
         required_macros	&Tbl{
@@ -160,7 +160,7 @@ capabilities	&Arr{
                 tool kit.
 		}
         enable	&Arr{
-            Darwin	1
+            Darwin	no
             Linux	no
             SunOS	no
         }
@@ -185,36 +185,6 @@ capabilities	&Arr{
 				       "implied by currently configured value of VTKLIBS macro";
 			-d "$VTKLIBS"
                         }
-        }
-    }
-    xmotif	&Arr{
-        Description	X/Motif Graphics toolkit links
-        Detail	&Literal{
-			The 'xmotif' capability provides linkage to the X/Motif include files and 
-			link libraries on the local machine. These are used within Antelope-contrib
-			for the dbxcor(1) application as well as supporting libraries such as
-			libseisw. 
-		}
-        enable	&Arr{
-            Darwin	1
-            Linux	yes
-            SunOS	yes
-        }
-        required_macros	&Tbl{
-            XMOTIFINCLUDE
-            XMOTIFLIB
-        }
-        tests	&Tbl{
-            &Literal{
-			$failure_msg = "Couldn't find header-file directory '$XMOTIFINCLUDE/Xm' " . 
-				       "implied by currently configured value of XMOTIFINCLUDE macro";
-			-d "$XMOTIFINCLUDE/Xm"
-			}
-            &Literal{
-			$failure_msg = "Couldn't find library-file directory '$XMOTIFLIB' " . 
-				       "implied by currently configured value of XMOTIFLIB macro";
-			-d "$XMOTIFLIB"
-			}
         }
     }
 }
@@ -404,7 +374,7 @@ macros	&Arr{
         SunOS	/opt/boost/stage/lib
     }
     VTKROOT	&Arr{
-        Darwin	/Users/pavlis/Paraview/VTK
+        Darwin	
         Description	Top of VTK package directory chain.
         Detail	&Literal{
                     The VTKROOT macro specifies the top of the rather large 
@@ -417,7 +387,7 @@ macros	&Arr{
         SunOS	/opt/VTK
     }
     VTKINCLUDE	&Arr{
-        Darwin	/Users/pavlis/Paraview/VTK
+        Darwin	
         Description	Directory for Visualization Tool Kit include files
         Detail	&Literal{
                     The VTKINCLUDE macro defines the top level directory for 
@@ -428,7 +398,7 @@ macros	&Arr{
         SunOS	/opt/vtk
     }
     VTKLIB	&Arr{
-        Darwin	/Users/pavlis/projects/Paraview-bin/bin
+        Darwin	
         Description	Library directory for Visualization Tool Kit
         Detail	&Literal{
                     The VTKLIB macro defines the base location for libraries
