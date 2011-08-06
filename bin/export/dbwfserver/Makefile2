@@ -1,15 +1,20 @@
-BIN = dbwfserver
-PF = dbwfserver.pf
+
+BIN = dbwfserver_extract dbwfserver
+PF =  dbwfserver.pf
 MAN1 = dbwfserver.1
+
 DATADIR = python/dbwfserver
+
 DATA = __init__.py \
        server.py \
        resource.py \
-       eventdata.py \
+       dbcentral.py \
        config.py 
 
-CLEAN = *.pyc
-UNINSTALL = $(ANTELOPE)/data/$(DATADIR)/*.pyc
+CLEAN = *.pyc *.o
+UNINSTALL = $(ANTELOPE)/data/$(DATADIR)/*.pyc $(ANTELOPE)/data/$(DATADIR)/*.pyc
+
+ldlibs=-lxtra $(TRLIBS) $(GPLLIBS)
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
