@@ -17,7 +17,7 @@ for port,db  in config.run_server.items():
 
     site.displayTracebacks = config.display_tracebacks
 
-    application = service.Application(config.application_name)
+    application = service.Application('dbwfserver')
 
     sc = service.IServiceCollection(application)
 

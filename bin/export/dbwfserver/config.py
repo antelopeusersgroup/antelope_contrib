@@ -7,7 +7,6 @@ class Config_Server():
         self.pfname              = 'dbwfserver'
         self.style               = 'cupertino'
         self.nickname            = ''
-        self.application_name    = ''
         self.application_title   = ''
         self.static_dir          = ''
         self.jquery_dir          = ''
@@ -16,7 +15,7 @@ class Config_Server():
         self.local_data          = ''
         self.antelope            = ''
         self.dbname              = ''
-        self.proxy_url           = 'false'
+        self.proxy_url           = ''
         self.port                = -1
         self.max_traces          = -1
         self.max_points          = -1
@@ -29,17 +28,9 @@ class Config_Server():
         self.debug               = False
         self.daemonize           = False
         self.import_paths        = ()
-        self.default_chans       = ()
         self.default_time_window = -1
         self.filters             = ()
         self.run_server          = {}
-
-        try:
-            import antelope.stock as stock
-        except Exception,e:
-            system_print()
-            print "Problem loading Antelope's Python libraries. (%s)" % e
-            sys.exit()
 
         try:
             opts, pargs = getopt.getopt(sys.argv[1:], 'dp:P:vVern:')
@@ -82,28 +73,80 @@ class Config_Server():
         # Get values from pf file
         #
         if self.port == -1:
-            self.port = stock.pfget_int( self.pfname, "default_port" )
+            self.port = stock.pfget_int( self.pfname, "port" )
 
-        self.max_points          = stock.pfget_int( self.pfname, "max_points" )
-        self.max_traces          = stock.pfget_int( self.pfname, "max_traces" )
-        self.jquery_dir          = stock.pfget_string( self.pfname, "jquery_dir" )
-        self.static_dir          = stock.pfget_string( self.pfname, "static_dir" )
-        self.template            = stock.pfget_string( self.pfname, "template" )
-        self.plot_template       = stock.pfget_string( self.pfname, "plot_template" )
-        self.local_data          = stock.pfget_string( self.pfname, "local_data" )
-        self.style               = stock.pfget_string( self.pfname, "jquery_ui_style" )
-        self.antelope            = stock.pfget_string( self.pfname, "antelope" )
-        self.application_name    = stock.pfget_string( self.pfname, "application_name" )
-        self.application_title   = stock.pfget_string( self.pfname, "application_title" )
-        self.proxy_url           = stock.pfget_string( self.pfname, "proxy_url" )
-        self.apply_calib         = stock.pfget_boolean( self.pfname, "apply_calib" )
-        self.display_tracebacks  = stock.pfget_boolean( self.pfname, "display_tracebacks" )
-        self.display_arrivals    = stock.pfget_boolean( self.pfname, "display_arrivals" )
-        self.display_points      = stock.pfget_boolean( self.pfname, "display_points" )
-        self.default_chans       = stock.pfget_tbl( self.pfname, "default_chans" )
-        self.default_time_window = stock.pfget_tbl( self.pfname, "default_time_window" )
-        self.filters             = stock.pfget_tbl( self.pfname, "filters" )
-        self.import_paths        = stock.pfget_tbl( self.pfname, "import_paths" )
+        try:
+            self.max_points = stock.pfget_int( self.pfname, "max_points" )
+        except:
+            pass
+        try:
+            self.max_traces = stock.pfget_int( self.pfname, "max_traces" )
+        except:
+            pass
+        try:
+            self.jquery_dir = stock.pfget_string( self.pfname, "jquery_dir" )
+        except:
+            pass
+        try:
+            self.static_dir = stock.pfget_string( self.pfname, "static_dir" )
+        except:
+            pass
+        try:
+            self.template = stock.pfget_string( self.pfname, "template" )
+        except:
+            pass
+        try:
+            self.plot_template = stock.pfget_string( self.pfname, "plot_template" )
+        except:
+            pass
+        try:
+            self.local_data = stock.pfget_string( self.pfname, "local_data" )
+        except:
+            pass
+        try:
+            self.style = stock.pfget_string( self.pfname, "jquery_ui_style" )
+        except:
+            pass
+        try:
+            self.antelope = stock.pfget_string( self.pfname, "antelope" )
+        except:
+            pass
+        try:
+            self.application_title = stock.pfget_string( self.pfname, "application_title" )
+        except:
+            pass
+        try:
+            self.proxy_url = stock.pfget_string( self.pfname, "proxy_url" )
+        except:
+            pass
+        try:
+            self.apply_calib = stock.pfget_boolean( self.pfname, "apply_calib" )
+        except:
+            pass
+        try:
+            self.display_tracebacks = stock.pfget_boolean( self.pfname, "display_tracebacks" )
+        except:
+            pass
+        try:
+            self.display_arrivals = stock.pfget_boolean( self.pfname, "display_arrivals" )
+        except:
+            pass
+        try:
+            self.display_points = stock.pfget_boolean( self.pfname, "display_points" )
+        except:
+            pass
+        try:
+            self.default_time_window = stock.pfget_tbl( self.pfname, "default_time_window" )
+        except:
+            pass
+        try:
+            self.filters = stock.pfget_tbl( self.pfname, "filters" )
+        except:
+            pass
+        try:
+            self.import_paths = stock.pfget_tbl( self.pfname, "import_paths" )
+        except:
+            pass
 
 #}}}
 
@@ -171,7 +214,6 @@ class Config_Server():
         if attrname == "pfname": return self.pfname
         if attrname == "nickname": return self.nickname
         if attrname == "style": return self.style
-        if attrname == "application_name": return self.application_name
         if attrname == "application_title": return self.application_title
         if attrname == "static_dir": return self.static_dir
         if attrname == "jquery_dir": return self.jquery_dir
@@ -191,7 +233,6 @@ class Config_Server():
         if attrname == "debug": return self.debug
         if attrname == "daemonize": return self.daemonize
         if attrname == "import_paths": return self.import_paths
-        if attrname == "default_chans": return self.default_chans
         if attrname == "default_time_window": return self.time_window
         if attrname == "filters": return self.filters
         if attrname == "run_server": return self.run_server
