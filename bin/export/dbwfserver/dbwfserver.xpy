@@ -137,8 +137,8 @@ if config.verbose: print '\n\tStart Server!\n'
 try:
     print "RUN REACTOR!"
     run()
-except:
-    print "Exiting."
+except Exception, e:
+    print "Exiting. Got: %s [%s]" % (Exception,e)
     try:
         reactor.stop()
     except:

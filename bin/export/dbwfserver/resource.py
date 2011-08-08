@@ -92,13 +92,6 @@ class db_nulls():
         dictionary with NULL values for each field.
         """
 
-        #try:
-        #    import antelope.datascope as datascope
-        #except Exception,e:
-        #    print "Problem loading Antelope's Python libraries. (%s)" % e
-        #    reactor.stop()
-
-
         """
         We will assume all databases have the same schema. 
         Get the first only.
@@ -943,10 +936,10 @@ class QueryParser(resource.Resource):
                 "dbname": self.dbname,
                 "display_arrivals": '',
                 "display_points": '',
+                "proxy_url": config.proxy_url,
                 "dbname": self.dbname,
                 "application_title": config.application_title,
             }
-
 
         for filter in config.filters:
             self.tvals['filters'] += '<option value='+filter.replace(' ','_')+'>'
@@ -1086,7 +1079,7 @@ class QueryParser(resource.Resource):
 
 
         if self.loading_stations or self.loading_events:
-            html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % config.application_name
+            html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % config.application_title
             html +=  "<p>Waiting for Stations: %s</p></br>" % self.loading_stations
             html +=  "<p>Waiting for Events: %s</p></br>" % self.loading_events
             html +=  "</body></html>"
@@ -1120,13 +1113,12 @@ class QueryParser(resource.Resource):
             "setupEvents":config.event,
             "setupUI":    'false',
             "realtime":   config.realtime,
-            "proxy":      "''",
-            "proxy_url":  config.proxy_url,
+            #"proxy_url":  config.proxy_url,
             "style":      config.style,
             "meta_query": "false"
         } )
 
-        if config.proxy_url: response_meta['proxy'] = "'" + config.proxy_url + "'"
+        #if config.proxy_url: response_meta['proxy'] = "'" + config.proxy_url + "'"
 
         #
         # remove all empty  elements
@@ -1347,15 +1339,7 @@ class QueryParser(resource.Resource):
 
         """
         Strict format for uri:
-            localhost/
-
-            localhost/wf/sta
-
-            localhost/wf/sta/chan
-
-            localhost/wf/sta/chan/time
-
-            localhost/wf/sta/chan/time/time
+            localhost/wf/sta/chan/time/time/page
 
             Data-only calls:
             localhost/data/wf
@@ -1365,7 +1349,7 @@ class QueryParser(resource.Resource):
             localhost/data/stations
             localhost/data/coverage
             localhost/data/channels
-            localhost/data/wf/sta/chan/time/time
+            localhost/data/wf/sta/chan/time/time/page
         """
         if config.debug: log.msg("QueryParser(): _parse_request(): URI: %s" % str(args) ) 
 
@@ -1378,8 +1362,6 @@ class QueryParser(resource.Resource):
             "end":0,
             "data":False,
             "start":0,
-            #"filter":'None',
-            #"calibrate":False,
             "page":1,
             "coverage":0,
             "time_window":False
@@ -1409,27 +1391,6 @@ class QueryParser(resource.Resource):
         # localhost/sta/chan/time/time/page
         if len(args) > 5:
             uri['page'] = args[5]
-
-        #   # localhost/sta/chan/time/time/filter
-        #   if len(args) > 5:
-        #       uri['filter'] = args[5]
-
-        #   # localhost/sta/chan/time/time/filter/calibrate
-        #   if len(args) > 6:
-        #       uri['calibrate'] = args[6]
-
-        #   # localhost/sta/chan/time/time/filter/calibrate/page
-        #   if len(args) > 7:
-        #       uri['page'] = args[7]
-
-        #
-        #Setting the filter
-        #
-        #if uri['filter']:
-        #    if uri['filter'] == 'None' or uri['filter'] == 'null' or uri['filter'] == '-':
-        #        uri['filter'] = 'None'
-        #    else:
-        #        uri['filter'] = uri['filter'].replace('_',' ')
 
         #
         # Fix start

@@ -1,15 +1,8 @@
-application_title Waveform Explorer
-application_name waveform_explorer
+application_title <strong>Waveform Explorer</strong>
 
-default_port 8008                               # default port to use for http requests
+port 80                               # default port to use for http requests
 
-#proxy_url /dbwf/ice9                    # for reverse proxy installations
-proxy_url
-
-default_chans &Tbl{
-# list of values or regex
-    .*
-}
+#proxy_url /dbwf/ice9                # for reverse proxy installations
 
 default_time_window 200
 
@@ -18,12 +11,12 @@ max_points  800
 max_traces  20
 
 # HTML templates 
+antelope        &env(ANTELOPE)
+local_data      local/data/www/dbwfserver
 template        template.html
 plot_template   plot.html
 jquery_dir      static/jquery
 static_dir      static
-local_data      local/data/www/dbwfserver
-antelope        &env(ANTELOPE)
 
 # in case of errors...
 display_tracebacks False 
