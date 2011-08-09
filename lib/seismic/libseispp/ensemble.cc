@@ -42,6 +42,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
+                if(SEISPP_verbose) cout << this_function_base_message
+                    <<":  Attempting to read an ensemble with "
+                        << nsta << " seismograms"<<endl;
 		// We need a copy of this pointer 
 		Dbptr dbparent=ensemble_bundle.parent;
 		--dbparent.table;
@@ -96,6 +99,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 					ensemble_mdl);
 			}
 		}
+                if(SEISPP_verbose) cout <<this_function_base_message
+                    << ":  Number of seismograms loaded="
+                        <<member.size()<<endl;;
 
 	} catch (...) { throw;};
 }
@@ -235,6 +241,10 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	else
 		ir=0;
 	Dbptr dbsc,dbscgr;
+        if(SEISPP_verbose) cout << base_error_message
+            << "Attempting to load data in time interval "
+                << strtime(twin.start) << " to "
+                << strtime(twin.end)<<endl;
 
 	// now call Danny Harvey's station-channel C function
 	ierr=grdb_sc_loadcss(dbhandle.db,
@@ -250,7 +260,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			+string("grdb_sc_loadcss procedure failed\n"));
 	}
 
-	char *gap="seg";
+	char *gap=const_cast<char *>("seg");
 	/* call Danny Harvey's routine that creates a trace
 	* database using the result of the grdb_sc_loadcss function.
 	* We always ask it to NOT apply calib and ask it to 
@@ -281,6 +291,11 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		throw SeisppError(base_error_message
 		   +string("no data in temporary trace database\n"));
 	}
+        else if (SEISPP_verbose)
+        {
+            cout << base_error_message
+                <<"Successfully read "<<ntraces<<" seismograms"<<endl;
+        }
 	try {
 		/* Use this trick to get a memory managed plain db for the handle */
 		DatascopeHandle dbhtmp(dbtr,dbtr);
@@ -462,6 +477,10 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 			else
 			{
+                                if(SEISPP_verbose) cout << base_error_message
+                                    << "(Warning) seismogram number "
+                                    << irec <<" of this ensemble has a data gap"
+                                    << endl;
 				// land here if there are gaps in this
 				// time interal.
 				long ns_this_segment;
@@ -488,6 +507,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							seis->add_gap(TimeWindow(
 								twin.start,
 								t0_this_segment));
+                                                        if(SEISPP_verbose)
+                                                            cout << "Gap is at start of seismogram"
+                                                                <<endl;
 						}
 					}
 					// Similar for endtime
@@ -503,6 +525,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							seis->add_gap(TimeWindow(
 								etime_this_segment,
 								twin.end));
+                                                        if(SEISPP_verbose)
+                                                            cout << "Gap is at end of seismogram"
+                                                                <<endl;
 						}
 					}
 					else
@@ -510,6 +535,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 						seis->add_gap(TimeWindow(
 							etime_last_segment,
 							t0_this_segment));
+                                                if(SEISPP_verbose)
+                                                  cout << "Gap is in middle of seismogram"
+                                                                <<endl;
 					}
 					// In all cases we just copy into
 					// this container
@@ -626,6 +654,9 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
+                if(SEISPP_verbose) cout << this_function_base_message
+                    <<":  Attempting to read an ensemble with "
+                        << nsta << " 3C seismograms"<<endl;
 		// We need a copy of this pointer 
 		Dbptr dbparent=ensemble_bundle.parent;
 		--dbparent.table;
@@ -680,6 +711,9 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 					ensemble_mdl);
 			}
 		}
+                if(SEISPP_verbose) cout <<this_function_base_message
+                    << ":  Number of seismograms loaded="
+                        <<member.size()<<endl;;
 
 	} catch (...) { throw;};
 }
