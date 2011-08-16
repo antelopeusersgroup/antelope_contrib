@@ -1,4 +1,4 @@
-application_title <strong>Waveform Explorer</strong>
+application_title Waveform Explorer
 
 port 80                               # default port to use for http requests
 

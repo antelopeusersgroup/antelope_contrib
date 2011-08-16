@@ -29,7 +29,7 @@ class Config_Server():
         self.daemonize           = False
         self.import_paths        = ()
         self.default_time_window = -1
-        self.filters             = ()
+        self.filters             = []
         self.run_server          = {}
 
         try:
@@ -140,7 +140,7 @@ class Config_Server():
         except:
             pass
         try:
-            self.filters = stock.pfget_tbl( self.pfname, "filters" )
+            self.filters = list(stock.pfget_tbl( self.pfname, "filters" ) )
         except:
             pass
         try:

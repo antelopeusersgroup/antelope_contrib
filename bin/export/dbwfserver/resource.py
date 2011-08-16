@@ -1270,7 +1270,7 @@ class QueryParser(resource.Resource):
                     Return list of filters as JSON objects. For client ajax calls.
                     """
 
-                    if config.debug: log.msg('QueryParser(): render_uri() query => data => filters')
+                    if config.debug: log.msg('QueryParser(): render_uri() query => data => filters %s' % config.filters)
 
                     return self.uri_results( uri, config.filters )
                 #}}}
