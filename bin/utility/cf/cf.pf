@@ -137,6 +137,7 @@ make &Arr{
 	^Making 
 	^libtool: compile:
 	^libtool: link:
+	^libtool: install:
 	^[[:alnum:]_]+\\.[fF]:$
 	^[[:space:]]*MAIN:$
 	^[[:space:]]+MAIN [[:alnum:]_]+:$
@@ -269,7 +270,7 @@ make &Arr{
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
 	^produce[[:space:]]
 	^(\\.\\/)?runmake[[:space:]]
-	^ranlib[[:space:]]
+	^ranlib:?[[:space:]]
 	^refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]
 	^sed[[:space:]]
