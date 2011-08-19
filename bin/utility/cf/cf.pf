@@ -134,6 +134,9 @@ make &Arr{
 	^to configure
 	^Extracted
 	^Manifying
+	^Making 
+	^libtool: compile:
+	^libtool: link:
 	^[[:alnum:]_]+\\.[fF]:$
 	^[[:space:]]*MAIN:$
 	^[[:space:]]+MAIN [[:alnum:]_]+:$
