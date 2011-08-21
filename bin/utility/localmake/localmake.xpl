@@ -424,15 +424,52 @@ sub localmake_module {
 	}
 
 	#HARD-WIRE tags
+
 	@warning_blocks = $Windows{"CompileOut"}->tagRanges("magenta");
 	@error_blocks = $Windows{"CompileOut"}->tagRanges("red");
 
 	$num_warning_blocks = scalar( @warning_blocks ) / 2;
 	$num_error_blocks = scalar( @error_blocks ) / 2;
 
-	inform( "localmake: done making module '$module' with $num_warning_blocks " .
-		"blocks of warning messages and $num_error_blocks blocks of " .
-		"error messages\n\n" );
+	if( $Gui_mode ) {
+
+		$msg = "localmake: done making module '$module' with ";
+
+		$Windows{"CompileOut"}->insert( "end", $msg, "localmake_inform" );
+
+		$msg = "$num_warning_blocks blocks of warning messages";
+
+		if( $num_warning_blocks > 0 ) {
+			
+			$tag = "magenta";
+
+		} else {
+
+			$tag = "localmake_inform";
+		}
+
+		$Windows{"CompileOut"}->insert( "end", $msg, $tag );
+
+		$Windows{"CompileOut"}->insert( "end", " and ", "localmake_inform" );
+
+		$msg = "$num_error_blocks blocks of error messages";
+
+		if( $num_error_blocks > 0 ) {
+			
+			$tag = "red";
+
+		} else {
+
+			$tag = "localmake_inform";
+		}
+
+		$Windows{"CompileOut"}->insert( "end", $msg, $tag );
+	} else {
+
+		inform( "localmake: done making module '$module' with " .
+			"$num_warning_blocks blocks of warning messages and " .
+			"$num_error_blocks blocks of error messages\n\n" );
+	}
 
 	if( $Gui_mode && $module eq "bootstrap" ) {
 
