@@ -135,6 +135,7 @@ make &Arr{
 	^Extracted
 	^Manifying
 	^Making 
+	^make: Nothing to be done
 	^libtool: compile:
 	^libtool: link:
 	^libtool: install:
