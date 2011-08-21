@@ -423,7 +423,16 @@ sub localmake_module {
 		$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
 	}
 
-	inform( "localmake: done making module '$module', hopefully successfully (review compilation messages for possible errors)\n\n" );
+	#HARD-WIRE tags
+	@warning_blocks = $Windows{"CompileOut"}->tagRanges("magenta");
+	@error_blocks = $Windows{"CompileOut"}->tagRanges("red");
+
+	$num_warning_blocks = scalar( @warning_blocks ) / 2;
+	$num_error_blocks = scalar( @error_blocks ) / 2;
+
+	inform( "localmake: done making module '$module' with $num_warning_blocks " .
+		"blocks of warning messages and $num_error_blocks blocks of " .
+		"error messages\n\n" );
 
 	if( $Gui_mode && $module eq "bootstrap" ) {
 
