@@ -331,6 +331,8 @@ sub localmake_module {
 
 		$Windows{"compilebutton_$module"}->configure( -relief => "sunken" );
 
+		destroy_followup_buttons();
+
 		$Windows{"CompileOut"}->delete( '0.0', 'end' );
 		$Windows{"Main"}->update();
 	}
@@ -423,7 +425,7 @@ sub localmake_module {
 		$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
 	}
 
-	#HARD-WIRE tags
+	#HARD-WIRE tag names (colors) interpreted as warnings and errors
 
 	@warning_blocks = $Windows{"CompileOut"}->tagRanges("magenta");
 	@error_blocks = $Windows{"CompileOut"}->tagRanges("red");
@@ -452,7 +454,7 @@ sub localmake_module {
 
 		$Windows{"CompileOut"}->insert( "end", " and ", "localmake_inform" );
 
-		$msg = "$num_error_blocks blocks of error messages";
+		$msg = "$num_error_blocks blocks of error messages\n";
 
 		if( $num_error_blocks > 0 ) {
 			
@@ -464,6 +466,16 @@ sub localmake_module {
 		}
 
 		$Windows{"CompileOut"}->insert( "end", $msg, $tag );
+
+		$Windows{"CompileOut"}->see( 'end' );
+
+		if( $num_warning_blocks > 0 || $num_error_blocks > 0 ) {
+			
+			add_followup_buttons();
+		}
+
+		$Windows{"Main"}->update();
+
 	} else {
 
 		inform( "localmake: done making module '$module' with " .
@@ -483,6 +495,81 @@ sub localmake_module {
 	}
 
 	return 0;
+}
+
+sub get_next_invisible {
+	my( $listref, $indexref ) = @_;
+
+	my( $last_visible ) = $Windows{"CompileOut"}->index('@0,0') + $Windows{"CompileOut"}->cget( -height );
+
+	my( $nextend ) = -1;
+
+	while( $nextend < $last_visible ) {
+
+		$$indexref++;
+
+		$nextend = $$listref[$$indexref * 2 + 1];
+	}
+
+	return $$indexref;
+}
+
+sub show_first_error {
+	
+	my( $start ) = $errorslist[0];
+
+	$current_error = 1;
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	$Windows{"NextError"}->configure( -state => "normal" );
+}
+
+sub show_first_warning {
+	
+	my( $start ) = $warningslist[0];
+
+	$current_warning = 1;
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	$Windows{"NextWarning"}->configure( -state => "normal" );
+}
+
+sub show_next_error {
+	
+	$current_error = get_next_invisible( \@errorlist, \$current_error );
+
+	my( $start ) = $errorslist[$current_error * 2];
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	if( ( $current_error + 1 ) * 2 >= scalar( @errorslist ) ) {
+
+		$Windows{"NextError"}->configure( -state => "disabled" );
+	}
+}
+
+sub show_next_warning {
+	
+	$current_warning = get_next_invisible( \@warninglist, \$current_warning );
+
+	my( $start ) = $warningslist[$current_warning * 2];
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	if( ( $current_warning + 1 ) * 2 >= scalar( @warningslist ) ) {
+
+		$Windows{"NextWarning"}->configure( -state => "disabled" );
+	}
 }
 
 sub create_compile_button {
@@ -535,6 +622,108 @@ sub init_menubar {
         init_File_menu( $menubar );
 
         return $menubar;
+}
+
+sub add_followup_buttons {
+
+	my( $firsterror_state, $nexterror_state, $firstwarning_state, $nextwarning_state );
+
+	@errorslist = $Windows{"CompileOut"}->tagRanges( "red" );
+	@warningslist = $Windows{"CompileOut"}->tagRanges( "magenta" );
+	$current_error = 0;
+	$current_warning = 0;
+
+	if( scalar( @errorslist ) <= 0 ) {
+
+		$firsterror_state = 'disabled';
+		$nexterror_state = 'disabled';
+
+	} elsif( scalar( @errorslist ) == 2 ) {
+
+		$firsterror_state = 'normal';
+		$nexterror_state = 'disabled';
+
+	} else {
+
+		$firsterror_state = 'normal';
+		$nexterror_state = 'normal';
+	}
+
+	if( scalar( @warningslist ) <= 0 ) {
+
+		$firstwarning_state = 'disabled';
+		$nextwarning_state = 'disabled';
+
+	} elsif( scalar( @warningslist ) == 2 ) {
+
+		$firstwarning_state = 'normal';
+		$nextwarning_state = 'disabled';
+
+	} else {
+
+		$firstwarning_state = 'normal';
+		$nextwarning_state = 'normal';
+	}
+
+	$w = $Windows{"Main"};
+
+	my( $frame ) = $w->Frame( -relief => 'raised', -borderwidth => 5 );
+
+	$Windows{"FirstError"} = $frame->Button( -text => "First Error", 
+					    -relief => 'raised', 
+					    -foreground => 'red', 
+					    -state => $firsterror_state,
+					    -command => \&show_first_error );
+
+	$Windows{"FirstError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$Windows{"NextError"} = $frame->Button( -text => "Next Error", 
+					   -relief => 'raised', 
+					   -foreground => 'red', 
+					   -state => $nexterror_state,
+					   -command => \&show_next_error );
+
+	$Windows{"NextError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$Windows{"FirstWarning"} = $frame->Button( -text => "First Warning", 
+					      -relief => 'raised', 
+					      -foreground => 'magenta', 
+					      -state => $firstwarning_state,
+					      -command => \&show_first_warning );
+
+	$Windows{"FirstWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$Windows{"NextWarning"} = $frame->Button( -text => "Next Warning", 
+					     -relief => 'raised', 
+					     -foreground => 'magenta', 
+					     -state => $nextwarning_state,
+					     -command => \&show_next_warning );
+
+	$Windows{"NextWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$frame->grid( -row => 3, -column => 0, -sticky => "new" );
+
+	$w->gridRowconfigure( 3, -weight => 0 );
+
+	$Windows{"FollowUpButtons"} = $frame;
+
+	return;
+}
+
+sub destroy_followup_buttons {
+
+	undef( @errorslist );
+	undef( @warningslist );
+
+	undef( $current_error );
+	undef( $current_warning );
+
+	if( Exists( $Windows{"FollowUpButtons"} ) ) {
+
+		$Windows{"FollowUpButtons"}->destroy();
+	}
+
+	return;
 }
 
 sub init_window {
