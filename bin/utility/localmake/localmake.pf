@@ -82,6 +82,15 @@ dbxcor &Arr{
 		man/man3/glp_matrix_utils.3
 	}
 }
+all_contrib &Arr{
+	product	&env(ANTELOPE)
+	src_subdir	&contrib_src_subdir
+	capabilities_required &Tbl{
+	}
+	build &Tbl{
+		.
+	}
+}
 antelope_matlab &Arr{
 	product	&env(ANTELOPE)
 	src_subdir	&contrib_src_subdir
