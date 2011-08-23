@@ -75,6 +75,7 @@ sub load_modules {
 
 	my( @exclude ) = ( "tarball_time_format",
 			   "tar_command",
+			   "make_command",
 			   "pf_revision_time" );
 
 	$p = pfget( $Pf, "" );
