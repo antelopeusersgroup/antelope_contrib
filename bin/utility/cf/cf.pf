@@ -60,6 +60,7 @@ make &Arr{
 	^[[:space:]]*parse_function doesn't understand 
 	^localmake_config:.*is not defined
 	^localmake_config:.*Test failed
+	^localmake_config:.*Stopping compilation
 	^.*Can.t locate
    }
    green &Tbl{							# Directory navigation
