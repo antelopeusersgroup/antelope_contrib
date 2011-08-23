@@ -497,10 +497,26 @@ sub localmake_module {
 	return 0;
 }
 
+sub compute_font_height {
+
+	if( $Windows{"CompileOut"}->height() == 1 ) {
+		
+		$Windows{"Main"}->after( 100, \&compute_font_height );
+
+		return;
+	}
+
+	$Font_height = $Windows{"CompileOut"}->height() / $Windows{"CompileOut"}->cget( -height );
+
+	return;
+}
+
 sub get_next_hidden_message {
 	my( $listref, $indexref ) = @_;
 
-	my( $last_visible ) = $Windows{"CompileOut"}->index('@0,0') + $Windows{"CompileOut"}->cget( -height );
+	my( $height_rows ) = int( $Windows{"CompileOut"}->height() / $Font_height );
+
+	my( $last_visible ) = $Windows{"CompileOut"}->index('@0,0') + $height_rows;
 
 	$$indexref++;
 
@@ -511,6 +527,11 @@ sub get_next_hidden_message {
 		$$indexref++;
 
 		$next_start = $$listref[$$indexref * 2];
+	}
+
+	if( ! defined( $next_start ) || $next_start eq "" || $$indexref >= scalar( @{$listref} ) - 1 ) {
+
+		$$indexref = scalar( @{$listref} ) / 2 - 1;
 	}
 
 	return $$indexref;
@@ -699,6 +720,8 @@ sub add_followup_buttons {
 
 	$Windows{"FollowUpButtons"} = $frame;
 
+	$Windows{"Main"}->update();
+
 	return;
 }
 
@@ -784,6 +807,8 @@ sub init_window {
 	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
 
 	$Windows{"Main"}->gridRowconfigure( 2, -weight => 1 );
+
+	$Windows{"Main"}->afterIdle( \&compute_font_height );
 
 	MainLoop;
 }
