@@ -41,6 +41,11 @@ Create a tarball of the compiled \fImodule\fP and files on which it depends
 .IP tarball_time_format
 This parameter specifies the time format (in the format of epoch2str(3))
 to be used in naming tar files with compiled code after it has been built. 
+.IP tar_command
+This parameter specifies the name of the command to be used to create tar files
+.IP make_command
+This parameter specifies the make command to use in building targets. The environment variable
+named MAKE will take precedence over this if defined. 
 .IP <module_name>
 The parameter file should contain one parameter-file array (see pf(5)) for each software 
 module to be built. The array for a given module describes how to build the module and if
@@ -82,6 +87,8 @@ all pieces of compiled code and supporting files comprising a given software
 .nf
 
 tarball_time_format %Y_%m_%d
+tar_command tar
+make_command make
 
 contrib_src_subdir src/contrib
 

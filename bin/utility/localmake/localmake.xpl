@@ -838,6 +838,12 @@ if( $opt_p ) {
 
 $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
+$Make_command = pfget( $Pf, "make" );
+
+if( defined( $ENV{'MAKE'} ) ) {
+
+	$Make_command = $ENV{'MAKE'};
+}
 
 %Modules = load_modules();
 

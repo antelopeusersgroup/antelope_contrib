@@ -1,5 +1,6 @@
 tarball_time_format %Y_%m_%d
 tar_command tar
+make_command make
 
 contrib_src_subdir src/contrib
 
