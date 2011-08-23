@@ -546,7 +546,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 	if((psm->xpe)==NULL)
 		throw SeisppError(base_error
 		 + string("XcorProcessingEngine has not been initiated or was cleared")
-		 + string("\nCannot copntinue"));
+		 + string("\nCannot continue"));
 	try {
 		DatabaseHandle *dbh;
 		TimeSeriesEnsemble *tse;
@@ -556,7 +556,7 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 			modify_asetting_for_phase(*psm,phase_to_analyze);
 		    } catch (SeisppError& serr) {
 			serr.log_error();
-			ss << "Do no know how to handle phase = "<<phase_to_analyze<<endl;
+			ss << "Do not know how to handle phase = "<<phase_to_analyze<<endl;
 			psm->record(ss.str());
 			return;
 		    }
@@ -572,11 +572,13 @@ void handle_next_ensemble(string phase_to_analyze,Widget w,SessionManager *psm)
 		do {
 			if(psm->get_state() == NONE)
 			{
+                                psm->record(string("Calling load_data method"));
 				psm->session_state(THINKING);
 				psm->xpe->load_data(*dbh,FINISHED);
 			}
 			else
 			{
+                                psm->record(string("Skipping this ensemble without saving"));
 				psm->session_state(THINKING);
 				psm->xpe->load_data(*dbh,SKIPPED);
 			}
@@ -2891,8 +2893,8 @@ main (int argc, char **argv)
 	XmNrightAttachment, XmATTACH_FORM, NULL);
 
   MenuItem file_menu[]={
-    {(char *) "Save",&xmPushButtonGadgetClass,'s',(char *) "Ctrl<Key>S","Ctrl+S",save_event,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Exit",&xmPushButtonGadgetClass,'x',(char *) "Ctrl<Key>C","Ctrl+C",exit_gui,(XtPointer)0,NULL,(MenuItem *)NULL},
+    {(char *) "Save",&xmPushButtonGadgetClass,'s',(char *) "Ctrl<Key>S",(char *)"Ctrl+S",save_event,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Exit",&xmPushButtonGadgetClass,'x',(char *) "Ctrl<Key>C",(char *)"Ctrl+C",exit_gui,(XtPointer)0,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
@@ -2907,19 +2909,19 @@ main (int argc, char **argv)
   };
 
   MenuItem picks_menu[]={
-    {(char *) "Beam Window",&xmPushButtonGadgetClass,'B',"<Key>B","B",pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Robust Window",&xmPushButtonGadgetClass,'R',"<Key>R","R",pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *)"Reference Trace",&xmPushButtonGadgetClass,'M',"<Key>M","M",
+    {(char *) "Beam Window",&xmPushButtonGadgetClass,'B',(char *)"<Key>B",(char *)"B",pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Robust Window",&xmPushButtonGadgetClass,'R',(char *)"<Key>R",(char *)"R",pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *)"Reference Trace",&xmPushButtonGadgetClass,'M',(char *)"<Key>M",(char *)"M",
     	pick_ref_trace,(XtPointer)&sm,NULL,(MenuItem *)NULL},
 //    {"View",&xmPushButtonGadgetClass,'V',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)view_submenu},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
   MenuItem edit_menu[]={
-    {(char *) "Trace Edit",&xmPushButtonGadgetClass,'T',"<Key>T","T",toggle_edit,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Pick Cutoff",&xmPushButtonGadgetClass,'C',"<Key>C","C",pick_cutoff,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Restore Data",&xmPushButtonGadgetClass,'D',"<Key>D","D",restore_data,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {(char *) "Enable Polarity Editing",&xmPushButtonGadgetClass,'P',"<Key>P","P",enable_polarity_switching,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Trace Edit",&xmPushButtonGadgetClass,'T',(char *)"<Key>T",(char *)"T",toggle_edit,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Pick Cutoff",&xmPushButtonGadgetClass,'C',(char *)"<Key>C",(char *)"C",pick_cutoff,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Restore Data",&xmPushButtonGadgetClass,'D',(char *)"<Key>D",(char *)"D",restore_data,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Enable Polarity Editing",&xmPushButtonGadgetClass,'P',(char *)"<Key>P",(char *)"P",enable_polarity_switching,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {(char *) "Enable Manual Picking",&xmPushButtonGadgetClass,'M',NULL,NULL,enable_display_mpicker,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {(char *) "Enable Cycle Skip Picker",&xmPushButtonGadgetClass,'C',NULL,NULL,enable_cycle_skip_picking,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
