@@ -435,6 +435,11 @@ sub localmake_module {
 
 	if( $Gui_mode ) {
 
+		if( $num_warning_blocks > 0 || $num_error_blocks > 0 ) {
+			
+			add_followup_buttons();
+		}
+
 		$msg = "localmake: done making module '$module' with ";
 
 		$Windows{"CompileOut"}->insert( "end", $msg, "localmake_inform" );
@@ -469,11 +474,6 @@ sub localmake_module {
 
 		$Windows{"CompileOut"}->see( 'end' );
 
-		if( $num_warning_blocks > 0 || $num_error_blocks > 0 ) {
-			
-			add_followup_buttons();
-		}
-
 		$Windows{"Main"}->update();
 
 	} else {
@@ -497,18 +497,20 @@ sub localmake_module {
 	return 0;
 }
 
-sub get_next_invisible {
+sub get_next_hidden_message {
 	my( $listref, $indexref ) = @_;
 
 	my( $last_visible ) = $Windows{"CompileOut"}->index('@0,0') + $Windows{"CompileOut"}->cget( -height );
 
-	my( $nextend ) = -1;
+	$$indexref++;
 
-	while( $nextend < $last_visible ) {
+	my( $next_start ) = $$listref[$$indexref * 2];
+
+	while( $next_start <= $last_visible && $$indexref * 2 < scalar( @{$listref} ) ) {
 
 		$$indexref++;
 
-		$nextend = $$listref[$$indexref * 2 + 1];
+		$next_start = $$listref[$$indexref * 2];
 	}
 
 	return $$indexref;
@@ -518,7 +520,7 @@ sub show_first_error {
 	
 	my( $start ) = $errorslist[0];
 
-	$current_error = 1;
+	$current_error = 0;
 
 	$Windows{"CompileOut"}->see( $start );
 
@@ -531,7 +533,7 @@ sub show_first_warning {
 	
 	my( $start ) = $warningslist[0];
 
-	$current_warning = 1;
+	$current_warning = 0;
 
 	$Windows{"CompileOut"}->see( $start );
 
@@ -542,7 +544,7 @@ sub show_first_warning {
 
 sub show_next_error {
 	
-	$current_error = get_next_invisible( \@errorlist, \$current_error );
+	$current_error = get_next_hidden_message( \@errorslist, \$current_error );
 
 	my( $start ) = $errorslist[$current_error * 2];
 
@@ -558,7 +560,7 @@ sub show_next_error {
 
 sub show_next_warning {
 	
-	$current_warning = get_next_invisible( \@warninglist, \$current_warning );
+	$current_warning = get_next_hidden_message( \@warningslist, \$current_warning );
 
 	my( $start ) = $warningslist[$current_warning * 2];
 
@@ -638,15 +640,10 @@ sub add_followup_buttons {
 		$firsterror_state = 'disabled';
 		$nexterror_state = 'disabled';
 
-	} elsif( scalar( @errorslist ) == 2 ) {
-
-		$firsterror_state = 'normal';
-		$nexterror_state = 'disabled';
-
 	} else {
 
 		$firsterror_state = 'normal';
-		$nexterror_state = 'normal';
+		$nexterror_state = 'disabled';
 	}
 
 	if( scalar( @warningslist ) <= 0 ) {
@@ -654,15 +651,10 @@ sub add_followup_buttons {
 		$firstwarning_state = 'disabled';
 		$nextwarning_state = 'disabled';
 
-	} elsif( scalar( @warningslist ) == 2 ) {
-
-		$firstwarning_state = 'normal';
-		$nextwarning_state = 'disabled';
-
 	} else {
 
 		$firstwarning_state = 'normal';
-		$nextwarning_state = 'normal';
+		$nextwarning_state = 'disabled';
 	}
 
 	$w = $Windows{"Main"};
