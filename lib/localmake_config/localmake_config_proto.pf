@@ -8,7 +8,7 @@ capabilities	&Arr{
 			of the Antelope Toolbox for Matlab. 
 		}
         enable	&Arr{
-            Darwin	1
+            Darwin	no
             Linux	no
             SunOS	no
         }
@@ -67,7 +67,7 @@ capabilities	&Arr{
 			tools get installed (e.g. dbwfserver(1) and orbtopo(1)). 
 		}
         enable	&Arr{
-            Darwin	1
+            Darwin	no
             Linux	no
             SunOS	no
         }
@@ -215,7 +215,7 @@ header	&Literal{
 }
 macros	&Arr{
     MATLAB	&Arr{
-        Darwin	/Applications/MATLAB_R2010a.app
+        Darwin	
         Description	Top-level directory of Matlab installation
         Detail	&Literal{
 			The MATLAB macro specifies the top-level directory
@@ -303,7 +303,7 @@ macros	&Arr{
         SunOS	
     }
     XMOTIFINCLUDE	&Arr{
-        Darwin	/usr/OpenMotif/include
+        Darwin	
         Description	Location of X-Motif header files
         Detail	&Literal{
 			The XMOTIFINCLUDE macro specifies the location 
@@ -324,7 +324,7 @@ macros	&Arr{
         SunOS	/usr/openwin/include
     }
     XMOTIFLIB	&Arr{
-        Darwin	/usr/OpenMotif/lib
+        Darwin	
         Description	Location of X-Motif link libraries
         Detail	&Literal{
 			The XMOTIFLIB macro specifies the location 
@@ -342,7 +342,7 @@ macros	&Arr{
         SunOS	/usr/openwin/lib
     }
     BOOSTINCLUDE	&Arr{
-        Darwin	/opt/boost
+        Darwin	
         Description	Location of boost include files
         Detail	&Literal{
 			The BOOSTINCLUDE macro defines the location of 
@@ -354,11 +354,11 @@ macros	&Arr{
                         should normally point to the top of the directory
                         tree where boost is installed. 
 		}
-        Linux	/opt/boost
-        SunOS	/opt/boost
+        Linux	
+        SunOS
     }
     BOOSTLIB	&Arr{
-        Darwin	/opt/boost/stage/lib
+        Darwin	
         Description	Location of boost compiled libraries.
         Detail	&Literal{
 			The BOOSTLIB macro defines the location of 
@@ -370,8 +370,8 @@ macros	&Arr{
                         the specifice -l reference to which library 
                         component you want to utilize.
 		}
-        Linux	/opt/boost/stage/lib
-        SunOS	/opt/boost/stage/lib
+        Linux	
+        SunOS
     }
     VTKROOT	&Arr{
         Darwin	
@@ -383,8 +383,8 @@ macros	&Arr{
                     subdirectories similar to the way ANTELOPE defines the top
                     of the directory chain for ANTELOPE.
 		}
-        Linux	/opt/VTK
-        SunOS	/opt/VTK
+        Linux	
+        SunOS	
     }
     VTKINCLUDE	&Arr{
         Darwin	
@@ -394,8 +394,8 @@ macros	&Arr{
                     include files for compiling an application with the
                     Visualization Tool Kit (VTK). 
 		}
-        Linux	/opt/vtk
-        SunOS	/opt/vtk
+        Linux	
+        SunOS	
     }
     VTKLIB	&Arr{
         Darwin	
@@ -406,9 +406,8 @@ macros	&Arr{
                     Individual makefiles need to select the correct list of 
                     the rather large number of libraries.
 		}
-        Linux	/opt/vtk
-        SunOS	/opt/vtk
+        Linux	
+        SunOS	
     }
 }
 output_file	antelopemake.local
-pf_revision_time	1311727341
