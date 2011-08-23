@@ -260,7 +260,7 @@ sub make_target {
 
 	} else {
 
-		$cmd = "make $target 2>&1 < /dev/null $cf";
+		$cmd = "$Make_command $target 2>&1 < /dev/null $cf";
 	}
 
 	inform( "localmake: executing '$cmd'\n" );
@@ -839,7 +839,7 @@ if( $opt_p ) {
 
 $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
-$Make_command = pfget( $Pf, "make" );
+$Make_command = pfget( $Pf, "make_command" );
 
 if( defined( $ENV{'MAKE'} ) ) {
 
