@@ -1,9 +1,7 @@
+#Edited by Malcolm White - August 2011
+
 require "getopts.pl";
 use Datascope;
-
-######
-#DEBUG
-######
 
 #####
 #MAIN
@@ -29,7 +27,7 @@ atabase\n" );
                 $Pf = $opt_p;
         }
 
-        #mw88 - The -f option was added to ensure that the descriptor file
+        #The -f option was added to ensure that the descriptor file
         #is not unintentionally clobbered (ie. when an orid argument is supplied
         #without specifying the -o option.).
         if( $opt_f ) {
@@ -137,28 +135,27 @@ if( $norigins <= 0 ) {
 
 $all = "";
 
-#mw88 - This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
+#This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
 #Database is no longer subsetted per orid, and entire database is passed to format_pickfile.
 #Outermost curly braces are insignificant as is whitespace (indentation).
-{
-        ($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
+        
+($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
 
-        if( $opt_i ) {
+if( $opt_i ) {
 
-                $pickfile_name_pattern =~ s/%{suffix}/$suffix/g;
-                $pickfile = epoch2str( $origin_time, $pickfile_name_pattern );
+	$pickfile_name_pattern =~ s/%{suffix}/$suffix/g;
+        $pickfile = epoch2str( $origin_time, $pickfile_name_pattern );
 
-                ($dir, $path, $sfx ) = parsepath( $pickfile );
-                makedir( $dir );
+        ($dir, $path, $sfx ) = parsepath( $pickfile );
+        makedir( $dir );
 
-                open( P, ">$pickfile" );
-                print P "$pickblob";
-                close( P );
+        open( P, ">$pickfile" );
+        print P "$pickblob";
+        close( P );
 
-        } else {
+} else {
 
-                $all .= "$pickblob";
-        }
+        $all .= "$pickblob";
 }
 
 if( $dbout_name ne "" ) {
@@ -224,6 +221,12 @@ if( $opt_i ) {
 #########
 #END MAIN
 #########
+
+
+#############
+#SUB-ROUTINES
+#############
+
 sub format_pickfile{
 
 	my( @db ) = @_;
@@ -245,8 +248,8 @@ sub format_pickfile{
 
         $pickblob .= format_comment_row( "English", $grname, $pref_agency );
         $pickblob .= format_comment_row( "French",  $grname, $pref_agency );
-##XXX
-        @db = dbprocess( @db, "dbsubset orid == prefor",
+        
+	@db = dbprocess( @db, "dbsubset orid == prefor",
                               "dbjoin assoc",
                               "dbjoin arrival" );
 
@@ -292,7 +295,7 @@ sub format_pickfile{
         
 #	@db = dbprocess( @db, "dbseparate stamag" );
 # separating stamag causes new view to be sorted by sta rather than by delta as desired
-# the following three commands are intended to sort stamag values by distance from hypocentre
+# the following three lines of code are intended to sort stamag values by distance from hypocentre
 
 	@db = dbsubset( @db, "sta == stamag.sta" );
 
@@ -308,7 +311,7 @@ sub format_pickfile{
         for( $db[3] = 0; $db[3] < $nstamags; $db[3]++ ) {
 
                 ( $sta, $magtype, $mag ) = dbgetv( @db, "sta", "stamag.magtype", "stamag.magnitude" );
-# magtype and magnitude from stamag table were changed to stamag.magtype and stamag.magnitude because this is where the
+# magtype and magnitude arguments passed to dbgetv were changed to stamag.magtype and stamag.magnitude because this is where the
 # pertinent data is stored
 
 		$magtype = correct_magtype_code( $magtype );
@@ -437,8 +440,8 @@ sub format_error_row {
         $smajax = $smajax != -1 ? sprintf( "%5.2f", $smajax ) : "     ";
         $sminax = $smajax != -1 ? sprintf( "%5.2f", $sminax ) : "     ";
         $strike = $strike != -1 ? sprintf( "%5.1f", $strike ) : "     ";
-print "XXX$strikeXXX\n";
-        my( $se_depth );
+        
+	my( $se_depth );
 
         if( $dtype =~ /[rg]/ ) {
 
@@ -912,3 +915,7 @@ sub read_pf {
 	%correct_magtype_codes	= %{pfget( $Pf, "correct_magtype_codes" )};
 	%magtype_priorities	= %{pfget( $Pf, "magtype_priorities" )};
 }
+
+#################
+#END SUB-ROUTINES
+#################

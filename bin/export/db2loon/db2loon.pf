@@ -14,7 +14,7 @@ attach_dbtables	1
 
 # Saving pickfiles:
 
-pickfile_name_pattern ./db2loon_test_output/%Y%m/%Y%m%d%H%M%S.%{suffix}
+pickfile_name_pattern /%Y%m/%Y%m%d%H%M%S.%{suffix}
 auth_suffixes &Tbl{
 	PGC:mulder	tm
 	PGC:bentkows	wb
