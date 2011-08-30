@@ -62,11 +62,13 @@ make &Arr{
 	^localmake_config:.*Test failed
 	^localmake_config:.*Stopping compilation
 	^.*Can.t locate
+	^[1-9][[:digit:]]* total failures
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
-	^make.*: Entering directory
-	^make.*: Leaving directory
+	^\\+(\\*\\*)[^[:space:]]+
+	^g?make.*: Entering directory
+	^g?make.*: Leaving directory
    }
    magenta &Tbl{						# Warning and potential problems
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
@@ -204,6 +206,16 @@ make &Arr{
 	^.*installing alias
 	^.*removing
 	^linking
+	^Certification tests
+	^.*cpu time discrepancy:
+	^.*elapsed time discrepancy:
+	^Not adding source directory to path
+	^[[:space:]]*Directories:
+	^[[:space:]]*ANTELOPE:
+	^[[:space:]]*Variety:
+	^[[:space:]]*Date:
+	^Passed.*of.*tests
+	^0 total failures
    }
    blue &Tbl{							# Commands executed
 	^ar[[:space:]]
