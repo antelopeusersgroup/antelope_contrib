@@ -60,7 +60,7 @@ main (int argc, char **argv)
 {
     int     calibrate=0, errflg=0, maxtr=0, last_page=0, bars=0, maxpoints=0;
     int     c=0, i=0, n=0, page=0, bin=1, bufd=0, debug=0;
-    long    result=0, first_trace=0, last_trace=0, nsamp=0, nrecords=0, nrecs=0;
+    long    nsamp=0,result=0, first_trace=0, last_trace=0, nrecords=0, nrecs=0;
     float   *data=NULL, period=0, *max=NULL, *zero=0, *min=NULL;
     float   inf=0, ninf=0;
     double  time=0, endtime=0, samprate=0, start=0, stop=0, total_points=0;
@@ -401,9 +401,9 @@ main (int argc, char **argv)
 
             tr.record = 0; 
 
-            dbgetv(tr,0,"nsamp",&nsamp,"samprate",&samprate,"segtype",&segtype,NULL) ; 
+            dbgetv(tr,0,"samprate",&samprate,"segtype",&segtype,NULL) ; 
 
-            if (debug) printf("\nnsamp=[%ld] samprate=[%f] segtype=[%s]\n",nsamp,samprate,segtype);
+            if (debug) printf("\nsamprate=[%f] segtype=[%s]\n",samprate,segtype);
 
             total_points = samprate * ( stop - start ); 
             if (debug) printf("\ntotal_points=[%f]\n",total_points);
@@ -428,6 +428,7 @@ main (int argc, char **argv)
             } 
             else {
                 printf ( "\"format\":\"lines\"," ) ; 
+                bin = 1;
             }
 
             printf ( "\"data\":[null" ) ; 
@@ -438,8 +439,6 @@ main (int argc, char **argv)
                 if (debug) printf("\ntr.record=[%ld]\n",tr.record);
 
                 dbgetv(tr,0,"time",&time,"nsamp",&nsamp,"data",&data,NULL) ; 
-
-                if (debug) printf("\ndbgetv()=> time=[%f] nsamp=[%f]\n",*min,*max);
 
                 if ( ! nsamp ) continue; 
 

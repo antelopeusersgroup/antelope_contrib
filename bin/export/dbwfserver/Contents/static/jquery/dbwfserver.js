@@ -111,6 +111,8 @@ function init(){
     // }}} Set defaults
 }
 
+function pad2(number) { return (number < 10 ? '0' : '') + number }
+
 function init_full(){
 // {{{ Set defaults
     mode = 'full';
@@ -121,14 +123,13 @@ function init_full(){
 
     $(window).resize(function(){
 
-        if (TO !== false) {
-            clearTimeout(TO);
-        }
         if (window_active && ! $('#wforms').hasClass("ui-helper-hidden") && ! isPlotting ) {
             load_all = true;
-            TO = setTimeout('setData();', 2000);
-            waitingDialog("Waveform Explorer:", "Resize detected. Refresh screen in 2 secs.");
+            clearTimeout(TO);
+            TO = setTimeout('setData();', 3000);
+            waitingDialog("Waveform Explorer:", "Resize detected. Refresh screen in 3 secs.");
         }
+
     });
     //}}} Automatic canvas resize
 
@@ -1297,15 +1298,13 @@ function handleSelect(evt, pos){
     // {{{ Selection zoom functionality
 
     if (isShiftPressed) {
-        var delta = 0;
+        var ta = parseInt( pos.xaxis.from, 10 );
+        var tb = parseInt( pos.xaxis.to, 10 );
+        var delta = tb - ta;
 
-        delta = parseInt( pos.xaxis.from, 10 ) - ts ;
-
-        ts -= delta;
-
-        delta = te - parseInt( pos.xaxis.to, 10 );
-
-        te += delta;
+        var newts = ts - ( ( (ta - ts) * (te-ts) ) / delta);
+        te = te + ( ( (te - tb) * (te-ts) ) / delta);
+        ts = newts;
 
         if ( mode == 'limited' ) {
             if  ( ts < original_ts || te > original_te )
@@ -1347,9 +1346,7 @@ function convertTime(time){
             var lbl = 'UTC'
         }
 
-
-
-        return newDate.getFullYear()+'-'+(newDate.getMonth()+1)+'-'+newDate.getDate()+' '+newDate.getHours()+':'+newDate.getMinutes()+':'+newDate.getSeconds()+' '+lbl
+        return newDate.getFullYear()+'-'+pad2(newDate.getMonth()+1)+'-'+pad2(newDate.getDate())+' '+pad2(newDate.getHours())+':'+pad2(newDate.getMinutes())+':'+pad2(newDate.getSeconds())+' '+lbl
 //}}}
 }
 
@@ -1598,9 +1595,10 @@ function plotData(r_data){
             // Setup for bins
             } else if( data['format'] == 'bins' ) {
             //{{{
-                temp_flot_ops.bars = {align:'center',show:true,barWidth:2,lineWidth:2};
+                //temp_flot_ops.bars = {align:'center',show:true,barWidth:1,lineWidth:1};
+                temp_flot_ops.bars = {align:'center',show:true,barWidth:1};
                 temp_flot_ops.points  = {show:false};
-                temp_flot_ops.lines = {show:true,lineWidth:2};
+                temp_flot_ops.lines = {show:true,lineWidth:1};
 
             } else if( data['format'] == 'lines' ) {
 
