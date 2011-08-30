@@ -751,6 +751,8 @@ sub init_window {
 	
 	$Windows{"Main"} = MainWindow->new();
 
+	$Windows{"Main"}->title( my_hostname() . ": localmake" );
+
 	elog_gui_init( MW => $Windows{"Main"} );
 	elog_callback( "::elog_gui" );
 
