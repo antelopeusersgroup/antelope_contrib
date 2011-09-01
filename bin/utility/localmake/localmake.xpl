@@ -335,7 +335,7 @@ sub clear_compileout {
 
 	%Defined_tags = ();
 
-	$Windows{"CompileOut"} = $Windows{"Main"}->Scrolled( "ROText", 
+	$Windows{"CompileOut"} = $Windows{"compile"}->Scrolled( "ROText", 
 						  		-wrap => "word",
 						  		-scrollbars => "oe",
 								-background => "white" );
@@ -769,32 +769,17 @@ sub destroy_followup_buttons {
 	return;
 }
 
-sub init_window {
-	use Tk;
-	use Tk::ROText;
-	use Tk::Font;
-	use Tk::FileSelect;
-	use elog_gui;
-	
-	$Windows{"Main"} = MainWindow->new();
+sub init_compile_window {
+	my( $w ) = @_;
 
-	$Windows{"Main"}->title( my_hostname() . ": localmake" );
+        my( $compilewindow );
 
-	elog_gui_init( MW => $Windows{"Main"} );
-	elog_callback( "::elog_gui" );
+        $compilewindow = $w->Frame( -relief => 'raised',
+                              -borderwidth => 2 );
 
-	$Windows{"Main"}->bind( "<Control-c>", \&quit );
-	$Windows{"Main"}->bind( "<Control-C>", \&quit );
+	$Windows{"buttons"} = $compilewindow->Frame( -relief => 'raised', -borderwidth => 5 );
 
-	$row = 0;
-
-	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
-
-	$Windows{"menubar"}->grid( -row => $row++, -column => 0, -sticky => "new" );
-
-	$Windows{"buttons"} = $Windows{"Main"}->Frame( -relief => 'raised', -borderwidth => 5 );
-
-	$Windows{"buttons"}->grid( -row => $row++, -column => 0, -sticky => "new" );
+	$Windows{"buttons"}->grid( -row => 0, -column => 0, -sticky => "new" );
 
 	$buttonrow = $buttoncolumn = 0;
 
@@ -825,20 +810,48 @@ sub init_window {
 		}
 	}
 
-	$Windows{"CompileOut"} = $Windows{"Main"}->Scrolled( "ROText", 
-						  		-wrap => "word",
-						  		-scrollbars => "oe",
-								-background => "white" );
+	$Windows{"CompileOut"} = $compilewindow->Scrolled( "ROText", 
+					  		-wrap => "word",
+					  		-scrollbars => "oe",
+							-background => "white" );
 
 	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
 
-	$CompileOut_Row = $row++;
+	$CompileOut_Row = 1;
 
 	$Windows{"CompileOut"}->grid( -row => $CompileOut_Row, -column => 0, -sticky => "nsew" );
 
+	return $compilewindow;
+}
+
+sub init_window {
+	use Tk;
+	use Tk::ROText;
+	use Tk::Font;
+	use Tk::FileSelect;
+	use elog_gui;
+	
+	$Windows{"Main"} = MainWindow->new();
+
+	$Windows{"Main"}->title( my_hostname() . ": localmake" );
+
+	elog_gui_init( MW => $Windows{"Main"} );
+	elog_callback( "::elog_gui" );
+
+	$Windows{"Main"}->bind( "<Control-c>", \&quit );
+	$Windows{"Main"}->bind( "<Control-C>", \&quit );
+
+	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
+
+	$Windows{"menubar"}->grid( -row => 0, -column => 0, -sticky => "new" );
+
+	$Windows{"compile"} = init_compile_window( $Windows{"Main"} );
+
+	$Windows{"compile"}->grid( -row => 1, -column => 0, -sticky => "new" );
+
 	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
 
-	$Windows{"Main"}->gridRowconfigure( 2, -weight => 1 );
+	$Windows{"Main"}->gridRowconfigure( 1, -weight => 1 );
 
 	$Windows{"Main"}->afterIdle( \&compute_font_height );
 
