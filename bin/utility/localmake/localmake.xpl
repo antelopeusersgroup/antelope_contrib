@@ -327,7 +327,26 @@ sub make_target {
 
 sub clear_compileout {
 
-	$Windows{"CompileOut"}->delete( '0.0', 'end' );
+	my( $geom ) = $Windows{"Main"}->geometry();
+
+	$Windows{"CompileOut"}->destroy();
+
+	$Windows{"CompileOut"} = $Windows{"Main"}->Scrolled( "ROText", 
+						  		-wrap => "word",
+						  		-scrollbars => "oe",
+								-background => "white" );
+
+	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
+
+	$Windows{"CompileOut"}->grid( -row => $CompileOut_Row, -column => 0, -sticky => "nsew" );
+
+	$Windows{"Main"}->gridRowconfigure( $CompileOut_Row, -weight => 1 );
+
+	$Windows{"Main"}->geometry( $geom );
+	
+	$Windows{"Main"}->update();
+
+	return;
 }
 
 sub localmake_module {
@@ -340,8 +359,6 @@ sub localmake_module {
 		destroy_followup_buttons();
 
 		clear_compileout();
-
-		$Windows{"Main"}->update();
 	}
 
 	my( @steps ) = @{$Modules{$module}{build}};
@@ -811,7 +828,9 @@ sub init_window {
 
 	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
 
-	$Windows{"CompileOut"}->grid( -row => $row++, -column => 0, -sticky => "nsew" );
+	$CompileOut_Row = $row++;
+
+	$Windows{"CompileOut"}->grid( -row => $CompileOut_Row, -column => 0, -sticky => "nsew" );
 
 	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
 
