@@ -181,7 +181,7 @@ sub ansicolored_to_tagged {
 
 		my( $tag_name ) = join( "_", @tag_parts );
 
-		if( ! defined( $defined_tags{$tag_name} ) ) {
+		if( ! defined( $Defined_tags{$tag_name} ) ) {
 
 			my( @tagopts ) = ();
 
@@ -222,6 +222,8 @@ sub ansicolored_to_tagged {
 		}
 
 		push( @tagged, $token, $tag_name );
+
+		$Defined_tags{$tag_name}++;
 	}
 
 	return @tagged;
@@ -330,6 +332,8 @@ sub clear_compileout {
 	my( $geom ) = $Windows{"Main"}->geometry();
 
 	$Windows{"CompileOut"}->destroy();
+
+	%Defined_tags = ();
 
 	$Windows{"CompileOut"} = $Windows{"Main"}->Scrolled( "ROText", 
 						  		-wrap => "word",
