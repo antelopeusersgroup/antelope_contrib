@@ -325,6 +325,11 @@ sub make_target {
 	return $rc;
 }
 
+sub clear_compileout {
+
+	$Windows{"CompileOut"}->delete( '0.0', 'end' );
+}
+
 sub localmake_module {
 	my( $module ) = @_;
 
@@ -334,7 +339,8 @@ sub localmake_module {
 
 		destroy_followup_buttons();
 
-		$Windows{"CompileOut"}->delete( '0.0', 'end' );
+		clear_compileout();
+
 		$Windows{"Main"}->update();
 	}
 
