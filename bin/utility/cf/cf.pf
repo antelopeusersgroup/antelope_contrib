@@ -217,9 +217,11 @@ make &Arr{
 	^[[:space:]]*Date:
 	^Passed.*of.*tests
 	^0 total failures
+   	^No optimization specified in Makefile
    }
    blue &Tbl{							# Commands executed
-	^ar[[:space:]]
+	^[[:space:]]*ar[[:space:]]
+	^[[:space:]]*strip[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^awk[[:space:]]
 	^[[:space:]]*cat
