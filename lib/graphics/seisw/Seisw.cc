@@ -5952,7 +5952,9 @@ ExmCreateSeisw (
   Args = XtMergeArgLists(arglist, argCount, my_args, nargs);
   sw = XtCreateManagedWidget(name , xmScrolledWindowWidgetClass, parent,
                              Args, argCount + nargs);
-  XtFree((char *) Args);
+  /* Older versions had this free.  Seems evil and valgrind complained 
+     so removed.  May create leaks as a side effect */
+  //XtFree((char *) Args);
 
   nw = XtCreateWidget(name, exmSeiswWidgetClass, sw, arglist, argCount);
 
