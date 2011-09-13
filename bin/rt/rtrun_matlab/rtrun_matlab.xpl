@@ -22,6 +22,8 @@ use Fcntl ':flock';
 use Datascope ;
 use rt;
  
+our( $opt_s );
+
 sub inform {
         my( $message ) = @_;
 
@@ -121,6 +123,7 @@ check_lock( $lockfile );
 $matlab_interpreter = pfget( $Pf, "matlab_interpreter" );
 $matlab_timeout_sec = pfget( $Pf, "matlab_timeout_sec" );
 $matlab_pf_varname = pfget( $Pf, "matlab_pf_varname" );
+$matlab_startup = pfget( $Pf, "matlab_startup" );
 @matlab_paths = @{pfget( $Pf, "matlab_paths" )};
 $matlab_script = pfget( $Pf, "matlab_script" );
 %matlab_pf = %{pfget( $Pf, "matlab_pf" )};
@@ -152,6 +155,11 @@ open( S, ">$tmp_script" );
 if( $opt_v ) {
 
 	print S "echo on" . $n;
+}
+
+if( $matlab_startup ne "" ) {
+
+	print S "$matlab_startup\n";
 }
 
 foreach $path ( @matlab_paths ) {
