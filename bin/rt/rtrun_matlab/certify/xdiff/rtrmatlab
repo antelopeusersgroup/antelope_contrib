@@ -1,0 +1,4 @@
+.*edit '/opt/antelope'.*
+.*Copyright.*
+.*Version.*
+[[:space:]]+[[:alpha:]]+[[:space:]]+[[:digit:]]+,[[:space:]]+[[:digit:]]{4}.*
