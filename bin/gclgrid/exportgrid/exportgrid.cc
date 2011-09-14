@@ -92,7 +92,9 @@ int main(int argc, char **argv)
 			GCLgrid grid(dbh.db,gridname);
 			for(int j=0;j<grid.n2;++j)
 			    for(int i=0;i<grid.n1;++i)
-				cout << deg(grid.lon(i,j)) <<" "<<deg(grid.lat(i,j))<<endl;
+				cout << deg(grid.lon(i,j)) 
+                                    <<" "<<deg(grid.lat(i,j))
+                                    <<" "<<grid.depth(i,j)<<endl;
 		     }
 		}
 	} catch (int ierr)
