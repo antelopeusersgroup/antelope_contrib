@@ -781,7 +781,7 @@ sub init_compile_window {
         my( $compilewindow );
 
         $compilewindow = $w->Frame( -relief => 'raised',
-                              -borderwidth => 2, -bg => 'red' );
+                              -borderwidth => 2 );
 
 	$Windows{"buttons"} = $compilewindow->Frame( -relief => 'raised', -borderwidth => 5 );
 
