@@ -575,7 +575,10 @@ sub show_first_error {
 
 	$Windows{"CompileOut"}->update();
 
-	$Windows{"NextError"}->configure( -state => "normal" );
+	if( ( $current_error + 1 ) * 2 < scalar( @errorslist ) ) {
+
+		$Windows{"NextError"}->configure( -state => "normal" );
+	}
 }
 
 sub show_first_warning {
@@ -588,7 +591,10 @@ sub show_first_warning {
 
 	$Windows{"CompileOut"}->update();
 
-	$Windows{"NextWarning"}->configure( -state => "normal" );
+	if( ( $current_warning + 1 ) * 2 < scalar( @warningslist ) ) {
+
+		$Windows{"NextWarning"}->configure( -state => "normal" );
+	}
 }
 
 sub show_next_error {
