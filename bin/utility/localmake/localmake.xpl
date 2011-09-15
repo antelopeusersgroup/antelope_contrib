@@ -781,11 +781,13 @@ sub init_compile_window {
         my( $compilewindow );
 
         $compilewindow = $w->Frame( -relief => 'raised',
-                              -borderwidth => 2 );
+                              -borderwidth => 2, -bg => 'red' );
 
 	$Windows{"buttons"} = $compilewindow->Frame( -relief => 'raised', -borderwidth => 5 );
 
 	$Windows{"buttons"}->grid( -row => 0, -column => 0, -sticky => "new" );
+
+	$compilewindow->gridColumnconfigure( 0, -weight => 1 );
 
 	$buttonrow = $buttoncolumn = 0;
 
@@ -827,6 +829,8 @@ sub init_compile_window {
 
 	$Windows{"CompileOut"}->grid( -row => $CompileOut_Row, -column => 0, -sticky => "nsew" );
 
+	$compilewindow->gridRowconfigure( $CompileOut_Row, -weight => 1 );
+
 	return $compilewindow;
 }
 
@@ -853,7 +857,7 @@ sub init_window {
 
 	$Windows{"compile"} = init_compile_window( $Windows{"Main"} );
 
-	$Windows{"compile"}->grid( -row => 1, -column => 0, -sticky => "new" );
+	$Windows{"compile"}->grid( -row => 1, -column => 0, -sticky => "nsew" );
 
 	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
 
