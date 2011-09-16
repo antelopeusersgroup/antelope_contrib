@@ -1,4 +1,4 @@
-.TH Q330_OPT_PKT_MON 1 "$Date$"
+.TH Q330_OPT_PKT_MON 1 
 .SH NAME
 q330_opt_pkt_mon \- converts /pf/st packet opt string data to binary values in /pf/vtw packets
 .SH SYNOPSIS
@@ -48,17 +48,10 @@ Start processing oldest packet in orb.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
-.in 2c
-.ft CW
-.nf
-.ne 7
 .IP select_packets
 Select orb packets.  Default is ".*/pf/st"
 .IP reject_packets
 Reject orb packets.  Default is ""
-.fi
-.ft R
-.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -80,4 +73,3 @@ reject_packets
 .LP
 .SH AUTHOR
 Frank Vernon
-.br

@@ -1,4 +1,4 @@
-.TH Q330_CALIBRATION 1 "$Date$"
+.TH Q330_CALIBRATION 1 
 .SH NAME
 q330_calibration \- runs q330 calibations on network
 .SH SYNOPSIS
@@ -72,18 +72,11 @@ white space.
 .SH ENVIRONMENT
 needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
-.in 2c
-.ft CW
-.nf
-.ne 7
 \fBq330_calibration\fP parameter file element is:
 
 .IP sensors 
 array of sensor specific parameters for cailbration.  Allowed calibration parameters are found in the
 \fBCommands\fP section of q3302orb(1).
-.fi
-.ft R
-.in
 .SH DEFAULT PARAMETER FILE
 .in 2c
 .ft CW
@@ -132,4 +125,3 @@ table is correct and up to date.  You may need to rerun \fBq330_baler\fP to get 
 .LP
 .SH AUTHOR
 Frank Vernon
-.br
