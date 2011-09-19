@@ -1,4 +1,4 @@
-.TH BALER_MSD_PROC 1 "$Date$"
+.TH BALER_MSD_PROC 1 
 .SH NAME
 baler_msd_proc \- reformats mulitplexed Baler 14 and Baler 44 miniseed data into sta-chan files 
 .SH SYNOPSIS
@@ -83,10 +83,6 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
-.in 2c
-.ft CW
-.nf
-.ne 7
 .IP baler14dirbase
 Absolute path name for station baler 14 miniseed directory base name
 .IP baler14procbase
@@ -117,9 +113,6 @@ white space.
 Table of net_sta_chan_loc changes for fixminiseed
 .IP sta
 Table of sta changes for fixminiseed
-.fi
-.ft R
-.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -175,4 +168,3 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
-.br
