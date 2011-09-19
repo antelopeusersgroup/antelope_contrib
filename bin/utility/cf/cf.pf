@@ -63,6 +63,9 @@ make &Arr{
 	^localmake_config:.*Stopping compilation
 	^.*Can.t locate
 	^[1-9][[:digit:]]* total failures
+	^.*\\*command failed\\*
+	^[[:digit:]]+[[:space:]]+failures
+	^Invalid.*license code
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
@@ -129,6 +132,7 @@ make &Arr{
 	^ar: creating
 	^ar: writing
 	^ar: adding
+	^gcc:[[:space:]]
 	^C compiler:
 	^amakelocal:
 	^localmake_config:.*marked as disabled
@@ -286,6 +290,7 @@ make &Arr{
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
+	^(\\/opt\\/[[:alpha:]]+\\/[[:digit:].p-]+|\\$[A-Z]+)\\/bin\\/python[[:space:]]
 	^produce[[:space:]]
 	^(\\.\\/)?runmake[[:space:]]
 	^ranlib:?[[:space:]]

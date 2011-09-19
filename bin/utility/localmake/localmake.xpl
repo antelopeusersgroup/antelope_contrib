@@ -387,7 +387,10 @@ sub localmake_module {
 		$src_subdir = $Modules{$module}{src_subdir};
 	}
 
-	inform( "localmake: making module '$module'\n" );
+	$start_time = now();
+	$start_time_str = epoch2str( $start_time, "%A %B %o, %Y at %T %Z", "" );
+
+	inform( "localmake: making module '$module' starting on $start_time_str\n" );
 
 	my( @capabilities ) = @{$Modules{$module}{capabilities_required}};
 
@@ -468,11 +471,21 @@ sub localmake_module {
 			add_followup_buttons();
 		}
 
-		$msg = "localmake: done making module '$module' with ";
+		$end_time = now();
+		$end_time_str = epoch2str( $end_time, "%A %B %o, %Y at %T %Z", "" );
+
+		$delta = strtdelta( $end_time - $start_time );
+		$delta =~ s/^[[:space:]]+//;
+		$delta =~ s/[[:space:]]+$//;
+
+		$msg = "localmake: done making module '$module'\n" .
+			"\tStarted:  $start_time_str\n" .
+			"\tFinished: $end_time_str\n" .
+			"\tElapsed:  $delta\n";
 
 		$Windows{"CompileOut"}->insert( "end", $msg, "localmake_inform" );
 
-		$msg = "$num_warning_blocks blocks of warning messages";
+		$msg = "\tWarnings: $num_warning_blocks blocks of warning messages\n";
 
 		if( $num_warning_blocks > 0 ) {
 			
@@ -485,9 +498,7 @@ sub localmake_module {
 
 		$Windows{"CompileOut"}->insert( "end", $msg, $tag );
 
-		$Windows{"CompileOut"}->insert( "end", " and ", "localmake_inform" );
-
-		$msg = "$num_error_blocks blocks of error messages\n";
+		$msg = "\tErrors:   $num_error_blocks blocks of error messages\n";
 
 		if( $num_error_blocks > 0 ) {
 			
@@ -821,7 +832,8 @@ sub init_compile_window {
 	$Windows{"CompileOut"} = $compilewindow->Scrolled( "ROText", 
 					  		-wrap => "word",
 					  		-scrollbars => "oe",
-							-background => "white" );
+							-background => "white", 
+							-width => $ROWidth );
 
 	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
 
@@ -870,6 +882,7 @@ sub init_window {
 
 $Os = my_os();
 $Pf = "localmake";
+$ROWidth = 132;
 
 $Program = $0;
 $Program =~ s@.*/@@;
