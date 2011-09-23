@@ -53,6 +53,7 @@ use strict;
 use warnings;
 use POSIX;
 use Math::Trig;
+use Data::Dumper; #SCAFFOLD temporary
 
 use lib "$ENV{ANTELOPE}/data/perl";
 
@@ -173,13 +174,34 @@ sub prepare_fpfit_input {
 	$self->{fpfit_hyp_block} = "";
 
 	@dbo = @{$self->{dbo}};
-	$dbo[3] = 0;
+
+	if( dbquery( @dbo, dbRECORD_COUNT ) < 1 ) {
+
+		addlog( $self, 0, "Database origin table does not have any rows\n" );
+		return "skip";
+
+	} else {
+
+		$dbo[3] = 0;
+	}
 
 	( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms ) =
 		dbgetv( @dbo, "time", "lat", "lon", "depth", "ml", "mb", "ms" );
 
 	@dboe = @{$self->{dboe}};
-	$dboe[3] = 0;
+
+	if( dbquery( @dboe, dbRECORD_COUNT ) < 1 ) {
+
+		addlog( $self, 0, "Database origerr table does not have any rows\n" );
+		return "skip";
+
+	} else {
+
+		$dboe[3] = 0;
+	}
+
+	printf STDERR "SCAFFOLD: dboe is " . join( " ", @dboe ) . "\n";
+	printf STDERR "SCAFFOLD: dboe dbname is " . dbquery( @dboe, dbDATABASE_NAME ) . "\n";
 
 	$sdobs = dbgetv( @dboe, "sdobs" );
 
@@ -368,7 +390,7 @@ sub harvest_fpfit {
 	$rake = substr( $summary_line, 90, 3 );
 	$fj = substr( $summary_line, 94, 5 );
 
-	my @dbfplane = dblookup( @{$self->{db}}, 0, "fplane", "", "dbSCRATCH" );
+	my @dbfplane = dblookup( @{$self->{dbm}}, 0, "fplane", "", "dbSCRATCH" );
 
 	dbputv( @dbfplane, "orid", $self->{orid},
 		   	   "str1", $strike,
@@ -376,6 +398,8 @@ sub harvest_fpfit {
 			   "rake1", $rake );
 
 	my $rec = dbadd( @dbfplane );
+
+	printf STDERR "SCAFFOLD: in harvest_fpfit temp database is " . dbquery( @dbfplane, "dbDATABASE_NAME" ) . "\n";
 
 	$dbfplane[3] = $rec;
 	$dbfplane[2] = $rec + 1;
@@ -404,13 +428,9 @@ sub process_network {
 
 	harvest_fpfit( $self );
 
-	#HACK
-	my( @db ) = @{$self->{dbo}};
-	$db[3] = 0;
-	my( $hacktime ) = dbgetv( @db, "time" );
-	dbputv( @db, "time", $hacktime + 2 );
-
 	$disp = "ok";
+
+	print STDERR Dumper( $self );
 
 	return makereturn( $self, $disp );
 }

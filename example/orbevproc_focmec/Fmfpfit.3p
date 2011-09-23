@@ -18,15 +18,14 @@ Fmfpfit \- evproc class for computing focal-mechanisms with USGS fpfit
 .in
 .SH RETURN VALUES
 .SH LIBRARY
-.SH ATTRIBUTES
-MT-Safe ?
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
+dbevproc(1), Focmec(3p)
 .fi
 .SH "BUGS AND CAVEATS"
 The parameters \fIuse_radiation_pattern_weighting\fP and \fIperform_fine_search\fP are fed directly
-to the \fBfpfit\fP program, and thus should be either a \fI1\fP or a \fI0\fP; parameter-file boolean string 
+to the \fBfpfit\fP program, and each should thus be either a \fI1\fP or a \fI0\fP; parameter-file boolean string 
 values will not be translated. 
 .SH AUTHOR
 .nf
