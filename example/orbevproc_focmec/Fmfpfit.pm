@@ -69,6 +69,8 @@ sub setup_parameters {
 	my $obj = shift;
 
 	my @expected = qw( fpfit_executable
+			   fplane_algorithm
+			   fplane_auth
 			   maximum_wait_time
 			   tempdir
 			   use_radiation_pattern_weighting
@@ -374,10 +376,64 @@ sub invoke_fpfit {
 	return;
 }
 
+sub aux_plane {
+	my( $strike1_deg, $dip1_deg, $rake1_deg ) = @_;
+
+	my( $strike1_rad, $dip1_rad, $rake1_rad,
+	    $strike2_deg, $dip2_deg, $rake2_deg,
+	    $rake1_sign, $rake2_rad, 
+	    $phi1_deg, $phi1_rad, $phi2_rad, $top, $bottom );
+
+	$phi1_deg = $strike1_deg - 90;
+	
+	if( $phi1_deg < 0 ) {
+
+		$phi1_deg -= 360;
+	}
+
+	$phi1_rad = rad( $phi1_deg );
+
+	$dip1_rad = rad( $dip1_deg );
+
+	$rake1_rad = rad( $rake1_deg );
+
+	if( $rake1_deg != 0.0 ) {
+
+		$rake1_sign = $rake1_deg / abs( $rake1_deg );
+
+	} else {
+
+		$rake1_sign = 1.0;
+	}
+
+	$top = cos( $rake1_rad ) * sin( $phi1_rad ) - cos( $dip1_rad ) * sin( $rake1_rad ) * cos( $phi1_rad );
+
+	$bottom = cos( $rake1_rad ) * cos( $phi1_rad ) + cos( $dip1_rad ) * sin( $rake1_rad ) * sin( $phi1_rad );
+
+	$strike2_deg = deg( atan2( $top, $bottom ) );
+
+	$phi2_rad = rad( $strike2_deg - 90 );
+
+	if( $rake1_deg < 0 ) { $strike2_deg -= 180; }
+	if( $strike2_deg < 0 ) { $strike2_deg += 360; }
+	if( $strike2_deg > 360 ) { $strike2_deg -= 360; }
+
+	$dip2_deg = deg( acos( sin( abs( $rake1_rad ) * sin( $dip1_rad ) ) ) );
+
+	$rake2_rad = cos( $phi2_rad ) * sin( $dip1_rad ) * sin( $phi1_rad ) + 
+		     sin( $phi2_rad ) * sin( $dip1_rad ) * cos( $phi1_rad );
+
+	$rake2_rad = abs( acos( $rake2_rad ) ) * $rake1_sign;
+
+	$rake2_deg = deg( $rake2_rad );
+
+	return( $strike2_deg, $dip2_deg, $rake2_deg );
+}
+
 sub harvest_fpfit {
 	my $self = shift;
 
-	my( $strike, $dip, $rake, $fj );
+	my( $strike, $dip, $rake, $fj, $strike_aux, $dip_aux, $rake_aux, $auth );
 
 	open( O, concatpaths( $self->{params}{tempdir}, $self->{fpfit_outputfile_sum} ) );
 
@@ -390,12 +446,31 @@ sub harvest_fpfit {
 	$rake = substr( $summary_line, 90, 3 );
 	$fj = substr( $summary_line, 94, 5 );
 
+	( $strike_aux, $dip_aux, $rake_aux ) = aux_plane( $strike, $dip, $rake );
+
+	if( $self->{params}{fplane_auth} ne "" ) {
+		
+		$auth = $self->{params}{fplane_auth};
+
+	} else {
+
+		$auth = "evproc:$ENV{USER}";
+	}
+
 	my @dbfplane = dblookup( @{$self->{dbm}}, 0, "fplane", "", "dbSCRATCH" );
 
+	my $mechid = dbnextid( @{$self->{dbm}}, "mechid" );
+
 	dbputv( @dbfplane, "orid", $self->{orid},
+			   "mechid", $mechid,
 		   	   "str1", $strike,
 			   "dip1", $dip, 
-			   "rake1", $rake );
+			   "rake1", $rake, 
+		   	   "str2", $strike_aux,
+			   "dip2", $dip_aux, 
+			   "rake2", $rake_aux, 
+			   "auth", $auth,
+			   "algorithm", $self->{params}{fplane_algorithm} );
 
 	my $rec = dbadd( @dbfplane );
 
