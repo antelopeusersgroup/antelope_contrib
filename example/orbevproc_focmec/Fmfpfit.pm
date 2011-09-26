@@ -379,53 +379,54 @@ sub invoke_fpfit {
 sub aux_plane {
 	my( $strike1_deg, $dip1_deg, $rake1_deg ) = @_;
 
-	my( $strike1_rad, $dip1_rad, $rake1_rad,
-	    $strike2_deg, $dip2_deg, $rake2_deg,
-	    $rake1_sign, $rake2_rad, 
-	    $phi1_deg, $phi1_rad, $phi2_rad, $top, $bottom );
+	my( $strike2_deg, $dip2_deg, $rake2_deg );
 
-	$phi1_deg = $strike1_deg - 90;
-	
-	if( $phi1_deg < 0 ) {
+	my( $strike1, $dip1, $rake1,
+	    $strike2, $dip2, $rake2 );
 
-		$phi1_deg -= 360;
+	my( $rake1_sign, $top, $bottom, $innards );
+
+	$strike1 = rad( $strike1_deg );
+	$dip1    = rad( $dip1_deg );
+	$rake1   = rad( $rake1_deg );
+
+	$strike1 -= pi / 2;
+
+	if( $strike1 < 0 ) {
+
+		$strike1 += 2 * pi;
 	}
 
-	$phi1_rad = rad( $phi1_deg );
+	if( $rake1 != 0.0 ) {
 
-	$dip1_rad = rad( $dip1_deg );
-
-	$rake1_rad = rad( $rake1_deg );
-
-	if( $rake1_deg != 0.0 ) {
-
-		$rake1_sign = $rake1_deg / abs( $rake1_deg );
+		$rake1_sign = $rake1 / abs( $rake1 );
 
 	} else {
 
 		$rake1_sign = 1.0;
 	}
 
-	$top = cos( $rake1_rad ) * sin( $phi1_rad ) - cos( $dip1_rad ) * sin( $rake1_rad ) * cos( $phi1_rad );
+	$top    = cos( $rake1 ) * sin( $strike1 ) - cos( $dip1 ) * sin( $rake1 ) * cos( $strike1 );
+	$bottom = cos( $rake1 ) * cos( $strike1 ) + cos( $dip1 ) * sin( $rake1 ) * sin( $strike1 );
 
-	$bottom = cos( $rake1_rad ) * cos( $phi1_rad ) + cos( $dip1_rad ) * sin( $rake1_rad ) * sin( $phi1_rad );
+	$strike2 = atan2( $top, $bottom );
 
-	$strike2_deg = deg( atan2( $top, $bottom ) );
+	$strike2 = $strike2 - pi / 2;
 
-	$phi2_rad = rad( $strike2_deg - 90 );
+	if( $rake1 < 0 ) { $strike2 -= pi; }
+	if( $strike2 < 0 ) { $strike2 += 2 * pi; }
+	if( $strike2 > 2 * pi ) { $strike2 -= 2 * pi; }
 
-	if( $rake1_deg < 0 ) { $strike2_deg -= 180; }
-	if( $strike2_deg < 0 ) { $strike2_deg += 360; }
-	if( $strike2_deg > 360 ) { $strike2_deg -= 360; }
+	$dip2 = acos( sin( abs( $rake1 ) ) * sin( $dip1 ) );
 
-	$dip2_deg = deg( acos( sin( abs( $rake1_rad ) * sin( $dip1_rad ) ) ) );
+	$innards = cos( $strike2 ) * sin( $dip1 ) * sin( $strike1 ) + 
+		   sin( $strike2 ) * sin( $dip1 ) * cos( $strike1 );
 
-	$rake2_rad = cos( $phi2_rad ) * sin( $dip1_rad ) * sin( $phi1_rad ) + 
-		     sin( $phi2_rad ) * sin( $dip1_rad ) * cos( $phi1_rad );
+	$rake2 = abs( acos( $innards ) ) * $rake1_sign;
 
-	$rake2_rad = abs( acos( $rake2_rad ) ) * $rake1_sign;
-
-	$rake2_deg = deg( $rake2_rad );
+	$strike2_deg = deg( $strike2 );
+	$dip2_deg    = deg( $dip2 );
+	$rake2_deg   = deg( $rake2 );
 
 	return( $strike2_deg, $dip2_deg, $rake2_deg );
 }
