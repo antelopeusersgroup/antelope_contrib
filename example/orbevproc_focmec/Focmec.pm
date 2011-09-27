@@ -61,8 +61,6 @@ sub new {
 	$self->put(@_);
 	$self->{class} = $class;
 
-	printf STDERR "SCAFFOLD In Focmec new\n";
-
 	$self->{output}{logs} = [];
 
 	@{$self->{dbo}} = dblookup( @{$self->{db}}, 0, "origin", 0, 0 );
@@ -170,8 +168,7 @@ sub process_channel {
 	my $dbref = shift;
 	my $flush = shift;
 
-	printf STDERR "SCAFFOLD In Focmec process_channel\n";
-
+	# SCAFFOLD
 	my( $sta ) = "FAKE";
 	my( $chan ) = "FAKE";
 	my( $disp ) = "ok";
@@ -185,16 +182,12 @@ sub process_station {
 	my $sta = shift;
 	my $flush = shift;
 
-	printf STDERR "SCAFFOLD In Focmec process_station\n";
-
 	return makereturn( $self, "ok" );
 }
 
 sub process_network {
 	my $self = shift;
 	my $flush = shift;
-
-	printf STDERR "SCAFFOLD In Focmec process_network\n";
 
 	$self->{output}{db}{assoc_params}{smart_assoc} = "yes";
 

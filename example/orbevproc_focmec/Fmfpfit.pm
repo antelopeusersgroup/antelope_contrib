@@ -59,8 +59,6 @@ use lib "$ENV{ANTELOPE}/data/perl";
 use Datascope;
 
 sub new {
-	printf STDERR "SCAFFOLD In Fmfpfit new\n";
-
 	return Focmec::new @_;
 }
 
@@ -122,8 +120,6 @@ sub setup_parameters {
 sub getwftimes {
 	my $self = shift;
 
-	printf STDERR "SCAFFOLD In Fmfpfit getwftimes\n";
-
 	my $ret = setup_parameters( $self );
 
 	if( $ret ne "ok" ) {
@@ -131,18 +127,18 @@ sub getwftimes {
 		return makereturn( $self, $ret );
 	}
 
-	$self->{stations} = {};
+	$self->put( "stations", {} );
 
-	$self->{expire_time} = now() + $self->{params}{maximum_wait_time};
+	$self->put( "expire_time", now() + $self->{params}{maximum_wait_time} );
 
-	return makereturn( $self, "ok", "stations" => $self->{stations}, "expire_time" => $self->{expire_time} ); 
+	return makereturn( $self, "ok", 
+			   "stations" => $self->get( "stations" ), 
+			   "expire_time" => $self->get( "expire_time" ) ); 
 }
 
 sub process_channel {
 	my $self = shift;
 	my $ret = $self->SUPER::process_channel( @_ );
-
-	printf STDERR "SCAFFOLD In Fmfpfit process_channel\n";
 
 	return $ret;
 }
@@ -150,8 +146,6 @@ sub process_channel {
 sub process_station {
 	my $self = shift;
 	my $ret = $self->SUPER::process_station( @_ );
-
-	printf STDERR "SCAFFOLD In Fmfpfit process_station\n";
 
 	return $ret;
 }
@@ -166,13 +160,13 @@ sub prepare_fpfit_input {
 	my( $sta, $phase, $fm, $snr, $arrival_time, $deltim, $delta, $esaz, $timeres );
 	my( $sdobs, $angle, $tobs, $imp, $pwt, $ptime );
 
-	$self->{fpfit_inputfile_hyp} = "fpfit_in_$self->{event_id}.hyp";
-	$self->{fpfit_outputfile_out} = "fpfit_out_$self->{event_id}.out";
-	$self->{fpfit_outputfile_sum} = "fpfit_out_$self->{event_id}.sum";
-	$self->{fpfit_outputfile_pol} = "fpfit_out_$self->{event_id}.pol";
-	$self->{fpfit_outputfile_stdout} = "fpfit_out_$self->{event_id}.stdout";
+	$self->put( "fpfit_inputfile_hyp",     "fpfit_in_" .  $self->get( "event_id" ) . ".hyp" );
+	$self->put( "fpfit_outputfile_out",    "fpfit_out_" . $self->get( "event_id" ) . ".out" );
+	$self->put( "fpfit_outputfile_sum",    "fpfit_out_" . $self->get( "event_id" ) . ".sum" );
+	$self->put( "fpfit_outputfile_pol",    "fpfit_out_" . $self->get( "event_id" ) . ".pol" );
+	$self->put( "fpfit_outputfile_stdout", "fpfit_out_" . $self->get( "event_id" ) . ".stdout" );
 
-	$self->{fpfit_hyp_block} = "";
+	$self->put( "fpfit_hyp_block", "" );
 
 	@dbo = @{$self->{dbo}};
 
@@ -201,12 +195,10 @@ sub prepare_fpfit_input {
 		$dboe[3] = 0;
 	}
 
-	printf STDERR "SCAFFOLD: dboe is " . join( " ", @dboe ) . "\n";
-	printf STDERR "SCAFFOLD: dboe dbname is " . dbquery( @dboe, dbDATABASE_NAME ) . "\n";
-
 	$sdobs = dbgetv( @dboe, "sdobs" );
 
-	$stime = epoch2str( $origin_time, "%y%m%d %H%M " ) . sprintf( "%05.2f", epoch2str( $origin_time, "%S.%s" ) );
+	$stime = epoch2str( $origin_time, "%y%m%d %H%M " ) . 
+	 	 sprintf( "%05.2f", epoch2str( $origin_time, "%S.%s" ) );
 
 	$mlat = 60 * substr( $lat, index( $lat, "." ) );
 	$ns = $lat >= 0 ? "n" : "s";
@@ -238,13 +230,14 @@ sub prepare_fpfit_input {
 
 	@dbj = dbjoin( @{$self->{dbar}}, @{$self->{dbas}} );
 
-	@dbj = dbsubset( @dbj, "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km} && strlen(chan) <= 4" );
+	@dbj = dbsubset( @dbj, 
+	  "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km} && strlen(chan) <= 4" );
 
 	$nprecs = dbquery( @dbj, "dbRECORD_COUNT" );
 
 	$self->{fpfit_hyp_block} .= "  DATE    ORIGIN   LATITUDE LONGITUDE  DEPTH    MAG NO           RMS\n";
 	$self->{fpfit_hyp_block} .= sprintf( " %17s%3d%1s%5.2f%4d%1s%5.2f%7.2f  %5.2f%3d         %5.2f\n",
-				    	     $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag, $nprecs, $rms );
+				    $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag, $nprecs, $rms );
 
 	$self->{fpfit_hyp_block} .= "\n  STN  DIST  AZ TOA PRMK HRMN  PSEC TPOBS              PRES  PWT\n";
 
@@ -295,10 +288,12 @@ sub prepare_fpfit_input {
 			$imp = " ";
 		}
 
-		$ptime = epoch2str( $arrival_time, "%H%M " ) . sprintf( "%05.2f", epoch2str( $arrival_time, "%S.%s" ) );
+		$ptime = epoch2str( $arrival_time, "%H%M " ) .
+			sprintf( "%05.2f", epoch2str( $arrival_time, "%S.%s" ) );
 
-		$self->{fpfit_hyp_block} .= sprintf( " %4s%6.1f %3d %3d %1s%1s%1s%1s %10s%6.2f             %5.2f  1.00\n",
-						     $sta, $delta, $esaz, $angle, $imp, $phase, $fm, $pwt, $ptime, $tobs, $deltim );
+		$self->{fpfit_hyp_block} .= 
+			sprintf( " %4s%6.1f %3d %3d %1s%1s%1s%1s %10s%6.2f             %5.2f  1.00\n",
+			     $sta, $delta, $esaz, $angle, $imp, $phase, $fm, $pwt, $ptime, $tobs, $deltim );
 	}
 
 	return $disp;
@@ -311,9 +306,9 @@ sub invoke_fpfit {
 
 	POSIX::chdir( $self->{params}{tempdir} );
 
-	open( I, "> $self->{fpfit_inputfile_hyp}" );
+	open( I, "> " . $self->get( "fpfit_inputfile_hyp" ) );
 
-	print I $self->{fpfit_hyp_block};
+	print I $self->get( "fpfit_hyp_block" );
 
 	close( I );
 
@@ -322,10 +317,10 @@ sub invoke_fpfit {
 	# Use default title, hypo filename plus date, i.e. choice "1"
 	print F "ttl 1 none\n";
 
-	print F "hyp $self->{fpfit_inputfile_hyp}\n";
-	print F "out $self->{fpfit_outputfile_out}\n";
-	print F "sum $self->{fpfit_outputfile_sum}\n";
-	print F "pol $self->{fpfit_outputfile_pol}\n";
+	print F "hyp " . $self->get( "fpfit_inputfile_hyp" ) . "\n";
+	print F "out " . $self->get( "fpfit_outputfile_out" ) . "\n";
+	print F "sum " . $self->get( "fpfit_outputfile_sum" ) . "\n";
+	print F "pol " . $self->get( "fpfit_outputfile_pol" ) . "\n";
 	print F "fit none\n";
 
 	# Set to "hypo71 print listing" i.e. input format "1"
@@ -474,8 +469,6 @@ sub harvest_fpfit {
 
 	my $rec = dbadd( @dbfplane );
 
-	printf STDERR "SCAFFOLD: in harvest_fpfit temp database is " . dbquery( @dbfplane, "dbDATABASE_NAME" ) . "\n";
-
 	$dbfplane[3] = $rec;
 	$dbfplane[2] = $rec + 1;
 
@@ -487,9 +480,6 @@ sub harvest_fpfit {
 sub process_network {
 	my $self = shift;
 	my $ret = $self->SUPER::process_network( @_ );
-
-	print STDERR "SCAFFOLD In Fmfpfit process_network\n";
-	print STDERR "SCAFFOLD: executing fpfit\n";
 
 	my $disp = prepare_fpfit_input( $self );
 
@@ -504,9 +494,6 @@ sub process_network {
 	harvest_fpfit( $self );
 
 	$disp = "ok";
-
-	# Focmec::display( $self );
-	$self->display();
 
 	return makereturn( $self, $disp );
 }
