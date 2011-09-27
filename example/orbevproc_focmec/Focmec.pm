@@ -123,6 +123,22 @@ sub DESTROY {
 	elog_notify $self->{event_id} . ":" . $self->{class} . ": DELETING PERL INSTANCE\n";
 }
 
+sub display {
+	my $self = shift ;
+	my @keys ;
+
+	if (@_ == 0) {
+		@keys = sort keys(%$self);
+	} else {
+		@keys = @_;
+	}
+
+	my $key;
+	foreach $key (@keys) {
+		prettyprint $self->{$key}, "\t$key" ;
+	}
+}
+
 sub put {
 	my $self = shift ;
 	if (@_) {

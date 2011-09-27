@@ -53,7 +53,6 @@ use strict;
 use warnings;
 use POSIX;
 use Math::Trig;
-use Data::Dumper; #SCAFFOLD temporary
 
 use lib "$ENV{ANTELOPE}/data/perl";
 
@@ -506,7 +505,8 @@ sub process_network {
 
 	$disp = "ok";
 
-	print STDERR Dumper( $self );
+	# Focmec::display( $self );
+	$self->display();
 
 	return makereturn( $self, $disp );
 }

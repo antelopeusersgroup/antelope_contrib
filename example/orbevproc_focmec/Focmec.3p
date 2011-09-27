@@ -3,8 +3,28 @@
 Focmec \- Focal-mechanism superclass for evproc-based generalized event processing
 .SH SYNOPSIS
 .nf
+our @ISA = ( "Focmec" );
+
+( $obj, $hashref ) = new( $class,
+                          "db" => $dbref,
+			  "dbm" => $dbmref [, $name1, $val1 [,...]] );
+
+display( $obj [, @keys] );
+
+put( $obj, $name1, $val1 [,...] );
+
+@vals = get( $obj, @keys );
+
+$hashref = process_channel( $obj, $trref, $flush );
+
+$hashref = process_station( $obj, $sta, $flush );
+
+$hashref = process_network( $obj, $flush );
+
 .fi
 .SH DESCRIPTION
+The \fBFocmec\fP module provides a framework, in the form of a Perl super class, that supports computation
+of focal-mechanisms within Antelope via the orbevproc(1) and dbevproc(1) programs. 
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -23,8 +43,11 @@ MT-Safe ?
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
+Magnitude(3p), Fmfpfit(3p)
 .fi
 .SH "BUGS AND CAVEATS"
+The \fBFocmec\fP module does not by itself do any computations. It needs to be subclassed and have
+the processing functions filled out with appropriate steps to compute the focal mechanisms. 
 .SH AUTHOR
 .nf
 Dr. Kent Lindquist
