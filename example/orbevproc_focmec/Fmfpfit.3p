@@ -24,9 +24,11 @@ $hashref = \fBprocess_network\fP( $obj, $flush );
 .fi
 .SH DESCRIPTION
 The \fBFmfpfit\fP module runs within \fBorbevproc\fP(1) or \fBdbevproc\fP(1), delegating computation 
-of earthquake focal-mechanisms to the U.S. Geological Survey's \fBfpfit\fP program.
+of earthquake focal-mechanisms to the U.S. Geological Survey's \fBfpfit\fP program. The \fBFmfpfit\fP assumes
+the first motion measurements have already been obtained by other means, then entered into the arrival table 
+of the database before invoking fpfit. Results are entered into the \fIfplane\fP table of the database. 
 .SH FILES
-The \fBFmfpfit\fP module creates several temporary files, including 
+The \fBFmfpfit\fP module creates several temporary files, including:
 .nf
 
 fpfit_in_<orid>.hyp
@@ -109,6 +111,8 @@ from the web-site \fIhttp://earthquake.usgs.gov/research/software/\fP.
 The parameters \fIuse_radiation_pattern_weighting\fP and \fIperform_fine_search\fP are fed directly
 to the \fBfpfit\fP program, and each should thus be either a \fI1\fP or a \fI0\fP; parameter-file boolean string 
 values will not be translated. 
+
+This version of \fBFmfpfit\fP does not handle errors and database problems gracefully. 
 .SH AUTHOR
 .nf
 Dr. Kent Lindquist
