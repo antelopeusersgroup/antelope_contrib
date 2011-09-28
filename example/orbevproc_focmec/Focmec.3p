@@ -5,21 +5,21 @@ Focmec \- Focal-mechanism superclass for evproc-based generalized event processi
 .nf
 our @ISA = ( "Focmec" );
 
-( $obj, $hashref ) = new( $class,
+( $obj, $hashref ) = \fBnew\fP( $class,
                           "db" => $dbref,
 			  "dbm" => $dbmref [, $name1, $val1 [,...]] );
 
-display( $obj [, @keys] );
+\fBdisplay\fP( $obj [, @keys] );
 
-put( $obj, $name1, $val1 [,...] );
+\fBput\fP( $obj, $name1, $val1 [,...] );
 
-@vals = get( $obj, @keys );
+@vals = \fBget\fP( $obj, @keys );
 
-$hashref = process_channel( $obj, $trref, $flush );
+$hashref = \fBprocess_channel\fP( $obj, $trref, $flush );
 
-$hashref = process_station( $obj, $sta, $flush );
+$hashref = \fBprocess_station\fP( $obj, $sta, $flush );
 
-$hashref = process_network( $obj, $flush );
+$hashref = \fBprocess_network\fP( $obj, $flush );
 
 .fi
 .SH DESCRIPTION
