@@ -160,11 +160,11 @@ sub prepare_fpfit_input {
 	my( $sta, $phase, $fm, $snr, $arrival_time, $deltim, $delta, $esaz, $timeres );
 	my( $sdobs, $angle, $tobs, $imp, $pwt, $ptime );
 
-	$self->put( "fpfit_inputfile_hyp",     "fpfit_in_" .  $self->get( "event_id" ) . ".hyp" );
-	$self->put( "fpfit_outputfile_out",    "fpfit_out_" . $self->get( "event_id" ) . ".out" );
-	$self->put( "fpfit_outputfile_sum",    "fpfit_out_" . $self->get( "event_id" ) . ".sum" );
-	$self->put( "fpfit_outputfile_pol",    "fpfit_out_" . $self->get( "event_id" ) . ".pol" );
-	$self->put( "fpfit_outputfile_stdout", "fpfit_out_" . $self->get( "event_id" ) . ".stdout" );
+	$self->put( "fpfit_inputfile_hyp",     "fpfit_in_$self->{event_id}.hyp" );
+	$self->put( "fpfit_outputfile_out",    "fpfit_out_$self->{event_id}.out" );
+	$self->put( "fpfit_outputfile_sum",    "fpfit_out_$self->{event_id}.sum" );
+	$self->put( "fpfit_outputfile_pol",    "fpfit_out_$self->{event_id}.pol" );
+	$self->put( "fpfit_outputfile_stdout", "fpfit_out_$self->{event_id}.stdout" );
 
 	$self->put( "fpfit_hyp_block", "" );
 
@@ -306,21 +306,29 @@ sub invoke_fpfit {
 
 	POSIX::chdir( $self->{params}{tempdir} );
 
-	open( I, "> " . $self->get( "fpfit_inputfile_hyp" ) );
+	my( $infile ) = $self->get( "fpfit_inputfile_hyp" );
+
+	open( I, "> $infile" );
 
 	print I $self->get( "fpfit_hyp_block" );
 
 	close( I );
 
-	open( F, "| $self->{params}{fpfit_executable} > $self->{fpfit_outputfile_stdout}" );
+	my( $stdoutfile, $hypfile, $outfile, $sumfile, $polfile ) = $self->get( "fpfit_outputfile_stdout",
+										"fpfit_inputfile_hyp",
+										"fpfit_outputfile_out",
+										"fpfit_outputfile_sum",
+										"fpfit_outputfile_pol" );
+
+	open( F, "| $self->{params}{fpfit_executable} > $stdoutfile" );
 
 	# Use default title, hypo filename plus date, i.e. choice "1"
 	print F "ttl 1 none\n";
 
-	print F "hyp " . $self->get( "fpfit_inputfile_hyp" ) . "\n";
-	print F "out " . $self->get( "fpfit_outputfile_out" ) . "\n";
-	print F "sum " . $self->get( "fpfit_outputfile_sum" ) . "\n";
-	print F "pol " . $self->get( "fpfit_outputfile_pol" ) . "\n";
+	print F "hyp $hypfile\n";
+	print F "out $outfile\n";
+	print F "sum $sumfile\n";
+	print F "pol $polfile\n";
 	print F "fit none\n";
 
 	# Set to "hypo71 print listing" i.e. input format "1"
@@ -430,7 +438,18 @@ sub harvest_fpfit {
 
 	my( $strike, $dip, $rake, $fj, $strike_aux, $dip_aux, $rake_aux, $auth );
 
-	open( O, concatpaths( $self->{params}{tempdir}, $self->{fpfit_outputfile_sum} ) );
+	my( $sumfile ) = $self->get( "fpfit_outputfile_sum" );
+
+	my( $resultsfile ) = concatpaths( $self->{params}{tempdir}, $sumfile );
+
+	if( ! -f $resultsfile ) {
+
+		addlog( $self, 0, "Results file '$resultsfile' from fpfit does not exist\n" );
+
+		return "skip";
+	}
+
+	open( O, $resultsfile );
 
 	my $summary_line = <O>;
 
@@ -474,7 +493,7 @@ sub harvest_fpfit {
 
 	push @{$self->{output}{db}{tables}}, \@dbfplane;
 
-	return;
+	return "ok";
 }
 
 sub process_network {
@@ -491,9 +510,13 @@ sub process_network {
 
 	invoke_fpfit( $self );
 
-	harvest_fpfit( $self );
+	$disp = harvest_fpfit( $self );
 
-	$disp = "ok";
+	if( $disp ne "ok" ) {
+
+		addlog( $self, 0, "Failed to harvest results from fpfit output file\n" );
+		return "skip";
+	}
 
 	return makereturn( $self, $disp );
 }
