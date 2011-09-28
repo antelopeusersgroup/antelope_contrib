@@ -112,6 +112,10 @@ sub setup_parameters {
 
 		addlog( $obj, 0, "fpfit_executable '$obj->{params}{fpfit_executable}' not executable" );
 		return "skip";
+
+	} else {
+
+		$obj->{params}{fpfit_executable} = abspath( $fpfit_executable );
 	}
 
 	return "ok";
