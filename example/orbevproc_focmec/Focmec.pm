@@ -168,13 +168,7 @@ sub process_channel {
 	my $dbref = shift;
 	my $flush = shift;
 
-	# SCAFFOLD
-	my( $sta ) = "FAKE";
-	my( $chan ) = "FAKE";
-	my( $disp ) = "ok";
-	# my( $disp ) = "processdone";
-
-	return makereturn( $self, $disp, "sta" => $sta, "chan" => $chan );
+	return makereturn( $self, "notneeded" );
 }
 
 sub process_station {
