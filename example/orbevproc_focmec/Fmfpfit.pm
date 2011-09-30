@@ -396,8 +396,6 @@ sub aux_plane {
 	$dip1    = rad( $dip1_deg );
 	$rake1   = rad( $rake1_deg );
 
-	$strike1 -= pi / 2;
-
 	if( $strike1 < 0 ) {
 
 		$strike1 += 2 * pi;
@@ -412,12 +410,10 @@ sub aux_plane {
 		$rake1_sign = 1.0;
 	}
 
-	$top    = cos( $rake1 ) * sin( $strike1 ) - cos( $dip1 ) * sin( $rake1 ) * cos( $strike1 );
-	$bottom = cos( $rake1 ) * cos( $strike1 ) + cos( $dip1 ) * sin( $rake1 ) * sin( $strike1 );
+	$top    = cos( $rake1 ) * sin( $strike1 - pi/2 ) - cos( $dip1 ) * sin( $rake1 ) * cos( $strike1 - pi/2 );
+	$bottom = cos( $rake1 ) * cos( $strike1 - pi/2 ) + cos( $dip1 ) * sin( $rake1 ) * sin( $strike1 - pi/2 );
 
 	$strike2 = atan2( $top, $bottom );
-
-	$strike2 = $strike2 - pi / 2;
 
 	if( $rake1 < 0 ) { $strike2 -= pi; }
 	if( $strike2 < 0 ) { $strike2 += 2 * pi; }
@@ -425,8 +421,8 @@ sub aux_plane {
 
 	$dip2 = acos( sin( abs( $rake1 ) ) * sin( $dip1 ) );
 
-	$innards = cos( $strike2 ) * sin( $dip1 ) * sin( $strike1 ) + 
-		   sin( $strike2 ) * sin( $dip1 ) * cos( $strike1 );
+	$innards = -1 * cos( $strike2 - pi/2 ) * sin( $dip1 ) * sin( $strike1 - pi/2 ) + 
+		        sin( $strike2 - pi/2 ) * sin( $dip1 ) * cos( $strike1 - pi/2 );
 
 	$rake2 = abs( acos( $innards ) ) * $rake1_sign;
 
