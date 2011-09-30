@@ -382,6 +382,19 @@ sub invoke_fpfit {
 	return;
 }
 
+sub tp_axes {
+	my( $strike1_deg, $dip1_deg, $rake1_deg, $strike2_deg, $dip2_deg, $rake2_deg ) = @_;
+
+	my( $taxazm, $taxplg, $paxazm, $paxplg );
+
+	my( $alat1 ) = rad( 90 - $dip1_deg );
+	my( $alon1 ) = rad( $strike1_deg );
+	my( $alat2 ) = rad( 90 - $dip2_deg );
+	my( $alon2 ) = rad( $strike2_deg );
+
+	return( $taxazm, $taxplg, $paxazm, $paxplg );
+}
+
 sub aux_plane {
 	my( $strike1_deg, $dip1_deg, $rake1_deg ) = @_;
 
@@ -461,6 +474,8 @@ sub harvest_fpfit {
 	$fj = substr( $summary_line, 94, 5 );
 
 	( $strike_aux, $dip_aux, $rake_aux ) = aux_plane( $strike, $dip, $rake );
+
+	( $taxazm, $taxplg, $paxazm, $paxplg ) = tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
 
 	if( $self->{params}{fplane_auth} ne "" ) {
 		
