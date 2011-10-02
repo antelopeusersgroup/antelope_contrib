@@ -1,0 +1,40 @@
+originator     Frank Vernon, UCSD
+last_modified  2011-10-02
+
+#
+#
+
+category	Streckeisen
+configuration	STS-2.5
+
+info 	&Literal{
+Consult STS-2.5-HF-Zeroes-Poles.pdf or contact Streckheisen for more info
+}
+
+description	Streckeisen STS-2.5
+dfile	sts2.5
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	15e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/sts2.5
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+
