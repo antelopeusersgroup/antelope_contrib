@@ -383,16 +383,54 @@ sub invoke_fpfit {
 }
 
 sub tp_axes {
-	my( $strike1_deg, $dip1_deg, $rake1_deg, $strike2_deg, $dip2_deg, $rake2_deg ) = @_;
+	my( $strike_deg, $dip_deg, $rake_deg ) = @_;
 
-	my( $taxazm, $taxplg, $paxazm, $paxplg );
+	my( $taxazm_deg, $taxplg_deg, $paxazm_deg, $paxplg_deg );
 
-	my( $alat1 ) = rad( 90 - $dip1_deg );
-	my( $alon1 ) = rad( $strike1_deg );
-	my( $alat2 ) = rad( 90 - $dip2_deg );
-	my( $alon2 ) = rad( $strike2_deg );
+	my( $strike ) = rad( $strike_deg );
+	my( $dip )    = rad( $dip_deg );
+	my( $rake )   = rad( $rake_deg );
 
-	return( $taxazm, $taxplg, $paxazm, $paxplg );
+	my( $nx1 ) = -1 * sin( $dip ) * sin( $strike );
+	my( $nx2 ) = -1 * sin( $dip ) * cos( $strike );
+	my( $nx3 ) = cos( $dip );
+
+	my( $dx1 ) = cos( $rake ) * cos( $strike ) + sin( $rake ) * cos( $dip ) * sin( $strike );
+	my( $dx2 ) = -1 * cos( $rake ) * sin( $strike ) + sin( $rake ) * cos( $dip ) * cos( $strike );
+	my( $dx3 ) = sin( $rake ) * sin( $dip );
+
+	my( $tx1 ) = $nx1 + $dx1;
+	my( $tx2 ) = $nx2 + $dx2;
+	my( $tx3 ) = $nx3 + $dx3;
+
+	my( $norm ) = sqrt( $tx1 * $tx1 + $tx2 * $tx2 + $tx3 * $tx3 );
+
+	$tx1 /= $norm;
+	$tx2 /= $norm;
+	$tx3 /= $norm;
+
+	my( $px1 ) = $nx1 - $dx1;
+	my( $px2 ) = $nx2 - $dx2;
+	my( $px3 ) = $nx3 - $dx3;
+
+	$norm = sqrt( $px1 * $px1 + $px2 * $px2 + $px3 * $px3 );
+
+	$px1 /= $norm;
+	$px2 /= $norm;
+	$px3 /= $norm;
+
+	my( $taxazm ) = acos( ( $tx1 * cos( $strike ) + $tx2 * sin( $strike ) ) / sqrt( $tx1 * $tx1 + $tx2 * $tx2 ) );
+	my( $paxazm ) = acos( ( $px1 * cos( $strike ) + $px2 * sin( $strike ) ) / sqrt( $px1 * $px1 + $px2 * $px2 ) );
+
+	my( $taxplg ) = acos( $tx3 );
+	my( $paxplg ) = acos( $px3 );
+
+	$taxazm_deg = deg( $taxazm );
+	$paxazm_deg = deg( $paxazm );
+	$taxplg_deg = deg( $taxplg );
+	$paxplg_deg = deg( $paxplg );
+
+	return( $taxazm_deg, $taxplg_deg, $paxazm_deg, $paxplg_deg );
 }
 
 sub aux_plane {
@@ -449,8 +487,6 @@ sub aux_plane {
 sub harvest_fpfit {
 	my $self = shift;
 
-	my( $strike, $dip, $rake, $fj, $strike_aux, $dip_aux, $rake_aux, $auth );
-
 	my( $sumfile ) = $self->get( "fpfit_outputfile_sum" );
 
 	my( $resultsfile ) = concatpaths( $self->{params}{tempdir}, $sumfile );
@@ -468,14 +504,16 @@ sub harvest_fpfit {
 
 	close( O );
 
-	$strike = substr( $summary_line, 83, 3 );
-	$dip = substr( $summary_line, 87, 2 );
-	$rake = substr( $summary_line, 90, 3 );
-	$fj = substr( $summary_line, 94, 5 );
+	my( $strike ) = substr( $summary_line, 83, 3 );
+	my( $dip ) = substr( $summary_line, 87, 2 );
+	my( $rake ) = substr( $summary_line, 90, 3 );
+	my( $fj ) = substr( $summary_line, 94, 5 );
 
-	( $strike_aux, $dip_aux, $rake_aux ) = aux_plane( $strike, $dip, $rake );
+	my( $strike_aux, $dip_aux, $rake_aux ) = aux_plane( $strike, $dip, $rake );
 
-	( $taxazm, $taxplg, $paxazm, $paxplg ) = tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
+	my( $taxazm, $taxplg, $paxazm, $paxplg ) = tp_axes( $strike, $dip, $rake );
+
+	my( $auth );
 
 	if( $self->{params}{fplane_auth} ne "" ) {
 		
@@ -498,6 +536,10 @@ sub harvest_fpfit {
 		   	   "str2", $strike_aux,
 			   "dip2", $dip_aux, 
 			   "rake2", $rake_aux, 
+			   "taxazm", $taxazm,
+			   "paxazm", $paxazm,
+			   "taxplg", $taxplg,
+			   "paxplg", $paxplg,
 			   "auth", $auth,
 			   "algorithm", $self->{params}{fplane_algorithm} );
 
