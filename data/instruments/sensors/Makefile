@@ -84,6 +84,7 @@ DATA= \
 	sts2_g1.pf \
 	sts2_g2.pf \
 	sts2_g3.pf \
+	sts2_5.pf \
 	sv1.pf \
 	terratech.pf \
 	trillium_40.pf \
