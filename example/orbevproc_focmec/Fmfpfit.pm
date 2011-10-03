@@ -382,53 +382,94 @@ sub invoke_fpfit {
 	return;
 }
 
+sub sign {
+	my( $a ) = @_;
+
+	if( $a >= 0 ) {
+
+		return 1;
+
+	} else {
+
+		return -1;
+	}
+}
+
 sub tp_axes {
-	my( $strike_deg, $dip_deg, $rake_deg ) = @_;
+	my( $strike_deg, $dip_deg, $rake_deg, $strikeaux_deg, $dipaux_deg, $rakeaux_deg ) = @_;
 
 	my( $taxazm_deg, $taxplg_deg, $paxazm_deg, $paxplg_deg );
 
-	my( $strike ) = rad( $strike_deg );
-	my( $dip )    = rad( $dip_deg );
-	my( $rake )   = rad( $rake_deg );
+	my( $shift ) = 45;
 
-	my( $nx1 ) = -1 * sin( $dip ) * sin( $strike );
-	my( $nx2 ) = -1 * sin( $dip ) * cos( $strike );
-	my( $nx3 ) = cos( $dip );
+	my( $alat1 ) = ( 90 - $dip_deg );
+	my( $alat2 ) = ( 90 - $dipaux_deg );
 
-	my( $dx1 ) = cos( $rake ) * cos( $strike ) + sin( $rake ) * cos( $dip ) * sin( $strike );
-	my( $dx2 ) = -1 * cos( $rake ) * sin( $strike ) + sin( $rake ) * cos( $dip ) * cos( $strike );
-	my( $dx3 ) = sin( $rake ) * sin( $dip );
+	my( $alon1 ) = $strike_deg;
+	my( $alon2 ) = $strikeaux_deg;
 
-	my( $tx1 ) = $nx1 + $dx1;
-	my( $tx2 ) = $nx2 + $dx2;
-	my( $tx3 ) = $nx3 + $dx3;
+	my( $az0 )   = dbex_eval( dbinvalid(), "azimuth(  $alat2, $alon2, $alat1, $alon1 )" );
 
-	my( $norm ) = sqrt( $tx1 * $tx1 + $tx2 * $tx2 + $tx3 * $tx3 );
+	my( $plunge ) = dbex_eval( dbinvalid(), "latitude(  $alat2, $alon2, $shift, $az0 )" );
+	my( $azimth ) = dbex_eval( dbinvalid(), "longitude( $alat2, $alon2, $shift, $az0 )" );
 
-	$tx1 /= $norm;
-	$tx2 /= $norm;
-	$tx3 /= $norm;
+	if( abs( $azimth ) > 180 ) {
 
-	my( $px1 ) = $nx1 - $dx1;
-	my( $px2 ) = $nx2 - $dx2;
-	my( $px3 ) = $nx3 - $dx3;
+		$azimth = $azimth - sign( $azimth ) * 360;
+	}
 
-	$norm = sqrt( $px1 * $px1 + $px2 * $px2 + $px3 * $px3 );
+	my( $az1 ) = $azimth;
+	my( $ain1 ) = $plunge + 90;
 
-	$px1 /= $norm;
-	$px2 /= $norm;
-	$px3 /= $norm;
+	$az0 += 180;
 
-	my( $taxazm ) = acos( ( $tx1 * cos( $strike ) + $tx2 * sin( $strike ) ) / sqrt( $tx1 * $tx1 + $tx2 * $tx2 ) );
-	my( $paxazm ) = acos( ( $px1 * cos( $strike ) + $px2 * sin( $strike ) ) / sqrt( $px1 * $px1 + $px2 * $px2 ) );
+	$plunge = dbex_eval( dbinvalid(), "latitude(  $alat2, $alon2, $shift, $az0 )" );
+	$azimth = dbex_eval( dbinvalid(), "longitude( $alat2, $alon2, $shift, $az0 )" );
 
-	my( $taxplg ) = acos( $tx3 );
-	my( $paxplg ) = acos( $px3 );
+	if( abs( $azimth ) > 180 ) {
 
-	$taxazm_deg = deg( $taxazm );
-	$paxazm_deg = deg( $paxazm );
-	$taxplg_deg = deg( $taxplg );
-	$paxplg_deg = deg( $paxplg );
+		$azimth = $azimth - sign( $azimth ) * 360;
+	}
+
+	my( $az2 ) = $azimth;
+	my( $ain2 ) = $plunge + 90;
+
+	if( $rake_deg >= 0 ) {
+
+		$paxplg_deg = $ain2;
+		$taxplg_deg = $ain1;
+		$paxazm_deg = $az2;
+		$taxazm_deg = $az1;
+
+	} else {
+
+		$paxplg_deg = $ain1;
+		$taxplg_deg = $ain2;
+		$paxazm_deg = $az1;
+		$taxazm_deg = $az2;
+	}
+
+	if( $paxplg_deg > 90 ) {
+		
+		$paxplg_deg = 180 - $paxplg_deg;
+		$paxazm_deg = 180 + $paxazm_deg;
+	}
+
+	if( $taxplg_deg > 90 ) {
+		
+		$taxplg_deg = 180 - $taxplg_deg;
+		$taxazm_deg = 180 + $taxazm_deg;
+	}
+
+	if( $taxazm_deg < 0 ) {
+
+		$taxazm_deg += 360;
+	}
+
+	if( $paxazm_deg < 0 ) {
+
+		$paxazm_deg += 360;
+	}
 
 	return( $taxazm_deg, $taxplg_deg, $paxazm_deg, $paxplg_deg );
 }
@@ -511,7 +552,7 @@ sub harvest_fpfit {
 
 	my( $strike_aux, $dip_aux, $rake_aux ) = aux_plane( $strike, $dip, $rake );
 
-	my( $taxazm, $taxplg, $paxazm, $paxplg ) = tp_axes( $strike, $dip, $rake );
+	my( $taxazm, $taxplg, $paxazm, $paxplg ) = tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
 
 	my( $auth );
 
