@@ -1,4 +1,4 @@
-.TH Q330_BALER 1 "$Date$"
+.TH Q330_BALER 1 
 .SH NAME
 q330_baler \- collects system information about q330 and balers
 .SH SYNOPSIS
@@ -44,10 +44,6 @@ white space.
 .SH ENVIRONMENT
 needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
-.in 2c
-.ft CW
-.nf
-.ne 7
 .IP net
 Net code to process 
 .IP status_mail
@@ -57,9 +53,6 @@ white space.
 Tbl list of station codes to ignore in processing. Like when TA gets data from Y12C but the data logger thinks its CI_BLY.
 .IP baler_orb_reject
 Regex of packets to ignore in baler processing.
-.fi
-.ft R
-.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -89,4 +82,3 @@ none.
 .LP
 .SH AUTHOR
 Frank Vernon
-.br

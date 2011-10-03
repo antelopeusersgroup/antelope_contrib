@@ -26,6 +26,7 @@ DATA= 	qx80-90.pf \
     qep_ANF.pf \
     qep_soh_only.pf \
     qep_with_sensors.pf \
+    qep_wxt.pf \
     qep_ch1.pf \
     qep_ch2.pf \
     qep_ch3.pf 

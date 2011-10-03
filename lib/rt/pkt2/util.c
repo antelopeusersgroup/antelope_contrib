@@ -229,7 +229,7 @@ int stuffpktcalib( char *packet, double calib)
   pkttype = ntohs (hdr->prehdr.pkttype) ;
 
   if( pkttype == -1 )  {
-    complain( 0, "Can't get packet type.\n" );
+    elog_complain( 0, "Can't get packet type.\n" );
     return 0;
   }
  
@@ -247,7 +247,7 @@ int stuffpktcalib( char *packet, double calib)
 	  break;
 
     default:
-	complain( 0, "stuffpktcalib: Unknown packet type - %d\n", pkttype);
+	elog_complain( 0, "stuffpktcalib: Unknown packet type - %d\n", pkttype);
 	retcode = 0 ; 
 	break ;
   } 
@@ -272,7 +272,7 @@ int stapar(
   int len = 0;
 
   if( Par.staid < 0  )  {
-      complain( 0, "Wrong STAID - %d\n", Par.staid);
+      elog_complain( 0, "Wrong STAID - %d\n", Par.staid);
       return 0;
   }
    
@@ -283,7 +283,7 @@ int stapar(
   for( i = 0, nchan = 0; i < Par.packet.nchan; i++, nchan++ )  {
       if( Par.packet.nchan == 1 ) i = Par.chan - 1;
       if( !get_site( Par.packet.pkttype, Par.staid, i + 1, &site))  {
-        complain( 0, "can't get site info for STAID:%d CHID:%d PKTTYPE:%s\n", 
+        elog_complain( 0, "can't get site info for STAID:%d CHID:%d PKTTYPE:%s\n", 
                       Par.staid, i+1, Par.packet.pkttype);
         return 0;
       } 
@@ -313,7 +313,7 @@ int get_sta_name()
       if(Err_msg == 0)  Err_msg = newarr(0);
       staerr = (char *) getarr(Err_msg, Par.staname);
       if(staerr == 0)  {
-          complain(0, "can't get sta name for staid=%d\n", Par.staid);
+          elog_complain(0, "can't get sta name for staid=%d\n", Par.staid);
           staerr = strdup(Par.staname);
 	  setarr(Err_msg, Par.staname, staerr);
       }  
@@ -346,7 +346,7 @@ char *get_chname_from_id(ushort_t pkttype, char *ptype, int staid, int chid)
              if(Err_msg == 0)  Err_msg = newarr(0);
              cherr = (char *) getarr(Err_msg, key);
              if(cherr == 0)  {
-	        complain(0, "can't get channel name (pkt=%s staid=%d, chid=%d)\n",
+	        elog_complain(0, "can't get channel name (pkt=%s staid=%d, chid=%d)\n",
                    ptype, staid, chid);
                  cherr = strdup(key);
 	         setarr(Err_msg, key, cherr);
@@ -359,7 +359,7 @@ char *get_chname_from_id(ushort_t pkttype, char *ptype, int staid, int chid)
          sprintf(key, "%d\0", chid);
          if(DasID == 0) init_DasID();
          if((name = getarr(DasID, key)) == 0) 
-            complain(0, "can't get DAS parameter name (staid=%d, chid=%d)\n", 
+            elog_complain(0, "can't get DAS parameter name (staid=%d, chid=%d)\n", 
                 staid, chid);
          break;
    
@@ -368,7 +368,7 @@ char *get_chname_from_id(ushort_t pkttype, char *ptype, int staid, int chid)
          sprintf(key, "%d\0", chid);
          if(DcID == 0) init_DcID();
          if((name = getarr(DcID, key)) == 0) 
-            complain(0, "can't get DC parameter name (staid=%d, chid=%d)\n", 
+            elog_complain(0, "can't get DC parameter name (staid=%d, chid=%d)\n", 
                 staid, chid);
          break; 
       case 0xdade:  /* DAS RTX packets */
@@ -376,7 +376,7 @@ char *get_chname_from_id(ushort_t pkttype, char *ptype, int staid, int chid)
          sprintf(key, "%d\0", chid);
          if(RTXID == 0) init_RTXID();
          if((name = getarr(RTXID, key)) == 0) 
-            complain(0, "can't get RTX parameter name (staid=%d, chid=%d)\n", 
+            elog_complain(0, "can't get RTX parameter name (staid=%d, chid=%d)\n", 
                 staid, chid);
          break;
    }

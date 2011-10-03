@@ -81,7 +81,7 @@ fprintf(stderr, "%s %ld %d - %ld\n", key, ch->lta, ch->nsamp, lta );
       if( pkttime - ch->time >= tm_period )  {
 	  lta = (ch->lta / ch->nsamp) ;
 	  if( labs(lta) >= MaxOff )  {
-              complain( 0, " %s_%s LTA is to high - %ld \n ", 
+              elog_complain( 0, " %s_%s LTA is to high - %ld \n ", 
 	                achan->sta, achan->chan, lta );
 	      ch->lta = 0;
 	      ch->nsamp = 0;

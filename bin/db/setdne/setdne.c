@@ -46,20 +46,20 @@ main(int argc, char **argv)
 	int nsta;
 	char sta[12];
 
-	if(argc!=3) die(0,"Usage:  setdne db refsta\n");
+	if(argc!=3) elog_die(0,"Usage:  setdne db refsta\n");
 	
 	dbname=argv[1];
 	refsta=argv[2];
 
 	if(dbopen(dbname,"r+",&db)==dbINVALID)
-		die(0,"Cannot open database %s\n",dbname);
+		elog_die(0,"Cannot open database %s\n",dbname);
 	db = dblookup(db,0,"site",0,0);
 	dbquery(db,dbRECORD_COUNT,&nsta);
-	if(nsta<=0)die(0,"Empty site table for db %s\n",dbname);
+	if(nsta<=0)elog_die(0,"Empty site table for db %s\n",dbname);
 	db = dblookup(db,0,"site","sta",refsta);
 	
 	if(dbgetv(db,0,"lat",&lat0,"lon",&lon0,0)==dbINVALID)
-		die(0,"dbgetv error reading reference station %s on row %d\n",
+		elog_die(0,"dbgetv error reading reference station %s on row %d\n",
 			refsta,db.record);
 	db = dblookup(db,0,"site",0,0);
 	for(db.record=0;db.record<nsta;++db.record)

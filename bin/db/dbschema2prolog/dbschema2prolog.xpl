@@ -1,6 +1,6 @@
 use Datascope;
 
-require "getopts.pl";
+use Getopt::Std;
 
 %Typetrans = (
 	"dbREAL"	=> "real",	

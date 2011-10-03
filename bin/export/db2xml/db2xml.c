@@ -81,7 +81,7 @@ main (int argc, char **argv)
 	
 	if( dbopen_table( database, "r+", &db ) < 0 ) { 
 
-		die( 0, "Can't open database %s\n", database ); 
+		elog_die( 0, "Can't open database %s\n", database ); 
 	}
 
 	if( argc - optind > 0 ) {
@@ -95,7 +95,7 @@ main (int argc, char **argv)
 		}
 		
 		if( primary ) {
-			complain( 1, 
+			elog_complain( 1, 
 			"Useless use of '-p' with specified expressions, ignoring\n" );
 		}
 
@@ -109,9 +109,9 @@ main (int argc, char **argv)
 
 	if( rc < 0 || xmlstring == NULL ) {
 		
-		clear_register( 1 );
+		elog_clear_register( 1 );
 
-		die( 0, "db2xml failed\n" );
+		elog_die( 0, "db2xml failed\n" );
 
 	} else if( stylesheet != NULL ) {
 

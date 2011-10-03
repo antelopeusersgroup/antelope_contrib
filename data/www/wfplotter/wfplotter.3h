@@ -18,7 +18,7 @@ graphing library for GD - JpGraph.
 .SH EXAMPLE
 <?php
    if( ! extension_loaded( "Datascope" ) ) {
-	die( "Module 'Datascope' not loaded. Bye." );
+	elog_die( "Module 'Datascope' not loaded. Bye." );
    }
    require_once( "lib/wfplot.inc" ) ;
    # Get form parameters

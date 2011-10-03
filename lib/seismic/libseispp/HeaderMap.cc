@@ -114,7 +114,7 @@ string HeaderMap::get_string(string name, unsigned char *h)
 		s[i]=hs[i];
 	h[nb]='\0';
 	string result(s);
-	delete s;
+	delete [] s;
 	return(result);
 }
 bool HeaderMap::get_bool(string name, unsigned char *h)

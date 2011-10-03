@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 	/* Open the input database */
 
         if (dbopen (dbin, "r+", &dbi) == dbINVALID) {
-                clear_register (1);
+                elog_clear_register(1);
                 fprintf (stderr, "dbdec: Unable to open input database '%s'.\n",
 									dbin);
                 exit (1);
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
 	/* Open the output database */
 
         if (dbopen (dbout, "r+", &dbo) == dbINVALID) {
-                clear_register (1);
+                elog_clear_register(1);
                 fprintf (stderr, "dbdec: Unable to open output database '%s'.\n",
 									dbout);
                 exit (1);
@@ -546,7 +546,7 @@ double                                                                samprate;
 		return (0);
 	}
 	if (read_response (file, &rspi)) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "make_response_file: read_response() error on response file '%s'.\n",
 						fname);
 		return (0);
@@ -571,7 +571,7 @@ double                                                                samprate;
 
 	ret = comp_responses (dbo, rspi, &rsp);
 	if (ret < 0) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "make_response_file: comp_responses() error.\n");
 		return (0);
 	}
@@ -618,7 +618,7 @@ double                                                                samprate;
 		return (0);
 	}
 	if (write_response (file, rsp)) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "make_response_file: write_response() error on response file '%s'.\n",
 						fname);
 		return (0);
@@ -663,7 +663,7 @@ int comp_responses (Dbptr db, Response *resp, Response **respo)
 				return (-1);
 			}
 			if (read_response (file, &rsp)) {
-				clear_register (1);
+				elog_clear_register(1);
 				fprintf (stderr, "comp_responses: read_response() error on response file '%s'.\n",
 								fname);
 				return (-1);
@@ -1032,7 +1032,7 @@ Tbl **decfac;
 			return (0);
 		}
 		if (read_response (file, &rsp)) {
-			clear_register (1);
+			elog_clear_register(1);
 			fprintf (stderr, "read_dec_files: read_response() error on stage file '%s'.\n",
 							dec_stages[i]);
 			return (0);
@@ -1170,13 +1170,13 @@ Tbl **chan_out_tbl;
 
 	*chan_in_tbl = newtbl (10);
 	if (*chan_in_tbl == NULL) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "parse_chan_maps: newtbl() error.\n");
 		return (0);
 	}
 	*chan_out_tbl = newtbl (10);
 	if (*chan_out_tbl == NULL) {
-		clear_register (1);
+		elog_clear_register(1);
 		fprintf (stderr, "parse_chan_maps: newtbl() error.\n");
 		return (0);
 	}
@@ -1191,12 +1191,12 @@ Tbl **chan_out_tbl;
 		ptr[i] = '\0';
 		i += 1;
 		if (settbl (*chan_out_tbl, j, ptr) != j) {
-			clear_register (1);
+			elog_clear_register(1);
 			fprintf (stderr, "parse_chan_maps: settbl() error.\n");
 			return (0);
 		}
 		if (settbl (*chan_in_tbl, j, &ptr[i]) != j) {
-			clear_register (1);
+			elog_clear_register(1);
 			fprintf (stderr, "parse_chan_maps: settbl() error.\n");
 			return (0);
 		}

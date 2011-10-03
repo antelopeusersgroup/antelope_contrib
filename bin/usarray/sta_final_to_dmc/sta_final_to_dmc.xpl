@@ -24,7 +24,7 @@
 #   graceful way to handle orb lag error?
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -52,7 +52,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnc:m:p:') || @ARGV < 2 ) { 
+    if (  ! getopts('vVnc:m:p:') || @ARGV < 2 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] \n" ;
         $usage .=  "	[-c orbclient] [-p pf] [-m mail_to]  \n" ;
         $usage .=  "	mseed_orb sta [sta1 sta2 ...]\n\n"  ; 

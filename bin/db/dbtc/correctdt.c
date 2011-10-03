@@ -37,7 +37,7 @@ int wrt_data(
              
      wrt_pnts = fwrite( data, 1, npts,  fp );
      if ( wrt_pnts != npts )  {
-               complain(  0, "write %ld samples insted of %ld \n", wrt_pnts, npts);
+               elog_complain(  0, "write %ld samples insted of %ld \n", wrt_pnts, npts);
                return 0;
      }
      Foff += wrt_pnts;
@@ -152,26 +152,26 @@ int change_name( char *dbname )
 
     sprintf( newname, "%s.wfdisc\0", NEW );
     if( stat( newname, &stat_buf) != 0 ) {
-         if(!ENOENT) die( 1, "can't stat %s.\n", newname );
+         if(!ENOENT) elog_die( 1, "can't stat %s.\n", newname );
     }  else {
        sprintf( str, "mv %s.wfdisc %s.wfdisc_orig\0", dbname, dbname );
        if( system(str) == -1 ) 
-           die( 1, "can't save an original wfdisc file - %s.wfdisc\n", dbname );
+           elog_die( 1, "can't save an original wfdisc file - %s.wfdisc\n", dbname );
        sprintf( str, "mv %s %s.wfdisc\0", newname, dbname );
        if( system(str) == -1 ) 
-           die( 1, "can't save a new wfdisc file - %s\n", newname );
+           elog_die( 1, "can't save a new wfdisc file - %s\n", newname );
     }
 
     sprintf( newname, "%.arrival\0", NEW );
     if( stat( newname, &stat_buf) != 0 ) {
-         if( !ENOENT) die( 1, "can't stat %s.\n", newname );
+         if( !ENOENT) elog_die( 1, "can't stat %s.\n", newname );
     }  else {
        sprintf( str, "mv %s.arrival %s.arrival_orig\0", dbname, dbname );
        if( system(str) == -1 ) 
-           die( 1, "can't save an original arrival file - %s.arrival\n", dbname );
+           elog_die( 1, "can't save an original arrival file - %s.arrival\n", dbname );
        sprintf( str, "mv %s %s.arrival\0", newname, dbname );
        if( system(str) == -1 ) 
-           die( 1, "can't save a new arrival file - %s\n", newname );
+           elog_die( 1, "can't save a new arrival file - %s\n", newname );
     }
    
     return 1; 
@@ -188,20 +188,20 @@ int change_arr( int dbrec, int arec )
     int recnum; 
      
     if (dbopen_database ( NEW, "r+", &dbout ) == dbINVALID )
-         die (0, "Can't open database %s\n",  NEW );
+         elog_die(0, "Can't open database %s\n",  NEW );
  
     dbout = dblookup (dbout, 0, "arrival", 0, 0);
     if (dbout.table < 0)  {
-        die (0, "Can't open arrival table '%s'\n", NEW );
+        elog_die(0, "Can't open arrival table '%s'\n", NEW );
     }
     
     for( dba.record = 0, dbout.record=0; dba.record < arec; dba.record++, dbout.record++)   {
  
        if( (dbgetv( dba, 0, "time", &stime, 0 )) == dbINVALID )  
-           die( 0, "dbgetv faild for record #%d\n", dba.record );  
+           elog_die( 0, "dbgetv faild for record #%d\n", dba.record );  
       
        if ( dbget ( dba, arrec ) == dbINVALID )   {
-             die( 1,"Can't get arrival record #%d\n", dba.record );
+             elog_die( 1,"Can't get arrival record #%d\n", dba.record );
        }
 
        dbout.record = dbaddnull( dbout );
@@ -215,7 +215,7 @@ int change_arr( int dbrec, int arec )
 	         "bchan", chan,
 	         "bnet", net,
 	         "bsta", sta, 0 )) == dbINVALID )
-	          die( 0, "dbgetv faild for record #%d\n", dbc.record );
+	          elog_die( 0, "dbgetv faild for record #%d\n", dbc.record );
 	        
 	    sprintf( key, "%s_%s_%s\0", net, sta, chan );
 
@@ -265,11 +265,11 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
  
      
     if (dbopen_database ( NEW, "r+", &dbout ) == dbINVALID )
-         die (0, "Can't open database %s\n",  NEW );
+         elog_die(0, "Can't open database %s\n",  NEW );
  
     dbout = dblookup (dbout, 0, "wfdisc", 0, 0);
     if (dbout.table < 0)  {
-        die (0, "Can't open wfdisc table '%s'\n", NEW );
+        elog_die(0, "Can't open wfdisc table '%s'\n", NEW );
     }
     
    
@@ -285,10 +285,10 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
           "chan", chan,
           "datatype", datatype,
            0 )) == dbINVALID )
-           die( 0, "dbgetv faild for record #%d\n", dbw.record );
+           elog_die( 0, "dbgetv faild for record #%d\n", dbw.record );
 
        if ( dbget ( dbw, wrec ) == dbINVALID )   {
-             die( 1,"Can't get wfdisc record #%d\n", dbw.record );
+             elog_die( 1,"Can't get wfdisc record #%d\n", dbw.record );
        }
 
        dbout.record = dbaddnull( dbout );
@@ -313,7 +313,7 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
 	         "bchan", cchan,
 	         "bnet", cnet,
 	         "bsta", csta, 0 )) == dbINVALID )
-	          die( 0, "dbgetv faild for record #%d\n", dbc.record );
+	          elog_die( 0, "dbgetv faild for record #%d\n", dbc.record );
 	        
 	    sprintf( key, "%s_%s_%s\0", cnet, sta, chan );
 
@@ -339,21 +339,21 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
               if(!seed )  {
                  sprintf( tmpname, "new.w\0" );
                  outfp = fopen (tmpname, "w");
-                 if (outfp == 0) die ( 1, "Unable to open '%s'\n", tmpname);
+                 if (outfp == 0) elog_die( 1, "Unable to open '%s'\n", tmpname);
                  seed = 1;
               }
               if (dbfilename (dbw, dfname) < 1) 
-                      die (1, "Unable to find input file '%s'\n", dfname);
+                      elog_die(1, "Unable to find input file '%s'\n", dfname);
               if( strncmp( old_fname, dfname, sizeof(dfname) ) ) {
                  if(infp != 0 )  fclose(infp);
                  infp = zopen (dfname);
                  if (infp == 0) 
-                      die ( 1, "Unable to open '%s'\n", dfname);
+                      elog_die( 1, "Unable to open '%s'\n", dfname);
               } 
               strcpy( old_fname, dfname);
               if (fseek(infp, foff, 0) < 0) {
                     fclose (infp);
-                    die ( 0, "fseek() error on '%s'\n", dfname);
+                    elog_die( 0, "fseek() error on '%s'\n", dfname);
               }  
      
           
@@ -361,7 +361,7 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
      
                   if ( (nread=fread ( seed_buf, 1, 48, infp)) != 48 ) {
                         if( nread == 0 ) break;
-                        else  die( 1, "Can't read first 48 bytes of a SEED record.\n" );
+                        else  elog_die( 1, "Can't read first 48 bytes of a SEED record.\n" );
                   }
                   memcpy(ssta,  seed_buf+8, 5 ) ;
                   TRIM(ssta,6);
@@ -381,20 +381,20 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
                         change_time( seed_buf, rectime, nread, &rec );
       
                         if( !wrt_data( outfp, rec, 48) )  
-                            die( 1, "write error for %s_%s SEEDHDR. \n", sta, chan );  
+                            elog_die( 1, "write error for %s_%s SEEDHDR. \n", sta, chan );  
                     
                         nleft = doff - 48;
                         if( doff <= 0 ) break;   
                         if ( (nread=fread ( seed_buf, 1, nleft, infp)) != nleft ) 
-                              die( 1, "Can't read SEED headers.\n" );
+                              elog_die( 1, "Can't read SEED headers.\n" );
                         if( !wrt_data( outfp, seed_buf, nread ) )  
-                              die( 1, "write error for %s_%s SEEDHDR.\n", sta, chan);  
+                              elog_die( 1, "write error for %s_%s SEEDHDR.\n", sta, chan);  
                    
                         nleft = 4096 - doff; 
                         if ( (nread=fread ( seed_buf, 1, nleft, infp)) != nleft ) 
-                              die( 1, "Can't read SEED headers.\n" );
+                              elog_die( 1, "Can't read SEED headers.\n" );
                         if( !wrt_data( outfp, seed_buf, nread) )  
-                              die( 1, "write error for %s_%s at %lf.\n", sta, chan, rectime );  
+                              elog_die( 1, "write error for %s_%s at %lf.\n", sta, chan, rectime );  
                  
                   }
     
@@ -429,12 +429,12 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
  
     sprintf( str, "mv %s.w %s.w_orig\0", dbname, dbname );
     if( system(str) == -1 ) 
-          die( 1, "can't save an original data file - %s.w\n", dbname );
+          elog_die( 1, "can't save an original data file - %s.w\n", dbname );
     
  
     sprintf( str, "mv %s %s.w\0", tmpname, dbname );
     if( system(str) == -1 ) 
-       die( 1, "can't rename new data file - %s\n", Dfile);
+       elog_die( 1, "can't rename new data file - %s\n", Dfile);
     
   }
   return 1;
@@ -486,43 +486,43 @@ char **argv;
     dbname = strdup( argv[optind++]); 
             
     if ( (code = regcomp( &srcmatch, match, REG_EXTENDED|REG_NOSUB)) != 0)
-          die( 1, "regcomp error #%d for %s\n", code, match );
+          elog_die( 1, "regcomp error #%d for %s\n", code, match );
 
   /*  Open  a corrupted databases.  */
 
     if (dbopen_database ( dbname, "r", &db ) == dbINVALID )
-        die (0, "Can't open database %s\n",  dbname );
+        elog_die(0, "Can't open database %s\n",  dbname );
 	      
     dbc = dblookup ( db, 0, "tcorrection", 0, 0);
     if (dbc.table < 0)  
-        die (0, "Can't open tcorrection table '%s'\n", dbname );
+        elog_die(0, "Can't open tcorrection table '%s'\n", dbname );
 
     sort_sta_ch_tm = strtbl("bsta", "bchan", "time", 0 ) ;
     dbc = dbsort ( dbc, sort_sta_ch_tm, 0, 0 ) ;
     dbquery ( dbc, dbRECORD_COUNT, &dbrec );
     if( dbrec <= 0 )
-       die( 0, " no record in %s \'tcorrection\' table.\n", dbname ); 
+       elog_die( 0, " no record in %s \'tcorrection\' table.\n", dbname ); 
    
     dbw = dblookup ( db, 0, "wfdisc", 0, 0);
     if ( dbw.table == dbINVALID )
-       complain (0, "Can't open '%s' wfdisc table.\n", dbname );
+       elog_complain(0, "Can't open '%s' wfdisc table.\n", dbname );
     dbquery ( dbw, dbRECORD_COUNT, &wfrec );
     if( wfrec <= 0 )
-       complain( 0, " no record in %s \'wfdisc\' table.\n", dbname ); 
+       elog_complain( 0, " no record in %s \'wfdisc\' table.\n", dbname ); 
 			     
     dba = dblookup ( db, 0, "arrival", 0, 0);
     dbquery ( dba, dbRECORD_COUNT, &arrec );
     if( arrec <= 0 )
-       complain( 0, " no record in %s \'arrival\' table.\n", dbname); 
+       elog_complain( 0, " no record in %s \'arrival\' table.\n", dbname); 
 
     if( wfrec <= 0 && arrec <= 0 ) 
-       die(0, "wfdisc&arrival tables contain no records. Nothing to fix.\n");
+       elog_die(0, "wfdisc&arrival tables contain no records. Nothing to fix.\n");
 
     if( wfrec > 0 )  change_wfd( dbname, dbrec, wfrec );
     if( arrec > 0 ) change_arr(  dbrec, arrec );
     
     if( !change_name( dbname ) )
-       die(0, "can't save new wfdisc/arrival tables.\n"); 
+       elog_die(0, "can't save new wfdisc/arrival tables.\n"); 
     
     exit(0);                             
 }

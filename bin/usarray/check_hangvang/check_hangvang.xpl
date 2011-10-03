@@ -6,7 +6,7 @@
 #  J.Eakins 3/2011
 # 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 
 use strict 'vars' ;
@@ -33,7 +33,7 @@ $cmd = "\n$0 @ARGV" ;
 
 
 
-  if ( ! &Getopts('n:op:s:vVx:') || @ARGV < 1 || @ARGV > 1) { 
+  if ( ! getopts('n:op:s:vVx:') || @ARGV < 1 || @ARGV > 1) { 
 	&usage;
   }
 

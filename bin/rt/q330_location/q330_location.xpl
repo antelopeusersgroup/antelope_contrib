@@ -10,17 +10,17 @@
     use sysinfo;
     use orb ;
     use archive ;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     our($pgm,$host,$Problems,$opt_v,$opt_d,$opt_c,$opt_m,$opt_n,$opt_f,$opt_p,$opt_s,$opt_t);
     my (@dbcomm,@dbcommscr,@dbcommnull,@dbsitesub,@dbsnet,@dbstage,@dbstagescr,@dbdls);
     my (%offline,$subset,$nbytes,$result,$pkt,$subcode,$desc,$type,$suffix,$pf);
-    my ($orbname,$cmd_orbname,$dbname,$cmd_orb,$orb,$pktid,$srcname,$net,$sta,$chan,$loc);
+    my ($orbname,$cmd_orbname,$dbname,$cmd_orb,$orb,$pktid,$srcname,$sta,$chan,$loc);
     my ($fer,$when,$src,$pkttime,$start,$nettmp,$statmp,$chantmp);
     my ($pfsource,$subject,$cmd,$usage,$match);
     my ($long,$ssident,$lat,$lon,$endtime,$now,$stime);
-    my (@temp_dls,@sources,@stas,@matches);
-    my ($commtype,$provider,$model,$nsta);
+    my (@db_temp,@temp_dls,@sources,@stas,@matches);
+    my ($commtype,$provider,$nsta);
     my (%site,$ref,$tbl,%dls_hash,@dls_array,$dls,$log_file);
     my (@keys,@db,@dbsite,@dbdlsite);
     my ($km,$tolerance);
@@ -32,7 +32,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
 
-    if ( !  &Getopts('ndvfc:m:p:s:t:') || @ARGV < 2 || @ARGV > 3) { 
+    if ( !  getopts('ndvfc:m:p:s:t:') || @ARGV < 2 || @ARGV > 3) { 
         $usage  =  "\n\n\nUsage: $0 [-d] [-v] [-n] [-f] [-m mail_to] [-c chan_code] " ;
         $usage .=  "[-p pf_sourcename] [-s sta_regex] [-t max_offset_meters] status_orb [cmd_orb] db\n"  ;
         
@@ -57,57 +57,66 @@
     ($orbname,$cmd_orbname,$dbname) = @ARGV if (@ARGV == 3);
     ($orbname,$dbname) = @ARGV if (@ARGV == 2);
 
-    $net       = "TA" ;
     $chan      = $opt_c || "BHZ" ;
     $pfsource  = $opt_p || ".*/pf/st" ;
     $tolerance = $opt_t ? ($opt_t/1000) : 0.02;
-    #$tolerance = ( $opt_t/1000 ) || 0.02 ;
 
-    elog_notify ("net       $pfsource")   if $opt_d;
     elog_notify ("pfsource  $pfsource")   if $opt_d;
     elog_notify ("status_orb$orbname")    if $opt_d;
     elog_notify ("cmd_orb   $cmd_orbname")if $opt_d;
     elog_notify ("db        $dbname\n")   if $opt_d;
     
 
-#  Set up default model.  Will need to change this when more dataloggers get put into this system.
-    $model = "q330";
-    elog_notify ("logger model -  $model\n") if $opt_d;
-
-#
-#  open and check dbs
-#
+    #
+    #  Open databases
+    #
     @db         = dbopen($dbname,"r+"); 
     @dbsite     = dblookup(@db,"","site","","");
     @dbdlsite   = dblookup(@db,"","dlsite","","");
+    @dbsnet     = dblookup(@db,"","snetsta","","");
+
     @dbcomm     = dblookup(@db,"","comm","","");
     @dbcommscr  = dblookup(@dbcomm,"","","","dbSCRATCH");
     @dbcommnull = dblookup(@dbcomm,"","","","dbNULL");
-    @dbsnet     = dblookup(@db,"","snetsta","","");
+
     @dbstage    = dblookup(@db,"","stage","","");
     @dbstagescr = dblookup(@dbstage,"","","","dbSCRATCH");
-    
-    $subset     = "snet =~ /$net/ && (offdate == NULL || offdate > ".yearday($now).")";
-    $subset    .= "&& sta =~ /$opt_s/" if $opt_s;
-    elog_notify ("$dbname.site subset $subset") if $opt_d;
-    @dbsitesub = dbjoin(@dbsite,@dbsnet);
-    @dbsitesub = dbsubset(@dbsitesub,$subset);
-    @dbsitesub = dbsort(@dbsitesub,"sta");
-    
 
-    $subset   = "endtime == NULL ";
-    $subset  .= "&& dlname =~ /.*_$opt_s/" if $opt_s;
-    elog_notify ("$dbname.dlsite subset $subset") if $opt_d;
-    @dbdls   = dbsubset(@dbdlsite,$subset);
-    @dbdls   = dbsort(@dbdls,"dlname");
-
+    #
+    # Verify databases
+    #
     table_check(\@dbsite);
-    table_check(\@dbdlsite);
     table_check(\@dbcomm);
     table_check(\@dbsnet);
     table_check(\@dbstage); 
 
     if ($Problems) { email_and_end(1); }
+
+    #
+    # Subset site table
+    #
+    $subset     = "(offdate == NULL || offdate > ".yearday($now).")";
+    $subset    .= "&& sta =~ /$opt_s/" if $opt_s;
+    elog_notify ("$dbname.site subset $subset") if $opt_d;
+    @dbsitesub = dbjoin(@dbsite,@dbsnet);
+    @dbsitesub = dbsubset(@dbsitesub,$subset);
+    @dbsitesub = dbsort(@dbsitesub,"sta");
+
+
+    #
+    # Subset dlsite table
+    #
+    $subset   = "endtime == NULL ";
+    $subset  .= "&& dlname =~ /.*_$opt_s/" if $opt_s;
+    if ( dbquery(@dbdlsite,"dbRECORD_COUNT") > 0 ) {
+        elog_notify ("$dbname.dlsite subset $subset") if $opt_d;
+        @dbdls   = dbsubset(@dbdlsite,$subset);
+        @dbdls   = dbsort(@dbdls,"dlname");
+    }
+    else {
+        elog_notify ("$dbname.dlsite is empty!") if $opt_d;
+        @dbdls = @dbdlsite;
+    }
 
 #
 #  open input orb
@@ -184,8 +193,8 @@
 #
 # Use -f option to refresh data from station
 #
-            if ($opt_f) { $cmd = "dlcmd $cmd_orbname $ref->{target} $model $dls getstatus -force 2>&1 >$log_file";  }
-            else { $cmd = "dlcmd $cmd_orbname $ref->{target} $model $dls getstatus 2>&1 >$log_file";  }
+            if ($opt_f) { $cmd = "dlcmd $cmd_orbname $ref->{target} - $dls getstatus -force 2>&1 >$log_file";  }
+            else { $cmd = "dlcmd $cmd_orbname $ref->{target} - $dls getstatus 2>&1 >$log_file";  }
 
             elog_notify("Running: $cmd") if $opt_d;
             $result = run($cmd);
@@ -226,7 +235,7 @@
 
             $dls_hash{$dls}{inp}     = $fer->{inp};
             $dls_hash{$dls}{thr}     = $fer->{thr};
-            $dls_hash{$dls}{model}   = $model;
+            $dls_hash{$dls}{model}   = $fer->{type};
             $dls_hash{$dls}{idtag}   = $fer->{pt};
             $dls_hash{$dls}{status}  = 'on-line';
             $dls_hash{$dls}{pkttime} = $pkttime;
@@ -301,8 +310,8 @@
     }
 
     for ($dbdls[3] = 0; $dbdls[3] < $nsta; $dbdls[3]++) {
-        ($dls,$lat,$lon,$ssident,$commtype,$provider,$model) = 
-            dbgetv(@dbdls,"dlname","lat","lon","ssident","commtype","provider","model");
+        ($dls,$lat,$lon,$ssident,$commtype,$provider) = 
+            dbgetv(@dbdls,"dlname","lat","lon","ssident","commtype","provider");
             
         $dls_hash{$dls}{commtype} = $commtype;
         $dls_hash{$dls}{provider} = $provider;

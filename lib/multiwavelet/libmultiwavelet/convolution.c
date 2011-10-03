@@ -47,12 +47,12 @@ int sconv(float *in, int nin, float *filter, int nfilter,
 	/* First check for bad parameters and correct if possible */
 	if(nfilter > nin)
 	{
-		register_error(0,"sconv:  filter length (%d) longer than input time series (%d)\n",nfilter,nin);
+		elog_log(0,"sconv:  filter length (%d) longer than input time series (%d)\n",nfilter,nin);
 		return(-1);
 	}
 	if(ioff < 0)
 	{
-		register_error(0,"sconv:  illegal offset value = %d set to 0\n",
+		elog_log(0,"sconv:  illegal offset value = %d set to 0\n",
 			ioff);
 		ret_code = -ioff;
 		ioff = 0;

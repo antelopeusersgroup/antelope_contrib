@@ -2,7 +2,7 @@
 #   program needs:
 #
 
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -34,7 +34,7 @@
     $usage   .=  "	[-o duration_offset_fraction] [-t start_time]  [-p pf] [-m mail_to] \n" ;
     $usage   .=  "	cmdorb db sta_regex [sta_regex1 [sta_regex2 [...]]] \n\n"  ; 
     
-    if (  ! &Getopts('nvVd:im:No:p:t:23') || @ARGV < 3 ) { 
+    if (  ! getopts('nvVd:im:No:p:t:23') || @ARGV < 3 ) { 
         unless ( ($opt_i || $opt_N) && @ARGV == 2) {
             elog_notify ( $cmd ) ; 
             elog_die    ( $usage ) ;

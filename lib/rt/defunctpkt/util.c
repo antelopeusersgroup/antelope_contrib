@@ -226,7 +226,7 @@ int stuffpkttime( char *packet, double time)
   pkttype = ntohs (hdr->prehdr.pkttype) ;
 
   if( pkttype == -1 )  {
-    complain( 0, "Can't get packet type.\n" );
+    elog_complain( 0, "Can't get packet type.\n" );
     return 0;
   }
  
@@ -243,7 +243,7 @@ int stuffpkttime( char *packet, double time)
 	  break;
 
     default:
-	complain( 0, "stuffpkttime: Unknown packet type - %d\n", pkttype);
+	elog_complain( 0, "stuffpkttime: Unknown packet type - %d\n", pkttype);
 	retcode = 0 ; 
 	break ;
   } 
@@ -264,7 +264,7 @@ int stuffpktcalib( char *packet, double calib)
   pkttype = ntohs (hdr->prehdr.pkttype) ;
 
   if( pkttype == -1 )  {
-    complain( 0, "Can't get packet type.\n" );
+    elog_complain( 0, "Can't get packet type.\n" );
     return 0;
   }
  
@@ -283,7 +283,7 @@ int stuffpktcalib( char *packet, double calib)
 	  break;
 
     default:
-	complain( 0, "stuffpktcalib: Unknown packet type - %d\n", pkttype);
+	elog_complain( 0, "stuffpktcalib: Unknown packet type - %d\n", pkttype);
 	retcode = 0 ; 
 	break ;
   } 
@@ -308,7 +308,7 @@ int stapar(
   int len = 0;
 
   if( Par.staid < 0  )  {
-      complain( 0, "Wrong STAID - %d\n", Par.staid);
+      elog_complain( 0, "Wrong STAID - %d\n", Par.staid);
       return 0;
   }
    
@@ -319,7 +319,7 @@ int stapar(
   for( i = 0, nchan = 0; i < Par.packet.nchan; i++, nchan++ )  {
       if( Par.packet.nchan == 1 ) i = Par.chan - 1;
       if( !get_site( Par.packet.pkttype, Par.staid, i + 1, &site))  {
-        complain( 0, "can't get site info for STAID:%d CHID:%d PKTTYPE:%s\n", 
+        elog_complain( 0, "can't get site info for STAID:%d CHID:%d PKTTYPE:%s\n", 
                       Par.staid, i+1, Par.packet.pkttype);
         return 0;
       } 

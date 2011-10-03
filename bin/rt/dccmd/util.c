@@ -83,18 +83,18 @@ int islegal( char *name, int cmdtype )
                   if( isip(one) )  {
 	             arg = newname( one );
 		     pushtbl( CmdArg, arg);
-	          } else die(0, "\nillegal IP was specified - %s.\n", one);
+	          } else elog_die(0, "\nillegal IP was specified - %s.\n", one);
 	          num++;
 	    }
             while( (one = strtok( NULL, "|" )) != 0 )  {
                   if( isip(one) )  {
 	             arg = newname( one );
 		     pushtbl( CmdArg, arg);
-	          } else die(0, "\nillegal IP was specified - %s.\n", one);
+	          } else elog_die(0, "\nillegal IP was specified - %s.\n", one);
 	          num++;
 	    }
 	    if( num > 1 )  {
-	        complain(0, 
+	        elog_complain(0, 
 		"\nMore than one IP addresses was specified. Will use the first one.\n");
 	        num = 1;
 	    }
@@ -106,14 +106,14 @@ int islegal( char *name, int cmdtype )
                   if( isdasid(one) >= 0 )  {
 	             arg = newname( one );
 		     pushtbl( CmdArg, arg);
-	          } else die(0, "\nillegal Radio/Clock number was specified - %s.\n", one);
+	          } else elog_die(0, "\nillegal Radio/Clock number was specified - %s.\n", one);
 	          num++;
 	    }
             while( (one = strtok( NULL, "|" )) != 0 )  {
                   if( isdasid(one) >= 0 )  {
 	             arg = newname( one );
 		     pushtbl( CmdArg, arg);
-	          } else die(0, "\nillegal Radio/Clock number was specified - %s.\n", one);
+	          } else elog_die(0, "\nillegal Radio/Clock number was specified - %s.\n", one);
 	          num++;
 	    }
 	    break;
@@ -159,7 +159,7 @@ int open_dc( char *dcname, int *dcfp )
 			     
            hp = gethostbyname (hostname);
            if (hp == NULL) {
-              complain (0, "\nopenID(): Can't get info for HOST - %s.\n", hostname);
+              elog_complain(0, "\nopenID(): Can't get info for HOST - %s.\n", hostname);
               return 0;
            }
     }
@@ -178,13 +178,13 @@ int open_dc( char *dcname, int *dcfp )
 	/* create a socket  */
  
        if( ( *dcfp = socket(AF_INET, SOCK_STREAM, 0)) < 0 )  {
-    	    die ( 1, "\nCan't open stream socket\n" ) ; 
+    	    elog_die( 1, "\nCan't open stream socket\n" ) ; 
        }
 
   /* Convert IP address from a.b.c.d to the hexadecimal number  */
 	   
        if ((int)(addr = inet_addr(server_name)) == -1) {
-          complain(0, "\nIP-address must be of the form a.b.c.d\n");
+          elog_complain(0, "\nIP-address must be of the form a.b.c.d\n");
           return 0;
        }
 
@@ -203,9 +203,9 @@ int open_dc( char *dcname, int *dcfp )
        if ( connect ( *dcfp, (struct sockaddr *) & peer_in, addrlen) == -1) {
            if( !tried )  {
 	      tried = 1;
-	      complain( 1, "\nwaiting for connection \n");
+	      elog_complain( 1, "\nwaiting for connection \n");
               sleep(1);
-	      complain( 1, "\ncan't connect %s\n", dcname );
+	      elog_complain( 1, "\ncan't connect %s\n", dcname );
 	   }
 	   close( *dcfp);
         } else done = 1;	
@@ -227,7 +227,7 @@ void initdas( )
    int 		nsite;
 
    if(pfread( pfile, &Param) != 0)
-       die(0, "\nCan't read parameter file\n");
+       elog_die(0, "\nCan't read parameter file\n");
  
 	/* Get Input & Network tables  */
 	 
@@ -235,7 +235,7 @@ void initdas( )
    nsite = maxtbl(Site);
     
    if( nsite <= 0  )
-     die( 0, "\nparameter file is not complete.\n");
+     elog_die( 0, "\nparameter file is not complete.\n");
  
   Dlist = newtbl(0);
   Dases = newarr( 0 );

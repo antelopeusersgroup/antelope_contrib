@@ -39,14 +39,14 @@ struct Prts *inport;
 		      !strncmp( inport->ip_name, "local", strlen("local") ) )  {
 	              return open_socket( inport );
 	        } 
-                complain(0, "open_IN_ports():Port:%s doesn't exist!\n", inport->ip_name );
+                elog_complain(0, "open_IN_ports():Port:%s doesn't exist!\n", inport->ip_name );
                 return 0; 
            } else {
-                complain(1, "open_IN_ports():can't stat %s.", inport->ip_name );
+                elog_complain(1, "open_IN_ports():can't stat %s.", inport->ip_name );
                 return 0; 
            }
        }  else {
-	   complain(1, "open_IN_ports():'%s' port is not supported.", inport->ip_name);
+	   elog_complain(1, "open_IN_ports():'%s' port is not supported.", inport->ip_name);
 	   return 0;
        }
        
@@ -87,7 +87,7 @@ struct Prts *inport;
 			     
            hp = gethostbyname (hostname);
            if (hp == NULL) {
-              complain (0, "openID(): Can't get info for HOST - %s.\n", hostname);
+              elog_complain(0, "openID(): Can't get info for HOST - %s.\n", hostname);
               return 0;
            }
     }
@@ -105,13 +105,13 @@ struct Prts *inport;
 	/* create a socket  */
  
        if( (Ls = socket(AF_INET, SOCK_STREAM, 0)) < 0 )  {
-    	    die ( 1, "Can't open stream socket\n" ) ; 
+    	    elog_die( 1, "Can't open stream socket\n" ) ; 
        }
 
   /* Convert IP address from a.b.c.d to the hexadecimal number  */
 	   
        if ((int)(addr = inet_addr(server_name)) == -1) {
-          complain(0, "IPD/open_socket():IP-address must be of the form a.b.c.d\n");
+          elog_complain(0, "IPD/open_socket():IP-address must be of the form a.b.c.d\n");
           return 0;
        }
 /*
@@ -137,10 +137,10 @@ fflush(stdout);
       b_size = Psize;  
 
       if( setsockopt( Ls, SOL_SOCKET, SO_SNDBUF, (char *)&b_size, sizeof(int)) != 0)  {
-    	   die( 1, "Unable to set size of send buffer.\n");
+    	   elog_die( 1, "Unable to set size of send buffer.\n");
       }
       if( setsockopt(Ls, SOL_SOCKET, SO_RCVBUF, (char *)&b_size, sizeof(int)) != 0)  {
-     	     die( 1, "Unable to set size of send buffer.\n");
+     	     elog_die( 1, "Unable to set size of send buffer.\n");
        }
 
 
@@ -149,7 +149,7 @@ fflush(stdout);
        if ( connect (Ls, (struct sockaddr *) & peer_in, addrlen) == -1) {
            if( !tried )  {
 	      tried = 1;
-	      complain( 1, "waiting for connection with %s \n", inport->ip_name );
+	      elog_complain( 1, "waiting for connection with %s \n", inport->ip_name );
               sleep(1);
 	   }
 	   close(Ls);
@@ -157,7 +157,7 @@ fflush(stdout);
     } 
 
     if ( fcntl(Ls, F_SETFL, O_NONBLOCK) == -1 ) { 
-        die ( 1, "Can't set non-blocking on accept socket\n" ) ; 
+        elog_die( 1, "Can't set non-blocking on accept socket\n" ) ; 
     }
 
      inport->ifp = Ls;

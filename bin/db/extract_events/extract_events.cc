@@ -92,7 +92,7 @@ template <class Tvec>
 		{
 		// First see if there is an arrival for this
 		// station.  If not, skip it. 
-			list<int> records
+			list<long> records
 				=dbh.find(dynamic_cast<Metadata&>(*d));
 			// if no arrival silently skip data for this station
 			if(records.size()<=0) continue;
@@ -113,7 +113,7 @@ template <class Tvec>
 			// value = record number of the match
 			db.record=*(records.begin());
 			char csta[10];
-			if(dbgetv(db,0,"arrival.time",&atime,"sta",csta,0)
+			if(dbgetv(db,0,"arrival.time",&atime,"sta",csta,NULL )
 				== dbINVALID) 
 			{
 				string sta=d->get_string("sta");
@@ -438,13 +438,13 @@ void SaveResults(DatascopeHandle& dbh,
 					"time",time,
 					"endtime",endtime,
 					"jdate",yearday(time),
-					"nsamp",ns,
+					"nsamp",static_cast<long>(ns),
 					"samprate",samprate,
 					"calib",calib,
 					"dir",dir,
 					"dfile",dfile,
 					"datatype",datatype.c_str(),
-					0);
+					NULL );
 				    if(dbh.db.record<0)
 				    {
 					string mes("dbaddv error on wfdisc.  ");
@@ -838,10 +838,13 @@ int main(int argc, char **argv)
 						string("3C"));
 					regular_gather->member[i].put("wfprocess.dfile",dfile);
 					if(intel_order)
-						regular_gather->member[i].put("wfprocess.datatype","c3");
+						regular_gather->member[i].put(string("wfprocess.datatype"),
+                                                        string("c3"));
 					else
-						regular_gather->member[i].put("wfprocess.datatype","3c");
-					regular_gather->member[i].put("wfprocess.timetype","a");
+						regular_gather->member[i].put(string("wfprocess.datatype"),
+                                                        string("3c"));
+					regular_gather->member[i].put(string("wfprocess.timetype"),
+                                                string("a"));
 					/* A more elegant solution is needed for the following
 					It is necesary because we've used short names for certain
 					attributes that need to be expanded for wfprocess.*/
@@ -877,17 +880,9 @@ int main(int argc, char **argv)
 //log_memory_use();
 		}
 	}
-	catch (SeisppError serr)
+	catch (SeisppError& serr)
 	{
 		serr.log_error();
-	}
-	catch (MetadataGetError mdge)
-	{
-		mdge.log_error();
-	}
-	catch (MetadataError mde)
-	{
-		mde.log_error();
 	}
 	catch (...)
 	{

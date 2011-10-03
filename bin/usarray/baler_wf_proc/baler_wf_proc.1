@@ -1,4 +1,4 @@
-.TH BALER_WF_PROC 1 "$Date$"
+.TH BALER_WF_PROC 1 
 .SH NAME
 baler_wf_proc \- writes wfdiscs for Baler 14 and Baler 44 miniseed data and fills gaps using rt data 
 .SH SYNOPSIS
@@ -82,10 +82,6 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
-.in 2c
-.ft CW
-.nf
-.ne 7
 .IP baler_active
 Absolute path name for station baler archive directory base name
 .IP rt_sta_dir
@@ -108,9 +104,6 @@ white space.
 .IP prob_mail
 Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
 white space.
-.fi
-.ft R
-.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -158,4 +151,3 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
-.br

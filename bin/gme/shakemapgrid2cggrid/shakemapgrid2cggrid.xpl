@@ -6,7 +6,7 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 
 my $pgm = $0 ; 

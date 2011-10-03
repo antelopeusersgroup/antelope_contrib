@@ -1699,7 +1699,7 @@ int paramFileRead ()
 
   if ((ret=pfupdate(oConfig.sParamFileName,&configpf))<0)
     {
-      complain(0,"pfupdate(\"%s\",configpf): failed to open config file.\n",oConfig.sParamFileName);
+      elog_complain(0,"pfupdate(\"%s\",configpf): failed to open config file.\n",oConfig.sParamFileName);
       exit(-1);
     } 
   else if (ret==1)

@@ -69,7 +69,7 @@ int timeout;
  	    psize = 0 ; 
     
 
-        complain( 0, "read %s write %s\n", ports->ip_name, ports->orbname);
+        elog_complain( 0, "read %s write %s\n", ports->ip_name, ports->orbname);
 
 	allot ( unsigned char *, buffer, IBUF_SIZE );
 
@@ -79,7 +79,7 @@ int timeout;
 	/*  Open A Ring Buffer server  */
     
         if( ( ports->orb = orbopen( ports->orbname, "w" )) < 0)  {
-         	die(0,"ipd2/read_in_port(): Can't open RB!\n");   
+         	elog_die(0,"ipd2/read_in_port(): Can't open RB!\n");   
          	ports->orb = -1;
     	}
     	ptype =  open_IN_ports( ports );
@@ -153,9 +153,9 @@ int timeout;
     for (;;) {
 	switch  ( fdready( Ls, timeout )  ) {
    	   case -1:
-	     die (1, " socket error from poll\n");
+	     elog_die(1, " socket error from poll\n");
 	   case 0:
-	     die( 1, "poll timeout \n" );
+	     elog_die( 1, "poll timeout \n" );
 	   case 1:
             poll_err = 0;
 	    if( !connected )  {
@@ -173,7 +173,7 @@ int timeout;
 	    }
 	      len = recv ( Ls, (char *) buffer, 500, 0 );
 	      if (len == 0) {
-	  	   die (0, "end of file on input socket\n");
+	  	   elog_die(0, "end of file on input socket\n");
 	      } else {
 		 for (i = 0; i < len; i++) {
 		    switch (state) {
@@ -193,7 +193,7 @@ int timeout;
 			    state = 1;
 		            control_cnt = 16;
 			} else
-			    complain (0, "state = 0 : discarding character '%c' = %x\n", buffer[i], buffer[i]);
+			    elog_complain(0, "state = 0 : discarding character '%c' = %x\n", buffer[i], buffer[i]);
 			
 			memcpy ((char *) newbuffer, (char *) &buffer[i], 1);
 			break;
@@ -221,7 +221,7 @@ int timeout;
 
 			default:
 			    state = 0;
-			    complain (0, "state = 1 : discarding character '%c' = %x\n", buffer[i], buffer[i]);
+			    elog_complain(0, "state = 1 : discarding character '%c' = %x\n", buffer[i], buffer[i]);
 			    break;
 			}
 			break;
@@ -247,7 +247,7 @@ int timeout;
 			    pid = (packet[off_pid] * 256) + packet[off_pid + 1];
 			    /* if (lpid[iunit] != 0) {
 				if ((pid - lpid[iunit]) != 1)  {
-				    complain( 0, "missed packet for %d: %d %d\n", unit, lpid[iunit], pid );
+				    elog_complain( 0, "missed packet for %d: %d %d\n", unit, lpid[iunit], pid );
 				    missed_cnt[iunit] += 1;
 				}
 			    }
@@ -255,7 +255,7 @@ int timeout;
 			    lpid[iunit] = pid;
 			    plength = (packet[off_plen] * 256) + packet[off_plen+1];
 			    if (plength == 0) {
-				complain (0, "bad plength = 0 for packet type 0xcd : discarding packet");
+				elog_complain(0, "bad plength = 0 for packet type 0xcd : discarding packet");
 				hexdump (stderr, packet, control_cnt);
 				state = 0;
 			    } else
@@ -283,14 +283,14 @@ int timeout;
 			    /*if (lpid[iunit] != 0) {
 				if ((pid - lpid[iunit]) != 1)  {
 				    missed_cnt[iunit] += 1;
-				    complain( 0, "missed packet for %d: %d %d\n", unit, lpid[iunit], pid );
+				    elog_complain( 0, "missed packet for %d: %d %d\n", unit, lpid[iunit], pid );
 				    missed_cnt[iunit] += 1;
 				}
 			    }  */
 			    lpid[iunit] = pid;
 			    plength = (packet[off_plen] * 256) + packet[off_plen+1];
 			    if (plength == 0) {
-				complain (0, "bad plength = 0 for packet type 0xabde : discarding packet");
+				elog_complain(0, "bad plength = 0 for packet type 0xabde : discarding packet");
 				hexdump (stderr, packet, control_cnt);
 				state = 0;
 			    } else
@@ -304,7 +304,7 @@ int timeout;
 			    pid = (packet[off_pid] * 256) + packet[off_pid+1];
 			    plength = (packet[off_plen] * 256) + packet[off_plen+1];
 			    if (plength == 0) {
-				complain (0, "bad plength = 0 for packet type 0xabef : discarding packet");
+				elog_complain(0, "bad plength = 0 for packet type 0xabef : discarding packet");
 				hexdump (stderr, packet, control_cnt);
 				state = 0;
 			    } else
@@ -328,7 +328,7 @@ int timeout;
 
 			    memcpy ((char *) newbuffer + 2, (char *) &packet[0], plength - 2);
 			    if (pchecksum - checksum != 0) {
-				complain (0, 
+				elog_complain(0, 
 				    "discarding packet with bad checksum  PCHK:%04X!=CHK:%04X %3d %04d %05d - %d\n",
 				    pchecksum, checksum, unit, plength, pid, len );
 				hexdump (stderr, newbuffer, plength);
@@ -342,7 +342,7 @@ int timeout;
 				
 				err = 0;
 				if((err = valid_pkt (&newbuffer, &srcname[0], &epoch, &psize, plength, hdrtype)) > 0) {
-				    complain (0, "read_socket(): Not valid packet. Wrong HEADER? \n");
+				    elog_complain(0, "read_socket(): Not valid packet. Wrong HEADER? \n");
 				} else {
 				        cansend = 1;
 					if( fabs( epoch - prev_time) > 86400.0 )  {
@@ -351,7 +351,7 @@ int timeout;
 						sp = ( ushort_t * ) &newbuffer[0];
 						hdrsiz = ntohs(*sp);
 						memcpy( (char *) &ysec, newbuffer+hdrsiz+10, 4 );
-						complain(0, 
+						elog_complain(0, 
 						    "%s packet has bad time - %s (epoch:%lf - ysec:%ld). Will discard packet.\n",
 						    srcname, s=strtime(epoch), epoch, ysec );
 						free(s);
@@ -363,7 +363,7 @@ int timeout;
 			            if( ports->orb > 0 && cansend ) {
 				       if (orbput ( ports->orb, &srcname[0], epoch, (char *) newbuffer, psize) < 0) {
 				 	    orbclose( ports->orb );
-                                            die (1, "Can't send a packet to orbserver.\n");
+                                            elog_die(1, "Can't send a packet to orbserver.\n");
 				        }
 			             }
 				}
@@ -371,7 +371,7 @@ int timeout;
 			    state = 0;
 			}
 			if (bufcnt >= Psize) {
-			    complain (0, "attempted to accumulate %d byte packet: too large for internal buffer\n", bufcnt);
+			    elog_complain(0, "attempted to accumulate %d byte packet: too large for internal buffer\n", bufcnt);
 			    state = 0;
 			}
 			break;

@@ -8,7 +8,7 @@
 # Lindquist Consulting, Inc. 
 # 2004
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope ;
 
 sub ensquiggle {
@@ -116,7 +116,7 @@ elog_init( $0, @ARGV );
 $Program = $0 ; 
 $Program =~ s".*/"" ;
 
-if ( ! &Getopts('') || @ARGV > 1 ) { 
+if ( ! getopts('') || @ARGV > 1 ) { 
 
 	die ( "Usage: $Program [template]\n" ) ; 
 } 

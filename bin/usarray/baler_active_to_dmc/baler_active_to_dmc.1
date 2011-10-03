@@ -1,4 +1,4 @@
-.TH BALER_ACTIVE_TO_DMC 1 "$Date$"
+.TH BALER_ACTIVE_TO_DMC 1 
 .SH NAME
 baler_active_to_dmc \- sends Baler 14 and Baler 44 miniseed dbs to DMC
 .SH SYNOPSIS
@@ -46,10 +46,6 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
-.in 2c
-.ft CW
-.nf
-.ne 7
 .IP baler_active
 Absolute path name for station baler archive directory base name
 .IP baler_final
@@ -77,9 +73,6 @@ white space.
 .IP prob_mail
 Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
 white space.
-.fi
-.ft R
-.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -139,4 +132,3 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
-.br

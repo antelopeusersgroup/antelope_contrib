@@ -4089,7 +4089,7 @@ PHP_FUNCTION(dbread_view)
 
 	rc = dbread_view( fpview, &db, name );
 
-	clear_register( 1 );
+	elog_clear_register( 1 );
 
 	RETURN_DBPTR( db );
 }
@@ -6166,7 +6166,7 @@ PHP_FUNCTION(dbaddv)
 	retcode = dbaddchk( db, 0 );
 
 	if( retcode < 0 ) {
-		clear_register( 1 );
+		elog_clear_register( 1 );
 		zend_error( E_ERROR, "Error with addchk in dbaddv\n" );
 	}
 

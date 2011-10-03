@@ -173,7 +173,7 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 	if( name == NULL ) {
 
-		register_error( 0, "pf2xml: name may not be null!\n" );
+		elog_log( 0, "pf2xml: name may not be null!\n" );
 		return NULL;
 	}
 
@@ -324,7 +324,7 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 		break;
 	default:
-		complain( 0, "pf2xml: unknown pf type %d\n", pf->type );
+		elog_complain( 0, "pf2xml: unknown pf type %d\n", pf->type );
 		return 0;
 	}
 

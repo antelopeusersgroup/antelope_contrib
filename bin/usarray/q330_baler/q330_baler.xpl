@@ -43,7 +43,7 @@
 #           
 #
 
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
 #    use diagnostics;
     use Switch ;
@@ -67,7 +67,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVDabnm:M:P:p:qs:') || @ARGV != 3 ) { 
+    if (  ! getopts('vVDabnm:M:P:p:qs:') || @ARGV != 3 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] [-a] [-q]\n" ;
         $usage .=  "	[-s sta_subset] [-p pf] [-P pfsource_name] [-m mail_to_operator]  \n" ;
         $usage .=  "	status_orb cmdorb db \n\n"  ; 

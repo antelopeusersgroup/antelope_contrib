@@ -19,7 +19,7 @@
 
 use Datascope;
 use Parse::RecDescent;
-require "getopts.pl";
+use Getopt::Std;
 
 sub pf2grammar {
 	my( $pf ) = @_;
@@ -90,7 +90,7 @@ sub pf2grammar {
 
 $Pf = "cf";
 
-if( ! &Getopts( "ce:gnp:t" ) ) {
+if( ! getopts( "ce:gnp:t" ) ) {
 
 	die( "Usage: cf [-n] [-t] [-c] [-g] [-e expressions] [-p pfname] [filename [filename ... ]]\n" );
 }

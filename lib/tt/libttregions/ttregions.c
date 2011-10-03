@@ -100,10 +100,10 @@ void ttregions_init()
 		dbpath = datapath (NULL,"tables/genloc/db",dbname,NULL);
 	
 	if (dbpath == NULL) { 
-	    die ( 0, "ttregions database open failed\n" ) ; 
+	    elog_die( 0, "ttregions database open failed\n" ) ; 
 	}
 	if(dbopen(dbpath,"r",&modeldb) == dbINVALID) {
-	    die(0,"Could not open velocity model database '%s' during libttregions initialization\n"
+	    elog_die(0,"Could not open velocity model database '%s' during libttregions initialization\n"
 	    	  "Exiting because all calls to this calculator will fail\n",
 		  dbpath);
 	}

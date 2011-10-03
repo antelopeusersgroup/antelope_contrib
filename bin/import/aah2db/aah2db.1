@@ -1,4 +1,4 @@
-.TH AAH2DB 1 "$Date$"
+.TH AAH2DB 1 
 .SH NAME
 aah2db \- Convert non-XDR AH files to database
 .SH SYNOPSIS
@@ -10,19 +10,10 @@ aah2db converts non-XDR AH files ("Alaskan AH") into their database representati
 
 aah2db can handle ah files that have multiple header/data block pairs. Also, aah2db correctly handles files that are compressed or gzipped. 
 .SH OPTIONS
--v verbose
-
--V version
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
-.SH EXAMPLE
-.ft CW
-.RS .2i
-.RE
-.ft R
-.SH RETURN VALUES
-.SH LIBRARY
+.IP -v 
+verbose
+.IP -V 
+version
 .SH DIAGNOSTICS
 aah2db: Unrecognized datatype 1572; skipping BADFILE_dmw.Z from offset 0 to end of file
 
@@ -44,4 +35,3 @@ datatype, allowing corresponding rewrite of ah2db.
 Event and calibration info are currently ignored. 
 .SH AUTHOR
 Kent Lindquist
-.\" $Id$

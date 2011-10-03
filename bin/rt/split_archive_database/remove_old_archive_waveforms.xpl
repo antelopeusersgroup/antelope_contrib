@@ -8,9 +8,9 @@
 #
 
 use Datascope;
-require "getopts.pl";
+use Getopt::Std;
 
-if( ! &Getopts('v') || $#ARGV != 1 ) {
+if( ! getopts('v') || $#ARGV != 1 ) {
 
 	die( "Usage: remove_old_archive_waveforms [-v] wfdir Leave_N_days\n" );
 

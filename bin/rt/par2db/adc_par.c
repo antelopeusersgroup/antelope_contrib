@@ -37,15 +37,15 @@ adc_par( uchar_t *packet,
 
     if( DasId == 0 ) { 
        if(pfread( Pfile, &pf) != 0)
-           die(0, "Can't read %s parameter file\n", Pfile );
+           elog_die(0, "Can't read %s parameter file\n", Pfile );
 	      
        DasId = pfget_tbl( pf, "DasId" );
        
        if( DasId == 0 ) 
-         die(0, "can't get DasId table from a %s parameter file.\n", Pfile);
+         elog_die(0, "can't get DasId table from a %s parameter file.\n", Pfile);
        dasnum = maxtbl( DasId );
        if( dasnum <= 0 )  
-         die(0, "can't get DasId table from a %s parameter file.\n", Pfile);
+         elog_die(0, "can't get DasId table from a %s parameter file.\n", Pfile);
     } 
 
     hdr = ( struct PreHdr *) packet;

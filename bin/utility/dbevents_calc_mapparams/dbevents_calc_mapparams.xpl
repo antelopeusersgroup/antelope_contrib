@@ -7,7 +7,7 @@
 #
 # Enter: latc lonc lat_ll lon_ll lat_ur lon_ur
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 
 # To be used with dbevents.pf to find the parameters 

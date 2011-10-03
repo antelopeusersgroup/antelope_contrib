@@ -41,7 +41,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "getopts.pl";
+use Getopt::Std;
 
 use Datascope;
 use Datascope::pf2xml;
@@ -89,7 +89,7 @@ sub pfmorph {
 	return;
 }
 
-if ( ! &Getopts('a:m:v') || @ARGV != 2 ) { 
+if ( ! getopts('a:m:v') || @ARGV != 2 ) { 
 	my $pgm = $0 ; 
 	$pgm =~ s".*/"" ;
 	die ( "Usage: $pgm [-v] [-a after] [-m match] orb dir\n" ) ; 

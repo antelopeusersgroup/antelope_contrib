@@ -3,9 +3,9 @@
 
 use Datascope;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
-if( ! &Getopts('r:c:t:') ) {
+if( ! getopts('r:c:t:') ) {
 	die( "Usage: $0 [-r README-file] [-t tag] [-c ftpdir]\n" );
 }
 

@@ -162,7 +162,7 @@ void *par;
     else if( STREQ( datatype, "gc" ) )
     {
     	if (genuncompress (&data_out, &(pktchan->nsamp), &(pktchan->nbytes), (unsigned char *) data_in.c, size) < 0) {
-    		register_error (0, "unstuff_iw_tracebuf: genuncompress() error.\n");
+    		elog_log(0, "unstuff_iw_tracebuf: genuncompress() error.\n");
     		return 0;
     	}
 	pktchan->data = (void *) data_out;

@@ -233,7 +233,7 @@ int parse_pscl_DP (
    if( PsclSTRM == NULL ) return 0;
    stream = ( Stream *) getarr( PsclSTRM, (char *)&skey[0]);
    if( stream == NULL ) {
-      complain( 0, "Can't get %s stream info\n", skey); 
+      elog_complain( 0, "Can't get %s stream info\n", skey); 
       hexdump( stderr, packet, 64 );
       return 0;
    }
@@ -276,7 +276,7 @@ int parse_pscl_DP (
        break;
 
     default:
-       complain( 0, "Can't recognize a PASSCAL data packet type. HS?LS?\n");
+       elog_complain( 0, "Can't recognize a PASSCAL data packet type. HS?LS?\n");
        return -1;
    }
    
@@ -334,20 +334,20 @@ int whatis_pkttype( uchar_t *packet )
      if( RawPkts == NULL) init_RawPkts();
      sprintf( key, "%d\0", code );
      if( code == 0 )  {
-        complain( 0, " whatis_pkttype(): Can't recognize a packet type %0x%0x\n", packet[0], packet[1] );
+        elog_complain( 0, " whatis_pkttype(): Can't recognize a packet type %0x%0x\n", packet[0], packet[1] );
         return -1;
      }
 
      raw = ( Raw *) getarr( RawPkts, (char *) &key[0] );
      if( raw == NULL ) { 
-        complain( 0, " whatis_pkttype(): Can't get RawPkts info for %0x%0x\n", packet[0], packet[1] );
+        elog_complain( 0, " whatis_pkttype(): Can't get RawPkts info for %0x%0x\n", packet[0], packet[1] );
         return -1;
      }
      memcpy( (char *) &Par.raw, (char *) raw, sizeof( Raw ) );
      switch(  parse_raw( packet, raw->parse, raw->pkttype ) ) {
 
 	case -1:
-          complain( 0, " whatis_pkttype(): Can't parse raw packet - %0x%0x\n", packet[0], packet[1] );
+          elog_complain( 0, " whatis_pkttype(): Can't parse raw packet - %0x%0x\n", packet[0], packet[1] );
           return -1;
 	case 0:
           return 0;

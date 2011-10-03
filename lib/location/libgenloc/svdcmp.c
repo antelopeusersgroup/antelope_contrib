@@ -48,7 +48,7 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 	afort = (float *) calloc(m*MAX(m,n),sizeof(float));
 	vfort = (float *) calloc(n*n,sizeof(float));
 	if( (afort == NULL) || (vfort == NULL))
-		die(0,"svdcmp could not alloc work arrays\n");
+		elog_die(0,"svdcmp could not alloc work arrays\n");
 #ifdef SUNPERF
 	for(i=0;i<m;++i)
 		scopy(n,A[i],1,(afort+i),m);
@@ -66,7 +66,7 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 			required for safety.  Space required is never
 			large by modern standards  */
 	swork = calloc(ldwork,sizeof(float));
-	if(n == NULL) die(0,"Cannot alloc work space for SVD routine\n");
+	if(n == NULL) elog_die(0,"Cannot alloc work space for SVD routine\n");
 	sgesvd_("o","s",&m,&n,afort,&m,s,NULL,&m,vfort,&n,
 		swork, &ldwork,
 		&info);

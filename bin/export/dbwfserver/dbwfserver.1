@@ -1,124 +1,280 @@
 .TH DBWFSERVER 1 "$Date$"
 .SH NAME
-dbwfserver \- serve URLs of explorable waveform data based on network requests
+\fBdbwfserver\fR \-  Web-based display and interaction with high density waveform data 
 .SH SYNOPSIS
 .nf
-dbwfserver [-dv] [-p pfname] [-P port] dbname
+\fBdbwfserver\fR [-drevV] [-n dbcentral_nickname] [-p pfname] [-P port] \fIdbname\fR
 .fi
+
+.SH SUPPORT
+Contributed: NO BRTT support -- please contact author. 
+
 .SH DESCRIPTION
-The dbwfserver application launches and runs a server that takes
-incoming requests for segments of waveform data and returns a Uniform
-Resource Locator for a server instance which will display the
-requested data out of the named database \fIdbname\fP.
+The Waveform Server, a Python Twisted application that allows rapid access and interactivity 
+with multi-station, multi-sensor and multi-channel data stored in css3.0 schema relational databases.
+The application uses web 2.0 technologies (JSON-based data exchange, AJAX functionality, 
+and HTML5 elements) and standardized libraries (jQuery & jQueryUI) to quickly display large 
+volumes of data in a user-friendly format as either a stand-alone application or remote (iframe) 
+display. The application can essentially be split into two independent components: 
+
+.TP
+Server-side Waveform Server Engine (\fBdbwfserver\fR) 
+.LP
+.TP
+Client side data rendering component (Waveform Viewer)
+.LP
+
+The \fBdbwfserver\fR Server launches and runs a Twisted Reactor that takes incoming HTTP requests 
+for segments of waveform data and returns a HTML and Javascript code that will display the data
+from the named database \fIdbname\fP.
+
+Providing anonymous web-based access to both near real-time and archived time-series data recorded 
+by instruments in a seismic network is an easy and efficient way for network operators and scientists 
+to determine network-wide data return rates and quality, scan seismic events, assess calibrations, etc.
+The Waveform Viewer interface is easily customizable for any network using simple Antelope parameter 
+files (pf) and templates on the server side (plot.html, template.html), and cascading style-sheets (CSS) 
+for the client-side interface. These can be easily modified to re-architect the client-side interface 
+for any particular purpose. 
+
+The application has been thoroughly tested using broadband (1 & 40Hz) seismic data from both the 
+NSF Earthscope Transportable Array (TA) and southern California Anza networks at UC San Diego, 
+and strong motion (200Hz) seismic data from the Network for Earthquake Engineering Simulation (NEES) 
+at the University of California at Santa Barbara. It is also being used by analysts studing data from 
+the Pinon Flats Observatory in California
+
+\fBdbwfserver_extract\fR is a special tool design for the \fBdbwfserver\fR to perform all data extraction. 
+The \fBdbwfserver_extract\fR is written in C and will output time-series (or coverage bars) segments in 
+JSON format. The series can be 2-tuple or 3-tuple element array. The epoch times are converted to Javascript-style 
+milliseconds. The tool will perform all the CPU intensive formatting and manipulation of the data. 
+This will include any filtering and calibration required for the time-series. This C code is many times faster 
+than the Python or Javascript sections and the obvious location for this type of processing. The server 
+will log each system call to the \fBdbwfserver_extractor\fR but little or no review of the returned object 
+is done on the server. This will minimize the time the client is waiting for the data.  You can copy and 
+paste this command into your terminal to debug any problems with the routine. If you see invalid JSON 
+files on the output you can use the [-v] debug flag to see each step of the extraction of the data. 
 
 .SH OPTIONS
 .IP -d
-Daemonize the application
+Demonize the application
 .IP "-p pfname"
 Override the default parameter-file name of \fIdbwfserver\fP.pf
 .IP "-P port"
-Override the port specified in the parameter file
+Override the port specified in the parameter file. Default to 80
 .IP -v
 Verbose output 
+.IP -V
+Debug output 
+.IP -e
+Load event data. 
+.IP -r
+Enable realtime mode on the client. You will have the option of 
+setting a continuously refreshing window on your browser. 
+.IP "-n nickname"
+If database in '\fIdbname\fR' is a dbcentral database you need to specify
+the nickname of the database that we are using.
+
+
+
 .SH PARAMETER FILE
 .IP application_title
 The \fIapplication_title\fP parameter contains the string used as the 
-web-page title for results returned from \fBdbwfserver\fP. 
-.IP application_name
-This parameter provides a name for the \fBdbwfserver\fP service within Twisted.
-.IP default_chans
-If channel names are not specified to \fBdbwfserver\fP in a request, the 
-channel-names in the \fIdefault_chans\fP table are used. 
+web-page title for results returned from \fBdbwfserver\fP.  
 .IP port
 The \fIport\fP parameter controls the port number to which \fBdbwfserver\fP
-binds to listen for incoming data requests. 
-.IP canvas_size_default
-The \fIcanvas_size_default\fP parameter, which may be overridden from within 
-each individual request, specifies the assumed pixel width available on the 
-display for plotting of waveform data. This parameter may be overridden with 
-an actual \fIcanvas_size\fP value in each individual request. If the number of 
-data points in a requested segment exceeds \fIcanvas_size\fP by more than a 
-factor of \fIbinning_threshold\fP, the data are returned as bins 
-(time/min/max triplets) instead of as individual data points (time/value). 
-.IP binning_threshold
-This is the factor by which the number of data points must exceed the \fIcanvas_size\fP
-in order for data to be returned as data bins rather than as individual points. 
-.IP index_html_template
-This parameter specifies the location of a template to be used to make the main index page 
-for returning the \fBdbwfserver\fP results. The template may reference the variables 
-\fI$jquery_includes\fP, \fI$stations\fP, \fI$dbname\fP, and \fI$application_title\fP, 
-which will be filled in dynamically during construction of a response. 
-.IP jquery_files
-The \fIjquery_files\fP table lists javascript jquery files used to support the javascript
-side of the \fBdbwfserver\fP application. These files must be available in the directory 
-\fIjquery_dir\fP. An \fIIE\fP string in front of a named jquery file (separated by a space)
-indicates that the include statement for the javascript file should be bracketed by 
-comment characters indicating it is only to be invoked when running under MicroSoft 
-Internet Explorer. 
-.IP jquery_dir
-The \fIjquery_dir\fP specifies the directory location in which to find javascript 
-jquery files supporting the \fIdbwfserver\fP application. 
-.IP static_dir
-The \fIstatic_dir\fP specifies the directory location in which to find static 
-files supporting the \fIdbwfserver\fP application, such as \fIdbwfserver.js\fP and 
-\fIdbwfserver.css\fP. 
+binds to listen for incoming data requests. Default to 80 
+.IP default_time_window
+Some queries only have one time element. This value is the default window, before
+or after, for the returned trace object.
+.IP max_points
+This is the value that limits the total number of data points returned in the \fIJSON\fP
+object to the client.
+.IP max_traces
+This parameter will group the traces produced by the server in "pages" of \fImax_traces\fP
+number of elements. If the query resolves to 20 traces but this is set to 10 elements then 
+the server will return 10 traces in the JSON object with some values that will tell the
+client that the result is not complete. If needed the client will request the missing
+traces using a special flag in the URL for the page number. 
+.IP "antelope local_data jquery_dir static_dir"
+These values will define the directories the server will make public for clients to 
+have access to the Javascript, HTML and CSS code (static files). 
+.IP template 
+Main HTML file that the server will return after  queries to the base resource. This is the main
+tool (Waveform Viewer) that users will get to interact with the server-side (Waveform Server Engine). 
+.IP plot_template 
+Short version of the main HTML code that is intended to render images only with limited interactivity 
+to the users. Use this if you want to include images of time-series in your existing 
+website using the \fIdbwfserver\fP. Just include a simple link inside an HTML iframe on your existing page.
 .IP display_tracebacks
 Set the \fIdisplay_tracebacks\fP parameter to \fItrue\fP to debug the application. 
-Exposing tracebacks can be a security risk. 
+NOTE: Exposing tracebacks can be a security risk. 
 .IP import_paths
 \fBdbwfserver\fP presumes that Twisted, zope, and any other necessary modules are 
 available along the default Python path. Non-standard locations for these modules 
 may be specified in this table, which will be added to the Python search path. The 
-Antelope Python extensions and the dbwfserver modules themselves are installed in 
-subdirectories of $ANTELOPE/data, which are added automatically and should not 
-be specified here. 
+Antelope Python extensions and the \fBdbwfserver\fR modules themselves are installed in 
+subdirectories of $ANTELOPE/data, which are added automatically.
 .nf
-
-application_title Waveform Explorer
-application_name waveform_explorer
-
-port 8008
-
-default_chans &Tbl{
-    BHZ
-    BHN
-    BHE
-}
-
-binning_threshold 2
-canvas_size_default 800
-
-index_html_template &datafilename(www/dbwfserver/index.html.template)
-
-jquery_dir &datafilename(www/dbwfserver/jquery)
-static_dir &datafilename(www/dbwfserver/static)
-
-jquery_files &Tbl{
-	IE excanvas.pack.js
-	jquery-1.3.2.min.js
-	jquery.flot.pack.js
-	jquery.hotkeys-0.7.8-packed.js
-}
-
-display_tracebacks false 
-
-import_paths &Tbl{
-}
 .fi
 .SH EXAMPLE
 .in 2c
 .ft CW
 .nf
 
-% dbwfserver /opt/antelope/data/db/demo/demo
-2009-06-25 13:00:30-0800 [-] Log opened.
-2009-06-25 13:00:30-0800 [-] twistd 8.2.0 (/sw/bin/python 2.5.1) starting up.
-2009-06-25 13:00:30-0800 [-] reactor class: twisted.internet.selectreactor.SelectReactor.
-2009-06-25 13:00:30-0800 [-] twisted.web.server.Site starting on 8008
-2009-06-25 13:00:30-0800 [-] Starting factory <twisted.web.server.Site instance at 0x12d4328>
-
-% open 'http://localhost:8008/'
+vista{reyes}% dbwfserver  -P 8800 /opt/antelope/data/db/demo/demo
+RUN REACTOR!
+########################
+    Loading!
+########################
+    2011-08-08 12:30:13-0700 [-] Log opened.
+    2011-08-08 12:30:13-0700 [-] twistd 10.2.0 (/opt/antelope/5.0-64/local/bin/python 2.6.1) starting up.
+    2011-08-08 12:30:13-0700 [-] reactor class: twisted.internet.selectreactor.SelectReactor.
+    2011-08-08 12:30:13-0700 [-] twisted.web.server.Site starting on 8800
+    2011-08-08 12:30:13-0700 [-] Starting factory <twisted.web.server.Site instance at 0x101d9c8c0>
+    2011-08-08 12:30:13-0700 [-] 
+    2011-08-08 12:30:13-0700 [-] Loading Stations()
+    2011-08-08 12:30:13-0700 [-] 
+    2011-08-08 12:30:13-0700 [-] Stations(): Done updating cache (13) stations.
+    2011-08-08 12:30:13-0700 [-] 
+    2011-08-08 12:30:13-0700 [-] Done loading Stations()
+    2011-08-08 12:30:13-0700 [-] 
+    2011-08-08 12:30:13-0700 [-] 
+    2011-08-08 12:30:13-0700 [-] READY!
+    2011-08-08 12:30:13-0700 [-] 
 .fi
+
+.in Now set your browser to localhost:8800
+
+.SH NOTES
+This tool is very good at building plots for pre-existing URLs. We have a GUI to explore the waveforms 
+but it is limited in capabilities. We definitely need some enhancement to the GUI if we want to 
+present that to users as the main gateway to the waveformviewer. There is a format for building URLs, 
+you can type the query yourself on the address-bar, handy if using time wildcards, or have some 
+script or webtool that will build this for you. 
+
+The server runs on a specific port (set on the pf or command line). If its not 80 then you need to specify 
+this on the URL.  [ localhost:8008 ]
+
+On the ANF system we have a reverse proxy configuration that will translate a path in a URL to our port-specific 
+address. Update the proxy value on the pf file if you plan to use this type of configuration. 
+You can also configure some load balancing reverse proxy with multiple server handling request for the same
+database for high traffic networks.  
+
+Resources:
+There are 4 main resources for the \fBdbwfserver\fR. 
+.TP
+Main GUI      localhost:8008
+.LP
+.TP
+Full WF       localhost:8008/wf
+.TP
+.TP
+Image WF      localhost:8008/plot
+.LP
+.TP
+Data          localhost:8008/data
+.LP
+If you have a URL then you go straight into wf or plot resource. Otherwise you go to the root (main) resource 
+and get the GUI. The data resource is how we get the data and returns JSON objects. Useful if you just 
+want to query the server for something simple or for external programs to get values from the database. Examples
+localhost:8008/data/now
+localhost:8008/data/stations
+localhost:8008/data/channels
+localhost:8008/data//channels/J28A      (only channels for this station)
+localhost:8008/data/dates
+localhost:8008/data/events           (if events are enabled)
+localhost:8008/data/wf
+localhost:8008/data/coverage
+---others---
+
+You can avoid the GUI and type your intended query in the URL by hand. The format is...
+localhost / wf / STA / CHAN / TIME_FLAG
+localhost / wf / STA / CHAN / START_EPOCH
+localhost / wf / STA / CHAN / START_EPOCH / END_EPOCH
+
+.B Possible time flags are [ hour | day | week | month ]. 
+
+The use of the flag will be a time_window back from 
+the last data endtime of that station. It is possible to combine a start_epoch time with a flag but I 
+have done little testing of that. You can say HOST / STA / CHAN / START_EPOCH / TIME_FLAG . 
+
+http://localhost:8008/wf/J33A/.*/day        ( always will return the last 24 hours of that station. )
+
+Wildcard are permitted for values of Stations and Channels. The arguments on the URL will get extracted 
+and inserted on a Datascope subset string like this...
+
+regex = "-s 'sta=~/%s/ && chan=~/%s/' " % (query['sta'],query['chan'])
+
+It is VERY flexible and the only limitation so far is that if you try to include a big list of stations or channels
+then the variable containing the string on the C code for the subset will run out of space. There are aprox. 
+900 characters for this but a subset for hundreds of channels and stations on a big network will kill the extraction process.
+The client will  limit the list to 30 stations and 30 channels on the client. The server will allow you to put 
+anything on the URL and you might hang the process.  Any Datascope compatible regex expression for the subsets will 
+be valid for the query ( as long as the browser is capable of sending the characters to the server). 
+
+The queries are subdivided by pages and it will default to page 1. The rest of the information 
+that you can submit with the URL will be encoded as a list of "key=value" pairs after the ? symbol. 
+This will allow you to force the application to a specific format. Otherwise the local COOKIE of the 
+user will take over the configuration. 
+
+If you are building URLs from an external application (like your website) and you want to embed the 
+image in a <div> inside your website then you use the "plot" resource. This will bring only the canvas element 
+and will look like a static image on your browser. Except that you will be able to zoom-in and zoom-out back 
+to the original view. 
+
+If you get the GUI then you have the flexibility of looking at the coverage of the database in terms of dates 
+and list of station/channels. The first two items will allow you to select start and end time. ONLY the dates 
+with data (any data) will be selectable. Once you select one the other calendar will adapt to your selection 
+and will limit itself to a valid range. If you select a date on the start time you get the beginning of the day. 
+If you select a date on the endtime you get the time of the end of that day, like 23:59:59 of that day. So if 
+you select the same date on both calendars you have 24 hours of data. Full day. 
+Once you have your dates then you select your stations. By default it is " .* " (all) stations. You can type 
+a regex, a single station or a list of stations divided by vertical bars (or symbol). If you click on the button 
+then you get your list of valid stations. Select one or multiple by holding the "command" key. 
+Like any regular multiple-selection on your computer. The same is true for the 
+channels. Except that the channels will be only the ones valid for your list of stations. 
+
+If the server was set to run in event mode (-e) then you will have a button that will load a list of events on 
+your window. The list can be sorted on any column and once you click your event the value of the start 
+epoch time will go into the start-time field. 
+
+.HP 5
+Once inside the waveforms you have some controls on the top. 
+
+The \fBHOME\fR button will load the main GUI. Just a simple redirect to the root of the server. 
+
+The \fBCONFIG\fR will bring a window with the list of options. Very simple to follow. If you click OK then the 
+server will reload the window that you have open. 
+The LINK will create a full URL string that you can copy/paste anywhere that will reproduce your active 
+window. **If you load the client using a special time flag ( like "day") the url will contain the start 
+epoch time and the end epoch time of your displayed data.
+
+The \fBCLEAN\fR will get read of specially marked traces that came with errors. We used to plot empty traces 
+in waveform mode ( we do in coverage) and that was a way of removing empty traces too. Now we send 
+the error to LOG and we don't plot the empty boxes. 
+
+The \fBLOG\fR button will bring a window with some messages. If there are errors on the traces, like empty ones, 
+it will append the line to the log and will change the color of the button to red. If the query contains 
+no data or if there is a major error on the processing of the data then the server will open a red box below 
+the controls with the entry. A \fBCLOSE\fR button inside the red box will get rid of the message and will remove 
+the box. Calling new data will also gets rid of the box. You can see this is you are moving in time and you 
+get to the end of the traces. Then you get the red box with the error message with something like "NO DATA HERE". 
+The right side contains buttons that will allow you to move in time and to zoom in and out. You can move 
+in time a full window length or 1/4 of the window length. 
+
+The \fBREALTIME\fR button only appears if the server is running with the realtime flag (-r). This will tell 
+the waveformvier to query the server for the time of "now" and get data in your same time-window but 
+with endtime set to now(). The refresh rate is set on the configuration panel. Starting the realtime mode 
+will disable regular waveform interaction. 
+
+.SH BUGS AND CAVEATS
+Server with high I/O load can take more than 60 seconds to render and some of them will timeout on the client. 
+Looks like an error but the real problem is that the server is just in the process of extracting the data. 
+If you see a red box around your trace then you got an error during extraction. Usually a miniseed error. 
+
+The errors are usually a mismatch between the number of points and the header value of points. Only happened 
+when we are looking at the newest data in the database. Maybe the orb2db process is appending new points 
+after the trloadchan process got the headers of the miniseed blocketts. 
+
 .ft R
 .in
 .SH LIBRARY
@@ -130,16 +286,17 @@ dbcentral(1), pythondb(3P), twistd(1)
 .fi
 .SH AUTHOR
 .nf
-Alex Clemesha
+Juan Reyes <reyes@ucsd.edu>
+U. of California, San Diego
+
+Rob Newman
 U. of California, San Diego
 
 Kent Lindquist 
 Lindquist Consulting, Inc. 
 
-Rob Newman
+Alex Clemesha
 U. of California, San Diego
 
-Juan Reyes
-U. of California, San Diego
 .fi
 .\" $Id$

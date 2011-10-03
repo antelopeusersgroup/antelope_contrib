@@ -17,7 +17,7 @@ use Net::FTP;
 use LWP::Simple;
 use Cwd;
 
-require "getopts.pl";
+use Getopt::Std;
 
 our ($opt_A, $opt_v, $opt_V, $opt_a, $opt_f, $opt_p);
 our ($database, $file2convert, $num2convert, $iwant);
@@ -38,8 +38,8 @@ our ($smnaz, $smnplng, $smn, $comment, $presid);
 our ($ev2stadist, $ev2staaz, $stambper, $stambamp, $stambmag, $stambused);
 our ($pf, $ref);
 
-if ( ! &Getopts('vVAa:f:p') || @ARGV != 1 ) {
-    print STDERR "Getopts or number of arguments failure.\n";
+if ( ! getopts('vVAa:f:p') || @ARGV != 1 ) {
+    print STDERR "getopts or number of arguments failure.\n";
     &usage;
 } else {
     $database = $ARGV[0];

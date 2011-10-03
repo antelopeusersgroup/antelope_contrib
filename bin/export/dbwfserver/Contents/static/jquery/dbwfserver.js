@@ -1,856 +1,1757 @@
-// Most key events are handled using: http://code.google.com/p/js-hotkeys/ 
-PlotSelect = {
+// Defaults
+//{{{ Set defaults
+var proxy = '';
+var mode = 'limited';
+var isShiftPressed =  false;
+var activeQueries = 0;
+var isPlotting =  false;
+var realtime =  false;
+var events =  false;
 
-    isShiftPressed: false,
+var ts = null;
+var te = null;
+var original_ts = null;
+var original_te = null;
+var sta = ['.*'];
+var chan = ['.*'];
+var page = 1;
+var last_page = 1;
+var load_all = false;
 
-    init: function(sta){
+var filter = 'None';
+var calibrate = true;
+var timezone = 'UTC';
+var type = 'waveform';
+var size = 'medium';
+var show_points = true;
+var show_phases = true;
+var acceleration  = 'nm';
+var tick_color = '#000000';
+var bg_top_color = '#000080';
+var bg_bottom_color = '#0000FF';
+var text_color = '#D3D3D3';
+var data_color = '#FFFF00';
+var realtime_refresh =  10;
 
-        // {{{ Set defaults
+var TO = false;
+var RT = false;
+var CLEAR = false;
+var window_active = false;
 
-        $(document).bind("keydown", "r", PlotSelect.resetPlot);
-        $(document).bind("keydown", "left", PlotSelect.shiftPlotViewLeft);
-        $(document).bind("keydown", "right", PlotSelect.shiftPlotViewRight);
-        $(window).bind("keydown", PlotSelect.toggleShift);
-        $(window).bind("keyup", PlotSelect.toggleShift);
+var chan_plot_obj = {};
 
-        // Create initial plot with max values:
-        $("#loading").hide();
-        $("#wforms").hide();
-        $("#interact").hide();
-        $("#tools").hide();
+var dates_allowed = [];
 
-        // {{{ Define colorschemes
+// Set data conversion table
+//{{{
+datatypes = {
+    'A': 'accel (nm/sec/sec)',
+    'B': 'UV (sunburn) index NOAA (25*nw/m/m)',
+    'D': 'displacement (nm)',
+    'H': 'hydroacoustic (pascal)',
+    'I': 'infrasound (pascal)',
+    'J': 'power (watts)',
+    'K': 'generic pressure (kilopascal)',
+    'M': 'Wood-Anderson drum recorder (millimeters)',
+    'N': 'dimensionless (-)',
+    'P': 'barometric pressure (millibar)',
+    'R': 'rain fall (millimeters)',
+    'S': 'strain (nm/m)',
+    'T': 'time (seconds)',
+    'V': 'velocity (nm/sec)',
+    'W': 'insolation (watts/m/m)',
+    'X': 'integrated displacement (nm*sec)',
+    'Y': 'waveform power (power)',
+    'a': 'azimuth (degrees)',
+    'b': 'bit rate (bits/second)',
+    'c': 'dimensionless integer(counts)',
+    'd': 'depth or height(meters)',
+    'f': 'photoactive radiation flux (micromoles/s/m/m)',
+    'h': 'hydrogen ion concentration (pH)',
+    'i': 'electric current (amperes)',
+    'l': 'slowness (sec/km)',
+    'm': 'dimensionless bitmap (bitmap)',
+    'n': 'angle - tilt (nanoradians)',
+    'o': 'dilution of oxygen (milligrams/liter)',
+    'p': 'percentage (percent)',
+    'r': 'rainfall (inches)',
+    's': 'speed (meter/second)',
+    't': 'temperature (degrees_Celsius)',
+    'u': 'conductivity (microsiemens/cm)',
+    'v': 'electric potential (volts)',
+    'w': 'rotation rate (radians/second)',
+    '-': 'UNKNOWN'
+};
+//}}}
 
-        PlotSelect.colorschemes = {};
+//}}} Default vars
 
-        PlotSelect.colorschemes.yb = {
-            lineColor : "#FDFF4F",
-            bgColor   : "#00029F",
-            tickColor : "#0009FF",
-            selection : "#FFFFFF"
-        };
-        PlotSelect.colorschemes.bw = {
-            lineColor : "#000000",
-            bgColor   : "#DBDBDB",
-            tickColor : "#666666",
-            selection : "#666666"
-        };
-        PlotSelect.colorschemes.yg = {
-            lineColor : "#FDFF4F",
-            bgColor   : "#009F02",
-            tickColor : "#00FF09",
-            selection : "#FFFFFF"
-        };
-        PlotSelect.colorschemes.wb = {
-            lineColor : "#FFFFFF",
-            bgColor   : "#000000",
-            tickColor : "#666666",
-            selection : "#FFFFFF"
-        };
-        PlotSelect.colorschemes.yp = {
-            lineColor : "#FDFF4F",
-            bgColor   : "#660066",
-            tickColor : "#993399",
-            selection : "#FFFFFF"
-        };
-        PlotSelect.colorschemes.ob = {
-            lineColor : "#FF6600",
-            bgColor   : "#000000",
-            tickColor : "#666666",
-            selection : "#FFFFFF"
+function init(){
+// {{{ Set defaults
+
+
+    //  Setup AJAX defaults
+    $.ajaxSetup({
+        type: 'get',
+        dataType: 'json',
+        timeout: 90*1000,
+        error:errorResponse
+    });
+
+    getCookie();
+
+    varSet();
+
+    keyBinds();
+
+    $('#load_next').live('click', function() { page += 1; setData(); });
+
+    $("button, input:submit, input:checkbox").button();
+
+    // }}} Set defaults
+}
+
+function pad2(number) { return (number < 10 ? '0' : '') + number }
+
+function init_full(){
+// {{{ Set defaults
+    mode = 'full';
+
+    //{{{ Automatic canvas resize
+    window.onblur = function() { window_active = false; }
+    window.onfocus = function() { window_active = true; }
+
+    $(window).resize(function(){
+
+        if (window_active && ! $('#wforms').hasClass("ui-helper-hidden") && ! isPlotting ) {
+            load_all = true;
+            clearTimeout(TO);
+            TO = setTimeout('setData();', 3000);
+            waitingDialog("Waveform Explorer:", "Resize detected. Refresh screen in 3 secs.");
         }
-        PlotSelect.colorschemes.def = {
-            lineColor : "#FDFF4F",
-            bgColor   : "#00029F",
-            tickColor : "#0009FF",
-            selection : "#FFFFFF"
-        }
 
-        // Set defaults for the colorscheme
-        if( PlotSelect.canvasLineColor == undefined ) PlotSelect.canvasLineColor = PlotSelect.colorschemes.def.lineColor;
-        if( PlotSelect.canvasBgColor == undefined ) PlotSelect.canvasBgColor = PlotSelect.colorschemes.def.bgColor;
-        if( PlotSelect.canvasTickColor === undefined ) PlotSelect.canvasTickColor = PlotSelect.colorschemes.def.tickColor;
-        if( PlotSelect.canvasSelection === undefined ) PlotSelect.canvasSelection = PlotSelect.colorschemes.def.selection;
+    });
+    //}}} Automatic canvas resize
 
-        // }}} Define colorschemes
+    build_dialog_boxes();
 
-        // {{{ Setup AJAX defaults
-        $.ajaxSetup({
-            type: 'get',
-            dataType: 'json',
-            timeout: 120000,
-            error:PlotSelect.errorResponse
-        });
+    waitingDialog("Waveform Explorer:", "Initializing client.");
 
-        // }}} Set defaults
+    $('#link').live('click', function() { makeLink(); });
 
-        // {{{ Open the config panel
-        $("a#configuration_open_link").click( function() {
-            $("#configpanel").slideToggle("slow", function() {
-                if( $(this).is(":hidden") ) {
-                    $("a#configuration_open_link").html('Show configuration');
-                } else {
-                    $("a#configuration_open_link").html('Hide configuration');
-                }
-            });
-        });
-        // }}} Open the config panel
+    $('#clean').live('click', function() { $(".remove").remove(); });
 
-        // {{{ Canvas resize experiment
-        // Not used yet
-        // $(window).resize(function(){
-        //     $('canvas').css({'width':'100%'});
-        // });
-        // }}} Canvas resize experiment
+    $('#home').live('click', function() {
+        //{{{
 
-        // {{{ Arrival flag CSS
-        PlotSelect.arrivalFlagCss = {
-            'border':'1px solid #FFF',
-            'background-color':'#F00',
-            'font-weight':'bold',
-            'font-size':'smaller',
-            'color':'#FFF',
-            'padding':'3px',
-            'position':'absolute'
-        };
-        PlotSelect.arrivalTailCss = {
-            'position':'absolute',
-            'border':'none',
-            'border-left':'1px solid #FFF',
-            'margin':'0',
-            'padding':'0',
-            'width':'1px'
-        };
-        // }}} Arrival flag CSS
+        var path = String(window.location).split('/')
+        window.location = path[0] + '//' + path[2] + '/' + proxy ;
 
-        // {{{ Initialize functions
-        PlotSelect.urlParser();
-        PlotSelect.colorschemeChange();
-        PlotSelect.filterChange();
-        PlotSelect.phaseSelector();
-        PlotSelect.typeChange();
-        // }}} Initialize functions
+        //}}}
+    });
 
-        // }}} Set defaults
-
-    },
-
-    urlParser: function(evt){
-
-        // {{{ Get parts of URL
-
-        var pathname = window.location.pathname;
-        if( pathname !== undefined ) {
-            var urlParts = pathname.split("/");
-            if( urlParts[1] === "wfs" ){
-                PlotSelect.urlPath = true;
-            } else {
-                PlotSelect.urlPath = false;
-            }
+    $('#openconfig').live('click', function() {
+    //{{{ Get cookie values
+        //
+        // Look for cookie values and update elements
+        //
+        if ( show_phases ){
+            $('#phases').attr('checked', true);
         } else {
-            PlotSelect.urlPath = false;
+            $('#phases').removeAttr('checked');
         }
 
-        // }}} Get parts of URL
+        if ( show_points ){
+            $('#points').attr('checked', true);
+        } else{
+            $('#points').removeAttr('checked');
+        }
 
-    },
-
-    resetPlot: function(evt){
-
-        location.reload(true);
-
-    },
-
-    filterChange: function(evt){
-
-        // {{{ Dynamic filter change data query
-
-
-        $("select#filter").change( function() {
-            PlotSelect.getData();
-        });
-
-
-        // }}} Dynamic filter change data query
-
-    },
-
-    colorschemeChange: function(evt){
-
-        // {{{ Change colorscheme
-
-        $("select#cs").change(function(){
-
-            var cs = $(this).val() ;
-
-            PlotSelect.canvasLineColor = PlotSelect.colorschemes[cs]['lineColor'] ;
-            PlotSelect.canvasBgColor   = PlotSelect.colorschemes[cs]['bgColor'];
-            PlotSelect.canvasTickColor = PlotSelect.colorschemes[cs]['tickColor'];
-            PlotSelect.canvasSelection = PlotSelect.colorschemes[cs]['selection'];
-
-            $("span#csFg").css("background-color",PlotSelect.canvasLineColor);
-            $("span#csBg").css("background-color",PlotSelect.canvasBgColor);
-
-            PlotSelect.getData();
-
-        });
-
-        // }}} Change colorscheme
-
-    },
-
-    phaseSelector: function(evt){
-
-        // {{{ Dynamic phase selector
-
-        $("input#phases").change( function() {
-            if( $(this).attr('checked') ) { 
-                PlotSelect.phases = 'True' ;
-            } else { 
-                PlotSelect.phases = 'False' ;
-            }
-            $(".flag").toggle();
-            $(".flagTail").toggle();
-        });
-        // }}} Dynamic phase selector
-
-    },
-
-    typeChange: function(evt){
-
-        // {{{ Dynamic type change data query
-
-        $("form#conftype select#type").change( function() {
-            PlotSelect.type = $(this).val();
-            PlotSelect.getData();
-
-        });
-        // }}} Dynamic type change data query
-
-    },
-
-    tickTranslator:function(tickSizeArr){
-
-        // {{{ tickTranslator
-
-        var increment = tickSizeArr[0], unit = tickSizeArr[1], factor=null;
-
-        if( unit == 'hour' ) {
-            factor = 3600 ;
-        } else if( unit == 'minute' ) {
-            factor = 60 ;
-        } else if( unit == 'second' ) {
-            factor = 1 ;
+        if (timezone ==  'local'){
+            $('#local').attr('checked', true);
+            $('#utc').attr('checked', false);
         } else {
-            factor = 1 ;
+            $('#local').attr('checked', false);
+            $('#utc').attr('checked', true);
         }
 
-        return increment * factor ;
-
-        // }}} tickTranslator
-
-    },
-
-    errorResponse:function(x,e) {
-
-        // {{{ Report Errors to user
-
-        if(x.status==0){
-
-            alert('You are offline!!\n Please Check Your Network.' + '\n\n' + e);
-
-        }else if(x.status==404){
-
-            alert('Requested URL not found.' + '\n\n' + e);
-
-        }else if(x.status==500){
-
-            alert('Internel Server Error.' + '\n\n' + e);
-
-        }else if(e=='parsererror'){
-
-            alert('Error.\nParsing JSON Request failed.' + '\n\n' + e);
-
-        }else if(e=='timeout'){
-
-            alert('Request Time out.' + '\n\n' + e);
-
-        }else {
-
-            //alert('Error.\n'+ x.responseText);
-            alert('Error:'+ x + '\n\n' + e);
-
-        }
-
-        // }}}
-
-    },
-
-    shiftPlotViewRight: function(evt) {
-
-        // {{{ Future data
-
-        var delta = PlotSelect.te - PlotSelect.ts ;
-
-        dleta = delta/4;
-
-        PlotSelect.ts += delta;
-
-        PlotSelect.te += delta;
-
-        PlotSelect.getData();
-
-        // }}} Future data
-
-    },
-
-    shiftPlotViewLeft: function(evt) {
-
-        // {{{ Past data
-
-        var delta = PlotSelect.te - PlotSelect.ts ;
-
-        dleta = delta/4;
-
-        PlotSelect.ts -= delta;
-
-        PlotSelect.te -= delta;
-
-        PlotSelect.getData();
-
-        // }}} Past data
-
-    },
-
-
-    /*XXX Is there a better way to do this (toggleShift)?
-     Currently this pre and post Shift toggling is done
-     such that we can detect if Shift is pressed before
-     we go into "PlotSelect.handleSelect"  which is an
-     event handler that Flot passes plot click position data to.
-    */
-    toggleShift: function(evt) {
-        PlotSelect.isShiftPressed = evt.shiftKey;
-    },
-
-    handleSelect: function(evt, pos){
-
-        // {{{ Selection zoom functionality
-
-        if (PlotSelect.isShiftPressed) { /*if the Shift Key is pressed, we zoom out. */
-            var delta = 0;
-
-            delta = parseInt( pos.xaxis.from / 1000, 10 ) - PlotSelect.ts ;
-
-            PlotSelect.ts -= delta;
-
-            delta = PlotSelect.te - parseInt( pos.xaxis.to / 1000, 10 ) ;
-
-            PlotSelect.te += delta;
-
-        }
-        else { 
-
-            PlotSelect.ts = parseInt( pos.xaxis.from / 1000, 10 ) ;
-
-            PlotSelect.te = parseInt( pos.xaxis.to / 1000, 10 ) ;
-
-        }
-
-        PlotSelect.getData();
-
-        // }}} Selection zoom functionality
-
-    },
-
-    getData: function(args){
-
-        // {{{ Get data
-
-        if ( typeof(args) == "undefined" ) {
-            // PlotSelect is define globally for app
-            args = {};
-
-            args.type   = PlotSelect.type,
-            args.stas   = PlotSelect.stas,
-            args.chans  = PlotSelect.chans,
-            args.ts     = PlotSelect.ts,
-            args.te     = PlotSelect.te,
-            args.phases = PlotSelect.phases
-        }
-
-        // Test if filter defined
-        if( args.filter !== $("select#filter option:selected").val() ) {
-            args.filter = $("select#filter option:selected").val();
-        }
-
-        // Test for type over-ride
-        if( args.type !== $("select#type").val() ) {
-            args.type = $("select#type").val();
-        }
-
-        // Update phases checkbox
-        if(  args.phases == 'True' ) {
-            $("form#wformer input#phases").attr('checked','checked');
+        if ( type  == 'coverage' ) {
+            $('#coverage').attr('checked', true);
+            $('#waveform').attr('checked', false);
         } else {
-            $("form#wformer input#phases").attr('checked','');
+            $('#coverage').attr('checked', false);
+            $('#waveform').attr('checked', true);
         }
 
-        // Override phases if coverage requested
-        if( args.type === 'coverage' ) {
-            $("form#wformer input#phases").attr('checked','');
-            args.phases = 'False';
+        if ( size  == 'big' ) {
+            $('#big').attr('checked', true);
+            $('#medium').attr('checked', false);
+            $('#small').attr('checked', false);
+        } else if ( size  == 'medium' ) {
+            $('#big').attr('checked', false);
+            $('#medium').attr('checked', true);
+            $('#small').attr('checked', false);
         } else {
-            if( $("form#wformer input#phases").attr('checked') ) {
-                args.phases = 'True';
-            } else {
-                args.phases = 'False';
-            }
+            $('#big').attr('checked', false);
+            $('#medium').attr('checked', false);
+            $('#small').attr('checked', true);
         }
 
-        $("#loading").show();
+        if ( acceleration  == 'cm' ) {
+            $('#cm').attr('checked', true);
+            $('#nm').attr('checked', false);
+        } else {
+            $('#cm').attr('checked', false);
+            $('#nm').attr('checked', true);
+        }
 
+        if ( realtime_refresh ){
+            $('#refresh').val(realtime_refresh);
+        } else {
+            $('#refresh').val('10');
+        }
 
-        // Query
-        // Change arrays to strings w/ + 
-        var sta_list = ''; 
-        var chan_list = ''; 
+        if ( bg_top_color ){
+            $('#bg_top_color').val(bg_top_color);
+        } else {
+            $('#bg_top_color').val('#D3D3D3');
+        }
 
-        $.each(args.stas, function(iterator,mysta){
-            sta_list = sta_list + '+' + mysta ;
-        });
-        $.each(args.chans, function(iterator,mychan){
-            chan_list = chan_list + '+' + mychan ;
-        });
-        // use substring(1) to remove first character '+' on new string
+        if ( bg_bottom_color ){
+            $('#bg_bottom_color').val(bg_bottom_color);
+        } else {
+            $('#bg_bottom_color').val('#FFFFFF');
+        }
 
+        if ( tick_color ){
+            $('#tick_color').val(tick_color);
+        } else {
+            $('#tick_color').val('#808080');
+        }
+
+        if ( text_color ){
+            $('#text_color').val(text_color);
+        } else {
+            $('#text_color').val('#808080');
+        }
+
+        if ( data_color ){
+            $('#data_color').val(data_color);
+        } else {
+            $('#data_color').val('#808080');
+        }
+
+        if ( filter ) {
+            $('#filter').val( filter) ;
+        } else {
+            $('#filter').val('None');
+        }
+
+        $("button, input:submit, input:checkbox").button('refresh');
+        $("#time_zone").buttonset();
+        $("#plot_type").buttonset();
+        $("#plot_size").buttonset();
+        $("#acceleration").buttonset();
+
+        $("#configpanel").dialog('option', 'title','Configuration:'); 
+        $("#configpanel").dialog('open'); 
+
+    //}}} Get cookie values
+    });
+
+    $('#openhelp').live('click', function() {
+    //{{{
+        $("#helppanel").dialog('option', 'title','HELP:'); 
+        $("#helppanel").dialog('open'); 
+    //}}}
+    });
+
+    $('#openlog').live('click', function() {
+    //{{{
+        $("#openlog").removeClass('ui-state-error');
+        $("#logpanel").dialog('option', 'title','LOG:'); 
+        $("#logpanel").dialog('open'); 
+    //}}}
+    });
+
+    $('#clear').live('click', function() {
+        //{{{
+
+        var path = String(window.location).split('/')
+        window.location = path[0] + '//' + path[2] + '/' + proxy ;
+
+        //}}}
+    });
+
+    $('#plot').live('click', function() {
+        //{{{
+
+        sta = ( $('#station_string').val() ) ? $("#station_string").val() : '.*';
+        chan = ( $('#channel_string').val() ) ? $("#channel_string").val() : '.*';
+
+        ts = ( $('#start_time').val() > 0 ) ? $("#start_time").val()*1000 : null;
+        te = ( $('#end_time').val()  > 0) ? $("#end_time").val()*1000 : null;
+
+        ts = parseInt(ts);
+        te = parseInt(te);
+
+        $("#logpanel").append('<p>Plot['+sta+'] ['+chan+'] ['+ts+'] ['+te+']</p>'); 
+
+        $('#list').empty();
+        $('#event_list').empty();
+        $('#wforms').empty();
+        $('#load_bar').hide();
+        $('#load_bar').empty();
+        $('#subnav').addClass('ui-helper-hidden');
+
+        setData();
+
+        //}}}
+    });
+
+    $('#load_stas').live('click', function() { 
+        //{{{ 
+        waitingDialog("Waveform Explorer:", "Load stations.");
+        $('#list').empty();
+        $("#list").html("<ol id='selectable'></ol>");
+
+        url = proxy + "/data/stations";
+
+        if ($("#start_time").val() && $("#end_time").val()) {
+            url += '/'+$("#start_time").val(); 
+            url += '/'+$("#end_time").val(); 
+        }
 
         $.ajax({
-            type:'get',
-            dataType:'json',
-            url:"/data/"+args.type+"/"+sta_list.substring(1)+"/"+chan_list.substring(1)+"/"+args.ts+"/"+args.te+"/"+args.filter ,
-            success:PlotSelect.setData,
-            error:PlotSelect.errorResponse
+            url: url,
+            async:false,
+            success: function(json) {
+                for (var i in json.sort()) {
+                    $("#list ol").append('<li id="'+json[i]+'" class="ui-state-default">'+json[i]+'</li>');
+                }
+
+                $("#selectable").selectable({ distance: 0 });
+
+                closeWaitingDialog();
+                $("#list").dialog('option', 'title','Select Stations:'); 
+                $("#list").dialog('open'); 
+
+            }
         });
 
-        // }}} Get data
+        //}}}
+    });
 
-        $("#loading").hide();
+    $('#load_chans').live('click', function() {
+        //{{{
+        waitingDialog("Waveform Explorer:", "Load channels.");
+        $('#list').empty();
+        $("#list").html("<ol id='selectable'></ol>");
 
-    },
+        url = proxy + "/data/channels";
 
-    setData: function(resp) {
+        url += ( $('#station_string').val() ) ? '/'+$("#station_string").val() : '';
 
-        // {{{ Define graph defaults
-        var opts0 = {
-            colors: [PlotSelect.canvasLineColor], 
-            selection: {mode:"x", color:PlotSelect.canvasSelection}, 
-            grid: {clickable:true, borderWidth:0, color:PlotSelect.canvasTickColor, tickColor:PlotSelect.canvasTickColor, backgroundColor:PlotSelect.canvasBgColor},
-            xaxis: {ticks:5, labelWidth:20, labelHeight:20, mode:"time", timeformat:"%H:%M:%S<br/>%y-%m-%d"},
-            yaxis: {ticks:4, labelWidth:25}
-        };
+        $.ajax({
+            url: url,
+            async:false,
+            success: function(json) {
+                $("#list ol").empty();
+                for (var i in json.sort()) {
+                    $("#list ol").append('<li id="'+json[i]+'" class="ui-state-default ui-selectee">'+json[i]+'</li>');
+                }
 
-        // }}} Define graph defaults
+                $("#selectable").selectable({ distance: 0 });
 
-        if (typeof(resp['type']) == "undefined" ) {
-            alert("Sorry, query failed! Please retry or restart server");
+                closeWaitingDialog();
+                $("#list").dialog('option', 'title','Select Channels:'); 
+                $("#list").dialog('open'); 
+
+            }
+
+        });
+
+        //}}}
+    });
+
+    $('#remove_error').live('click', function() {
+        $("#errors p").remove();
+        $('#errors').addClass('ui-helper-hidden');
+    })
+    $('#remove_error').mouseenter(function() {
+        $(this).addClass('ui-state-hover');
+    })
+    $('#remove_error').mouseleave(function() {
+        $(this).removeClass("ui-state-hover");
+    });
+
+    $( "#zoom-in" ).button({
+        icons: { primary: "ui-icon-circle-plus" }
+    });
+    $( "#zoom-out" ).button({
+        icons: { primary: "ui-icon-circle-minus" }
+    });
+    $( "#zoom-left" ).button({
+        icons: { primary: "ui-icon-circle-triangle-w" }
+    });
+    $( "#zoom-right" ).button({
+        icons: { primary: "ui-icon-circle-triangle-e" }
+    });
+    $( "#zoom-left-full" ).button({
+        icons: { primary: "ui-icon-circle-arrow-w" }
+    });
+    $( "#zoom-right-full" ).button({
+        icons: { primary: "ui-icon-circle-arrow-e" }
+    });
+
+    $('#zoom-in').live('click', function() { shiftPlot('I'); });
+    $('#zoom-out').live('click', function() { shiftPlot('O'); });
+    $('#zoom-left').live('click', function() { shiftPlot('L'); });
+    $('#zoom-right').live('click', function() { shiftPlot('R'); });
+    $('#zoom-left-full').live('click', function() { shiftPlot('LL'); });
+    $('#zoom-right-full').live('click', function() { shiftPlot('RR'); });
+
+    //$('#load_events').button('disable');
+    //$('#load_events').hide();
+    //$('#realtime').button('disable');
+    //$('#realtime').hide();
+
+    $("#logpanel").append('<p>Done initializing server.</p>'); 
+
+    closeWaitingDialog();
+
+    // }}} Set defaults
+}
+
+function setupEvents() {
+    // {{{ 
+
+    $('#load_events').live('click', function() {
+    //{{{
+        $('#event_list').empty();
+        $.ajax({
+            url: proxy + "/data/events",
+            success: function(json) {
+                //{{{
+                sorted_e_list = [];
+                table_headers = [];
+
+                if ( typeof(json) == "undefined" ) {
+                    $("#event_list").append('Error in AJAX query. Try using calendars.');
+                } else {
+                    $.each(json, function(key,value) {
+                        sorted_e_list.push(key);
+                        $.each( value, function(sKey,sVal) {
+                            if( $.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
+                        });
+                    });
+                    sorted_e_list = sorted_e_list.sort();
+                    table_headers = table_headers.sort();
+
+                    tbl = '<table id="evsTbl" class="evListTable">';
+
+                    tbl += '<thead><tr>\n';
+                    tbl += '<th>time</th>\n';
+
+                    $.each(table_headers, function(thi, thv) {
+                        if( thv !== 'time' ) { tbl += '<th>'+thv+'</th>\n'; }
+                    });
+
+                    tbl += '</tr></thead><tbody>\n';
+
+                    $.each(sorted_e_list, function(key, value) {
+                        tbl += "<tr>";
+                        var time  = json[value]['time'];
+                        var tbl_date = new Date(time * 1000);
+                        tbl += "<td><a class='add_events'href='#'id='";
+                        tbl += json[value]['time'] * 1000 + "'>";
+                        tbl += "<span style='display:none;'>";
+                        tbl += json[value]['time'] * 1000 + "</span>" + tbl_date + "</a></td>";
+                        $.each(table_headers, function(thi, thv) { 
+                            if( thv !== 'time' ) { tbl += "<td>" + json[value][thv] + "</td>"; }
+                        });
+                        tbl += "</tr>";
+                    });
+
+                    tbl += '</tbody></table>';
+                    $("#event_list").append(tbl);
+                    $("#event_list #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
+
+                    $('.add_events').click( function($e){
+                        $('#event_list').dialog('close');
+                        $e.preventDefault();
+                        time = $(this).attr("id");
+                        if ( typeof(time) != "undefined" ) {
+                            time /=  1000;
+                        }
+                        $("#start_time").val(time);
+                    });
+                }
+                $("#event_list").dialog('option', 'title','Events:'); 
+                $("#event_list").dialog('open'); 
+                //}}}
+            }
+        }); 
+    //}}}
+    });
+    events = true;
+
+    // }}}
+}
+
+function setupRT() {
+    // {{{ 
+
+    $('#realtime').live('click', function() { toggleRT(); });
+    $('#realtime').button({ label: "Run RealTime" });
+    //$('#realtime').show();
+    //$('#realtime').button('enable');
+
+    // }}}
+}
+
+function toggleRT() {
+    // {{{ 
+
+    realtime = (realtime == true) ? false : true;
+    if ( realtime ) {
+        $('#toolbar').hide();
+        $('#link').hide();
+        $('#clean').hide();
+        $('#home').hide();
+        $('#openconfig').hide();
+        $('#openhelp').hide();
+        $(".wrapper > div").unbind("plotselected", handleSelect);
+        $('#realtime').button({ label: "Stop RealTime" });
+    } else {
+        $('#toolbar').show();
+        $('#link').show();
+        $('#clean').show();
+        $('#home').show();
+        $('#openconfig').show();
+        $('#openhelp').show();
+        $(".wrapper > div").bind("plotselected", handleSelect);
+        $('#realtime').button({ label: "Run RealTime" });
+    }
+
+    if (realtime == false && RT !== false) {
+        clearTimeout(RT);
+    }
+
+    runRT();
+
+    // }}}
+}
+
+function runRT() {
+    // {{{ 
+
+
+    if (realtime) {
+        if (activeQueries > 0) {
+            RT = setTimeout( 'runRT();', 1000);
             return;
         }
 
-        // Define globally for app
-        PlotSelect.ts       = resp['time_start'];
-        PlotSelect.te       = resp['time_end'];
-        PlotSelect.type     = resp['type'];
-        PlotSelect.stas     = resp.sta;
-        PlotSelect.chans    = resp.chan;
-        PlotSelect.orid     = resp.orid;
+        $.ajax({
+            url: proxy + "/data/now",
+            async:false,
+            success: function(json) {
+                delta = te -ts;
+                te = json * 1000;
+                ts = te - delta;
+                load_all = true;
+                RT = setTimeout( 'setData();', realtime_refresh * 1000);
+            }
+        });
+    }
+
+    // }}}
+}
+
+function openSubnav() {
+    // {{{ open subnav div
+
+    waitingDialog("Waveform Explorer:", "Open Control Window.");
+
+    //{{{ Build DATEPICKERS
+
+    // Build DATEPICKER
+    $(".pickdate").datepicker({
+        dateFormat: '@',
+        beforeShow: function() { 
+
+            if ( $(this).val() > 0 ) $(this).val($(this).val()*1000);  
+            return {};
+
+        },
+        beforeShowDay: function(test_date) { 
+
+            test = test_date.getDOY();
+
+            for (var i=0; i<dates_allowed.length; i++) {
+
+                if (test == dates_allowed[i]) { return [true, '', ''] }
+
+            }
+
+            return [false,'','No data this day.']; 
+
+        },
+        onSelect: function(dateText, inst) {
+            var old = $(".pickdate").not(this).val();
+
+            //d = new Date();
+            //dateText -= (d.getTimezoneOffset() * 60000);
+
+            if (this.id == "end_time")
+                $(".pickdate").not(this).datepicker("option", 'maxDate', dateText );
+            else
+                $(".pickdate").not(this).datepicker("option", "minDate", dateText);
+
+            if ( old ) 
+                $(".pickdate").not(this).val( old );
+            else 
+                $(".pickdate").not(this).val( null );
+
+            if (this.id == "end_time")
+                $("#end_time").val( (dateText / 1000) + 86399 );
+            else
+                $("#start_time").val( dateText / 1000 );
+        }
+    });
+
+    //
+    // Set the max and min on datepicker to 
+    // database max and min times on wfdisc
+    //
+
+    Date.fromDayofYear= function(day){
+        day = String(day);
+        y = day.substring(0,4);
+        n = day.substring(4);
+
+        var d= new Date();
+        d.setUTCFullYear(y,0,n);
+        d.setUTCHours(0,0,0,0);
+        return d
+
+    }
+    Date.prototype.getDOY = function() {
+        d = new Date(this.getTime() + (this.getTimezoneOffset() * 60000));
+        var onejan = new Date(d.getFullYear(),0,1);
+        var text =  zeroPad(d.getFullYear(),4) + zeroPad(Math.ceil((d - onejan) / 86400000),3);
+        return text;
+    } 
+
+    function zeroPad(num,count)
+    {
+        var numZeropad = num + '';
+        while(numZeropad.length < count) {
+            numZeropad = "0" + numZeropad;
+        }
+        return numZeropad;
+    }
+
+    $.ajax({
+        url: proxy + "/data/dates",
+        success: function(json) {
 
-        PlotSelect.chan_plot_obj = {}; // A mapping from a named channel to it's associated 'flot' plot.
+            $("#logpanel").append('<p>Got dates for calendar.</p>'); 
+            if ( json ) {
+                var max = Math.max.apply(Math, json);
+                var min = Math.min.apply(Math, json);
 
-        var chan_labels = $("#chan_labels"), chan_plots = $("#chan_plots"); 
-        chan_labels.empty();
-        chan_plots.empty();
+                max = Date.fromDayofYear(max);
+                min = Date.fromDayofYear(min);
 
-        // PlotSelect.tsMilli = opts0['xaxis']['min'] = resp['time_start'] * 1000;
-        // PlotSelect.teMilli = opts0['xaxis']['max'] = resp['time_end'] * 1000;
-        opts0['xaxis']['min'] = resp['time_start'] * 1000;
-        opts0['xaxis']['max'] = resp['time_end'] * 1000;
+                max = new Date(max.getTime() + (max.getTimezoneOffset() * 60000));
+                min = new Date(min.getTime() + (min.getTimezoneOffset() * 60000));
 
+                $(".pickdate").datepicker("option", 'minDate', min); 
+                $(".pickdate").datepicker("option", 'maxDate', max); 
 
-        if( resp.sta === undefined ) {
+                dates_allowed = json;
 
-            alert( 'You must choose a station to plot data for. Please press the "r" key to refresh the plots' ) ;
-
-        } else {
-
-            // {{{ Some data to plot
-
-            $.each(resp.sta, function(sta_iterator,mysta){
-
-                // {{{ Per station
-
-                $.each(resp.chan, function(chan_iterator,mychan){
-
-                    // {{{ Per channel
-
-                    var stachan_data = mysta + '_' + mychan ; // Create the STA_CHAN data arrays from other response items
-                    var wrapper = $("<div>").attr("id", stachan_data+"_wrapper").attr("class","wrapper");
-                    var lbltxt = $("<p>").attr("class","chantitle").text(stachan_data);
-                    var lbl = $("<div>").attr("id", stachan_data+"_label").attr("class", "label").append(lbltxt);
-                    var plt = $("<div>").attr("id", stachan_data+"_plot").attr("class", "plot");
-                    //wrapper.append(lbl);
-                    //wrapper.append(plt);
-                    //chan_plots.append(wrapper);
-                    //chan_plot = $("#"+stachan_data+"_plot");
-
-
-                    // Show plots
-                    $("#wforms").show();
-                    $("#interact").show();
-
-                    if (typeof(resp[mysta]) == "undefined" ) { 
-
-                        // {{{ No station defined
-
-                        //
-                        // This station is not valid.
-                        // Avoid plotting...
-                        //
-                        //var flot_data = [];
-                        //opts0['yaxis']['min'] = 0;
-                        //opts0['yaxis']['max'] = 1;
-                        //flot_data[0] = resp['time_start'] *1000;
-                        //flot_data[1] = resp['time_end']   *1000;
-                        //var plot = $.plot(chan_plot, [ flot_data ], opts0);
-
-                        // Bind and store
-                        //chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        //PlotSelect.chan_plot_obj[stachan_data] = plot;
-
-                        // }}}  No station defined
-
-                    } else if (typeof(resp[mysta][mychan]) == "undefined" ) { 
-
-                        // {{{ No channel defined
-
-                        //
-                        // This channel is not valid for the station. 
-                        // Avoid plotting...
-                        //
-                        //var flot_data = [];
-                        //opts0['yaxis']['min'] = 0;
-                        //opts0['yaxis']['max'] = 1;
-                        //flot_data[0] = resp['time_start'] *1000;
-                        //flot_data[1] = resp['time_end']   *1000;
-                        //var plot = $.plot(chan_plot, [ flot_data ], opts0);
-
-                        // Bind and store
-                        //chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        //PlotSelect.chan_plot_obj[stachan_data] = plot;
-
-                        // }}} No channel defined
-
-                    } else {
-                    
-                        // {{{ Plotting
-
-                        wrapper.append(lbl);
-                        wrapper.append(plt);
-                        chan_plots.append(wrapper);
-                        chan_plot = $("#"+stachan_data+"_plot");
-
-                        var flot_data = [];
-
-                        if ( resp['type'] == "coverage") {
-
-                            // {{{ Coverage plot
-
-                            if (typeof(resp[mysta][mychan]['data']) == "undefined" ) { 
-
-                                var plot = $.plot(chan_plot, [], opts0);
-
-                            } else {
-
-                                $.each( resp[mysta][mychan]['data'], function(i,arr) {
-
-                                    var start_time = parseFloat(arr[0],10) *1000;
-                                    var end_time   = parseFloat(arr[1],10) *1000;
-                                    flot_data.push([start_time,1,end_time]);
-
-                                });
-
-                            }
-
-                            opts0['yaxis']['ticks'] = 0;
-                            opts0['yaxis']['min'] = 0.8 ;
-                            opts0['yaxis']['max'] = 2.2 ;
-                            opts0['bars'] = {show:true, horizontal:'true', barWidth:1};
-
-                            var plot = $.plot(chan_plot,[ flot_data ], opts0 );
-
-                            // }}} Coverage plot
-
-                        } else {
-
-                            // {{{ Waveform plot
-
-                            if (typeof(resp[mysta][mychan]['data']) == "undefined" ) { 
-                                var plot = $.plot(chan_plot, [], opts0);
-
-                                var flagCss = {};
-                                flagCss['color'] = 'red';
-                                flagCss['position'] = 'absolute';
-                                flagCss['left'] =  '250px';
-                                flagCss['bottom'] = '50px';
-                                flagCss['font-size'] = 'large';
-                                var arrDiv = $("<div>").css(flagCss).append('No data in time segment: ('+resp['time_start']+','+resp['time_end']+').');
-
-                                chan_plot.append(arrDiv);
-
-                            } else {
-                                //var st = resp[mysta][mychan]['start'];
-                                //var et = resp[mysta][mychan]['end'];
-                                //var period = (et-st)/resp[mysta][mychan]['data'].length;
-
-                                if( resp[mysta][mychan]['format'] == 'bins' ) {
-
-                                    for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
-                                        temp_data = resp[mysta][mychan]['data'][i];
-                                        flot_data[i] =  [temp_data[0]*1000,temp_data[2],temp_data[1]];
-                                    }
-                                    opts0['bars'] = {show:true,barWidth:0,align:'center'};
-                                    opts0['lines'] = {show:false};
-
-                                } else {
-
-                                    for ( var i=0, len=resp[mysta][mychan]['data'].length; i<len; ++i ){
-                                        temp_data = resp[mysta][mychan]['data'][i];
-                                        flot_data[i] =  [temp_data[0]*1000,temp_data[1]];
-                                    }
-                                    opts0['lines'] = {show:true,lineWidth:2,shadowSize:4};
-                                    opts0['bars'] = {show:false};
-
-                                }
-
-                                var plot = $.plot(chan_plot,[ flot_data ], opts0 );
-
-                            }
-
-                            // }}} Waveform plot
-
-                        }
-
-                        // Get the size of the screen
-                        //var p_width  = $("#wforms").width();
-
-                        // Resize waveform and label
-                        //if (p_width) {
-                        //    //$("#"+stachan_data+"_label").width(p_width*0.09);
-                        //    //$("#"+stachan_data+"_plot").width(p_width*0.80);
-                        //}
-
-
-                        if ( resp['type'] == "coverage") {
-                            //$("canvas").css("height","20px");
-                            //$(".label").css("height","20px");
-                            //$(".plot").css("height","20px");
-                            //$(".wrapper").css("height","20px");
-                        }
-
-                        // Bind and store
-                        chan_plot.bind("plotselected", PlotSelect.handleSelect);
-                        PlotSelect.chan_plot_obj[stachan_data] = plot;
-
-                        // {{{ Add arrival labels
-
-                        if( resp['phases'] !== undefined && resp['phases'] !== null ) {
-                            if( resp['phases'][stachan_data] !== undefined && ( $("input#phases").attr('checked') == true || PlotSelect.phases == 'True' ) ) {
-
-                                $.each(resp['phases'][stachan_data], function(phaseTime,phaseFlag){
-
-                                    var o = plot.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
-
-                                    var flagTop = plot.getPlotOffset() ;
-
-                                    var flagCss = PlotSelect.arrivalFlagCss;
-                                    flagCss['left'] = o.left + "px" ;
-                                    flagCss['top'] = flagTop.top + "px" ;
-
-                                    var flagTail = PlotSelect.arrivalTailCss;
-                                    flagTail['left'] = flagCss['left'] ;
-                                    flagTail['top'] = flagCss['top'] ;
-                                    flagTail['height'] = plot.height() + 'px';
-
-                                    var arrDiv = $("<div class='flag'>").css(flagCss).append( phaseFlag );
-                                    var arrTailDiv = $("<div class='flagTail'>").css(flagTail);
-
-                                    chan_plot.append(arrDiv);     // Flag
-                                    chan_plot.append(arrTailDiv); // Flag tail
-
-                                });
-                            }
-                        }
-
-                    // }}} Add arrival labels
-
-                       // }}} Plotting
-
-                    } 
-
-                    // }}} Per channel
-
-                });
-
-                // }}} Per station
-
-            });
-
-            // }}} Some data to plot
+            }
 
         }
+    });
 
-        if (typeof(resp['error']) != "undefined" ) {
-            alert('ERROR ON SERVER:\n'+resp['error']);
-        }
+    //}}}
 
-        $("#loading").fadeOut(500);
-        
+    $("#station_string").val(sta);
 
-        $("#tools").show();
+    $("#channel_string").val(chan);
 
-    },
+    temp = ( ts > 0 ) ? ts/1000 : null;
+    $("#start_time").val(temp);
+    temp = ( te > 0 ) ? te/1000 : null;
+    $("#end_time").val(temp);
 
-    setEventData: function(resp){
+    $('#link').hide();
+    $('#toolbar').hide();
+    $('#clean').hide();
+    $('#realtime').hide();
+    $('#load_bar').empty();
+    $('#load_bar').addClass('ui-helper-hidden');
+    $('#subnav').removeClass('ui-helper-hidden');
 
-        $('#subnav #event').empty();
+    closeWaitingDialog();
 
-        // {{{ Plot event table
+    // }}}
+}
 
-        var event_metadata = '<table id="eventTable">';
-        event_metadata += "<tr><th>Magnitude</th><td>"+resp['magnitude']+" "+resp['mtype']+"</td>";
-        event_metadata += "<th>Date-Time</th><td>"+resp['time']+"</td></tr>";
-        event_metadata += "<tr><th>Location</th><td>"+resp['lat']+"&deg;N, "+resp['lon']+"&deg;E</td>";
-        event_metadata += "<th>Depth</th><td>"+resp['depth']+"km</td></tr>";
-        event_metadata += "<tr><th>Author</th><td>"+resp['auth']+"</td><th>nass</th><td>"+resp['nass']+"</td></tr>";
-        event_metadata += "</table>";
-
-        $('#subnav #event').append(event_metadata);
-
-        // }}} Plot event table
-
-    },
-
-    buildSelect: function(s_list,e_list,st,ev){
-
+function makeLink(){
 //{{{
-       var subnavcontent = '';
+    var path = String(window.location).split('/')
+    var url = path[0] + '/' + path[2] + '/' + proxy + '/wf/' + sta + '/' + chan ;
+    url += '/'+ts/1000; 
+    url += '/'+te/1000; 
+    url += '/'+page+'?' ; 
+    url += ( filter ) ? 'filter='+filter : 'filter=None'; 
+    url += '&calibrate='+calibrate; 
+    url += '&type='+type; 
 
-       if (s_list && ev) {
-            s_list = s_list.sort() ;
-            subnavcontent = '<ul class="ui-helper-reset ui-helper-clearfix">';
-            jQuery.each(s_list, function() {
-                subnavcontent += "<li class='ui-state-active ui-corner-all'>" + "<a href='/wf/" + this + "/" + ev + "'>" + this + "</a></li>\n";
-            });
-            subnavcontent += '</ul>';
-            $("#subnavcontent").append(subnavcontent);
-        }
+    $("#logpanel").append('<p>makeLink()=>'+url+'</p>'); 
+    alert(url);
+//}}}
+}
 
-        else if (s_list) {
-            s_list = s_list.sort() ;
-            subnavcontent = '<ul class="ui-helper-reset ui-helper-clearfix">';
-            jQuery.each(s_list, function() {
-                subnavcontent += "<li class='ui-state-active ui-corner-all'>" + "<a href='/stations/" + this + "'>" + this + "</a></li>\n";
-            });
-            subnavcontent += '</ul>';
-            $("#subnavcontent").append(subnavcontent);
-        }
+function getCookie() {
+    //{{{ Get cookie values
+        //
+        // Look for cookie values and update elements
+        //
 
-        else if (e_list && st) {
+        $("#logpanel").append('<p>Get COOKIE.</p>'); 
 
-            sorted_e_list = [];
-            table_headers = [];
+        show_phases = ($.cookie('dbwfserver_phases') == 'true') ? true : false;
 
-            jQuery.each(e_list, function(key,value) {
-                sorted_e_list.push(key);
-                jQuery.each( value, function(sKey,sVal) {
-                    if( jQuery.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
-                });
-            });
-            sorted_e_list = sorted_e_list.sort();
-            table_headers = table_headers.sort();
+        show_points = ($.cookie('dbwfserver_points') == 'true') ? true : false;
 
-            subnavcontent = '<table id="evsTbl" class="evListTable">';
+        timezone = ($.cookie('dbwfserver_time_zone') == 'local') ? 'local' : 'UTC';
 
-            subnavcontent += '<thead><tr>\n';
-            subnavcontent += '<th>time</th>\n';
-            jQuery.each(table_headers, function(thi, thv) {
-                if( thv !== 'time' ) {
-                    subnavcontent += '<th>'+thv+'</th>\n';
+        type = ($.cookie('dbwfserver_type') == 'coverage') ? 'coverage' : 'waveform';
+
+        acceleration = ($.cookie('dbwfserver_acceleration') == 'nm') ? 'nm' : 'cm';
+
+        if ($.cookie('dbwfserver_size')) size  =  $.cookie('dbwfserver_size');
+
+        if ($.cookie('dbwfserver_realtime_refresh')) realtime_refresh  =  $.cookie('dbwfserver_realtime_refresh');
+
+        if ($.cookie('dbwfserver_bg_top_color')) bg_top_color  =  $.cookie('dbwfserver_bg_top_color');
+
+        if ($.cookie('dbwfserver_bg_bottom_color')) bg_bottom_color  =  $.cookie('dbwfserver_bg_bottom_color');
+
+        if ($.cookie('dbwfserver_tick_color')) tick_color  =  $.cookie('dbwfserver_tick_color');
+
+        if ($.cookie('dbwfserver_data_color')) data_color  =  $.cookie('dbwfserver_data_color');
+
+        if ($.cookie('dbwfserver_text_color')) text_color  =  $.cookie('dbwfserver_text_color');
+
+        if ($.cookie('dbwfserver_filter')) filter  =  $.cookie('dbwfserver_filter');
+
+    //}}} Get cookie values
+}
+
+function setCookie() {
+    //{{{ Set cookie
+
+        $("#logpanel").append('<p>Set COOKIE.</p>'); 
+
+        // Set COOKIE global options
+        COOKIE_OPTS = { path: '/', expiresAt: 99 };
+
+        $.cookie('dbwfserver_time_zone', timezone, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_type', type, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_realtime_refresh', realtime_refresh, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_size', size, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_acceleration', acceleration, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_bg_top_color', bg_top_color, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_bg_bottom_color', bg_bottom_color, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_tick_color', tick_color, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_text_color', text_color, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_data_color', data_color, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_filter', filter, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_phases', show_phases, COOKIE_OPTS);
+
+        $.cookie('dbwfserver_points', show_points, COOKIE_OPTS);
+
+        //$.cookie('dbwfserver_stime', ts , COOKIE_OPTS);
+
+        //$.cookie('dbwfserver_etime', te , COOKIE_OPTS);
+
+        //$.cookie('dbwfserver_sta', stations , COOKIE_OPTS);
+
+        //$.cookie('dbwfserver_chan', channels , COOKIE_OPTS);
+
+    //}}} Set cookie
+}
+
+function build_dialog_boxes() {
+    //{{{
+
+    //Set station and channel dialog boxes
+    $("#list").dialog({ 
+        //{{{
+        height: 'auto',
+        width: 'auto',
+        modal: false,
+        autoOpen: false,
+        draggable: true, 
+        resizable: true,
+        buttons: {
+            OK: function() {
+
+                var count = 0;
+                var target;
+                var selection = '';
+                var type_opt = $( this ).dialog('option', 'title'); 
+
+
+                if (type_opt == 'Select Channels:') {
+                    target = $("#channel_string");
                 }
-            });
-            subnavcontent += '</tr></thead><tbody>\n';
-
-            jQuery.each(sorted_e_list, function(key, value) {
-                subnavcontent += "<tr>";
-                var tbl_date = new Date(e_list[value]['time'] * 1000);
-                subnavcontent += "<td><span style='display:none;'>" + e_list[value]['time'] * 1000 + "</span><a href='/wf/" + st + "/" + value + "'>" + tbl_date + "</a></td>";
-                jQuery.each(table_headers, function(thi, thv) { 
-                    if( thv !== 'time' ) {
-                        subnavcontent += "<td>" + e_list[value][thv] + "</td>";
-                    }
-                });
-                subnavcontent += "</tr>";
-            });
-            subnavcontent += '</tbody></table>';
-            $("#subnavcontent").append(subnavcontent);
-            $("#subnavcontent #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
-        }
-
-        else if (e_list) {
-
-            sorted_e_list = [];
-            table_headers = [];
-
-            jQuery.each(e_list, function(key,value) {
-                sorted_e_list.push(key);
-                jQuery.each( value, function(sKey,sVal) {
-                    if( jQuery.inArray(sKey,table_headers) == -1 ) { table_headers.push(sKey); }
-                });
-            });
-            sorted_e_list = sorted_e_list.sort();
-            table_headers = table_headers.sort();
-
-            subnavcontent = '<table id="evsTbl" class="evListTable">\n';
-
-            subnavcontent += '<thead><tr>\n';
-            subnavcontent += '<th>time</th>\n';
-            jQuery.each(table_headers, function(thi, thv) {
-                if( thv !== 'time' ) {
-                    subnavcontent += '<th>'+thv+'</th>\n';
+                else if (type_opt == 'Select Stations:') {
+                    target = $("#station_string");
                 }
-            });
-            subnavcontent += '</tr></thead><tbody>\n';
+                else { 
+                    alert( 'ERROR: '+ type_opt );
+                    $( this ).dialog( "close" );
+                    return;
+                }
 
-            jQuery.each(sorted_e_list, function(key, value) {
-                subnavcontent += "<tr>";
-                var tbl_date = new Date(e_list[value]['time'] * 1000);
-                subnavcontent += "<td><span style='display:none;'>" + e_list[value]['time'] * 1000 + "</span><a href='/events/" + value + "'>" + tbl_date + "</a></td>";
-                jQuery.each(table_headers, function(thi, thv) { 
-                    if( thv !== 'time' ) {
-                        subnavcontent += "<td>" + e_list[value][thv] + "</td>";
+                target.val('.*');
+
+                $(".ui-selected").each(function(){
+                    if ( count == 31 )  alert("Too many items in selection. Try using REGEX expression. Using first 30 items!");
+                    count += 1;
+                    if ( count < 31 ){
+
+                        if ( ! selection ) {
+                            selection = $( this ).text();
+                        }
+                        else { 
+                            selection = selection + '|' + $( this ).text();
+                        }
                     }
+
                 });
-                subnavcontent += "</tr>";
-            });
-            subnavcontent += '</tbody></table>';
-            $("#subnavcontent").append(subnavcontent);
-            $("#subnavcontent #evsTbl").tablesorter( {sortList: [[0,0], [1,0]]} );
+
+                if ( selection ) target.val(selection);
+
+                $( this ).dialog( "close" );
+
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+            }
         }
+        //}}}
+    }); // end of dialog 
+
+    //Set loading dialog box
+    $("#event_list").dialog({ 
+        //{{{
+        autoOpen: false,
+        draggable: true, 
+        modal: false,
+        resizable: true,
+        minWidth:  600, 
+        //}}}
+    }); // end of dialog 
+
+    //Set loading dialog box
+    $("#configpanel").dialog({ 
+        //{{{
+        autoOpen: false,
+        modal: true,
+        draggable: true, 
+        resizable: true,
+        buttons: {
+            OK: function() {
+
+                timezone = $("input[name='timezone']:checked").val();
+
+                type = $("input[name='wf_type']:checked").val();
+
+                size = $("input[name='wf_size']:checked").val();
+
+                acceleration = $("input[name='accel_type']:checked").val();
+
+                realtime_refresh = $("#refresh").val();
+
+                bg_top_color = $("#bg_top_color").val();
+
+                bg_bottom_color = $("#bg_bottom_color").val();
+
+                tick_color = $("#tick_color").val();
+
+                text_color = $("#text_color").val();
+
+                data_color = $("#data_color").val();
+
+                filter = $("#filter").val(); 
+
+                show_phases = $('#phases').is(':checked') ? true : false; 
+
+                show_points = $('#points').is(':checked') ? true : false;
+
+                setCookie();
+
+                varSet();
+
+                $('#wforms').empty();
+                $('#load_bar').hide();
+                $('#load_bar').empty();
+                load_all = true;
+
+                $( this ).dialog( "close" );
+
+                if (! $("#subnav").is(":visible") ) { setData(); }
+
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+            }
+        },
+        //}}}
+    }); // end of dialog 
+
+    //Set log dialog box
+    $("#logpanel").dialog({ 
+        //{{{
+        autoOpen: false,
+        draggable: true, 
+        resizable: true,
+        buttons: {
+            Clear: function() {
+                $('#logpanel').empty();
+                $( this ).dialog( "close" );
+            },
+            OK: function() {
+                $( this ).dialog( "close" );
+            }
+        }
+        //}}}
+    }); // end of dialog 
+
+    //Set loading dialog box
+    $("#helppanel").dialog({ 
+        //{{{
+        autoOpen: false,
+        draggable: true, 
+        resizable: true,
+        buttons: {
+            OK: function() {
+                $( this ).dialog( "close" );
+            }
+        }
+        //}}}
+    }); // end of dialog 
+
+    //Set loading dialog box
+    $("#loading").dialog({ 
+        //{{{
+        autoOpen: false,
+        //dialogClass: "ui-state-error", 
+        //dialogClass: "ui-widget-overlay", 
+        draggable: false, 
+        modal:true,
+        resizable: false,
+        open: function(event, ui) { isPlotting = true; },
+        close: function(event, ui) { isPlotting = false; }
+        //}}}
+    }); // end of dialog 
+
+    //}}}
+}
+
+function waitingDialog(title,message) { 
+    //{{{
+
+    $("#logpanel").append('<p>'+message+'</p>'); 
+
+    $("#loading").html( (message && '' != message) ? '<h1>'+message+'</h1>' : '<h1>Please wait...</h1>'); 
+    $("#loading").dialog('option', 'title', (title && '' != title) ? title : 'Loading'); 
+    $("#loading").dialog('open'); 
+
+    //}}}
+}
+
+function closeWaitingDialog() { 
+    //{{{
+
+    if (activeQueries < 1) {
+        if (CLEAR !== false) {
+            clearTimeout(CLEAR);
+        }
+        setPhases();
+        $("#loading").dialog('close'); 
+        $("#loading").empty(); 
+        activeQueries = 0;
+    } else {
+        CLEAR = setTimeout('closeWaitingDialog();', 2*1000);
+    }
+
+    //}}}
+}
+
+function setupUI(resp) {
+//{{{
+
+    //
+    // Options and default values
+    //
+    //  filter = 'None';
+    //  calibrate = true;
+    //  timezone = 'UTC';
+    //  type = 'waveform';
+    //  size = 'medium';
+    //  show_points = true;
+    //  show_phases = true;
+    //  acceleration  = 'nm';
+    //  tick_color = '#000000';
+    //  bg_top_color = '#000080';
+    //  bg_bottom_color = '#0000FF';
+    //  text_color = '#D3D3D3';
+    //  data_color = '#FFFF00';
+    //  realtime_refresh =  10;
+
+    if ( resp['filter'] ) filter = resp['filter'][0];
+    if ( resp['calibrate'] ) calibrate = resp['calibrate'][0];
+    if ( resp['timezone'] ) timezon = resp['timezone'][0];
+    if ( resp['type'] ) type = resp['type'][0];
+    if ( resp['size'] ) size = resp['size'][0];
+    if ( resp['show_points'] ) show_points = resp['show_points'][0];
+    if ( resp['show_phases'] ) show_phases = resp['show_phases'][0];
+    if ( resp['acceleration'] ) acceleration = resp['acceleration'][0];
+    if ( resp['tick_color'] ) tick_color = resp['tick_color'][0];
+    if ( resp['bg_top_color'] ) bg_top_color = resp['bg_top_color'][0];
+    if ( resp['bg_bottom_color'] ) bg_bottom_color = resp['bg_bottom_color'][0];
+    if ( resp['text_color'] ) text_color = resp['text_color'][0];
+    if ( resp['data_color'] ) data_color = resp['data_color'][0];
+    if ( resp['realtime_refresh'] ) realtime_refresh = resp['realtime_refresh'][0];
+
+    setCookie();
 
 //}}}
+}
+
+function keyBinds(){
+    // {{{ Set bindings for keys
+        $(document).unbind('keyup');
+        $(document).unbind('keydown');
+
+        $(document).keydown(function(e) {
+            //if (e.keyCode == '38') {
+            //    // Up key
+            //    e.preventDefault();
+            //} else if (e.keyCode == '40') {
+            //    // Down key
+            //    e.preventDefault();
+            //} else if (e.keyCode == '37') {
+            //    // Left key
+            //    e.preventDefault();
+            //} else if (e.keyCode == '39') {
+            //    // Right key
+            //    e.preventDefault();
+            //} else if (e.keyCode == '82') {
+            //    // r for reset plot
+            //    e.preventDefault();
+            //} else if(e.which == 16) {
+            if(e.which == 16) {
+                // Shift key
+                isShiftPressed = true;
+            }
+        });
+
+        $(document).keyup(function(e) {
+            //if (e.keyCode == '38') {
+            //    // Up key
+            //    e.preventDefault();
+            //    shiftPlot('I');
+            //} else if (e.keyCode == '40') {
+            //    // Down key
+            //    e.preventDefault();
+            //    shiftPlot('O');
+            //} else if (e.keyCode == '37') {
+            //    // Left key
+            //    e.preventDefault();
+            //    shiftPlot('L');
+            //} else if (e.keyCode == '39') {
+            //    // Right key
+            //    e.preventDefault();
+            //    shiftPlot('R');
+            //} else if (e.keyCode == '82') {
+            //    // r for reset plot
+            //    e.preventDefault();
+            //    location.reload(true);
+            //} else if(e.which == 16) {
+            if(e.which == 16) {
+                // Shift key
+                isShiftPressed = false;
+            }
+        });
+
+    // }}} Set bindings for keys
+}
+
+function varSet(){
+// {{{ Set vars for plots
+
+    // Function to produce tick labels for X axis
+    x_formatter =  function (val, axis) { return convertTime(val); };
+
+    // Function to produce tick labels for X axis
+    y_formatter =  function (val, axis) {
+        //{{{
+        var range = Math.abs(axis.max - axis.min)
+
+        if (val == 0) {
+            return 0
+        } 
+
+        if (Math.abs(val) < 0.001) {
+            return val.toFixed(4);
+        }
+
+        if (Math.abs(val) < 0.1) {
+            return val.toFixed(2);
+        }
+
+        if (Math.abs(val) < 1) {
+            return val.toFixed(1);
+        }
+
+        if (range < 100) {
+            return val.toPrecision(3);
+        }
+        if (range < 1000) {
+            return val.toPrecision(4);
+        }
+
+        //}}}
+    };
+
+    // Set FLOT options
+    canvasBgColor   = { colors: [bg_top_color, bg_bottom_color]};
+
+    flot_ops = {
+        hoverable: false,
+        clickable: false,
+        colors: [data_color], 
+        selection: {mode:"x", color:text_color}, 
+        //grid: {hoverable:false,clickable:false, borderColor:tick_color, color:tick_color, tickColor:tick_color, backgroundColor:canvasBgColor},
+        grid: {hoverable:false,clickable:false, borderColor:tick_color, color:text_color, tickColor:tick_color, backgroundColor:canvasBgColor},
+        xaxis: {tickFormatter:x_formatter, ticks:4, mode:"time", timeformat:"%y-%m-%d %H:%M:%S UTC",labelWidth:200,labelHeight:0},
+        //yaxis: {tickFormatter:y_formatter, ticks:3, min:null, max:null ,labelWidth:0,labelHeight:0},
+        yaxis: {ticks:3, min:null, max:null ,labelWidth:0,labelHeight:0},
+        points: {show:false},
+        bars:  {show:false},
+        lines: {show:false}
+    };
+
+
+    // For the text on the screen.
+    NameCss = { color:text_color, 'font-size':'20px', position:'absolute', left:'10%', top:'8%'};
+
+    // For the text on the screen.
+    calibCss = { color:text_color, 'font-size':'15px', position:'absolute', right:'5%', top:'8%'};
+
+    // For the exit icon
+    IconCss = { cursor:'pointer', position:'absolute', right:'1%', top:'5%'};
+
+    // {{{ Arrival flag CSS
+    arrivalFlagCss = {
+        'border':'1px solid #FFF',
+        'background-color':'#F00',
+        'font-weight':'bold',
+        'font-size':'smaller',
+        'color':'#FFF',
+        'padding':'3px',
+        'position':'absolute'
+    };
+    arrivalTailCss = {
+        'position':'absolute',
+        'border':'none',
+        'border-left':'1px solid #FFF',
+        'margin':'0',
+        'padding':'0',
+        'width':'1px'
+    };
+    // }}} Arrival flag CSS
+
+// }}} Set vars for plots
+}
+
+function errorPrint(e) {
+    // {{{ Report Errors to user
+
+    $("#logpanel").append(e); 
+    $("#errors").append(e);
+    $('#errors').removeClass('ui-helper-hidden');
+
+    activeQueries = 0; 
+
+    closeWaitingDialog();
+
+    // }}}
+}
+
+function errorResponse(x,s,e) {
+    // {{{ Report Errors to user
+
+    //alert(JSON.stringify(this));
+    var path = String(window.location).split('/')
+    var message = path[0] + '/' + path[2] ;
+    message += this['url'];
+    message += " => ";
+
+    switch (x.status) {
+        case 404:
+            message += 'Requested URL not found. ';
+            break;
+        case 500:
+            message += 'Server Error. ';
+            break;
+        case 'parseerror':
+            message += 'Parsing JSON Request failed. ';
+            break;
+        case 'timeout':
+            message += 'No answer from Server. ';
+            break;
+        default:
+            message += "HTTP Error (" + x.status + " " + x.statusText + "). ";
+    }
+
+    switch (s) {
+        case 'timeout':
+            message += "The request timed out.";
+            break;
+        case 'notmodified':
+            message += "The request was not modified but was not retrieved from the cache.";
+            break;
+        case 'parseerror':
+            message += "XML/Json format is bad.";
+            break;
+        default:
+            message += "HTTP Error (" + s.status + " " + s.statusText + ").";
+    }
+
+    errorPrint( '<p>'+message+' : '+e+'</p>' ); 
+
+    // }}}
+}
+
+function shiftPlot(evt) {
+    // {{{ Future data
+
+    var delta = te - ts ;
+
+    if (evt == 'LL') { 
+        ts -= delta;
+        te -= delta;
+    } else if (evt == 'RR') {
+        ts += delta;
+        te += delta;
+    } 
+
+    delta /= 4;
+
+    if (evt == 'L') { 
+        ts -= delta;
+        te -= delta;
+    } else if (evt == 'R') {
+        ts += delta;
+        te += delta;
+    } else if (evt == 'I') {
+        ts += delta;
+        te -= delta;
+    } else if (evt == 'O') {
+        ts -= delta;
+        te += delta;
+    }
+
+    $('#wforms').empty();
+    $('#load_bar').hide();
+    $('#load_bar').empty();
+    load_all = true;
+    setData();
+
+    // }}} Future data
+}
+
+function handleSelect(evt, pos){
+    // {{{ Selection zoom functionality
+
+    if (isShiftPressed) {
+        var ta = parseInt( pos.xaxis.from, 10 );
+        var tb = parseInt( pos.xaxis.to, 10 );
+        var delta = tb - ta;
+
+        var newts = ts - ( ( (ta - ts) * (te-ts) ) / delta);
+        te = te + ( ( (te - tb) * (te-ts) ) / delta);
+        ts = newts;
+
+        if ( mode == 'limited' ) {
+            if  ( ts < original_ts || te > original_te )
+                alert('Cannot zoom-out more than original query!');
+
+            if (ts < original_ts) { ts = original_ts; }
+            if (te > original_te) { te = original_te; }
+        }
+
+    }
+    else { 
+
+        ts = parseInt( pos.xaxis.from, 10 ) ;
+        te = parseInt( pos.xaxis.to, 10 ) ;
 
     }
 
-};
+    $('#wforms').empty();
+    $('#load_bar').hide();
+    $('#load_bar').empty();
+    load_all = true;
+    setData();
 
-$(document).ready(PlotSelect.init);
+    // }}} Selection zoom functionality
+}
+
+function convertTime(time){
+//{{{
+        var newDate = new Date(time);
+
+        var diff = newDate.getTimezoneOffset();
+
+        if ( timezone == "local" ) {
+            var lbl = '(UTC + ' + (diff/60)+')';
+        }
+        else {
+            time += (newDate.getTimezoneOffset() * 60000);
+            newDate = new Date(time);
+            var lbl = 'UTC'
+        }
+
+        return newDate.getFullYear()+'-'+pad2(newDate.getMonth()+1)+'-'+pad2(newDate.getDate())+' '+pad2(newDate.getHours())+':'+pad2(newDate.getMinutes())+':'+pad2(newDate.getSeconds())+' '+lbl
+//}}}
+}
+
+function setData(resp) {
+//{{{
+    waitingDialog("Waveform Explorer:", "Waiting for data from server. Page: " +page);
+    $("#errors p").remove();
+    $('#errors').addClass('ui-helper-hidden');
+
+    // If resp defined... 
+    // update globals
+    if ( resp ) {
+    //{{{
+
+        if (resp.error) {
+            errorPrint('setData(): '+resp['error']);
+            closeWaitingDialog();
+            return;
+        }
+
+        if (resp.sta) sta = resp['sta'];
+
+        if (resp.chan) chan = resp['chan'];
+
+        if (resp.time_start) ts = resp['time_start']*1000;
+
+        if (resp.time_end) te = resp['time_end']*1000;
+
+        if (resp.page) page = resp['page'];
+
+        if ( (parseInt(page) > 1) ? parseInt(page) : 1 ) {
+            last_page = parseInt(page);
+            load_all = true;
+        } else {
+            page = 1;
+        }
+
+        ts = parseInt(ts);
+        te = parseInt(te);
+
+    //}}}
+    }
+
+    $("#logpanel").append('<p>Get: ['+sta+'] ['+chan+'] ['+ts+'] ['+te+']</p>'); 
+
+    // Set max time window
+    // This will prevent the user
+    // to zoom-out away from this 
+    // segment later.
+    if ( mode == 'limited' ) {
+        if ( ! original_ts ) original_ts = ts;
+        if ( ! original_te ) original_te = te;
+    }
+
+
+    // Show plots and hide Controls
+    $('#subnav').addClass('ui-helper-hidden');
+    $('#wforms').removeClass('ui-helper-hidden');
+    $('#realtime').show();
+    if ( ! realtime ) {
+        $('#link').show();
+        $('#toolbar').show();
+        $('#clean').show();
+    }
+
+    //
+    // Get the data... 
+    //  coverage and waveforms 
+    //  now are combined...
+    sta = (sta) ? sta : '.*';
+    chan = (chan) ? chan : '.*';
+
+    // Page to load
+    page = (parseInt(page) > 0) ? parseInt(page) : 1;
+    last_page = (parseInt(last_page) > 0) ? parseInt(last_page) : 1;
+
+    //if ( page > 1) page += 1;
+
+    if (page > last_page) page = last_page;
+
+    if (load_all) 
+        var first_page = 1;
+    else
+        var first_page = page;
+
+    load_all = false;
+
+    for( i=first_page;i<=page;i++) {
+
+        var url = proxy ;
+
+        if ( type == 'coverage')
+            url += '/data/coverage/' + sta + '/' + chan ;
+        else
+            url += '/data/wf/' + sta + '/' + chan ;
+
+        url += ( ts ) ? '/'+ts/1000 : '/-'; 
+
+        url += ( te ) ? '/'+te/1000 : '/-'; 
+
+        url += '/'+i+'?' ; 
+
+        url += ( filter ) ? 'filter='+filter : 'filter=None'; 
+
+        url += '&calibrate='+calibrate; 
+
+        $("#logpanel").append('<p>AJAX: ['+url+']</p>'); 
+
+        activeQueries += 1; 
+
+        $.ajax({ 
+            url:url, 
+            success: function(data){
+                plotData(data);
+                closeWaitingDialog();
+            }
+        });
+
+    }
+
+    runRT();
+
+//}}}
+}
+
+function plotData(r_data){
+//{{{
+    waitingDialog("Waveform Explorer:", "Got data, start plotting. Page: " +page);
+
+    if ( ! r_data ) errorPrint('plotData(): ERROR on server!');
+
+    if ( typeof(r_data['ERROR']) != "undefined" ) errorPrint('plotData(): '+r_data['ERROR']);
+
+    var flot_data = [];
+    var temp_flot_ops = flot_ops;
+    var calib = 'false';
+    var somedata = false;
+    var filter = 'none';
+    var conv = 0.0000001;
+
+    if ( typeof(r_data['page']) != "undefined" ){ 
+        if ( parseInt(r_data['page']) > page ) page = r_data['page'];
+    }
+
+    if ( typeof(r_data['last_page']) != "undefined"   ) last_page = r_data['last_page'];
+    if ( typeof(r_data['time']) != "undefined" ) ts = r_data['time'];
+    if ( typeof(r_data['endtime']) != "undefined"   ) te = r_data['endtime'];
+    if ( ts ) temp_flot_ops.xaxis.min   = ts;
+    if ( te ) temp_flot_ops.xaxis.max   = te;
+
+    if ( typeof(r_data['calib']) != "undefined" ) calib = r_data['calib'];
+
+    if ( typeof(r_data['filter']) != "undefined" ) filter = r_data['filter'];
+
+    $('#load_bar').hide();
+    $('#load_bar').empty();
+
+    for (var sta in r_data) {
+        if ( sta == 'page') continue; 
+        if ( sta == 'last_page') continue; 
+        if ( sta == 'time' ) continue;
+        if ( sta == 'endtime' ) continue;
+        if ( sta == 'filter' ) continue;
+        if ( sta == 'calib' ) continue;
+
+        for (var chan in r_data[sta]) {
+
+            var name = sta + '_' + chan ;
+            var wpr = name+"_wrapper";
+            var plt = name+"_plot";
+            var data = r_data[sta][chan];
+            var plot = $("<div>").attr("id", plt );
+
+            if (document.getElementById(wpr) == null) {
+                $("#wforms").append( $("<div>").attr("id",wpr ).attr("class","wrapper") );
+            } else {
+                $("#"+wpr).removeClass('ui-state-error');
+            }
+
+
+            if ( type == 'coverage') { 
+                $("#"+wpr).height( 50 );
+            } else if (size == 'big') {
+                $("#"+wpr).height( 200 );
+            } else if (size == 'medium') {
+                $("#"+wpr).height( 150 );
+            } else {
+                $("#"+wpr).height( 100 );
+            }
+
+            $("#"+wpr).width( $('#name_path').width() );
+            $("#"+wpr).empty();
+            // If we have no data in object
+            if ( data['ERROR']  ) { 
+            //{{{
+                var text = '<p>' + name + ' => ' + data['ERROR'] + ' [ ' + convertTime(ts) + ' - ' + convertTime(te) + ' ]</p>';
+                $("#logpanel").append(text); 
+                $("#openlog").addClass('ui-state-error');
+                $("#"+wpr).addClass('ui-state-error');
+                $('#'+wpr).append( $("<div style='position:absolute;z-index:9999;margin:30px;font-size:15px;color:"+text_color+"'>" + text + "</div>") );
+                $("#"+wpr).addClass('remove');
+            //}}}
+            } 
+            // If we have no data in object
+            if ( typeof(data['data']) == "undefined" ) { 
+            //{{{
+                $("#logpanel").append('<h3>'+name+': No data object in JSON</h3>'); 
+                $("#openlog").addClass('ui-state-error');
+                $("#"+wpr).remove();
+                continue;
+            //}}}
+            } 
+
+
+            $("#"+wpr).append(plot);
+            $("#"+plt).width( '100%' );
+            $("#"+plt).height( '100%' );
+
+
+            $("#"+plt).bind("plotselected", handleSelect);
+
+            var segtype = '-';
+
+            // Setup for Coverage Bars
+            if ( data['type'] == 'coverage') { 
+            //{{{
+
+                // Set FLOT options
+                // for coverage
+                temp_flot_ops.yaxis.ticks = 0;
+                temp_flot_ops.yaxis.min   = 1;
+                temp_flot_ops.yaxis.max   = 2;
+                temp_flot_ops.bars = {
+                        show:true,
+                        horizontal:true,
+                        barWidth:1,
+                        fill:true,
+                        fillColor:data_color
+                };
+
+                //temp_flot_ops.xaxis = {ticks:0,min:null,max:null,labelWidth:0,labelHeight:0};
+                temp_flot_ops.points  = {show:false};
+                temp_flot_ops.lines = {show:false};
+
+            //}}}
+            // Setup for bins
+            } else if( data['format'] == 'bins' ) {
+            //{{{
+                //temp_flot_ops.bars = {align:'center',show:true,barWidth:1,lineWidth:1};
+                temp_flot_ops.bars = {align:'center',show:true,barWidth:1};
+                temp_flot_ops.points  = {show:false};
+                temp_flot_ops.lines = {show:true,lineWidth:1};
+
+            } else if( data['format'] == 'lines' ) {
+
+                if ( show_points ) 
+                    temp_flot_ops.points  = {show:true,lineWidth:0.2};
+                else
+                    temp_flot_ops.points  = {show:false};
+
+                temp_flot_ops.lines = {show:true,lineWidth:1};
+                temp_flot_ops.bars = {show:false};
+
+            }
+            //}}}
+
+            // Add units label
+            if ( typeof(data['segtype']) != "undefined" ) segtype = data['segtype'];
+
+            if ( typeof(datatypes[segtype]) != "undefined") {
+
+            //{{{
+                // Convert to cm if needed
+                if (segtype == 'A' ) {
+
+                    if (acceleration == 'cm') {
+                        segtype = 'accel (cm/sec/sec)';
+
+                        for ( var i=0, len=data['data'].length; i<len; ++i ){
+                            if ( ! data['data'][i] ) continue;
+                            if ( data['data'][i][1] ) data['data'][i][1] *=  conv;
+                            if ( data['data'][i][2] ) data['data'][i][2] *=  conv;
+                        }
+
+                    } else {
+                        segtype = datatypes[segtype];
+                    }
+                } else {
+                    segtype = datatypes[segtype];
+                }
+            //}}}
+            }
+
+            // PLot data
+            if ( type == 'waveform') { 
+                var canvas = $.plot($("#"+plt),[ data['data'] ], temp_flot_ops);
+                $('#'+plt).append( $("<div>").html(name).css(NameCss) );
+
+                $(".tickLabel").css({'font-size':'15px'});
+
+                $(".tickLabel").each(function(i,ele) {
+                    ele = $(ele);
+                    if (ele.css("text-align") == "center") { //x-axis
+                        ele.css("bottom", '8%'); //move them up over graph
+                        ele.css("top", ''); //move them up over graph
+                    } else {  //y-axis
+                        ele.css("left", '1%'); //move them right over graph
+                        ele.css("width", '50px');
+                        ele.css("text-align",'left');
+                    }
+                });
+
+                $('#'+plt).append($("<div>").css(calibCss).append('[ calib: "'+calib+'",  type: "'+segtype+'", filter: "'+filter+'" ]'));
+                //$('#'+plt).append($("<div>").css(IconCss).attr("class","remove icons ui-state-dfault ui-corner-all").append("<span class='ui-icon ui-icon-close'></span>"));
+            } else {
+                if ( data['data'] != null ) {
+                    var canvas = $.plot($("#"+plt),[ data['data'] ], temp_flot_ops);
+                }
+                $('#'+plt).append( $("<div>").html(name).css(NameCss) );
+            }
+
+            somedata = true;
+            chan_plot_obj[name] = canvas;
+
+
+        }
+    }
+
+    if ( somedata && page < last_page ) {
+        $("#load_bar").html( "<p>Page " + page + " of " + last_page + "       <button id=load_next>Load Next</div></p>" );
+        $('#load_bar').show();
+    } else {
+        $("#load_bar").empty();
+        $('#load_bar').hide();
+    }
+
+    activeQueries -= 1; 
+
+    if ( activeQueries == 0 && page < last_page && $('#wforms > *').size() == 0 ) {
+        $("#logpanel").append('EMPTY page. Load next!'); 
+        $("#loading").append('EMPTY page. Load next!'); 
+        page += 1;
+        setData();
+    }
+
+//}}}
+}
+
+function setPhases(){
+//{{{
+    if (! events ) return; 
+    if (! show_phases ) return; 
+    if (! ts || ! te) return;
+
+    $.ajax({
+        url: proxy + "/data/events/"+ts/1000+"/"+te/1000,
+        success: function(data) {
+            if (typeof(data) == "undefined" ) { return; }
+            if (data == "null" ) { return; }
+            if (! data ) { return; }
+            $.each(data, function(sta_chan,p){
+
+                var pt = $('#' + sta_chan + '_plot'); 
+
+                if ( pt.length != 0){
+
+                    $.each(p, function(phaseTime,phaseFlag){
+
+                        var plot_obj = chan_plot_obj[sta_chan]; 
+
+                        var o = plot_obj.pointOffset( { x:(phaseTime*1000), y:1000 } ) ;
+
+                        var flagTop = plot_obj.getPlotOffset() ;
+
+                        var flagCss = arrivalFlagCss;
+
+                        flagCss['left'] = o.left + "px" ;
+                        flagCss['top'] = flagTop.top + "px" ;
+
+                        var flagTail = arrivalTailCss;
+                        flagTail['left'] = flagCss['left'] ;
+                        flagTail['top'] = flagCss['top'] ;
+                        flagTail['height'] = pt.height() + 'px';
+
+                        var arrDiv = $("<div class='flag'>").css(flagCss).append( phaseFlag );
+                        var arrTailDiv = $("<div class='flagTail'>").css(flagTail);
+
+                        pt.append(arrDiv); // Flag
+                        pt.append(arrTailDiv); // Flag tail
+                    });
+                };
+            });
+        },
+    });
+//}}}
+}
+
+//$('.remove').live('click', function() {
+//    $(this).parentsUntil('#wforms').remove();
+//});
+//
+//$(".remove").live("mouseover mouseout", function(event) {
+//  if ( event.type == "mouseover" ) {
+//    $(this).addClass('ui-state-hover');
+//  } else {
+//    $(this).removeClass("ui-state-hover");
+//  }
+//});

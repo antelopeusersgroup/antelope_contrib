@@ -19,7 +19,7 @@ send_alarm(int mrcnum, int dasid, char *who )
   
   nadd = maxtbl(MailAdd);
   if( nadd <= 0 ) 
-     die( 0, "can't get a mail recipients addresses\n");
+     elog_die( 0, "can't get a mail recipients addresses\n");
  
   sprintf( key, "%d\0", dasid);
   if( ( das = getarr( MailSent, key)) == 0 )  {

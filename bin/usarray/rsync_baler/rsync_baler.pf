@@ -1,14 +1,5 @@
 database   /anf/TA/dbs/dbops/usarray        #path to master database with stations and ips
 
-remote_folder      &Tbl{
-    activemedia/data/
-    reservemedia/data/
-}
-
-activemedia               /WDIR/data/        #directory to data in baler's http port
-
-reservemedia              /WDIR2/data/       #directory to data in baler's http port
-
 local_data_dir          /anf/TA/baler/work/  #local directory for archive
 
 download_timeout        300                  # in seconds
@@ -17,13 +8,6 @@ ftp_port                5382                 #port for ftp connections
 
 http_port               5381                 #port for http connections
 
-max_procs               100                  #number of simultaneous processes
+max_procs               40                   #number of simultaneous processes
 
-max_child_run_time      36000                #stop downloading files after this time. 0 for disable.
-#max_child_run_time      79200               #stop downloading files after this time. 0 for disable.
-                                             #outputs problem if met. Good for bandwidth problem detection.
-
-print_miniseed_errors   0                    #print errors output by miniseed cmd (1=True/0=False)
-
-#fix_mseed_cmd           msfixoffsets -i     # Fix each downloaded file. Compiled for Solaris. 
-fix_mseed_cmd                                # Fix each downloaded file. Compiled for Solaris. 
+max_child_run_time      36000                #stop downloading files after this number of seconds. 0 = disable.

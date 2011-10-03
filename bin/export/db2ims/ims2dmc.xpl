@@ -7,7 +7,7 @@
 
 # J.Eakins 1/2008
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 use rtmail;
 use File::Path;
@@ -43,7 +43,7 @@ elog_notify(0,"\nStarting program at: $t");
 my $pgm = $0 ;
 $pgm =~ s".*/"" ;
 
-  if ( ! &Getopts('C:f:m:o:s:vV') || @ARGV < 2 ) { 
+  if ( ! getopts('C:f:m:o:s:vV') || @ARGV < 2 ) { 
 	&usage;
   }
 

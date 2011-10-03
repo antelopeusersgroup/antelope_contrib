@@ -177,7 +177,7 @@ int main(int iArgCount, char *aArgList[]) {
 								1,
 								"An error occurred while adding the ORB header to the raw packet. Not submitting to the orb.");
 					} else if (sOutPkt == 0) {
-						die(1,
+						elog_die(1,
 								"Output packet length was non-zero but pointer to Output packet is null");
 					} else {
 

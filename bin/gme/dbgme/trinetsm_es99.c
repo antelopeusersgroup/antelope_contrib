@@ -639,7 +639,7 @@ trinetsm_es99_mmi( Dbptr db, Pf *pf )
 		        qgridtype, auth, flags );
 
 	if( rc < 0 ) {
-		clear_register( 1 );
+		elog_clear_register( 1 );
 	}
 
 	cggrid_free( &mp.cgg_pga );
@@ -1254,7 +1254,7 @@ trinetsm_es99( Dbptr db, Pf *pf )
 	
 	if( rc < 0 ) {
 
-		clear_register( 1 );
+		elog_clear_register( 1 );
 	}
 
 	cggrid_free( &cgg );

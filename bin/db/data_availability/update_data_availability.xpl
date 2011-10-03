@@ -1,7 +1,7 @@
 
-require "getopts.pl" ;
+use Getopt::Std ;
  
-if ( ! &Getopts('vlfs:b:') || @ARGV != 2 ) { 
+if ( ! getopts('vlfs:b:') || @ARGV != 2 ) { 
     die ( "Usage: $0 [-v] [-f] [-l] [-b date] [-s subset] dbwf[.table] dbout\n" ) ; 
 }
 

@@ -118,7 +118,7 @@ int liss_ucompress( int *data,
               conf->sdh.nsamp = nsamp;
               conf->level = 1;
               if ( usteim (conf, &sud, &npts) ) {
-                      register_error (0, "unstuffqorbpkt: usteim() error.\n");
+                      elog_log(0, "unstuffqorbpkt: usteim() error.\n");
                       return (0);
               }
               memcpy (data, sud, nsamp*4);
@@ -134,7 +134,7 @@ int liss_ucompress( int *data,
               conf->sdh.nsamp = nsamp;
               conf->level = 2;
               if ( usteim (conf, &sud, &npts) ) {
-                      register_error (0, "unstuffqorbpkt: usteim() error.\n");
+                      elog_log(0, "unstuffqorbpkt: usteim() error.\n");
                       return (0);
               }
               memcpy (data, sud, nsamp*4);
@@ -185,7 +185,7 @@ int liss_ucompress( int *data,
               conf->sdh.nsamp = nsamp;
               conf->level = 2;
               if ( usteim (conf, &sud, &npts) ) {
-                      register_error (0, "unstuffqorbpkt: usteim() error.\n");
+                      elog_log(0, "unstuffqorbpkt: usteim() error.\n");
                       return (0);
               }
               memcpy (data, sud, nsamp*4);
@@ -223,7 +223,7 @@ int liss_ucompress( int *data,
              return(ct);
               
          default:
-           complain(0, "unknown data format %c\n", dtype );
+           elog_complain(0, "unknown data format %c\n", dtype );
            return -1; 
  
          break;
@@ -278,7 +278,7 @@ int unstuff_liss(  double time,
 
         if( (nbytes = liss_ucompress( 
 	    &udata[0], hdr->prehdr.pktsiz, hdr->doff, cptr, hdr->nsamp, dformat) )<= 0 )  {
-             complain( 0, "Can't uncompress LISS data.\n");
+             elog_complain( 0, "Can't uncompress LISS data.\n");
              hexdump( stderr, packet, 16+hdr->doff+16 );
              fflush(stderr);
              return 0;

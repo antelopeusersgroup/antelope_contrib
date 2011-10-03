@@ -102,18 +102,18 @@ char           *wfdir;
     /* Write out each segment to a new sac file */
     trace = SCV_get_rawtrace (scv, tstrt, tend);
     if (trace == NULL)
-	die (1, "Can't read waveform data\n");
+	elog_die(1, "Can't read waveform data\n");
 
     /* Convert data */
     if (!strcmp (fixgaps, "zero") || !strcmp (fixgaps, "interp")) {
 	trace = (Trace *) SCV_trace_fixgaps (trace, fixgaps);
 	if (trace == NULL) {
-	    die (1, "Can't fix trace gaps\n");
+	    elog_die(1, "Can't fix trace gaps\n");
 	}
     }
     original = trace = (Trace *) SCV_trace_tofloat (trace, counts);
     if (trace == NULL) {
-	die (1, "Can't convert trace to counts\n");
+	elog_die(1, "Can't convert trace to counts\n");
     }
     for (seg_index = 0;
 	    trace != 0 && seg_index < nsegs;

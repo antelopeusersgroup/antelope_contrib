@@ -1,24 +1,24 @@
-import sys
-import os
-import re
+from __main__ import *
 
-from twisted.web import server, static, rewrite
-from twisted.application import service, internet
+for port,db  in config.run_server.items():
 
-import dbwfserver.config as config
-import dbwfserver.resource as resource
+    root = resource.QueryParser(db)
 
+    root.putChild('static', static.File(config.static_dir))
 
-root = resource.QueryParser()
+    #
+    # favicon.ico
+    #
+    favicon = static.File(os.path.join(config.static_dir, 'images/favicon.ico'),
+                                    defaultType='image/vnd.microsoft.icon')
+    root.putChild('favicon.ico', favicon)
 
-root.putChild('static',   static.File(config.static_dir))
+    site = server.Site(root)
 
-rewrite_root = rewrite.RewriterResource(root)
+    site.displayTracebacks = config.display_tracebacks
 
-site = server.Site(rewrite_root)
+    application = service.Application('dbwfserver')
 
-site.displayTracebacks = config.display_tracebacks
+    sc = service.IServiceCollection(application)
 
-application = service.Application(config.application_name)
-
-internet.TCPServer(config.port, site).setServiceParent(application)
+    sc.addService(internet.TCPServer(int(port), site))

@@ -22,7 +22,7 @@ int unstuffpar( char *packet,
   pkttype = ntohl (hdr->pkttype) ;
 
   if( pkttype == -1 )  {
-    complain( 0, "Can't get packet type.\n" );
+    elog_complain( 0, "Can't get packet type.\n" );
     return 0;
   }
  

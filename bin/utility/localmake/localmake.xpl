@@ -5,7 +5,7 @@ use Term::ANSIColor qw/uncolor/;
 use POSIX;
 use FileHandle;
 
-require "getopts.pl";
+use Getopt::Std;
 
 sub show_available {
 
@@ -75,6 +75,7 @@ sub load_modules {
 
 	my( @exclude ) = ( "tarball_time_format",
 			   "tar_command",
+			   "make_command",
 			   "pf_revision_time" );
 
 	$p = pfget( $Pf, "" );
@@ -180,7 +181,7 @@ sub ansicolored_to_tagged {
 
 		my( $tag_name ) = join( "_", @tag_parts );
 
-		if( ! defined( $defined_tags{$tag_name} ) ) {
+		if( ! defined( $Defined_tags{$tag_name} ) ) {
 
 			my( @tagopts ) = ();
 
@@ -221,6 +222,8 @@ sub ansicolored_to_tagged {
 		}
 
 		push( @tagged, $token, $tag_name );
+
+		$Defined_tags{$tag_name}++;
 	}
 
 	return @tagged;
@@ -259,7 +262,7 @@ sub make_target {
 
 	} else {
 
-		$cmd = "make $target 2>&1 < /dev/null $cf";
+		$cmd = "$Make_command $target 2>&1 < /dev/null $cf";
 	}
 
 	inform( "localmake: executing '$cmd'\n" );
@@ -324,6 +327,32 @@ sub make_target {
 	return $rc;
 }
 
+sub clear_compileout {
+
+	my( $geom ) = $Windows{"Main"}->geometry();
+
+	$Windows{"CompileOut"}->destroy();
+
+	%Defined_tags = ();
+
+	$Windows{"CompileOut"} = $Windows{"compile"}->Scrolled( "ROText", 
+						  		-wrap => "word",
+						  		-scrollbars => "oe",
+								-background => "white" );
+
+	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
+
+	$Windows{"CompileOut"}->grid( -row => $CompileOut_Row, -column => 0, -sticky => "nsew" );
+
+	$Windows{"Main"}->gridRowconfigure( $CompileOut_Row, -weight => 1 );
+
+	$Windows{"Main"}->geometry( $geom );
+	
+	$Windows{"Main"}->update();
+
+	return;
+}
+
 sub localmake_module {
 	my( $module ) = @_;
 
@@ -331,8 +360,9 @@ sub localmake_module {
 
 		$Windows{"compilebutton_$module"}->configure( -relief => "sunken" );
 
-		$Windows{"CompileOut"}->delete( '0.0', 'end' );
-		$Windows{"Main"}->update();
+		destroy_followup_buttons();
+
+		clear_compileout();
 	}
 
 	my( @steps ) = @{$Modules{$module}{build}};
@@ -357,7 +387,10 @@ sub localmake_module {
 		$src_subdir = $Modules{$module}{src_subdir};
 	}
 
-	inform( "localmake: making module '$module'\n" );
+	$start_time = now();
+	$start_time_str = epoch2str( $start_time, "%A %B %o, %Y at %T %Z", "" );
+
+	inform( "localmake: making module '$module' starting on $start_time_str\n" );
 
 	my( @capabilities ) = @{$Modules{$module}{capabilities_required}};
 
@@ -423,7 +456,71 @@ sub localmake_module {
 		$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
 	}
 
-	inform( "localmake: done making module '$module', hopefully successfully (review compilation messages for possible errors)\n\n" );
+	#HARD-WIRE tag names (colors) interpreted as warnings and errors
+
+	@warning_blocks = $Windows{"CompileOut"}->tagRanges("magenta");
+	@error_blocks = $Windows{"CompileOut"}->tagRanges("red");
+
+	$num_warning_blocks = scalar( @warning_blocks ) / 2;
+	$num_error_blocks = scalar( @error_blocks ) / 2;
+
+	if( $Gui_mode ) {
+
+		if( $num_warning_blocks > 0 || $num_error_blocks > 0 ) {
+			
+			add_followup_buttons();
+		}
+
+		$end_time = now();
+		$end_time_str = epoch2str( $end_time, "%A %B %o, %Y at %T %Z", "" );
+
+		$delta = strtdelta( $end_time - $start_time );
+		$delta =~ s/^[[:space:]]+//;
+		$delta =~ s/[[:space:]]+$//;
+
+		$msg = "localmake: done making module '$module'\n" .
+			"\tStarted:  $start_time_str\n" .
+			"\tFinished: $end_time_str\n" .
+			"\tElapsed:  $delta\n";
+
+		$Windows{"CompileOut"}->insert( "end", $msg, "localmake_inform" );
+
+		$msg = "\tWarnings: $num_warning_blocks blocks of warning messages\n";
+
+		if( $num_warning_blocks > 0 ) {
+			
+			$tag = "magenta";
+
+		} else {
+
+			$tag = "localmake_inform";
+		}
+
+		$Windows{"CompileOut"}->insert( "end", $msg, $tag );
+
+		$msg = "\tErrors:   $num_error_blocks blocks of error messages\n";
+
+		if( $num_error_blocks > 0 ) {
+			
+			$tag = "red";
+
+		} else {
+
+			$tag = "localmake_inform";
+		}
+
+		$Windows{"CompileOut"}->insert( "end", $msg, $tag );
+
+		$Windows{"CompileOut"}->see( 'end' );
+
+		$Windows{"Main"}->update();
+
+	} else {
+
+		inform( "localmake: done making module '$module' with " .
+			"$num_warning_blocks blocks of warning messages and " .
+			"$num_error_blocks blocks of error messages\n\n" );
+	}
 
 	if( $Gui_mode && $module eq "bootstrap" ) {
 
@@ -437,6 +534,110 @@ sub localmake_module {
 	}
 
 	return 0;
+}
+
+sub compute_font_height {
+
+	if( $Windows{"CompileOut"}->height() == 1 ) {
+		
+		$Windows{"Main"}->after( 100, \&compute_font_height );
+
+		return;
+	}
+
+	$Font_height = $Windows{"CompileOut"}->height() / $Windows{"CompileOut"}->cget( -height );
+
+	return;
+}
+
+sub get_next_hidden_message {
+	my( $listref, $indexref ) = @_;
+
+	my( $height_rows ) = int( $Windows{"CompileOut"}->height() / $Font_height );
+
+	my( $last_visible ) = $Windows{"CompileOut"}->index('@0,0') + $height_rows;
+
+	$$indexref++;
+
+	my( $next_start ) = $$listref[$$indexref * 2];
+
+	while( $next_start <= $last_visible && $$indexref * 2 < scalar( @{$listref} ) ) {
+
+		$$indexref++;
+
+		$next_start = $$listref[$$indexref * 2];
+	}
+
+	if( ! defined( $next_start ) || $next_start eq "" || $$indexref >= scalar( @{$listref} ) - 1 ) {
+
+		$$indexref = scalar( @{$listref} ) / 2 - 1;
+	}
+
+	return $$indexref;
+}
+
+sub show_first_error {
+	
+	my( $start ) = $errorslist[0];
+
+	$current_error = 0;
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	if( ( $current_error + 1 ) * 2 < scalar( @errorslist ) ) {
+
+		$Windows{"NextError"}->configure( -state => "normal" );
+	}
+}
+
+sub show_first_warning {
+	
+	my( $start ) = $warningslist[0];
+
+	$current_warning = 0;
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	if( ( $current_warning + 1 ) * 2 < scalar( @warningslist ) ) {
+
+		$Windows{"NextWarning"}->configure( -state => "normal" );
+	}
+}
+
+sub show_next_error {
+	
+	$current_error = get_next_hidden_message( \@errorslist, \$current_error );
+
+	my( $start ) = $errorslist[$current_error * 2];
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	if( ( $current_error + 1 ) * 2 >= scalar( @errorslist ) ) {
+
+		$Windows{"NextError"}->configure( -state => "disabled" );
+	}
+}
+
+sub show_next_warning {
+	
+	$current_warning = get_next_hidden_message( \@warningslist, \$current_warning );
+
+	my( $start ) = $warningslist[$current_warning * 2];
+
+	$Windows{"CompileOut"}->see( $start );
+
+	$Windows{"CompileOut"}->update();
+
+	if( ( $current_warning + 1 ) * 2 >= scalar( @warningslist ) ) {
+
+		$Windows{"NextWarning"}->configure( -state => "disabled" );
+	}
 }
 
 sub create_compile_button {
@@ -491,30 +692,113 @@ sub init_menubar {
         return $menubar;
 }
 
-sub init_window {
-	use Tk;
-	use Tk::ROText;
-	use Tk::Font;
-	use Tk::FileSelect;
-	use elog_gui;
-	
-	$Windows{"Main"} = MainWindow->new();
+sub add_followup_buttons {
 
-	elog_gui_init( MW => $Windows{"Main"} );
-	elog_callback( "::elog_gui" );
+	my( $firsterror_state, $nexterror_state, $firstwarning_state, $nextwarning_state );
 
-	$Windows{"Main"}->bind( "<Control-c>", \&quit );
-	$Windows{"Main"}->bind( "<Control-C>", \&quit );
+	@errorslist = $Windows{"CompileOut"}->tagRanges( "red" );
+	@warningslist = $Windows{"CompileOut"}->tagRanges( "magenta" );
+	$current_error = 0;
+	$current_warning = 0;
 
-	$row = 0;
+	if( scalar( @errorslist ) <= 0 ) {
 
-	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
+		$firsterror_state = 'disabled';
+		$nexterror_state = 'disabled';
 
-	$Windows{"menubar"}->grid( -row => $row++, -column => 0, -sticky => "new" );
+	} else {
 
-	$Windows{"buttons"} = $Windows{"Main"}->Frame( -relief => 'raised', -borderwidth => 5 );
+		$firsterror_state = 'normal';
+		$nexterror_state = 'disabled';
+	}
 
-	$Windows{"buttons"}->grid( -row => $row++, -column => 0, -sticky => "new" );
+	if( scalar( @warningslist ) <= 0 ) {
+
+		$firstwarning_state = 'disabled';
+		$nextwarning_state = 'disabled';
+
+	} else {
+
+		$firstwarning_state = 'normal';
+		$nextwarning_state = 'disabled';
+	}
+
+	$w = $Windows{"Main"};
+
+	my( $frame ) = $w->Frame( -relief => 'raised', -borderwidth => 5 );
+
+	$Windows{"FirstError"} = $frame->Button( -text => "First Error", 
+					    -relief => 'raised', 
+					    -foreground => 'red', 
+					    -state => $firsterror_state,
+					    -command => \&show_first_error );
+
+	$Windows{"FirstError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$Windows{"NextError"} = $frame->Button( -text => "Next Error", 
+					   -relief => 'raised', 
+					   -foreground => 'red', 
+					   -state => $nexterror_state,
+					   -command => \&show_next_error );
+
+	$Windows{"NextError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$Windows{"FirstWarning"} = $frame->Button( -text => "First Warning", 
+					      -relief => 'raised', 
+					      -foreground => 'magenta', 
+					      -state => $firstwarning_state,
+					      -command => \&show_first_warning );
+
+	$Windows{"FirstWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$Windows{"NextWarning"} = $frame->Button( -text => "Next Warning", 
+					     -relief => 'raised', 
+					     -foreground => 'magenta', 
+					     -state => $nextwarning_state,
+					     -command => \&show_next_warning );
+
+	$Windows{"NextWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+
+	$frame->grid( -row => 3, -column => 0, -sticky => "new" );
+
+	$w->gridRowconfigure( 3, -weight => 0 );
+
+	$Windows{"FollowUpButtons"} = $frame;
+
+	$Windows{"Main"}->update();
+
+	return;
+}
+
+sub destroy_followup_buttons {
+
+	undef( @errorslist );
+	undef( @warningslist );
+
+	undef( $current_error );
+	undef( $current_warning );
+
+	if( Exists( $Windows{"FollowUpButtons"} ) ) {
+
+		$Windows{"FollowUpButtons"}->destroy();
+	}
+
+	return;
+}
+
+sub init_compile_window {
+	my( $w ) = @_;
+
+        my( $compilewindow );
+
+        $compilewindow = $w->Frame( -relief => 'raised',
+                              -borderwidth => 2 );
+
+	$Windows{"buttons"} = $compilewindow->Frame( -relief => 'raised', -borderwidth => 5 );
+
+	$Windows{"buttons"}->grid( -row => 0, -column => 0, -sticky => "new" );
+
+	$compilewindow->gridColumnconfigure( 0, -weight => 1 );
 
 	$buttonrow = $buttoncolumn = 0;
 
@@ -545,31 +829,67 @@ sub init_window {
 		}
 	}
 
-	$Windows{"CompileOut"} = $Windows{"Main"}->Scrolled( "ROText", 
-						  		-wrap => "word",
-						  		-scrollbars => "oe",
-								-background => "white" );
+	$Windows{"CompileOut"} = $compilewindow->Scrolled( "ROText", 
+					  		-wrap => "word",
+					  		-scrollbars => "oe",
+							-background => "white", 
+							-width => $ROWidth );
 
 	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
 
-	$Windows{"CompileOut"}->grid( -row => $row++, -column => 0, -sticky => "nsew" );
+	$CompileOut_Row = 1;
+
+	$Windows{"CompileOut"}->grid( -row => $CompileOut_Row, -column => 0, -sticky => "nsew" );
+
+	$compilewindow->gridRowconfigure( $CompileOut_Row, -weight => 1 );
+
+	return $compilewindow;
+}
+
+sub init_window {
+	use Tk;
+	use Tk::ROText;
+	use Tk::Font;
+	use Tk::FileSelect;
+	use elog_gui;
+	
+	$Windows{"Main"} = MainWindow->new();
+
+	$Windows{"Main"}->title( my_hostname() . ": localmake" );
+
+	elog_gui_init( MW => $Windows{"Main"} );
+	elog_callback( "::elog_gui" );
+
+	$Windows{"Main"}->bind( "<Control-c>", \&quit );
+	$Windows{"Main"}->bind( "<Control-C>", \&quit );
+
+	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
+
+	$Windows{"menubar"}->grid( -row => 0, -column => 0, -sticky => "new" );
+
+	$Windows{"compile"} = init_compile_window( $Windows{"Main"} );
+
+	$Windows{"compile"}->grid( -row => 1, -column => 0, -sticky => "nsew" );
 
 	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
 
-	$Windows{"Main"}->gridRowconfigure( 2, -weight => 1 );
+	$Windows{"Main"}->gridRowconfigure( 1, -weight => 1 );
+
+	$Windows{"Main"}->afterIdle( \&compute_font_height );
 
 	MainLoop;
 }
 
 $Os = my_os();
 $Pf = "localmake";
+$ROWidth = 132;
 
 $Program = $0;
 $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !Getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
+if( !getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
 
 	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [-s src_subdir] [module]\n" );
 }
@@ -586,6 +906,12 @@ if( $opt_p ) {
 
 $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
+$Make_command = pfget( $Pf, "make_command" );
+
+if( defined( $ENV{'MAKE'} ) ) {
+
+	$Make_command = $ENV{'MAKE'};
+}
 
 %Modules = load_modules();
 

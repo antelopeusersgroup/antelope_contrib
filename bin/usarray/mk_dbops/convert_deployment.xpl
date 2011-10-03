@@ -3,13 +3,13 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 use Datascope ;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use strict ;
 
 our ($opt_i, $opt_n, $opt_v, $Cnt) ;
 our ($dbname, @db, @deployment, $name) ;
  
-if ( ! &Getopts('inv') || @ARGV != 1) { 
+if ( ! getopts('inv') || @ARGV != 1) { 
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     die ( "Usage: $pgm [-inv] database  \n" ) ; 

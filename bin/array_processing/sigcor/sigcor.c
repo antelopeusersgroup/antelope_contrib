@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   strcat(arrayfile,".arr");
   if ( (fp = fopen(arrayfile,"r")) == NULL)
   {
-    complain(0,"Could not open array file.\n");
+    elog_complain(0,"Could not open array file.\n");
     return 1;
   }
   nsta = 0;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
   if (dbopen(dbname,"r",&db) < 0)
   {
-    complain(0,"Could not open database.\n");
+    elog_complain(0,"Could not open database.\n");
     return 1;
   }
 
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     dbquery(dbz,dbRECORD_COUNT,&nz);
     if (nz == 0) 
     { 
-      complain(0,"No wfdisc records found for station %s.\n",sta[j]);
+      elog_complain(0,"No wfdisc records found for station %s.\n",sta[j]);
       continue;
     }
     dbz.record = 0;
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     iret=trgetwf(dbz,NULL,&s[j],&nbytes,tstart,tend,&ts[j],&te[j],&mpts[j],0,0);
     if (iret != 0)
     {
-      complain(0,"error in getting data for station %s\n",sta[j]);
+      elog_complain(0,"error in getting data for station %s\n",sta[j]);
       continue;
     }
     for (i=0;i<mpts[j];i++) s[j][i] = s[j][i]*calib;
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
   printf("# stations having waveforms to correlate = %d\n",nexist);
   if (nexist == 0) 
   {
-    complain(0,"No waveforms available for this time -- cannot continue.\n");
+    elog_complain(0,"No waveforms available for this time -- cannot continue.\n");
     return 1;
   }
 
@@ -242,14 +242,14 @@ int main(int argc, char *argv[])
 /*  Check old and new sample rates.*/
     if (fabs(rdec - idec) > 0.01) 
     {
-      complain(0,"Old sample rate over new sample rate != integer -- cannot continue.\n");
-      complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
+      elog_complain(0,"Old sample rate over new sample rate != integer -- cannot continue.\n");
+      elog_complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
       return 1;
     }
     if (idec == 0) 
     {
-      complain(0,"Old sample rate over new sample rate < 1 -- cannot resample.\n");
-      complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
+      elog_complain(0,"Old sample rate over new sample rate < 1 -- cannot resample.\n");
+      elog_complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
       return 1;
     }        
 
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
       iret = trfilter_segs(1,&mpts[j],&del,&s[j],decfilter);
       if (iret != 0)
       {
-        complain(0,"error in filtering waveform %d = %d\n",j,iret);
+        elog_complain(0,"error in filtering waveform %d = %d\n",j,iret);
         return 1;
       }
       for(i=0;i<spts;i++) s[j][i] = s[j][i*idec];
@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
       iret = trfilter_segs(1,&spts,&del,&s[j],filter);
       if (iret != 0)
       {
-        complain(0,"error in filtering waveform %d = %d\n",j,iret);
+        elog_complain(0,"error in filtering waveform %d = %d\n",j,iret);
         return 1;
       }
     }
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 
   if ( (fp = fopen(dfile,"w")) == NULL)
   {
-    complain(0,"Could not open output file.\n");
+    elog_complain(0,"Could not open output file.\n");
     return 1;
   }
  

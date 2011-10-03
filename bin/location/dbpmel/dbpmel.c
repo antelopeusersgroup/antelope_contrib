@@ -29,7 +29,7 @@ Tbl *parse_gridlist_string(char *gstr)
 	Tbl *t;
 	char *sp;
 	char *sie;
-	int is,ie,i;
+	long is,ie,i;
 
 	t = newtbl(0);
 	sp = strtok(gstr,",");
@@ -37,15 +37,15 @@ Tbl *parse_gridlist_string(char *gstr)
 	{
 		if( (sie=strchr(sp,'-')) == NULL)
 		{
-			is = atoi(sp);
+			is = atol(sp);
 			ie = is;
 		}
 		else
 		{
 			*sie = '\0';
 			++sie;
-			is = atoi(sp);
-			ie = atoi(sie);
+			is = atol(sp);
+			ie = atol(sie);
 		}
 		for(i=is;i<=ie;++i)
 		{
@@ -64,18 +64,18 @@ gmin and gmax are returned as the maximum and minimum grid id
 Author:  Gary Pavlis
 Written: July 2001
 */
-void get_gridid_range(Tbl *gridlist,int *gmin,int *gmax)
+void get_gridid_range(Tbl *gridlist,long *gmin,long *gmax)
 {
-	int gidmin,gidmax;
-	int gridid;
-	int i;
+	long gidmin,gidmax;
+	long gridid;
+	long i;
 	
 	if(maxtbl(gridlist)<=0) elog_die(0,"Empty grid id list\nProbable usage error\n");
-	gidmin = (int)gettbl(gridlist,0);
+	gidmin = (long)gettbl(gridlist,0);
 	gidmax = gidmin;
 	for(i=1;i<maxtbl(gridlist);++i)
 	{
-		gridid = (int)gettbl(gridlist,i);
+		gridid = (long)gettbl(gridlist,i);
 		gidmin = MIN(gidmin,gridid);
 		gidmax = MAX(gidmax,gridid);
 	}
@@ -114,7 +114,7 @@ void save_run_parameters(Dbptr db,Pf *pf)
 		"vmodel",vm,
 		"vmodel3d",vm3d,
 		"dir",dir,
-		"dfile",dfile,0);
+		"dfile",dfile,NULL );
 	if(ierr < 0) elog_die(0,
 		   "dbaddv error on pmelrun table\nVerify schema extensions for dbpmel and that the pmel_run_name parameter is unique\n");
 
@@ -143,12 +143,12 @@ main(int argc, char **argv)
 	int sift = 0;  /* default is no sift.  */
 	Tbl *sortkeys;
 	/* db row variables */
-	int nrows, nrows_raw;
+	long nrows, nrows_raw;
 
 	Pf *pf;
 	char *version="1.0";
 	int i;
-	int gmin,gmax;
+	long gmin,gmax;
 	char sstring[128];
 	char *gridname;
 	Tbl *proctbl;
@@ -184,7 +184,7 @@ main(int argc, char **argv)
 	/* set default this way*/
 	if(pfin == NULL) pfin = (char *)strdup("dbpmel");
 	i = pfread(pfin,&pf);
-	if(i != 0) die(1,"Pfread error\n");
+	if(i != 0) elog_die(1,"Pfread error\n");
 	check_required_pf(pf);
 
 
@@ -204,11 +204,11 @@ main(int argc, char **argv)
 	save_run_parameters(db,pf);	
 		
 	db = dblookup(db,0,"hypocentroid",0,0);
-	sprintf(sstring,"gridid>=%d && gridid<=%d && (gridname=~/%s/)",gmin,gmax,gridname);
+	sprintf(sstring,"gridid>=%ld && gridid<=%ld && (gridname=~/%s/)",gmin,gmax,gridname);
 	db = dbsubset(db,sstring,0);
 	dbquery(db, dbRECORD_COUNT, &nrows);
 	if(nrows<=0) 
-		elog_die(0,"No hypocentroid records in requested gridid range of %d to %d for grid called %s\n",
+		elog_die(0,"No hypocentroid records in requested gridid range of %ld to %ld for grid called %s\n",
 				gmin,gmax,gridname);
 	/* This forms the working view for this program */
 	proctbl = strtbl("dbjoin cluster",
@@ -216,17 +216,17 @@ main(int argc, char **argv)
 		"dbjoin origin",
 		"dbsubset orid==prefor",
 		"dbjoin assoc",
-		"dbjoin arrival",0);
+		"dbjoin arrival",NULL );
 	dbv = dbprocess(db,proctbl,0);
 	dbquery(dbv, dbRECORD_COUNT, &nrows);
-	fprintf(stdout,"Raw working database view has %d rows\n",nrows);
+	fprintf(stdout,"Raw working database view has %ld rows\n",nrows);
 
 	/* Subset using sift_key if requested */
 	if(sift)
 	{
 		dbv = dbsubset(dbv,sift_exp,0);
 		if(dbv.record == dbINVALID)
-			die(1,"dbsubset of %s with expression %s failed\n",
+			elog_die(1,"dbsubset of %s with expression %s failed\n",
 				dbin, sift_exp);
 	}
 
@@ -244,11 +244,11 @@ main(int argc, char **argv)
 	dbquery(dbv, dbRECORD_COUNT, &nrows);
 
 	if(nrows != nrows_raw)
-		complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
+		elog_complain(0,"Input database has duplicate picks of one or more phases on multiple channels\n\
 Which picks will be used here is unpredictable\n\
-%d total picks, %d unique\nContinuing\n", nrows_raw, nrows);
+%ld total picks, %ld unique\nContinuing\n", nrows_raw, nrows);
 
-	fprintf(stdout,"Final working view has %d rows\n",nrows);
+	fprintf(stdout,"Final working view has %ld rows\n",nrows);
 
 	if(dbpmel_process(dbv,gridlist,pf))
 	{

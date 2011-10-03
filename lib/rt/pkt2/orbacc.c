@@ -221,14 +221,14 @@ accumulate (int pktid, PktChannel *achan, regex_t *acc_re,
     }
 
     if (! TRSAMERATE(primary->samprate, achan->samprate)){
-	complain ( 0, "%s pktid#%d samprates don't match: %10.4f %10.4f\n", net_sta_chan, 
+	elog_complain( 0, "%s pktid#%d samprates don't match: %10.4f %10.4f\n", net_sta_chan, 
 		pktid, primary->samprate, achan->samprate ) ;
 	return acc_anomalous (achan, req_time, req_twin, primary ) ; 
     }
 
     if (! TRSAMETICKS(primary->t0, achan->time, primary->samprate)) {
 	char *s1, *s2 ;
-	complain ( 0, "%s pktid#%d ticks don't match: %s %s rate=%10.4f\n", net_sta_chan, 
+	elog_complain( 0, "%s pktid#%d ticks don't match: %s %s rate=%10.4f\n", net_sta_chan, 
 		pktid, s1=strtime(primary->t0), s2=strtime(achan->time), primary->samprate ) ;
 	free(s1) ;
 	free(s2) ;
@@ -236,7 +236,7 @@ accumulate (int pktid, PktChannel *achan, regex_t *acc_re,
     }
 
     if (primary->calib != achan->calib ) {
-	complain ( 0, "%s pktid#%d calibs don't match: %10.4f %10.4f\n", net_sta_chan, 
+	elog_complain( 0, "%s pktid#%d calibs don't match: %10.4f %10.4f\n", net_sta_chan, 
 		pktid, primary->calib, achan->calib ) ;
 	return acc_anomalous (achan, req_time, req_twin, primary ) ; 
     }
@@ -265,10 +265,10 @@ accumulate (int pktid, PktChannel *achan, regex_t *acc_re,
       || (next != 0 && t1 > next->t0 + .01/primary->samprate)) {
 	char *s1, *s2, *s3, *s4 ;
 	if (prev != 0 && prev->t1 > t0) 
-	    complain ( 0, "%s pktid#%d overlapping packets: \n\tprev->t0=%s prev->t1=%s\n\t      t0=%s       t1=%s\n", net_sta_chan, 
+	    elog_complain( 0, "%s pktid#%d overlapping packets: \n\tprev->t0=%s prev->t1=%s\n\t      t0=%s       t1=%s\n", net_sta_chan, 
 		    pktid, s1=strtime(prev->t0), s2=strtime(prev->t1), s3=strtime(t0), s4=strtime(t1)) ; 
 	else
-	    complain ( 0, "%s pktid#%d overlapping packets: \n\tt0      =%s       t0=%s\n\tnext->t0=%s next->t1=%s\n", net_sta_chan, 
+	    elog_complain( 0, "%s pktid#%d overlapping packets: \n\tt0      =%s       t0=%s\n\tnext->t0=%s next->t1=%s\n", net_sta_chan, 
 		    pktid, s1=strtime(t0), s2=strtime(t1), s3=strtime(next->t0), s4=strtime(next->t1)) ; 
 	free(s1) ;
 	free(s2) ;
@@ -428,7 +428,7 @@ Hook          **hookp;
 	p->chandata = newtbl (0);
 	if (orbget (orb, ORBCURRENT,
 		    &pktid, srcname, &pkttime, &packet, &nbytes, &bufsize)) {
-	    register_error (1, "orbget fails\n");
+	    elog_log(1, "orbget fails\n");
 	    return -1;
 	}
 	p->req_time = pkttime;
@@ -457,7 +457,7 @@ Hook          **hookp;
         if ( (err = regcomp(p->acc_re, accselect, REG_EXTENDED)) != 0 ) {
             char errbuf[ERRBUF_SIZE] ;
             regerror ( err, p->acc_re, errbuf, ERRBUF_SIZE) ;
-            register_error (0, "couldn't compile pattern '%s'\n", errbuf);
+            elog_log(0, "couldn't compile pattern '%s'\n", errbuf);
             return -2;
         }
 
@@ -494,7 +494,7 @@ Hook          **hookp;
 
     while (max_time - req_endtime < latency) {
 	if (orbreap (orb, &pktid, srcname, &pkttime, &packet, &nbytes, &bufsize)) {
-	    register_error (1, "orbreap fails\n");
+	    elog_log(1, "orbreap fails\n");
 	    retcode = -3 ;
 	    break;
 	}
@@ -502,7 +502,7 @@ Hook          **hookp;
 #ifdef DEBUG
 	{
 	char	   *s ;
-	complain( 0, "%5d %s %s\n", pktid, srcname, s=strtime(pkttime) ) ; 
+	elog_complain( 0, "%5d %s %s\n", pktid, srcname, s=strtime(pkttime) ) ; 
 	free(s) ;
 	}
 #endif
@@ -535,7 +535,7 @@ Hook          **hookp;
 
 	    default:
 		retcode = -4 ;
-		complain ( 0, "unknown return code %d from unstuffpkt\n", 
+		elog_complain( 0, "unknown return code %d from unstuffpkt\n", 
 		    unstuff ) ; 
 		break ;
 	}
@@ -602,7 +602,7 @@ Dbptr         *trp;
         if ( (err = regcomp(p->acc_re, accselect, REG_EXTENDED)) != 0 ) {
             char errbuf[ERRBUF_SIZE] ;
             regerror ( err, p->acc_re, errbuf, ERRBUF_SIZE) ;
-            register_error (0, "couldn't compile pattern '%s'\n", errbuf);
+            elog_log(0, "couldn't compile pattern '%s'\n", errbuf);
             return -1; 
         }   
 	
@@ -613,14 +613,14 @@ Dbptr         *trp;
     }
     if ( orbselections != 0 && *orbselections != 0 ) {
 	if ( orbselect ( orb, orbselections ) < 1 ) {
-	    register_error ( 0, "selection criteria gave no selections\n" ) ; 
+	    elog_log( 0, "selection criteria gave no selections\n" ) ; 
 	    return -2 ; 
 	}
     }
 
     req_endtime = req_t0 + req_twin ;
     if ((pktid = orbafter ( orb, req_t0 - eps )) < 0) {
-	register_error ( 1, "orbafter to %s failed\n", s=strtime(req_t0) )  ;
+	elog_log( 1, "orbafter to %s failed\n", s=strtime(req_t0) )  ;
 	free(s) ;
 	return -3 ;
     }
@@ -633,7 +633,7 @@ Dbptr         *trp;
 #ifdef DEBUG
 	{
 	char	   *s ;
-	complain( 0, "%5d %s %s\n", pktid, srcname, s=strtime(pkttime) ) ; 
+	elog_complain( 0, "%5d %s %s\n", pktid, srcname, s=strtime(pkttime) ) ; 
 	free(s) ;
 	}
 #endif
@@ -643,7 +643,7 @@ Dbptr         *trp;
 		for (i = 0; i < unstuffed->nchannels; i++) {
 		    achan = (PktChannel *) gettbl (unstuffed->chan, i);
 #ifdef DEBUG
-		    complain( 0, "%s", achan->chan ) ; 
+		    elog_complain( 0, "%s", achan->chan ) ; 
 #endif
 		    if ( achan->time < req_endtime ) 
 			accumulate (pktid, achan, p->acc_re, req_t0, req_twin, 
@@ -651,7 +651,7 @@ Dbptr         *trp;
 
 		}
 #ifdef DEBUG
-		complain( 0, "\n" ) ; 
+		elog_complain( 0, "\n" ) ; 
 #endif
 		break ;
 
@@ -660,7 +660,7 @@ Dbptr         *trp;
 
 	    default:
 		retcode = -4 ;
-		complain ( 0, "unknown return code %d from unstuffpkt\n", 
+		elog_complain( 0, "unknown return code %d from unstuffpkt\n", 
 		    unstuff ) ; 
 		break ;
 	}

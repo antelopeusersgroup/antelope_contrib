@@ -102,11 +102,11 @@ int main(argc, argv)
 	/* Set signal to handle USER interupt  */
 
 	if ((rorb = orbopen(inorbname, "r")) < 0)
-		die(0, "Can't open ORB\n");
+		elog_die(0, "Can't open ORB\n");
 
 	if (match) {
 		if ((nselect = orbselect(rorb, match)) < 1)
-			die(1, "orbselect '%s' failed\n", match);
+			elog_die(1, "orbselect '%s' failed\n", match);
 	}
 
 	if (argc - optind >= 1) {
@@ -120,15 +120,15 @@ int main(argc, argv)
 
 	if (after > 0) {
 		if ((id = orbafter(rorb, after - eps)) < 0) {
-			complain(1, "orbafter to %d failed\n", after);
+			elog_complain(1, "orbafter to %d failed\n", after);
 			id = orbtell(rorb);
-			complain(0, " pktid is still #%d\n", id);
+			elog_complain(0, " pktid is still #%d\n", id);
 		}
 
 	} else {
 		if (orbget(rorb, ORBCURRENT, &id, srcid, &after, &packet, &nbytes,
 				&bsize))
-			die(0, "fails to get ORBCURRENT time.\n");
+			elog_die(0, "fails to get ORBCURRENT time.\n");
 	}
 
 	if (MaxGap == 0)
@@ -200,7 +200,7 @@ int main(argc, argv)
 			if (pkttime >= until)
 				break;
 		} else {
-			complain(0, "Can't get packet after %lf.\n", save_time);
+			elog_complain(0, "Can't get packet after %lf.\n", save_time);
 
 		}
 

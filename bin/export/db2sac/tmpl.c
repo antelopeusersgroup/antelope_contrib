@@ -76,13 +76,13 @@ int             num_options;	       /* Number of options in option_list */
     /****  Was a required argument retrieved?  ****/
     if ((Parse_State == ONE_ARGUMENT) || (Parse_State == FIRST_ARGUMENT)
 	|| (Parse_State == ONE_SPECIAL) || (Parse_State == FIRST_SPECIAL)) {
-	register_error (0, "get_option: Option argument not retrieved\n");
+	elog_log(0, "get_option: Option argument not retrieved\n");
 	Parse_State = ERROR_RECOVERY;
 	return '-';
     }
     /****  Are we to the end of the arguments?  ****/
     if (Parse_State == ALL_ARGUMENTS) {
-	register_error (0, "get_option: All options were retrieved\n");
+	elog_log(0, "get_option: All options were retrieved\n");
 	return '-';
     }
     /****  Get the next option switch  ****/
@@ -99,7 +99,7 @@ int             num_options;	       /* Number of options in option_list */
 	} else if (STREQ (*Argv_Ptr, "-")) {
 	    /****  The user is only allowed one stdin diversion  ****/
 	    if (dash_seen ()) {
-		register_error (0, "get_option: More than one '-' seen\n");
+		elog_log(0, "get_option: More than one '-' seen\n");
 		return '-';
 	    }
 	    (void) shift_arg (&follow_ptr, &follow_count);
@@ -132,7 +132,7 @@ int             num_options;	       /* Number of options in option_list */
 		    else if (SPECIAL_ARGS == option_list[index].arg)
 			Parse_State = FIRST_SPECIAL;
 		    else {
-			register_error (0, "get_option: unknown option type\n");
+			elog_log(0, "get_option: unknown option type\n");
 			return '-';
 		    }
 
@@ -152,7 +152,7 @@ int             num_options;	       /* Number of options in option_list */
     for (index = 0; index < num_options; index++) {
 	if (*comp_opt == option_list[index].terse) {
 	    if (NO_ARGUMENT != option_list[index].arg) {
-		register_error (0, "get_option: illegal compound option\n");
+		elog_log(0, "get_option: illegal compound option\n");
 		return '-';
 	    } else {
 		return *comp_opt;
@@ -160,7 +160,7 @@ int             num_options;	       /* Number of options in option_list */
 	}
     }
 
-    register_error (0, "get_option: unknown option...\n");
+    elog_log(0, "get_option: unknown option...\n");
     return '-';
 }
 
@@ -222,7 +222,7 @@ get_argument ()
 
     /****  Make sure we should be here  ****/
     if (Parse_State == OPTION_ONLY) {
-	register_error (0, "get_argument: Argument not expected now\n");
+	elog_log(0, "get_argument: Argument not expected now\n");
 	return NULL;
     }
     /****  Are we to the end of the argument list?  ****/
@@ -247,7 +247,7 @@ get_argument ()
 	    Parse_State = OPTION_ONLY;
 	    return return_value;
 	} else {
-	    register_error (0, "get_argument: special argument not expected\n");
+	    elog_log(0, "get_argument: special argument not expected\n");
 	    Parse_State = ERROR_RECOVERY;
 	    return NULL;
 	}
@@ -323,7 +323,7 @@ get_argument ()
 	return return_value;
 
       default:
-	register_error (0, "get_argument: internal error\n");
+	elog_log(0, "get_argument: internal error\n");
     }
 
     return NULL;
@@ -342,7 +342,7 @@ get_directory ()
     char           *dir_name;
 
     if ((dir_name = get_argument ()) == NULL) {
-	register_error (0, "get_directory: empty argument list\n");
+	elog_log(0, "get_directory: empty argument list\n");
 	return NULL;
     }
     if ((testDir = opendir (dir_name)) == NULL) {
@@ -367,11 +367,11 @@ FILE          **input_file;	       /* FILE assiciated with  */
     char           *input_name;
 
     if ((input_name = get_argument ()) == NULL) {
-	register_error (0, "get_input_file: empty argument list\n");
+	elog_log(0, "get_input_file: empty argument list\n");
 	return NULL;
     }
     if ((*input_file = open_file (*input_file, input_name, "r")) == NULL) {
-	register_error (0, "get_input_file: can't open input file '%s'\n",
+	elog_log(0, "get_input_file: can't open input file '%s'\n",
 			input_name);
 	return NULL;
     }
@@ -393,11 +393,11 @@ FILE          **output_file;
     char           *output_name;
 
     if ((output_name = get_argument ()) == NULL) {
-	register_error (0, "get_output_file: empty argument list\n");
+	elog_log(0, "get_output_file: empty argument list\n");
 	return NULL;
     }
     if ((*output_file = open_file (*output_file, output_name, "w")) == NULL) {
-	register_error (0, "get_output_file: can't open output file '%s'\n",
+	elog_log(0, "get_output_file: can't open output file '%s'\n",
 			output_name);
 	return NULL;
     }
@@ -416,7 +416,7 @@ last_argument ()
     char           *arg_name;
 
     if (Arg_Count <= 0) {
-	register_error (0, "last_argument: empty argument list\n");
+	elog_log(0, "last_argument: empty argument list\n");
 	return (NULL);
     }
     arg_name = Argv_Ptr[Arg_Count - 1];
@@ -440,7 +440,7 @@ FILE          **input_file;
     char           *input_name;
 
     if (Arg_Count <= 0) {
-	register_error (0, "last_input_file: empty argument list\n");
+	elog_log(0, "last_input_file: empty argument list\n");
 	return (NULL);
     }
     input_name = Argv_Ptr[Arg_Count - 1];
@@ -448,7 +448,7 @@ FILE          **input_file;
     Arg_Count--;
 
     if ((*input_file = open_file (*input_file, input_name, "r")) == NULL) {
-	register_error (0, "last_input_file: can't open input file '%s'\n",
+	elog_log(0, "last_input_file: can't open input file '%s'\n",
 			input_name);
 	return NULL;
     }
@@ -469,7 +469,7 @@ FILE          **output_file;
     char           *output_name;
 
     if (Arg_Count <= 0) {
-	register_error (0, "last_output_file: empty argument list\n");
+	elog_log(0, "last_output_file: empty argument list\n");
 	return (NULL);
     }
     output_name = Argv_Ptr[Arg_Count - 1];
@@ -477,7 +477,7 @@ FILE          **output_file;
     Arg_Count--;
 
     if ((*output_file = open_file (*output_file, output_name, "w")) == NULL) {
-	register_error (0, "last_output_file: can't open output file '%s'\n",
+	elog_log(0, "last_output_file: can't open output file '%s'\n",
 			output_name);
 	return NULL;
     }
@@ -500,12 +500,12 @@ char           *access;
 {
     if ((old_file != NULL) && (old_file != stdin) && (old_file != stdout)) {
 	if (fclose (old_file) != 0) {
-	    register_error (1, "open_file: unable to close the old file\n");
+	    elog_log(1, "open_file: unable to close the old file\n");
 	}
     }
     /****  Advance to the next file  ****/
     if (new_name == NULL) {
-	register_error (0, "open_file: NULL file name given\n");
+	elog_log(0, "open_file: NULL file name given\n");
 	return NULL;
     }
     /****  Open the file, if possible  ****/
@@ -517,11 +517,11 @@ char           *access;
 	       || ((STREQ (access, "w")) && writable_file (new_name))) {
 	old_file = fopen (new_name, access);
 	if (old_file == NULL) {
-	    register_error (1, "open_file: can't open file '%s'\n", new_name);
+	    elog_log(1, "open_file: can't open file '%s'\n", new_name);
 	    return NULL;
 	}
     } else {
-	register_error (1, "open_file: can't open file '%s' for '%s'\n",
+	elog_log(1, "open_file: can't open file '%s' for '%s'\n",
 			new_name, access);
 	return NULL;
     }
@@ -545,11 +545,11 @@ char           *file_name;	       /* Name of the file to test */
     FILE           *test_file;
 
     if (file_name == NULL) {
-	register_error (0, "readable_file: called with null file_name\n");
+	elog_log(0, "readable_file: called with null file_name\n");
 	return 0;
     }
     if (stat (file_name, &statbuf) != 0) {
-	register_error (1, "readable_file: can't stat file '%s'\n", file_name);
+	elog_log(1, "readable_file: can't stat file '%s'\n", file_name);
 	return 0;
     }
     if (S_ISREG (statbuf.st_mode)) {
@@ -559,7 +559,7 @@ char           *file_name;	       /* Name of the file to test */
 	}
 	return 0;
     }
-    register_error (0, "readable_file: file '%s' is not regular\n", file_name);
+    elog_log(0, "readable_file: file '%s' is not regular\n", file_name);
     return 0;
 }
 
@@ -578,14 +578,14 @@ char           *file_name;	       /* Name of the file to test */
     FILE           *test_file;
 
     if (file_name == NULL) {
-	register_error (0, "writable_file: called with null file_name\n");
+	elog_log(0, "writable_file: called with null file_name\n");
 	return 0;
     }
     if (stat (file_name, &statbuf) != 0) {
 	if (errno == ENOENT) {
 	    return 1;
 	}
-	register_error (1, "writable_file: can't stat file '%s'\n", file_name);
+	elog_log(1, "writable_file: can't stat file '%s'\n", file_name);
 	return 0;
     }
     if (S_ISREG (statbuf.st_mode)) {
@@ -595,7 +595,7 @@ char           *file_name;	       /* Name of the file to test */
 	}
 	return 0;
     }
-    register_error (0, "writable_file: file '%s' is not regular\n", file_name);
+    elog_log(0, "writable_file: file '%s' is not regular\n", file_name);
     return 0;
 }
 

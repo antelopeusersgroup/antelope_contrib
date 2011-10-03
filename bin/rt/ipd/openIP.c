@@ -42,10 +42,10 @@ struct Prts *inport;
 		      !strncmp( inport->ip_name, "local", strlen("local") ) )  {
 	              return open_socket( inport );
 	        } 
-                complain(0, "open_IN_ports():Port:%s doesn't exist!\n", inport->ip_name );
+                elog_complain(0, "open_IN_ports():Port:%s doesn't exist!\n", inport->ip_name );
                 return 0; 
            } else {
-                complain(1, "open_IN_ports():can't stat %s.", inport->ip_name );
+                elog_complain(1, "open_IN_ports():can't stat %s.", inport->ip_name );
                 return 0; 
            }
        }  else if( S_ISCHR(buf.st_mode) )  {
@@ -62,7 +62,7 @@ struct Prts *inport;
       }  else if( S_ISDIR(buf.st_mode) || S_ISREG(buf.st_mode) ||
                S_ISBLK(buf.st_mode) || S_ISLNK(buf.st_mode) )  {
  
-               complain(0, "open_IN_ports():%s can't be Input Port!", inport->ip_name);
+               elog_complain(0, "open_IN_ports():%s can't be Input Port!", inport->ip_name);
                return 0; 
       }
 }
@@ -83,21 +83,21 @@ struct Prts *inport;
 
 
 	if (( inport->ifp = open( inport->ip_name, O_RDONLY ) ) < 0)  {
-	  complain(1,"open_IN_ports():Can't open %s disk.\n", inport->ip_name );
+	  elog_complain(1,"open_IN_ports():Can't open %s disk.\n", inport->ip_name );
 	  return 0; 
         }
    
            /* get disk geometry  */
 
    	if( ioctl(inport->ifp, DKIOCGGEOM, &geom) )  {
-       	  complain( 1, "openIP: Can't get disk geometry:" );
+       	  elog_complain( 1, "openIP: Can't get disk geometry:" );
           return 0; 
         }
 
         /* get partition table of the disk */
 
 	  if( ioctl( inport->ifp, DKIOCGAPART, &part) )  { 
-	     complain( 1, " openIP: Can't get disk partition table:" );
+	     elog_complain( 1, " openIP: Can't get disk partition table:" );
              return 0; 
           }
 
@@ -123,14 +123,14 @@ struct Prts *inport;
         	 geom.dkg_intrlv = label.dkl_intrlv;
         
 		if (ioctl( inport->ifp, DKIOCSGEOM, &geom) == -1) {
-              	   complain( 1, "openIP: Can't reset disk geometry");
+              	   elog_complain( 1, "openIP: Can't reset disk geometry");
          	   return 0; 
 		}
  
 	/* reset kernel's disk partition table */
 
         	if (ioctl( inport->ifp, DKIOCSAPART, &label.dkl_map) == -1) {
-                  complain(  1, "openIP: Can't reset disk  partitoon" );
+                  elog_complain(  1, "openIP: Can't reset disk  partitoon" );
                   return 0; 
                 }
   	}
@@ -138,17 +138,17 @@ struct Prts *inport;
   	close( inport->ifp );
 
   	if (( inport->ifp = open( inport->ip_name, O_RDONLY ) ) < 0)  {
-            complain( 1,"open_IN_ports():Can't open %s disk.\n", inport->ip_name);
+            elog_complain( 1,"open_IN_ports():Can't open %s disk.\n", inport->ip_name);
             return 0; 
    	}
    
   	if( (nbytes = read( inport->ifp, (char *) &buffer[0], 1024)) != 1024)  {
-     	   complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
+     	   elog_complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
      	   return 0; 
   	}
     
   	if( (nbytes = read( inport->ifp, (char *) &buffer[0], 1024)) != 1024)  {
-     	   complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
+     	   elog_complain(1,"open_IN_ports():Can't read PASCAL label %s \n", buffer);
      	   return 0; 
   	}
 
@@ -187,7 +187,7 @@ int status;
 
 
 	if (( inport->ifp = open( inport->ip_name, O_RDONLY ) ) < 0)  {
-           complain(1,"open_IN_ports():Can't open %s data stream.\n", inport->ip_name);
+           elog_complain(1,"open_IN_ports():Can't open %s data stream.\n", inport->ip_name);
            return 0; 
         }
    	if(strncmp( inport->ip_name, "/dev/hih", strlen("/dev/hih")) == 0) {
@@ -196,32 +196,32 @@ int status;
         	strioctl.ic_timout = 0;
         	strioctl.ic_len = sizeof(struct scc_mode);
         	strioctl.ic_dp = (char *) &mode;
-        	complain( 0, "Retrieve the current transmission %s parameters ...",
+        	elog_complain( 0, "Retrieve the current transmission %s parameters ...",
                 	inport->ip_name);
         	status = ioctl( inport->ifp, I_STR, &strioctl);
-        	complain( 0, "IOCTL=%d\n", status); 
+        	elog_complain( 0, "IOCTL=%d\n", status); 
         	if(status < 0)  {
-            	complain(0,"open_IN_ports():ioctl error");
+            	elog_complain(0,"open_IN_ports():ioctl error");
                 	return 0; 
                 }  
-        	complain(  0, "txc  = %d\n", mode.sm_txclock);
-        	complain(  0, "rxc  = %d\n", mode.sm_rxclock);
-        	complain(  0, "iflg = %d\n", mode.sm_iflags);
-        	complain(  0, "cfg  = %d\n", mode.sm_config);
-        	complain(  0, "baud = %d\n", mode.sm_baudrate);
-        	complain(  0, "retv = %d\n", mode.sm_retval);
+        	elog_complain(  0, "txc  = %d\n", mode.sm_txclock);
+        	elog_complain(  0, "rxc  = %d\n", mode.sm_rxclock);
+        	elog_complain(  0, "iflg = %d\n", mode.sm_iflags);
+        	elog_complain(  0, "cfg  = %d\n", mode.sm_config);
+        	elog_complain(  0, "baud = %d\n", mode.sm_baudrate);
+        	elog_complain(  0, "retv = %d\n", mode.sm_retval);
 
 /*
-        	complain( 0, "Retrieve the MAX value for MRU&MTU");
+        	elog_complain( 0, "Retrieve the MAX value for MRU&MTU");
         	strioctl.ic_cmd = S_IOCGETMRU;
         	strioctl.ic_timout = 0;
         	strioctl.ic_len = sizeof(struct scc_mode);
         	status = ioctl(inport->ifp, I_STR, &strioctl);
         	val = (short *) strioctl.ic_dp; 
         	max_pkt_siz = *val; 
-        	complain( 0, "MRU %d\n", max_pkt_siz); 
+        	elog_complain( 0, "MRU %d\n", max_pkt_siz); 
         	if(status < 0)  {
-            		complain(0,"open_IN_ports():ioctl error");
+            		elog_complain(0,"open_IN_ports():ioctl error");
             		return 0; 
         	} 
 */
@@ -232,19 +232,19 @@ int status;
         	strioctl.ic_len = sizeof(struct scc_mode);
         	strioctl.ic_dp = (char *) &max_pkt_siz;
            
-        	complain( 0, "Set the new tarnsmission %s parameters ...\n", inport->ip_name);
+        	elog_complain( 0, "Set the new tarnsmission %s parameters ...\n", inport->ip_name);
         	status = ioctl(inport->ifp, I_STR, &strioctl);
-        	complain( 0, "S_IOCSETMRU IOCTL=%d\n", status); 
+        	elog_complain( 0, "S_IOCSETMRU IOCTL=%d\n", status); 
         	if(status < 0)  {
-            		complain(0,"open_IN_ports():ioctl error");
+            		elog_complain(0,"open_IN_ports():ioctl error");
             		return 0; 
         	} 
    
         	strioctl.ic_cmd = S_IOCSETMTU;
         	status = ioctl(inport->ifp, I_STR, &strioctl);
-        	complain( 0, "S_IOCSETMTU IOCTL=%d\n", status); 
+        	elog_complain( 0, "S_IOCSETMTU IOCTL=%d\n", status); 
         	if(status < 0)  {
-            		complain(0,"open_IN_ports():ioctl error");
+            		elog_complain(0,"open_IN_ports():ioctl error");
             		return 0; 
         	} 
         	mode.sm_config = 0x10;
@@ -259,25 +259,25 @@ int status;
 	 
         	strioctl.ic_cmd = S_IOCSETMODE;
         	status = ioctl(inport->ifp, I_STR, &strioctl);
-        	complain( 0, "S_IOCSETMODE IOCTL=%d\n", status); 
+        	elog_complain( 0, "S_IOCSETMODE IOCTL=%d\n", status); 
         	if(status < 0)  {
-            	        complain(0,"open_IN_ports():ioctl error");
+            	        elog_complain(0,"open_IN_ports():ioctl error");
             	 	return 0; 
         	} 
         	strioctl.ic_cmd = S_IOCGETMODE;
-        	complain( 0, "Retrieve the new tarnsmission %s parameters ...", inport->ip_name);
+        	elog_complain( 0, "Retrieve the new tarnsmission %s parameters ...", inport->ip_name);
         	status = ioctl(inport->ifp, I_STR, &strioctl);
-        	complain( 0, "IOCTL=%d\n", status); 
+        	elog_complain( 0, "IOCTL=%d\n", status); 
         	if(status < 0)  {
-            		complain(0,"open_IN_ports():ioctl error");
+            		elog_complain(0,"open_IN_ports():ioctl error");
             		return 0; 
         	} 
-        	complain(  0, "txc  = %d\n", mode.sm_txclock);
-        	complain(  0, "rxc  = %d\n", mode.sm_rxclock);
-        	complain(  0, "iflg = %d\n", mode.sm_iflags);
-        	complain(  0, "cfg  = %d\n", mode.sm_config);
-        	complain(  0, "baud = %d\n", mode.sm_baudrate);
-        	complain(  0, "retv = %d\n", mode.sm_retval);
+        	elog_complain(  0, "txc  = %d\n", mode.sm_txclock);
+        	elog_complain(  0, "rxc  = %d\n", mode.sm_rxclock);
+        	elog_complain(  0, "iflg = %d\n", mode.sm_iflags);
+        	elog_complain(  0, "cfg  = %d\n", mode.sm_config);
+        	elog_complain(  0, "baud = %d\n", mode.sm_baudrate);
+        	elog_complain(  0, "retv = %d\n", mode.sm_retval);
 		return IN_HSI;
 	
 	}  else return IN_CHR;
@@ -319,7 +319,7 @@ struct Prts *inport;
 			     
            hp = gethostbyname (hostname);
            if (hp == NULL) {
-              complain (0, "openID(): Can't get info for HOST - %s.\n", hostname);
+              elog_complain(0, "openID(): Can't get info for HOST - %s.\n", hostname);
               return 0;
            }
     }
@@ -337,13 +337,13 @@ struct Prts *inport;
 	/* create a socket  */
  
        if( (Ls = socket(AF_INET, SOCK_STREAM, 0)) < 0 )  {
-    	    die ( 1, "Can't open stream socket\n" ) ; 
+    	    elog_die( 1, "Can't open stream socket\n" ) ; 
        }
 
   /* Convert IP address from a.b.c.d to the hexadecimal number  */
 	   
        if ((int)(addr = inet_addr(server_name)) == -1) {
-          complain(0, "IPD/open_socket():IP-address must be of the form a.b.c.d\n");
+          elog_complain(0, "IPD/open_socket():IP-address must be of the form a.b.c.d\n");
           return 0;
        }
 /*
@@ -369,10 +369,10 @@ fflush(stdout);
       b_size = Psize;  
 
       if( setsockopt( Ls, SOL_SOCKET, SO_SNDBUF, (char *)&b_size, sizeof(int)) != 0)  {
-    	   die( 1, "Unable to set size of send buffer.\n");
+    	   elog_die( 1, "Unable to set size of send buffer.\n");
       }
       if( setsockopt(Ls, SOL_SOCKET, SO_RCVBUF, (char *)&b_size, sizeof(int)) != 0)  {
-     	     die( 1, "Unable to set size of send buffer.\n");
+     	     elog_die( 1, "Unable to set size of send buffer.\n");
        }
 
 
@@ -381,7 +381,7 @@ fflush(stdout);
        if ( connect (Ls, (struct sockaddr *) & peer_in, addrlen) == -1) {
            if( !tried )  {
 	      tried = 1;
-	      complain( 1, "waiting for connection with %s \n", inport->ip_name );
+	      elog_complain( 1, "waiting for connection with %s \n", inport->ip_name );
               sleep(1);
 	   }
 	   close(Ls);
@@ -389,7 +389,7 @@ fflush(stdout);
     } 
 
     if ( fcntl(Ls, F_SETFL, O_NONBLOCK) == -1 ) { 
-        die ( 1, "Can't set non-blocking on accept socket\n" ) ; 
+        elog_die( 1, "Can't set non-blocking on accept socket\n" ) ; 
     }
 
      inport->ifp = Ls;

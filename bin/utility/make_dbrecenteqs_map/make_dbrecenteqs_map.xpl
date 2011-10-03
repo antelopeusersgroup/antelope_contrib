@@ -6,7 +6,7 @@
 # 2004
 #
 
-require "getopts.pl" ;
+use Getopt::Std ;
 require "dbrecenteqs.pl";
 require "dbgmtgrid.pl";
 require "winding.pl";
@@ -16,7 +16,7 @@ use Datascope;
 elog_init( $0, @ARGV );
 $Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('l:s:f:F:r:c:vt:p:') || @ARGV != 1 ) {
+if ( ! getopts('l:s:f:F:r:c:vt:p:') || @ARGV != 1 ) {
 
 	die ( "Usage: $Program [-v] [-p pffile] " .
 		"[-f focus_station_expression | -F focus_station_regex] " .

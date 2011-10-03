@@ -484,7 +484,7 @@ int stuffline(Tbl *r, char *readbuf)
     {
       if ((ret=pfupdate(configfile,&configpf))<0)
 	{
-	  complain(1,"pfupdate(%s,configpf)",configfile);
+	  elog_complain(1,"pfupdate(%s,configpf)",configfile);
 	  exit(-1);
 	}
       else if (ret==1)
@@ -539,7 +539,7 @@ int stuffline(Tbl *r, char *readbuf)
 	    if (channels<4 || (secondsfield && channels < 5))
 	    {
 		if (channels != 0 || verbose)
-		    complain(0,"this memory location (%d) did not contain enough data elements (%d)\n",OldMemPtr,channels);
+		    elog_complain(0,"this memory location (%d) did not contain enough data elements (%d)\n",OldMemPtr,channels);
 
 		/* don't do it */
 		freePkt(orbpkt);
@@ -949,10 +949,10 @@ struct crack_time_ret_struct* crack_timing (Tbl *r, Pf *configpf, char *readbuf)
 	    if (crack_time_ret.timestamp-previoustimestamp>crack_time_ret.saminterval+crack_time_ret.saminterval*0.05 || crack_time_ret.timestamp-previoustimestamp<crack_time_ret.saminterval-crack_time_ret.saminterval*0.05)
 	    {
 		if (force)
-		    complain(0,"sample interval out of tolerance, ignoring failure (%f should be %d with a tolerance of %f)\n",previoustimestamp-crack_time_ret.timestamp,crack_time_ret.saminterval,crack_time_ret.saminterval*0.05);
+		    elog_complain(0,"sample interval out of tolerance, ignoring failure (%f should be %d with a tolerance of %f)\n",previoustimestamp-crack_time_ret.timestamp,crack_time_ret.saminterval,crack_time_ret.saminterval*0.05);
 		else
 		{
-		    complain(0,"sample interval out of tolerance, failing, using -f to force this to work (%f should be %d with a tolerance of %f)\n",previoustimestamp-crack_time_ret.timestamp,crack_time_ret.saminterval,crack_time_ret.saminterval*0.05);
+		    elog_complain(0,"sample interval out of tolerance, failing, using -f to force this to work (%f should be %d with a tolerance of %f)\n",previoustimestamp-crack_time_ret.timestamp,crack_time_ret.saminterval,crack_time_ret.saminterval*0.05);
 		    return(NULL);
 		}
 	    }

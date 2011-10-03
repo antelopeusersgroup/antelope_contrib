@@ -55,7 +55,7 @@ VelocityModel_1d::VelocityModel_1d(Dbptr dbi,string name,string property)
 		// (modname=~/name/ && (paramname=~/Pvelocity/)
 		string sstr = s1+name+s2+property+s3;
 		dbs1 = dbsubset(db,(char *)sstr.c_str(),0);
-		sortkeys=strtbl((char *)"depth",0);
+		sortkeys=strtbl((char *)"depth",NULL);
 		dbs2=dbsort(dbs1,sortkeys,0,0);
 		dbquery(dbs2,dbRECORD_COUNT,&nlayers);
 		if(nlayers<=0)
@@ -193,7 +193,7 @@ VelocityModel_1d& VelocityModel_1d::operator=(const VelocityModel_1d& old)
 void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 	throw (VelocityModel_1d_Dberror)
 {
-	db=dblookup(db,0,"mod1d",0,0);
+	db=dblookup(db,0,const_cast<char *>("mod1d"),0,0);
 	if(db.table==dbINVALID) 
 		throw(VelocityModel_1d_Dberror(name,
 				"dbopen failure for mod1d table"));
@@ -214,7 +214,7 @@ void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 			"paramval",mod.v[i],
 			"grad",mod.grad[i],
 			"units",units.c_str(),
-			"auth",username,0);
+			"auth",username,NULL);
 		if(ierr<0) throw (VelocityModel_1d_Dberror(name,
 				"dbaddv error while saving model"));
 	}

@@ -703,7 +703,7 @@ sub start_dbxcor {
 
 	my( $cmd ) = "xterm " .
 		     "-title dbxcor_output " .
-		     "-e 'dbxcor $State{dbname} -v $dbxcor_appname 2>&1 | tee $State{dbxcor_log_file}'";
+		     "-e /bin/sh -c 'dbxcor $State{dbname} -v $dbxcor_appname 2>&1 | tee $State{dbxcor_log_file}'";
 
 	$State{DbxcorPid} = rtbkg( $cmd );
 

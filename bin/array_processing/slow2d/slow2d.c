@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
   strcat(arrayfile,".arr");
   if ( (fp = fopen(arrayfile,"r")) == NULL)
   {
-    complain(0,"Could not open array file.\n");
+    elog_complain(0,"Could not open array file.\n");
     return 1;
   }
   nsta = 0;
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
   printf("input database = %s\n",dbname);
   if (dbopen(dbname,"r+",&db) < 0)
   {
-    complain(0,"Could not open database.\n");
+    elog_complain(0,"Could not open database.\n");
     return 1;
   }
 
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
     dbquery(dbz,dbRECORD_COUNT,&nz);
     if (nz == 0) 
     { 
-      complain(0,"No wfdisc records found for station %s.\n",sta[j]);
+      elog_complain(0,"No wfdisc records found for station %s.\n",sta[j]);
       continue;
     }
     dbz.record = 0;
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
     iret=trgetwf(dbz,NULL,&s[j],&nbytes,tstart,tend,&ts[j],&te[j],&mpts[j],0,0);
     if (iret != 0)
     {
-      complain(0,"error in getting data for station %s\n",sta[j]);
+      elog_complain(0,"error in getting data for station %s\n",sta[j]);
       continue;
     }
     for (i=0;i<mpts[j];i++) s[j][i] = s[j][i]*calib;
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
   printf("# stations having waveforms to beam = %d\n",nbeam);
   if (nbeam == 0) 
   {
-    complain(0,"No waveforms available for this time -- cannot continue.\n");
+    elog_complain(0,"No waveforms available for this time -- cannot continue.\n");
     return 1;
   }
 
@@ -274,14 +274,14 @@ int main(int argc, char *argv[])
 /*  Check old and new sample rates.*/
     if (fabs(rdec - idec) > 0.01) 
     {
-      complain(0,"Old sample rate over new sample rate != integer -- cannot continue.\n");
-      complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
+      elog_complain(0,"Old sample rate over new sample rate != integer -- cannot continue.\n");
+      elog_complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
       return 1;
     }
     if (idec == 0) 
     {
-      complain(0,"Old sample rate over new sample rate < 1 -- cannot resample.\n");
-      complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
+      elog_complain(0,"Old sample rate over new sample rate < 1 -- cannot resample.\n");
+      elog_complain(0,"Old sample rate = %f; new sample rate = %f\n",sro,sr);
       return 1;
     }        
 
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
       iret = trfilter_segs(1,&mpts[j],&del,&s[j],decfilter);
       if (iret != 0)
       {
-        complain(0,"error in filtering waveform %d = %d\n",j,iret);
+        elog_complain(0,"error in filtering waveform %d = %d\n",j,iret);
         return 1;
       }
       npts = (npts-1)/idec + 1;  /*new number of points*/
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
       iret = trfilter_segs(1,&npts,&del,&s[j],filter);
       if (iret != 0)
       {
-        complain(0,"error in filtering waveform %d = %d\n",j,iret);
+        elog_complain(0,"error in filtering waveform %d = %d\n",j,iret);
         return 1;
       }
     }
@@ -448,7 +448,7 @@ beaming:
            0);
     if (ireturn == dbINVALID)
     {
-      complain(0,"Could not add record to fkgrid file.\n");
+      elog_complain(0,"Could not add record to fkgrid file.\n");
       dbclose(db);
       fclose(fout);
       return 1;
@@ -761,40 +761,40 @@ int make_beam_wrap(double del,int index,double kx,double ky,float *sout)
             case 1:
                 if(make_beam(del,index,kx,ky,sout)==1)
                 {
-                  complain(0,"Problem making beam\n");
+                  elog_complain(0,"Problem making beam\n");
                   exit(1);
                 }
                 break;
             case 2:
                 if(make_beam_root(del,index,kx,ky,2,sout)==1)
                 {
-                  complain(0,"Problem making beam\n");
+                  elog_complain(0,"Problem making beam\n");
                   exit(1);
                 }
                 break;
             case 3:
                 if(make_beam_root(del,index,kx,ky,3,sout)==1)
                 {
-                  complain(0,"Problem making beam\n");
+                  elog_complain(0,"Problem making beam\n");
                   exit(1);
                 }
                 break;
             case 4:
                 if(make_beam_root(del,index,kx,ky,4,sout)==1)
                 {
-                  complain(0,"Problem making beam\n");
+                  elog_complain(0,"Problem making beam\n");
                   exit(1);
                 }
                 break;
             case 5:
                 if(make_beam_inc(del,index,kx,ky,sout)==1)
                 {
-                  complain(0,"Problem making beam\n");
+                  elog_complain(0,"Problem making beam\n");
                   exit(1);
                 }
                 break;
             default:
-                complain(0,"Bad beam type selected\n");
+                elog_complain(0,"Bad beam type selected\n");
                 exit(1);
         }
         return 0;
@@ -862,7 +862,7 @@ double get_amp(float *sbeam)
         } 
         else 
         {
-            complain(0,"Bad choice for amplitude metric\n");
+            elog_complain(0,"Bad choice for amplitude metric\n");
             exit(1);
         }
         return val;

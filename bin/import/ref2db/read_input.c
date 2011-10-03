@@ -30,16 +30,16 @@ int read_input( SpecPar *par, RunArg *arg )
         switch( (nbytes = read( arg->ifp, buffer, DSK_BLK_SIZE))  )  {
 
     	     case 0:
-		complain( 0, "read EOF form %s.\n", arg->iport);
+		elog_complain( 0, "read EOF form %s.\n", arg->iport);
                 if( close( arg->ifp ) != 0 )  {
-                    die( 0, "can't close %s.\n", arg->iport );
+                    elog_die( 0, "can't close %s.\n", arg->iport );
     	        }
                 done = 1;
                 break;                
     	     case -1:
-		complain( 1, "read() error on %s.\n", arg->iport);
+		elog_complain( 1, "read() error on %s.\n", arg->iport);
                 if( close( arg->ifp ) != 0 )  {
-                    die( 0, "can't close %s.\n", arg->iport );
+                    elog_die( 0, "can't close %s.\n", arg->iport );
     	        }
                 done = 1;
                 break;                
@@ -51,17 +51,17 @@ int read_input( SpecPar *par, RunArg *arg )
                 
                        in_err++;
                        if(in_err >= 30)  {
-		           die(0, "too much bad blocks\n");
+		           elog_die(0, "too much bad blocks\n");
                        } 
                        break;
                    case 1:
                 
                        in_err = 0;
                        if( epoch > arg->etime ) { 
-                           complain(0, "All data for specified time window (%lf-%lf) was extracted.\n",
+                           elog_complain(0, "All data for specified time window (%lf-%lf) was extracted.\n",
                               arg->stime, arg->etime );
                            if( close( arg->ifp ) != 0 )  {
-                              die( 0, "can't close %s.\n", arg->iport );
+                              elog_die( 0, "can't close %s.\n", arg->iport );
     	                   }
                            done = 1;
                            break; 
@@ -70,7 +70,7 @@ int read_input( SpecPar *par, RunArg *arg )
 		           if( arg->nodata ) break;
                            PsclLog = 0;
                            if( !wrt2db ( epoch, srcname, buffer, par ) )
-		                die (0, "pkt2db fails\n");
+		                elog_die(0, "pkt2db fails\n");
 		           in_err = 0;
                        }
                        break;

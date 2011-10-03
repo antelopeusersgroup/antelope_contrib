@@ -81,7 +81,7 @@ char *argv[];
         
         case 'o':
           if( (out_dir = (char *) malloc(256) ) == NULL )  {
-             die( 1, "extrd/main(): malloc");
+             elog_die( 1, "extrd/main(): malloc");
           }
           strcpy(out_dir, optarg);
           break;
@@ -108,15 +108,15 @@ char *argv[];
    
     
     if( (out_dbase = (char *) malloc(256) ) == NULL )  {
-       die( 1, "extrd/main(): malloc");
+       elog_die( 1, "extrd/main(): malloc");
     }
 
     if( (fname = (char *) malloc(256) ) == NULL )  {
-       die(1, "extrd/main(): malloc");
+       elog_die(1, "extrd/main(): malloc");
     }
 
     if( (str = (char *) malloc(256) ) == NULL )  {
-       die(1, "extrd/main(): malloc");
+       elog_die(1, "extrd/main(): malloc");
     }
 
 
@@ -124,7 +124,7 @@ char *argv[];
 
    if(out_dir != 0) 
        if(!create_dir(out_dir))
-          die( 1, "Can't create an output directory: %s\n", out_dir); 
+          elog_die( 1, "Can't create an output directory: %s\n", out_dir); 
        
    signal(SIGINT, sig_hdlr );
    signal(SIGBUS, sig_hdlr );
@@ -160,13 +160,13 @@ char *argv[];
                pathfrname(wfd_name, path);
                sprintf(str, "ls %s > .tmp\0",wfd_name );
            } else {
-               die( 0, "Can't find wfdisc file.\n");
+               elog_die( 0, "Can't find wfdisc file.\n");
            }
        } else { 
-	  die( 0, "Can't find wfdisc file.\n"); 
+	  elog_die( 0, "Can't find wfdisc file.\n"); 
        } 
    } else { 
-       die( 1, "Can't stat!\n");
+       elog_die( 1, "Can't stat!\n");
    }
    system(str); 
 
@@ -174,25 +174,25 @@ char *argv[];
  
    if ((fd = fopen(".tmp","r") ) == NULL) {
          unlink( ".tmp" ); 
-         die( 1,"Can't open file .tmp \n");
+         elog_die( 1,"Can't open file .tmp \n");
     } 
 
     
     if (dbopen_database (in_dbase, "r+", &db) < 0)  {
          unlink( ".tmp" ); 
-         die (0, "Can't open database %s\n", in_dbase);
+         elog_die(0, "Can't open database %s\n", in_dbase);
     } 
 
     db = dblookup (db, 0, "wfdisc", 0, 0);
     if (db.table < 0)  {
          unlink( ".tmp" ); 
-        die (0, "Can't open wfdisc table '%s'\n", in_dbase );
+        elog_die(0, "Can't open wfdisc table '%s'\n", in_dbase );
     }
 
     dbaf = dblookup (db, 0, "affiliation", 0, 0);
     if (dbaf.table < 0)  {
          unlink( ".tmp" ); 
-        die (0, "Can't open wfdisc table '%s'\n", in_dbase );
+        elog_die(0, "Can't open wfdisc table '%s'\n", in_dbase );
     }
 
 
@@ -207,13 +207,13 @@ char *argv[];
  
       if (dbopen( fname, "r+", &tmpdb) < 0)  {
          unlink( ".tmp" ); 
-         die (0, "Can't open database %s\n", fname );
+         elog_die(0, "Can't open database %s\n", fname );
       }
  
       tmpdb = dblookup (tmpdb, 0, "wfdisc", 0, 0);
       if (tmpdb.table < 0)  {
         unlink( ".tmp" ); 
-        die (0, "Can't open wfdisc table '%s'\n", fname );
+        elog_die(0, "Can't open wfdisc table '%s'\n", fname );
       }
 
      /* subset db to only look at waveform segments that matter */
@@ -222,7 +222,7 @@ char *argv[];
       dbsub = dbsubset(tmpdb,subset_condition,0);
       dbquery (dbsub, dbRECORD_COUNT, &nrec);
       if( nrec <= 0 )  {
-	  complain(0, "No records in  %s after '%s' subset\n", 
+	  elog_complain(0, "No records in  %s after '%s' subset\n", 
 	                fname, subset_condition );
 	  gotone = 0;
 	  continue;
@@ -231,7 +231,7 @@ char *argv[];
       dbsub = dbsubset(dbsub,subset_condition,0);
       dbquery (dbsub, dbRECORD_COUNT, &nrec);
       if( nrec <= 0 )  {
-	  complain(0, "No records in  %s after '%s' subset\n", 
+	  elog_complain(0, "No records in  %s after '%s' subset\n", 
 	                fname, subset_condition );
 	  gotone = 0;
 	  continue;
@@ -239,11 +239,11 @@ char *argv[];
       for( dbsub.record = 0; dbsub.record < nrec; dbsub.record++ )  {
   
           if ( dbgetv ( dbsub, 0, "wfdisc", &wfddb, 0 ) == dbINVALID )   {
-               complain( 1,"Can't get wfddb\n" );
+               elog_complain( 1,"Can't get wfddb\n" );
                break;
           } 
           if ( ( wfdrec = dbget ( wfddb, rec )) == dbINVALID )   {
-             complain( 1,"Can't get dbsub record #%d\n", wfddb.record );
+             elog_complain( 1,"Can't get dbsub record #%d\n", wfddb.record );
              break;
           }
 
@@ -259,7 +259,7 @@ char *argv[];
 	        strcat( newdir, "/" );
 	        strcat( newdir, odir );
                 if( Find_path( newdir, &str ) < 0 ) {
-                    complain(0, "can't find a data path for record #%d\n",
+                    elog_complain(0, "can't find a data path for record #%d\n",
                                   dbsub.record);
                     continue;
                 }
@@ -274,16 +274,16 @@ char *argv[];
           tmpaf = dblookup (tmpdb, 0, "affiliation", 0, 0);
           if (tmpaf.table < 0)  {
               unlink( ".tmp" ); 
-              die (0, "Can't open affiliation table '%s'. Use '-n' option.\n", tmpdb );
+              elog_die(0, "Can't open affiliation table '%s'. Use '-n' option.\n", tmpdb );
           }
           dbquery (tmpaf, dbRECORD_COUNT, &nrec);
           if( nrec <= 0 )
-              die( 0, "No records in affiliation table. Use '-n' option.\n");
+              elog_die( 0, "No records in affiliation table. Use '-n' option.\n");
       
 	  for( tmpaf.record = 0; tmpaf.record < nrec; tmpaf.record++ )  {
   
              if ( ( wfdrec = dbget ( tmpaf, rec )) == dbINVALID )   {
-                complain( 1,"Can't get affiliation record #%d\n", tmpaf.record );
+                elog_complain( 1,"Can't get affiliation record #%d\n", tmpaf.record );
                 break;
              }
 
@@ -294,7 +294,7 @@ char *argv[];
           db = dbjoin( dbaf, db, 0, 0, 0, 0, 0);
           dbquery (db, dbRECORD_COUNT, &nrec);
           if( nrec <= 0 )
-              die( 0, "No records in wfdisc&affiliation join.\n");
+              elog_die( 0, "No records in wfdisc&affiliation join.\n");
 	  affil = 1;
       }
    }
@@ -303,36 +303,36 @@ char *argv[];
    if( gotone )  {
       dbquery (db, dbRECORD_COUNT, &nrec);
       if( nrec <= 0 ) {
-         complain( 0, "No records in dbin.\n");
+         elog_complain( 0, "No records in dbin.\n");
       }  else  {
          sort_sta_ch_tm = strtbl("sta", "chan", "time", 0 ) ;
          db = dbsort (db, sort_sta_ch_tm, 0, 0 ) ; 
 
          if(!mkfname( &out_dbase, stime, out_dir))  {
-              die( 1, " can't make outdb\n");
+              elog_die( 1, " can't make outdb\n");
          } 
    
          if (dbopen_database ( out_dbase, "r+", &dbout) < 0)
-              die (1, "Can't open output database %s\n", out_dbase);
+              elog_die(1, "Can't open output database %s\n", out_dbase);
          if (dbout.table < 0) {
               dbout = dblookup (dbout, 0, "wfdisc", 0, 0);
               if (dbout.table < 0)
-                  die (1, "Can't open wfdisc table '%s'\n", out_dbase);
+                  elog_die(1, "Can't open wfdisc table '%s'\n", out_dbase);
          }
  
 
          Seq = 1;
          if(!get_data( stime, etime, nrec ))  {
-             complain(0, "error in get_data()\n");
+             elog_complain(0, "error in get_data()\n");
              system(CLEAN); 
          }
       }
 
       if( affil)
         if( unlink( afname ) < 0 )  
-           complain( 1, "can't remove %s\n", afname);
+           elog_complain( 1, "can't remove %s\n", afname);
       if( unlink( in_dbase ) < 0 )  
-           complain( 1, "can't remove %s\n", in_dbase);
+           elog_complain( 1, "can't remove %s\n", in_dbase);
    }
 
   exit(0);
@@ -349,14 +349,14 @@ char wfd_name[256];
    char name[256];
 
    if (dbopen (dbname, "r", &db) == dbINVALID) {
-      complain (0, "Unable to open database %s.\n",
+      elog_complain(0, "Unable to open database %s.\n",
                                                  dbname);
-      complain (0, "Trying wfdisc name %s.wfdisc\n", dbname);
+      elog_complain(0, "Trying wfdisc name %s.wfdisc\n", dbname);
       sprintf(name, "%s.wfdisc\0", dbname);
       if(stat(name, &buf) == 0)  {
          strcpy(wfd_name, name);
       }  else
-         die ( 1, "The %s doesn't exist.\n", name); 
+         elog_die( 1, "The %s doesn't exist.\n", name); 
          
     }  else {
        db = dblookup (db, 0, "wfdisc", 0, 0);

@@ -9,7 +9,7 @@
 use Datascope ;
 use Tk;
 require Tk::ROText;
-require "getopts.pl" ;
+use Getopt::Std ;
 
 sub append_output {
 	my( @text ) = @_;
@@ -651,7 +651,7 @@ sub check_for_executable {
         return $ok;
 }
 
-if ( ! &Getopts('p:o:r:') || @ARGV > 2 || @ARGV < 1 ) { 
+if ( ! getopts('p:o:r:') || @ARGV > 2 || @ARGV < 1 ) { 
 
 	elog_die( "Usage: $0 [-p pffile] [-o orid] [-r recipe] " .
 		     "database [psfile]\n" ); 

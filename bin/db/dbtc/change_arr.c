@@ -9,17 +9,17 @@ int change_arr( int dbrec, int arec )
  
      
     if (dbopen_database ( NEW, "r+", &dbout ) == dbINVALID )
-         die (0, "Can't open database %s\n",  NEW );
+         elog_die(0, "Can't open database %s\n",  NEW );
  
     dbout = dblookup (dbout, 0, "arrival", 0, 0);
     if (dbout.table < 0)  {
-        die (0, "Can't open wfdisc table '%s'\n", dbname );
+        elog_die(0, "Can't open wfdisc table '%s'\n", dbname );
     }
     
     for( dba.record = 0, dbout.record=0; dba.record < arec; dba.record++, dbout.record++)   {
  
        if( (dbgetv( dba, 0, "time", &stime, 0 )) == dbINVALID )  
-           die( 0, "dbgetv faild for record #%d\n", dba.record );  
+           elog_die( 0, "dbgetv faild for record #%d\n", dba.record );  
        
        for( dbc.record = 0; dbc.record < dbrec; dbc.record++) {
 	            
@@ -29,7 +29,7 @@ int change_arr( int dbrec, int arec )
 	         "bchan", chan,
 	         "bnet", net,
 	         "bsta", sta, 0 )) == dbINVALID )
-	          die( 0, "dbgetv faild for record #%d\n", dbc.record );
+	          elog_die( 0, "dbgetv faild for record #%d\n", dbc.record );
 	        
 	    sprintf( key, "%s_%s_%s\0", net, sta, chan );
 

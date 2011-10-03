@@ -41,7 +41,7 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-require "getopts.pl";
+use Getopt::Std;
 
 use Datascope;
 
@@ -50,7 +50,7 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( ! &Getopts( 'p:v' ) || @ARGV != 1 ) {
+if( ! getopts( 'p:v' ) || @ARGV != 1 ) {
 	
 	elog_die( "Usage: build_sourcetree [-p pfname] [-v] project" );
 

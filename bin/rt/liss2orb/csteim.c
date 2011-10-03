@@ -137,7 +137,7 @@ int stuffw ( Steim *conf, Steimdef *adef, int (*save_record)(), int flush )
 	    }
 #endif
 	    if (save_record (conf, conf->n0, conf->n1)) {
-		register_error (1, 
+		elog_log(1, 
 		    "Couldn't save record for samples %ld to %ld for %s_%s_%s_%s\n",
 		    conf->n0, conf->n1, 
 		    conf->sdh.net, conf->sdh.sta, conf->sdh.chan, conf->sdh.loc );
@@ -184,7 +184,7 @@ csteim (Steim *conf, int (*save_record)(), int *data, long npts)
 		     conf->nsteimdef = nsteim2 ;
 		     break ;
 
-	    default: register_error ( 0, "Steim level must be 1 or 2, not %d\n", conf->level ) ;
+	    default: elog_log( 0, "Steim level must be 1 or 2, not %d\n", conf->level ) ;
 		return -1 ; 
 	}
 
@@ -202,7 +202,7 @@ csteim (Steim *conf, int (*save_record)(), int *data, long npts)
 	    }
 	    if ( j>= conf->nsteimdef ) {
 		if ( conf->nerr == 0 ) 
-		    register_error (0, "The difference %d between %d and %d near sample #%ld cannot be represented in a Steim level 2 compressed record\n", 
+		    elog_log(0, "The difference %d between %d and %d near sample #%ld cannot be represented in a Steim level 2 compressed record\n", 
 		    dx, conf->last_x, asample->x, conf->n1 ) ;
 		conf->nerr++ ;
 		j-- ;

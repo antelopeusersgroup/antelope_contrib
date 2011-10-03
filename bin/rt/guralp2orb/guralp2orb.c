@@ -181,7 +181,7 @@ static int Max_Packets_to_Recover;
 static void
 usage()
 {
-	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-d calibdb] [-l file_for_logpackets] orbname\n" );
+	elog_die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-d calibdb] [-l file_for_logpackets] orbname\n" );
 	
 }
 
@@ -432,7 +432,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 		if( ret < 0 || db.database < 0 ) {
 
-			complain( 1, "Failed to open %s\n",
+			elog_complain( 1, "Failed to open %s\n",
 				 Calibinfo.dbname );
 			
 			(*ttrk)->use = 0;
@@ -449,7 +449,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			complain( 1, "Failed to lookup %s.%s\n", 
+			elog_complain( 1, "Failed to lookup %s.%s\n", 
 		  	     	Calibinfo.dbname,
 		  	     	table );
 
@@ -470,7 +470,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			complain( 1, "%s does not exist\n", (*ttrk)->filename );
+			elog_complain( 1, "%s does not exist\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -482,7 +482,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+			elog_complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -497,7 +497,7 @@ table_check( char *table, Tabletrack **ttrk )
 			
 			dbclose( db );
 
-			complain( 1, "No records in %s\n", (*ttrk)->filename );
+			elog_complain( 1, "No records in %s\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -523,7 +523,7 @@ table_check( char *table, Tabletrack **ttrk )
 		ret = stat( (*ttrk)->filename, (*ttrk)->statbuf );
 
 		if( ret < 0 ) {
-			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+			elog_complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
 
 			(*ttrk)->use = 0;
 			free( (*ttrk)->statbuf );
@@ -596,7 +596,7 @@ add_segtype( char *sta, char *chan, double time, Dbptr *pdb )
 	}
 
 	if( ret < 0 || nrecs <= 0 ) {
-		complain( 1, "Failed to get segtype from database for %s\n", key );
+		elog_complain( 1, "Failed to get segtype from database for %s\n", key );
 		mutex_lock( &pfparams_mutex );
 		strcpy( segtype, Default_segtype );
 		mutex_unlock( &pfparams_mutex );
@@ -709,7 +709,7 @@ add_current_calibvals( char *sta, char *chan, double time, Dbptr *pdb )
 	}
 
 	if( ret < 0 || nrecs <= 0 ) {
-		complain( 1, "Failed to get calib and calper from database for %s\n", key );
+		elog_complain( 1, "Failed to get calib and calper from database for %s\n", key );
 		cv->calib = DEFAULT_CALIB;
 		cv->calper = DEFAULT_CALPER;
 		cv->validuntil = 9999999999.999;
@@ -1153,7 +1153,7 @@ trim_recovery_request( Recoverreq *rr, unsigned short oldest )
 
 	if( ( first_available != rr->first ) && VeryVerbose ) {
 		
-		complain( 1, 
+		elog_complain( 1, 
 		"TCP recovery: packets %d to %d no longer "
 		"available from %s\n",
 		rr->first,  previous_in_sequence( first_available ),
@@ -1187,7 +1187,7 @@ recover_packetsequence( Recoverreq *rr )
 
 	so = socket( PF_INET, SOCK_STREAM, 0 );
 	if( so < 0 ) {
-		complain( 1, 
+		elog_complain( 1, 
 		"Can't open tcp socket to %s for packet recovery\n", 
 		rr->udpsource );
 		recovery_failed( rr->udpsource );
@@ -1200,7 +1200,7 @@ recover_packetsequence( Recoverreq *rr )
 	sin.sin_addr.s_addr = htonl( INADDR_ANY );
 	
 	if( bind( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
-		complain( 1,
+		elog_complain( 1,
 		"Couldn't bind packet recovery socket\n" );
 		close( so );
 		recovery_failed( rr->udpsource );
@@ -1212,7 +1212,7 @@ recover_packetsequence( Recoverreq *rr )
 	sin.sin_addr = rr->udpip;
 	
 	if( connect( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
-		complain( 1,
+		elog_complain( 1,
 		"Couldn't connect packet recovery socket for %s\n", 
 		rr->udpsource );
 		close( so );
@@ -1232,7 +1232,7 @@ recover_packetsequence( Recoverreq *rr )
 
 	if( strncmp( response, SERVER_ID_STRING, 
 		sizeof( SERVER_ID_STRING ) - 1 ) ) {
-		complain( 1, 
+		elog_complain( 1, 
 		  "%s not a GCF server; TCP packet recovery failed. Server response was %s\n", 
 		  rr->udpsource, response );
 		bnsclose( bns );
@@ -1271,7 +1271,7 @@ recover_packetsequence( Recoverreq *rr )
 		if( gpkt == (G2orbpkt *) 1 ) {
 
 			if( Verbose ) {
-				complain( 1, 
+				elog_complain( 1, 
 				"TCP recovery: packet %d no longer "
 				"available from %s\n",
 				next, 
@@ -1281,7 +1281,7 @@ recover_packetsequence( Recoverreq *rr )
 		} else if( gpkt == (G2orbpkt *) NULL ) {
 
 			if( Verbose ) {
-				complain( 1, 
+				elog_complain( 1, 
 				"failed to get packet %d from %s via "
 				"TCP, errno %d. Will retry block.\n", 
 				next, 
@@ -1366,10 +1366,10 @@ guralp2orb_packettrans( void *arg )
 				    	 gpkt->len,
 					 &pkt );
 			if( rc == -1 ) {
-				complain( 1, "Unrecognized packet type GCFS\n" );
+				elog_complain( 1, "Unrecognized packet type GCFS\n" );
 				continue;
 			} else if( rc <= 0 ) {
-				complain( 1, 
+				elog_complain( 1, 
 					  "Error %d unstuffing GCFS packet\n",
 					  rc );
 				continue;
@@ -1390,7 +1390,7 @@ guralp2orb_packettrans( void *arg )
 					free( s );
 					fclose( fp );
 				} else {
-					complain( 1,
+					elog_complain( 1,
 					"Couldn't open %s for %s packet\n",
 						LogpktLogfile,
 						gpkt->srcname );
@@ -1434,7 +1434,7 @@ guralp2orb_packettrans( void *arg )
 			     gpkt->packet, 
 			     gpkt->len );
 
-		if( rc != 0 ) clear_register( 1 );
+		if( rc != 0 ) elog_clear_register( 1 );
 
 		free( gpkt );
 
@@ -1538,7 +1538,7 @@ guralp2orb_udplisten( void *arg )
 
 	ul->so = socket( AF_INET, SOCK_DGRAM, 0 );
 	if( ul->so < 0 ) {
-		complain( 1, "Can't open socket for port %d\n", ul->port );
+		elog_complain( 1, "Can't open socket for port %d\n", ul->port );
 		ul->failed = 1;
 		mutex_lock( &(ul->statuslock) );
 		cond_signal( &(ul->up) );
@@ -1556,7 +1556,7 @@ guralp2orb_udplisten( void *arg )
 	ul->local.sin_addr.s_addr = inet_addr( inaddr );
 
 	if( bind( ul->so, (struct sockaddr *) &(ul->local), ul->lenlocal ) < 0 ) {
-		complain( 1, "Can't bind address to socket\n" );
+		elog_complain( 1, "Can't bind address to socket\n" );
 		ul->failed = 1;
 		mutex_lock( &(ul->statuslock) );
 		cond_signal( &(ul->up) );
@@ -1566,7 +1566,7 @@ guralp2orb_udplisten( void *arg )
 
 	if( getsockname( ul->so, (struct sockaddr *) &(ul->local),
 			 &ul->lenlocal ) < 0 ) {
-		complain( 1, "Error getting socket name\n" );
+		elog_complain( 1, "Error getting socket name\n" );
 		ul->failed = 1;
 		mutex_lock( &(ul->statuslock) );
 		cond_signal( &(ul->up) );
@@ -1600,7 +1600,7 @@ guralp2orb_udplisten( void *arg )
 		mutex_unlock( &(ul->socketlock) );
 
 		if ( gpkt->len == -1 ) {
-			complain( 1, 
+			elog_complain( 1, 
 				"Was not able to get udp packet; errno %d\n",
 				errno );
 			free( gpkt );
@@ -1839,7 +1839,7 @@ init_calibinfo( void )
 
 	if( ret < 0 || db.database < 0 ) {
 
-		complain( 1, "%s %s; %s\n",
+		elog_complain( 1, "%s %s; %s\n",
 		  "Failed to open database",
 		  Calibinfo.dbname,
   		  "calib, calper, and segtype will be default values" );
@@ -1854,7 +1854,7 @@ init_calibinfo( void )
 
 	if( table_check( "calibration", &Calibinfo.ctrk ) == (struct stat *) NULL ) {
 
-		complain( 1, "Using default values for calib and calper.\n" );
+		elog_complain( 1, "Using default values for calib and calper.\n" );
 
 		Calibinfo.usedbcalib = 0;
 	}
@@ -1862,7 +1862,7 @@ init_calibinfo( void )
 	if( table_check( "sensor", &Calibinfo.strk ) == (struct stat *) NULL || 
 	    table_check( "instrument", &Calibinfo.itrk ) == (struct stat *) NULL ) {
 
-		complain( 1, "Using default value for segtype.\n" );
+		elog_complain( 1, "Using default value for segtype.\n" );
 
 		Calibinfo.usedbsegtype = 0;
 	}
@@ -1900,7 +1900,7 @@ launch_udplisten_threads( void )
 		nvals = sscanf( line, "%hd\n", &udpreceive_port );
 
 		if( nvals != 1 ) {
-			complain( 1, 
+			elog_complain( 1, 
 				"guralp2orb: line \"%s\" not understood in udplisten table of parameter file; skipping.\n", line );
 			continue;
 		}
@@ -1950,7 +1950,7 @@ launch_udpinitiate_threads( void )
 					&udpreceive_port );
 
 		if( nvals != 3 ) {
-			complain( 1, 
+			elog_complain( 1, 
 				"guralp2orb: line \"%s\" not understood in udpinitiate table of parameter file; skipping.\n", line );
 			continue;
 		}
@@ -2035,7 +2035,7 @@ guralp2orb_pfwatch( void *arg )
 
 		if( ret < 0 ) {
 
-			complain( 1, "pfupdate failed\n" );
+			elog_complain( 1, "pfupdate failed\n" );
 
 		} else if( ret == 0 ) {
 
@@ -2191,7 +2191,7 @@ guralp2orb_pfwatch( void *arg )
 				  			guralp2orb_packetrecover, 
 				  			0, 0, 0 );
 					if( ret != 0 ) {
-						complain( 1,
+						elog_complain( 1,
 		 				"Failed to create packet-recovery thread\n" );
 					}
 				}
@@ -2264,11 +2264,11 @@ main( int argc, char **argv )
 	}
 
 	if( ( Orbfd = orbopen( orbname, "w&" ) ) < 0 ) {
-		die( 1, "Failed to open orb %s\n", orbname ); 
+		elog_die( 1, "Failed to open orb %s\n", orbname ); 
 	}
 
 	if( pfupdate( Pffile, &pf ) < 0 ) {
-		die( 1, "Couldn't read parameter file %s\n", Pffile );
+		elog_die( 1, "Couldn't read parameter file %s\n", Pffile );
 	}
 
 	mutex_init( &pfparams_mutex, USYNC_THREAD, NULL );
@@ -2358,7 +2358,7 @@ main( int argc, char **argv )
 
 	ret = thr_create( NULL, 0, guralp2orb_packettrans, 0, 0, 0 );
 	if( ret != 0 ) {
-		die( 1,
+		elog_die( 1,
 		 "Failed to create packet-translation thread\n" );
 	}
 
@@ -2391,7 +2391,7 @@ main( int argc, char **argv )
 				  guralp2orb_packetrecover, 
 				  0, 0, 0 );
 		if( ret != 0 ) {
-			die( 1,
+			elog_die( 1,
 		 	"Failed to create packet-recovery thread\n" );
 		}
 	}
@@ -2416,13 +2416,13 @@ main( int argc, char **argv )
 	launch_udpinitiate_threads();
 
 	if( cntarr( ul_arr ) == 0 && cntarr( ui_arr ) == 0 ) {
-		die( 1, 
+		elog_die( 1, 
 		  "no udplisten or udpinitiate threads. Nothing to do, bye.\n" );
 	}
 	
 	ret = thr_create( NULL, 0, guralp2orb_pfwatch, 0, 0, 0 );
 	if( ret != 0 ) {
-		die( 1,
+		elog_die( 1,
 		 "Failed to create parameter-file watch thread\n" );
 	}
 

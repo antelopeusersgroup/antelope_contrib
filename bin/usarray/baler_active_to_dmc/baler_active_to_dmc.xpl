@@ -6,7 +6,7 @@
 #      fill gaps on day files, mark in gap table, "y|n|p"
 #
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use POSIX;    
     use strict ;
     use warnings ;
@@ -35,7 +35,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnc:m:p:s:') || ( @ARGV != 2 ) ) { 
+    if (  ! getopts('vVnc:m:p:s:') || ( @ARGV != 2 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf] [-m mail_to] [-c orbclient ] [-s sta_regex] db orb \n\n" ;
         elog_notify($cmd) ; 

@@ -2,7 +2,7 @@
 #   program needs:
 #
 
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive;
@@ -30,7 +30,7 @@
     $usage   .=  "	[-m mail_to] \n" ;
     $usage   .=  "	db dbcal\n\n"  ; 
     
-    if (  ! &Getopts('nvVim:No:p:') || @ARGV != 2 ) { 
+    if (  ! getopts('nvVim:No:p:') || @ARGV != 2 ) { 
             elog_notify ( $cmd ) ; 
             elog_die    ( $usage ) ;
     }

@@ -17,7 +17,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
     use archive;
     use Cwd;
     use File::Find;
-    require "getopts.pl" ;
+    use Getopt::Std ;
 
     elog_init ("recover_cdorb2db_wfdisc" , @ARGV) ;
 
@@ -41,8 +41,8 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 
 
-if (! &Getopts('d:f:vV')  || @ARGV != 1 ) {
-    elog_complain("Getopts or number of arguments failure.\n");
+if (! getopts('d:f:vV')  || @ARGV != 1 ) {
+    elog_complain("getopts or number of arguments failure.\n");
     &usage;
 } else {
     elog_notify(0,"\nStarting program at: $t");

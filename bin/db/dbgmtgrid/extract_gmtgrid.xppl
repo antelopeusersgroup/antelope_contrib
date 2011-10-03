@@ -7,7 +7,7 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-require "getopts.pl";
+use Getopt::Std;
 
 use POSIX qw(ceil floor);
 
@@ -462,7 +462,7 @@ sub gmtgrid {
 1;
 $Usage = "Usage: extract_gmtgrid [-V] [-Idx[m|c][/dy[m|c]]] -Rwest/east/south/north griddir outfile\n";
 
-if ( ! &Getopts( "VR:I:" ) || @ARGV != 2 ) { 
+if ( ! getopts( "VR:I:" ) || @ARGV != 2 ) { 
 
     print STDERR $Usage;
     exit( 1 );

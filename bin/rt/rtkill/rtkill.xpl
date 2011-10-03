@@ -43,7 +43,7 @@
 
 use Datascope;
 use File::Copy;
-require "getopts.pl";
+use Getopt::Std;
 
 sub retrieve_run_status {
 	my( $key ) = @_;
@@ -135,7 +135,7 @@ $Program =~ s/.*\///;
 
 elog_init( $Program, @ARGV);
 
-if( ! &Getopts('rvlqs') ) {
+if( ! getopts('rvlqs') ) {
 
 	die( "$usage\n" );
 

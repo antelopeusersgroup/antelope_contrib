@@ -89,7 +89,7 @@ SCMatrix *create_SCMatrix(Arr *stalist, Arr *arrp)
 	s->ncol = (s->nsta)*(s->nphases);
 	s->sta_index = create_sta_index(stalist);
 	if((s->ncol)<=0)
-		die(0,"create_SCMatrix:  illegal matrix request\nNumber stations = %d and number of phases = %d yielding %d matrix columns\n",
+		elog_die(0,"create_SCMatrix:  illegal matrix request\nNumber stations = %d and number of phases = %ld yielding %d matrix columns\n",
 			s->nsta,cntarr(arrp),s->ncol);
 	/* We set the initial number of rows to 1 and depend on 
 	a realloc late to make the S workspace larger. */

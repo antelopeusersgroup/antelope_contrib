@@ -6,7 +6,7 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope;
 
 sub exec_cmd {
@@ -41,7 +41,7 @@ my $pgm = $0 ;
 $pgm =~ s".*/"" ;
 $Pfname = $pgm;
 
-if ( ! &Getopts('R:V') || @ARGV != 0 ) { 
+if ( ! getopts('R:V') || @ARGV != 0 ) { 
 
 	die ( "Usage: $pgm [-V] -Rw/e/s/n\n" ) ; 
 

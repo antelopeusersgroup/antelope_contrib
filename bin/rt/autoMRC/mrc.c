@@ -99,7 +99,7 @@ char *argv[];
 
   
   if( (orb = orbopen( orbname, "r")) < 0)
-      die( 0, "Can't open ORB\n");
+      elog_die( 0, "Can't open ORB\n");
      
   if( pfread ( mypf, &lpf) == 0 )  {
        elog_notify (0, "Will read parameters from %s parameter file\n", mypf);
@@ -123,11 +123,11 @@ char *argv[];
       }
   }
   if ((nselect = orbselect ( orb, match)) < 1 )
-      die (1, "orbselect '%s' failed\n", match);
+      elog_die(1, "orbselect '%s' failed\n", match);
   
 
   if (orbget (orb, ORBCURRENT, &id, srcid, &pkttime, &packet, &nbytes, &bsize)) 
-      die(0,"fails to get ORBCURRENT time.\n") ; 
+      elog_die(0,"fails to get ORBCURRENT time.\n") ; 
 
   DC = newtbl(0);
   Dases = newarr(0);
@@ -144,7 +144,7 @@ char *argv[];
   }
   ndc = maxtbl(DC);
   if( ndc <= 0 ) 
-     die( 0, "can't get a DC names\n");
+     elog_die( 0, "can't get a DC names\n");
 
   /* Print current settings  */
 
@@ -211,31 +211,31 @@ char *argv[];
 		       break;
 
 	            case -1 :
-		       complain( 0, "unknown packet type %s\n", srcid );
+		       elog_complain( 0, "unknown packet type %s\n", srcid );
 		       break;
 	         }
 	 } 
     }  else {
           err_in++;
-	  complain( 0, "Can't get packet after %lf.\n", save_time );
+	  elog_complain( 0, "Can't get packet after %lf.\n", save_time );
 	  if( err_in > 900 )  {
 	       orbclose( orb );
 	       sleep(10);
                if( (orb = orbopen( orbname, "r")) < 0)
-                   die( 0, "Can't open ORB\n");
+                   elog_die( 0, "Can't open ORB\n");
 
                if ((nselect = orbselect ( orb, match)) < 1 )
-                   die (1, "orbselect '%s' failed\n", match);
+                   elog_die(1, "orbselect '%s' failed\n", match);
 
                if ( save_time > 0 ) {
                    if ( orbafter ( orb, save_time ) < 0) {
-                        complain ( 1, "orbafter to %lf failed\n", save_time )  ;
+                        elog_complain( 1, "orbafter to %lf failed\n", save_time )  ;
                         if (orbseek (orb, ORBCURRENT ) < 0 ) 
-                             die(0,"fails to get ORBCURRENT time.\n") ; 
+                             elog_die(0,"fails to get ORBCURRENT time.\n") ; 
                    } 
                }  else  {
                    if (orbseek (orb, ORBCURRENT ) < 0 ) 
-                        die(0,"fails to get ORBCURRENT time.\n") ; 
+                        elog_die(0,"fails to get ORBCURRENT time.\n") ; 
               }
 	  }
 

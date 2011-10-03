@@ -33,9 +33,9 @@ use Encode 'from_to';
 
 our( $opt_v, $opt_o, $opt_O, $opt_p, $opt_r, $opt_f, $opt_l, $opt_L );
 our $items;
-require "getopts.pl";
+use Getopt::Std;
 
-if ( !&Getopts('f:l:L:o:O:p:r:v') || @ARGV < 1 ) {
+if ( !getopts('f:l:L:o:O:p:r:v') || @ARGV < 1 ) {
     die (
 "Usage: $0 [-v] [-p pf] [-l field] [-r range] [-f psfile] [-o dboverlay.table|-O table] database[.table]\n"
     );

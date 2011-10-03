@@ -108,9 +108,9 @@ main (int argc, char **argv)
 
 		fp = zopen(ahfile);
 		if( fp == NULL ) {
-			register_error( 1, 
+			elog_log( 1, 
 				"Error opening %s; skipping", ahfile );
-			clear_register( 1 );
+			elog_clear_register( 1 );
 			optind++;
 			continue;
 		}
@@ -124,50 +124,50 @@ main (int argc, char **argv)
 
 			nread = fread( &ah.station, 1, 520, fp );
 			if( nread != 520 ) {
-				register_error( 1, 
+				elog_log( 1, 
 "Failed to read next header in %s. Skipping from offset %d to end of file\n",
 					ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 			nread = fread( &ah.event, 1, 22, fp );
 			if( nread != 22 ) {
-				register_error( 1, 
+				elog_log( 1, 
 "Failed to read next header in %s. Skipping from offset %d to end of file\n",
 					ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 			nread = fread( &ah.event.ot.sec, 1, 86, fp );
 			if( nread != 86 ) {
-				register_error( 1, 
+				elog_log( 1, 
 "Failed to read next header in %s. Skipping from offset %d to end of file\n",
 					ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 			nread = fread( &ah.record.ndata, 1, 22, fp );
 			if( nread != 22 ) {
-				register_error( 1, 
+				elog_log( 1, 
 "Failed to read next header in %s. Skipping from offset %d to end of file\n",
 					ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 			nread = fread( &ah.record.abstime.sec, 1, 290, fp );
 			if( nread != 290 ) {
-				register_error( 1, 
+				elog_log( 1, 
 "Failed to read next header in %s. Skipping from offset %d to end of file\n",
 					ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 			nread = fread( &ah.extra, 1, 84, fp );
 			if( nread != 84 ) {
-				register_error( 1, 
+				elog_log( 1, 
 "Failed to read next header in %s. Skipping from offset %d to end of file\n",
 					ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 
@@ -175,20 +175,20 @@ main (int argc, char **argv)
 
 			datasize = aah_datatype_to_size( ah.record.type );
 			if( datasize <= 0 ) {
-				register_error( 1, 
+				elog_log( 1, 
   "Unrecognized datatype %d; skipping %s from offset %d to end of file\n",
 				  ah.record.type, ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 			nsamp = ah.record.ndata;
 			samprate = 1.0 / ah.record.delta;
 
 			if( aah_abstime_to_epoch( ah.record.abstime, &time ) ) {
-				register_error( 1, 
+				elog_log( 1, 
 "time conversion error; skipping %s from offset %d to end of file\n",
 				  ahfile, foff );
-				clear_register( 1 );
+				elog_clear_register( 1 );
 				break;
 			}
 

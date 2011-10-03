@@ -1,0 +1,205 @@
+originator     Jennifer Eakins, UCSD
+last_modified  2011-06-15
+
+category	ANF 
+configuration	qep, w/ fixed vaisala wxt250 weather station
+
+description	qep, w/ fixed vaisala wxt250 weather station
+dfile 		qep 		# no response, qep = dummy
+
+soh		LWD_EP LWS_EP LKO_EP LDV_EP LIO_EP LRO_EP LRH_EP LKH_EP LEH_EP LEW_EP LER_EP
+soh_only	1
+
+#          stages        list of stages for the channel (no samprate)
+#          sensitivity   gnom for this sensor
+#          gains         a/d gain(s) for this datalogger
+#          iunits        natural units for this sensor
+#          samprate      input sample rate for this sensor
+
+
+LWD_EP	&Arr{	# wind direction, 1sps
+stages 		wDir	
+iunits  	degrees
+ounits		counts
+samprate 	1.000	
+rsptype		a
+}
+
+wDir &Arr{
+gtype		Wind Direction
+gnom		1.000
+iunits  	degrees
+ounits		counts
+sn              datalogger
+}
+
+LWS_EP	&Arr{	# wind speed in 0.1m/s , 1sps
+stages 		wSpd	
+iunits  	m/s 
+ounits		counts
+samprate 	1.000	
+rsptype		s
+}
+
+wSpd &Arr{
+gtype		Wind Speed 
+# check the gnom
+gnom		10
+iunits  	m/s    
+ounits		counts
+sn              datalogger
+}
+
+
+LKO_EP	&Arr{	# temperature in 0.1 degC, 1sps
+stages 		epTv	
+iunits  	C   
+ounits		counts
+samprate 	1.000	
+rsptype		t
+}
+
+epTv &Arr{
+gtype		wxt temp 
+gnom		10 
+iunits  	C	
+ounits		counts
+sn              datalogger
+}
+
+LDV_EP  &Arr{   # pressure in 0.0001 bar, 1sps
+stages          epPv
+iunits          mbar
+ounits          counts
+samprate        1.000
+rsptype         P
+}
+
+epPv &Arr{
+gtype           wxt pressure
+gnom            10
+iunits          mbar
+ounits          counts
+sn              datalogger
+}
+
+LIO_EP	&Arr{	# humidity in 0.1 percent, 1sps
+stages 		epHv	
+iunits  	percent   
+ounits		counts
+samprate 	1.000	
+rsptype		p
+}
+
+epHv &Arr{
+gtype		wxt humidity
+gnom		10
+iunits  	percent
+ounits		counts
+sn              datalogger
+}
+
+LKH_EP	&Arr{	# Heater temperature in 0.1 degC, 1sps
+stages 		epThv	
+iunits  	C   
+ounits		counts
+samprate 	1.000	
+rsptype		t
+}
+
+epThv &Arr{
+gtype		wxt heater temp 
+gnom		10 
+iunits  	C	
+ounits		counts
+sn              datalogger
+}
+
+
+LEH_EP	&Arr{	# heater voltage in 0.1V, 1sps
+stages 		epVhv	
+iunits  	V   
+ounits		counts
+samprate 	1.000	
+rsptype		v
+}
+
+epVhv &Arr{
+gtype		wxt heater voltage 
+# check this
+gnom		10 
+iunits  	V
+ounits		counts
+sn              datalogger
+}
+
+LEW_EP	&Arr{	# supply voltage in 0.1V, 1sps
+stages 		epVsv	
+iunits  	V   
+ounits		counts
+samprate 	1.000	
+rsptype		v
+}
+
+epVsv &Arr{
+gtype		wxt supply voltage 
+# check this
+gnom		10 
+iunits  	V
+ounits		counts
+sn              datalogger
+}
+
+
+LER_EP	&Arr{	# reference voltage in 0.001V, 1sps
+stages 		epVrv	
+iunits  	V   
+ounits		counts
+samprate 	1.000	
+rsptype		v
+}
+
+epVrv &Arr{
+gtype		wxt ref voltage 
+gnom		1000
+iunits  	V
+ounits		counts
+sn              datalogger
+}
+
+LRH_EP	&Arr{	# Hail Intensity in hits/cm2*hr, 1sps
+stages 		epHI 	
+iunits  	h/cm**2*hr   
+ounits		counts
+samprate 	1.000	
+rsptype		j
+}
+
+epHI &Arr{
+gtype		Hail Intensity 
+gnom		1.0
+iunits  	h/cm**2*hr 
+ounits		counts
+sn              datalogger
+}
+
+LRO_EP	&Arr{	# Rain Intensity in 0.1 mm/hr, 1sps
+stages 		epRI 	
+iunits  	mm/hr   
+ounits		counts
+samprate 	1.000	
+rsptype		V
+}
+
+epRI &Arr{
+gtype		Rain Intensity 
+# check this
+gnom		10
+iunits  	mm/hr	
+ounits		counts
+sn              datalogger
+}
+
+
+
+

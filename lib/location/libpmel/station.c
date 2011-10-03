@@ -88,7 +88,7 @@ Written:  October 2000
 Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 {
         Dbptr dbs;
-        int nrows;
+        long nrows;
         Tbl *sortkeys;
 	Arr *a,*out;
  	char staname[12];
@@ -99,7 +99,7 @@ Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 	double lastlon,lastlat,lastelev,lastdn,lastde;
 
 	/*We first scan the site table for moving stations*/
-	sortkeys = strtbl("sta","ondate::offdate",0);
+	sortkeys = strtbl("sta","ondate::offdate",NULL );
 	dbs = dblookup(db,0,"site",0,0);
 	dbs = dbsort(dbs,sortkeys,0,0);
 	dbquery(dbs,dbRECORD_COUNT,&nrows);
@@ -117,7 +117,7 @@ Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 		"lat",&lastlat,
 		"elev",&lastelev,
 		"dnorth",&lastdn,
-		"deast",&lastde,0);
+		"deast",&lastde,NULL );
 
 	for(dbs.record=0;dbs.record<nrows;++dbs.record)
 	{
@@ -126,8 +126,8 @@ Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 			"lat",&lat,
 			"elev",&elev,
 			"dnorth",&dnorth,
-			"deast",&deast,0) == dbINVALID)
-			die(0,"pmel_dbload_stations:  dbgetv error scaning site table at row %d of working view\n",dbs.record);
+			"deast",&deast,NULL ) == dbINVALID)
+			elog_die(0,"pmel_dbload_stations:  dbgetv error scaning site table at row %ld of working view\n",dbs.record);
 
 		if(usednde) apply_dnde(dnorth,deast,&lat,&lon);
 		if(strcmp(staname,laststa) )
@@ -149,7 +149,7 @@ Arr *pmel_dbload_stations(Dbptr db, Pf *pf)
 		else
 		{
 			if( (lastlat != lat) || (lastlon != lon) )
-			  die(0,"Fatal(pmel_dbload_stations):  station location for %s is not constant in site table\nFound lat,lon pairs of (%lf,%lf) and (%lf,%lf)\n",
+			  elog_die(0,"Fatal(pmel_dbload_stations):  station location for %s is not constant in site table\nFound lat,lon pairs of (%lf,%lf) and (%lf,%lf)\n",
 				staname,lat,lon,lastlat,lastlon);
 		}
 	}

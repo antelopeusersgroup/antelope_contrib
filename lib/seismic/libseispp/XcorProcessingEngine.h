@@ -83,7 +83,7 @@ public:
 	void sort_ensemble();
 	
 	//save the resulting beam to the output database
-        void save_results(int evid, int orid,Hypocenter& h);
+        void save_results(long evid, long orid,Hypocenter& h);
 
 	void load_data(Hypocenter& hypo);
 	/*! Load data from a generic database handle.  

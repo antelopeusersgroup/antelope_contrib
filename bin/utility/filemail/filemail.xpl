@@ -13,7 +13,7 @@ use Mail::Internet;
 use Datascope ;
 use filemail;
 
-require "getopts.pl" ;
+use Getopt::Std ;
 
 sub bycopy {
 
@@ -209,7 +209,7 @@ $do_file = 0;
 $do_sort = 0;
 $do_database = 0;
 
-if ( ! &Getopts('aunfvsS:d:l:') ) { 
+if ( ! getopts('aunfvsS:d:l:') ) { 
 
     	die ( "Usage: $0 [-anufsv] [-S sortedfile] [-l error_logfile] [-d new_database] [mail_file ...]\n" ) ; 
 

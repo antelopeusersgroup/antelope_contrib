@@ -27,12 +27,12 @@ Dbptr           tr;
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"rot:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"rot:bundletype != 0");
 
 		if (dbgetv(tr, 0,
 		 "data", &data,
 		  "nsamp", &nsamp,
-		   0)!=0) die (0,"rot:dbgetv problem\n");
+		   0)!=0) elog_die(0,"rot:dbgetv problem\n");
 
 		x_sum=y_sum=xy_sum=x_sum2=0.0;
 	    	for ( i=0 ; i<nsamp ; i++ ){ 

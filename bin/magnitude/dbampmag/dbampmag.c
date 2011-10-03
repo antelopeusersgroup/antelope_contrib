@@ -156,7 +156,7 @@ int main (int argc, char **argv) {
 
 	proc_arr = newarr (0);
 	if (proc_arr == NULL) {
-		complain (0, "newarr() error.\n");
+		elog_complain(0, "newarr() error.\n");
 		exit (1);
 	}
 	strcpy (pfname, "dbampmag");
@@ -166,7 +166,7 @@ int main (int argc, char **argv) {
 		if (!strcmp(*argv, "-pf")) {
 			argv++; argc--;
 			if (argc < 1) {
-				complain (0, "Need argument for -pf\n");
+				elog_complain(0, "Need argument for -pf\n");
 				usage();
 			}
 			strcpy (pfname, *argv);
@@ -185,13 +185,13 @@ int main (int argc, char **argv) {
 		} else if (!strcmp(*argv, "-quiet")) {
 			quiet = 1;
 		} else {
-			complain (0, "Unrecognized argument '%s'.\n", *argv);
+			elog_complain(0, "Unrecognized argument '%s'.\n", *argv);
 			usage();
 		}
 	}
 
 	if (argc < 1) {
-		complain (0, "Need dbname argument.\n");
+		elog_complain(0, "Need dbname argument.\n");
 		usage();
 	}
 	dbname = *argv;
@@ -203,19 +203,19 @@ int main (int argc, char **argv) {
 	}
 
 	if (use_if_not_associated + use_if_not_defining > 1) {
-		complain (0, "Cannot specify both -use_if_not_associated and -use_if_not_defining at the same time.\n");
+		elog_complain(0, "Cannot specify both -use_if_not_associated and -use_if_not_defining at the same time.\n");
 		usage();
 	}
 
 	if (strcmp(dbname, "-")) {
 		if (dbopen (dbname, "r+", &db) == dbINVALID) {
-			complain (0, "dbopen(%s) error.\n", dbname);
+			elog_complain(0, "dbopen(%s) error.\n", dbname);
 			usage();
 		}
 		dbo = dblookup (db, 0, "origin", 0, 0);
 	} else {
 		if (dbread_view (stdin, &db, NULL) != 0) {
-			complain (0, "dbread_view() error.\n");
+			elog_complain(0, "dbread_view() error.\n");
 			usage();
 		}
 		dbo = db;
@@ -234,64 +234,64 @@ int main (int argc, char **argv) {
 	}
 
 	if (pfread (pfname, &pf) < 0) {
-		complain (0, "pfread(%s) error.\n", pfname);
+		elog_complain(0, "pfread(%s) error.\n", pfname);
 		exit (1);
 	}	
 
 	parse_param (pf, "use_hypocentral_distance", P_BOOL, 0, &use_hypocentral_distance);
 	if (parse_param (pf, "v_r", P_DBL, 1, &v_r) < 0) {
-		complain (0, "parse_param(v_r) error.\n");
+		elog_complain(0, "parse_param(v_r) error.\n");
 		exit (1);
 	}
 	if (parse_param (pf, "time_window_factor", P_DBL, 1, &time_window) < 0) {
-		complain (0, "parse_param(time_window_factor) error.\n");
+		elog_complain(0, "parse_param(time_window_factor) error.\n");
 		exit (1);
 	}
 	parse_param (pf, "minimum_time_window", P_DBL, 0, &minimum_time_window);
 
 	if (parse_param (pf, "magtype", P_STR, 1, &magtype) < 0) {
-		complain (0, "parse_param(magtype) error.\n");
+		elog_complain(0, "parse_param(magtype) error.\n");
 		exit (1);
 	}
 	if (strcmp(magtype,"mb")!=0 && strcmp(magtype,"ms")!=0 && strcmp(magtype,"ml")!=0) {
-		complain(0, "magtype must be mb,ml or ms instead of %s\n",magtype);
+		elog_complain(0, "magtype must be mb,ml or ms instead of %s\n",magtype);
 		exit(1);
 	}
 	if (parse_param (pf, "filter", P_STR, 1, &filter) < 0) {
-		complain (0, "parse_param(filter) error.\n");
+		elog_complain(0, "parse_param(filter) error.\n");
 		exit (1);
 	}
 	if (sscanf(filter,"%s %lf %d %lf %d",filter_type,&f1,&np1,&f2,&np2)!=5) {
-		complain(0,"parse_filter(%s) error.\n",filter);
+		elog_complain(0,"parse_filter(%s) error.\n",filter);
 		exit(1);
 	}
 	if (parse_param (pf, "c0", P_DBL, 1, &c0) < 0) {
-		complain (0, "parse_param(c0) error.\n");
+		elog_complain(0, "parse_param(c0) error.\n");
 		exit (1);
 	}
 	if (parse_param (pf, "c1", P_DBL, 1, &c1) < 0) {
-		complain (0, "parse_param(c1) error.\n");
+		elog_complain(0, "parse_param(c1) error.\n");
 		exit (1);
 	}
 	if (parse_param (pf, "time0", P_STR, 1, &time0) < 0) {
-		complain (0, "parse_param(time0) error.\n");
+		elog_complain(0, "parse_param(time0) error.\n");
 		exit (1);
 	}
 	if (strcmp(time0,"P")!=0 && strcmp(time0,"S")!=0 && strcmp(time0,"R") !=0) {
-		complain(0, "time0 must be P,S or R instead of %s\n",time0);
+		elog_complain(0, "time0 must be P,S or R instead of %s\n",time0);
 		exit(1);
 	}
 	if (parse_param (pf, "mindelta", P_DBL, 1, &mindelta) < 0) {
-		complain (0, "parse_param(mindelta) error.\n");
+		elog_complain(0, "parse_param(mindelta) error.\n");
 		exit (1);
 	}
 	if (parse_param (pf, "maxdelta", P_DBL, 1, &maxdelta) < 0) {
-		complain (0, "parse_param(maxdelta) error.\n");
+		elog_complain(0, "parse_param(maxdelta) error.\n");
 		exit (1);
 	}
 	tbl = NULL;
 	if (parse_param (pf, "mag", P_TBL, 1, &tbl) < 0) {
-		complain (0, "parse_param(ml) error.\n");
+		elog_complain(0, "parse_param(ml) error.\n");
 		exit (1);
 	}
 	for (i=0; i<maxtbl(tbl); i++) {
@@ -307,7 +307,7 @@ int main (int argc, char **argv) {
 				sta, chan_expr, calib_ans, decon_ans, wa_ans, 
 				&snr_thresh, &twin_noise, &dummy, &c2, &c3 ,&c4 ,&c5, &minclip, &maxclip);
 		if (ret != 12 && ret != 14) {
-			die (0, "Cannot parse line '%s'\n", line);
+			elog_die(0, "Cannot parse line '%s'\n", line);
 		}
 		if (ret == 12) {
 			apply_clip_limits=0;
@@ -318,7 +318,7 @@ int main (int argc, char **argv) {
 		}
 		sp = (struct station_params *) malloc (sizeof (struct station_params));
 		if (sp == NULL) {
-			complain (1, "malloc() error.\n");
+			elog_complain(1, "malloc() error.\n");
 			exit (1);
 		}
 		memset(sp, 0, sizeof(struct station_params));
@@ -358,7 +358,7 @@ int main (int argc, char **argv) {
 
 	dbquery (dbo, dbRECORD_COUNT, &n);
 	if (n < 1) {
-		complain (0, "No origins to process.\n");
+		elog_complain(0, "No origins to process.\n");
 		exit (1);
 	}
 
@@ -386,7 +386,7 @@ int main (int argc, char **argv) {
 					"auth", auth,
 					0);
 		if (ret == dbINVALID) {
-			die (0, "dbgetv(orid) error.\n");
+			elog_die(0, "dbgetv(orid) error.\n");
 		}
 		if (orid < 0) continue;
 		if (verbose && !quiet) {
@@ -413,13 +413,13 @@ int main (int argc, char **argv) {
 			nm = dbmatches (dbo, dba, NULL, NULL, &hook, &mtbl);
 		}
 		if (nm == dbINVALID) {
-			complain (0, "dbmatches() error...skipping orid %d.\n", orid);
+			elog_complain(0, "dbmatches() error...skipping orid %d.\n", orid);
 			if (mtbl) freetbl (mtbl, 0);
 			continue;
 		}
 
 		if (nm < 1) {
-			complain (0, "No associations or stations for orid #%d.\n", orid);
+			elog_complain(0, "No associations or stations for orid #%d.\n", orid);
 			if (mtbl) freetbl (mtbl, 0);
 			continue;
 		}
@@ -513,12 +513,12 @@ int main (int argc, char **argv) {
 				mtbl2 = NULL;
 				ret = dbmatches (dbsm, dbs, NULL, NULL, &hook2, &mtbl2);
 				if (ret == dbINVALID) {
-					complain (0, "dbmatches() error...skipping orid:sta %d:%s.\n", orid, sta);
+					elog_complain(0, "dbmatches() error...skipping orid:sta %d:%s.\n", orid, sta);
 					if (mtbl2) freetbl (mtbl2, 0);
 					continue;
 				}
 				if (ret == 0) {
-					complain (0, "Cannot find sta %s in site table for orid %d.\n", sta, orid);
+					elog_complain(0, "Cannot find sta %s in site table for orid %d.\n", sta, orid);
 					if (mtbl2) freetbl (mtbl2, 0);
 					continue;
 				}
@@ -564,14 +564,14 @@ int main (int argc, char **argv) {
 	
 		if ( !quiet) {
 			if ( strlen(missing_stations) > 0 ) { 
-					complain ( 0, "parameter file is missing stations:%s%s\n", 
+					elog_complain( 0, "parameter file is missing stations:%s%s\n", 
 					missing_stations, too_long ? " and others" : "" ) ; 
 			}
 		}
 	
 		if (nn < 1) {
 			if (!quiet) {
-				complain (0, "No stations to process for orid %d.\n", orid);
+				elog_complain(0, "No stations to process for orid %d.\n", orid);
 			}
 			continue;
 		}
@@ -585,7 +585,7 @@ int main (int argc, char **argv) {
 			if (sp->use == 0) continue;
 			if (sp->delta < mindelta ||sp->delta > maxdelta) {
 					if (verbose) {
-						complain (0, "%s - station not in valid distance-range.\n",sta);
+						elog_complain(0, "%s - station not in valid distance-range.\n",sta);
 					}
 					continue;
 				}
@@ -599,14 +599,14 @@ int main (int argc, char **argv) {
 			ret = dbmatches (dbmw, dbw, &wfpat, &wfpat, &hookwf, &wftbl);
 			if (ret == dbINVALID) {
 				if (!quiet) {
-					complain (0, "dbmatches() error...skipping waveforms for orid:sta %d:%s.\n", orid, sp->sta);
+					elog_complain(0, "dbmatches() error...skipping waveforms for orid:sta %d:%s.\n", orid, sp->sta);
 				}
 				if (wftbl) freetbl (wftbl, 0);
 				continue;
 			}
 			if (ret == 0) {
 				if (!quiet) {
-					complain (0, "Cannot find wavforms for orid:sta %d:%s.\n", orid, sp->sta);
+					elog_complain(0, "Cannot find wavforms for orid:sta %d:%s.\n", orid, sp->sta);
 				}
 				if (wftbl) freetbl (wftbl, 0);
 				continue;
@@ -712,7 +712,7 @@ int main (int argc, char **argv) {
 							0);
 				if (ret < 0) {
 					if (!quiet) {
-						complain (0, "dbaddv(netmag) error.\n(magid=%i net=%s orid=%i evid=%i",magid,net,orid,evid);
+						elog_complain(0, "dbaddv(netmag) error.\n(magid=%i net=%s orid=%i evid=%i",magid,net,orid,evid);
 					}
 				} else {
 					dbnm.record = ret;
@@ -731,7 +731,7 @@ int main (int argc, char **argv) {
 									0);
 						if (ret < 0) {
 							if (!quiet) {
-								complain (0, "dbputv(stamag) error.\n");
+								elog_complain(0, "dbputv(stamag) error.\n");
 							}
 							continue;
 						}
@@ -819,7 +819,7 @@ mycallback (struct station_params *sp, int ichan)
 
 	if (grdb_sc_getstachan (sp->dbgr, ichan, sta, chan, &nsegs, &time, &endtime) < 0) {
 		if (!quiet) {
-			complain (0, "grdb_sc_getstachan() error for %s.\n", sta);
+			elog_complain(0, "grdb_sc_getstachan() error for %s.\n", sta);
 		}
 		return;
 	}
@@ -846,7 +846,7 @@ mycallback (struct station_params *sp, int ichan)
 		dbfree (dbv1);
 		dbfree (dbv2);
 		if (!quiet) {
-			complain (0, "mycallback: cannot find instrument row for %s_%s.\n", sp->sta, chan);
+			elog_complain(0, "mycallback: cannot find instrument row for %s_%s.\n", sp->sta, chan);
 		}
 		return;
 	}
@@ -855,7 +855,7 @@ mycallback (struct station_params *sp, int ichan)
 		dbfree (dbv1);
 		dbfree (dbv2);
 		if (!quiet) {
-			complain (0, "mycallback: dbgetv(rsptype) error for %s_%s.\n", sp->sta, chan);
+			elog_complain(0, "mycallback: dbgetv(rsptype) error for %s_%s.\n", sp->sta, chan);
 		}
 		return;
 	}
@@ -866,7 +866,7 @@ mycallback (struct station_params *sp, int ichan)
 			dbfree (dbv1);
 			dbfree (dbv2);
 			if (!quiet) {
-				complain (0, "mycallback: dbextfile(instrument) error for %s_%s.\n", sp->sta, chan);
+				elog_complain(0, "mycallback: dbextfile(instrument) error for %s_%s.\n", sp->sta, chan);
 			}
 			return;
 		}
@@ -875,7 +875,7 @@ mycallback (struct station_params *sp, int ichan)
 			dbfree (dbv1);
 			dbfree (dbv2);
 			if (!quiet) {
-				complain (1, "mycallback: fopen(%s) error for %s_%s.\n", fname, sp->sta, chan);
+				elog_complain(1, "mycallback: fopen(%s) error for %s_%s.\n", fname, sp->sta, chan);
 			}
 			return;
 		}
@@ -883,7 +883,7 @@ mycallback (struct station_params *sp, int ichan)
 			dbfree (dbv1);
 			dbfree (dbv2);
 			if (!quiet) {
-				complain (1, "mycallback: read_response(%s) error for %s_%s.\n", fname, sp->sta, chan);
+				elog_complain(1, "mycallback: read_response(%s) error for %s_%s.\n", fname, sp->sta, chan);
 			}
 			return;
 		}
@@ -902,7 +902,7 @@ mycallback (struct station_params *sp, int ichan)
 		if (n != 1) {
 			dbfree (dbv1);
 			if (!quiet) {
-				complain (0, "mycallback: cannot find calibration row for %s_%s.\n", sp->sta, chan);
+				elog_complain(0, "mycallback: cannot find calibration row for %s_%s.\n", sp->sta, chan);
 			}
 			return;
 		}
@@ -910,14 +910,14 @@ mycallback (struct station_params *sp, int ichan)
 		if (dbgetv (dbv1, 0, "calib", &calib, 0) < 0) {
 			dbfree (dbv1);
 			if (!quiet) {
-				complain (0, "mycallback: dbgetv(calib) error for %s_%s.\n", sp->sta, chan);
+				elog_complain(0, "mycallback: dbgetv(calib) error for %s_%s.\n", sp->sta, chan);
 			}
 			return;
 		}
 	if (calib == 0.0) {
 			dbfree (dbv1);
 			if (!quiet) {
-				complain (0, "mycallback: calib == 0 for %s_%s.\n", sp->sta, chan);
+				elog_complain(0, "mycallback: calib == 0 for %s_%s.\n", sp->sta, chan);
 			}
 			return;
 		}
@@ -930,13 +930,13 @@ mycallback (struct station_params *sp, int ichan)
 					"seg", getcalib, NULL, 0.0, 0.0, NULL,
 					&nsegs, &trace) < 0) {
 		if (!quiet) {
-			complain (0, "getchannel() error for %s:%s.\n", sta, chan);
+			elog_complain(0, "getchannel() error for %s:%s.\n", sta, chan);
 		}
 		return;
 	}
 	if (nsegs < 1) {
 		if (!quiet) {
-			complain (0, "No data to process for %s.\n", sta);
+			elog_complain(0, "No data to process for %s.\n", sta);
 		}
 		trdestroy (&trace);
 		return;
@@ -947,12 +947,12 @@ mycallback (struct station_params *sp, int ichan)
 	for (iseg = 0; iseg<nsegs; iseg++) {
 		if (getsegment (trace, iseg, &tstart, &dt, &nsamp, &data) < 0) {
 			if (!quiet) {
-				complain (0, "getsegment() error for %s:%s.\n", sta, chan);
+				elog_complain(0, "getsegment() error for %s:%s.\n", sta, chan);
 			}
 			trdestroy (&trace);
 			return;
 		}
-		clear_register (0);
+		elog_clear_register(0);
 		
 		if (sp->apply_clip_limits) {
 			float minclip, maxclip;
@@ -966,7 +966,7 @@ mycallback (struct station_params *sp, int ichan)
 				trcalib = trace;
 				if (iseg >= 0) trcalib.record += iseg;
 				if (dbgetv (trcalib, 0, "calib", &calib2, 0) == dbINVALID) {
-					complain (0, "getsegment: dbgetv(calib) error.\n");
+					elog_complain(0, "getsegment: dbgetv(calib) error.\n");
 					calib = 1.0;
 				}
 				minclip *= calib2;
@@ -1004,13 +1004,13 @@ mycallback (struct station_params *sp, int ichan)
 	
 		if (sp->apply_wa_filter && sp->decon_instr) {
 			if (!quiet) {
-				complain (0, "Cannot decon instrument for %s:%s.\n", sta, chan);
+				elog_complain(0, "Cannot decon instrument for %s:%s.\n", sta, chan);
 			}
 			trdestroy (&trace);
 			return;
 		} else if (sp->decon_instr) {
 			if (!quiet) {
-				complain (0, "Cannot decon instrument for %s:%s.\n", sta, chan);
+				elog_complain(0, "Cannot decon instrument for %s:%s.\n", sta, chan);
 			}
 			trdestroy (&trace);
 			return;
@@ -1021,7 +1021,7 @@ mycallback (struct station_params *sp, int ichan)
 				fil = (void *) wafl_create (NULL, 1, 0, dt);
 				if (fil == NULL) {
 					if (!quiet) {
-						complain (0, "wafl_create() error for %s:%s.\n", sta, chan);
+						elog_complain(0, "wafl_create() error for %s:%s.\n", sta, chan);
 					}
 					trdestroy (&trace);
 					return;
@@ -1031,7 +1031,7 @@ mycallback (struct station_params *sp, int ichan)
 				fil = (void *) wafl_create (NULL, 2, 0, dt);
 				if (fil == NULL) {
 					if (!quiet) {
-						complain (0, "wafl_create() error for %s:%s.\n", sta, chan);
+						elog_complain(0, "wafl_create() error for %s:%s.\n", sta, chan);
 					}
 					trdestroy (&trace);
 					return;
@@ -1041,7 +1041,7 @@ mycallback (struct station_params *sp, int ichan)
 				fil = (void *) wafl_create (NULL, 0, 0, dt);
 				if (fil == NULL) {
 					if (!quiet) {
-						complain (0, "wafl_create() error for %s:%s.\n", sta, chan);
+						elog_complain(0, "wafl_create() error for %s:%s.\n", sta, chan);
 					}
 					trdestroy (&trace);
 					return;
@@ -1049,7 +1049,7 @@ mycallback (struct station_params *sp, int ichan)
 				strcpy (filspec, "WAD");
 			} else {
 				if (!quiet) {
-					complain (0, "mycallback: Cannot use rsptype '%s'.\n", rsptype);
+					elog_complain(0, "mycallback: Cannot use rsptype '%s'.\n", rsptype);
 				}
 				return;
 			}
@@ -1063,7 +1063,7 @@ mycallback (struct station_params *sp, int ichan)
 				/*if (parse_filter ("BW 0 0 0.3 1", dt, &type, &fil) < 0) {*/
 				if (parse_filter (sp->filter, dt, &type, &fil) < 0) {
 					if (!quiet) {
-						complain (0, "mycallback: parse_filter() error.\n");
+						elog_complain(0, "mycallback: parse_filter() error.\n");
 					}
 					return;
 				}
@@ -1078,7 +1078,7 @@ mycallback (struct station_params *sp, int ichan)
 	strcpy(filter_specification,sp->filter);strcat(filter_specification,";");strcat(filter_specification,sp->filter);
 				if (parse_filter (filter_specification, dt, &type, &fil) < 0) {
 					if (!quiet) {
-						complain (0, "mycallback: parse_filter() error.\n");
+						elog_complain(0, "mycallback: parse_filter() error.\n");
 					}
 					return;
 				}
@@ -1091,7 +1091,7 @@ mycallback (struct station_params *sp, int ichan)
 				gain = 1.0;
 			} else {
 				if (!quiet) {
-					complain (0, "mycallback: Cannot use rsptype '%s'.\n", rsptype);
+					elog_complain(0, "mycallback: Cannot use rsptype '%s'.\n", rsptype);
 				}
 				return;
 			}
@@ -1103,7 +1103,7 @@ mycallback (struct station_params *sp, int ichan)
 				if (time > sp->t0_noise+sp->twin_noise) {
 			    	char *s ; 
 			    	if ( n < 1 && iseg == nsegs-1 ) { 
-					complain ( 1, "no preceding noise data for %s:%s at time %s", 
+					elog_complain( 1, "no preceding noise data for %s:%s at time %s", 
 						sta, chan, s=strtime(sp->t0_noise)) ; 
 					free(s) ;
 			    	}
@@ -1134,11 +1134,11 @@ mycallback (struct station_params *sp, int ichan)
 		n = 0;
 		for (iseg = 0; iseg<nsegs; iseg++) {
 			if (getsegment (trace, iseg, &tstart, &dt, &nsamp, &data) < 0) {
-				complain (0, "getsegment() error for %s:%s.\n", sta, chan);
+				elog_complain(0, "getsegment() error for %s:%s.\n", sta, chan);
 				trdestroy (&trace);
 				return;
 			}
-			clear_register (0);
+			elog_clear_register(0);
 	
 			for (i=0,time=tstart,signal=0.0; i<nsamp; i++,time+=dt) {
 				if (data[i] >= 1.e20) continue;
@@ -1157,12 +1157,12 @@ mycallback (struct station_params *sp, int ichan)
 	for (iseg = 0; iseg<nsegs; iseg++) {
 		if (getsegment (trace, iseg, &tstart, &dt, &nsamp, &data) < 0) {
 			if (!quiet) {
-				complain (0, "getsegment() error for %s:%s.\n", sta, chan);
+				elog_complain(0, "getsegment() error for %s:%s.\n", sta, chan);
 			}
 			trdestroy (&trace);
 			return;
 		}
-		clear_register (0);
+		elog_clear_register(0);
 
 		for (i=0; i<nsamp; i++) {
 			if (data[i] < 1.e20) {
@@ -1222,7 +1222,7 @@ mycallback (struct station_params *sp, int ichan)
 			compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, sp->depth, sp->use_hypocentral_distance, signal, &mag);
 		}
 		if (mag > MAX_REASONABLE_MAGNITUDE) {
-			complain(0,"magnitude %.2f unreasonably high -> ignored\n",mag);
+			elog_complain(0,"magnitude %.2f unreasonably high -> ignored\n",mag);
 			mag = -999.00;
 		}
 

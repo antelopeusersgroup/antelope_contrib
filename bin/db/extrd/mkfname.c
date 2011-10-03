@@ -17,7 +17,7 @@ char *out_dir;
     int yr,day, hour, min, sec, msec;
 
     if( (Data_file = (char *) malloc(512) ) == NULL )  {
-          die( 1, " malloc error\n");
+          elog_die( 1, " malloc error\n");
     }
    
 /* Make directory name for new data subset from data start time   */
@@ -44,16 +44,16 @@ char *out_dir;
      
    if(stat(Data_file, &buf) != 0)  {
         if (!ENOENT)  {
-            complain( 1,"stat error:");
+            elog_complain( 1,"stat error:");
             return 0;
         }  
     } else  {
-        complain( 0, "File %s already exist\n", Data_file);
-        complain( 0, "Can't overwrite existing file.\n");
+        elog_complain( 0, "File %s already exist\n", Data_file);
+        elog_complain( 0, "Can't overwrite existing file.\n");
         return 0;
    }
    if (( Df = fopen(Data_file, "w")) == NULL )  {
-         complain( 1,"Can't open file %s\n", Data_file);
+         elog_complain( 1,"Can't open file %s\n", Data_file);
          return 0;
    }
 

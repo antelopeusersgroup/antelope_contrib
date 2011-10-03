@@ -85,11 +85,11 @@ save_seed ( Steim *conf, int first, int last)
     fill_header (conf, first, last, segment);
 
     if ( (nbytes = fwrite (conf->record, 1, conf->record_size, segment->fp )) <= 0) {
-	complain (1, "Couldn't save seed data\n");
+	elog_complain(1, "Couldn't save seed data\n");
 	return -1;
     }
     if ( fflush(segment->fp) ) 
-	die ( 1, "Can't flush data file.\n" ) ;
+	elog_die( 1, "Can't flush data file.\n" ) ;
     
     conf->sdh.seq++;
     Seq = conf->sdh.seq;
@@ -112,7 +112,7 @@ segment->net, segment->sta, segment->chan, segment->time, segment->endtime, last
 	"nsamp", segment->nsamp,
 	"endtime", segment->endtime, 
 	0 ) < 0 ) 
-	die (0, "Couldn't write to database\n") ; 
+	elog_die(0, "Couldn't write to database\n") ; 
 
     return 0;
 }

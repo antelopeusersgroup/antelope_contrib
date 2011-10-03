@@ -56,11 +56,11 @@ int opendb( Dset *dset )
    Tbl *sort_sta_ch_tm;
  
    if (dbopen_database ( dset->dbname, "r+", &(dset->db) ) == dbINVALID )
-         die (0, "Can't open database %s\n",  dset->dbname );
+         elog_die(0, "Can't open database %s\n",  dset->dbname );
  
     dset->db = dblookup ( dset->db, 0, "wfdisc", 0, 0);
     if ( dset->db.table == dbINVALID )
-       die (0, "Can't open '%s' wfdisc table.\n", dset->dbname );
+       elog_die(0, "Can't open '%s' wfdisc table.\n", dset->dbname );
  
     /* Select specified sta&chan */
  
@@ -71,7 +71,7 @@ int opendb( Dset *dset )
  
     dbquery ( dset->db, dbRECORD_COUNT, &(dset->dbrec) );
     if( dset->dbrec <= 0 )
-       die( 0, " no record with sta == %s and chan == %s in %s.\n", 
+       elog_die( 0, " no record with sta == %s and chan == %s in %s.\n", 
                  dset->sta, dset->chan, dset->dbname );
  
  

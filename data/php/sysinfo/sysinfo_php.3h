@@ -6,7 +6,7 @@ sysinfo_PHP \- Antelope sysinfo interface for PHP
 
 <?php
 if( ! extension_loaded( "sysinfo" ) ) {
-	die( "Module 'sysinfo' is not loaded, unable to continue" );
+	elog_die( "Module 'sysinfo' is not loaded, unable to continue" );
 }
 ?>
 

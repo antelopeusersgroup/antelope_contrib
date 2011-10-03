@@ -182,7 +182,7 @@ int pscl_ucompress(
 
        if ( nerr = usteim ( conf, &sud, &npts) )  {
          freesteim( conf ) ;
-         complain ( 0, "Steim decompression reports %d errors\n", nerr ) ;
+         elog_complain( 0, "Steim decompression reports %d errors\n", nerr ) ;
          return 0;
        }
        psize =  npts*sizeof(int) ;

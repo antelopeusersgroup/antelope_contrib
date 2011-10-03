@@ -1,7 +1,7 @@
 #
 #   program needs:
 #
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -24,7 +24,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &Getopts('vVnfm:p:r') || @ARGV != 3 ) { 
+    if (  ! getopts('vVnfm:p:r') || @ARGV != 3 ) { 
         $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-n] [-f] \n" ;
         $usage .=  "	[-p pf] [-m mail_to]  \n" ;
         $usage .=  "	replay_orb YYYY MM \n\n"  ; 

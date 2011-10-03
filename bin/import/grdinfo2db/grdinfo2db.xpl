@@ -1,7 +1,7 @@
-require "getopts.pl" ;
+use Getopt::Std ;
 use Datascope ;
  
-if ( ! &Getopts('n:t:') || @ARGV != 2 ) { 
+if ( ! getopts('n:t:') || @ARGV != 2 ) { 
     die ( "Usage: $0 [-n name] [-t type] gridfile database\n" ) ; 
 } else {
 	$gridfile = shift( @ARGV );

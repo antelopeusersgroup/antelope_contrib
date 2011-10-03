@@ -54,7 +54,7 @@ open_socket ( char *name, int default_port )
     serv_addr.sin_port = htons ( port ) ; 
 
     if ( (fd = socket(PF_INET, SOCK_STREAM, 0 )) < 0 ) {
-	register_error ( 1, "Can't open stream socket\n" ) ; 
+	elog_log( 1, "Can't open stream socket\n" ) ; 
 	fd = -1 ;
     } else if ( connect(fd, 
 		(struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0 ) {

@@ -4,7 +4,7 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 # report datalogger events recorded in dlevent table
 #
 
-require "getopts.pl" ;
+use Getopt::Std ;
 use archive ;
 #use strict; 
 #use diagnostics; 
@@ -14,7 +14,7 @@ our (@dlevent, $ndlev, $last_dlname, $last_dlevtype, $dlev_cnt, $nevents, $host,
 our ($program, $ref, $Pf, %url, $url_string, $fsta, $snet) ;
 
 
-if ( ! &Getopts('p:d:m:n:s:C:vVSEu') || @ARGV > 1 ) {
+if ( ! getopts('p:d:m:n:s:C:vVSEu') || @ARGV > 1 ) {
     &usage;
 }
 

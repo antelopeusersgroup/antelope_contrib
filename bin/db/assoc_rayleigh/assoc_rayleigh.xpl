@@ -1,6 +1,6 @@
-require "getopts.pl" ;
+use Getopt::Std ;
  
-if ( ! &Getopts('v') || @ARGV != 2 )
+if ( ! getopts('v') || @ARGV != 2 )
     { die ( "Usage: $0 [-v] db origin_db\n" ) ; }
 
 use Datascope ;

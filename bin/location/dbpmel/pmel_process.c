@@ -33,7 +33,7 @@ int load_hypocentroid(Dbptr dbv,int rec, Hypocenter *h)
 	dbv.record = rec;
 	if(dbgetv(dbv,0,"hypocentroid.dlat",&lat,
 		"hypocentroid.dlon",&lon,
-		"hypocentroid.depth",&depth,0) == dbINVALID)
+		"hypocentroid.depth",&depth,NULL ) == dbINVALID)
 	{
 		elog_complain(0,"dbgetv error reading hypocentroid coordinates from row %d of working view\n",
 			rec);
@@ -151,7 +151,7 @@ int dbpmel_process(Dbptr db, Tbl *gridlist,Pf *pf)
 	Tbl **ta;  /* We use an array of Tbls for arrival times to 
 			allow a simple loop through an event group.*/
 	Hypocenter *h0;  
-	int *evid;  /* parallel array to h0 of event ids for each h0[i]*/
+	long *evid;  /* parallel array to h0 of event ids for each h0[i]*/
 	Hypocenter hypocentroid;
 	/* The associative array here is loaded from the pf and contains
 	information on which events are to be treated as calibration events.
@@ -249,11 +249,11 @@ option which is know to cause problems\nrecenter set off\n");
 	gridids and the record list from dbmatches is the set
 	of group pointers for the collection of events matching
 	a given gridid.*/
-	grptbl = strtbl("gridid","evid",0);
-	grdidtbl = strtbl("gridid",0);  /* used below */
+	grptbl = strtbl("gridid","evid",NULL );
+	grdidtbl = strtbl("gridid",NULL );  /* used below */
 	dbevid_grp = dbgroup(db,grptbl,EVIDGRP,1);
 	if(dbevid_grp.record == dbINVALID)
-		die(0,"dbgroup failed on gridid:evid bundling\n");
+		elog_die(0,"dbgroup failed on gridid:evid bundling\n");
 	dbgs = dblookup(db,0,EVIDGRP,0,0);
 	dbgs.record = dbSCRATCH;
 
@@ -261,37 +261,37 @@ option which is know to cause problems\nrecenter set off\n");
 	
 	for(i=0;i<maxtbl(gridlist);++i)
 	{
-		int gridid;
+		long gridid;
 		int nevents;
-		int is,ie;
+		long is,ie;
 		int ndata;
 		int ierr;
 
-		gridid = (int)gettbl(gridlist,i);
+		gridid = (long)gettbl(gridlist,i);
 
 
-		dbputv(dbgs,0,"gridid",gridid,0);
+		dbputv(dbgs,0,"gridid",gridid,NULL );
 		dbevid_grp.record=dbALL;
 		dbmatches(dbgs,dbevid_grp,&grdidtbl,&grdidtbl,&hook,
 					&reclist);
 		nevents = maxtbl(reclist);
 		if(nevents<=0)
 		{
-			fprintf(stdout,"No data for gridid = %d\n",gridid);
+			fprintf(stdout,"No data for gridid = %ld\n",gridid);
 			freetbl(reclist,0);
 			continue;
 		}
 		allot(Tbl **,ta,nevents);
 		allot(Hypocenter *,h0,nevents);
-		allot(int *,evid,nevents);
+		allot(long *,evid,nevents);
 		
 		/* reclist now contains a collection of record numbers
 		for gridid:evid grouped parts of the working view. */
 		for(j=0,ndata=0;j<nevents;++j)
 		{
-			dbevid_grp.record = (int)gettbl(reclist,j);
+			dbevid_grp.record = (long)gettbl(reclist,j);
 			dbgetv(dbevid_grp,0,"evid",evid+j,
-				"bundle",&dbbundle,0);
+				"bundle",&dbbundle,NULL );
 			dbget_range(dbbundle,&is,&ie);
 
 			ta[j] = dbload_arrival_table(dbbundle,
@@ -313,7 +313,7 @@ option which is know to cause problems\nrecenter set off\n");
 		to get the hypocentroid location for this group. */
 		if(load_hypocentroid(dbbundle,is,&hypocentroid))
 		{
-			elog_complain(0,"Error loading hypocentroid from working view for gridid=%d;  Skipping to next gridid in processing list\n",
+			elog_complain(0,"Error loading hypocentroid from working view for gridid=%ld;  Skipping to next gridid in processing list\n",
 				gridid);
 			for(k=0;k<nevents;++k) freetbl(ta[i],free);
 			continue;
@@ -327,12 +327,12 @@ option which is know to cause problems\nrecenter set off\n");
 			stations,&hypocentroid);
 		if(ierr>0)
 		{
-			elog_complain(0,"%d problems setting path anomaly corrections for gridid=%d\n",
+			elog_complain(0,"%d problems setting path anomaly corrections for gridid=%ld\n",
 				ierr,gridid);
 		}
 		else if(ierr<0)
 		{
-			elog_complain(0,"Cannot compute any path anomaly corrections for gridid=%d\nSkipping to next grid point\n",
+			elog_complain(0,"Cannot compute any path anomaly corrections for gridid=%ld\nSkipping to next grid point\n",
 				gridid);
 			for(k=0;k<nevents;++k) freetbl(ta[k],free);
 			free(evid);
@@ -387,13 +387,13 @@ option which is know to cause problems\nrecenter set off\n");
 			arr_phase,&o,pf,&converge,&pmelhistory))
 		{
 			elog_notify(0,
-			  "No solution from pmel for cluster id = %d\n",
+			  "No solution from pmel for cluster id = %ld\n",
 				gridid);
 			freearr(fixarrtmp,free);
 			continue;
 		}
 		freearr(fixarrtmp,free);
-		fprintf(stdout,"Cluster id=%d pmel convergence reason\n",
+		fprintf(stdout,"Cluster id=%ld pmel convergence reason\n",
 			gridid);
 		for(k=0,pmelfail=0;k<maxtbl(converge);++k)
 		{
@@ -415,7 +415,7 @@ option which is know to cause problems\nrecenter set off\n");
 
 			{
 				elog_complain(0,"Problems saving results\
-for cluster id %d\n",
+for cluster id %ld\n",
 					gridid);
 			}
 
@@ -428,9 +428,9 @@ for cluster id %d\n",
 				"pmelrun",runname,
 				"sswrodgf",smatrix->sswrodgf,
 				"ndgf",smatrix->ndgf,
-				"sdobs",smatrix->rmsraw,0) == dbINVALID)
+				"sdobs",smatrix->rmsraw,NULL ) == dbINVALID)
 			{
-				elog_complain(0,"dbaddv error for gridid %d adding to gridstat table\n",
+				elog_complain(0,"dbaddv error for gridid %ld adding to gridstat table\n",
 				gridid);
 			}
 		}

@@ -41,7 +41,7 @@ Tbl *pfextract_arrivals(Pf **pfall, int is, int ie,
 		sta = pfget_string(pf,"sta");
 		if(sta==NULL)
 		{
-			register_error(0,"No sta parameter for ensemble member %d\nSkipped\n",
+			elog_log(0,"No sta parameter for ensemble member %d\nSkipped\n",
 				i);
 			free(a);
 			continue;
@@ -135,7 +135,7 @@ void update_ensemble(
 	modtype = pfget_string(controlpf,"ellipse_type");
 	if(modtype == NULL)
 	{
-		complain(0,"parameter ellipse_type not defined--default to chi_square\n");
+		elog_complain(0,"parameter ellipse_type not defined--default to chi_square\n");
 		model = CHI_SQUARE;
 	}
 	else if ( strcmp( modtype, "chi_square" ) == 0 )
@@ -148,7 +148,7 @@ void update_ensemble(
 	}
 	else
 	{
-		complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
+		elog_complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
 		model = CHI_SQUARE;
 	}
 
@@ -165,7 +165,7 @@ void update_ensemble(
                             &smajax, &sminax, &strike, &sdepth, &stime );
                if( rc != 0 )
                {
-                        complain(0, "project_covariance failed." );
+                        elog_complain(0, "project_covariance failed." );
                         smajax = -1;
                         sminax = -1;
 	                strike = -1;

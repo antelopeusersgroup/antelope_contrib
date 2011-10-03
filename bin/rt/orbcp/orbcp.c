@@ -63,7 +63,7 @@ char **argv;
 		if (!strcmp(*argv, "-orbin")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "orbcp: Need argument for -orbin.\n");
+				elog_complain(0, "orbcp: Need argument for -orbin.\n");
 				usage();
 				exit (1);
 			}
@@ -71,7 +71,7 @@ char **argv;
 		} else if (!strcmp(*argv, "-orbout")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "orbcp: Need argument for -orout.\n");
+				elog_complain(0, "orbcp: Need argument for -orout.\n");
 				usage();
 				exit (1);
 			}
@@ -79,7 +79,7 @@ char **argv;
 		} else if (!strcmp(*argv, "-src")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "orbcp: Need argument for -src.\n");
+				elog_complain(0, "orbcp: Need argument for -src.\n");
 				usage();
 				exit (1);
 			}
@@ -93,15 +93,15 @@ char **argv;
 		} else if (!strcmp(*argv, "-messages")) {
 			messages = 1;
 			if (setupdb ("orbcp", &db) < 0) {
-				clear_register (1);
-				complain (0, "orbcp: setupdb() error.\n");
+				elog_clear_register(1);
+				elog_complain(0, "orbcp: setupdb() error.\n");
 				exit (1);
 			}
 			db = dblookup (db, 0, "remark", 0, 0);
 		} else if (!strcmp(*argv, "-pktstart")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "orbcp: Need argument for -pktstart.\n");
+				elog_complain(0, "orbcp: Need argument for -pktstart.\n");
 				usage();
 				exit (1);
 			}
@@ -109,7 +109,7 @@ char **argv;
 		} else if (!strcmp(*argv, "-rcnt_time")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "orbcp: Need argument for -rcnt_time.\n");
+				elog_complain(0, "orbcp: Need argument for -rcnt_time.\n");
 				usage();
 				exit (1);
 			}
@@ -117,24 +117,24 @@ char **argv;
 		} else if (!strcmp(*argv, "-npackets")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "orbcp: Need argument for -npackets.\n");
+				elog_complain(0, "orbcp: Need argument for -npackets.\n");
 				usage();
 				exit (1);
 			}
 			npackets = atoi(*argv);
 		} else {
-			complain (0, "orbcp: Illegal argument '%s'.\n", *argv);
+			elog_complain(0, "orbcp: Illegal argument '%s'.\n", *argv);
 			usage();
 			exit (1);
 		}
 	}
 	if (orbname == NULL) {
-		complain (0, "orbcp: No input -in_orbname specified.\n");
+		elog_complain(0, "orbcp: No input -in_orbname specified.\n");
 		usage();
 		exit (1);
 	}
 	if (orbnameo == NULL) {
-		complain (0, "orbcp: No output -out_orbname specified.\n");
+		elog_complain(0, "orbcp: No output -out_orbname specified.\n");
 		usage();
 		exit (1);
 	}
@@ -146,16 +146,16 @@ char **argv;
 		orbin = orbopen (orbname, "r");
 	}
 	if (orbin < 0) {
-		clear_register (1);
-		complain (0, "orbcp: orbopen() error for '%s'.\n", orbname);
+		elog_clear_register(1);
+		elog_complain(0, "orbcp: orbopen() error for '%s'.\n", orbname);
 		exit (1);
 	}
 	first = 1;
 
 	if (srcexpr) {
 		if (orbselect (orbin, srcexpr) < 0) {
-			clear_register (1);
-			complain (0, "orbcp: orbselect(%s, %s) erro.\n", orbname, srcexpr);
+			elog_clear_register(1);
+			elog_complain(0, "orbcp: orbselect(%s, %s) erro.\n", orbname, srcexpr);
 			exit (1);
 		}
 	}
@@ -166,8 +166,8 @@ char **argv;
 		orbout = orbopen (orbnameo, "w");
 	}
 	if (orbout < 0) {
-		clear_register (1);
-		complain (0, "orbcp: orbopen() error for '%s'.\n", orbnameo);
+		elog_clear_register(1);
+		elog_complain(0, "orbcp: orbopen() error for '%s'.\n", orbnameo);
 		exit (1);
 	}
 
@@ -180,8 +180,8 @@ char **argv;
 		pktid = orbseek (orbin, ORBNEWEST);
 	}
 	if (pktid < 0) {
-		clear_register (1);
-		complain (0, "orbcp: orbseek() error for '%s'.\n", orbname);
+		elog_clear_register(1);
+		elog_complain(0, "orbcp: orbseek() error for '%s'.\n", orbname);
 		printf ("orbcp: nothing in orb\n");
 		exit (1);
 	}
@@ -227,7 +227,7 @@ char **argv;
 			if (ircnt) {
 				int orbs;
 
-RECONNECT:			clear_register (0);
+RECONNECT:			elog_clear_register(0);
 				if (messages) myputmsg (orbout, db, "orbcp", "reconnecting");
 				sleep (10);
 				lastpkt_age += 10;
@@ -241,7 +241,7 @@ RECONNECT:			clear_register (0);
 					if (messages) myputmsg (orbout, db, "orbcp", "orb open for stat");
 					orbs = orbopen (orbname, "r");
 					if (orbs < 0) {
-						clear_register (0);
+						elog_clear_register(0);
 						if (messages) myputmsg (orbout, db, "orbcp", "orb open for stat failed");
 						continue;
 					}
@@ -250,7 +250,7 @@ RECONNECT:			clear_register (0);
 						if (orbselect (orbs, srcexpr) < 0) {
 							if (messages) myputmsg (orbout, db, "orbcp", "orb select for stat failed");
 							orbclose (orbs);
-							clear_register (0);
+							elog_clear_register(0);
 							continue;
 						}
 					}
@@ -266,7 +266,7 @@ RECONNECT:			clear_register (0);
 						if (orbstat ( orbs, &ostat ) < 0) {
 							if (messages) myputmsg (orbout, db, "orbcp", "orb stat failed");
 							orbclose (orbs);
-							clear_register (0);
+							elog_clear_register(0);
 							ok = 0;
 							break;
 						}
@@ -298,7 +298,7 @@ RECONNECT:			clear_register (0);
 					orbin = orbopen (orbname, "r");
 					if (orbin < 0) {
 						if (messages) myputmsg (orbout, db, "orbcp", "orb open failed");
-						clear_register (0);
+						elog_clear_register(0);
 						continue;
 					}
 					if (srcexpr) {
@@ -307,7 +307,7 @@ RECONNECT:			clear_register (0);
 						if (orbselect (orbin, srcexpr) < 0) {
 							if (messages) myputmsg (orbout, db, "orbcp", "orb select failed");
 							orbclose (orbin);
-							clear_register (0);
+							elog_clear_register(0);
 							continue;
 						}
 					}
@@ -316,38 +316,38 @@ RECONNECT:			clear_register (0);
 				first = 1;
 				lastpkt_age = 0;
 				if (messages) myputmsg (orbout, db, "orbcp", "orb seek to last_pktid");
-				complain ( 0, "seeking to pktid #%d\n", lastpkt_pktid ) ; 
+				elog_complain( 0, "seeking to pktid #%d\n", lastpkt_pktid ) ; 
 				if ((found = orbseek (orbin, lastpkt_pktid)) != lastpkt_pktid) {
-					complain ( 0, "result of orbseek was %d\n", found ) ; 
+					elog_complain( 0, "result of orbseek was %d\n", found ) ; 
 					if (messages) myputmsg (orbout, db, "orbcp", "orb seek to last_pktid failed");
-					clear_register (0);
+					elog_clear_register(0);
 					orbseek (orbin, ORBNEWEST);
 				} else {
 					if (messages) myputmsg (orbout, db, "orbcp", "orb seek to next_pktid");
 					if (orbseek (orbin, ORBNEXT) < 0) {
 						if (messages) myputmsg (orbout, db, "orbcp", "orb seek to next_pktid failed");
-						clear_register (0);
+						elog_clear_register(0);
 						orbseek (orbin, ORBNEWEST);
 					}
 				}
 				continue;
 			} else {
-				clear_register (1);
-				complain (0, "orbcp: orbreap_nd() error.\n");
+				elog_clear_register(1);
+				elog_complain(0, "orbcp: orbreap_nd() error.\n");
 				break;
 			}
 		}
 		p = packet;
 		if (orcnt) {
 			while (orbput (orbout, src, time, p, nbytes) < 0) {
-				clear_register (0);
+				elog_clear_register(0);
 				sleep (10);
 			}
 			if (flush) orbflush (orbout);
 		} else {
 			if (orbput (orbout, src, time, p, nbytes) < 0) {
-				clear_register (1);
-				complain (0, "orbcp: orbput() error.\n");
+				elog_clear_register(1);
+				elog_complain(0, "orbcp: orbput() error.\n");
 				break;
 			}
 			if (flush) orbflush (orbout);
@@ -361,10 +361,10 @@ RECONNECT:			clear_register (0);
 usage()
 
 {
-	complain (0, "usage: orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]\n");
-	complain (0, "             [-ircnt] [-orcnt] [-pktstart pktid]\n");
-	complain (0, "             [-rcnt_time minutes] [-npackets npackets]\n");
-	complain (0, "             [-messages] [-flush]\n");
+	elog_complain(0, "usage: orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]\n");
+	elog_complain(0, "             [-ircnt] [-orcnt] [-pktstart pktid]\n");
+	elog_complain(0, "             [-rcnt_time minutes] [-npackets npackets]\n");
+	elog_complain(0, "             [-messages] [-flush]\n");
 }
 
 int
@@ -380,20 +380,20 @@ Dbptr *        db;
 	sprintf (string, "/tmp/%s%d", prog, getpid());
 	f = fopen(string, "w");
 	if (f == NULL) {
-               	register_error (1, "setupdb: fopen('%s') error.\n", string);
+               	elog_log(1, "setupdb: fopen('%s') error.\n", string);
                	return (-1);
 	}
 	if (fputs ("rt1.0\n", f) == EOF) {
-               	register_error (1, "setupdb: fputs('%s') error.\n", string);
+               	elog_log(1, "setupdb: fputs('%s') error.\n", string);
                	return (-1);
 	}
 	if (fputs ("\n", f) == EOF) {
-               	register_error (1, "setupdb: fputs('%s') error.\n", string);
+               	elog_log(1, "setupdb: fputs('%s') error.\n", string);
                	return (-1);
 	}
 	fclose (f);
 	if (dbopen (string, "r+", db) == dbINVALID) {
-               	register_error (0, "setupdb: dbopen('%s') error.\n", string);
+               	elog_log(0, "setupdb: dbopen('%s') error.\n", string);
                	return (-1);
        	}
        	unlink (string);
@@ -410,7 +410,7 @@ myputmsg (int orb, Dbptr db, char *prog, char *msg)
 	db = dblookup (db, 0, "remark", 0, "dbSCRATCH");
 	gethostname (name, 512);
 	sprintf (string, "%s(%s:%d): %s %s", prog, name, getpid(), strtime(now()), msg);
-	complain (0, "%s\n", string);
+	elog_complain(0, "%s\n", string);
 	dbputv (db, 0, "remark", string, 0);
 	db2orbpkt (db, orb);
         orbflush (orb);

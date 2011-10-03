@@ -48,7 +48,7 @@ int *bufsiz;
 
     if( pktchan->datatype != trINT )
     {
-	complain( 0, "stuff_iw_tracebuf handles only the trINT datatype\n" );
+	elog_complain( 0, "stuff_iw_tracebuf handles only the trINT datatype\n" );
 	return( 0 );
     }
     else
@@ -135,7 +135,7 @@ int *bufsiz;
 
     if( pktchan->datatype != trINT )
     {
-	complain( 0, "stuff_iw_tracebuf handles only the trINT datatype\n" );
+	elog_complain( 0, "stuff_iw_tracebuf handles only the trINT datatype\n" );
 	return( 0 );
     }
     else
@@ -145,7 +145,7 @@ int *bufsiz;
 
     data = (int *) malloc (pktchan->nsamp*sizeof(int));
     if (data == NULL) {
-    	register_error (0, "stuff_iwc_tracebuf: malloc() error.\n");
+    	elog_log(0, "stuff_iwc_tracebuf: malloc() error.\n");
     	return 0;
     }
 
@@ -154,7 +154,7 @@ int *bufsiz;
     for (i=1; i<pktchan->nsamp; i++) data[i] = idata[i] - idata[i-1];
 
     if (gencompress (&buf, &nout, &bsize, data, pktchan->nsamp, 25) < 0) {
-    	register_error (0, "stuff_iwc_tracebuf: gencompress() error.\n");
+    	elog_log(0, "stuff_iwc_tracebuf: gencompress() error.\n");
     	return 0;
     }
 

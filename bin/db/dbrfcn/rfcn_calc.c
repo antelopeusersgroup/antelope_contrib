@@ -39,14 +39,14 @@ float phshift, wlev, gfreq, hpfreq;
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"rot:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"rot:bundletype != 0");
 
 		if (dbgetv(bundle, 0,
 		 "data", &data,
 		  "nsamp", &nsamp,
 		  "samprate", &samprate,
 		  "chan", chan,
-		   0)!=0) die (0,"rfcn_calc:dbgetv problem\n");
+		   0)!=0) elog_die(0,"rfcn_calc:dbgetv problem\n");
 
 
 	    	if (chan[2]=='T' || chan[2]=='t'){
@@ -64,7 +64,7 @@ float phshift, wlev, gfreq, hpfreq;
 		}
 	}
     }
-    if (nin_t==0 || nin_r==0 || nin_z==0) die (0,"rfcn_calc:not enough channels\n");
+    if (nin_t==0 || nin_r==0 || nin_z==0) elog_die(0,"rfcn_calc:not enough channels\n");
 
     rfcn_r = rfcn(nin_r, nin_z, data_r, data_z, delta, phshift, wlev, gfreq, hpfreq);
     rfcn_t = rfcn(nin_t, nin_z, data_t, data_z, delta, phshift, wlev, gfreq, hpfreq);
@@ -92,13 +92,13 @@ float phshift, wlev, gfreq, hpfreq;
               		"bundletype", &bundletype,
               		0);
 
-		if (bundletype != 0) die(0,"rot:bundletype != 0");
+		if (bundletype != 0) elog_die(0,"rot:bundletype != 0");
 
 		if (dbgetv(bundle, 0,
 		 "data", &data,
 		  "nsamp", &nsamp,
 		  "chan", chan,
-		   0)!=0) die (0,"rfcn_calc:dbgetv problem2\n");
+		   0)!=0) elog_die(0,"rfcn_calc:dbgetv problem2\n");
 
 
 	    	if (chan[2]=='T' || chan[2]=='t'){
