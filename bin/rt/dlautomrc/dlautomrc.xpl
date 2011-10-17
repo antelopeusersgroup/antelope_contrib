@@ -133,7 +133,6 @@
 
 	print STDERR "Subsetting:  $chansub&&dlsta!='-' \n" if $opt_V;
 
-#	@dbj		= dbsubset(@dbj, "chan == 'BHZ'" ) ;
 	@dbj		= dbsubset(@dbj, $chansub ) ;
 	@dbj		= dbsubset(@dbj, "dlsta != '-'" ) ;
 
@@ -397,7 +396,6 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
     our (%dl_mv,%sensor_mv);
     our (%dl_snname);
     @recenter = ();
-#    @mc = qw(m0 m1 m2 m3 m4 m5);
     $srcname =~ s/\/.*// ;
     
     if ($opt_x) {
