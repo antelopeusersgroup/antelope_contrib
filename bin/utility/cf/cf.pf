@@ -143,6 +143,7 @@ make &Arr{
 	^Extracted
 	^Manifying
 	^Making 
+	^Skipping:
 	^g?make: Nothing to be done
 	^libtool: compile:
 	^libtool: link:
