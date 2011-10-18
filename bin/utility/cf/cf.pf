@@ -45,9 +45,9 @@ make &Arr{
 	^gcc: language.*not recognized
 	^.*: acomp failed
 	^.*line [[:digit:]]+: return value type mismatch
-	^make(\\[[[:digit:]]+\\])?:.*Error
-	^make(\\[[[:digit:]]+\\])?:.*Fatal error
-	^make(\\[[[:digit:]]+\\])?:.*Command not found
+	^g?make(\\[[[:digit:]]+\\])?:.*Error
+	^g?make(\\[[[:digit:]]+\\])?:.*Fatal error
+	^g?make(\\[[[:digit:]]+\\])?:.*Command not found
 	^rm: Unable to remove
 	^ld: fatal:
 	^.*ld: can't locate file for:
@@ -143,7 +143,7 @@ make &Arr{
 	^Extracted
 	^Manifying
 	^Making 
-	^make: Nothing to be done
+	^g?make: Nothing to be done
 	^libtool: compile:
 	^libtool: link:
 	^libtool: install:
@@ -154,8 +154,8 @@ make &Arr{
 	^[[:space:]]+entry[[:space:]]+[[:alnum:]_]+:$
 	^: [^[:space:]]*\\/?lib[^[:space:]]+\\.a
 	^[[:space:]]*[[:alnum:]_]+.o$
-	^make\\[[[:digit:]]+\\]: Nothing to be done for
-	^make\\[[[:digit:]]+\\]:.*is up to date
+	^g?make\\[[[:digit:]]+\\]: Nothing to be done for
+	^g?make\\[[[:digit:]]+\\]:.*is up to date
 	^making[[:space:]]
 	^created directory[[:space:]]
 	^NOTICE:
@@ -279,7 +279,7 @@ make &Arr{
 	^[[:space:]]*\\/bin\\/sh[[:space:]]
 	^[[:space:]]*\\/bin\\/bash[[:space:]]
 	^[[:space:]]*config\\/install-sh[[:space:]]
-	^make[[:space:]]
+	^g?make[[:space:]]
 	^[[:space:]]*mkdir[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
