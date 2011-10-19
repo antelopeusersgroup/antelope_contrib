@@ -1,3 +1,6 @@
+2010.292:
+	- Update long's to int's for correct 64-bit operation.
+
 2008.092:
 	- Add man page.
 	- Commit to BRTT/Antelope CVS repository.
