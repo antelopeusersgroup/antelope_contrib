@@ -34,7 +34,7 @@ typedef struct s_fsdh {       /* FIXED-SECTION-DATA-HEADER DATA */
   unsigned char io_flags; 
   unsigned char dq_flags;
   unsigned char num_blockettes;
-  long time_correct;
+  int time_correct;
   unsigned short int begin_data;
   unsigned short int begin_blockette;
 } t_fsdh;
@@ -60,7 +60,7 @@ int parse_record ( char *lptr, int rec_size,
                    t_fsdh *fsdh, t_blk_1000 *blk_1000);
 double calcsamprate ( t_fsdh *fsdh );
 void swap_2bytes ( unsigned short *a );
-void swap_4bytes ( unsigned long *a );
+void swap_4bytes ( unsigned int *a );
 char *get_encoding ( char enc );
 
 #endif /* SEEDUTILS_H */

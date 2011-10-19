@@ -26,7 +26,7 @@
 #include "mseed2orbpkt.h"
 
 #define PACKAGE "rrp2orb"
-#define VERSION "2008.092"
+#define VERSION "2010.292"
 
 static void process_record (char *record, int reclen);
 static int parameter_proc (int argcount, char **argvec);
