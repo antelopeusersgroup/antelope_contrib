@@ -19,7 +19,7 @@ typedef union {
     int            *ints;
     short          *shorts;
     char           *chars;
-}               Frame;
+}               SteimFrame;
 
 static void
 idrecord (Steim * conf, char *id)
@@ -36,7 +36,7 @@ idrecord (Steim * conf, char *id)
 }
 
 static int
-convert_frame (Frame frame, int seq, int level, int **ipp, int *x0p, int *xnp, Steim * conf)
+convert_frame (SteimFrame frame, int seq, int level, int **ipp, int *x0p, int *xnp, Steim * conf)
 {
     int             codes[16],
                     w0,
@@ -262,7 +262,7 @@ convert_frame (Frame frame, int seq, int level, int **ipp, int *x0p, int *xnp, S
 int
 usteim (Steim * conf, int **data, long *npts)
 {
-    Frame           frame;
+    SteimFrame           frame;
     int             i,
                     nframes;
     int            *ip,
@@ -318,7 +318,7 @@ usteim (Steim * conf, int **data, long *npts)
 int
 _usteim (Steim * conf, int *data, long *npts)
 {
-    Frame           frame;
+    SteimFrame           frame;
     int             i,
                     nframes;
     int            *ip,
