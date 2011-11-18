@@ -382,149 +382,6 @@ sub invoke_fpfit {
 	return;
 }
 
-sub sign {
-	my( $a ) = @_;
-
-	if( $a >= 0 ) {
-
-		return 1;
-
-	} else {
-
-		return -1;
-	}
-}
-
-sub tp_axes {
-	my( $strike_deg, $dip_deg, $rake_deg, $strikeaux_deg, $dipaux_deg, $rakeaux_deg ) = @_;
-
-	my( $taxazm_deg, $taxplg_deg, $paxazm_deg, $paxplg_deg );
-
-	my( $shift ) = 45;
-
-	my( $alat1 ) = ( 90 - $dip_deg );
-	my( $alat2 ) = ( 90 - $dipaux_deg );
-
-	my( $alon1 ) = $strike_deg;
-	my( $alon2 ) = $strikeaux_deg;
-
-	my( $az0 )   = dbex_eval( dbinvalid(), "azimuth(  $alat2, $alon2, $alat1, $alon1 )" );
-
-	my( $plunge ) = dbex_eval( dbinvalid(), "latitude(  $alat2, $alon2, $shift, $az0 )" );
-	my( $azimth ) = dbex_eval( dbinvalid(), "longitude( $alat2, $alon2, $shift, $az0 )" );
-
-	if( abs( $azimth ) > 180 ) {
-
-		$azimth = $azimth - sign( $azimth ) * 360;
-	}
-
-	my( $az1 ) = $azimth;
-	my( $ain1 ) = $plunge + 90;
-
-	$az0 += 180;
-
-	$plunge = dbex_eval( dbinvalid(), "latitude(  $alat2, $alon2, $shift, $az0 )" );
-	$azimth = dbex_eval( dbinvalid(), "longitude( $alat2, $alon2, $shift, $az0 )" );
-
-	if( abs( $azimth ) > 180 ) {
-
-		$azimth = $azimth - sign( $azimth ) * 360;
-	}
-
-	my( $az2 ) = $azimth;
-	my( $ain2 ) = $plunge + 90;
-
-	if( $rake_deg >= 0 ) {
-
-		$paxplg_deg = $ain2;
-		$taxplg_deg = $ain1;
-		$paxazm_deg = $az2;
-		$taxazm_deg = $az1;
-
-	} else {
-
-		$paxplg_deg = $ain1;
-		$taxplg_deg = $ain2;
-		$paxazm_deg = $az1;
-		$taxazm_deg = $az2;
-	}
-
-	if( $paxplg_deg > 90 ) {
-		
-		$paxplg_deg = 180 - $paxplg_deg;
-		$paxazm_deg = 180 + $paxazm_deg;
-	}
-
-	if( $taxplg_deg > 90 ) {
-		
-		$taxplg_deg = 180 - $taxplg_deg;
-		$taxazm_deg = 180 + $taxazm_deg;
-	}
-
-	if( $taxazm_deg < 0 ) {
-
-		$taxazm_deg += 360;
-	}
-
-	if( $paxazm_deg < 0 ) {
-
-		$paxazm_deg += 360;
-	}
-
-	return( $taxazm_deg, $taxplg_deg, $paxazm_deg, $paxplg_deg );
-}
-
-sub aux_plane {
-	my( $strike1_deg, $dip1_deg, $rake1_deg ) = @_;
-
-	my( $strike2_deg, $dip2_deg, $rake2_deg );
-
-	my( $strike1, $dip1, $rake1,
-	    $strike2, $dip2, $rake2 );
-
-	my( $rake1_sign, $top, $bottom, $innards );
-
-	$strike1 = rad( $strike1_deg );
-	$dip1    = rad( $dip1_deg );
-	$rake1   = rad( $rake1_deg );
-
-	if( $strike1 < 0 ) {
-
-		$strike1 += 2 * pi;
-	}
-
-	if( $rake1 != 0.0 ) {
-
-		$rake1_sign = $rake1 / abs( $rake1 );
-
-	} else {
-
-		$rake1_sign = 1.0;
-	}
-
-	$top    = cos( $rake1 ) * sin( $strike1 - pi/2 ) - cos( $dip1 ) * sin( $rake1 ) * cos( $strike1 - pi/2 );
-	$bottom = cos( $rake1 ) * cos( $strike1 - pi/2 ) + cos( $dip1 ) * sin( $rake1 ) * sin( $strike1 - pi/2 );
-
-	$strike2 = atan2( $top, $bottom );
-
-	if( $rake1 < 0 ) { $strike2 -= pi; }
-	if( $strike2 < 0 ) { $strike2 += 2 * pi; }
-	if( $strike2 > 2 * pi ) { $strike2 -= 2 * pi; }
-
-	$dip2 = acos( sin( abs( $rake1 ) ) * sin( $dip1 ) );
-
-	$innards = -1 * cos( $strike2 - pi/2 ) * sin( $dip1 ) * sin( $strike1 - pi/2 ) + 
-		        sin( $strike2 - pi/2 ) * sin( $dip1 ) * cos( $strike1 - pi/2 );
-
-	$rake2 = abs( acos( $innards ) ) * $rake1_sign;
-
-	$strike2_deg = deg( $strike2 );
-	$dip2_deg    = deg( $dip2 );
-	$rake2_deg   = deg( $rake2 );
-
-	return( $strike2_deg, $dip2_deg, $rake2_deg );
-}
-
 sub harvest_fpfit {
 	my $self = shift;
 
@@ -550,9 +407,9 @@ sub harvest_fpfit {
 	my( $rake ) = substr( $summary_line, 90, 3 );
 	my( $fj ) = substr( $summary_line, 94, 5 );
 
-	my( $strike_aux, $dip_aux, $rake_aux ) = aux_plane( $strike, $dip, $rake );
+	my( $strike_aux, $dip_aux, $rake_aux ) = Focmec::aux_plane( $strike, $dip, $rake );
 
-	my( $taxazm, $taxplg, $paxazm, $paxplg ) = tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
+	my( $taxazm, $taxplg, $paxazm, $paxplg ) = Focmec::tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
 
 	my( $auth );
 
