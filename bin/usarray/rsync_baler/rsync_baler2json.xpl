@@ -321,7 +321,7 @@ sub build_json {
                 $last_time = $time unless $last_time;
                 $last_file = $file unless $last_file;
 
-                if ( $last_time <= $time) { 
+                if ( $last_time < $time) { 
                     $last_time = $time;
                     $last_file = $file;
                 }
@@ -361,8 +361,10 @@ sub build_json {
         $text .= ",\n\t\"downloaded\": " . scalar(@downloaded);
 
         if ( $last_file  and $last_time ) {
+            $last_time = epoch2str($last_time,"%Y-%m-%d");
+            $last_time =~ s/\s*//g;
             $text .= ",\n\t\"last\": \"$last_file\"";
-            $text .= ",\n\t\"last_time\": \"".strtime($last_time)."\"";
+            $text .= ",\n\t\"last_time\": \"$last_time\"";
         }
         else {
             $text .= ",\n\t\"last\": \"UNKNOWN\"";
@@ -592,7 +594,7 @@ sub open_db {
     #
     elog_notify("$sta Openning database table  ($dbout.rsyncbaler)") if $opt_v;
     eval { @db  = dbopen_table("$dbout.rsyncbaler","r+") or elog_complain("Can't open DB: $dbout.rsyncbaler",$sta) };
-    elog_notify("$sta open_db() $path => @db");
+    #elog_notify("$sta open_db() $path => @db");
     return unless @db; 
     return @db; 
 
