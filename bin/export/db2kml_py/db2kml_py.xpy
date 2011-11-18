@@ -103,8 +103,8 @@ def calc_magtype(ev_dict):
     and scale to use per event
     Assumes a netmag table
     is present"""
-    if ev_dict['mag'] > 0:
-        mag = ev_dict['mag']
+    if ev_dict['magnitude'] > 0:
+        mag = ev_dict['magnitude']
         mag_sc = ev_dict['magtype']
     elif ev_dict['mb'] > 0:
         mag = ev_dict['mb']
