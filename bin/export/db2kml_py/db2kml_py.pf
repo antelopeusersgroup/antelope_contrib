@@ -1,0 +1,122 @@
+config &Arr{
+    db    /opt/antelope/data/db/demo/demo
+    expr &Tbl{
+        time >= 704371900
+        lat >= 10 && lat <= 40 && lon >= -90 && lon <= -50
+    }
+    sort_fields &Tbl{
+        time
+    }
+    out_file      sjfz.kml
+    create_kmz    False
+    network_link &Arr{
+    }
+    subset    stations # Can be events, stations, or empty string ('') for both
+}
+
+headers &Arr{
+    name Antelope Demo Database
+    description &Literal{
+<p>Google Earth file showing demo database events
+<br/>
+Created:   2011-11-18 00:00 UTC<br/>
+Website:   http://www.brtt.com<br/>
+Author:    Rob Newman (robertlnewman@gmail.com)<br/>
+Copyright: 2011 My Institution</p>
+    }
+    look_at &Arr{
+        # Some default view when initially loaded
+        latitude 18.451 # degrees
+        longitude -72.445 # degrees
+        range 100000 # height above sea level
+    }
+    legend_url   http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/legend2.png
+}
+
+stations &Arr{
+    dbmaster    /opt/antelope/data/db/demo/demo
+    expr &Tbl{
+        sta =~ /L.*/
+    }
+    fields &Tbl{
+        sta
+        lon
+        lat
+        elev
+        staname
+        ondate
+        offdate
+    }
+    visibility   1
+    display_inactive    1
+}
+
+styles &Arr{
+    imagepath    http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/
+    styleinfo &Arr{
+         mag_0 &Arr{
+             id orangeStarZero
+             scale 0.2
+             href GMapOrangeStar.gif
+         }
+         mag_1 &Arr{
+             id orangeStarOne
+             scale 0.4
+             href GMapOrangeStar.gif
+         }
+         mag_2 &Arr{
+             id orangeStarTwo
+             scale 0.7
+             href GMapOrangeStar.gif
+         }
+         mag_3 &Arr{
+             id redStarThree
+             scale 1.1
+             href GMapRedStar.gif
+         }
+         mag_4 &Arr{
+             id redStarFour
+             scale 1.6
+             href GMapRedStar.gif
+         }
+         mag_5 &Arr{
+             id redStarFive
+             scale 2.2
+             href GMapRedStar.gif
+         }
+         mag_6 &Arr{
+             id redStarSix
+             scale 2.9
+             href GMapRedStar.gif
+         }
+         mag_7 &Arr{
+             id redStarSeven
+             scale 3.7
+             href GMapRedStar.gif
+         }
+         mag_8 &Arr{
+             id redStarEight
+             scale 4.6
+             href GMapRedStar.gif
+         }
+         mag_9 &Arr{
+             id redStarNine
+             scale 5.6
+             href GMapRedStar.gif
+         }
+    }
+    stylestation &Arr{
+        active &Arr{
+            id activeStation
+            scale 1.0
+            href GMapStation_active.gif
+        }
+        inactive &Arr{
+            id inactiveStation
+            scale 1.0
+            href GMapStation_inactive.gif
+        }
+    }
+}
+
+pf_revision_time 1321574456
