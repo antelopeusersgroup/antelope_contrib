@@ -1,5 +1,5 @@
 '''
-db2kml.py
+db2kml_py.py
 
 Create Google Earth KML source from 
 database origin and/or site tables
@@ -103,8 +103,8 @@ def calc_magtype(ev_dict):
     and scale to use per event
     Assumes a netmag table
     is present"""
-    if ev_dict['mag'] > 0:
-        mag = ev_dict['mag']
+    if ev_dict['magnitude'] > 0:
+        mag = ev_dict['magnitude']
         mag_sc = ev_dict['magtype']
     elif ev_dict['mb'] > 0:
         mag = ev_dict['mb']
@@ -115,6 +115,9 @@ def calc_magtype(ev_dict):
     elif ev_dict['ml'] > 0:
         mag = ev_dict['ml']
         mag_sc = "Ml"
+    else:
+        mag = '-'
+        mag_sc = ""
     return mag, mag_sc
  
 def get_orig_records(pf, verbosity=0):
@@ -123,16 +126,8 @@ def get_orig_records(pf, verbosity=0):
     """
     fields = ['time', 'lat', 'lon', 'depth', 'auth', 'mb', 'ms', 'ml', 'magnitude', 'magtype']
     db_pointer = antdb.dbopen(pf['config']['db'], 'r');
-    print pf['config']['db']
-    # db_pointer.lookup(table='origin')
     db_pointer.lookup(table='origin')
-    print db_pointer.query('dbTABLE_PRESENT')
     tbl_event = antdb.dblookup(db_pointer, table='event')
-    tbl_netmag = antdb.dblookup(db_pointer, table='netmag')
-    print tbl_event
-    print tbl_netmag
-    print antdb.dbquery(tbl_event, 'dbTABLE_PRESENT')
-    print antdb.dbquery(tbl_netmag, 'dbTABLE_PRESENT')
     if antdb.dbquery(tbl_event, 'dbTABLE_PRESENT') > 0:
         if verbosity > 1:
             print " - Join event table"
@@ -166,7 +161,7 @@ def get_orig_records(pf, verbosity=0):
         sys.exit(1)
     else:
         if verbosity > 0:
-            print "\t- Number of records: %s" % db_pointer.query('dbRECORD_COUNT')
+            print "- Number of records: %s" % db_pointer.query('dbRECORD_COUNT')
         oridout = ["\t<Folder>\n"]
         oridout.append("\t\t<name>Earthquakes</name>\n")
         oridout.append("\t\t<visibility>1</visibility>\n")
@@ -177,24 +172,27 @@ def get_orig_records(pf, verbosity=0):
                 ev_dict[f] = db_pointer.getv(f)[0]
                 if f == 'time':
                     # Convert to XML standard time
-                    ev_dict['xml'] = epoch2str(ev_time, "%Y-%m-%dT%H:%M:%SZ")
-                    ev_dict['readable'] = epoch2str(ev_time, "%Y-%m-%d %H:%M:%S UTC")
+                    ev_dict['time_xml'] = antstock.epoch2str(ev_dict[f], "%Y-%m-%dT%H:%M:%SZ")
+                    ev_dict['time_readable'] = antstock.epoch2str(ev_dict[f], "%Y-%m-%d %H:%M:%S UTC")
             mag, mag_sc = calc_magtype(ev_dict)
-            style_mag = "mag_" + str(int(math.ceil(mag)))
-            style_mag_id = pft['styles']['styleinfo'][style_mag]['id']
+            if mag != '-':
+                style_mag = "mag_" + str(int(math.ceil(mag)))
+            else:
+                style_mag = "mag_0"
+            style_mag_id = pf['styles']['styleinfo'][style_mag]['id']
             oridout.append("\t\t\t<Placemark>\n")
             oridout.append("\t\t\t\t<name></name>\n") # keep blank else too much noise on the map
             oridout.append("\t\t\t\t<styleUrl>#%s</styleUrl>\n" % style_mag_id)
-            oridout.append("\t\t\t\t<Point><coordinates>%s,%s</coordinates></Point>\n" % (ev_lon,ev_lat))
-            oridout.append("\t\t\t\t<TimeStamp><when>%s</when></TimeStamp>\n" % ev_time_xml)
+            oridout.append("\t\t\t\t<Point><coordinates>%s,%s</coordinates></Point>\n" % (ev_dict['lon'],ev_dict['lat']))
+            oridout.append("\t\t\t\t<TimeStamp><when>%s</when></TimeStamp>\n" % ev_dict['time_xml'])
             oridout.append("\t\t\t\t<description>\n")
             oridout.append("<![CDATA[\n")
-            oridout.append("<p><strong>Latitude:</strong> %s</p>\n" % ev_lat)
-            oridout.append("<p><strong>Longitude:</strong> %s</p>\n" % ev_lon)
-            oridout.append("<p><strong>Depth (km):</strong> %s</p>\n" % ev_depth)
+            oridout.append("<p><strong>Latitude:</strong> %s</p>\n" % ev_dict['lat'])
+            oridout.append("<p><strong>Longitude:</strong> %s</p>\n" % ev_dict['lon'])
+            oridout.append("<p><strong>Depth (km):</strong> %s</p>\n" % ev_dict['depth'])
             oridout.append("<p><strong>Magnitude:</strong> %s %s</p>\n" % (mag, mag_sc))
-            oridout.append("<p><strong>Origin time:</strong> %s</p>\n" % ev_time_read)
-            oridout.append("<p><strong>Author:</strong> %s</p>\n" % ev_auth)
+            oridout.append("<p><strong>Origin time:</strong> %s</p>\n" % ev_dict['time_readable'])
+            oridout.append("<p><strong>Author:</strong> %s</p>\n" % ev_dict['auth'])
             oridout.append("]]>\n")
             oridout.append("\t\t\t\t</description>\n")
             oridout.append("\t\t\t</Placemark>\n")
@@ -350,7 +348,7 @@ def write_kml(target_file, outlist, verbosity=0, create_kmz=False):
         if os.path.exists(target_file) and create_kmz:
             file_substr = target_file[:-3] + 'kmz'
             if verbosity > 0:
-                print '- Creating zipfile'
+                print "- Creating zipfile '%s'" % file_substr
             zf = zipfile.ZipFile(file_substr, mode='w')
             try:
                 zf.write(target_file)
@@ -358,12 +356,12 @@ def write_kml(target_file, outlist, verbosity=0, create_kmz=False):
                 zf.close()
                 os.remove(target_file)
                 if verbosity > 0:
-                    print '- Finished creating KMZ zipfile %s' % file_substr
+                    print "- Finished creating KMZ zipfile '%s'" % file_substr
         elif os.path.exists(target_file):
             if verbosity > 0:
-                print '- Finished creating KML file %s' % target_file
+                print "- Finished creating KML file '%s'" % target_file
         else:
-            print '- KML file %s not created. Something went wrong.' % target_file
+            print "- KML file '%s' not created. Something went wrong" % target_file
     return
 
 def kml_styles(pf_result, verbosity=0):
