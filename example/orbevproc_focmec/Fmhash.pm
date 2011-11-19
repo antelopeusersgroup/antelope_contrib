@@ -141,6 +141,7 @@ sub prepare_hash_input {
 
 	my( @dbo, @dboe, @dbj );
 	my( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms );
+	my( $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
 
 	$self->put( "hash_inputfile_phase",     "hash_in_$self->{event_id}.phase" );
 	$self->put( "hash_outputfile_stdout", 	"hash_out_$self->{event_id}.stdout" );
@@ -162,11 +163,45 @@ sub prepare_hash_input {
 	( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms ) =
 		dbgetv( @dbo, "time", "lat", "lon", "depth", "ml", "mb", "ms" );
 
-	$stime = epoch2str( $origin_time, "%y%m%d%H%M " ) . 
-	 	 sprintf( "%04.2f", epoch2str( $origin_time, "%S.%s" ) );
+	$stime = epoch2str( $origin_time, "%y%m%d%H%M" ) . 
+	 	 sprintf( "%02d", epoch2str( $origin_time, "%S" ) ) . 
+		 sprintf( "%02d", int( epoch2str( $origin_time, "%s" ) * 100 ) );
 
-	$self->{hash_phase_block} .= sprintf( " %17s%3d%1s%5.2f%4d%1s%5.2f%7.2f  %5.2f%3d         %5.2f\n",
-				              $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag, $nprecs, $rms );
+	print "SCAFFOLD " . epoch2str( $origin_time, "%y%m%d%H%M" ) . "   " . sprintf( "%02d", epoch2str( $origin_time, "%S" ) ) . "   " . sprintf( "%02d", int( epoch2str( $origin_time, "%s" ) / 10 ) ) . "\n";
+
+	$mlat = 60 * substr( $lat, index( $lat, "." ) );
+	$mlat = int( $mlat * 100 );
+	$ns = $lat >= 0 ? "N" : "S";
+	$ilat = int( abs( $lat ) );
+
+	$mlon = 60 * substr( $lon, index( $lon, "." ) );
+	$mlon = int( $mlon * 100 );
+	$ew = $lon >= 0 ? "E" : "W";
+	$ilon = int( abs( $lon ) );
+
+	$dkm = sprintf( "%05d", $depth * 100 );
+
+	if( $ms != -999.00 ) {
+
+		$mag = $ms;
+
+	} elsif( $mb != -999.00 ) {
+
+		$mag = $mb;
+
+	} elsif( $ml != -999.00 ) {
+
+		$mag = $ml;
+
+	} else {
+
+		$mag = 0.0;
+	}
+
+	$mag = sprintf( "%02d", int( $mag * 10 ) );
+
+	$self->{hash_phase_block} .= sprintf( ">>%14s<<>>%02d<<%1s%04d%03d%1s%04d%5s%2s\n",
+				              $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
 
 	return $disp;
 
@@ -334,7 +369,7 @@ sub invoke_hash {
 
 	open( I, "> $infile" );
 
-	print I $self->get( "fpfit_hyp_block" );
+	print I $self->get( "hash_phase_block" );
 
 	close( I );
 
