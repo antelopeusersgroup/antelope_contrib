@@ -70,7 +70,16 @@ sub setup_parameters {
 			   fplane_auth
 			   tempdir
 			   maximum_wait_time 
+			   min_num_polarities
+			   max_azim_gap_deg
+			   max_takeoff_angle_deg
+			   grid_angle_deg
+			   num_trials
+			   num_maxout
+			   badpick_fraction
 			   distance_cutoff_km
+			   probability_angle_deg
+			   probability_thresh
 			   );
 
 	foreach my $param ( @expected ) {
@@ -139,14 +148,41 @@ sub prepare_hash_input {
 	my $self = shift;
 	my $disp = "ok";
 
-	my( @dbo, @dboe, @dbj );
-	my( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms );
-	my( $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
-
 	$self->put( "hash_inputfile_phase",     "hash_in_$self->{event_id}.phase" );
+	$self->put( "hash_inputfile_control",  	"hash_in_$self->{event_id}.inp" );
+	$self->put( "hash_inputfile_reversals",	"hash_in_$self->{event_id}.reverse" );
 	$self->put( "hash_outputfile_stdout", 	"hash_out_$self->{event_id}.stdout" );
+	$self->put( "hash_outputfile_fmout", 	"hash_out_$self->{event_id}.fmout" );
+	$self->put( "hash_outputfile_plout", 	"hash_out_$self->{event_id}.plout" );
 
 	$self->put( "hash_phase_block", "" );
+	$self->put( "hash_control_block", "" );
+	$self->put( "hash_reversals_block", "" );
+
+	# Control File
+
+	$self->{hash_control_block} .= $self->get( "hash_inputfile_reversals" )->[0] . "\n";
+	$self->{hash_control_block} .= $self->get( "hash_inputfile_phase" )->[0] . "\n";
+	$self->{hash_control_block} .= $self->get( "hash_outputfile_fmout" )->[0] . "\n";
+	$self->{hash_control_block} .= $self->get( "hash_outputfile_plout" )->[0] . "\n";
+	$self->{hash_control_block} .= sprintf( "%d", $self->{params}{"min_num_polarities"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"max_azim_gap_deg"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"max_takeoff_angle_deg"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"grid_angle_deg"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%d", $self->{params}{"num_trials"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%d", $self->{params}{"num_maxout"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"badpick_fraction"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"distance_cutoff_km"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"probability_angle_deg"} ) . "\n";
+	$self->{hash_control_block} .= sprintf( "%f", $self->{params}{"probability_thresh"} ) . "\n";
+
+	# Phase File
+
+	my( @dbo, @dboe, @dbj );
+	my( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms, $orid );
+	my( $smajax, $sdepth );
+	my( $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
+	my( $mag_string, $smajax_string, $sdepth_string );
 
 	@dbo = @{$self->{dbo}};
 
@@ -160,14 +196,26 @@ sub prepare_hash_input {
 		$dbo[3] = 0;
 	}
 
-	( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms ) =
-		dbgetv( @dbo, "time", "lat", "lon", "depth", "ml", "mb", "ms" );
+	( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms, $orid ) =
+		dbgetv( @dbo, "time", "lat", "lon", "depth", "ml", "mb", "ms", "orid" );
+
+	@dboe = @{$self->{dboe}};
+
+	if( dbquery( @dboe, dbRECORD_COUNT ) < 1 ) {
+
+		addlog( $self, 0, "Database origerr table does not have any rows\n" );
+		return "skip";
+
+	} else {
+
+		$dboe[3] = 0;
+	}
+
+	( $smajax, $sdepth ) = dbgetv( @dboe, "smajax", "sdepth" );
 
 	$stime = epoch2str( $origin_time, "%y%m%d%H%M" ) . 
 	 	 sprintf( "%02d", epoch2str( $origin_time, "%S" ) ) . 
-		 sprintf( "%02d", int( epoch2str( $origin_time, "%s" ) * 100 ) );
-
-	print "SCAFFOLD " . epoch2str( $origin_time, "%y%m%d%H%M" ) . "   " . sprintf( "%02d", epoch2str( $origin_time, "%S" ) ) . "   " . sprintf( "%02d", int( epoch2str( $origin_time, "%s" ) / 10 ) ) . "\n";
+		 sprintf( "%02d", int( epoch2str( $origin_time, "%s" ) / 10 ) );
 
 	$mlat = 60 * substr( $lat, index( $lat, "." ) );
 	$mlat = int( $mlat * 100 );
@@ -195,13 +243,46 @@ sub prepare_hash_input {
 
 	} else {
 
-		$mag = 0.0;
+		$mag = -999.00;
 	}
 
-	$mag = sprintf( "%02d", int( $mag * 10 ) );
+	if( $mag == -999.00 ) {
+		
+		$mag_string = "  ";
 
-	$self->{hash_phase_block} .= sprintf( ">>%14s<<>>%02d<<%1s%04d%03d%1s%04d%5s%2s\n",
-				              $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
+	} else {
+
+		$mag_string = sprintf( "%02d", int( $mag * 10 ) );
+	}
+
+	if( $smajax == -1.0 ) {
+
+		$smajax_string = "    ";
+
+	} else {
+		
+		$smajax_string = sprintf( "%04d", int( $smajax * 100 ) );
+	}
+
+	if( $sdepth == -1.0 ) {
+
+		$sdepth_string = "    ";
+
+	} else {
+		
+		$sdepth_string = sprintf( "%04d", int( $sdepth * 100 ) );
+	}
+
+	$self->{hash_phase_block} .= sprintf( "%14s%02d%1s%04d%03d%1s%04d%5s%2s",
+				              $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag_string );
+
+	$self->{hash_phase_block} .= " " x 44;
+
+	$self->{hash_phase_block} .= sprintf( "%4s%4s", $smajax_string, $sdepth_string );
+
+	$self->{hash_phase_block} .= " " x 35;
+
+	$self->{hash_phase_block} .= sprintf( "% 16s", $orid );
 
 	return $disp;
 
@@ -357,155 +438,195 @@ sub prepare_hash_input {
 sub invoke_hash {
 	my $self = shift;
 
-	###############
-	# SCAFFOLD: OLD
-	###############
+	my( $startdir, $infile );
 
-	my $startdir = POSIX::getcwd();
+	$startdir = POSIX::getcwd();
 
 	POSIX::chdir( $self->{params}{tempdir} );
 
-	my( $infile ) = $self->get( "hash_inputfile_phase" );
+	( $infile ) = $self->get( "hash_inputfile_phase" );
+	print "SCAFFOLD phase file is '$infile'\n";
 
 	open( I, "> $infile" );
 
 	print I $self->get( "hash_phase_block" );
+	print "SCAFFOLD phase block is: " . ( $self->get( "hash_phase_block" ) ) . "\n";
 
 	close( I );
 
-	my( $stdoutfile, $hypfile, $outfile, $sumfile, $polfile ) = $self->get( "fpfit_outputfile_stdout",
-										"fpfit_inputfile_hyp",
-										"fpfit_outputfile_out",
-										"fpfit_outputfile_sum",
-										"fpfit_outputfile_pol" );
+	( $infile ) = $self->get( "hash_inputfile_control" );
+	print "SCAFFOLD control file is '$infile'\n";
 
-	open( F, "| $self->{params}{hash_executable} > $stdoutfile" );
+	open( I, "> $infile" );
 
-	# Use default title, hypo filename plus date, i.e. choice "1"
-	print F "ttl 1 none\n";
+	print I $self->get( "hash_control_block" );
+	print "SCAFFOLD control block is: " . ( $self->get( "hash_control_block" ) ) . "\n";
 
-	print F "hyp $hypfile\n";
-	print F "out $outfile\n";
-	print F "sum $sumfile\n";
-	print F "pol $polfile\n";
-	print F "fit none\n";
+	close( I );
 
-	# Set to "hypo71 print listing" i.e. input format "1"
-	print F "for 1\n";	
+	( $infile ) = $self->get( "hash_inputfile_reversals" );
 
-	print F "amp $self->{params}{use_radiation_pattern_weighting}\n";
-	print F "fin $self->{params}{perform_fine_search}\n";
+	open( I, "> $infile" );
 
-	#Output only the best solution
-	print F "bst 1\n";
+	print I $self->get( "hash_reversals_block" );
 
-	#Output single (not composite) solutions
-	print F "cmp 0\n";
-
-	print F "mag $self->{params}{min_magnitude}\n";
-	print F "obs $self->{params}{min_observations}\n";
-	print F "dis $self->{params}{distance_cutoff_km}\n";
-
-	print F "res $self->{params}{presidual_cutoff_sec}\n";
-
-	print F "ain $self->{params}{incidence_angle_min_deg} " .
-		    "$self->{params}{incidence_angle_max_deg}\n";
-
-	print F "dir $self->{params}{strike_search_min_deg} " .
-		    "$self->{params}{strike_search_max_deg} " .
-		    "$self->{params}{strike_search_coarse_incr} " .
-		    "$self->{params}{strike_search_fine_incr}\n";
-
-	print F "dip $self->{params}{dip_search_min_deg} " .
-		    "$self->{params}{dip_search_max_deg} " .
-		    "$self->{params}{dip_search_coarse_incr} " .
-		    "$self->{params}{dip_search_fine_incr}\n";
-
-	print F "rak $self->{params}{rake_search_min_deg} " .
-		    "$self->{params}{rake_search_max_deg} " .
-		    "$self->{params}{rake_search_coarse_incr} " .
-		    "$self->{params}{rake_search_fine_incr}\n";
-
-	print F "hdr $self->{params}{pweight_percentages}\n";
-
-	print F "fps\n";
-	print F "sto\n";
-	close( F );
-
-	POSIX::chdir( $startdir );
+	close( I );
 
 	return;
+
+	###############
+	# SCAFFOLD: OLD
+	###############
+
+#	my $startdir = POSIX::getcwd();
+
+#	POSIX::chdir( $self->{params}{tempdir} );
+
+#	my( $infile ) = $self->get( "hash_inputfile_phase" );
+
+#	open( I, "> $infile" );
+
+#	print I $self->get( "hash_phase_block" );
+
+#	close( I );
+
+#	my( $stdoutfile, $hypfile, $outfile, $sumfile, $polfile ) = $self->get( "fpfit_outputfile_stdout",
+#										"fpfit_inputfile_hyp",
+#										"fpfit_outputfile_out",
+#										"fpfit_outputfile_sum",
+#										"fpfit_outputfile_pol" );
+
+#	open( F, "| $self->{params}{hash_executable} > $stdoutfile" );
+
+	# Use default title, hypo filename plus date, i.e. choice "1"
+#	print F "ttl 1 none\n";
+
+#	print F "hyp $hypfile\n";
+#	print F "out $outfile\n";
+#	print F "sum $sumfile\n";
+#	print F "pol $polfile\n";
+#	print F "fit none\n";
+
+	# Set to "hypo71 print listing" i.e. input format "1"
+# 	print F "for 1\n";	
+
+# 	print F "amp $self->{params}{use_radiation_pattern_weighting}\n";
+# 	print F "fin $self->{params}{perform_fine_search}\n";
+
+	#Output only the best solution
+# 	print F "bst 1\n";
+
+	#Output single (not composite) solutions
+# 	print F "cmp 0\n";
+
+# 	print F "mag $self->{params}{min_magnitude}\n";
+# 	print F "obs $self->{params}{min_observations}\n";
+# 	print F "dis $self->{params}{distance_cutoff_km}\n";
+
+# 	print F "res $self->{params}{presidual_cutoff_sec}\n";
+
+# 	print F "ain $self->{params}{incidence_angle_min_deg} " .
+# 		    "$self->{params}{incidence_angle_max_deg}\n";
+
+# 	print F "dir $self->{params}{strike_search_min_deg} " .
+# 		    "$self->{params}{strike_search_max_deg} " .
+# 		    "$self->{params}{strike_search_coarse_incr} " .
+# 		    "$self->{params}{strike_search_fine_incr}\n";
+
+# 	print F "dip $self->{params}{dip_search_min_deg} " .
+# 		    "$self->{params}{dip_search_max_deg} " .
+# 		    "$self->{params}{dip_search_coarse_incr} " .
+# 		    "$self->{params}{dip_search_fine_incr}\n";
+
+# 	print F "rak $self->{params}{rake_search_min_deg} " .
+# 		    "$self->{params}{rake_search_max_deg} " .
+# 		    "$self->{params}{rake_search_coarse_incr} " .
+# 		    "$self->{params}{rake_search_fine_incr}\n";
+
+	# print F "hdr $self->{params}{pweight_percentages}\n";
+
+	# print F "fps\n";
+	# print F "sto\n";
+	# close( F );
+
+	# POSIX::chdir( $startdir );
+
+	# return;
 }
 
 sub harvest_hash {
 	my $self = shift;
 
+ 	return "ok";
+
+	###############
 	# SCAFFOLD: OLD 
+	###############
 
-	my( $sumfile ) = $self->get( "fpfit_outputfile_sum" );
+	# my( $sumfile ) = $self->get( "fpfit_outputfile_sum" );
 
-	my( $resultsfile ) = concatpaths( $self->{params}{tempdir}, $sumfile );
+	# my( $resultsfile ) = concatpaths( $self->{params}{tempdir}, $sumfile );
 
-	if( ! -f $resultsfile ) {
+	# if( ! -f $resultsfile ) {
 
-		addlog( $self, 0, "Results file '$resultsfile' from fpfit does not exist\n" );
+	# 	addlog( $self, 0, "Results file '$resultsfile' from fpfit does not exist\n" );
 
-		return "skip";
-	}
+	# 	return "skip";
+	# }
 
-	open( O, $resultsfile );
+	#  open( O, $resultsfile );
 
-	my $summary_line = <O>;
+	# my $summary_line = <O>;
 
-	close( O );
+	# close( O );
 
-	my( $strike ) = substr( $summary_line, 83, 3 );
-	my( $dip ) = substr( $summary_line, 87, 2 );
-	my( $rake ) = substr( $summary_line, 90, 3 );
-	my( $fj ) = substr( $summary_line, 94, 5 );
+	# my( $strike ) = substr( $summary_line, 83, 3 );
+	# my( $dip ) = substr( $summary_line, 87, 2 );
+	# my( $rake ) = substr( $summary_line, 90, 3 );
+	# my( $fj ) = substr( $summary_line, 94, 5 );
 
-	my( $strike_aux, $dip_aux, $rake_aux ) = Focmec::aux_plane( $strike, $dip, $rake );
+	# my( $strike_aux, $dip_aux, $rake_aux ) = Focmec::aux_plane( $strike, $dip, $rake );
 
-	my( $taxazm, $taxplg, $paxazm, $paxplg ) = Focmec::tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
+	# my( $taxazm, $taxplg, $paxazm, $paxplg ) = Focmec::tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
 
-	my( $auth );
+	# my( $auth );
 
-	if( $self->{params}{fplane_auth} ne "" ) {
+	# if( $self->{params}{fplane_auth} ne "" ) {
 		
-		$auth = $self->{params}{fplane_auth};
+	# 	$auth = $self->{params}{fplane_auth};
 
-	} else {
+	# } else {
 
-		$auth = "evproc:$ENV{USER}";
-	}
+	# 	$auth = "evproc:$ENV{USER}";
+	# }
 
-	my @dbfplane = dblookup( @{$self->{dbm}}, 0, "fplane", "", "dbSCRATCH" );
+	# my @dbfplane = dblookup( @{$self->{dbm}}, 0, "fplane", "", "dbSCRATCH" );
 
-	my $mechid = dbnextid( @{$self->{dbm}}, "mechid" );
+	# my $mechid = dbnextid( @{$self->{dbm}}, "mechid" );
 
-	dbputv( @dbfplane, "orid", $self->{orid},
-			   "mechid", $mechid,
-		   	   "str1", $strike,
-			   "dip1", $dip, 
-			   "rake1", $rake, 
-		   	   "str2", $strike_aux,
-			   "dip2", $dip_aux, 
-			   "rake2", $rake_aux, 
-			   "taxazm", $taxazm,
-			   "paxazm", $paxazm,
-			   "taxplg", $taxplg,
-			   "paxplg", $paxplg,
-			   "auth", $auth,
-			   "algorithm", $self->{params}{fplane_algorithm} );
+	# dbputv( @dbfplane, "orid", $self->{orid},
+	# 		   "mechid", $mechid,
+	# 	   	   "str1", $strike,
+	# 		   "dip1", $dip, 
+	# 		   "rake1", $rake, 
+	# 	   	   "str2", $strike_aux,
+	# 		   "dip2", $dip_aux, 
+	# 		   "rake2", $rake_aux, 
+	# 		   "taxazm", $taxazm,
+	# 		   "paxazm", $paxazm,
+	# 		   "taxplg", $taxplg,
+	# 		   "paxplg", $paxplg,
+	# 		   "auth", $auth,
+	# 		   "algorithm", $self->{params}{fplane_algorithm} );
 
-	my $rec = dbadd( @dbfplane );
+# 	my $rec = dbadd( @dbfplane );
 
-	$dbfplane[3] = $rec;
-	$dbfplane[2] = $rec + 1;
+# 	$dbfplane[3] = $rec;
+# 	$dbfplane[2] = $rec + 1;
+# 
+# 	push @{$self->{output}{db}{tables}}, \@dbfplane;
 
-	push @{$self->{output}{db}{tables}}, \@dbfplane;
-
-	return "ok";
+# 	return "ok";
 }
 
 sub process_network {
