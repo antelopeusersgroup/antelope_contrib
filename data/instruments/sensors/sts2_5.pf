@@ -30,7 +30,7 @@ N	0	90
 E	90	90
 }
 
-response	&datafile(responses/sts2.5
+response	&datafile(responses/sts2.5)
 
 caldrive        c
 active          yes

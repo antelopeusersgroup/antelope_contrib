@@ -1,12 +1,10 @@
 .TH RSYNC_BALER 1
 .SH NAME
-rsync_baler \- tool to create local copies of Baler44's archives     
+rsync_baler \- Sync a remote baler directory to a local copy
 .SH SYNOPSIS
 .nf
-\fBrsync_baler \fP [-h] [-v] [-d] [-f] [-x] [-R]
-                [-p \fIpf_file\fP] [-j \fIJSON_FILE\fP] 
-                [-m \fIemail\fP ] [-s select_\fIregex\fP ] 
-                [-r reject_\fIregex\fP ]
+\fBrsync_baler \fP [-h] [-v] [-d] [-p \fIpf_file\fP] 
+                [-m \fIemail\fP ] [-s select_\fIregex\fP ] [-r reject_\fIregex\fP ]
 .fi
 
 .SH SUPPORT
@@ -25,23 +23,14 @@ The list in order is:
 .TP 
 .B http   =>  LWP, wget, curl, lynx
 .LP
-.TP 
-.B ftp    =>  LWP, Net::FTP, wget, curl, ncftp, ftp
-.LP
 
 .PP 
-The default mode for the script is archival. In this mode the system will connect 
-to the stations and will download as many files as possible the the allowed time
-(set in the parameter file). The downloads are done in alphabetical order. 
+The system will connect to the stations and will download as many files as 
+possible in the allowed time (set in the parameter file). 
+The downloads are done in alphabetical order. 
 .LP
 .PP 
-A second mode is to run the script with the -R or -j flags. This will produce reports 
-for the databases present in the main directory. A list of stations is produce from
-the database before looking into the folders. If running with the -j flag the report will
-get dump into the specified file as a JSON formatted object. 
-.LP
-.PP 
-A third option is to run with the -x flag to review every entry on the databases and fix
+Before runnning the script will review every entry on the databases and fix
 any errors. Each file in the directory that does not match the name of the file gets thrown
 into a trash folder in the archive. The rest of the files in the folder are verified on 
 the database. If missing from the database with an entry in the status field of "downloaded" 
@@ -69,26 +58,21 @@ Help. Prints a script synopsis to screen.
 Select station regex
 .IP -r
 Reject station regex
-.IP -R 
-Run report mode.
-.IP "-j file.json" 
-Run report mode and export table to file in json format.
 .IP "-m email1,email2,email3"
 Email (or list of emails) address to send log at the end of script.
 
 .SH NOTES
 Before the main process spawns a new copy to handle a specific station the system gets 
 tested for available resources. If not enough resources are found the system limits the 
-value of maximum allowed processes to run to -1 the actual value of running processes. 
+value of maximum allowed processes to run to the current number of running processes. 
 First the function will test the memory in the system. The memory in use should be 90%
 or less the total REAL memory of the system.  Then each CPU in the system gets tested 
 until one is found with at least 25% idle time. 
 
-.SH ENVIRONMENT
-Needs to have sourced $ANTELOPE/setup.csh.  
-
 .SH BUGS AND CAVEATS
-Only anonymous ftp/http connections.
+Needs to have valid stabaler and staq330 tables. Will use stations reported to be of 
+type "PacketBaler44" on table stabaler and will get the public IP of the station from
+staq330 table. The port for the connections will be set on the parameter file. 
 .LP
 .SH AUTHOR
 Juan C. Reyes <reyes@ucsd.edu>
