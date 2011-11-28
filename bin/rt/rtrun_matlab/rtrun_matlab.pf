@@ -3,10 +3,11 @@ antelope	&env(ANTELOPE)
 matlab_interpreter  matlab -nosplash -nodesktop -nojvm -nodisplay
 matlab_timeout_sec  600
 
+matlab_startup &Literal{
+	run '&antelope/setup.m'
+}
+
 matlab_paths	&Tbl{
-	&antelope/data/matlab/antelope/antelope
-	&antelope/data/matlab/antelope/scripts
-	&antelope/data/matlab/antelope/user
 }
 
 matlab_pf_varname Pf

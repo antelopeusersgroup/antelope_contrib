@@ -60,15 +60,22 @@ make &Arr{
 	^[[:space:]]*parse_function doesn't understand 
 	^localmake_config:.*is not defined
 	^localmake_config:.*Test failed
+	^localmake_config:.*Stopping compilation
 	^.*Can.t locate
+	^[1-9][[:digit:]]* total failures
+	^.*\\*command failed\\*
+	^[[:digit:]]+[[:space:]]+failures
+	^Invalid.*license code
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
-	^make.*: Entering directory
-	^make.*: Leaving directory
+	^\\+(\\*\\*)[^[:space:]]+
+	^g?make.*: Entering directory
+	^g?make.*: Leaving directory
    }
    magenta &Tbl{						# Warning and potential problems
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
+	^Problem:
 	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
@@ -125,6 +132,7 @@ make &Arr{
 	^ar: creating
 	^ar: writing
 	^ar: adding
+	^gcc:[[:space:]]
 	^C compiler:
 	^amakelocal:
 	^localmake_config:.*marked as disabled
@@ -134,6 +142,11 @@ make &Arr{
 	^to configure
 	^Extracted
 	^Manifying
+	^Making 
+	^make: Nothing to be done
+	^libtool: compile:
+	^libtool: link:
+	^libtool: install:
 	^[[:alnum:]_]+\\.[fF]:$
 	^[[:space:]]*MAIN:$
 	^[[:space:]]+MAIN [[:alnum:]_]+:$
@@ -198,9 +211,21 @@ make &Arr{
 	^.*installing alias
 	^.*removing
 	^linking
+	^Certification tests
+	^.*cpu time discrepancy:
+	^.*elapsed time discrepancy:
+	^Not adding source directory to path
+	^[[:space:]]*Directories:
+	^[[:space:]]*ANTELOPE:
+	^[[:space:]]*Variety:
+	^[[:space:]]*Date:
+	^Passed.*of.*tests
+	^0 total failures
+   	^No optimization specified in Makefile
    }
    blue &Tbl{							# Commands executed
-	^ar[[:space:]]
+	^[[:space:]]*ar[[:space:]]
+	^[[:space:]]*strip[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^awk[[:space:]]
 	^[[:space:]]*cat
@@ -226,6 +251,7 @@ make &Arr{
 	^tclindex[[:space:]]
 	^find[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/deposit[[:space:]]
+	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/certify[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
 	^done[[:space:]]
 	^[[:space:]]*echo[[:space:]]
@@ -264,9 +290,10 @@ make &Arr{
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
+	^(\\/opt\\/[[:alpha:]]+\\/[[:digit:].p-]+|\\$[A-Z]+)\\/bin\\/python[[:space:]]
 	^produce[[:space:]]
 	^(\\.\\/)?runmake[[:space:]]
-	^ranlib[[:space:]]
+	^ranlib:?[[:space:]]
 	^refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]
 	^sed[[:space:]]

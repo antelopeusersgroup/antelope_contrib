@@ -1,0 +1,23 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2010 The MathWorks, Inc.
+                Version 7.12.0.635 (R2011a) 64-bit (maci64)
+                               March 18, 2011
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+dbname =
+
+/opt/antelope/data/db/demo/demo
+
+
+db = 
+
+    database: 0
+       table: -501
+       field: -501
+      record: -501
+

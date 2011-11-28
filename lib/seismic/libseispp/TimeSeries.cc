@@ -216,7 +216,7 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 		char timetype[20];
 		ierr=dbgetv(dbh.db,0,
 			const_cast<char *>(timetype_keyword.c_str()),
-			timetype,0);
+			timetype,NULL);
 		if(ierr==dbINVALID)
 			tref=absolute;
 		else if(strcmp(timetype,"r"))

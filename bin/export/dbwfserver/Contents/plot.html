@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+
+<head>
+
+    <title>$application_title</title>
+
+    <script src="http://www.google.com/jsapi" language="javascript" type="text/javascript"></script>
+    <script language="javascript" type="text/javascript">
+        google.load("jquery", "1.5.0",{uncompressed:true} ); // Load jQuery
+        google.load("jqueryui", "1.8.9",{uncompressed:true} ); // Load jQuery UI
+    </script>
+
+    <script type="text/javascript" src="/static/jquery/jquery.cookie.js"></script>
+
+    <script type="text/javascript" src="/static/jquery/excanvas.pack.js"></script>
+
+    <script type="text/javascript" src="/static/jquery/jquery.flot.min.js"></script>
+
+    <script type="text/javascript" src="/static/jquery/jquery.flot-selection.min.js"></script>
+
+    <script type="text/javascript" src="/static/jquery/jquery.hotkeys-0.8.js"></script>
+
+    <script type="text/javascript" src="/static/jquery/jquery.tablesorter-2.0.3.min.js"></script>
+
+    <script type="text/javascript" src="/static/jquery/dbwfserver.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/static/css/dbwfserver.css">
+
+</head>
+
+<body>
+
+<div id="content">
+
+    <div id="errors" style='margin-top:5px;margin-bottom:5px' class="ui-helper-hidden ui-widget-content ui-corner-all ui-state-error">
+    <div id="loading"></div>
+
+    <div id="wforms"></div>
+
+    <div id="load_bar" class='ui-state-highlight ui-corner-all ui-helper-hidden' style="padding: 5px; margin-top: 5px; margin-bottom: 5px"> 
+
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready( function(){
+
+        init(); 
+
+        var setup_ui    =  $setupUI ;
+        var meta_query =  $meta_query ;
+        var error      =  $error ;
+        var proxy      =  '$proxy_url';
+
+        $("#loading").show('slow');
+
+        if (proxy ) {
+            window.proxy = proxy
+        }
+        if (setup_ui) {
+             setupUI(setup_ui);
+        }
+
+        if (meta_query) {
+             setData(meta_query);
+        }
+
+    });
+</script>
+
+</body>
+
+</html>

@@ -966,6 +966,13 @@ void XcorProcessingEngine::prep_gather()
 	/* Load arrival times if requested */
 	if(load_arrivals)
 	{
+                if(SEISPP_verbose) cout << "XcorProcessingEngine:  "
+                    << "Calling LoadEventArrivals for phase "
+                        <<analysis_setting.phase_for_analysis<<endl
+                        << "Using predicted time metadata key="
+                        << predicted_time_key 
+                        <<" and arrival time metadata key ="
+                        << dbarrival_time_key<<endl;
 		/* This is a bit of a misuse of this constructor, but it will
 		work in this context in the current implemenation.  Beware a
 		possible maintenance issue */
@@ -1114,9 +1121,13 @@ void XcorProcessingEngine::prep_gather()
 	{
 		waveform_ensemble=*regular_gather;
 	}
+        if(SEISPP_verbose) cout << "XcorProcessingEngine:  filtering ensemble"
+            <<endl;
 	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
 	if(autoscale_initial)
 	{
+                if(SEISPP_verbose) cout << "XcorProcessingEngine:  "
+                    <<"Autoscaling data to have constant peak amplitude"<<endl;
 		MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>
 			(waveform_ensemble,gain_keyword);
 		ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
@@ -1180,9 +1191,15 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 				+ string(" Illegal channel code specified.")
 				+ string(" Must be Z,N,E,L,R, or T") );
 		}
+                if(SEISPP_verbose) cout << base_error
+                    <<" Calling read routine that requires three component data"
+                    <<endl;
 		ThreeComponentEnsemble *tcse;
 		tcse=new ThreeComponentEnsemble(dbh,
 			trace_mdl, ensemble_mdl, am);
+                if(SEISPP_verbose) cout << base_error
+                    <<" Extracting component with tag ="
+                    <<analysis_setting.component_name<<endl;
 		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CGenericEnsemble(tcse,
 			analysis_setting.component_name,analysis_setting.phase_for_analysis,
 			ttmethod,ttmodel) );
@@ -1194,6 +1211,9 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 		tse=auto_ptr<TimeSeriesEnsemble>
 		   (new TimeSeriesEnsemble(dbh,trace_mdl, ensemble_mdl, am));
 	}
+        if(SEISPP_verbose) cout << base_error
+            << "Loading geometry and phase timing metdata"
+            <<endl;
 	if(processing_mode==EventGathers)
 	{
 	    /* We fetch the hypocenter for this event from the ensemble metadata.  We
@@ -1231,6 +1251,8 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 				<< "Run in verbose mode for more details"<<endl;
 
 	}
+        if(SEISPP_verbose) cout << base_error
+            << "Building regular gather"<<endl;
 	/* Warning:  we assume if arrival alignment is turned off that
 	the data are multichannel in flavor and all have the same
 	sample rate.  Probably should test for this condition here, but
@@ -1247,11 +1269,13 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 }
 void XcorProcessingEngine::load_data(Hypocenter & h)
 {
+    const string base_message("XcorProcessingEngine::load_data:  ");
     if(processing_mode==GenericGathers)
-	throw SeisppError(string("XcorProcessingEngine::load_data:  ")
+	throw SeisppError(base_message
 		+ string("Coding error.  Wrong method called."));
     try {
-        if(SEISPP_verbose) cout << "Starting to read data"<<endl;
+        if(SEISPP_verbose) cout << base_message
+            <<"Starting to read data"<<endl;
 	// It is necessary to clear the contents of mcc in
 	// some situations.  In particular, in the gui dbxcor
 	// we desire sorting the data after it is read.  The
@@ -1276,13 +1300,15 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	auto_ptr<TimeSeriesEnsemble> tse;
 	if(RequireThreeComponents)
 	{
+                if(SEISPP_verbose) cout << base_message
+                    <<"Using RequireThreeComponents read method"
+                        <<endl;
 		string chan_allowed("ZNELRT");
 		if(analysis_setting.component_name
 			.find_first_of(chan_allowed,0)<0)
 		{
-			throw SeisppError(
-				string("XcorProcessingEngine::load_data:")
-				+ string(" Illegal channel code specified.")
+			throw SeisppError(base_message
+				+ string("Illegal channel code specified.")
 				+ string(" Must be Z,N,E,L,R, or T") );
 		}
 		ThreeComponentEnsemble *tcse;
@@ -1319,6 +1345,9 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	}
 	else
 	{
+                if(SEISPP_verbose) cout << base_message
+                    <<"Using scalar data read method"
+                        <<endl;
 		tse=auto_ptr<TimeSeriesEnsemble>(array_get_data(
   			   stations,
                            h,
@@ -1331,7 +1360,8 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                            trace_mdl,
                            am));
 	}
-        if(SEISPP_verbose) cout << "Data loaded.  Forming working gather"<<endl;
+        if(SEISPP_verbose) cout << base_message
+            <<"Data loaded.  Forming working gather"<<endl;
 	StationTime predarr=ArrayPredictedArrivals(stations,h,
 		analysis_setting.phase_for_analysis);
 
@@ -1348,7 +1378,8 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	regular_gather->put("source_lon",deg(h.lon));
 	regular_gather->put("source_depth",deg(h.z));
 	regular_gather->put("source_time",deg(h.time));
-        if(SEISPP_verbose) cout << "Doing Housecleaning work"<<endl;
+        if(SEISPP_verbose) cout << base_message
+            <<"Doing Housecleaning work"<<endl;
 	this->prep_gather();
     }
     catch (...) {throw;}
@@ -1429,7 +1460,7 @@ string set_chan_this_phase(string chan, XcorAnalysisSetting& a)
 		return(root+a.arrival_chan_code+tail);
 	}
 }
-void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
+void XcorProcessingEngine::save_results(long evid, long orid ,Hypocenter& h)
 {
 	// First save the beam
 	long pwfid;

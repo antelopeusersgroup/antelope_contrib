@@ -1,60 +1,53 @@
 application_title Waveform Explorer
-application_name waveform_explorer
 
-port 8008
+port 80                               # default port to use for http requests
 
-default_chans &Tbl{
-#    BHZ
-#    BHN
-#    BHE
-#    ..Z.*
-    .*
-}
+#proxy_url /dbwf/ice9                # for reverse proxy installations
 
 default_time_window 200
 
-binning_threshold 2
-canvas_size_default 800
+max_points  800
 
-html_template &datafilename(www/dbwfserver/waveform.html.template)
+max_traces  20
 
-jquery_dir &datafilename(www/dbwfserver/static/jquery)
-static_dir &datafilename(www/dbwfserver/static)
+# HTML templates 
+antelope        &env(ANTELOPE)
+local_data      local/data/www/dbwfserver
+template        template.html
+plot_template   plot.html
+jquery_dir      static/jquery
+static_dir      static
 
-jquery_files &Tbl{
-    /static/jquery/excanvas.pack.js
-    /static/jquery/jquery.flot.min.js
-    /static/jquery/jquery.flot-selection.min.js
-    /static/jquery/jquery.hotkeys-0.7.8-packed.js
-    /static/jquery/jquery.tablesorter-2.0.3.min.js
-}
-
+# in case of errors...
 display_tracebacks False 
 
+# Set app default control values
 apply_calib True
-
 display_arrivals True
+display_points False
+
+jquery_ui_style black-tie           #options { base, black-tie, blitzer, cupertino, 
+                                #           dark-hive, dot-luv, eggplant, excite-bike
+                                #           flick, hot-sneaks, humanity, le-frog, 
+                                #           mint-choc, overcast, pepper-grinder, redmond,
+                                #           smoothness, south-street, start, sunny, swanky-purse,
+                                #           trontastic, ui-darkness, ui-lightness and vader  }
 
 import_paths &Tbl{
+    /opt/antelope/5.0-64/local/data
 }
 
-filters &Arr{ # filter specifications
-#label      filter
-WAV             WAV 1
-WAA             WAA 1
-0.3_HP          BW 0.3 5 0.0 0
-0.5_HP          BW 0.5 5 0.0 0
-1_HP            BW 1.0 2 0.0 0
-5_HP            BW 5.0 2 0.0 0
-0.3-1_BP        BW 0.3 5 1.0 5
-0.5-2_BP        BW 0.5 5 1.0 5
-0.8-3_BP        BW 0.8 5 3.0 5
-1-5_BP          BW 1.0 5 5.0 5
-1-12_BP         BW 1.0 5 12.0 5
-3-10_BP         BW 3.0 4 10.0 4
-INT             DEMEAN ; INT
-INT-            BW 0.1 2 0.0 0 ; INT
-INT2            DEMEAN ; INT2
-DIF             DIF
-DIF2            DIF2
+filters &Tbl{ # filter specifications
+WAV
+WAA
+BW 5.0 4 0.0 0
+BW 0.1 4 0.0 0
+BW 0.3 4 1.0 4
+BW 0.8 4 3.0 4
+BW 1.0 4 5.0 4
+BW 1.0 4 12.0 4
+BW 3.0 4 10.0 4
+DEMEAN
+DIF
+DIF2
 }

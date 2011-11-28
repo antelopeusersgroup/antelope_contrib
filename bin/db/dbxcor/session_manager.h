@@ -110,12 +110,12 @@ public:
     string get_result_db_name() {return result_db_name;}
     string get_pf_name() {return pf_name;}
     string get_queuefile_name(){return queuefilename;}
-    int get_evid(){return evid;}
-    int get_orid(){return orid;}
+    long get_evid(){return evid;}
+    long get_orid(){return orid;}
     Hypocenter get_hypo(){return hypo;}
     string get_phase(){return current_phase;}
-    void set_evid(int event_id);
-    void set_orid(int origin_id);
+    void set_evid(long event_id);
+    void set_orid(long origin_id);
     void set_hypo(Hypocenter& h);
     void set_phase(string ph);
     void record(string s);
@@ -174,8 +174,8 @@ private:
     string pf_name;
     string queuefilename;
 // These are needed for save_event for CSS3.0 database manipulations
-    int evid;
-    int orid;
+    long evid;
+    long orid;
 // Added to preserve previous state.  Needed to make picking functions
 // more robust.
     SessionState previous_state;

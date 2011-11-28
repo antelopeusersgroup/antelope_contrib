@@ -1,87 +1,17 @@
-html { font-family: Helvetica,Arial,sans-serif;font-size:100%;margin:0;padding:0; }
+/* Select station channels */
+#list .ui-selecting { background: #FECA40; }
+#list .ui-selected { background: #F39814; color: white; }
+#list { list-style-type: none; margin: 0; padding: 0;} 
+#list li { margin: 3px; padding: 1px; list-style:none; list-style-type:none; float: left; min-width: 50px; min-height: 40px; font-size: 1em; text-align: center; }
 
-body { margin:0;padding:0;background-color:#DFDFDF; }
-
-h1 { color:#C5C5C5;font-size:20px;margin-left:18px; }
-
-h4 { text-align:center;font-family:sans-serif;padding:8px; }
-
-.wrapper { width:100%;height:200px;margin:0 auto;padding:0;text-align:center; }
-.label { width:100px;line-height:200px;margin:0;padding:0;float:left; }
-.plot { width:950px;height:200px;margin:0;padding:0;margin-left:110px;cursor:e-resize; }
-.tickLabel { font-size:8px;overflow:visible;min-width:30px; }
-p.chantitle { margin:0;font-weight:bold;font-size:120%;padding:0; }
-
-/* Block level elements */
-div#content { margin:0;padding:0;z-index:0; }
-div#container { width:800px; }
-div#event { display:block;float:right }
-div#loading { position:absolute;top:0px;right:0px;min-height:33px;min-width:100px;padding:4px;margin:0;background: url(/static/images/ajax-loader.gif) #FFA500 no-repeat center left;z-index:999; }
-div#chan_labels { font-weight:bold;font-size:120%; }
-div#wforms { border:1px solid #C9C9EE;background-color:#FFF;margin:0 auto;z-index:4; }
-div#wforms div#chan_plots { display:block;margin:0 auto;}
-div#wrapper { margin:0 auto;}
-
-/* Inline elements */
-div#crumbs { margin:0;padding:0;border:1px solid #C9C9EE;clear:both; }
-
-/* Configuration header */
-div#toppanel { margin:0 auto;position:absolute;top:0;text-align:center;width:100%;z-index:500; }
-
-div#configpanel { background:none repeat scroll 0 0 #333; color:#FFF;display:none;height:200px;overflow:hidden;position:relative;width:100%;z-index:3; }
-div#configpanel .panelcontent { font-size:0.85em;margin:0 auto;padding-top:15px;text-align:left;width:960px;}
-div#configpanel .clearfix { display:block;height:1%; }
-
-div#configpanel h1 { color:#666;margin:0;padding:0;font-size:120%; }
-div#configpanel div#info { float:left;width:280px;padding:0 15px;border-left:1px solid #666; }
-div#configpanel div#themer { float:left;width:280px;padding:0 15px;border-left:1px solid #666; }
-div#configpanel div#plotType { float:left;width:280px;padding:0 15px;border-left:1px solid #666;border-right:1px solid #666 }
-
-span.cs { border:1px solid #000;width:20px;display:inline-block;margin-right:10px;height:20px; }
-span#csFg { background-color:#FDFF4F; }
-span#csBg { background-color:#00029F; }
-
-div#tab { background: url("/static/images/config_bkgrd.png") repeat-x scroll 0 0 transparent; height:42px;position:relative; top:0; z-index:501; }
-div#tab ul { clear:right;color:#FFF;display:block;float:right;font-size:80%;font-weight:bold;height:42px;line-height:42px;margin:0;position:relative;right:50px;text-align:center;width:auto; }
-div#tab ul li { display:inline;list-style-type:none;margin:0;padding:0;}
-div#tab ul li.left { background: url("/static/images/config_bkgrd_left.png") no-repeat scroll left 0 transparent;display:block;float:left;height:42px;margin:0;padding:0;width:30px; }
-div#tab ul li.center { background: url("/static/images/config_bkgrd_center.png") repeat-x scroll 0 0 transparent;display:block;float:left;height:42px;margin:0;padding:0;text-align:left; }
-div#tab ul li.right { background: url("/static/images/config_bkgrd_right.png") no-repeat scroll left 0 transparent;display:block;float:left;height:42px;margin:0;padding:0;width:30px; }
-div#tab ul li a { padding:0;color:#7F7F7F;text-decoration:underline;color:#FFF }
-div#tab ul li a.openconfig { display:inline; }
-div#tab ul li a.closeconfig { display:none; }
-div#tab ul li a:hover { color:#C9C9EE; }
-div#tab ul li a:visited { color:#FFF; }
-
-div#location { float:left;border:none;border-bottom:1px solid #7F7F7F;background: url(/static/images/bkgrd_1x50.png) repeat-x #C9C9EE;width:100%;margin:0;padding:0;list-style:none; }
-div#location h1 { padding:0 10px;margin:0;margin-top:10px;line-height:50px;color:#7F7F7F; }
-
-/* Title div */
-div#title { clear:both;float:left;border-bottom: 1px solid #7F7F7F; background-color:#FFF;margin:0;padding:0;width:100%;z-index:2 }
-div#title div#dbpath { float:left;margin:0;padding:10px;font-weight:bold; }
-div#title div#nav { float:right;margin:0;padding:10px; }
-div#title div#nav ul { margin:0;padding:0; }
-div#title div#nav ul li { display:inline;padding:5px;list-style-type:none; }
-
-/* Subnav */
-div#subnav { clear:both;margin:0;padding:5px;z-index:3}
-div#subnav ul, div#subnav p { margin:0;padding:0;text-align:left; }
-div#subnav ul li { display:inline;padding:5px;margin:0 5px 5px 0;list-style-type:none;float:left;text-align:center; }
-div#subnav ul br { margin-bottom:15px; }
-div#subnav div#event { float:right;width:400px; }
-
-/* Text formatting */
-div#interact p { text-align:center;color:#696969;margin:14px; }
-div#loading p { margin: 8px 0 0 35px;font-size:14px;color:#FFF;font-weight:bold;text-align:left; }
-span#dbname { font-family: Courier, "Courier New", monospace }
 
 /* Event metadata layout */
-div#subnav div#event table#eventTable { font-weight:normal;color:#000;font-size:10px;border:1px solid #C9C9EE;background-color:#FFF; }
-div#subnav div#event table#eventTable tr { background-color:#CDCDEF;padding:3px; }
-div#subnav div#event table#eventTable td { background-color:#CCC;padding:3px; }
+table#eventTable { font-weight:normal;color:#000;font-size:10px;border:1px solid #C9C9EE;background-color:#FFF; }
+table#eventTable tr { background-color:#CDCDEF;padding:3px; }
+table#eventTable td { background-color:#CCC;padding:3px; }
 
-div#subnav table.evListTable { font-weight:normal;color:#000;border:1px solid #C9C9EE;background-color:#FFF;text-transform:capitalize; }
-div#subnav table.evListTable tr { background-color:#CDCDEF;padding:5px; }
-div#subnav table.evListTable td { background-color:#CCC;padding:5px; }
+table.evListTable { font-weight:normal;color:#000;border:1px solid #C9C9EE;background-color:#FFF;text-transform:capitalize; }
+table.evListTable tr { background-color:#CDCDEF;padding:5px; }
+table.evListTable td { background-color:#CCC;padding:5px; }
 
 div#xlabel { text-align:center;margin:20px 0px 20px 40px; }

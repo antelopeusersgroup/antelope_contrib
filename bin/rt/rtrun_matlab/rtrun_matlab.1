@@ -30,7 +30,8 @@ named by \fImatlab_pf_varname\fP.
 
 The second file is a script that will be given to the Matlab
 interpreter to execute. The script that \fBrtrun_matlab\fP gives to the
-interpreter contains commands to add the Matlab paths specified in 
+interpreter contains the commands in the \fImatlab_startup\fP parameter if specified;
+commands to add the Matlab paths specified in 
 \fImatlab_paths\fP; a command to make the contents of
 \fImatlab_pf\fP available through the Matlab variable \fImatlab_pf_varname\fP
 (this variable will contain an Antelope parameter-file object);
@@ -50,6 +51,35 @@ Specify a lock file, for coordination amongst multiple instances of
 Save the temporary script and parameter files rather than deleting them
 at the end of the run; also announce their location at the end of the run.
 .SH PARAMETER FILE
+.SS "Parameters"
+.IP matlab_interpreter
+This parameter specifies the Unix executable command line that \fBrtrun_matlab\fP
+will invoke to launch the Matlab interpreter. 
+.IP matlab_startup
+Once the Matlab interpreter is launched, 
+\fBrtrun_matlab\fP will run the Matlab command contained in the \fImatlab_startup\fP parameter
+(usually a parameter-file \fILiteral\fP value as documented in pf(5)). If the value is left 
+blank, no startup commands will be run. 
+.IP matlab_paths
+If this parameter-file table is not empty, each line is interpreted as a pathname, which will 
+be added to the Matlab execution path after any startup command is run but before the Matlab
+script is invoked. 
+.IP matlab_script
+After any startup commands are invoked in Matlab and any specified paths are added to the Matlab
+execution path, \fBrtrun_matlab\fP will run the script specified in the \fImatlab_script\fP 
+parameter, usually a parameter-file \fILiteral value\fP. 
+.IP matlab_pf_varname
+The contents of a parameter-file for the \fImatlab_script\fP may be made available to it during 
+run-time. The \fImatlab_pf_varname\fP specifies the name within Matlab that the parameter-file 
+will have when \fImatlab_script\fP is running (\fBrtrun_matlab\fP will read this parameter file 
+automatically, so nothing explicit has to be done within \fImatlab_script\fP to make it available). 
+.IP matlab_pf
+This parameter gives the contents of the parameter-file named in \fImatlab_pf_varname\fP, to be 
+fed to the \fImatlab_script\fP. 
+.IP matlab_timeout_sec
+The \fImatlab_timeout_sec\fP parameter specifies the maximum number of seconds
+the Matlab interpreter is allowed to run. 
+.SS "Parameter File Example"
 A basic example of the \fBrtrun_matlab\fP.pf parameter file is as follows:
 
 .in 2c
@@ -64,10 +94,11 @@ antelope        &env(ANTELOPE)
 \fImatlab_timeout_sec\fP  600
 
 .ne 5
+\fImatlab_startup\fP &Literal{
+        run '&antelope/setup.m'
+}
+.ne 5
 \fImatlab_paths\fP      &Tbl{
-        &antelope/data/matlab/antelope/antelope
-        &antelope/data/matlab/antelope/scripts
-        &antelope/data/matlab/antelope/user
 }
 
 .ne 5
@@ -243,7 +274,6 @@ rtrun_matlab: Finished (pid 12453) with pf 'matlab_experiment1' at  7/14/2006  2
 .fi
 .ft R
 .in
-.SH LIBRARY
 .SH "SEE ALSO"
 .nf
 rtexec(1)
@@ -253,10 +283,6 @@ If the system-wide or user-specific Matlab startup scripts are already
 configured to include the Antelope directories, it should not be necessary
 to add those Matlab paths again (as is done in the default parameter file
 for \fBrtrun_matlab\fP).
-
-Plain-references in parameter files do not cascade well through the
-parameter-file reference mechanism, which explains the hard-wiring of the
-Antelope version in the parameter-file example above.
 .SH AUTHOR
 .nf
 Kent Lindquist

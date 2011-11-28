@@ -351,8 +351,12 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 	the result is empty */
 	TimeSeriesEnsemble *result=AlignAndResample(raw,predicted_time_key,
 		result_twin,target_dt,rsdef,trim);
-	if(result->member.size()<=0) throw SeisppError(string("AssembleRegularGather:  ")
+	if(result->member.size()<=0) 
+        {
+            delete result;
+            throw SeisppError(string("AssembleRegularGather:  ")
 		+ string("Result after AlignAndResample function contains no data") );
+        }
 	auto_switch_polarity(result);
 	return(result);
 }

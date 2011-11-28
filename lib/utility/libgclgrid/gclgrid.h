@@ -1693,3 +1693,10 @@ the result, not the 0 points.
 */
 GCLgrid3d *decimate(GCLgrid3d& g,int dec1, int dec2, int dec3);
 #endif
+
+#  if (__STDC_VERSION__ >= 199901L) /* C99 */ || \
+                               (defined(__SUNPRO_C) && defined(__C99FEATURES__))
+#   define __func__ __func__
+#  else
+#   define __func__ "<unknown>"
+#  endif

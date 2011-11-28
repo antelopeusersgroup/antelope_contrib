@@ -68,6 +68,9 @@ DATA= \
 	ranger_horz.pf \
 	ranger_vert.pf \
 	reftek_400hz_3-5g_2-4vg.pf \
+	rt151_30.pf \
+	rt151_60.pf \
+	rt151_120.pf \
 	s13.pf \
 	s13e.pf \
 	s13n.pf \
@@ -84,6 +87,7 @@ DATA= \
 	sts2_g1.pf \
 	sts2_g2.pf \
 	sts2_g3.pf \
+	sts2_5.pf \
 	sv1.pf \
 	terratech.pf \
 	trillium_40.pf \

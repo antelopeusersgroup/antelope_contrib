@@ -68,6 +68,14 @@ slowness vector is 0.
 	double baz();
 /*! \brief Standard assignment operator. */
 	SlownessVector& operator=(const SlownessVector& parent);
+/* \brief Standard accumulation operator. */
+	SlownessVector& operator+=(const SlownessVector& other);
+/* \brief Standard subtract from  operator. */
+	SlownessVector& operator-=(const SlownessVector& other);
+/* \brief Standard addition  operator. */
+        const SlownessVector operator+(const SlownessVector& other) const;
+/* \brief Standard subraction  operator. */
+        const SlownessVector operator-(const SlownessVector& other) const;
 private:
 	double azimuth0;
 };

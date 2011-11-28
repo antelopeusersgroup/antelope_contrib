@@ -101,6 +101,26 @@ SlownessVector& SlownessVector::operator=(const SlownessVector& parent)
 	}
 	return(*this);
 }
+SlownessVector& SlownessVector::operator+=(const SlownessVector& other)
+{
+    ux+=other.ux;
+    uy+=other.uy;
+}
+SlownessVector& SlownessVector::operator-=(const SlownessVector& other)
+{
+    ux-=other.ux;
+    uy-=other.uy;
+}
+const SlownessVector SlownessVector::operator+(const SlownessVector& other) const {
+    SlownessVector result(*this);
+    result += other;
+    return result;
+}
+const SlownessVector SlownessVector::operator-(const SlownessVector& other) const {
+    SlownessVector result(*this);
+    result -= other;
+    return result;
+}
 
 // These could (and once were) inline, but decided that was poor
 // memory management

@@ -8,9 +8,6 @@ ftp_port                5382                 #port for ftp connections
 
 http_port               5381                 #port for http connections
 
-max_procs               50                   #number of simultaneous processes
+max_procs               40                   #number of simultaneous processes
 
 max_child_run_time      36000                #stop downloading files after this number of seconds. 0 = disable.
-
-fix_mseed_cmd
-#fix_mseed_cmd           msfixoffsets -i     # Fix each downloaded file with this local software. Not included!

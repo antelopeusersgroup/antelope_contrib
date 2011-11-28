@@ -488,6 +488,7 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		if(dbgetv(dbgrd,0,"foff",&foff,
 			"dimensions",&dim,"nv",&nv,NULL)==dbINVALID)
 		{
+                        fclose(fp);
 			elog_notify(0,(char *)"dbgetv error fetching foff from gclfield table\n");
 			throw 2;
 		}
@@ -581,6 +582,7 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 		if(dbgetv(dbgrd,0,"foff",&foff,
 			"dimensions",&dim,"nv",&nv,NULL)==dbINVALID)
 		{
+                        fclose(fp);
 			elog_notify(0,(char *)"dbgetv error fetching foff from gclfield table\n");
 			throw 2;
 		}

@@ -1,0 +1,3 @@
+localmake_config: Requested capability 'matlab' marked as disabled in 'localmake_config'.
+Run localmake_config(1) (or edit '/opt/antelope/5.1-64/local/data/pf/localmake_config.pf')
+to enable and configure 'matlab' if desired.

@@ -14,11 +14,13 @@ attach_dbtables	1
 
 # Saving pickfiles:
 
-pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
+pickfile_name_pattern /%Y%m/%Y%m%d%H%M%S.%{suffix}
 auth_suffixes &Tbl{
 	PGC:mulder	tm
-	PGC:bentkowski	wb
+	PGC:bentkows	wb
 	PGC:bird	ab
+	PGC:malwhite	mw
+	PGC:mkoessle	mk
 	PGC:.*		xx
 	orbassoc.*	auto
 }
@@ -26,6 +28,13 @@ auth_suffix_default 	xx
 
 auth_agencies &Arr{
 	PGC:.*		PGC
+	orbassoc.*	PGC
+	QED.*		NEIC
+	NEIC.*		NEIC
+	AEIC.*		AEIC
+	PNSN.*		SEA
+	mtech.*		BUT
+
 }
 auth_agency_default	???
 
@@ -40,8 +49,33 @@ model_codes &Arr{
 	cn07		07
 }
 locator_codes &Arr{
-	dbgenloc	G
-	dblocsat	I
+	dbgenloc	N
+	locsat		L
+	loc_eq		Q
+}
+
+correct_magtype_codes &Arr{
+	mw		Mw
+	mw'		Mw'
+	ms		MS
+	mb		mb
+	mb(lg)		mb(Lg)
+	ml		ML
+	ml(sn)		ML(Sn)
+	md		Md
+	mc		MC
+}
+
+magtype_priorities &Arr{
+	mw		1
+	mw'		2
+	ms		3
+	mb		4
+	mb(lg)		5
+	ml		6
+	ml(sn)		7
+	md		8
+	mc		9
 }
 
 # Extracting raw info from database for pickfiles:

@@ -30,7 +30,7 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& a
 		for(dsdbh.db.record=0;dsdbh.db.record<nrec;++dsdbh.db.record)
 		{
 			if(dbgetv(dsdbh.db,0,"lat",&lat,
-				"lon",&lon,"depth",&depth,"time",&otime,0)
+				"lon",&lon,"depth",&depth,"time",&otime,NULL )
 				== dbINVALID)
 			{
 				string message;
@@ -90,7 +90,7 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,string ttmethod, string ttmodel,
 		for(dsdbh.db.record=0;dsdbh.db.record<nrec;++dsdbh.db.record)
 		{
 			if(dbgetv(dsdbh.db,0,"lat",&lat,
-				"lon",&lon,"depth",&depth,"time",&otime,0)
+				"lon",&lon,"depth",&depth,"time",&otime,NULL )
 				== dbINVALID)
 			{
 				string message;

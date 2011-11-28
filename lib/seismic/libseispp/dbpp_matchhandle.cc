@@ -94,21 +94,25 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 				{
 					AttributeProperties testalias=aliasmap[*tttptr];
 					string dbattname=testalias.db_attribute_name;
-					double rval;  int ival;  char sval[80]; bool bval;
+					double rval;  long ival;  char sval[80]; bool bval;
 					switch (testalias.mdt)
 					{
 					case MDreal:
-						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&rval,0);
+						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&rval,NULL);
 						break;
 					case MDint:
-						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&ival,0);
+						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&ival,NULL);
 						break;
 					case MDboolean:
-						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&bval,0);
+						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&ival,NULL);
+						if(ival)
+							bval=true;
+						else
+							bval=false;
 						break;
 					case MDstring:
 					default:
-						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&sval,0);
+						ierr=dbgetv(dbtmp,0,dbattname.c_str(),&sval,NULL);
 						break;
 					}
 					if(ierr==0) 
@@ -300,21 +304,21 @@ list<long> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 				rval=md.get_double(MDnamekeys[i]);
 				ierr=dbputv(dbscratch_record,0,
 					fullname.c_str(),
-					rval,0);
+					rval,NULL);
 				++nscratch_records_set;
 				break;
 			case MDint:
 				ival=md.get_int(MDnamekeys[i]);
 				ierr=dbputv(dbscratch_record,0,
 					fullname.c_str(),
-					ival,0);
+					(long)ival,NULL);
 				++nscratch_records_set;
 				break;
 			case MDstring:
 				sval=md.get_string(MDnamekeys[i]);
 				ierr=dbputv(dbscratch_record,0,
 					fullname.c_str(),
-					sval.c_str(),0);
+					sval.c_str(),NULL);
 				++nscratch_records_set;
 				break;
 			default:

@@ -1,5 +1,6 @@
 DATADIR = www/dbwfserver
-DATA = waveform.html.template
+DATA = template.html \
+	   plot.html
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 

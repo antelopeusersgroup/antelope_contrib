@@ -1,0 +1,49 @@
+.TH FOCMEC 3P 
+.SH NAME
+Focmec \- Focal-mechanism superclass for evproc-based generalized event processing
+.SH SYNOPSIS
+.nf
+our @ISA = ( "Focmec" );
+
+( $obj, $hashref ) = \fBnew\fP( $class,
+                          "db" => $dbref,
+			  "dbm" => $dbmref [, $name1, $val1 [,...]] );
+
+\fBdisplay\fP( $obj [, @keys] );
+
+\fBput\fP( $obj, $name1, $val1 [,...] );
+
+@vals = \fBget\fP( $obj, @keys );
+
+$hashref = \fBprocess_channel\fP( $obj, $trref, $flush );
+
+$hashref = \fBprocess_station\fP( $obj, $sta, $flush );
+
+$hashref = \fBprocess_network\fP( $obj, $flush );
+
+.fi
+.SH DESCRIPTION
+The \fBFocmec\fP module provides a framework, in the form of a Perl super class, that supports computation
+of focal-mechanisms within Antelope via the orbevproc(1) and dbevproc(1) programs. 
+
+The \fBnew\fP routine creates a new perl object set up for focal-mechanism processing. 
+The \fBprocess_channel\fP, \fBprocess_station\fP, and \fBprocess_network\fP subroutines are called
+when data are ready for a channel, a station, and the whole network, respectively. 
+
+The \fBput\fP, \fBget\fP, and \fBdisplay\fP methods are utilities to store, retrieve, and print 
+intermediate variables in the \fBFocmec\fP object during processing. 
+
+.SH LIBRARY
+use lib $ENV{ANTELOPE}/data/evproc;
+.SH "SEE ALSO"
+.nf
+orbevproc(1), dbevproc(1), evproc(3p), Magnitude(3p), Fmfpfit(3p)
+.fi
+.SH "BUGS AND CAVEATS"
+The \fBFocmec\fP module does not by itself do any computations. It needs to be subclassed and have
+the processing functions filled out with appropriate steps to compute the focal mechanisms. 
+.SH AUTHOR
+.nf
+Dr. Kent Lindquist
+Lindquist Consulting, Inc.
+.fi

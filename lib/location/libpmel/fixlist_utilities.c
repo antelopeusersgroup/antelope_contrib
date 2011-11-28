@@ -19,7 +19,7 @@ Additions:  August 2008
 Added procedures to implement a scan for setting fixed depth
 for one member of a cluster.  All these are at the end of this file.
 */
-char *make_evid_key(int evid)
+char *make_evid_key(long evid)
 {
 	char *s;
 	/* The evid field is 8 bytes wide in css3.0 of datascope
@@ -28,7 +28,7 @@ char *make_evid_key(int evid)
 	/* We just left justify the string and not worry about 
 	leading zeros.  This will not produce correct sort order
 	necessarily, but for the application here this doesn't matter.*/
-	sprintf(s,"%-8d",evid);
+	sprintf(s,"%-8ld",evid);
 	return(s);
 }
 
@@ -46,7 +46,7 @@ Author:  Gary Pavlis
 Arr *load_calibration_events(Pf *pf)
 {
 	Tbl *t;
-	int evid;
+	long evid;
 	char *evidstr;
 	char fix[5],*line;
 	char *fptr;
@@ -66,7 +66,7 @@ Arr *load_calibration_events(Pf *pf)
 		for(i=0;i<maxtbl(t);++i)
 		{
 			line = (char *)gettbl(t,i);
-			sscanf(line,"%d%s",&evid,fix);
+			sscanf(line,"%ld%s",&evid,fix);
 			evidstr = make_evid_key(evid);
 			fptr=strdup(fix);
 			setarr(a,evidstr,fptr);
@@ -76,7 +76,7 @@ Arr *load_calibration_events(Pf *pf)
 	}
 	return(a);
 }
-char *get_fixlist(Arr *a,int evid)
+char *get_fixlist(Arr *a,long evid)
 {
 	char *o;
 	char *key;
@@ -88,9 +88,8 @@ char *get_fixlist(Arr *a,int evid)
 /* New procedurs for freeze depth of a cluster features */
 /* This simple procedure returns if a list of evids is found as a fixed 
 depth entry already in the existing list */
-int in_fixdepthlist(Arr *a, int *evid, int nevents)
+int in_fixdepthlist(Arr *a, long *evid, int nevents)
 {
-	int result;
 	char *o;
 	char *key;
 	int i;
@@ -125,12 +124,12 @@ Arguments:
 	nevents - number of events = size of evid and h0 vectors.
 */
 
-Arr *get_freezearr(enum FREEZE_METHOD fm, Hypocenter *h0, int *evid, 
+Arr *get_freezearr(enum FREEZE_METHOD fm, Hypocenter *h0, long *evid, 
 	Tbl **ta, int nevents)
 {
 	int i;  /* loop counter */
 	char *fixstr;
-	int minrmsevid, maxdataevid;
+	long minrmsevid, maxdataevid;
 	double rmsmin,thisrms;
 	int maxarrivals;
 	minrmsevid=evid[0];
@@ -168,7 +167,7 @@ Arr *get_freezearr(enum FREEZE_METHOD fm, Hypocenter *h0, int *evid,
 		}
 	}
 		
-	int evid_to_freeze;
+	long evid_to_freeze;
 	switch(fm)
 	{
 	case DEPTH_MINRMS:
