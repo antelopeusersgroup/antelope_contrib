@@ -288,7 +288,7 @@ sub prepare_hash_input {
 
 	$self->{hash_phase_block} .= sprintf( "%4s%4s", $smajax_string, $sdepth_string );
 
-	$self->{hash_phase_block} .= " " x 35;
+	$self->{hash_phase_block} .= " " x 34;
 
 	$self->{hash_phase_block} .= sprintf( "% 16s\n", $orid );
 
@@ -347,10 +347,10 @@ sub prepare_hash_input {
 		$self->{hash_phase_block} .= sprintf( "%03d ", $esaz );
 		$self->{hash_phase_block} .= sprintf( "%03d ", $self->{params}{"takeoff_angle_uncertainty"}, );
 		$self->{hash_phase_block} .= sprintf( "%03d\n", $self->{params}{"azimuth_uncertainty"}, );
-
-		# hash_driver1 program needs blank line to signal end of phase input:
-		$self->{hash_phase_block} .= " " x 80;
 	}
+
+	# hash_driver1 program needs blank line to signal end of phase input:
+	$self->{hash_phase_block} .= " " x 80 . "\n";
 
 	return $disp;
 }
