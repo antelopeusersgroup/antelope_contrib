@@ -650,7 +650,7 @@ sub create_compile_button {
 	return( $b );
 }
 
-sub init_File_menu {
+sub init_localmake_File_menu {
 	my( $w ) = @_;
 
 	my( $menubutton, $filemenu );
@@ -663,14 +663,14 @@ sub init_File_menu {
 
 	$filemenu = $menubutton->Menu( -tearoff => 0 );
 
-	$filemenu->add( "command", -label => "Save as...", -command => \&save_as );
+	$filemenu->add( "command", -label => "Save compile log as...", -command => \&save_as );
 	$filemenu->add( "command", -label => "Quit", -command => \&quit );
 
 	$menubutton->configure( -menu => $filemenu );
 
 	my( $button );
 
-	$button = $w->Button( -text => "Run localmake_config",
+	$button = $w->Button( -text => "configure",
 			      -bg => "green", 
 			      -command => sub { system( "localmake_config &" ); } );
 
@@ -679,7 +679,7 @@ sub init_File_menu {
 	return;
 }
 
-sub init_menubar {
+sub init_localmake_menubar {
         my( $w ) = @_;
 
         my( $menubar );
@@ -687,7 +687,7 @@ sub init_menubar {
         $menubar = $w->Frame( -relief => 'raised',
                               -borderwidth => 2 );
 
-        init_File_menu( $menubar );
+        init_localmake_File_menu( $menubar );
 
         return $menubar;
 }
@@ -846,24 +846,11 @@ sub init_compile_window {
 	return $compilewindow;
 }
 
-sub init_window {
-	use Tk;
-	use Tk::ROText;
-	use Tk::Font;
-	use Tk::FileSelect;
-	use elog_gui;
-	
-	$Windows{"Main"} = MainWindow->new();
+sub init_localmake_window {
 
 	$Windows{"Main"}->title( my_hostname() . ": localmake" );
 
-	elog_gui_init( MW => $Windows{"Main"} );
-	elog_callback( "::elog_gui" );
-
-	$Windows{"Main"}->bind( "<Control-c>", \&quit );
-	$Windows{"Main"}->bind( "<Control-C>", \&quit );
-
-	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
+	$Windows{"menubar"} = init_localmake_menubar( $Windows{"Main"} );
 
 	$Windows{"menubar"}->grid( -row => 0, -column => 0, -sticky => "new" );
 
@@ -876,6 +863,24 @@ sub init_window {
 	$Windows{"Main"}->gridRowconfigure( 1, -weight => 1 );
 
 	$Windows{"Main"}->afterIdle( \&compute_font_height );
+}
+
+sub init_window {
+	use Tk;
+	use Tk::ROText;
+	use Tk::Font;
+	use Tk::FileSelect;
+	use elog_gui;
+	
+	$Windows{"Main"} = MainWindow->new();
+
+	elog_gui_init( MW => $Windows{"Main"} );
+	elog_callback( "::elog_gui" );
+
+	$Windows{"Main"}->bind( "<Control-c>", \&quit );
+	$Windows{"Main"}->bind( "<Control-C>", \&quit );
+
+	init_localmake_window();
 
 	MainLoop;
 }
