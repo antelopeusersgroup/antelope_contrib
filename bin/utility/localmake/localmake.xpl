@@ -1325,7 +1325,12 @@ sub init_capabilities {
 
 	ptkform( $capabilities_window, \%Var, \%Widgets, @specs );
 
+	$capabilities_window->gridColumnconfigure( 0, -weight => 1 );
+
 	foreach $c ( keys( %capabilities ) ) {
+
+		$Widgets{"top$c"}->gridColumnconfigure( 0, -weight => 1 );
+		$Widgets{"bottom$c"}->gridColumnconfigure( 0, -weight => 1 );
 
 		$Widgets{"t$c"}->tagConfigure( 'failed', -foreground => "red" );
 		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "darkgreen" );
@@ -1438,6 +1443,8 @@ sub run_compile {
 	$Windows{"Main"}->gridForget( $Windows{"config_menubar"}, 
 				      $Windows{"save_config"},
 				      $Windows{"capabilities"} );
+
+	$Windows{"Main"}->gridRowconfigure( 2, -weight => 0 );
 
 	init_localmake_window();
 
