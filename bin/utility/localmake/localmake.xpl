@@ -1217,25 +1217,27 @@ sub run_configure {
 				   -sticky => 'new',
 				 );
 
+	$Windows{"capabilities"} = init_capabilities( $Windows{"Main"} );
+
+	$Windows{"capabilities"}->grid( -row => 1,
+				   	-column => 0,
+				   	-sticky => 'nsew',
+				 	);
+
 	$Windows{"save_config"} = $Windows{"Main"}->Button( -text => "save configuration",
 				       -command => \&commit_configuration, 
 				       -bg => "gray",
 				       -state => "disabled" );
 
-	$Windows{"save_config"}->grid( -row => 1,
+	$Windows{"save_config"}->grid( -row => 2,
 		  		       -column => 0,
-		  		       -sticky => 'new',
+		  		       -sticky => 'nsew',
 		 			);
 
-	$Windows{"capabilities"} = init_capabilities( $Windows{"Main"} );
-
-	$Windows{"capabilities"}->grid( -row => 2,
-				   	-column => 0,
-				   	-sticky => 'nsew',
-				 	);
-
 	$Windows{"Main"}->gridColumnconfigure( 0, -weight => 1 );
-	$Windows{"Main"}->gridRowconfigure( 2, -weight => 1 );
+
+	$Windows{"Main"}->gridRowconfigure( 1, -weight => 1 );
+	$Windows{"Main"}->gridRowconfigure( 2, -weight => 0 );
 
 	#DEBUG	$Windows{"Main"}->afterIdle( \&freeze_size );
 
