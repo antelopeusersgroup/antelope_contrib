@@ -1266,7 +1266,6 @@ sub init_capabilities {
 
 	my( $capabilities_window );
 	my( @specs, @lefttop, @righttop, @leftbottom, @rightbottom, $i );
-	my( $leftwidth ) = 80;
 
 	$capabilities_window = $w->Frame( -relief => 'raised', 
 					  -borderwidth => 2 );
@@ -1282,15 +1281,15 @@ sub init_capabilities {
 		@leftbottom = ();
 		@rightbottom = ();
 
-		push( @lefttop, "label np$c $leftwidth 0,0 Capability:" );
-		push( @lefttop, "label en$c $leftwidth +,0 Status:" );
+		push( @lefttop, "label np$c - 0,0 Capability:" );
+		push( @lefttop, "label en$c - +,0 Status:" );
 
 		push( @righttop, "button b$c - 0,0 Toggle" );
 		push( @righttop, "button e$c - +,0 Explain '$c' capability" );
 
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
 
-			push( @leftbottom, "entry e$c$m $leftwidth +,0 $m { $macros{$m}{Description} }" );
+			push( @leftbottom, "entry e$c$m - +,0 $m { $macros{$m}{Description} }" );
 			push( @rightbottom, "button b$c$m - +,0 Explain '$m' macro" );
 		}
 
@@ -1336,8 +1335,8 @@ sub init_capabilities {
 		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "darkgreen" );
 		$Widgets{"t$c"}->tagConfigure( 'disabled', -foreground => "grey30" );
 
-		$Widgets{"top$c"}->configure( -background => "orange" );
-		$Widgets{"bottom$c"}->configure( -background => "yellow" );
+		$Widgets{"np$c"}->parent()->parent()->gridColumnconfigure( 0, -weight => 1 );
+		resticky( $Widgets{"np$c"}->parent(), "nsew" );
 
 		resticky( $Widgets{"lefttop$c"}, "nsew" );
 		resticky( $Widgets{"leftbottom$c"}, "nsew" );
@@ -1345,13 +1344,19 @@ sub init_capabilities {
 		resticky( $Widgets{"righttop$c"}, "nsew" );
 
 		resticky( $Widgets{"b$c"}, "nsew" );
-		resticky( $Widgets{"e$c"}, "nsew" );
+		resticky( $Widgets{"e$c"}->parent(), "nsew" );
 
 		resticky( $Widgets{"t$c"}, "nsew" );
 		
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
 
+			$Widgets{"e$c$m"}->parent()->parent()->gridColumnconfigure( 0, -weight => 1 );
+			resticky( $Widgets{"e$c$m"}->parent(), "nsew" );
+
 			resticky( $Widgets{"b$c$m"}, "nsew" );
+			resticky( $Widgets{"e$c$m"}, "ew" );
+			resticky( $Widgets{"b$c$m"}->parent(), "nsew" );
+			resticky( $Widgets{"e$c$m"}->parent(), "ew" );
 		}
 
 		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
