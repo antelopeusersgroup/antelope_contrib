@@ -1336,9 +1336,23 @@ sub init_capabilities {
 		$Widgets{"t$c"}->tagConfigure( 'passed', -foreground => "darkgreen" );
 		$Widgets{"t$c"}->tagConfigure( 'disabled', -foreground => "grey30" );
 
-		resticky( $Widgets{"t$c"}, "nsew" );
+		$Widgets{"top$c"}->configure( -background => "orange" );
+		$Widgets{"bottom$c"}->configure( -background => "yellow" );
 
-		resticky( $Widgets{"b$c"}, "ew" );
+		resticky( $Widgets{"lefttop$c"}, "nsew" );
+		resticky( $Widgets{"leftbottom$c"}, "nsew" );
+
+		resticky( $Widgets{"righttop$c"}, "nsew" );
+
+		resticky( $Widgets{"b$c"}, "nsew" );
+		resticky( $Widgets{"e$c"}, "nsew" );
+
+		resticky( $Widgets{"t$c"}, "nsew" );
+		
+		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
+
+			resticky( $Widgets{"b$c$m"}, "nsew" );
+		}
 
 		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
 
