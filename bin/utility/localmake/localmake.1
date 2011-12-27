@@ -3,7 +3,7 @@
 localmake \- build subsections of the Antelope-contrib code base
 .SH SYNOPSIS
 .nf
-localmake [-v] [-l] [-p pfname] [-s src_subdir] [-t] module
+localmake [-c] [-v] [-l] [-p pfname] [-s src_subdir] [-t] module
 .fi
 .SH DESCRIPTION
 The \fBlocalmake\fP program is designed to build and install coherent
@@ -26,6 +26,8 @@ the main \fBlocalmake\fP window, may be saved to a file with the
 \fIFile->Save As...\fP button. 
 
 .SH OPTIONS
+.IP -c 
+Launch in configure mode instead of compile mode
 .IP -l
 Print a list of available modules and exit. 
 .IP "-s subdirectory"

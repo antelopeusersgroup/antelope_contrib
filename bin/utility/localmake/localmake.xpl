@@ -1208,6 +1208,13 @@ sub run_configure {
 
 	$Windows{"Main"}->gridForget( $Windows{"localmake_menubar"}, $Windows{"compile"} );
 
+	init_configure_window();
+
+	return;
+}
+
+sub init_configure_window {
+
 	$Windows{"Main"}->title( my_hostname() . ": localmake_config" );
 
 	$Windows{"config_menubar"} = init_config_menubar( $Windows{"Main"} );
@@ -1510,7 +1517,14 @@ sub init_window {
 	$Windows{"Main"}->bind( "<Control-c>", \&quit );
 	$Windows{"Main"}->bind( "<Control-C>", \&quit );
 
-	init_localmake_window();
+	if( $opt_c ) {
+		
+		init_configure_window();
+
+	} else {
+
+		init_localmake_window();
+	}
 
 	MainLoop;
 }
@@ -1532,9 +1546,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( !getopts( 'lp:s:tv' ) || scalar( @ARGV ) > 1 ) {
+if( !getopts( 'clp:s:tv' ) || scalar( @ARGV ) > 1 ) {
 
-	elog_die( "Usage: localmake [-v] [-l] [-t] [-p pfname] [-s src_subdir] [module]\n" );
+	elog_die( "Usage: localmake [-c] [-v] [-l] [-t] [-p pfname] [-s src_subdir] [module]\n" );
 }
 
 if( $opt_l && scalar( @ARGV ) > 0 ) {
