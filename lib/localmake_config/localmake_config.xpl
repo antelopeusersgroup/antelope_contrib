@@ -607,7 +607,7 @@ sub quit {
 	$Windows{"Main"}->destroy();
 }
 
-sub run_configure {
+sub run_configure_old {
 	use Tk;
 	use Tk::Toplevel;
 
@@ -652,6 +652,11 @@ sub run_configure {
 	$Windows{"Main"}->afterIdle( \&freeze_size );
 
 	MainLoop;
+}
+
+sub run_configure {
+	
+	system( "localmake -c" );
 }
 
 $Pf_config = "localmake_config";
