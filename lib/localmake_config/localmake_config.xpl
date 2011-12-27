@@ -50,7 +50,7 @@ format STDOUT =
 
 	foreach $c ( keys( %capabilities ) ) {
 
-		$enabled = pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" );
+		$enabled = pfget_boolean( $Pf_config, "capabilities{$c}{enable}{$Os}" );
 	
 		$enabled_string = $enabled ? "[ enabled]" : "[disabled]";
 
@@ -62,19 +62,19 @@ format STDOUT =
 
 sub write_makerules {
 
-	$output_file = pfget( $Pf, "output_file" );
-	$dest = pfget( $Pf, "dest" );
+	$output_file = pfget( $Pf_config, "output_file" );
+	$dest = pfget( $Pf_config, "dest" );
 
 	$dest_output_file = "$dest/$output_file";
 	$temp_output_file = "/tmp/$output_file\_$$\_$>";
 
-	if( -e "$dest_output_file" && ( -M "$dest_output_file" <= -M "$Pf_file" ) ) {
+	if( -e "$dest_output_file" && ( -M "$dest_output_file" <= -M "$Pf_config_file" ) ) {
 
 		return;
 
 	} else {
 
-		inform( "Rebuilding '$dest_output_file' since it is older than '$Pf_file'\n" );
+		inform( "Rebuilding '$dest_output_file' since it is older than '$Pf_config_file'\n" );
 	}
 
 	open( O, ">$temp_output_file" );
@@ -116,7 +116,7 @@ sub write_makerules {
 
 	system( "/bin/cp $temp_output_file $dest_output_file" );
 
-	inform( "Generated '$dest_output_file' from parameter-file '$Pf'\n" );
+	inform( "Generated '$dest_output_file' from parameter-file '$Pf_config'\n" );
 
 	unlink( $temp_output_file );
 
@@ -186,10 +186,10 @@ sub commit_configuration {
 		$macros{$macro}{$Os} = $$macro;
 	}
 
-	pfput( "macros", \%macros, $Pf );
-	pfput( "capabilities", \%capabilities, $Pf );
+	pfput( "macros", \%macros, $Pf_config );
+	pfput( "capabilities", \%capabilities, $Pf_config );
 
-	pfwrite( $Pf_file, $Pf );
+	pfwrite( $Pf_config_file, $Pf_config );
 
 	write_makerules();
 
@@ -224,17 +224,17 @@ sub test_capability {
 
 		if( $mode eq "verify" ) {
 
-			elog_complain( "Requested capability '$c' not defined in '$Pf'. " .
+			elog_complain( "Requested capability '$c' not defined in '$Pf_config'. " .
 					"Stopping compilation.\n" );
 
 			exit( -1 );
 		}
 	}
 
-	if( ! pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" ) && $mode eq "verify" ) {
+	if( ! pfget_boolean( $Pf_config, "capabilities{$c}{enable}{$Os}" ) && $mode eq "verify" ) {
 
-		elog_complain( "Requested capability '$c' marked as disabled in '$Pf'.\n" .
-			"Run localmake_config(1) (or edit '$Pf_file')\nto enable and configure " .
+		elog_complain( "Requested capability '$c' marked as disabled in '$Pf_config'.\n" .
+			"Run localmake_config(1) (or edit '$Pf_config_file')\nto enable and configure " .
 			"'$c' if desired.\n" );
 
 		exit( -1 );
@@ -254,8 +254,8 @@ sub test_capability {
 		return $passed;
 	} 
 
-	@required_macros = @{pfget( $Pf, "capabilities{$c}{required_macros}" )};
-	@tests = @{pfget( $Pf, "capabilities{$c}{tests}" )};
+	@required_macros = @{pfget( $Pf_config, "capabilities{$c}{required_macros}" )};
+	@tests = @{pfget( $Pf_config, "capabilities{$c}{tests}" )};
 
 	while( $required_macro = shift( @required_macros ) ) {
 
@@ -264,7 +264,7 @@ sub test_capability {
 			if( $mode eq "verify" ) {
 
 				elog_complain( "Macro '$required_macro', required for '$c' capability, " .
-						"is not defined.\nRun localmake_config(1) (or edit '$Pf_file')\n" .
+						"is not defined.\nRun localmake_config(1) (or edit '$Pf_config_file')\n" .
 						"to configure.\n" );
 
 				exit( -1 );
@@ -362,7 +362,7 @@ sub freeze_size {
 	$Windows{"Main"}->resizable( 0, 0 );
 }
 
-sub init_File_menu {
+sub init_config_File_menu {
 	my( $w ) = @_;
 
 	my( $menubutton, $filemenu );
@@ -385,7 +385,7 @@ sub init_File_menu {
 	return;
 }
 
-sub init_menubar {
+sub init_config_menubar {
 	my( $w ) = @_;
 
 	my( $menubar );
@@ -393,7 +393,7 @@ sub init_menubar {
 	$menubar = $w->Frame( -relief => 'raised', 
 			      -borderwidth => 2 );
 
-	init_File_menu( $menubar );
+	init_config_File_menu( $menubar );
 
 	my( $b ) = $menubar->Button( -text => "Run localmake",
 				     -bg => "green",
@@ -498,7 +498,7 @@ sub init_capabilities {
 
 		$Widgets{"b$c"}->configure( -command => [\&toggle_capability, $c] );
 
-		if( pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" ) ) {
+		if( pfget_boolean( $Pf_config, "capabilities{$c}{enable}{$Os}" ) ) {
 
 			$capabilities{$c}{enable}{$Os} = 1;
 
@@ -622,7 +622,7 @@ sub run_configure {
 	$Windows{"Main"}->bind( "<Control-c>", \&quit );
 	$Windows{"Main"}->bind( "<Control-C>", \&quit );
 
-	$Windows{"menubar"} = init_menubar( $Windows{"Main"} );
+	$Windows{"menubar"} = init_config_menubar( $Windows{"Main"} );
 
 	$Windows{"menubar"}->grid( -row => 0,
 				   -column => 0,
@@ -654,15 +654,15 @@ sub run_configure {
 	MainLoop;
 }
 
-$Pf = "localmake_config";
-$Pf_proto = "localmake_config_proto";
+$Pf_config = "localmake_config";
+$Pf_config_proto = "localmake_config_proto";
 
 $localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
 
 $ENV{'PFPATH'} = "$localpf_dir:$ENV{'PFPATH'}";
 
-$Pf_file = "$localpf_dir/$Pf.pf";
-$Pf_proto_file = "$ENV{'ANTELOPE'}/data/pf/$Pf_proto.pf";
+$Pf_config_file = "$localpf_dir/$Pf_config.pf";
+$Pf_config_proto_file = "$ENV{'ANTELOPE'}/data/pf/$Pf_config_proto.pf";
 
 $Program = $0;
 $Program =~ s@.*/@@;
@@ -683,8 +683,8 @@ if( @ARGV >= 1 ) {
 	$mode = "configure";
 }
 
-@pfproto_files = pffiles( $Pf_proto );
-@pf_files = pffiles( $Pf );
+@pfproto_files = pffiles( $Pf_config_proto );
+@pf_files = pffiles( $Pf_config );
 
 $pffiles_ok = 1;
 
@@ -692,7 +692,7 @@ while( $f = shift( @pfproto_files ) ) {
 
 	$f = abspath( $f );
 
-	if( $f ne $Pf_proto_file ) {
+	if( $f ne $Pf_config_proto_file ) {
 		
 		elog_complain( "Please move or remove the file '$f'\n" );
 
@@ -704,7 +704,7 @@ while( $f = shift( @pf_files ) ) {
 
 	$f = abspath( $f );
 
-	if( $f ne $Pf_file ) {
+	if( $f ne $Pf_config_file ) {
 		
 		elog_complain( "Please move or remove the file '$f'\n" );
 
@@ -714,35 +714,35 @@ while( $f = shift( @pf_files ) ) {
 
 if( ! $pffiles_ok ) {
 
-	elog_die( "$Program relies on\n\t'$ENV{'ANTELOPE'}/data/pf/$Pf_proto.pf' and\n\t" .
-		  "'$ENV{'ANTELOPE'}/local/data/pf/$Pf.pf'\n" .
+	elog_die( "$Program relies on\n\t'$ENV{'ANTELOPE'}/data/pf/$Pf_config_proto.pf' and\n\t" .
+		  "'$ENV{'ANTELOPE'}/local/data/pf/$Pf_config.pf'\n" .
 		  "exclusively. Other versions along PFPATH need to be removed. Exiting.\n" );
 }
 
-if( ! -e "$localpf_dir/$Pf.pf" ) {
+if( ! -e "$localpf_dir/$Pf_config.pf" ) {
 
 	makedir( $localpf_dir );
 
-	system( "cd $localpf_dir; cp $Pf_proto_file $Pf.pf" );
+	system( "cd $localpf_dir; cp $Pf_config_proto_file $Pf_config.pf" );
 
-	inform( "Copied '$Pf_proto.pf' to '$localpf_dir/$Pf.pf' since the latter didn't exist\n" );
+	inform( "Copied '$Pf_config_proto.pf' to '$localpf_dir/$Pf_config.pf' since the latter didn't exist\n" );
 
-	if( ! -e "$localpf_dir/$Pf.pf" ) {
+	if( ! -e "$localpf_dir/$Pf_config.pf" ) {
 
-		elog_die( "Failed to make '$localpf_dir/$Pf.pf'; Exiting.\n" );
+		elog_die( "Failed to make '$localpf_dir/$Pf_config.pf'; Exiting.\n" );
 	}
 }
 
-if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
+if( pfrequire( $Pf_config, pfget_time( $Pf_config_proto, "pf_revision_time" ) ) < 0 ) {
 
 	if( $mode eq "verify" ) {
 
-		elog_complain( "Your file '$Pf_file' appears out of date. The default file '$Pf_proto_file' is " .
+		elog_complain( "Your file '$Pf_config_file' appears out of date. The default file '$Pf_config_proto_file' is " .
 			       "newer than it. You may be missing features. Continuing.\n" );
 
 	} else {
 	
-		elog_complain( "Your file '$Pf_file' appears out of date. The default file '$Pf_proto_file' is " .
+		elog_complain( "Your file '$Pf_config_file' appears out of date. The default file '$Pf_config_proto_file' is " .
 			       "newer than it, and may contain added features.\n" );
 
 		while( ( $ans = ask( "What to do:\n" .
@@ -754,18 +754,18 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 
 			if( $ans eq "l" ) {
 
-				elog_notify( "Your configuration file\n\t$Pf_file\ndiffers from the new " .
-					     "default file\n\t$Pf_proto_file\nin the following ways:\n\n" );
+				elog_notify( "Your configuration file\n\t$Pf_config_file\ndiffers from the new " .
+					     "default file\n\t$Pf_config_proto_file\nin the following ways:\n\n" );
 
-				system( "pfdiff $Pf_file $Pf_proto_file" );
+				system( "pfdiff $Pf_config_file $Pf_config_proto_file" );
 			}
 		}
 
 		if( $ans eq "r" ) { 
 
-			unlink( $Pf_file );
+			unlink( $Pf_config_file );
 
-			system( "cd $localpf_dir; cp $Pf_proto_file $Pf.pf" );
+			system( "cd $localpf_dir; cp $Pf_config_proto_file $Pf_config.pf" );
 
 		} elsif( $ans eq "c" ) {
 
@@ -773,8 +773,8 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 
 		} elsif( $ans eq "q" ) {
 
-			elog_notify( "Please update your file\n\t$Pf_file\nto follow the pattern of the " .
-				     "new default file\n\t$Pf_proto_file\nExiting.\n" );
+			elog_notify( "Please update your file\n\t$Pf_config_file\nto follow the pattern of the " .
+				     "new default file\n\t$Pf_config_proto_file\nExiting.\n" );
 
 			exit( 0 );
 
@@ -787,10 +787,10 @@ if( pfrequire( $Pf, pfget_time( $Pf_proto, "pf_revision_time" ) ) < 0 ) {
 
 $Os = my_os();
 
-%macros = %{pfget($Pf,"macros")}; 
-$header = pfget( $Pf, "header" );
-$extra_rules = pfget( $Pf, "extra_rules" );
-%capabilities = %{pfget( $Pf, "capabilities" )};
+%macros = %{pfget($Pf_config,"macros")}; 
+$header = pfget( $Pf_config, "header" );
+$extra_rules = pfget( $Pf_config, "extra_rules" );
+%capabilities = %{pfget( $Pf_config, "capabilities" )};
 
 %macros_orig = %macros;
 
