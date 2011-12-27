@@ -76,7 +76,14 @@ sub load_modules {
 	my( @exclude ) = ( "tarball_time_format",
 			   "tar_command",
 			   "make_command",
-			   "pf_revision_time" );
+			   "pf_revision_time",
+			   "antelope",
+			   "dest",
+			   "extra_rules", 
+			   "capabilities",
+			   "header",
+			   "macros",
+			   "output_file" );
 
 	$p = pfget( $Pf, "" );
 
@@ -652,8 +659,8 @@ sub create_compile_button {
 
 sub write_makerules {
 
-	$output_file = pfget( $Pf_config, "output_file" );
-	$dest = pfget( $Pf_config, "dest" );
+	$output_file = pfget( $Pf, "output_file" );
+	$dest = pfget( $Pf, "dest" );
 
 	$dest_output_file = "$dest/$output_file";
 	$temp_output_file = "/tmp/$output_file\_$$\_$>";
@@ -1088,7 +1095,7 @@ sub test_capability {
 		}
 	}
 
-	if( ! pfget_boolean( $Pf_config, "capabilities{$c}{enable}{$Os}" ) && $mode eq "verify" ) {
+	if( ! pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" ) && $mode eq "verify" ) {
 
 		elog_complain( "Requested capability '$c' marked as disabled in '$Pf_config'.\n" .
 			"Run localmake_config(1) (or edit '$Pf_config_file')\nto enable and configure " .
@@ -1111,8 +1118,8 @@ sub test_capability {
 		return $passed;
 	} 
 
-	@required_macros = @{pfget( $Pf_config, "capabilities{$c}{required_macros}" )};
-	@tests = @{pfget( $Pf_config, "capabilities{$c}{tests}" )};
+	@required_macros = @{pfget( $Pf, "capabilities{$c}{required_macros}" )};
+	@tests = @{pfget( $Pf, "capabilities{$c}{tests}" )};
 
 	while( $required_macro = shift( @required_macros ) ) {
 
@@ -1372,7 +1379,7 @@ sub init_capabilities {
 
 		$Widgets{"b$c"}->configure( -command => [\&toggle_capability, $c] );
 
-		if( pfget_boolean( $Pf_config, "capabilities{$c}{enable}{$Os}" ) ) {
+		if( pfget_boolean( $Pf, "capabilities{$c}{enable}{$Os}" ) ) {
 
 			$capabilities{$c}{enable}{$Os} = 1;
 
@@ -1569,10 +1576,10 @@ $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
 $Make_command = pfget( $Pf, "make_command" );
 
-%macros = %{pfget($Pf_config,"macros")}; 
-$header = pfget( $Pf_config, "header" );
-$extra_rules = pfget( $Pf_config, "extra_rules" );
-%capabilities = %{pfget( $Pf_config, "capabilities" )};
+%macros = %{pfget($Pf,"macros")}; 
+$header = pfget( $Pf, "header" );
+$extra_rules = pfget( $Pf, "extra_rules" );
+%capabilities = %{pfget( $Pf, "capabilities" )};
 
 %macros_orig = %macros;
 
