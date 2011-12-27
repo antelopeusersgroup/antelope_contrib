@@ -18,7 +18,8 @@ capabilities	&Arr{
         tests	&Tbl{
             &Literal{
 			$failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
-				       "implied by currently configured value of MATLAB macro";
+				       "implied by currently configured value '$MATLAB' of MATLAB macro";
+			$success_msg = "Matlab is available within '$MATLAB'";
 			-d "$MATLAB"
 			}
         }
@@ -46,12 +47,14 @@ capabilities	&Arr{
         tests	&Tbl{
             &Literal{
 			$failure_msg = "Couldn't find header-file directory '$PHP_INC/Zend' " . 
-				       "implied by currently configured value of PHP_INC macro";
+				       "implied by currently configured value '$PHP_INC' of PHP_INC macro";
+			$success_msg = "PHP include files are available within '$PHP_INC'";
 			-d "$PHP_INC/Zend"
 			}
             &Literal{
 			$failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
 				       "PHP_EXECUTABLE macro is not present or not executable'";
+			$success_msg = "PHP executable is available as '$PHP_EXECUTABLE'";
 			-f "$PHP_EXECUTABLE" && -x "$PHP_EXECUTABLE"
 			}
         }
@@ -78,13 +81,15 @@ capabilities	&Arr{
         tests	&Tbl{
             &Literal{
 			$failure_msg = "Couldn't find header-file '$PYTHONINCLUDE/Python.h' " .
-				       "implied by currently configured value of PYTHONINCLUDE " .
+				       "implied by currently configured value '$PYTHONINCLUDE' of PYTHONINCLUDE " .
 				       "macro";
+			$success_msg = "Python include files are available within '$PYTHONINCLUDE'";
 			-e "$PYTHONINCLUDE/Python.h"
 			}
             &Literal{
 			$failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
 				       "PYTHON_EXECUTABLE macro is not present or not executable'";
+			$success_msg = "Python executable is available as '$PYTHON_EXECUTABLE'";
 			-f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE"
 			}
         }
@@ -209,12 +214,14 @@ capabilities	&Arr{
         tests	&Tbl{
             &Literal{
 			$failure_msg = "Couldn't find header-file directory '$XMOTIFINCLUDE/Xm' " . 
-				       "implied by currently configured value of XMOTIFINCLUDE macro";
+				       "implied by currently configured value '$XMOTIFINCLUDE' of XMOTIFINCLUDE macro";
+			$success_msg = "Xmotif include files are available within '$XMOTIFINCLUDE'";
 			-d "$XMOTIFINCLUDE/Xm"
 			}
             &Literal{
 			$failure_msg = "Couldn't find library-file directory '$XMOTIFLIB' " . 
-				       "implied by currently configured value of XMOTIFLIB macro";
+				       "implied by currently configured value '$XMOTIFLIB' of XMOTIFLIB macro";
+			$success_msg = "Xmotif library files are available within '$XMOTIFLIB'";
 			-d "$XMOTIFLIB"
 			}
         }
@@ -240,12 +247,14 @@ capabilities	&Arr{
         tests	&Tbl{
             &Literal{
 			$failure_msg = "Could not find header-file directory '$BOOSTINCLUDE' " .
-				       "implied by currently configured value of BOOSTINCLUDE  macro";
+				       "implied by currently configured value '$BOOSTINCLUDE' of BOOSTINCLUDE  macro";
+			$success_msg = "Boost include files are available within '$BOOSTINCLUDE'";
 			-d "$BOOSTINCLUDE/boost"
 			}
             &Literal{
 			$failure_msg = "Couldn't find library-file directory '$BOOSTLIB ' " . 
-				       "implied by currently configured value of BOOSTLIB macro";
+				       "implied by currently configured value '$BOOSTLIB' of BOOSTLIB macro";
+			$success_msg = "Boost libraries are available within '$BOOSTLIB'";
 			-d "$BOOSTLIB"
                     }
         }
@@ -272,17 +281,20 @@ capabilities	&Arr{
         tests	&Tbl{
             &Literal{
 			$failure_msg = "Couldn't find top level directory '$VTKROOT ' " . 
-				       "implied by currently configured value of VTKROOT macro";
+				       "implied by currently configured value '$VTKROOT' of VTKROOT macro";
+			$success_msg = "VTk root directory is available as '$VTKROOT'";
 			-d "$VTKROOT"
                     }
             &Literal{
 			$failure_msg = "Could not find header-file directory '$VTKINCLUDE' " .
-				       "implied by currently configured value of VTKINCLUDE  macro";
+				       "implied by currently configured value '$VTKINCLUDE' of VTKINCLUDE  macro";
+			$success_msg = "VTk include files are available within '$VTKINCLUDE'";
 			-d "$VTKINCLUDE"
 			}
             &Literal{
 			$failure_msg = "Couldn't find library-file directory '$VTKLIBS ' " . 
-				       "implied by currently configured value of VTKLIBS macro";
+				       "implied by currently configured value '$VTKLIBS' of VTKLIBS macro";
+			$success_msg = "VTk library files are available within '$VTKLIBS'";
 			-d "$VTKLIBS"
                         }
         }
