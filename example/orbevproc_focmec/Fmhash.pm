@@ -400,6 +400,8 @@ sub invoke_hash {
 
 	system( "$self->{params}{hash_executable} < $control_file >& $stdout_file" );
 
+	POSIX::chdir( $startdir );
+
 	return;
 }
 
