@@ -3,6 +3,7 @@
 #include <string>
 #include "stock.h"
 #include "pf.h"
+#include "Metadata.h"
 namespace SEISPP
 {
 using namespace std;
@@ -146,13 +147,40 @@ public:
 		double dux,double duy,int nx, int ny);
 /*!
  Parameter file driven constructor.
+
+ The following parameters are fetched:
+  "Slowness_Grid_Name" (string), "uxlow" (real), "uylow" (real),
+  "nux" (int), "nuy" (int), "dux" (real), and "duy" (real).
+  They define an nux by nuy regular grid in slowness space with 
+  spacing dux and duy respectively with the lower left corner of the
+  grid at (uxlow,uylow).  The name is just a tag.
+
 \param pf - Antelope pf pointer normally produced by earlier call to pfread
 \param tag - name to search in pf to describe this grid object.`
               The parameters to describe the object are assumed encased in an 
               &Arr{ } construct with this tag.  This allows multiple grids to 
               be defined in a single parameter file with different tags. 
+\exception MetadataGetError (child of SeisppError) is thrown if the 
+  required attributes are not defined in the Metadata object passed.
 **/
 	RectangularSlownessGrid(Pf *pf,string tag);
+/* \brief Metadata driven constructor.
+
+This is similar to the Pf driven method except the data is passed
+through a more generic object in SEISPP called Metadata.  Keywords
+defined in the Metadata object are identical to those in the pf version.
+As for the pf constructor the required parameters are:
+  "Slowness_Grid_Name" (string), "uxlow" (real), "uylow" (real),
+  "nux" (int), "nuy" (int), "dux" (real), and "duy" (real).
+  They define an nux by nuy regular grid in slowness space with 
+  spacing dux and duy respectively with the lower left corner of the
+  grid at (uxlow,uylow).  The name is just a tag.
+
+\param mdin is the Metadata object with attributes set to build this object.
+\exception MetadataGetError (child of SeisppError) is thrown if the 
+  required attributes are not defined in the Metadata object passed.
+  */
+        RectangularSlownessGrid(Metadata& mdin);
 /*!
  Standard copy constructor.
 **/
