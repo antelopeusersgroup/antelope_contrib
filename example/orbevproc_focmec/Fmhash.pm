@@ -184,12 +184,13 @@ sub prepare_hash_input {
 
 	# Phase File
 
-	my( @dbo, @dboe, @dbj );
+	my( @dbo, @dboe, @dbj, @dbpredarr );
 	my( $origin_time, $lat, $lon, $depth, $ml, $mb, $ms, $orid );
 	my( $smajax, $sdepth );
 	my( $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
 	my( $mag_string, $smajax_string, $sdepth_string );
 	my( $nprecs, $sta, $fm, $snr, $deltim, $delta, $esaz, $timeres, $qual );
+	my( $iphase, $impulsivity, $dip );
 
 
 	@dbo = @{$self->{dbo}};
@@ -269,7 +270,7 @@ sub prepare_hash_input {
 
 	} else {
 		
-		$smajax_string = sprintf( "%04d", int( $smajax * 100 ) );
+		$smajax_string = sprintf( "% 4d", int( $smajax * 100 ) );
 	}
 
 	if( $sdepth == -1.0 ) {
@@ -278,7 +279,7 @@ sub prepare_hash_input {
 
 	} else {
 		
-		$sdepth_string = sprintf( "%04d", int( $sdepth * 100 ) );
+		$sdepth_string = sprintf( "% 4d", int( $sdepth * 100 ) );
 	}
 
 	$self->{hash_phase_block} .= sprintf( "%14s%02d%1s%04d%03d%1s%04d%5s%2s",
@@ -294,6 +295,10 @@ sub prepare_hash_input {
 
 	@dbj = dbjoin( @{$self->{dbar}}, @{$self->{dbas}} );
 
+	@dbpredarr = dblookup( @dbj, "", "predarr", "", "" );
+
+	@dbj = dbjoin( @dbj, @dbpredarr );
+
 	@dbj = dbsubset( @dbj, 
 	  "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km}" );
 
@@ -301,12 +306,10 @@ sub prepare_hash_input {
 
 	for( $dbj[3] = 0; $dbj[3] < $nprecs; $dbj[3]++ ) {
 
-		( $sta, $fm, $deltim, $delta, $esaz ) = 
-			dbgetv( @dbj, "sta", "fm", "deltim", "delta", "esaz" );
+		( $sta, $fm, $iphase, $deltim, $delta, $esaz, $dip ) = 
+			dbgetv( @dbj, "sta", "fm", "iphase", "deltim", "delta", "esaz", "dip" );
 
 		$delta *= 111.191;
-
-		my( $angle ) = atan2( $delta, $depth ) * 180 / pi;
 
 		if( substr( $fm, 0, 1 ) eq "c" ) {
 
@@ -324,29 +327,32 @@ sub prepare_hash_input {
 		if( $deltim < 0.05 ) {
 
 			$qual = "0";
+			$impulsivity = "I";
 
 		} elsif( $deltim < 0.1 ) {
 
 			$qual = "1";
+			$impulsivity = "E";
 
 		} elsif( $deltim < 0.2 ) {
 
 			$qual = "2";
+			$impulsivity = "E";
 
 		} else {
 
 			$qual = "4";
+			$impulsivity = "E";
 		}
 
-		$self->{hash_phase_block} .= sprintf( "%-4s  %1s%1d", $sta, $fm, $qual );
-		$self->{hash_phase_block} .= " " x 51;
-		$self->{hash_phase_block} .= sprintf( "%04d", int( $delta * 10 ) );
-		$self->{hash_phase_block} .= " " x 4;
-		$self->{hash_phase_block} .= sprintf( "%03d", $angle );
-		$self->{hash_phase_block} .= " " x 11;
-		$self->{hash_phase_block} .= sprintf( "%03d ", $esaz );
-		$self->{hash_phase_block} .= sprintf( "%03d ", $self->{params}{"takeoff_angle_uncertainty"}, );
-		$self->{hash_phase_block} .= sprintf( "%03d\n", $self->{params}{"azimuth_uncertainty"}, );
+		$self->{hash_phase_block} .= sprintf( "%-4s%1s%1s%1s%1d", $sta, $impulsivity, $iphase, $fm, $qual );
+		$self->{hash_phase_block} .= " " x 50;
+		$self->{hash_phase_block} .= sprintf( "% 4d", int( $delta * 10 ) );
+		$self->{hash_phase_block} .= sprintf( "%03d", $dip );
+		$self->{hash_phase_block} .= " " x 10;
+		$self->{hash_phase_block} .= sprintf( "%03d", $esaz );
+		$self->{hash_phase_block} .= " ";
+		$self->{hash_phase_block} .= sprintf( "% 3d\n", $self->{params}{"azimuth_uncertainty"}, );
 	}
 
 	# hash_driver1 program needs blank line to signal end of phase input:
