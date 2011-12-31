@@ -241,9 +241,9 @@ capabilities	&Arr{
 			of the Antelope Toolbox for Matlab. 
 		}
         enable	&Arr{
-            Darwin	no
-            Linux	no
-            SunOS	no
+            Darwin	0
+            Linux	0
+            SunOS	0
         }
         required_macros	&Tbl{
             MATLAB
@@ -270,8 +270,8 @@ capabilities	&Arr{
 		}
         enable	&Arr{
             Darwin	0
-            Linux	no
-            SunOS	no
+            Linux	0
+            SunOS	0
         }
         required_macros	&Tbl{
             PHP_INC
@@ -303,9 +303,9 @@ capabilities	&Arr{
 			tools get installed (e.g. dbwfserver(1) and orbtopo(1)). 
 		}
         enable	&Arr{
-            Darwin	no
-            Linux	no
-            SunOS	no
+            Darwin	0
+            Linux	0
+            SunOS	0
         }
         required_macros	&Tbl{
             PYTHONINCLUDE
@@ -329,9 +329,9 @@ capabilities	&Arr{
     }
     python_amqplib &Arr{
 		enable &Arr{
-			Darwin no
-			SunOS no
-			Linux no
+			Darwin 0
+			SunOS 0
+			Linux 0
 		}
 		required_macros &Tbl{
 		}
@@ -354,9 +354,9 @@ capabilities	&Arr{
     }
     python_matplotlib &Arr{
 		enable &Arr{
-			Darwin no
-			SunOS no
-			Linux no
+			Darwin 0
+			SunOS 0
+			Linux 0
 		}
 		required_macros &Tbl{
 		}
@@ -379,9 +379,9 @@ capabilities	&Arr{
     }
     python_pygraphviz &Arr{
 		enable &Arr{
-			Darwin no
-			SunOS no
-			Linux no
+			Darwin 0
+			SunOS 0
+			Linux 0
 		}
 		required_macros &Tbl{
 		}
@@ -404,9 +404,9 @@ capabilities	&Arr{
     }
     perl_DBI &Arr{
 		enable &Arr{
-			Darwin no
-			SunOS no
-			Linux no
+			Darwin 0
+			SunOS 0
+			Linux 0
 		}
 		required_macros &Tbl{
 		}
@@ -436,9 +436,9 @@ capabilities	&Arr{
 			libseisw. 
 		}
         enable	&Arr{
-            Darwin	no
-            Linux	no
-            SunOS	no
+            Darwin	0
+            Linux	0
+            SunOS	0
         }
         required_macros	&Tbl{
             XMOTIFINCLUDE
@@ -469,9 +469,9 @@ capabilities	&Arr{
                     Gary Pavlis use this library. 
 		}
         enable	&Arr{
-            Darwin	no
-            Linux	no
-            SunOS	no
+            Darwin	0
+            Linux	0
+            SunOS	0
         }
         required_macros	&Tbl{
             BOOSTINCLUDE
@@ -502,9 +502,9 @@ capabilities	&Arr{
                 tool kit.
 		}
         enable	&Arr{
-            Darwin	no
-            Linux	no
-            SunOS	no
+            Darwin	0
+            Linux	0
+            SunOS	0
         }
         required_macros	&Tbl{
             VTKROOT

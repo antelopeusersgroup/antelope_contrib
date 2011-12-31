@@ -236,6 +236,11 @@ sub ansicolored_to_tagged {
 	return @tagged;
 }
 
+sub freeze_size {
+
+       $Windows{"Main"}->resizable( 0, 0 );
+}
+
 sub make_target {
 	my( $target ) = @_;
 
@@ -1642,9 +1647,7 @@ $extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
 
 %macros_initial_config = %{pfget($Pf_config,"macros")};
-%capabilities_initial_config = %{pfget($Pf,"capabilities")};
-
-%macros_orig = %macros;
+%capabilities_initial_config = %{pfget($Pf_config,"capabilities")};
 
 if( defined( $ENV{'MAKE'} ) ) {
 
@@ -1655,6 +1658,8 @@ if( ! update_config_pf() ) {
 
 	set_initial_config();
 }
+
+%macros_orig = %macros;
 
 set_orig_enabled();
 
