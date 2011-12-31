@@ -359,7 +359,7 @@ capabilities        &Arr{
 antelope        &env(ANTELOPE)
 dest        &antelope/local/include
 extra_rules        &Literal{
-.SUFFIXES: .SUFFIXES .py .pyc .xpy .xphp .wwwphp
+\.SUFFIXES: .SUFFIXES .py .pyc .xpy .xphp .wwwphp
 
 % : %.xpy $(ANTELOPE)/local/data/templates/xpy
         $(RM) $@
@@ -371,11 +371,11 @@ extra_rules        &Literal{
         cat $(ANTELOPE)/local/data/templates/xphp $< > $@
         chmod a+x $@
 
-.wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
+\.wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
         $(RM) $@
         cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
 
-.py.pyc :
+\.py.pyc :
         $(RM) $@
         $(PYTHON_EXECUTABLE) -c 'import py_compile; py_compile.compile("$<")'
 }
