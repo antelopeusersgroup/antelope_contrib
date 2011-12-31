@@ -1,9 +1,9 @@
-.TH Fmfpfit 3P 
+.TH Fmhash 3P 
 .SH NAME
-Fmfpfit \- evproc class for computing focal-mechanisms with USGS fpfit
+Fmhash \- evproc class for computing focal-mechanisms with HASH
 .SH SYNOPSIS
 .nf
-use Fmfpfit;
+use Fmhash;
 
 ( $obj, $hashref ) = \fBnew\fP( $class,
                           "db" => $dbref,
@@ -23,19 +23,21 @@ $hashref = \fBprocess_network\fP( $obj, $flush );
 
 .fi
 .SH DESCRIPTION
-The \fBFmfpfit\fP module runs within \fBorbevproc\fP(1) or \fBdbevproc\fP(1), delegating computation 
-of earthquake focal-mechanisms to the U.S. Geological Survey's \fBfpfit\fP program. The \fBFmfpfit\fP module assumes
+The \fBFmhash\fP module runs within \fBorbevproc\fP(1) or \fBdbevproc\fP(1), delegating computation 
+of earthquake focal-mechanisms to the Hardebeck/Shearer \fBHASH\fP program. The \fBFmhash\fP module assumes
 the first motion measurements have already been obtained by other means, then entered into the arrival table 
-of the database before invoking fpfit. Results are entered into the \fIfplane\fP table of the database. 
+of the database before invoking HASH. Results are entered into the \fIfplane\fP table of the database.
 .SH FILES
-The \fBFmfpfit\fP module creates several temporary files, including:
+The \fBFmhash\fP module creates several temporary files, including:
 .nf
 
-fpfit_in_<orid>.hyp
-fpfit_out_<orid>.out
-fpfit_out_<orid>.pol
-fpfit_out_<orid>.stdout
-fpfit_out_<orid>.sum
+hash_in_<orid>.inp
+hash_in_<orid>.phase
+hash_in_<orid>.reverse
+hash_out_<orid>.fmout
+hash_out_<orid>.plout
+hash_out_<orid>.stdout
+
 .fi
 
 (where <orid> is the origin id of the hypocenter being processed) as well as a temporary database. 
@@ -43,10 +45,10 @@ All of these files reside in a temporary directory and are removed after computa
 unless the \fB-keeptmp\fP option is specified to \fBdbevproc\fP. 
 .SH PARAMETER FILE
 .SS "Explanation of parameters"
-Most of the parameters are passed directly to the \fBfpfit\fP program. Please see the \fBfpfit\fP documentation for 
+Most of the parameters are passed directly to the \fBhash_driver1\fP program. Please see the \fBhash_driver1\fP documentation for 
 further information on these. The remainder are as follows:
-.IP fpfit_executable
-This parameter gives the name of the \fBfpfit\fP program. It may be an absolute path.
+.IP hash_executable
+This parameter gives the name of the \fBHASH\fP driver program. It may be an absolute path.
 .IP fplane_algorithm
 This parameter is entered into the \fIfplane\fP table's \fIalgorithm\fP field for each focal-mechanism
 solution created. 
@@ -66,33 +68,24 @@ The following block of parameters should appear inside the parameter file for \f
 \fBorbevproc\fP(1):
 .nf 
 
-fmfpfit_params &Arr{
-        fpfit_executable fpfit
-        fplane_algorithm fpfit
+fmhash_params &Arr{
+        hash_executable hash_driver1
+        fplane_algorithm hash
         fplane_auth
-        tempdir /tmp
+        tempdir ./mytmpdir
         maximum_wait_time 300.0
-        use_radiation_pattern_weighting 0
-        perform_fine_search 0
-        min_magnitude 0.
-        min_observations 8
-        distance_cutoff_km 9999.
-        presidual_cutoff_sec 100.
-        incidence_angle_min_deg 0.
-        incidence_angle_max_deg 180.
-        strike_search_min_deg 0.
-        strike_search_max_deg 360.
-        strike_search_coarse_incr 20.
-        strike_search_fine_incr 2.
-        dip_search_min_deg 0.
-        dip_search_max_deg 90.
-        dip_search_coarse_incr 10.
-        dip_search_fine_incr 1.
-        rake_search_min_deg -180.
-        rake_search_max_deg 180.
-        rake_search_coarse_incr 20.
-        rake_search_fine_incr 2.
-        pweight_percentages .01 .10 .20 .30
+        min_num_polarities 8
+        max_azim_gap_deg 90
+        max_takeoff_angle_deg 60
+        grid_angle_deg 5
+        num_trials 30
+        num_maxout 300
+        badpick_fraction 0.1
+        distance_cutoff_km 120
+        probability_angle_deg 45
+        probability_thresh 0.25
+        takeoff_angle_uncertainty 5
+        azimuth_uncertainty 10
 }
 
 .fi
@@ -104,15 +97,13 @@ use lib $ENV{ANTELOPE}/data/evproc;
 dbevproc(1), orbevproc(1), evproc(3p), Focmec(3p)
 .fi
 .SH "BUGS AND CAVEATS"
-The required \fBfpfit\fP program is not included. It must be separately downloaded and compiled before
-this \fBFmfpfit\fP module can run successfully. At the time of this writing, \fBfpfit\fP is available 
-from the web-site \fIhttp://earthquake.usgs.gov/research/software/\fP.
+The required \fBHASH\fP program is not included. It must be separately downloaded and compiled before
+this \fBFmhash\fP module can run successfully. At the time of this writing, \fBHASH\fP is available 
+from the web-site \fIhttp://earthquake.usgs.gov/research/software/\fP. This version of \fBFmhash\fP 
+invokes the \fBhash_driver1\fP example program delivered with \fBHASH\fP version 1.2. In the future, 
+an alternate approach could be to write a custom driver program that would connect directly to the database.
 
-The parameters \fIuse_radiation_pattern_weighting\fP and \fIperform_fine_search\fP are fed directly
-to the \fBfpfit\fP program, and each should thus be either a \fI1\fP or a \fI0\fP; parameter-file boolean string 
-values will not be translated. 
-
-This version of \fBFmfpfit\fP does not handle errors and database problems gracefully. 
+This version of \fBFmhash\fP does not handle errors and database problems gracefully. 
 .SH AUTHOR
 .nf
 Dr. Kent Lindquist
