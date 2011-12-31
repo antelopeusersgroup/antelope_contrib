@@ -299,8 +299,6 @@ sub prepare_hash_input {
 
 	@dbj = dbjoin( @dbj, @dbpredarr );
 
-	#DEBUG @dbj = dbsubset( @dbj, 
-	# "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km}" );
 	@dbj = dbsubset( @dbj, "iphase == 'P'" );
 
 	@dbj = dbsort( @dbj, "arid" );
@@ -416,16 +414,22 @@ sub invoke_hash {
 sub harvest_hash {
 	my $self = shift;
 
-	my( $auth );
+	my( $fmoutfile ) = $self->get( "hash_outputfile_fmout" );
 
-	if( $self->{params}{fplane_auth} ne "" ) {
-		
-		$auth = $self->{params}{fplane_auth};
+	my( $resultsfile ) = concatpaths( $self->{params}{tempdir}, $fmoutfile );
 
-	} else {
+	if( ! -f $resultsfile ) {
 
-		$auth = "evproc:$ENV{USER}";
+		addlog( $self, 0, "Results file '$resultsfile' from hash does not exist\n" );
+
+		return "skip";
 	}
+
+	open( O, $resultsfile );
+
+	my $summary_line = <O>;
+
+	close( O );
 
 	my( $strike ) = 0;
 	my( $dip ) = 0;
@@ -437,6 +441,27 @@ sub harvest_hash {
 	my( $paxazm ) = 0;
 	my( $taxplg ) = 0;
 	my( $paxplg ) = 0;
+	my( $auth );
+
+	my( @parts ) = split( /\s+/, $summary_line );
+
+	$strike = $parts[22];
+	$dip = $parts[23];
+	$rake = $parts[24];
+
+	( $strike_aux, $dip_aux, $rake_aux ) = Focmec::aux_plane( $strike, $dip, $rake );
+
+	( $taxazm, $taxplg, $paxazm, $paxplg ) = Focmec::tp_axes( $strike, $dip, $rake, $strike_aux, $dip_aux, $rake_aux );
+
+	if( $self->{params}{fplane_auth} ne "" ) {
+		
+		$auth = $self->{params}{fplane_auth};
+
+	} else {
+
+		$auth = "evproc:$ENV{USER}";
+	}
+
 
 	my @dbfplane = dblookup( @{$self->{dbm}}, 0, "fplane", "", "dbSCRATCH" );
 
