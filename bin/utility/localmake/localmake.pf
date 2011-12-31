@@ -509,7 +509,7 @@ capabilities	&Arr{
         required_macros	&Tbl{
             VTKROOT
             VTKINCLUDE
-            VTKLIBS
+            VTKLIB
         }
         tests	&Tbl{
             &Literal{
@@ -525,10 +525,10 @@ capabilities	&Arr{
 			-d "$VTKINCLUDE"
 			}
             &Literal{
-			$failure_msg = "Couldn't find library-file directory '$VTKLIBS ' " . 
-				       "implied by currently configured value '$VTKLIBS' of VTKLIBS macro";
-			$success_msg = "VTk library files are available within '$VTKLIBS'";
-			-d "$VTKLIBS"
+			$failure_msg = "Couldn't find library-file directory '$VTKLIB ' " . 
+				       "implied by currently configured value '$VTKLIB' of VTKLIB macro";
+			$success_msg = "VTk library files are available within '$VTKLIB'";
+			-d "$VTKLIB"
                         }
         }
     }

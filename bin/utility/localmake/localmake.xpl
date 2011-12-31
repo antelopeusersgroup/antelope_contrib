@@ -744,6 +744,39 @@ sub set_macros {
 	}
 }
 
+sub set_initial_config {
+	 
+	foreach $macro ( keys( %macros_initial_config ) ) {
+		
+		if( ! defined( $macros{$macro} ) ) {
+
+			elog_complain( "File '$Pf_config_file' refers to decommissioned macro '$macro'\n" );
+
+			next;
+
+		} else {
+
+			$macros{$macro}->{$Os} = $macros_initial_config{$macro};
+		}
+	}
+
+	foreach $capability ( keys( %capabilities_initial_config ) ) {
+
+		if( ! defined( $capabilities{$capability} ) ) {
+
+			elog_complain( "File '$Pf_config_file' refers to decommissioned capability '$capability'\n" );
+
+			next;
+
+		} else {
+
+			$capabilities{$capability}{enable}{$Os} = $capabilities_initial_config{$capability};
+		}
+	}
+
+	return;
+}
+
 sub set_orig_enabled {
 
 	foreach $capability ( keys( %capabilities ) ) {
@@ -967,28 +1000,39 @@ sub mark_configuration_unsaved {
 		$tft = test_configuration_unsaved();
 	}
 
-	if( $tft eq "true" ) {
+	if( defined( $Windows{"save_config"} ) ) {
 
-		$Windows{"save_config"}->configure( -text => "save configuration (SOME CHANGES UNSAVED)",
-				       		    -bg => "yellow",
-						    -state => "normal" );
-	} else {
+		if( $tft eq "true" ) {
 
-		$Windows{"save_config"}->configure( -text => "save configuration",
-				       		    -bg => "gray",
-						    -state => "disabled" );
+			$Windows{"save_config"}->configure( -text => "save configuration (SOME CHANGES UNSAVED)",
+				       		    	-bg => "yellow",
+						    	-state => "normal" );
+		} else {
+
+			$Windows{"save_config"}->configure( -text => "save configuration",
+				       		    	-bg => "gray",
+						    	-state => "disabled" );
+		}
 	}
 }
 
 sub commit_configuration {
 
+	%config_macros = ();
+	%config_capabilities = ();
+
 	foreach $macro ( keys( %macros ) ) {
 
-		$macros{$macro}{$Os} = $$macro;
+		$config_macros{$macro} = $$macro;
 	}
 
-	pfput( "macros", \%macros, $Pf_config );
-	pfput( "capabilities", \%capabilities, $Pf_config );
+	foreach $capability ( keys( %capabilities ) ) {
+
+		$config_capabilities{$capability} = 0;
+	}
+
+	pfput( "macros", \%config_macros, $Pf_config );
+	pfput( "capabilities", \%config_capabilities, $Pf_config );
 
 	pfwrite( $Pf_config_file, $Pf_config );
 
@@ -1202,6 +1246,24 @@ sub test_capability {
 	}
 
 	return;
+}
+
+sub update_config_pf {
+
+	if( -e $Pf_config_file && ! system( "grep extra_rules $Pf_config_file" ) ) {
+
+		elog_complain( "The file '$Pf_config_file' is out of date. Moving it to '$Pf_config_file-' and updating." );
+
+	} else {
+
+		return 0;
+	}
+
+	system( "/bin/mv $Pf_config_file $Pf_config_file-" );
+
+	commit_configuration();
+
+	return 1;
 }
 
 sub save_and_quit {
@@ -1539,14 +1601,12 @@ sub init_window {
 $Pf = "localmake";
 
 $Pf_config = "localmake_config";
-$Pf_config_proto = "localmake_config_proto";
 
 $localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
 
 $ENV{'PFPATH'} = "$localpf_dir:$ENV{'PFPATH'}";
 
 $Pf_config_file = "$localpf_dir/$Pf_config.pf";
-$Pf_config_proto_file = "$ENV{'ANTELOPE'}/data/pf/$Pf_config_proto.pf";
 
 $Program = $0;
 $Program =~ s@.*/@@;
@@ -1581,11 +1641,19 @@ $header = pfget( $Pf, "header" );
 $extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
 
+%macros_initial_config = %{pfget($Pf_config,"macros")};
+%capabilities_initial_config = %{pfget($Pf,"capabilities")};
+
 %macros_orig = %macros;
 
 if( defined( $ENV{'MAKE'} ) ) {
 
 	$Make_command = $ENV{'MAKE'};
+}
+
+if( ! update_config_pf() ) {
+
+	set_initial_config();
 }
 
 set_orig_enabled();
