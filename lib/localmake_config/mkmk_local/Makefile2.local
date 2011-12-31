@@ -1,0 +1,15 @@
+%
+% Standard ANTELOPEMAKE macros go here.
+% Macros configured via localmake will appear in the $(ANTELOPEMAKELOCAL) include file
+%
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
+
+%
+% Standard ANTELOPEMAKE rules go here
+% 
