@@ -190,7 +190,7 @@ sub prepare_hash_input {
 	my( $stime, $ilat, $ns, $mlat, $ilon, $ew, $mlon, $dkm, $mag );
 	my( $mag_string, $smajax_string, $sdepth_string );
 	my( $nprecs, $sta, $fm, $snr, $deltim, $delta, $esaz, $timeres, $qual );
-	my( $iphase, $impulsivity, $dip );
+	my( $iphase, $impulsivity, $dip, $chan );
 
 
 	@dbo = @{$self->{dbo}};
@@ -299,15 +299,18 @@ sub prepare_hash_input {
 
 	@dbj = dbjoin( @dbj, @dbpredarr );
 
-	@dbj = dbsubset( @dbj, 
-	  "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km}" );
+	#DEBUG @dbj = dbsubset( @dbj, 
+	# "iphase == 'P' && delta * 111.191 <= $self->{params}{distance_cutoff_km}" );
+	@dbj = dbsubset( @dbj, "iphase == 'P'" );
+
+	@dbj = dbsort( @dbj, "arid" );
 
 	$nprecs = dbquery( @dbj, "dbRECORD_COUNT" );
 
 	for( $dbj[3] = 0; $dbj[3] < $nprecs; $dbj[3]++ ) {
 
-		( $sta, $fm, $iphase, $deltim, $delta, $esaz, $dip ) = 
-			dbgetv( @dbj, "sta", "fm", "iphase", "deltim", "delta", "esaz", "dip" );
+		( $sta, $chan, $fm, $iphase, $deltim, $delta, $esaz, $dip ) = 
+			dbgetv( @dbj, "sta", "chan", "fm", "iphase", "deltim", "delta", "esaz", "dip" );
 
 		$delta *= 111.191;
 
@@ -346,13 +349,18 @@ sub prepare_hash_input {
 		}
 
 		$self->{hash_phase_block} .= sprintf( "%-4s%1s%1s%1s%1d", $sta, $impulsivity, $iphase, $fm, $qual );
-		$self->{hash_phase_block} .= " " x 50;
-		$self->{hash_phase_block} .= sprintf( "% 4d", int( $delta * 10 ) );
-		$self->{hash_phase_block} .= sprintf( "%03d", $dip );
+		$self->{hash_phase_block} .= " " x 19;
+		$self->{hash_phase_block} .= "0";
+		$self->{hash_phase_block} .= " " x 30;
+		$self->{hash_phase_block} .= sprintf( "%4s", sprintf( "%4d", int( $delta * 10 + 0.5 ) ) );
+		$self->{hash_phase_block} .= sprintf( "%3s", sprintf( "%3d", $dip + 0.5 ) );
 		$self->{hash_phase_block} .= " " x 10;
-		$self->{hash_phase_block} .= sprintf( "%03d", $esaz );
+		$self->{hash_phase_block} .= sprintf( "%3s", sprintf( "%3d", int( $esaz + 0.5 ) ) );
 		$self->{hash_phase_block} .= " ";
-		$self->{hash_phase_block} .= sprintf( "% 3d\n", $self->{params}{"azimuth_uncertainty"}, );
+		$self->{hash_phase_block} .= sprintf( "% 3d", $self->{params}{"azimuth_uncertainty"}, );
+		$self->{hash_phase_block} .= "   1     X   ";
+		$self->{hash_phase_block} .= $chan;
+		$self->{hash_phase_block} .= "\n";
 	}
 
 	# hash_driver1 program needs blank line to signal end of phase input:
