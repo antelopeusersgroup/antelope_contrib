@@ -16,11 +16,6 @@ and Python interfaces to Antelope; and the dbxcor(1) cross-correlation processor
 libraries. The \fBlocalmake_config\fP program represents an attempt to standardize how such external
 dependencies are configured and linked within the Antelope contributed-code distribution.
 
-The \fBlocalmake_config\fP program runs in two quite distinct modes, serving two separate purposes. 
-The first, \fIconfigure\fP, mode allows the user to specify how dependencies external to the 
-Antelope distribution are set up on their system. The second, \fIverify\fP, mode is invoked internal
-to the compilation process and entirely automatically to allow the configured choices to take effect.
-
 Basically, \fBlocalmake_config\fP manages two kinds of entities: \fIcapabilities\fP (such as 
 \fIphp\fP, \fIpython\fP, or \fImatlab\fP), which may be enabled or disabled; and \fImacros\fP (such 
 as \fIMATLAB\fP, \fIPYTHONINCLUDE\fP, etc.), which may be either blank or filled-in with pathnames 
@@ -29,41 +24,19 @@ necessary conditions for external links to succeed. (In order to compile desired
 elements, either execute \fImake install\fP in the appropriate source-code directories, or alternatively
 use the \fBlocalmake(1)\fP program, after you finish running \fBlocalmake_config\fP). 
 
-.SS 'Configure' mode
 When \fBlocalmake_config\fP is run without any \fIcapability\fP arguments on the command-line, it 
-starts in \fIconfigure\fP mode. This will be the normal way to run the program for 
-most users. In \fIconfigure\fP mode, the user can specify which
-externally-dependent capabilities to enable, and where to find the necessary supporting components 
-on their system. 
+launches the \fBlocalmake\fP program in \fI-c\fP i.e. configuration mode. This allows the normal user
+to specify which externally-dependent capabilities to enable, and where to find the necessary 
+supporting components on their system. 
 
-When in \fIconfigure\fP mode, \fBlocalmake_config\fP launches a Graphical User Interface
-that allows the user to enable or disable each \fIcapability\fP, and set the values of macro variables
-needed to support each \fIcapability\fP. After changing values with the \fBlocalmake_config\fP GUI, 
-it is critical to hit the \fIsave configuration\fP button in order to record the changes made. Otherwise 
-all changes will be lost. 
-
-The local configuration of external components (as well as the behaviour of the \fBlocalmake_config\fP program
-itself), is controlled by a parameter file on the local system which is kept in 
+The local configuration of external components (as well as the behaviour of the \fBlocalmake_config\fP
+program itself), is controlled by a parameter file on the local system which is kept in 
 .nf
 
       $ANTELOPE/local/data/pf/localmake_config.pf
 
 .fi
-If this does not exist, \fBlocalmake_config\fP makes an initial version of the file when it first runs,
-with all external dependencies disabled, by copying the file 
-.nf
-
-        $ANTELOPE/data/pf/localmake_config_proto.pf
-
-.fi
-to
-.nf
-
-      $ANTELOPE/local/data/pf/localmake_config.pf
-
-.fi
-(System administrators may perform this step by hand, then modify the resulting \fIlocalmake_config.pf\fP 
-by hand using their favorite Unix text editor if they are comfortable doing so, rather than using the GUI). 
+If this does not exist, \fBlocalmake_config\fP makes an initial version of the file when it first runs.
 
 Once configured, \fBlocalmake_config\fP creates a set of local make-rules to handle all configured 
 dependencies. By default, these local make-rules are stored in 
@@ -75,46 +48,30 @@ dependencies. By default, these local make-rules are stored in
 Do not edit the above file of make rules directly, as it will be automatically overwritten upon 
 any changes to the \fIlocalmake_config.pf\fP parameter file and re-run of \fBlocalmake_config\fP. 
 All changes by the user must be made to the file \fIlocalmake_config.pf\fP, either by hand or by using
-the \fBlocalmake_config\fP GUI. 
+the \fBlocalmake\fP GUI. 
 
-When the \fBlocalmake_config\fP GUI is launched, it presents a notebook-tabbed panel for each 
-potentially available \fIcapability\fP. The most important button on each panel is the one 
-to \fIEnable\fP or \fIDisable\fP the \fIcapability\fP in question. After a \fIcapability\fP is enabled, 
-the next step is to fill in the required macro values to support that \fIcapability\fP. These are presented
-as labelled entry-boxes, one entry-box for each necessary macro value. Balloon help is available 
-for each entry box with a basic description of what the value describes. For more detailed help, an 
-\fIExplain\fP button to the right of each entry box describes in more detail how the entry should be filled. 
-
-When a \fIcapability\fP is enabled, \fBlocalmake_config\fP runs tests (as configured in 
-\fIlocalmake_config.pf\fP) to ensure the macro values are OK and other necessary components are 
-in place. Generally these tests are fairly rudimentary, however important to check as they determine
-whether \fBlocalmake_config\fP will allow software elements to compile during the build process when 
-they depend on the \fIcapability\fP in question. When macro values are changed, the tests are re-run. 
-The bottom of the GUI panel for each \fIcapability\fP shows the status of the tests for the given 
-\fIcapability\fP. 
-
-An alternative to running the \fBlocalmake_config\fP GUI to configure the local system would be 
+An alternative to running the \fBlocalmake\fP GUI to configure the local system would be 
 to edit by hand the configuration file 
 .nf
 
       $ANTELOPE/local/data/pf/localmake_config.pf
 
 .fi
-For example (eliding lots of intervening parameters to strip this explanation to its essence), the edits to the above file
+For example the edits to the above file
 in support of the \fImatlab\fP capability would be changing
 .nf
 
         capabilities &Arr{
-            matlab &Arr{
-                enable 0
+            matlab 0
+        }
 
 .fi
 to
 .nf
 
         capabilities &Arr{
-            matlab &Arr{
-                enable 1
+            matlab 1
+        }
 
 .fi
 And, for the platform on which you're running (\fIDarwin\fP, \fISunOS\fP, or \fILinux\fP), 
@@ -122,50 +79,52 @@ filling in the MATLAB macro, e.g. changing
 .nf
 
         macros &Arr{
-            MATLAB &Arr{
-                Darwin
-                Linux
-                SunOS
-            }
+            MATLAB
+       }
 
 .fi
 to
 .nf
 
         macros &Arr{
-            MATLAB &Arr{
-                Darwin /Applications/MATLAB_R2009b.app
-                Linux
-                SunOS
-            }
+            MATLAB /Applications/MATLAB_R2009b.app
+        }
 
 .fi
-Many pieces of the \fIlocalmake_config\fP parameter file have been left out for clarity in the above 
-examples. This shows the general pattern: enable the \fIcapability\fP, then fill in the required 
-macros for your operating system. 
 
 .SS 'Verify' mode
-N.B. This man-page section is for people developing Antelope-contrib software that depends on external utilities
-and for those curious about all underlying technical details. If you're just configuring and compiling 
-software to use on your own system, not writing any, the explanations above should suffice. 
+N.B. This man-page section is for people developing Antelope-contrib
+software that depends on external utilities and for those curious
+about all underlying technical details. If you're just configuring
+and compiling software to use on your own system, not writing any,
+the explanations above should suffice.
 
-In addition to allowing the user to configure external software linkages to the Antelope-contrib code base, 
-\fBlocalmake_config\fP functions as part of the automated software compilation process. 
+In addition to allowing the user to configure external software
+linkages to the Antelope-contrib code base, \fBlocalmake_config\fP
+functions as part of the automated software compilation process.
 
-When \fBlocalmake_config\fP is run with one or more \fIcapability\fP arguments on the command-line, it 
-starts in \fIverify\fP mode. This is used within some Antelope-contrib make files to manage compilation 
-against external dependencies. In \fIverify\fP mode, \fBlocalmake_config\fP tests the listed \fIcapabilities\fP
-to see whether they 1) are enabled for use; 2) are properly supported by non-blank values for all the macros they require; 
-and 3) pass all the tests listed in \fIlocalmake_config.pf\fP for the given \fIcapability\fP. If all of these 
-indicate that whatever depends on the \fIcapability\fP should be compiled, \fBlocalmake_config\fP exits with 
-exit-code of 0. Otherwise, \fBlocalmake_config\fP exits with an exit code of -1, which is intended to stop compilation
-in the current directory. 
+When \fBlocalmake_config\fP is run with one or more \fIcapability\fP
+arguments on the command-line, it starts in \fIverify\fP mode. This
+is used within some Antelope-contrib make files to manage compilation
+against external dependencies. In \fIverify\fP mode, \fBlocalmake_config\fP
+tests the listed \fIcapabilities\fP to see whether they 1) are
+enabled for use; 2) are properly supported by non-blank values for
+all the macros they require; and 3) pass all the tests listed in
+\fIlocalmake_config.pf\fP for the given \fIcapability\fP. If all
+of these indicate that whatever depends on the \fIcapability\fP
+should be compiled, \fBlocalmake_config\fP exits with exit-code of
+0. Otherwise, \fBlocalmake_config\fP exits with an exit code of -1,
+which is intended to stop compilation in the current directory.
 
-The way this is used in the Antelope-contrib compilation structure (based on antelopemake(5)) is as follows. First, instead 
-of implementing one \fIMakefile\fP in the style of antelopemake(5), the developer implements two separate files: \fImakefile\fP
-and \fIMakefile2\fP. The former executes \fBlocalmake_config\fP, naming the desired capability on the command-line, and 
-determining whether or not to proceed with compilation. For example, in a directory that depends on the \fIpython\fP
-capability, \fImakefile\fP would look like this:
+The way this is used in the Antelope-contrib compilation structure
+(based on antelopemake(5)) is as follows. First, instead of
+implementing one \fIMakefile\fP in the style of antelopemake(5),
+the developer implements two separate files: \fImakefile\fP and
+\fIMakefile2\fP. The former executes \fBlocalmake_config\fP, naming
+the desired capability on the command-line, and determining whether
+or not to proceed with compilation. For example, in a directory
+that depends on the \fIpython\fP capability, \fImakefile\fP would
+look like this:
 .nf
 
         all Include install installMAN pf relink tags test :: FORCED
@@ -180,7 +139,8 @@ capability, \fImakefile\fP would look like this:
 
 .fi
 
-The \fIMakefile2\fP rules would then follow the format documented in antelopemakefile(5), though with the line 
+The \fIMakefile2\fP rules would then follow the format documented
+in antelopemakefile(5), though with the line
 
 .nf
 
@@ -194,16 +154,18 @@ expanded to say
 
         ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
-        include $(ANTELOPEMAKE)
-        include $(ANTELOPEMAKELOCAL)
+        include $(ANTELOPEMAKE) include $(ANTELOPEMAKELOCAL)
 
         SUBDIR= /local
 
 .fi
 
-Note that the assignment of \fISUBDIR\fP to \fI/local\fP may be appropriate only in some situations. With this structure, 
-the macros supporting the \fIpython\fP \fIcapability\fP (as configured in \fIlocalmake_config.pf\fP, currently
-\fIPYTHONINCLUDE\fP and \fPPYTHON_EXECUTABLE\fP) will now be available for use in \fIMakefile2\fP. 
+Note that the assignment of \fISUBDIR\fP to \fI/local\fP may be
+appropriate only in some situations. With this structure, the macros
+supporting the \fIpython\fP \fIcapability\fP (as configured in
+\fIlocalmake_config.pf\fP, currently \fIPYTHONINCLUDE\fP and
+\fPPYTHON_EXECUTABLE\fP) will now be available for use in
+\fIMakefile2\fP.
 
 .SH OPTIONS
 .IP -i 
@@ -213,8 +175,9 @@ List available capabilities and whether they're enabled or disabled, then exit.
 .IP -v 
 Verbose
 .SH FILES
-The master parameter-file controlling the behavior of \fBlocalmake_config\fP, and hence all the compilation tasks it governs, 
-is 
+The master parameter-file controlling the behavior of
+\fBlocalmake_config\fP, and hence all the compilation tasks it
+governs, is
 .nf
 
       $ANTELOPE/local/data/pf/localmake_config.pf
@@ -236,381 +199,54 @@ When \fBlocalmake_config\fP runs, it checks and updates the automated set of mak
 \fBlocalmake_config\fP depends on the environment variables \fIANTELOPE\fP, \fIPFPATH\fP, and \fIANTELOPEMAKE\fP as documented 
 in the man-page antelopeenv(5).
 .SH PARAMETER FILE
-This section describes the parameter-file for \fBlocalmake_config\fP. Do not be intimidated by the complexity of the parameter file: users 
-configuring their system need only to 1) mark each capability for their platform of choice with a \fItrue\fP or \fIfalse\fP value in 
-the \fIenable\fP sub-parameter; and 2) Fill in their desired macro values for their platform of choice in the \fImacros\fP array.
-Most of the rest of the detail below is for developers. 
+This section describes the parameter-file for \fBlocalmake_config\fP. Generally this parameter-file 
+is created automatically by \fBlocalmake_config\fP and/or the \fBlocalmake\fP GUI in \fIconfigure\fP 
+mode. It may, however, be hand-edited or created by system administrators for each platform. In that
+case to configure a system one needs only to A) mark each capability with a \fI0\fP or \fI1\fP value in 
+the \fIenable\fP sub-parameter; and B) Fill in the desired macro values in the \fImacros\fP array.
+Note that due to coding limitations, the booleans for enabling individual capabilities should be 
+explicitly 0 or 1 (i.e. not any of the string boolean values such as "yes", "no", "true", "ok" etc.). 
 
-.SS Parameter Explanations
+.SS "Parameter Explanations"
 
-.IP antelope
-This is a convenient \fIplain reference\fP (see pf(5)) in the parameter file used to record the current Antelope version. 
 .IP capabilities
-Each distinct external dependency controlled by \fBlocalmake_config\fP is given a unique \fIcapability\fP name, and configured 
-in the \fIcapabilities\fP Array of the \fBlocalmake_config\fP parameter file. The key into this array is the name of the \fIcapability\fP.
-Each named \fIcapability\fP has its own sub-array with the following values:
-.IP capabilities{enable}
-This is an array with booleans for each platform (\fIDarwin\fP, \fILinux\fP, and \fISunOS\fP), specifying whether or not to attempt 
-compilation (contingent on successfully passing tests) assuming the existence of this \fIcapability\fP. 
-.IP capabilities{required_macros}
-This Table lists the macros required to be defined for this \fIcapability\fP
-.IP capabilities{tests}
-This Table contains one or more parameter-file \fI&Literal\fP values (as documented in pf(5)), containing perl code to execute a test 
-to make sure the \fIcapability\fP is properly configured. The perl code must evaluate to a perl \fItrue\fP value for the test to be 
-considered successful. Each test should also define two strings called \fI$failure_msg\fP and \fI$success_msg\fP containing short 
-messages to the user explaining the results of the test. 
-.IP capabilities{Description}
-This parameter is a short text description of what the \fIcapability\fP entails. 
-.IP capabilities{Detail}
-This parameter is a longer, detailed text description of what the \fIcapability\fP entails. 
-.IP dest
-The \fIdest\fP parameter specifies the directory into which the automatically generated makefile rules will be placed. 
-.IP extra_rules
-In addition to locally configured macros, there may be extra rules necessary for local compilation (such as dot rules for script extensions
-that invoke template(1), for example). These extra make rules are listed in the \fIextra_rules\fP \fI&Literal\fP parameter. 
-.IP header
-This parameter-file \fI&Literal\fP contains the message to put at the top of the local make rules file. Usually, this is a warning 
-about not modifying the file by hand, rather using \fBlocalmake_config\fP. 
+This array is a simplified version of the \fIcapabilities\fP array in \fIlocalmake.pf\fP, 
+with one key for each capability and a value for each capability which is a boolean specifying 
+whether the capability is enabled on this operating system. 
 .IP macros
-Each makefile \fImacro\fP that may be of use in compiling Antelope-contrib code against external utilities is described
-in the \fImacros\fP Array of the \fBlocalmake_config\fP parameter file. The key into the \fImacros\fP array is the name of the \fImacro\fP.
-Each named \fImacro\fP has its own sub-array with the following values:
-.IP macros{Darwin}
-The \fIDarwin\fP sub-parameter gives the configured value of the \fImacro\fP on Macintosh systems
-.IP macros{Linux}
-The \fILinux\fP sub-parameter gives the configured value of the \fImacro\fP on Linux systems
-.IP macros{SunOS}
-The \fISunOS\fP sub-parameter gives the configured value of the \fImacro\fP on Solaris systems
-.IP macros{Description}
-This parameter gives a one-line text description of the \fImacro\fP
-.IP macros{Detail}
-This parameter gives a longer text paragraph explaining the \fImacro\fP and examples of some possible values on different systems. 
-.IP output_file
-The \fIoutput_file\fP parameter gives the filename (without directory path) of the local Antelope make rules automatically generated
-based on \fIlocalmake_config.pf\fP.
-.SS Example parameter file
-The example below shows \fIlocalmake_config_proto.pf\fP, which is used either by the \fBlocalmake_config\fP GUI, 
-or by the astute Antelope systems administrator with their favorite Unix text editor, to create a first version of 
-the \fIlocalmake_config.pf\fP parameter file that configures a local system:
+This array is a simplified version of the \fImacros\fP array in \fIlocalmake.pf\fP, 
+with one key for each macro and a value for each capability which is a string specifying 
+the value of the macro (possibly empty) on this operating system. 
+
+.SS "Parameter File Example"
 .nf
 
-antelope    &env(ANTELOPE)
-dest             &antelope/local/include
-output_file antelopemake.local
-
-macros &Arr{
-        MATLAB &Arr{
-                Darwin
-                SunOS
-                Linux
-                Description Top-level directory of Matlab installation
-                Detail &Literal{
-                        The MATLAB macro specifies the top-level directory
-                        of the Matlab installation on the local machine. 
-                        On Solaris or Linux, this may be something like 
-                        '/usr/local/matlab'. On Mac, it may be something
-                        like '/Applications/MATLAB_R2009b.app'.
-                }
-        }
-        PYTHONINCLUDE &Arr{
-                Darwin
-                SunOS
-                Linux
-                Description Location of Python header files
-                Detail &Literal{
-                     The PYTHONINCLUDE macro specifies the location of 
-                     the include files (header files) for the Python 
-                     interpreter to be used with Antelope (and against which 
-                     the Python interface to Antelope will compile locally). 
-                     The directory specified by this macro should contain, 
-                     among other things, the file Python.h. For the Antelope 
-                     Python toolbox to work correctly, the include files 
-                     specified by the PYTHONINCLUDE macro must be consistent 
-                     with the Python executable specified by the 
-                     PYTHON_EXECUTABLE macro. An example value for the 
-                     PYTHONINCLUDE macro might be '/usr/include/python2.6'
-                     on a Maciontosh computer, or perhaps '/sw/include/python2.6' 
-                     if the 'Fink' python interpreter is being used. 
-                }
-        }
-        PYTHON_EXECUTABLE &Arr{
-                Darwin
-                SunOS
-                Linux
-                Description Absolute pathname of Python interpreter
-                Detail &Literal{
-                     The PYTHON_EXECUTABLE macro specifies the absolute 
-                     pathname of the Python interpreter to be used for
-                     the Antelope python interface. The PYTHONINCLUDE
-                     and PYTHON_EXECUTABLE macros must be set consistent 
-                     with each other, i.e. referring to python header files 
-                     and python executable that belong together. An example 
-                     value for the PYTHON_EXECUTABLE macro might be '/usr/bin/python'
-                     on a Macintosh computer, or perhaps '/sw/bin/python' if the 
-                     'Fink' python interpreter is being used. 
-                }
-        }
-        PHP_INC &Arr{
-                Darwin
-                SunOS
-                Linux
-                Description Location of PHP header files
-                Detail &Literal{
-                     The PHP_INC macro specifies the location of 
-                     the include files (header files) for the PHP 
-                     interpreter to be used with Antelope (and against which 
-                     the Antelope interface to PHP will compile locally). 
-                     The directory specified by this macro should contain, 
-                     among other things, the sub-directories Zend/, TSRM/, and include/ 
-                     (at least for versions of PHP current at the time of this writing). 
-                     For the Antelope PHP toolbox to work correctly, the include files 
-                     specified by the PHP_INC macro must be consistent 
-                     with the PHP executable specified by the 
-                     PHP_EXECUTABLE macro. An example value for the 
-                     PYTHONINCLUDE macro might be '/usr/include/php', although this 
-                     of course depends on local system configuration.
-                }
-        }
-        PHP_EXECUTABLE &Arr{
-                Darwin
-                SunOS
-                Linux
-                Description Absolute pathname of PHP interpreter
-                Detail &Literal{
-                     The PHP_EXECUTABLE macro specifies the absolute 
-                     pathname of the PHP interpreter to be used for
-                     the Antelope PHP interface. The PHP_INC
-                     and PHP_EXECUTABLE macros must be set consistent 
-                     with each other, i.e. referring to PHP header files 
-                     and PHP executable that belong together. An example 
-                     value for the PHP_EXECUTABLE macro might be '/usr/bin/php', although
-                     this of course depends on local system configuration.
-                }
-        }
-        XMOTIFLIB &Arr{
-                Darwin
-                SunOS /usr/openwin/lib
-                Linux /usr/X11R6/lib
-                Description Location of X-Motif link libraries
-                Detail &Literal{
-                        The XMOTIFLIB macro specifies the location 
-                        of the link libraries for the X/Motif graphics toolkit. 
-                        This macro must be set to a value which is consistent with
-                        the location given in the XMOTIFINCLUDE macro, i.e. the header
-                        files and the library files pointed to by these two macros must 
-                        correspond to each other. An example value for XMOTIFLIB
-                        might be '/usr/openwin/lib' on Solaris; sometimes 
-                        '/usr/X11R6/lib' on Linux; and perhaps '/sw/lib' on 
-                        Macintosh, if the 'Fink' distribution of X/Motif has been 
-                        installed there.  
-                }
-        }
-        XMOTIFINCLUDE &Arr{
-                Darwin
-                SunOS /usr/openwin/include
-                Linux /usr/X11R6/include
-                Description Location of X-Motif header files
-                Detail &Literal{
-                        The XMOTIFINCLUDE macro specifies the location 
-                        of the include files (header files) for the 
-                        X/Motif graphics toolkit. The directory specified 
-                        by this macro should contain a subdirectory called Xm/ 
-                        which has the actual toolkit header files. This macro must 
-                        be set to a value which is consistent with the location 
-                        given in the XMOTIFLIB macro, i.e. the header files and the 
-                        library files pointed to by these two macros must 
-                        correspond to each other. An example value for XMOTIFINCLUDE
-                        might be '/usr/openwin/include' on Solaris; sometimes 
-                        '/usr/X11R6/include' on Linux; and perhaps '/sw/include' on 
-                        Macintosh, if the 'Fink' distribution of X/Motif has been 
-                        installed there.  
-                }
-        }
+capabilities        &Arr{
+    boost              0
+    matlab             0
+    perl_DBI           0
+    php                0
+    python             0
+    python_amqplib     0
+    python_matplotlib  0
+    python_pygraphviz  0
+    vtk                0
+    xmotif             0
 }
-
-capabilities &Arr{
-        matlab &Arr{
-                enable &Arr{
-                        Darwin no
-                        SunOS no
-                        Linux no
-                }
-                required_macros &Tbl{
-                        MATLAB
-                }
-                tests &Tbl{
-                        &Literal{
-                        $failure_msg = "Couldn't find Matlab directory '$MATLAB' " .
-                                       "implied by currently configured value of MATLAB macro";
-                        $success_msg = "Matlab directory '$MATLAB' exists";
-                        -d "$MATLAB"
-                        }
-                        &Literal{
-                        $failure_msg = "Couldn't find Matlab launch script '$MATLAB/bin/matlab' " .
-                                       "implied by currently configured value of MATLAB macro";
-                        $success_msg = "Matlab launch script '$MATLAB/bin/matlab' is executable";
-                        -x "$MATLAB/bin/matlab"
-                        }
-                }
-                Description Antelope Matlab Interface and Matlab-based Antelope tools
-                Detail &Literal{
-                        The 'matlab' capability provides linkage to the Matlab interpreter on the
-                        local machine. These is used within Antelope-contrib primarily for compilation
-                        of the Antelope Toolbox for Matlab. 
-                }
-        }
-        python &Arr{
-                enable &Arr{
-                        Darwin no
-                        SunOS no
-                        Linux no
-                }
-                required_macros &Tbl{
-                        PYTHONINCLUDE
-                        PYTHON_EXECUTABLE
-                }
-                tests &Tbl{
-                        &Literal{
-                        $failure_msg = "Couldn't find header-file '$PYTHONINCLUDE/Python.h' " .
-                                       "implied by currently configured value of PYTHONINCLUDE " .
-                                       "macro";
-                        $success_msg = "Found header file '$PYTHONINCLUDE/Python.h'";
-                        -e "$PYTHONINCLUDE/Python.h"
-                        }
-                        &Literal{
-                        $failure_msg = "File '$PYTHON_EXECUTABLE' specified by the " .
-                                       "PYTHON_EXECUTABLE macro is not present or not executable'";
-                        $success_msg = "Found python executable '$PYTHON_EXECUTABLE'";
-                        -f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE"
-                        }
-                }
-                Description Antelope Python Interface and Python-based Antelope tools
-                Detail &Literal{
-                        The 'python' capability provides linkage to the Python interpreter on the
-                        local machine (if there are several Python interpreters, this capability 
-                        identifies which one has been chosen to be used with Antelope). This capability 
-                        is used within Antelope-contrib primarily for compilation of the Antelope Python 
-                        interface, though it also controls whether other Python-dependent Antelope-contrib 
-                        tools get installed (e.g. dbwfserver(1) and orbtopo(1)). 
-                }
-        }
-        python_amqplib &Arr{
-                enable &Arr{
-                        Darwin no
-                        SunOS no
-                        Linux no
-                }
-                required_macros &Tbl{
-                }
-                tests &Tbl{
-                        &Literal{
-                        $failure_msg = "Python 'amqplib' is not available within " .
-                                       "Python interpreter '$PYTHON_EXECUTABLE'";
-                        $success_msg = "Python 'amqplib' is available within '$PYTHON_EXECUTABLE'";
-                        -f "$PYTHON_EXECUTABLE" && -x "$PYTHON_EXECUTABLE" && system( "$PYTHON_EXECUTABLE -c 'import amqplib'" ) == 0
-                        }
-                }
-                Description AMQP interface library for Python
-                Detail &Literal{
-                        The 'python_amqplib' capability supports usage of the py-amqplib Python 
-                        client library available from http://code.google.com/p/py-amqplib/.
-                }
-        }
-        php &Arr{
-                enable &Arr{
-                        Darwin no
-                        SunOS no
-                        Linux no
-                }
-                required_macros &Tbl{
-                        PHP_INC
-                        PHP_EXECUTABLE
-                }
-                tests &Tbl{
-                        &Literal{
-                        $failure_msg = "Couldn't find header-file directory '$PHP_INC/Zend' " . 
-                                       "implied by currently configured value of PHP_INC macro";
-                        $success_msg = "Found header-file directory '$PHP_INC'";
-                        -d "$PHP_INC/Zend"
-                        }
-                        &Literal{
-                        $failure_msg = "File '$PHP_EXECUTABLE' specified by the " .
-                                       "PHP_EXECUTABLE macro is not present or not executable'";
-                        $success_msg = "Found php executable '$PHP_EXECUTABLE'";
-                        -f "$PHP_EXECUTABLE" && -x "$PHP_EXECUTABLE"
-                        }
-                }
-                Description Antelope PHP Interface and PHP-based Antelope tools
-                Detail &Literal{
-                        The 'php' capability provides linkage to the PHP interpreter on the
-                        local machine (if there are several PHP interpreters, this capability 
-                        identifies which one has been chosen to be used with Antelope). This 
-                        capability is used within Antelope-contrib primarily for compilation of 
-                        the Antelope PHP interface, though it also controls whether other 
-                        PHP-dependent Antelope-contrib tools get installed (e.g. webdlmon(3H) 
-                        and webdbe(3H)). 
-                }
-        }
-        xmotif &Arr{
-                enable &Arr{
-                        Darwin no
-                        SunOS yes
-                        Linux yes
-                }
-                required_macros &Tbl{
-                        XMOTIFINCLUDE
-                        XMOTIFLIB
-                }
-                tests &Tbl{
-                        &Literal{
-                        $failure_msg = "Couldn't find header-file directory '$XMOTIFINCLUDE/Xm' " . 
-                                       "implied by currently configured value of XMOTIFINCLUDE macro";
-                        $success_msg = "Found header-file directory for X-Motif";
-                        -d "$XMOTIFINCLUDE/Xm"
-                        }
-                        &Literal{
-                        $failure_msg = "Couldn't find library-file directory '$XMOTIFLIB' " . 
-                                       "implied by currently configured value of XMOTIFLIB macro";
-                        $success_msg = "Found library-file directory for X-motif";
-                        -d "$XMOTIFLIB"
-                        }
-                }
-                Description X/Motif Graphics toolkit links
-                Detail &Literal{
-                        The 'xmotif' capability provides linkage to the X/Motif include files and 
-                        link libraries on the local machine. These are used within Antelope-contrib
-                        for the dbxcor(1) application as well as supporting libraries such as
-                        libseisw. 
-                }
-        }
+macros        &Arr{
+    BOOSTINCLUDE        
+    BOOSTLIB        
+    MATLAB        
+    PHP_EXECUTABLE      /usr/bin/php
+    PHP_INC             /usr/include/php
+    PYTHONINCLUDE       /usr/include/python2.6
+    PYTHON_EXECUTABLE   /usr/bin/python
+    VTKINCLUDE        
+    VTKLIB        
+    VTKROOT        
+    XMOTIFINCLUDE        
+    XMOTIFLIB        
 }
-
-header &Literal{
-# DO NOT MODIFY -- Automatically generated file -- DO NOT MODIFY
-#
-# This file has been automatically generated by the localmake_config(1) program.
-# Run localmake_config(1) to regenerate if necessary.
-# See the localmake_config(1)  man page for further details. 
-}
-
-extra_rules &Literal{
- .SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp
-
-% : %.xpy $(ANTELOPE)/local/data/templates/xpy
-        $(RM) $@
-        cat $(ANTELOPE)/local/data/templates/xpy $< > $@
-        chmod a+x $@
-
-% : %.xphp $(ANTELOPE)/local/data/templates/xphp
-        $(RM) $@
-        cat $(ANTELOPE)/local/data/templates/xphp $< > $@
-        chmod a+x $@
-
- .wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
-        $(RM) $@
-        cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
-}
-
 .fi
 .SH EXAMPLE
 To run \fBlocalmake_config\fP in \fIconfigure\fP mode, enter its name on the command line with no arguments: 
@@ -632,34 +268,33 @@ is disabled or failed one or more of its tests).
 localmake(1), antelopemakelocal(5), antelopemake(5), antelopemakefile(5)
 .fi
 .SH "BUGS AND CAVEATS"
-This program is a successor to amakelocal(1), which caused a great deal of confusion both in name and 
-design. Hopefully the current version is an improvement. 
+This program has undergone multiple restructurings to get the design right. Hopefully the 
+current version has succeeded. In particular, the \fIlocalmake_config_proto.pf\fP file 
+has been eliminated. 
 
 \fBlocalmake_config\fP internally sets and uses \fIPFPATH\fP to include \fI$ANTELOPE/local/data/pf\fP.
 
-\fBlocalmake_config\fP always rebuilds the make rules in \fI$ANTELOPE/local/include/antelopemake.local\fP
-if that file has a timestamp older than the master parameter file \fI$ANTELOPE/local/data/pf/localmake_config.pf\fP. 
-If an automated or other process (e.g. directory copy etc.) changes the timestamp on the former file to be later 
-than that on the master parameter file, \fBlocalmake_config\fP will not know to update the latter. 
+\fBlocalmake_config\fP always rebuilds the make rules in
+\fI$ANTELOPE/local/include/antelopemake.local\fP if that file has
+a timestamp older than the master parameter file
+\fI$ANTELOPE/local/data/pf/localmake_config.pf\fP.  If an automated
+or other process (e.g. directory copy etc.) changes the timestamp
+on the former file to be later than that on the master parameter
+file, \fBlocalmake_config\fP will not know to update the latter.
 
-Changes made to the user's configuration via the \fBlocalmake_config\fP Graphical User Interface must 
-be saved to disk using the yellow \fIsave configuration\fP button (enabled and visible when there are changes
-to be saved) or the \fIFile->Save and Quit\fP menu item, in order for the changes to take effect. 
+Changes made to the user's configuration via the \fBlocalmake_config\fP
+Graphical User Interface must be saved to disk using the yellow
+\fIsave configuration\fP button (enabled and visible when there are
+changes to be saved) or the \fIFile->Save and Quit\fP menu item,
+in order for the changes to take effect.
 
-\fBlocalmake_config\fP tolerates only one \fIlocalmake_config.pf\fP parameter-file along \fIPFPATH\fP, presumably that in 
-\fI$ANTELOPE/local/data/pf/localmake_config.pf\fP. This is to avoid ambiguities about what is configured where, which could 
-generate a fair amount of confusion. 
+Because \fBlocalmake_config\fP automatically keeps the local make
+rules up to date, it requires write permission to
+\fI$ANTELOPE/local/data/pf/localmake_config.pf\fP and
+\fI$ANTELOPE/local/include/antelopemake.local\fP. This is considered
+reasonable since compilation and installation requires write
+permission in \fI$ANTELOPE\fP anyways.
 
-Because \fBlocalmake_config\fP automatically keeps the local make rules up to date, it requires write permission to 
-\fI$ANTELOPE/local/data/pf/localmake_config.pf\fP and \fI$ANTELOPE/local/include/antelopemake.local\fP. This is considered 
-reasonable since compilation and installation requires write permission in \fI$ANTELOPE\fP anyways. 
-
-If \fIlocalmake_config_proto.pf\fP gets enhanced and has a \fIpf_revision_time\fP (see the man-page for pfrequire(3)) later than 
-that in \fIlocalmake_config.pf\fP, \fBlocalmake_config\fP will notice and complain, giving the user a choice to update by hand, 
-reset to the new defaults, or ignore the changes at their own risk. This is to prevent the user from missing out on new capabilities 
-that have been implemented or tripping over changes to the way those capabilities are being used in the compile process. As an 
-added caveat, even when \fBlocalmake_config\fP is running as a GUI, this warning and user choice is done on the command-line 
-rather than via a GUI pop-up. 
 .SH AUTHOR
 .nf
 Kent Lindquist

@@ -231,7 +231,6 @@ bootstrap &Arr{
 	}
 }
 
-antelope	&env(ANTELOPE)
 capabilities	&Arr{
     matlab	&Arr{
         Description	Antelope Matlab Interface and Matlab-based Antelope tools
@@ -533,6 +532,7 @@ capabilities	&Arr{
         }
     }
 }
+antelope	&env(ANTELOPE)
 dest	&antelope/local/include
 extra_rules	&Literal{
 .SUFFIXES: .SUFFIXES .py .pyc .xpy .xphp .wwwphp
