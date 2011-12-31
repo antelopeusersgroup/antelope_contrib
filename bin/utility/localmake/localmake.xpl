@@ -241,6 +241,11 @@ sub freeze_size {
        $Windows{"Main"}->resizable( 0, 0 );
 }
 
+sub unfreeze_size {
+
+       $Windows{"Main"}->resizable( 1, 1 );
+}
+
 sub make_target {
 	my( $target ) = @_;
 
@@ -370,11 +375,15 @@ sub localmake_module {
 
 	if( $Gui_mode ) {
 
+		freeze_size();
+
 		$Windows{"compilebutton_$module"}->configure( -relief => "sunken" );
 
 		destroy_followup_buttons();
 
 		clear_compileout();
+
+		$Windows{"Main"}->afterIdle( \&unfreeze_size );
 	}
 
 	my( @steps ) = @{$Modules{$module}{build}};
@@ -1280,7 +1289,10 @@ sub save_and_quit {
 
 sub run_configure {
 
-	$Windows{"Main"}->gridForget( $Windows{"localmake_menubar"}, $Windows{"compile"} );
+	$Windows{"Main"}->gridForget( $Windows{"localmake_menubar"}, 
+				      $Windows{"compile"} );
+
+	destroy_followup_buttons();
 
 	init_configure_window();
 
@@ -1542,6 +1554,8 @@ sub init_compile_window {
 
 sub run_compile {
 
+	freeze_size();
+
 	$Windows{"Main"}->gridForget( $Windows{"config_menubar"}, 
 				      $Windows{"save_config"},
 				      $Windows{"capabilities"} );
@@ -1549,6 +1563,8 @@ sub run_compile {
 	$Windows{"Main"}->gridRowconfigure( 2, -weight => 0 );
 
 	init_localmake_window();
+
+	$Windows{"Main"}->afterIdle( \&unfreeze_size );
 
 	return;
 }
