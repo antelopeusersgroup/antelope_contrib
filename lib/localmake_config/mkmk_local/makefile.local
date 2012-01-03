@@ -1,0 +1,15 @@
+
+%
+% Replace "somecapability" with the name of the capability you wish to enable
+%
+
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config somecapability ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
+
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
+
+FORCED:
+

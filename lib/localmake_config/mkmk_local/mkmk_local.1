@@ -1,0 +1,42 @@
+.TH MKMK_LOCAL 1
+.SH NAME
+mkmk_local \- Create localmake makefiles
+.SH SYNOPSIS
+.nf
+mkmk_local [-]
+.fi
+.SH DESCRIPTION
+The \fBmkmk_local\fP program creates Makefiles compatible with the \fBlocalmake_config\fP
+utility. If a hyphen is specified on the command line, instructive comments are omitted.
+
+The \fBlocalmake_config\fP program, which \fBmkmk_local\fP supports, uses a two-stage Makefile, 
+the first (\fImakefile\fP) to check if a given capability is enabled and the second 
+(\fIMakefile2\fP) to compile with the configured values of local macros as specified 
+in \fIantelopemakefile(5)\fP.
+.SH FILES
+\fBmkmk_local\fP creates sample files \fIMakefile2\fP and \fImakefile\fP
+in the current working directory. 
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% mkmk_local -
+mkmk_local: Created template files 'makefile' and 'Makefile2'.
+%
+% ls 
+Makefile2 makefile
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+mkmk(1), localmake(1), localmake_config(1), antelopemakelocal(5)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBmkmk_local\fP will not overwrite pre-existing files \fIMakefile2\fP and \fImakefile\fP
+in the current working directory. 
+.SH AUTHOR
+.nf
+Kent Lindquist 
+Lindquist Consulting, Inc.
+.fi
