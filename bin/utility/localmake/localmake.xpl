@@ -1332,8 +1332,6 @@ sub init_configure_window {
 	$Windows{"Main"}->gridRowconfigure( 1, -weight => 1 );
 	$Windows{"Main"}->gridRowconfigure( 2, -weight => 0 );
 
-	#DEBUG	$Windows{"Main"}->afterIdle( \&freeze_size );
-
 	MainLoop;
 }
 
@@ -1554,8 +1552,6 @@ sub init_compile_window {
 
 sub run_compile {
 
-	freeze_size();
-
 	$Windows{"Main"}->gridForget( $Windows{"config_menubar"}, 
 				      $Windows{"save_config"},
 				      $Windows{"capabilities"} );
@@ -1563,8 +1559,6 @@ sub run_compile {
 	$Windows{"Main"}->gridRowconfigure( 2, -weight => 0 );
 
 	init_localmake_window();
-
-	$Windows{"Main"}->afterIdle( \&unfreeze_size );
 
 	return;
 }
@@ -1600,6 +1594,8 @@ sub init_window {
 	use elog_gui;
 	
 	$Windows{"Main"} = MainWindow->new();
+
+	$Windows{"Main"}->minsize(30, 20);
 
 	elog_gui_init( MW => $Windows{"Main"} );
 	elog_callback( "::elog_gui" );
