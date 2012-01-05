@@ -129,7 +129,6 @@ make &Arr{
 	^.*truncating cmdlist
 	^Can.t figure out suffix
 	^nm: no name list
-	^.*skipping Library
 	^Library name conflict:
 	^.*found in both.*
    }
@@ -252,6 +251,7 @@ make &Arr{
 	^At line \#
 	^[[:space:]]+--> last directory
 	^[[:space:]]+_[[:space:]]
+	^.*skipping Library.*is also named
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
