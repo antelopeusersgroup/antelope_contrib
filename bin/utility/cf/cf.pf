@@ -117,6 +117,18 @@ make &Arr{
 	^You may be missing features
 	^Downloading
 	^no previously-included directories found
+	^No file
+	^[[:digit:]]+ warnings generated.
+	^Use of uninitialized value
+	^no lint on
+	^.*(ignored)$
+	^Bad link in
+	^.*has a funny extension
+	^.*truncating cmdlist
+	^Can.t figure out suffix
+	^nm: no name list
+	^.*skipping Library
+	^Library name conflict:
    }
    cyan &Tbl{							# Routine command output
 	^---+
@@ -127,6 +139,7 @@ make &Arr{
 	^[[:space:]]+[[:upper:]]+[[:space:]]+=[[:space:]]
 	^[[:space:]]+arguments[[:space:]]+=[[:space:]]
 	^->[[:space:]]+[[:upper:]]+ flags:
+	^.*troff2html
 	^tsort:
 	^a -
 	^r -
@@ -227,14 +240,18 @@ make &Arr{
 	^0 total failures
    	^No optimization specified in Makefile
 	^mdirmake:
-	^waiting$
+	^waiting[[:space:]]*$
 	^[[:space:]]*->[[:space:]].*&$
+	^.*running makedepend[[:space:]]
+	^tcmakewhatis:
+	^Fixing uses
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
 	^[[:space:]]*strip[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^awk[[:space:]]
+	^env[[:space:]]
 	^[[:space:]]*cat
 	^cc[[:space:]]
 	^m4[[:space:]]
@@ -249,6 +266,10 @@ make &Arr{
 	^g\\+\\+[[:space:]]
 	^-> gcc([-.0-9]*)?[[:space:]]
 	^dsymutil[[:space:]]
+	^mktimestamp[[:space:]]
+	^mkjson_index
+	^mkswtags
+	^ldlibs[[:space:]]
 	^[[:space:]]*[( ]*cd[[:space:]]
 	^chmod[[:space:]]
 	^compile[[:space:]]
@@ -262,10 +283,12 @@ make &Arr{
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/getid[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/certify[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
-	^done[[:space:]]
+	^[[:space:]]*done[[:space:]]
+	^[[:space:]]*done$
 	^[[:space:]]*echo[[:space:]]
 	^flex[[:space:]]
 	^for[[:space:]]
+	^mkxref
 	^[[:space:]]*gunzip[[:space:]]
 	^[[:space:]]*bunzip2[[:space:]]
 	^[[:space:]]*tar[[:space:]]
@@ -278,6 +301,7 @@ make &Arr{
 	^[[:space:]]*then[[:space:]]
 	^[[:space:]]*fi[[:space:]]
 	^[[:space:]]*fi[^[:alnum:]]
+	^[[:space:]]*fi$
 	^[[:space:]]*javac[[:space:]]
 	^[[:space:]]*ln[[:space:]]
 	^[[:alnum:]\\/]*ld[[:space:]]
@@ -287,7 +311,7 @@ make &Arr{
 	^[[:space:]]*\\/bin\\/sh[[:space:]]
 	^[[:space:]]*\\/bin\\/bash[[:space:]]
 	^[[:space:]]*config\\/install-sh[[:space:]]
-	^g?make[[:space:]]
+	^[[:space:]]*g?make[[:space:]]
 	^[[:space:]]*mkdir[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
@@ -319,6 +343,8 @@ make &Arr{
 	^exit[[:space:]]*$
 	.*py_compile.compile
 	^pf2screen
+	^./Build[[:space:]]*$
+	^ExtUtils::Mkbootstrap::Mkbootstrap
    }
 }
 
