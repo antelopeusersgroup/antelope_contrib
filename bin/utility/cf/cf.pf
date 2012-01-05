@@ -250,7 +250,7 @@ make &Arr{
 	^Fixing uses
 	^Elapsed time:
 	^At line \#
-	^[[:space:]]--> last directory
+	^[[:space:]]+--> last directory
 	^[[:space:]]+_[[:space:]]
    }
    blue &Tbl{							# Commands executed
