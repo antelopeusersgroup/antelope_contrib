@@ -343,7 +343,7 @@ make &Arr{
 	^exit[[:space:]]*$
 	.*py_compile.compile
 	^pf2screen
-	^./Build[[:space:]]*$
+	^.\\/Build[[:space:]]*$
 	^ExtUtils::Mkbootstrap::Mkbootstrap
    }
 }
