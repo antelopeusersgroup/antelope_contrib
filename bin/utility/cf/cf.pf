@@ -120,7 +120,7 @@ make &Arr{
 	^[[:digit:]]+ warnings generated.
 	^Use of uninitialized value
 	^no lint on
-	^.*(ignored)$
+	^.*\\(ignored\\)$
 	^Bad link in
 	^.*has a funny extension
 	^.*truncating cmdlist
@@ -128,6 +128,7 @@ make &Arr{
 	^nm: no name list
 	^.*skipping Library
 	^Library name conflict:
+	^.*found in both.*
    }
    cyan &Tbl{							# Routine command output
 	^---+
