@@ -73,6 +73,7 @@ make &Arr{
 	^g?make.*: Entering directory
 	^g?make.*: Leaving directory
 	^_[[:space:]]
+	^(Darwin|Linux|SunOS)[[:space:]]
    }
    magenta &Tbl{						# Warning and potential problems
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
@@ -225,6 +226,7 @@ make &Arr{
 	^0 total failures
    	^No optimization specified in Makefile
 	^mdirmake:
+	^waiting$
 	^[[:space:]]*->[[:space:]].*&$
    }
    blue &Tbl{							# Commands executed
