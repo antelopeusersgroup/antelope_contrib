@@ -1042,7 +1042,7 @@ sub commit_configuration {
 
 	foreach $capability ( keys( %capabilities ) ) {
 
-		$config_capabilities{$capability} = 0;
+		$config_capabilities{$capability} = $capabilities{$capability}{enable}{$Os};
 	}
 
 	pfput( "macros", \%config_macros, $Pf_config );
