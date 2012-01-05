@@ -72,6 +72,7 @@ make &Arr{
 	^\\+(\\*\\*)[^[:space:]]+
 	^g?make.*: Entering directory
 	^g?make.*: Leaving directory
+	^_[[:space:]]
    }
    magenta &Tbl{						# Warning and potential problems
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
@@ -223,6 +224,8 @@ make &Arr{
 	^Passed.*of.*tests
 	^0 total failures
    	^No optimization specified in Makefile
+	^mdirmake:
+	^[[:space:]]*->[[:space:]].*&$
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
@@ -249,16 +252,17 @@ make &Arr{
 	^purify[[:space:]]
 	^[[:space:]]*cp[[:space:]]
 	^deposit[[:space:]]
+	^getid[[:space:]]
 	^tclindex[[:space:]]
 	^find[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/deposit[[:space:]]
+	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/getid[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/certify[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
 	^done[[:space:]]
 	^[[:space:]]*echo[[:space:]]
 	^flex[[:space:]]
 	^for[[:space:]]
-	^getid[[:space:]]
 	^[[:space:]]*gunzip[[:space:]]
 	^[[:space:]]*bunzip2[[:space:]]
 	^[[:space:]]*tar[[:space:]]
@@ -311,6 +315,7 @@ make &Arr{
 	^[[:space:]]*\\*\\)
 	^exit[[:space:]]*$
 	.*py_compile.compile
+	^pf2screen
    }
 }
 
