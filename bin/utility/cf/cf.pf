@@ -239,7 +239,7 @@ make &Arr{
 	^0 total failures
    	^No optimization specified in Makefile
 	^mdirmake:
-	^waiting[[:space:]]*$
+	^waiting$
 	^[[:space:]]*->[[:space:]].*&$
 	^.*running makedepend[[:space:]]
 	^tcmakewhatis:
@@ -339,10 +339,10 @@ make &Arr{
 	^[[:space:]]*Linux\\)
 	^[[:space:]]*Darwin\\)
 	^[[:space:]]*\\*\\)
-	^exit[[:space:]]*$
+	^exit$
 	.*py_compile.compile
 	^pf2screen
-	^.\\/Build[[:space:]]*$
+	^.\\/Build$
 	^ExtUtils::Mkbootstrap::Mkbootstrap
    }
 }
