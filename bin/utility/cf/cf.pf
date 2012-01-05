@@ -282,8 +282,7 @@ make &Arr{
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/getid[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/certify[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
-	^[[:space:]]*done[[:space:]]
-	^[[:space:]]*done$
+	^[[:space:]]*done
 	^[[:space:]]*echo[[:space:]]
 	^flex[[:space:]]
 	^for[[:space:]]
