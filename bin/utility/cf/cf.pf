@@ -298,9 +298,7 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]\\/]*g\\+\\+[[:space:]]
 	^[[:space:]]*else[[:space:]]
 	^[[:space:]]*then[[:space:]]
-	^[[:space:]]*fi[[:space:]]
-	^[[:space:]]*fi[^[:alnum:]]
-	^[[:space:]]*fi$
+	^[[:space:]]*fi
 	^[[:space:]]*javac[[:space:]]
 	^[[:space:]]*ln[[:space:]]
 	^[[:alnum:]\\/]*ld[[:space:]]
