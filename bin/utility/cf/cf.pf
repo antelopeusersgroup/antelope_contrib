@@ -27,7 +27,7 @@ make &Arr{
    red &Tbl{							# Serious problems
 	^\\*\\*\\* Error code
 	^.* error:
-	^Error:
+	^[[:space:]]*Error:
 	^SyntaxError:
 	^.*undefined symbol:
 	^.*: Failed
@@ -119,6 +119,8 @@ make &Arr{
 	^no previously-included directories found
 	^No file
 	^[[:digit:]]+ warnings generated.
+	^[[:digit:]]+ warnings in
+	^[[:digit:]]+ make problems
 	^Use of uninitialized value
 	^no lint on
 	^.*\\(ignored\\)$
@@ -246,6 +248,10 @@ make &Arr{
 	^.*running makedepend[[:space:]]
 	^tcmakewhatis:
 	^Fixing uses
+	^Elapsed time:
+	^At line \#
+	^[[:space:]]--> last directory
+	^[[:space:]]+_[[:space:]]
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
