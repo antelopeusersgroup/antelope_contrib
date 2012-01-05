@@ -122,7 +122,7 @@ make &Arr{
 	^Use of uninitialized value
 	^no lint on
 	^.*\\(ignored\\)$
-	^Bad link in
+	^.*Bad link in
 	^.*has a funny extension
 	^.*truncating cmdlist
 	^Can.t figure out suffix
