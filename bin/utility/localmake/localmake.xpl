@@ -52,7 +52,7 @@ sub inform {
 
 	if( $opt_v ) {
 		
-		if( $Gui_mode ) { 
+		if( $Gui_mode && defined( $Windows{"CompileOut"} ) ) { 
 
 			$Windows{"CompileOut"}->insert( "end", $msg, "localmake_inform" );
 
