@@ -71,6 +71,7 @@ sub set_initial_config {
 
 	return;
 }
+
 sub show_capabilities {
 
 format STDOUT = 
@@ -225,6 +226,35 @@ sub test_capability {
 	return;
 }
 
+sub commit_configuration {
+
+	%config_macros = ();
+	%config_capabilities = ();
+
+	foreach $macro ( keys( %macros ) ) {
+
+		$config_macros{$macro} = $$macro;
+	}
+
+	foreach $capability ( keys( %capabilities ) ) {
+
+		$config_capabilities{$capability} = 0;
+	}
+
+	pfput( "macros", \%config_macros, $Pf_config );
+	pfput( "capabilities", \%config_capabilities, $Pf_config );
+
+	pfwrite( $Pf_config_file, $Pf_config );
+
+	write_makerules();
+
+	%macros_orig = %macros;
+
+	set_orig_enabled();
+
+	return;
+}
+
 sub run_verify {
 
 	while( $r = shift( @ARGV ) ) {
@@ -275,32 +305,6 @@ if( @ARGV >= 1 ) {
 	$mode = "configure";
 }
 
-@pf_files = pffiles( $Pf_config );
-
-$pffiles_ok = 1;
-
-while( $f = shift( @pf_files ) ) {
-
-	$f = abspath( $f );
-
-	if( $f ne $Pf_config_file ) {
-		
-		elog_complain( "Please move or remove the file '$f'\n" );
-
-		$pffiles_ok = 0;
-	}
-}
-
-if( ! -e "$localpf_dir/$Pf_config.pf" ) {
-
-	makedir( $localpf_dir );
-
-	if( ! -e "$localpf_dir/$Pf_config.pf" ) {
-
-		elog_die( "Failed to make '$localpf_dir/$Pf_config.pf'; Exiting.\n" );
-	}
-}
-
 $Os = my_os();
 
 %macros = %{pfget($Pf_localmake,"macros")}; 
@@ -308,10 +312,24 @@ $header = pfget( $Pf_localmake, "header" );
 $extra_rules = pfget( $Pf_localmake, "extra_rules" );
 %capabilities = %{pfget( $Pf_localmake, "capabilities" )};
 
-%macros_initial_config = %{pfget($Pf_config,"macros")};
-%capabilities_initial_config = %{pfget($Pf_config,"capabilities")};
+if( ! -e "$localpf_dir/$Pf_config.pf" ) {
 
-set_initial_config();
+	makedir( $localpf_dir );
+
+	commit_configuration();
+
+	if( ! -e "$localpf_dir/$Pf_config.pf" ) {
+
+		elog_die( "Failed to make '$localpf_dir/$Pf_config.pf'; Exiting.\n" );
+	}
+
+} else {
+
+	%macros_initial_config = %{pfget($Pf_config,"macros")};
+	%capabilities_initial_config = %{pfget($Pf_config,"capabilities")};
+
+	set_initial_config();
+}
 
 %macros_orig = %macros;
 
