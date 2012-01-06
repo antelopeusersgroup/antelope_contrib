@@ -25,14 +25,14 @@ default_expressions make
 
 make &Arr{
    red &Tbl{							# Serious problems
-	^\\*\\*\\* Error code
+	^[[:space:]]*\\*\\*\\* Error code
 	^.* error:
 	^[[:space:]]*Error:
-	^SyntaxError:
+	^[[:space:]]*SyntaxError:
 	^.*undefined symbol:
 	^.*: Failed
-	^Failed
-	^cc: assembler failed
+	^[[:space:]]*Failed
+	^[[:space:]]*cc: assembler failed
 	^.*Permission denied
 	^.*does not exist
 	^.*syntax error
@@ -42,30 +42,31 @@ make &Arr{
 	^.*cannot find include file
 	^[[:space:]]*mex:.*failed\\.
 	^.*No such file or directory
-	^gcc: language.*not recognized
+	^[[:space:]]*gcc: language.*not recognized
 	^.*: acomp failed
 	^.*line [[:digit:]]+: return value type mismatch
-	^g?make(\\[[[:digit:]]+\\])?:.*Error
-	^g?make(\\[[[:digit:]]+\\])?:.*Fatal error
-	^g?make(\\[[[:digit:]]+\\])?:.*Command not found
-	^rm: Unable to remove
-	^ld: fatal:
+	^[[:space:]]*g?make(\\[[[:digit:]]+\\])?:.*Error
+	^[[:space:]]*g?make(\\[[[:digit:]]+\\])?:.*Fatal error
+	^[[:space:]]*g?make(\\[[[:digit:]]+\\])?:.*Command not found
+	^[[:space:]]*rm: Unable to remove
+	^[[:space:]]*ld: fatal:
 	^.*ld: can't locate file for:
 	^.*ld returned [1-9] exit status
 	^.*libtool: can't locate file for:
 	^.*libtool:.*not allowed in library
 	^.*java.*cannot resolve symbol
-	^[[:digit:]]+ errors$
+	^[[:space:]]*[[:digit:]]+ errors$
 	^[[:space:]]*format_type can't format
 	^[[:space:]]*parse_function doesn't understand 
-	^localmake_config:.*is not defined
-	^localmake_config:.*Test failed
-	^localmake_config:.*Stopping compilation
+	^[[:space:]]*localmake_config:.*is not defined
+	^[[:space:]]*localmake_config:.*Test failed
+	^[[:space:]]*localmake_config:.*Stopping compilation
 	^.*Can.t locate
 	^[1-9][[:digit:]]* total failures
 	^.*\\*command failed\\*
 	^[[:digit:]]+[[:space:]]+failures
-	^Invalid.*license code
+	^[[:space:]]*Invalid.*license code
+	^.*corrupt archive
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
@@ -76,8 +77,8 @@ make &Arr{
 	^(Darwin|Linux|SunOS)[[:space:]]
    }
    magenta &Tbl{						# Warning and potential problems
-	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
-	^Problem:
+	^[[:space:]]*Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
+	^[[:space:]]*Problem:
 	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
@@ -95,40 +96,41 @@ make &Arr{
 	^.*Please specify prototyping behavior
 	^.*unrecognized compile argument
 	^.*Dropping empty section
-	^Unrecognized argument.*ignored
+	^[[:space:]]*Unrecognized argument.*ignored
 	^[[:space:]]*declaration[[:space:]]*:
 	^[[:space:]]*parameter[[:space:]]*:
 	^[[:space:]]*prototype[[:space:]]*:
 	^[[:space:]]*argument[[:space:]]*:
 	^[[:space:]]*pointer to.*=.*pointer to
-	^[[:digit:]]+ Warning\\(s\\) detected\\.
+	^[[:space:]]*[[:digit:]]+ Warning\\(s\\) detected\\.
 	^.*ld: warning
 	^.*: warning,
 	^.*Warning
 	^.*[[:space:]]*warning:    
-	^Undefined[[:space:]]+first referenced
+	^[[:space:]]*Undefined[[:space:]]+first referenced
 	^[[:space:]]symbol[[:space:]]+in file
 	^.*WARNING:
-	^Unsupported system
+	^[[:space:]]*Unsupported system
 	^.*localmake_config:.*pf_revision_time.*
 	^.*but program requires date after.*
-	^localmake_config:.*appears out of date
-	^You may be missing features
-	^Downloading
-	^no previously-included directories found
-	^No file
+	^[[:space:]]*localmake_config:.*appears out of date
+	^[[:space:]]*You may be missing features
+	^[[:space:]]*Downloading
+	^[[:space:]]*no previously-included directories found
+	^[[:space:]]*No file
 	^[[:digit:]]+ warnings generated.
 	^[[:digit:]]+ warnings in
 	^[[:digit:]]+ make problems
-	^Use of uninitialized value
-	^no lint on
+	^[[:digit:]]+ priority warnings
+	^[[:space:]]*Use of uninitialized value
+	^[[:space:]]*no lint on
 	^.*\\(ignored\\)$
 	^.*Bad link in
 	^.*has a funny extension
 	^.*truncating cmdlist
-	^Can.t figure out suffix
-	^nm: no name list
-	^Library name conflict:
+	^[[:space:]]*Can.t figure out suffix
+	^[[:space:]]*nm: no name list
+	^[[:space:]]*Library name conflict:
 	^.*found in both.*
    }
    cyan &Tbl{							# Routine command output
@@ -206,6 +208,7 @@ make &Arr{
 	^[sS]earching[[:space:]]
 	^[sS]kipping[[:space:]]
 	^[wW]riting[[:space:]]
+	^[uU]pdating[[:space:]]
 	^[uU]sing[[:space:]]
 	^Skip[[:space:]]
 	^x[[:space:]]
@@ -239,7 +242,7 @@ make &Arr{
 	^[[:space:]]*Date:
 	^Passed.*of.*tests
 	^0 total failures
-   	^No optimization specified in Makefile
+   	^[[:space:]]*No optimization specified in Makefile
 	^mdirmake:
 	^waiting$
 	^[[:space:]]*->[[:space:]].*&$
@@ -251,49 +254,50 @@ make &Arr{
 	^[[:space:]]+--> last directory
 	^[[:space:]]+_[[:space:]]
 	^.*skipping Library.*is also named
+	^Source code status summary
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
 	^[[:space:]]*strip[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
-	^awk[[:space:]]
-	^env[[:space:]]
+	^[[:space:]]*awk[[:space:]]
+	^[[:space:]]*env[[:space:]]
 	^[[:space:]]*cat
-	^cc[[:space:]]
-	^m4[[:space:]]
-	^clang[[:space:]]
+	^[[:space:]]*cc[[:space:]]
+	^[[:space:]]*m4[[:space:]]
+	^[[:space:]]*clang[[:space:]]
 	^\\/opt\\/SUNWspro\\/bin\\/cc[[:space:]]
-	^CC[[:space:]]
+	^[[:space:]]*CC[[:space:]]
 	^-> cc[[:space:]]
-	^f77[[:space:]]
-	^f90[[:space:]]
-	^gfortran[[:space:]]
-	^gcc[[:space:]]
-	^g\\+\\+[[:space:]]
+	^[[:space:]]*f77[[:space:]]
+	^[[:space:]]*f90[[:space:]]
+	^[[:space:]]*gfortran[[:space:]]
+	^[[:space:]]*gcc[[:space:]]
+	^[[:space:]]*g\\+\\+[[:space:]]
 	^-> gcc([-.0-9]*)?[[:space:]]
-	^dsymutil[[:space:]]
-	^mktimestamp[[:space:]]
-	^mkjson_index
-	^mkswtags
-	^ldlibs[[:space:]]
+	^[[:space:]]*dsymutil[[:space:]]
+	^[[:space:]]*mktimestamp[[:space:]]
+	^[[:space:]]*mkjson_index
+	^[[:space:]]*mkswtags
+	^[[:space:]]*ldlibs[[:space:]]
 	^[[:space:]]*[( ]*cd[[:space:]]
-	^chmod[[:space:]]
-	^compile[[:space:]]
-	^purify[[:space:]]
+	^[[:space:]]*chmod[[:space:]]
+	^[[:space:]]*compile[[:space:]]
+	^[[:space:]]*purify[[:space:]]
 	^[[:space:]]*cp[[:space:]]
-	^deposit[[:space:]]
-	^getid[[:space:]]
-	^tclindex[[:space:]]
-	^find[[:space:]]
+	^[[:space:]]*deposit[[:space:]]
+	^[[:space:]]*getid[[:space:]]
+	^[[:space:]]*tclindex[[:space:]]
+	^[[:space:]]*find[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/deposit[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/getid[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/certify[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
 	^[[:space:]]*done
 	^[[:space:]]*echo[[:space:]]
-	^flex[[:space:]]
-	^for[[:space:]]
-	^mkxref
+	^[[:space:]]*flex[[:space:]]
+	^[[:space:]]*for[[:space:]]
+	^[[:space:]]*mkxref
 	^[[:space:]]*gunzip[[:space:]]
 	^[[:space:]]*bunzip2[[:space:]]
 	^[[:space:]]*tar[[:space:]]
@@ -321,24 +325,24 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^[[:space:]]*mv[[:space:]]
 	^[[:space:]]*perl[[:space:]]
-	^sh[[:space:]]
-	^nawk[[:space:]]
+	^[[:space:]]*sh[[:space:]]
+	^[[:space:]]*nawk[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
 	^(\\/opt\\/[[:alpha:]]+\\/[[:digit:].p-]+|\\$[A-Z]+)\\/bin\\/python[[:space:]]
-	^produce[[:space:]]
+	^[[:space:]]*produce[[:space:]]
 	^(\\.\\/)?runmake[[:space:]]
-	^ranlib:?[[:space:]]
-	^refguide[[:space:]]
+	^[[:space:]]*ranlib:?[[:space:]]
+	^[[:space:]]*refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]
-	^sed[[:space:]]
-	^test[[:space:]]
-	^then[[:space:]]
-	^touch[[:space:]]
-	^tsort[[:space:]]
+	^[[:space:]]*sed[[:space:]]
+	^[[:space:]]*test[[:space:]]
+	^[[:space:]]*then[[:space:]]
+	^[[:space:]]*touch[[:space:]]
+	^[[:space:]]*tsort[[:space:]]
 	^[[:space:]]*unix_rm[[:space:]]
-	^case.*in
+	^[[:space:]]*case.*in
 	^[[:space:]]*esac
 	^[[:space:]]*SunOS\\)
 	^[[:space:]]*Linux\\)
@@ -346,7 +350,7 @@ make &Arr{
 	^[[:space:]]*\\*\\)
 	^exit$
 	.*py_compile.compile
-	^pf2screen
+	^[[:space:]]*pf2screen
 	^.\\/Build$
 	^ExtUtils::Mkbootstrap::Mkbootstrap
    }
