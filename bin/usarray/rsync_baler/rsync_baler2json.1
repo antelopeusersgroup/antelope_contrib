@@ -1,0 +1,50 @@
+.TH RSYNC_BALER2JSON 
+.SH NAME
+rsync_baler2json \- Read Baler44 rsyncbaler table(directory) and create JSON output
+
+.SH SYNOPSIS
+.nf
+\fBrsync_baler \fP [-h] [-v] [-s select_\fIregex\fP ] 
+            [-r reject_\fIregex\fP ] dbmaster baler44_dir [data.json]
+.fi
+
+.SH SUPPORT
+Contributed: NO BRTT support -- please contact author. 
+
+.SH DESCRIPTION
+\fBrsync_baler2json\fP will read a local directory that archives rsync_baler
+       folders for Baler44 stations and will output the status of the tables
+       in JSON format. This is the fastest way of creating a website that will
+       present this information to the users.  Maybe not to use in realtime to
+       export data to http calls but to update json file for the ajax calls
+       from the clients.  The script is simple and may fail if used outside
+       ANF-TA installation.
+
+.SH OPTIONS
+.IP -h  
+Print this help message
+
+.IP -v  
+Produce verbose output while running
+
+.IP "-s regex"
+    Select station regex. ('STA1|STA2' or 'A...|B.*')
+
+.IP "-r regex"
+    Reject station regex. ('STA1|STA2' or 'A...|B.*')
+
+.SH ARGUMENTS
+.IP dbmaster
+    Table with tables deployment, stabaler and staq330.
+
+.IP baler44_dir
+    Path to the base directory with all stations. Local archive of
+    balers.
+
+.IP [json.output]
+    File to update with all the JSON output from the script. If empty
+    then print to stdout.  You can then pipe the output to a second
+    script.
+
+.SH AUTHOR
+Juan C. Reyes <reyes@ucsd.edu>

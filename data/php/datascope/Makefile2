@@ -19,6 +19,8 @@ include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
 
+DLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(DEST)/data/php/$(DSDLIB) $(LDEXTRA) $(LDPATH)
+
 DBG=
 
 DSOBJS= Datascope.o

@@ -1,12 +1,12 @@
-ORBLIB = Orb.so
+ORBDLIB = Orb.so
 
 DATADIR= php
 
-DATA= $(ORBLIB)
+DATA= $(ORBDLIB)
 
 MAN3H= orb_php.3h
 
-CLEAN= $(ORBLIB)
+CLEAN= $(ORBDLIB)
 
 cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC
@@ -19,9 +19,11 @@ include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
 
+DLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(DEST)/data/php/$(ORBDLIB) $(LDEXTRA) $(LDPATH)
+
 DBG=
 
 ORBOBJS= Orb.o
-$(ORBLIB) : $(ORBOBJS)
+$(ORBDLIB) : $(ORBOBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(ORBLIB) $(LORDER) $(ORBOBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(DLDFLAGS) -o $(ORBDLIB) $(LORDER) $(ORBOBJS) $(TSORT) $(DLDLIBS) 

@@ -51,7 +51,7 @@ parse_record( char *recptr, int reclen,
       swap_2bytes(&fsdh->num_samples);
       swap_2bytes((unsigned short *)&fsdh->sample_rate);
       swap_2bytes((unsigned short *)&fsdh->multiplier);
-      swap_4bytes((unsigned long *)&fsdh->time_correct);
+      swap_4bytes((unsigned int *)&fsdh->time_correct);
       swap_2bytes(&fsdh->begin_data);
       swap_2bytes(&fsdh->begin_blockette);
     }
@@ -141,10 +141,10 @@ void swap_2bytes (unsigned short *a)
  * Swap four bytes in-place in an alignment independant way.
  ***************************************************************************/
 void
-swap_4bytes (unsigned long *a)
+swap_4bytes (unsigned int *a)
 {
   union {
-    unsigned long l;
+    unsigned int l;
     char b[4];
   } word;
   char temp;
@@ -156,7 +156,7 @@ swap_4bytes (unsigned long *a)
   temp = word.b[1];
   word.b[1] = word.b[2];
   word.b[2] = temp;
-  memcpy((void *)a,(void *)&(word.l),sizeof(long));
+  memcpy((void *)a,(void *)&(word.l),sizeof(int));
 }  /* End of swap_4bytes() */
 
 
