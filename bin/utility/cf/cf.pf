@@ -40,6 +40,7 @@ make &Arr{
 	^.*cannot create
 	^.*cannot open
 	^.*cannot find include file
+	^.*cannot find -l
 	^[[:space:]]*mex:.*failed\\.
 	^.*No such file or directory
 	^[[:space:]]*gcc: language.*not recognized
@@ -79,6 +80,7 @@ make &Arr{
    magenta &Tbl{						# Warning and potential problems
 	^[[:space:]]*Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
 	^[[:space:]]*Problem:
+	^[[:space:]]*Files are old:
 	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
@@ -259,6 +261,7 @@ make &Arr{
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
 	^[[:space:]]*strip[[:space:]]
+	^[[:space:]]*git[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^[[:space:]]*awk[[:space:]]
 	^[[:space:]]*env[[:space:]]
