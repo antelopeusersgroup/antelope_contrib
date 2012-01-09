@@ -67,6 +67,7 @@ make &Arr{
 	^.*\\*command failed\\*
 	^[[:digit:]]+[[:space:]]+failures
 	^[[:space:]]*Invalid.*license code
+	^.*No rule to make target
 	^.*corrupt archive
    }
    green &Tbl{							# Directory navigation
