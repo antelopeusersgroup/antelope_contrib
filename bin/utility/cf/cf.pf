@@ -256,6 +256,7 @@ make &Arr{
 	^[[:space:]]+--> last directory
 	^[[:space:]]+_[[:space:]]
 	^.*skipping Library.*is also named
+	^No problems.
 	^Source code status summary
    }
    blue &Tbl{							# Commands executed
