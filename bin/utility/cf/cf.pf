@@ -69,6 +69,7 @@ make &Arr{
 	^[[:space:]]*Invalid.*license code
 	^.*No rule to make target
 	^.*corrupt archive
+	^[[:space:]]*fatal: The remote end hung up unexpectedly
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
@@ -263,6 +264,7 @@ make &Arr{
 	^Source code status summary
 	^[[:space:]]*check for[[:space:]]
 	^[[:space:]]*checked [[:digit:]]+ distinct man pages
+	^[[:space:]]*(<>) git (pull|push|status)
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
