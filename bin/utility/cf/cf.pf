@@ -135,6 +135,8 @@ make &Arr{
 	^[[:space:]]*nm: no name list
 	^[[:space:]]*Library name conflict:
 	^.*found in both.*
+	^[[:space:]]*[[:digit:]]+ bad html links
+	^.*file type.*unknown
    }
    cyan &Tbl{							# Routine command output
 	^---+
@@ -259,6 +261,8 @@ make &Arr{
 	^.*skipping Library.*is also named
 	^No problems.
 	^Source code status summary
+	^[[:space:]]*check for[[:space:]]
+	^[[:space:]]*checked [[:digit:]]+ distinct man pages
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
