@@ -264,7 +264,7 @@ make &Arr{
 	^Source code status summary
 	^[[:space:]]*check for[[:space:]]
 	^[[:space:]]*checked [[:digit:]]+ distinct man pages
-	^[[:space:]]*(<>) git (pull|push|status)
+	^[[:space:]]*[<>] git (pull|push|status)
    }
    blue &Tbl{							# Commands executed
 	^[[:space:]]*ar[[:space:]]
