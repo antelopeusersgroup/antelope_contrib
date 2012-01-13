@@ -17,6 +17,7 @@ install:: runmake $(SRCS) $(PERLMAKEFILE)
 	@-chmod -R g+w blib
 	@-chmod -R g+w $(ANTELOPE)/data/perl
 	$(RM) $(ANTELOPE)/data/perl/perllocal.pod
+	touch $(ANTELOPE)/data/perl/Datascope/db2sql.pm
 
 all:: $(SRCS) $(PERLMAKEFILE) runmake
 	./runmake all

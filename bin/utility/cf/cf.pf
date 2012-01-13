@@ -338,6 +338,7 @@ make &Arr{
 	^[[:space:]]*perl[[:space:]]
 	^[[:space:]]*sh[[:space:]]
 	^[[:space:]]*nawk[[:space:]]
+	^[[:space:]]*([\\/\\.[:alnum:]]+)?libtool[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
@@ -347,6 +348,7 @@ make &Arr{
 	^[[:space:]]*ranlib:?[[:space:]]
 	^[[:space:]]*refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]
+	^[[:space:]]*rmdir[[:space:]]
 	^[[:space:]]*sed[[:space:]]
 	^[[:space:]]*test[[:space:]]
 	^[[:space:]]*then[[:space:]]
