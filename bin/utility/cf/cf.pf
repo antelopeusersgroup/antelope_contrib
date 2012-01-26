@@ -181,7 +181,7 @@ make &Arr{
 	^: [^[:space:]]*\\/?lib[^[:space:]]+\\.a
 	^[[:space:]]*[[:alnum:]_]+.o$
 	^g?make\\[[[:digit:]]+\\]: Nothing to be done for
-	^g?make\\[[[:digit:]]+\\]:.*is up to date
+	^.*is up to date
 	^making[[:space:]]
 	^created directory[[:space:]]
 	^NOTICE:
@@ -195,28 +195,30 @@ make &Arr{
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
 	^.*: At top level:$
-	^[aA]dding[[:space:]]
-	^[aA]ppending[[:space:]]
-	^[bB]uilding[[:space:]]
-	^[bB]yte-compiling[[:space:]]
-	^[cC]hanging[[:space:]]
-	^[cC]hecking[[:space:]]
-	^[cC]ompiling[[:space:]]
-	^[cC]opying[[:space:]]
-	^[cC]reating[[:space:]]
-	^[eE]xtracting[[:space:]]
-	^[iI]nstalling[[:space:]]
-	^[lL]isting[[:space:]]
-	^[pP]rocessing[[:space:]]
-	^[rR]eading[[:space:]]
-	^[rR]emoving[[:space:]]
-	^[rR]unning[[:space:]]
-	^[sS]earching[[:space:]]
-	^[sS]kipping[[:space:]]
-	^[wW]riting[[:space:]]
-	^[uU]pdating[[:space:]]
-	^[uU]sing[[:space:]]
-	^Skip[[:space:]]
+	^[[:space:]]*[aA]dding[[:space:]]
+	^[[:space:]]*[aA]ppending[[:space:]]
+	^[[:space:]]*[bB]uilding[[:space:]]
+	^[[:space:]]*[bB]yte-compiling[[:space:]]
+	^[[:space:]]*[cC]hanging[[:space:]]
+	^[[:space:]]*[cC]hecking[[:space:]]
+	^[[:space:]]*[cC]ompiling[[:space:]]
+	^[[:space:]]*[cC]opying[[:space:]]
+	^[[:space:]]*[cC]reating[[:space:]]
+	^[[:space:]]*[eE]xtracting[[:space:]]
+	^[[:space:]]*[iI]nstalling[[:space:]]
+	^[[:space:]]*[lL]isting[[:space:]]
+	^[[:space:]]*[iI]ncluding[[:space:]]
+	^[[:space:]]*[mM]aking[[:space:]]
+	^[[:space:]]*[pP]rocessing[[:space:]]
+	^[[:space:]]*[rR]eading[[:space:]]
+	^[[:space:]]*[rR]emoving[[:space:]]
+	^[[:space:]]*[rR]unning[[:space:]]
+	^[[:space:]]*[sS]earching[[:space:]]
+	^[[:space:]]*[sS]kipping[[:space:]]
+	^[[:space:]]*[wW]riting[[:space:]]
+	^[[:space:]]*[uU]pdating[[:space:]]
+	^[[:space:]]*[uU]sing[[:space:]]
+	^[[:space:]]*Skip[[:space:]]
 	^x[[:space:]]
 	^Files found in blib\\/arch: 
 	^LD_RUN_PATH=
@@ -338,6 +340,7 @@ make &Arr{
 	^[[:space:]]*perl[[:space:]]
 	^[[:space:]]*sh[[:space:]]
 	^[[:space:]]*nawk[[:space:]]
+	^[[:space:].\\/]*miniperl
 	^[[:space:]]*([\\/\\.[:alnum:]]+)?libtool[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
