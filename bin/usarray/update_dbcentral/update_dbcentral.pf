@@ -1,0 +1,8 @@
+evcluster			usarray								# event cluster name for dbcentral
+
+rtcluster			usarray_rt							# rt cluster name for dbcentral
+
+evdirbase			/anf/TA/dbs/event_dbs  				# Directory base path for monthly dbs
+
+
+  
