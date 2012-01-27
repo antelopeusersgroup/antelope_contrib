@@ -1,0 +1,62 @@
+.TH pythondbcentral 3P 
+.SH NAME
+pythondbcentral \- Python interface to resolve Datascope dbcentral entries
+.SH SYNOPSIS
+.nf
+from pythondbcentral import DbCentral
+
+path = '/anf/shared/dbcentral/dbcentral'
+clustername = 'usarray'
+
+dbc = DbCentral(path, clustername, True)
+
+try:
+    names = dbc.namelist()
+except Exception, e:
+    print "%s" % e
+else:
+    print names
+.fi
+.SH DESCRIPTION
+pythondbcentral is a Python utility class to query a dbcentral clusters database
+table and return all the resolved paths using the schema. It can handle year,
+month, day and single volume types.
+
+.SH EXAMPLE
+A short example is shown below. The code assumes that pythondbcentral is in the
+same directory as the script.
+.in 2c
+.ft CW
+.nf
+#!/usr/bin/env python
+
+import sys
+import os
+sys.path.append('%s/data/python/antelope/' % os.environ['ANTELOPE'])
+import datascope as antdb
+import stock as antstock
+from pythondbcentral import DbCentral
+
+if __name__ == '__main__':
+    path = '/anf/shared/dbcentral/dbcentral'
+    clustername = 'usarray'
+
+    dbc = DbCentral(path, clustername, True)
+
+    try:
+        names = dbc.namelist()
+    except Exception, e:
+        print "%s" % e
+    else:
+        print names
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+pythondb(3y), pythonstock(3y), dbcentral(1)
+.fi
+.SH AUTHOR
+.nf
+Robert Newman <robertlnewman@gmail.com>
+.fi

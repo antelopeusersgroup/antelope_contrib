@@ -1,0 +1,14 @@
+BIN = pythondbcentral
+
+MAN3 = pythondbcentral.3y
+
+DATADIR= utilities
+
+CLEAN = *.py
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+SUBDIR= /local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
