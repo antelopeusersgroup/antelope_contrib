@@ -39,7 +39,7 @@ make &Arr{
 	^.*cannot recover
 	^.*cannot create
 	^.*cannot open
-	^.*cannot find include file
+	^.*[cC]annot find .* include file
 	^.*cannot find -l
 	^[[:space:]]*mex:.*failed\\.
 	^.*No such file or directory
@@ -138,6 +138,7 @@ make &Arr{
 	^.*found in both.*
 	^[[:space:]]*[[:digit:]]+ bad html links
 	^.*file type.*unknown
+	^.*ranlib.*has no symbols
    }
    cyan &Tbl{							# Routine command output
 	^---+
@@ -205,6 +206,9 @@ make &Arr{
 	^[[:space:]]*[cC]opying[[:space:]]
 	^[[:space:]]*[cC]reating[[:space:]]
 	^[[:space:]]*[eE]xtracting[[:space:]]
+	^[[:space:]]*[fF]inding[[:space:]]
+	^[[:space:]]*[gG]enerating[[:space:]]
+	^[[:space:]]*[iI]gnoring[[:space:]]
 	^[[:space:]]*[iI]nstalling[[:space:]]
 	^[[:space:]]*[lL]isting[[:space:]]
 	^[[:space:]]*[iI]ncluding[[:space:]]
@@ -219,7 +223,11 @@ make &Arr{
 	^[[:space:]]*[uU]pdating[[:space:]]
 	^[[:space:]]*[uU]sing[[:space:]]
 	^[[:space:]]*Skip[[:space:]]
+	^[[:space:]]*Test Compiling[[:space:]]
+	^[[:space:]]*AutoSplitting[[:space:]]
 	^x[[:space:]]
+	^Tests in
+	^Looks good
 	^Files found in blib\\/arch: 
 	^LD_RUN_PATH=
 	^name=
@@ -269,7 +277,7 @@ make &Arr{
 	^[[:space:]]*[<>] git (pull|push|status)
    }
    blue &Tbl{							# Commands executed
-	^[[:space:]]*ar[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/]*ar[[:space:]]
 	^[[:space:]]*strip[[:space:]]
 	^[[:space:]]*git[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
