@@ -345,7 +345,7 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^[[:space:]]*mv[[:space:]]
-	^[[:space:]]*perl[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/.]*perl[[:space:]]
 	^[[:space:]]*sh[[:space:]]
 	^[[:space:]]*nawk[[:space:]]
 	^[[:space:].\\/]*miniperl
