@@ -4,6 +4,7 @@
 #   DONE	 miniseed2db month of data from certified dir into certified
 #
     use Getopt::Std ;
+    use Cwd 'abs_path';
     use strict ;
     use Datascope ;
     use archive ;
@@ -152,7 +153,7 @@ sub get_wf_dirs { # @dirs = &get_wf_dirs( $year, $month ) ;
 
 sub proc_year_dbs( @dirs ) { # $prob = &proc_year_dbs ( $prob, @dirs ) ;
     my ( $prob, @dirs ) = @_ ;
-    my ( $cmd, $day, $db, $dd, $dir, $mc, $month, $nrecs, $subset, $time, $year ) ;
+    my ( $cmd, $day, $db, $dd, $dir, $mc, $month, $nrecs, $subset, $success, $time, $year ) ;
     my ( @check, @db, @dir_days, @dir_tmp ) ;
     my ( %years ) ;
     
@@ -227,23 +228,23 @@ sub proc_year_dbs( @dirs ) { # $prob = &proc_year_dbs ( $prob, @dirs ) ;
         }
         
         $cmd = "dbsubset $db.wfdisc 'calib == NULL' | dbjoin - calibration | dbset -v - wfdisc.calib '*' calibration.calib ";
-        if ( ! &run_cmd( $cmd ) ) {
+        $success = &run_cmd( $cmd ) ;
+        if ( $success < 0 || $success > 1 ) {
             $prob++ ;
-            last ;
         }
         
 
         $cmd = "dbsubset $db.wfdisc 'calper == NULL' | dbjoin - calibration | dbset -v - wfdisc.calper '*' calibration.calper ";
-        if ( ! &run_cmd( $cmd ) ) {
+        $success = &run_cmd( $cmd ) ;
+        if ( $success < 0 || $success > 1 ) {
             $prob++ ;
-            last ;
         }
         
 
         $cmd = "dbsubset $db.wfdisc 'segtype == NULL' | dbjoin - calibration | dbset -v - wfdisc.segtype '*' calibration.segtype ";
-        if ( ! &run_cmd( $cmd ) ) {
+        $success = &run_cmd( $cmd ) ;
+        if ( $success < 0 || $success > 1 ) {
             $prob++ ;
-            last ;
         }
     }
     
@@ -253,8 +254,8 @@ sub proc_year_dbs( @dirs ) { # $prob = &proc_year_dbs ( $prob, @dirs ) ;
 
 sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
     my ( $prob, @dirs ) = @_ ;
-    my ( $cmd, $day, $dir, $jdate, $month, $new_month, $year ) ;
-    my ( @months ) ;
+    my ( $cmd, $day, $dir, $jdate, $month, $new_month, $nrows, $success, $year ) ;
+    my ( @db, @months ) ;
     my ( %abspath, %months ) ;
         
     %abspath = () ;
@@ -314,17 +315,34 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
             $prob++ ;
             return ( $prob )  ;
         }
-        
+                
     }
     
     foreach $month ( sort keys %abspath ) {
         chdir( "$pf{evdirbase}/$month" ) ;
-        $cmd = "dbset $months{$month}.wfdisc dir \"*\" \"abspath(dir)\" " ;
         
-        if ( ! &run_cmd( $cmd ) ) {
-            $prob++ ;
-            last ;
+#         $cmd = "dbset $months{$month}.wfdisc dir \"*\" \"abspath(dir)\" " ;
+#         
+#         if ( ! &run_cmd( $cmd ) ) {
+#             $prob++ ;
+#             last ;
+#         }
+        
+        @db = dbopen( $months{$month}, "r+" ) ;
+        @db = dblookup ( @db, 0, "wfdisc", 0, 0 ) ;
+        $nrows = dbquery( @db, "dbRECORD_COUNT" ) ;
+        
+        for ( $db[3] = 0 ; $db[3] < $nrows ; $db[3]++ ) {
+            $dir = dbgetv( @db, "dir" ) ;
+            $dir = abs_path( $dir ) ;
+            if ( $opt_n ) {
+                elog_notify ( $dir ) ;
+                next ;
+            }
+            dbputv ( @db, "dir", $dir ) ;
         }
+        
+        dbclose( @db ) ;
         
         $cmd = "dbfixchanids $months{$month}" ;
         
@@ -334,23 +352,23 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
         }
                 
         $cmd = "dbjoin $months{$month}.wfdisc calibration | dbset -v - wfdisc.calib '*' calibration.calib ";
-        if ( ! &run_cmd( $cmd ) ) {
+        $success = &run_cmd( $cmd ) ;
+        if ( $success < 0 || $success > 1 ) {
             $prob++ ;
-            last ;
         }
         
 
         $cmd = "dbjoin $months{$month}.wfdisc calibration | dbset -v - wfdisc.calper '*' calibration.calper ";
-        if ( ! &run_cmd( $cmd ) ) {
+        $success = &run_cmd( $cmd ) ;
+        if ( $success < 0 || $success > 1 ) {
             $prob++ ;
-            last ;
         }
         
 
         $cmd = "dbjoin $months{$month}.wfdisc calibration | dbset -v - wfdisc.segtype '*' calibration.segtype ";
-        if ( ! &run_cmd( $cmd ) ) {
+        $success = &run_cmd( $cmd ) ;
+        if ( $success < 0 || $success > 1 ) {
             $prob++ ;
-            last ;
         }
                 
 #  Prepare TA gap database tables
@@ -361,7 +379,6 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
         
         if ( ! &run_cmd( $cmd ) ) {
             $prob++ ;
-            last ;
         }
     }
     
