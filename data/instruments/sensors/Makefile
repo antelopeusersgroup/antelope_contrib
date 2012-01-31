@@ -1,5 +1,6 @@
 DATADIR=instruments/sensors
 DATA= \
+        BH1.pf \
 	chaparral.pf \
 	cmg1t.pf \
 	cmg1t_100sec.pf \
@@ -12,6 +13,7 @@ DATA= \
 	cmg3esp_60sec.pf \
 	cmg3esp_nsn.pf \
         cmg3t.pf \
+        cmg3t_nsn.pf \
 	cmg3t_100sec.pf \
 	cmg3t_120sec.pf \
 	cmg3t_30sec.pf \
@@ -52,6 +54,7 @@ DATA= \
 	l22.pf \
 	l28.pf \
 	l4c.pf \
+	l4a.pf \
 	l4c_horz.pf \
 	l4c_vert.pf \
 	le-3d20s.pf \

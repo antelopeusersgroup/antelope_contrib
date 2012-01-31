@@ -1,0 +1,36 @@
+originator      Matthew Koessler, GSC 
+last_modified   2012 Jan 24 
+category	Geological Survey of Canada
+configuration	IA
+
+description	Internet Accelerometer
+dfile 		ia
+
+streams		100sps
+
+# definitions of streams
+ 100sps     100  preamp a/d ia_fir
+ 
+ # Stages
+
+# gain = counts/V = 2^^18 bits/4V 
+gains		65536
+
+preamp	&Arr{
+gtype		preamp
+response	&datafile(responses/ia_preamp)
+}
+
+a/d	&Arr{
+samprate	300
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+ia_fir	&Arr{
+gtype		FIR_decimator
+decifac		3
+response	&datafile(responses/ia_fir)
+}
