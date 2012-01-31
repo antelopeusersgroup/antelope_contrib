@@ -1,0 +1,13 @@
+#  Manufacturer: Geological Survey of Canada
+#  Model       : IA 500 ug
+#  Description : Internet Accelerometer 
+#
+# Effective Flat Response
+# Corner frequency and resonance frequency are on the order of 10 kHz
+# see www.analog.com for specification sheet
+#
+#
+theoretical 1 anti-alias paz GSC_koessler
+1
+0
+0
