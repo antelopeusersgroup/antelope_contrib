@@ -1,0 +1,17 @@
+#  Manufacturer: Geological Survey of Canada
+#  Model       : IA Preamp 
+#  Description : Internet Accelerometer, preamp stage
+#
+# 5-pole butterworth low pass filter Wc = pi = 2pi * 90 Hz
+# Normalization factor from dbcheck_responses = 5.80E+13
+theoretical 1 anti-alias paz GSC_koessler
+5.80E+13
+5
+-174.745	537.810		0.000		0.000
+-457.488	332.385		0.000		0.000
+-565.487	0.000		0.000		0.000
+-457.488	-332.385	0.000		0.000
+-174.745	-537.810	0.000		0.000
+0
+
+

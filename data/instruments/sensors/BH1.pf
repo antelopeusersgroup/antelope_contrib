@@ -1,0 +1,36 @@
+originator      Matt Koessler, GSC
+last_modified   2011-09-08
+
+info    &Literal{
+GEOSense BH-1 Short Period Seismometer
+These instrument parameter files and their nominal responses came from
+
+    Tom Van Zandt
+
+and the files were compiled by T Mulder & M Koessler, GSC.
+}
+
+category        GEOSense
+configuration   BH-1
+
+description     GEOSense BH-1
+dfile		BH1
+
+rsptype               V	    # velocity instrument
+band	              s	    # short period 
+short_period_sensor   yes   # Sets first character of SEED channel code
+sensor_type_code      H     # 2nd character in SEED channel code
+
+gtype		sensor	# stage type
+sensitivity	3.50e-6 # equivalent to 3500 V/m/sec
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/BH1) 
+							

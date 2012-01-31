@@ -1,0 +1,35 @@
+originator     Taimi Mulder, GSC
+last_modified  2012 Jan 30
+
+info    &Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.analog.com
+	ADXL105 chip
+
+and provided to the GSC by Andreas Rosenberger at the GSC Pacific, Sidney.
+}
+category 	Geological Survey of Canada
+configuration	IA 50ug accelerometer
+
+description	GSC IA 50ug accelerometer
+dfile		ia_50ug
+
+rsptype	A	# velocity instrument
+band	b	# broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	1.6
+iunits		nm/s**2
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/ia_50ug) 
+

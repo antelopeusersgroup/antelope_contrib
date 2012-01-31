@@ -1,0 +1,21 @@
+# GOESense BH-1 Short Period Seismometer
+# $Id$
+#
+# Nominal response poles from Tom Van Zandt
+#
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 4                   num of poles
+# sensitivity  3500 v/m/sec
+theoretical   1 sensor   paz    
+1.380607E+06			
+4             Poles
+-6.2831E+00   0.0000E+00    0.0000E+00    0.0000E+00
+-6.2831E+00   0.0000E+00    0.0000E+00    0.0000E+00
+-500.0E+00    1063.3E+00    0.0000E+00    0.0000E+00
+-500.0E+00    -1063.3E+00    0.0000E+00    0.0000E+00
+2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
