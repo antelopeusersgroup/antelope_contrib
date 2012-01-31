@@ -254,7 +254,7 @@ sub proc_year_dbs( @dirs ) { # $prob = &proc_year_dbs ( $prob, @dirs ) ;
 
 sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
     my ( $prob, @dirs ) = @_ ;
-    my ( $cmd, $day, $dir, $jdate, $month, $new_month, $nrows, $success, $year ) ;
+    my ( $cmd, $day, $dfile, $dir, $jdate, $month, $new_month, $nrows, $success, $year ) ;
     my ( @db, @months ) ;
     my ( %abspath, %months ) ;
         
@@ -333,10 +333,15 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
         $nrows = dbquery( @db, "dbRECORD_COUNT" ) ;
         
         for ( $db[3] = 0 ; $db[3] < $nrows ; $db[3]++ ) {
-            $dir = dbgetv( @db, "dir" ) ;
+            ( $dir, $dfile ) = dbgetv( @db, qw ( dir dfile ) ) ;
             $dir = abs_path( $dir ) ;
             if ( $opt_n ) {
                 elog_notify ( $dir ) ;
+                next ;
+            }
+            if ( ! -f "$dir/$dfile" ) {
+                elog_complain ( "$dir/$dfile does not exist! " ) ;
+                $prob++ ;
                 next ;
             }
             dbputv ( @db, "dir", $dir ) ;
