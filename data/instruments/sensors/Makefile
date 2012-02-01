@@ -50,6 +50,8 @@ DATA= \
 	hs10_e.pf \
 	hs10_n.pf \
 	hs10_vert.pf \
+	ia_500ug.pf \
+	ia_50ug.pf \
 	ks54000.pf \
 	l22.pf \
 	l28.pf \
