@@ -6,6 +6,7 @@
     use Datascope ;
     use archive ;
     use timeslice ;
+    use timeutil ;
     use utilfunct ;
     
     our ($opt_v,$opt_V,$opt_f,$opt_m,$opt_n,$opt_p);
