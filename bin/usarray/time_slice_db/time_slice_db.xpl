@@ -54,8 +54,9 @@ our ( $pgm, $host);
 
 
 {    
-    my ( $dbin, $dirbase, $wfbase, $start_time, $end_time, $lag, $last_time, $dbbase );
-    my ( $period, $verbose, $debug, $usage, $exist, $subject, $cmd, $stime);
+    my ( $cmd, $dbbase, $dbin, $dirbase, $end_time, $lag, $last_time, $period, $start_time ) ;
+    my ( $stime, $subject, $usage, $wfbase);
+    
     $pgm = $0 ; 
     $pgm =~ s".*/"" ;
     elog_init($pgm, @ARGV);
@@ -91,8 +92,6 @@ our ( $pgm, $host);
     $lag        = 0 if $opt_e ;    
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -100,11 +99,11 @@ our ( $pgm, $host);
         elog_die("\n$subject");
     }
 
-    $last_time = &last_time($end_time, $lag, $period, $debug);
+    $last_time = &last_time($end_time, $lag, $period );
     
-    &backup_dbin( $dbin, $dbbase, $verbose, $debug) if $opt_C;
+    &backup_dbin( $dbin, $dbbase ) if $opt_C;
 
-    &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug)     if ($opt_E) ;
+    &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period )     if ($opt_E) ;
 
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -112,9 +111,9 @@ our ( $pgm, $host);
         elog_die("\n$subject");
     }
 
-    &process_wfdisc( $dbin, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug )     if ($opt_W) ;
+    &process_wfdisc( $dbin, $wfbase, $dbbase, $start_time, $last_time, $period )     if ($opt_W) ;
 
-    &process_big_tables( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) if ($opt_B) ;
+    &process_big_tables( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period ) if ($opt_B) ;
 
     $stime = strydtime(now());
     elog_notify ("\ncompleted successfully	$stime\n\n");
@@ -126,13 +125,11 @@ our ( $pgm, $host);
     exit(0);
 }
 
-
-
-sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug);
-    my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug) = @_ ;
-    my ( $arr_no_join, $base, $cmd, $current, $dbexist, $dbname, $dirname, $dtmp, $exists );
-    my ( $first_event, $last_event, $msg, $n, $narrivals, $nevents, $next_ts, $noassoc, $norigins );
-    my ( $nrecs, $origin_dir, $subject, $subset, $suffix, $ts, $wfdir, $wfpath, $wftmp );
+sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period );
+    my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period ) = @_ ;
+    my ( $arr_no_join, $base, $cmd, $current, $dbexist, $dbname, $dirname, $dtmp, $exists ) ;
+    my ( $first_event, $last_event, $msg, $n, $narrivals, $nevents, $next_ts, $noassoc, $norigins ) ;
+    my ( $nrecs, $origin_dir, $subject, $subset, $suffix, $ts, $wfdir, $wfpath, $wftmp) ;
     my ( @dbarrival, @dbevent, @dbin, @dbj, @dbnj, @dbnj2, @dborigin, @dbout, @dbtmp, @ts) ;
     
 #
@@ -185,7 +182,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
 #  find unique year-months
 #
     
-    @ts = &time_splits($period, $debug, @dbj) ;
+    @ts = &time_splits($period, @dbj) ;
     dbclose(@dbin);
     
 #
@@ -196,7 +193,7 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
 
 #  find month boundaries
 
-        ($current,$next_ts) =  &border($ts, $period, $debug);
+        ($current,$next_ts) =  &border($ts, $period );
         
         elog_notify ("process_events	current $current	next_ts $next_ts") if $opt_V;
                 
@@ -214,13 +211,13 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
         ($wfdir, $base, $suffix) = parsepath($wfpath);
         $wfpath = "$dbpath:$wfdir\/{$base}";
 
-        ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"origin", $wfpath, $dblocks, $dbidserver, $debug);
+        ($dirname, $dbname, $exists) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"origin", $wfpath, $dblocks, $dbidserver );
         if ($exists) {
             $dbname = $dirname . "/tmp_events";
             ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
             elog_notify("\nprocess_events	dbmerge $dbname $dbexist \n\n");
         } else {
-            ($dirname, $dbname) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"arrival", $dbpath, $dblocks, $dbidserver, $debug);
+            ($dirname, $dbname) =  &mk_db_des($ts,$dirbase,$dbbase,$period,"arrival", $dbpath, $dblocks, $dbidserver );
             if ($exists) {
                 $dbname = $dirname . "/tmp_events";
                 ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
@@ -351,19 +348,17 @@ sub process_events { # &process_events( $dbin, $dirbase, $wfbase, $dbbase, $star
             run($msg,0);
         }
 
-        &sort_events($dbname, $debug);
+        &sort_events( $dbname );
          
     }
     return ;
 }
 
-
-sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug );
-    my ( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) = @_ ;
-    my ( $ts, $current, $next_ts, $next_ts2, $wfdisc_dir, $tmp_db, $tmp_db2, $cmd, $msg );
-    my ( $subset, $dirname, $dbname, $dtmp, $dbexist, $nrecs, $exists, $subject ) ;
-    my ( @dbin, @dbm, @dbwfdisc, @dbcalib ) ;
-    my ( @ts);
+sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period );
+    my ( $dbin, $dirbase, $dbbase, $start_time, $last_time, $period ) = @_ ;
+    my ( $cmd, $current, $dbexist, $dbname, $dirname, $dtmp, $exists, $msg, $next_ts, $next_ts2 ) ;
+    my ( $nrecs, $subject, $subset, $tmp_db, $tmp_db2, $ts, $wfdisc_dir );
+    my ( @dbcalib, @dbin, @dbm, @dbwfdisc, @ts ) ;
     
 #
 #  open database tables
@@ -391,17 +386,17 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
     return if ($nrecs == 0);
     
     @ts = ();
-    @ts = &time_splits($period,$debug,@dbwfdisc) ;
+    @ts = &time_splits($period, @dbwfdisc) ;
     elog_notify ("process_wfdisc	time_splits	@ts") if $opt_V;
       
     foreach $ts (@ts) {
-        ($current,$next_ts) =  &border($ts, $period, $debug);
+        ($current,$next_ts) =  &border($ts, $period );
         $next_ts2 = yearday(epoch($next_ts) + 86400);
         if (epoch($current) >= str2epoch($last_time)) {
             elog_notify ( "process_wfdisc	current processing $current	 - stop processing at $last_time\n" ) if $opt_V;
             last;
         }
-        ($dirname, $dbname, $exists) =  &mk_db_des($ts, $dirbase, $dbbase, $period, "wfdisc", $dbpath, $dblocks, $dbidserver, $debug);
+        ($dirname, $dbname, $exists) =  &mk_db_des($ts, $dirbase, $dbbase, $period, "wfdisc", $dbpath, $dblocks, $dbidserver );
         if ($exists) {
             $dbname = $dirname . "/tmp_wfdisc";
             ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
@@ -455,7 +450,7 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
     
     if ($opt_C) {
         foreach $ts (@ts) {
-            ($current,$next_ts) =  &border($ts, $period, $debug);
+            ($current,$next_ts) =  &border($ts, $period );
             if (epoch($current) >= str2epoch($last_time)) {
                 elog_notify ( "process_wfdisc	current cleaning $current	 - stop cleaning at $last_time\n" ) if $opt_V;
                 last;
@@ -491,13 +486,11 @@ sub process_wfdisc { # &process_wfdisc( $dbin, $dirbase, $dbbase, $start_time, $
     return;    
 }
 
-sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug );
-    my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period, $verbose, $debug ) = @_ ;
-    my ( $ts, $current, $next_ts, $ref );
-    my ( $subset, $dirname, $dbname, $table, $problems, $cmd, $dtmp, $dbexist, $msg, $exists, $subject );
-    my ( $wftmp, $wfpath, $wfdir, $base, $suffix) ; 
-    my ( @dbin, @dbm, @dbt );
-    my ( @ts, @tables, @ctables, @dbtables );
+sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period );
+    my ( $dbin, $dirbase, $wfbase, $dbbase, $start_time, $last_time, $period ) = @_ ;
+    my ( $base, $cmd, $current, $dbexist, $dbname, $dirname, $dtmp, $exists, $msg, $next_ts ) ;
+    my ( $problems, $ref, $subject, $subset, $suffix, $table, $ts, $wfdir, $wfpath, $wftmp ) ; 
+    my ( @ctables, @dbin, @dbm, @dbt, @dbtables, @tables, @ts ) ;
     
 #
 #  open database tables
@@ -539,10 +532,10 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbas
 
         push (@ctables, $table) ;
                    
-        @ts = &time_splits($period, $debug, @dbt) ;
+        @ts = &time_splits($period, @dbt) ;
           
         foreach $ts (@ts) {
-            ($current,$next_ts) =  &border($ts, $period, $debug);
+            ($current,$next_ts) =  &border($ts, $period );
             if (str2epoch($current) >= str2epoch($last_time)) {
                 elog_notify ( "process_big_tables	current processing $current	 - stop processing at $last_time\n" ) if $opt_V ;
                 last ;
@@ -552,7 +545,7 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbas
             ($wfdir, $base, $suffix) = parsepath($wfpath);
             $wfpath = "$dbpath:$wfdir\/{$base}";
 
-            ($dirname, $dbname, $exists) =  &mk_db_des($ts, $dirbase, $dbbase, $period, $table, $wfpath, $dblocks, $dbidserver, $debug);
+            ($dirname, $dbname, $exists) =  &mk_db_des($ts, $dirbase, $dbbase, $period, $table, $wfpath, $dblocks, $dbidserver );
             if ($exists) {
                 $dbname = $dirname . "/tmp_$table";
                 ($dtmp, $dbexist) =  &mk_d($dirbase,$dbbase,$period,$ts);
@@ -598,11 +591,11 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbas
                 next ;
             }
                     
-            @ts  = &time_splits($period,$debug,@dbt) ;
+            @ts  = &time_splits($period, @dbt) ;
             dbclose(@dbt) ;
           
             foreach $ts (@ts) {
-                ($current,$next_ts) =  &border($ts, $period, $debug);
+                ($current,$next_ts) =  &border($ts, $period );
                 if (str2epoch($current) >= str2epoch($last_time)) {
                     elog_notify ("process_big_tables	current cleaning $current	 - stop cleaning at $last_time\n") if $opt_V;
                     last;
@@ -644,10 +637,7 @@ sub process_big_tables { # &process_big_tables( $dbin, $dirbase, $wfbase, $dbbas
 
 sub getparam { # ($dirbase,$wfbase,$dbbase,$period,$lag,$dbpath,$dbidserver,$dblocks) = getparam($Pf);
     my ($Pf) = @_ ;
-    my ($dirbase, $wfbase, $dbbase, $period, $lag, $dbpath, $dbidserver, $dblocks) ;
-    my ($rt_tot, $rt_avail, $dirbase_tot, $dirbase_avail, $subject);
-    my (@db);
-    my (%rtdb,%dirbase);
+    my ( $dbbase, $dirbase, $lag, $period, $subject, $wfbase ) ;
     
     $dirbase    = pfget( $Pf, "dirbase" );
     $wfbase     = pfget( $Pf, "wfbase" );
