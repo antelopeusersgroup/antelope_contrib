@@ -13,7 +13,7 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$problems,$subject,$debug,$verbose);
+    my ($usage,$cmd,$problems,$subject);
     my ($db,$dbcal,$stime,$subset,$string);
     my ($sta,$row,$chan,$time,$endtime,$nrows);
     my ($mintime, $maxtime);
@@ -45,8 +45,6 @@
     $dbcal      =  $ARGV[1];
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v ;
-    $debug      = $opt_V ;
         
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources" ;
@@ -100,7 +98,7 @@
 #  loop over dbdlcalwf, keeping for processing any waveforms which have not already been processed  
 #    
     if ($nrows) {
-        compress_wfdisc( "/tmp/tmp_cal_wf\_$$", "600", 0, $verbose, $debug );
+        compress_wfdisc( "/tmp/tmp_cal_wf\_$$", "600", 0 );
     
         @dbtmp = dbopen("/tmp/tmp_cal_wf\_$$","r+");
         @dbtmp = dblookup(@dbtmp,0,"wfdisc",0,0);

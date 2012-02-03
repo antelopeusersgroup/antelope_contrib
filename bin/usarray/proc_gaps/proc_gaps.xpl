@@ -24,9 +24,9 @@
     
 {    #  Main program
 
-    my ( $Pf, $absdir, $base, $cmd, $dbgap, $dbname, $debug, $dir, $dirname, $dmcdbname, $dmcgap ) ;
+    my ( $Pf, $absdir, $base, $cmd, $dbgap, $dbname, $dir, $dirname, $dmcdbname, $dmcgap ) ;
     my ( $endtime, $exists, $month, $nrecs, $problem_check, $problems, $starttime, $stime ) ;
-    my ( $str_end, $str_start, $subject, $suff, $sync_file, $usage, $verbose, $year, $yearday );
+    my ( $str_end, $str_start, $subject, $suff, $sync_file, $usage, $year, $yearday );
     my ( @db );
     my ( %pf );
 #
@@ -58,7 +58,7 @@
     $year      = $ARGV[1];
     $month     = $ARGV[2];
     
-    %pf = &getparam( $Pf, $verbose, $debug );
+    %pf = &getparam( $Pf );
     
     if ($pf{period} !~ /year|month/) {
         elog_complain("\n\n Paremeter file error.\nperiod $pf{period} is not \"year\" or \"month\"");
@@ -68,8 +68,6 @@
     }
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
     if (system_check(0)) {
         $subject = "Problems - $pgm $host	Ran out of system resources";
@@ -80,7 +78,7 @@
 #
 #  Get times and set up directories and descriptor files if necessary
 #
-    ($starttime,$endtime) = &times($year,$month,$debug);
+    ($starttime,$endtime) = &month_times($year,$month);
     $str_start = epoch2str($starttime,"%m/%d/%Y");
     $str_end   = epoch2str($endtime,"%m/%d/%Y");
     
@@ -91,7 +89,7 @@
 #  make TA descriptor file to get dbname and dirname
 #
 
-    ($dirname, $dbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver},$debug);    
+    ($dirname, $dbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver});    
     elog_notify("$dirname	$dbname	$exists")  if $opt_V ;
 #
 #  Build TA monthly wfdisc if needed
@@ -224,8 +222,8 @@
     elog_notify("dmcgap	$dmcgap") if $opt_V;
     
     $cmd  = "dmcgap2db ";
-    $cmd .= "-v " if $verbose ;
-    $cmd .= "-V " if $debug ;
+    $cmd .= "-v " if $opt_v ;
+    $cmd .= "-V " if $opt_V ;
     $cmd .= "-p -I $pf{dbidserver} -P $pf{dbpath} -d $pf{rtdirbase} " ;
     $cmd .= "$sync_file";
         
@@ -236,10 +234,10 @@
         elog_notify("\nskipping $cmd") if $opt_v;
     } 
     
-    ($dirname, $dmcdbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dmcgapbase},$pf{period},"gap",$pf{dbpath},$pf{dblocks},$pf{dbidserver},$debug);    
+    ($dirname, $dmcdbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dmcgapbase},$pf{period},"gap",$pf{dbpath},$pf{dblocks},$pf{dbidserver});    
     elog_notify("$dirname	$dmcdbname	$exists")  if $opt_V ;
 
-    ($dirname, $dbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver},$debug);    
+    ($dirname, $dbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver});    
     elog_notify("$dirname	$dbname	$exists")  if $opt_V ;
         
     $dbgap = "$dbname.gap";
@@ -249,7 +247,7 @@
 #  Prepare TA gap database tables
 #
     $cmd  = "rt_daily_return ";
-    $cmd .= "-v " if $debug ;
+    $cmd .= "-v " if $opt_V ;
     $cmd .= "-t \"$str_start\" -e \"$str_end\" -s \"chan=~/[BL]HZ/\" $dbname $dbname";
     $cmd .= "> /tmp/tmp_rt_daily_return\_$$ 2>&1 " unless $opt_V ;
 
@@ -286,7 +284,7 @@
 #  Build clean baler data directory
 #
     $cmd  = "build_baler_data ";
-    $cmd .= "-v " if $debug ;
+    $cmd .= "-v " if $opt_V ;
     $cmd .= "-V " if $opt_V;
     $cmd .= "-n " if $opt_n;
     $cmd .= "-d $pf{cleanbalerdirbase}/$year\_$month/baler $pf{balerdb_central} $pf{clustername} \"$str_start\" \"$str_end\" ";
@@ -308,7 +306,7 @@
 #  Evaluate whether DMC gaps have been filled by previous baler recoveries
 #
     $cmd  = "gap_status ";
-    $cmd .= "-v " if $debug ;
+    $cmd .= "-v " if $opt_V ;
     $cmd .= "$dmcdbname $pf{balerwfdisc} $pf{cleanbalerdirbase}/$year\_$month/baler";
     $cmd .= "> /tmp/tmp_gap_status_dmc\_$$ 2>&1 " unless $opt_V ;
     
@@ -322,7 +320,7 @@
 #  Evaluate whether TA gaps have been filled by previous baler recoveries
 #
     $cmd  = "gap_status ";
-    $cmd .= "-v " if $debug ;
+    $cmd .= "-v " if $opt_V ;
     $cmd .= "$dbname $pf{balerwfdisc} $pf{cleanbalerdirbase}/$year\_$month/baler";
     $cmd .= "> /tmp/tmp_gap_status_ta\_$$ 2>&1 " unless $opt_V ;
     
@@ -336,7 +334,7 @@
 #  Generate baler request file for baler_admin
 #
     $cmd  = "baler_request ";
-    $cmd .= "-v " if $verbose ;
+    $cmd .= "-v " if $opt_v ;
     $cmd .= "-d $pf{requestdir} $dbname $dmcdbname";
     $cmd .= "> /tmp/tmp_baler_request\_$$ 2>&1 " unless $opt_V ;
     
