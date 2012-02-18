@@ -66,7 +66,7 @@ sub check_lag($);
 sub valid_client($$$);
 
 # Constants
-our $VERSION = '$Revision$';
+our $VERSION = '1.0';
 our $AUTHOR = "Geoff Davis, gadavis\@ucsd.edu";
 our $PROGNAME = $0;
 our $NAGIOS_SERVICE_NAME = "ORBLAG";
