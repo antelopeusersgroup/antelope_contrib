@@ -39,7 +39,8 @@ make &Arr{
 	^.*cannot recover
 	^.*cannot create
 	^.*cannot open
-	^.*cannot find include file
+	^.*[cC]annot find .* include file
+	^.*cannot find -l
 	^[[:space:]]*mex:.*failed\\.
 	^.*No such file or directory
 	^[[:space:]]*gcc: language.*not recognized
@@ -66,7 +67,9 @@ make &Arr{
 	^.*\\*command failed\\*
 	^[[:digit:]]+[[:space:]]+failures
 	^[[:space:]]*Invalid.*license code
+	^.*No rule to make target
 	^.*corrupt archive
+	^[[:space:]]*fatal: The remote end hung up unexpectedly
    }
    green &Tbl{							# Directory navigation
 	^\\+[[:space:]]+[^[:space:]]+
@@ -79,6 +82,7 @@ make &Arr{
    magenta &Tbl{						# Warning and potential problems
 	^[[:space:]]*Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
 	^[[:space:]]*Problem:
+	^[[:space:]]*Files are old:
 	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
@@ -132,6 +136,9 @@ make &Arr{
 	^[[:space:]]*nm: no name list
 	^[[:space:]]*Library name conflict:
 	^.*found in both.*
+	^[[:space:]]*[[:digit:]]+ bad html links
+	^.*file type.*unknown
+	^.*ranlib.*has no symbols
    }
    cyan &Tbl{							# Routine command output
 	^---+
@@ -175,7 +182,7 @@ make &Arr{
 	^: [^[:space:]]*\\/?lib[^[:space:]]+\\.a
 	^[[:space:]]*[[:alnum:]_]+.o$
 	^g?make\\[[[:digit:]]+\\]: Nothing to be done for
-	^g?make\\[[[:digit:]]+\\]:.*is up to date
+	^.*is up to date
 	^making[[:space:]]
 	^created directory[[:space:]]
 	^NOTICE:
@@ -189,29 +196,38 @@ make &Arr{
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
 	^.*: At top level:$
-	^[aA]dding[[:space:]]
-	^[aA]ppending[[:space:]]
-	^[bB]uilding[[:space:]]
-	^[bB]yte-compiling[[:space:]]
-	^[cC]hanging[[:space:]]
-	^[cC]hecking[[:space:]]
-	^[cC]ompiling[[:space:]]
-	^[cC]opying[[:space:]]
-	^[cC]reating[[:space:]]
-	^[eE]xtracting[[:space:]]
-	^[iI]nstalling[[:space:]]
-	^[lL]isting[[:space:]]
-	^[pP]rocessing[[:space:]]
-	^[rR]eading[[:space:]]
-	^[rR]emoving[[:space:]]
-	^[rR]unning[[:space:]]
-	^[sS]earching[[:space:]]
-	^[sS]kipping[[:space:]]
-	^[wW]riting[[:space:]]
-	^[uU]pdating[[:space:]]
-	^[uU]sing[[:space:]]
-	^Skip[[:space:]]
+	^[[:space:]]*[aA]dding[[:space:]]
+	^[[:space:]]*[aA]ppending[[:space:]]
+	^[[:space:]]*[bB]uilding[[:space:]]
+	^[[:space:]]*[bB]yte-compiling[[:space:]]
+	^[[:space:]]*[cC]hanging[[:space:]]
+	^[[:space:]]*[cC]hecking[[:space:]]
+	^[[:space:]]*[cC]ompiling[[:space:]]
+	^[[:space:]]*[cC]opying[[:space:]]
+	^[[:space:]]*[cC]reating[[:space:]]
+	^[[:space:]]*[eE]xtracting[[:space:]]
+	^[[:space:]]*[fF]inding[[:space:]]
+	^[[:space:]]*[gG]enerating[[:space:]]
+	^[[:space:]]*[iI]gnoring[[:space:]]
+	^[[:space:]]*[iI]nstalling[[:space:]]
+	^[[:space:]]*[lL]isting[[:space:]]
+	^[[:space:]]*[iI]ncluding[[:space:]]
+	^[[:space:]]*[mM]aking[[:space:]]
+	^[[:space:]]*[pP]rocessing[[:space:]]
+	^[[:space:]]*[rR]eading[[:space:]]
+	^[[:space:]]*[rR]emoving[[:space:]]
+	^[[:space:]]*[rR]unning[[:space:]]
+	^[[:space:]]*[sS]earching[[:space:]]
+	^[[:space:]]*[sS]kipping[[:space:]]
+	^[[:space:]]*[wW]riting[[:space:]]
+	^[[:space:]]*[uU]pdating[[:space:]]
+	^[[:space:]]*[uU]sing[[:space:]]
+	^[[:space:]]*Skip[[:space:]]
+	^[[:space:]]*Test Compiling[[:space:]]
+	^[[:space:]]*AutoSplitting[[:space:]]
 	^x[[:space:]]
+	^Tests in
+	^Looks good
 	^Files found in blib\\/arch: 
 	^LD_RUN_PATH=
 	^name=
@@ -254,11 +270,16 @@ make &Arr{
 	^[[:space:]]+--> last directory
 	^[[:space:]]+_[[:space:]]
 	^.*skipping Library.*is also named
+	^No problems.
 	^Source code status summary
+	^[[:space:]]*check for[[:space:]]
+	^[[:space:]]*checked [[:digit:]]+ distinct man pages
+	^[[:space:]]*[<>] git (pull|push|status)
    }
    blue &Tbl{							# Commands executed
-	^[[:space:]]*ar[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/]*ar[[:space:]]
 	^[[:space:]]*strip[[:space:]]
+	^[[:space:]]*git[[:space:]]
 	^\\/usr\\/ccs\\/bin\\/ar[[:space:]]
 	^[[:space:]]*awk[[:space:]]
 	^[[:space:]]*env[[:space:]]
@@ -324,9 +345,11 @@ make &Arr{
 	^[[:space:]]*[[:alnum:]._\\/]*mex[[:space:]]
 	^[[:space:]]*[[:alnum:]._\\/]*matlab[[:space:]]
 	^[[:space:]]*mv[[:space:]]
-	^[[:space:]]*perl[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/.]*perl[[:space:]]
 	^[[:space:]]*sh[[:space:]]
 	^[[:space:]]*nawk[[:space:]]
+	^[[:space:].\\/]*miniperl
+	^[[:space:]]*([\\/\\.[:alnum:]]+)?libtool[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/bin\\/perl[[:space:]]
 	^\\/opt\\/antelope\\/perl[[:digit:].p-]+\\/lib\\/
@@ -336,6 +359,7 @@ make &Arr{
 	^[[:space:]]*ranlib:?[[:space:]]
 	^[[:space:]]*refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]
+	^[[:space:]]*rmdir[[:space:]]
 	^[[:space:]]*sed[[:space:]]
 	^[[:space:]]*test[[:space:]]
 	^[[:space:]]*then[[:space:]]

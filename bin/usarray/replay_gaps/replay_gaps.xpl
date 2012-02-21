@@ -6,6 +6,7 @@
     use Datascope ;
     use archive ;
     use timeslice ;
+    use timeutil ;
     use utilfunct ;
     
     our ($opt_v,$opt_V,$opt_f,$opt_m,$opt_n,$opt_p);
@@ -13,9 +14,9 @@
     
 {    #  Main program
 
-    my ( $Pf, $archive_db, $cmd, $dbname, $debug, $dirname, $dmcdbname, $endtime, $exists, $month ) ;
+    my ( $Pf, $archive_db, $cmd, $dbname, $dirname, $dmcdbname, $endtime, $exists, $month ) ;
     my ( $problems, $replay_orb, $starttime, $stime, $str_end, $str_start ) ;
-    my ( $subject, $usage, $verbose, $year );
+    my ( $subject, $usage, $year );
     my ( @db ) ;
     my ( %pf ) ;
 
@@ -50,10 +51,8 @@
     $month      = $ARGV[2];
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
-    %pf = &getparam($Pf, $verbose, $debug);
+    %pf = &getparam($Pf);
 
     if ($pf{period} !~ /year|month/) {
         elog_complain("\n\n Paremeter file error.\nperiod $pf{period} is not \"year\" or \"month\"");
@@ -68,7 +67,7 @@
         elog_die("\n$subject");
     }
 
-    ($starttime,$endtime) = &times($year,$month,$debug);
+    ($starttime,$endtime) = &month_times($year,$month);
     $str_start = epoch2str($starttime,"%m/%d/%Y");
     $str_end   = epoch2str($endtime,"%m/%d/%Y");
     
@@ -94,7 +93,7 @@
 #
 
     $cmd  = "build_baler_data ";
-    $cmd .= "-v " if $verbose ;
+    $cmd .= "-v " if $opt_v ;
     $cmd .= "-V " if $opt_V;
     $cmd .= "-n " if $opt_n;
     $cmd .= "-d $pf{cleanbalerdirbase}/$year\_$month/baler $pf{balerdb_central} $pf{clustername} \"$str_start\" \"$str_end\" ";
@@ -113,13 +112,13 @@
 #   check to see if expected dbs are available
 #
 
-    ($dirname, $dbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver},$debug);    
+    ($dirname, $dbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver});    
     elog_notify("Realtime database	$dirname	$dbname	$exists") if $opt_v ;
     
-    ($dirname, $dmcdbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dmcgapbase},$pf{period},"gap",$pf{dbpath},$pf{dblocks},$pf{dbidserver},$debug);    
+    ($dirname, $dmcdbname, $exists) =  &mk_db_des(yearday($starttime),$pf{rtdirbase},$pf{dmcgapbase},$pf{period},"gap",$pf{dbpath},$pf{dblocks},$pf{dbidserver});    
     elog_notify("DMC database	$dirname	$dmcdbname	$exists") if $opt_v ;
 
-    ($dirname, $archive_db, $exists) =  &mk_db_des(yearday($starttime),$pf{archivebase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver},$debug);    
+    ($dirname, $archive_db, $exists) =  &mk_db_des(yearday($starttime),$pf{archivebase},$pf{dbbase},$pf{period},"wfdisc",$pf{dbpath},$pf{dblocks},$pf{dbidserver});    
     elog_notify("Archive database	$dirname	$archive_db	$exists") if $opt_v ;
     
 #
@@ -146,7 +145,7 @@
 #
 
     $cmd  = "gap_status ";
-    $cmd .= "-v " if $debug ;
+    $cmd .= "-v " if $opt_V ;
     $cmd .= "$dmcdbname $pf{balerwfdisc} $pf{cleanbalerdirbase}/$year\_$month/baler $archive_db";
     $cmd .= "> /tmp/tmp_gap_status_dmc\_$$ 2>&1 " unless $opt_V ;
     
@@ -158,7 +157,7 @@
     } 
     
     $cmd  = "gap_status ";
-    $cmd .= "-v " if $debug ;
+    $cmd .= "-v " if $opt_V ;
     $cmd .= "$dbname $pf{balerwfdisc} $pf{cleanbalerdirbase}/$year\_$month/baler $archive_db";
     $cmd .= "> /tmp/tmp_gap_status_ta\_$$ 2>&1 " unless $opt_V ;
     

@@ -1,0 +1,34 @@
+originator     Taimi Mulder, GSC
+last_modified  2011-09-01
+
+info	&Literal{
+These instrument parameter files and their responses derived from
+
+    http://www.guralp.com
+    CMG-3T-NSN Calibration Sheet
+
+}
+category	Guralp
+configuration	CMG3T_NSN
+
+description	Guralp CMG3T_NSN
+dfile	cmg3t_nsn
+
+rsptype                 V       # velocity instrument
+band			b	# broadband
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	15e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/cmg3t_nsn) 
+

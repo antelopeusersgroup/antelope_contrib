@@ -15,7 +15,7 @@
     
 {    #  Main program
 
-    my ($usage,$cmd,$problems,$subject,$debug,$verbose);
+    my ($usage,$cmd,$problems,$subject);
     my ($orb,$orbname,$db,$stime,$Pf,$regex,$subset,$target);
     my ($sta,$dlsta,$snmodel,$chident,$time,$endtime,$sleep,$maxsleep);
     my ($offset,$start,$rows,$trow,$row,$irow,$drow,$nocal,$nrowe,$nrown,$stepe,$stepn);
@@ -51,8 +51,6 @@
     $db         = shift @ARGV;
 
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v ;
-    $debug      = $opt_V ;
     
     $offset     = $opt_o || .5 ;
     
@@ -86,7 +84,7 @@
 #
     $Pf = $opt_p || $pgm ;
         
-    %pf = getparam( $Pf, $verbose, $debug ) ;
+    %pf = getparam( $Pf ) ;
 #
 #  open db
 #

@@ -1,5 +1,5 @@
 originator     Juan Reyes, UCSD
-last_modified  2010-01-13
+last_modified  2012-01-27
 
 category    infrasound
 configuration   DPG_OBSIP      
@@ -12,7 +12,7 @@ band        l   #
 sensor_type_code    D
 
 gtype       sensor
-sensitivity -2.32414E-03
+sensitivity 2.32414E-03
 ounits      V   
 iunits      Pa    
 

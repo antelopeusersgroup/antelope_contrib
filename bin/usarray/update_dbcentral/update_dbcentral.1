@@ -1,0 +1,64 @@
+.TH UPDATE_DBCENTRAL 1 "$Date$"
+.SH NAME
+update_dbcentral \- Makes sure dbcentral is consistent with event dbs and rt database
+.SH SYNOPSIS
+.nf
+\fBupdate_dbcentral \fP [-v] [-V] [-n] [-p \fIpf\fP]  \fIdbcentral\fP
+.fi
+.SH DESCRIPTION
+\fBupdate_dbcentral\fP updates \fIdbcentral\fP to be consistent with the event dbs and the rt database
+
+.LP
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+.IP "-p parameter_file"
+Name of parameter file to use.  $PFPATH is searched to find parameter file.
+The default parameter file is \fBupdate_dbcentral\fP.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+.IP evcluster
+event cluster name for dbcentral
+.IP rtcluster
+rt cluster name for dbcentral
+.IP evdirbase
+Path name for directory base for wfdiscs of monthly waveform data.
+.fi
+.ft R
+.in
+.SH EXAMPLE PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+evcluster			usarray                             # event cluster name for dbcentral
+
+rtcluster			usarray_rt                          # rt cluster name for dbcentral
+
+evdirbase			/anf/TA/dbs/event_dbs               # Directory base path for monthly dbs
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+time_slice_db(1)
+monthly_wfs(1)
+.fi
+.SH "BUGS AND CAVEATS"
+This program is designed to be used with \fBtime_slice_db\fP and \fBmonthly_wfs\fP.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

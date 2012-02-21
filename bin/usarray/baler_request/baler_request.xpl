@@ -16,7 +16,7 @@
 
     my ($net,$stime,$tmpgap,$tmpba);
     my ($gapdb,$gapdb2,$etime,$reject,$filled,$dbops,$reqdir);
-    my ($sta_match,$verbose,$usage,$cmd,$host);
+    my ($sta_match,$usage,$cmd,$host);
     
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -53,11 +53,9 @@
     $stime     = $opt_t || &start_time ($gapdb) ;
     $etime     = $opt_e || now() ;
     $reqdir    = $opt_d || "." ;
-    $verbose   = defined($opt_v) || defined($opt_V)  ;
     $filled    = "b|n|-" ;
 
     elog_notify ( "NET $net" ) if $opt_v ;
-    elog_notify ( "verbose $verbose") if $opt_v ;
 
 #
 #  Define tmp databases
@@ -68,8 +66,8 @@
     elog_notify ( "temporary gap db	$tmpgap" ) if $opt_v ;
     elog_notify ( "temporary ba db	$tmpba" )  if $opt_v ;
 
-    &mk_gap_wfdisc ($sta_match,$gapdb,$tmpgap,$net,$stime,$etime,$reject,$filled,$verbose) ;
-    &mk_gap_wfdisc ($sta_match,$gapdb2,$tmpgap,$net,$stime,$etime,$reject,$filled,$verbose) if (@ARGV == 2) ;
+    &mk_gap_wfdisc ($sta_match,$gapdb,$tmpgap,$net,$stime,$etime,$reject,$filled) ;
+    &mk_gap_wfdisc ($sta_match,$gapdb2,$tmpgap,$net,$stime,$etime,$reject,$filled) if (@ARGV == 2) ;
     
     &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
         

@@ -1,0 +1,21 @@
+# L4-A    2.00000 hz seimometer
+# $Id$
+#
+# Poles and zeroes calculated from L4-A spec sheet on 
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1.0                 normalization factor
+# sensitivity   166.54 v/m/sec
+theoretical   1 anti-alias   paz    GSC_Koessler
+1
+2
+-8.79646E+00	-8.97418E+00	0.0000E+00	0.0000E+00
+-8.79646E+00	8.97418E+00	0.0000E+00	0.0000E+00
+2
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00
