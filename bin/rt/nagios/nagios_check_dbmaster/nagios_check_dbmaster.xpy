@@ -14,6 +14,7 @@ import antelope.datascope as antdb
 import antelope.orb as antorb
 import antelope.stock as antstock
 import antelope.elog as antelog
+import antelope.Pkt as antPkt
 
 class NagiosCheckDbmaster():
     """Class definition
@@ -67,39 +68,6 @@ class NagiosCheckDbmaster():
             return orb
         # }}}
 
-    def split_srcname(self, srcname):
-        """Split the source
-        name to get the 
-        station code"""
-        # {{{
-        if not ('pf' in srcname or 'db' in srcname):
-            if len(srcname.split('/')) == 3:
-                snet_station, packettype, samplerate = srcname.split('/')
-                if len(snet_station.split('_')) == 2:
-                    snet, station = snet_station.split('_')
-                elif len(snet_station.split('_')) == 3:
-                    snet, station, chan = snet_station.split('_')
-                elif len(snet_station.split('_')) == 4:
-                    snet, station, chan, ctype = snet_station.split('_')
-                else:
-                    if self.verbose > 1:
-                        (self.warnings).append("Not accounting for srcname in format: %s" % snet_station)
-            elif len(srcname.split('/')) == 2:
-                snet_station_chan, packettype = srcname.split('/')
-                if len(snet_station_chan.split('_')) == 3:
-                    snet, station, chan = snet_station_chan.split('_')
-                elif len(snet_station_chan.split('_')) == 4:
-                    snet, station, chan, loc_code = snet_station_chan.split('_')
-                else:
-                    if self.verbose > 1:
-                        (self.warnings).append("Not accounting for srcname in format: %s" % snet_station_chan)
-            return station
-        else:
-            if self.verbose > 1:
-                (self.warnings).append("No station code in srcname: %s" % srcname)
-            return False
-        # }}}
-
     def get_orb_sources_stations(self, orbptr):
         """Return a list of
         all orb sources
@@ -120,9 +88,9 @@ class NagiosCheckDbmaster():
             return False
         else:
             for s in sources:
-                station = self.split_srcname(s['srcname'])
-                if station and station not in station_source_list:
-                    station_source_list.append(station)
+                (net, sta, chan, loc, suffix, subcode) = antPkt.split_srcname(s['srcname'])
+                if sta != '' and sta not in station_source_list:
+                    station_source_list.append(sta)
             station_source_list.sort()
             return station_source_list
         # }}}
@@ -231,6 +199,7 @@ def main():
     orbptr = test.check_orb()
     if orbptr:
         sources = test.get_orb_sources_stations(orbptr)
+    print sources
 
     dbptr = test.check_db()
     if dbptr:
