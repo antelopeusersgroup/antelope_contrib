@@ -1,0 +1,249 @@
+"""
+nagios_check_dbmaster
+
+@author   Rob Newman <robertlnewman@gmail.com>
+@package  Antelope (Datascope, Orb)
+@version  1.0
+@notes    1. Follow Nagios plugin guidelines:
+             http://nagiosplug.sourceforge.net/developer-guidelines.html
+          2. Python elog routines still do not work as advertised - add
+             caveat to the man page
+"""
+from optparse import OptionParser
+import antelope.datascope as antdb
+import antelope.orb as antorb
+import antelope.stock as antstock
+import antelope.elog as antelog
+
+class NagiosCheckDbmaster():
+    """Class definition
+    for Nagion plugin for
+    dbmaster checks
+    """
+    # {{{
+
+    def __init__(self):
+        # {{{
+        antelog.elog_init(sys.argv)
+        self.invalid = []
+        self.errors = []
+        self.warnings = []
+        # }}}
+
+    def parse_command_line(self):
+        """Parse the command line
+        options.
+        """
+        # {{{
+        usage = "Usage: %prog [-v] [-V] host:orb database"
+        parser = OptionParser(usage=usage, version="%prog 1.0")
+        parser.add_option("-v", "--verbose", dest="verbose", help="verbose output", action="store_true", default=False)
+        parser.add_option("-V", "--veryverbose", dest="debug", help="very verbose output (debug)", action="store_true", default=False)
+        (options, args) = parser.parse_args()
+        if len(args) != 2:
+            parser.error("Must provide a valid orbname (host:orb) and dbmaster path")
+        if not (options.verbose or options.debug):
+            verbose = 0
+        else:
+            if options.verbose:
+                verbose = 1
+            elif options.debug:
+                verbose = 2
+        self.verbose = verbose
+        self.orb = args[0]
+        self.db = args[1]
+        # }}}
+
+    def check_orb(self):
+        """Check we can
+        open the orb"""
+        # {{{
+        try:
+            orb = antorb.orbopen(self.orb, 'r')
+        except Exception, e:
+            (self.invalid).append(e)
+            sys.exit()
+        else:
+            return orb
+        # }}}
+
+    def split_srcname(self, srcname):
+        """Split the source
+        name to get the 
+        station code"""
+        # {{{
+        if not ('pf' in srcname or 'db' in srcname):
+            if len(srcname.split('/')) == 3:
+                snet_station, packettype, samplerate = srcname.split('/')
+                if len(snet_station.split('_')) == 2:
+                    snet, station = snet_station.split('_')
+                elif len(snet_station.split('_')) == 3:
+                    snet, station, chan = snet_station.split('_')
+                elif len(snet_station.split('_')) == 4:
+                    snet, station, chan, ctype = snet_station.split('_')
+                else:
+                    if self.verbose > 1:
+                        (self.warnings).append("Not accounting for srcname in format: %s" % snet_station)
+            elif len(srcname.split('/')) == 2:
+                snet_station_chan, packettype = srcname.split('/')
+                if len(snet_station_chan.split('_')) == 3:
+                    snet, station, chan = snet_station_chan.split('_')
+                elif len(snet_station_chan.split('_')) == 4:
+                    snet, station, chan, loc_code = snet_station_chan.split('_')
+                else:
+                    if self.verbose > 1:
+                        (self.warnings).append("Not accounting for srcname in format: %s" % snet_station_chan)
+            return station
+        else:
+            if self.verbose > 1:
+                (self.warnings).append("No station code in srcname: %s" % srcname)
+            return False
+        # }}}
+
+    def get_orb_sources_stations(self, orbptr):
+        """Return a list of
+        all orb sources
+        """
+        # {{{
+        station_source_list = []
+        try:
+            when, sources = antorb.orbsources(orbptr)
+        except ValueError, e:
+            (self.invalid).append(e)
+            try:
+                antelog.elog_notify(e)
+            except Exception, e:
+                print "Caught exception: %s" % e
+            return False
+        except Exception, e:
+            (self.invalid).append(e)
+            return False
+        else:
+            for s in sources:
+                station = self.split_srcname(s['srcname'])
+                if station and station not in station_source_list:
+                    station_source_list.append(station)
+            station_source_list.sort()
+            return station_source_list
+        # }}}
+
+    def check_db(self):
+        """Check we can 
+        view the db"""
+        # {{{
+        if not os.path.exists(self.db):
+            (self.invalid).append("Database '%s' does not exist" % self.db)
+            return False
+        else:
+            try:
+                db = antdb.dbopen(self.db, 'r')
+            except Exception, e:
+                (self.invalid).append(e)
+                return False
+            else:
+                return db
+        # }}}
+
+    def get_db_active_stations(self, dbptr):
+        """Return a list of 
+        all the active stations 
+        in the database"""
+        # {{{
+        sta_list = []
+        try:
+            active_db = antdb.dblookup(dbptr, '', 'site', '', '');
+        except Exception, e:
+            (self.invalid).append(e)
+            return False
+        else:
+            active_db.join('snetsta')
+            active_db.join('deployment')
+            active_db.subset('offdate == NULL || offdate >= now()')
+            active_db.subset('endtime >= now()')
+            active_db.subset('time <= now()')
+            active_db.sort('sta')
+            if self.verbose > 1:
+                (self.warnings).append("Number of records: %s" % active_db.query('dbRECORD_COUNT'))
+            for i in range(active_db.query('dbRECORD_COUNT')):
+                active_db[3] = i
+                sta_list.append(active_db.getv('sta')[0])
+        return sta_list
+        # }}}
+
+    def membership_test(self, orblist, dblist):
+        """Test the membership
+        of elements in each list
+        """
+        # {{{
+        set_orb = set(orblist)
+        set_db = set(dblist)
+        if set_orb != set_db:
+            if len(set_orb.difference(set_db)) > 0:
+                err_msg = 'Missing dbmaster records error: ' + ', '.join(set_orb.difference(set_db))
+                (self.errors).append(err_msg)
+            if len(set_db.difference(set_orb)) > 0:
+                err_msg = 'Missing orb sources error: ' + ', '.join(set_db.difference(set_orb))
+                (self.warnings).append(err_msg)
+        # }}}
+
+    def output_status(self):
+        """Parse the errors
+        and output a Nagios
+        friendly service status
+        """
+        # {{{
+        if len(self.invalid) > 0:
+            service_status = "Unknown"
+            if self.verbose > 0:
+                service_status += "\nList of invalid command line arguments or low-level failures internal to the plugin:\n"
+                for i in self.invalid:
+                    service_status += "\t - %s\n" % i
+        else:
+            if len(self.errors) > 0:
+                service_status = "Critical"
+                if self.verbose > 0:
+                    service_status += "\nList of errors:\n"
+                    for e in self.errors:
+                        service_status += "\t - %s\n" % e
+            else:
+                if len(self.warnings) > 0:
+                    service_status = "Warning"
+                    if self.verbose > 0:
+                        service_status += "\nList of warnings:\n"
+                        for w in self.warnings:
+                            service_status += "\t - %s\n" % w
+                else:
+                    service_status = "OK"
+        return service_status
+        # }}}
+
+    # }}}
+
+def main():
+    """Main processing
+    """
+    sources = False
+    active_stas = False
+
+    test = NagiosCheckDbmaster()
+    test.parse_command_line()
+
+    orbptr = test.check_orb()
+    if orbptr:
+        sources = test.get_orb_sources_stations(orbptr)
+
+    dbptr = test.check_db()
+    if dbptr:
+        active_stas = test.get_db_active_stations(dbptr)
+
+    if sources and active_stas:
+        test.membership_test(sources, active_stas)
+
+    # Insert other tests here
+
+    print test.output_status()
+    return 0
+
+if __name__ == '__main__':
+   status = main()
+   sys.exit(status)

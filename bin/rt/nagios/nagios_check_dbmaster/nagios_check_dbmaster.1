@@ -1,0 +1,63 @@
+.TH NAGIOS_CHECK_DBMASTER 1 "$Date$"
+.SH NAME
+nagios_check_dbmaster \- a Nagios plugin to check dbmaster values, written in Python
+.SH SYNOPSIS
+.nf
+\fBnagios_check_dbmaster\fP [\fB\-v\fP|\fB\-V\fP] \fIorb\fP \fIdbmaster\fP
+.fi
+.SH DESCRIPTION
+\fBnagios_check_dbmaster\fP is intended to be used as a plugin to the
+.nf
+Intermapper/Nagios network monitoring system (www.nagios.org). The
+plugin can be installed with other plugins (usually in the Nagios
+libexec directory) and called through the Nagios configuration
+files.
+
+If no orb or database named in the command line exists, or a Datascope
+dbjoin or dbsubset results in an error, an "Unknown" state will be
+returned.
+
+If there are station packets missing from the orb that, according
+to the dbmaster, should be there, a "Warning" state will be returned.
+
+If there are records in the dbmaster that don't match station packets
+in the orb a "Critical" state will be returned.
+.fi
+.SH OPTIONS
+.nf
+Like all Nagios plugins, more detailed and recent help, argument
+formats, etc. can be obtained via the -h option of the program.
+
+To see more detailed output from the script, use the \fB\-v\fP or \fB\-V\fP
+command line arguments. Note that this will return an invalid Nagios plugin
+response, and should only be used when debugging.
+.fi
+.SH "EXAMPLE"
+.nf
+% \fBnagios_check_dbmaster\fP \fIanfops:usarray\fP \fI/anf/TA/rt/usarray/usarray\fP
+Warning
+
+% \fBnagios_check_dbmaster\fP \fB-v\fP \fIanfops:usarray\fP \fI/anf/TA/rt/usarray/usarray\fP
+Warning
+List of warnings:
+     - Missing orb sources error: F36A, CLWO, DRWO
+.fi
+.SH "BUGS AND CAVEATS"
+.nf
+This assumes that Python, $ANTELOPE and other Antelope environment
+variables have been set properly.
+
+If an invalid \fIorb\fP is provided, the Python interface to Antelope
+returns an invalid Nagios response due to how the orb routines
+cannot currently be captured from printing to STDOUT.
+.fi
+.SH "SEE ALSO"
+.nf
+nagios_antelope_utils(3)
+nagios_check_orbstat(1)
+nagios_check_q330_ping(1)
+.fi
+.SH AUTHOR
+.nf
+Rob Newman <robertlnewman@gmail.com>
+.fi
