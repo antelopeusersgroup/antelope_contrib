@@ -119,8 +119,8 @@ antelope_python &Arr{
 		python
 	}
 	build &Tbl{
-		deprecated/lib/dataformat/dbxml
-		deprecated/data/python
+		lib/dataformat/dbxml
+		data/python
 	}
 	package &Tbl{
 		lib/libdbxml.dylib
