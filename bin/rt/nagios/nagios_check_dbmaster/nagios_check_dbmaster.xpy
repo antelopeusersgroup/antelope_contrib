@@ -69,12 +69,10 @@ class NagiosCheckDbmaster():
         except Exception, e:
             (self.invalid).append("check_orb() [Exception]: %s" % e)
         else:
-            try:
-                orbping = orb.ping()
-            except TypeError, e:
+            if orb._orbfd == None:
                 (self.invalid).append("check_orb() [TypeError]: Orb name '%s' invalid" % self.orb)
             else:
-                return orb
+                return orb 
         # }}}
 
     def get_orb_sources_stations(self, orbptr):
