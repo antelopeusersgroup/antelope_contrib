@@ -13,7 +13,7 @@ from optparse import OptionParser
 import antelope.datascope as antdb
 import antelope.orb as antorb
 import antelope.stock as antstock
-import antelope.elog as antelog
+# import antelope.elog as antstock
 import antelope.Pkt as antPkt
 
 # Until the elog routines can 
@@ -30,7 +30,7 @@ class NagiosCheckDbmaster():
 
     def __init__(self):
         # {{{
-        antelog.elog_init(sys.argv)
+        antstock.elog_init(sys.argv)
         self.invalid = []
         self.errors = []
         self.warnings = []
