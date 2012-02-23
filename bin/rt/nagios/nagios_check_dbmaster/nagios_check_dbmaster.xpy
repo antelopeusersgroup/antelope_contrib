@@ -7,7 +7,7 @@ nagios_check_dbmaster
 @notes    1. Follow Nagios plugin guidelines:
              http://nagiosplug.sourceforge.net/developer-guidelines.html
           2. Python elog routines still do not work as advertised - add
-             caveat to the man page
+             caveat to the man page and redirect output to /dev/null
 """
 from optparse import OptionParser
 import antelope.datascope as antdb
@@ -15,6 +15,11 @@ import antelope.orb as antorb
 import antelope.stock as antstock
 import antelope.elog as antelog
 import antelope.Pkt as antPkt
+
+# Until the elog routines can 
+# be captured in a try/except 
+# clause, redirect elog messages to /dev/null
+os.environ['ELOG_DELIVER'] = '/dev/null'
 
 class NagiosCheckDbmaster():
     """Class definition
@@ -62,10 +67,14 @@ class NagiosCheckDbmaster():
         try:
             orb = antorb.orbopen(self.orb, 'r')
         except Exception, e:
-            (self.invalid).append(e)
-            sys.exit()
+            (self.invalid).append("check_orb() [Exception]: %s" % e)
         else:
-            return orb
+            try:
+                orbping = orb.ping()
+            except TypeError, e:
+                (self.invalid).append("check_orb() [TypeError]: Orb name '%s' invalid" % self.orb)
+            else:
+                return orb
         # }}}
 
     def get_orb_sources_stations(self, orbptr):
@@ -77,14 +86,9 @@ class NagiosCheckDbmaster():
         try:
             when, sources = antorb.orbsources(orbptr)
         except ValueError, e:
-            (self.invalid).append(e)
-            try:
-                antelog.elog_notify(e)
-            except Exception, e:
-                print "Caught exception: %s" % e
-            return False
+            (self.invalid).append("get_orb_sources_stations() [ValueError]: %s" % e)
         except Exception, e:
-            (self.invalid).append(e)
+            (self.invalid).append("get_orb_sources_stations() [Exception]: %s" % e)
             return False
         else:
             for s in sources:
@@ -100,13 +104,13 @@ class NagiosCheckDbmaster():
         view the db"""
         # {{{
         if not os.path.exists(self.db):
-            (self.invalid).append("Database '%s' does not exist" % self.db)
+            (self.invalid).append("check_db() [Exception]: Database '%s' does not exist" % self.db)
             return False
         else:
             try:
                 db = antdb.dbopen(self.db, 'r')
             except Exception, e:
-                (self.invalid).append(e)
+                (self.invalid).append("check_db() [Exception]: %s" % e)
                 return False
             else:
                 return db
@@ -121,7 +125,7 @@ class NagiosCheckDbmaster():
         try:
             active_db = antdb.dblookup(dbptr, '', 'site', '', '');
         except Exception, e:
-            (self.invalid).append(e)
+            (self.invalid).append("get_db_active_stations() [Exception]: %s" % e)
             return False
         else:
             active_db.join('snetsta')
@@ -199,7 +203,6 @@ def main():
     orbptr = test.check_orb()
     if orbptr:
         sources = test.get_orb_sources_stations(orbptr)
-    print sources
 
     dbptr = test.check_db()
     if dbptr:
