@@ -15,7 +15,7 @@ our ( $dbpath, $dblocks, $dbidserver) ;
 {    #  Main program
 
     my ($tmpgap,$gapdb,$sync_file,$period,$usage,$dirbase);
-    my ($stime,$start_time,$end_time,$verbose,$debug,$cmd,$host);
+    my ($stime,$start_time,$end_time,$cmd,$host);
     
     my $pgm = $0 ; 
     $pgm =~ s".*/"" ;
@@ -63,9 +63,6 @@ our ( $dbpath, $dblocks, $dbidserver) ;
     $dblocks    = "nfs" ;
     $start_time = $opt_t || 0. ;
     $end_time   = $opt_e || now() ;
-
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
     
 #
 #  Define tmp databases
@@ -73,12 +70,12 @@ our ( $dbpath, $dblocks, $dbidserver) ;
     $tmpgap    = "/tmp/tmp_gap_$$";
     elog_notify ("tmp db	$tmpgap") if $opt_v;
 
-    &mk_tmp_gap_table ($sync_file,$tmpgap,$verbose) ;
+    &mk_tmp_gap_table ($sync_file,$tmpgap) ;
 #
 #  split tmpgap.gap 
 #
 
-    &split_gap_table ($tmpgap, $period, $dirbase, "dmc", $dbpath, $dblocks, $dbidserver, $start_time, $end_time, $verbose, $debug) ;
+    &split_gap_table ($tmpgap, $period, $dirbase, "dmc", $dbpath, $dblocks, $dbidserver, $start_time, $end_time ) ;
 
     unlink ("$tmpgap\.gap") unless $opt_V;
         
@@ -88,8 +85,8 @@ our ( $dbpath, $dblocks, $dbidserver) ;
     exit(0);
 }
 
-sub mk_tmp_gap_table { # &mk_tmp_gap_table ($sync_file,$tmpgap,$verbose) ;
-    my ($sync_file,$tmpgap,$verbose) = @_ ;
+sub mk_tmp_gap_table { # &mk_tmp_gap_table ($sync_file,$tmpgap) ;
+    my ($sync_file,$tmpgap) = @_ ;
     my ($row,$sta,$chan,$time,$tgap);
     my ($line);
     my (@tmp,@dbgap);
@@ -130,8 +127,8 @@ sub mk_tmp_gap_table { # &mk_tmp_gap_table ($sync_file,$tmpgap,$verbose) ;
     return;
 }
 
-sub split_gap_table { # &split_gap_table ($tmpgap, $period, $dirbase, $dbbase, $dbpath, $dblocks, $dbidserver, $start_time, $end_time, $verbose, $debug) ;
-    my ($tmpgap, $period, $dirbase, $dbbase, $dbpath, $dblocks, $dbidserver, $start_time, $end_time, $verbose, $debug) = @_ ;
+sub split_gap_table { # &split_gap_table ($tmpgap, $period, $dirbase, $dbbase, $dbpath, $dblocks, $dbidserver, $start_time, $end_time ) ;
+    my ($tmpgap, $period, $dirbase, $dbbase, $dbpath, $dblocks, $dbidserver, $start_time, $end_time ) = @_ ;
     my ($sta, $chan, $time, $tgap, $last_time, $next_day, $tmp_tgap, $tmpgap2);
     my ($subset, $ts, $current, $next_ts, $n, $nrecs, $dirname, $dbname, $cmd, $y, $m);
     my (@dbtmp, @dbtmp2, @dbgap, @dbperiod, @dbout, @ts);
@@ -208,7 +205,7 @@ sub split_gap_table { # &split_gap_table ($tmpgap, $period, $dirbase, $dbbase, $
 #   
     if ( $opt_p ) {
         @ts = ();
-        @ts = &time_splits($period,$debug,@dbtmp2) ;
+        @ts = &time_splits($period,@dbtmp2) ;
         elog_notify ("split_gap_table	time_splits	@ts") if $opt_v;
 
 #
@@ -216,12 +213,12 @@ sub split_gap_table { # &split_gap_table ($tmpgap, $period, $dirbase, $dbbase, $
 #   
 
         foreach $ts (@ts) {
-            ($current,$next_ts) =  &border($ts, $period, $debug);
-            ($dirname, $dbname) =  &mk_db_des($ts, $dirbase, $dbbase, $period, "gap", $dbpath, $dblocks, $dbidserver, $debug);
+            ($current,$next_ts) =  &border($ts, $period );
+            ($dirname, $dbname) =  &mk_db_des($ts, $dirbase, $dbbase, $period, "gap", $dbpath, $dblocks, $dbidserver );
             elog_notify("split_gap_table	dirname	$dirname	dbname	$dbname") if $opt_v;
         
             if ($dbname =~ /EXISTS/) {
-                ($dirname, $dbname) =  &mk_d($dirbase,$dbbase,$period,$ts,$debug);
+                ($dirname, $dbname) =  &mk_d($dirbase,$dbbase,$period,$ts);
                 elog_notify("split_gap_table	dirname	$dirname	dbname	$dbname") if $opt_v;
             }
         

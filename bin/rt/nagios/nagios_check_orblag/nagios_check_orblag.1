@@ -1,0 +1,57 @@
+.TH NAGIOS_CHECK_ORBLAG 1 "$Date$"
+.SH NAME
+nagios_check_orblag \- a Nagios plugin to monitor maximum orb client lag
+.SH SYNOPSIS
+.nf
+\fBnagios_check_orblag\fP [\fB\-m\fP \fImatch_expr\fP | [\fB\-r\fP \fIreject_expr\fP
+           [\fB\-w\fP \fIwarn\fP \fB\-c\fP \fIcrit\fP] [\fB\-o\fP \fIorb\fP] 
+	   [\fB\-v\fP]
+.fi
+.SH DESCRIPTION
+\fBnagios_check_orblag\fP is intended to be used as a plugin to the
+Nagios network monitoring system (www.nagios.org). The plugin can be
+installed with other plugins (usually in the Nagios libexec directory)
+and called through the Nagios configuration files. The plugin queries
+the specified orbserver orb for it's clients relative read position
+(lag) in the orb.
+The value will then be compared to the warning and critical thresholds.
+Used in combination with APAN or another tool, this plugin could be
+used for performance measurements and/or graphing.
+.SH OPTIONS
+.nf
+Like all Nagios plugins, more detailed and recent help, argument
+formats, etc. can be obtained via the -h option of the program.
+
+The -m and -r options work to specify which clients (as shown in
+\fBorbstat -c\fP) should be considered when calculating the lag value.
+If the -o argument is not supplied, ":" is used by default.
+
+This version also includes support for Nagios-style ranges for warning
+and critical thresholds. According the the Nagios documentation, this
+is as follows:
+
+[@]start:end
+
+Notes:
+\- start > end>
+\- start and ":" is not required if start=0
+\- if range is of format "start:" and end is not specified,
+   assume end is infinity
+\- to specify negative infinity, use "~"
+\- alert is raised if metric is outside start and end range
+   (inclusive of endpoints)
+\- if range starts with "@", then alert if inside this range
+   (inclusive of endpoints)
+
+.fi
+.SH "BUGS AND CAVEATS"
+This assumes that $ANTELOPE and other Antelope environment variables
+have been set properly. This can be done in the startup script
+for the Nagios system.
+.SH "SEE ALSO"
+nagios_antelope_utils(3), orblag(1), orblag(3)
+.SH AUTHOR
+.nf
+Geoff Davis
+Scripps Institution of Oceanography
+.fi

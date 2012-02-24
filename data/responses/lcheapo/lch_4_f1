@@ -12,7 +12,7 @@
 # gain factor       1 
 #
 theoretical  1  anti_alias   fir    OBS-SIO-UCSD/CIRRUS_LOGIC
-1000 4
+1000 4 23.5
 48
      1.395000000000000e-05  0.0
      4.762500000000000e-05  0.0

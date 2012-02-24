@@ -1,5 +1,5 @@
 '\" te
-.TH BASIC_TIME_SERIES 3 "%G"
+.TH BASIC_TIME_SERIES 3 
 .SH NAME
 BasicTimeSeries - base class for various types of time series data
 .SH SYNOPSIS
@@ -71,10 +71,15 @@ contents as all bad.
 The \fItref\fR variable is a switch (enum) that can take on
 only one of two values:  "absolute" or "relative".  To be
 more precise, here is the definition:
-.nf
 .in 2c
+.ft CW
+.nf
+
 enum TimeReferenceType {absolute,relative};
+
 .fi
+.ft R
+.in
 .LP
 This allows absolute time reference frames (commonly called epoch times
 in seismology) or relative time sampling in which the user should assume
@@ -126,8 +131,9 @@ A BasicTimeSeries is mostly a virtual base class, with a few core
 member functions.  Here
 is an example of a bare bones implementation of a complex time
 series object:
-.nf
 .in 2c
+.ft CW
+.nf
 class Complex_TimeSeries : public BasicTimeSeries
 {
 public:
@@ -138,6 +144,8 @@ public:
 	Complex_TimeSeries(int nsamp){y.reserve(nsamp)};
 };
 .fi
+.ft R
+.in
 .LP
 Note that by inheritance the dt, t0, etc. of the BasicTimeSeries
 become members of the derived Complex_TimeSeries object.

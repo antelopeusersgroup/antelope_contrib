@@ -33,6 +33,7 @@ DATA= \
     gd2_v21_G11.pf \
     gd2_v21_G12.pf \
     gd2_v21_G13.pf \
+    ia.pf \
     spd_L4.pf \
     spd_L4_G00.pf \
     spd_L4_G05.pf \

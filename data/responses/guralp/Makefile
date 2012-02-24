@@ -16,6 +16,7 @@ DATA=  \
     cmg3esp_60sec \
     cmg3esp_nsn \
     cmg3t \
+    cmg3t_nsn \
     cmg3t_100sec \
     cmg3t_120sec \
     cmg3t_30sec \
