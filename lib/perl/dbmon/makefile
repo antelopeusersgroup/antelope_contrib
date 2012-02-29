@@ -14,8 +14,8 @@ SRCS= dbmon.pm dbmon.xs
 
 install:: runmake $(SRCS) $(PERLMAKEFILE) 
 	./runmake install 
-	@-chmod -R g+w blib
-	@-chmod -R g+w $(ANTELOPE)/data/perl
+	@-chmod -R ug+rw blib
+	@-chmod -R ug+rw $(ANTELOPE)/data/perl
 	$(RM) $(ANTELOPE)/data/perl/perllocal.pod
 	touch $(ANTELOPE)/data/perl/Datascope/dbmon.pm
 

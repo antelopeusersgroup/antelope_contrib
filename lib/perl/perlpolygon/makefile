@@ -14,6 +14,8 @@ SRCS= polygon.pm polygon.xs
 install:: runmake $(SRCS) $(PERLMAKEFILE) 
 	touch polygon.pm # so time is new in $antelope/data/perl
 	./runmake install 
+	@-chmod -R ug+rw blib
+	@-chmod -R ug+rw $(ANTELOPE)/data/perl
 
 all:: $(SRCS) $(PERLMAKEFILE) runmake
 	./runmake all
