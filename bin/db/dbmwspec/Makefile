@@ -9,4 +9,4 @@ OBJS=dbmwspec.o \
 	powspc.o \
 	save_spectrum.o 
 $(BIN) : $(OBJS)
-	$(FC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(FC) $(FFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
