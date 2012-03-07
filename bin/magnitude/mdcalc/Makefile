@@ -9,7 +9,7 @@ DIRS=
 OBJS =  mdcalc.o rms.o coda.o lstsqr.o 
 $(BIN) : $(OBJS)
 	$(RM) $@
-	$(FC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(FC) $(FFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 
 
