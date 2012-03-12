@@ -22,7 +22,7 @@ cd2orb [options] [orb]
 -v[v] 	more verbosity
 </options>
 
-cdremap [-p pf] [-t time] [-v] database
+cdremap [-p pf] [-t time] [-V] database
     test/reproduce channel mapping done by cd2orb
 
 cd1replay [-s sta] [-t dt] [-v] file [file2 ...] receiver

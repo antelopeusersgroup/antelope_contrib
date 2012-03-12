@@ -985,7 +985,6 @@ cdorb2db [options] orb db [start [end|period]]
 <options>
 -C	check for overlaps and duplicates in packet data
 -c re	save channel matching regular expression re
--M	memory map all waveform files (instead of seek/write)
 -m re	select packets matching regular expression re
 -r re	reject packets matching regular expression re
 -p pf	specify parameter file
@@ -993,6 +992,7 @@ cdorb2db [options] orb db [start [end|period]]
 -t timetags	create file of time tags from input packets
 -v	more verbose
 -vv	show every packet read.
+-W	Produce initialized waveform files for the next day
 -w wfname	specify pattern for waveform file names
 </options>
 

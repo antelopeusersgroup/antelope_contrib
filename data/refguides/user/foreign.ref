@@ -114,7 +114,7 @@ aah2db [-vV] ahfile [ahfile...] dbname
 ah2db ah1 [ah2 .. ] dbout
     create CSS database dbout from AH format waveform files ah1, ah2, ...
 
-altusevt2db evtfilename [dbname sta n1=chan1 [n2=chan2 [...]]]
+altusevt2db [-noaddchk] evtfilename [dbname sta n1=chan1 [n2=chan2 [...]]]
      read Kinemetrics EVT file format and convert to a database
 
 autodrm2db [-vV] reply1 [reply2 ..] dbout

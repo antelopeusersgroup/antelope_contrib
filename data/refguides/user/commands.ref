@@ -209,7 +209,7 @@ cmpdirs [options] dir1 dir2
 -v	more verbose
 </options>
 
-cntlines [options] filename
+cntlines [options] filename ...
    helper script for certify to count bad/good lines
 <options>
 -c re m	contains at least m lines containing re	

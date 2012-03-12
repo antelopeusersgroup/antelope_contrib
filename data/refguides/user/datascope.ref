@@ -4,7 +4,8 @@
 <subsection Database Schemas>
 <commands>
 
-dbbuild [-bv] [-p pf] db [input]
+dbbuild [-bv] [-p pf] db [template|inputfile]
+dbbuild [-bv] [-p pf] -b db inputfile ...
     build new database with site, sitechan, sensor, instrument, stage and calibration tables
 
 dbbuild_validate [-dsv] [file ..]
@@ -311,7 +312,7 @@ dbindex [-v] database[.table [keys..]]
 dbnextid db idname
     get next available id for idname (in database db)
 
-dbcalc [options] db.table [ record# | expression ]
+dbcalc [options] [db.table [ record# | expression ]]
     interactive interface to Datascope expression calculator
 <options>
 -c expr	calculate single expression
