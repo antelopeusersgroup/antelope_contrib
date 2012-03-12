@@ -150,7 +150,7 @@ dbcalibrate [options] dbin [sequence_id [sequence_id_cmp[,chan_cmp]]
 -resp_dfile resp_dfile	filename for output response spectrum
 -resp_dfilee resp_dfilee	filename for output response error spectrum
 -resp_dfilen reap_dfilen	filename for output nominal response spectrum
--dcalwf_sifter expr	used to subset rows from input dlcalwf table
+-dlcalwf_sifter expr	used to subset rows from input dlcalwf table
 -sngen sngen	fix sensor generator gain to this value
 -v	be more verbose
 -outrecno	print output sensorcal table row numbers
@@ -243,11 +243,9 @@ dbpick [options] dbname
 -fgtm color	timemark foreground color
 </options>
 
-dbrsec [options] db
+dbrsec db {-sc sta:chan | -orid orid:chan} [options]
     make record section plot of waveforms
 <options>
--sc sta:chan
--orid orid:chan
 -top top
 -bot bot
 -tstart tstart

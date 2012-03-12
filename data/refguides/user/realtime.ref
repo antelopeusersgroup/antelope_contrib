@@ -106,6 +106,7 @@ dbevents [options] dbname [start [end]]
 <options>
 -max_age max_age	limit age of displayed events
 -show_detections	show stations with detections only
+-show_errorellipses	show error ellipses for events
 -title window_title	window title
 -pf pfname	parameter file name
 </options>
@@ -179,7 +180,7 @@ orbmonrtd [options] orb
 rtm [-icon iconname] [-title title] [-procwin] [-netwin]
     monitor real-time tasks and resource usage
 
-tkorblag orb
+deprecated tkorblag orb
     graphical view of read client latency in orb 
 
 <subsection Reports>
@@ -414,6 +415,8 @@ pforbstat [options] orb [secs]
 <commands>
 deprecated adsend2orb orb port
     read earthworm packets from udp port and copy to orbserver orb
+
+deprecated k22orb
 
 altus2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
     transfer data from Kinemetrics Altus digitizer to an orb
@@ -749,9 +752,11 @@ dbreplay [options] view orb [t0 [{t1|T}]]
 -p pktsuffix	specify output packet type
 -r rate	specify data rate as ratio to real time 
 -s expr	subset input according to expression
+-S	simulate real time by translating times forward
 -T timeout 	with -w, give up after some timeout 
 -t timestep	specify packet time size
 -u	don't append /@ suffix
+-P	alias for -u
 -v	more verbose
 -w client	specify read client to watch (to avoid overruns)
 -x	eliminate trailer packet used for orb2db flush  

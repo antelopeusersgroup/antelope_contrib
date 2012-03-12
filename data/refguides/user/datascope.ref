@@ -30,7 +30,7 @@ mk_dbops [options] {-I | -U | -R | -A} db snet sta timestamp [comm_provider [com
 -s db	site db
 </options>
 
-dbhelp [ db | s ]
+dbhelp [ db | schema ]
     gui to explore schema for database db or schema s
 
 dbdescribe { db | schema } [ table ]
@@ -56,7 +56,8 @@ dbquery [-isv] [-f fld] db[.tbl] [query ...]
 dbe [-e] [-p pf] db[.table] [ db[.table] ...] [-f field ...]
     general purpose viewer/editor for databases 
 
-dberesp [db.table | -f response ..]
+dberesp db.table
+dberesp -f responsefile ...
     run by dbe to plot response curves from database table or response files
 
 db_extfile_proc -m mode [-u] [-w nmax] [-t table] db.table
@@ -81,6 +82,7 @@ dbset [options] db[.table] field from [to]
 -C	force updating timestamp field
 -l	use literal value for comparison
 -v	show changes
+-y	override request for confirmation when run on entire database
 </options>
 
 dbconvert [-fv] [-s new_schema] db dbout[.table]
@@ -157,7 +159,7 @@ dbconcat_event db1 db2 [ db3 ...] dbout
     combine multiple CSS 3.0 event databases db1, db2, ... (arrival, assoc, event, origin, and origerr tables) into single new database dbout
 
 dbfixids db idname [ idstart ]
-dbfixids [-s server] [-i id1,...] [-x id2,...] db [ db2 ]
+dbfixids [-s server] [-i id1,...] [-x id2,...] db [ db2 ... ]
     renumber ids for idname (starting at idstart) in database db, or sync ids to idserver server
 <options>
 -i ids	only renumber these ids
@@ -273,7 +275,7 @@ dbdiff [options] db1[.table] db2[.table]
 -r relative_tolerance
 	allow floating point values to vary by some absolute or relative tolerance
 -e	print times as epoch seconds
--i name	list of names to ignore
+-i list	list of names to ignore
 -l {exact|compare|ignore}
 	for link fields
 -N max_diffs	show a maximum of max_diffs per table

@@ -19,13 +19,13 @@ private dbloc_delorids [-k] database [ orid ...]
 private dbloc_group input trial
     group arrivals by time for dbloc
 
-dbloc_map database.table [orid]
+dbloc_map [-d overlay,...] [-e evid] [-o orid] [-p pf] database.table [orid]
     draw map showing location and associated arrivals
 
 private dbloc_setprefor db
     set preferred origin for an event
 
-dbloc_verify database orid [orid ...]
+dbloc_verify [-v] database orid [orid ...]
     check temporary database consistency for dbloc2
 
 dblocgrad dbin [dbout]
