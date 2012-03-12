@@ -1,0 +1,14 @@
+dbbase				usarray								# db dbbasename
+ev_period			month								# allowed values are "year" or "month"
+wf_period			year								# allowed values are "year" or "month"
+
+ev_lag  			1							    	#  Number of complete periods before present to allow to be processed.
+                                                        #  If lag is 1 in arrears, time_slice_db skips the current and immediately previous periods.
+
+evdirbase			/anf/TA/dbs/event_dbs  				# 
+wfdirbase	        /anf/TA/dbs/wfs/certified			# 
+
+dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}		# default dbpath
+dbidserver			anfops.ucsd.edu:2498    			# default dbidserver
+dblocks				nfs									# default dblocks
+

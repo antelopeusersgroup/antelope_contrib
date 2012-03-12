@@ -20,7 +20,7 @@
 
     my ($net,$reject,$sta_match,$usage,$dmc,$dbdmc);
     my ($stime,$etime,$tmpgap,$tmpbaler,$tmprt,$tmpdays);
-    my ($dbin,$dbbaler,$dbout,$filled,$verbose,$debug);
+    my ($dbin,$dbbaler,$dbout,$filled);
     my ($dir,$base,$suff,$dbmaster,$cmd,$host);
     my (@db);
 
@@ -82,14 +82,10 @@
     $sta_match = $opt_s || ".\*"  ;
     $dbbaler   = $opt_b || "$dir/baler/clean_data" ;
     $dbout     = $opt_o || "$dir/filled_gaps/$base" ;
-    $verbose   = defined($opt_v);
-    $debug     = defined($opt_V);
 
     $filled    = ".\*" ;
 
     elog_notify ( "NET $net" ) if $opt_v ;
-    elog_notify ( "verbose $verbose") if $opt_v ;
-    elog_notify ( "debug $debug") if $opt_V ;
 
     &check_baler($dbbaler);
     ($dir,$base,$suff) = parsepath($dbout);    
@@ -98,10 +94,10 @@
     
     ($tmpbaler,$tmprt,$tmpgap) = &mk_tmp_dbs($dir,$dbbaler,$dbin,$dbmaster);
 
-    &mk_gap_wfdisc ($sta_match,$dbin,$tmpgap,$net,$stime,$etime,$reject,$filled,$verbose) ;
+    &mk_gap_wfdisc ($sta_match,$dbin,$tmpgap,$net,$stime,$etime,$reject,$filled) ;
     
     if ($dmc) {
-        &mk_gap_wfdisc ($sta_match,$dbdmc,$tmpgap,$net,$stime,$etime,$reject,$filled,$verbose) ;
+        &mk_gap_wfdisc ($sta_match,$dbdmc,$tmpgap,$net,$stime,$etime,$reject,$filled) ;
     }
         
     $tmpdays = &trexcerpt ($tmprt,$tmpgap,$tmpbaler,$dbout,$dbmaster) ;

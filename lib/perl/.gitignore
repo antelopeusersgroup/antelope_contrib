@@ -5,3 +5,4 @@ blib
 perl_makefile
 pm_to_blib
 runmake
+MYMETA.yml

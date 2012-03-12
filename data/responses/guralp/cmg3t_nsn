@@ -1,0 +1,27 @@
+# cmg3t    3.3333e-02 hz (60 sec) seismometer
+# $Id$
+#
+# poles and zeros from http://www.guralp.com CMG-3T-NSN Calibration Sheet
+# s/n: T34581
+# 28 March 2007
+# Normalized  response relative to velocity
+# Normalized to gain of 1.0 in middle of passband
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 5                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 5.78e+08            normalization factor @ 6.2831 rad/sec (@ 1Hz)
+# 1.0                 gain
+# Sensitivity  1500/v/m/sec
+theoretical   1 anti-alias   paz    GSC_mulder
+1.98e+05  1
+4             Poles
+-3.142E-02     0.000E+00    0.0000E+00    0.0000E+00
+-1.979E-01     0.000E+00    0.0000E+00    0.0000E+00
+-3.142E+02     0.000E+00    0.0000E+00    0.0000E+00
+-6.283E+02     0.000E+00    0.0000E+00    0.0000E+00
+2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00

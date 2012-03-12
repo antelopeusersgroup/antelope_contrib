@@ -48,6 +48,19 @@ RectangularSlownessGrid::RectangularSlownessGrid(Pf *pf,string tag)
 		duy = md.get_double("duy");
 	} catch (...) {throw;}
 }
+RectangularSlownessGrid::RectangularSlownessGrid(Metadata& md)
+{
+    /* Painfully parallel to the pf version above */
+	try {
+		name=md.get_string("Slowness_Grid_Name");
+		uxlow=md.get_double("uxlow");
+		uylow=md.get_double("uylow");
+		nux = md.get_int("nux");
+		nuy = md.get_int("nuy");
+		dux = md.get_double("dux");
+		duy = md.get_double("duy");
+	} catch (...) {throw;}
+}
 // Copy constructor needed due to string variable (always wise anyway they say)
 RectangularSlownessGrid::RectangularSlownessGrid(const RectangularSlownessGrid& rsg)
 {

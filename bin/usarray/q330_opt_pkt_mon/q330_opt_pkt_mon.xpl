@@ -18,7 +18,7 @@
     
 {    #  Main program
 
-    my ( $usage, $cmd, $subject, $verbose, $debug, $Pf, $problems, $problem_check );
+    my ( $usage, $cmd, $subject, $Pf, $problems, $problem_check );
     my ( $nbytes, $orb, $orbname, $packet, $pkt, $pktid, $reject, $select, $source, $srcname, $stime, $time, $type, $when, $bit0, $bit1, $bit2, $bit6, $bit7, $value );
     my ( @sources );
 
@@ -46,10 +46,8 @@
     $orbname   = shift @ARGV;
     
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
-    $verbose    = $opt_v;
-    $debug      = $opt_V;
 
-    %Pf = getparam($Pf, $verbose, $debug);
+    %Pf = getparam($Pf);
     $select = $Pf{select_packets} ; 
     $reject = $Pf{reject_packets} ; 
 

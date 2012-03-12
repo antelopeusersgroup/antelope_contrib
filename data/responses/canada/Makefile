@@ -13,6 +13,10 @@ DATA= \
     gd2_firz_20 \
     gd2_firz_40 \
     gd2_preamp \
+    ia_500ug \
+    ia_50ug  \
+    ia_fir   \
+    ia_preamp \
     spd_fir1 \
     spd_fir2 \
     spd_preamp \

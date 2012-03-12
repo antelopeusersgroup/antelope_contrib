@@ -19,6 +19,9 @@ SRCS = atws_mwp.pm atws_mwp.xs
 install:: runmake $(SRCS) $(PERLMAKEFILE) 
 	touch atws_mwp.pm 
 	./runmake install 
+        @-chmod -R ug+rw blib
+        @-chmod -R ug+rw $(ANTELOPE)/data/perl
+
 
 all:: $(SRCS) $(PERLMAKEFILE) runmake
 	./runmake all
