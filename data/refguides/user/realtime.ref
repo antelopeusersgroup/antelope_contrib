@@ -25,10 +25,13 @@ orbptrigger [options] orb command ...
 -background
 </options>
 
-pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
+pktmon [-D secs] [-m re] [-r re] [-n npkts] [-p pf] [-S state] [-0dv] orb
     read packets, send alarms for specified conditions 
 <options>
 -0	start at first packet in orb
+-D secs	die after specified number of seconds
+-m re	select matching source-names
+-r re	reject matching source-names
 -S state	specify alternate directory to save history files 
 -d	print debugging information.
 -n npkts	stop after npkts packets
@@ -85,6 +88,7 @@ rtmanage [options]
 -c commands 	read commands from file or commandline
 -d	run in subdirectory #RTMANAGED
 -l	save command output in individual log files in logs directory
+-L logdir invoke -l and specify log dir directly	
 -p pf 	specify alternate parameter file
 -q program,program	quit if one of these programs dies
 -t nsecs 	wait nsecs after termination event to shut down
@@ -117,12 +121,14 @@ dbevents_new dbname
 dlmon [options] orb [cmdorb]
     monitor/control generic digitizers
 <options>
+-backup_time secs
 -dump period
 -dump_image file
+-mcol ncols
 -model model	data logger model
 -pf pffile	parameter file
 -select_status expr_status
--select_log expr_log
+-select_logs expr_log
 -show_map 	
 -state {Icons|Multi|Single}	initial display state
 -sort name	initial sort name
@@ -269,11 +275,11 @@ rtoutage [options] db t0 t1
 -s subset	only show gaps for sta/chan subset
 -S	show gaps as seconds only
 -t	only show totals
--s subset	deployment table subset
+-x subset	deployment table subset
 -z	select only vertical channels 
 </options>
 
-rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-f from] [-r replyto] [-dv] recipients
+rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-f from] [-r replyto] [-dv] recipient ...
     send mail with attachments
 
 stanote [-{f|F} file] [-r range] [-t time] [database] [sta [note]]
@@ -345,8 +351,10 @@ syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
+-f	zero-fill buffer files upon creation
 -h	stop after creating the new ring buffers
--k	don't reset ring buffer
+-k	don't reset ring buffer (debugging tool)
+-K	don't reset ring buffer and ignore verification tests (debugging tool)
 -p port	use port instead of 6510
 -P prefix	alternate names for orb files
 -r	reset ring buffer
@@ -379,6 +387,7 @@ orbproxy [options] orbhostport
 </options>
 
 orbstat [options] orb [secs]
+orbstat [-i] orb [cmd]
     show statistics for orbserver orb every secs seconds
 <options>
 -c	show client statistics
@@ -391,10 +400,13 @@ orbstat [options] orb [secs]
 -v	more verbose
 </options>
 
+tkorbstat [-c|-s|-p pktid] orbname
+    gui for orbstat command
+
 orbclients [-t] orb 
     show organized view of orbserver/diskserver clients
 
-orbport [-m] port
+orbport [-mn] port
     look up port by name, number, or regular expression
 
 pforbstat [options] orb [secs]
@@ -499,11 +511,11 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
     communicate with Q330 Quanterra digitizer, bringing data from Q330 into orb, and sending and monitoring commands from orb to Q330
 <options>
 -calib_db dbname	metadata database
+-[no]ipresolv	[do not] try to resolve ip addresses
+-poc_vampire	get pocs from other port
 -pf pf	parameter file
 -S statefile	
--noipresolv	do not try to resolve ip addresses
 -v	verbose
--poc_vampire	get pocs from other port
 </options>
 
 q330gpslocate log1 log2 ...
@@ -536,7 +548,7 @@ q330_location [options] status_orb [cmd_orb] db
 -v	verbose
 </options>
 
-qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
+qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2] 
     communicate between Quanterra digitizer and orb
 <options>
 -pf pf	specify parameter file
@@ -606,7 +618,7 @@ dlautomrc [options] cmdorb orb [target]
 -x dl_sta1,dl_sta2,...	comma separated list of rejected data loggers
 </options>
 
-dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
+dlcmd [options] orbcmd targets dltypes dlnames cmd [cmdarg1 [cmdarg2 [...]]]
     execute command cmd on generic data loggers
 <options>
 -waittime waittime	wait time for multiple targets
@@ -785,6 +797,8 @@ orb2orb [options] in out [start [period|end]]
 -v	more verbose
 -X xlat	translate srcnames according to morph table
 -x	require acknowledgment for each packet sent
+-z	uncompress incoming packets, writing the uncompressed packets to output
+-Z	compress incoming packets, writing the compressed packets to output
 </options>
 
 orbxchange [-d db] pf
@@ -837,7 +851,7 @@ orbstaseg [options] csssta orbdetect orbwfin orbwfout
 -select_wf expr
 -twin_pre twin_pre
 -twin_post twin_post
--twin_write_timeout
+-twin_write_timeout twin_write_timeout
 -twin_maxon twin_maxon	
 -S statefile	
 -repackage twin subcode	
@@ -871,12 +885,13 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 <options>
 -auth author	origin author field
 -delay delay	time delay for processing latent stations
+-dbforeign dbname
+-leavetmps
 -pf pf
 -select expr
 -start {pktid|time|OLDEST}
 -target_orb2dbt torb2dbt
--trigger_start_only
--v
+-v[v[v]]
 </options>
 
 orbdetect [options] orbname dbname
@@ -927,6 +942,7 @@ orbevproc [options] orbwf orbev dbname
 -p pf
 -tmpdbdir dir	directory for temp databases
 -dbwf dbwf	archive waveform database
+-v
 </options>
 
 orbwfproc [options] dbmaster [datatag1 dataname1 [datatag2 dataname2 [...]]]
@@ -938,7 +954,7 @@ orbwfproc [options] dbmaster [datatag1 dataname1 [datatag2 dataname2 [...]]]
 -reject expr	input reject expression
 -state file	save state in file
 -p pf
--v
+-v[v[v]]
 </options>
 
 orbwfrms [options] dbname orbin [orbout]
@@ -953,7 +969,7 @@ orbwfrms [options] dbname orbin [orbout]
 -v
 </options>
 
-orbwfmeas [options] orbwf orbdb dbname
+orbwfmeas [options] {detection|arrival} orbwf orbdb dbname
     make waveform measurements from an orb
 <options>
 -select_wf expr
@@ -962,7 +978,6 @@ orbwfmeas [options] orbwf orbdb dbname
 -nowait
 -state filename	save state in filename
 -p pf
--net net
 -dbsift_expr dbsift_expr
 </options>
 
@@ -1009,8 +1024,10 @@ orb2db [options] orb db [start [end|period]]
 <options>
 -a log	log of waveform files opened and closed
 -c re	save channel matching regular expression re
+-D	create dynamic_controls file if necessary
 -m re	select packets matching regular expression re
 -r re	reject packets matching regular expression re
+-o	generate statistics and write status packets to orb
 -p pf	specify parameter file
 -S file	save state in file
 -s datatype	specify output waveform type (overriding pf)
@@ -1019,6 +1036,18 @@ orb2db [options] orb db [start [end|period]]
 -v	more verbose
 -vv	show every packet read.
 -w wfname	specify pattern for waveform file names
+</options>
+
+orb2wf [options] orb db [start-time [window]]
+    archive waveform data from an ORB into a database
+<options>
+-c chanmatch
+-m srcmatch
+-r srcreject
+-p pffile
+-S statefile
+-dbm dbmaster
+-v[v[v]]	verbose
 </options>
 
 orb2db_flush [-nv] [-m match] [-r reject] orb
@@ -1033,6 +1062,7 @@ orb2dbt [options] orb dbout [orbout]
 -number number
 -target_orbmag torbmag
 -timeout timeout
+-markmagsdone mark
 -overwrite
 -state statefile
 -pf pf
@@ -1138,10 +1168,40 @@ event_archive [options] dbin dbout
 -V	be extremely verbose
 </options>
 
-rtbackup [-v] [-V] [-n] 
-         [-p pf] [-r reject_stas] [-s sta_match]
-         [-t start_time ] [-e end_time] rt_db 
+rtbackup [options] rt_db
     backup waveform and database data from rt_db to independent disk directory
+<options>
+-v 	verbose
+-V 	extremely verbose
+-n 	show intended actions, but don't archive any data
+-A	archive all, skipping lddate checks
+-E	expert mode
+-R	remove archive waveforms if replacable (requires -E)
+-p pf 	
+-m mailto	send email to recipient(s) upon errors
+-r reject_stas 
+-s sta_match
+-t start_time 
+-e end_time 
+</options>
+
+rtcache [options] orb
+    service requests for cached information products
+<options>
+-v 	verbose
+-V	print version and usage information
+-p pf 	specify parameter-file
+-t target specify target name for this instance of rtcache
+</options>
+
+rtwebserver [options]
+    embedded web-server for Antelope real-time systems
+<options>
+-p pf	specify parameter file
+-P port	override port specified in the parameter file
+-s name	specify top-level parameter-file array with description of website to display
+-v	verbose
+</options>
 
 deprecated rtbackup2tape [-v] [-m who] [-p pf] db drive
     original rtbackup (renamed)- backup waveform and database data from db to (tape) drive
@@ -1156,6 +1216,15 @@ deprecated get_archive [options] db dbout drive [t0 [t1]]
 
 rtdbclean [-n] [-v] [-V] [-w] [-p pf] orb rt_db
     remove old waveform data and associated database records
+<options>
+-n	simulate execution without changing database
+-t	skip table checks
+-v	verbose
+-V	very verbose
+-w	clean database tables but do not remove waveforms
+-m mailto send email to recipient(s) upon errors
+-p pf	specify parameter file
+</options>
 
 deprecated get_wftar -v dbmaster tape_drive
     extracts wftar table from an ARTS archive tar tape
@@ -1163,7 +1232,7 @@ deprecated get_wftar -v dbmaster tape_drive
 online_backup [options] [directories]
     backup certain files to an online directory
 <options>
--d n	remove log files after n days
+-c n	remove log files after n days
 -d dir	specify an alternate base directory
 -m	send mail rather than writing to stdout
 -n	don't actually run backup, but show what would happen
@@ -1184,6 +1253,8 @@ orbreap [options] orb [start [end|range]]
 -C	print packet header information and data
 -d	dump packets in hexadecimal format
 -F	expect packets in "Fake" format
+-L	constantly restart at the oldest packet
+-l lag	0 to 1 or "vary" lag behind for testing
 -m re	select packets matching re
 -r re	reject packets matching re
 -M	select only packets with numeric source names
@@ -1194,6 +1265,7 @@ orbreap [options] orb [start [end|range]]
 -R {a|x|f}	choose forb representation: ascii, hex, or header only
 -s pktid	start at pktid
 -S state	save state file
+-t	show packets in terse mode
 -v	more verbose
 </options>
 
@@ -1315,3 +1387,23 @@ orbstash [-m match] [-o out] [-r reject] [-v] in [srcname]
 ipvalidate [-p pf] [-v] [ip-addresses]
      test if particular ip address is accepted or rejected by valid_ip_address list in pf
   
+tcpmonitor [options] remote-host
+    monitor tcp connections for stability and throughput
+<options>
+-B pktsz	set the size of the packets
+-d db	save info to database
+-f	set number of packets in burst
+-2	set monitor mode
+-N npkts	set number of packets in a burst
+-m	set number of pings between server and client
+-n nloops	set number of times to repeat above operations (negative=indefinite)
+-P npings	set number of pings between server and client
+-p port		specify port in server mode
+-r lrsz	set size of client receive buffer
+-s lssz set size of client send buffer
+-R rrsz set size of server receive buffer
+-S rssz set size of server send buffer
+-t rcv_timeout_secs	set time out time for socket reads
+-v	verbose
+-W sec/ping	set number of seconds between pings
+</options>

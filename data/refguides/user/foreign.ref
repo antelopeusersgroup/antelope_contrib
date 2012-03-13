@@ -250,7 +250,7 @@ db2sd [-cv] [-n net] [-l lbl] db sd
 fix_miniseed [-ifv] [-d db] [-{p|P} pf] miniseed|dir ...
     change network, station, channel and/or location codes in specified miniseed volumes or all miniseed found under specified directories
 
-log2miniseed [-avV] [-c chan] [-l loc] [-n net] [-s sta] log ...
+log2miniseed [-avV] [-c chan] [-l loc] [-n net] [-s sta] log [log2 ...]
      read input log files and create miniseed
 
 miniseed2db [-T tolerance] [-v] miniseed|dir [msd2|dir2 ...] db
@@ -303,10 +303,9 @@ mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tap
     build IRIS DMC files on tape or disk
 
 msdd [-bdhovx] [-n max] miniseed ...
-    dump miniseed volume; -o shows opaque blockettes 
-
-msdd -i miniseed 
-    interactive mode for inspecting miniseed
+msdd [-hi] miniseed ...
+msdd [-hi] 'command;command' miniseed ...
+    dump miniseed volume. -o shows opaque blockettes, -i interactive inspection
 
 patch_miniseed [-nvv] miniseed ...
     look for and fix bad reverse integration constants, unless -n
@@ -327,6 +326,7 @@ qtunbale [options] url [time [endtime|period]]
 -t to	timeout for ping response from baler
 -u 	show all URLs used
 -v	more verbose
+-V	turn on -v in miniseed2{days,orb}; also show mem use changes
 -w wfname	specify pattern for miniseed files
 </options>
 
@@ -350,14 +350,14 @@ deprecated sd2db [options] sd dbout
 -z	compress waveform files (using compress(1)) after they are complete
 </options>
 
-sdd [-sv] sd
+sdd [-sv] [-f n] [-d db] sd
     dump blockettes (summary only if -s) from SEED volume sd
 
 seed2db [options] seed [db]
     read SEED volume seed, produce validation commentary and optionally database tables 
 <options>
 -lsize	size	specify logical record size
--vvv		be increasingly verbose
+-v[v[v]]	be increasingly verbose
 -respdir rdir	save responses into rdir
 -stagedir sdir  create stage table; save stage responses into sdir
 -chansift pf	select specific sta/chan pairs through pf
@@ -365,7 +365,8 @@ seed2db [options] seed [db]
 -tend   t1	stop at time t1
 -nodata		create no wfdisc table
 -nodataless	only create wfdisc
--nofirerrors	shut up about fir errors
+-nofirerrs	shut up about fir errors
+-strict_data_processing	reference every readable data blockette in wfdisc even if out of time order
 </options>
 
 seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed

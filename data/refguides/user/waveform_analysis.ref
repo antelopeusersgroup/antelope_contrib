@@ -18,6 +18,15 @@ alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
 -v	be more verbose
 </options>
 
+dbwf_fragmented [options] db
+    identify waveform problems with fragmentation and compression
+<options>
+-b max_bps
+-n max_wfdisc
+-N max_complaints
+-s subset
+</options>
+
 correctdt [-m srcmatch] [-t stime] [-v] bdb
     using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
 
@@ -44,13 +53,17 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -s expr	evid/orid/arid subset
 -v	more verbose
 -vv	show details of view evaluations
+-vvv	show more detail, including use of cp to copy waveforms
+-V	print version and exit
 -w pattern	specify naming convention for output waveforms
  	specify mode (default = time)
 -W db	specify database from which waveforms come
 </options>
 
-trmapnames [-anv] db [net fsta fchan {loc|aux}]
+trmapnames [-anv] db [net fsta [fchan {loc|aux}]]
+trmapnames [-anv] db [sta fchan {loc|aux}]
 trmapnames -u [-anv] db [sta [chan]]
+trmapnames [-anuv] db 
      map foreign net/sta or sta/chan/loc codes into local sta and chan codes, or vice versa
 
 deprecated dbsteimc [options] dbin [dbout]
@@ -171,7 +184,6 @@ dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} db [dbo
     make waveform measurements from database
 <options>
 -p pf
--net net
 -v
 -outrecno
 -exitonerror

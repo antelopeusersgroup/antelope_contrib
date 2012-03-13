@@ -49,7 +49,7 @@ dbwfproc [options] dbin dbout
 -start {pktid|time}
 -end time
 -p pf
--v
+-v[v[v]]
 </options>
 
 deprecated dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]
