@@ -42,10 +42,10 @@ Pf *pfnew ( int type )
 void pffree ( Pf *pf )
     free resources for pf
 
-Pf *pfdel( Pf *pf, char *name)
+Pf *pfdel( Pf *pf, char *name )
     remove branch for name from pf, returning the deleted branch
 
-int pfconfig ("ask", char *(*askx)(char *))
+int pfconfig ( char *name, void *value )
     replace default &ask routine with new version askx
 
 int pfget ( Pf *pf, char *name, void **result )
@@ -1146,7 +1146,7 @@ int resurrect ( char *name, Relic value, Relic_type type )
     recover old value for name from state file, set up to save on later
     calls to bury. type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
 
-char *gravesite ()
+const char *gravesite ()
     returns filename for state file
 
 <subsection Buffered Network Stream I/O>
