@@ -114,11 +114,11 @@ epoch [options] [ +format ] [ time/date components ]
 elog [-acdlnS] [-f fault_signal] [message]
     exhibit behavior of elog error routines with message
 
-elog -e errno
-    print error message for numeric system error
-
 elog -s signal#
     print signal description
+
+elog -e errno
+    print error message for numeric system error
 
 filetbl [-v] filename
     show contents of Tbl list saved in filename
@@ -449,7 +449,7 @@ mdirmake [-pv] $MAKE target dir ...
 produce [-v] exec [exec2 ...]
     use standard headers from template directory to create executable script exec from files with proper suffix
 
-private screen_makesw [options] [input]
+screen_makesw [options] [input]
     look through compilation output, extracting just the error messages
 <options>
 -c	screen contrib also

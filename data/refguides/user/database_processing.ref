@@ -43,13 +43,12 @@ dbgme [-vfd] [-p pf] -r recipe [-r recipe...] [-o orid] dbname
 dbrecenteqs [-p pf] [-v] [-h] [-u] [-e evid] [-c sourcedb] dbname
     maintain web-site of earthquake maps for for database dbname
 
-dbwfproc [options] dbin dbout
+dbwfproc [{-v|-vv|-vvv}] [options] dbin dbout
     generalized waveform processor
 <options>
 -start {pktid|time}
 -end time
 -p pf
--v[v[v]]
 </options>
 
 deprecated dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]

@@ -30,7 +30,7 @@ mk_dbops [options] {-I | -U | -R | -A} db snet sta timestamp [comm_provider [com
 -s db	site db
 </options>
 
-dbhelp [ db | schema ]
+dbhelp [db|s]
     gui to explore schema for database db or schema s
 
 dbdescribe { db | schema } [ table ]
@@ -297,6 +297,7 @@ dbcentral [-dln] [-q query] [-t time] [database_cluster [task_nickname]]
 dbgraph [options] db[.tbl [ {yexpr|xexpr yexpr} ]]
     graph data from a database
 <options>
+-a annotation   add markup from file
 -b batch	specify batch file
 -B log	log tk graphics commands
 -p pf	specify pf

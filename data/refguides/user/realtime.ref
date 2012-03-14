@@ -96,6 +96,9 @@ rtmanage [options]
 -x	on macs, start in background with /usr/libexec/StartupItemContext
 </options>
 
+is_idle [-t timeout] [-uv] filename
+    rtmanage helper script which waits for a file to stop changing
+
 rtorbcmd [-d] [-p pf] target command
     client program for sending commands to remote orb
 
@@ -105,7 +108,7 @@ rtorbcmd [-d] [-n npkts] [-p pf] [-S state] orb
 <subsection Real Time Display>
 <commands>
 
-dbevents [options] dbname [start [end]]
+dbevents [options] dbname [start]
     display map of seismic events and waveforms (between times start and end)
 <options>
 -max_age max_age	limit age of displayed events
@@ -348,7 +351,7 @@ syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
 
 <subsection Orbserver and Utilities>
 <commands>
-orbserver [options] pf
+orbserver [{-v|-vv}] [options] pf
     orb ring buffer server, using parameter file pf
 <options>
 -f	zero-fill buffer files upon creation
@@ -359,7 +362,6 @@ orbserver [options] pf
 -P prefix	alternate names for orb files
 -r	reset ring buffer
 -s size	ringsize, eg 150M
--v[v]	verbose/doubly verbose
 </options>
 
 diskserver [-p pf] [-v] dir[:port]
@@ -406,7 +408,7 @@ tkorbstat [-c|-s|-p pktid] orbname
 orbclients [-t] orb 
     show organized view of orbserver/diskserver clients
 
-orbport [-mn] port
+orbport [-mn] name ...
     look up port by name, number, or regular expression
 
 pforbstat [options] orb [secs]
@@ -507,11 +509,10 @@ rddas [options] port orb
 -v	verbose
 </options>
 
-q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
+q3302orb [{-ipresolv|-noipresolv}] [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
     communicate with Q330 Quanterra digitizer, bringing data from Q330 into orb, and sending and monitoring commands from orb to Q330
 <options>
 -calib_db dbname	metadata database
--[no]ipresolv	[do not] try to resolve ip addresses
 -poc_vampire	get pocs from other port
 -pf pf	parameter file
 -S statefile	
@@ -529,7 +530,7 @@ q330pocd [options] targetname orb
 -noipresolv	don't look up hostnames
 </options>
 
-q330proxy [-v[v[v]]] [-help] [template]
+q330proxy [{-v|-vv|-vvv}] [-help] [template]
     internet to SLIP proxy utility for Q330 data loggers
 
 q330snoop [-noeth] [-noip] [-snoop] prefix_expr
@@ -573,7 +574,7 @@ rtp2orb [-v] configuration_file
 ryo2orb [-v] [-V] [-p pfname] [-m subset] rtd_ipaddress:port orbserver
      collect GPS data in RYO format and write to orb
 
-slink2orb [options] SeedLink orb
+slink2orb [{-v|-vv|-vvv}] [options] SeedLink orb
     SeedLink to orb module
 <options>
 -dc database	db to get calib, calper and segtype
@@ -585,7 +586,6 @@ slink2orb [options] SeedLink orb
 -S statefile
 -o dumpfile
 -r	remap net/sta/chan
--v[v[v]]	more verbose
 </options>
 
 <subsection Datalogger Commanding>
@@ -839,7 +839,7 @@ orbaddcalib [options] dbcalib orbin orbout
 -v	more verbose
 -t translation_pf	morph SEED names
 -select select_expr	select expression for incoming packets
--relect reject_expr	reject expression for incoming packets
+-reject reject_expr	reject expression for incoming packets
 -start {pktid|time|OLDEST}	initial ORB read pointer position
 -S statefile	statefile
 </options>
@@ -880,7 +880,7 @@ deprecated orbtrigger [options] orbname
 -out orbout
 </options>
 
-orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
+orbassoc [{-v|-vv|-vvv}] [options] orbin orbout ttgridf1 [ttgridf2 [...]]
     spatial grid search based real time associator/locator
 <options>
 -auth author	origin author field
@@ -891,7 +891,6 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 -select expr
 -start {pktid|time|OLDEST}
 -target_orb2dbt torb2dbt
--v[v[v]]
 </options>
 
 orbdetect [options] orbname dbname
@@ -945,7 +944,7 @@ orbevproc [options] orbwf orbev dbname
 -v
 </options>
 
-orbwfproc [options] dbmaster [datatag1 dataname1 [datatag2 dataname2 [...]]]
+orbwfproc [{-v|-vv|-vvv}] [options] dbmaster [datatag1 dataname1 [datatag2 dataname2 [...]]]
     generalized real-time waveform processor
 <options>
 -start {pktid|time}
@@ -953,8 +952,9 @@ orbwfproc [options] dbmaster [datatag1 dataname1 [datatag2 dataname2 [...]]]
 -select expr	input select expression
 -reject expr	input reject expression
 -state file	save state in file
+-pause_timeout secs override wait time for paused database writes
+-statefile_update_interval secs 
 -p pf
--v[v[v]]
 </options>
 
 orbwfrms [options] dbname orbin [orbout]
@@ -1038,7 +1038,7 @@ orb2db [options] orb db [start [end|period]]
 -w wfname	specify pattern for waveform file names
 </options>
 
-orb2wf [options] orb db [start-time [window]]
+orb2wf [{-v|-vv|-vvv}] [options] orb db [start-time [window]]
     archive waveform data from an ORB into a database
 <options>
 -c chanmatch
@@ -1047,7 +1047,6 @@ orb2wf [options] orb db [start-time [window]]
 -p pffile
 -S statefile
 -dbm dbmaster
--v[v[v]]	verbose
 </options>
 
 orb2db_flush [-nv] [-m match] [-r reject] orb
@@ -1214,7 +1213,7 @@ deprecated get_archive [options] db dbout drive [t0 [t1]]
 -v	more verbosely
 </options>
 
-rtdbclean [-n] [-v] [-V] [-w] [-p pf] orb rt_db
+rtdbclean [options] orb rt_db
     remove old waveform data and associated database records
 <options>
 -n	simulate execution without changing database
@@ -1222,7 +1221,7 @@ rtdbclean [-n] [-v] [-V] [-w] [-p pf] orb rt_db
 -v	verbose
 -V	very verbose
 -w	clean database tables but do not remove waveforms
--m mailto send email to recipient(s) upon errors
+-m mailto	send email to recipient(s) upon errors
 -p pf	specify parameter file
 </options>
 
@@ -1266,6 +1265,7 @@ orbreap [options] orb [start [end|range]]
 -s pktid	start at pktid
 -S state	save state file
 -t	show packets in terse mode
+-T dt	wait dt seconds after each reaped packet
 -v	more verbose
 </options>
 

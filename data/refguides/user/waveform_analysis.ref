@@ -4,7 +4,7 @@
 <commands>
 
 alter_timestamps [-demnquv] [-p pf] db[.table]
-alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
+alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed ...
     change waveform and arrival timestamps for clock problems
 <options>
 -d	dump corrections table
@@ -34,7 +34,7 @@ dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
     create time correction table by comparing good source gdb:...
     with bad source bdb:...
 
-trexcerpt [options] dbin dbout [start {duration|end}]
+trexcerpt [{-v|-vv|-vvv}] [options] dbin dbout [start {duration|end}]
     extract waveform segments from database
 <options>
 -A	autodrm style (ascii) waveform files
@@ -51,9 +51,6 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -o datatype	specify output waveform datatype (default = sd)
 -p	in arrival mode, save waveforms only for pick channel 
 -s expr	evid/orid/arid subset
--v	more verbose
--vv	show details of view evaluations
--vvv	show more detail, including use of cp to copy waveforms
 -V	print version and exit
 -w pattern	specify naming convention for output waveforms
  	specify mode (default = time)
@@ -94,13 +91,13 @@ deprecated dbwfexcerpt [options] dbin[.table] dbout
 -v	verbose
 </options>
 
-trsample [options] database[.table] [time [end|period]]
+trsample [{-i|-t|-T}] [options] database[.table] [time [end|period]]
     print a few samples from waveforms in database
 <options>
 -c	apply calib to samples
 -e	read data from each row in table
 -I	interactive mode
--[i|t|T]	show integer, epoch time, or readable time index for each sample
+-{i|t|T}  show integer, epoch time, or readable time index for each sample
 -n npts	print npts samples
 -o	write samples one to a line
 -s expr	subset input according to expr

@@ -353,22 +353,21 @@ deprecated sd2db [options] sd dbout
 sdd [-sv] [-f n] [-d db] sd
     dump blockettes (summary only if -s) from SEED volume sd
 
-seed2db [options] seed [db]
+seed2db [{-v|-vv|-vvv}] [options] seed [db]
     read SEED volume seed, produce validation commentary and optionally database tables 
 <options>
--lsize	size	specify logical record size
--v[v[v]]	be increasingly verbose
+-lsize size	specify logical record size
 -respdir rdir	save responses into rdir
 -stagedir sdir  create stage table; save stage responses into sdir
 -chansift pf	select specific sta/chan pairs through pf
 -tstart t0	start at time t0
--tend   t1	stop at time t1
+-tend t1	stop at time t1
 -nodata		create no wfdisc table
 -nodataless	only create wfdisc
 -nofirerrs	shut up about fir errors
 -strict_data_processing	reference every readable data blockette in wfdisc even if out of time order
 </options>
 
-seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed
+seeddump [-lsize sz] [-types list] [{-v|-vv}] [-sta] seed
     dump certain blockettes from seed according to tlist:
     (V=Volume, A=Abbreviation, S=Station, T=Time span, D|R|Q=Data)
