@@ -1,0 +1,51 @@
+pf_revision_time 1150848000.000
+#
+#dbname	    /Users/horn/develop/antelope/contrib/bin/magnitude/dbmw/db/eventwfdb
+dbname	    /Users/horn/develop/antelope/contrib/bin/magnitude/dbmw/db/db
+#/Volumes/Daten/zamg/zagsun17/db/zagsun17 # input database
+#home_dir        /Users/rt/Antelope       # home directory    
+home_dir     /Users/horn/develop/antelope/contrib/bin/magnitude/dbmw # home directory    
+
+stringS         24 June 1970 00:00:00   # start time fo computation
+verb            2                       # verbose level 0-2
+pretime         10.                     # pre P phase time
+postime         90.                     # post P phase time
+magmin          1.5                     # Magnitudo min
+ispike          1	                # remove spike        
+nfin            100                     #
+spikv           1000.                   #
+iwin            1                       # apply D2
+d2npts          20                      # points used in D2
+idetr           1                       # apply detrend
+ifilt           4                       # filter 1=gaussian   
+                                        #        2=Butterworth
+                                        #        3=SNR gaussian
+					#        4=SNR Butterworth  
+f1             0.2                      # hp corner frequency
+f2             20.                      # lp corner frequency
+np1             6                       # hp poles (ifilt = 2)
+np2             6                       # lp poles (ifilt = 2)
+PERMIN         0.1                      # min period for Housner computation
+PERMAX         2.5                      # max period for Housner computation
+#
+tnoise         10.                      # noise time window       
+#
+aphas          0                        # 0 - db phases, 1 - computetd phases
+chanexpr      HHZ|HGZ|HLZ|HNZ|BHZ       # Vertical components
+magmin         1.0						# Magnitudo min
+distmin        10.                      #                                 
+                                        #                                 
+distmax1      150.                      #                                 
+                                        #                                 
+distmax2      150.                      #                                 
+                                        #                                 
+distmax3      150.                      #                                 
+                                        #                                 
+distmax4      150.                      #                                 
+                                        #                                 
+
+#
+#
+#
+#			   
+pf_revision_time 1150848000

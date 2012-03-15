@@ -1,0 +1,101 @@
+#  moment magnitudo extension (DST 2006)
+
+Attribute netmw
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "network moment  magnitude" )
+        Detail {
+                This is the moment magnitude of an event.  Associated with
+                this attribute is the identifier mwid, which points to
+                magid in the netmagw relation.  The information in that
+                record summarizes the method of analysis and the data
+                used.  See imb, iml, ims, magnitude, magtype, mb and ms.
+                }
+                ;
+
+Attribute sigmamw
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "sigma of network moment magnitude" )
+        Detail {
+                This is the sigma of network moment magnitude. 
+                }
+                ;
+
+Attribute netm0
+        Real (9)
+        Format ( "%9.3e" )
+        Null ( "-999.00" )
+        Description ( "network seismic moment" )
+        Detail {
+                This is the seismic moment of an event.
+                }
+                ;
+
+Attribute netf0
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "network angle frequency" )
+        Detail {
+                This is the network f0 frequency.
+                }
+                ;
+
+Attribute neteqR
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "network equivalent ray" )
+        Detail {
+                This is the computed equivalent ray in km.
+                }
+                ;
+
+Attribute quality
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "quality of determination" )
+        Detail {
+                This is the quality of the Mw determination.
+                }
+                ;
+
+Attribute usta
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "nsta > 0" )
+        Description ( "number of stations used in mw determination " )
+        Detail {
+                This quantity is the number of stations used to compute
+                the moment magnitude of the event.
+        }
+        ;
+
+Attribute rjsta
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "nsta > 0" )
+        Description ( "number of stations rejected in mw determination " )
+        Detail {
+                This quantity is the number of stations rejected to compute
+                the moment magnitude of the event.
+        }
+        ;
+
+Relation netmw
+        Fields ( orid evid netmw ml sigmamw netm0 netf0 neteqR usta rjsta quality auth commid lddate )
+        Primary (orid)
+        Foreign ( orid evid commid )
+        Description ( "Network moment magnitude" )
+        Detail {
+                This table summarizes estimates of network moment magnitudes
+                Station magnitudes used to compute the
+                network magnitude are in the relation stamw.
+        }
+        ;

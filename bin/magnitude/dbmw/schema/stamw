@@ -1,0 +1,146 @@
+#  moment magnitudo extension (DST 2006)
+
+Attribute mw
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "moment  magnitude" )
+        Detail {
+                This is the moment magnitude of an event.  Associated with
+                this attribute is the identifier mwid, which points to
+                magid in the netmagw relation.  The information in that
+                record summarizes the method of analysis and the data
+                used.  See imb, iml, ims, magnitude, magtype, mb and ms.
+		}
+		;
+
+Attribute m0
+        Real (9)
+        Format ( "%9.3e" )
+        Null ( "-999.00" )
+        Description ( "moment  magnitude" )
+        Detail {
+                This is the seismic moment magnitude of an event.  
+                }
+                ;
+
+Attribute f0
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "angle frequency" )
+        Detail {
+                This is the f0 frequency used in mw computation.
+                }
+                ;
+
+Attribute eqR
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "equivalent ray" )
+        Detail {
+                This is the computed equivalent ray in km.
+                }
+                ;
+
+Attribute distmw
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "angle frequency" )
+        Detail {
+                This is the station - event distance use in mw computation.
+                }
+                ;
+Attribute rotaz
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "Rotation angle" )
+        Detail {
+                This is the rotation angle for transveral component
+                }
+                ;
+
+Attribute quality
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "quality of determination" )
+        Detail {
+                This is the quality of the Mw determination.
+                }
+                ;
+
+Attribute chamw
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "channel type" )
+	Detail {
+                This is the channel type used in the moment magnitude computation
+	}
+        ;
+
+Attribute Pmw
+        String (4)
+        Format ( "%-4s" )
+        Null ( "-" )
+        Description ( "Mw P arrival type" )
+        Detail {
+                This is the type of P arrival used in the moment magnitude computation
+                synt = from travel timea
+                db = from database (automatic or revised)
+        }
+        ;
+
+Attribute Smw
+        String (4)
+        Format ( "%-4s" )
+        Null ( "-" )
+        Description ( "Mw S arrival type" )
+        Detail {
+                This is the type of P arrival used in the moment magnitude computation
+                synt = from travel timea
+                db = from database (automatic or revised)
+        }
+        ;
+
+Attribute timePmw
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "Mw P time" )
+	Detail {
+                Epochal time given as seconds and fractions of a second
+		since hour 0 January 1, 1970, and stored in a double
+		precision floating number.  Refers to the start time used to
+                define the noise window in the moment magnitude computation.
+	}
+        ;
+
+Attribute timeSmw
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" ) 
+        Units ( "Seconds" )
+        Description ( "Mw S time" )
+        Detail {
+                Epochal time given as seconds and fractions of a second
+                since hour 0 January 1, 1970, and stored in a double
+                precision floating number.  Refers to the start time used to
+                define the S window in the moment magnitude computation.
+        }
+        ;
+
+Relation stamw
+        Fields ( sta chamw orid evid mw m0 f0 eqR distmw rotaz quality timePmw Pmw timeSmw Smw segtype auth commid lddate )
+        Primary ( sta orid)
+        Foreign ( arid mwid orid evid commid )
+        Description ( "Station moment magnitude" )
+        Detail {
+                This table summarizes station moment magnitude estimates.
+               }
+               ;
