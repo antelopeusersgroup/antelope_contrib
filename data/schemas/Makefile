@@ -1,7 +1,6 @@
 DATADIR=schemas
 DATA=	iceworm1.3 \
 	takeoff \
-	places1.2 \
 	notify1.2 \
 	contacts1.0 \
 	dbrecenteqs1.1 \
@@ -18,9 +17,6 @@ DATA=	iceworm1.3 \
 	registry1.2 \
 	registry1.3 \
 	sitephotos0.3 \
-	dbcluster0.5 \
-	dbcluster0.6 \
-	dbcluster0.7 \
 	Images1.0 \
 	Mail1.1 \
 	Mail1.2 \
