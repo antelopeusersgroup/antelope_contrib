@@ -5,3 +5,4 @@ perl_makefile
 db2sql.c
 db2sql.bs
 runmake
+*.yml
