@@ -4,7 +4,7 @@
 <commands>
 
 alter_timestamps [-demnquv] [-p pf] db[.table]
-alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
+alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed ...
     change waveform and arrival timestamps for clock problems
 <options>
 -d	dump corrections table
@@ -18,6 +18,15 @@ alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
 -v	be more verbose
 </options>
 
+dbwf_fragmented [options] db
+    identify waveform problems with fragmentation and compression
+<options>
+-b max_bps
+-n max_wfdisc
+-N max_complaints
+-s subset
+</options>
+
 correctdt [-m srcmatch] [-t stime] [-v] bdb
     using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
 
@@ -25,7 +34,7 @@ dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
     create time correction table by comparing good source gdb:...
     with bad source bdb:...
 
-trexcerpt [options] dbin dbout [start {duration|end}]
+trexcerpt [{-v|-vv|-vvv}] [options] dbin dbout [start {duration|end}]
     extract waveform segments from database
 <options>
 -A	autodrm style (ascii) waveform files
@@ -42,15 +51,16 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -o datatype	specify output waveform datatype (default = sd)
 -p	in arrival mode, save waveforms only for pick channel 
 -s expr	evid/orid/arid subset
--v	more verbose
--vv	show details of view evaluations
+-V	print version and exit
 -w pattern	specify naming convention for output waveforms
  	specify mode (default = time)
 -W db	specify database from which waveforms come
 </options>
 
-trmapnames [-anv] db [net fsta fchan {loc|aux}]
+trmapnames [-anv] db [net fsta [fchan {loc|aux}]]
+trmapnames [-anv] db [sta fchan {loc|aux}]
 trmapnames -u [-anv] db [sta [chan]]
+trmapnames [-anuv] db 
      map foreign net/sta or sta/chan/loc codes into local sta and chan codes, or vice versa
 
 deprecated dbsteimc [options] dbin [dbout]
@@ -81,13 +91,13 @@ deprecated dbwfexcerpt [options] dbin[.table] dbout
 -v	verbose
 </options>
 
-trsample [options] database[.table] [time [end|period]]
+trsample [{-i|-t|-T}] [options] database[.table] [time [end|period]]
     print a few samples from waveforms in database
 <options>
 -c	apply calib to samples
 -e	read data from each row in table
 -I	interactive mode
--[i|t|T]	show integer, epoch time, or readable time index for each sample
+-{i|t|T}  show integer, epoch time, or readable time index for each sample
 -n npts	print npts samples
 -o	write samples one to a line
 -s expr	subset input according to expr
@@ -150,7 +160,7 @@ dbcalibrate [options] dbin [sequence_id [sequence_id_cmp[,chan_cmp]]
 -resp_dfile resp_dfile	filename for output response spectrum
 -resp_dfilee resp_dfilee	filename for output response error spectrum
 -resp_dfilen reap_dfilen	filename for output nominal response spectrum
--dcalwf_sifter expr	used to subset rows from input dlcalwf table
+-dlcalwf_sifter expr	used to subset rows from input dlcalwf table
 -sngen sngen	fix sensor generator gain to this value
 -v	be more verbose
 -outrecno	print output sensorcal table row numbers
@@ -171,7 +181,6 @@ dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} db [dbo
     make waveform measurements from database
 <options>
 -p pf
--net net
 -v
 -outrecno
 -exitonerror
@@ -243,11 +252,9 @@ dbpick [options] dbname
 -fgtm color	timemark foreground color
 </options>
 
-dbrsec [options] db
+dbrsec db {-sc sta:chan | -orid orid:chan} [options]
     make record section plot of waveforms
 <options>
--sc sta:chan
--orid orid:chan
 -top top
 -bot bot
 -tstart tstart

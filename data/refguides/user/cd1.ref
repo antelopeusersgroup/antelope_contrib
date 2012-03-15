@@ -1,6 +1,6 @@
 <subsection CD1 Alpha Format Protocol>
 <commands>
-orb2cd1s [-pf pf] [-select expr] [-reject expr] [-state statefile] [-orbstat orbstat] [-start {pktid|time}] [-v] orb1 orb2
+orb2cd1s [-pf pf] [-select expr] [-reject expr] [-state statefile] [-start {pktid|time}] [-v] orb1 orb2
     repackage and reformat data packets from orb1 into CTBT/IMS standard CD-1
     format subframe data packets on orb2
 
@@ -10,7 +10,7 @@ cd1s2cd1 [-n net] [-m match] [-r reject] [-v] [-S state] orb1 orb2
 cd1tran [-a after] [-S base] [-m match] [-r reject] [-s name] [-v] orb alphahost
     read CD1 packets from orb and send to alphahost using alpha protocol
 
-cd2orb [options] [orb]
+cd2orb [{-v|-vv}] [options] [orb]
     alpha protocol server to save incoming CD1 packets from multiple hosts onto orb
 <options>
 -c sec	max sec between connect mgr request and connection
@@ -19,10 +19,9 @@ cd2orb [options] [orb]
 -P cmport[,cd1port]	request port, connection port
 -p pf	alternate parameter file
 -S dir 	specify state directory
--v[v] 	more verbosity
 </options>
 
-cdremap [-p pf] [-t time] [-v] database
+cdremap [-p pf] [-t time] [-V] database
     test/reproduce channel mapping done by cd2orb
 
 cd1replay [-s sta] [-t dt] [-v] file [file2 ...] receiver

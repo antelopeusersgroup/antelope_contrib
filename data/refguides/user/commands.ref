@@ -93,7 +93,8 @@ datafile [-ae] {name | dir name | env dir name}
 <subsection Antelope facilities>
 <commands>
 
-dynctl [-crv] [program [name[=value] ...]]
+dynctl [-rv] [program]
+dynctl [-cv] [program [name[=value] ...]]
     display and set dynamic controls
 
 tkdynctl [program]
@@ -110,14 +111,14 @@ epoch [options] [ +format ] [ time/date components ]
 +format	specify format of output (refer to epoch escapes table)
 </options>
 
-elog [-acdlnS] [-f fault] [message]
+elog [-acdlnS] [-f fault_signal] [message]
     exhibit behavior of elog error routines with message
-
-elog -e errno
-    print error message for numeric system error
 
 elog -s signal#
     print signal description
+
+elog -e errno
+    print error message for numeric system error
 
 filetbl [-v] filename
     show contents of Tbl list saved in filename
@@ -168,7 +169,7 @@ pfverify [-v] [pf-files]
 pfwhich pf 
     show what files are read for pf
 
-simple_ringstat [-i] simple-ring-file
+simple_ringstat [-i] simple-ring-file ...
     interactively inspect simple ring buffer (such as pktmon creates)
 
 ttcalc method model phase distance depth
@@ -190,6 +191,23 @@ private unregister window_name
 xunits [-amqv] [from [to]]
     convert values from one unit to another, eg newtons to lbs
 
+dbproclogger [options] dbname
+    save system and process info into a process log database
+<options>
+-select_cmdline expr
+-reject_cmdline expr
+-interval interval_seconds
+</options>
+
+plotmem [options] dbname
+    plot log system and process info from a process log database
+<options>
+-select_cmdline expr
+-reject_cmdline expr
+-twin time_window
+-update_interval time_interval
+</options>
+
 <subsection File utilities>
 <commands>
 
@@ -209,7 +227,7 @@ cmpdirs [options] dir1 dir2
 -v	more verbose
 </options>
 
-cntlines [options] filename
+cntlines [options] filename ...
    helper script for certify to count bad/good lines
 <options>
 -c re m	contains at least m lines containing re	
@@ -217,7 +235,7 @@ cntlines [options] filename
 -n re m	no more than m lines containing re	
 </options>
 
-ffilter [-aBbCcDdEelLnoOpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
+ffilter [-aBbCcDdEeGglLnoOpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
     filter list of files according to various options
 <options>
  Combinatorial options
@@ -357,6 +375,17 @@ certify [options] [dir|testid ...]
 -V	show all commands
 </options>
 
+cf [options] [filename [...]]
+    colorize text based on filters specified in a parameter file
+<options>
+-c 	emit raw escape codes
+-n	restore terminal to normal output
+-t	activate tracing mechanism to analyze logic
+-g	print the grammar generated from pffile
+-e name specify the name of the parameter-file array of expressions to use
+-p pfname
+</options>
+
 compile cc-arguments
     used by BRTT to compile with optional optimization on different architectures
 
@@ -375,25 +404,28 @@ fixman [options] pages
 -n	just show what would be changed
 </options>
 
-getid [-aNv] [key=value ...] < in > out
+getid [-N] [key=value ...] $option ...
+getid [-v] [key=value ...] < input > output
+getid -a
     substitute special values into source files; used to centralize some info and help architecture independence
 
 installman [-nv] manpage dir
     install manpage into directory dir, modifying .TH line appropriately
 
 ldlibs [options] names
-    suggest link libraries; provide information about object libraries 
+    generate Makefile ldlibs line; provide information about object libraries 
 <options>
 Modifying Options
 -f	generate fortran ldlibs line (default is c)
--i	initialize database, eg, completely rebuild it
--k	rebuild database, if it's out of date
+-i	initialize database, i.e. completely rebuild it
+-k secs	rebuild database, if it's out of date
 -n	don't use macros to collapse dependency list
--v	be more verbose
+-v	be more verbose, show why library is added to link line
 -x	specify entry points on command line, rather than object files
 -X lib1 lib2	show all multiply defined entry pts or global variables between lib1 and lib2
 Different Modes
 -D lib	show refs defined in lib
+-F	fix uses database
 -N lib	show refs not defined in lib
 -L lib	show libraries which load lib
 -l lib	show libraries loaded by lib
@@ -408,7 +440,11 @@ Different Modes
 -V lib	index a single library, verbosely
 -w routine	show what libraries define routine
 -W routine	show what libraries require routine
+-X lib1 lib2 .. show multiply defined entry points
 </options>
+
+mdirmake [-pv] $MAKE target dir ...
+    run make in several directories at once
 
 produce [-v] exec [exec2 ...]
     use standard headers from template directory to create executable script exec from files with proper suffix
@@ -416,6 +452,14 @@ produce [-v] exec [exec2 ...]
 screen_makesw [options] [input]
     look through compilation output, extracting just the error messages
 <options>
+-c	screen contrib also
+-C	add specialized hard-coded CVS screening
+-d	add debugging remark about why line was flagged or ignored
+-g	include untracked files from certify directories, excepting results
+-G	include untracked files from certify directories
+-i	ignore errors from directories specified in parameter file
+-I	show why lines are ignored
+-m	send output to LOGNAME via email
 -t	show most time consuming directories
 -v	show directories
 -w	show compiler warnings
