@@ -3,8 +3,6 @@ DATA=	iceworm1.3 \
 	takeoff \
 	notify1.2 \
 	contacts1.0 \
-	dbrecenteqs1.1 \
-	dbrecenteqs1.2 \
 	statrans1.0 \
 	statrans1.1 \
 	models0.4 \
@@ -25,7 +23,6 @@ DATA=	iceworm1.3 \
 	Mail1.5 \
 	issues1.0 \
 	Techcomp1.0 \
-	Acronyms1.2 \
 	Bookmarks0.1 \
 	Specevents1.0 \
 	Travel1.0 \
