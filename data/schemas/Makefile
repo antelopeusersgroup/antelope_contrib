@@ -8,7 +8,6 @@ DATA=	iceworm1.3 \
 	models0.4 \
 	wfrecords1.0 \
 	track_processing1.0 \
-	gmt1.0 \
 	references1.0 \
 	registry1.0 \
 	registry1.1 \
