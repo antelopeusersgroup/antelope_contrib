@@ -39,7 +39,7 @@ then one is created for it. Then the script verifies every entry on the database
 contains a checksum. If missing one then the system will try to get the respective checksum
 file and will update the table with the results. If we have a success match then the value
 of the checksum gets updated on the table. If the file is missing then we have the word 
-"missing" on the database. If there is an error then we have "error-verify" on the database.
+"missing" on the database. If there is an error then we have "error" flag on the database.
 .LP
 .PP 
 If the file is missing in the directory the entry on the database with value "downloaded"
