@@ -1,0 +1,8 @@
+Makefile.PL
+blib
+pm_to_blib
+perl_makefile
+db2sql.c
+db2sql.bs
+runmake
+*.yml

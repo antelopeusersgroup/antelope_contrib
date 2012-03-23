@@ -1,2 +1,2 @@
-
+PARALLEL=-p
 include $(ANTELOPEMAKE)

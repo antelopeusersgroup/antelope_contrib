@@ -1,7 +1,0 @@
-<initialization Scripting ../refhdr.mif>
-<include perl.ref>
-<include tcl.ref>
-<include python.ref>
-<include php.ref>
-<include matlab.ref>
-<the_end>

@@ -395,6 +395,45 @@ sub localmake_module {
 		elog_die( "No steps listed for module '$module' in parameter-file '$Pf'\n" );
 	}
 
+	if( grep( /^nobuild/, @steps ) ) {
+
+		my( $msg ) = "WARNING: Module '$module' contains elements in the 'nobuild' directory " .
+			     "of the contributed-code repository. Installing them may conflict " .
+			     "with your existing Antelope installation, at worst making it necessary " .
+			     "to erase Antelope and reinstall from scratch.";
+
+		if( $Gui_mode ) {
+
+			my( $dialog ) = $Windows{"Main"}->Dialog( -title => "nobuild warning",
+							  	  -text => "$msg How do you wish to proceed ? ",
+							  	  -buttons => ['Install Despite Warning', 'Do Not Install'],
+							  	  -default_button => 'Do Not Install' );
+
+			my( $ans ) = $dialog->Show();
+
+			unless( $ans eq 'Install Despite Warning' ) {
+				
+				elog_complain( "Skipping install of potentially conflicting software module '$module'" );
+
+				$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
+
+				return -1;
+			}
+		} else {
+
+			elog_complain( "$msg" );
+
+			my( $ans ) = askyn( "Install '$module' despite WARNING [yN] ? " );
+
+			unless( $ans ) {
+
+				elog_complain( "Skipping install of potentially conflicting software module '$module'" );
+
+				return -1;
+			}
+		}
+	}
+
 	my( $src_subdir, $product );
 
 	$product = $Modules{$module}{product};
@@ -475,17 +514,14 @@ sub localmake_module {
 	if( $Gui_mode ) {
 
 		$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
-	}
 
-	#HARD-WIRE tag names (colors) interpreted as warnings and errors
+		#HARD-WIRE tag names (colors) interpreted as warnings and errors
 
-	@warning_blocks = $Windows{"CompileOut"}->tagRanges("magenta");
-	@error_blocks = $Windows{"CompileOut"}->tagRanges("red");
+		@warning_blocks = $Windows{"CompileOut"}->tagRanges("magenta");
+		@error_blocks = $Windows{"CompileOut"}->tagRanges("red");
 
-	$num_warning_blocks = scalar( @warning_blocks ) / 2;
-	$num_error_blocks = scalar( @error_blocks ) / 2;
-
-	if( $Gui_mode ) {
+		$num_warning_blocks = scalar( @warning_blocks ) / 2;
+		$num_error_blocks = scalar( @error_blocks ) / 2;
 
 		if( $num_warning_blocks > 0 || $num_error_blocks > 0 ) {
 			
@@ -1590,12 +1626,13 @@ sub init_window {
 	use Tk::ROText;
 	use Tk::Font;
 	use Tk::FileSelect;
+	use Tk::Dialog;
 	use ptkform;
 	use elog_gui;
 	
 	$Windows{"Main"} = MainWindow->new();
 
-	$Windows{"Main"}->minsize(30, 20);
+	$Windows{"Main"}->minsize(40, 20);
 
 	elog_gui_init( MW => $Windows{"Main"} );
 	elog_callback( "::elog_gui" );

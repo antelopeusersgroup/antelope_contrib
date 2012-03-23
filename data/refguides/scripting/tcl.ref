@@ -1,8 +1,0 @@
-<include tcldb.ref>
-<include tclorb8.ref>
-<include tkBrttPlot.ref>
-<include tkGpl.ref>
-<include tkPixmap.ref>
-<no_index don't index appendices>
-<include ../tables/tcl_extensions.ref>
-<index ok>
