@@ -90,7 +90,7 @@ gnom  4.0
 }
 
 #soh	LCQ	LEP	UCD	UEP	UF1	UFC UK2	UME	UMZ	UMN
-soh	LCQ	UFC 	UF1 
+soh	LCQ	UFC
 
 LCQ     &Arr{ #clock quality
 stages          clk_qual 

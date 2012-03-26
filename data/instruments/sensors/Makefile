@@ -13,6 +13,7 @@ DATA= \
 	cmg3esp_60sec.pf \
 	cmg3esp_nsn.pf \
         cmg3t.pf \
+        cmg3tb.pf \
         cmg3t_nsn.pf \
 	cmg3t_100sec.pf \
 	cmg3t_120sec.pf \
