@@ -9,4 +9,4 @@ include $(ANTELOPEMAKE)
 all clean Include :: install
 
 install :: 
-#	(cd .. ; localmake_config -i)
+	(cd .. ; localmake_config -i)
