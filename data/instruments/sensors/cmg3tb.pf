@@ -1,0 +1,33 @@
+originator     Nikolaus Horn, ZAMG
+last_modified  2012-03-26
+
+category	Guralp
+configuration	CMG3TB
+
+description	Guralp CMG3TB
+dfile	cmg3t
+
+rsptype                 V       # velocity instrument
+band			b	# broadband
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	99.9e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/cmg3tb) 
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+

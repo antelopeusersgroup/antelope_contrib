@@ -183,6 +183,12 @@ main(int argc, char **argv)
 	if(gridname == NULL) 
 		elog_die(0,"Missing required parameter GCLgrid_name\n");
 	GCLgrid3d *grd=new GCLgrid3d(db,gridname);
+        if(Verbose)
+        {
+            fprintf(stdout,"Grid points in 1 direction=%d\n",grd->n1);
+            fprintf(stdout,"Grid points in 2 direction=%d\n",grd->n2);
+            fprintf(stdout,"Grid points in 3 direction=%d\n",grd->n3);
+        }
 
 	if(grd == NULL) elog_die(0,"Problems in GCL3Dgrid_load_db\n");
 	proctbl = strtbl("dbopen event","dbjoin origin","dbsubset orid==prefor",NULL);
@@ -205,6 +211,7 @@ main(int argc, char **argv)
 		for(k=0;k<(grd->n3);++k)
 		{
 		    ++gridid;
+                    if(Verbose) fprintf(stderr,"Working on gridid=%ld\n",gridid);
 		    search_radius_km = rmin;
 		    gridz = grd->depth(i,j,k);
 		    zmin = gridz - dz;

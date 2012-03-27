@@ -121,9 +121,9 @@ void TimeSeriesRequiredError(MetadataGetError mde,string name)
 database.  Arguments:
 	db - database handle
 	md_to_extract - defines database attributes to be extracted and placed
-		in the Metadata object (see metadata(3)).
+		in the Metadata object (see Metadata(3)).
 	am - defines namespace mapping from database naming to internal namespace
-		(see metadata(3)).
+		(see Metadata(3)).
 Uses Antelope's trgetwf function which should allow it to read almost any
 common seismic trace format. 
 

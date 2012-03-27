@@ -89,4 +89,49 @@ gtype gain
 gnom  4.0	
 }
 
+#soh    LCQ     LEP     UCD     UEP     UF1     UFC UK2 UME     UMZ     UMN
+soh     LCQ     UFC
+
+LCQ     &Arr{ #clock quality
+stages          clk_qual
+gnom            1
+iunits          percent
+ounits          counts
+samprate        1
+}
+
+clk_qual &Arr{
+gtype           clock quality
+gnom            1
+iunits          percent
+ounits          counts
+sn              datalogger
+}
+
+UFC     &Arr{
+stages          vco
+gnom            1
+iunits          V
+ounits          counts
+samprate        0.01
+rsptype         v
+}
+vco &Arr{
+gtype           VCO control voltage
+gnom            4.0
+iunits          V
+ounits          counts
+sn              datalogger
+}
+
+LEP &Arr{
+stages          lep
+gnom            1
+iunits          V
+ounits          counts
+samprate        1
+}
+                                                                                                                                                                                                                    133,1         Bot
+
+
 
