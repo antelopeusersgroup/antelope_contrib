@@ -27,7 +27,7 @@
 # 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
 ####### converted (to rad) ##### nawk -f hz2rad filename > newfilename
 theoretical   1 anti-alias   paz    pz6seismo
-36316811075.49801 1
+42725660088.2352941176 1
 6             Poles
 -0.012340 0.012340
 -0.012340 -0.012340
