@@ -23,7 +23,7 @@ usage()
 int
 main(int argc, char **argv)
 {
-	int             c, verbose = 0, errflg = 0;
+	int             verbose = 0;
 
 
 	char           *dbname = malloc(STRSZ);
@@ -33,13 +33,8 @@ main(int argc, char **argv)
 	char            str1[20], str2[20], *str3 = malloc(1024);
 	int             level = 0;
 	int             closed = 0, close = 0;
-	char           *file;
-	FILE           *dfh;
-	float          *rvals, *cvals;
-	unsigned long   ind;
 	int             maxpoints = 5000;
 	Point          *poly = malloc(maxpoints * sizeof(double));
-	long             noints = 0;
 	double          lat, lon;
 
 	long             npoints;
@@ -51,7 +46,7 @@ main(int argc, char **argv)
 	Dbptr           db;
 	FILE           *fh;
 	int             putit;
-	int             i, nrecs, polycounter = 0;
+	int             polycounter = 0;
 
 	elog_init(argc, argv);
 
@@ -162,7 +157,7 @@ main(int argc, char **argv)
 					tname = strcat(tname, numstr);
 				}
 				if (verbose) {
-					elog_notify(0, "%s: (%d points n file %s/%s)\n", tname, npoints, dir, dfile);
+					elog_notify(0, "%s: (%ld points n file %s/%s)\n", tname, npoints, dir, dfile);
 				}
 				if (npoints > 2 && (close || (
 				 (poly[0].lat == poly[npoints - 1].lat) &&
@@ -196,7 +191,7 @@ main(int argc, char **argv)
 			strcat(tname, numstr);
 		}
 		if (verbose) {
-			elog_notify(0, "%s: (%d points n file %s/%s)\n", tname, npoints, dir, dfile);
+			elog_notify(0, "%s: (%ld points n file %s/%s)\n", tname, npoints, dir, dfile);
 		}
 		if (npoints > 2 && (close || (
 				 (poly[0].lat == poly[npoints - 1].lat) &&
