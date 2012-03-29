@@ -202,9 +202,9 @@ bool tmatrix_is_cardinal(ThreeComponentSeismogram& seis)
 database.  Arguments:
 	rdb - generic database handle (cast to Anteloep form)
 	md_to_extract - defines database attributes to be extracted and placed
-		in the Metadata object (see metadata(3)).
+		in the Metadata object (see Metadata(3)).
 	am - defines namespace mapping from database naming to internal namespace
-		(see metadata(3)).
+		(see Metadata(3)).
 Uses Antelope's trgetwf function which should allow it to read almost any
 common seismic trace format. The routine MUST have the db pointer defined
 as a bundle in groups of 3 channel.  (time:sta:chan group clause).  

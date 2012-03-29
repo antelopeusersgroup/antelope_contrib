@@ -703,7 +703,11 @@ int main(int argc, char **argv)
 		AttributeMap amo(schemaout);  
 		DatascopeHandle dbcatalog(dbh);
 		if(eventdb!=dbin)
+                {
 			dbcatalog=DatascopeHandle(eventdb,false);
+                        if(SEISPP_verbose) cout << "Using event database="
+                            <<eventdb<<endl;
+                }
 		if(use_arrival)
 			dbcatalog=StandardCatalogView(dbcatalog);
 		else if(require_event)
@@ -730,8 +734,11 @@ int main(int argc, char **argv)
 		DatascopeHandle dbhelink(dbho);
 		DatascopeHandle dbhsclink(dbho);
 		list<string> matchkeys;
-		matchkeys.push_back(string("sta"));
-		matchkeys.push_back(string("evid"));
+                /* if using arrivals we need a station match.  
+                   The match handle is largely ignored for event processing
+                   without arrivals but we push evid as the key anyway*/
+		if(use_arrival)matchkeys.push_back(string("sta"));
+		if(require_event) matchkeys.push_back(string("evid"));
 		DatascopeMatchHandle dbhm(dbcatalog,string(""),matchkeys,am);
 		if(save_as_3c)
 		{
@@ -788,9 +795,17 @@ int main(int argc, char **argv)
 				}
 			}
 			// Read the raw data using the time window based constructor
-			rawdata=array_get_data(*stations,hypo,
+                        try {
+			    rawdata=array_get_data(*stations,hypo,
 				phase,datatwin,tpad,dynamic_cast<DatabaseHandle&>(dbh),
 				stachanmap,mdens,mdtrace,am);
+                        }catch (SeisppError& serr)
+                        {
+                            cerr << "extract_windows:  array_get_data error"<<endl;
+                            serr.log_error();
+                            cerr << "Skipping this event"<<endl;
+                            continue;
+                        }
 			if(rawdata->member.size()<=0) 
 			{
 				delete rawdata;

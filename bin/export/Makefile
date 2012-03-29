@@ -1,5 +1,2 @@
+PARALLEL=-p
 include $(ANTELOPEMAKE)
-
-# $Id$ 
-
-# $Id$ 
