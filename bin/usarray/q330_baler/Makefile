@@ -3,10 +3,6 @@ PF=q330_baler.pf
 MAN1=q330_baler.1
 UNINSTALL=$(ANTELOPE)/data/perl/baler.pm
 
-DATA = stabaler staq330
-DATADIR = schemas/css3.0.ext
-
-
 include $(ANTELOPEMAKE)
 DIRS=
 
