@@ -1,0 +1,40 @@
+.TH LAST_ORIGIN_LDDATE 1 "$Date$"
+.SH NAME
+last_origin_lddate \- takes input db and outputs a db which has one origin per event 
+.SH SYNOPSIS
+.nf
+\fBlast_origin_lddate \fP  [-v] [-d \fIdistance\fP] [-w \fIwindow_sec\fP] [-t \fIstart_time\fP] [-e \fIend_time\fP] \fIdbin\fP] \fIdbout\fP
+.fi
+.SH DESCRIPTION
+Program takes input db origin table, subsets by time, then sorts by time.  Next it searches for all
+origins within \fIwindow_sec\fP seconds in time and \fIdistance\fP of distance and determines which origin has the latest
+lddate.  Program outputs the origin with the latest lddate, and any rows from the event and netmag 
+tables which join.
+
+.SH OPTIONS
+.IP -v
+Verbose
+.IP "-d distance"
+Distance in degrees for grouping origins.
+The default distance is \fB1 degree\fP.
+.IP "-w distance"
+Time in seconds for grouping origins.
+The default time is \fB5 seconds\fP.
+.IP "-t start_time"
+Start time for processing data.
+The default start time is \fB1 January 1970\fP.
+.IP "-e end_time"
+End time for processing data.
+The default end time is \fBnow()\fP.
+
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "BUGS AND CAVEATS"
+.LP
+.SH AUTHOR
+Frank Vernon
+.br
