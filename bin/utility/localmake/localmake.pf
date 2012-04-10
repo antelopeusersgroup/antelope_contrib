@@ -535,12 +535,7 @@ capabilities	&Arr{
 antelope	&env(ANTELOPE)
 dest	&antelope/local/include
 extra_rules	&Literal{
-.SUFFIXES: .SUFFIXES .py .pyc .xpy .xphp .wwwphp
-
-% : %.xpy $(ANTELOPE)/local/data/templates/xpy
-	$(RM) $@
-	cat $(ANTELOPE)/local/data/templates/xpy $< > $@
-	chmod a+x $@
+.SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp
 
 % : %.xphp $(ANTELOPE)/local/data/templates/xphp
 	$(RM) $@
@@ -550,10 +545,6 @@ extra_rules	&Literal{
 .wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
 	$(RM) $@
 	cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
-
-.py.pyc :
-	$(RM) $@
-	$(PYTHON_EXECUTABLE) -c 'import py_compile; py_compile.compile("$<")'
 }
 header	&Literal{
 # DO NOT MODIFY -- Automatically generated file -- DO NOT MODIFY
