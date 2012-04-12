@@ -51,12 +51,12 @@ ThreeComponentEnsemble
 		ThreeComponentChannelMap tccm=scmap.channels(current_sta);
 		vector<int> comp,prec,member_index;
 		string chan;
-		int i,j,ilasttest;
+		int i,j;
 		int rawsize=rawdata.member.size();
-		for(i=0,ilasttest=0;i<rawsize;++i)
+		for(i=0;i<rawsize;++i)
 		{
 			string nextsta=rawdata.member[i].get_string("sta");
-			if((nextsta==current_sta) || (i>=rawsize))
+			if(nextsta==current_sta) 
 			{
 				try {
 					chan=rawdata.member[i].get_string("chan");
@@ -77,19 +77,8 @@ ThreeComponentEnsemble
 				    }
 				}
 			}
-			else
+			if((nextsta!=current_sta) || (i>=(rawsize-1)) )
 			{
-			// The decrementing of i is implicitly dangerous
-			// here.  Of special concern is single component
-			// data mixed with three-component data will 
-			// create an infinite loop without this test.
-			// In normal processing decrementing is needed 
-			// to avoid dropping the previous member.
-			// This is kind of perverted logic I (glp)
-			// fully admit, but it works so I won't break it.
-
-			    if(i!=ilasttest) --i;
-			    ilasttest=i;
 			    tccm=scmap.channels(nextsta);
 			//
 			// Land here when a grouping is completed and we have
