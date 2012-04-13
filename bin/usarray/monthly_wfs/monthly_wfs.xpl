@@ -202,7 +202,7 @@ sub proc_year_dbs( @dirs ) { # $prob = &proc_year_dbs ( $prob, @dirs ) ;
             
             @dir_days = @dir_tmp ; 
         } else {
-            cssdescriptor( $db, $pf{dbpath}, $pf{dbidserver}, $pf{dblocks} ) ;  
+            cssdescriptor( $db, $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} ) ;  
         }
         
         elog_notify ( "@dir_days" ) ;
