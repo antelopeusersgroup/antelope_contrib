@@ -39,7 +39,7 @@ class DbCentral:
         if self.include_times:
             years = {}
         else:
-            years = ()
+            years = []
         for y in range(start_yr, end_yr + 1):
             voltime = antstock.str2epoch("1/1/%s 00:00:00" % y)
             volendtime = antstock.str2epoch("12/31/%s 23:59:59" % y)
@@ -62,7 +62,7 @@ class DbCentral:
         if self.include_times:
             months = {}
         else:
-            months = ()
+            months = []
         vol_month = start_mth
         vol_year = start_yr
         while vol_year <= end_yr or (vol_year == end_yr and vol_month <= end_mth):
@@ -92,7 +92,7 @@ class DbCentral:
         if self.include_times:
             days = {}
         else:
-            days = ()
+            days = []
         while start_dy <= end_dy:
             voltime = antstock.epoch(start_day)
             volendtime = voltime + 86399 # one second less than a full day
