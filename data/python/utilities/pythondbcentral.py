@@ -40,7 +40,7 @@ class DbCentral:
             years = {}
         else:
             years = []
-        for y in range(start_yr, end_yr):
+        for y in range(start_yr, end_yr + 1):
             voltime = antstock.str2epoch("1/1/%s 00:00:00" % y)
             volendtime = antstock.str2epoch("12/31/%s 23:59:59" % y)
             dbname = antstock.epoch2str(voltime, dbname_template)
