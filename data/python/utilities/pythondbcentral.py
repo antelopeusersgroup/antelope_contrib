@@ -65,7 +65,7 @@ class DbCentral:
             months = []
         vol_month = start_mth
         vol_year = start_yr
-        while vol_year < end_yr or (vol_year == end_yr and vol_month <= end_mth):
+        while vol_year <= end_yr or (vol_year == end_yr and vol_month <= end_mth):
             voltime = antstock.str2epoch("%d/1/%d" % (vol_month, vol_year))
             if vol_month < 12:
                 vol_month += 1
