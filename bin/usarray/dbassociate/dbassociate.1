@@ -17,7 +17,7 @@ All new associations, origins, netmags, are  incorportated into \fIarrival_db\fP
 
 This programs calls \fBdbloc_assoc(1)\fP to generate the assoc, origin, netmag and proper phase entries in assoc.
 
-\fBdbassociate\fP has a similar function to the older \fBdbassoc_arrivals(1)\fP.  Differences are that
+\fBdbassociate\fP has a similar function to the older \fBdbassoc_arrival(1)\fP.  Differences are that
 \fBdbassociate\fP compares both internal and external origin tables, handles netmag entries properly,
 and using dbloc_assoc to generate proper phase from the travel time calculator instead of just copying
 iphase from the arrival table into phase in the assoc table.
@@ -43,7 +43,7 @@ Needs to have sourced $ANTELOPE/setup.csh.
 0 if successful, 1 if not.
 .SH "SEE ALSO"
 .nf
-dbassoc_arrivals(1)
+dbassoc_arrival(1)
 dbloc_assoc(1)
 last_origin_lddate(1)
 .fi
