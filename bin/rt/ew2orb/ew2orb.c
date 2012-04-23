@@ -2,12 +2,12 @@
  * ew2orb.c
  *
  * Copyright (c) 2003-2005 Lindquist Consulting, Inc.
- * All rights reserved. 
- *                                                                     
- * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
- * 
- * This software may be used freely in any way as long as 
- * the copyright statement above is not removed. 
+ * All rights reserved.
+ *
+ * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc.
+ *
+ * This software may be used freely in any way as long as
+ * the copyright statement above is not removed.
  *
  */
 
@@ -32,7 +32,7 @@
 	NBYTES++; \
 	RESIZE_BUFFER( char *, BUFFER, BUFSZ, NBYTES ); \
 	BUFFER[NBYTES-1] = C;
-	
+
 #define BAD_BYTE(WHERE,C) \
 	elog_complain( 0, "Bad byte in parser at location '%s': ", WHERE ); \
 	{ int bad = (C); hexdump( stderr, &bad, 1 ); } \
@@ -54,13 +54,13 @@ typedef struct ImportThread {
 
 	/* Thread-only variables: */
 
-	char	name[STRSZ];			
+	char	name[STRSZ];
 	char	server_ipaddress[STRSZ];
-	in_port_t server_port;	
-	char	expect_heartbeat_string[STRSZ];	
+	in_port_t server_port;
+	char	expect_heartbeat_string[STRSZ];
 	Hook	*expect_heartbeat_hook;
-	char	send_heartbeat_string[STRSZ];	
-	int	send_heartbeat_sec;	
+	char	send_heartbeat_string[STRSZ];
+	int	send_heartbeat_sec;
 	double	last_heartbeat_sent;
 	double	last_heartbeat_received;
 	char	my_inst_str[STRSZ];
@@ -70,15 +70,15 @@ typedef struct ImportThread {
 	char	default_segtype[2];
 	Hook	*select_hook;
 	Hook	*reject_hook;
-	int	my_inst;	
-	int	my_mod;	
-	int	my_type_heartbeat;		
+	int	my_inst;
+	int	my_mod;
+	int	my_type_heartbeat;
 	int	so;
 	struct sockaddr_in sin;
-	Bns	*bnsin;			
-	Bns	*bnsout;			
-	char	*buf;	
-	int 	bufsize;
+	Bns	*bnsin;
+	Bns	*bnsout;
+	char	*buf;
+	int	bufsize;
 	int	nbytes;
 	enum	{ STREAM_SEARCH, STREAM_ACCUMULATE, STREAM_ESCAPE } sync_state;
 	enum Loglevel loglevel;
@@ -119,15 +119,15 @@ typedef struct tabletrack_ {
 
 typedef struct calibvals_ {
 	double	calib;
-	double 	calper;
-	double 	validuntil;
+	double	calper;
+	double	validuntil;
 } Calibvals;
 
 static struct {
-	char 	dbname[FILENAME_MAX];
+	char	dbname[FILENAME_MAX];
 	int	usedbcalib;
 	int	usedbsegtype;
-	Arr	*calibarr;	
+	Arr	*calibarr;
 	Arr	*segtypearr;
 	Tabletrack *ctrk;	/* calibration table */
 	Tabletrack *strk;	/* sensor table */
@@ -144,7 +144,7 @@ Ew2orbPacket *
 new_Ew2orbPacket()
 {
 	Ew2orbPacket *e2opkt;
-	
+
 	allot( Ew2orbPacket *, e2opkt, 1 );
 
 	e2opkt->buf = 0;
@@ -177,27 +177,27 @@ free_Ew2orbPacket( Ew2orbPacket *e2opkt )
 	}
 
 	if( e2opkt->buf != NULL ) {
-		
+
 		free( e2opkt->buf );
 	}
 
 	if( e2opkt->th != NULL ) {
-		
+
 		free( e2opkt->th );
 	}
 
 	if( e2opkt->th2 != NULL ) {
-		
+
 		free( e2opkt->th2 );
 	}
 
 	if( e2opkt->pkt != NULL ) {
-		
+
 		freePkt( e2opkt->pkt );
 	}
 
 	if( e2opkt->orbpkt != NULL ) {
-		
+
 		free( e2opkt->orbpkt );
 	}
 
@@ -221,49 +221,49 @@ describe_packet( Ew2orbPacket *e2opkt )
 
 	elog_notify( 0, "'%s': Received <%s> <%s> <%s>\n",
 		  e2opkt->itname,
-		  e2opkt->inststr, 
-		  e2opkt->modstr, 
+		  e2opkt->inststr,
+		  e2opkt->modstr,
 		  e2opkt->typestr );
 
-	if( STREQ( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) { 
+	if( STREQ( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) {
 
 		strncpy( heartbeat, e2opkt->buf, strlen( e2opkt->buf ) );
 
 		elog_notify( 0, "'%s':\tunpacked Heartbeat: \"%s\"\n",
-	  		e2opkt->itname, 
-	  		heartbeat );
+			e2opkt->itname,
+			heartbeat );
 
-	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) { 
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) {
 
 		if( e2opkt->th ) {
 
 			strncpy( datatype, e2opkt->th->datatype, 2 );
 			strncpy( quality, e2opkt->th->quality, 2 );
 
-			elog_notify( 0, 
+			elog_notify( 0,
 				  "'%s': unpacked TRACEBUF Trace-data:\n\t"
 				  "%s %s %s pinno %d "
 				  "datatype %s quality '%s'\n\t"
 				  "nsamp %d samprate %f\n\t"
 				  "starttime %f endtime %f\n",
 				  e2opkt->itname,
-				  e2opkt->th->net, 
-				  e2opkt->th->sta, 
+				  e2opkt->th->net,
+				  e2opkt->th->sta,
 				  e2opkt->th->chan,
-				  e2opkt->th->pinno, 
-				  datatype, 
-				  quality, 
-				  e2opkt->th->nsamp, 
-				  e2opkt->th->samprate, 
-				  e2opkt->th->starttime, 
+				  e2opkt->th->pinno,
+				  datatype,
+				  quality,
+				  e2opkt->th->nsamp,
+				  e2opkt->th->samprate,
+				  e2opkt->th->starttime,
 				  e2opkt->th->endtime );
 		} else {
 
 			elog_notify( 0, "'%s':\tunpacked TRACEBUF Trace data\n", 
-			  	e2opkt->itname  );
+				e2opkt->itname  );
 		}
 
-	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) { 
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) {
 
 		if( e2opkt->th2 ) {
 
@@ -271,29 +271,29 @@ describe_packet( Ew2orbPacket *e2opkt )
 			strncpy( datatype, e2opkt->th2->datatype, 2 );
 			strncpy( quality, e2opkt->th2->quality, 2 );
 
-			elog_notify( 0, 
+			elog_notify( 0,
 				  "'%s': unpacked TRACEBUF2 Trace-data:\n\t"
 				  "%s %s %s %s pinno %d "
 				  "version %s datatype %s quality '%s'\n\t"
 				  "nsamp %d samprate %f\n\t"
 				  "starttime %f endtime %f\n",
 				  e2opkt->itname,
-				  e2opkt->th2->net, 
-				  e2opkt->th2->sta, 
+				  e2opkt->th2->net,
+				  e2opkt->th2->sta,
 				  e2opkt->th2->chan,
 				  e2opkt->th2->loc,
-				  e2opkt->th2->pinno, 
-				  version, 
-				  datatype, 
-				  quality, 
-				  e2opkt->th2->nsamp, 
-				  e2opkt->th2->samprate, 
-				  e2opkt->th2->starttime, 
+				  e2opkt->th2->pinno,
+				  version,
+				  datatype,
+				  quality,
+				  e2opkt->th2->nsamp,
+				  e2opkt->th2->samprate,
+				  e2opkt->th2->starttime,
 				  e2opkt->th2->endtime );
 		} else {
 
 			elog_notify( 0, "'%s':\tunpacked TRACEBUF2 Trace data\n", 
-			  	e2opkt->itname  );
+				e2opkt->itname  );
 		}
 
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
@@ -303,27 +303,27 @@ describe_packet( Ew2orbPacket *e2opkt )
 			strncpy( datatype, e2opkt->th->datatype, 2 );
 			strncpy( quality, e2opkt->th->quality, 2 );
 
-			elog_notify( 0, 
+			elog_notify( 0,
 				  "'%s': unpacked Compressed trace-data:\n\t"
 				  "%s %s %s pinno %d "
 				  "datatype %s quality '%s'\n\t"
 				  "nsamp %d samprate %f\n\t"
 				  "starttime %f endtime %f\n" ,
 				  e2opkt->itname,
-				  e2opkt->th->net, 
-				  e2opkt->th->sta, 
+				  e2opkt->th->net,
+				  e2opkt->th->sta,
 				  e2opkt->th->chan,
-				  e2opkt->th->pinno, 
+				  e2opkt->th->pinno,
 				  datatype,
 				  quality,
-				  e2opkt->th->nsamp, 
-				  e2opkt->th->samprate, 
-				  e2opkt->th->starttime, 
+				  e2opkt->th->nsamp,
+				  e2opkt->th->samprate,
+				  e2opkt->th->starttime,
 				  e2opkt->th->endtime );
 		} else {
 
 			elog_notify( 0, "'%s':\tunpacked Compressed trace data\n", 
-			  	e2opkt->itname  );
+				e2opkt->itname  );
 		}
 
 	} else {
@@ -340,7 +340,7 @@ table_check( char *table, Tabletrack **ttrk )
 	Dbptr	db;
 	char	*filename;
 	int	nrecs;
-	int 	ret;
+	int	ret;
 
 	if( *ttrk == (Tabletrack *) NULL ) {
 
@@ -354,7 +354,7 @@ table_check( char *table, Tabletrack **ttrk )
 
 			elog_complain( 1, "Failed to open %s\n",
 				 Calibinfo.dbname );
-			
+
 			(*ttrk)->use = 0;
 
 			free( (*ttrk)->statbuf );
@@ -369,9 +369,9 @@ table_check( char *table, Tabletrack **ttrk )
 
 			dbclose( db );
 
-			elog_complain( 1, "Failed to lookup %s.%s\n", 
-		  	     	Calibinfo.dbname,
-		  	     	table );
+			elog_complain( 1, "Failed to lookup %s.%s\n",
+				Calibinfo.dbname,
+				table );
 
 			(*ttrk)->use = 0;
 
@@ -379,7 +379,7 @@ table_check( char *table, Tabletrack **ttrk )
 			(*ttrk)->statbuf = 0;
 
 			return (*ttrk)->statbuf;
-		} 
+		}
 
 		dbquery( db, dbTABLE_FILENAME, (Dbvalue *) &filename );
 		abspath( filename, (*ttrk)->filename );
@@ -409,12 +409,12 @@ table_check( char *table, Tabletrack **ttrk )
 			(*ttrk)->statbuf = 0;
 
 			return (*ttrk)->statbuf;
-		} 
+		}
 
 		dbquery( db, dbRECORD_COUNT, &nrecs );
-		
+
 		if( nrecs <= 0 ) {
-			
+
 			dbclose( db );
 
 			elog_complain( 1, "No records in %s\n", (*ttrk)->filename );
@@ -428,7 +428,7 @@ table_check( char *table, Tabletrack **ttrk )
 		} else {
 
 			dbclose( db );
-			
+
 			(*ttrk)->last_mtime = (double) (*ttrk)->statbuf->st_mtime;
 
 			return (*ttrk)->statbuf;
@@ -460,10 +460,10 @@ table_check( char *table, Tabletrack **ttrk )
 	return (struct stat *) NULL;
 }
 
-static int	
+static int
 init_calibinfo( void )
 {
-	Dbptr 	db;
+	Dbptr	db;
 	int	ret;
 
 	Calibinfo.usedbcalib = 1;
@@ -487,7 +487,7 @@ init_calibinfo( void )
 		elog_complain( 1, "%s %s; %s\n",
 		  "Failed to open database",
 		  Calibinfo.dbname,
-  		  "calib, calper, and segtype will be default values" );
+		  "calib, calper, and segtype will be default values" );
 
 		Calibinfo.usedbcalib = 0;
 		Calibinfo.usedbsegtype = 0;
@@ -539,13 +539,13 @@ set_calibration_database( Pf *pf )
 		     "in parameter file!!\n" );
 
 	} else {
-		
+
 		strcpy( Calibinfo.dbname, dbname );
 
 		if( translate_loglevel( Program_loglevel ) >= VERBOSE ) {
 
-			elog_notify( 0, 
-				"using database \"%s\" for calibration data\n", 
+			elog_notify( 0,
+				"using database \"%s\" for calibration data\n",
 				Calibinfo.dbname );
 		}
 	}
@@ -572,8 +572,8 @@ update_is_necessary( char *table, Tabletrack *ttrk )
 	}
 }
 
-static char * 
-add_segtype( char *sta, char *chan, double time, char *default_segtype, 
+static char *
+add_segtype( char *sta, char *chan, double time, char *default_segtype,
 	     enum Loglevel loglevel, Dbptr *pdb )
 {
 	Dbptr	db, dbs, dbi;
@@ -582,7 +582,7 @@ add_segtype( char *sta, char *chan, double time, char *default_segtype,
 	char	expr[STRSZ];
 	int	nrecs = 0;
 	int	ret;
-	
+
 	if( pdb == (Dbptr *) NULL ) {
 		dbopen( Calibinfo.dbname, "r", &db );
 	} else {
@@ -594,7 +594,7 @@ add_segtype( char *sta, char *chan, double time, char *default_segtype,
 	db = dbjoin( dbs, dbi, 0, 0, 0, 0, 0 );
 
 	sprintf( key, "%s:%s", sta, chan );
-	
+
 	if( ( segtype = getarr( Calibinfo.segtypearr, key ) ) == (char *) NULL ) {
 
 		allot( char *, segtype, 3 );
@@ -623,7 +623,7 @@ add_segtype( char *sta, char *chan, double time, char *default_segtype,
 		strcpy( segtype, default_segtype );
 
 		if( loglevel == VERYVERBOSE ) {
-			fprintf( stderr, 
+			fprintf( stderr,
 			  "Database has null segtype for %s; using default\n",
 			  key );
 		}
@@ -647,9 +647,9 @@ update_segtypevals( double time, char *default_segtype, enum Loglevel loglevel )
 	Dbptr	db;
 	Tbl	*keys;
 	char	*key;
-	char	*s;	
+	char	*s;
 	Tbl	*ssplit;
-	int 	i;
+	int	i;
 
 	if( loglevel == VERYVERBOSE ) {
 		fprintf( stderr, "Database sensor/instrument table changed; rereading segtype\n" );
@@ -666,11 +666,11 @@ update_segtypevals( double time, char *default_segtype, enum Loglevel loglevel )
 	for( i=0; i<maxtbl( keys ); i++ ) {
 
 		key = gettbl( keys, i );
-		
+
 		s = strdup( key );
 		ssplit = split( s, ':' );
 
-		add_segtype( gettbl( ssplit, 0 ), 
+		add_segtype( gettbl( ssplit, 0 ),
 			     gettbl( ssplit, 1 ),
 			     time, default_segtype, loglevel, &db );
 
@@ -681,8 +681,8 @@ update_segtypevals( double time, char *default_segtype, enum Loglevel loglevel )
 	dbclose( db );
 }
 
-static Calibvals * 
-add_current_calibvals( char *sta, char *chan, double time, 
+static Calibvals *
+add_current_calibvals( char *sta, char *chan, double time,
 		       enum Loglevel loglevel, Dbptr *pdb )
 {
 	Dbptr	db;
@@ -691,7 +691,7 @@ add_current_calibvals( char *sta, char *chan, double time,
 	char	expr[STRSZ];
 	int	nrecs = 0;
 	int	ret;
-	
+
 	if( pdb == (Dbptr *) NULL ) {
 		dbopen( Calibinfo.dbname, "r", &db );
 	} else {
@@ -701,7 +701,7 @@ add_current_calibvals( char *sta, char *chan, double time,
 	db = dblookup( db, 0, "calibration", 0, 0 );
 
 	sprintf( key, "%s:%s", sta, chan );
-	
+
 	if( ( cv = getarr( Calibinfo.calibarr, key ) ) == (Calibvals *) NULL ) {
 
 		allot( Calibvals *, cv, 1 );
@@ -717,8 +717,8 @@ add_current_calibvals( char *sta, char *chan, double time,
 
 	if( nrecs > 0 ) {
 		db.record = 0;
-		ret = dbgetv( db, 0, "calib", &(cv->calib), 
-			       	     "calper", &(cv->calper),
+		ret = dbgetv( db, 0, "calib", &(cv->calib),
+				     "calper", &(cv->calper),
 			             "endtime", &(cv->validuntil), 0 );
 	}
 
@@ -730,7 +730,7 @@ add_current_calibvals( char *sta, char *chan, double time,
 	}
 
 	if( loglevel == VERYVERBOSE ) {
-		fprintf( stderr, 
+		fprintf( stderr,
 			 "Using calib %f, calper %f for %s\n",
 			 cv->calib, cv->calper, key );
 	}
@@ -748,12 +748,12 @@ update_calibvals( double time, enum Loglevel loglevel )
 	Dbptr	db;
 	Tbl	*keys;
 	char	*key;
-	char	*s;	
+	char	*s;
 	Tbl	*ssplit;
-	int 	i;
+	int	i;
 
 	if( loglevel == VERYVERBOSE ) {
-		fprintf( stderr, 
+		fprintf( stderr,
 		   "Database calibration table changed; rereading calib and calper\n" );
 	}
 
@@ -768,11 +768,11 @@ update_calibvals( double time, enum Loglevel loglevel )
 	for( i=0; i<maxtbl( keys ); i++ ) {
 
 		key = gettbl( keys, i );
-		
+
 		s = strdup( key );
 		ssplit = split( s, ':' );
 
-		add_current_calibvals( gettbl( ssplit, 0 ), 
+		add_current_calibvals( gettbl( ssplit, 0 ),
 				       gettbl( ssplit, 1 ),
 				       time, loglevel, &db );
 
@@ -784,8 +784,8 @@ update_calibvals( double time, enum Loglevel loglevel )
 }
 
 static void
-get_calibinfo( Srcname *parts, double time, char **segtype, 
-	       double *calib, double *calper, 
+get_calibinfo( Srcname *parts, double time, char **segtype,
+	       double *calib, double *calper,
 	       char *default_segtype, enum Loglevel loglevel )
 {
 	char	key[STRSZ];
@@ -806,10 +806,10 @@ get_calibinfo( Srcname *parts, double time, char **segtype,
 
 			/* Use the current packet time to find valid rows: */
 			update_segtypevals( time, default_segtype, loglevel );
-		}	
+		}
 
 		sprintf( key, "%s:%s", parts->src_sta, parts->src_chan );
-	
+
 		*segtype = (char *) getarr( Calibinfo.segtypearr, key );
 
 		if( *segtype == (char *) NULL ) {
@@ -828,7 +828,7 @@ get_calibinfo( Srcname *parts, double time, char **segtype,
 	} else {
 
 		if( update_is_necessary( "calibration", Calibinfo.ctrk ) ) {
-			
+
 			update_calibvals( time, loglevel );
 		}
 
@@ -836,18 +836,18 @@ get_calibinfo( Srcname *parts, double time, char **segtype,
 
 		cv = (Calibvals *) getarr( Calibinfo.calibarr, key );
 
-		if( cv == (Calibvals *) NULL || 
+		if( cv == (Calibvals *) NULL ||
 		    ( cv->validuntil != 9999999999.999 && time > cv->validuntil ) ) {
 
-			cv = add_current_calibvals( parts->src_sta, 
-						    parts->src_chan, 
+			cv = add_current_calibvals( parts->src_sta,
+						    parts->src_chan,
 						    time, loglevel, 0 );
 		}
 
 		*calib = cv->calib;
 		*calper = cv->calper;
 	}
-	
+
 	return;
 }
 
@@ -884,14 +884,14 @@ buf_intake( ImportThread *it )
 
 	e2opkt->loglevel = it->loglevel;
 
-	RESIZE_BUFFER( char *, e2opkt->buf, 
+	RESIZE_BUFFER( char *, e2opkt->buf,
 		       e2opkt->bufsize, it->nbytes - EWLOGO_SIZE + 1 );
 
 	memset( e2opkt->buf, 0, e2opkt->bufsize + 1 );
 	memcpy( e2opkt->buf, cp, it->nbytes - EWLOGO_SIZE );
 	e2opkt->nbytes = it->nbytes - EWLOGO_SIZE;
 
-	ewlogo_tostrings( e2opkt->inst, e2opkt->mod, e2opkt->type, 
+	ewlogo_tostrings( e2opkt->inst, e2opkt->mod, e2opkt->type,
 			  e2opkt->inststr, e2opkt->modstr, e2opkt->typestr );
 
 	if( STREQ( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) {
@@ -901,16 +901,16 @@ buf_intake( ImportThread *it )
 			describe_packet( e2opkt );
 		}
 
-		if( ! strmatches( cp, 
-				  it->expect_heartbeat_string, 
+		if( ! strmatches( cp,
+				  it->expect_heartbeat_string,
 				  &it->expect_heartbeat_hook ) ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 				"'%s': Warning: Received heartbeat '%s' doesn't "
 				"match expected pattern '%s'\n",
 				it->name, cp, it->expect_heartbeat_string );
 		} else {
-			
+
 			if( it->loglevel == VERYVERBOSE ) {
 			  if( it->last_heartbeat_received == 0 ) {
 
@@ -918,10 +918,10 @@ buf_intake( ImportThread *it )
 					     it->name );
 			  } else {
 
-				s = strtdelta( now() - 
+				s = strtdelta( now() -
 					       it->last_heartbeat_received );
 
-				elog_notify( 0, 
+				elog_notify( 0,
 					  "'%s': Received-heartbeat latency %s\n",
 					  it->name, s );
 
@@ -933,26 +933,26 @@ buf_intake( ImportThread *it )
 		}
 
 		free_Ew2orbPacket( e2opkt );
-			
+
 	} else {
 
 		e2opkt->it->npacketrefs++;
 
-		pmtfifo_push( E2oPackets_mtf, (void *) e2opkt ); 
+		pmtfifo_push( E2oPackets_mtf, (void *) e2opkt );
 	}
 
 	return 0;
 }
 
 static void
-usage() 
+usage()
 {
-	cbanner( "$Date$", 
+	cbanner( "$Date$",
 		 "[-p pfname] orb",
-		 "Kent Lindquist", 
-		 "Lindquist Consulting", 
+		 "Kent Lindquist",
+		 "Lindquist Consulting",
 		 "kent@lindquistconsulting.com" );
-	
+
 	return;
 }
 
@@ -1006,7 +1006,7 @@ find_import_thread_byname( char *name )
 
 	pthread_rwlock_rdlock( &Import_Threads_rwlock );
 
-	it = getarr( Import_Threads, name ); 
+	it = getarr( Import_Threads, name );
 
 	pthread_rwlock_unlock( &Import_Threads_rwlock );
 
@@ -1018,7 +1018,7 @@ stop_import_thread( char *name )
 {
 	ImportThread *it;
 
-	if( ( it = find_import_thread_byname( name ) ) == 0 ) { 
+	if( ( it = find_import_thread_byname( name ) ) == 0 ) {
 
 		elog_complain( 1, "stop_import_thread: "
 			  "Couldn't find import thread '%s' in registry\n",
@@ -1042,7 +1042,7 @@ stop_import_thread( char *name )
 }
 
 static Tbl *
-import_thread_names() 
+import_thread_names()
 {
 	Tbl	*keys;
 	Tbl	*dup;
@@ -1074,7 +1074,7 @@ num_import_threads()
 	return nthreads;
 }
 
-static void 
+static void
 stop_all_import_threads()
 {
 	int	i;
@@ -1099,7 +1099,7 @@ find_import_thread_byid( pthread_t tid )
 	ImportThread *found = (ImportThread *) NULL;
 	Tbl	*keys;
 	char	*key;
-	int 	i;
+	int	i;
 
 	pthread_rwlock_rdlock( &Import_Threads_rwlock );
 
@@ -1128,7 +1128,7 @@ find_import_thread_byid( pthread_t tid )
 
 
 static void
-add_import_thread( char *name, ImportThread *it ) 
+add_import_thread( char *name, ImportThread *it )
 {
 	pthread_rwlock_wrlock( &Import_Threads_rwlock );
 
@@ -1140,7 +1140,7 @@ add_import_thread( char *name, ImportThread *it )
 }
 
 static void
-delete_import_thread( ImportThread *it ) 
+delete_import_thread( ImportThread *it )
 {
 	if( it != (ImportThread *) NULL ) {
 
@@ -1182,7 +1182,7 @@ close_import_connection( ImportThread *it )
 	it->bnsin = 0;
 
 	if( it->stop == 0 ) {
-		
+
 		sleep( SERVER_RESET_ALLOWANCE_SEC );
 	}
 
@@ -1202,7 +1202,7 @@ ew2orb_import_shutdown()
 				  (long) pthread_self() );
 
 	} else {
-	
+
 		if( it->bnsin != NULL ) {
 
 			close_import_connection( it );
@@ -1216,7 +1216,7 @@ ew2orb_import_shutdown()
 
 	if( Flags.verbose ) {
 
-		elog_notify( 0, 
+		elog_notify( 0,
 		"'%s': Thread (thread-id %ld) stopping at user request\n",
 		  name, (long) pthread_self() );
 	}
@@ -1248,24 +1248,24 @@ reconfig_import_thread( ImportThread *it )
 		if( it->loglevel >= VERBOSE ) {
 
 			if( it->new ) {
-					
-				elog_notify( 0, 
-			  	"'%s': Configuring thread with: ", 
-			  	it->name );
+
+				elog_notify( 0,
+				"'%s': Configuring thread with: ",
+				it->name );
 
 			} else {
 
-				elog_notify( 0, 
-			  	"'%s': Reconfiguring thread with: ", 
-			  	it->name );
+				elog_notify( 0,
+				"'%s': Reconfiguring thread with: ",
+				it->name );
 
 			}
 
 			pfout( stderr, it->pf );
 		}
-			
+
 		if( it->bnsin != NULL ) {
-			
+
 			close_import_connection( it );
 
 			it->last_heartbeat_sent = 0;
@@ -1274,7 +1274,7 @@ reconfig_import_thread( ImportThread *it )
 		strcpy( it->server_ipaddress,
 			pfget_string( it->pf, "server_ipaddress" ) );
 
-		it->server_port = 
+		it->server_port =
 			(in_port_t) pfget_int( it->pf, "server_port" );
 
 		strcpy( it->expect_heartbeat_string,
@@ -1288,7 +1288,7 @@ reconfig_import_thread( ImportThread *it )
 		strcpy( it->send_heartbeat_string,
 			pfget_string( it->pf, "send_heartbeat_string" ) );
 
-		it->send_heartbeat_sec = 
+		it->send_heartbeat_sec =
 			pfget_int( it->pf, "send_heartbeat_sec" );
 
 		strcpy( it->my_inst_str,
@@ -1297,9 +1297,9 @@ reconfig_import_thread( ImportThread *it )
 		strcpy( it->my_mod_str,
 			pfget_string( it->pf, "my_mod" ) );
 
-		ewlogo_tologo( it->my_inst_str, 
-			       it->my_mod_str, 
-			       Default_TYPE_HEARTBEAT, 
+		ewlogo_tologo( it->my_inst_str,
+			       it->my_mod_str,
+			       Default_TYPE_HEARTBEAT,
 			       &it->my_inst,
 			       &it->my_mod,
 			       &it->my_type_heartbeat );
@@ -1307,25 +1307,25 @@ reconfig_import_thread( ImportThread *it )
 		strcpy( it->select, pfget_string( it->pf, "select" ) );
 		strcpy( it->reject, pfget_string( it->pf, "reject" ) );
 
-		strcpy( it->default_segtype, 
+		strcpy( it->default_segtype,
 			pfget_string( it->pf, "default_segtype" ) );
 
 		if( it->select_hook ) {
 
 			free_hook( &it->select_hook );
-		} 
+		}
 
 		if( it->reject_hook ) {
 
 			free_hook( &it->reject_hook );
-		} 
+		}
 
 		loglevel = pfget_string( it->pf, "loglevel" );
 
 		it->loglevel = translate_loglevel( loglevel );
-		
+
 		if( it->srcname_morphmap != (Morphtbl *) NULL ) {
-			
+
 			freemorphtbl( it->srcname_morphmap );
 		}
 
@@ -1338,12 +1338,12 @@ reconfig_import_thread( ImportThread *it )
 		newmorphtbl( new_morphlist, &it->srcname_morphmap );
 
 		if( new_morphlist != (Tbl *) NULL ) {
-			
+
 			freetbl( new_morphlist, (void (*)(void *)) free );
 		}
 
 		if( it->timecorr != (Arr *) NULL ) {
-			
+
 			freearr( it->timecorr, free );
 		}
 
@@ -1351,7 +1351,7 @@ reconfig_import_thread( ImportThread *it )
 
 		if( timecorr != (Arr *) NULL ) {
 
-			it->timecorr = 
+			it->timecorr =
 			    duparr( timecorr, ( void *(*)(void *) ) strdup );
 
 			freearr( timecorr, 0 );
@@ -1381,19 +1381,19 @@ refresh_import_thread( ImportThread *it )
 		if( it->so < 0 ) {
 
 			elog_complain( 1,
-		 	  "'%s': Failed to open socket to %s:%d\n", 
+			  "'%s': Failed to open socket to %s:%d\n",
 			  it->name, it->server_ipaddress, it->server_port );
 
 			sleep( CONNECT_FAILURE_SLEEPTIME_SEC );
 
 			continue;
 		}
-	
+
 		it->sin.sin_family = AF_INET;
 		it->sin.sin_port = htons( 0 ); /* Any port */
 		it->sin.sin_addr.s_addr = htonl( INADDR_ANY );
 
-		if( bind( it->so, (struct sockaddr *) &it->sin, 
+		if( bind( it->so, (struct sockaddr *) &it->sin,
 		                                   sizeof( it->sin ) ) ) {
 			if( it->bindfail < NCOMPLAIN_MAX ) {
 
@@ -1402,8 +1402,8 @@ refresh_import_thread( ImportThread *it )
 			}
 
 			if( it->bindfail++ == NCOMPLAIN_MAX ) {
-					
-				elog_complain( 0, 
+
+				elog_complain( 0,
 					"'%s': Last message repeated %d "
 					"times; will keep retrying "
 					"every %d sec\n",
@@ -1413,7 +1413,7 @@ refresh_import_thread( ImportThread *it )
 			}
 
 			close( it->so );
-				
+
 			sleep( CONNECT_FAILURE_SLEEPTIME_SEC );
 
 			continue;
@@ -1422,31 +1422,31 @@ refresh_import_thread( ImportThread *it )
 
 			it->bindfail = 0;
 		}
-	
+
 		it->sin.sin_port = htons( it->server_port );
 		it->sin.sin_addr.s_addr = inet_addr( it->server_ipaddress );
 
 		if( ( it->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-			elog_notify( 0, 
+			elog_notify( 0,
 				  "'%s': Attempting to connect "
 				  "to remote export module at %s:%d\n",
-				  it->name, it->server_ipaddress, 
+				  it->name, it->server_ipaddress,
 				  it->server_port );
 		}
 
 		if( connect( it->so, (struct sockaddr *) &it->sin, sizeof( it->sin ) ) ) {
 			if( it->connectfail < NCOMPLAIN_MAX ) {
 
-				elog_complain( 1, 
+				elog_complain( 1,
 					"'%s': Failed to connect socket for %s:%d\n",
 					it->name,
 					it->server_ipaddress, it->server_port );
 			}
 
 			if( it->connectfail++ == NCOMPLAIN_MAX ) {
-					
-				elog_complain( 0, 
+
+				elog_complain( 0,
 					"'%s': Last message repeated %d "
 					"times; will keep retrying "
 					"every %d sec\n",
@@ -1456,7 +1456,7 @@ refresh_import_thread( ImportThread *it )
 			}
 
 			close( it->so );
-				
+
 			sleep( CONNECT_FAILURE_SLEEPTIME_SEC );
 
 			continue;
@@ -1467,22 +1467,22 @@ refresh_import_thread( ImportThread *it )
 
 			if( ( it->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-				elog_notify( 0, 
+				elog_notify( 0,
 					  "'%s': import thread Connected "
 					  "to remote export module\n",
 					  it->name );
 			}
 		}
 
-		it->bnsin = bnsnew( it->so, BNS_BUFFER_SIZE ); 
-		it->bnsout = bnsnew( it->so, BNS_BUFFER_SIZE ); 
+		it->bnsin = bnsnew( it->so, BNS_BUFFER_SIZE );
+		it->bnsout = bnsnew( it->so, BNS_BUFFER_SIZE );
 
 		bnsuse_sockio( it->bnsin );
 		bnsuse_sockio( it->bnsout );
 
 		if( it->send_heartbeat_sec*1000 < DEFAULT_BNS_TIMEOUT ) {
 
-			bnstimeout( it->bnsin, 
+			bnstimeout( it->bnsin,
 				it->send_heartbeat_sec * 1000 );
 
 		} else {
@@ -1497,21 +1497,21 @@ refresh_import_thread( ImportThread *it )
 static void
 send_heartbeat( ImportThread *it )
 {
-	char 	msg[STRSZ]; 
+	char	msg[STRSZ];
 	char	stx = STX;
 	char	etx = ETX;
 	char	nul = 0;
 	int	msglen;
 
 	if( now() - it->last_heartbeat_sent < it->send_heartbeat_sec ) {
-		
+
 		return;
 	}
 
 	sprintf( msg, "%c%3d%3d%3d%s%c%c",
 		      stx,
 		      it->my_inst,
-		      it->my_mod, 
+		      it->my_mod,
 		      it->my_type_heartbeat,
 		      it->send_heartbeat_string,
 		      nul,
@@ -1560,10 +1560,10 @@ more_packet_data( ImportThread *it )
 	int	bns_errno;
 
 	while( ( rc = bnsget( it->bnsin, &c, BYTES, 1 ) ) == 0 ) {
-			
+
 		switch( it->sync_state ) {
 
-		case STREAM_SEARCH: 
+		case STREAM_SEARCH:
 
 			if( c == STX && previous != ESC ) {
 
@@ -1579,16 +1579,16 @@ more_packet_data( ImportThread *it )
 
 		case STREAM_ACCUMULATE:
 
-			if( c == ESC ) { 
+			if( c == ESC ) {
 
 				it->sync_state = STREAM_ESCAPE;
 
 			} else if( c == ETX ) {
 
-				/* Guarantee null-termination of 
+				/* Guarantee null-termination of
 				   string messages */
 
-				APPEND_BUFFER( it->buf, it->bufsize, 
+				APPEND_BUFFER( it->buf, it->bufsize,
 					       it->nbytes, '\0' );
 				it->nbytes--;
 
@@ -1598,26 +1598,26 @@ more_packet_data( ImportThread *it )
 
 			} else {
 
-				APPEND_BUFFER( it->buf, it->bufsize, 
+				APPEND_BUFFER( it->buf, it->bufsize,
 					       it->nbytes, c );
 			}
 
 			break;
 
 		case STREAM_ESCAPE:
-			
+
 			if( c == ETX || c == STX || c == ESC ) {
 
-				APPEND_BUFFER( it->buf, it->bufsize, 
+				APPEND_BUFFER( it->buf, it->bufsize,
 					       it->nbytes, c );
 
 				it->sync_state = STREAM_ACCUMULATE;
 
 			} else {
-	
-				APPEND_BUFFER( it->buf, it->bufsize, 
+
+				APPEND_BUFFER( it->buf, it->bufsize,
 					       it->nbytes, previous );
-				APPEND_BUFFER( it->buf, it->bufsize, 
+				APPEND_BUFFER( it->buf, it->bufsize,
 					       it->nbytes, c );
 
 				it->sync_state = STREAM_ACCUMULATE;
@@ -1625,7 +1625,7 @@ more_packet_data( ImportThread *it )
 
 			break;
 
-		default: 
+		default:
 
 			BAD_BYTE( "default", c );
 
@@ -1638,26 +1638,26 @@ more_packet_data( ImportThread *it )
 	}
 
 	if( bnserr( it->bnsin ) != 0 ) {
-			
+
 		bns_errno = bnserrno( it->bnsin );
 
 		if( ( it->loglevel >= VERBOSE ) || Flags.verbose ) {
 
 		  if( bns_errno == ECONNRESET ) {
 
-			elog_complain( 1, 
+			elog_complain( 1,
 				  "'%s': Connection reset by peer\n",
 				  it->name );
 
 			if( it->loglevel == VERYVERBOSE ) {
 
-				display_banner( "ECONNRESET" ); 
+				display_banner( "ECONNRESET" );
 			}
 
 		  } else {
 
-			elog_complain( 1, 
-				  "'%s': bns error %d\n", 
+			elog_complain( 1,
+				  "'%s': bns error %d\n",
 				  it->name, bns_errno );
 		  }
 		}
@@ -1668,14 +1668,14 @@ more_packet_data( ImportThread *it )
 
 		if( ( it->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-			elog_complain( 1, 
+			elog_complain( 1,
 				  "'%s': Connection closed by remote "
 				  "export module\n",
 				  it->name );
 
 			if( it->loglevel == VERYVERBOSE ) {
 
-				display_banner( "CLOSED" ); 
+				display_banner( "CLOSED" );
 			}
 		}
 
@@ -1706,14 +1706,14 @@ ew2orb_import( void *arg )
 
 	if( ( it = find_import_thread_byid( pthread_self() ) ) == NULL ) {
 
-		elog_complain( 1, 
+		elog_complain( 1,
 			"Couldn't find thread id %ld in registry!\n",
 			 (long) pthread_self() );
 
 		status = -1;
 
 		pthread_exit( (void *) &status );
-	} 
+	}
 
 	for( ;; ) {
 
@@ -1787,46 +1787,46 @@ update_import_thread( char *name, Pf *pf )
 
 		pfput_string( it->pf, "server_ipaddress", "" );
 
-		pfput_int( it->pf, 
-			   "send_heartbeat_sec", 
+		pfput_int( it->pf,
+			   "send_heartbeat_sec",
 			   DEFAULT_SEND_HEARTBEAT_SEC );
 
-		pfput_int( it->pf, 
-			   "expect_heartbeat_sec", 
+		pfput_int( it->pf,
+			   "expect_heartbeat_sec",
 			   DEFAULT_EXPECT_HEARTBEAT_SEC );
 
-		pfput_string( it->pf, 
-			      "send_heartbeat_string", 
+		pfput_string( it->pf,
+			      "send_heartbeat_string",
 			      DEFAULT_SEND_HEARTBEAT_STRING );
 
-		pfput_string( it->pf, 
-			      "expect_heartbeat_string", 
+		pfput_string( it->pf,
+			      "expect_heartbeat_string",
 			      DEFAULT_EXPECT_HEARTBEAT_STRING );
 
-		pfput_string( it->pf, 
-			      "select", 
+		pfput_string( it->pf,
+			      "select",
 			      DEFAULT_SELECT );
 
-		pfput_string( it->pf, 
-			      "reject", 
+		pfput_string( it->pf,
+			      "reject",
 			      DEFAULT_REJECT );
 
-		pfput_string( it->pf, 
-			      "default_segtype", 
+		pfput_string( it->pf,
+			      "default_segtype",
 			      DEFAULT_SEGTYPE );
 
-		pfput_string( it->pf, 
-			      "loglevel", 
+		pfput_string( it->pf,
+			      "loglevel",
 			      Program_loglevel );
 
-		pfput_string( it->pf, 
-			      "my_inst", 
+		pfput_string( it->pf,
+			      "my_inst",
 			      DEFAULT_INST );
 
-		pfput_string( it->pf, 
-			      "my_mod", 
+		pfput_string( it->pf,
+			      "my_mod",
 			      DEFAULT_MOD );
-	} 
+	}
 
 	pthread_mutex_lock( &it->it_mutex );
 
@@ -1865,10 +1865,10 @@ update_import_thread( char *name, Pf *pf )
 
 	pfreplace( pf, it->pf, "defaults{my_mod}", "my_mod", "string" );
 
-	pfreplace( pf, it->pf, "defaults{srcname_morph}", 
+	pfreplace( pf, it->pf, "defaults{srcname_morph}",
 			       "srcname_morph", "tbl" );
 
-	pfreplace( pf, it->pf, "defaults{timecorr}", 
+	pfreplace( pf, it->pf, "defaults{timecorr}",
 			       "timecorr", "arr" );
 
 	sprintf( key, "import_from{%s}{server_port}", name );
@@ -1926,7 +1926,7 @@ update_import_thread( char *name, Pf *pf )
 			elog_complain( 1,
 			    "'%s': Failed to create import thread: "
 			    "pthread_create error %d\n", name, ret );
-			
+
 			delete_import_thread( it );
 
 			return;
@@ -1958,7 +1958,7 @@ update_import_thread( char *name, Pf *pf )
 
 			elog_notify( 0,
 				"'%s': Posted updates for import thread "
-				"(thread-id %ld)\n", 
+				"(thread-id %ld)\n",
 				it->name, (long) it->thread_id );
 
 		} else {
@@ -1986,46 +1986,46 @@ reconfigure_import_threads( Pf *pf )
 
 	if( pfget( pf, "import_from", (void **) &pfimport_from ) != PFARR ) {
 
-		elog_complain( 1, 
+		elog_complain( 1,
 		   "parameter 'import_from' not present or not an array\n" );
 
 		stop_all_import_threads();
-		
+
 		if( Flags.verbose && num_import_threads() <= 0 ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 			"Warning: no import threads defined; nothing to do\n" );
 		}
 
 		return;
-	} 
+	}
 
 	new_keys = pfkeys( pfimport_from );
 
 	if( maxtbl( new_keys ) <= 0 ) {
 
 		stop_all_import_threads();
-		
+
 		if( Flags.verbose && num_import_threads() <= 0 ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 			"Warning: no import threads defined; nothing to do\n" );
 		}
 
 		freetbl( new_keys, 0 );
 
 		return;
-	} 
+	}
 
 	existing_keys = import_thread_names();
 
 	for( i = 0; i < maxtbl( existing_keys ); i++ ) {
-		
+
 		akey = gettbl( existing_keys, i );
 
 		if( ( anarr = pfget_arr( pfimport_from, akey ) ) == NULL ) {
 
-			stop_import_thread( akey ); 
+			stop_import_thread( akey );
 
 		} else {
 
@@ -2036,7 +2036,7 @@ reconfigure_import_threads( Pf *pf )
 	}
 
 	freetbl( existing_keys, (void (*)(void *)) free );
-		
+
 	for( i = 0; i < maxtbl( new_keys ); i++ ) {
 
 		akey = gettbl( new_keys, i );
@@ -2051,7 +2051,7 @@ reconfigure_import_threads( Pf *pf )
 
 	if( Flags.verbose && num_import_threads() <= 0 ) {
 
-		elog_complain( 0, 
+		elog_complain( 0,
 		"Warning: no import threads defined; nothing to do\n" );
 	}
 
@@ -2078,7 +2078,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) &&
 	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
-		elog_complain( 0, 
+		elog_complain( 0,
 			"convert: Don't know how to crack type <%s>\n",
 			e2opkt->typestr );
 
@@ -2094,12 +2094,12 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 	pushtbl( e2opkt->pkt->channels, pktchan );
 
-	/* Acknowledge the Earthworm packing strategy of 
-	   memory-copying the entire trace-header structure. 
-	   This was an unwise protocol design since the 
+	/* Acknowledge the Earthworm packing strategy of
+	   memory-copying the entire trace-header structure.
+	   This was an unwise protocol design since the
 	   field order in a structure, officially, is at
-	   the whim of the compiler implementation. In an 
-	   attempt to sidestep difficulties, unpack the expected 
+	   the whim of the compiler implementation. In an
+	   attempt to sidestep difficulties, unpack the expected
 	   structure contents one item at a time in hopes they packed
 	   "correctly" (i.e. without misalignments from compiler-dependent
 	   structure padding) on the Earthworm side: */
@@ -2210,16 +2210,16 @@ crack_packet( Ew2orbPacket *e2opkt )
 	join_srcname( &e2opkt->pkt->parts, old_srcname );
 
 	pthread_mutex_lock( &e2opkt->it->it_mutex );
-		
+
 	if( ! STREQ( e2opkt->it->reject, "" ) ) {
 
-	    	n = strmatches( old_srcname, 
+		n = strmatches( old_srcname,
 				e2opkt->it->reject,
 				&e2opkt->it->reject_hook );
 
-		if( n < 0 ) { 
+		if( n < 0 ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 			"Couldn't compile reject expression '%s'\n",
 			e2opkt->it->reject );
 
@@ -2240,13 +2240,13 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 	if( ! STREQ( e2opkt->it->select, "" ) ) {
 
-	    	n = strmatches( old_srcname, 
+		n = strmatches( old_srcname,
 				e2opkt->it->select,
 				&e2opkt->it->select_hook );
 
-		if( n < 0 ) { 
+		if( n < 0 ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 			"Couldn't compile select expression '%s'\n",
 			e2opkt->it->select );
 
@@ -2254,7 +2254,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 			if( e2opkt->it->loglevel == VERYVERBOSE ) {
 
-				elog_notify( 0, 
+				elog_notify( 0,
 				"'%s': %s doesn't match select expression\n",
 					     e2opkt->itname,
 					     old_srcname );
@@ -2279,11 +2279,11 @@ crack_packet( Ew2orbPacket *e2opkt )
 				elog_notify( 0, "'%s': adding %f seconds to "
 				"timestamp value for incoming packet %s\n", 
 				e2opkt->itname, timeshift, old_srcname );
-						
+
 			}
 
 		} else {
-			
+
 			timeshift = 0.0;
 		}
 
@@ -2292,19 +2292,19 @@ crack_packet( Ew2orbPacket *e2opkt )
 		timeshift = 0.0;
 	}
 
-	n = morphtbl( old_srcname, e2opkt->it->srcname_morphmap, 
+	n = morphtbl( old_srcname, e2opkt->it->srcname_morphmap,
 		      MORPH_ALL|MORPH_PARTIAL, new_srcname );
 
 	pthread_mutex_unlock( &e2opkt->it->it_mutex );
 
 	split_srcname( new_srcname, &e2opkt->pkt->parts );
 
-	if( e2opkt->it->loglevel == VERYVERBOSE && 
+	if( e2opkt->it->loglevel == VERYVERBOSE &&
 	    ( n != 0 || strcmp( old_srcname, new_srcname ) ) ) {
 
 		elog_notify( 0, "'%s': mapped %s to %s (%d "
-				"transformation%s\n", 
-				e2opkt->itname, old_srcname, 
+				"transformation%s\n",
+				e2opkt->itname, old_srcname,
 				new_srcname, n,
 				n == 1 ? ")" : "s)" );
 	}
@@ -2357,7 +2357,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 			sp = (char *) &e2opkt->th2->nsamp;
 			vi2hi( &sp, &e2opkt->th2->nsamp, 1 );
-				
+
 			sp = (char *) &e2opkt->th2->samprate;
 			vd2hd( &sp, &e2opkt->th2->samprate, 1 );
 
@@ -2386,10 +2386,10 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		} else {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 				"convert: Don't know how to translate datatype <%s>\n",
 				e2opkt->th2->datatype );
-			
+
 			return -1;
 		}
 
@@ -2442,7 +2442,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 			sp = (char *) &e2opkt->th->nsamp;
 			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
-				
+
 			sp = (char *) &e2opkt->th->samprate;
 			vd2hd( &sp, &e2opkt->th->samprate, 1 );
 
@@ -2471,7 +2471,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		} else {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 				"convert: Don't know how to translate datatype <%s>\n",
 				e2opkt->th->datatype );
 
@@ -2485,9 +2485,9 @@ crack_packet( Ew2orbPacket *e2opkt )
 		pktchan->time = e2opkt->th->starttime + timeshift;
 	}
 
-	get_calibinfo( &e2opkt->pkt->parts, pktchan->time, 
+	get_calibinfo( &e2opkt->pkt->parts, pktchan->time,
 		       &temp_segtype, &pktchan->calib, &pktchan->calper,
-		       e2opkt->it->default_segtype, 
+		       e2opkt->it->default_segtype,
 		       e2opkt->it->loglevel );
 
 	strcpy( pktchan->segtype, temp_segtype );
@@ -2496,64 +2496,64 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		if( STREQ( e2opkt->th->datatype, "s4" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			mi2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			ms2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			vi2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			vs2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 		}
-		
+
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) {
 
 		if( STREQ( e2opkt->th2->datatype, "s4" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th2->nsamp * sizeof( int ) );
 
 			mi2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
 
 		} else if( STREQ( e2opkt->th2->datatype, "s2" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th2->nsamp * sizeof( int ) );
 
 			ms2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
 
 		} else if( STREQ( e2opkt->th2->datatype, "i4" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th2->nsamp * sizeof( int ) );
 
 			vi2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
 
 		} else if( STREQ( e2opkt->th2->datatype, "i2" ) ) {
 
-			allot( int *, pktchan->data, 
+			allot( int *, pktchan->data,
 			       e2opkt->th2->nsamp * sizeof( int ) );
 
 			vs2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
 		}
-		
+
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
 		pktchan->datasz *= sizeof(int);
@@ -2564,11 +2564,11 @@ crack_packet( Ew2orbPacket *e2opkt )
 		pktchan->datasz /= sizeof(int);
 	}
 
-	stuffPkt( e2opkt->pkt, 
-		  e2opkt->srcname, 
+	stuffPkt( e2opkt->pkt,
+		  e2opkt->srcname,
 		  &e2opkt->time,
-		  &e2opkt->orbpkt, 
-		  &e2opkt->orbpktnbytes, 
+		  &e2opkt->orbpkt,
+		  &e2opkt->orbpktnbytes,
 		  &e2opkt->orbpktsz );
 
 	return retcode;
@@ -2584,7 +2584,7 @@ ew2orb_convert( void *arg )
 	while( pmtfifo_pop( E2oPackets_mtf, (void **) &e2opkt ) != 0 ) {
 
 		if( crack_packet( e2opkt ) < 0 ) {
-			
+
 			free_Ew2orbPacket( e2opkt );
 
 			continue;
@@ -2597,9 +2597,9 @@ ew2orb_convert( void *arg )
 
 		if( e2opkt->orbpkt != NULL && e2opkt->orbpktnbytes != 0 ) {
 
-			orbput( Orbfd, e2opkt->srcname, 
-			       	       e2opkt->time,
-				       e2opkt->orbpkt, 
+			orbput( Orbfd, e2opkt->srcname,
+				       e2opkt->time,
+				       e2opkt->orbpkt,
 				       e2opkt->orbpktnbytes );
 		}
 
@@ -2648,12 +2648,12 @@ ew2orb_pfwatch( void *arg )
 		rc = pfupdate( Pfname, &pf );
 
 		if( rc < 0 ) {
-			
+
 			elog_complain( 1, "pfupdate pf parameter file '%s' failed\n",
 				  Pfname );
 
 		} else if( rc == 0 ) {
-			
+
 			; /* No reconfiguration necessary */
 
 		} else if( rc == 1 ) {
@@ -2663,8 +2663,8 @@ ew2orb_pfwatch( void *arg )
 			set_calibration_database( pf );
 
 			if( Flags.verbose ) {
-				
-				elog_notify( 0, 
+
+				elog_notify( 0,
 				"Reconfiguring ew2orb from parameter file\n" );
 			}
 
@@ -2727,12 +2727,12 @@ main( int argc, char **argv )
 		elog_die( 0, "Must specify an output orb name\n" );
 
 	} else {
-		
+
 		orbname = argv[optind++];
 	}
 
 	if( ( Orbfd = orbopen( orbname, "w&" ) ) < 0 ) {
-		
+
 		elog_die( 0, "Failed to open orb '%s' for writing\n", orbname );
 	}
 
