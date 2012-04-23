@@ -1736,6 +1736,7 @@ static ImportThread *
 new_ImportThread( char *name )
 {
 	ImportThread *it;
+        pthread_mutex_attr_t mtx_attr;
 
 	allot( ImportThread *, it, 1 );
 
@@ -1763,7 +1764,10 @@ new_ImportThread( char *name )
 	it->select_hook = NULL;
 	it->reject_hook = NULL;
 
-	pthread_mutex_init( &it->it_mutex, NULL );
+        pthread_mutexattr_init(&mtx_attr);
+        pthread_mutexattr_setpshared(&mtx_attr,
+            PTHREAD_PROCESS_PRIVATE );
+	pthread_mutex_init( &it->it_mutex, &mtx_attr );
 
 	return it;
 }
