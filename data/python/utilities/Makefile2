@@ -1,0 +1,11 @@
+MAN3 = pythondbcentral.3y
+
+DATADIR= python/utilities
+DATA = pythondbcentral.py
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+SUBDIR= /local
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
