@@ -1736,7 +1736,7 @@ static ImportThread *
 new_ImportThread( char *name )
 {
 	ImportThread *it;
-        pthread_mutex_attr_t mtx_attr;
+        pthread_mutexattr_t mtx_attr;
 
 	allot( ImportThread *, it, 1 );
 
