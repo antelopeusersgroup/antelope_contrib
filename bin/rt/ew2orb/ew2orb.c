@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include "orbew.h"
+#include <signal.h>
 
 #define SERVER_RESET_ALLOWANCE_SEC 1
 #define PACKET_QUEUE_SIZE 50000
@@ -41,8 +42,8 @@ typedef struct ImportThread {
 
 	/* Shared variables: */
 
-	mutex_t	it_mutex;
-	thread_t thread_id;
+	pthread_mutex_t	it_mutex;
+	pthread_t thread_id;
 	Pf	*pf;
 	int	update;
 	int	new;
@@ -134,7 +135,7 @@ static struct {
 } Calibinfo;
 
 Arr	*Import_Threads;
-rwlock_t Import_Threads_rwlock;
+pthread_rwlock_t Import_Threads_rwlock;
 Pmtfifo	*E2oPackets_mtf;
 int	Orbfd = -1;
 char	*Pfname = "ew2orb";
@@ -959,7 +960,7 @@ static void
 free_ImportThread( ImportThread **it )
 {
 
-	mutex_destroy( &(*it)->it_mutex );
+	pthread_mutex_destroy( &(*it)->it_mutex );
 
 	if( (*it)->pf ) {
 
@@ -1003,11 +1004,11 @@ find_import_thread_byname( char *name )
 {
 	ImportThread *it;
 
-	rw_rdlock( &Import_Threads_rwlock );
+	pthread_rwlock_rdlock( &Import_Threads_rwlock );
 
 	it = getarr( Import_Threads, name ); 
 
-	rw_unlock( &Import_Threads_rwlock );
+	pthread_rwlock_unlock( &Import_Threads_rwlock );
 
 	return it;
 }
@@ -1031,11 +1032,11 @@ stop_import_thread( char *name )
 			     "thread-id %ld\n", name, (long) it->thread_id );
 	}
 
-	mutex_lock( &it->it_mutex );
+	pthread_mutex_lock( &it->it_mutex );
 
 	it->stop = 1;
 
-	mutex_unlock( &it->it_mutex );
+	pthread_mutex_unlock( &it->it_mutex );
 
 	return;
 }
@@ -1046,7 +1047,7 @@ import_thread_names()
 	Tbl	*keys;
 	Tbl	*dup;
 
-	rw_rdlock( &Import_Threads_rwlock );
+	pthread_rwlock_rdlock( &Import_Threads_rwlock );
 
 	keys = keysarr( Import_Threads );
 
@@ -1054,7 +1055,7 @@ import_thread_names()
 
 	freetbl( keys, 0 );
 
-	rw_unlock( &Import_Threads_rwlock );
+	pthread_rwlock_unlock( &Import_Threads_rwlock );
 
 	return dup;
 }
@@ -1064,11 +1065,11 @@ num_import_threads()
 {
 	int	nthreads;
 
-	rw_rdlock( &Import_Threads_rwlock );
+	pthread_rwlock_rdlock( &Import_Threads_rwlock );
 
 	nthreads = cntarr( Import_Threads );
 
-	rw_unlock( &Import_Threads_rwlock );
+	pthread_rwlock_unlock( &Import_Threads_rwlock );
 
 	return nthreads;
 }
@@ -1092,7 +1093,7 @@ stop_all_import_threads()
 }
 
 ImportThread *
-find_import_thread_byid( thread_t tid )
+find_import_thread_byid( pthread_t tid )
 {
 	ImportThread *it;
 	ImportThread *found = (ImportThread *) NULL;
@@ -1100,7 +1101,7 @@ find_import_thread_byid( thread_t tid )
 	char	*key;
 	int 	i;
 
-	rw_rdlock( &Import_Threads_rwlock );
+	pthread_rwlock_rdlock( &Import_Threads_rwlock );
 
 	keys = keysarr( Import_Threads );
 
@@ -1120,7 +1121,7 @@ find_import_thread_byid( thread_t tid )
 
 	freetbl( keys, 0 );
 
-	rw_unlock( &Import_Threads_rwlock );
+	pthread_rwlock_unlock( &Import_Threads_rwlock );
 
 	return found;
 }
@@ -1129,11 +1130,11 @@ find_import_thread_byid( thread_t tid )
 static void
 add_import_thread( char *name, ImportThread *it ) 
 {
-	rw_wrlock( &Import_Threads_rwlock );
+	pthread_rwlock_wrlock( &Import_Threads_rwlock );
 
 	setarr( Import_Threads, name, (void *) it );
 
-	rw_unlock( &Import_Threads_rwlock );
+	pthread_rwlock_unlock( &Import_Threads_rwlock );
 
 	return;
 }
@@ -1143,10 +1144,10 @@ delete_import_thread( ImportThread *it )
 {
 	if( it != (ImportThread *) NULL ) {
 
-		mutex_trylock( &it->it_mutex );
-		mutex_unlock( &it->it_mutex );
+		pthread_mutex_trylock( &it->it_mutex );
+		pthread_mutex_unlock( &it->it_mutex );
 
-		rw_wrlock( &Import_Threads_rwlock );
+		pthread_rwlock_wrlock( &Import_Threads_rwlock );
 
 		delarr( Import_Threads, it->name );
 
@@ -1155,7 +1156,7 @@ delete_import_thread( ImportThread *it )
 			free_ImportThread( &it );
 		}
 
-		rw_unlock( &Import_Threads_rwlock );
+		pthread_rwlock_unlock( &Import_Threads_rwlock );
 	}
 
 	return;
@@ -1195,10 +1196,10 @@ ew2orb_import_shutdown()
 	ImportThread *it;
 	char	name[STRSZ] = "Unknown";
 
-	if( ( it = find_import_thread_byid( thr_self() ) ) == NULL ) {
+	if( ( it = find_import_thread_byid( pthread_self() ) ) == NULL ) {
 
 		elog_complain( 0, "Couldn't find thread %ld in registry!\n",
-			  	  (long) thr_self() );
+				  (long) pthread_self() );
 
 	} else {
 	
@@ -1217,12 +1218,12 @@ ew2orb_import_shutdown()
 
 		elog_notify( 0, 
 		"'%s': Thread (thread-id %ld) stopping at user request\n",
-		  name, (long) thr_self() );
+		  name, (long) pthread_self() );
 	}
 
 	delete_import_thread( it );
 
-	thr_exit( (void *) &status );
+	pthread_exit( (void *) &status );
 
 	return;
 }
@@ -1235,7 +1236,7 @@ reconfig_import_thread( ImportThread *it )
 	Tbl	*new_morphlist;
 	Arr	*timecorr;
 
-	mutex_lock( &it->it_mutex );
+	pthread_mutex_lock( &it->it_mutex );
 
 	if( it->stop == 1 ) {
 
@@ -1362,7 +1363,7 @@ reconfig_import_thread( ImportThread *it )
 		it->bindfail = 0;
 	}
 
-	mutex_unlock( &it->it_mutex );
+	pthread_mutex_unlock( &it->it_mutex );
 
 	return;
 }
@@ -1694,7 +1695,7 @@ ew2orb_import( void *arg )
 	int	status = 0;
 	int	rc;
 
-	thr_setprio( thr_self(), THR_PRIORITY_IMPORT );
+	pthread_setschedprio( pthread_self(), THR_PRIORITY_IMPORT );
 
 	if( Flags.verbose ) {
 
@@ -1703,15 +1704,15 @@ ew2orb_import( void *arg )
 			  name );
 	}
 
-	if( ( it = find_import_thread_byid( thr_self() ) ) == NULL ) {
+	if( ( it = find_import_thread_byid( pthread_self() ) ) == NULL ) {
 
 		elog_complain( 1, 
 			"Couldn't find thread id %ld in registry!\n",
-			 (long) thr_self() );
+			 (long) pthread_self() );
 
 		status = -1;
 
-		thr_exit( (void *) &status );
+		pthread_exit( (void *) &status );
 	} 
 
 	for( ;; ) {
@@ -1762,7 +1763,7 @@ new_ImportThread( char *name )
 	it->select_hook = NULL;
 	it->reject_hook = NULL;
 
-	mutex_init( &it->it_mutex, USYNC_THREAD, NULL );
+	pthread_mutex_init( &it->it_mutex, NULL );
 
 	return it;
 }
@@ -1774,6 +1775,9 @@ update_import_thread( char *name, Pf *pf )
 	Pf	*oldpf;
 	char	key[STRSZ];
 	int	ret;
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
 
 	if( ( it = find_import_thread_byname( name ) ) == 0 ) {
 
@@ -1824,7 +1828,7 @@ update_import_thread( char *name, Pf *pf )
 			      DEFAULT_MOD );
 	} 
 
-	mutex_lock( &it->it_mutex );
+	pthread_mutex_lock( &it->it_mutex );
 
 	oldpf = pfdup( it->pf );
 
@@ -1913,16 +1917,15 @@ update_import_thread( char *name, Pf *pf )
 
 		add_import_thread( name, it );
 
-		ret = thr_create( NULL, 0, ew2orb_import, 
-				  (void *) name, 
-				  THR_DETACHED,
-				  &it->thread_id );
-
+		ret = pthread_create( &it->thread_id,
+                                  &attr,
+                                  ew2orb_import,
+				  (void *) name );
 		if( ret != 0 ) {
 
 			elog_complain( 1,
 			    "'%s': Failed to create import thread: "
-			    "thr_create error %d\n", name, ret );
+			    "pthread_create error %d\n", name, ret );
 			
 			delete_import_thread( it );
 
@@ -1966,7 +1969,7 @@ update_import_thread( char *name, Pf *pf )
 		}
 	}
 
-	mutex_unlock( &it->it_mutex );
+	pthread_mutex_unlock( &it->it_mutex );
 
 	return;
 }
@@ -2206,7 +2209,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 	join_srcname( &e2opkt->pkt->parts, old_srcname );
 
-	mutex_lock( &e2opkt->it->it_mutex );
+	pthread_mutex_lock( &e2opkt->it->it_mutex );
 		
 	if( ! STREQ( e2opkt->it->reject, "" ) ) {
 
@@ -2229,7 +2232,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 					     old_srcname );
 			}
 
-			mutex_unlock( &e2opkt->it->it_mutex );
+			pthread_mutex_unlock( &e2opkt->it->it_mutex );
 
 			return -1;
 		}
@@ -2257,7 +2260,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 					     old_srcname );
 			}
 
-			mutex_unlock( &e2opkt->it->it_mutex );
+			pthread_mutex_unlock( &e2opkt->it->it_mutex );
 
 			return -1;
 		}
@@ -2292,7 +2295,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 	n = morphtbl( old_srcname, e2opkt->it->srcname_morphmap, 
 		      MORPH_ALL|MORPH_PARTIAL, new_srcname );
 
-	mutex_unlock( &e2opkt->it->it_mutex );
+	pthread_mutex_unlock( &e2opkt->it->it_mutex );
 
 	split_srcname( new_srcname, &e2opkt->pkt->parts );
 
@@ -2576,7 +2579,7 @@ ew2orb_convert( void *arg )
 {
 	Ew2orbPacket *e2opkt;
 
-	thr_setprio( thr_self(), THR_PRIORITY_CONVERT );
+	pthread_setschedprio( pthread_self(), THR_PRIORITY_CONVERT );
 
 	while( pmtfifo_pop( E2oPackets_mtf, (void **) &e2opkt ) != 0 ) {
 
@@ -2619,16 +2622,22 @@ ew2orb_pfwatch( void *arg )
 {
 	Pf	*pf = 0;
 	int	rc;
+        pthread_rwlockattr_t rwl_attr;
+        pthread_mutexattr_t mtx_attr;
 
-	thr_setprio( thr_self(), THR_PRIORITY_PFWATCH );
+	pthread_setschedprio( pthread_self(), THR_PRIORITY_PFWATCH );
 
-	rwlock_init( &Import_Threads_rwlock, USYNC_THREAD, NULL );
+        pthread_rwlockattr_init(&rwl_attr);
+        pthread_rwlockattr_setpshared(&rwl_attr, PTHREAD_PROCESS_PRIVATE );
+	pthread_rwlock_init( &Import_Threads_rwlock, &rwl_attr );
 
 	Import_Threads = newarr( 0 );
 
 	memset( &Ewinfo, '\0', sizeof( Earthworm_Info ) );
 
-	mutex_init( &Ewinfo.ew_mutex, USYNC_THREAD, NULL );
+        pthread_mutexattr_init(&mtx_attr);
+        pthread_mutexattr_setpshared(&mtx_attr, PTHREAD_PROCESS_PRIVATE );
+	pthread_mutex_init( &Ewinfo.ew_mutex, &mtx_attr );
 
 	strcpy( Ewinfo.pfname, DEFAULT_EARTHWORM_PFNAME );
 
@@ -2692,7 +2701,9 @@ main( int argc, char **argv )
 	char	c;
 	char	*orbname = 0;
 	int	rc;
-	thread_t pfwatch_tid;
+	pthread_t pfwatch_tid;
+        pthread_t conv_tid;
+        struct sigaction sa;
 
 	elog_init( argc, argv );
 
@@ -2727,27 +2738,28 @@ main( int argc, char **argv )
 
 	Flags.have_banner = have_banner();
 
-	sigignore( SIGPIPE );
+        sa.sa_handler = SIG_IGN;
+        sigaction( SIGPIPE, &sa, NULL);
 
 	E2oPackets_mtf = pmtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
 
-	rc = thr_create( NULL, 0, ew2orb_pfwatch, 0, 0, &pfwatch_tid );
+        rc = pthread_create( &pfwatch_tid, NULL, ew2orb_pfwatch, NULL );
 
 	if( rc != 0 ) {
 
 		elog_die( 1, "Failed to create parameter-file watch thread, "
-			"thr_create error %d\n", rc );
+			"pthread_create error %d\n", rc );
 	}
 
-	rc = thr_create( NULL, 0, ew2orb_convert, 0, 0, 0 );
+        rc = pthread_create( &conv_tid, NULL, ew2orb_convert, NULL);
 
 	if( rc != 0 ) {
 
 		elog_die( 1, "Failed to create packet-conversion thread, "
-			"thr_create error %d\n", rc );
+			"pthread_create error %d\n", rc );
 	}
 
-	thr_join( pfwatch_tid, (thread_t *) NULL, (void **) NULL );
+	pthread_join( pfwatch_tid, NULL );
 
 	if( Flags.verbose ) {
 

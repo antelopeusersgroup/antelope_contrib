@@ -64,7 +64,7 @@ refresh_earthworm_info()
 	int	ikey;
 	int	rc;
 
-	mutex_lock( &Ewinfo.ew_mutex );
+	pthread_mutex_lock( &Ewinfo.ew_mutex );
 
 	if( ( rc = pfupdate( Ewinfo.pfname, &Ewinfo.pf ) ) < 0 ) {
 
@@ -219,7 +219,7 @@ refresh_earthworm_info()
 		}
 	}
 
-	mutex_unlock( &Ewinfo.ew_mutex );
+	pthread_mutex_unlock( &Ewinfo.ew_mutex );
 
 	return;
 }
@@ -308,7 +308,7 @@ void
 ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 	       int *inst, int *mod, int *type )
 {
-	mutex_lock( &Ewinfo.ew_mutex );
+	pthread_mutex_lock( &Ewinfo.ew_mutex );
 
 	*inst = *mod = *type = 0;
 
@@ -357,7 +357,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 			     typestr, DEFAULT_EARTHWORM_PFNAME );
 	}
 
-	mutex_unlock( &Ewinfo.ew_mutex );
+	pthread_mutex_unlock( &Ewinfo.ew_mutex );
 
 	return;
 }
@@ -377,7 +377,7 @@ ewlogo_tostrings( int inst, int mod, int type,
 	sprintf( modkey, "%03d", mod );
 	sprintf( typekey, "%03d", type );
 
-	mutex_lock( &Ewinfo.ew_mutex );
+	pthread_mutex_lock( &Ewinfo.ew_mutex );
 
 	if( ( istring = getarr( Ewinfo.inst_names, instkey ) ) != NULL ) {
 			
@@ -406,7 +406,7 @@ ewlogo_tostrings( int inst, int mod, int type,
 		sprintf( typestr, "TYPE_%03d", type );
 	}
 
-	mutex_unlock( &Ewinfo.ew_mutex );
+	pthread_mutex_unlock( &Ewinfo.ew_mutex );
 
 	return;
 }

@@ -17,8 +17,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
-#include <thread.h>
-#include <synch.h>
+#include <pthread.h>
 #include <errno.h>
 #include "stock.h"
 #include "swapbytes.h"
@@ -68,7 +67,7 @@
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 
 typedef struct Earthworm_Info {
-	mutex_t	ew_mutex;
+	pthread_mutex_t	ew_mutex;
 	char	pfname[FILENAME_MAX];
 	Pf	*pf;
 	Arr	*inst_names;
