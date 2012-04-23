@@ -17,3 +17,14 @@ dblocks				none                                       # default dblocks
 #prob_mail			your@email.edu							# email addresses to send notification of problems
 success_mail		flvernon@ucsd.edu							# email addresses to send notification of station success
 prob_mail			flvernon@ucsd.edu							# email addresses to send notification of problems
+
+day_of_week			&Arr{						
+						Tuesday		^[A-E].*
+						Wednesday	^[F-J].*
+						Thursday	^[K-O].*
+						Friday		^[P-T].*
+						Saturday	^[U-Y].*
+						Sunday		^[Z0-3].*
+						Monday		^[4-9].*
+					}                                           # day of week station regex for routine processing
+                                                                

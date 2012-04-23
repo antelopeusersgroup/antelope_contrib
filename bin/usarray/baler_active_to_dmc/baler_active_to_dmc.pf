@@ -17,7 +17,17 @@ non_wf_chan			&Tbl{
 					}                                           # list of non-waveform miniseed channel codes to be 
                                                                 # processed.
                                                                 
-wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                      # remove these channels from transmission 
+day_of_week			&Arr{						
+						Wednesday	^[A-E].*
+						Thursday	^[F-J].*
+						Friday		^[K-O].*
+						Saturday	^[P-T].*
+						Sunday		^[U-Y].*
+						Monday		^[Z0-3].*
+						Tuesday		^[4-9].*
+					}                                           # day of week station regex for routine processing
+                                                                
+wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                      # regex to remove these channels from transmission 
 
 sync_dir			/anf/TA/products/sync/sta_active            # Absolute path name for directory to store sync files
 
@@ -25,5 +35,5 @@ deploy_mail			flvernon@ucsd.edu,jeakins@ucsd.edu          # email addresses to s
                                                                 # deployment table checks
 
 #prob_mail			your@email.edu							# email addresses to send notification of problems
-success_mail		flvernon@ucsd.edu							# email addresses to send notification of station success
+success_mail		flvernon@ucsd.edu,rick@iris.edu,gillian@iris.washington.edu							# email addresses to send notification of station success
 prob_mail			flvernon@ucsd.edu							# email addresses to send notification of problems
