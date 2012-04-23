@@ -2,12 +2,12 @@
  * orb2ew.c
  *
  * Copyright (c) 2003-2005 Lindquist Consulting, Inc.
- * All rights reserved. 
- *                                                                     
- * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
- * 
- * This software may be used freely in any way as long as 
- * the copyright statement above is not removed. 
+ * All rights reserved.
+ *
+ * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc.
+ *
+ * This software may be used freely in any way as long as
+ * the copyright statement above is not removed.
  *
  */
 
@@ -16,7 +16,7 @@
 
 #include "orbew.h"
 
-#define DATATYPE "s4" 
+#define DATATYPE "s4"
 #define DATASIZE 4
 #define SOCKET_LISTEN_BACKLOG 10
 #define SERVER_RESET_ALLOWANCE_SEC 1
@@ -42,13 +42,13 @@ typedef struct ExportServerThread {
 
 	/* Thread-only variables: */
 
-	char	name[STRSZ];			
+	char	name[STRSZ];
 	char	server_ipaddress[STRSZ];
-	in_port_t server_port;	
-	char	expect_heartbeat_string[STRSZ];	
+	in_port_t server_port;
+	char	expect_heartbeat_string[STRSZ];
 	Hook	*expect_heartbeat_hook;
-	char	send_heartbeat_string[STRSZ];	
-	int	send_heartbeat_sec;	
+	char	send_heartbeat_string[STRSZ];
+	int	send_heartbeat_sec;
 	double	last_heartbeat_sent;
 	double	last_heartbeat_received;
 	double	starttime;
@@ -57,17 +57,17 @@ typedef struct ExportServerThread {
 	char	my_inst_str[STRSZ];
 	char	my_mod_str[STRSZ];
 	char	my_type_str[STRSZ];
-	int	my_inst;	
-	int	my_mod;	
+	int	my_inst;
+	int	my_mod;
 	int	my_type;
-	int	my_type_heartbeat;		
+	int	my_type_heartbeat;
 	int	timesort_queue_maxpkts;
 	int	max_tracebuf_size;
 	char	large_tracebuf_handling[STRSZ];
 	int	so;
 	struct sockaddr_in sin;
-	char	*buf;	
-	int 	bufsize;
+	char	*buf;
+	int	bufsize;
 	int	nbytes;
 	enum Loglevel loglevel;
 
@@ -82,8 +82,8 @@ typedef struct ExportThread {
 	char	name[STRSZ];
 	int	so;
 	int	orbfd;
-	Bns	*bnsin;			
-	Bns	*bnsout;			
+	Bns	*bnsin;
+	Bns	*bnsout;
 	PktChannelPipe *pcp;
 
 } ExportThread;
@@ -102,26 +102,26 @@ thread_key_t reconfig_handler_key;
 thread_key_t sigusr2_buf_key;
 
 static void
-usage() 
+usage()
 {
-	cbanner( "$Date$", 
+	cbanner( "$Date$",
 		 "[-p pfname] orb",
-		 "Kent Lindquist", 
-		 "Lindquist Consulting", 
+		 "Kent Lindquist",
+		 "Lindquist Consulting",
 		 "kent@lindquistconsulting.com" );
-	
+
 	return;
 }
 
-static int 
+static int
 get_pinno( PktChannel *pktchan )
 {
 	char	netstachanloc[STRSZ];
 	int	pinno;
 
-	sprintf( netstachanloc, "%s_%s_%s_%s", 
-			  pktchan->net, 
-			  pktchan->sta, 
+	sprintf( netstachanloc, "%s_%s_%s_%s",
+			  pktchan->net,
+			  pktchan->sta,
 			  pktchan->chan,
 			  pktchan->loc );
 
@@ -194,7 +194,7 @@ pktchan_to_tracebuf( PktChannel *pktchan,
 int
 pktchan_to_tracebuf2( PktChannel *pktchan,
 		     TracePacket *tp,
-		     double starttime, 
+		     double starttime,
 		     int *nbytes )
 {
 	char	*datap;
@@ -244,7 +244,7 @@ pktchan_to_tracebuf2( PktChannel *pktchan,
 	version[0] = TRACE2_VERSION0;
 	version[1] = TRACE2_VERSION1;
 
-	strncpy( ptr, version, 2 );	
+	strncpy( ptr, version, 2 );
 	ptr += 2;
 
 	strncpy( ptr, DATATYPE, 3 );
@@ -277,7 +277,7 @@ new_ExportThread( ExportServerThread *es, int so )
 
 	strcpy( et->name, "" );
 
-	et->es = es; 
+	et->es = es;
 	et->so = so;
 	et->orbfd = -1;
 	et->bnsin = NULL;
@@ -288,12 +288,12 @@ new_ExportThread( ExportServerThread *es, int so )
 }
 
 static void
-free_ExportThread( void *arg ) 
+free_ExportThread( void *arg )
 {
 	ExportThread *et = (ExportThread *) arg;
 
 	if( et->pcp != NULL ) {
-		
+
 		pktchannelpipe_free( et->pcp );
 	}
 
@@ -357,7 +357,7 @@ free_ExportServerThread( ExportServerThread **es )
 	}
 
 	if( (*es)->Export_Threads ) {
-		
+
 		freearr( (*es)->Export_Threads, free_ExportThread );
 	}
 
@@ -369,7 +369,7 @@ free_ExportServerThread( ExportServerThread **es )
 }
 
 static void
-add_export_server_thread( char *name, ExportServerThread *es ) 
+add_export_server_thread( char *name, ExportServerThread *es )
 {
 	rw_wrlock( &Export_Server_Threads_rwlock );
 
@@ -387,7 +387,7 @@ find_export_server_thread_byid( thread_t tid )
 	ExportServerThread *found = (ExportServerThread *) NULL;
 	Tbl	*keys;
 	char	*key;
-	int 	i;
+	int	i;
 
 	rw_rdlock( &Export_Server_Threads_rwlock );
 
@@ -421,14 +421,14 @@ find_export_server_thread_byname( char *name )
 
 	rw_rdlock( &Export_Server_Threads_rwlock );
 
-	es = getarr( Export_Server_Threads, name ); 
+	es = getarr( Export_Server_Threads, name );
 
 	rw_unlock( &Export_Server_Threads_rwlock );
 
 	return es;
 }
 
-void 
+void
 close_export_connection( ExportThread *et )
 {
 	char	eof = 004;
@@ -441,7 +441,7 @@ close_export_connection( ExportThread *et )
 	et->bnsout = 0;
 
 	/* Keep import_generic from interpreting flushed data
-   	   as a malformed heartbeat: */
+	   as a malformed heartbeat: */
 
 	bnsclr( et->bnsin );
 
@@ -463,7 +463,7 @@ close_export_server_connection( ExportServerThread *es )
 	int	i;
 	int	*statusp;
 
-	close( es->so ); 
+	close( es->so );
 
 	keys = keysarr( es->Export_Threads );
 
@@ -487,7 +487,7 @@ close_export_server_connection( ExportServerThread *es )
 	freetbl( keys, 0 );
 
 	if( es->stop == 0 ) {
-		
+
 		sleep( SERVER_RESET_ALLOWANCE_SEC );
 	}
 
@@ -500,7 +500,7 @@ stop_export_server_thread( char *name )
 	ExportServerThread *es;
 	int	*statusp = 0;
 
-	if( ( es = find_export_server_thread_byname( name ) ) == 0 ) { 
+	if( ( es = find_export_server_thread_byname( name ) ) == 0 ) {
 
 		elog_complain( 1, "stop_export_server_thread: "
 			  "Couldn't find export_server thread '%s' in registry\n",
@@ -523,13 +523,13 @@ stop_export_server_thread( char *name )
 		elog_notify( 0, "'%s': Export_server thread (thread-id %ld) "
 			     "stopped with status %d\n",
 			     name, (long) es->thread_id, *statusp );
-	} 
+	}
 
 	return;
 }
 
 static Tbl *
-export_server_thread_names() 
+export_server_thread_names()
 {
 	Tbl	*keys;
 	Tbl	*dup;
@@ -561,7 +561,7 @@ num_export_server_threads()
 	return nthreads;
 }
 
-static void 
+static void
 stop_all_export_server_threads()
 {
 	int	i;
@@ -580,7 +580,7 @@ stop_all_export_server_threads()
 }
 
 static void
-delete_export_server_thread( ExportServerThread *es ) 
+delete_export_server_thread( ExportServerThread *es )
 {
 	if( es != (ExportServerThread *) NULL ) {
 
@@ -608,11 +608,11 @@ orb2ew_export_server_shutdown()
 	if( ( es = find_export_server_thread_byid( thr_self() ) ) == NULL ) {
 
 		elog_complain( 0, "Couldn't find thread %ld in registry!\n",
-			  	  (long) thr_self() );
+			(long) thr_self() );
 
 	} else {
-	
-		close_export_server_connection( es ); 
+
+		close_export_server_connection( es );
 
 		if( es->name != NULL ) {
 
@@ -622,7 +622,7 @@ orb2ew_export_server_shutdown()
 
 	if( Flags.verbose ) {
 
-		elog_notify( 0, 
+		elog_notify( 0,
 		"'%s': Export Server Thread (thread-id %ld) stopping at user request\n",
 		  name, (long) thr_self() );
 	}
@@ -635,20 +635,20 @@ int
 buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
 {
 	char	msg[STRSZ];
-	char	stx = STX;	
-	char	etx = ETX;	
-	char	esc = ESC;	
+	char	stx = STX;
+	char	etx = ETX;
+	char	esc = ESC;
 	char	*cp;
 	int	rc;
 	int	retcode = 0;
 	int	i;
 
-	sprintf( msg, "%c%3d%3d%3d", 
+	sprintf( msg, "%c%3d%3d%3d",
 			stx,
 			et->es->my_inst,
 			et->es->my_mod,
 			et->es->my_type );
-	
+
 	cp = (char *) tp;
 
 	rc = bnsput( et->bnsout, msg, BYTES, 10 );
@@ -694,13 +694,13 @@ buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
 			}
 		}
 	}
-	
+
 	rc = bnsput( et->bnsout, &etx, BYTES, 1 );
 	retcode += rc;
 
 	if( rc != 0 ) {
 
-		elog_complain( 1, "'%s': bnsput error %d\n", 
+		elog_complain( 1, "'%s': bnsput error %d\n",
 				et->name, bnserrno( et->bnsout ) );
 	}
 
@@ -750,7 +750,7 @@ static int
 set_sigusr1_handler( void (*handler)(int) )
 {
 	if( handler == SIG_DFL || handler == SIG_IGN ) {
-		
+
 		return EINVAL;
 	}
 
@@ -763,7 +763,7 @@ static int
 set_sigusr2_handler( void (*handler)(int) )
 {
 	if( handler == SIG_DFL || handler == SIG_IGN ) {
-		
+
 		return EINVAL;
 	}
 
@@ -793,7 +793,7 @@ sigusr2_handler( int sig )
 }
 
 int
-tracepacket_send( ExportThread *et, TracePacket *tp, int nbytes_tp, 
+tracepacket_send( ExportThread *et, TracePacket *tp, int nbytes_tp,
 		  char *netstachanloc, double time )
 {
 	int	rc;
@@ -801,18 +801,18 @@ tracepacket_send( ExportThread *et, TracePacket *tp, int nbytes_tp,
 	char	*ptr;
 	char	*s;
 
-	if( ( et->es->loglevel >= VERYVERBOSE ) || 
+	if( ( et->es->loglevel >= VERYVERBOSE ) ||
 		Flags.VeryVerbose ) {
 
 		ptr = (char *) &tp->i;
 		mi2hi( &ptr, &pinno, 1 );
 
-		elog_notify( 0, 
+		elog_notify( 0,
 			"'%s': Sending packet-channel %s "
-			"timed %s as pin %d, from %s %s, format %s\n", 
-			et->name, netstachanloc, 
-			s = strtime( time ), 
-			pinno, 
+			"timed %s as pin %d, from %s %s, format %s\n",
+			et->name, netstachanloc,
+			s = strtime( time ),
+			pinno,
 			et->es->my_inst_str,
 			et->es->my_mod_str,
 			et->es->my_type_str );
@@ -835,7 +835,7 @@ pktchan_send( void *etp, PktChannel *pktchan,
 	TracePacket tp;
 	int	rc;
 
-	sprintf( netstachanloc, "%s_%s_%s_%s", 
+	sprintf( netstachanloc, "%s_%s_%s_%s",
 			pktchan->net,
 			pktchan->sta,
 			pktchan->chan,
@@ -844,7 +844,7 @@ pktchan_send( void *etp, PktChannel *pktchan,
 	if( STREQ( et->es->my_type_str, "TYPE_TRACEBUF" ) ) {
 
 		if( pktchan_to_tracebuf( pktchan, &tp,
-				 	pktchan->time, &nbytes_tp  ) )
+					pktchan->time, &nbytes_tp  ) )
 		{
 			freePktChannel( pktchan );
 
@@ -854,7 +854,7 @@ pktchan_send( void *etp, PktChannel *pktchan,
 	} else if( STREQ( et->es->my_type_str, "TYPE_TRACEBUF2" ) ) {
 
 		if( pktchan_to_tracebuf2( pktchan, &tp,
-				 	pktchan->time, &nbytes_tp  ) )
+					pktchan->time, &nbytes_tp  ) )
 		{
 			freePktChannel( pktchan );
 
@@ -865,7 +865,7 @@ pktchan_send( void *etp, PktChannel *pktchan,
 
 		freePktChannel( pktchan );
 
-		elog_complain( 0, 
+		elog_complain( 0,
 			"'%s': Don't know how to convert and send "
 			"format %s!\n",
 			et->name, et->es->my_type_str );
@@ -873,11 +873,11 @@ pktchan_send( void *etp, PktChannel *pktchan,
 		return 0;
 	}
 
-	rc = tracepacket_send( et, &tp, nbytes_tp, 
+	rc = tracepacket_send( et, &tp, nbytes_tp,
 			       netstachanloc, pktchan->time );
 
 	if( rc != 0 ) {
-		
+
 		freePktChannel( pktchan );
 
 		thr_kill( et->thread_id, SIGUSR1 );
@@ -904,7 +904,7 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 	int	pktchan_nsamp_orig = 0;
 	int	pktchan_nsamp_remaining = 0;
 
-	sprintf( netstachanloc, "%s_%s_%s_%s", 
+	sprintf( netstachanloc, "%s_%s_%s_%s",
 			pktchan->net,
 			pktchan->sta,
 			pktchan->chan,
@@ -916,11 +916,11 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 		if( ( et->es->loglevel >= VERYVERBOSE ) ||
 			Flags.VeryVerbose ) {
 
-			elog_notify( 0, 
+			elog_notify( 0,
 			"'%s': Skipping packet-channel %s: "
 			"timestamp %s is before requested "
-			"start %s\n", 
-			et->name, netstachanloc, 
+			"start %s\n",
+			et->name, netstachanloc,
 			s = strtime( pktchan->time ),
 			t = strtime( et->es->starttime ) );
 			free( s );
@@ -932,11 +932,11 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 		return 0;
 	}
 
-	/* Rely on size of TRACE_HEADER and TRACE2_HEADER being 
-	   identical: 
+	/* Rely on size of TRACE_HEADER and TRACE2_HEADER being
+	   identical:
 	*/
 
-	nbytes_tp_predicted = sizeof( TRACE_HEADER ) + 
+	nbytes_tp_predicted = sizeof( TRACE_HEADER ) +
 			      DATASIZE * pktchan->nsamp;
 
 	if( nbytes_tp_predicted <= et->es->max_tracebuf_size ) {
@@ -949,17 +949,17 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 	} else if( ! strncmp( et->es->large_tracebuf_handling, "split", 5 ) ) {
 
-		if( strcontains( et->es->large_tracebuf_handling, 
+		if( strcontains( et->es->large_tracebuf_handling,
 				   "[[:digit:]]+", 0, &is, &ns ) ) {
-			
-			nsamp_split = 
+
+			nsamp_split =
 				atoi( &et->es->large_tracebuf_handling[is] );
 
 			if( et->es->loglevel >= VERYVERBOSE ) {
 
-				elog_notify( 0, 
+				elog_notify( 0,
 					"'%s': Splitting packets "
-					"down to %ld samples each\n", 
+					"down to %ld samples each\n",
 					et->name, nsamp_split );
 			}
 
@@ -970,23 +970,23 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 			pktchan_nsamp_remaining = pktchan_nsamp_orig;
 
 			while( pktchan_nsamp_remaining > 0 ) {
-			
-				pktchan->nsamp = 
+
+				pktchan->nsamp =
 					pktchan_nsamp_remaining > nsamp_split ?
 					nsamp_split : pktchan_nsamp_remaining;
 
 				nbytes_tp_predicted = sizeof( TRACE_HEADER ) +
 						DATASIZE * pktchan->nsamp;
 
-				if( nbytes_tp_predicted > 
+				if( nbytes_tp_predicted >
 					et->es->max_tracebuf_size ) {
 
-					elog_complain( 0, 
+					elog_complain( 0,
 					"'%s': Rejecting packet, size %d of "
 					"sub-packet after splitting to %ld "
 					"samples is still too large "
-					"(configured maximum is %d)\n", 
-					et->name, nbytes_tp_predicted, 
+					"(configured maximum is %d)\n",
+					et->name, nbytes_tp_predicted,
 					nsamp_split,
 					et->es->max_tracebuf_size );
 
@@ -1004,7 +1004,7 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 				if( et->es->loglevel >= VERYVERBOSE ) {
 
-					elog_notify( 0, 
+					elog_notify( 0,
 						"'%s': Sub-packet with nsamp "
 						"%d starts at %s\n",
 						et->name, pktchan->nsamp,
@@ -1029,12 +1029,12 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 		} else {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 				"'%s': Rejecting packet, size %d is larger "
 				"than configured maximum %d, also "
 				"large_tracebuf_handling mode '%s' "
 				"wasn't understood (expecting 'split ###')\n", 
-				et->name, nbytes_tp_predicted, 
+				et->name, nbytes_tp_predicted,
 				et->es->max_tracebuf_size,
 				et->es->large_tracebuf_handling );
 
@@ -1045,10 +1045,10 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 	} else if( STREQ( et->es->large_tracebuf_handling, "reject" ) ) {
 
-		elog_complain( 0, 
+		elog_complain( 0,
 			"'%s': Rejecting packet, size %d is larger "
-			"than configured maximum %d\n", 
-			et->name, nbytes_tp_predicted, 
+			"than configured maximum %d\n",
+			et->name, nbytes_tp_predicted,
 			et->es->max_tracebuf_size );
 
 	} else if( STREQ( et->es->large_tracebuf_handling, "reject_silent" ) ) {
@@ -1057,7 +1057,7 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 
 	} else {
 
-		elog_complain( 0, 
+		elog_complain( 0,
 			"'%s': Unknown large_tracebuf_handling mode "
 			" '%s' (options are 'send', 'split', 'reject', "
 			"'reject_silent'); Sending packet\n",
@@ -1086,7 +1086,7 @@ orb2ew_export( void *arg )
 	int	status = 0;
 
 	if( ( et->orbfd = orbopen( Orbname, "r&" ) ) < 0 ) {
-		
+
 		elog_complain( 0,
 			"'%s': Failed to open orb '%s' for reading\n",
 			et->name, Orbname );
@@ -1104,10 +1104,10 @@ orb2ew_export( void *arg )
 	if( strcmp( et->es->select, "" ) ) {
 
 		rc = orbselect( et->orbfd, et->es->select );
-		
+
 		if( et->es->loglevel == VERBOSE || Flags.verbose ) {
 
-			elog_notify( 0, 
+			elog_notify( 0,
 			  "'%s': %d sources selected after orbselect for '%s'\n", 
 			  et->name, rc, et->es->select );
 		}
@@ -1116,22 +1116,22 @@ orb2ew_export( void *arg )
 	if( strcmp( et->es->reject, "" ) ) {
 
 		rc = orbreject( et->orbfd, et->es->reject );
-		
+
 		if( et->es->loglevel == VERBOSE || Flags.verbose ) {
 
-			elog_notify( 0, 
+			elog_notify( 0,
 			  "'%s': %d sources selected after orbreject on '%s'\n", 
 			  et->name, rc, et->es->reject );
 		}
 	}
 
-	et->bnsin = bnsnew( et->so, BNS_BUFFER_SIZE ); 
-	et->bnsout = bnsnew( et->so, BNS_BUFFER_SIZE ); 
+	et->bnsin = bnsnew( et->so, BNS_BUFFER_SIZE );
+	et->bnsout = bnsnew( et->so, BNS_BUFFER_SIZE );
 
 	bnsuse_sockio( et->bnsin );
 	bnsuse_sockio( et->bnsout );
 
-	if( et->es->loglevel == VERYVERBOSE && VERYVERBOSE_DEBUGBNS ) { 
+	if( et->es->loglevel == VERYVERBOSE && VERYVERBOSE_DEBUGBNS ) {
 
 #if 0  /* no longer implemented */
 		et->bnsin->debug = 1;
@@ -1145,7 +1145,7 @@ orb2ew_export( void *arg )
 
 	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
 
-		goto close_export;	
+		goto close_export;
 	}
 
 	if( et->es->send_heartbeat_sec*1000 < DEFAULT_BNS_TIMEOUT ) {
@@ -1171,14 +1171,14 @@ orb2ew_export( void *arg )
 			continue;
 		}
 
-		pktchannelpipe_push( et->pcp, srcname, mytime, 
+		pktchannelpipe_push( et->pcp, srcname, mytime,
 				     rawpkt, nbytes_orb );
 	}
 
 	close_export:
 
 	if( et->pcp ) {
-		
+
 		pktchannelpipe_flush( et->pcp );
 	}
 
@@ -1222,41 +1222,41 @@ refresh_export_server_thread( ExportServerThread *es )
 
 	if( es->update == 1 ) {
 
-		close_export_server_connection( es ); 
+		close_export_server_connection( es );
 
 		loglevel = pfget_string( es->pf, "loglevel" );
 
 		es->loglevel = translate_loglevel( loglevel );
-		
+
 		if( es->loglevel >= VERBOSE ) {
 
 			if( es->new ) {
-					
-				elog_notify( 0, 
-			  	"'%s': Configuring thread with: ", 
-			  	es->name );
+
+				elog_notify( 0,
+				"'%s': Configuring thread with: ",
+				es->name );
 
 			} else {
 
-				elog_notify( 0, 
-			  	"'%s': Reconfiguring thread with: ", 
-			  	es->name );
+				elog_notify( 0,
+				"'%s': Reconfiguring thread with: ",
+				es->name );
 
 			}
 
 			pfout( stderr, es->pf );
 		}
-			
+
 		strcpy( es->server_ipaddress,
 			pfget_string( es->pf, "server_ipaddress" ) );
 
-		es->server_port = 
+		es->server_port =
 			(in_port_t) pfget_int( es->pf, "server_port" );
 
-		es->timesort_queue_maxpkts = 
+		es->timesort_queue_maxpkts =
 			pfget_int( es->pf, "timesort_queue_maxpkts" );
 
-		es->max_tracebuf_size = 
+		es->max_tracebuf_size =
 			pfget_int( es->pf, "max_tracebuf_size" );
 
 		strcpy( es->large_tracebuf_handling,
@@ -1270,7 +1270,7 @@ refresh_export_server_thread( ExportServerThread *es )
 			free_hook( &es->expect_heartbeat_hook );
 		}
 
-		es->send_heartbeat_sec = 
+		es->send_heartbeat_sec =
 			pfget_int( es->pf, "send_heartbeat_sec" );
 
 		strcpy( es->send_heartbeat_string,
@@ -1289,23 +1289,23 @@ refresh_export_server_thread( ExportServerThread *es )
 		strcpy( es->my_type_str,
 			pfget_string( es->pf, "my_type" ) );
 
-		ewlogo_tologo( es->my_inst_str, 
-			       es->my_mod_str, 
-			       Default_TYPE_HEARTBEAT, 
+		ewlogo_tologo( es->my_inst_str,
+			       es->my_mod_str,
+			       Default_TYPE_HEARTBEAT,
 			       &es->my_inst,
 			       &es->my_mod,
 			       &es->my_type_heartbeat );
 
-		ewlogo_tologo( es->my_inst_str, 
-			       es->my_mod_str, 
-			       es->my_type_str, 
+		ewlogo_tologo( es->my_inst_str,
+			       es->my_mod_str,
+			       es->my_type_str,
 			       &es->my_inst,
 			       &es->my_mod,
 			       &es->my_type );
 
 		starttime_string = pfget_string( es->pf, "starttime" );
 
-		if( starttime_string == NULL || 
+		if( starttime_string == NULL ||
 		    ( ! strcmp( starttime_string, "" ) ) ) {
 
 			es->starttime = NULL_STARTTIME;
@@ -1334,7 +1334,7 @@ refresh_export_server_thread( ExportServerThread *es )
 
 	es->sin.sin_family = AF_INET;
 
-	es->sin.sin_port = htons( es->server_port ); 
+	es->sin.sin_port = htons( es->server_port );
 
 	if( strcmp( es->server_ipaddress, "" ) ) {
 
@@ -1342,14 +1342,14 @@ refresh_export_server_thread( ExportServerThread *es )
 
 	} else {
 
-		es->sin.sin_addr.s_addr = htonl( INADDR_ANY ); 
+		es->sin.sin_addr.s_addr = htonl( INADDR_ANY );
 	}
 
-	rc = setsockopt( es->so, SOL_SOCKET, SO_REUSEADDR, 
+	rc = setsockopt( es->so, SOL_SOCKET, SO_REUSEADDR,
 			 &on, sizeof( char *) );
-	
+
 	if( rc < 0 ) {
-		
+
 		elog_complain( 1, "'%s': Failed to set address reuse on socket\n",
 				es->name );
 	}
@@ -1357,16 +1357,16 @@ refresh_export_server_thread( ExportServerThread *es )
 	Linger.l_onoff = 1;
 	Linger.l_linger = 0;
 
-	rc = setsockopt( es->so, SOL_SOCKET, SO_LINGER, 
+	rc = setsockopt( es->so, SOL_SOCKET, SO_LINGER,
 			(char *) &Linger, sizeof( struct linger ) );
 
 	if( rc < 0 ) {
-		
+
 		elog_complain( 1, "'%s': Failed to set linger to hard-close for socket\n",
 				es->name );
 	}
 
-	while( ( rc = bind( es->so, (struct sockaddr *) &es->sin, 
+	while( ( rc = bind( es->so, (struct sockaddr *) &es->sin,
 			    sizeof( es->sin ) ) ) < 0 ) {
 
 		elog_complain( 1, "'%s': Failed to bind socket; sleeping %d sec\n", 
@@ -1380,31 +1380,31 @@ refresh_export_server_thread( ExportServerThread *es )
 		elog_notify( 1, "'%s': Bound passive socket %d\n", es->name, es->so );
 	}
 
-	rc = listen( es->so, SOCKET_LISTEN_BACKLOG ); 
+	rc = listen( es->so, SOCKET_LISTEN_BACKLOG );
 
 	if( rc != 0 ) {
-			elog_complain( 1, 
+			elog_complain( 1,
 				"'%s': Failed to listen() on passive socket %d\n",
 				es->name, es->so );
 	}
 
 	for( ;; ) {
 
-		aso = accept( es->so, (struct sockaddr *) &client, &clientlen ); 
+		aso = accept( es->so, (struct sockaddr *) &client, &clientlen );
 		if( aso < 0 ) {
 
 			if( errno == EINTR ) {
-				
+
 				continue;
 			}
-			
-			elog_complain( 1, 
-				"'%s': Failed accept on passive socket %d\n", 
+
+			elog_complain( 1,
+				"'%s': Failed accept on passive socket %d\n",
 				es->name, es->so );
 
 			sleep( 10 );
 
-			continue;	
+			continue;
 		}
 
 		clienthost = inet_ntoa( client.sin_addr  );
@@ -1415,11 +1415,11 @@ refresh_export_server_thread( ExportServerThread *es )
 			 elog_notify( 0, "'%s': Accepted socket fd %d from %s:%d\n", 
 					es->name, aso, clienthost, clientport );
 		}
-		
+
 		et = new_ExportThread( es, aso );
 
-		rc = thr_create( NULL, 0, orb2ew_export, 
-				  (void *) et, 
+		rc = thr_create( NULL, 0, orb2ew_export,
+				  (void *) et,
 				  0,
 				  &et->thread_id );
 
@@ -1428,26 +1428,26 @@ refresh_export_server_thread( ExportServerThread *es )
 			elog_complain( 1,
 			    "'%s': Failed to create export thread: "
 			    "thr_create error %d\n", es->name, rc );
-			
+
 			free_ExportThread( &et );
 
 			continue;
 
 		} else {
 
-			sprintf( et->name, "%s#tid_%ld", 
+			sprintf( et->name, "%s#tid_%ld",
 				 es->name, (long) et->thread_id );
 
 			if( ( es->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-			 	elog_notify( 0, "'%s': Serving %s:%d with export thread '%s'\n", 
+				elog_notify( 0, "'%s': Serving %s:%d with export thread '%s'\n", 
 					es->name, clienthost, clientport, et->name );
 			}
 
 			mutex_lock( &es->es_mutex );
 
 			setarr( es->Export_Threads, et->name, et );
-		
+
 			mutex_unlock( &es->es_mutex );
 		}
 	}
@@ -1479,14 +1479,14 @@ orb2ew_export_server( void *arg )
 
 	if( ( es = find_export_server_thread_byid( thr_self() ) ) == NULL ) {
 
-		elog_complain( 1, 
+		elog_complain( 1,
 			"Couldn't find thread id %ld in registry!\n",
 			 (long) thr_self() );
 
 		status = -1;
 
 		thr_exit( (void *) &status );
-	} 
+	}
 
 	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
 
@@ -1524,62 +1524,62 @@ update_export_server_thread( char *name, Pf *pf )
 
 		pfput_string( es->pf, "server_ipaddress", "" );
 
-		pfput_int( es->pf, 
-			   "send_heartbeat_sec", 
+		pfput_int( es->pf,
+			   "send_heartbeat_sec",
 			   DEFAULT_SEND_HEARTBEAT_SEC );
 
-		pfput_int( es->pf, 
-			   "expect_heartbeat_sec", 
+		pfput_int( es->pf,
+			   "expect_heartbeat_sec",
 			   DEFAULT_EXPECT_HEARTBEAT_SEC );
 
-		pfput_int( es->pf, 
-			   "timesort_queue_maxpkts", 
+		pfput_int( es->pf,
+			   "timesort_queue_maxpkts",
 			   DEFAULT_TIMESORT_QUEUE_MAXPKTS );
 
-		pfput_int( es->pf, 
-			   "max_tracebuf_size", 
+		pfput_int( es->pf,
+			   "max_tracebuf_size",
 			   MAX_TRACEBUF_SIZ );
 
-		pfput_string( es->pf, 
-			      "send_heartbeat_string", 
+		pfput_string( es->pf,
+			      "send_heartbeat_string",
 			      DEFAULT_SEND_HEARTBEAT_STRING );
 
-		pfput_string( es->pf, 
-			      "expect_heartbeat_string", 
+		pfput_string( es->pf,
+			      "expect_heartbeat_string",
 			      DEFAULT_EXPECT_HEARTBEAT_STRING );
 
-		pfput_string( es->pf, 
-			      "select", 
+		pfput_string( es->pf,
+			      "select",
 			      DEFAULT_SELECT );
 
-		pfput_string( es->pf, 
-			      "reject", 
+		pfput_string( es->pf,
+			      "reject",
 			      DEFAULT_REJECT );
 
-		pfput_string( es->pf, 
-			      "starttime", 
+		pfput_string( es->pf,
+			      "starttime",
 			      DEFAULT_STARTTIME );
 
-		pfput_string( es->pf, 
-			      "large_tracebuf_handling", 
+		pfput_string( es->pf,
+			      "large_tracebuf_handling",
 			      DEFAULT_LARGE_TRACEBUF_HANDLING );
 
-		pfput_string( es->pf, 
-			      "loglevel", 
+		pfput_string( es->pf,
+			      "loglevel",
 			      Program_loglevel );
 
-		pfput_string( es->pf, 
-			      "my_inst", 
+		pfput_string( es->pf,
+			      "my_inst",
 			      DEFAULT_INST );
 
-		pfput_string( es->pf, 
-			      "my_mod", 
+		pfput_string( es->pf,
+			      "my_mod",
 			      DEFAULT_MOD );
 
-		pfput_string( es->pf, 
-			      "my_type", 
+		pfput_string( es->pf,
+			      "my_type",
 			      DEFAULT_EWEXPORT_TYPE );
-	} 
+	}
 
 	mutex_lock( &es->es_mutex );
 
@@ -1683,8 +1683,8 @@ update_export_server_thread( char *name, Pf *pf )
 
 		add_export_server_thread( name, es );
 
-		ret = thr_create( NULL, 0, orb2ew_export_server, 
-				  (void *) name, 
+		ret = thr_create( NULL, 0, orb2ew_export_server,
+				  (void *) name,
 				  THR_DETACHED,
 				  &es->thread_id );
 
@@ -1693,7 +1693,7 @@ update_export_server_thread( char *name, Pf *pf )
 			elog_complain( 1,
 			    "'%s': Failed to create export_server thread: "
 			    "thr_create error %d\n", name, ret );
-			
+
 			delete_export_server_thread( es );
 
 			return;
@@ -1709,7 +1709,7 @@ update_export_server_thread( char *name, Pf *pf )
 
 		es->update = 1;
 
-		mutex_lock( &es->es_mutex ); 
+		mutex_lock( &es->es_mutex );
 
 		thr_kill( es->thread_id, SIGUSR2 );
 
@@ -1749,7 +1749,7 @@ update_export_server_thread( char *name, Pf *pf )
 	return;
 }
 
-static void 
+static void
 refresh_pins_list( Pf *pf )
 {
 	Pf	*pfpins = 0;
@@ -1786,7 +1786,7 @@ refresh_pins_list( Pf *pf )
 		pinno = pfget_int( pfpins, akey );
 
 		if( Flags.VeryVerbose ) {
-			
+
 			elog_notify( 0, "\tAssigning %s to pin %d\n",
 					akey, pinno );
 		}
@@ -1813,46 +1813,46 @@ reconfigure_export_server_threads( Pf *pf )
 
 	if( pfget( pf, "export_servers", (void **) &pfexport_servers ) != PFARR ) {
 
-		elog_complain( 1, 
+		elog_complain( 1,
 		   "parameter 'export_servers' not present or not an array\n" );
 
 		stop_all_export_server_threads();
-		
+
 		if( Flags.verbose && num_export_server_threads() <= 0 ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 			"Warning: no export_server threads defined; nothing to do\n" );
 		}
 
 		return;
-	} 
+	}
 
 	new_keys = pfkeys( pfexport_servers );
 
 	if( maxtbl( new_keys ) <= 0 ) {
 
 		stop_all_export_server_threads();
-		
+
 		if( Flags.verbose && num_export_server_threads() <= 0 ) {
 
-			elog_complain( 0, 
+			elog_complain( 0,
 			"Warning: no export_server threads defined; nothing to do\n" );
 		}
 
 		freetbl( new_keys, 0 );
 
 		return;
-	} 
+	}
 
 	existing_keys = export_server_thread_names();
 
 	for( i = 0; i < maxtbl( existing_keys ); i++ ) {
-		
+
 		akey = gettbl( existing_keys, i );
 
 		if( ( anarr = pfget_arr( pfexport_servers, akey ) ) == NULL ) {
 
-			stop_export_server_thread( akey ); 
+			stop_export_server_thread( akey );
 
 		} else {
 
@@ -1863,7 +1863,7 @@ reconfigure_export_server_threads( Pf *pf )
 	}
 
 	freetbl( existing_keys, (void (*)(void *)) free );
-		
+
 	for( i = 0; i < maxtbl( new_keys ); i++ ) {
 
 		akey = gettbl( new_keys, i );
@@ -1878,7 +1878,7 @@ reconfigure_export_server_threads( Pf *pf )
 
 	if( Flags.verbose && num_export_server_threads() <= 0 ) {
 
-		elog_complain( 0, 
+		elog_complain( 0,
 		"Warning: no export_server threads defined; nothing to do\n" );
 	}
 
@@ -1916,12 +1916,12 @@ orb2ew_pfwatch( void *arg )
 		rc = pfupdate( Pfname, &pf );
 
 		if( rc < 0 ) {
-			
+
 			elog_complain( 1, "pfupdate pf parameter file '%s' failed\n",
 				  Pfname );
 
 		} else if( rc == 0 ) {
-			
+
 			; /* No reconfiguration necessary */
 
 		} else if( rc == 1 ) {
@@ -1929,11 +1929,11 @@ orb2ew_pfwatch( void *arg )
 			set_program_loglevel( pf );
 
 			if( Flags.verbose ) {
-				
-				elog_notify( 0, 
+
+				elog_notify( 0,
 				"Reconfiguring orb2ew from parameter file\n" );
 			}
-			
+
 			refresh_pins_list( pf );
 
 			reconfigure_export_server_threads( pf );
@@ -1974,7 +1974,7 @@ main( int argc, char **argv )
 		elog_die( 0, "Must specify an output orb name\n" );
 
 	} else {
-		
+
 		Orbname = argv[optind++];
 	}
 
