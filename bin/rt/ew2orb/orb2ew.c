@@ -30,11 +30,11 @@ typedef struct ExportServerThread {
 
 	/* Shared variables: */
 
-	mutex_t	es_mutex;
-	thread_t thread_id;
+	pthread_mutex_t	es_mutex;
+	pthread_t thread_id;
 	int	ready;
-	cond_t  ready_cond;
-	mutex_t ready_mutex;
+	pthread_cond_t  ready_cond;
+	pthread_mutex_t ready_mutex;
 	Pf	*pf;
 	int	update;
 	int	new;
@@ -78,7 +78,7 @@ typedef struct ExportServerThread {
 typedef struct ExportThread {
 
 	ExportServerThread *es;
-	thread_t thread_id;
+	pthread_t thread_id;
 	char	name[STRSZ];
 	int	so;
 	int	orbfd;
@@ -91,15 +91,15 @@ typedef struct ExportThread {
 char	*Pfname = "orb2ew";
 char	*Orbname = 0;
 Arr	*Export_Server_Threads;
-rwlock_t Export_Server_Threads_rwlock;
+pthread_rwlock_t Export_Server_Threads_rwlock;
 Arr	*Pins;
-rwlock_t Pins_rwlock;
+pthread_rwlock_t Pins_rwlock;
 
-thread_key_t shutdown_handler_key;
-thread_key_t sigusr1_buf_key;
+pthread_key_t shutdown_handler_key;
+pthread_key_t sigusr1_buf_key;
 
-thread_key_t reconfig_handler_key;
-thread_key_t sigusr2_buf_key;
+pthread_key_t reconfig_handler_key;
+pthread_key_t sigusr2_buf_key;
 
 static void
 usage()
@@ -125,11 +125,11 @@ get_pinno( PktChannel *pktchan )
 			  pktchan->chan,
 			  pktchan->loc );
 
-	rw_rdlock( &Pins_rwlock );
+	pthread_rwlock_rdlock( &Pins_rwlock );
 
 	pinno = (int) getarr( Pins, netstachanloc );
 
-	rw_unlock( &Pins_rwlock );
+	pthread_rwlock_unlock( &Pins_rwlock );
 
 	return pinno;
 }
@@ -137,7 +137,7 @@ get_pinno( PktChannel *pktchan )
 int
 pktchan_to_tracebuf( PktChannel *pktchan,
 		     TracePacket *tp,
-		     double starttime, 
+		     double starttime,
 		     int *nbytes )
 {
 	char	*datap;
@@ -306,6 +306,9 @@ static ExportServerThread *
 new_ExportServerThread( char *name )
 {
 	ExportServerThread *es;
+        pthread_mutexattr_t es_mtx_attr;
+        pthread_mutexattr_t ready_mtx_attr;
+        pthread_condattr_t ready_cnd_attr;
 
 	allot( ExportServerThread *, es, 1 );
 
@@ -332,9 +335,21 @@ new_ExportServerThread( char *name )
 	es->Export_Threads = newarr( 0 );
 
 	es->ready = 0;
-	mutex_init( &es->es_mutex, USYNC_THREAD, NULL );
-	mutex_init( &es->ready_mutex, USYNC_THREAD, NULL );
-	cond_init( &es->ready_cond, USYNC_THREAD, NULL );
+
+        pthread_mutexattr_init(&es_mtx_attr);
+        pthread_mutexattr_setpshared(&es_mtx_attr,
+          PTHREAD_PROCESS_PRIVATE );
+	pthread_mutex_init( &es->es_mutex, &es_mtx_attr );
+
+        pthread_mutexattr_init(&ready_mtx_attr);
+        pthread_mutexattr_setpshared(&ready_mtx_attr,
+          PTHREAD_PROCESS_PRIVATE );
+	pthread_mutex_init( &es->ready_mutex, &ready_mtx_attr );
+
+        pthread_condattr_init(&ready_cnd_attr);
+        pthread_condattr_setpshared(&ready_cnd_attr,
+          PTHREAD_PROCESS_PRIVATE );
+	pthread_cond_init( &es->ready_cond, &ready_cnd_attr );
 
 	return es;
 }
@@ -342,9 +357,9 @@ new_ExportServerThread( char *name )
 static void
 free_ExportServerThread( ExportServerThread **es )
 {
-	mutex_destroy( &(*es)->es_mutex );
-	mutex_destroy( &(*es)->ready_mutex );
-	cond_destroy( &(*es)->ready_cond );
+	pthread_mutex_destroy( &(*es)->es_mutex );
+	pthread_mutex_destroy( &(*es)->ready_mutex );
+	pthread_cond_destroy( &(*es)->ready_cond );
 
 	if( (*es)->pf ) {
 
@@ -371,17 +386,17 @@ free_ExportServerThread( ExportServerThread **es )
 static void
 add_export_server_thread( char *name, ExportServerThread *es )
 {
-	rw_wrlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_wrlock( &Export_Server_Threads_rwlock );
 
 	setarr( Export_Server_Threads, name, (void *) es );
 
-	rw_unlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_unlock( &Export_Server_Threads_rwlock );
 
 	return;
 }
 
 ExportServerThread *
-find_export_server_thread_byid( thread_t tid )
+find_export_server_thread_byid( pthread_t tid )
 {
 	ExportServerThread *es;
 	ExportServerThread *found = (ExportServerThread *) NULL;
@@ -389,7 +404,7 @@ find_export_server_thread_byid( thread_t tid )
 	char	*key;
 	int	i;
 
-	rw_rdlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_rdlock( &Export_Server_Threads_rwlock );
 
 	keys = keysarr( Export_Server_Threads );
 
@@ -409,7 +424,7 @@ find_export_server_thread_byid( thread_t tid )
 
 	freetbl( keys, 0 );
 
-	rw_unlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_unlock( &Export_Server_Threads_rwlock );
 
 	return found;
 }
@@ -419,11 +434,11 @@ find_export_server_thread_byname( char *name )
 {
 	ExportServerThread *es;
 
-	rw_rdlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_rdlock( &Export_Server_Threads_rwlock );
 
 	es = getarr( Export_Server_Threads, name );
 
-	rw_unlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_unlock( &Export_Server_Threads_rwlock );
 
 	return es;
 }
@@ -473,9 +488,9 @@ close_export_server_connection( ExportServerThread *es )
 
 		et = getarr( es->Export_Threads, akey );
 
-		thr_kill( et->thread_id, SIGUSR1 );
+		pthread_kill( et->thread_id, SIGUSR1 );
 
-		thr_join( et->thread_id, 0, (void **) &statusp );
+		pthread_join( et->thread_id, NULL );
 
 		if( et->es->loglevel >= VERBOSE || Flags.verbose ) {
 
@@ -516,7 +531,7 @@ stop_export_server_thread( char *name )
 
 	es->stop = 1;
 
-	thr_kill( es->thread_id, SIGUSR1 );
+	pthread_kill( es->thread_id, SIGUSR1 );
 
 	if( Flags.verbose ) {
 
@@ -534,7 +549,7 @@ export_server_thread_names()
 	Tbl	*keys;
 	Tbl	*dup;
 
-	rw_rdlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_rdlock( &Export_Server_Threads_rwlock );
 
 	keys = keysarr( Export_Server_Threads );
 
@@ -542,7 +557,7 @@ export_server_thread_names()
 
 	freetbl( keys, 0 );
 
-	rw_unlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_unlock( &Export_Server_Threads_rwlock );
 
 	return dup;
 }
@@ -552,11 +567,11 @@ num_export_server_threads()
 {
 	int	nthreads;
 
-	rw_rdlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_rdlock( &Export_Server_Threads_rwlock );
 
 	nthreads = cntarr( Export_Server_Threads );
 
-	rw_unlock( &Export_Server_Threads_rwlock );
+	pthread_rwlock_unlock( &Export_Server_Threads_rwlock );
 
 	return nthreads;
 }
@@ -584,16 +599,16 @@ delete_export_server_thread( ExportServerThread *es )
 {
 	if( es != (ExportServerThread *) NULL ) {
 
-		mutex_trylock( &es->es_mutex );
-		mutex_unlock( &es->es_mutex );
+		pthread_mutex_trylock( &es->es_mutex );
+		pthread_mutex_unlock( &es->es_mutex );
 
-		rw_wrlock( &Export_Server_Threads_rwlock );
+		pthread_rwlock_wrlock( &Export_Server_Threads_rwlock );
 
 		delarr( Export_Server_Threads, es->name );
 
 		free_ExportServerThread( &es );
 
-		rw_unlock( &Export_Server_Threads_rwlock );
+		pthread_rwlock_unlock( &Export_Server_Threads_rwlock );
 	}
 
 	return;
@@ -605,10 +620,10 @@ orb2ew_export_server_shutdown()
 	ExportServerThread *es;
 	char	name[STRSZ] = "Unknown";
 
-	if( ( es = find_export_server_thread_byid( thr_self() ) ) == NULL ) {
+	if( ( es = find_export_server_thread_byid( pthread_self() ) ) == NULL ) {
 
 		elog_complain( 0, "Couldn't find thread %ld in registry!\n",
-			(long) thr_self() );
+			(long) pthread_self() );
 
 	} else {
 
@@ -624,7 +639,7 @@ orb2ew_export_server_shutdown()
 
 		elog_notify( 0,
 		"'%s': Export Server Thread (thread-id %ld) stopping at user request\n",
-		  name, (long) thr_self() );
+		  name, (long) pthread_self() );
 	}
 
 	delete_export_server_thread( es );
@@ -721,7 +736,7 @@ process_sigusr1( int sig )
 {
 	void	(*handler)(int);
 
-	thr_getspecific( shutdown_handler_key, (void **) &handler );
+        handler = pthread_getspecific( shutdown_handler_key );
 
 	if( sig != SIGUSR1 || handler == NULL ) {
 
@@ -736,7 +751,7 @@ process_sigusr2( int sig )
 {
 	void	(*handler)(int);
 
-	thr_getspecific( reconfig_handler_key, (void **) &handler );
+        handler = pthread_getspecific( reconfig_handler_key );
 
 	if( sig != SIGUSR2 || handler == NULL ) {
 
@@ -754,7 +769,7 @@ set_sigusr1_handler( void (*handler)(int) )
 		return EINVAL;
 	}
 
-	thr_setspecific( shutdown_handler_key, (void *) handler );
+	pthread_setspecific( shutdown_handler_key, (void *) handler );
 
 	return 0;
 }
@@ -767,7 +782,7 @@ set_sigusr2_handler( void (*handler)(int) )
 		return EINVAL;
 	}
 
-	thr_setspecific( reconfig_handler_key, (void *) handler );
+	pthread_setspecific( reconfig_handler_key, (void *) handler );
 
 	return 0;
 }
@@ -777,7 +792,7 @@ sigusr1_handler( int sig )
 {
 	sigjmp_buf *sigusr1_buf;
 
-	thr_getspecific( sigusr1_buf_key, (void **) &sigusr1_buf );
+        sigusr1_buf = pthread_getspecific( sigusr1_buf_key );
 
 	siglongjmp( *sigusr1_buf, 1 );
 }
@@ -787,7 +802,7 @@ sigusr2_handler( int sig )
 {
 	sigjmp_buf *sigusr2_buf;
 
-	thr_getspecific( sigusr2_buf_key, (void **) &sigusr2_buf );
+        sigusr2_buf = pthread_getspecific( sigusr2_buf_key );
 
 	siglongjmp( *sigusr2_buf, 1 );
 }
@@ -880,7 +895,7 @@ pktchan_send( void *etp, PktChannel *pktchan,
 
 		freePktChannel( pktchan );
 
-		thr_kill( et->thread_id, SIGUSR1 );
+		pthread_kill( et->thread_id, SIGUSR1 );
 	}
 
 	return 0;
@@ -1093,7 +1108,7 @@ orb2ew_export( void *arg )
 
 		status = -1;
 
-		thr_exit( (void *) &status );
+		pthread_exit( (void *) &status );
 	}
 
 	if( et->es->starttime != NULL_STARTTIME ) {
@@ -1141,7 +1156,7 @@ orb2ew_export( void *arg )
 
 	set_sigusr1_handler( sigusr1_handler );
 
-	thr_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
+	pthread_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
 
 	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
 
@@ -1192,7 +1207,7 @@ orb2ew_export( void *arg )
 
 	status = 0;
 
-	thr_exit( (void *) &status );
+	pthread_exit( (void *) &status );
 }
 
 static void
@@ -1211,13 +1226,13 @@ refresh_export_server_thread( ExportServerThread *es )
 	char	*clienthost;
 	int	clientport;
 
-	mutex_lock( &es->es_mutex );
+	pthread_mutex_lock( &es->es_mutex );
 
 	if( es->stop == 1 ) {
 
 		orb2ew_export_server_shutdown();
 
-		thr_exit( (void *) &status );
+		pthread_exit( (void *) &status );
 	}
 
 	if( es->update == 1 ) {
@@ -1320,7 +1335,7 @@ refresh_export_server_thread( ExportServerThread *es )
 		es->new = 0;
 	}
 
-	mutex_unlock( &es->es_mutex );
+	pthread_mutex_unlock( &es->es_mutex );
 
 	memset( &es->sin, 0, sizeof( struct sockaddr ) );
 	memset( &client, 0, sizeof( struct sockaddr ) );
@@ -1418,16 +1433,14 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		et = new_ExportThread( es, aso );
 
-		rc = thr_create( NULL, 0, orb2ew_export,
-				  (void *) et,
-				  0,
-				  &et->thread_id );
+                rc = pthread_create( &et->thread_id, NULL,
+                    orb2ew_export, (void *) et);
 
 		if( rc != 0 ) {
 
 			elog_complain( 1,
 			    "'%s': Failed to create export thread: "
-			    "thr_create error %d\n", es->name, rc );
+			    "pthread_create error %d\n", es->name, rc );
 
 			free_ExportThread( &et );
 
@@ -1444,11 +1457,11 @@ refresh_export_server_thread( ExportServerThread *es )
 					es->name, clienthost, clientport, et->name );
 			}
 
-			mutex_lock( &es->es_mutex );
+			pthread_mutex_lock( &es->es_mutex );
 
 			setarr( es->Export_Threads, et->name, et );
 
-			mutex_unlock( &es->es_mutex );
+			pthread_mutex_unlock( &es->es_mutex );
 		}
 	}
 }
@@ -1465,10 +1478,10 @@ orb2ew_export_server( void *arg )
 	set_sigusr1_handler( sigusr1_handler );
 	set_sigusr2_handler( sigusr2_handler );
 
-	thr_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
-	thr_setspecific( sigusr2_buf_key, (void *) &sigusr2_buf );
+	pthread_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
+	pthread_setspecific( sigusr2_buf_key, (void *) &sigusr2_buf );
 
-	thr_setprio( thr_self(), THR_PRIORITY_EXPORT_SERVER );
+        pthread_setschedprio( pthread_self(), THR_PRIORITY_EXPORT_SERVER );
 
 	if( Flags.verbose ) {
 
@@ -1477,33 +1490,33 @@ orb2ew_export_server( void *arg )
 			  name );
 	}
 
-	if( ( es = find_export_server_thread_byid( thr_self() ) ) == NULL ) {
+	if( ( es = find_export_server_thread_byid( pthread_self() ) ) == NULL ) {
 
 		elog_complain( 1,
 			"Couldn't find thread id %ld in registry!\n",
-			 (long) thr_self() );
+			 (long) pthread_self() );
 
 		status = -1;
 
-		thr_exit( (void *) &status );
+		pthread_exit( (void *) &status );
 	}
 
 	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
 
 		orb2ew_export_server_shutdown();
 
-		thr_exit( (void *) &status );
+		pthread_exit( (void *) &status );
 	}
 
 	if( sigsetjmp( sigusr2_buf, 1 ) != 0 ) {
 
-		mutex_unlock( &es->es_mutex );
+		pthread_mutex_unlock( &es->es_mutex );
 	}
 
-	mutex_lock( &es->ready_mutex );
+	pthread_mutex_lock( &es->ready_mutex );
 	es->ready = 1;
-	cond_signal( &es->ready_cond );
-	mutex_unlock( &es->ready_mutex );
+	pthread_cond_signal( &es->ready_cond );
+	pthread_mutex_unlock( &es->ready_mutex );
 
 	refresh_export_server_thread( es );
 }
@@ -1515,6 +1528,10 @@ update_export_server_thread( char *name, Pf *pf )
 	Pf	*oldpf = 0;
 	char	key[STRSZ];
 	int	ret;
+        pthread_attr_t attr;
+
+        pthread_attr_init( &attr );
+        pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_DETACHED );
 
 	if( ( es = find_export_server_thread_byname( name ) ) == 0 ) {
 
@@ -1581,7 +1598,7 @@ update_export_server_thread( char *name, Pf *pf )
 			      DEFAULT_EWEXPORT_TYPE );
 	}
 
-	mutex_lock( &es->es_mutex );
+	pthread_mutex_lock( &es->es_mutex );
 
 	oldpf = pfdup( es->pf );
 
@@ -1677,41 +1694,41 @@ update_export_server_thread( char *name, Pf *pf )
 	sprintf( key, "export_servers{%s}{my_type}", name );
 	pfreplace( pf, es->pf, key, "my_type", "string" );
 
-	mutex_unlock( &es->es_mutex );
+	pthread_mutex_unlock( &es->es_mutex );
 
 	if( es->new ) {
 
 		add_export_server_thread( name, es );
 
-		ret = thr_create( NULL, 0, orb2ew_export_server,
-				  (void *) name,
-				  THR_DETACHED,
-				  &es->thread_id );
+                ret = pthread_create( &es->thread_id,
+                    &attr,
+                    orb2ew_export_server,
+                    (void *) name );
 
 		if( ret != 0 ) {
 
 			elog_complain( 1,
 			    "'%s': Failed to create export_server thread: "
-			    "thr_create error %d\n", name, ret );
+			    "pthread_create error %d\n", name, ret );
 
 			delete_export_server_thread( es );
 
 			return;
 		}
 
-		mutex_lock( &es->ready_mutex );
+		pthread_mutex_lock( &es->ready_mutex );
 		while( es->ready == 0 ) {
-			cond_wait( &es->ready_cond, &es->ready_mutex );
+			pthread_cond_wait( &es->ready_cond, &es->ready_mutex );
 		}
-		mutex_unlock( &es->ready_mutex );
+		pthread_mutex_unlock( &es->ready_mutex );
 
 	} else if( pfcmp( oldpf, es->pf ) ) {
 
 		es->update = 1;
 
-		mutex_lock( &es->es_mutex );
+		pthread_mutex_lock( &es->es_mutex );
 
-		thr_kill( es->thread_id, SIGUSR2 );
+		pthread_kill( es->thread_id, SIGUSR2 );
 
 	} else {
 
@@ -1730,7 +1747,7 @@ update_export_server_thread( char *name, Pf *pf )
 
 			elog_notify( 0,
 				"'%s': Posted updates for export_server thread "
-				"(thread-id %ld)\n", 
+				"(thread-id %ld)\n",
 				es->name, (long) es->thread_id );
 
 		} else {
@@ -1758,7 +1775,7 @@ refresh_pins_list( Pf *pf )
 	int	pinno;
 	int	i;
 
-	rw_wrlock( &Pins_rwlock );
+	pthread_rwlock_wrlock( &Pins_rwlock );
 
 	freearr( Pins, 0 );
 
@@ -1772,7 +1789,7 @@ refresh_pins_list( Pf *pf )
 					"parameter file\n" );
 		}
 
-		rw_unlock( &Pins_rwlock );
+		pthread_rwlock_unlock( &Pins_rwlock );
 
 		return;
 	}
@@ -1796,7 +1813,7 @@ refresh_pins_list( Pf *pf )
 
 	freetbl( new_keys, 0 );
 
-	rw_unlock( &Pins_rwlock );
+	pthread_rwlock_unlock( &Pins_rwlock );
 
 	return;
 }
@@ -1892,20 +1909,33 @@ orb2ew_pfwatch( void *arg )
 {
 	Pf	*pf = 0;
 	int	rc;
+        pthread_rwlockattr_t est_rwlockattr;
+        pthread_rwlockattr_t pins_rwlockattr;
+        pthread_mutexattr_t mtx_attr;
 
-	thr_setprio( thr_self(), THR_PRIORITY_PFWATCH );
+	pthread_setschedprio( pthread_self(), THR_PRIORITY_PFWATCH );
 
-	rwlock_init( &Export_Server_Threads_rwlock, USYNC_THREAD, NULL );
+        pthread_rwlockattr_init( &est_rwlockattr );
+        pthread_rwlockattr_setpshared( &est_rwlockattr,
+            PTHREAD_PROCESS_PRIVATE );
+	pthread_rwlock_init( &Export_Server_Threads_rwlock,
+            &est_rwlockattr );
 
 	Export_Server_Threads = newarr( 0 );
 
-	rwlock_init( &Pins_rwlock, USYNC_THREAD, NULL );
+        pthread_rwlockattr_init( &pins_rwlockattr );
+        pthread_rwlockattr_setpshared( &pins_rwlockattr,
+            PTHREAD_PROCESS_PRIVATE );
+	pthread_rwlock_init( &Pins_rwlock, &pins_rwlockattr );
 
 	Pins = newarr( 0 );
 
 	memset( &Ewinfo, '\0', sizeof( Earthworm_Info ) );
 
-	mutex_init( &Ewinfo.ew_mutex, USYNC_THREAD, NULL );
+        pthread_mutexattr_init( &mtx_attr );
+        pthread_mutexattr_setpshared( &mtx_attr,
+            PTHREAD_PROCESS_PRIVATE );
+	pthread_mutex_init( &Ewinfo.ew_mutex, &mtx_attr );
 
 	strcpy( Ewinfo.pfname, DEFAULT_EARTHWORM_PFNAME );
 
@@ -1948,7 +1978,7 @@ main( int argc, char **argv )
 {
 	char	c;
 	int	rc;
-	thread_t pfwatch_tid;
+	pthread_t pfwatch_tid;
 	struct sigaction sa1;
 	struct sigaction sa2;
 
@@ -1978,29 +2008,29 @@ main( int argc, char **argv )
 		Orbname = argv[optind++];
 	}
 
-	thr_keycreate( &sigusr1_buf_key, NULL );
-	thr_keycreate( &shutdown_handler_key, NULL );
+	pthread_key_create( &sigusr1_buf_key, NULL );
+	pthread_key_create( &shutdown_handler_key, NULL );
 	sa1.sa_flags = 0;
 	sigemptyset( &sa1.sa_mask );
 	sa1.sa_handler = process_sigusr1;
 	sigaction( SIGUSR1, &sa1, NULL );
 
-	thr_keycreate( &sigusr2_buf_key, NULL );
-	thr_keycreate( &reconfig_handler_key, NULL );
+	pthread_key_create( &sigusr2_buf_key, NULL );
+	pthread_key_create( &reconfig_handler_key, NULL );
 	sa2.sa_flags = 0;
 	sigemptyset( &sa2.sa_mask );
 	sa2.sa_handler = process_sigusr2;
 	sigaction( SIGUSR2, &sa2, NULL );
 
-	rc = thr_create( NULL, 0, orb2ew_pfwatch, 0, 0, &pfwatch_tid );
+        rc = pthread_create( &pfwatch_tid, NULL, orb2ew_pfwatch, NULL );
 
 	if( rc != 0 ) {
 
 		elog_die( 1, "Failed to create parameter-file watch thread, "
-			"thr_create error %d\n", rc );
+			"pthread_create error %d\n", rc );
 	}
 
-	thr_join( pfwatch_tid, (thread_t *) NULL, (void **) NULL );
+        pthread_join( pfwatch_tid, NULL );
 
 	if( Flags.verbose ) {
 
