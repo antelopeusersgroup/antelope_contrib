@@ -490,7 +490,7 @@ close_export_server_connection( ExportServerThread *es )
 
 		pthread_kill( et->thread_id, SIGUSR1 );
 
-		pthread_join( et->thread_id, NULL );
+		pthread_join( et->thread_id, (void **) &statusp );
 
 		if( et->es->loglevel >= VERBOSE || Flags.verbose ) {
 
@@ -2038,7 +2038,7 @@ main( int argc, char **argv )
 			"pthread_create error %d\n", rc );
 	}
 
-        pthread_join( pfwatch_tid, NULL );
+        pthread_join( pfwatch_tid, (void **) NULL );
 
 	if( Flags.verbose ) {
 
