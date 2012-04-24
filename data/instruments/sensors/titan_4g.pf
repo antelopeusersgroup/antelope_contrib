@@ -1,0 +1,34 @@
+originator     Taimi Mulder, GSC
+last_modified  2012-04-23
+
+info	&Literal{
+The sensitivity specifications are derived from
+
+	http://www.nanometrics.ca/ckfinder/userfiles/files/NMX-Titan.pdf
+	Titan Accelerometer Technical Specifications sheet
+
+}
+category	Nanometrics
+configuration	Titan 4g
+
+description	Nanometrics Titan 4g
+dfile		titan_4g
+
+rsptype                 A       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        N       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	5.0968e-10	# 5V/g = 5V/(9.81 x 10**9 nm/s**2)
+iunits		nm/s**2
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/titan) 
+

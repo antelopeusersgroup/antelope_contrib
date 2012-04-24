@@ -1,0 +1,24 @@
+originator      Taimi Mulder, GSC
+last_modified   2012-04-23
+
+category	Streckeisen
+configuration	STS1_360sec_10hz East
+
+description	Streckeisen STS-1 360sec_10hz
+dfile		sts1_360sec_10hz_e
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	24e-7
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+E	90	90
+}
+
+response	&datafile(responses/sts1_360sec_10hz) 

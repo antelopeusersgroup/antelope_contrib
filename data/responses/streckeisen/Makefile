@@ -1,5 +1,6 @@
 DATADIR=responses
 DATA= sts1 \
+        sts1_360sec_10hz \
 	old_sts2 \
 	old_sts2_vel \
 	sts2_g1 \

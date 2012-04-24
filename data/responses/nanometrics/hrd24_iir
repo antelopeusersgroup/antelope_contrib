@@ -1,0 +1,16 @@
+# Nanometrics HRD24 Digitizer
+# normalization factor 	1.0
+# 
+# Comment: This is a temporary response file for the IIR dc-removal preamp.
+# The final response file should have type "iir".  At the publication time
+# of this file, the "iir" response file option was unstable when used with 
+# dberesp and did not produce the correct response curve. The temporary 
+# fix, used here, was to specify the iir filter as a "paz" file.
+# 2012 Apr 12 - T Mulder & M Koessler
+#	   
+theoretical 1 dc-removal paz  GSC_Koessler
+1
+1
+-3.1415E-02	0.0000E+00	0.0000E+00	0.0000E+00
+1
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00
