@@ -1474,6 +1474,8 @@ orb2ew_export_server( void *arg )
 	sigjmp_buf sigusr1_buf;
 	sigjmp_buf sigusr2_buf;
 	int	status = 0;
+        int     tpolicy;
+        struct  sched_param tsparam;
 
 	set_sigusr1_handler( sigusr1_handler );
 	set_sigusr2_handler( sigusr2_handler );
@@ -1481,7 +1483,9 @@ orb2ew_export_server( void *arg )
 	pthread_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
 	pthread_setspecific( sigusr2_buf_key, (void *) &sigusr2_buf );
 
-        pthread_setschedprio( pthread_self(), THR_PRIORITY_EXPORT_SERVER );
+        pthread_getschedparam( pthread_self(), &tpolicy, &tsparam );
+        tsparam.sched_priority = THR_PRIORITY_EXPORT_SERVER;
+        pthread_setschedparam( pthread_self(), tpolicy, &tsparam );
 
 	if( Flags.verbose ) {
 
@@ -1912,8 +1916,12 @@ orb2ew_pfwatch( void *arg )
         pthread_rwlockattr_t est_rwlockattr;
         pthread_rwlockattr_t pins_rwlockattr;
         pthread_mutexattr_t mtx_attr;
+        int     tpolicy;
+        struct  sched_param tsparam;
 
-	pthread_setschedprio( pthread_self(), THR_PRIORITY_PFWATCH );
+        pthread_getschedparam( pthread_self(), &tpolicy, &tsparam );
+        tsparam.sched_priority = THR_PRIORITY_PFWATCH;
+	pthread_setschedparam( pthread_self(), tpolicy, &tsparam );
 
         pthread_rwlockattr_init( &est_rwlockattr );
         pthread_rwlockattr_setpshared( &est_rwlockattr,

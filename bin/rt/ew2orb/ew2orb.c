@@ -1694,8 +1694,12 @@ ew2orb_import( void *arg )
 	ImportThread *it;
 	int	status = 0;
 	int	rc;
+        int     tpolicy;
+        struct  sched_param tsparam;
 
-	pthread_setschedprio( pthread_self(), THR_PRIORITY_IMPORT );
+        pthread_getschedparam( pthread_self(), &tpolicy, &tsparam );
+        tsparam.sched_priority = THR_PRIORITY_IMPORT;
+	pthread_setschedparam( pthread_self(), tpolicy, &tsparam );
 
 	if( Flags.verbose ) {
 
@@ -2581,9 +2585,13 @@ crack_packet( Ew2orbPacket *e2opkt )
 static void *
 ew2orb_convert( void *arg )
 {
-	Ew2orbPacket *e2opkt;
+	Ew2orbPacket  *e2opkt;
+        int           tpolicy;
+        struct        sched_param tsparam;
 
-	pthread_setschedprio( pthread_self(), THR_PRIORITY_CONVERT );
+        pthread_getschedparam( pthread_self(), &tpolicy, &tsparam);
+        tsparam.sched_priority = THR_PRIORITY_CONVERT;
+	pthread_setschedparam( pthread_self(), tpolicy, &tsparam );
 
 	while( pmtfifo_pop( E2oPackets_mtf, (void **) &e2opkt ) != 0 ) {
 
@@ -2624,12 +2632,16 @@ ew2orb_convert( void *arg )
 static void *
 ew2orb_pfwatch( void *arg )
 {
-	Pf	*pf = 0;
-	int	rc;
-        pthread_rwlockattr_t rwl_attr;
-        pthread_mutexattr_t mtx_attr;
+	Pf	              *pf = 0;
+	int	              rc;
+        pthread_rwlockattr_t  rwl_attr;
+        pthread_mutexattr_t   mtx_attr;
+        int                   tpolicy;
+        struct sched_param    tsparam;
 
-	pthread_setschedprio( pthread_self(), THR_PRIORITY_PFWATCH );
+        pthread_getschedparam( pthread_self(), &tpolicy, &tsparam);
+        tsparam.sched_priority = THR_PRIORITY_PFWATCH;
+	pthread_setschedparam( pthread_self(), tpolicy, &tsparam );
 
         pthread_rwlockattr_init(&rwl_attr);
         pthread_rwlockattr_setpshared(&rwl_attr, PTHREAD_PROCESS_PRIVATE );
