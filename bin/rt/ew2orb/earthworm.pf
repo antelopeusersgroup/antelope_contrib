@@ -1,40 +1,40 @@
-# The Earthworm Installation, Message, and Module ID numbers range from 
-# 0 to 255. Installation-IDs are managed centrally by the USGS. 
-# Message IDs 0-99 are meant to be global, in order to support 
+# The Earthworm Installation, Message, and Module ID numbers range from
+# 0 to 255. Installation-IDs are managed centrally by the USGS.
+# Message IDs 0-99 are meant to be global, in order to support
 # data-exchange. Message IDs 100-255 are for use by local installations
-# for messages which do not leave the local system. In the 
-# arrays below, the 'global' keyword is optional, used to 
-# identify globally-defined values which are recommended not to be 
+# for messages which do not leave the local system. In the
+# arrays below, the 'global' keyword is optional, used to
+# identify globally-defined values which are recommended not to be
 # changed.
 
 Installations &Arr{
 	INST_WILDCARD    0      global # wildcard value - DO NOT CHANGE!!
-	INST_FAIRBANKS   1 	global
-	INST_UW          2 	global
-	INST_MENLO       3 	global
-	INST_CIT         4 	global
-	INST_UTAH        5 	global
-	INST_MEMPHIS     6 	global
-	INST_UNR         7 	global
-	INST_UCB         8 	global
-	INST_PTWC        9 	global
-	INST_IDA        10 	global
-	INST_NC         11 	global
-	INST_VT         12 	global
-	INST_USNSN      13 	global
-	INST_RICKS      14 	global
-	INST_HVO        15 	global
-	INST_ATWC       16 	global
-	INST_PGE        17 	global
-	INST_PNNL       18 	global
-	INST_PGC        19 	global
-	INST_AVO        20 	global
-	INST_BUTTE      21 	global
-	INST_LAMONT     22 	global
-	INST_SC_CHA     23 	global
-	INST_STLOUIS    24 	global
+	INST_FAIRBANKS   1	global
+	INST_UW          2	global
+	INST_MENLO       3	global
+	INST_CIT         4	global
+	INST_UTAH        5	global
+	INST_MEMPHIS     6	global
+	INST_UNR         7	global
+	INST_UCB         8	global
+	INST_PTWC        9	global
+	INST_IDA        10	global
+	INST_NC         11	global
+	INST_VT         12	global
+	INST_USNSN      13	global
+	INST_RICKS      14	global
+	INST_HVO        15	global
+	INST_ATWC       16	global
+	INST_PGE        17	global
+	INST_PNNL       18	global
+	INST_PGC        19	global
+	INST_AVO        20	global
+	INST_BUTTE      21	global
+	INST_LAMONT     22	global
+	INST_SC_CHA     23	global
+	INST_STLOUIS    24	global
 	INST_NMT        25	global
-	INST_CVO 	26	global
+	INST_CVO	26	global
 	INST_SC_COL     27	global
 	INST_PRSN       28	global
 	INST_TEMP1      29	global
@@ -63,14 +63,14 @@ Installations &Arr{
 	INST_CWB        52	global
 	INST_EDI        53	global
 	INST_MI         54	global
-	INST_URBAN-HZ   55 	global
-	INST_EREBUS     56 	global
-	INST_SGS        57 	global
-	INST_UNAVCO     58 	global
-	INST_USGSMAG    59 	global
+	INST_URBAN-HZ   55	global
+	INST_EREBUS     56	global
+	INST_SGS        57	global
+	INST_UNAVCO     58	global
+	INST_USGSMAG    59	global
 	INST_KACST	60	global #King Abdulaziz City for Science & Tech.
-	INST_OVMP       61	global #Ob. Vol. de la Montagne Pelee	
-	INST_UCSD       93	global 
+	INST_OVMP       61	global #Ob. Vol. de la Montagne Pelee
+	INST_UCSD       93	global
 	INST_QUITO      100	global
 	INST_INETER     101	global
 	INST_CENAPRED   102	global
@@ -83,25 +83,25 @@ Installations &Arr{
 
 Messages &Arr{
 
-	TYPE_WILDCARD        0   global # wildcard value - DO NOT CHANGE!!!   
+	TYPE_WILDCARD        0   global # wildcard value - DO NOT CHANGE!!!
 	TYPE_ADBUF           1   global # multiplexed waveforms from DOS adsend
 	TYPE_ERROR           2   global # error message
 	TYPE_HEARTBEAT       3   global # heartbeat message
 	TYPE_NANOBUF         5   global # single-channel waveforms, nanometrics
 	TYPE_PICK2K         10   global # P-wave arrival time with 4 digit year
-	TYPE_CODA2K         11   global # coda info (plus station code) 
-#	TYPE_PICK2          12   global # P-wave arrival time 
+	TYPE_CODA2K         11   global # coda info (plus station code)
+#	TYPE_PICK2          12   global # P-wave arrival time
 #	TYPE_CODA2          13   global # coda info from picker & pick_ew
-	TYPE_HYP2000ARC     14   global # hyp2000 event archive msg 
+	TYPE_HYP2000ARC     14   global # hyp2000 event archive msg
 	TYPE_H71SUM2K       15   global # hypo71-format hypocenter summary msg 
-#	TYPE_HINVARC        17   global # hypoinverse event archive msg 
-#	TYPE_H71SUM         18   global # hypo71-format summary msg 
+#	TYPE_HINVARC        17   global # hypoinverse event archive msg
+#	TYPE_H71SUM         18   global # hypo71-format summary msg
 	TYPE_TRACEBUF2      19   global # single-channel waveforms with loc codes
-	TYPE_TRACEBUF       20   global # single-channel waveforms 
+	TYPE_TRACEBUF       20   global # single-channel waveforms
 	TYPE_LPTRIG         21   global # single-channel long-period trigger 
-	TYPE_CUBIC          22   global # cubic-format summary msg 
-	TYPE_CARLSTATRIG    23   global # single-channel trigger 
-#	TYPE_TRIGLIST       24   global # trigger-list msg 
+	TYPE_CUBIC          22   global # cubic-format summary msg
+	TYPE_CARLSTATRIG    23   global # single-channel trigger
+#	TYPE_TRIGLIST       24   global # trigger-list msg
 	TYPE_TRIGLIST2K     25   global # trigger-list msg (with 4-digit year) 
 	TYPE_TRACE_COMP_UA  26   global # compressed waveforms from compress_UA
 	TYPE_STRONGMOTION   27   global # single-instr. peak A,V,D, Spectral A. 
