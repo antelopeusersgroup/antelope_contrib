@@ -18,7 +18,7 @@ after  removing an old server or adding a new one.
 
 The \fIorb\fP name from which to read data is specified on the command line. After
 that, most of the \fBorb2ew\fP configuration is in the \fBorb2ew\fP parameter file,
-named \fBorb2ew\fP.pf by default. 
+named \fBorb2ew\fP.pf by default.
 
 A sample parameter file is included below. The parameter
 program_loglevel controls the overall level of logging output for the
@@ -45,10 +45,10 @@ description of the connection parameters follows:
 
 .IP server_ipaddress
 This gives the IP address of the Earthworm server from which to export data.
-The default is to leave this blank, in which case all network interfaces 
-on the machine are valid for connections. On a multi-homed host, users 
-may wish to restrict the outgoing IP addresses on which connections will 
-be accepted. This is accomplished by specifying the IP address (in 
+The default is to leave this blank, in which case all network interfaces
+on the machine are valid for connections. On a multi-homed host, users
+may wish to restrict the outgoing IP addresses on which connections will
+be accepted. This is accomplished by specifying the IP address (in
 a.b.c.d dotted-decimal notation) of the desired network interface.
 
 .IP server_port
@@ -77,27 +77,27 @@ which the incoming heartbeat string must match.
 
 .IP select
 This parameter is a string which is fed to the orbselect(3) call
-after each orb connection is established. If the parameter is left 
-blank, no orbselect(3) call is made. 
+after each orb connection is established. If the parameter is left
+blank, no orbselect(3) call is made.
 
 .IP reject
 This parameter is a string which is fed to the orbreject(3) call
-after each orb connection is established. If the parameter is left 
-blank, no orbreject(3) call is made. 
+after each orb connection is established. If the parameter is left
+blank, no orbreject(3) call is made.
 
 .IP starttime
-This parameter specifies a beginning time for data which should be 
-sent. If the string is blank, no time filtering is done. If the string 
+This parameter specifies a beginning time for data which should be
+sent. If the string is blank, no time filtering is done. If the string
 is specified in a format understood by str2epoch(3), the orbafter(3) routine
-will be called to position the orbserver read pointer, and packets 
+will be called to position the orbserver read pointer, and packets
 before the specified time will be rejected. This parameter may also be used
 to rewind the server to start at an earlier position in the orb.
 
 .IP timesort_queue_maxpkts
-This parameter specifies the size of the packet-sorting queue. If this 
+This parameter specifies the size of the packet-sorting queue. If this
 parameter is nonzero, \fBorb2ew\fP attempts to sort packets into time order, 
-using the pktchannelpipe(3) routines [specifically, the 
-\fItimesort_queue_maxpkts\fP is sent as the \fImaxpkts\fP argument 
+using the pktchannelpipe(3) routines [specifically, the
+\fItimesort_queue_maxpkts\fP is sent as the \fImaxpkts\fP argument
 to pktchannelpipe_new(3)].
 
 .IP my_inst
@@ -144,11 +144,11 @@ which is to leave this blank, allows all sources on the orb to go out.
 This parameter constrains the maximum size of packets to be sent without 
 modification (how actually to handle packets larger than max_tracebuf_size is 
 determined by the parameter large_tracebuf_handling, q.v.). If max_tracebuf_size
-is not set, it defaults to the value compiled into the code, currently 
-4096 bytes. 
+is not set, it defaults to the value compiled into the code, currently
+4096 bytes.
 
 .IP large_tracebuf_handling
-If the total size of the outgoing trace-buf is larger than the 
+If the total size of the outgoing trace-buf is larger than the
 \fImax_tracebuf_size\fP value, the \fIlarge_tracebuf_handling\fP parameter 
 controls what happens to it. This parameter has several available modes:
 .IP "         \fIsend\fP"
@@ -159,7 +159,7 @@ Earthworm regardless of whether they are above or below the size threshold.
 
 This setting rejects packets which are too large for Earthworm (as determined
 by the current setting of max_tracebuf_size), emitting a complaint to the
-log file.  
+log file.
 .IP "         \fIreject_silent\fP"
 
 This is the same as "reject", however the
@@ -167,7 +167,7 @@ complaint message to the log file will be suppressed.
 
 .IP "         \fIsplit N\fP"
 
-This setting for large_tracebuf_handling splits packets into smaller 
+This setting for large_tracebuf_handling splits packets into smaller
 sub-packets of N samples each before sending them (Note that the decision 
 to split packets is still driven by the setting of max_tracebuf_size, thus one 
 can still have packets sent with more than N samples if their total size is 
@@ -175,9 +175,9 @@ less than max_tracebuf_size).
 
 .IP pins
 The pins array specifies optional Earthworm pin-numbers for individual station
-channels. Each entry should be listed as NET_STA_CHAN followed by 
-the desired pin number. If no pin number is specified for a given 
-channel, a pin-number of 0 will be used. 
+channels. Each entry should be listed as NET_STA_CHAN followed by
+the desired pin number. If no pin number is specified for a given
+channel, a pin-number of 0 will be used.
 
 .SH OPTIONS
 .IP "-p pfname"
@@ -192,8 +192,8 @@ The default parameter file is "\fBorb2ew\fP.pf".
 .nf
 program_loglevel verbose
 defaults &Arr{
-	send_heartbeat_sec 	120
-	send_heartbeat_string 	alive
+	send_heartbeat_sec	120
+	send_heartbeat_string	alive
 	expect_heartbeat_sec	300
 	expect_heartbeat_string	.*alive.*
 	select
@@ -252,32 +252,32 @@ present in earthworm.pf for all modules, message types, and installations
 encountered.
 
 The channels_select and channels_reject tables of pktchannelpipe_new
-are not passed through (there is no support for these in orb2ew.pf), 
-since the orb2ew select and reject expressions already cover that function. 
+are not passed through (there is no support for these in orb2ew.pf),
+since the orb2ew select and reject expressions already cover that function.
 
-The queue codes from the pktchannelpipe callback are currently ignored. 
+The queue codes from the pktchannelpipe callback are currently ignored.
 
 One should note the wait-time tradeoff involved in sorting out-of-order
-data. The queue should not be made too large or data will be delayed 
+data. The queue should not be made too large or data will be delayed
 proportionately when packets arrive out of order or are missing.
 
-The channel codes for Earthworm TYPE_TRACEBUF2 messages are four characters 
-at maximum, shorter than those for CSS3.0. If longer channel names are encountered 
-on the orbserver, they will be bluntly truncated to fit. 
+The channel codes for Earthworm TYPE_TRACEBUF2 messages are four characters
+at maximum, shorter than those for CSS3.0. If longer channel names are encountered
+on the orbserver, they will be bluntly truncated to fit.
 
 If the \fIlarge_tracebuf_handling\fP parameter is set to split the packet
 into a certain number of samples, and that number results in a sub-packet
 that is still larger than the configured \fImax_tracebuf_size\fP, the entire
 packet will be rejected with a warning message.
 
-The parameter-file is dynamically re-read to detect configuration changes. However, 
-if an optional parameter is added, then entirely removed from the parameter file, 
+The parameter-file is dynamically re-read to detect configuration changes. However,
+if an optional parameter is added, then entirely removed from the parameter file,
 \fBorb2ew\fP wil not notice, because it has come to expect that parameter to be 
 present. In some sense this could be considered a bug; certainly it could be circumvented
 with yet more programming, but the marginal value is questionable. Once you add 
-optional parameters to the parameter file, just keep them in there for the duration 
-of the run (you may change them as you wish and the dynamic updates will be 
-made in the running executable). 
+optional parameters to the parameter file, just keep them in there for the duration
+of the run (you may change them as you wish and the dynamic updates will be
+made in the running executable).
 .SH AUTHOR
 .nf
 Kent Lindquist
