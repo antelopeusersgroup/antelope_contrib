@@ -17,8 +17,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
-#include <thread.h>
-#include <synch.h>
+#include <pthread.h>
 #include <errno.h>
 #include "stock.h"
 #include "swapbytes.h"
@@ -68,7 +67,7 @@
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 
 typedef struct Earthworm_Info {
-	mutex_t	ew_mutex;
+	pthread_mutex_t	ew_mutex;
 	char	pfname[FILENAME_MAX];
 	Pf	*pf;
 	Arr	*inst_names;
@@ -100,12 +99,12 @@ extern Flagdef Flags;
 extern void refresh_earthworm_info( void );
 extern void set_program_loglevel( Pf *pf );
 extern enum Loglevel translate_loglevel( char *loglevel );
-extern void pfreplace( Pf *sourcepf, Pf *destpf, char *sourcekey, 
+extern void pfreplace( Pf *sourcepf, Pf *destpf, char *sourcekey,
 		       char *destkey, char *type );
 extern void ewlogo_tostrings( int inst, int mod, int type, char *inststr,
 		              char *modstr, char *typestr );
 extern void ewlogo_tologo( char *inststr, char *modstr, char *typestr,
-	        	   int *inst, int *mod, int *type );
+		              int *inst, int *mod, int *type );
 extern Tbl *healthy_morphlist( Tbl *morphlist );
 
 #endif /* ORBEW_H */

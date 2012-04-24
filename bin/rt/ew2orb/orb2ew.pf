@@ -1,7 +1,7 @@
 program_loglevel veryverbose
 defaults &Arr{
-	send_heartbeat_sec 	120
-	send_heartbeat_string 	alive
+	send_heartbeat_sec	120
+	send_heartbeat_string	alive
 	expect_heartbeat_sec	300
 	expect_heartbeat_string	.*alive.*
 	my_inst		        INST_UNKNOWN
@@ -16,20 +16,20 @@ defaults &Arr{
 }
 
 export_servers &Arr{
- 	PGC_test &Arr{
-  		server_ipaddress	# blank = use all interfaces on machine
-  		server_port 16015
-  		send_heartbeat_sec 100
-  		send_heartbeat_string alive
-  		reject .*(BHE|BHN).*
-  	}
+	PGC_test &Arr{
+		server_ipaddress	# blank = use all interfaces on machine
+		server_port 16015
+		send_heartbeat_sec 100
+		send_heartbeat_string alive
+		reject .*(BHE|BHN).*
+	}
 	PGC_test2 &Arr{
- 		server_ipaddress	# blank = use all interfaces on machine
- 		server_port 16016
- 		send_heartbeat_sec 100
- 		send_heartbeat_string alive
- 		reject .*BHZ.*
- 	}
+		server_ipaddress	# blank = use all interfaces on machine
+		server_port 16016
+		send_heartbeat_sec 100
+		send_heartbeat_string alive
+		reject .*BHZ.*
+	}
 }
 
 pins &Arr{
