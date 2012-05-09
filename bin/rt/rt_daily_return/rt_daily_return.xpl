@@ -5,10 +5,10 @@
     use strict ;
     use Datascope ;
 
-    my ($dbin,$dbout,$deploy,$starttime,$endtime,$time,$etime,$cmd,$delay_days,$table,$wfend,$usage);
-    my (@list,@dbin,@dbout);
-    our ($opt_v,$opt_d,$opt_n,$opt_z,$opt_s,$opt_t,$opt_e);
-
+    my ( $dbin, $dbout, $deploy, $starttime, $endtime, $time, $etime, $cmd, $delay_days, $table, $wfend, $usage );
+    my ( @list, @dbin, @dbout );
+    our ( $opt_v, $opt_d, $opt_n, $opt_z, $opt_s, $opt_t, $opt_e );
+ 
 #
 #  set up error logging
 #   
@@ -36,33 +36,34 @@
 
     $delay_days = $opt_d || 1 ;
 
-    @dbin  = dbopen($dbin,"r");
-    if ($dbin =~ $dbout) {
+    @dbin  = dbopen( $dbin, "r" );
+    if ( $dbin =~ $dbout ) {
         @dbout = @dbin ;
     } else {
-        @dbout = dbopen($dbout,"r");
+        @dbout = dbopen( $dbout, "r" );
     }
 
-    @dbin  = dblookup(@dbin,0,"wfdisc",0,0);
-    @dbout = dblookup(@dbout,0,"gap",0,0);
-    
-    if (dbquery(@dbout,"dbRECORD_COUNT")) {
-        @dbout     = dbsort(@dbout,"-r","time");
+    @dbin  = dblookup( @dbin,  0, "wfdisc",  0, 0 );
+    @dbout = dblookup( @dbout, 0, "netperf", 0, 0 );
+     
+    if ( dbquery( @dbout, "dbRECORD_COUNT" ) ) {
+        @dbout     = dbsubset ( @dbout, " snet =~ /$opt_n/" ) if $opt_n ;
+        @dbout     = dbsort( @dbout, "-r", "time" );
         $dbout[3]  = 0;
-        $starttime = epoch(yearday(dbgetv(@dbout,"time"))) + 86400;
+        $starttime = epoch( yearday( dbgetv( @dbout, "time" ) ) ) + 86400;
     } else {
-        dbsort(@dbin,"time");
+        dbsort( @dbin, "time" );
         $dbin[3]   = 0;
-        $starttime = epoch(yearday(dbgetv(@dbin,"time")));
+        $starttime = epoch( yearday( dbgetv( @dbin, "time" ) ) );
     }
     
     foreach $table (qw( site sensor )) {
-        @dbin = dblookup(@dbin,0,$table,0,0);
+        @dbin = dblookup( @dbin, 0, $table, 0, 0 );
         elog_die("Missing $table table in $dbin") unless dbquery(@dbin,"dbTABLE_PRESENT");
     }
 
-    @dbin = dblookup(@dbin,0,"deployment",0,0);
-    if (dbquery(@dbin,"dbTABLE_PRESENT")) {
+    @dbin = dblookup( @dbin, 0, "deployment", 0, 0 );
+    if ( dbquery( @dbin, "dbTABLE_PRESENT" ) ) {
         $deploy = 1 ;
     } else {
         $deploy = 0 ;
@@ -77,28 +78,28 @@
 
            
     if ( ! $opt_e ) {
-        $endtime = (epoch(yearday(now())) - ($delay_days * 86400)) ;
-        @dbin = dblookup(@dbin,0,"wfdisc",0,0) ;
-        @dbin    = dbsort(@dbin,"-r","endtime") ;
+        $endtime = ( epoch( yearday( now() ) ) - ( $delay_days * 86400 ) ) ;
+        @dbin    = dblookup( @dbin, 0, "wfdisc", 0, 0 ) ;
+        @dbin    = dbsort( @dbin, "-r", "endtime" ) ;
         $dbin[3] = 0 ;
-        $wfend   = dbgetv(@dbin,"endtime") ;
-        if (epoch(yearday($wfend + 80000)) < $endtime) {
-            $endtime = epoch(yearday($wfend + 80000));  # 80000 seconds to push $endtime into next day
+        $wfend   = dbgetv( @dbin, "endtime" ) ;
+        if ( epoch( yearday( $wfend + 80000 ) ) < $endtime ) {
+            $endtime = epoch( yearday ($wfend + 80000) );  # 80000 seconds to push $endtime into next day
         }
     } else {
-        $endtime     = epoch(yearday(str2epoch($opt_e))) ;
+        $endtime     = epoch( yearday( str2epoch( $opt_e ) ) ) ;
     }
     
     elog_notify(sprintf ("end of gap processing		%s",strydtime($endtime))) ;
 
-    dbclose(@dbin) ;
-    dbclose(@dbout) unless ($dbin =~ $dbout);
+    dbclose( @dbin ) ;
+    dbclose( @dbout ) unless ($dbin =~ $dbout);
                
 #
 #   process each day
 #
     $time = $starttime; 
-    while ($time < $endtime)  {
+    while ( $time < $endtime )  {
         elog_notify( sprintf ("\nprocessing gap for day %s",strydtime($time)));
         $etime = $time + 86399.999 ;
         if ($deploy) {
