@@ -1,0 +1,8 @@
+#!/bin/sh
+echo cmpresp $*
+# program table1 record1 table2 record2
+echo table1=$1
+echo record1=$2
+echo table2=$3
+echo record2=$4
+
