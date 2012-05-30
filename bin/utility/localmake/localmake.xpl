@@ -1695,6 +1695,11 @@ $header = pfget( $Pf, "header" );
 $extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
 
+if( ! -e "$Pf_config_file" ) {
+
+	commit_configuration();
+}
+
 %macros_initial_config = %{pfget($Pf_config,"macros")};
 %capabilities_initial_config = %{pfget($Pf_config,"capabilities")};
 
