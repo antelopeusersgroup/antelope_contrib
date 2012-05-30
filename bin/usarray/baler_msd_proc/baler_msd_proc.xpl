@@ -175,7 +175,7 @@
                 
         $logs{$sta}{lines}      = 0 ;
         $errors{$sta}{problems} = 0 ;
-        elog_notify ( "$sta started processing" ) ;
+        elog_notify ( "$sta started processing" ) if $opt_v ;
         
 #
 # Fork the script
@@ -221,7 +221,8 @@
             }
             $cmd  .=  "$parent" ;
             
-            fork_debug ( $parent, "$cmd " ) ;
+            elog_debug ( "$cmd " ) if $opt_V ;
+            fork_debug ( $parent, "$cmd " ) if $opt_V ;
                                     
             exec ( $cmd  ) ;
 
@@ -470,27 +471,27 @@ sub proc_sta { # &proc_sta( $sta, $install_time, $removal_time, $parent ) ;
 #  clean up
 #
         
-    if  ( $prob ) {
-        $subject = "TA $sta     $prob baler data problems -  $pgm on $host";
-        $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
-        fork_notify ( $parent, "$cmd") ;
-        
-        if ( ! &run_cmd( $cmd ) ) {
-            $prob++ ;
-            &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
-        }
-        
-    } elsif ( $opt_v ) {
-        $subject = "TA $sta baler completed successfully -  $pgm on $host";
-        $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
-        fork_notify ( $parent, "$cmd") if $opt_v ;   
-        
-        if ( ! &run_cmd( $cmd ) ) {
-            $prob++ ;
-            &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
-        }
-        
-    } 
+#     if  ( $prob ) {
+#         $subject = "TA $sta     $prob baler data problems -  $pgm on $host";
+#         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
+#         fork_notify ( $parent, "$cmd") ;
+#         
+#         if ( ! &run_cmd( $cmd ) ) {
+#             $prob++ ;
+#             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+#         }
+#         
+#     } elsif ( $opt_v ) {
+#         $subject = "TA $sta baler completed successfully -  $pgm on $host";
+#         $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
+#         fork_notify ( $parent, "$cmd") if $opt_v ;   
+#         
+#         if ( ! &run_cmd( $cmd ) ) {
+#             $prob++ ;
+#             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+#         }
+#         
+#     } 
 
     unlink "/tmp/prob_$sta\_$$" unless $opt_V;
 
@@ -890,7 +891,7 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
 
 }
 
-sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
+sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
     my ( $sta, $install_time, $removal_time, $parent, $prob ) = @_ ;
     my ( $alreadyproc, $dbname, $dfile, $dfile_full, $filebytes, $last_proc, $md5, $media, $msdtime, $ndfiles ) ;
     my ( $ndown, $next_proc, $ngap, $ngap_at_start, $nmiss, $nproc, $nrows, $nrows_to_proc, $nzfiles ) ;
@@ -1013,6 +1014,13 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld
         $dfile_unprocessed{ $dfile }{ md5 }          = $md5 ; 
         $dfile_unprocessed{ $dfile }{ filebytes }    = $filebytes ; 
         $dfile_unprocessed{ $dfile }{ dfile_full }   = $dfile_full ; 
+    }
+    
+    $nrows_to_proc = keys ( %dfile_unprocessed ) ; 
+
+    if ( $nrows_to_proc == 0 ) {
+        dbclose ( @db ) ;
+        return ( $nrows_to_proc, 0, $prob, \%dfile_unprocessed, \@skip  ) ;
     }
     
     @mseed        = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
@@ -2247,10 +2255,26 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
                     $prob++ ;
                 }
             } else {
-                fork_notify ( $parent, $string ) ;
-                fork_notify ( $parent, $string1 ) ;
-                $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
-                fork_notify ( $parent, $string ) ;
+#                 fork_notify ( $parent, $string ) ;
+#                 fork_notify ( $parent, $string1 ) ;
+#                 $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
+#                 fork_notify ( $parent, $string ) ;
+                if ( $opt_F || $opt_G ) {
+                    fork_notify ( $parent, $string ) ;
+                    fork_notify ( $parent, $string1 ) ;
+                    $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
+                    fork_notify ( $parent, $string ) ;
+                    $string =  sprintf( "	ignoring missing data since -F or -G option used" ) ;
+                    fork_notify ( $parent, $string ) ;
+                } else {
+                    fork_complain ( $parent, $string ) ;
+                    fork_complain ( $parent, $string1 ) ;
+                    $string =  sprintf( "	media did not change, data missing on baler 44" ) ;
+                    fork_complain ( $parent, $string ) ;
+                    $ngap++ ;
+                    $prob++ ;
+                }
+
             } 
             
         }
