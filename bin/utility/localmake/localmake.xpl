@@ -1697,6 +1697,13 @@ $extra_rules = pfget( $Pf, "extra_rules" );
 
 if( ! -e "$Pf_config_file" ) {
 
+	($adir, $abase, $asuffix) = parsepath( $Pf_config_file );
+
+	if( makedir( $adir ) != 0 ) {
+
+		elog_die( "Failed to make directory '$adir'\n" );
+	}
+
 	commit_configuration();
 }
 
