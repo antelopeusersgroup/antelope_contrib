@@ -750,4 +750,17 @@ macros	&Arr{
         SunOS	
     }
 }
+
+platform_rules &Arr{
+  Darwin &Literal{
+PHPDLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(DEST)/data/php/$(PHPDLIB) $(LDEXTRA) $(LDPATH)
+ }
+  Linux &Literal{
+PHPDLDFLAGS= $(DLDFLAGS)
+  }
+  SunOS &Literal{
+PHPDLDFLAGS= $(DLDFLAGS)
+  }
+}
+
 output_file	antelopemake.local
