@@ -27,7 +27,6 @@
 #include "stock.h"
 #include "orb.h"
 #include "forb.h"
-#undef orbpkt_string
 #include "Pkt.h"
 #include "pf.h"
 #include "pforbstat.h"
@@ -36,9 +35,12 @@
  * the name of the PHP function */
 #undef now
 
+static int le_Orb;
 static int le_Orb_Packet;
 
 #define PHP_ORB_PACKET_RES_NAME "Orb_Packet"
+
+static char *Elog_replacement = 0;
 
 static function_entry Orb_functions[] = {
 	PHP_FE(orbopen, NULL)		
@@ -52,6 +54,7 @@ static function_entry Orb_functions[] = {
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
 	PHP_FE(orbreap, NULL)		
+	PHP_FE(orbreap_nd, NULL)		
 	PHP_FE(orbreap_timeout, NULL)		
 	PHP_FE(orbget, NULL)		
 	PHP_FE(orbput, NULL)		
@@ -285,6 +288,7 @@ PHP_METHOD(orb_client, nselect);
 PHP_METHOD(orb_client, errors);
 PHP_METHOD(orb_client, priority);
 PHP_METHOD(orb_client, lastrequest);
+PHP_METHOD(orb_client, mymessages);
 PHP_METHOD(orb_client, nrequests);
 PHP_METHOD(orb_client, nwrites);
 PHP_METHOD(orb_client, nreads);
@@ -315,6 +319,7 @@ static function_entry php_orb_client_functions[] = {
 	PHP_ME(orb_client, errors, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, priority, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, lastrequest, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, mymessages, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nrequests, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nwrites, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nreads, NULL, ZEND_ACC_PUBLIC)
@@ -1109,6 +1114,55 @@ PHP_FUNCTION(orbreap)
 }
 /* }}} */
 
+/* {{{ proto array orbreap_nd( int orbfd ) */
+PHP_FUNCTION(orbreap_nd)
+{
+	long	orbfd;
+	int	pktid;
+	char	srcname[STRSZ];
+	double	pkttime;
+	char *pkt = 0;
+	int	bufsize = 0;
+	int	nbytes = 0;
+	int	rc;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &orbfd )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = orbreap_nd( (int) orbfd, &pktid, srcname, &pkttime, 
+		      &pkt, &nbytes, &bufsize );
+
+	if( rc < 0 ) {
+		
+		return;
+	}
+
+	array_init( return_value );
+
+	add_next_index_long( return_value, pktid );
+	add_next_index_string( return_value, srcname, 1 );
+	add_next_index_double( return_value, pkttime );
+	add_next_index_stringl( return_value, pkt, (uint) nbytes, 1 );
+	add_next_index_long( return_value, nbytes );
+
+	if( pkt != 0 ) {
+
+		free( pkt );
+	}
+
+	return;
+}
+/* }}} */
+
 /* {{{ proto array orbreap_timeout( int orbfd, int maxseconds ) */
 PHP_FUNCTION(orbreap_timeout)
 {
@@ -1770,7 +1824,7 @@ PHP_FUNCTION(orbpkt_string)
 		return;
 	}
 	
-	forbpkt = forbpacket_string( srcname, time, packet, (int) nbytes );
+	forbpkt = orbpkt_string( srcname, time, packet, (int) nbytes );
 
 	if( forbpkt == 0 ) {
 		
@@ -1859,7 +1913,7 @@ PHP_METHOD(orb_pkt, channels)
 	} else if( ichannel >= maxtbl( pkt->channels ) ) {
 
 		sprintf( msg, "Channel index %ld too high; packet contains "
-			      "only %ld channels\n", 
+			      "only %d channels\n", 
 			      ichannel, maxtbl( pkt->channels ) );
 		
 		ZVAL_NULL( return_value );
@@ -2336,7 +2390,7 @@ PHP_METHOD(orb_stat, maxpkts)
 
 	os = get_this_orb_stat( getThis() );
 
-	RETURN_LONG( os->maxpktid );
+	RETURN_LONG( os->maxpkts );
 }
 
 PHP_METHOD(orb_source, srcname)
@@ -2616,6 +2670,15 @@ PHP_METHOD(orb_client, lastrequest)
 	oc = get_this_orb_client( getThis() );
 
 	RETURN_LONG( oc->lastrequest );
+}
+
+PHP_METHOD(orb_client, mymessages)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->mymessages );
 }
 
 PHP_METHOD(orb_client, nrequests)
