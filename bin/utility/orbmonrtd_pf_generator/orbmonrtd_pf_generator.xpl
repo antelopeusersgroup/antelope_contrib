@@ -2,14 +2,12 @@ use strict ;
 use warnings ;
 
 #
-# $Id$
-#
 # Dynamically create parameter files for orbmonrtd
 # from dbmaster database tables
 #
-# @author     Rob Newman <rlnewman@ucsd.edu>
-# @copyright  University of California, San Diego
-# @version    $Revision$
+# @author     Rob Newman <robertlnewman@gmail.com>
+# @modified   2012-06-13
+# @version    1.1
 #
 
 use Getopt::Std ;
@@ -44,7 +42,7 @@ sub setup_state {
         die( "Couldn't find $State{pf}.pf. Goodbye.\n" ) ;
     }
     my $pf_change_time = "1238630400" ;
- 
+
     if( pfrequire( $State{pf}, $pf_change_time ) < 0 ) {
         elog_flush( 1, 0 ) ;
         die( "The parameter file '$State{pf}.pf' is out of date. " .
@@ -93,7 +91,7 @@ if( defined( $opt_t ) && $opt_t eq "deployment" ) {
     @db = dbjoin( @db_joined, @db_deployment ) ;
     @db = dbsubset( @db, "endtime > now() || endtime == NULL" ) ;
 }
-@db = dbsubset( @db_joined, "offdate > now() || offdate == NULL" ) ;
+@db = dbsubset( @db, "offdate > now() || offdate == NULL" ) ;
 @db = dbsort( @db, "snet","sta" ) ;
 
 while( my( $key, @value ) = each ( %{ $State{sources} } ) ) {
