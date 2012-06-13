@@ -119,8 +119,8 @@ antelope_python &Arr{
 		python
 	}
 	build &Tbl{
-		deprecated/lib/dataformat/dbxml
-		deprecated/data/python
+		nobuild/lib/dataformat/dbxml
+		nobuild/data/python
 	}
 	package &Tbl{
 		lib/libdbxml.dylib
@@ -155,7 +155,7 @@ orb2amqp &Arr{
 		python_amqplib
 	}
 	build &Tbl{
-		bin/rt/orb2amqp
+		nobuild/bin/rt/orb2amqp
 	}
 	package &Tbl{
 		local/bin/orb2amqp
@@ -197,7 +197,7 @@ rtkill &Arr{
 	capabilities_required &Tbl{
 	}
 	build &Tbl{
-		bin/rt/rtkill
+		nobuild/bin/rt/rtkill
 	}
 	package &Tbl{
 		bin/rtkill 
@@ -211,25 +211,25 @@ db2sql &Arr{
 	capabilities_required &Tbl{
 	}
 	build &Tbl{
-		lib/dataformat/db2sql
-		lib/dataformat/dbmon
-		lib/perl/db2sql
-		lib/perl/dbmon
+		nobuild/lib/dataformat/db2sql
+		nobuild/lib/dataformat/dbmon
+		nobuild/lib/perl/db2sql
+		nobuild/lib/perl/dbmon
 		bin/export/db2sql
-		bin/export/dbschema2sql
+		nobuild/bin/export/dbschema2sql
 	}
 }
-bootstrap &Arr{
-	product	&env(ANTELOPE)
-	src_subdir	&contrib_src_subdir
-	capabilities_required &Tbl{
-	}
-	build &Tbl{
-		lib/localmake_config
-		bin/utility/cf
-		bin/utility/localmake
-	}
-}
+#bootstrap &Arr{
+#	product	&env(ANTELOPE)
+#	src_subdir	&contrib_src_subdir
+#	capabilities_required &Tbl{
+#	}
+#	build &Tbl{
+#		lib/localmake_config
+#		nobuild/bin/utility/cf
+#		bin/utility/localmake
+#	}
+#}
 
 capabilities	&Arr{
     matlab	&Arr{
@@ -535,12 +535,7 @@ capabilities	&Arr{
 antelope	&env(ANTELOPE)
 dest	&antelope/local/include
 extra_rules	&Literal{
-.SUFFIXES: .SUFFIXES .py .pyc .xpy .xphp .wwwphp
-
-% : %.xpy $(ANTELOPE)/local/data/templates/xpy
-	$(RM) $@
-	cat $(ANTELOPE)/local/data/templates/xpy $< > $@
-	chmod a+x $@
+.SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp
 
 % : %.xphp $(ANTELOPE)/local/data/templates/xphp
 	$(RM) $@
@@ -550,10 +545,6 @@ extra_rules	&Literal{
 .wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
 	$(RM) $@
 	cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
-
-.py.pyc :
-	$(RM) $@
-	$(PYTHON_EXECUTABLE) -c 'import py_compile; py_compile.compile("$<")'
 }
 header	&Literal{
 # DO NOT MODIFY -- Automatically generated file -- DO NOT MODIFY
@@ -759,4 +750,17 @@ macros	&Arr{
         SunOS	
     }
 }
+
+platform_rules &Arr{
+  Darwin &Literal{
+PHPDLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(DEST)/data/php/$(PHPDLIB) $(LDEXTRA) $(LDPATH)
+ }
+  Linux &Literal{
+PHPDLDFLAGS= $(DLDFLAGS)
+  }
+  SunOS &Literal{
+PHPDLDFLAGS= $(DLDFLAGS)
+  }
+}
+
 output_file	antelopemake.local

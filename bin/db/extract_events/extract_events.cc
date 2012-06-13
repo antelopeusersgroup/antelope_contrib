@@ -472,6 +472,9 @@ void SaveResults(DatascopeHandle& dbh,
 					string absdir=getfullpath(dir);
 					makedir(const_cast<char *>(absdir.c_str()));
 					string path=absdir+"/"+dfile;
+                                        if(SEISPP_verbose)
+                                              cout << "Writing miniseed file="<<path<<endl;
+
 					
 					msdput(msd,MSD_FILENAME,path.c_str(),
 						MSD_NET, net.c_str(),
@@ -703,7 +706,11 @@ int main(int argc, char **argv)
 		AttributeMap amo(schemaout);  
 		DatascopeHandle dbcatalog(dbh);
 		if(eventdb!=dbin)
+                {
 			dbcatalog=DatascopeHandle(eventdb,false);
+                        if(SEISPP_verbose) cout << "Using event database="
+                            <<eventdb<<endl;
+                }
 		if(use_arrival)
 			dbcatalog=StandardCatalogView(dbcatalog);
 		else if(require_event)
@@ -730,8 +737,11 @@ int main(int argc, char **argv)
 		DatascopeHandle dbhelink(dbho);
 		DatascopeHandle dbhsclink(dbho);
 		list<string> matchkeys;
-		matchkeys.push_back(string("sta"));
-		matchkeys.push_back(string("evid"));
+                /* if using arrivals we need a station match.  
+                   The match handle is largely ignored for event processing
+                   without arrivals but we push evid as the key anyway*/
+		if(use_arrival)matchkeys.push_back(string("sta"));
+		if(require_event) matchkeys.push_back(string("evid"));
 		DatascopeMatchHandle dbhm(dbcatalog,string(""),matchkeys,am);
 		if(save_as_3c)
 		{
@@ -788,11 +798,21 @@ int main(int argc, char **argv)
 				}
 			}
 			// Read the raw data using the time window based constructor
-			rawdata=array_get_data(*stations,hypo,
+                        try {
+			    rawdata=array_get_data(*stations,hypo,
 				phase,datatwin,tpad,dynamic_cast<DatabaseHandle&>(dbh),
 				stachanmap,mdens,mdtrace,am);
+                        }catch (SeisppError& serr)
+                        {
+                            cerr << "extract_windows:  array_get_data error"<<endl;
+                            serr.log_error();
+                            cerr << "Skipping this event"<<endl;
+                            continue;
+                        }
 			if(rawdata->member.size()<=0) 
 			{
+                                cerr << "Warning:  Data for event from record = "<<record<< " has no data.  Skipped."
+                                    <<endl;
 				delete rawdata;
 				continue;
 			}
@@ -809,6 +829,8 @@ int main(int argc, char **argv)
 			above, so be aware in maintenance */
 			regular_gather=BuildRegularGather(*rawdata, dbhm,*rdef,target_dt,
 					processing_twin,use_arrival);
+                        if(SEISPP_verbose)
+                            cout << "Regular gather number of members = "<<regular_gather->member.size()<<endl;
 			delete rawdata;
 			if(apply_fst)
 				ApplyFST(*regular_gather,hypo,vp0,vs0);

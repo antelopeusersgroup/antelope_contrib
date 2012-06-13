@@ -55,7 +55,7 @@ parameters from a \fIBasicTimeSeries\fR object definition:
 of samples in this data object.  It also inherits a couple of
 auxiliary parameters and data gap processing facilities
 described in BasicTimeSeries(3).
-It also inherits a Metadata object (see metadata(3)) used
+It also inherits a Metadata object (see Metadata(3)) used
 basically as a variable length header in applications.
 See the man page for TimeSeries (3) for more details about 
 motivation and use of Metadata for time series data like 
@@ -277,7 +277,7 @@ and it MUST point to one and only one row of a database view
 that defines a bundle created by dbgroup by time:sta:chan.
 The database attributes to be extracted from this database row 
 are controlled by mdl and am in the manner described in
-detail in metadata(3).  Briefly, mdl and am control how attributes
+detail in Metadata(3).  Briefly, mdl and am control how attributes
 in the database are mapped to an internal Metadata namespace.  
 The list of attributes to extracted from the database are driven by 
 mdl.  The basic algorithm is that for each element of mdl an

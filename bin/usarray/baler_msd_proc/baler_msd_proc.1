@@ -1,11 +1,11 @@
-.TH BALER_MSD_PROC 1 
+.TH BALER_MSD_PROC 1 "$Date$"
 .SH NAME
 baler_msd_proc \- reformats mulitplexed Baler 14 and Baler 44 miniseed data into sta-chan files 
 .SH SYNOPSIS
 .nf
-\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-p \fIpf\fP] [-m \fImail_to\fP] [-f \fInforks\fP] [-s \fIsta_regex\fP] \fIdb\fP
+\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-c] [-d] [-F] [-B] [-E] [-G] [-p \fIpf\fP] [-m \fImail_to\fP] [-f \fInforks\fP] [-s \fIsta_regex\fP] \fIdb\fP
 
-\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-p \fIpf\fP] \fIsta\fP \fIparent_pid\fP
+\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-F] [-B] [-E] [-G] [-p \fIpf\fP] \fIsta\fP \fIparent_pid\fP
 .fi
 .SH DESCRIPTION
 This is the third in a series of 5 programs for processing baler 44 miniseed data.  The programs are
@@ -68,6 +68,18 @@ Verbose
 Extremely verbose.  Used for debugging purposes only.
 .IP -n
 Test mode.  Does not execute commands.
+.IP -c
+Only checks data downloads for baler 44.  Does not process.
+.IP -d
+Skip md5 checks for miniseed files
+.IP -F
+Force processing by ignoring all gap problems and processing the files which miniseed files actually exist.
+.IP -B
+Ignoring gap problems immediately following installation and process.
+.IP -E
+Ignoring gap problems immediately prior to removal and process.
+.IP -G
+Ignoring gap problems not associated with the installation or removal process.
 .IP "-p parameter_file"
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBbaler_msd_proc\fP.
@@ -83,6 +95,10 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
 .IP baler14dirbase
 Absolute path name for station baler 14 miniseed directory base name
 .IP baler14procbase
@@ -91,6 +107,8 @@ Absolute path name for processed baler 14 miniseed directory base name
 Absolute path name for processed baler 44 miniseed directory base name
 .IP archivebase
 Absolute path name for station baler directory base name for data to be written to
+.IP rt_sta_dir
+Absolute path name for rt wfdisc directory base name
 .IP bhdata_dir
 Subdirectory name for BH and LH data 
 .IP sohdata_dir
@@ -104,15 +122,23 @@ dbpath to be written into descriptor file for output database to use.
 .IP dblocks
 dblocking type for database
 .IP success_mail
-Email addresses to send notification of station success. Multiple email addresses should be comma delimited without
-white space.
+Email addresses to send notification of station success. Multiple email addresses 
+should be comma delimited without white space.
 .IP prob_mail
-Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
-white space.
+Email addresses to send notification of problems. Multiple email addresses 
+should be comma delimited without white space.
 .IP net_sta_chan_loc
 Table of net_sta_chan_loc changes for fixminiseed
 .IP sta
 Table of sta changes for fixminiseed
+.IP day_of_week
+Array of sta regex expressions for stations to be processed on a given day.  
+In general this program should be run the same day as \fBrt_sta_wfdisc\fP 
+and the day before \fBbaler_wf_proc\fP.  
+The -s option overrides this station subsetting function.
+.fi
+.ft R
+.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -123,6 +149,8 @@ baler14dirbase    /anf/TA/baler/station_aof_dumps/hold_for_station_closure    # 
 baler14procbase   /anf/TA/baler/station_aof_dumps/processed_44                # absolute path name for processed baler 14 miniseed directory base name
 
 baler44dirbase    /anf/TA/baler/work                 # absolute path name for station baler 44 miniseed directory base name
+
+rt_sta_dir         /anf/TA/dbs/wfs/rt_stas           # absolute path name for rt wfdisc directory base name
 
 archivebase       /anf/TA/dbs/wfs/station_active     # absolute path name for station baler directory base name for data to be written to
 
@@ -148,6 +176,16 @@ sta        &Tbl{                                     # for fix_miniseed paramete
 EXMP       CURRENT_STATION
 }
 
+day_of_week    &Arr{						
+    Monday      ^[A-E].*
+    Tuesday     ^[F-J].*
+    Wednesday   ^[K-O].*
+    Thursday    ^[P-T].*
+    Friday      ^[U-Y].*
+    Saturday    ^[Z0-3].*
+    Sunday      ^[4-9].*
+}                                                    # day of week station regex for routine processing
+
 .fi
 .ft R
 .in
@@ -168,3 +206,4 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
+.br

@@ -28,7 +28,7 @@ meaning is largely implementation dependent although a few items
 (see below) have frozen names that are utilized by 
 the Metadata-based constructor (see below).  The Metadata concept
 and how it is expected to be applied is described in more
-detail in the metadata(3) man page.
+detail in the Metadata(3) man page.
 .LP
 The \fITimeSeries\fR object itself was designed to be lightweight.
 That is, the aim was to make the number of member functions
@@ -176,7 +176,7 @@ the sample data are not valid.  In particular note that in
 this situation the s vector will have
 ns slots reserved for data, but the sample data are not valid.
 This constructor may also throw a MetadataError object 
-(see metadata(3)).  If a MetadataError is caught the object
+(see Metadata(3)).  If a MetadataError is caught the object
 should be discarded as it should be viewed as trash. A
 MetadataError indicates one of the required parameters for
 the constructor was not found in the Metadata space.
@@ -196,7 +196,7 @@ and it MUST point to one and only one row of a database view.
 (i.e. the row field must not be something like dbALL).  The 
 database attributes to be extracted from this database row 
 are controlled by mdl and am in the manner described in
-detail in metadata(3).  Briefly, mdl and am control how attributes
+detail in Metadata(3).  Briefly, mdl and am control how attributes
 in the database are mapped to an internal Metadata namespace.  
 The list of attributes to be extracted from the database are driven by 
 mdl.  The basic algorithm is that for each element of mdl an
@@ -236,10 +236,10 @@ interface.
 The function takes the contents of ts and writes results to 
 database db storing metadata in table (usually wfdisc but 
 not required).  The attributes to be stored in wfdisc are 
-extracted from the metadata(3) components of the ts object.  
+extracted from the Metadata(3) components of the ts object.  
 The list of names to be saved is stored in md and the
 AttributeMap object, am, describes how these names are 
-mapped to external attribute names (see metadata(3) for 
+mapped to external attribute names (see Metadata(3) for 
 details on this process -- dbsave uses the metadata 
 function with similar arguments).  
 .LP

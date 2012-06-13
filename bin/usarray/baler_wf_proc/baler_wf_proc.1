@@ -1,4 +1,4 @@
-.TH BALER_WF_PROC 1 
+.TH BALER_WF_PROC 1 "$Date$"
 .SH NAME
 baler_wf_proc \- writes wfdiscs for Baler 14 and Baler 44 miniseed data and fills gaps using rt data 
 .SH SYNOPSIS
@@ -82,6 +82,10 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
 .IP baler_active
 Absolute path name for station baler archive directory base name
 .IP rt_sta_dir
@@ -99,11 +103,18 @@ dbpath to be written into descriptor file for output database to use.
 .IP dblocks
 dblocking type for database
 .IP success_mail
-Email addresses to send notification of station success. Multiple email addresses should be comma delimited without
-white space.
+Email addresses to send notification of station success. Multiple email addresses should be comma 
+delimited without white space.
 .IP prob_mail
-Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
-white space.
+Email addresses to send notification of problems. Multiple email addresses should be comma 
+delimited without white space.
+.IP day_of_week
+Array of sta regex expressions for stations to be processed on a given day.  In general this 
+program should be run the day after \fBrt_sta_wfdisc\fP and \fBbaler_msd_proc\fP, and the day 
+before \fBbaler_active_to_dmc\fP.  The -s option overrides this station subsetting function.
+.fi
+.ft R
+.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -126,6 +137,16 @@ dblocks         none                              # default dblocks
 
 success_mail    your@email.edu                    # email addresses to send notification of station success
 prob_mail       your@email.edu                    # email addresses to send notification of problems
+
+day_of_week     &Arr{						
+                     Tuesday     ^[A-E].*
+                     Wednesday   ^[F-J].*
+                     Thursday    ^[K-O].*
+                     Friday      ^[P-T].*
+                     Saturday    ^[U-Y].*
+                     Sunday      ^[Z0-3].*
+                     Monday      ^[4-9].*
+                }                                 # day of week station regex for routine processing
 
 .fi
 .ft R
@@ -151,3 +172,4 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
+.br

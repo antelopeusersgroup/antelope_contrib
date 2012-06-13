@@ -1,9 +1,0 @@
-<include perlDatascope.ref>
-<include perlGrid.ref>
-<include perlHistory.ref>
-<include perlResponse.ref>
-<include perlSac.ref>
-<include perlScg.ref>
-<include perlTrace.ref>
-<include perlVector.ref>
-<include perltkBplot.ref>

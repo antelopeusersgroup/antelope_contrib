@@ -1,0 +1,191 @@
+category	Nanometrics
+configuration	HRD24
+
+originator	Nikolaus Horn
+last_modified	Febuary 22 2012
+
+description	Nanometrics HRD24
+dfile hrd24
+info &Literal{
+This is the configuration for a Nanometrics HRD24 Digitizer
+	There are two different a/d boards:
+	before '96 (part #10981) 1.92  micro-volt/bit or 520833 counts/volt
+	after  '96 (part #10128) 1.275 micro-volt/bit or 784313 counts/volt
+	Note: usually the gain is modified by user defined resistors. Or pre-amplifiers. Or so.
+	
+	Matt Koessler & Taimi Mulder, GSC - Febuary 22 2012
+	This modification of the parameter file includes the IIR high pass DC removal filter.
+	The corner frequency for this IIR filter is 0.005 Hz. 
+	A new response file must be created if another corner frequency is used.
+}
+
+streams		1000sps 500sps 250sps 200sps 125sps 120sps 100sps 80sps 50sps 40sps 20sps 10sps
+
+# definitions of streams
+1000sps	1000 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_iir
+500sps	 500 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_500sps_s4 hrd24_iir
+250sps	 250 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_250sps_s4 hrd24_iir
+200sps	 200 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_200sps_s4 hrd24_iir
+125sps	 125 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_125sps_s3 hrd24_125sps_s4 hrd24_125sps_s5 hrd24_iir
+120sps	 120 anti-alias a/d hrd24_s1 hrd24_120sps_s2 hrd24_120sps_s3 hrd24_120sps_s4 hrd24_iir
+100sps	 100 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_100sps_s4 hrd24_100sps_s5 hrd24_iir
+80sps	  80 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_80sps_s3 hrd24_80sps_s4 hrd24_iir
+50sps	  50 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_50sps_s4 hrd24_50sps_s5 hrd24_iir
+40sps	  40 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_s3 hrd24_40sps_s4 hrd24_40sps_s5 hrd24_iir
+20sps	  20 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_20sps_s3 hrd24_20sps_s4 hrd24_20sps_s5 hrd24_iir
+10sps	  10 anti-alias a/d hrd24_s1 hrd24_s2 hrd24_10sps_s3 hrd24_10sps_s4 hrd24_10sps_s5 hrd24_iir
+
+gains		784313 #counts/volt
+
+# Stages
+anti-alias &Arr{
+gtype	analog_anti_alias
+response	&datafile(responses/hrd24aaf)	
+}
+a/d	&Arr{
+samprate	30000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn			datalogger
+}
+
+hrd24_s1 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_s1)
+}
+
+hrd24_s2 &Arr{
+gtype	FIR_decimator
+decifac	3
+response	&datafile(responses/hrd24_s2)
+}
+
+hrd24_120sps_s2 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_120sps_s2)
+}
+
+hrd24_s3 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_s3)
+}
+
+hrd24_10sps_s3 &Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/hrd24_10sps_s3)
+}
+hrd24_20sps_s3 &Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/hrd24_20sps_s3)
+}
+hrd24_80sps_s3 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_80sps_s3)
+}
+hrd24_120sps_s3 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_120sps_s3)
+}
+hrd24_125sps_s3 &Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/hrd24_125sps_s3)
+}
+hrd24_10sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/hrd24_10sps_s4)
+}
+hrd24_20sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_20sps_s4)
+}
+hrd24_40sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_40sps_s4)
+}
+hrd24_50sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/hrd24_50sps_s4)
+}
+hrd24_80sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_80sps_s4)
+}
+hrd24_100sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_100sps_s4)
+}
+hrd24_120sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_120sps_s4)
+}
+hrd24_125sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_125sps_s4)
+}
+hrd24_200sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_200sps_s4)
+}
+hrd24_250sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	4
+response	&datafile(responses/hrd24_250sps_s4)
+}
+hrd24_500sps_s4 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_500sps_s4)
+}
+hrd24_10sps_s5 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_10sps_s5)
+}
+hrd24_20sps_s5 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_20sps_s5)
+}
+hrd24_40sps_s5 &Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/hrd24_40sps_s5)
+}
+hrd24_50sps_s5 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_50sps_s5)
+}
+hrd24_100sps_s5 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_100sps_s5)
+}
+hrd24_125sps_s5 &Arr{
+gtype	FIR_decimator
+decifac	2
+response	&datafile(responses/hrd24_125sps_s5)
+}
+
+hrd24_iir &Arr{
+gtype	dc_removal_iir
+response	&datafile(responses/hrd24_iir)
+}

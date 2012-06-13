@@ -46,7 +46,8 @@
     use Getopt::Std ;
     use strict ;
 #    use diagnostics;
-    use Switch ;
+#     use Switch ;
+    use feature ":5.10" ; 
     use Datascope ;
     use archive;
     use orb;
@@ -179,7 +180,7 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
             next;
         }
         $q330stat{$key}{dlsta} = $q330stat{$key}{dlname};
-        elog_notify("$key	$q330stat{$key}{dlsta}") if $opt_V;
+#        elog_debug("$key	$q330stat{$key}{dlsta}") if $opt_D;
     }
 
     elog_notify(sprintf("%d status dlsta",$#keys+1)) if $opt_v;
@@ -225,7 +226,7 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
             next;
         }
         $q330config{$key}{dlsta} = $q330config{$key}{dlname};
-        elog_notify("$key	$q330config{$key}{dlsta}") if $opt_V;
+#        elog_debug("$key	$q330config{$key}{dlsta}") if $opt_D;
     }
     elog_notify(sprintf("%d config dlsta",$#keys+1)) if $opt_v;
     
@@ -361,49 +362,50 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
         $q330{$dlsta}{qap_4_6_ver}    = $config{$key}{config}{man}{qapchp_4to6_version};
         $q330{$dlsta}{qap_4_6_ver}    = sprintf("%d.%d", ($config{$key}{config}{man}{qapchp_4to6_version}>>8), 
                                         int($config{$key}{config}{man}{qapchp_4to6_version}%256) );
- 
-        switch ( $config{$key}{config}{glob}{filter_bitmap} & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters for all frequencies" } 
-            case 1 {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters below 100 hz"         } 
-            case 2 {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters below 40 hz"          } 
-            case 3 {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters below 20 hz"          } 
+
+        given ( $config{$key}{config}{glob}{filter_bitmap} & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters for all frequencies" } 
+            when ( 1 ) {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters below 100 hz"         } 
+            when ( 2 ) {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters below 40 hz"          } 
+            when ( 3 ) {$q330{$dlsta}{ch1_3_filter}  = "linear phase filters below 20 hz"          } 
         }
-        switch ( $config{$key}{config}{glob}{filter_bitmap} & 0xc ) {
-            case 0 {$q330{$dlsta}{ch4_6_filter}  = "linear phase filters for all frequencies" } 
-            case 4 {$q330{$dlsta}{ch4_6_filter}  = "linear phase filters below 100 hz"         } 
-            case 8 {$q330{$dlsta}{ch4_6_filter}  = "linear phase filters below 40 hz"          } 
-            case 12 {$q330{$dlsta}{ch4_6_filter} = "linear phase filters below 20 hz"          } 
+        given ( $config{$key}{config}{glob}{filter_bitmap} & 0xc ) {
+            when ( 0 ) {$q330{$dlsta}{ch4_6_filter}  = "linear phase filters for all frequencies" } 
+            when ( 4 ) {$q330{$dlsta}{ch4_6_filter}  = "linear phase filters below 100 hz"         } 
+            when ( 8 ) {$q330{$dlsta}{ch4_6_filter}  = "linear phase filters below 40 hz"          } 
+            when ( 12 ) {$q330{$dlsta}{ch4_6_filter} = "linear phase filters below 20 hz"          } 
         }
-        switch ( $config{$key}{config}{glob}{gain_bitmap} & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch1_preamp} = "disabled" } 
-            case 1 {$q330{$dlsta}{ch1_preamp} = "enabled preamp off" } 
-            case 2 {$q330{$dlsta}{ch1_preamp} = "enabled preamp on" } 
+        given ( $config{$key}{config}{glob}{gain_bitmap} & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch1_preamp} = "disabled" } 
+            when ( 1 ) {$q330{$dlsta}{ch1_preamp} = "enabled preamp off" } 
+            when ( 2 ) {$q330{$dlsta}{ch1_preamp} = "enabled preamp on" } 
         }
-        switch ( ($config{$key}{config}{glob}{gain_bitmap}>>2) & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch2_preamp} = "disabled" } 
-            case 1 {$q330{$dlsta}{ch2_preamp} = "enabled preamp off" } 
-            case 2 {$q330{$dlsta}{ch2_preamp} = "enabled preamp on" } 
+        given ( ($config{$key}{config}{glob}{gain_bitmap}>>2) & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch2_preamp} = "disabled" } 
+            when ( 1 ) {$q330{$dlsta}{ch2_preamp} = "enabled preamp off" } 
+            when ( 2 ) {$q330{$dlsta}{ch2_preamp} = "enabled preamp on" } 
         }
-        switch ( ($config{$key}{config}{glob}{gain_bitmap}>>4) & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch3_preamp} = "disabled" } 
-            case 1 {$q330{$dlsta}{ch3_preamp} = "enabled preamp off" } 
-            case 2 {$q330{$dlsta}{ch3_preamp} = "enabled preamp on" } 
+        given ( ($config{$key}{config}{glob}{gain_bitmap}>>4) & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch3_preamp} = "disabled" } 
+            when ( 1 ) {$q330{$dlsta}{ch3_preamp} = "enabled preamp off" } 
+            when ( 2 ) {$q330{$dlsta}{ch3_preamp} = "enabled preamp on" } 
         }
-        switch ( ($config{$key}{config}{glob}{gain_bitmap}>>6) & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch4_preamp} = "disabled" } 
-            case 1 {$q330{$dlsta}{ch4_preamp} = "enabled preamp off" } 
-            case 2 {$q330{$dlsta}{ch4_preamp} = "enabled preamp on" } 
+        given ( ($config{$key}{config}{glob}{gain_bitmap}>>6) & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch4_preamp} = "disabled" } 
+            when ( 1 ) {$q330{$dlsta}{ch4_preamp} = "enabled preamp off" } 
+            when ( 2 ) {$q330{$dlsta}{ch4_preamp} = "enabled preamp on" } 
         }
-        switch ( ($config{$key}{config}{glob}{gain_bitmap}>>8) & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch5_preamp} = "disabled" } 
-            case 1 {$q330{$dlsta}{ch5_preamp} = "enabled preamp off" } 
-            case 2 {$q330{$dlsta}{ch5_preamp} = "enabled preamp on" } 
+        given ( ($config{$key}{config}{glob}{gain_bitmap}>>8) & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch5_preamp} = "disabled" } 
+            when ( 1 ) {$q330{$dlsta}{ch5_preamp} = "enabled preamp off" } 
+            when ( 2 ) {$q330{$dlsta}{ch5_preamp} = "enabled preamp on" } 
         }
-        switch ( ($config{$key}{config}{glob}{gain_bitmap}>>10) & 0x3 ) {
-            case 0 {$q330{$dlsta}{ch6_preamp} = "disabled" } 
-            case 1 {$q330{$dlsta}{ch6_preamp} = "enabled preamp off" } 
-            case 2 {$q330{$dlsta}{ch6_preamp} = "enabled preamp on" } 
+        given ( ($config{$key}{config}{glob}{gain_bitmap}>>10) & 0x3 ) {
+            when ( 0 ) {$q330{$dlsta}{ch6_preamp} = "disabled" } 
+            when ( 1 ) {$q330{$dlsta}{ch6_preamp} = "enabled preamp off" } 
+            when ( 2 ) {$q330{$dlsta}{ch6_preamp} = "enabled preamp on" } 
         }
+        
         if ( $config{$key}{config}{fix}{logical_port_packet_memory_size}[0] >0 ) {
             $q330{$dlsta}{LP1_buf}    = 
                 int(100*$stat{$key}{status}{log}{0}{bytes_of_packet_currently_used}/$config{$key}{config}{fix}{logical_port_packet_memory_size}[0]);
