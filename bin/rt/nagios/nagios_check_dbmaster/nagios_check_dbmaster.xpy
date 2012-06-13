@@ -16,8 +16,8 @@ import antelope.stock as antstock
 import antelope.elog as antelog
 import antelope.Pkt as antPkt
 
-# Until the elog routines can 
-# be captured in a try/except 
+# Until the elog routines can
+# be captured in a try/except
 # clause, redirect elog messages to /dev/null
 os.environ['ELOG_DELIVER'] = '/dev/null'
 
@@ -43,11 +43,15 @@ class NagiosCheckDbmaster():
         # {{{
         usage = "Usage: %prog [-v] [-V] host:orb database"
         parser = OptionParser(usage=usage, version="%prog 1.0")
-        parser.add_option("-v", "--verbose", dest="verbose", help="verbose output", action="store_true", default=False)
-        parser.add_option("-V", "--veryverbose", dest="debug", help="very verbose output (debug)", action="store_true", default=False)
+        parser.add_option("-v", "--verbose", dest="verbose",
+            help="verbose output", action="store_true",
+            default=False)
+        parser.add_option("-V", "--veryverbose", dest="debug",
+            help="very verbose output (debug)", action="store_true",
+            default=False)
         (options, args) = parser.parse_args()
         if len(args) != 2:
-            parser.error("Must provide a valid orbname (host:orb) and dbmaster path")
+            parser.error("A valid orbname (host:orb) and dbmaster path required")
         if not (options.verbose or options.debug):
             verbose = 0
         else:
