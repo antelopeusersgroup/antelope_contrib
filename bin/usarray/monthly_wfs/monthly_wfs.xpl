@@ -321,12 +321,9 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
     foreach $month ( sort keys %abspath ) {
         chdir( "$pf{evdirbase}/$month" ) ;
         
-#         $cmd = "dbset $months{$month}.wfdisc dir \"*\" \"abspath(dir)\" " ;
-#         
-#         if ( ! &run_cmd( $cmd ) ) {
-#             $prob++ ;
-#             last ;
-#         }
+        $cmd = "dbset $months{$month}.wfdisc dir \"*\" \"abspath(dir)\" " ;
+        
+        system ( $cmd ) ;
         
         @db = dbopen( $months{$month}, "r+" ) ;
         @db = dblookup ( @db, 0, "wfdisc", 0, 0 ) ;
@@ -335,7 +332,7 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
         for ( $db[3] = 0 ; $db[3] < $nrows ; $db[3]++ ) {
             ( $dir, $dfile ) = dbgetv( @db, qw ( dir dfile ) ) ;
             $dir = abs_path( $dir ) ;
-            if ( $opt_n ) {
+            if ( $opt_n && $opt_V ) {
                 elog_notify ( $dir ) ;
                 next ;
             }
