@@ -121,12 +121,16 @@ Name of idserver to be written into descriptor file for output database to use.
 dbpath to be written into descriptor file for output database to use.
 .IP dblocks
 dblocking type for database
-.IP success_mail
-Email addresses to send notification of station success. Multiple email addresses 
-should be comma delimited without white space.
-.IP prob_mail
-Email addresses to send notification of problems. Multiple email addresses 
-should be comma delimited without white space.
+.IP days_after_install
+number of days after installation to allow 90% rt data return
+.IP days_before_removal
+number of days before removal to allow 90% rt data return
+.IP limit_hours
+limit of hours to allow stations to start processing
+.IP days_after_removal
+number of days to wait after removal before final processing
+.IP max_mseed_hours
+maximum allowable number of hours between times of adjacent mseed files
 .IP net_sta_chan_loc
 Table of net_sta_chan_loc changes for fixminiseed
 .IP sta
@@ -144,35 +148,42 @@ The -s option overrides this station subsetting function.
 .ft CW
 .nf
 
-baler14dirbase    /anf/TA/baler/station_aof_dumps/hold_for_station_closure    # absolute path name for station baler 14 miniseed directory base name
+baler14dirbase      /anf/TA/baler/station_aof_dumps/hold_for_station_closure    # absolute path name for station baler 14 miniseed directory base name
 
-baler14procbase   /anf/TA/baler/station_aof_dumps/processed_44                # absolute path name for processed baler 14 miniseed directory base name
+baler14procbase     /anf/TA/baler/station_aof_dumps/processed_44                # absolute path name for processed baler 14 miniseed directory base name
 
-baler44dirbase    /anf/TA/baler/work                 # absolute path name for station baler 44 miniseed directory base name
+baler44dirbase      /anf/TA/baler/work                 # absolute path name for station baler 44 miniseed directory base name
+  
+rt_sta_dir          /anf/TA/dbs/wfs/rt_stas            # absolute path name for rt wfdisc directory base name
 
-rt_sta_dir         /anf/TA/dbs/wfs/rt_stas           # absolute path name for rt wfdisc directory base name
+archivebase         /anf/TA/dbs/wfs/station_active     # absolute path name for station baler directory base name for data to be written to
+ 
+bhdata_dir          BVLAOU                             # subdirectory name for BH and LH data
+sohdata_dir         VLAOU                              # subdirectory name for VH, UH, and SOH data
 
-archivebase       /anf/TA/dbs/wfs/station_active     # absolute path name for station baler directory base name for data to be written to
+net                 TA                                 # Network Code
 
-bhdata_dir        BVLAOU                             # subdirectory name for BH and LH data
-sohdata_dir       VLAOU                              # subdirectory name for VH, UH, and SOH data
+dbpath              /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
 
-net               TA                                 # Network Code
+dbidserver                                             # default dbidserver
+dblocks             none                               # default dblocks
 
-dbpath            /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+days_after_install  2                                  # number of days after installation 
+                                                       # to allow 90% rt data return
+days_before_removal 1                                  # number of days before removal 
+                                                       # to allow 90% rt data return
+limit_hours         12                                 # limit of hours to allow stations to start processing                                                                
+days_after_removal  60                                 # number of days to wait after removal before final processing
 
-dbidserver                                           # default dbidserver
-dblocks           none                               # default dblocks
+max_mseed_hours     10                                 # maximum allowable number of hours between times of adjacent mseed files
 
-success_mail      your@email.edu                     # email addresses to send notification of station success
-prob_mail         your@email.edu                     # email addresses to send notification of problems
 
-net_sta_chan_loc        &Tbl{                        # for fix_miniseed parameter file, see fix_miniseed man page
+net_sta_chan_loc        &Tbl{                          # for fix_miniseed parameter file, see fix_miniseed man page
 TA_([A-Z0-9]+)_(L[DIK]M)_      TA_\\$1_\\$2_EP
 TA_([A-Z0-9]+)_([BL]D[FO])_EP  TA_\\$1_\\$2_
 }
 
-sta        &Tbl{                                     # for fix_miniseed parameter file, see fix_miniseed man page
+sta        &Tbl{                                       # for fix_miniseed parameter file, see fix_miniseed man page
 EXMP       CURRENT_STATION
 }
 
@@ -184,7 +195,7 @@ day_of_week    &Arr{
     Friday      ^[U-Y].*
     Saturday    ^[Z0-3].*
     Sunday      ^[4-9].*
-}                                                    # day of week station regex for routine processing
+}                                                      # day of week station regex for routine processing
 
 .fi
 .ft R

@@ -2036,7 +2036,7 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
         }
 
         
-        if ( $mseed_offset > 6 * 3600 ) {
+        if ( $mseed_offset > $pf{max_mseed_hours} * 3600 ) {
             if ( $rt ) { 
                 $actual_time = &data_time_check ( &mseedtime( $msd1, $parent ), &mseedtime( $msd2, $parent ), @dbrt ) ;
             } else {
@@ -2293,7 +2293,7 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
     foreach $mseed ( 1..$#mseed ) {
         $mseed_offset = $dfile_unprocessed{ $mseed[ $mseed ] }{ time } - $dfile_unprocessed{ $mseed[ $mseed - 1 ] }{ time } ;
         
-        if ( $mseed_offset > 6 * 3600 ) {
+        if ( $mseed_offset > $pf{max_mseed_hours} * 3600 ) {
             
             if ( $rt ) { 
                 $actual_time = &data_time_check ( $dfile_unprocessed{ $mseed[ $mseed - 1 ] }{ time }, $dfile_unprocessed{ $mseed[ $mseed ] }{ time }, @dbrt ) ;
