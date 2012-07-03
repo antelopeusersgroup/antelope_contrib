@@ -6,15 +6,16 @@
 #      fill gaps on day files, mark in gap table, "y|n|p"
 #
 #
-    use Getopt::Std ;
     use POSIX;    
     use strict ;
     use Datascope ;
     use archive;
     use timeslice ;
+    use timeutil ;
     use utilfunct ;
     use utility ;
     use sysinfo ; 
+    use Getopt::Std ;
     use IO::Handle ;
     
     our ( $pgm, $host );
@@ -24,8 +25,8 @@
 {    #  Main program
 
     my ( $Pf, $arg, $cmd, $db, $fh, $good, $idle, $iowait, $kernel, $max_forks, $nchild, $ncpu, $nstas, $parent, $pid, $problems, $resp, $sta, $stime, $string, $subject, $swap, $usage, $user );
-    my (  @keys, @procs, @stas, @the_rest );
-    my (  %errors, %logs, %stas );
+    my ( @keys, @procs, @stas, @the_rest );
+    my ( %errors, %logs, %stas );
 
 
     $pgm = $0 ; 
@@ -33,7 +34,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 9 && @ARGV != 10 ) ) { 
+    if (  ! &getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf] [-m mail_to] [-f nforks] [-s sta_regex] db  \n\n" ;
         $usage .=  "Usage: $0  [-v] [-V] [-n] " ;
@@ -46,9 +47,10 @@
         elog_die ( $usage ) ; 
     }
     
+    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;
+    chop ($host = `uname -n` ) ;
     
     $Pf         = $opt_p || $pgm ;
-    
     if ( @ARGV > 1 && $opt_v ) {
         $opt_v = 0 ;
         %pf = getparam( $Pf );
@@ -57,20 +59,16 @@
         %pf = getparam( $Pf );
     }
     
-    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;
-    
-    chop ($host = `uname -n` ) ;
-        
     STDOUT->autoflush(1) ;
     
     $parent   = $$ ;
     $problems = 0;
 
-    if ( @ARGV == 9 ) {
-        &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $parent ) ;
-        exit 0 ;
-    }
-
+#     if ( @ARGV == 9 ) {
+#         &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $parent ) ;
+#         exit 0 ;
+#     }
+# 
     if ( @ARGV == 10 ) {
         $parent = $ARGV[9] ;
         &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $parent ) ;
@@ -89,6 +87,10 @@
     $db = $ARGV[0] ;
     
     %pf = getparam( $Pf );
+    
+    $opt_s  = $opt_s || $pf{day_of_week}{epoch2str( now(), "%A" )} ;
+    
+    elog_notify( "station subset is $opt_s" ) ;
     
     ( $ncpu, $idle, $user, $kernel, $iowait, $swap, @the_rest ) = syscpu() ;
     
@@ -181,7 +183,7 @@
             $cmd  .=  "$stas{$sta}{all}{start_proc} $stas{$sta}{all}{end_proc} " ;
             $cmd  .=  "$parent" ;
             
-            fork_debug ( $parent, "$cmd " ) ;
+            fork_debug ( $parent, "$cmd " ) ; # if $opt_V;
                                     
             exec ( $cmd  ) ;
 
@@ -230,15 +232,13 @@
     if ($problems == 0 ) {
         $subject = sprintf("Success  $pgm  $host  $nstas stations processed");
         elog_notify ($subject);
-        &sendmail ( $subject, $opt_m ) if $opt_m ;
     } else { 
         $subject = "Problems - $pgm $host	$nstas stations processed, $nchild stations with problems, $problems total problems" ;
-        &sendmail($subject, $opt_m) if $opt_m ; 
         elog_complain("\n$subject") ;
-        exit(1);
     }
-  
-    exit(0);
+    
+    &sendmail ( $subject, $opt_m ) if $opt_m ;
+    exit( 0 ) ;
 }
 
 sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
@@ -322,7 +322,7 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
         }
         
         if ( ! -d "$pf{baler_active}/$sta" ) {
-            elog_notify ( "$sta	- No baler data directory $pf{baler_active}/$sta;	Skipping station!" ) if $opt_v ;
+            elog_notify ( "$sta	- No baler data directory $pf{baler_active}/$sta;	Skipping station!" ) if $opt_V ;
             delete $stas{$sta} ;
             next ;
         }
@@ -508,19 +508,6 @@ sub noop_stas {  # &noop_stas ( $sta, \%stas ) ;
     
     @keys = sort ( keys %{$stas{$sta}} ) ;
             
-#     if ( $stas{$sta}{wf}{last_proc}     == $stas{$sta}{wf}{end_proc} )  {
-#         delete $stas{$sta}{wf} ;
-#     }
-#     if ( $stas{$sta}{soh}{last_proc}    == $stas{$sta}{soh}{end_proc} ) {
-#         delete $stas{$sta}{soh} ;
-#     } 
-#     if ( $stas{$sta}{baler}{last_proc}  == $stas{$sta}{baler}{end_proc} ) {
-#         delete $stas{$sta}{baler} ;
-#     } 
-#     if ( $stas{$sta}{all}{last_proc}    == $stas{$sta}{all}{end_proc} )  {
-#         delete $stas{$sta}{all} ;
-# 	}
-
     if ( ( $stas{$sta}{wf}{last_proc}     == $stas{$sta}{wf}{end_proc}    )  &&
          ( $stas{$sta}{soh}{last_proc}    == $stas{$sta}{soh}{end_proc}   )  &&
          ( $stas{$sta}{baler}{last_proc}  == $stas{$sta}{baler}{end_proc} )  &&
@@ -619,15 +606,6 @@ sub db_perf {  # $jdate = &db_perf ( $db ) ;
     return ( $jdate ) ;
 }
 
-sub yearmonth {  # $yearmonth = &yearmonth ( $epoch ) ;
-    my ( $epoch ) = @_ ;
-    my ( $yearmonth ) ;
-    
-    $yearmonth = epoch2str ( $epoch, "%Y%m" ) ;
-
-    return ( $yearmonth ) ;
-}
-
 sub jdate_to_dir {  # $dir = &jdate_to_dir ( $sta, $jdate ) ;
     my ( $sta, $jdate ) = @_ ;
     my ( $dir ) ;
@@ -646,40 +624,6 @@ sub month_to_dir {  # $dir = &month_to_dir ( $sta, $yearmonth ) ;
     $time  = str2epoch ( $string ) ;
     $dir = epoch2str ( $time, "$pf{baler_active}/$sta/%Y/month_files/%m" ) ;
     return $dir ;
-}
-
-sub prev_month {  # $yearmonth = &prev_month ( $yearmonth ) ;
-    my ( $yearmonth ) = @_ ;
-    my ( $month, $time, $year ) ;
-    
-    $month = $yearmonth % 100 ;
-    $year  = int( $yearmonth / 100 ) ;
-    if ( $month == 1 ) {
-        $month = 12 ;
-        $year-- ;
-    } else {
-        $month-- ;
-    }
-    
-    $yearmonth = ( $year * 100 ) + $month ;
-    return $yearmonth ;
-}
-
-sub next_month {  # $yearmonth = &next_month ( $yearmonth ) ;
-    my ( $yearmonth ) = @_ ;
-    my ( $month, $time, $year ) ;
-    
-    $month = $yearmonth % 100 ;
-    $year  = int( $yearmonth / 100 ) ;
-    if ( $month == 12 ) {
-        $month = 1 ;
-        $year++ ;
-    } else {
-        $month++ ;
-    }
-    
-    $yearmonth = ( $year * 100 ) + $month ;
-    return $yearmonth ;
 }
 
 sub exist_data {  # $jdate = &exist_data ( $dir, $sta, $parent ) ;
@@ -797,13 +741,11 @@ sub find_end_month { # $end_month = &find_end_month( $sta, $last_month, $closed 
 
 sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bperf_start, $bperf_end, $aperf_start, $aperf_end, $parent ) ;
     my ( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bperf_start, $bperf_end, $aperf_start, $aperf_end, $parent ) = @_ ;
-    my ( $cmd, $dir, $etime, $jdate, $prob, $prob_check, $baler_active, $stime, $string, $subject, $success, $yearmonth ) ;
-    my ( @output ) ;
+    my ( $all_perf, $baler_perf, $cmd, $dir, $etime, $jdate, $prob, $prob_check, $baler_active, $stime, $string, $subject, $yearmonth ) ;
+    my ( @db ) ; 
 
     $stime = strydtime( now() );
-    
     $string = "starting processing station $sta    $wf_start    $wf_end    $stime" ,
-    elog_notify ( $string );
     fork_notify ( $parent, $string );
     
     open( PROB,"> /tmp/prob_$sta\_$$");
@@ -818,7 +760,7 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
     fork_notify ( $parent, "Changed directory to $baler_active " ) if $opt_v ;
     fork_notify ( $parent, "starting miniseed2db processing " ) if $opt_v ;
 
-    &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+    &cssdescriptor ("$sta\_baler",$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
     
     open( TR, ">trdefaults.pf" );
     print TR "miniseed_segment_seconds 0\n";
@@ -831,11 +773,9 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
 
         if ( &exist_data ( $dir, $sta, $parent ) ) {
 
-            $cmd  = "miniseed2db $dir/\*$sta\* $sta ";
+            $cmd  = "miniseed2db $dir/\*$sta\* $sta\_baler ";
 
-            ( $success, @output )  = &run_cmd( $cmd ) ;
-
-            if ( ! $success ) {
+            if ( ! &run_cmd( $cmd ) ) {
                 $prob++ ;
                 &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
                 last ;
@@ -845,30 +785,6 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
         $jdate = &next_jdate ( $jdate ) ;
     }
         
-    $yearmonth = $soh_start ;
-    
-
-    while ( $yearmonth <= $soh_end ) {
-        $dir = &month_to_dir ( $sta, $yearmonth ) ;
-
-        if ( &exist_month ( $dir, $sta, $parent ) ) {
-
-            $cmd  = "miniseed2db -T 0.001 $dir/\*$sta\* $sta ";
-
-            ( $success, @output )  = &run_cmd( $cmd ) ;
-
-            if ( ! $success ) {
-                $prob++ ;
-                &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
-                last ;
-            }
-
-        }
-        $yearmonth = &next_month ( $yearmonth ) ;
-    }
-        
-    unlink("trdefaults.pf");
-    
     $prob = &schanloc( $sta, $parent, $prob ) unless $opt_n ;
 
     unless ( $prob ) {
@@ -877,19 +793,57 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
         $etime = yearday ( epoch( $bperf_end ) + 86400 )  ;
         $cmd  = "rt_daily_return ";
         $cmd .= "-t \"$stime\" -e \"$etime\" ";
-        $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $sta $sta\_baler";
+        $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $sta\_baler $sta\_baler";
         
         fork_notify ( $parent, $cmd ) if $opt_v ;
 
-        ( $success, @output )  = &run_cmd( $cmd ) ;
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $prob++ ;
             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
         }
 
         fork_notify ( $parent, "starting fill_gaps processing" ) if $opt_v ;
         $prob = fill_gaps ( $sta, $wf_start, $wf_end, $parent, $prob ) ;
+        
+        &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+    
+        $jdate = $wf_start ;
+    
+        while ( $jdate <= $wf_end ) {
+            $dir = &jdate_to_dir ( $sta, $jdate ) ;
+
+            if ( &exist_data ( $dir, $sta, $parent ) ) {
+
+                $cmd  = "miniseed2db $dir/\*$sta\* $sta ";
+
+               if ( ! &run_cmd( $cmd ) ) {
+                    $prob++ ;
+                    &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+                    last ;
+                }
+
+            }
+            $jdate = &next_jdate ( $jdate ) ;
+        }        
+    
+        $yearmonth = $soh_start ;
+    
+        while ( $yearmonth <= $soh_end ) {
+            $dir = &month_to_dir ( $sta, $yearmonth ) ;
+ 
+            if ( &exist_month ( $dir, $sta, $parent ) ) {
+
+                $cmd  = "miniseed2db -T 0.001 $dir/\*$sta\* $sta ";
+
+                if ( ! &run_cmd( $cmd ) ) {
+                    $prob++ ;
+                    &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+                    last ;
+                }
+
+            }
+            $yearmonth = &next_month ( $yearmonth ) ;
+        }
 
         fork_notify ( $parent, "starting all rt_daily_return processing" ) if $opt_v ;
         $stime = $aperf_start ;
@@ -900,20 +854,51 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
         
         fork_notify ( $parent, $cmd ) if $opt_v ;
 
-        ( $success, @output )  = &run_cmd( $cmd ) ;
-
-        if ( ! $success ) {
+        if ( ! &run_cmd( $cmd ) ) {
             $prob++ ;
             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
         }
-    }
+    } 
     
+    $cmd = "rm -rf trdefaults.pf" ;
+    
+    if ( ! &run_cmd( $cmd ) ) {
+        $prob++ ;
+        &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+    }
+
+    
+    @db = dbopen ( "$sta\_baler", "r" ) ;
+    @db = dblookup ( @db, 0, "netperf", 0, 0) ;
+    if ( dbquery( @db, "dbTABLE_PRESENT" ) ) {
+        $baler_perf = dbex_eval( @db, "sum(perf)/count()") ;
+    } else {
+        $baler_perf = 0 ;
+    }
+    dbclose ( @db ) ; 
+    
+    @db = dbopen ( "$sta\_all", "r" ) ;
+    @db = dblookup ( @db, 0, "netperf", 0, 0) ;
+    if ( dbquery( @db, "dbTABLE_PRESENT" ) ) {
+        $all_perf = dbex_eval( @db, "sum(perf)/count()") ;
+    } else {
+        $all_perf = 0 ;
+    }
+    dbclose ( @db ) ; 
+
+    $string  = sprintf ( "Baler 44 data return is %5.2f ", $baler_perf );
+    fork_notify ( $parent, $string )  ;
+    
+    $string  = sprintf ( "All      data return is %5.2f ", $all_perf );
+    fork_notify ( $parent, $string )  ;
+    
+    $string  = sprintf ( "Recovered               %5.2f ", $all_perf - $baler_perf );
+    fork_notify ( $parent, $string )  ;
+        
     $cmd  = "dbfixchanids $sta ";
     fork_notify ( $parent, $cmd ) if $opt_v ;
 
-    ( $success, @output )  = &run_cmd( $cmd ) ;
-
-    if ( ! $success ) {
+    if ( ! &run_cmd( $cmd ) ) {
         $prob++ ;
         &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
     }
@@ -933,14 +918,14 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
         fork_notify ( $parent, $cmd) ;
         
-        ( $success, @output )  = &run_cmd( $cmd ) ;
+        &run_cmd( $cmd ) ;
 
     } elsif ( $opt_v ) {
         $subject = "TA $sta completed successfully -  $pgm on $host";
         $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
         fork_notify ( $parent, $cmd) ;
         
-        ( $success, @output )  = &run_cmd( $cmd ) ;
+        &run_cmd( $cmd ) ;
 
     } 
 
@@ -957,8 +942,8 @@ sub fix_wfdisc_calib {  # $problems = &fix_wfdisc_calib( $db, $parent, $problems
 #  sets calib, calper, segtype in wfdisc
 #
     my ( $db, $parent, $problems ) = @_ ; 
-    my ( $cmd, $failed, $nfail ) ;
-    my ( @db, @dbcalibration, @output ) ; 
+    my ( $cmd, $failed, $nfail, $opt_v_hold ) ;
+    my ( @db, @dbcalibration ) ; 
 
     fork_debug ( $parent, "fix_wfdisc_calib  db = $db   problems = $problems") if ( $opt_V ) ;
     
@@ -967,6 +952,9 @@ sub fix_wfdisc_calib {  # $problems = &fix_wfdisc_calib( $db, $parent, $problems
     
 
     if (dbquery ( @dbcalibration, "dbRECORD_COUNT" ) ) {
+        
+        $opt_v_hold = $opt_v ;
+        $opt_v = 0 if ( ! $opt_V ) ; 
         
         $cmd = "dbjoin $db.wfdisc calibration | dbsubset - \"wfdisc.calib != calibration.calib\" | dbselect -s - \"wfdisc.calib:=calibration.calib\" " ;
         
@@ -1001,13 +989,16 @@ sub fix_wfdisc_calib {  # $problems = &fix_wfdisc_calib( $db, $parent, $problems
             sleep 300 ;
         }
 
+        $opt_v = $opt_v_hold if ( $opt_v_hold ) ; 
+
     }  else {
         fork_notify( $parent, "	no records in calibration for dbjoin wfdisc calibration") if ($opt_v);
     }
     
     dbclose ( @db ) ;
     
-    return( $problems );
+    
+return( $problems );
 }
 
 sub schanloc {  # $problems = &schanloc( $db, $parent, $problems ) ;
@@ -1047,8 +1038,8 @@ sub schanloc {  # $problems = &schanloc( $db, $parent, $problems ) ;
 
 sub fill_gaps {  # $prob = fill_gaps ( $sta, $proc_start, $proc_end, $parent, $prob ) ;
     my ( $sta, $proc_start, $proc_end, $parent, $prob ) = @_ ;
-    my ( $chan, $cmd, $endtime, $gchan, $gsta, $nrows, $problem_check, $row, $string, $success, $tgap, $time ) ;
-    my ( @db, @dbgap, @dbgwf, @dbscr, @dbwfchk, @output, @rows ) ;
+    my ( $chan, $cmd, $endtime, $gchan, $gsta, $nrows, $problem_check, $row, $string, $tgap, $time ) ;
+    my ( @db, @dbgap, @dbgwf, @dbscr, @dbwfchk, @rows ) ;
     
     $time    = epoch( $proc_start ) ;
     $endtime = epoch( $proc_end ) + 86399.999 ;
@@ -1061,7 +1052,7 @@ sub fill_gaps {  # $prob = fill_gaps ( $sta, $proc_start, $proc_end, $parent, $p
     @dbgap   = dbsubset( @dbgap, "time >= $time && time < $endtime" ) ;
         
     @dbwfchk = dbopen( "$sta", "r" ) ;
-    @dbwfchk = dblookup( @dbgap, 0, "wfdisc", 0, 0 ) ;
+    @dbwfchk = dblookup( @dbwfchk, 0, "wfdisc", 0, 0 ) ;
     @dbwfchk = dbsubset( @dbwfchk, "time < $endtime && endtime > $time" ) ;
     @dbscr   = dblookup( @dbwfchk, 0, 0, 0, "dbSCRATCH" ) ;
         
@@ -1086,9 +1077,9 @@ sub fill_gaps {  # $prob = fill_gaps ( $sta, $proc_start, $proc_end, $parent, $p
                        "endtime", $endtime ) ;
     }
 
-#     dbclose ( @db ) ; 
-#     dbclose ( @dbgap ) ;
-#     dbclose ( @dbwfchk ) ;
+    dbclose ( @db ) ; 
+    dbclose ( @dbgap ) ;
+    dbclose ( @dbwfchk ) ;
 
 #
 #  Build rt station wfdisc (this is in a different wf naming format for ease of debugging)
@@ -1096,15 +1087,12 @@ sub fill_gaps {  # $prob = fill_gaps ( $sta, $proc_start, $proc_end, $parent, $p
 
     $cmd  = "trexcerpt ";
     $cmd  .= "-v  " if $opt_V;
-    $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta/$sta tmp_gap_$sta\_$$.wfdisc $sta " ;
+    $cmd  .= "-a -D -E -m explicit -W $pf{rt_sta_dir}/$sta/$sta tmp_gap_$sta\_$$.wfdisc $sta\_from_rt " ;
                
-    ( $success, @output )  = &run_cmd( $cmd ) ;
-
-    if ( ! $success ) {
+    if ( ! &run_cmd( $cmd ) ) {
         $prob++ ;
         &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
     }
-    
     
     unlink ( "tmp_gap_$sta\_$$.wfdisc" ) ; 
     unlink ( "tmp_gap_$sta\_$$.lastid" ) ; 

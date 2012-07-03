@@ -1,6 +1,7 @@
 DATADIR=responses
 DATA= taurus_inf_aa \
       taurus_std_aa \
+      titan \
       trident_1000sps_fir1    \
       trident_1000sps_fir2    \
       trident_1000sps_fir3    \
@@ -40,37 +41,38 @@ DATA= taurus_inf_aa \
       Trillium120P-PA_UserGuide_15149R6.pdf \
       Trillium240_UserGuide_15672R6.pdf   \
       Trillium40_UserGuide_13912R11.pdf \
-		hrd24_100sps_s4 \
-		hrd24_100sps_s5 \
-		hrd24_10sps_s3 \
-		hrd24_10sps_s4 \
-		hrd24_10sps_s5 \
-		hrd24_120sps_s2 \
-		hrd24_120sps_s3 \
-		hrd24_120sps_s4 \
-		hrd24_125sps_s1 \
-		hrd24_125sps_s3 \
-		hrd24_125sps_s4 \
-		hrd24_125sps_s5 \
-		hrd24_200sps_s4 \
-		hrd24_20sps_s3 \
-		hrd24_20sps_s4 \
-		hrd24_20sps_s5 \
-		hrd24_250sps_s4 \
-		hrd24_40sps_s1 \
-		hrd24_40sps_s2 \
-		hrd24_40sps_s3 \
-		hrd24_40sps_s4 \
-		hrd24_40sps_s5 \
-		hrd24_500sps_s4 \
-		hrd24_50sps_s4 \
-		hrd24_50sps_s5 \
-		hrd24_80sps_s3 \
-		hrd24_80sps_s4 \
-		hrd24_s1 \
-		hrd24_s2 \
-		hrd24_s3 \
-		hrd24aaf
+      hrd24_100sps_s4 \
+      hrd24_100sps_s5 \
+      hrd24_10sps_s3 \
+      hrd24_10sps_s4 \
+      hrd24_10sps_s5 \
+      hrd24_120sps_s2 \
+      hrd24_120sps_s3 \
+      hrd24_120sps_s4 \
+      hrd24_125sps_s1 \
+      hrd24_125sps_s3 \
+      hrd24_125sps_s4 \
+      hrd24_125sps_s5 \
+      hrd24_200sps_s4 \
+      hrd24_20sps_s3 \
+      hrd24_20sps_s4 \
+      hrd24_20sps_s5 \
+      hrd24_250sps_s4 \
+      hrd24_40sps_s1 \
+      hrd24_40sps_s2 \
+      hrd24_40sps_s3 \
+      hrd24_40sps_s4 \
+      hrd24_40sps_s5 \
+      hrd24_500sps_s4 \
+      hrd24_50sps_s4 \
+      hrd24_50sps_s5 \
+      hrd24_80sps_s3 \
+      hrd24_80sps_s4 \
+      hrd24_s1 \
+      hrd24_s2 \
+      hrd24_s3 \
+      hrd24_iir \
+      hrd24aaf
                        
 include $(ANTELOPEMAKE)  	
 DIRS=

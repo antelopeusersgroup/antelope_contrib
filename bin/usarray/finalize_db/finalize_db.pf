@@ -1,0 +1,3 @@
+dbpath				none	# default dbpath
+dbidserver			none	# default dbidserver
+dblocks				local   # default dblocks

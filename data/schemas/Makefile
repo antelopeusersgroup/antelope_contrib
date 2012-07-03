@@ -3,6 +3,8 @@ DATA=	iceworm1.3 \
 	takeoff \
 	notify1.2 \
 	contacts1.0 \
+	dbcluster0.5 \
+	dbcluster0.6 \
 	statrans1.0 \
 	statrans1.1 \
 	models0.4 \

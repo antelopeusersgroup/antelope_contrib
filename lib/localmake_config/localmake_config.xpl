@@ -143,6 +143,8 @@ sub write_makerules {
 
 	print O "\n$extra_rules\n";
 
+        print O "\n$platform_rules{$Os}\n";
+
 	close( O );
 
 	makedir( $dest );
@@ -310,6 +312,7 @@ $Os = my_os();
 %macros = %{pfget($Pf_localmake,"macros")}; 
 $header = pfget( $Pf_localmake, "header" );
 $extra_rules = pfget( $Pf_localmake, "extra_rules" );
+%platform_rules = %{pfget( $Pf_localmake, 'platform_rules' )};
 %capabilities = %{pfget( $Pf_localmake, "capabilities" )};
 
 if( ! -e "$localpf_dir/$Pf_config.pf" ) {

@@ -1,0 +1,20 @@
+# KS-2000M  120sec 50Hz Seismometer
+# $Id$
+#
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 4                  num of poles
+# 9.86e+04                normalization factor
+# sensitivity   2000 V/(m/s)
+theoretical   1 sensor   paz	GSC_Koessler
+9.86e+04 
+4
+-3.6E-02	-3.80E-02	0.0000E+00	0.0000E+00
+-3.6E-02	3.80E-02	0.0000E+00	0.0000E+00
+-2.22E02	-2.22E02	0.0000E+00	0.0000E+00
+-2.22E02	2.22E02		0.0000E+00	0.0000E+00
+2
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00

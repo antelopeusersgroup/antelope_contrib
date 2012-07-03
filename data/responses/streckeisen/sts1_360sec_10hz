@@ -1,0 +1,21 @@
+# Streckeisen STS-1 360sec_10Hz seimometer
+# $Id$
+#
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 4                   num of poles
+# 3950                normalization factor
+# 1.0                 gain
+# sensitivity  2400 v/m/sec
+theoretical   1 sensor   paz	GSC_Koessler
+3.95E+03
+4
+-1.2217E-02	 1.2463E-02	0.0000E+00	0.0000E+00
+-1.2217E-02	-1.2463E-02	0.0000E+00	0.0000E+00
+-4.4428E+01	 4.4428E+01	0.0000E+00	0.0000E+00
+-4.4428E+01	-4.4428E+01	0.0000E+00	0.0000E+00
+2
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00
+0.0000E+00	0.0000E+00	0.0000E+00	0.0000E+00
