@@ -43,7 +43,7 @@ our ( $opt_d, $opt_n, $opt_p, $opt_t );
 
         $problems = &dbtidy($db,$problems) unless $opt_d ;
         
-        $cmd  = "dbverify -tcijk -P wfdisc,site,wfsrb,deployment,dmcfiles,comm,q330comm,staq330,stabaler " ;
+        $cmd  = "dbverify -tcijk -P wfdisc,site,wfsrb,deployment,dmcfiles,comm,q330comm,staq330,stabaler,dlcalwf,dlsite " ;
         $cmd .= "-A instrument,sitechan -X dbverify_eventdbs $db > $dir/verify_$base  2>&1 ";
         elog_notify($cmd);
         system($cmd) unless $opt_n;
