@@ -118,7 +118,7 @@ select STDERR; $| = 1;
 
     @db = dbopen ( $pf{database}, "r" ) or log_die("Can't open DB: $pf{database}"); 
 
-    # Open table for list of valid stations 
+    # Open table for list of valid stations
     @db_on = dblookup(@db, "", "deployment" , "", "");
     table_check(\@db_on);
 
@@ -143,7 +143,7 @@ select STDERR; $| = 1;
 #
 #{{{
 
-    $stations = get_stations_from_db(); 
+    $stations = get_stations_from_db();
     dbfree(@db_sta);
     dbfree(@db_ip);
     dbfree(@db_on);
@@ -167,7 +167,7 @@ select STDERR; $| = 1;
 
     logging("Start: $start End: $end");
     logging("Runtime: $run_time_str");
-    sendmail("$0 @ARGV",$opt_m,"/tmp/#rtsys$$") if $opt_m; 
+    sendmail("$0 @ARGV",$opt_m,"/tmp/#rtsys$$") if $opt_m;
 
     exit 0;
 
@@ -195,14 +195,14 @@ sub get_stations_from_db {
 
     $nrecords = dbquery(@db_1,dbRECORD_COUNT) or log_die("No records to work with after dbsubset()"); 
 
-    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) { 
+    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) {
 
-        ($dlsta,$net,$sta) = dbgetv(@db_1, qw/dlsta net sta/); 
+        ($dlsta,$net,$sta) = dbgetv(@db_1, qw/dlsta net sta/);
 
-        $sta_hash{$sta}{dlsta}      = $dlsta; 
-        $sta_hash{$sta}{net}        = $net; 
-        $sta_hash{$sta}{status}     = 'Decom'; 
-        $sta_hash{$sta}{ip}         = 0; 
+        $sta_hash{$sta}{dlsta}      = $dlsta;
+        $sta_hash{$sta}{net}        = $net;
+        $sta_hash{$sta}{status}     = 'Decom';
+        $sta_hash{$sta}{ip}         = 0;
 
         $sta_hash{$sta}{status} = 'Active' if ( dbfind(@db_on, "sta =~ /$sta/ && snet =~ /$net/ && endtime == NULL", -1) >= 0);
 
@@ -215,12 +215,12 @@ sub get_stations_from_db {
 
             if ( $db_ip[3] >= 0 ) {
 
-                $ip = dbgetv(@db_ip, qw/inp/); 
+                $ip = dbgetv(@db_ip, qw/inp/);
 
                 # regex for the ip
                 $ip =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/;
                 problem("Failed grep on IP $pf{database}.stabaler{inp}->(ip'$ip',dlsta'$dlsta')") unless $1;
-                $sta_hash{$sta}{ip} = $1 if $1; 
+                $sta_hash{$sta}{ip} = $1 if $1;
 
             }
         }
@@ -247,7 +247,7 @@ sub run_in_threads {
         #
         # Verify running procs
         #
-        @active_procs = check_pids(@active_procs); 
+        @active_procs = check_pids(@active_procs);
 
         #
         # Read messages from pipes
@@ -270,7 +270,7 @@ sub run_in_threads {
         # Send msgs from child to parent
         #
         #unless ( socketpair($$station{from_child}, $$station{to_parent}, AF_UNIX, SOCK_STREAM, PF_UNSPEC) ) {  
-        unless ( pipe($$station{from_child}, $$station{to_parent}) ) {  
+        unless ( pipe($$station{from_child}, $$station{to_parent}) ) {
             problem("run_in_threads(): ERROR... pipe():$! ");
             $max_out = scalar @active_procs || 1;
             problem("run_in_threads(): setting max_out=$max_out ");
@@ -285,21 +285,21 @@ sub run_in_threads {
 
         $pid = fork();
 
-        # 
+        #
         # Parent
         #
         push @active_procs, $pid if $pid;
         $stations->{$station}->{pid} = $pid if $pid;
         next if $pid;
 
-        # 
+        #
         # Child only
         #
 
         #
         # Set this global for child only
         #
-        $to_parent = $$station{to_parent}; 
+        $to_parent = $$station{to_parent};
 
         &$function($station,$stations->{$station});
 
@@ -320,7 +320,7 @@ sub run_in_threads {
 
 sub nonblock_read {
 #{{{ nonblock_read(sta)
-    my $stations = shift; 
+    my $stations = shift;
     my ($msg,$n,$fh,$buf);
 
     foreach my $station (sort keys %$stations) {
@@ -360,7 +360,7 @@ sub check_pids {
         elsif (WIFEXITED($?)) {
             debug("\tDone with $_");
         }
-        else{ 
+        else{
             push @temp_pids, $_;
         }
 
@@ -374,7 +374,7 @@ sub check_pids {
 sub get_data {
 #{{{  get_data(sta,%metadata)
 
-    my ($sta,$table) = @_; 
+    my ($sta,$table) = @_;
     log_die("No value for station in child.") unless $sta;
 
     my (%active_media_files,$media,@rem_file);
@@ -832,7 +832,7 @@ sub download_file {
     debug("Build File::Fetch object: http://$ip:$pf{http_port}/$file");
 
     eval{ $file_fetch = File::Fetch->new(uri => "http://$ip:$pf{http_port}/$file"); };
-    problem("File::Fetch -> $@") if $@; 
+    problem("File::Fetch -> $@") if $@;
 
     problem("ERROR in build of File::Fetch -> http://$ip:$pf{http_port}/$file") unless $file_fetch; 
     return unless $file_fetch;
@@ -840,7 +840,7 @@ sub download_file {
     debug("Download: ".$file_fetch->uri);
 
     #eval {  $where = $file_fetch->fetch( to => "$path/" ); };
-    #problem("File::Fetch ".$file_fetch->uri." $@") if $@; 
+    #problem("File::Fetch ".$file_fetch->uri." $@") if $@;
     $where = $file_fetch->fetch( to => "$path/" ) || '';
 
     #problem("ERROR on download of http://$ip:$pf{http_port}/$file") unless -f $where;
@@ -867,7 +867,7 @@ sub open_db {
     #
     # Fix path
     #
-    $dbout = File::Spec->rel2abs( "${path}/${sta}_baler" ); 
+    $dbout = File::Spec->rel2abs( "${path}/${sta}_baler" );
 
     debug("Opening database ($dbout).");
 
@@ -941,7 +941,7 @@ sub fix_local {
 
             problem("More than one entry for $file");
             while(1) {
-                $db[3] = dbfind(@db, "dfile =~ /$file/", -1); 
+                $db[3] = dbfind(@db, "dfile =~ /$file/", -1);
                 last unless $db[3] >= 0;
                 last if $r == 1;
                 problem("remove: $file ($r)=> " . dbgetv(@db,'status'));
@@ -1018,19 +1018,19 @@ sub fix_local {
             #
             # Add the missing file
             #
-            $size = -s "$path/$f" || 0; 
+            $size = -s "$path/$f" || 0;
             logging("$f adding as 'downloaded'");
-            dbaddv(@db, 
+            dbaddv(@db,
                 "net",      $net,
                 "sta",      $sta,
                 "dlsta",    $dlsta,
                 "dir",      $path,
                 "dfile",    $f,
-                "filebytes",$size, 
+                "filebytes",$size,
                 "attempts", 1,
-                "time",     now(), 
-                "fixed",    "n",
-                "lddate",   now(), 
+                "time",     now(),
+                "fixed",    "n"
+                "lddate",   now(),
                 "status",   "downloaded");
 
         }
