@@ -1587,3 +1587,4 @@ Perl(1).
 
 =cut
 #}}}
+# vim:ft=perl
