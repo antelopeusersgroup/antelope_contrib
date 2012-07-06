@@ -60,7 +60,7 @@ select STDERR; $| = 1;
     $start = now();
     $host = my_hostname();
 
-    unless ( &getopts('hdvm:p:s:r:') || @ARGV > 0 ) { 
+    unless ( &getopts('hdvm:p:s:r:') || @ARGV > 0 ) {
         pod2usage({-exitval => 2,
                    -verbose => 2});
     }
@@ -100,8 +100,8 @@ select STDERR; $| = 1;
     #
     ## Set File::Fetch options
     #
-    $File::Fetch::WARN    = 0 unless $opt_d; 
-    $File::Fetch::DEBUG   = 1 if $opt_d; 
+    $File::Fetch::WARN    = 0 unless $opt_d;
+    $File::Fetch::DEBUG   = 1 if $opt_d;
     $File::Fetch::TIMEOUT = $pf{download_timeout};
     $File::Fetch::BLACKLIST = [qw/LWP ncftp lftp lynx iosock/];
     #   File::Fetch
@@ -116,7 +116,7 @@ select STDERR; $| = 1;
     #
     debug("Opening $pf{database}:");
 
-    @db = dbopen ( $pf{database}, "r" ) or log_die("Can't open DB: $pf{database}"); 
+    @db = dbopen ( $pf{database}, "r" ) or log_die("Can't open DB: $pf{database}");
 
     # Open table for list of valid stations
     @db_on = dblookup(@db, "", "deployment" , "", "");
@@ -184,7 +184,7 @@ sub get_stations_from_db {
     #
     # Get stations with baler44s
     #
-    debug("dbsubset ( stablaler.model =~ /Packet Baler44/)");
+    debug("dbsubset ( stabaler.model =~ /Packet Baler44/)");
     @db_1 = dbsubset ( @db_sta, "stabaler.model =~ /PacketBaler44/ ");
 
     debug("dbsubset ( sta =~ /$opt_s/)") if $opt_s;
@@ -257,7 +257,7 @@ sub run_in_threads {
         #
         # throttle parent process
         #
-        sleep 0.5;
+        sleep 1;
 
         #
         # Stop if we are at max procs
@@ -425,8 +425,10 @@ sub get_data {
 
         debug("Check db: $dfile,$status,$bytes,$dir,$md5,$attempts,$msdtime,$time");
 
-        problem("WRONG NAME OF FILE: $dfile" ) if $dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/;
-        next if $dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/;
+        if ($dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/) {
+            problem("WRONG NAME OF FILE: $dfile" ) ;
+            next;
+        }
 
         if ($status =~ /skip/ ) {
             #
@@ -912,8 +914,9 @@ sub fix_local {
     my $dlsta = shift;
     my %list;
     my %llist;
-    my ($r,$record,@db_sub,@db_r,@db);
+    my ($r,$rnext,$record,@db_sub,@db_r,@db);
     my ($file,$status,$extra,$size,$path,$f);
+
 
     debug("Reading and fixing of local directory");
 
@@ -922,60 +925,51 @@ sub fix_local {
     #
     # Clean database
     #
+    # We ignore the dlsta field, and assume that the most recent entry
+    # for dfile is correct
+    #
     @db = open_db($sta);
     $r = dbquery(@db , dbRECORD_COUNT);
     for ($db[3]=0; $db[3] < $r; $db[3]++){
-        $list{ dbgetv(@db,'dfile') } = 1;
+        $file = dbgetv(@db,'dfile');
+        #add file to list unless it's a null entry
+        $list{ $file } = 1 unless ($file eq '-');
     }
 
     foreach $file (sort keys %list) {
+
+        #
+        # Clean duplicate file entries, keeping only the last
+        #
         logging("Clean dfile =~/$file/ ");
+        $r = dbfind(@db, "dfile =~ /$file/", -1);
+        $db[3]=$r;
+        $rnext = dbfind(@db, "dfile =~ /$file/", $r);
 
-        @db_sub = dbsubset(@db, "dfile =~ /$file/");
-        $r = dbquery(@db_sub,dbRECORD_COUNT);
-
-        #
-        # Make sure that we only have one entry for the file
-        #
-        if ( $r > 1 ) {
-
-            problem("More than one entry for $file");
-            while(1) {
-                $db[3] = dbfind(@db, "dfile =~ /$file/", -1);
-                last unless $db[3] >= 0;
-                last if $r == 1;
-                problem("remove: $file ($r)=> " . dbgetv(@db,'status'));
-                dbmark(@db);
-                $r -= 1;
-            }
-
+        while ($rnext >= 0 ) {
+            problem("remove: $file ($r)=> " . dbgetv(@db,'status'));
+            dbmark(@db);
+            $r = $rnext;
+            $db[3]=$r;
+            $rnext = dbfind(@db, "dfile =~ /$file/", $r);
         }
-        dbfree(@db_sub);
 
-    }
-
-    #
-    # Verify that every file on the database exists
-    #
-    $r = dbquery(@db , dbRECORD_COUNT);
-    for ($db[3]=0; $db[3] < $r; $db[3]++){
-        $f = dbgetv(@db,'dfile');
-        debug("local database: $f");
-
-        if ( $f !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ) {
-            problem("remove(format): $f");
+        # Remove entries with bad filenames
+        if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ) {
+            problem("remove(format): $file");
             dbmark(@db);
             next;
         }
 
+        # Verify the file exists if it's status is 'downloaded'
         next unless dbgetv(@db,'status') =~ /downloaded/;
 
-        unless ( -f "$path/$f"  ) {
-            problem("remove(not in directory): $f");
+        unless ( -f "$path/$file" ) {
+            problem("remove(not in directory): $file");
             dbmark(@db);
+            next;
         }
     }
-
 
     #
     # Verify every file in the folder
@@ -988,30 +982,31 @@ sub fix_local {
 
         debug("local file: $f");
 
-        #
-        # Subset database for file in directory
-        #
-        @db_r = dbsubset(@db, "dfile =~ /$f/");
-        $r = dbquery(@db_r , dbRECORD_COUNT);
+        $r = dbfind(@db, "dfile =~ /$f/",-1);
 
-        if ( $r == 1  ) {
+        if ( $r >= 0 ) {
 
-            $db_r[3] = 0;
+            $db[3] = $r;
 
-            if ( dbgetv(@db_r, 'status') =~ /downloaded/) {
+            if ( dbgetv(@db, 'status') =~ /downloaded/) {
 
                 debug("$f already in database as downloaded");
 
-            } elsif ( dbgetv(@db_r, 'status') =~ /skip/) {
+            } elsif ( dbgetv(@db, 'status') =~ /skip/) {
 
                 problem("$f flagged as 'skipped'");
 
             } else {
 
                 problem("$f updated to 'downloaded'");
-                dbputv(@db_r,'status', 'downloaded', 'attempts', 1, 'time', now(), 'lddate', now()  );
+                dbputv(@db,
+                    status   => 'downloaded',
+                    attempts => 1,
+                    time     => now(),
+                    lddate   => now(),
+                );
 
-             }
+            }
 
         } else {
 
@@ -1021,21 +1016,20 @@ sub fix_local {
             $size = -s "$path/$f" || 0;
             logging("$f adding as 'downloaded'");
             dbaddv(@db,
-                "net",      $net,
-                "sta",      $sta,
-                "dlsta",    $dlsta,
-                "dir",      $path,
-                "dfile",    $f,
-                "filebytes",$size,
-                "attempts", 1,
-                "time",     now(),
-                "fixed",    "n"
-                "lddate",   now(),
-                "status",   "downloaded");
+                net       => $net,
+                sta       => $sta,
+                dlsta     => $dlsta,
+                dir       => $path,
+                dfile     => $f,
+                filebytes => $size,
+                attempts  => 1,
+                time      => now(),
+                fixed     => 'n',
+                lddate    => now(),
+                status    => 'downloaded',
+            );
 
         }
-
-        dbfree(@db_r);
     }
 
     debug("Crunch table.");
@@ -1619,4 +1613,4 @@ Perl(1).
 
 =cut
 #}}}
-# vim:ft=perl
+# vim:ft=perl:sw=4:ts=4
