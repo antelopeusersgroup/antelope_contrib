@@ -1,0 +1,108 @@
+.TH DBRSEC 1 "$Date$"
+.SH NAME
+dbrsec \- Make record section plot of waveforms
+.SH SYNOPSIS
+.nf
+
+\fBdbrsec \fP\fIdb\fP {-sc \fIsta\fP:\fIchan\fP | -orid \fIorid\fP:\fIchan\fP}
+            [-top \fItop\fP]  [-bot \fIbot\fP] 
+	    [-tstart \fItstart\fP]
+            [-twin \fItwin\fP]           
+	    [-filter \fIfilter\fP] 
+	    [-sift \fIsift\fP] 
+	    [-clip {\fIon\fP|\fIoff\fP}]           
+	    [-vred \fIvred\fP] 
+	    [-gain \fIgain\fP] 
+	    [-amp \fIamp\fP]
+
+.fi
+.SH DESCRIPTION
+.B dbrsec
+makes a PostScript output file that contains a record section
+style display of either multiple channels for a single event
+or multiple events for a single channel. The output file
+name is automatically created and begins with \fIdbrsec.\fP and ends with \fI.ps\fP.
+.SH COMMAND LINE ARGUMENTS
+.TP 15
+\fIdb\fP
+The name of the input database.
+This argument is required.
+.TP 15
+\fI-sc sta:chan\fP
+The station and channel codes.
+Either this argument or the \fI-orid\fP argument
+is required. If this argument is specified, then
+the record section is for a single channel over
+multiple events.
+.TP 15
+\fI-orid orid:chan\fP
+The event orid value and the channel code.
+Either this argument or the \fI-sc\fP argument
+is required. If this argument is specified, then
+the record section is for a single event over
+multiple stations.
+chan may be either a single channel code (e.g., \fIBHZ\fP),
+or a Datascope expression involving chan and surrounded by
+parens (e.g., \fI(chan =~/.*[1Z]/)\fP.
+.TP 15
+\fI-top top\fP
+The distance in degrees at the top of the plot.
+.TP 15
+\fI-bot bot\fP
+The distance in degrees at the bottom of the plot.
+.TP 15
+\fI-tstart tstart\fP
+The start time for the display. This is in seconds relative to
+the event origin time.
+.TP 15
+\fI-twin twin\fP
+The time window in seconds for the display.
+.TP 15
+\fI-filter filter\fP
+A filter specification. This filter is applied to
+the waveform before it is plotted.
+The \fIfilter\fP specification is a character string like
+"BW 0.1 5 1.0 5" which would be a 5 order Butterworth filter
+with a low corner frequency of 0.1 Hz and a high corner
+frequency of 1.0 Hz. Note that specifications such as
+this with embedded blanks must be quoted in the command line.
+This argument is optional and if not specified, then
+no filtering is done.
+.TP 15
+\fI-sift sift\fP
+An optional Datascope sifting string.
+.TP 15
+\fI-clip {on|off}\fP
+Apply plot clipping flag.
+.TP 15
+\fI-vred vred\fP
+If specified, then apply time scale velocity reduction.
+This is specified in km/sec.
+.TP 15
+\fI-gain gain\fP
+This is a gain factor applied to the plot amplitude of
+each trace. It defaults to 1.0.
+.TP 15
+\fI-amp amp\fP
+The amplitude scale factor in data units per inch.
+The data units are defined within the database and are
+typically something like nm/sec.
+.SH EXAMPLE
+.nf
+.ft CW
+.in 2c
+%\fB dbcp -d /opt/antelope/data/db/demo2/demo2 .\fP
+%\fB dbrsec demo2 -orid 1940:BHZ -top 0.0 -bot 20 -twin 600\fP
+.in
+.ft R
+.fi
+.SH BUGS AND CAVEATS
+The \fIoptions\fP -\fItop\fP, -\fIbot\fP, -\fItwin\fP are required.
+.LP
+The database should be in the current directory, otherwise
+the program is not able to save the resulting postscript
+file.
+.SH AUTHOR
+Danny Harvey
+
+.\" $Id$
