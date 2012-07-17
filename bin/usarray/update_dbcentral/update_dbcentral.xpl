@@ -15,8 +15,8 @@
     
 {    #  Main program
 
-    my ( $Pf, $cmd, $dir, $problems, $dbcentral, $stime, $subject, $time, $usage );
-    my ( @db, @dirs );
+    my ( $Pf, $cmd, $dbcentral, $evtime, $first_dir, $last_dir, $rttime, $stime, $subject, $usage ) ;
+    my ( @db ) ;
 #
 #  Program setup
 #
@@ -50,28 +50,66 @@
         $subject = "Problems - $pgm $host	Ran out of system resources";
         elog_die( "\n$subject" );
     }
-    $problems = 0;
     
-    $dir = &get_last_ev_dir( ) ;
+    $last_dir = &last_ev_dir( ) ;
     
-    elog_notify ( "\ndir	$dir" ) if $opt_v ;
+    elog_notify ( "\nlast dir	$last_dir" ) if $opt_v ;
     
-    $dir =~ s/_// ;
+    $last_dir =~ s/_// ;
+    elog_notify ( "\nlast dir	$last_dir" ) if $opt_v ;
         
-    $time =  &next_month ( $dir ) ;
-    $time =  &yearmonth2epoch ( $time ) ;
+    $rttime =  &next_month ( $last_dir ) ;
+    elog_notify ( "\nrttime	$rttime" ) if $opt_v ;
+    $rttime =  &yearmonth2epoch ( $rttime ) ;
+    elog_notify ( "\nrttime	$rttime" ) if $opt_v ;
+    
+    $first_dir = &first_ev_dir( ) ;
+    
+    elog_notify ( "\nfirst dir	$first_dir" ) if $opt_v ;
+    
+    $first_dir =~ s/_// ;
+        
+    $evtime =  &yearmonth2epoch ( $first_dir ) ;
+    
+    if ( ! -f $dbcentral && ! $opt_n ) {
+        &descriptor ( $dbcentral, $pf{dbcluster_schema}, $pf{dbcluster_dbpath}, $pf{dbcluster_dblocks}, $pf{dbcluster_dbidserver} ) ;
+    }
     
     @db = dbopen( $dbcentral, "r+" ) ;
     
     @db = dblookup( @db, 0, "clusters", 0, 0 ) ;
     
-    $db[3] = dbfind( @db, "clustername =~ /$pf{rtcluster}/", 0 ) ; 
+    $db[3] = dbfind( @db, "clustername =~ /$pf{rtcluster}/", -1 ) ; 
     
-    dbputv ( @db, "time", $time ) ;
+    if ( $db[3] > -1 ) {
+        dbputv ( @db, "time", $rttime ) unless $opt_n ;
+    } else {
+        dbaddv ( @db, "clustername" , $pf{rtcluster} ,
+                      "time",         $rttime ,
+                      "schema",       $pf{schema} ,
+                      "volumes",      $pf{rtvolumes} ,
+                      "net",          $pf{net} ,
+                      "dir",          $pf{rtdirbase} ,
+                      "dfile",        $pf{rtdfile} ,
+                      "description",  $pf{rtdescription} ) ;
+    }
     
-    $db[3] = dbfind( @db, "clustername =~ /$pf{evcluster}/", 0 ) ; 
+    $db[3] = dbfind( @db, "clustername =~ /$pf{evcluster}/", -1 ) ; 
     
-    dbputv ( @db, "time", $time - 0.001 ) ;
+    if ( $db[3] > -1 ) {
+        dbputv ( @db, "endtime", $rttime - 0.001 ) unless $opt_n ; 
+    } else {
+        dbaddv ( @db, "clustername" , $pf{evcluster} ,
+                      "time",         $evtime ,
+                      "endtime",      $rttime - 0.001 ,
+                      "schema",       $pf{schema} ,
+                      "volumes",      $pf{evvolumes} ,
+                      "net",          $pf{net} ,
+                      "dir",          $pf{evdirbase} ,
+                      "dfile",        $pf{evdfile} ,
+                      "description",  $pf{evdescription} ) ;
+        
+    }
     
     dbclose ( @db ) ;
     
@@ -80,12 +118,6 @@
 #
     $stime = strydtime(now());
     
-    if ( $problems ) {
-        elog_notify ("completed 	$stime\n\n");
-        $subject = "Problems - $pgm $host" ;
-        elog_die("\n$subject") ;
-    }
-
     elog_notify ("completed successfully	$stime\n\n");
 
     $subject = sprintf("Success  $pgm  $host ");
@@ -94,7 +126,7 @@
     exit( 0 );
 }
 
-sub get_last_ev_dir { # $dir = &get_last_ev_dir( ) ;
+sub last_ev_dir { # $dir = &get_last_ev_dir( ) ;
     my ( $dir ) ;
     my ( @dirs ) ;
     
@@ -108,5 +140,33 @@ sub get_last_ev_dir { # $dir = &get_last_ev_dir( ) ;
     elog_debug ( "dirs	@dirs" ) if $opt_V ;
         
     return ( $dirs[0] ) ;
+}
+
+sub first_ev_dir { # $dir = &get_first_ev_dir( ) ;
+    my ( $dir ) ;
+    my ( @dirs ) ;
+    
+    @dirs = () ;
+    
+    elog_debug ( "$pf{evdirbase}" ) if $opt_V ;
+    opendir( DIR, "$pf{evdirbase}" ) ;
+    @dirs = sort { $a cmp $b } ( grep { /^20[0-9][0-9]_[0-2][0-9]$/  } readdir( DIR ) ) ;
+    closedir( DIR ) ;
+
+    elog_debug ( "dirs	@dirs" ) if $opt_V ;
+        
+    return ( $dirs[0] ) ;
+}
+
+sub descriptor {
+    my ( $db, $dbschema, $dbpath, $dblocks, $dbidserver ) = @_ ;
+    open  DESC, ">$db" or die "Can't open '$db', stopped" ;
+    print DESC "# Datascope database\n";
+    print DESC "schema		$dbschema\n";
+    print DESC "dbpath		$dbpath\n";
+    print DESC "dblocks		$dblocks\n";
+    print DESC "dbidserver	$dbidserver\n";
+    close DESC ;
+    return ;
 }
 

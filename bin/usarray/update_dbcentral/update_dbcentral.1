@@ -6,7 +6,8 @@ update_dbcentral \- Makes sure dbcentral is consistent with event dbs and rt dat
 \fBupdate_dbcentral \fP [-v] [-V] [-n] [-p \fIpf\fP]  \fIdbcentral\fP
 .fi
 .SH DESCRIPTION
-\fBupdate_dbcentral\fP updates \fIdbcentral\fP to be consistent with the event dbs and the rt database
+\fBupdate_dbcentral\fP updates \fIdbcentral\fP to be consistent with the event dbs and the rt database.  
+Will create new \fIdbcentral\fP db if one does not already exist.
 
 .LP
 
@@ -26,12 +27,38 @@ needs to have sourced $ANTELOPE/setup.csh.
 .ft CW
 .nf
 .ne 7
+.IP dbcluster_schema
+dbcluster schema for dbcentral
+.IP dbcluster_dbpath
+dbcluster dbpath for dbcentral
+.IP dbcluster_dblocks
+dbcluster dblocks for dbcentral
+.IP dbcluster_dbidserver
+dbcluster dbidserver  for dbcentral
+.IP schema
+db schema
+.IP net
+net code
 .IP evcluster
-event cluster name for dbcentral
-.IP rtcluster
-rt cluster name for dbcentral
+event cluster name
 .IP evdirbase
-Path name for directory base for wfdiscs of monthly waveform data.
+event directory basename
+.IP evdfile
+event database name template
+.IP evvolumes
+event boundary interval
+.IP evdescription
+event dbs description
+.IP rtcluster
+rt cluster name
+.IP rtdirbase
+rt directory basename
+.IP rtdfile
+rt database name template
+.IP rtvolumes
+rt boundary interval
+.IP rtdescription
+rt description
 .fi
 .ft R
 .in
@@ -40,12 +67,38 @@ Path name for directory base for wfdiscs of monthly waveform data.
 .ft CW
 .nf
 
-evcluster			usarray                             # event cluster name for dbcentral
+dbcluster_schema    dbcluster0.7                        # dbcluster schema
 
-rtcluster			usarray_rt                          # rt cluster name for dbcentral
+dbcluster_dbpath                                        # dbcluster dbpath
 
-evdirbase			/anf/TA/dbs/event_dbs               # Directory base path for monthly dbs
+dbcluster_dblocks   none                                # dbcluster dblocks
 
+dbcluster_dbidserver                                    # dbcluster dbidserver
+
+schema              css3.0                              # db schema
+
+net                 TA                                  # net code
+
+evcluster           usarray                             # event cluster name
+
+evdirbase           /anf/TA/dbs/event_dbs               # event directory basename
+
+evdfile             usarray_%y_%m                       # event database name template
+
+evvolumes           month                               # event boundary interval
+  
+evdescription       TA event dbs                        # event dbs description
+
+rtcluster           usarray_rt                          # rt cluster name
+
+rtdirbase           /anf/TA/rt/usarray                  # rt directory basename
+
+rtdfile             usarray                             # rt database name template
+
+rtvolumes           single                              # rt boundary interval
+
+rtdescription       TA realtime db                      # rt description
+  
 .fi
 .ft R
 .in
@@ -53,6 +106,7 @@ evdirbase			/anf/TA/dbs/event_dbs               # Directory base path for monthl
 0 if successful, 1 if not.
 .SH "SEE ALSO"
 .nf
+dbcentral(1)
 time_slice_db(1)
 monthly_wfs(1)
 .fi
