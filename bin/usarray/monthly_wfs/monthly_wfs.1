@@ -5,7 +5,7 @@ monthly_wfs \- build wfdiscs for monthly event databases and append to year wave
 .nf
 \fBmonthly_wfs \fP [-v] [-V] [-n] 
         [-p \fIpf\fP] [-m \fImail_to\fP]  
-        \fIYYYY [ MM ]  || all\fP
+        \fIYYYY [ MM ]  || all || recent \fP
 .fi
 .SH DESCRIPTION
 \fBmonthly_wfs\fP builds a list of year/day waveform directories and then runs \fBminiseed2db\fP to
@@ -14,7 +14,7 @@ all waveforms for the TA.  Wfdiscs are created for each year in the repository b
 one month at a time.  There is also a one month long event database which needs wfdiscs built off the 
 same repository to minimize disk usage. 
 
-Time windows to be operated on are specified by arguement values of YYYY, MM, or "all".
+Time windows to be operated on are specified by arguement values of YYYY, MM, or "all", or "recent" (preferred and faster).
 
 The programs executed by \fBmonthly_wfs\fP are:
 
