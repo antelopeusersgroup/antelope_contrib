@@ -2,7 +2,6 @@
 #   program needs:
 #
 #
-    use Getopt::Std ;
     use POSIX;    
     use strict ;
     use Datascope ;
@@ -13,6 +12,8 @@
     use utility ;
     use sysinfo ; 
     use IO::Handle ;
+    use Getopt::Std ;
+
     
     our ( $pgm, $host );
     our ( $opt_V, $opt_f, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v );
@@ -20,9 +21,10 @@
     
 {    #  Main program
 
-    my ( $Pf, $arg, $cmd, $db, $fh, $good, $idle, $iowait, $kernel, $max_forks, $nchild, $ncpu, $nstas, $parent, $pid, $problems, $resp, $sta, $stime, $string, $subject, $swap, $usage, $user );
-    my (  @procs, @stas, @the_rest );
-    my (  %errors, %logs, %stas );
+    my ( $Pf, $cmd, $db, $idle, $iowait, $kernel, $max_forks, $nchild, $ncpu, $nstas, $parent ) ;
+    my ( $pid, $problems, $sta, $stime, $string, $subject, $swap, $usage, $user );
+    my ( @procs, @stas, @the_rest ) ;
+    my ( %errors, %logs, %stas ) ;
 
 
     $pgm = $0 ; 
@@ -30,7 +32,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 3 && @ARGV != 4 ) ) { 
+    if (  ! &getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 3 && @ARGV != 4 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf] [-m mail_to] [-f nforks] [-s sta_regex] db  \n\n" ;
         $usage .=  "Usage: $0  [-v] [-V] [-n] " ;
@@ -42,9 +44,7 @@
         elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
-    
-    announce( 0, 0 ) if ( @ARGV == 1 ) ;
-    
+        
     $Pf         = $opt_p || $pgm ;
     if ( @ARGV > 1 && $opt_v ) {
         $opt_v = 0 ;
@@ -55,7 +55,6 @@
     }
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
     chop ($host = `uname -n` ) ;
-    $IPC::Cmd::VERBOSE = 1 if $opt_v ;
     STDOUT->autoflush(1) ;
     $parent   = $$ ;
     $problems = 0;
@@ -82,6 +81,7 @@
     }
 
     &savemail() if $opt_m ; 
+    announce( 0, 0 ) ;
     elog_notify($cmd) ; 
     $stime = strydtime(now());
     elog_notify ("\nstarting execution on	$host	$stime\n\n");
@@ -90,6 +90,10 @@
     
     %pf = getparam( $Pf ) ;
 
+    $opt_s  = $opt_s || $pf{day_of_week}{epoch2str( now(), "%A" )} ;
+    
+    elog_notify( "station subset is $opt_s" ) ;
+    
     ( $ncpu, $idle, $user, $kernel, $iowait, $swap, @the_rest ) = syscpu() ;
     
     $max_forks = $opt_f || int ( $ncpu / 2 ) ;
@@ -193,7 +197,6 @@
         @procs = check_procs( @procs ) ;
         elog_debug("Wait for:[".@procs."] => @procs") if $opt_V;
         &nonblock_read( \%stas, \%logs, \%errors );
-#         &nbfh_read ( \%stas, \%logs, \%errors ) ;
 
         sleep 1;
 
@@ -230,7 +233,6 @@
         $subject = "Problems - $pgm $host	$nstas stations processed, $nchild stations with problems, $problems total problems" ;
         &sendmail($subject, $opt_m) if $opt_m ; 
         elog_complain("\n$subject") ;
-        exit(1);
     }
   
     exit(0);
@@ -318,7 +320,7 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
         if ( exists $stas{$sta}{end} && -f $rtdb ) {
             if ( $stas{$sta}{last_jdate} == $stas{$sta}{end} ) {
                 delete $stas{$sta} ;
-                elog_notify ( "$sta already complete" ) ;
+                elog_notify ( "$sta already complete" ) if ( $opt_n || $opt_V );
             }
             if ( $stas{$sta}{last_jdate} < $stas{$sta}{end} ) {
                 $jdate = &next_jdate ( $stas{$sta}{last_jdate} ) ; 
@@ -332,10 +334,10 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
                     $jdate       = &next_jdate ( $jdate ) ;
                 }
                 if ( $more_days ) {
-                    elog_notify ( "$sta not complete, $more_days days to process" ) ;
+                    elog_notify ( "$sta not complete, $more_days days to process" ) if ( $opt_n || $opt_V );
                 } else {
                     delete $stas{$sta} ;
-                    elog_notify ( "$sta already complete" ) ;
+                    elog_notify ( "$sta already complete" ) if ( $opt_n || $opt_V );
                 }
             }
             elog_debug ( "get_stas station closed " ) if $opt_V ;
@@ -379,7 +381,7 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
     elog_debug ( "get_stas just before return" ) if $opt_V ;
     prettyprint( \%stas ) if $opt_V ;
         
-    elog_notify( sprintf( "stas    -    %s", join ( " " , sort ( keys %stas_out ) ) ) ) ;
+    elog_notify( sprintf( "stas    -    %s", join ( " " , sort ( keys %stas_out ) ) ) ) if $opt_V ;
             
     return ( $problems, %stas_out ) ;
 }
@@ -449,13 +451,11 @@ sub exist_data {  # $jdate = &exist_data ( $dir, $sta, $parent ) ;
 
 sub find_last_proc { # $proc_end = &find_last_proc( $sta, $last_proc ) ;
     my ( $sta, $last_proc ) = @_ ;
-    my ( $dir, $jdate, $jdate_file, $lag, $nday, $ndays, $proc_end ) ;
+    my ( $dir, $jdate, $jdate_file, $lag, $nday, $proc_end ) ;
     
     $jdate     = yearday( now() ) ;
     $proc_end  = yearday( now() ) ;
-    
-    $ndays = 2 ;  # number of days data needs to be on disk before adding to wfdisc
-    
+        
     for ($nday = 0; $nday< $pf{days_delay}; $nday++) {
         $proc_end = &prev_jdate ( $proc_end ) ;
     }
@@ -482,7 +482,7 @@ sub find_last_proc { # $proc_end = &find_last_proc( $sta, $last_proc ) ;
 sub proc_sta { # &proc_sta( $sta, $proc_start, $proc_end, $parent ) ;
     my ( $sta, $proc_start, $proc_end, $parent ) = @_ ;
     my ( $cmd, $dir, $etime, $jdate, $prob, $prob_check, $rt_sta_dir, $stime, $subject, $success ) ;
-    my ( @output ) ;
+    my (@db ) ; 
 
     $stime = strydtime( now() );
         
@@ -513,9 +513,7 @@ sub proc_sta { # &proc_sta( $sta, $proc_start, $proc_end, $parent ) ;
 
             $cmd  = "miniseed2db $dir/\*$sta\* $sta ";
 
-            ( $success, @output )  = &run_cmd( $cmd ) ;
-
-            if ( ! $success ) {
+            if ( ! &run_cmd( $cmd ) ) {
                 $prob++ ;
                 &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
                 last ;
@@ -526,31 +524,36 @@ sub proc_sta { # &proc_sta( $sta, $proc_start, $proc_end, $parent ) ;
     }
         
     unless ( $prob ) {
-        fork_notify ( $parent, "starting rt_daily_return processing" ) if $opt_v ;
-        $stime = $proc_start ;
-        $etime = yearday ( epoch( $proc_end ) + 86400 )  ;
-        $cmd  = "rt_daily_return ";
-        $cmd .= "-t \"$stime\" -e \"$etime\" ";
-        $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $sta $sta";
+        @db = dbopen( $sta, "r" ) ;
+        @db = dblookup ( @db, 0, "wfdisc", 0, 0 ) ;
+        if ( dbquery ( @db, "dbTABLE_PRESENT" ) ) {
+            dbclose ( @db ) ; 
+            fork_notify ( $parent, "starting rt_daily_return processing" ) if $opt_v ;
+            $stime = $proc_start ;
+            $etime = yearday ( epoch( $proc_end ) + 86400 )  ;
+            $cmd  = "rt_daily_return ";
+            $cmd .= "-t \"$stime\" -e \"$etime\" ";
+            $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $sta $sta";
         
-        ( $success, @output )  = &run_cmd( $cmd ) ;
+            if ( ! &run_cmd( $cmd ) ) {
+                $prob++ ;
+                &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+            }
+        
+            $cmd  = "dbfixchanids $sta ";
 
-        if ( ! $success ) {
-            $prob++ ;
-            &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+            fork_notify ( $parent, $cmd) if $opt_v ;
+        
+            if ( ! &run_cmd( $cmd ) ) {
+                $prob++ ;
+                &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+            }
+        
+            $prob = &fix_wfdisc( $sta, $parent, $prob ) ;
+        } else {
+            fork_notify ( $parent, "no wfdsic to process" ) if $opt_v ;
+            dbclose ( @db ) ; 
         }
-        
-        $cmd  = "dbfixchanids $sta ";
-        fork_notify ( $parent, $cmd ) if $opt_v ;
-
-        ( $success, @output )  = &run_cmd( $cmd ) ;
-
-        if ( ! $success ) {
-            $prob++ ;
-            &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
-        }
-        
-        $prob = &fix_wfdisc( $sta, $parent, $prob ) ;
         
     }
     
@@ -567,14 +570,14 @@ sub proc_sta { # &proc_sta( $sta, $proc_start, $proc_end, $parent ) ;
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
         fork_notify ( $parent, $cmd) ;
         
-        ( $success, @output )  = &run_cmd( $cmd ) ;
+        &run_cmd( $cmd ) ;
 
     } elsif ( $opt_v ) {
         $subject = "TA $sta completed successfully -  $pgm on $host";
         $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
         fork_notify ( $parent, $cmd) ;
         
-        ( $success, @output )  = &run_cmd( $cmd ) ;
+        &run_cmd( $cmd ) ;
 
     } 
 
@@ -591,8 +594,8 @@ sub fix_wfdisc {  # $problems = &fix_wfdisc( $db, $parent, $problems ) ;
 #  sets calib, calper, segtype in wfdisc
 #
     my ( $db, $parent, $problems ) = @_ ; 
-    my ( $cmd, $success ) ;
-    my ( @db, @dbcalibration, @output ) ; 
+    my ( $cmd, $verbose ) ;
+    my ( @db, @dbcalibration ) ; 
 
     fork_debug ( $parent, "fix_wfdisc  db = $db   problems = $problems") if ( $opt_V ) ;
     
@@ -602,53 +605,37 @@ sub fix_wfdisc {  # $problems = &fix_wfdisc( $db, $parent, $problems ) ;
 
     if (dbquery ( @dbcalibration, "dbRECORD_COUNT" ) ) {
         
+        if ( $opt_v && ! $opt_V ) {
+            $verbose = 1 ;
+            $opt_v   = 0 ;
+        } else {
+            $verbose = 0 ;
+        }
         $cmd = "dbjoin $db.wfdisc calibration | dbsubset - \"wfdisc.calib != calibration.calib\" | dbselect -s - \"wfdisc.calib:=calibration.calib\" " ;
         
-        $success = run ( $cmd, 60 ) ;
-        if ( $success ) {
+        if ( run ( $cmd, 60 ) ) {
             $problems++ ;
             &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
         }
-
-#         ( $success, @output )  = &run_cmd( $cmd, 60 ) ;
-# 
-#         if ( ! $success ) {
-#             $problems++ ;
-#             &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
-#         }
 
         $cmd = "dbjoin $db.wfdisc calibration | dbsubset - \"wfdisc.calper != calibration.calper\" | dbselect -s - \"wfdisc.calper:=calibration.calper\"  " ;
 
-        $success = run ( $cmd, 60 ) ;
-        if ( $success ) {
+        if ( run ( $cmd, 60 ) ) {
             $problems++ ;
             &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
         }
 
-#         ( $success, @output )  = &run_cmd( $cmd, 60 ) ;
-# 
-#         if ( ! $success ) {
-#             $problems++ ;
-#             &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
-#         }
-        
         $cmd = "dbjoin $db.wfdisc calibration | dbsubset - \"wfdisc.segtype !~ /calibration.segtype/\" | dbselect -s - \"wfdisc.segtype:=calibration.segtype\"  " ;
 
-        $success = run ( $cmd, 60 ) ;
-        if ( $success ) {
+        if ( run ( $cmd, 60 ) ) {
             $problems++ ;
             &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
         }
-
-#         ( $success, @output )  = &run_cmd( $cmd, 60 ) ;
-# 
-#         if ( ! $success ) {
-#             $problems++ ;
-#             &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
-#         }
+        
+        $opt_v = 1 if $verbose ; 
 
     }  else {
-        fork_notify( $parent, "	no records in calibration for dbjoin wfdisc calibration") if ($opt_v);
+        fork_notify( $parent, "	no records in calibration for dbjoin wfdisc calibration") if ( $opt_v );
     }
     
     dbclose ( @db ) ;

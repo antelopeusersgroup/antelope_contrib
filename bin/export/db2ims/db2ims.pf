@@ -12,9 +12,9 @@ ims_dir		IMS			# directory for storing output files
 #  magnitudes reported in MAG BLOCK must match 
 
 accept_magtype &Arr{	# netmag.magtype=~/$magtype[0]|$magtype[1]|.../
-     ml
-     ML
-     Ml
+     ml		ML
+     ML		ML
+     Ml		ML
 }
 
 mag_origin_auth 	ANF	

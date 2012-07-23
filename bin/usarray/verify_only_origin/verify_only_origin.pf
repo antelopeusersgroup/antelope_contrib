@@ -1,0 +1,81 @@
+local_auth ^ANF.*
+
+
+netmag &Tbl{            
+/anf/shared/catalogs/aeic/aeic_2009
+/anf/shared/catalogs/cit/cit_2000
+/anf/shared/catalogs/cit/cit_2001
+/anf/shared/catalogs/cit/cit_2002
+/anf/shared/catalogs/cit/cit_2003
+/anf/shared/catalogs/cit/cit_2004
+/anf/shared/catalogs/cit/cit_2005
+/anf/shared/catalogs/cit/cit_2006
+/anf/shared/catalogs/cit/cit_2007
+/anf/shared/catalogs/cit/cit_2008
+/anf/shared/catalogs/cit/cit_2009
+/anf/shared/catalogs/emsc/emsc_2009
+/anf/shared/catalogs/lcsn/lcsn_2009
+/anf/shared/catalogs/mtech/mtech_2004
+/anf/shared/catalogs/mtech/mtech_2005
+/anf/shared/catalogs/mtech/mtech_2006
+/anf/shared/catalogs/mtech/mtech_2007
+/anf/shared/catalogs/mtech/mtech_2008
+/anf/shared/catalogs/mtech/mtech_2009
+/anf/shared/catalogs/ncec/ncec_2004
+/anf/shared/catalogs/ncec/ncec_2005
+/anf/shared/catalogs/ncec/ncec_2006
+/anf/shared/catalogs/ncec/ncec_2007
+/anf/shared/catalogs/ncec/ncec_2008
+/anf/shared/catalogs/ncec/ncec_2009
+/anf/shared/catalogs/nesn/nesn_2009
+/anf/shared/catalogs/nmsn/nmsn_2009
+/anf/shared/catalogs/nrcan/nrcan_2009
+/anf/shared/catalogs/pgc/pgc_2009
+/anf/shared/catalogs/pnsn/pnsn_2000
+/anf/shared/catalogs/pnsn/pnsn_2001
+/anf/shared/catalogs/pnsn/pnsn_2002
+/anf/shared/catalogs/pnsn/pnsn_2003
+/anf/shared/catalogs/pnsn/pnsn_2004
+/anf/shared/catalogs/pnsn/pnsn_2005
+/anf/shared/catalogs/pnsn/pnsn_2006
+/anf/shared/catalogs/pnsn/pnsn_2007
+/anf/shared/catalogs/pnsn/pnsn_2008
+/anf/shared/catalogs/pnsn/pnsn_2009
+/anf/shared/catalogs/qed/mines
+/anf/shared/catalogs/qed/pde
+/anf/shared/catalogs/qed/qed_2009
+/anf/shared/catalogs/qed/qed_weekly_2007
+/anf/shared/catalogs/qed/qed_weekly_2008
+/anf/shared/catalogs/qed/qed_weekly_gt2009
+/anf/shared/catalogs/unr/unr_2004
+/anf/shared/catalogs/unr/unr_2005
+/anf/shared/catalogs/unr/unr_2006
+/anf/shared/catalogs/unr/unr_2007
+/anf/shared/catalogs/unr/unr_2008
+/anf/shared/catalogs/unr/unr_2009
+/anf/shared/catalogs/utah/utah_2006
+/anf/shared/catalogs/utah/utah_2007
+/anf/shared/catalogs/utah/utah_2008
+/anf/shared/catalogs/utah/utah_2009
+/anf/shared/catalogs/utah/yellowstone_2009
+}
+
+auth &Arr{
+CERI 	nmsn
+GSC 	nrcan
+LCSN	lcsn
+MTECH   mtech
+NBE     unr
+NCEDC	ncec
+NCSN	ncec
+NEIC	qed
+NMSN	nmsn
+PGC		pgc 
+PNSN	pnsn 
+QED		qed 
+SCSN	cit
+UNR		unr 
+UTAH	utah 
+UUSS	utah
+cit		cit 
+}

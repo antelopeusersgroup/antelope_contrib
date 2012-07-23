@@ -1,11 +1,10 @@
-# Setra 270 microbarometer - Pressure
+# This dummy response file is a kluge to fill in the 062 blockette in a seed volume
 #
-# 0                   num of zeroes
-# 0                   num of poles
-# 1                   normalization factor
-# 1.0                 gain
-#theoretical   1 sensor    	  paz    eakins  
-theoretical   1 anti-alias	  paz    eakins  
-1.00
-0	Poles
-0	Zeros
+# valid_frequency_units:  B
+# lower_valid_frequency_bound: .001
+# upper_valid_frequency_bound: 10
+# lower_bound_of_approximation: 600
+# upper_bound_of_approximation: 1100
+# maximum_absolute_error: 25
+# coefficients: 600  100
+   unknown   1 SEED062     poly    unknown

@@ -104,7 +104,7 @@ sub yearmonth2epoch {  # $time = &yearmonth2epoch ( $yearmonth ) ;
     my ( $yearmonth ) = @_ ;
     my ( $month, $time, $year ) ;
     
-    $month = $yearmonth % 100 ;
+    $month = sprintf ( "%.2d", $yearmonth % 100) ;
     $year  = int( $yearmonth / 100 ) ;
     $time  = "$year-$month-01" ;
     $time  = str2epoch ( $time ) ;

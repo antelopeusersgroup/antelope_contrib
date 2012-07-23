@@ -1,8 +1,33 @@
-evcluster			usarray								# event cluster name for dbcentral
+dbcluster_schema        dbcluster0.7             # dbcluster schema
 
-rtcluster			usarray_rt							# rt cluster name for dbcentral
+dbcluster_dbpath                                 # dbcluster dbpath
 
-evdirbase			/anf/TA/dbs/event_dbs  				# Directory base path for monthly dbs
+dbcluster_dblocks       none                     # dbcluster dblocks
 
+dbcluster_dbidserver                             # dbcluster dbidserver
 
+schema                  css3.0                   # db schema
+
+net                     TA                       # net code
+
+evcluster               usarray                  # event cluster name
+
+evdirbase               /anf/TA/dbs/event_dbs    # event directory basenames
+
+evdfile                 usarray_%y_%m            # event database name template
+
+evvolumes               month                    # event boundary interval
   
+evdescription           TA event dbs             # event description
+
+rtcluster               usarray_rt               # rt cluster name
+
+rtdirbase               /anf/TA/rt/usarray       # rt directory basename
+
+rtdfile                 usarray                  # rt database name template
+
+rtvolumes               single                   # rt boundary interval
+
+rtdescription           TA realtime db           # rt description
+  
+pf_revision_time 1342122266

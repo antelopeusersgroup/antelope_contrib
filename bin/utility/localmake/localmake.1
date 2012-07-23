@@ -184,6 +184,12 @@ examples of some possible values on different systems.
 The \fIoutput_file\fP parameter gives the filename (without directory path)
 of the local Antelope make rules automatically generated
 based on \fIlocalmake.pf\fP.
+.IP platform_rules
+In addition to the globally applicable extra_rules, there may be platform-
+specific rules necessary for local compilation (such as overrides to DLDFLAGS
+necessary to compile PHP extensions for example). These platform-specific make
+rules are listed in this array, with a literal value corresponding to each
+platform (\fIDarwin\fP, \fILinux\fP, and \fISunOS\fP).
 .SS "Parameter File Example"
 .nf
 

@@ -14,7 +14,7 @@
  *  needs expressed by Alex Bittenbinder and the Earthworm team
  * February 1997: KGL Added pad field as used by Earthworm team
  *
- * Replaced hardcoded string lengths for S-C-N with 
+ * Replaced hardcoded string lengths for S-C-N with
  * #defines so that they can be used elsewhere. LV 5/1999
  *
  *
@@ -26,7 +26,7 @@
 #define NETWORK_NULL_STRING "-"
 
 /* NOTE:
- * The principal time fields in the TRACE_HEADER are: 
+ * The principal time fields in the TRACE_HEADER are:
  *    starttime, nsamp, and samprate.
  * The endtime field is included as a redundant convenience.
  */

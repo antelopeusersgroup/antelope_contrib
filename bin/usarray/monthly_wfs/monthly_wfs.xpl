@@ -77,14 +77,8 @@
     
     @dirs = &get_wf_dirs( $year, $month ) ;
     
-    elog_notify ( "\nproc_ev_dbs" ) ;
-    
     $problems = proc_ev_dbs( $problems, @dirs ) ;
-
-    elog_notify ( "\nproc_year_dbs" ) ;
-    
-    $problems = proc_year_dbs( $problems, @dirs ) ;
-    
+        
 #
 #  Finish program
 #
@@ -114,7 +108,6 @@ sub get_wf_dirs { # @dirs = &get_wf_dirs( $year, $month ) ;
     
     @dirs = () ;
     
-    elog_debug ( "$pf{wfdirbase}" ) ;
     opendir( DIR, "$pf{wfdirbase}" ) ;
     @years = sort ( grep { /^20[0-9][0-9]$/  } readdir( DIR ) ) ;
     closedir( DIR ) ;
@@ -122,8 +115,10 @@ sub get_wf_dirs { # @dirs = &get_wf_dirs( $year, $month ) ;
     elog_debug ( "years	@years" ) if $opt_V ;
     elog_debug ( "year	$year	month	$month" ) if $opt_V ;
     
-    if ( $year !~ /all/ ) {
+    if ( $year !~ /all|recent/ ) {
         @years = grep { /$year/ } @years ;
+    } elsif ( $year =~ /recent/ ) {
+        @years =  @years[ $#years ] ;
     }
 
     $last_time = &last_time( now(), $pf{ev_lag}, $pf{ev_period} ) ;
@@ -151,113 +146,15 @@ sub get_wf_dirs { # @dirs = &get_wf_dirs( $year, $month ) ;
     return ( @dirs ) ;
 }
 
-sub proc_year_dbs( @dirs ) { # $prob = &proc_year_dbs ( $prob, @dirs ) ;
-    my ( $prob, @dirs ) = @_ ;
-    my ( $cmd, $day, $db, $dd, $dir, $mc, $month, $nrecs, $subset, $success, $time, $year ) ;
-    my ( @check, @db, @dir_days, @dir_tmp ) ;
-    my ( %years ) ;
-    
-    %years = () ;
-    
-    foreach $dir ( @dirs ) {
-        ( $year, $day ) =  split( "/", $dir ) ; 
-        $years{$year} = $year ;
-    }
-        
-    chdir( $pf{wfdirbase} ) ;
-
-    foreach $year ( sort keys %years ) {
-        @dir_tmp = () ;
-        elog_notify ( $year ) ;
-        @dir_days = sort ( grep { /$year/ } @dirs ) ;
-        $db = "$pf{dbbase}\_$year" ;
-        elog_notify ( $db ) ;
-        
-        if ( -f $db ) {
-            @db    = dbopen   ( $db, "r" ) ;
-            @db    = dblookup ( @db, 0, "wfdisc", 0, 0 ) ;
-        
-            foreach $month ( qw ( 01 02 03 04 05 06 07 08 09 10 11 12 )  ) {
-                $time   = str2epoch( "$month/01/$year" ) ;
-                $dd     = epoch2str ( $time, "%j" ) ;
-                $mc     = epoch2str ( $time, "%m" ) ;
-                $subset = "dir =~ /.*$year\\\/$dd/ " ;
-                $nrecs  = dbfind( @db, $subset, 0 ) ;
-                elog_debug ( "$subset	$nrecs" ) if $opt_V;
-                next if ( $nrecs > -1 ) ;
-                
-                @check  = sort ( grep { /$dd/ } @dir_days ) ;
-                next if ( $#check == -1 ) ;
-                elog_notify ( "$subset	$mc	$nrecs" ) ;
-                
-                while ( $month =~ /$mc/ ) {
-                    $day = epoch2str ( $time, "%j" ) ;
-                    push ( @dir_tmp, sort ( grep { /$day/ } @dir_days ) ) ;
-                    $time += 86400 ;
-                    $mc    = epoch2str ( $time, "%m" ) ;
-                }
-            }
-            
-            dbclose( @db ) ;
-            
-            @dir_days = @dir_tmp ; 
-        } else {
-            cssdescriptor( $db, $pf{dbpath}, $pf{dbidserver}, $pf{dblocks} ) ;  
-        }
-        
-        elog_notify ( "@dir_days" ) ;
-
-    
-        foreach $dir ( @dir_days ) {
-            $cmd  = "miniseed2db ";
-            $cmd .= "-v " if $opt_V;
-            $cmd .= "$dir $db " ;
-            
-            if ( ! &run_cmd( $cmd ) ) {
-                $prob++ ;
-                last ;
-            }
-            
-        }
-        
-        $cmd = "dbfixchanids $db" ;
-        
-        if ( ! &run_cmd( $cmd ) ) {
-            $prob++ ;
-            last ;
-        }
-        
-        $cmd = "dbsubset $db.wfdisc 'calib == NULL' | dbjoin - calibration | dbset -v - wfdisc.calib '*' calibration.calib ";
-        $success = &run_cmd( $cmd ) ;
-        if ( $success < 0 || $success > 1 ) {
-            $prob++ ;
-        }
-        
-
-        $cmd = "dbsubset $db.wfdisc 'calper == NULL' | dbjoin - calibration | dbset -v - wfdisc.calper '*' calibration.calper ";
-        $success = &run_cmd( $cmd ) ;
-        if ( $success < 0 || $success > 1 ) {
-            $prob++ ;
-        }
-        
-
-        $cmd = "dbsubset $db.wfdisc 'segtype == NULL' | dbjoin - calibration | dbset -v - wfdisc.segtype '*' calibration.segtype ";
-        $success = &run_cmd( $cmd ) ;
-        if ( $success < 0 || $success > 1 ) {
-            $prob++ ;
-        }
-    }
-    
-    return ( $prob ) ;
-
-}
 
 sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
     my ( $prob, @dirs ) = @_ ;
-    my ( $cmd, $day, $dfile, $dir, $jdate, $month, $new_month, $nrows, $success, $year ) ;
-    my ( @db, @months ) ;
+    my ( $MM, $chan, $cmd, $day, $db, $dfile, $dir, $endtime, $jdate, $month, $new_month, $nrows, $sta, $time, $year ) ;
+    my (  @db, @dbmonth, @dbyear, @months ) ;
     my ( %abspath, %months ) ;
-        
+
+    elog_notify ( "proc_ev_dbs ( $prob, \@dirs ) " ) ;
+         
     %abspath = () ;
     %months  = () ;
     
@@ -271,7 +168,8 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
     prettyprint( \%months ) if $opt_V ;
             
     chdir( $pf{wfdirbase} ) ;
-    
+    elog_notify ( "changed directory to $pf{wfdirbase}" ) ;
+
     $new_month = "" ; 
     @months    = () ; 
     
@@ -281,6 +179,8 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
         ( $year, $day ) =  split( "/", $dir ) ; 
         $jdate = ( $year * 1000 ) + $day ;
         $month = "$year\_" . epoch2str ( epoch ( $jdate ), "%m" )  ;
+        
+        $db = "usarray_$month" ;
         
         if ( ! -d "$pf{evdirbase}/$month" ) {
             elog_notify ( "$dir	$pf{evdirbase}/$month does not exist" ) if $opt_v ;
@@ -300,17 +200,19 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
             elog_debug ( "$dir	$months{$month}.wfdisc exists" ) if $opt_V ;
             next ;
         } else {
-            elog_debug ( "$dir	$months{$month}.wfdisc does not exist" ) if $opt_V ;
+            elog_debug ( "$pf{wfdirbase}	$months{$month}.wfdisc does not exist" ) if $opt_V ;
             $new_month = $month ; 
-            $abspath{$month} = $month ;
+            $abspath{$month} = $db ;
         }
 
-        elog_notify ( $dir ) if $opt_v ;
+        cssdescriptor( $db, $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} ) unless $opt_n ;  
 
         $cmd  = "miniseed2db " ;
         $cmd .= "-v " if $opt_V ;
-        $cmd .= "$dir $months{$month} " ;
-         
+        $cmd .= "$dir usarray_$month " ;
+
+        elog_notify ( $cmd ) if ( $opt_v && ! $opt_n )  ;
+
         if ( ! &run_cmd( $cmd ) ) {
             $prob++ ;
             return ( $prob )  ;
@@ -319,23 +221,19 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
     }
     
     foreach $month ( sort keys %abspath ) {
-        chdir( "$pf{evdirbase}/$month" ) ;
-        
-#         $cmd = "dbset $months{$month}.wfdisc dir \"*\" \"abspath(dir)\" " ;
-#         
-#         if ( ! &run_cmd( $cmd ) ) {
-#             $prob++ ;
-#             last ;
-#         }
-        
-        @db = dbopen( $months{$month}, "r+" ) ;
+
+       ( $year, $MM )  = split ( "_", $month ) ;
+#
+#  set dir to abspath
+#
+        @db = dbopen( "usarray_$month", "r+" ) ;
         @db = dblookup ( @db, 0, "wfdisc", 0, 0 ) ;
         $nrows = dbquery( @db, "dbRECORD_COUNT" ) ;
         
         for ( $db[3] = 0 ; $db[3] < $nrows ; $db[3]++ ) {
             ( $dir, $dfile ) = dbgetv( @db, qw ( dir dfile ) ) ;
             $dir = abs_path( $dir ) ;
-            if ( $opt_n ) {
+            if ( $opt_n && $opt_V ) {
                 elog_notify ( $dir ) ;
                 next ;
             }
@@ -348,32 +246,61 @@ sub proc_ev_dbs( @dirs ) { # $prob = &proc_ev_dbs ( $prob, @dirs ) ;
         }
         
         dbclose( @db ) ;
-        
-        $cmd = "dbfixchanids $months{$month}" ;
+#
+#  dbfixchanids
+#        
+        $cmd = "dbfixchanids $abspath{$month}" ;
         
         if ( ! &run_cmd( $cmd ) ) {
             $prob++ ;
             last ;
         }
-                
-        $cmd = "dbjoin $months{$month}.wfdisc calibration | dbset -v - wfdisc.calib '*' calibration.calib ";
-        $success = &run_cmd( $cmd ) ;
-        if ( $success < 0 || $success > 1 ) {
-            $prob++ ;
-        }
+#
+#  fix calibs calpers segtypes
+#        
+
+        $cmd = "dbjoin $abspath{$month}.wfdisc calibration | dbset -v - wfdisc.calib '*' calibration.calib ";
+        elog_notify ( $cmd ) if $opt_v ; 
+        system ( $cmd ) ;        
+
+        $cmd = "dbjoin $abspath{$month}.wfdisc calibration | dbset -v - wfdisc.calper '*' calibration.calper ";
+        elog_notify ( $cmd ) if $opt_v ; 
+        system ( $cmd ) ;        
         
 
-        $cmd = "dbjoin $months{$month}.wfdisc calibration | dbset -v - wfdisc.calper '*' calibration.calper ";
-        $success = &run_cmd( $cmd ) ;
-        if ( $success < 0 || $success > 1 ) {
-            $prob++ ;
-        }
-        
+        $cmd = "dbjoin $abspath{$month}.wfdisc calibration | dbset -v - wfdisc.segtype '*' calibration.segtype ";
+        elog_notify ( $cmd ) if $opt_v ; 
+        system ( $cmd ) ;
+#
+#  add to year db
+#                
 
-        $cmd = "dbjoin $months{$month}.wfdisc calibration | dbset -v - wfdisc.segtype '*' calibration.segtype ";
-        $success = &run_cmd( $cmd ) ;
-        if ( $success < 0 || $success > 1 ) {
+        if ( ! -f "usarray_$year" && ! $opt_n ) {
+            cssdescriptor( "usarray_$year", $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} )  ;
+        }
+       
+        $cmd = "cat usarray_$month.wfdisc >> usarray_$year.wfdisc" ;
+        
+        if ( ! &run_cmd( $cmd ) ) {
             $prob++ ;
+            last ;
+        }
+#
+#  move to event db
+#                
+       
+        $cmd = "mv usarray_$month.wfdisc $pf{evdirbase}/$month" ;
+        
+        if ( ! &run_cmd( $cmd ) ) {
+            $prob++ ;
+            last ;
+        }
+       
+        $cmd = "rm usarray_$month" ;
+        
+        if ( ! &run_cmd( $cmd ) ) {
+            $prob++ ;
+            last ;
         }
                 
 #  Prepare TA gap database tables

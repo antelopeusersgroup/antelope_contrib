@@ -497,6 +497,28 @@ void GenericFileHandle::put_metadata_to_dbuffer(Metadata& d,
     }catch(...){throw;};
 }
 
+void GenericFileHandle::put_sample_interval(BasicTimeSeries& d)
+{
+    double dtout;
+    if(key_is_dt)
+    {
+        dtout=d.dt*dtscale;
+    }
+    else
+    {
+        dtout=dtscale*(1.0/d.dt);
+    }
+    MDtype mdt=xref.type(dt_keyword);
+    switch(mdt)
+    {
+        case MDint:
+            dbuffer.put<int>(dtkey_ext,dtout);
+        case MDreal:
+        default:
+            dbuffer.put<double>(dtkey_ext,dtout);
+    }
+}
+
 int GenericFileHandle::put(TimeSeries& d)
 {
     /* To be stateless one might want to always force a seek to eof,
@@ -515,6 +537,7 @@ int GenericFileHandle::put(TimeSeries& d)
         dbuffer.put(0,d.s);
         this->put_metadata_to_dbuffer(d,ensemble_mdlist);
         this->put_metadata_to_dbuffer(d,trace_mdlist);
+        this->put_sample_interval(d);
         this->lock();
         dbuffer.write(outstrm);
         this->unlock();
@@ -543,6 +566,7 @@ int GenericFileHandle::put(TimeSeriesEnsemble& d)
                This uses the model that ensemble metadata are common
                to all members*/
             this->put_metadata_to_dbuffer(d,ensemble_mdlist);
+            this->put_sample_interval(*dptr);
             dbuffer.write(outstrm);
         }
         this->unlock();
@@ -589,6 +613,7 @@ int GenericFileHandle::put(ThreeComponentSeismogram& d)
         }
         this->put_metadata_to_dbuffer(d,ensemble_mdlist);
         this->put_metadata_to_dbuffer(d,trace_mdlist);
+        this->put_sample_interval(d);
         this->lock();
         dbuffer.write(outstrm);
         this->unlock();
@@ -631,6 +656,7 @@ int GenericFileHandle::put(ThreeComponentEnsemble& d)
                This uses the model that ensemble metadata are common
                to all members*/
             this->put_metadata_to_dbuffer(d,ensemble_mdlist);
+            this->put_sample_interval(*dptr);
             dbuffer.write(outstrm);
         }
         this->unlock();

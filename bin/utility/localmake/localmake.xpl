@@ -80,6 +80,7 @@ sub load_modules {
 			   "antelope",
 			   "dest",
 			   "extra_rules", 
+                           "platform_rules",
 			   "capabilities",
 			   "header",
 			   "macros",
@@ -757,6 +758,8 @@ sub write_makerules {
 
 	print O "\n$extra_rules\n";
 
+        print O "\n$platform_rules{$Os}\n";
+
 	close( O );
 
 	makedir( $dest );
@@ -1300,7 +1303,7 @@ sub test_capability {
 
 sub update_config_pf {
 
-	if( -e $Pf_config_file && ! system( "grep extra_rules $Pf_config_file" ) ) {
+	if( -e $Pf_config_file && ! system( "grep platform_rules $Pf_config_file" ) ) {
 
 		elog_complain( "The file '$Pf_config_file' is out of date. Moving it to '$Pf_config_file-' and updating." );
 
@@ -1694,6 +1697,18 @@ $Make_command = pfget( $Pf, "make_command" );
 $header = pfget( $Pf, "header" );
 $extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
+
+if( ! -e "$Pf_config_file" ) {
+
+	($adir, $abase, $asuffix) = parsepath( $Pf_config_file );
+
+	if( makedir( $adir ) != 0 ) {
+
+		elog_die( "Failed to make directory '$adir'\n" );
+	}
+
+	commit_configuration();
+}
 
 %macros_initial_config = %{pfget($Pf_config,"macros")};
 %capabilities_initial_config = %{pfget($Pf_config,"capabilities")};

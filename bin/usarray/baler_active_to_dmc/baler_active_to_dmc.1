@@ -1,4 +1,4 @@
-.TH BALER_ACTIVE_TO_DMC 1 
+.TH BALER_ACTIVE_TO_DMC 1 "$Date$"
 .SH NAME
 baler_active_to_dmc \- sends Baler 14 and Baler 44 miniseed dbs to DMC
 .SH SYNOPSIS
@@ -46,6 +46,10 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
 .IP baler_active
 Absolute path name for station baler archive directory base name
 .IP baler_final
@@ -58,6 +62,10 @@ Net code to process
 channel code of waveform file which is in the same directory as non-waveform miniseed files.
 .IP non_wf_chan
 list of non-waveform miniseed channel codes to be processed.
+.IP day_of_week
+Array of sta regex expressions for stations to be processed on a given day.  In general this 
+program should be run the day after \fBbaler_active_to_dmc\fP.  The -s option overrides this 
+station subsetting function.
 .IP dbidserver
 Name of idserver to be written into descriptor file for output database to use.
 .IP dbpath    
@@ -73,6 +81,9 @@ white space.
 .IP prob_mail
 Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
 white space.
+.fi
+.ft R
+.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
@@ -97,6 +108,16 @@ non_wf_chan          &Tbl{
                          OCF
                      }                                  # list of non-waveform miniseed channel codes to be 
                                                         # processed.
+                                                                
+day_of_week    &Arr{						
+                    Wednesday   ^[A-E].*
+                    Thursday    ^[F-J].*
+                    Friday      ^[K-O].*
+                    Saturday    ^[P-T].*
+                    Sunday      ^[U-Y].*
+                    Monday      ^[Z0-3].*
+                    Tuesday     ^[4-9].*
+               }                                        # day of week station regex for routine processing
                                                                 
 wfclean              LTW|VCE|VCQ|VFP|VQR|VTW            # remove these channels from transmission 
 
@@ -132,3 +153,4 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
+.br

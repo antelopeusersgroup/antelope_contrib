@@ -1,11 +1,11 @@
-.TH BALER_MSD_PROC 1 
+.TH BALER_MSD_PROC 1 "$Date$"
 .SH NAME
 baler_msd_proc \- reformats mulitplexed Baler 14 and Baler 44 miniseed data into sta-chan files 
 .SH SYNOPSIS
 .nf
-\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-p \fIpf\fP] [-m \fImail_to\fP] [-f \fInforks\fP] [-s \fIsta_regex\fP] \fIdb\fP
+\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-c] [-d] [-F] [-B] [-E] [-G] [-p \fIpf\fP] [-m \fImail_to\fP] [-f \fInforks\fP] [-s \fIsta_regex\fP] \fIdb\fP
 
-\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-p \fIpf\fP] \fIsta\fP \fIparent_pid\fP
+\fBbaler_msd_proc \fP  [-v] [-V] [-n] [-F] [-B] [-E] [-G] [-p \fIpf\fP] \fIsta\fP \fIparent_pid\fP
 .fi
 .SH DESCRIPTION
 This is the third in a series of 5 programs for processing baler 44 miniseed data.  The programs are
@@ -68,6 +68,18 @@ Verbose
 Extremely verbose.  Used for debugging purposes only.
 .IP -n
 Test mode.  Does not execute commands.
+.IP -c
+Only checks data downloads for baler 44.  Does not process.
+.IP -d
+Skip md5 checks for miniseed files
+.IP -F
+Force processing by ignoring all gap problems and processing the files which miniseed files actually exist.
+.IP -B
+Ignoring gap problems immediately following installation and process.
+.IP -E
+Ignoring gap problems immediately prior to removal and process.
+.IP -G
+Ignoring gap problems not associated with the installation or removal process.
 .IP "-p parameter_file"
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBbaler_msd_proc\fP.
@@ -83,6 +95,10 @@ Regular expression of stations to process.
 .SH ENVIRONMENT
 Needs to have sourced $ANTELOPE/setup.csh.  
 .SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
 .IP baler14dirbase
 Absolute path name for station baler 14 miniseed directory base name
 .IP baler14procbase
@@ -91,6 +107,8 @@ Absolute path name for processed baler 14 miniseed directory base name
 Absolute path name for processed baler 44 miniseed directory base name
 .IP archivebase
 Absolute path name for station baler directory base name for data to be written to
+.IP rt_sta_dir
+Absolute path name for rt wfdisc directory base name
 .IP bhdata_dir
 Subdirectory name for BH and LH data 
 .IP sohdata_dir
@@ -103,50 +121,81 @@ Name of idserver to be written into descriptor file for output database to use.
 dbpath to be written into descriptor file for output database to use.
 .IP dblocks
 dblocking type for database
-.IP success_mail
-Email addresses to send notification of station success. Multiple email addresses should be comma delimited without
-white space.
-.IP prob_mail
-Email addresses to send notification of problems. Multiple email addresses should be comma delimited without
-white space.
+.IP days_after_install
+number of days after installation to allow 90% rt data return
+.IP days_before_removal
+number of days before removal to allow 90% rt data return
+.IP limit_hours
+limit of hours to allow stations to start processing
+.IP days_after_removal
+number of days to wait after removal before final processing
+.IP max_mseed_hours
+maximum allowable number of hours between times of adjacent mseed files
 .IP net_sta_chan_loc
 Table of net_sta_chan_loc changes for fixminiseed
 .IP sta
 Table of sta changes for fixminiseed
+.IP day_of_week
+Array of sta regex expressions for stations to be processed on a given day.  
+In general this program should be run the same day as \fBrt_sta_wfdisc\fP 
+and the day before \fBbaler_wf_proc\fP.  
+The -s option overrides this station subsetting function.
+.fi
+.ft R
+.in
 .SH EXAMPLE PARAMETER FILE
 .in 2c
 .ft CW
 .nf
 
-baler14dirbase    /anf/TA/baler/station_aof_dumps/hold_for_station_closure    # absolute path name for station baler 14 miniseed directory base name
+baler14dirbase      /anf/TA/baler/station_aof_dumps/hold_for_station_closure    # absolute path name for station baler 14 miniseed directory base name
 
-baler14procbase   /anf/TA/baler/station_aof_dumps/processed_44                # absolute path name for processed baler 14 miniseed directory base name
+baler14procbase     /anf/TA/baler/station_aof_dumps/processed_44                # absolute path name for processed baler 14 miniseed directory base name
 
-baler44dirbase    /anf/TA/baler/work                 # absolute path name for station baler 44 miniseed directory base name
+baler44dirbase      /anf/TA/baler/work                 # absolute path name for station baler 44 miniseed directory base name
+  
+rt_sta_dir          /anf/TA/dbs/wfs/rt_stas            # absolute path name for rt wfdisc directory base name
 
-archivebase       /anf/TA/dbs/wfs/station_active     # absolute path name for station baler directory base name for data to be written to
+archivebase         /anf/TA/dbs/wfs/station_active     # absolute path name for station baler directory base name for data to be written to
+ 
+bhdata_dir          BVLAOU                             # subdirectory name for BH and LH data
+sohdata_dir         VLAOU                              # subdirectory name for VH, UH, and SOH data
 
-bhdata_dir        BVLAOU                             # subdirectory name for BH and LH data
-sohdata_dir       VLAOU                              # subdirectory name for VH, UH, and SOH data
+net                 TA                                 # Network Code
 
-net               TA                                 # Network Code
+dbpath              /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
 
-dbpath            /anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
+dbidserver                                             # default dbidserver
+dblocks             none                               # default dblocks
 
-dbidserver                                           # default dbidserver
-dblocks           none                               # default dblocks
+days_after_install  2                                  # number of days after installation 
+                                                       # to allow 90% rt data return
+days_before_removal 1                                  # number of days before removal 
+                                                       # to allow 90% rt data return
+limit_hours         12                                 # limit of hours to allow stations to start processing                                                                
+days_after_removal  60                                 # number of days to wait after removal before final processing
 
-success_mail      your@email.edu                     # email addresses to send notification of station success
-prob_mail         your@email.edu                     # email addresses to send notification of problems
+max_mseed_hours     10                                 # maximum allowable number of hours between times of adjacent mseed files
 
-net_sta_chan_loc        &Tbl{                        # for fix_miniseed parameter file, see fix_miniseed man page
+
+net_sta_chan_loc        &Tbl{                          # for fix_miniseed parameter file, see fix_miniseed man page
 TA_([A-Z0-9]+)_(L[DIK]M)_      TA_\\$1_\\$2_EP
 TA_([A-Z0-9]+)_([BL]D[FO])_EP  TA_\\$1_\\$2_
 }
 
-sta        &Tbl{                                     # for fix_miniseed parameter file, see fix_miniseed man page
+sta        &Tbl{                                       # for fix_miniseed parameter file, see fix_miniseed man page
 EXMP       CURRENT_STATION
 }
+
+day_of_week    &Arr{						
+    Monday      ^[A-E].*
+    Tuesday     ^[F-J].*
+    Wednesday   ^[K-O].*
+    Thursday    ^[P-T].*
+    Friday      ^[U-Y].*
+    Saturday    ^[Z0-3].*
+    Sunday      ^[4-9].*
+}                                                      # day of week station regex for routine processing
 
 .fi
 .ft R
@@ -168,3 +217,4 @@ rtmail(1)
 .LP
 .SH AUTHOR
 Frank Vernon
+.br

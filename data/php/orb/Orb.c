@@ -213,6 +213,18 @@ PHP_METHOD(orb_stat, nsources);
 PHP_METHOD(orb_stat, nclients);
 PHP_METHOD(orb_stat, maxsrc);
 PHP_METHOD(orb_stat, maxpkts);
+PHP_METHOD(orb_stat, utilization);
+PHP_METHOD(orb_stat, ipktrate);
+PHP_METHOD(orb_stat, opktrate);
+PHP_METHOD(orb_stat, ibyterate);
+PHP_METHOD(orb_stat, obyterate);
+PHP_METHOD(orb_stat, istashrate);
+PHP_METHOD(orb_stat, ostashrate);
+PHP_METHOD(orb_stat, maxlag);
+PHP_METHOD(orb_stat, howlong);
+PHP_METHOD(orb_stat, flags);
+PHP_METHOD(orb_stat, reaping);
+PHP_METHOD(orb_stat, stalled);
 
 zend_class_entry *php_orb_stat_entry;
 #define PHP_ORB_STAT_NAME "orb_stat"
@@ -237,6 +249,18 @@ static function_entry php_orb_stat_functions[] = {
 	PHP_ME(orb_stat, nclients, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_stat, maxsrc, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_stat, maxpkts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, utilization, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, ipktrate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, opktrate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, ibyterate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, obyterate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, istashrate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, ostashrate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, maxlag, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, howlong, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, flags, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, reaping, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, stalled, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -283,12 +307,21 @@ PHP_METHOD(orb_client, fd);
 PHP_METHOD(orb_client, nreject);
 PHP_METHOD(orb_client, nselect);
 PHP_METHOD(orb_client, errors);
-PHP_METHOD(orb_client, priority);
+PHP_METHOD(orb_client, lagprev);
 PHP_METHOD(orb_client, lastrequest);
 PHP_METHOD(orb_client, nrequests);
 PHP_METHOD(orb_client, nwrites);
 PHP_METHOD(orb_client, nreads);
 PHP_METHOD(orb_client, written);
+PHP_METHOD(orb_client, prev_time);
+PHP_METHOD(orb_client, prev_packets);
+PHP_METHOD(orb_client, prev_bytes);
+PHP_METHOD(orb_client, nstash);
+PHP_METHOD(orb_client, prev_stash);
+PHP_METHOD(orb_client, utilization);
+PHP_METHOD(orb_client, pkts_per_sec);
+PHP_METHOD(orb_client, bytes_per_sec);
+PHP_METHOD(orb_client, stash_per_sec);
 
 zend_class_entry *php_orb_client_entry;
 #define PHP_ORB_CLIENT_NAME "orb_client"
@@ -313,12 +346,20 @@ static function_entry php_orb_client_functions[] = {
 	PHP_ME(orb_client, nreject, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nselect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, errors, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(orb_client, priority, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, lagprev, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, lastrequest, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nrequests, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nwrites, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, nreads, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, written, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, prev_time, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, prev_bytes, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, nstash, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, prev_stash, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, utilization, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, pkts_per_sec, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, bytes_per_sec, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_client, stash_per_sec, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -2339,6 +2380,114 @@ PHP_METHOD(orb_stat, maxpkts)
 	RETURN_LONG( os->maxpktid );
 }
 
+PHP_METHOD(orb_stat, utilization)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->utilization );
+}
+
+PHP_METHOD(orb_stat, ipktrate)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->ipktrate );
+}
+
+PHP_METHOD(orb_stat, opktrate)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->opktrate );
+}
+
+PHP_METHOD(orb_stat, ibyterate)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->ibyterate );
+}
+
+PHP_METHOD(orb_stat, obyterate)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->obyterate );
+}
+
+PHP_METHOD(orb_stat, istashrate)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->istashrate );
+}
+
+PHP_METHOD(orb_stat, ostashrate)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->ostashrate );
+}
+
+PHP_METHOD(orb_stat, maxlag)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->maxlag );
+}
+
+PHP_METHOD(orb_stat, howlong)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->howlong );
+}
+
+PHP_METHOD(orb_stat, flags)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->flags );
+}
+
+PHP_METHOD(orb_stat, reaping)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->reaping );
+}
+
+PHP_METHOD(orb_stat, stalled)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->stalled );
+}
+
 PHP_METHOD(orb_source, srcname)
 {
 	Orbsrc *os;
@@ -2600,13 +2749,13 @@ PHP_METHOD(orb_client, errors)
 	RETURN_LONG( oc->errors );
 }
 
-PHP_METHOD(orb_client, priority)
+PHP_METHOD(orb_client, lagprev)
 {
 	Orbclient *oc;
 
 	oc = get_this_orb_client( getThis() );
 
-	RETURN_LONG( oc->priority );
+	RETURN_LONG( oc->lagprev );
 }
 
 PHP_METHOD(orb_client, lastrequest)
@@ -2652,6 +2801,87 @@ PHP_METHOD(orb_client, written)
 	oc = get_this_orb_client( getThis() );
 
 	RETURN_LONG( oc->written );
+}
+
+PHP_METHOD(orb_client, prev_time)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->prev_time );
+}
+
+PHP_METHOD(orb_client, prev_packets)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->prev_packets );
+}
+
+PHP_METHOD(orb_client, prev_bytes)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->prev_bytes );
+}
+
+PHP_METHOD(orb_client, nstash)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->nstash );
+}
+
+PHP_METHOD(orb_client, prev_stash)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->prev_stash );
+}
+
+PHP_METHOD(orb_client, utilization)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->utilization );
+}
+
+PHP_METHOD(orb_client, pkts_per_sec)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->pkts_per_sec );
+}
+
+PHP_METHOD(orb_client, bytes_per_sec)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->bytes_per_sec );
+}
+
+PHP_METHOD(orb_client, stash_per_sec)
+{
+	Orbclient *oc;
+
+	oc = get_this_orb_client( getThis() );
+
+	RETURN_LONG( oc->stash_per_sec );
 }
 
 /* {{{ proto array split_srcname( string srcname ) */

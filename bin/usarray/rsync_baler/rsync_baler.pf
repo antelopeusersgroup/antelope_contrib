@@ -6,6 +6,6 @@ download_timeout        300                  # in seconds
 
 http_port               5381                 #port for http connections
 
-max_procs               40                   #number of simultaneous processes
+max_procs               35                   #number of simultaneous processes
 
 max_child_run_time      36000                #stop downloading files after this number of seconds. 0 = disable.

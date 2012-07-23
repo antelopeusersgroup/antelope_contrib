@@ -23,17 +23,17 @@ program_loglevel controls the overall level of logging output for the
 program. The options for this setting are "quiet", "verbose", and
 "veryverbose". The latter is meant for debugging purposes, and will
 generate a great deal of output (several lines for each incoming
-packet). The parameter calibration_database gives the name of a database 
-with calibration information for the incoming stations. Since Earthworm 
-waveform packets do not contain calibration data and the Antelope waveform 
-packets do contain calibration data, a database is necessary to 
-hold the calibration information. If this database is not found, ew2orb 
-will complain, and fill in the Antelope packets with null calibration 
-information. This database is also used for the 'segtype' field in the 
-Antelope packets. segtype is taken from the rsptype field of the 
-instrument table. calib and calper are taken from the corresponding fields 
-of the calibration table. Note that in order to make use of the instrument 
-table, the sensor table must also be present and have valid entries 
+packet). The parameter calibration_database gives the name of a database
+with calibration information for the incoming stations. Since Earthworm
+waveform packets do not contain calibration data and the Antelope waveform
+packets do contain calibration data, a database is necessary to
+hold the calibration information. If this database is not found, ew2orb
+will complain, and fill in the Antelope packets with null calibration
+information. This database is also used for the 'segtype' field in the
+Antelope packets. segtype is taken from the rsptype field of the
+instrument table. calib and calper are taken from the corresponding fields
+of the calibration table. Note that in order to make use of the instrument
+table, the sensor table must also be present and have valid entries
 for the incoming stations.
 
 The bulk of the parameter file is contained in the 'import_from' array.
@@ -107,9 +107,9 @@ off veryverbose output after resolution.
 Incoming stations (orb source-names, i.e. net_sta_chan, before they're
 translated to any new names) which match this regular expression will
 be allowed to go on the orb. The default, which is to leave this blank,
-allows all incoming sources. Many values are possible here given the 
-flexibility of regular expressions. As an example, one could use an 
-expression such as the following to select several stations from a given 
+allows all incoming sources. Many values are possible here given the
+flexibility of regular expressions. As an example, one could use an
+expression such as the following to select several stations from a given
 network:
 .nf
 
@@ -123,8 +123,8 @@ be rejected and not allowed to go on the orb. The default, which is to
 leave this blank, allows all incoming sources.
 
 .IP default_segtype
-Incoming stations without segtype values available in the calibration 
-database will be assigned this value for segtype in the Antelope orb 
+Incoming stations without segtype values available in the calibration
+database will be assigned this value for segtype in the Antelope orb
 packets.
 
 .IP srcname_morph
@@ -160,12 +160,12 @@ All matching patterns listed in the srcname_morph table will be applied.
 For further details please see the documentation on the morphtbl(3) routine.
 
 .IP timecorr
-This array contains time shift values to be applied to certain of the 
+This array contains time shift values to be applied to certain of the
 stations as they come in. The names should be specified as net_sta_chan
 strings (using the designation with which the data comes in, i.e. before
-any srcname_morph transformation has been applied). Each value should be 
-followed by the number of seconds to add to each data packet's timestamp. 
-Positive values will move the data further into the future. 
+any srcname_morph transformation has been applied). Each value should be
+followed by the number of seconds to add to each data packet's timestamp.
+Positive values will move the data further into the future.
 
 .SH OPTIONS
 .IP "-p pfname"
@@ -286,23 +286,23 @@ a small run-time inefficiency; it's advantageous to have translations
 present in earthworm.pf for all modules, message types, and installations
 encountered.
 
-Because the select and reject subsetting is done on the receiving side, 
-bandwidth is used according to the number of packets being sent by the 
-remote export module, regardless of whether the ew2orb select and 
+Because the select and reject subsetting is done on the receiving side,
+bandwidth is used according to the number of packets being sent by the
+remote export module, regardless of whether the ew2orb select and
 reject expressions allow them to be put on the orb.
 
-\fBew2orb\fP will dynamically adjust to changes in the calibration_database. 
+\fBew2orb\fP will dynamically adjust to changes in the calibration_database.
 However, if the pathname of the database changes, \fBew2orb\fP must be
-restarted. Note also that if changes are made to calibration values using 
-dbe(1), sometimes one must quit the dbe application for the changes to be 
+restarted. Note also that if changes are made to calibration values using
+dbe(1), sometimes one must quit the dbe application for the changes to be
 noticed by \fBew2orb\fP.
 
 The timecorr array allows waveform timestamps to be shifted forward
-and backwards in time. The amounts are left to user discretion; no 
-limits are placed on the amount of shifting. Shifting data too far 
-into the future may cause a host of downstream problems. 
+and backwards in time. The amounts are left to user discretion; no
+limits are placed on the amount of shifting. Shifting data too far
+into the future may cause a host of downstream problems.
 
-Currently only station and channel name are used in looking up calibration 
+Currently only station and channel name are used in looking up calibration
 information in the stations database (net and loc codes are ignored).
 .SH AUTHOR
 .nf

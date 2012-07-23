@@ -1,0 +1,99 @@
+.TH RECOVER_NETMAG 1 "$Date$"
+.SH NAME
+recover_netmag \- takes input db and appends missing netmags from external catalogs 
+.SH SYNOPSIS
+.nf
+\fBrecover_netmag \fP  [-v]  \fIdb1 [db2 ...] \fP
+.fi
+.SH DESCRIPTION
+Program takes input db origin table, which is no-joined to netmag.  Next it searches the 
+list of catalogs to see if there are any missing netmags.  Program updates the 
+netmag table as necessary. 
+
+The process is repeated for \fIdb2.origin\fP and subsequent dbs if listed in argument list.
+
+This program is designed to be used during the verification stage of an analyst review.
+
+This program is created to harmonize databases created before netmag was in general use
+with updated catalogs.  In the case of usarray, it was necessary for all dbs prior to 2009.
+
+.SH OPTIONS
+.IP -v
+Verbose
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+.ne 7
+.IP local_auth
+Regex for local author
+.IP netmag
+list of catalogs to search
+.IP auth
+array of authors matched to catalogs
+.fi
+.ft R
+.in
+.SH EXAMPLE PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+local_auth 		^ANF.*|^UCSD.*|^local.*|^tele.*|^casc.*
+
+
+netmag &Tbl{            
+/anf/shared/catalogs/aeic/aeic_2009
+/anf/shared/catalogs/cit/cit_2008
+/anf/shared/catalogs/cit/cit_2009
+/anf/shared/catalogs/emsc/emsc_2009
+/anf/shared/catalogs/lcsn/lcsn_2009
+/anf/shared/catalogs/mtech/mtech_2009
+/anf/shared/catalogs/ncec/ncec_2009
+/anf/shared/catalogs/nesn/nesn_2009
+/anf/shared/catalogs/nmsn/nmsn_2009
+/anf/shared/catalogs/nrcan/nrcan_2009
+/anf/shared/catalogs/pgc/pgc_2009
+anf/shared/catalogs/pnsn/pnsn_2009
+/anf/shared/catalogs/qed/mines
+/anf/shared/catalogs/qed/pde
+/anf/shared/catalogs/qed/qed_weekly_gt2009
+/anf/shared/catalogs/unr/unr_2009
+/anf/shared/catalogs/utah/utah_2009
+/anf/shared/catalogs/utah/yellowstone_2009
+}
+
+auth &Arr{
+CERI 	nmsn
+GSC 	nrcan
+LCSN	lcsn
+MTECH   mtech
+NBE     unr
+NCEDC	ncec
+NCSN	ncec
+NEIC	qed
+NMSN	nmsn
+PGC		pgc 
+PNSN	pnsn 
+QED		qed 
+SCSN	cit
+UNR		unr 
+UTAH	utah 
+UUSS	utah
+cit		cit 
+}
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "BUGS AND CAVEATS"
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

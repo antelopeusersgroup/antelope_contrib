@@ -1,6 +1,7 @@
 DATADIR=instruments/sensors
 DATA= \
-        BH1.pf \
+    BH1.pf \
+    KS2000M.pf \
 	chaparral.pf \
 	cmg1t.pf \
 	cmg1t_100sec.pf \
@@ -12,9 +13,9 @@ DATA= \
 	cmg3esp_30sec.pf \
 	cmg3esp_60sec.pf \
 	cmg3esp_nsn.pf \
-        cmg3t.pf \
-        cmg3tb.pf \
-        cmg3t_nsn.pf \
+    cmg3t.pf \
+    cmg3tb.pf \
+    cmg3t_nsn.pf \
 	cmg3t_100sec.pf \
 	cmg3t_120sec.pf \
 	cmg3t_30sec.pf \
@@ -37,7 +38,7 @@ DATA= \
 	episensor_80vpg.pf \
 	fba23_0_25g.pf \
 	fba23_0_5g.pf \
-        fba23_100hz_1g.pf \
+    fba23_100hz_1g.pf \
 	fba23_1g.pf \
 	fba23_2g.pf\
 	fba23_2g_100hz.pf \
@@ -89,6 +90,9 @@ DATA= \
 	sts1_e.pf \
 	sts1_n.pf \
 	sts1_z.pf \
+	sts1_360sec_10hz_e.pf \
+	sts1_360sec_10hz_n.pf \
+	sts1_360sec_10hz_z.pf \
 	old_sts2.pf \
 	sts2_g1.pf \
 	sts2_g2.pf \
@@ -96,6 +100,11 @@ DATA= \
 	sts2_5.pf \
 	sv1.pf \
 	terratech.pf \
+    titan_0_25_g.pf \
+    titan_0_5_g.pf \
+    titan_1g.pf \
+    titan_2g.pf \
+    titan_4g.pf \
 	trillium_40.pf \
 	trillium_120.pf \
 	trillium_240_1.pf \

@@ -1,0 +1,57 @@
+.TH DBASSOCIATE 1 "$Date$"
+.SH NAME
+dbassociate \- takes arrival db and an external catalog and tries to associate all unassociated arrival
+.SH SYNOPSIS
+.nf
+\fBdbassociate \fP  [-v] [-n] [-e] [-i] \fIarrival_db\fP] \fIcatalog_db\fP
+.fi
+.SH DESCRIPTION
+Program takes \fIarrival_db.arrival\fP  table, does a dbnojoin with the assoc table, and tests
+to see if any of the no-joined arrivals match to \fIarrival_db.origin\fP.  
+All new associations are  incorportated into \fIarrival_db\fP. Then \fIarrival_db\fP is closed.
+
+In the second step, the \fIarrival_db.arrival\fP table is reopened, and again does a dbnojoin with the assoc table.
+This time the no-joined arrives match to \fIcatalog_db.origin\fP.  \fIcatalog_db.origin\fP is subsetted 
+to provide only the last lddate for near duplicate origins by calling \fBlast_origin_lddate(1)\fP.
+All new associations, origins, netmags, are  incorportated into \fIarrival_db\fP. Then \fIarrival_db\fP is closed.
+
+This programs calls \fBdbloc_assoc(1)\fP to generate the assoc, origin, netmag and proper phase entries in assoc.
+
+\fBdbassociate\fP has a similar function to the older \fBdbassoc_arrival(1)\fP.  Differences are that
+\fBdbassociate\fP compares both internal and external origin tables, handles netmag entries properly,
+and using dbloc_assoc to generate proper phase from the travel time calculator instead of just copying
+iphase from the arrival table into phase in the assoc table.
+
+Associations are defined by P waves having ( abs( $timeres ) < 3.0 ) and S waves having ( abs( $timeres ) < 10.0 ).
+
+This program is designed to be used during the verification stage of an analyst review.
+
+.SH OPTIONS
+.IP -v
+Verbose
+.IP -n
+No operation.  Examine dbs and get counts.  \fIarrival_db\fP not updated.
+.IP -e
+Only compare no-joined arrivals to \fIcatalog_db.origin\fP
+.IP -i
+Only compare no-joined arrivals to \fIarrival_db.origin\fP]
+
+.SH ENVIRONMENT
+Needs to have sourced $ANTELOPE/setup.csh.  
+
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+dbassoc_arrival(1)
+dbloc_assoc(1)
+last_origin_lddate(1)
+.fi
+.SH "BUGS AND CAVEATS"
+If using the -n option then the count of the unassociated arrivals will be the same for both
+origin tables, since 
+the real associations to the \fIarrival_db.origin\fP did not occur.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

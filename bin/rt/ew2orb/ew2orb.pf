@@ -1,8 +1,8 @@
 calibration_database dbmaster/cnsn
 program_loglevel verbose
 defaults &Arr{
-	send_heartbeat_sec 	120
-	send_heartbeat_string 	alive
+	send_heartbeat_sec	120
+	send_heartbeat_string	alive
 	expect_heartbeat_sec	300
 	expect_heartbeat_string	.*alive.*
 	server_port		16010

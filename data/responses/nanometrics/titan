@@ -1,0 +1,22 @@
+# Titan Accelerometer
+# $Id$
+#
+# Normalized  response relative to acceleration
+# All poles and zeroes in radians/sec
+# 1                   type
+# 1                   num of zeroes
+# 6                   num of poles
+# 1.0077e18           normalization factor
+# sensitivity is dependent on selected range
+theoretical   1 accelerometer   paz	GSC_Koessler
+1.0077e18
+6
+-9.77E+02	3.28E+02	0.000E+00	0.000E+00
+-9.77E+02	-3.28E+02	0.000E+00	0.000E+00
+-1.486E+03	2.512E+03	0.000E+00	0.000E+00
+-1.486E+03	-2.512E+03	0.000E+00	0.000E+00
+-5.736E+03	4.946E+03	0.000E+00	0.000E+00
+-5.736E+03	-4.946E+03	0.000E+00	0.000E+00
+1
+-5.15E+02	0.000E+02 	0.000E+00	0.000E+00
+

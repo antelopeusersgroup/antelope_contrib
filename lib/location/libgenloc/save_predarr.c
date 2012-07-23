@@ -123,7 +123,7 @@ double compute_ema (Slowness_vector *u, Slowness_Function_Output *ucalc,
 	char *key;
 	double velocity;
 	static Hook *hook=0;
-	int nmatches;
+	long nmatches;
 	char cphase;  /* store last char of phase name here */
 	int name_len;
 	int i; 

@@ -244,6 +244,11 @@ class GenericFileHandle
          dbuffer (external names)*/
         void put_metadata_to_dbuffer(Metadata& d,
                 list<string>& mdlist);
+        /* Because sample interval handling is variable with
+           format we use this private method to handle 
+           if it is stored as dt of 1/dt and if there is a scaling
+           as in segy */
+        void put_sample_interval(BasicTimeSeries& d);
         /* This file handle is designed to work in a multithreaded 
            environment as one of the primary goals was a way to read 
            and write data on a massively parallel machine.  

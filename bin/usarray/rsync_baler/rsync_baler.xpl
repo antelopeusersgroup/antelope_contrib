@@ -27,6 +27,7 @@ use File::Spec;
 use File::Copy;
 use Getopt::Std;
 use File::Fetch;
+use File::Basename;
 use Digest::MD5 qw[md5_hex];
 use IO::Uncompress::AnyUncompress qw(anyuncompress $AnyUncompressError) ;
 
@@ -50,6 +51,7 @@ use constant true  => 1;
 
 select STDOUT; $| = 1;
 select STDERR; $| = 1;
+
 #}}}
 
 #{{{
@@ -58,7 +60,7 @@ select STDERR; $| = 1;
     $start = now();
     $host = my_hostname();
 
-    unless ( &getopts('hdvm:p:s:r:') || @ARGV > 0 ) { 
+    unless ( &getopts('hdvm:p:s:r:') || @ARGV > 0 ) {
         pod2usage({-exitval => 2,
                    -verbose => 2});
     }
@@ -98,8 +100,8 @@ select STDERR; $| = 1;
     #
     ## Set File::Fetch options
     #
-    $File::Fetch::WARN    = 0 unless $opt_d; 
-    $File::Fetch::DEBUG   = 1 if $opt_d; 
+    $File::Fetch::WARN    = 0 unless $opt_d;
+    $File::Fetch::DEBUG   = 1 if $opt_d;
     $File::Fetch::TIMEOUT = $pf{download_timeout};
     $File::Fetch::BLACKLIST = [qw/LWP ncftp lftp lynx iosock/];
     #   File::Fetch
@@ -114,9 +116,9 @@ select STDERR; $| = 1;
     #
     debug("Opening $pf{database}:");
 
-    @db = dbopen ( $pf{database}, "r" ) or log_die("Can't open DB: $pf{database}"); 
+    @db = dbopen ( $pf{database}, "r" ) or log_die("Can't open DB: $pf{database}");
 
-    # Open table for list of valid stations 
+    # Open table for list of valid stations
     @db_on = dblookup(@db, "", "deployment" , "", "");
     table_check(\@db_on);
 
@@ -141,7 +143,11 @@ select STDERR; $| = 1;
 #
 #{{{
 
-    $stations = get_stations_from_db(); 
+    $stations = get_stations_from_db();
+    dbfree(@db_sta);
+    dbfree(@db_ip);
+    dbfree(@db_on);
+    dbclose(@db);
 
     #
     # Get data from the stations
@@ -161,7 +167,7 @@ select STDERR; $| = 1;
 
     logging("Start: $start End: $end");
     logging("Runtime: $run_time_str");
-    sendmail("$0 @ARGV",$opt_m,"/tmp/#rtsys$$") if $opt_m; 
+    sendmail("$0 @ARGV",$opt_m,"/tmp/#rtsys$$") if $opt_m;
 
     exit 0;
 
@@ -178,7 +184,7 @@ sub get_stations_from_db {
     #
     # Get stations with baler44s
     #
-    debug("dbsubset ( stablaler.model =~ /Packet Baler44/)");
+    debug("dbsubset ( stabaler.model =~ /Packet Baler44/)");
     @db_1 = dbsubset ( @db_sta, "stabaler.model =~ /PacketBaler44/ ");
 
     debug("dbsubset ( sta =~ /$opt_s/)") if $opt_s;
@@ -189,14 +195,14 @@ sub get_stations_from_db {
 
     $nrecords = dbquery(@db_1,dbRECORD_COUNT) or log_die("No records to work with after dbsubset()"); 
 
-    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) { 
+    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) {
 
-        ($dlsta,$net,$sta) = dbgetv(@db_1, qw/dlsta net sta/); 
+        ($dlsta,$net,$sta) = dbgetv(@db_1, qw/dlsta net sta/);
 
-        $sta_hash{$sta}{dlsta}      = $dlsta; 
-        $sta_hash{$sta}{net}        = $net; 
-        $sta_hash{$sta}{status}     = 'Decom'; 
-        $sta_hash{$sta}{ip}         = 0; 
+        $sta_hash{$sta}{dlsta}      = $dlsta;
+        $sta_hash{$sta}{net}        = $net;
+        $sta_hash{$sta}{status}     = 'Decom';
+        $sta_hash{$sta}{ip}         = 0;
 
         $sta_hash{$sta}{status} = 'Active' if ( dbfind(@db_on, "sta =~ /$sta/ && snet =~ /$net/ && endtime == NULL", -1) >= 0);
 
@@ -209,12 +215,12 @@ sub get_stations_from_db {
 
             if ( $db_ip[3] >= 0 ) {
 
-                $ip = dbgetv(@db_ip, qw/inp/); 
+                $ip = dbgetv(@db_ip, qw/inp/);
 
                 # regex for the ip
                 $ip =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/;
                 problem("Failed grep on IP $pf{database}.stabaler{inp}->(ip'$ip',dlsta'$dlsta')") unless $1;
-                $sta_hash{$sta}{ip} = $1 if $1; 
+                $sta_hash{$sta}{ip} = $1 if $1;
 
             }
         }
@@ -223,9 +229,6 @@ sub get_stations_from_db {
     }
 
     eval { dbfree(@db_1); };
-    eval { dbclose(@db_sta); };
-    eval { dbclose(@db_ip);  };
-    eval { dbclose(@db_on);  };
 
     return \%sta_hash;
 #}}}
@@ -244,7 +247,7 @@ sub run_in_threads {
         #
         # Verify running procs
         #
-        @active_procs = check_pids(@active_procs); 
+        @active_procs = check_pids(@active_procs);
 
         #
         # Read messages from pipes
@@ -252,18 +255,14 @@ sub run_in_threads {
         nonblock_read($stations);
 
         #
+        # throttle parent process
+        #
+        sleep 1;
+
+        #
         # Stop if we are at max procs
         #
         redo STATION if scalar(@active_procs) >= $max_out;
-
-        #
-        # Test for memory and CPU load
-        #
-        unless ( test_resources() ) {
-            $max_out = scalar @active_procs || 1;
-            problem("Low on resources. Limit max_out=$max_out ");
-            redo STATION;
-        }
 
         logging("Spawn: $function($station). Now: ".@active_procs." procs");
 
@@ -271,7 +270,7 @@ sub run_in_threads {
         # Send msgs from child to parent
         #
         #unless ( socketpair($$station{from_child}, $$station{to_parent}, AF_UNIX, SOCK_STREAM, PF_UNSPEC) ) {  
-        unless ( pipe($$station{from_child}, $$station{to_parent}) ) {  
+        unless ( pipe($$station{from_child}, $$station{to_parent}) ) {
             problem("run_in_threads(): ERROR... pipe():$! ");
             $max_out = scalar @active_procs || 1;
             problem("run_in_threads(): setting max_out=$max_out ");
@@ -286,21 +285,21 @@ sub run_in_threads {
 
         $pid = fork();
 
-        # 
+        #
         # Parent
         #
         push @active_procs, $pid if $pid;
         $stations->{$station}->{pid} = $pid if $pid;
         next if $pid;
 
-        # 
+        #
         # Child only
         #
 
         #
         # Set this global for child only
         #
-        $to_parent = $$station{to_parent}; 
+        $to_parent = $$station{to_parent};
 
         &$function($station,$stations->{$station});
 
@@ -321,7 +320,7 @@ sub run_in_threads {
 
 sub nonblock_read {
 #{{{ nonblock_read(sta)
-    my $stations = shift; 
+    my $stations = shift;
     my ($msg,$n,$fh,$buf);
 
     foreach my $station (sort keys %$stations) {
@@ -349,58 +348,6 @@ sub nonblock_read {
 #}}}
 }
 
-sub test_resources {
-#{{{ test_resources()
-
-    #
-    # Test memory usage
-    #
-    my %memory   = sysmem();
-    my $physical = $memory{physmem};
-    my $used     = $memory{used};
-    my $ratio    = ($used/$physical)*100 if $physical;
-    $ratio      ||= 0;
-
-    debug( sprintf("Memory in use: %0.1f%% (%0d/%0d)", $ratio, $used, $physical) );
-
-    return 0 unless ($ratio && $used && $physical);
-
-    #
-    # Stop here is we are over 85% of real memory usage (don't care about swap)
-    #
-    return 0 if $ratio > 85;
-
-    #
-    # Test CPU loads
-    #
-    my ($ncpu, $idle, $user, $kernel, $iowait, $swap, @the_rest) = syscpu();
-    sleep 1; # This is the only way syscpu() works... don't ask me :-P
-    ($ncpu, $idle, $user, $kernel, $iowait, $swap, @the_rest) = syscpu();
-
-    for (1 .. $ncpu) {
-
-        #
-        # Look for 1 CPU with more than 15% idle time
-        #
-        $idle   = shift @the_rest if $_ != 1;
-        $user   = shift @the_rest if $_ != 1;
-        $kernel = shift @the_rest if $_ != 1;
-        $iowait = shift @the_rest if $_ != 1;
-        $swap   = shift @the_rest if $_ != 1;
-        debug( sprintf("CPU $_: idle(%0.2f)  user(%0.2f)  kernel(%0.2f) iowait(%0.2f)  swap(%0.2f)\n",
-                $idle, $user, $kernel, $iowait, $swap) ) if $opt_d;
-        return 1 if $idle > 15; 
-
-    }
-
-    #
-    # If all CPUs are over 75% load we return false
-    #
-    return 0;
-
-#}}}
-}
-
 sub check_pids {
 #{{{ check_pids(@pids)
     my @temp_pids = ();
@@ -413,7 +360,7 @@ sub check_pids {
         elsif (WIFEXITED($?)) {
             debug("\tDone with $_");
         }
-        else{ 
+        else{
             push @temp_pids, $_;
         }
 
@@ -427,8 +374,8 @@ sub check_pids {
 sub get_data {
 #{{{  get_data(sta,%metadata)
 
-    my ($station,$table) = @_; 
-    log_die("No value for station in child.") unless $station;
+    my ($sta,$table) = @_;
+    log_die("No value for station in child.") unless $sta;
 
     my (%active_media_files,$media,@rem_file);
     my (%remote,$size,$nrecords,@temp_download,@dbwr,@dbr,@dbr_sub);
@@ -446,23 +393,28 @@ sub get_data {
     # Prepare Variables and Folders
     #
     my $type    = '';
-    my $resp    = 0; 
+    my $resp    = 0;
     my $ip     = $table->{ip};
     my $dlsta  = $table->{dlsta};
     my $net    = $table->{net};
     my @dates  = $table->{dates};
-    my $path = prepare_path($station); 
+    my $path = prepare_path($sta);
     my $start_sta = now();
+
+    #
+    # Set umask for process
+    #
+    umask 002;
 
     #
     # Read local files and fix errors
     #
-    fix_local( $station,$net,$dlsta );
+    fix_local( $sta,$net,$dlsta );
 
     #
     # Review all entries on the database
     #
-    @db = open_db($station);
+    @db = open_db($sta);
     $record  =  dbquery(@db, dbRECORD_COUNT);
     LINE: for ( $db[3] = 0 ; $db[3] < $record ; $db[3]++ ) {
     #{{{
@@ -473,15 +425,27 @@ sub get_data {
 
         debug("Check db: $dfile,$status,$bytes,$dir,$md5,$attempts,$msdtime,$time");
 
-        #
-        # Set to download again
-        #
-        $flagged{$dfile} = $dir if $status !~ /downloaded/ and $attempts < 8;
+        if ($dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/) {
+            problem("WRONG NAME OF FILE: $dfile" ) ;
+            next;
+        }
 
-        #
-        # If we have the file then clean
-        #
-        next LINE unless $status =~ /downloaded/;
+        if ($status =~ /skip/ ) {
+            #
+            # Avoid file
+            #
+            next LINE;
+        }
+
+        next LINE if $msdtime > 1; # file already processed
+
+        if ($status !~ /downloaded/ ) {
+            #
+            # Set to download again
+            #
+            $flagged{$dfile} = $dir if $attempts < 5;
+            next LINE;
+        }
 
         #
         # Fix "downloaded" entries on the database
@@ -493,20 +457,21 @@ sub get_data {
         #
         $mode = (stat("$path/$dfile"))[2] || 0;
         $mode = sprintf("0%o", $mode & 07777);
-        problem("Fix $path/$dfile mode $mode => 0664") unless int($mode) >= 660;
+        problem("$dfile mode $mode => 0660") unless int($mode) >= 660;
 
+        #
+        # Fix size of file in database
+        #
         dbputv(@db, "filebytes", -s "$path/$dfile") unless (-s "$path/$dfile" == int($bytes));
 
-        next LINE unless $attempts < 4;
+        next LINE if $attempts > 3;
 
         next LINE if $md5 =~ /missing/;
-
-        #next LINE if $msdtime > $time; # file already processed
 
         #
         # If missing checksum then connect to station
         #
-        dbputv(@db, "md5", get_md5($station,$dfile,$ip) ) if $md5 =~ /-|error/ and $ip;
+        dbputv(@db, "md5", get_md5($sta,$dfile,$ip) ) if $md5 =~ /-|error/ and $ip;
         $md5 = dbgetv(@db,'md5');
         dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1) if $md5 =~ /error/;
 
@@ -515,7 +480,6 @@ sub get_data {
 
     #}}}
     }
-    dbclose(@db);
 
     logging("Flagged from database: $_") foreach ( sort keys %flagged );
 
@@ -530,7 +494,7 @@ sub get_data {
     #
     # Limit the downloads to lest than 3 Gbs in last 21 days
     #
-    $d_data = total_data_downloaded($station,21) || 0.0;
+    $d_data = total_data_downloaded($sta,21) || 0.0;
     log_die("Downloaded ( $d_data ) Mbts in the last 21 days!") if $d_data > 3000;
 
     #
@@ -544,11 +508,11 @@ sub get_data {
     #
     # Get medias ID's
     #
-    ($media_active, $media_reserve) = get_medias($station,$ip);
+    ($media_active, $media_reserve) = get_medias($sta,$ip);
     $media_active ||= 'unknown';
     $media_reserve ||= 'unknown';
 
-    %remote = read_baler( $station, $ip, $media_active, $media_reserve);
+    %remote = read_baler( $sta, $ip, $media_active, $media_reserve);
     check_time($start_sta);
 
     #
@@ -561,7 +525,6 @@ sub get_data {
         #
         # Check if we have the file
         #
-        @db = open_db($station);
         $db[3] = dbfind(@db, "dfile =~ /$f/", -1);
 
         if ($db[3] >= 0 ){
@@ -569,35 +532,34 @@ sub get_data {
             next if dbgetv(@db,'status') =~ /downloaded/;
 
             next if dbgetv(@db,'attempts') > 5;
-
             if ( dbgetv(@db,'status') =~ /flagged/ ) {
                 logging("Already in db, increase attemtps: $f");
-                dbputv(@db, 
+                dbputv(@db,
                     "net",      $net,
-                    "sta",      $station,
+                    "sta",      $sta,
                     "dlsta",    $dlsta,
                     "dfile",    $f,
                     "dir",      $remote{$f},
                     "media",    ($remote{$f} =~ /WDIR2/) ? $media_reserve : $media_active,
                     "attempts", int( dbgetv(@db,'attempts') )+1,
-                    "time",     now(), 
-                    "lddate",   now(), 
+                    "time",     now(),
+                    "lddate",   now(),
                     "status",   "flagged");
             }
 
-        } else { 
+        } else {
 
             logging("Add to database from Baler list: $f");
-            dbaddv(@db, 
+            dbaddv(@db,
                 "net",      $net,
-                "sta",      $station,
+                "sta",      $sta,
                 "dlsta",    $dlsta,
                 "dfile",    $f,
                 "dir",      $remote{$f},
                 "media",    ($remote{$f} =~ /WDIR2/) ? $media_reserve : $media_active,
                 "attempts", 1,
-                "time",     now(), 
-                "lddate",   now(), 
+                "time",     now(),
+                "lddate",   now(),
                 "status",   "flagged");
 
         }
@@ -608,8 +570,7 @@ sub get_data {
         $flagged{$f} = $remote{$f};
 
     #}}}
-    } 
-    dbclose(@db);
+    }
 
     log_die('No new files.') unless keys %flagged;
 
@@ -622,8 +583,12 @@ sub get_data {
     #{{{
 
         logging("Now try to download: $file");
-        problem("ERROR on value of FLAGGED file:$file") unless $file;
-        next unless $file;
+
+        if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/) {
+            problem("ERROR on value of FLAGGED file:$file");
+            next;
+        }
+
         #{{{ Download the file
 
         $start_file = now();
@@ -645,17 +610,10 @@ sub get_data {
         #
         # Download file
         #
-        if ( $flagged{$file} =~ /-/ ) {
-            foreach (qw/WDIR WDIR2/) {
-                $flagged{$file} = "$_/data/";
-                logging("download_file($flagged{$file}$file,$path,$ip)");
-                $where = download_file("$flagged{$file}$file",$path,$ip);
-                last if $where;
-            }
-        } 
-        else {
-            logging("download_file($flagged{$file}$file,$path,$ip)");
-            $where = download_file("$flagged{$file}$file",$path,$ip);
+        foreach (qw/WDIR WDIR2/) {
+            logging("download_file($_/data/$file,$path,$ip)");
+            $where = download_file("$_/data/$file",$path,$ip);
+            last if $where;
         }
 
         $end_file = now();
@@ -669,17 +627,17 @@ sub get_data {
         if (! -f "$path/$file" && -f "$path/trash/$file") {
             problem("Resurrect file: $path/trash/$file to $path/$file");
             move("$path/trash/$file","$path/$file") or problem("Can't move $file to $path");
-        }
-
-        if (-f "$path/$file") {
             $status = 'downloaded';
-            $md5 = get_md5($station,$file,$ip) || 'error';
-            #$status = 'error' if $md5 =~ /error/;
+            $md5 = get_md5($sta,$file,$ip) || 'error';
+        } elsif (-f "$path/$file") {
+            $status = 'downloaded';
+            $status = 'error' unless $where;
+            $md5 = get_md5($sta,$file,$ip) || 'error';
             problem("$file => status:$status, md5:$md5") if $md5 =~ /error/;
             logging("Success in download of $file after $run_time_str") if $md5 !~ /error/;
             push @total_downloads, $file;
         } else {
-            problem("$file => Not in directory");
+            problem("$file => Not in local directory");
             $md5 = 'error';
             $status = 'error';
         }
@@ -700,7 +658,6 @@ sub get_data {
         #
         # Add to DB
         #
-        @db = open_db($station);
         $db[3] = dbfind(@db, "dfile =~ /$file/", -1);
 
         if ($db[3] >= 0) {
@@ -710,50 +667,49 @@ sub get_data {
             $attempts = 1;
         }
 
-        debug("$dlsta | $start_file | $end_file | $status | $attempts | $size | $speed | $md5");
+        debug("$file | $dlsta | $start_file | $end_file | $status | $attempts | $size | $speed | $md5");
 
         if ($db[3] >= 0) {
             dbputv(@db,
-                "net",      $net, 
-                "sta",      $station, 
-                "time",     $start_file, 
-                "endtime",  $end_file, 
-                "dir",      $path, 
+                "net",      $net,
+                "sta",      $sta,
+                "time",     $start_file,
+                "endtime",  $end_file,
+                "dir",      $path,
                 "attempts", $attempts,
-                "filebytes",$size, 
+                "filebytes",$size,
                 "media",    $flagged{$file} =~ /WDIR2/ ? $media_reserve : $media_active,
-                "bandwidth",$speed, 
+                "bandwidth",$speed,
                 "dlsta",    $dlsta,
-                "fixed",    'n', 
+                "fixed",    'n',
                 "md5",      $md5,
                 "dfile",    $file,
                 "lddate",   now(),
                 "status",   $status);
         } else {
             dbaddv(@db,
-                "net",      $net, 
-                "sta",      $station, 
-                "time",     $start_file, 
-                "endtime",  $end_file, 
-                "dir",      $path, 
+                "net",      $net,
+                "sta",      $sta,
+                "time",     $start_file,
+                "endtime",  $end_file,
+                "dir",      $path,
                 "attempts", $attempts,
-                "filebytes",$size, 
+                "filebytes",$size,
                 "media",    $flagged{$file} =~ /WDIR2/ ? $media_reserve : $media_active,
-                "bandwidth",$speed, 
+                "bandwidth",$speed,
                 "dlsta",    $dlsta,
-                "fixed",    'n', 
+                "fixed",    'n',
                 "md5",      $md5,
                 "dfile",    $file,
                 "lddate",   now(),
                 "status",   $status);
         }
 
-        dbclose(@db);
-
-        logging("Next file");
+        debug("Next file");
     #}}}
     }
 
+    dbclose(@db);
     log_die( "NO DOWNLOADS!!!! Station not downloading any files.") unless scalar @total_downloads;
 
     delete $flagged{$_} foreach @total_downloads;
@@ -773,7 +729,7 @@ sub get_data {
     $run_time = now() - $start_sta;
     $run_time_str = strtdelta($run_time);
 
-    logging("Done rsync of ".@total_downloads." files ($m Mb) out of ".@download." form $ip in $run_time_str");
+    logging("Done rsync of ".@total_downloads." files ($m Mb) form $ip in $run_time_str");
 
 
 
@@ -787,7 +743,7 @@ sub check_time {
     #
     # Check if we are over the time limit
     #
-    if ( $pf{max_child_run_time} ) { 
+    if ( $pf{max_child_run_time} ) {
         if ( int($pf{max_child_run_time}) < (now() - $start) ) {
             log_die("Rsync exceeds allowed time set in max_child_run_time ($pf{max_child_run_time}).");
         }
@@ -823,13 +779,19 @@ sub total_data_downloaded {
 
     @db_subset = dbsubset ( @db, "status =~ /downloaded|error/");
     $nrecords = dbquery(@db_subset, dbRECORD_COUNT) ;
-    return unless $nrecords;
+    unless ( $nrecords ) {
+      dbclose(@db);
+      return;
+    }
 
 
     $start_of_report = str2epoch("-${days}days");
     @db_temp= dbsubset ( @db_subset, "time >= $start_of_report");
     $nrecords = dbquery(@db_temp, dbRECORD_COUNT) ;
-    return unless $nrecords;
+    unless ( $nrecords ) {
+      dbclose(@db);
+      return;
+    }
 
     if ($nrecords > 0) {
         for ( $db_temp[3] = 0 ; $db_temp[3] < $nrecords ; $db_temp[3]++ ) {
@@ -862,17 +824,17 @@ sub download_file {
     my @temp_new;
 
 
-    foreach ( split(/[\s|\/]/,$file) ) {
-        next if /^\/$/;
-        push(@temp_new,$_) if /^\S+$/;
-    }
+    #foreach ( split(/[\s|\/]/,$file) ) {
+    #    next if /^\/$/;
+    #    push(@temp_new,$_) if /^\S+$/;
+    #}
 
-    $file = join('/',@temp_new);
+    #$file = join('/',@temp_new);
 
-    debug("DOWNLOAD: http://$ip:$pf{http_port}/$file");
+    debug("Build File::Fetch object: http://$ip:$pf{http_port}/$file");
 
     eval{ $file_fetch = File::Fetch->new(uri => "http://$ip:$pf{http_port}/$file"); };
-    problem("File::Fetch -> $@") if $@; 
+    problem("File::Fetch -> $@") if $@;
 
     problem("ERROR in build of File::Fetch -> http://$ip:$pf{http_port}/$file") unless $file_fetch; 
     return unless $file_fetch;
@@ -880,14 +842,14 @@ sub download_file {
     debug("Download: ".$file_fetch->uri);
 
     #eval {  $where = $file_fetch->fetch( to => "$path/" ); };
-    #problem("File::Fetch ".$file_fetch->uri." $@") if $@; 
+    #problem("File::Fetch ".$file_fetch->uri." $@") if $@;
     $where = $file_fetch->fetch( to => "$path/" ) || '';
 
-    problem("ERROR on download of http://$ip:$pf{http_port}/$file") unless $where;
+    #problem("ERROR on download of http://$ip:$pf{http_port}/$file") unless -f $where;
 
-    problem("ERROR on $file after download. Problem with name") unless $where =~ /$temp_new[-1]/;
+    #problem("ERROR on $file after download. Problem with name") unless $where =~ /$temp_new[-1]/;
 
-    problem("Cannot see $file after download") unless -f $where;
+    #problem("Cannot see $file after download") unless -f $where;
 
     return $where if -f $where;
     return
@@ -907,7 +869,7 @@ sub open_db {
     #
     # Fix path
     #
-    $dbout = File::Spec->rel2abs( "${path}/${sta}_baler" ); 
+    $dbout = File::Spec->rel2abs( "${path}/${sta}_baler" );
 
     debug("Opening database ($dbout).");
 
@@ -951,8 +913,10 @@ sub fix_local {
     my $net = shift;
     my $dlsta = shift;
     my %list;
-    my ($r,$record,@db_r,@db);
-    my ($status,$extra,$size,$path,$f);
+    my %llist;
+    my ($r,$rnext,$record,@db_sub,@db_r,@db);
+    my ($file,$status,$extra,$size,$path,$f);
+
 
     debug("Reading and fixing of local directory");
 
@@ -961,114 +925,117 @@ sub fix_local {
     #
     # Clean database
     #
-    @db = open_db($sta);
-    $r = dbquery(@db , dbRECORD_COUNT);
-    for ($db[3]=0; $db[3] < $r; $db[3]++){
-        $list{ dbgetv(@db,'dfile') } = 1;
-    }
-    dbclose(@db);
-    clean_db($sta,$_) foreach sort keys %list;
-
-    %list = {};
-
-    #
-    # Get all matching files
-    #
-    opendir(DIR,$path) or log_die("Failed to open $path: $!");
-    while($f = readdir DIR) {
-        next if -d "$path/$f";
-        $list{$f} = 1 if $f =~ /(${sta}_4-\d{14}|EXMP_4-\d{14})/;
-    }
-    close(DIR);
-
-    clean_db($sta,$_) foreach sort keys %list;
-
-    #
-    # Verify that every file on the database exists
+    # We ignore the dlsta field, and assume that the most recent entry
+    # for dfile is correct
     #
     @db = open_db($sta);
     $r = dbquery(@db , dbRECORD_COUNT);
     for ($db[3]=0; $db[3] < $r; $db[3]++){
-        $f = dbgetv(@db,'dfile');
-        debug("fix_local(): $f");
+        $file = dbgetv(@db,'dfile');
+        #add file to list unless it's a null entry
+        $list{ $file } = 1 unless ($file eq '-');
+    }
 
-        if ( dbgetv(@db,'dfile') !~ /(${sta}_4-\d{14}|EXMP_4-\d{14})/ ) {
-            problem("remove(format): $f");
-            delete $list{$f} if $list{$f};
+    foreach $file (sort keys %list) {
+
+        #
+        # Clean duplicate file entries, keeping only the last
+        #
+        logging("Clean dfile =~/$file/ ");
+        $r = dbfind(@db, "dfile =~ /$file/", -1);
+        $db[3]=$r;
+        $rnext = dbfind(@db, "dfile =~ /$file/", $r);
+
+        while ($rnext >= 0 ) {
+            problem("remove: $file ($r)=> " . dbgetv(@db,'status'));
             dbmark(@db);
+            $r = $rnext;
+            $db[3]=$r;
+            $rnext = dbfind(@db, "dfile =~ /$file/", $r);
         }
 
-        #if ( dbgetv(@db,'status') =~ /missing/ ) {
-        #problem("remove(missing): $f");
-        #delete $list{$f} if $list{$f};
-        #dbmark(@db);
-        #}
+        # Remove entries with bad filenames
+        if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ) {
+            problem("remove(format): $file");
+            dbmark(@db);
+            next;
+        }
 
+        # Verify the file exists if it's status is 'downloaded'
         next unless dbgetv(@db,'status') =~ /downloaded/;
 
-        unless ( $list{$f} ) {
-            problem("remove(not in directory): $f");
-            delete $list{$f} if $list{$f};
+        unless ( -f "$path/$file" ) {
+            problem("remove(not in directory): $file");
             dbmark(@db);
+            next;
         }
     }
-    dbcrunch(@db);
-    dbclose(@db);
 
     #
     # Verify every file in the folder
     #
-    @db = open_db($sta);
-    foreach $f ( sort keys %list ) { 
-        #
-        # Subset database for file in directory
-        #
-        @db_r = dbsubset(@db, "dfile =~ /$f/");
-        $r = dbquery(@db_r , dbRECORD_COUNT);
+    opendir(DIR,$path) or log_die("Failed to open $path: $!");
 
-        if ( $r == 1  ) {
+    while($f = readdir DIR) {
+        next if -d "$path/$f";
+        next if $f !~ /^(..-(${sta}|EXMP)_4-\d{14})$/;
 
-            $db_r[3] = 0;
+        debug("local file: $f");
 
-            if ( dbgetv(@db_r, 'status') eq 'downloaded') {
+        $r = dbfind(@db, "dfile =~ /$f/",-1);
+
+        if ( $r >= 0 ) {
+
+            $db[3] = $r;
+
+            if ( dbgetv(@db, 'status') =~ /downloaded/) {
 
                 debug("$f already in database as downloaded");
+
+            } elsif ( dbgetv(@db, 'status') =~ /skip/) {
+
+                problem("$f flagged as 'skipped'");
 
             } else {
 
                 problem("$f updated to 'downloaded'");
-                dbputv(@db_r,'status', 'downloaded', 'attempts', 1, 'time', now(), 'lddate', now()  );
+                dbputv(@db,
+                    status   => 'downloaded',
+                    attempts => 1,
+                    time     => now(),
+                    lddate   => now(),
+                );
 
-             }
+            }
 
         } else {
 
             #
             # Add the missing file
             #
-            $size = -s "$path/$f" || 0; 
+            $size = -s "$path/$f" || 0;
             logging("$f adding as 'downloaded'");
-            dbaddv(@db, 
-                "net",      $net,
-                "sta",      $sta,
-                "dlsta",    $dlsta,
-                "dir",      $path,
-                "dfile",    $f,
-                "filebytes",$size, 
-                "attempts", 1,
-                "time",     now(), 
-                "fixed",    "n",
-                "lddate",   now(), 
-                "status",   "downloaded");
+            dbaddv(@db,
+                net       => $net,
+                sta       => $sta,
+                dlsta     => $dlsta,
+                dir       => $path,
+                dfile     => $f,
+                filebytes => $size,
+                attempts  => 1,
+                time      => now(),
+                fixed     => 'n',
+                lddate    => now(),
+                status    => 'downloaded',
+            );
 
         }
-
-        dbfree(@db_r);
     }
 
+    debug("Crunch table.");
+    dbcrunch(@db);
     dbclose(@db);
-
-    debug("LOCAL FILES: " . join(' ',sort keys %list ));
+    close(DIR);
 
     return;
 #}}}
@@ -1087,7 +1054,7 @@ sub read_baler {
     my (@db,@n,@queries);
     my $attempt = 1;
 
-    $path = prepare_path($sta); 
+    $path = prepare_path($sta);
 
     $path .= '/lists/';
 
@@ -1109,7 +1076,9 @@ sub read_baler {
         #
         # download list of files now
         #
-        eval{ $file_fetch = File::Fetch->new(uri => "http://$ip:$pf{http_port}/$path"); };
+        eval{ $file_fetch = File::Fetch->new(
+            uri => "http://$ip:$pf{http_port}/$path");
+        };
         problem("File::Fetch($path) => $@") if $@;
 
         eval {  $where = $file_fetch->fetch( to => "./" ); };
@@ -1122,15 +1091,19 @@ sub read_baler {
         }
 
         problem("ERROR after download of: $path") unless -e $path;
-        open $input, "<$path"; 
-        $files = new IO::Uncompress::AnyUncompress $input or problem("IO::Uncompress::AnyUncompress failed: $AnyUncompressError");
+        open $input, "<$path";
+        $files = new IO::Uncompress::AnyUncompress $input
+          or problem(
+            "IO::Uncompress::AnyUncompress failed: " .
+            "$AnyUncompressError"
+          );
 
         while ( <$files> ) {
             #
             # Parse results and get size
             #
             s/\n//;
-            next unless /(${sta}_4-\d{14}|EXMP_4-\d{14})/;
+            next unless /(..-(${sta}|EXMP)_4-\d{14})/;
             @temp_dir = split(/\//,$_);
             $name = pop(@temp_dir);
             push(@temp_dir," ");
@@ -1145,7 +1118,8 @@ sub read_baler {
         $files->close();
     }
 
-    log_die("Can't get any lists of files: $ip:$pf{http_port})") unless keys %list;
+    log_die("Can't get any lists of files: $ip:$pf{http_port})")
+      unless keys %list;
 
     #
     # Fix the media id on the database
@@ -1155,13 +1129,13 @@ sub read_baler {
 
     debug("Fix media id on database.");
 
-    for ( $db[3] = 0 ; $db[3] < $nrecords ; $db[3]++ ) { 
-        $name = dbgetv(@db, 'dfile'); 
-        next unless $list{$name}; 
+    for ( $db[3] = 0 ; $db[3] < $nrecords ; $db[3]++ ) {
+        $name = dbgetv(@db, 'dfile');
+        next unless $list{$name};
         if ($list{$name} =~ /.*WDIR2.*/ ) {
             debug("Update $name to media $media_reserve");
             dbputv(@db,'media', $media_reserve );
-        } 
+        }
         else {
             debug("Update $name to media $media_active");
             dbputv(@db,'media', $media_active );
@@ -1185,20 +1159,21 @@ sub get_md5 {
 
     debug("Get MD5 $file");
 
-    $local_path = prepare_path($sta) . '/md5/'; 
+    $local_path = prepare_path($sta) . '/md5/';
 
     $old = $file;
     $file .= '.md5' unless $file =~ /\.md5/;
 
-    chdir $local_path or log_die("Cannot change to directory ($local_path)");
+    chdir $local_path
+      or log_die("Cannot change to directory ($local_path)");
 
     unless ( -s "$local_path/$file" ) {
 
         unlink "$local_path/$file";
         debug("Lets download MD5 file $file -> $local_path");
 
-        foreach $folder (qw/WDIR WDIR2/) {
-            last if download_file("$folder/recover/$file",$local_path,$ip);
+        foreach (qw/WDIR WDIR2/) {
+            last if download_file("$_/recover/$file",$local_path,$ip);
         }
 
     }
@@ -1206,7 +1181,8 @@ sub get_md5 {
     problem("Error downloading: $file")  unless -e "$local_path/$file";
     return 'missing' unless -e "$local_path/$file";
 
-    open(DAT, '<', "$local_path/$file") or log_die("Cannot open $local_path/$file!");
+    open(DAT, '<', "$local_path/$file")
+      or log_die("Cannot open $local_path/$file!");
 
     while (<DAT>) {
         chomp;
@@ -1216,21 +1192,26 @@ sub get_md5 {
 
     close(DAT);
 
+    unless ( $md5_raw[1] ) {
+        problem("Error in file $local_path/$file @md5_raw");
+        unlink "$local_path/$file";
+        return 'error';
+    }
+
     $md5 = $md5_raw[0];
 
-    problem("Error in file $local_path/$file @md5_raw")  unless $md5;
-    unlink "$local_path/$file" unless $md5;
+    if ( $md5_raw[1] !~ /($old)/ ) {
+        problem("Error in file $local_path/$file @md5_raw");
+        unlink "$local_path/$file";
+        return 'error';
+    }
 
-    problem("Error in file $local_path/$file @md5_raw")  unless $old eq $md5_raw[1];
-    unlink "$local_path/$file" unless $old eq $md5_raw[1];
-
-    return 'missing' unless $md5;
 
     #
     # Open file and get local md5
     #
     $file  =~ s/\.md5//g;
-    $local_path = prepare_path($sta); 
+    $local_path = prepare_path($sta);
     open(FILE,"$local_path/$file") or log_die("Cannot open $local_path/$file for md5 calc.");
     $md5_lib = Digest::MD5->new;
     $md5_lib->addfile(FILE);
@@ -1240,7 +1221,7 @@ sub get_md5 {
     problem("Cannot produce MD5 for ($file)") unless $digest;
 
     return $md5 if $digest eq $md5;
-    
+
     problem("$file MD5 problem:: reported:$md5 calc:$digest " );
 
     return 'error';
@@ -1253,7 +1234,8 @@ sub get_medias {
     my $sta = shift;
     my $ip = shift;
     my (@text,$line,$browser, $resp);
-    my ($active,$reserve);
+    my $active = '';
+    my $reserve = '';
 
     $browser = LWP::UserAgent->new;
 
@@ -1266,8 +1248,10 @@ sub get_medias {
         debug("$sta:\tLWP::UserAgent->get(http://$ip:$pf{http_port}/stats.html)");
         $resp = $browser->get("http://$ip:$pf{http_port}/stats.html");
 
-        problem("Missing http://$ip:$pf{http_port}/stats.html") unless $resp;
-        return unless $resp; 
+        unless ( $resp ) {
+          problem("Missing http://$ip:$pf{http_port}/stats.html");
+          return;
+        }
     }
 
     if ( $resp->is_success ) {
@@ -1275,13 +1259,13 @@ sub get_medias {
 
         for ($line=0; $line < scalar @text; $line++){
             $text[$line] =~ m/MEDIA site \d crc=(\S+) IN USE/;
-            $active = $1; 
+            $active = $1;
             last if $active;
         }
 
         for ($line=0; $line < scalar @text; $line++){
             $text[$line] =~ m/MEDIA site \d crc=(\S+) RESERVE/;
-            $reserve = $1; 
+            $reserve = $1;
             last if $reserve;
         }
     }
@@ -1290,8 +1274,13 @@ sub get_medias {
         return;
     }
 
-    problem("Cannot find MEDIA site 1 in http://$ip:$pf{http_port}/stats.html") unless $active;
-    problem("Cannot find MEDIA site 2 in http://$ip:$pf{http_port}/stats.html") unless $reserve;
+    problem("Cannot find MEDIA site 1 in http://$ip:$pf{http_port}/stats.html")
+      unless $active;
+    problem("Cannot find MEDIA site 2 in http://$ip:$pf{http_port}/stats.html")
+      unless $reserve;
+
+    $active  ||= '';
+    $reserve ||= '';
 
     debug("get(http://$ip:$pf{http_port}/stats.html) => ($active,$reserve)");
     return ($active,$reserve);
@@ -1304,7 +1293,7 @@ sub remove_file {
     my $sta  = shift;
     my $file = shift;
     my $all = shift;
-    my @db; 
+    my @db;
 
     return unless $file;
 
@@ -1318,22 +1307,22 @@ sub remove_file {
     #
     if ($file and -f "$path/$file") {
         debug("move $path/$file to $path/trash/$file");
-        move("$path/$file","$path/trash/$file") or problem("Can't move $file to $path/trash");
+        move("$path/$file","$path/trash/$file")
+          or problem("Can't move $file to $path/trash");
     }
 
     @db = open_db($sta);
 
     if ( $all ) {
-        while ( 1 ) { 
-            $db[3] = dbfind(@db, "dfile =~ /$file/", -1); 
+        while ( 1 ) {
+            $db[3] = dbfind(@db, "dfile =~ /$file/", -1);
             last unless $db[3] >= 0;
             debug("remove entry: $db[3] => $file");
-            dbmakr(@db);
+            dbmark(@db);
         }
-        dbcrunch(@db);
     } else {
-        while ( 1 ) { 
-            $db[3] = dbfind(@db, "dfile =~ /$file/", -1); 
+        while ( 1 ) {
+            $db[3] = dbfind(@db, "dfile =~ /$file/", -1);
             last unless $db[3] >= 0;
             dbputv(@db,'status','error','lddate',now());
             dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1);
@@ -1341,48 +1330,10 @@ sub remove_file {
         }
     }
 
+    dbcrunch(@db);
     dbclose(@db);
 
     return;
-#}}}
-}
-
-sub clean_db {
-#{{{ clean_db(sta,file)
-    my $sta      = shift;
-    my $file     = shift;
-    my (@db,@db_sub,$r,$v); 
-
-    logging("Clean dfile =~/$file/ ");
-
-    @db = open_db($sta);
-
-    @db_sub = dbsubset(@db, "dfile =~ /$file/");
-
-    $r = dbquery(@db_sub,dbRECORD_COUNT);
-
-    #
-    # Make sure that we only have one entry for the file
-    #
-    if ( $r > 1 ) {
-
-        problem("More than one entry for $file");
-        while(1) {
-            $db[3] = dbfind(@db, "dfile =~ /$file/", -1); 
-            last unless $db[3] >= 0;
-            last if $r == 1;
-            problem("remove: $file ($r)=> " . dbgetv(@db,'status'));
-            dbmark(@db);
-            $r -= 1;
-        }
-        debug("Crunch table.");
-        dbcrunch(@db);
-
-    }
-
-    dbclose(@db);
-
-    return $r;
 #}}}
 }
 
@@ -1391,21 +1342,25 @@ sub prepare_path {
     my $station  = shift;
     my $path = '';
 
-    log_die("prepare_path(). Cannot produce path! We need a station name...") unless $station;
+    log_die("prepare_path(). Cannot produce path! " .
+      "We need a station name...") unless $station;
 
-    $path = File::Spec->rel2abs( "$pf{local_data_dir}/$station" ); 
+    $path = File::Spec->rel2abs( "$pf{local_data_dir}/$station" );
 
     makedir($path) unless -e $path;
     log_die("Cannot create folder $path") unless -e $path;
 
     mkdir "$path/trash" unless -d "$path/trash";
-    log_die("Cannot make directory ($path/trash/)") unless -d "$path/trash";
+    log_die("Cannot make directory ($path/trash/)")
+      unless -d "$path/trash";
 
     mkdir "$path/md5" unless -d "$path/md5";
-    log_die("Cannot make directory ($path/md5/)") unless -d "$path/md5";
+    log_die("Cannot make directory ($path/md5/)")
+      unless -d "$path/md5";
 
     mkdir "$path/lists" unless -d "$path/lists";
-    log_die("Cannot make directory ($path/lists/)") unless -d "$path/lists";
+    log_die("Cannot make directory ($path/lists/)")
+      unless -d "$path/lists";
 
 
     return $path;
@@ -1417,11 +1372,12 @@ sub getparam {
     my $PF = shift ;
     my %pf;
 
-    foreach  (qw/local_data_dir max_child_run_time download_timeout 
+    foreach  (qw/local_data_dir max_child_run_time download_timeout
                 database http_port max_procs/){
         $pf{$_} = pfget($PF,$_);
 
-        log_die("Missing value for $_ in PF:$PF") unless defined($pf{$_});
+        log_die("Missing value for $_ in PF:$PF")
+          unless defined($pf{$_});
 
         debug( sprintf("\t%-22s -> %s", ($_,$pf{$_})) );
     }
@@ -1454,7 +1410,9 @@ sub log_die {
 
     exit if $parent != $$;
 
-    sendmail("ERROR: $0 @ARGV DIED ON $host",$opt_m,"/tmp/#rtsys$$") if $opt_m; 
+    if ($opt_m) {
+      sendmail("ERROR: $0 @ARGV DIED ON $host",$opt_m,"/tmp/#rtsys$$");
+    }
 
     elog_die($msg);
 
@@ -1495,7 +1453,7 @@ sub debug {
     my $string = 0;
     my $now = strtime(now());
 
-    return unless $opt_d; 
+    return unless $opt_d;
 
     if ( $parent != $$ ) {
         if ( $to_parent ) {
@@ -1515,10 +1473,10 @@ sub debug {
 #}}}
 }
 
-sub problem { 
+sub problem {
 #{{{ problem(msg,sta)
-    my $text = shift; 
-    my $sta = shift;
+    my $text = shift;
+    my $sta = shift || 'parent';
     my $now = strtime(now());
     my $string = 0;
 
@@ -1529,7 +1487,7 @@ sub problem {
         }
     }
 
-    if ( $sta ) {
+    if ( $sta ne 'parent' ) {
         $string = keys %{$problems_hash->{'problems'}->{$sta}};
         $problems_hash->{'problems'}->{$sta}->{$string+1} = $text;
         elog_complain("$sta: $text") if $opt_v;
@@ -1544,8 +1502,8 @@ sub problem {
 sub problem_print {
 #{{{ problem_print()
 
-    my $s_v; 
-    my $p_v; 
+    my $s_v;
+    my $p_v;
 
     #return unless $Problems;
 
@@ -1556,8 +1514,13 @@ sub problem_print {
 
     for  $s_v ( sort keys %{$problems_hash->{'problems'}} ) {
         elog_complain("\tOn station $s_v:");
-        for $p_v ( sort{ $a <=> $b } keys %{$problems_hash->{'problems'}->{$s_v}} ) {
-            elog_complain("\t\t $p_v) $problems_hash->{'problems'}->{$s_v}->{$p_v}");
+        for $p_v ( sort{ $a <=> $b } keys %{
+            $problems_hash->{'problems'}->{$s_v}
+          } ) {
+            elog_complain(
+              "\t\t $p_v) " .
+              $problems_hash->{'problems'}->{$s_v}->{$p_v}
+            );
         }
         elog_complain('');
     }
@@ -1565,11 +1528,21 @@ sub problem_print {
     elog_complain("-------- End of problems: --------");
     for  $s_v ( sort keys %{$problems_hash->{'log'}} ) {
         elog_notify("\tOn station $s_v:");
-        for $p_v ( sort{ $a <=> $b } keys %{$problems_hash->{'log'}->{$s_v}} ) {
-            elog_notify("\t\t $p_v) $problems_hash->{'log'}->{$s_v}->{$p_v}");
+        for $p_v ( sort{ $a <=> $b } keys %{
+            $problems_hash->{'log'}->{$s_v}
+          } ) {
+            elog_notify(
+              "\t\t $p_v) " .
+              $problems_hash->{'log'}->{$s_v}->{$p_v}
+            );
         }
-        for $p_v ( sort{ $a <=> $b } keys %{$problems_hash->{'problems'}->{$s_v}} ) {
-            elog_notify("\t\t $p_v) $problems_hash->{'problems'}->{$s_v}->{$p_v}");
+        for $p_v ( sort{ $a <=> $b } keys %{
+            $problems_hash->{'problems'}->{$s_v}
+          } ) {
+            elog_notify(
+              "\t\t $p_v) " .
+              $problems_hash->{'problems'}->{$s_v}->{$p_v}
+            );
         }
         elog_notify('');
     }
@@ -1595,11 +1568,11 @@ Recognized flags:
 
 =over 2
 
-=item B<-h> 
+=item B<-h>
 
 Help. Produce this documentation
 
-=item B<-v> 
+=item B<-v>
 
 Produce verbose output while running
 
@@ -1628,7 +1601,7 @@ List of emails to send output
 =head1 DESCRIPTION
 
 This script  creates a local repository of a field Baler44 station.
-The script is simple and may fail if used outside ANF-TA installation. 
+The script is simple and may fail if used outside ANF-TA installation.
 
 =head1 AUTHOR
 
@@ -1640,3 +1613,4 @@ Perl(1).
 
 =cut
 #}}}
+# vim:ft=perl:sw=4:ts=4

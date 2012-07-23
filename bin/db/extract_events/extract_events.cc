@@ -472,6 +472,9 @@ void SaveResults(DatascopeHandle& dbh,
 					string absdir=getfullpath(dir);
 					makedir(const_cast<char *>(absdir.c_str()));
 					string path=absdir+"/"+dfile;
+                                        if(SEISPP_verbose)
+                                              cout << "Writing miniseed file="<<path<<endl;
+
 					
 					msdput(msd,MSD_FILENAME,path.c_str(),
 						MSD_NET, net.c_str(),
@@ -808,6 +811,8 @@ int main(int argc, char **argv)
                         }
 			if(rawdata->member.size()<=0) 
 			{
+                                cerr << "Warning:  Data for event from record = "<<record<< " has no data.  Skipped."
+                                    <<endl;
 				delete rawdata;
 				continue;
 			}
@@ -824,6 +829,8 @@ int main(int argc, char **argv)
 			above, so be aware in maintenance */
 			regular_gather=BuildRegularGather(*rawdata, dbhm,*rdef,target_dt,
 					processing_twin,use_arrival);
+                        if(SEISPP_verbose)
+                            cout << "Regular gather number of members = "<<regular_gather->member.size()<<endl;
 			delete rawdata;
 			if(apply_fst)
 				ApplyFST(*regular_gather,hypo,vp0,vs0);
