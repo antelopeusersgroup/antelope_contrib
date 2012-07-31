@@ -3,7 +3,7 @@
 db2ims \- publish an IMS 2.0 short DMC modified bulletin from a css3.0 database
 .SH SYNOPSIS
 .nf
-\fBdb2ims \fP[-v] [-V] [-y] [-p \fIpf\fP] [-s \fIstart_origin.time\fP] [-e
+\fBdb2ims \fP[-a] [-v] [-V] [-y] [-p \fIpf\fP] [-s \fIstart_origin.time\fP] [-e
                 \fIend_origin.time\fP] [-l \fIlogfile\fP] [-d \fIdb\fP]
                 \fIdatabase\fP
 .fi
@@ -40,6 +40,10 @@ the prefor, but not marked as reviewed.  Events that fall into this category
 are skipped and not reported in the output file despite having one solution/origin
 that is marked as reviewed.  ALL solutions must be marked as reviewed for the
 event to be included in the output file.
+.IP -a
+Sent all associated origins, not just the prefor and the mag_origin_auth in the pf file.
+Beware that this may cause significant heartburn if you are sending data to the IRIS DMC 
+as they have limited capacity to receive all the origin data.
 .IP "-s start_time"
 Select origins after this time.
 .IP "-e end_time"
@@ -197,7 +201,7 @@ accept_magtype &Arr{
      Ml
 }
 
-mag_origin_auth         ANF
+mag_origin_auth         ANF.*
 
 mag_netmag_auth         evproc
 
