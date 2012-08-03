@@ -296,7 +296,7 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
             $line = "key	$key	config-dptokens-4-net	 \"$config{$key}{config}{dptokens}{4}{net}\"	config-dptokens-4-sta	 \"$config{$key}{config}{dptokens}{4}{sta}\"";
             print Q3302ORB "$line\n";
             elog_complain($line);
-            $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig -force",
+            $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig",
             elog_notify($line);
             if ( ! &run_cmd( $line ) ) {
                 $problems++ ;
@@ -307,7 +307,7 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
             $line = "key	$key	config-dptokens-4-net	 \"$config{$key}{config}{dptokens}{4}{net}\"	config-dptokens-4-sta	 \"$config{$key}{config}{dptokens}{4}{sta}\"";
             print Q3302ORB "$line\n";
             elog_complain($line);
-            $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig -force",
+            $line = "dlcmd $cmdorb $config{$key}{target} q330 $key getconfig",
             elog_notify($line);
             if ( ! &run_cmd( $line ) ) {
                 $problems++ ;
