@@ -24,7 +24,7 @@ our ( $opt_d, $opt_n, $opt_p, $opt_t );
 #  get arguments
 #
     if ( ! &getopts('ndtp:') || @ARGV == 0 ) { 
-        die ( "\nUsage: $0  [-d] [-n] [-t] [-p pf]db1 [ db2 db3 ... ]\n\n" ) ; 
+        die ( "\nUsage: $0  [-d] [-n] [-t] [-p pf] db1 [ db2 db3 ... ]\n\n" ) ; 
     }
 
     $Pf = $opt_p || $pgm ;
