@@ -716,6 +716,10 @@ sub print_arrivals { # &print_arrivals ( $evid, $prefor, \@dbj, \@dbstamag ) ;
             $azres = " " ;
         }	
 
+        if ($tres == -999.0) {  
+            $tres = " " ;
+        }	
+
         if ($slow  == -1.0) {  
             $slow  = " " ;
         }	
