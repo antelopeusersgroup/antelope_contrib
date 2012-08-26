@@ -175,7 +175,7 @@
                 
         $logs{$sta}{lines}      = 0 ;
         $errors{$sta}{problems} = 0 ;
-        elog_notify ( "$sta started processing" ) ;
+        elog_notify ( "$sta started processing" ) if $opt_v ;
         
 #
 # Fork the script
@@ -221,7 +221,8 @@
             }
             $cmd  .=  "$parent" ;
             
-            fork_debug ( $parent, "$cmd " ) ;
+            elog_debug ( "$cmd " ) if $opt_V ;
+            fork_debug ( $parent, "$cmd " ) if $opt_V ;
                                     
             exec ( $cmd  ) ;
 
@@ -282,12 +283,15 @@
 
 sub get_stas { # ( $problems, %proc_stas ) = &get_stas( $db, $problems ) ;
     my ( $db, $problems ) = @_ ;
-    my ( $equip_install, $equip_remove, $nrows, $row, $sta, $stas, $stas_b44, $subject ) ;
-    my ( @b44_stas, @db, @dbdeploy, @sta_deploy, @stas ) ;
+    my ( $endtime, $endtime_null, $equip_install, $equip_remove, $equip_remove_null, $nrows, $row, $sta, $stas, $stas_b44, $subject ) ;
+    my ( @b44_stas, @db, @dbdeploy, @dbnull, @sta_deploy, @stas ) ;
     my ( %proc_stas ) ;
     
     @db       = dbopen( $db, "r" ) ;
     @dbdeploy = dblookup( @db, 0, "deployment", 0, 0) ;
+    @dbnull   = dblookup( @dbdeploy, 0, 0, 0, "dbNULL" ) ;
+    ( $equip_remove_null, $endtime_null ) = dbgetv ( @dbnull, qw ( equip_remove endtime ) ) ;
+
     if (! dbquery( @dbdeploy, dbTABLE_PRESENT ) ) {
         $problems++ ;
         elog_complain( "\nProblem $problems" ) ;
@@ -344,8 +348,11 @@ sub get_stas { # ( $problems, %proc_stas ) = &get_stas( $db, $problems ) ;
     
     for ($row = 0; $row<$nrows; $row++) {
         $dbdeploy[3] = $row ;
-        ( $sta, $equip_install, $equip_remove )  = dbgetv ( @dbdeploy, qw ( sta equip_install equip_remove) ) ;
+        ( $sta, $equip_install, $equip_remove, $endtime )  = dbgetv ( @dbdeploy, qw ( sta equip_install equip_remove endtime ) ) ;
         next unless grep ( /$sta/, @b44_stas ) ;
+        if ( $equip_remove == $equip_remove_null && $endtime != $endtime_null )  {
+            $equip_remove = $endtime ;
+        }
         $proc_stas{$sta}{equip_install} = $equip_install ;
         $proc_stas{$sta}{equip_remove}  = $equip_remove ;
     }
@@ -470,27 +477,27 @@ sub proc_sta { # &proc_sta( $sta, $install_time, $removal_time, $parent ) ;
 #  clean up
 #
         
-    if  ( $prob ) {
-        $subject = "TA $sta     $prob baler data problems -  $pgm on $host";
-        $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
-        fork_notify ( $parent, "$cmd") ;
-        
-        if ( ! &run_cmd( $cmd ) ) {
-            $prob++ ;
-            &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
-        }
-        
-    } elsif ( $opt_v ) {
-        $subject = "TA $sta baler completed successfully -  $pgm on $host";
-        $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
-        fork_notify ( $parent, "$cmd") if $opt_v ;   
-        
-        if ( ! &run_cmd( $cmd ) ) {
-            $prob++ ;
-            &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
-        }
-        
-    } 
+#     if  ( $prob ) {
+#         $subject = "TA $sta     $prob baler data problems -  $pgm on $host";
+#         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
+#         fork_notify ( $parent, "$cmd") ;
+#         
+#         if ( ! &run_cmd( $cmd ) ) {
+#             $prob++ ;
+#             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+#         }
+#         
+#     } elsif ( $opt_v ) {
+#         $subject = "TA $sta baler completed successfully -  $pgm on $host";
+#         $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
+#         fork_notify ( $parent, "$cmd") if $opt_v ;   
+#         
+#         if ( ! &run_cmd( $cmd ) ) {
+#             $prob++ ;
+#             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
+#         }
+#         
+#     } 
 
     unlink "/tmp/prob_$sta\_$$" unless $opt_V;
 
@@ -652,13 +659,7 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     $string = "starting baler44_proc" ;
     fork_notify ( $parent, $string ) if $opt_v ;
     print PROB "$string \n\n" ;
-    
-    if ( now() > ( $removal_time + ( $pf{days_after_removal} * 86400) ) ) {
-        $string = sprintf ( "removal time was more than %d days ago", $pf{days_after_removal} )  ;
-        fork_notify ( $parent, $string ) if $opt_v ;
-        print PROB "$string \n\n" ;
-    }
-        
+            
     $prob_check = $prob ;
     
 #
@@ -890,11 +891,11 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
 
 }
 
-sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
+sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
     my ( $sta, $install_time, $removal_time, $parent, $prob ) = @_ ;
-    my ( $alreadyproc, $dbname, $dfile, $dfile_full, $filebytes, $last_proc, $md5, $media, $msdtime, $ndfiles ) ;
-    my ( $ndown, $next_proc, $ngap, $ngap_at_start, $nmiss, $nproc, $nrows, $nrows_to_proc, $nzfiles ) ;
-    my ( $prob_check, $string ) ;
+    my ( $alreadyproc, $dbname, $dfile, $dfile_full ) ;
+    my ( $filebytes, $last_proc, $md5, $media, $msdtime, $ndfiles, $ndown, $next_proc, $ngap ) ;
+    my ( $ngap_at_start, $nmiss, $nproc, $nrows, $nrows_to_proc, $nzfiles, $prob_check, $string, $time_since_removal ) ;
     my ( @db, @dbbaler, @dbbaler_unique, @dbbalerd, @dbbalerdn, @dbbalerz, @mseed, @skip, @t1, @t2, @tmp ) ;
     my ( %dfile_unique, %dfile_unprocessed ) ;
 
@@ -908,16 +909,26 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld
     %dfile_unique      = () ;
     %dfile_unprocessed = () ;
     @skip              = () ;
-            
-#
-#  open database
-#
+
     $dbname = "$pf{baler44dirbase}\/$sta/$sta\_baler" ;
     
     $string = "starting dnld_check using $dbname" ; 
     fork_notify ( $parent, $string ) ;
     print PROB "$string \n" ;
-     
+         
+    $time_since_removal  =  ( now() - $removal_time ) ;
+    
+    if  ( ( $time_since_removal / 86400 ) > $pf{time_since_removal} ) {
+        $opt_F = 1 ;
+        $string = sprintf ( "	time since removal is %s, more than the limit of %d days ago", strtdelta($time_since_removal), $pf{days_after_removal} )  ;
+        fork_notify ( $parent, $string ) ;
+        $string  = sprintf( "		will process through all missidbe ng data ( ie setting -F option ) "  )  ;
+        fork_notify ( $parent,  $string  ) ;
+    }
+            
+#
+#  open database
+#
     @db       = dbopen  ( $dbname, 'r' );
     @dbbaler  = dblookup( @db, 0, "rsyncbaler", 0, 0) ;
     $nrows    = dbquery ( @dbbaler, "dbRECORD_COUNT" ) ;
@@ -954,7 +965,7 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld
 
 #         $string  = sprintf( "%s	%d	%d", $dfile, $#t1, $#t2 )  ;
 #         fork_notify ( $parent,  $string  ) ;
-        $dfile_unique{ $dfile }{ time }  = &mseedtime ( $dfile, $parent, $prob ) ;
+        $dfile_unique{ $dfile }{ time }  = &mseedtime ( $dfile, $parent ) ;
     }
     
 #
@@ -1008,11 +1019,18 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld
             next ; 
         }
         next if ( length ( $dfile ) != 24 ) ;
-        $dfile_unprocessed{ $dfile }{ time }         = &mseedtime ( $dfile_full, $parent, $prob ) ;
+        $dfile_unprocessed{ $dfile }{ time }         = &mseedtime ( $dfile_full, $parent ) ;
         $dfile_unprocessed{ $dfile }{ media }        = $media ; 
         $dfile_unprocessed{ $dfile }{ md5 }          = $md5 ; 
         $dfile_unprocessed{ $dfile }{ filebytes }    = $filebytes ; 
         $dfile_unprocessed{ $dfile }{ dfile_full }   = $dfile_full ; 
+    }
+    
+    $nrows_to_proc = keys ( %dfile_unprocessed ) ; 
+
+    if ( $nrows_to_proc == 0 ) {
+        dbclose ( @db ) ;
+        return ( $nrows_to_proc, 0, $prob, \%dfile_unprocessed, \@skip  ) ;
     }
     
     @mseed        = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
@@ -1049,7 +1067,7 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld
         $nmiss = 0 ; 
     
         if ( $nproc > 0 ) {
-            ( $nmiss, $ngap_at_start, $prob, @tmp ) = &missing_files_since_last_proc( $last_proc, $next_proc, $ngap_at_start, \%dfile_unique, $parent, $prob ) ;
+            ( $nmiss, $ngap_at_start, $prob, @tmp ) = &missing_files_since_last_proc( $sta, $last_proc, $next_proc, $ngap_at_start, \%dfile_unique, $parent, $prob ) ;
             push ( @skip, @tmp ) ;
     
             if ( $ngap_at_start ) {
@@ -1115,8 +1133,8 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, %dfile_unprocessed ) = &dnld
     return ( $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip  ) ;
 }
 
-sub mseedtime { # ( $mseedtime ) = &mseedtime( $mseed, $parent, $prob ) ;
-    my ( $mseed, $parent, $prob ) = @_ ;
+sub mseedtime { # ( $mseedtime ) = &mseedtime( $mseed, $parent ) ;
+    my ( $mseed, $parent ) = @_ ;
     my ( $day, $hour, $minute, $month, $mseedtime, $second, $tstring, $year ) ;
     my ( @tstring ) ;
 #
@@ -1759,7 +1777,7 @@ sub install_missing { # ( $prob ) = install_missing ( $sta, $install_time, \%dfi
     
     if ( ! -d "$pf{baler14procbase}\/$sta" ) {
 
-        ( $mseedtime ) = &mseedtime( $mseed[0], $parent, $prob ) ;
+        ( $mseedtime ) = &mseedtime( $mseed[0], $parent ) ;
         
         $string            = sprintf ( "	row %d	dfile	%s", 0, $mseed[0] ) ;
         fork_notify ( $parent, $string ) ; # if $opt_v ;
@@ -1822,7 +1840,7 @@ sub install_missing { # ( $prob ) = install_missing ( $sta, $install_time, \%dfi
 
 sub removal_missing { # $prob = removal_missing ( $sta, $mseed, $removal_time, $prob, $parent ) ;
     my ( $sta, $mseed, $removal_time, $prob, $parent ) = @_ ;
-    my ( $actual_time, $mseedtime, $pct_return, $rt, $string, $string1 ) ;
+    my ( $actual_time, $days_since_removal,  $mseedtime, $pct_return, $rt, $string, $string1 ) ;
     my ( @dbrt ) ;
     
     fork_debug (  $parent, "removal_missing ( $sta, $mseed, $removal_time, $prob, $parent)" ) if $opt_V ;
@@ -1832,7 +1850,7 @@ sub removal_missing { # $prob = removal_missing ( $sta, $mseed, $removal_time, $
 #  look for missing files at end of equipment installation
 #
     $string =  "	$pf{rt_sta_dir}\/$sta\/$sta does not exist!"   ;
-    if ( ! -f "$pf{rt_sta_dir}\/$sta\/$sta" && ! ( $opt_F || $opt_B ) ) {
+    if ( ! -f "$pf{rt_sta_dir}\/$sta\/$sta" && ! ( $opt_F || $opt_E ) ) {
         $prob++ ;
         &print_prob ( $prob, $string, $parent, *PROB ) ;
         $rt = 0 ; 
@@ -1851,7 +1869,7 @@ sub removal_missing { # $prob = removal_missing ( $sta, $mseed, $removal_time, $
     }
     
     
-    ( $mseedtime ) = &mseedtime( $mseed, $parent, $prob ) ;
+    ( $mseedtime ) = &mseedtime( $mseed, $parent ) ;
         
     $string            = sprintf ( "	removal time        %s", strydtime(  $removal_time ) ) ;
     fork_notify ( $parent, $string ) if $opt_v ;
@@ -1869,15 +1887,18 @@ sub removal_missing { # $prob = removal_missing ( $sta, $mseed, $removal_time, $
     } else {
         $actual_time = 0 ;
     }
-    $pct_return  = 100 * ( $actual_time / (  $removal_time - $mseedtime ) ) ;
+    
+    $pct_return          = 100 * ( $actual_time / (  $removal_time - $mseedtime ) ) ;
 
+    $days_since_removal  =  ( now() - $removal_time ) / 86400 ;
+    
     if ( $removal_time - $mseedtime > 86400 * $pf{days_before_removal} ) {
             
         $string  = sprintf ( "	%s is more than %d day of missing data immediately before removal  ", 
                    strtdelta(  $removal_time - $mseedtime ), $pf{days_before_removal} ) ;
             
-        $string1 = sprintf( "	%s of rt BHZ data exists between    %s and    %s", strtdelta( $actual_time ), 
-                   strydtime ( $mseedtime ) , strydtime ( $removal_time )  )  ;
+        $string1 = sprintf( "	%s of rt BHZ data exists between    %s and    %s	with %d%% rt data return,	%d days since removal time", strtdelta( $actual_time ), 
+                   strydtime ( $mseedtime ) , strydtime ( $removal_time ), $pct_return, $days_since_removal  )  ;
 
         if ( $opt_F  || $opt_E ) {
             fork_notify ( $parent, $string ) ;
@@ -1892,8 +1913,8 @@ sub removal_missing { # $prob = removal_missing ( $sta, $mseed, $removal_time, $
             
     } else {
 
-        $string  = sprintf ( "	%s missing baler data before removal with %d%% rt data return", 
-                   strtdelta(  $removal_time - $mseedtime ), $pct_return ) ;
+        $string  = sprintf ( "	%s missing baler data before removal with %d%% rt data return,	%d days since removal time", 
+                   strtdelta(  $removal_time - $mseedtime ), $pct_return, $days_since_removal ) ;
 
         fork_notify ( $parent, $string ) if $opt_v ;
         print PROB "$string \n\n" ;
@@ -1906,10 +1927,12 @@ sub removal_missing { # $prob = removal_missing ( $sta, $mseed, $removal_time, $
 
 }
 
-sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing_files_since_last_proc( $mseed1, $mseed2, $ngap, \%dfile_unique, $parent, $prob ) ;
-    my ( $mseed1, $mseed2, $ngap, $refd, $parent, $prob ) = @_ ;
-    my ( $alreadyproc, $dfile, $msd1, $msd2, $mseeddir, $nf, $nmiss, $onbaler, $row, $row_1, $row_2, $string, $suffix, $zerolength ) ;
-    my ( @mseed, @skip ) ;
+sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing_files_since_last_proc( $sta, $mseed1, $mseed2, $ngap, \%dfile_unique, $parent, $prob ) ;
+    my ( $sta, $mseed1, $mseed2, $ngap, $refd, $parent, $prob ) = @_ ;
+    my ( $actual_time, $alreadyproc, $dfile, $msd1, $msd2, $mseed, $mseed_offset ) ;
+    my ( $mseeddir, $nf, $nmiss, $onbaler, $row, $row_1, $row_2, $rt ) ;
+    my ( $string, $string1, $suffix, $zerolength ) ;
+    my ( @dbrt, @mseed, @skip ) ;
     my ( %dfile_unique ) ;
     
     fork_notify (  $parent, "starting missing files since last processed check" ) ;
@@ -1989,6 +2012,63 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
         $string =  sprintf( "	Number of expected files already processed - %d", $alreadyproc )  ;
         &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
         print PROB "$string \n" ;
+    } else {
+    
+        $mseed_offset = &mseedtime( $msd2, $parent ) - &mseedtime( $msd1, $parent ) ;
+
+        $string =  "	$pf{rt_sta_dir}\/$sta\/$sta does not exist!"   ;
+        if ( ! -f "$pf{rt_sta_dir}\/$sta\/$sta" && ! ( $opt_F || $opt_B ) ) {
+            $prob++ ;
+            &print_prob ( $prob, $string, $parent, *PROB ) ;
+            $rt = 0 ; 
+        } elsif ( ! -f "$pf{rt_sta_dir}\/$sta\/$sta"  ) {
+            fork_notify ( $parent, $string ) ;
+            &print_prob ( $prob, $string, $parent, *PROB ) ;
+            $rt = 0 ; 
+        } else {
+            $rt = 1 ; 
+        }
+    
+        if ( $rt ) {
+            @dbrt  = dbopen   ( "$pf{rt_sta_dir}\/$sta\/$sta", "r" ) ;
+            @dbrt  = dblookup ( @dbrt, , 0, "wfdisc", 0, 0 ) ;
+            @dbrt  = dbsubset ( @dbrt, "chan =~ /BHZ/ " ) ;
+        }
+
+        
+        if ( $mseed_offset > $pf{max_mseed_hours} * 3600 ) {
+            if ( $rt ) { 
+                $actual_time = &data_time_check ( &mseedtime( $msd1, $parent ), &mseedtime( $msd2, $parent ), @dbrt ) ;
+            } else {
+                $actual_time = 0 ;
+            }
+            
+            $string =  sprintf( "	%s between %s      and    %s,     should be ~4 hours", strtdelta( $mseed_offset ), $mseed[ $mseed - 1 ],  $mseed[ $mseed ] )  ;
+            
+            $string1 =  sprintf( "	%s between %s and    %s of rt BHZ data exists", strtdelta( $actual_time ), 
+                       strydtime ( &mseedtime( $msd1, $parent ) ) , strydtime ( &mseedtime( $msd2, $parent ) )  )  ;
+
+            if ( $opt_F || $opt_G ) {
+                fork_notify ( $parent, $string ) ;
+                fork_notify ( $parent, $string1 ) ;
+                $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
+                fork_notify ( $parent, $string ) ;
+                $string =  sprintf( "	ignoring missing data since -F or -G option used" ) ;
+                fork_notify ( $parent, $string ) ;
+            } else {
+                fork_complain ( $parent, $string ) ;
+                fork_complain ( $parent, $string1 ) ;
+                $string =  sprintf( "	media did not change, data missing on baler 44" ) ;
+                fork_complain ( $parent, $string ) ;
+                $ngap++ ;
+                $prob++ ;
+            }
+        }
+
+        if ( $rt ) {
+            dbclose ( @dbrt ) ;
+        }
+            
     }
     
     fork_debug (  $parent, "end missing_files" ) if $opt_V ;
@@ -2213,7 +2293,7 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
     foreach $mseed ( 1..$#mseed ) {
         $mseed_offset = $dfile_unprocessed{ $mseed[ $mseed ] }{ time } - $dfile_unprocessed{ $mseed[ $mseed - 1 ] }{ time } ;
         
-        if ( $mseed_offset > 86400 ) {
+        if ( $mseed_offset > $pf{max_mseed_hours} * 3600 ) {
             
             if ( $rt ) { 
                 $actual_time = &data_time_check ( $dfile_unprocessed{ $mseed[ $mseed - 1 ] }{ time }, $dfile_unprocessed{ $mseed[ $mseed ] }{ time }, @dbrt ) ;
@@ -2221,7 +2301,7 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
                 $actual_time = 0 ;
             }
 
-            $string =  sprintf( "	%s between %s      and    %s,     should be ~8 hours", strtdelta( $mseed_offset ), $mseed[ $mseed - 1 ],  $mseed[ $mseed ] )  ;
+            $string =  sprintf( "	%s between %s      and    %s,     should be ~4 hours", strtdelta( $mseed_offset ), $mseed[ $mseed - 1 ],  $mseed[ $mseed ] )  ;
             
             $string1 =  sprintf( "	%s between %s and    %s of rt BHZ data exists", strtdelta( $actual_time ), 
                        strydtime ( $dfile_unprocessed{ $mseed[ $mseed - 1 ] }{ time } ) , strydtime ( $dfile_unprocessed{ $mseed[ $mseed ] }{ time } )  )  ;
@@ -2247,10 +2327,26 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
                     $prob++ ;
                 }
             } else {
-                fork_notify ( $parent, $string ) ;
-                fork_notify ( $parent, $string1 ) ;
-                $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
-                fork_notify ( $parent, $string ) ;
+#                 fork_notify ( $parent, $string ) ;
+#                 fork_notify ( $parent, $string1 ) ;
+#                 $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
+#                 fork_notify ( $parent, $string ) ;
+                if ( $opt_F || $opt_G ) {
+                    fork_notify ( $parent, $string ) ;
+                    fork_notify ( $parent, $string1 ) ;
+                    $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
+                    fork_notify ( $parent, $string ) ;
+                    $string =  sprintf( "	ignoring missing data since -F or -G option used" ) ;
+                    fork_notify ( $parent, $string ) ;
+                } else {
+                    fork_complain ( $parent, $string ) ;
+                    fork_complain ( $parent, $string1 ) ;
+                    $string =  sprintf( "	media did not change, data missing on baler 44" ) ;
+                    fork_complain ( $parent, $string ) ;
+                    $ngap++ ;
+                    $prob++ ;
+                }
+
             } 
             
         }

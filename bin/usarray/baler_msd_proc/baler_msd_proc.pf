@@ -22,9 +22,7 @@ days_before_removal 1                                           # number of days
 limit_hours         12											# limit of hours to allow stations to start processing                                                                
 days_after_removal  60											# number of days to wait after removal before final processing
 
-#prob_mail			your@email.edu								# email addresses to send notification of problems
-success_mail		flvernon@ucsd.edu							# email addresses to send notification of station success
-prob_mail			flvernon@ucsd.edu,reyes@ucsd.edu            # email addresses to send notification of problems
+max_mseed_hours     10                                          # maximum number of hours between times of adjacent mseed files
 
 net_sta_chan_loc        &Tbl{
 TA_([A-Z0-9]+)_(L[DIK]M)_      TA_\$1_\$2_EP

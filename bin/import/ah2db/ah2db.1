@@ -1,0 +1,29 @@
+.\" AH2DB 1 1.1.1.1 $ $Date$
+.TH AH2DB 1 "$Date$"
+.SH NAME
+ah2db \- create css database using ah format waveform files headers
+.SH SYNOPSIS
+.nf
+\fBah2db \fIah_file \fR[ \fIah_file \fR.. ] \fIdatabase\fR
+.fi
+.SH DESCRIPTION
+\fBAh2db\fR uses the information in the ah format headers to 
+create a CSS database, suitable for use by all the db utilities.
+It expects a list of ah format files (one waveform per file), 
+and creates a new \fIdatabase\fR (or adds to the existing \fIdatabase\fR). 
+.SH DIAGNOSTICS
+.IP "Can't open ah file"
+.IP "Can't read ah header"
+.IP "AH file not incorporated."
+.IP "Sample rate (1/delta) undefined "
+.IP "couldn't add to wfdisc"
+.IP "couldn't add to site"
+.IP "couldn't add to sitechan"
+.IP "couldn't add to sensor"
+.IP "couldn't add to origin"
+.IP "couldn't add to event"
+.SH AUTHOR
+Geoff Abers
+.br
+g-abers@ukans.edu
+.\" $Id$ 

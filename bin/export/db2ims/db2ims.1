@@ -3,7 +3,7 @@
 db2ims \- publish an IMS 2.0 short DMC modified bulletin from a css3.0 database
 .SH SYNOPSIS
 .nf
-\fBdb2ims \fP[-v] [-V] [-y] [-m] [-p \fIpf\fP] [-s \fIstart_origin.time\fP] [-e
+\fBdb2ims \fP[-a] [-v] [-V] [-y] [-p \fIpf\fP] [-s \fIstart_origin.time\fP] [-e
                 \fIend_origin.time\fP] [-l \fIlogfile\fP] [-d \fIdb\fP]
                 \fIdatabase\fP
 .fi
@@ -18,8 +18,8 @@ dmcbull table.
 .LP
 
 \fBdb2ims\fP requires the following database tables:  arrival, assoc, origin,
-origerr, event, and snetsta.  The netmag and stamag tables are required if the
--m option is used.  The input \fIdatabase\fP should pass dbverify origin, assoc 
+origerr, event, and snetsta.  The netmag and stamag tables are use if available.
+ The input \fIdatabase\fP should pass dbverify origin, assoc 
 and event checks cleanly.
 
 .SH OPTIONS
@@ -29,9 +29,6 @@ Name of parameter file (default is \fBdb2ims\fP.\fIpf\fP)
 Verbose log messages
 .IP -V
 Overwhelmingly verbose log messages.  Useful for debugging purposes only.
-.IP -m
-This option triggers reporting of magnitude information and
-writes a magnitude block.  The netmag and stamag tables are required.
 .IP -y
 Only select reviewed origins.  This is probably the preferred mode of operations.  
 Any origins which do not have the review field in the origin changed to "y" are 
@@ -43,6 +40,10 @@ the prefor, but not marked as reviewed.  Events that fall into this category
 are skipped and not reported in the output file despite having one solution/origin
 that is marked as reviewed.  ALL solutions must be marked as reviewed for the
 event to be included in the output file.
+.IP -a
+Sent all associated origins, not just the prefor and the mag_origin_auth in the pf file.
+Beware that this may cause significant heartburn if you are sending data to the IRIS DMC 
+as they have limited capacity to receive all the origin data.
 .IP "-s start_time"
 Select origins after this time.
 .IP "-e end_time"
@@ -200,7 +201,7 @@ accept_magtype &Arr{
      Ml
 }
 
-mag_origin_auth         ANF
+mag_origin_auth         ANF.*
 
 mag_netmag_auth         evproc
 

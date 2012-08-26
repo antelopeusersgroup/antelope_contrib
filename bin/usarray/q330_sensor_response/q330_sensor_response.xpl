@@ -11,7 +11,7 @@
 #   needs to select dbcalibrate.pf file
 #
 
-    require "getopts.pl" ;
+    use Getopt::Std ;
     use strict ;
     use Datascope ;
     use archive ;
@@ -38,7 +38,7 @@
     $usage   .=  "	[-d calibration_directory] [-D display] [-m mail_to] [-M mail_to_field_ops] [-g]\n" ;
     $usage   .=  "	db [sta_regex] \n\n"  ; 
     
-    if (  ! &Getopts('CPgnvVd:D:m:M:') || @ARGV < 1 ) { 
+    if (  ! getopts('CPgnvVd:D:m:M:') || @ARGV < 1 ) { 
         elog_notify ( $cmd ) ; 
         elog_die    ( $usage ) ;
     }

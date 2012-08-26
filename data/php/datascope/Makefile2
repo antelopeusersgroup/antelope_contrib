@@ -1,12 +1,12 @@
-DSDLIB = Datascope.so
+PHPDLIB = Datascope.so
 
 DATADIR= php
 
-DATA= $(DSDLIB) 
+DATA= $(PHPDLIB) 
 
 MAN3H= datascope_php.3h 
 
-CLEAN= $(DSDLIB) 
+CLEAN= $(PHPDLIB) 
 
 cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC 
@@ -19,11 +19,9 @@ include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
 
-DLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(DEST)/data/php/$(DSDLIB) $(LDEXTRA) $(LDPATH)
-
 DBG=
 
 DSOBJS= Datascope.o
-$(DSDLIB) : $(DSOBJS)
+$(PHPDLIB) : $(DSOBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DSDLIB) $(LORDER) $(DSOBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(PHPDLDFLAGS) -o $(PHPDLIB) $(LORDER) $(DSOBJS) $(TSORT) $(DLDLIBS) 

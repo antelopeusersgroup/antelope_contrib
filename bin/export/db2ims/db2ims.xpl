@@ -19,855 +19,182 @@
 # 
 # finally program magnitudes
 #  J.Eakins 5/2009
+#
+# rewritten again to respond to DMC comments.
+#  F. Vernon 7/2012
+#
 
 use Getopt::Std ;
 use Datascope;
+use utilfunct ;
 use File::Path;
+use feature "switch";
 
 use strict 'vars' ;
 # debug
 #use diagnostics;
 
-our ($opt_d, $opt_f, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_m, $opt_v, $opt_V, $opt_y);
+our ( $opt_a, $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_v, $opt_V, $opt_y);
+our ( $host, $pgm, $usage) ;
+our ( %pf ) ;
 
-our ($sub1, $sub2, $start, $end, $cmd) ; 
-our ($database, $filename ) ;
-our (@db, @dbevent_b, @dborigin_b, @dbj);
-our (@dborigin_g, @dbevent_g);
-our (@dbarrival, @dbevent, @dborigin, @dbassoc, @dborigerr);
-our (@dbsnetsta, @dbschanloc, @dbnetmag, @dbstamag );
-our (@trackdb, @dmcbull);
+{    #  Main program
+    my ( $Pf, $bundle, $bundletype, $cmd, $database, $event, $evid, $filename, $filtype ) ;
+    my ( $hour, $isdst, $mday, $min, $mon, $nevents, $prefor, $refj, $refj_event ) ;
+    my ( $refnetmag, $refstamag, $sec, $stime, $t, $time_subset, $wday, $yday, $year ) ;
+    my ( @db, @dbarrival_g, @dbevent_b, @dbevent_g, @dbj, @dbj_event, @dbnetmag, @dborigin_g, @dbstamag, @list ) ;
+    $pgm = $0 ; 
+    $pgm =~ s".*/"" ;
+    elog_init($pgm, @ARGV);
+    $cmd = "\n$0 @ARGV" ;
+    
+    if (  ! &getopts('anvVyd:e:l:p:s:t:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
+        $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-a] [-y] " ;
+        $usage .=  "[-s start_origin.time] [-e end_origin.time] [-t lddate.time] [-p pf] [-l logfile] [-d dbops] database  \n\n" ;
+        elog_notify($cmd) ; 
+        elog_die ( $usage ) ; 
+    }
+    
+    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;
+    chop ($host = `uname -n` ) ;
+    
+    $Pf = $opt_p || $pgm ;
+    %pf = getparam( $Pf );
 
-our ($bull, $bulls, $dmcfile);
+    $database	=  $ARGV[0];
 
-our ($t, $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst);
-our ($blank, $value, $agency, $auth, $orauth) ;
-our ($evtype, $emap, $etype, %emap); 
-our ($nrecs, $nevents, $event, $origin, $nevents_total) ;
-our ($mindelta, $maxdelta, $orid, $ortime, $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec);
-our ($startyr, $startmo, $startdy);
-our ($artime, $arrtime_ms, $atime, $mintime, $maxtime, $arid, $lddate);
-our ($smajax, $sminax, $strike, $sdepth, $ndef, $stime, $sdobs, $lat, $lon, $fixed);
-our ($match_origerr_auth, $tasdef, $fm, $pickinfo);
-our ($maginfo, $magtype, $magnitude, $hashname);
-our ($sta, $chan, $filtype, $deltime, $net, $loc, $dist, $evaz, $phase, $tres, $azim);
-our ($azres, $slodef, $arrtimesb, $arrtime, $slow, $sres, $snr, $amp, $pre);
-our ($cnt_origin, $gregion, $grn, $srn, $otime, $depth, $assoc, $delta) ;
-our ($evid, $dtype, $alg, $prefauth, $per);
-our ($prefix, $suffix) ;
+    announce( 0, 0 )  ;
+    
+    elog_notify( $cmd ) ; 
+    
+    $stime = strydtime( now() );
+    elog_notify ( "\nstarting execution on	$host	$stime\n\n" );
+    elog_notify( "\ndatabase is: $database\n" ) if $opt_v ;
 
-our ($prefor, $maglist);
-
-our ($Pf,$ref,%accept_magtypes,$mag_origin_auth,$mag_netmag_auth,$auth_reject,$mysubset,$IMSdir) ;
-
-our ($netmagtype,$nsta,$netmag,$magerr,$stamag,$mag_auth,$minmaxind);
-
-
-  if ( ! getopts('d:f:t:s:e:l:p:mvVy') || @ARGV < 1 || @ARGV > 1) { 
-	&usage;
-  }
-
-  elog_init ( $0, @ARGV) ;
-
-  $database	=  $ARGV[0];
-
-  $t = time() ;
-  ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime($t) ; 
-
-  elog_notify(0,"\nStarting $0 at: \n",  &strydtime($t) );
-
-  elog_notify("\ndatabase is: $database\n") if ($opt_v || $opt_V) ;
-
-  &cmdline() if ($opt_v || $opt_V);   
+    prettyprint( \%pf ) if $opt_V ;
+    
+    $t = time() ;
+    ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) = localtime($t) ; 
 
 # get variables set up with getopts
-   if ($opt_s) {
-	$sub1	= "origin.time";
-	$start	= is_epoch_string($opt_s) ;
-	$cmd	= "$sub1>='$start'";
-   }
+    
+    if ( $opt_s ) {
+	    $time_subset	= "origin.time >= _$opt_s\_ ";
+    }
 
-   if ($opt_e) {
-	$sub1	= "origin.time";
-	$end	= is_epoch_string($opt_e) ;
-	$cmd	= "$sub1>='$start'&&$sub1<'$end'" if $opt_s;
-	$cmd	= "$sub1<'$end'" if !$opt_s;
+   if ( $opt_e ) {
+        if ( $opt_s ) {
+            $time_subset	= "origin.time >= _$opt_s\_ && origin.time < _$opt_e\_ " ;
+        } else {
+            $time_subset	= "origin.time < _$opt_e\_ " ;
+        }
    } 
 
-   elog_notify("Subset command is: $cmd\n") if $opt_V;
+   elog_notify("Subset command is: $time_subset\n") if $opt_V;
 
-   if ($opt_t) {
-	$sub2	= "origin.lddate";  
-	$lddate	= str2epoch ($opt_t) ;	
-        elog_notify("Subsetting based on origin.lddate...\n") if $opt_V;
-	elog_notify("... subsetting for all events reviewed after:", epoch2str($opt_t), "\n")  if $opt_V;
-	if (!$cmd) {
-            $cmd	= "$sub2>='$lddate'";
-	} else { 
-            $cmd	= "$cmd && $sub2>='$lddate' ";
-	} 
-        elog_notify("\nFull database subset: dbsubset $database $cmd \n") if $opt_v ; 
-   }
+    if ( $opt_t ) {
+        elog_notify( "Subsetting based on origin.lddate...\n" ) if $opt_V ;
+        elog_notify( "... subsetting for all events reviewed after:", $opt_t , "\n")  if $opt_V ;
+        if ( ! $time_subset ) {
+            $time_subset	= "origin.lddate >= _$opt_t\_ " ;
+        } else { 
+            $time_subset	= "$time_subset && origin.lddate >= _$opt_t\_ " ;
+        } 
+        elog_notify("\nFull database subset: dbsubset $database $time_subset \n") if $opt_v ; 
+    }
 
-   
-#
-# untested filter option...
-# In css3.0 arrival table, there is no way to track the filter used to make the pick.
-#
-
-   if ($opt_f) {
-	$filtype = $opt_f ;
-   } else {
-   	$filtype	= " ";
-   }
-
-   if ($opt_p) {
-	$Pf = $opt_p ;
-   } else {
-	$Pf = "db2ims" ;
-   }
-
-   if ( pfrequire ( $Pf, "1243897200") ) {
-	elog_die ( "parameter file, $Pf, is outdated\n");
-   } 
-
-   if ($opt_V) {
-	$opt_v = "true";
-   }
-
-# get information from Pf file
-
-   $agency		= pfget ( $Pf, 'agency') ;
-   $auth_reject		= pfget ( $Pf, 'auth_reject') ;
-   $match_origerr_auth 	= pfget ( $Pf, 'match_origerr_auth');
-   $IMSdir		= pfget ( $Pf, 'ims_dir') ;
-
-   $ref			= pfget ( $Pf, 'accept_magtype') ;
-   %accept_magtypes	= %$ref; 
-   $mag_origin_auth 	= pfget ( $Pf, 'mag_origin_auth');
-   $mag_netmag_auth 	= pfget ( $Pf, 'mag_netmag_auth');
-
+    $filtype	= " ";
+ 
 #
 # open up database and lookup tables
 #
-   @db 		= dbopen ( $database, "r") ; 
-   @dborigin	= dblookup(@db,"","origin","","") ;
-   @dbassoc	= dblookup(@db,"","assoc","","") ;
-   @dbarrival	= dblookup(@db,"","arrival","","") ;
-   @dborigerr  	= dblookup(@db,"","origerr","","") ;
-   @dbevent	= dblookup(@db,"","event","","") ;
-   @dbnetmag	= dblookup(@db,"","netmag","","")  if ($opt_m);
-   @dbstamag	= dblookup(@db,"","stamag","","")  if ($opt_m);
-   @dbsnetsta  	= dblookup(@db,"","snetsta","","") ;
-   @dbschanloc 	= dblookup(@db,"","schanloc","","") ;
-
-   if ( !dbquery(@dborigin,"dbRECORD_COUNT") ) {
-	elog_die("No records in origin table.  Exiting.\n");
-	exit(1);
-   } else {
-	elog_notify(dbquery(@dborigin,"dbRECORD_COUNT"), " origin records before any subsets. \n") if ( $opt_V ) ;
-   }
-
-#
-# take only reviewed origins
-#
-
-   if ($opt_y) {
-      $nrecs	= dbquery (@dborigin,"dbRECORD_COUNT");
-      elog_notify($nrecs, " records before subsetting for reviewed origins. \n") if ( $opt_v ) ;
-      @dborigin	= dbsubset(@dborigin, "review=='y'") ; 
-      $nrecs	= dbquery (@dborigin,"dbRECORD_COUNT");
-
-      if ( !$nrecs ) {
-	    elog_die("No records in origin table after reviewed origin subset.  Exiting.\n");
-	    exit(1);
-      } else {
-      	    elog_notify($nrecs, " records after subsetting for reviewed origins. \n") if ( $opt_v) ;
-      }
-   }
-
-#
-# reject certain origin authors (i.e. those that are automatic solutions)
-#
-
-# get list from pf file and construct subset expression, $auth_reject
-
-   elog_notify("author reject set to: $auth_reject\n") if ($opt_V);
-   $mysubset = "auth !~ /" . $auth_reject . "/";
-   @dborigin	= dbsubset(@dborigin, $mysubset  );
-   $nrecs	= dbquery (@dborigin,"dbRECORD_COUNT");
-   if ( !$nrecs ) {
-	elog_die("No records in origin table after author reject subset.  Exiting.\n");
-	exit(1);
-   } else {
-   	elog_notify($nrecs, " records after removing author rejects. \n") if ($opt_v);
-   }
-
-#
-# Frank's suggestion to deal with problem where automatic solutions 
-# from dborigin2orb/orb2dbt get added to database as prefor, but are 
-# not reviewed (problem for rt databases)
-#
-#  
-
-   @dbj		= dbjoin  (@dbevent, @dborigin);
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify($nrecs, " records after joining event origin. \n") if $opt_v;
-   
-   @dbj     = dbsubset(@dbj,"prefor == orid");
-   @dbevent = dbseparate(@dbj,"event");
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify($nrecs, " records after separating \"y\" prefor events. \n") if $opt_v;
-   
-
-#
-# subset origin table based on command line arguments (will have to 
-#	change the position of this command in the program if
-# 	you broaden the subsetting capabilities)...
-
-   @dborigin  	= dbsubset(@dborigin,   "$cmd") if $cmd ; 
-   $nrecs	= dbquery (@dborigin,"dbRECORD_COUNT");
-   elog_notify($nrecs, " records after subsetting for origin time, author, and possibly lddate. \n") if $opt_V;
-
-   if (!$nrecs) {
-	elog_die("No records after time subset.  Exiting.\n");
-	exit(1);
-   }
-
-#
-# determine time of first origin to use for filename check
-#
-# sort it first to get proper time
-#
-
-   @dborigin	= dbsort(@dborigin, "origin.time");
-
-   $dborigin[3] = 0 ;
-   $ortime = dbgetv(@dborigin, qw(time));
-   $startyr = epoch2str($ortime, "%Y");
-   $startmo = epoch2str($ortime, "%m");
-   $startdy = epoch2str($ortime, "%d");
-
-   if ($opt_l) {
-        $filename = "$opt_l";
-   } else {
-	$filename = "$IMSdir/$startyr\_$startmo\_$startdy\_$agency"."_IMS";
-	elog_notify("filename is: $filename.  \n") if $opt_V ;
-	elog_notify("Now checking for $IMSdir  existance.\n") if $opt_V;
-	if (! -d $IMSdir) {
-	  elog_complain("$IMSdir does not exist.  Creating.\n") if ($opt_v || $opt_V);
-	  mkpath "$IMSdir" ;
-	}
-   }
-
-
-# check to see if filename already exists in save area
-
-   while (-e $filename) {  
-        elog_complain("   Duplicate filename. Attempting a fix.\n ") if $opt_v; 
-
-	if (index($filename,".") < 0) {
-           elog_notify("   Attempting to change filename from: $filename to: ") if $opt_V; 
-           $filename = $filename . ".1";
-           elog_notify("  $filename \n") if $opt_V; 
-	} elsif (index($filename,".") >= 1) {
-           elog_notify("   Attempting to change filename from: $filename to: ") if $opt_V ; 
-	    $prefix = substr($filename,0,rindex($filename,"."));
-	    $suffix = substr($filename,rindex($filename,".")+1);
-
-               if ($suffix =~ /^[0-9]+$/) { #purely an integer
-                  $filename = $prefix . "." . ++$suffix;
-           	  elog_notify("  $filename \n") if $opt_V ; 
-               }  else {
-                  $filename = $filename . ".1";
-           	  elog_notify("  $filename \n") if $opt_V ; 
-                  elog_complain("Error: filename already exists.\n") if $opt_V;
-                  elog_notify("Modifying output to $filename.\n") if $opt_V;
-               }
-
-	}
-   }
-
-# check to see if filename already exists in tracking db
-  
-   if (-e $opt_d) {
-	@trackdb 	= dbopen ( $opt_d, "r") ; 
-	@dmcbull	= dblookup(@trackdb,"","dmcbull","","") ;
-	$bulls	= dbquery (@dmcbull,"dbRECORD_COUNT");
-
-   # override default $filename or opt_l (-l) filename if opt_d is used 
-   #	and a duplicate filename is found in the output db
-
-	for ($bull = 0; $bull<$bulls; $bull++) {
-	    $dmcbull[3] = $bull ;
-	    $dmcfile	= dbgetv(@dmcbull, qw(dfile) ) ;
-	    if ($dmcfile eq $filename) {
-		if (index($filename,".") < 0) {
-           	    elog_notify("   Attempting to change filename from: $filename to: ") if $opt_V; 
-		    $filename = $filename. ".1";
-           	    elog_notify("  $filename \n") if $opt_V; 
-	    	} elsif (index($filename,".") >= 1) {
-           	    elog_notify("   Attempting to change filename from: $filename to: ") if $opt_V ; 
-	    	    $prefix = substr($filename,0,rindex($filename,"."));
-	    	    $suffix = substr($filename,rindex($filename,".")+1);
-
-                    if ($suffix =~ /^[0-9]+$/) { #purely an integer
-                  	$filename = $prefix . "." . ++$suffix;
-           	  	elog_notify("  $filename \n") if $opt_V ; 
-                    }  else {
-                  	$filename = $filename . ".1";
-           	  	elog_notify("  $filename \n") if $opt_V ; 
-                  	elog_complain("Error: filename already exists.\n") if $opt_V;
-                  	elog_complain("Modifying output to $filename.\n") if $opt_V;
-               	    }
-
-	    	}
-	    }
-
-	}
-
-   } 
-
-
-#
-# join in assoc, arrival, and event tables, sort and prepare groups for reporting
-#
-
-   @dbj		= dbjoin  (@dbevent, @dborigin);
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify("$nrecs records after joining event origin. \n") if $opt_V;
-
-   @dbj		= dbjoin  (@dbj,@dbassoc);
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify("$nrecs records after joining event origin assoc. \n") if $opt_V;
-
-   @dbj		= dbjoin  (@dbj,@dbarrival) ;
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify("$nrecs records after joining event origin assoc arrival. \n") if $opt_V;
-
-   @dbj		= dbjoin  (@dbj,@dbsnetsta) ;
-   @dbj		= dbjoin  (@dbj,@dbschanloc) ;
-   @dbj		= dbsubset (@dbj,"chan==fchan") ;
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify("$nrecs records after joining event origin assoc arrival snetsta schanloc. \n") if $opt_V;
-
-   if (!$nrecs) { 
-	elog_die("No records after joining event origin assoc arrival snetsta and schanloc.  Exiting.\n");
-	exit(1);
-   }
-
-   @dbj		= dbjoin  (@dbj,@dborigerr,-outer) ;
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify("$nrecs records after joining origerr \n") if $opt_V;
-
-   if ($opt_m) { 
-     if ( dbquery ( @dbnetmag, "dbRECORD_COUNT")) {
-	@dbj = dbjoin (@dbj, @dbnetmag, -outer, "orid");
-        $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-	elog_notify("", dbquery (@dbj, "dbRECORD_COUNT"), " records after joining netmag \n") if $opt_V;
-     }
-
-     if ( dbquery ( @dbstamag, "dbRECORD_COUNT")) {
-#	@dbj = dbjoin (@dbj, @dbstamag, -outer);
-	@dbj = dbjoin (@dbj, @dbstamag, -outer, "orid", "sta");
-        $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-	elog_notify("", dbquery (@dbj, "dbRECORD_COUNT"), " records after joining stamag \n") if $opt_V;
-     }
-
-
-   }
-
-   @dbj		= dbsort  (@dbj, "origin.time", "origin.auth", "arrival.time");
-   $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
-   elog_notify("$nrecs records after sorting for origin.time, and arrival.time. \n") if $opt_V;
-   if (!$nrecs) { 
-	elog_die("No records after sorting for origin.time and arrival.time.  Exiting.\n");
-	exit(1);
-   }
-
+    @db          = dbopen ( $database, "r") ; 
+    
+    ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &build_dbj ( @db ) ;
+    @dbj         = @$refj ; 
+    @dbj_event   = @$refj_event ; 
+    @dbnetmag    = @$refnetmag ; 
+    @dbstamag    = @$refstamag ; 
+    
 #
 # group by event (evid) since I have multiple origins per event. 
 #
 
-   if ($opt_m) {
-	@dborigin_g = dbgroup(@dbj, "time", "evid", "orid", "prefor", "auth", "lat", "lon", "depth", "mb", "ms", "ml", "nass", "ndef", "algorithm", "dtype", "etype", "origin.auth", "review", "stime", "sdobs", "smajax", "sminax", "strike", "sdepth", "magtype", "nsta", "magnitude", "uncertainty", "netmag.auth");
-   } else {
-# below worked before I started messing with magnitude info...
-	@dborigin_g = dbgroup(@dbj, "time", "evid", "orid", "prefor", "auth", "lat", "lon", "depth", "mb", "ms", "ml", "nass", "ndef", "algorithm", "dtype", "etype", "origin.auth", "review", "stime", "sdobs", "smajax", "sminax", "strike", "sdepth");
-   }
+    @dbarrival_g = dbgroup( @dbj, qw ( orid ) ) ;
+    $nevents	= dbquery ( @dbarrival_g, "dbRECORD_COUNT" );
+    elog_notify("Number of grouped arrivals is: $nevents	\n") if $opt_v ; 
 
-   @dbevent_g  = dbgroup(@dborigin_g, "evid", "prefor");
+    @dborigin_g = dbgroup( @dbj_event, qw ( evid orid prefor time lat lon depth ndef etype dtype algorithm ) ) ;  
 
-   $nevents	= dbquery (@dbevent_g,"dbRECORD_COUNT");
-   elog_notify("Number of grouped events is: $nevents	\n") if $opt_v ; 
+    @dbevent_g  = dbgroup( @dborigin_g, qw ( evid prefor ) ) ;   
+    $nevents	= dbquery ( @dbevent_g, "dbRECORD_COUNT" );
+    elog_notify("Number of grouped events is: $nevents	\n") if $opt_v ; 
 
-   if ($nevents <= 1 ) {
+    if ( $nevents < 1 ) {
         elog_complain("No records after grouping.  \n");
         elog_die("Check for possible dbpath errors.  Exiting.\n");
-        exit(1);
-   }
+    }
 
 #
 # Now that the filename is determined, open it.
 #
-   elog_notify("Bulletin info will be logged to $filename. \n") if  $opt_v ; 
+    elog_notify( "Bulletin info will be logged to $filename. \n" ) if  $opt_v ; 
 
-   elog_notify("Done with subsets.  Writing to output file: $filename.\n");
+    elog_notify( "Done with subsets.  Writing to output file: $filename.\n" ) ;
+    
+    
+#  Database loaded.  Start bulletin processing
 
-   open (LOG, ">$filename");
-   printf LOG "DATA_TYPE BULLETIN IMS1.0:short \n" ;
-   printf LOG " (IRIS AGENCY=\"$agency\")\n" ;
+    open ( LOG, ">$filename" ) ;
+    printf LOG "DATA_TYPE BULLETIN IMS1.0:short \n" ;
+    printf LOG " (IRIS AGENCY=\"$pf{agency}\")\n" ;
 
 
-   for ($event = 0; $event<$nevents; $event++) {
-      $dbevent_g[3]	= $event;
-      $nevents_total	= $nevents - 1 ;
-      elog_notify("\nProcessing event#: $event of $nevents_total\n") if $opt_v ; 
-      ($evid,$prefor)	= dbgetv(@dbevent_g, qw( evid prefor));
+    for ( $event = 0; $event < $nevents; $event++ ) {
+        $dbevent_g[3]	= $event;
+        elog_notify( sprintf ( "\nProcessing event#: %d  of %d\n", $event + 1, $nevents ) ) if $opt_v ; 
+        ( $evid, $prefor, $bundle, $bundletype )	= dbgetv( @dbevent_g, qw( evid prefor bundle bundletype ) ) ;
 
-#
-# setup @$prefor for accepting %$arid
-#
-      @{$prefor} = () ;
-      elog_notify (" evid    $evid   prefor   $prefor  \n") if $opt_V ;
+        elog_debug ( " evid    $evid   prefor   $prefor  bundle	$bundle	bundletype	$bundletype\n" ) if $opt_V ;
 
-      @dbevent_b = split(" ",dbgetv(@dbevent_g,"bundle"));
+        @dbevent_b = split( " ", dbgetv( @dbevent_g, "bundle" ) ) ;
 
-# PRINT EVENT BLOCK HEADER HERE, leave no carriage return so gregion can be filled in later
-      printf LOG "\n\nEVENT $evid ";
+# print event block header here
 
+        &print_ev_info ( $evid, $prefor, @dbevent_b ) ;        
 #
 # find event parameters (get all origin information and add to ORIGIN BLOCK)
 #
-      $cnt_origin = 0;
-      $maxdelta = 0.0;
-      $mindelta = 180.0;
-      $mintime  = 9999999999.999;
-      $maxtime  = -9999999999.999;
 
-      @{$maglist} = () ;
+        &print_origins ( $evid, $prefor, \@dbevent_b, \@dbarrival_g ) ;
 
-      for ($origin=$dbevent_b[3]; $origin<$dbevent_b[2]; $origin++) {
-	$dbevent_b[3] = $origin;
-	@dborigin_b = split(" ",dbgetv(@dbevent_b,"bundle"));
+        &print_mags ( $evid, \@dbevent_b, \@dbnetmag ) ;
+    
+        &print_arrivals ( $evid, $prefor, \@dbj, \@dbstamag ) ;
 
-	($orid ) = dbgetv(@dbevent_b, qw (orid) ) ;
-	elog_notify ("       evid     $evid\n") if $opt_V ;
-	elog_notify ("       orid     $orid\n") if $opt_V ;
-	elog_notify ("       prefor   $prefor\n") if $opt_V ;
+    } #end of loop over each event 
 
-	# info from origin table
+    dbclose @db;
+    close(LOG);
+}
 
-        ($otime, $lat, $lon, $depth, $ndef, $etype, $dtype, $alg) = dbgetv(@dbevent_b, qw ( time lat lon depth ndef etype dtype algorithm ));
+sub convert_auth { # &convert_auth ( $auth2c ) ;
+    my ( $auth2c ) = @_ ;
+    my ( $auth, $string ) ; 
 
-	elog_notify ("       lat      $lat \n") if $opt_V ;
-	elog_notify ("       lon      $lon \n") if $opt_V ;
-	elog_notify ("      time     %s \n", strtime($otime)) if $opt_V;
-	elog_notify ("       alg      $alg \n") if $opt_V ;
-
-
-        $prefauth	= dbgetv(@dbevent_b, qw ( auth));
-        $auth		= dbgetv(@dborigin_b, qw ( origin.auth)); 
-	$orauth		= $auth ;
-	elog_notify("   prefauth     $prefauth \n") if $opt_V ;
-	elog_notify("       auth     $auth \n") if $opt_V ;
-
-	# info from origerr table
-        ($stime, $sdobs, $smajax, $sminax, $strike, $sdepth)     = dbgetv(@dbevent_b, qw ( stime sdobs smajax sminax strike sdepth ));
-
-	# info from netmag table
-	if ($opt_m) {
-	   ($netmagtype, $nsta, $netmag, $magerr)     = dbgetv(@dbevent_b, qw ( magtype nsta magnitude uncertainty )) if $opt_m ;
-	} else {
-	   $netmagtype = " " ;
-	   $netmag = -1.0 ;
-	   $magerr = 0 ;
-	}
-
-	$netmagtype = sprintf "%-5s",   $netmagtype;
-	$netmag  = sprintf "%4.1f", $netmag;
-	$magerr  = sprintf "%3.1f", $magerr;
-	
-	$gregion = grname($lat,$lon);
-	$grn	= grn($lat,$lon);
-	$srn	= srn($lat,$lon);
-
-        $cnt_origin++ ;
-	$blank = " ";
-	$minmaxind = " ";
-
-	# create hash of magnitude info for later print to MAGNITUDE BLOCK
-
-	$hashname = $orid ;
-
-	%$hashname = ();
-	%$hashname = (
-		netmagtype	=> $netmagtype,
-		netmag		=> $netmag,
-		magerr		=> $magerr,
-		nsta  		=> $nsta  ,
-#		auth		=> &convert_auth($auth),
-		auth		=> $auth,
-		orid		=> $orid
-	) ;
-
-	push (@$maglist, $orid) ;
-
-        for ($assoc=$dborigin_b[3]; $assoc<$dborigin_b[2]; $assoc++) {
-           $dbj[3] = $assoc;
-           ($delta, $artime)     = dbgetv(@dbj, qw ( assoc.delta arrival.time));
-           $mindelta = $delta if ($delta < $mindelta);
-           $maxdelta = $delta if ($delta > $maxdelta);
-           $mintime  = $artime  if ($artime < $mintime);
-           $maxtime  = $artime  if ($artime > $maxtime);
-	# put in if orid == prefor check
-	# get all info and put into hash for prefor
-	   if ( $orid == $prefor ) {	   
-# adding chan, net, and deltime for SUB-BLOCK
-	      ($sta, $chan, $net, $loc, $deltime, $dist, $evaz, $phase, $tres, $azim, $azres, $slodef) = dbgetv(@dbj, qw ( assoc.sta chan snet loc deltim delta esaz iphase timeres delta azres slodef))  ;
-
-
-		# info from arrival table
-#	      ($atime, $slow, $sres, $snr, $amp, $per, $fm, $arid) = dbgetv(@dbj, qw ( arrival.time arrival.slow delslo snr amp per fm arid )) ;
-	      ($atime, $slow, $sres, $snr, $amp, $per, $fm, $arid) = dbgetv(@dbj, qw ( arrival.time arrival.slow delslo snr amp per fm arrival.arid )) ;
-
-		elog_notify("      arrival time     %s \n", strtime($atime)) if $opt_V;
-
-		$arrtime_ms	= epoch2str($atime, "%s");
-
-		# get precision and rounding correct 
-		if ($arrtime_ms == 1000) {
-			$arrtime_ms = 999;
-		}
-
-		$arrtime	= epoch2str($atime, "%H:%M:%S") . ".$arrtime_ms"; 
-		$arrtimesb	= epoch2str($atime, "%Y/%m/%d");
-
-		$azim 		= sprintf "%5.1f", $azim;
-		$dist		= sprintf "%6.2f", $delta;
-
-		if ($azres == -999.0) {  
-		    $azres = " " ;
-		}	
-
-		if ($slow  == -1.0) {  
-		    $slow  = " " ;
-		}	
-
-		if ($sres == -1.0) {  
-		    $sres = " " ;
-		}	
-
-		if ($snr == -1.0) {  
-		    $snr  = " " ;
-		} elsif ($snr >= 999) {
-		    elog_notify("Truncating SNR\n") if $opt_V  ;
-		    $snr = 999.9 ;
-		} else {
-		    $snr  = sprintf "%5.1f", $snr ;	
-		}	
-
-		if ($amp  == -1.0) {  
-		    $amp  = " " ;
-		} else {	
-		    $amp  = sprintf "%9.1f", $amp ;	
-		}
-
-		if ($per  == -1.0) {  
-		    $per  = " " ;
-		} else {	
-		    $per  = sprintf "%5.2f", $per ;	
-		}
-
-		if ($deltime == -1.0) {  
-		    $deltime = " " ;
-		} else {	
-		    $deltime = sprintf "%5.2f", $deltime ;	
-		}
-
-		if ($loc =~ /-/) {
-		    $loc = " " ;
-		}
-
-		$tasdef	= "___" ;
-
-		if ($fm !~ /-/ ) {
-		   $pickinfo	= "m" . substr($fm,0,1) . "_";
-		} else {
-		   $pickinfo	= "m__";	# m is used because we only send reviewed solutions, no auto-picks
-		}
-
-		if ($sdepth > 99.9) {  
-		    $sdepth = 99.9 ;
-		}	
-
-		$maginfo = $blank;
-
-# poorly (un)coded magnitude reporting
-		if ($opt_m) {	
-		   ($magtype, $stamag, $mag_auth) = dbgetv ( @dbj, qw ( stamag.magtype stamag.magnitude netmag.auth ) )  ;
-		   $stamag  = sprintf "%4.1f", $stamag ;	
-		   elog_notify("Magtype: $magtype.  Stamag: $stamag.  Mag_auth: $mag_auth.  Auth: $auth\n");
-		   if ($orauth=~/$mag_origin_auth/&&$mag_auth=~/$mag_netmag_auth/) {
-			elog_notify("Looking good.  Matches origin.auth and netmag.auth!\n");
-			if (exists $accept_magtypes{$magtype} )  {
-			   elog_notify("Woo Hoo!  Found a magnitude matcherooni!\n");
-			   $maginfo = $magtype . " " . $stamag ;
-			} else { 
-			   elog_complain("Drat.  accept_magtypes{$magtype} did not exist!\n");
-			   $magtype = "";
-			   $stamag = "";
-			}
-		   } else {
-			elog_complain("No Dice.  Auth, $orauth doesn't match mag subsets, $mag_origin_auth or $mag_netmag_auth.\n");
-			$magtype = "";
-			$stamag = "";
-		   }
-		}
-
-	# put this information in a hash... using arid as main key
-
-		$hashname = $arid ;
-
-		%$hashname = ();
-		%$hashname = (
-			sta		=> $sta ,
-			chan		=> $chan,
-			filtype		=> $filtype,
-			deltime		=> $deltime,
-			net		=> $net,
-			loc		=> $loc,
-			dist		=> $dist , 
-			evaz		=> $evaz , 
-			phase		=> $phase ,
-			tres		=> $tres, 
-			azim		=> $azim ,
-			azres		=> $azres ,
-			slodef		=> $slodef ,
-			magtype		=> $magtype ,
-			magnitude 	=> $stamag,
-			arrtimesb	=> $arrtimesb ,
-			arrtime		=> $arrtime ,
-			slow		=> $slow ,
-			sres		=> $sres ,
-			snr		=> $snr ,
-			amp		=> $amp ,
-			per		=> $pre ,
-			fm		=> $fm , 
-			pickinfo	=> $pickinfo, 
-			arid		=> $arid  
-		);
-		
-		push(@$prefor, $arid) ;
-
-	   } # end of orid == prefor
-
-        } # end of loop over each assoc
-
-
-
-# PRINT region for EVENT BLOCK DATA and ORIGIN BLOCK HEADER 
-	if ($cnt_origin == 1) {
-	    print LOG "$gregion\n";
-# ORIGIN BLOCK (HEADER)
-	printf LOG "%3s%s%7s%s%8s%s%3s%s%1s%s%1s%s", $blank,"Date",$blank,"Time",$blank,"Err",$blank, "RMS", $blank,"Latitude", $blank,"Longitude";
-	printf LOG "%2s%s%2s%s%2s%s%1s%s%3s%s%1s%s", $blank,"Smaj",$blank,"Smin",$blank,"Az",$blank,"Depth",$blank,"Err";
-	printf LOG "%s%1s%s%1s%s%2s%s%2s%s%1s%s%3s%s%6s%s\n", "Ndef",$blank,"Nsta",$blank,"Gap",$blank,"mdist",$blank,"Mdist", $blank,"Qual",$blank,"Author",$blank,"OrigId";
-	}	 
-
-# PRINT REMAINDER of ORIGIN BLOCK DATA 
-	$oYR		= epoch2str($otime,"%Y");
-	$oMO		= epoch2str($otime,"%m");
-	$oDY		= epoch2str($otime,"%d");
-	$ohour		= epoch2str($otime, "%H");
-	$omin		= epoch2str($otime, "%M");
-	$oms 		= epoch2str($otime, "%S");
-	$omsec		= epoch2str($otime, "%s");
-
-	# get percision and rounding correct 
-	if ($omsec == 1000) {
-		$omsec = 999;
-	}
-	$omsec		= $omsec/10 ;
-	$omsec		= sprintf "%2d", $omsec ;
-
-	if ($omsec < 10) {
-	    $omsec	= "0" . chop($omsec) ;	
-	}
-
-	$fixed = " ";
-
-	if ($dtype =~/g/) { 
-	    $fixed = "f"; 
-	} else {
-	    $fixed = $blank;
-	}
-
-#print "Auth is: $auth\n";
-#	$auth = &convert_auth($auth); 
-
-	if ($orauth !~ /$match_origerr_auth.*/) {
-          $stime = $blank ;
-	  $sdobs = $blank;  
-          $smajax = $blank;
-	  $sminax = $blank; 
-	  $strike = $blank; 
-	  $sdepth = $blank; 
-	} else {
-	  $strike = sprintf "%3d", $strike;
-	  $sdepth = sprintf "%4.1f", $sdepth;
-	}
-
-	if ($ndef == -1) {
-		$ndef = $blank ;
-	} elsif ($ndef == 0) {
-		$ndef = $blank ;
-	} 
-
-	$auth = &convert_auth($auth); 
-
-# take out marking of prefor
-#	if ( $orid == $prefor ) {
-#	    $auth = $auth . "*" ;
-#	}
-
-	$etype = &map_etype;
-
-        printf "%4s/%2s/%2s %2s:%2s:%s.%s%1s",  $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec, $blank if ($opt_v||$opt_V) ;
-        printf " %5.2f %5.2f",  $stime, $sdobs  if ($opt_v||$opt_V) ; 
-        printf " %8.4f %9.4f%1s %4.1f %5.1f %3s",  $lat, $lon, $fixed, $smajax, $sminax, $strike if ($opt_v||$opt_V); 
-        printf " %5.1f%1s %4.1f %4s %4s %3s", $depth, $blank, $sdepth, $ndef, $blank, $blank if ($opt_v||$opt_V); 
-        printf " %6.2f %6.2f %1s %1s %2s %9s %8s\n", $mindelta, $maxdelta, $blank, $blank, $etype, $auth, $orid if ($opt_v||$opt_V); 
-# ORIGIN BLOCK (DATA)
-        printf LOG "%4s/%2s/%2s %2s:%2s:%s.%s%1s",  $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec, $blank;
-
-	if ($orauth =~ /$match_origerr_auth.*/) {
-            printf LOG " %5.2f %5.2f",  $stime, $sdobs ; 
-            printf LOG " %8.4f %9.4f%1s ", $lat, $lon, $fixed ;
-	    printf LOG "%4.1f %5.1f %3s", $smajax, $sminax, $strike ; 
-            printf LOG " %5.1f%1s %4.1f %4s %4s %3s", $depth, $blank, $sdepth, $ndef, $blank, $blank; 
-	} else {
-            printf LOG " %5s %5s",  $stime, $sdobs ; 
-            printf LOG " %8.4f %9.4f%1s ", $lat, $lon, $fixed ;
-	    printf LOG "%4s %5s %3s", $smajax, $sminax, $strike ;
-            printf LOG " %5.1f%1s %4s %4s %4s %3s", $depth, $blank, $sdepth, $ndef, $blank, $blank; 
-	}
-        printf LOG " %6.2f %6.2f %1s %1s %2s %9s %8s\n", $mindelta, $maxdelta, $blank, $blank, $etype, $auth, $orid ; 
-	
-	# Latest officially sanctioned way to determine origin supremacy 
-	if ($orid == $prefor) { 
-	    printf LOG " %s \n", "(#PRIME)" ; 
-	}
-
-      } # end of loop over each origin.  Should have prefor information by now
-
-
-# In theory, a magnitude block should go here... but I am still in the middle of coding it 
-#	print "Printing MAGNITUDE BLOCK HEADER\n";
-	printf LOG "\n%9s%2s%3s%1s%4s%1s%6s%6s%6s\n", "Magnitude",$blank,"Err",$blank,"Nsta",$blank,"Author",$blank,"OrigID" if $opt_m;
-#	print "Printing MAGNITUDE BLOCK DATA\n";
-
-
-# loop over all orids in @$maglist and only print out those that match $mag_origin_auth
-	if ($opt_m) {
-	  foreach $value (@$maglist) {
-	     elog_notify("Value: $value.  auth: $$value{auth} vs $mag_origin_auth.  $$value{netmagtype} and $$value{nsta}\n");
-	     if ( ( $$value{auth} =~ /$mag_origin_auth/) && ($$value{netmagtype} !~ /-|^s/ || $$value{nsta} != -1.0) ) {  # don't print if no netmag values
-		elog_notify("Found a magnitude to print to MAG BLOCK.\n");
-		printf LOG "%-5s%s%4.1f%1s%3.1f%1s%4s%1s%-9s%1s%8s\n", $$value{netmagtype}, $minmaxind,$$value{netmag},$blank,$$value{magerr},$blank,$$value{nsta},$blank,convert_auth($$value{auth}),$blank,$$value{orid};
-	     } else {
-		elog_notify("Not printing magnitude for author: $$value{auth}\n");
-	     }		
-	  }
-
-	}
-# instead of going through bundles, go through prefor hashes
-
-#	print "Printing PHASE BLOCK HEADER\n";
-	printf LOG "\n%s%5s%s%2s%s%1s%s%8s%s%6s%s", "Sta",$blank,"Dist",$blank,"EvAZ",$blank,"Phase",$blank,"Time",$blank,"TRes";
-	printf LOG "%2s%s%1s%s%3s%s%3s%s%1s%s%3s", $blank,"Azim",$blank,"Azres",$blank,"Slow",$blank,"Sres",$blank,"Def",$blank;
-	printf LOG "%s%7s%s%3s%s%1s%s%1s%s%4s%s\n", "SNR",$blank,"Amp",$blank,"Per",$blank,"Qual",$blank,"Magnitude",$blank,"ArrID";
-
-#	print "Printing PHASE BLOCK DATA\n";
-	foreach $value (@$prefor) {
-		printf LOG "%-5s %6.2f %5.1f %-8s %12s %5.1f %5.1f %5s %6s %6s %3s %5s %9s %5s %3s %-5s%s%4s %8s \n",  $$value{sta}, $$value{dist}, $$value{evaz}, $$value{phase}, $$value{arrtime}, $$value{tres}, $$value{azim}, $$value{azres}, $$value{slow}, $$value{sres}, $$value{tasdef}, $$value{snr}, $$value{amp}, $$value{per}, $$value{pickinfo}, $$value{magtype}, $minmaxind, $$value{magnitude}, $$value{arid}; 
-	}
-# PHASE INFO SUB-BLOCK
-#	print "Printing PHASE SUB-BLOCK HEADER \n";
-	printf LOG "\n%s%6s%s%1s%s%1s%s%1s%s%1s%s", "Net",$blank,"Chan",$blank,"F",$blank,"Low_F",$blank,"HighF",$blank,"AuthPhas";
-	printf LOG "%4s%s%5s%s%1s%s%1s%s%1s%s%2s", $blank,"Date",$blank,"eTime",$blank,"wTime",$blank,"eAzim",$blank,"wAzim",$blank;
-	printf LOG "%s%1s%s%6s%s%2s%s%1s%s%2s%s%4s%s\n", "eSlow",$blank,"wSlow",$blank,"eAmp",$blank,"ePer",$blank,"eMag",$blank,"Author",$blank,"ArrID";
-	foreach $value (@$prefor) {
-		printf LOG "%-9s %3s %1s %5s %5s %-8s %10s %6.3f %5s %5s %5s %6s %5s %9s %5s %3s %8s %8s\n",  $$value{net}, $$value{chan}, $$value{filtype}, $blank, $blank, $$value{phase}, $$value{arrtimesb}, $$value{deltime}, $blank, $blank, $blank, $blank, $blank, $blank, $blank, $blank, $agency, $$value{arid}; 
-		# print the totally moronic comment lines that make reading this file impossible
-		if (!$$value{loc}) { 
-		    printf LOG " %s%s%s  \n", "(IRIS FDSNNETWORKCODE=\"", $$value{net}, "\")" ; 
-		} else {
-		    printf LOG " %s%s%s%2s%s  \n", "(IRIS FDSNNETWORKCODE=\"", $$value{net}, "\" FDSNLOCATIONID=\"", $$value{loc}, "\")" ;
-		}
-
-	}
-
-   } #end of loop over each event 
-
-#print LOG "End of run\n";
-
-dbclose @db;
-close(LOG);
-
-sub convert_auth {
-
-my ($auth2c) = @_ ;
-
-	if ($auth2c=~/cit.*/) {
-		$auth	= "SCEDC";
-	} elsif ($auth2c =~/SCEDC/) {
-		$auth	= "SCEDC" ;
-	} elsif ($auth2c =~/ISC/) {
-		$auth	= "ISC" ;
-	} elsif ($auth2c =~/QED_weekly/) {
-		$auth	= "PDE-W" ;
-	} elsif ($auth2c =~/PDE-W/) {
-		$auth	= "PDE-W" ;
-	} elsif ($auth2c =~/PDE/) {
-		$auth	= "PDE" ;
-	} elsif ($auth2c =~/QED/) {
-		$auth	= "PDE-Q" ;
-	} elsif ($auth2c =~/PDE-Q/) {
-		$auth	= "PDE-Q" ;
-	} elsif ($auth2c =~/UNR.*/) {
-		$auth	= "UNR";
-	} elsif ($auth2c =~/NCEDC.*/) {
-		$auth	= "NCEDC";
-	} elsif ($auth2c =~/ANFR.*/) {
-		$auth	= "ANFR";
-	} elsif ($auth2c =~/ANF:.*/) {
-		$auth	= "ANF";
-	} elsif ($auth2c =~/ANF/) {
-		$auth	= "ANF";
-	} elsif ($auth2c =~/PNSN.*/) {
-		$auth	= "PNSN";
-	} elsif ($auth2c =~/MTECH.*/) {
-		$auth	= "MTECH";
-	} elsif ($auth2c =~/UTAH.*/) {
-		$auth	= "UUSS";
-	} elsif ($auth2c =~/UCSD.*/) {
-		$auth	= "ANZA";
-	} elsif ($auth2c =~/ANZA.*/) {
-		$auth	= "ANZA";
-	} else {
-		$auth = "UNKNWN";
-	}
-
+    eval $pf{auth_map}  ; 
+    
 	elog_notify("converted auth is: $auth\n") if $opt_V;
 	return $auth; 
 }
 
-
-sub map_etype {
+sub map_etype { # $evtype = map_etype ( $etype ) ; 
+    my ( $etype ) = @_ ;
+    my ( $evtype ) ; 
+    my ( %emap ) ;
 	
 	%emap = (
-	         L => "ke",
+         L => "ke",
 		 l => "ke",
 		le => "ke",
 		LE => "ke",
@@ -897,33 +224,593 @@ sub map_etype {
 
 	$evtype = $emap{$etype}; 
 	elog_notify("etype is: $evtype\n") if $opt_V;
-	return $evtype; 
+	return ( $evtype ) ; 
 	
 }
 
-sub cmdline {   # &cmdline();
+sub new_filename {  # $filename = &new_filename ( $filename ) ; 
+    my ( $filename ) = @_ ;
+    my ( $prefix, $suffix ) ; 
+    
+    if ( index( $filename, "." ) < 0 ) {
+        elog_notify("   Attempting to change filename from: $filename to: ") if $opt_V; 
+        $filename = $filename . ".1";
+        elog_notify("  $filename \n") if $opt_V; 
+    } elsif ( index( $filename, "." ) >= 1) {
+        elog_notify("   Attempting to change filename from: $filename to: ") if $opt_V ; 
+        $prefix = substr( $filename, 0, rindex( $filename, "." ) ) ;
+        $suffix = substr( $filename, rindex( $filename, "." ) + 1 );
 
-    print STDERR "\ncommand line: \t $0" ;
-    print STDERR " -v " if $opt_v  ;
-    print STDERR " -V " if $opt_V  ;
-    print STDERR " -y " if $opt_y  ;
-    print STDERR " -m " if $opt_m  ;
-    print STDERR " -s $opt_s" if $opt_s  ;
-    print STDERR " -e $opt_e" if $opt_e  ;
-    print STDERR " -p $opt_p" if $opt_p  ;
-    print STDERR " -l $opt_l" if $opt_l  ;
-    print STDERR " -d $opt_d" if $opt_d  ;
-    printf STDERR " $ARGV[0] \n\n" ;
-
-    return;
+        if ( $suffix =~ /^[0-9]+$/ ) { #purely an integer
+            $filename = $prefix . "." . ++$suffix;
+            elog_notify( "  $filename \n" ) if $opt_V ; 
+        }  else {
+            $filename = $filename . ".1";
+            elog_notify( "  $filename \n" ) if $opt_V ; 
+            elog_complain( "Error: filename already exists.\n" ) if $opt_V;
+            elog_notify( "Modifying output to $filename.\n" ) if $opt_V;
+        }
+    }
+    return ( $filename ) ; 
 }
 
+sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &build_dbj ( @db ) ; 
+    my ( @db ) = @_ ;
+    
+    my ( $filename, $mysubset, $nrecs, $ortime, $startdy, $startmo, $startyr, $time_subset ) ; 
+    my ( @dbarrival, @dbassoc, @dbevent, @dbj, @dbj_event, @dbnetmag, @dborigerr ) ; 
+    my ( @dborigin, @dbschanloc, @dbsnetsta, @dbstamag, @dmcbull, @trackdb ) ; 
+
+    @dborigin    = dblookup( @db, "", "origin",   "", "" ) ;
+    @dbassoc     = dblookup( @db, "", "assoc",    "", "" ) ;
+    @dbarrival   = dblookup( @db, "", "arrival",  "", "" ) ;
+    @dborigerr   = dblookup( @db, "", "origerr",  "", "" ) ;
+    @dbevent     = dblookup( @db, "", "event",    "", "" ) ;
+    @dbnetmag    = dblookup( @db, "", "netmag",   "", "" ) ;
+    @dbstamag    = dblookup( @db, "", "stamag",   "", "" ) ;
+    @dbsnetsta   = dblookup( @db, "", "snetsta",  "", "" ) ;
+    @dbschanloc  = dblookup( @db, "", "schanloc", "", "" ) ;
+
+    if ( ! dbquery( @dborigin, "dbRECORD_COUNT" ) ) {
+        elog_die( "No records in origin table.  Exiting.\n" );
+    } else {
+        elog_notify( sprintf ( "%d origin records before any subsets. \n", dbquery( @dborigin, "dbRECORD_COUNT" ) ) ) if ( $opt_V ) ;
+    }
+#
+# subset origin table based on command line arguments 
+#
+
+    @dborigin = dbsubset( @dborigin, "$time_subset" ) if $time_subset ; 
+    $nrecs	  = dbquery ( @dborigin, "dbRECORD_COUNT" ) ;
+    elog_notify( "$nrecs records after subsetting for origin time, author, and possibly lddate. \n" ) if $opt_V ;
+
+    if ( ! $nrecs ) {
+        elog_die( "No records after time subset.  Exiting.\n" ) ;
+    }
+
+#
+# take only reviewed origins
+#
+
+    if ( $opt_y ) {
+        $nrecs	    = dbquery ( @dborigin, "dbRECORD_COUNT" );
+        elog_notify( "$nrecs records before subsetting for reviewed origins. \n" ) if ( $opt_v ) ;
+        @dborigin	= dbsubset( @dborigin, "review=='y'" ) ;     
+        $nrecs	    = dbquery ( @dborigin, "dbRECORD_COUNT" ) ;
+
+        if ( ! $nrecs ) {
+            elog_die( "No records in origin table after reviewed origin subset.  Exiting.\n" ) ;
+        } else {
+            elog_notify( "$nrecs records after  subsetting for reviewed origins. \n" ) if ( $opt_v ) ;
+        }
+    }
+
+#
+# reject certain origin authors (i.e. those that are automatic solutions)
+#
+
+# get list from pf file and construct subset expression, $pf{auth_reject}
+
+    elog_notify( "author reject set to: $pf{auth_reject}\n" ) if ( $opt_V ) ;
+    $mysubset = "auth !~ /" . $pf{auth_reject} . "/" ;
+    @dborigin = dbsubset( @dborigin, $mysubset ) ;
+    $nrecs	  = dbquery ( @dborigin, "dbRECORD_COUNT" ) ;
+    if ( !$nrecs ) {
+        elog_die( "No records in origin table after author reject subset.  Exiting.\n" ) ;
+    } else {
+        elog_notify( "$nrecs records after removing author rejects. \n" ) if ( $opt_v ) ;
+    }
+
+#
+# Frank's suggestion to deal with problem where automatic solutions 
+# from dborigin2orb/orb2dbt get added to database as prefor, but are 
+# not reviewed (problem for rt databases)
+#
+#  
+
+    @dbj     = dbjoin  ( @dbevent, @dborigin ) ;
+    $nrecs   = dbquery ( @dbj, "dbRECORD_COUNT" ) ;
+    elog_notify( "$nrecs records after joining event origin. \n" ) if $opt_v ;
+   
+    @dbj     = dbsubset  ( @dbj, "prefor == orid" ) ;
+    @dbevent = dbseparate( @dbj, "event" ) ;
+    $nrecs	 = dbquery   ( @dbj, "dbRECORD_COUNT" ) ;
+    elog_notify( "$nrecs records after separating \"y\" prefor events. \n" ) if $opt_v ;
+   
+#
+# determine time of first origin to use for filename check
+#
+# sort it first to get proper time
+#
+
+    @dborigin	= dbsort( @dborigin, "origin.time" ) ;
+
+    $dborigin[3] = 0 ;
+    $ortime  = dbgetv( @dborigin, qw( time ) ) ;
+    $startyr = epoch2str( $ortime, "%Y" ) ;
+    $startmo = epoch2str( $ortime, "%m" ) ;
+    $startdy = epoch2str( $ortime, "%d" ) ;
+
+    if ($opt_l) {
+        $filename = "$opt_l";
+    } else {
+        $filename = "$pf{ims_dir}/$startyr\_$startmo\_$startdy\_$pf{agency}"."_IMS";
+        elog_notify( "filename is: $filename.  \n" ) if $opt_V ;
+        elog_notify( "Now checking for $pf{ims_dir}  existance.\n" ) if $opt_V;
+        if (! -d $pf{ims_dir}) {
+            elog_complain( "$pf{ims_dir} does not exist.  Creating.\n" ) if ($opt_v || $opt_V);
+            mkpath "$pf{ims_dir}" ;
+        }
+    }
 
 
-sub usage{
-	print STDERR <<ENDIT ;
-\nUSAGE: \t$0 [-v] [-V] [-y] [-m] [-s start_origin.time] [-e end_origin.time] [-p pf] [-l logfile] [-d dbops] database 
+# check to see if filename already exists in save area
 
-ENDIT
-exit;
+    while (-e $filename) {  
+        elog_complain("   Duplicate filename. Attempting a fix. ") if $opt_v; 
+
+        $filename = &new_filename ( $filename ) ;
+    }
+
+# check to see if filename already exists in tracking db
+  
+    if (-e $opt_d) {
+        @trackdb 	= dbopen ( $opt_d, "r") ; 
+        @dmcbull	= dblookup(@trackdb,"","dmcbull","","") ;
+        
+        while ( dbfind ( @dmcbull, "dfile =~ /$filename/", -1 ) != -2 ) {
+            $filename = &new_filename ( $filename ) ;
+        }
+
+        dbclose ( @trackdb ) ; 
+    } 
+
+#
+# join in event, origin, origerr, netmag tables
+#
+
+    @dbj_event   = dbjoin  ( @dbevent, @dborigin );
+    $nrecs       = dbquery ( @dbj_event, "dbRECORD_COUNT");
+    elog_notify("$nrecs records after joining event origin.") if $opt_V ;
+    
+    unless ( $opt_a ) {
+        $mysubset    = "prefor == orid || origin.auth =~ /" . $pf{mag_origin_auth} . "/" ;
+        @dbj_event   = dbsubset ( @dbj_event, $mysubset );
+        $nrecs       = dbquery  ( @dbj_event, "dbRECORD_COUNT");
+        elog_notify("$nrecs records after subset $mysubset.") if $opt_V ;
+    }
+
+    @dbj_event   = dbjoin  ( @dbj_event, @dborigerr, "-outer" ) ;
+    $nrecs	     = dbquery ( @dbj_event, "dbRECORD_COUNT" );
+    elog_notify( "$nrecs records after joining origerr" ) if $opt_V;
+
+    if ( dbquery ( @dbnetmag, "dbRECORD_COUNT")) {
+	    @dbj_event    = dbjoin (@dbj_event, @dbnetmag, -outer, "orid");
+	    $nrecs	= dbquery (@dbj_event,"dbRECORD_COUNT");
+	    elog_notify("", dbquery (@dbj_event, "dbRECORD_COUNT"), " records after joining netmag \n") if $opt_V;
+    }
+
+#
+# join in origin, assoc, arrival, snetsta, schanloc, and stamag tables
+#
+
+    @dbj      = dbjoin  ( @dborigin, @dbassoc );
+    $nrecs    = dbquery ( @dbj, "dbRECORD_COUNT" );
+    elog_notify("$nrecs records after joining event origin assoc.") if $opt_V;
+
+    @dbj      = dbjoin  ( @dbj, @dbarrival ) ;
+    $nrecs    = dbquery ( @dbj, "dbRECORD_COUNT" );
+    elog_notify("$nrecs records after joining event origin assoc arrival.") if $opt_V;
+
+    @dbj      = dbjoin  ( @dbj, @dbsnetsta ) ;
+    @dbj      = dbjoin  ( @dbj, @dbschanloc ) ;
+    @dbj      = dbsubset( @dbj, "arrival.chan == schanloc.chan" ) ;
+    $nrecs	  = dbquery ( @dbj, "dbRECORD_COUNT" );
+    elog_notify( "$nrecs records after joining origin assoc arrival snetsta schanloc." ) if $opt_V;
+
+    if ( ! $nrecs ) { 
+        elog_die( "No records after joining origin assoc arrival snetsta and schanloc.  Exiting." );
+    }
+
+    if ( dbquery ( @dbstamag, "dbRECORD_COUNT")) {
+	    @dbj    = dbjoin (@dbj, @dbstamag, -outer, "orid", "sta");
+	    $nrecs	= dbquery (@dbj,"dbRECORD_COUNT");
+	    elog_notify("", dbquery (@dbj, "dbRECORD_COUNT"), " records after joining stamag \n") if $opt_V;
+    }
+
+    @dbj      = dbsort  ( @dbj, "orid", "arrival.time"  ) ;
+    $nrecs	  = dbquery ( @dbj, "dbRECORD_COUNT" ) ;
+    elog_notify("$nrecs records after sorting orid, and arrival.time. ") if $opt_V;
+    if ( ! $nrecs ) { 
+        elog_die("No records after sorting orid and arrival.time.  Exiting.");
+    }
+    return ( $filename, \@dbj, \@dbj_event, \@dbnetmag, \@dbstamag ) ;
+}
+
+sub print_ev_info { # &print_ev_info ( $evid, $prefor, @dbevent_b ) ;
+    my ( $evid, $prefor, @dbevent_b ) = @_ ;
+    my ( $gregion, $lat, $lon, $orid, $origin ) ;
+    
+    elog_debug ( "starting \&print_ev_info ( $evid, $prefor, \@dbevent_b )" ) if $opt_V ; 
+
+    for ( $origin = $dbevent_b[3]; $origin < $dbevent_b[2] ; $origin++ ) {
+        $dbevent_b[3]         = $origin ;
+        ( $orid, $lat, $lon ) = dbgetv( @dbevent_b, qw ( orid lat lon) ) ;
+        elog_notify ("print_ev_info	evid	$evid	orid	$orid	prefor	$prefor	lat	$lat	lon	$lon	\n") if $opt_V ;
+        $gregion              = grname( $lat, $lon ) ;
+        last if ( $orid == $prefor ) ;
+    }
+
+    printf LOG "\n\nEVENT $evid $gregion\n";
+    return ;
+}
+
+sub print_origins { # &print_origins ( $evid, $prefor, \@dbevent_b, \@dbarrival_g ) ;
+    my ( $evid, $prefor, $refb, $refa ) = @_ ;
+    
+    my ( $alg, $auth, $blank, $bundle, $bundletype, $depth, $dtype, $etype, $fixed ) ;
+    my ( $lat, $lon, $maxdelta, $mindelta, $ndef, $oDY, $oMO, $oYR, $ohour, $omin ) ;
+    my ( $oms, $omsec, $orauth, $orid, $origin, $otime, $sdepth, $sdobs, $smajax, $sminax ) ;
+    my ( $stime, $strike ) ;
+    my ( @dbarrival_b, @dbarrival_g, @dbevent_b, @dborigin_b, @list ) ;
+
+    @dbevent_b    = @$refb ; 
+    @dbarrival_g  = @$refa ;
+    
+    elog_debug ( "starting \&print_origins ( $evid, $prefor, \@dbevent_b )" ) if $opt_V ; 
+
+    $blank      = " ";
+    
+# ORIGIN BLOCK (HEADER)
+    printf LOG "%3s%s%7s%s%8s%s%3s%s%1s%s%1s%s", $blank,"Date",$blank,"Time",$blank,"Err",$blank, "RMS", $blank,"Latitude", $blank,"Longitude";
+    printf LOG "%2s%s%2s%s%2s%s%1s%s%3s%s%1s%s", $blank,"Smaj",$blank,"Smin",$blank,"Az",$blank,"Depth",$blank,"Err";
+    printf LOG "%s%1s%s%1s%s%2s%s%2s%s%1s%s%3s%s%6s%s\n", "Ndef",$blank,"Nsta",$blank,"Gap",$blank,"mdist",$blank,"Mdist", $blank,"Qual",$blank,"Author",$blank,"OrigId";
+	
+# info from assoc table
+	
+    $dbarrival_g[3]  = dbfind ( @dbarrival_g, "orid == $prefor", -1 ) ;
+    $mindelta        = dbex_eval (  @dbarrival_g, "min( delta )" ) ;
+    $maxdelta        = dbex_eval (  @dbarrival_g, "max( delta )" ) ;
+    
+    for ( $origin = $dbevent_b[3]; $origin < $dbevent_b[2] ; $origin++ ) {
+         
+        $dbevent_b[3]  = $origin ;
+        @dborigin_b    = split( " ", dbgetv( @dbevent_b, "bundle" ) );        
+        @list = dbquery ( @dborigin_b, "dbTABLE_FIELDS" ) ;    
+
+        ( $evid, $orid, $bundle, $bundletype ) = dbgetv( @dbevent_b, qw ( evid orid bundle bundletype ) );
+
+# info from origin table
+
+        ( $orid, $otime, $lat, $lon, $depth, $ndef, $etype, $dtype, $alg ) = dbgetv( @dbevent_b, qw ( orid time lat lon depth ndef etype dtype algorithm  ) );
+        elog_debug ( "print_origins	evid	$evid	orid	$orid	prefor	$prefor" ) if $opt_V ;
+        elog_debug ( sprintf ( "	time	%s	lat	$lat	lon	$lon	depth	$depth	alg	$alg", strydtime($otime) ) ) if $opt_V ;
+
+        $auth		= dbgetv( @dborigin_b, qw ( origin.auth ) ) ; 
+        $orauth		= $auth ;
+        elog_debug("       auth     $auth \n") if $opt_V ;
+
+	# info from origerr table
+        ( $stime, $sdobs, $smajax, $sminax, $strike, $sdepth )     = dbgetv( @dborigin_b, qw ( stime sdobs smajax sminax strike sdepth ));
+
+        if ( $smajax > 99.9 ) {  
+            $smajax = 99.9 ;
+        }	
+
+        if ( $sminax > 99.9 ) {  
+            $sminax = 99.9 ;
+        }	
+
+        if ( $sdepth > 99.9 ) {  
+            $sdepth = 99.9 ;
+        }	
+
+ # PRINT REMAINDER of ORIGIN BLOCK DATA 
+        $oYR		= epoch2str($otime,"%Y")  ;
+        $oMO		= epoch2str($otime,"%m")  ;
+        $oDY		= epoch2str($otime,"%d")  ;
+        $ohour		= epoch2str($otime, "%H") ;
+        $omin		= epoch2str($otime, "%M") ;
+        $oms 		= epoch2str($otime, "%S") ;
+        $omsec		= epoch2str($otime, "%s") ;
+
+	# get percision and rounding correct 
+        if ($omsec == 1000) {
+                $omsec = 999 ;
+        }
+        $omsec		= $omsec/10 ;
+        $omsec		= sprintf "%2d", $omsec ;
+
+        if ($omsec < 10) {
+                $omsec	= "0" . chop($omsec) ;	
+        }
+
+        $fixed = " " ;
+
+        if ($dtype =~/g/) { 
+            $fixed = "f" ; 
+        } else {
+            $fixed = $blank ;
+        }
+
+#print "Auth is: $auth\n";
+#        $auth = &convert_auth($auth); 
+
+        if ( $orauth !~ /$pf{match_origerr_auth}.*/ ) {
+            $stime  = $blank ;
+            $sdobs  = $blank ;  
+            $smajax = $blank ;
+            $sminax = $blank ; 
+            $strike = $blank ; 
+            $sdepth = $blank ; 
+        } else { 
+            $strike = sprintf "%3d", $strike;
+            $sdepth = sprintf "%4.1f", $sdepth;
+        }
+
+        if ( $ndef == -1 || $ndef == 0 ) {
+            $ndef = $blank ;
+        } 
+
+        $auth = &convert_auth($auth); 
+
+        $etype = &map_etype ( $etype );
+
+        if ( $opt_v ) {
+            printf "%4s/%2s/%2s %2s:%2s:%s.%s%1s",  $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec, $blank  ;
+            printf " %5.2f %5.2f",  $stime, $sdobs  ; 
+            printf " %8.4f %9.4f%1s %4.1f %5.1f %3s",  $lat, $lon, $fixed, $smajax, $sminax, $strike  ; 
+            printf " %5.1f%1s %4.1f %4s %4s %3s", $depth, $blank, $sdepth, $ndef, $blank, $blank  ; 
+            printf " %6.2f %6.2f %1s %1s %2s %9s %8s\n", $mindelta, $maxdelta, $blank, $blank, $etype, $auth, $orid  ; 
+        } 
+
+# ORIGIN BLOCK (DATA)
+        printf LOG "%4s/%2s/%2s %2s:%2s:%s.%s%1s",  $oYR, $oMO, $oDY, $ohour, $omin, $oms, $omsec, $blank;
+
+        if ($orauth =~ /$pf{match_origerr_auth}.*/) {
+            printf LOG " %5.2f %5.2f",  $stime, $sdobs ; 
+            printf LOG " %8.4f %9.4f%1s ", $lat, $lon, $fixed ;
+            printf LOG "%4.1f %5.1f %3s", $smajax, $sminax, $strike ; 
+            printf LOG " %5.1f%1s %4.1f %4s %4s %3s", $depth, $blank, $sdepth, $ndef, $blank, $blank; 
+        } else {
+            printf LOG " %5s %5s",  $stime, $sdobs ; 
+            printf LOG " %8.4f %9.4f%1s ", $lat, $lon, $fixed ;
+            printf LOG "%4s %5s %3s", $smajax, $sminax, $strike ;
+            printf LOG " %5.1f%1s %4s %4s %4s %3s", $depth, $blank, $sdepth, $ndef, $blank, $blank; 
+        }
+        printf LOG " %6.2f %6.2f %1s %1s %2s %9s %8s\n", $mindelta, $maxdelta, $blank, $blank, $etype, $auth, $orid ; 
+	
+	# Latest officially sanctioned way to determine origin supremacy 
+        if ( $orid == $prefor ) { 
+            printf LOG " %s \n", "(#PRIME)" ; 
+        }
+        
+    }
+
+    return ;
+}
+
+sub print_mags { # &print_mags ( $evid, \@dbevent_b, \@dbnetmag ) ;
+    my ( $evid, $refb, $refn ) = @_ ;  
+    my ( $auth, $blank, $magerr, $magnitude, $magtype, $minmaxind, $netmag, $netmagtype ) ;
+    my ( $nsta, $orid, $origin, $row, $uncertainty ) ;
+    my ( @dbevent_b, @dbnetmag, @dborigin_b, @dbscr, @rows ) ;
+    
+    elog_debug ( "starting &print_mags ( $evid, \@dbevent_b, \@dbnetmag ) " ) if $opt_V ; 
+    
+    $blank      = " " ;
+    $minmaxind  = " ";
+    
+    @dbevent_b = @$refb ; 
+    @dbnetmag  = @$refn ;
+    @dbscr     = dblookup( @dbnetmag, 0, "netmag", 0, "dbSCRATCH" ) ; 
+    
+
+#	print "Printing MAGNITUDE BLOCK DATA\n";
+
+
+    for ( $origin = $dbevent_b[3]; $origin < $dbevent_b[2] ; $origin++ ) {
+        $dbevent_b[3]  = $origin ;
+        @dborigin_b    = split( " ", dbgetv( @dbevent_b, "bundle" ) );
+        
+# info from origin table
+
+        ( $orid, $auth ) = dbgetv( @dborigin_b, qw ( orid origin.auth ) ) ;
+        
+        elog_debug ( "print_mags	orid	$orid	auth	$auth	pf\{match_origerr_auth\}	$pf{match_origerr_auth}" ) if $opt_V ; 
+        
+        if ( $auth =~ /$pf{match_origerr_auth}/ ) {
+            dbputv ( @dbscr, "orid", $orid ) ;
+            @rows = dbmatches( @dbscr, @dbnetmag, "netmag", "orid" ) ;
+            elog_notify ( "orid	$orid	nrows	$#rows " ) if $opt_V ;
+            if ( $#rows > -1 ) {
+ #	print "Printing MAGNITUDE BLOCK HEADER\n";
+                printf LOG "\n%9s%2s%3s%1s%4s%1s%6s%6s%6s\n", "Magnitude",$blank,"Err",$blank,"Nsta",$blank,"Author",$blank,"OrigID";
+                foreach $row ( @rows) {
+                    $dbnetmag[3] = $row ;
+                    ( $magtype, $magnitude, $uncertainty, $nsta, $auth ) = dbgetv ( @dbnetmag, qw ( magtype magnitude uncertainty nsta auth ) ) ;
+                    $netmagtype = sprintf "%-5s",  $pf{accept_magtype}{ $magtype } ;
+                    $netmag     = sprintf "%4.1f", $magnitude ;
+                    $magerr     = sprintf "%3.1f", $uncertainty ;
+
+                    printf LOG "%-5s%s%4.1f%1s%3.1f%1s%4s%1s%-9s%1s%8s\n", $netmagtype, $minmaxind, $netmag,$blank,$magerr,$blank,$nsta,$blank,$auth,$blank,$orid;
+                }
+            }
+        }
+    }
+    
+    return ; 
+
+}
+
+sub print_arrivals { # &print_arrivals ( $evid, $prefor, \@dbj, \@dbstamag ) ;
+    my ( $evid, $prefor, $refj, $refs ) = @_ ;
+    my ( $amp, $arid, $arrtime, $arrtime_ms, $arrtimesb, $atime, $auth, $azim, $azres ) ;
+    my ( $blank, $chan, $deltim, $dist, $evaz, $filtype, $first_row, $fm, $iphase ) ;
+    my ( $last_row, $loc, $magnitude, $magtype, $minmaxind, $mtype, $net, $per, $phase ) ;
+    my ( $pickinfo, $slodef, $slow, $snr, $sres, $sta, $stamag, $tasdef, $tres ) ;
+    my ( @dbj, @dbscr, @dbstamag ) ;
+    
+    elog_debug ( "starting &print_arrivals ( $evid, $prefor, \@dbj, \@dbstamag )" ) if $opt_V ; 
+
+    $blank      = " ";
+    $minmaxind  = " ";
+    
+    @dbj       = @$refj ; 
+    @dbstamag  = @$refs ;
+    @dbscr     = dblookup( @dbstamag, 0, "stamag", 0, "dbSCRATCH" ) ; 
+
+#	print "Printing PHASE BLOCK HEADER\n";
+    printf LOG "\n%s%5s%s%2s%s%1s%s%8s%s%6s%s", "Sta",$blank,"Dist",$blank,"EvAZ",$blank,"Phase",$blank,"Time",$blank,"TRes";
+    printf LOG "%2s%s%1s%s%3s%s%3s%s%1s%s%3s", $blank,"Azim",$blank,"Azres",$blank,"Slow",$blank,"Sres",$blank,"Def",$blank;
+    printf LOG "%s%7s%s%3s%s%1s%s%1s%s%4s%s\n", "SNR",$blank,"Amp",$blank,"Per",$blank,"Qual",$blank,"Magnitude",$blank,"ArrID";
+
+#	print "Printing PHASE BLOCK DATA\n";
+
+    $first_row = dbfind ( @dbj, "orid == $prefor" , -1 ) ;
+    $last_row  = dbfind ( @dbj, "orid == $prefor" , dbquery( @dbj, "dbRECORD_COUNT" ), "reverse" ) ;
+    
+    elog_notify ( "print_arrivals	evid	$evid	prefor	$prefor	first row	$first_row	last row	$last_row" ) if $opt_V ;
+        
+    for ( $dbj[3] = $first_row ; $dbj[3] <= $last_row ; $dbj[3]++ ) {
+        ( $sta, $deltim, $dist, $evaz, $phase, $tres, $azim, $azres, $slodef, $auth ) = dbgetv( @dbj, qw ( assoc.sta deltim delta esaz iphase timeres seaz azres slodef origin.auth ) )  ;
+
+		# info from arrival table
+        ( $atime, $slow, $sres, $snr, $amp, $per, $fm, $arid) = dbgetv(@dbj, qw ( arrival.time arrival.slow delslo snr amp per fm arrival.arid )) ;
+
+        elog_notify("      arrival time     %s \n", strydtime( $atime ) ) if $opt_V ;
+
+        $arrtime_ms	= epoch2str( $atime, "%s") ;
+
+		# get precision and rounding correct 
+        if ($arrtime_ms == 1000) {
+            $arrtime_ms = 999;
+        }
+
+        $arrtime	= epoch2str($atime, "%H:%M:%S") . ".$arrtime_ms"; 
+
+        $azim 		= sprintf "%5.1f", $azim;
+        $dist		= sprintf "%6.2f", $dist;
+
+        if ($azres == -999.0) {  
+            $azres = " " ;
+        }	
+
+        if ($tres == -999.0) {  
+            $tres = " " ;
+        }	
+
+        if ($slow  == -1.0) {  
+            $slow  = " " ;
+        }	
+
+        if ($sres == -1.0) {  
+            $sres = " " ;
+        }	
+
+        if ($snr == -1.0) {  
+            $snr  = " " ;
+        } elsif ($snr >= 999) {
+            elog_notify("Truncating SNR\n") if $opt_V  ;
+            $snr = 999.9 ;
+        } else {
+            $snr  = sprintf "%5.1f", $snr ;	
+        }	
+
+        if ($amp  == -1.0) {  
+            $amp  = " " ;
+        } else {	
+            $amp  = sprintf "%9.1f", $amp ;	
+        }
+
+        if ($per  == -1.0) {  
+            $per  = " " ;
+        } else {	
+            $per  = sprintf "%5.2f", $per ;	
+        }
+
+#         $tasdef	= "___" ;
+        $tasdef	= "" ;
+
+        if ($fm !~ /-/ ) {
+            $pickinfo	= "m" . substr($fm,0,1) . "_";
+        } else {
+            $pickinfo	= "m__";	# m is used because we only send reviewed solutions, no auto-picks
+        }
+        
+        $magtype    = "" ;
+        $magnitude  = "" ;
+        
+        if ( $auth =~ /$pf{match_origerr_auth}/ )  {
+            $dbstamag[3] = dbfind ( @dbstamag, " ( orid == $prefor ) && ( sta =~ /$sta/ ) ", -1 ) ;
+            elog_notify ( "print_arrivals	( orid == $prefor ) && ( sta =~ /$sta/ ) auth	$auth	$pf{match_origerr_auth}	$dbstamag[3]" ) if $opt_V;
+            if ( $dbstamag[3] != -2 ) {
+                ( $mtype, $stamag ) = dbgetv ( @dbstamag, qw ( magtype magnitude ) ) ;
+                if ( exists $pf{accept_magtype}{ $mtype } )  { 
+                    $magtype   = $pf{accept_magtype}{ $mtype } ;
+                    $magnitude = sprintf "%4.1f", $stamag ;
+                }
+            }
+        } 
+        
+        printf LOG "%-5s %6.2f %5.1f %-8s %12s %5.1f %5.1f %5s %6s %6s %3s %5s %9s %5s %3s %-5s%s%4s %8s \n",  
+               $sta, $dist, $evaz, $phase, $arrtime, $tres, $azim, $azres, $slow, $sres, $tasdef, $snr, 
+               $amp, $per, $pickinfo, $magtype, $minmaxind, $magnitude, $arid ; 
+    }
+    
+    
+    
+# PHASE INFO SUB-BLOCK
+#	print "Printing PHASE SUB-BLOCK HEADER \n";
+
+    printf LOG "\n%s%6s%s%1s%s%1s%s%1s%s%1s%s", "Net",$blank,"Chan",$blank,"F",$blank,"Low_F",$blank,"HighF",$blank,"AuthPhas";
+    printf LOG "%4s%s%5s%s%1s%s%1s%s%1s%s%2s", $blank,"Date",$blank,"eTime",$blank,"wTime",$blank,"eAzim",$blank,"wAzim",$blank;
+    printf LOG "%s%1s%s%6s%s%2s%s%1s%s%2s%s%4s%s\n", "eSlow",$blank,"wSlow",$blank,"eAmp",$blank,"ePer",$blank,"eMag",$blank,"Author",$blank,"ArrID";
+
+    for ( $dbj[3] = $first_row ; $dbj[3] <= $last_row ; $dbj[3]++ ) {
+
+        ( $net, $chan, $loc, $iphase, $atime, $deltim, $arid ) = dbgetv( @dbj, qw ( snet fchan loc iphase arrival.time deltim arid ) )  ;
+
+        $arrtimesb	= epoch2str($atime, "%Y/%m/%d");
+
+        if ($deltim == -1.0 ) {  
+            $deltim = 0.0 ;
+        } else {	
+            $deltim = sprintf "%5.2f", $deltim ;	
+        }
+
+        if ($loc =~ /-/) {
+            $loc = "" ;
+        }
+
+        printf LOG "%-9s %3s %1s %5s %5s %-8s %10s %6.3f %5s %5s %5s %6s %5s %9s %5s %3s %8s %8s\n",  $net, $chan, $filtype, $blank, $blank, $iphase, $arrtimesb, $deltim, $blank, $blank, $blank, $blank, $blank, $blank, $blank, $blank, $pf{agency}, $arid; 
+		# print the totally moronic comment lines that make reading this file impossible
+        if (! $loc ) { 
+            printf LOG " %s%s%s  \n", "(IRIS FDSNNETWORKCODE=\"", $net, "\")" ; 
+        } else {
+            printf LOG " %s%s%s%2s%s  \n", "(IRIS FDSNNETWORKCODE=\"", $net, "\" FDSNLOCATIONID=\"", $loc, "\")" ;
+        }
+
+    }
+
 }

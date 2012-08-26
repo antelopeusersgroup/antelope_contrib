@@ -1,0 +1,40 @@
+originator	Matthew Koessler & Taimi Mulder, GSC
+last_modified	2012_04_12
+
+info	&Literal{
+These instrument parameter files and their responses are derived from the Geotech manual (printed May 3, 2011):
+
+	http://www.geoinstr.com/pub/manuals/ks-2000b.pdf
+
+Note the correction published on the Geotech website:
+
+	http://www.geoinstr.com/ks2000.htm
+
+IMPORTANT NOTICE: ALL KS-2000, KS-2000M, KS-2000BH, AND KS-2000EDU SEISMOMETERS SHIPPED BEFORE JULY 15, 2008 HAVE THE FACTORY SHIPPED SENSITIVITY VALUES FOR THE VELOCITY OUTPUT 5% (for vertical) and 11% (for horizontal) LOWER THAN THE ACTUAL VALUE, WHILE FOR THE ACCELERATION OUTPUT 7% (for vertical) and 12% (for horizontal) LOWER THAN THE ACTUAL VALUE.
+
+ALSO, THE CONSTANTS IN SECTIONS 6.3.3 AND 6.3.4 OF THE MANUAL ARE 5% (for vertical) and 11% (for horizontal) TOO SMALL AND THE CONSTANTS IN SECTIONS 6.3.2 AND 6.3.5 ARE 7% (for vertical) and 12% (for horizontal) TOO SMALL. THE MANUAL WILL BE CORRECTED ACCORDINGLY.
+
+}
+category        Geotech
+configuration   KS2000M
+
+description     Geotech KS2000M Broad-band
+dfile		KS2000M
+
+rsptype			V	# velocity instrument
+band			b	# Broad Band
+sensor_type_code  	H
+short_period_sensor  	no
+
+gtype		sensor	# stage type
+sensitivity	2.0E-6  # equivalent to 2000 V/m/sec
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/KS2000M)     

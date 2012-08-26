@@ -12,15 +12,42 @@ ims_dir		IMS			# directory for storing output files
 #  magnitudes reported in MAG BLOCK must match 
 
 accept_magtype &Arr{	# netmag.magtype=~/$magtype[0]|$magtype[1]|.../
-     ml
-     ML
-     Ml
+     ml		ML
+     ML		ML
+     Ml		ML
 }
 
-mag_origin_auth 	ANF	
+mag_origin_auth 	ANF.*	
 
-mag_netmag_auth 	evproc
-
+auth_map &Literal{
+ 	given( $auth2c ) {
+ 		when (/AEIC.*/)     { $auth	= "AEIC"; }
+ 		when (/ANF.*/)      { $auth	= "ANF"; }
+	    when (/ANZA.*/)     { $auth	= "ANZA"; }
+	    when (/CERI.*/)     { $auth	= "CERI"; }
+	    when (/cit.*/)      { $auth	= "SCEDC"; }
+	    when (/GSC/)        { $auth	= "OTT" ; }
+	    when (/ISC/)        { $auth	= "ISC" ; }
+	    when (/LCSN.*/)     { $auth	= "LDO" ; }
+	    when (/MTECH.*/)    { $auth	= "BUT"; }
+	    when (/NBE.*/)      { $auth	= "UNR"; }
+	    when (/NCEDC.*/)    { $auth	= "NCEDC"; }
+	    when (/NCSN.*/)     { $auth	= "NCEDC"; }
+	    when (/NEIC.*/)     { $auth	= "NEIC"; }
+	    when (/NESN/)       { $auth	= "WES"; }
+	    when (/NMSN/)       { $auth	= "CERI"; }
+	    when (/PNSN.*/)     { $auth	= "PNSN"; }
+	    when (/PGC/)        { $auth	= "PGC" ; }
+	    when (/QED/)        { $auth	= "PDE-Q" ; }
+	    when (/QED_we.*/)   { $auth	= "PDE-W" ; }
+	    when (/SCEDC/)      { $auth	= "SCEDC"; }
+	    when (/SCSN.*/)     { $auth	= "SCEDC"; }
+	    when (/UCSD.*/)     { $auth	= "ANZA"; }
+	    when (/UNR.*/)      { $auth	= "UNR"; }
+	    when (/UTAH.*/)     { $auth	= "UUSS"; }
+	    when (/UUSS.*/)     { $auth	= "UUSS"; }
+	    default             { $auth = "UNKNWN"; } }
+}
 
 pf_revision_time	1243897200
 

@@ -2775,7 +2775,7 @@ main( int argc, char **argv )
 			"pthread_create error %d\n", rc );
 	}
 
-	pthread_join( pfwatch_tid, NULL );
+	pthread_join( pfwatch_tid, (void **) NULL );
 
 	if( Flags.verbose ) {
 

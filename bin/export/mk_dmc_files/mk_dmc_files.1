@@ -165,7 +165,8 @@ The default comment to be placed in the \fIdmcfiles\fP table.  The
 maximum length of this string is 180 characters.
 
 .SH EXAMPLE
-.LP Generate a dataless for station 109C and keep it in compressed 
+.LP 
+Generate a dataless for station 109C and keep it in compressed 
 format after a datalogger swap.  Do not transfer it via orbxfer2.
 .in 2c
 .ft CW
@@ -183,7 +184,8 @@ DATALESS.TA_109C.2011.04.01
 .ft R
 .in
 
-.LP Generate a VND for the _US-TA virtual network after adding two new stations.  
+.LP 
+Generate a VND for the _US-TA virtual network after adding two new stations.  
 Store it in the local vnd_dir specified in the default parameter file. Transfer 
 it via orbxfer2.
 .in 2c
@@ -196,7 +198,8 @@ it via orbxfer2.
 .ft R
 .in
 
-.LP Generate a single station dataless, store it in a product directory
+.LP 
+Generate a single station dataless, store it in a product directory
  and inform people why the dataless was generated.  The dataless will 
 end up in the directory: /raid/data/products/TA/dataless_sta/L08A and
 will not be transferred via orbxfer2.
@@ -222,7 +225,8 @@ vnd_dir vnd
 .in
 
 
-.LP Generate a complete dataless for a network after adding two new stations.  
+.LP 
+Generate a complete dataless for a network after adding two new stations.  
 Store it in a data products directory on your raid system, but transfer using orbxfer2
 with only the dataless_dir appearing for the receiver. 
 .in 2c
@@ -235,7 +239,8 @@ with only the dataless_dir appearing for the receiver.
 .ft R
 .in
 
-.LP In the above case the file generated would be something like
+.LP 
+In the above case the file generated would be something like
 /raid/data/products/dataless/2008/DATALESS.TA.2008.03.25.   It would
 appear in the anfexport:meta orb as a source that looked like:
 .in 2c
@@ -246,7 +251,8 @@ appear in the anfexport:meta orb as a source that looked like:
 .ft R
 .in
 
-.LP If a downstream user was connected to the anfexport:meta
+.LP 
+If a downstream user was connected to the anfexport:meta
 orb with orbxfer2 in the receiver mode and chose to have the
 directories preserverd, they would receive the file on their
 host as:

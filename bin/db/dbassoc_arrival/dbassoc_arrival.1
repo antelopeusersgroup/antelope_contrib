@@ -1,0 +1,60 @@
+'\" te
+.TH DBASSOC_ARRIVAL 1
+.SH NAME
+dbassoc_arrival \- associate arrivals with an origin table
+.SH SYNOPSIS
+.nf
+dbassoc_arrival [-p delta_p] [-s delta_s] arrival_db origin_db
+.fi
+.SH DESCRIPTION
+dbassoc_arrival attempts to associate p and s phase arrivals
+from one database, arrival_db,  with origins in a second (distinct) database
+origin_db.  For each origin, it looks for matching arrivals.
+If matching arrivals are found, that origin is added to the 
+arrival_db origin table, and assoc table entries are made in the
+arrival_db assoc table.
+.SH OPTIONS
+.IP "-p delta_p"
+.br
+You may specify the maximum p-arrival residual; the default is 3.0 seconds.
+.IP "-s delta_s"
+.br
+You may specify the maximum s-arrival residual; the default is 10.0 seconds.
+.SH ENVIRONMENT
+.IP TAUP_TABLE
+.br
+This specifies the travel time table used.
+.SH EXAMPLE
+.nf
+lemond% dbassoc_arrival -p 2.0 -s 2.0 tests/anza tests/smallcit
+.fi
+.SH RETURN VALUES
+.SH DIAGNOSTICS
+.IP "Can't open database \fIorigin_dbname\fR"
+.IP "Origin table has no records."
+.IP "Arrival table has no records."
+.IP "Site table has no records."
+Can't read some necessary information.
+.IP "Can't get new orid id"
+Probably permissions don't permit writing to the lastid table.
+.IP "Can't add to origin table."
+.IP "Can't add to assoc table."
+Probably permissions don't permit writing to the origin or assoc table.
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Dbassoc_arrival will only match arrivals with iphase starting with 'P'
+or 'S', and only matches against first P and S arrivals, not later
+arrivals.
+.LP
+The origin table records are copied almost verbatim from the 
+origin_db to the arrival_db; only orid is changed.  Commid's
+are copied as is, but may be be dangling references in the 
+new database.
+.LP
+There are no station elevation correction factors added into
+the arrival time calculations.
+.SH AUTHOR
+Daniel Quinlan

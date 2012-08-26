@@ -1,6 +1,6 @@
 #Edited by Malcolm White - August 2011
 
-require "getopts.pl";
+use Getopt::Std;
 use Datascope;
 
 #####
@@ -14,7 +14,7 @@ $Pf = $program;
 
 elog_init( $0, @ARGV );
 
-if ( ! &Getopts('mil:s:o:p:d:f:') || @ARGV != 1 ){
+if ( ! getopts('mil:s:o:p:d:f:') || @ARGV != 1 ){
 
         die ( "Usage: $program [-m] [-i] [-l lddate_cutoff] [-s origin_subset_expr] [-d dbout] [-o orid] [-p pffile] [-f output_filename] d
 atabase\n" );

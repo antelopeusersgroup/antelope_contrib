@@ -351,8 +351,6 @@ sub valid_client($$$)
   $match = shift;
   $reject = shift;
 
-  print "valid_client $who , $match, $reject\n";
-
   $is_valid = 1; # Assume client is valid
 
   if ( "$match" ne '' )
