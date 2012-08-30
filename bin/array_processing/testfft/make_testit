@@ -1,0 +1,2 @@
+#cc -o testit testit.c ../src/fft_sp.c -lm
+cc -o testit testit.c ../src/fft_dp.c -lm
