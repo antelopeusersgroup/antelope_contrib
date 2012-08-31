@@ -1,0 +1,65 @@
+.TH "delay" 1 "September 1, 2012"
+.SH NAME
+delay \- compute the time delays at an array for a given slowness vector
+.SH SYNOPSIS
+.B "delay slowness azimuth delaytype arrayname refsta dbname dfile"
+.SH DESCRIPTION
+Program delay computes the delay times at an array of stations associated with 
+a given slowness vector.  Geometrical delays, assuming the stations lie on 
+a flat earth, are computed.  An option is provided to add known station delays
+(that is, station effects) to the computed geometrical delays to get the optimum
+delays for beaming.  An array file (see below) is input to provide the exact
+stations for which delays are desired.  The program works with an existing 
+database to get the station parameters and creates a data file of the delays.  
+This data file can be used as an array file, for instance in the program "beam" (see man page for "beam"). 
+
+The following input parameters are used:
+
+slowness = slowness of wave (s/km)
+
+azimuth = back azimuth of wave, as seen by array (degrees clockwise from north)
+
+delaytype = type of delays to compute.  If equal to 0, compute the delays based
+solely on array and incoming wave geometry.  If equal to 1, add known station 
+delays to the geometrical delays.
+
+arrayname = name of array (This name is arbitrary, but it must exist as a filename with suffix ".arr".  For instance, if "ZZZ.arr" is the file, then "ZZZ" is arrayname.  The maximum number of characters is 6.)
+
+refsta = station which will be the reference point (x,y = 0,0).  (This station is arbitrary, but it must exist in the site table of the database.  Normally, this station is near the center of the array.)
+
+dbname = database name (the prefix used for the database)
+
+dfile = file name to hold computed array response
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.nf
+A typical array file would look like (sta chan delay)::
+
+CM01 SHZ  0.0
+CM02 SHZ  0.0
+CM03 SHZ  0.0
+CM04 SHZ  0.0
+CM05 SHZ  0.0
+CM06 SHZ  0.0
+CM07 SHZ  0.0
+CM08 SHZ  0.0
+CM09 SHZ  0.0
+CM10 SHZ  0.0
+CM11 SHZ  0.0
+CM12 SHZ  0.0
+CM13 SHZ  0.0
+CM14 SHZ  0.0
+CM15 SHZ  0.0
+CM16 SHZ  0.0
+CM17 SHZ  0.0
+CM18 SHZ  0.0
+
+.fi
+.SH "SEE ALSO"
+beam distaz
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern

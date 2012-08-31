@@ -1,0 +1,11 @@
+The "korea" testcase is for the Korean UNE of 2006.  The SHZ recordings of the 
+SGBDSN are used (station HEL data is missing).  The approximate back azimuth is
+~316 degrees and the approximate slowness is ~0.05 s/km.
+
+OT  = 10/09/2006 (282) 01:35:28.01
+AT  ~ 01:47:50 at SGBDSN
+
+using RPY as reference:
+del = 9069 km
+az  =  47.4 deg
+baz = 316.2 deg

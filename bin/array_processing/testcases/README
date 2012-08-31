@@ -1,0 +1,8 @@
+This directory contains test cases for all the programs in ../bin.  A C-shell script
+is provided for running the testcases.  Some of the test cases use synthetic data 
+while others use data recorded from the 2008 North Korean nuclear explosion.
+
+Several of the programs use an array file, with suffix "arr".  This ASCII file may 
+contain several fields, but the first is always station name.  Other fields will depend
+on the exact program, but include such things as channel name, static delay, or distance
+along a linear array layout.
