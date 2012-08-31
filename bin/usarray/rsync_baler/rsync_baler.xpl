@@ -6,8 +6,8 @@
 #  The software will connect to any active baler44 station and will 
 #  download all missing miniseed files on the local archive. The 
 #  code will get the list of stations and the ips from the information 
-#  present in tables [deployment, stabaler, staq330] and all of them 
-#  are required for the process to run. The process will ping each 
+#  present in tables [deployment, stabaler, staq330] (all of them 
+#  are required for the process to run). The process will ping each 
 #  station for connectivity and then will download a compressed list 
 #  of files present on the remote media. The list is verified with 
 #  the local list of files and any missing file is flagged for 
@@ -50,18 +50,18 @@ use IO::Uncompress::AnyUncompress qw(anyuncompress $AnyUncompressError) ;
 
 our(%pf);
 our(%logs,%errors);
-our($nstas,$get_sta,$parent,$host);
-our($string,$problems,$nchild,$to_parent,$file_fetch);
+our($to_parent,$nstas,$get_sta,$parent,$host);
+our($from_child,$string,$problems,$nchild,$file_fetch);
 our($subject,$start,$end,$run_time,$run_time_str);
-our($opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d);
+our($opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d);
 
 use constant false => 0;
 use constant true  => 1;
 
-select STDOUT; 
-$| = 1;
-select STDERR; 
-$| = 1;
+#select STDOUT; 
+#$| = 1;
+#select STDERR; 
+#$| = 1;
 
 #}}}
 
@@ -93,9 +93,9 @@ $| = 1;
 
     if ( $get_sta ) {
         $parent = 0;  # run as child...
-        fork_log($parent,"Running as child process for station: $get_sta") if $opt_v;
+        fork_notify($parent,"Running as child process for station: $get_sta") if $opt_v;
     } else {
-        fork_log($parent,"Running as parent process.\n") if $opt_v;
+        fork_notify($parent,"Running as parent process.\n") if $opt_v;
     }
 
     #
@@ -103,23 +103,24 @@ $| = 1;
     #
     if ($opt_m){
         savemail();
-        fork_log($parent,"Initialize mail") if $opt_v;
+        fork_notify($parent,"Initialize mail") if $opt_v;
     }
 
 
-    fork_log($parent,"$0 @ARGV") if $opt_v;
-    fork_log($parent,"Starting at ".strydtime(now())." on ".my_hostname()) if $opt_v;
+    fork_notify($parent,"$0 @ARGV") if $opt_v;
+    fork_notify($parent,"Starting at ".strydtime(now())." on ".my_hostname()) if $opt_v;
 
     #
     # Implicit flag
     #
     $opt_v = $opt_d ? $opt_d : $opt_v ;
+    $opt_V = $opt_d;
     $opt_p ||= "rsync_baler.pf" ;
 
     #
     # Get parameters from config file
     #
-    fork_log($parent,"Getting params from: $opt_p") if $opt_v;
+    fork_notify($parent,"Getting params from: $opt_p") if $opt_v;
     %pf = getparam($opt_p);
 
     #
@@ -159,7 +160,7 @@ $| = 1;
         exit 0;
     }
     else {
-        run_in_threads();
+        $nstas = run_in_threads();
     }
 
     #
@@ -181,11 +182,11 @@ $| = 1;
 
 
     $run_time = strydtime( now() ) ;
-    fork_log ($parent, "completed    $run_time\n\n" ) ;
+    fork_notify ($parent, "completed    $run_time\n\n" ) ;
 
     if ($problems == 0 ) {
         $subject = sprintf( "Success  $0  $host  $nstas stations processed" ) ;
-        fork_log ($parent, $subject );
+        fork_notify ($parent, $subject );
     } else {
         $subject = "Problems - $0 $host   $nstas stations processed, $nchild stations with problems, $problems total problems" ;
         fork_complain($parent, "\n$subject" ) ;
@@ -203,12 +204,12 @@ sub get_stations_from_db {
     my %sta_hash;
     my (@db,@db_sta);
 
-    fork_log($parent,'Get list of stations:') if $opt_v;
+    fork_notify($parent,'Get list of stations:') if $opt_v;
 
     #
     # Verify Database
     #
-    fork_log($parent,"Using database $pf{database}") if $opt_v;
+    fork_notify($parent,"Using database $pf{database}") if $opt_v;
 
     @db = dbopen ( $pf{database}, "r" ) or fork_die($parent,"Can't open DB: $pf{database}");
 
@@ -218,17 +219,17 @@ sub get_stations_from_db {
     #
     # Get stations with baler44s
     #
-    fork_log($parent,"dbsubset ( stablaler.model =~ /Packet Baler44/)") if $opt_v;
+    fork_notify($parent,"dbsubset ( stablaler.model =~ /Packet Baler44/)") if $opt_v;
     @db_sta = dbsubset ( @db_sta, "stabaler.model =~ /PacketBaler44/ ");
 
-    fork_log($parent,"dbsubset ( sta =~ /$opt_s/)") if $opt_s and $opt_v;
+    fork_notify($parent,"dbsubset ( sta =~ /$opt_s/)") if $opt_s and $opt_v;
     @db_sta = dbsubset ( @db_sta, "sta =~ /$opt_s/") if $opt_s;
 
-    fork_log($parent,"dbsubset ( sta !~ /$opt_r/)") if $opt_r and $opt_v;
+    fork_notify($parent,"dbsubset ( sta !~ /$opt_r/)") if $opt_r and $opt_v;
     @db_sta = dbsubset ( @db_sta, "sta !~ /$opt_r/") if $opt_r;
 
     $nrecords = dbquery(@db_sta,dbRECORD_COUNT) or fork_die($parent,"No records to work with after dbsubset()"); 
-    fork_log($parent,"$nrecords after subset") if $opt_v;
+    fork_notify($parent,"$nrecords after subset") if $opt_v;
 
     for ( $db_sta[3] = 0 ; $db_sta[3] < $nrecords ; $db_sta[3]++ ) { 
 
@@ -306,7 +307,7 @@ sub get_info_for_sta {
         }
     }
 
-    fork_log($parent,"$sta $net $dlsta $sta_hash{status} $sta_hash{ip}");
+    fork_notify($parent,"$sta $net $dlsta $sta_hash{status} $sta_hash{ip}");
 
     dbclose(@db);
 
@@ -321,21 +322,19 @@ sub run_in_threads {
     my $pid;
     my $cmd;
     my $max_out = $pf{max_procs};
-
     my %archive = get_stations_from_db();
 
-    $nstas = ( scalar keys %archive ) ;
-
-    fork_log ( $parent, "$nstas stations to process\n\n" ) if $opt_v;
+    $nstas = scalar keys %archive;
 
     STATION: foreach $station (sort keys %archive) {
+
+        fork_debug($parent,"run_in_threads($station)") if $opt_d;
 
         #
         # throttle the reading engine
         #
-        #fork_debug($parent,"sleep");
         #sleep (10/scalar @procs) if scalar @procs;
-        sleep 0.5;
+        sleep (5);
 
         #
         # Verify running procs
@@ -363,17 +362,19 @@ sub run_in_threads {
         $cmd  .=  "$station " ;
 
 
-        fork_log($parent,"Now: ".@procs." procs") if $opt_v;
-        fork_log($parent,"Starting $station with command: $cmd ") if $opt_v;
-
-        $pid = open($archive{$station}{fh}, "-|") ;
-        $archive{$station}{fh}->autoflush(1);
+        fork_notify($parent,"Now: ".@procs." procs") if $opt_v;
+        fork_notify($parent,"Starting $station with command: $cmd ") if $opt_v;
 
         fork_debug($parent, "exec( $cmd )" ) if $opt_d;
-        exec( $cmd ) unless $pid;
-        exit 0 unless $pid;
+        $pid = open($from_child, "-|") ;
 
-        fcntl( $archive{$station}{fh}, F_SETFL, O_NONBLOCK ) ;
+
+        $from_child->autoflush(1);
+
+        fcntl($from_child,F_SETFL, O_NONBLOCK);
+
+        exec( $cmd ) unless $pid;
+
 
         fork_debug($parent,"Got pid $pid for $station") if $opt_d;
         push @procs, $pid;
@@ -382,10 +383,25 @@ sub run_in_threads {
     }
 
     fork_debug($parent, "Initiated all stations." ) if $opt_v;
+
     #
-    # wait for last proc to end
+    # wait for all children 
     #
-    nonblock_read(\%archive,\%logs,\%errors) while check_procs(@procs);
+    #nonblock_read(\%archive,\%logs,\%errors) while check_procs(@procs);
+    while ( 1 ){
+
+        nonblock_read(\%archive,\%logs,\%errors);
+
+        last unless scalar check_procs(@procs);
+
+        #
+        # throttle the reading engine
+        #
+        sleep (5);
+
+    }
+
+    return $nstas;
 
 #}}}
 }
@@ -426,11 +442,16 @@ sub get_data {
     my $start_sta = now();
 
 
-
     #
     # Set umask for process
     #
     umask 002;
+
+    #
+    # Try to lock baler database.
+    #
+    fork_die($parent,"Cannot lock database ${path}/${sta}_baler") 
+        if dblock("${path}/${sta}_baler",$pf{max_child_run_time});
 
     #
     # Read local files and fix errors
@@ -507,24 +528,26 @@ sub get_data {
     }
     dbclose(@db);
 
-    fork_log($parent,"Flagged from database: $_") foreach ( sort keys %flagged );
+    fork_notify($parent,"Flagged from database: $_") foreach ( sort keys %flagged );
 
 
     #
     # For DECOM stations stop here
     #
     unless ( $status eq 'Active') {
-        fork_log($parent,"$sta is under DECOMMISSION status- finished processing station");
+        fork_notify($parent,"$sta is under DECOMMISSION status- finished processing station");
         return;
     }
 
 
+    dbunlock("${path}/${sta}_baler") unless $ip;
     fork_die($parent,"No IP") unless $ip;
 
     #
     # Limit the downloads to lest than 3 Gbs in last 21 days
     #
     $d_data = total_data_downloaded($sta,21) || 0.0;
+    dbunlock("${path}/${sta}_baler") if $d_data > 30000;
     fork_die($parent,"Downloaded ( $d_data ) Mbts in the last 21 days!") if $d_data > 3000;
 
 
@@ -533,6 +556,7 @@ sub get_data {
     #
     $p = Net::Ping->new("tcp", 10);
     $p->port_number($pf{http_port});
+    dbunlock("${path}/${sta}_baler") unless $p->ping($ip);
     fork_die($parent,"Not Responding!!!!") unless $p->ping($ip);
     undef($p);
 
@@ -581,7 +605,7 @@ sub get_data {
 
         } else { 
 
-            fork_log($parent,"Add to database from Baler list: $f") if $opt_v;
+            fork_notify($parent,"Add to database from Baler list: $f") if $opt_v;
             dbaddv(@db, 
                 "net",      $net,
                 "sta",      $sta,
@@ -604,15 +628,16 @@ sub get_data {
     #}}}
     } 
     dbclose(@db);
+    dbunlock("${path}/${sta}_baler");
 
     unless (keys %flagged) {
-        fork_log($parent,'No new files.');
-        fork_log ( $parent, "$sta - finished processing station");
+        fork_notify($parent,'No new files.');
+        fork_notify ( $parent, "$sta - finished processing station");
         return;
     }
 
     if ( $opt_v ) {
-        fork_log($parent,'Files flagged: ' . join(' ' ,sort keys %flagged));
+        fork_notify($parent,'Files flagged: ' . join(' ' ,sort keys %flagged));
     }
 
     #
@@ -621,7 +646,7 @@ sub get_data {
     FILE: foreach $file ( sort keys %flagged ) {
     #{{{
 
-        fork_log($parent,"Start download: $file") if $opt_v;
+        fork_notify($parent,"Start download: $file") if $opt_v;
 
         if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/) {
             fork_complain($parent,"ERROR on value of FLAGGED file:$file");
@@ -647,7 +672,7 @@ sub get_data {
         # Download file
         #
         foreach (qw/WDIR WDIR2/) {
-            fork_log($parent,"download_file($_/data/$file,$path,$ip)") if $opt_v;
+            fork_notify($parent,"download_file($_/data/$file,$path,$ip)") if $opt_v;
             $where = download_file("$_/data/$file",$path,$ip);
             last if $where;
         }
@@ -670,7 +695,7 @@ sub get_data {
             $status = 'error' unless $where;
             $md5 = get_md5($sta,$file,$ip) || 'error';
             fork_complain($parent,"$file => status:$status, md5:$md5") if $md5 =~ /error/;
-            fork_log($parent,"Success in download of $file after $run_time_str") if $md5 !~ /error/ and $opt_v;
+            fork_notify($parent,"Success in download of $file after $run_time_str") if $md5 !~ /error/ and $opt_v;
             push @total_downloads, $file;
         } else {
             fork_complain($parent,"$file => Not present in local directory after download");
@@ -767,7 +792,7 @@ sub get_data {
     $run_time = now() - $start_sta;
     $run_time_str = strtdelta($run_time);
 
-    fork_log($parent,"finished processing station $sta for ".@total_downloads." files ($m Mb) from $ip in $run_time_str");
+    fork_notify($parent,"finished processing station $sta for ".@total_downloads." files ($m Mb) from $ip in $run_time_str");
 
     return;
 
@@ -803,7 +828,7 @@ sub total_data_downloaded {
     #
     # Verify Database
     #
-    fork_log($parent,"Get data downloaded in last $days for $sta") if $opt_d;
+    fork_notify($parent,"Get data downloaded in last $days for $sta") if $opt_d;
     @db = open_db($sta);
 
     eval { dbquery(@db,dbTABLE_PRESENT); };
@@ -1247,7 +1272,7 @@ sub get_md5 {
     my ($old,$md5_lib,$digest,$md5,$local_path,$folder);
     my @md5_raw;
 
-    fork_log($parent,"Get MD5 $file") if $opt_v;
+    fork_notify($parent,"Get MD5 $file") if $opt_v;
 
     $local_path = prepare_path($sta) . '/md5/'; 
 
@@ -1259,7 +1284,7 @@ sub get_md5 {
     unless ( -s "$local_path/$file" ) {
 
         unlink "$local_path/$file";
-        fork_log($parent,"Lets download MD5 file $file -> $local_path") if $opt_v;
+        fork_notify($parent,"Lets download MD5 file $file -> $local_path") if $opt_v;
 
         foreach (qw/WDIR WDIR2/) {
             last if download_file("$_/recover/$file",$local_path,$ip);
@@ -1397,6 +1422,96 @@ sub prepare_path {
     return $path;
 #}}}
 }
+
+sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
+#{{{
+    my ( $db, $lock_duration ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $pid ) ;
+    my ( %pf ) ;
+
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf    $Pf     dbloc_pf_file   $dbloc_pf_file  pid $pid" ) if $opt_V ;
+
+    if ( ! -f $dbloc_pf_file ) {
+        elog_debug ( sprintf ("$db new lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+        return ( 0 ) ;
+    } else {
+        %pf = getparam( $Pf ) ;
+        if ( $pf{unlock_time} > &now() && $pf{pid} != $pid ) {
+            elog_complain ( sprintf ("$db is locked until %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            prettyprint ( \%pf ) ;
+            return ( 1 ) ;
+        } elsif  ( $pf{unlock_time} > &now() && $pf{pid} == $pid ) {
+            elog_debug ( sprintf ("$db lock is extended to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        } else {
+            elog_debug ( sprintf ("$db lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        }
+    }
+#}}}
+}
+
+sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
+#{{{
+    my ( $db ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $host1, $lock_time1, $pid, $pid1, $program1, $unlock_time1 ) ;
+    my ( %pf ) ;
+
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf    $Pf     dbloc_pf_file   $dbloc_pf_file" ) if $opt_V ;
+
+    if ( ! -f $dbloc_pf_file ) {
+        elog_complain ( "dbunlock:      $dbloc_pf_file does not exist!" ) ;
+        return ( 1 ) ;
+    } else {
+        pfupdate ( $Pf ) ;
+        %pf = getparam( $Pf ) ;
+        if ( $0 ne $pf{program} || $pid != int($pf{pid}) || $host ne $pf{host}) {
+            elog_complain ( "unable to unlock $db" ) ;
+            elog_complain ( "program    $0      $pf{program}" ) ;
+            elog_complain ( "pid        $pid    $pf{pid}" ) ;
+            elog_complain ( "host       $host   $pf{host}" ) ;
+            return ( 1 ) ;
+        }
+        if ( $pf{unlock_time} < &now() ) {
+            elog_complain ( sprintf ("$db was already unlocked at %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            return ( 1 ) ;
+        }
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, &now() ) ;
+        return ( 0 ) ;
+    }
+#}}}
+}
+
+sub write_dblock { # &write_dblock ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) ;
+#{{{
+    my ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) = @_ ;
+    open( LOCK,   ">$dbloc_pf_file" ) ;
+    print LOCK    "program      $program\n" ;
+    print LOCK    "host         $host\n" ;
+    print LOCK    "pid          $pid\n" ;
+    printf ( LOCK "lock_time    %d\n", $lock_time ) ;
+    printf ( LOCK "unlock_time  %d\n", $unlock_time ) ;
+    close LOCK ;
+    return ; 
+#}}}
+}
+
+
 
 __END__
 #{{{
