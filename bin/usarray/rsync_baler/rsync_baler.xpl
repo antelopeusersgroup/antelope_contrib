@@ -51,13 +51,14 @@ use IO::Uncompress::AnyUncompress qw(anyuncompress $AnyUncompressError) ;
 our(%pf);
 our(%logs,%errors);
 our($to_parent,$nstas,$get_sta,$parent,$host);
-our($from_child,$string,$problems,$nchild,$file_fetch);
-our($subject,$start,$end,$run_time,$run_time_str);
+our($string,$problems,$nchild,$file_fetch);
+our($subject,$start,$end,$run_time_str);
 our($opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d);
 
 use constant false => 0;
 use constant true  => 1;
 
+STDOUT->autoflush(1);
 #select STDOUT; 
 #$| = 1;
 #select STDERR; 
@@ -106,9 +107,8 @@ use constant true  => 1;
         fork_notify($parent,"Initialize mail") if $opt_v;
     }
 
-
     fork_notify($parent,"$0 @ARGV") if $opt_v;
-    fork_notify($parent,"Starting at ".strydtime(now())." on ".my_hostname()) if $opt_v;
+    fork_notify($parent,"Starting at ".strydtime($start)." on $host") if $opt_v;
 
     #
     # Implicit flag
@@ -168,21 +168,21 @@ use constant true  => 1;
     #
     $string = "finished processing station" ;
 
-    &missing_children ( $string, \%logs, \%errors ) ;
+    &test_missing_children ( $string, \%logs, \%errors ) ;
 
     #
     # Print error logs
     #
-    ( $nchild, $problems ) = &problem_print ( \%errors ) ;
+    ( $nchild, $problems ) = &test_problem_print ( \%errors ) ;
 
     #
     # Print logs
     #
-    &log_print ( \%logs ) ;
+    &test_log_print ( \%logs ) ;
 
 
-    $run_time = strydtime( now() ) ;
-    fork_notify ($parent, "completed    $run_time\n\n" ) ;
+    fork_notify($parent,"started at ".strydtime($start)." on $host") if $opt_v;
+    fork_notify ($parent, "completed at ".strydtime(now())." \n\n" ) ;
 
     if ($problems == 0 ) {
         $subject = sprintf( "Success  $0  $host  $nstas stations processed" ) ;
@@ -344,7 +344,7 @@ sub run_in_threads {
         #
         # Read messages from pipes
         #
-        nonblock_read(\%archive,\%logs,\%errors);
+        test_nonblock_read(\%archive,\%logs,\%errors);
 
         #
         # Stop if we are at max procs
@@ -366,19 +366,31 @@ sub run_in_threads {
         fork_notify($parent,"Starting $station with command: $cmd ") if $opt_v;
 
         fork_debug($parent, "exec( $cmd )" ) if $opt_d;
-        $pid = open($from_child, "-|") ;
 
+        undef $pid; 
 
-        $from_child->autoflush(1);
+        $pid = open($archive{$station}{fh}, "-|") ;
 
-        fcntl($from_child,F_SETFL, O_NONBLOCK);
+        #pipe($archive{$station}{fh}, $to_parent) or elog_die('Cannot create pipe()');
+        #$pid = fork();
 
-        exec( $cmd ) unless $pid;
+        elog_die("fork() failed: $!") unless defined $pid;
 
+        if ($pid) {
 
-        fork_debug($parent,"Got pid $pid for $station") if $opt_d;
-        push @procs, $pid;
-        $archive{$station}{pid} = $pid;
+            fcntl($archive{$station}{fh},F_SETFL, O_NONBLOCK);
+            $archive{$station}{fh}->autoflush(1);
+
+            fork_debug($parent,"Got pid $pid for $station") if $opt_d;
+            push @procs, $pid;
+            $archive{$station}{pid} = $pid;
+
+        }
+        else {
+            exec($cmd);
+        }
+
+        #exec( $cmd ) unless $pid;
 
     }
 
@@ -390,7 +402,7 @@ sub run_in_threads {
     #nonblock_read(\%archive,\%logs,\%errors) while check_procs(@procs);
     while ( 1 ){
 
-        nonblock_read(\%archive,\%logs,\%errors);
+        test_nonblock_read(\%archive,\%logs,\%errors);
 
         last unless scalar check_procs(@procs);
 
@@ -400,9 +412,158 @@ sub run_in_threads {
         sleep (5);
 
     }
+    #while (<$to_parent>) { elog_notify($_); }
 
     return $nstas;
 
+#}}}
+}
+
+sub test_missing_children { # &missing_children ( $string, \%logs, \%errors ) ; 
+#{{{
+    my ( $string, $logs, $errors ) = @_ ;
+    #my ( $string, $reflog, $referr ) = @_ ;
+    #my ( %logs )   = %$reflog ;
+    #my ( %errors ) = %$referr ;
+    my ( $line ) ;
+
+
+    LOG: for my $log ( sort keys %$logs) {
+
+        for my $lineno ( sort keys %{$logs->{$log}} ) {
+            next if ( $lineno =~ /lines/ ) ;
+            if ( $logs->{$log}->{$lineno} =~ /.*$string.*/ ) {
+                next LOG ;
+            }
+        }
+
+        $line = "$log DID NOT COMPLETE!" ;
+        $logs->{$log}->{lines}++ ;
+        $logs->{$log}->{ $logs->{$log}->{lines} } = $line ;
+        $errors->{$log}->{problems}++ ;
+        $errors->{$log}{ $errors->{$log}->{problems} } = $line ;
+
+        elog_notify('');
+    }
+
+    return ;
+#}}}
+}
+
+sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) ;
+#{{{
+    my $errors = shift;
+    #my $ref = shift;
+    #my ( %errors ) = %$ref ;
+    my ( $nchild, $nerr, $nprob ) ;
+
+    $nchild = $nerr = $nprob = 0 ;
+
+
+    elog_complain('');
+    elog_complain('');
+    elog_complain("-------- Problems: --------");
+    elog_complain('');
+
+
+    for my $k ( sort keys %$errors) {
+
+        next if ( $errors->{$k}->{problems} == 0 ) ;
+        $nchild++ ;
+        $nprob++ ;
+        elog_complain("On child $k:");
+
+        for my $j ( sort {$a <=> $b} keys %{$errors->{$k}} ) {
+            next if ( $j =~ /problems/ ) ;
+            elog_complain("   $j) $errors->{$k}->{$j}");
+            $nerr++ ;
+        }
+
+        elog_complain('');
+    }
+
+    elog_complain("No problems in script.") unless $nprob;
+
+    elog_complain("-------- End of problems: --------");
+    elog_complain('') ;
+
+    return ( $nchild, $nerr ) ; 
+#}}}
+}
+
+sub test_log_print { # &log_print ( \%logs ) ; 
+#{{{
+    my $logs = shift;
+    
+    elog_notify('');
+    elog_notify('');
+    elog_notify("-------- Logs: --------");
+    elog_notify('');
+
+    for my $k ( sort keys %$logs) {
+
+        elog_notify("On child $k:");
+
+        for my $j ( sort {$a <=> $b} keys %{$logs->{$k}} ) {
+            next if ( $j =~ /lines/ ) ;
+            elog_notify("   $j) $logs->{$k}->{$j}");
+        }
+
+        elog_notify('');
+    }
+
+    elog_notify("-------- End of logs: --------");
+    elog_notify('');
+#}}}
+}
+
+sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
+#{{{
+    my ( $stas, $logs, $errors ) = @_ ;
+    #my ( $refsta, $reflog, $referr ) = @_ ;
+    #my ( %stas   ) = %$refsta ;
+    #my ( %logs   ) = %$reflog ;
+    #my ( %errors ) = %$referr ;
+    my ( $fh, $fileline, $line )  ;
+
+    foreach my $sta (sort keys %$stas) {
+
+        next unless $fh = $stas->{$sta}->{fh} ;
+        elog_debug ( "nonblock_read $sta    $stas->{$sta}->{fh}" ) if $opt_d;
+
+        while ( $fileline = <$fh> ) {
+
+            while ( $fileline =~ /\[LOG:(.*?)\]$/g )     {
+                $line = $1 ;
+                $logs->{$sta}->{lines}++ ;
+                $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+            }
+            while ( $fileline =~ /\[NOTIFY:(.*?)\]$/g )     {
+                $line = $1 ;
+                $logs->{$sta}->{lines}++ ;
+                $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+            }
+            while ( $fileline =~ /\[DEBUG:(.*?)\]$/g )     {
+                $line = $1 ;
+                $logs->{$sta}->{lines}++ ;
+                $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+            }
+            while ( $fileline =~ /\[PROBLEM:(.*?)\]$/g )     {
+                $line = $1 ;
+                $logs->{$sta}->{lines}++ ;
+                $logs->{$sta}->{ $logs->{$sta}->{lines} } = $line ;
+                $errors->{$sta}->{problems}++ ;
+                $errors->{$sta}->{ $errors->{$sta}->{problems} } = $line ;
+            }
+        }
+
+        unless ( check_procs( $stas->{$sta}->{pid} ) ) {
+
+            close $stas->{$sta}->{fh} ;
+            undef $stas->{$sta}->{fh} ;
+        }
+    }
+    return ;
 #}}}
 }
 
