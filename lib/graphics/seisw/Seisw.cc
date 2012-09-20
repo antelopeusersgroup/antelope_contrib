@@ -2168,7 +2168,7 @@ static void load_z_matrix_peng(vector<TimeSeries> data,
 	{
 		char message[256];
                 sprintf(message,"SeismicPlot::load_z_matrix():  "
-			" ensemble size = %d does not match number expected"
+			" ensemble size = %ld does not match number expected"
 			" for window = %d\n",data.size(),n2);
 		throw SeisppError(string(message));
 	}
@@ -3963,11 +3963,15 @@ showpar(para);
 	{
  		para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
 	}
-	TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(nw->seisw.seisw_ensemble);
+        const string no_data_message("Seisw widget:  data ensemble empty");
+        TimeSeriesEnsemble *tse;
+        if(nw->seisw.seisw_ensemble == NULL) 
+                    throw SeisppError(no_data_message);
+        tse=static_cast<TimeSeriesEnsemble*>(nw->seisw.seisw_ensemble);
 	int nmember;
 	ca->nmember=nmember=tse->member.size();
 	if(nmember<=0) 
-		throw SeisppError("no data to plot\n");
+		throw SeisppError(no_data_message);
 	(ca->curvecolor).clear();
 	for(i=0;i<nmember;++i) (ca->curvecolor).push_back(para->default_curve_color);
 	if((ca->x2)==NULL)
