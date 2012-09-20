@@ -24,7 +24,7 @@ our ( $opt_d, $opt_n, $opt_p, $opt_t );
 #  get arguments
 #
     if ( ! &getopts('ndtp:') || @ARGV == 0 ) { 
-        die ( "\nUsage: $0  [-d] [-n] [-t] [-p pf]db1 [ db2 db3 ... ]\n\n" ) ; 
+        die ( "\nUsage: $0  [-d] [-n] [-t] [-p pf] db1 [ db2 db3 ... ]\n\n" ) ; 
     }
 
     $Pf = $opt_p || $pgm ;
@@ -70,18 +70,34 @@ sub dbtidy { # $problems = &dbtidy($db,$problems);
     @db = dblookup(@db,0,"arrival",0,0);
     for ($db[3] = 0; $db[3] < dbquery(@db,'dbRECORD_COUNT'); $db[3]++) {
         ( $snr, $chan, $lddate ) = dbgetv(@db,qw( snr chan lddate ));
-        if ( $snr < 0 ) {
+        if ( $snr < 0 && ! $opt_n ) {
            dbputv(@db,"snr",-1,"lddate",$lddate);
         }
     }
     @db = dblookup(@db,0,"origin",0,0);
     for ($db[3] = 0; $db[3] < dbquery(@db,'dbRECORD_COUNT'); $db[3]++) {
         ( $etype, $lddate ) = dbgetv(@db,qw( etype lddate ));
-        if ( $etype =~ /^\s+$/ ) {
+        if ( $etype =~ /^\s+$/  && ! $opt_n ) {
            dbputv(@db,"etype","-","lddate",$lddate);
         }
     }
     dbclose(@db);
+
+    $cmd = "dbset -l $db.assoc timeres nan NULL";
+    elog_notify($cmd);
+    system($cmd) unless $opt_n;
+
+    $cmd = "dbset -l $db.assoc timeres \"-nan\" NULL";
+    elog_notify($cmd);
+    system($cmd) unless $opt_n;
+
+    $cmd = "dbset -l $db.assoc timeres NaN NULL";
+    elog_notify($cmd);
+    system($cmd) unless $opt_n;
+
+    $cmd = "dbset -l $db.assoc timeres \"-NaN\" NULL";
+    elog_notify($cmd);
+    system($cmd) unless $opt_n;
 
     $cmd = "dbsort -o $db.origin time ";
     elog_notify($cmd);

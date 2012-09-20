@@ -34,7 +34,7 @@ use strict 'vars' ;
 # debug
 #use diagnostics;
 
-our ( $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_v, $opt_V, $opt_y);
+our ( $opt_a, $opt_d, $opt_t, $opt_s, $opt_e, $opt_l, $opt_p, $opt_v, $opt_V, $opt_y);
 our ( $host, $pgm, $usage) ;
 our ( %pf ) ;
 
@@ -48,8 +48,8 @@ our ( %pf ) ;
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &getopts('nvVyd:e:l:p:s:t:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
-        $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-y] " ;
+    if (  ! &getopts('anvVyd:e:l:p:s:t:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
+        $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-a] [-y] " ;
         $usage .=  "[-s start_origin.time] [-e end_origin.time] [-t lddate.time] [-p pf] [-l logfile] [-d dbops] database  \n\n" ;
         elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
@@ -72,7 +72,7 @@ our ( %pf ) ;
     elog_notify( "\ndatabase is: $database\n" ) if $opt_v ;
 
     prettyprint( \%pf ) if $opt_V ;
-        
+    
     $t = time() ;
     ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) = localtime($t) ; 
 
@@ -178,34 +178,12 @@ our ( %pf ) ;
     close(LOG);
 }
 
-sub convert_auth {
+sub convert_auth { # &convert_auth ( $auth2c ) ;
     my ( $auth2c ) = @_ ;
-    my ( $auth ) ; 
+    my ( $auth, $string ) ; 
 
-	given( $auth2c ) {
-	    when (/ANF.*/)      { $auth	= "ANF"; }
-	    when (/ANZA.*/)     { $auth	= "ANZA"; }
-	    when (/CERI.*/)     { $auth	= "CERI"; }
-	    when (/cit.*/)      { $auth	= "SCEDC"; }
-	    when (/ISC/)        { $auth	= "ISC" ; }
-	    when (/MTECH.*/)    { $auth	= "MTECH"; }
-	    when (/NBE.*/)      { $auth	= "UNR"; }
-	    when (/NCEDC.*/)    { $auth	= "NCEDC"; }
-	    when (/NCSN.*/)     { $auth	= "NCEDC"; }
-	    when (/PDE/)        { $auth	= "PDE" ; }
-	    when (/PDE-Q/)      { $auth	= "PDE-Q" ; }
-	    when (/PDE-W/)      { $auth	= "PDE-W" ; }
-	    when (/PNSN.*/)     { $auth	= "PNSN"; }
-	    when (/QED_weekly/) { $auth	= "PDE-W" ; }
-	    when (/SCEDC/)      { $auth	= "SCEDC"; }
-	    when (/SCSN.*/)     { $auth	= "SCEDC"; }
-	    when (/UCSD.*/)     { $auth	= "ANZA"; }
-	    when (/UNR.*/)      { $auth	= "UNR"; }
-	    when (/UTAH.*/)     { $auth	= "UUSS"; }
-	    when (/UUSS.*/)     { $auth	= "UUSS"; }
-	    default             { $auth = "UNKNWN"; }
-	}
-
+    eval $pf{auth_map}  ; 
+    
 	elog_notify("converted auth is: $auth\n") if $opt_V;
 	return $auth; 
 }
@@ -413,7 +391,14 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
 
     @dbj_event   = dbjoin  ( @dbevent, @dborigin );
     $nrecs       = dbquery ( @dbj_event, "dbRECORD_COUNT");
-    elog_notify("$nrecs records after joining event origin.") if $opt_V;
+    elog_notify("$nrecs records after joining event origin.") if $opt_V ;
+    
+    unless ( $opt_a ) {
+        $mysubset    = "prefor == orid || origin.auth =~ /" . $pf{mag_origin_auth} . "/" ;
+        @dbj_event   = dbsubset ( @dbj_event, $mysubset );
+        $nrecs       = dbquery  ( @dbj_event, "dbRECORD_COUNT");
+        elog_notify("$nrecs records after subset $mysubset.") if $opt_V ;
+    }
 
     @dbj_event   = dbjoin  ( @dbj_event, @dborigerr, "-outer" ) ;
     $nrecs	     = dbquery ( @dbj_event, "dbRECORD_COUNT" );
@@ -729,6 +714,10 @@ sub print_arrivals { # &print_arrivals ( $evid, $prefor, \@dbj, \@dbstamag ) ;
 
         if ($azres == -999.0) {  
             $azres = " " ;
+        }	
+
+        if ($tres == -999.0) {  
+            $tres = " " ;
         }	
 
         if ($slow  == -1.0) {  

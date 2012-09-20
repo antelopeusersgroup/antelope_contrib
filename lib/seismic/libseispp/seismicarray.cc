@@ -69,18 +69,22 @@ SeismicArray::SeismicArray()
 SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	double time, string arrayname)
 {
+        const string base_error("SeismicArray database constructor:  ");
 	name=arrayname;
 	// Intentionally create a copy.  This algorithm assumes
 	// this constructor is call rarely or this approach is
 	// inefficient.  
 	DatascopeHandle dbh(dynamic_cast<DatascopeHandle&>(dbi));
 	dbh.natural_join("site","snetsta");
+	int ndbrows=dbh.number_tuples();
+        if(ndbrows<=0) throw SeisppError(base_error
+                +"natural join of site and snetsta channel is empty\n"
+                +"You probably need an snetsta table");
 	int jdate=yearday(time);
 	int ondate=0,offdate=0;
 	dbh.rewind();
 	vector<int> ondl,offdl,future_ondl;
 	vector<int>::iterator ondlmax,offdlmin;
-	int ndbrows=dbh.number_tuples();
 	for(int i=0;i<ndbrows;++i,++dbh)
 	{
 		double lat,lon,elev,dnorth,deast;
@@ -155,7 +159,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	// Old test
 	//if(offdl.empty() && ondl.empty())
 	if(array.size()<=0)
-		throw SeisppError(string("SeismicArray database constructor:")
+		throw SeisppError(base_error
 			+ string("  no stations found in the db marked live")
 			+ string(" at time ")+string(strtime(time)) );
 	if(ondl.empty())

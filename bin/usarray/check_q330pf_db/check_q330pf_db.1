@@ -1,0 +1,176 @@
+.TH CHECK_Q330PF_DB 1
+.SH NAME
+check_q330pf_db \- flag mismatch between open records in database and dataloggers in q3302orb.pf files
+.SH SYNOPSIS
+.nf
+\fBcheck_q330pf_db \fP [-l] [-m \fImailto\fP] [-p \fIpf\fP] [-v] -m [\fImailto\fP] [-s \fIsubset\fP]  db
+.fi
+.SH DESCRIPTION
+\fBcheck_q330pf_db\fP reviews the dataloggers section of \fBq3302orb\fP parameter files 
+and compares stations found there to a database to make sure that all open stations 
+are in the pf files and that no closed stations are attempting to be collected.  
+Optionally, it also checks to see if there are stations attempting to be collected 
+that have not had any waveform data written to the database recently. 
+.LP
+This script may not see much use for any network other than the USArray Transportable Array. 
+It was written to help alert the network operator of potential mismatches when trying to
+keep track of the status of 450+ dataloggers who only reside in place for ~18 months.  With
+25 or more dataloggers either installed or removed per month, a safety net to highlight
+problems is necessary.  For static networks this script is unlikely to be run more than a 
+few times per year, if at all.  Note that for the first released version of this script, 
+there is the assumption that all dataloggers in the network are q330s.
+ 
+.SH OPTIONS
+.IP -l
+Optionally review wfdisc for recent data.  See the \fImaxlag\fP and \fIchansub\fP parameters  
+in the PARAMETER FILE.
+.IP "-m mail_list"
+Generate an automated email informing the \fImail_list\fP of the results of the checks.  
+The recipient list should be comma separated. 
+.IP "-p parameter_file"
+Parameter file to use.  The default parameter file name is \fBcheck_q330pf_db\fP.
+.IP "-s subset_expression"
+Subset expression to be applied to site-snet join.  Overrides the \fIsubset\fP found in 
+the PARAMETER FILE.
+.IP -v
+Verbose output.
+.IP -V
+Very verbose output.  Should only be used for debugging.
+.IP db
+Database which contains site and snetsta tables as well as optionally the sitechan
+and wfdisc tables.  This argument is required.
+
+.SH FILES
+See \fBq3302orb(1)\fP for a full description of the q3302orb.pf file.  This script only
+reviews the \fIdataloggers\fP section of that parameter file.
+.SH ENVIRONMENT
+Need to have sourced $ANTELOPE/setup.csh and environment variable $PFPATH set.
+.SH PARAMETER FILE
+Below is the default \fBcheck_q330pf_db\fP parameter file.
+.in 2c
+.ft CW
+.nf
+.ps 8
+# pf file for check_q330pf_db 
+
+q3302orb_pfs &Tbl{       # list of q3302orb pf file to check , if empty only q3302orb.pf
+        q3302orb_1
+        q3302orb_2
+        q3302orb_prelim
+}
+
+subset          "snet=='XX'"  # default subset, full expression
+
+# only used with -l option
+maxlag          5        # number of days of no data before complaint 
+chansub         BHZ.*    # channel(s) for subset expression:  i.e. BHZ|BHZ_00
+.fi
+.ft R
+.in
+.LP
+
+.IP \fIq3302orb_pfs\fP 
+List of q3302orb parameter files to check.  Most networks only operate a 
+single instance of q3302orb and use the default naming convention for that
+parameter file so there would only be one item listed:  q3302orb.  However,
+at the ANF in San Diego, for the TA project, we have 6 or 7 instances of 
+q3302orb running, each with its own parameter file.  Shown here is an
+example of a multi-q3302orb instance setup.
+
+.IP \fIsubset\fP
+A full expression for what subset needs to be done.  This subset can use
+fields from the site and/or snetsta table.  Note that this subset is only
+applied to the database, your list of dataloggers will not be subsetted in
+a similar way.  See BUGS AND CAVEATS below.
+
+.IP \fImaxlag\fP
+Value is in days.  The wfdisc from the input database \fIdbin\fP is reviewed 
+for stations that have no data more recent than now - maxlag (days).  Only 
+used with the \fI-l\fP option.
+
+.IP \fIchansub\fP
+Channels to look for in the wfdisc table.  Subset applied to the wfdisc is
+chan=~/\fIchansub\fP/.   Only used with the \fI-l\fP option.
+
+.SH EXAMPLE
+
+.in 2c
+.ft CW
+.nf
+check_q330pf_db -l -m someone@somewhere.edu "snet=='TA'" db/usarray
+.fi
+.ft R
+.LP
+The above example applies all checks to the database.  User someone, might receive
+an email with a subject of:  "Problems - check_q330pf_db hostname /datalag/".  It 
+would be up to the user to then review their system to see if the station that is 
+reporting the datalag is a station with comms issues and not sending data, or is
+a station that has been extracted from the field and thus needs to be closed in 
+both the metadata and removed from the q3302orb.pf file.
+
+.in
+.SH DIAGNOSTICS
+There are three types of tests performed and if any one of the three tests are failed
+they are reported in the subject line of the output email, or to STDERR.  The three 
+possible failures that could show up individually, or in combination in the mail 
+subject line are:  /datalag/, /excess db stations/, or  /rm q3302orb stations/.  
+They are explained below.
+
+.IP \fIdatalag\fP
+Will only be returned if \fI-l\fP option is used.  This test is tripped if there are
+dataloggers listed in the pf file with open records in the metadata, but no recent (see
+\fImaxlag\fP) data.
+
+.IP "\fIexcess db stations\fP"
+If there are open stations in the database that are not found in the q3302orb pf files, 
+this alarm is tripped.  It could be a non-issue for you if the station does not have 
+a q330 (see BUGS and CAVEATS below), or it could indicate that you need to update your
+metadata.
+
+.IP "\fIrm q3302orb stations\fP"
+If there are stations that have been closed in the metadata, but not removed from the
+q3302orb pf files, this alarm is tripped.  For a mobile network like the USArray TA, 
+this is an important case to trip because if the datalogger is reinstalled, it could 
+start collecting data tagged with an incorrect station name.  A quick response to 
+this alarm is recommended.
+
+.LP
+In a perfect world, no mismatches will be found and you will see a subject line 
+that reports a \fISuccess\fP.
+
+.SH "SEE ALSO"
+.nf
+q3302orb(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+This program assumes all stations to be collected are q330s.  At some point, 
+I need to put in a check to try to ignore a station if it is not using a q330
+as the datalogger.
+
+.LP 
+Note that there is no check in this script to see if the sta-datalogger_sn 
+reported in the database matches the sta-datalogger_sn recorded in the q3302orb.pf
+
+.LP
+If you use a \fIsubset\fP like \fI-s snet=='TA'&&sta=~/1.*/\fP, you may see many 
+error messages like:
+
+.in 2c
+.ft CW
+.nf
+
+XXXX exists in a pf but is not found in the db 
+
+.fi
+.ft R
+.in
+
+This is because you subsetted the database only.  The same subset is not
+applied to the dataloggers table so you may see many reports of a station
+existing in the pf but not the db.
+
+.SH AUTHOR
+Jennifer Eakins
+.br
+Univ. of California, San Diego

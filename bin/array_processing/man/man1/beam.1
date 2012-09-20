@@ -1,0 +1,89 @@
+.TH "beam" 1 "September 1, 2012"
+.SH NAME
+beam \- form an array beam trace
+.SH SYNOPSIS
+.B "beam tstart slen filter sr beamslow beamaz ampfunc beamtype delaytype channame arrayname refsta dbin dbout dir dfile"
+.SH DESCRIPTION
+Program beam computes an array beam trace. It works with an existing database 
+to get the station parameters and creates a data file which is referenced in 
+the wfdisc table of the database.  The beam is written as binary IEEE 
+floating-point numbers ("u4" datatype in Antelope for Intel machines).  
+A single beam is written to a given data file.  The option is provided to make 
+simple delay-and-sum beams, N-th root beams, or incoherent beams.
+
+The following input parameters are used:
+
+tstart = start time of signal in epoch seconds
+
+slen = signal length to be beamed in seconds
+
+filter = filter specification in BRTT syntax, like "BW 0.5 4 8.0 4" (Must be put in quotes.)
+
+sr = desired sampling rate (<= actual sampling rate).  This increases performance when looking at low-frequency signals relative to original sampling rate.
+
+beamslow = beam slowness (s/km)
+
+beamaz = azimuth to which beam is directed (incoming signal azimuth) in degrees CW from north
+.nf
+
+ampfunc = flag to select how amplitude is computed from beam
+            1 = simple peak value (absolute)
+            2 = average of absolute values in beam window (L1)
+            3 = root-mean-square of values in beam window (L2)
+
+beamtype = type of beam to be formed in slowness space
+            1 = linear
+            2 = 2nd root
+            3 = 3rd root
+            4 = 4th root
+            5 = incoherent
+
+.fi
+delaytype = 0 means use delays in .arr file in addition to geometry delays; delaytype = 1 means the .arr file delays are the complete delays to apply
+
+channame = channel name to be assigned to beam trace (maximum of 8 characters).  arrayname and channame should be a unique pair of trace identifiers.
+
+arrayname = name of array (This name is arbitrary, but it must exist as a filename with suffix ".arr".  For instance, if "ZZZ.arr" is the file, then "ZZZ" is arrayname.  The maximum number of characters is 6.)
+
+refsta = station which will be the reference point (x,y = 0,0).  (This station is arbitrary, but it must exist in the site table of the database.  Normally, this station is near the center of the array.)
+
+dbin = database name of input data
+
+dbout = database name of output data (beam traces)
+
+dir = directory in which dfile will be put
+
+dfile = name of beam waveform file.  This file will be written in the current directory.
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.nf
+A typical array file would look like (sta chan delay)::
+
+CM01 SHZ  0.0
+CM02 SHZ  0.0
+CM03 SHZ  0.0
+CM04 SHZ  0.0
+CM05 SHZ  0.0
+CM06 SHZ  0.0
+CM07 SHZ  0.0
+CM08 SHZ  0.0
+CM09 SHZ  0.0
+CM10 SHZ  0.0
+CM11 SHZ  0.0
+CM12 SHZ  0.0
+CM13 SHZ  0.0
+CM14 SHZ  0.0
+CM15 SHZ  0.0
+CM16 SHZ  0.0
+CM17 SHZ  0.0
+CM18 SHZ  0.0
+
+.fi
+.SH "SEE ALSO"
+delay sigcor slow2d
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern
