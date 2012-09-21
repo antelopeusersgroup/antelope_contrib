@@ -26,7 +26,7 @@ usage()
 int
 main(int argc, char **argv)
 {
-	int             c, verbose = 0, errflg = 0;
+	int             verbose = 0 ;
 
 
 	char           *dbname= NULL;
