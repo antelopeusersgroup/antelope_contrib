@@ -1,0 +1,12 @@
+This directory holds the software for dbcorrelate, a program to correlate P and
+S waveforms at common stations in order to get differential times for HYPODD.
+It uses Antelope libraries.  Three supporting programs
+
+event_pairs 
+create_ccfile
+hypodd2db 
+
+are also included. The first is a preprocessor for dbcorrelate.  The second is a
+post-processor for dbcorrelate, and it makes the HYPODD dt.cc file.  The third
+is a program to convert HYPODD *.reloc files to Antelope origin and, optionally,
+origerr tables.

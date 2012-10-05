@@ -1,0 +1,11 @@
+These are the exact locations for the synthesis, not the locations appearing
+in db.origin, which are the locations gotten with dbloc2.
+       1   39.2000 -120.0000   10.0000  1/01/2004   0:00:00.000
+       2   39.2000 -120.0116   10.0000  1/01/2004   1:00:00.000
+       3   39.2090 -120.0000   10.0000  1/01/2004   2:00:00.000
+       4   39.2000 -120.0000    9.0000  1/01/2004   3:00:00.000
+
+#1 is the reference event
+#2 is 1 km west of #1
+#3 is 1 km north of #1
+#4 is 1 km above #1
