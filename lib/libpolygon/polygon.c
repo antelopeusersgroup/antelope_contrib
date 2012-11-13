@@ -79,7 +79,6 @@ static Point *shift_polygon(Point P, Point *polygon, long n) {
 	return shifted;
 }
 static int is_inside_polygon( Point P, Point *polygon, long n) {
-	int cleanup_needed=0;
 	int wn;
 	Point *copy=malloc((n+1)*sizeof(Point));
 
@@ -149,7 +148,7 @@ static PolyCodeType PolyCodes[] = {
 	{ "u4", polyINTELFLOAT }
 };
 
-static nPolyTypes = sizeof(PolyCodes) / sizeof(PolyCodeType);
+static int nPolyTypes = sizeof(PolyCodes) / sizeof(PolyCodeType);
 
 int polycode (char *type) {
 	int i;
@@ -301,6 +300,7 @@ long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int clos
 
 	pid=dbnextid(db,"pid");
 	
+	db=dblookup(db, 0, "polygon", 0, 0);
 	if ( (db.record=dbaddnull(db) ) ==dbINVALID) {
 		elog_log(0,"writePolygonData: problem adding row...");
 		return dbINVALID;
@@ -536,10 +536,10 @@ Dbptr inWhichPolygons(Dbptr db,Point P) {
 				found=1;
 				dbgetv(dbs,0,"pid",&pid,NULL );
 				if (first) {
-					sprintf(expr,"pid==%d",pid);
+					sprintf(expr,"pid==%ld",pid);
 					first=0;
 				} else {
-					sprintf(temp,"|| pid==%d",pid);
+					sprintf(temp,"|| pid==%ld",pid);
 					strcat(expr,temp);
 				}
 			}

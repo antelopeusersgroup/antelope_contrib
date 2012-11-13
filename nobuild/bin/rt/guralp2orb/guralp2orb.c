@@ -1,4 +1,4 @@
- /* guralp2orb
+/* guralp2orb
  *
  * Kent Lindquist
  * Geophysical Institute
@@ -37,9 +37,11 @@
 #include "bns.h"
 
 #define ORBGCF_VERSION 1
-#define RAWGCF_PACKET_SIZE 1063
+#define OLD_RAWGCF_PACKET_SIZE 1063
+#define RAWGCF_PACKET_SIZE 1079
 #define ORBGCF_HEADER_SIZE 12
 #define ORBGCF_PACKET_SIZE ( ORBGCF_HEADER_SIZE + RAWGCF_PACKET_SIZE )
+#define OLD_ORBGCF_PACKET_SIZE ( ORBGCF_HEADER_SIZE + OLD_RAWGCF_PACKET_SIZE )
 #define BLOCK_SEQUENCE_MAX 65536
 #define GCF_MOTOROLA_BYTEORDER 1
 #define GCF_INTEL_BYTEORDER 2
@@ -78,7 +80,7 @@ typedef struct g2orbpkt_ {
 	char	streamid[7];
 	char	srcname[ORBSRCNAME_SIZE];
 	double	samprate;
-	int	byteorder;
+	char	byteorder;
 	unsigned short blockseq;
 	double	time;
 } G2orbpkt;
@@ -843,7 +845,9 @@ insert_orbgcf_hdr( G2orbpkt *gpkt )
 	double	calib;
 	double 	calper;
 
+	//fprintf(stderr, "start inserting header\n");
 	split_srcname( gpkt->srcname, &parts );
+	//fprintf(stderr, "srcname split copied\n");
 
 	if( ! strcmp( parts.src_suffix, "GCFS" ) ) {
 
@@ -854,7 +858,8 @@ insert_orbgcf_hdr( G2orbpkt *gpkt )
 
 	} else {
 
-		memmove( &gpkt->packet[12], gpkt->packet, gpkt->len );
+		//memmove( &gpkt->packet[12], gpkt->packet, gpkt->len );
+		memmove( &gpkt->packet[12], gpkt->packet,OLD_RAWGCF_PACKET_SIZE  );
 		version = htons( version );
 		memcpy( gpkt->packet, &version, 2 );
 		
@@ -866,7 +871,13 @@ insert_orbgcf_hdr( G2orbpkt *gpkt )
 		HD2NF( &gpkt->packet[4], &calib, 1 );
 		HD2NF( &gpkt->packet[8], &calper, 1 );
 
+		//memcpy( &gpkt->packet[1060 + 11],gpkt->byteorder,1);
+		memcpy( &gpkt->packet[OLD_ORBGCF_PACKET_SIZE - 3],&gpkt->byteorder,1);
+		//memcpy( &gpkt->packet[OLD_ORBGCF_PACKET_SIZE - 2],&gpkt->packet[1024 + 12] ,1);
+		//memmove( &gpkt->packet[1026 + 12],gpkt->packet[1058 + 12],2);
+
 		gpkt->len += 12;
+		gpkt->len= OLD_ORBGCF_PACKET_SIZE;
 	}
 
 	return;
@@ -882,12 +893,14 @@ gcfpeek( G2orbpkt *gpkt )
 	memcpy( &sysid, &(gpkt->packet[0]), sizeof( unsigned int ) );
 	memcpy( &streamid, &(gpkt->packet[4]), sizeof( unsigned int ) );
 	memcpy( &datecode, &(gpkt->packet[8]), sizeof( unsigned int ) );
+	//&(gpkt->packet[1058]), 
 	memcpy( &(gpkt->blockseq), 
-		&(gpkt->packet[1058]), 
+		&(gpkt->packet[1026]), 
 		sizeof( unsigned short ) );
 
 	gpkt->samprate = (unsigned char) gpkt->packet[13];
-	gpkt->byteorder = (unsigned char) gpkt->packet[1060];
+	//gpkt->byteorder = (unsigned char) gpkt->packet[1060];
+	gpkt->byteorder = (unsigned char) gpkt->packet[1025];
 
 	if( ( gpkt->byteorder == GCF_MOTOROLA_BYTEORDER && ! Words_bigendian ) || 
 	    ( gpkt->byteorder == GCF_INTEL_BYTEORDER && Words_bigendian ) ) {
