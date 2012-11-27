@@ -2,7 +2,6 @@
 #
 # dbobjptrs.py
 #
-# obspy antelope database object pointers module
 # by Mark Williams 2012.013
 # Oregon State University
 #
@@ -208,17 +207,7 @@ class AttribDbptr(list):
             raise TypeError("Input pointer or string of valid database")
         if kwargs:
             self.Ptr = dblookup(self.Ptr,**kwargs)
-            
         # otherwise returns empty list
-
-    def __del__(self):
-        """Close the db if it was opened on creation
-        This is a weird and dangerous one but not having it
-        might be worse. Counting refs to db pointers is not
-        something I want to do, and...
-        """
-        if self._opened:
-            self.Ptr.close()
 
     def __getitem__(self, index):
         """

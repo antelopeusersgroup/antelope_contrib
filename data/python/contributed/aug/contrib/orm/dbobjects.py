@@ -13,7 +13,6 @@
 # created, a db can be closed or destroyed and the data is in python memory.
 
 from antelope.datascope import *  # all is necessary for db query variables
-#from obspy.core.util import AttribDict
 from numpy import array
 
 
