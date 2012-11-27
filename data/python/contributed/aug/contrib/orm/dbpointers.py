@@ -14,8 +14,6 @@
 # databases for the classes to work properly. The advantage is speed and
 # memory footprint when working with large database tables.
 
-from obspy_ext.antelope.utils import add_antelope_path
-add_antelope_path()
 from antelope.datascope import *  # all is necessary for db query variables
 from numpy import array
 

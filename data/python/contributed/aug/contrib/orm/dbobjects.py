@@ -12,14 +12,12 @@
 # These classes load data from the database into python on creation. Once
 # created, a db can be closed or destroyed and the data is in python memory.
 
-from obspy_ext.antelope.utils import add_antelope_path
-add_antelope_path()
 from antelope.datascope import *  # all is necessary for db query variables
-from obspy.core.util import AttribDict
+#from obspy.core.util import AttribDict
 from numpy import array
 
 
-class Dbrecord(AttribDict):
+class Dbrecord(dict,object):
     """
     Holds one record line from an Antelope Datascope database
     
@@ -72,12 +70,18 @@ class Dbrecord(AttribDict):
                     field_value = db.getv(field_name)[0]
                 except:
                     field_value = None
-                super(Dbrecord,self).__setitem__(field_name, field_value)
+                self.__dict__[field_name] =  field_value
         else:
             self.Table      =  'Empty'
             self.PrimaryKey = ('Table',)
             self._fields_unsorted = ()
-            
+ 
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __setitem__(self, key, value):
+        self.__dict__[key] =  value
+
     def __repr__(self):
         """
         Useful representation - shows the table and primary key of the record.
