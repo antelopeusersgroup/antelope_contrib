@@ -23,6 +23,6 @@ or
 >>> d[0:2]
 [DbrecordPtr('site' -> HIA 1986201::-1),
  DbrecordPtr('site' -> KIV 1988258::-1)]
->>> d[1].sta, d[1].lat, d[1].lon
+>>> d[1].sta, d[1].lat, d[1].lon, d[1].elev
 ('KIV', 43.9562, 42.6888, 1.21)
 
