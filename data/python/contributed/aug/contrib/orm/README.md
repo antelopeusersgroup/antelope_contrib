@@ -22,8 +22,13 @@ Contains basic functions to interact with (read) data from Antelope Datascope da
 >>> db = dbopen('/opt/antelope/data/db/demo/demo')
 >>> db = db.lookup(table='site')
 >>> adp = AttribDbptr(db)
+>>> adp[0]
+
+DbrecordPtr('site' -> OBN 1988258::-1)
+
 >>> for r in adp:
 ...    print r.sta, r.lat, r.lon
+
 HIA 49.2667 119.7417
 KIV 43.9562 42.6888
 KMI 25.1233 102.74
