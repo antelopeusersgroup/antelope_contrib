@@ -24,13 +24,25 @@ Views are mostly supported. Access to the same fields from two joined tables may
 >>> from aug.contrib.orm import AttribDbptr
 >>> db = dbopen('/opt/antelope/data/db/demo/demo')
 >>> db = db.lookup(table='site')
->>> adp = AttribDbptr(db)
->>> adp[5]
+```
+Old way:
+```python
+>>> db.record = 5
+>>> db
+[0, 25, -501, 5]
 
+>>> for db.record in range(db.nrecs()):
+...     sta, lat, lon = db.getv('sta','lat','lon')
+...     print sta, lat, lon
+```
+Using ORM:
+```python
+>>> sites = AttribDbptr(db)
+>>> sites[5]
 DbrecordPtr('site' -> OBN 1988258::-1)
 
->>> for r in adp:
-...    print r.sta, r.lat, r.lon
+>>> for s in sites:
+...    print s.sta, s.lat, s.lon
 
 HIA 49.2667 119.7417
 KIV 43.9562 42.6888
