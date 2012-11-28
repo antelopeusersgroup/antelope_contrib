@@ -15,6 +15,9 @@ Contains basic functions to interact with (read) data from Antelope Datascope da
 
 * AttribDbptr - An 'Attribute pointer' which acts like a python list. Can be constructed with a Dbptr or a string db name. Instances consist of just one Dbptr in memory. DbrecordPtr's are built on the fly, and accessed as one would a list. AttribDbptr is also a generator, so one can run a for loop on it. A simple ORM for Datascope.
 
+### Notes
+Views are mostly supported. Access to the same fields from two joined tables may cause problems, depending on situation. Because all record pointers have attribute AND dictionary key access, in the 'pointer' classes (which use dbgetv directly), one can get access through the dictionary key: db['origin.time'], for example, of a joined view, while: db.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
+
 ### Examples
 ```python
 >>> from antelope.datascope import dbopen
@@ -22,7 +25,7 @@ Contains basic functions to interact with (read) data from Antelope Datascope da
 >>> db = dbopen('/opt/antelope/data/db/demo/demo')
 >>> db = db.lookup(table='site')
 >>> adp = AttribDbptr(db)
->>> adp[0]
+>>> adp[5]
 
 DbrecordPtr('site' -> OBN 1988258::-1)
 
