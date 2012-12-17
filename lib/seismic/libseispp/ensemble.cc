@@ -62,7 +62,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 			try {
 				d = new TimeSeries(*rdbhv,
 					station_mdl,am);
-			} catch (SeisppDberror& dberr)
+			} catch (SeisppError& dberr)
 			{
 				cerr << "Problem with member "
 					<< i 
@@ -633,9 +633,8 @@ tacitly assumes then that all rows in view that forms this ensemble
 have the same attributes (i.e. these are common attributes obtained
 through some form of relational join.)  
 
-The routine will pass along any exceptions thrown by functions 
-called by the constructor.  It will also throw a SeisppDberror 
-in cases best seen by inspecting the code below.
+Some errors will generate a SeisppError exception that should be handled.
+Individual errors for one seismogram are handled with  message posting.
 
 Author:  Gary L. Pavlis
 Written:  July 2004
@@ -674,7 +673,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 			try {
 				data3c = new ThreeComponentSeismogram(*rdbhv,
 					station_mdl,am);
-			} catch (SeisppDberror& dberr)
+			} catch (SeisppError& dberr)
 			{
 				cerr << "Problem with member "
 					<< i 
