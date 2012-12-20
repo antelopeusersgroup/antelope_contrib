@@ -1,4 +1,5 @@
 #include "SacFileHandle.h"
+namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
 /* These allowed values of the IZTYPE variable in SAC headers*/
@@ -113,3 +114,4 @@ TimeSeries SacFileHandle::GetNextSeismogram()
     }
     return(result);
 }
+}  // End SEIPP namespace encapsulation

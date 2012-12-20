@@ -1,7 +1,8 @@
 #include "GenericFileHandle.h"
+namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
-/* \brief Special GenericFileHandle for SAC files.
+/*! \brief Special GenericFileHandle for SAC files.
 
    This handle can be used to read a SAC file.  SAC has no
    concept of ensembles so it has only a method to read 
@@ -14,7 +15,7 @@ using namespace SEISPP;
 class SacFileHandle : public GenericFileHandle
 {
 public:
-    /* \brief Standard constructor with simple interface. 
+    /*! \brief Standard constructor with simple interface. 
 
        This will construct a handle to a Sac file in read only
        mode using standard mapping defined in a default parameter 
@@ -24,7 +25,7 @@ public:
 \exception SeisppError object is thrown if there are any problems.
 */
     SacFileHandle(string filename);
-/* \brief Fully parameterized constructor. 
+/*!` \brief Fully parameterized constructor. 
 
 The actual algorithm used to read a sac file with this object
 uses a GenericFileHandle with significant complexity used to make
@@ -53,3 +54,4 @@ the default behaviour.
   */
     TimeSeries GetNextSeismogram();
 };
+} // Close SEISPP namespace encapsulation
