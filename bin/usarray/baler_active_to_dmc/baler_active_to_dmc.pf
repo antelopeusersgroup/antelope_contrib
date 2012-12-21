@@ -1,9 +1,7 @@
 baler_active	   /anf/TA/dbs/wfs/station_active               # absolute path name for active station baler directory base name
 baler_final  	   /anf/TA/dbs/wfs/station_final_44             # absolute path name for archive station baler directory base name
 
-dbpath				/anf/TA/dbs/dbmaster/{usarray}:/anf/TA/dbs/dbops/{usarray}	# default dbpath
-dbidserver			            								# default dbidserver
-dblocks				none										# default dblocks
+tmp_dbmaster       /anf/TA/dbs/wfs/station_active/tmp_baler_active
 
 net                 TA
 
@@ -16,6 +14,8 @@ non_wf_chan			&Tbl{
 						OCF
 					}                                           # list of non-waveform miniseed channel codes to be 
                                                                 # processed.
+
+days_after_removal  60											# number of days to wait after removal before final processing
                                                                 
 day_of_week			&Arr{						
 						Wednesday	^[A-E].*
@@ -31,9 +31,9 @@ wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                      # regex to remov
 
 sync_dir			/anf/TA/products/sync/sta_active            # Absolute path name for directory to store sync files
 
-deploy_mail			flvernon@ucsd.edu,jeakins@ucsd.edu          # email addresses to send notification of 
+deploy_mail			flvernon@ucsd.edu,jeakins@ucsd.edu,gillian@iris.washington.edu          # email addresses to send notification of 
                                                                 # deployment table checks
 
 #prob_mail			your@email.edu							# email addresses to send notification of problems
-success_mail		flvernon@ucsd.edu,rick@iris.edu,gillian@iris.washington.edu							# email addresses to send notification of station success
+success_mail		flvernon@ucsd.edu,rick@iris.edu,gillian@iris.washington.edu,sarah@iris.washington.edu							# email addresses to send notification of station success
 prob_mail			flvernon@ucsd.edu							# email addresses to send notification of problems
