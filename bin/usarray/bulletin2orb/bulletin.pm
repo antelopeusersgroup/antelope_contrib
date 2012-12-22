@@ -2638,7 +2638,7 @@ sub extract_simsum {	# extract_simsum ($file)
 
       $depth = trim($depth) ;
 
-      if ($depth =~ /\*/) {	# get rid of "*" used in nrcan
+      if ($depth =~ /\*|g/) {	# get rid of "*" and "g" used in nrcan
 	$depth = substr($depth,0,-1);
       }
 

@@ -243,7 +243,7 @@ Data center to be filled in for \fIdeployment.pdcc\fP.  If not filled in, the pd
 The DMC has some limitation on what can be put in this field.  Contact them for a full definition of a PDCC.
 .IP \fIpacket_match\fP
 Match statement for packets in the preliminary orb.  These packets are used for start times when using the \fI-I\fP option
-for new installations.
+for new installations.  The orbselect statement will be \fIsnet_sta_(\fBpacket_match\fP)\fP
 .IP \fIchannel_match\fP
 Channel subset to use for checking start/end times in wfdisc for installations and removals.  The stage table is also subset
 to review for equipment install times using this subset.  Ideally, this would be one vertical channel.  If you have multiple 

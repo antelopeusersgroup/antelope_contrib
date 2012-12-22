@@ -1,0 +1,48 @@
+This directory contains a test case for cross-correlation location methods.  
+There are four events in the origin table.  The first is exactly at z = 10 km, 
+39.2N, 120.0W.  The 2nd is displaced by 1 km west from the 1st.  The 3rd is 
+displaced 1 km north from the 1st.  The 4th is displaced 1 km upward from 
+the 1st.   Origin times are
+
+1st  00:00:00.000
+2nd  01:00:00.000
+3rd  02:00:00.000
+4th  03:00:00.000
+
+Synthetic waveforms were placed on the records using a homogeneous halfspace
+model with Vp = 6 km/s and the known origin times.  This is a little tricky 
+because, to have true accuracy, the synthetics must be created at a higher 
+rate, say 1000 s/sec, so that they can appear at the right time in the 
+waveform files created at 100 s/sec.  Thus, the correlation interevent times 
+are only accurate to the nearest 0.01 second.  This somewhat compromises the 
+ability to recover the original hypocenters accurately.  Epicenter parameters 
+in the table were determined by picking and locating the events in dbloc2 and
+so are not precisely the original epicenters.  The depths and origin times 
+are, however, precisely the original ones.
+
+The synthetic waveforms for the four events can be viewed with 
+
+% dbpick db
+
+Correlation times are produced with the commands
+
+% ../bin/event_pairs db 10 10 10 20 event_pairs.dat
+% ../bin/dbcorrelate db . 0 1.0 0.25 0.0 event_pairs.dat correl_output1.dat
+% ../bin/create_ccfile correl_output1.dat dt.cc 0.0 0 0.0 0.5 1
+
+Move the dt.cc file to the subdirectory hypodd.  Events are then relocated 
+using HYPODD in the subdirectory hypodd with
+
+% hypodd hypodd.inp
+
+assuming "hypodd" is aliased to the executable location.
+
+The relocated hypocenters are in hypodd.reloc.  The file hypodd.reloc is used 
+to create the css3.0 origin and origerr tables with
+
+% ../../bin/hypodd2db hypodd.reloc reloc 1
+
+Relative location results are in reloc.origin, using both catalog times and 
+cross-correlation times.  These hypocenters should agree closely 
+with the ones in db.origin in this directory.
+

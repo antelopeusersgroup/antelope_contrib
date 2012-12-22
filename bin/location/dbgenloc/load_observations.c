@@ -40,6 +40,11 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
     dbarr = dblookup ( db, 0, "arrival", 0, "dbSCRATCH" ) ; 
     dbsite = dblookup ( db, 0, "site", 0, 0 ) ; 
 
+    double null_time ; 
+    Dbptr dbarrnull = dbarr ; 
+    dbarrnull.record = dbNULL ; 
+    dbgetv(dbarrnull, "arrival", "time", &null_time, NULL ) ; 
+
     arrival_tbl = pfget_tbl(pf, "arrival_table");
     narr = maxtbl(arrival_tbl);
     for (i = 0; i < narr; i++) {
@@ -88,7 +93,7 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 	    elog_complain( 0, "Can't compute travel time for phase %s\n", iphase ) ;
 	} else {
 
-	    if (time>0.0)
+	    if (time > null_time ) 
 	    {
 		allot(Arrival *, a, 1) ;
 		a->arid = arid ;

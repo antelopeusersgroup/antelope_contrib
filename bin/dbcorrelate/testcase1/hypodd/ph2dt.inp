@@ -1,0 +1,6 @@
+* filename of station data
+station.dat
+* filename of phase data input
+phase.dat
+* MINWGHT MAXDIST MAXSEP MAXNGH MINLNK MINOBS MAXOBS
+     0      100     2      10     8      5      20

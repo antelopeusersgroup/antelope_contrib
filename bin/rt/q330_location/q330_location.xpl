@@ -1,6 +1,10 @@
 #
 #  Checks q330 locations from tadata/pf/st orb packet
 #
+#  accounted for now missing model information in status section
+#	- J.Eakins  12/17/2012
+#
+#
 #  Need to account for q330hr
 #
 #   use diagnostics ;
@@ -24,6 +28,7 @@
     my (%site,$ref,$tbl,%dls_hash,@dls_array,$dls,$log_file);
     my (@keys,@db,@dbsite,@dbdlsite);
     my ($km,$tolerance);
+    my ($jensmdl); 
 
 #  Set up mail  
             
@@ -211,10 +216,14 @@
 #
 # Get all data into hashes
 #
+
             $fer = $ref->{dls}{$dls};
             @keys = keys %$tbl;
-            $tbl = $tbl->{$keys[0]}{status}{gps};
 
+# work around after firmware update at some point in 2011 nuked availability of model
+            $jensmdl = $tbl->{$keys[0]}{type};
+
+            $tbl = $tbl->{$keys[0]}{status}{gps};
 
             if ( $tbl->{number_of_satellites_used} ) {;
                 $dls_hash{$dls}{gps}         = $tbl->{gps_fix_string};
@@ -235,7 +244,10 @@
 
             $dls_hash{$dls}{inp}     = $fer->{inp};
             $dls_hash{$dls}{thr}     = $fer->{thr};
-            $dls_hash{$dls}{model}   = $fer->{type};
+#            $dls_hash{$dls}{model}   = $fer->{type};
+# model is completely broken with some distant firmware update 
+# there is a work-around above where the model is collected
+# --J.Eakins 12/17/2012
             $dls_hash{$dls}{idtag}   = $fer->{pt};
             $dls_hash{$dls}{status}  = 'on-line';
             $dls_hash{$dls}{pkttime} = $pkttime;
@@ -391,8 +403,10 @@
             @matches = dbmatches(@dbstagescr,@dbstage,"stage","sta","chan","gtype");
             
             if ($#matches == 0) {
-                elog_notify("\t$dls new record added to dlsite table");
-                dbaddv(@dbdlsite, "model",  $dls_hash{$dls}{model},
+                elog_notify("\t$dls new record to be added to dlsite table");
+		elog_notify("model $jensmdl, ssident $dls_hash{$dls}{ssident}, time $now, dlname $dls");	
+#                dbaddv(@dbdlsite, "model",  $dls_hash{$dls}{model},
+                dbaddv(@dbdlsite, "model",  $jensmdl,
                                 "ssident",  $dls_hash{$dls}{ssident},
                                 "time",  $now,
                                 "dlname",   $dls, 
@@ -500,6 +514,7 @@ sub print_pfe { #use print_pfe($ref,0);
             for (my $n=0; $n < 30-$length; $n++){ $line .= '-'; }
             elog_notify("$tab $k$line> $v");
         }
+
     };
 
     foreach (0 .. ($level-1)){ $tab .= "    "; }

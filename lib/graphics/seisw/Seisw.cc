@@ -688,8 +688,8 @@ externaldef (exmseiswlassrec) ExmSeiswClassRec exmSeiswClassRec = {
 
 /* Declare any global static variables. */
 
-/* DEBUG function used to deal with scaling problems */
 #ifdef DEBUG_WIDGET
+/* DEBUG function used to deal with scaling problems */
 //////////////////////////////////////////////////////////
 void showscaling(ExmSeiswWidget sw)
 {
@@ -744,7 +744,7 @@ cerr << "first_trace_offset = "<< p->first_trace_offset <<endl;
 cerr << "use_variable_trace_spacing = "<< p->use_variable_trace_spacing <<endl<<endl;
 }
 }
-#endif
+#endif`
 
 
 void compute_and_set_resolution(ExmSeiswWidget sw, SeiswPar *spar)
@@ -2168,7 +2168,7 @@ static void load_z_matrix_peng(vector<TimeSeries> data,
 	{
 		char message[256];
                 sprintf(message,"SeismicPlot::load_z_matrix():  "
-			" ensemble size = %d does not match number expected"
+			" ensemble size = %ld does not match number expected"
 			" for window = %d\n",data.size(),n2);
 		throw SeisppError(string(message));
 	}
@@ -3963,11 +3963,15 @@ showpar(para);
 	{
  		para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
 	}
-	TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(nw->seisw.seisw_ensemble);
+        const string no_data_message("Seisw widget:  data ensemble empty");
+        TimeSeriesEnsemble *tse;
+        if(nw->seisw.seisw_ensemble == NULL) 
+                    throw SeisppError(no_data_message);
+        tse=static_cast<TimeSeriesEnsemble*>(nw->seisw.seisw_ensemble);
 	int nmember;
 	ca->nmember=nmember=tse->member.size();
 	if(nmember<=0) 
-		throw SeisppError("no data to plot\n");
+		throw SeisppError(no_data_message);
 	(ca->curvecolor).clear();
 	for(i=0;i<nmember;++i) (ca->curvecolor).push_back(para->default_curve_color);
 	if((ca->x2)==NULL)
@@ -4956,7 +4960,7 @@ static void SetBox(Widget w)
     if(is==nmember)
     {
 	x1min=-10.0;
-	x2max=50.0;
+	x1max=50.0;
     }
     else
     {
@@ -5022,7 +5026,7 @@ static void HandlePreRender(Widget w)
     ExmSeiswWidget sw = (ExmSeiswWidget)w;
 
     TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(sw->seisw.seisw_ensemble);
-    /* Return immediately if there is not data to process */
+    /* Return immediately if there is no data to process */
     if(tse==NULL) return;
     SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
     SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
@@ -5036,15 +5040,19 @@ static void HandlePreRender(Widget w)
 	sca->nmember=tse->member.size();
     }
     nmember=sca->nmember;
-/*
     x1min=(tse->member)[0].t0;
     x1max=(tse->member)[0].endtime();
-    for(i=0;i<nmember;++i) {
+    for(i=1;i<nmember;++i) {
 	x1min=MIN(tse->member[i].t0,x1min);
 	x1max=MAX(tse->member[i].endtime(),x1max);
     }
 
-    if (spar->use_variable_trace_spacing) {
+    if(nmember==1)
+    {
+        x2min=0.5;
+        x2max=1.5;
+    }
+    else if (spar->use_variable_trace_spacing) {
 	x2min=sca->x2[0];
  	x2max=sca->x2[0];
 	for(i=1;i<nmember;++i) {
@@ -5055,12 +5063,15 @@ static void HandlePreRender(Widget w)
 	    x2min=sca->x2[0];
 	    x2max=sca->x2[nmember-1];
     }
-*/
     //
     // Set x1beg and x1end for auto scaling.  Not else currently
     // because in that case assume x1beg and x1end are set in construction
     //
-/*    if (spar->time_scaling=="auto")
+    /* This code works, but has an undesirable side effect
+       I (glp) do not grok.   Sliders to work through data do not
+       work of this code is retained. */
+    /*
+    if (spar->time_scaling=="auto")
     {
          spar->x1begb=x1min;
          spar->x1endb=x1max;
@@ -5084,7 +5095,7 @@ static void HandlePreRender(Widget w)
 
     sca->f1=spar->x1beg;
     spar->x2endb = static_cast<float>(spar->x2end);
-*/
+    */
     int tempx, tempy;
     /* determine good size for axes box */
     xSizeAxesBox_peng(XtDisplay(sw),sca->win,
@@ -5103,11 +5114,11 @@ static void HandlePreRender(Widget w)
 
     // Get the number of samples from x1beg and x1end.
     // With above logic this should work if time_scaling is auto or manual
-    sca->n1=SEISPP::nint((spar->x1end-spar->x1beg)/(sca->d1));
+    //sca->n1=SEISPP::nint((spar->x1end-spar->x1beg)/(sca->d1));
+    sca->n1=SEISPP::nint((x1max-x1min)/(sca->d1));
     sca->n2=sca->nmember;
 
     // Sanity checks on n1
-/*
     if(sca->n1<2) {
         char message[256];
         sprintf(message,"SeismicPlot::refresh():  Plot range error.\n%d samples in requested time range of %lf to %lf\n", sca->n1, spar->x1begb, spar->x1endb);
@@ -5115,10 +5126,9 @@ static void HandlePreRender(Widget w)
     }
     else if(sca->n1>MAXPLOTSAMPLES) {
         char message[512];
-        sprintf(message,"SeismicPlot::refresh(): Plot range request too large \nTime range of %lf to %lf requires %n samples.  Sanity check overrides request.  Check input parameters\n",spar->x1begb,spar->x1endb,sca->n1);
+        sprintf(message,"SeismicPlot::refresh(): Plot range request too large \nTime range of %lf to %lf requires %d samples.  Sanity check overrides request.  Check input parameters\n",spar->x1begb,spar->x1endb,sca->n1);
         throw SeisppError(string(message));
     }
-*/
 
     // d2 and f2 are defined in this object by less obscure names
     sca->d2=static_cast<float>(spar->trace_spacing);
@@ -5339,12 +5349,20 @@ showscaling(sw);
             /*  since we are not dealing with a static window anymore, we need to adjust
                 sca->width and sca->height */
 
+#ifdef DEBUG_WIDGET
+    cerr << "Before calling HandlePreRender"<<endl;
+    showscaling(sw);
+#endif
 	    HandlePreRender(w);
 	/* Handle scaling */
 	if(!is_resolution_set(w))
 	{
 		CalcVisualSize(w);
 		compute_and_set_resolution(sw,spar);
+#ifdef DEBUG_WIDGET
+    cerr << "After calling compute_and_set_resolution"<<endl;
+    showscaling(sw);
+#endif
 	}
 
 	    sca->width=sw->core.width-(sw->primitive.highlight_thickness+sw->primitive.shadow_thickness
@@ -5369,7 +5387,10 @@ showscaling(sw);
 			sca->height=static_cast<int>((spar->x2end-spar->x2beg)
 				/sw->seisw.x2_resolution);
 		}
-		
+#ifdef DEBUG_WIDGET
+    cerr << "After DrawVisual size setting of spar variables "<<endl;
+    showscaling(sw);
+#endif
 
 
             /* Since we are repainting every time, so image is always out of date*/
@@ -5407,6 +5428,10 @@ showscaling(sw);
 	    
 	    if (sca->width < 0) sca->width=0;
 	    if (sca->height < 0) sca->height=0;
+#ifdef DEBUG_WIDGET
+    cerr << "Immediately before calling newBitmap_peng"<<endl;
+    showscaling(sw);
+#endif
 
             sca->image = newBitmap_peng(XtDisplay(w),sca->width,sca->height,
                     sca->n1,sca->d1,sca->f1,sca->n2,sca->x2,sca->z,

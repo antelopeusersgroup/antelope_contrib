@@ -79,6 +79,10 @@ ThreeComponentEnsemble
 			}
 			if((nextsta!=current_sta) || (i>=(rawsize-1)) )
 			{
+                            /* Always dangerous in a for loop to do an 
+                               decrement like this, but otehrwise will 
+                               drop current seismogram*/
+                            if(i<(rawsize-1))--i;
 			    tccm=scmap.channels(nextsta);
 			//
 			// Land here when a grouping is completed and we have

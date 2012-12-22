@@ -1,0 +1,12 @@
+The dt.cc file was made from the dbcorrelate output file using create_ccfile.
+The dt.ct file was made by running ph2dt on phase.dat.  phase.dat was created
+from the tables ../db using the program db2ph.
+
+Use the scripts
+
+hypodd.csh
+hypodd2db.csh
+
+to produce reloc.origin.  The hypocenter values in this file should match the
+original locations in ../db.origin fairly well.
+
