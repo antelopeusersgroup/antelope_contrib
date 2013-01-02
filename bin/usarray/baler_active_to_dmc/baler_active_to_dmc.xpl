@@ -416,12 +416,13 @@ sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
 sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $orbsize, \%stas, $Pf, $problems ) ;
     my ( $sta, $db, $orbname, $orb, $orbclient, $orbsize, $ref, $Pf, $problems ) = @_ ;
     my ( $baler_active, $chan, $cmd, $comment, $days_after_removal, $dbsize, $endtime ) ;
-    my ( $nrows, $prob, $prob_check, $problem_init, $stime, $subject, $sync_dfile ) ;
+    my ( $nrows, $prob, $prob_check, $problem_init, $start, $stime, $subject, $sync_dfile ) ;
     my ( $time, $tmp_db, $tmp_sync, $wf_endtime ) ;
     my ( @db, @dbreplayed, @dbtmp, @dbtwf, @dbwfdisc ) ;
     my ( %stas ) = %{$ref} ;
 
-    $stime = strydtime( now() ) ;
+    $start = now() ;
+    $stime = strydtime( $start ) ;
             
     elog_notify ( "\nstarting processing station $sta    $stime");
     
@@ -518,7 +519,7 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
 #  If station completed
 #
 
-    if ( exists $stas{$sta}{wf}{endtime} ) {
+    if ( exists $stas{$sta}{wf}{endtime}  && ! $prob ) {
 
         $days_after_removal  =  ( now() - $stas{$sta}{wf}{endtime} ) / 86400 ;
         
@@ -544,6 +545,10 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
 #
 #  clean up
 #
+
+    $comment = sprintf("Transmission time %s		Transfer rate	%d bytes/sec", strtdelta( now() - $start ), $dbsize / ( now() - $start ) ) ;
+    elog_notify ( $comment ) ;
+    print PROB "$comment \n\n" ;
         
     $stime = strydtime( now() );
     print PROB "$stime      end processing \n\n" ;
@@ -736,7 +741,7 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
     $comment .= "    $min_dir    $max_dir    $min_month    $max_month" ;
     $comment .= "    Total Bytes -    $dbsize" ;
     print  PROB "$comment \n" ;
-    elog_notify( $comment ) if $opt_n ;        
+    elog_notify( $comment ) ;        
         
     dbclose ( @db ) ;
     dbclose ( @dbtmp ) ;

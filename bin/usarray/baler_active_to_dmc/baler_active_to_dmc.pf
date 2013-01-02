@@ -15,7 +15,7 @@ non_wf_chan			&Tbl{
 					}                                           # list of non-waveform miniseed channel codes to be 
                                                                 # processed.
 
-days_after_removal  60											# number of days to wait after removal before final processing
+days_after_removal  120											# number of days to wait after removal before final processing
                                                                 
 day_of_week			&Arr{						
 						Wednesday	^[A-E].*
