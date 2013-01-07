@@ -1015,13 +1015,13 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip,
          
     $time_since_removal  =  ( now() - $removal_time ) ;
     
-#     if  ( ( $time_since_removal / 86400. ) > $pf{days_after_removal} ) {
-#         $opt_F = 1 ;
-#         $string = sprintf ( "	time since removal is %s, more than the limit of %d days ago", strtdelta($time_since_removal), $pf{days_after_removal} )  ;
-#         fork_notify ( $parent, $string ) ;
-#         $string  = sprintf( "		will process through all missing data ( ie setting -F option ) "  )  ;
-#         fork_notify ( $parent,  $string  ) ;
-#     }
+    if  ( ( $time_since_removal / 86400. ) > $pf{days_after_removal} ) {
+        $opt_F = 1 ;
+        $string = sprintf ( "	time since removal is %s, more than the limit of %d days ago", strtdelta($time_since_removal), $pf{days_after_removal} )  ;
+        fork_notify ( $parent, $string ) ;
+        $string  = sprintf( "		will process through all missing data ( ie setting -F option ) "  )  ;
+        fork_notify ( $parent,  $string  ) ;
+    }
             
 #
 #  open database
