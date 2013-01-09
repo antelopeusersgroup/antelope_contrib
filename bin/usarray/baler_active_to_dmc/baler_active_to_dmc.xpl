@@ -627,7 +627,7 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
             push @missing, dbgetv( @dbnj, "chan" ) ;
         }
         
-        $line    = "$nojoin records in wfdisc do not join to schanloc - @missing" ;
+        $line    = "$nojoin records in $sta wfdisc do not join to schanloc - @missing" ;
         print  PROB "$line \n\n" ;
         elog_complain( $line ) ;  
     
