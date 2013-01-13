@@ -56,6 +56,7 @@
     $stime = strydtime(now());
     chop ($host = `uname -n` ) ;
     
+    
     elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     announce( 0, 0 )  ;
@@ -975,7 +976,7 @@ sub wait_for_orb_to_empty { # &wait_for_orb_to_empty ( $orb ) ;
 
 sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sync_dfile, $problems ) ;
     my ( $sta, $dbops, $comment, $orbname, $sync_dfile, $problems ) = @_ ;
-    my ( $cmd, $host_tmp, $nsuccess, $sync_dir, $year ) ;
+    my ( $cmd, $nsuccess, $short_hostname, $sync_dir, $year ) ;
     my ( @dbdmcfiles, @dbops, @pffiles ) ;
     
     elog_debug ( "start of send_sync  -	sync_dfile	\"$sync_dfile\" " ) ;
@@ -1040,18 +1041,17 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
         $problems++ ;
         print PROB "FAILED: $cmd \n\n" ;
     }
+        
+    @dbops          = dbopen( $dbops, "r+" );
+    @dbdmcfiles     = dblookup(@dbops,0,"dmcfiles",0,0);
     
-    $host_tmp = $host ;
-    $host_tmp =~ s/\..*// ;
-    
-    @dbops         = dbopen( $dbops, "r+" );
-    @dbdmcfiles    = dblookup(@dbops,0,"dmcfiles",0,0);
+    $short_hostname = my_hostname() ;
     dbaddv( @dbdmcfiles, "time",    now(),
                          "comment", $comment,
                          "dir",     $sync_dir,
                          "dfile",   $sync_dfile,
                          "orb",     $orbname,
-                         "auth",    "$host:batd" ) unless $opt_n ;
+                         "auth",    "$short_hostname:batd" ) unless $opt_n ;
     dbclose( @dbops ) ;
        
     return ( $problems ) ;
