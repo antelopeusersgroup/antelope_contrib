@@ -59,9 +59,14 @@ ps2pdf14(1)
 .fi
 
 .SH "BUGS AND CAVEATS"
-If \fBq330_sensor_response\fP is run under rtexec without a display, then a vnc server needs to be implemented.  
+If \fBq330_sensor_response\fP is run under rtexec without a display, then a vnc server needs to be implemented unless using -C option.  
 This has been done at the ANF and example configurations can be provided.  In general, this mode of operation
 is not recommended and in normal network operations is not needed.
+
+All sensors are expected to be the nominal value of the generator constant.
+
+Guralp CMG3Ts have different values of calibration coil constants for horizontals and verticals sensors.  Typical quality control.
+The conversion factor is 1500/1402.7.
 .LP
 .SH AUTHOR
 Frank Vernon
