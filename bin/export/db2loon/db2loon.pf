@@ -14,13 +14,15 @@ attach_dbtables	1
 
 # Saving pickfiles:
 
-pickfile_name_pattern /%Y%m/%Y%m%d%H%M%S.%{suffix}
+pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
 auth_suffixes &Tbl{
 	PGC:mulder	tm
 	PGC:bentkows	wb
 	PGC:bird	ab
 	PGC:malwhite	mw
 	PGC:mkoessle	mk
+	PGC:meighan	lm
+	PGC:brillon	cb
 	PGC:.*		xx
 	orbassoc.*	auto
 }
@@ -32,8 +34,9 @@ auth_agencies &Arr{
 	QED.*		NEIC
 	NEIC.*		NEIC
 	AEIC.*		AEIC
+	PDE.*		NEIC
 	PNSN.*		SEA
-	mtech.*		BUT
+	MTECH.*		BUT
 
 }
 auth_agency_default	???
