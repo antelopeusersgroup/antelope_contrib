@@ -6,8 +6,7 @@ origin_subset_expr
 # Mailing pickfiles: 
 
 email_recipients &Tbl{
-	mulder@pgc.nrcan.gc.ca
-	kent@lindquistconsulting.com
+	name@domain.com
 }
 email_subject 	pick files
 attach_dbtables	1
