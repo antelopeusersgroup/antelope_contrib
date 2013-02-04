@@ -1,9 +1,15 @@
 #
 #   program needs:
-#      miniseed2db on month files
 #      only process month files with one complete month before current month.
 #      only process day files to match last month.
-#      fill gaps on day files, mark in gap table, "y|n|p"
+#
+#      test current changes then
+#          copy snetsta and schanloc to /tmp at beginning of program
+#          make links from sta_db and tmp_db to tmp snetsta schanloc
+#          change cssdescriptor for tmpdb
+#          cleanup /tmp
+#          remove links to snetsta and schanloc for sta_db
+#          remove dbpath ... from pf file
 #
 #      consider implementing retrys if consistent orb connection failures.
 #
@@ -27,7 +33,7 @@
     
 {    #  Main program
 
-    my ( $Pf, $cmd, $db, $nchild, $nstas, $opt_c, $orb, $orbclient, $orbname, $orbsize, $problems ) ;
+    my ( $Pf, $cmd, $db, $nchild, $nstas, $opt_c, $orb, $orbclient, $orbname, $orbsize, $prob, $problems ) ;
     my ( $sta, $stime, $subject, $usage ) ;
     my ( @stas ) ;
     my ( %stas ) ;
@@ -49,6 +55,8 @@
     elog_notify($cmd) ; 
     $stime = strydtime(now());
     chop ($host = `uname -n` ) ;
+    
+    
     elog_notify ("\nstarting execution on	$host	$stime\n\n");
 
     announce( 0, 0 )  ;
@@ -90,7 +98,7 @@
 #   subset for unprocessed data
 #
     ( $problems, %stas ) = &get_stas( $db, $problems ) ;
-    
+        
     @stas = sort keys %stas ;
     
     $nstas = $#stas + 1 ;
@@ -105,15 +113,28 @@
 #  process all stations
 #
         
-    STA: foreach $sta ( @stas ) {
+    $nchild = 0 ;
+    foreach $sta ( @stas ) {
     
-        $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $orbsize, \%stas, $Pf, $problems ) ;
+        $prob = 0 ;
+        $prob = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $orbsize, \%stas, $Pf, $prob ) ;
+        
+        $problems += $prob ;
+        
+        $nchild++ if ( $prob ) ;
+        
 
     }
 
 #
 # Finish up
 #
+
+    if ( -d $pf{tmp_dbmaster} ) {
+        $cmd = "rm -rf $pf{tmp_dbmaster}" ;
+        &run_cmd( $cmd )
+    }
+
     $stime = strydtime(now());
     elog_notify ("completed 	$stime\n\n");
 
@@ -133,7 +154,7 @@
 
 sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
     my ( $db, $problems ) = @_ ;
-    my ( $endtime, $endtime_null, $equip_install, $key1, $key2, $nrows, $row, $sta, $subject, $time ) ;
+    my ( $cmd, $endtime, $endtime_null, $equip_install, $key1, $key2, $nrows, $row, $sta, $subject, $time ) ;
     my ( @db, @dbdeploy, @dbnull ) ;
     my ( %stas, %stas_out ) ;
 #
@@ -227,6 +248,31 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
         }
     }
     
+    if ( -d $pf{tmp_dbmaster} ) {
+        $cmd = "rm -rf $pf{tmp_dbmaster}" ;
+        &run_cmd( $cmd )
+    }
+    
+    makedir ( $pf{tmp_dbmaster} ) ;
+    
+    $cmd = "dbcp $db.schanloc $pf{tmp_dbmaster}/tmp_dbmaster" ;
+        
+    if ( ! &run_cmd( $cmd ) ) {
+        elog_complain ( "FAILED:	$cmd" ) ;
+        $subject = "Problems - $pgm $host	dbcp dbmaster" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
+        
+    $cmd = "dbcp $db.snetsta $pf{tmp_dbmaster}/tmp_dbmaster" ;
+        
+    if ( ! &run_cmd( $cmd ) ) {
+        elog_complain ( "FAILED:	$cmd" ) ;
+        $subject = "Problems - $pgm $host	dbcp dbmaster" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
+        
     elog_debug ( "$sta	- get_stas just before return" ) if $opt_V ;
         
     prettyprint( \%stas_out ) if $opt_V ;
@@ -315,7 +361,7 @@ sub orbcheck { # ( $orbsize, $problems ) = &orbcheck( $orb, $orbname, $orbclient
 
 sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
     my ( $orbname, $problems ) = @_ ;
-    my ( $cmd, $parent );
+    my ( $cmd );
     
     unlink "/tmp/JUNK.mseed"      if ( -e "/tmp/JUNK.mseed" ) ;
     unlink "JUNK.lastid"          if ( -e "JUNK.lastid" ) ;
@@ -323,17 +369,14 @@ sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
     unlink "JUNK.pf"              if ( -e "JUNK.pf" ) ;
     unlink "miniseed2orb_JUNK.pf" if ( -e "miniseed2orb_JUNK.pf" ) ;
     
-    $parent = $$ ;
-
     $cmd = "trsignal -d sd -r 40 -s JUNK -w /tmp/JUNK.mseed JUNK";
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
     }
     
-    unlink "JUNK.lastid" ;
-    unlink "JUNK.wfdisc" ;
+    unlink "JUNK.lastid" unless $opt_V ;
+    unlink "JUNK.wfdisc" unless $opt_V ;
    
     open ( PF, ">JUNK.pf" ) ;
     print  PF "net     \&Tbl\{ \n" ;
@@ -345,16 +388,14 @@ sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
     }
 
-    unlink "JUNK.pf" ;
+    unlink "JUNK.pf" unless $opt_V ;
     
     $cmd = "pfcp miniseed2orb miniseed2orb_JUNK " ;
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
     }
 
     open(  MS, ">>miniseed2orb_JUNK.pf") ;
@@ -365,26 +406,25 @@ sub orbprime { # ( $problems ) = &orbprime( $orbname, $problems ) ;
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
     }
 
-    unlink "/tmp/JUNK.mseed" ;
-    unlink "miniseed2orb_JUNK.pf" ;
+    unlink "/tmp/JUNK.mseed" unless $opt_V ;
+    unlink "miniseed2orb_JUNK.pf" unless $opt_V ;
 
     return( $problems ) ;
 }
 
 sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $orbsize, \%stas, $Pf, $problems ) ;
     my ( $sta, $db, $orbname, $orb, $orbclient, $orbsize, $ref, $Pf, $problems ) = @_ ;
-    my ( $baler_active, $chan, $cmd, $comment, $dbsize, $endtime, $nrows, $parent, $prob ) ;
-    my ( $prob_check, $problem_init, $stime, $subject, $sync_dfile, $time, $tmp_db, $tmp_sync ) ;
-    my ( @db, @dbreplayed, @dbtmp, @dbtwf ) ;
+    my ( $baler_active, $chan, $cmd, $comment, $days_after_removal, $dbsize, $endtime ) ;
+    my ( $nrows, $prob, $prob_check, $problem_init, $start, $stime, $subject, $sync_dfile ) ;
+    my ( $time, $tmp_db, $tmp_sync, $wf_endtime ) ;
+    my ( @db, @dbreplayed, @dbtmp, @dbtwf, @dbwfdisc ) ;
     my ( %stas ) = %{$ref} ;
 
-    $stime = strydtime( now() ) ;
-    
-    $parent = $$ ; 
-        
+    $start = now() ;
+    $stime = strydtime( $start ) ;
+            
     elog_notify ( "\nstarting processing station $sta    $stime");
     
     $problem_init = $problems ;
@@ -398,10 +438,10 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
     $baler_active = "$pf{baler_active}/$sta" ;
     
     chdir( $baler_active ) ;
-    fork_notify ( $parent, "Changed directory to $baler_active " ) if $opt_v ;
+    elog_notify ( "Changed directory to $baler_active " ) if $opt_v ;
 
     ( $tmp_db, $comment, $dbsize, $prob ) = &build_tmp_db( $sta, $prob ) ;
-
+       
     if ( $dbsize && ! $prob) {
 #
 #  Transfer wf data to DMC using obsip2orb
@@ -413,7 +453,7 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
         elog_notify( $cmd ) ; 
          
         if ( ! &run_cmd( $cmd ) ) {
-            $problems++ ;
+            elog_complain ( "FAILED:	$cmd" ) ;
             $subject = "Problems - $pgm $host	obsip2orb $sta" ;
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject") ;
@@ -422,59 +462,41 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
 #
 #  Transfer non-wf data to DMC 
 #
-        $tmp_sync = proc_nonwf_seed( $sta, $tmp_db, $Pf, $dbsize, $orbname, $orbsize, $orbclient, $problems ) ;
+        $tmp_sync = proc_nonwf_seed( $sta, $tmp_db, $Pf, $dbsize, $orbname, $orbsize, $orbclient ) ;
 #
 #  Make sync file 
 #  
-        $sync_dfile = &sync_file ( $sta, $tmp_db, $tmp_sync, $problems ) ;
+        ( $sync_dfile, $problems ) = &sync_file ( $sta, $tmp_db, $tmp_sync, $problems ) ;
+        
+        elog_debug ( "output of sync_file  -	sync_dfile	\"$sync_dfile\" " ) ;
 #
 #  wait until orblag value become acceptable
 #
-        &wait_for_orb_to_empty ( $orb, $problems ) ;
+        &wait_for_orb_to_empty ( $orb ) ;
 #
 #  Transfer DMC sync file
 #
          if ( $problem_init == $problems ) {
              $problems = &send_sync ( $sta, $db, $comment, $orbname, $sync_dfile, $problems ) ;
          } else {
-            $subject = "Problems - $pgm $host	obsip2orb $sta" ;
+            $subject = "Problems - $pgm $host	sync_file	$sta" ;
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject") ;
          }
 #
-#  If station completed
-#
-
-        if ( exists $stas{$sta}{wf}{endtime} ) {
-   
-            &check_deployment( $sta, $db ) ; 
-            chdir( $pf{baler_active} ) ;
-            
-            $cmd = "mv $baler_active $pf{baler_final}" ;
-        
-            if ( ! &run_cmd( $cmd ) ) {
-                $problems++ ;
-                &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
-            } else {
-                $comment = "Station completed, moved to $pf{baler_final}" ;
-                fork_notify ( $comment ) ;
-                print PROB "$comment \n\n" ;
-            }
-
-        }
-#
 #  update replayed table
 #
-        @db           = dbopen  ( $sta, "r+" ) ; 
-        @dbreplayed   = dblookup( @db, 0, "replayed", 0, 0 ) ;
-
-        @dbtmp        = dbopen  ( $tmp_db, "r" ) ; 
-        @dbtwf        = dblookup( @dbtmp, 0, "wfdisc", 0, 0 ) ;
-    
-        $nrows = dbquery(@dbtwf,"dbRECORD_COUNT") ;
+        @db            = dbopen  (  $sta, "r+" ) ; 
+        @dbreplayed    = dblookup(  @db, 0, "replayed", 0, 0 ) ;
         
-        elog_notify ( "opt_n  $opt_n	problem_init  $problem_init	problems  $problems" ) ;
+        @dbwfdisc      = dblookup(  @db, 0, "wfdisc", 0, 0 ) ;
+        $wf_endtime    = dbex_eval( @dbwfdisc, "max(endtime)" ) ;
+         
+        @dbtmp         = dbopen  ( $tmp_db, "r" ) ; 
+        @dbtwf         = dblookup( @dbtmp, 0, "wfdisc", 0, 0 ) ;
     
+        $nrows         = dbquery( @dbtwf, "dbRECORD_COUNT" ) ;
+            
         if ( ! $opt_n && ! ( $problem_init != $problems ) ) {
             for ( $dbtwf[3] = 0; $dbtwf[3]<$nrows; $dbtwf[3]++ ) {
                 $dbreplayed[3] = dbaddnull( @dbreplayed ) ;
@@ -490,11 +512,44 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
         unlink ( "$tmp_db" )                       unless $opt_V ;
         unlink ( "$tmp_db.wfdisc" )                unless $opt_V ;
         
+    } elsif ( $prob ) {
+        $problems += $prob ;
+    }
+
+#
+#  If station completed
+#
+
+    if ( exists $stas{$sta}{wf}{endtime}  && ! $prob ) {
+
+        $days_after_removal  =  ( now() - $stas{$sta}{wf}{endtime} ) / 86400 ;
+        
+        if   ( $days_after_removal > $pf{days_after_removal} ||  ( (  $stas{$sta}{wf}{endtime} - $wf_endtime ) / 86400 ) < 1 ) {
+            
+            &check_deployment( $sta, $db ) ; 
+            chdir( $pf{baler_active} ) ;
+            
+            $cmd = "mv $baler_active $pf{baler_final}" ;
+                    
+            if ( ! &run_cmd( $cmd ) ) {
+                $problems++ ;
+                print PROB "FAILED: $cmd \n\n" ;
+            } else {
+                $comment = "Station completed, moved to $pf{baler_final}" ;
+                elog_notify ( $comment ) ;
+                print PROB "$comment \n\n" ;
+            }
+        }
+
     }
     
 #
 #  clean up
 #
+
+    $comment = sprintf("Transmission time %s		Transfer rate	%d bytes/sec", strtdelta( now() - $start ), $dbsize / ( now() - $start ) ) ;
+    elog_notify ( $comment ) ;
+    print PROB "$comment \n\n" ;
         
     $stime = strydtime( now() );
     print PROB "$stime      end processing \n\n" ;
@@ -503,14 +558,14 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
     if  ( $prob ) {
         $subject = "TA $sta     $prob problems -  $pgm on $host";
         $cmd     = "rtmail -C -s '$subject' $pf{prob_mail} < /tmp/prob_$sta\_$$";
-        fork_notify ( $parent, $cmd) ;
+        elog_notify ( $cmd ) ;
         
         &run_cmd( $cmd ) ;
 
     } elsif ( $opt_v ) {
         $subject = "TA $sta transmission completed -  $pgm on $host";
         $cmd     = "rtmail -C -s '$subject' $pf{success_mail} < /tmp/prob_$sta\_$$";
-        fork_notify ( $parent, $cmd) ;
+        elog_notify ( $cmd ) ;
         
         &run_cmd( $cmd ) ;
 
@@ -519,7 +574,7 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
     unlink "/tmp/prob_$sta\_$$" unless $opt_V;
     
     $stime = strydtime( now() );
-    fork_notify ( $parent, "proc_sta complete for $sta with $prob problems    $stime") ;
+    elog_notify (  "proc_sta complete for $sta with $prob problems    $stime") ;
 
     return ( $problems ) ;
 
@@ -528,13 +583,29 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
 sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta, $prob ) ;
     my ( $sta, $prob ) = @_ ;
     my ( $chan, $comment, $datatype, $dbsize, $dfile, $dir, $endtime, $foff, $line, $max_dir ) ;
-    my ( $max_month, $min_dir, $min_month, $nojoin, $nrows, $nsamp, $nwfs, $replay, $row ) ;
-    my ( $samprate, $time, $tmpdb ) ;
+    my ( $max_month, $min_dir, $min_month, $nminutes, $nojoin, $nrows, $nsamp, $nwfs, $replay, $row ) ;
+    my ( $samprate, $string, $time, $tmpdb ) ;
     my ( @db, @dbblh, @dbnj, @dbreplayed, @dbschan, @dbscr, @dbsize, @dbsoh, @dbtmp, @dbtwf, @dbwfdisc, @missing, @rows ) ;
     
     $tmpdb = "tmp_replay_$sta\_$$" ;
     
     elog_debug( "build_tmp_db $sta begins" ) if $opt_V ;
+
+    $nminutes = 0 ;
+    while ( &dblock ( $sta, ( 600 ) ) ) {
+        if ( $nminutes > 60 ) {
+            $string  = sprintf( "		$sta locked for more that 1 hour, cannot process now "  )  ;
+            elog_complain ( $string  ) ;
+            $prob++ ;
+            return ( $prob ) ;
+        }
+        $string = "$sta is locked!  build_tmp_db now sleeping" ;
+        elog_notify ( $string ) ;
+        sleep 60 ; 
+        $nminutes++ ;
+    }
+    
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.schanloc", "$sta.schanloc" ) ;
     
     @db           = dbopen  ( $sta, "r" ) ; 
     @dbwfdisc     = dblookup( @db, 0, "wfdisc", 0, 0 ) ;
@@ -557,7 +628,7 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
             push @missing, dbgetv( @dbnj, "chan" ) ;
         }
         
-        $line    = "$nojoin records in wfdisc do not join to schanloc - @missing" ;
+        $line    = "$nojoin records in $sta wfdisc do not join to schanloc - @missing" ;
         print  PROB "$line \n\n" ;
         elog_complain( $line ) ;  
     
@@ -566,6 +637,7 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
         elog_complain( $line ) ;  
     
         dbclose ( @db ) ;
+        &dbunlock ( $sta ) ;
 
         $dbsize = 0 ;
         $prob++;
@@ -578,9 +650,15 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
     @dbtmp        = dbopen  ( $tmpdb, "r+" ) ; 
     @dbtwf        = dblookup( @dbtmp, 0, "wfdisc", 0, 0 ) ;
     
-    $nwfs         = dbquery( @dbwfdisc, "dbRECORD_COUNT" ) ;
-    $replay       = dbquery( @dbreplayed, "dbTABLE_PRESENT" ) ;
+#     $replay       = dbquery( @dbreplayed, "dbTABLE_PRESENT" ) ;
     
+    if ( dbquery( @dbreplayed, "dbTABLE_PRESENT" ) )  {
+        @dbwfdisc = dbnojoin ( @dbwfdisc, @dbreplayed, qw ( sta chan time endtime ) ) ;
+    }
+    
+    $nwfs         = dbquery( @dbwfdisc, "dbRECORD_COUNT" ) ;
+    
+    elog_debug( "nwfs	$nwfs" ) if $opt_V ;
     elog_debug( "open	$tmpdb" ) if $opt_V ;
 #
 #  load tmp wfdisc with all non-replayed waveforms 
@@ -589,42 +667,20 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
 
         ( $sta, $chan, $time, $endtime, $nsamp, $samprate, $datatype, $dir, $dfile, $foff )  = 
             dbgetv ( @dbwfdisc, qw ( sta chan time endtime nsamp samprate datatype dir dfile foff ) ) ;
-        
-        if ( $replay ) {
             
-            dbputv( @dbscr, "sta", $sta, "chan", $chan, "time", $time, "endtime", $endtime ) ;
-            
-            @rows = dbmatches( @dbscr, @dbreplayed, "replayed_$sta", "sta", "chan", "time", "endtime" ) ;
-            
-            next if ( $#rows == 0 ) ;
-            
-            $dbtwf[3] = dbaddnull ( @dbtwf ) ;
-            dbputv (  @dbtwf, "sta", $sta, 
-                              "chan", $chan, 
-                              "time", $time, 
-                              "endtime", $endtime, 
-                              "nsamp", $nsamp, 
-                              "samprate", $samprate, 
-                              "datatype", $datatype, 
-                              "dir", $dir, 
-                              "dfile", $dfile, 
-                              "foff", $foff ) ;
-            
-        } else {
-        
-            $dbtwf[3] = dbaddnull ( @dbtwf ) ;
-            dbputv (  @dbtwf, "sta", $sta, 
-                              "chan", $chan, 
-                              "time", $time, 
-                              "endtime", $endtime, 
-                              "nsamp", $nsamp, 
-                              "samprate", $samprate, 
-                              "datatype", $datatype, 
-                              "dir", $dir, 
-                              "dfile", $dfile, 
-                              "foff", $foff ) ;
-            
-        }
+        elog_debug ( sprintf ("%8d	%s	%s	%s	%s	%s	%s", $dbwfdisc[3], $sta, $chan, strydtime($time), strydtime($endtime), $dir, $dfile ) ) if $opt_V ;
+ 
+        $dbtwf[3] = dbaddnull ( @dbtwf ) ;
+        dbputv (  @dbtwf, "sta", $sta, 
+                          "chan", $chan, 
+                          "time", $time, 
+                          "endtime", $endtime, 
+                          "nsamp", $nsamp, 
+                          "samprate", $samprate, 
+                          "datatype", $datatype, 
+                          "dir", $dir, 
+                          "dfile", $dfile, 
+                          "foff", $foff ) ;
 
     }
     
@@ -635,10 +691,11 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
         print PROB  "$sta has no new data to process\n" ;
         dbclose ( @db ) ;
         dbclose ( @dbtmp ) ;
+        &dbunlock ( $sta ) ;
         return ( "", "", 0, $prob ) ;
     }
         
-    &cssdescriptor ( $tmpdb, $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} ) ;
+    &cssdescriptor ( $tmpdb, "$pf{tmp_dbmaster}/{tmp_dbmaster}", "none", "" ) ;
 
     elog_debug( "$tmpdb descriptor" ) if $opt_V ;
     
@@ -681,30 +738,22 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
         $dbsize += -s dbextfile( @dbsize ) ;
     }
         
-    $line    = "dbname $sta	Total Bytes - 	$dbsize" ;
-    print  PROB "$line \n" ;
-    elog_notify( $line ) ;        
-
     $comment = "$sta active baler data sent to DMC" ;
+    $comment .= "    $min_dir    $max_dir    $min_month    $max_month" ;
+    $comment .= "    Total Bytes -    $dbsize" ;
     print  PROB "$comment \n" ;
-    elog_notify( $comment ) if $opt_n ;        
-    
-    $comment = "	start day	$min_dir	start month	$min_month" ;
-    print  PROB "$comment \n" ;
-    elog_notify( $comment ) if $opt_n ;        
-    
-    $comment = "	last day	$max_dir	last month	$max_month" ;
-    print  PROB "$comment \n" ;
-    elog_notify( $comment ) if $opt_n ;        
+    elog_notify( $comment ) ;        
         
     dbclose ( @db ) ;
     dbclose ( @dbtmp ) ;
+    &dbunlock ( $sta ) ;
+    unlink ( "$sta.schanloc" ) ;
 
     return ( $tmpdb, $comment, $dbsize, $prob ) ;
 }
 
-sub proc_nonwf_seed { # $tmp_sync = proc_nonwf_seed( $sta, $tmpdb, $Pf, $dbsize, $orbname, $orbsize, $orbclient, $problems ) ;
-    my ( $sta, $tmpdb, $Pf, $dbsize, $orbname, $orbsize, $orbclient, $problems ) = @_ ;
+sub proc_nonwf_seed { # $tmp_sync = proc_nonwf_seed( $sta, $tmpdb, $Pf, $dbsize, $orbname, $orbsize, $orbclient ) ;
+    my ( $sta, $tmpdb, $Pf, $dbsize, $orbname, $orbsize, $orbclient ) = @_ ;
     my ( $base, $chan, $cmd, $dir, $mseedfile, $net, $nrows, $ref, $st1, $st2, $st3, $subject, $suf, $tmp_sync ) ;
     my ( @chans, @dbnonwf, @dbtmp, @dbtwf, @dirs, @files, @line, @msd, @mseedfiles, @pffiles ) ;
 
@@ -822,7 +871,7 @@ sub proc_nonwf_seed { # $tmp_sync = proc_nonwf_seed( $sta, $tmpdb, $Pf, $dbsize,
         $cmd = "miniseed2orb -p miniseed2orb_sta_final -u $mseedfile $orbname";
             
         if ( ! &run_cmd( $cmd ) ) {
-            $problems++ ;
+            elog_complain ( "FAILED:	$cmd" ) ;
             $subject = "Problems - $pgm $host	miniseed2orb $mseedfile" ;
             &sendmail($subject, $opt_m) if $opt_m ; 
             elog_die("\n$subject") ;
@@ -841,24 +890,24 @@ sub proc_nonwf_seed { # $tmp_sync = proc_nonwf_seed( $sta, $tmpdb, $Pf, $dbsize,
 
 }
 
-sub sync_file { # $sync_dfile = &sync_file ( $sta, $tmp_db, $tmp_sync, $problems ) ;
+sub sync_file { # ( $sync_dfile, $problems ) = &sync_file ( $sta, $tmp_db, $tmp_sync, $problems ) ;
     my ( $sta, $tmp_db, $tmp_sync, $problems ) = @_ ;
-    my ( $cmd, $parent, $subject, $sync_dfile, $yearday ) ;
+    my ( $cmd,  $subject, $sync_dfile, $yearday ) ;
 #
 #  Make DMC sync file
 #
-    $parent = $$ ; 
     $yearday = &yearday( now () ) ;
     
     makedir("sync") if (! -d "sync" && ! $opt_n);
 
     $sync_dfile = "$sta\_$yearday.sync";
-    
+        
     $cmd = "db2sync -h $tmp_db sync/$sync_dfile" ;
 
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
+        elog_complain ( "FAILED: $cmd \n\n" ) ;
+        print PROB "FAILED: $cmd \n\n" ;
     }
     sleep 1 ;
         
@@ -875,19 +924,19 @@ sub sync_file { # $sync_dfile = &sync_file ( $sta, $tmp_db, $tmp_sync, $problems
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
+        elog_complain ( "FAILED: $cmd \n\n" ) ;
+        print PROB "FAILED: $cmd \n\n" ;
     }
     
-    return ( $sync_dfile ) ;
+    return ( $sync_dfile, $problems  ) ;
 }
 
-sub wait_for_orb_to_empty { # &wait_for_orb_to_empty ( $orb, $problems ) ;
+sub wait_for_orb_to_empty { # &wait_for_orb_to_empty ( $orb ) ;
     my ( $orb, $problems ) = @_ ;
     my ( $max, $mlag, $n, $nerror, $new, $old, $orbname, $pktid, $range, $subject, $thread, $what, $who ) ;
     my ( @laggards) ;
 
     if ( $orb < 0 and ! $opt_n ) {
-        $problems++ ;
         elog_complain( "\nProblem $problems
                             \n	Failed to open orb $orbname for orblag check" ) ;
         $subject = "Problems - $pgm $host	" ;
@@ -927,15 +976,16 @@ sub wait_for_orb_to_empty { # &wait_for_orb_to_empty ( $orb, $problems ) ;
 
 sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sync_dfile, $problems ) ;
     my ( $sta, $dbops, $comment, $orbname, $sync_dfile, $problems ) = @_ ;
-    my ( $cmd, $nsuccess, $parent, $sync_dir, $year ) ;
+    my ( $cmd, $nsuccess, $short_hostname, $sync_dir, $year ) ;
     my ( @dbdmcfiles, @dbops, @pffiles ) ;
+    
+    elog_debug ( "start of send_sync  -	sync_dfile	\"$sync_dfile\" " ) ;
+
 #
 #  make sure wait_match specified properly in miniseed2orb.pf
 #
     $nsuccess = 0 ;
     
-    $parent = $$ ;
-
     @pffiles = pffiles( "orbxfer2" ) ;
     elog_notify( "pffiles	@pffiles" ) ;
     unlink( "orbxfer2.pf" ) if ( -e "orbxfer2.pf" ) ;
@@ -943,7 +993,8 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
+        elog_complain ( "FAILED:	$cmd" ) ;
+        print PROB "FAILED: $cmd \n\n" ;
     }
 
     open(  OXF, ">>orbxfer2.pf" ) ;
@@ -959,7 +1010,8 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
+        elog_complain ( "FAILED:	$cmd" ) ;
+        print PROB "FAILED: $cmd \n\n" ;
     } else {
         elog_notify ( $cmd ) ;
         $nsuccess++ ;
@@ -967,10 +1019,10 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
+        elog_complain ( "FAILED:	$cmd" ) ;
+        print PROB "FAILED: $cmd \n\n" ;
     } else {
         elog_notify ( $cmd ) if ( ! $nsuccess ) ;
-        return ( $problems ) ;
     }
 
     unlink ( "orbxfer2.pf" )                  unless $opt_V ;
@@ -987,17 +1039,19 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
         
     if ( ! &run_cmd( $cmd ) ) {
         $problems++ ;
-        &print_prob ( $problems, "FAILED: $cmd", $parent, *PROB ) ;
+        print PROB "FAILED: $cmd \n\n" ;
     }
-
-    @dbops         = dbopen( $dbops, "r+" );
-    @dbdmcfiles    = dblookup(@dbops,0,"dmcfiles",0,0);
+        
+    @dbops          = dbopen( $dbops, "r+" );
+    @dbdmcfiles     = dblookup(@dbops,0,"dmcfiles",0,0);
+    
+    $short_hostname = my_hostname() ;
     dbaddv( @dbdmcfiles, "time",    now(),
                          "comment", $comment,
                          "dir",     $sync_dir,
                          "dfile",   $sync_dfile,
                          "orb",     $orbname,
-                         "auth",    "$host:batd" ) unless $opt_n ;
+                         "auth",    "$short_hostname:batd" ) unless $opt_n ;
     dbclose( @dbops ) ;
        
     return ( $problems ) ;
@@ -1006,7 +1060,8 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
 
 sub check_deployment { # $problems =  &check_deployment( $sta, $db, $problems ) ;
     my ( $sta, $db, $problems ) = @_ ;
-    my ( $cmd, $dep, $dep_end, $dep_start, $line, $maxtime, $mintime, $st1, $st2, $subject ) ;
+    my ( $cmd, $dep, $dep_end, $dep_install, $dep_remove, $dep_start, $line ) ;
+    my ( $maxtime, $mintime, $st1, $st2, $subject ) ;
     my ( @dbdeploy, @dbwfdisc ) ;
     
     
@@ -1017,16 +1072,24 @@ sub check_deployment { # $problems =  &check_deployment( $sta, $db, $problems ) 
     @dbdeploy = dblookup( @dbdeploy, 0, "deployment", 0, 0 ) ;
     @dbdeploy = dbsubset( @dbdeploy, "sta =~ /$sta/" ) ;
     
-    @dbdeploy = dbsort  ( @dbdeploy, "time" ) ;
+    @dbdeploy    = dbsort  ( @dbdeploy, "time" ) ;
     $dbdeploy[3] = 0 ;
-    $dep_start = dbgetv ( @dbdeploy, "time" ) ;
+    $dep_start   = dbgetv ( @dbdeploy, "time" ) ;
 
-    @dbdeploy = dbsort  ( @dbdeploy, "endtime", "-r" ) ;
+    @dbdeploy    = dbsort  ( @dbdeploy, "endtime", "-r" ) ;
     $dbdeploy[3] = 0 ;
-    $dep_end = dbgetv ( @dbdeploy, "endtime" ) ;
+    $dep_end     = dbgetv ( @dbdeploy, "endtime" ) ;
 
-    $mintime  = dbex_eval( @dbwfdisc, "min(time)" ) ;
-    $maxtime  = dbex_eval( @dbwfdisc, "max(endtime)" ) ;
+    @dbdeploy    = dbsort  ( @dbdeploy, "equip_install" ) ;
+    $dbdeploy[3] = 0 ;
+    $dep_install = dbgetv ( @dbdeploy, "equip_install" ) ;
+
+    @dbdeploy    = dbsort  ( @dbdeploy, "equip_remove", "-r" ) ;
+    $dbdeploy[3] = 0 ;
+    $dep_remove  = dbgetv ( @dbdeploy, "equip_remove" ) ;
+
+    $mintime     = dbex_eval( @dbwfdisc, "min(time)" ) ;
+    $maxtime     = dbex_eval( @dbwfdisc, "max(endtime)" ) ;
 
 #
 #  Verify start and end times in deployment table
@@ -1051,6 +1114,28 @@ sub check_deployment { # $problems =  &check_deployment( $sta, $db, $problems ) 
         elog_notify( $line ) ;
         $dep++ ;
     }
+    if ( $mintime < $dep_install ) {
+        $st1 = strydtime( $mintime ) ;
+        $st2 = strydtime( $dep_install );
+        $line =  "Deployment table equip_install field may need changing " ;
+        $line .= "-	$sta db equip_install $st2	new suggested equip_install $st1" ;
+        print DEP "$line\n" ;
+        $line =  "Dbmaster may need to be rebuilt" ;
+        print DEP "$line\n" ;
+        elog_notify( $line ) ;
+        $dep++ ;
+    }
+    if ( $maxtime > $dep_remove ) {
+        $st1 = strydtime( $maxtime );
+        $st2 = strydtime( $dep_remove );
+        $line = "Deployment table equip_remove field may need changing " ;
+        $line .= "-	$sta db equip_remove $st2	new suggested equip_remove $st1" ; 
+        print DEP "$line\n" ; 
+        $line =  "Dbmaster may need to be rebuilt" ;
+        print DEP "$line\n" ;
+        elog_notify( $line ) ;
+        $dep++ ;
+    }
                 
     close( DEP );
 
@@ -1067,4 +1152,86 @@ sub check_deployment { # $problems =  &check_deployment( $sta, $db, $problems ) 
     dbclose ( @dbdeploy ) ;
 
     return ;
+}
+
+sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
+    my ( $db, $lock_duration ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $pid ) ;
+    my ( %pf ) ;
+    
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf	$Pf	dbloc_pf_file	$dbloc_pf_file	pid $pid" ) if $opt_V ;
+    
+    if ( ! -f $dbloc_pf_file ) {
+        elog_debug ( sprintf ("$db new lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+        return ( 0 ) ; 
+    } else { 
+        %pf = getparam( $Pf ) ;
+        if ( $pf{unlock_time} > &now() && $pf{pid} != $pid ) {
+            elog_complain ( sprintf ("$db is locked until %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            prettyprint ( \%pf ) ;
+            return ( 1 ) ;
+        } elsif  ( $pf{unlock_time} > &now() && $pf{pid} == $pid ) {
+            elog_debug ( sprintf ("$db lock is extended to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        } else {
+            elog_debug ( sprintf ("$db lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        }
+    }    
+}
+
+sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
+    my ( $db ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $host1, $lock_time1, $pid, $pid1, $program1, $unlock_time1 ) ;
+    my ( %pf ) ;
+    
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf	$Pf	dbloc_pf_file	$dbloc_pf_file" ) if $opt_V ;
+    
+    if ( ! -f $dbloc_pf_file ) {
+        elog_complain ( "dbunlock:	$dbloc_pf_file does not exist!" ) ;
+        return ( 1 ) ;
+    } else { 
+        pfupdate ( $Pf ) ; 
+        %pf = getparam( $Pf ) ;
+        if ( $0 !~ /$pf{program}/ || $pid != $pf{pid} || $host !~ /$pf{host}/ ) {
+            elog_complain ( "unable to unlock $db" ) ;
+            elog_complain ( "program	$0	$pf{program}" ) ;
+            elog_complain ( "pid	$pid	$pf{pid}" ) ;
+            elog_complain ( "host	$host	$pf{host}" ) ;            
+            return ( 1 ) ;
+        }
+        if ( $pf{unlock_time} < &now() ) {
+            elog_complain ( sprintf ("$db was already unlocked at %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            return ( 1 ) ;
+        } 
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, &now() ) ;
+        return ( 0 ) ;
+    }    
+}
+
+sub write_dblock { # &write_dblock ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) ;
+    my ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) = @_ ;
+    open( LOCK,   ">$dbloc_pf_file" ) ;
+    print LOCK    "program      $program\n" ;
+    print LOCK    "host         $host\n" ;
+    print LOCK    "pid          $pid\n" ;
+    printf ( LOCK "lock_time    %d\n", $lock_time ) ;
+    printf ( LOCK "unlock_time  %d\n", $unlock_time ) ;
+    close LOCK ;
+    return ; 
 }

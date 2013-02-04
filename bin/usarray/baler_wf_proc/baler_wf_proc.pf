@@ -1,11 +1,17 @@
 baler_active	   /anf/TA/dbs/wfs/station_active              # absolute path name for active station baler directory base name
 baler_final  	   /anf/TA/dbs/wfs/station_final_44            # absolute path name for archive station baler directory base name
 
+tmp_dbmaster       /anf/TA/dbs/wfs/station_active/tmp_baler_wf
+
 rt_sta_dir         /anf/TA/dbs/wfs/rt_stas                     # absolute path name for station rt wfdisc directory base name
 
 wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                     # remove these wfdisc rows
 
 days_delay         7                                           # Number of days for data to reside on disk before processing
+
+days_after_removal 195										   # number of days to wait after removal before final processing
+
+limit_hours        12										   # limit of hours to allow stations to start processing                                                                
 
 net                TA                                          # Network Code
 
