@@ -1,6 +1,9 @@
-#Edited by Malcolm White - August 2011
+: # use perl
+eval 'exec $ANTELOPE/bin/perl -S $0 "$@"'
+if 0;
 
-use Getopt::Std;
+use lib "$ENV{ANTELOPE}/data/perl" ;
+require "getopts.pl";
 use Datascope;
 
 #####
@@ -14,7 +17,7 @@ $Pf = $program;
 
 elog_init( $0, @ARGV );
 
-if ( ! getopts('mil:s:o:p:d:f:') || @ARGV != 1 ){
+if ( ! &Getopts('mil:s:o:p:d:f:') || @ARGV != 1 ){
 
         die ( "Usage: $program [-m] [-i] [-l lddate_cutoff] [-s origin_subset_expr] [-d dbout] [-o orid] [-p pffile] [-f output_filename] d
 atabase\n" );
@@ -27,7 +30,7 @@ atabase\n" );
                 $Pf = $opt_p;
         }
 
-        #The -f option was added to ensure that the descriptor file
+        #mw88 - The -f option was added to ensure that the descriptor file
         #is not unintentionally clobbered (ie. when an orid argument is supplied
         #without specifying the -o option.).
         if( $opt_f ) {
@@ -135,27 +138,28 @@ if( $norigins <= 0 ) {
 
 $all = "";
 
-#This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
+#mw88 - This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
 #Database is no longer subsetted per orid, and entire database is passed to format_pickfile.
 #Outermost curly braces are insignificant as is whitespace (indentation).
-        
-($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
+{
+        ($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
 
-if( $opt_i ) {
+        if( $opt_i ) {
 
-	$pickfile_name_pattern =~ s/%{suffix}/$suffix/g;
-        $pickfile = epoch2str( $origin_time, $pickfile_name_pattern );
+                $pickfile_name_pattern =~ s/%{suffix}/$suffix/g;
+                $pickfile = epoch2str( $origin_time, $pickfile_name_pattern );
 
-        ($dir, $path, $sfx ) = parsepath( $pickfile );
-        makedir( $dir );
+                ($dir, $path, $sfx ) = parsepath( $pickfile );
+                makedir( $dir );
 
-        open( P, ">$pickfile" );
-        print P "$pickblob";
-        close( P );
+                open( P, ">$pickfile" );
+                print P "$pickblob";
+                close( P );
 
-} else {
+        } else {
 
-        $all .= "$pickblob";
+                $all .= "$pickblob";
+        }
 }
 
 if( $dbout_name ne "" ) {
@@ -221,12 +225,6 @@ if( $opt_i ) {
 #########
 #END MAIN
 #########
-
-
-#############
-#SUB-ROUTINES
-#############
-
 sub format_pickfile{
 
 	my( @db ) = @_;
@@ -248,8 +246,8 @@ sub format_pickfile{
 
         $pickblob .= format_comment_row( "English", $grname, $pref_agency );
         $pickblob .= format_comment_row( "French",  $grname, $pref_agency );
-        
-	@db = dbprocess( @db, "dbsubset orid == prefor",
+
+        @db = dbprocess( @db, "dbsubset orid == prefor",
                               "dbjoin assoc",
                               "dbjoin arrival" );
 
@@ -295,7 +293,7 @@ sub format_pickfile{
         
 #	@db = dbprocess( @db, "dbseparate stamag" );
 # separating stamag causes new view to be sorted by sta rather than by delta as desired
-# the following three lines of code are intended to sort stamag values by distance from hypocentre
+# the following three commands are intended to sort stamag values by distance from hypocentre
 
 	@db = dbsubset( @db, "sta == stamag.sta" );
 
@@ -311,7 +309,7 @@ sub format_pickfile{
         for( $db[3] = 0; $db[3] < $nstamags; $db[3]++ ) {
 
                 ( $sta, $magtype, $mag ) = dbgetv( @db, "sta", "stamag.magtype", "stamag.magnitude" );
-# magtype and magnitude arguments passed to dbgetv were changed to stamag.magtype and stamag.magnitude because this is where the
+# magtype and magnitude from stamag table were changed to stamag.magtype and stamag.magnitude because this is where the
 # pertinent data is stored
 
 		$magtype = correct_magtype_code( $magtype );
@@ -411,7 +409,7 @@ sub format_origin_row {
 
 	}
 
-	$row .= sprintf( "     %3d    %-4s  %5s ", $ndef, $magtype, $mag );
+	$row .= sprintf( "     %3d    %-4s  %5.2f ", $ndef, $magtype, $mag );
         $row .= " $agency\n";
 
         return $row;
@@ -440,8 +438,8 @@ sub format_error_row {
         $smajax = $smajax != -1 ? sprintf( "%5.2f", $smajax ) : "     ";
         $sminax = $smajax != -1 ? sprintf( "%5.2f", $sminax ) : "     ";
         $strike = $strike != -1 ? sprintf( "%5.1f", $strike ) : "     ";
-        
-	my( $se_depth );
+print "XXX$strikeXXX\n";
+        my( $se_depth );
 
         if( $dtype =~ /[rg]/ ) {
 
@@ -543,11 +541,13 @@ sub format_magnitude_row {
 
 	if( $defining && $flag ){
 
-        	$row = sprintf( "$m *%-7s$mag ", $magtype );
+#        	$row = sprintf( "$m *%-7s$mag ", $magtype );		# TM edited this - see next line
+        	$row = sprintf( "$m *%-6s%5.2f ", $magtype, $mag );
 
 	} else {
 
-        	$row = sprintf( "$m  %-7s$mag ", $magtype );
+#        	$row = sprintf( "$m  %-7s$mag ", $magtype );		# TM edited this - see next line
+        	$row = sprintf( "$m  %-6s%5.2f ", $magtype, $mag );
 
 	}	
         $row .= "($magerr) $nmagsta";
@@ -915,7 +915,3 @@ sub read_pf {
 	%correct_magtype_codes	= %{pfget( $Pf, "correct_magtype_codes" )};
 	%magtype_priorities	= %{pfget( $Pf, "magtype_priorities" )};
 }
-
-#################
-#END SUB-ROUTINES
-#################
