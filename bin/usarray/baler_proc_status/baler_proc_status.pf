@@ -1,0 +1,23 @@
+net                          TA
+
+active_baler44_dir           /anf/TA/dbs/wfs/station_active
+
+baler14_sync                 /anf/TA/products/sync/sta_final
+
+rt_sta_dir                   /anf/TA/dbs/wfs/rt_stas
+
+baler14_dirs       &Tbl{
+    /anf/TA/baler/station_aof_dumps/processed
+    /anf/TA/baler/station_aof_dumps/processed_44
+}
+   
+baler44_dirs       &Tbl{
+    /anf/TA/baler/work
+}
+   
+final_baler_dirs       &Tbl{
+    /anf/TA/dbs/wfs/station_final
+    /anf/TA/dbs/wfs/station_final_44
+}
+   
+pf_revision_time 1342122266
