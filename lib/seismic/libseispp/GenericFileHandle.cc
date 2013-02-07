@@ -8,67 +8,14 @@ using namespace std;
 using namespace SEISPP;
 namespace SEISPP
 {
-
-GenericFileHandle::GenericFileHandle(string filename,
-      string tracetype, AttributeCrossReference& namemap,
-      list<string> okeys, list<string> ensmdlist, list<string> tmdlist, 
-      bool read_only, string nskey, string dt_key, double dtscl, 
-      bool using_sample_interval,bool nowrit) 
-            : xref(namemap), dbuffer(tracetype), fname(filename)
+    /* This is a small (private) helper function common to both of
+       the following constructors.  It initializes the data file
+       handles stored internally in read or write mode.   
+       The one argument is obvious */
+void GenericFileHandle::initialize_iohandle(string filename, bool read_only)
 {
-    const string base_error("GenericFileHandle constructor:  ");
-    no_write_dead=nowrit;
-    retry_limit=50;
-    sleep_interval=1;
-    /* We must require the orderkeys to be loaded for each trace
-       as changes in keys is the signal to mark a new ensemble.
-       Note that is not as general as it could be (e.g. it doesn't 
-       allow for interval tests) but is sufficient for now.  This 
-       is research code after all. */
-    list<string>::iterator okptr;
-    for(okptr=okeys.begin();okptr!=okeys.end();++okptr)
-    {
-        try{
-            string exttest=xref.external(*okptr);
-        }catch(SeisppError& serr) {
-            throw SeisppError(base_error
-                    + "ensemble metdata key="
-                    + *okptr
-                    + " is not defind in cross reference map\nAdd to definitions");
-        }
-    }
-    orderkeys=okeys;
-    ensemble_mdlist=ensmdlist;
-    trace_mdlist=tmdlist;
-    readmode=read_only;
-    nsamp_keyword=nskey;
-    dt_keyword=dt_key;
-    dtscale=dtscl;
-    key_is_dt=using_sample_interval;
-    // Cache external names for these keywords for efficiency
-    // and to avoid later error traps
-    try {
-        dtkey_ext=xref.external(dt_keyword);
-    } catch (...)
-    {
-        throw SeisppError(base_error
-                + "Required metadata keyword ="
-                + dt_keyword
-                + " does not have a cross reference for file format "
-                +tracetype);
-    }
-    try {
-        nskey_ext=xref.external(nsamp_keyword);
-    } catch (...)
-    {
-        throw SeisppError(base_error
-                + "Required metadata keyword ="
-                + nsamp_keyword
-                + " does not have a cross reference for file format "
-                + tracetype);
-    }
-
-    if(readmode)
+    const string base_error("GenericFileHandle::iohandle procedure called by constructor: ");
+    if(read_only)
     {
         fp=fopen(filename.c_str(),"r");
         if(fp==NULL) throw SeisppError(base_error
@@ -91,6 +38,103 @@ GenericFileHandle::GenericFileHandle(string filename,
         fp=NULL;
     }
 }
+
+GenericFileHandle::GenericFileHandle(string filename,
+      string tracetype, AttributeCrossReference& namemap,
+      list<string> okeys, list<string> ensmdlist, list<string> tmdlist, 
+      bool read_only, string nskey, string dt_key, double dtscl, 
+      bool using_sample_interval,bool nowrit) 
+            : xref(namemap), dbuffer(tracetype), fname(filename)
+{
+    const string base_error("GenericFileHandle constructor:  ");
+    handle_not_ready=true;
+    readmode=read_only;
+    nsamp_keyword=nskey;
+    dt_keyword=dt_key;
+    dtscale=dtscl;
+    key_is_dt=using_sample_interval;
+    no_write_dead=nowrit;
+    /* These probably should be variable, but frozen for now */
+    retry_limit=50;
+    sleep_interval=1;
+    /* We must require the orderkeys to be loaded for each trace
+       as changes in keys is the signal to mark a new ensemble.
+       Note that is not as general as it could be (e.g. it doesn't 
+       allow for interval tests) but is sufficient for now.  This 
+       is research code after all. */
+    list<string>::iterator okptr;
+    for(okptr=okeys.begin();okptr!=okeys.end();++okptr)
+    {
+        try{
+            string exttest=xref.external(*okptr);
+        }catch(SeisppError& serr) {
+            throw SeisppError(base_error
+                    + "ensemble metdata key="
+                    + *okptr
+                    + " is not defind in cross reference map\nAdd to definitions");
+        }
+    }
+    orderkeys=okeys;
+    ensemble_mdlist=ensmdlist;
+    trace_mdlist=tmdlist;
+    // Cache external names for these keywords for efficiency
+    // and to avoid later error traps
+    try {
+        dtkey_ext=xref.external(dt_keyword);
+    } catch (...)
+    {
+        throw SeisppError(base_error
+                + "Required metadata keyword ="
+                + dt_keyword
+                + " does not have a cross reference for file format "
+                +tracetype);
+    }
+    try {
+        nskey_ext=xref.external(nsamp_keyword);
+    } catch (...)
+    {
+        throw SeisppError(base_error
+                + "Required metadata keyword ="
+                + nsamp_keyword
+                + " does not have a cross reference for file format "
+                + tracetype);
+    }
+    try {
+        initialize_iohandle(filename,readmode);
+    }catch(...){throw;};
+
+    handle_not_ready=false;
+}
+void GenericFileHandle::set_required(AttributeCrossReference& namemap,
+                list<string> okeys,
+                    list<string> ensmdlist,
+                        list<string> tmdlist,
+                            string ns_key,
+                                string dt_key,
+                                    double dtscl,
+                                        bool using_sample_interval,
+                                            bool nowritedead)
+{
+    xref=namemap;
+    orderkeys=okeys;
+    ensemble_mdlist=ensmdlist;
+    trace_mdlist=tmdlist;
+    nsamp_keyword=ns_key;
+    dt_keyword=dt_key;
+    dtscale=dtscl;
+    key_is_dt=using_sample_interval;
+    no_write_dead=nowritedead;
+    handle_not_ready=false;
+}
+GenericFileHandle::GenericFileHandle(string filename, string tracetype,
+        bool read_only) : dbuffer(tracetype), fname(filename)
+{
+    handle_not_ready=true;
+    try {
+        initialize_iohandle(filename,read_only);
+    }catch(...){throw;};
+}
+
 GenericFileHandle::GenericFileHandle(const GenericFileHandle& parent)
 {
     throw SeisppError(string("GenericFileHandle: coding error\n")
@@ -107,6 +151,8 @@ GenericFileHandle::~GenericFileHandle()
         outstrm.close();
     }
 }
+
+const string notreadyerror("GenericFileHandle:  Attempt to use incomplete file handle - marked not ready\nCoding error");
 
 long GenericFileHandle::filesize()
 {
@@ -164,6 +210,8 @@ bool GenericFileHandle::eof()
 void GenericFileHandle::LoadMetadata(FixedFormatTrace& dext,
         Metadata& d,list<string> mdlist)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror+" when calling LoadMetadata method");
     try {
         string extkey;
         list<string>::iterator mdlptr;
@@ -215,6 +263,9 @@ void GenericFileHandle::LoadMetadata(FixedFormatTrace& dext,
 void GenericFileHandle::LoadCommonAttributes(FixedFormatTrace& d, 
         BasicTimeSeries& base)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                +" when calling LoadCommonAttributes method");
     try {
         int nsext=d.get<int>(nskey_ext);
         base.ns=nsext;
@@ -237,6 +288,9 @@ void GenericFileHandle::LoadCommonAttributes(FixedFormatTrace& d,
 }
 TimeSeries GenericFileHandle::GetNextSeismogram()
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling GetNextSeismogram method");
     const string base_error("GenericFileHandle::GetNextSeismogram:  ");
     if(!readmode) throw SeisppError(base_error
             + "Coding error.  Trying to read when handle is in write mode");
@@ -262,6 +316,9 @@ TimeSeries GenericFileHandle::GetNextSeismogram()
 /* Private method used by the GetNextEnsemble method below */
 bool GenericFileHandle::keys_match(Metadata& d1, Metadata& d2)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling keys_match method");
     list<string>::iterator nmptr;
     for(nmptr=orderkeys.begin();nmptr!=orderkeys.end();++nmptr)
     {
@@ -308,6 +365,9 @@ bool GenericFileHandle::keys_match(Metadata& d1, Metadata& d2)
 
 auto_ptr<TimeSeriesEnsemble> GenericFileHandle::GetNextEnsemble()
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling GetNextEnsemble method");
     const string base_error("GenericFileHandle::GetNextEnsemble:  ");
     if(!readmode) throw SeisppError(base_error
             + "Coding error.  Trying to read when handle is in write mode");
@@ -365,6 +425,9 @@ auto_ptr<TimeSeriesEnsemble> GenericFileHandle::GetNextEnsemble()
 /* This code was modeled closely after GetNextSeismogram (scalar data) */
 ThreeComponentSeismogram GenericFileHandle::GetNext3CSeismogram()
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling GetNext3CSeismogram method");
     const string base_error("GenericFileHandle::GetNext3CSeismogram:  ");
     if(!readmode) throw SeisppError(base_error
             + "Coding error.  Trying to read when handle is in write mode");
@@ -400,6 +463,9 @@ ThreeComponentSeismogram GenericFileHandle::GetNext3CSeismogram()
 /* This code was derived from GetNextEnsemble (scalar data version) above*/
 auto_ptr<ThreeComponentEnsemble> GenericFileHandle::GetNext3CEnsemble()
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling GetNext3CEnsemble method");
     const string base_error("GenericFileHandle::GetNextEnsemble:  ");
     if(!readmode) throw SeisppError(base_error
             + "Coding error.  Trying to read when handle is in write mode");
@@ -454,6 +520,9 @@ auto_ptr<ThreeComponentEnsemble> GenericFileHandle::GetNext3CEnsemble()
 void GenericFileHandle::put_metadata_to_dbuffer(Metadata& d,
         list<string>& metanm)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put_metadata_to_dbuffer method");
     list<string>::iterator mdlptr;
     try{
         for(mdlptr=metanm.begin();mdlptr!=metanm.end();++mdlptr)
@@ -499,6 +568,9 @@ void GenericFileHandle::put_metadata_to_dbuffer(Metadata& d,
 
 void GenericFileHandle::put_sample_interval(BasicTimeSeries& d)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put_sample_interval method");
     double dtout;
     if(key_is_dt)
     {
@@ -521,6 +593,9 @@ void GenericFileHandle::put_sample_interval(BasicTimeSeries& d)
 
 int GenericFileHandle::put(TimeSeries& d)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put for TimeSeries method");
     /* To be stateless one might want to always force a seek to eof,
        but I do not do that on purpose for efficiency. Instead 
        all we really need to do is copy the required metadata to
@@ -546,6 +621,9 @@ int GenericFileHandle::put(TimeSeries& d)
 }
 int GenericFileHandle::put(TimeSeriesEnsemble& d)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put for TimeSeriesEnsemble method");
     int tracecount;
     vector<TimeSeries>::iterator dptr;
     try {
@@ -581,6 +659,9 @@ int GenericFileHandle::put(TimeSeriesEnsemble& d)
 
 int GenericFileHandle::put(ThreeComponentSeismogram& d)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put for ThreeComponentSeismogram  method");
     const string base_error("GenericFileHandle::put method for 3c seismogram:  ");
     /* To be stateless one might want to always force a seek to eof,
        but I do not do that on purpose for efficiency. Instead 
@@ -622,6 +703,9 @@ int GenericFileHandle::put(ThreeComponentSeismogram& d)
 }
 int GenericFileHandle::put(ThreeComponentEnsemble& d)
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put for ThreeComponentEnsemble  method");
     const string base_error("GenericFileHandle::put method for 3c ensemble:  ");
     if(!dbuffer.data_are_3c) throw SeisppError(base_error
             + "3c ensemble put method called for a format that is not 3c\n"
@@ -733,6 +817,9 @@ void GenericFileHandle::unlock()
 }
 void GenericFileHandle::rewind()
 {
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling rewind method");
     if(readmode)
     {
         std::rewind(this->fp);

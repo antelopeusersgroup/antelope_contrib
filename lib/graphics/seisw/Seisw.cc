@@ -3343,7 +3343,12 @@ static XImage *newBitmap_peng (Display *dpy, int width, int height,
 
         /* determine first sample and number of samples to rasterize */
         if1r = MIN(i1beg,i1end);
+        /* This is original code that is exactly the same as original Seismic Unix code.
         n1r = MAX(i1beg,i1end)-if1r+1;
+        This seems to be an off by one error that is largely harmless and easily not noticed.
+        I retain original code and this comment as I am not 100% sure of this fix.
+        */
+        n1r = MAX(i1beg,i1end)-if1r;
 
         /* determine bits corresponding to first and last samples */
         b1fz = (x1end > x1beg) ? 0 : bx1max;

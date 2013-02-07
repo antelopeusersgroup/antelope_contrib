@@ -502,7 +502,7 @@ sub process_network {
        #get depth of event to determine what range of stations to use
 	my ($odepth,$olat,$olon) = dbgetv ( @{$self->{dbo}}, "depth","lat","lon" ) ;
 	my $m_type = $self->{params}{output_magtype};
-	my $poly = `inwhichpolygons /opt/antelope/4.11/data/evproc/REGIONS/ca_poly $olat $olon` ;
+	my $poly = `inwhichpolygons $ENV{ANTELOPE}/data/evproc/REGIONS/ca_poly $olat $olon` ;
 	if ($poly eq "Offshore"){
 	    $m_type = "mlsn" ;
 	}

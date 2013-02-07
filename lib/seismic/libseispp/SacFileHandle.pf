@@ -1,0 +1,184 @@
+SAC_metadata_cross_reference &Tbl{
+# Order is:  internal name, file name, type
+dt delta real
+depmin depmin real
+depmax depmax real
+scale scale real
+odelta odelta real
+b b real
+e e real
+o o real
+a a real
+t0 t0 real
+t1 t1 real
+t2 t2 real
+t3 t3 real
+t4 t4 real
+t5 t5 real
+t6 t6 real
+t7 t7 real
+t8 t8 real
+t9 t9 real
+f f real
+stla stla real
+stlo stlo real
+stel stel real
+stdp stdp real
+evla evla real
+evlo evlo real
+evel evel real
+evdp evdp real
+mag mag real
+dist dist real
+az az real
+baz baz real
+gcarc gcarc real
+depmen depmen real
+cmpaz cmpaz real
+cmpinc cmpinc real
+xminimum xminimum real
+xmaximum xmaximum real
+yminimum yminimum real
+ymaximum ymaximum real
+year nzyear integer
+jday nzjday integer
+hour nzhour integer
+min nzmin integer
+nzsec nzsec integer
+sec nzsec integer
+msec nzmsec integer
+nvhdr nvhdr integer
+norid norid integer
+nevid nevid integer
+nsamp npts integer
+nwfid nwfid integer
+nxsize nxsize integer
+nysize nysize integer
+iftype iftype integer
+idep idep integer
+iztype iztype integer
+iinst iinst integer
+istreg istreg integer
+ievreg ievreg integer
+ievtyp ievtyp integer
+iqual iqual integer
+isynth isynth integer
+imagtyp imagtyp integer
+imagsrc imagsrc integer
+leven leven integer
+lpspol lpspol integer
+lovrok lovrok integer
+lcalda lcalda integer
+kstnm kstnm string
+kevnm kevnm string
+khole khole string
+k0 k0 string
+ka ka string
+kt0 kt0 string
+kt1 kt1 string
+kt2 kt2 string
+kt3 kt3 string
+kt4 kt4 string
+kt5 kt5 string
+kt6 kt6 string
+kt7 kt7 string
+kt8 kt8 string
+kt9 kt9 string
+kf kf string
+kuser0 kuser0 string
+kuser1 kuser1 string
+kuser2 kuser2 string
+kcmpnm kcmpnm string
+knetwk knetwk string
+kdatrd kdatrd string
+kinst kinst string
+}
+SAC_metadata_list &Tbl{
+dt
+depmin
+depmax
+scale
+odelta
+b
+e
+o
+a
+t0
+t1
+t2
+t3
+t4
+t5
+t6
+t7
+t8
+t9
+f
+stla
+stlo
+stel
+stdp
+evla
+evlo
+evel
+evdp
+mag
+dist
+az
+baz
+gcarc
+depmen
+cmpaz
+cmpinc
+xminimum
+xmaximum
+yminimum
+ymaximum
+year
+jday
+hour
+min
+nzsec
+msec
+nvhdr
+norid
+nevid
+nsamp
+nwfid
+nxsize
+nysize
+iftype
+idep
+iztype
+iinst
+istreg
+ievreg
+ievtyp
+iqual
+isynth
+imagtyp
+imagsrc
+leven
+lpspol
+lovrok
+lcalda
+kstnm
+kevnm
+khole
+k0
+ka
+kt0
+kt1
+kt2
+kt3
+kt4
+kt5
+kt6
+kt7
+kt8
+kt9
+kf
+knetwk
+kdatrd
+kinst
+}
