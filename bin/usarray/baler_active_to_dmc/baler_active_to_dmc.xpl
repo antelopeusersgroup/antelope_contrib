@@ -702,7 +702,16 @@ sub build_tmp_db { # ( $tmpdb, $comment, $dbsize, $prob ) = &build_tmp_db( $sta,
 #  Find directory range
 
     @dbblh      = dbsubset ( @dbtwf, "chan =~ /[BL]H[ZNE]/" ) ;
-    
+
+    if ( ! dbquery( @dbblh, "dbTABLE_PRESENT" ) ) {
+        elog_notify ( "$sta has no new data to process " ) ;
+        print PROB  "$sta has no new data to process\n" ;
+        dbclose ( @db ) ;
+        dbclose ( @dbtmp ) ;
+        &dbunlock ( $sta ) ;
+        return ( "", "", 0, $prob ) ;
+    }
+      
     @dbblh      = dbsort   ( @dbblh, "dir", "-u" ) ; 
     $dbblh[3]   = 0 ;
     $min_dir    = dbgetv ( @dbblh, "dir" ) ;
