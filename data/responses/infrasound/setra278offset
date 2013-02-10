@@ -1,0 +1,10 @@
+# This dummy response file is a kluge to fill in the 062 blockette in a seed volume
+#
+# valid_frequency_units:  B
+# lower_valid_frequency_bound: .001
+# upper_valid_frequency_bound: 10
+# lower_bound_of_approximation: 600
+# upper_bound_of_approximation: 1100
+# maximum_absolute_error: 25
+# coefficients: 800  0.00015
+   unknown   1 SEED062     poly    unknown

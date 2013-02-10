@@ -85,6 +85,7 @@ DATA= \
 	s6000.pf \
 	setra278.pf \
 	setra278HA.pf \
+	setra278offset.pf \
 	sh1.pf \
 	sm6-b.pf \
 	sts1_e.pf \
