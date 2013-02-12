@@ -1,0 +1,14 @@
+# pf file for check_q330pf_db 
+
+q3302orb_pfs &Tbl{			# list of q3302orb pf files to check, if empty only q3302orb.pf
+	q3302orb_1
+	q3302orb_2
+	q3302orb_prelim
+}
+
+subset		"snet=='XX'"		# default subset
+
+# only used with -l option
+maxlag		5			# number of days of no data before complaint 
+chansub		BHZ.*			# channel(s) for subset expression.  Only used for review of data lag
+

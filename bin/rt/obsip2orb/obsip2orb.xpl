@@ -94,7 +94,7 @@ our ( $opt_c, $opt_n, $opt_X, $opt_v) ;
     foreach $dbin (@ARGV) {
         @dbin 		= dbopen  ( $dbin, 'r' ) ;
         @dbwfdisc 	= dblookup( @dbin, 0, "wfdisc", 0, 0 ) ;
-        @dbwfdisc   = dbsubset( @dbwfdisc, "datatype =~ /sd|MS/" ) ;
+        @dbwfdisc   = dbsubset( @dbwfdisc, "datatype =~ /sd|MS/ && dfile !~ /-/ " ) ;
         @dbwfdisc   = dbsort  ( @dbwfdisc, "-u", "dir", "dfile" ) ;
         @dbwfdisc   = dbsort  ( @dbwfdisc, "sta","chan", "time" ) ;
         

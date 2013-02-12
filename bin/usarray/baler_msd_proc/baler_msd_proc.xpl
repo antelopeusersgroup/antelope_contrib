@@ -51,7 +51,7 @@
     use Digest::MD5 qw[md5_hex];
     
     our ( $pgm, $host );
-    our ( $opt_B, $opt_E, $opt_F, $opt_G, $opt_V, $opt_c, $opt_d, $opt_f, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v );
+    our ( $opt_B, $opt_E, $opt_F, $opt_G, $opt_V, $opt_X, $opt_c, $opt_d, $opt_f, $opt_m, $opt_n, $opt_p, $opt_s, $opt_v );
     our ( %pf );
     
 {    #  Main program
@@ -67,10 +67,10 @@
     elog_init( $pgm, @ARGV );
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &getopts('vVncdBEFGf:m:p:s:') || ( @ARGV != 1 && @ARGV != 4 ) ) { 
-        $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] [-c] [-d] [-F] [-B] [-E] [-G] " ;
+    if (  ! &getopts('vVncdBEFGXf:m:p:s:') || ( @ARGV != 1 && @ARGV != 4 ) ) { 
+        $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] [-c] [-d] [-F] [-B] [-E] [-G] [-X] " ;
         $usage .=  "[-p pf] [-m mail_to] [-f nforks] [-s sta_regex] db\n\n"  ;         
-        $usage .=  "Usage: $0  [-v] [-V] [-n] [-c] [-d] [-F] [-B] [-E] [-G] " ;
+        $usage .=  "Usage: $0  [-v] [-V] [-n] [-c] [-d] [-F] [-B] [-E] [-G] [-X] " ;
         $usage .=  "[-p pf] sta install_time removal_time parent_pid \n\n"  ;         
         elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
@@ -99,7 +99,8 @@
             $opt_v = 0 ;
             %pf = getparam( $Pf ) ;
             $opt_v = 1 ;
-        }        
+        }
+        fork_notify ( $parent, $cmd ) ;        
         &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $parent ) ;
         exit 0 ;
     }
@@ -111,8 +112,6 @@
     $stime = strydtime( now() ) ;
     elog_notify( "\nstarting execution on	$host	$stime\n\n" ) ;
     
-#     &md5_check () ;
-
     $db = $ARGV[0] ;
     
     %pf = getparam( $Pf ) ;
@@ -152,7 +151,10 @@
     
     STA: foreach $sta ( sort ( keys %proc_stas ) ) {
     
-        last if ( now() - $stime >  ( 3600 * $pf{limit_hours} ) ) ;  #  exit process if running more than 18 hours.
+        if ( now() - $stime >  ( 3600 * $pf{limit_hours} ) ) {  #  exit process if running more than limit_hours hours.
+            elog_notify "$pgm has exceeded the pf{limit_hours} of $pf{limit_hours}" ;
+            last;
+        }
 
 #
 # Verify how many procs we have running
@@ -209,6 +211,7 @@
             $cmd  .=  "-B " if $opt_B ;
             $cmd  .=  "-E " if $opt_E ;
             $cmd  .=  "-G " if $opt_G ;
+            $cmd  .=  "-X " if $opt_X ;
             $cmd  .=  "-p $opt_p " if $opt_p ;
             $cmd  .=  "$sta " ;
             $cmd  .=  sprintf("\" %s \" ", 
@@ -221,8 +224,7 @@
             }
             $cmd  .=  "$parent" ;
             
-            elog_debug ( "$cmd " ) if $opt_V ;
-            fork_debug ( $parent, "$cmd " ) if $opt_V ;
+            fork_debug ( $parent, "$cmd " ) ; # if $opt_V ;
                                     
             exec ( $cmd  ) ;
 
@@ -283,8 +285,9 @@
 
 sub get_stas { # ( $problems, %proc_stas ) = &get_stas( $db, $problems ) ;
     my ( $db, $problems ) = @_ ;
-    my ( $endtime, $endtime_null, $equip_install, $equip_remove, $equip_remove_null, $nrows, $row, $sta, $stas, $stas_b44, $subject ) ;
-    my ( @b44_stas, @db, @dbdeploy, @dbnull, @sta_deploy, @stas ) ;
+    my ( $endtime, $endtime_null, $equip_install, $equip_remove, $equip_remove_null ) ;
+    my ( $final_stas, $nrows, $row, $sta, $stas, $stas_b14, $stas_b44, $subject ) ;
+    my ( @b14_stas, @b44_stas, @db, @dbdeploy, @dbnull, @final_stas, @sta_deploy, @stas ) ;
     my ( %proc_stas ) ;
     
     @db       = dbopen( $db, "r" ) ;
@@ -322,25 +325,41 @@ sub get_stas { # ( $problems, %proc_stas ) = &get_stas( $db, $problems ) ;
     
     elog_debug( "dbdeploy stas - 	$stas" ) if $opt_V ;
 
+    opendir( DIR, $pf{baler_final} ) ;
+    @final_stas = sort ( grep { /^[A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]$/  } readdir(DIR) ) ;
+    closedir( DIR ) ;
+    
+    $final_stas = join( " ", @final_stas ) ;
+    elog_notify( "final_stas - 	$final_stas\n\n" ) if $opt_V ;
+    
+    opendir( DIR, $pf{baler14dirbase} ) ;
+    @b14_stas = sort ( grep { /^[A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]$/  } readdir(DIR) ) ;
+    closedir( DIR );
+
+    $stas_b14 = join( " ", @b14_stas ) ;
+    elog_notify( "b14_stas - 	$stas_b14\n\n" ) if $opt_V ;
+
     opendir( DIR, $pf{baler44dirbase} ) ;
     @b44_stas = sort ( grep { /^[A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]$/  } readdir(DIR) ) ;
-    closedir( DIR );
+    closedir( DIR ) ;
     
     $stas_b44 = join( " ", @b44_stas ) ;
     elog_notify( "b44_stas - 	$stas_b44\n\n" ) if $opt_V ;
     
-    @stas = grep ( /$stas/, @b44_stas ) ;
+    push ( @b44_stas, @b14_stas ) ; 
+    
+    @stas = sort( get_unique( grep ( /$stas/, @b44_stas ) ) )  ;
 
     elog_debug( "get_stas station subset is $opt_s" ) if $opt_V ;
-    @stas = grep ( /$opt_s/, @b44_stas ) if $opt_s ;
-    
+    @stas = grep ( /$opt_s/, @stas ) if $opt_s ;
+
     $stas = join( " ", @stas ) ;
     elog_notify( "stas     - 	$stas" ) ;
 
     if ( $#stas < 0 ) {
         $problems++ ;
         elog_complain( "\nProblem $problems" ) ;
-        elog_complain( "	No stations to process in $pf{baler44dirbase}!" ) ;
+        elog_complain( "	No stations to process!" ) ;
         $subject = "Problems - $pgm $host	$problems problems" ;
         &sendmail($subject, $opt_m) if $opt_m ; 
         elog_die("\n$subject") ;
@@ -349,7 +368,11 @@ sub get_stas { # ( $problems, %proc_stas ) = &get_stas( $db, $problems ) ;
     for ($row = 0; $row<$nrows; $row++) {
         $dbdeploy[3] = $row ;
         ( $sta, $equip_install, $equip_remove, $endtime )  = dbgetv ( @dbdeploy, qw ( sta equip_install equip_remove endtime ) ) ;
-        next unless grep ( /$sta/, @b44_stas ) ;
+        next unless grep ( /$sta/, @stas ) ;
+        if ( grep ( /$sta/, @final_stas ) ) {
+            elog_notify ( "$sta already completed and sent to DMC" ) ;
+            next ;
+        }
         if ( $equip_remove == $equip_remove_null && $endtime != $endtime_null )  {
             $equip_remove = $endtime ;
         }
@@ -469,7 +492,12 @@ sub proc_sta { # &proc_sta( $sta, $install_time, $removal_time, $parent ) ;
         return ;
     }
                 
-    $prob = &baler44_proc( $sta, str2epoch( $install_time ), str2epoch ( $removal_time ), $parent, $prob ) unless ( $prob );
+    if ( ! -d "$pf{baler44dirbase}/$sta" ) {
+        $string = "No directory $pf{baler44dirbase}/$sta.	Skipping baler 44 processing" ;
+        &fork_notify ( $parent, $string ) ;
+    } else { 
+        $prob = &baler44_proc( $sta, str2epoch( $install_time ), str2epoch ( $removal_time ), $parent, $prob ) unless ( $prob );
+    }
             
     close(PROB);
     
@@ -565,12 +593,12 @@ sub sta_db_check { # ( $dirname, $bh14name, $soh14name, $prob ) = &sta_db_check(
     $baler44dir = "$pf{baler44dirbase}\/$sta" ;
     $rsync      = "$pf{baler44dirbase}\/$sta/$sta\_baler.rsyncbaler" ;
     
-    if ( ! -d $baler44dir ) {
+    if ( ! -d $baler44dir && ! $opt_X ) {
         $prob++ ;
         &print_prob ( $prob, "Baler 44 directory $baler44dir does not exist", $parent, *PROB ) ;
     }
                         
-    if ( ! -e $rsync ) {
+    if ( ! -e $rsync && ! $opt_X  ) {
         $prob++ ;
         &print_prob ( $prob, "Baler 44 file $rsync does not exist!", $parent, *PROB ) ;
     }
@@ -580,7 +608,7 @@ sub sta_db_check { # ( $dirname, $bh14name, $soh14name, $prob ) = &sta_db_check(
 
 sub baler14_proc {  # $prob = &baler14_proc( $sta, $bh14name, $soh14name, $parent, $prob ) ;
     my ( $sta, $bh14name, $soh14name, $parent, $prob ) = @_ ;
-    my ( $mseedfile, $string ) ;
+    my ( $cmd, $mseedfile, $string ) ;
     my ( @mseedfilesbh, @mseedfilessoh ) ;
 
     $string = "starting baler14_proc" ;
@@ -592,12 +620,14 @@ sub baler14_proc {  # $prob = &baler14_proc( $sta, $bh14name, $soh14name, $paren
 #
 
     opendir( DIR, $bh14name ) ;
-    @mseedfilesbh = grep { /C.*\.bms.*/  } readdir( DIR ) ;
+    @mseedfilesbh = sort ( grep { /C.*\.bms.*/  } readdir( DIR ) ) ;
     closedir( DIR );
         
     if ( $#mseedfilesbh == -1 ) {
         $prob++ ;
-        &print_prob ( $prob, "no '.*bms.*' files in $bh14name!", $parent, *PROB ) ;
+        $string = "no '.*bms.*' files in $bh14name!" ;
+        fork_complain( $parent, $string ) ;
+        &print_prob ( $prob, $string, $parent, *PROB ) ;
         
     }
         
@@ -606,12 +636,14 @@ sub baler14_proc {  # $prob = &baler14_proc( $sta, $bh14name, $soh14name, $paren
 #
 
     opendir( DIR, $soh14name );
-    @mseedfilessoh = grep { /C.*\.bms.*/  } readdir( DIR );
+    @mseedfilessoh = sort ( grep { /C.*\.bms.*/  } readdir( DIR ) ) ;
     closedir( DIR );
                 
     if ($#mseedfilessoh == -1 ) {
         $prob++ ;
-        &print_prob ( $prob, "no '.*bms.*' files in $soh14name!", $parent, *PROB ) ;
+        $string = "no '.*bms.*' files in $soh14name!" ;
+        fork_complain( $parent, $string ) ;
+        &print_prob ( $prob, $string, $parent, *PROB ) ;
 
     }
 
@@ -625,33 +657,40 @@ sub baler14_proc {  # $prob = &baler14_proc( $sta, $bh14name, $soh14name, $paren
 #
 #  build station-channel-day seed files from baler final seismic miniseed directory  
 #
-        
-    foreach $mseedfile (@mseedfilesbh) {
-        $prob = msd2daysBL( $sta, $bh14name, $mseedfile, $parent, $prob ) ;
+    $string = "$prob problems before msd2daysBL" ;
+    fork_notify( $parent, $string ) ;
+
+    foreach $mseedfile ( @mseedfilesbh ) {
+        $prob = msd2daysBL( $sta, "$bh14name/$mseedfile", $parent, $prob ) ;
     }
 
+    $string = "$prob problems after msd2daysBL" ;
+    fork_notify( $parent, $string ) ;
 #
 #  build station-channel-month seed files from baler final soh, VH, UH miniseed directory  
 #
-    foreach $mseedfile (@mseedfilessoh) {
-        $prob = msd2daysSOH( $sta, $soh14name, $mseedfile, $parent, $prob ) ;
+    foreach $mseedfile ( @mseedfilessoh ) {
+        $prob = msd2daysSOH( $sta, "$soh14name/$mseedfile", $parent, $prob ) ;
     }
-
+    
+    $string = "$prob problems after msd2daysSOH" ;
+    fork_notify( $parent, $string ) ;
+    
     return( $prob );
 }
 
 sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, $parent, $prob );
     my ( $sta, $install_time, $removal_time, $parent, $prob ) = @_ ;
-    my ( $dbname, $go_to_next, $last_mseed, $maxtime, $mintime, $msd2days_prob, $mseed, $ncnt ) ;
-    my ( $nfiles, $ngap, $nrows, $nrows_to_proc, $nsize, $prob_check, $skip_ref, $string, $time, $unproc_ref ) ;
-    my ( @db, @dbbaler, @diff, @mseed, @mseed_test, @skip ) ;
-    my ( %msd_proc, %unproc ) ;
+    my ( $dbname, $delinquent, $delinquent_ref, $go_to_next, $last_mseed, $maxtime, $mintime ) ;
+    my ( $msd2days_prob, $mseed, $ncnt, $nfiles, $ngap, $nminutes, $nrows, $nrows_to_proc, $nsize ) ;
+    my ( $prob_check, $skip_ref, $string, $time, $unproc_ref ) ;
+    my ( @db, @dbbaler, @delinquent, @diff, @mseed, @mseed_proc, @skip ) ;
+    my ( %delinquent, %msd_proc, %unproc ) ;
     
 #
 #  Assumes that rsyncbaler table is correct and all msd files on baler are listed
 #
 #  Convert so all db and file checks are done in one subroutine.
-#  Remove last_good.
 #
     
     %msd_proc = () ;
@@ -661,18 +700,48 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     print PROB "$string \n\n" ;
             
     $prob_check = $prob ;
-    
+        
 #
 #  check rsyncbaler table is correct, returns @dbbalerd which has all mseed files to process 
 #
     elog_debug ( sprintf ( "starting dnld_check		%s" , strydtime ( now () ) ) ) if $opt_V ;
-
-    ( $nrows_to_proc, $ngap, $prob, $unproc_ref, $skip_ref ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
     
-    %unproc = %$unproc_ref ;
-    @skip   = @$skip_ref ;
+    $dbname = "$pf{baler44dirbase}\/$sta/$sta\_baler" ;
+
+    $nminutes = 0 ;
+    while ( &dblock ( $dbname, ( 6 * 3600 ) ) ) {
+        if ( $nminutes > 60 ) {
+            $string  = sprintf( "		$dbname locked for more that 1 hour, cannot process now "  )  ;
+            fork_complain ( $parent,  $string  ) ;
+            $prob++ ;
+            return ( $prob ) ;
+        }
+        $string = "$dbname is locked!  baler44_proc now sleeping" ;
+        fork_notify ( $parent, $string ) ;
+        sleep 60 ; 
+        $nminutes++ ;
+    }
+
+    ( $nrows_to_proc, $ngap, $prob, $unproc_ref, $skip_ref, $delinquent_ref ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
+
+# 
+#  %unproc is a hash with the primary key being the name of the mseed file to process
+#
+    %unproc      = %$unproc_ref ;
+# 
+#  @skip is an array consisting of a list of mseed files which have not been downloaded and 
+#        are being marked to leave off future processing because the -F or -G option was used
+#
+    @skip         = @$skip_ref ;
+        
+# 
+#  @delinquent is an array consisting of a list of mseed files which were downloaded very late 
+#        and will not be processed since downstream processing has already occurred.
+#
+    @delinquent   = @$delinquent_ref ;
         
     if ( $prob_check != $prob || $opt_c ) {
+        &dbunlock ( $dbname ) ;
         $string =  " "  ;
         fork_complain ( $parent, $string ) ;
         $string =  sprintf( "%6d problems and %6d gaps after dnld_check, skipping processing", $prob, $ngap )  ;
@@ -688,6 +757,7 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     elog_debug ( "dnld_check return		nrows_to_proc	$nrows_to_proc	ngap	$ngap	prob	$prob" ) if $opt_V ;
     
     if ( $nrows_to_proc == 0 ) {
+        &dbunlock ( $dbname ) ;
         $string =  sprintf( "%6d baler44 files to process", $nrows_to_proc )  ;
         fork_notify ( $parent, $string ) ;
         print PROB "\n$string \n" ;
@@ -695,14 +765,34 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     }
 
     elog_debug ( sprintf ( "completed dnld_check		%s" , strydtime ( now () ) ) ) if $opt_V ;
+
+#
+#  make list of downloaded mseed files which have not been processed
+#
+
+    @mseed      = sort keys %unproc ;
+    
+    %delinquent = () ;
+    @mseed_proc = () ;
+    
+    foreach $delinquent ( @delinquent ) { $delinquent{ $delinquent } = 1 } ;
+    
+    fork_debug (  $parent, "delinquent	@delinquent" ) if $opt_V ;
+    
+    foreach $mseed ( @mseed ) {
+        unless ( $delinquent{ $mseed } ) {
+            push ( @mseed_proc, $mseed ) ;
+        }
+    }
+
+    fork_debug (  $parent, "mseed_proc	@mseed_proc" ) if $opt_V ;
+    
     
 #
 #  loop over all downloaded mseed files which have not been processed
 #
-    
-    @mseed_test = sort keys %unproc ;
-        
-    foreach $mseed ( @mseed_test ) {
+            
+    foreach $mseed ( @mseed_proc ) {
     
 #
 #  skip files with wrong sta code in mseed
@@ -713,7 +803,7 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
             next ;
         }
 #
-#  run msdd on mseed file to get a listing of the contents
+#  run msdd on mseed file to get a listing of the contents, skip files that fail msdd
 #
         
         ( $time, $go_to_next, $prob ) = &msdd( $sta, $unproc{ $mseed }{ dfile_full }, $parent, $prob ) ;
@@ -729,10 +819,10 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     }
     
     if ( $prob_check != $prob ) {
+        &dbunlock ( $dbname ) ;
         $string =  sprintf( "%5d problems after mseedcheck and msdd loop, skipping processing", $prob )  ;
         fork_notify ( $parent, $string ) ;
-        print PROB "\n$string \n" ;
-    
+        print PROB "\n$string \n" ;    
         return( $prob );    
     }
         
@@ -748,11 +838,11 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
 
     @mseed = sort { $msd_proc{$a}{time} <=> $msd_proc{$b}{time} } keys %msd_proc ;
     
-    @diff       = sym_diff ( \@mseed, \@mseed_test ) ;
+    @diff       = sym_diff ( \@mseed, \@mseed_proc ) ;
     
-    elog_debug  ( "mseed      test    $#mseed    $mseed[0]    $mseed[$#mseed] " ) if $opt_V ;
-    elog_debug  ( "mseed_test test    $#mseed_test    $mseed_test[0]    $mseed_test[$#mseed_test] " ) if $opt_V ;
-    elog_debug  ( "diff    $#diff    @diff " ) if $opt_V ;
+    fork_debug (  $parent, "mseed      test    $#mseed    $mseed[0]    $mseed[$#mseed] " ) if $opt_V ;
+    fork_debug (  $parent, "mseed_proc test    $#mseed_proc    $mseed_proc[0]    $mseed_proc[$#mseed_proc] " ) if $opt_V ;
+    fork_debug (  $parent, "diff    $#diff    @diff " ) if $opt_V ;
     
     prettyprint( \@mseed ) if $opt_V ; 
     
@@ -761,9 +851,9 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
 #
     if ( -e "$sta.wfdisc" ) {
         ( $mintime, $maxtime, $prob ) = &sta_time_check( $sta, $parent, $prob ) ;
-        fork_notify ( $parent, sprintf( "	$sta.wfdisc already exists; baler_wf_proc has been run before" ) )  ;
-        fork_notify ( $parent, sprintf( "	Baler wfdisc range  %s    %s", strydtime( $mintime ), strydtime( $maxtime ) ) )  ;
-        fork_notify ( $parent, sprintf( "	Baler mseed new     %s    %d", strydtime( $msd_proc{$mseed[0]}{time} ), $nrows ) )  ;
+        fork_notify ( $parent, sprintf( "	$sta.wfdisc already exists; baler_wf_proc has been run before" ) ) if $opt_v ;
+        fork_notify ( $parent, sprintf( "	Baler wfdisc range  %s    %s", strydtime( $mintime ), strydtime( $maxtime ) ) ) if $opt_v ;
+        fork_notify ( $parent, sprintf( "	Baler mseed new     %s    %d", strydtime( $msd_proc{$mseed[0]}{time} ), $nrows ) ) if $opt_v ;
         if ( $msd_proc{$mseed[0]}{time} < $maxtime && $msd_proc{$mseed[0]}{time} > epoch(2004001)  ) {
             $prob++ ;
             &print_prob ( $prob, "New baler download data starts before last processed data - Should be after", $parent, *PROB ) ;
@@ -777,11 +867,12 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
         }
     } 
 
-    fork_debug   ( $parent, "prob_check	$prob_check	problems	$prob	ngap	$ngap" ) ; # if $opt_V ;
+    fork_debug   ( $parent, "prob_check	$prob_check	problems	$prob	ngap	$ngap" ) if $opt_V ;
 
     elog_debug ( "pre-skip	$prob	$nfiles	$last_mseed" ) if $opt_V ;
 
     if ( $prob_check != $prob ) {  
+        &dbunlock ( $dbname ) ;
         $string = "Skipping Baler 44 processing, going to next station" ;
         fork_complain ( $parent, $string ) ;
         print PROB "\n$string \n\n" ;        
@@ -838,8 +929,6 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     
     elog_debug ( sprintf ( "completed miniseed2days loop	%s" , strydtime ( now () ) ) ) if $opt_V ;
     
-    $dbname = "$pf{baler44dirbase}\/$sta/$sta\_baler" ;
-    
     @db       = dbopen  ( $dbname, 'r+' );
     @dbbaler  = dblookup( @db, 0, "rsyncbaler", 0, 0) ;
     
@@ -853,11 +942,20 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     foreach $mseed ( @skip ) {
         $dbbaler[3] = dbfind ( @dbbaler, "dfile =~ /$mseed/", -1 ) ;
         dbputv( @dbbaler, "msdtime", now(), "status", "skipped" ) if ( ! $opt_n  ) ;
-        $string = "	$mseed    skipped";
+        $string = "	$mseed    skipped for -F or -G" ;
+        fork_notify ( $parent, $string ) if ( $opt_n || $opt_v ) ;
+    }
+    
+    foreach $mseed ( @delinquent ) {
+        $dbbaler[3] = dbfind ( @dbbaler, "dfile =~ /$mseed/", -1 ) ;
+        dbputv( @dbbaler, "msdtime", now(), "status", "skipped" ) if ( ! $opt_n  ) ;
+        $string = "	$mseed    skipped because too delinquent" ;
         fork_notify ( $parent, $string ) if ( $opt_n || $opt_v ) ;
     }
     
     dbclose( @db );  
+    
+    &dbunlock ( $dbname ) ;
 
     elog_debug ( sprintf ( "completed db update	%s" , strydtime ( now () ) ) ) if $opt_V ;
 
@@ -880,35 +978,34 @@ sub baler44_proc { # $prob = &baler44_proc( $sta, $install_time, $removal_time, 
     $string =  sprintf( "%5d baler44 files not processed", $nrows_to_proc - $ncnt )  ;
     fork_notify ( $parent, $string ) ;
     print PROB "\n$string \n" ;
-
-    
+   
     elog_debug ( sprintf ( "completed miniseed2days loop	%s" , strydtime ( now () ) ) ) if $opt_V ;
         
     elog_debug ( sprintf ( "completed baler44_proc loop	%s" , strydtime ( now () ) ) ) if $opt_V ;
-    
     
     return( $prob );
 
 }
 
-sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
+sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip, \@delinquent ) = &dnld_check( $sta, $install_time, $removal_time, $parent, $prob ) ;
     my ( $sta, $install_time, $removal_time, $parent, $prob ) = @_ ;
-    my ( $alreadyproc, $dbname, $dfile, $dfile_full ) ;
-    my ( $filebytes, $last_proc, $md5, $media, $msdtime, $ndfiles, $ndown, $next_proc, $ngap ) ;
-    my ( $ngap_at_start, $nmiss, $nproc, $nrows, $nrows_to_proc, $nzfiles, $prob_check, $string, $time_since_removal ) ;
-    my ( @db, @dbbaler, @dbbaler_unique, @dbbalerd, @dbbalerdn, @dbbalerz, @mseed, @skip, @t1, @t2, @tmp ) ;
+    my ( $alreadyproc, $dbname, $dfile, $dfile_full, $filebytes, $last_proc, $md5, $media ) ;
+    my ( $msdtime, $ndelinquent, $ndfiles, $ndown, $ndownld, $next_proc, $ngap ) ;
+    my ( $ngap_at_start, $nmiss, $nproc, $nrows, $nrows_to_proc, $nskipped, $nzfiles ) ;
+    my ( $prob_check, $string, $time_since_removal ) ;
+    my ( @db, @dbbaler, @dbbaler_unique, @dbbalerd, @dbbalerdn, @dbbalerdsk, @dbbalerz ) ;
+    my ( @delinquent, @mseed, @skip, @t1, @t2, @tmp ) ;
     my ( %dfile_unique, %dfile_unprocessed ) ;
 
 #
 #  Assumes that rsyncbaler table is correct and all msd files on baler are listed
 #
-#  Convert so all db and file checks are done in one subroutine.
-#  Remove last_good.
 #
 
     %dfile_unique      = () ;
     %dfile_unprocessed = () ;
     @skip              = () ;
+    @delinquent        = () ;
 
     $dbname = "$pf{baler44dirbase}\/$sta/$sta\_baler" ;
     
@@ -918,26 +1015,23 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
          
     $time_since_removal  =  ( now() - $removal_time ) ;
     
-    if  ( ( $time_since_removal / 86400 ) > $pf{time_since_removal} ) {
+    if  ( ( $time_since_removal / 86400. ) > $pf{days_after_removal} ) {
         $opt_F = 1 ;
         $string = sprintf ( "	time since removal is %s, more than the limit of %d days ago", strtdelta($time_since_removal), $pf{days_after_removal} )  ;
         fork_notify ( $parent, $string ) ;
-        $string  = sprintf( "		will process through all missidbe ng data ( ie setting -F option ) "  )  ;
+        $string  = sprintf( "		will process through all missing data ( ie setting -F option ) "  )  ;
         fork_notify ( $parent,  $string  ) ;
     }
             
 #
 #  open database
 #
+
     @db       = dbopen  ( $dbname, 'r' );
     @dbbaler  = dblookup( @db, 0, "rsyncbaler", 0, 0) ;
     $nrows    = dbquery ( @dbbaler, "dbRECORD_COUNT" ) ;
 
     fork_debug   ( $parent, "$nrows in rsyncbaler") if $opt_V ;
-
-#     $string    = "starting  dnld_check" ;
-#     fork_notify ( $parent, $string ) if $opt_v ;
-#     print PROB "$string \n" ;
     
     $prob_check = $prob ;
     
@@ -948,8 +1042,8 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
     ( $prob, @dbbaler_unique ) = unique_dfiles( $prob, $parent, @dbbaler ) ;
     
     if ( $prob_check != $prob ) {
-        dbclose ( @db ) ;
-        return ( 0, 0, $prob, \%dfile_unprocessed, \@skip  ) ;
+        dbclose ( @db ) ;            
+        return ( 0, 0, $prob, \%dfile_unprocessed, \@skip, \@delinquent   ) ;
     }
     
     for ( $dbbaler_unique[3] = 0 ; $dbbaler_unique[3] < dbquery(  @dbbaler_unique, "dbRECORD_COUNT" ) ; $dbbaler_unique[3]++ ) {
@@ -963,24 +1057,45 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
             next;
         }
 
-#         $string  = sprintf( "%s	%d	%d", $dfile, $#t1, $#t2 )  ;
-#         fork_notify ( $parent,  $string  ) ;
         $dfile_unique{ $dfile }{ time }  = &mseedtime ( $dfile, $parent ) ;
     }
     
 #
-#  find downloaded mseed files in rsyncbaler table, build hash of downloaded mseed file names
+#  find downloaded mseed files in rsyncbaler table, update hash of unique mseed file names
 #
 
     ( $prob, @dbbalerd ) = downloaded_mseed( $prob, $parent, @dbbaler ) ;
 
-    for ( $dbbalerd[3] = 0 ; $dbbalerd[3] < dbquery(  @dbbalerd, "dbRECORD_COUNT" ) ; $dbbalerd[3]++ ) {
+    $ndownld    = dbquery(  @dbbalerd, "dbRECORD_COUNT" ) ;
+
+    for ( $dbbalerd[3] = 0 ; $dbbalerd[3] < $ndownld ; $dbbalerd[3]++ ) {
         ( $dfile, $filebytes, $msdtime )        = dbgetv  ( @dbbalerd, qw ( dfile filebytes msdtime ) ) ;
         next if ( length ( $dfile ) != 24 ) ;
         @t1 = split /-/, $dfile ;
         @t2 = split /_/, $t1[1] ;
         next if ( $#t1 != 2 || $#t2 != 1 ) ;
-        $dfile_unique{ $dfile }{ downloaded }   = 1 ;
+        $dfile_unique{ $dfile }{ status }   = "downloaded" ;
+        $dfile_unique{ $dfile }{ filebytes }    = $filebytes ;
+        if ( $msdtime > 0 ) {
+            $dfile_unique{ $dfile }{ msdtime }  = $msdtime ;
+        }
+    }
+    
+#
+#  find skipped mseed files in rsyncbaler table, update hash of unique mseed file names
+#
+
+    ( $prob, @dbbalerdsk ) = skipped_mseed( $prob, $parent, @dbbaler ) ;
+    
+    $nskipped  = dbquery(  @dbbalerdsk, "dbRECORD_COUNT" ) ;
+            
+    for ( $dbbalerdsk[3] = 0 ; $dbbalerdsk[3] < $nskipped ; $dbbalerdsk[3]++ ) {
+        ( $dfile, $filebytes, $msdtime )        = dbgetv  ( @dbbalerdsk, qw ( dfile filebytes msdtime ) ) ;
+        next if ( length ( $dfile ) != 24 ) ;
+        @t1 = split /-/, $dfile ;
+        @t2 = split /_/, $t1[1] ;
+        next if ( $#t1 != 2 || $#t2 != 1 ) ;
+        $dfile_unique{ $dfile }{ status }      = "skipped" ;
         $dfile_unique{ $dfile }{ filebytes }    = $filebytes ;
         if ( $msdtime > 0 ) {
             $dfile_unique{ $dfile }{ msdtime }  = $msdtime ;
@@ -1000,8 +1115,8 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
     ( $prob, $nrows_to_proc, @dbbalerdn ) = downloaded_for_proc ( $prob, $parent, @dbbaler ) ;
     
     if ( $nrows_to_proc == 0 ) {
-        dbclose ( @db ) ;
-        return ( $nrows_to_proc, 0, $prob, \%dfile_unprocessed, \@skip  ) ;
+        dbclose ( @db ) ;            
+        return ( $nrows_to_proc, 0, $prob, \%dfile_unprocessed, \@skip, \@delinquent  ) ;
     }
 
     for ( $dbbalerdn[3] = 0 ; $dbbalerdn[3] < dbquery(  @dbbalerdn, "dbRECORD_COUNT" ) ; $dbbalerdn[3]++ ) {
@@ -1029,8 +1144,8 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
     $nrows_to_proc = keys ( %dfile_unprocessed ) ; 
 
     if ( $nrows_to_proc == 0 ) {
-        dbclose ( @db ) ;
-        return ( $nrows_to_proc, 0, $prob, \%dfile_unprocessed, \@skip  ) ;
+        dbclose ( @db ) ;            
+        return ( $nrows_to_proc, 0, $prob, \%dfile_unprocessed, \@skip, \@delinquent  ) ;
     }
     
     @mseed        = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
@@ -1051,12 +1166,8 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
 #  Check for delinquent files which have now magically appeared
 #
 
-        ( $prob, $alreadyproc ) = &delinquent_files( \%dfile_unique, \%dfile_unprocessed, $parent, $prob ) ;
-    
-        if ( $alreadyproc > 0 ) {
-            dbclose ( @db ) ;
-            return ( $nrows_to_proc, -1, $prob, \%dfile_unprocessed, \@skip  ) ;
-        }
+        ( $prob, $nrows_to_proc, $next_proc, $alreadyproc, $ndelinquent, @delinquent ) = &delinquent_files( $sta, \%dfile_unique, \%dfile_unprocessed, $parent, $prob ) ;
+
 #
 #  see if there are missing mseed files between previously processed files and unprocessed files
 #
@@ -1066,13 +1177,13 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
     
         $nmiss = 0 ; 
     
-        if ( $nproc > 0 ) {
+        if ( $nrows_to_proc > 0 ) {
             ( $nmiss, $ngap_at_start, $prob, @tmp ) = &missing_files_since_last_proc( $sta, $last_proc, $next_proc, $ngap_at_start, \%dfile_unique, $parent, $prob ) ;
             push ( @skip, @tmp ) ;
     
             if ( $ngap_at_start ) {
-                dbclose ( @db ) ;
-                return ( $nrows_to_proc, $ngap_at_start, $prob, \%dfile_unprocessed, \@skip  ) ;
+                dbclose ( @db ) ;            
+                return ( $nrows_to_proc, $ngap_at_start, $prob, \%dfile_unprocessed, \@skip, \@delinquent  ) ;
             }
         }
 	}	
@@ -1093,13 +1204,13 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
 #  look for missing files based on the list of files to process
 #
 
-    ( $nmiss, $ngap, $prob, @tmp ) = &find_missing_files( $nmiss, \%dfile_unique, \%dfile_unprocessed, $parent, $prob ) unless $prob ;
+    ( $nmiss, $ngap, $prob, @tmp ) = &find_missing_files( $nmiss, \%dfile_unique, \@delinquent, $parent, $prob ) unless $prob ;
     
     push ( @skip, @tmp ) ;
     
     if ( $prob_check != $prob ) {
-        dbclose ( @db ) ;
-        return ( $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip ) ;
+        dbclose ( @db ) ;            
+        return ( $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip, \@delinquent ) ;
     }
 
 #
@@ -1107,7 +1218,7 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
 #  look for unusually long times between adjacent mseed files
 #
 
-    ( $prob ) = &check_time_between_files( $sta, \%dfile_unprocessed, $parent, $prob ) ;
+    ( $prob ) = &check_time_between_files( $sta, \%dfile_unprocessed, \@delinquent, $parent, $prob ) unless ( $ndelinquent ) ;
         
 #
 #  find number of zero length files
@@ -1130,7 +1241,8 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip 
         print PROB "$string \n\n" ;
     }
     dbclose ( @db ) ;
-    return ( $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip  ) ;
+    
+    return ( $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip, \@delinquent  ) ;
 }
 
 sub mseedtime { # ( $mseedtime ) = &mseedtime( $mseed, $parent ) ;
@@ -1420,7 +1532,7 @@ sub msd2daysBL { # $prob = &msd2daysBL( $sta, $mseedfile, $parent, $prob ) ;
     my ( $sta, $mseedfile, $parent, $prob ) = @_ ;
     my ( $cmd, $error_code, $full_buf, $stderr_buf, $stdout_buf ) ;
     
-    fork_debug   ( $parent, "starting msd2daysBL" ) if $opt_V ;
+    fork_debug   ( $parent, "starting msd2daysBL $sta, $mseedfile, $parent, $prob" ) if $opt_V ;
 
     return ( $prob ) if ( $opt_n && ! $opt_V ) ;
 
@@ -1429,6 +1541,7 @@ sub msd2daysBL { # $prob = &msd2daysBL( $sta, $mseedfile, $parent, $prob ) ;
 
     if ( ! &run_cmd( $cmd ) ) {
         $prob++ ;
+        &fork_complain ( $parent, "FAILED: $cmd" ) ;
         &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
     }
         
@@ -1448,6 +1561,7 @@ sub msd2daysSOH { # $prob = &msd2daysSOH( $sta, $mseedfile, $parent, $prob ) ;
     
     if ( ! &run_cmd( $cmd ) ) {
         $prob++ ;
+        &fork_complain ( $parent, "FAILED: $cmd" ) ;
         &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
     }
             
@@ -1627,8 +1741,6 @@ sub downloaded_mseed { # ( $prob, @dbbalerdu ) = downloaded_mseed( $prob, $paren
 
     $string = sprintf ( "%6d rsyncbaler dfiles with status =~ /downloaded/ ", $ndown ) ;
     fork_notify ( $parent, "$string" ) ; # if $opt_v ;
-    print PROB "$string \n" ;
-    elog_debug ( $string ) if $opt_V ;
     
     @dbbalerdu = dbsort  ( @dbbalerd, "-u", "dfile" ) ;
     $ndownu    = dbquery ( @dbbalerdu, "dbRECORD_COUNT" );
@@ -1655,6 +1767,28 @@ sub downloaded_mseed { # ( $prob, @dbbalerdu ) = downloaded_mseed( $prob, $paren
     dbfree ( @dbbalerd ) ;
 
     return ( $prob, @dbbalerdu ) ;
+}
+
+sub skipped_mseed { # ( $prob, @dbbalerdsk ) = skipped_mseed( $prob, $parent, @dbbaler ) ;
+    my ( $prob, $parent, @dbbaler ) = @_ ;
+    my ( $dfile, $dfile_check, $ndown, $ndownu, $string ) ;
+    my ( @dbbalerd, @dbbalerdsk ) ;
+#
+#  find skipped mseed files
+#
+
+    @dbbalerd   = dbsubset( @dbbaler, "status =~ /skipped/ ") ;
+    $ndown      = dbquery ( @dbbalerd, "dbRECORD_COUNT" ) ;
+
+    $string     = sprintf ( "%6d rsyncbaler dfiles with status =~ /skipped/ ", $ndown ) ;
+    fork_notify ( $parent, "$string" ) ; # if $opt_v ;
+    
+    @dbbalerdsk = dbsort  ( @dbbalerd, "-u", "dfile" ) ;
+    $ndownu     = dbquery ( @dbbalerdsk, "dbRECORD_COUNT" );
+     
+    dbfree ( @dbbalerd ) ;
+
+    return ( $prob, @dbbalerdsk ) ;
 }
 
 sub proc_prev { # ( $prob, $nproc, $last_proc ) = proc_prev ( $prob, $parent, \%dfile_unique ) ;
@@ -1703,8 +1837,6 @@ sub downloaded_for_proc { # ( $prob, $nrows_to_proc, @dbbalerdn ) = downloaded_f
 
     $string            = sprintf ( "%6d rsyncbaler dfiles with status =~ /downloaded/  && msdtime == NULL", $nrows_to_proc ) ;
     fork_notify ( $parent, $string ) ; # if $opt_v ;
-    print PROB "$string \n\n" ;
-    elog_debug ( $string ) if $opt_V ;
 
 #
 #  list common md5 errors in downloaded mseed files which have not been processed
@@ -1937,7 +2069,7 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
     
     fork_notify (  $parent, "starting missing files since last processed check" ) ;
     fork_notify (  $parent, "	previously processed file is    $mseed1" ) ;
-    fork_debug  (  $parent, "missing_files_since_last_proc ( $mseed1, $mseed2, $ngap, \%dfile_unique, $parent, $prob)" ) if $opt_V ;
+    fork_debug  (  $parent, "missing_files_since_last_proc ( $sta, $mseed1, $mseed2, $ngap, \%dfile_unique, $parent, $prob)" ) if $opt_V ;
 
     %dfile_unique  = %$refd ;     # downloaded mseed files
     
@@ -1963,7 +2095,7 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
         foreach $row ( ( $row_1 + 1 )..( $row_2 - 1 ) ) {
             fork_debug   ( $parent, "row  $row" ) if $opt_V ;
             fork_debug   ( $parent, "dfile  $mseed[$row]" ) if $opt_V ;
-            if ( ! exists $dfile_unique{$mseed[$row]}{downloaded} ) {
+            if ( $dfile_unique{$mseed[$row]}{status} =~ /downloaded/ ) {
                 $onbaler++ ;
                 next ;
             }
@@ -1979,7 +2111,7 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
             &print_prob ( $prob, $string, $parent, *PROB ) unless ( $opt_F || $opt_G ) ;
                         
             foreach $row ( ( $row_1 + 1 )..( $row_2 - 1 ) ) {                
-                if ( ! exists $dfile_unique{ $mseed[$row] }{ downloaded } ) {
+                if ( $dfile_unique{$mseed[$row]}{status} =~ /downloaded/ ) {
                     $string  =  "	$mseed[$row]    is still on baler"  ;
                     push ( @skip, $mseed[$row] ) if ( $opt_F || $opt_G ) ;
                     &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
@@ -2034,7 +2166,6 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
             @dbrt  = dblookup ( @dbrt, , 0, "wfdisc", 0, 0 ) ;
             @dbrt  = dbsubset ( @dbrt, "chan =~ /BHZ/ " ) ;
         }
-
         
         if ( $mseed_offset > $pf{max_mseed_hours} * 3600 ) {
             if ( $rt ) { 
@@ -2043,7 +2174,7 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
                 $actual_time = 0 ;
             }
             
-            $string =  sprintf( "	%s between %s      and    %s,     should be ~4 hours", strtdelta( $mseed_offset ), $mseed[ $mseed - 1 ],  $mseed[ $mseed ] )  ;
+            $string =  sprintf( "	%s between %s      and    %s,     should be ~4 hours", strtdelta( $mseed_offset ), $msd1,  $msd2 )  ;
             
             $string1 =  sprintf( "	%s between %s and    %s of rt BHZ data exists", strtdelta( $actual_time ), 
                        strydtime ( &mseedtime( $msd1, $parent ) ) , strydtime ( &mseedtime( $msd2, $parent ) )  )  ;
@@ -2075,119 +2206,97 @@ sub missing_files_since_last_proc { # ( $nmiss, $ngap, $prob, @skip ) = &missing
     return ( $nmiss, $ngap, $prob, @skip ) ;
 }
 
-sub find_missing_files { # ( $nmiss, $ngap, $prob, @skip ) = &find_missing_files( $nmiss, \%dfile_unique, \%dfile_unprocessed, $parent, $prob ) ;
-    my ( $nmiss, $refu, $refc, $parent, $prob ) = @_ ;
-    my ( $last_good, $last_proc, $mseed1, $mseed2, $next_proc, $ngap, $nrows_to_proc, $onbaler, $shift, $string, $tmp_gap, $unproc ) ;
-    my ( @skip, @unique, @unprocessed ) ;
-    my ( %dfile_unique, %dfile_unprocessed ) ;
-    
+sub find_missing_files { # ( $nmiss, $ngap, $prob, @skip ) = &find_missing_files( $nmiss, \%dfile_unique, \@delinquent, $parent, $prob ) ;
+    my ( $nmiss, $refu, $refd, $parent, $prob ) = @_ ;
+    my ( $gap_test, $ngap, $nrows_to_proc, $string, $unique ) ;
+    my ( @skip, @unique ) ;
+    my ( %dfile_unique ) ;
+        
     fork_notify (  $parent, "starting missing file check" ) ;
     fork_debug (  $parent, "find_missing_files ( $nmiss, \%dfile_unique, \%dfile_unprocessed, $parent, $prob )" ) if $opt_V ;
 
     %dfile_unique       = %$refu ;     # unique mseed files
-    %dfile_unprocessed  = %$refc ;     # unprocessed mseed files
          
     @unique        = sort { $dfile_unique{$a}{time} <=> $dfile_unique{$b}{time} } keys %dfile_unique ;
-    @unprocessed   = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
-    
-    until ( $unique[0] =~ /$unprocessed[0]/ ) {
-        shift @unique ;
-    }
 
-    fork_debug   ( $parent, "first unprocessed file is $unique[0]	$unprocessed[0] " ) if $opt_V ;
-    
+    $gap_test      = 0 ;
     $nrows_to_proc = 0 ;
+    $nmiss         = 0 ;
     $ngap          = 0 ;
-    $last_good     = "" ;
     @skip          = () ;
     
-    foreach $unproc ( @unprocessed ) {
-        last if ( $unproc =~ /$unprocessed[$#unprocessed]/ ) ;
-        
-        fork_debug   ( $parent, "unprocessed file is $unproc	$unprocessed[$#unprocessed] " )  if $opt_V ;
-        $shift     = 0 ;
-        $tmp_gap   = 0 ;
-        $nmiss     = 0 ;
-        $onbaler   = 0 ;
-        $last_proc = $unique[0] ;
-        $next_proc = $unique[1] ;
-                
-        until ( $unique[0] =~ /$unproc/ ) {
-            shift @unique ;
-            
-            fork_debug   ( $parent, "$unique[0]	$unproc	shift $shift" ) if $opt_V ;
-            
-            if ( $shift == 1 ) {
-                $string  =  "	$next_proc    is still on baler"  ;
-                &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-                print PROB "$string \n" ;
-                push ( @skip, $next_proc ) if ( $opt_F || $opt_G ) ;
-                $onbaler++ ;
-            }
-            
-            last if ( $unique[0] =~ /$unproc/ ) ;
-            
-            $shift++ ;
-            
-            if ( $shift > 1 ) {
-                $string  =  "	$unique[0]    is still on baler"  ;
-                &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-                print PROB "$string \n" ;
-                push ( @skip, $unique[0] ) if ( $opt_F || $opt_G ) ;
-                $onbaler++ ;
-            }
-        }
-        
-        fork_debug   ( $parent, "$unique[0]	$unproc	shift $shift" ) if ( $shift > 1 && $opt_V ) ;
+#
+#  process all unique files
+#      all files with msdtimes are completed
+#      all files with NULL msdtimes and status downladed can be processed
+#      all files with status skipped are ignored
+#      all files with status !~ /downloaded|skipped/ are flagged and no processing allowed
+#          unless $opt_F or $opt_G
 
-        if ( $shift > 0 ) {
-            $nmiss += $shift ;
-            $tmp_gap++ ;
-            $prob++ unless ( $opt_F || $opt_G ) ;
-            
-            $string =  sprintf( "	Number of files expected                   - %d", $nmiss )  ;
-            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-            print PROB "$string \n" ;
-            $string =  sprintf( "	Number of files on baler                   - %d", $onbaler )  ;
-            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-            print PROB "$string \n" ;
-        } elsif ( ! $last_good ) {
-            $nrows_to_proc++ ;
+    
+    foreach $unique (  @unique ) {
+
+        if ( $dfile_unique{ $unique }{status} =~ /skipped/ ) {
+            fork_notify   ( $parent, "	$unique flagged as skipped" ) if $opt_v ;
+            next ;            
         }
         
-        unless ( $opt_F || $opt_G ) {
-            $ngap     += $tmp_gap ;
-            $last_good = $last_proc if ( $ngap == 1 && ! $last_good ) ;
+        if ( exists $dfile_unique{ $unique }{ msdtime } ) {
+            fork_debug   ( $parent, "	$unique already processed" ) if $opt_V ;
+            next ;
+        }
+        
+        if ( $dfile_unique{ $unique }{status} =~ /downloaded/ ) {
+            $nrows_to_proc++ ;
+            if ( $gap_test ) {
+                $ngap++ ;
+                $prob++ unless ( $opt_F || $opt_G ) ;
+            }
+            $gap_test      = 0 ;
+            fork_debug   ( $parent, "	$unique downloaded" ) if $opt_V ;
+            next ;
+            
+        } else {
+            $nmiss++ ;
+            $gap_test = 1 ;
+            $string  =  "	$unique    has not been recovered"  ;
+            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
+            print PROB "$string \n" ;
+            push ( @skip, $unique ) if ( $opt_F || $opt_G ) ;
         }
     }
     
     if ( $ngap > 0 ) {
-        $string = " " ;
-        fork_notify ( $parent, $string ) if $opt_v ;
-        $string = "last dfile to process	$last_good " ;
-        fork_notify ( $parent, $string ) if $opt_v ;
-        print PROB "$string \n\n" ;
-
-        $string = "$nrows_to_proc rsyncbaler dfiles with status =~ /downloaded/  && msdtime == NULL before first missing file" ;
-        fork_notify ( $parent, $string ) if $opt_v ;
-        print PROB "$string \n\n" ;
-    }    
+            $string =  sprintf( "	Number of files expected                   - %5d", $nmiss + $nrows_to_proc )  ;
+            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
+            print PROB "$string \n" ;
+            $string =  sprintf( "	Number of files ready for processing       - %5d", $nrows_to_proc )  ;
+            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
+            print PROB "$string \n" ;
+            $string =  sprintf( "	Number of files not recovered              - %5d", $nmiss )  ;
+            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
+            print PROB "$string \n" ;
+            $string =  sprintf( "	Number of gaps of missing data             - %5d", $ngap )  ;
+            &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
+            print PROB "$string \n" ;
+    }
+    
     
     return ( $nmiss, $ngap, $prob, @skip ) ;
 }
 
-sub delinquent_files { # ( $prob, $alreadyproc ) = &delinquent_files( \%dfile_unique, \%dfile_unprocessed, $parent, $prob ) ;
+sub delinquent_files { # ( $prob, $nrows_to_proc, $next_proc, $alreadyproc, $ndelinquent, @delinquent ) = &delinquent_files( $sta, \%dfile_unique, \%dfile_unprocessed, $parent, $prob ) ;
 #
 #  find any files which have now appeared which are prior to already processed files
 #
-    my ( $refu, $refc, $parent, $prob ) = @_ ;
-    my ( $alreadyproc, $dfile, $ndelinquent, $not_proc, $row, $string, $unique ) ;
-    my ( @unique, @unprocessed ) ;
+    my ( $sta, $refu, $refc, $parent, $prob ) = @_ ;
+    my ( $alreadyproc, $maxtime, $msd1, $msdtime, $ndelinquent, $not_proc, $string, $too_delinquent, $unique ) ;
+    my ( @db, @delinquent, @will_process, @unique, @unprocessed ) ;
     my ( %dfile_unique, %dfile_unprocessed ) ;
     
     fork_notify (  $parent, "starting delinquent file check" ) ;
 
-    fork_debug (  $parent, "delinquent_files( \%dfile_unique, \%dfile_unprocessed, $parent, $prob )" ) if $opt_V ;
+    fork_debug (  $parent, "delinquent_files( $sta, \%dfile_unique, \%dfile_unprocessed, $parent, $prob )" ) if $opt_V ;
 
     %dfile_unique       = %$refu ;     # unique mseed files
     %dfile_unprocessed  = %$refc ;     # unprocessed mseed files
@@ -2195,78 +2304,136 @@ sub delinquent_files { # ( $prob, $alreadyproc ) = &delinquent_files( \%dfile_un
     @unique        = sort { $dfile_unique{$a}{time} <=> $dfile_unique{$b}{time} } keys %dfile_unique ;
     @unprocessed   = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
     
+    @delinquent    = () ;
+    @will_process  = () ;
+    
+#  
+#  shift unique list to first unprocessed downloaded file
+#    after shift all elements of unique list should be unprocessed!
+#
+    $msd1 = $unique[0] ;
+    
     until ( $unique[0] =~ /$unprocessed[0]/ ) {
         shift @unique ;
     }
 
-    fork_debug   ( $parent, "first unprocessed file is $unique[0]	$unprocessed[0] " ) if $opt_V ;
+    fork_debug   ( $parent, "	first unprocessed file is $unique[0]	$unprocessed[0] " ) if $opt_V ;
 
-    $ndelinquent = 0 ;
-    $alreadyproc = 0 ;
-    $not_proc    = 0 ;
-    
+    $ndelinquent    = 0 ;
+    $alreadyproc    = 0 ;
+    $not_proc       = 0 ;
+    $too_delinquent = 0 ;
+
+#  
+#  find if any delinquent files have appeared
+#
+        
     foreach $unique ( @unique ) {
         
-        fork_debug   ( $parent, "delinquent check file is $unique" )  if $opt_V ;
+        fork_debug   ( $parent, "	delinquent check file $unique" ) if $opt_V ;
         
         if ( exists $dfile_unique{ $unique }{ msdtime } ) {
             $ndelinquent++ ;
-            $prob++ ;
             last ;
         }
 
     }
     
+#  
+#  determine if delinquent files can be processed
+#
+        
     if ( $ndelinquent ) {
         
-        $string =  sprintf( "" )  ;
-        fork_complain ( $parent, $string ) ;
-        $string =  sprintf( "delinquent    files have appeared!" )  ;
-        fork_complain ( $parent, $string ) ;
+        $string =  sprintf( "	delinquent files have appeared!" )  ;
+        fork_notify ( $parent, $string ) ;
+                
+        @db       = dbopen(  $sta, 'r' ) ;
+        @db       = dblookup( @db, 0, "wfdisc", 0, 0 ) ;
+        if ( dbquery( @db, "dbTABLE_PRESENT" ) ) {
+            $maxtime  = dbex_eval( @db, "max(endtime)" ) ;
+            $string =  sprintf( "	last time in $sta.wfdisc	%s", strydtime( $maxtime )  ) ; 
+            fork_notify ( $parent, $string ) ;
+        } else {
+            $maxtime  = &mseedtime( $msd1, $parent ) ;
+            $string =  sprintf( "	$sta.wfdisc does not exist yet" ) ; 
+            fork_notify ( $parent, $string ) ;
+        }
+        dbclose ( @db ) ;
         
         foreach $unique ( @unique ) {        
         
             if ( exists $dfile_unique{ $unique }{ msdtime } ) {
                 $alreadyproc++ ;
-                $string =  sprintf( "	$unique    already processed    msdtime	%s", strydtime( $dfile_unique{ $unique }{ msdtime } )  )  ;
+                $string =  sprintf( "	$unique    already processed    msdtime	%s", strydtime( $dfile_unique{ $unique }{ msdtime } )  ) ; 
+                fork_notify ( $parent, $string ) if $opt_V ;
             } else {
-                $not_proc++ ;
-                $string =  sprintf( "	$unique    not processed yet	" )  ;
+                $msdtime = &mseedtime( $unique, $parent ) ;
+                if ( $maxtime > $msdtime ) {
+                    $too_delinquent++ ;
+                    $string =  sprintf( "	$unique    is delinquent.	msdtime %s	max endtime  %s", strydtime ( $msdtime ) , strydtime ( $maxtime ) )  ;
+                    fork_notify ( $parent, $string ) ;
+                    push ( @delinquent, $unique ) ;
+                } else {
+                    $not_proc++ ;
+                    $string =  sprintf( "	$unique    not processed yet	" )  ;
+                    fork_notify ( $parent, $string ) if $opt_v ;
+                    push ( @will_process, $unique ) ;
+                }
             }
-            fork_complain ( $parent, $string ) ;
-            print PROB "$string \n" ;
         }
-        $string =  sprintf( "	Number of files expected                   - %d", $alreadyproc + $not_proc  )  ;
-        fork_complain ( $parent, $string ) ;
-        print PROB "$string \n" ;
-        $string =  sprintf( "	Number of expected files not processed     - %d", $not_proc )  ;
-        fork_complain ( $parent, $string ) ;
-        print PROB "$string \n" ;
-        $string =  sprintf( "	Number of expected files already processed - %d", $alreadyproc )  ;
-        fork_complain ( $parent, $string ) ;
-        print PROB "$string \n" ;
+        $string =  sprintf( "	Number of files expected                   - %5d", $alreadyproc + $not_proc + $too_delinquent )  ;
+        fork_notify ( $parent, $string ) ;
+        $string =  sprintf( "	Number of expected files not processed     - %5d", $not_proc )  ;
+        fork_notify ( $parent, $string ) ;
+        $string =  sprintf( "	Number of expected files already processed - %5d", $alreadyproc )  ;
+        fork_notify ( $parent, $string ) ;
+        $string =  sprintf( "	Number of expected files too delinquent    - %5d", $too_delinquent )  ;
+        fork_notify ( $parent, $string ) ;
+        return ( $prob, $not_proc, $will_process[0], $alreadyproc, $ndelinquent, @delinquent ) ;
     }
 
+    fork_notify (  $parent, "ending delinquent file check" ) ;
          
-    return ( $prob, $alreadyproc ) ;
+    return ( $prob, ( $#unprocessed + 1 ), $unprocessed[0], $alreadyproc, $ndelinquent, @delinquent ) ;
 
 }
 
-sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%dfile_unprocessed, $parent, $prob ) ;
+sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%dfile_unprocessed, \@delinquent, $parent, $prob ) ;
 #
 #  find any differences between times of adjacent files which are too long indicating possible missing data.
 #
-    my ( $sta, $refu, $parent, $prob ) = @_ ;
-    my ( $actual_time, $mseed, $mseed_offset, $ngap, $offset, $rt, $string, $string1 ) ;
-    my ( @dbrt, @mseed, @mseed_offset ) ;
-    my ( %dfile_unprocessed ) ;
+    my ( $sta, $refu, $refd, $parent, $prob ) = @_ ;
+    my ( $actual_time, $delinquent, $mseed, $mseed_offset, $ngap, $offset, $rt, $string, $string1 ) ;
+    my ( @dbrt, @delinquent, @mseed, @mseed_check, @mseed_offset ) ;
+    my ( %delinquent, %dfile_unprocessed ) ;
     
     fork_notify (  $parent, "starting check_time_between_files" ) ;
 
     %dfile_unprocessed  = %$refu ;     # unprocessed mseed files
-    
-    @mseed        = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
+    @delinquent         = @$refd ;     # delinquent files
+
+    @mseed_check  = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
     @mseed_offset = () ;
+    
+#
+#  make list of downloaded mseed files which have not been processed
+#
+    
+    %delinquent = () ;
+    @mseed      = () ;
+    
+    foreach $delinquent ( @delinquent ) { $delinquent{ $delinquent } = 1 } ;
+    
+    fork_debug (  $parent, "delinquent	@delinquent" ) if $opt_V ;
+    
+    foreach $mseed ( @mseed_check ) {
+        unless ( $delinquent{ $mseed } ) {
+            push ( @mseed, $mseed ) ;
+        }
+    }
+
+    fork_debug (  $parent, "mseed	@mseed" ) if $opt_V ;
 
     $string =  "	$pf{rt_sta_dir}\/$sta\/$sta does not exist!"   ;
     if ( ! -f "$pf{rt_sta_dir}\/$sta\/$sta" && ! ( $opt_F || $opt_B ) ) {
@@ -2327,10 +2494,6 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
                     $prob++ ;
                 }
             } else {
-#                 fork_notify ( $parent, $string ) ;
-#                 fork_notify ( $parent, $string1 ) ;
-#                 $string =  sprintf( "	media did not change, data corrupted on baler 44" ) ;
-#                 fork_notify ( $parent, $string ) ;
                 if ( $opt_F || $opt_G ) {
                     fork_notify ( $parent, $string ) ;
                     fork_notify ( $parent, $string1 ) ;
@@ -2364,3 +2527,86 @@ sub check_time_between_files { # ( $prob ) = &check_time_between_files( $sta, \%
     return ( $prob ) ;
 
 }
+
+sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
+    my ( $db, $lock_duration ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $pid ) ;
+    my ( %pf ) ;
+    
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf	$Pf	dbloc_pf_file	$dbloc_pf_file	pid $pid" ) if $opt_V ;
+    
+    if ( ! -f $dbloc_pf_file ) {
+        elog_debug ( sprintf ("$db new lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+        return ( 0 ) ; 
+    } else { 
+        %pf = getparam( $Pf ) ;
+        if ( $pf{unlock_time} > &now() && $pf{pid} != $pid ) {
+            elog_complain ( sprintf ("$db is locked until %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            prettyprint ( \%pf ) ;
+            return ( 1 ) ;
+        } elsif  ( $pf{unlock_time} > &now() && $pf{pid} == $pid ) {
+            elog_debug ( sprintf ("$db lock is extended to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        } else {
+            elog_debug ( sprintf ("$db lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        }
+    }    
+}
+
+sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
+    my ( $db ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $host1, $lock_time1, $pid, $pid1, $program1, $unlock_time1 ) ;
+    my ( %pf ) ;
+    
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf	$Pf	dbloc_pf_file	$dbloc_pf_file" ) if $opt_V ;
+    
+    if ( ! -f $dbloc_pf_file ) {
+        elog_complain ( "dbunlock:	$dbloc_pf_file does not exist!" ) ;
+        return ( 1 ) ;
+    } else { 
+        pfupdate ( $Pf ) ; 
+        %pf = getparam( $Pf ) ;
+        if ( $0 != $pf{program} || $pid != $pf{pid} || $host != $pf{host}) {
+            elog_complain ( "unable to unlock $db" ) ;
+            elog_complain ( "program	$0	$pf{program}" ) ;
+            elog_complain ( "pid	$pid	$pf{pid}" ) ;
+            elog_complain ( "host	$host	$pf{host}" ) ;            
+            return ( 1 ) ;
+        }
+        if ( $pf{unlock_time} < &now() ) {
+            elog_complain ( sprintf ("$db was already unlocked at %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            return ( 1 ) ;
+        } 
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, &now() ) ;
+        return ( 0 ) ;
+    }    
+}
+
+sub write_dblock { # &write_dblock ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) ;
+    my ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) = @_ ;
+    open( LOCK,   ">$dbloc_pf_file" ) ;
+    print LOCK    "program      $program\n" ;
+    print LOCK    "host         $host\n" ;
+    print LOCK    "pid          $pid\n" ;
+    printf ( LOCK "lock_time    %d\n", $lock_time ) ;
+    printf ( LOCK "unlock_time  %d\n", $unlock_time ) ;
+    close LOCK ;
+    return ; 
+}
+

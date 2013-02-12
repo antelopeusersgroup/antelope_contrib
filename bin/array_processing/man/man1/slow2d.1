@@ -1,0 +1,90 @@
+.TH "slow2d" 1 "September 1, 2012"
+.SH NAME
+slow2d \- form an array beam trace
+.SH SYNOPSIS
+.B "slow2d tstart slen wlen filter sr kmax nk ampfunc beamtype channame arrayname refsta dbname dir dfile"
+.SH DESCRIPTION
+Program slow2d computes amplitude-versus-slowness maps in 2-D for an array of 
+channels. It works with an existing database to get the station parameters.  It
+works entirely in the time domain (except for the incoherent beam option where
+the Hilbert transform is computed), finding the maximum amplitude of the beam
+trace for all values of the 2-D slowness space. The option is provided to make 
+simple delay-and-sum beams, N-th root beams, or incoherent beams.  Multiple,
+contiguous time windows can be analyzed.  For each time window, it creates a 
+2-D grid in a data file, as referenced in the fkgrid table of the database.  
+The grids are written as binary IEEE floating-point numbers ("u4" datatype in 
+Antelope for Intel machines).
+
+The following input parameters are used:
+
+tstart = start time of signal in epoch seconds
+
+slen = signal length to be beamed in seconds
+
+wlen = window length to analyze per slowness grid  (wlen <= slen; if equal, then only one window will be analyzed.  The window is moved forward with no overlap until tstart+slen is reached.)
+
+filter = filter specification in BRTT syntax, like "BW 0.5 4 8.0 4" (Must be put in quotes.)
+
+sr = desired sampling rate (<= actual sampling rate).  This increases performance when looking at low-frequency signals relative to original sampling rate.
+
+kmax = maximum slowness (s/km)  (This will be used to define minimum slowness as kmin = -kmax and is applied to both x and y directions.)
+
+nk = # of slownesses from kmin to kmax.  (This should usually be an odd integer so that 0 Hz falls on (kmax - kmin)/(nk - 1)
+.nf
+
+ampfunc = flag to select how amplitude is computed from beam
+            1 = simple peak value (absolute)
+            2 = average of absolute values in beam window (L1)
+            3 = root-mean-square of values in beam window (L2)
+beamtype = type of beam to be formed in slowness space
+            1 = linear
+            2 = 2nd root
+            3 = 3rd root
+            4 = 4th root
+            5 = incoherent
+
+.fi
+channame = channel name to be assigned to slowness grid (maximum of 8 characters).  arrayname and channame should be a unique pair of grid identifiers.
+
+arrayname = name of array (This name is arbitrary, but it must exist as a filename with suffix ".arr".  For instance, if "ZZZ.arr" is the file, then "ZZZ" is arrayname.  The maximum number of characters is 6.)
+
+refsta = station which will be the reference point (x,y = 0,0).  (This station is arbitrary, but it must exist in the site table of the database.  Normally, this station is near the center of the array.)
+
+dbname = database name (the prefix used for the database).
+
+dir = directory in which to put the output file.
+
+dfile = name of slowness map(s) file.
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.nf
+A typical array file would look like (sta chan delay)::
+
+CM01 SHZ  0.0
+CM02 SHZ  0.0
+CM03 SHZ  0.0
+CM04 SHZ  0.0
+CM05 SHZ  0.0
+CM06 SHZ  0.0
+CM07 SHZ  0.0
+CM08 SHZ  0.0
+CM09 SHZ  0.0
+CM10 SHZ  0.0
+CM11 SHZ  0.0
+CM12 SHZ  0.0
+CM13 SHZ  0.0
+CM14 SHZ  0.0
+CM15 SHZ  0.0
+CM16 SHZ  0.0
+CM17 SHZ  0.0
+CM18 SHZ  0.0
+
+.fi
+.SH "SEE ALSO"
+arf beam delay distaz
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern

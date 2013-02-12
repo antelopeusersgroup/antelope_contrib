@@ -1,6 +1,7 @@
 
 DATA = \
 	balerlist \
+	balerproc \
 	calplot \
 	calib_request \
 	dlcmd_cal \

@@ -1,0 +1,77 @@
+* hypodd.inp:
+*--- input file selection
+* cross correlation diff times:
+dt.cc
+*
+*catalog P diff times:
+dt.ct
+*
+* event file:
+event.dat
+*
+* station file:
+station.dat
+*
+*--- output file selection
+* original locations:
+hypodd.loc
+* relocations:
+hypodd.reloc
+* station information:
+hypodd.sta
+* residual information:
+hypodd.res
+* source parameter information (azimuths and takeoff angles):
+hypodd.src
+*
+*
+*--- data type selection: 
+* IDAT:  0 = synthetics; 1= cross corr; 2= catalog; 3= cross & cat 
+* IPHA: 1= P; 2= S; 3= P&S
+* DIST:max dist [km] between cluster centroid and station 
+* IDAT   IPHA   DIST
+    3     3     100
+*
+*--- event clustering:
+* OBSCC:    min # of obs/pair for crosstime data (0= no clustering)
+* OBSCT:    min # of obs/pair for network data (0= no clustering)
+* OBSCC  OBSCT    
+     1     5        
+*
+*--- solution control:
+* ISTART:  	1 = from single source; 2 = from network sources
+* ISOLV:	1 = SVD, 2=LSQR
+* NSET:      	number of sets of iteration with specifications following
+*  ISTART  ISOLV  NSET
+    2        2      2 
+*
+*--- data weighting and re-weighting: 
+* NITER: 		last iteration to used the following weights
+* WTCCP, WTCCS:		weight cross P, S 
+* WTCTP, WTCTS:		weight catalog P, S 
+* WRCC, WRCT:		residual threshold in sec for cross, catalog data 
+* WDCC, WDCT:  		max dist [km] between cross, catalog linked pairs
+* DAMP:    		damping (for lsqr only) 
+*       ---  CROSS DATA ----- ----CATALOG DATA ----
+* NITER WTCCP WTCCS WRCC WDCC WTCTP WTCTS WRCT WDCT DAMP
+  5      1.0   1.0  0.2    3   1.00  0.50  0.5   3   50
+  5      1.0   1.0  0.1    2   0.01  0.01  0.3   2   50
+*
+*--- 1D model:
+* NLAY:		number of model layers  
+* RATIO:	vp/vs ratio 
+* TOP:		depths of top of layer (km) 
+* VEL: 		layer velocities (km/s)
+* NLAY  RATIO 
+   1     1.73
+* TOP 
+0.0
+* VEL
+6.00
+*
+*--- event selection:
+* CID: 	cluster to be relocated (0 = all)
+* ID:	cuspids of event to be relocated (8 per line)
+* CID
+    0
+* ID

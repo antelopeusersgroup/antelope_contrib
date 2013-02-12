@@ -112,15 +112,16 @@
 
 sub dbcalibrate { # &dbcalibrate( $db ) ;
     my ( $db ) = @_ ;
-    my ( $cmd, $endtime, $row, $sta, $start, $subset, $time ) ;
+    my ( $cmd, $endtime, $row, $sc_row, $sta, $start, $subset, $time ) ;
     my ( @cals, @db, @dbdlcalwf, @dbscrsc, @dbsensorcal ) ;
+    my ( %guralp ) ;
 #
 #  open db
 #
-    @db            = dbopen($db,'r+');
-    @dbdlcalwf     = dblookup(@db,0,"dlcalwf",0,0);
-    @dbsensorcal   = dblookup(@db,0,"sensorcal",0,0);
-    @dbscrsc       = dblookup(@db,0,"sensorcal",0,"dbSCRATCH");
+    @db            = dbopen( $db, 'r+' ) ;
+    @dbdlcalwf     = dblookup( @db, 0, "dlcalwf", 0, 0 ) ;
+    @dbsensorcal   = dblookup( @db, 0, "sensorcal", 0, 0 ) ;
+    @dbscrsc       = dblookup( @db, 0, "sensorcal", 0, "dbSCRATCH" ) ;
 #
 #  subset dlcalwf by station regular expressions.
 #
@@ -144,13 +145,13 @@ sub dbcalibrate { # &dbcalibrate( $db ) ;
         
         $dbdlcalwf[3] = $row ;
         
-        ($sta,$time,$endtime) = dbgetv(@dbdlcalwf,"fsta","time","endtime") ;
+        ($sta,$time,$endtime) = dbgetv(@dbdlcalwf,"fsta","time","endtime" ) ;
         
-        dbputv(@dbscrsc,"sta", $sta, "chan", "BHZ", "time", $time, "endtime", $endtime) ;
+        dbputv(@dbscrsc,"sta", $sta, "chan", "BHZ", "time", $time, "endtime", $endtime ) ;
         
-        @cals = dbmatches(@dbscrsc,@dbsensorcal,"processed","sta","chan","time::endtime") ;
+        @cals = dbmatches( @dbscrsc, @dbsensorcal, "processed", "sta", "chan", "time::endtime" ) ;
         if ($#cals > -1) {
-            elog_notify(sprintf("Already processed	$sta	%s	%s",strydtime($time),strydtime($endtime))) if $opt_v ;
+            elog_notify( sprintf("Already processed	$sta	%s	%s", strydtime($time), strydtime($endtime) ) ) if $opt_v ;
             next ;
         }
         
@@ -162,9 +163,20 @@ sub dbcalibrate { # &dbcalibrate( $db ) ;
             $cmd = "cat /tmp/dbcalibrate" ;
             run_cmd( $cmd ) ;
         }
+        
     }
     
     dbclose(@db);
+    
+    @db            = dbopen( $db, 'r+' ) ;
+    @dbsensorcal   = dblookup( @db, 0, "sensorcal", 0, 0 ) ;
+    @dbsensorcal   = dbsubset( @dbsensorcal, "lddate > $start && chan =~ /BHN|BHE/ && snmodel =~ /cmg3t/ " ) ;
+    
+    for ( $dbsensorcal[3] = 0 ; $dbsensorcal[3] < dbquery(@dbsensorcal,"dbRECORD_COUNT") ; $dbsensorcal[3]++ ) {
+        dbputv ( @dbsensorcal, "sngen", ( 1500.0/1402.7) * (dbgetv ( @dbsensorcal, "sngen" ) ) ) ;
+    }
+    
+    dbclose( @db );
     
     return ;
 }
@@ -252,18 +264,21 @@ sub displayscal { # &displayscal( $db, $caldir ) ;
         
         sleep 1 ;
         
-        $cmd  = "ps2pdf14 $psfile $pdffull" ;
-        run_cmd ( $cmd ) ;
+        if ( -s $psfile > 50000 ) {
         
-        $cmd  = "rm $psfile";
-        run_cmd ( $cmd ) ;
+            $cmd  = "ps2pdf14 $psfile $pdffull" ;
+            run_cmd ( $cmd ) ;
         
-        dbaddv( @dbcalplot,  "sta",      $sta,
-                             "chan",    $chan,
-                             "time",    $time,
-                             "endtime", $endtime,
-                             "dir",     $pdfdir,
-                             "dfile",   $pdffile ) unless $opt_n;
+            $cmd  = "rm $psfile";
+            run_cmd ( $cmd ) ;
+        
+            dbaddv( @dbcalplot,  "sta",      $sta,
+                                 "chan",    $chan,
+                                 "time",    $time,
+                                 "endtime", $endtime,
+                                 "dir",     $pdfdir,
+                                 "dfile",   $pdffile ) unless $opt_n;            
+        }
 #
 #  identify problems
 #        

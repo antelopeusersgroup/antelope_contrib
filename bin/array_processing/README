@@ -1,0 +1,12 @@
+These directories hold various files for the suite of "beaming" programs of
+David von Seggern.  These programs are all written to interact with the Antelope
+software system of BRTT, Inc.
+
+The directories here are:
+
+bin       -- holds executable binary programs
+dbmaster  -- holds a database used in program tests
+man       -- holds man pages
+src        -- holds source code
+testfft   -- holds source code for a test of fft function
+testcases -- holds various scripts and data files used for testing programs

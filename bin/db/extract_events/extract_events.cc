@@ -816,6 +816,9 @@ int main(int argc, char **argv)
 				delete rawdata;
 				continue;
 			}
+                        if(SEISPP_verbose)
+                            cout << "Number of 3c seismogram created from raw data="
+                                <<rawdata->member.size()<<endl;
 			PostEvid(rawdata,evid);
 			if(!use_arrival)
 			{

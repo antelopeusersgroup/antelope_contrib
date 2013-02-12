@@ -1,0 +1,50 @@
+.TH "distaz" 1 "September 1, 2012"
+.SH NAME
+delay \- compute the inter-sensor distances and azimuths for an array
+.SH SYNOPSIS
+.B "delay arrayname dbname"
+.SH DESCRIPTION
+Program distaz computes distances and azimuths among stations in an array.  The program 
+works with an existing database to get the station parameters and creates two data files:one for the inter-station distances and a second for the inter-station azimuths.
+
+The program assumes that the array covers a small enough area that Cartesian geometry 
+applies.  Thus back azimuths are equal to azimuths plus 180 degrees.
+
+The following input parameters are used:
+
+arrayname = name of array (This name is arbitrary, but it must exist as a filename with suffix ".arr".  For instance, if "ZZZ.arr" is the file, then "ZZZ" is arrayname.  The maximum number of characters is 6.)
+
+dbname = database name (the prefix used for the database)
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.nf
+A typical array file would contain only station names and would look like:
+
+CM01
+CM02
+CM03
+CM04
+CM05
+CM06
+CM07
+CM08
+CM09
+CM10
+CM11
+CM12
+CM13
+CM14
+CM15
+CM16
+CM17
+CM18
+
+.fi
+.SH "SEE ALSO"
+delay sigcor
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern

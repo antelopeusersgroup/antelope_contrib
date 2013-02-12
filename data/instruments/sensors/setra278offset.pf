@@ -1,0 +1,24 @@
+originator     Jennifer Eakins, UCSD
+last_modified  2010-11-12
+
+category        infrasound
+configuration   Setra 278 microbarometer
+
+description     Setra 278 microbarometer
+dfile           setra278
+
+rsptype         P       # infrasound instrument
+band            l       # broadband
+sensor_type_code        D
+
+gtype           sensor
+sensitivity     0.0166667       #  sensitivity is in V/mbar
+iunits          mbar
+ounits          counts
+
+orientations    &Tbl{
+D       0       0
+}
+
+response        &datafile(responses/setra278offset)
+

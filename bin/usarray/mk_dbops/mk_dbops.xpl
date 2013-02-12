@@ -280,8 +280,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
   }
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
@@ -314,8 +318,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
     }
 
     &close_deployment($earntime, $endnull, $mytime ) ; 
@@ -339,8 +347,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
     } 
 
     $sendtime	= &get_stageendtime ;
@@ -376,8 +388,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
   }
 
   $sendtime = &get_stageendtime ;
@@ -412,8 +428,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
   }
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
@@ -447,7 +467,7 @@ if ($opt_U) {
      if ($opt_m) {
        $select = "$opt_m" ;	# Look for data packets
      } else {
-       $select = $dlname . $packet_ext ;	# Look for data packets
+       $select = $dlname . "(" . $packet_ext . ")" ;	# Look for data packets
      }
 
      $n = orbselect($preorb, $select) ;

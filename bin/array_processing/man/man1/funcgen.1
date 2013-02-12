@@ -1,0 +1,49 @@
+.TH "funcgen" 1 "September 1, 2012"
+.SH NAME
+funcgen \- synthesize analytic and random test waveforms
+.SH SYNOPSIS
+.B "funcgen type tstart width nfactor sta chan time samprate nsamp database dir filename"
+.SH DESCRIPTION
+Program funcgen generates various synthetic waveforms for testing purposes.
+The output waveforms are written to a Datascope database.  They are written as 
+binary IEEE floating-point numbers ("u4" datatype in Antelope for Intel 
+machines).  
+
+The following input parameters are used:
+
+  type = type of function to be generated
+         "zeros"  means entire trace will be exact zeros
+         "delta"  means a 1-point delta function will be inserted at the toff
+                  point of the trace
+         "boxcar" means that a boxcar-shape will start at toff and have
+                  width seconds and be 0's elsewhere
+         "triangle" means that a triangle-shape will start at toff and
+                  have width seconds and be 0's elsewhere
+         "sine"   means a 1/width Hz sine wave will be created
+         "impulse" means a f = 1/width Hz and h = 0.7 seismometer response pulse
+                  will be generated and started at tstart
+         "noise"  means a white-noise sequence drawn from a normal density with
+                  zero mean and unit standard deviation will be created
+  toff = offset (s), relative to time, at which synthetic wave starts
+  width = width (s) of boxcar or triangle, or natural period in case of impulse
+  nfactor = for adding random noise to any type (except "xeros" or "noise")
+            This factor is the ratio of rms of additive noise to peak of signal.
+  sta = station name
+  chan = channel name
+  time = epoch time of start of trace
+  samprate = sample rate (#/second) of trace
+  nsamp = # of samples in trace
+  database = database name for output data
+  dir = directory in which to write trace
+  dfile = filename of trace
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.nf
+.fi
+.SH "SEE ALSO"
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern

@@ -1,5 +1,5 @@
 LIB=libseispp.a
-# DLIB=$(LIB:.a=$(DSUFFIX)) 
+DLIB=$(LIB:.a=$(DSUFFIX)) 
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
 INCLUDE=ArrivalUpdater.h \
@@ -15,6 +15,7 @@ INCLUDE=ArrivalUpdater.h \
   Metadata.h\
   MultichannelCorrelator.h\
   ProcessingQueue.h \
+  SacFileHandle.h \
   SeisppError.h\
   SeisppKeywords.h \
   SignalToNoise.h \
@@ -46,7 +47,8 @@ INCLUDE=ArrivalUpdater.h \
 # an external program
 PF=seispp_attribute_maps.pf \
   metadata_defaults.pf \
-  HeaderMap.pf
+  HeaderMap.pf \
+  SacFileHandle.pf
 MAN3=Basic_Time_Series.3 \
   Datascope_Handle.3 \
   GCLrays.3 \
@@ -76,6 +78,7 @@ OBJS=ArrivalUpdater.o \
   Metadata.o \
   MultichannelCorrelator.o \
   ProcessingQueue.o \
+  SacFileHandle.o \
   SignalToNoise.o \
   SimpleWavelets.o \
   StationChannelMap.o \
@@ -122,9 +125,9 @@ $(LIB) : $(OBJS)
 	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
-#$(DLIB) : $(OBJS)
-#	$(RM) $@
-#	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+$(DLIB) : $(OBJS)
+	$(RM) $@
+	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 #$(BUNDLE) : $(OBJS)
 #	$(RM) $@
 #	$(DLD)  -flat_namespace -bundle -undefined suppress -o $@   $(OBJS) $(LDFLAGS) $(DLDLIBS)

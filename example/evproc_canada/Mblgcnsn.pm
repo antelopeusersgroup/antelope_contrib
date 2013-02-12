@@ -65,7 +65,7 @@ sub getwftimes {
 		return makereturn ( $self, "skip" ) ; 
 	}
 	
-	my $poly = `inwhichpolygons /opt/antelope/4.11/data/evproc/REGIONS/ca_poly $olat $olon`;
+	my $poly = `inwhichpolygons $ENV{ANTELOPE}/data/evproc/REGIONS/ca_poly $olat $olon`;
 	if ( $poly ne "EastCA" ) {
 		addlog ( $self, 1, "Event not in region" ) ;
 		return makereturn ( $self, "skip" ) ; 

@@ -135,26 +135,14 @@ bulletins &Arr{
 	defaultmagtype	md		# md if mag< 1.9, ml if mag >=1.9, ??? 
   }
 
-  NRCAN-PGC 	&Arr{
-	method		htmlnotags
-	parser		recenteqs
-	extractor	simsum	
-	src		NRCAN/PGC	# srcname will be /pf/$src/orb2dbt
-	auth		PGC  	 	# auth == $auth	
-### If you want more events, try the year long grab
-###http://earthquakescanada.nrcan.gc.ca/recent/maps-cartes/index-eng.php?maptype=1y&tpl_region=west
-	url	 	http://earthquakescanada.nrcan.gc.ca/recent/maps-cartes/index-eng.php?tpl_region=west	
-	defaultmagtype	M 		# not coded yet
-  }
-
-
   NRCAN-GSC 	&Arr{
 	method		htmlnotags
 	parser		recenteqs
 	extractor	simsum	
 	src		NRCAN/GSC	# srcname will be /pf/$src/orb2dbt
 	auth		GSC  		# auth == $auth	
-	url	 	http://earthquakescanada.nrcan.gc.ca/recent/maps-cartes/index-eng.php?tpl_region=east	
+	# Use this URL - it will give you 30 days of data.  time values like time_start=2012%2F05%2F01+00%3A00%3A can be added
+        url     http://www.earthquakescanada.nrcan.gc.ca/stndon/NEDB-BNDS/bull-eng.php?depth_min=0&depth_max=100&mag_min=-3&mag_max=9.9&shape_type=region&radius_center_lat=50&radius_center_lon=-95&radius_radius=1000&region_north=90&region_south=41&region_east=-40&region_west=-150&eq_type_L=1&eq_type_R=1&eq_type_B=1&eq_type_I=1&display_list=1&list_sort=date&list_order=a&tpl_output=txt&submited=Submit+Request
 	defaultmagtype	M 		# not coded yet
   }
 

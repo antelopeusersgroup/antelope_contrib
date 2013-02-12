@@ -447,6 +447,36 @@ MetadataList pfget_mdlist(Pf *pf,string tag);
 //\return Antelope parameter file Pf pointer.
 **/
 Pf *Metadata_to_pf(Metadata& md);
+/*!  \brief Extract an antelope Pf Tbl into a string.
+
+  Antelope pf files have the concept of a Tbl grouping of stuff
+  that is commonly parsed by programs for data that is not a simple
+  single value type.   This procedure finds a Tbl with a specified
+  tag and extracts the Tbl contents into a string which is returned.
+
+\param pf  is the Antelope Pf pointer 
+\param tag is the tag for the Tbl to be extracted
+
+\return string of Tbl contents. 
+*/
+string pftbl2string(Pf *pf, const char *tag);
+/*!  \brief Extract an antelope Pf Tbl into a list of strings.
+
+  Antelope pf files have the concept of a Tbl grouping of stuff
+  that is commonly parsed by programs for data that is not a simple
+  single value type.   This procedure finds a Tbl with a specified
+  tag and extracts the Tbl contents into list container.   Each 
+  string in this list is defined by newlines in the original Tbl of
+  the pf file.  Said another way the basic algorithm is a gettbl for
+  each line in the Tbl followed by a push_back to the STL list.
+
+\param pf  is the Antelope Pf pointer 
+\param tag is the tag for the Tbl to be extracted
+
+\return STL list container of std::string objects derived from tbl lines.
+*/
+list<string> pftbl2list(Pf *pf, const char *tag);
+
 
 } // End namespace SEISPP declaration
 #endif
