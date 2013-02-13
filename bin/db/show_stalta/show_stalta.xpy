@@ -1,5 +1,3 @@
-#! /opt/antelope/5.2-64p/bin/python
-
 import sys
 import os
 
