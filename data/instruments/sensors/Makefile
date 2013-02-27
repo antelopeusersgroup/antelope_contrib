@@ -99,6 +99,7 @@ DATA= \
 	sts2_g2.pf \
 	sts2_g3.pf \
 	sts2_5.pf \
+	sts4_b.pf \
 	sv1.pf \
 	terratech.pf \
     titan_0_25_g.pf \
