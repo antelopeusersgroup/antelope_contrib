@@ -1,3 +1,6 @@
+#
+#  This is an example of a pf file saving data as 3c objects.   
+#
 station_mdlist &Tbl{
 sta string
 nsamp int
@@ -30,19 +33,21 @@ wfprocess.dfile string
 wfprocess.dir string
 }
 netname usarray
-net_code XZ
+net_code XO
 phase P
-data_window_start -200.0
-data_window_end 800.0
+data_window_start -600.0
+data_window_end 4000.0
 data_time_pad 100.0
-processing_window_start -50.0
-processing_window_end 550.0
-target_sample_interval 0.1
+processing_window_start -500.0
+processing_window_end 3600.0
+target_sample_interval 0.05
 # When true only data for stations with times marked in
 # the arrival table are extracted.  When false all data 
 # will be extracted using predicted arrival time
 use_arrival_table false
-save_as_3c_objects false
+save_as_3c_objects true
+# essential this be true when run in save_as_3c_objects
+require_event true
 # travel time method and model for ttcalc
 method tttaup
 model iasp91
@@ -60,7 +65,7 @@ apply_free_surface_transformation false
 # units of km/s
 vp0 6.0
 vs0 3.5
-output_waveform_directory_base testwf/events
+output_waveform_directory_base wf3c/2011/events
 # Determines directory structure (gathermode) of output 
 # trace data.  MUST be either "station_gathers" or
 # "event_gathers".  (defaults to station_gathers with lost of 
@@ -81,29 +86,20 @@ resample_definitions    &Arr{
     100 &Arr{
         Decimator_response_files        &Tbl{
             5   response/RT72A_5_f
-            2   response/RT72A_2_f
         }
         high_limit      101
         low_limit       99
     }
     20  &Arr{
         Decimator_response_files        &Tbl{
-            2       response/RT72A_2_f
+            1 none
         }
         high_limit      21
         low_limit       19
     }
-    31.25        &Arr{
-        Decimator_response_files        &Tbl{
-            0.78125      resample
-            4       response/RT72A_4_f
-        }
-        high_limit      35
-        low_limit       30
-    }
     40  &Arr{
         Decimator_response_files        &Tbl{
-            4       response/RT72A_4_f
+            2       response/RT72A_2_f
         }
         high_limit      41
         low_limit       39
@@ -112,20 +108,19 @@ resample_definitions    &Arr{
 
 # Used to construct StationChannelMap object
 StationChannelMap       &Arr{
-   SDV	&Tbl{
-        BHE_00 0 0
-        BHN_00 1 0
+   CCM	&Tbl{
+        BH1_00 0 0
+        BH2_00 1 0
         BHZ_00 2 0
-        BHE_10 0 1
-        BHN_10 1 1
+        BH1_10 0 1
+        BH2_10 1 1
         BHZ_10 2 1
-        HHE_10 0 2
-        HHN_10 1 2
-        HHZ_10 2 2
-        HHE_20 0 3
-        HHN_20 1 3
-        HHZ_20 2 3
     }
+   UTMT &Tbl{
+       BHE_01 0 0
+       BHN_01 1 0
+       BHZ_01 2 0
+   }
     default     &Tbl{
         HHE 0 0
         HHN 1 0
@@ -136,15 +131,12 @@ StationChannelMap       &Arr{
         BHE 0 2
         BHN 1 2
         BHZ 2 2
-	BH1 0 3
-	BH2 1 3
-	BHZ 2 3
-	EHE 0 4
-	EHN 1 4
-	EHZ 2 4
-        LHE 0 5
-        LHN 1 5
-        LHZ 2 5
+	EHE 0 3
+	EHN 1 3
+	EHZ 2 3
+        LHE 0 4
+        LHN 1 4
+        LHZ 2 4
     }
 }
 #
@@ -154,7 +146,5 @@ StationChannelMap       &Arr{
 #
 save_files_only false
 
-pf_revision_time 1192965733
-# Set this false if you are using a plain origin table without event
-# False is a bit dangerous as it builds an intinsic orid=evid definition
-require_event true
+
+pf_revision_time 1273162127
