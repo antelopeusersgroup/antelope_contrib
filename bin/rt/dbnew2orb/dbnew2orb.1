@@ -1,25 +1,37 @@
-.TH DBNEW2ORB 1 "$Date$"
+.TH DBNEW2ORB 1
 .SH NAME
 dbnew2orb \- transfer modified database rows to an orbserver
 .SH SYNOPSIS
 .nf
 \fBdbnew2orb \fP[-sleep \fIseconds\fP] [-pf \fIpfname\fP] [-state \fIstatefile\fP]
-                [-prefix \fIprefix\fP] [-modified_after \fItime\fP] [-v] \fIdb\fP
-                \fIorb\fP
+          [-lastid] [-wfdisc] [-prefix \fIprefix\fP] [-modified_after\fItime\fP] 
+          [-v] \fIdb\fP \fIorb\fP
 .fi
 .SH DESCRIPTION
-\fBdbnew2orb\fP watches a database for modifications and sends modified rows to an orbserver. It allows to transfer a database so that it can be used on the receiving side with programs that keep the database open like e.g. dbevents.
+\fBdbnew2orb\fP watches a database for modifications and sends modified rows to an orbserver. 
+It allows to transfer a database so that it can be used on the receiving side with programs 
+that keep the database open like e.g. dbevents.
 .SH OPTIONS
 .IP "-sleep seconds"
-\fIseconds\fP specifies the number of \fIseconds\fP to wait between iterations over all database tables. Defaults to 60 \fIseconds\fP.
+\fIseconds\fP specifies the number of \fIseconds\fP to wait between iterations over all database 
+tables. Defaults to 60 \fIseconds\fP.
 .IP "pf pfname"
 Specify a \fIpfname\fP as the parameter file name for \fBdbnew2orb\fP. Defaults to \fBdbnew2orb\fP.
 .IP "state statefile"
-Specify a \fIstatefile\fP used for saving and restoring the modification times (lddate) of the database rows. Note that due to rounding errors some rows could be retransmitted after a restart.
+Specify a \fIstatefile\fP used for saving and restoring the modification times (lddate) of 
+the database rows. Note that due to rounding errors some rows could be retransmitted after a restart.
 .IP "-prefix prefix"
 This can be used to distinguish between different databases on the orbserver. Defaults to dbn2orb.
 .IP "-modified_after time"
-Transfer only rows that have been modified after \fItime\fP.
+Transfer only rows that have been modified after \fItime\fP. The default is to transfer only rows 
+modified after the start of the program.
+.IP "-lastid"
+transfer lastid table. I cannot think of a situation where this might be usefol, therefore this 
+is disabled by default.
+.IP "-wfdisc"
+transfer wfdisc table. Since the wfdisc table is igenerally modified frequent, this can result 
+in high data volume. There is a dozen more intelligent methods to transfer waveforms within 
+\fBAntelope\fP. The default is to ignore the \fBwfdisc\fP table.
 .IP "-v"
 verbose flag
 .IP "db"
@@ -35,13 +47,12 @@ The \fBdbnew2orb\fP parameter file contains parameter that control how and when 
 
 .ne 10
 
-sleep   60                                      #naptime between checks
-check_lddate_interval   5       #check lddate every nth iteration
-\fIprefix\fP  dbn2orb                         #sourcenames <\fIprefix\fP>/\fIdb\fP/<tablename>
+sleep   60                     #naptime between checks
+check_lddate_interval   5      #check lddate every nth iteration
+prefix  dbn2orb                #sourcenames <prefix>/db/<tablename>
 ignore_tables   &Tbl{
 }
 check_tables    &Tbl{
-        affiliation
 }
 
 .fi
@@ -57,6 +68,7 @@ Since a check of lddate is \fItime\fP consuming, the program checks most of the 
 This \fIprefix\fP can be used to distinguish between several datanase on the destination orbserver.
 .IP "ignore_tables, check_tables"
 List of tablenames that wil (or will not) be transferred to the orbserver.
+Note that both \fBwfdisc\fP and \fBlastid\fP need to be specified on the \fIcommandline\fP.
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -67,16 +79,16 @@ List of tablenames that wil (or will not) be transferred to the orbserver.
 Export one of the example databases:
 
 > ./dbnew2orb  -prefix db2orb -modified_after 1950-01-01 -v $antelope/../data/db/demo/demo :
-dbnew2orb:  2/21/2005  20:30:30.619: 13 patcket(s) sent with sourcename: db2orb/db/affiliation
-dbnew2orb:  2/21/2005  20:30:30.624: 12 patcket(s) sent with sourcename: db2orb/db/arrival
-dbnew2orb:  2/21/2005  20:30:30.630: 9 patcket(s) sent with sourcename: db2orb/db/assoc
-dbnew2orb:  2/21/2005  20:30:30.634: 5 patcket(s) sent with sourcename: db2orb/db/netmag
-dbnew2orb:  2/21/2005  20:30:30.637: 1 patcket(s) sent with sourcename: db2orb/db/network
-dbnew2orb:  2/21/2005  20:30:30.784: 1351 patcket(s) sent with sourcename: db2orb/db/origin
-dbnew2orb:  2/21/2005  20:30:30.800: 39 patcket(s) sent with sourcename: db2orb/db/sensor
-dbnew2orb:  2/21/2005  20:30:30.804: 13 patcket(s) sent with sourcename: db2orb/db/site
-dbnew2orb:  2/21/2005  20:30:30.811: 39 patcket(s) sent with sourcename: db2orb/db/sitechan
-dbnew2orb:  2/21/2005  20:30:30.814: 4 patcket(s) sent with sourcename: db2orb/db/stamag
+dbnew2orb:  2/21/2005  20:30:30.619: 13 packet(s) sent with sourcename: db2orb/db/affiliation
+dbnew2orb:  2/21/2005  20:30:30.624: 12 packet(s) sent with sourcename: db2orb/db/arrival
+dbnew2orb:  2/21/2005  20:30:30.630: 9 packet(s) sent with sourcename: db2orb/db/assoc
+dbnew2orb:  2/21/2005  20:30:30.634: 5 packet(s) sent with sourcename: db2orb/db/netmag
+dbnew2orb:  2/21/2005  20:30:30.637: 1 packet(s) sent with sourcename: db2orb/db/network
+dbnew2orb:  2/21/2005  20:30:30.784: 1351 packet(s) sent with sourcename: db2orb/db/origin
+dbnew2orb:  2/21/2005  20:30:30.800: 39 packet(s) sent with sourcename: db2orb/db/sensor
+dbnew2orb:  2/21/2005  20:30:30.804: 13 packet(s) sent with sourcename: db2orb/db/site
+dbnew2orb:  2/21/2005  20:30:30.811: 39 packet(s) sent with sourcename: db2orb/db/sitechan
+dbnew2orb:  2/21/2005  20:30:30.814: 4 packet(s) sent with sourcename: db2orb/db/stamag
 
 save the demo database on the other side:
 > orb2dbt -select "db2orb.*" -overwrite : copy-of-demo
@@ -85,14 +97,16 @@ save the demo database on the other side:
 .ft R
 .in
 .SH "BUGS AND CAVEATS"
-The program cannot transfer tables that point to external files, i.e. those with the field dfile. Furthermore it ignores the lastid and remark tables. The latter is a pity...
+The program now also transfers tables that point to external files, i.e. those with the field \fIdfile\fP. 
+Sometimes one might see strange log entries coming from orb2dbt on the receiving side. While this looks
+frigthening, it still seems to work fine.
 
 .SH "SEE ALSO"
 .nf
 dbt2orb(1),orb2dbt(1).
 .fi
 .SH AUTHOR
-Nikolaus Horn
+Nikolaus Horn, 2005-2013
 .br
 ZAMG / Vienna, nikolaus.horn@zamg.ac.at
 .\" $Id$
