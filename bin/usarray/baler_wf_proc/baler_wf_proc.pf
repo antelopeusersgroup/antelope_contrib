@@ -9,7 +9,7 @@ wfclean            LTW|VCE|VCQ|VFP|VQR|VTW                     # remove these wf
 
 days_delay         7                                           # Number of days for data to reside on disk before processing
 
-days_after_removal 60										   # number of days to wait after removal before final processing
+days_after_removal 195										   # number of days to wait after removal before final processing
 
 limit_hours        12										   # limit of hours to allow stations to start processing                                                                
 

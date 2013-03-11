@@ -112,8 +112,6 @@
     $stime = strydtime( now() ) ;
     elog_notify( "\nstarting execution on	$host	$stime\n\n" ) ;
     
-#     &md5_check () ;
-
     $db = $ARGV[0] ;
     
     %pf = getparam( $Pf ) ;
@@ -1017,13 +1015,13 @@ sub dnld_check { # (  $nrows_to_proc, $ngap, $prob, \%dfile_unprocessed, \@skip,
          
     $time_since_removal  =  ( now() - $removal_time ) ;
     
-#     if  ( ( $time_since_removal / 86400. ) > $pf{days_after_removal} ) {
-#         $opt_F = 1 ;
-#         $string = sprintf ( "	time since removal is %s, more than the limit of %d days ago", strtdelta($time_since_removal), $pf{days_after_removal} )  ;
-#         fork_notify ( $parent, $string ) ;
-#         $string  = sprintf( "		will process through all missing data ( ie setting -F option ) "  )  ;
-#         fork_notify ( $parent,  $string  ) ;
-#     }
+    if  ( ( $time_since_removal / 86400. ) > $pf{days_after_removal} ) {
+        $opt_F = 1 ;
+        $string = sprintf ( "	time since removal is %s, more than the limit of %d days ago", strtdelta($time_since_removal), $pf{days_after_removal} )  ;
+        fork_notify ( $parent, $string ) ;
+        $string  = sprintf( "		will process through all missing data ( ie setting -F option ) "  )  ;
+        fork_notify ( $parent,  $string  ) ;
+    }
             
 #
 #  open database
@@ -2213,42 +2211,19 @@ sub find_missing_files { # ( $nmiss, $ngap, $prob, @skip ) = &find_missing_files
     my ( $gap_test, $ngap, $nrows_to_proc, $string, $unique ) ;
     my ( @skip, @unique ) ;
     my ( %dfile_unique ) ;
-    
-# $opt_V = 1 ;
-    
+        
     fork_notify (  $parent, "starting missing file check" ) ;
     fork_debug (  $parent, "find_missing_files ( $nmiss, \%dfile_unique, \%dfile_unprocessed, $parent, $prob )" ) if $opt_V ;
 
     %dfile_unique       = %$refu ;     # unique mseed files
-#     %dfile_unprocessed  = %$refc ;     # unprocessed mseed files
-#     @delinquent         = @$refd ;     # delinquent files
          
     @unique        = sort { $dfile_unique{$a}{time} <=> $dfile_unique{$b}{time} } keys %dfile_unique ;
-#     @msd_tmp       = sort { $dfile_unprocessed{$a}{time} <=> $dfile_unprocessed{$b}{time} } keys %dfile_unprocessed ;
 
     $gap_test      = 0 ;
     $nrows_to_proc = 0 ;
     $nmiss         = 0 ;
     $ngap          = 0 ;
     @skip          = () ;
-#
-#  make list of downloaded mseed files which have not been processed
-#
-
-#     %delinquent  = () ;
-#     @unprocessed = () ;
-#     
-#     foreach $delinquent ( @delinquent ) { $delinquent{ $delinquent } = 1 } ;
-#         
-#     foreach $mseed ( @msd_tmp ) {
-#         unless ( $delinquent{ $mseed } ) {
-#             push ( @unprocessed, $mseed ) ;
-#         }
-#     }
-#     
-#     if ( $#unprocessed == -1 ) {
-#         return ( $nmiss, $ngap, $prob, @skip ) ;
-#     }
     
 #
 #  process all unique files
@@ -2306,77 +2281,6 @@ sub find_missing_files { # ( $nmiss, $ngap, $prob, @skip ) = &find_missing_files
             print PROB "$string \n" ;
     }
     
-#           
-# #  
-# #  shift unique list to first unprocessed downloaded file
-# #    after shift all elements of unique list should be unprocessed!
-# #
-#     
-#     until ( $unique[0] =~ /$unprocessed[0]/ ) {
-#         shift @unique ;
-#     }
-# 
-#     fork_debug   ( $parent, "first unprocessed file is $unique[0]	$unprocessed[0] " ) if $opt_V ;
-#     
-#     foreach $unproc ( @unprocessed ) {
-#         last if ( $unproc =~ /$unprocessed[$#unprocessed]/ ) ;
-#         
-#         fork_debug   ( $parent, "unprocessed file is $unproc	$unprocessed[$#unprocessed] " )  if $opt_V ;
-#         $shift     = 0 ;
-#         $tmp_gap   = 0 ;
-#         $nmiss     = 0 ;
-#         $onbaler   = 0 ;
-#         $last_proc = $unique[0] ;
-#         $next_proc = $unique[1] ;
-#                 
-#         until ( $unique[0] =~ /$unproc/ ) {
-#             shift @unique ;
-#             
-#             fork_debug   ( $parent, "$unique[0]	$unproc	shift $shift" ) if $opt_V ;
-#             
-#             if ( $shift == 1 ) {
-#                 $string  =  "	$next_proc    is still on baler"  ;
-#                 &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-#                 print PROB "$string \n" ;
-#                 push ( @skip, $next_proc ) if ( $opt_F || $opt_G ) ;
-#                 $onbaler++ ;
-#             }
-#             
-#             last if ( $unique[0] =~ /$unproc/ ) ;
-#             last if ( exists $dfile_unique{ $unique[0] }{ msdtime } ) ;
-#             
-#             $shift++ ;
-#             
-#             if ( $shift > 1 ) {
-#                 $string  =  "	$unique[0]    is still on baler"  ;
-#                 &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-#                 print PROB "$string \n" ;
-#                 push ( @skip, $unique[0] ) if ( $opt_F || $opt_G ) ;
-#                 $onbaler++ ;
-#             }
-#         }
-#         
-#         fork_debug   ( $parent, "$unique[0]	$unproc	shift $shift" ) if ( $shift > 1 && $opt_V ) ;
-# 
-#         if ( $shift > 0 ) {
-#             $nmiss += $shift ;
-#             $tmp_gap++ ;
-#             $prob++ unless ( $opt_F || $opt_G ) ;
-#             
-#             $string =  sprintf( "	Number of files expected                   - %d", $nmiss )  ;
-#             &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-#             print PROB "$string \n" ;
-#             $string =  sprintf( "	Number of files on baler                   - %d", $onbaler )  ;
-#             &complain_or_notify ( ( $opt_F || $opt_G ), $parent, $string )  ;
-#             print PROB "$string \n" ;
-#         }
-#         
-#         unless ( $opt_F || $opt_G ) {
-#             $ngap     += $tmp_gap ;
-#         }
-#     }
-         
-# $opt_V = 0 ;
     
     return ( $nmiss, $ngap, $prob, @skip ) ;
 }

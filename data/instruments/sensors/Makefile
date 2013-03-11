@@ -85,6 +85,7 @@ DATA= \
 	s6000.pf \
 	setra278.pf \
 	setra278HA.pf \
+	setra278offset.pf \
 	sh1.pf \
 	sm6-b.pf \
 	sts1_e.pf \
@@ -98,6 +99,7 @@ DATA= \
 	sts2_g2.pf \
 	sts2_g3.pf \
 	sts2_5.pf \
+	sts4_b.pf \
 	sv1.pf \
 	terratech.pf \
     titan_0_25_g.pf \

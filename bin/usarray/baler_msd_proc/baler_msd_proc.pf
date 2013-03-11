@@ -1,4 +1,4 @@
-baler14dirbase     /anf/TA/baler/station_aof_dumps/hold_for_station_closure         # absolute path name for station baler 14 miniseed directory base name
+baler14dirbase     /anf/TA/baler/station_aof_dumps/new                              # absolute path name for station baler 14 miniseed directory base name
 baler14procbase    /anf/TA/baler/station_aof_dumps/processed_44                     # absolute path name for processed baler 14 miniseed directory base name
 baler44dirbase     /anf/TA/baler/work                                               # absolute path name for station baler 44 miniseed directory base name
 baler_final  	   /anf/TA/dbs/wfs/station_final_44                                 # absolute path name for archive station baler directory base name
@@ -21,7 +21,7 @@ days_after_install  2                                           # number of days
 days_before_removal 1                                           # number of days before removal 
                                                                 # to allow 90% rt data return
 limit_hours         12											# limit of hours to allow stations to start processing                                                                
-days_after_removal  60											# number of days to wait after removal before final processing
+days_after_removal  180											# number of days to wait after removal before final processing
 max_mseed_hours     10                                          # maximium number of hours alllowed between mseed files w/o notification
 
 # prob_mail			your@email.edu								# email addresses to send notification of problems

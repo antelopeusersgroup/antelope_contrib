@@ -1,0 +1,135 @@
+Attribute baler14_end
+        String (30)
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "last baler14 miniseed file" )
+        Detail {
+                last baler14 miniseed file
+        }
+        ;
+
+Attribute baler14_start
+        String (30)
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "first baler14 miniseed file" )
+        Detail {
+                first baler14 miniseed file
+        }
+        ;
+
+Attribute baler44_end
+        String (30)
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "last baler44 miniseed file" )
+        Detail {
+                last baler44 miniseed file
+        }
+        ;
+
+Attribute baler44_start
+        String (30)
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "first baler44 miniseed file" )
+        Detail {
+                first baler44 miniseed file
+        }
+        ;
+
+Attribute completed 
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "time when data transmission completed to dmc" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+
+Attribute dmc_end
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "last valid time for dmc data" )
+        Detail {
+                Data end time in epochal seconds.  See field time for more info.
+                This attribute is the time of the last sample of data
+                on the baler.  
+        }
+        ;
+
+Attribute dmc_start
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "dmc data start epoch time" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+Attribute proc_end
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "last valid time for baler processed data" )
+        Detail {
+                Data end time in epochal seconds.  See field time for more info.
+                This attribute is the time of the last sample of data
+                on the baler.  
+        }
+        ;
+
+Attribute proc_start
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "baler processed data start epoch time" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+
+Attribute rt_end
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "last valid time for rt data" )
+        Detail {
+                Data end time in epochal seconds.  See field time for more info.
+                This attribute is the time of the last sample of data
+                on the baler.  
+        }
+        ;
+
+Attribute rt_start
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "rt data start epoch time" )
+        Detail {
+                Data start time in epochal seconds.  See field time for more info.
+        }
+        ;
+
+Relation balerproc
+	Fields ( net sta baler14_start baler14_end baler44_start baler44_end proc_start proc_end dmc_start dmc_end rt_start rt_end completed lddate )
+	Primary ( sta )
+	Description ( "Table listing of information from baler processing" )
+	Detail {
+		Table designed provide documentation on the process of sending baler data to the IRIS DMC.
+		
+		}
+	;
+
