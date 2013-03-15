@@ -36,7 +36,6 @@ auth_agencies &Arr{
 	PDE.*		NEIC
 	PNSN.*		SEA
 	MTECH.*		BUT
-
 }
 auth_agency_default	???
 
@@ -66,6 +65,7 @@ correct_magtype_codes &Arr{
 	ml(sn)		ML(Sn)
 	md		Md
 	mc		MC
+	m		M
 }
 
 magtype_priorities &Arr{
@@ -78,6 +78,18 @@ magtype_priorities &Arr{
 	ml(sn)		7
 	md		8
 	mc		9
+	m		10
+}
+
+bulletin_paths &Arr{
+	#path to bulletin catalogue					authoring agency
+	/marmot/rt/rtsystems/bulletins/catalogs/aeic			AEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/mtech			BUT
+	/marmot/rt/rtsystems/bulletins/catalogs/pde			NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/pnsn			SEA
+	/marmot/rt/rtsystems/bulletins/catalogs/qed			NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/qed_mines		NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/qed_weekly		NEIC
 }
 
 # Extracting raw info from database for pickfiles:
