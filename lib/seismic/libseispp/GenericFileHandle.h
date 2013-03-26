@@ -142,6 +142,31 @@ class GenericFileHandle
         \exception SeisppError will be thrown if there are problems.
         */
         int put(TimeSeriesEnsemble& d);
+        /*! Write a binary blob.
+
+          Some formats (e.g. true SEGY as opposed to Seismic Unix
+          format) have other stuff that needs to be written to 
+          a file that does not match the fixed length record
+          model exactly on which this object is built.  An example
+          are the so called reel headers of SEGY.  We allow writing
+          such a thing through an opaque pointer that needs to 
+          normally be cast by the caller to an const char 
+          pointer.   This has the universal warning that we
+          implicitly assume the pointer is directed at where
+          you think it is and chaos will result if it is anything
+          else.  The only exception is that a NULL pointer will
+          create an exception.
+
+          \param b is a pointer to the first byte of the block
+          of data to be written to output at the current file position.
+          \param nb is the number of bytes from b to write.
+
+          \return number of bytes successfully written
+          
+          \exception SeisppError is thrown if b is nill.
+          */
+
+        int put(const char *b, int nb);
         /* \brief Load and return a ThreeComponentSeismgram object.
 
            Some formats can and should allow gathers of three component
