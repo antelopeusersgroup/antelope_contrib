@@ -15,6 +15,8 @@ namespace SEISPP
 void GenericFileHandle::initialize_iohandle(string filename, bool read_only)
 {
     const string base_error("GenericFileHandle::iohandle procedure called by constructor: ");
+    // There are contexts we need to make sure this is set
+    readmode=read_only;
     if(read_only)
     {
         fp=fopen(filename.c_str(),"r");
@@ -115,6 +117,7 @@ void GenericFileHandle::set_required(AttributeCrossReference& namemap,
                                         bool using_sample_interval,
                                             bool nowritedead)
 {
+    const string base_error("GenericFileHandle::set_required:  ");
     xref=namemap;
     orderkeys=okeys;
     ensemble_mdlist=ensmdlist;
@@ -125,6 +128,28 @@ void GenericFileHandle::set_required(AttributeCrossReference& namemap,
     key_is_dt=using_sample_interval;
     no_write_dead=nowritedead;
     handle_not_ready=false;
+    // frozen for now 
+    retry_limit=50;
+    // Cache external names for these keywords for efficiency
+    // and to avoid later error traps
+    try {
+        dtkey_ext=xref.external(dt_keyword);
+    } catch (...)
+    {
+        throw SeisppError(base_error
+                + "Required metadata keyword ="
+                + dt_keyword
+                + " does not have a cross reference for this format");
+    }
+    try {
+        nskey_ext=xref.external(nsamp_keyword);
+    } catch (...)
+    {
+        throw SeisppError(base_error
+                + "Required metadata keyword ="
+                + nsamp_keyword
+                + " does not have a cross reference for this format");
+    }
 }
 GenericFileHandle::GenericFileHandle(string filename, string tracetype,
         bool read_only) : dbuffer(tracetype), fname(filename)
@@ -751,7 +776,26 @@ int GenericFileHandle::put(ThreeComponentEnsemble& d)
     };
     return(tracecount);
 }
-
+int GenericFileHandle::put(const char *b, int nb)
+{
+    if(handle_not_ready) 
+        throw SeisppError(notreadyerror
+                + " when calling put for raw buffer of unsigned char");
+    const string base_error("GenericFileHandle::put method for generic buffer:  ");
+    if(b==NULL) 
+        throw SeisppError(base_error + "Received a nill pointer");
+    try{
+        this->lock();
+        outstrm.write(b,nb);
+        this->unlock();
+    } catch(...){
+        //Make sure we unlock the file if it got locked and we had a failure
+        this->unlock();
+        throw;
+    };
+    /* Here always return nb.  Perhaps should check stream for an error */
+    return(nb);
+}
 /* Copied from the web from url http://www.techbytes.ca/techbyte103.html */
 bool FileExists(string strFilename) {
   struct stat stFileInfo;

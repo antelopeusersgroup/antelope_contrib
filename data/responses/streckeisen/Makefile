@@ -6,7 +6,8 @@ DATA= sts1 \
 	sts2_g1 \
 	sts2_g2 \
 	sts2_g3 \
-        sts2.5  \
+        sts2_5  \
+        sts4_b  \
 	STS-2_sn_response.pdf \
 	STS-2.5-HF-Zeroes-Poles.pdf
                        

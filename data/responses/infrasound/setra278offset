@@ -6,5 +6,5 @@
 # lower_bound_of_approximation: 600
 # upper_bound_of_approximation: 1100
 # maximum_absolute_error: 25
-# coefficients: 600  0.00015
+# coefficients: 800  0.00015
    unknown   1 SEED062     poly    unknown

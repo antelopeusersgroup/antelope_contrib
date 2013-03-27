@@ -6,6 +6,7 @@ DATA= \
 	ncpa  \
 	setra278  \
 	setra278HA  \
+	setra278offset  \
 	validyne 
 include $(ANTELOPEMAKE)  	
 DIRS=

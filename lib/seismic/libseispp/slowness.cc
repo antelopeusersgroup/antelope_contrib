@@ -118,11 +118,13 @@ SlownessVector& SlownessVector::operator+=(const SlownessVector& other)
 {
     ux+=other.ux;
     uy+=other.uy;
+    return(*this);
 }
 SlownessVector& SlownessVector::operator-=(const SlownessVector& other)
 {
     ux-=other.ux;
     uy-=other.uy;
+    return(*this);
 }
 const SlownessVector SlownessVector::operator+(const SlownessVector& other) const {
     SlownessVector result(*this);

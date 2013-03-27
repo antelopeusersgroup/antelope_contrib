@@ -1,4 +1,4 @@
-baler14dirbase     /anf/TA/baler/station_aof_dumps/hold_for_station_closure         # absolute path name for station baler 14 miniseed directory base name
+baler14dirbase     /anf/TA/baler/station_aof_dumps/new                              # absolute path name for station baler 14 miniseed directory base name
 baler14procbase    /anf/TA/baler/station_aof_dumps/processed_44                     # absolute path name for processed baler 14 miniseed directory base name
 baler44dirbase     /anf/TA/baler/work                                               # absolute path name for station baler 44 miniseed directory base name
 baler_final  	   /anf/TA/dbs/wfs/station_final_44                                 # absolute path name for archive station baler directory base name
