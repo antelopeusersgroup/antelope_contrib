@@ -938,8 +938,8 @@ sub auth_to_suffix {
 	}
 	else{
 		print( STDERR "Current author suffix: \'$auth_suffix_default\'. Please provide appropriate author suffix: " );
-                $user_response  =  <STDIN>;
-		chomp( $user_response );
+                chomp( $user_response  =  <STDIN> );
+		$user_response = ( $user_response eq '' ? 'xx' : $user_response );
         	return $user_response;
 	}
 }
