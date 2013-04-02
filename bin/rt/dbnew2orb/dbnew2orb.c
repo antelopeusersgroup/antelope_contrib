@@ -293,6 +293,7 @@ main(int argc, char **argv)
 		elog_die(0, "orbopen(%s) error\n", orbname);
 	}
     /* both the function dbtables and a query to dbFIELD_TABLES do not return all tables
+       therefore I use an alternate strategy here: I'm trying to lookup the field lddate in all tables.
 	tablenames = dbtables(db, "lddate");
 	//tables_containing_dfile = dbtables(db, "dfile");
     dbf= dblookup(db, 0, "origin", "lddate", "dbNULL");

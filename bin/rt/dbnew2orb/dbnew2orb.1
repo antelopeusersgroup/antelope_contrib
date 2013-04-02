@@ -1,6 +1,6 @@
 .TH DBNEW2ORB 1
 .SH NAME
-dbnew2orb \- transfer modified database rows to an orbserver
+dbnew2orb \- send new or updated database rows to an orbserver
 .SH SYNOPSIS
 .nf
 \fBdbnew2orb \fP[-sleep \fIseconds\fP] [-pf \fIpfname\fP] [-state \fIstatefile\fP]
@@ -21,12 +21,13 @@ Specify a \fIpfname\fP as the parameter file name for \fBdbnew2orb\fP. Defaults 
 Specify a \fIstatefile\fP used for saving and restoring the modification times (lddate) of 
 the database rows. Note that due to rounding errors some rows could be retransmitted after a restart.
 .IP "-prefix prefix"
-This can be used to distinguish between different databases on the orbserver. Defaults to dbn2orb.
+This can be used to distinguish between different databases on the orbserver. This overwrites the prefix 
+specified in the parameterfile.
 .IP "-modified_after time"
 Transfer only rows that have been modified after \fItime\fP. The default is to transfer only rows 
 modified after the start of the program.
 .IP "-lastid"
-transfer lastid table. I cannot think of a situation where this might be usefol, therefore this 
+transfer lastid table. I cannot think of a situation where it might be safe to transfer the lastid table, therefore this 
 is disabled by default.
 .IP "-wfdisc"
 transfer wfdisc table. Since the wfdisc table is igenerally modified frequent, this can result 
@@ -97,7 +98,8 @@ save the demo database on the other side:
 .ft R
 .in
 .SH "BUGS AND CAVEATS"
-The program now also transfers tables that point to external files, i.e. those with the field \fIdfile\fP. 
+The current version of the program transfers external files, i.e. those referenced by the fields dir and dfile \fIdfile\fP. 
+This could result in large data volume transferred.
 Sometimes one might see strange log entries coming from orb2dbt on the receiving side. While this looks
 frigthening, it still seems to work fine.
 
@@ -106,7 +108,7 @@ frigthening, it still seems to work fine.
 dbt2orb(1),orb2dbt(1).
 .fi
 .SH AUTHOR
-Nikolaus Horn, 2005-2013
+Nikolaus Horn, 2005,2013
 .br
 ZAMG / Vienna, nikolaus.horn@zamg.ac.at
 .\" $Id$
