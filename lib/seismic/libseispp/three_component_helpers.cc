@@ -61,6 +61,8 @@ auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram
 	// start with a clone of the original
 	auto_ptr<ThreeComponentSeismogram> tcso(new ThreeComponentSeismogram(tcsi));
 	tcso->ator(atime);  // shifts to arrival time relative time reference
+        // Simply return a copy of traces marked dead
+        if(!(tcso->live)) return(tcso);
 
 	// Extracting a subset of the data is not needed when the requested
 	// time window encloses all the data
@@ -77,26 +79,37 @@ auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram
 		if(jstart<0) jstart=0;
 		if(jend>=tcso->ns) jend = tcso->ns - 1;
 		ns_to_copy = jend - jstart + 1;
+                // This is a null trace so mark it dead in this condition
+                if(ns_to_copy<0) 
+                {
+                    ns_to_copy=0;
+                    tcso->live=false;
+                    tcso->u=dmatrix(1,1);
+                    tcso->ns=0;
+                }
+                else
+                {
 		// This is not the fastest way to do this, but it is
 		// clearer and the performance hit should not be serious
 		// old advice:  make it work before you make it fast
-		tcso->u = dmatrix(3,ns_to_copy);
-		tcso->ns=ns_to_copy;
-		for(i=0;i<3;++i)
-			for(j=0,jj=jstart;j<ns_to_copy;++j,++jj)
-				tcso->u(i,j)=tcsi.u(i,jj);
-		tcso->t0 += (tcso->dt)*static_cast<double>(jstart);
-		//
-		// This is necessary to allow for a rtoa (relative
-		// to absolute time) conversion later.  
-		//
-		if(jstart>0)
-		{
-			double stime=atime+tcso->t0;
-			tcso->put("time",stime);
-			// this one may not really be necessary
-			tcso->put("endtime",atime+tcso->endtime());
-		}
+        		tcso->u = dmatrix(3,ns_to_copy);
+        		tcso->ns=ns_to_copy;
+        		for(i=0;i<3;++i)
+        			for(j=0,jj=jstart;j<ns_to_copy;++j,++jj)
+        				tcso->u(i,j)=tcsi.u(i,jj);
+        		tcso->t0 += (tcso->dt)*static_cast<double>(jstart);
+        		//
+        		// This is necessary to allow for a rtoa (relative
+        		// to absolute time) conversion later.  
+        		//
+        		if(jstart>0)
+        		{
+        			double stime=atime+tcso->t0;
+        			tcso->put("time",stime);
+        			// this one may not really be necessary
+        			tcso->put("endtime",atime+tcso->endtime());
+        		}
+                }
 	}
 	return(tcso);
 }
