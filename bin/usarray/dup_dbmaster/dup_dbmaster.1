@@ -7,7 +7,13 @@ dup_dbmaster \- Makes copy of dbmaster for event dbs
 .fi
 .SH DESCRIPTION
 \fBdup_dbmaster\fP updates \fIdbmaster_output_dir\fP and runs \fBdbfixchanids\fP on dbs 
-defined by \fIfix_chanid_dbs\fP.  
+defined by the regex \fIfix_chanid_dbs\fP.  
+
+Example command line:
+
+.nf
+dup_dbmaster -v /anf/TA/dbs/dbmaster/usarray /anf/TA/dbs/event_dbs/dbmaster/usarray "/anf/TA/dbs/event_dbs/*/u*[0-9]"
+.fi
 
 .LP
 

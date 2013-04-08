@@ -465,5 +465,200 @@ attribute_defaults &Tbl{
     depth real 0.0
 } # end attributes Tbl
 }
+SEGY2002 &Arr{
+sample_data_type real32
+headersize 240
+boolean_true 1
+boolean_false 2
+boolean_default true
+t0_default 0.0
+timetype relative
+data_are_3c false
+data_are_channel_order false
+#
+# Not sure I read the standard right for bytes 216-230 on source orientation
+#
+attributes &Tbl{
+lineSeq int 4 0
+reelSeq int 4 4
+event_number int 4 8
+channel_number int 4 12
+energySourcePt int 4 16
+cdpEns int 4 20
+traceInEnsemble int 4 24
+traceId short 2 30
+vertSum short 2 32
+horSum short 2 34
+dataUse short 2 36
+sourceToRecDist int 4 38
+recElevation int 4 40
+sourceSurfaceElevation int 4 44
+sourceDepth int 4 48
+datumElevRec int 4 52
+datumElevSource int 4 56
+recWaterDepth int 4 60
+sourceWaterDepth int 4 64
+elevationScale short 2 68
+coordScale short 2 70
+sourceLongOrX int 4 72
+sourceLatOrY int 4 76
+recLongOrX int 4 80
+recLatOrY int 4 84
+coordUnits short 2 88
+weatheringVelocity short 2 90
+subWeatheringVelocity short 2 92
+sourceUpholeTime short 2 94
+recUpholeTime short 2 96
+sourceStaticCor short 2 98
+recStaticCor short 2 100
+totalStatic short 2 102
+lagTimeA short 2 104
+lagTimeB short 2 106
+delay short 2 108
+muteStart short 2 110
+muteEnd short 2 112
+sampleLength short 2 114
+deltaSample short 2 116
+gainType short 2 118
+gainConst short 2 120
+initialGain short 2 122
+correlated short 2 124
+sweepStart short 2 126
+sweepEnd short 2 128
+sweepLength short 2 130
+sweepType short 2 132
+sweepTaperAtStart short 2 134
+sweepTaperAtEned short 2 136
+taperType short 2 138
+aliasFreq short 2 140
+aliasSlope short 2 142
+notchFreq short 2 144
+notchSlope short 2 146
+lowCutFreq short 2 148
+hiCutFreq short 2 150
+lowCutSlope short 2 152
+hiCutSlope short 2 154
+year short 2 156
+day short 2 158
+hour short 2 160
+minute short 2 162
+second short 2 164
+timeBasisCode short 2 166
+traceWeightingFactor short 2 168
+phoneRollPos1 short 2 170
+phoneFirstTrace short 2 172
+phoneLastTrace short 2 174
+gapSize short 2 176
+taperOvertravel short 2 178
+cdpx int 4 180
+cdpy int 4 184
+inline int 4 188
+crossline int 4 192
+shotnumber int 4 196
+snscale short 2 200
+DataUnits short 2 202
+TransductanceMantissa int 4 204
+TransductanceExponent short 2 208
+TransductanceUnits short 2 210
+DeviceId short 2 212
+TimeScale short 2 214
+SourceOrientation short 2 216
+SourceDirectionSign short 2 218
+SourceDirectionAngle int 4 220
+SourceMeasurementMantissa int 4 224
+SourceMeasurementExponent short 2 228
+SourceMeasurementUnits short 2 230
+} # end attributes Tbl
+attribute_defaults &Tbl{
+lineSeq  int 0
+reelSeq  int 0
+event_number  int 0
+channel_number  int 0
+energySourcePt  int 0
+cdpEns  int 0
+traceInEnsemble  int 0
+traceId  int 2
+vertSum  int 0
+horSum  int 0
+dataUse  int 2
+sourceToRecDist  int 0
+recElevation  int 0
+sourceSurfaceElevation  int 0
+sourceDepth  int 0
+datumElevRec  int 0
+datumElevSource  int 0
+recWaterDepth  int 0
+sourceWaterDepth  int 0
+elevationScale  int 0
+coordScale  int 0
+sourceLongOrX  int 0
+sourceLatOrY  int 0
+recLongOrX  int 0
+recLatOrY  int 0
+coordUnits  int 0
+weatheringVelocity  int 0
+subWeatheringVelocity  int 0
+sourceUpholeTime  int 0
+recUpholeTime  int 0
+sourceStaticCor  int 0
+recStaticCor  int 0
+totalStatic  int 0
+lagTimeA  int 0
+lagTimeB  int 0
+delay  int 0
+muteStart  int 0
+muteEnd  int 0
+sampleLength  int 0
+deltaSample  int 0
+gainType  int 0
+gainConst  int 0
+initialGain  int 0
+correlated  int 0
+sweepStart  int 0
+sweepEnd  int 0
+sweepLength  int 0
+sweepType  int 0
+sweepTaperAtStart  int 0
+sweepTaperAtEned  int 0
+taperType  int 0
+aliasFreq  int 0
+aliasSlope  int 0
+notchFreq  int 0
+notchSlope  int 0
+lowCutFreq  int 0
+hiCutFreq  int 0
+lowCutSlope  int 0
+hiCutSlope  int 0
+year  int 0
+day  int 0
+hour  int 0
+minute  int 0
+second  int 0
+timeBasisCode  int 0
+traceWeightingFactor  int 0
+phoneRollPos1  int 0
+phoneFirstTrace  int 0
+phoneLastTrace  int 0
+gapSize  int 0
+taperOvertravel  int 0
+cdpx int 0
+cdpy int 0
+inline int 0
+crossline int 0
+shotnumber int 0
+snscale int 1
+DataUnits int 0
+TransductanceMantissa int 0
+TransductanceExponent int 0
+TransductanceUnits int 0
+DeviceId int 0
+TimeScale int 1
+SourceOrientation int 0
+SourceDirectionSign int 0
+SourceDirectionAngle int 0
+SourceMeasurementMantissa int 0
+SourceMeasurementExponent int 0
+}
+}
 
 pf_revision_time 1295713195
