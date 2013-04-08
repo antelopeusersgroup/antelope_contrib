@@ -15,7 +15,6 @@ Contains basic functions to interact with (read) data from Antelope Datascope da
 Views are mostly supported. Access to 'dotted' fields is possible, depending on situation. Because all record pointers have attribute AND dictionary key access, one can get access through the dictionary key: dbtup['origin.time'], or the method dbtup.get('origin.time'), for example, of a joined view, while: dbtup.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
 
 ### Examples
-```
 Old way:
 ```python
 >>> from antelope.datascope import dbopen
