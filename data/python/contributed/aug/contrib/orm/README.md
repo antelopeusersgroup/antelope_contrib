@@ -5,25 +5,20 @@ Contains basic functions to interact with (read) data from Antelope Datascope da
 
 ### Overview
 
-* Dbrecord - A dictionary/object which loads/holds all the data from one record of a table. Field access as key or attribute.
+* Dbtuple - A dictionary/object which points to the data from one record of a table. Field access as dictionary key or attribute.
 
-* DbrecordList - A list of Dbrecord's. ALL data are local to python, in namespace and memory. You can close the db and your data remains. Memory hog if you pass it a huge table.
+* Relation - A table/view pointer which acts like a python list. Can be constructed with a Dbptr or a string db name. Instances consist of just one Dbptr in memory. Dbtuple's are built on the fly, and accessed as one would a list. a Relation is also a generator, so one can run a for loop on it.
 
-* DbrecordPtr - Object with the same methods/access as a Dbrecord, but the data are not local, they are read from/(AND WRITTEN TO) to the database. The pointer is stored and any fields are passed as queries to the db.
-
-* DbrecordPtrList - A list of DbrecordPtr's. Suitable for most occasions. Because DbrecordLists can take up memory for a lot of records, see AttribDbptr.
-
-* AttribDbptr - An 'Attribute pointer' which acts like a python list. Can be constructed with a Dbptr or a string db name. Instances consist of just one Dbptr in memory. DbrecordPtr's are built on the fly, and accessed as one would a list. AttribDbptr is also a generator, so one can run a for loop on it. A simple ORM for Datascope.
+* Connection - A simple controller for opening/closing databases and doing some processing. Designed to be inherited and used as a base class.
 
 ### Notes
-Views are mostly supported. Access to the same fields from two joined tables may cause problems, depending on situation. Because all record pointers have attribute AND dictionary key access, in the 'pointer' classes (which use dbgetv directly), one can get access through the dictionary key: db['origin.time'], for example, of a joined view, while: db.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
+Views are mostly supported. Access to 'dotted' fields is possible, depending on situation. Because all record pointers have attribute AND dictionary key access, one can get access through the dictionary key: db['origin.time'], for example, of a joined view, while: db.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
 
 ### Examples
 ```python
->>> from antelope.datascope import dbopen
->>> from aug.contrib.orm import AttribDbptr
->>> db = dbopen('/opt/antelope/data/db/demo/demo')
->>> db = db.lookup(table='site')
+>>> from aug.contrib.orm import Connection
+>>> dbc = Connection('/opt/antelope/data/db/demo/demo', table='site')
+>>> db = dbc.DBPTR
 ```
 Old way:
 ```python
@@ -37,9 +32,9 @@ Old way:
 ```
 Using ORM:
 ```python
->>> sites = AttribDbptr(db)
+>>> sites = dbc.relation
 >>> sites[5]
-DbrecordPtr('site' -> OBN 1988258::-1)
+Dbtuple('site' -> OBN 1988258::-1)
 
 >>> for s in sites:
 ...    print s.sta, s.lat, s.lon
