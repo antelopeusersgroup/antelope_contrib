@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
 # core.py
 #
@@ -12,8 +12,8 @@
 # However they hold database pointers (Dbptrs) which must point to open
 # databases for the classes to work properly. The advantage is speed and
 # memory footprint when working with large database tables.
-from antelope.datascope import (Dbptr, dbopen, dblookup, dbALL, dbNULL, 
-    dbTABLE_NAME, dbPRIMARY_KEY, dbTABLE_FIELDS, dbDATABASE_IS_WRITABLE)
+
+from antelope.datascope import (Dbptr, dbopen, dblookup, dbALL, dbNULL)
 
 def _open(database, perm='r'):
     """
@@ -42,15 +42,15 @@ class Dbtuple(dict, object):
     # built in queries for useful info
     @property
     def TABLE_NAME(self):
-        return self._ptr.query(dbTABLE_NAME)  # string of what table record came from
+        return self._ptr.query('dbTABLE_NAME')  # string of what table record came from
     
     @property
     def PRIMARY_KEY(self):
-        return self._ptr.query(dbPRIMARY_KEY) # tuple of strings of fields in primary key
+        return self._ptr.query('dbPRIMARY_KEY') # tuple of strings of fields in primary key
     
     @property
     def TABLE_FIELDS(self):              # tuple of fields from database record
-        return self._ptr.query(dbTABLE_FIELDS)
+        return self._ptr.query('dbTABLE_FIELDS')
     
     @property
     def Fields(self):                   # May go away in future
@@ -96,7 +96,7 @@ class Dbtuple(dict, object):
         else:
             # Could try to catch an ElogComplain in else, but the same
             # error comes up for read-only or a wrong field
-            if self._ptr.query(dbDATABASE_IS_WRITABLE):
+            if self._ptr.query('dbDATABASE_IS_WRITABLE'):
                 self._ptr.putv(field, value)
             else:
                 raise IOError("Database not opened with write permission!")
@@ -152,10 +152,10 @@ class Dbtuple(dict, object):
         """
         Prints out record content as a string.
 
-        SHOULD be the same as if you cat'ted a line from the table file
-        (w/o the extra whitespace)
+        SHOULD be the same as if you cat'ted a line from the table text file
         """
-        formatting = ''.join([db.query('dbFIELD_FORMAT') for db.record in range(len(self.TABLE_FIELDS))])
+        db = Dbptr(self._ptr)
+        formatting = ' '.join([db.query('dbFIELD_FORMAT') for db.field in range(len(self.TABLE_FIELDS))])
         fields = tuple([self.__getattr__(f) for f in self.TABLE_FIELDS])
         return formatting % fields
 
@@ -170,17 +170,21 @@ class Relation(list):
     No data (not even individual record pointers) are stored. The object acts like
     a list but the entire contents are just a pointer to an open db.
 
-    When accessing items, will return a Dbtuple, by building a pointer,
-    rather than actually storing them in the list. A request for one list item
-    returns a Dbtuple, and a slice returns a list of Dbtuple's. This is
-    essentially the exact behavior of a Python list. You're welcome.
+    A request for one list item returns a Dbtuple, and a slice returns a list of
+    Dbtuple's. This is essentially the exact behavior of a Python list. You're welcome.
 
-    Good for large datasets that would take up a lot of memory to load the whole table
-    or even millions of Dbtuple's (which are holding one Dbptr each) into RAM.
-
-    Attributes
+    Methods
     ----------
-    _ptr - the actual Dbptr
+    
+    append(**kwargs)
+        Add row to relation, populate with values from keyword arguments
+
+    column(field)
+        Get a list of values for each record for a field name
+
+    get_column(field)
+        A version of the 'column' method with Datascope NULL awareness,
+        returns a python None where a value is NULL for its field
 
     .. rubric:: Example
     >>> db = dbopen('/opt/antelope/data/db/demo/demo')
@@ -248,6 +252,29 @@ class Relation(list):
         for index in xrange(len(self)):
             yield self.__getitem__(index)
     
+    def __str__(self):
+        """
+        Print out Antelope compatible text for a table/view
+        """
+        return '\n'.join([str(dbr) for dbr in self])
+    
+    def _new(self):
+        """
+        Add null row to a table
+
+        Returns Dbtuple of the new record row
+        """
+        record = self._ptr.addnull()
+        return self[record]
+    
+    def append(self, **kwargs):
+        """
+        Add a new null row and populate it with keyword arguements
+        """
+        dbt = self._new()
+        for key, value in kwargs.iteritems():
+            dbt.set(key,value)
+
     def column(self, field):
         """
         A column of the same field from each Dbtuple record
@@ -263,6 +290,7 @@ class Relation(list):
         
         """
         return [dbr.get(field) for dbr in self if field in dbr.TABLE_FIELDS]
+    
 
 class Connection(object):
     """
@@ -281,20 +309,26 @@ class Connection(object):
         return Relation(self._ptr)
 
     def _lookup(self, **kwargs):
-        """Convenience function for now"""
-        self._ptr = self._ptr.lookup(**kwargs)
+        """Return pointer from a lookup on self"""
+        return self._ptr.lookup(**kwargs)
 
-    def process(self, commands=None):
-        """Forward process command list to Dbptr in the connection"""
-        self._ptr = self._ptr.process(commands)
+    def _process(self, commands=None):
+        """Return process from a pointer on self"""
+        return self._ptr.process(commands)
 
     def __init__(self, database, perm='r', **kwargs):
-        """
-        Open a database connection
-        """
+        """Open a database connection"""
         self._ptr = _open(database, perm)
         if kwargs:
-            self._lookup(**kwargs)
+            self.lookup(**kwargs)
+    
+    def lookup(self, **kwargs):
+        """Do a lookup on self"""
+        self._ptr = self._lookup(**kwargs)
+
+    def process(self, commands=None):
+        """Do a process on self"""
+        self._ptr = self._process(commands)
 
     def close(self):
         """Close current pointer"""
