@@ -35,14 +35,18 @@ db.close()
 
 Using ORM:
 ```python
->>> from aug.contrib.orm import Connection
+>>> from aug.contrib.orm import Connection, Relation
 >>> dbc = Connection('/opt/antelope/data/db/demo/demo', table='site')
 # Dbptr available as attribute
 >>> dbc.DBPTR
 [0, 25, -501, -501]
 
-# returns a Relation pointer instance (list of Dbtuples)
+# create a Relation from a Dbptr (Connection also has 'relation' property method)
+
 >>> sites = dbc.relation
+# OR
+>>> sites = Relation(dbc.DBPTR)
+
 >>> sites[1:4]
 [Dbtuple('site' -> KIV 1988258::-1),
  Dbtuple('site' -> KMI 1986159::-1),
@@ -59,9 +63,10 @@ LSA 29.7 91.15
 LZH 36.0867 103.8444
 
 # Method 'get' returns python 'None' if NULL value for that field
->>> sites[5].offdate
+>>> site = sites[5]
+>>> site.offdate
 -1
->>> sites[5].get('offdate')
+>>> site.get('offdate')
 
 # Connection close
 dbc.close()
