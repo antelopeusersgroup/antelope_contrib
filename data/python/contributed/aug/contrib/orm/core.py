@@ -155,8 +155,9 @@ class Dbtuple(dict, object):
         SHOULD be the same as if you cat'ted a line from the table file
         (w/o the extra whitespace)
         """
-        fields = [str(self.__getattr__(f)) for f in self.TABLE_FIELDS]
-        return ' '.join(fields)
+        formatting = ''.join([db.query('dbFIELD_FORMAT') for db.record in range(len(self.TABLE_FIELDS))])
+        fields = tuple([self.__getattr__(f) for f in self.TABLE_FIELDS])
+        return formatting % fields
 
 
 class Relation(list):
