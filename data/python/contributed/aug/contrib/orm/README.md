@@ -5,23 +5,22 @@ Contains basic functions to interact with (read) data from Antelope Datascope da
 
 ### Overview
 
-* Dbtuple - A dictionary/object which points to the data from one record of a table. Field access as dictionary key or attribute.
+* Dbtuple - A dictionary/object which points to the data from one record of a table. Field access as dictionary key or attribute. Also contains 'get' and 'set' methods which are Datascope NULL aware. Retrieving a value with 'get' which is equal to a NULL value for that field returns a python None, while setting a value to None with 'set' will put the NULL value into that field.
 
 * Relation - A table/view pointer which acts like a python list. Can be constructed with a Dbptr or a string db name. Instances consist of just one Dbptr in memory. Dbtuple's are built on the fly, and accessed as one would a list. a Relation is also a generator, so one can run a for loop on it.
 
 * Connection - A simple controller for opening/closing databases and doing some processing. Designed to be inherited and used as a base class.
 
 ### Notes
-Views are mostly supported. Access to 'dotted' fields is possible, depending on situation. Because all record pointers have attribute AND dictionary key access, one can get access through the dictionary key: db['origin.time'], for example, of a joined view, while: db.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
+Views are mostly supported. Access to 'dotted' fields is possible, depending on situation. Because all record pointers have attribute AND dictionary key access, one can get access through the dictionary key: dbtup['origin.time'], or the method dbtup.get('origin.time'), for example, of a joined view, while: dbtup.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
 
 ### Examples
-```python
->>> from aug.contrib.orm import Connection
->>> dbc = Connection('/opt/antelope/data/db/demo/demo', table='site')
->>> db = dbc.DBPTR
 ```
 Old way:
 ```python
+>>> from antelope.datascope import dbopen
+>>> db = dbopen('/opt/antelope/data/db/demo/demo')
+>>> db = db.lookup(table='site')
 >>> db.record = 5
 >>> db
 [0, 25, -501, 5]
@@ -29,29 +28,45 @@ Old way:
 >>> for db.record in range(db.nrecs()):
 ...     sta, lat, lon = db.getv('sta','lat','lon')
 ...     print sta, lat, lon
+# prints 'HIA 49.2667 119.7417', etc...
+
+db.close()
+
 ```
+
 Using ORM:
 ```python
->>> sites = dbc.relation
->>> sites[5]
-Dbtuple('site' -> OBN 1988258::-1)
+>>> from aug.contrib.orm import Connection
+>>> dbc = Connection('/opt/antelope/data/db/demo/demo', table='site')
+# Dbptr available as attribute
+>>> dbc.DBPTR
+[0, 25, -501, -501]
 
->>> for s in sites:
-...    print s.sta, s.lat, s.lon
+# returns a Relation pointer instance (list of Dbtuples)
+>>> sites = dbc.relation
+>>> sites[1:4]
+[Dbtuple('site' -> KIV 1988258::-1),
+ Dbtuple('site' -> KMI 1986159::-1),
+ Dbtuple('site' -> LSA 1991333::-1)]
+
+# Access fields as attribute, key, or 'get' method
+>>> for s in sites[:4]:
+...    print s.sta, s['lat'], s.get(lon)
 
 HIA 49.2667 119.7417
 KIV 43.9562 42.6888
 KMI 25.1233 102.74
 LSA 29.7 91.15
 LZH 36.0867 103.8444
-OBN 55.1138 36.5687
-WUS 41.199 79.218
-CHM 42.9986 74.7513
-EKS2 42.6615 73.7772
-USP 43.2669 74.4997
-TKM 42.8601 75.3184
-KBK 42.6564 74.9478
-AAK 42.6333 74.4944
+
+# Method 'get' returns python 'None' if NULL value for that field
+>>> sites[5].offdate
+-1
+>>> sites[5].get('offdate')
+
+# Connection close
+dbc.close()
+
 ```
 
 Copyright by Mark Williams 2012.013
