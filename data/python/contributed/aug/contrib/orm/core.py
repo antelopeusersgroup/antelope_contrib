@@ -15,9 +15,10 @@
 
 from antelope.datascope import (Dbptr, dbopen, dblookup, dbALL, dbNULL)
 
-def _open(database, perm='r'):
+def _open(database, perm='r', **kwargs):
     """
-    Return a pointer to an open database from a string or Dbptr
+    Return a pointer to an open database from a string or Dbptr.
+    Any keyword arguments not for dbopen are passed to dblookup
     """
     if isinstance(database, Dbptr):
         db = Dbptr(database)
@@ -25,6 +26,8 @@ def _open(database, perm='r'):
         db = dbopen(database, perm=perm)
     else:
         raise TypeError("Input pointer or string of valid database")
+    if kwargs:
+        db = dblookup(db,**kwargs)
     return db
 
 class Dbtuple(dict, object):
@@ -201,16 +204,15 @@ class Relation(list):
 
     def __init__(self, database=None, **kwargs):
         """
-        Sets the pointer.
+        Sets the pointer. Must be a pointer to a table or view.
 
         :type dbv: antelope.datascope.Dbptr
         :param dbv: Open pointer to an Antelope database view or table
         """
         super(Relation, self).__init__()
         self._ptr = _open(database)
-        if kwargs:
-            self._ptr = dblookup(self._ptr,**kwargs)
-        # otherwise returns empty list
+        if self._ptr.table == dbALL:
+            raise ValueError("Dbptr doesn't contain table or view")
 
     def __getitem__(self, index):
         """
