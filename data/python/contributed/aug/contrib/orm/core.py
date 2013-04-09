@@ -277,6 +277,23 @@ class Relation(list):
         for key, value in kwargs.iteritems():
             dbt.set(key,value)
 
+    def index(self, query_string):
+        """
+        Return index of a tuple which matches an item in the list.
+        
+        USE AT YOUR OWN RISK!
+        This passes the query to dbfind, so dbfind rules apply:
+            - Datascope db syntax
+            - Returns first record matching query
+        For now, acts like list 'index' and throws error if no match.
+        * Could return None in future
+        """
+        _index = self._ptr.find(query_string)
+        if 0 <= _index < len(self):
+            return _index
+        else:
+            raise ValueError("No items found in list")
+
     def column(self, field):
         """
         A column of the same field from each Dbtuple record
