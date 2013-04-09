@@ -44,7 +44,6 @@ Using ORM:
 [0, 25, -501, -501]
 
 # create a Relation from a Dbptr (Connection also has 'relation' property method)
-
 >>> sites = dbc.relation
 # OR
 >>> sites = Relation(dbc.DBPTR)
@@ -56,7 +55,7 @@ Using ORM:
 
 # Access fields as attribute, key, or 'get' method
 >>> for s in sites[:4]:
-...    print s.sta, s['lat'], s.get(lon)
+...    print s.sta, s['lat'], s.get('lon')
 
 HIA 49.2667 119.7417
 KIV 43.9562 42.6888
