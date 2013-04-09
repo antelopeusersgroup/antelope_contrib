@@ -1,18 +1,20 @@
-## aug.contrib.orm
+aug.contrib.orm
+---------------
+
 ### Object-Relational Mapping for Datascope
 
 Contains basic functions to interact with (read) data from Antelope Datascope database tables into python using the Antelope Python API.
 
-### Overview
+### Classes
 
-* Dbtuple - A dictionary/object which points to the data from one record of a table. Field access as dictionary key or attribute. Also contains 'get' and 'set' methods which are Datascope NULL aware. Retrieving a value with 'get' which is equal to a NULL value for that field returns a python None, while setting a value to None with 'set' will put the NULL value into that field.
+* Dbtuple - A dictionary/object which points to the data from one record of a table. Field access as dictionary key or attribute. Also contains `get` and `set` methods which are Datascope NULL aware.
 
-* Relation - A table/view pointer which acts like a python list. Can be constructed with a Dbptr or a string db name. Instances consist of just one Dbptr in memory. Dbtuple's are built on the fly, and accessed as one would a list. a Relation is also a generator, so one can run a for loop on it.
+* Relation - A table/view pointer which acts like a python list of Dbtuple's. Supports indexing, slicing, and appending. A Relation is also a generator, so one can run a for loop on it.
 
-* Connection - A simple controller for opening/closing databases and doing some processing. Designed to be inherited and used as a base class.
+* Connection - A simple controller for opening/closing databases and doing queries. Designed to be inherited and used as a base class.
 
 ### Notes
-Views are mostly supported. Access to 'dotted' fields is possible, depending on situation. Because all record pointers have attribute AND dictionary key access, one can get access through the dictionary key: dbtup['origin.time'], or the method dbtup.get('origin.time'), for example, of a joined view, while: dbtup.origin.time will produce an error since 'origin' will produce a Dbptr which has no 'time' attribute.
+Views are mostly supported. Access to 'dotted' fields is possible, depending on situation. Because all record pointers have attribute AND dictionary key access, one can get access through the dictionary key: `dbtup['origin.time']`, or the `get` method: `dbtup.get('origin.time')`, while the attribute: `dbtup.origin.time` will produce an error due to python syntax.
 
 ### Examples
 Old way:
@@ -60,7 +62,6 @@ HIA 49.2667 119.7417
 KIV 43.9562 42.6888
 KMI 25.1233 102.74
 LSA 29.7 91.15
-LZH 36.0867 103.8444
 
 # Method 'get' returns python 'None' if NULL value for that field
 >>> site = sites[5]
@@ -73,5 +74,5 @@ dbc.close()
 
 ```
 
-Copyright by Mark Williams 2012.013
+Copyright by Mark Williams 2012.013 under Lesser GPL
 
