@@ -1,0 +1,62 @@
+Data for the MIT Global Traveltime tomography code is separated 
+into series of binary files in two parts.  First, information about
+individual events is added to the catalog of all events.  Then,
+information for all tt measurements is seperated out into folders
+for different phases.
+
+
+Event Files:
+Files containing information on each event
+Combined with all other events used (EHB, CSN, etc)
+
+***Event Files from data:***
+1) Event ID - evnr.bin (tacked onto end of catalog ID numbers)
+2) Month - month.bin
+3) Day - day.bin
+4) Year - year.bin
+5) Hour - hour.bin
+6) Minute - min.bin
+7) Second - sec.bin
+8) Event LAT (-pi/2 to pi/2)- evlat.bin
+9) Event LON (0 to 2*pi) - evlon.bin
+10) Event Radius (6371-Depth) - evrad.bin
+11) Event Mb - evmb.bin
+12) Event Ms - evms.bin
+
+***Event files from clustering***
+8) Event cluster LAT (-pi/2 to pi/2)- evcllat.bin.fine
+9) Event cluster LON (0 to 2*pi) - evcllon.bin.fine
+10) Event cluster number index - evclnr.bin.fine
+
+
+Station-Event Files:
+Files containing information for each traveltime delay measured
+Sorted into different folders according to phase
+
+***Station-event Files from data:***
+1) Event LAT (-pi/2 to pi/2) - evlat.bin
+2) Event LON (0 to 2*pi) - evlon.bin
+3) Event Radius - evrad.bin
+4) Event ID - evnr.bin (matches relevent IDs for events file)
+5) Station LAT - (-pi/2 to pi/2) stlat.bin
+6) Station LON  -(0 to 2*pi) - stlon.bin
+7) Station Altitude - sth.bin
+8) Traveltime delay - d.bin
+9) Predicted traveltime in ak135 - prett.bin
+10) Observed traveltime - obstt.bin
+11) Event to Station arc distance - arc.bin
+12) Event to Station Azimuth - azim.bin
+13) Precision of measurement - prec.bin
+
+***Station-event files from processing:***
+14) Derivative of tt wrt lat - dTdphi.bin
+15) Derivative of tt wrt lon - dTdtheta.bin
+16) Derivative of tt wrt radius - dTdr.bin
+17) Elliptical correction - ellipcor.bin
+18) Station altitude correction - stcor.bin
+19) TT delay corrected for ellipticity and station altitude - dcor.bin
+
+***Station-event files from clustering:***
+20) Cluster index - index.bin
+20) Station cluster index - stclust.bin
+21) Event cluster index - evclust.bin
