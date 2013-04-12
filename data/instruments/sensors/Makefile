@@ -109,6 +109,7 @@ DATA= \
 	trillium_120.pf \
 	trillium_240_1.pf \
 	trillium_240_2.pf \
+	trillium_compact_sio.pf \
 	unknown-acceleration.pf \
 	unknown-displacement.pf \
 	unknown-velocity-1d.pf \
