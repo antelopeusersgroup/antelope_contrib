@@ -6,21 +6,22 @@ origin_subset_expr
 # Mailing pickfiles: 
 
 email_recipients &Tbl{
-	mulder@pgc.nrcan.gc.ca
-	kent@lindquistconsulting.com
+	name@domain.com
 }
 email_subject 	pick files
 attach_dbtables	1
 
 # Saving pickfiles:
 
-pickfile_name_pattern /%Y%m/%Y%m%d%H%M%S.%{suffix}
+pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
 auth_suffixes &Tbl{
 	PGC:mulder	tm
 	PGC:bentkows	wb
 	PGC:bird	ab
 	PGC:malwhite	mw
 	PGC:mkoessle	mk
+	PGC:meighan	lm
+	PGC:brillon	cb
 	PGC:.*		xx
 	orbassoc.*	auto
 }
@@ -32,9 +33,9 @@ auth_agencies &Arr{
 	QED.*		NEIC
 	NEIC.*		NEIC
 	AEIC.*		AEIC
+	PDE.*		NEIC
 	PNSN.*		SEA
-	mtech.*		BUT
-
+	MTECH.*		BUT
 }
 auth_agency_default	???
 
@@ -64,6 +65,7 @@ correct_magtype_codes &Arr{
 	ml(sn)		ML(Sn)
 	md		Md
 	mc		MC
+	m		M
 }
 
 magtype_priorities &Arr{
@@ -76,6 +78,18 @@ magtype_priorities &Arr{
 	ml(sn)		7
 	md		8
 	mc		9
+	m		10
+}
+
+bulletin_paths &Arr{
+	#path to bulletin catalogue					authoring agency
+	/marmot/rt/rtsystems/bulletins/catalogs/aeic			AEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/mtech			BUT
+	/marmot/rt/rtsystems/bulletins/catalogs/pde			NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/pnsn			SEA
+	/marmot/rt/rtsystems/bulletins/catalogs/qed			NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/qed_mines		NEIC
+	/marmot/rt/rtsystems/bulletins/catalogs/qed_weekly		NEIC
 }
 
 # Extracting raw info from database for pickfiles:

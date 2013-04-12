@@ -24,12 +24,12 @@ using namespace SEISPP;
 class GenericFileHandle
 {
     public:
-        /*! Primary constructor. 
+        /*! Full constructor. 
 
-          This is expected to be the only constructor for this 
-          handle object.  It opens a requested file in either read
-          or write mode.  Reads and write cannot be mixed on the
-          same handle.  
+          This is a fully parameterized constructor that defines
+          all the components needed to make the object valid.  
+          A file accessed by this handle is in either read or write
+          mode, but it cannot be both. 
 
           \param filename is the data file to be read or created.
           \param tracetype is a unique data type identifier used 
@@ -74,6 +74,28 @@ class GenericFileHandle
                 list<string> ensmdlist, list<string> tmdlist, 
                 bool read_only, string ns_key, string dt_key, double dtscl,
                 bool using_sample_interval=true,bool nowritedead=true);
+        /*! \brief Simplified constructor with file name and type only.
+
+          Children of this handle for particular trace formats 
+          will normally use this constructor.   It builds only core
+          components that have to be initialized by a "construction is
+          initialization" algorithm.   Any use of this constructor 
+          will require a later call to the protected method called
+          set_required.  The object itself has 
+          internal checks for validation of required parameters.   
+          The intent is most uses of this object will use this 
+          constructor in the standard colon syntax followed by calls 
+          to set_required.   This allows the details of how these
+          messy elements are constructed to be hidden behind the 
+          interface.
+
+          \param filename is the data file to be read or created.
+          \param tracetype is a unique data type identifier used 
+            internally to define format (implementation dependent)
+          \param read_only is boolean as the name implies.
+          */
+        GenericFileHandle(string filename, string tracetype,
+                bool read_only=true);
         /*! Copy constructor.
 
           The current implementation does not actually allow this
@@ -120,6 +142,31 @@ class GenericFileHandle
         \exception SeisppError will be thrown if there are problems.
         */
         int put(TimeSeriesEnsemble& d);
+        /*! Write a binary blob.
+
+          Some formats (e.g. true SEGY as opposed to Seismic Unix
+          format) have other stuff that needs to be written to 
+          a file that does not match the fixed length record
+          model exactly on which this object is built.  An example
+          are the so called reel headers of SEGY.  We allow writing
+          such a thing through an opaque pointer that needs to 
+          normally be cast by the caller to an const char 
+          pointer.   This has the universal warning that we
+          implicitly assume the pointer is directed at where
+          you think it is and chaos will result if it is anything
+          else.  The only exception is that a NULL pointer will
+          create an exception.
+
+          \param b is a pointer to the first byte of the block
+          of data to be written to output at the current file position.
+          \param nb is the number of bytes from b to write.
+
+          \return number of bytes successfully written
+          
+          \exception SeisppError is thrown if b is nill.
+          */
+
+        int put(const char *b, int nb);
         /* \brief Load and return a ThreeComponentSeismgram object.
 
            Some formats can and should allow gathers of three component
@@ -186,7 +233,57 @@ class GenericFileHandle
         long filesize();
         /*! Position file pointer to beginning of file.  */
         void rewind();
+    protected:
+        /* \brief Sets all required format dependent variables.
+          
+           This procedure is a companion to the partial constructor 
+           above. It exists mainly to provide a way to build
+           simplified constructors for specific formats.  This procedure
+           sets the required parameters and an internal boolean that
+           validates the handle is complete and in working order.  
+           
+          \param namemap is an object that provides a cross referencing
+            between the internal and external namespace.
+          \param orderkeys is a list of attributes used to define
+            internal groupings during reads.  Ignored in writing 
+            so writers can leave this empty. 
+          \param ensmdlist is a list of internal names to be loaded
+            as global for the entire ensemble.  These are extracted
+            for input and pushed to all headers in output.  
+          \param tmdlist is a list of internal names for metadata to
+            be loaded for every object read or to be stored for
+            each object written.
+          \param ns_key is a Metadata tag (internal name, not external
+            name for given file format) for number of samples.
+          \param dt_key is a Metadata tag (internal name, not external)
+            used to define sample interval in seconds. 
+          \param dtscl is a scale factor to be applied to the external
+            files stored sample rate.  This is necessary, for example,
+            with segy/su files where dt is defined in microseconds. 
+          \param using_sample_interval is used as a flag to define
+            the physical meaning of the dt_key parameter.  When 
+            this parameter is true it is assumed the dt_key attribute
+            is the sample interval.  When false it is assumed the
+            value stored is sampling frequency = 1/dt.  (default true)
+          \param nowritedead defines how to handle traces maked dead.
+            When true (the default) traces marked dead (live=false)
+            are ignored.  When false a zero pad version will be inserted.
+            The later, for example, is used by segy.
+           */
+        void set_required(AttributeCrossReference& namemap,
+                list<string> orderkeys,
+                    list<string> ensmdlist,
+                        list<string> tmdlist,
+                            string ns_key,
+                                string dt_key,
+                                    double dtscl,
+                                        bool using_sample_interval,
+                                            bool nowritedead);
     private:
+        bool handle_not_ready;
+        /* This is little routine opens files and stores appropriate
+           handle in this object.  Used by all constructors. */
+        void initialize_iohandle(string filename, bool read_only);
         FixedFormatTrace dbuffer;
         AttributeCrossReference xref;
         /* Current implementation uses the file name to create an empty 

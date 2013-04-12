@@ -257,8 +257,8 @@ sub new_filename {  # $filename = &new_filename ( $filename ) ;
 sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &build_dbj ( @db ) ; 
     my ( @db ) = @_ ;
     
-    my ( $filename, $mysubset, $nrecs, $ortime, $startdy, $startmo, $startyr, $time_subset ) ; 
-    my ( @dbarrival, @dbassoc, @dbevent, @dbj, @dbj_event, @dbnetmag, @dborigerr ) ; 
+    my ( $filename, $mysubset, $nrecs, $nsta, $ortime, $startdy, $startmo, $startyr, $time_subset ) ; 
+    my ( @dbarrival, @dbassoc, @dbevent, @dbj, @dbj_event, @dbnetmag, @dbnj, @dborigerr ) ; 
     my ( @dborigin, @dbschanloc, @dbsnetsta, @dbstamag, @dmcbull, @trackdb ) ; 
 
     @dborigin    = dblookup( @db, "", "origin",   "", "" ) ;
@@ -276,6 +276,13 @@ sub build_dbj { # ( $filename, $refj, $refj_event, $refnetmag, $refstamag ) = &b
     } else {
         elog_notify( sprintf ( "%d origin records before any subsets. \n", dbquery( @dborigin, "dbRECORD_COUNT" ) ) ) if ( $opt_V ) ;
     }
+    
+    @dbnj  = dbnojoin ( @dbarrival, @dbsnetsta ) ;
+    $nsta  = dbquery( @dbnj, "dbRECORD_COUNT" )  ;
+    if ( $nsta > 0 ) {
+        elog_die( "$nsta stations do not join to snetsta table.  Exiting.\n" ) ;
+    }
+    
 #
 # subset origin table based on command line arguments 
 #

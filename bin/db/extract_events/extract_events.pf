@@ -42,7 +42,7 @@ target_sample_interval 0.1
 # the arrival table are extracted.  When false all data 
 # will be extracted using predicted arrival time
 use_arrival_table false
-save_as_3c_objects true
+save_as_3c_objects false
 # travel time method and model for ttcalc
 method tttaup
 model iasp91
@@ -155,3 +155,6 @@ StationChannelMap       &Arr{
 save_files_only false
 
 pf_revision_time 1192965733
+# Set this false if you are using a plain origin table without event
+# False is a bit dangerous as it builds an intinsic orid=evid definition
+require_event true

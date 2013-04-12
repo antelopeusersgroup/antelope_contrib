@@ -1,0 +1,150 @@
+#
+#  This is an example of a pf file saving data as 3c objects.   
+#
+station_mdlist &Tbl{
+sta string
+nsamp int
+samprate real
+datatype string
+dfile string
+dir string
+foff int
+time real
+endtime real 
+timetype string
+calib real
+}
+Ensemble_mdlist &Tbl{
+evid int
+}
+# These are referenced only when save_as_3c_objects is set true
+# They should not be changed unless one wants to use a different
+# table to store these attributes than the wfprocess table
+# None 3c data always use wfdisc
+output_mdlist &Tbl{
+pwfid int
+wfprocess.nsamp int
+wfprocess.samprate real
+wfprocess.datatype string
+wfprocess.time real
+wfprocess.endtime real 
+wfprocess.timetype string
+wfprocess.dfile string
+wfprocess.dir string
+}
+netname usarray
+net_code XO
+phase P
+data_window_start -600.0
+data_window_end 4000.0
+data_time_pad 100.0
+processing_window_start -500.0
+processing_window_end 3600.0
+target_sample_interval 0.05
+# When true only data for stations with times marked in
+# the arrival table are extracted.  When false all data 
+# will be extracted using predicted arrival time
+use_arrival_table false
+save_as_3c_objects true
+# essential this be true when run in save_as_3c_objects
+require_event true
+# travel time method and model for ttcalc
+method tttaup
+model iasp91
+preserve_original_chan true
+# Output channel names for wfdisc.  Ignored if save_as_3c_object
+# is set true or if preserve_original_chan is set true. 
+X1_channel_name E
+X2_channel_name N
+X3_channel_name Z
+# If true a free surface transformation is applied to each 
+# 3c member to produce output.  Note in this case the channel 
+# names should normally be set to T,R, and L
+apply_free_surface_transformation false
+# vp and vs for surface when free surface transformation is used
+# units of km/s
+vp0 6.0
+vs0 3.5
+output_waveform_directory_base wf3c/2011/events
+# Determines directory structure (gathermode) of output 
+# trace data.  MUST be either "station_gathers" or
+# "event_gathers".  (defaults to station_gathers with lost of 
+# complaints if anything else).  An event_gather has output
+# trace files organized in event directories (orid as directory
+# name) while station_gather has sta as the directory name.
+gather_mode event_gathers
+filter DEMEAN
+# output data format.  Ignored when save_as_3c_objects is true
+# most useful to get miniseed data.  Header based formats like
+# sac are guaranteed to be incomplete
+datatype sd
+# resample_defintions is ignored if this boolean is false.
+# In that case no resampling is done.
+resample_data true
+# resampling recipe
+resample_definitions    &Arr{
+    100 &Arr{
+        Decimator_response_files        &Tbl{
+            5   response/RT72A_5_f
+        }
+        high_limit      101
+        low_limit       99
+    }
+    20  &Arr{
+        Decimator_response_files        &Tbl{
+            1 none
+        }
+        high_limit      21
+        low_limit       19
+    }
+    40  &Arr{
+        Decimator_response_files        &Tbl{
+            2       response/RT72A_2_f
+        }
+        high_limit      41
+        low_limit       39
+    }
+}
+
+# Used to construct StationChannelMap object
+StationChannelMap       &Arr{
+   CCM	&Tbl{
+        BH1_00 0 0
+        BH2_00 1 0
+        BHZ_00 2 0
+        BH1_10 0 1
+        BH2_10 1 1
+        BHZ_10 2 1
+    }
+   UTMT &Tbl{
+       BHE_01 0 0
+       BHN_01 1 0
+       BHZ_01 2 0
+   }
+    default     &Tbl{
+        HHE 0 0
+        HHN 1 0
+        HHZ 2 0
+        HLE 0 1
+        HLN 1 1
+        HLZ 2 1
+        BHE 0 2
+        BHN 1 2
+        BHZ 2 2
+	EHE 0 3
+	EHN 1 3
+	EHZ 2 3
+        LHE 0 4
+        LHN 1 4
+        LHZ 2 4
+    }
+}
+#
+# If set true the result does not produce database lines.
+# Mainly useful to avoid db errors from overlapping waveforms when
+# saving to wfdisc.  
+#
+save_files_only false
+
+
+pf_revision_time 1273162127

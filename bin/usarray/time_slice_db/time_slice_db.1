@@ -38,11 +38,21 @@ appropriate waveforms.  \fBtime_slice_db\fP will not move the actual waveforms
 puts the correct references to where \fIdbin\fP waveforms are located.  If this program 
 does not meet your needs, you should use  \fBdbsplit(1)\fP.
 
+In the case of USArray TA, the command line used is:
+
+.nf
+time_slice_db -C -B -E -m flvernon@ucsd.edu $DB
+.fi
+
+which cleans up the input db, slices the big tables and the event related tables, but does
+not touch the wfdisc and waveforms.  The USArray TA waveforms are dealt with using a 
+combination of \fIrsync\fP, \fImonthly_wfs\fP, and \fIrtdbclean\fP.
+
 This program con be configured to work on a live real-time database.  
 
 .SH ARGUMENTS
 .IP "(-B | -E | -W)"
-program requires one or more of -E -B -W options
+program requires one or \fBmore\fP of -E -B -W options
 .IP \fIdbin\fP 
 database which needs to be sliced.
 .SH OPTIONS
@@ -60,11 +70,11 @@ and don't update dir/dfile fields. See dbcp(1).
 .IP -f 
 Actually copies waveforms instead of referencing original waveforms. See dbcp(1).
 .IP -B
-Only slices big tables listed in pf file.
+Only slices big tables listed in pf file. Can be used with -E and/or -W options.
 .IP -E
-Only slices events.
+Only slices events. Can be used with -B and/or -W options.
 .IP -W
-Only slices waveforms.
+Only slices waveforms. Can be used with -E and/or -B options.
 .IP "-p parameter_file"
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBtime_slice_db\fP.
@@ -136,12 +146,14 @@ big_tables &Tbl{
 .SH "SEE ALSO"
 .nf
 dbcp(1)
-dbsplit(1)
 dbcentral(1)
+dbsplit(1)
+monthly_wfs(1)
 pfecho(1)
-dbcp(1)
 pf(3)
+rtdbclean(1)
 rtexec(1)
+rsync(1)
 .fi
 .SH "BUGS AND CAVEATS"
 This program does most the work using perl system calls to the Datascope interface.

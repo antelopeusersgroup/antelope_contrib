@@ -1,25 +1,25 @@
-originator     Jennifer Eakins, UCSD
-last_modified  2010-11-12
+originator          Jennifer Eakins, UCSD
+last_modified       2013-02-26
 
-category	infrasound
-configuration	Setra 278 microbarometer - High Altitude
+category            infrasound
+configuration       Setra 278 microbarometer - High Altitude
 
-description	Setra 278 microbarometer - High Altitude
-dfile		setra278HA 
+description         Setra 278 microbarometer - High Altitude
+dfile               setra278HA 
 
-rsptype		P	# infrasound instrument
-band		l	# broadband
-sensor_type_code	D
+rsptype             P            # infrasound instrument
+band                l            # broadband
+sensor_type_code    D
 
-gtype		sensor
-sensitivity     0.01		#  sensitivity is in V/mbar
+gtype               sensor
+sensitivity         0.0166667    #  sensitivity is in V/mbar
 
 iunits		mbar
-ounits		V  
+ounits		counts  
 
 orientations	&Tbl{
 D	0	0
 }
 
-response	&datafile(responses/setra278HA) 
+response            &datafile(responses/setra278HA) 
 

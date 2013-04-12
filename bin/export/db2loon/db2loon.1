@@ -3,7 +3,7 @@
 db2loon \- Create Loon-pickfile(s) from database
 .SH SYNOPSIS
 .nf
-\fBdb2loon \fP[-m] [-d \fIdbout\fP] [-l \fIlddate_cutoff\fP] 
+\fBdb2loon \fP [-b] [-m] [-d \fIdbout\fP] [-l \fIlddate_cutoff\fP] 
 		[-s \fIorigin_subset_expr\fP]  [-o \fIorid\fP] 
 		[-p \fIpffile\fP] \fIdbin\fP [\fIfilename\fP]
 .fi
@@ -15,6 +15,9 @@ to send the results to stdout. If \fIfilename\fP is specified, the results are s
 the named file instead.
 
 .SH OPTIONS
+.IP "-b"
+Run db2loon in batch mode. No user interaction.
+
 .IP "-p pffile"
 Use the named parameter-file instead of the default \fBdb2loon\fP.pf
 

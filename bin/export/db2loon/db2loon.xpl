@@ -1,6 +1,4 @@
-#Edited by Malcolm White - August 2011
-
-use Getopt::Std;
+require "getopts.pl";
 use Datascope;
 
 #####
@@ -14,20 +12,26 @@ $Pf = $program;
 
 elog_init( $0, @ARGV );
 
-if ( ! getopts('mil:s:o:p:d:f:') || @ARGV != 1 ){
+if ( ! &Getopts('bmil:s:o:p:d:f:') || @ARGV != 1 ){
 
-        die ( "Usage: $program [-m] [-i] [-l lddate_cutoff] [-s origin_subset_expr] [-d dbout] [-o orid] [-p pffile] [-f output_filename] d
+        die ( "Usage: $program [-b] [-m] [-i] [-l lddate_cutoff] [-s origin_subset_expr] [-d dbout] [-o orid] [-p pffile] [-f output_filename] d
 atabase\n" );
 
 } else {
 
         $dbname = $ARGV[0];
 
+	our( $batch_mode ) = 0;
+
+	if( $opt_b ){
+		$batch_mode = 1;
+	}
+
         if( $opt_p ) {
                 $Pf = $opt_p;
         }
 
-        #The -f option was added to ensure that the descriptor file
+        #mw88 - The -f option was added to ensure that the descriptor file
         #is not unintentionally clobbered (ie. when an orid argument is supplied
         #without specifying the -o option.).
         if( $opt_f ) {
@@ -135,27 +139,28 @@ if( $norigins <= 0 ) {
 
 $all = "";
 
-#This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
+#mw88 - This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
 #Database is no longer subsetted per orid, and entire database is passed to format_pickfile.
 #Outermost curly braces are insignificant as is whitespace (indentation).
-        
-($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
+{
+        ($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
 
-if( $opt_i ) {
+        if( $opt_i ) {
 
-	$pickfile_name_pattern =~ s/%{suffix}/$suffix/g;
-        $pickfile = epoch2str( $origin_time, $pickfile_name_pattern );
+                $pickfile_name_pattern =~ s/%{suffix}/$suffix/g;
+                $pickfile = epoch2str( $origin_time, $pickfile_name_pattern );
 
-        ($dir, $path, $sfx ) = parsepath( $pickfile );
-        makedir( $dir );
+                ($dir, $path, $sfx ) = parsepath( $pickfile );
+                makedir( $dir );
 
-        open( P, ">$pickfile" );
-        print P "$pickblob";
-        close( P );
+                open( P, ">$pickfile" );
+                print P "$pickblob";
+                close( P );
 
-} else {
+        } else {
 
-        $all .= "$pickblob";
+                $all .= "$pickblob";
+        }
 }
 
 if( $dbout_name ne "" ) {
@@ -221,12 +226,6 @@ if( $opt_i ) {
 #########
 #END MAIN
 #########
-
-
-#############
-#SUB-ROUTINES
-#############
-
 sub format_pickfile{
 
 	my( @db ) = @_;
@@ -248,8 +247,8 @@ sub format_pickfile{
 
         $pickblob .= format_comment_row( "English", $grname, $pref_agency );
         $pickblob .= format_comment_row( "French",  $grname, $pref_agency );
-        
-	@db = dbprocess( @db, "dbsubset orid == prefor",
+
+        @db = dbprocess( @db, "dbsubset orid == prefor",
                               "dbjoin assoc",
                               "dbjoin arrival" );
 
@@ -295,7 +294,7 @@ sub format_pickfile{
         
 #	@db = dbprocess( @db, "dbseparate stamag" );
 # separating stamag causes new view to be sorted by sta rather than by delta as desired
-# the following three lines of code are intended to sort stamag values by distance from hypocentre
+# the following three commands are intended to sort stamag values by distance from hypocentre
 
 	@db = dbsubset( @db, "sta == stamag.sta" );
 
@@ -311,7 +310,7 @@ sub format_pickfile{
         for( $db[3] = 0; $db[3] < $nstamags; $db[3]++ ) {
 
                 ( $sta, $magtype, $mag ) = dbgetv( @db, "sta", "stamag.magtype", "stamag.magnitude" );
-# magtype and magnitude arguments passed to dbgetv were changed to stamag.magtype and stamag.magnitude because this is where the
+# magtype and magnitude from stamag table were changed to stamag.magtype and stamag.magnitude because this is where the
 # pertinent data is stored
 
 		$magtype = correct_magtype_code( $magtype );
@@ -344,9 +343,9 @@ sub format_solution_error_block{
 
 		my( $defining ) = 0;
 
-		my( $origin_time, $event_type, $auth ) = dbgetv( @db, "origin.time", "origin.etype", "origin.auth" );
+		my( $origin_time, $event_type, $auth, $orid ) = dbgetv( @db, "origin.time", "origin.etype", "origin.auth", "origin.orid" );
 
-		my( $lat, $lon, $depth, $ndef ) = dbgetv( @db, "lat", "lon", "depth", "ndef" );
+		my( $lat, $lon, $depth, $ndef, $evid ) = dbgetv( @db, "lat", "lon", "depth", "ndef", "evid" );
 
 		my( $algorithm, $dtype ) = dbgetv( @db, "algorithm", "dtype" );
 
@@ -375,13 +374,13 @@ sub format_solution_error_block{
                 	$pref_agency = $agency;
                 	$pref_origin_time = $origin_time;
 
-                	$suffix = auth_to_suffix( $auth );
+                	$suffix = auth_to_suffix( $auth, $evid, $origin_time );
 
                 }
 	
 		$pickblob .= format_origin_row( $defining, $origin_time, $lat, $lon, $depth, $ndef, $magtype, $mag, $agency, $event_type, $model );
 
-		$pickblob .= format_error_row( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr, $sdepth, $smajax, $sminax, $strike, $agency );
+		$pickblob .= format_error_row( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr, $sdepth, $smajax, $sminax, $strike, $agency, $origin_time, $orid );
 	}
 
 	return( $pickblob );
@@ -411,7 +410,7 @@ sub format_origin_row {
 
 	}
 
-	$row .= sprintf( "     %3d    %-4s  %5s ", $ndef, $magtype, $mag );
+	$row .= sprintf( "     %3d    %-4s  %5.2f ", $ndef, $magtype, $mag );
         $row .= " $agency\n";
 
         return $row;
@@ -420,9 +419,9 @@ sub format_origin_row {
 sub format_error_row {
 
         my( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr,
-            $sdepth, $smajax, $sminax, $strike, $agency ) = @_;
+            $sdepth, $smajax, $sminax, $strike, $agency, $time, $orid ) = @_;
 
-        my( $row );
+        my( $row, $se_lat, $se_lon );
 
         my( $e ) = "E";
 
@@ -431,17 +430,62 @@ sub format_error_row {
         my( $model ) = &algorithm_to_model( $algorithm );
         my( $locator ) = &algorithm_to_locator( $algorithm );
 
+	$time = epoch2str( $time, "%Y-%m-%d %H:%M:%S.%s" );
+
         $sdobs = $sdobs != -1 ? sprintf( "%4.2f", $sdobs ) : "    ";
-        $stime = $stime != -1 ? sprintf( "%5.2f", $stime ) : "     ";
 
-        my( $se_lat ) = $laterr != -1 ? sprintf( "%6.3fkm", $laterr ) : "        ";
-        my( $se_lon ) = $lonerr != -1 ? sprintf( "%7.3fkm", $lonerr ) : "         ";
+	if( $stime < 100.0 ){
+		if ( $stime > 20.0 ){
+			print( STDERR "WARNING: TErr is greater than 20.0s for orid $orid at $time. Please review solution and reconvert (TErr should be less than 10.0s).\n" );
+		}
+        	$stime = $stime != -1 ? sprintf( "%5.2f", $stime ) : "     ";
+	}
+	else{
+		die( "ERROR: Overflow in TErr field for orid $orid at $time. Please review and reconvert. No loonfile generated.\n" ) unless $batch_mode;
+		print( STDERR "WARNING: Overflow in TERR field. Maximum value of 99.99s being used. Please review orid $orid at $time and reconvert.\n" );
+		$stime = "99.99";
+	}
 
-        $smajax = $smajax != -1 ? sprintf( "%5.2f", $smajax ) : "     ";
-        $sminax = $smajax != -1 ? sprintf( "%5.2f", $sminax ) : "     ";
+	if ( $laterr < 100.0 ){
+        	$se_lat = $laterr != -1 ? sprintf( "%6.3fkm", $laterr ) : "        ";
+	}
+	else{
+		die( "ERROR: Overflow in LatErr field for orid $orid at $time. Please review and reconvert. No loonfile generated.\n" ) unless $batch_mode;
+		print( STDERR "WARNING: Overflow in LatErr field. Maximum value of 99.999km being used. Please review orid $orid at $time and reconvert.\n" );
+        	$se_lat = "99.999km";
+	}
+
+	if( $lonerr < 1000.00 ) {
+        	$se_lon = $lonerr != -1 ? sprintf( "%7.3fkm", $lonerr ) : "         ";
+	}
+	else{
+		die( "ERROR: Overflow in LonErr field for orid $orid at $time. Please review and reconvert. No loonfile generated.\n" ) unless $batch_mode;
+		print( STDERR "WARNING: Overflow in LonErr field. Maximum value of 999.999km being used. Please review orid $orid at $time and reconvert.\n" );
+        	$se_lon = "999.999km";
+	}
+
+
+	if( $smajax < 100.00 ){
+        	$smajax = $smajax != -1 ? sprintf( "%5.2f", $smajax ) : "     ";
+	}
+	else{
+		die( "ERROR: Overflow in MajHE field for orid $orid at $time. Please review and reconvert. No loonfile generated.\n" ) unless $batch_mode;
+		print( STDERR "WARNING: Overflow in MajHE field. Maximum value of 99.99 being used. Please review orid $orid at $time and reconvert.\n" );
+        	$smajax = "99.99";
+	}
+
+	if( $sminax < 100.00 ){
+        	$sminax = $sminax != -1 ? sprintf( "%5.2f", $sminax ) : "     ";
+	}
+	else{
+		die( "ERROR: Overflow in MinHE field for orid $orid at $time. Please review and reconvert. No loonfile generated.\n" ) unless $batch_mode;
+		print( STDERR "WARNING: Overflow in MinHE field. Maximum value of 99.99 being used. Please review orid $orid at $time and reconvert.\n" );
+        	$sminax = "99.99";
+	}
+
         $strike = $strike != -1 ? sprintf( "%5.1f", $strike ) : "     ";
-        
-	my( $se_depth );
+print "XXX$strikeXXX\n";
+        my( $se_depth );
 
         if( $dtype =~ /[rg]/ ) {
 
@@ -543,11 +587,13 @@ sub format_magnitude_row {
 
 	if( $defining && $flag ){
 
-        	$row = sprintf( "$m *%-7s$mag ", $magtype );
+#        	$row = sprintf( "$m *%-7s$mag ", $magtype );		# TM edited this - see next line
+        	$row = sprintf( "$m *%-6s%5.2f ", $magtype, $mag );
 
 	} else {
 
-        	$row = sprintf( "$m  %-7s$mag ", $magtype );
+#        	$row = sprintf( "$m  %-7s$mag ", $magtype );		# TM edited this - see next line
+        	$row = sprintf( "$m  %-6s%5.2f ", $magtype, $mag );
 
 	}	
         $row .= "($magerr) $nmagsta";
@@ -656,12 +702,17 @@ sub format_comment_row {
 }
 
 sub get_all_magnitudes{
+#returns a hash table containing all magnitudes associated with a single origin referenced by @db
 
         my( @db ) = @_;
 
-        my( $ml, $mb, $ms, $orid, $algorithm ) = dbgetv( @db, "ml", "mb", "ms", "orid", "algorithm" );
+        my( $ml, $mb, $ms, $orid, $algorithm, $auth ) = dbgetv( @db, "ml", "mb", "ms", "orid", "algorithm", "origin.auth" );
+
+	my( $lat, $lon, $depth, $time, $nass, $ndef ) = dbgetv( @db, "lat", "lon", "depth", "time", "nass", "ndef" );
 
 	my( $model ) = algorithm_to_model( $algorithm );
+
+	my( $agency ) = auth_to_agency( $auth );
 
         @db = dbsubset( @db, "orid == $orid" );
 
@@ -687,6 +738,43 @@ sub get_all_magnitudes{
 
 		delete( $magnitudes{ "ml" } );
 
+	}
+
+	if( $agency ne $primary_agency ){
+		#look in bulletin catalogues for netmag data
+
+        	foreach( keys( %bulletin_paths ) ){
+
+			if ( $bulletin_paths{ $_ } eq $agency ){
+
+				my( @db_bulletin ) = dbopen( $_, "r" );
+
+				@db_bulletin = dblookup( @db_bulletin, "", "origin", "", "" );
+
+				@db_bulletin = dbsubset( @db_bulletin, "(lat == $lat) && (lon == $lon) && (depth == $depth) && (time == _ $time _)" );# && (nass == $nass) && (ndef == $ndef)" );
+#The subset above should include 'nass' and 'ndef' fields, but for some reason, these values do not match in bulletin catalogues and CNSN catalogue as expected.
+				$norecords = dbquery( @db_bulletin, dbRECORD_COUNT );
+
+				if ( $norecords > 0 ){
+
+					@db_bulletin = dbjoin( @db_bulletin, dblookup( @db_bulletin, "", "netmag", "", "" ) );
+
+					$norecords = dbquery( @db_bulletin, dbRECORD_COUNT );
+
+					if ( $norecords > 0 ){
+
+						for( $db_bulletin[3] = 0; $db_bulletin[3] < $norecords; $db_bulletin[3]++ ){
+
+							my( $magtype, $mag ) = dbgetv( @db_bulletin, "magtype", "magnitude" );
+
+							$magtype =~ tr/[A-Z]/[a-z]/;
+
+							$magnitudes{ $magtype } = $mag;
+						}
+					}
+				}
+			}
+		}
 	}
 
         return( %magnitudes );
@@ -762,6 +850,10 @@ sub verify_event_type{
 
         my( $event_type, $event_type_keep, @db ) = @_;
 
+	my( $orid, $time, $auth ) = dbgetv( @db, "orid", "time", "origin.auth" );
+
+	$time = epoch2str( $time, "%Y-%m-%d %H:%M:%S.%s" );
+
         if( $event_type ne "-" ){
 
                 if( !defined( $event_type_keep ) ){
@@ -781,30 +873,16 @@ sub verify_event_type{
 
                 if( defined( $event_type_keep ) ){
 
-                        my( $orid, $auth ) = dbgetv( @db, "orid", "origin.auth" );
-
-                        print( STDERR "etype for solution by $auth (orid: $orid) not supplied. Matching etype as \'$event_type_keep\'.\n" );
-
+                        print( STDERR "WARNING: etype for orid $orid at $time not supplied. Matching etype as \'$event_type_keep\'.\n" );
                         return ( $event_type_keep, $event_type_keep );
                 }
-
                 else{
 
-                        my( $user_response ) = undef;
+			die( "ERROR: etype for orid $orid at $time not supplied. Please update database and reconvert.\n" ) unless $batch_mode;
 
-                        until( $user_response =~ /[B,L,R,T]/i ){
-
-                                print( STDERR "etype for preferred solution not supplied. Please enter etype (B,L,R,T)\n" );
-
-                                $user_response  =  <STDIN>;
-
-                        }
-
-                        chomp( $user_response );
-
-                        return( uc( $user_response ), uc( $user_response ) );
-
-                }
+			print ( STDERR "WARNING: etype for preferred orid $orid at $time not supplied. Leaving etype void. Update database and reconvert.\n" );
+			return( " ", " " );
+		}
 
         }
 
@@ -840,7 +918,9 @@ sub auth_to_agency {
 }
 
 sub auth_to_suffix {
-        my( $auth ) = @_;
+        my( $auth, $evid, $origin_time ) = @_;
+
+	my( $time ) = epoch2str( $origin_time, "%Y-%m-%d %H:%M:%S.%s" );
 
         foreach $line ( @auth_suffixes ) {
 
@@ -852,7 +932,16 @@ sub auth_to_suffix {
                 }
         }
 
-        return $auth_suffix_default;
+	if ( $batch_mode ){
+		print( STDERR "WARNING: Default author suffix \'$auth_suffix_default\' being used for evid $evid at $time. Try reconverting this event in non-batch mode.\n" );
+        	return $auth_suffix_default;
+	}
+	else{
+		print( STDERR "Current author suffix: \'$auth_suffix_default\'. Please provide appropriate author suffix: " );
+                $user_response  =  <STDIN>;
+		chomp( $user_response );
+        	return $user_response;
+	}
 }
 
 sub algorithm_to_model {
@@ -904,6 +993,7 @@ sub read_pf {
         $pickfile_name_pattern  = pfget( $Pf, "pickfile_name_pattern" );
         $primary_agency         = pfget( $Pf, "primary_agency" );
         $ignore_fm              = pfget( $Pf, "ignore_fm" );
+	$primary_agency		= pfget( $Pf, "primary_agency" );
 
         @email_recipients       = @{pfget( $Pf, "email_recipients" )};
         @auth_suffixes          = @{pfget( $Pf, "auth_suffixes" )};
@@ -914,8 +1004,5 @@ sub read_pf {
         %auth_agencies          = %{pfget( $Pf, "auth_agencies" )};
 	%correct_magtype_codes	= %{pfget( $Pf, "correct_magtype_codes" )};
 	%magtype_priorities	= %{pfget( $Pf, "magtype_priorities" )};
+	%bulletin_paths		= %{pfget( $Pf, "bulletin_paths" )};
 }
-
-#################
-#END SUB-ROUTINES
-#################
