@@ -2,9 +2,9 @@ DATADIR = www/dbwfserver/static/css
 
 DATA = dbwfserver.css \
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKELOCAL)
+#include $(ANTELOPEMAKELOCAL)
 
-SUBDIR= /local
+#SUBDIR= /local
