@@ -557,9 +557,9 @@ sub end_proc_data {  # &next_proc_data ( $sta, \%stas ) ;
     $lapse_time = now() - $stas{$sta}{wf}{endtime} ;
     
     if ( defined $stas{$sta}{wf}{endtime} ) {
-        elog_notify( sprintf ( "%s was closed %s", $sta, strydtime( $stas{$sta}{wf}{endtime} ) ) ) if $opt_v ;
-        elog_notify( sprintf ( "	rt_endtime	%s", strydtime( $rt_endtime ) ) ) if $opt_V ;
-        elog_notify( sprintf ( "	wf_endtime	%s	%s after station endtime", strydtime( $wf_endtime ), strtdelta ( $stas{$sta}{wf}{endtime} - $wf_endtime ) ) ) if $opt_V ;
+        elog_notify( sprintf ( "%s was closed %s", $sta, strydtime( $stas{$sta}{wf}{endtime} ) ) ) ; # if $opt_v ;
+        elog_notify( sprintf ( "	rt_endtime	%s", strydtime( $rt_endtime ) ) ) ; # if $opt_V ;
+        elog_notify( sprintf ( "	wf_endtime	%s	%s before station endtime", strydtime( $wf_endtime ), strtdelta ( $stas{$sta}{wf}{endtime} - $wf_endtime ) ) ) ; # if $opt_V ;
         
 #  close the station if the waveform endtime is no earlier than one day before the station closes
 
