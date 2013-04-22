@@ -1,0 +1,13 @@
+net                          TA
+
+baler44_active               /anf/TA/dbs/wfs/station_active
+
+baler44_final                /anf/TA/dbs/wfs/station_final_44
+
+baler44_work                 /anf/TA/baler/work
+
+tar_dir                      /anf/TA/glacier/send
+
+delay_days                   90
+   
+pf_revision_time 1342122266
