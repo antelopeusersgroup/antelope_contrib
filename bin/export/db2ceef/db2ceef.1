@@ -1,0 +1,79 @@
+.TH DB2CEEF 1 
+.SH NAME
+db2ceef \- Create CEEF format file from database
+.SH SYNOPSIS
+.nf
+\fBdb2ceef \fP [-d] [-s \fIsubset_expression\fP] [-p \fIpffile\fP]
+	\fIdbin\fP \fIoutput_file\fP
+.fi
+.SH DESCRIPTION
+This program converts and writes selected database rows from \fIdbin\fP to 
+\fIoutput_file\fP in CEEF format.
+
+.SH OPTIONS
+.IP "-d"
+Display CEEF formatted output to STDOUT as it is generated.
+
+.IP "-s subset_expression"
+Only rows for which \fIsubset_expression\fP holds true will be converted to 
+CEEF format. The subsetting expression should be valid expression for a view 
+created via a join between origin and events tables and an outer join with 
+netmag table. The subsetting expression should be formatted according to the 
+documentation for dbexpressions(5). If time-strings are used within this 
+expression they should be enclosed in their own quotes and formatted 
+according to str2epoch(3).
+
+.IP "-p pffile"
+Use the parameter file \fIpffile\fP instead of the default \FBdb2ceef\fP.pf.
+
+.SH PARAMETER FILE
+.IP "auth_source &Arr"
+Providing a mapping from \fIauth\fP field to a three letter source code to 
+be used in the \fISrc\fP field of output CEEF file.
+
+.IP "source_default"
+Provides a default \fISrc\fP for any unmapped \fIauth\fP values.
+
+.IP "magtype_priorities &Arr"
+Provides a priority value for possible \fImagtype\fP values. Higher priority 
+\fImagtype\fP values will be chosen for \fIPref\fP field in CEEF file over 
+lower priority \fImagtype\fP values.
+
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+-shell$ \fBdb2ceef -d -s "(lat > 50.0)&&(lon < -129.0)" /path/to/dbin /path/to/output_file \fP
+      Date    Time          Lat      Lon    Depth                         Magnitudes                           Src
+  yyyy mm dd hhmm ss.s                        km        mb    Mn    ML    MS    MC    Mw   Othr  Pref   Mw
+******************************************************************************************************************
++ 2013 03 01 0050 47.3     52.258 -131.918  14.98                  2.97                          2.97          GSC
++ 2013 03 01 0242 35.3     52.843 -132.244  20.00                                                              GSC
++ 2013 03 01 0315 43.1     52.648 -131.813  10.32                                                              GSC
++ 2013 03 01 0646 13.2     52.925 -132.558  14.40                                                              GSC
++ 2013 03 01 0711 01.1     52.865 -132.194   0.00                                                              GSC
++ 2013 03 01 0712 41.9     52.678 -131.895  16.00                                                              GSC
++ 2013 03 01 0718 26.1     53.000 -132.126  16.00                                                              GSC
++ 2013 03 01 0736 09.2     52.830 -132.153   0.00                                                              GSC
++ 2013 03 01 0807 08.9     52.706 -131.927   6.62                                                              GSC
+...
+
+-shell$ \fBdb2ceef /path/to/dbin /path/to/output_file\fP
+-shell$
+
+.SH "SEE ALSO"
+.nf
+.fi
+
+.SH "BUGS AND CAVEATS"
+The \fIPref\fP field in the output CEEF format file is taken as the highest 
+priority \fImagtype\fP for the preferred solution. If the preferred solution 
+has not magnitude value associated, the \fIPref\fP field is left empty for 
+all origins associated with that event.
+
+.SH AUTHOR
+Malcolm White, Geological Survey of Canada, Sidney, B.C.
+April 2013
