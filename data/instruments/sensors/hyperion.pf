@@ -1,0 +1,24 @@
+originator     Jennifer Eakins, UCSD
+last_modified  2010-08-12
+
+category	infrasound
+configuration	Hyperion microbarometer 
+
+description	Hyperion microbarometer 
+dfile		hyperion 
+
+rsptype		P	# infrasound instrument
+band		l	# broadband
+sensor_type_code	D
+
+gtype		sensor
+sensitivity	0.4926  	# try 1/( (0.0203 V/Pa) * 100 Pa/mbar =  0.4926 mbar/V
+iunits		mbar
+ounits		V  
+
+orientations	&Tbl{
+D	0	0
+}
+
+response	&datafile(responses/hyperion) 
+
