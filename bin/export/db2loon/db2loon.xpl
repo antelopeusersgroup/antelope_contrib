@@ -253,8 +253,10 @@ sub format_pickfile{
                               "dbjoin arrival" );
 
         my( $narrivals ) = dbquery( @db, dbRECORD_COUNT );
-
+	
 	@db = dbsort( @db, "delta");
+	#the above line fails when the preferred solution comes from an external catalogue for which an arrival table does not exist. 
+	#Possible fix: execute lines concerning formatting of amplitude and magnitude rows only if auth != PGC.* || orb.*
 
         $pickblob .= "C Statn IC nHHMM SSSSS TCorr Q-Phase- IUW TTres " .
                      "LocW StDly Edistnc Azm Ain Agncy\n";
