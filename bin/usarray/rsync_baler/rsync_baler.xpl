@@ -53,7 +53,7 @@ our(%logs,%errors);
 our($to_parent,$nstas,$get_sta,$parent,$host);
 our($string,$problems,$nchild,$file_fetch);
 our($subject,$start,$end,$run_time_str);
-our($opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d);
+our($opt_x,$opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d);
 
 use constant false => 0;
 use constant true  => 1;
@@ -75,7 +75,7 @@ STDOUT->autoflush(1);
 
     elog_init($0,@ARGV);
 
-    unless ( &getopts('hdvm:p:s:r:') || @ARGV > 1 ) { 
+    unless ( &getopts('xhdvm:p:s:r:') || @ARGV > 1 ) { 
         pod2usage({-exitval => 2,
                    -verbose => 2});
     }
@@ -186,7 +186,7 @@ STDOUT->autoflush(1);
 
     if ($problems == 0 ) {
         $subject = sprintf( "Success  $0  $host  $nstas stations processed" ) ;
-        fork_notify ($parent, $subject );
+        fork_notify($parent, $subject );
     } else {
         $subject = "Problems - $0 $host   $nstas stations processed, $nchild stations with problems, $problems total problems" ;
         fork_complain($parent, "\n$subject" ) ;
@@ -307,7 +307,7 @@ sub get_info_for_sta {
         }
     }
 
-    fork_notify($parent,"$sta $net $dlsta $sta_hash{status} $sta_hash{ip}");
+    fork_notify($parent,"$sta $net $dlsta $sta_hash{status} $sta_hash{ip}:$pf{http_port}");
 
     dbclose(@db);
 
@@ -357,6 +357,7 @@ sub run_in_threads {
         # Fork the script (not using &fork)
         #
         $cmd   =  "$0 " ;
+        $cmd  .=  "-x " if $opt_x ;
         $cmd  .=  "-v " if $opt_v ;
         $cmd  .=  "-d " if $opt_d ;
         $cmd  .=  "$station " ;
@@ -443,7 +444,7 @@ sub test_missing_children { # &missing_children ( $string, \%logs, \%errors ) ;
         $errors->{$log}->{problems}++ ;
         $errors->{$log}{ $errors->{$log}->{problems} } = $line ;
 
-        elog_notify('');
+        #elog_notify('');
     }
 
     return ;
@@ -455,6 +456,7 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
     my $errors = shift;
     #my $ref = shift;
     #my ( %errors ) = %$ref ;
+    my ( @total );
     my ( $nchild, $nerr, $nprob ) ;
 
     $nchild = $nerr = $nprob = 0 ;
@@ -473,8 +475,13 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
         $nprob++ ;
         elog_complain("On child $k:");
 
-        for my $j ( sort {$a <=> $b} keys %{$errors->{$k}} ) {
+        @total = ();
+        for my $j ( keys %{$errors->{$k}} ) {
             next if ( $j =~ /problems/ ) ;
+            push( @total, int($j) );
+        }
+
+        for my $j ( sort {$a <=> $b} @total ) {
             elog_complain("   $j) $errors->{$k}->{$j}");
             $nerr++ ;
         }
@@ -494,6 +501,7 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
 sub test_log_print { # &log_print ( \%logs ) ; 
 #{{{
     my $logs = shift;
+    my ( @total );
     
     elog_notify('');
     elog_notify('');
@@ -504,8 +512,13 @@ sub test_log_print { # &log_print ( \%logs ) ;
 
         elog_notify("On child $k:");
 
-        for my $j ( sort {$a <=> $b} keys %{$logs->{$k}} ) {
+        @total = ();
+        for my $j ( keys %{$logs->{$k}} ) {
             next if ( $j =~ /lines/ ) ;
+            push( @total, int($j) );
+        }
+
+        for my $j ( sort {$a <=> $b} @total ) {
             elog_notify("   $j) $logs->{$k}->{$j}");
         }
 
@@ -529,7 +542,7 @@ sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
     foreach my $sta (sort keys %$stas) {
 
         next unless $fh = $stas->{$sta}->{fh} ;
-        elog_debug ( "nonblock_read $sta    $stas->{$sta}->{fh}" ) if $opt_d;
+        #elog_debug ( "nonblock_read $sta    $stas->{$sta}->{fh}" ) if $opt_d;
 
         while ( $fileline = <$fh> ) {
 
@@ -583,7 +596,7 @@ sub get_data {
     my ($k,$m,$g,$total_size,%temp_hash,@total_downloads,@download);
     my ($digest,$hexd,$md5,$remote_file_content, $remote_file_handle);
     my ($stat,$mode,$f,$http_folder,$md5_lib,@original_downloads);
-    my (@dbscr,@recs,@data,@db_r,%remove,%flagged,@db,@db_t);
+    my (@lists,@dbscr,@recs,@data,@db_r,%remove,%flagged,@db,@db_t);
     my ($media_active, $media_reserve,%downloaded);
     my ($start_of_report);
 
@@ -608,6 +621,7 @@ sub get_data {
     #
     umask 002;
 
+
     #
     # Try to lock baler database.
     #
@@ -618,6 +632,47 @@ sub get_data {
     # Read local files and fix errors
     #
     fix_local( $sta,$net,$dlsta );
+
+    #
+    # For DECOM stations stop here
+    #
+    unless ( $status eq 'Active') {
+        dbunlock("${path}/${sta}_baler");
+        fork_notify($parent,"$sta is under DECOMMISSION status- finished processing station");
+        return;
+    }
+
+    dbunlock("${path}/${sta}_baler") unless $ip;
+    fork_die($parent,"No IP") unless $ip;
+
+    #
+    # Limit the downloads to lest than 3 Gbs in last 21 days
+    #
+    $d_data = total_data_downloaded($sta,21) || 0.0;
+    dbunlock("${path}/${sta}_baler") if $d_data > 30000;
+    fork_die($parent,"Downloaded ( $d_data ) Mbts in the last 21 days!") if $d_data > 3000;
+
+    #
+    # Ping the station
+    #
+    $p = Net::Ping->new("tcp", 5);
+    $p->port_number($pf{http_port});
+    # try 2 times
+    unless ( $p->ping($ip) ) {
+        unless ( $p->ping($ip) ) {
+            dbunlock("${path}/${sta}_baler");
+            fork_notify($parent,"$sta finished processing station");
+            fork_die($parent,"Not Responding!!!! http://$ip:$pf{http_port}");
+        }
+    }
+    undef($p);
+
+    #
+    # Get medias ID's
+    #
+    ($media_active, $media_reserve, @lists) = get_medias_and_lists($sta,$ip);
+    $media_active ||= 'unknown';
+    $media_reserve ||= 'unknown';
 
     #
     # Review all entries on the database
@@ -633,102 +688,108 @@ sub get_data {
 
         fork_debug($parent,"Check db: $dfile,$stat,$bytes,$dir,$md5,$attempts,$msdtime,$time") if $opt_d;
 
-        fork_complain("WRONG NAME OF FILE: $dfile" ) if $dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/;
-        next if $dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/;
+        #
+        # Files to avoid
+        #
+        if ($dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ) {
+            fork_complain($parent,"$dfile value is of wrong format in db");
+            next LINE;
+        }
 
         if ($stat =~ /skip/ ) {
-            #
-            # Avoid file
-            #
+            #fork_complain($parent,"$dfile flagged as skiped") if $opt_v;
+            fork_complain($parent,"$dfile status set to skiped");
             next LINE;
         }
 
-        next LINE if $msdtime > 1; # file already processed
+        if ( $msdtime > 1 ) {
+            # file already processed
+            fork_debug($parent,"$dfile already processed msdtime=>$msdtime") if $opt_d;
+            next LINE;
+        }
 
-        if ($stat !~ /downloaded/ ) {
-            #
-            # Set to download again
-            #
-            fork_debug($parent,"Set for download $dfile") if $opt_d;
-            $flagged{$dfile} = $dir if $attempts < 5;
+        if ($attempts > 5) {
+            # Too many attempts
+            # Add file if we are using the opt_x flag at runtime
+            if ( $opt_x ) {
+                fork_complain($parent,"$dfile will not be rejected based on -x flag") if $opt_v;
+            } else {
+                fork_complain($parent,"$dfile *avoid* attempts=>$attempts in status=>$stat md5=$md5");
+                next LINE;
+            }
+
+        }
+
+        #
+        # Files to get
+        #
+        if ($stat !~ /downloaded/) {
+            # get file one more time
+            fork_debug($parent,"$dfile Already in db and flagged for download") if $opt_v;
+            $flagged{$dfile} = '';
             next LINE;
         }
 
         #
-        # Fix "downloaded" entries on the database
+        # Clean database fields
         #
-        dbputv(@db, "dir", $path,"lddate",dbgetv(@db,"lddate")) unless -f "$dir/$dfile";
+        #if ($dir ne $path ) {
+        #    #
+        #    # Fix "downloaded" entries on the database
+        #    #
+        #    dbputv(@db, "dir", $path,"lddate",dbgetv(@db,"lddate")) unless -f "$path/$dfile";
+        #}
 
         #
         # Verify mode 0664
         #
-        $mode = (stat("$path/$dfile"))[2] || 0;
-        $mode = sprintf("0%o", $mode & 07777);
-        fork_complain("$dfile mode $mode => 0660") unless int($mode) >= 660;
+        #$mode = (stat("$path/$dfile"))[2] || 0;
+        #$mode = sprintf("0%o", $mode & 07777);
+        #fork_complain("$dfile mode error: $mode => 0660") unless int($mode) >= 660;
 
         #
         # Fix size of file in database
         #
-        dbputv(@db, "filebytes", -s "$path/$dfile","lddate",dbgetv(@db,"lddate")) unless (-s "$path/$dfile" == int($bytes));
+        #dbputv(@db, "filebytes", -s "$path/$dfile","lddate",dbgetv(@db,"lddate")) unless (-s "$path/$dfile" == int($bytes));
 
-        next LINE if $attempts > 3;
+        if ( -s "$path/$dfile" == 591 ) {
+            fork_complain($parent,"$dfile error in file size == 591");
+            fork_complain($parent,"$dfile add to download list");
+            $flagged{$dfile} = '';
+            next LINE;
+        }
 
-        next LINE if $md5 =~ /missing/;
+        if ($md5 =~ /(\S{32})/) {
+            fork_debug($parent,"$dfile ready for processing md5=>$md5") if $opt_d;
+            next LINE;
+        }
+
+        fork_debug($parent,"$dfile fixing md5=>$md5") if $opt_v;
 
         #
         # If missing checksum then connect to station
         #
         fork_debug($parent,"Get md5 for $dfile") if $opt_d;
-        dbputv(@db, "md5", get_md5($sta,$dfile,$ip),"lddate",dbgetv(@db,"lddate") ) if $md5 =~ /-|error/ and $ip;
+        dbputv(@db, "md5", get_md5($sta,$dfile,$ip,\@lists),"lddate",dbgetv(@db,"lddate") ) if $ip;
         $md5 = dbgetv(@db,'md5');
-        dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1,"lddate",dbgetv(@db,"lddate")) if $md5 =~ /error/;
+        dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1,"lddate",dbgetv(@db,"lddate"));
 
-        $flagged{$dfile} = $dir if $md5 =~ /error/;
+        next if $md5 =~ /missing/;
+        next if $md5 =~ /(\S{32})/;
+
+        fork_complain($parent,"$dfile Problem with md5.");
+        fork_complain($parent,"$dfile Add to download list.");
+        $flagged{$dfile} = '';
 
     #}}}
     }
     dbclose(@db);
 
-    fork_notify($parent,"Flagged from database: $_") foreach ( sort keys %flagged );
-
-
-    #
-    # For DECOM stations stop here
-    #
-    unless ( $status eq 'Active') {
-        fork_notify($parent,"$sta is under DECOMMISSION status- finished processing station");
-        return;
+    if ( $opt_v ) {
+        fork_notify($parent,"Flagged from database: $_") foreach ( sort keys %flagged );
     }
 
-
-    dbunlock("${path}/${sta}_baler") unless $ip;
-    fork_die($parent,"No IP") unless $ip;
-
-    #
-    # Limit the downloads to lest than 3 Gbs in last 21 days
-    #
-    $d_data = total_data_downloaded($sta,21) || 0.0;
-    dbunlock("${path}/${sta}_baler") if $d_data > 30000;
-    fork_die($parent,"Downloaded ( $d_data ) Mbts in the last 21 days!") if $d_data > 3000;
-
-
-    #
-    # Ping the station
-    #
-    $p = Net::Ping->new("tcp", 10);
-    $p->port_number($pf{http_port});
-    dbunlock("${path}/${sta}_baler") unless $p->ping($ip);
-    fork_die($parent,"Not Responding!!!!") unless $p->ping($ip);
-    undef($p);
-
-    #
-    # Get medias ID's
-    #
-    ($media_active, $media_reserve) = get_medias($sta,$ip);
-    $media_active ||= 'unknown';
-    $media_reserve ||= 'unknown';
-
-    %remote = read_baler( $sta, $ip, $media_active, $media_reserve);
+    %remote = read_baler( $sta, $ip, \@lists, $media_active, $media_reserve);
     check_time($start_sta);
 
     #
@@ -748,9 +809,12 @@ sub get_data {
 
             next if dbgetv(@db,'status') =~ /downloaded/;
 
-            next if dbgetv(@db,'attempts') > 5;
+            unless ( $opt_x ) {
+                next if dbgetv(@db,'attempts') > 5;
+            }
+
             if ( dbgetv(@db,'status') =~ /flagged/ ) {
-                fork_complain($parent,"Already in db, increase attemtps: $f");
+                fork_complain($parent,"Previously flagged, increase attemtps: $f");
                 dbputv(@db, 
                     "net",      $net,
                     "sta",      $sta,
@@ -788,17 +852,45 @@ sub get_data {
 
     #}}}
     } 
+    # Fix media ids in database
+    foreach $f ( sort keys %remote ) {
+    #{{{
+        next if $f =~ /\.md5/;
+        next unless $media_active;
+        next unless $media_reserve;
+        next unless $remote{$f};
+
+        #
+        # Check if we have the file
+        #
+        $db[3] = dbfind(@db, "dfile =~ /$f/", -1);
+
+        if ($db[3] >= 0 ){
+            dbputv(@db, 
+                "media",    ($remote{$f} =~ /WDIR2/) ? $media_reserve : $media_active,
+                "lddate", dbgetv(@db,"lddate") 
+            ); 
+
+        } 
+
+    #}}}
+    } 
     dbclose(@db);
     dbunlock("${path}/${sta}_baler");
 
     unless (keys %flagged) {
-        fork_notify($parent,'No new files.');
-        fork_notify ( $parent, "$sta - finished processing station");
+        fork_notify($parent,"No new files. http://$ip:$pf{http_port}");
+        fork_notify( $parent, "$sta - finished processing station");
         return;
     }
 
     if ( $opt_v ) {
         fork_notify($parent,'Files flagged: ' . join(' ' ,sort keys %flagged));
+    }
+    if ( $opt_d ) {
+        foreach $file ( sort keys %flagged ) {
+            fork_notify($parent,"Files flagged: $file => $flagged{$file}");
+        }
     }
 
     #
@@ -807,7 +899,9 @@ sub get_data {
     FILE: foreach $file ( sort keys %flagged ) {
     #{{{
 
-        fork_notify($parent,"Start download: $file") if $opt_v;
+        $dir = $flagged{$file};
+
+        fork_notify($parent,"Start download: $dir/$file") if $opt_v;
 
         if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/) {
             fork_complain($parent,"ERROR on value of FLAGGED file:$file");
@@ -832,36 +926,48 @@ sub get_data {
         #
         # Download file
         #
-        foreach (qw/WDIR WDIR2/) {
-            fork_notify($parent,"download_file($_/data/$file,$path,$ip)") if $opt_v;
-            $where = download_file("$_/data/$file",$path,$ip);
-            last if $where;
+        if ( $dir ) {
+            fork_notify($parent,"download_file($dir/$file,$path,$ip)") if $opt_v;
+            $where = download_file("$dir/$file",$path,$ip) || '';
+        } else {
+            foreach $f (@lists) {
+                $start_file = now();
+                fork_notify($parent,"Now with directory $f") if $opt_d;
+                $dir = ( $f =~ /active/ ? 'WDIR' : 'WDIR2' );
+                $f =~ m/list\.\w+\.(data\S*)\.gz/;
+                next unless $1;
+                fork_notify($parent,"attempt download: $dir/$1/$file") if $opt_v;
+                $where = download_file("$dir/$1/$file",$path,$ip) || '';
+                last if $where;
+            }
         }
 
         $end_file = now();
         $run_time = $end_file-$start_file;
         $run_time_str = strtdelta($run_time);
+        fork_notify($parent,"Success in download of $file after $run_time_str") if -f $where and $opt_v;
         #}}}
 
         #
         # Resurrect the file if we have previous copy
         #
-        if (! -f "$path/$file" && -f "$path/trash/$file") {
+        if (-f $where) {
+            $status = 'downloaded';
+            $status = 'error' unless $where;
+            $md5 = get_md5($sta,$file,$ip,\@lists) || 'error';
+            fork_complain($parent,"$file => status:$status, md5:$md5") unless $md5 =~ /(\S{32})/;
+            fork_notify($parent,"$file verified with md5:$md5") if $md5 =~ /(\S{32})/ and $opt_v;
+            push @total_downloads, $file;
+        } elsif (! -f "$path/$file" && -f "$path/trash/$file") {
             fork_complain($parent,"Resurrect file: move $path/trash/$file back to $path/$file");
             move("$path/trash/$file","$path/$file") or fork_complain($parent,"Can't move $file to $path");
             $status = 'downloaded';
-            $md5 = get_md5($sta,$file,$ip) || 'error';
-        } elsif (-f "$path/$file") {
-            $status = 'downloaded';
-            $status = 'error' unless $where;
-            $md5 = get_md5($sta,$file,$ip) || 'error';
-            fork_complain($parent,"$file => status:$status, md5:$md5") if $md5 =~ /error/;
-            fork_notify($parent,"Success in download of $file after $run_time_str") if $md5 !~ /error/ and $opt_v;
-            push @total_downloads, $file;
+            $md5 = get_md5($sta,$file,$ip,\@lists) || 'error';
         } else {
             fork_complain($parent,"$file => Not present in local directory after download");
             $md5 = 'error';
             $status = 'error';
+            $dir = '';
         }
 
         #
@@ -901,7 +1007,8 @@ sub get_data {
                 "dir",      $path, 
                 "attempts", $attempts,
                 "filebytes",$size, 
-                "media",    $flagged{$file} =~ /WDIR2/ ? $media_reserve : $media_active,
+                # don't need... already set
+                #"media",    $flagged{$file} =~ /WDIR2/ ? $media_reserve : $media_active,
                 "bandwidth",$speed, 
                 "dlsta",    $dlsta,
                 "fixed",    'n', 
@@ -918,7 +1025,8 @@ sub get_data {
                 "dir",      $path, 
                 "attempts", $attempts,
                 "filebytes",$size, 
-                "media",    $flagged{$file} =~ /WDIR2/ ? $media_reserve : $media_active,
+                # don't need... already set
+                #"media",    $flagged{$file} =~ /WDIR2/ ? $media_reserve : $media_active,
                 "bandwidth",$speed, 
                 "dlsta",    $dlsta,
                 "fixed",    'n', 
@@ -934,7 +1042,7 @@ sub get_data {
     #}}}
     }
 
-    fork_die($parent, "NO DOWNLOADS!!!! Station not downloading any files.") unless scalar @total_downloads;
+    fork_die($parent, "NO DOWNLOADS!!!! Station not downloading any files. http://$ip:$pf{http_port}") unless scalar @total_downloads;
 
     delete $flagged{$_} foreach @total_downloads;
 
@@ -1076,13 +1184,18 @@ sub download_file {
     #fork_complain("File::Fetch ".$file_fetch->uri." $@") if $@; 
     $where = $file_fetch->fetch( to => "$path/" ) || '';
 
-    #fork_complain("ERROR on download of http://$ip:$pf{http_port}/$file") unless -f $where;
+    #fork_complain($parent,"ERROR on download of http://$ip:$pf{http_port}/$file") unless -f $where;
+
+    return unless -f $where;
+
+    fork_complain($parent,"Maybe there is a problem with the file. $where from http://$ip:$pf{http_port}/$file") if -s $where == 591;
 
     #fork_complain("ERROR on $file after download. Problem with name") unless $where =~ /$temp_new[-1]/;
 
     #fork_complain("Cannot see $file after download") unless -f $where;
 
     return $where if -f $where;
+
     return
 #}}}
 }
@@ -1148,7 +1261,7 @@ sub fix_local {
     my ($r,$record,@db_sub,@db_r,@db,@dbscr,@recs);
     my ($unique,$file,$status,$extra,$size,$path,$f);
     my $nulls = 0;
-    my (@fields);
+    my ($mode,@fields);
 
     fork_debug($parent,"Reading and fixing of local directory") if $opt_d;
 
@@ -1254,6 +1367,28 @@ sub fix_local {
             $nulls = 1;
         }
 
+        #
+        # Clean database fields
+        #
+        if (dbgetv(@db,'dir') ne $path ) {
+            #
+            # Fix "downloaded" entries on the database
+            #
+            dbputv(@db, "dir", $path,"lddate",dbgetv(@db,"lddate"));
+        }
+
+        #
+        # Verify mode 0664
+        #
+        $mode = (stat("$path/$file"))[2] || 0;
+        $mode = sprintf("0%o", $mode & 07777);
+        fork_complain("$file mode error: $mode => 0660") unless int($mode) >= 660;
+
+        #
+        # Fix size of file in database
+        #
+        dbputv(@db, "filebytes", -s "$path/$file","lddate",dbgetv(@db,"lddate")) unless (-s "$path/$file" == int(dbgetv(@db,"filebytes")));
+
     }
 
 
@@ -1296,14 +1431,14 @@ sub fix_local {
 
                 fork_debug($parent,"$f already in database as downloaded") if $opt_d;
 
-            } elsif ( dbgetv(@db, 'status') =~ /skip/) {
+                #} elsif ( dbgetv(@db, 'status') =~ /skip/) {
 
-                fork_complain($parent,"$f flagged as 'skipped'");
+                #fork_complain($parent,"$f already flagged as 'skipped'");
 
             } else {
 
                 fork_complain($parent,"$f updated to 'downloaded'");
-                dbputv(@db,'status', 'downloaded', 'attempts', 1, 'time', now(), 'lddate', now()  );
+                dbputv(@db,'status', 'downloaded', 'attempts', 1, 'time', now(), 'dir',$path, 'lddate', now()  );
 
              }
 
@@ -1348,16 +1483,17 @@ sub fix_local {
 }
 
 sub read_baler {
-#{{{ read_baler(sta,ip,m_active,m_reserve)
+#{{{
     my $sta   = shift;
     my $ip    = shift;
+    my $dir   = shift;
     my $media_active    = shift;
     my $media_reserve    = shift;
-    my ($dir,$path,$name,$test,$nrecords);
+    my ($path,$name,$test,$nrecords);
     my %list;
-    my ($input,$where,$files);
+    my ($input,$list,$where,$files);
     my @temp_dir = ();
-    my (@db,@n,@queries);
+    my (@temp,@db,@n,@queries);
     my $attempt = 1;
 
     $path = prepare_path($sta); 
@@ -1368,61 +1504,81 @@ sub read_baler {
 
     chdir $path or fork_die($parent,"Cannot change to directory ($path)");
 
+    fork_debug($parent,"Full array for directories: @$dir") if $opt_d;
 
     #
     # For each of the folders
     #
-    foreach $dir ( qw/active reserve/ ) {
+    foreach $list ( @$dir ) {
 
-        $path = "list.$dir.data.gz";
+        #$list = "list.$dir.data.gz";
 
-        fork_debug($parent,"Get: $path") if $opt_d;
+        next unless $list =~ /data/;
 
-        unlink $path if -e $path;
+        fork_debug($parent,"Get: $list") if $opt_d;
+
+        unlink $list if -e $list;
         #
         # download list of files now
         #
-        eval{ $file_fetch = File::Fetch->new(uri => "http://$ip:$pf{http_port}/$path"); };
-        fork_complain($parent,"File::Fetch($path) => $@") if $@;
+        eval{ $file_fetch = File::Fetch->new(uri => "http://$ip:$pf{http_port}/$list"); };
+        fork_complain($parent,"File::Fetch($list) => $@") if $@;
 
         eval {  $where = $file_fetch->fetch( to => "./" ); };
         fork_complain($parent,"File::Fetch(".$file_fetch->uri.") => $@") if $@;
 
+        unless ( $where ) {
+            eval {  $where = $file_fetch->fetch( to => "./" ); };
+            fork_complain($parent,"File::Fetch(".$file_fetch->uri.") => $@") if $@;
+        }
 
         unless ( $where ) {
-            fork_complain($parent,"Error fetching:  http://$ip:$pf{http_port}/$path");
+            eval {  $where = $file_fetch->fetch( to => "./" ); };
+            fork_complain($parent,"File::Fetch(".$file_fetch->uri.") => $@") if $@;
+        }
+
+        unless ( $where ) {
+            fork_complain($parent,"Error fetching:  http://$ip:$pf{http_port}/$list");
             next;
         }
 
-        fork_complain($parent,"ERROR after download of: $path") unless -e $path;
-        open $input, "<$path"; 
+        fork_complain($parent,"ERROR after download of: $list") unless -e $list;
+        open $input, "<$list"; 
         $files = new IO::Uncompress::AnyUncompress $input or fork_complain($parent,"IO::Uncompress::AnyUncompress failed: $AnyUncompressError");
 
+        @temp = ();
         while ( <$files> ) {
+            s/\n//;
+            push(@temp,$_);
+        }
+        $input->close();
+        $files->close();
+
+        foreach $test ( @temp ) {
             #
             # Parse results and get size
             #
-            s/\n//;
-            next unless /(..-(${sta}|EXMP)_4-\d{14})/;
-            @temp_dir = split(/\//,$_);
+            next unless $test =~ /..-(${sta}|EXMP)_4-(\d{14})/;
+            @temp_dir = split(/\//,$test);
             $name = pop(@temp_dir);
-            push(@temp_dir," ");
-            unshift(@temp_dir, $dir =~ /active/ ? 'WDIR' : 'WDIR2' );
-            unshift(@temp_dir," ");
+            unshift(@temp_dir, $list =~ /active/ ? 'WDIR' : 'WDIR2' );
 
             $list{$name} = join('/',@temp_dir);
             fork_debug($parent,"$name => $list{$name}") if $opt_d;
         }
 
-        $input->close();
-        $files->close();
     }
 
-    fork_die($parent,"Can't get any lists of files: $ip:$pf{http_port})") unless keys %list;
+    unless ( keys %list ) {
+        fork_notify($parent,"$sta finished processing station");
+        $path = prepare_path($sta); 
+        dbunlock("${path}/${sta}_baler");
+        fork_die($parent,"Can't get any lists of files: $ip:$pf{http_port})");
+    }
 
     return %list;
-
 #}}}
+
 }
 
 sub get_md5 {
@@ -1430,25 +1586,37 @@ sub get_md5 {
     my $sta  = shift;
     my $file  = shift;
     my $ip    = shift;
-    my ($old,$md5_lib,$digest,$md5,$local_path,$folder);
-    my @md5_raw;
-
-    fork_notify($parent,"Get MD5 $file") if $opt_v;
+    my $lists    = shift;
+    my ($old,$md5_lib,$f,$d,$digest,$md5,$local_path,$folder);
+    my ($where);
+    my @md5_raw = ();
 
     $local_path = prepare_path($sta) . '/md5/'; 
 
     $old = $file;
+
     $file .= '.md5' unless $file =~ /\.md5/;
+
+    fork_notify($parent,"Get MD5 $file") if $opt_d;
 
     chdir $local_path or fork_die($parent,"Cannot change to directory ($local_path)");
 
     unless ( -s "$local_path/$file" ) {
 
         unlink "$local_path/$file";
-        fork_notify($parent,"Lets download MD5 file $file -> $local_path") if $opt_v;
+        fork_notify($parent,"Lets download MD5 file $file -> $local_path") if $opt_d;
 
-        foreach (qw/WDIR WDIR2/) {
-            last if download_file("$_/recover/$file",$local_path,$ip);
+        foreach $f (@$lists) {
+            next unless $f =~ m/recover/;
+            fork_notify($parent,"Now with directory $f") if $opt_d;
+            $d = ( $f =~ /active/ ? 'WDIR' : 'WDIR2' );
+            $f =~ m/list\.\w+\.(recover\S*)\.gz/;
+            next unless $1;
+            fork_notify($parent,"attempt download of MD5: $d/$1/$file") if $opt_d;
+            $where = download_file("$d/$1/$file",$local_path,$ip);
+            last if $where;
+            $where = download_file("$d/$1/$file",$local_path,$ip);
+            last if $where;
         }
 
     }
@@ -1460,25 +1628,35 @@ sub get_md5 {
 
     while (<DAT>) {
         chomp;
-        fork_debug($parent,"MD5:: $_");
+        fork_debug($parent,"MD5 file:: $_") if $opt_v;
         push @md5_raw, split;
     }
 
     close(DAT);
 
-    unless ( $md5_raw[1] ) {
-        fork_complain($parent,"Error in file $local_path/$file @md5_raw");
-        unlink "$local_path/$file";
+    unless ( scalar(@md5_raw) ) {
+        fork_complain($parent,"Error in scalar value of md5 in file $local_path/$file @md5_raw");
+        move("$local_path/$file","$local_path/../trash/$file") or fork_complain($parent,"Can't move $file to $local_path/../trash");
+        #unlink "$local_path/$file";
+        return 'error';
+    }
+
+
+    if ( $md5_raw[0] !~ /(\S{32})/ ) {
+        fork_complain($parent,"Error in md5 regex for value in file $local_path/$file @md5_raw");
+        move("$local_path/$file","$local_path/../trash/$file") or fork_complain($parent,"Can't move $file to $local_path/../trash");
+        #unlink "$local_path/$file";
+        return 'error';
+    }
+
+    if ( $md5_raw[1] !~ /($old)/ ) {
+        fork_complain($parent,"Error in md5 in filename in file $local_path/$file @md5_raw");
+        move("$local_path/$file","$local_path/../trash/$file") or fork_complain($parent,"Can't move $file to $local_path/../trash");
+        #unlink "$local_path/$file";
         return 'error';
     }
 
     $md5 = $md5_raw[0];
-
-    if ( $md5_raw[1] !~ /($old)/ ) {
-        fork_complain($parent,"Error in file $local_path/$file @md5_raw");
-        unlink "$local_path/$file";
-        return 'error';
-    }
 
 
     #
@@ -1503,13 +1681,14 @@ sub get_md5 {
 #}}}
 }
 
-sub get_medias {
-#{{{ get_medias(sta,ip)
+sub get_medias_and_lists {
+#{{{ get_medias_and_lists(sta,ip)
     my $sta = shift;
     my $ip = shift;
     my (@text,$line,$browser, $resp);
     my $active = '';
     my $reserve = '';
+    my @dir = ();
 
     $browser = LWP::UserAgent->new;
 
@@ -1540,6 +1719,22 @@ sub get_medias {
             $reserve = $1; 
             last if $reserve;
         }
+
+        #
+        # Look for file lists
+        #
+        for (my $line=0; $line < scalar @text; $line++){
+
+            push(@dir,"$1") if $text[$line] =~ m/>(list\.active\.data.*\.gz)</;
+            push(@dir,"$1") if $text[$line] =~ m/>(list\.active\.recover.*\.gz)</;
+            push(@dir,"$1") if $text[$line] =~ m/>(list\.reserve\.data.*\.gz)</;
+            push(@dir,"$1") if $text[$line] =~ m/>(list\.reserve\.recover.*\.gz)</;
+
+            next unless $1;
+            fork_debug($parent,"Data Folder: $1") if $opt_v;
+
+
+        }
     }
     else {
         fork_complain($parent,"problem reading http://$ip:$pf{http_port}/stats.html");
@@ -1552,8 +1747,8 @@ sub get_medias {
     $active  ||= '';
     $reserve ||= '';
 
-    fork_debug($parent,"get_medias(http://$ip:$pf{http_port}/stats.html) => ($active,$reserve)") if $opt_v;
-    return ($active,$reserve);
+    fork_debug($parent,"get_medias_and_lists(http://$ip:$pf{http_port}/stats.html) => ($active,$reserve)") if $opt_v;
+    return ($active,$reserve,@dir);
 
 #}}}
 }
@@ -1684,7 +1879,7 @@ rsync_baler - Sync a remote baler directory to a local copy
 
 =head1 SYNOPSIS
 
-rsync_baler [-h] [-v] [-d] [-s sta_regex] [-r sta_regex] [-p pf] [-m email,email]
+rsync_baler [-h] [-x] [-v] [-d] [-s sta_regex] [-r sta_regex] [-p pf] [-m email,email]
 
 =head1 ARGUMENTS
 
@@ -1695,6 +1890,10 @@ Recognized flags:
 =item B<-h> 
 
 Help. Produce this documentation
+
+=item B<-x> 
+
+Ignore all database flags for max attempts on files.
 
 =item B<-v> 
 

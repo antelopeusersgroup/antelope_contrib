@@ -27,7 +27,7 @@ class Config_Server():
         self.verbose             = False
         self.debug               = False
         self.daemonize           = False
-        self.import_paths        = ()
+        #self.import_paths        = ()
         self.default_time_window = -1
         self.filters             = []
         self.run_server          = {}
@@ -143,10 +143,10 @@ class Config_Server():
             self.filters = list(stock.pfget_tbl( self.pfname, "filters" ) )
         except:
             pass
-        try:
-            self.import_paths = stock.pfget_tbl( self.pfname, "import_paths" )
-        except:
-            pass
+        #try:
+        #    self.import_paths = stock.pfget_tbl( self.pfname, "import_paths" )
+        #except:
+        #    pass
 
 #}}}
 
@@ -155,9 +155,9 @@ class Config_Server():
         # 
         # Expand paths
         #
-        for p in self.import_paths:
-            log.msg('Expnding path: %s' % p)
-            sys.path.insert(0, p)
+        #for p in self.import_paths:
+        #    log.msg('Expnding path: %s' % p)
+        #    sys.path.insert(0, p)
 
         # 
         # Fix paths
@@ -193,7 +193,7 @@ class Config_Server():
             argv_remap.append("-n")
 
         argv_remap.append("-y")
-        argv_remap.append(os.path.join(os.environ['ANTELOPE'], 'local/data/python/dbwfserver/server.py'))
+        argv_remap.append(os.path.join(os.environ['ANTELOPE'], 'data/python/dbwfserver/server.py'))
 
         if os.path.isdir('./state'):
             pid_path = './state'
@@ -232,7 +232,7 @@ class Config_Server():
         if attrname == "verbose": return self.verbose
         if attrname == "debug": return self.debug
         if attrname == "daemonize": return self.daemonize
-        if attrname == "import_paths": return self.import_paths
+        #if attrname == "import_paths": return self.import_paths
         if attrname == "default_time_window": return self.time_window
         if attrname == "filters": return self.filters
         if attrname == "run_server": return self.run_server

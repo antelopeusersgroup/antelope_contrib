@@ -171,7 +171,7 @@
             dbclose ( @dbactive ) ; 
         }
 
-#  process station active directory 
+#  process rt directory 
 
         $dbrt = "$pf{rt_sta_dir}/$sta/$sta" ;
         if ( -f $dbrt ) {

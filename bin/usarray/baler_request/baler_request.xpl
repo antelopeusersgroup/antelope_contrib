@@ -66,8 +66,8 @@
     elog_notify ( "temporary gap db	$tmpgap" ) if $opt_v ;
     elog_notify ( "temporary ba db	$tmpba" )  if $opt_v ;
 
-    &mk_gap_wfdisc ($sta_match,$gapdb,$tmpgap,$net,$stime,$etime,$reject,$filled) ;
-    &mk_gap_wfdisc ($sta_match,$gapdb2,$tmpgap,$net,$stime,$etime,$reject,$filled) if (@ARGV == 2) ;
+    &mk_gap_wfdisc ( $sta_match, $gapdb,  $tmpgap, $net, $stime, $etime, $reject, $filled ) ;
+    &mk_gap_wfdisc ( $sta_match, $gapdb2, $tmpgap, $net, $stime, $etime, $reject, $filled ) if (@ARGV == 2) ;
     
     &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
         
@@ -142,7 +142,7 @@ sub baler_admin { # &baler_admin ($net,$tmpgap,$tmpba,$gapdb,$reqdir) ;
     system ($cmd);
     
     $nsec = 1800;
-    &compress_wfdisc($tmpjunk,$nsec,0,$opt_v,$opt_V);
+    &compress_wfdisc( $tmpjunk, $nsec, 0 );
     
 #
 #  build tmpba database

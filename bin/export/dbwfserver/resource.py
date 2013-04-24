@@ -117,7 +117,7 @@ class db_nulls():
 
             if self.debug: log.msg("Class Db_Nulls: Test table:[%s]" % table)
 
-            db.lookup( '',table,'','dbNULL')
+            db = db.lookup( '',table,'','dbNULL')
 
             """
             Test every field
@@ -236,7 +236,7 @@ class Stations():
 
             try:
                 db = datascope.dbopen( dbname , 'r' )
-                db.lookup( table='wfdisc',field='time')
+                db = db.lookup( table='wfdisc',field='time')
                 records = db.query(datascope.dbRECORD_COUNT)
                 self.mintime = db.ex_eval('min(time)')
                 self.maxtime   = db.ex_eval('max(endtime)')
@@ -294,8 +294,8 @@ class Stations():
 
             try:
                 db = datascope.dbopen( dbname , 'r' )
-                db.lookup( table='sitechan')
-                db.sort(['sta', 'chan'])
+                db = db.lookup( table='sitechan')
+                db = db.sort(['sta', 'chan'])
                 records = db.query(datascope.dbRECORD_COUNT)
 
             except Exception,e:
@@ -594,18 +594,18 @@ class Events():
 
         try: 
             db = datascope.dbopen( dbname , 'r' )
-            db.lookup( table='origin')
+            db = db.lookup( table='origin')
             db.query(datascope.dbTABLE_PRESENT) 
         except Exception,e:
             print "Exception on Events() time(%s): Error on db pointer %s [%s]" % (orid_time,db,e)
             return
 
-        db.subset( 'time >= %f' % start )
-        db.subset( 'time <= %f' % end )
+        db = db.subset( 'time >= %f' % start )
+        db = db.subset( 'time <= %f' % end )
 
         try:
             db = datascope.dbopen( dbname , 'r' )
-            db.lookup( table='wfdisc' )
+            db = db.lookup( table='wfdisc' )
             records = db.query(datascope.dbRECORD_COUNT)
 
         except:
@@ -639,7 +639,7 @@ class Events():
             # Get min max for wfdisc table first
             try:
                 db = datascope.dbopen( dbname , 'r' )
-                db.lookup( table='wfdisc')
+                db = db.lookup( table='wfdisc')
                 start = db.ex_eval('min(time)')
                 end = db.ex_eval('max(endtime)')
                 if end > stock.now():
@@ -671,7 +671,7 @@ class Events():
 
             try:
                 db = datascope.dbopen( dbname , 'r' )
-                db.lookup( table='event')
+                db = db.lookup( table='event')
                 records = db.query(datascope.dbRECORD_COUNT)
 
             except:
@@ -680,15 +680,15 @@ class Events():
             if records:
 
                 try:
-                    db.join( 'origin' )
-                    db.subset( 'orid == prefor' )
+                    db = db.join( 'origin' )
+                    db = db.subset( 'orid == prefor' )
                 except:
                     pass
 
             else:
 
                 try:
-                    db.lookup( table='origin' )
+                    db = db.lookup( table='origin' )
                 except:
                     pass
 
@@ -707,8 +707,8 @@ class Events():
                 print "Events(): origin db_pointer: [%s,%s,%s,%s]" % (db['database'],db['table'],db['field'],db['record'])
 
             try:
-                db.subset("time > %f" % self.start)
-                db.subset("time < %f" % self.end)
+                db = db.subset("time > %f" % self.start)
+                db = db.subset("time < %f" % self.end)
             except:
                 pass
 
@@ -822,14 +822,14 @@ class Events():
 
         try: 
             db = datascope.dbopen (dbname , 'r' )
-            db.lookup( table='arrival' )
-            db.join( 'assoc' )
+            db = db.lookup( table='arrival' )
+            db = db.join( 'assoc' )
             nrecs = db.query(datascope.dbRECORD_COUNT)
 
         except:
             try:
                 db = datascope.dbopen (dbname , 'r' )
-                db.lookup( table='arrival')
+                db = db.lookup( table='arrival')
                 nrecs = db.query(datascope.dbRECORD_COUNT)
 
             except Exception,e:
@@ -844,7 +844,7 @@ class Events():
             return dict(phases)
 
         try:
-            db.subset("%s <= time && time <= %s" % (float(min),float(max)) )
+            db = db.subset("%s <= time && time <= %s" % (float(min),float(max)) )
             nrecs = db.query(datascope.dbRECORD_COUNT)
         except:
             nrecs = 0
@@ -981,7 +981,7 @@ class QueryParser(resource.Resource):
                 if config.debug: print "QueryParser(): Init(): Check table  %s[%s]." % (dbname,tbl)
 
                 try:
-                    db_temp.lookup( table=tbl )
+                    db_temp = db_temp.lookup( table=tbl )
                 except Exception, e:
                     print '\nERROR: %s.%s not present (%s)\n' % (dbname,tbl,e)
                     remove.append(dbname)
@@ -1354,7 +1354,7 @@ class QueryParser(resource.Resource):
         if config.debug: log.msg("QueryParser(): _parse_request(): URI: %s" % str(args) ) 
 
         uri = {}
-        time_window = config.default_time_window
+        time_window = float(config.default_time_window)
 
         uri.update( { 
             "sta":[],

@@ -135,21 +135,20 @@
         &run_cmd( $cmd )
     }
 
-    $stime = strydtime(now());
-    elog_notify ("completed 	$stime\n\n");
+    $stime = strydtime( now() ) ;
+    elog_notify ( "completed 	$stime\n\n" ) ;
 
     if ( $problems == 0 ) {
-        $subject = sprintf("Success  $pgm  $host  $nstas stations processed");
-        elog_notify ($subject);
-        &sendmail ( $subject, $opt_m ) if $opt_m ;
+        $subject = sprintf( "Success  $pgm  $host  $nstas stations processed" );
+        elog_notify ( $subject ) ;
     } else { 
         $subject = "Problems - $pgm $host	$nstas stations processed, $nchild stations with problems, $problems total problems" ;
-        &sendmail($subject, $opt_m) if $opt_m ; 
-        elog_complain("\n$subject") ;
-        exit(1);
+        elog_complain( "\n$subject" ) ;
     }
-  
-    exit(0);
+
+    &sendmail ( $subject, $opt_m ) if $opt_m ;
+
+    exit(0) ;
 }
 
 sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
@@ -468,7 +467,7 @@ sub proc_sta { # $problems = &proc_sta( $sta, $db, $orbname, $orb, $orbclient, $
 #  
         ( $sync_dfile, $problems ) = &sync_file ( $sta, $tmp_db, $tmp_sync, $problems ) ;
         
-        elog_debug ( "output of sync_file  -	sync_dfile	\"$sync_dfile\" " ) ;
+        elog_debug ( "output of sync_file  -	sync_dfile	\"$sync_dfile\" " ) if $opt_V ;
 #
 #  wait until orblag value become acceptable
 #
@@ -988,7 +987,7 @@ sub send_sync { # $problems = &send_sync ( $sta, $dbops, $comment, $orbname, $sy
     my ( $cmd, $nsuccess, $short_hostname, $sync_dir, $year ) ;
     my ( @dbdmcfiles, @dbops, @pffiles ) ;
     
-    elog_debug ( "start of send_sync  -	sync_dfile	\"$sync_dfile\" " ) ;
+    elog_debug ( "start of send_sync  -	sync_dfile	\"$sync_dfile\" " ) if $opt_V ;
 
 #
 #  make sure wait_match specified properly in miniseed2orb.pf
