@@ -23,12 +23,12 @@ use List::Util qw[max min];
 
 
 
-    unless ( &getopts('s:r:vh') ) { 
+    unless ( &getopts('s:r:vh') ) {
         elog_complain("Problem with flags.");
         pod2usage({-verbose => 2});
     }
 
-    if ( 3 < @ARGV or @ARGV < 2 ) { 
+    if ( 3 < @ARGV or @ARGV < 2 ) {
         elog_complain("Problem with arguments.");
         pod2usage({-verbose => 2});
     }
@@ -59,7 +59,7 @@ use List::Util qw[max min];
     $json = $ARGV[2] if scalar(@ARGV) == 3;
     elog_notify("JSON: $json") if $opt_v;
     if ( $json ) {
-        $json = File::Spec->rel2abs( $json ); 
+        $json = File::Spec->rel2abs( $json );
         elog_notify("Write table in json file: $json") if $opt_v;
         unlink($json) if -e $json;
     }
@@ -67,9 +67,9 @@ use List::Util qw[max min];
     #
     # Verify Database
     #
-    @db = dbopen ( $database, "r" ) or elog_die("Can't open DB: $database"); 
+    @db = dbopen ( $database, "r" ) or elog_die("Can't open DB: $database");
 
-    # Open table for list of valid stations 
+    # Open table for list of valid stations
     @db_on = dblookup(@db, "", "deployment" , "", "");
 
     # Open table for list of station types ie 'PacketBaler44'
@@ -86,7 +86,7 @@ use List::Util qw[max min];
 
 
     elog_notify('Get list of stations:') if $opt_v;
-    $stations = get_stations_from_db(); 
+    $stations = get_stations_from_db();
 
     #
     # Report and/or JSON file export
@@ -129,20 +129,20 @@ sub get_stations_from_db {
     elog_notify("dbsubset ( sta !~ /$opt_r/)") if $opt_v && $opt_r;
     @db_1 = dbsubset ( @db_1, "sta !~ /$opt_r/") if $opt_r;
 
-    $nrecords = dbquery(@db_1,dbRECORD_COUNT) or elog_die("No records to work with after dbsubset()"); 
+    $nrecords = dbquery(@db_1,dbRECORD_COUNT) or elog_die("No records to work with after dbsubset()");
     elog_notify("dbsubset => nrecords = $nrecords") if $opt_v;
 
 
-    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) { 
+    for ( $db_1[3] = 0 ; $db_1[3] < $nrecords ; $db_1[3]++ ) {
 
-        ($dlsta,$net,$sta,$time,$endtime) = dbgetv(@db_1, qw/dlsta net sta time endtime/); 
+        ($dlsta,$net,$sta,$time,$endtime) = dbgetv(@db_1, qw/dlsta net sta time endtime/);
 
         elog_notify("[$sta] [$net] [$dlsta] [$time] [$endtime]") if $opt_v;
 
-        $sta_hash{$sta}{dlsta}      = $dlsta; 
-        $sta_hash{$sta}{net}        = $net; 
-        $sta_hash{$sta}{status}     = 'Decom'; 
-        $sta_hash{$sta}{ip}         = 0; 
+        $sta_hash{$sta}{dlsta}      = $dlsta;
+        $sta_hash{$sta}{net}        = $net;
+        $sta_hash{$sta}{status}     = 'Decom';
+        $sta_hash{$sta}{ip}         = 0;
 
         push @{ $sta_hash{$sta}{dates} }, [$time,$endtime];
 
@@ -170,16 +170,16 @@ sub get_stations_from_db {
 
         if ( $db_ip[3] >= 0 ) {
 
-            $ip = dbgetv(@db_ip, qw/inp/); 
+            $ip = dbgetv(@db_ip, qw/inp/);
 
             # regex for the ip
             $ip =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/;
             problem("Failed grep on IP stabaler{inp}->(ip'$ip',dlsta'$dlsta')") unless $1;
-            $sta_hash{$sta}{ip} = $1 if $1; 
+            $sta_hash{$sta}{ip} = $1 if $1;
 
         }
 
-        elog_notify("$dlsta $sta_hash{$sta}{status} $sta_hash{$sta}{ip}") if $opt_v; 
+        elog_notify("$dlsta $sta_hash{$sta}{status} $sta_hash{$sta}{ip}") if $opt_v;
 
         foreach (sort @{$sta_hash{$sta}{dates}}) { elog_notify("\t\t@$_") if $opt_v; }
 
@@ -233,7 +233,7 @@ sub build_json {
         $total_7 = 0;
         $total_30 = 0;
 
-        $local_path = prepare_path($temp_sta); 
+        $local_path = prepare_path($temp_sta);
 
         #
         # Get station info
@@ -313,15 +313,15 @@ sub build_json {
                 ($file, $time, $bytes, $bandwidth, $md5) = dbgetv(@dbr_temp, qw/dfile time filebytes bandwidth md5/);
                 #elog_notify("$file, $time, $status, $bytes, $bandwidth, $md5");
 
-                push @downloaded, $file; 
+                push @downloaded, $file;
 
                 $bandwidth += 0;
-                push @bw, $bandwidth if $bandwidth > 0; 
+                push @bw, $bandwidth if $bandwidth > 0;
 
                 $last_time = $time unless $last_time;
                 $last_file = $file unless $last_file;
 
-                if ( $last_time < $time) { 
+                if ( $last_time < $time) {
                     $last_time = $time;
                     $last_file = $file;
                 }
@@ -496,7 +496,7 @@ sub build_time_regex {
     }
     else {
 
-        # 
+        #
         # Build regex for all valid months
         #
         foreach ( @dates ) {
@@ -587,7 +587,7 @@ sub open_db {
     #
     # Fix path
     #
-    $dbout = File::Spec->rel2abs( $dbout ); 
+    $dbout = File::Spec->rel2abs( $dbout );
 
     #
     # Open table
@@ -595,8 +595,8 @@ sub open_db {
     elog_notify("$sta Openning database table  ($dbout.rsyncbaler)") if $opt_v;
     eval { @db  = dbopen_table("$dbout.rsyncbaler","r+") or elog_complain("Can't open DB: $dbout.rsyncbaler",$sta) };
     #elog_notify("$sta open_db() $path => @db");
-    return unless @db; 
-    return @db; 
+    return unless @db;
+    return @db;
 
 #}}}
 }
@@ -618,17 +618,17 @@ sub read_local {
 
         $file = "$path/$f";
 
-        if(-d "$file"){ next; } 
+        if(-d "$file"){ next; }
 
-        elsif($f =~ /..-...._\d-\d+-\d+/ ){ 
+        elsif($f =~ /..-...._\d-\d+-\d+/ ){
             remove_file($sta,$f);
-        } 
+        }
 
-        elsif($f !~ /.*${sta}.*/ ){ 
+        elsif($f !~ /.*${sta}.*/ ){
             remove_file($sta,$f);
-        } 
+        }
 
-        elsif($f =~ /.*-${sta}_4-.*/ ){ 
+        elsif($f =~ /.*-${sta}_4-.*/ ){
             $list{$f} = ();
         }
     }
@@ -648,7 +648,7 @@ sub prepare_path {
 
     elog_die("prepare_path(). Cannot produce path! We need a station name...") unless $station;
 
-    my $path = File::Spec->rel2abs( "$dir/$station" ); 
+    my $path = File::Spec->rel2abs( "$dir/$station" );
 
     elog_notify("$sta path: $path ") if $opt_v;
     return $path;
@@ -658,35 +658,35 @@ sub prepare_path {
 sub average {
 #{{{
     # usage: $average = average(\@array)
-    my ($array_ref) = @_; 
-    my $sum; 
-    my $count = scalar @$array_ref; 
+    my ($array_ref) = @_;
+    my $sum;
+    my $count = scalar @$array_ref;
     return unless $count;
-    foreach (@$array_ref) { $sum += $_; } 
-    return $sum / $count; 
+    foreach (@$array_ref) { $sum += $_; }
+    return $sum / $count;
 #}}}
-} 
+}
 
 sub median {
 #{{{
     # usage: $median = median(\@array)
-    my ($array_ref) = @_; 
-    my $count = scalar @$array_ref; 
-    my @array = sort @$array_ref; 
+    my ($array_ref) = @_;
+    my $count = scalar @$array_ref;
+    my @array = sort @$array_ref;
     return unless $count;
 
     if ($count == 1 ) {
         return $array[0];
     }
-    elsif ($count == 2) { 
-        return ($array[0] + $array[1])/2; 
-    } 
-    elsif ($count % 2) { 
-        return $array[int($count/2)]; 
-    } 
-    else { 
-        return ($array[$count/2] + $array[$count/2 - 1]) / 2; 
-    } 
+    elsif ($count == 2) {
+        return ($array[0] + $array[1])/2;
+    }
+    elsif ($count % 2) {
+        return $array[int($count/2)];
+    }
+    else {
+        return ($array[$count/2] + $array[$count/2 - 1]) / 2;
+    }
 #}}}
 }
 
@@ -714,7 +714,7 @@ rsync_baler2json - Read Baler44 rsyncbaler table(directory) and create JSON outp
 
 =head1 SYNOPSIS
 
-rsync_baler2json [-v] [-h] [-s sta_regex] [-r sta_regex] dbmaster baler44_dir [json.output] 
+rsync_baler2json [-v] [-h] [-s sta_regex] [-r sta_regex] dbmaster baler44_dir [json.output]
 
 =head1 ARGUMENTS
 
@@ -731,19 +731,19 @@ Path to the base directory with all stations. Local archive of balers.
 =item [json.output]
 
 File to update with all the JSON output from the script. If empty then print to stdout.
-You can then pipe the output to a second script. 
+You can then pipe the output to a second script.
 
 =back
 
-=head1 OPTIONS 
+=head1 OPTIONS
 
 =over 4
 
-=item B<-h> 
+=item B<-h>
 
 Print this help message
 
-=item B<-v> 
+=item B<-v>
 
 Produce verbose output while running
 
@@ -759,13 +759,13 @@ Reject station regex. ('STA1|STA2' or 'A...|B.*')
 
 =head1 DESCRIPTION
 
-This script will read a local directory that archives rsync_baler 
-folders for Baler44 stations and will output the status of the 
-tables in JSON format. This is the fastest way of creating a 
-website that will present this information to the users. 
+This script will read a local directory that archives rsync_baler
+folders for Baler44 stations and will output the status of the
+tables in JSON format. This is the fastest way of creating a
+website that will present this information to the users.
 Maybe not to use in realtime to export data to http calls but to
-update json file for the ajax calls from the clients. 
-The script is simple and may fail if used outside ANF-TA installation. 
+update json file for the ajax calls from the clients.
+The script is simple and may fail if used outside ANF-TA installation.
 
 =head1 AUTHOR
 
