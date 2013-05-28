@@ -1,0 +1,11 @@
+INWHICHPOLYGONS find polygons that include a point
+
+DB = INWHICHPOLYGONS ( DB, LAT, LON )
+
+INWHICHPOLYGONS creates a view of a database table, containing
+only the polygons wich surround the point specified by LAT and LON.
+
+This utility written by:
+Nikolaus Horn
+ZAMG / Vienna - 2003
+

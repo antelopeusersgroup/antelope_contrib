@@ -1,0 +1,92 @@
+#  moment magnitudo extension (DST 2006)
+
+Attribute PGA
+	Real (15)
+	Format ( "%15.6f" )
+        Null ( "-999.00" )
+	Description ( "PGA value on a waveform" )
+	Detail {
+                This is a PGA value on a waveform. 
+	}
+        ;
+Attribute PGV
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "PGV value on a waveform" )
+        Detail {
+                This is a PGV value on a waveform.      
+        }
+        ;
+
+Attribute PSA03
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "PSA03 value on a waveform" )
+        Detail {
+                This is a PSA03 value on a waveform.
+        }
+        ;
+		
+Attribute PSA10
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "PSA10 value on a waveform" )
+        Detail {
+                This is a PSA10 value on a waveform.
+        }
+        ;
+
+Attribute PSA30
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "PSA30 value on a waveform" )
+        Detail {
+                This is a PSA30 value on a waveform.
+        }
+        ;
+
+Attribute Arias
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "Arias value on a waveform" )
+        Detail {
+                This is a Arias value on a waveform.
+        }
+        ;
+
+Attribute Housner
+        Real (15)
+        Format ( "%15.6f" )
+        Null ( "-999.00" )
+        Description ( "Housner value on a waveform" )
+        Detail {
+                This is a Housner value on a waveform.
+        }
+        ;
+
+Attribute dista
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-1.00" )
+        Range ( "dista >= 0.0 && dista <= 40000." )
+        Units ( "Km" )
+        Description ( "distance" )
+        Detail {
+                This attribute gives the source-receiver distance
+        }
+        ;
+
+Relation wfparam
+	Fields ( sta chan orid filter time endtime ml dista seaz PGA PGV PSA03 PSA10 PSA30 Arias Housner arid auth lddate )
+  	Primary ( sta chan orid)
+	Description ( "waveform parameters" )
+	Detail {
+                This relation provides the gran motion parameters extracted from the waveform
+	}
+        ;
+

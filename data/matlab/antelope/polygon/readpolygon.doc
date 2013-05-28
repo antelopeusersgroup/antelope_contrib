@@ -1,0 +1,13 @@
+READPOLYGON read polygon from a database
+
+[LAT, LON] = READPOLYGON ( DBPTR )
+
+READPOLYGONS returns the vertices of all polygons 
+specified by DBPTR. If multiple polgons are
+returned, they are separated by NANs for compatibility
+with other Matlab routines.
+ 
+This utility written by:
+Nikolaus Horn
+ZAMG / Vienna - 2003
+
