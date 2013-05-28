@@ -40,12 +40,12 @@ use Datascope ;
 use Pod::Usage ;
 use IO::Handle ;
 use File::Spec ;
-#use File::Copy ;
+use File::Copy qw[move];
 use Getopt::Std ;
 use File::Fetch ;
 #use File::Basename ;
 use Digest::MD5 qw[md5_hex] ;
-use IO::Uncompress::AnyUncompress qw(anyuncompress $AnyUncompressError) ;
+use IO::Uncompress::AnyUncompress qw[anyuncompress $AnyUncompressError] ;
 
 our(%pf) ;
 our(%logs,%errors) ;
@@ -903,7 +903,12 @@ sub get_data {
         fork_complain("Can't get any lists of files: $ip:$pf{http_port})") ;
         return ;
     }
-    #die unless check_time($start_sta) ;
+
+    unless ( check_time($start_sta) ) {
+        dbunlock("${path}/${sta}_baler") ;
+        fork_complain("No more time! EXIT!!!!") ;
+        return ;
+    }
 
     #
     # Compare local to remote
@@ -1014,7 +1019,7 @@ sub get_data {
 
         $dir = $flagged{$file} ;
         $where = '' ;
-        check_time($start_sta) ;
+        last unless check_time($start_sta) ;
 
         fork_notify("Start download: $dir/$file") if $opt_v ;
 
