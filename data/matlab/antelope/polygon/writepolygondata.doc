@@ -1,0 +1,20 @@
+WRITEPOLYGONDATA save polygon data in a database
+
+WRITEPOLYGONDATA ( DBPTR, LAT, LON, PNAME, PTYPE, AUTH, DIR, DFILE, PCODE )
+
+Save all polyons to database DB (and file specified by DIR and DFILE)
+
+LAT, LON - array of vertices
+PNAME		- Name
+PTYPE 		- 2 character field to specify the type of border, e.g. cb for country border etc.
+AUTH		- author
+DIR,DFILE	- these fields specify the external file. If the file exists, data is appended.
+PCODE		- storage type
+			s4 - sun 4 byte
+			i4 - intel 4 byte integer
+			t4 - sun 4 byte float
+			u4 - intel 4 byte float
+
+This utility written by:
+Nikolaus Horn
+ZAMG / Vienna - 2003,2012

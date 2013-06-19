@@ -52,6 +52,7 @@ DATA= \
 	hs10_e.pf \
 	hs10_n.pf \
 	hs10_vert.pf \
+        hyperion.pf \
 	ia_500ug.pf \
 	ia_50ug.pf \
 	ks54000.pf \
@@ -111,6 +112,7 @@ DATA= \
 	trillium_120.pf \
 	trillium_240_1.pf \
 	trillium_240_2.pf \
+	trillium_compact_sio.pf \
 	unknown-acceleration.pf \
 	unknown-displacement.pf \
 	unknown-velocity-1d.pf \

@@ -1,0 +1,30 @@
+# $Id$
+# Nov29, 2012; Jeff Babcock, SIO
+# Nanometrics Trillium Compact	   8.33333e-03 Hz (120 sec) seismometer
+# Normalization, poles and zeros from Nanometrics-provided calibration sheets.
+# See also: See also: http://www.nanometrics.ca/products/trillium-compact-obs
+# Normalized response relative to velocity
+# Normalized to gain of 1.0 at 1 Hz
+# All poles and zeroes in radians/sec
+# 1		      type
+# 3		      num of zeroes
+# 7		      num of poles
+# 0.0		      input sample interval
+# 1		      decim factor
+# 8.184e+11	     normalization factor @ 6.2831 rad/sec (@ 1 Hz); units are (radians/s)^4
+# 1.0		      gain
+# Sensitivity  749.1 V/m/s
+theoretical   1 sensor	 paz	babcock-sio
+8.184000e+11
+7
+-3.691000E-02	 3.712000E-02	0.000000E+00	0.000000E+00
+-3.691000E-02	-3.712000E-02	0.000000E+00	0.000000E+00
+-3.712000E+02	 0.000000E+00	0.000000E+00	0.000000E+00
+-3.739000E+02	 4.755000E+02	0.000000E+00	0.000000E+00
+-3.739000E+02	-4.755000E+02	0.000000E+00	0.000000E+00
+-5.884000E+02	 1.508000E+03	0.000000E+00	0.000000E+00
+-5.884000E+02	-1.508000E+03	0.000000E+00	0.000000E+00
+3
+0.0000E+00    0.0000E+00    0.0000E+00	  0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00	  0.0000E+00
+-4.3410E+02   0.0000E+00    0.0000E+00	  0.0000E+00

@@ -126,7 +126,7 @@ class dbcentral:
 
         try:
 
-            db.lookup('','clusters','','')
+            db = db.lookup('','clusters','','')
 
         except Exception,e:
 
@@ -136,7 +136,8 @@ class dbcentral:
 
         try:
 
-            db.query(datascope.dbTABLE_PRESENT)
+            #if not db.query(datascope.dbTABLE_PRESENT): raise
+            if not db.query("dbTABLE_PRESENT"): raise
 
         except:
 
@@ -157,7 +158,7 @@ class dbcentral:
 
         try:
 
-            db.lookup('','clusters','','dbNULL')
+            db = db.lookup('','clusters','','dbNULL')
             null_time,null_endtime = db.getv('time','endtime')
 
         except Exception,e:
@@ -171,7 +172,7 @@ class dbcentral:
 
         try:
 
-            db.subset(expr)
+            db = db.subset(expr)
 
         except Exception,e:
 
@@ -180,7 +181,7 @@ class dbcentral:
 
         try:
 
-            db.sort(['time'])
+            db = db.sort(['time'])
             nclusters = db.nrecs()
 
 

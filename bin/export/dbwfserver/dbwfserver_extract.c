@@ -61,7 +61,7 @@ main (int argc, char **argv)
     int     calibrate=0, errflg=0, maxtr=0, last_page=0, bars=0, maxpoints=0;
     int     c=0, i=0, n=0, page=0, bin=1, bufd=0, debug=0;
     long    nsamp=0,result=0, first_trace=0, last_trace=0, nrecords=0, nrecs=0;
-    float   *data=NULL, period=0, *max=NULL, *zero=0, *min=NULL;
+    float   *data=NULL, period=0, *max=NULL, zero=0, *min=NULL;
     float   inf=0, ninf=0;
     double  time=0, endtime=0, samprate=0, start=0, stop=0, total_points=0;
     char    old_sta[16]="", segtype[16]="", sta[16]="", chan[16]="", temp[600]="";

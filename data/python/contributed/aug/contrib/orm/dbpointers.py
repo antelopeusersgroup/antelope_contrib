@@ -12,9 +12,9 @@
 # However they hold database pointers (Dbptrs) which must point to open
 # databases for the classes to work properly. The advantage is speed and
 # memory footprint when working with large database tables.
-
-from antelope.datascope import *  # all is necessary for db query variables
 from numpy import array
+from antelope.datascope import (Dbptr, dbopen, dblookup, dbALL, dbNULL, 
+    dbTABLE_NAME, dbPRIMARY_KEY, dbTABLE_FIELDS)
 
 
 class DbrecordPtr(dict, object):
@@ -43,6 +43,14 @@ class DbrecordPtr(dict, object):
         flist = list(self._fields_unsorted)
         flist.sort()
         return flist
+    @property
+    def NULL(self):
+        """
+        Return NULL record for a given pointer
+        """
+        nullptr = Dbptr(self.Ptr)
+        nullptr.record = dbNULL
+        return nullptr
 
     def __init__(self, db=None):
         """
@@ -79,6 +87,31 @@ class DbrecordPtr(dict, object):
     # Dictionary powers activate:
     __getitem__ = __getattr__
     __setitem__ = __setattr__
+
+    def _getNULL(self, field):
+        """
+        Returns NULL value for a given field
+        """
+        return self.NULL.getv(field)[0]
+
+    def get(self, field):
+        """Get a database value from the given field (NULL supported)
+        
+        If the value is a NULL value for that field, return a python None
+        """
+        value = self.__getattr__(field)
+        if value == self._getNULL(field):
+            value = None
+        return value
+
+    def set(self, field, value):
+        """Set a database field to the given value (NULL supported)
+        
+        Setting a field to 'None' puts a NULL value in for that record field
+        """
+        if value is None:
+            value = self._getNULL(field)
+        self.__setattr__(field, value)
 
     def __repr__(self):
         """

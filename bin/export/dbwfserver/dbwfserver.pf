@@ -1,7 +1,8 @@
 application_title Waveform Explorer
 
-port 80                               # default port to use for http requests
+port 8080                               # default port to use for http requests
 
+proxy_url                           # for reverse proxy installations
 #proxy_url /dbwf/ice9                # for reverse proxy installations
 
 default_time_window 200
@@ -12,7 +13,7 @@ max_traces  20
 
 # HTML templates 
 antelope        &env(ANTELOPE)
-local_data      local/data/www/dbwfserver
+local_data      data/www/dbwfserver
 template        template.html
 plot_template   plot.html
 jquery_dir      static/jquery
@@ -33,9 +34,9 @@ jquery_ui_style black-tie           #options { base, black-tie, blitzer, cuperti
                                 #           smoothness, south-street, start, sunny, swanky-purse,
                                 #           trontastic, ui-darkness, ui-lightness and vader  }
 
-import_paths &Tbl{
-    /opt/antelope/5.0-64/local/data
-}
+#import_paths &Tbl{
+#    /opt/antelope/5.0-64/data
+#}
 
 filters &Tbl{ # filter specifications
 WAV

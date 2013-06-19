@@ -1,11 +1,26 @@
 
-all Include install installMAN pf relink tags test :: FORCED
-	@-if localmake_config python ; then \
-	    $(MAKE) -f Makefile2 $@ ; \
-	fi
+BIN = dbwfserver_extract dbwfserver
+PF =  dbwfserver.pf
+MAN1 = dbwfserver.1
 
-clean uninstall :: FORCED
-	$(MAKE) -f Makefile2 $@
+DATADIR = python/dbwfserver
 
-FORCED:
+DATA = __init__.py \
+       server.py \
+       resource.py \
+       dbcentral.py \
+       config.py 
 
+CLEAN = *.pyc *.o
+UNINSTALL = $(ANTELOPE)/data/$(DATADIR)/*.pyc $(ANTELOPE)/data/$(DATADIR)/*.pyc
+
+ldlibs=-lxtra $(TRLIBS) $(GPLLIBS)
+
+#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+
+include $(ANTELOPEMAKE)
+#include $(ANTELOPEMAKELOCAL)
+
+#SUBDIR= /local
+
+DIRS = Contents

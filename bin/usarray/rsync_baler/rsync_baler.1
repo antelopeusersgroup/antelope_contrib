@@ -3,76 +3,105 @@
 rsync_baler \- Sync a remote baler directory to a local copy
 .SH SYNOPSIS
 .nf
-\fBrsync_baler \fP [-h] [-v] [-d] [-p \fIpf_file\fP] 
+\fBrsync_baler \fP [-h] [-v] [-d] [-p \fIpf_file\fP]
                 [-m \fIemail\fP ] [-s select_\fIregex\fP ] [-r reject_\fIregex\fP ]
 .fi
 
 .SH SUPPORT
-Contributed: NO BRTT support -- please contact author. 
+Contributed: NO BRTT support -- please contact author.
 
 .SH DESCRIPTION
-\fBrsync_baler\fP is designed to create and maintain a local archive 
+\fBrsync_baler\fP is designed to create and maintain a local archive
 of miniseed files from balers with ftp and http access (Baler44).
-The script will get the list of active stations and IPs from a database. 
+The script will get the list of active stations and IPs from a database.
 The required tables are deployment, stabaler and staq330 from a css3.0 database.
 After creating the list of targets the script will spawn multiple copies
 of itself to connect to each station and download the data.
 Each child will connect to a single station and a single directory archive.
-Multiple connection utilities are used during the retrieval process. 
+Multiple connection utilities are used during the retrieval process.
 The list in order is:
-.TP 
-.B http   =>  LWP, wget, curl, lynx
+.TP
+.B http   =>  wget, curl
+.B File::Fetch::BLACKLIST = [qw/LWP ncftp lftp lynx iosock/]
 .LP
 
-.PP 
-The system will connect to the stations and will download as many files as 
-possible in the allowed time (set in the parameter file). 
-The downloads are done in alphabetical order. 
+.PP
+The system will connect to the stations and will download as many files as
+possible in the allowed time (set in the parameter file).
+The downloads are done in alphabetical order.
 .LP
-.PP 
+.PP
 Before runnning the script will review every entry on the databases and fix
 any errors. Each file in the directory that does not match the name of the file gets thrown
-into a trash folder in the archive. The rest of the files in the folder are verified on 
-the database. If missing from the database with an entry in the status field of "downloaded" 
-then one is created for it. Then the script verifies every entry on the database with status 
-"downloaded" and checks for the file in the directory. The the script verifies that every file 
+into a trash folder in the archive. The rest of the files in the folder are verified on
+the database. If missing from the database with an entry in the status field of "downloaded"
+then one is created for it. Then the script verifies every entry on the database with status
+"downloaded" and checks for the file in the directory. The the script verifies that every file
 contains a checksum. If missing one then the system will try to get the respective checksum
 file and will update the table with the results. If we have a success match then the value
-of the checksum gets updated on the table. If the file is missing then we have the word 
+of the checksum gets updated on the table. If the file is missing then we have the word
 "missing" on the database. If there is an error then we have "error" flag on the database.
 .LP
-.PP 
+.PP
 If the file is missing in the directory the entry on the database with value "downloaded"
-gets deleted. 
+gets deleted.
+.LP
+.PP
+If we have a reject subset from command-line
+then we use that string. If we don't then
+we look into the parameter file for a possible
+definition set on days of the week. This is
+related to the second process that we run
+over the files and parses the data. We want
+to avoid collision with that process.
+
+if ( $pf{avoid_on_day_of_week} ) {
+    $opt_r ||= $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} ;
+}
 .LP
 
 
 .SH OPTIONS
 .IP -v
-Verbose. 
+Verbose.
 .IP -d
 Debugging mode.
 .IP -h
-Help. Prints a script synopsis to screen. 
+Help. Prints a script synopsis to screen.
+.IP -x
+Ignore all database flags for max attempts on files.
 .IP -s
 Select station regex
 .IP -r
 Reject station regex
+.IP "-p parameter_file"
+Parameter file name to use.
 .IP "-m email1,email2,email3"
 Email (or list of emails) address to send log at the end of script.
 
 .SH NOTES
-Before the main process spawns a new copy to handle a specific station the system gets 
-tested for available resources. If not enough resources are found the system limits the 
-value of maximum allowed processes to run to the current number of running processes. 
-First the function will test the memory in the system. The memory in use should be 90%
-or less the total REAL memory of the system.  Then each CPU in the system gets tested 
-until one is found with at least 25% idle time. 
+The code will get the list of stations and the ips from the information
+present in tables [deployment, stabaler, staq330] (all of them
+are required for the process to run).
+Fork of child process is done with this method:
+
+.B        undef $pid ;
+.B        $pid = open($archive{$station}{fh}, "-|") ;
+.B        if ($pid) {
+.B
+.B            fcntl($archive{$station}{fh},F_SETFL, O_NONBLOCK) ;
+.B            $archive{$station}{fh}->autoflush(1) ;
+.B
+.B            fork_debug($parent,"Got pid $pid for $station") if $opt_d ;
+.B            push @procs, $pid ;
+.B            $archive{$station}{pid} = $pid ;
+.B
+.B        }
 
 .SH BUGS AND CAVEATS
-Needs to have valid stabaler and staq330 tables. Will use stations reported to be of 
+Needs to have valid stabaler and staq330 tables. Will use stations reported to be of
 type "PacketBaler44" on table stabaler and will get the public IP of the station from
-staq330 table. The port for the connections will be set on the parameter file. 
+staq330 table. The port for the connections will be set on the parameter file.
 .LP
 .SH AUTHOR
 Juan C. Reyes <reyes@ucsd.edu>

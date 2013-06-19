@@ -37,6 +37,7 @@ DATA= taurus_inf_aa \
       trillium_240_1          \
       trillium_240_2          \
       trillium_40           \
+      trillium_compact_sio \
       Taurus_UserGuide_15148R7.pdf \
       Trillium120P-PA_UserGuide_15149R6.pdf \
       Trillium240_UserGuide_15672R6.pdf   \
@@ -74,7 +75,7 @@ DATA= taurus_inf_aa \
       hrd24_iir \
       hrd24aaf
                        
-include $(ANTELOPEMAKE)  	
+include $(ANTELOPEMAKE)		
 DIRS=
 
 # $Id$ 

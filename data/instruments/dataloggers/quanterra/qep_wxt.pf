@@ -188,7 +188,7 @@ stages 		epRI
 iunits  	mm/hr   
 ounits		counts
 samprate 	1.000	
-rsptype		V
+rsptype		R
 }
 
 epRI &Arr{
