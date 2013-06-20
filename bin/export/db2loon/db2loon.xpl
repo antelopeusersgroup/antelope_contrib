@@ -401,8 +401,18 @@ sub format_origin_row {
         $s = "s" unless( $defining );
         
 	$row = "$s $event_type  ";
+
         $row .= epoch2str( $origin_time, "%Y%m%d %H%M " );
-        $row .= sprintf( "%05.2f ", epoch2str( $origin_time, "%S.%s" ) );
+
+	#%05.2f causes any number >= 59.995 to be rounded to 60.00
+        #$row .= sprintf( "%05.2f ", epoch2str( $origin_time, "%S.%s" ) );
+	#Truncate the seconds field to two decimal places
+
+	my( $seconds ) = epoch2str( $origin_time, "%S.%s" );
+	$seconds =~ s/(\.\d\d)\d*/$1/;
+
+	$row .= sprintf( "%05.2f ", $seconds );
+
         $row .= sprintf( "% 8.4f % 9.4f %6.2f", $lat, $lon, $depth );
 
 	if( ( $model eq "07" )&&( $magtype =~ /ml/ ) ){
