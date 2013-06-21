@@ -37,7 +37,7 @@ auth_agencies &Arr{
 	PNSN.*		SEA
 	MTECH.*		BUT
 }
-auth_agency_default	???
+auth_agency_default	PGC
 
 # Formatting pickfiles:
 primary_agency PGC
