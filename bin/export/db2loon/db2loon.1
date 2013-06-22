@@ -282,6 +282,14 @@ Caution should be used with the -d option not to specify any previously
 existing databases (especially the input \fIdatabase\fP!!) since the new \fIdatabase\fP may overwrite
 the old.
 
+A rounding error in the seconds field of the origin time has been remedied by truncating the value to
+two decimal places. Rounding of this field to two decimal places is avoided as rounding over hour,
+day, month and year boundaries introduce inconsistencies between file naming convention and origin
+time as represented in loon file. Truncated digits are insignificant.
+
+PGC is hard-wired as the agency for all phase and amplitude rows as PGC is the only agency providing
+this data. This could potentially be a bug in the future.
+
 .SH AUTHOR
 .nf
 Kent Lindquist, Lindquist Consulting, Inc.
