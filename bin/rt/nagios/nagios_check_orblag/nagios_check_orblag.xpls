@@ -104,7 +104,7 @@ MAIN:
     # Print the results and exit
     ($result_code,$result_perf) = check_lag($max_lag);
     print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
-      "orblag" );
+      "orblag", $max_who );
     exit $result_code;
 }
 
