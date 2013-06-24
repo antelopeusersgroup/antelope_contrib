@@ -34,7 +34,7 @@ package nagios_antelope_utils;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(&categorize_return_value 
+@EXPORT_OK = qw(&categorize_return_value
 		&parse_ranges
 		&print_version
 		&print_results
@@ -65,7 +65,7 @@ our ($VERBOSE) = 0;
 #Notes:
 #- start > end>
 #- start and ":" is not required if start=0
-#- if range is of format "start:" and end is not specified, 
+#- if range is of format "start:" and end is not specified,
 #    assume end is infinity
 #- to specify negative infinity, use "~"
 #- alert is raised if metric is outside start and end range
@@ -125,7 +125,7 @@ sub parse_ranges($$)
 	{
 	    return ();
 	}
-	
+
 	if (($crit_low eq "") && ($crit_hi ne ""))
 	{
 	    $crit_low = 0;
@@ -143,14 +143,14 @@ sub parse_ranges($$)
 # Return: (error code from %ERRORS, Description)
 sub categorize_return_value($$$$$$$)
 {
-    my ($return_value, $warn_at, $warn_hi, $warn_low, 
+    my ($return_value, $warn_at, $warn_hi, $warn_low,
 	$crit_at, $crit_hi, $crit_low) = @_;
-    
+
     if ($VERBOSE)
     {
 	if (defined $return_value)
 	{
-	    print "Value being compared: $return_value\n"; 
+	    print "Value being compared: $return_value\n";
 	}
 	if ((defined $warn_at) && (defined $warn_low) && (defined $warn_hi))
 	{
@@ -188,8 +188,8 @@ sub categorize_return_value($$$$$$$)
 
 ######
 # Check to see if a particular value falls within a given range.
-# Assumes hi and low values are not BOTH empty, but returns 1 if they are 
-# 
+# Assumes hi and low values are not BOTH empty, but returns 1 if they are
+#
 # Param: $test_val - The value in question
 # Param: $at - "@" or "" if checking in or out of the range (see Nagios range)
 # Param: $low_val - The low value of the range, "" for negative infinity
@@ -200,12 +200,12 @@ sub check_range($$$$)
     my ($test_val, $at, $low_val, $high_val) = @_;
 
     # should already be checked before we get here, but...
-    if (((!defined $low_val) && (!defined $high_val)) 
+    if (((!defined $low_val) && (!defined $high_val))
 	|| (($low_val eq "") && ($high_val eq ""))) { return 1; }
 
 #   print "testing val: $test_val, at: $at, low: $low_val, hi: $high_val\n"; #debug
 
-    if ($at) # looking for inside range 
+    if ($at) # looking for inside range
     {
 	if (($low_val eq "") && ($test_val < $high_val)) { return 1; }
 	if (($low_val eq "") && ($test_val > $high_val)) { return 0; }
@@ -237,7 +237,7 @@ sub print_version($ $)
 }
 
 ######
-# Print the results in a nagios friendly format given a result code 
+# Print the results in a nagios friendly format given a result code
 # and possibly some performance data.
 # Param: service_name - A short name for the service to display in Nagios
 # Param: result_code - A scalar from %ERRORS
@@ -272,6 +272,6 @@ sub print_results($ $ $ $)
             last SWITCH;
         }
     }
-    print "$prefix $result_descr = $result_perf "
-        . "| \'$result_descr\' = $result_perf\n";
+    print "$prefix $result_descr = $result_perf"
+        . "|\'$result_descr\'=$result_perf\n";
 }
