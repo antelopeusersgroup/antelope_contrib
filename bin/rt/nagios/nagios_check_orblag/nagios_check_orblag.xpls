@@ -172,7 +172,7 @@ sub check_args()
     }
 
     # sanity check critical and warn flags
-    if ((defined $opt_warn) && (defined $opt_crit))
+    if ((!defined $opt_warn) && (!defined $opt_crit))
     {
         $opt_warn="@0.01:";
         $opt_crit="@0.2:";
