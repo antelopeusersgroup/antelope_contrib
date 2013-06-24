@@ -50,7 +50,7 @@ sub categorize_return_value($$$$$$$);
 sub check_range($$$$);
 sub parse_ranges($$);
 sub print_version($$);
-sub print_results($$$$);
+sub print_results;
 
 our (%ERRORS)=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 our ($TIMEOUT) = 15;
@@ -244,9 +244,12 @@ sub print_version($ $)
 # Param: result_perf - A scalar performance value that was fetched
 # Param: result_descr - A short description (1-2 words) describing the
 #                       performance value (ie "descr = $result_perf")
-sub print_results($ $ $ $)
+# Param: result_ext - Extended information about the result that should not be
+#                       included in the perfdata
+sub print_results
 {
-    my ($service_name, $result_code, $result_perf, $result_descr) = @_;
+    my ($service_name, $result_code, $result_perf, $result_descr,
+        $result_ext) = @_;
     my ($prefix);
 
     SWITCH :
@@ -258,20 +261,21 @@ sub print_results($ $ $ $)
         }
         if ($result_code == $ERRORS{'WARNING'})
         {
-            $prefix = "WARNING:";
+            $prefix = "$service_name WARNING:";
             last SWITCH;
         }
         if ($result_code == $ERRORS{'CRITICAL'})
         {
-            $prefix = "CRITICAL:";
+            $prefix = "$service_name CRITICAL:";
             last SWITCH;
         }
         if ($result_code == $ERRORS{'UNKNOWN'})
         {
-            $prefix = "UNKNOWN:";
+            $prefix = "$service_name UNKNOWN:";
             last SWITCH;
         }
     }
-    print "$prefix $result_descr = $result_perf"
-        . "|\'$result_descr\'=$result_perf\n";
+    print "$prefix $result_descr = $result_perf";
+    print (" " . $result_ext) if ($result_ext);
+    print "|\'$result_descr\'=$result_perf\n";
 }
