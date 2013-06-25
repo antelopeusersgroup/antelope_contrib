@@ -238,6 +238,7 @@ sub format_pickfile{
 
 
 	@db = dbprocess( @db, "dbungroup" );
+	@db2 = @db;
 
 	$pickblob .= format_solution_error_block( @db );
 	$pickblob .= format_magnitudes_block( @db );
@@ -251,10 +252,18 @@ sub format_pickfile{
         @db = dbprocess( @db, "dbsubset orid == prefor",
                               "dbjoin assoc",
                               "dbjoin arrival" );
+	$db[3] = 0;
+	my( $evid ) = dbgetv( @db, "evid" );
+	@db2 = dbprocess( @db2, "dbsubset evid == $evid",
+				"dbjoin assoc",
+				"dbjoin arrival" );
+
 
         my( $narrivals ) = dbquery( @db, dbRECORD_COUNT );
-
+	
 	@db = dbsort( @db, "delta");
+	#the above line fails when the preferred solution comes from an external catalogue for which an arrival table does not exist. 
+	#Possible fix: execute lines concerning formatting of amplitude and magnitude rows only if auth != PGC.* || orb.*
 
         $pickblob .= "C Statn IC nHHMM SSSSS TCorr Q-Phase- IUW TTres " .
                      "LocW StDly Edistnc Azm Ain Agncy\n";
@@ -274,9 +283,18 @@ sub format_pickfile{
                 next if( defined ( $Used{"$sta:$iphase"} ) );
                 $Used{"$sta:$iphase"}++;
 
+                #$pickblob .= format_phase_row( $origin_time, $sta, $chan, $iphase, $arrtime,
+                #                               $qual, $fm, $timedef, $timeres,
+                #                               $wgt, $delta, $esaz, $ema, $pref_agency );
+		#HACK - The $auth_agency_default variable (PGC for all intensive purposes) is used
+		#as the agency for pahse rows. A general solution is to provide a mapping from
+		#arrival.auth to agency code. This is currently a moot point as all phase data
+		#is coming from PGC, so $auth_agency_default = "PGC" provides adequate behaviour.
+		#In implementing the proposed general solution, the potential for name collisions
+		#exists.
                 $pickblob .= format_phase_row( $origin_time, $sta, $chan, $iphase, $arrtime,
                                                $qual, $fm, $timedef, $timeres,
-                                               $wgt, $delta, $esaz, $ema, $pref_agency );
+                                               $wgt, $delta, $esaz, $ema, $auth_agency_default );
         }
 
         if( $dbout_name ne "" ) {
@@ -290,32 +308,40 @@ sub format_pickfile{
                 dbunjoin( @dbout, $dbout_name );
         }
 
-        @db = dbprocess( @db, "dbjoin -o stamag" );
+        @db2 = dbprocess( @db2, "dbjoin -o stamag" );
         
 #	@db = dbprocess( @db, "dbseparate stamag" );
 # separating stamag causes new view to be sorted by sta rather than by delta as desired
 # the following three commands are intended to sort stamag values by distance from hypocentre
 
-	@db = dbsubset( @db, "sta == stamag.sta" );
+	@db2 = dbsubset( @db2, "sta == stamag.sta" );
 
-	@db = dbsort( @db, "-u", "sta" );
 
-	@db = dbsort( @db, "delta" );
+	@db2 = dbsort( @db2, "-u", "sta" );
 
-        my( $nstamags ) = dbquery( @db, dbRECORD_COUNT );
+	@db2 = dbsort( @db2, "delta" );
+
+        my( $nstamags ) = dbquery( @db2, dbRECORD_COUNT );
 
         $pickblob .= "C Statn IC nHHMM SSSSS TCorr  -Phase-- Period " .
                      "-Amplitude-- T  -Magnitude-- Agncy\n";
 
-        for( $db[3] = 0; $db[3] < $nstamags; $db[3]++ ) {
+        for( $db2[3] = 0; $db2[3] < $nstamags; $db2[3]++ ) {
 
-                ( $sta, $magtype, $mag ) = dbgetv( @db, "sta", "stamag.magtype", "stamag.magnitude" );
+                ( $sta, $magtype, $mag ) = dbgetv( @db2, "sta", "stamag.magtype", "stamag.magnitude" );
 # magtype and magnitude from stamag table were changed to stamag.magtype and stamag.magnitude because this is where the
 # pertinent data is stored
 
 		$magtype = correct_magtype_code( $magtype );
 
-                $pickblob .= format_amplitude_row( $sta, $magtype, $mag, $pref_agency );
+                #$pickblob .= format_amplitude_row( $sta, $magtype, $mag, $pref_agency );
+		#HACK - The $auth_agency_default variable (PGC for all intensive purposes) is used
+		#as the agency for amplitude rows. A general solution is to provide a mapping from
+		#stamag.auth to agency code. This is currently a moot point as all amplitude data
+		#is coming from PGC, so $auth_agency_default = "PGC" provides adequate behaviour.
+		#In implementing the proposed general solution, the potential for name collisions
+		#exists.
+                $pickblob .= format_amplitude_row( $sta, $magtype, $mag, $auth_agency_default );
         }
 
         if( $dbout_name ne "" ) {
@@ -399,8 +425,18 @@ sub format_origin_row {
         $s = "s" unless( $defining );
         
 	$row = "$s $event_type  ";
+
         $row .= epoch2str( $origin_time, "%Y%m%d %H%M " );
-        $row .= sprintf( "%05.2f ", epoch2str( $origin_time, "%S.%s" ) );
+
+	#%05.2f causes any number >= 59.995 to be rounded to 60.00
+        #$row .= sprintf( "%05.2f ", epoch2str( $origin_time, "%S.%s" ) );
+	#Truncate the seconds field to two decimal places
+
+	my( $seconds ) = epoch2str( $origin_time, "%S.%s" );
+	$seconds =~ s/(\.\d\d)\d*/$1/;
+
+	$row .= sprintf( "%05.2f ", $seconds );
+
         $row .= sprintf( "% 8.4f % 9.4f %6.2f", $lat, $lon, $depth );
 
 	if( ( $model eq "07" )&&( $magtype =~ /ml/ ) ){
@@ -938,8 +974,8 @@ sub auth_to_suffix {
 	}
 	else{
 		print( STDERR "Current author suffix: \'$auth_suffix_default\'. Please provide appropriate author suffix: " );
-                $user_response  =  <STDIN>;
-		chomp( $user_response );
+                chomp( $user_response  =  <STDIN> );
+		$user_response = ( $user_response eq '' ? 'xx' : $user_response );
         	return $user_response;
 	}
 }

@@ -625,7 +625,7 @@ sub baler14_proc {  # $prob = &baler14_proc( $sta, $bh14name, $soh14name, $paren
         
     if ( $#mseedfilesbh == -1 ) {
         $prob++ ;
-        $string = "no '.*bms.*' files in $bh14name!" ;
+        $string = "no 'C.*bms.*' files in $bh14name!" ;
         fork_complain( $parent, $string ) ;
         &print_prob ( $prob, $string, $parent, *PROB ) ;
         
@@ -641,7 +641,7 @@ sub baler14_proc {  # $prob = &baler14_proc( $sta, $bh14name, $soh14name, $paren
                 
     if ($#mseedfilessoh == -1 ) {
         $prob++ ;
-        $string = "no '.*bms.*' files in $soh14name!" ;
+        $string = "no 'C.*bms.*' files in $soh14name!" ;
         fork_complain( $parent, $string ) ;
         &print_prob ( $prob, $string, $parent, *PROB ) ;
 

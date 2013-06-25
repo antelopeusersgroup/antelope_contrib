@@ -1,0 +1,40 @@
+.TH EMSCD 1 "$Date: 2013/03/12 05:01:39 $" "Antelope Contrib SW" "User Commands"
+.SH NAME
+emscd \- search EMSC webpage for new events and save to database
+.SH SYNOPSIS
+.nf
+\fBemscd \fP[-v] [-n \fIpages\fP] [-s \fIseconds\fP] [-p \fIproxy-url\fP]
+                [-u \fIurl\fP] \fIdatabase\fP
+.fi
+
+.SH DESCRIPTION
+This little helper parses the EMSC webpage continuously for new events and saves them in a \fIdatabase\fP.
+It uses the event IDs assignerd by EMSC. This allow to only have the preferred events in the \fIdatabase\fP which
+can be very convenient in conjunction with dbloc2.
+.SH OPTIONS
+.IP "-v"
+verbose flag
+.IP "-n pages"
+go back \fIn\fP on the webpage. This allows to retrieve older information.
+.IP "-s seconds"
+pause this many \fIseconds\fP between each iteration. Defaults to 900 \fIseconds\fP or 15 minutes.
+.IP "-p proxy-url"
+use proxy, e.g. machine:port. If this is not specified, the environment variable \fBhttp_proxy\fP is used.
+.IP "-u url"
+Url of EMSC webpage. Defaults to \fBhttp://www.emsc-csem.org/Earthquake/?view=\fP.
+.IP "database"
+Name of \fIdatabase\fP. This argument is required
+
+.SH "BUGS AND CAVEATS"
+It appears the perl interpreter has tiny memory leaks. It might be a good idea to restart the program every other month.
+The script depends on the structure of the webpage of the EMSC and may easily break if they change the format. Contact the author for a recent version...
+.SH "SEE ALSO"
+.nf
+antelope(1), examples_perl(5)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2013
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+

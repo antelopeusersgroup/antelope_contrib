@@ -2,7 +2,6 @@ from __main__ import *
 
 class Config_Server():
     def __init__(self):
-#{{{
         self.event               = 'false'
         self.pfname              = 'dbwfserver'
         self.style               = 'cupertino'
@@ -72,86 +71,86 @@ class Config_Server():
         #
         # Get values from pf file
         #
+        pf = stock.pfread( self.pfname )
+
         if self.port == -1:
-            self.port = stock.pfget_int( self.pfname, "port" )
+            self.port = pf.get( "port" )
 
         try:
-            self.max_points = stock.pfget_int( self.pfname, "max_points" )
+            self.max_points = pf.get( "max_points" )
         except:
             pass
         try:
-            self.max_traces = stock.pfget_int( self.pfname, "max_traces" )
+            self.max_traces = pf.get( "max_traces" )
         except:
             pass
         try:
-            self.jquery_dir = stock.pfget_string( self.pfname, "jquery_dir" )
+            self.jquery_dir = pf.get( "jquery_dir" )
         except:
             pass
         try:
-            self.static_dir = stock.pfget_string( self.pfname, "static_dir" )
+            self.static_dir = pf.get( "static_dir" )
         except:
             pass
         try:
-            self.template = stock.pfget_string( self.pfname, "template" )
+            self.template = pf.get( "template" )
         except:
             pass
         try:
-            self.plot_template = stock.pfget_string( self.pfname, "plot_template" )
+            self.plot_template = pf.get( "plot_template" )
         except:
             pass
         try:
-            self.local_data = stock.pfget_string( self.pfname, "local_data" )
+            self.local_data = pf.get( "local_data" )
         except:
             pass
         try:
-            self.style = stock.pfget_string( self.pfname, "jquery_ui_style" )
+            self.style = pf.get( "jquery_ui_style" )
         except:
             pass
         try:
-            self.antelope = stock.pfget_string( self.pfname, "antelope" )
+            self.antelope = pf.get( "antelope" )
         except:
             pass
         try:
-            self.application_title = stock.pfget_string( self.pfname, "application_title" )
+            self.application_title = pf.get( "application_title" )
         except:
             pass
         try:
-            self.proxy_url = stock.pfget_string( self.pfname, "proxy_url" )
+            self.proxy_url = pf.get( "proxy_url" )
         except:
             pass
         try:
-            self.apply_calib = stock.pfget_boolean( self.pfname, "apply_calib" )
+            self.apply_calib = pf.get( "apply_calib" )
         except:
             pass
         try:
-            self.display_tracebacks = stock.pfget_boolean( self.pfname, "display_tracebacks" )
+            self.display_tracebacks = pf.get( "display_tracebacks" )
         except:
             pass
         try:
-            self.display_arrivals = stock.pfget_boolean( self.pfname, "display_arrivals" )
+            self.display_arrivals = pf.get( "display_arrivals" )
         except:
             pass
         try:
-            self.display_points = stock.pfget_boolean( self.pfname, "display_points" )
+            self.display_points = pf.get( "display_points" )
         except:
             pass
         try:
-            self.default_time_window = stock.pfget_tbl( self.pfname, "default_time_window" )
+            self.default_time_window = pf.get( "default_time_window" )
         except:
             pass
         try:
-            self.filters = list(stock.pfget_tbl( self.pfname, "filters" ) )
+            self.filters = list(pf.get( "filters" ) )
         except:
             pass
         #try:
-        #    self.import_paths = stock.pfget_tbl( self.pfname, "import_paths" )
+        #    self.import_paths = pf.get( "import_paths" )
         #except:
         #    pass
 
-#}}}
 
     def configure(self):
-#{{{
         # 
         # Expand paths
         #

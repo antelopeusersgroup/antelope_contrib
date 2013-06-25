@@ -1,5 +1,5 @@
 originator     Jennifer Eakins, UCSD
-last_modified  2010-08-12
+last_modified  2013-06-08
 
 category	infrasound
 configuration	NCPA microbarometer 
@@ -12,8 +12,7 @@ band		l	# broadband
 sensor_type_code	D
 
 gtype		sensor
-#sensitivity	0.408   	# try 1/( (0.0245 V/Pa) * 100 Pa/mbar =  0.408 mbar/V
-sensitivity	0.4926  	# try 1/( (0.0203 V/Pa) * 100 Pa/mbar =  0.4926 mbar/V
+sensitivity	2.03  	# (0.0203 V/Pa) * (100 Pa/mbar) =  2.03 V/mbar
 iunits		mbar
 ounits		V  
 

@@ -47,7 +47,7 @@ static void
 usage()
 {
 	cbanner("$Date$",
-		"[-sleep seconds] [-pf pfname] [-state statefile]\n\t\t\t[-prefix prefix] [-modified_after time] [-v] db orb",
+		"[-sleep seconds] [-pf pfname] [-state statefile]\n                   [-lastid] [-wfdisc] [-prefix prefix] [-modified_after time] [-v] db orb",
 		"Nikolaus Horn",
 		"ZAMG / Vienna",
 		"nikolaus.horn@zamg.ac.at");
@@ -56,7 +56,7 @@ usage()
 static int
 dbrows2orb(Dbptr db, int orb, char *prefix)
 {
-	Packet         *pkt;
+	Packet         *pkt= NULL;
 	char            srcname[ORBSRCNAME_SIZE];
 	double          time;
 	char           *packet;
@@ -101,7 +101,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	dbfree_untangle(records);
 	freePkt(pkt);
 	if (verbose) {
-		elog_notify(0, "%s: %ld patcket(s) sent with sourcename: %s\n", s = strtime(now()), nrecords, srcname);
+		elog_notify(0, "%s: %ld packet(s) sent with sourcename: %s\n", s = strtime(now()), nrecords, srcname);
 		free(s);
 	}
 	return (0);
@@ -122,12 +122,12 @@ main(int argc, char **argv)
 	char           *prefix = NULL;
 	struct stat     filestat;
 	int             i;
-	Tbl            *tablenames, *tables_containing_dfile, *check_tables = NULL,
+	Tbl            *tablenames, *all_tables, *check_tables = NULL,
 	               *ignore_tables = NULL;
 	long            table_present, recc, is_view;
 	char           *tablename, *schemaname;
 	char           *filename;
-	int             counter = 0, force_check = 0;
+	int             counter = 0, force_check = 0, send_lastid = 0, send_wfdisc = 0;
 	char            expr[512];
 	char           *statefilename = NULL, *pfname = "dbnew2orb";
 	Pf             *pf = NULL;
@@ -201,6 +201,10 @@ main(int argc, char **argv)
 			check_lddate_interval = atoi(*argv);
 		} else if (!strcmp(*argv, "-v")) {
 			verbose++;
+		} else if (!strcmp(*argv, "-lastid")) {
+			send_lastid = 1;
+		} else if (!strcmp(*argv, "-wfdisc")) {
+			send_wfdisc = 1;
 		} else if (**argv != '-') {
 			break;
 		} else {
@@ -253,7 +257,8 @@ main(int argc, char **argv)
 		}
 	}
 	/*
-	 * no good here, would erase the table above pffree(pf);
+	 * no good here, would erase the table above 
+     pffree(pf);
 	 */
 
 	if (argc < 1) {
@@ -287,20 +292,44 @@ main(int argc, char **argv)
 	if (orb < 0) {
 		elog_die(0, "orbopen(%s) error\n", orbname);
 	}
-	/*
-	 * prepare for later call to dbquery(dbFIELD_TABLES) to find only
-	 * tables containing lddate
-	 */
-
-	/*
-	 * dbtables is much better, does not require the existence of table
-	 * origin dbf = dblookup(db, 0, "origin", "lddate", "dbNULL");
-	 * dbquery(dbf, dbFIELD_TABLES, &tablenames);
-	 */
+    /* both the function dbtables and a query to dbFIELD_TABLES do not return all tables
+       therefore I use an alternate strategy here: I'm trying to lookup the field lddate in all tables.
+	tablenames = dbtables(db, "lddate");
+	//tables_containing_dfile = dbtables(db, "dfile");
+    dbf= dblookup(db, 0, "origin", "lddate", "dbNULL");
+	dbquery(dbf, dbFIELD_TABLES, &tablenames);
+    */
+	tablenames= newtbl(0);
+    dbquery(db, dbSCHEMA_TABLES, &all_tables);
+    for (i = 0; i < maxtbl(all_tables); i++) {
+        tablename = gettbl(all_tables, i);
+        dbt=dblookup(db, 0, tablename, "lddate" , "dbSCRATCH" );
+        if (dbt.field != dbINVALID) {
+			/* lastid is probably not a good idea (my personal choice)... */
+			if (send_lastid == 0 && strcmp(tablename, "lastid") == 0) {
+				continue;
+			}
+			if (send_wfdisc == 0 && strcmp(tablename, "wfdisc") == 0) {
+				continue;
+			}
+			if (check_tables) {
+				if (!findtbl(tablename,check_tables)) {
+					if ( verbose > 1 ) elog_notify(0,"ignoring table %s because it's NOT in 'check_tables'\n",tablename);
+					continue;
+				}
+			}
+			if (ignore_tables) {
+				if (findtbl(tablename,ignore_tables)) {
+					if ( verbose > 1 ) elog_notify(0,"ignoring table %s because it's in 'ignore_tables'\n",tablename);
+					continue;
+				}
+			}
+            if (verbose) elog_notify(0,"will check table %s\n",tablename);
+            pushtbl(tablenames,tablename);
+        }
+    }
 
 	dbex_compile(db, "max(lddate)", &expr_lddate, dbTIME);
-	tablenames = dbtables(db, "lddate");
-	tables_containing_dfile = dbtables(db, "dfile");
 
 	/* waste a few bytes... */
 	ntables = maxtbl(tablenames);
@@ -322,44 +351,22 @@ main(int argc, char **argv)
 		static_flags[i] = NEW_TABLE;
 	}
 	for (;;) {
-		tablenames = dbtables(db, "lddate");
-
 		for (i = 0; i < ntables; i++) {
+            /* ignore nameless table... */
 			tablename = gettbl(tablenames, i);
 			if (!tablename) {
 				continue;
 			}
+            /* ignore empty tables, would not make sense... */
 			dbt = dblookup(db, 0, tablename, 0, 0);
 			dbquery(dbt, dbTABLE_PRESENT, &table_present);
 			if (!table_present) {
 				continue;
 			}
+            /* ignore views */
 			dbquery(dbt, dbTABLE_IS_VIEW, &is_view);
 			if (is_view) {
 				continue;
-			}
-			/* lastid is not a good idea (my personal choice)... */
-			if (strcmp(tablename, "lastid") == 0) {
-				continue;
-			}
-			/* remove after Dan fixed the bug with remark */
-			if (strcmp(tablename, "remark") == 0) {
-				continue;
-			}
-			if (findtbl(tablename, tables_containing_dfile)) {
-				continue;
-			}
-			if (check_tables) {
-				if (!findtbl(tablename,check_tables)) {
-					if (verbose > 1 && static_flags[i]==NEW_TABLE) elog_notify(0,"ignoring table %s because it's NOT in 'check_tables'\n",tablename);
-					continue;
-				}
-			}
-			if (ignore_tables) {
-				if (findtbl(tablename,ignore_tables)) {
-					if (verbose > 1 && static_flags[i]==NEW_TABLE) elog_notify(0,"ignoring table %s because it's in 'ignore_tables'\n",tablename);
-					continue;
-				}
 			}
 			dbquery(dbt, dbRECORD_COUNT, &recc);
 			if (recc < 1) {
