@@ -187,7 +187,65 @@ typedef INT32 BOOL;
 
 #else
 
-#    error "can't determine platform!"
+/* -------------------------------------------------------------------- */
+/* Standard 32 (and 64) bit UNIX types ( -MCW 2013 )
+
+ * "see if you've got <inttypes.h> and use it."
+ *
+ * Mark's implementation of inttypes, this is the modern default.
+ * Any 64-bit system should fail down to this 'else' and use all
+ * of these nice standard types.
+ *
+ */
+#include <inttypes.h>
+
+    /* Void type */
+typedef void VOID;
+
+ /* Characters */
+typedef char CHAR;
+
+ /* Signed and unsigned 8 bit integers */
+typedef int8_t BYTE;
+typedef uint8_t UBYTE;
+typedef int8_t SBYTE;
+typedef int8_t INT8;
+typedef uint8_t UINT8;
+
+ /* 16 bit integer values */
+typedef uint16_t  UWORD;
+typedef int16_t SWORD;
+typedef uint16_t WORD;
+typedef int16_t INT16;
+typedef uint16_t UINT16;
+
+ /* 32 bit integer values */
+typedef int32_t  LONG;
+typedef int32_t SLONG;
+typedef uint32_t ULONG;
+typedef int32_t INT32;
+typedef uint32_t UINT32;
+
+ /* 64 bit integers */
+typedef int64_t  INT64;
+typedef uint64_t UINT64;
+
+ /* 32 bit IEEE 754 Real */
+typedef float FLOAT;
+typedef float REAL32;
+
+ /* 64 bit IEEE 754 Real */
+typedef double DOUBLE;
+typedef double REAL64;
+
+ /* 80 bit IEEE 754 Real */
+typedef long double LDOUBLE;
+typedef long double REAL80;
+
+ /* Boolean values */
+typedef INT32 BOOL;
+
+//#    error "can't determine platform!"
 
 #endif
 
@@ -206,6 +264,11 @@ typedef INT32 BOOL;
 /* Revision History
  *
  * $Log$
+ * 
+ * Revision 1.2  2013/05/21 markcwill
+ * Implemented inttypes.h for standard types, compiles and runs.
+ * Tested on an RTPD instance.
+ *
  * Revision 1.1  2004/08/25 22:47:59  vernon
  * Rebuilt all the software and was able to get it to complie now.
  *

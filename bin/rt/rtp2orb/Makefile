@@ -46,4 +46,4 @@ OBJS= 	rtp2orb.o \
  
 $(BIN) : $(OBJS)
 	$(RM) $@
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) $(LDLIBS)
