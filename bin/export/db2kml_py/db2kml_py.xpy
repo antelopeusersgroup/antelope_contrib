@@ -24,9 +24,9 @@ import zipfile
 from optparse import OptionParser
 
 # Import Antelope modules
-sys.path.append('%s/local/data/python/antelope' % os.environ['ANTELOPE'])
-import datascope as antdb
-import stock as antstock
+#sys.path.append('%s/local/data/python/antelope' % os.environ['ANTELOPE'])
+import antelope.datascope as antdb
+import antelope.stock as antstock
 
 def configure():
     """Gather command line
@@ -75,16 +75,19 @@ def get_pf(pf, verbosity=0):
     if not os.path.isfile(pf):
         print "ERROR: cannot locate parameter file (pf): %s" % pf
         sys.exit()
-    config = antstock.pfget_arr(pf, 'config')
-    styles = antstock.pfget_arr(pf, 'styles')
-    stations = antstock.pfget_arr(pf, 'stations')
+
+    pf = antstock.pfread(pf)
+
+    config = pf.get('config')
+    styles = pf.get('styles')
+    stations = pf.get('stations')
     if not styles['imagepath'].endswith('/'):
         err_str = []
         err_str.append('ERROR: imagepath URL must contain a trailing / in parameter file.')
         err_str.append('Imagepath currently defined as: %s\n' % styles['imagepath'])
         print err_str
         sys.exit()
-    headers = antstock.pfget_arr(pf, 'headers')
+    headers = pf.get('headers')
     pf_result = {'config': config, 'styles': styles, 'headers': headers, 'stations': stations}
     return pf_result
 
@@ -126,13 +129,13 @@ def get_orig_records(pf, verbosity=0):
     """
     fields = ['time', 'lat', 'lon', 'depth', 'auth', 'mb', 'ms', 'ml', 'magnitude', 'magtype']
     db_pointer = antdb.dbopen(pf['config']['db'], 'r');
-    db_pointer.lookup(table='origin')
+    db_pointer = db_pointer.lookup(table='origin')
     tbl_event = antdb.dblookup(db_pointer, table='event')
     if antdb.dbquery(tbl_event, 'dbTABLE_PRESENT') > 0:
         if verbosity > 1:
             print " - Join event table"
-        db_pointer.join('event')
-        db_pointer.subset('orid==prefor')
+        db_pointer = db_pointer.join('event')
+        db_pointer = db_pointer.subset('orid==prefor')
     else:
         if verbosity > 1:
             print " * NOTE: Cannot join 'event' table"
@@ -140,14 +143,14 @@ def get_orig_records(pf, verbosity=0):
     if tbl_netmag.query('dbTABLE_PRESENT'):
         if verbosity > 1:
             print " - Join netmag table"
-        db_pointer.join('netmag', outer=True)
+        db_pointer = db_pointer.join('netmag', outer=True)
     else:
         if verbosity > 1:
             print " * NOTE: Cannot join 'netmag' table"
     my_expr = pf['config']['expr']
     if pf['config']['expr']:
         for mex in pf['config']['expr']:
-            db_pointer.subset('%s' % mex)
+            db_pointer = db_pointer.subset('%s' % mex)
             if verbosity > 0:
                 print " - Origin subset '%s' resulted in %d records" % (mex, db_pointer.query('dbRECORD_COUNT'))
     my_sort_fields = pf['config']['sort_fields']
@@ -155,7 +158,7 @@ def get_orig_records(pf, verbosity=0):
         print "* ERROR: Database subsets failed to return any records. Check expr in config section of parameter file."
         sys.exit(1)
     for msf in my_sort_fields:
-        db_pointer.sort('%s' % msf)
+        db_pointer = db_pointer.sort('%s' % msf)
     if db_pointer.query('dbRECORD_COUNT') < 1:
         print "* ERROR: Database sorts failed. Check sort_fields in parameter file."
         sys.exit(1)
@@ -203,7 +206,7 @@ def create_site(meta_dict_site, visibility, style):
     """Create KML for site icons
     """
     siteplace = ["\t\t<Placemark>\n\t\t\t<name>%s</name>\n" % meta_dict_site['sta']]
-    siteplace.append("\t\t\t<visibility>%d</visibility>\n" % visibility)
+    siteplace.append("\t\t\t<visibility>%s</visibility>\n" % visibility)
     siteplace.append("\t\t\t<description>\n")
     siteplace.append("\t\t\t\t<![CDATA[\n")
     siteplace.append("<p><strong>%s</strong></p>\n" % meta_dict_site['sta'])
@@ -228,18 +231,24 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
     """Get all the sites 
     in the dbmaster
     """
+    if verbosity > 0:
+        print "- Subsetting database '%s' for %s" % (dbmaster,staexpr)
+
     try:
         dbm = antdb.dbopen(dbmaster, 'r')
     except:
         print "* Cannot open database '%s'" % dbmaster
     else:
-        dbm.lookup(table='site')
+        dbm = dbm.lookup(table='site')
+
         for nex in staexpr:
-            dbm.subset('%s' % nex )
+            if nex:
+                dbm = dbm.subset('%s' % nex )
+
         if not inactive or inactive == 0:
             if verbosity > 0:
                 print "- Subsetting database '%s' for active stations" % dbmaster
-            dbm.subset('offdate < 0') # Just get active stations
+            dbm = dbm.subset('offdate < 0') # Just get active stations
         if dbm.query('dbRECORD_COUNT') < 1:
             if len(staexpr) > 0:
                 print "* ERROR: Dbmaster database (%s) generated view contains no records. Check your expressions." % dbmaster
@@ -247,7 +256,7 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
                 print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
             sys.exit(1)
         sitestr = ["\t<Folder>"]
-        sitestr.append("\t\t<visibility>%d</visibility>" % visibility)
+        sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
         sitestr.append("\t\t<name>Stations</name>")
 
         for i in range(dbm.query('dbRECORD_COUNT')):
