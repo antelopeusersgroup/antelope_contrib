@@ -104,7 +104,7 @@ MAIN:
     # Print the results and exit
     ($result_code,$result_perf) = check_lag($max_lag);
     print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
-      "orblag" );
+      "orblag", $max_who );
     exit $result_code;
 }
 
@@ -114,38 +114,39 @@ sub check_args()
 {
     my ($fetching_params) = 0;
 
-    GetOptions("V"     => \$opt_version,  "version"  => \$opt_version,
-	       "v"     => \$opt_verbose,  "verbose"  => \$opt_verbose,
-	       "h"     => \$opt_help,     "help"     => \$opt_help,
-	       "w=s"   => \$opt_warn,     "warn=s"   => \$opt_warn,
-	       "c=s"   => \$opt_crit,     "crit=s"   => \$opt_crit,
-	       "o=s"   => \$opt_orb,      "orb=s"    => \$opt_orb,
-	       "m=s"   => \$opt_match,    "match=s"  => \$opt_match,
-	       "r=s"   => \$opt_reject,   "reject=s" => \$opt_match,
-	       );
+    GetOptions(
+        "V"     => \$opt_version,  "version"  => \$opt_version,
+        "v"     => \$opt_verbose,  "verbose"  => \$opt_verbose,
+        "h"     => \$opt_help,     "help"     => \$opt_help,
+        "w=s"   => \$opt_warn,     "warn=s"   => \$opt_warn,
+        "c=s"   => \$opt_crit,     "crit=s"   => \$opt_crit,
+        "o=s"   => \$opt_orb,      "orb=s"    => \$opt_orb,
+        "m=s"   => \$opt_match,    "match=s"  => \$opt_match,
+        "r=s"   => \$opt_reject,   "reject=s" => \$opt_match,
+    );
 
     # handle options here
     if ($opt_version)
     {
-	print_version($VERSION, $AUTHOR);
-	exit $ERRORS{'OK'};
+        print_version($VERSION, $AUTHOR);
+        exit $ERRORS{'OK'};
     }
 
     if ($opt_verbose)
     {
-	$VERBOSE = 1;
-	$nagios_antelope_utils::VERBOSE = 1;
+        $VERBOSE = 1;
+        $nagios_antelope_utils::VERBOSE = 1;
     }
 
     if ($opt_help)
     {
-	print_help();
-	exit $ERRORS{'OK'};
+        print_help();
+        exit $ERRORS{'OK'};
     }
 
     if ($opt_orb)
     {
-	$ORB = $opt_orb;
+        $ORB = $opt_orb;
     }
 
     if ($opt_match)
@@ -164,25 +165,28 @@ sub check_args()
 
     # Either both defined or neither of them
     if (((!defined $opt_warn) && (defined $opt_crit))
-	|| ((defined $opt_warn) && (!defined $opt_crit)))
+        || ((defined $opt_warn) && (!defined $opt_crit)))
     {
-	print_usage("Warn and Crit must be defined or not defined as a pair.");
-	exit $ERRORS{'UNKNOWN'};
+        print_usage("Warn and Crit must be defined or not defined as a pair.");
+        exit $ERRORS{'UNKNOWN'};
     }
 
     # sanity check critical and warn flags
-    if ((defined $opt_warn) && (defined $opt_crit))
+    if ((!defined $opt_warn) && (!defined $opt_crit))
     {
-	($warn_at, $warn_high, $warn_low, $crit_at, $crit_high,
-          $crit_low) = parse_ranges($opt_warn, $opt_crit);
-	if ((!valid_lag($warn_at)) || (!valid_lag($warn_high))
-	    || (!valid_lag($warn_low))
-	    || (!valid_lag($crit_at)) || (!valid_lag($crit_high))
-	    || (!valid_lag($crit_low)))
-	{
-	    print "Error in threshold ranges!\n";
-	    exit $ERRORS{'UNKNOWN'};
-	}
+        $opt_warn="@0.01:";
+        $opt_crit="@0.2:";
+        print "Using default thresholds\n" if $VERBOSE;
+    }
+    ($warn_at, $warn_high, $warn_low, $crit_at, $crit_high,
+        $crit_low) = parse_ranges($opt_warn, $opt_crit);
+    if ((!valid_lag($warn_at)) || (!valid_lag($warn_high))
+        || (!valid_lag($warn_low))
+        || (!valid_lag($crit_at)) || (!valid_lag($crit_high))
+        || (!valid_lag($crit_low)))
+    {
+        print "Error in threshold ranges!\n";
+        exit $ERRORS{'UNKNOWN'};
     }
 }
 
@@ -195,7 +199,7 @@ sub print_usage($)
 
     if (defined $explanation)
     {
-	print "$explanation\n";
+        print "$explanation\n";
     }
 
     print "Usage: $0 [-m <match>] [-r <reject>] "
