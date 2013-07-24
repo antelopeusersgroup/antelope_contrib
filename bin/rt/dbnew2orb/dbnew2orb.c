@@ -31,7 +31,8 @@ mortician()
 static int
 findtbl(char *string, Tbl * table)
 {
-	int             i, found = 0;
+	int             found = 0;
+	long 			i;
 	char           *str;
 
 	for (i = 0; i < maxtbl(table); i++) {
@@ -47,7 +48,7 @@ static void
 usage()
 {
 	cbanner("$Date$",
-		"[-sleep seconds] [-pf pfname] [-state statefile]\n\t\t\t[-prefix prefix] [-modified_after time] [-v] db orb",
+		"[-sleep seconds] [-pf pfname] [-state statefile]\n\t\t\t[-prefix prefix] [-modified_after time] [-wfdisc] [-v] db orb",
 		"Nikolaus Horn",
 		"ZAMG / Vienna",
 		"nikolaus.horn@zamg.ac.at");
@@ -56,10 +57,10 @@ usage()
 static int
 dbrows2orb(Dbptr db, int orb, char *prefix)
 {
-	Packet         *pkt;
+	static struct Packet         *pkt;
 	char            srcname[ORBSRCNAME_SIZE];
 	double          time;
-	char           *packet;
+	static char           *packet=0;
 	int             nbytes, packetsize = 0;
 	Dbptr           tmpdb;
 	long            t, nrecords, r, ntables;
@@ -86,6 +87,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 			for (r = 0; r < nrecords; r++) {
 				tmpdb.record = (long) getstbl(stbl, r);
 				pkt->db = tmpdb;
+				packetsize=0;
 				if (stuffPkt(pkt, srcname, &time, &packet, &nbytes, &packetsize) < 0) {
 					elog_complain(0, "stuffPkt fails for pf packet");
 					return (-1);
@@ -94,6 +96,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 					elog_complain(0, "Couldn't send packet to orb\n");
 					return (-1);
 				}
+				free(packet);
 			}
 		}
 	}
@@ -127,7 +130,7 @@ main(int argc, char **argv)
 	long            table_present, recc, is_view;
 	char           *tablename, *schemaname;
 	char           *filename;
-	int             counter = 0, force_check = 0;
+	int             counter = 0, force_check = 0, dont_send_wfdisc=1;
 	char            expr[512];
 	char           *statefilename = NULL, *pfname = "dbnew2orb";
 	Pf             *pf = NULL;
@@ -201,6 +204,8 @@ main(int argc, char **argv)
 			check_lddate_interval = atoi(*argv);
 		} else if (!strcmp(*argv, "-v")) {
 			verbose++;
+		} else if (!strcmp(*argv, "-wfdisc")) {
+			dont_send_wfdisc=0;
 		} else if (**argv != '-') {
 			break;
 		} else {
@@ -309,7 +314,7 @@ main(int argc, char **argv)
 	bury_times = malloc(ntables * sizeof(double));
 	static_flags = malloc(ntables * sizeof(long));
 	if (statefilename) {
-		if (exhume(statefilename, &Stop, 10, mortician)) {
+		if (exhume(statefilename, &Stop, 10, (void *) mortician)) {
 			elog_notify(0, "read old state file\n");
 		} else {
 			elog_complain(0, "could not read old statefile\n");
@@ -326,6 +331,7 @@ main(int argc, char **argv)
 
 		for (i = 0; i < ntables; i++) {
 			tablename = gettbl(tablenames, i);
+			printf("tavblename: %s\n",tablename);
 			if (!tablename) {
 				continue;
 			}
@@ -343,10 +349,20 @@ main(int argc, char **argv)
 				continue;
 			}
 			/* remove after Dan fixed the bug with remark */
+			/* seems to work now*/
+			/*
 			if (strcmp(tablename, "remark") == 0) {
 				continue;
 			}
-			if (findtbl(tablename, tables_containing_dfile)) {
+			*/
+			/*seems to work now*/
+			/*
+			 if (findtbl(tablename, tables_containing_dfile)) {
+				continue;
+			}
+			*/
+			/* don't send wfdisc unless explicitly specified */
+			if (dont_send_wfdisc && strcmp(tablename, "wfdisc") == 0 ) {
 				continue;
 			}
 			if (check_tables) {
