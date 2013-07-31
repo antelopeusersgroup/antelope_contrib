@@ -1222,7 +1222,7 @@ function errorResponse(x,s,e) {
 
     //alert(JSON.stringify(this));
     var path = String(window.location).split('/')
-    var message = path[0] + '/' + path[2] ;
+    var message = path[0] + '//' + path[2] ;
     message += this['url'];
     message += " => ";
 
