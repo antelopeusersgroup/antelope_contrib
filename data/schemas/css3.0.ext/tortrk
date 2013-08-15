@@ -1,0 +1,125 @@
+Attribute slat
+        Real (9)
+        Format ( "%9.4f" )
+        Null ( "-999.0000" )
+        Range ( "lat >= -90.0 && lat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "latitude of the start of a tornado track segment" )
+        Detail {
+                This attribute is the geographic latitude, in degrees, 
+		of the start of a tornado track segment. Locations north
+		of the equator have positive latitudes.
+        }
+        ;
+
+Attribute slon
+        Real (9)
+        Format ( "%9.4f" )
+        Null ( "-999.0000" )
+        Range ( "lon >= -180.0 && lon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "longitude of the start of a tornado track segment" )
+        Detail {
+                This attribute is the geographic longitude, in degrees, 
+		of the start of a tornado track segment. Longitudes are 
+		measured positive east of the Greenwich meridian.
+        }
+        ;
+
+Attribute elat
+        Real (9)
+        Format ( "%9.4f" )
+        Null ( "-999.0000" )
+        Range ( "lat >= -90.0 && lat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "latitude of the end of a tornado track segment" )
+        Detail {
+                This attribute is the geographic latitude, in degrees, 
+		of the end of a tornado track segment. Locations north 
+		of the equator have positive latitudes.
+        }
+        ;
+
+Attribute elon
+        Real (9)
+        Format ( "%9.4f" )
+        Null ( "-999.0000" )
+        Range ( "lon >= -180.0 && lon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "longitude of the end of a tornado track segment" )
+        Detail {
+                This attribute is the geographic longitude, in degrees, 
+		of the end of a tornado track segment. Longitudes are 
+		measured positive east of the Greenwich meridian.
+        }
+        ;
+
+Attribute EFscale
+	Integer (2)
+	Format ( "%2d" )
+	Null ("-1")
+	Range ( "EFscale >= -1 && EFscale <= 5" )
+	Description( "EF scale number of tornado" )
+	Detail{
+		This attribute is the Enhanced Fujita Tornado Damage 
+		Scale number for the tornado.
+	}
+	;
+
+#Attribute length
+#	Real (8)
+#	Format ( "%8.3f" )
+#	Null ( "-999.000" )
+#	Range ( "length > 0.0" )
+#	Description( "length (km) of tornado track segment" )
+#	Detail{
+#		This attribute is the the length, in km, of the tornado 
+#		track segment.
+#	}
+#	;
+
+Attribute width
+	Real (6)
+	Format ( "%6.3f" )
+	Null ( "-9.000" )
+	Range ( "width > 0.0 && width < 10.0" )
+	Description( "width (km) of tornado track segment" )
+	Detail{
+		This attribute is the width, in km, of the tornado 
+		track segment.
+	}
+	;
+
+Attribute injuries
+	Integer(6)
+	Format ( "%d" )
+	Null ( "-99999" )
+	Range( "injuries >= 0" )
+	Description( "number of injuries" )
+	Detail{
+		This attribute is the number of injuries caused by the 
+		tornado.
+	}
+	;
+
+Attribute fatalities
+	Integer(6)
+	Format ( "%d" )
+	Null ( "-99999" )
+	Range( "fatal >= 0" )
+	Description( "number of fatalities" )
+	Detail{
+		This attribute is the number of fatalities caused by 
+		the tornado.
+	}
+	;
+Relation tortrk
+	Fields ( time endtime slat slon elat elon EFscale width injuries fatalities lddate ) 
+	Primary ( time slat slon elat elon )
+	Description ( "Tornado track segment parameters" )
+	Detail {
+		This relation provides a description of a tornado's 
+		track segments.
+	}
+	;
+
