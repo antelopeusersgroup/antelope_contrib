@@ -3,8 +3,8 @@ LIB=libgclgrid.a
 DIRS=htdocs
 DATADIR=schemas
 
-INCLUDE=gclgrid.h dmatrix.h
-MAN3=gclgrid.3 dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
+INCLUDE=gclgrid.h GCLgridError.h dmatrix.h
+MAN3= dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
 
 DBG=-g
 
@@ -18,7 +18,7 @@ OBJS=converters.o \
     dx_output.o \
     ellipsoid.o \
     extract_component.o \
-    error_handlers.o \
+    fileoutput.o \
     flatten.o \
     fme_weights.o \
     initialize1d.o \
@@ -33,24 +33,32 @@ OBJS=converters.o \
     ustrans.o \
     zero.o
 
+converters.cc:gclgrid.h
+converters.cc:dmatrix.h
+create_destroy.cc:gclgrid.h
+dbsubs.cc:gclgrid.h
+decimate.cc:gclgrid.h
+dmatrix.cc:dmatrix.h
+dx_output.cc:gclgrid.h
+elipsoid.cc:gclgrid.h
+extract_component.cc:gclgrid.h
+extract_gridline.cc:gclgrid.h
+extract_gridline.cc:dmatrix.h
+flatten.cc:gclgrid.h
+initialize1d.cc:gclgrid.h
+interpolate.cc:gclgrid.h
+interpolate.cc:dmatrix.h
+lookup.cc:gclgrid.h
+operators.cc:gclgrid.h
+pathintegral.cc:gclgrid.h
+pathintegral.cc:dmatrix.h
+remapgrid.cc:gclgrid.h
+tapergrid.cc:gclgrid.h
+ustrans.cc:gclgrid.h
+ustrans.cc:dmatrix.h
+zero.cc:gclgrid.h
+
 $(LIB) : $(OBJS)
 	$(RM) $@
 	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
-
-# New special build for html documentation using ccdoc
-CCDOC=ccdoc.exe
-htdocs/gclgrid.db : htdocs gclgrid.h dmatrix.h
-	$(CCDOC) -db htdocs/gclgrid.db \
-		-pkg GCLgrid gclgrid.h
-	$(CCDOC) -db htdocs/gclgrid.db \
-		-pkg dmatrix dmatrix.h
-	$(CCDOC) -db htdocs/gclgrid.db \
-		-index 
-	$(CCDOC) -db htdocs/gclgrid.db \
-		-html htdocs/ -root GCLgrid -rootfile htdocs/index.html
-
-htdocs : ; @mkdir $@
-
-
-
