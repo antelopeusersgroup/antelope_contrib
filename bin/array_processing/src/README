@@ -1,0 +1,93 @@
+08/01/2007 -- David von Seggern
+
+This directory holds adaptations of Keith Koper's programs to the Datascope
+database and some additional programs related to array processing.  The mods 
+have been extensive.  One should find these programs easier to work with than 
+the "dbap" command in Antelope (no longer officially supported) and the array 
+processing tools in MatSeis.  The programs here are purposely written to do a 
+limited set of elementary functions with respect to arrays.  "Arrays" can be
+a fairly arbitrary configuration of stations and channels.  
+
+Datascope library routines are now used wherever possible to give this code the
+"look and feel" of Datascope programming (BRTT, Inc.).  This directory is self-
+contained as far as source code.  BRTT libraries are invoked in the Makefile as 
+usual.  
+
+The programs contained here are:
+
+arf    -- computes theoretical array response for a given frequency
+beam   -- computes a beam trace for a given back azimuth and slowness
+delay  -- computes time delays over an array for given back azimuth and slowness
+distaz -- computes the interstation distances and azimuths for an array
+funcgen-- computes various synthetic wavelets, or random noise
+sigcor -- computes the waveform cross-correlations among elements of an array
+slow2d -- computes a 2-D wavenumber (slowness) map of maximum beam amplitude
+kfgrid -- computes a wavenumber-frequency map for a 2-D linear array of records
+kfresp -- computes the k-f response of a specified array to a specified signal
+tcgrid -- computes a period-velocity map for a 2-D linear array of records
+
+The binary codes (see bin subdirectory) were built with Antelope 5.2-64 on Mac
+OS/X 10.6.8.
+
+A testcase subdirectory is provided with data from the North Korean underground
+nuclear explosion on 10/09/2006 recorded at the Yucca Mountain seismic
+monitoring array in southern Nevada.  The scripts should be modified to declare
+new output files in order to compare with the original ones before running.
+
+All programs work with slowness in s/km and with back azimuth in degrees 
+clockwise from north.  
+
+All programs use a simple "array" file, which must have the suffix ".arr".  The
+file is ASCII, with one line per channel to be used.  Each line is free-form
+with the fields: sta chan delay.  The sta and chan variables will be as in the
+Antelope database used, and a non-zero delay (s) allows for specific site
+values to be applied in aligning signals.  These delays are normally the 
+amounts to be applied in addition to the automatic ones computed by the programs
+as simply dependent on the slowness vector.
+
+Programs using real data allow mixed sample rates among the channels, provided 
+the base sample rate, given on the command line, is an even divisor of all the
+rates.  Traces sampled at rates higher than the base rate will be anti-aliased
+filtered and decimated to the base rate.
+********************************************************************************
+
+Program arf does not use recorded data, only the array configuration.  It 
+computes the theoretical array response, in 2-D slowness space, to plane waves 
+of a given frequency.  The grid is indexed by the "fkgrid" Datascope table, 
+just as for slow2d.
+
+Program beam creates beam traces and puts them in the database, creating a 
+wfdisc record for each output trace.  Beam traces are normal 32-bit, IEEE,
+binary, floating-point numbers.  The traces are of course viewable with Antelope
+tools.
+
+Program delay simply computes the time delays at each receiver of an array for 
+a plane wave propagating at a certain azimuth and slowness.
+
+Program distaz computes the interstation distances and azimuths for an array of
+stations.  Itis assumed that the stations occupy a small region such that 
+Cartesian 2-D geometry is accurate enough.
+ 
+Program sigcor computes the cross-correlation coefficients and delays among the
+signals at an array.  The output consists of interstation distances and back
+azimuths and the computed coefficients and delays. 
+
+Program slow2d creates 2-D slowness grids which can be plotted in any convenient
+program, after suitable file manipulation.  Grids are written in normal 32-bit,
+IEEE, binary, floating-point numbers.  The grids are indexed in the "fkgrid"
+Datascope table.  The order of the numbers in the grid is from left to
+right, starting with the bottom row first.  
+
+Program kfgrid computes the wavenumber-frequency amplitude map for a linear array
+of sensors.  The spacing of the sensors does not need to be uniform.  Output 
+grids are handled as for program slow2d.  Wavenumber is on the horizontal axis 
+and frequency on the vertical axis; thus constant velocity is given by a straight 
+line on the map.
+
+Program tcgrid computes a map similar to kfgrid but with period on the horizontal
+axis and velocity on the vertical axis. This type of map is used often to analyze
+dispersive signals over linear arrays.
+
+Reference:
+
+Keith Koper (koper@eas.slu.edu), 2004. GAP 1.0 delivery, GAP/Docs/manual.pdf

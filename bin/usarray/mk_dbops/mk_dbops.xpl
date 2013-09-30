@@ -280,8 +280,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
   }
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
@@ -297,12 +301,12 @@ if ($opt_U) {
 
   elog_notify("Starting ADOPTION specific commands\n");
 
-  if ($newvnet) {	# this means its an EARN station
+  if ($newvnet) {	# this means its an EARN or TRANSITION 
 
 # get deployment.endtime from (last time in wfdisc?  stage.endtime? last data in orb?)
 #   for EARN, endtime is timestamp from ask:  earntime
 # get deployment.equip_removal from (last time in wfdisc?  stage.endtime? last data in orb?)
-#   for EARN, equip_removal is null
+#   for EARN/TRNSITION, equip_removal is null
 # get deployment.decert from (last time in wfdisc?  stage.endtime? last data in orb? ????)
 #   for EARN, chose to use time from command line
 
@@ -314,17 +318,24 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
     }
 
     &close_deployment($earntime, $endnull, $mytime ) ; 
   
     $stime = &get_stagestarttime ;
 
-    &add2deployment ($newvnet, $earntime+0.001, $stime, $mytime) ; 
+    elog_notify("newvnet is: $newvnet\n") if ($opt_v);
+    elog_notify("newnet  is: $newnet \n") if ($opt_v);
 
-    elog_notify("This is an EARN station.  No change to comm or dlsite.\n" ) if ($opt_v);
+    &add2deployment ($newvnet, $newnet, $newsta, $earntime+0.001, $stime, $mytime) ; 
+
+    elog_notify("This is a $atype station.  No change to comm or dlsite.\n" ) if ($opt_v);
 
     &add2adoption($earntime) ; 
 
@@ -339,8 +350,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
     } 
 
     $sendtime	= &get_stageendtime ;
@@ -352,7 +367,7 @@ if ($opt_U) {
 
     &close_deployment($wfendtime, $endnull, $mytime) ; 
 
-    elog_notify("This is a non-EARN station.  Comm and dlsite will be changed.\n" )  if ($opt_v) ;
+    elog_notify("This is a $atype station.  Comm and dlsite will be changed.\n" )  if ($opt_v) ;
 
     &close_dlsite($sendtime); 
     &close_comm($sendtime) ;
@@ -376,8 +391,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
   }
 
   $sendtime = &get_stageendtime ;
@@ -412,8 +431,12 @@ if ($opt_U) {
         elog_notify("\t  $table  \n") if ($opt_v) ;
 	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
 	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	&run("$cmd");
-	push(@rm_list,$table_filename) ;
+	if (-e $table_filename) {
+	  &run("$cmd");
+	  push(@rm_list,$table_filename) ;
+	} else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+	}
   }
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
@@ -447,7 +470,7 @@ if ($opt_U) {
      if ($opt_m) {
        $select = "$opt_m" ;	# Look for data packets
      } else {
-       $select = $dlname . $packet_ext ;	# Look for data packets
+       $select = $dlname . "(" . $packet_ext . ")" ;	# Look for data packets
      }
 
      $n = orbselect($preorb, $select) ;
@@ -464,7 +487,7 @@ if ($opt_U) {
 
   &trim($dtime) ;
 
-  &add2deployment($vnet, $dtime, $stime, $mytime) ;  
+  &add2deployment($vnet, $snet, $sta, $dtime, $stime, $mytime) ;  
 
 # Try to use Frank's q330_location script to add to dlsite table unless opt_n is chosen
 
@@ -721,15 +744,15 @@ sub add2comm {	#add2comm($time)		# add a new record to the comm table
 
 }
 
-sub add2deployment  {	# ( $vnet, $time, $equip_install, $cert_time)  add a new record to the deployment table
+sub add2deployment  {	# ( $vnet, $net, $sta, $time, $equip_install, $cert_time)  add a new record to the deployment table
 
-  my ($vnet, $time, $install_time, $cert_time)  = @_ ; 
+  my ($vnet, $net, $sta, $time, $install_time, $cert_time)  = @_ ; 
 
   @dep_record = ();
 
   push(@dep_record,
 	"vnet",   	$vnet,
-	"snet",   	$snet,
+	"snet",   	$net,
 	"sta",   	$sta,
 	"time",         $time,
 	"endtime", 	$endnull,
@@ -745,7 +768,7 @@ sub add2deployment  {	# ( $vnet, $time, $equip_install, $cert_time)  add a new r
   eval { dbaddv(@deployment,@dep_record) };
   if ($@) {
       warn $@;
-      elog_complain("Problem adding deployment record:  $vnet, $snet, $sta, time: ". &strydtime($time) . " endtime: ". &strydtime($endnull) . ".\n")  ;
+      elog_complain("Problem adding deployment record:  $vnet, $net, $sta, time: ". &strydtime($time) . " endtime: ". &strydtime($endnull) . ".\n")  ;
       elog_die("No record added!\n");
   } else {
       elog_notify("Added deployment record to database: $dbops\n")  ;

@@ -1,0 +1,27 @@
+# db2ceef.pf parameter file
+
+auth_sources &Arr{
+	PGC:.*		GSC
+	orbassoc.*	GSC
+	QED.*		NEI
+	NEIC.*		NEI
+	AEIC.*		AEI
+	PDE.*		NEI
+	PNSN.*		SEA
+	MTECH.*		BUT
+}
+source_default	???
+
+magtype_priorities &Arr{
+	mw		11
+	mw'		10
+	ms		9
+	mb		8
+	mb(lg)		7
+	ml		6
+	ml(sn)		5
+	md		4
+	mc		3
+	m		2
+	other		1
+}

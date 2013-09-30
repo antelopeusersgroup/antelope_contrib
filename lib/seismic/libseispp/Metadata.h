@@ -166,18 +166,29 @@ public:
 **/
 	Metadata(Pf *pfin, string tag);
 /*!
-// Construct from a string.  
-//
-// The algorithm used here is to use the pfcompile function of
-// antelope on the input string and then treat load the result
-// just as in the Pf driven constructor.
-//
-//\exception MeetadataParseError if pfcompile failes.
-//
-//\param s string to be compiled into Metadata.  Here this must
-//  be in the format of Antelope parameter files.
-**/
-	Metadata(string s) throw(MetadataParseError);
+\brief File and string constructor.
+
+The normal use for this constructor is to construct the object
+from a file.   The default is an oddity created by a need for
+backward compatibility.   That is, the default (no format specified)
+is to construct from a string stored in memory.   The string is
+assumed to be an image of an Antelope pf file that is passed through
+the pfcompile procedure to construct the object.   Otherwise the
+constructor assumes arg 1 is a file name that is read and parsed
+with a structure assumption defined by the format name passed as
+arg 2.
+\exception MeetadataParseError if pfcompile failes.
+\param s is one of two things.  If format is string it assumed to 
+  be a string that is to be parsed as an antelope pf file image.  Otherwise
+  it is assumed to be a file name with the structure defined by format.
+\param format is a keyword that defines the format of the file to be read.
+  Currently the only recognized name is "pf" for an antelope pf, but this
+  is intended to be a general interface.  The default is "string", which 
+  is different.  In that case s is assume to be an image of an
+  antelope pf file.
+
+*/
+	Metadata(string s,const char *format="string") throw(MetadataParseError);
 /*!
 //  Restricted build from a string driven by a typed list.  
 //  
@@ -447,6 +458,36 @@ MetadataList pfget_mdlist(Pf *pf,string tag);
 //\return Antelope parameter file Pf pointer.
 **/
 Pf *Metadata_to_pf(Metadata& md);
+/*!  \brief Extract an antelope Pf Tbl into a string.
+
+  Antelope pf files have the concept of a Tbl grouping of stuff
+  that is commonly parsed by programs for data that is not a simple
+  single value type.   This procedure finds a Tbl with a specified
+  tag and extracts the Tbl contents into a string which is returned.
+
+\param pf  is the Antelope Pf pointer 
+\param tag is the tag for the Tbl to be extracted
+
+\return string of Tbl contents. 
+*/
+string pftbl2string(Pf *pf, const char *tag);
+/*!  \brief Extract an antelope Pf Tbl into a list of strings.
+
+  Antelope pf files have the concept of a Tbl grouping of stuff
+  that is commonly parsed by programs for data that is not a simple
+  single value type.   This procedure finds a Tbl with a specified
+  tag and extracts the Tbl contents into list container.   Each 
+  string in this list is defined by newlines in the original Tbl of
+  the pf file.  Said another way the basic algorithm is a gettbl for
+  each line in the Tbl followed by a push_back to the STL list.
+
+\param pf  is the Antelope Pf pointer 
+\param tag is the tag for the Tbl to be extracted
+
+\return STL list container of std::string objects derived from tbl lines.
+*/
+list<string> pftbl2list(Pf *pf, const char *tag);
+
 
 } // End namespace SEISPP declaration
 #endif

@@ -667,6 +667,13 @@ int main(int argc, char **argv)
 				<< "Edit pf file and try again"<<endl;
 			exit(-1);
 		}
+                if(save_as_3c && !require_event)
+                {
+                    cerr << "Illegal parameter combination"<<endl
+                        << "save_as_3c_objects is set true but require_event is set false"<<endl
+                        << "Not allowed as this will produce incorrect indexing"<<endl;
+                    exit(-1);
+                }
 		double vp0,vs0;
 		vp0=control.get_double("vp0");
 		vs0=control.get_double("vs0");
@@ -816,6 +823,9 @@ int main(int argc, char **argv)
 				delete rawdata;
 				continue;
 			}
+                        if(SEISPP_verbose)
+                            cout << "Number of 3c seismogram created from raw data="
+                                <<rawdata->member.size()<<endl;
 			PostEvid(rawdata,evid);
 			if(!use_arrival)
 			{

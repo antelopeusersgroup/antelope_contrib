@@ -1,0 +1,154 @@
+.TH DBMAPEVENTS 1 "$Date$"
+.SH NAME
+dbmapevents \- Make a map of events from a database (deprecated)
+.SH SYNOPSIS
+.nf
+\fBdbmapevents \fP\fIdbname\fP 
+            {\fIsta\fP | \fIorid\fP | \fIlat\fP:\fIlon\fP}
+            \fIrange\fP 
+            [-c] 
+            [\fIauth1\fP \fIsym1\fP \fIhue1\fP \fIlit1\fP \fIsat1\fP ...] 
+            [-d \fIdisplayname\fP]
+.fi
+.SH DESCRIPTION
+\fBdbmapevents\fP
+makes a map of events and stations from a CSS 3.0 database.
+A detailed worldwide cartography database is used to provide coastlines,
+shorelines, rivers and political boundaries. The level of cartographic
+detail is determined by the size of the map region. Maps are always drawn
+using an equal distance projection with an origin that is determined
+either by a station location (from the \fBsite\fP table), a hypocenter
+(from the \fBorigin\fP table) or a user specified latitude-longitude
+coordinate. The events are always taken from the \fBorigin\fP table and
+can be optionally sifted and color-symbol coded by the \fBauthor\fP field
+within the \fBorigin\fP table. An interactive mode can be optionally
+enabled that allows the user to pan and zoom the map after it is initially
+drawn. PostScript versions of the map are put into a file named
+\fBdbmapevents\fP.ps.
+.SH COMMAND LINE ARGUMENTS
+.IP dbname
+The name of the subject database. The database name is defined as the
+file name of one of the flat relation files without the .relname suffix.
+For example, if the .wfdisc relation file name is ./foo.wfdisc then ./foo
+is the database name.
+This argument is required.
+.IP "sta | orid | lat:lon"
+A coordinate origin definition. If a valid station code is specified, then
+the latitude-longitude of that station is used as the origin. If a valid
+\fBorid\fP value is specified, then the hypocenter latitude-longitude
+for that \fBorid\fP is used. If a latitude:longitude value is specified
+(with a : separating the two values), then that value is used. Latitudes
+and longitudes are specified in degrees with +/- values representing
+north and south latitudes, respectively, and east and west longitudes.
+This argument is required.
+.IP range
+The map plot range in degrees from the origin to the edges of the map.
+This argument is required.
+.IP "auth1 sym1 hue1 lit1 sat1 ..."
+An optional list of hypocenter author sifting keys and color-plotting
+symbol codes for each author. Each element in the list consists of
+\fIauth#\fP which specifies an \fBauthor\fP field within the \fBorigin\fP
+table, \fIsym#\fP, which specifies a plotting symbol and should be
+one of 'box', 'triangle', 'hexagon', or 'cross', \fIhue#\fP, which specifies
+the symbol color hue value (0.0 to 360.0), \fIlit#\fP, which specifies
+the symbol color lightness value (0.0 to 1.0), and \fIsat#\fP, which specifies
+the symbol color saturation value. If no author sifting keys are given, then
+all hypocenters are plotted with the same symbol and color.
+.IP -c
+If specified, then enter interactive mode after making the map. During
+interactive mode, a cross-hairs cursor appears in the plot window and
+can be manipulated with the mouse. If this argument is not specified,
+then the program will exit immediately after making the map.
+.IP "-d displayname"
+Overrides the X-window display name normally set in the DISPLAY environment
+variable. If this is set to 'none', then only the PostScript output will
+be made and there will be no connection to an X-server.
+.SH PROGRAM INTERACTION
+If the \fI-c\fP command line argument has been specified, then a cross-hair
+cursor will appear in the map area and the program will go into an
+interactive mode (after the initial map is made). Single key commands
+can then be typed while the cursor cross-hair is active.
+Single key commands are defined as follows (no RETURN is required):
+.br
+\fB?\fP - Display help menu.
+.br
+\fBq\fP - Quit and leave the window on the screen.
+.br
+\fBQ\fP - Quit and destroy the window.
+.br
+\fBp\fP - Pan.
+.br
+\fBi\fP - Zoom in by a small increment.
+.br
+\fBI\fP - Zoom in by a large increment.
+.br
+\fBo\fP - Zoom out by a small increment.
+.br
+\fBO\fP - Zoom out by a large increment.
+.br
+\fBe\fP - Identify closest event.
+.br
+\fBs\fP - Identify closest station.
+.br
+\fBt\fP - Enter time range.
+.br
+\fB1\fP - Toggle orid labels on/off.
+.br
+\fB2\fP - Toggle depth symbol color coding on/off.
+.br
+\fB3\fP - Toggle shallow depth symbol color coding on/off.
+.br
+\fB4\fP - Toggle depth residual symbol color coding on/off.
+.br
+\fB5\fP - Toggle station symbols on/off.
+.br
+\fB6\fP - Toggle color coding of events in the PDE catalog on/off.
+.br
+\fB7\fP - Toggle magnitude symbol size coding on/off.
+.br
+\fB8\fP - Toggle display of distance circles on/off.
+.SH EXAMPLE
+.IP \(bu
+Plot all origins within 2 degrees of 33.3 -116.5 and allow interaction
+.in 2c
+.ft CW
+.nf
+
+%\fB dbmapevents anza 33.3:-116.5 2 anza -i \fP
+
+.fi
+.ft R
+.in
+.IP \(bu
+Plot only origins from two different authors, ANF and UNR, using a cross
+or box, for events within 5 degrees of station O08A.
+.LP
+Note that there is no pattern matching for the author field.  If you
+have varying authors such as ANF:vladik, ANF:rt, UNR_401188 and
+UNR_555751, you may have to make a separate copy of the origin
+table which has stripped out the "extra" author information.
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+
+%\fB cp usarray.origin usarray_feb2007.origin \fP
+%\fB dbset -v usarray_feb2007.origin auth "auth=~/UNR.*/" UNR\fP
+%\fB dbset -v usarray_feb2007.origin auth "auth=~/ANF.*/" ANF\fP
+
+%\fB dbmapevents usarray_feb2007 O08A 5 ANF cross 50 0.8 0.8 UNR box 180 0.8 0.8 \fP
+
+.fi
+.ft R
+.in
+.SH ENVIRONMENT
+The cartography file must be resident at $ANTELOPE/data/maps/mapdata. The ANTELOPE
+environment variable must be set appropriately. In addition the SCHEMA_DIR
+environment variable can be used (see antelopeenv(5)).
+.SH SEE ALSO
+antelopeenv(5)
+.SH AUTHOR
+Danny Harvey
+
+.\" $Id$

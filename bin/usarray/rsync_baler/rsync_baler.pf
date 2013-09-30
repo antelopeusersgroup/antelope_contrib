@@ -1,11 +1,27 @@
-database   /anf/TA/dbs/dbops/usarray        #path to master database with stations and ips
+database   /anf/TA/dbs/dbops/usarray        #path to master database 
+                                            #with stations and ips
 
-local_data_dir          /anf/TA/baler/work/  #local directory for archive
+local_data_dir          /anf/TA/baler/work/ #local directory for archive
 
-download_timeout        300                  # in seconds
+download_timeout        300                 # in seconds
 
-http_port               5381                 #port for http connections
+http_port               5381                #port for http connections
 
-max_procs               35                   #number of simultaneous processes
+max_procs               35                  #number of simultaneous processes
 
-max_child_run_time      36000                #stop downloading files after this number of seconds. 0 = disable.
+max_child_run_time      36000               #stop downloading files 
+                                            #after this number of 
+                                            #seconds. 0 = disable.
+
+# avoid_on_day_of_week
+# Will be implemented like this...
+# $opt_r  = $opt_r || $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} ;
+avoid_on_day_of_week &Arr{
+    Monday      ^[A-E].*
+    Tuesday     ^[F-J].*
+    Wednesday   ^[K-O].*
+    Thursday    ^[P-T].*
+    Friday      ^[U-Y].*
+    Saturday    ^[Z0-3].*
+    Sunday      ^[4-9].*
+}

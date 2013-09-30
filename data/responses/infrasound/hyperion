@@ -1,0 +1,14 @@
+# Hyperion microphone  
+#
+# 0                   num of zeroes
+# 0                   num of poles
+# 1                   normalization factor
+# 1.0                 gain
+#theoretical   1 sensor    	  paz    eakins  
+theoretical   1 anti-alias	  paz    eakins  
+1.0
+1	Poles
+-0.041281   0.0000e+00    0.0000E+00    0.0000E+00
+
+1	Zeros
+ 0.000e+00  0.0000e+00    0.0000e+00    0.0000e+00 

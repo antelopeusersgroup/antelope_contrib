@@ -3,7 +3,7 @@
 db2loon \- Create Loon-pickfile(s) from database
 .SH SYNOPSIS
 .nf
-\fBdb2loon \fP[-m] [-d \fIdbout\fP] [-l \fIlddate_cutoff\fP] 
+\fBdb2loon \fP [-b] [-m] [-d \fIdbout\fP] [-l \fIlddate_cutoff\fP] 
 		[-s \fIorigin_subset_expr\fP]  [-o \fIorid\fP] 
 		[-p \fIpffile\fP] \fIdbin\fP [\fIfilename\fP]
 .fi
@@ -15,6 +15,9 @@ to send the results to stdout. If \fIfilename\fP is specified, the results are s
 the named file instead.
 
 .SH OPTIONS
+.IP "-b"
+Run db2loon in batch mode. No user interaction.
+
 .IP "-p pffile"
 Use the named parameter-file instead of the default \fBdb2loon\fP.pf
 
@@ -278,6 +281,14 @@ only of a simple automatically-generated Flinn-Engdahl geographic region name.
 Caution should be used with the -d option not to specify any previously
 existing databases (especially the input \fIdatabase\fP!!) since the new \fIdatabase\fP may overwrite
 the old.
+
+A rounding error in the seconds field of the origin time has been remedied by truncating the value to
+two decimal places. Rounding of this field to two decimal places is avoided as rounding over hour,
+day, month and year boundaries introduce inconsistencies between file naming convention and origin
+time as represented in loon file. Truncated digits are insignificant.
+
+PGC is hard-wired as the agency for all phase and amplitude rows as PGC is the only agency providing
+this data. This could potentially be a bug in the future.
 
 .SH AUTHOR
 .nf

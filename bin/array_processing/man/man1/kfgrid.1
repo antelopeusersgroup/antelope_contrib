@@ -1,0 +1,79 @@
+.TH "kfgrid" 1 "September 1, 2012"
+.SH NAME
+kfgrid \- compute an amplitude map in wavenumber-frequency space
+.SH SYNOPSIS
+.B "kfgrid tstart slen sr kmax nk fmax nf kneg channame arrayname whiten dbname dir dfile"
+.SH DESCRIPTION
+Program kfgrid computes amplitude in wavenumber-frequency space for a linear 
+array of channels. It works with an existing database to get the station 
+parameters.  It works entirely in the time domain, finding the maximum amplitude
+of the beam trace for all values of the 2-D wavenumber-frequency space.  Narrow-
+band filtering is done to limit the frequency.   Iterating over frequency and
+wavenumber, the program beams the signals and finds the maximum on the beam.  
+The maximum value is inserted into the k-f map.  It writes the 2-D grid to a 
+data file, as referenced in the fkgrid table of the database.  The grids are 
+written as binary IEEE floating-point numbers ("u4" datatype in Antelope for 
+Intel machines).
+
+The following input parameters are used:
+
+tstart = start time of signal in epoch seconds
+
+slen = signal length to be beamed in seconds
+
+sr = desired sampling rate (<= actual sampling rate).  This increases performance when looking at low-frequency signals relative to original sampling rate.
+
+kmax = maximum slowness (s/km).  (This will be used to define minimum slowness as kmin = -kmax.
+
+nk = # of slownesses from kmin to kmax.  (This should usually be an odd integer so that 0 Hz falls on (kmax - kmin)/(nk - 1).  This defines the number of columns in the map.
+
+fmax = maximum frequency (Hz).
+
+nf = # of frequencies from 0 to fmax.  This defines the number of rows in the map.
+
+kneg = flag to compte negative k part of grid or not (1 = compute; 0 = do not).
+
+channame = channel name to be assigned to F-K grid  (maximum of 8 characters). arrayname and channame should be a unique pair of grid identifiers.
+
+arrayname = name of array (This name is arbitrary, but it must exist as a filename with suffix ".arr".  For instance, if "ZZZ.arr" is the file, then "ZZZ" is arrayname.  The maximum number of characters is 6.)
+
+whiten = flag to whiten the spectrum across frequencies (0 = no whitening; 1 = whiten such that peak over wavenumber for each frequency = 1.0).
+
+dbname = database name
+
+dir = directory to hold output dfile.
+
+dfile = file name to hold computed power in wavenumber-frequency space.
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.nf
+A typical array file would look like (sta chan delay)::
+
+CM01 SHZ  0.0
+CM02 SHZ  0.0
+CM03 SHZ  0.0
+CM04 SHZ  0.0
+CM05 SHZ  0.0
+CM06 SHZ  0.0
+CM07 SHZ  0.0
+CM08 SHZ  0.0
+CM09 SHZ  0.0
+CM10 SHZ  0.0
+CM11 SHZ  0.0
+CM12 SHZ  0.0
+CM13 SHZ  0.0
+CM14 SHZ  0.0
+CM15 SHZ  0.0
+CM16 SHZ  0.0
+CM17 SHZ  0.0
+CM18 SHZ  0.0
+
+.fi
+.SH "SEE ALSO"
+beam slow2d tcgrid
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern

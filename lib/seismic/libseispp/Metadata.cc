@@ -397,14 +397,36 @@ namespace SEISPP
         bptr=mbool.find(name);
         if(bptr!=mbool.end()) mbool.erase(bptr);
     }
-    Metadata::Metadata(string mdin)
+    /* File and string constructor.
+       
+       The algorithm used here is not at all extensible.  When and
+       if I ever decide to support an alternative format this will
+       require some major surgery.  The reason is that the what
+       I do here is when the format is specified as pf all the
+       algorithm does is first read a pf file and then fall into
+       the original (older) loop that converts the result to the
+       internal structure of this object.  */
+    Metadata::Metadata(string mdin,const char *fraw)
         throw(MetadataParseError)
     {
         Pf *pf;
         pf=pfnew(PFARR);
         int ierr;
-        ierr = pfcompile(const_cast<char *>(mdin.c_str()),&pf);
-        if(ierr!=0) throw MetadataParseError(ierr,"pfcompile failure in Metadata constructor");
+        string format(fraw);
+        if(format=="string")
+        {
+            ierr = pfcompile(const_cast<char *>(mdin.c_str()),&pf);
+            if(ierr!=0) 
+                throw MetadataParseError(ierr,"pfcompile failure in Metadata constructor");
+        }
+        else if(format=="pf")
+        {
+            ierr = pfread(const_cast<char *>(mdin.c_str()),&pf);
+            if(ierr!=0)
+                throw MetadataError(string("pfread failed reading file")+mdin);
+        }
+        else
+            throw MetadataError(string("No support for format = ")+format);
         //
         // The following duplicates code in the Pf constructor.
         // There may be a tricky way to invoke that code I'm not
@@ -440,6 +462,7 @@ namespace SEISPP
         map<string,bool>::iterator bptr;
         bptr=mbool.find(key);
         if(bptr!=mbool.end()) return(true);
+        return(false);
     }
     bool Metadata::is_attribute_set(char *key)
     {
@@ -599,5 +622,36 @@ namespace SEISPP
         Pf *pf;
         pfcompile(const_cast<char *>(pfinp.str().c_str()),&pf);
         return(pf);
+    }
+    string pftbl2string(Pf *pf, const char* tag)
+    {
+        Tbl *t;
+        t=pfget_tbl(pf,const_cast<char *>(tag));
+        if(t==NULL) throw SeisppError(string("pftbl2string:  ")
+                + "pf file is missing Tbl with tag = "
+                +tag);
+        string result;
+        for(int i=0;i<maxtbl(t);++i)
+        {
+            char *line=(char *)gettbl(t,i);
+            result += line;
+            result += "\n";
+        }
+        return result;
+    }
+    list<string> pftbl2list(Pf *pf, const char* tag)
+    {
+        Tbl *t;
+        t=pfget_tbl(pf,const_cast<char *>(tag));
+        if(t==NULL) throw SeisppError(string("pftbl2list:  ")
+                + "pf file is missing Tbl with tag = "
+                +tag);
+        list<string> result;
+        for(int i=0;i<maxtbl(t);++i)
+        {
+            char *line=(char *)gettbl(t,i);
+            result.push_back(string(line));
+        }
+        return result;
     }
 }                                                 // Termination of namespace SEISPP definitions

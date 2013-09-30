@@ -705,7 +705,12 @@ function openSubnav() {
 function makeLink(){
 //{{{
     var path = String(window.location).split('/')
-    var url = path[0] + '/' + path[2] + '/' + proxy + '/wf/' + sta + '/' + chan ;
+    if (proxy) {
+        var url = path[0] + '//' + path[2] + '/' + proxy + '/wf/' + sta + '/' + chan ;
+    } else {
+        var url = path[0] + '//' + path[2] + '/wf/' + sta + '/' + chan ;
+    }
+    //var url = path[0] + '//' + path[2] + '/' + proxy + '/wf/' + sta + '/' + chan ;
     url += '/'+ts/1000; 
     url += '/'+te/1000; 
     url += '/'+page+'?' ; 
@@ -713,6 +718,7 @@ function makeLink(){
     url += '&calibrate='+calibrate; 
     url += '&type='+type; 
 
+    //$("#logpanel").append('<p>makeLink()=>'+window.location+'</p>'); 
     $("#logpanel").append('<p>makeLink()=>'+url+'</p>'); 
     alert(url);
 //}}}
@@ -1216,7 +1222,7 @@ function errorResponse(x,s,e) {
 
     //alert(JSON.stringify(this));
     var path = String(window.location).split('/')
-    var message = path[0] + '/' + path[2] ;
+    var message = path[0] + '//' + path[2] ;
     message += this['url'];
     message += " => ";
 

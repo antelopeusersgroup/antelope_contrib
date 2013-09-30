@@ -24,7 +24,7 @@
     
 {    #  Main program
 
-    my ( $Pf, $arg, $cmd, $db, $fh, $good, $idle, $iowait, $kernel, $max_forks, $nchild, $ncpu, $nstas, $parent, $pid, $problems, $resp, $sta, $stime, $string, $subject, $swap, $usage, $user );
+    my ( $Pf, $act_stas, $arg, $cmd, $db, $fh, $good, $idle, $iowait, $kernel, $max_forks, $nchild, $ncpu, $nstas, $parent, $pid, $problems, $resp, $sta, $stime, $string, $subject, $swap, $usage, $user );
     my ( @keys, @procs, @stas, @the_rest );
     my ( %errors, %logs, %stas );
 
@@ -34,7 +34,7 @@
     elog_init($pgm, @ARGV);
     $cmd = "\n$0 @ARGV" ;
     
-    if (  ! &getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 10 ) ) { 
+    if (  ! &getopts('vVnf:m:p:s:') || ( @ARGV != 1 && @ARGV != 12 ) ) { 
         $usage  =  "\n\n\nUsage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf] [-m mail_to] [-f nforks] [-s sta_regex] db  \n\n" ;
         $usage .=  "Usage: $0  [-v] [-V] [-n] " ;
@@ -42,7 +42,7 @@
         $usage .=  "sta wf_start_yearday wf_end_yearday soh_start_YYYYMM soh_end_YYYYMM balerperf_start_yearday balerperf_end_yearday allperf_start_yearday allperf_end_yearday \n\n"  ;         
         $usage .=  "Usage: $0  [-v] [-V] [-n] " ;
         $usage .=  "[-p pf]  " ;
-        $usage .=  "sta wf_start_yearday wf_end_yearday soh_start_YYYYMM soh_end_YYYYMM balerperf_start_yearday balerperf_end_yearday allperf_start_yearday allperf_end_yearday parent_pid \n\n"  ;         
+        $usage .=  "sta wf_start_yearday wf_end_yearday soh_start_YYYYMM soh_end_YYYYMM balerperf_start_yearday balerperf_end_yearday allperf_start_yearday allperf_end_yearday rt_end_yearday is_closed parent_pid \n\n"  ;         
         elog_notify($cmd) ; 
         elog_die ( $usage ) ; 
     }
@@ -64,14 +64,9 @@
     $parent   = $$ ;
     $problems = 0;
 
-#     if ( @ARGV == 9 ) {
-#         &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $parent ) ;
-#         exit 0 ;
-#     }
-# 
-    if ( @ARGV == 10 ) {
-        $parent = $ARGV[9] ;
-        &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $parent ) ;
+    if ( @ARGV == 12 ) {
+        $parent = $ARGV[11] ;
+        &proc_sta( $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6], $ARGV[7], $ARGV[8], $ARGV[9], $ARGV[10], $parent ) ;
         exit 0 ;
     }
 
@@ -117,19 +112,29 @@
     
     elog_debug ( "get_stas returned" ) if $opt_V ;
     prettyprint ( \%stas ) if $opt_V ;
-
+    
     elog_notify ( "$nstas stations to process\n\n" ) ;
     elog_notify ( "@stas" ) ;
-    
+        
 #
 #  process all new stations
 #
+
+    $stime = now() ;
+    
+    $act_stas = 0 ;
         
     STA: foreach $sta ( @stas ) {
+
+        if ( now() - $stime >  ( 3600 * $pf{limit_hours} ) ) {  #  exit process if running more than limit_hours hours.
+            elog_notify "$pgm has exceeded the pf{limit_hours} of $pf{limit_hours}" ;
+            last;
+        }
 
 #
 # Verify how many procs we have running
 #
+
         @procs = check_procs(@procs);
 
 #
@@ -148,6 +153,9 @@
 
         $logs{$sta}{lines}      = 0 ;
         $errors{$sta}{problems} = 0 ;
+        elog_notify ( "$sta started processing" ) if $opt_v ;
+        
+        $act_stas++ ; 
         
 #
 # Fork the script
@@ -181,21 +189,22 @@
             $cmd  .=  "$stas{$sta}{soh}{start_proc} $stas{$sta}{soh}{end_proc} " ;
             $cmd  .=  "$stas{$sta}{baler}{start_proc} $stas{$sta}{baler}{end_proc} " ;
             $cmd  .=  "$stas{$sta}{all}{start_proc} $stas{$sta}{all}{end_proc} " ;
+            $cmd  .=  "$stas{$sta}{rt}{end_proc} $stas{$sta}{wf}{closed} " ;
             $cmd  .=  "$parent" ;
             
-            fork_debug ( $parent, "$cmd " ) ; # if $opt_V;
+            fork_debug ( $parent, "$cmd " ) if $opt_V;
                                     
             exec ( $cmd  ) ;
 
             exit 0 ;
         }
         
-
     }
 
 #
 # Wait for all children to finish
 #
+
     while ( @procs ) {
 
         @procs = check_procs( @procs ) ;
@@ -204,36 +213,45 @@
 
         sleep 1;
 
-    }
-    
+    }    
+
 #
 # Find aborted child
 #
+
     $string = "proc_sta complete for" ;
     
-    &missing_children ( $string, \%logs, \%errors ) ;
-    
+    &missing_children ( $string, \%logs, \%errors ) ;    
+
 #
 # Print error logs
 #
+
     ( $nchild, $problems ) = &problem_print ( \%errors ) ;
 
 #
 # Print logs
 #
+
     &log_print ( \%logs ) ;
 
 #
 # Finish up
 #
+
+    if ( -d $pf{tmp_dbmaster} ) {
+        $cmd = "rm -rf $pf{tmp_dbmaster}" ;
+        &run_cmd( $cmd )
+    }
+
     $stime = strydtime(now());
     elog_notify ("completed 	$stime\n\n");
 
     if ($problems == 0 ) {
-        $subject = sprintf("Success  $pgm  $host  $nstas stations processed");
+        $subject = sprintf("Success  $pgm  $host  $act_stas out of $nstas stations processed");
         elog_notify ($subject);
     } else { 
-        $subject = "Problems - $pgm $host	$nstas stations processed, $nchild stations with problems, $problems total problems" ;
+        $subject = "Problems - $pgm $host	$act_stas out of $nstas stations processed, $nchild stations with problems, $problems total problems" ;
         elog_complain("\n$subject") ;
     }
     
@@ -243,8 +261,9 @@
 
 sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
     my ( $db, $problems ) = @_ ;
-    my ( $baler_db, $endtime, $endtime_null, $equip_install, $key1, $key2, $nrows, $row, $rt_db, $sta, $string, $subject, $time ) ;
-    my (  @db, @dbdeploy, @dbnull, @mseed_dirs ) ;
+    my ( $baler_db, $cmd, $endtime, $endtime_null, $equip_install, $key1, $key2, $nrows ) ;
+    my ( $row, $rt_db, $sta, $string, $subject, $time ) ;
+    my ( @db, @dbdeploy, @dbnull, @mseed_dirs ) ;
     my ( %stas, %stas_out ) ;
 #
 #  setup db
@@ -276,32 +295,32 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
     for ($row = 0; $row<$nrows; $row++) {
         $dbdeploy[3] = $row ;
         ( $sta, $time, $endtime, $equip_install )  = dbgetv ( @dbdeploy, qw( sta time endtime equip_install ) ) ;
-        $stas{$sta}{wf}{start}         = yearday  ( $time ) ;
-        $stas{$sta}{wf}{start_proc}    = yearday  ( $equip_install ) ;
-        $stas{$sta}{soh}{start_proc}   = yearmonth( $equip_install ) ;
-        $stas{$sta}{baler}{start_proc} = $stas{$sta}{wf}{start_proc} ;
-        $stas{$sta}{all}{start_proc}   = $stas{$sta}{wf}{start_proc} ;
+        $stas{$sta}{wf}{start}         = yearday  ( $time ) ;            # time of first data   
+        $stas{$sta}{wf}{start_proc}    = yearday  ( $equip_install ) ;   # equipment installation 
+        $stas{$sta}{soh}{start_proc}   = yearmonth( $equip_install ) ;   # equipment installation 
+        $stas{$sta}{baler}{start_proc} = $stas{$sta}{wf}{start_proc} ;   # equipment installation 
+        $stas{$sta}{all}{start_proc}   = $stas{$sta}{wf}{start_proc} ;   # equipment installation 
         
         if ( exists $stas{$sta}{wf}{endtime} ) {
-            if ( ( $endtime != $endtime_null ) && ( $endtime > $stas{$sta}{endtime} )) {
-                $stas{$sta}{wf}{endtime}   = $endtime ;
-                $stas{$sta}{wf}{end_proc}  = yearday ( $endtime ) ;
-                $stas{$sta}{soh}{end_proc} = yearmonth( $endtime ) ;
-                $stas{$sta}{baler}{end_proc} = $stas{$sta}{wf}{end_proc} ;
-                $stas{$sta}{all}{end_proc}   = $stas{$sta}{wf}{end_proc} ;
-            } elsif ( exists $stas{$sta}{wf}{endtime} ) {
+            if ( ( $endtime != $endtime_null ) && ( $endtime > $stas{$sta}{endtime} )) {  # Station has reopened and reclosed!
+                $stas{$sta}{wf}{endtime}     = $endtime ;                   # end of station operation
+                $stas{$sta}{wf}{end_proc}    = yearday ( $endtime ) ;       # end of station operation
+                $stas{$sta}{soh}{end_proc}   = yearmonth( $endtime ) ;      # end of state-of-health operation   
+                $stas{$sta}{baler}{end_proc} = $stas{$sta}{wf}{end_proc} ;  # end of baler operation
+                $stas{$sta}{all}{end_proc}   = $stas{$sta}{wf}{end_proc} ;  # end of combined operation
+            } elsif ( exists $stas{$sta}{wf}{endtime} ) {    # Station has reopened!
                 delete $stas{$sta}{wf}{endtime} ;
                 delete $stas{$sta}{wf}{end_proc} ;
                 delete $stas{$sta}{soh}{end_proc} ;
                 delete $stas{$sta}{baler}{end_proc} ;
                 delete $stas{$sta}{all}{end_proc} ;
             }
-        } elsif ( $endtime != $endtime_null ) {
-            $stas{$sta}{wf}{endtime}     = $endtime ;
-            $stas{$sta}{wf}{end_proc}    = yearday ( $endtime ) ;
-            $stas{$sta}{soh}{end_proc}   = yearmonth( $endtime )  ;
-            $stas{$sta}{baler}{end_proc} = $stas{$sta}{wf}{end_proc} ;
-            $stas{$sta}{all}{end_proc}   = $stas{$sta}{wf}{end_proc} ;
+        } elsif ( $endtime != $endtime_null ) {        # Station is closed
+            $stas{$sta}{wf}{endtime}     = $endtime ;                   # end of station operation 
+            $stas{$sta}{wf}{end_proc}    = yearday ( $endtime ) ;       # end of station operation 
+            $stas{$sta}{soh}{end_proc}   = yearmonth( $endtime ) ;      # end of state-of-health operation
+            $stas{$sta}{baler}{end_proc} = $stas{$sta}{wf}{end_proc} ;  # end of baler operation
+            $stas{$sta}{all}{end_proc}   = $stas{$sta}{wf}{end_proc} ;  # end of combined operation
         }
     }
      
@@ -354,9 +373,6 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
     elog_notify( "\n\n\n")  if $opt_V ;
     
     foreach $sta (sort keys %stas) {
-        $rt_db             = "$pf{rt_sta_dir}/$sta/$sta" ;
-        $baler_db          = "$pf{baler_active}/$sta/$sta" ;
-        elog_debug ( "$baler_db	$rt_db" ) if $opt_V ;
 #
 #  find if sta has some processing completed
 #
@@ -393,7 +409,36 @@ sub get_stas { # ( $problems, %stas ) = &get_stas( $db, $problems ) ;
             }
         }
     }
+
+    makedir ( $pf{tmp_dbmaster} ) ;
     
+    $cmd = "dbcp $db.schanloc $pf{tmp_dbmaster}/tmp_dbmaster" ;
+        
+    if ( ! &run_cmd( $cmd ) ) {
+        elog_complain ( "FAILED:	$cmd" ) ;
+        $subject = "Problems - $pgm $host	dbcp dbmaster" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
+        
+    $cmd = "dbcp $db.snetsta $pf{tmp_dbmaster}/tmp_dbmaster" ;
+        
+    if ( ! &run_cmd( $cmd ) ) {
+        elog_complain ( "FAILED:	$cmd" ) ;
+        $subject = "Problems - $pgm $host	dbcp dbmaster" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
+            
+    $cmd = "dbcp $db.deployment $pf{tmp_dbmaster}/tmp_dbmaster" ;
+        
+    if ( ! &run_cmd( $cmd ) ) {
+        elog_complain ( "FAILED:	$cmd" ) ;
+        $subject = "Problems - $pgm $host	dbcp dbmaster" ;
+        &sendmail($subject, $opt_m) if $opt_m ; 
+        elog_die("\n$subject") ;
+    }
+            
     elog_debug ( "$sta	- get_stas just before return" ) if $opt_V ;
         
     prettyprint( \%stas_out ) if $opt_V ;
@@ -419,23 +464,29 @@ sub last_proc_data {  # &last_proc_data ( $sta, \%stas ) ;
 #
 #  find last jdate processed
 #
-        $jdate                        = &db_jdate ( $baler_db ) ;
+        $jdate                        = &db_jdate ( $baler_db ) ;      # find last sta processed day
         $stas{$sta}{wf}{last_proc}    = $jdate if ( $jdate ) ;
 #
 #  find last month processed
 #
-        $yearmonth                    = &db_month ( $baler_db ) ;
+        $yearmonth                    = &db_month ( $baler_db ) ;      # find last soh processed month
         $stas{$sta}{soh}{last_proc}   = $yearmonth if ( $yearmonth ) ;
             
 #
 #  find last baler_perf processed
 #
-        $jdate                        = &db_perf ( $baler_perf_db ) ;
-        $stas{$sta}{baler}{last_proc} = $jdate if ( $jdate ) ;
+        if ( -f $baler_perf_db  && -f "$baler_perf_db.wfdisc" ) {
+            $jdate                        = &db_jdate ( $baler_perf_db ) ; # find last sta_baler processed day
+            $stas{$sta}{baler}{last_proc} = $jdate if ( $jdate ) ;
+        } else {
+            $jdate                        = &db_perf ( $baler_perf_db ) ; # find last sta_baler processed day
+            $stas{$sta}{baler}{last_proc} = $jdate if ( $jdate ) ;
+        
+        }
 #
 #  find last all_perf processed
 #
-        $jdate                        = &db_perf ( $baler_all_db ) ;
+        $jdate                        = &db_perf ( $baler_all_db ) ;   # find last sta_all perf
         $stas{$sta}{all}{last_proc}   = $jdate if ( $jdate ) ;
         
     }       
@@ -449,19 +500,19 @@ sub start_proc_data {  # &next_proc_data ( $sta, \%stas ) ;
     %stas = %$ref ;
 
     if ( exists $stas{$sta}{wf}{last_proc} ) {
-        $stas{$sta}{wf}{start_proc}    = next_jdate ( $stas{$sta}{wf}{last_proc} ) ;
+        $stas{$sta}{wf}{start_proc}    = next_jdate ( $stas{$sta}{wf}{last_proc} ) ;     # Start processing after end of sta db
     } 
 
     if ( exists $stas{$sta}{soh}{last_proc} ) {
-        $stas{$sta}{soh}{start_proc}    = next_month ( $stas{$sta}{soh}{last_proc} ) ;
+        $stas{$sta}{soh}{start_proc}    = next_month ( $stas{$sta}{soh}{last_proc} ) ;   # Start processing soh after end of soh
     }
 
     if ( exists $stas{$sta}{baler}{last_proc} ) {
-        $stas{$sta}{baler}{start_proc} = next_jdate ( $stas{$sta}{baler}{last_proc} ) ;
+        $stas{$sta}{baler}{start_proc} = next_jdate ( $stas{$sta}{baler}{last_proc} ) ;  # Start processing sta_baler after end of sta_baler 
     }
 
     if ( exists $stas{$sta}{all}{last_proc} ) {
-        $stas{$sta}{all}{start_proc}   = next_jdate ( $stas{$sta}{all}{last_proc} ) ;
+        $stas{$sta}{all}{start_proc}   = next_jdate ( $stas{$sta}{all}{last_proc} ) ;    # Start processing sta_all after end of sta_all
     }
 
     return ;
@@ -469,30 +520,72 @@ sub start_proc_data {  # &next_proc_data ( $sta, \%stas ) ;
 
 sub end_proc_data {  # &next_proc_data ( $sta, \%stas ) ;
     my ( $sta, $ref ) = @_ ;
-    my ( $closed, $end_jdate ) ; 
+    my ( $closed, $end_jdate, $lapse_time, $rt_db, $rt_endtime, $wf_db, $wf_endtime ) ; 
+    my ( @rt_db, @wf_db ) ; 
     my ( %stas ) ;
     %stas = %$ref ;
     
-    $closed = 0 ;
+    $closed                   = 0 ;
+    $stas{$sta}{wf}{closed}   = $closed ;
     
-    $closed = 1 if ( defined $stas{$sta}{wf}{endtime} )  ;
+    $rt_db  = "$pf{rt_sta_dir}/$sta/$sta" ;
+    
+    if ( -f $rt_db  && -f "$rt_db.wfdisc" ) {
+        @rt_db                     = dbopen   ( $rt_db, "r" ) ;
+        @rt_db                     = dblookup ( @rt_db, 0, "wfdisc", 0, 0) ;
+        @rt_db                     = dbsort   ( @rt_db, qw ( -u -r endtime ) ) ;
+        $rt_db[3]                  = 0 ;
+        $rt_endtime                = dbgetv   ( @rt_db, qw ( endtime ) ) ;
+        $stas{$sta}{rt}{end_proc}  = yearday  ( $rt_endtime ) ;             # end of rt data
+        dbclose ( @rt_db ) ;
+    } else {
+        $rt_endtime    = 1.0 ;
+    }
+
+    $wf_db             = "$pf{baler_active}/$sta/$sta" ;
+    if ( -f $wf_db  && -f "$wf_db.wfdisc" ) {
+        @wf_db         = dbopen   ( $wf_db, "r" ) ;
+        @wf_db         = dblookup ( @wf_db, 0, "wfdisc", 0, 0) ;
+        @wf_db         = dbsort   ( @wf_db, qw ( -u -r endtime ) ) ;
+        $wf_db[3]      = 0 ;
+        $wf_endtime    = dbgetv ( @wf_db, qw ( endtime ) ) ;
+        dbclose ( @wf_db ) ;
+    } else {
+        $wf_endtime  = 0.0 ;
+    }
+
+    $lapse_time = now() - $stas{$sta}{wf}{endtime} ;
+    
+    if ( defined $stas{$sta}{wf}{endtime} ) {
+        elog_notify( sprintf ( "%s was closed %s", $sta, strydtime( $stas{$sta}{wf}{endtime} ) ) ) ; # if $opt_v ;
+        elog_notify( sprintf ( "	rt_endtime	%s", strydtime( $rt_endtime ) ) ) ; # if $opt_V ;
+        elog_notify( sprintf ( "	wf_endtime	%s	%s before station endtime", strydtime( $wf_endtime ), strtdelta ( $stas{$sta}{wf}{endtime} - $wf_endtime ) ) ) ; # if $opt_V ;
+        
+#  close the station if the waveform endtime is no earlier than one day before the station closes
+
+        if ( ( (  $stas{$sta}{wf}{endtime} - $wf_endtime ) / 86400 ) < 1 || ( $lapse_time / 86400 ) > $pf{days_after_removal} ) {
+            $closed = 1 ;
+            $stas{$sta}{wf}{closed}   = $closed ;
+            elog_notify( sprintf ( "	station closed %s ago, more than %d days", strtdelta( $lapse_time ), $pf{days_after_removal} ) ) if $opt_v ;
+        }
+    }
     
     if ( defined $stas{$sta}{wf}{last_proc} ) {
-        $end_jdate = &find_end_proc ( $sta, $stas{$sta}{wf}{last_proc}, $closed ) ;
-        $stas{$sta}{wf}{end_proc}    = $end_jdate ;
-        $stas{$sta}{baler}{end_proc} = $end_jdate ;
+        $end_jdate                   = &find_end_proc ( $sta, $stas{$sta}{wf}{last_proc}, $closed ) ;
         $stas{$sta}{all}{end_proc}   = $end_jdate ;
+        $stas{$sta}{baler}{end_proc} = $end_jdate ;
+        $stas{$sta}{wf}{end_proc}    = $end_jdate if ( ! defined $stas{$sta}{wf}{end_proc} );
 	} else {
-        $end_jdate = &find_end_proc ( $sta, $stas{$sta}{wf}{start_proc}, $closed ) ;
-        $stas{$sta}{wf}{end_proc}    = $end_jdate ;
-        $stas{$sta}{baler}{end_proc} = $end_jdate ;
+        $end_jdate                   = &find_end_proc ( $sta, $stas{$sta}{wf}{start_proc}, $closed ) ;
         $stas{$sta}{all}{end_proc}   = $end_jdate ;
+        $stas{$sta}{baler}{end_proc} = $end_jdate ;
+        $stas{$sta}{wf}{end_proc}    = $end_jdate if ( ! defined $stas{$sta}{wf}{end_proc} );
 	}
 	
     if ( defined $stas{$sta}{soh}{last_proc} ) {
-        $stas{$sta}{soh}{end_proc} = &find_end_month ( $sta, $stas{$sta}{soh}{last_proc}, $closed ) ;
+        $stas{$sta}{soh}{end_proc}   = &find_end_month ( $sta, $stas{$sta}{soh}{last_proc}, $closed ) ;
 	} else {
-        $stas{$sta}{soh}{end_proc} = &find_end_month ( $sta, $stas{$sta}{soh}{start_proc}, $closed ) ;
+        $stas{$sta}{soh}{end_proc}   = &find_end_month ( $sta, $stas{$sta}{soh}{start_proc}, $closed ) ;
 	}
 
     return ;
@@ -505,17 +598,15 @@ sub noop_stas {  # &noop_stas ( $sta, \%stas ) ;
     %stas = %$ref ;
         
     elog_debug ( "noop_stas	$sta " ) if $opt_V ;
-    
-    @keys = sort ( keys %{$stas{$sta}} ) ;
-            
+                
     if ( ( $stas{$sta}{wf}{last_proc}     == $stas{$sta}{wf}{end_proc}    )  &&
-         ( $stas{$sta}{soh}{last_proc}    == $stas{$sta}{soh}{end_proc}   )  &&
-         ( $stas{$sta}{baler}{last_proc}  == $stas{$sta}{baler}{end_proc} )  &&
-         ( $stas{$sta}{all}{last_proc}    == $stas{$sta}{all}{end_proc}   ) )  {
+         ( $stas{$sta}{soh}{last_proc}    == $stas{$sta}{soh}{end_proc}   )  )  {
         delete $stas{$sta}{all} ;
         delete $stas{$sta}{baler} ;
         delete $stas{$sta}{soh} ;
         delete $stas{$sta}{wf} ;
+        delete $stas{$sta}{rt} ;
+        delete $stas{$sta}{closed} ;
 	}
 
     @keys = sort ( keys %{$stas{$sta}} ) ;
@@ -534,6 +625,7 @@ sub db_jdate {  # $last_jdate = &db_jdate ( $db ) ;
     
     @db    = dbopen   ( $db, "r" ) ;
     @db    = dblookup ( @db, 0, "wfdisc", 0, 0) ;
+    @db    = dbsubset ( @db, "dir !~ /.*month_files.*/ " ) ;
     @db    = dbsort   ( @db, qw ( -u -r jdate dir ) ) ;
     $db[3] = 0 ;
     
@@ -592,7 +684,8 @@ sub db_perf {  # $jdate = &db_perf ( $db ) ;
     @db    = dblookup ( @db, 0, "netperf", 0, 0) ;
 
     if ( dbquery( @db, 'dbRECORD_COUNT' ) == 0 ) {
-        elog_complain( "$db has no month_files processed" ) ; 
+        elog_complain( "$db has no data return stats yet" ) ;
+        dbclose ( @db ) ; 
         return ( 0 ) ; 
     }
     
@@ -739,41 +832,109 @@ sub find_end_month { # $end_month = &find_end_month( $sta, $last_month, $closed 
     return 0 ;
 }
 
-sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bperf_start, $bperf_end, $aperf_start, $aperf_end, $parent ) ;
-    my ( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bperf_start, $bperf_end, $aperf_start, $aperf_end, $parent ) = @_ ;
-    my ( $all_perf, $baler_perf, $cmd, $dir, $etime, $jdate, $prob, $prob_check, $baler_active, $stime, $string, $subject, $yearmonth ) ;
+sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bperf_start, $bperf_end, $aperf_start, $aperf_end, $rt_end, $closed, $parent ) ;
+    my ( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bperf_start, $bperf_end, $aperf_start, $aperf_end, $rt_end, $closed, $parent ) = @_ ;
+    my ( $all_perf, $baler_active, $baler_db, $baler_perf, $cmd, $dir, $endtime, $etime ) ;
+    my ( $exist_baler_db, $jdate, $nminutes, $prob, $prob_check, $stime, $string ) ;
+    my ( $subject, $yearmonth ) ;
     my ( @db ) ; 
 
-    $stime = strydtime( now() );
-    $string = "starting processing station $sta    $wf_start    $wf_end    $stime" ,
-    fork_notify ( $parent, $string );
+    $stime = strydtime( now() ) ;
+    $string = "starting processing station $sta    $wf_start    $wf_end    $stime" ;
+    fork_notify ( $parent, $string ) ;
     
-    open( PROB,"> /tmp/prob_$sta\_$$");
+    if ( $wf_start > $wf_end || $bperf_start > $bperf_end ) {
+        $string = "no new baler data to process                                                         " ;
+        fork_notify ( $parent, $string ) ;
+        $string = "Ignore the following message about not completing.  Some buffer not flushing in time." ;
+        fork_complain ( $parent, $string ) ;
+        return (0);
+    }
+    open( PROB, "> /tmp/prob_$sta\_$$" )  ;
     
     print PROB "$string \n\n" ;
 
-    $prob_check = $prob = 0;
+    $prob_check = $prob = 0 ;
         
     $baler_active = "$pf{baler_active}/$sta" ;
+    
+    $baler_db = "$sta\_baler" ;
+    
+    if ( -f $baler_db ) {
+        $exist_baler_db = 1 ; 
+    } else {
+        $exist_baler_db = 0 ; 
+    } 
     
     chdir( $baler_active ) ;
     fork_notify ( $parent, "Changed directory to $baler_active " ) if $opt_v ;
     fork_notify ( $parent, "starting miniseed2db processing " ) if $opt_v ;
 
-    &cssdescriptor ("$sta\_baler",$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
+    &cssdescriptor ( $baler_db, $pf{dbpath}, $pf{dblocks}, $pf{dbidserver} ) ;
     
-    open( TR, ">trdefaults.pf" );
-    print TR "miniseed_segment_seconds 0\n";
-    close( TR );
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.deployment", "$baler_db.deployment" ) ;
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.schanloc", "$baler_db.schanloc" ) ;
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.snetsta", "$baler_db.snetsta" ) ;
+    
+#
+#  check to see if station is still operating
+#
+    
+    @db = dbopen ( $baler_db, "r" ) ;
+    @db = dblookup ( @db, 0, "deployment", 0, 0) ;
+    if ( dbquery( @db, "dbTABLE_PRESENT" ) ) {
+        @db = dbsubset ( @db, "snet =~ /$pf{net}/ && sta =~ /$sta/ && endtime != NULL" ) ;
+        if ( dbquery ( @db, "dbRECORD_COUNT" ) ) {
+            @db = dbsort( @db, "endtime", "-r" ) ;
+            $db[3] = 0 ;
+            $endtime = dbgetv ( @db, "endtime" ) ;
+            fork_notify ( $parent, sprintf( "proc_sta	- %s	%s	 closed %s", $pf{net}, $sta, strydtime( $endtime ) ) ) ;
+        } else {
+            fork_notify ( $parent, "station still operating " ) if $opt_v ;
+        } 
+    } else {
+        fork_complain ( $parent, "$baler_db has no deployment table!" )  ;
+        $prob++ ;
+        return ;
+    }
+    dbclose ( @db ) ; 
+    
+    unlink ( $baler_db ) if ( ! $exist_baler_db && $opt_n ) ;
 
-    $jdate = $wf_start ;
+#
+#  setup for miniseed2db
+#
+
+    $nminutes = 0 ;
+    while ( &dblock ( $baler_db, ( 6 * 3600 ) ) ) {
+        if ( $nminutes > 60 ) {
+            $string  = sprintf( "		$baler_db locked for more that 1 hour, cannot process now "  )  ;
+            fork_complain ( $parent,  $string  ) ;
+            $prob++ ;
+            return ;
+        }
+        $string = "$baler_db is locked!  proc_sta now sleeping" ;
+        fork_notify ( $parent, $string ) ;
+        sleep 60 ; 
+        $nminutes++ ;
+    }
+        
+    open( TR, ">trdefaults.pf" ) ;
+    print TR "miniseed_segment_seconds 0\n" ;
+    close( TR ) ;
     
-    while ( $jdate <= $wf_end ) {
+#
+#  miniseed2db new baler wf directories
+#
+
+    $jdate = $bperf_start ;
+    
+    while ( $jdate <= $bperf_end ) {
         $dir = &jdate_to_dir ( $sta, $jdate ) ;
 
         if ( &exist_data ( $dir, $sta, $parent ) ) {
 
-            $cmd  = "miniseed2db $dir/\*$sta\* $sta\_baler ";
+            $cmd  = "miniseed2db $dir/\*$sta\* $baler_db ";
 
             if ( ! &run_cmd( $cmd ) ) {
                 $prob++ ;
@@ -784,16 +945,32 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
         }
         $jdate = &next_jdate ( $jdate ) ;
     }
-        
+    
+#
+#  check for invalid schanlocs
+#
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.deployment", "$sta.deployment" ) ;
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.schanloc", "$sta.schanloc" ) ;
+    link ( "$pf{tmp_dbmaster}/tmp_dbmaster.snetsta", "$sta.snetsta" ) ;
+
     $prob = &schanloc( $sta, $parent, $prob ) unless $opt_n ;
 
     unless ( $prob ) {
+    
+#
+#  rt_daily_return on new baler wf directories, looking for gaps
+#
+
         fork_notify ( $parent, "starting baler rt_daily_return processing" ) if $opt_v ;
         $stime = $bperf_start ;
-        $etime = yearday ( epoch( $bperf_end ) + 86400 )  ;
-        $cmd  = "rt_daily_return ";
+        if ( ! $closed ) {
+            $etime = yearday ( epoch( $bperf_end ) + 86400 )  ;
+        } else {
+            $etime = yearday ( epoch( $wf_end ) + 86400 )  ;
+        }
+        $cmd  = "rt_daily_return  ";
         $cmd .= "-t \"$stime\" -e \"$etime\" ";
-        $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $sta\_baler $sta\_baler";
+        $cmd .= "-s \"sta =~/$sta/ && chan=~/^[BL][HD].*/\" $baler_db $baler_db";
         
         fork_notify ( $parent, $cmd ) if $opt_v ;
 
@@ -801,15 +978,23 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
             $prob++ ;
             &print_prob ( $prob, "FAILED: $cmd", $parent, *PROB ) ;
         }
+    
+#
+#  fill in gaps
+#
 
         fork_notify ( $parent, "starting fill_gaps processing" ) if $opt_v ;
-        $prob = fill_gaps ( $sta, $wf_start, $wf_end, $parent, $prob ) ;
+        $prob = fill_gaps ( $sta, $stime, $etime, $parent, $prob ) ;
+    
+#
+#  build wfdisc of combined baler and rtdata
+#
         
         &cssdescriptor ($sta,$pf{dbpath},$pf{dblocks},$pf{dbidserver}) unless $opt_n;
     
-        $jdate = $wf_start ;
+        $jdate = $stime ;
     
-        while ( $jdate <= $wf_end ) {
+        while ( $jdate <= $etime ) {
             $dir = &jdate_to_dir ( $sta, $jdate ) ;
 
             if ( &exist_data ( $dir, $sta, $parent ) ) {
@@ -826,6 +1011,10 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
             $jdate = &next_jdate ( $jdate ) ;
         }        
     
+#
+#  build wfdisc of soh data
+#
+        
         $yearmonth = $soh_start ;
     
         while ( $yearmonth <= $soh_end ) {
@@ -844,13 +1033,21 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
             }
             $yearmonth = &next_month ( $yearmonth ) ;
         }
-
+    
+#
+#  rt_daily_return after combining baler and rt data
+#
+        
         fork_notify ( $parent, "starting all rt_daily_return processing" ) if $opt_v ;
-        $stime = $aperf_start ;
-        $etime = yearday ( epoch( $aperf_end ) + 86400 )  ;
+#         $stime = $aperf_start ;
+#         if ( ! $closed ) {
+#             $etime = yearday ( epoch( $bperf_end ) + 86400 )  ;
+#         } else {
+#             $etime = yearday ( epoch( $wf_end ) + 86400 )  ;
+#         }
         $cmd  = "rt_daily_return ";
         $cmd .= "-t \"$stime\" -e \"$etime\" ";
-        $cmd .= "-s \"sta =~/$sta/ && chan=~/[BL]H./\" $sta $sta\_all";
+        $cmd .= "-s \"sta =~/$sta/ && chan=~/^[BL][HD].*/\" $sta $sta\_all";
         
         fork_notify ( $parent, $cmd ) if $opt_v ;
 
@@ -868,7 +1065,7 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
     }
 
     
-    @db = dbopen ( "$sta\_baler", "r" ) ;
+    @db = dbopen ( $baler_db, "r" ) ;
     @db = dblookup ( @db, 0, "netperf", 0, 0) ;
     if ( dbquery( @db, "dbTABLE_PRESENT" ) ) {
         $baler_perf = dbex_eval( @db, "sum(perf)/count()") ;
@@ -906,12 +1103,22 @@ sub proc_sta { # &proc_sta( $sta, $wf_start, $wf_end, $soh_start, $soh_end, $bpe
     $prob = &fix_wfdisc_calib( $sta, $parent, $prob ) ;
 
     $stime = strydtime( now() );
-    print PROB "$stime      end processing \n\n" ;
+    print PROB "end processing                                            $stime\n\n" ;
     close(PROB);
+    
+    &dbunlock ( $baler_db ) ;
                  
 #
 #  clean up
 #
+
+    unlink ( "$baler_db.deployment" ) ;
+    unlink ( "$baler_db.snetsta" ) ;
+    unlink ( "$baler_db.schanloc" ) ;
+        
+    unlink ( "$sta.deployment" ) ;
+    unlink ( "$sta.snetsta" ) ;
+    unlink ( "$sta.schanloc" ) ;
         
     if  ( $prob ) {
         $subject = "TA $sta     $prob problems -  $pgm on $host";
@@ -1018,11 +1225,14 @@ sub schanloc {  # $problems = &schanloc( $db, $parent, $problems ) ;
     fork_notify( $parent, sprintf("%d rows in wfdisc after wfclean", dbquery( @dbwfdisc, "dbRECORD_COUNT" ) ) ) ;
     @dbschanloc   = dblookup( @db, "", "schanloc", "", "" ) ;
     @dbwfdisc     = dbnojoin( @dbwfdisc, @dbschanloc ) ;
-    fork_notify( $parent, sprintf("%d rows in wfdisc after nojoin", dbquery( @dbwfdisc, "dbRECORD_COUNT" ) ) ) ;
     
     $nojoin = dbquery ( @dbwfdisc, "dbRECORD_COUNT" ) ;
+
+    fork_notify( $parent, sprintf("%d rows in wfdisc after nojoin", $nojoin ) ) ;
+    
     if ( $nojoin ) {
-        @dbwfdisc = dbsort( @dbwfdisc, "-u", "chan" ) ;
+        @dbwfdisc = dbsort(   @dbwfdisc, "-u", "chan" ) ;
+        $nojoin   = dbquery ( @dbwfdisc, "dbRECORD_COUNT" ) ;
         @missing = () ;
         for ( $dbwfdisc[3] = 0; $dbwfdisc[3] < $nojoin; $dbwfdisc[3]++ ) {
             push @missing, dbgetv( @dbwfdisc, "chan" ) ;
@@ -1101,3 +1311,84 @@ sub fill_gaps {  # $prob = fill_gaps ( $sta, $proc_start, $proc_end, $parent, $p
 
 }
 
+sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
+    my ( $db, $lock_duration ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $pid ) ;
+    my ( %pf ) ;
+    
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf	$Pf	dbloc_pf_file	$dbloc_pf_file	pid $pid" ) if $opt_V ;
+    
+    if ( ! -f $dbloc_pf_file ) {
+        elog_debug ( sprintf ("$db new lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+        return ( 0 ) ; 
+    } else { 
+        %pf = getparam( $Pf ) ;
+        if ( $pf{unlock_time} > &now() && $pf{pid} != $pid ) {
+            elog_complain ( sprintf ("$db is locked until %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            prettyprint ( \%pf ) ;
+            return ( 1 ) ;
+        } elsif  ( $pf{unlock_time} > &now() && $pf{pid} == $pid ) {
+            elog_debug ( sprintf ("$db lock is extended to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        } else {
+            elog_debug ( sprintf ("$db lock set to %s", strydtime ( now() + $lock_duration ) ) ) if $opt_V ;
+            &write_dblock ( $dbloc_pf_file, $0, $host, $pid, &now(), &now() + $lock_duration ) ;
+            %pf = () ;
+            return ( 0 ) ;
+        }
+    }    
+}
+
+sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
+    my ( $db ) = @_ ;
+    my ( $Pf, $dbloc_pf_file, $host, $host1, $lock_time1, $pid, $pid1, $program1, $unlock_time1 ) ;
+    my ( %pf ) ;
+    
+    chop ($host = `uname -n` ) ;
+    $pid = $$ ;
+
+    $Pf            = $db . "_LOCK" ;
+    $dbloc_pf_file = $db . "_LOCK.pf" ;
+    elog_debug ( "Pf	$Pf	dbloc_pf_file	$dbloc_pf_file" ) if $opt_V ;
+    
+    if ( ! -f $dbloc_pf_file ) {
+        elog_complain ( "dbunlock:	$dbloc_pf_file does not exist!" ) ;
+        return ( 1 ) ;
+    } else { 
+        pfupdate ( $Pf ) ; 
+        %pf = getparam( $Pf ) ;
+        if ( $0 != $pf{program} || $pid != $pf{pid} || $host != $pf{host}) {
+            elog_complain ( "unable to unlock $db" ) ;
+            elog_complain ( "program	$0	$pf{program}" ) ;
+            elog_complain ( "pid	$pid	$pf{pid}" ) ;
+            elog_complain ( "host	$host	$pf{host}" ) ;            
+            return ( 1 ) ;
+        }
+        if ( $pf{unlock_time} < &now() ) {
+            elog_complain ( sprintf ("$db was already unlocked at %s", strydtime ( $pf{unlock_time} ) ) ) ;
+            return ( 1 ) ;
+        } 
+        &write_dblock ( $dbloc_pf_file, $0, $host, $pid, $pf{lock_time}, &now() ) ;
+        return ( 0 ) ;
+    }    
+}
+
+sub write_dblock { # &write_dblock ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) ;
+    my ( $dbloc_pf_file, $program, $host, $pid, $lock_time, $unlock_time ) = @_ ;
+    open( LOCK,   ">$dbloc_pf_file" ) ;
+    print LOCK    "program      $program\n" ;
+    print LOCK    "host         $host\n" ;
+    print LOCK    "pid          $pid\n" ;
+    printf ( LOCK "lock_time    %d\n", $lock_time ) ;
+    printf ( LOCK "unlock_time  %d\n", $unlock_time ) ;
+    close LOCK ;
+    return ; 
+}

@@ -1,0 +1,44 @@
+.TH DUP_DBMASTER 1 "$Date$"
+.SH NAME
+dup_dbmaster \- Makes copy of dbmaster for event dbs
+.SH SYNOPSIS
+.nf
+\fBdup_dbmaster \fP [-v] [-V] [-n] \fIdbmaster_in\fP \fIdbmaster_output_dir\fP \fIfix_chanid_dbs\fP
+.fi
+.SH DESCRIPTION
+\fBdup_dbmaster\fP updates \fIdbmaster_output_dir\fP and runs \fBdbfixchanids\fP on dbs 
+defined by the regex \fIfix_chanid_dbs\fP.  
+
+Example command line:
+
+.nf
+dup_dbmaster -v /anf/TA/dbs/dbmaster/usarray /anf/TA/dbs/event_dbs/dbmaster/usarray "/anf/TA/dbs/event_dbs/*/u*[0-9]"
+.fi
+
+.LP
+
+.SH OPTIONS
+.IP -n
+no commands run. use with -v option to see commands which would be executed.
+.IP -v
+verbose
+.IP -V
+Extremely verbose.  Used for debugging purposes only.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+time_slice_db(1)
+monthly_wfs(1)
+dbfixchanids(1)
+.fi
+.SH "BUGS AND CAVEATS"
+This program is designed to be run immediately after \fBtime_slice_db\fP and \fBmonthly_wfs\fP.
+.LP
+.SH AUTHOR
+Frank Vernon
+.br

@@ -1,4 +1,4 @@
-# pf file for ANFmrc-testing
+# pf file for dlautomrc 
 
 dltype		q330		# default datalogger type
 				# for a mixed system run with either -s option, or -x exclude
@@ -19,7 +19,9 @@ sensor_mv &Arr{			# with -d, override default out_of_range value with sensor spe
 	sts2_g2	50	
 	sts2_g3	50	
         sts2_5  50
+        sts4_b  50
 	cmg3t	25	
+        trillium_120    20
         trillium_240_1  20
         trillium_240_2  20
 }

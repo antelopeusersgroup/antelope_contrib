@@ -1,0 +1,53 @@
+This directory holds a synthetic test case for dbcorrelate.  It is a little
+more thorough than in directory "testcase1" because it uses real seismograms.
+The cross-correlation peak values and the relative times between peaks are 
+measured in SAC as the basis of comparison.
+
+Note that file correl_output0.dat has write permission removed so that
+it can be a basis of comparison when further code changes are made in
+dbcorrelate and tested.
+
+This test is based on local seismic signals recorded at station CMN, which is
+located at
+
+lat =   37.6275
+lon = -121.7083
+
+SAC data are in subdirectory sac.  The "cmn" seismograms were used.  The start 
+time of the files were set to
+
+orid = 1) cmn.[zne].o       11:09:56.363
+orid = 2) cmn.[zne].o-1hr   10:09:56.363
+orid = 3) cmn.[zne].o-2hr+n 09:09:56.363
+
+Sample interval set to 100.00, npts set to 3933.
+
+All signals have the same original amplitude, but about 50% random noise was 
+added to the third signal, thus garbling it.
+
+Using SAC, xcor peak CCC = 1.00 for Z-component signals 1 and 2.
+Using SAC, xcor peak CCC = 0.77 for Z-component signals 1 and 3 (due to noise).
+
+Used sac2db to create a database.  Put in 3 origin rows, 3 assoc rows, and 
+3 arrivals.
+
+Using S-P time of ~ 2.5 sec, the distance to epicenter ~ 20 km.  So origin
+time should be ~ 5 sec before P (4 km/s).
+
+Run dbcorrelate with
+
+% ../bin/dbcorrelate db . 0 1.0 0.3 0.0 event_pairs.dat correl_output0.dat
+
+Using perfect picks of P, the result was:
+
+% cat correl_output0.dat
+
+sta ph    orid1  jdate1   orid2  jdate2     CCC       CCCP            tau         otdiff         atdiff
+CMN  P        1 1987173       1 1987173   1.000  1.000e+00          0.000          0.000          0.000
+CMN  P        1 1987173       2 1987173   1.000  1.001e+00      -3600.000      -3600.000      -3599.860
+CMN  P        1 1987173       3 1987173   0.687  7.915e-01      -7200.001      -7200.000      -7199.860
+
+Note that the relative origin times are resolved to within 0.001.  The CCC
+peak value is correct for the second event and off by only 0.08 for the third,
+compared to SAC result.
+
