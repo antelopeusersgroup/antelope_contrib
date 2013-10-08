@@ -1496,9 +1496,6 @@ public:
 	*/
 	friend ostream& operator << (ostream&,GCLvectorfield3d&);
 };
-// Disabled for now:
-// verbosity level.  0 terse, 1 verbose, 2 very verbose
-// extern int GCLverbose;  
 /*! 
 // Error object throw by some GCLgrid functions.  
 //
