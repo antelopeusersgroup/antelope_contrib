@@ -344,7 +344,7 @@ void  ComputePeakRatioMetric(TimeSeriesEnsemble& d,
         work.clear();
         double ratio;
         vector<double>::iterator sptr;
-        if(dptr->live && ((xcptr->ns)>3))
+        if(dptr->live && xcptr->live && ((xcptr->ns)>3))
         {
             work.clear();
             /* Hunt through the data vector and push peak positive
