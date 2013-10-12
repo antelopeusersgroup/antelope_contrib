@@ -3,7 +3,7 @@
 exportgrid - ascii output of GCLgrid objects
 .SH SYNOPSIS
 .nf
-exportgrid db gridname [-f fieldname -3d -vector]
+exportgrid db|fname gridname [-fin -f fieldname -3d -vector n -o outfile -dir outdir]
 .fi
 .SH DESCRIPTION
 .LP
@@ -11,16 +11,23 @@ This is a relatively crude program to output the contents of various
 GCLgrid related objects as simple ascii data.  This implementation supports
 three data type:  GCLgrid, GCLgrid3d, GCLscalarfield, GCLscalarfield3d,
 GCLvectorfield, and GCLvectorfield3d.  In all cases the object's contents
-are dumped stdout.  The type of object to dump is implied from combinations
+are dumped to stdout.  The type of object to dump is implied from combinations
 of the arguments passed to the program.  See the following section for a 
 description of how this works.
 
-The default requires two arguments.  \fIdb\fR is assumed to be an
+The default requires two arguments.  
+The first is one of two things depending on whether or not the flag -fin is used.
+If -fin does not appear (the default) 
+\fIdb\fR is assumed to be an
 Antelope database name containing at least a gclgdisk table and 
-gclfield table if a field object is to being referenced.  The
-\fIgridname\fR is required.  It defines a unique name assigned to 
-a particular grid referenced in the gclgdisk table.
+gclfield table if a field object is to being referenced.  If the -fin 
+flag appears argument 1 is assumed to a base file name where the data are stored.
+Argument 2, \fIgridname\fR, is also required.  It defines a unique name assigned to 
+a particular grid referenced in the gclgdisk table.  Although it is required it is 
+ignored for file input mode.  
 .SH OPTIONS
+.IP -fin
+File mode switch (see above).
 .IP -f
 Dump the field with the unique name \fIfieldname\fR defined in the gclfield
 table.  The field and grid names must be consistent or the program will
@@ -36,6 +43,12 @@ only grid geometry is to be written to output.  The -3d option is a
 switch between the class of 2d and 3d GCLgrid/field objects. Finally,
 the -vector argument is required if a field being referenced is a 
 vector field. 
+.IP -o
+If this flag appears data will be sent to outfile instead of stdout in a format
+that can read in the -fin mode.   i.e. this is the mechanism to export data from
+a database to a file format that can be read without using a database.   Note it 
+is a fatal error to use -fin with -o since the input and output would then be
+completely identical.
 .SH FILES
 .LP
 At this time the output format is very different for field objects
@@ -61,15 +74,19 @@ val(1) to val(nv) are the nv data values associated with this
 grid point.  For scalar fields nv is 1 so there is only one val.  
 .SH "SEE ALSO"
 .nf
-http://geology.indiana.edu/pavlis/software/gclgrid/ccdoc.GCLgrid.GCLgrid.pkg.html
+http://www.indiana.edu/~pavlab/software/gclgrid/html/index.html
 .fi
 .SH "BUGS AND CAVEATS"
-.LP
+.IP (1)
 The program does not automatically make a sanity check for scalar versus
 vector fields.  The output will be scrambled if a vector field is referenced
 without using the -vector flag.  I am not sure what will happen if a 
 scalar field is referenced with the -vector flag set.  
 Remember that famous quote:  "Do you feel lucky?  Do ya, punk?".
+.IP (2)
+The file input and output mode were kind of shoehorned into an older code that
+was pure database input.   This created some confusing oddities in the behaviour from
+dependencies on arguments.
 .SH AUTHOR
 .nf
 Gary L. Pavlis
