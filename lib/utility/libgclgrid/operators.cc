@@ -335,6 +335,7 @@ GCLvectorfield3d& GCLvectorfield3d::operator=(const GCLvectorfield3d& g)
 		x1=create_3dgrid_contiguous(n1,n2,n3);
 		x2=create_3dgrid_contiguous(n1,n2,n3);
 		x3=create_3dgrid_contiguous(n1,n2,n3);
+		val=create_4dgrid_contiguous(n1,n2,n3,nv);
 		for(i=0;i<3;++i)
 		{
 			translation_vector[i]=g.translation_vector[i];

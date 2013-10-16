@@ -1,6 +1,58 @@
+#include <typeinfo>
 #include <string.h>
 #include <math.h>
 #include "gclgrid.h"
+#include "seispp.h"  // needed here for byte swap procedures
+/* This series of internal procedures contain duplicate code 
+   for file-based constructors.  They follow the class hierarchy.
+   Very convenient to put these in one place because the namespace
+   of attribute tags is hard coded into this code.
+   */
+template <class T>
+    void pfload_common_GCL_attributes(T& g,Metadata& par)
+{
+    try {
+	/* This template loads common attributes from BasicGCLgrid base class*/
+	g.name=par.get_string("name");
+	g.lat0=par.get_double("origin_latitude");
+	g.lon0=par.get_double("origin_longitude");
+	// Immediately convert these to radians
+	g.lat0=rad(g.lat0);
+	g.lon0=rad(g.lon0);
+	g.r0=par.get_double("origin_radius");
+        g.azimuth_y=par.get_double("azimuth_y");
+        g.azimuth_y=rad(g.azimuth_y);
+        g.dx1_nom=par.get_double("dx1_nom");
+        g.dx2_nom=par.get_double("dx2_nom");
+	g.n1=par.get_int("n1");
+	g.n2=par.get_int("n2");
+        /* There perhaps should be a way to force these to be 
+           computed, but for now we assume they were set by 
+           a writer and we don't need to compute them. */
+        g.x1low=par.get_double("x1low");
+        g.x1high=par.get_double("x1high");
+        g.x2low=par.get_double("x2low");
+        g.x2high=par.get_double("x2high");
+        g.x3low=par.get_double("x3low");
+        g.x3high=par.get_double("x3high");
+        /* This perhaps should be set by caller, but since all
+           callers will need this do it here.*/
+        g.set_transformation_matrix();
+    } catch(MetadataGetError& mderr)
+    {
+        throw GCLgridError(mderr.message);
+    }
+    catch(...) {throw;};
+}
+template <class T>
+    void pfload_3dgrid_attributes(T& g, Metadata& par)
+{
+    try {
+        g.dx3_nom=par.get_double("dx3_nom");
+        g.n3=par.get_int("n3");
+        g.k0=par.get_int("k0");
+    } catch(...) {throw;};
+}
 /* These are create and free routines for 2d, 3d, and 4d arrays in plain C.
 They are used below for C++ constructors and destructors.  The MOST 
 IMPORTANT thing to note about the constructions used here is that I have
@@ -204,6 +256,113 @@ GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size) : BasicGCLgrid()
 	x2=create_3dgrid_contiguous(n1size,n2size,n3size);
 	x3=create_3dgrid_contiguous(n1size,n2size,n3size);
 }
+/* This routine is used in all file-based constructors using a 
+   pf to store attributes. */
+Metadata pfload_GCLmetadata(string fname)
+{
+    Pf *pf;
+    if(pfread(const_cast<char *>(fname.c_str()),&pf)) 
+        throw GCLgridError(string("pfread failed on file=")
+                + fname + ".pf");
+    /* Intentionally do not put this in a try block.  Currently
+       the constructor called here will never throw an exception*/
+    Metadata md(pf);
+    /* Safe to do this because Metadata makes a copy */
+    pffree(pf);
+    return(md);
+}
+GCLgrid::GCLgrid(string fname, string format)
+{
+    const string base_error("GCLgrid file-based constructor:  ");
+    if(format==default_output_format)
+    {
+        try{
+            Metadata params=pfload_GCLmetadata(fname);
+            /* This would need to be a private method if
+               attributes were not public.  Warning if interface 
+               is changed.*/
+            pfload_common_GCL_attributes<GCLgrid>(*this,params);
+            /* Intentionally do not check for object_type to allow
+             field constructors to use this */
+            //string otype=params.get_string("object_type");
+            /* This and other similar routines need to get info about
+               the byte order of the data.  Done with this attribute.*/
+            string datatype=params.get_string("datatype");
+            if( !((datatype=="u8") || (datatype=="t8") ) ) 
+                throw GCLgridError(base_error
+                        + "Do not know how to handle datatype="
+                        + datatype
+                        +"\nMust be u8 or t8");
+            bool little_endian=IntelByteOrder();
+            bool need_to_swap_bytes;
+            if( (datatype=="t8") && little_endian)
+                need_to_swap_bytes=true;
+            else if( (datatype=="u8") && !little_endian)
+                need_to_swap_bytes=true;
+            else
+                need_to_swap_bytes=false;
+            string dfile=fname+"."+dfileext;
+            FILE *fp = fopen(dfile.c_str(),"r");
+            if(fp == NULL)
+                throw GCLgridError(base_error
+                        + "fopen failed on file "
+                        + dfile);
+            /* These are part of the object*/
+            x1 = create_2dgrid_contiguous(n1,n2);
+            x2 = create_2dgrid_contiguous(n1,n2);
+            x3 = create_2dgrid_contiguous(n1,n2);
+            /* Database stores data in geographic coordinates.
+               File stores Cartesian form.  A bit inconsistent,
+               but a design choice.  Storing geo coordinates
+               would be a future format choice.*/
+            int gridsize = n1*n2;
+            if(fread(x1[0],sizeof(double),gridsize,fp) != gridsize)
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fread failed on file reading x1 coordinate  array"
+                        + dfile);
+            }
+            if(fread(x2[0],sizeof(double),gridsize,fp) != gridsize)
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fread failed on file reading x2 coordinate  array"
+                        + dfile);
+            }
+            if(fread(x3[0],sizeof(double),gridsize,fp) != gridsize)
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fread failed on file reading x3 coordinate array"
+                        + dfile);
+            }
+            fclose(fp);
+            if(need_to_swap_bytes)
+            {
+                swapdvec(x1[0],gridsize);
+                swapdvec(x2[0],gridsize);
+                swapdvec(x3[0],gridsize);
+            }
+            /* database version calls set_transformation_matrix() 
+               method here, but not needed because we called
+               it earlier */
+        } catch(SeisppError& serr)
+        {
+            /* Translate message to common error for this package.*/
+            throw GCLgridError(base_error
+                    + "Problems loading attributes from pf\nDetail:  "
+                    + serr.what());
+        }
+    }
+    else
+        throw GCLgridError(base_error
+                + "unknown input format with tag="
+                + format
+                + "\nCurrently only accept format="
+                +default_output_format);
+}
+
 // copy constructors here use inheritance of the BasicGCLgrid
 // to reduce redundant code.
 GCLgrid::GCLgrid(const GCLgrid& g) 
@@ -226,6 +385,93 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
 
+}
+GCLgrid3d::GCLgrid3d(string fname, string format)
+{
+    /* This code is painfully similar to GCLgrid constructor 
+       with same arguments */
+    const string base_error("GCLgrid3d file-based constructor:  ");
+    if(format==default_output_format)
+    {
+        try{
+            Metadata params=pfload_GCLmetadata(fname);
+            /* This would need to be a private method if
+               attributes were not public.  Warning if interface 
+               is changed.*/
+            pfload_common_GCL_attributes<GCLgrid3d>(*this,params);
+            pfload_3dgrid_attributes<GCLgrid3d>(*this,params);
+            /* This and other similar routines need to get info about
+               the byte order of the data.  Done with this attribute.*/
+            string datatype=params.get_string("datatype");
+            if( !((datatype=="u8") || (datatype=="t8") ) ) 
+                throw GCLgridError(base_error
+                        + "Do not know how to handle datatype="
+                        + datatype
+                        +"\nMust be u8 or t8");
+            bool little_endian=IntelByteOrder();
+            bool need_to_swap_bytes;
+            if( (datatype=="t8") && little_endian)
+                need_to_swap_bytes=true;
+            else if( (datatype=="u8") && !little_endian)
+                need_to_swap_bytes=true;
+            else
+                need_to_swap_bytes=false;
+            string dfile=fname+"."+dfileext;
+            FILE *fp = fopen(dfile.c_str(),"r");
+            if(fp == NULL)
+                throw GCLgridError(base_error
+                        + "fopen failed on file "
+                        + dfile);
+            /* These are part of the object.  The file format
+             stored the data in the Cartesian system for good
+             or bad.  Note this is different from the db data
+             where the storage is geographic`*/
+	    x1=create_3dgrid_contiguous(n1,n2,n3);
+	    x2=create_3dgrid_contiguous(n1,n2,n3);
+	    x3=create_3dgrid_contiguous(n1,n2,n3);
+            int gridsize = n1*n2*n3;
+            if(fread(x1[0][0],sizeof(double),gridsize,fp) != gridsize)
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fread failed on file reading x1 coordinate array"
+                        + dfile);
+            }
+            if(fread(x2[0][0],sizeof(double),gridsize,fp) != gridsize)
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fread failed on file reading x2 coordinate array"
+                        + dfile);
+            }
+            if(fread(x3[0][0],sizeof(double),gridsize,fp) != gridsize)
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fread failed on file reading x3 coordinate array"
+                        + dfile);
+            }
+            fclose(fp);
+            if(need_to_swap_bytes)
+            {
+                swapdvec(x1[0][0],gridsize);
+                swapdvec(x2[0][0],gridsize);
+                swapdvec(x3[0][0],gridsize);
+            }
+        } catch(SeisppError& serr)
+        {
+            /* Translate message to common error for this package.*/
+            throw GCLgridError(base_error
+                    + "Problems loading attributes from pf\nDetail:  "
+                    + serr.what());
+        }
+    }
+    else
+        throw GCLgridError(base_error
+                + "unknown input format with tag="
+                + format
+                + "\nCurrently only accept format="
+                +default_output_format);
 }
 GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 	: BasicGCLgrid(dynamic_cast<const BasicGCLgrid&>(g))
@@ -700,6 +946,208 @@ GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4)
 			for(k=0;k<n3;++k)
 				for(l=0;l<nv;++l)
 					val[i][j][k][l]=0.0;
+}
+/* File based constructors for field objects */
+GCLscalarfield::GCLscalarfield(string fname, string format)
+    : GCLgrid(fname,format)
+{
+    const string base_error("GCLscalarfield file constructor:  ");
+    try {
+        if(format==default_output_format)
+        {
+            /* Necesary complication to recreate the Metadata object.
+               Inefficent but assumption is large number of these
+               objects are not going to be created by this mechanism. */
+            Metadata params=pfload_GCLmetadata(fname);
+            string otype=params.get_string("object_type");
+            string otypethis=string(typeid(*this).name());
+            if(otype!=otypethis)
+                throw GCLgridError(base_error
+               + "Object type mismatch.  "
+               + "Called GCLscalarfield constructor on a file with object_type="
+               + otype);
+            string dfile=fname+"."+dfileext;
+            FILE *fp=fopen(dfile.c_str(),"r");
+            if(fp==NULL)
+                throw GCLgridError(base_error
+                        + "fopen failed for file="
+                        + dfile);
+            long fvalstart;
+            // 3 is because there are 3 coordinates for each grid point 
+            fvalstart=sizeof(double)*n1*n2*3;
+            if(fseek(fp,fvalstart,SEEK_SET))
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fseek to start of field data area of file failed");
+            }
+            size_t npts=n1*n2;
+            val=create_2dgrid_contiguous(n1,n2);
+            size_t nvread;
+            nvread=fread((void *)(&(val[0][0])),sizeof(double),npts,fp);
+            fclose(fp);
+            if(nvread!=npts)
+                throw GCLgridError(base_error
+                        + "fread error reading field data area of file"
+                        + dfile);
+        }
+        else
+        {
+            throw GCLgridError(base_error
+                    + "Do not know how to handle format with name="
+                    +format);
+        }
+
+    }catch(...){throw;};
+}
+GCLscalarfield3d::GCLscalarfield3d(string fname, string format)
+    : GCLgrid3d(fname,format)
+{
+    const string base_error("GCLscalarfield3d file constructor:  ");
+    try {
+        if(format==default_output_format)
+        {
+            Metadata params=pfload_GCLmetadata(fname);
+            string otype=params.get_string("object_type");
+            string otypethis=string(typeid(*this).name());
+            if(otype!=otypethis)
+                throw GCLgridError(base_error
+               + "Object type mismatch.  "
+               + "Called GCLscalarfield3d constructor on a file with object_type="
+               + otype);
+            string dfile=fname+"."+dfileext;
+            FILE *fp=fopen(dfile.c_str(),"r");
+            if(fp==NULL)
+                throw GCLgridError(base_error
+                        + "fopen failed for file="
+                        + dfile);
+            long fvalstart;
+            fvalstart=sizeof(double)*n1*n2*n3*3;
+            if(fseek(fp,fvalstart,SEEK_SET))
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fseek to start of field data area of file failed");
+            }
+            size_t npts=n1*n2*n3;
+            val=create_3dgrid_contiguous(n1,n2,n3);
+            size_t nvread;
+            nvread=fread((void *)(&(val[0][0][0])),sizeof(double),npts,fp);
+            fclose(fp);
+            if(nvread!=npts)
+                throw GCLgridError(base_error
+                        + "fread error reading field data area of file"
+                        + dfile);
+        }
+        else
+        {
+            throw GCLgridError(base_error
+                    + "Do not know how to handle format with name="
+                    +format);
+        }
+
+    }catch(...){throw;};
+}
+GCLvectorfield::GCLvectorfield(string fname, string format)
+    : GCLgrid(fname,format)
+{
+    const string base_error("GCLvectorfield file constructor:  ");
+    try {
+        if(format==default_output_format)
+        {
+            Metadata params=pfload_GCLmetadata(fname);
+            string otype=params.get_string("object_type");
+            string otypethis=string(typeid(*this).name());
+            if(otype!=otypethis)
+                throw GCLgridError(base_error
+               + "Object type mismatch.  "
+               + "Called GCLvectorfield constructor on a file with object_type="
+               + otype);
+            /* nv has to be handled specially.  attribute name maintenance
+               issue here */
+            nv=params.get_int("nv");
+            string dfile=fname+"."+dfileext;
+            FILE *fp=fopen(dfile.c_str(),"r");
+            if(fp==NULL)
+                throw GCLgridError(base_error
+                        + "fopen failed for file="
+                        + dfile);
+            long fvalstart;
+            fvalstart=sizeof(double)*n1*n2*3;
+            if(fseek(fp,fvalstart,SEEK_SET))
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fseek to start of field data area of file failed");
+            }
+            size_t npts=n1*n2*nv;
+            val=create_3dgrid_contiguous(n1,n2,nv);
+            size_t nvread;
+            nvread=fread((void *)(&(val[0][0][0])),sizeof(double),npts,fp);
+            fclose(fp);
+            if(nvread!=npts)
+                throw GCLgridError(base_error
+                        + "fread error reading field data area of file"
+                        + dfile);
+        }
+        else
+        {
+            throw GCLgridError(base_error
+                    + "Do not know how to handle format with name="
+                    +format);
+        }
+    }catch(...){throw;};
+}
+GCLvectorfield3d::GCLvectorfield3d(string fname, string format)
+    : GCLgrid3d(fname,format)
+{
+    const string base_error("GCLvectorfield3d file constructor:  ");
+    try {
+        if(format==default_output_format)
+        {
+            Metadata params=pfload_GCLmetadata(fname);
+            string otype=params.get_string("object_type");
+            string otypethis=string(typeid(*this).name());
+            if(otype!=otypethis)
+                throw GCLgridError(base_error
+               + "Object type mismatch.  "
+               + "Called GCLvectorfield3d constructor on a file with object_type="
+               + otype);
+            /* nv has to be handled specially.  attribute name maintenance
+               issue here */
+            nv=params.get_int("nv");
+            string dfile=fname+"."+dfileext;
+            FILE *fp=fopen(dfile.c_str(),"r");
+            if(fp==NULL)
+                throw GCLgridError(base_error
+                        + "fopen failed for file="
+                        + dfile);
+            long fvalstart;
+            fvalstart=sizeof(double)*n1*n2*n3*3;
+            if(fseek(fp,fvalstart,SEEK_SET))
+            {
+                fclose(fp);
+                throw GCLgridError(base_error
+                        + "fseek to start of field data area of file failed");
+            }
+            size_t npts=n1*n2*n3*nv;
+            val=create_4dgrid_contiguous(n1,n2,n3,nv);
+            size_t nvread;
+            nvread=fread((void *)(&(val[0][0][0][0])),sizeof(double),npts,fp);
+            fclose(fp);
+            if(nvread!=npts)
+                throw GCLgridError(base_error
+                        + "fread error reading field data area of file"
+                        + dfile);
+        }
+        else
+        {
+            throw GCLgridError(base_error
+                    + "Do not know how to handle format with name="
+                    +format);
+        }
+
+    }catch(...){throw;};
 }
 
 

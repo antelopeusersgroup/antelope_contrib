@@ -4,20 +4,21 @@
 #include "coords.h"
 #include "elog.h"
 #include "pf.h"
-#include "db.h"
+#include "seispp.h"
+#include "dbpp.h"
 #include "gclgrid.h"
 using namespace std;
-extern int GCLverbose=0;
+using namespace SEISPP;
 void usage(char *prog)
 {
 	elog_die(0,"Usage:  %s db [-v -pf pffile]\n",prog);
 }
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
 	char *version="2.1 (Feb. 2005)";
 	char *pfin=NULL;
 	Pf *pf;
-	Dbptr db;
 	char *dbname;
 	int i;
 	/* All of the following are duplicates of GCLgrid parameters,
@@ -58,7 +59,7 @@ int main(int argc, char **argv)
                         pfin = argv[i];
                 }
 		else if(!strcmp(argv[i],"-v"))
-			GCLverbose=1;
+			SEISPP_verbose=true;
                 else
                         usage(argv[0]);
         }
@@ -67,11 +68,15 @@ int main(int argc, char **argv)
 
         i = pfread(pfin,&pf);
         if(i != 0) die(1,"Pfread error\n");
-
-	if(dbopen(dbname,"r+",&db))
-		die(0,"dbopen failed on database %s\n",dbname);
-	db = dblookup(db,0,"gclgdisk",0,0);
-	if(db.record == dbINVALID) die(0,"lookup fails for gclgdisk table\nSchema is probably defined incorrectly\n");
+        DatascopeHandle *dbh;
+        try {
+            dbh = new DatascopeHandle(dbname,false);
+            dbh->lookup("gclgdisk");
+        } catch(SeisppError& serr)
+        {
+            serr.log_error();
+            exit(-1);
+        }
 
 	/* Fetch the main grid parameters from the parameter file */
 	string gridname(pfget_string(pf,"gridname"));
@@ -116,7 +121,7 @@ int main(int argc, char **argv)
 			lat0, lon0, r0, azimuth_y, 
 			dx1, dx2, i0, j0);
 	try {
-		g.dbsave(db,dir);
+		g.save(*dbh,dir);
 	}
 	catch (...)
 	{
@@ -127,7 +132,7 @@ int main(int argc, char **argv)
 			lat0, lon0,r0, azimuth_y, 
 			dx1, dx2, dx3, i0, j0);
 	    try {
-		g3d.dbsave(db,dir);
+		g3d.save(*dbh,dir);
 	    }
 	    catch (...)
 	    {
