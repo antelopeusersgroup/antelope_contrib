@@ -1,24 +1,25 @@
-originator     Juan Reyes, UCSD
-last_modified  2012-01-27
+originator     Juan Reyes, UCSD # reyes@ucsd.edu
+last_modified  10-2013
 
-category    infrasound
-configuration   DPG_OBSIP      
+category    hydroacoustic
+configuration   DPG_OBSIP
 
-description DPG_OBSIP pressure sensor 
-dfile       DPG_OBSIP 
+description DPG_OBS_SIO
+dfile       DPGSIO
 
-rsptype     I   # infrasound instrument
-band        l   # 
-sensor_type_code    D
+rsptype     H   # hydroacoustic instrument
+band        b   # broad band
+short_period_sensor no # Sets the first char of seed code
+sensor_type_code    D # Sets second char of seed code
 
 gtype       sensor
 sensitivity 2.32414E-03
-ounits      V   
-iunits      Pa    
+ounits      V
+iunits      Pa
 
 orientations    &Tbl{
-D       0       0 
+H       0       0
 }
 
-response    &datafile(responses/DPG_OBSIP) 
+response    &datafile(responses/DPG_OBSIP)
 
