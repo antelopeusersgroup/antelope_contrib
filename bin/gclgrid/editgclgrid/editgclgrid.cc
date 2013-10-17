@@ -2,10 +2,11 @@
 #include <iostream>
 #include "stock.h"
 #include "pf.h"
-#include "db.h"
+#include "seispp.h"
+#include "dbpp.h"
 #include "gclgrid.h"
 using namespace std;
-extern int GCLverbose=0;
+using namespace SEISPP;
 void usage(string prog)
 {
 	cerr << "usage:  "<< prog << " db [-pf pfname]" <<endl;
@@ -43,8 +44,8 @@ GCLgrid *makenewgrid(GCLgrid& parent,
 	// function immediately below.
 	Geographic_point p;
 	Cartesian_point cp;
-	for(i=x1skip,ii=0;i<parent.n1,ii<nx1out;i+=x1dec,++ii)
-		for(j=x2skip,jj=0;j<parent.n2,jj<nx2out;j+=x2dec,++jj)
+	for(i=x1skip,ii=0;(i<parent.n1)&&(ii<nx1out);i+=x1dec,++ii)
+		for(j=x2skip,jj=0;(j<parent.n2)&&(jj<nx2out);j+=x2dec,++jj)
 			{
 				p=parent.geo_coordinates(i,j);
 				cp=newgrid->gtoc(p);
@@ -88,9 +89,9 @@ GCLgrid3d *makenewgrid3d(GCLgrid3d& parent,
 	// function immediately below.
 	Geographic_point p;
 	Cartesian_point cp;
-	for(i=x1skip,ii=0;i<parent.n1,ii<nx1out;i+=x1dec,++ii)
-		for(j=x2skip,jj=0;j<parent.n2,jj<nx2out;j+=x2dec,++jj)
-			for(k=x3skip,kk=0;k<parent.n3,kk<nx3out;k+=x3dec,++kk)
+	for(i=x1skip,ii=0;(i<parent.n1)&&(ii<nx1out);i+=x1dec,++ii)
+		for(j=x2skip,jj=0;(j<parent.n2)&&(jj<nx2out);j+=x2dec,++jj)
+			for(k=x3skip,kk=0;(k<parent.n3)&&(kk<nx3out);k+=x3dec,++kk)
 			{
 				p=parent.geo_coordinates(i,j,k);
 				cp=newgrid->gtoc(p);
@@ -139,6 +140,7 @@ bool InputNotValid(string comp,int skip, int dec, int nin, int nout,
 }
 	
 
+bool SEISPP::SEISPP_verbose(false);
 int main(int argc, char **argv)
 {
 	const string prog("editgclgrid");
@@ -182,20 +184,14 @@ int main(int argc, char **argv)
 	string griddir(pfget_string(pf,"grid_directory"));
 	string fielddir(pfget_string(pf,"field_directory"));
 	string dfile(pfget_string(pf,"output_field_file_name"));
-	
-	Dbptr db;
-	if(dbopen(const_cast<char *>(dbname.c_str()), "r+",&db) )
-	{
-		cerr << "dbopen failed on db="<<dbname<<endl;
-		exit(-1);
-	}
 	GCLgrid *newgrid2d;
 	GCLgrid3d *newgrid3d;
 	int ii,j,jj,k,kk,l;
 	try {
+                DatascopeHandle dbh(dbname,false);
 		if(fieldtype=="GCLscalarfield")
 		{
-			GCLscalarfield grid(db,gridname,fieldname);
+			GCLscalarfield grid(dbh,gridname,fieldname);
 			if( InputNotValid(string("x1"),x1skip,x1dec,
 					grid.n1,nx1out,grid.i0)
 				|| InputNotValid(string("x2"),x2skip,x2dec,
@@ -206,15 +202,16 @@ int main(int argc, char **argv)
 				x1dec,x2dec,
 				nx1out,nx2out);
 			GCLscalarfield newfield(*newgrid2d);
-			for(i=x1skip,ii=0;i<grid.n1,ii<nx1out;i+=x1dec,++ii)
-				for(j=x2skip,jj=0;j<grid.n2,jj<nx2out;j+=x2dec,++jj)
+			for(i=x1skip,ii=0;(i<grid.n1)&&(ii<nx1out); i+=x1dec,++ii)
+				for(j=x2skip,jj=0;(j<grid.n2)&&(jj<nx2out);
+                                        j+=x2dec,++jj)
 						newfield.val[ii][jj]=grid.val[i][j];
 			newfield.compute_extents();
-			newfield.dbsave(db,griddir,fielddir,fieldname,dfile);
+			newfield.save(dbh,griddir,fielddir,fieldname,dfile);
 		}
 		else if(fieldtype=="GCLvectorfield")
 		{
-			GCLvectorfield grid(db,gridname,fieldname);
+			GCLvectorfield grid(dbh,gridname,fieldname);
 			if( InputNotValid(string("x1"),x1skip,x1dec,
 					grid.n1,nx1out,grid.i0)
 				|| InputNotValid(string("x2"),x2skip,x2dec,
@@ -224,18 +221,18 @@ int main(int argc, char **argv)
 				x1dec,x2dec,
 				nx1out,nx2out);
 			GCLvectorfield newfield(*newgrid2d,grid.nv);
-			for(i=x1skip,ii=0;i<grid.n1,ii<nx1out;i+=x1dec,++ii)
-				for(j=x2skip,jj=0;j<grid.n2,jj<nx2out;j+=x2dec,++jj)
+			for(i=x1skip,ii=0;(i<grid.n1)&&(ii<nx1out);i+=x1dec,++ii)
+				for(j=x2skip,jj=0;(j<grid.n2)&&(jj<nx2out);j+=x2dec,++jj)
 					for(l=0;l<grid.nv;++i)
 					{
 						newfield.val[ii][jj][l]=grid.val[i][j][l];
 					}
 			newfield.compute_extents();
-			newfield.dbsave(db,griddir,fielddir,fieldname,dfile);
+			newfield.save(dbh,griddir,fielddir,fieldname,dfile);
 		}
 		else if(fieldtype=="GCLscalarfield3d")	
 		{
-			GCLscalarfield3d grid(db,gridname,fieldname);
+			GCLscalarfield3d grid(dbh,gridname,fieldname);
 			// x3skip needs to be computed
 			// Assume negative skips are caught by 
 			// InputNotValid function below
@@ -254,16 +251,17 @@ int main(int argc, char **argv)
 				nx1out,nx2out,nx3out);
 			GCLscalarfield3d newfield(*newgrid3d);
 			delete newgrid3d;
-			for(i=x1skip,ii=0;i<grid.n1,ii<nx1out;i+=x1dec,++ii)
-				for(j=x2skip,jj=0;j<grid.n2,jj<nx2out;j+=x2dec,++jj)
-					for(k=x3skip,kk=0;k<grid.n3,kk<nx3out;k+=x3dec,++kk)
+			for(i=x1skip,ii=0;(i<grid.n1)&&(ii<nx1out);i+=x1dec,++ii)
+				for(j=x2skip,jj=0;(j<grid.n2)&&(jj<nx2out);j+=x2dec,++jj)
+					for(k=x3skip,kk=0;(k<grid.n3)&&(kk<nx3out);
+                                                                k+=x3dec,++kk)
 						newfield.val[ii][jj][kk]=grid.val[i][j][k];
 			newfield.compute_extents();
-			newfield.dbsave(db,griddir,fielddir,fieldname,dfile);
+			newfield.save(dbh,griddir,fielddir,fieldname,dfile);
 		}
 		else if(fieldtype=="GCLvectorfield3d")	
 		{
-			GCLvectorfield3d grid(db,gridname,fieldname);
+			GCLvectorfield3d grid(dbh,gridname,fieldname);
 			//
 			// x3skip needs to be computed
 			// Assume negative skips are caught by 
@@ -283,15 +281,16 @@ int main(int argc, char **argv)
 				nx1out,nx2out,nx3out);
 			GCLvectorfield3d newfield(*newgrid3d,grid.nv);
 			delete newgrid3d;
-			for(i=x1skip,ii=0;i<grid.n1,ii<nx1out;i+=x1dec,++ii)
-				for(j=x2skip,jj=0;j<grid.n2,jj<nx2out;j+=x2dec,++jj)
-					for(k=x3skip,kk=0;k<grid.n3,kk<nx3out;k+=x3dec,++kk)
+			for(i=x1skip,ii=0;(i<grid.n1)&&(ii<nx1out);i+=x1dec,++ii)
+				for(j=x2skip,jj=0;(j<grid.n2)&&(jj<nx2out);j+=x2dec,++jj)
+					for(k=x3skip,kk=0;(k<grid.n3)&&(kk<nx3out);
+                                                            k+=x3dec,++kk)
 						for(l=0;l<grid.nv;++i)
 						{
 							newfield.val[ii][jj][kk][l]=grid.val[i][j][k][l];
 						}
 			newfield.compute_extents();
-			newfield.dbsave(db,griddir,fielddir,fieldname,dfile);
+			newfield.save(dbh,griddir,fielddir,fieldname,dfile);
 		}
 		else
 		{
