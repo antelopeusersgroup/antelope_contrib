@@ -52,7 +52,6 @@ int main(int argc, char **argv)
 		{
 			++i;
 			if(i==argc) usage();
-                        write_file_output=true;
 			fieldname=string(argv[i]);
 			isfield=true;
 		}
@@ -74,6 +73,7 @@ int main(int argc, char **argv)
 			++i;
 			if(i==argc) usage();
                         outfile=string(argv[i]);
+                        write_file_output=true;
                 }
 		else
 			usage();
