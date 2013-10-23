@@ -1,0 +1,64 @@
+ADO:BHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    ADO:BHZ           1 days              
+ADO:LHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    ADO:LHZ           1 days              
+BBR:BHZ          1/17/2005 (017) 18:47:35.973   1:36 hours         
+    BBR:BHZ            1:36 hours         
+CWC:BHZ          1/17/2005 (017) 10:51:59.348  53:08 minutes       
+CWC:BHZ          1/17/2005 (017) 13:45:07.523  32:08 minutes       
+CWC:BHZ          1/17/2005 (017) 18:11:22.048  26:19 minutes       
+CWC:BHZ          1/17/2005 (017) 18:39:34.573  22:23 minutes       
+CWC:BHZ          1/17/2005 (017) 19:02:49.423  12:07 minutes       
+CWC:BHZ          1/17/2005 (017) 19:16:47.098   9:18 minutes       
+CWC:BHZ          1/17/2005 (017) 19:27:37.898  39:28 minutes       
+CWC:BHZ          1/17/2005 (017) 20:07:59.873  44:35 minutes       
+CWC:BHZ          1/17/2005 (017) 20:53:24.623  17:58 minutes       
+CWC:BHZ          1/17/2005 (017) 21:14:33.248   1:14 hours         
+CWC:BHZ          1/17/2005 (017) 22:29:25.348  47:04 minutes       
+CWC:BHZ          1/17/2005 (017) 23:17:44.723  18:43 minutes       
+CWC:BHZ          1/17/2005 (017) 23:37:20.198  22:40 minutes       
+    CWC:BHZ            7:00 hours         
+DNR:BHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    DNR:BHZ           1 days              
+DNR:LHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    DNR:LHZ           1 days              
+FARB:UMZ         1/17/2005 (017)  0:00:00.000  1 days              
+    FARB:UMZ          1 days              
+GOR:BHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    GOR:BHZ           1 days              
+GOR:LHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    GOR:LHZ           1 days              
+MNRC:BHZ         1/17/2005 (017)  4:00:00.437   1:23 hours         
+MNRC:BHZ         1/17/2005 (017) 13:34:51.200   4:31 hours         
+    MNRC:BHZ           5:54 hours         
+MNRC:LHZ         1/17/2005 (017)  3:56:07.719   1:27 hours         
+MNRC:LHZ         1/17/2005 (017) 13:31:57.256   4:34 hours         
+    MNRC:LHZ           6:00 hours         
+MPI:BHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    MPI:BHZ           1 days              
+MPI:LHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    MPI:LHZ           1 days              
+SDP:BHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    SDP:BHZ           1 days              
+SDP:LHZ          1/17/2005 (017) 15:16:01.507   8:44 hours         
+    SDP:LHZ            8:44 hours         
+SDR:BHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    SDR:BHZ           1 days              
+SDR:LHZ          1/17/2005 (017)  0:00:00.000  1 days              
+    SDR:LHZ           1 days              
+SNCC:BHZ         1/17/2005 (017)  0:00:00.000  1 days              
+    SNCC:BHZ          1 days              
+SNCC:LHZ         1/17/2005 (017)  0:00:00.000  1 days              
+    SNCC:LHZ          1 days              
+
+> Network Performance      86400 seconds
+% BK   17 sta   41 chan     129269 seconds    96.35%
+% CI   45 sta   90 chan    1185554 seconds    84.75%
+
+Stations down:
+# ADO
+# DNR
+# GOR
+# MPI
+# SDR
+# SNCC

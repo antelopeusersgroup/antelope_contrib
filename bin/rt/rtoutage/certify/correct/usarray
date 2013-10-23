@@ -1,0 +1,22 @@
+A04A:BHZ         1/17/2005 (017)  0:11:53.525  19:31 hours         
+A04A:BHZ         1/17/2005 (017) 19:42:51.525   2:48 minutes       
+A04A:BHZ         1/17/2005 (017) 19:46:05.525   2:23 minutes       
+A04A:BHZ         1/17/2005 (017) 19:51:45.525   2:20 minutes       
+A04A:BHZ         1/17/2005 (017) 19:54:06.525   4:40 minutes       
+A04A:BHZ         1/17/2005 (017) 20:02:58.525   2:22 minutes       
+A04A:BHZ         1/17/2005 (017) 23:29:05.525   1:46 minutes       
+A04A:BHZ         1/17/2005 (017) 23:32:01.525   3:19 minutes       
+A04A:BHZ         1/17/2005 (017) 23:42:23.525  12:50 minutes       
+A04A:BHZ         1/17/2005 (017) 23:56:35.525   3:24 minutes       
+    A04A:BHZ          20:07 hours         
+A04A:LHZ         1/17/2005 (017)  0:11:39.000  19:31 hours         
+A04A:LHZ         1/17/2005 (017) 20:17:07.000   2.000 seconds      
+A04A:LHZ         1/17/2005 (017) 23:56:21.000   3:39 minutes       
+    A04A:LHZ          19:35 hours         
+FARB:UMZ         1/17/2005 (017)  0:00:00.000  1 days              
+    FARB:UMZ          1 days              
+
+> Network Performance      86400 seconds
+% AZ    1 sta    2 chan          0 seconds   100.00%
+% BK    1 sta    3 chan      86400 seconds    66.67%
+% TA    1 sta    2 chan     142887 seconds    17.31%
