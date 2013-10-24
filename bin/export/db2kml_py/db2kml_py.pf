@@ -7,23 +7,27 @@ config &Arr{
     sort_fields &Tbl{
         time
     }
-    out_file      sjfz.kml
-    create_kmz    False
+    out_file      AZ_network.kml
+    create_kmz
     network_link &Arr{
     }
     subset    stations # Can be events, stations, or empty string ('') for both
 }
 
 headers &Arr{
-    name Antelope Demo Database
+    name ANZA AZ Stations
     description &Literal{
-<p>Google Earth file showing demo database events
-<br/>
-Created:   2011-11-18 00:00 UTC<br/>
-Website:   http://www.brtt.com<br/>
-Author:    Rob Newman (robertlnewman@gmail.com)<br/>
-Copyright: 2011 My Institution</p>
+        <p>Google Earth file showing demo database events
+        <br/>
+        Created:   <br/>
+        Website:   http://www.brtt.com<br/>
+        Author:    db2kml_py<br/>
+        Copyright: </p>
     }
+
+    #set_look_at  True
+    set_look_at
+
     look_at &Arr{
         # Some default view when initially loaded
         latitude 18.451 # degrees
@@ -31,12 +35,15 @@ Copyright: 2011 My Institution</p>
         range 100000 # height above sea level
     }
     legend_url   http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/legend2.png
+
+    #generate_legend  True
+    generate_legend 
 }
 
 stations &Arr{
-    dbmaster    /opt/antelope/data/db/demo/demo
+    dbmaster   /anf/ANZA/dbs/dbmaster/anza 
     expr &Tbl{
-        sta =~ /L.*/
+        sta =~ /.*/ && snet =~ /AZ/
     }
     fields &Tbl{
         sta
@@ -52,7 +59,7 @@ stations &Arr{
 }
 
 styles &Arr{
-    imagepath    http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/
+    imagepath  http://maps.google.com/mapfiles/kml/paddle/
     styleinfo &Arr{
          mag_0 &Arr{
              id orangeStarZero
@@ -109,12 +116,12 @@ styles &Arr{
         active &Arr{
             id activeStation
             scale 1.0
-            href GMapStation_active.gif
+            href wht-blank.png
         }
         inactive &Arr{
             id inactiveStation
             scale 1.0
-            href GMapStation_inactive.gif
+            href wht-circle.png
         }
     }
 }

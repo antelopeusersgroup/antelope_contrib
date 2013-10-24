@@ -235,48 +235,67 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
         print "- Subsetting database '%s' for %s" % (dbmaster,staexpr)
 
     try:
-        dbm = antdb.dbopen(dbmaster, 'r')
+        db = antdb.dbopen(dbmaster, 'r')
     except:
-        print "* Cannot open database '%s'" % dbmaster
+        sys.exit( "* Cannot open database '%s'" % dbmaster )
+
+
+    dbm = db.lookup(table='site')
+    if not dbm.query('dbTABLE_PRESENT'):
+        sys.exit( "* Cannot open site table '%s'" % dbmaster )
+
+
+    test_net = antdb.dblookup(db, table='snetsta')
+    if test_net.query('dbTABLE_PRESENT'):
+        if verbosity > 1:
+            print " - Join snetsta table"
+        dbm = dbm.join('snetsta', outer=True)
     else:
-        dbm = dbm.lookup(table='site')
+        if verbosity > 1:
+            print " * NOTE: Cannot join 'snetsta' table"
 
-        for nex in staexpr:
-            if nex:
-                dbm = dbm.subset('%s' % nex )
 
-        if not inactive or inactive == 0:
-            if verbosity > 0:
-                print "- Subsetting database '%s' for active stations" % dbmaster
-            dbm = dbm.subset('offdate < 0') # Just get active stations
-        if dbm.query('dbRECORD_COUNT') < 1:
-            if len(staexpr) > 0:
-                print "* ERROR: Dbmaster database (%s) generated view contains no records. Check your expressions." % dbmaster
-            else:
-                print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
-            sys.exit(1)
-        sitestr = ["\t<Folder>"]
-        sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
-        sitestr.append("\t\t<name>Stations</name>")
+    for nex in staexpr:
+        if nex:
+            dbm = dbm.subset('%s' % nex )
 
-        for i in range(dbm.query('dbRECORD_COUNT')):
-            dbm[3] = i
-            per_sta_info = {}
-            for f in fields:
-                per_sta_info[f] = dbm.getv(f)[0]
-                if f == 'elev':
-                    per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
+    if not inactive or inactive == 0:
+        if verbosity > 0:
+            print "- Subsetting database '%s' for active stations" % dbmaster
+        dbm = dbm.subset('offdate < 0') # Just get active stations
 
-            if inactive and inactive == 1:
-                inactive_offdate = dbm.getv('offdate')[0]
-                if inactive_offdate < 0: # dbNULL value is -1
-                    stastyle = 'activeStation'
-                else:
-                    stastyle = 'inactiveStation'
-            else:
+
+    if dbm.query('dbRECORD_COUNT') < 1:
+        if len(staexpr) > 0:
+            print "* ERROR: Dbmaster database (%s) generated view contains no records. Check your expressions." % dbmaster
+        else:
+            print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
+        sys.exit(1)
+
+    sitestr = ["\t<Folder>"]
+    sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
+    sitestr.append("\t\t<name>Stations</name>")
+
+    for i in range(dbm.query('dbRECORD_COUNT')):
+        dbm[3] = i
+        per_sta_info = {}
+        for f in fields:
+            per_sta_info[f] = dbm.getv(f)[0]
+            if f == 'elev':
+                per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
+
+        if inactive and inactive == 1:
+            inactive_offdate = dbm.getv('offdate')[0]
+            if inactive_offdate < 0: # dbNULL value is -1
                 stastyle = 'activeStation'
-            sitestr.append(create_site(per_sta_info, visibility, stastyle))
-        sitestr.append("\t</Folder>")
+            else:
+                stastyle = 'inactiveStation'
+        else:
+            stastyle = 'activeStation'
+        sitestr.append(create_site(per_sta_info, visibility, stastyle))
+    sitestr.append("\t</Folder>")
+
+
     return ''.join(sitestr)
 
 def generate_legend(legendurl):
@@ -312,6 +331,13 @@ def kml_start(params):
         <name>%s</name>
         <open>1</open>
         <description>%s</description>
+    '''
+    return kmlstart % (params[0], params[1])
+
+def kml_lookat(params):
+    """Define basic kml 
+    header string"""
+    kmlstart = '''
         <LookAt>
             <longitude>%s</longitude>
             <latitude>%s</latitude>
@@ -321,7 +347,7 @@ def kml_start(params):
             <heading>0</heading>
         </LookAt>
     '''
-    return kmlstart % (params[0], params[1], params[2], params[3], params[4])
+    return kmlstart % (params[0], params[1], params[2])
 
 def kml_network(params):
     """Add a Network Link"""
@@ -428,17 +454,23 @@ def main():
     if pf_result['config']['network_link']:
         expires_time = time.time() + pf_result['config']['network_link']['refresh_rate']
         outstr.append(kml_network(expires_time))
+
     outstr.append(kml_start([
         pf_result['headers']['name'], 
         pf_result['headers']['description'], 
-        str(pf_result['headers']['look_at']['longitude']), 
-        str(pf_result['headers']['look_at']['latitude']), 
-        str(pf_result['headers']['look_at']['range'])
     ]))
 
-    if verbosity > 0:
-        print "- Write out legend link"
-    outstr.append(generate_legend(pf_result['headers']['legend_url']))
+    if pf_result['headers']['set_look_at']:
+        outstr.append(kml_lookat([
+            str(pf_result['headers']['look_at']['longitude']), 
+            str(pf_result['headers']['look_at']['latitude']), 
+            str(pf_result['headers']['look_at']['range'])
+        ]))
+
+    if pf_result['headers']['generate_legend']:
+        if verbosity > 0:
+            print "- Write out legend link"
+        outstr.append(generate_legend(pf_result['headers']['legend_url']))
 
     if verbosity > 0:
         print "- Generating styles"
