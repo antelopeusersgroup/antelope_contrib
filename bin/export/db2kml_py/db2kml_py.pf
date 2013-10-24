@@ -1,5 +1,4 @@
 config &Arr{
-    db    /opt/antelope/data/db/demo/demo
     expr &Tbl{
         time >= 704371900
         lat >= 10 && lat <= 40 && lon >= -90 && lon <= -50
@@ -7,15 +6,15 @@ config &Arr{
     sort_fields &Tbl{
         time
     }
-    out_file      AZ_network.kml
-    create_kmz
+    out_file        CONTRIB_network.kml
+    create_kmz      True
     network_link &Arr{
     }
     subset    stations # Can be events, stations, or empty string ('') for both
 }
 
 headers &Arr{
-    name ANZA AZ Stations
+    name ANZA CONTRIB Stations
     description &Literal{
         <p>Google Earth file showing demo database events
         <br/>
@@ -41,9 +40,8 @@ headers &Arr{
 }
 
 stations &Arr{
-    dbmaster   /anf/ANZA/dbs/dbmaster/anza 
     expr &Tbl{
-        sta =~ /.*/ && snet =~ /AZ/
+        sta =~ /.*/ && snet !~ /AZ|YN|TA/
     }
     fields &Tbl{
         sta
@@ -55,11 +53,12 @@ stations &Arr{
         offdate
     }
     visibility   1
-    display_inactive    1
+    display_inactive
 }
 
 styles &Arr{
-    imagepath  http://maps.google.com/mapfiles/kml/paddle/
+    #imagepath  http://maps.google.com/mapfiles/kml/paddle/
+    imagepath  http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/
     styleinfo &Arr{
          mag_0 &Arr{
              id orangeStarZero
@@ -116,12 +115,14 @@ styles &Arr{
         active &Arr{
             id activeStation
             scale 1.0
-            href wht-blank.png
+            #href wht-blank.png
+            href GMapStation_active.gif
         }
         inactive &Arr{
             id inactiveStation
             scale 1.0
-            href wht-circle.png
+            #href wht-circle.png
+            href GMapStation_inactive.gif
         }
     }
 }
