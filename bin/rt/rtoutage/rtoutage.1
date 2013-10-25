@@ -1,0 +1,186 @@
+.TH RTOUTAGE 1 "$Date$"
+.SH NAME
+rtoutage \- show data gaps for a database over a time period
+.SH SYNOPSIS
+.nf
+\fBrtoutage \fP[-AcCNpStz] 
+        [-d \fIgap_database\fP] 
+        [-n \fInetcode\fP] 
+        [-P \fImaxpts\fP] 
+        [-s \fIsubset\fP] 
+        [-x \fIdeployment-subset\fP] 
+            \fIdb\fP \fIstart\fP \fIstop\fP
+.fi
+.SH DESCRIPTION
+\fBrtoutage\fP writes a summary of data gaps for a database \fIdb\fP by channel.
+The output contains a list of all gaps by station, channel, and
+time.
+.LP
+The input database may be a view containing the stations and channels of
+interest, or just a database.  In the latter case, the sensor table is
+opened and \fIsubset\fP to the time range from \fIstart\fP to \fIstop\fP
+to provide the list of available channels.
+.LP
+Next, the wfdisc table is opened, and for each channel, the entire
+waveform available from \fIstart\fP to \fIstop\fP is loaded.  This
+waveform is inspected for marked gaps, and all the gaps are printed.
+.SH OPTIONS
+.IP -A
+Format output as an autodrm(1) outage report.
+.IP -c
+Show explicit list of reporting stations
+.IP -C
+Show explicit list of reporting channels
+.IP -N
+Show summary by network.
+.IP "-d gap_database"
+Save gaps and performance info in database \fIgap_database\fP. This database 
+may not be the same as the input database. 
+.IP "-n netcode"
+Restrict report to stations where the net code matches
+the regular expression netcode.  Network membership is
+determined through the snetsta table, not affiliation.
+.IP "-P maxpts"
+specify maximum number of data points to load at
+one shot; default is 1 day of 40sps data, or about 14 Mbytes.  
+This is to avoid
+using exorbitant amounts of memory.
+.IP -p
+print percentage of data recovered for time period.
+.IP -S
+show gaps as seconds only, instead of using larger units.
+.IP "-s subset"
+Perform the specified \fIsubset\fP on the input table (or sensor) to select
+the desired stations and channels.
+.IP -t
+Show only the totals, not each individual gap.
+.IP "-x deployment-subset"
+Perform the specified \fIdeployment-subset\fP on the deployment table to select
+the desired stations and channels.  Must be valid subset for deployment fields.
+.IP -z
+Select only channels ending in 'z' or 'Z', or where the
+third character is 'z' or 'Z'.  This is useful for reducing
+the output in networks
+where the outages on any 3 channels for the same station and sample rate
+are the same.
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+.ne 12
+%\fB rtoutage -z /brtt/danq/gsn/db/gsn 4/12/99 4/14/99\fP
+CTAO:BHZ         4/12/1999 (102)  0:00:00.000  2 days 0.0 hours
+ESK:BHZ          4/12/1999 (102)  4:02:47.645   2:45 hours
+ESK:BHZ          4/12/1999 (102)  8:46:59.671   2:00 minutes
+ESK:BHZ          4/13/1999 (103) 18:36:35.910   2:12 minutes
+KONO:BHZ         4/12/1999 (102)  0:00:00.000  2 days 0.0 hours
+NNA:BHZ          4/12/1999 (102) 12:56:14.704  12.000 seconds
+NNA:BHZ          4/13/1999 (103)  4:35:50.760  12.000 seconds
+SUR:BHZ          4/12/1999 (102) 11:02:10.627  12.000 seconds
+SUR:BHZ          4/13/1999 (103)  9:34:10.795  11.950 seconds
+TATO:BHZ         4/12/1999 (102)  0:00:00.000  2 days 0.0 hours
+ULN:BHZ          4/12/1999 (102)  0:00:00.000  2 days 0.0 hours
+
+% \fBrtoutage -Nz $db '5/17/92 21:55' 0:03 \fP
+AAK:BHZ          5/17/1992 (138) 21:55:00.000  10.250 seconds      
+AAK:BHZ          5/17/1992 (138) 21:57:02.700  57.300 seconds      
+    AAK:BHZ            1:08 minutes       
+CHM:BHZ          5/17/1992 (138) 21:55:00.000  15.200 seconds      
+CHM:BHZ          5/17/1992 (138) 21:57:21.550  38.450 seconds      
+    CHM:BHZ           53.650 seconds      
+EKS2:BHZ         5/17/1992 (138) 21:55:00.000   4.700 seconds      
+EKS2:BHZ         5/17/1992 (138) 21:56:41.600   1:18 minutes       
+    EKS2:BHZ           1:23 minutes       
+HIA:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    HIA:BHZ            3:00 minutes       
+KBK:BHZ          5/17/1992 (138) 21:55:00.000  14.400 seconds      
+KBK:BHZ          5/17/1992 (138) 21:57:18.500  41.500 seconds      
+    KBK:BHZ           55.900 seconds      
+KIV:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    KIV:BHZ            3:00 minutes       
+KMI:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    KMI:BHZ            3:00 minutes       
+LSA:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    LSA:BHZ            3:00 minutes       
+LZH:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    LZH:BHZ            3:00 minutes       
+OBN:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    OBN:BHZ            3:00 minutes       
+TKM:BHZ          5/17/1992 (138) 21:55:00.000  19.050 seconds      
+TKM:BHZ          5/17/1992 (138) 21:57:36.000  24.000 seconds      
+    TKM:BHZ           43.050 seconds      
+USP:BHZ          5/17/1992 (138) 21:55:00.000  15.700 seconds      
+USP:BHZ          5/17/1992 (138) 21:57:23.400  36.600 seconds      
+    USP:BHZ           52.300 seconds      
+WUS:BHZ          5/17/1992 (138) 21:55:00.000   3:00 minutes       
+    WUS:BHZ            3:00 minutes       
+
+> Network Performance        180 seconds
+% ??   13 sta   13 chan       1616 seconds    30.96%
+
+Stations down:
+# HIA
+# KIV
+# KMI
+# LSA
+# LZH
+# OBN
+# WUS
+
+.ne 14
+%\fB rtoutage -A -z /brtt/danq/gsn/db/gsn 4/12/99 4/14/99\fP
+Report period from 1999/04/12 00:00:00.000 to 1999/04/14 00:00:00.000
+Net       Sta  Chan Aux      Start Date Time          End Date Time        Duration Comment
+CTBT_AUX  CTAO  BHZ      1999/04/12 00:00:00.000 1999/04/14 00:00:00.000 172800.000
+CTBT_AUX  ESK   BHZ      1999/04/12 04:02:47.645 1999/04/12 06:48:23.660   9936.015
+CTBT_AUX  ESK   BHZ      1999/04/12 08:46:59.671 1999/04/12 08:48:59.671    120.000
+CTBT_AUX  ESK   BHZ      1999/04/13 18:36:35.910 1999/04/13 18:38:47.860    131.950
+CTBT_AUX  KONO  BHZ      1999/04/12 00:00:00.000 1999/04/14 00:00:00.000 172800.000
+CTBT_AUX  NNA   BHZ      1999/04/12 12:56:14.704 1999/04/12 12:56:26.704     12.000
+CTBT_AUX  NNA   BHZ      1999/04/13 04:35:50.760 1999/04/13 04:36:02.760     12.000
+CTBT_AUX  SUR   BHZ      1999/04/12 11:02:10.627 1999/04/12 11:02:22.627     12.000
+CTBT_AUX  SUR   BHZ      1999/04/13 09:34:10.795 1999/04/13 09:34:22.745     11.950
+CTBT_AUX  TATO  BHZ      1999/04/12 00:00:00.000 1999/04/14 00:00:00.000 172800.000
+CTBT_AUX  ULN   BHZ      1999/04/12 00:00:00.000 1999/04/14 00:00:00.000 172800.000
+
+.ne 6
+%\fB rtoutage -p -z -s "sta=='ESK'" /brtt/danq/gsn/db/gsn 4/12/99 4/14/99\fP
+ESK:BHZ          4/12/1999 (102)  4:02:47.645   2:45 hours
+ESK:BHZ          4/12/1999 (102)  8:46:59.671   2:00 minutes
+ESK:BHZ          4/13/1999 (103) 18:36:35.910   2:12 minutes
+Missing   2:49 hours of data from 1 channels
+94.10% data recovered over  2 days 0.0 hours
+
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+Returns zero if no errors occur, otherwise 1.
+.SH DIAGNOSTICS
+.IP "Can't open input table '\fItable\fP'"
+.IP "No records in sensor table for '\fItable\fP'"
+.IP "No records in input table '\fItable\fP'"
+.IP "No channels running during specified time range"
+.IP "No records after subset '\fIsubset\fP'"
+.IP "No records after z channel subset"
+Some problem exists with the input parameters or database.
+.IP "Can't load trace data for \fIsta\fP"
+Perhaps the waveform data has been removed from disk.
+.SH "SEE ALSO"
+.nf
+autodrm(1)
+gap_report(1)
+rtreport(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Because the entire waveform is read into memory, this is fairly
+expensive, and slow.  While only one waveform is read into memory
+at a time, this could cause problems on a machine with limited memory.
+.LP
+Using the gaps table if it were present could make this a lot faster.
+.LP
+The \fIgaps_database\fP specified for the \fI-d\fP option may not be the same as the input database. 
+.SH AUTHOR
+Daniel Quinlan
+.\" $Id$

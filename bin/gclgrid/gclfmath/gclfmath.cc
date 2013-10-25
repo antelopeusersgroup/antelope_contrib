@@ -218,14 +218,14 @@ int main(int argc, char **argv)
 		gvf=NULL;
 		if(vectormode)
 		{
-			gvf=new GCLvectorfield3d(dbh.db,gridname,infield);
+			gvf=new GCLvectorfield3d(dbh,gridname,infield);
 			n1=gvf->n1;
 			n2=gvf->n2;
 			n3=gvf->n3;
 		}
 		else
 		{
-			gsf=new GCLscalarfield3d(dbh.db,gridname,infield);
+			gsf=new GCLscalarfield3d(dbh,gridname,infield);
 			n1=gsf->n1;
 			n2=gsf->n2;
 			n3=gsf->n3;
@@ -259,9 +259,9 @@ int main(int argc, char **argv)
 			    }
 		}
 		if(vectormode)
-			gvf->dbsave(dbh.db,string(""),outdir,outfield,outfield);
+			gvf->save(dbh,string(""),outdir,outfield,outfield);
 		else
-			gsf->dbsave(dbh.db,string(""),outdir,outfield,outfield);
+			gsf->save(dbh,string(""),outdir,outfield,outfield);
 			
 	} catch (int ierr)
 	{
