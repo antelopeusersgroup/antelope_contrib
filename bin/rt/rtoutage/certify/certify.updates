@@ -1,0 +1,39 @@
+simple       929740649.00000 denali                S5.7N/dev  first correct run                                               929740650
+simple       936114227.00000 denali                S5.7N/dev  corrections to rtoutage now give the right results              936114228
+simple       957285709.00000 castle                S5.7W/dev  updated summary output                                          957285710
+manygaps     957285750.00000 castle                S5.7W/dev  first run                                                       957285750
+samprate     958690836.00000 castle                S5.7W/dev  first run                                                       958690837
+samprate     960399549.00000 castle                S5.7W/dev  total is now sum of absolute values, so that negative gaps a    960399550
+simple       962720754.00000 castle                S5.7W/dev  changed strtdelta to return fixed length string.                962720755
+samprate     962720806.00000 castle                S5.7W/dev  changed strtdelta to return fixed length string                 962720807
+samprate    1093535219.00000 crestone   danq       SunOS/dev  removed blank between minus sign and number in strtdelta       1093535220
+1sampgap    1099348792.00000 crestone   danq       SunOS/dev  first run                                                      1099348792
+1sampgap    1100714342.00000 crestone   danq       SunOS/dev  eliminate bogus point added                                    1100714343
+samprate    1104857659.00000 crestone   danq       SunOS/dev  stopped reporting overlaps as gaps                             1104857659
+24hr        1105992553.00000 crestone   danq       SunOS/dev  first run                                                      1105992553
+network     1106002268.00000 crestone   danq       SunOS/dev  first run                                                      1106002268
+network2    1106002272.00000 crestone   danq       SunOS/dev  first run                                                      1106002272
+network     1106094543.00000 crestone   danq       SunOS/dev  previously wrong result                                        1106094543
+network2    1106094547.00000 crestone   danq       SunOS/dev  previously wrong result                                        1106094547
+gapreport   1106094796.00000 crestone   danq       SunOS/dev  first run                                                      1106094796
+usarray     1106160025.00000 crestone   danq       SunOS/dev  first run                                                      1106160025
+usarray2    1106160031.00000 crestone   danq       SunOS/dev  first run                                                      1106160031
+gapreport   1106161423.00000 crestone   danq       SunOS/dev  perhaps this is right                                          1106161424
+fullgaps    1106164587.00000 crestone   danq       SunOS/dev  first run                                                      1106164587
+gapreport   1106168763.00000 crestone   danq       SunOS/dev  looks better                                                   1106168763
+fullgaps    1106168993.00000 crestone   danq       SunOS/dev  changed gap_report                                             1106168994
+usarray4    1106197309.00000 crestone   danq       SunOS/dev  first run                                                      1106197309
+usarray3    1106197718.00000 crestone   danq       SunOS/dev  first run                                                      1106197718
+gapreport   1107362102.00000 elbert     danq       Linux/4.7  added net code to down stations                                1107362102
+fullgaps    1107362629.00000 elbert     danq       Linux/4.7  added net code to down stations                                1107362630
+24hr        1107810910.00000 crestone   danq       SunOS/dev  demonstrate new chanperf and netperf tables                    1107810910
+roundoff    1108502122.00000 crestone   danq       SunOS/dev  first correct run                                              1108502122
+usarray     1108502327.00000 crestone   danq       SunOS/dev  eliminate bogus 1 sample gaps at midnight                      1108502328
+fullgaps    1108502409.00000 crestone   danq       SunOS/dev  eliminate bogus 1 sample gaps at midnight                      1108502409
+1sampgap    1144702577.00000 crestone   danq       SunOS/dev  changed trsplice to correct problem Frank found                1144702578
+gapreport   1146147459.00000 crestone   danq       SunOS/dev  changed spacing on report                                      1146147459
+fullgaps    1146147624.00000 crestone   danq       SunOS/dev  changed spacing on report                                      1146147625
+gapreport   1175208621.00000 ouray      danq       Linux/4.9  changed error message a little                                 1175208621
+romania     1255554332.00000 crestone   danq       SunOS/dev- first run                                                      1255554333
+fullgaps    1256680568.00000 crestone   danq       SunOS/dev- changed 0 picoseconds to 0 seconds                             1256680569
+romania     1256680571.00000 crestone   danq       SunOS/dev- changed 0 picoseconds to 0 seconds                             1256680571

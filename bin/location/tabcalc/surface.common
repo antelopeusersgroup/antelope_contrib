@@ -1,2 +1,0 @@
-      parameter(nsmax=8000)
-      common/surface/ns,p(nsmax),t(nsmax),x(nsmax),v(nsmax),d(nsmax)

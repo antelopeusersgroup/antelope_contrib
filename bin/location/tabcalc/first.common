@@ -1,5 +1,0 @@
-c--the sizes of these arrays are linked to that expected by lquake
-      parameter(nztab=100,nxtab=1000)
-      common/first1/tone(nztab,nxtab),pone(nztab,nxtab) 
-      character brone 
-      common/first2/brone(nztab,nxtab)

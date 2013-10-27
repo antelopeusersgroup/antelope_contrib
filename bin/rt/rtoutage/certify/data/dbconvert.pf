@@ -1,0 +1,35 @@
+
+#  So far, this is just a dummy file, but the format should be like the 
+# following (from the man page):
+#output_schema 	&Arr{
+#    input_schema	&Arr{
+#	output_table1	&Arr{
+#	    input	input-spec
+#	    fields	&Arr{
+#		output_field1	expression	
+#		output_field2	expression	
+#		output_field3	expression
+#		    .
+#		    .
+#
+#	    }
+#	output_table2	&Arr{
+#	    input	input-spec
+#	    fields	&Arr{
+#		output_field	expression	
+#		output_field	expression	
+#		output_field	expression
+#		    .
+#		    .
+#	    }
+#	    .
+#	    .
+#
+#	}
+#    }
+#}
+
+dummy # to keep this parameter file from being empty
+# $Id: dbconvert.pf,v 1.2 2001/01/24 21:13:17 danq Exp $ 
+
+pf_revision_time 1099672666

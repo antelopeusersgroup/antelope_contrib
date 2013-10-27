@@ -1,2 +1,0 @@
-      parameter(nwinmax=50) 
-      common/window/nwindow,vwork(nwinmax),dwork(nwinmax) 

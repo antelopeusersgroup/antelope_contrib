@@ -1,0 +1,41 @@
+.\" %W% %G%
+.TH HYPOTAB 1 "%G%"
+.SH NAME
+hypotab - companion program to tabcalc travel time calculator
+.SH SYNOPSIS
+.nf
+hypotab
+.fi
+.SH DESCRIPTION
+.LP
+This is an ancient, FORTRAN code that is a companion to 
+tabcalc(1).  All it does is read the complete set of curves
+that include reversed branches and shadow zones, and sorts
+out the first arrival at each distance.  The output is 
+a uniform grid grid travel time table compatible with
+genloc.
+.LP
+The program asks for one input parameter interactively with
+a free field read.  This parameter is the number of distance
+points desired for the output table.  There is a maximum
+that is currently 1000 points. 
+.SH FILES
+.IP (1)
+This program looks for a fixed named file called "vmodel".
+It's structure is described in tabcalc(1).  
+.IP (2)
+The main input to this program is a fixed named file
+called "txpxall" that is a binary output file of tabcalc(1).
+.IP (3)
+The output has the fixed name of "txpxone".  Simply change
+this to something like P_anza.pf.
+.SH "SEE ALSO"
+.nf
+tabcalc(1), genloc_intro(3)
+.fi
+.SH "BUGS AND CAVEATS"
+Base code has been pretty thoroughly exercised.  Some recent
+changes to expand an older barrier on the table size have
+not been thoroughly tested as of June 1998l
+.SH AUTHOR
+Gary L. Pavlis

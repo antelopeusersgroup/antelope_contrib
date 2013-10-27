@@ -1,2 +1,0 @@
-      parameter(nupmax=npmax) 
-      common/upward/np,pup(nupmax),tup(nupmax),xup(nupmax)

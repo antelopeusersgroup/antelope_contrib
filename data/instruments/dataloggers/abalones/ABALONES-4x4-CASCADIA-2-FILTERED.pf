@@ -1,0 +1,66 @@
+originator     Juan Reyes, SIO-UCSD
+last_modified  2013-08
+
+category    LC
+configuration   ABALONES-4x4-CASC2-FIL
+
+description ABALONES-4x4-CASC2-FIL
+dfile ABALONES-4x4-CASC2-FIL
+
+
+info    &Literal{
+ABALONES-4x4-CAS2-FIL, OBSIP SIO
+}
+
+#
+# NOTE:
+#   USING this pf for filtered channels
+#   on the CASCADIA 2 deployment
+#   We cannot specify 2 streams with the
+#   same samplerate on the same file. If
+#   you discover how to do it then send me
+#   an email. reyes@ucsd.edu
+#
+
+streams 50sps
+
+50sps   50 a/d50 fir_50_c2
+
+possible_streams &Literal{
+    my @chosen = @_;
+    my %valid ;
+
+    $valid{'50sps'} = 1;
+
+    foreach my $test (@chosen) {
+        return ( ($test) ) if exists $valid{$test} ;
+    }
+
+    return ( (keys %valid) );
+
+}
+
+# Gains: Nominal sensitivity (in ounits/iunits) for datalogger
+# Voltage range: +/- 2.5 V, max counts over this range of
+# -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
+# 0.000000298 V/count => 3355443 counts/V
+
+gains 3355443
+
+
+# Stages
+
+a/d50     &Arr{
+    samprate    50
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+# configuration for filtered data on CASCADIA 1
+fir_50_c2          &Arr{
+    gtype       FIR_decimator
+    decifac     1
+    response    &datafile(responses/abalones_filtered_c2)
+} 

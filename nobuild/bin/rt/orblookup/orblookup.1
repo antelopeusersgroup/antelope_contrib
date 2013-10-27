@@ -1,0 +1,677 @@
+.\" $Name$ $Date$
+.TH ORBLOOKUP 1 "$Date$"
+.SH NAME
+orblookup, orblookupd \- cgi programs to provide orb status
+.SH SYNOPSIS
+.nf
+orblookup
+.fi
+.SH DESCRIPTION
+orblookup consists of two portions: a daemon which grabs status information
+from a given orb at a specific interval, and a cgi program that generates a
+web page using this information.
+.LP
+The orblookupd program runs an orbstat command on a single orb and stores the
+resulting information locally in a parameter file.  It is controlled by a
+program called orblook which starts and stops separate instances of
+orblookupd.  Multiple instances of orblook running on the same orb are not 
+allowed.
+.LP
+The orblookupd program is also able to compare the information retrieved from
+the orb with a local antelope database.  This enables the orblookup cgi to
+figure out if any stations have not reported recently or if any new stations
+have been picked up by the orb.
+.LP
+The orblookup cgi program takes an html template defined in the configuration
+file and the information gathered from the orblookupd program and generates 
+an html page that displays status information.  
+.SS INSTALLATION
+The orblookup cgi needs to be located in a directory that is authorized to
+run scripts by the web server.  This means that you will have to choose 
+between:
+.IP 1) 
+Placing the orblookup program in the web server's default script directory
+( such as $WEBROOT/cgi-bin )
+.IP 2) 
+Placing the entire orblookup install within the web tree and granting the
+orblookup directory or file script execution privileges
+.LP
+Solution 1 is a little more secure, since fewer files will be exposed to the
+outside world.  Additionally, solution 1 requires moving the configuration
+file to a globally-known parameter file location, such as $ANTELOPE/data/pf/.
+Solution 2 is more straightforward, since all files are kept together,
+but most likely requires the web server configuration to be changed.
+.SS USAGE
+Once configured as below, the orblookupd program can be controlled using the
+perl script orblook.  To start gathering information from an orb, run
+.ft CW
+.in 2c
+.nf
+
+    orblook start orbname interval
+
+.fi
+.in
+.ft R
+where orbname is the orbname as used in an orbstat command, and interval
+is the time in minutes between updates.  To restart an orb, run
+.ft CW
+.in 2c
+.nf
+
+    orblook restart orbname interval
+
+.fi
+.in
+.ft R
+and to stop a currently running orb, run
+.ft CW
+.in 2c
+.nf
+
+    orblook stop orbname
+
+.fi
+.in
+.ft R
+
+.SS WHAT NEEDS TO BE PERSONALIZED
+.IP  orblookup.pf 
+Orb information and html layout must be provided as a parameter file described
+in the section "Configuration File Format" below.
+.IP orblook 
+The first line of the file should be changed to match the perl executable
+on your system.  Additionally, the value $orblookupdir should be changed to
+your orblookup install location.
+.SH OPTIONS
+.SH FILES
+.TS
+l l.
+README                          This file
+QuickStart.txt                  Read this if you just want to get running
+orblook                         perl executable wrapper script
+orblookup_example_config.pf     Fleshed-out example configuration file
+ro.pl                           perl script called by orblook
+orblookupd                      The orblookup daemon C binary
+orblookup                       The orblookup cgi C binary
+.TE
+.SH PARAMETER FILE
+The configuration file for orblookup is an Antelope 
+parameter file.  An example configuration file named 
+orblookup_example_config.pf illustrates a working configuration. 
+.LP
+Two items of importance exist in the orblookup configuration file: the orblist,
+and the html template.
+.SS orblist
+The first item of importance in the orblookup configuration file is the list
+of orbs to be monitored, containing the orb names, packet types to be
+scanned, the alert messages to be used, the fields to be displayed, and fields
+to be ignored for particular packet types.  Expect more documentation on this
+to be forthcoming.
+.SS THE HTML TEMPLATE
+The second item of importance in the orblookup configuration file is the
+html template.  The template element contains blocks of valid html code
+with special comments designed to act as placeholders for variables.  At least
+one block of code must be contained by html_template: the overview element.
+This is the first block of code processed, and if no references to other
+blocks are contained with it, may be the only block of code processed.
+
+The orblookup program steps through the overview string literal and substitutes
+generated code at special comments encountered.  There are three specific 
+comment types used by orblookup, with the following format:
+
+.IP "<!-- ?var_name -->"
+.sp
+which is replaced by the value of the given variable based on code logic,
+where var_name is a legal variable name listed below
+
+.IP "<!-- ?insert block_name iterate=num indent=num_spaces -->"
+.br
+which is replaced by a block of code contained in block_name and which is
+indented num_spaces, where block_name is a top-level component under
+html_template.  This performs num iterations of the block of code
+
+.IP "<!-- ?insert block_name iterate=var_name indent=num_spaces -->"
+.br
+which is replaced by a block of code iterated over var_name and
+indented num_spaces, where var_name is a legal variable name listed
+below, and has an integer value.  This loops over the variable
+var_name, and updates its value through each iteration.  The valid
+variable names for this purpose are:
+.TS
+l.
+net
+sta
+used_field
+all_field
+alert_stage
+orb
+.TE
+.LP
+The following is a list of legal variable names for use within the html 
+template and what they represent:
+.TS
+l l.
+orbname                 the name of the current orb
+minnetlat               the smallest latency on the current network
+mediannetlat            the median latency on the current network
+maxnetlat               the largest latencies seen on the current network
+alertmode               " checked" if displaying only alerts, "" otherwise
+staclass                class corresponding for current station
+netclass                class corresponding to current network
+time                    the time in UTC of the last cache
+encodednet              the network in scope in url-encoded form
+encodednetsta           the sta+network in url-encoded form
+alert_class             class corresponding to the current alert state
+alert_desc              full description of the alert state
+rownumclass             an alternating class name, either .oddrow or .evenrow
+fieldclass              the class of the current field
+fieldvalue              the value of the current field
+fieldalign              the alignment of the current field, based on config
+checkedstatus           replaced by "checked" or nothing depending on field
+scriptname              the url of the current page
+percentcolwidth         the reciprocal of the number of columns as a percent
+net                     name of the network currently in scope
+sta                     name of the station currently in scope
+used_field              the name of the current field that is enabled 
+all_field               the name of the current field
+num_used_fields         # of fields current enabled
+numfields               total # of fields defined for a network
+num_nets                total # of networks used
+numstas                 total # of stations on current network
+numstastot              total # of stations on all networks
+numstas_expected        total # of expected stations on current network
+numchans                # of channels found for the current station
+numchanstot             total # of channels on current network
+url                     url for the current network
+orburl                  url for the current orb
+orb                     name of the current orb
+.TE
+.SH EXAMPLE
+.ft CW
+.in 2c
+orblist &Arr{
+    __orbname__ &Arr{
+        cachefile /tmp/.cache___orbname__.pf
+        orbname __orbname__
+        update 5
+        num_alert_stages 2        
+        admin __adminemail__
+        numcols 8              
+        numfields 9              
+        dbname __dbname__
+        station_not_present_style nosta
+        new_station_style newsta
+        css_class_list &Arr{
+            norm     color: \\#00AA00; font-weight: bold
+            alert    color: \\#AA0000; font-weight: bold
+            newsta   color: \\#0000CC; font-weight: bold
+            nosta    color: \\#AAAA00; font-weight: bold
+        }      
+        alert_stages &Arr{
+            0 &Arr{
+                name norm
+                priority 0
+                style norm
+                description Station is operating normally.
+            }
+            1 &Arr{
+                name alert
+                priority 1
+                style alert
+                description Station is reporting alert conditions.
+            }
+        }
+        fields &Arr{
+            latency &Arr{
+                channame  LATENCY
+                chantype  standard
+                units     time
+                decdigits 0
+                order     0
+            }
+            numchans &Arr{
+                channame NC
+                chantype standard
+                decdigits 0
+                order    1
+            }
+            skew &Arr{
+                channame  SKEW
+                chantype  standard
+                divby     1000
+                units     time
+                decdigits 0
+                order     2
+            }
+            "temp(F)" &Arr{
+                channame  TEMP
+                chantype  standard
+                divby     100
+                units     &deg;F
+                decdigits 1
+                order     3
+            }
+            "temp(C)" &Arr{
+                channame  TEMP
+                chantype  standard
+                divby     180
+                offset    -17.78
+                units     &deg;C
+                decdigits 1
+                order     4
+            }
+            voltage &Arr{
+                channame  BATT
+                chantype  standard
+                divby     100
+                units     V
+                decdigits 2
+                display   1
+                order     5
+            }
+            "AC failure" &Arr{
+                channame  ACFAIL
+                chantype  alert
+                order     6
+            }
+            hazard &Arr{
+                channame  HAZARD
+                chantype  alert
+                order     7
+            }
+            "clock lock" &Arr{
+                channame  CLOCK
+                chantype  alert
+                order     8
+            }                    
+        }
+        alert_stage_ranges &Arr{
+            all &Arr{
+                alert &Tbl{
+                    &Arr{
+                        name  latency
+                        high   3600
+                        low    -1
+                    }
+                    &Arr{
+                        name  numchans
+                        high  30
+                        low   -1
+                    }
+                    &Arr{
+                        name  skew
+                        high   2.0
+                        low    -2.0
+                    }
+                    &Arr{
+                        name  temp(F)
+                        high   80.0
+                        low    -30.0
+                    }
+                    &Arr{
+                        name  temp(C)
+                        high   26.67
+                        low    -34.44
+                    }
+                    &Arr{
+                        name  voltage
+                        high   999.0
+                        low    10.0
+                    }
+                    &Arr{
+                        name  AC failure
+                        high   0.5
+                        low    -10.0
+                    }
+                    &Arr{
+                        name  hazard
+                        high   0.5
+                        low    -10.0
+                    }
+                    &Arr{
+                        name  clock lock
+                        high   0.5
+                        low    -10.0
+                    }
+                }
+            }
+        }
+        disabled_fields &Arr{
+            DC &Arr{
+                voltage
+            }
+        }
+        packets &Arr{
+            DAS
+            DC
+            RTX
+        }
+    }
+# end of orblist
+}
+styles &Arr{
+  BODY             background-color: white
+  TABLE            vertical-align: top; background-color: white
+  TD               vertical-align: top
+  .ralign          text-align: right
+  .evenrow         background-color: \\#CCCCAA
+  .oddrow          background-color: \\#EEEEDD
+  .selectfields    background-color: \\#AAAA88; text-align: left
+  .descriptive
+  .orblist         background-color: \\#CCCCAA
+  .netlist         background-color: \\#CCCCAA
+  ".netsumrow A"   text-decoration: none;
+  ".summary TD A"  text-decoration: none
+  ".summary TH"    background-color: \\#AAAA88
+  ".summary TD"    background-color: \\#EEEEDD; text-align: center
+  ".descriptive TH" background-color: \\#AAAA88
+  ".descriptive .netheader TH"    background-color: \\#EEEEDD
+  ".orblist TH"    background-color: \\#AAAA88 
+  ".netlist TH"    background-color: \\#AAAA88
+  .netsum          background-color: \\#CCCCAA
+  ".netsum TH"     background-color: \\#AAAA88
+  .legend          background-color: \\#CCCCAA
+  ".legend TH"     background-color: \\#AAAA88 
+  .bc              background-color: \\#333300
+}
+
+email_notify &Literal{
+
+}
+
+html_template &Arr{
+    overview &Literal{
+<CENTER>
+<H1><!-- ?orbname --> real-time status</H1>
+<P STYLE="font-style: italic">last update: <!-- ?time --></P>
+
+<FORM method=GET action="<!-- ?scriptname -->">
+<TABLE cellpadding=0 cellspacing=4 border=0 valign=baseline>
+  <TR>
+    <TD valign=top rowspan=1>
+      <!-- ?insert orblist iterate=1 indent=6 -->
+      <BR>
+      <!-- ?insert netlist iterate=1 indent=6 -->
+    </TD>
+    <TD valign=top>
+      <!-- ?insert legend iterate=1 indent=6 -->
+      <BR>
+      <!-- ?insert netsummary iterate=1 indent=6 -->
+    </TD>
+    <TD valign=top rowspan=1>
+      <!-- ?insert fieldselect iterate=1 indent=6 -->
+    </TD>
+  </TR>
+</TABLE>
+</TD></TR></TABLE>
+</FORM>
+</CENTER>
+}
+
+    netspecific &Literal{
+<CENTER>
+<H1><!-- ?orbname --> real-time status</H1>
+<P STYLE="font-style: italic">last update: <!-- ?time --></P>
+<FORM method=GET action="<!-- ?scriptname -->">
+<TABLE cellpadding=4 cellspacing=4 border=0>
+  <TR>
+    <TD rowspan=5>
+      <!-- ?insert orblist iterate=1 indent=6 -->
+      <BR>
+      <!-- ?insert netlist iterate=1 indent=6 -->
+    </TD>
+    <TD>
+      <!-- ?insert legend iterate=1 indent=6 -->
+    </TD>
+    <TD valign=top rowspan=5>
+      <!-- ?insert fieldselect iterate=1 indent=6 -->
+    </TD>
+  </TR>
+  <TR>
+    <TD>
+      <!-- ?insert current_netsummary iterate=1 indent=6 -->
+    </TD>
+  </TR>
+  <TR>
+    <TD>
+      <!-- ?insert summary iterate=?numstas indent=6 -->
+    </TD>
+  </TR>
+  <TR>
+    <TD>
+      <HR size=1 noshade>
+    </TD>
+  </TR>
+  <!-- ?insert descriptive iterate=1 indent=2 -->
+</TABLE>
+</FORM>
+</CENTER>
+}
+
+    descriptive &Literal{
+<TR>
+  <TD>
+    <TABLE border=0 class=bc cellpadding=1 cellspacing=0 align=center 
+           width="100%"><TR><TD>
+    <TABLE class=descriptive border=0 cellpadding=4 cellspacing=1 align=center
+           width="100%">
+      <TR class=netheader>
+        <TH colspan=<!-- ?num_used_fields -->><!-- ?fullnet -->
+        </TH>
+      </TR>
+      <TR>
+        <TH>station</TH>
+        <!-- ?insert descriptheadcell iterate=used_field indent=8 -->
+      </TR>
+      <!-- ?insert descriptrow iterate=sta indent=6 -->
+    </TABLE>
+    </TD></TR></TABLE>
+  </TD>
+</TR>
+}
+
+    descriptheadcell &Literal{
+<TH><!-- ?used_field --></TH>
+}
+
+    descriptrow &Literal{
+<TR CLASS="<!-- ?rownumclass -->">
+  <TD ALIGN="center"><A CLASS="<!-- ?staclass -->" NAME="<!-- ?encodednetsta -->"><!-- ?sta --></A></TD>
+  <!-- ?insert descriptcell iterate=used_field indent=2 -->
+</TR>
+}
+
+    descriptcell &Literal{
+<TD CLASS="<!-- ?fieldclass -->" ALIGN="<!-- ?fieldalign -->"><!-- ?fieldvalue --></TD>
+}
+
+    fieldselect &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE CLASS=selectfields border=0 cellpadding=4 cellspacing=0 width="100%">
+  <TR>
+    <TH>Fields to display:</TH>
+  </TR>
+  <!-- ?insert fieldselectrow iterate=all_field indent=2 -->
+  <TR><TD><HR></TD></TR>
+  <TR>
+    <TD><INPUT TYPE="checkbox" NAME="alertmode"<!-- ?alertmode -->>
+      Show alerts only
+    </TD>
+  </TR>
+  <TR>
+    <INPUT TYPE="hidden" NAME="orbname" VALUE="<!-- ?orbname -->">
+    <INPUT TYPE="hidden" NAME="net" VALUE="<!-- ?net -->">
+    <TD><INPUT TYPE="submit" VALUE="Update"></TD>
+  </TR>
+</TABLE>
+</TD></TR></TABLE>
+}
+
+    fieldselectrow &Literal{
+<TR>
+  <TD><INPUT TYPE="checkbox" NAME="<!-- ?all_field -->"<!-- ?checkedstatus -->> <!-- ?all_field --></TD>
+</TR>
+}
+
+    legend &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE border=0 class="legend" cellpadding=2 cellspacing=0 width=100%>
+  <TR>
+    <TH>LEGEND</TH>
+  </TR>
+  <!-- ?insert legendrow iterate=alert_stage indent=2 -->
+  <TR>
+    <TD CLASS="nosta">Station has not reported.</TD>
+  </TR>
+  <TR>
+    <TD CLASS="newsta">Station has not been added to the database.</TD>
+  </TR>
+</TABLE>
+</TD></TR></TABLE>}
+
+    legendrow &Literal{
+<TR>
+  <TD class="<!-- ?alert_class -->"><!-- ?alert_desc --></TD>
+</TR>
+}
+
+    summary &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE CLASS=summary width="100%" cellpadding=2 cellspacing=0 border=0>
+  <TR>
+    <TH colspan=<!-- ?numcols -->><!-- ?fullnet --></A>
+    </TH>
+  </TR>
+  <TR>
+  <!-- ?insert summarycell iterate=sta indent=2 -->
+  </TR>
+</TABLE>
+</TD></TR></TABLE>
+}
+
+    summarycell &Literal{
+  <TD width="<!-- ?percentcolwidth -->%">
+    <A CLASS=<!-- ?staclass --> HREF="#<!-- ?encodednetsta -->"><!-- ?sta --></A>
+  </TD>
+<!-- ?row_seperator -->
+}
+
+    netsummary &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE border=0 class="netsum" cellpadding=2 cellspacing=0 width=100%>
+  <TR>
+    <TH colspan=7>NETWORK SUMMARY [ <!-- ?num_nets --> networks total ]</TH>
+  </TR>
+  <TR>
+    <TH>Network</TH>
+    <TH># of stations</TH>
+    <TH># expected</TH>
+    <TH># of channels</TH>
+    <TH>min latency</TH>
+    <TH>median latency</TH>
+    <TH>max latency</TH>
+  </TR>
+  <!-- ?insert netsummaryrow iterate=net indent=2 -->
+  <TR>
+    <TD>&nbsp;</TD>
+    <TD>&nbsp;</TD>
+    <TD>&nbsp;</TD>
+    <TD>&nbsp;</TD>
+  </TR>
+  <TR>
+    <TD colspan=7 align=right><b><!-- ?numstastot --> stations total</b></TD>
+  </TR>
+  <TR>
+    <TD colspan=7 align=right><b><!-- ?numchanstot --> channels total</b></TD>
+  </TR>
+</TABLE>
+</TD></TR></TABLE>
+}
+
+    current_netsummary &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE border=0 class="netsum" cellpadding=4 cellspacing=0 width=100%>
+  <TR>
+    <TH>Network</TH>
+    <TH># of stations</TH>
+    <TH># expected</TH>
+    <TH># of channels</TH>
+    <TH>min latency</TH>
+    <TH>median latency</TH>
+    <TH>max latency</TH>
+  </TR>
+  <!-- ?insert netsummaryrow iterate=?numstas indent=2 -->
+</TABLE>
+</TD></TR></TABLE>
+}
+
+    netsummaryrow &Literal{
+<TR>
+  <TD align=center><A HREF="<!-- ?url -->" CLASS="<!-- ?netclass -->"><!-- ?fullnet --></A></TD>
+  <TD align=right><!-- ?numstas --></TD>
+  <TD align=right><!-- ?numstas_expected --></TD>
+  <TD align=right><!-- ?numchans --></TD>
+  <TD align=right><!-- ?minnetlat --></TD>
+  <TD align=right><!-- ?mediannetlat --></TD>
+  <TD align=right><!-- ?maxnetlat --></TD>
+</TR>
+}
+    fillercell &Literal{
+<TD>&nbsp;</TD>
+}
+
+
+    orblist &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE border=0 align=center cellpadding=2 cellspacing=0 class=orblist width="100%">
+  <TR>
+     <TH>ORB LIST</TH>
+  </TR>
+  <!-- ?insert orblistrow iterate=orb indent=2 -->
+</TABLE>
+</TD></TR></TABLE>
+}
+
+    orblistrow &Literal{
+<TR>
+  <TD><A HREF="<!-- ?orburl -->"><!-- ?orb --></A></TD>
+</TR>
+}
+
+
+    netlist &Literal{
+<TABLE border=0 class=bc cellpadding=1 cellspacing=0 width="100%"><TR><TD>
+<TABLE border=0 align=center cellpadding=2 cellspacing=0 class=netlist width="100%">
+  <TR>
+     <TH>NETWORKS</TH>
+  </TR>
+  <!-- ?insert netlistrow iterate=net indent=2 -->
+</TABLE>
+</TD></TR></TABLE>
+}
+
+    netlistrow &Literal{
+<TR>
+  <TD align=center><A HREF="<!-- ?url -->"><!-- ?net--></A></TD>
+</TR>
+}
+}
+.nf
+.fi
+.in
+.ft R
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orblook(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Jennifer Bowen
+.br
+Institute of Geophysics and Planetary Physics
+.br
+Scripps Institution of Oceanography
+.\" $Id$

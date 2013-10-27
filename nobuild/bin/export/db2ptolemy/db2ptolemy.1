@@ -1,0 +1,46 @@
+.TH DB2XML 1 "$Date$"
+.SH NAME
+db2ptolemy \- pretty-print a database view as a Ptolemy II expression
+.SH SYNOPSIS
+.nf
+\fBdb2ptolemy \fP[-v] [-p] 
+                \fIdbname.table\fP [\fIname\fP \fIexpr\fP [\fIname\fP \fIexpr\fP
+                ...]]
+.fi
+.SH DESCRIPTION
+
+\fBdb2ptolemy\fP prints a database table or view as a Ptolemy II expression that
+will evaluate to an array of records in Ptolemy II.
+
+With no command-line arguments other than the table pathname, all
+table fields are printed, each as its own element. the -p option
+limits the fields shown to the primary keys. The output 
+is sent to standard-out.
+
+Optionally, all of the fields in each row may be individually
+specified on the command line. Each field is defined by a
+pair of command line arguments, first a (Ptolemy) field \fIname\fP and then
+an expression to be evaluated by the Antelope expression calculator
+(see the man page for dbexpressions(5)). Care should be taken
+to use quotes where necessary to protect expressions from the
+shell.
+
+.SH OPTIONS
+
+-v Verbose
+
+-p Only print out the primary keys as elements
+
+.SH RETURN VALUES
+\fBdb2ptolemy\fP exits with 0 upon success, nonzero upon error.
+.SH "SEE ALSO"
+.nf
+db2xml(1), db2ptolemy(3), dbexpressions(5), dbselect(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Tobin Fricke, University of California
+Basically a direct copy of Kent Lindquist's db2xml(1).
+.fi
+.\" $Id$

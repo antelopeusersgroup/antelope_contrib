@@ -1,0 +1,57 @@
+Network_Name  anza
+ 
+#DTYPE    SID NAME    COMP   SENS       CALIB
+Site &Tbl{
+ BBA/HS  298   TRO       1    HHZ    1.266669
+ BBA/HS  298   TRO       2    HHN    1.266669
+ BBA/HS  298   TRO       3    HHE    1.266669
+ BBA/BS  298   TRO       1    BHZ    1.266669
+ BBA/BS  298   TRO       2    BHN    1.266669
+ BBA/BS  298   TRO       3    BHE    1.266669
+ BBA/LS  298   TRO       1    LHZ    1.266669
+ BBA/LS  298   TRO       2    LHN    1.266669 
+ BBA/LS  298   TRO       3    LHE    1.266669
+#
+
+}
+ 
+Das_Stat &Tbl{
+  1    BATT
+  2    RESET
+  3    WHY
+  4    BUFF
+  5    RADRES
+  6    PLL
+  7    SKEW
+  8    TEMP
+  9    LAT
+  10   LONG
+  11   ALT
+}
+ 
+DC_Stat &Tbl{
+  1    BATT
+  2    ACFAIL
+  3    HAZARD
+  4    M1
+  5    M2
+  6    M3
+  7    CLOCK
+  8    MCLK
+  9    ACLK
+  10   BUFF
+  11   LINK
+  12   OPEN
+  13   ERROR
+  14   SEND
+  15   RESET
+  16   WHY
+  17   RSR
+}
+ 
+RTX_Stat &Tbl{
+  1     RTXREQ
+  2     RTXRCV
+  3     RTXSKP
+}
+

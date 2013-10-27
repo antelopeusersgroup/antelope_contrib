@@ -1,0 +1,2 @@
+      parameter(nvelmax=200)
+      common/model/nvel,vel(nvelmax),dep(nvelmax) 
