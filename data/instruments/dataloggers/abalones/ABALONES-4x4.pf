@@ -12,22 +12,11 @@ info    &Literal{
 ABALONES-4x4, OBSIP SIO
 }
 
-streams 50sps
+streams 1sps 50sps
 
-50sps      50 a/d50
+1sps    1   a/d1
+50sps   50  a/d50
 
-possible_streams &Literal{
-    my %valid ;
-
-    $valid{'50sps'} = 1;
-
-    foreach (@_) {
-        return ( ($_) ) if exists $valid{$_} ;
-    }
-
-    return ( (keys %valid) );
-
-}
 
 # Gains: Nominal sensitivity (in ounits/iunits) for datalogger
 # Voltage range: +/- 2.5 V, max counts over this range of
@@ -39,6 +28,13 @@ gains 3355443
 
 # Stages
 
+a/d1     &Arr{
+    samprate    1
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
 a/d50     &Arr{
     samprate    50
     gtype       digitizer
