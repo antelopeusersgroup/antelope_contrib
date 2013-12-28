@@ -60,7 +60,7 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,MetadataList& mdl,AttributeMap& a
 					<< " it was judged a duplicate:"
 					<< endl
 					<< lat << " "<< lon <<" "<<depth
-					<< strtime(otime)<<endl;
+					<<" "<< strtime(otime)<<endl;
 		}
 		current_hypo=catalog.begin();
 		mdloaded=mdl;
@@ -104,8 +104,8 @@ EventCatalog::EventCatalog(DatabaseHandle& dbh,string ttmethod, string ttmodel,
 					<< "Warning:  this event was not added because"
 					<< " it was judged a duplicate:"
 					<< endl
-					<< deg(lat) << " "<< deg(lon) <<" "<<depth
-					<< strtime(otime)<<endl;
+					<< lat << " "<< lon <<" "<<depth
+					<<" "<< strtime(otime)<<endl;
 		}
 		current_hypo=catalog.begin();
 	} catch (std::exception& e)
