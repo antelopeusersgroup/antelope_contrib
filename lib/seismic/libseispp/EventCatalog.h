@@ -43,7 +43,7 @@ public:
         bool operator()(const Hypocenter& h1, const Hypocenter& h2) const
         {
 		const double vp(6.2);  // km/s
-		const double dtmin(2.0);  // fudge factor cannot be smaller than this
+		const double dtmin(0.01);  // fudge factor cannot be smaller than this
 		/* if origin times differ by more than this just use a
 		simple inequality test on origin time for speed.*/
 		const double dtbig(100.0);  
