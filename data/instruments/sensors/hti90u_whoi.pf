@@ -28,4 +28,4 @@ orientations    &Tbl{
 H       -999.9  -999.9
 }
 
-response        &datafile(responses/hti90u_whoi)
+response        &datafile(responses/HTI90U_WHOI)
