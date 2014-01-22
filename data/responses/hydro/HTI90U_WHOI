@@ -1,0 +1,19 @@
+# @(#) High Tech HTI-90-U   1.0  07/27/2007
+#  High Tech HTI-90-U piezoelectric hydrophone; 
+#  Preamp internal to sensor package
+#  Normalized  response relative to pressure (Passcals)
+#  Sensitivity  is 1.0023E-03 V/Pa
+#  Poles come first followed by zeroes
+#  All poles and zeroes in radians/sec
+#  Transfer function from pressure
+#  Normalization Frequency is 3.1416e+03 rad/sec (500 Hz)
+#  Normalization Factor is 1.0000E+00
+#
+theoretical   1 sensor   paz    Collins/WHOI
+1.0000E+00  500.0
+2             Poles
+-2.9577E+01  0.0000E+00  0.0000E+00   0.0000E+00
+-3.6329E-01  0.0000E+00  0.0000E+00   0.0000E+00
+2             Zeros
+0.0000E+00  0.0000E+00  0.0000E+00    0.0000E+00
+-4.2553E-01  0.0000E+0 0 0.0000E+00    0.0000E+00
