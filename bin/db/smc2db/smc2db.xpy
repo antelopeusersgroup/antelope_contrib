@@ -3,7 +3,7 @@ A script to map SMC format files (http://nsmp.wr.usgs.gov/smcfmt.html)
 to a css3.0 database.
 """
 import antelope.datascope as datascope
-from antelope.datascope import dbopen, closing, freeing, Trsave_wfError
+from antelope.datascope import dbcreate, dbopen, closing, freeing, Trsave_wfError
 import contextlib
 try:
     from antelope.datascope import Trsave_wfException
@@ -162,7 +162,7 @@ def _write_data(data, dbout):
 def _write_origin_event_data(data, dbout):
     """
     Write data to origin and event tables.
-    """"
+    """
     from antelope.stock import epoch2str
     text_hdr, integer_hdr, real_hdr = data['text_header'], \
         data['integer_header'], data['real_header']
@@ -402,6 +402,7 @@ def _main():
     try:
         args = _parse_command_line()
         dbout = args.dbout
+        if not os.path.exists(dbout): dbcreate(dbout, 'css3.0')
         for f in args.input_file:
             with open(f, 'r') as infile:
                 _process_file(infile, dbout)
