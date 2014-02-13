@@ -51,7 +51,6 @@ def _read_text_header(infile):
         else:
             try: data[key] = eval(data[key])
             except (SyntaxError, NameError): pass
-    _log_null_values(data)
     return data
 
 def _read_integer_header(infile):
@@ -191,7 +190,7 @@ def _write_origin_event_data(data, dbout):
                     'mlid': tbl_origin.nextid('mlid'), \
                     'ms': real_hdr['mag_s'], \
                     'msid': tbl_origin.nextid('msid'), \
-                    'auth': sys.argv[0]}
+                    'auth': 'smc2db'}
                 tbl_origin.record = tbl_origin.addnull()
                 for field in origin_data:
                     if origin_data[field] == None: continue
@@ -199,7 +198,7 @@ def _write_origin_event_data(data, dbout):
                 event_data = {'evid': evid, \
                     'evname': text_hdr['event_name'], \
                     'prefor': orid, \
-                    'auth': sys.argv[0]}
+                    'auth': 'smc2db'}
                 tbl_event.record = tbl_event.addnull()
                 for field in event_data:
                     if event_data[field] == None: continue
@@ -373,7 +372,7 @@ def _process_file(infile, dbout):
     """
     Pass control to reader functions and writer function.
     """
-    print 'processing %s' % infile
+    print 'processing %s' % infile.name
     data = {}
     data['text_header'] = _read_text_header(infile)
     data['integer_header'] = _read_integer_header(infile)
@@ -405,7 +404,8 @@ def _main():
         for f in args.input_file:
             with open(f, 'r') as infile:
                 _process_file(infile, dbout)
-    except Exception:
+    except Exception as e:
+        print e
         return -1
     return 0
 
