@@ -3,7 +3,8 @@ A script to map SMC format files (http://nsmp.wr.usgs.gov/smcfmt.html)
 to a css3.0 database.
 """
 import antelope.datascope as datascope
-from antelope.datascope import dbcreate, dbopen, closing, freeing, Trsave_wfError
+from antelope.datascope import dbcreate, dbopen, closing, freeing, \
+    Trsave_wfError, trdestroying, trnew
 import contextlib
 try:
     from antelope.datascope import Trsave_wfException
@@ -208,8 +209,6 @@ def _write_wf_data(data, dbout):
     """
     Create waveform file and add record to wfdisc table.
     """
-    from antelope.datascope import destroying, trdestroying, freeing, closing, \
-        dbtmp, Trsave_wfError, trnew
     from antelope.stock import str2epoch, epoch2str
     text_hdr, integer_hdr, real_hdr, time_series = data['text_header'], \
         data['integer_header'], data['real_header'], data['time_series']
@@ -245,7 +244,7 @@ def _write_wf_data(data, dbout):
         for d in metadata: tmptr.putv(d)
         try:
             tmptr.trsave_wf(tbl_wfdisc, datatype=datatype)
-        except (NameError, Trsave_wfError) as e:
+        except (NameError, Trsave_wfError, Trsave_wfException) as e:
             print e
 
 def _write_site_data(data, dbout):
