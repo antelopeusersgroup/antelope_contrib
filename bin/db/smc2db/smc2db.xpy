@@ -5,12 +5,14 @@ to a css3.0 database.
 import antelope.datascope as datascope
 from antelope.datascope import dbopen, closing, freeing, Trsave_wfError
 import contextlib
-
-class Trsave_wfException(datascope.DatascopeException): pass
-datascope.Trsave_wfException = Trsave_wfException
+try:
+    from antelope.datascope import Trsave_wfException
+except ImportError:
+    class Trsave_wfException(datascope.DatascopeException): pass
+    datascope.Trsave_wfException = Trsave_wfException
 def _read_text_header(infile):
     """
-    Read text header, return dictionary of parsed data
+    Read text header, return dictionary of parsed data.
     """
     data, lines = {}, []
     #read text header lines into memory
@@ -53,7 +55,7 @@ def _read_text_header(infile):
 
 def _read_integer_header(infile):
     """
-    Read integer header, return dictionary of parsed data
+    Read integer header, return dictionary of parsed data.
     """
     data, cells = {}, []
     #read integer header cells into memory
@@ -97,7 +99,7 @@ def _read_integer_header(infile):
 
 def _read_real_header(infile):
     """
-    Read real header, return dictionary of parsed data
+    Read real header, return dictionary of parsed data.
     """
     data, cells = {}, []
     #read real header cells into memory
@@ -140,6 +142,9 @@ def _read_real_header(infile):
     return data
 
 def _read_time_series_data(infile, nsamp):
+    """
+    Read time series portion of the input file. Return data in a list.
+    """
     data = []
     for line in infile:
         data += [float(line[i:i+10]) for i in range(0, 80, 10) \
@@ -147,11 +152,17 @@ def _read_time_series_data(infile, nsamp):
     return data
 
 def _write_data(data, dbout):
+    """
+    Pass control to writer functions.
+    """
     _write_origin_event_data(data, dbout)
     _write_wf_data(data, dbout)
     _write_site_data(data, dbout)
 
 def _write_origin_event_data(data, dbout):
+    """
+    Write data to origin and event tables.
+    """"
     from antelope.stock import epoch2str
     text_hdr, integer_hdr, real_hdr = data['text_header'], \
         data['integer_header'], data['real_header']
@@ -194,6 +205,9 @@ def _write_origin_event_data(data, dbout):
                     else: tbl_event.putv((field, event_data[field]))
 
 def _write_wf_data(data, dbout):
+    """
+    Create waveform file and add record to wfdisc table.
+    """
     from antelope.datascope import destroying, trdestroying, freeing, closing, \
         dbtmp, Trsave_wfError, trnew
     from antelope.stock import str2epoch, epoch2str
@@ -235,6 +249,9 @@ def _write_wf_data(data, dbout):
             print e
 
 def _write_site_data(data, dbout):
+    """
+    Write data to site table.
+    """
     text_hdr, integer_hdr, real_hdr = data['text_header'], \
         data['integer_header'], data['real_header']
     if _is_site_unique(data, dbout):
@@ -252,6 +269,9 @@ def _write_site_data(data, dbout):
                 tbl_site.putv(d)
 
 def _is_origin_unique(data, tbl_origin):
+    """
+    Verify uniqueness of origin. Return True if unique, False otherwise.
+    """
     text_hdr, integer_hdr, real_hdr = data['text_header'], \
         data['integer_header'], data['real_header']
     lat, lon, depth = real_hdr['origin_lat'], real_hdr['origin_lon'], \
@@ -268,6 +288,9 @@ def _is_origin_unique(data, tbl_origin):
         else: return False
 
 def _is_site_unique(data, dbout):
+    """
+    Verify uniqueness of site. Return True if unique, False otherwise.
+    """
     text_hdr, integer_hdr, real_hdr = data['text_header'], \
         data['integer_header'], data['real_header']
     sta_code, lat, lon, elev = text_hdr['sta_code'], real_hdr['sta_lat'], \
@@ -283,10 +306,16 @@ def _is_site_unique(data, dbout):
         else: return False
 
 def _text_hdr_time_2_epoch(year, month, day, hm):
+    """
+    Convert text header time format to epoch. Return epoch time.
+    """
     from antelope.stock import str2epoch
     return str2epoch('%d/%d/%d  %d:%d:00.0' % (month, day, year, hm/100, hm%100))
 
 def _build_chan_code(data):
+    """
+    Return the channel code of the input data.
+    """
     samprate = data['real_header']['samprate']
     if samprate < 0.000001: band_code = 'Q'
     elif samprate >= 0.000001 and samprate < 0.00001: band_code = 'T'
@@ -319,6 +348,9 @@ def _build_chan_code(data):
     return '%s%s%s' % (band_code, instrument_code, component)
 
 def _get_segtype(data):
+    """
+    Returns the segtype of the input data.
+    """
     data_type = data['text_header']['data_type']
     if data_type == None: segtype = 'A'
     elif data_type[0] == '0': segtype = 'A'
@@ -331,11 +363,17 @@ def _get_segtype(data):
     return segtype
 
 def _get_calib_value(data):
+    """
+    This is a place holder. Function should return wfdisc.calib value.
+    """
     text_hdr, integer_hdr, real_hdr = data['text_header'], \
         data['integer_header'], data['real_header']
     return 1
 
 def _process_file(infile, dbout):
+    """
+    Pass control to reader functions and writer function.
+    """
     print 'processing %s' % infile
     data = {}
     data['text_header'] = _read_text_header(infile)
@@ -346,6 +384,9 @@ def _process_file(infile, dbout):
     _write_data(data, dbout)
 
 def _parse_command_line():
+    """
+    Parse command line arguments. Return <argparse.Namespace> class
+    """
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('input_file', type=str, nargs='+', \
@@ -354,32 +395,19 @@ def _parse_command_line():
     args = parser.parse_args()
     return args
 
-
-#def _configure_logging(logfile=False):
-#    import logging
-#    logger = logging.getLogger(sys.argv[0])
-#    logger.setLevel(logging.DEBUG)
-#    if logfile:
-#        fh = logging.FileHandler(logfile)
-#        fh.setLevel(logging.INFO)
-#        logger.addHandler(fh)
-#    sh = logging.StreamHandler()
-#    sh.setLevel(logging.ERROR)
-#    logger.addHandler(sh)
-#    return logger
-
-def _log_null_values(data):
-    """Log null values read from SMC file."""
-    #use the 'inspect' module to get a stack trace
-    pass
-
 def _main():
-    args = _parse_command_line()
-#    logger = _configure_logging()
-    dbout = args.dbout
-    for f in args.input_file:
-        with open(f, 'r') as infile:
-            _process_file(infile, dbout)
+    """
+    This is the main function. Execution control begins here.
+    """
+    try:
+        args = _parse_command_line()
+        dbout = args.dbout
+        for f in args.input_file:
+            with open(f, 'r') as infile:
+                _process_file(infile, dbout)
+    except Exception:
+        return -1
+    return 0
 
 if __name__ == '__main__': sys.exit(_main())
 else: sys.exit('Not a module to import!!')
