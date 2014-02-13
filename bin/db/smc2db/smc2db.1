@@ -1,6 +1,6 @@
 .TH SMC2DB SECTION# 1
 .SH NAME
-smc2db (lowercase roman) \- convert SMC format data to CSS3.0 database
+smc2db \- convert SMC format data to CSS3.0 database
 .SH SYNOPSIS
 .nf
 \fBsmc2db\fP \fIinput_file [input_file..[input_file..[..]]] output_db\fP
@@ -26,16 +26,9 @@ smc2db /path/to/smc_data_dir/* /path/to/dbout
 .in
 .SH RETURN VALUES
 Command returns 0 for normal execution, -1 otherwise.
-.SH LIBRARY
 .SH ATTRIBUTES
 Not thread safe.
-.SH DIAGNOSTICS
-.SH "SEE ALSO"
-.nf
-.fi
 .SH "BUGS AND CAVEATS"
 The current mapping from SMC format to CSS3.0 is incomplete. Further development will be undertaken only if a user-base and demand exists.
 .SH AUTHOR
-Malcolm White
-mcwhite@ucsd.edu
-February, 2014
+Malcolm White (mcwhite@ucsd.edu) - February, 2014
