@@ -1,24 +1,25 @@
-.TH SHOW_STALTA 1 
+.TH SHOW_STALTA 1
 .SH NAME
 show_stalta \- Plot STA, LTA and SNR of trace
 .SH SYNOPSIS
 .nf
-\fBshow_stalta \fP\fIdb\fP \fIsta\fP \fIchan\fP \fItstart\fP \fItend\fP \fIfilter\fP \fIsta_twin\fP \fIlta_twin\fP \fISNR_thresh\fP
+\fBshow_stalta \fP\fIdb\fP \fIsta\fP \fIchan\fP \fItstart\fP \fItend\fP
+                \fIfilter\fP \fIsta_twin\fP \fIlta_twin\fP \fISNR_thresh\fP
 .fi
 .SH DESCRIPTION
-This program displays five traces on four separate plots. The first plot displays the raw waveform data for /fIsta/fP:/fIchan/fP in /fIdb/fP between /fItstart/fP and /fItend/fP. The second plot displays waveform data filtered by /fIfilter/fP. The third plot displays the short-term average (STA) and long-term average calculated using filtered data over respective time windows /fIsta_twin/fP and /fIlta_twin/fP. When the signal-to-noise-ration (SNR) exceeds /fISNR_thresh/fP, the lta will be held constant until the SNR drops below /fISNR_thresh/fP. The fourth plot displays the SNR, calculated using the sta and lta values displayed in the third plot.
+This program displays five traces on four separate plots. The first plot displays the raw waveform data for \fIsta\fP:\fIchan\fP in \fIdb\fP between \fItstart\fP and \fItend\fP. The second plot displays waveform data filtered by \fIfilter\fP. The third plot displays the short-term average (STA) and long-term average calculated using filtered data over respective time windows \fIsta_twin\fP and \fIlta_twin\fP. When the signal-to-noise-ration (SNR) exceeds \fISNR_thresh\fP, the lta will be held constant until the SNR drops below \fISNR_thresh\fP. The fourth plot displays the SNR, calculated using the \fIsta\fP and lta values displayed in the third plot.
 
 .in 2c
 .ft CW
 .nf
+
+dbdetect(1)
+
 .fi
 .ft R
 .in
-.nf
-dbdetect(1)
-.fi
 .SH "BUGS AND CAVEATS"
-The SNR calculated here is NOT calculated as STA / LTA. 
+The SNR calculated here is NOT calculated as STA / LTA.
 
 .SH AUTHOR
 .nf
