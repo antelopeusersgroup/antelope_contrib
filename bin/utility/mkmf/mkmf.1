@@ -1,0 +1,32 @@
+.TH MKMF 1
+.SH MKMF
+mkmf \- utility to create Makefiles for Antelope
+.SH SYNOPSIS
+.nf
+\fBmkmf \fP
+.fi
+.SH DESCRIPTION
+\fBmkmf\fP searches files in the local directory and
+lists them in the proper sections for simple antelope makefiles
+At this time, it recognizes sources files from the languages supported by Antelope, parameterfiles, manpages and headers.
+
+.SH EXAMPLE
+.nf
+mkmf > Makefile
+
+> cat Makefile
+BIN=mkmf
+MAN1=mkmf.1
+include $(ANTELOPEMAKE)
+DIRS=
+SUBDIR=/local
+.fi
+.SH "SEE ALSO"
+.nf
+mkmk(1)
+antelopemakefile(5)
+.fi
+.SH BUGS AND CAVEATS
+mkmf is very simple minded. Among others, it cannot guess data to be installed and even more complicated stuff.
+.SH AUTHOR
+Nikolaus Horn, nikolaus.horn@zamg.ac.at
