@@ -1,0 +1,38 @@
+.TH CATALOG_CLEANUP 1
+.SH NAME
+catalog_cleanup - removes duplicates in an event catalog from a common source
+.SH SYNOPSIS
+.nf
+catalog_cleanup dbin dbout tolerance
+.fi
+.SH DESCRIPTION
+.LP
+Catalogs like the qed_weekly often have duplicates.  A typical 
+cause is posting of real time solutions before all arrivals have
+been measured.  For this reason the qed often has 2 to 4 different
+solutions for the same event.  This program removes duplicates 
+based on a space-time cutoff criteria.
+.LP
+The program is driven by the origin table of dbin.  It sorts that 
+table by time.  It detects a duplicate by computing a space-time
+distance in units of seconds.  Distances are scaled to time using 
+a constant velocity of 6.0 km/s.  If one or more events are found
+within a time distance range of tolerance the event with the 
+largest value of ndef (number of defining phases) is save.  
+Output is written to dbout.  The output preserves the original 
+orid and evid values.  The output event table will have a 
+one-to-one relationship with the output origin table.
+.SH "BUGS AND CAVEATS"
+.LP
+Do not use this program on a mixed catalog produced by merging results
+from multiple sources.  e.g. never ever apply this program to 
+a database with properly defined multiple origins associated with 
+a single evid like a clean database produced by dbloc2.  
+I reiterate that the intended use is mainly for real-time 
+catalogs that have clear duplicates.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi

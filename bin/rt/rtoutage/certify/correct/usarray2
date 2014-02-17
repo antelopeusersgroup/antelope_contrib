@@ -1,0 +1,24 @@
+A04A:BHZ         1/16/2005 (016)  0:00:00.000  1 days              
+    A04A:BHZ          1 days              
+A04A:LHZ         1/16/2005 (016)  0:00:00.000  1 days              
+    A04A:LHZ          1 days              
+FARB:BHZ         1/16/2005 (016)  0:00:00.000  1 days              
+    FARB:BHZ          1 days              
+FARB:LHZ         1/16/2005 (016)  0:00:00.000  1 days              
+    FARB:LHZ          1 days              
+FARB:UMZ         1/16/2005 (016)  0:00:00.000  1 days              
+    FARB:UMZ          1 days              
+PFO:BHZ          1/16/2005 (016)  0:00:00.000  1 days              
+    PFO:BHZ           1 days              
+PFO:LHZ          1/16/2005 (016)  0:00:00.000  1 days              
+    PFO:LHZ           1 days              
+
+> Network Performance      86400 seconds
+% AZ    1 sta    2 chan     172800 seconds     0.00%
+% BK    1 sta    3 chan     259200 seconds     0.00%
+% TA    1 sta    2 chan     172800 seconds     0.00%
+
+Stations down:
+# A04A
+# FARB
+# PFO

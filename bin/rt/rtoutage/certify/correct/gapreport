@@ -1,0 +1,124 @@
+
+45.04% data recovered from all selected channels
+4 of 5 stations reporting.
+
+missing average of 13:11 hours of data from 5 channels 
+
+Performance by network
+  Net %Return Network                                      Stations Channels
+  CI   76.53% CI                                                1       1
+  TA   37.16% USArray Transportable Array (Bigfoot)             4       4
+
+ 1 station appears to be down:
+	
+	TA 109C     Camp Elliot, Mirimar, CA, USA
+
+
+Worst 5 stations for missing data are:
+   TA A04A      17:36 hours          (LHZ) Lummi Island, Lummi Island, WA, USA
+   TA V04C      10:25 hours          (LHZ) Ramage Ranch, Paso Robles, CA, USA
+   TA Y12C       8:19 hours          (LHZ) Blythe, CA, USA
+   CI SDP        5:38 hours          (LHZ) Sudden Peak
+
+Worst 5 Stations by large gaps:
+   TA A04A      16:04 hours          (LHZ) Lummi Island, Lummi Island, WA, USA
+   TA V04C       8:59 hours          (LHZ) Ramage Ranch, Paso Robles, CA, USA
+   TA Y12C       8:19 hours          (LHZ) Blythe, CA, USA
+   CI SDP        5:19 hours          (LHZ) Sudden Peak
+
+Worst 5 Stations with most gaps:
+   TA A04A      52 gaps              (LHZ) Lummi Island, Lummi Island, WA, USA
+   TA V04C       3 gaps              (LHZ) Ramage Ranch, Paso Robles, CA, USA
+   CI SDP        2 gaps              (LHZ) Sudden Peak
+   TA Y12C       1 gaps              (LHZ) Blythe, CA, USA
+
+
+Detailed Waveform Gaps from  1/15/2005 for  1 days              
+
+  CI   76.53% CI                                         1 stations    1 channels
+
+    SDP   Sudden Peak
+      LHZ   5:38 hours         
+        02:21:21.507  18:27 minutes       
+        06:49:54.507   5:19 hours         
+
+  TA   37.16% USArray Transportable Array (Bigfoot)      4 stations    4 channels
+
+    109C  Camp Elliot, Mirimar, CA, USA
+Couldn't open note file for 109C in /opt/antelope/tests/bin/rt/rtoutage/data/notes/109c: No such file or directory
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+    A04A  Lummi Island, Lummi Island, WA, USA
+
+        ** This station sucks **
+      LHZ  17:36 hours         
+        00:44:12.000  16:04 hours         
+        17:00:36.000   3.000 seconds      
+        22:25:50.000   1:40 minutes       
+        22:27:31.000   1:52 minutes       
+        22:29:24.000   1:49 minutes       
+        22:31:20.000   1:46 minutes       
+        22:33:20.000   1:36 minutes       
+        22:35:23.000   1:31 minutes       
+        22:37:11.000   1:30 minutes       
+        22:38:42.000   1:50 minutes       
+        22:40:33.000   1:50 minutes       
+        22:42:24.000   1:53 minutes       
+        22:44:18.000   1:48 minutes       
+        22:46:07.000   1:53 minutes       
+        22:48:23.000   1:26 minutes       
+        22:50:03.000   1:44 minutes       
+        22:52:06.000   1:35 minutes       
+        22:53:42.000   1:43 minutes       
+        22:55:26.000   1:51 minutes       
+        22:57:18.000   1:49 minutes       
+        22:59:08.000   1:53 minutes       
+        23:01:04.000   1:49 minutes       
+        23:02:54.000   1:49 minutes       
+        23:04:44.000   1:53 minutes       
+        23:06:38.000   1:50 minutes       
+        23:08:29.000   3:53 minutes       
+        23:12:23.000   1:37 minutes       
+        23:14:01.000   1:53 minutes       
+        23:15:55.000   1:51 minutes       
+        23:17:47.000   1:49 minutes       
+        23:19:37.000   1:49 minutes       
+        23:21:27.000   1:56 minutes       
+        23:23:24.000   1:47 minutes       
+        23:25:12.000   1:52 minutes       
+        23:27:05.000   1:53 minutes       
+        23:29:01.000   1:46 minutes       
+        23:30:48.000   1:49 minutes       
+        23:32:38.000   1:51 minutes       
+        23:34:30.000   1:49 minutes       
+        23:36:20.000   1:51 minutes       
+        23:38:12.000   1:53 minutes       
+        23:40:06.000   1:48 minutes       
+        23:41:55.000   1:52 minutes       
+        23:43:48.000   1:49 minutes       
+        23:45:38.000   1:51 minutes       
+        23:47:30.000   1:50 minutes       
+        23:49:21.000   1:51 minutes       
+        23:51:13.000   1:52 minutes       
+        23:53:06.000   1:49 minutes       
+        23:54:56.000   1:50 minutes       
+        23:56:47.000   1:53 minutes       
+        23:58:41.000   1:19 minutes       
+
+    V04C  Ramage Ranch, Paso Robles, CA, USA
+
+        ** This station blows **
+      LHZ  10:25 hours         
+        00:00:00.000   1:24 hours         
+        01:34:20.070   1:28 minutes       
+        15:00:55.070   8:59 hours         
+
+    Y12C  Blythe, CA, USA
+
+        ********************
+        This station sucks
+            and blows.
+        ********************
+      LHZ   8:19 hours         
+        07:36:02.070   8:19 hours         
