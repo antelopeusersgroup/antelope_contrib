@@ -129,6 +129,7 @@ public:
                 z.reserve(nlayers);
                 v.reserve(nlayers);
                 grad.reserve(nlayers);};
+#ifndef NO_ANTELOPE
 	/*!
 	// Database driven constructor.
 	// Builds a velocity model from database tables.
@@ -145,6 +146,7 @@ public:
 	
 	VelocityModel_1d(Dbptr db,string name, string property)
 		throw(VelocityModel_1d_Dberror);
+#endif
 	/*!
 	// Ascii file constructor.  
 	// Reads a velocity model from file fname using a simple ascii format
@@ -179,6 +181,7 @@ public:
 	**/
 	double getv(double zin);
 };
+#ifndef NO_ANTELOPE
 /*! \brief Save a velocity model to an antelope database. 
 
 \param mod velocity model to save
@@ -188,6 +191,7 @@ public:
 */
 void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 	throw(VelocityModel_1d_Dberror);
+#endif
 
 } // End SEISPP namespace declaration
 #endif

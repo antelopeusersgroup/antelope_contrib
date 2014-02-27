@@ -201,6 +201,7 @@ arg 2.
 //  s that do not match keys found in this list will be dropped.
 **/
 	Metadata(string s,MetadataList& mdl);
+#ifndef NO_ANTELOPE
 /*!
 //  Construct from a database.
 //
@@ -224,6 +225,11 @@ arg 2.
 **/
 	Metadata(DatabaseHandle& dbh,
 		MetadataList& mdl,AttributeMap& am) throw(MetadataError);
+#else
+	Metadata(DatabaseHandle& dbh,
+		MetadataList& mdl,AttributeMap& am) throw(SeisppError);
+#endif
+
 /*!
 // Standard copy constructor.
 //

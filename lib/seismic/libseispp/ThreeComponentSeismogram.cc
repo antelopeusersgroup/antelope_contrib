@@ -198,6 +198,7 @@ bool tmatrix_is_cardinal(ThreeComponentSeismogram& seis)
 		||  (seis.tmatrix[2][2]!=1.0) )return(false);
 	return(true);
 }
+#ifndef NO_ANTELOPE
 /* Constructor to read a three-component seismogram from an antelope
 database.  Arguments:
 	rdb - generic database handle (cast to Anteloep form)
@@ -518,6 +519,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 
 	}
 }
+#endif
 
 ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts, 
 	int component_to_clone) 

@@ -2,7 +2,10 @@
 #include <vector>
 #include <map>
 #include "coords.h"
+#include "stock.h"
+#ifndef NO_ANTELOPE
 #include "dbpp.h"
+#endif
 #include "seispp.h"
 using namespace std;
 using namespace SEISPP;
@@ -66,6 +69,69 @@ SeismicArray::SeismicArray()
 {
 	name="UNDEFINED";
 }
+SeismicArray::SeismicArray(string fnamebase,string form)
+{
+    const string base_error("SeismicArray file-driven constructor:  ");
+    string net,refsta;   // needed for SeismicStationLocation object
+    Pf *pf;
+    if(form=="ascii_table_with_pf")
+    {
+        if(pfread(const_cast<char *>(fnamebase.c_str()),&pf))
+            throw SeisppError(base_error + "pfread failed for "
+                    + fnamebase+".pf");
+        try {
+            Metadata params(pf);
+            name=params.get_string("array_name");
+            net=params.get_string("net_name");
+            refsta=params.get_string("refsta");
+            double stime=params.get_double("start_time");
+            double etime=params.get_double("end_time");
+            valid_time_interval=TimeWindow(stime,etime);
+            // A pf will allow definitions of subarrays as in dbxcor. 
+            // this procedure parses pf for that and loads definitions to object
+            load_subarrays_from_pf(*this,pf);
+            pffree(pf);
+        }catch(...) {
+            pffree(pf);
+            throw;
+        };
+    }
+    else if (form=="simple_ascii_table")
+    {
+        name=fnamebase;
+        net=name;
+        refsta="UNDEFINED";
+        // end time here is Jan 1, 2100
+        valid_time_interval=TimeWindow(0.0,4102444800.0);
+    }
+    else
+        throw SeisppError(base_error
+                + "Unsupported format with name tag="
+                + form);
+    // For now both formats read a .dat file in common format
+    // Small sanity checks done to avoid common problem of mixing
+    // lat and lon 
+    FILE *fp;
+    string fname=fnamebase+".dat";
+    if(fopen(fname.c_str(),"r")==NULL) throw SeisppError(base_error
+                                + "cannot open file " + fname);
+    double lat,lon,elev;
+    char stain[20];
+    double dnorth(0.0),deast(0.0);   // force these always 0
+    while(fscanf(fp,"%s%lf%lf%lf",stain,&lat,&lon,&elev)!=EOF)
+    {
+        // stored internally in radians
+        lat=rad(lat);
+        lon=rad(lon);
+        string sta(stain);
+        // Set refsta to first station read for simple format
+        if(refsta=="UNDEFINED")refsta=sta;
+        SeismicStationLocation newstaloc(lat,lon,elev,dnorth,deast,
+                sta,net,refsta);
+        array.insert(pair<string,SeismicStationLocation>(sta,newstaloc));
+    }
+}
+#ifndef NO_ANTELOPE
 SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	double time, string arrayname)
 {
@@ -239,6 +305,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	// It may do bad things if the list is small compared to the database.
 	valid_time_interval=master.valid_time_interval;
 }
+#endif
 
 SeismicArray::SeismicArray(const SeismicArray& orig)
 {

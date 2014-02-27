@@ -6,7 +6,9 @@
 #include <string>
 #include "AttributeMap.h"
 #include "Metadata.h"
+#ifndef NO_ANTELOPE
 #include "dbpp.h"
+#endif
 using namespace std;
 namespace SEISPP
 {
@@ -116,7 +118,7 @@ namespace SEISPP
         pfnested = static_cast<Pf *>(result);
         pf2metadatastring(pfnested,mstring);
     }
-
+#ifndef NO_ANTELOPE
     // constructor from an antelope database (possibly view) row driven by
     // mdlist and am.  The list of attributes found in mdlist are extracted
     // from the database row using dbgetv.  am defines how the Antelope
@@ -259,6 +261,15 @@ namespace SEISPP
         }
 	} catch (...) {throw;};
     }
+#else
+    Metadata::Metadata(DatabaseHandle& dbh,
+        MetadataList& mdlist,
+        AttributeMap& am) throw (SeisppError)
+    {
+        throw SeisppError(string("Metadata database constructor not implemented.\n")
+                + "If you need that functionality you will need antelope or implement a handle");
+    }
+#endif
     //
     // These functions get and convert values
     //

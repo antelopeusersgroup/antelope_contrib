@@ -47,6 +47,7 @@ public:
         }
 };
 
+#ifndef NO_ANTELOPE
 /*!
  Defines severity code for errors thrown by database routines.
 **/
@@ -78,6 +79,7 @@ public:
 	SeisppDberror(const string mess, 
 		Dbptr dbi, ErrorSeverity et);
 };
+#endif
 /*! \brief Special error object thrown by SAC file reader.
 
 \author Gary L. Pavlis

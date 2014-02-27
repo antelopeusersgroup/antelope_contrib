@@ -116,6 +116,7 @@ void TimeSeriesRequiredError(MetadataGetError mde,string name)
 		<< name<<endl;
 	cerr << "Edit your parameter file to make this message go away"<<endl;
 }
+#ifndef NO_ANTELOPE
 
 /* Constructor to read a single seismogram from an antelope
 database.  Arguments:
@@ -271,6 +272,7 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	// release the space it allocated.
 	free(inbuffer);
 }
+#endif
 // standard assignment operator
 TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 {

@@ -2,7 +2,9 @@
 #include <fstream>
 #include <list>
 #include <string>
+#ifndef NO_ANTELOPE
 #include "db.h"
+#endif
 #include "VelocityModel_1d.h"
 using namespace std;
 namespace SEISPP
@@ -31,6 +33,7 @@ double VelocityModel_1d::getv(double zin)
 	dz=zin-v[nlayers-1];
 	return(v[nlayers-1]+dz*grad[nlayers-1]);
 }
+#ifndef NO_ANTELOPE
 // database constructor. 
 // property must be P or S.  Errors are thrown for a range of
 // likely problems.
@@ -96,6 +99,7 @@ VelocityModel_1d::VelocityModel_1d(Dbptr dbi,string name,string property)
 		 "Coding error:  property passed to database constructor must be either P or S"));
 	}
 }
+#endif
 /* Read from a file constructor.  fname is the file name to be 
 read and form is a format name.  Currently supports two 
 names:  rbh - Herrmmann synthetics package format; and 
