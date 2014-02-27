@@ -124,6 +124,7 @@ template <class T> void HeaderMap::put(string name,
 			+ name
 			+ string(" coding error.  Cannot use this template method with string attribute") );
 	case HDRINVALID:
+        default:
 		throw SeisppError(base_error_message
 			+ name
 			+ string(" Attribute is marked invalid") );
