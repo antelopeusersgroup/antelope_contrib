@@ -342,7 +342,8 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		ns = nint((te_md-t0)/dt) + 1;
 		u=dmatrix(3,ns);
 		for(i=0;i<3;++i)
-			for(j=nint((tsread[i]-t0)/dt);j<nsamp[i],j<ns;++j)
+			for(j=nint((tsread[i]-t0)/dt);
+                            (j<nsamp[i])||(j<ns);++j)
 				u(i,j)=component[i].s[j];
 		/* Scan for gaps in any component.  This is a general 
 		algorithm that is thorough but not fast.  We call the 
