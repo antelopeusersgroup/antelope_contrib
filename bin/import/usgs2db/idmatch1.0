@@ -1,0 +1,76 @@
+Schema idmatch1.0
+	Description ( "map foreign ids containg strings to antelope numerical ids" )
+	Detail {
+		Contains only a lastid table.
+	}
+	Timedate lddate
+	;
+
+Attribute fkey
+    String (20)
+    Format ( "%-20s" )
+    Null ( "-" )
+    Description ( "foreign id, charactrsa are allowed" )
+    Detail {
+        This attribute contains the actual foreign key
+        e.g. usb00001v from usgs or so
+    }
+    ;
+Attribute ftime
+    Time (17)
+    Format ( "%17.5lf" )
+    Null ( "-9999999999.99900" )
+    Units ( "Seconds" )
+    Description ( "(epoch) time of last record modification" )
+    Detail {
+        This is the last time the record was modified.
+    }
+    ;
+Attribute keyname
+    String (15)
+    Format ( "%-15s" )
+    Null ( "-" )
+    Range ( "keyname =~ /arid|chanid|commid|edid|evid|inid|magid|orid|stassid|wfid/" )
+    Description ( "id name (arid, orid, etc.)" )
+    Detail {
+        This attribute contains the actual name of a key whose
+        last assigned numeric value is saved in keyvalue.
+    }
+    ;
+
+Attribute keyvalue
+    Integer (8)
+    Format ( "%8ld" )
+    Null ( "-1" )
+    Range ( "keyvalue > 0 && keyvalue < 99998999" )
+    Description ( "last value used for that id" )
+    Detail {
+        This attribute maintains the last assigned value (a
+        positive integer) of the counter for the specified
+        keyname.  The number keyvalue is the last counter value
+        used for the attribute keyname.  Key values are maintained
+        in the database to ensure uniqueness.
+    }
+    ;
+
+Attribute lddate
+    Time (17)
+    Format ( "%17.5lf" )
+    Null ( "-9999999999.99900" )
+    Units ( "Seconds" )
+    Description ( "(epoch) time of last record modification" )
+    Detail {
+        This is the last time the record was modified.
+    }
+    ;
+
+Relation idmatch
+    Fields (  fkey ftime keyname keyvalue lddate )
+    Primary (  fkey keyname )
+    Description ( "Counter values (Last value used for keys)" )
+    Detail {
+        This relation maps keys in foreign databases to antelope ids
+        This is especially useful when foreing keys use characters    
+    }
+;
+

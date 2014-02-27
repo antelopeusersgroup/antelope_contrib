@@ -1,13 +1,21 @@
+#
+# OLD CONFIGURATION
+# SHOULD USE LC2000_4x4.pf INSTEAD
+# 01/2014
+# Juan Reyes
+#
 originator     Juan Reyes, UCSD
 last_modified  2010-05-28
 
-category    LCheapo
-configuration   LCheapo 2000 Long Period 4x4
+category    DONT_USE_LCheapo
+configuration   DONT_USE_LCheapo 2000 Long Period 4x4
 
-description LCheapo 2000 4x4 Long Period Datalogger 
-dfile lc2000l_4x4
+description DONT_USE_LCheapo 2000 4x4 Long Period Datalogger 
+dfile DONT_USE_lc2000l_4x4
 
 info    &Literal{
+DON'T USE THIS CONFIGURATION. Updated info in LC2000_4x4.pf
+
 This is the configuration for a LCheapo 4x4, UCSD OBS datalogger.
 }
 
