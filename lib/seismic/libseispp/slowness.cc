@@ -35,6 +35,7 @@ RectangularSlownessGrid::RectangularSlownessGrid(string nm,
 	dux =du1;
 	duy=du2;
 }
+#ifndef NO_ANTELOPE
 RectangularSlownessGrid::RectangularSlownessGrid(Pf *pf,string tag)
 {
 	Metadata md(pf,tag);
@@ -48,6 +49,7 @@ RectangularSlownessGrid::RectangularSlownessGrid(Pf *pf,string tag)
 		duy = md.get_double("duy");
 	} catch (...) {throw;}
 }
+#endif
 RectangularSlownessGrid::RectangularSlownessGrid(Metadata& md)
 {
     /* Painfully parallel to the pf version above */
