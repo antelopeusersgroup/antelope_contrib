@@ -3,7 +3,7 @@ last_modified  2014-02-07
 
 info    &Literal{
 This description is for the Taurus infinite impedence response with high input impedence.
-40V pp, sw gain = 1, lcf IIR DC removal filter = 1 mHz
+40V pp, sw gain = 1, lcf IIR DC removal filter = off
 
 These instrument parameter files and their responses derived from
 

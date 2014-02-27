@@ -3,7 +3,7 @@ last_modified  2014-02-07
 
 info    &Literal{
 This description is for the Taurus infinite impedence response with high input impedence.
-8V pp, sw gain = 1, lcf IIR DC removal filter = 1 mHz
+8V pp, sw gain = 1, lcf IIR DC removal filter = off
 
 These instrument parameter files and their responses derived from
 
@@ -288,10 +288,5 @@ trident_50sps_fir3    &Arr{
 gtype           FIR_decimator 
 decifac         2 
 response        &datafile(responses/trident_50sps_fir3) 
-} 
-
-trident_iir    &Arr{ 
-gtype           IIR_DC_removal 
-response        &datafile(responses/trident_iir_1) 
 } 
 
