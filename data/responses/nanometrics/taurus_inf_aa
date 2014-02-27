@@ -1,5 +1,18 @@
 # $Id$
-# Nanometrics     2122 hz anti-alias filter
+# Nanometrics     1659 hz anti-alias filter
+# High impedance mode (9.4 M-ohm)
+#
+# (T. Mulder, GSC)
+# See Taurus User Guide, Appendix D.
+# The poles used are the ones calculated by IRIS DMC for the Taurus.
+#
+# Use the high impedance setting to match the datalogger to an active 
+# seismomenter. Active seismometers have an output impedance of 
+# about 50 ohms (Z).  
+# R = 9600 + Z = 9650 ohms
+# C = 1.0E-8 farads
+# pole = -1/RC = -10362.7
+#
 # Normalized  response 
 # 1                   type
 # 0                   num of zeroes
@@ -9,7 +22,7 @@
 # 0.3667E+16         normalization factor                   
 # 1.0                 gain
 theoretical   1 anti-alias   paz    pz6pbut
-1.333889e+004
+1.036270e+004
 1             Poles
--1.333888e+004    0.0000E+00    0.0000E+00    0.0000E+00
+-1.036270e+004    0.0000E+00    0.0000E+00    0.0000E+00
 0             Zeros
