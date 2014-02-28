@@ -3,7 +3,7 @@ last_modified  2014-02-07
 
 info    &Literal{
 This description is for the Taurus standard impedence response with 47K (low) input impedence.
-40V pp, sw gain = 1, lcf IIR DC removal filter = 1 mHz
+8V pp, sw gain = 1, lcf IIR DC removal filter = 1 mHz
 
 These instrument parameter files and their responses derived from
 
@@ -35,8 +35,8 @@ K2K 2A1
 category	Nanometrics
 configuration   Taurus infinite
 
-description	Taurus Infinite 40V
-dfile           taurus_inf_40V
+description	Taurus Infinite 08V
+dfile           taurus_inf_08Vswg1_iir0_001
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 
