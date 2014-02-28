@@ -1,11 +1,15 @@
 .TH DBWFSERVER 1 "$Date$"
 .SH NAME
-\fBdbwfserver\fR \-  Web-based display and interaction with high density waveform data 
+\fBdbwfserver dbwfserver_extract\fR\-  Web-based display and interaction with high density waveform data 
 .SH SYNOPSIS
 .nf
 \fBdbwfserver\fR [-drevV] [-n dbcentral_nickname] [-p pfname] [-P port] \fIdbname\fR
 .fi
 
+.nf
+\fBdbwfserver_extract\fR [-hdbc][-p page] [-n max_traces] [-m max_points] 
+                            [-f filter] [-s subset] \fIdatabase time endtime\fR
+.fi
 .SH SUPPORT
 Contributed: NO BRTT support -- please contact author. 
 

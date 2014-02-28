@@ -1,0 +1,611 @@
+
+71.62% data recovered from all selected channels
+67 of 76 stations reporting.
+
+missing average of 6:49 hours of data from 659 channels 
+
+Performance by network
+  Net %Return Network                                      Stations Channels
+  AZ  100.00% Anza Real Time Broadband Network                  2      12
+  BK   94.41% BDSN                                             17     173
+  CI   84.75% CI                                               45     270
+  TA   33.23% USArray Transportable Array (Bigfoot)            12     204
+
+ 9 stations appear to be down:
+	TA 109C     Camp Elliot, Mirimar, CA, USA
+	CI ADO      Adelanto
+	TA D03A     Wishkah Elem. School, Wishkah, WA, USA
+	CI DNR      Dunn Ranch
+	CI GOR      Green Oaks Ranch
+	CI MPI      Mt Pinos
+	TA Q04C     Lincoln, CA, USA
+	CI SDR      San Diego Rd Dept
+	CI SNCC     San Nicolas Island
+
+
+Worst 5 stations for missing data are:
+   TA A04A      20:07 hours          (BHE) Lummi Island, Lummi Island, WA, USA
+   BK MNRC      17:29 hours          (UEP) McLaughlin Mine, CA
+   TA V04C      11:08 hours          (VCO) Ramage Ranch, Paso Robles, CA, USA
+   CI SDP        8:44 hours          (LHZ) Sudden Peak
+   CI CWC        7:00 hours          (BHN) Cottonwood Creek
+
+Worst 5 Stations by large gaps:
+   TA A04A      19:31 hours          (BHE) Lummi Island, Lummi Island, WA, USA
+   BK MNRC      17:29 hours          (UEP) McLaughlin Mine, CA
+   TA V04C       9:28 hours          (VMU) Ramage Ranch, Paso Robles, CA, USA
+   CI SDP        8:44 hours          (LHZ) Sudden Peak
+   CI BBR        1:36 hours          (BHN) Big Bear Solar Observatory
+
+Worst 5 Stations with most gaps:
+   CI CWC       13 gaps              (BHE) Cottonwood Creek
+   TA A04A      10 gaps              (BHZ) Lummi Island, Lummi Island, WA, USA
+   TA V04C       3 gaps              (BHE) Ramage Ranch, Paso Robles, CA, USA
+   BK MNRC       2 gaps              (BHE) McLaughlin Mine, CA
+   CI SDP        1 gaps              (LHE) Sudden Peak
+
+
+Detailed Waveform Gaps from  1/17/2005 for  1 days              
+
+  BK   94.41% BDSN                                      17 stations  173 channels
+
+    FARB  Farallon Islands, CA
+      UME  1 days              
+        00:00:00.000  1 days              
+      UMN  1 days              
+        00:00:00.000  1 days              
+      UMZ  1 days              
+        00:00:00.000  1 days              
+
+    MNRC  McLaughlin Mine, CA
+      BHE   1:35 hours         
+        03:59:57.487   1:23 hours         
+        17:54:20.125  11:38 minutes       
+      BHN   1:35 hours         
+        03:59:46.462   1:23 hours         
+        17:54:20.875  11:38 minutes       
+      BHZ   5:54 hours         
+        04:00:00.437   1:23 hours         
+        13:34:51.200   4:31 hours         
+      LHE   1:25 hours         
+        03:58:09.719   1:25 hours         
+      LHN   1:28 hours         
+        03:55:07.719   1:28 hours         
+      LHZ   6:00 hours         
+        03:56:07.719   1:27 hours         
+        13:31:57.256   4:34 hours         
+      UEP  17:29 hours         
+        00:00:00.000  17:29 hours         
+      UMU  17:29 hours         
+        00:00:00.000  17:29 hours         
+      UMV  17:29 hours         
+        00:00:00.000  17:29 hours         
+      UMW  17:29 hours         
+        00:00:00.000  17:29 hours         
+
+    YBH   Yreka Blue Horn Mine, Yreka, CA
+      UMU  1 days              
+        00:00:00.000  1 days              
+      UMV  1 days              
+        00:00:00.000  1 days              
+      UMW  1 days              
+        00:00:00.000  1 days              
+
+  CI   84.75% CI                                        45 stations  270 channels
+
+    ADO   Adelanto
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+    BBR   Big Bear Solar Observatory
+      BHE   1:36 hours         
+        18:47:40.298   1:36 hours         
+      BHN   1:36 hours         
+        18:47:34.798   1:36 hours         
+      BHZ   1:36 hours         
+        18:47:35.973   1:36 hours         
+
+    CWC   Cottonwood Creek
+      BHE   7:00 hours         
+        10:51:52.398  53:15 minutes       
+        13:45:07.773  32:05 minutes       
+        18:11:25.273  26:14 minutes       
+        18:39:28.598  22:27 minutes       
+        19:02:49.948  12:11 minutes       
+        19:16:41.198   9:25 minutes       
+        19:27:38.623  39:25 minutes       
+        20:07:57.798  44:33 minutes       
+        20:53:20.323  18:01 minutes       
+        21:14:29.023   1:14 hours         
+        22:29:25.098  47:03 minutes       
+        23:17:43.873  18:42 minutes       
+        23:37:19.923  22:40 minutes       
+      BHN   7:00 hours         
+        10:51:58.448  53:08 minutes       
+        13:45:06.348  32:09 minutes       
+        18:11:25.848  26:17 minutes       
+        18:39:30.873  22:29 minutes       
+        19:02:51.873  12:06 minutes       
+        19:16:42.348   9:23 minutes       
+        19:27:35.873  39:29 minutes       
+        20:08:00.398  44:31 minutes       
+        20:53:22.423  18:02 minutes       
+        21:14:27.673   1:14 hours         
+        22:29:24.973  47:00 minutes       
+        23:17:40.898  18:48 minutes       
+        23:37:15.373  22:45 minutes       
+      BHZ   7:00 hours         
+        10:51:59.348  53:08 minutes       
+        13:45:07.523  32:08 minutes       
+        18:11:22.048  26:19 minutes       
+        18:39:34.573  22:23 minutes       
+        19:02:49.423  12:07 minutes       
+        19:16:47.098   9:18 minutes       
+        19:27:37.898  39:28 minutes       
+        20:07:59.873  44:35 minutes       
+        20:53:24.623  17:58 minutes       
+        21:14:33.248   1:14 hours         
+        22:29:25.348  47:04 minutes       
+        23:17:44.723  18:43 minutes       
+        23:37:20.198  22:40 minutes       
+
+    DNR   Dunn Ranch
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+    GOR   Green Oaks Ranch
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+    MPI   Mt Pinos
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+    SDP   Sudden Peak
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE   8:44 hours         
+        15:16:27.507   8:44 hours         
+      LHN   8:44 hours         
+        15:16:23.507   8:44 hours         
+      LHZ   8:44 hours         
+        15:16:01.507   8:44 hours         
+
+    SDR   San Diego Rd Dept
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+    SNCC  San Nicolas Island
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+
+  TA   33.23% USArray Transportable Array (Bigfoot)     12 stations  204 channels
+
+    109C  Camp Elliot, Mirimar, CA, USA
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    A04A  Lummi Island, Lummi Island, WA, USA
+      BHE  20:07 hours         
+        00:11:53.525  19:31 hours         
+        19:42:51.525   2:48 minutes       
+        19:46:05.525   2:23 minutes       
+        19:51:45.525   7:01 minutes       
+        20:02:58.525   2:22 minutes       
+        23:29:05.525   1:46 minutes       
+        23:32:01.525   3:19 minutes       
+        23:42:23.525  12:50 minutes       
+        23:56:35.525   3:24 minutes       
+      BHN  20:07 hours         
+        00:11:53.525  19:31 hours         
+        19:42:51.525   2:48 minutes       
+        19:46:05.525   2:23 minutes       
+        19:51:45.525   7:01 minutes       
+        20:02:58.525   2:22 minutes       
+        23:29:05.525   1:46 minutes       
+        23:32:01.525   3:19 minutes       
+        23:42:23.525  12:50 minutes       
+        23:56:35.525   3:24 minutes       
+      BHZ  20:07 hours         
+        00:11:53.525  19:31 hours         
+        19:42:51.525   2:48 minutes       
+        19:46:05.525   2:23 minutes       
+        19:51:45.525   2:20 minutes       
+        19:54:06.525   4:40 minutes       
+        20:02:58.525   2:22 minutes       
+        23:29:05.525   1:46 minutes       
+        23:32:01.525   3:19 minutes       
+        23:42:23.525  12:50 minutes       
+        23:56:35.525   3:24 minutes       
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      LHE  19:35 hours         
+        00:11:39.000  19:31 hours         
+        20:17:07.000   2.000 seconds      
+        23:56:21.000   3:39 minutes       
+      LHN  19:35 hours         
+        00:11:39.000  19:31 hours         
+        20:17:07.000   2.000 seconds      
+        23:56:21.000   3:39 minutes       
+      LHZ  19:35 hours         
+        00:11:39.000  19:31 hours         
+        20:17:07.000   2.000 seconds      
+        23:56:21.000   3:39 minutes       
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    D03A  Wishkah Elem. School, Wishkah, WA, USA
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    HAST  UC Hastings Reserve, Carmel Valley, CA, USA
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    Q04C  Lincoln, CA, USA
+      BHE  1 days              
+        00:00:00.000  1 days              
+      BHN  1 days              
+        00:00:00.000  1 days              
+      BHZ  1 days              
+        00:00:00.000  1 days              
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      LHE  1 days              
+        00:00:00.000  1 days              
+      LHN  1 days              
+        00:00:00.000  1 days              
+      LHZ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    R04C  Big Horse Ranch, Ione, CA, USA
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    S04C  Ingram Canyon, Westley, CA, USA
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+
+    T06C  Millerton Lake Dam, Friant, CA, USA
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+
+    U05C  Westside ANR, Five Points, CA, USA
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    V04C  Ramage Ranch, Paso Robles, CA, USA
+      BHE  10:36 hours         
+        00:00:00.000   1:23 hours         
+        01:24:08.595   1.000 seconds      
+        14:46:50.595   9:13 hours         
+      BHN  10:36 hours         
+        00:00:00.000   1:23 hours         
+        14:46:47.595   9:13 hours         
+      BHZ  10:36 hours         
+        00:00:00.000   1:23 hours         
+        01:24:08.595   1.000 seconds      
+        14:46:50.595   9:13 hours         
+      LCE  10:38 hours         
+        00:00:00.000   1:24 hours         
+        14:45:42.000   9:14 hours         
+      LCQ  10:38 hours         
+        00:00:00.000   1:24 hours         
+        14:45:42.000   9:14 hours         
+      LHE  10:38 hours         
+        00:00:00.000   1:24 hours         
+        14:45:27.070   9:15 hours         
+      LHN  10:38 hours         
+        00:00:00.000   1:24 hours         
+        14:45:27.070   9:15 hours         
+      LHZ  10:38 hours         
+        00:00:00.000   1:24 hours         
+        14:45:27.070   9:15 hours         
+      VCO  11:08 hours         
+        00:00:00.000   1:40 hours         
+        14:32:06.000   9:28 hours         
+      VEA  11:08 hours         
+        00:00:00.000   1:40 hours         
+        14:32:06.000   9:28 hours         
+      VEC  11:08 hours         
+        00:00:00.000   1:40 hours         
+        14:32:06.000   9:28 hours         
+      VEP  11:08 hours         
+        00:00:00.000   1:40 hours         
+        14:32:06.000   9:28 hours         
+      VKI  11:08 hours         
+        00:00:00.000   1:40 hours         
+        14:32:06.000   9:28 hours         
+      VMU  11:08 hours         
+        00:00:00.000   1:39 hours         
+        14:31:58.000   9:28 hours         
+      VMV  11:08 hours         
+        00:00:00.000   1:39 hours         
+        14:31:58.000   9:28 hours         
+      VMW  11:08 hours         
+        00:00:00.000   1:39 hours         
+        14:31:58.000   9:28 hours         
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    Y12C  Blythe, CA, USA
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              
+
+    Y22C  IRIS PASSCAL Insrument Center, Socorro NM, USA
+      LCE  1 days              
+        00:00:00.000  1 days              
+      LCQ  1 days              
+        00:00:00.000  1 days              
+      VCO  1 days              
+        00:00:00.000  1 days              
+      VEA  1 days              
+        00:00:00.000  1 days              
+      VEC  1 days              
+        00:00:00.000  1 days              
+      VEP  1 days              
+        00:00:00.000  1 days              
+      VKI  1 days              
+        00:00:00.000  1 days              
+      VMU  1 days              
+        00:00:00.000  1 days              
+      VMV  1 days              
+        00:00:00.000  1 days              
+      VMW  1 days              
+        00:00:00.000  1 days              
+      VPB  1 days              
+        00:00:00.000  1 days              

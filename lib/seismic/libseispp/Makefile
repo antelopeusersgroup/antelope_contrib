@@ -14,6 +14,7 @@ INCLUDE=ArrivalUpdater.h \
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
+  PfStyleMetadata.h \
   ProcessingQueue.h \
   SacFileHandle.h \
   SeisppError.h\
@@ -77,6 +78,7 @@ OBJS=ArrivalUpdater.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
+  PfStyleMetadata.o \
   ProcessingQueue.o \
   SacFileHandle.o \
   SignalToNoise.o \

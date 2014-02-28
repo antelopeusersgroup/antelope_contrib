@@ -166,18 +166,29 @@ public:
 **/
 	Metadata(Pf *pfin, string tag);
 /*!
-// Construct from a string.  
-//
-// The algorithm used here is to use the pfcompile function of
-// antelope on the input string and then treat load the result
-// just as in the Pf driven constructor.
-//
-//\exception MeetadataParseError if pfcompile failes.
-//
-//\param s string to be compiled into Metadata.  Here this must
-//  be in the format of Antelope parameter files.
-**/
-	Metadata(string s) throw(MetadataParseError);
+\brief File and string constructor.
+
+The normal use for this constructor is to construct the object
+from a file.   The default is an oddity created by a need for
+backward compatibility.   That is, the default (no format specified)
+is to construct from a string stored in memory.   The string is
+assumed to be an image of an Antelope pf file that is passed through
+the pfcompile procedure to construct the object.   Otherwise the
+constructor assumes arg 1 is a file name that is read and parsed
+with a structure assumption defined by the format name passed as
+arg 2.
+\exception MeetadataParseError if pfcompile failes.
+\param s is one of two things.  If format is string it assumed to 
+  be a string that is to be parsed as an antelope pf file image.  Otherwise
+  it is assumed to be a file name with the structure defined by format.
+\param format is a keyword that defines the format of the file to be read.
+  Currently the only recognized name is "pf" for an antelope pf, but this
+  is intended to be a general interface.  The default is "string", which 
+  is different.  In that case s is assume to be an image of an
+  antelope pf file.
+
+*/
+	Metadata(string s,const char *format="string") throw(MetadataParseError);
 /*!
 //  Restricted build from a string driven by a typed list.  
 //  

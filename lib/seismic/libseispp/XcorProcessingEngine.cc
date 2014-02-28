@@ -768,8 +768,19 @@ auto_ptr<TimeSeriesEnsemble> Convert3CGenericEnsemble(ThreeComponentEnsemble *tc
 	    for(i=0;i<tcse->member.size();++i)
 	    {
 		if(!tcse->member[i].live) continue;
-		// First make certain we are in cardinal coordinates
-		tcse->member[i].rotate_to_standard();
+		/* First make certain we are in cardinal coordinates
+                   We make this a nonfatal error as this can happen to 
+                   some but not all stations */
+		try {
+			tcse->member[i].rotate_to_standard();
+		} catch (SeisppError& serr)
+		{
+			serr.log_error();
+			string staname=tcse->member[i].get_string("sta");
+			cerr << "Station = "<< staname
+				<<" data deleted from ensemble"<<endl;
+			continue;
+		}
 		if(compname=="E")
 			x=ExtractComponent(tcse->member[i],0);
 		else if(compname=="N")
@@ -881,7 +892,16 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 	    {
 		if(!tcse->member[i].live) continue;
 		// First make certain we are in cardinal coordinates
-		tcse->member[i].rotate_to_standard();
+		try {
+			tcse->member[i].rotate_to_standard();
+		} catch (SeisppError& serr)
+		{
+			serr.log_error();
+			string staname=tcse->member[i].get_string("sta");
+			cerr << "Station = "<< staname
+				<<" data deleted from ensemble"<<endl;
+			continue;
+		}
 		if(compname=="E")
 			x=ExtractComponent(tcse->member[i],0);
 		else if(compname=="N")

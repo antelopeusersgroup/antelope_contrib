@@ -24,28 +24,39 @@ import zipfile
 from optparse import OptionParser
 
 # Import Antelope modules
-sys.path.append('%s/local/data/python/antelope' % os.environ['ANTELOPE'])
-import datascope as antdb
-import stock as antstock
+#sys.path.append('%s/local/data/python/antelope' % os.environ['ANTELOPE'])
+import antelope.datascope as antdb
+import antelope.stock as antstock
 
 def configure():
     """Gather command line
     options"""
-    usage = "Usage: %prog [options]"
+    usage = "Usage: %prog [options] database"
     parser = OptionParser(usage=usage)
     parser.add_option("-v", action="store_true", dest="verbose", help="verbose output", default=False)
     parser.add_option("-x", action="store_true", dest="debug", help="debug output", default=False)
     parser.add_option("-p", action="store", type="string", dest="pf", help="pf", metavar="", default=False)
     parser.add_option("-t", action="store", type="string", dest="filetype", help="filetype", metavar="", default=False)
     (options, args) = parser.parse_args()
+
+    if len(args) != 1:
+        parser.error("incorrect number of arguments")
+
+    if args[0]:
+        database = args[0]
+    else:
+        sys.exit("\n\t%s\n" % usage)
+
+    verbose = False
+    debug = False
+    file_type = 'all'
+
     if options.verbose:
         verbose = True
-    else:
-        verbose = False
+
     if options.debug:
         debug = True
-    else:
-        debug = False
+
     if not options.pf:
         pfs_tuple = list(antstock.pffiles('db2kml_py'))
         pfs_tuple.reverse() # Reverse order to search local pf dir first
@@ -61,11 +72,11 @@ def configure():
             sys.exit(-1)
         else:
             pfname = options.pf
+
     if options.filetype:
         file_type = options.filetype
-    else:
-        file_type = 'all'
-    return verbose, debug, pfname, file_type
+
+    return database, verbose, debug, pfname, file_type
 
 def get_pf(pf, verbosity=0):
     """Get values from the parameter file
@@ -75,16 +86,19 @@ def get_pf(pf, verbosity=0):
     if not os.path.isfile(pf):
         print "ERROR: cannot locate parameter file (pf): %s" % pf
         sys.exit()
-    config = antstock.pfget_arr(pf, 'config')
-    styles = antstock.pfget_arr(pf, 'styles')
-    stations = antstock.pfget_arr(pf, 'stations')
+
+    pf = antstock.pfread(pf)
+
+    config = pf.get('config')
+    styles = pf.get('styles')
+    stations = pf.get('stations')
     if not styles['imagepath'].endswith('/'):
         err_str = []
         err_str.append('ERROR: imagepath URL must contain a trailing / in parameter file.')
         err_str.append('Imagepath currently defined as: %s\n' % styles['imagepath'])
         print err_str
         sys.exit()
-    headers = antstock.pfget_arr(pf, 'headers')
+    headers = pf.get('headers')
     pf_result = {'config': config, 'styles': styles, 'headers': headers, 'stations': stations}
     return pf_result
 
@@ -120,19 +134,19 @@ def calc_magtype(ev_dict):
         mag_sc = ""
     return mag, mag_sc
  
-def get_orig_records(pf, verbosity=0):
+def get_orig_records(database, pf, verbosity=0):
     """Return a list of all events
     from the database
     """
     fields = ['time', 'lat', 'lon', 'depth', 'auth', 'mb', 'ms', 'ml', 'magnitude', 'magtype']
-    db_pointer = antdb.dbopen(pf['config']['db'], 'r');
-    db_pointer.lookup(table='origin')
+    db_pointer = antdb.dbopen(database, 'r');
+    db_pointer = db_pointer.lookup(table='origin')
     tbl_event = antdb.dblookup(db_pointer, table='event')
     if antdb.dbquery(tbl_event, 'dbTABLE_PRESENT') > 0:
         if verbosity > 1:
             print " - Join event table"
-        db_pointer.join('event')
-        db_pointer.subset('orid==prefor')
+        db_pointer = db_pointer.join('event')
+        db_pointer = db_pointer.subset('orid==prefor')
     else:
         if verbosity > 1:
             print " * NOTE: Cannot join 'event' table"
@@ -140,14 +154,14 @@ def get_orig_records(pf, verbosity=0):
     if tbl_netmag.query('dbTABLE_PRESENT'):
         if verbosity > 1:
             print " - Join netmag table"
-        db_pointer.join('netmag', outer=True)
+        db_pointer = db_pointer.join('netmag', outer=True)
     else:
         if verbosity > 1:
             print " * NOTE: Cannot join 'netmag' table"
     my_expr = pf['config']['expr']
     if pf['config']['expr']:
         for mex in pf['config']['expr']:
-            db_pointer.subset('%s' % mex)
+            db_pointer = db_pointer.subset('%s' % mex)
             if verbosity > 0:
                 print " - Origin subset '%s' resulted in %d records" % (mex, db_pointer.query('dbRECORD_COUNT'))
     my_sort_fields = pf['config']['sort_fields']
@@ -155,7 +169,7 @@ def get_orig_records(pf, verbosity=0):
         print "* ERROR: Database subsets failed to return any records. Check expr in config section of parameter file."
         sys.exit(1)
     for msf in my_sort_fields:
-        db_pointer.sort('%s' % msf)
+        db_pointer = db_pointer.sort('%s' % msf)
     if db_pointer.query('dbRECORD_COUNT') < 1:
         print "* ERROR: Database sorts failed. Check sort_fields in parameter file."
         sys.exit(1)
@@ -203,7 +217,7 @@ def create_site(meta_dict_site, visibility, style):
     """Create KML for site icons
     """
     siteplace = ["\t\t<Placemark>\n\t\t\t<name>%s</name>\n" % meta_dict_site['sta']]
-    siteplace.append("\t\t\t<visibility>%d</visibility>\n" % visibility)
+    siteplace.append("\t\t\t<visibility>%s</visibility>\n" % visibility)
     siteplace.append("\t\t\t<description>\n")
     siteplace.append("\t\t\t\t<![CDATA[\n")
     siteplace.append("<p><strong>%s</strong></p>\n" % meta_dict_site['sta'])
@@ -228,46 +242,70 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
     """Get all the sites 
     in the dbmaster
     """
+    if verbosity > 0:
+        print "- Subsetting database '%s' for %s" % (dbmaster,staexpr)
+
     try:
-        dbm = antdb.dbopen(dbmaster, 'r')
+        db = antdb.dbopen(dbmaster, 'r')
     except:
-        print "* Cannot open database '%s'" % dbmaster
+        sys.exit( "* Cannot open database '%s'" % dbmaster )
+
+
+    dbm = db.lookup(table='site')
+    if not dbm.query('dbTABLE_PRESENT'):
+        sys.exit( "* Cannot open site table '%s'" % dbmaster )
+
+
+    test_net = antdb.dblookup(db, table='snetsta')
+    if test_net.query('dbTABLE_PRESENT'):
+        if verbosity > 1:
+            print " - Join snetsta table"
+        dbm = dbm.join('snetsta', outer=True)
     else:
-        dbm.lookup(table='site')
-        for nex in staexpr:
-            dbm.subset('%s' % nex )
-        if not inactive or inactive == 0:
-            if verbosity > 0:
-                print "- Subsetting database '%s' for active stations" % dbmaster
-            dbm.subset('offdate < 0') # Just get active stations
-        if dbm.query('dbRECORD_COUNT') < 1:
-            if len(staexpr) > 0:
-                print "* ERROR: Dbmaster database (%s) generated view contains no records. Check your expressions." % dbmaster
-            else:
-                print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
-            sys.exit(1)
-        sitestr = ["\t<Folder>"]
-        sitestr.append("\t\t<visibility>%d</visibility>" % visibility)
-        sitestr.append("\t\t<name>Stations</name>")
+        if verbosity > 1:
+            print " * NOTE: Cannot join 'snetsta' table"
 
-        for i in range(dbm.query('dbRECORD_COUNT')):
-            dbm[3] = i
-            per_sta_info = {}
-            for f in fields:
-                per_sta_info[f] = dbm.getv(f)[0]
-                if f == 'elev':
-                    per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
 
-            if inactive and inactive == 1:
-                inactive_offdate = dbm.getv('offdate')[0]
-                if inactive_offdate < 0: # dbNULL value is -1
-                    stastyle = 'activeStation'
-                else:
-                    stastyle = 'inactiveStation'
-            else:
+    for nex in staexpr:
+        if nex:
+            dbm = dbm.subset('%s' % nex )
+
+    if not inactive:
+        if verbosity > 0:
+            print "- Subsetting database '%s' for active stations" % dbmaster
+        dbm = dbm.subset('offdate == NULL')
+
+
+    if dbm.query('dbRECORD_COUNT') < 1:
+        if len(staexpr) > 0:
+            print "* ERROR: Dbmaster database (%s) generated view contains no records. Check your expressions." % dbmaster
+        else:
+            print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
+        sys.exit(1)
+
+    sitestr = ["\t<Folder>"]
+    sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
+    sitestr.append("\t\t<name>Stations</name>")
+
+    for i in range(dbm.query('dbRECORD_COUNT')):
+        dbm[3] = i
+        per_sta_info = {}
+        for f in fields:
+            per_sta_info[f] = dbm.getv(f)[0]
+            if f == 'elev':
+                per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
+
+        if inactive:
+            if dbm.getv('offdate')[0] < 0: # dbNULL value is -1
                 stastyle = 'activeStation'
-            sitestr.append(create_site(per_sta_info, visibility, stastyle))
-        sitestr.append("\t</Folder>")
+            else:
+                stastyle = 'inactiveStation'
+        else:
+            stastyle = 'activeStation'
+        sitestr.append(create_site(per_sta_info, visibility, stastyle))
+    sitestr.append("\t</Folder>")
+
+
     return ''.join(sitestr)
 
 def generate_legend(legendurl):
@@ -303,6 +341,13 @@ def kml_start(params):
         <name>%s</name>
         <open>1</open>
         <description>%s</description>
+    '''
+    return kmlstart % (params[0], params[1])
+
+def kml_lookat(params):
+    """Define basic kml 
+    header string"""
+    kmlstart = '''
         <LookAt>
             <longitude>%s</longitude>
             <latitude>%s</latitude>
@@ -312,7 +357,7 @@ def kml_start(params):
             <heading>0</heading>
         </LookAt>
     '''
-    return kmlstart % (params[0], params[1], params[2], params[3], params[4])
+    return kmlstart % (params[0], params[1], params[2])
 
 def kml_network(params):
     """Add a Network Link"""
@@ -406,7 +451,7 @@ def main():
     for creating KML files
     """
 
-    verbose, debug, pf, file_type = configure()
+    database, verbose, debug, pf, file_type = configure()
     verbosity = calc_verbosity(verbose, debug) 
 
     if verbosity > 0:
@@ -419,17 +464,23 @@ def main():
     if pf_result['config']['network_link']:
         expires_time = time.time() + pf_result['config']['network_link']['refresh_rate']
         outstr.append(kml_network(expires_time))
+
     outstr.append(kml_start([
         pf_result['headers']['name'], 
         pf_result['headers']['description'], 
-        str(pf_result['headers']['look_at']['longitude']), 
-        str(pf_result['headers']['look_at']['latitude']), 
-        str(pf_result['headers']['look_at']['range'])
     ]))
 
-    if verbosity > 0:
-        print "- Write out legend link"
-    outstr.append(generate_legend(pf_result['headers']['legend_url']))
+    if pf_result['headers']['set_look_at']:
+        outstr.append(kml_lookat([
+            str(pf_result['headers']['look_at']['longitude']), 
+            str(pf_result['headers']['look_at']['latitude']), 
+            str(pf_result['headers']['look_at']['range'])
+        ]))
+
+    if pf_result['headers']['generate_legend']:
+        if verbosity > 0:
+            print "- Write out legend link"
+        outstr.append(generate_legend(pf_result['headers']['legend_url']))
 
     if verbosity > 0:
         print "- Generating styles"
@@ -438,14 +489,14 @@ def main():
     if not pf_result['config']['subset'] or pf_result['config']['subset'] == 'events':
         if verbosity > 0:
             print "- Generating event icons"
-        outstr.append(get_orig_records(pf_result, verbosity))
+        outstr.append(get_orig_records(database, pf_result, verbosity))
 
     if not pf_result['config']['subset'] or pf_result['config']['subset'] == 'stations':
         if verbosity > 0:
-            print "- Generating station icons from dbmaster '%s'" % pf_result['stations']['dbmaster']
+            print "- Generating station icons from database '%s'" % database
         outstr.append(
             get_site_records(
-                pf_result['stations']['dbmaster'], 
+                database,
                 pf_result['stations']['expr'], 
                 pf_result['stations']['fields'], 
                 pf_result['stations']['visibility'], 
@@ -458,8 +509,8 @@ def main():
 
     if pf_result['config']['create_kmz']:
         write_kml(pf_result['config']['out_file'], outstr, verbosity, True)
-    else:
-        write_kml(pf_result['config']['out_file'], outstr)
+
+    write_kml(pf_result['config']['out_file'], outstr)
 
     if verbosity > 0:
         print "End of script at time %s" % time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
