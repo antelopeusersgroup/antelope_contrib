@@ -3,7 +3,7 @@ last_modified  2014-02-07
 
 info    &Literal{
 This description is for the Taurus infinite impedence response with high input impedence.
-8V pp, sw gain = 1, lcf IIR DC removal filter = off
+9.4 M-ohm impedance, 8V pp, sw gain = 1, IIR = off
 
 These instrument parameter files and their responses derived from
 
@@ -36,7 +36,7 @@ category	Nanometrics
 configuration   Taurus infinite
 
 description	Taurus Infinite 8V
-dfile           taurus_inf_08V_swg1
+dfile           taurus10_hi_08V_swg1_iiroff
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 
