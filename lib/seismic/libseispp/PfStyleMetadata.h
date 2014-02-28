@@ -5,6 +5,7 @@
 #include <string>
 #include "Metadata.h"
 namespace SEISPP{
+using namespace SEISPP;
 /*! \brief C++ object version of a parameter file.
 
    This object encapsulates the Antelope concept of a parameter
