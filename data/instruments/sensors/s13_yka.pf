@@ -1,0 +1,40 @@
+originator     Taimi Mulder, GSC
+last_modified  2014-02-25
+
+info	&Literal{
+Nominal response for the 2013 upgrade of the Yellowknife Array.
+The new configuration has:
+an S13 seismometer, a 40 gain pre-amp, and a dm24_mk3 variable gain datalogger.
+
+The average of the array's S13 main coil generator constant and the 
+main coil resistance were used to obtain the nominal sensitivity for 
+the array S13's.  This value was multiplied by the pre-amp value of 40 
+to obtain the "sensor" sensitivity.
+}
+
+category	Geotech
+configuration	S-13 YKA
+
+description	Geotech S-13 SP seismometer + YKA pre-amp
+dfile		s13_yka
+
+rsptype	V	# velocity instrument
+band	s	# short period 
+
+gtype		sensor	# stage type
+# Coil G=615.89 V/m/s, coil R=3732.6 ohms, critical damping=0.707: sensitivity=383.7 V/m/s
+sensitivity	153.48e-7 # S13 & YK pre-amp (383.7 V/m/s x 40)
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/gs13) 
+
+sensor_type_code  	H
+short_period_sensor  	yes
+
