@@ -2,8 +2,11 @@
 #define _SLOWNESS_H_
 #include <string>
 #include "stock.h"
-#include "pf.h"
 #include "Metadata.h"
+
+#ifndef NO_ANTELOPE
+#include "pf.h"
+#endif
 namespace SEISPP
 {
 using namespace std;
@@ -145,6 +148,7 @@ public:
 **/
 	RectangularSlownessGrid(string nm, double uxl, double uyl,
 		double dux,double duy,int nx, int ny);
+#ifndef NO_ANTELOPE
 /*!
  Parameter file driven constructor.
 
@@ -164,6 +168,7 @@ public:
   required attributes are not defined in the Metadata object passed.
 **/
 	RectangularSlownessGrid(Pf *pf,string tag);
+#endif
 /* \brief Metadata driven constructor.
 
 This is similar to the Pf driven method except the data is passed
