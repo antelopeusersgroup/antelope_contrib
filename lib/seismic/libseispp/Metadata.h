@@ -462,26 +462,6 @@ void copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 //\param tag key of Tbl in Pf holding the list.  
 **/
 MetadataList pfget_mdlist(Pf *pf,const string tag);
-#include "PfStyleMetadata.h"
-/*! \brief Build a MetadataList using PfStyleMetadata.
-
-A C++ replacement for Pf styles in Antelope is the object
-called PfStyleMetadata.   A PfStyleMetadata is effectively
-an object oriented interface to concepts embedded in a Pf file.
-This procedure will extract a MetadataList from a Tbl with a
-specified tag defined in a pf file used to construct the
-PfStyleMetadata passed to the procedure.
-
-Note this thing should probably be a constructor, but this interface
-is retained because of large numbers of dependencies in my existing 
-code on the pfget_mdlist which it effectively replaces.
-
-\param m is the PfStyleMetadata object where you expect to find the list.
-\param tag is the unique tag on the Tbl in the original Pf containing the
-  data defining the MetadataList.
-
-  */
-MetadataList get_mdlist(SEISPP::PfStyleMetadata& m, const string tag);
 /*!
 // Convert a Metadata to an Antelope Pf.  This is essentially
 // an inverse to the Pf constructor.  
