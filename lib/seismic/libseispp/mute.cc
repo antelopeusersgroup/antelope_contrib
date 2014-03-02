@@ -1,5 +1,6 @@
 #include "seispp.h"
 #include "mute.h"
+#include "PfStyleMetadata.h"
 namespace SEISPP
 {
 using namespace std;
@@ -88,8 +89,7 @@ void ApplyTopMute(ThreeComponentEnsemble &t3ce, TopMute& mute)
 		ApplyTopMute(*t3c,mute);
 	}
 }
-// Probably should have started with this, but we need constructors
-// This uses a pf
+#ifndef NO_ANTELOPE
 TopMute::TopMute(Pf *pf,string tag)
 {
 	try {
@@ -105,5 +105,22 @@ TopMute::TopMute(Pf *pf,string tag)
 	}
 	catch (...) {throw;};
 }
+#endif
+TopMute::TopMute(PfStyleMetadata& md,string tag)
+{
+    try{
+        PfStyleMetadata branch=md.get_branch(tag);
+	string reft = md.get_string("time_reference_type");
+	if(reft=="absolute")
+		reftype = absolute;
+	else
+		reftype = relative;
+	t0e = md.get_double("zero_end_time");
+	t1 = md.get_double("end_time");
+	enabled=true;
+    }
+    catch (...) {throw;};
+}
+
 	
 } // Termination of namespace SEISPP definitions
