@@ -2,7 +2,7 @@
 #define _SLOWNESS_H_
 #include <string>
 #include "stock.h"
-#include "Metadata.h"
+#include "PfStyleMetadata.h"
 
 #ifndef NO_ANTELOPE
 #include "pf.h"
@@ -182,10 +182,14 @@ As for the pf constructor the required parameters are:
   grid at (uxlow,uylow).  The name is just a tag.
 
 \param mdin is the Metadata object with attributes set to build this object.
+\param tag - name to search in pf to describe this grid object.`
+              The parameters to describe the object are assumed encased in an 
+              &Arr{ } construct with this tag.  This allows multiple grids to 
+              be defined in a single parameter file with different tags. 
 \exception MetadataGetError (child of SeisppError) is thrown if the 
   required attributes are not defined in the Metadata object passed.
   */
-        RectangularSlownessGrid(Metadata& mdin);
+        RectangularSlownessGrid(PfStyleMetadata& mdin,string tag);
 /*!
  Standard copy constructor.
 **/
