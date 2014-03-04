@@ -48,7 +48,7 @@ MetadataList pfget_mdlist(Pf *pf,string tag)
 	return(mdl);
 }
 #endif
-MetadataList get_mdlist(SEISPP::PfStyleMetadata& m,const string tag)
+MetadataList get_mdlist(PfStyleMetadata& m,const string tag)
 {
     try {
         MetadataList mdl;
