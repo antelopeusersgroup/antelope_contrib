@@ -1,0 +1,31 @@
+originator     John Collins, WHOI
+last_modified  2009-06-26
+
+info    &Literal{
+This instrument parameter file and response provided by
+
+        John A. Collins, Woods Hole Oceanographic Institution
+
+High Tech, Inc HTI-90-U with built-in preamp.
+}
+category        High Tech
+configuration   HTI-90-U
+
+description     HTI-90-U Hydrophone;
+dfile           hti90u_whoi
+
+rsptype                 H       # Pressure instrument
+band                    E       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        D       # 2nd character in SEED channel code
+
+gtype           sensor
+sensitivity     1.0023E-03
+iunits          Pa
+ounits          V
+
+orientations    &Tbl{
+H       -999.9  -999.9
+}
+
+response        &datafile(responses/HTI90U_WHOI)

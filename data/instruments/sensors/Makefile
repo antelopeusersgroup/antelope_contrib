@@ -52,7 +52,8 @@ DATA= \
 	hs10_e.pf \
 	hs10_n.pf \
 	hs10_vert.pf \
-        hyperion.pf \
+	hti90u_whoi.pf \
+    hyperion.pf \
 	ia_500ug.pf \
 	ia_50ug.pf \
 	ks54000.pf \
@@ -79,6 +80,7 @@ DATA= \
 	rt151_30.pf \
 	rt151_60.pf \
 	rt151_120.pf \
+	s13_yka.pf \
 	s13.pf \
 	s13e.pf \
 	s13n.pf \

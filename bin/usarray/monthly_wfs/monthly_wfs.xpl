@@ -108,24 +108,29 @@ sub get_wf_dirs { # @dirs = &get_wf_dirs( $year, $month ) ;
     
     @dirs = () ;
     
+    elog_debug ( "get_wf_dirs year	$year	month	$month" ) if $opt_V ;
+
     opendir( DIR, "$pf{wfdirbase}" ) ;
     @years = sort ( grep { /^20[0-9][0-9]$/  } readdir( DIR ) ) ;
     closedir( DIR ) ;
 
-    elog_debug ( "years	@years" ) if $opt_V ;
-    elog_debug ( "year	$year	month	$month" ) if $opt_V ;
+    elog_debug ( "get_wf_dirs: \@years	@years" ) if $opt_V ;
     
     if ( $year !~ /all|recent/ ) {
         @years = grep { /$year/ } @years ;
     } elsif ( $year =~ /recent/ ) {
-        @years =  @years[ $#years ] ;
+        if ( $#years > 1 ) {
+            @years =  ( $years[ $#years -  1 ], $years[ $#years ] )  ;
+        } else {
+            @years =  $years[ $#years ]   ;
+        }
     }
 
     $last_time = &last_time( now(), $pf{ev_lag}, $pf{ev_period} ) ;
     
-    elog_debug ( sprintf("last time	%s", $last_time ) ) if $opt_V ;
+    elog_debug ( sprintf("get_wf_dirs: last time	%s", strydtime($last_time ) ) ) if $opt_V ;
     
-    elog_debug ( "years	@years" )  if $opt_V ;
+    elog_debug ( "get_wf_dirs: \@years	@years" )  if $opt_V ;
     
     foreach $year ( @years ) {
         opendir( DIR, "$pf{wfdirbase}/$year" ) ;
