@@ -152,11 +152,7 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	float *inbuffer=NULL;
 	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb); 
 	double te,t0read,teread,srate;
-#ifdef OLDANTELOPE
-	int nread;
-#else
 	long int nread;
-#endif
 	/* Metadata constructor should load these parameters, but
 	because they are required to build this object we attempt
 	a recovery if they are not found by hitting the db 
