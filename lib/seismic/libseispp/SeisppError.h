@@ -1,7 +1,9 @@
 #ifndef _SEISPPERROR_H_
 #define _SEISPPERROR_H_
 #include <iostream>
+#ifndef NO_ANTELOPE
 #include "db.h"
+#endif
 namespace SEISPP {
 using namespace std;
 /*! \brief Base class for error object thrown by seispp library routines.
