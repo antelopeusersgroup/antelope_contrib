@@ -110,13 +110,13 @@ TopMute::TopMute(PfStyleMetadata& md,string tag)
 {
     try{
         PfStyleMetadata branch=md.get_branch(tag);
-	string reft = md.get_string("time_reference_type");
+	string reft = branch.get_string("time_reference_type");
 	if(reft=="absolute")
 		reftype = absolute;
 	else
 		reftype = relative;
-	t0e = md.get_double("zero_end_time");
-	t1 = md.get_double("end_time");
+	t0e = branch.get_double("zero_end_time");
+	t1 = branch.get_double("end_time");
 	enabled=true;
     }
     catch (...) {throw;};
