@@ -2,7 +2,11 @@
 //  Indiana University
 //
 //  Copyright 2005, The Trustees of Indiana University.
-//  Last Modified: 12/1/2005
+//  Last Modified: March 2014
+/* This file has heavy antelope dependencies.  We simply ignore it with this ifndef
+   when the NO_ANTELOPE macro is set.   
+   */
+#ifndef NO_ANTELOPE
 
 #include <algorithm>
 #include "SeisppKeywords.h"
@@ -1974,3 +1978,4 @@ int XcorProcessingEngine::clear_already_processed()
 	}
 	return(regular_gather->member.size());
 }
+#endif
