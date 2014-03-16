@@ -239,6 +239,7 @@ VelocityModel_1d& VelocityModel_1d::operator=(const VelocityModel_1d& old)
 	}
 	return(*this);
 }
+#ifndef NO_ANTELOPE
 /* Save a model to a database */
 void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 	throw (VelocityModel_1d_Dberror)
@@ -270,4 +271,5 @@ void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 	}
 
 }
+#endif
 } // Termination of namespace SEISPP definitions

@@ -2,7 +2,9 @@
 #define _VELOCITYMODEL_1D_H_
 #include <string>
 #include <vector>
+#ifndef NO_ANTELOPE
 #include "db.h"
+#endif
 #include "seispp.h"
 namespace SEISPP {
 using namespace std;
