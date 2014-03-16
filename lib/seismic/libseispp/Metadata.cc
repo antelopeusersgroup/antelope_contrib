@@ -263,14 +263,6 @@ namespace SEISPP
         }
 	} catch (...) {throw;};
     }
-#else
-    Metadata::Metadata(DatabaseHandle& dbh,
-        MetadataList& mdlist,
-        AttributeMap& am) throw (SeisppError)
-    {
-        throw SeisppError(string("Metadata database constructor not implemented.\n")
-                + "If you need that functionality you will need antelope or implement a handle");
-    }
 #endif
     //
     // These functions get and convert values
