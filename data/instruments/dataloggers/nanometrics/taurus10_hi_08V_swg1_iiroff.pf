@@ -36,7 +36,7 @@ category	Nanometrics
 configuration   Taurus infinite
 
 description	Taurus Infinite 8V
-dfile           taurus10_hi_08V_swg1_iiroff
+dfile           taurus10
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 
