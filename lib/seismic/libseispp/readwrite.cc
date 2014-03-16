@@ -171,13 +171,13 @@ void SetGaps(TimeSeries& ts,
 }
 
 
+#ifndef NO_ANTELOPE
 TimeSeries *LoadTimeSeriesUsingPf(Pf *pf)
 {
 	Metadata md(pf);
 	TimeSeries *ts = new TimeSeries(md,true);
 	return(ts);
 }
-#ifndef NO_ANTELOPE
 /* This function is used by both the TimeSeries and Three_Component
 versions of dbsave below.  It builds a database row from a metadata
 object, which is produced in both cases by  casting up to Metadata,
