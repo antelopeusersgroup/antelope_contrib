@@ -73,14 +73,10 @@ SeismicArray::SeismicArray(string fnamebase,string form)
 {
     const string base_error("SeismicArray file-driven constructor:  ");
     string net,refsta;   // needed for SeismicStationLocation object
-    Pf *pf;
     if(form=="ascii_table_with_pf")
     {
-        if(pfread(const_cast<char *>(fnamebase.c_str()),&pf))
-            throw SeisppError(base_error + "pfread failed for "
-                    + fnamebase+".pf");
         try {
-            Metadata params(pf);
+            PfStyleMetadata params=pfread(fnamebase+".pf");
             name=params.get_string("array_name");
             net=params.get_string("net_name");
             refsta=params.get_string("refsta");
@@ -89,10 +85,8 @@ SeismicArray::SeismicArray(string fnamebase,string form)
             valid_time_interval=TimeWindow(stime,etime);
             // A pf will allow definitions of subarrays as in dbxcor. 
             // this procedure parses pf for that and loads definitions to object
-            load_subarrays_from_pf(*this,pf);
-            pffree(pf);
+            load_subarrays(*this,params);
         }catch(...) {
-            pffree(pf);
             throw;
         };
     }
@@ -411,7 +405,7 @@ int SeismicArray::number_subarrays()
 // Probably should be somewhere else and made externally visible
 // but for now it will just be internal here.
 //
-string strip_white(char *s)
+string strip_white(const char *s)
 {
 	const string white(" \t\n");
 	string work(s);
@@ -461,7 +455,7 @@ void load_subarrays_from_pf(SeismicArray& master,Pf *pf)
 			char *line;
 			line=static_cast<char *>(gettbl(t,j));
 			string staname=strip_white(line);
-			stalist.push_back(string(line));
+			stalist.push_back(staname);
 		}
 		master.LoadSubarray(string(arrayname),stalist);
 		// cleanup
@@ -469,6 +463,39 @@ void load_subarrays_from_pf(SeismicArray& master,Pf *pf)
 		freetbl(t,0);
 	}
 	freetbl(arraylist,0);
+}
+// A routine to make it easy to load a group of subarrays from pf
+void load_subarrays(SeismicArray& master,PfStyleMetadata& md)
+{
+    list<string> stalist;  // result
+    const string vakey("virtual_arrays");
+    const string vatblkey("sta_list");
+    const string base_message("SEISPP::load_subarrays: ");
+    try{
+        PfStyleMetadata vab=md.get_branch(vakey);
+        list<string> arraylist=vab.arr_keys();
+
+        if(arraylist.size()<=0)
+		throw SeisppError(base_message+vakey
+		  +string(" Arr&{} field for defining subarrays is empty"));
+	int i,j;
+        list<string>::iterator keyptr,tblptr;
+        for(i=0,keyptr=arraylist.begin();keyptr!=arraylist.end();++i,++keyptr)
+	{
+            string arrayname(*keyptr);   // convience for readability
+            PfStyleMetadata thisva=vab.get_branch(arrayname);
+            list<string> tbllines=thisva.get_tbl(vatblkey);
+
+            string staname;
+            for(tblptr=tbllines.begin();tblptr!=tbllines.end();++tblptr)
+            {
+                staname=strip_white(tblptr->c_str());
+                stalist.push_back(staname);
+            }
+	    master.LoadSubarray(string(arrayname),stalist);
+	    stalist.clear();
+	}
+    }catch(...){throw;};
 }
 
 } // End namespace SEISPP

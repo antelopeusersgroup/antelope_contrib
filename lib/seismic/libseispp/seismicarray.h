@@ -12,6 +12,7 @@
 #include "Hypocenter.h"
 #include "ensemble.h"
 #include "resample.h"
+#include "PfStyleMetadata.h"
 
 namespace SEISPP{
 using namespace std;
@@ -286,6 +287,27 @@ to the object is required.
 
 **/
 void load_subarrays_from_pf(SeismicArray& master,Pf *pf);
+/*!
+\brief Define subarrays for a network using a parameter file.
+
+Subarrays are a concept encapsulated in the SeismicArray object.
+As the name suggests a subarray is a subset of a larger array of receivers.
+The SeismicArray object handles this in a general way.  This helper
+function defines subarrays for an input SeismicArray object by
+using a parameter file description of the subarray geometry
+loaded through the PfStyleMetadata object.  . 
+
+Note the SeismicArray object is altered which is why a reference
+to the object is required.
+
+\param master is the larger seismic array for which subarrays are to be 
+	defined.
+\param pfmd is the object created from a pf that provides a nonproprietary
+   interface to pf files.
+
+
+**/
+void load_subarrays(SeismicArray& master,PfStyleMetadata& pfmd);
 /*! Computes predicted arrival times for a given phase at all stations
  defined for an input array.  
 
@@ -300,6 +322,7 @@ void load_subarrays_from_pf(SeismicArray& master,Pf *pf);
 StationTime ArrayPredictedArrivals(SeismicArray& stations,
                 Hypocenter& hypo, string phase);
 
+#ifndef NO_ANTELOPE
 /*! \brief Read a block of data in a fixed absolute time window.
 
 
@@ -365,6 +388,7 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	string phase, string chan, TimeWindow data_window, double tpad,
 	DatabaseHandle& dbh, MetadataList& ensemble_mdl, MetadataList& member_mdl,
 	AttributeMap& am);
+#endif
 /*! \brief Assemble a gather with uniform sample rates.
  
  Takes an ensemble of data with potentially irregular sample
@@ -479,6 +503,7 @@ TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
 				ResamplingDefinitions& rsdef,
 					bool trim);
 
+#ifndef NO_ANTELOPE
 /*! \brief Read a block of three component data in a fixed time window.
 
  Reads a block of data defined by a time window derived from
@@ -552,6 +577,7 @@ ThreeComponentEnsemble
         StationChannelMap& scmap,
         MetadataList& ensemble_mdl, MetadataList& member_mdl,
         AttributeMap& am);
+#endif
 
 /*! Scans an array of times to return the range spanned by the group.
 
