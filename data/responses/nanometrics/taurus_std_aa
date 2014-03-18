@@ -1,5 +1,27 @@
 # $Id$
-# Nanometrics     1649 hz anti-alias filter
+# Nanometrics     2132 hz anti-alias filter
+# Low impedance mode (43.07 k-ohm)
+#
+# (T. Mulder, GSC)
+# See Taurus User Guide, Appendix D.
+# The poles used are the ones calculated by IRIS DMC for the Taurus.
+#
+# Use the low impedance setting to match the datalogger to a passive 
+# seismometer. Passive seismometers have varying output impedance. 
+# For example, an S13 may have an output impedance of 3085 ohms (Z).
+# R = 9600 + Z = 12685 ohms
+# C = 1.0E-8 farads
+# pole(for use with an S13) = -1/RC = -7883.3
+#
+# The pole below was calculated by IRIS using Z=50 ohms, a conservative
+# estimate for the roll-off.  In practice, one would have to sample at 
+# over 2000sps for roll-off at the corner frequency of 2132 to have any effect
+# (due to log frequency scale, the roll-off would start around 1000 Hz).
+# So the fact that Z=50 may not be a realistic value for a passive
+# seismo will not have an effect on the instrument response for the sample
+# rates available with the Taurus (max sps = 500 sps).  It was felt that 
+# these poles should be in keeping with those used by IRIS to avoid confusion.
+#
 # Normalized  response 
 # 1                   type
 # 0                   num of zeroes
@@ -9,7 +31,7 @@
 # 0.3667E+16         normalization factor                   
 # 1.0                 gain
 theoretical   1 anti-alias   paz    pz6pbut
-1.333889e+04
+1.3338890e+04
 1             Poles
--1.333888e+004    0.0000E+00    0.0000E+00    0.0000E+00
+-1.333890e+004    0.0000E+00    0.0000E+00    0.0000E+00
 0             Zeros

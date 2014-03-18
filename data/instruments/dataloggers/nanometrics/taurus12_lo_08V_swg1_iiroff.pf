@@ -1,9 +1,9 @@
-originator     Frank Vernon, UCSD
-last_modified  2009-08-11
+originator     Frank Vernon, UCSD; Taimi Mulder, GSC
+last_modified  2014-02-07
 
 info    &Literal{
-This description is for the Taurus standard response with 47k input impedence.
-
+This description is for the Taurus standard response with 47k (low) input impedence.
+43.07 k-ohm impedance, 40V pp, sw gain = 1, IIR filter = off
 
 These instrument parameter files and their responses derived from
 
@@ -30,17 +30,13 @@ Nanometrics Inc.
 Ottawa, ON
 K2K 2A1
 613-592-6776 x 259
-
-Fixed gain of nominal gain of 1 based on 
-Taurus_UserGuide_15148R7.pdf
-2009 Nanometrics Inc. 
 }
 
 category	Nanometrics
 configuration   Taurus standard
 
 description	Taurus Standard 47k
-dfile           taurus_std
+dfile           taurus12
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 
@@ -86,7 +82,7 @@ possible_streams &Literal{
     return (@ok) ; 
 }
 
-gains  1000000        
+gains  2000000        
 
 
 # Stages

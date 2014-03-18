@@ -1,5 +1,5 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-01-30
+last_modified  2014-02-25
 
 category	Geotech
 configuration	S-13 Vertical
@@ -11,7 +11,7 @@ rsptype	V	# velocity instrument
 band	s	# short period 
 
 gtype		sensor	# stage type
-sensitivity	6.29e-7 # equivalent to 629 V/m/sec
+sensitivity	4.447e-7 # equivalent to 629 V/m/sec, critcally damped
 iunits		nm/s
 ounits		V
 
