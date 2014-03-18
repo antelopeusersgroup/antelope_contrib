@@ -236,6 +236,7 @@ long int vector_fwrite(float *x,int n, string dir, string dfile) throw(SeisppErr
 //\param fname file name 
 **/
 long int vector_fwrite(float *x,int n, string fname) throw(SeisppError);
+#ifndef NO_ANTELOPE
 /*!
 // Save the data in a TimeSeries object to a database.
 // This function works only with an Antelope (Datascope) database but the
@@ -461,6 +462,8 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 int dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
+
+#endif
 
 /*!
 // Extracts a requested time window of data from a parent TimeSeries object.

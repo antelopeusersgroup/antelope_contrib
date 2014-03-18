@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <string>
 #include "stock.h"
+#ifndef NO_ANTELOPE
 #include "pf.h"
+#endif
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ensemble.h"
@@ -48,6 +50,7 @@ functions will be return immediately doing nothing.*/
 	TimeReferenceType reftype;   
 	//* Default constructor */
 	TopMute(){t0e=1.0; t1=2.0; reftype=relative; enabled=false;};
+#ifndef NO_ANTELOPE
 /*!
 // Parameter file driven constructor.  
 // Looks for three keyword strings to set the three data parameters
@@ -55,12 +58,31 @@ functions will be return immediately doing nothing.*/
 // which reference t0, t1e, and reftype respectively.  
 //
 //\param pf Antelope parameter file pf object.
-//\param tag is a string that defines an &Tbl{} enscapsulation of the parameters
-//   parsed for the mute definition. The nesting of an &Tbl{ } with the parameters
+//\param tag is a string that defines an &Arr{} enscapsulation of the parameters
+//   parsed for the mute definition. The nesting of an &Arr{ } with the parameters
 //   between the curly brackets allows the same keywords to be used in multiple
 //   constructors for different mute definitions.
 **/
 	TopMute(Pf *pf,string tag);
+#endif
+/*!  \brief Parameter file style contructor.
+
+  This constructor is similar to the Pf version and is effectively a replacement 
+  for the NO_ANTELOPE option.   The usage is essentially identical except the
+  required data comes from a PfStyleMetadata object instead of the plain 
+  C Pf* that has long been a part of the Antelope software.
+
+  Looks for three keyword strings to set the three data parameters
+  that define the object.  They are:  Zero_End_Time, End_Time, and TimeReferenceType
+  which reference t0, t1e, and reftype respectively.
+
+  \param  md is the object constructed from a Pf file that encapsulates the pf interface.
+  \param tag is a string that defines an &Arr{} enscapsulation of the parameters
+   parsed for the mute definition. The nesting of an &Arr{ } with the parameters
+   between the curly brackets allows the same keywords to be used in multiple
+   constructors for different mute definitions.
+   */
+        TopMute(PfStyleMetadata& md,string tag);
 };
 /*!
 // Applies a top mute to a TimeSeries object.

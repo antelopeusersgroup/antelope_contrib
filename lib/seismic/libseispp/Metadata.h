@@ -8,9 +8,11 @@
 #include <vector>
 #include "stock.h"
 #include "arrays.h"
+#ifndef NO_ANTELOPE
 #include "pf.h"
-#include "AttributeMap.h"
 #include "databasehandle.h"
+#endif
+#include "AttributeMap.h"
 #include "SeisppError.h"
 
 namespace SEISPP 
@@ -132,6 +134,7 @@ public:
 // Default constructor.  Does nothing but build an empty object.
 **/
         Metadata(){};
+#ifndef NO_ANTELOPE
 /*!
 // Construct from an Antelope parameter file.  Note that antelope
 // parameter files are stored in a form similar to an STL
@@ -177,6 +180,11 @@ the pfcompile procedure to construct the object.   Otherwise the
 constructor assumes arg 1 is a file name that is read and parsed
 with a structure assumption defined by the format name passed as
 arg 2.
+
+Note this constructor is depricated and should not be used.  The
+intended use has been superceded by child of this class
+called PfStyleMetadata.
+
 \exception MeetadataParseError if pfcompile failes.
 \param s is one of two things.  If format is string it assumed to 
   be a string that is to be parsed as an antelope pf file image.  Otherwise
@@ -189,6 +197,7 @@ arg 2.
 
 */
 	Metadata(string s,const char *format="string") throw(MetadataParseError);
+#endif
 /*!
 //  Restricted build from a string driven by a typed list.  
 //  
@@ -201,6 +210,7 @@ arg 2.
 //  s that do not match keys found in this list will be dropped.
 **/
 	Metadata(string s,MetadataList& mdl);
+#ifndef NO_ANTELOPE
 /*!
 //  Construct from a database.
 //
@@ -224,6 +234,8 @@ arg 2.
 **/
 	Metadata(DatabaseHandle& dbh,
 		MetadataList& mdl,AttributeMap& am) throw(MetadataError);
+#endif
+
 /*!
 // Standard copy constructor.
 //
@@ -449,7 +461,7 @@ void copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 //   of a parameter file.
 //\param tag key of Tbl in Pf holding the list.  
 **/
-MetadataList pfget_mdlist(Pf *pf,string tag);
+MetadataList pfget_mdlist(Pf *pf,const string tag);
 /*!
 // Convert a Metadata to an Antelope Pf.  This is essentially
 // an inverse to the Pf constructor.  

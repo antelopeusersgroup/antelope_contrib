@@ -3,6 +3,7 @@ LIB=libseispp.a
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
 ldlibs=-lgclgrid
+cxxflags=-g -DNO_ANTELOPE
 INCLUDE=ArrivalUpdater.h \
   AttributeCrossReference.h \
   AttributeMap.h \
@@ -67,6 +68,10 @@ DBG=-g
 
 include $(ANTELOPEMAKE)  	
 
+#  The following have been deleted from master Makefile (with antelope)
+#  because ifndefs make contents null:  XcorProcessingEngine.o, dbpp.o, 
+#  dbpp_matchhandle.o
+
 OBJS=ArrivalUpdater.o \
   AttributeCrossReference.o \
   AttributeMap.o \
@@ -91,14 +96,11 @@ OBJS=ArrivalUpdater.o \
   VelocityModel_1d.o \
   VelocityModel_3d.o \
   XcorAnalysisSetting.o \
-  XcorProcessingEngine.o \
   array_get_data_3c.o \
   array_get_data.o \
   byteswap.o \
   converters.o \
   correlation.o \
-  dbpp.o \
-  dbpp_matchhandle.o \
   ensemble.o \
   ensemble_helpers.o \
   filter.o \

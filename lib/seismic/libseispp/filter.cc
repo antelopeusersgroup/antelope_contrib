@@ -236,12 +236,14 @@ void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
 	// Append this filter name to Metadata part of object
 	ts.append_string(string("filter_spec"),string("; "),filter_spec);
 }
+#ifndef NO_ANTELOPE
 void TimeInvariantFilter::apply(Dbptr tr)
 {
 	if(type==none) return;
 	if(trfilter(tr,const_cast<char*>(filter_spec.c_str()))<0)
 		throw SeisppError(string("Error in trfilter"));
 }
+#endif
 
 // helpers for ensembles.  There is probably a way to do this with templates,
 // but it isn't that much code

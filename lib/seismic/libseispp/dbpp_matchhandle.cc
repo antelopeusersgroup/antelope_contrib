@@ -1,3 +1,7 @@
+/* This file has heavy antelope dependencies.  We simply ignore it with this ifndef
+when the NO_ANTELOPE macro is set.   
+*/
+#ifndef NO_ANTELOPE
 #include <stdio.h>
 #include "elog.h"
 #include "dbpp.h"
@@ -366,3 +370,4 @@ list<long> DatascopeMatchHandle::find(Metadata& md,bool use_fullnames)
 	return(result);
 }
 } // End namespace SEISPP declaration
+#endif

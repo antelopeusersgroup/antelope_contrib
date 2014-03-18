@@ -74,6 +74,7 @@ TimeWindow StationTimeRange(StationTime& times)
 	}
 	return(TimeWindow(tmin,tmax));
 }
+#ifndef NO_ANTELOPE
 		
 //
 //@{
@@ -171,6 +172,7 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	// needs to ultimately be repaired.
 	return(result);
 }
+#endif
 /* Automatically switches polarity of traces with reversed
 polarity.  Works only for SEED channel codes.  Silently does
 nothing if the third character of the channel code is anything

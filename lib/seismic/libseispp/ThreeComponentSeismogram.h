@@ -160,6 +160,7 @@ Initializes data and sets aside memory for
                      attributes derived from the Metadata object (see above).
 **/
 	ThreeComponentSeismogram(Metadata& md,bool load_data);
+#ifndef NO_ANTELOPE
 /*!
  Antelope database driven constructor.
 
@@ -199,6 +200,7 @@ Initializes data and sets aside memory for
 **/
 	ThreeComponentSeismogram(DatabaseHandle& db, 
 		MetadataList& mdl, AttributeMap& am);
+#endif
 /*!
  Standard copy constructor.
 **/
