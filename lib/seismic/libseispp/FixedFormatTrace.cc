@@ -452,6 +452,9 @@ void FixedFormatTrace::zero()
 	case REAL64:
 		dptr = reinterpret_cast<double *>(d);		
 		for(i=0;i<ntotal;++i,dptr++) *dptr=0.0;
+        default:
+                throw SeisppError(string("FixedFormatTrace::zero method:  ")
+                        + "illegal sample type defined in object");
 	};
 }
 void FixedFormatTrace::put(int nsamp, int offset, double *dnew)
@@ -494,6 +497,9 @@ void FixedFormatTrace::put(int nsamp, int offset, double *dnew)
 		dptr = reinterpret_cast<double *>(d);		
 		dptr+=static_cast<size_t>(offset);
 		for(i=0;i<nstocopy;++i,dptr++) *dptr=dnew[i];
+        default:
+                throw SeisppError(string("FixedFormatTrace::put double method")
+                        + "Attempt to put a double into a nonnumeric attribute");
 	};
 }
 void FixedFormatTrace::put(int offset, vector<double> dnew)

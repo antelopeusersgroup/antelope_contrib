@@ -1,5 +1,5 @@
 #include <sstream>
-#include "Metadata.h"
+#include "PfStyleMetadata.h"
 #include "gclgrid.h"
 #include "seispp.h"
 using namespace std;
@@ -18,7 +18,7 @@ class TaperGrid
 {
 public:
 	TaperGrid(Metadata& md);
-	TaperGrid(Pf *pf,string tag);
+	TaperGrid(string fname);
 	TaperGrid(const TaperGrid& parent);
 	TaperGrid& operator=(const TaperGrid& parent);
 	void apply(GCLscalarfield3d& g);
@@ -105,10 +105,12 @@ TaperGrid::TaperGrid(Metadata& md)
 	}
 
 }
-TaperGrid::TaperGrid(Pf *pf, string tag)
+TaperGrid::TaperGrid(string fname)
 {
-	Metadata mdtmp(pf,tag);
+    try {
+        PfStyleMetadata mdtmp=pfread(fname);
 	*this=TaperGrid(mdtmp);
+    }catch(...){throw;};
 }
 TaperGrid::TaperGrid(const TaperGrid& parent)
 {

@@ -3,6 +3,9 @@
 #include "dbpp.h"
 #include "EventCatalog.h"
 #include "seispp.h"
+// This file should be completely ignored if antelope is not defined.
+// This is here to allow simple compilation of all seispp with the NO_ANTELOPE option
+#ifndef NO_ANTELOPE
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP
@@ -207,3 +210,4 @@ EventCatalog& EventCatalog::operator=(const EventCatalog& parent)
 }
 
 } /* End SEISPP namespace encapsulation*/
+#endif

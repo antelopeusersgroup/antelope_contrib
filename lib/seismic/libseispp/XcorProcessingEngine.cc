@@ -2,7 +2,11 @@
 //  Indiana University
 //
 //  Copyright 2005, The Trustees of Indiana University.
-//  Last Modified: 12/1/2005
+//  Last Modified: March 2014
+/* This file has heavy antelope dependencies.  We simply ignore it with this ifndef
+   when the NO_ANTELOPE macro is set.   
+   */
+#ifndef NO_ANTELOPE
 
 #include <algorithm>
 #include "SeisppKeywords.h"
@@ -1204,7 +1208,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	{
 		string chan_allowed("ZNELRT");
 		if(analysis_setting.component_name
-			.find_first_of(chan_allowed,0)<0)
+			.find_first_of(chan_allowed,0)!=std::string::npos)
 		{
 			throw SeisppError(
 				string("XcorProcessingEngine::load_data():")
@@ -1325,7 +1329,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                         <<endl;
 		string chan_allowed("ZNELRT");
 		if(analysis_setting.component_name
-			.find_first_of(chan_allowed,0)<0)
+			.find_first_of(chan_allowed,0)!=std::string::npos)
 		{
 			throw SeisppError(base_message
 				+ string("Illegal channel code specified.")
@@ -1974,3 +1978,4 @@ int XcorProcessingEngine::clear_already_processed()
 	}
 	return(regular_gather->member.size());
 }
+#endif
