@@ -31,8 +31,6 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 	/* Compute a match tolerance to nodes using the nominal dx3 grid spacing as 
 	a scale factor */
 	double dz_match(field.dx3_nom*0.01);
-cout << "DEBUG:  z,v values"<<endl;
-for(i=0;i<n1dsize;++i) cout << z1d[i]<<",  "<<val1d[i]<<endl;
 	// To be completely correct and general we have to loop over each surface point because the top
 	// surface is not guaranteed to be at Earth's surface.  
 	for(i=0;i<field.n1;++i)

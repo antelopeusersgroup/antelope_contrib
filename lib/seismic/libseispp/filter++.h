@@ -116,8 +116,10 @@ public:
 	* (e.g. "DEMEAN; BW 0.5 5 2.5 2").
 	*/
 	void apply(ThreeComponentSeismogram& tce);
+#ifndef NO_ANTELOPE
 	/*! Apply this filter to a trace database. */
 	void apply(Dbptr tr);
+#endif
 
 private:
 	string filter_spec;

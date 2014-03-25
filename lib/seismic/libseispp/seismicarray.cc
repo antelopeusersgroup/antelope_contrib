@@ -2,7 +2,10 @@
 #include <vector>
 #include <map>
 #include "coords.h"
+#include "stock.h"
+#ifndef NO_ANTELOPE
 #include "dbpp.h"
+#endif
 #include "seispp.h"
 using namespace std;
 using namespace SEISPP;
@@ -66,6 +69,63 @@ SeismicArray::SeismicArray()
 {
 	name="UNDEFINED";
 }
+SeismicArray::SeismicArray(string fnamebase,string form)
+{
+    const string base_error("SeismicArray file-driven constructor:  ");
+    string net,refsta;   // needed for SeismicStationLocation object
+    if(form=="ascii_table_with_pf")
+    {
+        try {
+            PfStyleMetadata params=pfread(fnamebase+".pf");
+            name=params.get_string("array_name");
+            net=params.get_string("net_name");
+            refsta=params.get_string("refsta");
+            double stime=params.get_double("start_time");
+            double etime=params.get_double("end_time");
+            valid_time_interval=TimeWindow(stime,etime);
+            // A pf will allow definitions of subarrays as in dbxcor. 
+            // this procedure parses pf for that and loads definitions to object
+            load_subarrays(*this,params);
+        }catch(...) {
+            throw;
+        };
+    }
+    else if (form=="simple_ascii_table")
+    {
+        name=fnamebase;
+        net=name;
+        refsta="UNDEFINED";
+        // end time here is Jan 1, 2100
+        valid_time_interval=TimeWindow(0.0,4102444800.0);
+    }
+    else
+        throw SeisppError(base_error
+                + "Unsupported format with name tag="
+                + form);
+    // For now both formats read a .dat file in common format
+    // Small sanity checks done to avoid common problem of mixing
+    // lat and lon 
+    FILE *fp;
+    string fname=fnamebase+".dat";
+    if(fopen(fname.c_str(),"r")==NULL) throw SeisppError(base_error
+                                + "cannot open file " + fname);
+    double lat,lon,elev;
+    char stain[20];
+    double dnorth(0.0),deast(0.0);   // force these always 0
+    while(fscanf(fp,"%s%lf%lf%lf",stain,&lat,&lon,&elev)!=EOF)
+    {
+        // stored internally in radians
+        lat=rad(lat);
+        lon=rad(lon);
+        string sta(stain);
+        // Set refsta to first station read for simple format
+        if(refsta=="UNDEFINED")refsta=sta;
+        SeismicStationLocation newstaloc(lat,lon,elev,dnorth,deast,
+                sta,net,refsta);
+        array.insert(pair<string,SeismicStationLocation>(sta,newstaloc));
+    }
+}
+#ifndef NO_ANTELOPE
 SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	double time, string arrayname)
 {
@@ -239,6 +299,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	// It may do bad things if the list is small compared to the database.
 	valid_time_interval=master.valid_time_interval;
 }
+#endif
 
 SeismicArray::SeismicArray(const SeismicArray& orig)
 {
@@ -344,7 +405,7 @@ int SeismicArray::number_subarrays()
 // Probably should be somewhere else and made externally visible
 // but for now it will just be internal here.
 //
-string strip_white(char *s)
+string strip_white(const char *s)
 {
 	const string white(" \t\n");
 	string work(s);
@@ -394,7 +455,7 @@ void load_subarrays_from_pf(SeismicArray& master,Pf *pf)
 			char *line;
 			line=static_cast<char *>(gettbl(t,j));
 			string staname=strip_white(line);
-			stalist.push_back(string(line));
+			stalist.push_back(staname);
 		}
 		master.LoadSubarray(string(arrayname),stalist);
 		// cleanup
@@ -402,6 +463,39 @@ void load_subarrays_from_pf(SeismicArray& master,Pf *pf)
 		freetbl(t,0);
 	}
 	freetbl(arraylist,0);
+}
+// A routine to make it easy to load a group of subarrays from pf
+void load_subarrays(SeismicArray& master,PfStyleMetadata& md)
+{
+    list<string> stalist;  // result
+    const string vakey("virtual_arrays");
+    const string vatblkey("sta_list");
+    const string base_message("SEISPP::load_subarrays: ");
+    try{
+        PfStyleMetadata vab=md.get_branch(vakey);
+        list<string> arraylist=vab.arr_keys();
+
+        if(arraylist.size()<=0)
+		throw SeisppError(base_message+vakey
+		  +string(" Arr&{} field for defining subarrays is empty"));
+	int i,j;
+        list<string>::iterator keyptr,tblptr;
+        for(i=0,keyptr=arraylist.begin();keyptr!=arraylist.end();++i,++keyptr)
+	{
+            string arrayname(*keyptr);   // convience for readability
+            PfStyleMetadata thisva=vab.get_branch(arrayname);
+            list<string> tbllines=thisva.get_tbl(vatblkey);
+
+            string staname;
+            for(tblptr=tbllines.begin();tblptr!=tbllines.end();++tblptr)
+            {
+                staname=strip_white(tblptr->c_str());
+                stalist.push_back(staname);
+            }
+	    master.LoadSubarray(string(arrayname),stalist);
+	    stalist.clear();
+	}
+    }catch(...){throw;};
 }
 
 } // End namespace SEISPP

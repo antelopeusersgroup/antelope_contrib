@@ -1,6 +1,6 @@
 #include <float.h>
 #include "SeisppError.h"
-#include "Metadata.h"
+#include "PfStyleMetadata.h"
 #include "slowness.h"
 namespace SEISPP
 {
@@ -35,6 +35,7 @@ RectangularSlownessGrid::RectangularSlownessGrid(string nm,
 	dux =du1;
 	duy=du2;
 }
+#ifndef NO_ANTELOPE
 RectangularSlownessGrid::RectangularSlownessGrid(Pf *pf,string tag)
 {
 	Metadata md(pf,tag);
@@ -48,10 +49,12 @@ RectangularSlownessGrid::RectangularSlownessGrid(Pf *pf,string tag)
 		duy = md.get_double("duy");
 	} catch (...) {throw;}
 }
-RectangularSlownessGrid::RectangularSlownessGrid(Metadata& md)
+#endif
+RectangularSlownessGrid::RectangularSlownessGrid(PfStyleMetadata& pfsmd,string tag)
 {
     /* Painfully parallel to the pf version above */
 	try {
+            PfStyleMetadata md=pfsmd.get_branch(tag);
 		name=md.get_string("Slowness_Grid_Name");
 		uxlow=md.get_double("uxlow");
 		uylow=md.get_double("uylow");

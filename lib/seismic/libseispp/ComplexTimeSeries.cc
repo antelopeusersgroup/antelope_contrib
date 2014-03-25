@@ -97,6 +97,7 @@ ComplexTimeSeries::ComplexTimeSeries(const Metadata& md,bool load_data) : Metada
 
 	}
 }
+#ifndef NO_ANTELOPE
 
 /* Constructor to read a single seismogram from an antelope
 database.  Arguments:
@@ -170,6 +171,7 @@ ComplexTimeSeries::ComplexTimeSeries(DatabaseHandle& rdb,
 
 	}
 }
+#endif
 // standard assignment operator
 ComplexTimeSeries& ComplexTimeSeries::operator=(const ComplexTimeSeries& tsi)
 {
