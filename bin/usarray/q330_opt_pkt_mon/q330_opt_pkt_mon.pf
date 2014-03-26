@@ -1,3 +1,4 @@
 
-select_packets		.*/pf/st
-reject_packets		
+select_packets      .*/pf/st
+buffer_time_window  600 #in seconds
+reject_packets
