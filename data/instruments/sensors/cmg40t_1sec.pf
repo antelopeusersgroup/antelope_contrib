@@ -1,5 +1,5 @@
 originator     Frank Vernon, UCSD
-last_modified  2008-06-24
+last_modified  2014-04-02
 
 info	&Literal{
 These instrument parameter files and their responses derived from
@@ -20,7 +20,7 @@ short_period_sensor     no      # Sets first character of SEED channel code
 sensor_type_code        H       # 2nd character in SEED channel code
 
 gtype		sensor
-sensitivity	8e-7
+sensitivity	20e-7
 iunits		nm/s
 ounits		V
 

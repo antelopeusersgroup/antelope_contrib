@@ -1,5 +1,5 @@
 originator     Frank Vernon, UCSD
-last_modified  2008-06-24
+last_modified  2014-04-02
 
 category	Guralp
 configuration	CMG40T-1
@@ -13,7 +13,7 @@ short_period_sensor     no      # Sets first character of SEED channel code
 sensor_type_code        H       # 2nd character in SEED channel code
 
 gtype		sensor
-sensitivity	4e-6
+sensitivity	20e-7
 iunits		nm/s
 ounits		V
 
