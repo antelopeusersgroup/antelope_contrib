@@ -46,8 +46,25 @@ auth_map &Literal{
 	    when (/UNR.*/)      { $auth	= "UNR"; }
 	    when (/UTAH.*/)     { $auth	= "UUSS"; }
 	    when (/UUSS.*/)     { $auth	= "UUSS"; }
+	    when (/USGS:ak/)	{ $auth = "AEIC"; }         
+	    when (/USGS:at/)	{ $auth = "AEIC"; }         
+	    when (/USGS:ci/)    { $auth	= "SCEDC"; }
+	    when (/USGS:hv/)    { $auth	= "HVO"; }
+	    when (/USGS:ld/)    { $auth	= "LDO"; }
+	    when (/USGS:mb/)    { $auth	= "BUT"; }
+	    when (/USGS:nc/)    { $auth	= "NCEDC"; }
+	    when (/USGS:nm/)    { $auth	= "CERI"; }
+	    when (/USGS:nn/)    { $auth	= "UNR"; }
+	    when (/USGS:pr/)    { $auth	= "RSPR"; }
+	    when (/USGS:pt/)    { $auth	= "PTWC"; }
+	    when (/USGS:se/)    { $auth	= "UNKNWN"; }
+	    when (/USGS:us/)    { $auth	= "NEIC"; }
+	    when (/USGS:uu/)    { $auth	= "UUSS"; }
+	    when (/USGS:uw/)    { $auth	= "PNSN"; }
+
 	    default             { $auth = "UNKNWN"; } }
 }
 
-pf_revision_time	1243897200
 
+
+pf_revision_time 1387575390
