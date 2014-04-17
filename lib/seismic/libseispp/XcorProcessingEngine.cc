@@ -348,7 +348,7 @@ void  ComputePeakRatioMetric(TimeSeriesEnsemble& d,
         work.clear();
         double ratio;
         vector<double>::iterator sptr;
-        if(dptr->live && ((xcptr->ns)>3))
+        if(dptr->live && xcptr->live && ((xcptr->ns)>3))
         {
             work.clear();
             /* Hunt through the data vector and push peak positive
@@ -1208,7 +1208,7 @@ int  XcorProcessingEngine::load_data(DatabaseHandle& dbh,ProcessingStatus stat)
 	{
 		string chan_allowed("ZNELRT");
 		if(analysis_setting.component_name
-			.find_first_of(chan_allowed,0)!=std::string::npos)
+			.find_first_of(chan_allowed,0)==std::string::npos)
 		{
 			throw SeisppError(
 				string("XcorProcessingEngine::load_data():")
@@ -1329,7 +1329,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                         <<endl;
 		string chan_allowed("ZNELRT");
 		if(analysis_setting.component_name
-			.find_first_of(chan_allowed,0)!=std::string::npos)
+			.find_first_of(chan_allowed,0)==std::string::npos)
 		{
 			throw SeisppError(base_message
 				+ string("Illegal channel code specified.")
