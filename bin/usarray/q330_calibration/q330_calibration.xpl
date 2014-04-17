@@ -18,7 +18,7 @@
 {    #  Main program
 
     my ($msg,$usage,$cmd,$subject);
-    my ($field,$orb,$orbname,$db,$stime,$Pf,$regex,$subset,$target);
+    my ($field,$orb,$orbname,$db,$stime,$regex,$subset,$target);
     my ($sta,$dlsta,$snmodel,$chident,$time,$endtime,$sleep,$maxsleep);
     my ($start,$rows,$trow,$row,$irow,$drow,$nocal,$nrowe,$nrown,$stepe,$stepn);
     my (@db,@dbdlcalwf,@dbdlsensor,@dbstaq330,@dbj,@dbmone,@dbmonn,@dbje,@dbjn) ;
@@ -77,11 +77,9 @@
     #
     #  get pf
     #
-    $Pf = $opt_p || $pgm ;
-    %pf = getparam( $Pf ) ;
+    %pf = getparam( $opt_p || $pgm ) ;
 
     foreach $snmodel ( keys $pf{sensors} ) {
-        # not sure if we need this... JCRC
         #foreach $field (qw/duration settling_time trailer_time waveform period amplitude/) {
         foreach $field (qw/duration settling_time trailer_time waveform amplitude/) {
             unless ( defined $pf{sensors}{$snmodel}{$field} ) {
@@ -346,7 +344,6 @@ sub calibrate { # ($sleep,$problems) = &calibrate($orbname,$sta,$snmodel,$mon_ch
         return 0 ;
     }
 
-#    ($sta,$dlsta,$chident,$snmodel,$target) = dbgetv(@dbj,"sta","dlsta","chident","snmodel","target");
     $dlsta    = $q330{$sta}{$snmodel}{dlsta};
     $chident  = $q330{$sta}{$snmodel}{chident};
     $target   = $q330{$sta}{$snmodel}{target};
@@ -362,16 +359,16 @@ sub calibrate { # ($sleep,$problems) = &calibrate($orbname,$sta,$snmodel,$mon_ch
 
 
     $cmd = "dlcmd $orbname $target q330 $dlsta calibrate ";
-    $cmd .= "-duration $pf{sensors}{$snmodel}{duration} " if $pf{sensor}{$snmodel}{duration};
-    $cmd .= "-settling_time $pf{sensors}{$snmodel}{settling_time} " if $pf{sensor}{$snmodel}{settling_time};
-    $cmd .= "-trailer_time $pf{sensors}{$snmodel}{trailer_time} " if $pf{sensor}{$snmodel}{trailer_time};
-    $cmd .= "-waveform $pf{sensors}{$snmodel}{waveform} " if $pf{sensor}{$snmodel}{waveform};
-    $cmd .= "-period $pf{sensors}{$snmodel}{period} " if $pf{sensor}{$snmodel}{period};
-    $cmd .= "-amplitude $pf{sensors}{$snmodel}{amplitude} " if $pf{sensor}{$snmodel}{amplitude};
+    $cmd .= "-duration $pf{sensors}{$snmodel}{duration} " if $pf{sensors}{$snmodel}{duration};
+    $cmd .= "-settling_time $pf{sensors}{$snmodel}{settling_time} " if $pf{sensors}{$snmodel}{settling_time};
+    $cmd .= "-trailer_time $pf{sensors}{$snmodel}{trailer_time} " if $pf{sensors}{$snmodel}{trailer_time};
+    $cmd .= "-waveform $pf{sensors}{$snmodel}{waveform} " if $pf{sensors}{$snmodel}{waveform};
+    $cmd .= "-period $pf{sensors}{$snmodel}{period} " if $pf{sensors}{$snmodel}{period};
+    $cmd .= "-amplitude $pf{sensors}{$snmodel}{amplitude} " if $pf{sensors}{$snmodel}{amplitude};
     $cmd .= "-sensors $chident -monitor_channels $mon_chan " ;
     $cmd .= "> $temp_file 2>&1 ";
 
-    elog_notify("run_cmd - $cmd") if $opt_V ;
+    elog_notify("run_cmd:[ $cmd ]") if $opt_v ;
 
     unless ( &run_cmd( $cmd ) ) {
         my @lines = <$temp_file>;
