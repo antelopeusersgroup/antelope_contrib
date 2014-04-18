@@ -28,11 +28,12 @@ to
 .fi
 
 and puts these /pf/vtw packets back into the orb.
-A second mode of running will be using the \fB-w\fP flag. This will also create MGENC
+A second mode of running will be using the \fB-w\fP flag. This will  create MGENC
 packets of data from each of the values. Each value in the opt string will create a new
 seed channel without loc codes. The multiplexed packets will be push to the same orb
 as the /pf/st packets. There is an internal buffer for the values that can be modified
 in the parameter file. The calib is set to 1 and the segtype to \fBc\fP "dimensionless integer".
+The new packets with waveforms will have a name of STA_CHAN_/MGENC/MSTV.
 
 
 .SH OPTIONS
@@ -43,9 +44,9 @@ Extremely verbose.  Used for debugging purposes only.
 .IP "-n npkts"
 Number of packets to process.
 .IP -d
-Debug mode. 
+Dry run. Don't put any packets back in the orb.
 .IP -w
-Build VTW MGENC data packets and put them back in the orb.
+Build MGENC/MSTV data packets and put them back in the orb. Avoid /pf/vtw packets.
 .IP "-p parameter_file"
 Name of parameter file to use.  $PFPATH is searched to find parameter file.
 The default parameter file is \fBq330_opt_pkt_mon\fP.
@@ -82,7 +83,7 @@ If a gap is detected of more than 1.5 times the samplerate then the buffer is du
 channel and it will start buffering from that point forward.
 .HP
 Example of the waveform packet that will be produced:
-#21 'TA_O20A_VTW/MGENC':  3/25/2014 (084) 20:55:17.964 : 484 bytes
+#21 'TA_O20A_/MGENC/MSTV':  3/25/2014 (084) 20:55:17.964 : 484 bytes
      0 : TA       O20A     ACOK               0.017/s calib=           1 calper= 1.000 segtype=c 4 samps Tue 2014-084 Mar 25 20:52:17.73499 - 20:56:17.73498
             1        1        1        1
      1 : TA       O20A     API                0.017/s calib=           1 calper= 1.000 segtype=c 4 samps Tue 2014-084 Mar 25 20:52:17.73499 - 20:56:17.73498

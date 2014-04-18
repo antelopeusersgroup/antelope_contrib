@@ -2,7 +2,7 @@
 #   Original Author:
 #       Frank Vernon <flvernon@ucsd.edu>
 #
-#   Update: 2/25/14
+#   Update: 3/14
 #       Juan Reyes <reyes@ucsd.edu>
 #       - Add "-w" option to make
 #           orb packets with the
@@ -208,7 +208,7 @@ sub process_packet {
 
             next unless scalar @temp_stash ;
 
-            $parts = Srcname->new(src_net=>$n, src_sta=>$s, src_chan=>'VTW') ;
+            $parts = Srcname->new(src_net=>$n, src_sta=>$s, src_subcode=>'MSTV') ;
 
             $temp_pkt = Packet->new(suffix=>'MGENC', parts=>$parts,
                             channels=>[@temp_stash]) ;
@@ -230,24 +230,26 @@ sub process_packet {
 
         }
 
-    }
-
-    pfput("dls",\%pfout,$pftarget ) ;
-
-    ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
-    $parts  = Srcname->new(src_net=>$net,src_sta =>$sta,src_chan=>$chan,src_loc=>$loc) ;
-    $pktout = Packet->new(subcode=>'vtw', suffix=>'pf', parts=>$parts, pf=>$pftarget) ;
-    ($srcname_new, $pkttime, $packet) = stuffPkt($pktout) ;
-
-    $srcname_new = join_srcname($net, $sta, $chan, $loc, $suffix, "vtw") ;
-
-    if ( $opt_d ) {
-        elog_notify( "***dry-run***: orbputx: -NULL- $newsrcname time: "
-                . epoch2str($time,"%Y%j-%T") ) ;
     } else {
-        $pktid = orbputx($orb, $srcname_new, $time, $packet, length($packet)) ;
-        elog_notify( "\t\torbputx:$pktid $srcname_new time: "
-            . epoch2str($time,"%Y%j-%T") ) if $opt_v ;
+
+        pfput("dls",\%pfout,$pftarget ) ;
+
+        ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
+        $parts  = Srcname->new(src_net=>$net,src_sta =>$sta,src_chan=>$chan,src_loc=>$loc) ;
+        $pktout = Packet->new(subcode=>'vtw', suffix=>'pf', parts=>$parts, pf=>$pftarget) ;
+        ($srcname_new, $pkttime, $packet) = stuffPkt($pktout) ;
+
+        $srcname_new = join_srcname($net, $sta, $chan, $loc, $suffix, "vtw") ;
+
+        if ( $opt_d ) {
+            elog_notify( "***dry-run***: orbputx: -NULL- $newsrcname time: "
+                    . epoch2str($time,"%Y%j-%T") ) ;
+        } else {
+            $pktid = orbputx($orb, $srcname_new, $time, $packet, length($packet)) ;
+            elog_notify( "\t\torbputx:$pktid $srcname_new time: "
+                . epoch2str($time,"%Y%j-%T") ) if $opt_v ;
+        }
+
     }
 
     %pf    = ();
