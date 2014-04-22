@@ -52,7 +52,7 @@ our(%logs,%errors) ;
 our($to_parent,$nstas,$get_sta,$parent,$host) ;
 our($string,$problems,$nchild,$file_fetch) ;
 our($subject,$start,$end,$run_time_str) ;
-our($opt_x,$opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d) ;
+our($opt_n,$opt_x,$opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d) ;
 
 use constant false => 0 ;
 use constant true  => 1 ;
@@ -67,7 +67,7 @@ $host = my_hostname() ;
 
 elog_init($0,@ARGV) ;
 
-unless ( &getopts('xhdvm:p:s:r:') || @ARGV > 1 ) {
+unless ( &getopts('nxhdvm:p:s:r:') || @ARGV > 1 ) {
     pod2usage({-exitval => 99, -verbose => 2}) ;
 }
 
@@ -248,8 +248,8 @@ sub get_stations_from_db {
     #
     # Get stations with baler44s
     #
-    fork_notify("dbsubset ( stablaler.model =~ /Packet Baler44/)") if $opt_v ;
-    @db_sta = dbsubset( @db_sta, "stabaler.model =~ /PacketBaler44/ ") ;
+    fork_notify("dbsubset ( stablaler.model =~ /$pf{baler_model}/)") if $opt_v ;
+    @db_sta = dbsubset( @db_sta, "stabaler.model =~ /$pf{baler_model}/ ") ;
 
     if ( $opt_s ) {
         fork_notify("dbsubset ( sta =~ /$opt_s/)") ;
@@ -415,6 +415,7 @@ sub run_in_threads {
         # Fork the script (not using &fork)
         #
         $cmd   =  "$0 " ;
+        $cmd  .=  "-n " if $opt_n ;
         $cmd  .=  "-x " if $opt_x ;
         $cmd  .=  "-v " if $opt_v ;
         $cmd  .=  "-d " if $opt_d ;
@@ -774,7 +775,11 @@ sub get_data {
         #
         # Files to avoid
         #
-        if ($dfile !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ) {
+        if ($dfile !~ /(${sta}|EXMP)/ ) {
+            fork_complain("$dfile station name is wrong") ;
+            next LINE ;
+        }
+        if ($dfile !~ /($pf{regex_for_files})/ ) {
             fork_complain("$dfile name is of wrong format") ;
             next LINE ;
         }
@@ -854,7 +859,7 @@ sub get_data {
         # If missing checksum then connect to station
         #
 
-        if ( $ip ) {
+        if ( $ip and not $opt_n) {
 
             fork_debug("Get md5 for $dfile") if $opt_d ;
 
@@ -946,7 +951,7 @@ sub get_data {
                     "attempts", int( dbgetv(@db,'attempts') )+1,
                     "time",     now(),
                     "lddate",   now(),
-                    "status",   "flagged") ;
+                    "status",   "flagged") unless $opt_n ;
             }
 
         } else {
@@ -962,7 +967,7 @@ sub get_data {
                 "attempts", 1,
                 "time",     now(),
                 "lddate",   now(),
-                "status",   "flagged") ;
+                "status",   "flagged") unless $opt_n ;
 
         }
 
@@ -980,6 +985,8 @@ sub get_data {
         next unless $media_active ;
         next unless $media_reserve ;
         next unless $remote{$f} ;
+
+        next if $opt_n ;
 
         #
         # Check if we have the file
@@ -1023,11 +1030,13 @@ sub get_data {
 
         fork_notify("Start download: $dir/$file") if $opt_v ;
 
-        if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/) {
+        if ($file !~ /($pf{regex_for_files})/ ) {
             fork_complain("ERROR ON FLAGGED NAME: $file") ;
             next ;
         }
 
+
+        next if $opt_n ;
 
         #
         # Verify if we have a copy of the file in the local dir
@@ -1106,8 +1115,14 @@ sub get_data {
                 # variations on the names. Then we can build
                 # a good URL for the file.
                 #
+                ################################################
+                # NOTE:
+                # Adding option to look into sdata directories.
+                # OLD: $f =~ m/list\.\w+\.(data\S*)\.gz/ ;
+                # 4/14
+                #
 
-                $f =~ m/list\.\w+\.(data\S*)\.gz/ ;
+                $f =~ m/list\.\w+\.(s?data\S*)\.gz/ ;
                 next unless $1 ;
 
                 $start_file = now() ;
@@ -1564,7 +1579,7 @@ sub fix_local {
                 fork_complain( "remove record $r: "
                     .join(' ',dbgetv(@db,dbquery(@db,"dbTABLE_FIELDS" )))
                     ) ;
-                dbmark(@db) ;
+                dbmark(@db) unless $opt_n ;
                 $nulls = 1 ;
             }
 
@@ -1594,13 +1609,13 @@ sub fix_local {
         #
         # Verify file name is for this station
         #
-        if ( $file !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ) {
+        if ( $file !~ /(${sta}|EXMP)/ or $file !~ /($pf{regex_for_files})/ ) {
             fork_complain("filename failed regex match "
                 ."for station: remove(): $file") ;
             fork_complain("remove record $unique: "
                 .join(' ',dbgetv(@db,dbquery(@db,"dbTABLE_FIELDS" )))
                 ) ;
-            dbmark(@db) ;
+            dbmark(@db) unless $opt_n ;
             $nulls = 1 ;
             next ;
         }
@@ -1609,7 +1624,7 @@ sub fix_local {
 
         unless ( -f "$path/$file"  ) {
             fork_complain("remove(not in directory): $file") ;
-            dbmark(@db) ;
+            dbmark(@db) unless $opt_n ;
             $nulls = 1 ;
         }
 
@@ -1620,7 +1635,7 @@ sub fix_local {
             #
             # Fix "downloaded" entries on the database
             #
-            dbputv(@db, "dir", $path,"lddate",dbgetv(@db,"lddate")) ;
+            dbputv(@db, "dir", $path,"lddate",dbgetv(@db,"lddate")) unless $opt_n ;
         }
 
         #
@@ -1633,10 +1648,12 @@ sub fix_local {
         #
         # Fix size of file in database
         #
-        dbputv(@db, 
-            "filebytes", -s "$path/$file",
-            "lddate",dbgetv(@db,"lddate")
-            ) unless (-s "$path/$file" == int(dbgetv(@db,"filebytes"))) ;
+        unless ( $opt_n ) {
+            dbputv(@db,
+                "filebytes", -s "$path/$file",
+                "lddate",dbgetv(@db,"lddate")
+                ) unless (-s "$path/$file" == int(dbgetv(@db,"filebytes"))) ;
+        }
 
     }
 
@@ -1648,14 +1665,15 @@ sub fix_local {
 
     while($f = readdir DIR) {
         next if -d "$path/$f" ;
-        next if $f !~ /^(..-(${sta}|EXMP)_4-\d{14})$/ ;
+        next if $f !~ /(${sta}|EXMP)/ ;
+        next if $f !~ /($pf{regex_for_files})/ ;
 
         fork_debug("local file: $f") if $opt_d ;
 
         #
         # Add file name to scratch record
         #
-        dbputv(@dbscr,"dfile",$f) ;
+        dbputv(@dbscr,"dfile",$f) unless $opt_n ;
 
         #
         # Search for all entries with the same filename
@@ -1694,7 +1712,7 @@ sub fix_local {
                     'time', now(),
                     'dir',$path,
                     'lddate', now()
-                    ) ;
+                    ) unless $opt_n ;
 
              }
 
@@ -1717,7 +1735,7 @@ sub fix_local {
                 "fixed",    "n",
                 "lddate",   now(),
                 "status",   "downloaded"
-                ) ;
+                ) unless $opt_n ;
 
         }
 
@@ -1727,7 +1745,7 @@ sub fix_local {
     # Clean memory pointers and null entries
     #
     fork_complain("Crunch table.") if $nulls ;
-    dbcrunch(@db) if $nulls ;
+    dbcrunch(@db) if $nulls and not $opt_n ;
     dbclose(@db) ;
 
     #
@@ -1769,7 +1787,7 @@ sub read_baler {
 
         #$list = "list.$dir.data.gz" ;
 
-        next unless $list =~ /data/ ;
+        next unless $list =~ /$pf{folder_with_files}/ ;
 
         fork_debug("Get: $list") if $opt_d ;
 
@@ -1827,9 +1845,10 @@ sub read_baler {
             #
             # Parse results and get size
             #
-            next unless $test =~ /..-(${sta}|EXMP)_4-(\d{14})/ ;
             @temp_dir = split(/\//,$test) ;
             $name = pop(@temp_dir) ;
+            next unless  $name =~ /$pf{regex_for_files}/ ;
+            next unless $name =~ /.*(${sta}|EXMP).*/ ;
             unshift(@temp_dir, $list =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
 
             $list{$name} = join('/',@temp_dir) ;
@@ -1870,10 +1889,10 @@ sub get_md5 {
 
         foreach $f (@$lists) {
 
-            next unless $f =~ m/recover/ ;
+            next unless $f =~ m/$pf{md5_folder}/ ;
             fork_notify("Now with directory $f") if $opt_d ;
             $d = ( $f =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
-            $f =~ m/list\.\w+\.(recover\S*)\.gz/ ;
+            $f =~ m/list\.\w+\.($pf{md5_folder}\S*)\.gz/ ;
             next unless $1 ;
 
             fork_notify("attempt download of MD5: $d/$1/$file")
@@ -2033,16 +2052,7 @@ sub get_medias_and_lists {
         for (my $line=0; $line < scalar @text; $line++){
 
             push(@dir,"$1") if
-                $text[$line] =~ m/>(list\.active\.data.*\.gz)</ ;
-
-            push(@dir,"$1") if
-                $text[$line] =~ m/>(list\.active\.recover.*\.gz)</ ;
-
-            push(@dir,"$1") if
-                $text[$line] =~ m/>(list\.reserve\.data.*\.gz)</ ;
-
-            push(@dir,"$1") if
-                $text[$line] =~ m/>(list\.reserve\.recover.*\.gz)</ ;
+                $text[$line] =~ m/>(list\.(active|reserve)\.($pf{folder_with_files}|$pf{md5_folder}).*\.gz)</ ;
 
             next unless $1 ;
             fork_debug("Data Folder: $1") if $opt_v ;
@@ -2152,7 +2162,7 @@ sub dblock { # $lock_status = &dblock ( $db, $lock_duration ) ;
                     strydtime ( $pf{unlock_time} )
                     ) ) ;
 
-            prettyprint ( \%pf ) ;
+                #prettyprint ( \%pf ) ;
             return 1 ;
 
         } elsif  ( $pf{unlock_time} > &now() && $pf{pid} == $pid ) {
