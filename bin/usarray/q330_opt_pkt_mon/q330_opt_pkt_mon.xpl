@@ -21,7 +21,7 @@ our ( $Pgm, $Host );
 our ( $opt_d, $opt_0, $opt_w, $opt_V, $opt_V, $opt_n, $opt_p, $opt_v );
 our ( $max_buffer_time, $Lastmem, $Pktbytes, $Pktcnt ) ;
 our ( %pfout_buffer, %Pf, %Opt ) ;
-our @opt_channels = qw/acok api ins1 ins2 ti/ ;
+our %opt_channels = ( 'acok','acok','api','api','isp1','ins1','isp2','ins2','ti','ti') ;
 
 my ( $usage, $cmd, $subject, $Pf, $problems, $problem_check );
 my ( $nbytes, $orb, $orbname, $packet, $pkt, $pktid, $reject );
@@ -134,7 +134,7 @@ sub process_packet {
     my ( $orb, $srcname, $time, $pkt ) = @_ ;
     my ( $interval, $pf, $sta, $pftarget );
     my ( @temp_stash, $chan, $ref, %pf, %pfout );
-    my ( $chan, $loc, $net, $packet, $parts, $pktout ) ;
+    my ( $chan, $chan_name, $loc, $net, $packet, $parts, $pktout ) ;
     my ( $pktid, $pkttime, $srcname_new, $subcode, $suffix ) ;
     my ( $first_time, $last_time, $e, $n, $s, $c, $l, $sf) ;
     my ( $temp_pkt, $parts ) ;
@@ -158,13 +158,19 @@ sub process_packet {
         elog_notify("\tgot: $sta $pf{dls}{$sta}{opt}") if $opt_V ;
 
         if ( $pf{dls}{$sta}{opt} =~ /-/ ) {
-            for $chan ( @opt_channels ) {
-                $pfout{$sta}{$chan} = '-' ;
+            foreach  $chan  (keys %opt_channels) {
+                next unless $chan ;
+                $chan_name = $opt_channels{$chan};
+                #elog_notify("\tset: $sta-[$chan_name] = '-'") if $opt_V ;
+                $pfout{$sta}{$chan_name} = '-' ;
             }
         } else {
-            for $chan ( @opt_channels ) {
-                $pfout{$sta}{$chan} = $pf{dls}{$sta}{opt} =~ /.*($chan).*/ ? 1 : 0 ;
-                buffer_data( $sta, $chan, $pf{dls}{$sta}{opt},
+            foreach  $chan  (keys %opt_channels) {
+                next unless $chan ;
+                $chan_name = $opt_channels{$chan};
+                $pfout{$sta}{$chan_name} = $pf{dls}{$sta}{opt} =~ /.*($chan).*/ ? 1 : 0 ;
+                elog_notify("\tset: $sta [$chan_name] = $pfout{$sta}{$chan_name}") if $opt_V ;
+                buffer_data( $sta, $chan_name,$pfout{$sta}{$chan_name},
                             $time, $interval) if $opt_w ;
             }
         }
@@ -178,14 +184,18 @@ sub process_packet {
 
             ($n,$s,$c,$l,$sf) = split_srcname($sta);
 
-            for $chan ( @opt_channels ) {
-                $first_time = $pfout_buffer{$sta}{$chan}{first_time} ;
-                $last_time  = $pfout_buffer{$sta}{$chan}{last_time} ;
+            #elog_notify( "\tEVAL: ${n}_${s}_${c}_${l}_${sf}" );
+            foreach  $chan  (keys %opt_channels) {
+                next unless $chan ;
+                $chan_name = $opt_channels{$chan};
+                #elog_notify( "\t\tEVAL: ${chan} => ${chan_name}" );
+                $first_time = $pfout_buffer{$sta}{$chan_name}{first_time} ;
+                $last_time  = $pfout_buffer{$sta}{$chan_name}{last_time} ;
 
                 next unless $first_time and $last_time ;
                 next if (( $last_time - $first_time ) < $max_buffer_time) ;
 
-                elog_notify( "\t\tBuffer Full for ${sta}_${chan} with: "
+                elog_notify( "\t\tBuffer Full for ${sta}_${chan_name} with: "
                     . strtdelta($last_time - $first_time) ) if $opt_V ;
 
                 # waveform packet
@@ -193,17 +203,17 @@ sub process_packet {
                 my $calper = 1 ;
                 my $segtype = "c"  ; # counts = dimensionless integer
 
-                $e = PktChannel->new(net=>$n, sta=>$s, chan=>uc($chan),
+                $e = PktChannel->new(net=>$n, sta=>$s, chan=>uc($chan_name),
                             time=>$first_time, samprate=>(1/$interval),
                             calib=>$calib, calper=>$calper, segtype=>$segtype,
-                            data=>\@{$pfout_buffer{$sta}{$chan}{data}} ) ;
+                            data=>\@{$pfout_buffer{$sta}{$chan_name}{data}} ) ;
 
                 push(@temp_stash, $e) ;
 
                 # Cleanup buffer
-                $pfout_buffer{$sta}{$chan}{data} = () ;
-                $pfout_buffer{$sta}{$chan}{first_time} = 0 ;
-                $pfout_buffer{$sta}{$chan}{last_time} = 0 ;
+                $pfout_buffer{$sta}{$chan_name}{data} = () ;
+                $pfout_buffer{$sta}{$chan_name}{first_time} = 0 ;
+                $pfout_buffer{$sta}{$chan_name}{last_time} = 0 ;
             }
 
             next unless scalar @temp_stash ;
@@ -230,26 +240,24 @@ sub process_packet {
 
         }
 
+    }
+
+    pfput("dls",\%pfout,$pftarget ) ;
+
+    ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
+    $parts  = Srcname->new(src_net=>$net,src_sta =>$sta,src_chan=>$chan,src_loc=>$loc) ;
+    $pktout = Packet->new(subcode=>'vtw', suffix=>'pf', parts=>$parts, pf=>$pftarget) ;
+    ($srcname_new, $pkttime, $packet) = stuffPkt($pktout) ;
+
+    $srcname_new = join_srcname($net, $sta, $chan, $loc, $suffix, "vtw") ;
+
+    if ( $opt_d ) {
+        elog_notify( "***dry-run***: orbputx: -NULL- $newsrcname time: "
+                . epoch2str($time,"%Y%j-%T") ) ;
     } else {
-
-        pfput("dls",\%pfout,$pftarget ) ;
-
-        ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
-        $parts  = Srcname->new(src_net=>$net,src_sta =>$sta,src_chan=>$chan,src_loc=>$loc) ;
-        $pktout = Packet->new(subcode=>'vtw', suffix=>'pf', parts=>$parts, pf=>$pftarget) ;
-        ($srcname_new, $pkttime, $packet) = stuffPkt($pktout) ;
-
-        $srcname_new = join_srcname($net, $sta, $chan, $loc, $suffix, "vtw") ;
-
-        if ( $opt_d ) {
-            elog_notify( "***dry-run***: orbputx: -NULL- $newsrcname time: "
-                    . epoch2str($time,"%Y%j-%T") ) ;
-        } else {
-            $pktid = orbputx($orb, $srcname_new, $time, $packet, length($packet)) ;
-            elog_notify( "\t\torbputx:$pktid $srcname_new time: "
-                . epoch2str($time,"%Y%j-%T") ) if $opt_v ;
-        }
-
+        $pktid = orbputx($orb, $srcname_new, $time, $packet, length($packet)) ;
+        elog_notify( "\t\torbputx:$pktid $srcname_new time: "
+            . epoch2str($time,"%Y%j-%T") ) if $opt_v ;
     }
 
     %pf    = ();
@@ -258,10 +266,10 @@ sub process_packet {
 }
 
 sub buffer_data {
-    my ( $sta, $chan, $string, $time, $interval ) = @_ ;
+    my ( $sta, $chan, $value, $time, $interval ) = @_ ;
     my ( $log );
 
-    my $new_data   = $string =~ /.*($chan).*/ ? 1 : 0 ;
+    #my $new_data   = $string =~ /.*($chan).*/ ? 1 : 0 ;
 
     my $first_time = $pfout_buffer{$sta}{$chan}{first_time} || 0;
     my $last_time  = $pfout_buffer{$sta}{$chan}{last_time}  || 0;
@@ -274,7 +282,7 @@ sub buffer_data {
         elog_notify($log) ;
     }
 
-    if ( $last_time and $time gt ( $last_time+($interval*1.5) ) ) {
+    if ( $last_time and $time gt ( $last_time+($interval*2) ) ) {
         # Clean buffer...
         $log  = "\n\n\t*** Gap in the data for ${sta}_${chan}\n" ;
         $log .= "\t*** Last data from $last_time ".epoch2str($last_time,"%Y%j-%T")."\n" ;
@@ -293,11 +301,11 @@ sub buffer_data {
     $pfout_buffer{$sta}{$chan}{first_time} ||= $time ;
     $pfout_buffer{$sta}{$chan}{last_time} = $time ;
 
-    push( @{$pfout_buffer{$sta}{$chan}{data}}, $new_data ) ;
+    push( @{$pfout_buffer{$sta}{$chan}{data}}, $value ) ;
 
 
     if ( $opt_V ) {
-        $log = "\tadd [$new_data] to ${sta}_${chan}" ;
+        $log = "\tadd [$value] to ${sta}_${chan}" ;
         $log .= ":".epoch2str($pfout_buffer{$sta}{$chan}{first_time},"%Y%j-%T") ;
         $log .= ":".epoch2str($pfout_buffer{$sta}{$chan}{last_time},"%Y%j-%T") ;
         $log .= ":[".join(',', @{$pfout_buffer{$sta}{$chan}{data}})."]" ;
