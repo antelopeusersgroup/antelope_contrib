@@ -419,6 +419,7 @@ sub run_in_threads {
         $cmd  .=  "-x " if $opt_x ;
         $cmd  .=  "-v " if $opt_v ;
         $cmd  .=  "-d " if $opt_d ;
+        $cmd  .=  "-p $opt_p " if $opt_p ;
         $cmd  .=  "$station " ;
 
 
@@ -844,7 +845,7 @@ sub get_data {
         #
         # Verify for valid checksum
         #
-        if ($md5 =~ /(\S{32})/) {
+        if ($md5 =~ /(\S{32})/ or $md5 =~ /ignore/ ) {
 
             if ( $opt_d ) {
                 fork_debug("$dfile verified md5=>$md5") ;
@@ -1149,8 +1150,8 @@ sub get_data {
             $status = 'downloaded' ;
             $md5 = get_md5($sta,$file,$ip,\@lists) || 'error' ;
 
-            if ( $md5 =~ /(\S{32})/ ) {
-                fork_notify("$file verified with md5:$md5") if $opt_v ;
+            if ( $md5 =~ /(\S{32})/ or $md5 =~ /ignore/ ) {
+                fork_notify("$file verified with md5: $md5") if $opt_v ;
             }
             else {
                 fork_complain("$file => status:$status md5:$md5") ;
@@ -1845,14 +1846,20 @@ sub read_baler {
             #
             # Parse results and get size
             #
+            #fork_debug("Split $test") ;
             @temp_dir = split(/\//,$test) ;
             $name = pop(@temp_dir) ;
-            next unless  $name =~ /$pf{regex_for_files}/ ;
+            next unless $name ;
+            #fork_debug("passed name test") if $opt_v ;
+            #fork_debug("Test $name => $pf{regex_for_files}") if $opt_v ;
+            next unless  $name =~ /($pf{regex_for_files})/ ;
+            #fork_debug("passed regex") if $opt_v ;
             next unless $name =~ /.*(${sta}|EXMP).*/ ;
+            #fork_debug("passed ${sta}|EXMP regex") if $opt_v ;
             unshift(@temp_dir, $list =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
 
             $list{$name} = join('/',@temp_dir) ;
-            fork_debug("$name => $list{$name}") if $opt_d ;
+            fork_debug("$name => $list{$name}") if $opt_v ;
         }
 
     }
@@ -1869,6 +1876,8 @@ sub get_md5 {
     my ($old,$md5_lib,$f,$d,$digest,$md5,$local_path,$folder) ;
     my ($where) ;
     my @md5_raw = () ;
+
+    return 'ignore' unless $pf{md5_folder} =~ /\w{1,}/ ;
 
     $local_path = prepare_path($sta) . '/md5/' ;
 
@@ -2052,11 +2061,16 @@ sub get_medias_and_lists {
         for (my $line=0; $line < scalar @text; $line++){
 
             push(@dir,"$1") if
-                $text[$line] =~ m/>(list\.(active|reserve)\.($pf{folder_with_files}|$pf{md5_folder}).*\.gz)</ ;
+                $text[$line] =~ m/>(list\.(active|reserve)\.$pf{folder_with_files}.*\.gz)</ ;
 
-            next unless $1 ;
-            fork_debug("Data Folder: $1") if $opt_v ;
+            fork_debug("Got data Folder: $1") if $1 ;
 
+            next if $1 ;
+
+            push(@dir,"$1") if $pf{md5_folder} =~ /\w{1,}/ and
+                $text[$line] =~ m/>(list\.(active|reserve)\.$pf{md5_folder}.*\.gz)</ ;
+
+            fork_debug("Got md5 Folder: $1") if $1 and $opt_v ;
 
         }
     }
