@@ -4,16 +4,11 @@ db2kml_py.py
 Create Google Earth KML source from 
 database origin and/or site tables
 
-@author      Rob Newman <robertlnewman@gmail.com> 858.822.1333
-@created     2010-05-26
-@modified    2011-11-17
-@version     1.0
-@license     MIT-style license
+@author      Juan Reyes
 @credits     Rewrite of an original Perl script (db2kml) by 
              Michael West of the Volcano Observatory, University 
-             of Alaska Fairbanks. This verions uses the Antelope 
-             Python interface and adds some more functionality 
-             with dbsubsets etc. Also add verbosity options.
+             of Alaska Fairbanks.
+@credits 2   Rewrite 2 by Rob Newman <robertlnewman@gmail.com>
 '''
 
 import sys
@@ -25,8 +20,8 @@ from optparse import OptionParser
 
 # Import Antelope modules
 #sys.path.append('%s/local/data/python/antelope' % os.environ['ANTELOPE'])
-import antelope.datascope as antdb
-import antelope.stock as antstock
+import antelope.datascope as datascope
+import antelope.stock as stock
 
 def configure():
     """Gather command line
@@ -58,7 +53,7 @@ def configure():
         debug = True
 
     if not options.pf:
-        pfs_tuple = list(antstock.pffiles('db2kml_py'))
+        pfs_tuple = list(stock.pffiles('db2kml_py'))
         pfs_tuple.reverse() # Reverse order to search local pf dir first
         for p in pfs_tuple:
             if os.path.isfile(p):
@@ -87,7 +82,7 @@ def get_pf(pf, verbosity=0):
         print "ERROR: cannot locate parameter file (pf): %s" % pf
         sys.exit()
 
-    pf = antstock.pfread(pf)
+    pf = stock.pfread(pf)
 
     config = pf.get('config')
     styles = pf.get('styles')
@@ -139,10 +134,10 @@ def get_orig_records(database, pf, verbosity=0):
     from the database
     """
     fields = ['time', 'lat', 'lon', 'depth', 'auth', 'mb', 'ms', 'ml', 'magnitude', 'magtype']
-    db_pointer = antdb.dbopen(database, 'r');
+    db_pointer = datascope.dbopen(database, 'r');
     db_pointer = db_pointer.lookup(table='origin')
-    tbl_event = antdb.dblookup(db_pointer, table='event')
-    if antdb.dbquery(tbl_event, 'dbTABLE_PRESENT') > 0:
+    tbl_event = db_pointer.dblookup(table='event')
+    if tbl_event.dbquery('dbTABLE_PRESENT') > 0:
         if verbosity > 1:
             print " - Join event table"
         db_pointer = db_pointer.join('event')
@@ -150,7 +145,7 @@ def get_orig_records(database, pf, verbosity=0):
     else:
         if verbosity > 1:
             print " * NOTE: Cannot join 'event' table"
-    tbl_netmag = antdb.dblookup(db_pointer, table='netmag')
+    tbl_netmag = db_pointer.dblookup(table='netmag')
     if tbl_netmag.query('dbTABLE_PRESENT'):
         if verbosity > 1:
             print " - Join netmag table"
@@ -181,13 +176,13 @@ def get_orig_records(database, pf, verbosity=0):
         oridout.append("\t\t<visibility>1</visibility>\n")
         for i in range(db_pointer.query('dbRECORD_COUNT')):
             ev_dict = {}
-            db_pointer[3] = i
+            db_pointer.record = i
             for f in fields:
                 ev_dict[f] = db_pointer.getv(f)[0]
                 if f == 'time':
                     # Convert to XML standard time
-                    ev_dict['time_xml'] = antstock.epoch2str(ev_dict[f], "%Y-%m-%dT%H:%M:%SZ")
-                    ev_dict['time_readable'] = antstock.epoch2str(ev_dict[f], "%Y-%m-%d %H:%M:%S UTC")
+                    ev_dict['time_xml'] = stock.epoch2str(ev_dict[f], "%Y-%m-%dT%H:%M:%SZ")
+                    ev_dict['time_readable'] = stock.epoch2str(ev_dict[f], "%Y-%m-%d %H:%M:%S UTC")
             mag, mag_sc = calc_magtype(ev_dict)
             if mag != '-':
                 style_mag = "mag_" + str(int(math.ceil(mag)))
@@ -220,14 +215,17 @@ def create_site(meta_dict_site, visibility, style):
     siteplace.append("\t\t\t<visibility>%s</visibility>\n" % visibility)
     siteplace.append("\t\t\t<description>\n")
     siteplace.append("\t\t\t\t<![CDATA[\n")
-    siteplace.append("<p><strong>%s</strong></p>\n" % meta_dict_site['sta'])
+    siteplace.append("<p><strong>%s_%s</strong></p>\n" % (meta_dict_site['snet'],meta_dict_site['sta']))
+    siteplace.append("<hr>\n")
     for sKey in sorted(meta_dict_site.iterkeys()):
         sVal = meta_dict_site[sKey]
-        if sKey == 'elev':
-            sVal = str(sVal) + ' meters'
-        if isinstance(sVal, int) and sVal < 0:
-            sVal = '-'
-        if sKey is not 'sta':
+        if sKey == 'sta' or sKey == 'snet':
+            pass
+        else:
+            if sKey == 'elev':
+                sVal = str(sVal) + ' meters'
+            if isinstance(sVal, int) and sVal < 0:
+                sVal = '-'
             siteplace.append("<p><strong>%s:</strong> %s</p>\n" % (sKey.capitalize(), sVal))
     siteplace.append("\t\t\t\t]]>\n")
     siteplace.append("\t\t\t</description>\n")
@@ -238,7 +236,7 @@ def create_site(meta_dict_site, visibility, style):
     siteplace.append("\t\t\t</Point>\n\t\t</Placemark>\n")
     return ''.join(siteplace)
 
-def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=0):
+def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inactive, verbosity=0):
     """Get all the sites 
     in the dbmaster
     """
@@ -246,7 +244,7 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
         print "- Subsetting database '%s' for %s" % (dbmaster,staexpr)
 
     try:
-        db = antdb.dbopen(dbmaster, 'r')
+        db = datascope.dbopen(dbmaster, 'r')
     except:
         sys.exit( "* Cannot open database '%s'" % dbmaster )
 
@@ -256,7 +254,7 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
         sys.exit( "* Cannot open site table '%s'" % dbmaster )
 
 
-    test_net = antdb.dblookup(db, table='snetsta')
+    test_net = db.lookup(table='snetsta')
     if test_net.query('dbTABLE_PRESENT'):
         if verbosity > 1:
             print " - Join snetsta table"
@@ -273,7 +271,7 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
     if not inactive:
         if verbosity > 0:
             print "- Subsetting database '%s' for active stations" % dbmaster
-        dbm = dbm.subset('offdate == NULL')
+        dbm = dbm.subset('offdate == NULL || offdate > now()')
 
 
     if dbm.query('dbRECORD_COUNT') < 1:
@@ -288,20 +286,28 @@ def get_site_records(dbmaster, staexpr, fields, visibility, inactive, verbosity=
     sitestr.append("\t\t<name>Stations</name>")
 
     for i in range(dbm.query('dbRECORD_COUNT')):
-        dbm[3] = i
+        dbm.record = i
         per_sta_info = {}
         for f in fields:
             per_sta_info[f] = dbm.getv(f)[0]
             if f == 'elev':
                 per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
 
-        if inactive:
-            if dbm.getv('offdate')[0] < 0: # dbNULL value is -1
-                stastyle = 'activeStation'
-            else:
-                stastyle = 'inactiveStation'
-        else:
-            stastyle = 'activeStation'
+            if f == 'snet':
+                if per_sta_info[f] in stylestation:
+                    stastyle = per_sta_info[f]
+                else:
+                    stastyle = 'others'
+
+        #if inactive:
+        #    if dbm.getv('offdate')[0] < 0: # dbNULL value is -1
+        #        stastyle = 'activeStation'
+        #    else:
+        #        stastyle = 'inactiveStation'
+        #else:
+        #    stastyle = 'activeStation'
+        # Lets color them by network...
+
         sitestr.append(create_site(per_sta_info, visibility, stastyle))
     sitestr.append("\t</Folder>")
 
@@ -497,6 +503,7 @@ def main():
         outstr.append(
             get_site_records(
                 database,
+                pf_result['styles']['stylestation'], 
                 pf_result['stations']['expr'], 
                 pf_result['stations']['fields'], 
                 pf_result['stations']['visibility'], 
