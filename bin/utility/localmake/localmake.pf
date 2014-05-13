@@ -551,7 +551,7 @@ extra_rules	&Literal{
 % : %.xpls $(ANTELOPE)/local/data/templates/xpls
 	$(RM) $@
 	cat $(ANTELOPE)/local/data/templates/xpls $*.xpls > $@
-	chmod +s $@
+	chmod +x $@
 }
 header	&Literal{
 # DO NOT MODIFY -- Automatically generated file -- DO NOT MODIFY
