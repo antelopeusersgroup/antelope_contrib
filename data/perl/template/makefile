@@ -1,7 +1,15 @@
-BIN = nagios_check_q330_ping
-MAN1 = nagios_check_q330_ping.1
+
+DATADIR= templates
+DATA= xpls
+
+CLEAN= xpls
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
+
+SUBDIR= /local
+
+xpls: xpls.id
+	getid < $@.id > $@
