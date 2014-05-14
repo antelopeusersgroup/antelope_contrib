@@ -9,6 +9,10 @@ ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
+# Override the Include rule so that templates get installed before scripts
+# need them
+Include :: DATA
+
 SUBDIR= /local
 
 xpls.header: xpls.header.id
