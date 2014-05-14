@@ -537,20 +537,21 @@ dest	&antelope/local/include
 extra_rules	&Literal{
 .SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp .xpls .php
 
-% : %.xphp $(ANTELOPE)/local/data/templates/xphp
+LOCAL_TEMPLATE_DIR = $(ANTELOPE)/local/data/templates
+% : %.xphp $(LOCAL_TEMPLATE_DIR)/xphp
 	$(RM) $@
-	cat $(ANTELOPE)/local/data/templates/xphp $< > $@
+	cat $(LOCAL_TEMPLATE_DIR)/xphp $< > $@
 	chmod a+x $@
 
-.wwwphp.php : $(ANTELOPE)/local/data/templates/wwwphp
+.wwwphp.php : $(LOCAL_TEMPLATE_DIR)/wwwphp
 	$(RM) $@
-	cat $(ANTELOPE)/local/data/templates/wwwphp $*.wwwphp > $@
+	cat $(LOCAL_TEMPLATE_DIR)/wwwphp $*.wwwphp > $@
 
 % : %.xpls $(ANTELOPE)/data/templates/xpls # undef any existing ANTELOPEMAKE rule
 
-% : %.xpls $(ANTELOPE)/local/data/templates/xpls
+% : %.xpls $(LOCAL_TEMPLATE_DIR)/xpls.header $(LOCAL_TEMPLATE_DIR)/xpls.footer
 	$(RM) $@
-	cat $(ANTELOPE)/local/data/templates/xpls $*.xpls > $@
+	cat $(LOCAL_TEMPLATE_DIR)/xpls.header $*.xpls $(LOCAL_TEMPLATE_DIR)/xpls.footer > $@
 	chmod +x $@
 }
 header	&Literal{

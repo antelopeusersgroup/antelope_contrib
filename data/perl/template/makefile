@@ -1,8 +1,8 @@
 
 DATADIR= templates
-DATA= xpls
+DATA= xpls.header xpls.footer
 
-CLEAN= xpls
+CLEAN= xpls.header
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
@@ -11,5 +11,5 @@ include $(ANTELOPEMAKELOCAL)
 
 SUBDIR= /local
 
-xpls: xpls.id
+xpls.header: xpls.header.id
 	getid < $@.id > $@

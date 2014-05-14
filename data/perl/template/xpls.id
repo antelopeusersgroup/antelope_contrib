@@ -1,5 +1,0 @@
-#!/opt/antelope/$perl/bin/perl -T
-
-$ENV{ANTELOPE} = "/opt/antelope/$id" ;
-use lib "/opt/antelope/$id/data/perl" ;
-require sysinfo;

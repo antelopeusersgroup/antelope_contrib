@@ -1,0 +1,6 @@
+#!/bin/bash
+
+. /opt/antelope/$id/setup.sh
+
+/opt/antelope/$perl/bin/perl -T << "AnTeLoPeWrApPeR"
+use lib "/opt/antelope/$id/data/perl";
