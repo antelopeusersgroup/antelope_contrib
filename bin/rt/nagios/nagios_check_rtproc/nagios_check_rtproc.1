@@ -1,0 +1,66 @@
+.TH NAGIOS_CHECK_RTPROC 1 "$Date$"
+.SH NAME
+nagios_check_rtproc \- a Nagios plugin to monitor the status of an rtexec-managed process
+.SH SYNOPSIS
+.nf
+\fBnagios_check_rtproc\fP [\fB\-i \fI[1|true]\fP] [\fB\-w \fI<warn>\fP]
+     [\fB\-c \fI<crit>\fP] \fB<RT system path>\fP \fB<RT system process name>\fP
+.fi
+.SH DESCRIPTION
+\fBnagios_check_orblag\fP determines if a process run under Antelope rtexec is
+currently running.  The plugin queries the rtsys database in an Antelope
+ real-time system directory.
+
+It is intended to be used as a plugin to the Nagios network monitoring system
+(www.nagios.org). The plugin can be installed with other plugins (usually in
+the Nagios libexec directory) and called through the Nagios configuration files.
+
+Since it requires direct access to the real-time system configuration, this
+script has to be run on the same host as the real-time system in question. Thus,
+it is recommended that this probe is used in conjunction with NRPE or similar so
+that it can be executed remotely from a central monitoring box.
+
+Warnings will be returned if process has been restarted by rtexec.
+
+The default thresholds are as follows:
+
+State       # of restarts
+-----       -------------
+Warning     2
+Alarm       5
+Critical    10
+
+.SH OPTIONS
+.nf
+Like all Nagios plugins, more detailed and recent help, argument
+formats, etc. can be obtained via the \fB\-h\fP option of the program.
+
+The warning thresholds can be customized as follows.
+
+  \fB\-i, --ignore \fI[1|true]\fP
+  Ignore process restart warnings.
+
+  \fB\-w, --warn\fP
+   Customize the 'Warning' threshold. [Positive Integer]
+
+  \fB\-a, --alarm\fP
+   Customize the 'Alarm' threshold. [Positive Integer]
+
+  \fB\-c, --critical\fP
+  Customize the 'Critical' threshold. [Positive Integer]
+
+
+
+
+.fi
+.SH "BUGS AND CAVEATS"
+The check must run on the same host as the real-time system to be check. See
+note in DESCRIPTION section regarding NRPE.
+
+.SH "SEE ALSO"
+nagios_antelope_utils(3), rtexec(1), NRPE
+.SH AUTHOR
+.nf
+Juan Reyes and Geoff Davis
+Scripps Institution of Oceanography
+.fi
