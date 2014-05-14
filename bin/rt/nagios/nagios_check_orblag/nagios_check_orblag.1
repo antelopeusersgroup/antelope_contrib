@@ -45,9 +45,9 @@ Notes:
 
 .fi
 .SH "BUGS AND CAVEATS"
-This assumes that $ANTELOPE and other Antelope environment variables
-have been set properly. This can be done in the startup script
-for the Nagios system.
+If you are using custom orb names, you will need to make sure that Antelope has
+an updated orbserver_names.pf on the monitoring host that matches that on the
+system to be checked, or use a numeric port identifier.
 .SH "SEE ALSO"
 nagios_antelope_utils(3), orblag(1), orblag(3)
 .SH AUTHOR
