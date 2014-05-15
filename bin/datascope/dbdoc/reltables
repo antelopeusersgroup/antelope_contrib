@@ -1,0 +1,54 @@
+.nr H1 1
+.nr H2 0
+.OH ' ' 'Database Structure'
+.EH 'Database Structure' ' '
+.Lp
+.ce
+.B "\s+2DATABASE STRUCTURE\s0"
+.Lp
+This chapter defines the physical structure of each table, in its
+flat file representation.  The name of 
+the relation appears in \fBbold\fP print at the top.  
+Exactly one blank separates fields in these files, and one
+linefeed separates records.  
+This improves readability and makes it easier for C programs to
+scan the records.  
+.LP
+Each field has a an associated "type", recognized by the 
+library routines.  These basic data types, and their
+corresponding representation in C and FORTRAN library
+interfaces are shown below:
+.TS
+allbox center ;
+l l l.
+type	C	FORTRAN
+string	char *	character *(*)
+time	double	real *8
+real	double	real *8
+integer	int	integer
+yearday	int	integer
+date	char *	character *(*)
+.TE
+Fields of type \fItime\fR are represented as epoch times -- seconds
+since January 1, 1970.
+\fIYearday\fR fields are of the form YYYYDDD.  Eg, 1988080 
+represents day 80 of the year 1988, or February 29, 1988.
+\fIDate\fR fields are typically written as MM/DD/YYYY, but
+this format is not required.
+A library of routines which simplifies the conversions among
+these various representations of time is provided; see epoch(3)
+and epoch(3f).
+.LP
+All floating point values are represented in double precision 
+by the db library.
+.LP
+The "print format" of each field is given in C printf style.
+All numeric entries are right justified and all 
+character strings are left justified.
+Having the field number quickly accessible is useful when writing
+\fIawk\fP and shell scripts.
+.br
+.ps 11
+.nf
+.nr HM 1.0i
+.bp

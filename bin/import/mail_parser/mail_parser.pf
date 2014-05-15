@@ -1,0 +1,65 @@
+Handlers &Tbl{
+&Arr{
+handler 	submit_pepp
+sender 		rphinney@Princeton.EDU
+subject 	PEPP Earthquake Alert
+site_db 	/Seis/databases/stations/master_stations
+waveform_db 	/iwrun/op/db/archive/archive_%Y_%m_%d
+net 		PP
+pre_P_sec	480
+post_P_sec	1200
+filetime 	%Y_%m_%d_%H:%M
+wffilename 	%{sta}_FILETIME.%{chan}.sac
+wfformat	sc
+ftp_repository	lasker.princeton.edu
+ftp_dir		.
+ftp_user	anonymous
+ftp_password	johndoe@peppschool.net
+}
+&Arr{
+handler		reb_import
+sender		reb_source@somenet.net
+subject		reb-format file
+database	mydbname
+}
+&Arr{
+handler		cnsn_pick
+sender		cnsn_source@somenet.net
+subject		event
+database	testdb_%Y_%m
+authors	&Tbl{
+	"LARGE EVENT NOTIFICATION" yk_large_event
+}
+}
+&Arr{
+handler		pgc_pickfile
+sender		pgc.nrcan.gc.ca
+subject		pgc pick files
+database	testdb
+chantrans &Arr{
+	EZ	EHZ
+	BZ	BHZ
+	BN	BHN
+	BE	BHE
+}
+velmodeltrans &Arr{
+	01	canada		# Generic Canada
+	03	grgastrt	# Georgia Straight
+	06	QChrlte		# Queen Charlotte Islands
+	07	offshore	# Canadian Offshore model
+}
+locatortrans &Arr{
+	H	LocEq
+}
+}
+&Arr{
+handler		mp_filemail
+sender		.*
+subject		.*
+database	mp_maildb
+archive_dir	mp_mail_archive
+schema		Mail1.3
+dirmode		0755
+filemode	0444
+}
+}
