@@ -1,0 +1,16 @@
+From someone@somewhere.com Mon Jan 18 23:10:38 1999
+From: "Random user" <someone@somewhere.com>
+Date: Mon, 18 Jan 1999 16:10:34 -0700 (MST)
+To: autodrm@brtt.com
+
+ignored
+
+BEGIN GSE2.0
+MSG_ID 101 coyne
+MSG_TYPE REQUEST
+e-mail danq@epicenter.ucsd.edu
+TIME 1999/04/26 12:35:06 TO 1999/04/26 12:37:06
+STA_LIST *
+CHAN_LIST *
+WAVEFORM GSE2.0
+STOP

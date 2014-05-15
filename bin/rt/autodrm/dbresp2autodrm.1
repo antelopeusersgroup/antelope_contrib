@@ -1,0 +1,143 @@
+.TH DBRESP2AUTODRM 1 "$Date$"
+.SH NAME
+dbresp2autodrm \- convert response information from database to autodrm format
+.SH SYNOPSIS
+.nf
+dbresp2autodrm \fItable\fR
+.fi
+.SH DESCRIPTION
+dbresp2autodrm reads an input table (view) and writes to stdout 
+response files corresponding to every input record.
+It requires a complete database with stage, response, sensor and instrument
+tables.
+.SH PARAMETER FILE
+The dbresp2autodrm parameter file contains an array "segtype"
+which specifies the segtype (really instrument units)
+given either input units (iunits from the stage table)
+or output units (units from the calibration table).  This
+information is used to modify the response function by 
+adding one or two zeros to the initial instrument stage, 
+and modify calib by multiplying by "calper/(2*pi)".
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+% dbsubset gsn.sensor 'sta=="CTAO" && chan == "BHZ"' | \\
+    dbresp2autodrm - 
+
+CAL2 CTAO  BHZ      STS1VB   8.96e+00  50.000    20.00000 1998/10/06 21:00 
+PAZ2  1 V  1.81118325e+04                4   3                          
+-1.23400000e-02  1.23400000e-02
+-1.23400000e-02 -1.23400000e-02
+-3.91800000e+01  4.91200000e+01
+-3.91800000e+01 -4.91200000e+01
+ 0.00000000e+00  0.00000000e+00
+ 0.00000000e+00  0.00000000e+00
+ 0.00000000e+00  0.00000000e+00
+DIG2  2  3.90016000e+05  5120.00000 
+FIR2  3   1.00e+00   16    0.000 C   32                          
+ -1.09707031e-03 -9.93327284e-04 -1.33316038e-03 -1.70526049e-03 -2.05384059e-03
+ -2.35065067e-03 -2.57156074e-03 -2.69373077e-03 -2.69337077e-03 -2.54709073e-03
+ -2.23115064e-03 -1.72301049e-03 -9.99270286e-04 -3.46562099e-05  1.21980035e-03
+  3.11383089e-03  6.89755198e-03  8.96712257e-03  1.23598035e-02  1.60748046e-02
+  1.99682057e-02  2.39632069e-02  2.79916080e-02  3.19878092e-02  3.58841103e-02
+  3.96135113e-02  4.31082123e-02  4.63032133e-02  4.91314141e-02  5.15184148e-02
+  5.33261153e-02  5.35984154e-02
+FIR2  4   1.00e+00    4    0.000 C   36                          
+  1.53855015e-04  3.12770030e-04  4.52861043e-04  3.95780038e-04 -4.84389046e-05
+ -9.92496094e-04 -2.35471022e-03 -3.78932036e-03 -4.72855045e-03 -4.56471043e-03
+ -2.93407028e-03  7.16545068e-06  3.46095033e-03  6.13788058e-03  6.69753064e-03
+  4.35528041e-03 -5.88914056e-04 -6.57815062e-03 -1.11658011e-02 -1.18968011e-02
+ -7.42773070e-03  1.57168015e-03  1.22001012e-02  2.00547019e-02  2.08071020e-02
+  1.21336012e-02 -4.74761045e-03 -2.46521023e-02 -3.95029037e-02 -4.07417039e-02
+ -2.23578021e-02  1.65229016e-02  7.05056067e-02  1.28823012e-01  1.78128017e-01
+  2.06351020e-01
+FIR2  5   1.00e+00    2    0.000 C   32                          
+  2.84880456e-04  1.53605246e-03  2.94949473e-03  2.48944399e-03 -4.97392797e-04
+ -2.78111446e-03 -7.99810281e-04  3.18005509e-03  2.68281430e-03 -2.88342462e-03
+ -5.03823807e-03  1.32459212e-03  7.31892172e-03  1.80785290e-03 -8.72254397e-03
+ -6.49493040e-03  8.29381329e-03  1.22901197e-02 -5.07334813e-03 -1.82834293e-02
+ -1.77264284e-03  2.31033370e-02  1.29041207e-02 -2.48940399e-02 -2.89909464e-02
+  2.10329337e-02  5.16156827e-02 -6.54239048e-03 -8.73813400e-02 -3.62034580e-02
+  1.84223295e-01  3.99321640e-01
+FIR2  6   1.00e+00    2    0.000 C   32                          
+  2.84880456e-04  1.53605246e-03  2.94949473e-03  2.48944399e-03 -4.97392797e-04
+ -2.78111446e-03 -7.99810281e-04  3.18005509e-03  2.68281430e-03 -2.88342462e-03
+ -5.03823807e-03  1.32459212e-03  7.31892172e-03  1.80785290e-03 -8.72254397e-03
+ -6.49493040e-03  8.29381329e-03  1.22901197e-02 -5.07334813e-03 -1.82834293e-02
+ -1.77264284e-03  2.31033370e-02  1.29041207e-02 -2.48940399e-02 -2.89909464e-02
+  2.10329337e-02  5.16156827e-02 -6.54239048e-03 -8.73813400e-02 -3.62034580e-02
+  1.84223295e-01  3.99321640e-01
+
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+dbresp2autodrm returns zero when no errors occur, 
+1 otherwise.
+.SH DIAGNOSTICS
+.IP "fir filter has denominator coefficients, autoDRM doesn't allow"
+.IP "no matches in sensor/instrument join for \fIsta\fR\fIchan\fR @ \fItime\fR"
+Couldn't find a matching row in the joined sensor and instrument table.
+.IP "too many matches (\fInmatches\fR in sensor/instrument join for \fIsta\fR\fIchan\fR @ \fItime\fR"
+Found too many matching rows in the joined sensor and instrument table.
+.IP "no matches in calibration table for \fIsta\fR\fIchan\fR @ \fItime\fR"
+Couldn't find a matching row in the calibration table.
+.IP "too many matches (\fInmatches\fR in calibration table for \fIsta\fR\fIchan\fR @ \fItime\fR - \fIendtime\fR"
+Found too many matching rows in the calibration table.
+.IP "Can't match record for \fIsta\fR\fIchan\fR @ \fItime\fR in stage table"
+Couldn't find a matching row in the stage table.
+.IP "stageid numbers for \fIsta\fR\fIchan\fR @ \fItime\fR don't add up."
+The matching stageid numbers do not form a continuous sequence of numbers from 1 to n.
+.IP "gcalib = \fIgcalib\fR < 0. is invalid for \fIsta:chan\fR @ \fItime\fR."
+The gcalib value from the stage table is wrong.
+.IP "Can't read response file \fIfilename\fR  for \fIsta\fR\fIchan\fR @ \fItime\fR"
+The response file is unreadable.
+.IP "stage response file \fIfilename\fR has \fIresponse->ngroups\fR stages, not 1"
+A response file from the stage table has more than one stage.
+.IP "Unknown filter type \fIid\fR in response file \fIfilename\fR"
+The specified filter id is not supported.
+.IP "Unrecognized gtype='\fIgtype\fR' for \fIsta\fR\fIchan\fR @ \fItime\fR"
+The specified stage type is not supported.
+.IP "Can't read parameter file"
+The dbresp2autodrm parameter file could not be read.
+.IP "Can't open input table '\fItable\fR'"
+.IP "No records in input table '\fItable\fR'"
+The input table was empty or couldn't be opened.
+.SH "SEE ALSO"
+.IP GSE2.1
+http://www.seismo.ethz.ch/prod/autodrm/manual/provisional_GSE2.1.pdf
+.IP IMS1.0
+ftp://ftp.isc.ac.uk/pub/isf/isf.pdf
+.LP
+More information about the Swiss AutoDRM can be found in: 
+.br
+http://www.seismo.ethz.ch/prod/autodrm/index_EN
+
+.IP \(bu
+Kradolfer, U., AutoDRM - The First Five Years, 
+Seism. Res. Let., 67, pp. 30-33, 1996. 
+
+.IP \(bu
+Kradolfer, U., Automating the Exchange of Earthquake Information, 
+EOS Trans. Amer. Geophys. U., vol. 74, pp. 442,444-445, 1993. 
+.SH "BUGS AND CAVEATS"
+.LP
+The instrument table is required to derive instype.
+.LP
+The group correction for fir filters is always zero.
+.LP
+No descriptions are furnished for the various stages.
+.LP
+Comments from the response file are not propagated into
+the autodrm output.
+.LP
+Some responses (from Nanometrics) include digital filters
+with both numerators and denominators.  AutoDRM does not
+support this representation, and dbresp2autodrm does not 
+transform them into a legal autoDRM representation.
+.SH AUTHOR
+Daniel Quinlan
+.\" $Id$

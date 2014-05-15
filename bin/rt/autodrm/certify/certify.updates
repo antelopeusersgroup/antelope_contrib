@@ -1,0 +1,89 @@
+bulletin     927489541.00000 denali                S5.7N/dev  first run of test                                               927489542
+bulletin     927489632.00000 denali                S5.7N/dev  remove a debugging print statement                              927489633
+help         927489659.00000 denali                S5.7N/dev  add the bulletin command                                        927489660
+origins      927556799.00000 denali                S5.7N/dev  corrected bulletin output                                       927556799
+waveforms    928336991.00000 denali                S5.7N/dev  changed verbosity of trexcerpt                                  928336992
+coyne        928336998.00000 denali                S5.7N/dev  changed verbosity of trexcerpt                                  928336999
+toobig       928337012.00000 denali                S5.7N/dev  changed verbosity of trexcerpt                                  928337012
+data         928430373.00000 denali                S5.7N/dev  waveform command (trexcerpt) became more verbose                928430374
+response     937601176.00000 denali                S5.7N/dev  corrected blunder in dbresp2autodrm which mislabeled sta/cha    937601177
+def_bull     962133076.00000 castle                S5.7W/dev  first correct run                                               962133077
+toobig2      962219938.00000 castle                S5.7W/dev  first correct run                                               962219938
+toosmall     962220557.00000 castle                S5.7W/dev  first run                                                       962220558
+channels     962904655.00000 castle                S5.7W/dev  changes in the foreign keys mappings                            962904656
+coyne        962904815.00000 castle                S5.7W/dev  fixed WID2 line, foreign keys channged                          962904816
+data         962904831.00000 castle                S5.7W/dev  fixed WID2 line, foreign keys channged                          962904831
+e-mail       962904841.00000 castle                S5.7W/dev  foreign keys channged                                           962904841
+outage       962905052.00000 castle                S5.7W/dev  foreign keys changed                                            962905052
+stations     962905078.00000 castle                S5.7W/dev  foreign keys changed                                            962905079
+waveforms    962905401.00000 castle                S5.7W/dev  foreign keys changed                                            962905401
+toobig2      962905598.00000 castle                S5.7W/dev  changed strtdelta trimming                                      962905599
+origins      962905627.00000 castle                S5.7W/dev  changed strtdelta trimming                                      962905627
+channels     962907621.00000 castle                S5.7W/dev  corrected channels to time/endtime from sitechan instead of     962907622
+waveforms    968172675.00000 castle                S5.7W/dev  trexcerpt got better about missing waveforms                    968172675
+coyne        974915743.00000 castle                S5.7W/dev  improvements in trexcerpt                                       974915744
+toobig       974916430.00000 castle                S5.7W/dev  the old calib/calper results are obviously wrong, but I don'    974916430
+waveforms    995575126.00000 castle     danq       S5.7W/dev  changed error messages for trload_css                           995575126
+junkmail    1004643290.00000 castle     danq       S5.7W/dev  first run                                                      1004643290
+channels    1004984075.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984075
+coyne       1004984084.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984084
+data        1004984088.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984088
+e-mail      1004984090.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984090
+errors      1004984092.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984092
+help        1004984094.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984094
+origins     1004984096.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984096
+outage      1004984105.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984105
+response    1004984109.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984109
+stations    1004984112.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984112
+toobig      1004984120.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984120
+waveforms   1004984122.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984122
+bulletin    1004984124.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984124
+def_bull    1004984128.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984128
+toobig2     1004984130.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984130
+toosmall    1004984132.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984132
+junkmail    1004984134.00000 castle     danq       S5.7W/dev  added special anti-mail-loop string                            1004984134
+loopback    1004984138.00000 castle     danq       S5.7W/dev  first run                                                      1004984138
+channels    1015540150.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540151
+coyne       1015540155.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540155
+data        1015540157.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540158
+e-mail      1015540159.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540159
+outage      1015540163.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540164
+stations    1015540165.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540165
+toobig      1015540171.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540172
+waveforms   1015540173.00000 castle     danq       S5.7W/dev  changed default seed network in trdefaults.pf                  1015540174
+iir         1033595165.00000 castle     danq       S5.8W/dev  first run                                                      1033595165
+bulletin    1040250870.00000 castle     danq       S5.8W/dev  changes from Chad fix nsta count in report                     1040250871
+def_bull    1040250878.00000 castle     danq       S5.8W/dev  changes from Chad fix nsta count in report                     1040250878
+channels    1042673789.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673789
+coyne       1042673791.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673791
+data        1042673792.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673792
+e-mail      1042673792.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673793
+errors      1042673793.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673794
+help        1042673794.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673794
+origins     1042673796.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673796
+outage      1042673797.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673797
+response    1042673798.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673799
+stations    1042673799.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673800
+toobig      1042673801.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673802
+waveforms   1042673802.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673803
+bulletin    1042673803.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673804
+def_bull    1042673804.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673805
+toobig2     1042673805.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673806
+toosmall    1042673806.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673807
+loopback    1042673807.00000 elbert     danq       I2.4.19-4G changed the anti-loopback string in the messages               1042673808
+response    1066316110.00000 castle     danq       S5.8W/dev  corrected CAL2 as requested by Chad                            1066316110
+toobig      1066316123.00000 castle     danq       S5.8W/dev  corrected CAL2 as requested by Chad                            1066316124
+iir         1066316127.00000 castle     danq       S5.8W/dev  corrected CAL2 as requested by Chad                            1066316127
+bulletin    1095353732.00000 crestone   danq       SunOS/dev  fix problem Danet pointed out                                  1095353732
+def_bull    1095433472.00000 crestone   danq       SunOS/dev  fixed bug that Anton Danet pointed out                         1095433472
+drm2db      1147877130.00000 crestone   danq       SunOS/dev  first run                                                      1147877130
+help        1229547230.00000 crestone   danq       SunOS/dev- changed date in help file                                      1229547230
+help        1239298644.00000 denali     danq       SunOS/4.11 changed help                                                   1239298644
+bulletin    1239987102.00000 denali     danq       SunOS/4.11 regions files changed                                          1239987102
+def_bull    1239987103.00000 denali     danq       SunOS/4.11 regions files changed                                          1239987104
+def_bull    1311889897.00000 windom     danq       Darwin/dev changed rtbulletin to test whether arrivals are time definin   1311889897
+rtbulletin  1320876762.00000 windom     danq       Darwin/dev added new rtbulletin certify test                              1320876763
+bulletin    1320876870.00000 windom     danq       Darwin/dev changed to leave stamag entries blank in arrival list if nul   1320876870
+def_bull    1320876870.00000 windom     danq       Darwin/dev changed to leave stamag entries blank in arrival list if nul   1320876871
+rtbulletin  1320953379.00000 windom     danq       Darwin/dev fixed sorting bug in rtbulletin                                1320953380
+rtbulletin  1328139077.00000 windom     danq       Darwin/dev update correct results after sort                              1328139078
