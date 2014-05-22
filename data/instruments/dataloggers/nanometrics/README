@@ -1,0 +1,39 @@
+Due to the complexity of the Taurus datalogger configuration, 
+the various configs result in a long filename.  Unfortunately 
+this produces non-unique filenames when dbbuild builds the 
+combined sensor+datalogger response.  The solution is to 
+include a number near the beginning of the filename to provide 
+the uniqueness when the filename becomes truncated.  The list 
+below indicates the numbering order and filename for the 
+creation of additional taurus datalogger files.
+
+An impedance of 43.07 k-ohms is "lo" or "std".
+An impedance of 9.4 M-ohms is "hi" or "inf".
+A 1 mHz IIR filter is "iir0_001".
+A 1 Hz IIR filter (not shown) would be "iir1_000".
+
+taurus01_hi_02V_swg1_iir0_001.pf
+taurus02_hi_02V_swg1_iiroff.pf
+taurus03_lo_02V_swg1_iir0_001.pf
+taurus04_lo_02V_swg1_iiroff.pf
+
+taurus05_hi_04V_swg1_iir0_001.pf
+taurus06_hi_04V_swg1_iiroff.pf
+taurus07_lo_04V_swg1_iir0_001.pf
+taurus08_lo_04V_swg1_iiroff.pf
+
+taurus09_hi_08V_swg1_iir0_001.pf
+taurus10_hi_08V_swg1_iiroff.pf
+taurus11_lo_08V_swg1_iir0_001.pf
+taurus12_lo_08V_swg1_iiroff.pf
+
+taurus13_hi_16V_swg1_iir0_001.pf
+taurus14_hi_16V_swg1_iiroff.pf
+taurus15_lo_16V_swg1_iir0_001.pf
+taurus16_lo_16V_swg1_iiroff.pf
+
+taurus17_hi_40V_swg1_iir0_001.pf
+taurus18_hi_40V_swg1_iiroff.pf
+taurus19_lo_40V_swg1_iir0_001.pf
+taurus20_lo_40V_swg1_iiroff.pf
+

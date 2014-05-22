@@ -2,9 +2,9 @@ originator     Frank Vernon, UCSD
 last_modified  2008-06-24
 
 category	Unknown
-configuration	unknown-1D_velocity
+configuration	unknown-velocity
 
-description	Dummy 1-D Sensor used in ignorance
+description	Dummy Sensor used in ignorance
 dfile	unknown
 
 rsptype                 V       # velocity instrument

@@ -24,21 +24,12 @@ ABALONES-4x4-CAS1-FIL, OBSIP SIO
 
 streams 50sps
 
-50sps   50 a/d50 fir_50_c1
+# Problems wiht samprate 333...
+# 512000/1536 = 333.3333333 and not 333
+#333sps    333  a/d_192   f1 f2
 
-possible_streams &Literal{
-    my @chosen = @_;
-    my %valid ;
-
-    $valid{'50sps'} = 1;
-
-    foreach my $test (@chosen) {
-        return ( ($test) ) if exists $valid{$test} ;
-    }
-
-    return ( (keys %valid) );
-
-}
+# definitions of streams
+50sps      50  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2 fir_50_c1
 
 # Gains: Nominal sensitivity (in ounits/iunits) for datalogger
 # Voltage range: +/- 2.5 V, max counts over this range of
@@ -50,14 +41,73 @@ gains 3355443
 
 # Stages
 
-a/d50     &Arr{
-    samprate    50
+a/d     &Arr{
+    samprate    512000
     gtype       digitizer
     iunits      V
     ounits      counts
     sn          datalogger
 }
 
+sinc1    &Arr{
+    gtype       FIR_decimator
+    decifac     8
+    response    &datafile(responses/lch_4_sinc1)
+}
+
+sinc2      &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2)
+}
+
+sinc2_3    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_3)
+}
+
+sinc2_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_4)
+}
+
+sinc3       &Arr{
+    gtype       FIR_decimator
+    decifac     5
+    response    &datafile(responses/lch_4_sinc3)
+}
+
+sinc3_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_4)
+}
+
+sinc3_5    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_5)
+}
+
+sinc3_6    &Arr{
+    gtype       FIR_decimator
+    decifac     3
+    response    &datafile(responses/lch_4_sinc3_6)
+}
+
+f1          &Arr{
+    gtype       FIR_decimator
+    decifac     4
+    response    &datafile(responses/lch_4_f1)
+}
+
+f2          &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_f2)
+}
 # configuration for filtered data on CASCADIA 1
 fir_50_c1          &Arr{
     gtype       FIR_decimator

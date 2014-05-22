@@ -1,0 +1,36 @@
+From danq@brtt.com Mon Jan 18 23:10:38 1999
+From: "Daniel M. Quinlan" <danq@brtt.com>
+Date: Mon, 18 Jan 1999 16:10:34 -0700 (MST)
+To: autodrm@brtt.com
+
+ignored
+
+begin 
+msg_id 
+  msg_id
+email
+e-mail
+ftp
+msg_type
+time
+time 10
+lon 
+lat
+event_sta_dist
+depth
+depth_minus_error
+mag
+mag_type
+mb_minus_ms
+net_list
+sta_list
+chan_list
+aux_list
+beam_list
+bull_type
+group_bull_list
+arrival_list
+origin_list
+event_list
+comm_list
+relative_to

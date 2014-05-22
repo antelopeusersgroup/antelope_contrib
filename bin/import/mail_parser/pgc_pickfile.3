@@ -1,0 +1,66 @@
+.TH PGC_PICKFILE 3 "$Date$"
+.SH NAME
+pgc_pickfile \- mail_parser handler for PGC pick/hypocenter mail messages
+.SH SYNOPSIS
+.nf
+pgc_pickfile_handler( $message, $pfarray );
+.fi
+.SH DESCRIPTION
+The pgc_pickfile handler is intended to be launched by the
+mail_parser(1) utility. The pgc_pickfile handler takes
+email from the Geological Survey of Canada at the Pacific
+Geoscience Center, interpreting their "Loon Pickfile"
+format and placing the results into a CSS database.  The
+database is specified in the mail_parser.pf parameter
+file.  Three additional tables in the mail_parser.pf
+parameter file translate the channel names, location
+programs, and Canadian velocity models into equivalent text
+strings to go in the CSS database.
+
+Note that the error ellipsoid description for LocEq generated 
+errors is an approximation to the true error ellipsoid 
+for this solution. It is based on the lat, lon, depth errors 
+calculated at the earth's surface from LocEq; these errors are 
+represented in the ellipsoid such that smajax and sminax always 
+lie parallel to the earth's surface. Strike direction is 
+consistent with Aki & Richards, section 4.5. 
+All definitions conform with css3.0 schema definitions for 
+error ellipsoid.
+
+.SH PARAMETER FILE
+.nf
+nordic% cat mail_parser.pf
+Handlers &Tbl{
+	&Arr{
+		handler		pgc_pickfile
+		sender		pgc.nrcan.gc.ca
+		subject		pgc pick files
+		database	testdb
+		chantrans &Arr{
+			EZ	EHZ
+			BZ	BHZ
+			BN	BHN
+			BE	BHE
+		}
+		velmodeltrans &Arr{
+			01	canada		# Generic Canada
+			03	grgastrt	# Georgia Straight
+			06	QChrlte		# Queen Charlotte Islands
+			07	offshore	# Canadian Offshore model
+		}
+		locatortrans &Arr{
+			H	LocEq
+		}
+	}
+}
+nordic%
+.fi
+.SH "SEE ALSO"
+.nf
+mail_parser(1), db2pgc(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Sometimes a re-analysis of the same event is sent out via email. the pgc_pickfile 
+handler does not account for receiving updated copies of the same earthquake.
+.SH AUTHOR
+Kent Lindquist and Taimi Mulder

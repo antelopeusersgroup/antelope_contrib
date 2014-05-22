@@ -1,0 +1,2 @@
+request rejected as possible spam or loopback mail
+Can't call method "name" on an undefined value at blib/lib/Mail/Internet.pm (autosplit into blib/lib/auto/Mail/Internet/reply.al) line 360.

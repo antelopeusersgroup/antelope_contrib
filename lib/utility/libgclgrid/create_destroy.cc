@@ -1,8 +1,11 @@
 #include <typeinfo>
 #include <string.h>
 #include <math.h>
+#include "PfStyleMetadata.h"
 #include "gclgrid.h"
 #include "seispp.h"  // needed here for byte swap procedures
+using namespace std;
+using namespace SEISPP;
 /* This series of internal procedures contain duplicate code 
    for file-based constructors.  They follow the class hierarchy.
    Very convenient to put these in one place because the namespace
@@ -260,16 +263,11 @@ GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size) : BasicGCLgrid()
    pf to store attributes. */
 Metadata pfload_GCLmetadata(string fname)
 {
-    Pf *pf;
-    if(pfread(const_cast<char *>(fname.c_str()),&pf)) 
-        throw GCLgridError(string("pfread failed on file=")
-                + fname + ".pf");
-    /* Intentionally do not put this in a try block.  Currently
-       the constructor called here will never throw an exception*/
-    Metadata md(pf);
-    /* Safe to do this because Metadata makes a copy */
-    pffree(pf);
-    return(md);
+    try {
+        PfStyleMetadata md;
+        md=pfread(fname+".pf");
+        return(dynamic_cast<Metadata&>(md));
+    }catch(...){throw;};
 }
 GCLgrid::GCLgrid(string fname, string format)
 {

@@ -1,0 +1,64 @@
+.bp
+.nr H1 1
+.nr H2 0
+.OH ' ' 'Database Relations'
+.EH 'Database Relations' ' '
+.Lp
+.ce
+.B "\s+2DATABASE RELATIONS\s0"
+.Lp
+This chapter describes the relations of a schema.
+The information given here, along with that in Chapter 4,
+\fIDatabase Attributes\fP, constitutes the data dictionary. 
+There is an entry for each relation.  Within the entry,
+the relation's name appears first, followed by a list of its
+key attributes.  A brief description completes the entry.
+Key attributes link relations.
+The following tableau explains the format used in the entries.
+.KS
+.Hl
+.in 1i
+.LP
+.ta 1i 2i
+.TI
+Name:   This is the name of the relation.
+.TI
+Keys:   Primary.        These are the attributes which, taken
+together, uniquely identify a 
+.br
+        row in the table.
+.br
+Alternate.      These are other attributes which also uniquely identify a row and 
+.br
+        may be used as primary keys.
+.br
+Foreign.        These attributes are primary keys in another table.
+.TI
+Description:    This paragraph describes the relation.
+.in 0i
+.LP
+.Hl
+.KE
+.Lp
+Keys provide the links by which tables are joined.  The following
+definitions explain the several types of keys.
+.RS
+.Lp
+A primary key (which often is the concatenation of several
+attributes) uniquely identifies a row in the table.
+For example, each \fBorigin\fP record is unique by \fIlat, lon, 
+depth\fP, and \fItime.\fP
+.Lp
+An alternate key also uniquely identifies a row in the table and
+may be used as the primary key. For example, \fIorid\fP may also be 
+used as the primary key for the \fBorigin\fP table.
+.Lp
+A foreign key is another table's primary key. 
+Thus, \fIevid\fP is a foreign key in the \fBorigin\fP table, but is the
+primary key in the \fBevent\fP table. 
+Similarly, \fIcommid\fP is
+a foreign key in many of the tables and the primary key in \fBremark\fP. 
+.RE
+.Lp
+.bp
+

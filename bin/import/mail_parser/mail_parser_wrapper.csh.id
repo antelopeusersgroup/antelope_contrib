@@ -1,0 +1,5 @@
+cd ~
+set ANTELOPE=/opt/antelope/$id
+source $ANTELOPE/setup.csh
+setenv PFPATH $ANTELOPE/data/pf:$HOME/data/pf:./pf:.
+exec $ANTELOPE/bin/mail_parser

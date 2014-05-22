@@ -1,17 +1,18 @@
-originator     Frank Vernon, UCSD
-last_modified  2009-01-30
+originator     Taimi Mulder, GSC & Frank Vernon, UCSD
+last_modified  2014-02-25
 
 category	Geotech
-configuration	S-13 
+configuration	S-13
 
-description	Geotech S-13 short-period seismometer
+description	Geotech S-13 SP seismometer
 dfile		s13
 
 rsptype	V	# velocity instrument
 band	s	# short period 
 
 gtype		sensor	# stage type
-sensitivity	6.29e-7 # equivalent to 629 V/m/sec
+# Coil G=629 V/m/s, coil R=3600 ohms, critical damping=0.707: sensitivity=444.7 V/m/s
+sensitivity	4.447e-7
 iunits		nm/s
 ounits		V
 

@@ -1,199 +1,354 @@
 #
-#   program needs:
-#       open status orb
+#   Original Author:
+#       Frank Vernon <flvernon@ucsd.edu>
 #
-#  Liberally copied from pktmon
+#   Update: 3/14
+#       Juan Reyes <reyes@ucsd.edu>
+#       - Add "-w" option to make
+#           orb packets with the
+#           information as waveforms
 #
-    use Getopt::Std ;
-    use strict ;
-    use Datascope ;
-    use archive;
-    use utilfunct ; 
-    use orb ;
-    
-    our ( $Pgm, $Host );
-    our ( $opt_0, $opt_V, $opt_d, $opt_n, $opt_p, $opt_v );
-    our ( $Lastmem, $Pktbytes, $Pktcnt ) ; 
-    our ( %Pf, %Opt ) ;
-    
-{    #  Main program
 
-    my ( $usage, $cmd, $subject, $Pf, $problems, $problem_check );
-    my ( $nbytes, $orb, $orbname, $packet, $pkt, $pktid, $reject, $select, $source, $srcname, $stime, $time, $type, $when, $bit0, $bit1, $bit2, $bit6, $bit7, $value );
-    my ( @sources );
+use Getopt::Std ;
+use sysinfo ;
+use strict ;
+use Datascope ;
+use archive;
+use utilfunct ;
+use orb ;
 
-    $Pgm = $0 ; 
-    $Pgm =~ s".*/"" ;
-    elog_init($Pgm, @ARGV);
-    $cmd = "\n$0 @ARGV" ;
-    
-    if (  ! getopts('vV0dn:p:') || @ARGV != 1 ) { 
-        $usage  =  "\n\n\nUsage: $0  \n	[-v] [-V] [-d] [-0] \n" ;
-        $usage .=  "	[-p pf] [-n npkts]   \n" ;
-        $usage .=  "	status_orb \n\n"  ; 
-        
-        elog_notify($cmd) ; 
-        elog_die ( $usage ) ; 
-    }
-    
-    elog_notify($cmd) ; 
-    $stime = strydtime(now());
-    chop ($Host = `uname -n` ) ;
-    elog_notify ("\nstarting execution on	$Host	$stime");
+our ( $Pgm, $Host );
+our ( $opt_d, $opt_0, $opt_w, $opt_V, $opt_V, $opt_n, $opt_p, $opt_v );
+our ( $max_buffer_time, $Lastmem, $Pktbytes, $Pktcnt ) ;
+our ( %pfout_buffer, %Pf, %Opt ) ;
+our %opt_channels = ( 'acok','acok','api','api','isp1','ins1','isp2','ins2','ti','ti') ;
 
-    $Pf         = $opt_p || $Pgm ;
+my ( $usage, $cmd, $subject, $Pf, $problems, $problem_check );
+my ( $nbytes, $orb, $orbname, $packet, $pkt, $pktid, $reject );
+my ( $select, $source, $srcname, $stime, $time, $type, $when );
+my ( $return, $bit0, $bit1, $bit2, $bit6, $bit7, $value );
+my ( @sources );
 
-    $orbname   = shift @ARGV;
-    
-    $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;    
+$Pgm = $0 ;
+$Pgm =~ s".*/"" ;
+elog_init($Pgm, @ARGV);
+$cmd = "\n$0 @ARGV" ;
 
-    %Pf = getparam($Pf);
-    $select = $Pf{select_packets} ; 
-    $reject = $Pf{reject_packets} ; 
+elog_notify($cmd) ;
+$stime = strydtime(now());
+chop ($Host = `uname -n` ) ;
 
-    elog_notify("select    $select" ) ;
-    elog_notify("reject    $reject" ) ;
+if (  ! getopts('dwvV0n:p:') || @ARGV != 1 ) {
+    $usage  =  "\n\n\nUsage: $0  \n [-d] [-w] [-v] [-V] [-0] \n" ;
+    $usage .=  "    [-p pf] [-n npkts]   \n" ;
+    $usage .=  "    status_orb \n\n"  ;
 
-#
-#  open orb
-#
-    $orb = orbopen($orbname,"r+");
-    orbposition($orb, "oldest") if $opt_0 ; 
-
-    orbselect($orb, $select) if $select ne "" ; 
-    orbreject($orb, $reject) if $reject ne "" ;
-    
-    orbstashselect($orb, "NO_STASH") ;
-
-    ($when, @sources) = orbsources($orb) ;
-    
-#    prettyprint(\@sources);
-    
-    foreach $source (@sources) {
-        elog_notify(sprintf ("%-15s    %8d    %s    %s\n",
-                $source->srcname, $source->npkts, 
-                strtdelta($when-$source->slatest_time) ) ) ; # if $opt_V;
-    }
-
-    for (;;) {
-        ($pktid, $srcname, $time, $packet, $nbytes) = orbreap($orb) ;
-        next if ($pktid == -16) ; # skip stash packets
-        # &show_mem(" * after orbreap") if $opt_d ;
-        last if (! defined $pktid || $pktid < 0 || ($opt_n && ($opt_n < $Pktcnt))) ;
-        $Pktcnt++ ; 
-        $Pktbytes += $nbytes ; 
-        &showPkt($pktid, $srcname, $time, $packet, $nbytes, 4) if $opt_d ;
-        # &show_mem(" * after showPkt") if $opt_d ;
-        ($type, $pkt) = unstuffPkt($srcname, $time, $packet, $nbytes) ;
-        # &show_mem(" * after unstuffPkt") if $opt_d ;
-        if ( $type eq "Pkt_pf" ) { 
-            my ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ; 
-            # &show_mem(" * after pkt->parts") if $opt_d ;
-            process_packet ( $orb, $srcname, $time, $pkt) ; 
-            &show_mem(" * after process_packet") if $opt_d ;
-        } else { 
-            warn ( "skipping packet $srcname   type  $type\n" ) ; 
-        }
-        # &show_mem(sprintf("%8d %-20s %4d", $pktid, $srcname, $nbytes)) if $opt_d ;
-    }
-
-
-#
-#  close up
-#
-print STDERR "processed $Pktcnt packets, with $Pktbytes bytes\n" ; 
-    
-    orbclose($orb);
-    
-#     @unique_vals = sort { $a <=> $b } (get_unique(@unique_vals));
-#     
-#     elog_notify("unique vals    @unique_vals");
-#     
-#     foreach $value (@unique_vals) {
-# 	    $bit0     = int($value)  & 0x1 ;
-# 	    $bit1     = (int($value) >> 1)  & 0x1 ;
-# 	    $bit2     = (int($value) >> 2)  & 0x1 ;
-# 	    $bit6     = (int($value) >> 6)  & 0x1 ;
-# 	    $bit7     = (int($value) >> 7)  & 0x1 ;
-# 	    elog_notify (sprintf("    %d    %d    %d    %d    %d    %d", $value, $bit0, $bit1, $bit2, $bit6, $bit7)) if $opt_v;
-#     }
-        
-    $stime = strydtime(now());
-    elog_notify ("completed successfully	$stime\n\n");
-  
-    exit(0);
+    elog_notify( $cmd ) ;
+    elog_die( $usage ) ;
 }
 
-sub process_packet { 
-    my ( $orb, $srcname, $time, $pkt ) = @_ ; 
-    my ( $acok, $api, $ins1, $ins2, $pf, $sta, $pftarget, $ti );        
-    my ( %pf, %pfout );        
-    my ( $chan, $loc, $net, $packet, $parts, $pfout, $pktout, $pkttime, $srcname_new, $subcode, $suffix ) ;
+elog_notify ("\nstarting execution on   $Host   $stime");
+
+
+$orbname = shift @ARGV;
+
+$opt_v   = defined( $opt_V ) ? $opt_V : $opt_v ;
+
+#$Pf = $opt_p || $Pgm ;
+#%Pf = getparam($Pf);
+%Pf = getparam( $opt_p || $Pgm );
+$select = $Pf{select_packets} ;
+$reject = $Pf{reject_packets} ;
+$max_buffer_time = $Pf{buffer_time_window} || 600 ;
+
+elog_notify( "select => ( $select )" ) ;
+elog_notify( "reject => ( $reject )" ) ;
+
+# Open the ORB and output info
+$orb = open_orb() ;
+
+# Reap packets and extract data from ORB
+$return = main() ;
+
+orbclose( $orb );
+elog_notify( "Close orb connection." ) ;
+
+exit $return ;
+
+
+sub main {
+
+    while ( 1 ) {
+
+        elog_notify( "Go to packet: $pktid" ) if $pktid > 0 and $opt_V ;
+        orbseek($orb, $pktid ) if $pktid > 0;
+
+        ($pktid, $srcname, $time, $packet, $nbytes) = orbreap($orb) ;
+        elog_notify( "Got packet: $pktid $srcname ".epoch2str($time,"%Y%j-%T") ) if $opt_V ;
+
+
+        unless ( $pktid ) {
+            &show_mem( " * after orbreap" ) ;
+            elog_complain( "Problem on orbreap() pkid:$pktid srcname:$srcname" ) ;
+            return 1 ;
+        }
+
+        next if $pktid < 0 ;
+
+        &show_mem(" * after orbreap") if $opt_V ;
+
+        $Pktcnt++ if $opt_n;
+        #$Pktbytes += $nbytes ;
+
+        &showPkt($pktid, $srcname, $time, $packet, $nbytes, 4) if $opt_V ;
+
+        ($type, $pkt) = unstuffPkt($srcname, $time, $packet, $nbytes) ;
+
+        if ( $type eq "Pkt_pf" ) {
+            my ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ; 
+
+            process_packet ( $orb, $srcname, $time, $pkt) ;
+            &show_mem(" * after process_packet") if $opt_V ;
+
+        } else {
+            warn ( "skipping packet $srcname   type  $type" ) if $opt_v;
+        }
+
+        if ( $opt_n and ($opt_n < $Pktcnt) ) {
+            elog_notify( "Processed $Pktcnt packets" ) ;
+            return 0;
+        }
+
+        elog_notify( "Last packet: $pktid" ) if $opt_V ;
+
+    }
+
+
+    $stime = strydtime( now() ) ;
+    elog_notify ("completed at $stime\n\n") ;
+
+    return 0 ;
+}
+
+sub process_packet {
+    my ( $orb, $srcname, $time, $pkt ) = @_ ;
+    my ( $interval, $pf, $sta, $pftarget );
+    my ( @temp_stash, $chan, $ref, %pf, %pfout );
+    my ( $chan, $chan_name, $loc, $net, $packet, $parts, $pktout ) ;
+    my ( $pktid, $pkttime, $srcname_new, $subcode, $suffix ) ;
+    my ( $first_time, $last_time, $e, $n, $s, $c, $l, $sf) ;
+    my ( $temp_pkt, $parts ) ;
+    my ( $newsrcname, $pkttime, $packet) ;
+    # IMPORTANT:
+    # %pfout is to be use for exporting vtw pf packets
+    # for waveforms we want to use the global variable
+    # %pfout_buffer that we defined at the init part.
 
     $pftarget = $srcname ;
     $pftarget =~ s/\/pf\/st/.pf/ ;
-    elog_notify("pftarget    $pftarget") ;
+    elog_notify("pf packet: $pftarget") if $opt_v ;
 
     $pf = $pkt->pf ;
-    %pf = getparam( $pf, $opt_v, $opt_V );
-    
+    $ref = pfget( $pf, "");
+    %pf = %$ref ;
+    $interval =  int($pf{itvl}) ;
+
     foreach $sta ( sort keys %{$pf{dls}} ) {
 
+        elog_notify("\tgot: $sta $pf{dls}{$sta}{opt}") if $opt_V ;
+
         if ( $pf{dls}{$sta}{opt} =~ /-/ ) {
-            $acok = $api = $ins1 = $ins2 = $ti = "-" ;
+            foreach  $chan  (keys %opt_channels) {
+                next unless $chan ;
+                $chan_name = $opt_channels{$chan};
+                #elog_notify("\tset: $sta-[$chan_name] = '-'") if $opt_V ;
+                $pfout{$sta}{$chan_name} = '-' ;
+            }
         } else {
-            $acok = $api = $ins1 = $ins2 = $ti = 0 ;
+            foreach  $chan  (keys %opt_channels) {
+                next unless $chan ;
+                $chan_name = $opt_channels{$chan};
+                $pfout{$sta}{$chan_name} = $pf{dls}{$sta}{opt} =~ /.*($chan).*/ ? 1 : 0 ;
+                elog_notify("\tset: $sta [$chan_name] = $pfout{$sta}{$chan_name}") if $opt_V ;
+                buffer_data( $sta, $chan_name,$pfout{$sta}{$chan_name},
+                            $time, $interval) if $opt_w ;
+            }
         }
-        
-        $acok = 1 if ( $pf{dls}{$sta}{opt} =~ /.*acok.*/) ;
-        $api  = 1 if ( $pf{dls}{$sta}{opt} =~ /.*api.*/) ;
-        $ins1 = 1 if ( $pf{dls}{$sta}{opt} =~ /.*isp1.*/) ;
-        $ins2 = 1 if ( $pf{dls}{$sta}{opt} =~ /.*isp2.*/) ;
-        $ti   = 1 if ( $pf{dls}{$sta}{opt} =~ /.*ti.*/)   ;
-        
-        $pfout{$sta}{acok} = $acok ;
-        $pfout{$sta}{api}  = $api ;
-        $pfout{$sta}{ins1} = $ins1 ;
-        $pfout{$sta}{ins2} = $ins2 ;
-        $pfout{$sta}{ti}   = $ti ;
+
     }
-   
-    prettyprint(\%pfout) if $opt_V;
-    
+
+    #prettyprint(\%pfout) if $opt_V;
+
+    if ( $opt_w ) {
+        foreach $sta ( sort keys %pfout_buffer ) {
+
+            ($n,$s,$c,$l,$sf) = split_srcname($sta);
+
+            #elog_notify( "\tEVAL: ${n}_${s}_${c}_${l}_${sf}" );
+            foreach  $chan  (keys %opt_channels) {
+                next unless $chan ;
+                $chan_name = $opt_channels{$chan};
+                #elog_notify( "\t\tEVAL: ${chan} => ${chan_name}" );
+                $first_time = $pfout_buffer{$sta}{$chan_name}{first_time} ;
+                $last_time  = $pfout_buffer{$sta}{$chan_name}{last_time} ;
+
+                next unless $first_time and $last_time ;
+                next if (( $last_time - $first_time ) < $max_buffer_time) ;
+
+                elog_notify( "\t\tBuffer Full for ${sta}_${chan_name} with: "
+                    . strtdelta($last_time - $first_time) ) if $opt_V ;
+
+                # waveform packet
+                my $calib = 1 ;
+                my $calper = 1 ;
+                my $segtype = "c"  ; # counts = dimensionless integer
+
+                $e = PktChannel->new(net=>$n, sta=>$s, chan=>uc($chan_name),
+                            time=>$first_time, samprate=>(1/$interval),
+                            calib=>$calib, calper=>$calper, segtype=>$segtype,
+                            data=>\@{$pfout_buffer{$sta}{$chan_name}{data}} ) ;
+
+                push(@temp_stash, $e) ;
+
+                # Cleanup buffer
+                $pfout_buffer{$sta}{$chan_name}{data} = () ;
+                $pfout_buffer{$sta}{$chan_name}{first_time} = 0 ;
+                $pfout_buffer{$sta}{$chan_name}{last_time} = 0 ;
+            }
+
+            next unless scalar @temp_stash ;
+
+            $parts = Srcname->new(src_net=>$n, src_sta=>$s, src_subcode=>'MSTV') ;
+
+            $temp_pkt = Packet->new(suffix=>'MGENC', parts=>$parts,
+                            channels=>[@temp_stash]) ;
+
+            ($newsrcname, $pkttime, $packet) = stuffPkt($temp_pkt) ;
+
+            if ( $opt_d ) {
+                elog_notify( "***dry-run***: orbputx: -NULL- $newsrcname time: "
+                        . epoch2str($pkttime,"%Y%j-%T") ) ;
+            } else {
+                $pkttime = now() ;
+                $pktid = orbputx($orb, $newsrcname, $pkttime, $packet, length($packet)) ; 
+                elog_notify( "\t\torbputx:$pktid $newsrcname time: "
+                        . epoch2str($pkttime,"%Y%j-%T") ) if $opt_v ;
+            }
+
+            # Clean buffer
+            @temp_stash = ();
+
+        }
+
+    }
+
     pfput("dls",\%pfout,$pftarget ) ;
-    
+
     ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
     $parts  = Srcname->new(src_net=>$net,src_sta =>$sta,src_chan=>$chan,src_loc=>$loc) ;
     $pktout = Packet->new(subcode=>'vtw', suffix=>'pf', parts=>$parts, pf=>$pftarget) ;
     ($srcname_new, $pkttime, $packet) = stuffPkt($pktout) ;
 
     $srcname_new = join_srcname($net, $sta, $chan, $loc, $suffix, "vtw") ;
-    orbput($orb, $srcname_new, $time, $packet, length($packet)) ;
 
-#     ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
-#     $parts  = Srcname->new(src_net=>$net,src_sta =>$sta,src_chan=>$chan,src_loc=>$loc) ;
-#     $pktout = Packet->new(subcode=>'vtw', suffix=>'pf', parts=>$parts, pf=>$pftarget) ;
-#     ($srcname_new, $pkttime, $packet) = stuffPkt($pktout) ;
-#     orbput($orb, $srcname_new, $time, $packet, length($packet)) ;
-    
+    if ( $opt_d ) {
+        elog_notify( "***dry-run***: orbputx: -NULL- $newsrcname time: "
+                . epoch2str($time,"%Y%j-%T") ) ;
+    } else {
+        $pktid = orbputx($orb, $srcname_new, $time, $packet, length($packet)) ;
+        elog_notify( "\t\torbputx:$pktid $srcname_new time: "
+            . epoch2str($time,"%Y%j-%T") ) if $opt_v ;
+    }
+
     %pf    = ();
-    %pfout = ();
-    return;
-    
+    %pfout = () ;
+
 }
 
-sub getmem {
-    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-        $atime,$mtime,$ctime,$blksize,$blocks)
-            = stat("/proc/self/as");
-    return $size ;
+sub buffer_data {
+    my ( $sta, $chan, $value, $time, $interval ) = @_ ;
+    my ( $log );
+
+    #my $new_data   = $string =~ /.*($chan).*/ ? 1 : 0 ;
+
+    my $first_time = $pfout_buffer{$sta}{$chan}{first_time} || 0;
+    my $last_time  = $pfout_buffer{$sta}{$chan}{last_time}  || 0;
+
+    if ( $opt_V ) {
+        $log = "\tprev: ${sta}_${chan}" ;
+        $log .= ":".epoch2str($pfout_buffer{$sta}{$chan}{first_time},"%Y%j-%T") if $first_time;
+        $log .= ":".epoch2str($pfout_buffer{$sta}{$chan}{last_time},"%Y%j-%T") if $last_time;
+        $log .= ":[".join(',', @{$pfout_buffer{$sta}{$chan}{data}})."]" if $pfout_buffer{$sta}{$chan}{data};
+        elog_notify($log) ;
+    }
+
+    if ( $last_time and $time gt ( $last_time+($interval*2) ) ) {
+        # Clean buffer...
+        $log  = "\n\n\t*** Gap in the data for ${sta}_${chan}\n" ;
+        $log .= "\t*** Last data from $last_time ".epoch2str($last_time,"%Y%j-%T")."\n" ;
+        $log .= "\t*** New data is $time ".epoch2str($time,"%Y%j-%T")."\n" ;
+        $log .= "\t*** Diff: " . strtdelta($time - $last_time) . " \n" ;
+        $log .= "\t*** Dump previous segment: [" ;
+        $log .= join( ',', @{$pfout_buffer{$sta}{$chan}{data}} ) . "]\n" ;
+        elog_complain( $log ) ;
+
+        $pfout_buffer{$sta}{$chan}{first_time} = 0 ;
+        $pfout_buffer{$sta}{$chan}{data} = () ;
+
+    }
+
+    $pfout_buffer{$sta}{$chan}{data} ||= () ;
+    $pfout_buffer{$sta}{$chan}{first_time} ||= $time ;
+    $pfout_buffer{$sta}{$chan}{last_time} = $time ;
+
+    push( @{$pfout_buffer{$sta}{$chan}{data}}, $value ) ;
+
+
+    if ( $opt_V ) {
+        $log = "\tadd [$value] to ${sta}_${chan}" ;
+        $log .= ":".epoch2str($pfout_buffer{$sta}{$chan}{first_time},"%Y%j-%T") ;
+        $log .= ":".epoch2str($pfout_buffer{$sta}{$chan}{last_time},"%Y%j-%T") ;
+        $log .= ":[".join(',', @{$pfout_buffer{$sta}{$chan}{data}})."]" ;
+        elog_notify($log) ;
+    }
+
 }
-        
-sub show_mem {   
-    # my %psinfo  = psinfo($$) ;
-    # my $mem = $psinfo{mem} ;
-    my $mem = getmem() ;
-    printf STDOUT "%-35s  %10d  %6d\n", 
-	$_[0], $mem, $mem-$Lastmem if $mem > $Lastmem ;
-    $Lastmem = $mem ;
+
+sub show_mem {
+    my %vminfo = sysmem() ;
+    my $output ;
+    $output .= " physmem:" . sprintf("%.1f Gb", $vminfo{physmem}/1024) ;
+    $output .= " used:" . sprintf("%.1f Mb", $vminfo{used}/1024) ;
+    elog_notify( "Memory:  $output" ) ;
+
+}
+
+sub open_orb {
+    my ( $pktid ) ;
+
+    $orb = orbopen($orbname,"r+");
+
+    orbstashselect($orb, "NO_STASH") ;
+
+    $pktid = orbposition($orb, "oldest") if $opt_0 ;
+    elog_notify( "orbposition pktid: $pktid" ) if $opt_V ;
+
+    orbselect($orb, $select) if $select ;
+    orbreject($orb, $reject) if $reject ;
+
+
+    ($when, @sources) = orbsources($orb) ;
+
+    prettyprint(\@sources) if $opt_V ;
+
+    foreach $source (@sources) {
+        elog_notify(sprintf ("%-15s    %8d    %s    %s\n",
+                $source->srcname, $source->npkts,
+                strtdelta($when-$source->slatest_time) ) ) if $opt_v;
+    }
+
+    elog_notify( "open_orb: at packet => " . orbtell($orb) ) if $opt_V ;
+
+    return $orb ;
+
 }

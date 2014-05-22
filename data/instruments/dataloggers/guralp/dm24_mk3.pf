@@ -1,10 +1,69 @@
-originator 
-last_modified 
+originator     Frank Vernon, UCSD & Taimi Mulder, GSC
+last_modified  2014-02-12
+
+info    &Literal{
+Guralp DM24 Mk3
+These instrument parameter files and their responses derived from
+
+   http://www.guralp.com/fir-filter-configuration-of-the-cmg-dm24-mk3/
+   http://www.guralp.com/documents/html/MAN-D24-0004/
+   support@guralp.com
+
+In addition, IRIS has a good summary of the DM24 Mk2 datalogger response at
+http://www.iris.washington.edu/NRL/dataloggers/guralp/CMG_DM24/guralp_CMG_DM24_mk3_dataloggers.htm
+
+
+On 2014 Feb 10, fish from support@guralp.com wrote:
+
+...The DM24s fitted in most DM24S3EAMs are identical to
+those in stand-alone DM24-S3s in all the respects that you query.
+
+I'm sure that you'd love me to sign off at this point but nothing is that easy!
+Some DM24SxEAMs have variable-gain front-ends fitted. The only differences from
+your point of view are the output bit weights: these are 2.8 µV/bit at unity
+gain but can be set for ×2, ×4, ×8, ×16, ×32 or ×64 operation, with consequent
+adjustments to the bit weight. The bit-weight for the calibration signal return
+channel for variable-gain units is factory-adjusted to 0.424 µV/bit.
+So how do you tell whether a given digitiser is fixed gain or variable gain?
+Here's four ways:
+
+ * Check the long part number on the label: character 12 is U for unity-gain
+   or V for variable gain so a DAS-2403SA0UE0323, for example, is a unity-gain
+   unit and a DAS-2403SA0VE0323 is a variable-gain version.
+
+ * Check the calibration documents: if the gains for the velocity channels are
+   around 3.2 µV/bit, it is a unity-gain unit and if they are around 2.8
+   µV/bit, it is a variable-gain unit.
+
+ * Check the status stream after boot: if gain settings are reported, it is a
+   variable-gain unit.
+
+ * Check the digitiser configuration page in the web interface of an attached
+   EAM: if gain settings are displayed, it is a variable-gain unit.
+
+There is, I'm afraid, no way to tell from the serial number other than by
+asking me to look it up!
+
+I hope that this helps but do let me know if you need more information.
+
+Yours,
+
+--
+
+fish
+Customer Support Manager/Scientific Author
+Güralp Systems Limited                ,--,_             Midas House,
+t: 0118 981 9056 x511          __    _\.---'-.          Calleva Park,
+f: 0118 981 9943               \ '.-"     // o\         Aldermaston,
+e: fish@guralp.com             /_.'-._    \\  /         Berkshire.
+im: MSN:fish@guralp.com               `"--(/"`          RG7 8EA
+skype: callto:seismofish                                UK
+}
 
 category       Guralp
 configuration  DM24-MK3
 
-gains          787401.57
+gains          312500.0
 
 description    Guralp DM24-MK3 Datalogger
 dfile          dm24-mk3

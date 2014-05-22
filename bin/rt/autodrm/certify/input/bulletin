@@ -1,0 +1,21 @@
+From danq@brtt.com Mon Jan 18 23:10:38 1999
+From: "Daniel M. Quinlan" <danq@brtt.com>
+Date: Mon, 18 Jan 1999 16:10:34 -0700 (MST)
+To: autodrm@brtt.com
+
+ignored
+
+begin gse2.1
+msg_id channels USA_BRTT
+e-mail danq@brtt.com
+depth 10 to 40
+event_sta_dist 0.5 to 10
+lat 40 to 45
+lon 65 to 75
+time 1995/02/20 8:00 TO 1995/02/20 9:44:40
+mag 3 to 4
+mag_type mb
+
+bull_type demo2
+bulletin
+stop

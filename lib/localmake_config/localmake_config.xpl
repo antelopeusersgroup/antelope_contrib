@@ -18,19 +18,19 @@ sub inform {
 sub set_macros {
 
 	foreach $macro ( keys( %macros ) ) {
-		
+
 		if( ! defined( $macros{$macro} ) ) {
 
 			next;
 
 		} else {
-			
+
 			$contents = $macros{$macro};
 		}
 
 		if( ref( $contents ) eq "HASH" ) {
-		
-			if( defined( $contents->{$Os} ) && 
+
+			if( defined( $contents->{$Os} ) &&
 			    $contents->{$Os} ne "" ) {
 
 				$$macro = "$contents->{$Os}";
@@ -40,9 +40,9 @@ sub set_macros {
 }
 
 sub set_initial_config {
-	 
+
 	foreach $macro ( keys( %macros_initial_config ) ) {
-		
+
 		if( ! defined( $macros{$macro} ) ) {
 
 			elog_complain( "File '$Pf_config_file' refers to decommissioned macro '$macro'\n" );
@@ -74,7 +74,7 @@ sub set_initial_config {
 
 sub show_capabilities {
 
-format STDOUT = 
+format STDOUT =
    @<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<< @*
    $enabled_string, $c, $capabilities{$c}{Description}
 .
@@ -84,7 +84,7 @@ format STDOUT =
 	foreach $c ( keys( %capabilities ) ) {
 
 		$enabled = $capabilities{$c}{enable}{$Os};
-	
+
 		$enabled_string = $enabled ? "[ enabled]" : "[disabled]";
 
 		write;
@@ -95,39 +95,43 @@ format STDOUT =
 
 sub write_makerules {
 
+	$force_write = shift;
+
 	$output_file = pfget( $Pf_localmake, "output_file" );
 	$dest = pfget( $Pf_localmake, "dest" );
 
 	$dest_output_file = "$dest/$output_file";
 	$temp_output_file = "/tmp/$output_file\_$$\_$>";
 
-	if( -e "$dest_output_file" && ( -M "$dest_output_file" <= -M "$Pf_config_file" ) ) {
+	unless($force_write) {
+		if( -e "$dest_output_file" && ( -M "$dest_output_file" <= -M "$Pf_config_file" ) ) {
 
-		return;
+			return;
 
-	} else {
+		} else {
 
-		inform( "Rebuilding '$dest_output_file' since it is older than '$Pf_config_file'\n" );
-	}
+			inform( "Rebuilding '$dest_output_file' since it is older than '$Pf_config_file'\n" );
+		}
+    }
 
 	open( O, ">$temp_output_file" );
 
 	print O "$header\n\n";
 
 	foreach $macro ( keys( %macros ) ) {
-		
+
 		if( ! defined( $macros{$macro} ) ) {
 
 			next;
 
 		} else {
-			
+
 			$contents = $macros{$macro};
 		}
 
 		if( ref( $contents ) eq "HASH" ) {
-		
-			if( defined( $contents->{$Os} ) && 
+
+			if( defined( $contents->{$Os} ) &&
 			    $contents->{$Os} ne "" ) {
 
 				print O "$macro = $contents->{$Os}\n";
@@ -170,7 +174,7 @@ sub set_orig_enabled {
 sub test_capability {
 	if( ref( $_[0] ) ) { shift( @_ ); }
 	my( $c, $mode ) = @_;
-	
+
 	my( $passed ) = 1;
 
 	if( ! defined( $capabilities{$c} ) ) {
@@ -200,7 +204,7 @@ sub test_capability {
 	while( $required_macro = shift( @required_macros ) ) {
 
 		if( ! defined( $$required_macro ) || $$required_macro eq "" ) {
-				
+
 			if( $mode eq "verify" ) {
 
 				elog_complain( "Macro '$required_macro', required for '$c' capability, " .
@@ -213,7 +217,7 @@ sub test_capability {
 	}
 
 	while( $test = shift( @tests ) ) {
-			
+
 		if( ! eval( $test ) ) {
 
 			if( $mode eq "verify" ) {
@@ -275,7 +279,7 @@ sub run_verify {
 }
 
 sub run_configure {
-	
+
 	system( "localmake -c" );
 }
 
@@ -293,9 +297,9 @@ $Program =~ s@.*/@@;
 
 elog_init( $Program, @ARGV );
 
-if( ! getopts( 'ilv' ) ) {
+if( ! getopts( 'ilvf' ) ) {
 
-	elog_die( "Usage: localmake_config [-ilv] [capability [, capability...]]\n" );
+	elog_die( "Usage: localmake_config [-ilvf] [capability [, capability...]]\n" );
 }
 
 if( @ARGV >= 1 ) {
@@ -309,7 +313,7 @@ if( @ARGV >= 1 ) {
 
 $Os = my_os();
 
-%macros = %{pfget($Pf_localmake,"macros")}; 
+%macros = %{pfget($Pf_localmake,"macros")};
 $header = pfget( $Pf_localmake, "header" );
 $extra_rules = pfget( $Pf_localmake, "extra_rules" );
 %platform_rules = %{pfget( $Pf_localmake, 'platform_rules' )};
@@ -340,7 +344,7 @@ set_orig_enabled();
 
 set_macros();
 
-write_makerules();
+write_makerules($opt_f);
 
 if( $opt_i ) {
 

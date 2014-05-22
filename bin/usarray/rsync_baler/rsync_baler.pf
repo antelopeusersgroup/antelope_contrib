@@ -13,6 +13,16 @@ max_child_run_time      36000               #stop downloading files
                                             #after this number of 
                                             #seconds. 0 = disable.
 
+regex_for_files         ^(..-...._4-\d{14})$
+folder_with_files       data
+md5_folder              recover
+
+#regex_for_files         ^(..-...._4-(S-)?\d{14})$
+#folder_with_files       s?data
+#md5_folder              recover
+
+baler_model             PacketBaler44
+
 # avoid_on_day_of_week
 # Will be implemented like this...
 # $opt_r  = $opt_r || $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} ;

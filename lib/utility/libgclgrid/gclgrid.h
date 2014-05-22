@@ -9,10 +9,10 @@
 #include "dmatrix.h"
 #include "GCLgridError.h"
 /* Double negative means default works with Antelope.  To build use
-   -DNO_DB_SUPPORT to disable putting database support in the 
+   -DNO_ANTELOPE to disable putting database support in the 
    interface. 
    */
-#ifndef NO_DB_SUPPORT
+#ifndef NO_ANTELOPE
 #include "databasehandle.h"
 using namespace SEISPP;
 #endif
@@ -365,6 +365,7 @@ public:
 	GCLgrid(int n1size, int n2size, string n, double la0, double lo0,
 		double radius0, double az, double dx1n, double dx2n, 
 		int iorigin, int jorigin);
+#ifndef NO_ANTELOPE
 /*! 
   Database driven constructor.  This is a specialized constructor that
   loads a grid tagged with the name nm from a generic database assuming
@@ -375,6 +376,7 @@ public:
   \param nm name of grid to be loaded from the database.
 */
 	GCLgrid(DatabaseHandle& db, string nm);  
+#endif
         /*! \brief Constuct from a file.
 
           A standard simple way to build any object is from a data file.
@@ -409,6 +411,7 @@ public:
 // Standard assignment operator.
 */
 	GCLgrid& operator=(const GCLgrid& );
+#ifndef NO_ANTELOPE
 	/*! \brief Save to a generic database.
 
           Some applications can generate large numbers of objects and
@@ -422,6 +425,7 @@ public:
           \exception GCLgridError is thrown if save fails.
 	*/
 	void save(DatabaseHandle& db,string dir);
+#endif
         /*! \brief Save to a file.
 
           Many applications will find it more convenient to write 
@@ -615,6 +619,7 @@ public:
 		double la0, double lo0, double az, double radius0,
 		double dx1n, double dx2n, double dx3n,
 		int iorigin, int jorigin);
+#ifndef NO_ANTELOPE
 /*! 
   Database driven constructor.  This is a specialized constructor that
   loads a grid tagged with the name nm from a generic database assuming
@@ -625,6 +630,7 @@ public:
   \param nm name of grid to be loaded from the database.
 */
 	GCLgrid3d(DatabaseHandle& db, string nm);  
+#endif
         /*! \brief Constuct from a file.
 
           A standard simple way to build any object is from a data file.
@@ -649,6 +655,7 @@ public:
 	GCLgrid3d(const GCLgrid3d&); 
 	/** Standard assignment operator. */
 	GCLgrid3d& operator=(const GCLgrid3d& );
+#ifndef NO_ANTELOPE
 	/*! \brief Save to a generic database.
 
           Some applications can generate large numbers of objects and
@@ -662,6 +669,7 @@ public:
           \exception GCLgridError is thrown if save fails.
 	*/
 	void save(DatabaseHandle& db,string dir);
+#endif
         /*! \brief Save to a file.
 
           Many applications will find it more convenient to write 
@@ -809,6 +817,7 @@ public:
 	// \param g Grid to be cloned.
 	*/
 	GCLscalarfield(GCLgrid& );
+#ifndef NO_ANTELOPE
 /*! 
   Database driven constructor.  This is a specialized constructor that
   loads a field tagged with the name fldname from a generic database assuming
@@ -821,6 +830,7 @@ public:
   \param fldname field name attribute of data linked to nm
 */
 	GCLscalarfield(DatabaseHandle& db, string nm,string fldname);  
+#endif
         /*! \brief Constuct from a file.
 
           A standard simple way to build any object is from a data file.
@@ -851,6 +861,7 @@ public:
 	void zero();
 	/** Standard assignment operator */
 	GCLscalarfield& operator=(const GCLscalarfield&);
+#ifndef NO_ANTELOPE
 	/*! \brief Save to a generic database.
 
           Some applications can generate large numbers of objects and
@@ -875,6 +886,7 @@ public:
 	*/
 	void save(DatabaseHandle& db,string gclgdir,
                 string fielddir,string fieldname, string dfile);
+#endif
         /*! \brief Save to a file.
 
           Many applications will find it more convenient to write 
@@ -994,6 +1006,7 @@ public:
 	// \param g Grid to be cloned.
 	*/
 	GCLvectorfield(GCLgrid &,int);
+#ifndef NO_ANTELOPE
 /*! 
   Database driven constructor.  This is a specialized constructor that
   loads a field tagged with the name fldname from a generic database assuming
@@ -1010,6 +1023,7 @@ public:
 */
 	GCLvectorfield(DatabaseHandle& db, string nm,string fldname,
                 int nvsize=0);  
+#endif
         /*! \brief Construct from a file.
 
           A standard simple way to build any object is from a data file.
@@ -1040,6 +1054,7 @@ public:
 	~GCLvectorfield();
 	/** Zeros the field variable */
 	void zero();
+#ifndef NO_ANTELOPE
 	/*! \brief Save to a generic database.
 
           Some applications can generate large numbers of objects and
@@ -1065,6 +1080,7 @@ public:
 	*/
 	void save(DatabaseHandle& db,string gclgdir,
                 string fielddir,string fieldname, string dfile);
+#endif
         /*! \brief Save to a file.
 
           Many applications will find it more convenient to write 
@@ -1183,6 +1199,7 @@ public:
 	// \param g Grid to be cloned.
 	*/
 	GCLscalarfield3d(GCLgrid3d &g);
+#ifndef NO_ANTELOPE
 /*! 
   Database driven constructor.  This is a specialized constructor that
   loads a field tagged with the name fldname from a generic database assuming
@@ -1196,6 +1213,7 @@ public:
 */
 	GCLscalarfield3d(DatabaseHandle& db, string grdnm,
                 string fldname);
+#endif
         /*! \brief Constuct from a file.
 
           A standard simple way to build any object is from a data file.
@@ -1226,6 +1244,7 @@ public:
 	void zero();
 	/** Standard assignment operator. */
 	GCLscalarfield3d& operator=(const GCLscalarfield3d&);
+#ifndef NO_ANTELOPE
 	/*! \brief Save to a generic database.
 
           Some applications can generate large numbers of objects and
@@ -1251,6 +1270,7 @@ public:
 	*/
 	void save(DatabaseHandle& db,string gclgdir,
                 string fielddir,string fieldname, string dfile);
+#endif
         /*! \brief Save to a file.
 
           Many applications will find it more convenient to write 
@@ -1357,6 +1377,7 @@ public:
 	// \param nvsize number of vector components for vector field val array.
 	*/
 	GCLvectorfield3d(GCLgrid3d &,int nvsize);
+#ifndef NO_ANTELOPE
 /*! 
   Database driven constructor.  This is a specialized constructor that
   loads a field tagged with the name fldname from a generic database assuming
@@ -1373,6 +1394,7 @@ public:
 */
 	GCLvectorfield3d(DatabaseHandle& db, string nm,string fldname,
                 int nvsize=0);  
+#endif
         /*! \brief Constuct from a file.
 
           A standard simple way to build any object is from a data file.
@@ -1403,6 +1425,7 @@ public:
 	void zero();
 	/** Standard assignment operator. */
 	GCLvectorfield3d& operator=(const GCLvectorfield3d&);
+#ifndef NO_ANTELOPE
 	/*! \brief Save to a generic database.
 
           Some applications can generate large numbers of objects and
@@ -1428,6 +1451,7 @@ public:
 	*/
 	void save(DatabaseHandle& db,string gclgdir,
                 string fielddir,string fieldname, string dfile);
+#endif
         /*! \brief Save to a file.
 
           Many applications will find it more convenient to write 

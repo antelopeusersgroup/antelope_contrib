@@ -1,0 +1,57 @@
+.TH DBVERSAC 1 "$Date$"
+.SH NAME
+dbversac \- compare sac file headers with css database
+.SH SYNOPSIS
+.nf
+\fBdbversac \fIdatabase\fR
+.fi
+.SH DESCRIPTION
+Occasionally, we create a css database with sac files 
+containing the waveform data.  This means that various
+parameter data is contained in both the sac headers and 
+in the css database.  \fBDbversac\fR attempts to verify
+that the parameters are the same in both places, since
+it is easy to update the css database without changing the
+sac headers.
+.LP
+This program is quite rigid, and depends on the existence of
+the following tables:
+
+.IP wfdisc
+.IP sensor
+.IP sitechan
+.IP site
+.IP wftag
+.IP origin
+.LP
+The wftag table is expected to contain only entries joining
+the origin and wfdisc table.  It expects that every wfdisc record
+points to a sac file.
+Provided all these conditions are met, the program checks that 
+the following css database correspond with the sac headers
+for each wfdisc record:
+
+.IP calib
+.IP foff
+.IP nsamp 
+.IP time
+.IP endtime
+.IP samprate
+.IP segtype
+.IP sta
+.IP chan
+.IP lat
+.IP lon
+.IP elev
+.IP hang
+.IP vang
+.IP edepth
+.IP "event time, lat, lon, depth"
+.SH "SEE ALSO"
+dbverify(1)
+.SH "BUGS AND CAVEATS"
+dbversac requires a way of generating a wftag table.
+.SH AUTHOR
+Daniel Quinlan
+
+.\" $Id$ 

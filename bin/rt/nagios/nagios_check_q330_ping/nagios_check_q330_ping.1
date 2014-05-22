@@ -42,17 +42,12 @@ Notes:
 Critical and warning thresholds refer to packet loss from the ping sequence.
 .fi
 .SH "BUGS AND CAVEATS"
-This assumes that $ANTELOPE and other Antelope environment variables
-have been set properly. This can be done in the startup script
-for the Nagios system.
-
 Due to what appears to be a bug somewhere in Perl 5.8.0 on Linux (and
 possibly other platforms), this program does not build correct packets and
 is thereby ignored by the Q330. Since Antelope 4.7 ships on Linux with
 5.8.0, this software needs to use a different (system?) version of Perl to
 be functional. Perl 5.8.4 (possibly earlier versions as well) seems to
 have corrected the bug and this program behaves normally.
-
 .SH "SEE ALSO"
 nagios_antelope_utils(3)
 nagios_check_orbstat(1)

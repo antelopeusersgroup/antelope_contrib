@@ -1,0 +1,30 @@
+practice_subdir 	practice
+default_template 	pgc
+
+templates &Arr{
+    pgc	&Arr{
+	practice_database	mydb
+	descriptor_elements &Arr{
+		schema	rt1.0
+	}
+
+	site_database		/chilako/rt/workshop/dbmaster/cnsn
+	waveform_database	/raid/wf/cnsn
+
+	autoproc_database 	/chilako/rt/workshop/autoproc_test/al4ta
+	autoproc_tables &Tbl{
+		arrival
+		assoc
+		event
+		origin
+	}
+
+	copy_files &Tbl{
+		/chilako/rt/workshop/autoproc_test/pf/dbloc2.pf
+        }
+
+	rcfiles &Arr{
+		dbpickrc	/opt/antelope/4.6/data/pf/.dbpickrc
+	}
+    }
+}

@@ -1,0 +1,25 @@
+# $Id$
+# Nanometrics Taurus IIR DC removal filter
+# Normalized  response 
+# 1                   type
+# 1                   num of zeroes
+# 1                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1                   normalization factor                   
+# 1.0                 gain
+# 
+# Comment: This is a "paz" response file for the IIR dc-removal preamp.
+# The final response file should have type "iir".  At the publication time
+# of this file, the "iir" response file option was unstable when used with 
+# dberesp and did not produce the correct response curve. The temporary 
+# fix, used here, was to specify the iir filter as a "paz" file.
+# 2014 Feb 07 - T Mulder
+#          
+theoretical 1 dc-removal paz  GSC_Mulder
+1
+1             Poles
+-0.00628319e+00    0.0000E+00    0.0000E+00    0.0000E+00
+#-6.28319e+00    0.0000E+00    0.0000E+00    0.0000E+00
+1             Zeros
+-0.00000000e+00    0.0000E+00    0.0000E+00    0.0000E+00

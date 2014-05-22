@@ -1,12 +1,12 @@
 config &Arr{
     expr &Tbl{
-        time >= 704371900
-        lat >= 10 && lat <= 40 && lon >= -90 && lon <= -50
+    #time >= 704371900
+    #    lat >= 10 && lat <= 40 && lon >= -90 && lon <= -50
     }
     sort_fields &Tbl{
         time
     }
-    out_file        CONTRIB_network.kml
+    out_file        CEUSN_network.kml
     create_kmz      True
     network_link &Arr{
     }
@@ -14,12 +14,12 @@ config &Arr{
 }
 
 headers &Arr{
-    name ANZA CONTRIB Stations
+    name Central and Eastern United States Network (CEUSN)
     description &Literal{
-        <p>Google Earth file showing demo database events
+        <p>As the USArray Transportable Array entered the central and eastern United States, several Federal agencies (National Science Foundation, United States Geological Survey, United States Nuclear Regulatory Commission, and Department of Energy) recognized the unique opportunity to retain seismometers in this region beyond the original timeline of the deployed TA footprint.
         <br/>
         Created:   <br/>
-        Website:   http://www.brtt.com<br/>
+        Website:   http://ceusn.ucsd.edu<br/>
         Author:    db2kml_py<br/>
         Copyright: </p>
     }
@@ -29,21 +29,22 @@ headers &Arr{
 
     look_at &Arr{
         # Some default view when initially loaded
-        latitude 18.451 # degrees
-        longitude -72.445 # degrees
+        latitude 38.5
+        longitude -87.0
         range 100000 # height above sea level
     }
-    legend_url   http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/legend2.png
+    legend_url http://ceusn.ucsd.edu/images/CEUSN-logo.jpg
 
     #generate_legend  True
-    generate_legend 
+    generate_legend 1
 }
 
 stations &Arr{
     expr &Tbl{
-        sta =~ /.*/ && snet !~ /AZ|YN|TA/
+        sta =~ /.*/ && snet =~ /.*/
     }
     fields &Tbl{
+        snet
         sta
         lon
         lat
@@ -53,12 +54,14 @@ stations &Arr{
         offdate
     }
     visibility   1
-    display_inactive
+    display_inactive 0
 }
 
 styles &Arr{
     #imagepath  http://maps.google.com/mapfiles/kml/paddle/
-    imagepath  http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/
+    #imagepath  http://eqinfo.ucsd.edu/images/spevents/google_map_icons_evstars/
+    imagepath http://maps.google.com/mapfiles/kml/paddle/
+
     styleinfo &Arr{
          mag_0 &Arr{
              id orangeStarZero
@@ -112,19 +115,28 @@ styles &Arr{
          }
     }
     stylestation &Arr{
-        active &Arr{
-            id activeStation
+        N4 &Arr{
+            id N4
             scale 1.0
-            #href wht-blank.png
-            href GMapStation_active.gif
+            href grn-circle-lv.png
         }
-        inactive &Arr{
-            id inactiveStation
+        TA &Arr{
+            id TA
             scale 1.0
-            #href wht-circle.png
-            href GMapStation_inactive.gif
+            href red-circle-lv.png
+        }
+        US &Arr{
+            id US
+            scale 1.0
+            href blu-circle-lv.png
+        }
+        others &Arr{
+            id others
+            scale 1.0
+            href wht-circle-lv.png
         }
     }
 }
 
-pf_revision_time 1321574456
+
+pf_revision_time 1387575390

@@ -154,7 +154,7 @@ sub process_channel {
 
 	$dbtrace[3] = 0;
 	my ($t0, $sta, $chan, $nsamp, $samprate) = dbgetv ( @dbtrace, "time", "sta", "chan", "nsamp", "samprate" ) ;
-	my ($tstart, $tend) = trimtrace ( @dbtrace ) ;
+	my ($tstart, $tend) = trace_trim ( @dbtrace ) ;
 
 	if ( ! defined $self->{stations}{$sta} ) { 
 		addlog ( $self, 3, "%s: %s: Leaving process_channel because station not defined", $sta, $chan ) ;
@@ -324,11 +324,14 @@ sub process_channel {
  				}
 				$self->{stations}{$sta}{channels}{$chan}{noise_done} = 1;
 			}
-			if ( defined $self->{stations}{$sta}{channels}{$chan}{noise_std} ) {
+                        if (( defined $self->{stations}{$sta}{channels}{$chan}{noise_std} ) &&
+                            ( $self->{stations}{$sta}{channels}{$chan}{noise_std} > 0.0 ))  {
 				$self->{stations}{$sta}{channels}{$chan}{snr} = 
  					$self->{stations}{$sta}{channels}{$chan}{signal_amax}
 					/ ($self->{stations}{$sta}{channels}{$chan}{noise_std}*1.414) ;
-			}
+			} else {
+                                $self->{stations}{$sta}{channels}{$chan}{snr} = 0.0 ;
+                        }
 			if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
 				if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_amp} ) {
 					addlog ( $self, 2, 
@@ -511,12 +514,13 @@ sub process_network {
 	my $sta ;
 	my @logs ;
 	my $log ;
-	
+	my $nstas = 0 ;
 
 	
 	#only use stations greater than 50 km away for events deeper than 30 km
 	if ($m_type eq "ml" && $odepth > 30){
 	    foreach $sta (keys(%{$self->{stations}})) {
+		$nstas ++ ;
 		if ( defined $log ) {
 			$log .= ', ' ;
 		}
@@ -534,6 +538,7 @@ sub process_network {
 	    }
 	} else {
 	    foreach $sta (keys(%{$self->{stations}})) {
+		$nstas ++ ;
 		if ( defined $log ) {
 			$log .= ', ' ;
 		}
@@ -571,6 +576,7 @@ sub process_network {
 	$self->{m_mean} = $m ;
 	$self->{m_n} = $nm ;
 	$self->{m_std} = sqrt ( $std ) ;
+        $self->{m_pcnt} = 100.0 * $nm / $nstas ;
 
 	my @magss = sort { $a <=> $b } @mags ;
 	my $n = scalar ( @magss ) ;
@@ -585,13 +591,49 @@ sub process_network {
 	my $hi = $magss[int(0.8413*$n)] ;
 	$self->{m_unc} = 0.5*($hi-$lo) ;
 
-	addlog ( $self, 1, "Network mag: mean = %.2f, std = %.2f, median = %.2f, unc = +%.2f/-%.2f, n = %d", 
- 		$self->{m_mean}, $self->{m_std}, $self->{m_median}, 
-		$hi-$self->{m_median}, $self->{m_median}-$lo, $self->{m_n} ) ;
+        addlog ( $self, 1, "Network mag: mean = %.2f, std = %.2f, median = %.2f, unc = +%.2f/-%.2f, n = %d of %d, pcnt = %.1f%%",
+                $self->{m_mean}, $self->{m_std}, $self->{m_median},
+                $hi-$self->{m_median}, $self->{m_median}-$lo, $self->{m_n}, $nstas, $self->{m_pcnt} ) ;
+
+        if (defined $self->{params}{station_number_minimum}) {
+                if ( $self->{m_n} < $self->{params}{station_number_minimum} ) {
+                        addlog ( $self, 1, "Network mag: Rejected - Number of stations %d < minimum %d",
+                                $self->{m_n},
+                                $self->{params}{station_number_minimum} ) ;
+                        undef $self->{m_median} ;
+                        return makereturn ( $self, "nodata" ) ;
+                }
+        }
+
+        if (defined $self->{params}{station_percentage_minimum}) {
+                if ( $self->{m_pcnt} < $self->{params}{station_percentage_minimum} ) {
+                        addlog ( $self, 1, "Network mag: Rejected - Percentage of stations %.1f%% < minimum %.1f%%",
+                                $self->{m_pcnt},
+                                $self->{params}{station_percentage_minimum} ) ;
+                        undef $self->{m_median} ;
+                        return makereturn ( $self, "nodata" ) ;
+                }
+        }
+
+        if (defined $self->{params}{uncertainty_maximum}) {
+                if ( abs($hi-$self->{m_median}) > $self->{params}{uncertainty_maximum} ||
+                     abs($self->{m_median}-$lo) > $self->{params}{uncertainty_maximum} ) {
+                        addlog ( $self, 1, "Network mag: Rejected - Uncertainty = +%.2f/-%.2f > maximum %.2f",
+                                abs($hi-$self->{m_median}),
+                                abs($self->{m_median}-$lo),
+                                $self->{params}{uncertainty_maximum} ) ;
+                        undef $self->{m_median} ;
+                        return makereturn ( $self, "nodata" ) ;
+                }
+        }
 
 	#Create another entry in netmag if mlsn that is Mwe
+	#This block may not work as expected...
+	#'dblookup' lines have changed in 5.2
 	if ( $m_type eq "mlsn" ){
-	    my @dbnetmag = dblookup ( @{$self->{db}}, 0, "netmag", 0, "dbSCRATCH" ) ;
+	    my @dbnetmag = dblookup ( @{$self->{db}}, 0, "netmag", "dbALL", "dbNULL" ) ;
+            dbget ( @dbnetmag, 0 ) ;
+	    @dbnetmag = dblookup ( @dbnetmag, 0, "netmag", 0, "dbSCRATCH" ) ;
 	    my $magid = dbnextid ( @dbnetmag, "magid" ) ;
 	    my $mwe = $self->{m_median} + 0.62 ;
 	    dbputv ( @dbnetmag, "orid", $self->{orid}, "evid", $self->{evid},
@@ -606,7 +648,9 @@ sub process_network {
 	}
 
 
-	my @dbnetmag = dblookup ( @{$self->{db}}, 0, "netmag", 0, "dbSCRATCH" ) ;
+	my @dbnetmag = dblookup ( @{$self->{db}}, 0, "netmag", "dbALL", "dbNULL" ) ;
+        dbget ( @dbnetmag, 0 ) ;
+        @dbnetmag = dblookup ( @dbnetmag, 0, "netmag", 0, "dbSCRATCH" ) ;
 	my $magid = dbnextid ( @dbnetmag, "magid" ) ;
 	dbputv ( @dbnetmag, "orid", $self->{orid}, "evid", $self->{evid},
 					"magid", $magid,
@@ -636,11 +680,14 @@ sub process_network {
 			if ( ! defined $self->{stations}{$sta}{m} ) {next; }
 			my $arid = -1 ;
 			if ( isyes $self->{params}{output_wfmeas} ) {
-				@dbarrival = dblookup ( @dbarrival, 0, 0, 0, "dbSCRATCH" ) ;
+                                @dbarrival = dblookup ( @dbarrival, 0, 0, "dbALL", "dbNULL" ) ;
+                                dbget ( @dbarrival, 0 ) ;
+                                @dbarrival = dblookup ( @dbarrival, 0, 0, 0, "dbSCRATCH" ) ;
 				$arid = dbnextid ( @dbarrival, "arid" ) ;
 				dbputv ( @dbarrival, "sta", $sta, "chan", $self->{stations}{$sta}{m_chan}, 
 							"arid", $arid,
 							"time", $self->{stations}{$sta}{m_time},
+                                                        "jdate", yearday($self->{stations}{$sta}{m_time}),
 							"iphase", $self->{params}{output_magtype},
 							"amp", $self->{stations}{$sta}{m_amp},
 							"per", $self->{stations}{$sta}{m_per},
@@ -651,7 +698,9 @@ sub process_network {
 				$dbarrival[3] = $rec;
 				if ( ! defined $arrival0 ) { $arrival0 = $rec; }
 				$arrival1 = $rec+1;
-				@dbwfmeas = dblookup ( @dbwfmeas, 0, 0, 0, "dbSCRATCH" ) ;
+                                @dbwfmeas = dblookup ( @dbwfmeas, 0, 0, "dbALL", "dbNULL" ) ;
+                                dbget ( @dbwfmeas, 0 ) ;
+                                @dbwfmeas = dblookup ( @dbwfmeas, 0, 0, 0, "dbSCRATCH" ) ;
 				dbputv ( @dbwfmeas, "sta", $sta, "chan", $self->{stations}{$sta}{m_chan}, 
 						"arid", $arid,
 						"meastype", $self->{params}{output_magtype},
@@ -669,6 +718,8 @@ sub process_network {
 				if ( ! defined $wfmeas0 ) { $wfmeas0 = $rec; }
 				$wfmeas1 = $rec+1;
 			}
+                        @dbstamag = dblookup ( @dbstamag, 0, 0, "dbALL", "dbNULL" ) ;
+                        dbget ( @dbstamag, 0 ) ;
 			@dbstamag = dblookup ( @dbstamag, 0, 0, 0, "dbSCRATCH" ) ;
 			dbputv ( @dbstamag, "magid", $magid, "sta", $sta, "orid", $self->{orid}, 
 						"evid", $self->{evid},

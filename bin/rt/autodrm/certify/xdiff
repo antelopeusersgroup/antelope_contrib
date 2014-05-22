@@ -1,0 +1,11 @@
+time_stamp .*
+received from .* at .*
+The return reply id is .*
+MSG_ID .*
+autodrmwf\d+ 
+tmp/autodrm\d+ 
+tmp/autodrm_view\d+ 
+->            to \w+ \w+ \d+, \d+ \d+:\d+:\d+
+\$\bDate: .* \$
+^Bulletin .*
+^\s+Release .*

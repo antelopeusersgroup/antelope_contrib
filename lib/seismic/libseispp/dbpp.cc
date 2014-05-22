@@ -1,3 +1,7 @@
+/* This file has heavy antelope dependencies.  We simply ignore it with this ifndef
+when the NO_ANTELOPE macro is set.   
+*/
+#ifndef NO_ANTELOPE
 #include <stdio.h>
 // These probably don't belong in this file, but it works
 #include <sstream>
@@ -814,3 +818,4 @@ void DatascopeHandle::manage_parent()
 	}
 }
 } // End SEISPP namespace declaration
+#endif

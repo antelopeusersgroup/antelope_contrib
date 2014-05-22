@@ -40,7 +40,7 @@ category	Nanometrics
 configuration   Taurus standard
 
 description	Taurus Standard 47k
-dfile           taurus_std_aa
+dfile           taurus_std
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 

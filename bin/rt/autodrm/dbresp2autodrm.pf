@@ -1,0 +1,26 @@
+# The following table is used to decide whether to add extra 
+# zeros to a response stage in order to convert the response to
+# a displacement instrument.
+# 
+# if the corresponding segtype is 'V', one zero is added.
+# if the corresponding segtype is 'A', two zeros are added.
+# otherwise, no zeros are added.
+segtype	&Arr{
+m/s	V
+cm/s	V
+nm/s	V
+m/sec	V
+cm/sec	V
+nm/sec	V
+m/s/s	A
+m/s**2	A
+cm/s**2	A
+nm/s**2	A
+m/sec/sec	A
+m/sec**2	A
+cm/sec**2	A
+nm/sec**2	A
+m	D
+cm	D
+nm	D
+}

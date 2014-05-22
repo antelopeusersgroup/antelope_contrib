@@ -6,10 +6,13 @@
 #include "TimeWindow.h"
 #include "StationChannelMap.h"
 #include "Metadata.h"
+#ifndef NO_ANTELOPE
 #include "databasehandle.h"
+#endif
 #include "Hypocenter.h"
 #include "ensemble.h"
 #include "resample.h"
+#include "PfStyleMetadata.h"
 
 namespace SEISPP{
 using namespace std;
@@ -106,6 +109,7 @@ public:
 Sets name UNDEFINED and defines an empty receiver geometry.
 **/
 	SeismicArray();
+#ifndef NO_ANTELOPE
 /*! Constructs the object from a database.  
 
 Loads all stations marked as
@@ -146,6 +150,28 @@ This is essential a way to construct a virtual network with the name
 **/
 	SeismicArray(DatabaseHandle& dbh, double time, string netname, 
 		list<string> sta_to_use);
+#endif
+/*! Constructs the object from an ascii file.
+
+  When a database is not available it is convenient to construct this
+  object from a simple ascii file.   This constructor does that for 
+  simple ascii file structure that is linked to the object.   Two formats
+  are currently supported:   form="ascii_table_with_pf" and 
+  form="simple_ascii_table".   They differ only in how the array name and
+  valid time window are obtained.   In the pf version these are extracted from
+  a required filed derived from the name parameter as "name.pf".  Both formats
+  assume the data table is in a file "name.dat".   In the "simple" version the
+  name the file name and the time span is assumed to be effectively infinite. 
+
+  \param name - is the base file name that contains data. This constructor
+     always looks for a file name+".dat" and with the pf format looks for 
+     name+".pf" as well.   
+  \parm form - is a name assigned to the format.  Currently only support formats
+     noted above.
+  \exception - throws a SeisppError exception with an expanatory message if the
+     constructor fails.  
+  */
+        SeismicArray(string name,string form="simple_ascii_table");
 /*!
   Standard copy constructor.
 **/
@@ -261,6 +287,27 @@ to the object is required.
 
 **/
 void load_subarrays_from_pf(SeismicArray& master,Pf *pf);
+/*!
+\brief Define subarrays for a network using a parameter file.
+
+Subarrays are a concept encapsulated in the SeismicArray object.
+As the name suggests a subarray is a subset of a larger array of receivers.
+The SeismicArray object handles this in a general way.  This helper
+function defines subarrays for an input SeismicArray object by
+using a parameter file description of the subarray geometry
+loaded through the PfStyleMetadata object.  . 
+
+Note the SeismicArray object is altered which is why a reference
+to the object is required.
+
+\param master is the larger seismic array for which subarrays are to be 
+	defined.
+\param pfmd is the object created from a pf that provides a nonproprietary
+   interface to pf files.
+
+
+**/
+void load_subarrays(SeismicArray& master,PfStyleMetadata& pfmd);
 /*! Computes predicted arrival times for a given phase at all stations
  defined for an input array.  
 
@@ -275,6 +322,7 @@ void load_subarrays_from_pf(SeismicArray& master,Pf *pf);
 StationTime ArrayPredictedArrivals(SeismicArray& stations,
                 Hypocenter& hypo, string phase);
 
+#ifndef NO_ANTELOPE
 /*! \brief Read a block of data in a fixed absolute time window.
 
 
@@ -340,6 +388,7 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	string phase, string chan, TimeWindow data_window, double tpad,
 	DatabaseHandle& dbh, MetadataList& ensemble_mdl, MetadataList& member_mdl,
 	AttributeMap& am);
+#endif
 /*! \brief Assemble a gather with uniform sample rates.
  
  Takes an ensemble of data with potentially irregular sample
@@ -454,6 +503,7 @@ TimeSeriesEnsemble *AlignAndResample(TimeSeriesEnsemble& raw,
 				ResamplingDefinitions& rsdef,
 					bool trim);
 
+#ifndef NO_ANTELOPE
 /*! \brief Read a block of three component data in a fixed time window.
 
  Reads a block of data defined by a time window derived from
@@ -527,6 +577,7 @@ ThreeComponentEnsemble
         StationChannelMap& scmap,
         MetadataList& ensemble_mdl, MetadataList& member_mdl,
         AttributeMap& am);
+#endif
 
 /*! Scans an array of times to return the range spanned by the group.
 

@@ -1,7 +1,8 @@
 LIB=libseispp.a
-DLIB=$(LIB:.a=$(DSUFFIX)) 
+#DLIB=$(LIB:.a=$(DSUFFIX)) 
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
+ldlibs=-lgclgrid
 INCLUDE=ArrivalUpdater.h \
   AttributeCrossReference.h \
   AttributeMap.h \
@@ -127,9 +128,9 @@ $(LIB) : $(OBJS)
 	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
-$(DLIB) : $(OBJS)
-	$(RM) $@
-	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+#$(DLIB) : $(OBJS)
+#	$(RM) $@
+#	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 #$(BUNDLE) : $(OBJS)
 #	$(RM) $@
 #	$(DLD)  -flat_namespace -bundle -undefined suppress -o $@   $(OBJS) $(LDFLAGS) $(DLDLIBS)

@@ -1,0 +1,276 @@
+use strict;
+use Datascope;
+use File::Basename;
+use Getopt::Long;
+
+our($prog,$opt_version,$opt_help,$opt_warn,$opt_alarm,$opt_crit,$opt_ignore,%ERRORS,@REASON,
+    $VERSION,@RETVAL,@RETVAL_SORT,$thresh_warn,$thresh_alarm,$thresh_crit);
+
+$VERSION = 1.01;
+
+$prog = basename($0);
+$thresh_warn 	= 2;
+$thresh_alarm 	= 5;
+$thresh_crit	= 10;
+
+%ERRORS = ('OK'		=> 0,
+  	   'WARN'	=> 1,
+	   'ALARM'	=> 2,
+	   'CRIT'	=> 3,
+	   'UNKNOWN'	=> 4
+	  );
+
+MAIN:
+{
+  # Make sure options switches are always processed first on the command line
+  Getopt::Long::Configure("require_order");
+
+  # Validate input
+  my ($rtproctable,$rtproc) = check_args();
+
+  # Query the rtsys db for process information
+  my ($name,$pid,$starts,$last_start,$execution) = db_query($rtproctable,$rtproc);
+
+  # Check if the process is running as well as the number of restarts since the
+  # last rtexec restart
+  check_process($name,$pid,$starts,$last_start,$execution);
+  print_results($name,$pid,$starts,$last_start,$execution);
+
+  # Exit with the highest return value of individual tests
+  @RETVAL_SORT = sort { $b <=> $a } @RETVAL;
+  exit($RETVAL_SORT[0]);
+}
+
+sub print_usage
+{
+  print "Usage: $prog [-i[1|true]] [-w <INTEGER>] [-a <INTEGER>]\n";
+  print "[-c <INTEGER>] <RT system path> <RT system process name>\n";
+}
+
+sub print_help
+{
+  print_usage();
+  print "\n";
+  print "Description:\n";
+  print "Determines if a process run under Antelope rtexec is running.\n";
+  print "Warnings will be returned if the number of process restarts after\n";
+  print "the last rtexec restart increases. The default thresholds are as\n";
+  print "specified:\n";
+  print "\n";
+  print "State		# of restarts\n";
+  print "-----		-------------\n";
+  print "Warning	2\n";
+  print "Alarm		5\n";
+  print "Critical	10\n";
+  print "\n";
+  print "The warning thresholds can be customized as command options.\n";
+  print "Warnings can also be ignored by setting the -i option to 1 or\n";
+  print "true.\n";
+  print "\n";
+  print "Options:\n";
+  print "-i,--ignore Ignore process restart warnings [1|true].\n";
+  print "-w,--warn Customize the 'Warning' threshold. [Positive integer]\n";
+  print "-a,--alarm Customize the 'Alarm' threshold. [Positive integer]\n";
+  print "-c,--crit Customize the 'Critical' threshold. [Positive integer]\n";
+}
+
+sub check_args
+{
+  GetOptions("V"     => \$opt_version,  "version"  => \$opt_version,
+             "h"     => \$opt_help,     "help"     => \$opt_help,
+             "w=i"   => \$opt_warn,     "warn=s"   => \$opt_warn,
+             "a=i"   => \$opt_alarm,    "alarm=s"  => \$opt_alarm,
+             "c=i"   => \$opt_crit,     "crit=s"   => \$opt_crit,
+             "i=s"   => \$opt_ignore,   "ignore=s" => \$opt_ignore
+						);
+
+  my $rtpath = $ARGV[0];
+  my $rtproc = $ARGV[1];
+
+  print "$prog $VERSION\n" && exit $ERRORS{UNKNOWN} if $opt_version;
+  print_help() && exit $ERRORS{UNKNOWN} if $opt_help;
+  print_usage() && exit $ERRORS{UNKNOWN} unless ($#ARGV == 1);
+
+  if (defined($opt_warn))
+  {
+    unless ($opt_warn =~ /^[1-9]\d*$/)
+    {
+      print "Not an accepted value for option --warn. Please use a positive integer.\n";
+      exit $ERRORS{UNKNOWN};
+    }
+    else
+    {
+      $thresh_warn = $opt_warn;
+    }
+  }
+
+  if (defined($opt_alarm))
+  {
+    unless ($opt_alarm =~ /^[1-9]\d*$/)
+    {
+      print "Not an accepted value for option --alarm. Please use a positive integer.\n";
+      exit $ERRORS{UNKNOWN};
+    }
+    else
+    {
+      $thresh_alarm = $opt_alarm;
+    }
+  }
+
+  if (defined($opt_crit))
+  {
+    unless ($opt_crit =~ /^[1-9]\d*$/)
+    {
+      print "Not an accepted value for option --crit. Please use a positive integer.\n";
+      exit $ERRORS{UNKNOWN};
+    }
+    else
+    {
+      $thresh_crit = $opt_crit;
+    }
+  }
+
+  if (defined($opt_ignore))
+  {
+    unless ($opt_ignore =~ /^(0|1|true|false)$/)
+    {
+      print "Not an accepted value for option --ignore. Please use '1' or 'true'.\n";
+      exit $ERRORS{UNKNOWN};
+    }
+  }
+
+  if ($thresh_warn >= $thresh_alarm)
+  {
+    print "The threshold value for 'warn' cannot equal or exceed the value for 'alarm'.\n";
+    exit $ERRORS{UNKNOWN};
+  }
+
+  if ($thresh_alarm >= $thresh_crit)
+  {
+    print "The threshold value for 'alarm' cannot equal or exceed the value for 'crit'.\n";
+    exit $ERRORS{UNKNOWN};
+  }
+
+  unless ($rtpath =~ m#^(/[\w-.]+)+$#)
+  {
+    print "The realtime system path has disallowed characters. Please check the path for\n";
+    print "directory names with metacharacters or correct the path string.\n";
+    exit $ERRORS{UNKNOWN};
+  }
+
+  unless ($rtproc =~ /^[\w-.]+$/)
+  {
+    print "The realtime process string has disallowed metacharacters. Please rename the process\n";
+    print "to use this program.\n";
+    exit $ERRORS{UNKNOWN};
+  }
+
+  my $rtproctable = "$rtpath/rtsys/rtsys.process";
+
+  return ($rtproctable,$rtproc);
+}
+
+sub db_query
+{
+  my $rtproctable = shift;
+  my $rtproc = shift;
+  my ($name,$pid,$starts,$last_start,$execution,@dbproc);
+
+  eval
+  {
+    @dbproc = dbopen_table($rtproctable,"r");
+    $dbproc[3] = dbfind(@dbproc, "name == '$rtproc'");
+    ($name,$pid,$starts,$last_start,$execution) = dbgetv(@dbproc,"name","pid","starts","last_start","execution");
+  };
+
+  if ($@)
+  {
+    print "An error has occurred looking up process information for $rtproc. It's possible that\n";
+    print "process '$rtproc' may not exist for the specified realtime system. Please check the\n";
+    print "Processes table entries in rtexec.pf\n";
+    print "ERROR: $@\n";
+    exit $ERRORS{CRIT};
+  }
+  else
+  {
+    $last_start = epoch2str($last_start,"%L/%d/%Y  %k:%M:%S.%s");
+    return ($name,$pid,$starts,$last_start,$execution);
+  }
+}
+
+sub check_process
+{
+  my $name		= shift;
+  my $pid 		= shift;
+  my $starts		= shift;
+  my $last_start	= shift;
+  my $execution		= shift;
+  my $retval		= $ERRORS{OK};
+
+  # Determine if process is running of not. The null value for
+  # the pid field in the process table is -1.
+  if ($pid == -1)
+  {
+    push @REASON, "Realtime process $name is not currently running";
+    push @RETVAL, $ERRORS{CRIT};
+  }
+  else
+  {
+    push @REASON, "Realtime process $name is running with PID $pid";
+    push @RETVAL, $ERRORS{OK};
+  }
+
+  # Determine additional state based on the number of realtime process restarts
+  # since the last rtexec restart. If $opt_ignore is set then skip this
+
+  unless (($opt_ignore == 1) || ($opt_ignore eq "true"))
+  {
+    if ($starts >= $thresh_crit)
+    {
+      push @RETVAL, $ERRORS{CRIT};
+    }
+    if (($starts >= $thresh_alarm) && ($starts < $thresh_crit))
+    {
+      push @RETVAL, $ERRORS{ALARM};
+    }
+    elsif (($starts >= $thresh_warn) && ($starts < $thresh_alarm))
+    {
+      push @RETVAL, $ERRORS{WARN};
+    }
+    else
+    {
+      push @RETVAL, $ERRORS{OK};
+    }
+
+    # Report the number of process restarts since the last rtexec restart
+    push @REASON, "Process restarts since the last rtexec restart is $starts";
+  }
+  else
+  {
+    push @REASON, "Ignoring process restart warnings.\n";
+  }
+}
+
+
+sub print_results
+{
+  my $name 				= shift;
+  my $pid 				= shift;
+  my $starts			= shift;
+  my $last_start	= shift;
+  my $execution		= shift;
+
+  # Print Intermapper variables
+  print "\\{ \$name := \"$name\",
+     	     \$pid := \"$pid\",
+  	     \$starts := \"$starts\",
+  	     \$last_start := \"$last_start\",
+  	     \$execution := \"$execution\" } \n";
+
+  # print reason for probe status
+  foreach my $i (@REASON)
+  {
+    chomp($i);
+    print "$i\n";
+  }
+}
