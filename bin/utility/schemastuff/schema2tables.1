@@ -1,0 +1,38 @@
+.TH SCHEMA2TABLES 1 
+.SH NAME
+schema2tables splitschema.awk - reorganize extension schemata as extension tables
+.SH SYNOPSIS
+.nf
+schema2tables extensionschema
+.fi
+
+.SH DESCRIPTION
+schema2ables helps to reorganize extension schemata as extension tables after the ban of extension schemata in Antelope 5.3
+It splits the extension into Relations and Attributes and creates separate files for each Relation found. All Attributes defined in the original extension schema are added to the definition of the new extension table. Finally the program leaves the new extension tables and a Makefile, named after the original extension schema.
+In many cases, this can result in a single definition of each attribute, thus making the database engine happy.
+
+splitschema.awk is a helper to schema2tables and should not be called directly
+.SH OPTIONS
+.IP "extensionschema"
+filename of the extension schema. This is the only argument and required.
+
+.SH EXAMPLE
+.nf
+schema2tables ran1.3
+make -f Makefile_ran1.3 install
+
+.fi
+
+.SH "BUGS AND CAVEATS"
+There might be many. So far the only way I know to test a new extension is by using dbe.
+The resulting extension table has all the flaws of the original extension schema.
+The script of course cannot help if the same Attribute was defined in different extension schemata with different layout, this still leads to complaints from the database engine.
+.SH "SEE ALSO"
+.nf
+dbschema(5), dbe(1) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2014
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
