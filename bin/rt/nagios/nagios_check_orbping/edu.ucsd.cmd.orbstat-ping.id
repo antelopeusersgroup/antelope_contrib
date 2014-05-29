@@ -1,0 +1,45 @@
+<!--
+Simple Command Line Example (com.dartware.cmd.simple)
+Copyright (c) 2007 Dartware, LLC. All rights reserved.
+-->
+
+<header>
+type            = "cmd-line"
+package         = "edu.ucsd"
+probe_name      = "cmd.orbstat-ping"
+human_name      = "Orbstat Ping"
+display_name    = "Servers-Proprietary/Antelope/Orbstat Ping"
+version         = "2.2"
+address_type    = "IP"
+flags           = "NAGIOS3"
+</header>
+
+<description>
+This probe runs the \MB\nagios_check_orbping\P\ Nagios plugin to determine if
+an orbserver is running. This is less invasive than probing TCP ports which
+will show up in the orbserver logs
+\B\Parameters:\P\
+
+\MB\Orb\P\: port number or name from orbserver_names.pf
+</description>
+
+<parameters>
+"Orb" = ""
+</parameters>
+
+<command-line>
+path = "/opt/antelope/$id/bin"
+cmd = "nagios_check_orbping -o ${ADDRESS}:${Orb}"
+
+</command-line>
+<command-exit>
+  down:     ${EXIT_CODE} = 3
+  okay:     ${EXIT_CODE} = 0
+  alarm:    ${EXIT_CODE} = 1
+  critical: ${EXIT_CODE} = 2
+</command-exit>
+
+<command-display>
+\B5\Orb ping: ${ADDRESS}:${Orb}\P0\
+${nagios_output}
+</command-display>
