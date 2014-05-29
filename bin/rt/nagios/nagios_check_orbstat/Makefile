@@ -1,6 +1,6 @@
 BIN = nagios_check_orbstat
 MAN1 = nagios_check_orbstat.1
-DATA = edu.ucsd.cmd.orbstat-exists
+DATA = edu.ucsd.cmd.orbstat-exists edu.ucsd.cmd.orbstat-client
 DATADIR = intermapper/probes
 CLEAN = $(BIN) $(DATA)
 
