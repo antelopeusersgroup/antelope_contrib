@@ -41,5 +41,5 @@ cmd = "nagios_check_orbping -o ${ADDRESS}:${Orb}"
 
 <command-display>
 \B5\Orb ping: ${ADDRESS}:${Orb}\P0\
-${nagios_output}
+  Round Trip time: ${orbping} seconds
 </command-display>
