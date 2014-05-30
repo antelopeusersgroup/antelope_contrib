@@ -37,6 +37,7 @@
 use strict;
 use Socket;
 use Getopt::Long;
+use Pod::Usage;
 use File::Basename;
 use vars qw($opt_version $opt_help $opt_verbose $opt_warn $opt_crit
             $opt_orb $opt_match $opt_reject
@@ -59,8 +60,6 @@ use Socket;
 # Prototypes
 sub check_args();
 sub valid_lag($);
-sub print_help();
-sub print_usage($);
 sub get_max_laggard();
 sub check_lag($);
 sub valid_client($$$);
@@ -123,7 +122,7 @@ sub check_args()
         "o=s"   => \$opt_orb,      "orb=s"    => \$opt_orb,
         "m=s"   => \$opt_match,    "match=s"  => \$opt_match,
         "r=s"   => \$opt_reject,   "reject=s" => \$opt_match,
-    );
+    ) || pod2usage(-verbose => 0, -exitval => $ERRORS{'UNKNOWN'});
 
     # handle options here
     if ($opt_version)
@@ -140,8 +139,7 @@ sub check_args()
 
     if ($opt_help)
     {
-        print_help();
-        exit $ERRORS{'OK'};
+        pod2usage({-exitval => $ERRORS{'OK'}, -verbose => 2, -input => \*DATA});
     }
 
     if ($opt_orb)
@@ -167,8 +165,9 @@ sub check_args()
     if (((!defined $opt_warn) && (defined $opt_crit))
         || ((defined $opt_warn) && (!defined $opt_crit)))
     {
-        print_usage("Warn and Crit must be defined or not defined as a pair.");
-        exit $ERRORS{'UNKNOWN'};
+        pod2usage ( {
+                -message => "Warn and Crit must be defined or not defined as a pair.",
+                -exitval => $ERRORS{'UNKNOWN'} });
     }
 
     # sanity check critical and warn flags
@@ -185,55 +184,12 @@ sub check_args()
         || (!valid_lag($crit_at)) || (!valid_lag($crit_high))
         || (!valid_lag($crit_low)))
     {
-        print "Error in threshold ranges!\n";
-        exit $ERRORS{'UNKNOWN'};
+        #print "Error in threshold ranges!\n";
+        #exit $ERRORS{'UNKNOWN'};
+        pod2usage ( {
+                -message => "Error in threshold ranges!",
+                -exitval => $ERRORS{'UNKNOWN'} });
     }
-}
-
-######
-# Print the usage for the command
-# Param: Explanation for the problem, can be ""
-sub print_usage($)
-{
-    my ($explanation) = shift;
-
-    if (defined $explanation)
-    {
-        print "$explanation\n";
-    }
-
-    print "Usage: $0 [-m <match>] [-r <reject>] "
-    . "[-w <warn> -c <crit>] [-o <orb>] [-v verbose]\n";
-}
-
-######
-#
-sub print_help()
-{
-    print_version($VERSION, $AUTHOR);
-    print_usage("");
-    print "\n";
-    print " Nagios plugin to query the specified orbserver orb for it's clients\n";
-    print " relative read position (lag) in the orb\n";
-    print " Check is performed from the Nagios server, not remotely\n";
-    print "\n";
-    print "-o  (--orb)     = The ORB to look at (addr:port, default: $ORB)\n";
-    print "\n";
-    print " Ranges for max lag values are between 0.00 and 1.00\n";
-    print "-w  (--warn)    = Maxium lag value to trigger a warning, expressed "
-        . " as a Nagios range phrase ([@][min:]max)\n";
-    print "-c  (--crit)    = Max lag value to trigger a critical, expressed "
-        . " as a Nagios range phrase ([@][min:]max)\n";
-    print "\n";
-    print "-m  (--match)\n";
-    print "-r  (--reject)\n";
-    print " These regular expressions are matched against the client names (as\n";
-    print " shown in orbstat -c)\n";
-    print "\n";
-    print "-h  (--help)    = This help message\n";
-    print "-V  (--version) = The version of this script\n";
-    print "-v  (--verbose) = The verbosity of the output\n";
-    print "\n";
 }
 
 ######
@@ -369,4 +325,79 @@ sub valid_client($$$)
   return $is_valid;
 
 }
+__END__
+=head1 NAME
+
+nagios_check_orblag - a Nagios plugin to monitor maximum orb client lag
+
+=head1 SYNOPSIS
+
+nagios_check_orblag [-m match_expr] [-r reject_expr] [-w warn] [-c crit] [-o orb] [-v]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-o  (--orb)>
+
+The ORB to look at (addr:port, default: $ORB)\n";
+
+Ranges for max lag values are between 0.00 and 1.00\n";
+
+=item B<-w  (--warn)>
+
+Maxium lag value to trigger a warning, expressed as a Nagios range phrase ([@][min:]max)
+
+=item B<-c  (--crit)>
+
+Max lag value to trigger a critical, expressed as a Nagios range phrase ([@][min:]max)
+
+=item B<-m  (--match)> and B<-r  (--reject)>
+
+These regular expressions are matched against the client names (as shown in orbstat -c)
+
+=item B<-h  (--help)>
+
+Print a help message and exit
+
+=item B<-V  (--version)>
+
+Print the version of this script
+
+=item B<-v  (--verbose)>
+Verbose output
+
+=back
+
+=head1 DESCRIPTION
+
+B<nagios_check_orblag> is intended to be used as a plugin to the
+Nagios network monitoring system (L<http://www.nagios.org>). The plugin can be
+installed with other plugins (usually in the Nagios libexec directory)
+and called through the Nagios configuration files. The plugin queries
+the specified orbserver orb for it's clients relative read position
+(lag) in the orb.
+The value will then be compared to the warning and critical thresholds.
+Used in combination with APAN or another tool, this plugin could be
+used for performance measurements and/or graphing.
+
+=head1 BUGS AND CAVEATS
+
+If you are using custom orb names, you will need to make sure that Antleope has an updated orbserver_names.pf on the monitoring host that matches that on the system to be checked, or else use a numeric port identifier value.
+
+=head1 SEE ALSO
+
+nagios_antelope_utils(3), orblag(1), orblag(3)
+
+=head1 AUTHOR
+
+Geoff Davis
+Scripps Institution of Oceanography
+
+=head1 SUPPORT
+
+Contributed: NO BRTT support -- please contact author.
+
+=cut
+
 # vim:ft=perl
