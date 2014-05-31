@@ -1,0 +1,4 @@
+nagios_check_dlcmdping
+edu.ucsd.cmd.dlcmd-ping
+*.pd.1
+*.pd.3p
