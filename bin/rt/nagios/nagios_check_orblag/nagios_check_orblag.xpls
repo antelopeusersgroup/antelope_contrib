@@ -326,6 +326,7 @@ sub valid_client($$$)
 
 }
 __END__
+
 =head1 NAME
 
 nagios_check_orblag - a Nagios plugin to monitor maximum orb client lag
