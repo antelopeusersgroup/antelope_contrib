@@ -1,10 +1,10 @@
-.TH nagios_antelope_utils 3 "$Date$"
+.TH nagios_antelope_utils 3p "$Date$"
 
 .SH NAME
 parse_ranges, categorize_return_value \- utilities for Nagios plugins
 .SH SYNOPSIS
 .nf
-use nagios_antelope_utils qw(&categorize_return_value 
+use nagios_antelope_utils qw(&categorize_return_value
 	&parse_ranges %ERRORS $VERBOSE);
 
 ($warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low)
@@ -25,7 +25,7 @@ described in the Nagios plugin development guide:
    Notes:
    \- start > end>
    \- start and ":" is not required if start=0
-   \- if range is of format "start:" and end is not specified, 
+   \- if range is of format "start:" and end is not specified,
        assume end is infinity
    \- to specify negative infinity, use "~"
    \- alert is raised if metric is outside start and end range
@@ -37,7 +37,7 @@ described in the Nagios plugin development guide:
 sorts it into a valid Nagios plugin return code given the warning
 and critical ranges that were input. The arguments include the return
 value that needs to be sorted, along with the values that make up the
-output of the \fBparse_ranges\fP subroutine. 
+output of the \fBparse_ranges\fP subroutine.
 
 \fBprint_version\fP prints a version banner with version number and author
 to STDOUT.
@@ -60,9 +60,9 @@ For parsing ranges, one might use a section of code that appears as follows:
     {
         ($warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low) =
             parse_ranges($opt_warn, $opt_crit);
-        if ((!defined $warn_at) || (!defined $warn_hi) 
+        if ((!defined $warn_at) || (!defined $warn_hi)
 	     || (!defined $warn_low)
-             || (!defined $crit_at) || (!defined $crit_hi) 
+             || (!defined $crit_at) || (!defined $crit_hi)
              || (!defined $crit_low))
         {
              print "Error in threshold ranges!\\n";
@@ -79,7 +79,7 @@ One might then obtain a value to check, and categorize it with the following:
 .nf
 {
     ...
-    return categorize_return_value($time_difference, $warn_at, 
+    return categorize_return_value($time_difference, $warn_at,
     				   $warn_hi, $warn_low,
 				   $crit_at, $crit_hi, $crit_low);
 }
@@ -89,8 +89,8 @@ One might then obtain a value to check, and categorize it with the following:
 
 .SH RETURN VALUES
 \fBparse_ranges\fP returns a set of variables indicating the range of data
-that was parsed. This includes an @ sign in the $\fIwarn_at\fP and 
-$\fIcrit_at\fP variables if one was entered. The $\fIwarn_hi\fP and 
+that was parsed. This includes an @ sign in the $\fIwarn_at\fP and
+$\fIcrit_at\fP variables if one was entered. The $\fIwarn_hi\fP and
 $\fIcrit_hi\fP variables get the upper bound of the range, and the
 $\fIwarn_low\fP and $\fIcrit_low\fP variables get the lower bound of the
 range. If there were errors parsing, an empty list is returned.
@@ -99,7 +99,7 @@ range. If there were errors parsing, an empty list is returned.
 with, along with the return value that was checked.
 
 .SH DIAGNOSTICS
-To obtain more info on STDOUT about the parsing and values obtained, set the 
+To obtain more info on STDOUT about the parsing and values obtained, set the
 $\fInagios_antelope_utils::VERBOSE\fP flag to 1.
 .SH "SEE ALSO"
 .nf
