@@ -1,6 +1,7 @@
 # This Makefile is intended to be included after $(ANTELOPEMAKE) in a master
 # Makefile. It generates Antelope style man pages from Perl code
-ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN3:%.pm=%.pd.3p)
+ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1)
+ALL : $(PMAN3:%.pm=%.pd.3p)
 
 MAN :: $(PMAN1:%=$(DEST)/man/man1/%.1)
 MAN :: $(PMAN1:%.xpls=$(DEST)/man/man1/%.1)
