@@ -332,7 +332,7 @@ nagios_check_orblag - a Nagios plugin to monitor maximum orb client lag
 
 =head1 SYNOPSIS
 
-nagios_check_orblag [-m match_expr] [-r reject_expr] [-w warn] [-c crit] [-o orb] [-v]
+nagios_check_orblag [-m I<match_expr>] [-r I<reject_expr>] [-w I<warn>] [-c I<crit>] [-o I<orb>] [-v]
 
 =head1 OPTIONS
 
@@ -340,21 +340,21 @@ nagios_check_orblag [-m match_expr] [-r reject_expr] [-w warn] [-c crit] [-o orb
 
 =item B<-o  (--orb)>
 
-The ORB to look at (addr:port, default: $ORB)\n";
-
-Ranges for max lag values are between 0.00 and 1.00\n";
+Specifies the orbserver look at (I<addr:port>, default: C<:>). Ranges for max
+lag values are between C<0.00> and C<1.00>
 
 =item B<-w  (--warn)>
 
-Maxium lag value to trigger a warning, expressed as a Nagios range phrase ([@][min:]max)
+Maxium lag value to trigger a warning, expressed as a Nagios range phrase
+(I<[@][min:]max>)
 
 =item B<-c  (--crit)>
 
-Max lag value to trigger a critical, expressed as a Nagios range phrase ([@][min:]max)
+Max lag value to trigger a critical, expressed as a Nagios range phrase (I<[@][min:]max>)
 
 =item B<-m  (--match)> and B<-r  (--reject)>
 
-These regular expressions are matched against the client names (as shown in orbstat -c)
+These regular expressions are matched against the client names (as shown in F<orbstat -c>)
 
 =item B<-h  (--help)>
 
@@ -372,10 +372,10 @@ Verbose output
 =head1 DESCRIPTION
 
 B<nagios_check_orblag> is intended to be used as a plugin to the
-Nagios network monitoring system (L<http://www.nagios.org>). The plugin can be
-installed with other plugins (usually in the Nagios libexec directory)
+L<Nagios network monitoring system|http://www.nagios.org>. The plugin can be
+installed with other plugins (usually in the Nagios F<libexec> directory)
 and called through the Nagios configuration files. The plugin queries
-the specified orbserver orb for it's clients relative read position
+the specified orbserver I<orb> for it's clients relative read position
 (lag) in the orb.
 The value will then be compared to the warning and critical thresholds.
 Used in combination with APAN or another tool, this plugin could be
@@ -383,7 +383,9 @@ used for performance measurements and/or graphing.
 
 =head1 BUGS AND CAVEATS
 
-If you are using custom orb names, you will need to make sure that Antleope has an updated orbserver_names.pf on the monitoring host that matches that on the system to be checked, or else use a numeric port identifier value.
+If you are using custom orb names, you will need to make sure that Antelope
+has an updated orbserver_names.pf on the monitoring host that matches that on
+the system to be checked, or else use a numeric port identifier value.
 
 =head1 SEE ALSO
 
@@ -391,8 +393,7 @@ nagios_antelope_utils(3), orblag(1), orblag(3)
 
 =head1 AUTHOR
 
-Geoff Davis
-Scripps Institution of Oceanography
+Geoff Davis, Scripps Institution of Oceanography
 
 =head1 SUPPORT
 
