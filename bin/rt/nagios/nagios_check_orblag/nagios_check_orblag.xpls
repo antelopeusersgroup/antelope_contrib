@@ -65,7 +65,7 @@ sub check_lag($);
 sub valid_client($$$);
 
 # Constants
-our $VERSION = '1.0';
+our $VERSION = '1.1';
 our $AUTHOR = "Geoff Davis, gadavis\@ucsd.edu";
 our $PROGNAME = $0;
 our $NAGIOS_SERVICE_NAME = "ORBLAG";
@@ -313,11 +313,11 @@ sub valid_client($$$)
 
   $is_valid = 1; # Assume client is valid
 
-  if ( "$match" ne '' )
+  if ( "$match" ne '' && $match ne '-' )
   {
     $is_valid = ( $who =~ m/$match/i );
   }
-  if ( $is_valid && "$reject" ne ''  )
+  if ( $is_valid && ( "$reject" ne '' || $reject ne '')  )
   {
     $is_valid = ( ! ( $who =~ m/$reject/i ) );
   }
@@ -355,7 +355,11 @@ Max lag value to trigger a critical, expressed as a Nagios range phrase (I<[@][m
 
 =item B<-m  (--match)> and B<-r  (--reject)>
 
-These regular expressions are matched against the client names (as shown in F<orbstat -c>)
+These regular expressions are matched against the client names (as shown in
+F<orbstat -c>). Note that if the special value C<-> is given for either match or
+reject, it is treated as if the option was not specified (which is useful for
+things like Intermapper or NRPE that don't allow conditional passing of
+arguments to probe scripts.
 
 =item B<-h  (--help)>
 

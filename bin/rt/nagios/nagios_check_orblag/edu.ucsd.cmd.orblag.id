@@ -9,7 +9,7 @@ Copyright (c) 2013 The Regents of the University of California
   probe_name   = "cmd.orblag"
   human_name   = "Orblag"
   display_name = "Servers-Proprietary/Antelope/Orblag"
-  version      = "1.6"
+  version      = "1.7"
   address_type = "IP"
   flags        = "NAGIOS3"
 </header>
@@ -30,9 +30,7 @@ name as defined in \I\orbserver_names.pf\P\
 state. Values must be between 0 and 1, expressed as a decimal number.
 \MB\Alarm\P\ defaults to \I\0.01\P\. \MB\Critical\P\ defaults to \I\0.2\P\
 
-\MB\Match\P\ and \MB\Reject\P\ - Regular expressions for either matching or rejecting hosts based on their hostname.
-
-\B\Note:\P\ Due to how Intermapper strips quotes from a command, you have to specify a \I\Match\P\ statement even if it's the default of \I\.*\P\. It's ok to leave \B\Reject\P\ empty.
+\MB\Match\P\ and \MB\Reject\P\ - Regular expressions for either matching or rejecting hosts based on their hostname. Note that the special value of '-' is treated as if the match or reject expression was not specified.
 
 </description>
 
@@ -40,8 +38,8 @@ state. Values must be between 0 and 1, expressed as a decimal number.
   "Orbport"  = ""
   "Alarm"    = "0.01"
   "Critical" = "0.2"
-  "Match"    = ".*"
-  "Reject"   = ""
+  "Match"    = "-"
+  "Reject"   = "-"
 </parameters>
 
 <command-line>
