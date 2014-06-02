@@ -279,3 +279,59 @@ sub print_results
     print (" " . $result_ext) if ($result_ext);
     print "|\'$result_descr\'=$result_perf\n";
 }
+
+__END__
+
+=head1 NAME
+
+parse_ranges, categorize_return_value - utilties for Nagios plugins
+
+=head1 SYNOPSIS
+
+ use nagios_antelope_utils qw(&categorize_return_value
+     &parse_ranges % ERRORS $VERBOSE);
+ ($warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low)
+ 	= parse_ranges($warning_input, $critical_input)
+ ($error_code, $description) = categorize_return_value($return_value\,
+ 	$warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low)
+ print_version($VERSION, $AUTHOR);
+ print_results($service_name, $result_code, $result_perf_val, $result_descr);
+
+=head1 DESCRIPTION
+
+C<parse_ranges> reads in user input to C<-w> and C<-c> options and parses
+the fields into a set of variables that are easier to use. The format for
+the warn and critical input is the standard Nagios range grammar as
+described in the Nagios plugin development guide:
+
+   [@]start:end
+
+Notes:
+- start > end>
+- start and ":" is not required if start=0
+- if range is of format "start:" and end is not specified,
+assume end is infinity
+- to specify negative infinity, use "~"
+- alert is raised if metric is outside start and end range
+      (inclusive of endpoints)
+- if range starts with "@", then alert if inside this range
+      (inclusive of endpoints)
+
+C<categorize_return_values> takes the retrieved value from and
+sorts it into a valid Nagios plugin return code given the warning
+and critical ranges that were input. The arguments include the return
+value that needs to be sorted, along with the values that make up the
+output of the C<parse_ranges> subroutine.
+
+C<print_version> prints a version banner with version number and author
+to STDOUT.
+
+C<print_results> prints to STDOUT a Nagios-friendly string with the service
+name, a result code, a performance value, and a description of that value.
+
+C<%ERRORS> is an associative array to be used for generating return
+values. It is defined as follows:
+  %ERRORS=('OK'=>0,'WARNING'=>1,
+               'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
+
+=cut

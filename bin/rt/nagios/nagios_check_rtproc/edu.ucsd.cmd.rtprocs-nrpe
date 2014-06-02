@@ -1,0 +1,62 @@
+<!--
+Simple Command Line Example (com.dartware.cmd.simple)
+Copyright (c) 2007 Dartware, LLC. All rights reserved.
+-->
+<header>
+type = "cmd-line"
+package = "edu.ucsd"
+probe_name = "cmd.rtproc-nrpe"
+display_name = "IGPP Custom/Antelope/Realtime Process (NRPE)"
+human_name = "Realtime Process (NRPE)"
+version = "1.0"
+address_type = "IP"
+</header>
+<description>
+This probe checks a host running Antelope if the specified Realtime System process is running or not. The probe also checks the number of times the process has been restarted since the rtexec process started and sets state based on thresholds. These thresholds are configurable. There is a bit of setup work to get this probe to run since it uses the NRPE daemon provided by Nagios. A functional NRPE configuration on the remote host is required before this probe can be run. Within the nrpe.cfg configuration file, the following declarations must be made for the probe to operate correctly.
+
+1) Set dont_blame_nrpe=1
+2) Uncomment or enter the following line:
+   command[check_rtproc]=/<PATH TO NAGIOS PLUGINS ON REMOTE HOST>/check_procs -w $ARG1$ -a $ARG2$ -c $ARG3$ -i $ARG4$ $ARG5$ $ARG6$
+3) Be sure to set the allowed_hosts variable as well as the nrpe_user and nrpe_group variables to a non-root user.
+
+The probe parameters are as follows:
+
+TCPport      	      - The port NRPE uses on the remote host
+RTSysPath    	      - The absolute path to the realtime system. This is the
+	       		directory that contains rtexec.pf.
+RTProcname            - The name of the realtime process. This is usually found in
+               	        the first column of the Processes table in rtexec.pf.
+Warning	     	      - The warning threshold for the number of process restarts.
+Alarm       	      - The alarm threshold for the number of process restarts.
+Critical     	      - The critical threshold for the number of process restarts.
+IgnoreRestartWarnings - Don't set status based on the number of process restarts
+
+</description>
+<parameters>
+"TCPport" = "5666"
+"RTSysPath" = "/export/home/rt/rtsystems"
+"RTProcname" = "orbserver"
+"Warning" = "2"
+"Alarm" = "5"
+"Critical" = "10"
+"IgnoreRestartWarnings[true,false]" = "false"
+</parameters>
+<command-line>
+path = "/usr/lib64/nagios/plugins"
+cmd = "check_nrpe -H ${ADDRESS} -c check_rtproc -a ${Warning} ${Alarm} ${Critical} ${IgnoreRestartWarnings[true,false]} ${RTSysPath} ${RTProcname}"
+</command-line>
+<command-exit>
+okay: ${EXIT_CODE} = 0
+warning: ${EXIT_CODE} = 1
+alarm: ${EXIT_CODE} = 2
+critical: ${EXIT_CODE} = 3
+unknown: ${EXIT_CODE} = 4
+</command-exit>
+<command-display>
+  \B5\Realtime Process Information\0P\
+          Name: $name
+           PID: $pid
+  Last started: $last_start (UTC)
+      Restarts: $starts
+       Command: $execution
+</command-display>

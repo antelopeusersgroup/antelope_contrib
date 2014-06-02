@@ -2,172 +2,165 @@ use strict;
 use Datascope;
 use File::Basename;
 use Getopt::Long;
+use Pod::Usage;
 
-our($prog,$opt_version,$opt_help,$opt_warn,$opt_alarm,$opt_crit,$opt_ignore,%ERRORS,@REASON,
-    $VERSION,@RETVAL,@RETVAL_SORT,$thresh_warn,$thresh_alarm,$thresh_crit);
+our ($prog, $opt_version, $opt_verbose, $opt_help, $opt_warn, $opt_alarm, $opt_crit,
+    $opt_ignore, %ERRORS, @REASON, $VERSION, @RETVAL, @RETVAL_SORT,
+    $thresh_warn, $thresh_alarm, $thresh_crit );
 
-$VERSION = 1.01;
+$VERSION = 1.1;
+our $VERBOSE=0;
 
 $prog = basename($0);
-$thresh_warn 	= 2;
-$thresh_alarm 	= 5;
-$thresh_crit	= 10;
+$thresh_warn    = 2;
+$thresh_alarm   = 5;
+$thresh_crit    = 10;
 
-%ERRORS = ('OK'		=> 0,
-  	   'WARN'	=> 1,
-	   'ALARM'	=> 2,
-	   'CRIT'	=> 3,
-	   'UNKNOWN'	=> 4
-	  );
+%ERRORS = (
+        'OK'      => 0,
+        'WARN'    => 1,
+        'ALARM'   => 2,
+        'CRIT'    => 3,
+        'UNKNOWN' => 4
+        );
 
 MAIN:
 {
-  # Make sure options switches are always processed first on the command line
-  Getopt::Long::Configure("require_order");
+# Make sure options switches are always processed first on the command line
+    Getopt::Long::Configure("require_order");
 
-  # Validate input
-  my ($rtproctable,$rtproc) = check_args();
+# Validate input
+    my ($rtproctable,$rtproc) = check_args();
 
-  # Query the rtsys db for process information
-  my ($name,$pid,$starts,$last_start,$execution) = db_query($rtproctable,$rtproc);
+# Query the rtsys db for process information
+    my ($name,$pid,$starts,$last_start,$execution) = db_query($rtproctable,$rtproc);
 
-  # Check if the process is running as well as the number of restarts since the
-  # last rtexec restart
-  check_process($name,$pid,$starts,$last_start,$execution);
-  print_results($name,$pid,$starts,$last_start,$execution);
+# Check if the process is running as well as the number of restarts since the
+# last rtexec restart
+    check_process($name,$pid,$starts,$last_start,$execution);
+    print_results($name,$pid,$starts,$last_start,$execution);
 
-  # Exit with the highest return value of individual tests
-  @RETVAL_SORT = sort { $b <=> $a } @RETVAL;
-  exit($RETVAL_SORT[0]);
-}
-
-sub print_usage
-{
-  print "Usage: $prog [-i[1|true]] [-w <INTEGER>] [-a <INTEGER>]\n";
-  print "[-c <INTEGER>] <RT system path> <RT system process name>\n";
-}
-
-sub print_help
-{
-  print_usage();
-  print "\n";
-  print "Description:\n";
-  print "Determines if a process run under Antelope rtexec is running.\n";
-  print "Warnings will be returned if the number of process restarts after\n";
-  print "the last rtexec restart increases. The default thresholds are as\n";
-  print "specified:\n";
-  print "\n";
-  print "State		# of restarts\n";
-  print "-----		-------------\n";
-  print "Warning	2\n";
-  print "Alarm		5\n";
-  print "Critical	10\n";
-  print "\n";
-  print "The warning thresholds can be customized as command options.\n";
-  print "Warnings can also be ignored by setting the -i option to 1 or\n";
-  print "true.\n";
-  print "\n";
-  print "Options:\n";
-  print "-i,--ignore Ignore process restart warnings [1|true].\n";
-  print "-w,--warn Customize the 'Warning' threshold. [Positive integer]\n";
-  print "-a,--alarm Customize the 'Alarm' threshold. [Positive integer]\n";
-  print "-c,--crit Customize the 'Critical' threshold. [Positive integer]\n";
+# Exit with the highest return value of individual tests
+    @RETVAL_SORT = sort { $b <=> $a } @RETVAL;
+    exit($RETVAL_SORT[0]);
 }
 
 sub check_args
 {
-  GetOptions("V"     => \$opt_version,  "version"  => \$opt_version,
-             "h"     => \$opt_help,     "help"     => \$opt_help,
-             "w=i"   => \$opt_warn,     "warn=s"   => \$opt_warn,
-             "a=i"   => \$opt_alarm,    "alarm=s"  => \$opt_alarm,
-             "c=i"   => \$opt_crit,     "crit=s"   => \$opt_crit,
-             "i=s"   => \$opt_ignore,   "ignore=s" => \$opt_ignore
-						);
+    GetOptions(
+            "V"     => \$opt_version,  "version"  => \$opt_version,
+            "v"     => \$opt_verbose,  "verbose"  => \$opt_verbose,
+            "h"     => \$opt_help,     "help"     => \$opt_help,
+            "w=i"   => \$opt_warn,     "warn=s"   => \$opt_warn,
+            "a=i"   => \$opt_alarm,    "alarm=s"  => \$opt_alarm,
+            "c=i"   => \$opt_crit,     "crit=s"   => \$opt_crit,
+            "i=s"   => \$opt_ignore,   "ignore=s" => \$opt_ignore
+    ) || pod2usage(-verbose => 0, -exitval => $ERRORS{'UNKNOWN'});
 
-  my $rtpath = $ARGV[0];
-  my $rtproc = $ARGV[1];
+    my $rtpath = $ARGV[0];
+    my $rtproc = $ARGV[1];
 
-  print "$prog $VERSION\n" && exit $ERRORS{UNKNOWN} if $opt_version;
-  print_help() && exit $ERRORS{UNKNOWN} if $opt_help;
-  print_usage() && exit $ERRORS{UNKNOWN} unless ($#ARGV == 1);
-
-  if (defined($opt_warn))
-  {
-    unless ($opt_warn =~ /^[1-9]\d*$/)
+    if ($opt_version)
     {
-      print "Not an accepted value for option --warn. Please use a positive integer.\n";
-      exit $ERRORS{UNKNOWN};
+        print "$prog $VERSION\n"; exit $ERRORS{OK}
     }
-    else
+
+    if ($opt_verbose)
     {
-      $thresh_warn = $opt_warn;
+        $VERBOSE = 1;
+        $nagios_antelope_utils::VERBOSE = 1;
     }
-  }
 
-  if (defined($opt_alarm))
-  {
-    unless ($opt_alarm =~ /^[1-9]\d*$/)
+    if ($opt_help)
     {
-      print "Not an accepted value for option --alarm. Please use a positive integer.\n";
-      exit $ERRORS{UNKNOWN};
+        pod2usage({-exitval => $ERRORS{'OK'}, -verbose => 2, -input => \*DATA});
     }
-    else
+
+    if (defined($opt_warn))
     {
-      $thresh_alarm = $opt_alarm;
+        unless ($opt_warn =~ /^[1-9]\d*$/)
+        {
+            pod2usage({ -message => "Not an accepted value for option --warn.".
+                   "Please use a positive integer.",
+                   -exitval => $ERRORS{UNKNOWN} });
+        }
+        else
+        {
+            $thresh_warn = $opt_warn;
+        }
     }
-  }
 
-  if (defined($opt_crit))
-  {
-    unless ($opt_crit =~ /^[1-9]\d*$/)
+    if (defined($opt_alarm))
     {
-      print "Not an accepted value for option --crit. Please use a positive integer.\n";
-      exit $ERRORS{UNKNOWN};
+        unless ($opt_alarm =~ /^[1-9]\d*$/)
+        {
+            pod2usage({ -message => "Not an accepted value for option " .
+                    "--alarm. Please use a positive integer.",
+                    -exitval => $ERRORS{UNKNOWN} });
+        }
+        else
+        {
+            $thresh_alarm = $opt_alarm;
+        }
     }
-    else
+
+    if (defined($opt_crit))
     {
-      $thresh_crit = $opt_crit;
+        unless ($opt_crit =~ /^[1-9]\d*$/)
+        {
+            pod2usage({ -message => "Not an accepted value for option " ."
+                    --crit. Please use a positive integer.",
+                    -exitval => $ERRORS{UNKNOWN} });
+        }
+        else
+        {
+            $thresh_crit = $opt_crit;
+        }
     }
-  }
 
-  if (defined($opt_ignore))
-  {
-    unless ($opt_ignore =~ /^(0|1|true|false)$/)
+    if (defined($opt_ignore))
     {
-      print "Not an accepted value for option --ignore. Please use '1' or 'true'.\n";
-      exit $ERRORS{UNKNOWN};
+        unless ($opt_ignore =~ /^(0|1|true|false)$/)
+        {
+            pod2usage({ -message => "Not an accepted value for option " .
+                    "--ignore. Please use '1' or 'true'.",
+                    -exitval => $ERRORS{UNKNOWN} });
+        }
     }
-  }
 
-  if ($thresh_warn >= $thresh_alarm)
-  {
-    print "The threshold value for 'warn' cannot equal or exceed the value for 'alarm'.\n";
-    exit $ERRORS{UNKNOWN};
-  }
+    if ($thresh_warn >= $thresh_alarm)
+    {
+        pod2usage({ -message => "The threshold value for 'warn' cannot " .
+                "equal or exceed the value for 'alarm'.",
+                -exitval => $ERRORS{UNKNOWN} });
+    }
 
-  if ($thresh_alarm >= $thresh_crit)
-  {
-    print "The threshold value for 'alarm' cannot equal or exceed the value for 'crit'.\n";
-    exit $ERRORS{UNKNOWN};
-  }
+    if ($thresh_alarm >= $thresh_crit)
+    {
+        pod2usage({ -message => "The threshold value for 'alarm' cannot " .
+                "equal or exceed the value for 'crit'.",
+                -exitval => $ERRORS{UNKNOWN} });
+    }
 
-  unless ($rtpath =~ m#^(/[\w-.]+)+$#)
-  {
-    print "The realtime system path has disallowed characters. Please check the path for\n";
-    print "directory names with metacharacters or correct the path string.\n";
-    exit $ERRORS{UNKNOWN};
-  }
+    unless ($rtpath =~ m#^(/[\w-.]+)+$#)
+    {
+        pod2usage({ -message => "The realtime system path has disallowed " .
+                "characters. Please check the path for directory names " .
+                "with metacharacters or correct the path string.",
+                -exitval => $ERRORS{UNKNOWN} });
+    }
 
-  unless ($rtproc =~ /^[\w-.]+$/)
-  {
-    print "The realtime process string has disallowed metacharacters. Please rename the process\n";
-    print "to use this program.\n";
-    exit $ERRORS{UNKNOWN};
-  }
+    unless ($rtproc =~ /^[\w-.]+$/)
+    {
+        pod2usage({ -message => "The realtime process string has " .
+                "disallowed metacharacters. Please rename the process " .
+                "to use this program.",
+                -exitval => $ERRORS{UNKNOWN} });
+    }
 
-  my $rtproctable = "$rtpath/rtsys/rtsys.process";
+    my $rtproctable = "$rtpath/rtsys/rtsys.process";
 
-  return ($rtproctable,$rtproc);
+    return ($rtproctable,$rtproc);
 }
 
 sub db_query
@@ -187,7 +180,7 @@ sub db_query
   {
     print "An error has occurred looking up process information for $rtproc. It's possible that\n";
     print "process '$rtproc' may not exist for the specified realtime system. Please check the\n";
-    print "Processes table entries in rtexec.pf\n";
+    print "processes table entries in rtexec.pf\n";
     print "ERROR: $@\n";
     exit $ERRORS{CRIT};
   }
@@ -274,3 +267,104 @@ sub print_results
     print "$i\n";
   }
 }
+
+__END__
+
+=head1 NAME
+
+nagios_check_rtproc - a Nagios plugin to monitor the status of an rtexec-managed process
+
+=head1 SYNOPSIS
+
+B<nagios_check_rtproc> [B<-i> [I<1>|I<true>]] [B<-w> I<warn>]
+[B<-c> I<crit>] I<RT system path> I<RT system process name>
+
+=head1 DESCRIPTION
+
+C<nagios_check_orblag> determines if a process run under Antelope F<rtexec> is
+currently running.  The plugin queries the F<rtsys> database in an Antelope
+real-time system directory.
+
+It is intended to be used as a plugin to the L<Nagios network monitoring
+system|http://www.nagios.org>. The plugin can be installed with other plugins
+(usually in the Nagios F<libexec> directory) and called through the Nagios
+configuration files.
+
+However, since it requires direct filesystem access to the real-time system
+configuration, this script has to be run on the same host as the real-time
+system in question. Thus, B<it is recommended that this probe is used in
+conjunction with NRPE or similar> so that it can be executed remotely from a
+central monitoring box. See L<USAGE WITH NRPE> below for details.
+
+Warnings will be returned if process has been restarted by rtexec.
+
+The default thresholds are as follows:
+
+ State       # of restarts
+ -----       -------------
+ Warning     2
+ Alarm       5
+ Critical    10
+
+=head1 OPTIONS
+
+Like all Nagios plugins, more detailed and recent help, argument
+formats, etc. can be obtained via the B<-h> option of the program.
+
+The warning thresholds can be customized as follows.
+
+=over 8
+
+=item B<-i>, B<--ignore> [I<1>|I<true>]
+
+Ignore process restart warnings.
+
+=item B<-w>, B<--warn>
+
+Customize the I<Warning> threshold. [Positive Integer]
+
+=item B<-a>, B<--alarm>
+
+Customize the I<Alarm> threshold. [Positive Integer]
+
+=item B<-c>, B<--critical>
+
+Customize the I<Critical> threshold. [Positive Integer]
+
+=back
+
+=head1 USAGE WITH NRPE
+
+Within the F<nrpe.cfg> configuration file, the following declarations must be made for the probe to operate correctly.
+
+1) Set C<dont_blame_nrpe=1>
+
+2) Enter the following line:
+   command[check_rtproc]=/<PATH TO NAGIOS PLUGINS ON REMOTE HOST>/check_procs -w $ARG1$ -a $ARG2$ -c $ARG3$ -i $ARG4$ $ARG5$ $ARG6$
+
+3) Be sure to set the C<allowed_hosts> variable as well as the C<nrpe_user>
+and C<nrpe_group> variables to a non-root user.
+
+=head1 BUGS AND CAVEATS
+
+The check must run on the same host as the real-time system to be check. See
+note in L<DESCRIPTION> section regarding B<NRPE>.
+
+=head1 SEE ALSO
+
+nagios_antelope_utils(3)
+rtexec(1)
+NRPE
+
+=head1 AUTHOR
+
+ Juan Reyes and Geoff Davis
+ Scripps Institution of Oceanography
+
+=head1 SUPPORT
+
+Contributed: NO BRTT support -- please contact author.
+
+=cut
+
+#vim:ft=perl

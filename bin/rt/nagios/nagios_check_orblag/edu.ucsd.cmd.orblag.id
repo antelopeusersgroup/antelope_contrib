@@ -1,0 +1,62 @@
+<!--
+Orblag plugin for Intermapper
+Copyright (c) 2013 The Regents of the University of California
+-->
+
+<header>
+  type         = "cmd-line"
+  package      = "edu.ucsd"
+  probe_name   = "cmd.orblag"
+  human_name   = "Orblag"
+  display_name = "Servers-Proprietary/Antelope/Orblag"
+  version      = "1.6"
+  address_type = "IP"
+  flags        = "NAGIOS3"
+</header>
+
+<description>
+This probe runs the \MB\nagios_check_orblag\P\ Nagios plugin to check for clients that
+ are not reading at the tip of the orb.
+
+The check is executed from the Intermapper server. It uses the address assigned
+ to the probe object, checking the requested \M\Orbport\P\
+
+\B\Parameters:\P\
+
+\MB\Orbport\P\ - The Antelope port name or number to check. Can be any valid
+name as defined in \I\orbserver_names.pf\P\
+
+\MB\Alarm\P\ and \MB\Critical\P\ - Lag threshold to set an alarm or Critical
+state. Values must be between 0 and 1, expressed as a decimal number.
+\MB\Alarm\P\ defaults to \I\0.01\P\. \MB\Critical\P\ defaults to \I\0.2\P\
+
+\MB\Match\P\ and \MB\Reject\P\ - Regular expressions for either matching or rejecting hosts based on their hostname.
+
+\B\Note:\P\ Due to how Intermapper strips quotes from a command, you have to specify a \I\Match\P\ statement even if it's the default of \I\.*\P\. It's ok to leave \B\Reject\P\ empty.
+
+</description>
+
+<parameters>
+  "Orbport"  = ""
+  "Alarm"    = "0.01"
+  "Critical" = "0.2"
+  "Match"    = ".*"
+  "Reject"   = ""
+</parameters>
+
+<command-line>
+  path = "/opt/antelope/$id/bin"
+  cmd  = "nagios_check_orblag -o ${ADDRESS}:${Orbport} -w '@${Alarm}:' -c '@${Critical}:' -m '${Match}' -r '${Reject}' "
+</command-line>
+
+<command-exit>
+  down:     ${EXIT_CODE} = 3
+  okay:     ${EXIT_CODE} = 0
+  alarm:    ${EXIT_CODE} = 1
+  critical: ${EXIT_CODE} = 2
+</command-exit>
+
+<command-display>
+\B5\Orblag: ${ADDRESS}:${Orbport}\P0\
+${nagios_output}
+</command-display>

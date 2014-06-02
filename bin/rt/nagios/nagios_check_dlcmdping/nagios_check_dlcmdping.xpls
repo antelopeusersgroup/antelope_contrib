@@ -1,0 +1,304 @@
+
+#
+# Copyright (c) 2004 The Regents of the University of California
+# All Rights Reserved
+#
+# Permission to use, copy, modify and distribute any part of this software for
+# educational, research and non-profit purposes, without fee, and without a
+# written agreement is hereby granted, provided that the above copyright
+# notice, this paragraph and the following three paragraphs appear in all
+# copies.
+#
+# Those desiring to incorporate this software into commercial products or use
+# for commercial purposes should contact the Technology Transfer Office,
+# University of California, San Diego, 9500 Gilman Drive, La Jolla, CA
+# 92093-0910, Ph: (858) 534-5815.
+#
+# IN NO EVENT SHALL THE UNIVESITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE, EVEN IF THE UNIVERSITY
+# OF CALIFORNIA HAS BEEN ADIVSED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# THE SOFTWARE PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF
+# CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
+# ENHANCEMENTS, OR MODIFICATIONS.  THE UNIVERSITY OF CALIFORNIA MAKES NO
+# REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER IMPLIED OR
+# EXPRESS, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE
+# SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+#
+#   This code was created as part of the USArray ANF project.
+#   See http://anf.ucsd.edu/
+#
+#   Written By: Geoff Davis 17-Feb-2012
+#
+# Based on the nagios_check_orblag plugin
+
+use strict;
+use Socket;
+use Getopt::Long;
+use Pod::Usage;
+use File::Basename;
+use vars qw($opt_version $opt_help $opt_verbose $opt_timeout $opt_targets
+            $opt_orb $opt_dltypes
+            $warn_at $warn_low $warn_high $crit_at $crit_low $crit_high
+            $VERBOSE $PROGNAME $STATE);
+
+
+use nagios_antelope_utils qw(&categorize_return_value
+                            &parse_ranges
+                            &print_results
+                            &print_version
+                            %ERRORS
+                            $VERBOSE);
+
+# antelope includes
+use orb;
+use Datascope;
+use Socket;
+
+# Prototypes
+sub check_args();
+sub do_ping();
+sub untaint_env();
+sub csv2regex($);
+
+# Constants
+our $VERSION = '1.0';
+our $AUTHOR = "Geoff Davis, gadavis\@ucsd.edu";
+our $PROGNAME = "nagios_check_dlcmdping";
+our $NAGIOS_SERVICE_NAME = "DLCMDPING";
+
+# Defaults
+our $VERBOSE = 0;
+our $ORB = ":"; # orb and port, ie. "orbstat -s $ORB"
+our $TARGETS = '-';
+our $DLTYPES = '-';
+our $TIMEOUT = 2;
+
+
+######
+#
+MAIN:
+{
+
+    my ($result_code, $result_perf, $status);
+    Getopt::Long::Configure("bundling");
+    $status = check_args();
+    if ($status)
+    {
+        print "ERROR: processing arguments\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+
+    my $pingresult = do_ping();
+
+    if ($pingresult==-1)
+    {
+        print_results($NAGIOS_SERVICE_NAME, $ERRORS{'UNKNOWN'}, 0,
+            "Could not run dlcmd");
+        exit $ERRORS{'CRITICAL'};
+    }
+    elsif ($pingresult==0)
+    {
+        print_results($NAGIOS_SERVICE_NAME, $ERRORS{'OK'}, 0, "");
+        exit $ERRORS{'OK'};
+    }
+    print_results($NAGIOS_SERVICE_NAME, $ERRORS{'CRITICAL'}, 0,
+        "No ping response");
+    exit $ERRORS{'CRITICAL'};
+}
+
+sub untaint_env()
+{
+    # Untaint various environment vars
+    $ENV{'ANTELOPE'} =~ /\/opt\/antelope\/([\w\.-]+)/;
+    $ENV{'ANTELOPE'}="/opt/antelope/".$1;
+
+    $ENV{"PATH"} = "$ENV{'ANTELOPE'}/bin";
+    $ENV{"BASH_ENV"} = "";
+}
+
+sub csv2regex($)
+{
+    my $in=shift;
+    if ($in =~ /,/) {
+        $in =~ s/,/|/g;
+        $in = '('.$in.')';
+    }
+    return $in;
+}
+
+sub do_ping()
+{
+    untaint_env();
+    my @cmd = ("$ENV{'ANTELOPE'}/bin/dlcmd", '-waittime', ${TIMEOUT},
+        '-timeout', ${TIMEOUT}, ${ORB}, ${TARGETS}, ${DLTYPES}, '-', 'pingt');
+    my $result = system(@cmd);
+    return $?
+}
+
+
+######
+# Check the arguments supplied
+sub check_args()
+{
+    my ($fetching_params) = 0;
+
+    GetOptions(
+        "V"     => \$opt_version,  "version"   => \$opt_version,
+        "v"     => \$opt_verbose,  "verbose"   => \$opt_verbose,
+        "h"     => \$opt_help,     "help"      => \$opt_help,
+        "t=s"   => \$opt_targets,  "targets=s" => \$opt_targets,
+        "T=i"   => \$opt_timeout,  "timeout=i" => \$opt_timeout,
+        "o=s"   => \$opt_orb,      "orb=s"     => \$opt_orb,
+        "d=s"   => \$opt_dltypes,  "dltypes=s" => \$opt_dltypes,
+    ) || pod2usage(-verbose => 0, -exitval => $ERRORS{'UNKNOWN'});
+
+    # handle options here
+    if ($opt_version)
+    {
+        print_version($VERSION, $AUTHOR);
+        exit $ERRORS{'OK'};
+    }
+
+    if ($opt_verbose)
+    {
+        $VERBOSE = 1;
+        $nagios_antelope_utils::VERBOSE = 1;
+    }
+
+    if ($opt_help)
+    {
+        pod2usage({-exitval => $ERRORS{'OK'}, -verbose => 2, -input => \*DATA});
+    }
+
+    if ($opt_orb)
+    {
+        $ORB = $opt_orb;
+        $ORB =~ /([\w-.]*):([\w-]*)/;
+        $ORB = "$1:$2";
+    }
+
+    if ($opt_targets)
+    {
+        $TARGETS = $opt_targets;
+        # Passing regexs is dangerous so we limit it to either a comma
+        # delimited string or -
+        $TARGETS =~ /((\w{1}[\w,]*|-))/;
+        $TARGETS = $1;
+        $TARGETS = csv2regex($TARGETS);
+    }
+    if ($opt_dltypes)
+    {
+        $DLTYPES = $opt_dltypes;
+        # Passing regexs is dangerous so we limit it to either a comma
+        # delimited string or -
+        $DLTYPES =~ /((\w{1}[\w,]*|-))/;
+        $DLTYPES = $1;
+        $DLTYPES = csv2regex($DLTYPES);
+    }
+    if ($opt_timeout)
+    {
+        $TIMEOUT = $opt_timeout;
+        $TIMEOUT =~ /(\d+)/;
+        $TIMEOUT = $1;
+    }
+    return 0;
+}
+
+__END__
+=head1 NAME
+
+nagios_check_dlcmdping - a Nagios plugin to verify dlcmds work
+
+=head1 SYNOPSIS
+
+F<nagios_check_dlcmdping> [-t I<targets>] [-T I<timeout>] [-d I<dltypes>] [-o I<orb>] [-v]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-o  (--orb)>
+
+Specifies the orbserver look at (I<addr:port>, default: C<:>). Ranges for max
+lag values are between C<0.00> and C<1.00>
+
+=item B<-t  (--targets)>
+
+This is a command separated list that will match against data acquisition
+program target names to determine which target acquisition programs will
+respond to the command. If this is set to C<-> then it is treated as matching
+all target names. Default: C<-> (all target names)
+
+=item B<-T  (--timeout)>
+
+How long dlcmd will wait for a response in seconds. This can usually be a
+short interval. Default: C<2> (2 seconds)
+
+=item B<-d  (--dltypes)>
+
+This is a regular UNIX expression that will match against datalogger types to
+determine which target acquisition programs will respond to the command. If
+this is set to C<-> then it is treated as matching all datalogger types.
+Typical values are C<qt> for older Quanterra MULTISHEAR dataloggers, and
+C<q330> for newer Quanterra Q330-seriers dataloggers. See L<dlcmd> for details.
+Default: C<->
+
+=item B<-h  (--help)>
+
+Print a help message and exit
+
+=item B<-V  (--version)>
+
+Print the version of this script
+
+=item B<-v  (--verbose)>
+Verbose output
+
+=back
+
+=head1 DESCRIPTION
+
+B<nagios_check_dlcmd> is intended to be used as a plugin to the
+L<Nagios network monitoring system|http://www.nagios.org>. The plugin can be
+installed with other plugins (usually in the Nagios F<libexec> directory)
+and called through the Nagios configuration files. The plugin uses F<dlcmd>
+to send a C<pingt> command to the orbserver I<orb>, matching the specified
+datalogger types I<dltypes> and I<targets>. This is useful to determine
+whether a given instance of F<q3302orb> is running.
+
+=head1 EXAMPLES
+
+Check whether a F<q3302orb> instance called C<tadataAG> is listening for
+datalogger commands on C<acqhost:cmd>:
+
+ nagios_check_dlcmdping -t tadataAG -d q330 -o acqhost:cmd
+
+=head1 BUGS AND CAVEATS
+
+If you are using custom orb names, you will need to make sure that Antelope
+has an updated orbserver_names.pf on the monitoring host that matches that on
+the system to be checked, or else use a numeric port identifier value.
+
+Since this script might be called with unsafe arguments (such as via NRPE),
+the targets and dltypes parameters cannot be specified as regular expressions,
+and thus must be specified as comma delimited lists. This differs from the
+behavior of the underlying F<dlcmd> executable.
+
+=head1 SEE ALSO
+
+nagios_antelope_utils(3), dlcmd(1), q3302orb(1), altus2orb(1), qt2orb(1)
+
+=head1 AUTHOR
+
+Geoff Davis, Scripps Institution of Oceanography
+
+=head1 SUPPORT
+
+Contributed: NO BRTT support -- please contact author.
+
+=cut
+
+# vim:ft=perl
