@@ -1,6 +1,7 @@
 parameter (NMAX = 100000, NMAX1 = 113616)
 logical :: dir_e
-character *100 table
+logical :: exis
+character*100 table
 character *100 chanexpr
 character *100 dbmasdir	,stringS		
 character*150 subset,subchan
@@ -9,17 +10,17 @@ character*10 evento
 character*4 Ptype,Stype
 integer aphas,verb,runflag,chanflag,Mwflag
 integer itest,nch,nch1,arid,icha,commid
-real*8  pretime,postime,startime,diff 
+real*8  postime,startime,diff 
 !integer pf,retcode,d2npts,nptsN,strlen
 integer retcode,d2npts,nptsN,strlen
 integer*8 pf
-integer i
-integer dbP1(4)
+integer*4 i
+integer dbP1(4),dbP2(4)
 real dati(NMAX),x(NMAX) ,noise(NMAX),noisS(NMAX),rappsr(NMAX),sismS(NMAX)
 real sismoN(NMAX),sismoE(NMAX),sismtmp(NMAX)
 real sismo(NMAX),sismoA(NMAX),sismoV(NMAX),sismoD(NMAX)
 real sismorg(NMAX),xtim
-real *8 t0_req, t1_req, t1o_req, t1,t2,samprate,calib
+real *8 t1_req, t1o_req, t1,t2,samprate,calib
 real *8 t3_req, t4_req, t4o_req, t3
 real sampint
 !----------------------------------------------
@@ -30,13 +31,13 @@ integer*8 ex
 integer NMAX64
 integer*8 nsamp
 integer nptsM
-real*8  otime,olat,olon,slat,slon,elat,elon,ml
+real*8  otime,olat,olon,slat,slon,elat,elon,ml,stopti
 integer db_o(4),db_or(4),dbresult(4),db_ar(4),db_net(4),db_ml(4)
 integer db(4),db_re(4),db_re1(4),db_si(4),db_in(4),db_wf(4)
 integer db_ca(4),db_caO(4),db_ca_(4)
 integer db_as(4),db_s(4),db_i(4),db_w(4),dbmw(4),dbmwn(4)
 integer n_w, n_ca, n_st, n_in, n_or, n_o, n_wf, n_net
-integer n_ml, nn, nw, nwn
+integer n_ml, nn, nw, nwn, nn1
 integer orid, evid 
 integer npts
 !
@@ -53,16 +54,16 @@ real*8 depth,arrP,arrS,arrP_,arrS_,res,resP,resS,resmin,sphasetime,pphasetime
 real*8 arrSo
 integer iargc,npts_i,errfl,nptsSi
 character*278 dbreco
+character*155 dbreco1
 character*182 dbremw
 character*136 dbremwn
-character* 125 recemail(1000),rec1mail(1000)
-character*50 labsys
+character*50 label
 character*30 filter
 character*24 param(NMAX),ptest,mtest,smw(NMAX)
-character*20 string_ot
+character*20 string_ot,string_ot1
 character*15 auth
 character*8 ntest,nmw(NMAX)
-character*7 labor
+character*7 labor,labev
 character*4 labMw					
 character*1 segtype
 character*1 idum
@@ -73,7 +74,7 @@ complex sismA(NMAX),sismV(NMAX),sismD(NMAX)
 complex hsb1
 complex hsb2
 real sqbsum,abmax,Q
-real dista,freqq(NMAX)
+real dista,freqq(NMAX),ipdista
 real PGA,PGV,PGD,PSA03,PSA10,PSA30,RMSA,energ,Te,Sarag,Mf,Arias,Housner,freq1,delhou
 real dura
 real*8 PERMIN,PERMAX,distmin,distmax1,distmax2,distmax3,distmax4,distrad
@@ -84,7 +85,7 @@ real*8 staMw(100),staM0(100),staeqR(100),staf0(100)
 real*8 netMw,netM0,netf0,neteqR,sigmaMw
 common/BUT/sqbsum,abmax,hsb1(NMAX),hsb2(NMAX)
 COMMON/CPAZ/ t,phase(NMAX),absval(NMAX),freq(NMAX)
-COMMON/RDATI/ifilt,np1,np2,ff1,ff2
+COMMON/RDATI/ff1,ff2,ifilt,np1,np2
 COMMON/GAUSS1/XGAU(NMAX)
 COMMON/DERI/xder
 COMMON/ARA/ DMP(5),SD(5,1000),SA(5,1000),GA(NMAX1),PSSV(5,1000),ID
@@ -99,15 +100,15 @@ character*60 command
 
         external fill
 
-
-include "db.i"
-include "coords.i"
+include "inc/db.i"
+include "inc/coords.i"
 
 !-------------------------------------------------------------------
 ! DATA
 !
       data pi/3.141592654/
       data grav/981./
+      runflag = 0
 !--------------------------------------------------------------------
 
 if ( iargc() .gt. 2 .or. iargc() .lt. 1) then
@@ -122,6 +123,8 @@ call getarg (1, filepf )
   endif
 
 if (iargc() .eq. 2) runflag = 1
+
+print *, "ORID!", orid
 
 strlen = LEN(TRIM(ADJUSTL(filepf)))
 filepf = filepf(1:strlen)
@@ -147,7 +150,6 @@ if ( retcode .ne. 0 ) call complain ( 0, "Error in parameter file:" )
     call pfget_string ( pf, 'home_dir',home_dir)
     call pfget_string ( pf, 'stringS',stringS )
     call pfget_int ( pf, 'verb', verb )
-    call pfget_double( pf, 'pretime', pretime )
     call pfget_double( pf, 'postime', postime )
     call pfget_int ( pf, 'ispike', ispike )
     call pfget_int ( pf, 'nfin', nfin )
@@ -242,6 +244,7 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
   db_or(4) = imain
   if(runflag.lt.1) then
     if( dbgetv (db_or,"","orid",orid,"evid",evid,NULL).lt.0) call complain (0, "dbgetv error" )    
+print *, "Son qui 1"
   endif
 !
       write(subset,*) "orid == ",orid
@@ -249,6 +252,7 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
 	  call dbquery (db_o,dbRECORD_COUNT, n_o)
 	  call dbjoin(db_wf,db_w,db_o,0,0,0,0,"")
 	  call dbquery (db_wf,dbRECORD_COUNT, n_wf)
+print *, 'DPC_1 n_w n_wf n_ca, n_w: ', n_wf, n_ca, n_w
 !---------------------------------------------------------------------
 !   
 !	  MAIN if over waveforms
@@ -261,6 +265,7 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
         if( dbgetv ( db_o,"",  &
         &   "evid",evid,"lat",olat,"lon",olon,"time",otime,"ml",ml,NULL) &
         &   .lt. 0) call complain (0, "dbgetv error" )
+print *, "Son qui 2"
    enddo
 !
 	   if(ml.lt.2.0) distrad=distmax1/111.195
@@ -270,39 +275,6 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
            distmin = distmin/111.195
 !		
       call epoch2str(string_ot,otime,"%D %k %M %S")
-
-!-----------------------------------------------------------------------------------------------------
-! prepare header for GMP file1
-!
-
-  write(recemail(1),*) 'Department of Geoscience University of Trieste - Internal use only'
-  write(recemail(2),*) '===================================================================================================='
-  write(recemail(3),*) 'Data from National Accelerometric Network - RAN'
-  write(recemail(4),*) '===================================================================================================='
-  write(recemail(5),'("Evid: ",i7," Orid: ",i7," Origin time: ",a17," Lat. ",f6.3," Lon. ",f6.3," Ml = ",f4.1)') & 
-                   &  evid,orid,string_ot,olat,olon,ml
-  write(recemail(6),*) '================================================================================='
-  write(recemail(7),*) 'sta  chan  dist   filter    PGA      PGV   PSA03   PSA10   PSA30   Arias  Housner'
-  write(recemail(8),*) '            km      Hz     cm/s*s    cm/s  cm/s*s  cm/s*s  cm/s*s  cm/s     cm'
-  write(recemail(9),*) '---------------------------------------------------------------------------------'
-  nemail = 9
-
-!-----------------------------------------------------------------------------------------------------
-! prepare header for GMP file2
-!
-  write(rec1mail(1),*) 'Department of Geoscience University of Trieste - Internal use only'
-  write(rec1mail(2),*) '===================================================================================================='
-  write(rec1mail(3),*) 'Data from National Accelerometric Network - RAN'
-  write(rec1mail(4),*) '===================================================================================================='
-  write(rec1mail(5),'("Evid: ",i7," Orid: ",i7," Origin time: ",a17," Lat. ",f6.3," Lon. ",f6.3," Ml = ",f4.1)') &
-                   &  evid,orid,string_ot,olat,olon,ml
-  write(rec1mail(6),*) '=========================================================================================='
-  write(rec1mail(7),*) 'sta  chan  dist  PGA     PGV     PGD   PGV/PGA  RMSA     Tp       Ia      v0     Pd      Id'
-  write(recemail(8),*) '            km  cm/s*s   cm/s    cm       s    cm/s*s    s       cm/s    I/s    cm*s'
-  write(rec1mail(9),*) '------------------------------------------------------------------------------------------'
-
-!-----------------------------------------------------------------------------------------------------
-
 
       write(subchan,*) "chan =~/"//chanexpr
 
@@ -346,8 +318,12 @@ print *, '======================================================================
 !----------------------------------------------------------------------
 ! response filename
 !
-    call dbjoin(db_in,db_re,db_s,0,0,0,0,"")
+    call dbjoin(db_in,db_si,db_s,0,0,0,0,"")
     call dbsubset(db_in,db_in,subchan,"")
+    subset = 'chan == "'//chan(1:3)//'"'
+    call dbsubset(db_in,db_in,subset,"")
+    write(subset,*) "time < ",otime, " && endtime > ",otime
+    call dbsubset(db_in,db_in,subset,"")
     call dbjoin(db_in,db_in,db_i,0,0,0,0,"")
     call dbquery(db_in,dbRECORD_COUNT, n_in)
 !----------------------------------------------------------------------
@@ -380,7 +356,9 @@ print *, '======================================================================
 
         CALL DISTAN(elat,elon,slat,slon,delta1,dista,az)
 		
-		dista=sqrt(dista**2+depth**2)
+        write(6,*) 'Distance epic.:', dista
+        ipdista=sqrt(dista**2+depth**2)
+        write(6,*) 'Distance hypo.:', ipdista
         delta=dista/111.195
 
         IF(diff.GT.180.) az=360.-az
@@ -518,7 +496,6 @@ print *, '======================================================================
 !----------------------------------------------------------------------
 !   Define signal-noise start time and end time
 !         
-	 t0_req = arrP - pretime
          t1_req = arrP + postime
 	 t1o_req = t1_req
 	 t3_req = arrP - tnoise - 2.
@@ -541,6 +518,7 @@ print *, '======================================================================
 
      nremw = 0
      npar = 0
+     npar1 = 0
 
      if(icha.eq.1) then
        tsta = tsta+1
@@ -578,8 +556,35 @@ print *, '======================================================================
        dbreco=''
      enddo
      npar=npar+1
-     itest=dbcrunch(dbP1) 
+     itest=dbcrunch(dbP1)
+!----------------------------------------------------------------------
+!    Open output table wfdamage
+!
+     call dblookup(dbP2, db, "", "wfdamage", "", "")
+     if(dbP2(2) .lt. 0) call die ( 0, "Can't open table" )
+     call dbquery ( dbP2, dbRECORD_COUNT, nn1 )
 
+     if(nn1 .gt. NMAX) then
+                print *, "Number of records in wfdamage table:", nn1
+                        call die ( 0, "Table wfdamage number of record > NMAX" )
+     endif
+
+     write(ptest,'(a6,1x,a8,1x,i8)') sta,chan,orid
+
+     npar1 = nn1
+     do i=0,nn1-1
+       dbP2(4) = i
+       itest=dbget(dbP2,dbreco1)
+       param(i)=dbreco1(1:24)
+       if(ptest.eq.dbreco1(1:24)) then
+         itest=dbmark(dbP2)
+         npar1=npar1-1
+       endif
+       dbreco=''
+     enddo
+     npar1=npar1+1
+     itest=dbcrunch(dbP2)
+!--------------------------------------------------------------------- 
      if(icha.eq.2.and.Mwflag.gt.0) then
 !----------------------------------------------------------------------
 !    Open output table stamw
@@ -686,9 +691,9 @@ print *, '======================================================================
     if(npts.gt.0.and.npts.lt.NMAX) then
 !-------------------------------------------------------------------
             if((t3_req-t3).lt.0.0.and.abs(t3_req-t3).gt.0.5) then 
-	      if(verb.ge.1) write(6,*) 'Pretime ',pretime+(t3_req-t3),' less then pf pretime ',pretime
+	      if(verb.ge.1) write(6,*) 'tnoise ',tnoise+(t3_req-t3),' less then pf tnoise ',tnoise
 	    endif
-	    if(t1.lt.t1_req) write(6,*) '     Wform end time less then pf posttime ',postime 
+	    if((t1+0.5).lt.t1_req) write(6,*) '     Wform end time less then pf posttime ',postime 
 
 !-----------------------------------------------------------------------
 !  Signal pre-process
@@ -948,7 +953,8 @@ print *, '======================================================================
 !
 
               if(fsup.gt.finf.and.finf.lt.1.1) then 
-                if(ifilt.gt.2.or.ifilt.lt.3.and.ff1.ge.fmin.and.ff2.lt.fmax) then
+!               if(ifilt.gt.2.or.ifilt.lt.3.and.ff1.ge.fmin.and.ff2.lt.fmax) then
+               if(ff1.ge.fmin.and.ff2.le.fmax) then
 
 !	      open(22,file='Filtered')
 !	      open(23,file='Corrected')
@@ -985,7 +991,7 @@ print *, '======================================================================
 !
 !  Butterworth filter
 !
-	            if(ifilt.eq.2) then
+	            if(ifilt.eq.2.or.ifilt.eq.4) then
 	              if(np1.ne.0)sism(i2) = sism(i2)*hsb1(i2)
                       if(np2.ne.0)sism(i2) = sism(i2)*hsb2(i2)
 	            endif
@@ -1091,7 +1097,7 @@ print *, '======================================================================
 
               enddo
 !
-		    if(verb.gt.1) close(3)
+	      if(verb.gt.1) close(3)
 !---------------------------------------------------------------------------
 !       Compute response spectra
 !
@@ -1099,32 +1105,72 @@ print *, '======================================================================
 	          PSA03=0.0
 	          PSA10=0.0
 	          PSA30=0.0
-              IRANGE=0
-!
+              IRANGE=1
               call RESPEK(sampint,nptsSi,sismoA)
-!
+              label = home_dir(1:strlen)//"/respectra/"
+              inquire(FILE=label,EXIST=exis)
+              if(exis) then
+!               write(*,*) "Directory ",TRIM(label)," already exists."
+              else
+                command = "mkdir "//label
+                call system(TRIM(command))
+                write(*,*) "Directory ",TRIM(label)," created."
+              endif
+              call epoch2str(string_ot1,otime,"%G")
+              label=TRIM(label)//TRIM(string_ot1)
+              inquire(FILE=label,EXIST=exis)
+              if(exis) then
+!               write(*,*) "Directory ",TRIM(label)," already exists."
+              else
+                command = "mkdir "//label
+                call system(TRIM(command))
+                write(*,*) "Directory ",TRIM(label)," created."
+              endif
+              call epoch2str(string_ot1,otime,"%H%M%S")
+              label = TRIM(label)//"/"//TRIM(string_ot1)
+              inquire(FILE=label,EXIST=exis)
+              if(exis) then
+!               write(*,*) "Directory ",TRIM(label)," already exists."
+              else
+                command = "mkdir "//label
+                call system(TRIM(command))
+                write(*,*) "Directory ",TRIM(label)," created."
+              endif
+              filspt = TRIM(label)//"/"//sta(1:nch)//"-"//chan(1:nch1)//".spt"
+              open(30,file=filspt)
+	      do i2=1,IP
+!               if((1.0/PD(i2)).ge.ff1.and.(1.0/PD(i2)).le.ff2) then
+!!	          write(30,"(4(1x,e13.6))") PD(i2),SA(1,i2)*1.0e-07,SV(1,i2)*1.0e-07,SD(1,i2)*1.0e-07
+                  write(30,"(4(1x,e13.6))") PD(i2),SA(1,i2)*1.0e-07
+!               endif
+	      enddo
+	      close(30)
+              write(*,*) "     response spectrum file: ",filspt," created"
+              write(*,*) "     min freq: ",ff1," max freq: ",ff2
+!----------------------------------------------------------------------------
+	          PSA03=0.0
+	          PSA10=0.0
+	          PSA30=0.0
+              IRANGE=0
+              call RESPEK(sampint,nptsSi,sismoA)
 	          do i3=1,1
 	            write(idum,'(i1)') i3
-                    filspt=sta(1:nch)//"-"//chan(1:nch1)//".spt0"//idum
-!	            open(30,file=filspt)
 	            do i2=1,IP
-!	              write(30,"(4(1x,e13.6))") 1.0/PD(i2),SA(i3,i2),SV(i3,i2),SD(i3,i2)
                       if(i3.eq.1) then
 	                if(abs(PD(i2)-0.3).lt..001.and.ff1.le.3.0) PSA03=SA(i3,i2)
 	                if(abs(PD(i2)-1.0).lt..001.and.ff1.le.1.0) PSA10=SA(i3,i2)
 	                if(abs(PD(i2)-3.0).lt..001.and.ff1.le.0.3) PSA30=SA(i3,i2)
 		      endif 
 	            enddo
-!	            close(30)
 	          enddo
 !---------------------------------------------------------------------------
 !    Compute Arias
 !         
               call ENERGY(sismoA,sampint,nptsSi,energ,dura,te)
-              RMSA = energ/dura
+              RMSA = sqrt(energ/dura)
               Arias = energ * pi / (grav * 2.0)
 
-!------------------------------------------------------------------------ ---
+!---------------------------------------------------------------------------
 !    Housner intensity - Mar 2007 Giovanni
 !
               IRANGE=1
@@ -1133,10 +1179,11 @@ print *, '======================================================================
 !	              
 	      delhou=abs(PD(1)-PD(2))
               Housner=0.0
-
               do ihou=1,200
 !	        write(31,*) PD(ihou),SV(3,ihou),pssv(3,ihou)
-	        Housner=Housner+(SV(1,ihou)*delhou)
+                if(PD(ihou).ge.PERMIN.and.PD(ihou).le.PERMAX) then
+	          Housner=Housner+(SV(1,ihou)*delhou)
+                endif
 	      enddo
 !---------------------------------------------------------------------------
 !   write parameters file
@@ -1152,16 +1199,7 @@ print *, '======================================================================
 ! Compute saragoni Factor & Cosenza and Manfredi Damage Factor
 !
               Sarag = Arias/(te*te)
-              Mf = (2.*grav/pi)/(PGA*PGV)
-!---------------------------------------------------------------------------
-              dista=delta*111.195
-	      nemail =nemail+1
-	      write(recemail(nemail),"(1x,a4,1x,a3,1x,f4.0,2(1x,f5.2),8(1x,e7.2))") sta(1:nch),chan(1:nch1),dista &
-              &           ,ff1,ff2,PGA,PGV,PSA03,PSA10,PSA30,Arias,Housner
-!write(rec1mail(nemail),"(1x,a4,1x,a3,1x,f4.0,10(1x,e7.2))") sta(1:nch),chan(1:nch1),dista, PGA, PGV, &
-!             & PGD, (PGV/PGA)*100., RMSA, dura, Arias, Te, Sarag, Mf
-write(rec1mail(nemail),"(1x,a4,1x,a3,1x,f4.0,5(1x,f7.1),f7.2,f7.1,3(f7.2))") sta(1:nch),chan(1:nch1),dista, PGA, PGV, &
-             & PGD, (PGV/PGA)*100., RMSA, dura, Arias, Te, Sarag, Mf
+              Mf = (2.*grav/pi)*Arias/(PGA*PGV)
 !---------------------------------------------------------------------------
 			  if(verb.ge.1) then
 			    write(6,220) PGA,PGV,PGD
@@ -1175,7 +1213,7 @@ write(rec1mail(nemail),"(1x,a4,1x,a3,1x,f4.0,5(1x,f7.1),f7.2,f7.1,3(f7.2))") sta
               
 			  iterOK=1
 !---------------------------------------------------------------------------
-!   add record to the db table wfparams 
+!   add record to the db tables wfparam  and wfdamage
 !
               lddate=now()
 
@@ -1184,33 +1222,58 @@ write(rec1mail(nemail),"(1x,a4,1x,a3,1x,f4.0,5(1x,f7.1),f7.2,f7.1,3(f7.2))") sta
               if(PSA30.lt.1.0e-06) PSA30 = -999.
               if(PGA.lt.1.0e-06) PGA = -999.
               if(PGV.lt.1.0e-06) PGV = -999.
+              if(PGD.lt.1.0e-06) PGD = -999.
               if(Arias.lt.1.0e-06) Arias = -999.
               if(Housner.lt.1.0e-06) Housner = -999.
 
+              if(RMSA.lt.1.0e-06) RMSA = -999.
+              if(Sarag.lt.1.0e-06) Sarag = -999.
+              if(Te.lt.1.0e-06) Te = -999.
+              if(Mf.lt.1.0e-06) Mf = -999.
+              if(PGD.lt.1.0e-06) PGD = -999.
+
               if(PGA.gt.-999..or.PGV.gt.-999.) then
+!--------------------------------------------------------------------
+! write records in wfparam table
+!
 	        t2 = t3 + (nptsSi-1)*sampint
                 write(dbreco,230) sta,chan,orid,filter,t3,t2,	   &
-              &                 mlsta,dista,az,PGA,PGV,	   &
-              &                 PSA03,PSA10,PSA30,Arias,Housner, &
-              &                 arid,auth,lddate
+                &                 mlsta,dista,az,PGA,PGV,	   &
+                &                 PSA03,PSA10,PSA30,Arias,Housner, &
+                &                 arid,auth,lddate
  230            format(a6,1x,a8,1x,i8,1x,a30,2(1x,f17.5),3(1x,f7.2), &
-              &      7(1x,f15.6),1x,i8,1x,a15,1x,f17.5)
+                &      7(1x,f15.6),1x,i8,1x,a15,1x,f17.5)
 
 	        istor=dbP1(4) 
 
 	        dbP1(4)= npar
 		itest = dbadd(dbP1,dbreco)
-	        if(itest.lt.0) call die ( 0, "Can't write record" )
+	        if(itest.lt.0) call die ( 0, "Can't write record in table wfparam" )
+!--------------------------------------------------------------------
+! write records in wfdamage table
+!
+                write(dbreco1,231) sta,chan,orid,PGD,dura,RMSA,Sarag,Te,Mf,auth,lddate
+ 231            format(a6,1x,a8,1x,i8,1x,6(1x,f15.6),1x,a15,1x,f17.5) 
+
+                istor1=dbP2(4)
+
+                dbP2(4)= npar1
+                itest = dbadd(dbP2,dbreco1)
+                if(itest.lt.0) call die ( 0, "Can't write record in table wfdamage" )
+!--------------------------------------------------------------------
                endif
 !-----------------------------------------------------------------------------
-              if(icha.eq.2) chanflag=chanflag+1
-              if(icha.eq.3) chanflag=chanflag+1
+               if(icha.eq.2) chanflag=chanflag+1
+               if(icha.eq.3) chanflag=chanflag+1
 !-----------------------------------------------------------------------------
    else
     if(verb.ge.1) write(6,*) '     SNR test not passed ',sta,'_',chan,' REMOVED'
    endif
   else
-   if(verb.ge.1) write(6,*) '     fsup lt finf ',sta,'_',chan,' REMOVED'
+   if(verb.ge.1) then 
+     if(fsup.lt.finf) write(6,*) '     fsup lt finf ',sta,'_',chan,' REMOVED'
+     if(fsup.lt.finf) write(6,*) '     finf lt 1.1 Hz ',sta,'_',chan,' REMOVED'
+   endif
   endif
 !
 ! end if frequency range
@@ -1286,7 +1349,7 @@ write(rec1mail(nemail),"(1x,a4,1x,a3,1x,f4.0,5(1x,f7.1),f7.2,f7.1,3(f7.2))") sta
       write(6,*) '=================================='
       write(6,*) '  Mw computation  station REMOVED'
       write(6,100) dista,az,distmin*111.195,distrad*111.195
-100   format('    Distance:',f7.0,' Azimuth:',f5.0,' min distance:',f7.0,' max distance:',f7.0)
+100   format('    Distance:',f7.2,' Azimuth:',f7.2,' min distance:',f7.2,' max distance:',f7.2)
    endif
   endif
 !----------------------------------------------------------------------
@@ -1375,7 +1438,7 @@ endif	 ! magnitudo min n_ca
    neteqR=neteqR/float(nmwdat)
 
    do ii=1,nmwdat
-     sigmaMw=sigmaMw+(staMw(ii)-netMw)**2
+     sigmaMw=sigmaMw+(staMw(ii)-netMw)
    enddo
 
    sigmaMw = sqrt(sigmaMw**2/float(nmwdat))
@@ -1400,46 +1463,6 @@ endif	 ! magnitudo min n_ca
 !---------------------------------------------------------------------------------
 !  End MW network table
 !
-!---------------------------------------------------------------------
-!  Write ASCII param file for e-mail
-!
-
-    if(nemail.gt.8) then
-      write(labor,'(i7)') orid
-
-      labor = trim(adjustl(labor))
-      nch = len(trim(adjustl(labor)))
-      nch1 =len(trim(adjustl(dirpr)))
-
-      filepr = dirpr(1:nch1)//"Or"//labor(1:nch)//".par"
-      filepr1 = dirpr(1:nch1)//"Or"//labor(1:nch)//".pa1"
-
-      inquire (file=trim(adjustl(filepr)), exist = exi)
-
-      if(exi .eqv..false.) then
-        write(command,*) "mkdir ", dirpr(1:nch1)
-        call system (command)
-        print *, "PARAM dircetory created",command
-      endif
-
-      open(4,file=trim(adjustl(filepr)))
-      open(74,file=trim(adjustl(filepr1)))
-
-
-      if(nmwdat.gt.0) then	
-        write(labMw,'(f3.1)') netMw
-        recemail(5)= recemail(5)(1:92)//' Mw= '//labmw
-        rec1mail(5)= rec1mail(5)(1:92)//' Mw= '//labmw
-      endif
-      do i=1,nemail
-        write(4,400) recemail (i)
-        write(74,400) rec1mail (i)
-      enddo
-      write(4,*) '================================================================================='
-      write(74,*) '================================================================================='
-      close(4)
-      close(74)
-    endif
  endif
 !---------------------------------------------------------------------
 !
@@ -1699,20 +1722,20 @@ end
 ! 
       parameter ( NMAX = 100000 )
       character*1 labG
-	  character*18 transfile
+      character*18 transfile
       real first,inc,last,omega,absval,amaxa,phase
-	  real*8 f1, f2
+      real*8 ff1,ff2,f1, f2
       complex t(NMAX),hrvres,NUM,DEN,D,awcal
       complex P(20),Z(20),xder(NMAX)
-      integer np1
-      integer np2
+!      integer np1
+!      integer np2
       complex hs1
       complex hs2
       complex hsb1
       complex hsb2
       real sqbsum,abmax
       common/BUT/sqbsum,abmax,hsb1(NMAX),hsb2(NMAX)
-      common/RDATI/ifilt,np1,np2,f1,f2
+      COMMON/RDATI/f1,f2,ifilt,np1,np2
       COMMON/RPAZ/ P,Z,npoli,nzero,Campl,percal
       COMMON/CPAZ/ t,phase(NMAX),absval(NMAX),freq(NMAX)
       COMMON/GAUSS1/XGAU(NMAX)
@@ -1749,6 +1772,7 @@ end
 
         hs1 = cmplx(1.0,0.0)
         hs2 = cmplx(1.0,0.0)
+        print *,"Subroutine PAZ compute Butterworth filter for frequency range: ", f1, f2
 !-----------------------------------------------------------------------
       twopi=6.28318530717959D0
 !-----------------------------------------------------------------------
@@ -1804,9 +1828,9 @@ end
         stop
         endif   
 !
-      D = CMPLX(0.0,OMEGA)
+        D = CMPLX(0.0,OMEGA)
 !        
-      xder(idat)=D
+        xder(idat)=D
 !        
 !-----------------------------------------------------------------------
         NUM=CMPLX(1.0e+00,0.0e+00)
@@ -1828,11 +1852,11 @@ end
         awcal = NUM/DEN
         HRVRES = Campl*awcal
 !========================================================================
-      if(ifilt.eq.2) then
+        if(ifilt.eq.2.or.ifilt.eq.4) then
 !
 ! Calculate Butterworth filter for equivalent frequencies
 
-           if(f1.ne.0.0.and.np1.ne.0) call Bworth(f,f1,-np1,hs1)
+           if(f1.ne.0.0.and.np1.ne.0)call Bworth(f,f1,-np1,hs1)
            if(f2.ne.0.0.and.np2.ne.0)call Bworth(f,f2,np2,hs2)
            if(np1.ne.0.or.np2.ne.0)then
                         if(idat.eq.npunti/2+1)then
@@ -1851,7 +1875,7 @@ end
                 hsb1(idat)=hs1
                 hsb2(idat)=hs2
 !---------------------------------------------------------------------
-       endif
+        endif
 
 !=====================================================================      
         t(idat)=hrvres
@@ -2185,12 +2209,17 @@ end
       DIMENSION X1(NMAX)                                                       
 !                                                                               
 !      DEFINE THE VALID FREQUENCY RANGE                                         
-!                                       	                                      	
+!
+! Modifica terremoto emilia:
+!
+      PERMIN1= 0.02
+      PERMAX1= 3.5
+!                                             	                                      	
       IF(IRANGE.EQ.1) THEN                                                      
          IP=200                                                                                                          
-         DELPER=(PERMAX-PERMIN)/200.                                          
-         DO 1 I=1,IP                                                            
-         PD(I)=PERMIN+(DELPER*(I-1))                                       
+         DELPER=(PERMAX1-PERMIN1)/200.                                          
+         DO 1 I=1,IP
+           PD(I)=PERMIN1+(DELPER*(I-1))                                       
    1     CONTINUE                                                               
       ELSE                                                                      
          IP=IP1                                                                 
@@ -2633,10 +2662,6 @@ end
       SUBROUTINE ENERGY(z1,dt,nstop,w,dura,te)
       parameter (NMAX = 100000)
 !
-! PROGRAMMA CHE CALCOLA L'ENERGIA DI ACCELERAZIONI STRONG-MOTION
-! (VEDI PAG.163 'RENDICONTI SCUOLA INTERN. DI FISICA 'E.FERMI'',
-! LXXXV CORSO, 1983)
-!
  	DIMENSION Z(NMAX),Z1(NMAX)
 	W=0.0D+00
         dura = 0.0
@@ -2644,7 +2669,8 @@ end
 	i5stop=0
 !
  	nstart=1
-	wpcent=5.
+	wpcent0=5.
+        wpcent1=95.
 ! compute amaxa
 	amaxa=0.0D+00
 	amina=0.0D+00
@@ -2656,8 +2682,25 @@ end
 !------------------------------------------
 	  if(abs(z(i)).GT.amaxa) amaxa=abs(z(i))
 	enddo
-        test=amaxa*wpcent/100.d+00
-!	write(*,*)'test',test
+!--------------------------------------------
+! compute total Energy
+!
+        zz=0.0
+        zz1=0.0
+        W=0.0
+        DO I=nstart,nstop
+          zz=z(i)
+          zz1=z(i+1)
+          W=W+DT*(ZZ*ZZ+ZZ1*ZZ1)/2.0D+00
+          if(sign(1.0,z(i)).ne.sign(1.0,z(i+1))) icount =icount+1
+        ENDDO
+        write(*,*) "     Total energy: ",W," nstart nstop:, ",nstart,nstop
+        if(w.lt.1.0e-09) write(*,*) "WARNING!!!! subroutine ENERGY: ",i5start,test,amaxa,wpcent,nstart,nstop
+!
+        test=amaxa*wpcent0/100.d+00
+        test0=W*wpcent0/100.d+00
+        test1=W*wpcent1/100.d+00
+        write(*,*) "     ",wpcent0,'% energy:',test0,wpcent1,"% energy:",test1
 !------------------------------------------
 ! i5start is the first sample for which the amplitude is gt 5% of the peak
 ! i5stop  is the last  sample for which the amplitude is gt 5% of the peak
@@ -2679,23 +2722,40 @@ end
         enddo
  2      continue
 	if(i5stop.ge.nstop) i5stop=nstop-1
+        write(*,*) "i5start i5stop:, ",i5start,i5stop
 !--------------------------------------------
 ! compute Energy
 !
-	DO I=i5start,i5stop
+        zz=0.0
+        zz1=0.0
+        W=0.0
+        Wtmp=0.0
+        i6start=0
+        i6stop=0
+	DO I=nstart,nstop
 	  zz=z(i)
 	  zz1=z(i+1)
-	  W=W+DT*(ZZ*ZZ+ZZ1*ZZ1)/2.0D+00
-          if(sign(1.0,z(i)).ne.sign(1.0,z(i+1))) icount =icount+1
+	  Wtmp=Wtmp+DT*(ZZ*ZZ+ZZ1*ZZ1)/2.0D+00
+          if(Wtmp.ge.test0.and.Wtmp.le.test1) then
+            if(i6start.eq.0) i6start=i
+            W=W+DT*(ZZ*ZZ+ZZ1*ZZ1)/2.0D+00
+            if(sign(1.0,z(i)).ne.sign(1.0,z(i+1))) icount =icount+1
+          else
+            if(i6stop.eq.0.and.Wtmp.gt.test1) i6stop=i
+          endif  
         ENDDO
-        if(w.lt.1.0e-09) write(*,*) "WARNING!!!! subroutine ENERGY: ",i5start,test,amaxa,wpcent,nstart,nstop
+        write(*,*) "      Duration energy: ",W," i6start i6stop:, ",i6start,i6stop
 !-------------------------------------------------
 ! compute duration
 !
-        dura = (i5stop - i5start) * DT
-!
-        te = float(icount)/dura
+        dura1 = (i5stop - i5start) * DT
+        dura = (i6stop - i6start) * DT
+        write(*,*) dura,dura1
+!------------------------------------------------------------------------
+! compute intensity of zero crossing
 
+        te = float(icount)/dura
+!
         write(*,100) w,dura, icount, te
   100   format(/,1x,'     Energy:',e9.4,' duration:',e9.4,' icount:',i8,' Te:',e9.4)
         RETURN
@@ -2711,7 +2771,7 @@ end
 !
 !   VEDI IN : K.E. BULLEN 'AN INTRODUCTION TO THE THEORY OF SEISMOLGY'
 !
-!   PAG 154: 'CALCULATION OF THE EPICENTRAL DISTANCE.....'
+!   PAG 151: 'CALCULATION OF THE EPICENTRAL DISTANCE.....'
 !
 !      ESEMPIO  DI IMPUT TAPE5 :
 !
@@ -2725,7 +2785,7 @@ end
 !
 !
       real*8 ELAT,ELON,SLAT,SLON,DELTA,Z
-	  real dist
+      real dist
       REAL H1,H2
       SLA=SLAT
       SLO=SLON
@@ -2791,6 +2851,8 @@ end
 !-----------------------------------------------------------
       DELTA=DELTA*RD
       DIST=DELTA*AR
+!-----------------------------------------------------------
+write(6,*) 'SUB DISTAN: ',ELAT,ELON,SLAT,SLON,DELTA,DIST,Z
       RETURN
       END
 !
@@ -2938,8 +3000,8 @@ SUBROUTINE Mw_core(dbremw,sismoEc,sismoNc,t,npts,nptsW,inc,azR,arrSo,dista,Q,fin
   qual = -999.0
 
   nmwdat = nmwdat + 1
-
-  if(fsup.gt.20.0) fsup = 20.0
+  print *, '>>>>>>>>>>>>>>>>> SUP: ', fsup
+  !if(fsup.gt.20.0) fsup = 20.0
 	  
 !------------------------------------------------------------------------
 
@@ -3077,39 +3139,39 @@ SUBROUTINE Mw_core(dbremw,sismoEc,sismoNc,t,npts,nptsW,inc,azR,arrSo,dista,Q,fin
 
 	  enddo
 
- 	  if(verb.eq.3) close(56)
+     if(verb.eq.3) close(56)
 !------------------------------------------------------------
 ! Andrews - Antonella 2008
 !------------------------------------------------------------
-      rho =2700.
-	  v = 3400.
+      rho = 2700.
+      v = 3400.
       e=0
-	  k=0.63
+      k=0.63
 !------------------------------------------------------------	  
-	  freq1=0.0
-	  SD2= 0.0
-	  SV2= 0.0
+      freq1=0.0
+      SD2= 0.0
+      SV2= 0.0
 
       fsup=40.
 
       test=0
-	  test1=0
+      test1=0
 
       do ii=2,npts2+1
-	    freq1=freq1+inc
-	    if(freq1.ge.finf.and.freq1.le.fsup) then
-		  e=e+1
-		  if(test.eq.0) then
-		   inf=ii
-		   test=1
-		  endif
+        freq1=freq1+inc
+	if(freq1.ge.finf.and.freq1.le.fsup) then
+          e=e+1
+          if(test.eq.0) then
+	    inf=ii
+	    test=1
+	  endif
           S2(e)=spetrDqd(ii)**2
           V2(e)=spetrVqd(ii)**2
-		  sup=ii
-		endif
+          sup=ii
+	endif
       enddo
 
-	  nptse=e
+      nptse=e
 
       do i=1,nptse-1
 
