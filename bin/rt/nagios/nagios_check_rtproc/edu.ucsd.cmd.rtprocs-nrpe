@@ -6,9 +6,9 @@ Copyright (c) 2007 Dartware, LLC. All rights reserved.
 type = "cmd-line"
 package = "edu.ucsd"
 probe_name = "cmd.rtproc-nrpe"
-display_name = "IGPP Custom/Antelope/Realtime Process (NRPE)"
+display_name = "Servers-Proprietary/Antelope/Realtime Process (NRPE)"
 human_name = "Realtime Process (NRPE)"
-version = "1.0"
+version = "1.1"
 address_type = "IP"
 </header>
 <description>
