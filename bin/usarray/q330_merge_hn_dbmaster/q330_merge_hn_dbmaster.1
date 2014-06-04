@@ -1,0 +1,56 @@
+.TH Q330_MERGE_HN_DBMASTER 1 "$Date$"
+.SH NAME
+q330_merge_hn_dbmaster \- merge q330 broadband and strong motion data with different filter types 
+.SH SYNOPSIS
+.nf
+\fBq330_merge_hn_dbmaster \fP[-v] [-V] \fIbb_db\fP \fIsm_db\fP
+.fi
+.SH DESCRIPTION
+\fBq330_merge_hn_dbmaster\fP is designed to merge q330 broadband and strong motion data with different filter types.
+The q330 allows for different types of filters on broadband and strong motion channels.  Some
+configurations which happen in real life include using acausal filters on broadband
+sensors and causal filters on strong motion channels.
+
+This program was written to address specific issues at the ANF for the USArray TA.
+To build proper metadata for q330s using both causal and acausal filters, there is a 
+multiple step process.
+
+.nr step 1 1
+.IP \\n[step]) 3
+create one dbbuild batch file for the bb sensor and one dbbuild batch file for the sm sensor
+.IP \\n+[step])
+run \fBdbbuild\fP on both batch files creating two different dbs, \fIsm_db\fP and \fIbb_db\fP
+.IP \\n+[step])
+run \fBq330_merge_hn_dbmaster\fP \fIbb_db\fP \fIsm_db\fP
+
+\fBq330_merge_hn_dbmaster\fP will merge the relevant parts of the \fIsm_db\fP into \fIbb_db\fP. 
+
+.SH ARGUMENTS
+.IP \fIbb_db\fP 
+broadband database previously created with \fBdbbuild\fP.
+.IP \fIsm_db\fP 
+strong motion database previously created with \fBdbbuild\fP.
+.SH OPTIONS
+.IP -v
+verbose
+.IP -n
+No execution.  Will show commands if -v option used.
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+dbbuild(1)
+dbsubset(1)
+dbnextid(1)
+dbmerge(1)
+.fi
+.SH "BUGS AND CAVEATS"
+This program does most the work using perl system calls to the Datascope interface.
+.SH AUTHOR
+Frank Vernon
+.br
+IGPP, UCSD

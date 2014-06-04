@@ -1,0 +1,54 @@
+.TH AUTODRM2DB 1 
+.SH NAME
+autodrm2db \- convert autoDRM responses to a database
+.SH SYNOPSIS
+.nf
+autodrm2db [-vV] input-file [file ..] database
+.fi
+.SH DESCRIPTION
+autodrm2db attempts to read autoDRM responses and 
+create or update a database with the contents.  
+The waveforms are not converted to a different input
+type, but rather the corresponding wfdisc row refers 
+to the input autodrm response directly.
+.SH OPTIONS
+.IP -v
+Be verbose
+.IP -V
+Be extremely verbose.
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.nf
+autodrm2db autodrm_mail database
+.fi
+.RE
+.ft R
+.SH "SEE ALSO"
+.nf
+autodrm(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The resulting database may differ depending on the order of the
+information in the autoDRM response.  Generally, it's good
+to get channel and site information, then response information, 
+and finally waveform data.
+.LP
+autodrm2db will not resolve any conflicts found.
+.LP
+There are multiple output formats for different autodrm
+servers and versions.  
+Different servers follow different 
+conventions and have different restrictions on the format and
+order of the input requests.  Similarly, different servers
+may depart from the "standard" set of reply formats.
+.LP
+autodrm2db cannot accommodate all these differences, but should 
+probably be more tolerant than it is.
+.LP
+autodrm2db does not handle CONTINUED/CONTINUATION replies.
+The best way to handle these is to concatenate the different replies
+together and delete everything between CONTINUED and CONTINUATION
+lines.
+.SH AUTHOR
+Daniel Quinlan, Boulder Real Time Technologies, Inc.

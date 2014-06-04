@@ -1,0 +1,144 @@
+This is a MIME-encapsulated message
+
+--NAC27203.925241398/ament.brtt.com
+
+    **********************************************
+    **      THIS IS A WARNING MESSAGE ONLY      **
+    **  YOU DO NOT NEED TO RESEND YOUR MESSAGE  **
+    **********************************************
+
+The original message was received at Tue, 27 Apr 1999 09:16:39 -0600 (MDT)
+from ament.brtt.com [206.168.219.179]
+
+   ----- The following addresses had transient non-fatal errors -----
+<rt@shake.ucsd.edu>
+
+   ----- Transcript of session follows -----
+<rt@shake.ucsd.edu>... Deferred: Connection timed out with shake.ucsd.edu.
+Warning: message still undelivered after 4 hours
+Will keep trying until message is 5 days old
+
+--NAC27203.925241398/ament.brtt.com
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; ament.brtt.com
+Arrival-Date: Tue, 27 Apr 1999 09:16:39 -0600 (MDT)
+
+Final-Recipient: RFC822; rt@shake.ucsd.edu
+Action: delayed
+Status: 4.4.1
+Remote-MTA: DNS; shake.ucsd.edu
+Last-Attempt-Date: Tue, 27 Apr 1999 13:29:58 -0600 (MDT)
+Will-Retry-Until: Sun, 2 May 1999 09:16:39 -0600 (MDT)
+
+--NAC27203.925241398/ament.brtt.com
+Content-Type: message/rfc822
+
+Return-Path: <autodrm@brtt.com>
+Received: from ament.colorado.edu (ament.brtt.com [206.168.219.179])
+	by ament.brtt.com (8.9.1a/8.9.1) with SMTP id JAA26655
+	for <rt@shake.ucsd.edu>; Tue, 27 Apr 1999 09:16:39 -0600 (MDT)
+Date: Tue, 27 Apr 1999 09:16:39 -0600 (MDT)
+Message-Id: <199904271516.JAA26655@ament.brtt.com>
+To: rt@shake.ucsd.edu (Real Time System)
+From: autodrm@brtt.com
+Subject: User's Guide to Antelope_autodrm
+X-Mailer: Perl5 Mail::Internet v1.32
+Sender: autoDRM <autodrm@brtt.com>
+MIME-Version: 1.0
+
+   Users Guide for the Antelope AutoDRM Server.		
+   ---------------------------------------------
+    $Date: 2002/04/24 20:53:57 $ 
+
+To obtain data from this autoDRM server, send electronic
+mail to mail to the datacenter's autodrm request line, 
+(usually "autodrm@datacenter").
+
+The request e-mail contains commands starting in column one
+which specify what data you want to receive.  By convention,
+the keywords are written in upper case below, but the server
+understands any mix of upper and lower case.
+
+* The first line must start with : BEGIN
+* The last line starts with      : STOP
+
+The return address is taken by default from the mail header; however,
+you can specify the return address explicitly with the e-mail command:
+    
+    E-MAIL  return-address
+
+This autoDRM server does not support an ftp interface for large requests;
+all requests are returned via email.  If the result is too large, you
+may get an error return instead.  Multi-part email responses are not
+supported.
+
+Responses follow the GSE2.1 format.  Please refer to the following document
+for more information:
+
+GSE2.1
+    http://www.seismo.ethz.ch/home/autodrm_news.html
+
+
+The following commands are supported:
+=============================================================
+
+BEGIN Version-id                       First line in a request.  The version-id
+				       is ignored.
+
+MSG_TYPE request                       Second line of a GSE2.1 request (optional)
+
+MSG_ID message_id source_id            Third line of a GSE2.1 request message, (optional)
+				       The message_ID may be up to 20
+				       characters long.  This
+				       message_id and the source_id
+				       will appear as the reference_id
+				       (REF_ID) in the response!  The
+				       souce_id's are specified in the
+				       GSE2.0 documentation (max. 
+				       7chars) This line is optional
+				       on *this* AutoDRM but not at
+				       others (as e.g.  the GSETT-3
+				       IDC).
+
+E-MAIL email@return-address            E-Mail address where response should be sent.
+
+HELP                                   Send this document
+ 
+
+TIME [StartDateTime] TO [EndDateTime]  Definition of Start- and End-DateTime for request.
+                                       Times should conform to a format like: 
+						"1994/02/24 16:23:50.20"
+
+STA_LIST ABC [,D*] [,HIJK]             Stations desired 
+
+CHAN_LIST SHZ [,SHN] [,SLZ]            Channels desired
+
+WAVEFORM                               Get waveforms for specified Time/Channels
+
+WAVEF stn                              Similar to command WAVEFORM GSE2.0,
+                                       but no STA_LIST is required (station
+                                       stn' is defined on the command line).
+                                       Valid station names may be obtained using
+                                       the command SLIST (see there).
+                                       Multiple lines with this command (for 
+                                       additional stations) are allowed. This 
+                                       command must be preceeded by either the 
+                                       command TIME or the commands DATE1 and 
+                                       DATE2.
+
+STATION                                Get station-info for specified stations
+
+CHANNEL                                Get channel-info for specified channels
+
+RESPONSE                               Get response-data (calibration) of the
+                                       specified stations/channels
+
+
+OUTAGE                                 Get outage-info on specified channels
+
+STOP                                   This must be the last line of any request
+
+
+--NAC27203.925241398/ament.brtt.com--
+

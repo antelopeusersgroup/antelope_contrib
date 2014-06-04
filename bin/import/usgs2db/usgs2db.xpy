@@ -75,7 +75,10 @@ def main():
         ds.dbcreate(keydbname,keyschema)
 
         kdb=ds.dbopen(keydbname,'r+')
-    idmatch=kdb.lookup(table='idmatch')
+    try:
+        idmatch=kdb.lookup(table='idmatch')
+    except Exception,e:
+        print "Error :",e
     
 
     #proxies={'http':'http://138.22.156.44:3128'}

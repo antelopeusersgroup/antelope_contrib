@@ -2,7 +2,9 @@
 #include <fstream>
 #include <list>
 #include <string>
+#ifndef NO_ANTELOPE
 #include "db.h"
+#endif
 #include "VelocityModel_1d.h"
 using namespace std;
 namespace SEISPP
@@ -31,6 +33,7 @@ double VelocityModel_1d::getv(double zin)
 	dz=zin-v[nlayers-1];
 	return(v[nlayers-1]+dz*grad[nlayers-1]);
 }
+#ifndef NO_ANTELOPE
 // database constructor. 
 // property must be P or S.  Errors are thrown for a range of
 // likely problems.
@@ -96,6 +99,7 @@ VelocityModel_1d::VelocityModel_1d(Dbptr dbi,string name,string property)
 		 "Coding error:  property passed to database constructor must be either P or S"));
 	}
 }
+#endif
 /* Read from a file constructor.  fname is the file name to be 
 read and form is a format name.  Currently supports two 
 names:  rbh - Herrmmann synthetics package format; and 
@@ -117,9 +121,9 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 	if(input.fail())
 		throw(VelocityModel_1d_IOerror("Cannot open file "+fname,
 			"VelocityModel_1d constructor failed"));	
+	char line[255];
 	if(form=="rbh" || form=="plain")
 	{
-		char line[255];
 		double znow;
 
 		// throw away the first few lines for rbh format
@@ -156,18 +160,64 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 			// all values are 0 for gradient here
 			grad.push_back(0.0);
 		}
-		input.close();
 		nlayers = z.size();
 		// replace z values (currently intervals) with accumulated
 		// depth to top of each layer
 		for(i=1,z[0]=0.0;i<nlayers;++i)  z[i]+=z[i-1];
 	}
+        else if(form=="mod1d")
+        {
+            /* This will do a straight read of a mod1d table.  Require
+               all rows have the same model name tag and are sorted 
+               by depth. */
+            double zin,zlast,vin,gradin;
+            string modname,mnlast,property_name;
+            const string Ptag("Pvelocity");
+            const string Stag("Svelocity");
+            i=0;
+            while(input.getline(line,255))
+            {
+                stringstream ss(line);
+                ss>>modname;  ss>>property_name;
+                ss>>zin;   ss>>vin;   ss>>gradin;
+                if(i==0) 
+                {
+                    mnlast=modname;
+                    zlast=zin;
+                }
+                if(mnlast!=modname)
+                {
+                    input.close();
+                    throw VelocityModel_1d_IOerror(
+                      string("mod1d db table should subsetted to single model name"),
+                      string("name key not unique"));
+                }
+                if(zin<zlast)
+                {
+                    input.close();
+                    throw VelocityModel_1d_IOerror(
+                            string("mod1d db table should be sorted by depth"),
+                            string("table not sorted"));
+                }
+                if( ((property=="P") && (property_name==Ptag))
+                    || ((property=="S") && (property_name==Stag)) )
+                {
+                    z.push_back(zin);
+                    v.push_back(vin);
+                    grad.push_back(gradin);
+                    mnlast=modname;
+                    zlast=zin;
+                }
+            }
+            nlayers=z.size();
+        }
 	else
 	{
 		input.close();
 		throw(VelocityModel_1d_IOerror("Unrecognized format name = "+form,
 				"VelocityModel_1d constructor failed"));
 	}
+        input.close();
 }
 /* Standard copy constructor */
 VelocityModel_1d::VelocityModel_1d(const VelocityModel_1d& old)
@@ -189,6 +239,7 @@ VelocityModel_1d& VelocityModel_1d::operator=(const VelocityModel_1d& old)
 	}
 	return(*this);
 }
+#ifndef NO_ANTELOPE
 /* Save a model to a database */
 void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 	throw (VelocityModel_1d_Dberror)
@@ -220,4 +271,5 @@ void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
 	}
 
 }
+#endif
 } // Termination of namespace SEISPP definitions

@@ -6,7 +6,9 @@
 #include <string>
 #include "AttributeMap.h"
 #include "Metadata.h"
+#ifndef NO_ANTELOPE
 #include "dbpp.h"
+#endif
 using namespace std;
 namespace SEISPP
 {
@@ -41,6 +43,7 @@ namespace SEISPP
 	}
 	return result;
     }
+#ifndef NO_ANTELOPE
     void pf2metadatastring(Pf *pfin, map<string,string>& mdstr)
     {
         // Parameter files translate almost directly to the mstring
@@ -86,6 +89,7 @@ namespace SEISPP
         }
         freetbl(t,0);
     }
+#endif
     // constructors
     Metadata::Metadata(const Metadata& mdold)
     {
@@ -95,6 +99,7 @@ namespace SEISPP
         mstring=mdold.mstring;
     }
 
+#ifndef NO_ANTELOPE
     Metadata::Metadata(Pf *pfin)
     {
         pf2metadatastring(pfin,mstring);
@@ -116,7 +121,6 @@ namespace SEISPP
         pfnested = static_cast<Pf *>(result);
         pf2metadatastring(pfnested,mstring);
     }
-
     // constructor from an antelope database (possibly view) row driven by
     // mdlist and am.  The list of attributes found in mdlist are extracted
     // from the database row using dbgetv.  am defines how the Antelope
@@ -259,6 +263,7 @@ namespace SEISPP
         }
 	} catch (...) {throw;};
     }
+#endif
     //
     // These functions get and convert values
     //
@@ -397,6 +402,13 @@ namespace SEISPP
         bptr=mbool.find(name);
         if(bptr!=mbool.end()) mbool.erase(bptr);
     }
+#ifndef NO_ANTELOPE
+/* This constructor is a bit of a relic.   It has been superceded
+   by a child of Metadata called PfStyleMetadata that provides
+   a comparable functionality in a more general way with 
+   functionality comparable to the original antelope pf concepts.
+   That is, PfStyleMetadata provides support for Tbl and Arr 
+   constructs which Metadata does not. */
     /* File and string constructor.
        
        The algorithm used here is not at all extensible.  When and
@@ -448,6 +460,7 @@ namespace SEISPP
         freetbl(t,0);
         pffree(pf);
     }
+#endif
     bool Metadata::is_attribute_set(string key)
     {
         map<string,double>::iterator rptr;
@@ -521,8 +534,6 @@ namespace SEISPP
             double r;
             int iv;
             string s;
-            Tbl *t;
-            Arr *a;
             bool b;
 
             mdtest = mdti->mdt;
@@ -608,6 +619,7 @@ namespace SEISPP
         }
         return os;
     }
+#ifndef NO_ANTELOPE
     //
     // Small function to extract the entire metadata contents to a pf.
     // Implementation here is very crude being a memory pig and simultaneously
@@ -654,4 +666,5 @@ namespace SEISPP
         }
         return result;
     }
+#endif
 }                                                 // Termination of namespace SEISPP definitions

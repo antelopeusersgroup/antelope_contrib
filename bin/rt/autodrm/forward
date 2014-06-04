@@ -1,0 +1,7 @@
+"| /home/autodrm/autodrm_wrapper >> forward-errors 2>&1 || exit 75"
+# the redirection above can cause a request to fail if 
+# someone has the output file open when the request arrives.
+# 
+# The exit 75 causes sendmail to requeue the message and try later,
+# which could be convenient if autodrm_wrapper were being edited.
+# (Thanks to Nicholas Horn for the above suggestion)

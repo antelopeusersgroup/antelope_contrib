@@ -80,6 +80,7 @@ DATA= \
 	rt151_30.pf \
 	rt151_60.pf \
 	rt151_120.pf \
+	s13_yka.pf \
 	s13.pf \
 	s13e.pf \
 	s13n.pf \
@@ -102,6 +103,7 @@ DATA= \
 	sts2_g3.pf \
 	sts2_5.pf \
 	sts4_b.pf \
+	sts5.pf \
 	sv1.pf \
 	terratech.pf \
     titan_0_25_g.pf \

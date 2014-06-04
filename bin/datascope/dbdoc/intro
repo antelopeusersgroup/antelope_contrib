@@ -1,0 +1,73 @@
+.nr PO 1.25i .\" page offset.  With 6 inch LL, puts words in middle
+.nr PS 10
+.nr VS 12
+.\"  .ds LF Revision 1.0
+.\"  .ds CF Antelope V3 Database: Schema Reference Manual 
+.OH ' ' ' '
+.EH ' ' ' '
+.OF 'Revision 1.1'Antelope V3 Database: Schema Reference Manual'%'
+.EF '%'Antelope V3 Database: Schema Reference Manual'Revision 1.1'
+.de Lp
+.sp 0.5v
+.LP
+..
+.\" define a macro for bullet paragraph
+.de Bp
+.IP \(bu
+..
+.\"  draw a horizontal line
+.de Hl
+.br
+\l'\\n(LLu'
+..
+.de TI \" temporary indent 0 with extra .5 space
+.ti 0
+.sp .5
+..
+
+
+
+.LP
+The following document is patterned after
+(and much of it is copied directly from):
+.DS
+Technical Report C90-01
+September 1990
+
+Center for Seismic Studies
+Version 3 Database:
+Schema Reference Manual
+
+J. Anderson, W.E. Farrell, K. Garcia, J. Given, H. Swanger
+
+Center for Seismic Studies
+1300 N. 17th Street, Suite 1450
+Arlington, Virginia  22209-3871
+703/276-7900
+.DE
+.LP
+The present document, however, is derived directly from a schema file 
+used by Antelope's software.
+Both this document and the schema differ somewhat from 
+the original Technical Report from CSS.
+.LP
+This document differs in the following ways:
+.IP \(bu
+Tables and attributes not used in the data set have been deleted.
+.IP \(bu
+References to the ORACLE database representation are removed.
+.LP
+The schema may be entirely different.  If it's related to the 
+origin CSS 3.0 schema, the changes may be documented in the 
+Schema statement.
+.bp
+.EH 'Introduction' ' '
+.OH ' ' 'Introduction'
+.nr H1 1
+.nr H2 0
+.Lp
+.ce
+.B "\s+21.0 INTRODUCTION\s0"
+.Lp
+This volume describes a Datascope schema. 
+.bp

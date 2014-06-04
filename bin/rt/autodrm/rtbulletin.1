@@ -1,0 +1,82 @@
+.TH RTBULLETIN 1 
+.SH NAME
+rtbulletin \- create a bulletin from a database
+.SH SYNOPSIS
+.nf
+\fBrtbulletin \fP[-Av] [-s \fIsubset\fP] {\fIdatabase|view\fP} [\fIstart-time\fP [\fIperiod\fP|\fIend-time\fP]]
+.fi
+.SH DESCRIPTION
+\fBrtbulletin\fP creates a bulletin in autodrm format
+from input \fIdatabase\fP; the \fIdatabase\fP should
+contain event, origin, assoc and arrival tables.
+A time range may optionally be specified.
+.SH OPTIONS
+.IP "-A"
+standard autodrm(1) output
+.IP "-s subset"
+The specified \fIsubset\fP expression is used to \fIsubset\fP
+a join of event and origin.
+.IP -v
+Be more verbose
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+.ne 10
+%\fB rtbulletin -s "auth=~/UCSD.*/" db/knet 12/21/99 12/22/99\fP
+
+Event    24639 AFGHANISTAN-USSR BORDER REGION
+
+Date          Time        Err   RMS Latitude Longitude  Smaj\\
+  Smin  Az Depth   Err Ndef Nsta Gap  mdist  Mdist Qual   \\
+Author      OrigID
+1999/12/21 11:58:56.56   0.93  0.43  36.9037   72.0371  22.9\\
+  18.6  70  48.8  22.2   16    0 200   5.38   6.64 m i uk \\
+UCSD:vlad    71513
+
+.ne 34
+Sta     Dist  EvAz Phase        Time      TRes  Azim AzRes \\
+Slow   SRes Def   SNR       Amp   Per Qual Magnitude    ArrID
+AML     5.38  13.2 P        12:00:15.716  -0.5             \\
+          T__  57.0                 mc_         0.0   306825
+AML     5.38  13.2 S        12:01:18.757  -0.5             \\
+          T__                       mc_         0.0   307782
+UCH     5.65  18.9 P        12:00:20.094   0.1             \\
+          T__   7.8                 mc_         0.0   306827
+UCH     5.65  18.9 S        12:01:25.805  -0.3             \\
+          T__                       md_         0.0   307786
+KZA     5.74  24.6 P        12:00:21.018  -0.1             \\
+          T__                       mc_         0.0   307780
+KZA     5.74  24.6 S        12:01:28.767   0.7             \\
+          T__                       mc_         0.0   307788
+EKS2    5.91  12.5 P        12:00:23.871   0.7             \\
+          T__   9.4                 md_         0.0   306826
+EKS2    5.91  12.5 S        12:01:31.363  -0.4             \\
+          T__                       mc_         0.0   307789
+AAK     6.03  17.5 P        12:00:25.146   0.3             \\
+          T__   6.1                 mc_         0.0   306824
+AAK     6.03  17.5 S        12:01:35.391   0.6             \\
+          T__                       md_         0.0   307783
+KBK     6.17  20.3 P        12:00:27.100   0.3             \\
+          T__                       md_         0.0   307781
+ULHL    6.25  29.9 P        12:00:27.753  -0.1             \\
+          T__                       mc_         0.0   307785
+ULHL    6.25  29.9 S        12:01:40.635   0.5             \\
+          T__                       mc_         0.0   307792
+TKM2    6.61  23.3 P        12:00:32.483  -0.3             \\
+          T__                       mc_         0.0   307784
+USP     6.64  15.7 P        12:00:32.410  -0.6             \\
+          T__   5.2                 mc_         0.0   306828
+USP     6.64  15.7 S        12:01:49.469   0.1             \\
+          T__                       md_         0.0   307791
+
+.fi
+.in
+.ft R
+.SH "SEE ALSO"
+.nf
+autodrm(1)
+.fi
+.SH AUTHOR
+Daniel Quinlan

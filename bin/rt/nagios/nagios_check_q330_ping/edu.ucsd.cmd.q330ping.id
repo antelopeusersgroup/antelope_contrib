@@ -1,0 +1,48 @@
+<!--
+Simple Command Line Example (com.dartware.cmd.simple)
+Copyright (c) 2007 Dartware, LLC. All rights reserved.
+-->
+
+<header>
+  type         = "cmd-line"
+  package      = "edu.ucsd"
+  probe_name   = "cmd.q330ping"
+  human_name   = "Q330 Ping"
+  display_name = "Servers-Proprietary/Antelope/Q330 Ping"
+  version      = "1.1"
+  address_type = "IP"
+  flags        = "NAGIOS3"
+</header>
+
+<description>
+This probe runs the nagios_check_q330_ping Nagios plugin to send Quanterra Data Protocol ping packets to a Q330 to check for Q330 responsivness and packet loss along the data path.  The number of pings to send and corresponding loss thresholds are specified in the probe parameters. Thresholds are specified as a percent of packets lost.
+
+The probe parameters are:
+
+Hostname - The name of the hosts to be checked
+Packets  - The number of ping packets to sent to the host
+Alarm    - The percentage of ping packets lost out of the total sent that sets an alarm status
+Critical - The percentage of ping packets lost out of the total sent that sets an down status
+
+</description>
+
+<parameters>
+  "Packets" = "10"
+  "Alarm" = "20"
+  "Critical" = "60"
+</parameters>
+
+<command-line>
+  path = "/opt/antelope/$id/bin"
+  cmd = "nagios_check_q330_ping -H ${ADDRESS} -n ${Packets} -w ${Alarm} -c ${Critical}"
+</command-line>
+
+<command-exit>
+  okay: ${EXIT_CODE} = 0
+  alarm: ${EXIT_CODE} = 1
+  critical: ${EXIT_CODE} = 2
+  unknown: ${EXIT_CODE} = 3
+</command-exit>
+
+<command-display>
+</command-display>

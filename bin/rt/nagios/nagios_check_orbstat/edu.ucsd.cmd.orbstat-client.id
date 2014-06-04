@@ -1,0 +1,58 @@
+<!--
+Simple Command Line Example (com.dartware.cmd.simple)
+Copyright (c) 2007 Dartware, LLC. All rights reserved.
+-->
+
+<header>
+  type = "cmd-line"
+  package = "edu.ucsd"
+  probe_name = "cmd.orbstat-client"
+  human_name = "Orbstat Client"
+  display_name = "Servers-Proprietary/Antelope/Orbstat Client"
+  version = "1.2"
+  address_type = "IP"
+  flags = "NAGIOS3"
+</header>
+
+<description>
+This probe runs the \B\nagios_check_orbstat\P\ Nagios plugin with the -u
+option to check an orb for the latency value of a particular client to the
+orb. The orb, client name, and corresponding latency time thresholds are
+specified in the probe parameters. Thresholds are specified in seconds.
+
+The check is executed from the Intermapper server. It uses the address assigned
+to the probe object, checking the request \M\Orbport\P\
+
+\B\Parameters:\P\
+
+\MB\Orbport\P\ - The Antelope port name or number to check. Can be any valid
+name as defined in \I\orbserver_names.pf\P\. Default value is empty which means
+use the Antelope default port.
+
+\MB\Alarm\P\ and \MB\Critical\P\ - Latency threshold to set an alarm or Critical
+state. Values must be expressed as a decimal number.
+\MB\Alarm\P\ defaults to \I\600\P\. \MB\Critical\P\ defaults to \I\900\P\
+
+\MB\Clientname\P\ - The orb client name used to check the latency. Not a regex.
+
+</description>
+<parameters>
+"Clientname" = "orb2db"
+"Orbport" = ""
+"Alarm" = "300"
+"Critical" = "900"
+</parameters>
+<command-line>
+path = "/opt/antelope/$id/bin"
+cmd = "nagios_check_orbstat -o ${ADDRESS}:${Orbport} -u ${Clientname} -w ${Alarm} -c ${Critical}"
+</command-line>
+<command-exit>
+okay: ${EXIT_CODE} = 0
+alarm: ${EXIT_CODE} = 1
+critical: ${EXIT_CODE} = 2
+unknown: ${EXIT_CODE} = 3
+</command-exit>
+<command-display>
+\B5\Orbstat: ${ADDRESS}:${orbport} Client: ${Clientname}\P0\
+${nagios_output}
+</command-display>

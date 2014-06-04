@@ -34,6 +34,7 @@
 use integer;
 use Socket;
 use Getopt::Long;
+use Pod::Usage;
 use Q330pkt qw(qpkt_hdr_stuff qpkt_hdr_unstuff);
 use vars qw($opt_version $opt_help $opt_verbose $opt_warn $opt_crit
             $opt_host $opt_num $VERBOSE);
@@ -44,7 +45,7 @@ use nagios_antelope_utils qw(&categorize_return_value
 			     %ERRORS
 			     $VERBOSE);
 our $AUTHOR = "Chris Gross, UCSD ROADNet Project, cgross\@ucsd.edu";
-our $VERSION = '$Revision$';
+our $VERSION = '1.1';
 #our $PROGNAME = $0;
 our $DEFAULT_NUM = 10;
 our $SPECIAL_FUNCTIONS_PORT = 5331;
@@ -57,20 +58,18 @@ our $TIMEOUT = 8;
 ### PROTOTYPES
 sub ping();
 sub check_args();
-sub print_help();
-sub print_usage();
 
 MAIN:
 {
    my ($result_code, $result_perf);
-   Getopt::Long::Configure("bundling"); 
+   Getopt::Long::Configure("bundling");
    check_args();
 
    #if we return then everything checked out
 
    $result_code = ping();
 
-   # Catch the odd case here 
+   # Catch the odd case here
    if( ($result_code > 100 ) ){
 
 	print_results($NAGIOS_SERVICE_NAME,$ERRORS{'UNKNOWN'},$result_code,"% sucessful pings");
@@ -80,12 +79,12 @@ MAIN:
    ($result_code,$result_perf) = categorize_return_value($result_code, $warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low );
 
    # so we have a good result so lets categorize it and return
-   print_results($NAGIOS_SERVICE_NAME, $result_code, 
-		$result_perf, "% ping packet loss");       
+   print_results($NAGIOS_SERVICE_NAME, $result_code,
+		$result_perf, "% ping packet loss");
 
    exit $result_code;
 
-} 
+}
 
 
 ###Actual ping subroutine, sends and waits for pings
@@ -95,15 +94,15 @@ sub ping()
     my $counter = 0;
     my $packet = undef;
     my $rec = undef;
-    my $flag = 0;   
- 
+    my $flag = 0;
+
     #open the connection
     socket(TARGET, $DOMAIN, $TYPE, $PROTO) || die "Can't create socket!";
 
     $port = 0;
     $sockaddr = sockaddr_in( $port, INADDR_ANY );
     bind(TARGET, $sockaddr) || die "Can't bind socket!";
-    
+
     $port = $SPECIAL_FUNCTIONS_PORT;
     $ip_addr = inet_aton($opt_host);
     $connectaddr = sockaddr_in($port, $ip_addr);
@@ -115,14 +114,14 @@ sub ping()
     $ack = 0;
 
     $packet = qpkt_hdr_stuff($command,$ack,$payload);
-    
+
     $SIG{ ALRM } = sub { $flag = 1; };
 
     #send here, the required number of times
-    for( $i = 1; $i <= $opt_num; $i++)  
+    for( $i = 1; $i <= $opt_num; $i++)
     {
 	alarm $TIMEOUT;
-	if( $VERBOSE ){	
+	if( $VERBOSE ){
 		print "Sending ping packet $i to $opt_host\n";
 	}
 	send(TARGET,$packet,0);
@@ -133,11 +132,11 @@ sub ping()
 		}
 		@unpack = qpkt_hdr_unstuff($rec);
  		@unpack2 = unpack("n2",$unpack[7]);
-	
+
 		if( ($unpack[2] == 0x38 ) && ($unpack2[0] == 1) ){
  		 	$counter++;
-		} 
-	
+		}
+
 		$flag = 0;
 	}
 
@@ -149,26 +148,21 @@ sub ping()
     return (($opt_num-$counter)/$opt_num)*100;
 }
 
-###prints the usage message to the console
-#
-sub print_usage()
-{
-   print "Usage: $0 [-v] [-h] -H <Q330 to ping> -n <# of pings> -w warn -c crit\n";
-}
-
 ###check the arguments supplied
 sub check_args()
 {
     my ($fetching_params) = 0;
 
-    GetOptions("V"     => \$opt_version,  "version"  => \$opt_version,
-               "v"     => \$opt_verbose,  "verbose"  => \$opt_verbose,
-               "h"     => \$opt_help,     "help"     => \$opt_help,
-               "w=s"   => \$opt_warn,     "warn=s"   => \$opt_warn,
-               "c=s"   => \$opt_crit,     "crit=s"   => \$opt_crit,
-               "H=s"   => \$opt_host,     "host=s"   => \$opt_host,
-	       "n=s"   => \$opt_num,      "number=s" => \$opt_num
-               );
+    GetOptions(
+        "V"     => \$opt_version,  "version"  => \$opt_version,
+        "v"     => \$opt_verbose,  "verbose"  => \$opt_verbose,
+        "h"     => \$opt_help,     "help"     => \$opt_help,
+        "w=s"   => \$opt_warn,     "warn=s"   => \$opt_warn,
+        "c=s"   => \$opt_crit,     "crit=s"   => \$opt_crit,
+        "H=s"   => \$opt_host,     "host=s"   => \$opt_host,
+        "n=s"   => \$opt_num,      "number=s" => \$opt_num,
+    ) || pod2usage(-verbose => 0, -exitval => $ERRORS{'UNKNOWN'});
+
     # handle options here
     if ($opt_version)
     {
@@ -179,64 +173,120 @@ sub check_args()
     if ($opt_verbose)
     {
         $VERBOSE = 1;
+        $nagios_antelope_utils::VERBOSE = 1;
     }
 
     if ($opt_help)
     {
-        print_help();
-        exit $ERRORS{'OK'};
+        pod2usage({-exitval => $ERRORS{'OK'}, -verbose => 2, -input => \*DATA});
     }
 
     if (!defined $opt_num)
     {
-	$opt_num = $DEFAULT_NUM;
+        $opt_num = $DEFAULT_NUM;
     }
 
     # Gotta have warn, crit
     if ((!defined $opt_warn) || (!defined $opt_crit))
     {
-        print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        pod2usage({ -message => "Missing value for warn or crit",
+                -exitval => $ERRORS{'UNKNOWN'} });
     }
 
     # Make sure our source is a pforbstat source
     if (!defined $opt_host)
     {
-	print "Must specify at Target to ping!\n";
-	exit $ERRORS{'UNKNOWN'};
+        pod2usage({ -message => "Must specify at Target to ping!",
+                -exitval => $ERRORS{'UNKNOWN'} });
     }
-     # Deal with our ranges
+    # Deal with our ranges
     ($warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low) =
-	parse_ranges($opt_warn, $opt_crit);
+        parse_ranges($opt_warn, $opt_crit);
     if ((!defined $warn_at) || (!defined $warn_hi) || (!defined $warn_low)
-	|| (!defined $crit_at) || (!defined $crit_hi)
-	|| (!defined $crit_low))
+        || (!defined $crit_at) || (!defined $crit_hi)
+        || (!defined $crit_low))
     {
-	print "Error in threshold ranges!\n";
-	exit $ERRORS{'UNKNOWN'};
+        pod2usage({ -message => "Error in threshold ranges!",
+                -exitval => $ERRORS{'UNKNOWN'} });
     }
 
 }
 
-###prints the Help for the script
-#
-sub print_help()
-{
-   print_version($VERSION,$AUTHOR);
-   print_usage();
-   print "\n";
-   print "Check on the uptime of an orb based on a pforbstat packet coming";
-   print " back from it. Use the warn and crit options to set thresholds";
-   print " for alerting for recent downtime.";
-   print "\n";
-   print "-n  (--number)  = The number of packets to send (default: 10)\n";
-   print "-H  (--host)    = The address of the Q330 to ping (addr)\n";
-   print "-w  (--warn)    = Nagios % packet loss range ([@][min:]max) to "
-       . "trigger warning\n";
-   print "-c  (--crit)    = Nagios % packet loss range ([@][min:]max) to "
-       . "trigger critical\n";
-   print "-h  (--help)    = This help message\n";
-   print "-V  (--version) = The version of this script\n";
-   print "-v  (--verbose) = The verbosity of the output\n";
-   print "\n";
-}
+__END__
+
+=head1 NAME
+
+nagios_check_q330_ping - a Nagios plugin to ping Q330 via QDP PING packets.
+
+=head1 SYNOPSIS
+
+B<nagios_check_q330_ping> B<-H> I<host> [B<-v>] [B<-h>]
+B<-w> I<warn> B<-c> I<crit> B<-n> I<pings>
+
+=head1 DESCRIPTION
+
+F<nagios_check_q330_ping> is intended to be used as a plugin to
+the L<Nagios network monitoring system|http://www.nagios.org>. The plugin can
+be installed with other plugins (usually in the Nagios F<libexec>
+directory or F<$ANTELOPE/bin>) and called through the Nagios
+configuration files.
+
+This program sends off a series of C<QDP PING> packets to a Quanterra Q330
+unit. It then returns the percent of packet loss from the ping set.
+
+=head1 OPTIONS
+
+Like all Nagios plugins, more detailed and recent help, argument
+formats, etc. can be obtained via the B<-h> option of the program.
+
+This version includes support for Nagios-style ranges for warning
+and critical thresholds. According the the Nagios documentation, this
+is as follows:
+
+[B<@>]I<start>B<:>I<end>
+
+=head2 Notes:
+
+I<start> > I<end>
+
+I<start> and C<:> is not required if I<start> equals C<0>
+
+if range is of format I<start>B<:> and end is not specified,
+assume end is infinity
+
+to specify negative infinity, use C<~>
+
+alert is raised if metric is outside start and end range
+(inclusive of endpoints)
+
+if range starts with C<@>, then alert if inside this range
+(inclusive of endpoints)
+
+Critical and warning thresholds refer to packet loss from the ping sequence.
+
+=head1 BUGS AND CAVEATS
+
+Due to what appears to be a bug somewhere in Perl 5.8.0 on Linux (and
+possibly other platforms), this program does not build correct packets and
+is thereby ignored by the Q330. Since Antelope 4.7 ships on Linux with
+5.8.0, this software needs to use a different (system?) version of Perl to
+be functional. Perl 5.8.4 (possibly earlier versions as well) seems to
+have corrected the bug and this program behaves normally.
+
+=head1 SEE ALSO
+
+nagios_antelope_utils(3)
+nagios_check_orbstat(1)
+
+=head1 AUTHOR
+
+ Chris Gross
+ University of California, San Diego
+
+=head1 SUPPORT
+
+Contributed: NO BRTT support -- please contact author.
+
+=cut
+
+#vim:ft=perl

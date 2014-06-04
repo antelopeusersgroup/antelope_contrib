@@ -3,7 +3,7 @@
 rsync_baler \- Sync a remote baler directory to a local copy
 .SH SYNOPSIS
 .nf
-\fBrsync_baler \fP [-h] [-v] [-d] [-p \fIpf_file\fP]
+\fBrsync_baler \fP [-n] [-h] [-v] [-d] [-p \fIpf_file\fP]
                 [-m \fIemail\fP ] [-s select_\fIregex\fP ] [-r reject_\fIregex\fP ]
 .fi
 
@@ -62,6 +62,8 @@ if ( $pf{avoid_on_day_of_week} ) {
 
 
 .SH OPTIONS
+.IP -n
+Null/Dry run. No updates and no downloads.
 .IP -v
 Verbose.
 .IP -d

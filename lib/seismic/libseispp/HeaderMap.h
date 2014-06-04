@@ -113,6 +113,7 @@ template <class T> void HeaderMap::put(string name,
 			+ name
 			+ string(" is not defined for this header type"));
 	int nb=ithm->second.nbytes;
+        size_t o;
 	if(sizeof(T)!=nb)
 		throw SeisppError(base_error_message
 			+ name 
@@ -127,13 +128,14 @@ template <class T> void HeaderMap::put(string name,
 		throw SeisppError(base_error_message
 			+ name
 			+ string(" Attribute is marked invalid") );
+        default:
+		o=ithm->second.offset;
+		T *hptr;
+		unsigned char *a;
+		a=headerdata+o;
+		hptr=reinterpret_cast<T*>(a);
+		*hptr=value;
 	}
-	size_t o=ithm->second.offset;
-	T *hptr;
-	unsigned char *a;
-	a=headerdata+o;
-	hptr=reinterpret_cast<T*>(a);
-	*hptr=value;
 }
 } // End SEISPP namespace declaration
 #endif

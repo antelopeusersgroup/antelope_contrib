@@ -28,6 +28,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
 {
 	member=tceold.member;
 }
+#ifndef NO_ANTELOPE
 TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 	MetadataList& station_mdl,
         	MetadataList& ensemble_mdl,
@@ -581,6 +582,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		throw;
 	}
 }
+#endif
 
 // Partial copy constructor copies metadata only.  reserves nmembers slots
 // in ensemble container
@@ -618,6 +620,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(int nstations,
 		delete tcs;
 	}
 }
+#ifndef NO_ANTELOPE
 /* Database-driven constructor for an ensemble.  This implementation uses
 a Datascope database only through an immediate dynamic_cast to a 
 DatascopeHandle, but the idea is that a more generic interface 
@@ -716,6 +719,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 
 	} catch (...) { throw;};
 }
+#endif
 //copy constructor 
 ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tceold)
 	: Metadata(tceold)

@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <string>
 #include "stock.h"
+#ifndef NO_ANTELOPE
 #include "tr.h"
+#endif
 #include "seispp.h"
 #include "dmatrix.h"
 namespace SEISPP
@@ -169,6 +171,7 @@ void SetGaps(TimeSeries& ts,
 }
 
 
+#ifndef NO_ANTELOPE
 TimeSeries *LoadTimeSeriesUsingPf(Pf *pf)
 {
 	Metadata md(pf);
@@ -678,5 +681,6 @@ int dbsave(ComplexTimeSeries& tcs,
 		throw serr;
 	}
 }
+#endif
 } // Termination of namespace SEISPP definitions
 

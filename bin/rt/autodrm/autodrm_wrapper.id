@@ -1,0 +1,5 @@
+#!/bin/csh -f
+cd ~
+set ANTELOPE=/opt/antelope/$id
+source $ANTELOPE/setup.csh
+exec $ANTELOPE/bin/autodrm

@@ -115,7 +115,7 @@ namespace SEISPP
         {
             // Call alternate constructor an return immediately for
             // simple stack method.
-            if(stacktype=BasicStack)
+            if(stacktype==BasicStack)
             {
                 *this=Stack(d,stack_twin);
                 return;

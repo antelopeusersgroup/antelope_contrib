@@ -2,7 +2,7 @@ originator     Frank Vernon, UCSD
 last_modified  2008-06-24
 
 category	Unknown
-configuration	unknown-velocity
+configuration	unknown-velocity-1D
 
 description	Dummy 1-D Sensor used in ignorance
 dfile	unknown

@@ -1,0 +1,27 @@
+This file describes some issues related to the permutation of this library
+for installation without the antelope package.   All users of this library
+should recognize that the original library was very antelope centric.   It
+became necessary to produce a variant of the library to run on high performance
+systems where antelope installation was problematic in many cases.   In addition
+I produced this for colleagues in Europe where obtaining a license for antelope
+was not realistic due to the cost.  (Pretty much all US universities have 
+easy access to antelope through an iris licensing arrangment.)
+
+When this library is part of antelope it should simply build using the standard
+make procedures.  
+
+When the library is used without antelope support there are several issues:
+1.  To build this library without antelope support use 
+make -f Makefile.nodb
+This removes some files from the compilation and sets a preprocessor macro
+for conditional no compilation.
+2.  This library is intimately linked with another called libgclgrid.   
+That library can and should be built with the Makefile.nodb file.
+3.  A limited set of the antelope API C functions were translated from the 
+original Datascope library that formed the original kernel of Antelope.   
+These are expected to be placed in a static library called libdsap.a 
+4.  This and libgclgrid depend upon the file swapdvec, which references 
+a newer set of byte swap routines that post date the old Datascope package.
+A replacement for the routines called by this procedure are contained in 
+the libdsap.a library.  Note antelope has a much more complete set of 
+byte swap routines than I implemented here.   I handle only IEEE doubles.

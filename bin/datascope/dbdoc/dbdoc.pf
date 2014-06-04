@@ -1,0 +1,10 @@
+
+tables	&Tbl{
+}
+
+intro			intro
+relation_tables_intro	reltables
+relation_desc_intro	reldesc
+attribute_desc_intro	attrdesc
+
+# $Id$ 

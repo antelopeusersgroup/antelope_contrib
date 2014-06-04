@@ -8,5 +8,5 @@ include $(ANTELOPEMAKE)
 # Always install localmake_config to work around compile-dependency tangles
 all clean Include :: install
 
-install :: 
-	(cd .. ; localmake_config -i)
+install ::
+	(cd .. ; localmake_config -if)
