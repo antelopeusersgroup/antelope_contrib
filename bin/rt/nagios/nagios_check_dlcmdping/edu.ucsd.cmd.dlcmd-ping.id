@@ -7,7 +7,7 @@ type = "cmd-line"
 package = "edu.ucsd"
 probe_name = "cmd.dlcmd-ping"
 human_name = "Dlcmd ping"
-display_name = "Servers-proprietary/Antelope/Dlcmd ping"
+display_name = "Servers-Proprietary/Antelope/Dlcmd ping"
 version = "1.0"
 address_type = "IP"
 </header>
@@ -55,7 +55,7 @@ to see if anything at all responds.
 </parameters>
 <command-line>
 path = "/opt/antelope/$id/bin"
-cmd = "dlcmd -waittime ${timeout} -timeout ${timeout} ${address}:${Orbport} '${Targets}' '${Dltypes}' - pingt"
+cmd = "nagios_check_dlcmdping -T ${timeout} -o ${ADDRESS}:${Orbport} -t '${Targets}' -d '${Dltypes}'"
 </command-line>
 <command-exit>
 down: ${EXIT_CODE} = 1
