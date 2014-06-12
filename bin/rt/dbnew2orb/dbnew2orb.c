@@ -31,7 +31,8 @@ mortician()
 static int
 findtbl(char *string, Tbl * table)
 {
-	int             i, found = 0;
+	int             found = 0;
+	long 			i;
 	char           *str;
 
 	for (i = 0; i < maxtbl(table); i++) {
@@ -59,7 +60,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	Packet         *pkt= NULL;
 	char            srcname[ORBSRCNAME_SIZE];
 	double          time;
-	char           *packet;
+	static char           *packet=0;
 	int             nbytes, packetsize = 0;
 	Dbptr           tmpdb;
 	long            t, nrecords, r, ntables;
@@ -86,6 +87,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 			for (r = 0; r < nrecords; r++) {
 				tmpdb.record = (long) getstbl(stbl, r);
 				pkt->db = tmpdb;
+				packetsize=0;
 				if (stuffPkt(pkt, srcname, &time, &packet, &nbytes, &packetsize) < 0) {
 					elog_complain(0, "stuffPkt fails for pf packet");
 					return (-1);
@@ -94,6 +96,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 					elog_complain(0, "Couldn't send packet to orb\n");
 					return (-1);
 				}
+				free(packet);
 			}
 		}
 	}
@@ -338,7 +341,7 @@ main(int argc, char **argv)
 	bury_times = malloc(ntables * sizeof(double));
 	static_flags = malloc(ntables * sizeof(long));
 	if (statefilename) {
-		if (exhume(statefilename, &Stop, 10, mortician)) {
+		if (exhume(statefilename, &Stop, 10, (void *) mortician)) {
 			elog_notify(0, "read old state file\n");
 		} else {
 			elog_complain(0, "could not read old statefile\n");
@@ -354,6 +357,7 @@ main(int argc, char **argv)
 		for (i = 0; i < ntables; i++) {
             /* ignore nameless table... */
 			tablename = gettbl(tablenames, i);
+			printf("tavblename: %s\n",tablename);
 			if (!tablename) {
 				continue;
 			}
