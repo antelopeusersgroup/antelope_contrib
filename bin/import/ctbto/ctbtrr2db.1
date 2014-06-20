@@ -1,0 +1,50 @@
+.TH CTBTRR2DB 1
+.SH NAME
+ctbtrr2db \- save CTBT Radionuclide Reports into a database
+.SH SYNOPSIS
+.nf
+\fBctbtrr2db \fP\fIfilename\fP [\fIfilename\fP ...] \fIdbname\fP
+.fi
+.SH SUPPORT
+.br
+Contributed: NO BRTT support -- please contact nikolaus.horn@zamg.ac.at for questions.
+.SH DESCRIPTION
+\fBctbtrr2db\fP converts radionuclide reports from the International
+Data Centre of the Comprehensive Nuclear Test ban Treaty Organization (www.ctbto.org)
+into an antelop database in ctbto1.2 format. Acceptable input formats include ARR and RRR,
+the different reports are saved to different tables according to the bulletin format.
+Since the measured nuclides can differ, the nuclide details are stored in separate tables.
+.SH OPTIONS
+.IP filenamed
+file holding automated or reviewed radionuclide bulletin in IMS2.0 format
+.IP dbname
+output database in format ctbto1.2. This database will be created when not existing
+.SH DIAGNOSTICS
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+
+Not in ARR or RRR format
+Not in IMS2.0 or IMS1.0 format
+
+The message seems to have the  wrong format
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+This script parses only the most basic information from the reports.
+The reports can hold detailed information on gory details of everythin, which is completed ignored here.
+.br
+If no DATA_TYPE line is found, \fBctbtrr2db\fP assumes IMS1.0 format at the
+first instance that it hits an EVENT line. \fBctbtrr2db\fP is a state-machine
+that reads input lines successively from all supplied input files. If a
+file after the first file does not have an explicitly specified DATA_TYPE,
+the format (IMS1.0, IMS1.0:SHORT) will carry over from the
+previous file.
+.SH AUTHOR
+Nikolaus Horn,
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
