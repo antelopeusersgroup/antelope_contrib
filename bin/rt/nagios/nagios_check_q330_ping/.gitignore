@@ -1,1 +1,4 @@
 nagios_check_q330_ping
+edu.ucsd.cmd.q330ping
+*.pd.1
+*.pd.3p

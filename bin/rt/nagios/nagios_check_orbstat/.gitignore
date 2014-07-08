@@ -1,1 +1,5 @@
 nagios_check_orbstat
+edu.ucsd.cmd.orbstat-exists
+edu.ucsd.cmd.orbstat-client
+*.pd.1
+*.pd.3p

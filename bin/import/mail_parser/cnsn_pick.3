@@ -1,0 +1,54 @@
+.TH CNSN_PICK 3 "$Date$"
+.SH NAME
+cnsn_pick \- mail_parser handler for CNSN pick/hypocenter mail messages
+.SH SYNOPSIS
+.nf
+cnsn_pick_handler( $message, $pfarray );
+.fi
+.SH DESCRIPTION
+The cnsn_pick handler is intended to be launched by the mail_parser(1)
+utility. The cnsn_pick handler takes email from the Canadian National Seismic 
+Network about single-array event locations, and converts them to an 
+output CSS database. The database is specified in the mail_parser.pf 
+parameter file. The database may be specified with epoch2str(3) 
+percent-escapes, in which case the parameter will be fed as a template to 
+epoch2str against the origin time of the earthquake to decide the 
+name of the output database. An additional table in the mail_parser.pf 
+parameter file translates different types of message-labels into 
+corresponding "auth" fields for the database.
+.SH PARAMETER FILE
+.nf
+nordic% cat mail_parser.pf
+Handlers	&Tbl{
+    &Arr{
+	database	testdb_%Y_%m
+	handler		cnsn_pick
+	sender		somesource@somenet.net
+	subject		YKA event
+	authors	&Arr{
+	  "LARGE EVENT NOTIFICATION" yk_large_event
+	}
+    }
+}
+nordic%
+.fi
+.SH "SEE ALSO"
+.nf
+mail_parser(1)
+.fi
+.SH "BUGS AND CAVEATS"
+There may be an official name for this format but I've not seen it referenced
+anywhere. If there is, the name of this handler should be changed 
+to reflect the format of the messages rather than one particular source 
+that uses it.
+
+There are a couple more fields in the mail messages which need to be 
+explained to the author; at the moment they are ignored. The email-message 
+format was reverse-engineered by inspection for the conversion. 
+
+Sometimes multiple source queues will deliver the same email message. 
+cnsn_pick puts the first one received in the database, and ignores the 
+rest (by relying on the dbaddv(3) duplicate-primary-key check, then 
+trapping the run-time error).
+.SH AUTHOR
+Kent Lindquist

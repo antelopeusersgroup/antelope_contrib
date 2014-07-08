@@ -1,0 +1,261 @@
+.TH AUTODRM 1 
+.SH NAME
+autodrm \- Antelope IDC/GSE2.1 AutoDRM Server
+.SH SYNOPSIS
+\fBautodrm \fP[-dv] [-D \fIdir\fP] [-p \fIpf\fP] [\fIfiles\fP]
+.SH DESCRIPTION
+An AutoDRM is an email based system (with an optional ftp facility)
+for requesting and obtaining data, particularly seismic data.
+The specification originated at ETH in Switzerland.  For more information,
+please refer to
+.ft CW
+.in 2c
+.nf
+
+http://www.seismo.ethz.ch/autodrm/
+
+.fi
+.in
+.ft R
+Quoting from that document:
+.in 2c
+
+\fIAn AutoDRM (Automatic Data Request Manager) is a software package,
+that allows anyone with access to electronic mail to retrieve data
+from the site where such an AutoDRM is installed.\fP
+
+.nf
+    .
+    .
+    .
+
+.fi
+
+\fIAutoDRM is now a widely used method to retrieve earthquake information
+(including waveform data) from seismological observatories.  Besides
+the original 'standard' most AutoDRMs today understand requests in the
+so-called GSE2.0 format and their response mails are also in this
+format.  The GSE2.0 format was developed by members of the GSE (Group
+of Scientific Experts at the Conference on disarmament),
+representatives of the FDSN (Federation on Digital Seismographic
+Networks), and representatives of the U.S.  Geological Survey.\fP
+
+.in
+.LP
+As part of the verification of the Comprehensive Nuclear Test Ban Treaty,
+the original AutoDRM protocol and definition was considerably extended
+to provide a method for obtaining data from participating stations.
+The Antelope \fBautodrm\fP implements a subset of this new extended
+protocol.
+.SH OPTIONS
+.IP -d
+This debug option prints the output on stderr, rather than sending mail
+to the requester.
+.IP "-D directory"
+Run in the specified \fIdirectory\fP, rather than in the home directory
+of the destination user (typically \fBautodrm\fP).
+.IP "-p pf"
+Use the specified parameter file, rather than \fBautodrm\fP.\fIpf\fP.
+.SH Setting up a new autoDRM server
+.IP \(bu
+Create the autodrm user.  Copy autodrm_wrapper into the home
+directory.
+Setup the .forward file for this
+user using the supplied prototypes forward and autodrm_wrapper.
+.IP \(bu
+Verify that mail is delivered properly by using autodrm_wrapper to
+direct it to a file first.  Verify that the ANTELOPE environment
+is set up properly.  Typical problems at this stage are directories
+along the path to the home directory which have group write permission,
+bad ownership or permissions of .forward or autodrm_wrapper.
+.IP \(bu
+Copy autodrm.pf to the autodrm user home directory, and edit appropriately.
+.IP \(bu
+Use try_autodrm(1) to send a test request to the server.
+Correct any problems which appear.
+.SH PARAMETER FILE
+.IP observatory
+name of the institution and its location
+.IP source_code
+See the GSE documentation
+(e.g., pp 10 of Provisional GSE2.1 Formats and Protocols)
+to learn how to specify this.
+This should be something like a 3-letter country code,
+followed by _ and a 3 letter
+abbreviation of the organization (NDC is reserved), e.g. \fIUSA_BRT\fP.
+.IP return_address
+the return address for mail from \fBautodrm\fP
+.IP operator
+trouble mail is sent to this address
+.IP database_for_requests
+This is the Datascope database from which to pluck data for replies
+.IP error-log
+error-log is a log of errors; generally mail is also sent to operator.
+.IP max_email_size
+maximum size of email request-response in bytes.
+.IP minimum_free_space
+When free space in the \fBautodrm\fP directory falls below this limit
+(in k-bytes), mail is sent to the operator.  This is intended to help
+prevent server failures.
+.IP ftp-directory
+This is not used currently; in the future it should indicate an
+ftp directory where requests that are too big for email can be left.
+.IP max_ftp_size
+This is not used currently: it will be the
+maximum allowed size of ftp request-response
+.IP max_ftp_spool_size
+This is not currently used, but will provide another means of
+limiting output ftp responses.
+.IP max_ftp_latency
+This is not currently used; \fBautodrm\fP will use it
+to periodically clean out the ftp directory
+.IP incoming_replies_directory
+directory into which to save replies from other autoDRM's; these
+are recognized by the presence of \fIDATA_TYPE\fP or \fIMSG_TYPE DATA\fP
+lines in the request.
+.IP incoming_program
+program to run on incoming autoDRM replies: autodrm2db(1) is one
+choice.  This program is run with two arguments: a file containing
+the incoming reply, and a database name from \fIincoming_database\fP
+below.
+.IP incoming_database
+database into which to save incoming autoDRM data; this is used
+as the second argument to the \fIincoming_program\fP.
+.IP no_bulletin
+Bulletins may only be provided by some sites.  Station autoDRM's
+do not have adequate information to locate events, for example.
+Set this parameter to some message to prevent attempts to create
+a bulletin.
+.IP bulletin_title
+This is a title for bulletin responses, and may include
+epoch2str(3) '%' expansions to create a date.
+.IP bulletin_types
+The autoDRM standard allows setting up multiple bulletin types,
+which for \fBautodrm\fP must correspond to different databases.
+This list allows setting up a correspondence between the
+bulletin type and the database.
+.IP restrict_bulletin_origins
+The standard database may very well include associated
+origins from other bulletins, and it may be desirable to
+not include these in the \fBautodrm\fP bulletin.  This
+expression is used to subset the join of event and origin
+used to create a bulletin.
+.IP allow
+.IP deny
+Choose to fill out either the allow or deny lists with regular
+expressions.  If allow is not empty, only addresses in the allow
+list are accepted (but addresses which match a pattern in the deny
+list are still rejected).  This is used first to reject returned mail,
+and secondly to allow restricting access to the server.
+.IP log_database
+.IP log_schema
+\fBautodrm\fP keeps a database of requests and replies.
+.IP reply_preface
+This header prefaces all responses to AutoDRM requests.
+.IP help_msg
+This file is sent in response to a help message.
+.IP reply_id_format
+Each reply is required to have a unique id, which \fBautodrm\fP
+constructs using the time and date.  You may (cautiously) change this.
+See epoch2str(3) for codes; the id May not include '/' characters,
+and must be less than 25 characters,
+.IP reply_id_timezone
+Specify UTC to use GMT time, or leave blank to use the local time
+for the reply_id.
+.IP save_requests
+if this is non-zero, save all incoming requests in the directory \fIrequests\fP
+by reply_id.
+.IP save_replies
+if this is non-zero, save all outgoing replies in the directory \fIreplies\fP
+by reply_id.
+.IP request_expiration_age
+requests older than this number of days are automatically removed.
+.IP reply_expiration_age
+replies older than this number of days are automatically removed.
+.IP default_bulletin_type
+fill this in if there's more than one bulletin available
+.IP examples
+When an input request has an error, \fBautodrm\fP attempts to provide
+a correctly formatted example request from this list.
+.IP maximum_waveform_period
+maximum amount of data to allow in a request
+.IP maximum_outage_period
+maximum period over which to allow a request for outages.
+.IP Network
+network code; may be dictated by the \fBautodrm\fP standard.
+.IP reference_coordinate_system
+This is used in many of the \fBautodrm\fP responses, but is not part of the
+CSS 3.0 database.
+.SH "SEE ALSO"
+.IP GSE2.0
+.IP GSE2.1
+.IP IMS1.0
+.IP "Swiss AutoDRM"
+.IP \(bu
+Kradolfer, U., AutoDRM - The First Five Years,
+Seism. Res. Let., 67, pp. 30-33, 1996.
+.IP \(bu
+Kradolfer, U., Automating the Exchange of Earthquake Information,
+EOS Trans. Amer. Geophys. U., vol. 74, pp. 442,444-445, 1993.
+.SH "BUGS AND CAVEATS"
+.IP \(bu
+Does not implement multi-part replies.
+.IP \(bu
+Does not implement subscribe requests.
+.IP \(bu
+Is not compulsive about input correctness.
+.IP \(bu
+The Provisional GSE2.1 Formats and Protocols specifies that
+.sp
+\fIA GSE message without a STOP line
+is considered incomplete and is ignored.\fP
+.sp
+This specification is ignored.
+.IP \(bu
+The \fIdata delayed\fP message for waveforms is not implemented.
+.IP \(bu
+The time environment is neither required nor optional for the
+station and channel requests, but both are sometimes time dependent.
+This server uses the time environment if present, and otherwise
+provides only station and channel information for the last 24 hours.
+Similarly, the response information is provided only for the last 24
+hours unless an explicit time range is requested.
+.IP \(bu
+The station reply includes a \fIstatype\fP field which is supposed
+to take the values \fI1C\fP, \fI3C\fP, \fIhfa\fP or \fIlpa\fP.
+This implementation
+uses the statype field from the site table, which likely has different
+values by default.
+.IP \(bu
+The response reply requires a stage and calibration table (rather
+than just a sensor and instrument table).
+.IP \(bu
+Because autoDRM wants to put a network code into waveforms, the
+foreignkeys database may need to have anetsta and achanaux filled in
+for all the station/channel pairs in the \fBautodrm\fP database.
+.IP \(bu
+The IDC AutoDRM specification
+lists the allowed instrument types, but the existing database may use
+other codes.
+.IP \(bu
+The network environment variable is short-circuited to allow only
+a single network.  That is, if any network is specified, it must
+be the network in the parameter file, otherwise no data is available.
+The server cannot support multiple networks.
+.IP \(bu
+The specification requires a reference coordinate system in
+the station and channel and waveform results.  For station
+and channel, this implementation uses the coordinate system
+specified in the parameter file; for waveforms, the coordinate
+system is obtained from the trdefaults(5) parameter file.
+.IP \(bu
+Because the autoDRM network code is different from the CSS net
+code, the current version doesn't allow serving multiple networks
+from a single autoDRM server.
+.IP \(bu
+autoDRM specifies a restricted set of instype values.  The database
+must be constructed to contain only the approved values; \fBautodrm\fP
+does no checking to verify that this is the case.
+.SH AUTHOR
+.nf
+Daniel M. Quinlan danq@brtt.com

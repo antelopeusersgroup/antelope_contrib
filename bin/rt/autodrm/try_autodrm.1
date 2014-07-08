@@ -1,0 +1,42 @@
+.TH TRY_AUTODRM 1 
+.SH NAME
+try_autodrm \- send a standard request to an autodrm server
+.SH SYNOPSIS
+.nf
+try_autodrm [-nv] [-t time] [-V version] [email-address]
+.fi
+.SH DESCRIPTION
+This script sends the autodrm server at the specified email-address 
+(or otherwise "autodrm") a sample request for 
+data and information.  It's primarily for testing purposes
+when bringing up a server.
+.SH OPTIONS
+.IP -n
+Write the request on stdout, rather than sending it.
+.IP "-t time"
+specify catalog start time in request body.
+.IP -v
+Be more verbose.
+.IP "-V version"
+specify GSE version.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+try_autdrm messages@pidc.org
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+autodrm(1)
+autodrm2db(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Doesn't support multiple autodrm versions.
+.br
+Always requests help.
+.SH AUTHOR
+Daniel Quinlan

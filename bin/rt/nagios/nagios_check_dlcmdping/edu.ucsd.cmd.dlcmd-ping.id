@@ -1,0 +1,66 @@
+<!--
+Antelope Dlcmd pingt Command Line Example (edu.ucsd.cmd.dlcmd-pingt)
+Copyright (c) 2013 The Regents of the University of California
+-->
+<header>
+type = "cmd-line"
+package = "edu.ucsd"
+probe_name = "cmd.dlcmd-ping"
+human_name = "Dlcmd ping"
+display_name = "Servers-proprietary/Antelope/Dlcmd ping"
+version = "1.0"
+address_type = "IP"
+</header>
+<description>
+The \b\Dlcmd pingt \p\probe uses the Antelope dlcmd program to check if a
+target datalogger acquisition instance \i\Target\p\ of type \i\Dltype\p\ is
+listening on the given command orb \i\Orbport\p\.
+
+\b\Parameters:\p\
+
+\i\Timeout\p\ - How long dlcmd will wait for a response in seconds. This can
+usually be a short interval for a pingt. \b\Note:\p\ if you are using a
+wildcard for \i\Targets\!i\, you will want to tune the \b\Response Time\!b\
+settings under \b\Thresholds\!b\ for the device to be greater than this value.
+
+\i\Orbport\p\ - The Antelope port name or number. This can be any entry in
+ \u\orbserver-names.pf\p\ or a number.
+
+\i\Targets\p\ - This is a regular UNIX expression that will match against data
+acquisition program target names to determine which target acquisition
+programs will respond to the command.  This is a required argument. If this is
+set to \b\-\p\ then it is treated as matching all target names.
+
+\i\Dltypes\p\ - This  is  a regular UNIX expression that will match against
+datalogger types to determine which target acquisition programs will respond to
+the command.  This is a required argument. If this is set to \b\-\p\ then it is
+treated as matching all datalogger types. Currently, the datalogger types that
+are recognized are \u\altus\p\, for Kinemetrics Altus dataloggers, \u\qt\p\,
+for older Quanterra MULTISHEAR dataloggers and \u\q330\p\, for newer Quanterra
+Q330-series dataloggers.
+
+\b\Example Settings:\p\
+
+To verify that a q3302orb instance called 'tadataAG' is listening, set
+\i\Targets\p\ to \b\tadataAG\p\ and \i\Dltypes\p\ to \b\q330\p\.
+
+The default settings of \b\-\p\ for \i\Targets\p\ and \i\Dltypes\p\ will check
+to see if anything at all responds.
+</description>
+<parameters>
+  "Timeout" = "2"
+  "Orbport" = ""
+  "Targets" = "-"
+  "Dltypes" = "-"
+</parameters>
+<command-line>
+path = "/opt/antelope/$id/bin"
+cmd = "dlcmd -waittime ${timeout} -timeout ${timeout} ${address}:${Orbport} '${Targets}' '${Dltypes}' - pingt"
+</command-line>
+<command-exit>
+down: ${EXIT_CODE} = 1
+okay: ${EXIT_CODE} = 0
+</command-exit>
+<command-display>
+\B5\Dlcmd pingt response\0P\
+</command-display>

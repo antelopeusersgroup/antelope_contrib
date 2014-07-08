@@ -1,15 +1,11 @@
 pf_revision_time 1150848000.000
 #
-#dbname	    /Users/horn/develop/antelope/contrib/bin/magnitude/dbmw/db/eventwfdb
-dbname	    /Users/horn/develop/antelope/contrib/bin/magnitude/dbmw/db/db
-#/Volumes/Daten/zamg/zagsun17/db/zagsun17 # input database
-#home_dir        /Users/rt/Antelope       # home directory    
-home_dir     /Users/horn/develop/antelope/contrib/bin/magnitude/dbmw # home directory    
-
+dbname	    	/home/rt/EMILIA.new/db/zamg # input database
+home_dir        /home/rt/EMILIA.new     # home directory    
 stringS         24 June 1970 00:00:00   # start time fo computation
 verb            2                       # verbose level 0-2
 pretime         10.                     # pre P phase time
-postime         90.                     # post P phase time
+postime         40.                     # post P phase time
 magmin          1.5                     # Magnitudo min
 ispike          1	                # remove spike        
 nfin            100                     #
@@ -21,8 +17,8 @@ ifilt           4                       # filter 1=gaussian
                                         #        2=Butterworth
                                         #        3=SNR gaussian
 					#        4=SNR Butterworth  
-f1             0.2                      # hp corner frequency
-f2             20.                      # lp corner frequency
+f1             0.1                      # hp corner frequency
+f2             50.                      # lp corner frequency
 np1             6                       # hp poles (ifilt = 2)
 np2             6                       # lp poles (ifilt = 2)
 PERMIN         0.1                      # min period for Housner computation

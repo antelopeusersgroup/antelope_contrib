@@ -1,0 +1,31 @@
+.TH REB_IMPORT 3 "$Date$"
+.SH NAME
+reb_import \- mail_parser handler for REB-format mail messages
+.SH SYNOPSIS
+.nf
+reb_import_handler( $message, $pfarray );
+.fi
+.SH DESCRIPTION
+The reb_import handler is intended to be launched by the mail_parser(1) 
+utility. reb_import launches reb2db(1) on the incoming mail, converting 
+it and placing it into the database specified by the 'database' parameter
+in the mail_parser.pf parameter file
+.nf
+nordic% cat mail_parser.pf
+nordic%
+Handlers &Tbl{
+&Arr{
+handler		reb_import
+sender		reb_source@somenet.net
+subject		reb-format file
+database 	mydbname
+}
+}
+.fi
+.SH "SEE ALSO"
+.nf
+mail_parser(1), reb2db(1)
+.fi
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$

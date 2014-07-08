@@ -1,0 +1,258 @@
+# Fill out the observatory with the name of the institution and its location
+observatory	BRTT/GSN Demonstration Autodrm Server
+
+# See the GSE documentation to learn how to specify your SourceId.
+# eg, pp 10 of Provisional GSE2.1 Formats and Protocols
+# something like 3-letter country code, followed by _ and a 3 letter
+# abbreviation of the organization (NDC is reserved), eg "USA_BRT".
+source_code	USA_BRT
+
+# return_address is the return address for mail from autodrm
+return_address	autodrm@brtt.com
+
+# operator is the person responsible for smooth operation; trouble
+# mail is sent to this address
+operator	danq
+
+# error-log is a log of errors; generally mail is also sent to operator.
+error-log	error-log
+
+# ftp-directory:  if not blank, indicates a directory where autodrm
+# may place request-responses for anonymous pickup.  
+ftp-directory
+
+# indicates the ftp-directory relative to ~ftp.
+user-ftp-directory
+
+# maximum size of email request-response
+max_email_size	100000 # bytes
+
+# maximum size of ftp request-response
+max_ftp_size	10000000 # bytes
+
+# minimum free space 
+minimum_free_space 	2000 # minimum free space on ~autodrm in kbytes
+
+# maximum size for ftp directory; requests which would cause this 
+# size to be exceeded will fail
+max_ftp_spool_size	
+
+# maximum latency for request-responses in ftp directory: antelope-autodrm
+# will clean out the ftp directory of all responses older than this 
+# number of days before adding new responses.
+
+max_ftp_latency		7 # days
+
+
+# database from which to pluck data for replies
+database_for_requests	data/gsn
+
+# directory into which to save replies from other autodrm's
+incoming_replies_directory	autodrm_data
+
+# program to run on incoming autodrm replies
+incoming_program	autodrm2db
+
+# database into which to save incoming autodrm data
+incoming_database save
+
+# message -- non-null to disable bulletin
+no_bulletin # No bulletin is currently available.
+
+# title for bulletin responses
+bulletin_title	Bulletin as of %k:%m  %B %d, %Y
+
+bulletin_types  &Arr{
+# name          database
+demo2	/opt/antelope/data/db/demo2/demo2
+}
+
+# the standard database may very well include associated
+# origins from other bulletins, and it may be desirable to
+# not include these in the autodrm bulletin.  The following
+# expression is used to subset the join of event and origin
+# used to create a bulletin, for this or some other purpose.
+restrict_bulletin_origins ndef>0
+
+# Choose to fill out either the allow or deny lists with regular
+# expressions.  If allow is not empty, only addresses in the allow
+# list are accepted (but addresses which match a pattern in the deny
+# list are still rejected).
+#	
+
+# Accept requests only when from address matches this list:
+allow	&Tbl{
+danny@brtt.com
+danq@brtt.com
+danq
+}
+
+# Deny all requests from these addresses:
+deny	&Tbl{
+autodrm
+operator
+root
+Postmaster
+mailer-daemon
+nobody
+}
+
+# database where log of requests and replies is kept
+log_database	db
+log_schema	autodrm1.0
+
+# header which prefaces all responses to AutoDRM requests.
+reply_preface	&Literal{
+
+}
+# file sent in response to help message:
+help_msg	 /opt/antelope/$id/data/autodrm/help
+
+reply_id_format  %Y-%m-%d-%H:%M:%S.%s # see str2epoch(3) for codes.
+				   # May not include '/' characters
+				   # Must be less than 25 characters
+reply_id_timezone		   # "UTC", or leave blank for local timezone
+
+save_requests	0		   # if non-zero, save requests in "requests" 
+				   # directory by reply_id.
+save_replies	0		   # if non-zero, save replies in "replies"
+				   # by reply_id
+request_expiration_age	5	   # requests older than this are removed.
+reply_expiration_age    5	   # replies older than this are removed.
+
+default_bulletin_type	# fill in if there's more than one bulletin available
+
+examples	&Arr{
+begin	&Tbl{
+begin gse2.1
+}
+msg_type &Tbl{
+msg_type request
+msg_type data
+msg_type subscription
+}
+msg_id	&Tbl{
+msg_id 1994/05/21_0001 ABC_NDC
+}
+ref_id  &Tbl{
+ref_id 1997/05/21_0001 ABC_NDC
+}
+e-mail	&Tbl{
+e-mail wizard@overtherainbow.com
+}
+ftp	&Tbl{
+ftp wizard@overtherainbow.com
+}
+time	&Tbl{
+time 1994/02/01 to 1994/03/01
+time 1994/02/01 23:14:19.7 to 1994/03/01 12
+time 1999/1/15 to
+time 1995/1/1 00:12:16.9 to 1995/1/1 00:12:17.01
+}
+lat	&Tbl{
+lat -12 to 17
+lat to 50
+lat 15 to
+}
+lon	&Tbl{
+lon -110 to 95
+lon to 123
+lon 50 to
+}
+
+event_sta_dist  &Tbl{
+event_sta_dist 0 to 20
+event_sta_dist 50 to 90
+}
+
+depth &Tbl{
+depth 0 to 10.3
+depth 100 to 600
+depth 100 to
+depth to 5
+}
+
+depth_minus_error &Tbl{
+depth_minus_error 0 to 10.3
+depth_minus_error 100 to 600
+depth_minus_error 100 to
+depth_minus_error to 5
+}
+
+mag	&Tbl{
+mag 4.5 to
+mag to 2.1
+mag 1 to 3
+}
+
+mag_type	&Tbl{
+mag_type mb, Ms
+mag_type MD, Mw, mb, ML, Mn
+}
+
+mb_minus_ms &Tbl{
+mb_minus_ms  1.0 to 2.0
+mb_minus_ms 2.0 to
+}
+
+net_list	&Tbl{
+net_list idc_seis, idc_hydr
+net_list gsn, ida
+}
+
+sta_list	&Tbl{
+sta_list WHY, WOOL, STKA, FCC
+sta_list A*, W*B
+}
+
+chan_list	&Tbl{
+chan_list shz, shn, she
+chan_list s*
+chan_list *Z
+}
+
+beam_list	&Tbl{
+beam_list	FICB.Pa, FICB.Pb
+}
+
+aux_list	&Tbl{
+aux_list	chi,med
+}
+
+bull_type	&Tbl{
+bull_type	IDC_REB
+bull_type	USA_QED
+}
+
+group_bull_list  &Tbl{
+group_bull_list IDC_ABEL, GAMMA
+}
+
+arrival_list	&Tbl{
+arrival_list 8971234, 90814
+}
+
+origin_list	&Tbl{
+origin_list 8971234, 90814
+}
+
+event_list	&Tbl{
+event_list 8971234, 90814
+}
+
+relative_to	&Tbl{
+relative_to bulletin
+relative_to origin
+relative_to event
+}
+
+}
+
+maximum_waveform_period	3600	# maximum of 1 hour segment of data
+maximum_outage_period	604800	# maximum of 1 week segment of data
+
+Network	CTBTO_AUX
+
+reference_coordinate_system	WGS-84
+
+pf_revision_time 1078373334

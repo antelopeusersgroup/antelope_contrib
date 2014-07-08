@@ -1,8 +1,8 @@
 # Copyright (c) 2001 Boulder Real Time Technologies, Inc.
-# All rights reserved 
+# All rights reserved
 # vim: ft=make
 
-# This software module is wholly owned by Boulder Real Time 
+# This software module is wholly owned by Boulder Real Time
 # Technologies, Inc. Any use of this software module without
 # express written permission from Boulder Real Time Technologies,
 # Inc. is prohibited.
@@ -42,7 +42,7 @@ CLASSES = \
 	com/brtt/antelope/SourcesModel.class \
 	com/brtt/antelope/Stock.class
 
-antelope.jar	: remove_classes $(CLASSES)
+antelope.jar	: $(CLASSES)
 	jar cvf antelope.jar com/brtt/antelope/*.class
 
 $(ANTELOPE)/man/javadoc : $(JAVAS)
@@ -57,7 +57,7 @@ remove_classes:
 	@-(cd com/brtt/antelope ; $(RM) `ls | grep '.class$$' | grep -v CVS` )
 
 install::   $(ANTELOPE)/man/javadoc
-    	
+
 uninstall::
 	@echo uninstalling $(ANTELOPE)/man/javadoc ; if [ -d $(ANTELOPE)/man/javadoc ] ; then $(RM) -r $(ANTELOPE)/man/javadoc ; fi
-	
+

@@ -1,0 +1,345 @@
+#Include css3.0
+#
+Schema ctbto1.0
+        Description ( "CTBTO products" )
+        Detail {
+                This schema is intended to hold CTBT products
+        }
+        Timedate lddate
+        ;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "(epoch) time of last record modification" )
+	Detail {
+		This is the last time the record was modified.
+	}
+	;
+
+
+
+Attribute auth
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "source/originator" )
+	Detail {
+		This records the originator of an arrival (in arrival
+		relation) or origin (in origin relation).  Possibilities
+		include externally supplied arrivals identified according
+		to their original source, such as WMO, NEIS, CAN(adian),
+		UK(array), etc.  This may also be an identifier of an
+		application generating the attribute, such as an automated
+		interpretation or signal processing program.
+	}
+	;
+
+Attribute acquisition_start
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "acquisition start time" )
+	;
+
+Attribute acquisition_stop
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "acquisition stop time" )
+	;
+
+Attribute activity
+	Real (12)
+	Format ( "%12.3f" )
+	Null ( "-89999999999" )
+	Units ( "uBq/m^3" )
+	Description ( "measured activity" )
+	;
+
+Attribute category
+	Integer (1)
+	Format ( "%1d" )
+	Null ( "-" )
+	Range ( "category >=1 && category <=5" )
+	Description ( "measurement categorization" )
+	Detail {
+		Categorization Legend
+		---------------------
+		Level 1  =  Typical Background Rad. Meas.
+		Level 2  =  Anomalous Background Rad. Meas.
+		Level 3  =  Typical Anthropogenic Rad. Meas.
+		Level 4  =  Anomalous Anthropogenic Rad. Meas.
+		Level 5  =  Mult. Anomalous Anthropogenic Rad. Meas.
+	}
+	;
+
+Attribute chan
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "channel" )
+	Detail {
+		This is an eight-character code, which, taken together
+		with sta, jdate and time, uniquely identifies the source
+		of the seismic data, including the geographic location,
+		spatial orientation, sensor and subsequent data
+		processing.
+	}
+	;
+
+Attribute collection_start
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "collection start time" )
+	;
+
+Attribute collection_stop
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "collection stop time" )
+	;
+
+Attribute mdc
+	Real (12)
+	Format ( "%12.3f" )
+	Null ( "-89999999999" )
+	Units ( "uBq/m^3" )
+	Description ( "minimum detectable concentration" )
+	;
+
+Attribute nuclide
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	;
+
+Attribute product
+	String (5)
+	Format ( "%-5s" )
+	Null ( "-" )
+	Description ( "Bulletin " )
+	Detail {
+		This specifies the bulletin where a measurement is specified
+		RRR
+		ARR
+		SSREB
+	}
+	;
+
+Attribute quantified
+	String (1)
+	Format ( "%-1s" )
+	Null ( "-" )
+	Description ( "was the nuclide quantfied or only identified" )
+	;
+
+Attribute quantity
+	Real (10)
+	Format ( "%10.2f" )
+	Null ( "-999999.99" )
+	Description ("air volume" )
+	;
+
+Attribute sample_id
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "sample id" )
+	Detail {
+		unique sample id. Kept across all products based on this measurement
+	}
+	;
+
+Attribute sta
+	String (6)
+	Format ( "%-6s" )
+	Null ( "-" )
+	Description ( "station" )
+	Detail {
+		This is the common code-name of a seismic observatory. 
+		Generally only three or four characters are used.
+	}
+	;
+Attribute time
+    Time (17)
+    Format ( "%17.5f" )
+    Null ( "-9999999999.99900" )
+    Units ( "Seconds" )
+    Description ( "epoch time" )
+    Detail {
+        Epochal time given as seconds and fractions of a second
+        since hour 0 January 1, 1970, and stored in a double
+        precision floating number.  Refers to the relation data
+        object with which it is found.  E.g., in arrival - arrival
+        time; in origin - origin time; in wfdisc, - start time of
+        data.  Where date of historical events is known, time is
+        set to the start time of that date; where the date of
+        contemporary arrival measurements is known but no time is
+        given, then the time attribute is set to the NA value. 
+        The double-precision floating point number allows 15
+        decimal digits.  At 1 millisecond accuracy this is a range
+        of 3 years.  Where time is unknown, or prior to Feb.  10,
+        1653, set to the NA value.
+    }
+    ;
+
+Attribute endtime
+    Time (17)
+    Format ( "%17.5f" )
+    Null ( "-9999999999.99900" )
+    Units ( "Seconds" )
+    Description ( "epoch time" )
+    Detail {
+        Epochal time given as seconds and fractions of a second
+        since hour 0 January 1, 1970, and stored in a double
+        precision floating number.  Refers to the relation data
+        object with which it is found.  E.g., in arrival - arrival
+        time; in origin - origin time; in wfdisc, - start time of
+        data.  Where date of historical events is known, time is
+        set to the start time of that date; where the date of
+        contemporary arrival measurements is known but no time is
+        given, then the time attribute is set to the NA value. 
+        The double-precision floating point number allows 15
+        decimal digits.  At 1 millisecond accuracy this is a range
+        of 3 years.  Where time is unknown, or prior to Feb.  10,
+        1653, set to the NA value.
+    }
+    ;
+
+
+Attribute relerr
+	Real (6)
+	Format ( "%6.2f" )
+	Null ( "-99.99" )
+	Units ("percent")
+	Description ( "relative error of activity measurements" )
+	Detail {
+		Relative measurement error in percent.
+	}
+	;
+
+Attribute temperature
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-99.99" )
+	Units ("degrees celsius")
+	Description ( "average outside temperature" )
+	Detail {
+		Temperature at radionuclide stations
+	}
+	;
+
+Attribute winddirection
+	Real (6)
+	Format ( "%6.1f" )
+	Null ( "-999.9" )
+	Units ("degrees")
+	Description ( "wind direction" )
+	Detail {
+		Wind direction at IMS stations
+	}
+    ;
+
+Attribute windspeed
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-999.9" )
+	Units ("m/s")
+	Description ( "wind speed" )
+	Detail {
+		wind speed at IMS stations
+	}
+    ;
+
+Attribute pressure
+	Real (9)
+	Format ( "%9.2f" )
+	Null ( "-999.9" )
+	Units ("hPa")
+	Description ( "air pressure" )
+	Detail {
+		air pressure at IMS stations
+	}
+    ;
+
+Attribute humidity
+	Real (5)
+	Format ( "%5.1f" )
+	Null ( "-99.9" )
+	Units ("%")
+	Description ( "average relative humidity" )
+	Detail {
+		percent relative humidity at IMS stations
+	}
+    ;
+
+Attribute rainfall
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-99.9" )
+	Units ("mm")
+	Description ( "rainfall" )
+	Detail {
+		rainfall in mm at IMS stations
+	}
+    ;
+
+Relation arr
+	Fields ( sta chan sample_id quantity collection_start collection_stop acquisition_start acquisition_stop lddate )
+	Primary ( sample_id )
+	Foreign ( sample_id ) 
+	Description ( "automated radionuclide report" )
+	Detail {
+		Automated analysis of a particulate or gas sample
+	}
+	;
+
+Relation arr_nuclide
+	Fields ( sta chan sample_id nuclide mdc activity relerr quantified lddate )
+	Primary ( sample_id nuclide )
+	Foreign ( sample_id nuclide ) 
+	Description ( "radionuclide measurement" )
+	Detail {
+		radionuclide measurement
+	}
+	;
+
+Relation rrr_nuclide
+	Fields ( sta chan sample_id nuclide mdc activity relerr quantified lddate )
+	Primary ( sample_id nuclide )
+	Foreign ( sample_id nuclide ) 
+	Description ( "radionuclide measurement" )
+	Detail {
+		Reviewed analysis of a particulate or gas sample
+	}
+	;
+
+Relation rrr
+	Fields ( sta chan sample_id category quantity collection_start collection_stop acquisition_start acquisition_stop lddate )
+	Primary ( sample_id )
+	Foreign ( sample_id ) 
+	Description ( "reviewed radionuclide report" )
+	Detail {
+		Reviewed analysis of a particulate or gas sample
+	}
+	;
+
+Relation met
+	Fields ( sta time endtime temperature winddirection windspeed pressure humidity rainfall lddate )
+	Primary ( sta time::endtime )
+	Foreign ( sta ) 
+	Description ( "meteorological data from radionuclide stations" )
+	Detail {
+		met data as per page 264 of IDC-3.4.1 rev 6
+	}
+	;
+

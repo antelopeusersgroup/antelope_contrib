@@ -1,0 +1,48 @@
+.TH CTBTMET2DB 1
+.SH NAME
+ctbtmet2db \- save CTBT Met bulletins into a database
+.SH SYNOPSIS
+.nf
+\fBctbtmet2db \fP\fIfilename\fP [\fIfilename\fP ...] \fIdbname\fP
+.fi
+.SH SUPPORT
+.br
+Contributed: NO BRTT support -- please contact author.
+.SH DESCRIPTION
+\fBctbtmet2db\fP converts MET Bulletin files from the International
+Data Centre of the Comprehensive Nuclear Test ban Treaty Organization (www.ctbto.org)
+into an antelope database in ctbto1.2 format.
+The MET bulletin holds simple meteorologic paramters from the met station colocated to each
+radionuclide station in the IMS network of the CTBTO.
+The Specifications I found are note really clear regarding the NULL values used in the
+MET bulletins. I guess every value of -99 means a NULL.
+.SH OPTIONS
+.IP filename
+Met Bulletin in MET:IMS2.0 format
+.IP dbname
+output database inf format ctbto1.2. This database will be created when not existing
+.SH DIAGNOSTICS
+.in 2c
+.ft CW
+.nf
+
+Not in IMS2.0 or IMS1.0 format
+
+The message seems to have the wrong format
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+If no DATA_TYPE line is found, \fBctbtmet2db\fP assumes IMS2.0 format at the
+first instance that it hits an EVENT line. \fBctbtmet2db\fP is a state-machine
+that reads input lines successively from all supplied input files. If a
+file after the first file does not have an explicitly specified DATA_TYPE,
+the format (IMS1.0, IMS1.0:SHORT, or GSE2.0) will carry over from the
+previous file.
+.SH "SEE ALSO"
+reb2db(1), ctbtrr2db(1), ctbtmet_import(3p), mail_parser(1)
+.SH AUTHOR
+Nikolaus Horn,
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at

@@ -1,0 +1,24 @@
+.TH AUTODRM_WRAPPER 1 "$Date$"
+.SH NAME
+autodrm_wrapper \- script which is run by sendmail to run autodrm
+.SH SYNOPSIS
+.nf
+autodrm_wrapper
+.fi
+.SH DESCRIPTION
+This script is used to set up the environment properly so that
+autodrm will run.  It is typically run by sendmail as a result of
+a .forward file.  Sendmail setups differ, so it may be necessary to 
+edit this script a bit.  
+.SH "SEE ALSO"
+.nf
+autodrm(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Permissions are extremely important; most
+recent versions of sendmail will refuse to use a .forward file if
+any user other than the email recipient can write to the .forward
+file or any of the directories on the path to that file.
+.SH AUTHOR
+Daniel Quinlan
+.\" $Id$

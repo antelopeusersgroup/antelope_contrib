@@ -1,0 +1,33 @@
+.TH CTBTRR_IMPORT 3 "$Date$"
+.SH NAME
+ctbtrr_import \- mail_parser handler for ARR- and RRR-format mail messages
+.SH SYNOPSIS
+.nf
+ctbrrr_import_handler( $message, $pfarray );
+.fi
+.SH DESCRIPTION
+The reb_import handler is intended to be launched by the mail_parser(1) 
+utility. reb_import launches reb2db(1) on the incoming mail, converting 
+it and placing it into the database specified by the 'database' parameter
+in the mail_parser.pf parameter file
+.nf
+eastern% cat mail_parser.pf
+eastern%
+Handlers &Tbl{
+&Arr{
+handler		ctbtrr_import
+sender		requests@ctbto.org
+subject		[NMS] - Delivery .* of product # .*]
+database 	rndb
+}
+}
+.fi
+.SH "SEE ALSO"
+.nf
+mail_parser(1), reb2db(1), ctbtrr2db(1)
+.fi
+.SH AUTHOR
+Nikolaus Horn
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
+.\" $Id$

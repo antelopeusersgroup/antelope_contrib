@@ -1,0 +1,35 @@
+.TH NAGIOS_CHECK_ORBPING 1 "$Date$"
+.SH NAME
+nagios_check_orbping \- a Nagios plugin to verify an orbserver is running
+.SH SYNOPSIS
+.nf
+\fBnagios_check_orbping\fP [\fB\-m\fP \fImatch_expr\fP | [\fB\-r\fP \fIreject_expr\fP
+           [\fB\-w\fP \fIwarn\fP \fB\-c\fP \fIcrit\fP] [\fB\-o\fP \fIorb\fP]
+	   [\fB\-v\fP]
+.fi
+.SH DESCRIPTION
+\fBnagios_check_orbping\fP is intended to be used as a plugin to the
+Nagios network monitoring system (www.nagios.org). The plugin can be
+installed with other plugins (usually in the Nagios libexec directory)
+and called through the Nagios configuration files. The plugin queries
+the specified orbserver orb using the orb ping command, and reports the
+round-trip time of the ping in seconds plus the server version of the
+orbserver.
+Used in combination with APAN or another tool, this plugin could be
+used for performance measurements and/or graphing.
+.SH OPTIONS
+.nf
+Like all Nagios plugins, more detailed and recent help, argument
+formats, etc. can be obtained via the -h option of the program.
+.fi
+.SH "BUGS AND CAVEATS"
+If you are using custom orb names, you will need to make sure that Antelope has
+an updated orbserver_names.pf on the monitoring host that matches that on the
+system to be checked, or use a numeric port identifier.
+.SH "SEE ALSO"
+nagios_antelope_utils(3), orbstat(1), perlorb(3p), orbping(3)
+.SH AUTHOR
+.nf
+Geoff Davis
+Scripps Institution of Oceanography
+.fi

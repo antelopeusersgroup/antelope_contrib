@@ -9,6 +9,9 @@ ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
+# Force templates to install during Include build phase
+Include:: DATA
+
 SUBDIR= /local
 
 xphp: xphp.id

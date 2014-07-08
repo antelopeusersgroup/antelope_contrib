@@ -1,0 +1,19 @@
+From danq@brtt.com Mon Jan 18 23:10:38 1999
+From: "Daniel M. Quinlan" <danq@brtt.com>
+Date: Mon, 18 Jan 1999 16:10:34 -0700 (MST)
+To: autodrm@brtt.com
+
+ignored
+
+
+begin gse2.1
+msg_id stations USA_BRTT
+e-mail danq@brtt.com
+time_stamp
+time 1999/01/12 to 1999/01/13
+sta_list ULN
+chan_list *Z
+station
+channel
+stop
+
