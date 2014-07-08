@@ -615,7 +615,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 				// silently do nothing if outside bounds.  This
 				// perhaps should be an error as it shouldn't really
 				// happen with the above algorithm, but safety is good
-				if( (i>0) && (i<ns) ) this->u(0,i)=ts[ic].s[j];
+				if( (i>0) && (i<ns) ) this->u(ic,i)=ts[ic].s[j];
 			}
 		}
 	}
