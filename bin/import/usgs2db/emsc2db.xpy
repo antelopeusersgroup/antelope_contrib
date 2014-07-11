@@ -232,7 +232,7 @@ def main():
                     if magtype.lower()   == 'ml':
                         dborigin.putv( ('ml',mag) )
                     elif magtype.lower() == 'mb':
-                        idborigin.putv( ('mb',mag) )
+                        dborigin.putv( ('mb',mag) )
                     elif magtype.lower() == 'ms':
                         dborigin.putv( ('ms',mag) )
                     kmatch=db.lookup(table='netmag',record='dbSCRATCH')
