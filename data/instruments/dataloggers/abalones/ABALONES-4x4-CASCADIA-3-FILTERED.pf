@@ -1,0 +1,116 @@
+originator     Juan Reyes, SIO-UCSD
+last_modified  2014-07
+
+category    LC
+configuration   ABALONES-4x4-CASC3-FIL
+
+description ABALONES-4x4-CASC3-FIL
+dfile ABALONES-4x4-CASC3-FIL
+
+
+info    &Literal{
+ABALONES-4x4-CAS3-FIL, OBSIP SIO
+}
+
+#
+# NOTE:
+#   USING this pf for filtered channels
+#   on the CASCADIA 3 deployment
+#   We cannot specify 2 streams with the
+#   same samplerate on the same file. If
+#   you discover how to do it then send me
+#   an email. reyes@ucsd.edu
+#
+
+streams 50sps
+
+# Problems wiht samprate 333...
+# 512000/1536 = 333.3333333 and not 333
+#333sps    333  a/d_192   f1 f2
+
+# definitions of streams
+50sps      50  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2 fir_50_c3
+
+
+# Gains: Nominal sensitivity (in ounits/iunits) for datalogger
+# Voltage range: +/- 2.5 V, max counts over this range of
+# -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
+# 0.000000298 V/count => 3355443 counts/V
+
+gains 3355443
+
+# Stages
+
+a/d     &Arr{
+    samprate    512000
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+sinc1    &Arr{
+    gtype       FIR_decimator
+    decifac     8
+    response    &datafile(responses/lch_4_sinc1)
+}
+
+sinc2      &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2)
+}
+
+sinc2_3    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_3)
+}
+
+sinc2_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_4)
+}
+
+sinc3       &Arr{
+    gtype       FIR_decimator
+    decifac     5
+    response    &datafile(responses/lch_4_sinc3)
+}
+
+sinc3_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_4)
+}
+
+sinc3_5    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_5)
+}
+
+sinc3_6    &Arr{
+    gtype       FIR_decimator
+    decifac     3
+    response    &datafile(responses/lch_4_sinc3_6)
+}
+
+f1          &Arr{
+    gtype       FIR_decimator
+    decifac     4
+    response    &datafile(responses/lch_4_f1)
+}
+
+f2          &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_f2)
+}
+# configuration for filtered data on CASCADIA 2
+fir_50_c3          &Arr{
+    gtype       FIR_decimator
+    decifac     1
+    response    &datafile(responses/abalones_filtered_c3)
+} 

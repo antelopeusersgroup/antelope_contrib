@@ -1,6 +1,7 @@
 DATADIR=responses
 DATA= abalones_filtered_c1 \
       abalones_filtered_c2 \
+      abalones_filtered_c3 \
       lch_4_f1 \
       lch_4_f2  \
       lch_4_sinc2 \
