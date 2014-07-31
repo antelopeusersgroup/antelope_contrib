@@ -1,4 +1,4 @@
-.TH pythondbcentral 3P 
+.TH pythondbcentral 3P
 .SH NAME
 pythondbcentral \- Python interface to resolve Datascope dbcentral entries
 .SH SYNOPSIS
@@ -19,8 +19,8 @@ else:
     print names
 .fi
 .SH DESCRIPTION
-pythondbcentral is a Python utility module with one class, DbCentral, 
-to query a dbcentral clusters database table and return all the resolved 
+pythondbcentral is a Python utility module with one class, DbCentral,
+to query a dbcentral clusters database table and return all the resolved
 paths using the schema. It can handle year, month, day and single volume types.
 
 It takes up to three arguments:
@@ -30,26 +30,19 @@ It takes up to three arguments:
     clustername - a valid clustername in the clusters table
 
     include_times - a boolean (True or False). If set to True will
-        return a dictionary of database names (keys) and values of 
+        return a dictionary of database names (keys) and values of
         a tuple of (start_time, end_time) in epoch seconds. Note
         that a dictionary is by definition unsorted.
         If set to False will return a simple ordered list of database names.
 
 .SH EXAMPLE
-A short example is shown below. The code assumes that the module 
-pythondbcentral is either in the same directory as the script or
-in a directory that is included in your PYTHONPATH environment variable.
+A short example is shown below. This code is designed to be used in an .xpy file.
 .in 2c
 .ft CW
 .nf
-#!/usr/bin/env python
-
-import sys
-import os
-sys.path.append('%s/local/data/python/antelope/' % os.environ['ANTELOPE'])
 import datascope as antdb
 import stock as antstock
-from pythondbcentral import DbCentral
+from utilities.pythondbcentral import DbCentral
 
 path = '/anf/shared/dbcentral/dbcentral'
 clustername = 'usarray'
@@ -65,8 +58,8 @@ else:
     print names
 
 {
-    '/anf/TA/dbs/event_dbs/2006_03/usarray_2006_03': (1141171200.0, 1143849599.0), 
-    '/anf/TA/dbs/event_dbs/2007_03/usarray_2007_03': (1172707200.0, 1175385599.0), 
+    '/anf/TA/dbs/event_dbs/2006_03/usarray_2006_03': (1141171200.0, 1143849599.0),
+    '/anf/TA/dbs/event_dbs/2007_03/usarray_2007_03': (1172707200.0, 1175385599.0),
     '/anf/TA/dbs/event_dbs/2006_02/usarray_2006_02': (1138752000.0, 1141171199.0)
 }
 .fi
@@ -74,8 +67,8 @@ else:
 .in
 .SH ENVIRONMENT
 The environment variables ANTELOPE and PYTHONPATH are used by this module. See
-antelopeenv(5) for a description of the ANTELOPE variable, and 
-http://docs.python.org/tutorial/modules.html#the-module-search-path 
+antelopeenv(5) for a description of the ANTELOPE variable, and
+http://docs.python.org/tutorial/modules.html#the-module-search-path
 or
 http://docs.python.org/using/cmdline.html#envvar-PYTHONPATH
 for a description of the PYTHONPATH environment variable.
