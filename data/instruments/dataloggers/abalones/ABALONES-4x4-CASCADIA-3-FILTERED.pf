@@ -1,48 +1,43 @@
 originator     Juan Reyes, SIO-UCSD
-last_modified  2013-08
+last_modified  2014-07
 
 category    LC
-configuration   ABALONES-4x4
+configuration   ABALONES-4x4-CASC3-FIL
 
-description ABALONES-4x4
-dfile ABALONES-4x4
+description ABALONES-4x4-CASC3-FIL
+dfile ABALONES-4x4-CASC3-FIL
 
 
 info    &Literal{
-ABALONES-4x4, OBSIP SIO
+ABALONES-4x4-CAS3-FIL, OBSIP SIO
 }
 
-streams 4000sps 2000sps 1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 5sps 1sps
+#
+# NOTE:
+#   USING this pf for filtered channels
+#   on the CASCADIA 3 deployment
+#   We cannot specify 2 streams with the
+#   same samplerate on the same file. If
+#   you discover how to do it then send me
+#   an email. reyes@ucsd.edu
+#
+
+streams 50sps
 
 # Problems wiht samprate 333...
 # 512000/1536 = 333.3333333 and not 333
 #333sps    333  a/d_192   f1 f2
 
 # definitions of streams
-4000sps  4000  a/d sinc1 sinc2_4 f1 f2
-2000sps  2000  a/d sinc1 sinc2_3 sinc2_4 f1 f2
-1000sps  1000  a/d sinc1 sinc2 sinc2_3 sinc2_4 f1 f2
-500sps    500  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 f1 f2
-250sps    250  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3_5 f1 f2
-200sps    200  a/d sinc1 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
-125sps    125  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3_4 sinc3_5 f1 f2
-100sps    100  a/d sinc1 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
-50sps      50  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
-40sps      40  a/d sinc1 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
-25sps      25  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2
-20sps      20  a/d sinc1 sinc2_3 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
-10sps      10  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
-5sps        5  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
-1sps        1  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
+50sps      50  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2 fir_50_c3
+
 
 # Gains: Nominal sensitivity (in ounits/iunits) for datalogger
-# Voltage range: +/- 2.47 V, max counts over this range of
-# –6,100,300 to 6,102,081.
-# This gives S(a/d) = 4.94 / 12,202,381 = 0.405x10**-6 V/count
-# = 0.405 microV/count = 2469135 counts/V
+# Voltage range: +/- 2.5 V, max counts over this range of
+# -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
+# 0.000000298 V/count => 3355443 counts/V
 
-gains 2469135
-
+gains 3355443
 
 # Stages
 
@@ -113,4 +108,9 @@ f2          &Arr{
     decifac     2
     response    &datafile(responses/lch_4_f2)
 }
-
+# configuration for filtered data on CASCADIA 2
+fir_50_c3          &Arr{
+    gtype       FIR_decimator
+    decifac     1
+    response    &datafile(responses/abalones_filtered_c3)
+} 

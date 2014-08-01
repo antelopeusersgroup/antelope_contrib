@@ -1,5 +1,5 @@
 originator     Juan Reyes, UCSD # reyes@ucsd.edu
-last_modified  10-2013
+last_modified  7-2014
 
 category    hydroacoustic
 configuration   DPG_OBSIP
@@ -13,7 +13,7 @@ short_period_sensor no # Sets the first char of seed code
 sensor_type_code    D # Sets second char of seed code
 
 gtype       sensor
-sensitivity 2.32414E-03
+sensitivity 7.3E-09
 ounits      V
 iunits      Pa
 
