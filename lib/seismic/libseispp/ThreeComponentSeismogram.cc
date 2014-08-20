@@ -424,6 +424,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 	    {
 		// Land here when data are not stored in wfdisc but
 		// stored as dmatrix object binary form
+	      try {
 		Metadata md(dbh,md_to_extract,am);
 		copy_selected_metadata(md,
 			dynamic_cast<Metadata &>(*this),md_to_extract);
@@ -508,17 +509,18 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 				swapdvec(this->u.get_address(0,0),readsize);
 		}
 		if(ns>0) live=true;
+	      }catch (MetadataError& mderr)
+	      {
+		// Land here when any of the metadata routines fail
+		    mderr.log_error();
+		    throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
+			dbh.db,complain);
+
+	      }
 	    }
 		
 	}
-	catch (MetadataError& mderr)
-	{
-		// Land here when any of the metadata routines fail
-		mderr.log_error();
-		throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
-			dbh.db,complain);
-
-	}
+    catch(...){throw;};
 }
 #endif
 
