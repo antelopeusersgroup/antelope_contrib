@@ -37,6 +37,7 @@ DATA= taurus_inf_aa \
       trillium_120          \
       trillium_240_1          \
       trillium_240_2          \
+      trillium_240_obs_sio \
       trillium_40           \
       trillium_compact_sio \
       Taurus_UserGuide_15148R7.pdf \
