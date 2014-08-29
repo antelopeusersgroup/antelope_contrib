@@ -2,7 +2,7 @@ originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
 last_modified  Aug. 2014
 
 info    &Literal{
-    L28LB OBSIP-SIO Configuration
+    L28LB 4.5Hz Geophone OBSIP-SIO Configuration
 
     Transduction constant --> 1.57 * sqrt(R-coil) V/m/s
     with R-coil = 630 ohm nominally this gives 39.53
@@ -16,15 +16,15 @@ info    &Literal{
 }
 
 category    OBSIP
-configuration   L28_OBSIP_SIO
+configuration   L28LB_OBSIP_SIO
 
-description  L28 OBSIP-SIO Seismometer Differential
-dfile   l28_obsip_sio
+description  L28LB OBSIP-SIO Seismometer Differential
+dfile   l28lb_obsip_sio
 
 rsptype                 V       # velocity instrument
 band                    s       # short period
 short_period_sensor     yes     # Sets first character of SEED channel code
-sensor_type_code        H       # 2nd character in SEED channel code
+sensor_type_code        L       # 2nd character in SEED channel code
 
 gtype       sensor
 sensitivity 3.41e-8
@@ -37,5 +37,5 @@ N   0   90
 E   90  90
 }
 
-response    &datafile(responses/l28_obsip_sio)
+response    &datafile(responses/l28lb_obsip_sio)
 

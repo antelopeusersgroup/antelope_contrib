@@ -60,7 +60,7 @@ DATA= \
     ks54000.pf \
     l22.pf \
     l28.pf \
-    l28_obsip_sio.pf \
+    l28lb_obsip_sio.pf \
     l4c.pf \
     l4a.pf \
     l4c_horz.pf \
