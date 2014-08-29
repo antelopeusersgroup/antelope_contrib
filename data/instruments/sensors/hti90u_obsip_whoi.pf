@@ -8,8 +8,8 @@ This instrument parameter file and response provided by
 
 High Tech, Inc HTI-90-U with built-in preamp.
 }
-category        High Tech
-configuration   HTI-90-U
+category        OBSIP
+configuration   HTI-90-U_WHOI
 
 description     HTI-90-U Hydrophone;
 dfile           hti90u_whoi
