@@ -1,20 +1,24 @@
-# Trillium 40 OBS Single Sided
-originator     Juan Reyes, UCSD
-last_modified  2014-08-25
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  Aug. 2014
 
-#The manufacturer quotes 1553 V*s/m over +/-8V for a
-# full differential signal. SIO-LC4x4 uses only a
-# single-sided input to the A/D, effectively halving the
-# sensitivity, thus:
-# S(T40-ss) = 776.5 V/m/s
-# flat response: 0.025 Hz (40 sec) to 50 Hz
+info &Literal{
+    Trillium 40 OBS-SIO Single-Sided Configuration
 
+    The manufacturer quotes 1553 V*s/m over +/-8V for a
+    full differential signal. SIO-LC4x4 uses only a
+    single-sided input to the A/D, effectively halving the
+    sensitivity.
+    Thus:
 
-category    Nanometrics
-configuration   Trillium 40 OBS Seismometer Single Sided Input
+    S(T40-ss) = 776.5 V/m/s
+    flat response: 0.025 Hz (40 sec) to 50 Hz
+}
 
-description Nanometrics Trillium 40 OBS Seismometer Single Sided Input
-dfile   trillium_40_obs_sio
+category    OBSIP
+configuration   T-40 Single-Sided
+
+description Nanometrics Trillium 40 Single Sided
+dfile   trillium_40_obsip_sio
 
 rsptype                 V       # velocity instrument
 band                    b       # broad band

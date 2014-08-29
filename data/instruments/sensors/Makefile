@@ -52,7 +52,8 @@ DATA= \
     hs10_e.pf \
     hs10_n.pf \
     hs10_vert.pf \
-    hti90u_whoi.pf \
+    hti90u_obsip_sio.pf \
+    hti90u_obsip_whoi.pf \
     hyperion.pf \
     ia_500ug.pf \
     ia_50ug.pf \
@@ -115,8 +116,8 @@ DATA= \
     trillium_120.pf \
     trillium_240_1.pf \
     trillium_240_2.pf \
-    trillium_240_ss_obs_sio.pf \
-    trillium_40_ss_obs_sio.pf \
+    trillium_240_ss_obsip_sio.pf \
+    trillium_40_ss_obsip_sio.pf \
     trillium_compact_sio.pf \
     unknown-acceleration.pf \
     unknown-displacement.pf \

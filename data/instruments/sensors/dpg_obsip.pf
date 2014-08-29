@@ -1,11 +1,27 @@
-originator     Juan Reyes, UCSD # reyes@ucsd.edu
-last_modified  7-2014
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  Aug. 2014
 
-category    hydroacoustic
-configuration   DPG_OBSIP
+info &Literal{
+    Differential Pressure Gauge (DPG) OBSIP-SIO Configuration
 
-description DPG_OBS_SIO
-dfile       DPGSIO
+    Using measurements from strain gauge full scale outputs,
+    the average is about 57 mv/7e3 PA. (FSO is 75e-3V/7e3PA).
+    According to Cox et al there is a mechanical attenuation
+    factor due to the compressibility of the oil and the
+    compliance of the chamber. They estimate this as 0.86.
+    Willoughby et al say they measured the response and deduced
+    this factor as 0.924. Using a value of 0.9 is suggested until
+    a better value can be determined. Thus the STAGE 1 gain should
+    be 5.7e-2*0.9/7e3 or:
+
+    S(DPG) = 7.3 μV/Pa -or- (7.3e-6 V/Pa)
+}
+
+category    OBSIP
+configuration   DPG_OBSIP_SIO
+
+description Differential Pressure Gauge OBSIP-SIO
+dfile       DPG_OBSIP_SIO
 
 rsptype     H   # hydroacoustic instrument
 band        b   # broad band
@@ -13,7 +29,7 @@ short_period_sensor no # Sets the first char of seed code
 sensor_type_code    D # Sets second char of seed code
 
 gtype       sensor
-sensitivity 7.3E-09
+sensitivity 7.3e-6
 ounits      V
 iunits      Pa
 
@@ -21,5 +37,5 @@ orientations    &Tbl{
 H       0       0
 }
 
-response    &datafile(responses/DPG_OBSIP)
+response    &datafile(responses/DPG_OBSIP_SIO)
 

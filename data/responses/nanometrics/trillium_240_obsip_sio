@@ -2,27 +2,22 @@
 # $Id: trillium_240_obs_sio,v 1.0 2014-08-25 Reyes
 # trillium 240 seismometer for OBS group
 # Normalized  response relative to velocity
-# All poles and zeroes in radians/sec
-# 1                   type
-# 4                   num of zeroes
-# 7                   num of poles
-# 0.0                 input sample interval
 # 1                   decim factor
 # 2.316E+9            normalization factor
-# 1.0                 gain
-# 1196.5 V/m/s  * (1/2) = 5.9825E-7  V/nm/s sensitivity
+# 1196.5 V/m/s  sensitivity
+# 5.9825E-7  V/nm/s sensitivity for Single-Sided
 theoretical   1 anti-alias   paz    teledyne
 2.316E9
 7             Poles
 -0.01815       0.01799         0.0000E+00    0.0000E+00
 -0.01815       -0.01799        0.0000E+00    0.0000E+00
--173.0         0.0000E+00      0.0000E+00    0.0000E+00
+-173.0         0.0             0.0000E+00    0.0000E+00
 -196           231             0.0000E+00    0.0000E+00
 -196           -231            0.0000E+00    0.0000E+00
 -732           1415            0.0000E+00    0.0000E+00
 -732           -1415           0.0000E+00    0.0000E+00
 4               Zeros
-0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
-0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0           0.0000E+00    0.0000E+00    0.0000E+00
+0.0           0.0000E+00    0.0000E+00    0.0000E+00
 -108          0.0000E+00    0.0000E+00    0.0000E+00
 -161          0.0000E+00    0.0000E+00    0.0000E+00
