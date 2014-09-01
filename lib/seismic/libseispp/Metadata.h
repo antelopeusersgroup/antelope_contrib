@@ -7,8 +7,8 @@
 #include <map>
 #include <vector>
 #include "stock.h"
-#include "arrays.h"
 #ifndef NO_ANTELOPE
+#include "arrays.h"
 #include "pf.h"
 #include "databasehandle.h"
 #endif
