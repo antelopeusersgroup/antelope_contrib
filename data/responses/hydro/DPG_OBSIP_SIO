@@ -20,7 +20,7 @@
 # 828.26383492        normalization factor
 # 1.0                 gain
 #
-theoretical   1 sensor       paz    seed
+theoretical   1 sensor       paz    OBSIP-SIO
 1.0
 1             Poles
 -1.2568000000e-02  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00

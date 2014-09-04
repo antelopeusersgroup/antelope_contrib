@@ -1,0 +1,19 @@
+# @(#) High Tech HTI-90-U OBS-SIO  1.0  08/28/2014
+#  High Tech HTI-90-U piezoelectric hydrophone;
+#  Preamp internal to sensor package
+#  Normalized  response relative to pressure (Passcals)
+#  Sensitivity  is 6.53e-4 V/Pa
+#  Transfer function from pressure
+#  Normalization Frequency is 500 Hz
+#  Normalization Factor is 47124
+#  Juan Reyes <reyes@ucsd.edu>
+#
+theoretical   1 sensor   paz    OBSIP-SIO
+47124  500.0
+3             Poles
+-24.1277431 0.0000E+00  0.0000E+00   0.0000E+00
+-0.1256637  0.0000E+00  0.0000E+00   0.0000E+00
+-47124      0.0000E+00  0.0000E+00   0.0000E+00
+2             Zeros
+0.0000E+00  0.0000E+00  0.0000E+00    0.0000E+00
+0.0000E+00  0.0000E+00  0.0000E+00    0.0000E+00

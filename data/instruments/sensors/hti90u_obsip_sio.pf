@@ -1,0 +1,42 @@
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  Aug 2014
+
+info    &Literal{
+    High-Tech Hydrophone OBSIP-SIO Configuration
+
+    For the custom High-Tech Hydrophone (HTI-90-U) the
+    manufacturer calibration files give a sensitivity of
+    -182.7 dB re 1V/μPa. This hydrophone loses ~2 dB in
+    sensitivity per ~6000m in depth (10,000 psi) so for
+    typical ocean depth around 3km we correct ~1 dB and
+    use -183.7 dB re 1V/μPa. Using amplitude spectra
+    throughout (e.g. X[db] =20*log10[X/Xref]), this gives
+    S(hyd-HTI) = 10**(-183.7/20) * 1V/μPa = 0.653 mV/Pa
+    (at 3000m water depth).
+    Thus:
+
+    S(hyd-HTI) = 0.653 mV/Pa -or- (6.53e-4 V/Pa)
+    flat response: 0.05 Hz to 7.5 kHz (at 3000m depth)
+}
+
+category        OBSIP
+configuration   HTI_90_U_OBS_SIO
+
+description     HTI_90_U Hydrophone OBSIP-SIO
+dfile           hti90u_obsip_sio
+
+rsptype                 H       # Pressure instrument
+band                    E       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        D       # 2nd character in SEED channel code
+
+gtype           sensor
+sensitivity     6.53e-4
+iunits          Pa
+ounits          V
+
+orientations    &Tbl{
+H       -999.9  -999.9
+}
+
+response        &datafile(responses/HTI90U_OBSIP_SIO)

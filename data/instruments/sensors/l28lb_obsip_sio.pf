@@ -1,0 +1,41 @@
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  Aug. 2014
+
+info    &Literal{
+    L28LB 4.5Hz Geophone OBSIP-SIO Configuration
+
+    Transduction constant --> 1.57 * sqrt(R-coil) V/m/s
+    with R-coil = 630 ohm nominally this gives 39.53
+    V/m/s. SIO uses 70% coil current damping,
+    (R-shunt-ss = (7860+51) ohm SINGLE-SIDED, DIVIDE BY 2 to
+    effective R-shunt damping for differential signal).
+    Thus R-shunt-diff = 3956 ohm, which gives:
+
+    S(L28) = 34.10 V/m/s
+    flat response: ~4.5 Hz and above
+}
+
+category    OBSIP
+configuration   L28LB_OBSIP_SIO
+
+description  L28LB OBSIP-SIO Seismometer Differential
+dfile   l28lb_obsip_sio
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        L       # 2nd character in SEED channel code
+
+gtype       sensor
+sensitivity 3.41e-8
+iunits      nm/s
+ounits      V
+
+orientations    &Tbl{
+Z   0   180
+N   0   90
+E   90  90
+}
+
+response    &datafile(responses/l28lb_obsip_sio)
+
