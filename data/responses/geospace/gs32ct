@@ -1,0 +1,21 @@
+# GS-32CT    10.0000 hz geophone  395 ohm coil resistance
+#    0.700000 damping
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1.0                 normalization factor
+# 1.0                 gain
+# sensitivity  19.7 v/m/sec
+ theoretical   1 anti-alias   paz    pzseismo
+ 1.0
+ 2             Poles
+-.4398E+02    0.4487E+02    0.0000E+00    0.0000E+00
+-.4398E+02    -.4487E+02    0.0000E+00    0.0000E+00
+ 2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+

@@ -1,0 +1,25 @@
+originator     Frank Vernon, UCSD
+last_modified  2014-09-14
+
+category	Geospace
+configuration	GS32CT
+
+description	GS32CT
+dfile	gs32ct
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	19.7e-9
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	0
+}
+
+response	&datafile(responses/gs32ct) 
+

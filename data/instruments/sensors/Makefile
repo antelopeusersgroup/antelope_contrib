@@ -47,6 +47,8 @@ DATA= \
     gs13e.pf \
     gs13n.pf \
     gs13z.pf \
+    gs30ct.pf \
+    gs32ct.pf \
     gsv-111.pf \
     hs10_horz.pf \
     hs10_e.pf \
