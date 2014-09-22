@@ -1,11 +1,11 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 description	Quanterra 330 Linear Phase Composite
-dfile q330_ANF_lc
+dfile q330_ANF_lc_anf
 
 category	ANF
-configuration	Quanterra 330 Linear Phase Composite
+configuration	Q330 Linear Phase Composite
 
 info	&Literal{
 This is the ANF standard station configuration for 
@@ -208,7 +208,7 @@ stages 		clk_qual
 iunits  	percent
 ounits		counts
 samprate 	1
-rspstype	p
+rsptype	p
 } 
 
 VCO      &Arr{
@@ -256,6 +256,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VMV       &Arr{
@@ -263,6 +264,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VMW       &Arr{
@@ -378,7 +380,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }

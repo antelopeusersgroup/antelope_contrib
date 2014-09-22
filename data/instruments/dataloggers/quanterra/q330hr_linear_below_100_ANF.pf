@@ -1,11 +1,11 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 category	ANF
 configuration	Q330HR Linear Phase Below 100 Composite
 
 description	Quanterra 330HR Linear Phase Below 100 Composite
-dfile q330hr_lb100c
+dfile q330hr_lb100c_anf
 
 info    &Literal{
 This is the ANF standard station configuration for a 

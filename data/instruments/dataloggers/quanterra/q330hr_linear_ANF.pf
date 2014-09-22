@@ -1,11 +1,11 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 category	ANF 
 configuration	Q330HR Linear Phase Composite
 
 description	Quanterra 330HR Linear Phase Composite
-dfile q330hr_lc
+dfile q330hr_lc_anf
 
 info    &Literal{
 This is the ANF standard station configuration for a 
@@ -375,7 +375,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }

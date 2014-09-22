@@ -1,8 +1,8 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 description	Quanterra 330 Linear Phase Below 100 Composite Baler Dec10
-dfile q330_ANF_lb100c
+dfile q330_ANF_lb100_anf_b
 
 category	ANF
 configuration	Quanterra 330 Linear Phase Below 100 Composite Baler Dec10
@@ -370,7 +370,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }
