@@ -79,6 +79,7 @@ DATA= \
     qep \
     Q330_Description.pdf \
     q330decim.pdf \
+    Q330S+.pdf \
     README_quanterra \
     ULP \
     ULP379 \
