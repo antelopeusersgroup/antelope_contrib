@@ -41,6 +41,39 @@ DATA= \
     FLinear-50 \
     FS2D5 \
     FS2D5M \
+    FS+Lbelow100-1 \
+    FS+Lbelow20-200 \
+    FS+Lbelow40-50 \
+    FS+Lbelow100-10 \
+    FS+Lbelow20-250 \
+    FS+Linear-1 \
+    FS+Lbelow100-100 \
+    FS+Lbelow20-40 \
+    FS+Linear-10 \
+    FS+Lbelow100-20 \
+    FS+Lbelow20-50 \
+    FS+Linear-100 \
+    FS+Lbelow100-200 \
+    FS+Lbelow20-500 \
+    FS+Linear-1000 \
+    FS+Lbelow100-40 \
+    FS+Lbelow40-1 \
+    FS+Linear-20 \
+    FS+Lbelow100-50 \
+    FS+Lbelow40-10 \
+    FS+Linear-200 \
+    FS+Lbelow20-1 \
+    FS+Lbelow40-100 \
+    FS+Linear-250 \
+    FS+Lbelow20-10 \
+    FS+Lbelow40-20 \
+    FS+Linear-40 \
+    FS+Lbelow20-100 \
+    FS+Lbelow40-200 \
+    FS+Linear-50 \
+    FS+Lbelow20-20 \
+    FS+Lbelow40-40 \
+    FS+Linear-500 \
     LP \
     MP \
     qep \
