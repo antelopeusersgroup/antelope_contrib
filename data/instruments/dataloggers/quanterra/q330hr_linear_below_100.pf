@@ -22,8 +22,8 @@ streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
 20sps	 20 a/d20  FLbelow100-20
 10sps	 10 a/d10  FLbelow100-10
 1sps	  1 a/d1   FLbelow100-1
-0.1sps	0.1 a/d1   FLbelow100-1 BalerDec10
-0.01sps 0.01 a/d1  FLbelow100-1 BalerDec10 BalerDec10
+0.1sps	0.1 a/d1   FLbelow100-1 VLP389
+0.01sps 0.01 a/d1  FLbelow100-1 VLP389 ULP379
 
 gains  1677720    # in units of counts/volt
 
@@ -134,12 +134,17 @@ response	&datafile(responses/FLbelow100-1)
 samprate	1
 }
 
-BalerDec10	&Arr{
+VLP389	&Arr{
 gtype		FIR_decimator
 decifac		10
-response	&datafile(responses/BalerDec10)
+response	&datafile(responses/VLP389)
 }
 
+ULP379	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/ULP379)
+}
 
 
 soh		LCE LCQ VCO VEA VEC VEP VKI VMU VMV VMW VPB
