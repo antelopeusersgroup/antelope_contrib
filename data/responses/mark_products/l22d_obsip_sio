@@ -1,0 +1,22 @@
+# l22    2.0 hz vertical seimometer
+# $Id: OBS-SIO configuration, 2014-09-25 Reyes
+#
+#    0.599 damping
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# -1.0                 normalization factor
+# 1.0                 gain
+# sensitivity  32.21 V/m/sec
+theoretical   1 anti-alias   paz    pzseismo
+1.0 2.0
+2             Poles
+-7.527        10.063        0.0000E+00    0.0000E+00
+-7.527        -10.063       0.0000E+00    0.0000E+00
+2             Zeros
+0.0           0.0           0.0000E+00    0.0000E+00
+0.0           0.0           0.0000E+00    0.0000E+00
