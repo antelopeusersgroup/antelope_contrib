@@ -1,0 +1,39 @@
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  Sept. 2014
+
+info    &Literal{
+    L22D 2.0Hz Vertical Seismometer OBSIP-SIO Configuration
+
+    Transduction constant --> 1.61 * sqrt(R-coil) V/m/s
+    with R-coil = 510 ohm nominally this gives 36.36 V/m/s.
+    SIO uses 60% coil current damping,
+    (R-shunt-ss=(7860+51) ohm single-sided, divide by 2 to
+    effective R-shunt damping for differential signal),
+    thus R-shunt-diff = 3956 ohm, which gives:
+
+    S(L22) = 32.21 V/m/s
+    flat response: ~2.0 Hz and above
+}
+
+category    OBSIP
+configuration   L22D_OBSIP_SIO
+
+description  L22D OBSIP-SIO Vertical Seismometer
+dfile   l22d_obsip_sio
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        L       # 2nd character in SEED channel code
+
+gtype       sensor
+sensitivity 3.221e-8
+iunits      nm/s
+ounits      V
+
+orientations    &Tbl{
+Z   0   180
+}
+
+response    &datafile(responses/l22d_obsip_sio)
+

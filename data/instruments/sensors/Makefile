@@ -63,6 +63,7 @@ DATA= \
     l22.pf \
     l28.pf \
     l28lb_obsip_sio.pf \
+    l22d_obsip_sio.pf \
     l4c.pf \
     l4a.pf \
     l4c_horz.pf \
