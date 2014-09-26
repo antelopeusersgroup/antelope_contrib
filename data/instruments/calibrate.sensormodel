@@ -10,3 +10,4 @@ trillium_240    V    v yes  -9.0375000e-01   1       1200         1.000000 nom_r
 trillium_240_1  V    v yes  -9.0819344e-01   1       1200         1.000000 nom_response                                                     trillium_240_1                    1358439567.30117
 trillium_240_2  V    v yes  -9.0201781e-01   1       1200         1.000000 nom_response                                                     trillium_240_2                    1358439569.01897
 loop            D    -       1.0000000e+00   0          1         1.000000 nom_response                                                     loop                              1358267936.74182
+sts5a           V    c yes   4.2337543e-02   1       1500         1.000000 nom_response                                                     sts5a                             1411756499.15763
