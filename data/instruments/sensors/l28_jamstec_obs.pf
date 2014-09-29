@@ -1,0 +1,27 @@
+originator     	Taimi Mulder, GSC & Jesse Hutchinson, UVic
+last_modified  	2014-03-21
+
+category	Mark Products
+configuration	L28
+
+description	Mark Products L28
+dfile	l28
+
+rsptype                 V       # velocity instrument
+band                    s       # short period
+short_period_sensor     yes     # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype		sensor
+sensitivity	2.72e-8
+iunits		nm/s
+ounits		V
+
+orientations	&Tbl{
+Z	0	180
+N	0	90
+E	90	90
+}
+
+response	&datafile(responses/l28) 
+
