@@ -1,0 +1,37 @@
+originator     Taimi Mulder, GSC
+last_modified  2014-04-13
+
+category	Geological Survey of Canada
+configuration	CTN_MKIII
+
+description	GSC CTN_MKIII
+dfile 		ctn_mkIII
+
+streams		60sps
+
+# definitions of streams
+ 60sps     60   preamp a/d ctn_mkIII
+
+# Stages
+
+gains		1
+
+preamp	&Arr{
+gtype		preamp
+response	&datafile(responses/dummy)
+}
+
+a/d	&Arr{
+samprate	40
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+ctn_mkIII	&Arr{
+gtype		paz
+decifac		1
+response	&datafile(responses/cnt_mkIII)
+}
+
