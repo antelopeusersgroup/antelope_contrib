@@ -29,8 +29,6 @@ ounits		V
 
 orientations	&Tbl{
 Z	0	0
-N	0	90
-E	90	90
 }
 
 response	&datafile(responses/gs13) 

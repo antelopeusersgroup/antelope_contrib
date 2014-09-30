@@ -1,5 +1,8 @@
 DATADIR=responses
 DATA= \
+    ctn_mkI \
+    ctn_mkII \
+    ctn_mkIII \
     gd1_fir1 \
     gd1_fir2 \
     gd1_fir3 \

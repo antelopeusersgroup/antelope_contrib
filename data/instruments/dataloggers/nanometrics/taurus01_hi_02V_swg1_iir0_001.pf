@@ -1,9 +1,9 @@
 originator     Frank Vernon, UCSD; Taimi Mulder, GSC
-last_modified  2014-02-07
+last_modified  2014-07-11
 
 info    &Literal{
-This description is for the Taurus standard response with 47k (low) input impedence.
-43.07 k-ohm impedance, 8V pp, sw gain = 1, IIR filter = off
+This description is for the Taurus infinite impedence response with high input impedence.
+9.4 M-ohm impedance, 2V pp, sw gain = 1, IIR co freq = 1 mHz
 
 These instrument parameter files and their responses derived from
 
@@ -33,23 +33,23 @@ K2K 2A1
 }
 
 category	Nanometrics
-configuration   Taurus standard
+configuration   Taurus infinite
 
-description	Taurus Standard 47k
-dfile           taurus12_lo_08V_swg1_iiroff
+description	Taurus Infinite 8V
+dfile           taurus01_hi_02V_swg1_iir0_001
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 
 # definitions of streams
-1000sps	 	1000	a/d taurus_std_aa trident_1000sps_fir1 trident_1000sps_fir2 trident_1000sps_fir3
-500sps	 	500	a/d taurus_std_aa trident_500sps_fir1 trident_500sps_fir2 trident_500sps_fir3
-200sps	 	200	a/d taurus_std_aa trident_200sps_fir1 trident_200sps_fir2 trident_200sps_fir3
-120sps	 	120	a/d taurus_std_aa trident_120sps_fir1 trident_120sps_fir2 trident_120sps_fir3 trident_120sps_fir4
-100sps	 	100	a/d taurus_std_aa trident_100sps_fir1 trident_100sps_fir2 trident_100sps_fir3
-50sps		50	a/d taurus_std_aa trident_50sps_fir1 trident_50sps_fir2 trident_50sps_fir3
-40sps		40	a/d taurus_std_aa trident_40sps_fir1 trident_40sps_fir2 trident_40sps_fir3 trident_40sps_fir4
-20sps		20	a/d taurus_std_aa trident_20sps_fir1 trident_20sps_fir2 trident_20sps_fir3 trident_20sps_fir4
-10sps		10	a/d taurus_std_aa trident_10sps_fir1 trident_10sps_fir2 trident_10sps_fir3 trident_10sps_fir4
+1000sps	 	1000	a/d taurus_inf_aa trident_1000sps_fir1 trident_1000sps_fir2 trident_1000sps_fir3 taurus_iir0_001
+500sps	 	500	a/d taurus_inf_aa trident_500sps_fir1 trident_500sps_fir2 trident_500sps_fir3 taurus_iir0_001
+200sps	 	200	a/d taurus_inf_aa trident_200sps_fir1 trident_200sps_fir2 trident_200sps_fir3 taurus_iir0_001
+120sps	 	120	a/d taurus_inf_aa trident_120sps_fir1 trident_120sps_fir2 trident_120sps_fir3 trident_120sps_fir4 taurus_iir0_001
+100sps	 	100	a/d taurus_inf_aa trident_100sps_fir1 trident_100sps_fir2 trident_100sps_fir3 taurus_iir0_001
+50sps		50	a/d taurus_inf_aa trident_50sps_fir1 trident_50sps_fir2 trident_50sps_fir3 taurus_iir0_001
+40sps		40	a/d taurus_inf_aa trident_40sps_fir1 trident_40sps_fir2 trident_40sps_fir3 trident_40sps_fir4 taurus_iir0_001
+20sps		20	a/d taurus_inf_aa trident_20sps_fir1 trident_20sps_fir2 trident_20sps_fir3 trident_20sps_fir4 taurus_iir0_001
+10sps		10	a/d taurus_inf_aa trident_10sps_fir1 trident_10sps_fir2 trident_10sps_fir3 trident_10sps_fir4 taurus_iir0_001
 
 possible_streams &Literal{
     my @chosen = @_ ; 
@@ -82,7 +82,7 @@ possible_streams &Literal{
     return (@ok) ; 
 }
 
-gains  2000000        
+gains  8000000        
 
 
 # Stages
@@ -99,9 +99,9 @@ ounits		counts
 sn		datalogger
 }
 
-taurus_std_aa	&Arr{
+taurus_inf_aa	&Arr{
 gtype           analog_anti_alias
-response        &datafile(responses/taurus_std_aa)
+response        &datafile(responses/taurus_inf_aa)
 }
 
 trident_1000sps_fir3    &Arr{ 
@@ -288,5 +288,10 @@ trident_50sps_fir3    &Arr{
 gtype           FIR_decimator 
 decifac         2 
 response        &datafile(responses/trident_50sps_fir3) 
+} 
+
+taurus_iir0_001      &Arr{ 
+gtype           IIR_DC_removal 
+response        &datafile(responses/taurus_iir0_001) 
 } 
 
