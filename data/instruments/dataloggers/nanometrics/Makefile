@@ -1,6 +1,7 @@
 DATADIR=instruments/dataloggers
 DATA= hrd24.pf \
     hrd24_iir.pf \
+	rd16.pf \
     taurus01_hi_02V_swg1_iir0_001.pf \
     taurus02_hi_02V_swg1_iiroff.pf \
     taurus03_lo_02V_swg1_iir0_001.pf \

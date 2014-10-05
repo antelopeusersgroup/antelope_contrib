@@ -1,0 +1,88 @@
+originator     Martina Carman, ARSO
+last_modified  2010-08-10
+
+category	Nanometrics
+configuration	RD-16
+
+description	Nanometrics RD-16
+dfile           rd16
+
+streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps
+
+# definitions of streams
+200sps	200 flat200
+100sps	100 flat100
+50sps	 50 flat50
+40sps	 40 flat40
+20sps	 20 flat20
+10sps	 10 flat10
+1sps	  1 flat1
+0.1sps	0.1 flat.1
+
+gains  100000
+
+
+# Stages
+flat200	&Arr{
+gtype		digitizer
+samprate	200
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat100	&Arr{
+gtype		digitizer
+samprate	100
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat50	&Arr{
+gtype		digitizer
+samprate	50
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat40	&Arr{
+gtype		digitizer
+samprate	40
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat20	&Arr{
+gtype		digitizer
+samprate	20
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat10	&Arr{
+gtype		digitizer
+samprate	10
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat1	&Arr{
+gtype		digitizer
+samprate	1
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+flat.1	&Arr{
+gtype		digitizer
+samprate	.1
+iunits		V
+ounits		counts
+sn		datalogger
+}
