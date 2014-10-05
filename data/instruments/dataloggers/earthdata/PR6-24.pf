@@ -1,0 +1,65 @@
+originator      XX 
+last_modified   2010-12-07
+
+category	Earth Data
+configuration	PR6-24
+
+description	Earth Data PR6-24       
+dfile           PR6-24
+
+streams		3000sps 250sps 200sps 20sps              
+
+# definitions of streams
+3000sps 3000 a/d F1 F2
+250sps  250  a/d F1 F2 F3_12
+200sps	200  a/d F1 F2 F3_3 F4_5 
+20sps   20   a/d F1 F2 F3_3 F4_10 F4_5
+
+gains 1000072.5 # in units of counts/volt (2^24cnt/2*8.388V)
+
+
+# Stages
+a/d	&Arr{
+samprate	192000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+F1   	&Arr{
+gtype	FIR_decimator
+decifac	8   
+response	&datafile(responses/ED_F1)
+}
+
+F2   	&Arr{ 
+gtype	FIR_decimator
+decifac	8
+response	&datafile(responses/ED_F2)
+}
+ 
+F3_12   &Arr{
+gtype   FIR_decimator
+decifac 12
+response        &datafile(responses/ED_jcrs_719_12)
+}
+
+F3_3	&Arr{
+gtype	FIR_decimator
+decifac	3
+response	&datafile(responses/ED_jcrs_719_3)
+}
+
+F4_5	&Arr{
+gtype	FIR_decimator
+decifac	5
+response	&datafile(responses/ED_jcrs_639_5)
+}
+
+F4_10	&Arr{
+gtype	FIR_decimator
+decifac	10
+response	&datafile(responses/ED_jcrs_639_10)
+}
+
