@@ -1,0 +1,29 @@
+.TH DISTANCETOPOLYGON 1 2003/07/28 "Antelope Contrib SW" "User Commands"
+.SH NAME
+distancetopolygon \- get minimum distance to polygon(s) from a database
+.SH SYNOPSIS
+.nf
+distancetopolygon [-v] dbname [lat lon]
+.fi
+.SH DESCRIPTION
+distancetopolygon is a simple tool do get minimm distance to a set of polygons for a specified point.
+The script uses the method by Burke (1988). It gives either the distance to the closes point on the 
+boundary or to the closes vertex, whatever is smaller.
+.SH OPTIONS
+.IP "-v"
+Verbose flag. When specified, the distance to all polygons found in the dataset is given and each polygon is checked for inclusion.
+.IP "dbname"
+Name of database with polygon information. This argument is required. Note that the database must be in polygon1.x schema.
+.IP "lat lon"
+Coordinates, separated by space(s). If no coordinates are given on the command line, the program will ask for them.
+.SH "SEE ALSO"
+.nf
+polygon(3), inwhichpolygons(3), polygon_schema(5), regions2polygon(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2014 
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+	
