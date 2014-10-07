@@ -28,7 +28,7 @@ int \fBisGeographicallyInside\fP(Point \fIP\fP, Point *\fIpolygon\fP, int \fIn\f
 
 double \fBdistanceToPolygon\fP(Dbptr \fIdb\fP,Point \fIP\fP);
 
-double \fBdistance_from_polygon\fP(Point \fIP\fP, Point *\fIpolygon\fP, int \fIn\fP);
+double \fBdistance_to_polygon\fP(Point \fIP\fP, Point *\fIpolygon\fP, int \fIn\fP);
 
 .fi
 .SH DESCRIPTION
@@ -76,9 +76,9 @@ returns TRUE (1) if point P falls entirely in Polygon P (with n vertices)
 .SS inWhichPolygons
 returns all rows of database db where point P falls into.
 .SS distance_to_polygon
-returns distance in degrees to a given polygon using an algorithm by Paul Burke (1996)
+returns minimum distance in degrees to a given polygon using an algorithm by Paul Burke (1988).
 .SS distanceToPolygon
-returns closest distance in degrees to polygons in a database
+returns minimum distance from a given point to polygons in a database.
 .SH LIBRARY
 -lpolygon
 .SH DIAGNOSTICS
