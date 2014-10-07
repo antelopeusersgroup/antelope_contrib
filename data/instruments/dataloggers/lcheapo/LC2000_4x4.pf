@@ -1,15 +1,8 @@
-#
-# Juan Reyes
-# reyes@ucsd.edu
-# SIO-OBS group decided to return to this
-# configuration for the datalogger on 3/2014.
-#
-originator     Juan Reyes, UCSD
-#last_modified  2010-05-28
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
 last_modified  2014-03-19
 
-category    LC
-configuration   LCHEAPO2000
+category    OBSIP
+configuration   LCHEAPO2000_4x4
 
 description LCheapo2000 Datalogger
 dfile LCEAPO-4x4

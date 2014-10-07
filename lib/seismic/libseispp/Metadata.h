@@ -7,12 +7,22 @@
 #include <map>
 #include <vector>
 #include "stock.h"
-#include "arrays.h"
 #ifndef NO_ANTELOPE
+#include "arrays.h"
 #include "pf.h"
 #include "databasehandle.h"
-#endif
 #include "AttributeMap.h"
+#else
+/* This is normally defined (probably improperly) in AttributeMap.h.
+   In PWMIG namespace this needs to be defined here.  This is a nasty
+   potential maintenance issue putting this in two places */
+enum MDtype {MDreal, /*!< Attribute is a real (floating point) number */
+    MDint, /*!< Attribute is an integer. */
+    MDstring, /*!< Attribute is a character string. */
+    MDboolean, /*!< Attribute is a boolean (true/false). */
+    MDinvalid  /*!< Attribute type is not recognized (an error code). */
+};
+#endif
 #include "SeisppError.h"
 
 namespace SEISPP 
@@ -452,6 +462,7 @@ protected:
 **/
 void copy_selected_metadata(Metadata& mdin, Metadata& mdout, 
 	MetadataList& mdlist) throw(MetadataError);
+#ifndef NO_ANTELOPE
 /*!
 // Build a MetadataList from a parameter file.
 //
@@ -499,6 +510,7 @@ string pftbl2string(Pf *pf, const char *tag);
 \return STL list container of std::string objects derived from tbl lines.
 */
 list<string> pftbl2list(Pf *pf, const char *tag);
+#endif
 
 
 } // End namespace SEISPP declaration

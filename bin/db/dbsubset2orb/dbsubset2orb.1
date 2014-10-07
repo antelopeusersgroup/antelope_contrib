@@ -1,0 +1,50 @@
+.TH DBSUBSET2ORB 1 2007/11/08 "Glenn Thompson, AEIC" "User Commands"
+.SH NAME
+dbsubset2orb - monitor a database for new origins, and generate a /pf/orb2dbt packet and send it to an orb if a new origin meet certain criteria
+.SH SYNOPSIS
+dbsubset2orb [-a] [-d days] [-i] [-l last_lddate] [-m magnitude_threshold] [-n number_of_associations_threshold] [-o oldest_acceptable_origin] [-r rate] [-s sleep] [-t time_to_wait_for_magnitude] [-v] [-z] database last_lddate_file orb [orb2 [orb3 ...]]
+.SH DESCRIPTION
+\fBdbsubset2orb\fP watches the origin table of a given database for new origin rows. An origin that meets specified criteria is packaged along with its event, assoc, arrival and netmag data into a /pf/orb2dbt packet which is written to the output orb. 
+.LP
+Checks are made every 10 seconds, although this can be modified with the -s switch. A variable called last_lddate tracks the load time of the last origin that was processed, and this can be modified through the -l switch. Only origins with an lddate greater than last_lddate will be processed. 
+.LP
+Other criteria are available for subsetting origins. By default, an origin must have a minimum of 4 associated arrivals. This can be overridden with the -n switch. The minimum magnitude by default is 0.0. This can be overridden with the -m switch. Typically a a magnitude is not computed by orbevproc for 30-60s after the origin is computed. By default, \fBdbsubset2orb\fP will wait up to 60 seconds for magnitude to appear. If it does not, the origin will be ignored. The time out parameter can be modified with the -t switch.
+.SH OPTIONS
+.IP "-a"
+Allow origins to be broadcast even if they don't have a magnitude after waiting time_to_wait_for_magnitude seconds.
+.IP "-d num_days"
+If this option is specified, only origins with an lddate within the last num_days days will be processed. This value will be written to last_lddate_file (see below). This option will be ignored if the -l option is given (see below). Note: to only process new origins, specify "-d 0" on the command line (and omit the -l option).
+.IP "-i"
+Include netmag, stamag and origerr tables too.
+.IP "-l last_lddate"
+If this option is specified, only origins with an lddate > last_lddate will be processed. This value will be written to last_lddate_file (see below). Note: to process all origins in a database from the beginning, specify "-l 0" on the command line.
+.IP "-m magnitude_threshold"
+Specifies the smallest magnitude that will result in an origin being transmitted to the output orb. If omitted, defaults to 0.0.
+.IP "-n number_of_associations_threshold"
+Specifies the smallest number of associations that will result in an origin being transmitted to the output orb. If omitted, defaults to 4.
+.IP "-o oldest_acceptable_origin_in_minutes"
+In some near-real-time applications, origins which are a few days old, such as those reviewed by an analyst, might not be wanted. For such applications it might be desirable to set 60 minutes as the oldest origin that will be processed. The default is 999999 minutes, which is over 2 years. 
+.IP "-s sleep"
+Specifies the time to wait between rechecking the database for new origins. If omitted, defaults to 10 (seconds).  
+.IP "-t time_to_wait_for_magnitude"
+Specifies the maximum time to wait for a magnitude to be computed. Once this limit is met, the origin will be ignored. If omitted, defaults to 60 (seconds).
+.IP "-v"
+Verbose mode.
+.IP "-z"
+Use only origin, event, and netmag tables (used to sent magnitude data from dbmoment database).
+.SH COMMAND LINE ARGUMENTS
+.IP database
+The database to monitor for new origins
+.IP last_lddate_file
+The path of the file for storing the lddate of the last origin processed. If the file exists, the last lddate will be read from it, providing a mechanism for the program to begin where it left off. If the file does not exist, it will be created, and only origins that appear after the program is initiated will be processed. Also see the -l option.
+.IP "orb [orb2 [orb3 ... ]  ]"
+The orbserver(s) to write /pf/orb2dbt packets too.
+.SH "PARAMETER FILE"
+There is no parameter file
+.SH BUGS AND CAVEATS
+None known. 
+.SH AUTHOR
+Glenn Thompson, Anna Bulanova
+.br
+Alaska Earthquake Information Center
+

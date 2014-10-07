@@ -1,0 +1,11 @@
+# Zland_1000_iir_1.0Hz - ZLand Linear Phase Non-scaled Impulse Responses for CS5376A ADC with Standard ROM Coefficients
+# Zland File Date:  9/26/2014 (269)  13:00:00 
+#  
+# input sample rate           1000
+# high pass corner frequency  1.0Hz 
+theoretical  1  dc-removal   paz      
+1.0     100.0 
+1
+-.6283E+01    0.1593E-04    0.0000E+00    0.0000E+00
+1
+0     0.0 

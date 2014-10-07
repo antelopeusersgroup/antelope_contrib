@@ -1,0 +1,22 @@
+# l28    4.50000 hz seimometer
+# $Id: OBS-SIO configuration, 2014-08-28 Reyes
+#
+#    0.701 damping
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 2                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# -1.0                 normalization factor
+# 1.0                 gain
+# sensitivity  34.1 V/m/sec
+theoretical   1 anti-alias   paz    pzseismo
+1.0
+2             Poles
+-19.820        20.164        0.0000E+00    0.0000E+00
+-19.820        -20.164       0.0000E+00    0.0000E+00
+2             Zeros
+0.0           0.0           0.0000E+00    0.0000E+00
+0.0           0.0           0.0000E+00    0.0000E+00

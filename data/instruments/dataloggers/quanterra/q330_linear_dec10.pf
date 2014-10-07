@@ -1,5 +1,5 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 category	Quanterra
 configuration	Q330 Linear Phase Composite Baler Dec10
@@ -156,6 +156,7 @@ stages 		clk_qual
 iunits  	percent
 ounits		counts
 samprate 	1
+rsptype		p
 } 
 
 VCO      &Arr{
@@ -163,6 +164,7 @@ stages 		vco
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
  
 VEA       &Arr{
@@ -170,6 +172,7 @@ stages 		mamp
 iunits  	A
 ounits		counts
 samprate 	.1
+rsptype		i
 }
 
 VEC       &Arr{
@@ -177,6 +180,7 @@ stages 		mamp
 iunits  	A
 ounits		counts
 samprate 	.1
+rsptype		i
 }
 
 VEP       &Arr{
@@ -184,6 +188,7 @@ stages		mvolt
 iunits		V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VKI       &Arr{
@@ -191,6 +196,7 @@ stages 		temp
 iunits  	Celsius
 ounits		counts
 samprate 	.1
+rsptype		t
 }
 
 VMU       &Arr{
@@ -198,6 +204,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VMV       &Arr{
@@ -205,6 +212,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VMW       &Arr{
@@ -212,6 +220,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VPB      &Arr{
@@ -219,6 +228,7 @@ stages 		buf_use
 iunits  	percent
 ounits		counts
 samprate 	.1
+rsptype		p
 }
 
 phase &Arr{
@@ -262,7 +272,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }

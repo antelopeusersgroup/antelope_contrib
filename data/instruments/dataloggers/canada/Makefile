@@ -1,5 +1,8 @@
 DATADIR=instruments/dataloggers
 DATA= \
+    ctn_mkI.pf \
+    ctn_mkII.pf \
+    ctn_mkIII.pf \
     gd1.pf \
     gd1_G00.pf \
     gd1_G05.pf \

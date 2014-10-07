@@ -1,11 +1,11 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 category	ANF 
 configuration	Q330HR Linear Phase Composite
 
 description	Quanterra 330HR Linear Phase Composite
-dfile q330hr_lc
+dfile q330hr_lc_anf
 
 info    &Literal{
 This is the ANF standard station configuration for a 
@@ -23,8 +23,8 @@ streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
 20sps	 20 a/d20  FLinear-20
 10sps	 10 a/d10  FLinear-10
 1sps	  1 a/d1   FLinear-1 
-0.1sps	0.1 a/d1   FLinear-1 BalerDec10
-0.01sps 0.01 a/d1  FLinear-1 BalerDec10 BalerDec10
+0.1sps	0.1 a/d1   FLinear-1 VLP389
+0.01sps 0.01 a/d1  FLinear-1 VLP389 ULP379
 
 gains  1677720  # in units of counts/volt
 
@@ -135,12 +135,17 @@ response	&datafile(responses/FLinear-1)
 samprate	1
 }
 
-BalerDec10	&Arr{
+VLP389	&Arr{
 gtype		FIR_decimator
 decifac		10
-response	&datafile(responses/BalerDec10)
+response	&datafile(responses/VLP389)
 }
 
+ULP379	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/ULP379)
+}
 
 
 #soh		LCE LCQ VCO VEA VEC VEP VKI VMU VMV VMW VPB
@@ -375,7 +380,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }

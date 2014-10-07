@@ -1882,6 +1882,40 @@ void remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
 //    new version of grid.  
 */
 void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern);
+
+/*! 
+ \brief Remap one grid to coordinate system of another.
+  
+   Sometimes it is useful when dealing with multiple grids to 
+   allow an algorithm to make an assumption that all grids in the
+   set have a common coordinate system.  This can avoid the
+   overhead of conversion of points to and from geographical
+   coordinates.  Experience has shown this is a nontrivial
+   calculation and needs to be minimized for algorithms that
+   might require large numbers of such conversions.  
+   This function uses the set of parameters required to 
+   define this transformation as arguments.  It is 
+   a close cousin to two related procedures that use a
+   grid object.  Use this one when it is inconvenient to 
+   have to actually load another grid as a pattern.  
+  
+   Note that remap_grid can be called on field objects derived
+   from this one with no effect as the grid geometry is not
+   altered.  Only the coordinate system changes.
+   Note the grid is altered in place so the grid object passed will
+   be modified after this function completes.  The exception is if
+   the grids are already congruent in which case it silently does nothing.
+  
+   \param g grid to be remapped (note it is a pointer).
+   \param olat latitude (radians) of new origin
+   \param olon longitude (radians) of new origin
+   \param oradius radius (km) of new origin
+   \param azn azimuth of the y axis in the new coordinate system.
+
+   \author Gary L. Pavlis
+*/
+void remap_grid(BasicGCLgrid *g,
+                double olat, double olon, double oradius, double azn);
 /*! \brief Decimate a GCLgrid3d.
 
 We sometimes want to decimate a grid. This procedure does this for

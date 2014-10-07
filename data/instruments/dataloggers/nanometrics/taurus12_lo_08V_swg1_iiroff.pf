@@ -3,7 +3,7 @@ last_modified  2014-02-07
 
 info    &Literal{
 This description is for the Taurus standard response with 47k (low) input impedence.
-43.07 k-ohm impedance, 40V pp, sw gain = 1, IIR filter = off
+43.07 k-ohm impedance, 8V pp, sw gain = 1, IIR filter = off
 
 These instrument parameter files and their responses derived from
 
@@ -36,7 +36,7 @@ category	Nanometrics
 configuration   Taurus standard
 
 description	Taurus Standard 47k
-dfile           taurus12
+dfile           taurus12_lo_08V_swg1_iiroff
 
 streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
 

@@ -1,7 +1,7 @@
-originator     Juan Reyes, SIO-UCSD
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
 last_modified  2013-08
 
-category    LC
+category    OBSIP
 configuration   ABALONES-4x4
 
 description ABALONES-4x4
@@ -36,11 +36,12 @@ streams 4000sps 2000sps 1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 2
 1sps        1  a/d sinc1 sinc2 sinc2 sinc2_3 sinc2_4 sinc3 sinc3 sinc3 sinc3_4 sinc3_5 f1 f2
 
 # Gains: Nominal sensitivity (in ounits/iunits) for datalogger
-# Voltage range: +/- 2.5 V, max counts over this range of
-# -8388608 to 8388607. This gives S(a/d) = 5.0 / 16777215 = 0.298 microV/count,
-# 0.000000298 V/count => 3355443 counts/V
+# Voltage range: +/- 2.47 V, max counts over this range of
+# –6,100,300 to 6,102,081.
+# This gives S(a/d) = 4.94 / 12,202,381 = 0.405x10**-6 V/count
+# = 0.405 microV/count = 2469135 counts/V
 
-gains 3355443
+gains 2469135
 
 
 # Stages

@@ -1,0 +1,26 @@
+originator    	Taimi Mulder, GSC  & Jesse Hutchinson, UVic
+last_modified  	2014-03-21
+
+category	Jamstec
+configuration	Jamstec OBS
+
+description	Jamstec OBS
+dfile 		jamstec_obs_dl	# no response, jamstec_obs = dummy
+
+streams		100sps
+
+# definitions of streams
+100sps	100 flat100
+
+# gain = counts/V = (2**16/9V)/1000 (60dB amplification=1000x)
+gains   2222220000000  
+
+
+# Stages
+flat100	&Arr{
+gtype		digitizer
+samprate	100
+iunits		V
+ounits		counts
+sn		datalogger
+}

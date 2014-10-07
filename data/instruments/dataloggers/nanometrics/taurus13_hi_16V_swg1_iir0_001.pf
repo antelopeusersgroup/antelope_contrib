@@ -1,0 +1,297 @@
+originator     Frank Vernon, UCSD; Taimi Mulder, GSC
+last_modified  2014-02-07
+
+info    &Literal{
+This description is for the Taurus infinite impedence response with high input impedence.
+9.4 M-ohm impedance, 16V pp, sw gain = 1, IIR co freq = 1 mHz
+
+These instrument parameter files and their responses derived from
+
+    http://www.nanometrics.ca
+
+and Trident Digitiser User Guide, 2002.
+
+On Jul 10, 2009, at 11:11 AM, Dario Baturan wrote:
+
+For the most part, Taurus filter stages are identical to those of Tridents. 
+There is only one exception. Tauruses can be configured to operate in 
+high impedance mode (where their input impedance is infinite as opposed 
+to the standard 47k). 
+
+If you are using your Tauruses in the default low impedance mode, 
+feel free to use Trident filter stages when building your response files.
+
+Best Regards,
+Dario Baturan, BEng
+Systems Engineering Manager
+
+Nanometrics Inc.
+250 Herzberg Rd.
+Ottawa, ON
+K2K 2A1
+613-592-6776 x 259
+}
+
+category	Nanometrics
+configuration   Taurus infinite
+
+description	Taurus Infinite 8V
+dfile           taurus13_hi_16V_swg1_iir0_001
+
+streams		1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps 
+
+# definitions of streams
+1000sps	 	1000	a/d taurus_inf_aa trident_1000sps_fir1 trident_1000sps_fir2 trident_1000sps_fir3 taurus_iir0_001
+500sps	 	500	a/d taurus_inf_aa trident_500sps_fir1 trident_500sps_fir2 trident_500sps_fir3 taurus_iir0_001
+200sps	 	200	a/d taurus_inf_aa trident_200sps_fir1 trident_200sps_fir2 trident_200sps_fir3 taurus_iir0_001
+120sps	 	120	a/d taurus_inf_aa trident_120sps_fir1 trident_120sps_fir2 trident_120sps_fir3 trident_120sps_fir4 taurus_iir0_001
+100sps	 	100	a/d taurus_inf_aa trident_100sps_fir1 trident_100sps_fir2 trident_100sps_fir3 taurus_iir0_001
+50sps		50	a/d taurus_inf_aa trident_50sps_fir1 trident_50sps_fir2 trident_50sps_fir3 taurus_iir0_001
+40sps		40	a/d taurus_inf_aa trident_40sps_fir1 trident_40sps_fir2 trident_40sps_fir3 trident_40sps_fir4 taurus_iir0_001
+20sps		20	a/d taurus_inf_aa trident_20sps_fir1 trident_20sps_fir2 trident_20sps_fir3 trident_20sps_fir4 taurus_iir0_001
+10sps		10	a/d taurus_inf_aa trident_10sps_fir1 trident_10sps_fir2 trident_10sps_fir3 trident_10sps_fir4 taurus_iir0_001
+
+possible_streams &Literal{
+    my @chosen = @_ ; 
+    my @ok = () ; 
+    my %chosen ;
+    foreach (@chosen) {
+	$chosen{$_} = 1 ; 
+    }
+    if ( defined $chosen{"1000sps"} ) { 
+	@ok = qw(1000sps) ; 
+    } elsif ( defined $chosen{"500sps"} ) { 
+	@ok = qw(500sps) ; 
+    } elsif ( defined $chosen{"200sps"} ) { 
+	@ok = qw(200sps) ; 
+    } elsif ( defined $chosen{"120sps"} ) { 
+	@ok = qw(120sps) ; 
+    } elsif ( defined $chosen{"100sps"} ) { 
+	@ok = qw(100sps) ; 
+    } elsif ( defined $chosen{"50sps"} ) { 
+	@ok = qw(50sps) ; 
+    } elsif ( defined $chosen{"40sps"} ) { 
+	@ok = qw(40sps) ; 
+    } elsif ( defined $chosen{"20sps"} ) { 
+	@ok = qw(20sps) ; 
+    } elsif ( defined $chosen{"10sps"} ) { 
+	@ok = qw(10sps) ; 
+    } else { 
+	@ok = qw( 1000sps 500sps 200sps 120sps 100sps 50sps 40sps 20sps 10sps ) ; 
+    }
+    return (@ok) ; 
+}
+
+gains  1000000        
+
+
+# Stages
+
+#  nominal a/d conversion factor is 1 microVolt/count 
+#  as defined in Appendix A.1.4 Sensor Inputs on
+#  page 24 of the Trident UserGuide.  Various gains can be applied.
+
+a/d	&Arr{
+samprate	30000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		datalogger
+}
+
+taurus_inf_aa	&Arr{
+gtype           analog_anti_alias
+response        &datafile(responses/taurus_inf_aa)
+}
+
+trident_1000sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_1000sps_fir3) 
+} 
+
+trident_1000sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         3 
+response        &datafile(responses/trident_1000sps_fir2) 
+} 
+
+trident_1000sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_1000sps_fir1) 
+} 
+
+trident_100sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         10 
+response        &datafile(responses/trident_100sps_fir2) 
+} 
+
+trident_100sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         15 
+response        &datafile(responses/trident_100sps_fir1) 
+} 
+
+trident_100sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_100sps_fir3) 
+} 
+
+trident_10sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         15 
+response        &datafile(responses/trident_10sps_fir2) 
+} 
+
+trident_10sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         20 
+response        &datafile(responses/trident_10sps_fir1) 
+} 
+
+trident_10sps_fir4    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_10sps_fir4) 
+} 
+
+trident_10sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_10sps_fir3) 
+} 
+
+trident_120sps_fir4    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_120sps_fir4) 
+} 
+
+trident_120sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_120sps_fir1) 
+} 
+
+trident_120sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_120sps_fir2) 
+} 
+
+trident_120sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_120sps_fir3) 
+} 
+
+trident_200sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         15 
+response        &datafile(responses/trident_200sps_fir1) 
+} 
+
+trident_200sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_200sps_fir3) 
+} 
+
+trident_200sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_200sps_fir2) 
+} 
+
+trident_20sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         10 
+response        &datafile(responses/trident_20sps_fir2) 
+} 
+
+trident_20sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         15 
+response        &datafile(responses/trident_20sps_fir1) 
+} 
+
+trident_20sps_fir4    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_20sps_fir4) 
+} 
+
+trident_20sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_20sps_fir3) 
+} 
+
+trident_40sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         15 
+response        &datafile(responses/trident_40sps_fir1) 
+} 
+
+trident_40sps_fir4    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_40sps_fir4) 
+} 
+
+trident_40sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_40sps_fir2) 
+} 
+
+trident_40sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         5 
+response        &datafile(responses/trident_40sps_fir3) 
+} 
+
+trident_500sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         10 
+response        &datafile(responses/trident_500sps_fir1) 
+} 
+
+trident_500sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_500sps_fir3) 
+} 
+
+trident_500sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         3 
+response        &datafile(responses/trident_500sps_fir2) 
+} 
+
+trident_50sps_fir2    &Arr{ 
+gtype           FIR_decimator 
+decifac         15 
+response        &datafile(responses/trident_50sps_fir2) 
+} 
+
+trident_50sps_fir1    &Arr{ 
+gtype           FIR_decimator 
+decifac         20 
+response        &datafile(responses/trident_50sps_fir1) 
+} 
+
+trident_50sps_fir3    &Arr{ 
+gtype           FIR_decimator 
+decifac         2 
+response        &datafile(responses/trident_50sps_fir3) 
+} 
+
+taurus_iir0_001      &Arr{ 
+gtype           IIR_DC_removal 
+response        &datafile(responses/taurus_iir0_001) 
+} 
+

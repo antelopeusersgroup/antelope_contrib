@@ -424,6 +424,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 	    {
 		// Land here when data are not stored in wfdisc but
 		// stored as dmatrix object binary form
+	      try {
 		Metadata md(dbh,md_to_extract,am);
 		copy_selected_metadata(md,
 			dynamic_cast<Metadata &>(*this),md_to_extract);
@@ -508,17 +509,18 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 				swapdvec(this->u.get_address(0,0),readsize);
 		}
 		if(ns>0) live=true;
+	      }catch (MetadataError& mderr)
+	      {
+		// Land here when any of the metadata routines fail
+		    mderr.log_error();
+		    throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
+			dbh.db,complain);
+
+	      }
 	    }
 		
 	}
-	catch (MetadataError& mderr)
-	{
-		// Land here when any of the metadata routines fail
-		mderr.log_error();
-		throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
-			dbh.db,complain);
-
-	}
+    catch(...){throw;};
 }
 #endif
 
@@ -615,7 +617,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 				// silently do nothing if outside bounds.  This
 				// perhaps should be an error as it shouldn't really
 				// happen with the above algorithm, but safety is good
-				if( (i>0) && (i<ns) ) this->u(0,i)=ts[ic].s[j];
+				if( (i>0) && (i<ns) ) this->u(ic,i)=ts[ic].s[j];
 			}
 		}
 	}
@@ -1030,7 +1032,7 @@ void ThreeComponentSeismogram::free_surface_transformation(SlownessVector uvec,
 	double fstran[3][3];
 	fstran[0][0]=0.5;  fstran[0][1]=0.0;  fstran[0][2]=0.0;
 	fstran[1][0]=0.0;  fstran[1][1]=vsr;  fstran[1][2]=vpr;
-	fstran[2][0]=0.0;  fstran[2][1]=vsz;  fstran[2][2]=vpz;
+	fstran[2][0]=0.0;  fstran[2][1]=-vsz;  fstran[2][2]=-vpz;
 	this->apply_transformation_matrix(fstran);
 
 	components_are_cardinal=false;

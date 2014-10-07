@@ -148,7 +148,7 @@ samprate 	.1
 
 VKI       &Arr{
 stages 		temp 
-iunits  	CELSIUS
+iunits  	Celsius
 ounits		counts
 samprate 	.1
 }
@@ -222,7 +222,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }

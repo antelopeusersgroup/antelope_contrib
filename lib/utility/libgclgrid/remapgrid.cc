@@ -88,5 +88,25 @@ void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern)
 	g.compute_extents();
 	return;
 }
+/* This procedure is a wrapper that uses an inheritance trick.
+   It builds a minimal sized and then will use one of the above
+   procedures to do the actual work.   Inheritance sorts out the
+   2d or 3d form. */
+void remap_grid(BasicGCLgrid *g, 
+        double olat, double olon, double oradius, double azn)
+{
+    GCLgrid rmg(2,2,string("dummy"),olat,olon,oradius,azn,1.0,1.0,0,0);
+    GCLgrid *g2d;
+    GCLgrid3d *g3d;
+    g2d=dynamic_cast<GCLgrid *>(g);
+    if(g2d!=NULL)
+        remap_grid(*g2d,rmg);
+    else
+    {
+        g3d=dynamic_cast<GCLgrid3d *>(g);
+        if(g3d==NULL) throw GCLgridError("remap_grid - downcast failed from BasicGCLgrid pointer");
+    }
+}
+
 			
 			

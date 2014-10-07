@@ -1,5 +1,5 @@
 originator     Frank Vernon, UCSD
-last_modified  2009-03-05
+last_modified  2014-09-22
 
 category	Quanterra
 configuration	Q330HR Linear Phase Composite
@@ -22,8 +22,8 @@ streams		200sps 100sps 50sps 40sps 20sps 10sps 1sps 0.1sps 0.01sps
 20sps	 20 a/d20  FLinear-20
 10sps	 10 a/d10  FLinear-10
 1sps	  1 a/d1   FLinear-1 
-0.1sps	0.1 a/d1   FLinear-1 BalerDec10
-0.01sps 0.01 a/d1  FLinear-1 BalerDec10 BalerDec10
+0.1sps	0.1 a/d1   FLinear-1 VLP389
+0.01sps 0.01 a/d1  FLinear-1 VLP389 ULP379
 
 gains  1677720  # in units of counts/volt
 
@@ -134,12 +134,17 @@ response	&datafile(responses/FLinear-1)
 samprate	1
 }
 
-BalerDec10	&Arr{
+VLP389	&Arr{
 gtype		FIR_decimator
 decifac		10
-response	&datafile(responses/BalerDec10)
+response	&datafile(responses/VLP389)
 }
 
+ULP379	&Arr{
+gtype		FIR_decimator
+decifac		10
+response	&datafile(responses/ULP379)
+}
 
 
 soh		LCE LCQ VCO VEA VEC VEP VKI VMU VMV VMW VPB
@@ -156,6 +161,7 @@ stages 		clk_qual
 iunits  	percent
 ounits		counts
 samprate 	1
+rsptype		p
 } 
 
 VCO      &Arr{
@@ -163,6 +169,7 @@ stages 		vco
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
  
 VEA       &Arr{
@@ -170,6 +177,7 @@ stages 		mamp
 iunits  	A
 ounits		counts
 samprate 	.1
+rsptype		i
 }
 
 VEC       &Arr{
@@ -177,6 +185,7 @@ stages 		mamp
 iunits  	A
 ounits		counts
 samprate 	.1
+rsptype		i
 }
 
 VEP       &Arr{
@@ -184,6 +193,7 @@ stages		mvolt
 iunits		V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VKI       &Arr{
@@ -191,6 +201,7 @@ stages 		temp
 iunits  	Celsius
 ounits		counts
 samprate 	.1
+rsptype		t
 }
 
 VMU       &Arr{
@@ -198,6 +209,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VMV       &Arr{
@@ -205,6 +217,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VMW       &Arr{
@@ -212,6 +225,7 @@ stages 		mp
 iunits  	V
 ounits		counts
 samprate 	.1
+rsptype		v
 }
 
 VPB      &Arr{
@@ -219,6 +233,7 @@ stages 		buf_use
 iunits  	percent
 ounits		counts
 samprate 	.1
+rsptype		p
 }
 
 phase &Arr{
@@ -262,7 +277,7 @@ sn		datalogger
 
 temp &Arr{
 gtype		thermometer
-iunits		CELSIUS
+iunits		Celsius
 ounits		counts
 sn		datalogger
 }

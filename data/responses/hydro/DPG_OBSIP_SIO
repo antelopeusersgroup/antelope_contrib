@@ -1,0 +1,28 @@
+# $Id$
+# Differential Pressure Gauge for OBSIP
+# Using measurements from strain gauge full scale
+# outputs, the average is about 57 mv/7e3 PA. According
+# to Cox et al there is a mechanical attenuation
+# factor due to the compressibility of the oil and the
+# compliance of the chamber. They estimate this as 0.86.
+# Willoughby et al say they measured the
+# response and deduced this factor as 0.924.
+# I suggest we use 0.9 until we can determine a better value.
+# Thus the STAGE 1 gain should be 5.7e-2*0.9/7e3 or:
+# S(DPG) = 7.3 μV/Pa
+# Normalized  response relative to pressure
+# All poles and zeroes in radians/sec
+# 1                   type
+# 1                   num of zeroes
+# 1                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 828.26383492        normalization factor
+# 1.0                 gain
+#
+theoretical   1 sensor       paz    OBSIP-SIO
+1.0
+1             Poles
+-1.2568000000e-02  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00
+1             Zeros
+ 0.0000000000e+00  0.0000000000e+00  0.0000000000e+00  0.0000000000e+00

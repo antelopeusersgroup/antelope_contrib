@@ -1,0 +1,48 @@
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  Aug. 2014
+
+info    &Literal{
+    Trillium 240 OBSIP-SIO Single-Sided Configuration
+
+    The manufacturer quotes 1196.5 V*s/m over +/-20V
+    for a full differential signal. SIO-4x4-LP uses only a
+    single-sided input to the A/D, effectively halving
+    the sensitivity.
+    Thus:
+
+    S(T240-ss) = 598.25 V/m/s
+    flat response: 0.004167 Hz (240 sec) to 35 Hz
+
+}
+
+category    OBSIP
+configuration   T-240 Single-Sided
+
+description Nanometrics Trillium 240 Single-Sided
+dfile   trillium_240_ss_obsip_sio
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype       sensor
+sensitivity 5.9825e-7   # SIO uses single sided
+                        #  input (halving this number to 598.25 V*s/m)
+iunits      nm/s
+ounits      V
+
+orientations    &Tbl{
+Z   0   0
+N   0   90
+E   90  90
+}
+
+response    &datafile(responses/trillium_240_obsip_sio)
+
+caldrive        c
+active          yes
+calgen          1
+cal2rsp         1
+calper          1
+

@@ -1,0 +1,11 @@
+# Zland_2000_iir_3.0Hz - ZLand Linear Phase Non-scaled Impulse Responses for CS5376A ADC with Standard ROM Coefficients
+# Zland File Date:  9/26/2014 (269)  13:00:00 
+#  
+# input sample rate           2000
+# high pass corner frequency  3.0Hz 
+theoretical  1  dc-removal   iir      
+1.0     100.0 
+1
+0.990625      0.0
+1
+1.0     0.0 

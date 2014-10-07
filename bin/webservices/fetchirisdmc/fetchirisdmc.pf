@@ -1,0 +1,8 @@
+minimum_epicentral_distance 30.0
+maximum_epicentral_distance 95.0
+reference_phase P
+top_level_directory /Volumes/DataDisk2/ANFdata/wf
+time_before_arrival -600
+time_after_arrival 1000
+client_agent_base_name "Gary Pavlis, Indiana University"
+web_service_timeout 300

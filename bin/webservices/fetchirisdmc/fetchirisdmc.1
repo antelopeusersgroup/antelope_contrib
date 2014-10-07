@@ -1,0 +1,162 @@
+.TH FETCHIRISDMC 1
+.SH NAME
+fetchirisdmc - retrieve waveform data from IRIS driven by arrival db
+.SH SYNOPSIS
+.nf
+fetchirisdmc db nthreads [-s subsetstring -check -pf pffile]
+find_overlaps dbname
+fetch_overlaps outdir [-i overlaplistfile]
+.fi
+.SH DESCRIPTION
+.LP
+IRIS has has a web service that can be used to retrieve waveform data.
+This set of obspy python scripts can be used to retrieve all waveforms 
+available through IRIS that are 
+linked to entries in an arrival
+table.  A time range is specified in the parameter file that
+defines the time window around each arrival table entry.   Waveforms
+defined by that time window are extracted and written as miniseed files
+in a year/event_id directory structure.   
+.LP
+The original concept of this sequence of scripts  
+was to extract all data for picks 
+made by the Array Network Facility for the USArray.   The assumption is if 
+a human could pick a phase there was some data of interest there.   
+In general, it can be driven by any database with an arrival table even if 
+that catalog part of the db is faked as a set of theoretical arrival times. 
+.LP
+Normally the first script you will want to run is fetchirisdmc. 
+The first argument of this script is the database name to be used to drive the processing.
+The following view is formed so it is advised you form this in dbe 
+before running this program: 
+.nf
+arrival!->wfdisc->assoc->origin->event->snetsta
+                           orid==prefor    
+.fi
+where the !-> symbol means nojoin.   This is done to allow the script to
+be rerun repeatedly on the same database.  This has proven necessary as the 
+failure rate for web services at the time of this writing is high and multiple
+runs are pretty much essential to maximize the amount of data retrieved.   
+(see Bugs and Caveats section)
+.LP
+The approach used by fetchirisdmc 
+collides with the CSS3.0 concept of how to index waveforms.
+For anything but a trivial retrieval by this mechanism the odds are close
+to 100% that fetchirisdmc will retrieve some waveforms that overlap in time.
+That confuses a lot of antelope processing utilities that have an implicit
+assumption of continuous data without overlap assumption.  The two scripts find_overlaps
+and fetch_overlaps exist to deal with this problem.   To use these the
+user must first use miniseed2db to build a wfdisc table for the files
+written by fetchiridsmc.   Note miniseed2db will create a snetsta table
+or append to it if needed during processing.   A complete snetsta table is
+essential or the overlap processing sequence will fail on stations with 
+common sta name with different net codes.   The key thing is to 
+run dbe on the output of miniseed2db and make sure all rows of wfdisc 
+join with snetsta.   
+.LP
+Once a wfdisc is produced run find_overlaps on the db with the wfdisc 
+table you just created.   This script builds two files:  (1) cleanup.sh
+can be used to remove all files with overlaps, and (2) overlap_fetch_list
+contains a simple ascii table defining net:sta:chan and time periods 
+of segments defined by where overlaps occurred in the original.  
+Run cleanup.sh or alter the script to mv the files to another location.
+Then run fetch_overlaps to retrieve the overlap data.   Note there is no
+rerun capability of the overlap data so it is strongly advised you keep
+a log file of the output of fetch_overlaps.   
+.LP
+The workflow of this is complex enough that it seems appropriate to summarize 
+the the sequence as the following algorithm:
+.nf
+    1) Edit fetchirisdmc.pf 
+    2) Run dbe and verify view described above for fetchirisdmc is workable
+    3) Run fetchirisdmc on your database
+    4) rm your old wfdisc table
+    5) rebuild wfdisc using miniseed2db (custom shell script required)
+    6) Run fetchirisdmc with -check mode
+    7) if you are missing waveforms goto 3)
+    8) run find_overlaps on the database
+    9) run cleanup.sh
+    10) fun fetch_overlaps
+    11) rm your old wfdisc table
+    12) rebuild wfdisc with miniseed2db
+    13) [optional] run fetchirisdmc in -check mode.  Goto 3) if necessary
+.fi
+.SH OPTIONS
+.LP
+For to fetchirisdmc script:
+.IP -s
+Use this option to specify a subset condition on the final view beyond 
+those hard wired into the script (see PARAMETER FILE section below).   
+.IP -check
+In this mode no data is actually fetched.  Check only for count of how many 
+waveforms will be requested.
+.IP -pf
+Use alternate parameter file defined by the argument pffile following this flag.
+.LP 
+For the script fetch_overlaps:
+.IP -i
+Use this option to specify an alternative for the overlap table to 
+the default of overlap_fetch_list.
+.SH FILES
+.LP
+This script can easily produce many thousand to millions of waveform files.   
+Waveform data is currently always written as miniseed files in a frozen
+directory structure.   A top level directory is defined through the parameter file.
+Under directory are year directories with the year for data from a particular event
+parsed from the event origin time.  Below this are directories with names of
+the form evidN where N is a number equal to the event id extracted from the 
+event table.  The leaves are miniseed files with a net_sta.m (e.g. CI_ISA.m) 
+naming convention.
+.SH PARAMETER FILE
+.LP
+Nearly every new use of this program will require changing the parameter
+with the name \fItop_level_directory\fR.   Waveform data retrieved by this
+script will be placed in a directory structure (see FILES section above) below
+this directory. 
+.LP
+Two parameters control a hard wired subset condition.  
+A subset condition is applied on the assoc attribute delta.  The range of
+epicenter distances selected is between \fIminimum_epicentral_distance\fR
+and \fImaximum_epicentral_distance\fR.
+.LP
+This script selects time windows around the phase specified with the
+parameter \fIreference_phase\fR.   The time range is defined by the
+interval \fItime_before_arrival\fR to \fItime_after_arrival\fR.   
+These times are all computed relative to each entry in arrival found in
+the working view.
+.LP
+The parameter \fIclient_agent_base_name\fR is used by the obspy client
+object to identify the agent.   It provide identification information for 
+you.  Normally this is best set in the master pf file for your institution.
+.LP
+The parameter \fIweb_service_timeout\fR controls the timeout (in seconds) 
+by the obspy Client web services data collection object.  That is, a web service
+client has to have a timeout parameter to avoid waiting forever for a no response
+condition.   The default in earlier vesion of obspy produced large numbers of 
+failure due to timeouts (approaching 50% with a large number of threads).   The 
+default is 300 second and should only need to be changed if you experience a 
+high timeout failure rate.
+.SH "BUGS AND CAVEATS"
+.IP (1)
+This utility is written in python using features from two large packages:  (a) obspy, and
+(b) BRTT's datascope interface to python.  This dependency on two uncoordinated 
+developments is a recipe for maintenance headaches in the future.   
+Note the fetchirisdmc script will throw an informational error if obspy 
+is not yet installed.
+.IP (2)
+At the time of this writing IRIS's web services has a serious performance problem. 
+They advise you are a bad citizen if you ask for more than 3 parallel threads, but 
+hopefully this will change in the near future.   As of summer 2014 three threads 
+can sustain transfer rates around 500-700 KBytes/s.   Plan accordingly for large 
+data transfers.
+.IP (3)
+This script can easily create millions of files.   The file organization is far from 
+optimal when the data set gets large, particularly on large high performance systems.
+Reorganizations are easy since miniseed files can be cracked by miniseed2db if 
+simply concatenated together.  
+.IP (4)
+The find_overlaps script requires reindexing every single waveform file after running
+cleanup.sh.   This is far from ideal for large data sets.  It should be rewritten to 
+edit the database on the fly or a new script needs to be written to postedit the db.
+.SH AUTHOR
+Gary L. Pavlis, Dept. of Geol. Sci, Indiana University, Bloomington, Indiana, USA
