@@ -2,6 +2,7 @@
 .SH NAME 
 polycode, polytype, writePolygonData, readPolygon, isGeographicallyInside, \
 	inWhichPolygons, windrose \
+	distance_to_polygon, distanceToPolygon \
 	\- routines for polygon handling
 
 .SH SYNOPSIS
@@ -24,6 +25,11 @@ Dbptr \fBinWhichPolygons\fP(Dbptr \fIdb\fP,Point \fIP\fP);
 char *\fBwindrose\fP(double \fIazimuth\fP);
 
 int \fBisGeographicallyInside\fP(Point \fIP\fP, Point *\fIpolygon\fP, int \fIn\fP);
+
+double \fBdistanceToPolygon\fP(Dbptr \fIdb\fP,Point \fIP\fP);
+
+double \fBdistance_from_polygon\fP(Point \fIP\fP, Point *\fIpolygon\fP, int \fIn\fP);
+
 .fi
 .SH DESCRIPTION
 .SS polycode, polytype
@@ -69,6 +75,10 @@ reads Polygon data into array Polygon, returns number of vertices.
 returns TRUE (1) if point P falls entirely in Polygon P (with n vertices)
 .SS inWhichPolygons
 returns all rows of database db where point P falls into.
+.SS distance_to_polygon
+returns distance in degrees to a given polygon using an algorithm by Paul Burke (1996)
+.SS distanceToPolygon
+returns closest distance in degrees to polygons in a database
 .SH LIBRARY
 -lpolygon
 .SH DIAGNOSTICS
@@ -80,6 +90,8 @@ dbhelp polygon1.2
 perlpolygon(3p)
 
 winding(3p)
+
+http://paulbourke.net/geometry/pointlineplane/	
 	
 .fi
 .SH "BUGS AND CAVEATS"
@@ -88,7 +100,7 @@ The routine \fBwindrose\fP does not exactly fit in here, but for the moment beei
 .SH AUTHOR
 These routines are based on a Pascal library I wrote many years ago. As this is based on the same BSSA article as Kent Lindquists (Lindquist Consulting) winding number routines, the similarities are apparent.
 .nf
-Nikolaus Horn, 2003
+Nikolaus Horn, 2003, 2014
 
 ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
 .fi

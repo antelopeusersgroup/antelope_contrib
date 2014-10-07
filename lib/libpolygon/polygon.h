@@ -33,3 +33,6 @@ Dbptr inWhichPolygons(Dbptr db,Point P);
 char *windrose(double azimuth);
 
 int isGeographicallyInside(Point P, Point *polygon, long n);
+
+double distance_from_polygon( Point P, Point *polygon, long n);
+double distanceToPolygon( Dbptr db, Point P);
