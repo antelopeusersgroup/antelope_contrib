@@ -24,9 +24,9 @@ void mydist(double lat,double lon) {
 			dbquery(db,dbRECORD_COUNT,&nrecords);
 			//printf("in %ld zeilen wird gesucht\n",nrecords);
 			for (db.record=0; db.record < nrecords; db.record++) {
+				int inside;
 
 				dbgetv(db,0,"pname",name,"pid",&pid,NULL);
-				int inside;
 					
 				dist = distanceToPolygon(db, p);
 				if (dist > 0 && dist < mindist) {

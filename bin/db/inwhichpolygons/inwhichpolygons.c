@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
 	if (argc == 2) {
 		dbname=argv[1];
-		if (dbopen(dbname,"r",&db)) {
+		if (dbopen_database(dbname,"r",&db) < 0 ) {
 			elog_die(1,"cannot open database %s",dbname);
 		}
 		printf("Enter lat, lon: ");
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 		printf("\n" ) ; 
 	} else if (argc == 4) {
 		dbname=argv[1];
-		if (dbopen(dbname,"r",&db)) {
+		if (dbopen_database(dbname,"r",&db) < 0 ) {
 			elog_die(1,"cannot open database %s",dbname);
 		}
 		sscanf(argv[2], "%lf", &lat);

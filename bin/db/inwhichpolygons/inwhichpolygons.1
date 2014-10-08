@@ -10,8 +10,14 @@ Inwhichpolygons is a simple tool to search a database with polygon information. 
 .SH OPTIONS
 .IP "dbname"
 Name of database with polygon information. This argument is required. Note that the database must be in polygon1.x schema.
+This can be specified a "-", in this case a view containing polygons is expected. 
 .IP "lat lon"
 Coordinates, separated by space(s). If no coordinates are given on the command line, the program will ask for them.
+.SH EXAMPLE
+.nf
+inwhichpolygons $LDB/BekannteGrenzen.polygon 47 16
+dbsubset $LDB/BekannteGrenzen.polygon "pname=~/Austria/" | inwhichpolygons - 47 16
+.fi
 .SH "SEE ALSO"
 .nf
 polygon(3), inWhichPolygons(3), polygon_schema(5), regions2polygon(1)

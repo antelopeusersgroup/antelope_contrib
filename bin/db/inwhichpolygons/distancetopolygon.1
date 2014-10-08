@@ -16,6 +16,12 @@ Verbose flag. When specified, the distance to all polygons found in the dataset 
 Name of database with polygon information. This argument is required. Note that the database must be in polygon1.x schema.
 .IP "lat lon"
 Coordinates, separated by space(s). If no coordinates are given on the command line, the program will ask for them.
+.SH EXAMPLE
+.nf
+distancetopolygon $LDB/BekannteGrenzen 47 16
+dbsubset $LDB/BekannteGrenzen.polygon "pname=~/Austria/||ptype !~/cb/" |\\
+    distancetopolygon - 47 16
+.fi
 .SH "SEE ALSO"
 .nf
 polygon(3), inwhichpolygons(3), polygon_schema(5), regions2polygon(1)
