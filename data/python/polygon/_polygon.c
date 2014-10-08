@@ -12,13 +12,15 @@
 
 
 static PyObject *python_inwhichpolygons( PyObject *self, PyObject *args );
+static PyObject *python_distancetopolygon( PyObject *self, PyObject *args );
 static PyObject *python_windrose( PyObject *self, PyObject *args );
 
 PyMODINIT_FUNC init_polygon( void );
 
 static struct PyMethodDef _polygon_methods[] = {
-	{ "_inwhichpolygons",  	python_inwhichpolygons, METH_VARARGS, "find polygon enclosing point" },
-	{ "_windrose",  	    python_windrose,   	    METH_VARARGS, "windrose, 3 chars indicating direction" },
+	{ "_inwhichpolygons",  	python_inwhichpolygons,   METH_VARARGS, "find polygon enclosing point" },
+	{ "_distancetopolygon", python_distancetopolygon, METH_VARARGS, "find minimum distance to polygon" },
+	{ "_windrose",  	    python_windrose,   	      METH_VARARGS, "windrose, 3 chars indicating direction" },
 	{ NULL, NULL, 0, NULL }
 };
 
@@ -40,7 +42,27 @@ python_inwhichpolygons( PyObject *self, PyObject *args ) {
 	P.lon=lon;
 	dbr=inWhichPolygons(db,P);
 	return Dbptr2PyObject(dbr);
-	return NULL;
+}
+static PyObject *
+python_distancetopolygon( PyObject *self, PyObject *args ) {
+	char    *usage = "Usage: dbout= _polygon._distancetopolygon( dbin, lat, lon )\n";
+	Dbptr	db;
+	Point 	P;
+	double  lat,lon;
+    double  mindist;
+	PyObject *obj;
+	
+	if( ! PyArg_ParseTuple( args, "O&dd",parse_to_Dbptr,&db, &lat, &lon ) ) {
+
+		USAGE;
+
+		return NULL;
+	}
+	P.lat=lat;
+	P.lon=lon;
+	mindist=distanceToPolygon(db,P);
+	obj =  Py_BuildValue( "d", mindist );
+	return obj;
 }
 static PyObject *
 python_windrose( PyObject *self, PyObject *args ) {
