@@ -17,7 +17,7 @@ The programs keeps track of event ids in a separate table and updates the output
 .SH OPTIONS
 .IP \-v
 verbose flag
-.IP -k keydname
+.IP "-k keydname"
 name of database to keep track of origin ids. Since USGS/EMSC IDs are a mixture of strings and integers, a separate table is needed.
 The database must be in schema \fBidmatch1.0\fP or higher. The database is created upon startup if not originally existing. The database name defaults to keydb.
 .IP \-u
@@ -29,7 +29,7 @@ for \fIEMSC\fP, the program retrieves data from the FDSN webservice described on
 \fBhttp://www.seismicportal.eu/fdsn-wsevent.html\fP
 the default url in this case is
 \fBhttp://www.seismicportal.eu/fdsnws/event/1/query?limit=100&format=json\fP.
-.IP \-a author
+.IP "-a author"
 Author name for event, origin and netmag table. Defaults to NEIC or EMSC
 .IP database
 The name of the output database. This argument is required.

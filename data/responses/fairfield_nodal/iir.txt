@@ -1,0 +1,13 @@
+From: Dan Hollis <dan.hollis@nodalseismic.com>
+Subject: Re: ZLand transfer functions so IRIS can make dataless SEED metadata
+Date: September 19, 2014 at 8:57:26 AM PDT
+To: Frank Vernon <flvernon@ucsd.edu>
+Cc: Mitchell Barklage <mbarklage@nodalseismic.com>, Bill Erickson <berickson@nodalseismic.com>
+
+Frank,
+
+" The DC Blocking filter is an IIR digital filter having one Zero at 1 + j0 and one Pole at (1 - 6.25*fc/SPS) + j0, where fc = corner frequency in Hz and SPS is the Sampling frequency. For example, for 500 samples/sec and 3 Hz corner frequency, The pole is (1-6.25*3/500) + j0 = .9625 + j0."
+
+
+Dan
+

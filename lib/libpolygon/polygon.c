@@ -494,10 +494,10 @@ long writePolygonData(Dbptr db, Point *poly, long npoints, char *pname, int clos
 	
 Dbptr inWhichPolygons(Dbptr db,Point P) {
 	Point *poly;
-	long i;
+	long i,firstrecord;
 	long nrec;
-	Dbptr dbr= dblookup(db,0,"polygon",0,0);
-	double lat,lon;
+	Dbptr dbr;/*= dblookup(db,0,"polygon",0,0);*/
+	double lat,lon, north, south, east,west;
 	Dbptr dbs;
 	long npoints;
 	char expr[STRSZ];
@@ -505,36 +505,57 @@ Dbptr inWhichPolygons(Dbptr db,Point P) {
 	long pid;
 	int first;
 	int found=0;
+	int free_dbs=0;
 	char name[STRSZ];
 
 	lat= P.lat;
 	lon= P.lon;
 	
-	dbs=dblookup(db,0,"polygon",0,0);
-/*
-   Nice idea, but breaks too many programs (older versions of the polygon-schema)
-   sprintf(expr,"closed=~/y/ && north >= %f && south <= %f && east >= %f && west <= %f",
-   */
-	sprintf(expr,"north >= %f && south <= %f && east >= %f && west <= %f",
+	if (db.table < 0) { 
+		dbs=dblookup(db,0,"polygon",0,0);
+	} else {
+		dbs=db;
+	}
+   /* 
+	* Nice idea to check only on cleose polygons..., but breaks too many programs (older versions of the polygon-schema)
+    *  sprintf(expr,"closed=~/y/ && north >= %f && south <= %f && east >= %f && west <= %f",
+    */
+	if (db.record < 0) {
+		sprintf(expr,"north >= %f && south <= %f && east >= %f && west <= %f",
 			lat,lat,lon,lon);
-	dbs=dbsubset(dbs,expr,0);
-	dbquery(dbs, dbRECORD_COUNT,&nrec);
-	if (nrec < 1) {
-		/*
-		elog_log(0,"inWhichPolygons: initial check of Bounding Box returns 0!");
-		*/
-		dbr=dbinvalid();
-		return dbr;
+		dbs=dbsubset(dbs,expr,0);
+		free_dbs=1;
+		dbquery(dbs, dbRECORD_COUNT,&nrec);
+		firstrecord = 0;
+		if (nrec < 1) {
+			/* 
+			 * elog_log(0,"inWhichPolygons: initial check of Bounding Box returns 0!");
+			*/
+			dbr=dbinvalid();
+			return dbr;
+		}
+	} else {
+	/* 
+	 * make sure we ca use the for-loop below both for one record and a whole series...
+	 */
+		dbgetv(db, 0, "north", &north, "east", &east, "west", &west, "south", &south, 0);
+		if (north >= lat && south <= lat && east >= lon  && west <=lon) {
+			dbs=db;		
+			firstrecord=db.record;
+			nrec=firstrecord + 1;
+		} else {
+			dbr=dbinvalid();
+			return dbr;
+		}
 	}
 	first=1;
-	for (i= 0; i< nrec; i++) {
+	for (i= firstrecord; i< nrec; i++) {
 		dbs.record=i;
-		dbgetv(dbs,0,"pname",&name,NULL );
+		dbgetv(dbs,0,"pname",&name, "pid", &pid,NULL );
 
 		if ((npoints=readPolygon(dbs,&poly))>0) {
 			if (isGeographicallyInside(P,poly,npoints)) {
 				found=1;
-				dbgetv(dbs,0,"pid",&pid,NULL );
 				if (first) {
 					sprintf(expr,"pid==%ld",pid);
 					first=0;
@@ -553,7 +574,9 @@ Dbptr inWhichPolygons(Dbptr db,Point P) {
 	} else {
 		dbr=dbinvalid();
 	}
-	dbfree(dbs);
+	if (free_dbs) {
+		dbfree(dbs);
+	}
 	return dbr;
 }
 
@@ -659,3 +682,103 @@ area2D_Polygon( int n, Point* V )
 //===================================================================
 
 */
+
+
+static double distance_to_line( Point P, Point L1, Point L2) {
+	double latdist, londist, distance, dlat, dlon, u;
+	Point closest;
+	if ( (P.lat == L1.lat) && (P.lon == L1.lon) ) {
+		distance = 0;
+		return distance;
+	}
+	if ( (P.lat == L2.lat) && (P.lon == L2.lon) ) {
+		distance = 0;
+		return distance;
+	}
+	dlat = L2.lat - L1.lat;
+	dlon = L2.lon - L1.lon;
+	
+	if ( (dlat == 0) && (dlon == 0) ) {
+		latdist = P.lat - L1.lat;
+		londist = P.lon - L1.lon;
+	
+		distance = sqrt(  latdist*latdist + londist*londist );
+		return distance;
+	}	
+	
+	u = ( (P.lat - L1.lat) * dlat + (P.lon - L1.lon) * dlon) / (dlat * dlat + dlon * dlon);
+
+
+	if ( u < 0) {
+		closest = L1;
+	} else if ( u > 1) {
+		closest = L2;
+	} else {
+		closest.lat = L1.lat + u * dlat;
+		closest.lon = L1.lon + u * dlon;
+	}
+	latdist = P.lat - closest.lat;
+	londist = P.lon - closest.lon;
+	
+	distance = sqrt(  latdist*latdist + londist*londist );
+	return distance;
+}
+
+double distance_to_polygon( Point P, Point *polygon, long npoints) {
+	long i;
+	double mindist,dist;
+	Point L1,L2;
+	mindist = 1e99;
+	if (npoints == 1) {
+		L1.lat = polygon[0].lat;
+		L1.lon = polygon[0].lon;
+
+		L2.lat =P.lat - L1.lat;
+		L2.lon =P.lon - L1.lon;
+		mindist= sqrt(L2.lat * L2.lat + L2.lon*L2.lon);
+	} else {
+		for ( i=0; i<(npoints-1); i++) {
+			L1.lat = polygon[i].lat;
+			L1.lon = polygon[i].lon;
+			L2.lat = polygon[i+1].lat;
+			L2.lon = polygon[i+1].lon;
+			dist= distance_to_line(P, L1, L2);
+			if (dist < mindist) {
+				mindist = dist;
+			}
+		}
+	}
+	return mindist;
+}
+
+double distanceToPolygon(Dbptr db, Point P) {
+	Point *poly;
+	long i, nrec, npoints;
+	double dist, mindist;	
+	mindist = 1.0e99;
+	
+	if (db.record < 0) {
+		dbquery(db, dbRECORD_COUNT,&nrec);
+		if (nrec < 1) {
+			return -1.0;
+		}
+		for ( i=0; i< nrec; i++) {
+			db.record=i;
+			if ( (npoints=readPolygon( db, &poly )) >0) {
+				dist = distance_to_polygon( P, poly, npoints);
+				if (dist < mindist) {
+					mindist = dist;
+				}
+			}
+		}
+	} else {
+		if ( (npoints=readPolygon( db, &poly )) >0) {
+			mindist = distance_to_polygon( P, poly, npoints);
+			free(poly);
+		} else {
+			return -1.0;
+		}	
+	}
+	return mindist;
+
+}

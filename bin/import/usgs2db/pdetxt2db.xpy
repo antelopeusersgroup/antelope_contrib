@@ -84,7 +84,10 @@ def main():
         lat=float(lat)
         lon=float(lon)
         depth=float(depth)
-        magnitude=float(magnitude)
+        if magnitude != '':
+	    magnitude=float(magnitude)
+        else:
+            magnitude=mlnull
         ts=otimestr.replace('T',' ')
         otime=stock.str2epoch(ts)
         magtype=str(magtype).lower()
@@ -98,18 +101,18 @@ def main():
             ms=magnitude
         if magtype == 'mb':
             mb=magnitude
-        # grn, srn seems to be unimplemenmted
         gr=stock.grnumber(lat,lon)    
         sr=stock.srnumber(lat,lon)    
         jdate=stock.epoch2str(otime,'%Y%j')
         if auth != '':
             oauth=auth
+            ocat= auth
         orecno=dborigin.addv( ('time',otime),('lat',lat),('lon',lon),('depth',depth), 
                 ('evid',evid),('orid',evid), ('jdate',jdate), 
                 ('mb',mb),('ml',ml),('ms',ms), 
-                ('nass',0),('ndef',0),('auth',oauth),('grn',gr),('srn',sr) ) 
+                ('nass',0),('ndef',0),('auth',ocat),('grn',gr),('srn',sr) ) 
 
-        erecno=dbevent.addv(('evid',evid),('prefor',evid),('evname',regname[:evname_width]),('auth',oauth) )
+        erecno=dbevent.addv(('evid',evid),('prefor',evid),('evname',regname[:evname_width]),('auth',ocat) )
         nmrecno=dbnetmag.addv(('evid',evid),('orid',evid),('magnitude',magnitude),('magtype',magtype),('auth',magauth) )
             
     return 0    
