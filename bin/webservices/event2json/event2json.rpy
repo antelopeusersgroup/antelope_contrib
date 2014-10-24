@@ -51,18 +51,26 @@ def test_table(dbname,tbl,verbose=False):
     Returns True if valid and we see data.
     """
 
-    with datascope.closing(datascope.dbopen( dbname , 'r' )) as db:
-        db = db.lookup( table=tbl )
+    path = False
 
-        if not db.query(datascope.dbTABLE_PRESENT):
-            if verbose: elog.complain( 'No dbTABLE_PRESENT on %s' % dbname )
-            return False
+    try:
+        with datascope.closing(datascope.dbopen( dbname , 'r' )) as db:
+            db = db.lookup( table=tbl )
 
-        if not db.record_count:
-            if verbose: elog.complain( 'No %s.record_count' % dbname )
-            return False
+            if not db.query(datascope.dbTABLE_PRESENT):
+                if verbose: elog.complain( 'No dbTABLE_PRESENT on %s' % dbname )
+                return False
 
-    return True
+            if not db.record_count:
+                if verbose: elog.complain( 'No %s.record_count' % dbname )
+                return False
+
+            path = db.query('dbTABLE_FILENAME')
+    except Exception,e:
+        elog.complain("Prolembs with db[%s]: %s" % (dbname,e) )
+        return False
+
+    return path
 
 class Events(Resource):
 
@@ -82,6 +90,11 @@ class Events(Resource):
         self.time_limit = config.sitedict['siteconfig']['time_limit']
         self.refresh = int(config.sitedict['siteconfig']['refresh'])
         self.dbname = config.sitedict['siteconfig']['databases']
+        try:
+            self.readableJSON = int(config.sitedict['siteconfig']['readableJSON'])
+        except:
+            self.readableJSON = None
+
         self.event_cache = {}
 
         self.loading = True
@@ -101,6 +114,7 @@ class Events(Resource):
             elog.notify( "\ttime_limit: %s" % self.time_limit )
             elog.notify( "\tdbname: %s" % self.dbname )
             elog.notify( "\trefresh: %s" % self.refresh )
+            elog.notify( "\treadableJSON: %s" % self.readableJSON )
 
 
         if self.verbose:
@@ -127,6 +141,7 @@ class Events(Resource):
 
             db = datascope.dbopen( path , 'r' )
             self.dbs[name] = { 'db':db, 'path':path, 'mags':{},
+                    'md5event':False, 'md5origin':False, 'md5netmag':False,
                     'origin': origin, 'event':event, 'netmag':netmag }
 
 
@@ -270,14 +285,13 @@ class Events(Resource):
 
         return mags
 
-    def _get_md5(self,path,file):
+    def _get_md5(self,file):
         """
         Get the checksum of a table
         """
-        test = "%s.%s" % (path,file)
 
-        if os.path.isfile( test ):
-            return hashlib.md5( open(test).read() ).hexdigest()
+        if os.path.isfile( file ):
+            return hashlib.md5( open(file).read() ).hexdigest()
 
         return False
 
@@ -305,39 +319,45 @@ class Events(Resource):
 
         for name in self.dbs:
 
-            origin = self.dbs[name]['origin']
             path = self.dbs[name]['path']
-            event = self.dbs[name]['event']
-            netmag = self.dbs[name]['netmag']
             mags = self.dbs[name]['mags']
             db = self.dbs[name]['db']
+
+            origin = self.dbs[name]['origin']
+            md5origin = self.dbs[name]['md5origin']
+
+            event = self.dbs[name]['event']
+            md5event = self.dbs[name]['md5event']
+
+            netmag = self.dbs[name]['netmag']
+            md5netmag = self.dbs[name]['md5netmag']
 
             if self.debug: elog.debug( "Events(%s): db: %s" % (name,path) )
 
 
-            originmd5 = self._get_md5(path,'origin')
-            eventmd5 = self._get_md5(path,'event') if event else False
-            netmagmd5 = self._get_md5(path,'netmag') if netmag else False
+            testorigin = self._get_md5(origin)
+            testevent = self._get_md5(event) if event else False
+            testnetmag = self._get_md5(netmag) if netmag else False
 
 
             if self.debug:
-                elog.debug('event [old: %s new: %s]' %(event,eventmd5) )
-                elog.debug('origin [old: %s new: %s]' %(origin,originmd5) )
-                elog.debug('netmag [old: %s new: %s]' %(netmag,netmagmd5) )
+                elog.debug('event [old: %s new: %s]' %(md5event,testevent) )
+                elog.debug('origin [old: %s new: %s]' %(md5origin,testorigin) )
+                elog.debug('netmag [old: %s new: %s]' %(md5netmag,testnetmag) )
 
-            if originmd5 == origin and eventmd5 == event and netmagmd5 == netmag:
+            if testorigin == md5origin and testevent == md5event and testnetmag == md5netmag:
                 if self.debug: elog.debug('No update needed. Skipping.')
                 continue
 
             tempcache[name] = []
 
-            self.dbs[name]['event'] = eventmd5
-            self.dbs[name]['origin'] = originmd5
+            self.dbs[name]['md5event'] = testevent
+            self.dbs[name]['md5origin'] = testorigin
 
-            if netmagmd5 != netmag:
+            if testnetmag != netmag:
                 mags = self._get_magnitudes(db)
                 self.dbs[name]['mags'] = mags
-                self.dbs[name]['netmag'] = netmagmd5
+                self.dbs[name]['md5netmag'] = testnetmag
 
             if event:
                 steps = ['dbopen event']
@@ -407,7 +427,7 @@ class Events(Resource):
 
                     if self.debug: elog.debug( "Events(): %s add (%s,%s)" % (name,evid,orid) )
 
-            self.event_cache[name] = json.dumps(tempcache[name])
+            self.event_cache[name] = json.dumps(tempcache[name],indent=self.readableJSON)
 
             if self.debug: elog.debug( "Completed updating db. (%s)" % name )
 

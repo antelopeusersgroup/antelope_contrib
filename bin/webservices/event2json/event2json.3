@@ -6,22 +6,57 @@
 .SH SYNOPSIS
 .nf
 **** NO BRTT SUPPORT ****
-Author: Juan Reyes <reyes@ucsd.edu>
+Author: "Juan Reyes"<reyes@ucsd.edu>
 .fi
-.LP
-This tool is an extension to the rtwebserver program. It is design to read a database containing events and origins and produce a memory cached object for fast delivery to web clients. This object will be converted to a JSON formatted string easy to interpret by JavaScript and, unlike XML, readable by people.
+.PP
+This tool is an extension to the rtwebserver program. It is design to read a
+database containing events and origins and produce a memory cached object for
+fast delivery to web clients. This object will be converted to a JSON formatted
+string easy to interpret by JavaScript and, unlike XML, readable by people.
+
+.B You need to copy the event2jon.rpy by hand to the folder that you are
+.B using to run the rtwebserver.
 
 .SH DESCRIPTION
 .LP
-The rtwebserver will declare an instance of a Event() class that will handle all database interactions and web requests. This class will read an origin table and possibly an event table if it exists. Then try to combine this information with a netmag table if present.
+The rtwebserver will declare an instance of a Event() class that will handle all
+database interactions and web requests. This class will read an origin table and
+possibly an event table if it exists. Then try to combine this information with
+a netmag table if present.
 .LP
-All the configuration parameters for  this Event() class are specified in the [siteconfig] Arr of the rtwebserver.pf running the instance. Multiple databases can be served out of the same instance by specifying different databases in this [site][siteconfig][databases] Arr in the configuration file. If the origin table is not valid for a database then the system will skip the database and will not store any data for it.  If the netmag table is not available then the system will not produce any magnitudes for the events.
+All the configuration parameters for  this Event() class are specified in the
+[siteconfig] Arr of the rtwebserver.pf running the instance. Multiple databases
+can be served out of the same instance by specifying different databases in this
+[site][siteconfig][databases] Arr in the configuration file. If the origin table
+is not valid for a database then the system will skip the database and will not
+store any data for it.  If the netmag table is not available then the system
+will not produce any magnitudes for the events.
 .LP
-The tool will track the checksum of every table and determine if there is a change from the last time the cache was updated. If the checksum is different then the Events() class will attempt to read the database and update the cached object. The data will be converted from a dictionary structure to a JSON string at the end of the extraction to minimize delivery time to the clients.
+The tool will track the checksum of every table and determine if there is a
+change from the last time the cache was updated. If the checksum is different
+then the Events() class will attempt to read the database and update the cached
+object. The data will be converted from a dictionary structure to a JSON string
+at the end of the extraction to minimize delivery time to the clients.
 .LP
 The selected magnitude for the event will be the one with the last lddate time.
+.LP
+A successful response from the server will have Content-Type and Expires fields
+set. The Expires will be set by the server to be the time of the query in
+addition to the refresh time specified on the parameter file. Example of
+headers set in this way:
+
+.nf
+Content-Type    application/json
+Date    Fri, 24 Oct 2014 04:21:56 GMT
+Expires Fri, 24 Oct 2014 04:22:56 GMT
+Server  TwistedWeb/13.1.0
+.fi
+
+
+
 
 .SH JSON FORMAT
+.nf
 {
 
     "allmags": [
@@ -50,17 +85,23 @@ The selected magnitude for the event will be the one with the last lddate time.
     "time": 1414105562.3846
 
 }
+.fi
 
 
 
 .SH PARAMETER FILE
+
+.PP
 All is configured on the [rtwebserver.pf] file. You  need to specify
 the tool in the [site][pages] area of the parameter file. The [data][events]
 configuration use here will be the same values you will use on the URL when
-you try to query the tool. http://127.0.0.1:8000/data/events?db=ta
+you try to query the tool.
+
+http://127.0.0.1:8000/data/events?db=ta
 
 Example:
-.SS
+
+.nf
 site &Arr{
    siteconfig &Arr{
         debug           False
@@ -80,22 +121,23 @@ site &Arr{
        }
    }
 }
+.fi
 
 
 
-The \fBtime_limit\fR is the number of seconds is the past that you want to track on the
-event and origin tables. Using a big value here so you can see output when running on the
-demo database. Usually this will be a week or a month in seconds.
+The \fBtime_limit\fR is the number of seconds is the past that you want to track
+on the event and origin tables. Using a big value here so you can see output
+when running on the demo database. Usually this will be a week or a month in
+seconds.
 
-The \fBtimezone\fR and \fBtimeformat\fR will specify a pre-formatted time string included
-on the JSON object. The epoch time of the origin will be there too in case you want
-to use that on your client code.
+The \fBtimezone\fR and \fBtimeformat\fR will specify a pre-formatted time string
+included on the JSON object. The epoch time of the origin will be there too in
+case you want to use that on your client code.
 
-The \fBdatabases\fR segment are a list of tuples. The first value is an arbitrarily 
-name that we select for the instance. This is important because that is used on the
-URL to request data from that database. The second is the path to the descriptor file
-for that database. For now the rest of the tables will have to be on the same directory.
-I will fix this limitation on the next update.
+The \fBdatabases\fR segment are a list of tuples. The first value is an
+arbitrarily name that we select for the instance. This is important because
+that is used on the URL to request data from that database. The second is the
+path to the descriptor file for that database.
 
 .SH EXAMPLE
 
@@ -105,45 +147,43 @@ I will fix this limitation on the next update.
 volcano{reyes}% make; make install;
 
 volcano{reyes}%rtwebserver -p ./rtwebserver_example.pf
-/opt/antelope/5.4/bin/rtwebserver: Starting rtwebserver at '23:24:54.546 10/23/14 UTC' as pid 37034
-/opt/antelope/5.4/bin/rtwebserver: Events(): init()
-/opt/antelope/5.4/bin/rtwebserver:  debug: False
-/opt/antelope/5.4/bin/rtwebserver:  verbose: True
-/opt/antelope/5.4/bin/rtwebserver:  timeformat: %D (%j) %H:%M:%S %z
-/opt/antelope/5.4/bin/rtwebserver:  timezone: UTC
-/opt/antelope/5.4/bin/rtwebserver:  time_limit: 999999999999
-/opt/antelope/5.4/bin/rtwebserver:  dbname: {'demo': '/opt/antelope/data/db/demo/demo'}
-/opt/antelope/5.4/bin/rtwebserver:  refresh: 60
-/opt/antelope/5.4/bin/rtwebserver:  ####################
-/opt/antelope/5.4/bin/rtwebserver:  Loading Events!
-/opt/antelope/5.4/bin/rtwebserver:  ####################
-/opt/antelope/5.4/bin/rtwebserver: Test demo db: /opt/antelope/data/db/demo/demo
-/opt/antelope/5.4/bin/rtwebserver *complain*: Empty or missing /opt/antelope/data/db/demo/demo.event
-/opt/antelope/5.4/bin/rtwebserver: Loading Events()
-/opt/antelope/5.4/bin/rtwebserver: Events(demo): updating from /opt/antelope/data/db/demo/demo
-/opt/antelope/5.4/bin/rtwebserver: Done loading Events()
+rtwebserver: Starting rtwebserver at '23:24:54.546 10/23/14 UTC' as pid 37034
+rtwebserver: Events(): init()
+rtwebserver:  debug: False
+rtwebserver:  verbose: True
+rtwebserver:  timeformat: %D (%j) %H:%M:%S %z
+rtwebserver:  timezone: UTC
+rtwebserver:  time_limit: 999999999999
+rtwebserver:  dbname: {'demo': '/opt/antelope/data/db/demo/demo'}
+rtwebserver:  refresh: 60
+rtwebserver:  ####################
+rtwebserver:  Loading Events!
+rtwebserver:  ####################
+rtwebserver: Test demo db: /opt/antelope/data/db/demo/demo
+rtwebserver *complain*: Empty or missing /opt/antelope/data/db/demo/demo.event
+rtwebserver: Loading Events()
+rtwebserver: Events(demo): updating from /opt/antelope/data/db/demo/demo
+rtwebserver: Done loading Events()
 
-/opt/antelope/5.4/bin/rtwebserver: READY!
-
+rtwebserver: READY!
 .fi
 
 .SH "SEE ALSO"
 .nf
-rtwebserver(1), rtwebserver_rpy(3y), rtexec(1), pf(5), legit_ip(3), RtcacheResource(3y), rtcache(1)
-
-
-
+rtwebserver(1), rtwebserver_rpy(3y)
 .fi
+
 .SH "BUGS AND CAVEATS"
 **** NO BRTT SUPPORT ****
 
-The rtwebserver program must be restarted after changes to the parameter file.
+You need to copy the code to the folder structure running the rtwebserver
+instance. I'm not sure how to compile this and migrate the rpy file to a
+folder en $ANTELOPE and make it available systemwide.
+On the rtwebserver manpage we see that:
 
-As always under Unix, access to privileged ports require root execution privileges.
-
-The  pathnames  for  files  listed in the parameter file are relative to the current working
-directory in which rtwebserver is running, which may not be the same  as  the  directory  in
-which the parameter-file resides.
+The  pathnames  for  files  listed in the parameter file are relative to the
+current working directory in which rtwebserver is running, which may not be
+the same  as  the  directory  in which the parameter-file resides.
 
 
 
