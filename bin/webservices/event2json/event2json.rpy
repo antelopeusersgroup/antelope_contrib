@@ -177,7 +177,12 @@ class Events(Resource):
 
     def render_GET(self, uri):
 
-        (host,port) = uri.getHeader('host').split(':', 1)
+        try:
+            (host,port) = uri.getHeader('host').split(':', 1)
+        except:
+            host = uri.getHeader('host')
+            port = '-'
+
         hostname = socket.gethostname()
 
         if self.verbose:
