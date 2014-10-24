@@ -1,0 +1,33 @@
+port    8000
+
+reject_ip_addresses &Tbl{
+}
+
+trackingdb
+#trackingdb  db/webserver
+
+valid_ip_addresses  &Tbl{
+    0.0.0.0     0.0.0.0
+}
+
+site &Arr{
+   pythonpaths &Tbl{
+   }
+   siteconfig &Arr{
+        debug           False
+        verbose         True
+        time_limit      999999999999
+        refresh         60
+        timezone        UTC
+        timeformat      %D (%j) %H:%M:%S %z
+        databases &Arr{
+                demo    /opt/antelope/data/db/demo/demo
+                #ta      /anf/TA/rt/usarray/usarray
+        }
+   }
+   pages &Arr{
+       data &Arr{
+           events     rpy:event2json.rpy
+       }
+   }
+}

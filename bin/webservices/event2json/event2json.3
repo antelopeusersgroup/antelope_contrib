@@ -1,0 +1,152 @@
+.TH EVENT2JSON_RPY 3
+
+.SH NAME
+\fIevent2json.rpy\fR \- deliver JSON data from events in a database
+
+.SH SYNOPSIS
+.nf
+**** NO BRTT SUPPORT ****
+Author: Juan Reyes <reyes@ucsd.edu>
+.fi
+.LP
+This tool is an extension to the rtwebserver program. It is design to read a database containing events and origins and produce a memory cached object for fast delivery to web clients. This object will be converted to a JSON formatted string easy to interpret by JavaScript and, unlike XML, readable by people.
+
+.SH DESCRIPTION
+.LP
+The rtwebserver will declare an instance of a Event() class that will handle all database interactions and web requests. This class will read an origin table and possibly an event table if it exists. Then try to combine this information with a netmag table if present.
+.LP
+All the configuration parameters for  this Event() class are specified in the [siteconfig] Arr of the rtwebserver.pf running the instance. Multiple databases can be served out of the same instance by specifying different databases in this [site][siteconfig][databases] Arr in the configuration file. If the origin table is not valid for a database then the system will skip the database and will not store any data for it.  If the netmag table is not available then the system will not produce any magnitudes for the events.
+.LP
+The tool will track the checksum of every table and determine if there is a change from the last time the cache was updated. If the checksum is different then the Events() class will attempt to read the database and update the cached object. The data will be converted from a dictionary structure to a JSON string at the end of the extraction to minimize delivery time to the clients.
+.LP
+The selected magnitude for the event will be the one with the last lddate time.
+
+.SH JSON FORMAT
+{
+
+    "allmags": [
+        {
+            "printmag": "4.9 mb",
+            "magid": 238710,
+            "magtype": "mb",
+            "uncertainty": 0.28,
+            "auth": "orbevproc",
+            "magnitude": 4.9,
+            "lddate": 1414106024.76122
+        }
+    ],
+    "auth": "tele",
+    "lat": 14.99,
+    "srname": "MEXICO - GUATEMALA AREA",
+    "orid": 1364877,
+    "strtime": "10/23/14 (296) 23:06:02 UTC",
+    "nass": 50,
+    "evid": 1171883,
+    "review": "-",
+    "lon": -89.5402,
+    "depth": 200,
+    "magnitude": "4.9 mb",
+    "grname": "GUATEMALA",
+    "time": 1414105562.3846
+
+}
+
+
+
+.SH PARAMETER FILE
+All is configured on the [rtwebserver.pf] file. You  need to specify
+the tool in the [site][pages] area of the parameter file. The [data][events]
+configuration use here will be the same values you will use on the URL when
+you try to query the tool. http://127.0.0.1:8000/data/events?db=ta
+
+Example:
+.SS
+site &Arr{
+   siteconfig &Arr{
+        debug           False
+        verbose         True
+        time_limit      999999999999
+        refresh         60
+        timezone        UTC
+        timeformat      %D (%j) %H:%M:%S %z
+        databases &Arr{
+                demo    /opt/antelope/data/db/demo/demo
+                ta      /anf/TA/rt/usarray/usarray
+        }
+   }
+   pages &Arr{
+       data &Arr{
+           events     rpy:event2json.rpy
+       }
+   }
+}
+
+
+
+The \fBtime_limit\fR is the number of seconds is the past that you want to track on the
+event and origin tables. Using a big value here so you can see output when running on the
+demo database. Usually this will be a week or a month in seconds.
+
+The \fBtimezone\fR and \fBtimeformat\fR will specify a pre-formatted time string included
+on the JSON object. The epoch time of the origin will be there too in case you want
+to use that on your client code.
+
+The \fBdatabases\fR segment are a list of tuples. The first value is an arbitrarily 
+name that we select for the instance. This is important because that is used on the
+URL to request data from that database. The second is the path to the descriptor file
+for that database. For now the rest of the tables will have to be on the same directory.
+I will fix this limitation on the next update.
+
+.SH EXAMPLE
+
+.nf
+/Users/reyes/antelope_contrib/bin/webservices/event2json
+
+volcano{reyes}% make; make install;
+
+volcano{reyes}%rtwebserver -p ./rtwebserver_example.pf
+/opt/antelope/5.4/bin/rtwebserver: Starting rtwebserver at '23:24:54.546 10/23/14 UTC' as pid 37034
+/opt/antelope/5.4/bin/rtwebserver: Events(): init()
+/opt/antelope/5.4/bin/rtwebserver:  debug: False
+/opt/antelope/5.4/bin/rtwebserver:  verbose: True
+/opt/antelope/5.4/bin/rtwebserver:  timeformat: %D (%j) %H:%M:%S %z
+/opt/antelope/5.4/bin/rtwebserver:  timezone: UTC
+/opt/antelope/5.4/bin/rtwebserver:  time_limit: 999999999999
+/opt/antelope/5.4/bin/rtwebserver:  dbname: {'demo': '/opt/antelope/data/db/demo/demo'}
+/opt/antelope/5.4/bin/rtwebserver:  refresh: 60
+/opt/antelope/5.4/bin/rtwebserver:  ####################
+/opt/antelope/5.4/bin/rtwebserver:  Loading Events!
+/opt/antelope/5.4/bin/rtwebserver:  ####################
+/opt/antelope/5.4/bin/rtwebserver: Test demo db: /opt/antelope/data/db/demo/demo
+/opt/antelope/5.4/bin/rtwebserver *complain*: Empty or missing /opt/antelope/data/db/demo/demo.event
+/opt/antelope/5.4/bin/rtwebserver: Loading Events()
+/opt/antelope/5.4/bin/rtwebserver: Events(demo): updating from /opt/antelope/data/db/demo/demo
+/opt/antelope/5.4/bin/rtwebserver: Done loading Events()
+
+/opt/antelope/5.4/bin/rtwebserver: READY!
+
+.fi
+
+.SH "SEE ALSO"
+.nf
+rtwebserver(1), rtwebserver_rpy(3y), rtexec(1), pf(5), legit_ip(3), RtcacheResource(3y), rtcache(1)
+
+
+
+.fi
+.SH "BUGS AND CAVEATS"
+**** NO BRTT SUPPORT ****
+
+The rtwebserver program must be restarted after changes to the parameter file.
+
+As always under Unix, access to privileged ports require root execution privileges.
+
+The  pathnames  for  files  listed in the parameter file are relative to the current working
+directory in which rtwebserver is running, which may not be the same  as  the  directory  in
+which the parameter-file resides.
+
+
+
+.SH AUTHOR
+Juan Reyes <reyes@ucsd.edu>
+
