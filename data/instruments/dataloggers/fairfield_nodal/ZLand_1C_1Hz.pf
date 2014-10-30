@@ -1,0 +1,125 @@
+category	Fairfield Nodal
+configuration	ZLand 1C 1Hz
+
+originator	Frank Vernon
+last_modified	October 5, 2014
+
+description	Fairfield Nodal 1 Hz DC Removal
+dfile zland_1c_1hz
+
+info &Literal{
+This are the composite FIR composite filter with a 1 Hz high pass dc-removal IIR filter 
+for the Fairfield Nodal ZLand 1C datalogger
+Currently using a paz representation for the iir dc-removal filter since db2sd does not support iir
+}
+
+
+streams		2000sps 1000sps 500sps 250sps
+
+# definitions of streams
+# 2000sps	  2000 a/d_2000 Zland_2000_iir_1Hz Zland_2000
+# 1000sps	  1000 a/d_1000 Zland_1000_iir_1Hz Zland_1000
+# 500sps	  500  a/d_500  Zland_500_iir_1Hz Zland_500
+# 250sps	  250  a/d_250  Zland_250_iir_1Hz Zland_250
+2000sps	  2000 anti-alias a/d_2000 Zland_2000
+1000sps	  1000 anti-alias a/d_1000 Zland_1000
+500sps	  500  anti-alias a/d_500  Zland_500
+250sps	  250  anti-alias a/d_250  Zland_250
+
+gains		2440476		# in units of counts/volt
+# Stages
+a/d_2000	&Arr{
+samprate	2000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		    datalogger
+}
+
+a/d_1000	&Arr{
+samprate	1000
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		    datalogger
+}
+
+a/d_500	&Arr{
+samprate	500
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		    datalogger
+}
+
+a/d_250	&Arr{
+samprate	250
+gtype		digitizer
+iunits		V
+ounits		counts
+sn		    datalogger
+}
+
+
+Zland_2000	&Arr{ # 
+gtype	FIR_decimator
+decifac	1
+response	&datafile(responses/Zland_2000)
+samplerate	2000
+}
+
+Zland_1000	&Arr{ # 
+gtype	FIR_decimator
+decifac	1
+response	&datafile(responses/Zland_1000)
+samplerate	1000
+}
+
+Zland_500	&Arr{ # 
+gtype	FIR_decimator
+decifac	1
+response	&datafile(responses/Zland_500)
+samplerate	500
+}
+
+Zland_250	&Arr{ # 
+gtype	FIR_decimator
+decifac	1
+response	&datafile(responses/Zland_250)
+samplerate	250
+}
+
+Zland_2000_iir_1Hz	&Arr{ # 
+gtype	IIR_decimator
+decifac	1
+response	&datafile(responses/Zland_2000_iir_1.0Hz)
+samplerate	2000
+}
+
+Zland_1000_iir_1Hz	&Arr{ # 
+gtype	IIR_decimator
+decifac	1
+response	&datafile(responses/Zland_1000_iir_1.0Hz)
+samplerate	1000
+}
+
+Zland_500_iir_1Hz	&Arr{ # 
+gtype	IIR_decimator
+decifac	1
+response	&datafile(responses/Zland_500_iir_1.0Hz)
+samplerate	500
+}
+
+Zland_250_iir_1Hz	&Arr{ # 
+gtype	IIR_decimator
+decifac	1
+response	&datafile(responses/Zland_250_iir_1.0Hz)
+samplerate	250
+}
+
+anti-alias &Arr{
+gtype   analog_anti_alias
+response        &datafile(responses/Zland_hp_1.0Hz_pz)   
+}
+
+
