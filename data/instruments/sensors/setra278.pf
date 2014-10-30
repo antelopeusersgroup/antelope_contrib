@@ -14,7 +14,7 @@ sensor_type_code   D
 gtype              sensor
 sensitivity        0.0166667   #  sensitivity is in V/mbar
 iunits             mbar
-ounits             counts
+ounits             V
 
 orientations    &Tbl{
 D       0       0
