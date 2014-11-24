@@ -17,13 +17,20 @@
 #include "coords.h"
 #include "perf.h"
 
+#ifndef NO_ANTELOPE
 #include "pfstream.h"
+#endif
 #include "TimeWindow.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
+#ifndef NO_ANTELOPE
 #include "ComplexTimeSeries.h"
+#endif
 #include "Hypocenter.h"
 #include "SeisppKeywords.h"
+#ifdef NO_ANTELOPE
+using namespace PWMIG;
+#endif
 namespace SEISPP {
 /*! \brief Object to contain a group (ensemble) of time series objects (seismograms).
 
@@ -56,6 +63,7 @@ public:
 // for ntsin members with a typical size of nsampin samples.
 **/
 	TimeSeriesEnsemble(int ntsin, int nsampin);
+#ifndef NO_ANTELOPE
 /*!
 // Database-driven constructor.  
 // Seismic data are often stored today using a database to index the raw
@@ -175,6 +183,7 @@ public:
 // regular C data object.  See man pfstream(3).
 **/
 	TimeSeriesEnsemble(Pf_ensemble *pfe);
+#endif
 /*!
 // Standard copy constructor. 
 **/
@@ -232,6 +241,7 @@ public:
 **/
 	ThreeComponentEnsemble(int nsta, int nsamp,
 				MetadataList& mdl);
+#ifndef NO_ANTELOPE
 /*!
 // Database-driven constructor.  
 // Seismic data are often stored today using a database to index the raw
@@ -290,6 +300,7 @@ public:
 /*!
 // Standard copy constructor.
 **/
+#endif
 	ThreeComponentEnsemble(const ThreeComponentEnsemble& tseold);
 /*!
 // Partial copy constructor. 
@@ -338,7 +349,9 @@ double PeakAmplitude(TimeSeries *p);
 Seismogram. */
 double PeakAmplitude(ThreeComponentSeismogram *p);
 /*! Measures peak amplitude for a ComplexTimeSeries. */
+#ifndef NO_ANTELOPE
 double PeakAmplitude(ComplexTimeSeries *p);
+#endif
 
 /*! Generic algorithm to measure and set peak amplitude as a scaling attribute.
 
@@ -441,8 +454,10 @@ template <class Tensemble,class Tmember>
 void ScaleMember(TimeSeries *p,double scale);
 /*! Scales a ThreeComponentSeismogram object by scale. */
 void ScaleMember(ThreeComponentSeismogram *p,double scale);
+#ifndef NO_ANTELOPE
 /*! Scales a ComplexTimeSeries object by scale. */
 void ScaleMember(ComplexTimeSeries *p,double scale);
+#endif
 
 /* Companion to above */
 
@@ -517,6 +532,7 @@ template <class Te, class Ta>
 			d.member[i].put(name,val);
 	} catch(...){throw;};
 }
+#ifndef NO_ANTELOPE
 /*! \brief Finds arrival time picks for a particular phase spanned by a seismogram.
 
 In passive array processing a common thing one needs to do is associate a seismogram
@@ -639,6 +655,7 @@ template <class Tensemble> void LoadEventArrivals(Tensemble& d,
 	we don't do this.  If changed this next line must be removed */
 	//dbfree(dbhss.db);
 }
+#endif
 /*! \brief Load predicted times for a general ensemble.
 
 This is a generic algorithm to implement posting predicted arrival times

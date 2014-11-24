@@ -20,6 +20,7 @@
 // Antelope includes required
 //
 #include "stock.h"
+#ifndef NO_ANTELOPE
 #include "db.h"
 #include "tr.h"
 #include "pf.h"
@@ -27,6 +28,7 @@
 // These are glp stuff external to this library
 // 
 #include "pfstream.h"
+#endif
 //
 // Library internal includes files required for the seispp.h  include
 // 
@@ -34,9 +36,11 @@
 #include "SeisppKeywords.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
+#ifndef NO_ANTELOPE
 #include "ComplexTimeSeries.h"
-#include "ensemble.h"
 #include "seismicarray.h"
+#endif
+#include "ensemble.h"
 
 namespace SEISPP 
 {
@@ -79,6 +83,7 @@ void ApplyGeometricStatic(BasicTimeSeries *ts, double vel, double elev);
 // data are not altered but a diagnostic is issued to stderr.
 **/
 void ApplyGeometricStatic(TimeSeries *ts);
+#ifndef NO_ANTELOPE
 /*!
 // Pfstream method for getting a time series object from an input stream.
 // Useful only in a pfstream environment which is currently not well developed
@@ -111,6 +116,7 @@ void PfstreamSave3cseis(ThreeComponentSeismogram *seis,string tag,
 **/
 void SetGaps(TimeSeries&,Trsample *,int, string)
 		throw(SeisppError);
+#endif
 /*!
 // Return direction of particle motion for a P wave with 
 // slowness (ux,uy) at a surface with P velocity vp0 and 
@@ -549,6 +555,7 @@ void StaChanSort(TimeSeriesEnsemble& ensemble);
 **/
 auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
         string sta_expr, string chan_expr);
+#ifndef NO_ANTELOPE
 /*! 
 \brief Return a subset of an ensemble that match a specified array.
 
@@ -575,6 +582,7 @@ that match are copied to the output.
 **/
 auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 		SeismicArray& array);
+#endif
 /*! Sparse convolution routine.
 
   Sometimes a time series is made up initially of only a relatively 

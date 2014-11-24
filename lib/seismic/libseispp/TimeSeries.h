@@ -2,7 +2,9 @@
 #define _TIMESERIES_H_
 #include <vector>
 #include "BasicTimeSeries.h"
+#ifndef NO_ANTELOPE
 #include "dbpp.h"
+#endif
 #include "Metadata.h"
 namespace SEISPP {
 using namespace std;
@@ -65,6 +67,8 @@ public:
 //                     attributes derived from the Metadata object (see above).
 **/
 	TimeSeries(const Metadata& md,bool load_data);
+#ifndef NO_ANTELOPE
+
 /*!
 // Antelope database driven constructor.
 // The basic model here is that this constructor builds a TimeSeries object
@@ -78,6 +82,7 @@ public:
 //  normally created once at the early stage of a program's execution.  
 **/
 	TimeSeries(DatabaseHandle& db, MetadataList& mdl, AttributeMap& am);
+#endif
 /*!
 // Standard copy constructor.
 **/

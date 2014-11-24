@@ -94,6 +94,7 @@ long int vector_fwrite(float *x,int n, string fname) throw(SeisppError)
 	return(foff);
 }
 
+#ifndef NO_ANTELOPE
 // Small helper for function immediately below avoids 
 // repetitious and confusing test
 bool trdata_is_gap(Wftype *wft,Trsample value)
@@ -171,7 +172,6 @@ void SetGaps(TimeSeries& ts,
 }
 
 
-#ifndef NO_ANTELOPE
 TimeSeries *LoadTimeSeriesUsingPf(Pf *pf)
 {
 	Metadata md(pf);

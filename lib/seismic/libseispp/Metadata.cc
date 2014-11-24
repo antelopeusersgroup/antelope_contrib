@@ -2,11 +2,11 @@
 #include <sstream>
 #include <limits.h>
 #include "stock.h"
-#include "pf.h"
 #include <string>
-#include "AttributeMap.h"
 #include "Metadata.h"
 #ifndef NO_ANTELOPE
+#include "AttributeMap.h"
+#include "pf.h"
 #include "dbpp.h"
 #endif
 using namespace std;

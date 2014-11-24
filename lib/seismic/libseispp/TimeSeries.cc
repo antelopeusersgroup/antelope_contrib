@@ -1,4 +1,6 @@
+#ifndef NO_ANTELOPE
 #include "tr.h" // Antelope trace library
+#endif
 #include "seispp.h"
 #include "SeisppKeywords.h"
 #include "SeisppError.h"

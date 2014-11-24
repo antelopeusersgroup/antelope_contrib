@@ -5,6 +5,7 @@
 using namespace SEISPP;
 using namespace std;
 namespace SEISPP{
+#ifndef NO_ANTELOPE
 /* This file contains tools that operate on ensemble objects
 // to subset or sort ensembles in common ways.  May eventually
 // generate a generalized sort or subset method, but for now
@@ -86,6 +87,7 @@ auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 	}
 	return(result);
 }
+#endif
 /*  Extract a single component from an ensemble to produce a scalar ensemble. */
 auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component)
 {
