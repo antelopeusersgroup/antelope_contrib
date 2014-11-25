@@ -1,53 +1,53 @@
-.TH DB2SEGY 1 "February 24, 1999"
+.TH DB2SEGY 1 "October 19, 2014"
 .SH NAME
 db2segy - conversion from css3.0 traces to segy disk image
 .SH SYNOPSIS
 
-\fBdb2segy db outfile \fR [ -SU -ss subset -pf pffile -v ]
+\fBdb2segy db outfile \fR [ [-SU|-V SU|-V 0|-V 1] -ss subset -pf pffile -v -d desc]
 
 .SH DESCRIPTION
 .LP
-\fBdb2segy\fR is a fairly flexible program for producing a 
-segy tape image file from data stored in a css3.0 database.  
+\fBdb2segy\fR is a fairly flexible program for producing a
+segy tape image file from data stored in a css3.0 database.
 The output is known to be readable by ProMAX distributed through
-release 98 of Landmark Graphics, but it should work correctly 
-with any processing system with a SEGY reader that accepts 
-IEEE float data (not part of the original SEGY standard).  
-This program was built with a strong prejudice that the only 
+release 98 of Landmark Graphics, but it should work correctly
+with any processing system with a SEGY reader that accepts
+IEEE float data (not part of the original SEGY standard).
+This program was built with a strong prejudice that the only
 rational use of this converter would be to collect a group of
 traces from a database and output a suite of traces that look
 like shot gathers.   The start times of each of the
-pseudoevents assembled this way are passed to the program 
+pseudoevents assembled this way are passed to the program
 through standard input and a set of fixed length traces are
-produced with a constant number of channels per gather as 
-required by the segy standard.  
+produced with a constant number of channels per gather as
+required by the segy standard.
 .LP
 An exception to this is that one can alternatively map all data
-to look like a stacked cdp section.  In this case, the source and 
+to look like a stacked cdp section.  In this case, the source and
 receiver coordinates are set equal and individual events end up being
-set to look like single-fold, zero offset reflection data. 
+set to look like single-fold, zero offset reflection data.
 .LP
 This program has several bells and whistles controlled by the
 input parameter file.  The optional parts of this are described
 below, but one key design feature needs to be recognized here.
-The parameter file is used to specify a list of station/channel 
+The parameter file is used to specify a list of station/channel
 pairs that define the output channel order of the segy tape
 image.  Because multichannel shot data always have fixed
-numbers of channels per shot file, this is forced into the 
+numbers of channels per shot file, this is forced into the
 output by this list.  That is, each station/channel listed
-is written in the position defined by the parameter file 
+is written in the position defined by the parameter file
 (see below) with the first entry in the list being channel 1
 and the last entry in the list defining the number of channels
-per gather.  When the program actually runs station/channel 
-pairs not found in the specified time period are silently 
+per gather.  When the program actually runs station/channel
+pairs not found in the specified time period are silently
 flagged as "dead" in the SEGY headers for that channel number
-and the corresponding trace is filled with zeros.    
-A special case produces different behaviour.  
+and the corresponding trace is filled with zeros.
+A special case produces different behaviour.
 That is, some people have used this program to produce data effectively
 sorted into common receiver gathers by specifying the array consists of
 of one and only one stations.  This creates an anomaly in dealing
 with dead channels.  In this case, data for time periods when a station
-had no data are simply skipped BUT the 
+had no data are simply skipped BUT the
 field field (ffid = event number) is incremented.  Because the ffid
 field in this program is derived from the input shot list by counting
 one can then normally sort out the geometry correctly since all systems
@@ -55,72 +55,78 @@ I've ever used utilize ffid as a unique key for shot data.  A corollary of
 this for ALL uses of this program is that it is wise to use the same shot list
 for all data on a single experiment or you may have a hard time working out the geometry.
 .LP
-There are two ways to set source geometry information in the segy headers.  
-One mechanism is to use the extension "shot" table described in more detail 
+There are two ways to set source geometry information in the segy headers.
+One mechanism is to use the extension "shot" table described in more detail
 below.  For most user a more convenient method is to specify these coordinates
-as part of the input stream.  This is controlled by the input boolean 
+as part of the input stream.  This is controlled by the input boolean
 \fBinput_source_coordinates\fR in the parameter file.  When set true the program
 will assume that the input lines that drive the program are of the form:
 .nf
   time  ffid x(lon)   y(lat)   elev
 .fi
 where the time field string must NOT be specified in a format with BI
-spaces (e.g. 2009001:01:22:22.405 is acceptable  but "1/1/2009 01:22:22.405" 
-will not work).  The time string is passed directly 
+spaces (e.g. 2009001:01:22:22.405 is acceptable  but "1/1/2009 01:22:22.405"
+will not work).  The time string is passed directly
 to the str2epoch(3) procedure
 so any string (without blanks) that can be cracked by str2epoch should work.
 The ffid is used to set the field file number (ffid = fldr in Seismic Unix)
 AND the energy point number (ep in Seismic Unix).  Note this supercedes
 the counting method described above to set ffid if this format is not used.
 i.e line count is ignored when running in this mode and this value is
-used to set ffid.  In general this should make indexing easier for 
-most likely uses of this program as ffid is the lowest common 
+used to set ffid.  In general this should make indexing easier for
+most likely uses of this program as ffid is the lowest common
 demoninator in reflection data.
 .LP
-This program handles source and receiver coordinates according to the 
+This program handles source and receiver coordinates according to the
 SEGY standard, but with some limitations.  The first is you either
-get units of meter or arcseconds depending on the setting of the parameter 
-file boolean \fBuse_geo_coordinates\fR.  When this is true you will get
-coordinates in arc seconds, otherwise it will be meter or null.
-Source coordinates are taken from the site table.  If using geographc 
-coordinates the lat,lon fields are used.  If you are using meters the dnorth
-and deast fields of the site table are used.  Be warned the standard schema
-definition for Antelope for site coordinates will lead to a loss of accuracy 
-for receiver coordinates as the number of digits stored is only sufficient for 
-approximately 100 m accuracy.  If you need better resolution you will need to 
-mess with the header data yourself.  
+get units of meter, decimal degrees, or arcseconds depending on the setting of
+the parameter file boolean \fBuse_geo_coordinates\fR,
+\fBprefer_decimal_degrees\fR, and the \fB-V\fR command line option.
+When the \fBuse_geo_coordinates\fR boolean is true you will get output
+coordinates in either arc seconds (SEG-Y REV0) or decimal degrees (SEG-Y Rev1
+only, depending on the setting of \fBprefer_decimal_degrees\fR). Otherwise it
+will be meter or null.
 .LP
-Source coordinates can optionally be passed to the program through the 
-standard input stream.  This is controlled by a boolean variable 
+Source coordinates are taken from the site table.  If using geographc
+coordinates the lat,lon fields are used.  If you are using meters the dnorth
+and deast fields of the site table are used.  When using arcseconds, be warned
+the standard schema definition for Antelope for site coordinates will lead to
+a loss of accuracy for receiver coordinates as the number of digits stored is
+only sufficient for approximately 100 m accuracy.  If you need better
+resolution you will need to mess with the header data yourself.
+.LP
+Source coordinates can optionally be passed to the program through the
+standard input stream.  This is controlled by a boolean variable
 \fRinput_source_coordinates.\fR.  Fields read as x=lon and y=lat are
 blindly converted depending upon the setting of \fBuse_geo_coordinates\fR.
-When true the input coordinates are converted to arcseconds, otherwise they
-are assumed in units of meters (e.g. UTM coordinates).  
+When true the input coordinates are treated as decimal degrees and converted to
+arcseconds if necessary, otherwise they are assumed in units of meters
+(e.g. UTM coordinates).
 .LP
-The parameter \fBcoordinate_scale_factor\fR is treated as described in the 
+The parameter \fBcoordinate_scale_factor\fR is treated as described in the
 standard with some restrictions.  Specifically, it is required to be a multiplier so
 if a number smaller than one is not allowed.  Internally the standard then requires
-this number to be converted to a negative value and stored at offset 71-72 in the 
-segy header.  Thus, all coordinates stored in the header are multiplied by this 
-value.  To restore them to meters divide by this number.  To restore geographic 
-coordinates divide header values by coordinate_scale_factor*3600 to get decimal 
-degrees of longitude and latitude.  
+this number to be converted to a negative value and stored at offset 71-72 in the
+segy header.  Thus, all coordinates stored in the header are multiplied by this
+value.  To restore them to meters divide by this number.  To restore decimal
+degree coordinates from arcsecond coordinates, divide header values by
+(\fBcoordinate_scale_factor\fR * 3600).
 .LP
-\fBdb2segy\fR allows one to optionally rotate data to 
+\fBdb2segy\fR allows one to optionally rotate data to
 any specified orthonormal coordinate system.  This makes sense, of
 course, only with three component data and rational channel codes
 (e.g. EHZ, EHN, and EHE) AND when the sitechan table is complete
 and correct.  The program will almost certainly die with a diagnostic
-if you attempt to rotate data that does not include a complete 
+if you attempt to rotate data that does not include a complete
 set of three components.  Because it uses rotate_to_standard in
 the trace library it will also have problems if the input
 database has multiple channel codes for that station.  If you have
 multiple channel code data, you should subset the data first before
 running this program.  The output channel order for rotated data
 is defined in the same way as described above from an output list
-of station/channel pairs in the parameter file.  This allows 
+of station/channel pairs in the parameter file.  This allows
 an important flexibility as three component data can be output in
-station bundles of three adjacent traces or as three separate 
+station bundles of three adjacent traces or as three separate
 groupings in the output shot gather file (e.g. vertical first, followed
 by radial, followed by the transverse components).  Some important
 details related to the rotation feature are described below that are controlled
@@ -129,40 +135,52 @@ that segy was not written with three-component data in mind as no
 orientation information is stored in the trace headers.  The orientation
 mechanism used by processing systems is usually implicit and requires
 traces to be in a particular order on input. Hopefully this mechanism
-will cover all the bases. 
+will cover all the bases.
 .LP
 \fBdb2segy\fR treats data gaps in a way that needs to be recognized.
 It makes an assumption that gaps should be treated as clipped data.
-This means data in intervals flagged by the trace library routine trload_css 
+This means data in intervals flagged by the trace library routine trload_css
 as a gap will take on one of two values:  the upper or lower data limit
 defined for the original data type (see trgaps(3)).  The "upper" value is
 set if the last sample before the gap was positive, adn the "lower" value
-is used if the last sample was negative.  This algorithm may give 
-erroneous full scale transients for true data gaps not caused by 
+is used if the last sample was negative.  This algorithm may give
+erroneous full scale transients for true data gaps not caused by
 clipping.  An exception to this rule is a "gap" flagged at the front
 or end of a trace.  Because this would commonly happen with variable
 start times on different traces gaps in the front or end of a trace
-will be zeroed instead of set to full scale.  
+will be zeroed instead of set to full scale.
 .SH OPTIONS
 .IP -SU
 In this mode the reel headers will not be written and the data files
-can be read directly by Seismic Unix provided you don't mix endian
-orders of machines (i.e. SU and machine used to run db2segy need to 
-be the same byte order).  
+can be read directly by Seismic Unix. All data is output in Big-Endian format,
+regardless of the host byte order. This may be a problem if the system running
+SU cannot easily read Big-Endian data.
+This option is exclusive of the -V option.
+.IP -V SU or -V 0 or -V 1
+The -V option accepts one of three values: "SU", "0", or "1".
+"SU" is equivalent to specifying the -SU option.
+"0" outputs "classic" 1975-era SEG-Y, with some non-standard PASSCAL
+extensions. (This is the default operating mode of the program.)
+"1" outputs SEG-Y REV1 compliant output.
 .IP -ss
-This applies a the expression subset to the wfdisc table before 
+This applies a the expression subset to the wfdisc table before
 starting processing.  This can dramatically reduce run times with
 a large database because it subsets wfdisc before calling trload_css
 for each shot time listed.  This option is most useful for the
-common case of wanting to extract files as common station gathers.  
-In this case subset would be a condition like sta=~/BERG/ to 
-limit the wfdisc immediately to the station of interest 
+common case of wanting to extract files as common station gathers.
+In this case subset would be a condition like sta=~/BERG/ to
+limit the wfdisc immediately to the station of interest
 (for this example BERG).
 .IP -pf
 Alternate parameter file to use in place of db2segy.pf.
 .IP -v
 Verbose mode.  Without this option the program is totally silent
 sending only error messages to stderr.  The default is not verbose.
+.IP -d description text
+Allows optional description text to be inserted into record 1 of the textual
+file header block. It overrides the parameter \fBtext_header_description\fR in the
+parameter file. Due to the fixed-format nature of the textual header block, it
+is automatically truncated at 76 characters.
 .SH FILES
 .LP
 \fBdb2segy\fR expects to see stdin in one of two forms.
@@ -173,8 +191,8 @@ time lon(x) lat(y) depth
 .fi
 When false only the first field, the start time, is required.  If
 there is any other data on an input line it will be silently discarded
-in this mode.  
-In both cases the time field string is 
+in this mode.
+In both cases the time field string is
 passed directly to str2epoch(3) so anything str2epoch can
 crack should produce the desired results.
 If in doubt run the program in verbose mode and the times will be echoed
@@ -189,133 +207,152 @@ echoes trace channel and index number as conversion progresses.
 The output file passed as argument two will silently overwrite
 and existing file if one by the same name already exists.  This
 file is a segy tape image.  The 3200 byte EBCDIC reel header is written
-as a block of pure nulls.  The binary reel header is filled in 
-and written immediately after the EBCDIC section as required by 
-the standard.  The trace data follow.  
+as a block of pure nulls.  The binary reel header is filled in
+and written immediately after the EBCDIC section as required by
+the standard.  The trace data follow.
 .LP
-An optional extension table to css3.0 called segy1.0 can be used to 
+An optional extension table to css3.0 called segy1.0 can be used to
 set the source coordinates in the segy header.  It defines a table
 called \fBshot\fR that is used to set the source coordinate fields
-in the segy header.  The program will attempt to open this table 
+in the segy header.  The program will attempt to open this table
 ONLY when \fBinput_source_coordinates\fR is false. In that mode (false) the
 program assumes all coordinates are in a local coordinate system with units of
-km set in the dnorth and deast fields of the 
-shot and site tables.  (These are implicitly assumed to be consistent)  
-If this table is not present when running in local coordinate mode, db2segy will 
+km set in the dnorth and deast fields of the
+shot and site tables.  (These are implicitly assumed to be consistent)
+If this table is not present when running in local coordinate mode, db2segy will
 silently leave the source coordinate fields in the segy header null.
 .SH PARAMETER FILE
 .LP
 The main controlling input for this program enters through a parameter
-file.  It contains four type of parameters:  (1) basic scalar parameters
-required by the program; (2) parameters related to three-component rotation; 
-(3) output channel order definition; 
+file.  It contains five type of parameters:  (1) basic scalar parameters
+required by the program; (2) parameters related to three-component rotation;
+(3) output channel order definition;
 and (4) database
 table parameters.  The following divides the parameters this way.
 .ce
 \fIBasic Scalar Parameters\fR
 .LP
-\fBsample_rate\fR defines the fixed sample rate in sample per second.  
-All data must have the same sample rate (a SEGY limitation).  
-Any traces that do not match the sample rate defined by this 
-parameter will be skipped with an error message logged.  
+\fBsample_rate\fR defines the fixed sample rate in sample per second.
+All data must have the same sample rate (a SEGY limitation).
+Any traces that do not match the sample rate defined by this
+parameter will be skipped with an error message logged.
 .LP
-\fBtrace_length\fR  length of ALL output traces in seconds. 
+\fBtrace_length\fR  length of ALL output traces in seconds.
 .LP
 \fBmap_to_cdp\fR  Boolean variable.  When true the program sets header
 variables to make the data look like stacked cdp data instead of shot
-gathers (the default behaviour).  
+gathers (the default behaviour).
 .LP
 The boolean \fBinput_source_coordinates\fR, \fBcoordinate_scale_factor\fR,
-and \fBuse_geo_coordinates\fR 
-work together as described above.  I emphasize that when use_geo_coordinates
-is false receiver coordinates are extracted from the dnorth and deast fields 
-of the site table and written in the headers in units of meters.  
-When input_source_coordinates is true the coordinates are treated as geographic
-if use_geo_coordinates is true, but are written verbatim if this si false.  In either case
-the coordinate_scale_factor is always applied to coordinate values as specified by the 
-standard.  Note that the scale factor is always a number greater than one for this program
-and is used as a mutiplier.  Be aware that because the standard says a mutiplier should
-be specified negative this attribute (stored in byte offset 71-72 in the segy header) will
-always be negative when written by this program.
+\fBuse_geo_coordinates\fR, and \fBprefer_decimal_degrees\fR along with the
+ \fB-V\fR command-line option work together as described above.  I emphasize
+that when use_geo_coordinates is false receiver coordinates are extracted from
+the dnorth and deast fields of the site table and written in the headers in
+units of meters.
+When \fBinput_source_coordinates\fR is true the coordinates are treated as
+geographic if \fBuse_geo_coordinates\fR is true, but are written verbatim if
+this is false.
+
+The \fBcoordinate_scale_factor\fR is applied to ALL coordinate values as
+specified by the standard if \fBinput_source_coordinates\fR is true.
+A reasonable scale factor is automatically chosen if
+\fBinput_scale_coordinates\fR is false.  Note that the scale factor is always
+a number greater than one for this program and is used as a mutiplier.
+Be aware that because the standard says a mutiplier should
+be specified negative this attribute (stored in byte offset 71-72 in the SEG-Y
+trace headers) will always be negative when written by this program.
 .LP
-The boolean \fBuse_32bit_nsamp\fR can be used if very long record lengths are desired.
-The segy standard stores the number of samples field in a 16 bit integer in both 
-the reel and trace headers.  If set true, long record lengths will be handled and
-an extension field (num_samps in the PASSCAL segy extension definition), which 
-is an 32 bit integer field, is used to store nsamp.  The regular nsamp field is
-simply silently truncated using a cast to a 16 bit field.  Use this feature with
-caution. 
+For SEG-Y output versions 0 or SU, the boolean \fBuse_32bit_nsamp\fR can be
+used if very long record lengths are desired.  The segy standard stores the
+number of samples field in a 16 bit integer in both
+the reel and trace headers.  If set true, long record lengths will be handled
+and an extension field (num_samps in the PASSCAL SEG-Y extension definition),
+which is an 32 bit integer field, is used to store nsamp.  The regular nsamp
+field is simply silently truncated using a cast to a 16 bit field.  Use this
+feature with caution. Note that this option is ignored for SEG-Y Rev1 because
+the PASSCAL extension field conflicts with a new field in the Rev 1 standard.
+.LP
+The integer \fBtrace_gain_type\fR overrides the "gain type of field instruments"
+field (bytes 119-12) in the trace header. 0 = unknown; 1 = fixed gain;
+ 2 = binary; 3 = floating point; 4...N user defined.
+The default is 0 (unknown) to maintain compatibility with previous versions of
+this program. 1 (fixed) is probably a more sensible default.
+.LP
+The string \fBtext_header_description\fR controls the contents of the first
+record of the textual file header. It is automatically truncated at 76
+characters due to limitations of the file format, and is overridden by the
+\fB-d\fR command-line option.
 .ce
 \fIRotation Parameters\fR
 .LP
-\fBrotate\fR is a logical that turns the rotation feature on and 
+\fBrotate\fR is a logical that turns the rotation feature on and
 off.  If rotate is set false other rotation related commands will
 be ignored.  Note also that attempting to output rotated channels
-(see below) will, of course, either produce garbage or cause the 
-program to die.  
+(see below) will, of course, either produce garbage or cause the
+program to die.
 .LP
-\fBphi\fR and \fBtheta\fR are spherical coordinate angles that 
+\fBphi\fR and \fBtheta\fR are spherical coordinate angles that
 define how the standard E,N,Z coordinate system will be rotated
 on output (see trrotate(3) for a more extensive description.  These
 parameters are passed directly to the trrotate.)
 .ce
 \fIChannel order definition\fR
 .LP
-Channel order definitions are controlled by a &Tbl tagged with 
-the keyword "channels".  The lines below the &Tbl{ tag 
-should consist of a series of valid station channel pairs 
-(blank separated -- see example below) for the data being converted.   
+Channel order definitions are controlled by a &Tbl tagged with
+the keyword "channels".  The lines below the &Tbl{ tag
+should consist of a series of valid station channel pairs
+(blank separated -- see example below) for the data being converted.
 The data will be written in the same order as this list (top will
-be channel 1).  
+be channel 1).
 .LP
-Rotated data are handled by special unalterable channel codes.  
+Rotated data are handled by special unalterable channel codes.
 Specifically use Z, R, and T as channel codes to output vertical,
-radial, and transverse components respectively as defined by 
+radial, and transverse components respectively as defined by
 your transformation.  The definitions of these direction is,
 however, intimately related to the transformations defined in
 trrotate(3).  First, the program calls rotate_to_standard to
 produce output traces tagged with channel codes X1, X2, and
 X3.  The "standard" used is that X1 is +east, X2 is +north,
-and X3 is +up.  This transformation is essential since data 
-often have polarity differences from the standard and/or 
+and X3 is +up.  This transformation is essential since data
+often have polarity differences from the standard and/or
 simple field setup errors.   The program next calls trrotate
 using the angles phi and theta (see above).  The best way
 to think of the results is how the X1,X2, and X3 coordinate
-system would be changed if rotated by spherical coordinate 
-angles phi and theta.  At the end of that transformation 
+system would be changed if rotated by spherical coordinate
+angles phi and theta.  At the end of that transformation
 R is the transformed X1, T is the transformed X2, and
 Z is the transformed X3.
 .LP
-Note you can actually request the data transformed to 
+Note you can actually request the data transformed to
 "standard" coordinates by setting rotate to true and asking
 for channels X1, X2, and X3 instead of the original channel
-codes.    
+codes.
 .ce
 \fIDatabase Table Parameters\fR
 .LP
 \fBjoin_tables\fR is a &Tbl object that contains a list
-of database tables and the order they are to be joined 
-when the program opens the input database.    
-Two tables are absolutely required in this list -- the program 
-will die if they do not appear in the list.  They are: 
+of database tables and the order they are to be joined
+when the program opens the input database.
+Two tables are absolutely required in this list -- the program
+will die if they do not appear in the list.  They are:
 wfdisc and site.  In addition, although sitechan is not
-totally required, the program will produce garbage if 
+totally required, the program will produce garbage if
 three-component rotation is attempted and sitechan is not
 listed in this table.  Finally, note that after the receiver coordinates placed
-in the SEGY header come the dnorth, deast fields of site.    
+in the SEGY header come the dnorth, deast fields of site.
 .LP
-Most users are unlikely to need to 
+Most users are unlikely to need to
 alter the default parameter file for this list. There is one special
 add on table that is commented out in the example below.  This table
 called "shot", which is an extension to css3.0.  If the "shot" line appears
 here, db2segy looks for a database table called shot.  If it cannot
 find it defined in the schema it will be ignored.  If it is defined
-the shot table will be used to set the source coordinate information.  
+the shot table will be used to set the source coordinate information.
 Provided the table joins correctly, the only information that the
 program attempts to extract from the shot table are the dnorth,
-deast, elev, and edepth fields.  Other tables to set other 
+deast, elev, and edepth fields.  Other tables to set other
 parameters could be defined by a similar mechanism in datascope, but
-in this version only the "shot" table extension will work.  
+in this version only the "shot" table extension will work.
 .SH EXAMPLE
 .RS .2i
 .nf
@@ -325,7 +362,7 @@ rotate yes
 # This set of parameters are only hit when rotate is turned on.
 phi 80.0
 theta 0.0
-# end rotate parameters 
+# end rotate parameters
 
 #
 #  This form outputs rotated channels
@@ -366,7 +403,7 @@ channels &Tbl{
 110 T
 }
 #
-#  This is the pattern to use normal channel codes.  
+#  This is the pattern to use normal channel codes.
 #  They are commented out for this example.
 #
 #channels &Tbl{
@@ -416,55 +453,64 @@ sitechan
 origin
 #shot
 }
+# trace_gain controls the value of the "gain type of field instruments" field
+# (bytes 119-120) in the trace header.
+# 0 = unknown; 1 = fixed gain; 2 = binary; 3 = floating point; 4...N optional
+# Default is 0 (unknown) to maintain compatiblity with previous versions
+# of this program. 1 is probably a more sensible default.
+trace_gain_type 0
+text_header_description Antelope DB2SEGY
+
+pf_revision_time 1413768151
 .RE
 .fi
 .SH DIAGNOSTICS
 .LP
 Numerous diagnostics are written using the elog facility that should
-help in sorting out problems.  The list is too long to rationally 
+help in sorting out problems.  The list is too long to rationally
 repeat here.
 .SH "SEE ALSO"
 .nf
 trintro(3), trrotate(3), trload_css(3), pf(3), str2epoch(3),
- and the SEGY standard book. 
+ and the SEGY standard book.
 .fi
 .SH "BUGS AND CAVEATS"
 .IP (1)
 \fRdb2segy\fR currently does not support multiple sample rates for input.  It probably
 should have a resampling option.
-.IP (2)  
+.IP (2)
 The handling of coordinates is a far from ideal because the segy standard
 is archaic in this regard and highly inconsistent with the css3.0 database.
 This has several elements.  The handling of coordinates in local or geographic
-frames is admittedly a bit complicated.  Read above carefully, but keep in 
+frames is admittedly a bit complicated.  Read above carefully, but keep in
 mind the approach is to have the program try to decide whether it should
 be thinking local or geographic depending on the setting of the coordinate
 scale parameter.  If that parameter is 1, it assume local coordinates but if
 it is anything else it will assume we talking geographic coordinates.  Note
-there is no way to specify shot coordinates in the input stream in local 
+there is no way to specify shot coordinates in the input stream in local
 coordinates. If you need that you must use the shot table and set dnorth and
 deast consistent with dnorth and deast in the site table.  Finally, the shot
 depth is a concept totally at odds with geographic coordinates.  I compromise
 here and require that the shot elevation be specified through stdin when
-using geographic coordinates and then forcing the depth attribute to 0.  
+using geographic coordinates and then forcing the depth attribute to 0.
 If true depth is required for something like uphole times you will need
-to figure out how to insert that information by some other means. 
+to figure out how to insert that information by some other means.
 .IP (3)
 One could probably do a nifty generalization of the extended table
-mechanism I used for the "shot" table that would allow a more 
-general approach.  That is, one could define a mapping of 
-header variables from a definition of a table name and the 
-name of the attribute.  This could be done by specifying a 
-a table name, table attribute name, a byte offset for the 
+mechanism I used for the "shot" table that would allow a more
+general approach.  That is, one could define a mapping of
+header variables from a definition of a table name and the
+name of the attribute.  This could be done by specifying a
+a table name, table attribute name, a byte offset for the
 corresponding header entry, and a data type for the header value.
 I didn't judge this worth the effort, but present is as a challenge
-to other users.  
+to other users.
 .IP (4)
 The 32 bit number of samples feature is completely untested.  The choice
 of where to insert this field in the extension portion of the header was
-an arbitrary choice made because this program was centered around an 
-include file originally supplied by IRIS-PASSCAL. 
+an arbitrary choice made because this program was centered around an
+include file originally supplied by IRIS-PASSCAL.
 .SH AUTHOR
 .LP
-Gary L. Pavlis
-.\" $Id$
+Gary L. Pavlis and Geoffrey A. Davis
+.\"

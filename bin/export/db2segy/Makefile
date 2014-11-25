@@ -5,10 +5,10 @@ PF=db2segy.pf
 DATADIR=schemas
 DATA=segy1.0
 
-ldlibs=-lgenloc $(PERFLIBS) $(TRLIBS) $(F77LIBS)
+ldlibs=$(TRLIBS) $(F77LIBS)
 
-include $(ANTELOPEMAKE)  	
-DIRS=			
+include $(ANTELOPEMAKE)
+DIRS=
 OBJS= db2segy.o
 CC=cc
 $(BIN):$(OBJS)

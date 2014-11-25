@@ -5,10 +5,10 @@ rotate yes
 # This set of parameters are only hit when rotate is turned on.
 phi 80.0
 theta 0.0
-# end rotate parameters 
+# end rotate parameters
 
 #
-#  This is the pattern to use normal channel codes.  
+#  This is the pattern to use normal channel codes.
 #  They are commented out for this example.
 #
 #channels &Tbl{
@@ -96,10 +96,29 @@ sitechan
 origin
 #shot
 }
-#
-# New features added in 2009
-#
 use_32bit_nsamp false
 input_source_coordinates false
+
+# coordinate_scale_factor only used if input_source_coordinates is true
+# Set this to at least 10000 if using prefer_decimal_degrees below in order
+# to get the full resolution of the CSS3.0 lat and lon fields
+# Set it to 1 when using arcseconds
 coordinate_scale_factor 3600
 use_geo_coordinates true
+
+# If true, source and receiver coordinates are output in decimal degrees
+# (SEG-Y Rev1 only). Has no effect for -V SU or -V 0 modes
+# If false, source and receiver coordinates are output in arcseconds.
+# Be sure to set coordinate_scale_factor to at least 10000 if using decimal
+# degrees
+prefer_decimal_degrees false
+
+# trace_gain controls the value of the "gain type of field instruments" field
+# (bytes 119-120) in the trace header.
+# 0 = unknown; 1 = fixed gain; 2 = binary; 3 = floating point; 4...N optional
+# Default is 0 (unknown) to maintain compatiblity with previous versions
+# of this program. 1 is probably a more sensible default.
+trace_gain_type 0
+text_header_description Antelope DB2SEGY
+
+pf_revision_time 1414000191
