@@ -1,0 +1,22 @@
+earth_radius            6371.0
+tt_map_dir              /home/mcwhite/data/tt_maps
+frechet.in              ${ANTELOPE}/data/data/fm3d/frechet.in
+gridsave.in             ${ANTELOPE}/data/data/fm3d/gridsave.in
+interfaces.in           ${ANTELOPE}/data/data/fm3d/interfaces.in
+mode_set.in             ${ANTELOPE}/data/data/fm3d/mode_set.in
+receivers.in            ${ANTELOPE}/data/data/fm3d/receivers.in
+vgrids.in               ${ANTELOPE}/data/data/fm3d/vgrids.in
+
+propagation_grid &Arr{
+    minlat      32.5
+    minlon      -117.80
+    minr        6326.0
+    nlat        76
+    nlon        73
+    nr          25
+    dlat        0.0273
+    dlon        0.0327
+    dr          2.0
+    refinement_factor   5
+    ncells      10
+}

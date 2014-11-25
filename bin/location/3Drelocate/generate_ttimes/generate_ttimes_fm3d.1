@@ -1,0 +1,53 @@
+.TH GENERATE_TTIMES_FM3D 1
+.SH NAME
+generate_ttimes_fm3d - generate travel-time files using 3D velocity model
+.SH SYNOPSIS
+.nf
+generate_ttimes_fm3d [-h] [-p \fIpf\fP] [-s \fIsubset\fP] [-o \fIoutput\fP] \fIdb\fR
+.fi
+.SH DESCRIPTION
+\fBgenerate_ttimes_fm3d\fR calculates theoretical node-to-station
+travel-times for a 3D grid of nodes. Travel-times are modelled using 3D
+Fast Marching Code (FM3D) written by Nicholas Rawlinson
+(http://rses.anu.edu.au/seismology/soft/fmmcode/) which accounts for 3D
+velocity heterogeneities. Travel-times are output into station files suitable
+for use in \fB3Drelocate\fR.
+
+.SH OPTIONS
+.IP "-h"
+Display help info.
+.IP "-p pf"
+Specify an alternate parameter file; the default is 3Drelocate.pf.
+.IP "-s subset"
+Subset of stations for which to generate travel-time files.
+.IP "-o output"
+Output destination.
+.SH FILES
+\fBgenerate_ttimes_fm3d\fR outputs 3 files for each station - an ascii
+file (%STA.traveltime) containing header information (grid parameters)
+and node-to-station travel-times, an ascii file (hdr.%STA.traveltime)
+containing just the header information and a binary file
+(bin.%STA.traveltime) containing node-to-station travel times.
+.SH PARAMETER FILE
+This parameter file is the same parameter file used by \fB3Drelocate\fR. See
+the man page for \fB3Drelocate\fR for information on the parameter file.
+.SH EXAMPLE
+sh$ \fBgenerate_ttimes_fm3d -s 'lat > 33' -o ~/data/my_ttimes anza_2013\fR
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+3Drelocate(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The program will not run if the output directory already exists. An
+error message will be displayed and the program will exit.
+.SH AUTHOR
+Malcolm White - UCSD
+
+Thank you to Nicholas Rawlinson (University of Aberdeen), whose code is
+being used to calculate travel-times.

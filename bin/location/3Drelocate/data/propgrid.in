@@ -1,0 +1,69 @@
+   25           76         73          # of propagation grid points in r, lat and long         
+      2.0         0.0273        0.0327         grid intervals in r (km) lat,long (deg)
+       3.000        32.5   -117.80       origin of the grid height (km),lat,long (deg)
+          5            10                      refinement factor and # of propgrid cells in refined source grid 
+          
+          
+          
+             51           232         243          # of propagation grid points in r, lat and long         
+   1.0         0.008        0.008         grid intervals in r (km) lat,long (deg)
+ 0.000        32.56129   -117.90001       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid 
+
+#### ORIGINAL
+
+
+
+   21           41          41          # of propagation grid points in r, lat and long         
+   50.0         0.50        0.50         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid 
+
+
+
+
+##### copy one set of the lines below to the top of the file for the example  with the
+##### subducting slab model (interfaces and velocities generated with make_cmplayers.f90
+##### and make_cmpvelocities.f90)
+
+
+   26           51         51          # of propagation grid points in r, lat and long         
+   2.0         0.02        0.02         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid
+
+   51           101         101          # of propagation grid points in r, lat and long         
+   1.0         0.01        0.01         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid  
+
+   101           201         201          # of propagation grid points in r, lat and long         
+   0.5         0.005        0.005         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid  
+
+
+##### copy one set of the lines below to the top of the file for the example  with the
+##### ak135 model (interfaces and velocities generated with make_aklayers.f90
+##### and make_akvelP.f90)
+
+   81           161         161          # of propagation grid points in r, lat and long         
+   12.5         0.125       0.125         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid 
+
+   41           81          81          # of propagation grid points in r, lat and long         
+   25.0         0.25        0.25         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid  
+
+
+##### copy the lines below to the top of the file for a simple example
+##### generated with files make_interfaces.f90 and make_vgrids.f90
+##### for a simple test of the frechet derivatives and as an example with
+##### a very short execution time
+
+   21           41          41          # of propagation grid points in r, lat and long         
+   50.0         0.50        0.50         grid intervals in r (km) lat,long (deg)
+   0.000        0.000       0.000       origin of the grid height (km),lat,long (deg)
+   5            10                      refinement factor and # of propgrid cells in refined source grid 

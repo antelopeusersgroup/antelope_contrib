@@ -1,0 +1,31 @@
+F   file_mode
+T   no_pp_mode
+F   parallel_mode
+F   display_mode
+F   save_rays_mode
+T   save_timefields_mode
+
+
+file_mode : store all computed time fields on disk, not in memory
+            this saves memory in case many sources have to be computed
+
+no_pp_mode : do ray tracing immediately after FMM for each source,
+             and deallocate all memory related to the source before
+             starting on the next.
+             This excludes the computation of late reflections because
+             this requires the travel time fields of two sources to be 
+             available at the same time
+
+parallel_mode : set if sources are distributed over different machines.
+                A script is required to copy over the required input files
+                to each machine and start up instances of the fm3d code.
+
+display_mode : generate OpenDX visualization files 
+
+save_rays_mode : save the ray paths in the file rays.dat
+
+save_timefields_mode : save the arrival times on the nodes of the regular 
+                       grid in arrtimes.dat. For paths involving interface
+                       crossings there will always be ambiguities. For now
+                       we take the minimum arrival time at each node from
+                       all timefields crossing the region.
