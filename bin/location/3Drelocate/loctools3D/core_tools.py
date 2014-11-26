@@ -19,6 +19,43 @@ from numpy import append,\
 
 logger = logging.getLogger(__name__)
 
+class LinearIndex:
+    '''
+    A class to convert between 1D and 3D indices. The z-index varies
+    fastest, y-index second fastest and x-index slowest.
+    '''
+    def __init__(self, nx, ny, nz):
+        import numpy as np
+        self.index_1D = np.zeros(nx * ny * nz, dtype=np.ndarray)
+        self.index_3D = np.zeros([nx, ny, nz], dtype=np.int)
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        i, x = 0, 0
+        while x < nx:
+            y = 0
+            while y < ny:
+                z = 0
+                while z < nz:
+                    self.index_1D[i] = [x, y, z]
+                    self.index_3D[x, y, z] = i
+                    i += 1
+                    z += 1
+                y += 1
+            x += 1
+
+    def convert_to_1D(self, x, y, z):
+        '''
+        Given a 3D index, return the corresponding 1D index.
+        '''
+        return self.index_3D[x, y, z]
+
+    def convert_to_3D(self, i):
+        '''
+        Given a 1D index, return the corresponding 3D index.
+        '''
+        return self.index_1D[i]
+
 def parse_cfg(config_file):
     '''
     Parse .cfg configuration file and return dictionary of contents.
@@ -250,10 +287,9 @@ class Locator:
         Locate an earthquake based on the arrivals in event, traveltime
         files which are already saved.
         '''
-        from loctools3D.cython_module import grid_search_abs, LinearIndex
         prop_params = self.propagation_grid
-        earth_rad = self.misc['earth_radius']
-        tt_map_dir = self.misc['tt_map_dir']
+        earth_rad = self.earth_radius
+        tt_map_dir = self.tt_map_dir
 #Get Propagation grid parameters
         minlat = prop_params['minlat']
         nlat = prop_params['nlat']
@@ -284,7 +320,7 @@ class Locator:
             if arrival.phase is 'P':
 #Make sure the needed travel-time file exist
                 if not os.path.isfile('%s%s.traveltime'
-                        % (self.misc['tt_map_dir'], arrival.sta)):
+                        % (self.tt_map_dir, arrival.sta)):
                     logger.info("No travel time file for station %s, omitting from "\
                             "inversion." % arrival.sta)
                     continue
@@ -364,7 +400,8 @@ class Locator:
                              evid=event.evid,
                              nass=len(event.arrivals),
                              ndef=len(arrival_times))
-        cfg_dict = {'misc': self.misc,\
+        cfg_dict = {'earth_radius': earth_rad,\
+                    'tt_map_dir': tt_map_dir,\
                     'propagation_grid': self.propagation_grid}
         logger.debug('[evid: %d] Updating predicted arrival times.' %\
                 event.evid)
@@ -1191,11 +1228,10 @@ class Origin():
         S None
         P 1275439333.59
         '''
-        from loctools3D.cython_module import LinearIndex
         #Get Propagation grid paramters
-        ttdir = cfg_dict['misc']['tt_map_dir']
+        ttdir = cfg_dict['tt_map_dir']
         prop_params = cfg_dict['propagation_grid']
-        earth_rad = cfg_dict['misc']['earth_radius']
+        earth_rad = cfg_dict['earth_radius']
         nlat = prop_params['nlat']
         nlon = prop_params['nlon']
         nr = prop_params['nr']
@@ -1302,3 +1338,39 @@ class Arrival():
         ret += 'tt_calc:\t\t%s\n' % self.tt_calc
         ret += 'predarr:\t\t%s\n' % self.predarr
         return ret
+
+def grid_search_abs(qx, qy, qz, arrivals, pred_tts, linear_index):
+    '''
+    Find the minimum of the absolute value of the calculated origin
+    time following Ben-Zion et al., 1992 (JGR)
+    '''
+    best_misfit = float('inf')
+    nx = len(qx)
+    ny = len(qy)
+    nz = len(qz)
+    stas = [arrival.sta for arrival in arrivals]
+    i = 0
+    while i < nx:
+        j = 0
+        while j < ny:
+            k = 0
+            while k < nz:
+                index = linear_index.convert_to_1D(i, j, k)
+                if min([pred_tts[sta][index] for sta in pred_tts]) < 0:
+                    k += 1
+                    continue
+                estimated_origin_times = [arrival.time -\
+                        pred_tts[arrival.sta][index] for arrival in arrivals]
+                origin_time = sum(estimated_origin_times) /\
+                        len(estimated_origin_times)
+                residuals = [estimated_origin_time - origin_time for\
+                        estimated_origin_time in estimated_origin_times]
+                misfit = sum([abs(residual) for residual in residuals])
+                if misfit < best_misfit:
+                    best_misfit = misfit
+                    x, y, z = qx[i], qy[j], qz[k]
+                    best_origin_time = origin_time
+                k += 1
+            j += 1
+        i += 1
+    return x, y, z, best_origin_time, best_misfit
