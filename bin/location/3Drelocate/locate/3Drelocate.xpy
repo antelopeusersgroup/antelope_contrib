@@ -63,7 +63,7 @@ def _main():
                 (prop_grid['minlat'],
                  prop_grid['minlat'] + (prop_grid['nlat'] - 1) * prop_grid['dlat'],
                  prop_grid['minlon'],
-                 prop_grid['minlon'] + (prop_grid['nlon'] - 1) * prop_grid['dlon'])
+                 prop_grid['minlon'] + (prop_grid['nlon'] - 1) * prop_grid['dlon']))
         view.free()
         view = tmp
         if args.subset:
