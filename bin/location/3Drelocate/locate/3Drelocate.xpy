@@ -53,6 +53,7 @@ def _main():
     #pfile_2_cfg(args.pfile, '3Dreloc')
     #cfg_dict = verify_config_file(parse_cfg('3Dreloc.cfg'))
     cfg_dict = _parse_pfile(args.pfile)
+    print type(cfg_dict)
     prop_grid = cfg_dict['propagation_grid']
     locator = Locator(cfg_dict)
     with closing(dbopen(args.db, 'r+')) as db:
@@ -120,13 +121,13 @@ def _parse_pfile(pfile):
             logger.error('Parameter file %s does not exist. Please check and '\
                     'try again.' % pfile)
             sys.exit(-1)
-        pfile = pfin(pfile)
+        pfile = pfin(pfile).pf2dict()
     else:
-        pfile = pfread('3Drelocate')
+        pfile = pfread('3Drelocate').pf2dict()
     return _eval_pfile(pfile)
 
 def _eval_pfile(pfile):
-    for key in pfile.keys():
+    for key in pfile:
         if isinstance(pfile[key], dict):
             _eval_pfile(pfile[key])
         else:
