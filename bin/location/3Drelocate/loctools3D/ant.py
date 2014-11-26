@@ -171,7 +171,7 @@ def get_null_value(table, field):
 
 def create_event_list(view):
     '''
-    Create and return a list of anf.loctools3D.core.Event objects based on
+    Create and return a list of loctools3D.core_tools.Event objects based on
     a CSS3.0 database.
 
     Arguments:
@@ -179,7 +179,7 @@ def create_event_list(view):
     of the Event table of the CSS3.0 database schema.
 
     Return Values:
-    A list of anf.loctools3D.core.Event objects.
+    A list of loctools3D.core_tools.Event objects.
 
     Behaviour:
     This method does NOT open or close the database passed in.
@@ -193,7 +193,7 @@ def create_event_list(view):
 
     In [4]: from antelope.datascope import closing, dbopen
 
-    In [5]: from anf.loctools3D.ant import create_event_list
+    In [5]: from loctools3D.ant import create_event_list
 
     In [6]: with closing(dbopen('/Users/mcwhite/staging/dbs/June2010/June2010',
                                 'r')) as db:
@@ -208,7 +208,7 @@ def create_event_list(view):
     202551 ANF:vernon
     202553 ANF:mabibbins
     '''
-    from anf.loctools3D.core import Event, Arrival
+    from loctools3D.core_tools import Event, Arrival
     event_list = []
     for record1 in view.iter_record():
         evid, evname, prefor, auth, commid, lddate = record1.getv('evid',
@@ -296,14 +296,14 @@ def create_event_list(view):
 
 def create_station_list(view):
     '''
-    Create and return a list of anf.loctools3D.core.Station objects.
+    Create and return a list of loctools3D.core_tools.Station objects.
 
     Arguments:
     view - A datascope database pointer to a (potentially subsetted) view
     of the Site table from the CSS3.0 database schema.
 
     Return Values:
-    A list of anf.loctools3D.core.Station objects.
+    A list of loctools3D.core_tools.Station objects.
 
     Behaviour:
     This method does NOT open or close the database passed in.
@@ -317,7 +317,7 @@ def create_station_list(view):
 
     In [4]: from antelope.datascope import closing, dbopen
 
-    In [5]: from anf.loctools3D.ant import create_station_list
+    In [5]: from loctools3D.ant import create_station_list
 
     In [6]: with closing(dbopen('/Users/mcwhite/staging/dbs/June2010/June2010',
                                 'r')) as db:
@@ -353,7 +353,7 @@ def create_station_list(view):
     ...
     ...
     '''
-    from anf.loctools3D.core import Station
+    from loctools3D.core_tools import Station
     view = view.sort('sta', unique=True)
     station_list = []
     for record in view.iter_record():
@@ -363,10 +363,10 @@ def create_station_list(view):
 
 def write_origin(origin, dbout):
     '''
-    Write an anf.loctools3D.core.Origin object to an output databse.
+    Write an loctools3D.core_tools.Origin object to an output databse.
 
     Arguments:
-    origin - An anf.loctools3D.core.Origin object to be written out.
+    origin - An loctools3D.core_tools.Origin object to be written out.
     dbout - A datascope database pointer to an open output database.
 
     Returns:
@@ -391,9 +391,9 @@ def write_origin(origin, dbout):
 
     In [4]: from antelope.datascope import closing, dbopen
 
-    In [5]: from anf.loctools3D.core import Origin, Arrival
+    In [5]: from loctools3D.core_tools import Origin, Arrival
 
-    In [6]: from anf.loctools3D.ant import write_origin
+    In [6]: from loctools3D.ant import write_origin
 
     In [7]: arrivals = []
 
@@ -530,9 +530,9 @@ def map_null_values(table, obj):
 
     In [4]: from antelope.datascope import closing, dbopen
 
-    In [5]: from anf.loctools3D.core import Origin
+    In [5]: from loctools3D.core_tools import Origin
 
-    In [6]: from anf.loctools3D.ant import map_null_values
+    In [6]: from loctools3D.ant import map_null_values
 
     In [7]: origin = Origin(48.4222, -123.3657, 35.0, 1267390800.000, 'white')
 
@@ -632,7 +632,7 @@ def pfile_2_cfg(pfile, config_file):
     file.
 
     Example:
-    In [1]: from anf.loctools3D.ant import pfile_2_cfg
+    In [1]: from loctools3D.ant import pfile_2_cfg
 
     In [2]: pfile_2_cfg(None, 'test_pfile_2_cfg')
     Out[2]: 0

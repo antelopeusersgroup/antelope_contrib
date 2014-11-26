@@ -7,7 +7,7 @@ def _configure_logging(logfile, level=None):
     else:
         level = logging.INFO
     for name in (__name__,
-                 'loctools3D.core',
+                 'loctools3D.core_tools',
                  'loctools3D.ant',
                  'loctools3D.scec'):
         logger = logging.getLogger(name)
@@ -38,7 +38,7 @@ def _main():
     from loctools3D.ant import pfile_2_cfg,\
                                    create_event_list,\
                                    write_origin
-    from loctools3D.core import Locator,\
+    from loctools3D.core_tools import Locator,\
                                     parse_cfg,\
                                     verify_config_file
 

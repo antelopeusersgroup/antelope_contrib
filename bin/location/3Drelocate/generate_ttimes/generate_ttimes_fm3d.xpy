@@ -2,7 +2,7 @@ import logging
 import time
 import subprocess
 import shutil
-from loctools3D.core import Station, eval_dict
+from loctools3D.core_tools import Station, eval_dict
 from math import pi
 
 tt_calculator = 'fm3d'
@@ -16,7 +16,7 @@ def _configure_logging(logfile='generate_ttimes_fm3d.log', level=None):
     else:
         level = logging.INFO
     for name in (__name__,
-                 'loctools3D.core'):
+                 'loctools3D.core_tools'):
         logger = logging.getLogger(name)
         logger.setLevel(level)
         if level == logging.DEBUG:
