@@ -460,7 +460,7 @@ def write_origin(origin, dbout):
                     ('commid', origin.commid))
     tbl_event = dbout.schema_tables['event']
     tbl_event.record = tbl_event.find('evid == %d' % origin.evid)
-    tbl_event.putv(('prefor', origin.orid))
+    #tbl_event.putv(('prefor', origin.orid))
     tbl_assoc = dbout.schema_tables['assoc']
     tbl_predarr = dbout.schema_tables['predarr']
     tbl_site = dbout.schema_tables['site']
