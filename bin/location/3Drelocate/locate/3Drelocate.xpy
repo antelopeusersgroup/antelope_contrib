@@ -50,13 +50,24 @@ def _main():
         logging_level = None
     _configure_logging(args.logfile, level=logging_level)
     logger = getLogger(__name__)
-    pfile_2_cfg(args.pfile, '3Dreloc')
-    cfg_dict = verify_config_file(parse_cfg('3Dreloc.cfg'))
+    #pfile_2_cfg(args.pfile, '3Dreloc')
+    #cfg_dict = verify_config_file(parse_cfg('3Dreloc.cfg'))
+    cfg_dict = _parse_pfile(args.pfile)
+    prop_grid = cfg_dict['propagation_grid']
     locator = Locator(cfg_dict)
     with closing(dbopen(args.db, 'r+')) as db:
         tbl_event = db.schema_tables['event']
+        view = tbl_event.join('origin')
+#Make sure all events are within boundaries of propagation grid
+        tmp = view.subset('lat > %f && lat < %f && lon > %f && lon < %f' %\
+                (prop_grid['minlat'],
+                 prop_grid['minlat'] + (prop_grid['nlat'] - 1) * prop_grid['dlat'],
+                 prop_grid['minlon'],
+                 prop_grid['minlon'] + (prop_grid['nlon'] - 1) * prop_grid['dlon'])
+        view.free()
+        view = tmp
         if args.subset:
-            view = tbl_event.join('origin')
+            #view = tbl_event.join('origin')
             tmp = view.subset(args.subset)
             view.free()
             view = tmp
@@ -98,6 +109,34 @@ def _parse_command_line():
         if os.path.splitext(args.logfile)[1] != '.log':
             logfile = '%s.log' % args.logfile
     return args
+
+def _parse_pfile(pfile):
+    from antelope.stock import pfin, pfread
+    from os.path import splitext, isfile
+    if pfile:
+        if splitext(pfile)[1] != '.pf':
+            pfile = '%s.pf' % pfile
+        if not isfile(pfile):
+            logger.error('Parameter file %s does not exist. Please check and '\
+                    'try again.' % pfile)
+            sys.exit(-1)
+        pfile = pfin(pfile)
+    else:
+        pfile = pfread('3Drelocate')
+    return _eval_pfile(pfile)
+
+def _eval_pfile(pfile):
+    for key in pfile.keys():
+        if isinstance(pfile[key], dict):
+            _eval_pfile(pfile[key])
+        else:
+            if key in locals():
+                continue
+            try:
+                pfile[key] = eval(pfile[key])
+            except (NameError, SyntaxError, TypeError):
+                pass
+    return pfile
 
 if __name__ == '__main__': sys.exit(_main())
 else: raise ImportError

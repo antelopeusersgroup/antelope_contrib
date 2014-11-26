@@ -7,24 +7,13 @@
 3Drelocate [-h] [-v]  [-p \fIpf\fP] [-s \fIsubset\fP] [-l \fIlogfile\fP] db
 .fi
 .SH DESCRIPTION
-#
-# Here you put the complete description. Use .SS for subsections, .LP
-# for paragraphs.
-# The names of programs and command options must be in bold. 
-# The names of parameters and arguments should be in italics.
-
-# add references to pdf documents, graphics and web pages using the notation:
 \fB3Drelocate\fR relocates events by minimizing travel-time residuals between
 observations and predicted arrival times. This piece of software is designed
 to work in tandem with output travel-time files from \fBgenerate_ttimes_fm3d\fR
-which allows for 3D velocity heterogeneities. The location algorithm first
-performs a grid search and then does a cool sub-grid search that needs equations
-to be explained...
+which allows for 3D velocity heterogeneities. Travel-time files generated using
+\fBgenerate_ttimes_fm3d\fR are linked to \fB3Drelocate\fR via the
+\fItt_map_dir\fR parameter.
 .SH OPTIONS
-#
-# Options in bold. Describe options from \fBSYNOPSYS\fR above in fully
-# indented paragraphs, preceded by the option.
-#
 .IP "-h"
 Display help info.
 .IP "-p pf"
