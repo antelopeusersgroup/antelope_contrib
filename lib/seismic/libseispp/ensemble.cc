@@ -1,7 +1,9 @@
 #include <algorithm>
 #include "SeisppKeywords.h"
 #include "ensemble.h"
+#ifndef NO_ANTELOPE
 #include "tr.h"
+#endif
 #include "seispp.h"
 namespace SEISPP {
 using namespace std;
@@ -719,6 +721,19 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 
 	} catch (...) { throw;};
 }
+ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& dbhi,
+	TimeWindow twin,StationChannelMap& chanmap)
+{
+    try{
+        TimeSeriesEnsemble rawdata=TimeSeriesEnsemble(dbhi,twin,
+                "none","none",true,true,false);
+        /*This will copy the ensemble metadata */
+        this->Metadata::operator=(rawdata);
+        this->member.reserve(rawdata.member.size());
+        BundleChannels(rawdata,*this,chanmap);
+    }catch(...){throw;};
+}
+
 #endif
 //copy constructor 
 ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tceold)
@@ -804,6 +819,7 @@ double PeakAmplitude(ThreeComponentSeismogram *p)
 	amp=max_element(ampvec.begin(),ampvec.end());
 	return(*amp);
 }
+#ifndef NO_ANTELOPE
 double PeakAmplitude(ComplexTimeSeries *p)
 {
 	if(!(p->live) || ((p->ns)<=0)) return(0.0);
@@ -821,6 +837,7 @@ double PeakAmplitude(ComplexTimeSeries *p)
 	amp=max_element(ampvec.begin(),ampvec.end());
 	return(*amp);
 }
+#endif
 void ScaleMember(TimeSeries *p,double scale)
 {
 	if(!(p->live) || ((p->ns)<=0)) return;
@@ -838,6 +855,7 @@ void ScaleMember(ThreeComponentSeismogram *p,double scale)
 	// Using the blas for efficiency
 	dscal(size,scale,p->u.get_address(0,0),1);
 }
+#ifndef NO_ANTELOPE
 void ScaleMember(ComplexTimeSeries *p,double scale)
 {
 	if(!(p->live) || ((p->ns)<=0)) return;
@@ -850,4 +868,5 @@ void ScaleMember(ComplexTimeSeries *p,double scale)
 		*siter *= scale;
 
 }
+#endif
 } // Termination of namespace SEISPP definitions
