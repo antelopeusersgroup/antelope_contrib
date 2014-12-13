@@ -429,6 +429,11 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				trattributes.put("sta_lat",lat);
 				trattributes.put("sta_lon",lon);
 				trattributes.put("sta_elev",elev);
+                                /* Post with these names for css 
+                                   namespace compatibility*/
+				trattributes.put("site.lat",lat);
+				trattributes.put("site.lon",lon);
+				trattributes.put("site.elev",elev);
 				trattributes.put("dnorth",dnorth);
 				trattributes.put("deast",deast);
 				trattributes.put("refsta",refsta);
