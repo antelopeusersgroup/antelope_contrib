@@ -360,7 +360,7 @@ void save_metadata_for_object(Metadata& md,
 	call trputwf to save data
  
 */
-int dbsave(TimeSeries& ts, 
+long dbsave(TimeSeries& ts, 
 	Dbptr db,
 		string table, 
 			MetadataList& mdl, 
@@ -484,7 +484,7 @@ Author:  G Pavlis
 Written:  summer 2004
  
 */
-int dbsave(ThreeComponentSeismogram& tcs, 
+long dbsave(ThreeComponentSeismogram& tcs, 
 	Dbptr db,
 		string table, 
 			MetadataList& mdl, 
@@ -536,7 +536,7 @@ int dbsave(ThreeComponentSeismogram& tcs,
 // the dmatrix are in FORTRAN order with components of 
 // the seismogram in row order.  (i.e. data are multiplexed
 // in the vector sequence stored in output)  
-int dbsave(ThreeComponentSeismogram& tcs, 
+long dbsave(ThreeComponentSeismogram& tcs, 
 	Dbptr db,
 		string table, 
 			MetadataList& mdl, 
@@ -546,10 +546,10 @@ int dbsave(ThreeComponentSeismogram& tcs,
 	string field_name;
 
 	if(!tcs.live) return(-1);  // return immediately if this is marked dead
-	if(table=="wfdisc")
+	if(table!="wfprocess")
 		throw SeisppError(string("dbsave:  Using wrong dbsave function ")
 			+string("for ThreeComponentSeismogram object.\n")
-			+string("Cannot save to wfdisc with this function.\n"));
+			+string("Can only save to wfprocess with this function.\n"));
 	
 	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
 	recnumber = dbaddnull(db);
@@ -606,13 +606,65 @@ int dbsave(ThreeComponentSeismogram& tcs,
 		throw serr;
 	}
 }
+long dbsave_oriented(ThreeComponentSeismogram& tcs, 
+	Dbptr db,
+		string table, 
+			MetadataList& mdl, 
+				AttributeMap& am)
+{
+    const string base_error("dbsave_oriented:  ");
+    try{
+        long rec;
+        rec=dbsave(tcs,db,table,mdl,am);
+        db.record=rec;
+        /* We need pwfid as key for this table */
+        long pwfid;
+        int retcode;
+        retcode=dbgetv(db,0,"pwfid",&pwfid,NULL);
+        if(retcode==dbINVALID)
+            throw SeisppError(base_error
+              + "dbgetv failed trying to extract pwfid from wfprocess table\n"
+              + "Orientation data will not be saved");
+        db=dblookup(db,0,const_cast<char *>("tmatrix"),0,0);
+        if(db.table==dbINVALID)
+            throw SeisppError(base_error
+                    + "extension table, tmatrix, is not installed");
+        long icard,iortho;
+        if(tcs.components_are_cardinal)
+            icard=1;
+        else
+            icard=0;
+        if(tcs.components_are_orthogonal)
+            iortho=1;
+        else
+            iortho=0;
+        retcode=dbaddv(db,0,"U11",tcs.tmatrix[0][0],
+                "U21",tcs.tmatrix[1][0],
+                "U31",tcs.tmatrix[1][0],
+                "U21",tcs.tmatrix[1][0],
+                "U22",tcs.tmatrix[1][0],
+                "U23",tcs.tmatrix[1][0],
+                "U31",tcs.tmatrix[1][0],
+                "U32",tcs.tmatrix[1][0],
+                "U33",tcs.tmatrix[1][0],
+                "pwfid",pwfid,
+                "cardinal",icard,
+                "ortho",iortho,
+                NULL);
+        if(retcode==dbINVALID)
+            throw SeisppError(base_error
+                    + "dbaddv failed attempting to save to tmatrix table");
+        return(rec);
+    }catch(...){throw;};
+}
+
 // Similar to above for ComplexTimeSeries object.  
 // Behaves the same, but uses a 2xns dmatrix to
 // which complex numbers are copied (real in row
 // 1, imag in row 2).
 
 
-int dbsave(ComplexTimeSeries& tcs, 
+long dbsave(ComplexTimeSeries& tcs, 
 	Dbptr db,
 		string table, 
 			MetadataList& mdl, 

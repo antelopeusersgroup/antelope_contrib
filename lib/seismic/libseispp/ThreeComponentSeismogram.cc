@@ -426,23 +426,51 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		// stored as dmatrix object binary form
 	      try {
 		Metadata md(dbh,md_to_extract,am);
+                this->Metadata::operator=(md);
+                /*  The above trick replaces this older code 
 		copy_selected_metadata(md,
 			dynamic_cast<Metadata &>(*this),md_to_extract);
-		// In this situation we have to load the definition of the
-		// transformation matrix into the md object
-		// We must assume the data are externally defined in cardinal coordinates
-		this->put("U11",1.0);
-		this->put("U22",1.0);
-		this->put("U33",1.0);
-		this->put("U12",0.0);
-		this->put("U13",0.0);
-		this->put("U21",0.0);
-		this->put("U23",0.0);
-		this->put("U31",0.0);
-		this->put("U32",0.0);
-		for(i=0;i<3;++i)
-			for(j=0;j<3;++j) tmatrix[i][j]=0.0;
-		for(i=0;i<3;++i) tmatrix[i][i]=1.0;
+                        */
+                /* Database extensions make it possible to store 
+                   orientation matrix data in the db.   The approach
+                   used here that uses a exception handler is not ideal, 
+                   but useful for backward compatibility.  The idea is 
+                   that if any of the transformation matrix component
+                   get_double methods fail we assume the data are
+                   in cardinal.  This is done silently, which is 
+                   intrinsically error prone */
+                try {
+                    tmatrix[0][0]=this->get_double("U11");
+                    tmatrix[1][0]=this->get_double("U21");
+                    tmatrix[2][0]=this->get_double("U31");
+                    tmatrix[0][1]=this->get_double("U12");
+                    tmatrix[1][1]=this->get_double("U22");
+                    tmatrix[2][1]=this->get_double("U32");
+                    tmatrix[0][2]=this->get_double("U13");
+                    tmatrix[1][2]=this->get_double("U23");
+                    tmatrix[2][2]=this->get_double("U33");
+                    /* In this situation we assume general coordinates*/
+		    components_are_cardinal=false;
+		    components_are_orthogonal=false;
+                }catch(SeisppError& serr)
+                {
+                    /* In this situation we quietly assume the data 
+                       are cardinal */
+                   	this->put("U11",1.0);
+                   	this->put("U22",1.0);
+                   	this->put("U33",1.0);
+                   	this->put("U12",0.0);
+                   	this->put("U13",0.0);
+                   	this->put("U21",0.0);
+                   	this->put("U23",0.0);
+                   	this->put("U31",0.0);
+                   	this->put("U32",0.0);
+                   	for(i=0;i<3;++i)
+                   		for(j=0;j<3;++j) tmatrix[i][j]=0.0;
+                   	for(i=0;i<3;++i) tmatrix[i][i]=1.0;
+                        components_are_cardinal=true;
+                        components_are_orthogonal=true;
+                }
 		ns = md.get_int("nsamp");
 		double samprate=md.get_double("samprate");
 		dt = 1.0/samprate;
@@ -465,9 +493,6 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 				<< endl;
 		}
 		
-		// these need to be forced
-		components_are_cardinal=true;
-		components_are_orthogonal=true;
 		// Important consistency cross check.
 		string datatype=md.get_string("datatype");
 		if(datatype!="3c" && datatype!="c3")
