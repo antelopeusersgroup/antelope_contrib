@@ -1,0 +1,143 @@
+.TH EVENT2JSON_RPY 3
+
+.SH NAME
+\fIsta2json.rpy\fR \- deliver station metadata in JSON format
+
+.SH SYNOPSIS
+.nf
+**** NO BRTT SUPPORT ****
+Author: "Juan Reyes"<reyes@ucsd.edu>
+.fi
+.PP
+This tool is an extension to the rtwebserver program. It is design to read a
+Datascope database containing station information and produce a memory cached object for
+fast delivery to web clients. This object will be converted to a JSON formatted
+string easy to interpret by JavaScript and, unlike XML, readable by people.
+
+.B Multiple databases can be tracked by the tool. All configuration is set
+.B on the rtwebserver paramter file.
+
+.SH DESCRIPTION
+.LP
+The rtwebserver will declare an instance of an Station() class that will handle all
+database interactions and web requests. This class will read multiple tables and
+join them to get the most information possible from them.
+.LP
+The tool will track the checksum of every table and determine if there is a
+change from the last time the cache was updated. If the checksum is different
+then the Station() class will attempt to read the database and update the cached
+object. The data will be converted from a dictionary structure to a JSON string
+at the time of delivery.
+.LP
+A successful response from the server will have Content-Type and Expires fields
+set. The Expires will be set by the server to be the time of the query in
+addition to the refresh time specified on the parameter file. Example of
+headers set in this way:
+
+.nf
+Content-Type    application/json
+Date    Fri, 24 Oct 2014 04:21:56 GMT
+Expires Fri, 24 Oct 2014 04:22:56 GMT
+Server  TwistedWeb/13.1.0
+.fi
+
+
+
+.SH Valid flag on the API
+.nf
+    db=dbname
+    snet=network name (snet value)
+    sta=station name
+.fi
+
+
+
+.SH JSON FORMAT
+.nf
+{
+
+    "strendtime": "12/13/01 (347) 20:45:-2147483648 UTC",
+    "lon": -156.6175,
+    "vnet": "_US-TA",
+    "time": 1403434673.525,
+    "lat": 71.3221,
+    "endtime": 9999999999.999,
+    "strtime": " 6/22/14 (173) 10:57:53 UTC"
+
+}
+.fi
+
+
+
+.SH PARAMETER FILE
+
+.PP
+All is configured on the [rtwebserver.pf] file. You  need to specify
+the tool in the [site][pages] area of the parameter file. The [data][events]
+configuration use here will be the same values you will use on the URL when
+you try to query the tool.
+
+http://localhost:8000/stations?db=usarray&snet=TA&sta=A21K
+http://localhost:8000/stations?db=usarray&active=True
+
+Example:
+
+.nf
+   sta2jsonconfig &Arr{              
+        debug           True         
+        verbose         True         
+        sta_subset      sta =~ /^.*$/    # Seconds in the past to track
+        #readableJSON    4               # None, 0(just newline), number
+        readableJSON    None               # None, 0(just newline), 4(int number)
+        refresh         60              # seconds for next refresh of cached data
+        timezone        UTC             # Timezone for time string
+        timeformat      %D (%j) %H:%M:%S %z
+        databases &Arr{              
+            #demo   /opt/antelope/data/db/demo/demo
+            usarray ~/TA/dbs/usarray
+        }                            
+   }                                 
+   pages &Arr{                       
+        index        pf:demoindex     text/html     index
+        stations     rpy:/opt/antelope/5.4/data/python/rtwebserver/sta2json.rpy
+   } 
+.fi
+
+
+
+The \fBtime_limit\fR is the number of seconds is the past that you want to track
+on the event and origin tables. Using a big value here so you can see output
+when running on the demo database. Usually this will be a week or a month in
+seconds.
+
+The \fBtimezone\fR and \fBtimeformat\fR will specify a pre-formatted time string
+included on the JSON object. The epoch time of the origin will be there too in
+case you want to use that on your client code.
+
+The \fBdatabases\fR segment are a list of tuples. The first value is an
+arbitrarily name that we select for the instance. This is important because
+that is used on the URL to request data from that database. The second is the
+path to the descriptor file for that database.
+
+.SH "SEE ALSO"
+.nf
+rtwebserver(1), rtwebserver_rpy(3y)
+.fi
+
+.SH "BUGS AND CAVEATS"
+**** NO BRTT SUPPORT ****
+
+You DON'T need to copy the code to the folder structure running the rtwebserver
+instance. Just make sure that you "make install;" the code and then set the
+absolute path on the rtwebserver.pf file for the rpy file..
+On the rtwebserver manpage we see that:
+
+The  pathnames  for  files  listed in the parameter file are relative to the
+current working directory in which rtwebserver is running, which may not be
+the same  as  the  directory  in which the parameter-file resides.
+
+
+
+.SH AUTHOR
+Juan Reyes <reyes@ucsd.edu>
+
