@@ -638,15 +638,16 @@ long dbsave_oriented(ThreeComponentSeismogram& tcs,
             iortho=1;
         else
             iortho=0;
-        retcode=dbaddv(db,0,"U11",tcs.tmatrix[0][0],
+        retcode=dbaddv(db,0,
+        		"U11",tcs.tmatrix[0][0],
+                "U12",tcs.tmatrix[0][1],
+                "U13",tcs.tmatrix[0][2],
                 "U21",tcs.tmatrix[1][0],
-                "U31",tcs.tmatrix[1][0],
-                "U21",tcs.tmatrix[1][0],
-                "U22",tcs.tmatrix[1][0],
-                "U23",tcs.tmatrix[1][0],
-                "U31",tcs.tmatrix[1][0],
-                "U32",tcs.tmatrix[1][0],
-                "U33",tcs.tmatrix[1][0],
+                "U22",tcs.tmatrix[1][1],
+                "U23",tcs.tmatrix[1][2],
+                "U31",tcs.tmatrix[2][0],
+                "U32",tcs.tmatrix[2][1],
+                "U33",tcs.tmatrix[2][2],
                 "pwfid",pwfid,
                 "cardinal",icard,
                 "ortho",iortho,
@@ -735,4 +736,3 @@ long dbsave(ComplexTimeSeries& tcs,
 }
 #endif
 } // Termination of namespace SEISPP definitions
-
