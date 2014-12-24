@@ -11,6 +11,20 @@ Safe to use as:
 Juan 12/2014
 """
 
+
+
+class event2jsonException(Exception):
+    """
+    Local class to raise Exceptions to the
+    rtwebserver framework.
+    """
+    def __init__(self, msg):
+        self.msg = msg
+    def __repr__(self):
+        return 'event2jsonException: %s' % (self.msg)
+    def __str__(self):
+        return repr(self)
+
 class sta2jsonException(Exception):
     """
     Local class to raise Exceptions to the

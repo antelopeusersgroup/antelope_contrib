@@ -9,7 +9,7 @@
 Author: "Juan Reyes"<reyes@ucsd.edu>
 .fi
 .PP
-This tool is an extension to the rtwebserver program. It is design to read a
+This tool is a module to extend the rtwebserver program. It is design to read a
 Datascope database containing station information and produce a memory cached object for
 fast delivery to web clients. This object will be converted to a JSON formatted
 string easy to interpret by JavaScript and, unlike XML, readable by people.
@@ -73,8 +73,8 @@ Server  TwistedWeb/13.1.0
 
 .PP
 All is configured on the [rtwebserver.pf] file. You  need to specify
-the tool in the [site][pages] area of the parameter file. The [data][events]
-configuration use here will be the same values you will use on the URL when
+the tool in the [site][pages] area of the parameter file. The
+configuration used here will be the same values you will use on the URL when
 you try to query the tool.
 
 http://localhost:8000/stations?db=usarray&snet=TA&sta=A21K
@@ -83,21 +83,21 @@ http://localhost:8000/stations?db=usarray&active=True
 Example:
 
 .nf
-   sta2jsonconfig &Arr{              
-        debug           True         
-        verbose         True         
-        sta_subset      sta =~ /^.*$/    # Seconds in the past to track
-        #readableJSON    4               # None, 0(just newline), number
+   sta2jsonconfig &Arr{
+        debug           True
+        verbose         True
+        #sta_subset      sta =~ /^.*$/    # Seconds in the past to track
+        readableJSON    None               # None, 0(just newline), number
         readableJSON    None               # None, 0(just newline), 4(int number)
         refresh         60              # seconds for next refresh of cached data
         timezone        UTC             # Timezone for time string
         timeformat      %D (%j) %H:%M:%S %z
-        databases &Arr{              
+        databases &Arr{
             #demo   /opt/antelope/data/db/demo/demo
             usarray ~/TA/dbs/usarray
-        }                            
-   }                                 
-   pages &Arr{                       
+        }
+   }
+   pages &Arr{
         index        pf:demoindex     text/html     index
         stations     rpy:/opt/antelope/5.4/data/python/rtwebserver/sta2json.rpy
    } 
@@ -105,13 +105,8 @@ Example:
 
 
 
-The \fBtime_limit\fR is the number of seconds is the past that you want to track
-on the event and origin tables. Using a big value here so you can see output
-when running on the demo database. Usually this will be a week or a month in
-seconds.
-
 The \fBtimezone\fR and \fBtimeformat\fR will specify a pre-formatted time string
-included on the JSON object. The epoch time of the origin will be there too in
+included on the JSON object. The epoch time will be there too in
 case you want to use that on your client code.
 
 The \fBdatabases\fR segment are a list of tuples. The first value is an
@@ -129,13 +124,7 @@ rtwebserver(1), rtwebserver_rpy(3y)
 
 You DON'T need to copy the code to the folder structure running the rtwebserver
 instance. Just make sure that you "make install;" the code and then set the
-absolute path on the rtwebserver.pf file for the rpy file..
-On the rtwebserver manpage we see that:
-
-The  pathnames  for  files  listed in the parameter file are relative to the
-current working directory in which rtwebserver is running, which may not be
-the same  as  the  directory  in which the parameter-file resides.
-
+absolute path on the rtwebserver.pf file for the rpy file.
 
 
 .SH AUTHOR
