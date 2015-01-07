@@ -145,7 +145,7 @@ class Stations(Resource):
                 if self.pf_keys[attr]['type'] == 'int':
                     value = int(config.sitedict['sta2jsonconfig'][attr])
                 elif self.pf_keys[attr]['type'] == 'bool':
-                    value = stock.yesno(config.sitedict['sta2jsonconfig'][attr])
+                    value = bool(config.sitedict['sta2jsonconfig'][attr])
                 elif self.pf_keys[attr]['type'] == 'str':
                     value = str(config.sitedict['sta2jsonconfig'][attr])
                 else:
@@ -234,10 +234,20 @@ class Stations(Resource):
         if flags['orb'] in self.orbs:
             orb = flags['orb']
 
-            if stock.yesno( flags['clients'] ):
+            try:
+                clients_yesno = stock.yesno( flags['clients'] )
+            except:
+                clients_yesno = bool( flags['clients'] )
+
+            if clients_yesno:
                 clients = self.orbs[orb]['clients']
 
-            if stock.yesno( flags['sources'] ):
+            try:
+                sources_yesno = stock.yesno( flags['sources'] )
+            except:
+                sources_yesno = bool( flags['sources'] )
+
+            if sources_yesno:
                 if flags['snet'] and flags['sta']:
                     try:
                         sources[flags['snet']] = \
