@@ -13,8 +13,12 @@ This tool is a module to extend the rtwebserver program. It is design to read a
 Datascope database containing station information and produce a memory cached object for
 fast delivery to web clients. This object will be converted to a JSON formatted
 string easy to interpret by JavaScript and, unlike XML, readable by people.
+There is also a segment in the configuration object to specify orbservers to track
+and query for "sources" and "clients" status. If the SNET STA entry between the db
+cached object and the orb cached object then the orb status is included on the return
+JSON blob. You can also query orbserver status only.
 
-.B Multiple databases can be tracked by the tool. All configuration is set
+.B Multiple databases/orbs can be tracked by the tool. All configuration is set
 .B on the rtwebserver paramter file.
 
 .SH DESCRIPTION
@@ -30,7 +34,7 @@ object. The data will be converted from a dictionary structure to a JSON string
 at the time of delivery.
 .LP
 A successful response from the server will have Content-Type and Expires fields
-set. The Expires will be set by the server to be the time of the query in
+set. The field "Expires" will be set by the server to be the time of the query in
 addition to the refresh time specified on the parameter file. Example of
 headers set in this way:
 
@@ -45,8 +49,17 @@ Server  TwistedWeb/13.1.0
 
 .SH Valid flag on the API
 .nf
+    orb=orbname
+    clients=True/False
+    sources=True/False
+    snet=network name
+    sta=station name
+
     db=dbname
-    snet=network name (snet value)
+    active=True/False
+    decom=True/False
+    decom=True/False
+    snet=network name
     sta=station name
 .fi
 
@@ -95,6 +108,9 @@ Example:
         databases &Arr{
             #demo   /opt/antelope/data/db/demo/demo
             usarray ~/TA/dbs/usarray
+        }
+        orbnames &Arr{  #use same key names than 'databases'
+            usarray anfexport:usarrayTA
         }
    }
    pages &Arr{

@@ -1,3 +1,13 @@
+"""
+rtwebserver module to deliver station metadata
+to web clients in JSON format.
+
+NO BRTT SUPPORT!!!!!
+
+Juan Reyes
+reyes@ucsd.edu
+"""
+
 import re,os,sys
 
 if __name__ == '__main__':
@@ -23,9 +33,11 @@ except Exception,e:
     raise sta2jsonException( 'Problems loading Twisted libs: %s' % e )
 
 try:
+    import antelope.Pkt as Pkt
     import antelope.elog as elog
     import antelope.stock as stock
     import antelope.datascope as datascope
+    import antelope.orb as orb
 except Exception,e:
     raise sta2jsonException( 'Problems loading Antelope libs: %s' % e )
 
@@ -48,8 +60,10 @@ class Stations(Resource):
 
         self.loading = True
 
-        self.sta_cache = {}
-        self.db = ''
+        self.dbs = {}
+        self.orbs = {}
+
+        self.db_cache = {}
 
         self.tables = ['deployment','site','comm','sensor','dlsensor','dlsite']
 
@@ -61,9 +75,9 @@ class Stations(Resource):
                 'sta_subset':{'type':'str','default':False},
                 'refresh':{'type':'int','default':60},
                 'databases':{'type':'dict','default':{}},
+                'orbnames':{'type':'dict','default':{}},
                 'readableJSON':{'type':'int','default':0}
                 }
-
 
         self._read_pf()
 
@@ -71,13 +85,15 @@ class Stations(Resource):
             self.verbose = self.debug
 
         if not self.refresh:
-            self.refresh = 60 * 60 # every hour default
+            self.refresh = 60 # every minute default
 
 
-        try:
-            for name,path in self.databases.iteritems():
-                elog.notify( "Test %s db: %s" % (name,path) )
+        # Check DATABASES
+        for name,path in self.databases.iteritems():
+            try:
+                if self.verbose: elog.notify( "init %s DB: %s" % (name,path) )
 
+                self.dbs[name] = {}
                 self.dbs[name] = { 'tables':{} }
                 for table in self.tables:
                     present = test_table(path,table,self.debug)
@@ -89,18 +105,40 @@ class Stations(Resource):
                 db = datascope.dbopen( path , 'r' )
                 self.dbs[name]['db'] = db
                 self.dbs[name]['path'] = path
-        except Exception,e:
-            raise sta2jsonException( 'Problems on configured dbs: %s' % e )
+
+                deferToThread(self._get_sta_cache,name)
+            except Exception,e:
+                raise sta2jsonException( 'Problems on configured dbs: %s' % e )
+
+        # Check ORBS
+        for name,orbname in self.orbnames.iteritems():
+            if self.verbose: elog.notify( "init %s ORB: %s" % (name,orbname) )
+
+            self.orbs[name] = {}
+            self.orbs[name]['clients'] = {}
+            self.orbs[name]['sources'] = {}
+            self.orbs[name]['info'] = {
+                    'status':'offline',
+                    'last_check':0,
+                    'name':orbname
+                    }
+
+            self.orbs[name]['orb'] = orb.Orb(orbname)
+
+            deferToThread(self._get_orb_cache, name)
+
+        self.loading = False
 
 
-        deferToThread(self._init_in_thread)
+        if self.verbose: elog.notify( 'Done loading Stations()' )
 
 
     def _read_pf(self):
         """
         Read configuration parameters from rtwebserver pf file.
         """
-        self.dbs = {}
+
+        elog.notify( 'Read parameters from pf file')
 
         for attr in self.pf_keys:
             try:
@@ -113,74 +151,161 @@ class Stations(Resource):
                 else:
                     value = config.sitedict['sta2jsonconfig'][attr]
             except Exception,e:
-                elog.notify( 'Error on read_pf( %s %s)' % (Exception,e) )
                 value = self.pf_keys[attr]['default']
-
-            elog.notify( "\t%s: %s" % (attr,value ) )
 
             setattr(self, attr, value )
 
-            elog.notify( "\t%s: %s" % (attr,getattr(self,attr) ) )
+            elog.notify( "\tsta2jsonconfig %s: %s" % (attr,getattr(self,attr) ) )
 
+    def _get_orb_cache(self, name):
 
-    def _init_in_thread(self):
+        if self.verbose: elog.notify( 'Check ORB(%s) sources' % name)
 
-        elog.notify( 'Loading Stations()' )
+        if self.debug:
+            elog.debug( "Using approx. %0.1f MB of memory" % self._memory_usage_resource() )
 
-        self._get_sta_cache()
-        self.loading = False
+        pkt = Pkt.Packet()
 
-        elog.notify( 'Done loading Stations()' )
-        elog.notify( '\nREADY!\n' )
+        try:
+            if self.verbose: elog.notify("connect to orb(%s)" % name )
+            self.orbs[name]['orb'].connect()
+        except Exception,e:
+            self.orbs[name]['info']['status'] = e
+            elog.complain('Cannot connect ORB [%s]: %s' % (orbname,e) )
+        else:
+            self.orbs[name]['info']['status'] = 'online'
+            self.orbs[name]['info']['last_check'] = stock.now()
+            try:
+                # get clients
+                if self.verbose: elog.notify("get clients orb(%s)" % name )
+                result = self.orbs[name]['orb'].clients()
+
+                for r in result:
+                    if isinstance(r,float):
+                        self.orbs[name]['info']['clients_time'] = r
+                        if self.verbose: elog.notify("orb(%s) client time %s" % (name, r) )
+                    else:
+                        self.orbs[name]['clients'] = r
+            except Exception,e:
+                elog.notify("Cannot query orb(%s) %s %s" % (name, Exception, e) )
+
+            try:
+                # get sources
+                if self.verbose: elog.notify("get sources orb(%s)" % name )
+                result = self.orbs[name]['orb'].sources()
+
+                for r in result:
+                    if isinstance(r,float):
+                        self.orbs[name]['info']['sources_time'] = r
+                        if self.verbose: elog.notify("orb(%s) sources time %s" % (name, r) )
+                    else:
+                        for stash in r:
+
+                            pkt.srcname = Pkt.SrcName(stash['srcname'])
+                            net = pkt.srcname.net
+                            sta = pkt.srcname.sta
+
+                            if self.debug:
+                                elog.notify("orb(%s) update %s %s" % (name,net,sta) )
+
+                            if not net in self.orbs[name]['sources']:
+                                self.orbs[name]['sources'][net] = {}
+
+                            self.orbs[name]['sources'][net][sta] = stash
+            except Exception,e:
+                elog.notify("Cannot query orb(%s) %s %s" % (name, Exception, e) )
+
+        self.orbs[name]['orb'].close()
+
+        reactor.callLater(self.refresh, self._get_orb_cache, name )
+
 
     def _cache(self, flags):
         """
-        Return cached data.
+        Return cached data for query response.
         """
 
-        if not flags['db']:
-            return {'valid_db': self.sta_cache.keys(),
-                'error':'No ?db=*** spefied in URL.'}
+        if self.debug: elog.notify( '_cache()')
 
-        if flags['db'] in self.sta_cache:
+        results = {}
+        clients = {}
+        sources = {}
 
+        if flags['orb'] in self.orbs:
+            orb = flags['orb']
+
+            if stock.yesno( flags['clients'] ):
+                clients = self.orbs[orb]['clients']
+
+            if stock.yesno( flags['sources'] ):
+                if flags['snet'] and flags['sta']:
+                    try:
+                        sources[flags['snet']] = \
+                            { flags['sta']: self.orbs[orb]['sources'][flags['snet']][flags['sta']] }
+                    except:
+                        pass
+
+                elif flags['snet']:
+                    try:
+                        sources[flags['snet']] = self.orbs[orb]['sources'][flags['snet']]
+                    except:
+                        pass
+
+                else:
+                        sources = self.orbs[orb]['sources']
+
+            return {
+                    'info': self.orbs[orb]['info'],
+                    'clients': clients,
+                    'sources': sources
+                    }
+
+
+        elif flags['db'] in self.db_cache:
             db = flags['db']
 
             if flags['active']:
-                result = self.sta_cache[db]['active']
-                if flags['snet'] in result:
-                    result = result[ flags['snet'] ]
-                return result
+                return self.db_cache[db]['active']
 
             elif flags['decom']:
-                result = self.sta_cache[db]['decom']
-                if flags['snet'] in result:
-                    result = result[ flags['snet'] ]
-                return result
+                return self.db_cache[db]['decom']
 
             else:
                 if flags['snet'] and flags['sta']:
                     snet = flags['snet']
                     sta = flags['sta']
+
                     try:
-                        return self.sta_cache[db]['full'][snet][sta]
+                        results = self.db_cache[db]['full'][snet][sta]
                     except:
-                        return {'error':'Cannot find %s_%s in %s' % (snet,sta,db)}
+                        return results
+
+                    try:
+                        results['orb'] = self.orbs[db]['sources'][snet][sta]
+                    except:
+                        results['orb'] = {}
+
+                    return results
 
                 else:
-                    result = self.sta_cache[db]['list']
-                    if flags['snet'] in result:
-                        result = result[ flags['snet'] ]
-                    return result
+                    return self.db_cache[db]['list']
 
         else:
-            return {'valid_db': self.sta_cache.keys(),
-                'error':'[%s] is not a valid database' % flags['db']}
+            return {
+                    'valid_db': self.db_cache.keys(),
+                    'valid_orb': self.orbs.keys(),
+                    'error':'[%s] is not valid ' % flags
+                    }
 
         return { 'error':'Problem with URL query'}
 
 
     def render_GET(self, uri):
+        """
+        Get query from client and parse arguments.
+        """
+
+        elog.debug('render_GET() uri.uri:%s' % uri.uri)
 
         try:
             (host,port) = uri.getHeader('host').split(':', 1)
@@ -188,14 +313,11 @@ class Stations(Resource):
             host = uri.getHeader('host')
             port = '-'
 
-        hostname = socket.gethostname()
-
         if self.verbose:
+            hostname = socket.gethostname()
             elog.notify("render_GET(): [%s] %s:%s%s" % (hostname,host,port,uri.uri))
 
         if self.debug:
-            elog.debug('')
-            elog.debug('render_GET() uri.uri:%s' % uri.uri)
             elog.debug('render_GET() uri.args:%s' % (uri.args) )
             elog.debug('render_GET() uri.prepath:%s' % (uri.prepath) )
             elog.debug('render_GET() uri.postpath:%s' % (uri.postpath) )
@@ -204,7 +326,6 @@ class Stations(Resource):
             elog.debug('\tQUERY: %s ' % uri)
             elog.debug('\tHostname => [%s:%s]'% (host,port))
             elog.debug('\tHost=> [%s]'% uri.host)
-            #elog.debug('\tsocket.gethostname() => [%s]'% socket.gethostname())
             elog.debug('')
 
         d = defer.Deferred()
@@ -216,6 +337,11 @@ class Stations(Resource):
         return server.NOT_DONE_YET
 
     def _render_uri(self,uri):
+        """
+        Get the uri arguments into a local structure.
+        """
+
+        if self.debug: elog.debug("_render_uri()")
 
         if self.loading:
 
@@ -229,49 +355,52 @@ class Stations(Resource):
 
         flags = {'db':False, 'snet':False,
                 'sta':False, 'active':False,
-                'decom':False, 'full':False}
+                'decom':False, 'full':False,
+                'clients':False, 'sources':True,
+                'orb':False}
 
         for var in flags.keys():
             if var in uri.args:
                 flags[var] = uri.args[var][0]
 
-        #if self.debug:
-        #    for var in flags.keys():
-        #        elog.debug('_render_uri() %s:%s' % (var,flags[var]) )
-
         return self._uri_results(uri,self._cache(flags))
 
 
     def _uri_results(self, uri=None, results=False, error=False):
+        """
+        Return data to client.
+        """
 
         if not uri:
             elog.complain('No URI to work with on _uri_results()')
             return
 
         if self.debug:
-            elog.debug('_uri_results  uri: %s' % uri)
+            elog.debug('_uri_results  uri: %s results:%s' % (uri,results) )
 
-        if results:
+        try:
             if error:
                 uri.setHeader("content-type", "text/html")
-                uri.write(results)
+                uri.setResponseCode( 500 )
+                uri.write( pprint.pprint(results) )
             else:
                 uri.setHeader("content-type", "application/json")
                 expiry_time = datetime.utcnow() + timedelta(seconds=self.refresh)
                 uri.setHeader("expires", expiry_time.strftime("%a, %d %b %Y %H:%M:%S GMT"))
                 uri.write( json.dumps(results,indent=self.readableJSON) )
 
-        else:
-            elog.complain('No results from query.')
+        except Exception,e:
+            elog.complain('Exception: %s %s.' % (Exception,e) )
             uri.setHeader("content-type", "text/html")
             uri.setResponseCode( 500 )
             uri.write('Problem with server!')
-            elog.complain( '_uri_results() Problem: No data for :%s' % uri )
+            elog.complain( '_uri_results() Problem: Exception after :%s' % uri )
 
         try:
             uri.finish()
         except Exception,e:
-            elog.complain( '_uri_results() Problem: %s' % e )
+            elog.complain('Exception: %s %s.' % (Exception,e) )
+            elog.complain( '_uri_finish() Problem: Exception after :%s' % uri )
 
         if self.debug: elog.debug( '_uri_results() DONE!' )
 
@@ -280,25 +409,13 @@ class Stations(Resource):
         Get the checksum of a table
         """
 
-        if self.debug:
-            elog.debug('checksum [%s]' % file)
+        if self.debug: elog.debug('checksum [%s]' % file)
 
         if os.path.isfile( file ):
             return hashlib.md5( open(file).read() ).hexdigest()
 
         return False
 
-
-    def _memory_usage_resource(self):
-        """
-        Nice print of memory usage.
-        """
-        rusage_denom = 1024.
-        if sys.platform == 'darwin':
-            # ... it seems that in OSX the output is different units ...
-            rusage_denom = rusage_denom * rusage_denom
-        mem = sysresource.getrusage(sysresource.RUSAGE_SELF).ru_maxrss / rusage_denom
-        return mem
 
     def _get_sensor(self, db, tempcache):
 
@@ -313,7 +430,8 @@ class Stations(Resource):
 
         with datascope.freeing(db.process( steps )) as dbview:
             if not dbview.record_count:
-                elog.complain( 'No records %s in dlsensor join' % (self.db) )
+                elog.complain( 'No records in dlsensor join %s' % \
+                        db.query(datascope.dbDATABASE_NAME) )
                 return tempcache
 
             for temp in dbview.iter_record():
@@ -365,7 +483,7 @@ class Stations(Resource):
 
     def _get_stabaler(self, db, tempcache):
 
-        if self.debug: elog.debug( "Stations(): stabaler()")
+        if self.debug: elog.debug( "_get_stabaler()")
 
         steps = [ 'dbopen stabaler']
 
@@ -378,7 +496,8 @@ class Stations(Resource):
 
         with datascope.freeing(db.process( steps )) as dbview:
             if not dbview.record_count:
-                elog.complain( 'No records in %s after stabler join' % (self.db) )
+                elog.complain( 'No records after stabler join %s' % \
+                        db.query(datascope.dbDATABASE_NAME) )
                 return tempcache
 
             for temp in dbview.iter_record():
@@ -392,7 +511,7 @@ class Stations(Resource):
                     tempcache[snet][sta]['baler_ssident'] = touple['ssident']
                     tempcache[snet][sta]['baler_firm'] = touple['firm']
 
-                    if self.debug: elog.debug( "Stations(): baler(%s):%s" % (sta,time) )
+                    if self.debug: elog.debug( "baler(%s):%s" % (sta,time) )
                 except:
                     pass
 
@@ -401,7 +520,7 @@ class Stations(Resource):
 
     def _get_comm(self, db, tempcache):
 
-        if self.debug: elog.debug( "Stations(): comm()")
+        if self.debug: elog.debug( "_get_comm()")
 
         steps = [ 'dbopen comm']
 
@@ -414,18 +533,19 @@ class Stations(Resource):
 
         with datascope.freeing(db.process( steps )) as dbview:
             if not dbview.record_count:
-                elog.complain( 'No records in %s after comm join' % (self.db) )
+                elog.complain( 'No records in %s after comm join' % \
+                        db.query(datascope.dbDATABASE_NAME) )
                 return tempcache
 
             for temp in dbview.iter_record():
                 sta = temp.getv('sta')[0]
                 results = dict( zip(fields, temp.getv(*fields)) )
-                results['time'] = int(results['time']) 
-                results['endtime'] = int(results['endtime']) 
+                results['time'] = int(results['time'])
+                results['endtime'] = int(results['endtime'])
                 for snet in tempcache:
                     try:
                         tempcache[snet][sta]['comm'].append( results )
-                        if self.debug: elog.debug( "Stations(): comm(%s)" % sta )
+                        if self.debug: elog.debug( "comm(%s)" % sta )
                     except:
                         pass
 
@@ -435,7 +555,7 @@ class Stations(Resource):
 
     def _get_dlsite(self, db, tempcache):
 
-        if self.debug: elog.debug( "Stations(): dlsite()" )
+        if self.debug: elog.debug( "_get_dlsite()" )
 
         steps = [ 'dbopen dlsite']
 
@@ -448,7 +568,8 @@ class Stations(Resource):
 
         with datascope.freeing(db.process( steps )) as dbview:
             if not dbview.record_count:
-                elog.complain( 'No records in %s after dlsite join' % (self.db) )
+                elog.complain( 'No records in after dlsite join %s' %
+                        db.query(datascope.dbDATABASE_NAME) )
                 return tempcache
 
             for temp in dbview.iter_record():
@@ -465,7 +586,7 @@ class Stations(Resource):
                     else:
                         tempcache[snet][sta]['datalogger'][ssident] = dl
 
-                    if self.debug: elog.debug( "Stations(): dlsite(%s_%s)" % (snet,sta) )
+                    if self.debug: elog.debug( "_get_dlsite(%s_%s)" % (snet,sta) )
                 except Exception,e:
                     #elog.complain("#### No deployment entry for %s_%s %s %s" % \
                     #        (snet,sta,Exception,e) )
@@ -491,7 +612,8 @@ class Stations(Resource):
 
         with datascope.freeing(db.process( steps )) as dbview:
             if not dbview.record_count:
-                elog.complain( 'No records in %s after deployment-site join' % (self.db) )
+                elog.complain( 'No records after deployment-site join %s' % \
+                        db.query(datascope.dbDATABASE_NAME) )
                 return tempcache
 
             for temp in dbview.iter_record():
@@ -525,7 +647,7 @@ class Stations(Resource):
                 snet = db_v['snet']
                 endtime = db_v['endtime']
 
-                if self.debug: elog.debug( "Stations(): %s_%s" % (snet,sta) )
+                if self.debug: elog.debug( "_get_deployment_list(%s_%s)" % (snet,sta) )
 
                 if not snet in tempcache['full']:
                     tempcache['full'][snet] = {}
@@ -534,8 +656,7 @@ class Stations(Resource):
                     tempcache['list'][snet] = {}
 
                 if not sta in tempcache['full'][snet]:
-                    tempcache['full'][snet][sta] = {}
-
+                    tempcache['full'][snet][sta] = {} 
                 tempcache['full'][snet][sta] = db_v
 
                 tempcache['full'][snet][sta]['datalogger'] = {}
@@ -556,45 +677,42 @@ class Stations(Resource):
         return tempcache
 
 
-    def _get_sta_cache(self):
+    def _get_sta_cache(self,database):
         """
         Private function to load the data from the tables
         """
 
         if self.debug:
             elog.debug( "Using approx. %0.1f MB of memory" % self._memory_usage_resource() )
+
         tempcache = {}
 
-        for database in self.dbs:
+        db = self.dbs[database]['db']
+        dbpath = self.dbs[database]['path']
+        need_update = False
+        if self.debug:
+            elog.debug( "(%s) path:%s" % (database,dbpath) )
 
-            self.db = database
-            db = self.dbs[database]['db']
-            dbpath = self.dbs[database]['path']
-            need_update = False
+        for name in self.tables:
+
+            path = self.dbs[database]['tables'][name]['path']
+            md5 = self.dbs[database]['tables'][name]['md5']
+
             if self.debug:
-                elog.debug( "(%s) path:%s" % (database,dbpath) )
-
-            for name in self.tables:
-
-                path = self.dbs[database]['tables'][name]['path']
-                md5 = self.dbs[database]['tables'][name]['md5']
-
-                if self.debug:
-                    elog.debug( "(%s) table:%s path:%s md5:%s" % (database,name,path,md5) )
+                elog.debug( "(%s) table:%s path:%s md5:%s" % (database,name,path,md5) )
 
 
-                test = self._get_md5(path)
+            test = self._get_md5(path)
 
-                if self.debug:
-                    elog.debug('[old: %s new: %s]' %(md5,test) )
+            if self.debug:
+                elog.debug('[old: %s new: %s]' %(md5,test) )
 
-                if test != md5:
-                    if self.debug: elog.debug('Update needed.')
-                    self.dbs[database]['tables'][name]['md5'] = test
-                    need_update = True
+            if test != md5:
+                if self.debug: elog.debug('Update needed.')
+                self.dbs[database]['tables'][name]['md5'] = test
+                need_update = True
 
-            if not need_update:
-                continue
+        if need_update:
 
             tempcache[database] = self._get_deployment_list(db)
             tempcache[database]['full'] = self._get_dlsite(db,
@@ -612,12 +730,27 @@ class Stations(Resource):
                     tempcache[database][cache][snet] = \
                             tempcache[database][cache][snet].keys()
 
-            self.sta_cache[database] = tempcache[database]
+            self.db_cache[database] = tempcache[database]
 
             if self.debug: elog.debug( "Completed updating db. (%s)" % database )
 
 
         if self.debug: elog.debug( "Schedule update in (%s) seconds" % self.refresh )
-        reactor.callLater(self.refresh, self._get_sta_cache )
+        reactor.callLater(self.refresh, self._get_sta_cache, database )
+
+    def _memory_usage_resource(self):
+        """
+        Nice print of memory usage.
+        """
+        rusage_denom = 1024.
+
+        if sys.platform == 'darwin':
+            # ... it seems that in OSX the output is different units ...
+            rusage_denom = rusage_denom * rusage_denom
+
+        mem = sysresource.getrusage(sysresource.RUSAGE_SELF).ru_maxrss / rusage_denom
+
+        return mem
+
 
 resource = Stations()

@@ -24,7 +24,7 @@ site &Arr{
             timezone        UTC             # Timezone for time string
             timeformat      %D (%j) %H:%M:%S %z
             databases &Arr{
-                demo   /opt/antelope/data/db/demo/demo
+                # demo   /opt/antelope/data/db/demo/demo
                 usarray /anf/TA/rt/usarray/usarray
                 anza /anf/ANZA/rt/anza/anza
                 ceusn /anf/CEUSN/rt/ceusn/ceusn
@@ -35,14 +35,19 @@ site &Arr{
             verbose         False
             #sta_subset      sta =~ /Q39A/
             readableJSON    None               # None, 0(just newline), number
-            readableJSON    None               # None, 0(just newline), 4(int number)
-            refresh         60              # seconds for next refresh of cached data
+            refresh         60              # seconds for next refresh of db cached data
             timezone        UTC             # Timezone for time string
             timeformat      %D (%j) %H:%M:%S %z
-            databases &Arr{
+            databases &Arr{  #use same key names than 'orbs'
+                # demo   /opt/antelope/data/db/demo/demo
                 usarray /anf/TA/dbs/dbops/usarray
                 anza /anf/ANZA/dbs/dbops/anza
                 ceusn /anf/CEUSN/dbs/dbops/ceusn
+            }
+            orbnames &Arr{  #use same key names than 'databases'
+                usarray anfexport:usarrayTA
+                anza anzaexport:anza
+                ceusn ceusnexport:usarray
             }
     }
     pages &Arr{
@@ -69,11 +74,22 @@ site &Arr{
             </p>
             <p>Flags available with the stations API:</p>
             <ul>
+                <li>orb=<i>orbname</i></li>
+                <li>client=<i>list clients</i>  (Default False)</li>
+                <li>sources=<i>list sources</i> (Default True)</li>
+                <li>snet=<i>network name (snet value)</i> & sta=<i>station name</i></li>
+            </ul>
+            <ul>
                 <li>db=<i>dbname</i></li>
+                <li>active=<i>True</i></li>
+                <li>decom=<i>True</i></li>
+                <li>list=<i>True</i></li>
                 <li>snet=<i>network name (snet value)</i></li>
                 <li>sta=<i>station name</i></li>
             </ul>
             <p>Example: /stations?db=usarray&snet=TA</p>
+            <p>Example: /stations?orb=usarray</p>
+            <p>Example: /stations?db=ceusn&decom=True</p>
             </br>
             <p>Flags available with the events API:</p>
             <ul>
