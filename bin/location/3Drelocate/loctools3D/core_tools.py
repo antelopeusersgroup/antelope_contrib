@@ -326,7 +326,9 @@ class Locator:
                     continue
                 arrivals += [arrival]
 #Make sure there are at least 5 arrivals to use in relocation
-        if len(arrivals) < 5:
+        #if len(arrivals) < 5:
+#The above line is Amir's, the below line is Malcolm's
+        if len(arrivals) < 10:
             logger.info("[evid: %d] Only %d valid arrivals found. Skipping "\
                     "relocation." % (event.evid, len(arrivals)))
             return None
@@ -420,6 +422,7 @@ class Locator:
 #Calculate forward deriatives making sure that each calculation
 #involves two unique points
         ind = li.convert_to_1D(ix, iy, iz)
+        t0 = array([arrival.time - pred_tts[arrival.sta][ind] for arrival in arrivals]).mean()
         tt000 = array([pred_tts[sta][ind] for sta in stas])
         if ix == li.nx - 1:
             dt_dx = None
@@ -468,8 +471,13 @@ class Locator:
         dt_dz = [deriv for deriv in (dt_dz, bdt_dz) if deriv != None]
         dt_dz = sum(dt_dz) / len(dt_dz)
 #Build and condition residual vector
-        residuals = arrival_times - tt000
-        residuals = residuals - residuals.mean()
+#######################################################
+#CHECK THIS!!!!!!!!!!!
+        #residuals = arrival_times - tt000
+        #residuals = residuals - residuals.mean()
+#The above two lines are Amir's, the below line is Malcolm's
+        residuals = t0 + tt000 - arrival_times
+#######################################################
 #Create a matrix of the spatial derivatives of travel-times
         A = c_[dt_dx, dt_dy, dt_dz]
 #Find the change in position which best fits the residuals in a

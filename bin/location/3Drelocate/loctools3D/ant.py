@@ -225,6 +225,7 @@ def create_event_list(view):
                       lddate=lddate)
         view2 = view.subset('evid == %d' % evid)
         view2 = view2.join('origin')
+        view2 = view2.subset('orid == prefor')
         view2 = view2.separate('origin')
         for record2 in view2.iter_record():
             lat = record2.getv('lat')[0]
