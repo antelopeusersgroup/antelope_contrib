@@ -130,6 +130,7 @@ int component_count(vector<int> comps)
         if(hits[i]) ++result;
     return(result);
 }
+#ifndef NO_ANTELOPE
 /* This procedure does more or less the inverse of ExtractComponent.
 That process is far more complicated, however, becasue of the complexity 
 of multiple channel and loc codes.  We handle that through the 
@@ -266,4 +267,5 @@ void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
         }
     }catch(...){throw;};
 }
+#endif
 } // End SEISPP namespace

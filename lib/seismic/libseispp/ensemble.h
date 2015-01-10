@@ -781,6 +781,7 @@ to yield a scalar (TimeSeriesEnsemble) result.  This procedure does this.
 \exception SeisppError is throw if result is empty of component number is illegal.
 */
 auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
+#ifndef NO_ANTELOPE
 /*! \brief Bundle scalar data to produce an ensemble of three-component data.
 
 Data in many formats is stored raw a scalar, time series data.  A common issue 
@@ -815,5 +816,6 @@ description for hints on how that works.
 
 void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
                 StationChannelMap scmap);
+#endif
 } // End SEISPP namespace declaration
 #endif
