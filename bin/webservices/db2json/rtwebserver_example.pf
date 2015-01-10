@@ -1,0 +1,102 @@
+port    8000
+
+reject_ip_addresses &Tbl{
+}
+
+trackingdb
+
+valid_ip_addresses  &Tbl{
+    0.0.0.0     0.0.0.0
+}
+
+site &Arr{
+    pythonpaths &Tbl{
+    }
+    siteconfig &Arr{
+    }
+    event2jsonconfig &Arr{
+            debug           False
+            verbose         False
+            readableJSON    None              # None, 0(just newline), number
+            readableJSON    None            # None, 0(just newline), 4(int number)
+            refresh         60              # seconds for next refresh of cached data
+            time_limit      2680200         # 31 days, aprox. 1 month
+            timezone        UTC             # Timezone for time string
+            timeformat      %D (%j) %H:%M:%S %z
+            databases &Arr{
+                # demo   /opt/antelope/data/db/demo/demo
+                usarray /anf/TA/rt/usarray/usarray
+                anza /anf/ANZA/rt/anza/anza
+                ceusn /anf/CEUSN/rt/ceusn/ceusn
+            }
+    }
+    sta2jsonconfig &Arr{
+            debug           False
+            verbose         False
+            #sta_subset      sta =~ /Q39A/
+            readableJSON    None               # None, 0(just newline), number
+            refresh         60              # seconds for next refresh of db cached data
+            timezone        UTC             # Timezone for time string
+            timeformat      %D (%j) %H:%M:%S %z
+            databases &Arr{  #use same key names than 'orbs'
+                # demo   /opt/antelope/data/db/demo/demo
+                usarray /anf/TA/dbs/dbops/usarray
+                anza /anf/ANZA/dbs/dbops/anza
+                ceusn /anf/CEUSN/dbs/dbops/ceusn
+            }
+            orbnames &Arr{  #use same key names than 'databases'
+                usarray anfexport:usarrayTA
+                anza anzaexport:anza
+                ceusn ceusnexport:usarray
+            }
+    }
+    pages &Arr{
+            index        pf:demoindex     text/html     index
+            stations     rpy:/opt/antelope/5.4/data/python/rtwebserver/sta2json.rpy
+            events       rpy:/opt/antelope/5.4/data/python/rtwebserver/event2json.rpy
+    }
+    demoindex &Literal{
+            <html>
+            <body>
+            <h1>Antelope's <i>rtwebserver</i> API:</h1>
+            <p>This is an application-programming interface
+            for Antelope's relational database system <b>Datascope</b>.
+            Data is cached in memory by rtwebserver and delivered to
+            the user in JavaScript Object Notation (JSON) format.</p>
+            </br>
+            <p>To access station metadata related information
+            query the server with the <i>this_server</i><b>/stations</b>
+            URL.
+            To access event related information
+            query the server with the <i>this_server</i><b>/events</b>
+            URL.
+            Both will show a list of available databases.
+            </p>
+            <p>Flags available with the stations API:</p>
+            <ul>
+                <li>orb=<i>orbname</i></li>
+                <li>client=<i>list clients</i>  (Default False)</li>
+                <li>sources=<i>list sources</i> (Default True)</li>
+                <li>snet=<i>network name (snet value)</i> & sta=<i>station name</i></li>
+            </ul>
+            <ul>
+                <li>db=<i>dbname</i></li>
+                <li>active=<i>True</i></li>
+                <li>decom=<i>True</i></li>
+                <li>list=<i>True</i></li>
+                <li>snet=<i>network name (snet value)</i></li>
+                <li>sta=<i>station name</i></li>
+            </ul>
+            <p>Example: /stations?db=usarray&snet=TA</p>
+            <p>Example: /stations?orb=usarray</p>
+            <p>Example: /stations?db=ceusn&decom=True</p>
+            </br>
+            <p>Flags available with the events API:</p>
+            <ul>
+                <li>db=<i>dbname</i></li>
+            </ul>
+            <p>Example: /events?db=usarray</p>
+            </body>
+            </html>
+    }
+}
