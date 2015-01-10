@@ -25,6 +25,7 @@
 #include "ThreeComponentSeismogram.h"
 #ifndef NO_ANTELOPE
 #include "ComplexTimeSeries.h"
+#include "StationChannelMap.h"
 #endif
 #include "Hypocenter.h"
 #include "SeisppKeywords.h"
@@ -267,36 +268,35 @@ public:
 		MetadataList& ensemble_mdl,
 		 AttributeMap& am);
 /*!
-// Construct a ThreeComponentEnsemble from 
-// database-indexed storage returning data defined by a fixed time window.
-// In processing continuous seismic data it is commonly necessary 
-// to read data for an array of stations within a fixed time window.
-// Many algorithms start this way and some assume data are already 
-// on a common time base.  This constructor returns a vector of 
-// ThreeComponentSeismogram objects spanning a constant time 
-// defined by the TimeWindow argument.  i.e. all objects in
-// the ensemble will have the same start time (t0).
-//
-//\exception SeisppError object with an explanatory message if process fails.
-//\param dbhi is a handle to the database that indexes these data.
-//\param twin defines the window of time to be retrieved
-//\param ensemble_mdl defines the list of attributes to be extracted
-//   from the database and loaded into the global (ensemble) metadata
-//   area.  i.e. this is the list of parameters that are global to the
-//   ensemble.
-//\param data_mdl defines the list of attributes to be extracted from
-//   the database for each TimeSeries object that forms this ensemble.
-//\param am is a schema-specific attribute map that defines the mapping
-//   from database attribute name space to the seispp internal namespace.
-//\param chanmap defines mapping operator for how channel codes map
-//   into components.  
+\brief Construct a ThreeComponentEnsemble from 
+ database-indexed storage returning data defined by a fixed time window.
+ `
+ In processing continuous seismic data it is commonly necessary 
+ to read data for an array of stations within a fixed time window.
+ Many algorithms start this way and some assume data are already 
+ on a common time base.  This constructor returns a vector of 
+ ThreeComponentSeismogram objects spanning a constant time 
+ defined by the TimeWindow argument.  i.e. all objects in
+ the ensemble will have the same start time (t0).
+ Metadata loaded are frozen as a set of names from the css3.0 attribute namespace.
+ These are:  sta, time, samprate, and nsamp.   The following are translated from
+ site to give receiver geographic location:  sta_lat, sta_lon, sta_elev, dnorth, deast, refsta.
+
+ Calib from wfdisc is always applied.   Any data that do not join with site or sitechan 
+ will be silently dropped.  The bundle process to build 3C sets is implemented by the
+ helper procedure BundleChannels that is part of this library.   Most of the work of this
+ constructor is done by calling the TimeSeriesEnsemble version with a similar argument signature
+ and the BundleChannels procedure.  
+
+\exception SeisppError object with an explanatory message if process fails.
+\param dbhi is a handle to the database that indexes these data.
+\param twin defines the window of time to be retrieved
+\param chanmap defines mapping operator for how channel codes map
+   into components.  See object description for StationChannelMap for
+   details on the approach.  
 **/ 
 	ThreeComponentEnsemble(DatabaseHandle& dbhi,
-	        TimeWindow twin,
-	                MetadataList& ensemble_mdl,
-	                        MetadataList& data_mdl,
-	                                AttributeMap& am,
-						vector<string>chanmap);
+	        TimeWindow twin,StationChannelMap& chanmap);
 /*!
 // Standard copy constructor.
 **/
@@ -765,7 +765,7 @@ template <class Tensemble> int LoadPredictedArrivalTimes(Tensemble& d,
 	return(nfailures);
 }
 
-/*! Extract a componnt from a ThreeComponentEnsemble to yield a TimeSeriesEnsemble.
+/*! Extract a component from a ThreeComponentEnsemble to yield a TimeSeriesEnsemble.
 
 An ensemble of three component data can be conceptualized as a three-dimensional
 array (3 by number of samples by number of ensemble members) while a TimeSeriesEnsemble
@@ -781,5 +781,39 @@ to yield a scalar (TimeSeriesEnsemble) result.  This procedure does this.
 \exception SeisppError is throw if result is empty of component number is illegal.
 */
 auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
+/*! \brief Bundle scalar data to produce an ensemble of three-component data.
+
+Data in many formats is stored raw a scalar, time series data.  A common issue 
+is the need to bundle scalar component time series data into three-component 
+seismogram object.   This is far from trivial with modern seismological data
+due to the complexity created by multiple sensors and/or multiple samples
+rates from the same physical point on the ground.   Another complexity is 
+data irregularies - one or more components may be missing or dead in a particular
+time period.   We handle that here through the StationChannelMap object.   
+
+This algorithm here will discard data from any station from which it cannot 
+assemble a set of 3 components that the StationChannelMap object says 
+are rational to put together.   Here that means they must be from the
+same sensor with a common sample rate, although the actual implementation 
+uses user supplied definitions through the StationChannelMap object, 
+
+A tacit assumption of the algorithm used is the input data are a block defined
+either by event gathers or a common time window.   
+
+\param  rawdata is the set input scalar data.  These data will be altered 
+   on output as they will be sorted to sta-channel order.   
+
+\param dtcs empty ThreeComponentEnsemble (i.e. members containers is assumed
+zero length) to contain the bundled data.   User must copy ensemble Metadata
+externally to this object if this is desired.  
+
+\param scmap defines the mapping operator used for bundling.  See that objects
+description for hints on how that works.
+
+\exception - SeisppError will be thrown in fatal conditions.  
+*/
+
+void BundleChannels(TimeSeriesEnsemble& rawdata, ThreeComponentEnsemble& dtcs,
+                StationChannelMap scmap);
 } // End SEISPP namespace declaration
 #endif
