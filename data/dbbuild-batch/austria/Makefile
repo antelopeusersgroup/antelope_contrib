@@ -18,4 +18,5 @@ SQTA-dbb \
 WATA-dbb \
 WTTA-dbb \
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

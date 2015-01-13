@@ -6,6 +6,7 @@ DATADIR =
 
 ldlibs=$(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

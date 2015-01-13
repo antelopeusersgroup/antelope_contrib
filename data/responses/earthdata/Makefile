@@ -7,5 +7,6 @@ DATA= \
 	ED_jcrs_719_12 \
 	ED_jcrs_719_3
                                
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=

@@ -7,6 +7,7 @@ cflags=-I$(MATLAB)/include
 ldlibs= -L$(MATLAB)/lib/sol2 -R$(MATLAB)/lib/sol2 -lmatlabprocessor -lgclgrid -lseispp -leng -lmx -lut -lmat \
 	$(TRLIBS) -lperf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 OBJS=	tcee.o
 $(BIN) : $(OBJS)

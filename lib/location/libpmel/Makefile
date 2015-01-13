@@ -6,6 +6,7 @@ cflags=-g
 ldflags=
 ldlibs=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 OBJS=fixlist_utilities.o phase_handle_utilities.o \

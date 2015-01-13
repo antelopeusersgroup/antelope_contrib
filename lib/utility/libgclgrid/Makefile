@@ -9,6 +9,7 @@ MAN3= dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
 DBG=-g
 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 OBJS=converters.o \

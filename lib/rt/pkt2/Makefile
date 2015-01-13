@@ -6,6 +6,7 @@ INCLUDE=_pkt2.h pkt2.h
 OPTIMIZE=decompress.c
 
 SUBDIR=/local
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

@@ -11,6 +11,7 @@ DATA=README_reftek cf1 cf2 cf3 RT24_62 RT24_100 RT72A_250 RT72A_06 \
                                
 
                        
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

@@ -4,6 +4,7 @@ MAN3T= \
 
 DATA=$(MAN3T:.3t=.tcl) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 			

@@ -77,6 +77,7 @@ DATA= taurus_inf_aa \
       hrd24_iir \
       hrd24aaf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

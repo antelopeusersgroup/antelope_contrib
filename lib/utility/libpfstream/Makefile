@@ -6,6 +6,7 @@ MAN5=pfstream.5
 
 #ldlibs= -lbrttutil $(THREAD) $(DBLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 

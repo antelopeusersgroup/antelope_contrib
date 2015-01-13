@@ -6,6 +6,7 @@ DATA=iaspei.time2 elpcor
 
 fflags=-g
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 OBJS=getiasp.o bjdaz2.o elpcr.o redtab.o find.o glat.o
 $(LIB) : $(OBJS)

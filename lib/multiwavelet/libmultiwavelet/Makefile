@@ -9,6 +9,7 @@ MAN3=mwtransform.3
 CLEAN= 		
 ldlibs= -lgenloc $(PERFLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=			
 

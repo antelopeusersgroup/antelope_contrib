@@ -9,6 +9,7 @@ DATA= l22 \
 	l4a l4c \
 	l4c_3damp
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

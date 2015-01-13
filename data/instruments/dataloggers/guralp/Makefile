@@ -13,5 +13,6 @@ DATA=     cmg6d.pf \
     peppv.pf \
     peppv_classic.pf 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

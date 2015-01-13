@@ -18,6 +18,7 @@ DATA= \
     Zland_500_iir_3.0Hz
 
                                
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

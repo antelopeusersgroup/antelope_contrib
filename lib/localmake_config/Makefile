@@ -3,6 +3,7 @@ BIN = localmake_config
 MAN1 = localmake_config.1
 MAN5 = antelopemakelocal.5
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 # Always install localmake_config to work around compile-dependency tangles

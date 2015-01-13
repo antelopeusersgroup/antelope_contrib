@@ -65,6 +65,7 @@ MAN3=Basic_Time_Series.3 \
   Top_Mute.3
 DBG=-g
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 OBJS=ArrivalUpdater.o \

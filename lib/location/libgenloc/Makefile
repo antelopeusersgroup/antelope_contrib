@@ -11,6 +11,7 @@ MAN3 = genloc.3 \
 DATADIR=schemas
 DATA=genloc1.0
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=	
 

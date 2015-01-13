@@ -32,6 +32,7 @@ DATA= \
     yka_sp_fir2 \
     yka_sp_preamp
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

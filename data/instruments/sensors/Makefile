@@ -130,5 +130,6 @@ DATA= \
     validyne.pf \
     wr1.pf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

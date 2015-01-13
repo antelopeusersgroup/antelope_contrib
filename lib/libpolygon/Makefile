@@ -17,6 +17,7 @@ MAN3= \
 
 ldlibs=	$(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=schema
 

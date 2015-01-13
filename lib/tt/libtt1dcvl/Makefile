@@ -5,6 +5,7 @@ MAN3=tt1dcvl.3
 
 ldlibs = $(DBLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

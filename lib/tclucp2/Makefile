@@ -3,6 +3,7 @@ DLIB = libtclucp2$(DSUFFIX)
 cflags =  $(TCLINCLUDE)
 ldlibs = -lrtucp2 $(TKLIBS) $(TCLLIBS) $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

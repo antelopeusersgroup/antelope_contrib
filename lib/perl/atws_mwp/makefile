@@ -11,6 +11,7 @@ CLEAN = Makefile.PL runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFIL
 
 ldlibs = $(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

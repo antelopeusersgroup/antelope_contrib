@@ -40,6 +40,7 @@ DATA= \
     sh_vel \
     wr1_vel
                                
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

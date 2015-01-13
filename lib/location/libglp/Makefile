@@ -5,6 +5,7 @@ CLEAN=
 ldflags=
 ldlibs=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

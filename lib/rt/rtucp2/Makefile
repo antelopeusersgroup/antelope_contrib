@@ -1,6 +1,7 @@
 LIB=		librtucp2.a
 cflags=		$(TCLINCLUDE)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=			
 

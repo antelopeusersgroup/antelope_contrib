@@ -15,6 +15,7 @@ fflags=
 ldflags= 
 ldlibs= -lpyutil -lpolygon $(TRLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DSOBJS= _polygon.o

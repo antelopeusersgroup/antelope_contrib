@@ -9,6 +9,7 @@ DATA= \
 	setra278HA  \
 	setra278offset  \
 	validyne 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

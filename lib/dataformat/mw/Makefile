@@ -1,6 +1,7 @@
 LIB	= libmw.a
 DLIB=$(LIB:.a=$(DSUFFIX))
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=			
 

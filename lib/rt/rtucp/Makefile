@@ -1,6 +1,7 @@
 LIB=		librtucp.a
 cflags=		-g $(TCLINCLUDE)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=			
 #DBG=		-g
