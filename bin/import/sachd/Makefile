@@ -1,9 +1,9 @@
-BIN = sachd
-MAN1 = sachd.1
+BIN  = sachd
+MAN1 = $(BIN).1
 
-ldlibs	= $(DBLIBS)
+ldlibs= $(DBLIBS)
 
-include	$(ANTELOPEMAKE)
+SUBDIR=/contrib
+include$(ANTELOPEMAKE)
+
 DIRS=
-
-# $Id$ 

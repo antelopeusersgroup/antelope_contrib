@@ -1,11 +1,14 @@
-BIN = rddas
-MAN1=rddas.1
+BIN  = $(BIN)
+MAN1 = $(BIN).1
 
-ldlibs	= -ldefunctpkt $(ORBLIBS)
+ldlibs= -ldefunctpkt $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-OBJSM	= rddas.o\
+
+OBJSM= $(BIN).o\
 	  openIP.o\
 	  read_in_port.o
-$(BIN):	$(OBJSM)
+
+$(BIN):$(OBJSM)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJSM) $(LDFLAGS) $(LDLIBS)

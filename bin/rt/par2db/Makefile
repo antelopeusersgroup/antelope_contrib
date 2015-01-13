@@ -1,10 +1,9 @@
-#
-BIN=par2db
-MAN1=par2db.1
-#
-cflags=
-ldlibs=	-ldefunctpkt $(ORBLIBS) 
+BIN  = par2db
+MAN1 = par2db.1
 
+ldlibs = -ldefunctpkt $(ORBLIBS)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
@@ -24,5 +23,3 @@ SRCS= \
 OBJS=$(SRCS:.c=.o)
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-

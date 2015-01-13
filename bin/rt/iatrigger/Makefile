@@ -1,6 +1,6 @@
-BIN = iatrigger
-PF= iatrigger.pf
+BIN  = iatrigger
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1 = iatrigger.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

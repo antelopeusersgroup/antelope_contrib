@@ -1,5 +1,5 @@
-BIN= reb2db
+BIN  = reb2db
+MAN1 = $(BIN).1
 
-MAN1= reb2db.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

@@ -1,9 +1,11 @@
-BIN=Xphase2db
-PF=Xphase2db.pf
+BIN  = Xphase2db
+PF   = $(BIN).pf
 
-MAN1=Xphase2db.1
+MAN1  = $(BIN).1
 
-ldlibs= $(DBLIBS) -lstock		
+ldlibs= $(DBLIBS) -lstock
 
-include $(ANTELOPEMAKE)  	
-DIRS=			
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+DIRS=

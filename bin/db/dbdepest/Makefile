@@ -1,6 +1,6 @@
-BIN =dbdepest
-MAN1=$(BIN).1
-PF  =$(BIN).pf
+BIN  = dbdepest
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
 ldflags = -L../teles
 ldlibs= -lteles $(TRLIBS)

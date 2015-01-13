@@ -4,6 +4,7 @@ MAN1=liss2orb.1
 cflags=
 ldlibs=	$(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
@@ -20,4 +21,3 @@ SRCS= \
 OBJS=$(SRCS:.c=.o)
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-

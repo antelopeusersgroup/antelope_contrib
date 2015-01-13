@@ -1,9 +1,11 @@
-
 BIN=rtp2orb
 MAN1=rtp2orb.1
 
 ldlibs=$(ORBLIBS)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
 OBJS= 	rtp2orb.o \
@@ -43,7 +45,7 @@ OBJS= 	rtp2orb.o \
 	type.o \
 	version.o
 
- 
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) $(LDLIBS)

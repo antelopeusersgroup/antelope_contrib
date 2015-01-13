@@ -1,8 +1,6 @@
+BIN  = gnis2db
 
-BIN= gnis2db
+MAN1 = $(BIN).1
 
-MAN1= gnis2db.1
-
-CLEAN=
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

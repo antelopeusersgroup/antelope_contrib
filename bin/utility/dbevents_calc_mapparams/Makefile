@@ -1,6 +1,5 @@
-BIN=	dbevents_calc_mapparams 	# commands to be placed in bin
-MAN1=	dbevents_calc_mapparams.1	# man pages for commands
+BIN=	dbevents_calc_mapparams
+MAN1=	dbevents_calc_mapparams.1
 
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
-				# and before the DIRS definition below..
-
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)

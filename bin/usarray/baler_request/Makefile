@@ -1,6 +1,7 @@
-BIN=baler_request
-MAN1=baler_request.1
+BIN  = baler_request
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

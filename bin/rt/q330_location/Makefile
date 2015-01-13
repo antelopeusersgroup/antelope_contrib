@@ -1,6 +1,7 @@
-BIN=q330_location
-MAN1= q330_location.1
+BIN  = q330_location
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

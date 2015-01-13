@@ -1,5 +1,5 @@
-BIN=dbdec
-MAN1=$(BIN).1
+BIN  = dbdec
+MAN1 = $(BIN).1
 
 cflags=-g
 ldlibs=-lscv2 -ldbl2 $(TRLIBS)

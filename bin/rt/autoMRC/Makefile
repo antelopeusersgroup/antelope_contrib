@@ -1,11 +1,11 @@
-# Makefile for svd
-
 BIN = automrc
 MAN1=automrc.1
 PF=automrc.pf
 ldlibs	= $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 OBJSM	= mrc.o\
 	  open_dc.o\
 	  orbsort.o \

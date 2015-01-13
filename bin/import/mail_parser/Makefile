@@ -9,7 +9,7 @@ DATA= submit_pepp.pl \
 PF= mail_parser.pf
 
 MAN1= mail_parser.1 \
-      mail_parser_wrapper.1 
+      mail_parser_wrapper.1
 
 MAN3= submit_pepp.3 \
       reb_import.3 \
@@ -18,6 +18,7 @@ MAN3= submit_pepp.3 \
 
 CLEAN=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 mail_parser_wrapper : mail_parser_wrapper.csh.id

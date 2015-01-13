@@ -1,14 +1,8 @@
-BIN= check_q330pf_db
+BIN  = check_q330pf_db
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-PF= check_q330pf_db.pf
-
-MAN1=  check_q330pf_db.1 
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-CLEAN=
-
 DIRS=
-
-
-

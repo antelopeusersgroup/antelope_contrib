@@ -1,8 +1,8 @@
 BIN  = dbarrparams
-MAN1 =  dbarrparams.1
+MAN1 = $(BIN).1
 
 ldlibs= -lscv2 -ldbl2 $(TRLIBS) $(F77LIBS)
-OBJS=dbarrparams.o eigen.o polarization.o filter.o butwth.o
+OBJS = $(BIN).o eigen.o polarization.o filter.o butwth.o
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

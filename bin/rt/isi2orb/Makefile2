@@ -1,11 +1,9 @@
-
-BIN = isi2orb
-
-PF = isi2orb.pf
-
-MAN1 = isi2orb.1
+BIN  = isi2orb
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
 cflags = -D$(OSNAME)
-ldlibs = -lisi $(ORBLIBS) 
+ldlibs = -lisi $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

@@ -1,9 +1,9 @@
-BIN=dbdoc
-PF=dbdoc.pf
-DATA=intro reldesc attrdesc reltables
-DATADIR=doc/dbdoc
+BIN  = dbdoc
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1=dbdoc.1
+DATA    = intro reldesc attrdesc reltables
+DATADIR = doc/dbdoc
 
 CLEAN=
 

@@ -1,7 +1,8 @@
-BIN= baler_wf_proc
-PF= baler_wf_proc.pf
-MAN1= baler_wf_proc.1
+BIN  = baler_wf_proc
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

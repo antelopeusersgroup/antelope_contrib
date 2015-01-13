@@ -1,8 +1,5 @@
+BIN  = scec2db
+MAN1 = $(BIN).1
 
-BIN= scec2db 
-
-MAN1= scec2db.1
-
-CLEAN=
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

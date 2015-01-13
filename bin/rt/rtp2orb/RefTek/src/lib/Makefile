@@ -1,4 +1,3 @@
-# $Id$
 # Make RefTek libraries
 
 all: reftek rtp util

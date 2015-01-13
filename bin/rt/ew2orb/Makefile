@@ -11,6 +11,7 @@ fflags=
 ldflags=
 ldlibs= -lbrttutil -lbrttpkt $(ORBLIBS) $(THREAD)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

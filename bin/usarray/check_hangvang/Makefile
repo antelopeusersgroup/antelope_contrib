@@ -1,13 +1,8 @@
+BIN  = check_hangvang
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-BIN= check_hangvang 
-
-PF= check_hangvang.pf 
-
-MAN1=  check_hangvang.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-CLEAN=
-
 DIRS=
-

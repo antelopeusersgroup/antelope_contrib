@@ -1,8 +1,7 @@
-BIN=dlmon2snw
-MAN1=dlmon2snw.1
+BIN  = dlmon2snw
+MAN1 = $(BIN).1
 
-#ldlibs=$(DBLIBS)
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

@@ -1,10 +1,13 @@
-BIN=gclfmath
-MAN1=gclfmath.1
+BIN  = gclfmath
+MAN1 = $(BIN).1
 
-ldlibs=-lm -lgclgrid -lseispp -lperf $(DBLIBS) 
+ldlibs=-lm -lgclgrid -lseispp -lperf $(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-OBJS=gclfmath.o
+
+OBJS=$(BIN).o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

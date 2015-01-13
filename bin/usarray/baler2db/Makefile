@@ -1,9 +1,8 @@
-BIN=baler2db
-PF=baler2db.pf
-MAN1=baler2db.1
+BIN  = baler2db
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-#ldlibs=$(DBLIBS)
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

@@ -1,8 +1,7 @@
 BIN=gap_status
 MAN1=gap_status.1
 
-#ldlibs=$(DBLIBS)
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

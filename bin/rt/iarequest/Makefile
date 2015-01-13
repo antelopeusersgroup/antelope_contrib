@@ -1,6 +1,6 @@
-BIN = iarequest
-PF= iarequest.pf
+BIN  = iarequest
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1 = iarequest.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

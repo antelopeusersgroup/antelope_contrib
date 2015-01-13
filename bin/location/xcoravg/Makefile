@@ -1,11 +1,14 @@
-BIN=xcoravg
+BIN  = xcoravg
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
-MAN1=xcoravg.1
-PF=xcoravg.pf
-ldlibs=	$(DBLIBS) -lseispp
+ldlibs=$(DBLIBS) -lseispp
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-OBJS=xcoravg.o
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

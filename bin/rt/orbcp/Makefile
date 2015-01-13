@@ -1,18 +1,16 @@
-BIN = orbcp
+BIN  = orbcp
+MAN1 = $(BIN).1
 
-MAN1 = orbcp.1
-
-cflags =  -g
-ldflags = 
+cflags = -g
+ldflags =
 ldlibs= $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
-OBJS= \
-	orbcp.o
+OBJS= $(BIN).o
 
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-# $Id$ 

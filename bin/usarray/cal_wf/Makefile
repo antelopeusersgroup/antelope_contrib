@@ -1,6 +1,7 @@
-BIN=cal_wf
-MAN1=cal_wf.1
+BIN  = cal_wf
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

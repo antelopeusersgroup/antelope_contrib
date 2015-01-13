@@ -1,7 +1,7 @@
-BIN = orbdlstat2xml
+BIN  = orbdlstat2xml
+MAN1 = $(BIN).1
 
-MAN1 = orbdlstat2xml.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

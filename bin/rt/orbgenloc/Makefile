@@ -1,20 +1,19 @@
-BIN=orbgenloc
-MAN1=orbgenloc.1
-PF=orbgenloc.pf
+BIN  = orbgenloc
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
 cflags= #-xpg
-ldlibs= -lgenloc $(PERFLIBS) $(ORBLIBS) $(F77LIBS) 
+ldlibs= -lgenloc $(PERFLIBS) $(ORBLIBS) $(F77LIBS)
 
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
-SRCS= orbgenloc.c maketmpdb.c  orb_arrivals_in.c 
+SRCS = $(BIN).c maketmpdb.c  orb_arrivals_in.c
 
 OBJS=$(SRCS:.c=.o)
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 lint: $(SRCS)
-	lint $(SRCS) -I/opt/antelope/solaris/include -I/usr/openwin/include  
-# $Id$ 
+	lint $(SRCS) -I/opt/antelope/solaris/include -I/usr/openwin/include

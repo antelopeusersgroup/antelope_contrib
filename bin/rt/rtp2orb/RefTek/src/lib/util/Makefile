@@ -4,6 +4,7 @@ MAN3=
 
 cflags= -I../../include
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=
@@ -17,10 +18,10 @@ OBJS= 	bcd2long.o \
 	string.o \
 	swap.o \
 	timefunc.o \
-	timer.o 
+	timer.o
 
 
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $(OBJS) 
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@

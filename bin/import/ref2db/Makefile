@@ -1,21 +1,21 @@
-# %W% %G% 
-# Makefile for ref2db
+BIN  = ref2db
+MAN1 = $(BIN).1
 
-BIN = ref2db
-MAN1=ref2db.1   
+ldlibs = -ldefunctpkt $(ORBLIBS)
 
-ldlibs	=-ldefunctpkt $(ORBLIBS)
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-OBJS 	= ref2db.o\
-	  openIP.o\
-	  parfile.o\
-	  read_input.o\
-	  read_psclIP.o\
-	  record.o\
-	  save_seed.o\
-	  util.o\
-	  valid_pkt.o\
-	  wrt2db.o
+
+OBJS  = $(BIN).o
+OBJS += openIP.o
+OBJS += parfile.o
+OBJS += read_input.o
+OBJS += read_psclIP.o
+OBJS += record.o
+OBJS += save_seed.o
+OBJS += util.o
+OBJS += valid_pkt.o
+OBJS += wrt2db.o
+
 $(BIN):	$(OBJS)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)

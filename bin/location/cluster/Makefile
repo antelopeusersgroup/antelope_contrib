@@ -1,11 +1,15 @@
-BIN=cluster
-PF=cluster.pf
+BIN  = cluster
+PF   = $(BIN).pf
 
-MAN1=	cluster.1
-ldlibs=-lgenloc -lgclgrid -lperf -lglputil -ltrvltm -lseispp -lperf $(DBLIBS) $(TRLIBS)
+MAN1 = $(BIN).1
 
-include $(ANTELOPEMAKE)  	
+ldlibs  = -lgenloc -lgclgrid -lperf -lglputil -ltrvltm -lseispp -lperf
+ldlibs += $(DBLIBS) $(TRLIBS)
 
-OBJS=cluster.o
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

@@ -1,8 +1,8 @@
-BIN=db2pfstream
-DLIB=$(LIB:.a=$(DSUFFIX))
-PF=db2pfstream.pf
+BIN  = db2pfstream
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1=db2pfstream.1
+DLIB=$(LIB:.a=$(DSUFFIX))
 #ldlibs=-lglputil  -xlic_lib=sunperf,fui,fai,fsu $(DBLIBS)
 #ldlibs=-lglputil  -xlic_lib=sunperf $(DBLIBS) -lpfstream -lbrttutil
 ldlibs=-lglputil  -lperf $(DBLIBS) -lpfstream -lbrttutil
@@ -12,7 +12,8 @@ SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
-OBJS=db2pfstream.o
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

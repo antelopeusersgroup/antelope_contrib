@@ -1,13 +1,13 @@
-BIN= dbnew2orb
-PF=dbnew2orb.pf
-MAN1=dbnew2orb.1
-ldlibs=	-lbrttutil $(ORBLIBS)
+BIN  = dbnew2orb
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+ldlibs = -lbrttutil $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
-#SUBDIR=/local
-OBJS= dbnew2orb.o
+OBJS= $(BIN).o
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

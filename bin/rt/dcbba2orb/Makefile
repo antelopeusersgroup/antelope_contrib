@@ -1,8 +1,11 @@
-BIN=dcbba2orb
-MAN1=dcbba2orb.1
-PF=dcbba2orb.pf
-ldlibs=$(STOCKLIBS) $(ORBLIBS)
+BIN  = dcbba2orb
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
+
+ldlibs = $(STOCKLIBS) $(ORBLIBS)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-verifyman: dcbba2orb.1
-	nroff -man dcbba2orb.1
+verifyman: $(MAN1)
+	nroff -man $(MAN1)

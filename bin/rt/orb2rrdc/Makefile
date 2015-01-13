@@ -1,6 +1,6 @@
-BIN= orb2rrdc
-PF=  orb2rrdc.pf
-MAN1 = orb2rrdc.1
+BIN  = orb2rrdc
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
 CLEAN=
 
@@ -9,6 +9,7 @@ fflags=
 ldflags=
 ldlibs= -lbrttpkt $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

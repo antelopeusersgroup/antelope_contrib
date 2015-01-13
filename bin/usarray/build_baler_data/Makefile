@@ -1,6 +1,7 @@
-BIN=build_baler_data
-MAN1=build_baler_data.1
+BIN  = build_baler_data
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

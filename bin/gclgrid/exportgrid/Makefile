@@ -1,9 +1,12 @@
-BIN=exportgrid
-MAN1=exportgrid.1
+BIN  = exportgrid
+MAN1 = $(BIN).1
 cflags=-g
 ldlibs=-lseispp -ltrvltm -lgclgrid $(TRLIBS) $(DBLIBS) -lperf -lm -lseispp
 
-include $(ANTELOPEMAKE) 
-OBJS=exportgrid.o
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS=$(BIN).o
+
 $(BIN) : $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

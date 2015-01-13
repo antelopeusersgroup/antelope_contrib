@@ -1,10 +1,9 @@
-MAN1=taup_convert.1
-BIN=taup_convert
+BIN  = taup_convert
+MAN1 = $(BIN).1
 
-ldlibs=  -ltttaup $(STOCKLIBS)
+ldlibs = -ltttaup $(STOCKLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=
-
-# $Id$ 
