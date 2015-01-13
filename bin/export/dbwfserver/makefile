@@ -1,4 +1,3 @@
-
 BIN = dbwfserver_extract dbwfserver
 PF =  dbwfserver.pf
 MAN1 = dbwfserver.1
@@ -9,18 +8,14 @@ DATA = __init__.py \
        server.py \
        resource.py \
        dbcentral.py \
-       config.py 
+       config.py
 
 CLEAN = *.pyc *.o
 UNINSTALL = $(ANTELOPE)/data/$(DATADIR)/*.pyc $(ANTELOPE)/data/$(DATADIR)/*.pyc
 
 ldlibs=-lxtra $(TRLIBS) $(GPLLIBS)
 
-#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-#include $(ANTELOPEMAKELOCAL)
-
-#SUBDIR= /local
 
 DIRS = Contents

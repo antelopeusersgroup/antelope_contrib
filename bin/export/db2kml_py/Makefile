@@ -1,5 +1,6 @@
-BIN= db2kml_py
-PF= db2kml_py.pf
-MAN1 = db2kml_py.1
+BIN  = db2kml_py
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

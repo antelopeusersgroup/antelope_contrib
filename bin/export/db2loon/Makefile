@@ -1,10 +1,8 @@
-BIN= db2loon
+BIN  = db2loon
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
-MAN1= db2loon.1
-PF= db2loon.pf
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=
-
-$(BIN): $(BIN).xpl

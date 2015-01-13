@@ -1,10 +1,8 @@
-BIN= db2pgc
+BIN  = db2pgc
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
-MAN1= db2pgc.1
-PF= db2pgc.pf
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=
-
-$(BIN): $(BIN).xpl

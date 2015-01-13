@@ -8,11 +8,6 @@ DATA = excanvas.pack.js \
     jquery.tablesorter-2.0.3.min.js \
     jquery.cookie.js \
     dbwfserver.js
-    
 
-#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-#include $(ANTELOPEMAKELOCAL)
-
-#SUBDIR= /local

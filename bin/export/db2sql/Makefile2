@@ -1,4 +1,3 @@
-
 BIN= db2sql
 PF= db2sql.pf
 
