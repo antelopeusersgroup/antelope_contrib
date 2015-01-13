@@ -1,7 +1,7 @@
-BIN=dbmap_gui
-PF= dbmap_gui.pf
+BIN  = dbmap_gui
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1=dbmap_gui.1
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
-#SUBDIR=/local

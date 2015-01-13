@@ -1,4 +1,5 @@
-BIN= show_stalta
-MAN1 = show_stalta.1
+BIN  = show_stalta
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

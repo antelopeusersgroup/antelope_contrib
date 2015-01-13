@@ -1,15 +1,17 @@
-BIN= dbfix_phase
-PF=dbfix_phase.pf
-MAN1=dbfix_phase.1
-CLEAN= 
+BIN  = dbfix_phase
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+CLEAN=$(BIN)
 cflags=
 ldflags=
-ldlibs=	$(DBLIBS)
+ldlibs=$(DBLIBS)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-#SUBDIR=/local
-DIRS=	
-OBJS= dbfix_phase.o
+
+DIRS=
+OBJS= $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-

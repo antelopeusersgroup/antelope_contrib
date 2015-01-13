@@ -4,8 +4,5 @@ DATA = edu.ucsd.cmd.rtprocs-nrpe
 DATADIR = intermapper/probes
 CLEAN = $(BIN) *.pd.1 *.pd.3p
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKELOCAL)
-include ../perldoc.mk

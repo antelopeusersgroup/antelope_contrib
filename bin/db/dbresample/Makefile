@@ -1,9 +1,14 @@
-BIN=dbresample
-PF=dbresample.pf
-MAN1=dbresample.1
+BIN  = dbresample
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+
 ldlibs= -lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) -lperf -lgclgrid
-include $(ANTELOPEMAKE)  	
-OBJS=dbresample.o 
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

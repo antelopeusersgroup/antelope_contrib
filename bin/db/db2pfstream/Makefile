@@ -8,6 +8,7 @@ MAN1=db2pfstream.1
 ldlibs=-lglputil  -lperf $(DBLIBS) -lpfstream -lbrttutil
 ldlibs=-lglputil $(PERFLIBS) -lpfstream $(TRLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

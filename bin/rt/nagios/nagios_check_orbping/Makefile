@@ -4,10 +4,8 @@ DATA = edu.ucsd.cmd.orbstat-ping
 DATADIR = intermapper/probes
 CLEAN = $(BIN) $(DATA)
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-include $(ANTELOPEMAKELOCAL)
 
 % : %.id
 	getid < $@.id > $@

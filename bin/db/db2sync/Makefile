@@ -1,10 +1,6 @@
-
 BIN= db2sync
-
-PF= db2sync.pf 
-
+PF= db2sync.pf
 MAN1=  db2sync.1
 
-CLEAN=
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

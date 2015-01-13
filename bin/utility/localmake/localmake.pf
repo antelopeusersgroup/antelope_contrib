@@ -535,7 +535,7 @@ capabilities	&Arr{
 antelope	&env(ANTELOPE)
 dest	&antelope/local/include
 extra_rules	&Literal{
-.SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp .xpls .php
+.SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp .php
 
 LOCAL_TEMPLATE_DIR = $(ANTELOPE)/local/data/templates
 % : %.xphp $(LOCAL_TEMPLATE_DIR)/xphp
@@ -546,13 +546,6 @@ LOCAL_TEMPLATE_DIR = $(ANTELOPE)/local/data/templates
 .wwwphp.php : $(LOCAL_TEMPLATE_DIR)/wwwphp
 	$(RM) $@
 	cat $(LOCAL_TEMPLATE_DIR)/wwwphp $*.wwwphp > $@
-
-% : %.xpls $(ANTELOPE)/data/templates/xpls # undef any existing ANTELOPEMAKE rule
-
-% : %.xpls $(LOCAL_TEMPLATE_DIR)/xpls.header $(LOCAL_TEMPLATE_DIR)/xpls.footer
-	$(RM) $@
-	cat $(LOCAL_TEMPLATE_DIR)/xpls.header $*.xpls $(LOCAL_TEMPLATE_DIR)/xpls.footer > $@
-	chmod +x $@
 }
 header	&Literal{
 # DO NOT MODIFY -- Automatically generated file -- DO NOT MODIFY

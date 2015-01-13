@@ -1,4 +1,5 @@
-BIN= dbschema2prolog
-MAN1= dbschema2prolog.1
+BIN  = dbschema2prolog
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

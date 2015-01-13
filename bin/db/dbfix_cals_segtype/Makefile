@@ -1,6 +1,6 @@
+BIN  = dbfix_cals_segtype
 
-BIN= dbfix_cals_segtype
+MAN1 = $(BIN).1
 
-MAN1= dbfix_cals_segtype.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

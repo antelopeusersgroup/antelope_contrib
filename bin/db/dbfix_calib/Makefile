@@ -1,6 +1,5 @@
+BIN  = dbfix_calib
+MAN1 = $(BIN).1
 
-BIN= dbfix_calib
-
-MAN1= dbfix_calib.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

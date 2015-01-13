@@ -1,17 +1,17 @@
-BIN=   dbtimerf
-MAN1=  dbtimerf.1
+BIN  = dbtimerf
+MAN1 = $(BIN).1
 
+ldlibs= $(TRLIBS)
 
-ldlibs= $(TRLIBS) 
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
-OBJS=	dbtimerf.o \
-	write_my_wf.o \
-	gaussj.o  \
-	get_my_wf_.o
+OBJS  = $(BIN).o
+OBJS += write_my_wf.o
+OBJS += gaussj.o
+OBJS += get_my_wf_.o
 
-
-$(BIN): $(BIN).f $(OBJS) 
+$(BIN): $(BIN).f $(OBJS)
 	$(FC) $(FFLAGS) $(OBJS) $(LDFLAGS) $(LDLIBS) -o $@

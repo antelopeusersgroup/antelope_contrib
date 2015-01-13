@@ -1,4 +1,6 @@
-BIN= dbe_dbplotpicks
-MAN1= dbe_dbplotpicks.1
-include $(ANTELOPEMAKE)  	
+BIN  = dbe_dbplotpicks
+MAN1 = $(BIN).1
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 DIRS=

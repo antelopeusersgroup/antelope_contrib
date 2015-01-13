@@ -94,11 +94,22 @@ Compilation
 As a rule, all code in this repository must at a minimum:
 
 1. compile cleanly on the supported Antelope platforms
-2. contain a Makefile set up to use the `antelopemake(5)` rules
-3. include a man page describing how to use the program or library. This can either be
+2. contain a Makefile set up to use the `antelopemake(5)` rules, and the SUBDIR
+   macro set to `/contrib`
+3. include a man page describing how to use the program or library. This can be
    formatted by hand or created with a documentation package like Doxygen,
-   sphinx or javadoc. The resultant troff-formatted manpage must be committed
-   with the code.
+   sphinx, pod2man, or javadoc.
+
+Example Makefile
+----------------
+
+```
+BIN = myprog
+MAN1 = $(BIN).1
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+```
 
 The AUG wiki page on Github contains [instructions on how to get started
 contributing][contribute] to this repository.
