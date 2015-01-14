@@ -12,7 +12,7 @@
 CXXFLAGS += -I$(ANTELOPE)/contrib/include
 FEXTRA   += -I$(ANTELOPE)/contrib/include
 CEXTRA   += -I$(ANTELOPE)/contrib/include
-LDEXTRA = -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
+LDEXTRA  += -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
 
 
 # TODO: DLDFLAGS, DLDFLAGS1, and DLDFLAGS2 need the install name changed on
