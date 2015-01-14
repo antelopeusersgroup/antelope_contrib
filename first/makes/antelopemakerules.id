@@ -4,11 +4,13 @@
 #TODO: work out final details with Kent - SUBDIR_CXXFLAGS and friends?
 # abuse lower-case variables that are historically for use by end Makefiles
 # to inject contrib paths
-cxxflags += -I $(ANTELOPE)/contrib/include
-fflags   += -I $(ANTELOPE)/contrib/include
-cflags   += -I $(ANTELOPE)/contrib/include
-# abuse LDEXTRA to insert contrib into LDFLAGS and the "static ::" rule before
-# the stock LDPATH
+#cxxflags += -I $(ANTELOPE)/contrib/include
+#fflags   += -I $(ANTELOPE)/contrib/include
+#cflags   += -I $(ANTELOPE)/contrib/include
+# abuse LDEXTRA and friends to insert contrib into LDFLAGS and the
+# "static ::" rule before # the stock LDPATH
+FEXTRA   += -I $(ANTELOPE)/contrib/include
+CEXTRA   += -I $(ANTELOPE)/contrib/include
 LDEXTRA = -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
 
 
