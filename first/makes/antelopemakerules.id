@@ -9,6 +9,7 @@
 #cflags   += -I $(ANTELOPE)/contrib/include
 # abuse LDEXTRA and friends to insert contrib into LDFLAGS and the
 # "static ::" rule before # the stock LDPATH
+CXXFLAGS += -I $(ANTELOPE)/contrib/include
 FEXTRA   += -I $(ANTELOPE)/contrib/include
 CEXTRA   += -I $(ANTELOPE)/contrib/include
 LDEXTRA = -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
