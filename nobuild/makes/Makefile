@@ -10,7 +10,7 @@ Include:: install
 install:: solaris-makes
 
 SUBDIR=/contrib
-include $(ANTELOPEMAKE) 
+include $(ANTELOPEMAKE)
 
 solaris-makes :  $M/antelopemake $M/antelopemake.var solaris-gcc solaris-gcc-mix
 	case `uname -s` in \

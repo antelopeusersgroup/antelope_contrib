@@ -1,4 +1,4 @@
-DIRS=first makes lib bin data java adm
+DIRS=first lib bin data java adm
 FIRSTDIRS=first
 
 SUBDIR=/contrib
