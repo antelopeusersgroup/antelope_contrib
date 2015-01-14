@@ -2,6 +2,7 @@ ldlibs = -ldbmon $(DBLIBS)
 
 CLEAN = try_dbmon
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

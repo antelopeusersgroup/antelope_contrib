@@ -8,6 +8,7 @@ DATADIR = schemas/css3.0.ext
 
 DATA = eids
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS = xslt

@@ -4,4 +4,5 @@ PF=manage_paymentdb.pf
 DATA= payment1.0
 DATADIR = schemas
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

@@ -8,4 +8,5 @@ MAN1=\
 	remove_old_archive_waveforms.1 \
 	split_archive_database.1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

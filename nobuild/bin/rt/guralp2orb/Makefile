@@ -6,6 +6,7 @@ cflags =
 ldflags =
 ldlibs=  $(THREAD) -lbrttutil $(ORBLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DBG=-g
 

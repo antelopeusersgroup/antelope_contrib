@@ -10,5 +10,6 @@ MAN5=
 
 CLEAN= 		
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 			

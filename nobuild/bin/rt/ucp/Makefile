@@ -20,6 +20,7 @@ TCL= anzadp.tcl \
 DATADIR=tcl/ucp
 DATA=tclIndex $(TCL)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE) 
 DIRS=
 

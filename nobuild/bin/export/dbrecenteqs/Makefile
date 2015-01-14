@@ -8,4 +8,5 @@ MAN1= dbrecenteqs.1
 
 MAN3P= dbrecenteqs.3p 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

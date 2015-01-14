@@ -10,6 +10,7 @@ fflags=
 ldflags=
 ldlibs= -lcgeom $(TRLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

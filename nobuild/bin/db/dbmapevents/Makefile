@@ -5,6 +5,7 @@ MAN1=		dbmapevents.1
 
 ldlibs=		-lev -lscv2 -ldbl2 -lgrx -lmap $(X11LIBS) $(TRLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 DIRS=		

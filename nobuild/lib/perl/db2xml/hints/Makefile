@@ -1,5 +1,6 @@
 CLEAN= darwin.pl
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 all :: darwin.pl

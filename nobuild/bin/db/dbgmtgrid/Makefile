@@ -5,6 +5,7 @@ DATA= dbgmtgrid.pl
 MAN1= dbgmtgrid.1 extract_gmtgrid.1
 MAN3= dbgmtgrid.3
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

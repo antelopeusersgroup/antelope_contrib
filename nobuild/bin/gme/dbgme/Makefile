@@ -11,6 +11,7 @@ fflags=
 ldflags= 
 ldlibs= $(TRLIBS) -lcgeom  
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DBG= -g
 

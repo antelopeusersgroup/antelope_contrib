@@ -11,6 +11,7 @@ fflags=
 ldflags=
 ldlibs= -lpfxml $(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DBG= -g

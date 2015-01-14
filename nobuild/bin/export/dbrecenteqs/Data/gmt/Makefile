@@ -5,4 +5,5 @@ DATA= dbrecenteqs.cpt \
       dbrecenteqs_pga.cpt \
       depthmag2.cpt 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

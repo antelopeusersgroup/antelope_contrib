@@ -9,6 +9,7 @@ PF = orbampmag.pf mb.pf ml.pf ms.pf
 ldflags = 
 ldlibs = -lbrttpkt -lwffil -lbrttutil $(ORBLIBS) $(THREAD)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 #SUBDIR=/local

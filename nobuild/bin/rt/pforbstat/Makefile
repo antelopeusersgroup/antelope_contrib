@@ -9,6 +9,7 @@ fflags=
 ldflags=
 ldlibs= -lpforbstat $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

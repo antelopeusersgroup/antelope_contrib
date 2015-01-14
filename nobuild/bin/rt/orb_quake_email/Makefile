@@ -4,6 +4,7 @@ PF=orb_quake_email.pf
 MAN1=orb_quake_email.1
 
 ldlibs= $(DBLIBS) $(ORBLIBS)
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 			
 DIRS=			

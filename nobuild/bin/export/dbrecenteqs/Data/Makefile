@@ -10,4 +10,5 @@ DATA= legend.gif \
       igpp_logo.gif \
       your_logo.gif 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

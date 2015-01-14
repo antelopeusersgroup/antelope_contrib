@@ -1,5 +1,6 @@
 # Makefile for xfer contribution to idatap library
 cflags  = -I../include
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 SRCS    = \

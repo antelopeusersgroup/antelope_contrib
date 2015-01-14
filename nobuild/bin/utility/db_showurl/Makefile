@@ -11,4 +11,5 @@ fflags=
 ldflags=
 ldlibs=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

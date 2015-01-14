@@ -11,6 +11,7 @@ fflags=
 ldflags=
 ldlibs= $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=

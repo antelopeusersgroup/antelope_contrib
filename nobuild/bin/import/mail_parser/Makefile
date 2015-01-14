@@ -20,6 +20,7 @@ MAN3= submit_pepp.3 \
 
 CLEAN=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 mail_parser_wrapper : mail_parser_wrapper.csh.id

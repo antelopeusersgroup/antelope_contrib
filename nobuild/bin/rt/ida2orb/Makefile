@@ -5,6 +5,7 @@ cflags=	-Iidatap-1.2.2/include
 fflags= 	
 ldlibs=	idatap-1.2.2/libidatap.a $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=idatap-1.2.2
 			
