@@ -6,3 +6,5 @@ db2sql.c
 db2sql.bs
 runmake
 *.yml
+dbmon.bs
+dbmon.c
