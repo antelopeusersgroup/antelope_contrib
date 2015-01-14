@@ -23,7 +23,7 @@ CONTRIB_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
 	cat $(CONTRIB_TEMPLATE_DIR)/xpls.header $*.xpls $(CONTRIB_TEMPLATE_DIR)/xpls.footer > $@
 	chmod +x $@
 
-ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1) \
+ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1)
 ALL : $(PMAN3:%.pm=%.pd.3p)
 
 MAN :: $(PMAN1:%=$(DEST)/man/man1/%.1)
