@@ -4,7 +4,7 @@ PF  = sendMRC.pf
 
 ldlibs	= -ldefunctpkt $(ORBLIBS)
 
-SUBDIR=/contrbi
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 OBJSM	= mrc.o\
