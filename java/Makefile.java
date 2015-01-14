@@ -13,6 +13,7 @@ DATADIR = java
 DATA = antelope.jar
 MAN1 = orbstatj.1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
@@ -60,4 +61,3 @@ install::   $(ANTELOPE)/man/javadoc
 
 uninstall::
 	@echo uninstalling $(ANTELOPE)/man/javadoc ; if [ -d $(ANTELOPE)/man/javadoc ] ; then $(RM) -r $(ANTELOPE)/man/javadoc ; fi
-
