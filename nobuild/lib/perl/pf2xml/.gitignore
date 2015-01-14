@@ -1,1 +1,8 @@
 *.yml
+Makefile.PL
+blib
+perl_makefile
+pf2xml.bs
+pf2xml.c
+pm_to_blib
+runmake
