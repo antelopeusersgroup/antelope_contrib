@@ -1,6 +1,20 @@
 # These are additional makerules for the Antelope Contributed Software
 # repository
 
+#TODO: work out final details with Kent - SUBDIR_CXXFLAGS and friends?
+# abuse lower-case variables that are historically for use by end Makefiles
+# to inject contrib paths
+cxxflags += -I $(ANTELOPE)/contrib/include
+fflags   += -I $(ANTELOPE)/contrib/include
+cflags   += -I $(ANTELOPE)/contrib/include
+# abuse LDEXTRA to insert contrib into LDFLAGS and the "static ::" rule before
+# the stock LDPATH
+LDEXTRA = -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
+
+
+# TODO: DLDFLAGS, DLDFLAGS1, and DLDFLAGS2 need the install name changed on
+# Darwin - maybe with a GNU make regex substitution or some other hackery?
+
 CONTRIB_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
 % : %.xpls $(ANTELOPE)/data/templates/xpls # undef any existing ANTELOPEMAKE rule
 
@@ -9,7 +23,7 @@ CONTRIB_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
 	cat $(CONTRIB_TEMPLATE_DIR)/xpls.header $*.xpls $(CONTRIB_TEMPLATE_DIR)/xpls.footer > $@
 	chmod +x $@
 
-ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1)
+ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1) \
 ALL : $(PMAN3:%.pm=%.pd.3p)
 
 MAN :: $(PMAN1:%=$(DEST)/man/man1/%.1)
@@ -39,3 +53,12 @@ $(DEST)/man/man1/%.1 : %.pd.1
 $(DEST)/man/man3/%.3p : %.pd.3p
 	install $< $@
 
+# Augment the uninstall target
+uninstall ::
+	@echo uninstalling $(PMAN1) $(PMAN3)
+	@-if [ -d $(DEST)/man/man1 ] ; then \
+		(cd $(DEST)/man/man1 ; $(RM) -r $(PMAN1:%=%.1) $(PMAN1:%.xpls=%.1) $(PMAN1:%.xpl=%1)) \
+	fi
+	@-if [ -d $(DEST)/man/man3 ] ; then \
+		(cd $(DEST)/man/man3 ; $(RM) -r $(PMAN3:%.pm=%.3p)) \
+	fi
