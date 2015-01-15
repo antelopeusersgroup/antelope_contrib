@@ -353,9 +353,9 @@ class Locator:
                                                       predicted_travel_times,
                                                       li)
         logger.debug("[evid: %d] Grid search complete." % event.evid)
-        print '!!!'
-        print event.time - otime
-        print '!!!'
+        #print '!!!'
+        #print event.time - otime
+        #print '!!!'
 #Best-fit grid point
         glon = qlon[minx]
         glat = qlat[miny]
@@ -461,7 +461,7 @@ class Locator:
         ind = li.convert_to_1D(ix, iy, iz)
         t0 = array([arrival.time - pred_tts[arrival.sta][ind] for arrival in arrivals]).mean()
         u = [ix, iy, iz, t0]
-        print u[0], u[1], u[2], u[3]
+        #print u[0], u[1], u[2], u[3]
         tt000 = array([pred_tts[sta][ind] for sta in stas])
         if ix == li.nx - 1:
             dt_dx = None
@@ -526,7 +526,7 @@ class Locator:
         delta_u, residues, rank, sigma = linalg.lstsq(A, residuals)
 #Compute updated travel times
         u_prime = array([ix, iy, iz, t0]) + delta_u
-        print u_prime[0], u_prime[1], u_prime[2], u_prime[3]
+        #print u_prime[0], u_prime[1], u_prime[2], u_prime[3]
         tt_updated_temp = tt000 + (A * delta_u).sum(axis=1)
         tt_updated = {}
         i = 0
@@ -581,7 +581,7 @@ class Locator:
             delta_u, residues, rank, sigma = linalg.lstsq(A, residuals)
 #Compute updated travel times
             u_prime = u_prime + delta_u
-            print u_prime[0], u_prime[1], u_prime[2], u_prime[3]
+            #print u_prime[0], u_prime[1], u_prime[2], u_prime[3]
             tt_updated_temp = array([tt_updated[sta] for sta in stas]) + (A * delta_u).sum(axis=1)
             tt_updated = {}
             i = 0
