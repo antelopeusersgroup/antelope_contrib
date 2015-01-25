@@ -18,6 +18,8 @@ Metadata load_common_GCL_attributes(BasicGCLgrid *g)
     m.put("dx2_nom",g->dx2_nom);
     m.put("n1",g->n1);
     m.put("n2",g->n2);
+    m.put("i0",g->i0);
+    m.put("j0",g->j0);
     m.put("x1low",g->x1low);
     m.put("x1high",g->x1high);
     m.put("x2low",g->x2low);
