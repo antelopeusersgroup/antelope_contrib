@@ -99,6 +99,8 @@ As a rule, all code in this repository must at a minimum:
 3. include a man page describing how to use the program or library. This can be
    formatted by hand or created with a documentation package like Doxygen,
    sphinx, pod2man, or javadoc.
+4. include a file called `LICENSE` that clearly states the license that program
+   is released with.
 
 Example Makefile
 ----------------
@@ -113,5 +115,13 @@ include $(ANTELOPEMAKE)
 
 The AUG wiki page on Github contains [instructions on how to get started
 contributing][contribute] to this repository.
+
+<h3 id="licensing">Licensing</h3>
+
+All code in this repository is expected to be readily distributed. In order for pre-compiled versions
+of your code to be included with the Antelope distribution, it must be accompanied by a LICENSE file,
+and be of a type that lends itself to inclusion in commercial packages. Generally speaking, BSD and MIT
+style licenses are ok, but GNU GPL and LGPL are not. For more information, please see
+[BRTT's contrib licensing page](http://www.brtt.com/contrib_software.html).
 
   [contribute]: https://github.com/antelopeusersgroup/antelope_contrib/wiki/Setting-up-to-modify-Antelope-contrib-via-git

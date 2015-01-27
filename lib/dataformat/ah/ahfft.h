@@ -1,0 +1,15 @@
+extern void four_ ( float *data, int *n, int *isign );
+extern void ifour_ ( int *data, int *n, int *isign );
+extern void cfour ( float *data, int n, int isign );
+extern void cifour ( int *data, int n, int isign );
+extern void fftr_ ( float *x, int *n );
+extern void cfftr ( float *x, int n );
+extern void ifftr_ ( int *x, int *n );
+extern void cifftr ( int *x, int n );
+extern void fftri_ ( float *x, int *n );
+extern void cfftri ( float *x, int n );
+extern void ifftri_ ( int *x, int *n );
+extern void cifftri ( int *x, int n );
+extern void discrete_fft ( complex * z1, int n, int isign );
+extern void fftstp ( complex * zin, int after, int std_now, int before, complex * zout, int isign );
+extern void real_dis_fft ( float *data, int npts, int isign );
