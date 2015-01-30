@@ -1,0 +1,13 @@
+extern float dot_product ( float *x, unsigned int xstep, float *y, unsigned int ystep, int npts );
+extern float reverse_dot_product ( float *x, unsigned int xstep, float *y, unsigned int ystep, int npts );
+extern void reverse_order ( float *data, int npts, unsigned int step );
+extern void norm_by_length ( float *data, int npts, unsigned int step );
+extern float maxmag ( float *data, int npts, unsigned int step );
+extern float max_value ( float *data, int npts, unsigned int step );
+extern float min_value ( float *data, int npts, unsigned int step );
+extern void scale ( float factor, float *data, int npts, unsigned int step );
+extern void norm_by_maxmag ( float *data, int npts, unsigned int step );
+extern void covariance ( float *x, int nx, unsigned int xstep, float *y, int ny, unsigned int ystep, float *c, int nc, unsigned int cstep );
+extern void correlation ( float *x, int nx, unsigned int xstep, float *y, int ny, unsigned int ystep, float *c, int nc, unsigned int cstep );
+extern void autocovariance ( float *x, int nx, unsigned int xstep, float *a, int na, unsigned int astep );
+extern void autocorrelation ( float *x, int nx, unsigned int xstep, float *a, int na, unsigned int astep );

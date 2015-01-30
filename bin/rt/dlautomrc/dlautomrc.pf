@@ -20,6 +20,7 @@ sensor_mv &Arr{			# with -d, override default out_of_range value with sensor spe
 	sts2_g3	50	
         sts2_5  50
         sts4_b  50
+        sts5a   50
 	cmg3t	25	
         trillium_120    20
         trillium_240_1  20

@@ -290,7 +290,7 @@ long int vector_fwrite(float *x,int n, string fname) throw(SeisppError);
 //\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 **/
-int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap& am)
+long dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap& am)
 		throw(SeisppError);
 /*!
 // Save the data in a ThreeComponentSeismogram object to a database.
@@ -333,7 +333,7 @@ int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap&
 // this function will write ONE AND ONLY ONE DATABASE ROW PER OBJECT.
 // This means somewhat by definition that the output table CANNOT be
 // wfdisc if this function is called.  Consequently, this routine will
-// throw an exception and do nothing if table=="wfdisc".
+// throw an exception and do nothing if table!="wfprocess".
 //
 //\exception SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
@@ -349,8 +349,38 @@ int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap&
 //\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 **/
-int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table, 
+long dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table, 
 	MetadataList& md, AttributeMap& am);
+/*! \brief Save the data in a ThreeComponentSeismogram object 
+  to a database with orientation data.
+
+  This procedure is identical to the dbsave procedure with the 
+  same argument signature.  The difference is that the data are
+  save directly without an automatic reorientation to cardinal 
+  directions used in that procedure.  This procedure requires
+  an extension table called tmatrix to save the orientation data.
+  This procedure actually calls the plain dbsave routine in
+  a mode where the automatic reorientation is disabled.
+  Details described there apply here too.
+
+\exception SeisppError object if there are any problems saving the data or 
+    writing attributes into the database.
+
+\return -1 if live is false, record number of added row otherwise
+
+\param ts is the ThreeComponentSeismogram object to be saved.
+\param db is a Datascope database pointer.  It need only point at a valid
+    open database.
+\param table is the name of the table to index this time series data
+   (e.g. "wfdisc").
+ \param md  is the list of metadata to be dumped to the database as described above.
+ \param am is a mapping operator that defines how internal names are to be mapped
+    to database attribute names and tables.  
+\param chanmap is a set of channel names to map each component to channel code (see above)
+**/
+long dbsave_oriented(ThreeComponentSeismogram& ts,Dbptr db,
+	string table, MetadataList& md, 
+	AttributeMap& am);
 /*!
 // Save the data in a ThreeComponentSeismogram object to a database.
 // This function works only with an Antelope (Datascope) database but the
@@ -412,7 +442,7 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table,
 //\param chanmap is a set of channel names to map each component to channel code (see above)
 //\param output_as_standard when true forces data to be converted to ew,ns, z system
 **/
-int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
+long dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am, vector<string>chanmap,bool output_as_standard);
 /*!
@@ -465,7 +495,7 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 //\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 **/
-int dbsave(ComplexTimeSeries& ts,Dbptr db,
+long dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
 

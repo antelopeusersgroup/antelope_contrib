@@ -8,18 +8,8 @@ import resource as sysresource
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-
-class event2jsonException(Exception):
-    """
-    Local class to raise Exceptions to the
-    rtwebserver framework.
-    """
-    def __init__(self, msg):
-        self.msg = msg
-    def __repr__(self):
-        return 'event2jsonException: %s' % (self.msg)
-    def __str__(self):
-        return repr(self)
+# safe to import * here
+from rtwebserver.db2json_libs import *
 
 if __name__ == '__main__':
     raise event2jsonException( 'DO NOT RUN DIRECTLY!!! Use rtwebserver framework' )
@@ -44,36 +34,9 @@ try:
 except Exception,e:
     raise event2jsonException( 'Problems loading local libs: %s' % e )
 
-
-def test_table(dbname,tbl,verbose=False):
-    """
-    Verify that we can work with table.
-    Returns True if valid and we see data.
-    """
-
-    path = False
-
-    try:
-        with datascope.closing(datascope.dbopen( dbname , 'r' )) as db:
-            db = db.lookup( table=tbl )
-
-            if not db.query(datascope.dbTABLE_PRESENT):
-                if verbose: elog.complain( 'No dbTABLE_PRESENT on %s' % dbname )
-                return False
-
-            if not db.record_count:
-                if verbose: elog.complain( 'No %s.record_count' % dbname )
-                return False
-
-            path = db.query('dbTABLE_FILENAME')
-    except Exception,e:
-        elog.complain("Prolembs with db[%s]: %s" % (dbname,e) )
-        return False
-
-    return path
-
 class Events(Resource):
 
+    # isLeaf not working in rtwebserver for now...
     isLeaf = True
     allowedMethods = ("GET")
 
@@ -83,15 +46,15 @@ class Events(Resource):
         """
 
         self.dbs = {}
-        self.verbose = stock.yesno( config.sitedict['siteconfig']['verbose'] )
-        self.debug = stock.yesno( config.sitedict['siteconfig']['debug'] )
-        self.timeformat = config.sitedict['siteconfig']['timeformat']
-        self.timezone = config.sitedict['siteconfig']['timezone']
-        self.time_limit = config.sitedict['siteconfig']['time_limit']
-        self.refresh = int(config.sitedict['siteconfig']['refresh'])
-        self.dbname = config.sitedict['siteconfig']['databases']
+        self.verbose = stock.yesno( config.sitedict['event2jsonconfig']['verbose'] )
+        self.debug = stock.yesno( config.sitedict['event2jsonconfig']['debug'] )
+        self.timeformat = config.sitedict['event2jsonconfig']['timeformat']
+        self.timezone = config.sitedict['event2jsonconfig']['timezone']
+        self.time_limit = config.sitedict['event2jsonconfig']['time_limit']
+        self.refresh = int(config.sitedict['event2jsonconfig']['refresh'])
+        self.dbname = config.sitedict['event2jsonconfig']['databases']
         try:
-            self.readableJSON = int(config.sitedict['siteconfig']['readableJSON'])
+            self.readableJSON = int(config.sitedict['event2jsonconfig']['readableJSON'])
         except:
             self.readableJSON = None
 

@@ -29,6 +29,8 @@ template <class T>
         g.dx2_nom=par.get_double("dx2_nom");
 	g.n1=par.get_int("n1");
 	g.n2=par.get_int("n2");
+	g.i0=par.get_int("i0");
+	g.j0=par.get_int("j0");
         /* There perhaps should be a way to force these to be 
            computed, but for now we assume they were set by 
            a writer and we don't need to compute them. */

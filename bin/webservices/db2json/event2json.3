@@ -97,13 +97,13 @@ the tool in the [site][pages] area of the parameter file. The [data][events]
 configuration use here will be the same values you will use on the URL when
 you try to query the tool.
 
-http://127.0.0.1:8000/data/events?db=ta
+http://127.0.0.1:8000/events?db=ta
 
 Example:
 
 .nf
 site &Arr{
-   siteconfig &Arr{
+   event2jsonconfig &Arr{
         debug           False
         verbose         True
         time_limit      999999999999
@@ -176,15 +176,9 @@ rtwebserver(1), rtwebserver_rpy(3y)
 .SH "BUGS AND CAVEATS"
 **** NO BRTT SUPPORT ****
 
-You need to copy the code to the folder structure running the rtwebserver
-instance. I'm not sure how to compile this and migrate the rpy file to a
-folder en $ANTELOPE and make it available systemwide.
-On the rtwebserver manpage we see that:
-
-The  pathnames  for  files  listed in the parameter file are relative to the
-current working directory in which rtwebserver is running, which may not be
-the same  as  the  directory  in which the parameter-file resides.
-
+You DON'T need to copy the code to the folder structure running the rtwebserver
+instance. Just make sure that you "make install;" the code and then set the
+absolute path on the rtwebserver.pf file for the rpy file.
 
 
 .SH AUTHOR
