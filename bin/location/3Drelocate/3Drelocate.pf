@@ -1,11 +1,15 @@
 earth_radius            6371.0
 tt_map_dir              /home/mcwhite/data/tt_maps
+
 frechet.in              ${ANTELOPE}/data/data/fm3d/frechet.in
 gridsave.in             ${ANTELOPE}/data/data/fm3d/gridsave.in
 interfaces.in           ${ANTELOPE}/data/data/fm3d/interfaces.in
 mode_set.in             ${ANTELOPE}/data/data/fm3d/mode_set.in
 receivers.in            ${ANTELOPE}/data/data/fm3d/receivers.in
-vgrids.in               ${ANTELOPE}/data/data/fm3d/vgrids.in
+vgrids_P                ${ANTELOPE}/data/data/fm3d/Vp/vgrids.in
+vgrids_S                ${ANTELOPE}/data/data/fm3d/Vs/vgrids.in
+
+use_S                   True
 
 propagation_grid &Arr{
     minlat      32.5

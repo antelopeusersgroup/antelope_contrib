@@ -37,7 +37,8 @@ def _main():
     from logging import getLogger
     from loctools3D.ant import pfile_2_cfg,\
                                    create_event_list,\
-                                   write_origin
+                                   write_origin,\
+                                   write_origerr
     from loctools3D.core_tools import Locator,\
                                     parse_cfg,\
                                     verify_config_file
@@ -80,13 +81,15 @@ def _main():
             for event in event_list:
                 origin = event.preferred_origin
                 logger.info('[evid: %d] Relocating.' % event.evid)
-                origin = locator.locate_eq(origin)
+                origin, origerr = locator.locate_eq(origin)
                 if origin == None:
                     logger.info('[evid: %d] Could not relocate.' % event.evid)
                     continue
                 logger.debug('[evid: %d] Writing origin to database.' %\
                         event.evid)
-                write_origin(origin, db)
+                orid = write_origin(origin, db)
+                origerr.set_orid(orid)
+                write_origerr(origerr, db)
                 logger.debug('[evid: %d] Finished writing origin to '\
                         'database.' % event.evid)
     return 0

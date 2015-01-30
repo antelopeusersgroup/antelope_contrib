@@ -165,7 +165,28 @@ def get_null_value(table, field):
                     'vmodel': '-',\
                     'commid': -1,\
                     'lddate': -9999999999.99900
-                    }
+                    },\
+            'origerr': {
+                    'orid': -1,\
+                    'sxx': -999999999.9999,\
+                    'syy': -999999999.9999,\
+                    'szz': -999999999.9999,\
+                    'stt': -999999999.9999,\
+                    'sxy': -999999999.9999,\
+                    'sxz': -999999999.9999,\
+                    'syz': -999999999.9999,\
+                    'stx': -999999999.9999,\
+                    'sty': -999999999.9999,\
+                    'stz': -999999999.9999,\
+                    'sdobs': -1.0000,\
+                    'smajax': -1.0000,\
+                    'sminax': -1.0000,\
+                    'strike': -1.00,\
+                    'sdepth': -1.0000,\
+                    'stime': -1.00,\
+                    'conf': 0.000,\
+                    'commid': -1,\
+                    'lddate': -9999999999.99900}
             }
     return nulls[table][field]
 
@@ -362,6 +383,32 @@ def create_station_list(view):
         station_list += [Station(sta, lat, lon, elev)]
     return station_list
 
+def write_origerr(origerr, dbout):
+    tbl_origerr = dbout.lookup(table='origerr')
+    origerr = map_null_values(tbl_origerr, origerr)
+    tbl_origerr.record = tbl_origerr.addnull()
+    tbl_origerr.putv(('orid', origerr.orid),
+                     ('sxx', origerr.sxx),
+                     ('syy', origerr.syy),
+                     ('szz', origerr.szz),
+                     ('stt', origerr.stt),
+                     ('sxy', origerr.sxy),
+                     ('sxz', origerr.sxz),
+                     ('syz', origerr.syz),
+                     ('stx', origerr.stx),
+                     ('sty', origerr.sty),
+                     ('stz', origerr.stz),
+                     ('sdobs', origerr.sdobs),
+                     ('smajax', origerr.smajax),
+                     ('sminax', origerr.sminax),
+                     ('strike', origerr.strike),
+                     ('sdepth', origerr.sdepth),
+                     ('stime', origerr.stime),
+                     ('conf', origerr.conf),
+                     ('commid', origerr.commid),
+                     ('lddate', origerr.lddate))
+    return 0
+
 def write_origin(origin, dbout):
     '''
     Write an loctools3D.core_tools.Origin object to an output databse.
@@ -430,7 +477,7 @@ def write_origin(origin, dbout):
     Out[11]: 0
     '''
     from time import time
-    tbl_origin = dbout.schema_tables['origin']
+    tbl_origin = dbout.lookup(table='origin')
     origin.orid = dbout.nextid('orid')
     origin = map_null_values(tbl_origin, origin)
     tbl_origin.record = tbl_origin.addnull()
@@ -507,7 +554,7 @@ def write_origin(origin, dbout):
                                                     stalat,
                                                     stalon)))
 
-    return 0
+    return origin.orid
 
 def map_null_values(table, obj):
     '''

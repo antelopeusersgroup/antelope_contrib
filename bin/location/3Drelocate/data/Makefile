@@ -1,3 +1,5 @@
+DIRS= Vp\
+	  Vs
 DATA= frechet.in\
 	  gridsave.in\
 	  interfaces.in\
@@ -5,6 +7,5 @@ DATA= frechet.in\
 	  propgrid.in\
 	  receivers.in\
 	  sources.in\
-	  vgrids.in
 DATADIR= data/fm3d
 include $(ANTELOPEMAKE)

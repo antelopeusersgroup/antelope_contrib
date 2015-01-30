@@ -65,7 +65,8 @@ def _parse_pfile(pfile):
                 'interfaces.in',
                 'mode_set.in',
                 'receivers.in',
-                'vgrids.in'):
+                'vgrids_P',
+                'vgrids_S'):
         string = pfile[key]
         match = pattern.search(string)
         while match != None:
@@ -80,78 +81,78 @@ def _parse_pfile(pfile):
 def _check_pfile(pfile):
     exit_flag = False
     prop_grid = pfile['propagation_grid']
-    vgrids_infile = open(pfile['vgrids.in'], 'r')
-    vgrids_infile.readline()
-    vgrids_nr, vgrids_nlat, vgrids_nlon = vgrids_infile.readline().split()
-    vgrids_dr, vgrids_dlat, vgrids_dlon = vgrids_infile.readline().split()
-    vgrids_minr, vgrids_minlat, vgrids_minlon = vgrids_infile.readline().split()
-    vgrids_infile.close()
-    vgrids_nr = int(vgrids_nr)
-    vgrids_nlat = int(vgrids_nlat)
-    vgrids_nlon = int(vgrids_nlon)
-    vgrids_dr = float(vgrids_dr)
-    vgrids_dlat = float(vgrids_dlat) * 180.0 / pi
-    vgrids_dlon = float(vgrids_dlon) * 180.0 / pi
-    vgrids_minr = float(vgrids_minr)
-    vgrids_minlat = float(vgrids_minlat) * 180.0 / pi
-    vgrids_minlon = float(vgrids_minlon) * 180.0 / pi
-    vgrids_maxr = vgrids_minr + (vgrids_nr - 1) * vgrids_dr
-    vgrids_maxlat = vgrids_minlat + (vgrids_nlat - 1) * vgrids_dlat
-    vgrids_maxlon = vgrids_minlon + (vgrids_nlon - 1) * vgrids_dlon
-    vgrids_violation_msg = "Propagation grid must be entirely contained by the"\
-            " second layer of the velocity grid. Edit the parameter file to "\
-            "satisfy the below requirement(s):"
-    print_vgrids_violation_msg = True
-    if prop_grid['minr'] < (vgrids_minr + vgrids_dr):
-        exit_flag = True
-        if print_vgrids_violation_msg:
-            logger.error(vgrids_violation_msg)
-            print_vgrids_violation_msg = False
-        logger.info("\t%.4f <= propagation_grid['minr'] <= %.4f" \
-                % ((vgrids_minr + vgrids_dr), (vgrids_maxr - vgrids_dr)))
-    if prop_grid['minr'] + (prop_grid['nr'] - 1) * prop_grid['dr'] > \
-                (vgrids_maxr - vgrids_dr):
-        exit_flag = True
-        if print_vgrids_violation_msg:
-            logger.error(vgrids_violation_msg)
-            print_vgrids_violation_msg = False
-        logger.info("\t%.4f <= propagation_grid['minr']  + "\
-                "(propagation_grid['nr'] - 1) * propagation_grid['dr'] <= "\
-                "%.4f" % ((vgrids_minr + vgrids_dr), (vgrids_maxr - vgrids_dr)))
-    if prop_grid['minlat'] < (vgrids_minlat + vgrids_dlat):
-        exit_flag = True
-        if print_vgrids_violation_msg:
-            logger.error(vgrids_violation_msg)
-            print_vgrids_violation_msg = False
-        logger.info("\t%.4f <= propagation_grid['minlat'] <= %.4f" \
-                % ((vgrids_minlat + vgrids_dlat), (vgrids_maxlat - vgrids_dlat)))
-    if prop_grid['minlat'] + (prop_grid['nlat'] - 1) * prop_grid['dlat'] > \
-                (vgrids_maxlat - vgrids_dlat):
-        exit_flag = True
-        if print_vgrids_violation_msg:
-            logger.error(vgrids_violation_msg)
-            print_vgrids_violation_msg = False
-        logger.info("\t%.4f <= propagation_grid['minlat']  + "\
-                "(propagation_grid['nlat'] - 1) * propagation_grid['dlat'] <= "\
-                "%.4f" % ((vgrids_minlat + vgrids_dlat),
-                          (vgrids_maxlat - vgrids_dlat)))
-    if prop_grid['minlon'] < (vgrids_minlon + vgrids_dlon):
-        exit_flag = True
-        if print_vgrids_violation_msg:
-            logger.error(vgrids_violation_msg)
-            print_vgrids_violation_msg = False
-        logger.info("\t%.4f <= propagation_grid['minlon'] <= %.4f" \
-                % ((vgrids_minlon + vgrids_dlon), (vgrids_maxlon - vgrids_dlon)))
-    if prop_grid['minlon'] + (prop_grid['nlon'] - 1) * prop_grid['dlon'] > \
-                (vgrids_maxlon - vgrids_dlon):
-        exit_flag = True
-        if print_vgrids_violation_msg:
-            logger.error(vgrids_violation_msg)
-            print_vgrids_violation_msg = False
-        logger.info("\t%.4f <= propagation_grid['minlon']  + "\
-                "(propagation_grid['nlon'] - 1) * propagation_grid['dlon'] <= "\
-                "%.4f" % ((vgrids_minlon + vgrids_dlon),
-                          (vgrids_maxlon - vgrids_dlon)))
+    for vgrids_infile in [open(pfile[vgrid], 'r') for vgrid in ('vgrids_P', 'vgrids_S')]:
+        vgrids_infile.readline()
+        vgrids_nr, vgrids_nlat, vgrids_nlon = vgrids_infile.readline().split()
+        vgrids_dr, vgrids_dlat, vgrids_dlon = vgrids_infile.readline().split()
+        vgrids_minr, vgrids_minlat, vgrids_minlon = vgrids_infile.readline().split()
+        vgrids_infile.close()
+        vgrids_nr = int(vgrids_nr)
+        vgrids_nlat = int(vgrids_nlat)
+        vgrids_nlon = int(vgrids_nlon)
+        vgrids_dr = float(vgrids_dr)
+        vgrids_dlat = float(vgrids_dlat) * 180.0 / pi
+        vgrids_dlon = float(vgrids_dlon) * 180.0 / pi
+        vgrids_minr = float(vgrids_minr)
+        vgrids_minlat = float(vgrids_minlat) * 180.0 / pi
+        vgrids_minlon = float(vgrids_minlon) * 180.0 / pi
+        vgrids_maxr = vgrids_minr + (vgrids_nr - 1) * vgrids_dr
+        vgrids_maxlat = vgrids_minlat + (vgrids_nlat - 1) * vgrids_dlat
+        vgrids_maxlon = vgrids_minlon + (vgrids_nlon - 1) * vgrids_dlon
+        vgrids_violation_msg = "Propagation grid must be entirely contained by the"\
+                " second layer of the velocity grid. Edit the parameter file to "\
+                "satisfy the below requirement(s):"
+        print_vgrids_violation_msg = True
+        if prop_grid['minr'] < (vgrids_minr + vgrids_dr):
+            exit_flag = True
+            if print_vgrids_violation_msg:
+                logger.error(vgrids_violation_msg)
+                print_vgrids_violation_msg = False
+            logger.info("\t%.4f <= propagation_grid['minr'] <= %.4f" \
+                    % ((vgrids_minr + vgrids_dr), (vgrids_maxr - vgrids_dr)))
+        if prop_grid['minr'] + (prop_grid['nr'] - 1) * prop_grid['dr'] > \
+                    (vgrids_maxr - vgrids_dr):
+            exit_flag = True
+            if print_vgrids_violation_msg:
+                logger.error(vgrids_violation_msg)
+                print_vgrids_violation_msg = False
+            logger.info("\t%.4f <= propagation_grid['minr']  + "\
+                    "(propagation_grid['nr'] - 1) * propagation_grid['dr'] <= "\
+                    "%.4f" % ((vgrids_minr + vgrids_dr), (vgrids_maxr - vgrids_dr)))
+        if prop_grid['minlat'] < (vgrids_minlat + vgrids_dlat):
+            exit_flag = True
+            if print_vgrids_violation_msg:
+                logger.error(vgrids_violation_msg)
+                print_vgrids_violation_msg = False
+            logger.info("\t%.4f <= propagation_grid['minlat'] <= %.4f" \
+                    % ((vgrids_minlat + vgrids_dlat), (vgrids_maxlat - vgrids_dlat)))
+        if prop_grid['minlat'] + (prop_grid['nlat'] - 1) * prop_grid['dlat'] > \
+                    (vgrids_maxlat - vgrids_dlat):
+            exit_flag = True
+            if print_vgrids_violation_msg:
+                logger.error(vgrids_violation_msg)
+                print_vgrids_violation_msg = False
+            logger.info("\t%.4f <= propagation_grid['minlat']  + "\
+                    "(propagation_grid['nlat'] - 1) * propagation_grid['dlat'] <= "\
+                    "%.4f" % ((vgrids_minlat + vgrids_dlat),
+                            (vgrids_maxlat - vgrids_dlat)))
+        if prop_grid['minlon'] < (vgrids_minlon + vgrids_dlon):
+            exit_flag = True
+            if print_vgrids_violation_msg:
+                logger.error(vgrids_violation_msg)
+                print_vgrids_violation_msg = False
+            logger.info("\t%.4f <= propagation_grid['minlon'] <= %.4f" \
+                    % ((vgrids_minlon + vgrids_dlon), (vgrids_maxlon - vgrids_dlon)))
+        if prop_grid['minlon'] + (prop_grid['nlon'] - 1) * prop_grid['dlon'] > \
+                    (vgrids_maxlon - vgrids_dlon):
+            exit_flag = True
+            if print_vgrids_violation_msg:
+                logger.error(vgrids_violation_msg)
+                print_vgrids_violation_msg = False
+            logger.info("\t%.4f <= propagation_grid['minlon']  + "\
+                    "(propagation_grid['nlon'] - 1) * propagation_grid['dlon'] <= "\
+                    "%.4f" % ((vgrids_minlon + vgrids_dlon),
+                            (vgrids_maxlon - vgrids_dlon)))
     interfaces_infile = open(pfile['interfaces.in'], 'r')
     interfaces_infile.readline()
     interfaces_nlat, interfaces_nlon = interfaces_infile.readline().split()
@@ -281,11 +282,11 @@ def _configure_logger():
     sh.setFormatter(formatter)
     logger.addHandler(sh)
 
-def gen_sta_tt_maps(stalist, if_write_binary=True):
+def gen_sta_tt_maps(stalist, phase, if_write_binary=True):
 #Generate a travel time map for each station in the station list
-    logger.info('Starting travel time calculation.')
+    logger.info('Starting travel time calculation for %s phase.' % phase)
     for sta in sorted(stalist):
-        logger.info('[sta: %s] Generating travel times.' %  sta.sta)
+        logger.info('[sta: %s] Generating %s-wave travel times.' %  (sta.sta, phase))
 #Elevation can be set to a large negative number to glue the source to
 #the surface
 #Elevation is in km and negative
@@ -296,7 +297,7 @@ def gen_sta_tt_maps(stalist, if_write_binary=True):
                                               stderr=subprocess.STDOUT)
         for line in tt_calc_subprocess.stdout:
             logger.info('[sta: %s] %s' % (sta.sta, line.rstrip()))
-        outfile = '%s.traveltime' % sta.sta
+        outfile = '%s.%s.traveltime' % (sta.sta, phase)
         try:
             logger.info('[sta: %s] Moving arrtimes.dat to %s' % (sta.sta, outfile))
             shutil.move('arrtimes.dat', outfile)
@@ -306,7 +307,7 @@ def gen_sta_tt_maps(stalist, if_write_binary=True):
             continue
         if if_write_binary:
             try:
-                _tt_ascii_2_binary(sta.sta)
+                _tt_ascii_2_binary(sta.sta, phase)
             except IndexError:
                 logger.error('[sta: %s] Could not write binary file' % sta.sta)
         logger.info('[sta: %s] Finished travel time calculation.' % sta.sta)
@@ -334,14 +335,14 @@ def _write_sources_file(depth, lat, lon):
     # For the first arrival from a source propagating at the surface [ 0 2 ]
     #  is the path section
 
-def _tt_ascii_2_binary(sta):
+def _tt_ascii_2_binary(sta, phase):
     '''
     Convert an ascii traveltime file to binary format
     Also puts the header in a separate ascii file
     just put "bin" and "hdr" in front of the filename
     '''
     from array import array
-    infile = '%s.traveltime' % sta
+    infile = '%s.%s.traveltime' % (sta, phase)
     bin_path = 'bin.%s' % infile
     hdr_path = 'hdr.%s' % infile
     logger.info('[sta: %s] Reading arrival times from %s' % (sta, infile))
@@ -399,8 +400,8 @@ def _tt_ascii_2_binary(sta):
              null2,
              null3))
     outfile.close()
-    logger.info('[sta: %s] Finished writing arrival times to %s and %s' \
-            % (sta, bin_path, hdr_path))
+    logger.info('[sta: %s] Finished writing %s-wave arrival times to %s and %s' \
+            % (sta, phase, bin_path, hdr_path))
     #return data #Don't forget to remove this!!
 
 def read_arrtimes(fnam='arrtimes.dat',ifplot=0): #default name
@@ -496,7 +497,6 @@ if __name__ == '__main__':
     _check_pfile(pfile)
     station_list = _create_station_list(args, pfile)
     input_files = ('mode_set.in',
-                   'vgrids.in',
                    'interfaces.in',
                    'gridsave.in',
                    'frechet.in')
@@ -510,11 +510,23 @@ if __name__ == '__main__':
     logger.info('Creating dummy receivers.in file.')
     _create_dummy_receivers_file(pfile)
     _write_propgrid(pfile)
-    gen_sta_tt_maps(station_list)
-    for input_file in input_files:
+    for phase in ('P', 'S'):
+        input_file = 'vgrids_%s' % phase
         try:
-            logger.info('Removing %s from working directory' %\
-                    pfile[input_file])
+            logger.info('Copying %s to working directory' % pfile[input_file])
+            shutil.copyfile(pfile[input_file], 'vgrids.in')
+        except IOError as err:
+            logger.error('Could not copy %s to working directory' % input_file)
+            sys.exit(-1)
+        gen_sta_tt_maps(station_list, phase)
+    for input_file in input_files + ('vgrids.in',
+                                     'arrivals.dat',
+                                     'frechet.dat',
+                                     'propgrid.in',
+                                     'receivers.in',
+                                     'sources.in'):
+        try:
+            logger.info('Removing %s from working directory' % input_file)
             os.remove(input_file)
         except IOError as err:
             logger.error('Could not remove %s from working directory' %\
