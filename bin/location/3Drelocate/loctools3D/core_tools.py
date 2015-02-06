@@ -409,15 +409,19 @@ class Locator:
         #    minx, miny, minz = ix, iy, iz
 ###############
         #This is for testing new inversion algorithm
-        u, tt_updated, sdobs = self.get_subgrid_loc_new(minx,
-                                                        miny,
-                                                        minz,
-                                                        arrivals,
-                                                        predicted_travel_times,
-                                                        li,
-                                                        qlon,
-                                                        qlat,
-                                                        qdep)
+        result = self.get_subgrid_loc_new(minx,
+                                          miny,
+                                          minz,
+                                          arrivals,
+                                          predicted_travel_times,
+                                          li,
+                                          qlon,
+                                          qlat,
+                                          qdep)
+        if result:
+            u, tt_updated, sdobs = result
+        else:
+            return None, None
         origerr = Origerr(sdobs)
         newloc = [newlon, newlat, newz] = \
                 [minlon + u[0] * dlon,
@@ -647,7 +651,7 @@ class Locator:
             if delta_u[0] > 0:
                 if ix == li.nx - 1:
                     #this should probably be zeros.
-                    dt_dx = 0
+                    dt_dx = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix + 1, iy, iz)
                 #dt_dx = array([pred_tts[sta][ind] for sta in stas]) - tt000
                 dt_dx = array([pred_tts[arrival.sta][arrival.phase][ind] for \
@@ -655,7 +659,7 @@ class Locator:
             elif delta_u[0] < 0:
                 if ix == 0:
                     #this should probably be zeros.
-                    dt_dx = 0
+                    dt_dx = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix - 1, iy, iz)
                 #dt_dx = tt000 - array([pred_tts[sta][ind] for sta in stas])
                 dt_dx = tt000 - \
@@ -663,12 +667,12 @@ class Locator:
                         arrival in arrivals])
             else:
                 #this should probably be zeros.
-                dt_dx = 0
+                dt_dx = zeros(len(arrivals))
 #calculate the derivative w.r.t. y-axis in the containing cube
             if delta_u[1] > 0:
                 if iy == li.ny - 1:
                     #this should probably be zeros.
-                    dt_dy = 0
+                    dt_dy = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy + 1, iz)
                 #dt_dy = array([pred_tts[sta][ind] for sta in stas]) - tt000
                 dt_dy = array([pred_tts[arrival.sta][arrival.phase][ind] for \
@@ -676,7 +680,7 @@ class Locator:
             elif delta_u[1] < 0:
                 if iy == 0:
                     #this should probably be zeros.
-                    dt_dy = 0
+                    dt_dy = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy - 1, iz)
                 #dt_dy = tt000 - array([pred_tts[sta][ind] for sta in stas])
                 dt_dy = tt000 - \
@@ -684,12 +688,12 @@ class Locator:
                         arrival in arrivals])
             else:
                 #this should probably be zeros.
-                dt_dy = 0
+                dt_dy = zeros(len(arrivals))
 #calculate the derivative w.r.t. z-axis in the containing cube
             if delta_u[2] > 0:
                 if iz == li.nz - 1:
                     #this should probably be zeros.
-                    dt_dz = 0
+                    dt_dz = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy, iz + 1)
                 #dt_dz = array([pred_tts[sta][ind] for sta in stas]) - tt000
                 dt_dz = array([pred_tts[arrival.sta][arrival.phase][ind] for \
@@ -697,7 +701,7 @@ class Locator:
             elif delta_u[2] < 0:
                 if iz == 0:
                     #this should probably be zeros.
-                    dt_dz = 0
+                    dt_dz = zeros(len(arrivals))
                 ind = li.convert_to_1D(ix, iy, iz - 1)
                 #dt_dz = tt000 - array([pred_tts[sta][ind] for sta in stas])
                 dt_dz = tt000 - \
@@ -705,7 +709,7 @@ class Locator:
                         arrival in arrivals])
             else:
                 #this should probably be zeros.
-                dt_dz = 0
+                dt_dz = zeros(len(arrivals))
             A = c_[dt_dx, dt_dy, dt_dz, ones(len(dt_dx))]
             delta_u, residues, rank, sigma = linalg.lstsq(A, residuals)
 #Compute updated travel times
@@ -724,16 +728,16 @@ class Locator:
             residuals_prime = arrival_times - (u_prime[3] + \
                     [tt_updated[arrival.sta][arrival.phase] for \
                     arrival in arrivals])
-            if j > 100:
+            if j > self.max_iterations:
                 logger.debug("Maximum number of iterations exceeded.")
-                break
+                return None
             j += 1
-            delta_r = sqrt(sum([x ** 2 for x in delta_u[:2]]))
-            #delta_residuals = residuals.std() - residuals_prime.std()
-            #if delta_residuals < 0.001:
+            delta_residuals = residuals.std() - residuals_prime.std()
+            #delta_r = sqrt(sum([x ** 2 for x in delta_u[:2]]))
+            if delta_residuals < self.sdobs_stable_thresh:
             #if delta_r < 0.02:
-            #    print "Origin location displacement below threshold."
-            #    break
+                logger.debug("sdobs stablilized below threshold - %f" % self.sdobs_stable_thresh)
+                break
             residuals = residuals_prime
         return u_prime, tt_updated, residuals.std()
 

@@ -10,6 +10,8 @@ vgrids_P                ${ANTELOPE}/data/data/fm3d/Vp/vgrids.in
 vgrids_S                ${ANTELOPE}/data/data/fm3d/Vs/vgrids.in
 
 use_S                   True
+max_iterations          100
+sdobs_stable_thresh     0.001
 
 propagation_grid &Arr{
     minlat      32.5
