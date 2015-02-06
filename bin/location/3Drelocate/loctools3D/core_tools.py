@@ -17,7 +17,8 @@ from numpy import append,\
                   linalg,\
                   linspace,\
                   nonzero,\
-                  ones
+                  ones,\
+                  zeros
 import numpy as np
 
 logger = logging.getLogger(__name__)
