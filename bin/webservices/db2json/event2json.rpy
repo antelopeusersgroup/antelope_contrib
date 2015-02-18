@@ -1,10 +1,8 @@
 import re,os,sys
 import json
-import hashlib
 #import inspect
 import socket
 import pprint
-import resource as sysresource
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -45,80 +43,101 @@ class Events(Resource):
         Load class and get the data
         """
 
+
         self.dbs = {}
-        self.verbose = stock.yesno( config.sitedict['event2jsonconfig']['verbose'] )
-        self.debug = stock.yesno( config.sitedict['event2jsonconfig']['debug'] )
-        self.timeformat = config.sitedict['event2jsonconfig']['timeformat']
-        self.timezone = config.sitedict['event2jsonconfig']['timezone']
-        self.time_limit = config.sitedict['event2jsonconfig']['time_limit']
-        self.refresh = int(config.sitedict['event2jsonconfig']['refresh'])
-        self.dbname = config.sitedict['event2jsonconfig']['databases']
-        try:
-            self.readableJSON = int(config.sitedict['event2jsonconfig']['readableJSON'])
-        except:
-            self.readableJSON = None
+        self.pf_keys = {
+                'verbose':{'type':'bool','default':False},
+                'timeformat':{'type':'str','default':'%d (%j) %h:%m:%s %z'},
+                'timezone':{'type':'str','default':'utc'},
+                'time_limit':{'type':'int','default':3600},
+                'refresh':{'type':'int','default':60},
+                'databases':{'type':'dict','default':{}},
+                'readableJSON':{'type':'int','default':0}
+                }
+
+        self._read_pf()
+
 
         self.event_cache = {}
 
         self.loading = True
 
-        if self.debug:
-            self.verbose = self.debug
+        self._log( "Events(): init()" )
 
-        if not self.refresh:
-            self.refresh = 60 * 60 # every hour default
-
-        if self.verbose:
-            elog.notify( "Events(): init()" )
-            elog.notify( "\tdebug: %s" % self.debug )
-            elog.notify( "\tverbose: %s" % self.verbose )
-            elog.notify( "\ttimeformat: %s" % self.timeformat )
-            elog.notify( "\ttimezone: %s" % self.timezone )
-            elog.notify( "\ttime_limit: %s" % self.time_limit )
-            elog.notify( "\tdbname: %s" % self.dbname )
-            elog.notify( "\trefresh: %s" % self.refresh )
-            elog.notify( "\treadableJSON: %s" % self.readableJSON )
+        self._log( '\t' + '#'*20 )
+        self._log( '\tLoading Events!' )
+        self._log( '\t' + '#'*20 )
 
 
-        if self.verbose:
-            elog.notify( '\t' + '#'*20 )
-            elog.notify( '\tLoading Events!' )
-            elog.notify( '\t' + '#'*20 )
-
-
-        for name,path in self.dbname.iteritems():
-            elog.notify( "Test %s db: %s" % (name,path) )
+        for name,path in self.databases.iteritems():
+            self._log( "Test %s db: %s" % (name,path) )
 
             for table in ['event','origin','netmag']:
-                present = test_table(path,table,self.debug)
+                present = test_table(path,table)
                 if not present:
-                    elog.complain('Empty or missing %s.%s' % (path,table) )
+                    self._complain('Empty or missing %s.%s' % (path,table) )
 
                 if table is 'event': event = present
                 if table is 'origin': origin = present
                 if table is 'netmag': netmag = present
 
             if not origin:
-                elog.complain( 'Cannot work without origin table.')
+                self._complain( 'Cannot work without origin table.')
                 continue
 
-            db = datascope.dbopen( path , 'r' )
-            self.dbs[name] = { 'db':db, 'path':path, 'mags':{},
+            #db = datascope.dbopen( path , 'r' )
+            self.dbs[name] = { 'db':path, 'path':path, 'mags':{},
                     'md5event':False, 'md5origin':False, 'md5netmag':False,
                     'origin': origin, 'event':event, 'netmag':netmag }
 
 
         deferToThread(self._init_in_thread)
 
+
+    def _log(self,msg):
+        if self.verbose:
+            elog.notify( 'event2json: %s' % msg )
+
+    def _complain(self,msg):
+        elog.complain( 'evnet2json: PROBLEM: %s' % msg )
+
+
+    def _read_pf(self):
+        """
+        Read configuration parameters from rtwebserver pf file.
+        """
+
+        elog.notify( 'Read parameters from pf file')
+
+        module = 'event2jsonconfig'
+
+        for attr in self.pf_keys:
+            try:
+                if self.pf_keys[attr]['type'] == 'int':
+                    value = int(config.sitedict[module][attr])
+                elif self.pf_keys[attr]['type'] == 'bool':
+                    value = test_yesno(config.sitedict[module][attr])
+                elif self.pf_keys[attr]['type'] == 'str':
+                    value = str(config.sitedict[module][attr])
+                else:
+                    value = config.sitedict[module][attr]
+            except Exception,e:
+                value = self.pf_keys[attr]['default']
+
+            setattr(self, attr, value )
+
+            elog.notify( "%s: read_pf[%s]: %s" % (module, attr,getattr(self,attr) ) )
+
+
     def _init_in_thread(self):
 
-        elog.notify( 'Loading Events()' )
+        self._log( 'Loading Events()' )
 
         self._get_event_cache()
         self.loading = False
 
-        elog.notify( 'Done loading Events()' )
-        elog.notify( '\nREADY!\n' )
+        self._log( 'Done loading Events()' )
+        self._log( '\nREADY!\n' )
 
     def _cache(self, db=False):
         """
@@ -134,7 +153,7 @@ class Events(Resource):
                     'error':'No ?db=*** spefied in URL.'})
 
         except Exception,e:
-            elog.complain('Cannot find self.table(%s) => %s' % (db,e) )
+            self._complain('Cannot find self.table(%s) => %s' % (db,e) )
             return False
 
 
@@ -147,29 +166,26 @@ class Events(Resource):
             port = '-'
 
         hostname = socket.gethostname()
+        self._log("render_GET(): [%s] %s:%s%s" % (hostname,host,port,uri.uri))
 
-        if self.verbose:
-            elog.notify("render_GET(): [%s] %s:%s%s" % (hostname,host,port,uri.uri))
+        #self._log('')
+        #self._log('render_GET() uri.uri:%s' % uri.uri)
+        #self._log('render_GET() uri.args:%s' % (uri.args) )
+        #self._log('render_GET() uri.prepath:%s' % (uri.prepath) )
+        #self._log('render_GET() uri.postpath:%s' % (uri.postpath) )
+        #self._log('render_GET() uri.path:%s' % (uri.path) )
 
-        if self.debug:
-            elog.debug('')
-            elog.debug('render_GET() uri.uri:%s' % uri.uri)
-            elog.debug('render_GET() uri.args:%s' % (uri.args) )
-            elog.debug('render_GET() uri.prepath:%s' % (uri.prepath) )
-            elog.debug('render_GET() uri.postpath:%s' % (uri.postpath) )
-            elog.debug('render_GET() uri.path:%s' % (uri.path) )
-
-            elog.debug('\tQUERY: %s ' % uri)
-            elog.debug('\tHostname => [%s:%s]'% (host,port))
-            elog.debug('\tHost=> [%s]'% uri.host)
-            #elog.debug('\tsocket.gethostname() => [%s]'% socket.gethostname())
-            elog.debug('')
+        #self._log('\tQUERY: %s ' % uri)
+        #self._log('\tHostname => [%s:%s]'% (host,port))
+        #self._log('\tHost=> [%s]'% uri.host)
+        #self._log('\tsocket.gethostname() => [%s]'% socket.gethostname())
+        #self._log('')
 
         d = defer.Deferred()
         d.addCallback( self._render_uri )
         reactor.callInThread(d.callback, uri)
 
-        if self.debug: elog.debug("render_GET() - return server.NOT_DONE_YET")
+        self._log("render_GET() - return server.NOT_DONE_YET")
 
         return server.NOT_DONE_YET
 
@@ -188,11 +204,10 @@ class Events(Resource):
     def _uri_results(self, uri=None, results=False, error=False):
 
         if not uri:
-            elog.complain('No URI to work with on _uri_results()')
+            self._complain('No URI to work with on _uri_results()')
             return
 
-        if self.debug:
-            elog.debug('_uri_results  uri: %s' % uri)
+        self._log('_uri_results  uri: %s' % uri)
 
         if results:
             if error:
@@ -204,24 +219,24 @@ class Events(Resource):
             uri.write(results)
 
         else:
-            elog.complain('No results from query.')
+            self._complain('No results from query.')
             uri.setHeader("content-type", "text/html")
             uri.setResponseCode( 500 )
             uri.write('Problem with server!')
-            elog.complain( '_uri_results() Problem: No data for :%s' % uri )
+            self._complain( '_uri_results() Problem: No data for :%s' % uri )
 
         try:
             uri.finish()
         except Exception,e:
-            elog.complain( '_uri_results() Problem: %s' % e )
+            self._complain( '_uri_results() Problem: %s' % e )
 
-        if self.debug: elog.debug( '_uri_results() DONE!' )
+        self._log( '_uri_results() DONE!' )
 
     def _get_magnitudes(self,db):
 
         mags = {}
 
-        if self.debug: elog.debug('Get magnitudes ' )
+        self._log('Get magnitudes ' )
 
         steps = ['dbopen netmag', 'dbsubset orid!=NULL']
 
@@ -230,7 +245,7 @@ class Events(Resource):
 
         with datascope.freeing(db.process( steps )) as dbview:
 
-            if self.debug: elog.debug('Got %s mags from file' % dbview.record_count )
+            self._log('Got %s mags from file' % dbview.record_count )
 
             for record in dbview.iter_record():
 
@@ -253,27 +268,6 @@ class Events(Resource):
 
         return mags
 
-    def _get_md5(self,file):
-        """
-        Get the checksum of a table
-        """
-
-        if os.path.isfile( file ):
-            return hashlib.md5( open(file).read() ).hexdigest()
-
-        return False
-
-
-    def _memory_usage_resource(self):
-        """
-        Nice print of memory usage.
-        """
-        rusage_denom = 1024.
-        if sys.platform == 'darwin':
-            # ... it seems that in OSX the output is different units ...
-            rusage_denom = rusage_denom * rusage_denom
-        mem = sysresource.getrusage(sysresource.RUSAGE_SELF).ru_maxrss / rusage_denom
-        return mem
 
 
     def _get_event_cache(self):
@@ -281,126 +275,125 @@ class Events(Resource):
         Private function to load the data from the tables
         """
 
-        if self.debug:
-            elog.debug( "Using approx. %0.1f MB of memory" % self._memory_usage_resource() )
         tempcache = {}
 
         for name in self.dbs:
 
             path = self.dbs[name]['path']
             mags = self.dbs[name]['mags']
-            db = self.dbs[name]['db']
+            path = self.dbs[name]['db']
 
-            origin = self.dbs[name]['origin']
-            md5origin = self.dbs[name]['md5origin']
+            with datascope.closing(datascope.dbopen( path , 'r' )) as db:
 
-            event = self.dbs[name]['event']
-            md5event = self.dbs[name]['md5event']
+                origin = self.dbs[name]['origin']
+                md5origin = self.dbs[name]['md5origin']
 
-            netmag = self.dbs[name]['netmag']
-            md5netmag = self.dbs[name]['md5netmag']
+                event = self.dbs[name]['event']
+                md5event = self.dbs[name]['md5event']
 
-            if self.debug: elog.debug( "Events(%s): db: %s" % (name,path) )
+                netmag = self.dbs[name]['netmag']
+                md5netmag = self.dbs[name]['md5netmag']
 
-
-            testorigin = self._get_md5(origin)
-            testevent = self._get_md5(event) if event else False
-            testnetmag = self._get_md5(netmag) if netmag else False
+                self._log( "Events(%s): db: %s" % (name,path) )
 
 
-            if self.debug:
-                elog.debug('event [old: %s new: %s]' %(md5event,testevent) )
-                elog.debug('origin [old: %s new: %s]' %(md5origin,testorigin) )
-                elog.debug('netmag [old: %s new: %s]' %(md5netmag,testnetmag) )
-
-            if testorigin == md5origin and testevent == md5event and testnetmag == md5netmag:
-                if self.debug: elog.debug('No update needed. Skipping.')
-                continue
-
-            tempcache[name] = []
-
-            self.dbs[name]['md5event'] = testevent
-            self.dbs[name]['md5origin'] = testorigin
-
-            if testnetmag != netmag:
-                mags = self._get_magnitudes(db)
-                self.dbs[name]['mags'] = mags
-                self.dbs[name]['md5netmag'] = testnetmag
-
-            if event:
-                steps = ['dbopen event']
-                steps.extend(['dbjoin origin'])
-                steps.extend(['dbsubset orid!=NULL'])
-                steps.extend(['dbsubset orid==prefor'])
-            else:
-                steps = ['dbopen origin']
-
-            if self.time_limit:
-                steps.extend(["dbsubset time > %d" % (stock.now() - float(self.time_limit))] )
+                testorigin =get_md5(origin)
+                testevent = get_md5(event) if event else False
+                testnetmag = get_md5(netmag) if netmag else False
 
 
-            steps.extend(['dbsort -r time'])
+                self._log('event [old: %s new: %s]' %(md5event,testevent) )
+                self._log('origin [old: %s new: %s]' %(md5origin,testorigin) )
+                self._log('netmag [old: %s new: %s]' %(md5netmag,testnetmag) )
 
-            if self.verbose:
-                elog.notify( 'Events(%s): updating from %s' % (name,path) )
-
-            if self.debug:
-                elog.debug( ', '.join(steps) )
-
-
-            with datascope.freeing(db.process( steps )) as dbview:
-
-                if not dbview.record_count:
-                    elog.complain( 'Events(%s): No records %s' % (name,path) )
+                if testorigin == md5origin and testevent == md5event and testnetmag == md5netmag:
+                    self._log('No update needed. Skipping.')
                     continue
 
-                for temp in dbview.iter_record():
+                tempcache[name] = []
 
-                    (orid,time,lat,lon,depth,auth,nass,review) = \
-                            temp.getv('orid','time','lat','lon','depth',
-                                    'auth','nass','review')
+                self.dbs[name]['md5event'] = testevent
+                self.dbs[name]['md5origin'] = testorigin
 
-                    evid = orid
-                    if event:
-                        evid = temp.getv('evid')[0]
+                if testnetmag != netmag:
+                    mags = self._get_magnitudes(db)
+                    self.dbs[name]['mags'] = mags
+                    self.dbs[name]['md5netmag'] = testnetmag
 
+                if event:
+                    steps = ['dbopen event']
+                    steps.extend(['dbjoin origin'])
+                    steps.extend(['dbsubset orid!=NULL'])
+                    steps.extend(['dbsubset orid==prefor'])
+                else:
+                    steps = ['dbopen origin']
 
-                    if self.debug: elog.debug( "Events(%s): new evid #%s" % (name,evid) )
-
-                    allmags = []
-                    magnitude = '-'
-                    maglddate = 0
-                    strtime = stock.epoch2str(time, self.timeformat, self.timezone)
-                    try:
-                        srname = stock.srname(lat,lon)
-                        grname = stock.grname(lat,lon)
-                    except Exception,e:
-                        error = 'Problems with (s/g)rname for orid %s: %s' % (orid,lat,lon,e) 
-                        elog.complain(error)
-                        srname = '-'
-                        grname = '-'
-
-                    if orid in mags:
-                        for o in mags[orid]:
-                            allmags.append(mags[orid][o])
-                            if mags[orid][o]['lddate'] > maglddate:
-                                magnitude = mags[orid][o]['printmag']
-                                maglddate = mags[orid][o]['lddate']
+                if self.time_limit:
+                    steps.extend(["dbsubset time > %d" % (stock.now() - float(self.time_limit))] )
 
 
-                    tempcache[name].append({'time':time, 'lat':lat, 'srname':srname,
-                            'evid':evid, 'orid':orid, 'lon':lon, 'magnitude':magnitude,
-                            'grname': grname, 'review': review, 'strtime':strtime,
-                            'allmags': allmags, 'depth':depth, 'auth':auth, 'nass':nass})
+                steps.extend(['dbsort -r time'])
 
-                    if self.debug: elog.debug( "Events(): %s add (%s,%s)" % (name,evid,orid) )
+                if self.verbose:
+                    self._log( 'Events(%s): updating from %s' % (name,path) )
 
-            self.event_cache[name] = json.dumps(tempcache[name],indent=self.readableJSON)
-
-            if self.debug: elog.debug( "Completed updating db. (%s)" % name )
+                self._log( ', '.join(steps) )
 
 
-        if self.debug: elog.debug( "Schedule update in (%s) seconds" % self.refresh )
+                with datascope.freeing(db.process( steps )) as dbview:
+
+                    if not dbview.record_count:
+                        self._complain( 'Events(%s): No records %s' % (name,path) )
+                        continue
+
+                    for temp in dbview.iter_record():
+
+                        (orid,time,lat,lon,depth,auth,nass,ndef,review) = \
+                                temp.getv('orid','time','lat','lon','depth',
+                                        'auth','nass','ndef','review')
+
+                        evid = orid
+                        if event:
+                            evid = temp.getv('evid')[0]
+
+
+                        self._log( "Events(%s): new evid #%s" % (name,evid) )
+
+                        allmags = []
+                        magnitude = '-'
+                        maglddate = 0
+                        strtime = stock.epoch2str(time, self.timeformat, self.timezone)
+                        try:
+                            srname = stock.srname(lat,lon)
+                            grname = stock.grname(lat,lon)
+                        except Exception,e:
+                            error = 'Problems with (s/g)rname for orid %s: %s' % (orid,lat,lon,e) 
+                            self._complain(error)
+                            srname = '-'
+                            grname = '-'
+
+                        if orid in mags:
+                            for o in mags[orid]:
+                                allmags.append(mags[orid][o])
+                                if mags[orid][o]['lddate'] > maglddate:
+                                    magnitude = mags[orid][o]['printmag']
+                                    maglddate = mags[orid][o]['lddate']
+
+
+                        tempcache[name].append({'time':time, 'lat':lat, 'srname':srname,
+                                'evid':evid, 'orid':orid, 'lon':lon, 'magnitude':magnitude,
+                                'grname': grname, 'review': review, 'strtime':strtime,
+                                'allmags': allmags, 'depth':depth, 'auth':auth,
+                                'ndef': ndef, 'nass':nass})
+
+                        self._log( "Events(): %s add (%s,%s)" % (name,evid,orid) )
+
+                self.event_cache[name] = json.dumps(tempcache[name],indent=self.readableJSON)
+
+                self._log( "Completed updating db. (%s)" % name )
+
+
+        self._log( "Schedule update in (%s) seconds" % self.refresh )
         reactor.callLater(self.refresh, self._get_event_cache )
 
 resource = Events()

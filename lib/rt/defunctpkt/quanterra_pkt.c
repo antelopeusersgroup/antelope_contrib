@@ -1,10 +1,8 @@
 /* Copyright (c) 1997 Boulder Real Time Technologies, Inc. */
 /* All rights reserved */
 
-/* This software module is wholly owned by Boulder Real Time 
-   Technologies, Inc. Any use of this software module without
-   express written permission from Boulder Real Time Technologies,
-   Inc. is prohibited. */
+/*  This software may be used freely in any way as long as            */
+/*  the copyright statement above is not removed.                     */
 
 /* Following is the structure of a Quanterra ORB packet. This
    is a representation of the data returned from a Q4120 or
