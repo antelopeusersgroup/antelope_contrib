@@ -80,17 +80,13 @@ sub main {
 
     while ( 1 ) {
 
-        elog_notify( "Go to packet: $pktid" ) if $pktid > 0 and $opt_V ;
-        orbseek($orb, $pktid ) if $pktid > 0;
-
         ($pktid, $srcname, $time, $packet, $nbytes) = orbreap($orb) ;
         elog_notify( "Got packet: $pktid $srcname ".epoch2str($time,"%Y%j-%T") ) if $opt_V ;
 
 
         unless ( $pktid ) {
-            &show_mem( " * after orbreap" ) ;
-            elog_complain( "Problem on orbreap() pkid:$pktid srcname:$srcname" ) ;
-            return 1 ;
+            elog_complain( "Problem on orbreap() pkid:$pktid srcname:$srcname time:$time" ) ;
+            next;
         }
 
         next if $pktid < 0 ;
@@ -324,13 +320,14 @@ sub show_mem {
 }
 
 sub open_orb {
+    my $position = shift if @_ or 'oldest';
     my ( $pktid ) ;
 
     $orb = orbopen($orbname,"r+");
 
     orbstashselect($orb, "NO_STASH") ;
 
-    $pktid = orbposition($orb, "oldest") if $opt_0 ;
+    $pktid = orbposition($orb, $position) if $opt_0 ;
     elog_notify( "orbposition pktid: $pktid" ) if $opt_V ;
 
     orbselect($orb, $select) if $select ;
