@@ -73,7 +73,7 @@ class Stations(Resource):
                 'refresh':{'type':'int','default':60},
                 'databases':{'type':'dict','default':{}},
                 'orbnames':{'type':'dict','default':{}},
-                'readablejson':{'type':'int','default':0}
+                'readableJSON':{'type':'int','default':0}
                 }
 
         self._read_pf()
