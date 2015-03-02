@@ -72,20 +72,12 @@ def find_status(blob,sta,debug=False):
     if debug: print "find_status(%s) => False" % sta
     return False
 
-def test_yesno(value):
+def test_yesno(v):
     """
     Verify if we have true or false
     on variable.
     """
-    try:
-        import antelope.stock as stock
-    except Exception,e:
-        raise sta2jsonException( 'Problems loading Antelope libs: %s' % e )
-
-    try:
-        return stock.yesno( value )
-    except:
-        return bool( value )
+    return str(v).lower() in ("y", "yes", "true", "t", "1")
 
 
 def test_table(dbname,tbl,verbose=False):

@@ -1,0 +1,24 @@
+# This is a template for a standard Antelope man page.
+.TH GENERATE_TTIMES_FM3D 1
+.SH THIS IS THE NAME
+generate_ttimes_fm3d (lowercase roman) \- generate travel-time files using 3D velocity model
+.SH SYNOPSIS
+.nf
+\fBgenerate_ttimes_fm3d \fP(\fIbold\fP), \fIoptions\fP (\fIsquare\fP
+                \fIbrackets\fP \fIbold\fP, \fIuse\fP | \fIto\fP \fIseparate\fP
+\fBalternative \fP\fIoptions\fP), \fIarguments\fP (\fIsquare\fP \fIbrackets\fP
+                \fIitalics\fP)
+.fi
+.SH DESCRIPTION
+
+.IP graphic:antelope.jpg
+.IP graphic:Quicktime_X_Logo.png
+.IP graphic:process.mov
+
+.IP doc:swd.pdf
+
+.SH LIBRARY
+0.SH ATTRIBUTES
+MT-Safe ?
+.SH AUTHOR
+Malcolm White

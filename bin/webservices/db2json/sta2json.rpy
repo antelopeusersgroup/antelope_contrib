@@ -73,7 +73,7 @@ class Stations(Resource):
                 'refresh':{'type':'int','default':60},
                 'databases':{'type':'dict','default':{}},
                 'orbnames':{'type':'dict','default':{}},
-                'readablejson':{'type':'int','default':0}
+                'readableJSON':{'type':'int','default':None}
                 }
 
         self._read_pf()
@@ -241,6 +241,7 @@ class Stations(Resource):
 
         if flags['orb'] in self.orbs:
 
+            self._log('_cache() orb query')
             info = {}
             clients = {}
             sources = {}
@@ -258,37 +259,37 @@ class Stations(Resource):
 
         elif flags['db'] in self.db_cache:
 
+            self._log('_cache() db query')
             results = {}
             db = flags['db']
             snet = flags['snet']
             sta = flags['sta']
+            sta_type = 'active'
 
-            if test_yesno( flags['active'] ):
-                temp = self.db_cache[db]['active']
+            if test_yesno( flags['decom'] ):
+                sta_type = 'decom'
 
-            elif test_yesno( flags['decom'] ):
-                temp = self.db_cache[db]['decom']
+            #else:
+            #    temp = dict_merge(self.db_cache[db]['decom'],
+            #            self.db_cache[db]['active'] )
 
-            else:
-                temp = dict_merge(self.db_cache[db]['decom'],
-                        self.db_cache[db]['active'] )
-
+            self._log('_cache() got temp [%s]' % sta_type)
 
             if snet and sta:
 
                 try:
-                    return { snet: { sta: temp[snet][sta] } }
+                    return { snet: { sta: self.db_cache[db][sta_type][snet][sta] } }
                 except:
                     pass
 
             elif snet:
 
                 try:
-                    return { snet: temp[snet] }
+                    return { snet: self.db_cache[db][sta_type][snet] }
                 except:
                     pass
 
-            return temp
+            return self.db_cache[db][sta_type]
 
         else:
             return {
@@ -366,6 +367,8 @@ class Stations(Resource):
         """
         Return data to client.
         """
+
+        self._log('uri_results()')
 
         if not uri:
             self._complain('No URI to work with on _uri_results()')
