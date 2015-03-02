@@ -60,6 +60,34 @@ class LinearIndex:
         '''
         return self.index_1D[i]
 
+def grid_search_dbgrassoc(qx, qy, qz, arrivals, tt_map_dir):
+    from antelope.datascope import destroying, dbDATABASE_NAME
+    import subprocess
+#Create temporary database detection table
+    with destroying(dbtmp(schema='CSS3.0')) as db:
+        tbl_detection = db.lookup(table='detection')
+        for arrival in arrivals:
+            tbl_detection.record = tbl_detection.addnull()
+            tbl_detetction.putv(('sta', arrival.sta),
+                                ('chan', 'YYY'),
+                                ('time', arrival.time),
+                                ('state', 'a'),
+                                ('filter', 'None'))
+        subprocess.call(["dbgrassoc",
+                         "-pf tmp_dbgrassoc.pf",
+                         db.query(dbDATABASE_NAME),
+                         db.query(dbDATABASE_NAME),
+                         "%s/ttgrid" % tt_map_dir])
+        tbl_origin = db.lookup(table='origin')
+        for record in tbl_origin.iter_record():
+            print record.getv('lat', 'lon', 'depth', 'time', 'auth')
+        tbl_origin.record = 0
+        lon, lat, depth, time = tbl_origin.getv('lon', 'lat', 'depth', 'time')
+        ix = find_nearest_index(lon, qx)[0]
+        iy = find_nearest_index(lat, qy)[0]
+        iz = find_nearest_index(depth, qz)[0]
+        return ix, iy, iz, time
+
 def parse_cfg(config_file):
     '''
     Parse .cfg configuration file and return dictionary of contents.
@@ -274,7 +302,7 @@ def read_predicted_travel_times(arrivals, tt_dir, nx, ny, nz):
 
 class Locator:
     '''
-    An object class to provide functionality to locate Earthquakes.
+    An object class to provide functionality to locate earthquake.
     Location parameter configuration is stored in this object class.
     '''
     def __init__(self, cfg_dict):
@@ -287,6 +315,37 @@ class Locator:
         '''
         for key in cfg_dict:
             setattr(self, key, cfg_dict[key])
+        if self.dbgrassoc_grid_search:
+            pfile = open('tmp_dbgrassoc.pf', 'w')
+            pfile.write('process_time_window\t 500.0\n')
+            pfile.write('process_ncycle\t\t 20\n')
+            pfile.write('process_tcycle\t\t 0.0\n')
+            pfile.write('use_associated_stations_for_best_grid\t no\n\n')
+
+            pfile.write('grid_params &Arr{\n')
+            pfile.write('\t fm3d &Arr{\n')
+            pfile.write('\t\t nsta_thresh\t 10\n')
+            pfile.write('\t\t nxd\t 11\n')
+            pfile.write('\t\t nyd\t 11\n')
+            pfile.write('\t\t cluster_twin\t 1.5\n')
+            pfile.write('\t\t try_S\t yes\n')
+            pfile.write('\t\t associate_S\t no\n')
+            pfile.write('\t\t reprocess_S\t no\n')
+            pfile.write('\t\t drop_if_on_edge\t yes\n')
+            pfile.write('\t\t auth\t dbgrassoc\n')
+            pfile.write('\t\t algorithm\t dbgrassoc\n')
+            pfile.write('\t\t P_deltim\t 0.1\n')
+            pfile.write('\t\t S_deltim\t 0.2\n')
+            pfile.write('\t\t phase_sifter\t a\n')
+            pfile.write('\t\t P_channel_sifter\t .*\n')
+            pfile.write('\t\t S_channel_sifter\t .*\n')
+            pfile.write('\t\t P_det_tmin\t 10.0\n')
+            pfile.write('\t\t priority\t 1\n')
+            pfile.write('\t\t use_dwt\t no\n')
+            pfile.write('\t\t use_dwts\t no\n')
+            pfile.write('\t}\n')
+            pfile.write('}\n')
+
 
     def locate_eq(self, event):
         '''
@@ -368,6 +427,15 @@ class Locator:
                                                       predicted_travel_times,
                                                       li)
         logger.debug("[evid: %d] Grid search complete." % event.evid)
+#        print minx, miny, minz, otime
+        #logger.debug("[evid: %d] Starting dbgrassoc grid search." % event.evid)
+        #minx, miny, minz, otime = grid_search_dbgrassoc(qx,
+        #                                                qy,
+        #                                                qz,
+        #                                                arrivals,
+        #                                                tt_map_dir)
+        #logger.debug("[evid: %d] dbgrassoc grid search complete." % event.evid)
+        #print minx, miny, minz, otime
         #print '!!!'
         #print event.time - otime
         #print '!!!'
@@ -428,6 +496,9 @@ class Locator:
                 [minlon + u[0] * dlon,
                         minlat + u[1] * dlat,
                         earth_rad - minr + u[2] * dz]
+        if newloc[2] < 0:
+            newloc[2] = 0.0
+            newz =  0.0
         otime = u[3]
         #print event.lon, event.lat, event.depth, event.time
         #print newlon, newlat, newz, otime
@@ -885,7 +956,7 @@ class Station:
 
 class Event():
     '''
-    A container class for Earthquake event data. Mirrors the Event
+    A container class for earthquake event data. Mirrors the Event
     table of the CSS3.0 databse schema.
     '''
     #def __init__(self, time, lat, lon, depth, mag, magtype=None, evid=None):
@@ -1144,10 +1215,10 @@ class Event():
         associated with this event.
 
         Arguments:
-        lat - Latitude of Earthquake hypocenter.
-        lon - Longitude of Earthquake hypocenter.
-        depth - Depth of Earthquake hypocenter.
-        time - Epoch time of Earthquake rupture.
+        lat - Latitude of earthquake hypocenter.
+        lon - Longitude of earthquake hypocenter.
+        depth - Depth of earthquake hypocenter.
+        time - Epoch time of earthquake rupture.
 
         Keyword Arguments:
         These need to be FULLY described here. Procastinating on this,
@@ -1254,7 +1325,7 @@ class Event():
                                 lddate=lddate)]
 class Origerr():
     '''
-    A container class for Earthquake event data. Mirrors the Origerr
+    A container class for earthquake event data. Mirrors the Origerr
     table of the CSS3.0 databse schema.
     '''
     def __init__(self,
@@ -1304,7 +1375,7 @@ class Origerr():
 
 class Origin():
     '''
-    A container class for Earthquake event data. Mirrors the Origin
+    A container class for earthquake event data. Mirrors the Origin
     table of the CSS3.0 databse schema.
     '''
     def __init__(self,
@@ -1339,10 +1410,10 @@ class Origin():
         Initialize Origin object.
 
         Arguments:
-        lat - Latitude of Earthquake hypocenter.
-        lon - Longitude of Earthquake hypocenter.
-        depth - Depth of Earthquake hypocenter.
-        time - Epoch time of Earthquake rupture.
+        lat - Latitude of earthquake hypocenter.
+        lon - Longitude of earthquake hypocenter.
+        depth - Depth of earthquake hypocenter.
+        time - Epoch time of earthquake rupture.
 
         Keyword Arguments:
         These need to be FULLY described here. Procastinating on this,

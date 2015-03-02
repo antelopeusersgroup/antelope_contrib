@@ -41,10 +41,11 @@ def _parse_args():
     from os import getcwd
     from os.path import join
     parser = ArgumentParser()
-    parser.add_argument('db', type=str, help='Input database.')
-    parser.add_argument('-p', '--pf', type=str, help='Parameter file.')
-    parser.add_argument('-s', '--subset', type=str, help='Station subset.')
-    parser.add_argument('-o', '--output', type=str, help='Output directory.')
+    parser.add_argument('db', type=str, help='input database')
+    parser.add_argument('-p', '--pf', type=str, help='parameter file')
+    parser.add_argument('-s', '--subset', type=str, help='station subset')
+    parser.add_argument('-o', '--output', type=str, help='output directory')
+    parser.add_argument('-t', '--ttgrid_output', action='store_true', help='output travel-times in Antelope ttgrid format')
     args = parser.parse_args()
     args.db = join(getcwd(), args.db)
     return args
@@ -64,7 +65,6 @@ def _parse_pfile(pfile):
                 'gridsave.in',
                 'interfaces.in',
                 'mode_set.in',
-                'receivers.in',
                 'vgrids_P',
                 'vgrids_S'):
         string = pfile[key]
@@ -232,6 +232,7 @@ def _create_station_list(args, pfile):
         subset = 'lat > %f && lat < %f && lon > %f && lon < %f' \
                 % (minlat, maxlat, minlon, maxlon)
         tbl_site = tbl_site.subset(subset)
+        tbl_site = tbl_site.sort('sta', unique=True)
         for record in tbl_site.iter_record():
             sta, lat, lon, elev = record.getv('sta',
                                               'lat',
@@ -241,6 +242,8 @@ def _create_station_list(args, pfile):
     return station_list
 
 def _write_propgrid(pfile):
+    refinement_factor = 5
+    ncells = 10
     prop_grid = pfile['propagation_grid']
     if os.path.isfile('propgrid.in'):
         os.remove('propgrid.in')
@@ -262,8 +265,8 @@ def _write_propgrid(pfile):
                prop_grid['minlon'],
                'origin of the grid height (km),lat,long (deg)'))
     outfile.write('%8s\t%8s\t\t\t\t\t%s\n'
-            % (prop_grid['refinement_factor'],
-               prop_grid['ncells'],
+            % (refinement_factor,
+               ncells,
                'refinement factor and # of propgrid cells in refined source '\
                     'grid'))
     outfile.close()
@@ -282,10 +285,10 @@ def _configure_logger():
     sh.setFormatter(formatter)
     logger.addHandler(sh)
 
-def gen_sta_tt_maps(stalist, phase, if_write_binary=True):
+def gen_sta_tt_maps(station_list, phase, if_write_binary=True):
 #Generate a travel time map for each station in the station list
     logger.info('Starting travel time calculation for %s phase.' % phase)
-    for sta in sorted(stalist):
+    for sta in sorted(station_list):
         logger.info('[sta: %s] Generating %s-wave travel times.' %  (sta.sta, phase))
 #Elevation can be set to a large negative number to glue the source to
 #the surface
@@ -316,10 +319,10 @@ def _write_sources_file(depth, lat, lon):
     #Write  the sources.in file, which has this form:
     # 1                                number of sources
     # 0                                source is local/teleseismic (0/1)
-    # 5.00  33.0   -116.0      position depth(km),lat(deg),long(deg) 
+    # 5.00  33.0   -116.0      position depth(km),lat(deg),long(deg)
     # 1                                number of paths from this source
     # 1                                number of sections on the path
-    # 0 1           define the path sections 
+    # 0 1           define the path sections
     # 1            define the velocity type along the path
     numsrc = 1
     teleflag = 0
@@ -466,6 +469,63 @@ def _create_dummy_receivers_file(pfile):
     outfile.write('%f    %f    %f\n1\n1\n1' % (midz, midlat, midlon))
     outfile.close()
 
+def write_antelope_ttgrid(station_list, calc_S_tt, pfile):
+    prop_grid = pfile['propagation_grid']
+    ttgrid_compile_input = open('ttgrid_compile_input', 'w')
+    ttgrid_compile_input.write('name\tfm3d_grid\n')
+    ttgrid_compile_input.write('method\tfm3d\n')
+    ttgrid_compile_input.write('model\tdefault\n')
+    ttgrid_compile_input.write('P\tyes\n')
+    if calc_S_tt:
+        ttgrid_compile_input.write('S\tyes\n')
+    else:
+        ttgrid_compile_input.write('S\tno\n')
+    ttgrid_compile_input.write('stations\t%d\n' % len(station_list))
+    for sta in station_list:
+        ttgrid_compile_input.write('%s\t%f\t%f\t%f\n' % (sta.sta, sta.lat, sta.lon, sta.elev))
+    ttgrid_compile_input.write('sources\t%d\n' % \
+            (prop_grid['nlat'] * prop_grid['nlon'] * prop_grid['nr']))
+    for ilon in range(prop_grid['nlon']):
+        for ilat in range(prop_grid['nlat']):
+            for ir in range(prop_grid['nr']):
+                ttgrid_compile_input.write('%f\t%f\t%f\n' % \
+                        (prop_grid['minlat'] + ilat * prop_grid['dlat'],
+                         prop_grid['minlon'] + ilon * prop_grid['dlon'],
+                         pfile['earth_radius'] - (prop_grid['minr'] \
+                                 + ir * prop_grid['dr'])))
+    ttgrid_compile_input.write('ttimes\n')
+    for ilon in range(prop_grid['nlon']):
+        for ilat in range(prop_grid['nlat']):
+            for ir in range(prop_grid['nr']):
+                for sta in station_list:
+                    if calc_S_tt:
+                        P_ttfile = open('%s.P.traveltime' % sta.sta, 'r')
+                        S_ttfile = open('%s.S.traveltime' % sta.sta, 'r')
+                        for j in range(ir + ilat + ilon + 5):
+                            P_ttfile.readline()
+                            S_ttfile.readline()
+                        P_tt = float(P_ttfile.readline())
+                        S_tt = float(S_ttfile.readline())
+                        P_ttfile.close()
+                        S_ttfile.close()
+                        if P_tt == -1.0:
+                            P_tt = 100.0
+                        if S_tt == -1.0:
+                            S_tt = 100.0
+                        ttgrid_compile_input.write('%f\t%f\t' % (P_tt, S_tt))
+                    else:
+                        P_ttfile = open('%s.P.traveltime' % sta.sta, 'r')
+                        for j in range(ir + ilat + ilon + 5):
+                            P_ttfile.readline()
+                        P_tt = float(P_ttfile.readline())
+                        P_ttfile.close()
+                        if P_tt == -1.0:
+                            P_tt = 100.0
+                        ttgrid_compile_input.write('%f\t' % P_tt)
+                ttgrid_compile_input.write('\n')
+    ttgrid_compile_input.close()
+    subprocess.call(["ttgrid_compile < ttgrid_compile_input > ttgrid"], shell=True)
+
 if __name__ == '__main__':
     from logging import getLogger
     args = _parse_args()
@@ -496,6 +556,7 @@ if __name__ == '__main__':
     logger.info('Checking parameter file.')
     _check_pfile(pfile)
     station_list = _create_station_list(args, pfile)
+    print sorted([sta.sta for sta in station_list])
     input_files = ('mode_set.in',
                    'interfaces.in',
                    'gridsave.in',
@@ -531,4 +592,8 @@ if __name__ == '__main__':
         except IOError as err:
             logger.error('Could not remove %s from working directory' %\
                     input_file)
+    if args.ttgrid_output:
+        logger.info('Converting travel-time files to Antelope ttgrid format...'\
+                ' This is slow... Very slow.')
+        write_antelope_ttgrid(station_list, pfile['calc_S_tt'], pfile)
     sys.exit(0)
