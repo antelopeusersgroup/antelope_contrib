@@ -1,9 +1,7 @@
 /*  Copyright (c) 1997 Boulder Real Time Technologies, Inc.           */
 /*                                                                    */
-/*  This software module is wholly owned by Boulder Real Time         */
-/*  Technologies, Inc. Any use of this software module without        */
-/*  express written permission from Boulder Real Time Technologies,   */
-/*  Inc. is prohibited.                                               */
+/*  This software may be used freely in any way as long as            */
+/*  the copyright statement above is not removed.                     */
 
 #include <string.h>
 

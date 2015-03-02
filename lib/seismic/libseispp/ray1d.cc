@@ -72,7 +72,7 @@ RayPathSphere::RayPathSphere(VelocityModel_1d& vmod,
 		vel=vmod.getv(z);
 		rnow=R0-z;
 		eta=rnow/vel; //
-		if(p>eta)break;  // exit loop to avoid a negative sqrt
+		if(p>=eta)break;  // exit loop to avoid a negative sqrt
 		root_term=sqrt(eta*eta-p*p);
 		// mode switches between equal depth steps and equal
 		// time steps

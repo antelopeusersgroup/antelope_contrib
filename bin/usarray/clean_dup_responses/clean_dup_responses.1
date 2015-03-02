@@ -1,0 +1,106 @@
+.TH clean_dup_responses 1 
+.SH NAME
+clean_dup_responses \- remove duplicate response and response/stage files from a dbmaster
+.SH SYNOPSIS
+.nf
+\fBclean_dup_responses \fP [-v] \fIdatabase\fP
+.fi
+.SH DESCRIPTION
+When a combined dbmaster is generated via seed2db followed by dbmerge when using 
+metadata from multiple external groups, you can often get identical response files 
+with different names referenced in the stage and instrument tables.  This can lead
+to large bloat in your response and response/stage directories of your dbmaster.
+This script uses the perl \fI Digest::MD5 \fP module to check for file contents 
+duplication between referenced files, notes the files that are identical if the 
+\fI[-v]\fP option is used, \fBdeletes the duplicates with no undo(!)\fP, and changes
+the \fIdir\fP and \fIdfile\fP fields as necessary in the instrument and stage table for files that 
+have been removed.  For something like the usarray dbmaster, with over 10 
+contributing networks, running this script reduces the size of the response 
+directory by more than 60%.  Note that the number of records in the instrument and
+stage table are not reduced, just the number of referenced response files.
+
+\fBIMPORTANT!\fP  It is left to the user to make a backup of the database 
+before running this script!!!  Running this script \fB will
+remove files from the response directory with no way to recover them short
+of rebuilding the entire dbmaster!\fP  Use with caution!
+
+
+.SH OPTIONS
+.IP -v
+Verbose output.
+.SH ENVIRONMENT
+Need to have sourced $ANTELOPE/setup.csh 
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+% \fBclean_dup_responses: clean_dupe_responses usarray\fP
+
+clean_dup_responses: clean_dup_responses usarray
+clean_dup_responses: Finished with stage cleanup
+
+clean_dup_responses: Finished with instrument cleanup
+
+clean_dup_responses: File duplication cleanup complete
+           Directory   Old Size   New Size   %reduction
+   response/stage_po    1972.00     578.00   70.69
+   response/stage_UU     102.00     102.00    0.00
+   response/stage_NN     578.00     578.00    0.00
+   response/stage_II     884.00     510.00   42.31
+   response/stage_LD    7650.00    1394.00   81.78
+   response/stage_AK   21964.00    2958.00   86.53
+   response/stage_CI   64702.00    2686.00   95.85
+   response/stage_AZ    7072.00     952.00   86.54
+   response/stage_US   36176.00    2312.00   93.61
+   response/stage_IU    8738.00    2176.00   75.10
+   response/stage_BK    3536.00    3536.00    0.00
+
+           Directory   Old Size   New Size   %reduction
+            response   44302.00   15538.00   64.93
+
+Duplicated files referenced by stage, now removed: 3988
+Duplicated files referenced by instrument, now removed: 4835
+
+.fi
+.ft R
+.in
+.SH DIAGNOSTICS
+.IP "No records found in \fItable\fR table of \fIdatabase\fR"
+.br
+There were no records found in either the stage or instrument table.  
+Check that you have referenced the correct database, or that the descriptor
+file of the referenced database includes a path to the instrument and stage table.
+.IP "Could not unlink \fIfile\fR"
+.br
+You may not have permissions to remove files from the response directory.
+.SH "BUGS AND CAVEATS"
+
+\fBIMPORTANT!\fP  It is left to the user to make a backup of the database 
+before running this script!!!  Running this script \fB will
+remove files from the response directory with no way to recover them short
+of rebuilding the entire dbmaster!\fP  Use with caution!  This is a critical 
+warning, so it is appearing twice in the manpage!
+
+This script will not win any awards for efficiency and timely operations.  
+It is slow.  It is very slow when run on the largest databases that 
+would actually benefit the most from expunging duplicate resopnse files. 
+One method to avoid the long run times for the clean-up would be to run 
+the script on each individual dbmaster before running again on the combined/final
+dbmaster.  (This assumes you have a predbmaster area with individual network
+dbmasters that you later merge via dbmerge).  
+
+The script could benefit from optimization to speed it up.  One possible 
+path forward is the use of the Find::File::Rule module instead of some of
+the hackery in place now.
+
+If the very first record of the instrument or stage table has a referenced file
+which is a duplicate, and that duplicated file is not chosen to be kept (i.e.
+has been replaced by a different named response file), it does not end up
+getting a replacement named file.  This is a known bug.  The original dir/dfile
+is kept for this first record of the table and will likely be a duplicate of
+another file kept in the response directory.  
+.SH AUTHOR
+Jennifer Eakins
+.br
+jeakins@ucsd.edu

@@ -15,39 +15,36 @@ site &Arr{
     siteconfig &Arr{
     }
     event2jsonconfig &Arr{
-            debug           False
             verbose         False
             readableJSON    None              # None, 0(just newline), number
-            readableJSON    None            # None, 0(just newline), 4(int number)
-            refresh         60              # seconds for next refresh of cached data
+            refresh         10              # seconds for next refresh of cached data
             time_limit      2680200         # 31 days, aprox. 1 month
             timezone        UTC             # Timezone for time string
             timeformat      %D (%j) %H:%M:%S %z
             databases &Arr{
-                # demo   /opt/antelope/data/db/demo/demo
-                usarray /anf/TA/rt/usarray/usarray
+                #demo   /opt/antelope/data/db/demo/demo
+                #usarray /anf/TA/rt/usarray/usarray
                 anza /anf/ANZA/rt/anza/anza
-                ceusn /anf/CEUSN/rt/ceusn/ceusn
+                #ceusn /anf/CEUSN/rt/ceusn/ceusn
             }
     }
     sta2jsonconfig &Arr{
-            debug           False
-            verbose         False
+            verbose         True
             #sta_subset      sta =~ /Q39A/
             readableJSON    None               # None, 0(just newline), number
             refresh         60              # seconds for next refresh of db cached data
             timezone        UTC             # Timezone for time string
             timeformat      %D (%j) %H:%M:%S %z
             databases &Arr{  #use same key names than 'orbs'
-                # demo   /opt/antelope/data/db/demo/demo
-                usarray /anf/TA/dbs/dbops/usarray
+                #demo   /opt/antelope/data/db/demo/demo
+                #usarray /anf/TA/dbs/dbops/usarray
                 anza /anf/ANZA/dbs/dbops/anza
-                ceusn /anf/CEUSN/dbs/dbops/ceusn
+                #ceusn /anf/CEUSN/dbs/dbops/ceusn
             }
             orbnames &Arr{  #use same key names than 'databases'
-                usarray anfexport:usarrayTA
+                #usarray anfexport:usarrayTA
                 anza anzaexport:anza
-                ceusn ceusnexport:usarray
+                #ceusn ceusnexport:usarray
             }
     }
     pages &Arr{
