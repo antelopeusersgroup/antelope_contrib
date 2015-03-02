@@ -1,0 +1,72 @@
+number_of_active_entries 5		# should match the number of defined setups in newannc
+default_authcode	0000000000000007
+
+unlock_flags 		0xa00		# do not change this
+
+alt_auth_codes  &Tbl{
+	0000000000000000
+	00000000DEADBEEF
+	0000000000003333	
+#	000000000000BAAB	
+}
+
+
+# default POC settings
+# DO NOT CHANGE THESE unless you really know why you need to
+
+flags			0xa1
+dp_udp_port		2254
+router_ip_addr	192.168.33.1
+
+#
+# These should be the final POC setups your datalogger(s) should have
+#
+
+newannc &Arr{
+
+anfacq &Arr{
+dp_ip_addr	169.228.999.999
+router_ip_addr	192.168.33.1
+timeout_in_minutes	0	
+resume_time_in_minutes	5
+flags			0xa1
+dp_udp_port		2254
+}
+
+anfdmcacq &Arr{
+dp_ip_addr	128.95.999.999
+router_ip_addr	192.168.33.1
+timeout_in_minutes	0	
+resume_time_in_minutes	10
+flags			0xa1
+dp_udp_port		2254
+}
+
+ceusnacq &Arr{
+dp_ip_addr	169.228.999.888
+router_ip_addr	192.168.33.1
+timeout_in_minutes	0	
+resume_time_in_minutes	5
+flags			0xa1
+dp_udp_port		2254
+}
+
+ceusndmcacq &Arr{
+dp_ip_addr	128.95.999.888
+router_ip_addr	192.168.33.1
+timeout_in_minutes	0	
+resume_time_in_minutes	10
+flags			0xa1
+dp_udp_port		2254
+}
+
+isti &Arr{
+dp_ip_addr	24.97.987.654
+router_ip_addr	192.168.33.1
+timeout_in_minutes	0	
+resume_time_in_minutes	10
+flags			0xa1
+dp_udp_port		2254
+}
+
+}

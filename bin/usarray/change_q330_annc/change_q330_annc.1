@@ -1,0 +1,406 @@
+#	 % nroff -man manpage.1 | more
+.TH CHANGE_Q330_ANNC 1 # 
+.SH NAME
+change_q330_annc \- change or review the annc structure on a q330 datalogger
+.SH SYNOPSIS
+.nf
+\fBchange_q330_annc \fP
+	[-a authcode]
+	[-d dlevent_db]
+	[-p pf]
+	[-s select]
+	[-r reject]
+	[-t targetname]
+	[-v]
+	[-V]
+	[-n ]
+	[-x exclude_dlsta]
+	{-i dlevent_db | staq330_db} 
+	
+
+.fi
+.SH DESCRIPTION
+.SS Background
+The Earthscope USArray Transportable Array (TA) network uses POC initiated operations
+to connect to the deployed q330 dataloggers.  This requires the field crews to deploy
+the q330s with the ANNC structure properly setup to send these Point-of-Contact (POC)
+messages and to send them to host IPs that are ready to acquire them with a running 
+\fBpocd(1) \fP processes.  On occassion, the datalogger setup, or modifications 
+using Willard go awry and the ANNC structure is set improperly, or the toggle to 
+send out the POCs is not checked.  This script is a way for a data center to 
+query and/or modify that ANNC structure and is a wrapper around the \fBq330util(1)\fP
+command to request or set that structure.  It is a sharp tool, and serious care/caution 
+should be taken before you use this on all of your remote dataloggers!!  \fB Please run this 
+in test/non-commanding mode with the \fI-n\fP option before unleashing it on your 
+remote dataloggers!!\fP  
+
+.SS Auxilliary tables
+This script has been developed for use at the ANF where we have implemented various
+table extensions to the css3.0 schema to help with the tracking of operational details.
+In particular, the default, non \fI -i \fP run of the script requires that a \fIstaq330\fP
+table exist.  If you do not have a \fIstaq330\fP table, you will need to run the script 
+in interactive mode - a slow process if you have a multitude of dataloggers to check/modify.
+The staq330 table is created by the \fBq330_baler(1)\fP script.  If you run in interactive 
+mode, you can bypass the need for both a \fIstaq330\fP or \fIq330comm\fP table.
+
+
+
+.SH OPTIONS
+.LP  
+See the EXAMPLE section for examples on how the different options should be selected depending on your task.
+You must select either the \fI -i\fP (interactive) mode, or specify a database which
+has a staq330 table.
+.IP -n 
+Run \fBchange_q330_annc\fP in report mode only - NO CHANGES will be made to the datalogger.  
+Use this when you want to see what would happen, or get a report on the current settings,  
+but not actually affect any datalogger settings.  Highly recommended that you start with this 
+option enabled!
+.IP -v
+Verbose output.
+.IP -V
+Very verbose output - debugging only.
+.IP "-a authcode" 
+Password/authentication code for the q330 datalogger.  Default of 0000000000000000 is tried, 
+but alternates can be specified with this option or in the parameter file.
+.IP -f
+This is a "force" option that will report any pre-existing oddities
+in setup but will go ahead and change them to your new ones.  This could have potentially critical/disasterous 
+consequences to your remote datalogger.  Use with extreme caution! 
+.IP "-p parameter_file"
+Alternate parameter file to use.  The default parameter file name is \fBchange_q330_annc.pf\fP
+.IP "-x dl_reject_expression"
+Expression used to reject dataloggers for change or review.  The code performs dlsta !~/$opt_x/".
+.IP "-s dl_select_expression"
+Expression used to select dataloggers for change or review.  The code performs dlsta =~/$opt_s/".
+.IP "-t targetname_expression"
+Expression used to select particular q330 targetnames for change or review.  
+.IP "-d dlevent_db"
+Database name that contains a dlevent table to record when the settings change took place.  The dlevent
+table is a css3.0 extension table used at the ANF.  When a setannc command is to be sent to the dataloggers
+a umsg is sent to the datalogger as a record informing when the setting change took place.
+.IP "-i" 
+Run the script in interactive mode.  This allows single datalogger interaction and is the only
+way the script will run if a staq330 table is unavailable.   You must use the \fI-d dlevent_db\fP
+option when running in interactive mode.  Either the \fI-i\fP option or the \fIstaq330_db\fP must be used.
+.IP staq330_db
+Database that contains the staq330 table.  All active dataloggers found in this table will have the
+annc structure analized based on the q330 serial number and IP address found in this table.  Use
+the \fI-x\fP or \fI-s\fP and \fI-t\fP options to limit which dataloggers are reviewed. 
+.SH FILES
+.LP
+There are three schema extension tables that can accessed by this script:  staq330, q330comm,
+and dlevent.  See the documentation available via \fBdbhelp(1)\fP for the css3.0
+schema.  See \fBq330_baler(1)\fP for information on populating the staq330 table. See 
+\fBq330coms(1)\fP for how the q330comm table is created.  See \fBlogs2dlevent(1)\fP or
+\fBdlreport(1)\fP for how the dlevent table is used. 
+
+.LP 
+Four output files are created that contain information about the before/after POC settings (report.txt),
+a record of the actual \fBq330util\fP setannc commands that are sent (setannccmds.txt), a more detailed 
+record of settings (settings.txt), and a shorter list of problem stations (tobefixed.txt).  These 
+files are overwritten for every run of \fBchange_q330_annc\fP.  Examples of these four files are shown: 
+.SS "report.txt"
+.in 2c
+.ft CW
+.nf
+.ne 4 
+   TA_I51A(Initial)  132.239.99.99 (?)   5  169.228.99.99 (host1)   5  128.95.999.99 (faraway1)  10  24.97.99.999 (monitor)  10
+   TA_I51A(  Final)  169.228.88.88 (mylocal1)   5  128.95.88.888  (faraway2)  10  169.228.88.882 (mylocal2)   5  128.95.77.777 (faraway2)  10  24.97.99.999 (monitor)  10
+.fi
+.ft R
+.in
+.SS "setannccmds.txt"
+.in 2c
+.ft CW
+.nf
+.ne 4 
+# TA_I51A
+q330util -auth 00000000DEADBEEF sannc 74.198.9.99,0100000B64343434,5,0xa00,169.228.88.88,192.168.33.1,0,5,0xa1,2254,128.95.88.888,192.168.33.1,0,10,0xa1,2254,169.228.88.882,192.168.33.1,0,5,0xa1,2254,128.95.77.777,192.168.33.1,0,10,0xa1,2254,24.97.99.999,192.168.33.1,0,10,0xa1,2254
+.fi
+.ft R
+.in
+.SS "settings.txt"
+.in 2c
+.ft CW
+.nf
+.ne 4 
+POC settings for TA_I51A (0) annc structure:
+   IP address is: 132.239.99.99 (?)
+   Router address is: 192.168.33.1 (?)
+   Timeout is: 0
+   Resume time is: 5
+   Flags: 0xa1
+   UDP port is: 2254
+.fi
+.ft R
+.in
+
+.SS "tobefixed.txt"
+.in 2c
+.ft CW
+.nf
+.ne 4 
+Incorrect POC ip (132.239.99.99) in use for TA_I51A (0) annc structure
+Incorrect POC ip (128.95.999.99) in use for TA_I51A (2) annc structure
+Could not reach TA_I57A after attempting all alternate authorization code(s)
+.fi
+.ft R
+.in
+
+.SH ENVIRONMENT
+Need to have sourced $ANTELOPE/setup.csh and environment variable $PFPATH set.
+.SH PARAMETER FILE
+The first portion of the parameter file describes the number of POC receivers, authentication
+codes to try, and some global settings.  The core portion of the parameter file is the \fI newannc\fP 
+structure with named sections for your POC receivers and their individual POC settings.
+.IP number_of_active_entries 
+This number indicates how many hosts should be sent POCs from the datalogger.  This number must
+match the number of setups defined in the newannc section of the parameter file.
+.IP default_authcode 
+If your network uses a single authorization code for q330 access, specify it here.
+.IP alt_auth_codes
+If your network uses a variety of possible authorization codes, add them all here.  The
+script will cycle through each one if it cannot access the datalogger with the \fI default_authcode\fP.
+.IP unlock_flags
+This should likely always be set to 0xa00 if you are operating in POC mode.  This sets the serial
+number unlocks.
+.IP flags
+This should likely always be set to 0xa1 as that is the value that indicates that POCs should be sent.
+Oft times when a datalogger is not sending POCs after a field visit, setting the annc structure to include
+this flag will start the POCs flowing.
+.IP dp_udp_port
+This should be set to 2254. 
+.IP router_ip_addr
+This should likely be set to 192.168.33.1.  Do not change it unless you know why it needs to be changed.
+.IP newannc
+This is an associative array containing named arrays which hold the settings for each of the POC receivers.  The
+number of named arrays should match the \fInumber_of_active_entries\fP specified earlier in the 
+parameter file.  The names used here do not have to match the nslookup names of the hosts that are
+receiving the POCs, but should each be unique.  
+.IP "newannc POC settings elements"
+Each newannc structure has an associative array that must contain:
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+dp_ip_addr	- IP to send POCs to (where a q330pocd process is run)
+router_ip_addr	- router IP address.  Almost always set to 192.168.33.1 for TA operations
+timeout_in_minutes	- set to 0 so the q330 will continue to send POCs "forever"
+resume_time_in_minutes	- delay in minutes without a registered connection before POCs are sent
+flags	-  should be set to 0xa1 to indicate POCs should be flowing
+dp_udp_port	- should likely always be set to 2254
+
+
+.fi
+.ft R
+.in
+.SH EXAMPLE PARAMETER FILE
+Below is the default \fBchange_q330_annc\fP parameter file.
+.in 2c
+.ft CW
+.nf
+.ps 8
+
+number_of_active_entries	5              # should match the number of defined setups in newannc
+default_authcode        0000000000000007
+
+unlock_flags            0xa00           # do not change this
+
+alt_auth_codes  &Tbl{
+        0000000000000000        	# this is the quanterra default and should always be included 
+        00000000DEADBEEF
+        0000000000003333        
+#       000000000000BAAB        
+}
+
+
+# default POC settings
+
+flags                   0xa1
+dp_udp_port             2254
+router_ip_addr  192.168.33.1
+
+newannc &Arr{		# named structures for settings for each POC receptor
+
+anfacq &Arr{
+dp_ip_addr      169.228.999.999
+router_ip_addr  192.168.33.1
+timeout_in_minutes      0       
+resume_time_in_minutes  5
+flags                   0xa1
+dp_udp_port             2254
+}
+
+anfdmcacq &Arr{
+dp_ip_addr      128.95.999.999
+router_ip_addr  192.168.33.1
+timeout_in_minutes      0       
+resume_time_in_minutes  10
+flags                   0xa1
+dp_udp_port             2254
+}
+
+ceusnacq &Arr{
+dp_ip_addr      169.228.999.888
+router_ip_addr  192.168.33.1
+timeout_in_minutes      0       
+resume_time_in_minutes  5
+flags                   0xa1
+dp_udp_port             2254
+}
+
+ceusndmcacq &Arr{
+dp_ip_addr      128.95.999.888
+router_ip_addr  192.168.33.1
+timeout_in_minutes      0       
+resume_time_in_minutes  10
+flags                   0xa1
+dp_udp_port             2254
+}
+
+isti &Arr{
+dp_ip_addr      24.97.987.654
+router_ip_addr  192.168.33.1
+timeout_in_minutes      0       
+resume_time_in_minutes  10
+flags                   0xa1
+dp_udp_port             2254
+}
+
+}
+
+
+.SH EXAMPLE
+.SS "Interactive mode"
+.IP \(bu
+Check the settings for single datalogger, interactively, using the staq330 table.  Do not implement
+any changes to the settings.
+
+.in 2c
+.ft CW
+.nf
+.ne 4 
+%\fB change_q330_annc -n -i -d dbops/usarray\fP
+: dl_sta to check: ('XX_ABCD'):  TA_109C
+: How is q330 sn provided? ('provide_pf|XXXXXXXXXXXXXXXX'):  pf/q3302orb_Strays.pf
+: How is IP provided? ('q330comm | path/to/q330logs/year/day/target/log | XXX.XXX.XXX.XXX'):  q330comm
+: Database with q330comm table? ('path/to/db/dbname'):  dbops/usarray
+Using ip from q330comm: 198.202.999.999
+
+No changes to POC setup needed for: TA_109C 
+
+.fi
+.ft R
+.in
+.IP \(bu
+Check, but do not change the settings for a single datalogger with no staq330 table available and looking
+for an IP from the q330logs available from the output of \fBorb2logs\fI.
+
+.in 2c
+.ft CW
+.nf
+.ne 4 
+%\fB change_q330_annc -n -i -d dbops/usarray\fP
+: dl_sta to check: ('XX_ABCD'):  TA_109C
+: How is q330 sn provided? ('provide_pf|XXXXXXXXXXXXXXXX'):  0100000ABCABCABC
+: How is IP provided? ('q330comm | path/to/q330logs/year/day/target/log | XXX.XXX.XXX.XXX'):  q330logs/2015/051/tadataStrays/log
+Using ip from log: 198.202.999.999
+
+No changes to POC setup needed for: TA_109C 
+.fi
+.ft R
+.in
+
+.SS "Report/Review"
+.IP \(bu
+Check the settings for all dataloggers in a single targetname.  Again, no changes made as the \fI-n\fP is used.  The below
+example shows that TA_D55A has an incorrect setting, TA_D56A must have comms which are not functioning, and TA_D58A 
+has the expected settings.
+
+.in 2c
+.ft CW
+.nf
+.ne 4 
+%\fB change_q330_annc -n -t tadataLow48 db/usarray\fP 
+Incorrect POC ip (132.239.999.999) in use for TA_D55A (0) annc structure 
+Incorrect POC ip (128.95.999.999) in use for TA_D55A (2) annc structure 
+        User specified -n prevents setannc from running. 
+           annc structure remains as before for TA_D55A 
+Could not reach TA_D56A after attempting all alternate authorization code(s) 
+Station TA_D56A was unreachable. 
+
+No changes to POC setup needed for: TA_D58A 
+
+
+.fi
+.ft R
+.in
+
+.SS "Modify Settings"
+.IP \(bu
+Correct the POC settings for a single station.
+.in 2c
+.ft CW
+.nf
+.ne 4 
+%\fB change_q330_annc -s "TA_D55A" db/usarray\fP 
+Incorrect POC ip (132.239.999.999) in use for TA_D55A (0) annc structure 
+Incorrect POC ip (128.95.999.999) in use for TA_D55A (2) annc structure 
+Changed POC config for TA_D55A
+.fi
+.ft R
+.in
+.IP \(bu
+Correct the POC settings for a subset of stations, exclude one, use only stations 
+from a single instance/targetname.
+.in 2c
+.ft CW
+.nr
+.ne
+%\fB change_q330_annc -s "TA_[IJK].*" -x TA_I50A -t tadataLow48 db/usarray\fP
+
+Incorrect POC ip (132.239.999.999) in use for TA_I51A (0) annc structure 
+Incorrect POC ip (128.95.999.999) in use for TA_I51A (2) annc structure 
+Could not reach TA_I57A after attempting all alternate authorization code(s) 
+Station TA_I57A was unreachable. 
+Incorrect POC ip (132.239.999.999) in use for TA_I58A (0) annc structure 
+Incorrect POC ip (128.95.999.999) in use for TA_I58A (2) annc structure 
+
+No changes to POC setup needed for: TA_I59A 
+
+No changes to POC setup needed for: TA_I60A 
+Could not reach TA_I61A after attempting all alternate authorization code(s) 
+Station TA_I61A was unreachable. 
+
+
+.SH DIAGNOSTICS
+.IP "Could not reach XX_ABCD after attempting all alternate authorization code(s)"
+Station was either off-line/no comms, or you are using the wrong authorization code 
+when attempting to register.
+.IP "No changes to POC setup needed for: XX_ABCD"
+Station has POCs setup as specified in your parameter file. 
+.IP "Incorrect POC ip (XXX.XXX.XXX.XXX) in use for XX_ABCD (n) annc structure"
+The numbered POC structure \fI(n)\fP has incorrect POC settings.  This datalogger 
+will receive a setannc q330util command to modify the POC structures.  Note that 
+only the numbered structures will be modified.
+.SH "SEE ALSO"
+.nf
+q3302orb(1)
+q330util(1)
+dlcmd(1)
+q330_baler(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Assumes same authorization code across all ports.  
+.LP
+I expect log messages might be confusing if you have a single datalogger recording 
+two stations worth of data (i.e. both XX_ABCD and XX_EFGH are collected via a single
+datalogger).  Untested, so use caution.
+.LP 
+Occassionally, the "Final" report of the annc structure is incomplete in the report.txt output file.
+.SH AUTHOR
+Jennifer Eakins
+.br
+Univ. of California, San Diego
