@@ -1,0 +1,53 @@
+0                         ! 1 if frechet derivatives requested, 0 if not 
+2                         ! # of velocity grids to be inverted for
+3 3                       ! indices of velocity grids to be inverted 
+1 2                       ! types of velocity grids to be inverted for
+2                         ! # of interfaces to be inverted for
+2 3                       ! indices of interfaces to be inverted for 
+1                         ! # of sources to be inverted for
+1                         ! indices of sources to be inverted for
+
+
+##### copy the lines below to the top of the file for the simple example
+##### generated with  files make_interfaces.f90 and make_vgrids.f90 for a
+##### simple test of the frechet derivatives and as an example with a short execution time
+
+1                         ! 1 if frechet derivatives requested, 0 if not 
+2                         ! # of velocity grids to be inverted for
+3 3                       ! indices of velocity grids to be inverted 
+1 2                       ! types of velocity grids to be inverted for
+2                         ! # of interfaces to be inverted for
+2 3                       ! indices of interfaces to be inverted for 
+1                         ! # of sources to be inverted for
+1                         ! indices of sources to be inverted for
+
+
+
+##### copy the lines below to the top of the file for the example  with the
+##### subducting slab model (interfaces and velocities generated with make_cmplayers.f90
+##### and make_cmpvelocities.f90)
+
+1                         ! 1 if frechet derivatives requested, 0 if not 
+2                         ! # of velocity grids to be inverted for
+3 4                       ! indices of velocity grids to be inverted 
+1 1                       ! types of velocity grids to be inverted for
+2                         ! # of interfaces to be inverted for
+4 5                       ! indices of interfaces to be inverted for 
+1                         ! # of sources to be inverted for
+1                         ! indices of sources to be inverted for
+
+
+
+
+
+##### copy the lines below to the top of the file for the example  with the
+##### ak135 model (interfaces and velocities generated with make_aklayers.f90
+##### and make_akvelP.f90)
+
+1                         ! 1 if frechet derivatives requested, 0 if not 
+2                         ! # of velocity grids to be inverted for
+3 4                       ! indices of velocity grids to be inverted
+1 1                       ! types of velocity grids to be inverted for
+0                         ! # of interfaces to be inverted for
+1                         ! # of sources to be inverted for
+1                         ! indices of sources to be inverted for
