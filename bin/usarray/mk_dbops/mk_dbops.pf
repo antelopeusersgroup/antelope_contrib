@@ -1,6 +1,4 @@
 #
-
-
 status_orb	somewhere.ucsd.edu:status		# orb where status packets exist, override with -S
 
 prelim_orb	somewhere.ucsd.edu:prelim		# orb where prelim waveforms exist, override with -P
@@ -14,9 +12,9 @@ vnet		_US-TA
 pdcc		IRIS DMC
 
 packet_match	.*M40|.*M100			# packet match for those in the prelim orb
-channel_match	HNZ|HHZ				# channels to check wfdisc start/end times and open records in stage table
+channel_match	HNZ|[BH]HZ				# channels to check wfdisc start/end times and open records in stage table
 
-# Only 3 adoption types supported: E, T, R.  
+# Only 4 adoption types supported: E, T, R, X.  
 # Do not change or add to list of codes below.
 # atype_phrase can be modified 
 
@@ -28,4 +26,57 @@ R	REFNET / BACKBONE
 X	CEUSN/1N4 
 }
 
+# mk_dbops won't fatally die, it will only complain if you use a 
+# comm type or provider not specified here
+
+accepted_comm_types &Tbl{
+DSL
+WiFi
+cable
+cell modem
+no comms
+orb
+orb2orb
+regular internet
+slink2orb
+vsat
+}
+
+accepted_comm_providers &Tbl{
+ATT
+Cal_Ore tel
+DSL Frontier
+DoE
+Eaglecap
+HPWERN
+Hughes
+NetVelocite
+OR Wireless
+PBO
+QWEST/CCS
+Siskiyou tel
+Telus
+UAF
+Volcano Telco
+Wild Blue
+alltel
+bell
+bgan
+charter
+edge
+hosted
+nwtel
+none
+orb2orb
+orb
+rogers
+rudics
+starstream
+spacenet
+unicel
+union
+unknown
+verizon
+xplornet
+}
 

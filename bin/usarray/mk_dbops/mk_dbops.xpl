@@ -1,6 +1,9 @@
 
 use Datascope;
 use orb ;
+use utilfunct;
+#use strict;
+#use warnings;
 
 use Getopt::Std;
 
@@ -17,6 +20,22 @@ use Getopt::Std;
 # jeakin@ucsd.edu
 #
 
+our ($opt_k,$opt_n,$opt_v,$opt_y,$opt_I,$opt_R,$opt_U,$opt_A,$opt_m,$opt_w,$opt_W);
+our ($opt_s,$opt_S,$opt_p,$opt_P,$opt_C,$opt_V,$opt_d,$opt_e);
+our ($dbops,$snet,$sta,$mytime,$newprovider,$newcommtype,$newvnet,$mydb,$newpower,$newdutycycle,$power,$dutycycle);
+our ($samecomm,$type,$atype,$stime,$table,$table_filename);
+our ($newnet,$newsta,$newDCC);
+our ($ctime,$cendtime,$wfendtime,$sendtime,$dtime,$endtime);
+our ($nbytes,$packet,$pkttime,$srcname,$pktid,$select,$n);
+our ($model,$ssident,$dltime,$idtag,$lat,$lon,$elev);
+our ($dmctime,$pdcc,$sdcc,$dlname,$startnull,$endnull,$earntime,$atime); 
+our ($stasub,$dlstasub,$nullsub,$commsub,$dlsitesub,$depsub,$chansub,$stagesub,$wfsub,$vnetsub);
+our ($status_orb,$cmd_orb,$prelim_orb,$wfdb,$vnet,$packet_ext,$preorb,$statorb,$cmdorb);
+our (%Pf,$pf,$prelimwf_db,$sitedb,$newdb,$newdbpath,$newsuffix);
+our (@db,@prewf,@ops,@stage,@wfdisc,@deployment,@dlsite,@comm,@adoption);
+our (@newops,@newdeployment,@newdlsite,@newcomm,@newadoption,@rm_list,$cp);
+our (%adoption_types,@single_comm,@single_deployment,@single_stage,@single_dlsite,$commtype,$provider,$adoption_type);
+our (@adoption_record,@dep_record,@deptable,@comm_record,@commtable,@dlsite_record);
 
   my $pgm = $0 ;
   $pgm =~ s".*/"" ;
@@ -25,8 +44,8 @@ use Getopt::Std;
 
   elog_notify($cmd);
 
-  if ( !getopts('knvyIRUAm:w:W:s:S:p:P:C:V:') || @ARGV < 4 || @ARGV > 6 ) {
-    die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
+  if ( !getopts('knvyIRUAm:w:W:s:S:p:P:C:V:d:e:') || @ARGV < 4 || @ARGV > 6 ) {
+    die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
   $dbops	= $ARGV[0];
@@ -66,6 +85,19 @@ use Getopt::Std;
      }
   }
 
+
+if ($opt_e) {
+   $power = $opt_e;
+} else {
+   $power = "-";
+}
+
+if ($opt_d) {
+   $dutycycle = $opt_d;
+} else {
+   $dutycycle = "-";
+}
+
 # set up some defaults
 
 $dmctime	= 19880899199.00000;		# DMC requested time translates to 12/31/2599 23:59:59 
@@ -82,44 +114,53 @@ $nullsub 	= "endtime=='9999999999.99900'";
 
 $commsub	= "$stasub && $nullsub";
 $dlsitesub	= "$dlstasub && $nullsub";
-$depsub		= "$stasub" ;
+$depsub		= "$stasub"."&&snet=='$snet'" ;
 
 # read pf file to get default orbs and wf dbs
+ 
+$pf = $opt_p ?  $opt_p  : "mk_dbops" ;
 
-  if ($opt_p) {
-     $Pf = $opt_p ;
-  } else {
-     $Pf = mk_dbops ;  
-  }
+%Pf = getparam ($pf);
 
-  $status_orb	= pfget($Pf, 'status_orb');
-  $cmd_orb	= pfget($Pf, 'cmd_orb');
-  $prelim_orb	= pfget($Pf, 'prelim_orb');
-  $wfdb 	= pfget($Pf, 'wfdb');
-  $vnet  	= pfget($Pf, 'vnet');
-  $pdcc  	= pfget($Pf, 'pdcc');
-  $status_orb	= pfget($Pf, 'status_orb');
-  $packet_ext	= pfget($Pf, 'packet_match') ;  
-  $chansub	= pfget($Pf, 'channel_match')  ;
-  $chansub	= "chan=~/$chansub/" ;
+$status_orb	= $Pf{status_orb};
+$cmd_orb	= $Pf{cmd_orb};
+$prelim_orb	= $Pf{prelim_orb};
+$wfdb 	= $Pf{wfdb};
+$vnet  	= $Pf{vnet};
+$pdcc  	= $Pf{pdcc};
+$packet_ext	= $Pf{packet_match};  
+$chansub	= $Pf{channel_match};
 
-  $status_orb	= pfget($Pf, 'status_orb');
+$chansub	= "chan=~/$chansub/" ;
 
-  $ref		= pfget($Pf, 'adoption_types' ) ;
-  %adoption_types = %$ref; 
-
-  $stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
-  $wfsub 	= "$stasub && $chansub";
+$stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
+$wfsub 	= "$stasub && $chansub";
 
 # command line overrides 
-  $status_orb	= $opt_S if ($opt_S) ;
-  $cmd_orb	= $opt_C if ($opt_C) ;
-  $prelim_orb	= $opt_P if ($opt_P) ;
-  $wfdb		= $opt_W if ($opt_W) ; 
-  $prelimwf_db	= $opt_w if ($opt_w) ;
-  $vnet 	= $opt_V if ($opt_V) ;
 
-  $vnetsub	= "vnet=='$vnet'" ;
+$status_orb  = $opt_S ? $opt_S  : $Pf{status_orb}  ;
+$cmd_orb     = $opt_C ? $opt_C  : $Pf{cmd_orb}     ;
+$prelim_orb  = $opt_P ? $opt_P  : $Pf{prelim_orb}  ;
+$prelimwf_db = $opt_w ? $opt_w  : $Pf{prelimwf_db} ;
+$wfdb        = $opt_W ? $opt_W  : $Pf{wfdb}        ;
+$vnet        = $opt_V ? $opt_V  : $Pf{vnet}        ;
+
+
+$vnetsub	= "vnet=='$vnet'" ;
+
+if (defined $newcommtype) {
+  unless ( $newcommtype ~~ @{$Pf{accepted_comm_types}} ) {
+    elog_alert "ALERT!!\n \t $newcommtype is not a recognized commtype!" ;
+    elog_complain "Update $pf\.pf with a new accepted_comm_type: $newcommtype!!\n\n";
+  }
+}
+
+if (defined $newprovider) {
+  unless  ($newprovider ~~ @{$Pf{accepted_comm_providers}} ) {
+    elog_alert "ALERT!!\n \t $newprovider is not a recognized comm provider!" ;
+    elog_complain "Update $pf\.pf with a new accepted_comm_provider: $newprovider!!\n\n";
+  }
+}
 
 if ($opt_s) {
   $sitedb		= $opt_s ;
@@ -129,12 +170,11 @@ if ($opt_s) {
 
 @ops		= dbopen ( $dbops, "r+") ; 
 @stage 		= dbopen_table ( $sitedb.".stage", "r") ; 
-# only opt_A and non-EARN
-@wfdisc		= dbopen_table ($wfdb.".wfdisc", "r") if ($opt_R || $opt_W || !$newvnet) ; 
+@wfdisc		= dbopen_table ($wfdb.".wfdisc", "r") if ($opt_R || $opt_W || $opt_A || !$newvnet) ; 
 
 elog_notify(0,"\t dbops  database: $dbops\n");
 elog_notify(0,"\t dbsite database: $sitedb\n") if $opt_s ;
-elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W);
+elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W || $opt_A);
 
 @deployment	= dblookup(@ops,  "", "deployment" , "" , "");
 @dlsite		= dblookup(@ops,  "", "dlsite" ,     "" , "");
@@ -160,39 +200,33 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W);
 	elog_die("Must use only one of -A, -I, -R, or -U \n");
     } 
 
-# hard code allowed adoption_codes for now ... 
-
-#    # setup default for adoption types 
-#    foreach $key (keys %adoption_types) {
-#	$adopt_code = $key ;
-#	$adopt_phr  = $adoption_types{$adopt_code};
-#    }
-
-
     $atype	= ask( "Adoption type (E|T|R|X|-):  " ) ;
-
 
     &new_sta_net_dcc ;		# get new sta, net, and dcc
 
     if( $atype=~ /^\s*$/ ) {
-        $atype= "-";
-	$adopt_phrase  = "-" ;
+        $atype= "other";
+	$Pf{adoption_types}{$atype} = "-" ;
     } elsif ( $atype=~/E|R|X/ ) {	# EARN/REFNET/CEUSN-1N4 stations get new vnet code; TRANSITIONS, do not
-	$newvnet = ask ( "New vnet code for  $adoption_types{$atype}  station (_XX-XXXXXXXX):  ") ;  
+	$newvnet = ask ( "New vnet code for  $Pf{adoption_types}{$atype}  station (_XX-XXXXXXXX):  ") ;  
         if( $newvnet=~ /^\s*$/ ) {
           $newvnet= "-";
         }
 
-	$type = $type . "   -  $adoption_types{$atype} ";
+	$type = $type . "   -  $Pf{adoption_types}{$atype} ";
 
-	$earntime = ask ( "Time of $adoption_types{$atype} transition ('now'):  ") ;
+# this value goes into deployment.endtime and comm.endtime - should grab last wfdisc time instead!
+        if ($atype!~/X/) { 	# non TA-N4 transitions do not rely on the last time in the wfdisc
+	   $earntime = ask ( "Time of $Pf{adoption_types}{$atype} transition ('now'):  ") ;
+        } else {		# this may break if you have your close time wrong in the metadata
+	   $earntime = &get_wfendtime; 
+        }
+
         if( $earntime=~ /^\s*$/ ) {
           $earntime = now() ;
         } else {
 	  $earntime = str2epoch($earntime) ; 
  	}
-
-	$adopt_phrase  = $adoption_types{$atype};
 
 	if ( $atype=~/X/) {	# CEUSN style transition - new deployment table needed
 	   $newdb= ask ( "New database for deployment and comms (new/db):  ") ;  
@@ -219,19 +253,15 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W);
 
 	}
 
-    } elsif ( $atype == 'T' ) {	# Transition to regional network 
+    } elsif ( $atype eq 'T' ) {	# Transition to regional network 
 	$type = $type . "   -  TRANSITION ";
-	$adopt_phrase  = $adoption_types{$atype};
-
     } else {
 	$type = $type . "   -  OTHER ";
 	$atype = "other" ;
-	$adopt_phrase = "other" ;
     }
 
   } elsif ($opt_U) {
     $type = "UPDATE" ;
-#    $newcommtime = $opt_U ;
     if ($opt_R || $opt_I ) {
 	elog_die("Must use only one of -A, -I, -R, -U \n");
     } 
@@ -282,27 +312,29 @@ if ($opt_U) {
 
   elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
-  foreach $table ("comm", "dlsite") {
-        elog_notify("\t  $table  \n") if ($opt_v) ;
-	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	if (-e $table_filename) {
-	  &run("$cmd");
-	  push(@rm_list,$table_filename) ;
-	} else {
-	  elog_notify("$table_filename does not exist - no backup made\n");
-	}
-  }
+
+  &backup_tables("comm", "dlsite");
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
 
-
-# modify old record and update new in comm table
   &modifycomm($dbops,$mytime-1) ;
 
-  $newcommtype = (defined $samecomm)  ? $commtype: $newcommtype ;
+# when            something is defined  , set a variable to be value A (or) value B (first or 2nd side of :)  
+  $newcommtype  = (defined $samecomm)      ? $commtype     : $newcommtype  ;
 
-  &add2comm($dbops,$sta,$mytime,$newcommtype,$newprovider) ;
+# should newcommtype not matching what is in mk_dbops.pf be fatal, or simply a warning?
+
+  if ($newcommtype !~ @{$Pf{accepted_comm_types}}) {
+    elog_alert "$newcommtype is not a recognized commtype!" ;
+    elog_complain "Update $pf with a new accepted_comm_type: $newcommtype!!\n";
+  }
+
+  @deptable =  defined $newdb && ($db eq $newdb)   ? @newdeployment : @deployment ;
+
+  $newpower     = $opt_e && ($opt_e !~ $power)     ? $opt_e  : $power ;
+  $newdutycycle = $opt_d && ($opt_d !~ $dutycycle) ? $opt_d  : $dutycycle ;
+
+  &add2comm($dbops,$sta,$mytime,$newcommtype,$newprovider,$newpower,$newdutycycle) ;
 
   &modifydlsite($dbops) ;
 
@@ -313,25 +345,15 @@ if ($opt_U) {
   if ($newvnet) {	# this means its an EARN or TRANSITION, or CEUSN/1N4 
 
 #   for EARN, endtime is timestamp from ask:  earntime
-#   for EARN/TRNSITION, equip_removal is null
+#   for EARN/TRANSITION, equip_removal is null
 #   for EARN, deployment.decert uses time from command line
-#   for CEUSN/1N4, use same values as EARN, but need to copy comm info to new dbops tables, and generate new deployment info
+#   for CEUSN/1N4, endtime in comm and deployment is from wfdisc, copy comm info to new dbops tables, and generate new deployment info
 
     elog_notify("Command line timestamp:  ". &strydtime($mytime) . " used for deployment.decert_time and new deployment.cert_time\n");
 
     elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
-    foreach $table ("adoption", "deployment") {
-        elog_notify("\t  $table  \n") if ($opt_v) ;
-	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	if (-e $table_filename) {
-	  &run("$cmd");
-	  push(@rm_list,$table_filename) ;
-	} else {
-	  elog_notify("$table_filename does not exist - no backup made\n");
-	}
-    }
+    &backup_tables("adoption", "deployment");
 
     elog_notify("\t starting close_deployment on $dbops\n");
 
@@ -346,8 +368,8 @@ if ($opt_U) {
 #  add to the new deployment table
       elog_notify("\t starting add2deployment for new deployment table, $newdb \n");
   
-
       elog_notify("Vnet: $newvnet; Snet: $newnet; Sta: $newsta; \n")  ;
+
       &add2deployment ($newdb, $newvnet, $newnet, $newsta, $earntime+0.001, $stime, $mytime) ; 
 
 # need to pull commtype and provider from old comm table
@@ -359,7 +381,7 @@ if ($opt_U) {
 
     #  add to the new comm table
       elog_notify("\t starting add2comm for new comm table\n");
-      &add2comm($newdb,$newsta,$earntime+0.001,$commtype,$provider) ;
+      &add2comm($newdb,$newsta,$earntime+0.001,$commtype,$provider,$power,$dutycycle) ;
     # close out old deployment, comm, and dlsite records
       elog_notify("\t starting close_deployment for old deployment table\n");
       &close_deployment ($dbops, $earntime, $endnull, $mytime ) ; 
@@ -379,7 +401,7 @@ if ($opt_U) {
       &add2deployment ($dbops, $newvnet, $newnet, $newsta, $earntime+0.001, $stime, $mytime) ; 
     }
 
-    elog_notify("This is a $atype station.  No change to comm or dlsite.\n" ) if ($opt_v);
+    elog_notify("This is a '$atype' station transition.  No change to comm or dlsite.\n" ) if ($opt_v);
 
     &add2adoption($dbops,$earntime) ; 
 
@@ -391,17 +413,7 @@ if ($opt_U) {
 
     elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
-    foreach $table ("adoption", "comm", "deployment", "dlsite") {
-        elog_notify("\t  $table  \n") if ($opt_v) ;
-	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	if (-e $table_filename) {
-	  &run("$cmd");
-	  push(@rm_list,$table_filename) ;
-	} else {
-	  elog_notify("$table_filename does not exist - no backup made\n");
-	}
-    } 
+    &backup_tables("adoption", "comm", "deployment", "dlsite");
 
     $sendtime	= &get_stageendtime ;
     $wfendtime	= &get_wfendtime ;
@@ -412,7 +424,7 @@ if ($opt_U) {
 
     &close_deployment($dbops, $wfendtime, $endnull, $mytime) ; 
 
-    elog_notify("This is a $atype station.  Comm and dlsite will be changed.\n" )  if ($opt_v) ;
+    elog_notify("This is a '$atype' station transition.  Comm and dlsite will be changed.\n" )  if ($opt_v) ;
 
     &close_dlsite($dbops, $sendtime); 
     &close_comm($dbops, $sendtime) ;
@@ -432,17 +444,7 @@ if ($opt_U) {
   elog_notify("Starting REMOVAL specific commands\n");
   elog_notify("Command line timestamp:  ". &strydtime($mytime) . " used for deployment.decert_time \n");
 
-  foreach $table ("comm", "deployment", "dlsite") {
-        elog_notify("\t  $table  \n") if ($opt_v) ;
-	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	if (-e $table_filename) {
-	  &run("$cmd");
-	  push(@rm_list,$table_filename) ;
-	} else {
-	  elog_notify("$table_filename does not exist - no backup made\n");
-	}
-  }
+  &backup_tables("comm", "deployment", "dlsite");
 
   $sendtime = &get_stageendtime ;
   $wfendtime = &get_wfendtime ;
@@ -458,7 +460,7 @@ if ($opt_U) {
   &close_deployment($dbops, $wfendtime, $sendtime, $mytime) ; 
   &close_comm($dbops,$sendtime) ; # we want endtime to be $sendtime
 
-  elog_notify("Closed comm record in database: $dbops\n")  if (opt_v) ;
+  elog_notify("Closed comm record in database: $dbops\n")  if ($opt_v) ;
 
 # get dlsite.endtime from (last time in wfdisc?  stage.endtime? last data in orb?)
 #   chose to use stage.endtime
@@ -472,17 +474,7 @@ if ($opt_U) {
 
   elog_notify("Creating backup of tables:  \n") if ($opt_v) ;
 
-  foreach $table ("comm", "deployment", "dlsite") {
-        elog_notify("\t  $table  \n") if ($opt_v) ;
-	$table_filename =  dbquery(@$table, "dbTABLE_FILENAME") ; 
-	$cmd  = "/bin/cp $table_filename $table_filename+" ;
-	if (-e $table_filename) {
-	  &run("$cmd");
-	  push(@rm_list,$table_filename) ;
-	} else {
-	  elog_notify("$table_filename does not exist - no backup made\n");
-	}
-  }
+  &backup_tables("comm", "deployment", "dlsite");
 
   elog_notify("Backup tables will be removed upon success.\n") if ($opt_v && !$opt_k) ;
 
@@ -492,7 +484,7 @@ if ($opt_U) {
 
   $stime = &get_stagestarttime ;
 
-  &add2comm($dbops,$sta,$stime,$newcommtype,$newprovider) ;
+  &add2comm($dbops,$sta,$stime,$newcommtype,$newprovider,$power,$dutycycle) ;
 
 # get deployment.time from (first time in wfdisc?  stage.time?  first data in orb?)
 #   chose to use first data in orb - override with -w
@@ -547,14 +539,14 @@ if ($opt_U) {
 
 dbclose (@ops);
 dbfree (@stage) if ($opt_s) ;  
-dbclose (@wfdisc) if ($opt_R || $opt_w) ;
-dbclose (@newops) if ($opt_A) ; 
+#dbclose (@wfdisc) if ($opt_R || $opt_w) ;
+dbclose (@newops) if ($opt_A && defined $newdb); 
 
 # cleanup backup tables unless -k
 if (!$opt_k) {
-   foreach $rm_tb (@rm_list) {
-     $cmd = "/bin/rm $rm_tb+" ;
-     &run("$cmd");
+   foreach my $rm_tb (@rm_list) {
+     my $rm = "/bin/rm $rm_tb+" ;
+     &myrun("$rm");
    }
 }
 
@@ -572,7 +564,7 @@ sub get_stageendtime {		# get the stage.endtime
   @single_stage	= dbsubset (@stage, $stagesub) ;		
   @single_stage	= dbsort(@single_stage, "endtime") ;	# get single record that will be updated
   
-  elog_die("No records in stage table matching station $sta \n") if (!dbquery(@single_stage, "dbRECORD_COUNT") ) ; 
+  elog_die("No matching records in stage table for station $sta.  Possibly check stagesub: $stagesub \n") if (!dbquery(@single_stage, "dbRECORD_COUNT") ) ; 
 
   $single_stage[3] 	= dbquery(@single_stage, "dbRECORD_COUNT") - 1 ;	# get last record, which should indicate close time
 
@@ -603,7 +595,7 @@ sub get_wfendtime {		# get the last time of available data from DB
     @wfdisc	= dbsubset (@wfdisc, $wfsub) ;
     @wfdisc 	= dbsort   (@wfdisc, "endtime") ;	# get single record that will be updated
 
-    elog_die("No records in certified wf db matching $sta for $chansub \n") if (!dbquery(@wfdisc, "dbRECORD_COUNT") ) ; 
+    elog_die("No records in certified wf db matching $sta for $wfsub \n") if (!dbquery(@wfdisc, "dbRECORD_COUNT") ) ; 
 
     $wfdisc[3] 	= dbquery(@wfdisc, "dbRECORD_COUNT") - 1  ;
     $wfendtime = dbgetv(@wfdisc, qw( endtime ) );
@@ -614,10 +606,8 @@ sub modifydlsite {		# modifydlsite($db)		# modify record in dlsite table
 
   my ($db) = @_; 
 
-  @dlsite = ( $db eq $newdb )  ? @newdlsite : @dlsite ;
+  @dlsite = defined $newdb && ( $db eq $newdb )  ? @newdlsite : @dlsite ;
 
-# update dlsite table for a comms change
- 
   @single_dlsite	= dbsubset (@dlsite, $dlsitesub) ;		# get single record that will be updated
 
   elog_die("No records in dlsite table matching $dlname with null endtime\n") if (!dbquery(@single_dlsite, "dbRECORD_COUNT") ) ; 
@@ -626,7 +616,7 @@ sub modifydlsite {		# modifydlsite($db)		# modify record in dlsite table
   ($model,$ssident,$dltime,$idtag,$lat,$lon,$elev)  = dbgetv(@single_dlsite, qw(model ssident time idtag lat lon elev) ) ; 
 
   if ( ($mytime - 1) > $dltime ) {
-     dbputv(@single_dlsite,endtime,$mytime-1);
+     dbputv(@single_dlsite,"endtime",$mytime-1);
      elog_notify("Modified dlsite record for sta: $sta in $dbops dlsite table\n")  ;
   } else {
      elog_notify("Time of comms change:  " . &strydtime($mytime) . "\n") ;
@@ -672,7 +662,7 @@ sub close_deployment {		# close_deployment($db, $endtime,$equip_removal,$decertt
 # get deployment.decert from (last time in wfdisc?  stage.endtime? last data in orb? ????)
 #   chose to use time from command line
 
-  @deptable =  ($db eq $newdb)   ? @newdeployment : @deployment ;
+  @deptable =  defined $newdb && ($db eq $newdb)   ? @newdeployment : @deployment ;
 
   elog_notify("Closing record in deployment table: $db \n") if $opt_v ;  
 
@@ -690,7 +680,7 @@ sub close_deployment {		# close_deployment($db, $endtime,$equip_removal,$decertt
 
   $single_deployment[3]	= 0 ;
 
-  dbputv(@single_deployment,endtime,$time1,equip_remove,$time2,decert_time,$time3) ; 
+  dbputv(@single_deployment,"endtime",$time1,"equip_remove",$time2,"decert_time",$time3) ; 
 
   $mydb = (defined $newdb)  ? $newdb : $db ;
   elog_notify("Closed deployment record in database: $mydb\n")  if ($opt_v) ;
@@ -704,7 +694,7 @@ my ($db,$endtime)  = @_ ;
 # get dlsite.endtime from (last time in wfdisc?  stage.endtime? last data in orb?)
 #   chose to use stage.endtime
 
-  @dlsite = ( $db eq $newdb )  ? @newdlsite : @dlsite ;
+  @dlsite = defined $newdb && ( $db eq $newdb )  ? @newdlsite : @dlsite ;
 
   $dlsitesub	= "$dlstasub && $nullsub";
   @single_dlsite	= dbsubset (@dlsite, $dlsitesub) ;		# get single record that will be updated
@@ -713,34 +703,31 @@ my ($db,$endtime)  = @_ ;
 
   $single_dlsite[3] 	= 0 ;
 
-  dbputv(@single_dlsite,endtime,$endtime) ; 
+  dbputv(@single_dlsite,"endtime",$endtime) ; 
   elog_notify("Closed dlsite record in database: $dbops\n")  if ($opt_v) ;
 
 } 
 
 sub modifycomm {  # &modifycomm($db,$time)		
-#HERE
 
 my ($db,$endcommtime)  = @_ ;
 
-  @comm = ( $db eq $newdb )  ? @newcomm : @comm ;
+  @comm = defined $newdb && ( $db eq $newdb )  ? @newcomm : @comm ;
 
-# update comm table
   @single_comm = dbsubset (@comm, $commsub) ;		# get single record that will be updated
 
   elog_die("No records in comm table matching $sta with null endtime\n") if (!dbquery(@single_comm, "dbRECORD_COUNT") ) ; 
   elog_die("Too many records in comm matching $sta\n") if (dbquery(@single_comm, "dbRECORD_COUNT") > 1) ; 
   $single_comm[3] = 0 ;
 
-  ($ctime,$cendtime,$commtype,$provider) = dbgetv(@single_comm, qw(time endtime commtype provider) );
+  ($ctime,$cendtime,$commtype,$provider,$power,$dutycycle) = dbgetv(@single_comm, qw(time endtime commtype provider power dutycycle) );
 
   if ( $endcommtime > $ctime ) {
-     dbputv(@single_comm,endtime,$endcommtime);
+     dbputv(@single_comm,"endtime",$endcommtime);
      elog_notify("Modified comm  record for sta: $sta in $db comm table\n")  ;
   } else {
      elog_notify("Time of comms change:  " . &strydtime($endcommtime) . "\n") ; 
      elog_die("Urk...  Check your requested input time!! \n\t Starting time of previous record is: " . &strydtime($ctime)  )  ;
-
   }
 
 }
@@ -749,8 +736,7 @@ sub close_comm { # &close_comm($dbops,$time)
 
   my ($db,$endcommtime) = @_ ;
 
-# update comm table
-  @comm = ( $db eq $newdb )  ? @newcomm : @comm ;
+  @comm = defined $newdb && ( $db eq $newdb )  ? @newcomm : @comm ;
 
   @single_comm = dbsubset (@comm, $commsub) ;		# get single record that will be updated
 
@@ -761,7 +747,7 @@ sub close_comm { # &close_comm($dbops,$time)
   ($ctime,$cendtime,$commtype,$provider) = dbgetv(@single_comm, qw(time endtime commtype provider) );
 
   if ( $endcommtime > $ctime ) {
-     dbputv(@single_comm,endtime,$endcommtime);
+     dbputv(@single_comm,"endtime",$endcommtime);
      elog_notify("Closed comm  record for sta: $sta in $db comm table\n")  if ($opt_v) ;
   } else {
      elog_die("Urk...  Check your requested close time: " . &strydtime($endcommtime) . " !! \n\t Starting time of previous record is: " . &strydtime($ctime)  ); 
@@ -777,23 +763,25 @@ sub add2dlsite	{	# add2dlsite ($db) 		# add a new record to the dlsite table
   elog_notify("Starting modification of dlsite via external program q330_location. \n")  ;
   elog_notify("This program assumes sitedb and dbops are the same..... \n")  ;
   $cmd = "q330_location -s $sta $status_orb $cmd_orb $dbops" ;
-  &run($cmd)  ;
+  &myrun($cmd)  ;
 
 }
 
-sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider)		# add a new record to the comm table
+sub add2comm {	#add2comm($db, $sta, $time, $commtype, $provider, $power, $dutycycle)		# add a new record to the comm table
 
-  my ($db, $sta, $stime, $commtype, $provider) = @_;
+  my ($db, $sta, $stime, $commtype, $provider, $power, $dutycycle) = @_;
 
   @comm_record = ();
   push(@comm_record,
                         "sta",   	$sta ,
                         "time",         $stime,
                         "commtype",     $commtype,
-                        "provider",     $provider 
+                        "provider",     $provider,
+                        "power",        $power,
+                        "dutycycle",    $dutycycle
         ) ;
 
-  @commtable = ( $db eq $newdb )  ? @newcomm : @comm ;
+  @commtable = defined $newdb && ($db eq $newdb)   ? @newcomm : @comm ;
 
   elog_notify("Adding record to comm table: $db \n") if $opt_v ;  
 
@@ -831,7 +819,7 @@ sub add2deployment  {	# ( $db, $vnet, $net, $sta, $time, $equip_install, $cert_t
 	"sdcc",     	"-"   
   ) ;
 
-  @deptable = ( $db eq $newdb )  ? @newdeployment : @deployment ;
+  @deptable =  defined $newdb && ($db eq $newdb)   ? @newdeployment : @deployment ;
 
   elog_notify("Adding record to deployment table: $db \n") if $opt_v ;  
 
@@ -850,7 +838,7 @@ sub add2adoption {	# $add2adoption($db,$time) 		# add a new record to the adopti
 
   my ($db, $time) = @_ ; 
 
-  @adoption= ( $db eq $newdb )  ? @newadoption : @adoption ;
+  @adoption=  defined $newdb && ($db eq $newdb)   ? @newadoption : @adoption;
 
   push(@adoption_record,
                         "snet",		$snet,
@@ -858,7 +846,7 @@ sub add2adoption {	# $add2adoption($db,$time) 		# add a new record to the adopti
                         "time",		$time,
                         "newsnet",	$newnet,
                         "newsta",	$newsta,
-                        "atype",	$adopt_phrase,
+                        "atype",	$Pf{adoption_types}{$atype},
                         "auth",		$newDCC
        ) ;
 
@@ -905,6 +893,23 @@ sub new_sta_net_dcc {
     return ;
 }
 
+sub backup_tables { 	#    &backup_tables($tbl1, $tbl2, ...) 
+   my @tables = @_;
+   while ( $_ = shift @tables ) {
+     elog_notify("\t  $_ \n") if ($opt_v) ;
+# HERE
+     my $table_filename =  dbquery(@$_, "dbTABLE_FILENAME") ; 
+     $cp  = "/bin/cp $table_filename $table_filename+" ;
+     if (-e $table_filename) {
+	  &myrun("$cp");
+	  push(@rm_list,$table_filename) ;
+     } else {
+	  elog_notify("$table_filename does not exist - no backup made\n");
+     }
+
+   }
+}
+
 sub trim {
 
         # from Perl Cookbook (O'Reilly) recipe 1.14, p.30
@@ -918,7 +923,7 @@ sub trim {
 }
 
 
-sub run {               # run system cmds safely
+sub myrun {               # run system cmds safely
     my ( $cmd ) = @_ ;
     system ( $cmd ) ;
     if ($?) {
@@ -933,11 +938,11 @@ sub usage {
 
    For a new installation:
 
-       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
+       USAGE: $0  -I [-k] [-n] [-v] [-V vnet] [-d dutycycle] [-e power] [-m source_match] [-p pf] [-C cmdORB] [-P prelimORB] [-S statusORB] [-w prelimwfDB] [-s siteDB] dbopsdb snet sta certify_time comm_provider comm_type  \n");
 
    For a comms update:    
 
-       USAGE: $0 -U [-k] [-p pf] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  \n");
+       USAGE: $0 -U [-k] [-p pf] [-d dutycycle] [-e power] dbopsdb snet sta time_of_comm_change comm_provider [comm_type]  \n");
 
    For a station removal:
 

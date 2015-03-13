@@ -1,7 +1,7 @@
 .TH mk_dbops 1 "$Date$"
 
 .SH NAME
-mk_dbops \- update dbops tables after station install, adoption, removal or comms change
+mk_dbops \- update dbops tables after station install, removal, adoption, transition or comms change
 
 .SH SYNOPSIS
 .nf
@@ -10,6 +10,8 @@ mk_dbops \- update dbops tables after station install, adoption, removal or comm
 	[-k]
 	[-n]
 	[-v]
+	[-d \fIon|off|string\fP]
+	[-e \fIAC|solar|wind|string\fP]
 	[-V \fIvnet\fP]
 	[-m \fIsource_match\fP]
 	[-p \fIpf\fP]
@@ -25,8 +27,8 @@ mk_dbops \- update dbops tables after station install, adoption, removal or comm
 
 .SS Background
 The EarthScope USArray Transportable Array (TA) network of 400+ 
-currently operational seismic stations and approximate 1600 lifetime  
-installations prompted development of additional relations (tables) 
+currently operational seismic stations and approximately 1800 lifetime  
+installations, prompted development of additional relations (tables) 
 to keep track of operational information at the Array Network Facility (ANF).
 Tables were created to keep track of communication setup, inclusion time
 in the virtual network, and adoption status if the station is still 
@@ -46,7 +48,7 @@ first \fIprelim\fP data received.
 Upon receipt of the metadata, \fBdbbuild(1)\fP is used to update the dbmaster 
 tables.  A dataless SEED file is generated and passed to downstream users via 
 \fBmk_dmc_files(1)\fP (which uses \fBorbxfer2(1)\fP).  The quarantined data is 
-now transferred via \fBorb2orb(1)\fP to the \fIcertified\fI ORB where it is written 
+now transferred via \fBorb2orb(1)\fP to the \fIcertified\fP ORB where it is written 
 out to disk with \fBorb2db(1)\fP.
 .LP
 At this point, following the old procedures, the \fIdeployment\fP, \fIcomm\fP, 
@@ -96,14 +98,20 @@ If you do not have information on the new station name, the \fIsta\fP and \fIsne
 from the command line is used (defaults shown after prompt).  When there is a 
 station adoption, the deployment.equip_remove is left null.  
 
-Currently there are only three \fIadoption_types\fP available: E (EARN), T (OPERATOR TRANSITION), 
-and R (REFNET/BACKBONE).  See PARAMETER FILE section below for additional description.
+Currently there are only four \fIadoption_types\fP available: E (EARN), T (OPERATOR TRANSITION), 
+R (REFNET/BACKBONE), and X (CEUSN/1N4).  See PARAMETER FILE section below for additional description.
 
 .IP -k
 Keep created backup files.  Backups of the tables to be modified are always created 
 and appear as \fIdbops.table+\fP.  Any backup files already existing 
 are overwritten.  This option overrides the default behavior which is to remove 
 these backup files upon successful completion of the script.
+.IP "-d duty_cycle_status"
+Text indicating whether or not the comms are on a duty cycle.  Typical values are
+\fIyes\fP or \fIno\fP.  Default is the null value "-".
+.IP "-e power_type"
+Text indicating the type of power used at the station.  Typical values are
+\fIAC\fP, \fIsolar\fP, \fIwind\fP or \fIunknown\fP.  Default is the null value "-".
 .IP "-V vnet"
 Virtual network code to be used in the deployment table.  Overrides default
 found in pf.   Only valid when using \fI-I\fP, an installation or when the deployment
@@ -161,12 +169,16 @@ Must be a valid timestamp.  If you use a date string, surround \fItimestamp\fP b
 .IP comm_provider
 String describing who provides the communications (i.e. Wild Blue, ATT, Local TelCo, etc.).  This
 is mandatory for an installation and an update.  It is ignored for removals and adoptions.  If you have
-spaces in the provider name, surround \fIcomm_provider\fP by quotes (see EXAMPLES).
+spaces in the provider name, surround \fIcomm_provider\fP by quotes (see EXAMPLES).  This value is 
+checked against the \fIaccepted_comm_providers\fP found in the parameter file.  A non-fatal alert is 
+reported if the \fIcomm_provider\fP supplied is not found in \fIaccepted_comm_providers\fP.
 .IP comm_type
 String describing the type of communications (i.e. vsat, dsl, cell modem, etc.).  This
 is mandatory for an installation but not for an update.  It is ignored for removals and 
 adoptions.  If it is not included during an update, the pre-existing \fIcomm.commtype\fP is used.
 If you have spaces in the communications type, surround \fIcomm_type\fP by quotes (see EXAMPLES).
+This value is checked against the \fIaccepted_comm_types\fP found in the parameter file.  
+A non-fatal alert is reported if the \fIcomm_type\fP supplied is not found in \fIaccepted_comm_types\fP.
 
 .SH FILES
 .LP 
@@ -199,9 +211,9 @@ pdcc            IRIS DMC
 
 packet_match    .*M40|.*M100                    # packet match for those in the prelim orb
 
-channel_match   BHZ|LHZ                         # channels to check wfdisc start/end times and open records in stage table
+channel_match   HNZ|[BH]HZ                         # channels to check wfdisc start/end times and open records in stage table
 
-# Only 3 adoption types supported: E, T, R.  
+# Only 4 adoption types supported: E, T, R, X.  
 # Do not change or add to list of codes below.
 # atype_phrase can be modified 
 
@@ -210,8 +222,29 @@ adoption_types &Arr{
 E       EARN
 T       OPERATOR TRANSITION
 R       REFNET / BACKBONE 
+X       CEUSN/1N4
 }
 
+accepted_comm_types &Tbl{
+DSL
+WiFi
+cable
+cell modem
+no comms
+orb
+orb2orb
+regular internet
+slink2orb
+vsat
+}
+
+accepted_comm_providers &Tbl{
+ATT
+Cal_Ore tel
+DSL Frontier
+DoE
+etc.
+}
 
 .ps
 .fi
@@ -256,6 +289,14 @@ a transition to regional/national lab network operator, and a transition to oper
 or Backbone station.  The \fIatype_phrase\fP is placed in the adoption table.  The phrase can be modified,
 but a standard should be chosen for compatibility with web apps that may use the \fIadoption.atype\fP 
 field for sorting.
+
+.IP \fIaccepted_comm_types\fP
+A list of comm types that one would expect to see in the comm table.  If you use one that is not listed here
+the script alerts but does not die.
+
+.IP \fIaccepted_comm_providers\fP
+A list of comm providers that one would expect to see in the comm table.  If you use one that is not listed here
+the script alerts but does not die.
 
 .LP
 .SH EXAMPLE
@@ -347,7 +388,7 @@ Keep backups of the comm, deployment and site tables.
 .LP 
 Update the adoption, comm, deployment and dlsite tables, after 
 station TA ADPT is adopted by PNSN.   Time station transitioned 
-to non-standard TA opertaions was 12/10/2008 18:30:00.  Station 
+to non-standard TA opertations was 12/10/2008 18:30:00.  Station 
 was adopted by UW and called SNOW.
 
 .in 2c
@@ -355,7 +396,7 @@ was adopted by UW and called SNOW.
 .nf
 %\fB mk_dbops -A dbops/usarray TA ADPT "12/10/2008 18:30:00" \fP
 
-mk_dbops: Adoption type(E|T|R|-): \fIT\fP
+mk_dbops: Adoption type(E|T|R|X|-): \fIT\fP
 mk_dbops: New station name(ADPT): \fISNOW\fP
 mk_dbops: New network code(TA): \fIUW\fP
 mk_dbops: Newly responsible data center(????????): \fIPNSN\fP
@@ -366,8 +407,8 @@ mk_dbops: Newly responsible data center(????????): \fIPNSN\fP
 .in
 
 .LP 
-Update the comm, deployment and dlsite tables, after transtion of 
-station TA ERNN.  Time station transitioned to non-standard TA opertaions 
+Update the comm, deployment and dlsite tables, after transition of 
+station TA ERNN.  Time station transitioned to non-standard TA operations 
 was 12/10/2008 18:30:00.  Station is part of the EARN program and will continue
 to flow through the ANF with the same name.  
 
@@ -387,10 +428,73 @@ mk_dbops: Newly responsible data center(-): \fIANF\fP
 .ft R
 .in
 
+.LP 
+Update the comm and deployment tables of the usarray database and the
+comm and deployment table of the ceusn database, after transition of 
+station TA A01A.  Time station transitioned to N4/CEUSN operations 
+was 03/13/2015 18:00:00.  
+
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -n -A db/usarray TA A01A "03/13/2015 18:00:00" \fP
+
+mk_dbops: Adoption type (E|T|R|X|-):  \fIX\fP
+mk_dbops: New station name (A01A):  
+mk_dbops: New network code (TA):  \fIN4\fP
+mk_dbops: Newly responsible data center (????????):  \fIANF\fP
+mk_dbops: New vnet code for  CEUSN/1N4  station (_XX-XXXXXXXX):  \fI_CEUSN\fP
+mk_dbops: New database for deployment and comms (new/db):  \fIn4/dbops/ceusn\fP
+
+
+
+.fi
+.ft R
+.in
 
 
 .SH RETURN VALUES
 .SH DIAGNOSTICS
+.IP "\fINo matching records in stage table for stations XXXX\fP"
+This is a common message that you will run across if your dbmaster tables are not
+updated for the type of dbops change you are trying to make. There are multiple
+things to check:
+
+.IP \(bu
+Are you matching the proper channels available for that station?  
+.LP
+The parameter file has a channel sifter in it called \fIchan_match\fP.  For instance,
+if you have BHZ channels in your metadata and the parameter file is set to use HHZ channels, 
+you will see this error.
+
+.IP \(bu
+Have you closed off the records for that station in the metadata?  
+.LP
+If you are working with a removal, \fI-R\fP, or an adoption, \fI-A\fP with an 
+adoption type of \fIT|transition\fP or \fIX|CEUSN/N4 conversion\fP you need to have updated
+the dbmaster tables to indicate the station is closed.
+
+.IP \(bu
+Have you added the metadata for that station to the database?
+.LP
+If you are working on an installation, \fI-I\fP, the metadata for that station
+must be in the input database before running \fBmk_dbops\fP.
+
+.IP "\fIcouldn't find ip address for 'somewhere.ucsd.edu' : 'Name or service not known'\fP"
+This means you have no updated your \fImk_dbops.pf\fP file to point to the appropriate orbs
+(status, prelim or cmd orbs) or you have not used the command line overrides \fI-S\fP, \fI-P\fP,
+or \fI-C\fP.
+
+.IP "\fICan't select XX_XXXX(.*M40|.*M100) packets from prelim orb, somewhere.ucsd.edu:prelim\fP"
+Perhaps you are not running a prelim orb to segregate the data.  Check that you have your orbs 
+specified correctly.
+
+.IP "\fINo records in certified wf db matching N25K for chan=~/HNZ|[BH]HZ/\fP"
+Check the values of \fIwfdb\fP or possibly \fIchannel_match\fP in \fImk_dbops.pf\fP.  You likely are
+pointing at the wrong database where the waveforms reside.  Alternatively, if you are using the \fI-W\fP 
+option, you could be pointing at the wrong database.
+
 .SH "SEE ALSO"
 .nf
 \fBadoption(5)\fP
@@ -404,6 +508,11 @@ mk_dbops: Newly responsible data center(-): \fIANF\fP
 \fBq330_location(1)\fP
 .fi
 .SH "BUGS AND CAVEATS"
+This script is firmly founded upon assumptions made in the operational model
+of your network.  Testing has not been attempted for setups outside what is 
+in use at the ANF.  For instance, you may run across errors if you do not 
+operate separate \fIprelim\fP and \fIcmd\fP orbs.
+ 
 Per agreed upon conventions:  EARN stations retain their same snet_sta, 
 TRANSITION stations may change their snet_sta, and REFNET/Backbone 
 stations should retain their same snet_sta.  If these conventions change, 
@@ -438,8 +547,13 @@ in the default \fIstatus_orb\fP you will have to run \fIq330_location(1)\fP
 by hand.  Alternatively, use the \fI-S\fP option to point at the orb that has the
 necessary .*/st packets, likely the \fIprelimORB\fP.
 
-This script does not fill in the dutycycle or power fields in the comm table.  I 
-plan on working on that at some future date.
+When running in \fI-U\fP mode, if you only have duty cycle status or power type to 
+update, you will still need to put in the comm provider in order to convince the script
+to update the comm table.
+
+The deployment table subset has been modified to include the vnet.  This should
+deal with instances for example where you had a station operational as TA, it was
+adopted/transitioned to operations as N4, and then you have to close the station.
 
 .SH AUTHOR
 Jennifer Eakins
