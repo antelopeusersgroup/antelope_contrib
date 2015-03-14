@@ -106,6 +106,7 @@ GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
 		x2high=g.x2high;
 		x3low=g.x3low;
 		x3high=g.x3high;
+                fast_lookup=g.fast_lookup;
 		x1=create_3dgrid_contiguous(n1,n2,n3);
 		x2=create_3dgrid_contiguous(n1,n2,n3);
 		x3=create_3dgrid_contiguous(n1,n2,n3);

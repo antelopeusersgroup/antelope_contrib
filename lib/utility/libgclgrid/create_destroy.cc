@@ -252,7 +252,7 @@ GCLgrid::GCLgrid (int n1size, int n2size) : BasicGCLgrid()
 	x3=create_2dgrid_contiguous(n1size,n2size);
 }
 
-GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size) : BasicGCLgrid()
+GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size, bool fl) : BasicGCLgrid()
 {
 	n1=n1size;
 	n2=n2size;
@@ -260,6 +260,7 @@ GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size) : BasicGCLgrid()
 	x1=create_3dgrid_contiguous(n1size,n2size,n3size);
 	x2=create_3dgrid_contiguous(n1size,n2size,n3size);
 	x3=create_3dgrid_contiguous(n1size,n2size,n3size);
+        fast_lookup=fl;
 }
 /* This routine is used in all file-based constructors using a 
    pf to store attributes. */
@@ -386,11 +387,12 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 		for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
 
 }
-GCLgrid3d::GCLgrid3d(string fname, string format)
+GCLgrid3d::GCLgrid3d(string fname, string format,bool fl)
 {
     /* This code is painfully similar to GCLgrid constructor 
        with same arguments */
     const string base_error("GCLgrid3d file-based constructor:  ");
+    fast_lookup=fl;
     if(format==default_output_format)
     {
         try{
@@ -495,6 +497,7 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
 
+        fast_lookup=g.fast_lookup;
 }
 
 /* This small function builds a baseline vector of latitude and
@@ -678,7 +681,10 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 	double azimuth_yin, double dx1_nomin, double dx2_nomin,double dx3_nomin, 
 	int i0in, int j0in)
 {		
-
+        /* Fast lookup method is always enabled for a grid created this 
+           way.   Reason is this grid is alway very close to regular
+           and the speed loss for lookup is ill advised. */
+        fast_lookup=false;
 	/* pole to baseline */
 	double pole_lat, pole_lon;
 	int i,j,k;

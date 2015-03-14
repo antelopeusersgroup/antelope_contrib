@@ -93,8 +93,9 @@ Dbptr ConvertGenericHandle(DatabaseHandle *dbh)
 // They stil throw a simple int, which is not very elegant, ut
 // since constructors are primitive I see no reason why this
 // shouldn't work.  It is as described in the man page.
-GCLgrid3d::GCLgrid3d(DatabaseHandle& dbh, string gridname)
+GCLgrid3d::GCLgrid3d(DatabaseHandle& dbh, string gridname, bool fl)
 {
+    fast_lookup=fl;
     const string base_error("GCLgrid3d Database constructor:  ");
     Dbptr dbgrd;
     try {
