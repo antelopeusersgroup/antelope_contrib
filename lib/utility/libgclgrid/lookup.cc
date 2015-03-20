@@ -242,9 +242,9 @@ bool GridCell::InsideTest(double x, double y, double z, double tolerance)
 }	
 	
 	
-static const double FeasibleTest(0.1);
-static const double AcceptableTest(1.0E-2);
-static const double UnambiguousTest(1.0E-5);
+static const double FeasibleTest(0.25);
+static const double AcceptableTest(0.1);
+static const double UnambiguousTest(1.0E-2);
 
 /* This is a recovery routines. The lookup function uses
 the direction set method which is known to fail in some situations in 
@@ -586,11 +586,16 @@ int GCLgrid3d::lookup(double x, double y, double z)
  
 	if(ctest==0)
 	{
+            if(fast_lookup)
+                return(0);
+            else
+            {
 		GridCell cell(*this, ix1,ix2,ix3);
 		if(cell.InsideTest(x,y,z,UnambiguousTest))
 		{
 			return(0);
 		}
+            }
 	}
 
 	// Use dxunit values to define search distance in each direction

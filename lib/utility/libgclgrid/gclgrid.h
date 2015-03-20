@@ -575,6 +575,7 @@ public:
 	GCLgrid3d(){
 		n1=0;n2=0;n3=0;
 		x1=NULL;x2=NULL;x3=NULL;
+                fast_lookup=true;
 	};
 /*! 
 // Simple constructor.  Allocates space for x1, x2, and x3 arrays and initializes
@@ -583,8 +584,9 @@ public:
 //  \param n1size number of grid points on generalized coordinate axis 1.
 //  \param n2size number of grid points on generalized coordinate axis 2.
 //  \param n3size number of grid points on generalized coordinate axis 3.
+//  \parm fl when true use fast lookup method.  False is slower and more sure.
 */
-	GCLgrid3d(int n1size, int n2size, int n3size);
+	GCLgrid3d(int n1size, int n2size, int n3size, bool fl=true);
 /*! 
 //  Constructor for what we call a "regular" GCLgrid in 3D in the Fan and Pavlis (in review) paper.  
 //  The object this constructs is spherical shell, boxlike object built up of elemental spherical
@@ -595,6 +597,9 @@ public:
 //  index 3 for the origin.  This constuctor always puts the origin at the bottom of the grid.
 //  This isn't necessary, but something that is just frozen into this implementation.
 //  For the same reason r0 is ignored and just set internally by this constructor.
+//  Note the fast lookup method is always on for this constructor because the
+//  grid is always regular making this extra overhead of the slow method 
+//  totally unnecessary.
 //
 //  Note that the makegclgrid program is little more than a wrapper around this and the 2d 
 //  version of this constructor.
@@ -614,6 +619,7 @@ public:
 //  \param iorigin 1 axis grid index of the origin in generalized coordinate grid frame.
 //  \param jorigin 2 axis grid index of the origin in generalized coordinate grid frame.
 //
+
 */
 	GCLgrid3d(int n1size, int n2size, int n3size, string n, 
 		double la0, double lo0, double az, double radius0,
@@ -629,7 +635,7 @@ public:
   \param db generic database handle
   \param nm name of grid to be loaded from the database.
 */
-	GCLgrid3d(DatabaseHandle& db, string nm);  
+	GCLgrid3d(DatabaseHandle& db, string nm, bool fl=true);  
 #endif
         /*! \brief Constuct from a file.
 
@@ -650,7 +656,8 @@ public:
           likely want to force default and use only one argument to
           this constructor.
           */
-        GCLgrid3d(string fname, string format=default_output_format);
+        GCLgrid3d(string fname, string format=default_output_format,
+                bool fl=true);
 	/** Standard copy constructor. */
 	GCLgrid3d(const GCLgrid3d&); 
 	/** Standard assignment operator. */
@@ -771,6 +778,29 @@ public:
 	double depth(int,int,int);
 	//** Sets extents attributes based on min and max values */
 	void compute_extents();
+        /*! \brief Enable high accuracy lookup.
+
+          Default lookup method can sometimes find the wrong cell when
+          a grid is extremely distorted.  The direction set method uses
+          a Jacobian computed with vectors computed in the direction of
+          increasing grid index values.   If the point of a distorted 
+          cell box not touched by the set of edge vectors defined by this 
+          operation differs strongly from a projection from the opposite
+          edges, the lookup will find the wrong cell.  The high accuracy
+          method checks for this condition and attempts to recover using
+          a search in adjacent cells.  This is, however, a very expensive
+          operation and should normally be avoided unless your application 
+          is prone to large, local distortions. 
+          */
+        void enable_high_accuracy()
+        {
+            fast_lookup=false;
+        };
+        /*! Inverse of enable_high_accuracy method - turn on fast method.*/
+        void enable_fast_lookup()
+        {
+            fast_lookup=true;
+        };
 /*! 
 // Destructor.  Nontrivial destructor has to destroy the coordinate arrays correctly
 // and handle case when they are never defined.  Handles this by checking for 
@@ -781,6 +811,7 @@ public:
 	~GCLgrid3d();
 private:
 	int ix1, ix2, ix3;
+        bool fast_lookup;
 };	  		
 /** Two-dimensional scalar field defined on a GCLgrid framework. */
 class GCLscalarfield :  public GCLgrid
