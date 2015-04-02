@@ -323,11 +323,10 @@ if ($opt_U) {
   $newcommtype  = (defined $samecomm)      ? $commtype     : $newcommtype  ;
 
 # should newcommtype not matching what is in mk_dbops.pf be fatal, or simply a warning?
-
-  if ($newcommtype !~ @{$Pf{accepted_comm_types}}) {
-    elog_alert "$newcommtype is not a recognized commtype!" ;
-    elog_complain "Update $pf with a new accepted_comm_type: $newcommtype!!\n";
-  }
+  unless ( $newcommtype ~~ @{$Pf{accepted_comm_types}} ) {
+    elog_alert "ALERT!!\n \t $newcommtype is not a recognized commtype!" ;
+    elog_complain "Update $pf\.pf with a new accepted_comm_type: $newcommtype!!\n\n";
+ }
 
   @deptable =  defined $newdb && ($db eq $newdb)   ? @newdeployment : @deployment ;
 
