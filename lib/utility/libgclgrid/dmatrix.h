@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include "perf.h"
+#include <sstream>
 using namespace std;
 //==================================================================
 //@{
@@ -12,77 +13,101 @@ using namespace std;
 // @author Gary L. Pavlis
 //@}
 //==================================================================
-class dmatrix_error
+class dmatrix_error : public exception 
 {
 public:
-//@{
-// Base error message string
-//@}
+    /*! Holds message string posted. */
         string message;
-//@{
-// Writes the error message to standard error.
-//@}
+        /*! SEISPP style error print. */
         virtual void log_error(){cerr<<"Pf error: %s"<< message<<endl;}
+        /*! std::exception standard interface. */
+        virtual const char* what() const throw()
+        {
+            return message.c_str();
+        };
+        /* necessary baggage for some compilers - empty destructor */
+        ~dmatrix_error() throw(){};
 };
 //==================================================================
-//@{
-// Thrown by a dmatrix if a requested index is outside the bounds
-// of the matrix dimension.
-//
-// @author Gary L. Pavlis
-//@}
+/*!
+ Thrown by a dmatrix if a requested index is outside the bounds
+ of the matrix dimension.
+
+\author Gary L. Pavlis
 //==================================================================
+*/
 class dmatrix_index_error : public dmatrix_error
 {
 public:
 //@{
-// Basic constructor for this error object.
-// @param nrmax number of rows in matrix
-// @param ncmax number of columns in matrix
-// @param ir row index requested
-// @param ic column index requested
-//@}
+/*!
+Basic constructor for this error object.
+\param nrmax number of rows in matrix
+\param ncmax number of columns in matrix
+\param ir row index requested
+\param ic column index requested
+*/
 	dmatrix_index_error(int nrmax, int ncmax, int ir, int ic)
 		{row = ir; column=ic; nrr=nrmax; ncc=ncmax;};
-//@{
-// Writes the error message to standard error.
-//@}
+/*! Writes the error message to standard error.
+*/
         virtual void log_error()
 	{ cerr << "Matrix index (" << row << "," << column 
 		<< ")is outside range = " << nrr << "," << ncc << endl;};
+        /*! std::exception standard interface. */
+        virtual const char* what() const throw()
+        {
+            stringstream ss(message);
+            ss << "dmatrix object:  indexing error"<<endl
+                << "Matrix index (" << row << "," << column
+                << ")is outside range = " << nrr << "," << ncc << endl;
+            string result(ss.str());
+            return result.c_str();
+        };
+        /* necessary baggage for some compilers - empty destructor */
+        ~dmatrix_index_error() throw(){};
 private:
 	int row,column;
 	int nrr, ncc;
 };
-//==================================================================
-//@{
-// Thrown by a dmatrix when two matrices have a size mismatch.
-//
-// @author Gary L. Pavlis
-//@}
-//==================================================================
+/*!
+Thrown by a dmatrix when two matrices have a size mismatch.
+
+\author Gary L. Pavlis
+*/
 class dmatrix_size_error : public dmatrix_error
 {
 public:
-//@{
-// Basic constructor for this error object.
-// @param nr1 number of rows in matrix 1
-// @param nc1 number of columns in matrix 1
-// @param nr1 number of rows in matrix 2
-// @param nc1 number of columns in matrix 2
-//@}
+/*!
+Basic constructor for this error object.
+\param nr1 number of rows in matrix 1
+\param nc1 number of columns in matrix 1
+\param nr1 number of rows in matrix 2
+\param nc1 number of columns in matrix 2
+*/
 	dmatrix_size_error (int nr1, int nc1, int nr2, int nc2)
 		{nrow1=nr1; ncol1=nc1;nrow2=nr2;ncol2=nc2;};
-//@{
-// Writes the error message to standard error.
-//@}
+/*! Writes the error message to standard error.*/
 	virtual void log_error()
 	{
-		cerr << "Matrix size mismatch:  matrix one is "
-			<< nrow1 << "X" << ncol1 
-			<< "while matrix two is "
-			<< nrow2 << "X" << ncol2 << endl;
-	}
+            cerr << "dmatrix class:   size mismatch error in binary operator"<<endl
+                << "matrix on left is "<< nrow1 << "X" << ncol1
+		<< "while matrix on right is "
+		<< nrow2 << "X" << ncol2 << endl;
+	};
+        /*! std::exception standard interface. */
+        virtual const char* what() const throw()
+        {
+            stringstream ss(message);
+            ss << "dmatrix class:   size mismatch error in binary operator"<<endl
+                << "matrix on left is "<< nrow1 << "X" << ncol1
+		<< "while matrix on right is "
+		<< nrow2 << "X" << ncol2 << endl;
+            string result(ss.str());
+            return result.c_str();
+        };
+        /* necessary baggage for some compilers - empty destructor */
+        ~dmatrix_size_error() throw(){};
 private:
 	int nrow1, ncol1, nrow2, ncol2;
 };
