@@ -3,6 +3,9 @@ MAN3T= \
     CommandCheckoff.3t 
 
 DATA=$(MAN3T:.3t=.tcl) 
+LICENSES = license_CommandCheckoff.txt
+
+CLEAN = $(LICENSES)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
@@ -13,4 +16,5 @@ install :: $(ANTELOPE)/data/$(DATADIR)/tclIndex
 tclIndex : $(DATA) 
 	tclindex $(DATA) > $@
 
-# $Id$ 
+$(LICENSES) : LICENSE
+	cp $< $@

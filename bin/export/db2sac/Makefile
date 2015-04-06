@@ -1,7 +1,10 @@
 BIN  = db2sac db2ah
 MAN1 = db2sac.1
+LICENSES = license_db2sac.txt license_db2ah.txt
 
 ldlibs	= -lscv2 -ldbl2 $(TRLIBS)
+
+CLEAN = $(LICENSES)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
@@ -21,3 +24,6 @@ db2sac : db2sac.o write_sac.o tmpl.o
 
 db2sac.o : db2.c
 	$(CC) $(CFLAGS) -DSAC -c db2.c -o db2sac.o
+
+$(LICENSES) : LICENSE
+	cp $< $@

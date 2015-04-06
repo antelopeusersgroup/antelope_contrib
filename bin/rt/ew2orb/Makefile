@@ -31,7 +31,5 @@ orb2ew: $(ORB2EW_OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(ORB2EW_OBJS) $(LDFLAGS) $(LDLIBS)
 
-license_ew2orb.txt license_orb2ew.txt: LICENSE
-	echo source is $<
-	echo dest is $@
+$(LICENSES): LICENSE
 	cp $< $@
