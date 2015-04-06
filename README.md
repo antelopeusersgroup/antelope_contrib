@@ -9,6 +9,8 @@ Maintained by members of the [Antelope Users Group][aug].
   [brtt]: http://www.brtt.com
   [aug]: http://www.antelopeusersgroup.org
 
+Source code is available on GitHub: http://github.com/antelopeusersgroup/antelope_contrib
+
 Inclusion in Antelope
 ---------------------
 
@@ -17,7 +19,7 @@ release of Antelope, subject to some basic quality control guidelines. The
 [contributing](#contributing) section below contains some guidelines.
 
 
-Layout of this repository
+Layout of the antelope\_contrib Git repository
 -------------------------
 
 Code in this repository is laid out in a few top-level dirctories.
@@ -84,7 +86,7 @@ these macros. Basic boot-strapping for `localmake` looks like this:
 Compilation
 -----------
 
-    cd $ANTELOPE/src
+    cd $ANTELOPE/src # or where ever you checked out the repository
     make Include
     make
     make install
