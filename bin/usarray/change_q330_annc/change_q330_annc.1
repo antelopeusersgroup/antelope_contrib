@@ -7,7 +7,9 @@ change_q330_annc \- change or review the annc structure on a q330 datalogger
 \fBchange_q330_annc \fP
 	[-a authcode]
 	[-d dlevent_db]
+	[-l logdir]
 	[-p pf]
+	[-P port]
 	[-s select]
 	[-r reject]
 	[-t targetname]
@@ -66,8 +68,12 @@ but alternates can be specified with this option or in the parameter file.
 This is a "force" option that will report any pre-existing oddities
 in setup but will go ahead and change them to your new ones.  This could have potentially critical/disasterous 
 consequences to your remote datalogger.  Use with extreme caution! 
+.IP "-l logdir"
+Directory to store reports of before and after POC settings and annc commands.  Default is \fIchange_q330_annc_logs\fP. 
 .IP "-p parameter_file"
 Alternate parameter file to use.  The default parameter file name is \fBchange_q330_annc.pf\fP
+.IP "-P port"
+Use this port number for communications with the q330 rather than the default port number of 5330.
 .IP "-x dl_reject_expression"
 Expression used to reject dataloggers for change or review.  The code performs dlsta !~/$opt_x/".
 .IP "-s dl_select_expression"
@@ -98,7 +104,10 @@ schema.  See \fBq330_baler(1)\fP for information on populating the staq330 table
 Four output files are created that contain information about the before/after POC settings (report.txt),
 a record of the actual \fBq330util\fP setannc commands that are sent (setannccmds.txt), a more detailed 
 record of settings (settings.txt), and a shorter list of problem stations (tobefixed.txt).  These 
-files are overwritten for every run of \fBchange_q330_annc\fP.  Examples of these four files are shown: 
+files are written to the \fIchange_q330_annc_logs\fP directory or your chosen directory if you use the 
+\fI-l logdir\fP option, with a timestamp to show what date/time the change was attempted. 
+.LP
+Examples of these four files are shown: 
 .SS "report.txt"
 .in 2c
 .ft CW
@@ -161,6 +170,10 @@ If your network uses a single authorization code for q330 access, specify it her
 .IP alt_auth_codes
 If your network uses a variety of possible authorization codes, add them all here.  The
 script will cycle through each one if it cannot access the datalogger with the \fI default_authcode\fP.
+.IP port_base   
+The base port number for q330 communications.  The default value is 5330 and is not normally changed 
+unless particular/odd communication paths are needed.  Override of the default can also be done with 
+the \fI-p port\fP option which will take precedence.
 .IP unlock_flags
 This should likely always be set to 0xa00 if you are operating in POC mode.  This sets the serial
 number unlocks.
@@ -220,6 +233,10 @@ alt_auth_codes  &Tbl{
 flags                   0xa1
 dp_udp_port             2254
 router_ip_addr  192.168.33.1
+
+exclude &Tbl{           # dataloggers to exclude from POC check and change
+        TA_ABCD
+}
 
 newannc &Arr{		# named structures for settings for each POC receptor
 

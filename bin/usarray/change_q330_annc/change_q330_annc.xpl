@@ -1,4 +1,3 @@
-
 use strict ;
 use Datascope ;
 use orb ;
@@ -6,19 +5,21 @@ use archive ;
 use Getopt::Std ;
 use utilfunct ; 
 
-our ($opt_a, $opt_d, $opt_f, $opt_i, $opt_p, $opt_n, $opt_s, $opt_t, $opt_x, $opt_V, $opt_v);
+use File::Path qw( make_path );
+
+our ($opt_a, $opt_d, $opt_f, $opt_i, $opt_l, $opt_p, $opt_P, $opt_n, $opt_s, $opt_t, $opt_x, $opt_V, $opt_v);
 
 our ($dlsta, $inp, $ssident, $ip, $pfname, $str, $k, $kcnt, $getannc, $change, $named);
 
 our (@db, @db2, @dlevent, @dbstaq330, @dbq, @q330comm);
 
 our ($dbin, $targetname, $dbsub, $targetsub, $dlselect, $dlreject, $nrecs);
-our ($rqcmd, $row, $setannccmd, $umsg, $auth, $newip);
-our ($status);
+our ($rqcmd, $row, $setannccmd, $umsg, $auth, $newip, $port_base);
+our ($status, $logdir, $logtime);
 
 our (%Pf,%Pfannc) = () ;
 
-our (@dp_ip_addr,@problems,@skipstas,@changetype);
+our (@dp_ip_addr,@problems,@skipstas,@changetype,@resume,@poc_to,@xclude);
 
 our (@collected,@skipstas);		# these seem to be unused
 
@@ -30,7 +31,7 @@ $Pgm = $0 ;
 $Pgm =~ s".*/"" ;
 $cmd = "\n$0 @ARGV" ;
 
-if (! getopts('a:d:finp:s:t:x:vV')  || ((@ARGV == 1 ) && ($opt_i) ) || (@ARGV == 0 && (!$opt_i)) || (@ARGV > 1 ) ) {
+if (! getopts('a:d:fil:np:P:s:t:x:vV')  || ((@ARGV == 1 ) && ($opt_i) ) || (@ARGV == 0 && (!$opt_i)) || (@ARGV > 1 ) ) {
    print STDERR "getopts or number of arguments failure.\n";
    &usage;
 }
@@ -38,6 +39,12 @@ if (! getopts('a:d:finp:s:t:x:vV')  || ((@ARGV == 1 ) && ($opt_i) ) || (@ARGV ==
 if (!$opt_i) {
    $dbin		= $ARGV[0]  ;
 } 
+
+$logdir = $opt_l ? $opt_l : "change_q330_annc_logs" ; 
+
+unless (-d $logdir) {
+    make_path $logdir or die "Failed to create path: $logdir ($!)";
+}
 
 if ($opt_t) {
   $targetname = $opt_t;
@@ -62,17 +69,36 @@ if ($opt_a) {
   }
 }
 
+if (!$Pf{port_base} && !$opt_P ) {
+  print "Using default port base, 5330\n" if $opt_v;
+  $port_base = "-port_base 5330";
+} elsif ($opt_P) {
+  print "Using port base from command line, $opt_P \n" if $opt_v;
+  $port_base = "-port_base $opt_P";
+} else {
+  print "Using port base from parameter file: $Pf{port_base} \n" if $opt_v;
+  $port_base = "-port_base $Pf{port_base}";
+}
+
+print "Port base: $port_base\n" if $opt_V;
+
 print "Num. of active entries:  $Pf{number_of_active_entries}\n" if $opt_V ;
 
 foreach $named (sort keys $Pf{newannc}) {
    next if !$named ;
    push (@dp_ip_addr,trimip($Pf{newannc}{$named}{dp_ip_addr}));
+   push (@resume,($Pf{newannc}{$named}{resume_time_in_minutes}));
+   push (@poc_to,($Pf{newannc}{$named}{timeout_in_minutes}));
 }
 
-open(FILE, ">report.txt") || die "Cannot open report file";
-open(POC,  ">settings.txt") || die "Cannot open settings file";
-open(RUN,  ">setannccmds.txt") || die "Cannot open commands file";
-open(RPT,  ">tobefixed.txt") || die "Cannot open reported problems file";
+# Need to put these in a directory with -l option(?) and include timestamp in name
+
+$logtime = epoch2str(now(),"%Y%j-%H:%M:%S") ;
+
+open(FILE, ">$logdir/$logtime-report.txt") || die "Cannot open report file";
+open(POC,  ">$logdir/$logtime-settings.txt") || die "Cannot open settings file";
+open(RUN,  ">$logdir/$logtime-setannccmds.txt") || die "Cannot open commands file";
+open(RPT,  ">$logdir/$logtime-tobefixed.txt") || die "Cannot open reported problems file";
 
 if ($opt_i) {
    if (!$opt_d) {
@@ -229,8 +255,13 @@ if ($opt_i) {
       print "$nrecs records after datalogger reject subsets\n"  if ($opt_V);
    }
 
-
    die ("\nFatal!  No records after staq330 subsets\n") if ($nrecs == 0);
+
+   foreach my $x (@{$Pf{exclude}}) {
+      push (@xclude,$x);
+      printf "Number of dataloggers to exclude: %d\n",  $#xclude +1  if ($opt_v);
+   }
+
    # get an array of all available stations 
 
 
@@ -239,10 +270,18 @@ if ($opt_i) {
      ($dlsta,$inp,$ssident) = dbgetv(@dbstaq330,qw(dlsta inp ssident));
      $ip  = (split /:/, $inp) [0] ; 	# staq330  - IP is item 0 of inp; q330comm - IP is item 1 of inp
 
-     &current_annc($dlsta,$ip,$ssident);
 
-     &report_status('Initial') ;
-     &report_status('Final') ;	# The Final report status triggers a re-run of rqannc
+     if ( $dlsta  ~~ @xclude ) { # check to make sure dlsta is not in the xclude list
+	printf "Skipping %s per the exclude list in the parameter file\n", $dlsta ;
+     } else {
+
+	printf "%s is not in the exclude list in the parameter file.  Getting annc structures\n", $dlsta ;
+
+        &current_annc($dlsta,$ip,$ssident);
+
+        &report_status('Initial') ;
+        &report_status('Final') ;	# The Final report status triggers a re-run of rqannc
+     }
 
    }
 
@@ -268,7 +307,7 @@ exit (0);
 
 sub usage {
         print STDERR <<END;
-            \nUSAGE: $0 [-a authcode] [-d dlevent_db] [-p pf] [-v] [-s select] [-x xclude] [-t targetname] [-n]  {db | -i }
+            \nUSAGE: $0 [-a authcode] [-d dlevent_db] [-l logdir] [-p pf] [-P port] [-v] [-s select] [-x xclude] [-t targetname] [-n]  {db | -i }
 
 END
         exit(1);
@@ -284,7 +323,7 @@ sub current_annc {
 
 # run q330util rqannc to return a pf using default, or command line (opt_a) auth value
   print "auth to be used for rqcmd: $auth  \n" if $opt_V ;
-  $rqcmd =  "q330util $auth rqannc $dlinfo{ip},$dlinfo{ssident}" ;
+  $rqcmd =  "q330util $port_base $auth rqannc $dlinfo{ip},$dlinfo{ssident}" ;
 
   if (!$str ) {		# likely means auth code wasn't correct, or station is unreachable
      print "Could not reach $dlsta using default or command line authorization code(s) - attempting alternates \n" if $opt_v ;
@@ -292,7 +331,7 @@ sub current_annc {
      foreach my $a (@{$Pf{alt_auth_codes}}) {
          print "Alternate auth code to check: $a\n" if $opt_v ;
          $auth = "-auth $a" ;
-         $rqcmd =  "q330util $auth rqannc $dlinfo{ip},$dlinfo{ssident}" ;
+         $rqcmd =  "q330util $port_base $auth rqannc $dlinfo{ip},$dlinfo{ssident}" ;
          print "Command requesting annc structure for $dlsta: $rqcmd\n" if $opt_v ;
          &runrqannc ($rqcmd) ;		# should return a value for $str if request returned successfully
          last if $str;		# successful return, don't check other alternates
@@ -357,6 +396,24 @@ sub current_annc {
 	   $change++ ;
 	   push(@changetype,"dp_ip");
       }  
+
+#       print "Another attempt: $Pf{newannc}{$kcnt}{resume_time_in_minutes}\n";
+#       print "Yet another attempt: $resume[$kcnt]\n";
+#exit;
+ 
+      if ($Pfannc{anncs}[$getannc]{resume_time_in_minutes} != $resume[$kcnt]) { 
+	  print "   Problem - resume_time_in_minutes is $Pfannc{anncs}[$getannc]{resume_time_in_minutes} rather than $resume[$kcnt] for $dlsta $Pfannc{anncs}[$getannc]{dp_ip_address}\n"; 
+	  print "     resume_time_in_minutes will be changed to $resume[$kcnt] for $dlsta\n";
+	  $change++;
+	  push(@changetype,"resume_time_in_minutes");
+      }
+
+      if ($Pfannc{anncs}[$getannc]{timeout_in_minutes} != $poc_to[$kcnt]) { 
+	  print "   Problem - timeout_in_minutes is $Pfannc{anncs}[$getannc]{timeout_in_minutes} rather than $poc_to[$kcnt] for $dlsta $Pfannc{anncs}[$getannc]{dp_ip_address}\n"; 
+	  print "     timeout_in_minutes will be changed to $poc_to[$kcnt] for $dlsta\n";
+	  $change++;
+	  push(@changetype,"timeout_in_minutes");
+      }
 
       if ($change) {
 	print "  Changes to POC structure needed for the $getannc POC settings for $dlsta \n"  if $opt_V ;
@@ -458,7 +515,7 @@ sub setannc  {
 	}
 
 # starter for the setannc cmd
-  $setannccmd =  "q330util $auth sannc $dlinfo{ip},$dlinfo{ssident}," . trim($Pf{number_of_active_entries}) . "," . trim($Pf{unlock_flags}) ;
+  $setannccmd =  "q330util $port_base $auth sannc $dlinfo{ip},$dlinfo{ssident}," . trim($Pf{number_of_active_entries}) . "," . trim($Pf{unlock_flags}) ;
 
 
   foreach $named (sort keys $Pf{newannc}) {
@@ -490,7 +547,7 @@ sub setannc  {
   if (!$opt_n) {
 
 # send a message saying the annc is going to change
-  $umsg	=  "q330util $auth umsg $dlinfo{ip},$dlinfo{ssident},0,'Changing POC/annc structure.  -- ANF'" ;
+  $umsg	=  "q330util $port_base $auth umsg $dlinfo{ip},$dlinfo{ssident},0,'Changing POC/annc structure.  -- ANF'" ;
 		
     if ($opt_v) {
        open (UMSG, "$umsg |" ) || die "umsg cmd failed for $dlinfo{ip},$dlinfo{ssident}: $! \n";

@@ -18,6 +18,10 @@ flags			0xa1
 dp_udp_port		2254
 router_ip_addr	192.168.33.1
 
+exclude &Tbl{		# dataloggers to exclude from POC check and change
+	TA_109C
+}
+
 #
 # These should be the final POC setups your datalogger(s) should have
 #
