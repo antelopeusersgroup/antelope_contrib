@@ -26,21 +26,19 @@ import antelope.stock as stock
 def configure():
     """Gather command line
     options"""
-    usage = "Usage: %prog [options] database"
+    usage = "Usage: %prog [options] database output_file.kml"
     parser = OptionParser(usage=usage)
     parser.add_option("-v", action="store_true", dest="verbose", help="verbose output", default=False)
     parser.add_option("-x", action="store_true", dest="debug", help="debug output", default=False)
-    parser.add_option("-p", action="store", type="string", dest="pf", help="pf", metavar="", default=False)
+    parser.add_option("-p", action="store", type="string", dest="pf", help="pf", default='db2kml_py.pf')
     parser.add_option("-t", action="store", type="string", dest="filetype", help="filetype", metavar="", default=False)
     (options, args) = parser.parse_args()
 
-    if len(args) != 1:
+    if len(args) != 2:
         parser.error("incorrect number of arguments")
 
-    if args[0]:
-        database = args[0]
-    else:
-        sys.exit("\n\t%s\n" % usage)
+    database = args[0]
+    out_file = args[1]
 
     verbose = False
     debug = False
@@ -52,48 +50,52 @@ def configure():
     if options.debug:
         debug = True
 
-    if not options.pf:
-        pfs_tuple = list(stock.pffiles('db2kml_py'))
-        pfs_tuple.reverse() # Reverse order to search local pf dir first
-        for p in pfs_tuple:
-            if os.path.isfile(p):
-                pfname = p
-                break
-        if verbose or debug:
-            print "Used PFPATH to determine which parameter file to use and found '%s'" % pfname
-    else:
-        if not os.path.isfile(options.pf):
-            print "Command line defined parameter file '%s' does not exist. Exiting" % options.pf
-            sys.exit(-1)
-        else:
-            pfname = options.pf
+    if verbose:
+        print "- Read configuration parameter file (pf): %s" % options.pf
+
+    pf = stock.pfupdate(options.pf)
+
+    #if not options.pf:
+    #    pfs_tuple = list(stock.pffiles('db2kml_py'))
+    #    pfs_tuple.reverse() # Reverse order to search local pf dir first
+    #    for p in pfs_tuple:
+    #        if os.path.isfile(p):
+    #            pfname = p
+    #            break
+    #    if verbose or debug:
+    #        print "Used PFPATH to determine which parameter file to use and found '%s'" % pfname
+    #else:
+    #    if not os.path.isfile(options.pf):
+    #        print "Command line defined parameter file '%s' does not exist. Exiting" % options.pf
+    #        sys.exit(-1)
+    #    else:
+    #        pfname = options.pf
 
     if options.filetype:
         file_type = options.filetype
 
-    return database, verbose, debug, pfname, file_type
+    return database, out_file, verbose, debug, pf, file_type
 
 def get_pf(pf, verbosity=0):
     """Get values from the parameter file
     """
-    if verbosity > 0:
-        print "- Read configuration parameter file (pf): %s" % pf
-    if not os.path.isfile(pf):
-        print "ERROR: cannot locate parameter file (pf): %s" % pf
-        sys.exit()
 
-    pf = stock.pfread(pf)
+    #pf = stock.pfread(pf)
 
-    config = pf.get('config')
-    styles = pf.get('styles')
-    stations = pf.get('stations')
+    config = pf['config']
+
+    styles = pf['styles']
+    if verbosity:
+        print "%s" % styles
+
+    stations = pf['stations']
     if not styles['imagepath'].endswith('/'):
         err_str = []
         err_str.append('ERROR: imagepath URL must contain a trailing / in parameter file.')
         err_str.append('Imagepath currently defined as: %s\n' % styles['imagepath'])
         print err_str
         sys.exit()
-    headers = pf.get('headers')
+    headers = pf['headers']
     pf_result = {'config': config, 'styles': styles, 'headers': headers, 'stations': stations}
     return pf_result
 
@@ -268,10 +270,10 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
         if nex:
             dbm = dbm.subset('%s' % nex )
 
-    if not inactive:
+    if not stock.yesno(inactive):
         if verbosity > 0:
             print "- Subsetting database '%s' for active stations" % dbmaster
-        dbm = dbm.subset('offdate == NULL || offdate > now()')
+        dbm = dbm.subset('offdate == NULL || offdate > %s' % stock.yearday(stock.now()) )
 
 
     if dbm.query('dbRECORD_COUNT') < 1:
@@ -457,13 +459,13 @@ def main():
     for creating KML files
     """
 
-    database, verbose, debug, pf, file_type = configure()
+    database, out_file, verbose, debug, pf, file_type = configure()
     verbosity = calc_verbosity(verbose, debug) 
 
     if verbosity > 0:
         print "Start of script at time %s" % time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
 
-    pf_result = get_pf('%s' % pf, verbosity)
+    pf_result = get_pf(pf, verbosity)
 
     outstr = []
     outstr.append(kml_header())
@@ -515,9 +517,9 @@ def main():
     outstr.append(kml_footer())
 
     if pf_result['config']['create_kmz']:
-        write_kml(pf_result['config']['out_file'], outstr, verbosity, True)
+        write_kml(out_file, outstr, verbosity, True)
 
-    write_kml(pf_result['config']['out_file'], outstr)
+    write_kml(out_file, outstr)
 
     if verbosity > 0:
         print "End of script at time %s" % time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())

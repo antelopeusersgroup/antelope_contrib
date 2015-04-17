@@ -6,7 +6,6 @@ config &Arr{
     sort_fields &Tbl{
         time
     }
-    out_file        CEUSN_network.kml
     create_kmz      True
     network_link &Arr{
     }
