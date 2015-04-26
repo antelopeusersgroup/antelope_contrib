@@ -1,0 +1,9 @@
+
+time July 20, 1992
+net GX A Galaxy far, far away
+sta STaaR 65.123 -125.125 2.765 Starry Starry Night
+
+datalogger rt130 dl-s/n  dlsta
+
+sensor sts2_g1 0.1 sn-s/n 
+    samplerate 100sps
