@@ -19,6 +19,7 @@ DATA = __init__.py \
 CLEAN = *.pyc
 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS = DREGERS_MTPACKAGE
