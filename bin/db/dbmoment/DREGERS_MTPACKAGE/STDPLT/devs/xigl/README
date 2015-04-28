@@ -1,0 +1,23 @@
+  Igltool is really not finished.
+
+1) endplot (newplot) doesn't work.  Igltool should have a menu entry that
+   becomes active if another plot awaits after endplot.  This entry should
+   be inactive otherwise.  sendplot(), not closedev(), should start
+   window_main_loop().
+
+2) penmode currently does nothing.  I didn't know it existed.  xvector.c
+   will address this.  Also, FILL_BRWHITE for polygons needs fixing,
+   see xpolygon.c.  Finally, why aren't the same fill options available
+   for both pens and brushes?  This is an IGL bug.
+
+3) zoom would be nice, but I doubt it will ever happen.
+
+4) sticky mouse could be sped up.  Try moving the canvas, but not by
+   scrolling with the scrollbars.  The canvas can be moved in one operation
+   in an arbitrary direction.  Scrolling takes two (one in x, one in y).
+
+5) cross-hairs to return canvas coords in "inches"?
+
+6) allow a grid to pop up (menu item), and be erased.
+
+7) color edit facility (on bw, this would merely invert)

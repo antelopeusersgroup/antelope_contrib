@@ -1,0 +1,23 @@
+
+This device driver leaves the graphics terminal in a messed up state
+upon exiting.  You must fix it with rasfix, which resets the terminal.
+(Can also fix it by powering down, or by entering graphics mode manually
+and typing MODDIS)
+
+
+Compile rasfix.c separately by typing 
+
+	% cc -o rasfix rasfix.c
+
+rasfix will reset the rastertech graphics terminal.
+
+
+-----------------------------------------------------------
+
+
+There are 2 different versions of open_close.c .  
+open_close.c is the normal one, and leaves the graphics terminal
+in a messed up state.
+
+open_close1.c will reset the graphics terminal , but
+can only be used if two terminals are available.

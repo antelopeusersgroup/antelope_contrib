@@ -1,0 +1,91 @@
+# parameter file for dbmoment
+# In this version of the parameter file
+# we are going to replace the provided Python
+# libreries with a version that will prepare
+# the parameter for us to run the original code
+# compiled in Dreger's distribution. The data for
+# the event is included as an example and we just
+# need to load it into a wfdisc table with the
+# included script in the EXAMPLE directory.
+
+
+tmp_folder      /tmp/dbmoment/
+
+clean_tmp       False
+
+# Waveform database if different form main database
+#wave_db    /opt/antelope/data/db/demo/demo
+
+# Response database if different from main database
+#resp_db    /opt/antelope/data/db/demo/demo
+
+# Green's functions database
+# Should be different than main database since we
+# need a dedicated wfdisc table.
+green_db    greens_db/green
+
+# Name of the library to use
+# for Green'sFunction class
+gf_lib green
+
+# Name of the library to use
+# for Inversion class
+inv_lib inversion
+
+# Name of the library to use
+# for Data class
+data_lib data
+
+# Name of the library to use
+# for Event class
+event_lib event
+
+# channel to use in MT-inversion, default is LH. If higher sample rate channels are chosen, 
+# the data is downsampled to 1 Hz.
+chan_to_use .*
+
+# Name of the model parameter file
+model_name SOCAL_MODEL
+
+# Maximum number of stations to use in the inversion
+#     - Minimum of eight, one for each division 
+#       of the cardinal and intercardinal directions
+sta_max 12
+
+sta_min 3
+
+depth_min       1
+
+depth_max       400
+
+distance_min    1
+
+distance_max    200
+
+
+allowed_segtype  &Tbl{
+    D
+    #    V  # not working for Velocity traces #
+}
+
+
+# The high_pass and low_pass filter corners are
+# given in hertz. An acausal (two pass), 4th
+# order butterworth filter is applied
+filter_high_pass   0.02
+filter_low_pass    0.1
+
+
+# Test for some executables neened for the example code
+find_executables     &Tbl{
+    sac
+    fromHelm
+    window
+    bin2sac
+    sac2bin
+    mkHelm
+    mv
+    rm
+    wvint9
+    tdmt_invc
+}

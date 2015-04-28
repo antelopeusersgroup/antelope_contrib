@@ -1,0 +1,112 @@
+current as of 10/7/86   
+
+frame.c:
+	setframe(ifr)
+	freeframe(ifr)
+	pushframe()
+	popframe()
+	framecopy(in,out,n) /*not called by user */
+	pushglobal()
+	popglobal()
+	dumpframe(ifr)
+	dumpglobal()
+	
+scale.c:
+	setorig(xorig,yorig)
+	setmin(xmin,ymin)
+	setscl(xscl,yscl)
+	getorig(xorig,yorig)
+	getmin(xmin,ymin)
+	getscl(xscl,yscl)
+	window(xmin, ymin, xmax, ymax)
+	uwindow(xmin, ymin, xmax, ymax)
+	iwindow(xmin, ymin, xmax, ymax)  /*not called by user*/
+	unwindow()
+	where(xlab,ylab)
+	uwhere(xlab,ylab)
+
+table.c:
+	setfat(ifat)
+	getfat()
+	getfillmode()
+	setbrushpat(ipat)
+	getbrushpat()
+	getpenmode()
+	getfillmode()
+	setpen(ipen)
+	setbrush(ibrush)
+	getpen()
+	getbrush()
+	defpen(ipen,ifat,idash,imode,icfat,icdash,icolor)
+	defbrush(ibrush,ipat,imode,icolor)
+	defbwpen(ipen,ifat,idash,imode)
+	defcpen(ipen,icfat,icdash,icolor)
+	defbwbrush(ibrush,ipat,imode)
+	defcbrush(ibrush,icolor)
+	setpenmode(imode)
+	setbrushmode(imode)
+	setrastmode(imode)  /* doesn't work yet */
+	defdash(idash,on1,off1,on2,off2)
+	defpattern(ipat,bits)
+	defcolor(icolor,r,g,b);
+	setcolor(icolor)
+	getcolor()
+	setdash(idash)
+	getdash()
+	getcolor()
+	
+err.c:
+	err(type,fmt,ARGS)
+	
+plot.c:
+	plot(xinch,yinch,ipen)
+	uplot(xuser,yuser,ipen)
+	line(x1,y1,x2,y2)
+	uline(x1,y1,x2,y2)
+	box(x1,y1,x2,y2)
+	ubox(x1,y1,x2,y2)
+	point(xinch,yinch)
+	upoint(xuser,yuser)
+	
+polygon.c:
+	polyfill(p,np)
+	upolyfill(p,np)
+	polyfilln(npoly,nverts,verts)
+	upolyfilln(npoly,nverts,verts)
+	boxfill(x1,y1,x2,y2)
+	uboxfill(x1,y1,x2,y2)
+	intpolygon *getpolybuf(n)
+	freepolybuf(q)
+	
+text.c:
+	text(xinch,yinch,fmt,ARGS)
+	utext(xuser,yuser,fmt,ARGS)
+	settextangle(angle)
+	settextsize(size)
+	settextfont(ifont)  /* doesn't work */
+	plotlabel(fmt,ARGS)
+	settextcenter(hpos,vpos)
+
+symbol.c:
+	symbol(xinch,yinch,isym,size,angle)
+	usymbol(xuser,yuser,isym,size,angle)
+ 	getsymbol(s)
+	dumpsymbols()
+
+output.c:
+	purge()
+	output1(c)
+	output2(c,x,y)
+	output3(c,str)
+	output4(c,n)
+	output5(c,n,ptr)
+	output6(c,n,ptr,len)
+	output7(c,n1,n2,n3,n4)
+	output8(c, n)
+	output9(c, p, n)
+	output10(c,n1,n2,n3,n4)
+	output11(c,n1,n2,n3)
+	output12(c,n1,n2,n3,n4,n5)
+	output13(p,n)
+	output14(c,n1,n2,str)
+	output15(c,n2,n2)

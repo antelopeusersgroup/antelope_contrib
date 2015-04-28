@@ -1,0 +1,8 @@
+.nr CH 0 1
+.nr VS 24
+.nr PS 12
+.nr PO 1.25i
+.EQ
+delim $$
+gsize 12
+.EN

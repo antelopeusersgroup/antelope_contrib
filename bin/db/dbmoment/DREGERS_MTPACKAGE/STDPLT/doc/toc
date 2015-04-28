@@ -1,0 +1,31 @@
+.af % i
+.bp
+.nr VS 14
+.LP
+.ce
+\fB\s+2Contents\s-2\fR
+.sp 0.5i
+.ta 0.5i 5.5i
+.nf
+.na
+\n+(CH. Introduction  00
+	Design of the SGP  00
+\n+(CH. User Interface Description  00
+	Introduction  00
+	Plot Scaling and Translation  00
+	Frames and Environment  00
+	Line Plotting  00
+	Pens and Brushs  00
+	Text  00
+	Area Filling  00
+	Symbols  00
+	Raster Plotting  00
+	Windows  00
+	Miscellaneous  00
+\n+(CH. Implementation Notes  00
+	Adding a New Device Filter  00
+
+Appendix A: Reference List of SGP C-Routines  00
+Appendix B: Reference List of Device Filters  00
+.ad
+.nr CH 0 1

@@ -1,0 +1,19 @@
+cc -O  -sun4 -c  bye.c
+cc -O  -sun4 -c  cgen.c
+cc -O  -sun4 -c  cmdlist.c
+cc -O  -sun4 -c  compile.c
+cc -O  -sun4 -c  dashline.c
+cc -O  -sun4 -c  fontdata.c
+cc -O  -sun4 -c  getspcpar.c
+cc -O  -sun4 -c  getstdpar.c
+cc -O  -sun4 -c  glo.c
+cc -O  -sun4 -c  opt.c
+cc -O  -sun4 -c  par.c
+cc -O  -sun4 -c  symbol.c
+cc -O  -sun4 -c  text.c
+cc -O  -sun4 -c  unixmain.c
+cc -O  -sun4 -c  sherr.c
+cc -O  -sun4 -c  shinp.c
+cc -O  -sun4 -c  shout.c
+cc -O  -sun4 -c  shmain.c
+cc -o psigl bye.o cgen.o cmdlist.o compile.o dashline.o fontdata.o getspcpar.o  getstdpar.o glo.o opt.o par.o symbol.o text.o unixmain.o sherr.o shinp.o shout.o shmain.o -lm

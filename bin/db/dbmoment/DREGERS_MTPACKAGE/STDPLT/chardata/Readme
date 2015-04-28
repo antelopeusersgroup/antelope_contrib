@@ -1,0 +1,48 @@
+# chardata/Readme:  Richard Stead 3-20-89
+
+   This directory contains the Hershey font set, rearranged for use by
+IGL filters.  The Hershey font set represented here is not complete,
+but what is missing is not essential.  The missing data are:  the
+'cartographic' (9 point grid) fonts, the 'indexical' (13 point grid) fonts,
+the symbols and large characters (various grids) and a few characters
+from the cyrillic font and the math font.  The basic Hershey fonts are
+on a 21 point grid.  Each Hershey font has 82 characters.  This contrasts
+with the 94 printing characters of ascii (I am not counting white space
+characters).  The following list shows the contrast:
+
+		In Hershey Fonts: (84)
+	ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:;!
+	abcdefghijklmnopqrstuvwxyz?'"*/()-+=%&@$#
+
+		On average keyboard: (94 printing chars of ascii)
+	ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:;!
+	abcdefghijklmnopqrstuvwxyz?'"*/()-+=%&@$#
+		... and ...
+	<>[]{}`~|\^_
+
+		In Hershey Math:
+	<>[]{}|
+
+		Create by drawing backwards (or other simple rule):
+	`\_
+
+		Remaining:
+	~^
+
+Some of the missing ascii characters are available from the math font,
+some ('\) can be made by reversing characters, the _ is a simple rule.
+For ^, I substituted the up arrow from the math font, I drew ~ myself.
+If someone complains, change them.
+   These extra characters are added to the fonts from the file named
+'additional'.  additional also contains # and %, since many fonts did
+not specify these.  Thus all fonts contain the same set of additional
+characters to give them the full complement of 94.  The makefile adds
+'additional' when required, compiles char_compile.c and then runs it
+for 12 fonts.  (The shell script do_compiles is needed for this).
+Some of the fonts are duplicates, some are not used.
+The result, after make is done, is a file chardata.h to be included
+in text.c during compilation.  'make clean' removes this file.
+   One more note:  newmath.ascii is my compilation of math + greek.
+Most of the characters are labeled for identification.  Plenty of
+room is left here for more math symbols (for instance, those of the
+Hershey fonts that we seem to be missing, or useful ones like del).

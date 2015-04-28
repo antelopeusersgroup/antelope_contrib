@@ -1,0 +1,278 @@
+CHECKINT	output.c	/^#define	CHECKINT(x,y)	if ( INTBYTES == 2 ) \\$/
+
+box	plot.c	/^box(x1,y1,x2,y2)$/
+box_	fortran.c	/^box_ (px1,py1,px2,py2)$/
+
+boxfill	polygon.c	/^boxfill(x1,y1,x2,y2)$/
+boxfill_	fortran.c	/^boxfill_ (px1, py1, px2, py2)$/
+
+defbrush	table.c	/^defbrush(ibrush, ipat, imode, icolor)$/
+defbrush_	fortran.c	/^defbrush_ (pibrush,pipat,pimode,picolor)$/
+
+defbwbrush	table.c	/^defbwbrush(ibrush, ipat, imode)$/
+defbwbrush_	fortran.c	/^defbwbrush_ (pibrush,pipat,pimode)$/
+
+defbwpen	table.c	/^defbwpen(ipen, ifat, idash, imode)$/
+defbwpen_	fortran.c	/^defbwpen_ (pipen,pifat,pidash,pimode)$/
+
+defcbrush	table.c	/^defcbrush(ibrush, icolor)$/
+defcbrush_	fortran.c	/^defcbrush_ (pibrush,picolor,pimode)$/
+
+defcolor	table.c	/^defcolor(icolor, r, g, b)$/
+defcolor_	fortran.c	/^defcolor_ (picolor,pr,pg,pb)$/
+
+defcpen	table.c	/^defcpen(ipen, icfat, icdash, icolor)$/
+defcpen_	fortran.c	/^defcpen_ (pipen,pifat,pidash,picolor)$/
+
+defdash	table.c	/^defdash(idash,on1,off1,on2,off2)$/
+defdash_	fortran.c	/^defdash_ (pidash,pon1,poff1,pon2,poff2)$/
+
+defpattern	table.c	/^defpattern(ipat, bits)$/
+defpattern_	fortran.c	/^defpattern_ (ipat,bits)$/
+
+defpen	table.c	/^defpen(ipen, ifat, idash, imode, icfat, icdash, ic/
+defpen_	fortran.c	/^defpen_ (pipen,pifat,pidash,pimode,picfat,picdash,/
+
+dumpframe	frame.c	/^dumpframe(ifr)$/
+dumpframe_	fortran.c	/^dumpframe_(ifr)$/
+
+dumpglobal	frame.c	/^dumpglobal()$/
+dumpglobal_	fortran.c	/^dumpglobal_()$/
+
+endplot	erase.c	/^endplot()$/
+
+erase	erase.c	/^erase()$/
+erase_	fortran.c	/^erase_()$/
+
+err	err.c	/^err(type,fmt,ARGS)$/
+
+framecopy	frame.c	/^framecopy(in,out,n)$/
+
+freebrush_	fortran.c	/^freebrush_ (pibrush)$/
+
+freeframe	frame.c	/^freeframe(ifr)$/
+freeframe_	fortran.c	/^freeframe_(ifr)$/
+
+freepen_	fortran.c	/^freepen_ (pipen)$/
+
+freepolybuf	polygon.c	/^freepolybuf(q)$/
+
+getbrush	table.c	/^getbrush()$/
+getbrush_	fortran.c	/^getbrush_ ()$/
+
+getbrushcolor	table.c	/^getbrushcolor()$/
+getbrushcolor_	fortran.c	/^getbrushcolor_ ()$/
+
+getbrushmode	table.c	/^getbrushmode()$/
+getbrushmode_	fortran.c	/^getbrushmode_ ()$/
+
+getbrushpat	table.c	/^getbrushpat()$/
+getbrushpat_	fortran.c	/^	getbrushpat_ ()$/
+
+getcolor_	fortran.c	/^getcolor_ ()$/
+
+getdash	table.c	/^getdash()$/
+getdash_	fortran.c	/^getdash_ ()$/
+
+getfat	table.c	/^getfat()$/
+getfat_	fortran.c	/^getfat_ ()$/
+
+getfillmode	table.c	/^getfillmode()$/
+
+getmin	scale.c	/^getmin(xmin,ymin)$/
+getmin_	fortran.c	/^getmin_ (px,py)$/
+
+getorig	scale.c	/^getorig(xorig,yorig)$/
+getorig_	fortran.c	/^getorig_ (px,py)$/
+
+getpen	table.c	/^getpen()$/
+getpen_	fortran.c	/^getpen_ ()$/
+
+getpencolor	table.c	/^getpencolor()$/
+getpencolor_	fortran.c	/^getpencolor_ ()$/
+
+getpenmode	table.c	/^getpenmode()$/
+getpenmode_	fortran.c	/^getpenmode_ ()$/
+
+getpolybuf	polygon.c	/^struct intpolygon *getpolybuf(n)$/
+
+getscl	scale.c	/^getscl(xscl,yscl)$/
+getscl_	fortran.c	/^getscl_ (px,py)$/
+
+getsymbol	symbol.c	/^getsymbol(s)$/
+getsymbol_	fortran.c	/^getsymbol_ (symbolname,islen)$/
+
+getsymbolnames	symbol.c	/^struct symbolname *getsymbolnames(nsymbol)$/
+
+iwindow	scale.c	/^iwindow(xmin, ymin, xmax, ymax)$/
+
+line	plot.c	/^line(x1,y1,x2,y2)$/
+line_	fortran.c	/^line_ (px1,py1,px2,py2)$/
+
+origin_	fortran.c	/^origin_ (px,py)$/
+
+output1	output.c	/^output1(c)$/
+output10	output.c	/^output10(c,x1,y1,x2,y2)$/
+output11	output.c	/^output11(c,n1,n2,n3)$/
+output12	output.c	/^output12(c,b1,x1,y1,x2,y2)$/
+output13	output.c	/^output13(p,n)$/
+output14	output.c	/^output14(c,x1,y1,str)$/
+output15	output.c	/^output15(c,n1,n2)$/
+output16	output.c	/^output16(c,x1,y1,n3)$/
+output2	output.c	/^output2(c,x,y)$/
+output3	output.c	/^output3(c,str)$/
+output4	output.c	/^output4(c,n)$/
+output5	output.c	/^output5(c,n,ptr)$/
+output6	output.c	/^output6(c,n,ptr,len)$/
+output7	output.c	/^output7(c,n1,n2,n3,n4)$/
+output8	output.c	/^output8(c, n)$/
+output9	output.c	/^output9(c, p, n)$/
+
+pause	erase.c	/^pause()$/
+pause_	fortran.c	/^pause_()$/
+
+plot	plot.c	/^plot(xinch,yinch,ipen)$/
+plot_	fortran.c	/^plot_ (px,py,pipen)$/
+
+plotdot	dot.c	/^plotdot(xinch,yinch,size,imode)$/
+
+plotlabel	text.c	/^plotlabel(fmt,ARGS)$/
+plotlabel_	fortran.c	/^plotlabel_ (str,islen)$/
+
+point	plot.c	/^point(xinch,yinch)$/
+point_	fortran.c	/^point_ (px,py)$/
+
+polyfill	polygon.c	/^polyfill(p,np)$/
+polyfill_	fortran.c	/^polyfill_ (np,vl)$/
+
+polyfilln	polygon.c	/^polyfilln(npoly,nverts,verts)$/
+polyfilln_	fortran.c	/^polyfilln_ (npoly, npts, ind, vertices)$/
+
+popframe	frame.c	/^popframe()$/
+popframe_	fortran.c	/^popframe_()$/
+
+popglobal	frame.c	/^popglobal()$/
+popglobal_	fortran.c	/^popglobal_()$/
+
+purge	output.c	/^purge()$/
+purge_	fortran.c	/^purge_()$/
+
+pushframe	frame.c	/^pushframe()$/
+pushframe_	fortran.c	/^pushframe_()$/
+
+pushglobal	frame.c	/^pushglobal()$/
+pushglobal_	fortran.c	/^pushglobal_()$/
+
+puth	puth.c	/^puth(w,iop)$/
+puti	output.c	/^puti (n, file)$/
+putxy	output.c	/^putxy (x,y)$/
+
+setbrush	table.c	/^setbrush(ibrush)$/
+setbrush_	fortran.c	/^setbrush_ (pibrush)$/
+
+setbrushcolor	table.c	/^setbrushcolor(icolor)$/
+setbrushcolor_	fortran.c	/^setbrushcolor_ (picolor)$/
+
+setbrushmode	table.c	/^setbrushmode(imode)$/
+setbrushmode_	fortran.c	/^setbrushmode_ (pimode)$/
+
+setbrushpat	table.c	/^setbrushpat(ipat)$/
+setbrushpat_	fortran.c	/^setbrushpat_ (pipat)$/
+
+setcolor	table.c	/^setcolor(icolor)$/
+setcolor_	fortran.c	/^setcolor_ (picolor)$/
+
+setdash	table.c	/^setdash(idash)$/
+setdash_	fortran.c	/^setdash_ (pidash)$/
+
+setfat	table.c	/^setfat(ifat)$/
+setfat_	fortran.c	/^setfat_ (pifat)$/
+
+setframe	frame.c	/^setframe(ifr)$/
+setframe_	fortran.c	/^setframe_(ifr)$/
+
+setintbytes	table.c	/^setintbytes(nbytes)$/
+
+setmin	scale.c	/^setmin(xmin,ymin)$/
+setmin_	fortran.c	/^setmin_ (px,py)$/
+
+setorig	scale.c	/^setorig(xorig,yorig)$/
+setorig_	fortran.c	/^setorig_ (px,py)$/
+
+setpattern_	fortran.c	/^setpattern_ (pipat)$/
+
+setpen	table.c	/^setpen(ipen)$/
+setpen_	fortran.c	/^setpen_ (pipen)$/
+
+setpencolor	table.c	/^setpencolor(icolor)$/
+setpencolor_	fortran.c	/^setpencolor_ (picolor)$/
+
+setpenmode	table.c	/^setpenmode(imode)$/
+setpenmode_	fortran.c	/^setpenmode_ (pimode)$/
+
+setrastmode	table.c	/^setrastmode(imode)$/
+
+setscl	scale.c	/^setscl(xscl,yscl)$/
+setscl_	fortran.c	/^setscl_ (px,py)$/
+
+settextangle	text.c	/^settextangle(angle)$/
+settextangle_	fortran.c	/^settextangle_ (pangle)$/
+
+settextcenter	text.c	/^settextcenter(hpos,vpos)$/
+settextcenter_	fortran.c	/^settextcenter_ (ph,pv)$/
+
+settextfont	text.c	/^settextfont(ifont)$/
+settextfont_	fortran.c	/^settextfont_ (pfont)$/
+
+settextsize	text.c	/^settextsize(size)$/
+settextsize_	fortran.c	/^settextsize_ (psize)$/
+
+symbol	symbol.c	/^symbol(xinch,yinch,isym,size,angle)$/
+symbol_	fortran.c	/^symbol_ (px,py,pisym,psize,pangle)$/
+
+text	text.c	/^text(xinch,yinch,fmt,ARGS)$/
+text_	fortran.c	/^text_ (px,py,str,islen)$/
+
+ubox	plot.c	/^ubox(x1,y1,x2,y2)$/
+ubox_	fortran.c	/^ubox_ (px1,py1,px2,py2)$/
+
+uboxfill	polygon.c	/^uboxfill(x1,y1,x2,y2)$/
+uboxfill_	fortran.c	/^uboxfill_ (px1, py1, px2, py2)$/
+
+uline	plot.c	/^uline(x1,y1,x2,y2)$/
+uline_	fortran.c	/^uline_ (px1,py1,px2,py2)$/
+
+unwindow	scale.c	/^unwindow()$/
+unwindow_	fortran.c	/^unwindow_()$/
+
+uplot	plot.c	/^uplot(xuser,yuser,ipen)$/
+uplot_	fortran.c	/^uplot_ (px,py,pipen)$/
+
+uplotdot	dot.c	/^uplotdot(xuser,yuser,size,imode)$/
+
+upoint	plot.c	/^upoint(xuser,yuser)$/
+upoint_	fortran.c	/^upoint_ (px,py)$/
+
+upolyfill	polygon.c	/^upolyfill(p,np)$/
+upolyfill_	fortran.c	/^upolyfill_ (np,vl)$/
+
+upolyfilln	polygon.c	/^upolyfilln(npoly,nverts,verts)$/
+upolyfilln_	fortran.c	/^upolyfilln_ (npoly, npts, ind, vertices)$/
+
+usymbol	symbol.c	/^usymbol(xuser,yuser,isym,size,angle)$/
+usymbol_	fortran.c	/^usymbol_ (px,py,pisym,psize,pangle)$/
+
+utext	text.c	/^utext(xuser,yuser,fmt,ARGS)$/
+utext_	fortran.c	/^utext_ (px,py,str,islen)$/
+
+uwhere	scale.c	/^uwhere(xlab,ylab)$/
+uwhere_	fortran.c	/^uwhere_ (px,py)$/
+
+uwindow	scale.c	/^uwindow(xmin, ymin, xmax, ymax)$/
+uwindow_	fortran.c	/^uwindow_ (px1, py1, px2, py2)$/
+
+where	scale.c	/^where(xlab,ylab)$/
+where_	fortran.c	/^where_ (px,py)$/
+
+window	scale.c	/^window(xmin, ymin, xmax, ymax)$/
+window_	fortran.c	/^window_ (px1, py1, px2, py2)$/

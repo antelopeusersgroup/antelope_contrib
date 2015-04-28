@@ -1,0 +1,210 @@
+.TH DBMOMENT 1
+.SH NAME
+dbmoment \- moment tensor calculation for given origin
+.SH SYNOPSIS
+.nf
+\fBdbmoment \fP[-vd] [-p \fIpfname\fP] \fIdatabase\fP \fIevid/orid\fP
+.fi
+
+.SH DEPENDENCY
+The demo code will make some shell calls to SAC. The SAC software
+is distributed for free by IRIS but you need to request a copy
+on their website. http://ds.iris.edu/ds/nodes/dmc/forms/sac/
+
+
+.SH DESCRIPTION
+The \fBdbmoment\fP application calculates the moment tensor for a given
+origin-id (\fIevidd/orid\fP) for stations with arrivals associated to that
+event.
+
+The time domain seismic moment tensor inversion software package written
+by Dreger (2003) and updated by Minson & Dreger (2008) has been repackaged
+for inclusion into the open-source contributed code repository for the Boulder
+Real Time Technology (BRTT) Antelope Environmental Monitoring System.
+
+The new code-base utilizes the Python interface to Antelope (Lindquist et al., 2008)
+for data access and handling. The new code archives all data products into a
+Center for Seismic Studies (CSS) 3.0 schema table for easy access and distribution
+of solutions. This tool is focused on analyzing local to regional earthquakes. A
+calibrated velocity model representative of the south-west continental United States
+is included and used for the included example.
+
+The accompanying Green's functions are either read from the database or generated
+dynamically and stored in a database wfdisc. The tool uses a Frequency-Wavenumber
+integration program included in Dreger's original distribution. 
+
+.SH ACKNOWLEDGEMENT
+Moment tensors code extracted from mtpackagev1.1 package developed by
+Douglas Dreger of the Berkeley Seismological Laboratory. Green’s
+functions computed using the FKRPROG software developed by Chandan Saikia
+of URS.
+
+.SH OPTIONS
+.IP -v
+Verbose output
+.IP -d
+Debug output
+.IP "-p pfname"
+Override the default parameter-file \fBdbmoment\fP.pf
+.IP "-s station_select_regex"
+String to subset the list of stations to use on the calculatoin.
+.IP "-r station_reject_regex"
+String to reject stations on the calculatoin.
+.SH PARAMETER FILE
+An example \fBdbmoment\fP parameter file (as specified by \fIpfname\fP) is as follows:
+
+.nf
+tmp_folder      /tmp/dbmoment/
+
+clean_tmp       False
+
+# Waveform database if different form main database
+#wave_db    /opt/antelope/data/db/demo/demo
+
+# Response database if different from main database
+#resp_db    /opt/antelope/data/db/demo/demo
+
+# Green's functions database if different from main database
+green_db    greens_db/green
+
+# Name of the library to use
+# for Green'sFunction class
+gf_lib green
+
+# Name of the library to use
+# for Inversion class
+inv_lib inversion
+
+# Name of the library to use
+# for Data class
+data_lib data
+
+# Name of the library to use
+# for Event class
+event_lib event
+
+# channel to use in MT-inversion, default is LH. If higher sample rate channels are chosen, 
+# the data is downsampled to 1 Hz.
+chan_to_use .*
+
+# Name of the model parameter file
+model_name SOCAL_MODEL
+
+# Maximum number of stations to use in the inversion
+#     - Minimum of eight, one for each division 
+#       of the cardinal and intercardinal directions
+statmax 24
+
+depth_min       0
+
+depth_max       400
+
+distance_min    0
+
+distance_max    100
+
+allowed_segtype  &Tbl{
+    D
+    V
+}
+
+
+# The high_pass and low_pass filter corners are
+# given in hertz. An acausal (two pass), 4th
+# order butterworth filter is applied
+filter_high_pass    0.02
+filter_low_pass    0.02
+
+
+# Test for some executables neened for the example code
+find_executables     &Tbl{
+    sac
+    fromHelm
+    window
+    bin2sac
+    sac2bin
+    mkHelm
+    mv
+    rm
+    wvint9
+    tdmt_invc
+}
+.fi
+
+.IP \fImodel_type\fP
+Type of model which is ued in the inversion, v for
+velocity and d for displacement
+.IP \fItmp_folder\fP
+All temporary files will be written to this folder. Default "/tmp/dbmoment/".
+.IP \fIclean_tmp\fP
+If True then we clean the temporary folder before exiting the code. False will
+keep all temporary files on the folder. Good for troubleshooting problems with
+the tool.
+.IP \fIchan_to_use\fP
+Channels which are used in the inversion.
+.IP \fIdepth_min/depth_max\fP
+Only work with event depths within this range.
+.IP \fIdistance_min/distance_max\fP
+Only work with stations within this range to the event.
+.IP \fIsta_max\fP
+Only calculate the inversion for no more than this amount.
+.IP \fIsta_min\fP
+Avoid running the inversion if we don't get at least this amount of stations.
+.IP \fIfind_executables\fP
+Look for these names on the PATH and keep the full path to them in memory. Replace
+the path on some scripts that we create on the tmp_folder.
+
+.SH EXAMPLE
+
+Dreger’s original code contains an example dataset for us to test the code. The 
+EXAMPLE_1 from the original distribution was migrated to an Antelope database 
+consisting of a wfdisc table, an origin and event table and associated dbmaster 
+tables needed. We started by mapping the original files ‘testdata[1,2,3]’  to 
+rows on a wfdisc table. The records on the original database are already rotated 
+to ZRT, calibrated, filtered and instrument response corrected. We set a flag 
+in the code to avoid doing any of those processes if you are running with 
+ORID = 1 (our example). We also added a dbbuild batch file to put some generic 
+metadata for stations. We decided for stations names [STA1, STA2, STA3]. The 
+only reference to a location in the example is giving by the azimuth and distance 
+form the event to each station. WE assigned a random location to the EVID=1 and 
+then calculated theoretical location to each station from that information. 
+This created an even with 3 stations located at 100 km each and azimuths of [10,40,50]. 
+
+To run the experiment you need to compile the code and then cal dbmoment with 
+the name of the example database and our example ORID. 
+
+% \fB dbmoment\fP -d EXAMPLE/example_1 1
+
+If you want to debug a problme then use this format to run a clean version:
+
+% \fBmake\fP; \fBmake\fP install; \fBrm\fP -f greens_db; \fBdbmoment\fP -d EXAMPLE/example_1 1
+
+
+ This will create a temporary working directory in /tmp/dbmoment/ used to save 
+ the files and scripts that we are submitting to the binary executables to 
+ calculate the inversion. First step of the calculation is for the code to 
+ extract all event information from the tables and identify the stations needed. 
+ Then the code will extract the traces for each of the stations and will create 
+ GreenFunctions for each of the stations. If the GreenFunctions are not present 
+ in our GF’s archive then the tool will create the traces dynamically. Then all 
+ information is put on disk in the temporary directory and presented to tdmt_invc 
+ to calculate the results. The code will parse all results return to STDOUT and 
+ will also read a results file placed on the temporary folder by the tdmt_invc binary. 
+
+ Running on debug mode (-d) will produce a plot at the end script that will 
+ compare the original traces with the theoretical calculations for each station 
+ based on our GreenFunctions and the values of the tensor returned by the tool. 
+ At the end of every run the system will update the “mt” table and the “nutmeg” 
+ tables with the results. If a previous entry for the same ORID is found on the 
+ tables then we remove the old entry before adding a new row with the new results. 
+
+.SH SEE ALSO
+pythondb(1), pythonstock(1)
+
+.SH AUTHORS
+.nf
+Matt Koes (PGC, Canada/UCSD)
+Rob Newman (UCSD)
+Juan Reyes (UCSD)
+Gert-Jan van den Hazel (Orfeus Data Center/UCSD)
+.fi

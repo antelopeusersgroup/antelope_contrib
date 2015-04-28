@@ -1,0 +1,19 @@
+# test file for pattern generator
+
+% black
+OOOO
+OOOO
+OOOO
+OOOO
+
+% grey grey-1
+O.O.
+.O.O
+O.O.
+.O.O
+
+% grey-2
+O...
+....
+....
+....

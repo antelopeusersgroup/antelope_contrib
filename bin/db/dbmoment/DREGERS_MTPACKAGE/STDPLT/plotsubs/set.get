@@ -1,0 +1,31 @@
+setfat(ifat)		/* set fatness			*/
+getfat()		/* get fatness			*/
+
+setbrushpat(ipat)	/* set brush pattern		*/
+getbrushpat()		/* get bruch pattern		*/
+
+setpen(ipen)		/* set which pen to use		*/
+getpen()		/* get which pen is in use	*/
+
+setbrush(ibrush)	/* set which brush to use	*/
+getbrush()		/* get which brush is in use	*/
+	
+setdash(idash)		/* set which dash to use	*/
+getdash()		/* get which dash is in use	*/
+
+setcolor(icolor)	/* set pen AND brush color	*/
+
+setpencolor(icolor)	/* set pen color		*/
+getpencolor()		/* get pen color		*/
+
+setbrushcolor(icolor)	/* set brush color		*/
+getbrushcolor()		/* get brush color		*/
+
+setpenmode(imode)	/* set pen mode			*/
+getpenmode()		/* get pen mode			*/
+
+setbrushmode(imode)	/* set brush mode		*/
+getbrushmode()		/* get brush mode		*/
+getfillmode()		/* brush mode used for poly fill */
+
+setrastmode(imode)	/* set the rastermode		*/

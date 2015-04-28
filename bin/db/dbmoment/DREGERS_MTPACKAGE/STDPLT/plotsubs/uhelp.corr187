@@ -1,0 +1,51 @@
+
+
+
+		To:  ima/ver/jup PLOT USERS
+
+		Anyone else please ignore this.
+
+
+
+
+Following are ( final ! -probably) corrections to stdplt: 
+
+
+	1. LABEL (ima and ver) 
+		- can no longer be windowed out 
+		- to SUPPRESS LABEL:
+			% prog | ima dolabel=0 
+		- % prog | ima label="STRING" 
+		    replaces default label with STRING
+
+	2. GRID (ima and ver)
+		puts a grid over plot
+		e.g.: 
+			% prog | ima grid=.5     (adds a 1/2" grid)
+
+	3. SETTEXTANGLE -- can use any angle 0.0-360.0 for all fonts.
+
+	4. DEFDASH(IDASH,on1,off1,on2,off2)
+	   e.g. defdash(14,.5,.1,.5,.2);
+		setdash(14);
+		line(1.0,1.0,8.0,1.0);
+
+	5. GETSYMBOL, DUMPSYMBOL -- can call before calling symbol.
+
+
+----------------------------------------------------------------------
+
+
+	note:
+
+	You can specify all your pars (such as label, pagerot) in a file.
+
+	e.g. if you never want a label, and you always want extra 
+	     squirt on the versatec,
+	     make a file named (for example) myparfile with these contents:
+
+	     dolabel=0
+	     squirt=10.0
+
+	     then 
+		% prog | ver par=myparfile

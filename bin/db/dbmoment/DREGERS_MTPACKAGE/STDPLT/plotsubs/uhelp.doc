@@ -1,0 +1,708 @@
+
+
+
+
+
+
+
+		Free  -- please take one --  plotting program information
+
+		Revised as of 12/8/86.
+
+		With enhancements (or corrections of previous deficiencies)
+
+
+
+
+
+		Note:  fully compatible with previous version,
+
+		       i.e. no changes, just additions.
+
+		       Chief to note: raster text is now implemented with
+				      textcentering, size in inches, and
+				      0.0, 90.0, 180.0, 270.0, 360.0 rotations.
+
+				      circle is now available symbol.
+
+	               This duplicates old info package, so it can be
+		       discarded. 
+
+
+
+
+GENERAL INFORMATION ON USING STDPLT
+
+	
+
+		 %  cc -o myprog myprog.c  -lstd
+		 %  myprog | ver 
+		OR
+		  % myprog > file1
+		  % ver < file1
+
+		OR 
+		  % myprog | jup
+		  % myprog | ima
+		  % myprog | stddb report=all
+
+
+        	
+            -lstd gives you the library of plot routines.
+		
+	    Note:  Log in to jupiter if you want to use jup.
+
+
+
+
+REFERENCE LIST OF STDPLT ROUTINES
+in /u1/newclay/subs/stdplt/plotsubs/uhelp
+obvious CHANGES from pen: No init, polygon.
+			  changes in text.
+			  No endplot unless multiple plots.
+
+stdplt user routines:
+
+
+(u)plot means there are 2 routines: uplot(x,y,i) and plot(x,y,i)
+
+plot:  x,y are in inches on page and aren't scaled or offset at all.
+uplot: x,y are in user units.  They are scaled and plotted from the
+       position fixed as the origin from the points fixed as the
+       mins in setmin.
+
+
+
+I. Most useful calls:
+	(u)plot(x,y,0)			(u)plot(x,y,1)
+	(u)line(x1,y1,x2,y2) 		(u)box(x1,y2,x2,y2)	
+	(u)point(x,y) 			(u)boxfill(x1,y1,x2,y2)
+
+	setcolor(icolor)		 setfat(ifat)	
+	setdash(idash)			 setbrushpat(ipat) 	
+
+
+II. Useful calls:
+	setorig(xorig,yorig) 		setmin(xmin,ymin)
+	setscl(xscl,yscl) 		(u)window(x1,y1,x2,y2)	
+	unwindow()
+
+	defcolor(icolor,pcred,pcgreen,pcblue)
+	defpattern(ipat,bits)
+	defdash(idash,on1,off1,on2,off2) 
+
+	(u)polyfill(p,np)		(u)polyfilln(npoly,nverts,verts)
+
+	(u)text(x,y,fmt,ARGS)	 	settextangle(angle)
+	settextsize(size)		settextfont(ifont)
+	plotlabel(fmt,ARGS)		settextcenter(hpos,vpos) 
+
+	(u)symbol(xinch,yinch,isym,size,angle)
+	getsymbol(s);
+
+III. Useful calls
+	setpenmode(imode)		 setbrushmode(imode)
+	setrastmode(imode)
+
+
+IV. Pen and Brush calls
+	defpen(ipen,ifat,idash,imode,icfat,icdash,icolor)
+	defbwpen(ipen,ifat,idash,imode)
+	defcpen(ipen,icfat,icdash,icolor)
+	defbwbrush(ibrush,ipat,imode)
+	defcbrush(ibrush,icolor)
+
+	setpen(ipen)		 setbrush(ibrush)
+
+
+V. Other calls
+	setframe(ifr) 		 freeframe(ifr)
+	pushframe()		 popframe()
+	pushglobal()		 popglobal()
+	dumpframe(ifr)		 dumpglobal()
+
+	getorigin(xorig,yorig)	 getmin(xmin,ymin) 
+	getscl(xscl,yscl)	 (u)where(xlab,ylab)
+
+	getfat()		 getfillmode()
+	getpen()		 getbrush()
+	getdash()		
+
+
+
+LONG VERSION OF STDPLT USER ROUTINES Reference list
+
+stdplt user routines:
+
+CHANGES FROM PEN:
+ 	NOT available: polygon, qtext, init
+	Use setfat instead of fat.
+	settextsize(size) now takes a float as size. 
+	Don't use endplot unless you're making multiple plots.
+
+TYPING:
+	FLOATS:
+		 x,y,x1,y1,x2,y2, xorig, yorig, xmin, ymin
+		 xscl,yscl, pcred, pcgreen, pcblue, angle, size
+		 on1, off1, on2, off2
+	INTS:
+		 icolor, ifat, idash, ipat, ifont, np, npoly
+		 hpos, vpos, imode, ipen, ibrush, ifr
+
+
+I. Most useful calls:
+
+	(u)plot(x,y,0)
+		/* move to x,y */
+	(u)plot(x,y,1)
+		/* draw to x,y */
+	(u)line(x1,y1,x2,y2)
+		
+	(u)box(x1,y2,x2,y2)
+		/* rect with opposite verts at x1,y1 x2,y2 */
+	(u)point(x,y)
+
+	(u)boxfill(x1,y1,x2,y2)	
+		/* fill rect with verts at x1,y2,x2,y2 */
+		/* fill is with current color or pat   */
+
+	setcolor(icolor)	 /* predefd 0-7 -- legal values 0-255*/
+		0	black		5	magenta
+		1	red		6	cyan
+		2	green		7	white
+		3	yellow		
+		4	blue
+
+	setfat(ifat) 	/* legal values -- 0-64 */
+
+	setdash(idash) /* predefd 0-7 -- legal values 0-15*/
+		note: dash 0 is a solid line
+
+	setbrushpat(ipat) 	/* predefd 0-15 -- legal values 0-15*/
+		0	black		9	narrow diagonal shade
+		1	medium gray	10	narrow diagonal shade
+		2 	darkish lines	11	diagonal shade
+		3	medium stipple	12	diagonal shade
+		4	light stipple	13	diagonal stipple
+		5	black squares 	14	vertical lines
+		6	vertical brick	15	horizontal lines
+		7	horizontal brick
+		8	narrow wavy lines
+
+II. Useful calls:
+
+	setorig(xorig,yorig)
+		/*value in inches of where the origin of plot on page will be */
+		/* likely value setorig(1.0,1.0)  or setorig(1.0,3.0) etc.    */
+
+	setmin(xmin,ymin)
+		/* value in user units of what point xorig,yorig will*/
+		/* represent. e.g.  setmin(-90.0,10.0) --> xvalue at your */
+		/* origin will be -90.0.  yvalue will be 10.0.  So the user*/
+		/* point 0.0,0.0 will be in the RH lower (4th) "quadrant" */
+
+	setscl(xscl,yscl)
+		/* scale. To get plot halfsize setscl(.5,.5)		*/
+
+	(u)window(x1,y1,x2,y2)
+		/*clip anything outside of window */
+		/* note: if you window on a labelled device you must unwindow*/
+		/* in order to get a label, else label will be clipped out   */
+
+	unwindow()
+		
+
+	defcolor(icolor,pcred,pcgreen,pcblue)
+		/*define color icolor */
+		/* legal values 0-255. Redefining color 0 not recommended */
+		e.g. defcolor(13,.5,0.0,.5) 	/* dimmish purple     */
+
+	defpattern(ipat,bits)	
+		/* define pattern ipat*/ 	
+		/* legal values 0-16 */
+		/* bits is int bits[32]*/
+
+	defdash(idash,on1,off1,on2,off2)
+		/* define dash idash   */
+		/* legal values 0-15.  Redefining dash 0 not recommended */
+		e.g. defdash(14,1.0,.5,2.0,.5)  defines a dash that has a
+		one inch dash, .5 inch gap, two inch dash, .5 inch gap.
+		Then setdash(14) and plot(2.0,4.0,1) will draw a dashed line.
+
+	(u)polyfill(p,np)		
+		/* fill polygon with current color or pattern         */
+		struct fltpolygon {float xv, yv};
+		struct fltpolygon *p;
+		int np;
+
+	(u)polyfilln(npoly,nverts,verts)	
+		/* fill group of polygons   */
+		/* enclosed by first one    */
+		struct fltpolygon **verts;
+		int npoly, nverts[];
+			/* npoly is total number of polygons */
+			/* nverts holds the number of verts for each polygon */
+			/* verts holds verts for each polygon */
+
+	(u)text(x,y,fmt,ARGS)
+		/* x,y position of left hand bottom corner of text unless */
+		/* textcenter is used.  fmt,ARGS as fprintf 		  */
+		e.g.  text(4.0,3.2,"FAULT NUMBER %d",i)
+			\b and \n can be part of the fmt statement.
+		bug: if too many args (>4) are part of fmt statement sometimes
+		     the last few seem to get lost. 
+			
+	settextangle(angle)	
+		/* 0 - 360.0 for all text fonts */
+
+	settextsize(size) 
+		/* size is a float -- appx size in inches */
+		e.g.  settextsize(.25);
+		/* may also use rastersizes 8.0 - 36.0 for raster text
+		   if you prefer.  Recommend using size in inches however */
+
+	settextfont(ifont) /* 1 = roman  2= italic 3 = bold */
+
+	plotlabel(fmt,ARGS)
+		/* same as text, except position in lower lh corner */
+
+	settextcenter(hpos,vpos) 
+		hpos = 0  --> position at left edge of text
+		hpos = 1  --> center 
+		hpos = 2  --> position at right edge of text
+		vpos = 0  --> position at bottom edge
+		vpos = 1  --> center vertically
+		vpos = 2  --> position at top edge
+
+	(u)symbol(x,y,isym,size,angle)
+		size is appx size in inches. E.g. .25
+		angle is angle of rotation usually 0.0
+		x,y is position of center. Except for arrows is position of tip
+		Symbol is colored in or filled with current color or pat.
+		Or with current brushcolor if separate pen and brush colors
+		are used.
+		isym -- legal values 0-31
+		current values:
+		0	triangle	9	invtriangle
+		1	square 		10	plus-thin
+		2	pentagon	11	plus-med	
+		3	hexagon		12	plus-fat
+		4	r-arrow		13	dagger
+		5	l-arrow		14	circle
+		6	star-4		15	repeat of symbol 0	
+		7	star-5		 etc.
+		8	diamond
+
+	getsymbol(s)
+		char s[];
+		returns the isym of given string s, if s is in the
+		symbol list. 
+		e.g.
+			i = getsymbol("triangle");
+	
+
+III. Useful calls
+
+	setpenmode(imode)
+		/* mode pen writes in for bw devices */
+		imode = 0     /* black */
+		imode = 1     /* flips to opposite of background --
+				   not good for text */
+		imode = 2  	/* white */
+
+	setbrushmode(imode)
+		/* mode brush fills in for bw devices */
+		imode = 0	/* or's with background */
+		imode = 1	/* flips to opposite of background */
+		imode = 2	/* writes over background */
+		imode = 3 	/* fills white */
+
+	setrastmode(imode)	/* doesn't work */
+
+IV. Pen and Brush calls
+	Defines a total pen, bw pen, color pen, total brush, bw brush,
+	color brush.
+
+	defpen(ipen,ifat,idash,imode,icfat,icdash,icolor)
+	defbwpen(ipen,ifat,idash,imode)
+	defcpen(ipen,icfat,icdash,icolor)
+	defbrush(ibrush,ipat,imode,icolor)
+	defbwbrush(ibrush,ipat,imode)
+	defcbrush(ibrush,icolor)
+
+	setpen(ipen)
+		/* set current pen values to the values of this pen.
+		   E.g. fat,dash value, write mode, color will be used
+		   for future draws, lines, text etc until reset */
+
+	setbrush(ibrush)
+		/* set current brush values to values of this brush.
+		   E.g. fillmode, color or pat for polyfills and symbols.  */
+
+	imode as in above for setpenmode, setbrushmode
+
+V. Other calls
+
+	NOTE: all these frame routines could be replaced by calls to
+	      setmin, setorig, setscl, moves. These multiple calls can
+	      be avoided if frame routines are used. Particularly useful
+	      if you are making multipanel plots. Probably no need to
+	      use in normal plot making.
+
+	setframe(ifr) 		
+		/* sets to frame ifr. Frame stores value of xmin,ymin,
+		   xorig, yorig, xscl, yscl,current position.
+		   Useful if you want to move
+		   back and forth between scales, e.g. for a multipanel
+		   figure.  Subsequent calls to  setmin,setorig,setscl
+		   change the values for THIS frame
+		   legal values 0-9*/
+			
+	freeframe(ifr)
+	pushframe()
+		/* pushes current frame values onto a stack 
+		   if you want to use another frame for awhile */
+	popframe()
+		/*revert to previous frame if a pushframe has been used before*/
+	pushglobal()
+		/* temporarily push current global values onto stack
+		   e.g. ipen,pencolor,idash,textsize etc are saved */	
+	popglobal()
+		/* revert to old values of ipen,pencolor etc. if pushglobal
+		   has previously been used */
+
+	getorigin(xorig,yorig)  float *xorig, *yorig;
+	getmin(xmin,ymin) 	float *xmin, *ymin;
+	getscl(xscl,yscl) 	float *xscl,*yscl;
+	(u)where(xlab,ylab)  	float *xlabl,*ylab;
+
+	getfat()		/* these return value of fat,brushmode,etc*/
+	getfillmode()
+	getpen()
+	getbrush()
+	getdash()
+
+	Plus a few more explained in MAKING MULTIPLE PLOTS
+
+
+
+PENS AND BRUSHES:
+
+These are useful if you want to run a program on both color and bw devices.
+
+Sample jupiter program:
+	setcolor(4);
+	line(1.0,1.0,2.0,2.0);
+	setcolor(1);
+	boxfill(3.0,1.0,5.0,3.0);
+draws a blue line and fills a red box.
+
+Sample equivalent imagen program:
+	setdash(5);
+	line(1.0,1.0,2.0,2.0);
+	setpat(2);
+	boxfill(3.0,1.0,5.0,3.0);
+draws a dashed line with dash5 dash and fills a box with pattern 2= dark shade.
+
+Either program can be run into jup or ima.  However, the colors, dashes and
+patterns you get from running the jupiter program into ima or vice versa, may
+not be that nice, since they are whatever the values happen to be. 
+
+Program that does both:
+	setcolor(4);
+	setdash(5);
+	line(1.0,1.0,2.0,2.0);    /* line dash or blue */
+	setcolor(1);
+	setpat(2);
+	boxfill(3.0,1.0,5.0,3.0); /* fill red or pat 2 */
+
+Pen and brush program that does both:
+	defpen(1,0,5,0,0,0,4);
+	defbrush(1,2,0,1);
+	setpen(1);
+	line(1.0,1.0,2.0,2.0);    /* line dash or blue */
+	setbrush(1);
+	boxfill(3.0,1.0,5.0,3.0); /* fill red or pat 2 */
+
+MAKING MULTIPLE PLOTS FROM THE SAME PROGRAM:
+
+1. Each plot should be ended with either erase() or endplot().  
+   Last plot should not have endplot or erase.
+   Only difference is that on jupiter, no erase will be done between
+   plots unless param erase=1 is given at runtime.
+
+      i.e.  % myprog | jup erase=1
+
+2. Param pause=<int> will set pausetime before plot is erased on jupiter
+   Or pause made if you put subroutine pause() into your program -- no
+   reason why you would put pauses in your program, probably though.
+
+
+3. erase()  can be called at any time in a program.  It will cause an erase
+   to occur on jupiter, no impact on imagen or versatec.  It will cause the
+   program to sleep for the pause given as param pause=<int>, or not at all
+   if that param is not given.
+
+EXAMPLE:
+	plot(1.0,1.0,0);
+	plot(1.0,3.0,1);
+	plotlabel("CALIFORNIA");
+	endplot();
+	plot(1.0,2.0,0);
+	plot(4.0,5.0,1);
+	text(1.0,4.0,"HI"); 
+	endplot();
+	symbol(1.0,2.0,3,.25,0.0);
+	plotlabel("NEW MEXICO");
+
+
+	on versatec or imagen:
+		myprog | ver label="WESTERN STATES" 
+
+	will produce three plots, each labeled WESTERN STATES. Two will
+	have additional label "CALIFORNIA", "NEW MEXICO"
+
+	on jupiter:
+		myprog | jup erase=1 pause=300
+
+	will produce three plots, the first two are erased after 300 seconds,
+	the third is not erased since there is no erase or endplot at the
+	end of it.  If you goof and forget to put in the param erase=1 then
+	there won't be an erase between plots.  If you end plots with erase()
+	instead of endplot() you'll always get an erase between plots. Then
+	you have to remember to use the param pause=<int> or your plots will
+	be erased instantaneously.  So really, it doesn't matter if you use
+	erase() or endplot().
+
+TO MAKE LONG OR FAT PLOTS i.e, spread over more than one page.
+(see below about versatec also) 
+You can always squeeze everything onto one page by changing the xscl and yscl.
+If however, you'd rather spread your plot over many pages, you can do so by
+altering the frame variables xmin, ymin, xscl, yscl, and windowing.
+
+E.G.    a  very wide plot.  Width is 4000 user units, and the user desires
+	plot to be 100 inches long. (xscl is thus 100inches/4000 units */
+	Yscl is 1:1, yvalues are -4 to +4.
+	We will plot approximately 10 inches at a time, with some overlap.
+
+	setorig(1.0,1.0);  	/* start plot at one inch from each edge appx*/
+	setscl(100.0/4000.0,1.0) /*
+
+	setmin(0.0,-4.0);    /* start at x=0.0, y = -4.0 at origin */
+	uwindow(0.0,-4.0, 500.0, 4.0);  /* window from x=0.0 to x=500.0 */
+  	<  plot,plot,plot, line,symbol, etc. >
+	endplot(); /* spit out this page */
+
+	setmin(400.0,-4.0);  	 /* start at x=400.0 y=-4.0  at origin */
+	uwindow(400.0,-4.0,900.0,4.0);   /* window from x=400.0 to x=900.0*/
+  	<  plot,plot,plot, line,symbol, etc. >
+	endplot(); /* spit out this page */
+	
+	setmin(800.0,-4.0);  	 /* start at x=800.0 y=-4.0  at origin */
+	uwindow(800.0,-4.0,1300.0,4.0);   /* window from x=800.0 to x=1300.0*/
+  	<  plot,plot,plot, line,symbol, etc. >
+	endplot(); /* spit out this page -- */
+
+
+	etc.  Probably in reality you should use a for loop to keep shifting
+	      over.  This is not the most efficient way to do this, since 
+	      it makes the whole plot everytime and just centers it and clips
+	      out the parts that are windowed out.
+	      Probably in practice one can figure out a more efficient way to
+	      shift things about, especially if it is a graph or chart. For
+	      a map it probably would be pretty hard.
+
+
+VERSATEC:
+----------
+To make a wide plot
+	   
+	   on versatec can go up to x=40 inches without alteration.
+
+       to make a tall plot
+
+	   rotate by 90.0 and change default (because of label)
+		% prog | ver pagerot=90 xpagelen=40.0
+		OR
+		%prog | ver pagerot=90 xpagelen=25.0
+
+
+
+
+
+
+	TEXT ---  
+
+
+	(u)text(x,y,fmt,ARGS)	 	settextangle(angle)
+	settextsize(size)		settextfont(ifont)
+	settextcenter(hpos,vpos) 
+
+
+	see next page for example of textcentering.
+
+	settextcenter(hpos,vpos) 
+		hpos = 0  --> position at left edge of text
+		hpos = 1  --> center 
+		hpos = 2  --> position at right edge of text
+		vpos = 0  --> position at bottom edge
+		vpos = 1  --> center vertically
+		vpos = 2  --> position at top edge
+
+
+	settextfont(ifont)
+		ifont = 0 --> vector text = ugly but fast
+		ifont = 1 --> roman raster text
+		ifont = 2 --> italic raster text
+		ifont = 3 --> bold raster text
+
+	settextangle(angle)
+		angle = 0.0, 90.0, 180.0, 270.0, 360.0 only.
+		for font=0 only, angle = arbitrary angle 0.0-360.0
+
+
+	example:
+		main()
+		{	
+			float x,y;
+		
+			x=3.141;
+			y=56.2;
+			settextfont(1);
+			settextsize(.20);
+			settextangle(90.0);
+			settextcenter(1,1);
+			text(2.0,4.0,"Degrees Centigrade");
+			settextangle(0.0);
+			settextcenter(0,0);
+			text(5.0,.5,"x=%7.3f y=%7.3f",x,y);
+			settextsize(.4);
+			settextfont(2);
+			text(5.0,5.0,"help !!!!");
+		}
+
+
+
+For people who wanted to look at code.
+
+
+			/u1/newclay/subs/stdplt
+				   |
+      --------------------------------------------------------------
+      |                |            |              |               |
+     doc               h           devs       symboldata         plotsubs
+				    |                              
+                     ------------------------------------
+		     |    |    |    |    |   |   |      |
+                   com   dum  jup  ver  ima scan (ras) plotdb
+
+
+
+ data flow:
+--------                          ---------------
+| prog | --->  igl symbols -----> | interpreter | -----> device driver commands
+--------	                  --------------- 
+ e.g.
+
+ prog = plot(1.0,1.0,0);
+	plot(4.0,5.0,1);
+
+ prog ---> "355 350 003 350 003 344 240 017 210 023" = octal dump of output =
+	   "355 (350 003) (350 003)  344 (240 017) (210 023)"
+	   "igl_move_symbol x y igl_draw_symbol x y" =
+	   "igl_move_symbol 1000 1000 igl_draw_symbol 4000 5000"
+
+ ---->  interpreter ----> (interpreter scales x and y so it comes out
+			   right on the screen or page)
+
+	            ---->  write to jupiter or 
+			   store and send plot to imagen or versatec.
+
+
+
+To look at igl symbols look at h directory, file igl.h.  Each plot command
+has a separate code in igl.h. E.g. there is a code for move, switch color,
+draw, draw a boxfill etc.
+
+To still output of prog is made, look at plotsubs directory, in particular
+output.c
+
+The interpreter reads the incoming file and reads each commands and sends
+it to the graphics device.  File to look at is readcom.c in com.  You can
+see it takes the input stream and for each command it then takes the data
+for it off the input stream and execute.  That is if it sees a draw command
+it then takes x and y values as the next things in the input stream. It then
+executes a draw. For jupiter this will send a draw command to the jupiter.
+For imagen or versatec this will store a line in memory until the whole plot
+is sent to imagen or versatec all at once.
+
+
+For jupiter -- files are in com, dum, jup
+For verstatec -- files are in com, dum, ver, scan
+For ima -- files are in com, dum, ima, scan
+
+Com has routines in common to all. Dum has dummy routines, like color routines
+for imagen.  Scan has routines that store plot for ima, ver till sent.
+			
+			
+
+
+Compiled files
+are /usr/local/jup, /usr/loca/ima, /usr/local/ver , usr/lib/libstd.a
+    /usr/local/stddb
+
+Note the non-text files in symboldata should not be deleted.
+If programs are installed on another
+computer, must alter symboldata/sym.h to get right name for symboldata 
+directory.  Need entire pathname because symbols are loaded when
+program is run if they are needed. 
+
+
+stddb
+------
+
+DEBUG program for stdplt (ima, ver, jup)
+
+This is a crude debugging program for programs written using the stdplt 
+routines.  It probably will be most useful when the plot that comes out
+is not what's expected, is blank, etc.   This is because for every routine
+called it will print a message containing whatever values are associated 
+with it.  Values are in absolute inches on the page.  Therefore, values that
+are very large  (for imagen greater than 11.0 in x direction or 8.5 in y
+direction) will be clipped from the final plot.  E.g., if you get a message
+line 100.0 200.0 40.0 99.2 , you can tell this line won't show up on your 
+final plot.  It may be due to a wrong scale factor, or using plot instead of
+uplot, etc.
+
+to use:   
+	% prog | stddb report=all
+OR
+	% prog > file
+	% stddb< file report=all
+OR
+	% prog | stddb report=point,symbol
+
+Note that the usual params for ver,ima,jup such as pagerot, xscale, label, etc.
+don't work.   (If a plot works without any params and bombs for instance when
+you try pagerot, it means there's a bug in the ver,ima,jup programs. Tell Rob.)
+(or Joanne)  So if you are rotating your page 90 degrees, a y value of 10.5 is
+still a good value that won't be clipped off your plot.
+
+Valid things to report on are all, point, vector (or vec), point, text,
+polygon, poly, fill, raster (doesn't work yet), color (or col), pattern,
+pat, symbol (or sym) , pen, brush, window (or wind).
+
+There might be a few bugs in this program. E.g., angles are in radians, not
+degrees.  So if you get any really weird values, it may be due to bugs. (Try
+to find Joanne if you find any odd looking things)
+
+ANOTHER USEFUL DEBUGGING TRY IS TO RUN WITH WINDOW=0 
+      e.g. prog | ima window=0
+
+OTHER DEBUG ROUTINES
+	dumpframe(ifr)
+		/* get values of min,orig,scl for frame ifr */
+	dumpglobal()
+		/* dump global stack of values */
+	dumpsymbols()	
+		/* dumps valid names of symbols to screen or stderr */

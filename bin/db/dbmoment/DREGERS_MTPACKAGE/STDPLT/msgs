@@ -1,0 +1,25 @@
+(cd plotsubs; make)
+make[1]: Entering directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/plotsubs'
+make[1]: `stdplt' is up to date.
+make[1]: Leaving directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/plotsubs'
+(cd devs; make)
+make[1]: Entering directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/devs'
+for i in psigl tkx; do  (echo  dev $i :; cd $i; make); done
+dev psigl :
+make[2]: Entering directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/devs/psigl'
+make[2]: `psigl' is up to date.
+make[2]: Leaving directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/devs/psigl'
+dev tkx :
+make[2]: Entering directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/devs/tkx'
+(cd ../../../GETPAR; make get)
+make[3]: Entering directory `/data/dreger/MTPACKAGE/MTCODE/GETPAR'
+make[3]: `get' is up to date.
+make[3]: Leaving directory `/data/dreger/MTPACKAGE/MTCODE/GETPAR'
+cc -O -fsingle-precision-constant -o tkx globalvar.o open_close.o vector.o newplot.o fill.o sendplot.o ../com/main.o ../com/readcom.o ../com/line_point.o ../com/symbol.o ../com/err.o ../com/text.o  ../com/getstdpar.o ../com/xpolygon.o ../com/label.o ../com/dot.o ../com/geth.o ../dum/raster.o ../dum/getspcpar.o  ../dum/color.o ../dum/rastext.o ../dum/pattern.o ../dum/initcolortable.o ../../symboldata/getsymdata.o ../../../libget.a -lm
+/usr/bin/ld: final link failed: Bad value
+collect2: ld returned 1 exit status
+make[2]: *** [tkx] Error 1
+make[2]: Leaving directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/devs/tkx'
+make[1]: *** [compile] Error 2
+make[1]: Leaving directory `/data/dreger/MTPACKAGE/MTCODE/STDPLT/devs'
+make: *** [filters] Error 2

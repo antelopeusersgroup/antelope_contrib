@@ -1,0 +1,12 @@
+#! /bin/csh
+set keynames=( $2:x )
+set hfile=$1
+set infiles=( $argv[3-] )
+if ( $#keynames != $#infiles ) exit(1)
+foreach one ( $infiles )
+if ( ! -f $one ) exit(1)
+char_compile $keynames[1] < $one >> $hfile
+echo "char_compile $keynames[1] < $one >> $hfile"
+shift keynames
+end
+exit(0)

@@ -1,0 +1,117 @@
+.LP
+.bp
+.ce
+\fB\s+2Appendix A: List of SGP C-Routines\s-2\fR
+.sp 0.25i
+.ta 0.25i 2.75i
+.nf
+.ad
+.ne 2
+\fBLine Drawing\fR
+	(u)plot(x,y,ipen)	move/draw to (x,y)
+	(u)line(x1,y1,x2,y2)	draw (x1,y1) $->$ (x2,y2)
+	(u)point(x,y)	draw point at (x,y)
+	(u)box(x1,y1,x2,y2)	draw rectangle (x1,y1)::(x2,y2)
+.ne 2
+\fBScaling\fR
+	setorig(x0,y0)	set frame origin to (x0,y0)
+	setscl(xscl,yscl)	set xy-scaling to (xscl,yscl)
+	setmin(xmin,ymin)	set user origin to (xmin,ymin)
+	origin(xabs,yabs)	set physical origin to (xabs,yabs)
+	getorig(&x0,&y0)	get frame origin
+	getscl(&xscl,&yscl)	get xy-scaling
+	getmin(&xmin,&ymin)	get user origin
+.ne 2
+\fBPen Position\fR
+	(u)where(&xpos,&ypos)	get current pen position
+.ne 3
+\fBWindows\fR
+	(u)window(x1,y1,x2,y2)	set window to (x1,y1)::(x2,y2)
+	unwindow()	remove window setting
+.ne 2
+\fBArea Fills\fR
+	getfillmode()	get current fill mode
+	(u)boxfill(x1,y1,x2,y2)	fill rectangle (x1,y1)::(x2,y2)
+	(u)polyfill(np,vert)	fill polygon with np vertices
+	(u)polyfilln(npoly,nps,vert)	XOR-fill of multiple polygons
+.ne 2
+\fBText\fR
+	(u)text(x,y,fmt,ARGS)	do text starting at (x,y)
+	settextangle(angle)	set text angle in degrees
+	settextsize(size)	set text size in inches
+	settextfont(ifont)	set text font
+	settextcenter(hpos,vpos)	set text centering
+	plotlabel(fmt,ARGS)	label plot
+.ne 2
+\fBFrames and Globals\fR
+	setframe(iframe)	set or create current frame
+	getframe()	get current frame
+	pushframe()	save current frame
+	popframe()	restore frame
+	freeframe(iframe)	free a frame
+	pushglobal()	save global parameters
+	popglobal()	restore global parameters
+.ne 2
+\fBPens\fR
+	defbwpen(ipen,ifat,idash,imode)	define BW portion of pen
+	defcpen(ipen,icfat,icdash,icolor)	define color portion of pen
+	defpen(ipen,ifat,idash,imode,icfat,icdash,icolor)  define total pen
+	setpen(ipen)	 set current pen
+	freepen(ipen)	 free pen
+	setpencolor(icolor)	 set current pen color
+	setcolor(icolor)	 set current pen and brush color
+	setfat(ifat)	 set current pen fatness
+	setdash(idash)	 set current line dash index
+	setpenmode(imode)	set current pen mode
+	getpen()	get current pen
+	getfat()	get current pen fatness
+	getdash()	get current pen dash index
+	getpenmode()	get current pen mode
+.ne 2
+\fBBrushs\fR
+	defbwbrush(ibrush,ipat,imode)	define bw portion of brush
+	defcbrush(ibrush,icolor,icmode)	define color portion of brush
+	defbrush(ibrush,ipat,imode,icolor)
+		define total brush
+	setbrush(ibrush)	set current brush
+	freebrush(ibrush)	free brush
+	setbrushpat(ipat)	set brush pattern
+	setpattern(ipat)	set brush pattern
+	setbrushmode(imode)	set brush mode
+	setbrushcolor(icolor)	set brush color
+	getbrush()	get current brush
+	getbrushpat()	get current brush pattern
+	getbrushmode()	get current brush mode
+	getbrushcolor()	get current brush color
+.ne 2
+\fBColor\fR
+	defcolor(icolor,r,g,b)	define red, green, and blue components of color
+	setcolor(icolor)	set current pen and brush color
+	setpencolor(icolor)	set current pen color
+	setbrushcolor(icolor)	set current brush color
+	getcolor()	get current pen color
+	getpencolor()	get current pen color
+	getbrushcolor()	get current brush color
+.ne 2
+\fBDashed Lines\fR
+	defdash(idash,on1,off1,on2,off2)	define dash in inches
+	setdash(idash)	set dash index for lines
+	getdash()	get current dash index
+.ne 2
+\fBFill Patterns\fR
+	defpattern(ipat,bits)	define bit pattern
+	setpattern(ipat)	set current pattern index
+	getbrushpat()	get current pattern index
+.ne 3
+\fBSymbols\fR
+	(u)plotdot(x,y,size,imode)	plot dot at (x,y) 
+		mode=1 -> black dot, mode=0 -> white dot
+	(u)symbol(x,y,isym,size,angle)	draw symbol at (x,y)
+	getsymbol(symbolname)	get symbol index for 'symbolname'
+.ne 2
+\fBMiscellaneous\fR
+	erase()	erase screen or start new plot
+	purge()	dump all buffered info to plot device
+	pause()	pause for a period of time in the output filter.
+		The pause time is specified by the filter parameter 
+		\fIpause=seconds\fR.

@@ -1,0 +1,4 @@
+cc -g  -sun4 -c  readcom.c
+cc -g  -sun4 -c  getspcpar.c
+cc -c -g -I../plotdb ../com/globalvar.c
+cc -g -o plotdb readcom.o getspcpar.o globalvar.o ../com/main.o  ../com/err.o ../com/geth.o ../dum/open_close.o ../dum/getstdpar.o ../dum/raster.o  ../dum/newplot.o ../dum/initcolortable.o ../dum/label.o -lget -lm

@@ -1,0 +1,292 @@
+/usr/bin/ld -verbose -o tkx globalvar.o open_close.o vector.o newplot.o fill.o sendplot.o ../com/main.o ../com/readcom.o ../com/line_point.o ../com/symbol.o ../com/err.o ../com/text.o  ../com/getstdpar.o ../com/xpolygon.o ../com/label.o ../com/dot.o ../com/geth.o ../dum/raster.o ../dum/getspcpar.o  ../dum/color.o ../dum/rastext.o ../dum/pattern.o ../dum/initcolortable.o ../../symboldata/getsymdata.o ../../../libget.a -lm
+GNU ld version 2.10.90 (with BFD 2.10.0.18)
+  Supported emulations:
+   elf_i386
+   i386linux
+using internal linker script:
+==================================================
+OUTPUT_FORMAT("elf32-i386", "elf32-i386",
+	      "elf32-i386")
+OUTPUT_ARCH(i386)
+ENTRY(_start)
+SEARCH_DIR(/lib); SEARCH_DIR(/usr/lib); SEARCH_DIR(/usr/local/lib); SEARCH_DIR(/usr/i386-redhat-linux/lib);
+/* Do we need any of these for elf?
+   __DYNAMIC = 0;    */
+SECTIONS
+{
+  /* Read-only sections, merged into text segment: */
+  . = 0x08048000 + SIZEOF_HEADERS;
+  .interp     : { *(.interp) 	}
+  .hash          : { *(.hash)		}
+  .dynsym        : { *(.dynsym)		}
+  .dynstr        : { *(.dynstr)		}
+  .gnu.version   : { *(.gnu.version)	}
+  .gnu.version_d   : { *(.gnu.version_d)	}
+  .gnu.version_r   : { *(.gnu.version_r)	}
+  .rel.init      : { *(.rel.init)	}
+  .rela.init     : { *(.rela.init)	}
+  .rel.text      :
+    {
+      *(.rel.text)
+      *(.rel.text.*)
+      *(.rel.gnu.linkonce.t*)
+    }
+  .rela.text     :
+    {
+      *(.rela.text)
+      *(.rela.text.*)
+      *(.rela.gnu.linkonce.t*)
+    }
+  .rel.fini      : { *(.rel.fini)	}
+  .rela.fini     : { *(.rela.fini)	}
+  .rel.rodata    :
+    {
+      *(.rel.rodata)
+      *(.rel.rodata.*)
+      *(.rel.gnu.linkonce.r*)
+    }
+  .rela.rodata   :
+    {
+      *(.rela.rodata)
+      *(.rela.rodata.*)
+      *(.rela.gnu.linkonce.r*)
+    }
+  .rel.data      :
+    {
+      *(.rel.data)
+      *(.rel.data.*)
+      *(.rel.gnu.linkonce.d*)
+    }
+  .rela.data     :
+    {
+      *(.rela.data)
+      *(.rela.data.*)
+      *(.rela.gnu.linkonce.d*)
+    }
+  .rel.ctors     : { *(.rel.ctors)	}
+  .rela.ctors    : { *(.rela.ctors)	}
+  .rel.dtors     : { *(.rel.dtors)	}
+  .rela.dtors    : { *(.rela.dtors)	}
+  .rel.got       : { *(.rel.got)		}
+  .rela.got      : { *(.rela.got)		}
+  .rel.sdata     :
+    {
+      *(.rel.sdata)
+      *(.rel.sdata.*)
+      *(.rel.gnu.linkonce.s*)
+    }
+  .rela.sdata     :
+    {
+      *(.rela.sdata)
+      *(.rela.sdata.*)
+      *(.rela.gnu.linkonce.s*)
+    }
+  .rel.sbss      : { *(.rel.sbss)		}
+  .rela.sbss     : { *(.rela.sbss)	}
+  .rel.sdata2    : { *(.rel.sdata2)	}
+  .rela.sdata2   : { *(.rela.sdata2)	}
+  .rel.sbss2     : { *(.rel.sbss2)	}
+  .rela.sbss2    : { *(.rela.sbss2)	}
+  .rel.bss       : { *(.rel.bss)		}
+  .rela.bss      : { *(.rela.bss)		}
+  .rel.plt       : { *(.rel.plt)		}
+  .rela.plt      : { *(.rela.plt)		}
+  .init          : 
+  { 
+    KEEP (*(.init))
+  } =0x9090
+  .plt      : { *(.plt)	}
+  .text      :
+  {
+    *(.text)
+    *(.text.*)
+    *(.stub)
+    /* .gnu.warning sections are handled specially by elf32.em.  */
+    *(.gnu.warning)
+    *(.gnu.linkonce.t*)
+  } =0x9090
+  .fini      :
+  {
+    KEEP (*(.fini))
+  } =0x9090
+  PROVIDE (__etext = .);
+  PROVIDE (_etext = .);
+  PROVIDE (etext = .);
+  .rodata   : { *(.rodata) *(.rodata.*) *(.gnu.linkonce.r*) }
+  .rodata1   : { *(.rodata1) }
+  .sdata2   : { *(.sdata2) }
+  .sbss2   : { *(.sbss2) }
+  /* Adjust the address for the data segment.  We want to adjust up to
+     the same address within the page on the next page up.  */
+  . = ALIGN(0x1000) + (. & (0x1000 - 1));
+  .data    :
+  {
+    *(.data)
+    *(.data.*)
+    *(.gnu.linkonce.d*)
+    SORT(CONSTRUCTORS)
+  }
+  .data1   : { *(.data1) }
+  .eh_frame : { KEEP (*(.eh_frame)) }
+  .gcc_except_table : { *(.gcc_except_table) }
+  .ctors   : 
+  {
+    /* gcc uses crtbegin.o to find the start of
+       the constructors, so we make sure it is
+       first.  Because this is a wildcard, it
+       doesn't matter if the user does not
+       actually link against crtbegin.o; the
+       linker won't look for a file to match a
+       wildcard.  The wildcard also means that it
+       doesn't matter which directory crtbegin.o
+       is in.  */
+    KEEP (*crtbegin.o(.ctors))
+    /* We don't want to include the .ctor section from
+       from the crtend.o file until after the sorted ctors.
+       The .ctor section from the crtend file contains the
+       end of ctors marker and it must be last */
+    KEEP (*(EXCLUDE_FILE (*crtend.o ) .ctors))
+    KEEP (*(SORT(.ctors.*)))
+    KEEP (*(.ctors))
+  }
+   .dtors         :
+  {
+    KEEP (*/usr/bin/ld: warning: cannot find entry symbol _start; defaulting to 08048968
+/usr/bin/ld: final link failed: Bad value
+crtbegin.o(.dtors))
+    KEEP (*(EXCLUDE_FILE (*crtend.o ) .dtors))
+    KEEP (*(SORT(.dtors.*)))
+    KEEP (*(.dtors))
+  }
+  .got		  : { *(.got.plt) *(.got) }
+  .dynamic       : { *(.dynamic) }
+  /* We want the small data sections together, so single-instruction offsets
+     can access them all, and initialized data all before uninitialized, so
+     we can shorten the on-disk segment size.  */
+  .sdata     : 
+  {
+    *(.sdata) 
+    *(.sdata.*)
+    *(.gnu.linkonce.s.*)
+  }
+  _edata = .;
+  PROVIDE (edata = .);
+  __bss_start = .;
+  .sbss      :
+  {
+    PROVIDE (__sbss_start = .);
+    PROVIDE (___sbss_start = .);
+    *(.dynsbss)
+    *(.sbss)
+    *(.sbss.*)
+    *(.scommon)
+    PROVIDE (__sbss_end = .);
+    PROVIDE (___sbss_end = .);
+  }
+  .bss       :
+  {
+   *(.dynbss)
+   *(.bss)
+   *(.bss.*)
+   *(COMMON)
+   /* Align here to ensure that the .bss section occupies space up to
+      _end.  Align after .bss to ensure correct alignment even if the
+      .bss section disappears because there are no input sections.  */
+   . = ALIGN(32 / 8);
+  }
+  . = ALIGN(32 / 8);
+  _end = .;
+  PROVIDE (end = .);
+  /* Stabs debugging sections.  */
+  .stab 0 : { *(.stab) }
+  .stabstr 0 : { *(.stabstr) }
+  .stab.excl 0 : { *(.stab.excl) }
+  .stab.exclstr 0 : { *(.stab.exclstr) }
+  .stab.index 0 : { *(.stab.index) }
+  .stab.indexstr 0 : { *(.stab.indexstr) }
+  .comment 0 : { *(.comment) }
+  /* DWARF debug sections.
+     Symbols in the DWARF debugging sections are relative to the beginning
+     of the section so we begin them at 0.  */
+  /* DWARF 1 */
+  .debug          0 : { *(.debug) }
+  .line           0 : { *(.line) }
+  /* GNU DWARF 1 extensions */
+  .debug_srcinfo  0 : { *(.debug_srcinfo) }
+  .debug_sfnames  0 : { *(.debug_sfnames) }
+  /* DWARF 1.1 and DWARF 2 */
+  .debug_aranges  0 : { *(.debug_aranges) }
+  .debug_pubnames 0 : { *(.debug_pubnames) }
+  /* DWARF 2 */
+  .debug_info     0 : { *(.debug_info) }
+  .debug_abbrev   0 : { *(.debug_abbrev) }
+  .debug_line     0 : { *(.debug_line) }
+  .debug_frame    0 : { *(.debug_frame) }
+  .debug_str      0 : { *(.debug_str) }
+  .debug_loc      0 : { *(.debug_loc) }
+  .debug_macinfo  0 : { *(.debug_macinfo) }
+  /* SGI/MIPS DWARF 2 extensions */
+  .debug_weaknames 0 : { *(.debug_weaknames) }
+  .debug_funcnames 0 : { *(.debug_funcnames) }
+  .debug_typenames 0 : { *(.debug_typenames) }
+  .debug_varnames  0 : { *(.debug_varnames) }
+  /* These must appear regardless of  .  */
+}
+
+
+==================================================
+attempt to open globalvar.o succeeded
+globalvar.o
+attempt to open open_close.o succeeded
+open_close.o
+attempt to open vector.o succeeded
+vector.o
+attempt to open newplot.o succeeded
+newplot.o
+attempt to open fill.o succeeded
+fill.o
+attempt to open sendplot.o succeeded
+sendplot.o
+attempt to open ../com/main.o succeeded
+../com/main.o
+attempt to open ../com/readcom.o succeeded
+../com/readcom.o
+attempt to open ../com/line_point.o succeeded
+../com/line_point.o
+attempt to open ../com/symbol.o succeeded
+../com/symbol.o
+attempt to open ../com/err.o succeeded
+../com/err.o
+attempt to open ../com/text.o succeeded
+../com/text.o
+attempt to open ../com/getstdpar.o succeeded
+../com/getstdpar.o
+attempt to open ../com/xpolygon.o succeeded
+../com/xpolygon.o
+attempt to open ../com/label.o succeeded
+../com/label.o
+attempt to open ../com/dot.o succeeded
+../com/dot.o
+attempt to open ../com/geth.o succeeded
+../com/geth.o
+attempt to open ../dum/raster.o succeeded
+../dum/raster.o
+attempt to open ../dum/getspcpar.o succeeded
+../dum/getspcpar.o
+attempt to open ../dum/color.o succeeded
+../dum/color.o
+attempt to open ../dum/rastext.o succeeded
+../dum/rastext.o
+attempt to open ../dum/pattern.o succeeded
+../dum/pattern.o
+attempt to open ../dum/initcolortable.o succeeded
+../dum/initcolortable.o
+attempt to open ../../symboldata/getsymdata.o succeeded
+../../symboldata/getsymdata.o
+attempt to open ../../../libget.a succeeded
+(../../../libget.a)getpar.o
+attempt to open /lib/libm.so failed
+attempt to open /lib/libm.a failed
+attempt to open /usr/lib/libm.so succeeded
+-lm (/usr/lib/libm.so)
+make: *** [load] Error 1

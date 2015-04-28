@@ -1,0 +1,505 @@
+.bp
+.LP
+.ne 3
+\fB\n+(CH. User Interfaces\fR
+.sp
+.ne 3
+\fBIntroduction\fR
+.PP
+The user interfaces are (hopefully) designed to be easy to use and easy to
+remember.  Most optional features will default to something, and the user is
+only required to refer to the documentation to fine tune a plot.
+.sp
+.ne 3
+\fBPlot scaling and translation\fR
+.PP
+The SGP uses two sets of coordinates - inches and user-units.  The relationship
+between the two is given by
+ 		\fIxinch = xorig + xscl * (xuser - xmin)\fR
+ 		\fIyinch = yorig + yscl * (yuser - ymin)\fR
+.br
+The \fIorig\fR, \fIscl\fR, and \fImin\fR parameters are set by the calls:
+ 		\fIsetorig(xorig, yorig)\fR
+ 		\fIsetmin(xmin, ymin)\fR
+ 		\fIsetscl (xscl, yscl)\fR
+.br
+Note that \fIxorig\fR and \fIyorig\fR are in inches,
+\fIxmin\fR and \fIymin\fR are in user units, and
+\fIxscl\fR and \fIyscl\fR have dimensions of inches over user units.
+The \fImin\fR parameters
+are somewhat redundant but they allow the user to easily determine
+where the physical origin of the plot is,
+in user coordinates.
+.PP
+As an example of scaling, consider making a linear map of the world in latitude
+(range -90 to 90 degrees) and longitude (range -180 to 180 degrees).  The
+plot is to be 10 inches by 5 inches with the lower left corner at (1.0, 3.0)
+inches.  The appropriate transform is
+ 		\fIsetorig (1.0, 3.0);\fR
+ 		\fIsetmin (-180.0, -90.0);\fR
+ 		\fIsetscl (10.0/360.0, 5.0/180.0);\fR
+.PP
+The default values for the parameters are the user coordinate system equals the
+inch system.
+That is \fIxorig=yorig=0.0\fR,
+\fIxmin=ymin=0.0\fR, and \fIxscl=yscl=1.0\fR.
+.PP
+Negative scales are permitted, but if you specify either \fIxscl\fR or
+\fIyscl\fR to be
+zero the SGP package will terminate with a nasty message.
+.PP
+If you happen to forget what the scaling parameters are, you can retrieve
+them with the subroutines
+ 		\fIgetorig(\fR&\fIxorig, \fR&\fIyorig)\fR
+ 		\fIgetmin(\fR&\fIxmin, \fR&\fIymin)\fR
+ 		\fIgetscl(\fR&\fIxscl, \fR&\fIyscl)\fR
+.sp
+.ne 3
+\fBFrames and Environment\fR
+.PP
+To facilitate the composing of multi-panel plots and also in writing general
+purpose plotting routines, the concept of a plot frame is introduced.  The
+novice user can skip this section since the default frame is probably all that
+is wanted anyway.
+.PP
+The scaling and translation parameters are stored by the plotting system in an
+entity called a frame.  It is possible to define these parameters for several
+frames (currently limited to 10).  An example of the use of several frames would
+be a multi-panel figure.  One of the panels might be a map while another might
+be a graph.
+.sp
+.ne 3
+\fBLine Plotting\fR
+.PP
+The simplest form of graphics is line drawing or vector graphics.  The SGP
+uses the concept of a pen that can be moved around the plotting surface.  If
+the pen is down, a line is actually drawn.  If it is up, then it is merely
+moved.  The pen is manipulated with
+ 		\fIplot(xinch, yinch, ipen)\fR
+.br
+for coordinates in inches, or with
+ 		\fIuplot(xuser, yuser, ipen)\fR
+.br
+for coordinates in user units.  The parameter \fIipen\fR determines
+the up or down status of the pen.
+The pen is up (moving) if \fIipen=0\fR, and it is down (drawing) otherwise.
+The \fIplot\fR/\fIuplot\fR routines moves the pen from its current
+location to the specified location.  The subsequent location then becomes
+the current location.  When the SGP is first started up, the pen is placed
+at (0.0, 0.0).
+.PP
+To draw a continuous sequence of lines whose coordinates are specified by the
+vectors \fIx[n]\fR and \fIy[n]\fR,
+a simple loop over the \fIplot\fR/\fIuplot\fR routine is used.
+ 		\fIfor (i=0, i<n; i++) plot(x[i], y[i], i);\fR
+.br
+Note that \fIi\fR is zero on first pass through the loop,
+so a `move' is done to the
+starting position.  Thereafter draws are done.
+.PP
+To draw a single line sequence from (x1, y1) to (x2,y2), the single call
+ 		\fIline(x1, y1, x2, y2)\fR
+.br
+The current pen position becomes the last point (x2, y2).  For
+user coordinates, use the routine \fIuline\fR instead of \fIline\fR.
+.PP
+By now, the reader is probably catching on to the idea that routines that
+operate in user coordinates that have a \fIu\fR prepended to the equivalent
+inch-coordinate routine.
+.PP
+The above continuous line segment could also be (less efficiently) coded as.
+ 		\fIfor (i=1; i<n; i++) line(x[i-1], y[i-1], x[i], y[i]);\fR
+.br
+This is less efficient because each \fIline\fR call implies a move to the
+first point, which of course is where the pen already is (except for the
+first call).
+.sp
+.ne 3
+\fBPens and Brushes\fR
+.PP
+In the SGP, the various attributes of line drawing (i.e. line thickness,
+color, dashes, etc.) are controlled by an entity termed the
+pen.  Similarly, area fill attributes (i.e. color, pattern, etc.) are governed
+by a brush.  By using pens and brushes, the user can easily make plots that
+are reasonable on a wide variety of output devices.  For example, a particular
+pen can be defined to produce dashed lines on BW devices and colored lines
+on color devices.
+.PP
+Each of the 256 pens available to the user has the following attributes
+associated with it:
+.in 1.0i
+.ti -0.5i
+\fIfat\fR	-line thickness for BW devices
+.ti -0.5i
+\fIidash\fR	-index to dash pattern to be used for BW devices
+(\fIidash=0\fR is a solid line)
+.ti -0.5i
+\fIcfat\fR	-line thickness for color devices
+.ti -0.5i
+\fIcdash\fR	-index for dash pattern to be used for color devices
+.ti -0.5i
+\fIcolor\fR	-index for color of pen
+.ti -0.5i
+\fImode\fR	-a parameter that controls how the pen is used to write.
+.in 1.0i
+ =0:  BLACK - pen always draws black.
+ =1:  XOR -mode the line flips to opposite state
+of background.  If the background is white, it writes
+black; if the background is black, it writes white.
+ =2:  WHITE - the pen always writes white (useful for
+erasing things)
+.in 0.0i
+.br
+A particular pen is defined by a call to the \fIdefpen\fR routine.
+ 		\fIipen = defpen (ipen, ifat, idash, imode, icfat, icdash, icolor)\fR
+.br
+where all of the parameters are integers.  \fIDefpen\fR returns the pen index it
+just defined, or -1 if an error occurred.  If on input, \fIipen\fR is set to -1,
+then \fIdefpen\fR will select a free pen for you by starting with the last
+available pen, and return this index.  Errors will be reported if \fIipen\fR is
+outside the range [1, 255], if no more free pens are available, or if the
+arguments appear to be screwed up.  Pen 0 can not be redefined as a
+precautionary measure, so the user can always select
+this pen when debugging, and be assured something will be drawn.
+If you wish to separately define the BW and color portions of the pen,
+the above call can be split into
+ 		\fIipen = defbwpen(ipen, ifat, idash, imode)\fR
+ 		\fIipen = defcpen(ipen, icfat, icdash, icolor)\fR
+.PP
+A particular pen can be brought into action by the call
+ 		\fIoldipen = setpen(ipen)\fR
+.br
+This routine sets the active pen to \fIipen\fR, if that pen index is in the range
+[0,255], otherwise it does not alter its status.  The previously pen
+index is returned.  The call
+ 		\fIipen = getpen()\fR
+.br
+returns the current pen in effect.
+.PP
+The brushes provide a similar mechanism for area fills (polyfill, boxfill,
+etc.).  There are 256 brushes available with [1,255] definable by the user.
+The attributes of each brush are:
+.in 1.0i
+.ti -0.5i
+\fIpat\fR	-the index to the fill pattern to be used on BW devices.
+.ti -0.5i
+\fIcolor\fR	-the index to the fill color to be used on color devices.
+.ti -0.5i
+\fImode\fR	-the BW filling style.
+.in 1.0i
+=0 (OR)		-pattern is ``colored'' or added to background.
+.br
+=1 (XOR)		-pattern is ``xored'' to background
+.br
+=2 (EQU)		-pattern is set regardless of background
+.br
+=3 (WHITE)	-a white-out fill is used.
+.br
+.in 0.0i
+The brushes [1,255] are definable with the call.
+ 		\fIibrush = defbrush(ibrush, ipat, imode, icolor)\fR
+.br
+This routine is similar in action to the \fIdefpen()\fR routine.
+If \fIibrush\fR is on
+the range [1,255] then that brush is defined.
+If \fIibrush\fR in input is set to
+-1, the first available brush is used and returned (starting from the last
+brush).  The value -1 is returned for out of range \fIibrush\fR,
+no more free brushes, or apparently messed by arguments.
+To separately define the BW and color portions of the brushs, the routines
+ 		\fIibrush = defbwbrush(ibrush, ipat, imode)\fR
+ 		\fIibrush = defcbrush(ibrush, icolor)\fR
+.br
+are provided.
+The call
+ 		\fIibrush = getbrush()\fR
+.br
+returns the current brush in effect.
+.PP
+For users that do not wish to use the wonderfulness of pens and brushes, then
+a set or overwrite calls are provided.  In fact, you need not use the
+pen/brush facility at all and achieve exactly the same results, although it is
+more painful.  The following calls are provided to set specific attributes:
+ 		\fIsetfat(ifat)\fR			-sets line thickness to \fIifat\fR for all devices.
+ 		\fIsetdash(idash)\fR		-set dash index to \fIidash\fR for all devices
+ 		\fIsetpencolor(icolor)\fR	-set color index for pen
+ 		\fIsetbrushcolor(icolor)\fR	-set color index for brush
+ 		\fIsetcolor(icolor)\fR		-set color index for both pen and brush
+ 		\fIsetdash(idash)\fR		-set dash index for all devices
+ 		\fIsetpenmode(imode)\fR	-set pen mode
+ 		\fIsetbrushmode(imode)\fR	-set brush mode
+ 		\fIsetbrushpat(ipat)\fR	-set brush pattern index
+.br
+.PP
+Any of the current attributes in effect can be retrieved by a corresponding set
+of `get' routines (replace `set' in the above routine with `get').
+For example
+ 		\fIidash=setdash()\fR
+.br
+returns the current dash index.  Note that \fIgetcolor()\fR
+returns the pen color.
+.PP
+The above override calls do not affect the definition of the current pen or
+brush in effect.  Thus, the effect of the overwrite calls will disappear if a
+\fIsetpen()\fR or \fIsetbrush()\fR call is issued.
+.PP
+Other aspects of the SGP are governed by pens and brushes.  Text uses pens,
+symbols and polyfills use a brush to fill, but a pen to outline.  The bit
+setting of raster fields is independent of pens or brushes.
+.sp
+.ne 3
+\fBText\fR
+.PP
+A string of text can be placed at any point in the plot with the call
+		\fItext(x,y,fmt,ARGS)
+ 			float x,y; char *fmt;\fR
+.br
+where (x,y) is (by default), the lower left position of the text in inches.
+The remainder of the arguments (\fIfmt\fR and \fIARGS\fR) are exactly the
+same as the arguments to \fIprintf\fR of the stdio package.
+That is, \fIfmt\fR is a format string, and \fIARGS\fR is a list of arguments
+refered to by that string.
+For example, the call
+ 		\fItext(1.0,2.0,"Test string x=%5.2f n=%d\n",1.72,101);\fR
+.br
+would produce the text
+ 		\fITest string x= 1.72 n=101\fR
+.br
+starting at the position (1.0,2.0).
+For user-corrdinates an equivalent routine \fIutext\fR is provided.
+.PP
+The default font for text rendering is a set of simple line-drawn letters.
+These letters are quick to produce, but are rather ugly.
+A set of classier dot-matrix fonts are also available.
+To switch between the two types of letters (or font types), use the call
+ 		\fIsettextfont(ifonttype)\fR
+.br
+where
+ 		\fIifonttype\fR	=0 (default) vector characters.
+ 				=1 dot-matrix characters.
+.br
+Some installations may not provide the dot-matrix characters because
+they require a lot of disk space.
+In this case, requests to \fIifonttype=1\fR are automatically mapped into
+the equivalent vector characters.
+In the future, more font types my be provided.
+.PP
+The size of the text characters is controlled by the routine
+ 		\fIsettextsize(size)\fR
+.br
+where \fIsize\fR is the height of the letters in inches.
+The default is 0.1 inches.
+The vector characters follow the size specification exactly, but
+the dot-matrix characters use the closest available smaller size
+because of their discrete sizes.
+.PP
+The angle of the text string can be specified by
+ 		\fIsettextangle(angle)\fR
+.br
+where \fIangle\fR is the angle in degree between the in-line text direction and the x-axis.
+The default is \fIangle=0.0\fR.
+Here in-line means the direction in which the letters of string proceed.
+Out-of-line is defined as the direction of the vertical extent of the letters.
+.PP
+Another option that is useful for titles and axes annotation is the cenetring of text.
+By default, the (x,y) coordinates in the \fItext\fR routine are interpreted
+as the lower-left corner of the text string.
+This interpretation can be modified with the call
+ 		\fIsettextcenter(ihpos,ivpos)\fR
+.br
+where
+ 		\fIihpos\fR	=0 -position at the left edge.
+ 			=1 -position at the horizontal center.
+ 			=2 -position at the right edge.
+ 		\fIivpos\fR	=0 -position at the bottom edge.
+ 			=1 -position at the vertical center.
+ 			=2 -position at the top edge.
+.br
+The horizontal and vertical position always refer to the in-line and out-of-line text directions,
+regardless of the text angle in effect.
+.PP
+The text rendering follows the specification of the current pen setting as far as the attributes of color and mode are concerned.
+.PP
+The standard carriage controls of backspace ('\\b'), newline ('\\n'), and
+tab ('\\t') are properly honored.
+The origin for the purposes of the newline control is the specified 
+point (x,y).
+Tabs are spaced at 0.5 inches relative to the point (x,y).
+.\:: Removed section --  Not currently implemented
+.\In addition several other controls allow local modification of
+.\position, color, and size.
+.\they are
+.\ 		\\fR	-switch to roman font.
+.\ 		\\fI	-switch to \fIitalic\fR font.
+.\ 		\\fB	-switch to \fBbold\fR font.
+.\ 		\\fP	-switch to previous font.
+.\ 		\\u	-move half up.
+.\ 		\\U	-move full up.
+.\ 		\\d	-move half down.
+.\ 		\\D	-move full down.
+.\ 		\\c(n)	-switch to color n.
+.\.br
+.\:: End of removed section.
+.br
+.sp
+.ne 3
+\fBArea Filling\fR
+.PP
+Several routines in the SGP are provided to do shading and stipling.  For
+the filling of rectangular regions the call
+ 		\fIboxfill (x1, y1, x2, y2)\fR
+.br
+or
+ 		\fIuboxfill (x1, y1, x2, y2)\fR
+.br
+will fill a rectangle whose lower left corner is (x1, y1) and upper right
+corner is (x2, y2).  The fill is done according to the currently
+defined brush.  The \fIuboxfill\fR uses coordinates defined in user units.
+.PP
+For the filling of more complicated shapes, a set polygon fill routines
+is provided.  The simplest version is the routine
+ 		\fIpolyfill (np, vertices)\fR
+ 		\fIupolyfill (np, vertices)\fR
+ 			\fIint np; struct polygon {float xv, yv;} *vertices;\fR
+.br
+where \fInp\fR is the number of points (vertices) in the polygon, and
+\fIvertices\fR is a list of the points.  The vertices are passed via
+the structure \fIpolygon\fR.
+.PP
+The next level of complexity is the filling of the exclusive OR
+of multiple polygons
+simultaneously.  One application of this is in cartography where
+one polygon would specify the continent, another would denote a
+lake within the continent, and yet a third would outline an island
+in the lake.  To fill the land regions and not the lake regions
+use the routines
+ 		\fIpolyfilln (npoly, nps, vertices)\fR
+ 		\fIupolyfilln (npoly, nps, vertices)\fR
+ 			\fIint npoly, nps[ ]; struct polygon *vertices[ ];\fR
+.br
+Here \fInpoly\fR is the total number of polygons, \fInps\fR is a vector
+of length \fInpoly\fR,
+which gives the number of points in each polygon, and \fIvertices\fR
+is a list of pointers to the vertices of the polygons.
+A particular point is filled if and only if it covered by an 
+odd number of polygons.
+.sp
+.ne 3
+\fBSymbols\fR
+.PP
+The SGP contains a number (32) of symbols (i.e., circles, triangles,
+etc.) that can be placed at any point.  The size and orientation
+(angle) of the symbol is under user control.  To plot a given symbol, the
+routines:
+ 		\fIsymbol (x, y, isym, size, angle)\fI
+ 		\fIusymbol (x, y, isym, size, angle)\fI
+ 			\fIfloat x, y, size, angle; int isym;\fR
+g.br
+are provided.  Here \fI(x,y)\fR is the location of the symbol in inches or
+user coordinates, \fIisym\fR is the symbol to be plotted, \fIsize\fR is its
+size in inches, and \fIangle\fR is its rotation in degrees (0-180).
+The \fIsize\fR is the
+radius of the minimal circle that completely encloses the symbol.  To
+obtain a particular symbol by name, the routine:
+ 		\fIisym = getsymbol(symbolname)\fR
+ 			\fIchar *symbolname;\fR
+.br
+is available.  The currently understood symbol names are:
+ 		r-arrow		l-arrow 		triangle
+ 		star-5 		square		star-4
+  		pentagon		plus-thin 		hexagon
+ 		plus-med		dagger		plus-fat
+		diamond		invtriangle	
+.br
+.sp
+.ne 3
+\fBDirect Raster Bit-Setting\fR
+.PP
+Some graphics applications require that raster images be directly incorporated
+into the plots.  This is the least-device independent part of the SGP since 
+the width of the images is necessarily given in pixels, not device independent
+coordinates.  This is also the SGP that is most likely to change in the future.
+.PP
+Currently raster images can be incorporated with the calls
+ 		\fIraster (rasbits);\fR
+.br
+or
+		\fIrasterfile (rasfile)\fR
+.br
+In the first case, a raster image (\fIrasbit\fR) is shipped directly
+to the device.
+In the second case, a file name (\fIrasfile\fR) is sent to the device, which
+it opens and reads.  The style in which the raster image is added to the plot
+is governed by the call
+ 		\fIsetrastmode(imode)\fR
+.br
+where
+ 	\fIimode\fR	= 0, OR-mode (defaults)-bits are ``or'ed'' into the image.
+	 			= 1 XOR-mode - bits are ``xor'ed'' into the image.
+ 			= 2 EQU-the bits are sets equal to the raster image.
+.PP
+Currently only one format of the raster image is supported.  The bits are
+specified in short word (16-bit) scan lines.  Each scan line is precedded
+by a short header (16-bit) which describes the length and offset of the scan
+line.  The lowest byte is the number of 16-bit short words that follow for a
+given scan line.  The high-byte indicates the offset of the line (the number
+of 16-bit  zero short words to insert ahead of the actual bits).  A header
+= 0 denotes a blank scan line.  A header = -1 denotes the end of the image.
+This flag is particularly chosen to be the same as EOF.
+.sp
+.ne 3
+\fBWindows\fR
+.PP
+The plot information can be clipped to a particular rectangular region
+with the call
+ 		\fIwindow(x1,y1,x2,y2)\fR
+.br
+where (x1,y1) is the lower-left corner of the region, and (x2,y2) is the
+upper-right.
+The SGP package will reorder the window parameters, if they imply a negative
+area.
+It will not allow a window with zero area.
+All plot commands including line-drawing, text, symbols, raster data, and
+area fills are clipped according to the window.
+To specify the window in user coordinates, use the equivalent \fIuwindow\fR
+routine.
+A unique plot window can be specified for each frame.
+.PP
+To remove a window, that is set the window back to the maximium size, use the
+command
+ 		\fIunwindow()\fR
+.br
+.PP
+A very common error in making plots is to
+accidently specify a window that excludes all plot data.
+To aid in the detection of this condition, the device filters
+have a `nowindow' option that stops clipping by user defined windows.
+In addtion, the outline of the user window is drawn under this option.
+.sp
+.ne 3
+\fBMiscellaneous Plot Routines\fR
+.PP
+To erase the screen, or start a new plot on hardcopy devices, call
+ 		\fIerase()\fR
+.br
+For most hardcopy devices, the plot is immediately produced by the device.
+Some however, may wait until all pages of the plot are done before producing anything.
+For CRT devices, (both BW and color), device filters allow the user to specify
+the pause time before an erase is actually done.
+.PP
+The plot data that is buffered by the user routines and the device filters
+can be forced out by
+ 		\fIpurge()\fR
+.br
+This command is useful to bring a CRT plot up to date so the user can interact
+with it.
+On hardcopy devices, the user buffers are flushed out, but not the device
+filter buffers.
+.PP
+Plots can be convenietly labelled with the subroutine
+ 		\fIplotlabel(fmt,ARGS)\fR
+.br
+where the \fIfmt\fR and \fIARGS\fR parameters are the same as with \fItext\fR.
+The resulting string is added to the plot label.
+If multiple calls to \fIplotlabel\fR are made for a single plot page,
+the the string from the last \fIplotlabel\fR call will be used.

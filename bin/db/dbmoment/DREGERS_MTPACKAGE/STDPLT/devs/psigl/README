@@ -1,0 +1,24 @@
+Fixes by GHM 12/88
+
+	1)  I changed the bit field width of the vertical and horizontal
+	character centering flags.  The fields were each 2 bits, however
+	stdplt appears to use 4 bit fields.  This fix appears near line
+	58 of text.c
+
+	2)  The font sizes were in units of points, however the stdplt
+	usage is in terms of inches.  This fix appears near line
+	290 of compile.c
+
+Bugs remaining:
+	The fill patterns have seams.  This is apparently a recurring
+	problem, as it is mentioned in the original comments.  Perhaps
+	the parameters are printer-dependent?
+	See comment at line 127 in cgen.c
+
+Dave:  If you make any improvements, please let me know what they
+are so I can keep our version up to date.  Thanks, greg@expet | greg&dix
+
+PS:  Sorry it took me so long to transfer these files.  The net between
+our machines was down all day yesterday so I couldn't ftp the files.
+I tried to phone you but I couldn't locate you.
+

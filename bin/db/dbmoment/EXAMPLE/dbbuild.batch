@@ -1,0 +1,37 @@
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+sta STA2 31.6867 -116.3210 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+sta STA3 31.5750  -116.1918  0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+verify
+

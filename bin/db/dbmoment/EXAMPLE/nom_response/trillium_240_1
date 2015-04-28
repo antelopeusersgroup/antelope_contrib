@@ -1,0 +1,29 @@
+# @(#)trillium	240  23/03/2011
+# $Id: trillium_240_1,v 1.6 2007/05/31 22:03:56 vernon Exp $
+# trillium 240 seismometer sn 0-399
+# Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
+# 1                   type
+# 5                   num of zeroes
+# 7                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 4.532E+05	      normalization factor
+# 1.0                 gain
+# 1196.6 V/m/s          sensitivity
+theoretical   1 anti-alias   paz    teledyne
+4.532E+05
+7             Poles
+   -0.01813       0.01803       0.0000E+00    0.0000E+00
+   -0.01813      -0.01803       0.0000E+00    0.0000E+00
+ -124.9           0.0000E+00    0.0000E+00    0.0000E+00
+ -197.5         256.1           0.0000E+00    0.0000E+00
+ -197.5        -256.1           0.0000E+00    0.0000E+00
+ -569          1150             0.0000E+00    0.0000E+00
+ -569         -1150             0.0000E+00    0.0000E+00
+5             	Zeros
+    0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+    0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+  -90             0.0000E+00    0.0000E+00    0.0000E+00
+ -164.2           0.0000E+00    0.0000E+00    0.0000E+00
+-3203             0.0000E+00    0.0000E+00    0.0000E+00

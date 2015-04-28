@@ -1,0 +1,74 @@
+#include	<stdio.h>
+
+#include	"devpar.h"
+
+struct reportinfo
+   {
+	char rname[16];
+	int  rkey;
+   }	ri[] = {
+	"vector",	VECTOR,
+	"vec",		VECTOR,
+	"point",	POINT,
+	"text",		TEXT,
+	"polygon",	POLY,
+	"poly",		POLY,
+	"fill",		POLY,
+	"raster",	RASTER,
+	"color",	COLOR,
+	"col",		COLOR,
+	"pattern",	PAT,
+	"pat",		PAT,
+	"include",	INCLUDE,
+	"symbol",	SYMBOL,
+	"sym",		SYMBOL,
+	"pen",		PEN,
+	"brush",	BRUSH,
+	"window",	WIND,
+	"wind",		WIND,
+	"all",		0xffffffff,
+	"",		0	};
+
+int key	= 0;
+
+get_spc_par()
+   {
+	char c, rlist[128];
+	char *p, *pn;
+	int k;
+
+	getpar("report","s",rlist);   
+	key= 0;
+	pn= rlist;
+	while(*pn != '\0')
+	   {
+		while(*pn == ' ' || *pn == '\t') pn++;
+		if(*pn == '\0') break;
+		p= pn;
+		while(*p != '\0' && *p != ',') p++;
+		c= *p;
+		*p++ = '\0';
+		for(k=0; ri[k].rname[0] != '\0'; k++)
+		   {
+			if(strcmp(pn,ri[k].rname) == 0)
+			   {
+				key |= ri[k].rkey;
+				break;
+			   }
+		   }
+		if(ri[k].rname[0] == '\0')
+			fprintf(stderr,
+				"plotdb: don't know how to report on %s\n",pn);
+		if(c == '\0') break;
+		pn= p;
+	   }
+	fprintf(stderr,"reporting on: \n");
+	for(k=0; ri[k].rname[0] != '\0'; k++)
+	   {
+		if(key & ri[k].rkey) fprintf(stderr,"\t%s\n",ri[k].rname);
+	   }
+	   
+
+
+		
+   }

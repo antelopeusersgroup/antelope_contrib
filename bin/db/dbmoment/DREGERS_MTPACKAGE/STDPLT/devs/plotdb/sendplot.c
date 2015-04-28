@@ -1,0 +1,1 @@
+sendplot() { return(1); }
