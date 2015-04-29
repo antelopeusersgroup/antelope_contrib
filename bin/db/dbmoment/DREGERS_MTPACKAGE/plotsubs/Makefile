@@ -1,13 +1,13 @@
-LIB = nrcv2.a
+LIB = libstd.a
 
 include $(ANTELOPEMAKE)
+
 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
-
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@
 	\cp $(LIB) ../

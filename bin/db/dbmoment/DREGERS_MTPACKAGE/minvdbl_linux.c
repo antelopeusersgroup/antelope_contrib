@@ -4,6 +4,7 @@ precision */
 #include   <stdio.h>
 #include   <stdlib.h> 
 #include   <math.h> 
+#include   "C_CODE/nrutil.h" 
 
 #define SWAP(a,b) {double temp=(a);(a)=(b);(b)=temp;}
 void gaussj();
@@ -29,7 +30,7 @@ int n,m;
 	int *indxc,*indxr,*ipiv;
 	int i,icol,irow,j,k,l,ll,*ivector();
 	double big,dum,pivinv;
-	void nrerror(),free_ivector();
+    /*free_ivector();*/
 
 	indxc=ivector(1,n);
 	indxr=ivector(1,n);

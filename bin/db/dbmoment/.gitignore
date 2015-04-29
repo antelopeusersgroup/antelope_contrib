@@ -13,5 +13,5 @@ tdmt_invc
 fortran_fkrprog
 wvint9
 putmt
-libget.a
-nrcv2.a
+*.o
+*.a

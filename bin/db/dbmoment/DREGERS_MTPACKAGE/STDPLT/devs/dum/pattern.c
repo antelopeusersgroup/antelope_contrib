@@ -1,3 +1,0 @@
-setpattern() { }
-
-defpattern() { }

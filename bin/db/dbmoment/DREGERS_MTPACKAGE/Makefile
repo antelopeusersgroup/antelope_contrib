@@ -9,18 +9,22 @@ BIN = example2wfdisc \
 	wvint9 \
 	putmt
 
-cflags = -arch x86_64 -Wno-return-type -Wno-format -Wno-uninitialized -Wno-unused-variable -Wno-implicit-int -Wno-int-conversion -Wno-implicit-function-declaration
-fflags = -m64
+cflags = -Wno-return-type -Wno-implicit-int
+#cflags = -arch x86_64 -Wno-return-type -Wno-format -Wno-uninitialized -Wno-unused-variable -Wno-implicit-int -Wno-int-conversion -Wno-implicit-function-declaration
+#fflags = -m64
 
 include $(ANTELOPEMAKE)
 
-DIRS=
+DIRS= plotsubs GETPAR C_CODE
+
+%.o: %.c
+	$(CC) $(cflags) -o $@ $<
 
 libget.a:
 	(cd GETPAR; make;)
 
 libstd.a: libget.a
-	(cd STDPLT/plotsubs; make;)
+	(cd plotsubs; make;)
 
 nrcv2.a:
 	(cd C_CODE; make;)
@@ -41,16 +45,13 @@ bin2sac: libget.a bin2sac.c
 	$(CC) -o bin2sac bin2sac.c libget.a
 
 putmt: libget.a
-	$(CC) -g -o putmt putmt.c readhelm.c libget.a
+	$(CC) -g -o putmt putmt.c readhelm.c libget.a -lm
 
 fortran_fkrprog:
 	$(FC) $(fflags) -o $@ fortran_fkrprog.f
 
 wvint9:
 	$(FC) $(fflags) -o $@ wvint9.f cwrite.c
-
-%.o: %.c
-	$(CC) $(cflags) -o $@ $<
 
 tdmt_invc: nrcv2.a libstd.a tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o  fitcheck2.o mt_plot6iso2_linux2.o fmap_subs_linux.o
 	$(FC) $(fflags) -o tdmt_invc tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o mt_plot6iso2_linux2.o fitcheck2.o fmap_subs_linux.o nrcv2.a libstd.a -lm 
