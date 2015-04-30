@@ -1,8 +1,0 @@
-
-
-use find to locate the psigl, tkx, and stdplt (library - libstd.a) files.
-The directories where these files are located are the only directories
-needed from this package.
-
-
-Dreger March 13, 1998

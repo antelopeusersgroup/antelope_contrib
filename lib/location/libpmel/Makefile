@@ -2,9 +2,12 @@ LIB=libpmel.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 INCLUDE=pmel.h
 MAN3=pmel.3
+LICENSES=license_libpmel.txt
 cflags=-g
 ldflags=
 ldlibs=
+
+CLEAN = $(LICENSES)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
@@ -20,3 +23,6 @@ $(LIB) : $(OBJS)
 $(DLIB) : $(OBJS)
 	$(RM) $@
 	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
+
+$(LICENSES) : LICENSE
+	cp $< $@

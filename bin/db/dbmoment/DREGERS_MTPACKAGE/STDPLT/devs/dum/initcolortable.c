@@ -1,4 +1,0 @@
-
-initcolortable()
-{
-}

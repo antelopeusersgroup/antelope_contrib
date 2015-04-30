@@ -1,6 +1,7 @@
 BIN  = relocate
 MAN1 = $(BIN).1
 PF   = $(BIN).pf
+LICENSES= license_relocate.txt
 DBX=-g
 cflags =
 ldflags =
@@ -16,6 +17,8 @@ ldlibs=-lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS)
 
 #ldlibs= -lgenloc -ltt -L/opt/dsap/ext/CLAPACK/F2CLIBS  -llapack_alpha  -lblas_alpha -lI77f2c -lF77f2c -lcoords -lposix4 -lstock $(DBLIBS) $(F77LIBS) -ldl
 
+CLEAN = $(LICENSES)
+
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
@@ -23,3 +26,6 @@ DIRS=
 OBJS = $(BIN).o
 $(BIN):$(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+$(LICENSES) : LICENSE
+	cp $< $@
