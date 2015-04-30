@@ -341,8 +341,10 @@ fprintf(out,"Mo=%g\nMw=%.1f\nStrike=%.0f ; %.0f\nRake=%.0f ; %.0f\nDip=%.0f ; %.
 
 fitcheck(ss,gg,W,M,Mo,nsta,isoflag,&E,&VR);  /*Function to compute vr and flag bad stations*/
 
+/*
 if(plotflag==1)
   mt_plot(ss,gg,nsta,Strike,Rake,Dip,St2,Rk2,Dp2,M,d_mt,Pdc,Pclvd,Piso,Mo,Mw,E,VR);
+  */
 fprintf(out,"Variance=%.3e\n",E);
 fprintf(out,"VarRed=%.3e\n",VR);
 fprintf(stderr,"Var/Pdc=%.3e\n",E/Pdc);

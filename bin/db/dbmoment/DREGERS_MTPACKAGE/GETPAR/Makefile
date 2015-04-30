@@ -3,14 +3,14 @@ LIB = libget.a
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-CFLAGS=-Wno-implicit -Wno-return-type -c -O -DENVIRONMENT
+#CFLAGS=-Wno-implicit -Wno-return-type -c -O -DENVIRONMENT
 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
 
+#	gcc $(CFLAGS) $(SRCS)
 $(LIB) : $(OBJS)
-	gcc $(CFLAGS) $(SRCS)
 	$(RM) $@
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
 	$(RANLIB) $@
