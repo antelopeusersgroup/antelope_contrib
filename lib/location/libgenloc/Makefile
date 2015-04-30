@@ -42,7 +42,7 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	case `uname -s` in \
-	Darwin) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) $(ANTELOPE)/static/libperf.a ;; \
+	Darwin) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) $(ANTELOPE)/contrib/static/libperf.a ;; \
 	*) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS)  ;; \
 	esac 
 
