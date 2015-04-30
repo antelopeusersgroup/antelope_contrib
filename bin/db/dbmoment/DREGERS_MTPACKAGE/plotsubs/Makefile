@@ -1,5 +1,6 @@
 LIB = libstd.a
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 

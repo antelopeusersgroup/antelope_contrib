@@ -1,5 +1,6 @@
 LIB = nrcv2.a
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 SRCS=$(wildcard *.c)

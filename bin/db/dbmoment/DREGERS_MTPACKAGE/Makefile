@@ -13,6 +13,7 @@ cflags = -Wno-return-type -Wno-implicit-int
 #cflags = -arch x86_64 -Wno-return-type -Wno-format -Wno-uninitialized -Wno-unused-variable -Wno-implicit-int -Wno-int-conversion -Wno-implicit-function-declaration
 #fflags = -m64
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS= plotsubs GETPAR C_CODE
