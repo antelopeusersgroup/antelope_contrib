@@ -370,5 +370,5 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 

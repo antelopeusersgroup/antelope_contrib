@@ -42,7 +42,7 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)   
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT)
 
 lint ::
 	lint $(SRCS)

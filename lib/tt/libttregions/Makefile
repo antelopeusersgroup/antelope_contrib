@@ -20,9 +20,9 @@ $(LIB) : $(OBJS)
 $(DLIB) : $(OBJS)
 	$(RM) $@
 	case `uname -s` in \
-	    SunOS) $(CC) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
-	    Linux) $(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) -Wl,-init,_ttregions_init $(OBJS) ;; \
-	    Darwin) $(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
+	    SunOS) $(CC) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
+	    Linux) $(DLD) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) -Wl,-init,_ttregions_init $(OBJS) ;; \
+	    Darwin) $(DLD) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
 	    *)  echo dynamic $(DLIB) not created: System type `uname -s` not recognized. ;;\
 	esac
 

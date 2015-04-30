@@ -17,4 +17,4 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(CONTRIBDLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)

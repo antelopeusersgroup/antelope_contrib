@@ -22,7 +22,7 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
 
 $(LICENSES) : LICENSE
 	cp $< $@

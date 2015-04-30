@@ -1,0 +1,58 @@
+# These are additional makerules for the Antelope Contributed Software
+# repository
+
+# Use LDEXTRA and friends to insert contrib into linker and compiler flags
+CXXEXTRA += -I$(ANTELOPE)/contrib/include
+FEXTRA   += -I$(ANTELOPE)/contrib/include
+CEXTRA   += -I$(ANTELOPE)/contrib/include
+LDEXTRA  += -L$(ANTELOPE)/contrib/lib -Wl,-rpath,$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
+
+CONTRIBDLDFLAGS= $(ldflags) $(LDEXTRA) $(LDPATH) $(LDRUN) -shared -Wl,-soname,$@
+
+CONTRIB_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
+% : %.xpls $(ANTELOPE)/data/templates/xpls # undef any existing ANTELOPEMAKE rule
+
+% : %.xpls $(CONTRIB_TEMPLATE_DIR)/xpls.header $(CONTRIB_TEMPLATE_DIR)/xpls.footer
+	$(RM) $@
+	cat $(CONTRIB_TEMPLATE_DIR)/xpls.header $*.xpls $(CONTRIB_TEMPLATE_DIR)/xpls.footer > $@
+	chmod +x $@
+
+ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1)
+ALL : $(PMAN3:%.pm=%.pd.3p)
+
+MAN :: $(PMAN1:%=$(DEST)/man/man1/%.1)
+MAN :: $(PMAN1:%.xpls=$(DEST)/man/man1/%.1)
+MAN :: $(PMAN1:%.xpl=$(DEST)/man/man1/%.1)
+MAN :: $(PMAN3:%.pm=$(DEST)/man/man3/%.3p)
+
+PODMANRELEASE="Antelope Contrib SW"
+PODARGS1=-s 1 -c "User Commands" -r $(PODMANRELEASE)
+PODARGS3=-s 3p -c "Perl Extensions Commands" -r $(PODMANRELEASE)
+
+%.pd.1 : %.xpls
+	pod2man -n $* $(PODARGS1) $< $@
+
+%.pd.1 : %.xpl
+	pod2man -n $* $(PODARGS1) $< $@
+
+%.pd.1 : %
+	pod2man $(PODARGS1) $< $@
+
+%.pd.3p : %
+	pod2man -n $* $(PODARGS3) $< $@
+
+$(DEST)/man/man1/%.1 : %.pd.1
+	install $< $@
+
+$(DEST)/man/man3/%.3p : %.pd.3p
+	install $< $@
+
+# Augment the uninstall target
+uninstall ::
+	@echo uninstalling $(PMAN1) $(PMAN3)
+	@-if [ -d $(DEST)/man/man1 ] ; then \
+		(cd $(DEST)/man/man1 ; $(RM) -r $(PMAN1:%=%.1) $(PMAN1:%.xpls=%.1) $(PMAN1:%.xpl=%1)) \
+	fi
+	@-if [ -d $(DEST)/man/man3 ] ; then \
+		(cd $(DEST)/man/man3 ; $(RM) -r $(PMAN3:%.pm=%.3p)) \
+	fi

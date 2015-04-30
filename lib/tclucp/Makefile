@@ -9,7 +9,7 @@ DIRS=
 
 OBJS=ucp_init.o
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 
 install :: pkgIndex

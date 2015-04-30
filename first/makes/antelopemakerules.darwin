@@ -7,8 +7,7 @@ FEXTRA   += -I$(ANTELOPE)/contrib/include
 CEXTRA   += -I$(ANTELOPE)/contrib/include
 LDEXTRA  += -L$(ANTELOPE)/contrib/lib -L$(ANTELOPE)/contrib/static
 
-# TODO: DLDFLAGS, DLDFLAGS1, and DLDFLAGS2 need the install name changed on
-# Darwin - maybe with a GNU make regex substitution or some other hackery?
+CONTRIBDLDFLAGS= $(ARCHES) $(ldflags) -flat_namespace -dynamiclib -undefined suppress -install_name $(ANTELOPE)/contrib/lib/$(DLIB) $(LDEXTRA) $(LDPATH)
 
 CONTRIB_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
 % : %.xpls $(ANTELOPE)/data/templates/xpls # undef any existing ANTELOPEMAKE rule

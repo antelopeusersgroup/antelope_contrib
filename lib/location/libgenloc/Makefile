@@ -45,8 +45,8 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	case `uname -s` in \
-	Darwin) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) $(ANTELOPE)/contrib/static/libperf.a ;; \
-	*) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS)  ;; \
+	Darwin) $(DLD) $(CONTRIBDLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) $(ANTELOPE)/contrib/static/libperf.a ;; \
+	*) $(DLD) $(CONTRIBDLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS)  ;; \
 	esac 
 
 $(LICENSES) : LICENSE

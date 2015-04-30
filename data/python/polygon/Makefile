@@ -22,7 +22,7 @@ DSOBJS= _polygon.o
 
 $(DSDLIB) : $(DSOBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DSDLIB) $(DSOBJS) $(DLDLIBS) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $(DSDLIB) $(DSOBJS) $(DLDLIBS) 
 
 $(DLIB): $(DSDLIB)
 	$(RM) $@
