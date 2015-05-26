@@ -1,0 +1,29 @@
+# $Response file valid for Trillium 120PH and Trillium 120PHQ $
+
+originator     Sensor Group PASSCAL
+last_modified  2014-10-16
+
+category        Nanometrics
+configuration   Trillium 120 Sec PH Response
+
+description     Nanometrics Trillium 120 Sec PH Response
+dfile   trillium_120PH
+
+rsptype                 V       # velocity instrument
+band                    b       # broad band
+short_period_sensor     no      # Sets first character of SEED channel code
+sensor_type_code        H       # 2nd character in SEED channel code
+
+gtype           sensor
+sensitivity     12.025e-7
+iunits          nm/s
+ounits          V
+
+orientations    &Tbl{
+Z       0       0
+N       0       90
+E       90      90
+}
+
+response        &datafile(responses/trillium_120PH)
+
