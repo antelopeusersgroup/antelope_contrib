@@ -5,9 +5,9 @@ CLEAN = antelopemakerules
 SUBDIR = /contrib
 include $(ANTELOPEMAKE)
 
-antelopemakerules: antelopemakerules.darwin antelopemakerules.linux
-	@rm -f antelopemakerules
+antelopemakerules: antelopemakerules.*
+	@rm -f $@
 	@case `uname -s` in \
-		Darwin) cp antelopemakerules.darwin antelopemakerules ;; \
-		Linux) cp antelopemakerules.linux antelopemakerules ;; \
+		Darwin) cat $@.darwin $@.common > $@ ;; \
+		Linux) cat $@.linux $@.common > $@ ;; \
 	esac;
