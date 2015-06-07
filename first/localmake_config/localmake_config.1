@@ -33,7 +33,7 @@ The local configuration of external components (as well as the behaviour of the 
 program itself), is controlled by a parameter file on the local system which is kept in
 .nf
 
-      $ANTELOPE/contrib/data/pf/contribmake_config.pf
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
 
 .fi
 If this does not exist, \fBlocalmake_config\fP makes an initial version of the file when it first runs.
@@ -54,7 +54,7 @@ An alternative to running the \fBlocalmake\fP GUI to configure the local system 
 to edit by hand the configuration file
 .nf
 
-      $ANTELOPE/contrib/data/pf/contribmake_config.pf
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
 
 .fi
 For example the edits to the above file
@@ -182,13 +182,13 @@ The master parameter-file controlling the behavior of
 governs, is
 .nf
 
-      $ANTELOPE/contrib/data/pf/contribmake_config.pf
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
 
 .fi
 A starting draft of this file may be obtained from
 .nf
 
-        $ANTELOPE/data/pf/contribmake_config_proto.pf
+        $ANTELOPE/data/pf/localmake_config_proto.pf
 
 .fi
 When \fBlocalmake_config\fP runs, it checks and updates the automated set of make rules currently in
@@ -279,7 +279,7 @@ has been eliminated.
 \fBlocalmake_config\fP always rebuilds the make rules in
 \fI$ANTELOPE/contrib/include/antelopemake.local\fP if that file has
 a timestamp older than the master parameter file
-\fI$ANTELOPE/contrib/data/pf/contribmake_config.pf\fP.  If an automated
+\fI$ANTELOPE/contrib/data/pf/localmake_config.pf\fP.  If an automated
 or other process (e.g. directory copy etc.) changes the timestamp
 on the former file to be later than that on the master parameter
 file, \fBlocalmake_config\fP will not know to update the latter.
@@ -292,7 +292,7 @@ in order for the changes to take effect.
 
 Because \fBlocalmake_config\fP automatically keeps the local make
 rules up to date, it requires write permission to
-\fI$ANTELOPE/contrib/data/pf/contribmake_config.pf\fP and
+\fI$ANTELOPE/contrib/data/pf/localmake_config.pf\fP and
 \fI$ANTELOPE/contrib/include/antelopemake.local\fP. This is considered
 reasonable since compilation and installation requires write
 permission in \fI$ANTELOPE\fP anyways.
