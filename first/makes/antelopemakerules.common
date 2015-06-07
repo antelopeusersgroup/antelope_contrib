@@ -1,12 +1,31 @@
 
 # Common makerules for all platforms
-CONTRIB_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
+
+# Add (and optionally override any existing rules) support for stand-alone scripts that set up the Antelope environment for themselves.
+CONTRIB_TEMPLATE_DIR = $(ANTELOPE)$(SUBDIR)/data/templates
 % : %.xpls $(ANTELOPE)/data/templates/xpls # undef any existing ANTELOPEMAKE rule
 
 % : %.xpls $(CONTRIB_TEMPLATE_DIR)/xpls.header $(CONTRIB_TEMPLATE_DIR)/xpls.footer
 	$(RM) $@
 	cat $(CONTRIB_TEMPLATE_DIR)/xpls.header $*.xpls $(CONTRIB_TEMPLATE_DIR)/xpls.footer > $@
 	chmod +x $@
+
+# Override Antelope xpl extension in order to insert the contrib module path
+% : %.xpl $(ANTELOPE)/data/templates/xpl # undef existing ANTELOPEMAKE rule
+
+% : %.xpl $(CONTRIB_TEMPLATE_DIR)/xpl
+	$(RM) $@
+	cat $(CONTRIB_TEMPLATE_DIR)/xpl $*.xpl > $@
+	chmod +x $@
+
+# Override Antelope xpy extension in order to insert the contrib module path
+% : %.xpy $(ANTELOPE)/data/templates/xpy # undef existing ANTELOPEMAKE rule
+
+% : %.xpy $(CONTRIB_TEMPLATE_DIR)/xpy
+	$(RM) $@
+	cat $(CONTRIB_TEMPLATE_DIR)/xpy $*.xpy > $@
+	chmod +x $@
+
 
 ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1)
 ALL : $(PMAN3:%.pm=%.pd.3p)

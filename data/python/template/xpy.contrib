@@ -1,0 +1,2 @@
+sys.path.append(os.environ['ANTELOPE'] + "/contrib/data/python")
+

@@ -1,7 +1,7 @@
 DATADIR= templates
-DATA= xpls.header xpls.footer xpl
+DATA= xpy
 
-CLEAN= xpls.header xpl
+CLEAN= xpy
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
@@ -10,9 +10,6 @@ include $(ANTELOPEMAKE)
 # need them
 Include :: DATA
 
-xpls.header: xpls.header.id
-	getid < $@.id > $@
-
-xpl: $(ANTELOPE)/data/templates/xpl xpl.contrib
+xpy: $(ANTELOPE)/data/templates/xpy xpy.contrib
 	$(RM) $@
 	cat $^ > $@
