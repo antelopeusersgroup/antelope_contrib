@@ -4,15 +4,14 @@ DATA= xphp wwwphp
 
 CLEAN= xphp wwwphp
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
+SUBDIR= /contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 # Force templates to install during Include build phase
 Include:: DATA
-
-SUBDIR= /local
 
 xphp: xphp.id
 	getid < xphp.id > xphp

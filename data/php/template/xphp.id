@@ -1,5 +1,5 @@
-#!/opt/antelope/$id/local/bin/php
+#!/opt/antelope/$id/contrib/bin/php
 
 <?php
-	set_include_path( get_include_path() .  PATH_SEPARATOR .  $_ENV{'ANTELOPE'} . "/local/data/php" );
+	set_include_path( get_include_path() .  PATH_SEPARATOR .  $_ENV{'ANTELOPE'} . "/contrib/data/php" );
 ?>

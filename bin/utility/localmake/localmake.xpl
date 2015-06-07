@@ -10,7 +10,7 @@ use Getopt::Std;
 sub show_available {
 
 	if( scalar( @Module_names ) <= 0 ) {
-		
+
 		print "\n\n\tNo modules configured in $Pf.pf\n\n";
 
 	} else {
@@ -38,7 +38,7 @@ sub save_as {
 	$file = $FSref->Show;
 
 	if( defined( $file ) && $file ne "" ) {
-		
+
 		open( S, "> $file" );
 
 		print S $Windows{"CompileOut"}->Contents();
@@ -51,8 +51,8 @@ sub inform {
 	my( $msg ) = @_;
 
 	if( $opt_v ) {
-		
-		if( $Gui_mode && defined( $Windows{"CompileOut"} ) ) { 
+
+		if( $Gui_mode && defined( $Windows{"CompileOut"} ) ) {
 
 			$Windows{"CompileOut"}->insert( "end", $msg, "localmake_inform" );
 
@@ -65,7 +65,7 @@ sub inform {
 			elog_notify( $msg );
 		}
 	}
-	
+
 	return;
 }
 
@@ -79,7 +79,7 @@ sub load_modules {
 			   "pf_revision_time",
 			   "antelope",
 			   "dest",
-			   "extra_rules", 
+			   "extra_rules",
                            "platform_rules",
 			   "capabilities",
 			   "header",
@@ -95,13 +95,13 @@ sub load_modules {
 		next if( $key =~ /src_subdir/ );
 
 		if( $key eq "modules" ) {
-			
+
 			elog_die( "Your $Pf.pf file still contains the 'modules' array, indicating " .
 				  "that it is out of date. Please update $Pf.pf per the localmake(1) " .
 				  "documentation. Exiting.\n" );
 
-		} 
-		
+		}
+
 		$val = pfget( $Pf, $key );
 
 		if( ref( $val ) eq "HASH" ) {
@@ -109,7 +109,7 @@ sub load_modules {
 			$modules{$key} = $val;
 
 		} else {
-			
+
 			elog_complain( "Unexpected parameter '$key' in $Pf.pf. " .
 				       "Ignoring and attempting to continue \n" );
 		}
@@ -124,7 +124,7 @@ sub ansicolored_to_tagged {
 	if( $line eq "ANSICODE_00 \n" ) {
 
 		return ( "\n" );
-	} 
+	}
 
 	my( @line_parts ) = split( /(?=ANSICODE_)/, $line );
 
@@ -152,7 +152,7 @@ sub ansicolored_to_tagged {
 			# Only use the last of these on fall-through; preceding should be empty
 
 			if( $tag eq "reverse" ) {
-				
+
 				$layer = "background";
 
 			} elsif( $tag eq "underline" ) {
@@ -176,8 +176,8 @@ sub ansicolored_to_tagged {
 				$color = $tag;
 
 				# HACK to make this show up:
-				if( $color eq "cyan" ) { 
-					
+				if( $color eq "cyan" ) {
+
 					$color = "dark cyan";
 				}
 			}
@@ -197,7 +197,7 @@ sub ansicolored_to_tagged {
 
 			if( $clear ) {
 
-				$Windows{"CompileOut"}->tagConfigure( $tag_name, 
+				$Windows{"CompileOut"}->tagConfigure( $tag_name,
 								-foreground => "black",
 								-background => "",
 								-font => $font,
@@ -214,11 +214,11 @@ sub ansicolored_to_tagged {
 				$font_bold = $font->Clone( -weight => "bold" );
 
 				push( @tagopts, "-font", $font_bold );
-				
+
 			}
 
 			if( $layer eq "foreground" ) {
-				
+
 				push( @tagopts, "-foreground", $color );
 
 			} else {
@@ -288,13 +288,13 @@ sub make_target {
 	if( $Gui_mode ) {
 
 		$fh = new FileHandle;
-		
+
 		$fh->open( "$cmd |" );
 
 		$fh->autoflush(1);
-			
+
 		while( $line = <$fh> ) {
-				
+
 			@tagged = ansicolored_to_tagged( $line );
 
 			$Windows{"CompileOut"}->insert( "end", @tagged );
@@ -306,7 +306,7 @@ sub make_target {
 
 		$fh->close();
 
-		# Re-run the verify command rather than construct an entire 
+		# Re-run the verify command rather than construct an entire
 		# auto-flushing spawn architecture:
 
 		if( $target =~ /^VERIFY/ ) {
@@ -314,7 +314,7 @@ sub make_target {
 			$rc = system( $quiet );
 
 		} else {
-			
+
 			$rc = 0;
 		}
 
@@ -326,7 +326,7 @@ sub make_target {
 
 			if( $rc != 0 ) {
 
-				# Re-run to show output without overwriting return code: 
+				# Re-run to show output without overwriting return code:
 
 				system( $cmd );
 			}
@@ -353,7 +353,7 @@ sub clear_compileout {
 
 	%Defined_tags = ();
 
-	$Windows{"CompileOut"} = $Windows{"compile"}->Scrolled( "ROText", 
+	$Windows{"CompileOut"} = $Windows{"compile"}->Scrolled( "ROText",
 						  		-wrap => "word",
 						  		-scrollbars => "oe",
 								-background => "white" );
@@ -365,7 +365,7 @@ sub clear_compileout {
 	$Windows{"Main"}->gridRowconfigure( $CompileOut_Row, -weight => 1 );
 
 	$Windows{"Main"}->geometry( $geom );
-	
+
 	$Windows{"Main"}->update();
 
 	return;
@@ -390,7 +390,7 @@ sub localmake_module {
 	my( @steps ) = @{$Modules{$module}{build}};
 
 	if( @steps <= 0 ) {
-		
+
 		show_available();
 
 		elog_die( "No steps listed for module '$module' in parameter-file '$Pf'\n" );
@@ -413,7 +413,7 @@ sub localmake_module {
 			my( $ans ) = $dialog->Show();
 
 			unless( $ans eq 'Install Despite Warning' ) {
-				
+
 				elog_complain( "Skipping install of potentially conflicting software module '$module'" );
 
 				$Windows{"compilebutton_$module"}->configure( -relief => "raised" );
@@ -438,13 +438,13 @@ sub localmake_module {
 	my( $src_subdir, $product );
 
 	$product = $Modules{$module}{product};
-	
+
 	if( $opt_s ) {
-		
+
 		$src_subdir = $opt_s;
 
-	} else { 
-		
+	} else {
+
 		$src_subdir = $Modules{$module}{src_subdir};
 	}
 
@@ -473,7 +473,7 @@ sub localmake_module {
 	my( $cwd ) = Cwd::cwd();
 
 	foreach $step ( @steps ) {
-		
+
 		if( $step =~ m@^/.*@ ) {
 
 			$Dir = $step;
@@ -525,7 +525,7 @@ sub localmake_module {
 		$num_error_blocks = scalar( @error_blocks ) / 2;
 
 		if( $num_warning_blocks > 0 || $num_error_blocks > 0 ) {
-			
+
 			add_followup_buttons();
 		}
 
@@ -546,7 +546,7 @@ sub localmake_module {
 		$msg = "\tWarnings: $num_warning_blocks blocks of warning messages\n";
 
 		if( $num_warning_blocks > 0 ) {
-			
+
 			$tag = "magenta";
 
 		} else {
@@ -559,7 +559,7 @@ sub localmake_module {
 		$msg = "\tErrors:   $num_error_blocks blocks of error messages\n";
 
 		if( $num_error_blocks > 0 ) {
-			
+
 			$tag = "red";
 
 		} else {
@@ -597,7 +597,7 @@ sub localmake_module {
 sub compute_font_height {
 
 	if( $Windows{"CompileOut"}->height() == 1 ) {
-		
+
 		$Windows{"Main"}->after( 100, \&compute_font_height );
 
 		return;
@@ -635,7 +635,7 @@ sub get_next_hidden_message {
 }
 
 sub show_first_error {
-	
+
 	my( $start ) = $errorslist[0];
 
 	$current_error = 0;
@@ -651,7 +651,7 @@ sub show_first_error {
 }
 
 sub show_first_warning {
-	
+
 	my( $start ) = $warningslist[0];
 
 	$current_warning = 0;
@@ -667,7 +667,7 @@ sub show_first_warning {
 }
 
 sub show_next_error {
-	
+
 	$current_error = get_next_hidden_message( \@errorslist, \$current_error );
 
 	my( $start ) = $errorslist[$current_error * 2];
@@ -683,7 +683,7 @@ sub show_next_error {
 }
 
 sub show_next_warning {
-	
+
 	$current_warning = get_next_hidden_message( \@warningslist, \$current_warning );
 
 	my( $start ) = $warningslist[$current_warning * 2];
@@ -730,19 +730,19 @@ sub write_makerules {
 	print O "$header\n\n";
 
 	foreach $macro ( keys( %macros ) ) {
-		
+
 		if( ! defined( $macros{$macro} ) ) {
 
 			next;
 
 		} else {
-			
+
 			$contents = $macros{$macro};
 		}
 
 		if( ref( $contents ) eq "HASH" ) {
-		
-			if( defined( $contents->{$Os} ) && 
+
+			if( defined( $contents->{$Os} ) &&
 			    $contents->{$Os} ne "" ) {
 
 				print O "$macro = $contents->{$Os}\n";
@@ -776,19 +776,19 @@ sub write_makerules {
 sub set_macros {
 
 	foreach $macro ( keys( %macros ) ) {
-		
+
 		if( ! defined( $macros{$macro} ) ) {
 
 			next;
 
 		} else {
-			
+
 			$contents = $macros{$macro};
 		}
 
 		if( ref( $contents ) eq "HASH" ) {
-		
-			if( defined( $contents->{$Os} ) && 
+
+			if( defined( $contents->{$Os} ) &&
 			    $contents->{$Os} ne "" ) {
 
 				$$macro = "$contents->{$Os}";
@@ -798,9 +798,9 @@ sub set_macros {
 }
 
 sub set_initial_config {
-	 
+
 	foreach $macro ( keys( %macros_initial_config ) ) {
-		
+
 		if( ! defined( $macros{$macro} ) ) {
 
 			elog_complain( "File '$Pf_config_file' refers to decommissioned macro '$macro'\n" );
@@ -866,10 +866,10 @@ sub init_config_File_menu {
 
 	$menubutton = $w->Menubutton (
 			    -text => 'File',
-			    -pady => 0, 
-			    -anchor => 'w', 
+			    -pady => 0,
+			    -anchor => 'w',
 			    );
-			    
+
 	$menubutton->pack( -side => "left" );
 
 	$filemenu = $menubutton->Menu( -tearoff => 0 );
@@ -889,8 +889,8 @@ sub init_localmake_File_menu {
 
 	$menubutton = $w->Menubutton (
 			    -text => 'File',
-			    -pady => 0, 
-			    -anchor => 'w', 
+			    -pady => 0,
+			    -anchor => 'w',
 			    )->pack( -side => "left" );
 
 	$filemenu = $menubutton->Menu( -tearoff => 0 );
@@ -903,7 +903,7 @@ sub init_localmake_File_menu {
 	my( $button );
 
 	$button = $w->Button( -text => "configure",
-			      -bg => "green", 
+			      -bg => "green",
 			      -command => \&run_configure );
 
 	$button->pack( -side => "right" );
@@ -959,37 +959,37 @@ sub add_followup_buttons {
 
 	my( $frame ) = $w->Frame( -relief => 'raised', -borderwidth => 5 );
 
-	$Windows{"FirstError"} = $frame->Button( -text => "First Error", 
-					    -relief => 'raised', 
-					    -foreground => 'red', 
+	$Windows{"FirstError"} = $frame->Button( -text => "First Error",
+					    -relief => 'raised',
+					    -foreground => 'red',
 					    -state => $firsterror_state,
 					    -command => \&show_first_error );
 
-	$Windows{"FirstError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+	$Windows{"FirstError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );
 
-	$Windows{"NextError"} = $frame->Button( -text => "Next Error", 
-					   -relief => 'raised', 
-					   -foreground => 'red', 
+	$Windows{"NextError"} = $frame->Button( -text => "Next Error",
+					   -relief => 'raised',
+					   -foreground => 'red',
 					   -state => $nexterror_state,
 					   -command => \&show_next_error );
 
-	$Windows{"NextError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+	$Windows{"NextError"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );
 
-	$Windows{"FirstWarning"} = $frame->Button( -text => "First Warning", 
-					      -relief => 'raised', 
-					      -foreground => 'magenta', 
+	$Windows{"FirstWarning"} = $frame->Button( -text => "First Warning",
+					      -relief => 'raised',
+					      -foreground => 'magenta',
 					      -state => $firstwarning_state,
 					      -command => \&show_first_warning );
 
-	$Windows{"FirstWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+	$Windows{"FirstWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );
 
-	$Windows{"NextWarning"} = $frame->Button( -text => "Next Warning", 
-					     -relief => 'raised', 
-					     -foreground => 'magenta', 
+	$Windows{"NextWarning"} = $frame->Button( -text => "Next Warning",
+					     -relief => 'raised',
+					     -foreground => 'magenta',
 					     -state => $nextwarning_state,
 					     -command => \&show_next_warning );
 
-	$Windows{"NextWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );		
+	$Windows{"NextWarning"}->pack( -side => 'left', -fill => 'x', -expand => 'yes' );
 
 	$frame->grid( -row => 3, -column => 0, -sticky => "new" );
 
@@ -1136,26 +1136,26 @@ sub explain {
 	my( $w ) = $Windows{"Main"}->Toplevel();
 
 	my( $f ) = $w->Frame();
-	
+
 	$f->pack( -side => "top",
-	      	  -fill => "both", 
+	      	  -fill => "both",
 		  -expand => "yes" );
 
 	my( $text ) = $f->Scrolled( "ROText",
 				    -wrap => "word",
 				    -scrollbars => "oe");
-				    
-	$text->pack( -side => "left", 
+
+	$text->pack( -side => "left",
 		     -fill => "both",
 		     -expand => "yes" );
 
 	$text->insert( "end", $detail );
 
-	my( $b ) = $w->Button( -text => "Dismiss", 
+	my( $b ) = $w->Button( -text => "Dismiss",
 		    	       -command => sub { $w->destroy } );
 
 	$b->pack( -side => "top",
-	      	  -fill => "both", 
+	      	  -fill => "both",
 		  -expand => "yes" );
 
 	$w->waitWindow();
@@ -1164,7 +1164,7 @@ sub explain {
 }
 
 sub tweak_capability {
-	
+
 	mark_configuration_unsaved( "test" );
 
 	test_capability( @_ );
@@ -1173,7 +1173,7 @@ sub tweak_capability {
 sub test_capability {
 	if( ref( $_[0] ) ) { shift( @_ ); }
 	my( $c, $mode ) = @_;
-	
+
 	my( $passed ) = 1;
 
 	if( $mode eq "configure" ) {
@@ -1213,7 +1213,7 @@ sub test_capability {
 		$Widgets{"en$c"}->configure( -fg => "grey30" );
 
 		return $passed;
-	} 
+	}
 
 	@required_macros = @{pfget( $Pf, "capabilities{$c}{required_macros}" )};
 	@tests = @{pfget( $Pf, "capabilities{$c}{tests}" )};
@@ -1221,7 +1221,7 @@ sub test_capability {
 	while( $required_macro = shift( @required_macros ) ) {
 
 		if( ! defined( $$required_macro ) || $$required_macro eq "" ) {
-				
+
 			if( $mode eq "verify" ) {
 
 				elog_complain( "Macro '$required_macro', required for '$c' capability, " .
@@ -1232,9 +1232,9 @@ sub test_capability {
 
 			} else {
 
-				$Widgets{"t$c"}->insert( "end", 
+				$Widgets{"t$c"}->insert( "end",
 					"Failed check for capability '$c': " .
-					"Required macro '$required_macro' is not defined\n\n", 
+					"Required macro '$required_macro' is not defined\n\n",
 					'failed' );
 
 				$passed = 0;
@@ -1244,16 +1244,16 @@ sub test_capability {
 
 			if( $mode eq "configure" ) {
 
-				$Widgets{"t$c"}->insert( "end", 
+				$Widgets{"t$c"}->insert( "end",
 					"Passed check for capability '$c': " .
-					"Required macro '$required_macro' is defined\n\n", 
+					"Required macro '$required_macro' is defined\n\n",
 					'passed' );
 			}
 		}
 	}
 
 	while( $test = shift( @tests ) ) {
-			
+
 		if( ! eval( $test ) ) {
 
 			if( $mode eq "verify" ) {
@@ -1261,11 +1261,11 @@ sub test_capability {
 				elog_complain( "Test failed for capability '$c': $failure_msg\n" );
 
 				exit( -1 );
-				
+
 			} else {
 
-				$Widgets{"t$c"}->insert( "end", 
-					"Failed: Test failed for capability '$c': $failure_msg\n\n", 
+				$Widgets{"t$c"}->insert( "end",
+					"Failed: Test failed for capability '$c': $failure_msg\n\n",
 					'failed' );
 
 				$passed = 0;
@@ -1275,8 +1275,8 @@ sub test_capability {
 
 			if( $mode eq "configure" ) {
 
-				$Widgets{"t$c"}->insert( "end", 
-					"Passed test for capability '$c': $success_msg\n\n", 
+				$Widgets{"t$c"}->insert( "end",
+					"Passed test for capability '$c': $success_msg\n\n",
 					'passed' );
 			}
 		}
@@ -1328,7 +1328,7 @@ sub save_and_quit {
 
 sub run_configure {
 
-	$Windows{"Main"}->gridForget( $Windows{"localmake_menubar"}, 
+	$Windows{"Main"}->gridForget( $Windows{"localmake_menubar"},
 				      $Windows{"compile"} );
 
 	destroy_followup_buttons();
@@ -1357,7 +1357,7 @@ sub init_configure_window {
 				 	);
 
 	$Windows{"save_config"} = $Windows{"Main"}->Button( -text => "save configuration",
-				       -command => \&commit_configuration, 
+				       -command => \&commit_configuration,
 				       -bg => "gray",
 				       -state => "disabled" );
 
@@ -1379,7 +1379,7 @@ sub init_config_menubar {
 
 	my( $menubar );
 
-	$menubar = $w->Frame( -relief => 'raised', 
+	$menubar = $w->Frame( -relief => 'raised',
 			      -borderwidth => 2 );
 
 	init_config_File_menu( $menubar );
@@ -1399,7 +1399,7 @@ sub init_capabilities {
 	my( $capabilities_window );
 	my( @specs, @lefttop, @righttop, @leftbottom, @rightbottom, $i );
 
-	$capabilities_window = $w->Frame( -relief => 'raised', 
+	$capabilities_window = $w->Frame( -relief => 'raised',
 					  -borderwidth => 2 );
 
 	push( @specs, "notebook capabilities - 0,0 Capabilities" );
@@ -1479,7 +1479,7 @@ sub init_capabilities {
 		resticky( $Widgets{"e$c"}->parent(), "nsew" );
 
 		resticky( $Widgets{"t$c"}, "nsew" );
-		
+
 		foreach $m ( @{$capabilities{$c}{required_macros}} ) {
 
 			$Widgets{"e$c$m"}->parent()->parent()->gridColumnconfigure( 0, -weight => 1 );
@@ -1491,7 +1491,7 @@ sub init_capabilities {
 			resticky( $Widgets{"e$c$m"}->parent(), "ew" );
 		}
 
-		$Var{"np$c"} = "$capabilities{$c}{Description}"; 
+		$Var{"np$c"} = "$capabilities{$c}{Description}";
 
 		$Widgets{"b$c"}->configure( -command => [\&toggle_capability, $c] );
 
@@ -1551,8 +1551,8 @@ sub init_compile_window {
 
 		$Windows{"compilebutton_$module"} = create_compile_button( $Windows{"buttons"}, $module );
 
-		$Windows{"compilebutton_$module"}->grid( -row => $buttonrow, 
-							 -column => $buttoncolumn, 
+		$Windows{"compilebutton_$module"}->grid( -row => $buttonrow,
+							 -column => $buttoncolumn,
 							 -sticky => "new" );
 
 		if( $buttonrow == 0 ) {
@@ -1572,10 +1572,10 @@ sub init_compile_window {
 		}
 	}
 
-	$Windows{"CompileOut"} = $compilewindow->Scrolled( "ROText", 
+	$Windows{"CompileOut"} = $compilewindow->Scrolled( "ROText",
 					  		-wrap => "word",
 					  		-scrollbars => "oe",
-							-background => "white", 
+							-background => "white",
 							-width => $ROWidth );
 
 	$Windows{"CompileOut"}->tagConfigure( "localmake_inform", -foreground => "brown" );
@@ -1591,7 +1591,7 @@ sub init_compile_window {
 
 sub run_compile {
 
-	$Windows{"Main"}->gridForget( $Windows{"config_menubar"}, 
+	$Windows{"Main"}->gridForget( $Windows{"config_menubar"},
 				      $Windows{"save_config"},
 				      $Windows{"capabilities"} );
 
@@ -1632,7 +1632,7 @@ sub init_window {
 	use Tk::Dialog;
 	use ptkform;
 	use elog_gui;
-	
+
 	$Windows{"Main"} = MainWindow->new();
 
 	$Windows{"Main"}->minsize(40, 20);
@@ -1644,7 +1644,7 @@ sub init_window {
 	$Windows{"Main"}->bind( "<Control-C>", \&quit );
 
 	if( $opt_c ) {
-		
+
 		init_configure_window();
 
 	} else {
@@ -1659,7 +1659,7 @@ $Pf = "localmake";
 
 $Pf_config = "localmake_config";
 
-$localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
+$localpf_dir = "$ENV{'ANTELOPE'}/contrib/data/pf";
 
 $ENV{'PFPATH'} = "$localpf_dir:$ENV{'PFPATH'}";
 
@@ -1678,7 +1678,7 @@ if( !getopts( 'clp:s:tv' ) || scalar( @ARGV ) > 1 ) {
 if( $opt_l && scalar( @ARGV ) > 0 ) {
 
 	elog_complain( "Useless specification of module with -l option, ignoring module\n" );
-} 
+}
 
 if( $opt_p ) {
 
@@ -1693,7 +1693,7 @@ $Tarball_time_format = pfget( $Pf, "tarball_time_format" );
 $Tar_command = pfget( $Pf, "tar_command" );
 $Make_command = pfget( $Pf, "make_command" );
 
-%macros = %{pfget($Pf,"macros")}; 
+%macros = %{pfget($Pf,"macros")};
 $header = pfget( $Pf, "header" );
 $extra_rules = pfget( $Pf, "extra_rules" );
 %capabilities = %{pfget( $Pf, "capabilities" )};
@@ -1762,7 +1762,7 @@ if( localmake_module( $module ) < 0 && ! $Gui_mode ) {
 }
 
 if( $opt_t ) {
-	
+
 	$tarfilelist = "/tmp/localmake_$<_$$";
 
 	if( scalar( @{$Modules{$module}{package}} ) <= 0 ) {
@@ -1771,7 +1771,7 @@ if( $opt_t ) {
 	}
 
 	open( T, ">$tarfilelist" );
-	
+
 	print T map { "$Modules{$module}{product}/$_\n" } @{$Modules{$module}{package}};
 
 	close( T );
@@ -1779,7 +1779,7 @@ if( $opt_t ) {
 	$tarfile = epoch2str( str2epoch( "now" ), $Tarball_time_format );
 
 	$tarfile .= "_$module";
-	$tarfile .= "_" . my_hardware(); 
+	$tarfile .= "_" . my_hardware();
 	$tarfile .= "_" . my_os();
 	$tarfile .= "_tarball.tar";
 
@@ -1788,7 +1788,7 @@ if( $opt_t ) {
 		$v = "-v";
 
 	} else {
-		
+
 		$v = "";
 	}
 

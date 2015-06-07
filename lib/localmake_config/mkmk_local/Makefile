@@ -6,5 +6,3 @@ MAN1 = mkmk_local.1
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-
-SUBDIR = /local

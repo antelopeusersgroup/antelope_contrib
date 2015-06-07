@@ -3,8 +3,8 @@
 	$_ENV{'ANTELOPE'} = "/opt/antelope/$id";
 
 	set_include_path( get_include_path() .
-			  PATH_SEPARATOR . 
-			  $_ENV{'ANTELOPE'} . "/local/data/www" .
-			  PATH_SEPARATOR . 
-			  $_ENV{'ANTELOPE'} . "/local/data/php" );
+			  PATH_SEPARATOR .
+			  $_ENV{'ANTELOPE'} . "/contrib/data/www" .
+			  PATH_SEPARATOR .
+			  $_ENV{'ANTELOPE'} . "/contrib/data/php" );
 ?>

@@ -1,14 +1,15 @@
 LIB=libseisw.a
 # DLIB=$(LIB:.a=$(DSUFFIX))
-# BUNDLE=$(LIB:.a=.bundle) 
+# BUNDLE=$(LIB:.a=.bundle)
 INCLUDE=Seisw.h SeismicPick.h xplot.h display_marker.h
 
 #Needed eventually
 #MAN3=
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
-include $(ANTELOPEMAKE)  	
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(XMOTIFINCLUDE)
@@ -18,6 +19,5 @@ CXXFLAGS += -I$(XMOTIFINCLUDE)
 OBJS=	SeismicPick.o Seisw.o colormap.o parameters.o
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)  
+	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@
-

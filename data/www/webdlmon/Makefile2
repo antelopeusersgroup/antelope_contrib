@@ -9,9 +9,8 @@ MAN3H= webdlmon.3h
 
 CLEAN = *.php
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
+SUBDIR= /contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
-
-SUBDIR= /local
