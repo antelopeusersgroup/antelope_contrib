@@ -1,7 +1,5 @@
 DATADIR= templates
-DATA= xpy
-
-CLEAN= xpy
+DATA= xpy.contrib
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
@@ -9,7 +7,3 @@ include $(ANTELOPEMAKE)
 # Override the Include rule so that templates get installed before scripts
 # need them
 Include :: DATA
-
-xpy: $(ANTELOPE)/data/templates/xpy xpy.contrib
-	$(RM) $@
-	cat $^ > $@

@@ -13,20 +13,20 @@ CONTRIB_TEMPLATE_DIR = $(ANTELOPE)$(SUBDIR)/data/templates
 # Override Antelope xpl extension in order to insert the contrib module path
 % : %.xpl $(ANTELOPE)/data/templates/xpl # undef existing ANTELOPEMAKE rule
 
-% : %.xpl $(CONTRIB_TEMPLATE_DIR)/xpl
+% : %.xpl $(ANTELOPE)/data/templates/xpl $(CONTRIB_TEMPLATE_DIR)/xpl.contrib
 	$(RM) $@
-	cat $(CONTRIB_TEMPLATE_DIR)/xpl $*.xpl > $@
+	cat $(ANTELOPE)/data/templates/xpl $(CONTRIB_TEMPLATE_DIR)/xpl.contrib $*.xpl > $@
 	chmod +x $@
 
 # Override Antelope xpy extension in order to insert the contrib module path
 % : %.xpy $(ANTELOPE)/data/templates/xpy # undef existing ANTELOPEMAKE rule
 
-% : %.xpy $(CONTRIB_TEMPLATE_DIR)/xpy
+% : %.xpy $(ANTELOPE)/data/templates/xpy $(CONTRIB_TEMPLATE_DIR)/xpy.contrib
 	$(RM) $@
-	cat $(CONTRIB_TEMPLATE_DIR)/xpy $*.xpy > $@
+	cat $(ANTELOPE)/data/templates/xpy $(CONTRIB_TEMPLATE_DIR)/xpy.contrib $*.xpy > $@
 	chmod +x $@
 
-
+# pod2man rules
 ALL : $(PMAN1:%.xpls=%.pd.1) $(PMAN1:%.xpl=%.pd.1) $(PMAN1:%=%.pd.1)
 ALL : $(PMAN3:%.pm=%.pd.3p)
 
