@@ -1,4 +1,3 @@
-DIRS=makes localmake_config localmake
+DIRS=skel makes localmake_config localmake
 SUBDIR=/contrib
-DIRS=skel makes
 include $(ANTELOPEMAKE)
