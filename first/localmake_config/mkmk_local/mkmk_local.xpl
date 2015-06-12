@@ -8,8 +8,8 @@ elog_init( $pgm, @ARGV );
 
 $antelope = $ENV{'ANTELOPE'} ;
 
-$template1="$antelope/local/data/templates/makefile.local" ;
-$template2="$antelope/local/data/templates/Makefile2.local" ;
+$template1="$antelope/contrib/data/templates/makefile.local" ;
+$template2="$antelope/contrib/data/templates/Makefile2.local" ;
 
 if( ! -e "$template1" ) {
 
@@ -41,10 +41,10 @@ open ( IN1, $template1 ) ;
 
 while ( <IN1> ) {
     if ( $strip ) {
-	next if ( /^%/ ) ; 
+	next if ( /^%/ ) ;
 	s/\s*#.*$// ;
     }
-    print OUT1 ; 
+    print OUT1 ;
 }
 
 close( IN1 );

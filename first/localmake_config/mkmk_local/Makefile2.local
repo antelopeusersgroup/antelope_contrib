@@ -1,13 +1,7 @@
-DATADIR= www/cgibin
-
-DATA= wfplotter.php
-
-MAN3H= wfplotter.3h
-
-CLEAN = *.php
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
 SUBDIR= /contrib
+
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)

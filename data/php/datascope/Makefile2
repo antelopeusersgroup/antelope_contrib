@@ -2,26 +2,25 @@ PHPDLIB = Datascope.so
 
 DATADIR= php
 
-DATA= $(PHPDLIB) 
+DATA= $(PHPDLIB)
 
-MAN3H= datascope_php.3h 
+MAN3H= datascope_php.3h
 
-CLEAN= $(PHPDLIB) 
+CLEAN= $(PHPDLIB)
 
 cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
-	-DHAVE_CONFIG_H -DPHP_ATOM_INC 
+	-DHAVE_CONFIG_H -DPHP_ATOM_INC
 ldlibs= $(STOCKLIBS) $(TRLIBS) -ldbxml -lpfxml
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
+SUBDIR= /contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
-
-SUBDIR= /local
 
 DBG=
 
 DSOBJS= Datascope.o
 $(PHPDLIB) : $(DSOBJS)
 	$(RM) $@
-	$(DLD) $(PHPDLDFLAGS) -o $(PHPDLIB) $(LORDER) $(DSOBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(PHPDLDFLAGS) -o $(PHPDLIB) $(LORDER) $(DSOBJS) $(TSORT) $(DLDLIBS)

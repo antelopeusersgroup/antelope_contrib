@@ -533,11 +533,11 @@ capabilities	&Arr{
     }
 }
 antelope	&env(ANTELOPE)
-dest	&antelope/local/include
+dest	&antelope/contrib/include
 extra_rules	&Literal{
 .SUFFIXES: .SUFFIXES .xpy .xphp .wwwphp .php
 
-LOCAL_TEMPLATE_DIR = $(ANTELOPE)/local/data/templates
+LOCAL_TEMPLATE_DIR = $(ANTELOPE)/contrib/data/templates
 % : %.xphp $(LOCAL_TEMPLATE_DIR)/xphp
 	$(RM) $@
 	cat $(LOCAL_TEMPLATE_DIR)/xphp $< > $@
