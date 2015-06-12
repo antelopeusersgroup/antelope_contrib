@@ -1,3 +1,4 @@
 MAN3H = webdbe.3h
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

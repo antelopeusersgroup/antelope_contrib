@@ -1,12 +1,12 @@
 '''
 db2kml_py.py
 
-Create Google Earth KML source from 
+Create Google Earth KML source from
 database origin and/or site tables
 
 @author      Juan Reyes
-@credits     Rewrite of an original Perl script (db2kml) by 
-             Michael West of the Volcano Observatory, University 
+@credits     Rewrite of an original Perl script (db2kml) by
+             Michael West of the Volcano Observatory, University
              of Alaska Fairbanks.
 @credits 2   Rewrite 2 by Rob Newman <robertlnewman@gmail.com>
 '''
@@ -19,7 +19,6 @@ import zipfile
 from optparse import OptionParser
 
 # Import Antelope modules
-#sys.path.append('%s/local/data/python/antelope' % os.environ['ANTELOPE'])
 import antelope.datascope as datascope
 import antelope.stock as stock
 
@@ -130,7 +129,7 @@ def calc_magtype(ev_dict):
         mag = '-'
         mag_sc = ""
     return mag, mag_sc
- 
+
 def get_orig_records(database, pf, verbosity=0):
     """Return a list of all events
     from the database
@@ -239,7 +238,7 @@ def create_site(meta_dict_site, visibility, style):
     return ''.join(siteplace)
 
 def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inactive, verbosity=0):
-    """Get all the sites 
+    """Get all the sites
     in the dbmaster
     """
     if verbosity > 0:
@@ -334,7 +333,7 @@ def generate_legend(legendurl):
     return overlaycoords % legendurl
 
 def kml_header():
-    """Define basic kml 
+    """Define basic kml
     header string"""
     kml_header = '''<?xml version="1.0" encoding="UTF-8"?>
     <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
@@ -342,7 +341,7 @@ def kml_header():
     return kml_header
 
 def kml_start(params):
-    """Define basic kml 
+    """Define basic kml
     header string"""
     kmlstart = '''
     <Document>
@@ -353,7 +352,7 @@ def kml_start(params):
     return kmlstart % (params[0], params[1])
 
 def kml_lookat(params):
-    """Define basic kml 
+    """Define basic kml
     header string"""
     kmlstart = '''
         <LookAt>
@@ -375,7 +374,7 @@ def kml_network(params):
     </NetworkLinkControl>
     '''
     return kml_network % params
- 
+
 def kml_footer():
     """Create KML footer"""
     kml_footer = '''
@@ -455,12 +454,12 @@ def kml_styles(pf_result, verbosity=0):
     return ''.join(style_list)
 
 def main():
-    """Main functionality 
+    """Main functionality
     for creating KML files
     """
 
     database, out_file, verbose, debug, pf, file_type = configure()
-    verbosity = calc_verbosity(verbose, debug) 
+    verbosity = calc_verbosity(verbose, debug)
 
     if verbosity > 0:
         print "Start of script at time %s" % time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
@@ -474,14 +473,14 @@ def main():
         outstr.append(kml_network(expires_time))
 
     outstr.append(kml_start([
-        pf_result['headers']['name'], 
-        pf_result['headers']['description'], 
+        pf_result['headers']['name'],
+        pf_result['headers']['description'],
     ]))
 
     if pf_result['headers']['set_look_at']:
         outstr.append(kml_lookat([
-            str(pf_result['headers']['look_at']['longitude']), 
-            str(pf_result['headers']['look_at']['latitude']), 
+            str(pf_result['headers']['look_at']['longitude']),
+            str(pf_result['headers']['look_at']['latitude']),
             str(pf_result['headers']['look_at']['range'])
         ]))
 
@@ -505,10 +504,10 @@ def main():
         outstr.append(
             get_site_records(
                 database,
-                pf_result['styles']['stylestation'], 
-                pf_result['stations']['expr'], 
-                pf_result['stations']['fields'], 
-                pf_result['stations']['visibility'], 
+                pf_result['styles']['stylestation'],
+                pf_result['stations']['expr'],
+                pf_result['stations']['fields'],
+                pf_result['stations']['visibility'],
                 pf_result['stations']['display_inactive'],
                 verbosity
             )

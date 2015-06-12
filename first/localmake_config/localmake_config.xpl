@@ -286,7 +286,7 @@ sub run_configure {
 $Pf_config = "localmake_config";
 $Pf_localmake = "localmake";
 
-$localpf_dir = "$ENV{'ANTELOPE'}/local/data/pf";
+$localpf_dir = "$ENV{'ANTELOPE'}/contrib/data/pf";
 
 $ENV{'PFPATH'} = "$localpf_dir:$ENV{'PFPATH'}";
 

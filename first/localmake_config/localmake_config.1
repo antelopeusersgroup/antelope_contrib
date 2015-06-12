@@ -33,7 +33,7 @@ The local configuration of external components (as well as the behaviour of the 
 program itself), is controlled by a parameter file on the local system which is kept in
 .nf
 
-      $ANTELOPE/local/data/pf/localmake_config.pf
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
 
 .fi
 If this does not exist, \fBlocalmake_config\fP makes an initial version of the file when it first runs.
@@ -42,7 +42,7 @@ Once configured, \fBlocalmake_config\fP creates a set of local make-rules to han
 dependencies. By default, these local make-rules are stored in
 .nf
 
-        $ANTELOPE/local/include/antelopemake.local
+        $ANTELOPE/contrib/include/antelopemake.local
 
 .fi
 Do not edit the above file of make rules directly, as it will be automatically overwritten upon
@@ -54,7 +54,7 @@ An alternative to running the \fBlocalmake\fP GUI to configure the local system 
 to edit by hand the configuration file
 .nf
 
-      $ANTELOPE/local/data/pf/localmake_config.pf
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
 
 .fi
 For example the edits to the above file
@@ -152,15 +152,15 @@ expanded to say
 
 .nf
 
-        ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+        ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
         include $(ANTELOPEMAKE) include $(ANTELOPEMAKELOCAL)
 
-        SUBDIR= /local
+        SUBDIR= /contrib
 
 .fi
 
-Note that the assignment of \fISUBDIR\fP to \fI/local\fP may be
+Note that the assignment of \fISUBDIR\fP to \fI/contrib\fP may be
 appropriate only in some situations. With this structure, the macros
 supporting the \fIpython\fP \fIcapability\fP (as configured in
 \fIlocalmake_config.pf\fP, currently \fIPYTHONINCLUDE\fP and
@@ -182,7 +182,7 @@ The master parameter-file controlling the behavior of
 governs, is
 .nf
 
-      $ANTELOPE/local/data/pf/localmake_config.pf
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
 
 .fi
 A starting draft of this file may be obtained from
@@ -194,7 +194,7 @@ A starting draft of this file may be obtained from
 When \fBlocalmake_config\fP runs, it checks and updates the automated set of make rules currently in
 .nf
 
-        $ANTELOPE/local/include/antelopemake.local
+        $ANTELOPE/contrib/include/antelopemake.local
 
 .fi
 .SH ENVIRONMENT
@@ -274,12 +274,12 @@ This program has undergone multiple restructurings to get the design right. Hope
 current version has succeeded. In particular, the \fIlocalmake_config_proto.pf\fP file
 has been eliminated.
 
-\fBlocalmake_config\fP internally sets and uses \fIPFPATH\fP to include \fI$ANTELOPE/local/data/pf\fP.
+\fBlocalmake_config\fP internally sets and uses \fIPFPATH\fP to include \fI$ANTELOPE/contrib/data/pf\fP.
 
 \fBlocalmake_config\fP always rebuilds the make rules in
-\fI$ANTELOPE/local/include/antelopemake.local\fP if that file has
+\fI$ANTELOPE/contrib/include/antelopemake.local\fP if that file has
 a timestamp older than the master parameter file
-\fI$ANTELOPE/local/data/pf/localmake_config.pf\fP.  If an automated
+\fI$ANTELOPE/contrib/data/pf/localmake_config.pf\fP.  If an automated
 or other process (e.g. directory copy etc.) changes the timestamp
 on the former file to be later than that on the master parameter
 file, \fBlocalmake_config\fP will not know to update the latter.
@@ -292,8 +292,8 @@ in order for the changes to take effect.
 
 Because \fBlocalmake_config\fP automatically keeps the local make
 rules up to date, it requires write permission to
-\fI$ANTELOPE/local/data/pf/localmake_config.pf\fP and
-\fI$ANTELOPE/local/include/antelopemake.local\fP. This is considered
+\fI$ANTELOPE/contrib/data/pf/localmake_config.pf\fP and
+\fI$ANTELOPE/contrib/include/antelopemake.local\fP. This is considered
 reasonable since compilation and installation requires write
 permission in \fI$ANTELOPE\fP anyways.
 

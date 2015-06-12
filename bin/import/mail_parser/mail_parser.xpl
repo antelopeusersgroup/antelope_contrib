@@ -3,7 +3,7 @@ use Mail::Internet;
 use Getopt::Std ;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
-$ENV{'PATH'} = "/bin:/usr/bin:$ENV{'ANTELOPE'}/bin:$ENV{'ANTELOPE'}/local/bin";
+$ENV{'PATH'} = "/bin:/usr/bin:$ENV{'ANTELOPE'}/bin:$ENV{'ANTELOPE'}/local/bin:$ENV{'ANTELOPE'}/contrib/bin";
 
 sub pop_message {
 	local( @message );
@@ -28,10 +28,10 @@ sub pop_message {
 					push( @message, $line );
 				}
 			}
-		} 
+		}
 
 	} else {
-		
+
 		@message = splice( @input, 0 );
 	}
 
@@ -51,27 +51,27 @@ sub redirect_output {
 }
 
 # prepare the way for handlers that require Datascope
-# and Antelope command-line utilities 
+# and Antelope command-line utilities
 
 use Datascope;
 
-# If people send us mail and something causes unexpected script death, 
+# If people send us mail and something causes unexpected script death,
 # don't allow a non-zero exit status from the script or the mail
 # will bounce back to the sender. Keep our problems to ourselves:
 $IN_EVAL = 0;
 $SIG{__DIE__} = sub { unless( $IN_EVAL ) { print $_[0]; exit 0; } };
 
-# Also, though, we don't want to break the exception handling of eval 
-# with the explicit exit in the above signal handler; therefore we 
-# have to define a customized eval. Apparently it is not possible to 
+# Also, though, we don't want to break the exception handling of eval
+# with the explicit exit in the above signal handler; therefore we
+# have to define a customized eval. Apparently it is not possible to
 # access PL_in_eval from within the perl script, otherwise the preferred
-# solution would be to build that into the __DIE__ handler. 
+# solution would be to build that into the __DIE__ handler.
 
 sub myeval (&) {
 
 	my $coderef = shift;
 
-	$IN_EVAL++; 
+	$IN_EVAL++;
 
 	$retval = eval { &$coderef };
 
@@ -93,7 +93,7 @@ $Program =~ s@^.*/@@;
 
 if ( ! getopts('f:l:p:vm') ) {
 	die( "Usage: $Program [-f output_file] [-l lib_dir] " .
-	      "[-p pffile] [-v] [-m] [file [file...]]\n" ); 
+	      "[-p pffile] [-v] [-m] [file [file...]]\n" );
 } else {
 	$verbose = $opt_v ? 1 : 0;
 	$Pf = $opt_p ? $opt_p : "$Program";

@@ -7,7 +7,7 @@ EXAMPLE = \
 	  examples_datascope_php.3h \
 	  examples_orb_php.3h
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
