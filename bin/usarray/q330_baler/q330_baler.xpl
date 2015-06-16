@@ -54,6 +54,8 @@
     use baler ;
     use utilfunct ;
 
+    my $PFTIME = 1434481632; # pf_revision_time >= PFTIME, see pfrequire
+
     our ( $opt_v, $opt_V, $opt_D, $opt_a, $opt_m, $opt_P, $opt_n, $opt_p, $opt_q, $opt_s );
     our ( $pgm, $host );
     our ( @targets );
@@ -94,6 +96,7 @@
     $opt_v      = defined($opt_V) ? $opt_V : $opt_v ;
 
     $Pf         = $opt_p || $pgm ;
+    pfrequire($Pf, $PFTIME);
     %pf         = getparam( $Pf ) ;
 
     if (system_check(0)) {
@@ -125,7 +128,7 @@
 
     &cleanup_files;
 
-    $subject = "ANF TA Q330 and Baler status";
+    $subject = $pf{'Institution'} . ' ' . $pf{'net'} . ' Q330 and Baler status';
     $cmd     = "rtmail -C -s '$subject' $pf{status_mail} < /tmp/tmp_noreg_$$";
 
     &run_cmd( $cmd ) if  ( $pf{status_mail} =~ /[A-Za-z].*/ ) ;
@@ -149,7 +152,7 @@ sub get_q330_stat { #%q330stat = get_q330_stat($cmdorb,$problems);
     my ( %q330stat );
 
     elog_notify("\nget_q330_stat");
-    $Pf = "/tmp/TA_status";
+    $Pf = '/tmp/' . $pf{'net'} . '_status';
 
     unlink "$Pf.pf" if (-e "$Pf.pf");
 
@@ -195,7 +198,7 @@ sub get_q330_config { #%q330config = get_q330_config($cmdorb,$problems);
 
     elog_notify("\nget_q330_config");
 
-    $Pf = "/tmp/TA_config";
+    $Pf = '/tmp/' . $pf{'net'} . '_config';
 
     unlink "$Pf.pf" if (-e "$Pf.pf");
 
@@ -286,7 +289,7 @@ sub q330_proc { # ($problems) = q330_proc( $cmdorb, $dbops, $subset, $problems )
         elog_notify("$key   $stat{$key}{dlsta}  $config{$key}{dlsta}") if $opt_V;
 
         unless (exists $config{$key}{config}{dptokens}) {
-            $line = "key    $key    has not registered, no Q330 data in TA_config.pf";
+            $line = "key    $key    has not registered, no Q330 data in $pf{'net'}_config.pf";
             print Q3302ORB "$line\n";
             elog_notify($line);
             next;
