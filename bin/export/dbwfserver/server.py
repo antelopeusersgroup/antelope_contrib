@@ -1,24 +1,28 @@
-from __main__ import *
+from __main__ import config
+import os
+import resource
+import twisted.web
+import twisted.application
 
 for port,db  in config.run_server.items():
 
-    root = resource.QueryParser(db)
+    root = resource.QueryParser(config, db)
 
-    root.putChild('static', static.File(config.static_dir))
+    root.putChild('static', twisted.web.static.File(config.static_dir))
 
     #
     # favicon.ico
     #
-    favicon = static.File(os.path.join(config.static_dir, 'images/favicon.ico'),
+    favicon = twisted.web.static.File(os.path.join(config.static_dir, 'images/favicon.ico'),
                                     defaultType='image/vnd.microsoft.icon')
     root.putChild('favicon.ico', favicon)
 
-    site = server.Site(root)
+    site = twisted.web.server.Site(root)
 
     site.displayTracebacks = config.display_tracebacks
 
-    application = service.Application('dbwfserver')
+    application = twisted.application.service.Application('dbwfserver')
 
-    sc = service.IServiceCollection(application)
+    sc = twisted.application.service.IServiceCollection(application)
 
-    sc.addService(internet.TCPServer(int(port), site))
+    sc.addService(twisted.application.internet.TCPServer(int(port), site))
