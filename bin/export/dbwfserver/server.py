@@ -1,28 +1,35 @@
 from __main__ import config
 import os
-import resource
-import twisted.web
-import twisted.application
+import dbwfserver.resource as resource
+from twisted.application import internet, service
+from twisted.web import server, static
+from twisted.python.log import ILogObserver,PythonLoggingObserver
 
 for port,db  in config.run_server.items():
 
     root = resource.QueryParser(config, db)
 
-    root.putChild('static', twisted.web.static.File(config.static_dir))
+    root.putChild('static', static.File(config.static_dir))
 
     #
     # favicon.ico
     #
-    favicon = twisted.web.static.File(os.path.join(config.static_dir, 'images/favicon.ico'),
-                                    defaultType='image/vnd.microsoft.icon')
+    favicon = static.File(
+        os.path.join( config.static_dir, 'images/favicon.ico'),
+        defaultType='image/vnd.microsoft.icon')
+
     root.putChild('favicon.ico', favicon)
 
-    site = twisted.web.server.Site(root)
+    site = server.Site(root)
 
     site.displayTracebacks = config.display_tracebacks
 
-    application = twisted.application.service.Application('dbwfserver')
+    application = service.Application('dbwfserver')
 
-    sc = twisted.application.service.IServiceCollection(application)
+    observer = PythonLoggingObserver()
+    observer.start()
+    application.setComponent(ILogObserver, observer.emit)
 
-    sc.addService(twisted.application.internet.TCPServer(int(port), site))
+    sc = service.IServiceCollection(application)
+
+    sc.addService(internet.TCPServer(int(port), site))

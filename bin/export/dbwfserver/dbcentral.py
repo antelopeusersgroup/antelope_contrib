@@ -40,6 +40,8 @@ if __name__ == '__main__':
 
 import antelope.datascope as datascope
 import antelope.stock as stock
+import logging
+import glob
 
 class DbcentralException(Exception):
     def __init__(self, msg):
@@ -57,11 +59,9 @@ class Dbcentral:
         self.nickname = nickname
         self.debug = debug
 
-        import glob
         self.glob = glob.glob
-        import logging
 
-        self.logger = logging.getLogger().getChild('dbcentral')
+        self.logger = logging.getLogger(__name__)
 
         if self.debug:
             self.logger.setLevel( logging.DEBUG )

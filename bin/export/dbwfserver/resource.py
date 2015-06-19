@@ -1,5 +1,6 @@
 import os, sys
 import re
+import socket
 import twisted.web.resource
 import twisted.internet.defer
 import twisted.internet.reactor
@@ -12,6 +13,7 @@ from twisted.python import log
 import twisted.web.server
 import json
 from string import Template
+import logging
 
 #
 # Global Functions
@@ -60,6 +62,7 @@ class Db_nulls():
         self.tables    = tables
         self.debug    = self.config.debug
         self.null_vals = defaultdict(lambda: defaultdict(dict))
+        self.logger = logging.getLogger(__name__)
 
         #Load values from databases
         self._get_nulls()
@@ -86,7 +89,7 @@ class Db_nulls():
 
         if element is None:
 
-            print  "\nERROR: Db_nulls(): No element named (%s) in object.\n\n" % element
+            self.logger.error ('No element named (%s) in object.' % element)
             return
 
         if element in self.null_vals:
@@ -95,7 +98,7 @@ class Db_nulls():
 
         else:
 
-            print "\nERROR: Db_nulls(): No value for (%s)\n\n" % element
+            self.logger.error('No value for element (%s)' % element)
             return
 
     def _get_nulls(self):
@@ -114,18 +117,18 @@ class Db_nulls():
             db = datascope.dbopen( dbname , "r" )
 
         except Exception, e:
-            print '\n\nERROR: dbopen(%s)=>(%s)\n\n' % (dbname,e)
+            logger.exception('dbopen(%s)=>(%s)' % (dbname,e))
             sys.exit(twisted.internet.reactor.stop())
 
 
-        if self.debug: log.msg("Class Db_Nulls: Looking for tables:%s" % self.tables)
+        self.logger.debug('Looking for tables: %s' % self.tables)
 
         #Loop over all tables
         for table in db.query(datascope.dbSCHEMA_TABLES):
 
             if len(self.tables) > 0 and table not in self.tables: continue
 
-            if self.debug: log.msg("Class Db_Nulls: Test table:[%s]" % table)
+            self.logger.debug('Test table: [%s]' % table)
 
             db = db.lookup( '',table,'','dbNULL')
 
@@ -141,7 +144,8 @@ class Db_nulls():
 
                     self.null_vals[field] = db.getv(field)[0]
 
-                    if self.debug: log.msg("\t\tClass Db_Nulls: table:[%s] field(%s):[%s]" % (table,field,self.null_vals[field]))
+                    self.logger.debug( 'table:[%s] field(%s):[%s]' % (
+                        table,field,self.null_vals[field]))
 
         try:
             db.close()
@@ -159,6 +163,7 @@ class Stations():
     def __init__(self, config, db):
         #Load class and get the data
 
+        self.logger = logging.getLogger(__name__)
         self.config = config
         self.first = True
         self.dbcentral = db
@@ -168,7 +173,7 @@ class Stations():
         self.maxtime = -1
         self.mintime = 0
 
-        if self.config.debug: print "Stations(): init() class"
+        self.logger.debug('init() class')
 
         self._get_stachan_cache()
 
@@ -197,18 +202,15 @@ class Stations():
 
     def __str__(self):
         """
-        Nicely print of elements in class.
-
-        end-user/application display of content using log.msg() or log.msg()
+        Nicely format elements in class.
         """
 
-        if self.config.verbose: print "Stations():"
-
+        text = 'Stations(): '
         for st in self.stachan_cache.keys():
             chans = self.stachan_cache[st].keys()
-            print "\t%s: %s" % (st,chans)
+            text += "\t%s: %s" % (st,chans)
 
-
+        return text
 
     def __call__(self, station):
         """
@@ -218,28 +220,35 @@ class Stations():
 
 
         if station in self.stachan_cache:
-            if self.config.debug: print "Stations(): %s => %s" % (station,self.stachan_cache[station])
+            self.logger.debug('Stations: %s => %s' % (station,self.stachan_cache[station]))
             return self.stachan_cache[station]
 
         else:
-            print "Stations(): No value for station:%s" % station
-            if self.config.debug:
-                for sta in self.stachan_cache:
-                    for chan in self.stachan_cache[sta]:
-                        print '\t%s.%s => %s' % (sta,chan,self.stachan_cache[sta][chan])
+            self.logger.warning("Stations(): No value for station:%s" % station)
+            for sta in self.stachan_cache:
+                for chan in self.stachan_cache[sta]:
+                    self.logger.debug(
+                        '\t%s.%s => %s' % (
+                            sta,chan, self.stachan_cache[sta][chan])
+                    )
 
         return False
 
 
     def _get_stachan_cache(self):
-        #private function to load data
+        """
+        private function to load data
+
+        """
+
         records = 0
 
-        if self.config.verbose: print "Stations(): update cache"
+        self.logger.info("Stations(): update cache")
 
         for dbname in self.dbcentral.list():
 
-            if self.config.debug: print "Station(): dbname: %s" % dbname
+            self.logger.debug('Station(): dbname: %s' % dbname)
+
             dates = {}
 
             try:
@@ -249,7 +258,8 @@ class Stations():
                 self.mintime = db.ex_eval('min(time)')
                 self.maxtime   = db.ex_eval('max(endtime)')
             except Exception,e:
-                print "Stations(): ERROR: Problem with wfdisc table. %s: %s" % (Exception,e)
+                self.logger.exception('Problem with wfdisc table. %s: %s' % (
+                    Exception, e))
                 sys.exit(reactor.stop())
 
             if self.maxtime > stock.now() or self.maxtime > (stock.now()-3600):
@@ -265,12 +275,11 @@ class Stations():
                 try:
                     self.wfdates[stock.yearday(db.getv('time')[0])] = 1
                 except Exception, e:
-                    print 'Station(): ERROR (%s=>%s)' % (Exception,e)
+                    self.logger.exception('(%s=>%s)' % (Exception,e))
 
-            if self.config.debug:
-                print 'Stations(): maxtime: %s' % self.maxtime
-                print 'Stations(): mintime: %s' % self.mintime
-                print 'Stations(): dates: %s' % dates.keys()
+            self.logger.debug('Stations(): maxtime: %s' % self.maxtime)
+            self.logger.debug('Stations(): mintime: %s' % self.mintime)
+            self.logger.debug('Stations(): dates: %s' % dates.keys())
 
             try:
                 db.close()
@@ -307,12 +316,14 @@ class Stations():
                 records = db.query(datascope.dbRECORD_COUNT)
 
             except Exception,e:
-                print 'Stations(): ERROR: Porblems with sitechan table %s: %s\n\n' % (Exception,e)
+                self.logger.exception(
+                    'Stations(): Problems with sitechan table %s: %s' % (Exception,e))
                 sys.exit(reactor.stop())
 
 
             if not records:
-                print "Stations(): ERROR: No records after sitechan sort. "
+                self.logger.critical(
+                    "Stations(): No records after sitechan sort.")
                 sys.exit(reactor.stop())
 
 
@@ -322,14 +333,15 @@ class Stations():
                 try:
                     sta, chan, ondate, offdate = db.getv('sta','chan','ondate','offdate')
                 except Exception, e:
-                    print 'Station(): ERROR (%s=>%s)' % (Exception,e)
+                    self.logger.exception('Station(): (%s=>%s)' % (Exception,e))
 
                 ondate = stock.str2epoch(str(ondate))
                 if offdate != -1: offdate = stock.str2epoch(str(offdate))
 
                 self.stachan_cache[sta][chan]['dates'].extend([[ondate,offdate]])
 
-                if self.config.debug: print "Station(): %s.%s dates: %s" % (sta,chan,self.stachan_cache[sta][chan]['dates'])
+                self.logger.debug("Station(): %s.%s dates: %s" % (
+                    sta,chan,self.stachan_cache[sta][chan]['dates']))
 
             try:
                 db.close()
@@ -337,9 +349,8 @@ class Stations():
                 pass
 
 
-        print "Stations(): Done updating cache (%s) stations." % len(self.stachan_cache)
-
-
+        self.logger.info("Stations(): Done updating cache (%s) stations." % \
+                         len(self.stachan_cache))
 
     def min_time(self):
         """
@@ -394,7 +405,7 @@ class Stations():
                         if date[0] <= end and end <= date[1]: cache[sta] = 1
                         if start <= date[0] and date[1] <= end: cache[sta] = 1
 
-        print cache.keys()
+        self.logger.info('cache.keys: ' . str(cache.keys()))
         return cache.keys()
 
 
@@ -446,7 +457,7 @@ class Stations():
 
         if not list: list = ['.*']
 
-        if self.config.debug: print "Stations(): convert_sta(%s)" % list
+        self.logger.debug("Stations(): convert_sta(%s)" % list)
 
         for test in list:
 
@@ -465,7 +476,8 @@ class Stations():
 
         stations = keys.keys()
 
-        if self.config.debug: print "Stations(): convert_sta(%s) => %s" % (list,stations)
+        self.logger.debug( "Stations(): convert_sta(%s) => %s" % (
+            list,stations))
 
         return stations
 
@@ -484,6 +496,7 @@ class Events():
     def __init__(self, db, config):
         #Load class and get the data
 
+        self.logger = logging.getLogger(__name__)
         self.config = config
         self.first = True
         self.dbcentral = db
@@ -492,12 +505,12 @@ class Events():
         self.start = 0
         self.end = 0
 
-        if self.config.debug: print "Events(): init() class"
+        self.logger.debug("Events(): init() class")
 
         #
         # Load null class
         #
-        if self.config.debug: print "Events(): self.nulls"
+        self.logger.debug("Events(): self.nulls")
         self.nulls = Db_nulls(self.config, db, [
             'events','event','origin','assoc','arrival'])
 
@@ -529,19 +542,15 @@ class Events():
 
     def __str__(self):
         """
-        Nicely print of elements in class
-
-        end-user/application display of content using log.msg() or log.msg()
+        Nicely format elements in class
         """
 
-        if self.config.debug:
 
-            for orid in self.event_cache:
-                print "\nEvents(): %s(%s)" % (orid,self.event_cache[orid])
+        text = "Events: "
+        for orid in self.event_cache:
+            text += "\t%s(%s)" % (orid,self.event_cache[orid])
 
-        else:
-
-            print "Events(): %s" % (self.event_cache.keys())
+        return text
 
 
 
@@ -562,7 +571,7 @@ class Events():
 
         else:
 
-            print "Events(): %s not in database." % value
+            self.warning('Events(): %s not in database.' % value)
             return self.list
 
 
@@ -589,7 +598,8 @@ class Events():
         orid_time = _isNumber(orid_time)
 
         if not orid_time:
-            print  "Not a valid number in function call: %s" % orid_time
+            self.logger.error(
+                "Not a valid number in function call: %s" % orid_time)
             return
 
         start = float(orid_time)-float(window)
@@ -598,7 +608,9 @@ class Events():
         dbname = self.dbcentral(orid_time)
 
         if not db:
-            print  "No match for orid_time in dbcentral object: (%s,%s)" % (orid_time,self.dbcentral(orid_time))
+            self.logger.error(
+                "No match for orid_time in dbcentral object: (%s,%s)" % (
+                    orid_time,self.dbcentral(orid_time)))
             return
 
         try:
@@ -606,7 +618,9 @@ class Events():
             db = db.lookup( table='origin')
             db.query(datascope.dbTABLE_PRESENT)
         except Exception,e:
-            print "Exception on Events() time(%s): Error on db pointer %s [%s]" % (orid_time,db,e)
+            self.logger.error('Exception on Events() time(%s): ' +
+                              'Error on db pointer %s [%s]' % (
+                                  orid_time,db,e))
             return
 
         db = db.subset( 'time >= %f' % start )
@@ -639,11 +653,11 @@ class Events():
     def _get_event_cache(self):
         #private function to load the data from the tables
 
-        if self.config.verbose: print "Events(): update cache"
+        self.logger.info("Events(): update cache")
 
         for dbname in self.dbcentral.list():
 
-            if self.config.debug: print "Events(): dbname: %s" % dbname
+            self.logger.debug("Events(): dbname: %s" % dbname)
 
             # Get min max for wfdisc table first
             try:
@@ -709,11 +723,11 @@ class Events():
 
 
             if not records:
-                print 'Events(): ERROR: No records to work on any table\n\n'
+                self.logger.error('Events(): No records to work on any table')
                 continue
 
-            if self.config.debug:
-                print "Events(): origin db_pointer: [%s,%s,%s,%s]" % (db['database'],db['table'],db['field'],db['record'])
+            self.logger.debug("Events(): origin db_pointer: [%s,%s,%s,%s]" % (
+                db['database'],db['table'],db['field'],db['record']))
 
             try:
                 db = db.subset("time > %f" % self.start)
@@ -727,7 +741,7 @@ class Events():
                 records = 0
 
             if not records:
-                print 'Events(): ERROR: No records after time subset\n\n'
+                self.logger.error('Events(): No records after time subset')
                 continue
 
             for i in range(records):
@@ -803,10 +817,10 @@ class Events():
             except:
                 pass
 
-        print "Events(): Done updating cache. (%s)" % len(self.event_cache)
+        self.logger.info("Events(): Done updating cache. (%s)" % len(
+            self.event_cache))
 
-        if self.config.debug:
-            print "Events(): %s" % self.event_cache.keys()
+        self.logger.debug('Events(): %s' % self.event_cache.keys())
 
 
 
@@ -816,7 +830,7 @@ class Events():
 
         """
 
-        if self.config.debug: print "Events():phases(%s,%s) "%(min,max)
+        self.logger.debug("Events():phases(%s,%s) "%(min,max))
 
         phases = defaultdict(lambda: defaultdict(dict))
 
@@ -825,7 +839,7 @@ class Events():
 
         dbname = self.dbcentral(min)
 
-        if self.config.debug: print "Events():phases(%s,%s) db:(%s)"%(min,max,dbname)
+        self.logger.debug('Events():phases(%s,%s) db:(%s)' % (min,max,dbname))
 
         if not dbname: return phases
 
@@ -842,7 +856,8 @@ class Events():
                 nrecs = db.query(datascope.dbRECORD_COUNT)
 
             except Exception,e:
-                print "Events: Exception on phases(): %s" % e,phases
+                self.logger.exception(
+                    "Events: Exception %s on phases(): %s" % (e,phases))
                 return phases
 
         if not nrecs:
@@ -882,13 +897,14 @@ class Events():
                 phases[StaChan][ArrTime] = '_' + Phase
 
 
-            if self.config.debug: print "Phases(%s):%s" % (StaChan,Phase)
+            self.logger.debug("Phases(%s):%s" % (StaChan,Phase))
         try:
             db.close()
         except:
             pass
 
-        if self.config.debug:  print "Events: phases(): t1=%s t2=%s [%s]" % (min,max,phases)
+        self.logger.debug("Events: phases(): t1=%s t2=%s [%s]" % (
+            min,max,phases))
 
         return dict(phases)
 
@@ -906,9 +922,11 @@ class QueryParser(twisted.web.resource.Resource):
 
     def __init__(self,config,db):
 
-        print '########################'
-        print '\tLoading!'
-        print '########################'
+        self.logger=logging.getLogger(__name__)
+
+        self.logger.info('########################')
+        self.logger.info('        Loading!        ')
+        self.logger.info('########################')
 
         self.config = config
         self.dbname = db
@@ -918,19 +936,20 @@ class QueryParser(twisted.web.resource.Resource):
         #
         # Initialize Classes
         #
-        if self.config.debug: print 'QueryParser(): Init DB: Load class twisted.web.resource.Resource.__init__(self)'
+        self.logger.debug('QueryParser(): Init DB: Load class twisted.web.resource.Resource.__init__(self)')
         twisted.web.resource.Resource.__init__(self)
 
 
         #
         # Open db using Dbcentral CLASS
         #
-        if self.config.debug: print "QueryParser(): Init DB: Create Dbcentral object with database(%s)." % self.dbname
+        self.logger.debug("QueryParser(): Init DB: Create Dbcentral object with database(%s)." % self.dbname)
         self.db = Dbcentral(self.dbname,self.config.nickname,self.config.debug)
         if self.config.debug: self.db.info()
 
         if not self.db.list():
-            print '\nQueryParser(): Init DB: ERROR: No databases to use! (%s)\n\n'% self.dbname
+            self.logger.critical('Init DB: No databases to use! (%s)' %
+                                 self.dbname)
             sys.exit(reactor.stop())
 
 
@@ -966,90 +985,97 @@ class QueryParser(twisted.web.resource.Resource):
             #
             # Test database access.
             #
-            if self.config.debug: print "QueryParser(): Init(): try dbopen [%s]" % dbname
+            self.logger.debug("QueryParser(): Init(): try dbopen [%s]" % dbname)
 
             try:
                 db_temp = datascope.dbopen( dbname , "r" )
             except datascope.DatascopeException, e:
-                print '\nERROR: dbopen(%s) =>(%s)\n' % (dbname,e)
+                self.logger.error('dbopen(%s) =>(%s)\n' % (dbname,e))
                 remove.append(dbname)
                 continue
 
-            if self.config.debug:
-                print "QueryParser(): Init(): Dbptr: [%s,%s,%s,%s]" % (db_temp['database'],db_temp['table'],db_temp['field'],db_temp['record'])
+            # This is broken
+            #self.logger.debug("QueryParser(): Init(): Dbptr: [%s,%s,%s,%s]" % (
+            #    db_temp['database'],db_temp['table'],db_temp['field'],
+            #    db_temp['record'])
 
             table_list =  ['wfdisc','sitechan']
 
             for tbl in table_list:
-                if self.config.debug: print "QueryParser(): Init(): Check table  %s[%s]." % (dbname,tbl)
+                self.logger.debug(
+                    'QueryParser(): Init(): Check table  %s[%s].' % (
+                        dbname,tbl))
 
                 try:
                     db_temp = db_temp.lookup( table=tbl )
                 except Exception, e:
-                    print '\nERROR: %s.%s not present (%s)\n' % (dbname,tbl,e)
+                    self.logger.exception('%s.%s not present (%s)' % (
+                        dbname,tbl,e))
                     remove.append(dbname)
                     continue
 
                 try:
                     db_temp.query(datascope.dbTABLE_PRESENT)
                 except Exception,e:
-                    print '\nERROR: %s.%s not present (%s)\n' % (dbname,tbl,e)
+                    self.logger.exception('%s.%s not present (%s)' % (
+                        dbname,tbl,e))
                     remove.append(dbname)
                     continue
 
                 try:
                     records = db_temp.query(datascope.dbRECORD_COUNT)
                 except Exception, e:
-                    print '\nERROR: %s.%s( dbRECORD_COUNT )=>(%s)' % (dbname,tbl,e)
+                    self.logger.exception('%s.%s( dbRECORD_COUNT )=>(%s)' % (
+                        dbname,tbl,e))
                     if tbl == 'wfdisc': remove.append(dbname)
                     continue
 
 
                 if not records and tbl == 'wfdisc':
-                    print '\nERROR: %s.%s( dbRECORD_COUNT )=>(%s) Empty table!!!!' % (dbname,tbl,records)
+                    self.logger.error('%s.%s( dbRECORD_COUNT )=>(%s) Empty table!!!!' % (dbname,tbl,records))
                     remove.append(dbname)
                     continue
 
-                if self.config.debug: print "QueryParser(): Init():\t%s records=>[%s]" % (tbl,records)
+                self.logger.debug('%s records=>[%s]' % (tbl,records))
 
             try:
                 db_temp.close()
             except:
-                print '\nERROR: dbclose(%s) =>(%s)\n' % (dbname,e)
+                self.logger.exception('dbclose(%s) =>(%s)' % (dbname,e))
                 remove.append(dbname)
                 continue
 
 
         for db_temp in remove:
-            print "QueryParser(): Init(): Removing %s from Dbcentral object" % db_temp
+            self.logger.info("Removing %s from Dbcentral object" % db_temp)
             self.db.purge(db_temp)
 
-        if len(remove): print "QueryParser(): Init(): New list: dbcentral.list() => %s" % self.db.list()
+        if len(remove):
+            self.logger.info("QueryParser(): Init(): New list: dbcentral.list() => %s" % self.db.list())
 
         if not self.db.list():
-            print '\n\nNo good databases to work! -v or -V for more info\n\n'
+            self.logger.critical(
+                'No valid databases to work with! -v or -V for more info')
             return False
 
         deferToThread(self._init_in_thread)
 
-
-
     def _init_in_thread(self):
 
-        print '\nLoading Stations()\n'
+        self.logger.info('Loading Stations()')
         self.stations = Stations(self.config,self.db)
         self.loading_stations = False
-        print '\nDone loading Stations()\n'
+        self.logger.info('Done loading Stations()')
 
         if self.config.event == 'true':
-            print '\nLoading Events()\n'
+            self.logger.info('Loading Events()')
             self.events = Events(self.db)
             self.loading_events = False
-            print '\nDone loading Events()\n'
+            self.logger.info('Done loading Events()')
         else:
             self.loading_events = False
 
-        print '\nREADY!\n'
+        self.logger.info('READY!')
 
 
     def getChild(self, name, uri):
@@ -1060,25 +1086,24 @@ class QueryParser(twisted.web.resource.Resource):
 
     def render_GET(self, uri):
 
-        if self.config.debug: log.msg("QueryParser(): render_GET(): uri: %s" % uri)
+        self.logger.debug("QueryParser(): render_GET(): uri: %s" % uri)
 
-        if self.config.debug:
-            log.msg('')
-            log.msg('QueryParser(): render_GET(%s)' % uri)
-            log.msg('QueryParser(): render_GET() uri.uri:%s' % uri.uri)
-            log.msg('QueryParser(): render_GET() uri.args:%s' % (uri.args) )
-            log.msg('QueryParser(): render_GET() uri.prepath:%s' % (uri.prepath) )
-            log.msg('QueryParser(): render_GET() uri.postpath:%s' % (uri.postpath) )
-            log.msg('QueryParser(): render_GET() uri.path:%s' % (uri.path) )
+        self.logger.debug('')
+        self.logger.debug('QueryParser(): render_GET(%s)' % uri)
+        self.logger.debug('QueryParser(): render_GET() uri.uri:%s' % uri.uri)
+        self.logger.debug('QueryParser(): render_GET() uri.args:%s' % (uri.args) )
+        self.logger.debug('QueryParser(): render_GET() uri.prepath:%s' % (uri.prepath) )
+        self.logger.debug('QueryParser(): render_GET() uri.postpath:%s' % (uri.postpath) )
+        self.logger.debug('QueryParser(): render_GET() uri.path:%s' % (uri.path) )
 
-            (host,port) = uri.getHeader('host').split(':', 1)
-            log.msg('QueryParser():\tQUERY: %s ' % uri)
-            log.msg('QueryParser():\tHostname => [%s:%s]'% (host,port))
-            log.msg('QueryParser():\tHost=> [%s]'% uri.host)
-            log.msg('QueryParser():\tsocket.gethostname() => [%s]'% socket.gethostname())
-            log.msg('')
-            #log.msg('QueryParser():\tsocket.getsockname() => [%s]'% uri.host.getsockname())
-            #uri.setHost(host,self.config.port)
+        (host,port) = uri.getHeader('host').split(':', 1)
+        self.logger.debug('QueryParser():\tQUERY: %s ' % uri)
+        self.logger.debug('QueryParser():\tHostname => [%s:%s]'% (host,port))
+        self.logger.debug('QueryParser():\tHost=> [%s]'% uri.host)
+        self.logger.debug('QueryParser():\tsocket.gethostname() => [%s]'% socket.gethostname())
+        self.logger.debug('')
+        #self.logger.debug('QueryParser():\tsocket.getsockname() => [%s]'% uri.host.getsockname())
+        #uri.setHost(host,self.config.port)
 
 
         if self.loading_stations or self.loading_events:
@@ -1096,7 +1121,7 @@ class QueryParser(twisted.web.resource.Resource):
         d.addCallback( self.render_uri )
         twisted.internet.reactor.callInThread(d.callback, uri)
 
-        if self.config.debug: log.msg("QueryParser(): render_GET() - return server.NOT_DONE_YET")
+        self.logger.debug("QueryParser(): render_GET() - return server.NOT_DONE_YET")
 
         return twisted.web.server.NOT_DONE_YET
 
@@ -1311,7 +1336,8 @@ class QueryParser(twisted.web.resource.Resource):
                     Return JSON object of data. For client ajax calls.
                     """
 
-                    if self.config.debug: print "QueryParser(): render_uri(): get_data(%s))" % query
+                    self.logger.debug(
+                        "QueryParser(): render_uri(): get_data(%s))" % query)
 
                     return self.uri_results( uri, self.get_data(query) )
 
@@ -1322,7 +1348,7 @@ class QueryParser(twisted.web.resource.Resource):
                     """
                     Return coverage tuples as JSON objects. For client ajax calls.
                     """
-                    if self.config.debug: print "QueryParser(): render_uri(): Get coverage"
+                    self.logger.debug("QueryParser(): render_uri(): Get coverage")
 
                     query.update( { "coverage": 1 } )
 
@@ -1483,7 +1509,7 @@ class QueryParser(twisted.web.resource.Resource):
         return uri
 
     def uri_results(self, uri=None, results=False):
-        print 'QueryParser(): uri_results(%s,%s)' % (uri,type(results))
+        self.logger.info('QueryParser(): uri_results(%s,%s)' % (uri,type(results)))
 
         if uri:
 
@@ -1504,7 +1530,7 @@ class QueryParser(twisted.web.resource.Resource):
             except:
                 pass
 
-        print 'QueryParser(): uri_results() DONE!'
+        self.logger.info('QueryParser(): uri_results() DONE!')
 
     def get_data(self,query):
         #
@@ -1513,20 +1539,19 @@ class QueryParser(twisted.web.resource.Resource):
 
         response_data = ""
 
-        if self.config.debug:
-            print "QueryParser(): get_data(): Build COMMAND"
+        self.logger.debug("QueryParser(): get_data(): Build COMMAND")
 
-        if self.config.debug:
-            print "QueryParser(): get_data(): Get data for uri:%s.%s" % (query['sta'],query['chan'])
+        self.logger.debug("QueryParser(): get_data(): Get data for uri:%s.%s" % (
+            query['sta'],query['chan']))
 
         if not query['sta']:
             response_data = "Not valid station value"
-            print response_data
+            self.logger.error(response_data)
             return { "ERROR": response_data }
 
         if not query['chan']:
             response_data = "Not valid channel value "
-            print response_data
+            self.logger.error(response_data)
             return { "ERROR": response_data }
 
         start = isNumber(query['start'])
@@ -1534,7 +1559,9 @@ class QueryParser(twisted.web.resource.Resource):
 
         if not start:
             temp_dic = self.stations(query['sta'][0])
-            if temp_dic: start = temp_dic[query['chan'][0]]['end'] - self.config.default_time_window
+            if temp_dic:
+                start = temp_dic[query['chan'][0]]['end'] - \
+                            self.config.default_time_window
 
         #if not start: start = stock.now()
 
@@ -1543,7 +1570,7 @@ class QueryParser(twisted.web.resource.Resource):
         tempdb = self.db(start)
         if not tempdb:
             response_data = "Not valid database for this time [%s]" % start
-            print response_data
+            self.logger.error(response_data)
             return { "ERROR": response_data }
 
         regex = "-s 'sta=~/%s/ && chan=~/%s/' " % (query['sta'],query['chan'])
@@ -1590,9 +1617,9 @@ class QueryParser(twisted.web.resource.Resource):
 
         run = "dbwfserver_extract %s %s %s %s %s %s %s %s %s -n %s -m %s %s %s %s 2>&1" % ( regex, coverage, filter, page, calibrate, precision, realtime, median, period, self.config.max_traces, self.config.max_points, tempdb, start, end)
 
-        print "*********"
-        print "QueryParser(): get_data(): Extraction command: [%s]" % run
-        print "*********"
+        self.logger.info("*********")
+        self.logger.info("QueryParser(): get_data(): Extraction command: [%s]" % run)
+        self.logger.info("*********")
 
         # Method 1
         #master, slave = pty.openpty()
