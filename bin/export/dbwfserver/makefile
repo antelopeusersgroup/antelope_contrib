@@ -10,12 +10,10 @@ DATA = __init__.py \
        dbcentral.py \
        config.py
 
-CLEAN = *.pyc *.o
-UNINSTALL = $(ANTELOPE)/data/$(DATADIR)/*.pyc $(ANTELOPE)/data/$(DATADIR)/*.pyc
-
 ldlibs=-lxtra $(TRLIBS) $(GPLLIBS)
-
 SUBDIR=/contrib
-include $(ANTELOPEMAKE)
-
+CLEAN = *.pyc *.o $(BIN)
+UNINSTALL = $(ANTELOPE)$(SUBDIR)/data/$(DATADIR)/*.pyc $(ANTELOPE)$(SUBDIR)/data/$(DATADIR)/*.pyc
 DIRS = Contents
+
+include $(ANTELOPEMAKE)

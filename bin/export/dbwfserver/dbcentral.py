@@ -12,9 +12,9 @@
 #
 # @usage:
 #   Create:
-#      element = dbcentral(path)
-#      element = dbcentral(path,nickname)
-#      element = dbcentral(path,nickname,True) # Enable Debug mode. Verbose output
+#      element = Dbcentral(path)
+#      element = Dbcentral(path,nickname)
+#      element = Dbcentral(path,nickname,True) # Enable Debug mode. Verbose output
 #   Access:
 #      print element                           # Nice print of values
 #      element.type                            # return string value for mode [dbcentral,masquerade]
@@ -25,7 +25,7 @@
 #      element.purge(db)                       # remove database from class.
 #
 
-from __main__ import *
+import os,sys,signal
 
 if __name__ == '__main__':
     """
@@ -35,30 +35,21 @@ if __name__ == '__main__':
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    sys.path.append(os.environ['ANTELOPE'] + "/data/python")
-    try:
-        import antelope.datascope as datascope
-        import antelope.stock as stock
-    except Exception,e:
-        sys.exit( "\n\tProblems with Antelope libraries.%s %s\n" % (Exception,e) )
+    sys.path.append(os.environ['ANTELOPE'] + '/data/python')
+    sys.path.append(os.environ['ANTELOPE'] + 'contrib/data/python')
 
-    try:
-        import logging
-        from anf.eloghandler import ElogHandler
-    except Exception,e:
-        sys.exit( "\n\tProblems loading ANF logging libs. %s(%s)\n"  % (Exception,e))
+import antelope.datascope as datascope
+import antelope.stock as stock
 
-
-
-class dbcentralException(Exception):
+class DbcentralException(Exception):
     def __init__(self, msg):
         self.msg = msg
     def __repr__(self):
-        return 'dbcentralException: %s' % (self.msg)
+        return 'DbcentralException: %s' % (self.msg)
     def __str__(self):
         return repr(self)
 
-class dbcentral:
+class Dbcentral:
 
     def __init__(self, path, nickname=False, debug=False):
         self.type = False
@@ -89,15 +80,15 @@ class dbcentral:
         """
         end-user/application display of content using print() or log.msg()
         """
-        return ''.join(["\ndbcentral:\t%s: %s" % \
+        return ''.join(["\nDbcentral:\t%s: %s" % \
                 (value,self.dbs[value]) for value in sorted(self.dbs.keys())])
 
 
     def info(self):
-        self.logger.info( "dbcentral.nickname() => %s" % self.nickname )
-        self.logger.info( "dbcentral.type() => %s" % self.type )
-        self.logger.info( "dbcentral.path() => %s" % self.path )
-        self.logger.info( "dbcentral.list() => %s" % self.list() )
+        self.logger.info( "Dbcentral.nickname() => %s" % self.nickname )
+        self.logger.info( "Dbcentral.type() => %s" % self.type )
+        self.logger.info( "Dbcentral.path() => %s" % self.path )
+        self.logger.info( "Dbcentral.list() => %s" % self.list() )
         for element in sorted(self.dbs):
             self.logger.info( "%s => %s" % (element,self.dbs[element]['times']) )
 
@@ -111,7 +102,7 @@ class dbcentral:
         try:
             time = float(time)
         except Exception,e:
-            print "\n*dbcentral*: dbcentral() => error in time=>[%s] %s" % \
+            print "\n*Dbcentral*: Dbcentral() => error in time=>[%s] %s" % \
                     (time,time.__class__)
         else:
             for element in sorted(self.dbs):
@@ -120,7 +111,7 @@ class dbcentral:
                 if start < time and time < end:
                     return element
 
-        raise dbcentralException( "No db match for time=>[%s]" % time )
+        raise DbcentralException( "No db match for time=>[%s]" % time )
 
 
     def __dell__(self):
@@ -135,7 +126,7 @@ class dbcentral:
         """
         method to print problems and raise exceptions
         """
-        raise dbcentralException('*dbcentral*: ERROR=> %s' % log)
+        raise DbcentralException('*Dbcentral*: ERROR=> %s' % log)
 
 
     def _get_list(self):
@@ -165,7 +156,7 @@ class dbcentral:
         else:
             self.type = 'dbcentral'
             if self.nickname is None:
-                self._problem("Need nickname for dbcentral clustername regex.")
+                self._problem("Need nickname for Dbcentral clustername regex.")
 
         try:
             db = db.lookup('','clusters','','dbNULL')
@@ -324,7 +315,7 @@ class dbcentral:
         try:
             time = float(time)
         except Exception,e:
-            print "\n*dbcentral*: dbcentral() => error in time=>[%s] %s" % \
+            print "\n*Dbcentral*: Dbcentral() => error in time=>[%s] %s" % \
                     (time,time.__class__)
         else:
             for element in sorted(self.dbs):
@@ -346,12 +337,12 @@ class dbcentral:
 
     def purge(self,tbl=None):
         """
-        Method to clean dbcentral object by removing a database
+        Method to clean Dbcentral object by removing a database
         """
         if not tbl:
-            raise dbcentralException('*dbcentral*: dbcentral.purge() => No db')
+            raise DbcentralException('*Dbcentral*: Dbcentral.purge() => No db')
 
-        self.logger.debug( '*dbcentral*: dbcentral.purge() => %s' % tbl )
+        self.logger.debug( '*Dbcentral*: Dbcentral.purge() => %s' % tbl )
 
         try:
             del self.dbs[tbl]
@@ -365,29 +356,15 @@ if __name__ == '__main__':
     """
     This will run if the file is called directly.
     """
-    try:
-        import logging
-        from anf.eloghandler import ElogHandler
-    except Exception,e:
-        sys.exit( "\n\tProblems loading ANF logger libs. %s(%s)\n"  % (Exception,e)) 
-    try:
-        logging.basicConfig()
-        logger = logging.getLogger()
-        formatter = logging.Formatter('[%(name)s] %(message)s')
-        handler = ElogHandler()
-        handler.setFormatter(formatter)
-        logger.handlers=[]
-        logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
-    except Exception, e:
-        sys.exit("Problem building logging handler. %s(%s)\n" % (Exception,e) )
-
+    import logging
+    logging.basicConfig()
+    logger = logging.getLogger()
 
     time =  1262404000.00000
 
-    dbcntl = dbcentral('/opt/antelope/data/db/demo/demo',debug=True)
+    dbcntl = Dbcentral('/opt/antelope/data/db/demo/demo',debug=True)
 
-    logger.info( 'dbcntl = dbcentral("%s","%s")' % (dbcntl.path,dbcntl.nickname) )
+    logger.info( 'dbcntl = Dbcentral("%s","%s")' % (dbcntl.path,dbcntl.nickname) )
     logger.info( 'dbcntl.type => %s' % dbcntl.type )
     logger.info( 'dbcntl.nickname => %s' % dbcntl.nickname )
     logger.info( '%s' % dbcntl )
@@ -398,6 +375,6 @@ if __name__ == '__main__':
     except Exception, e:
         logger.info('dbcntl.purge(%s) => %s' % ('test',e) )
 
-    logger.info( 'Done with dbcentral demo.' )
+    logger.info( 'Done with Dbcentral demo.' )
 
 
