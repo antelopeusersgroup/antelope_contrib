@@ -6,7 +6,7 @@ from twisted.python.log import ILogObserver,PythonLoggingObserver
 
 for port,db  in config.run_server.items():
 
-    root = resource.QueryParser(config, db)
+    root = resource.QueryParserResource(config, db)
 
     root.putChild('static', static.File(config.static_dir))
 

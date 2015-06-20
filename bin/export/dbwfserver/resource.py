@@ -923,7 +923,7 @@ class FaviconResource(twisted.web.static.File):
 
 
 
-class QueryParser(twisted.web.resource.Resource):
+class QueryParserResource(twisted.web.resource.Resource):
     """
     Serve http queries. Functions as the root resource of the dbwfserver Site
     """
