@@ -4,6 +4,12 @@ import antelope.datascope as datascope
 import antelope.stock as stock
 from collections import defaultdict
 
+"""
+Utility functions and classes for dbwfserver
+
+Used by resource.QueryParserResource and other items
+"""
+
 def isNumber(test):
     """
     Test if the string is a valid number

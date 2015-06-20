@@ -15,6 +15,15 @@ from string import Template
 import logging
 from dbwfserver.util import isNumber, Events, Stations
 
+"""
+Twisted.web resources for use by the dbwfserver application
+
+FaviconResource is a thin wrapper around a static File resource.
+
+QueryParserResource is the main resource that runs at the root of the
+dbwfserver application
+"""
+
 class FaviconResource(twisted.web.static.File):
     """
     Serve up a favicon from the static content directory
@@ -25,9 +34,6 @@ class FaviconResource(twisted.web.static.File):
             self,
             os.path.join(config.static_dir, 'images/favicon.ico'),
             defaultType='image/vnd.microsoft.icon')
-
-
-
 
 class QueryParserResource(twisted.web.resource.Resource):
     """
