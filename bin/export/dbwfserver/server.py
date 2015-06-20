@@ -26,8 +26,8 @@ for port,db  in config.run_server.items():
 
     application = service.Application('dbwfserver')
 
-    observer = PythonLoggingObserver()
-    observer.start()
+    observer = PythonLoggingObserver('dbwfserver.twisted.port'+str(port))
+
     application.setComponent(ILogObserver, observer.emit)
 
     sc = service.IServiceCollection(application)
