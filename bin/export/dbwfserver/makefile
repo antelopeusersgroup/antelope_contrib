@@ -4,11 +4,12 @@ MAN1 = dbwfserver.1
 
 DATADIR = python/dbwfserver
 
-DATA = __init__.py \
-       server.py \
-       resource.py \
-       dbcentral.py \
-       config.py
+DATA  = __init__.py
+DATA += server.py
+DATA += resource.py
+DATA += dbcentral.py
+DATA += config.py
+DATA += util.py
 
 ldlibs=-lxtra $(TRLIBS) $(GPLLIBS)
 SUBDIR=/contrib
