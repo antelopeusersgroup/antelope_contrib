@@ -4,6 +4,7 @@ import socket
 import twisted.web.resource
 import twisted.internet.defer
 import twisted.internet.reactor
+import twisted.web.static
 from twisted.internet.threads import deferToThread
 from dbcentral import Dbcentral
 from collections import defaultdict
@@ -908,14 +909,25 @@ class Events():
 
         return dict(phases)
 
+class FaviconResource(twisted.web.static.File):
+    """
+    Serve up a favicon from the static content directory
+    """
+
+    def __init__(self,config):
+        twisted.web.static.File.__init__(
+            self,
+            os.path.join(config.static_dir, 'images/favicon.ico'),
+            defaultType='image/vnd.microsoft.icon')
+
 
 
 
 class QueryParser(twisted.web.resource.Resource):
+    """
+    Serve http queries. Functions as the root resource of the dbwfserver Site
+    """
 
-    #
-    # Serve HTTP queries.
-    #
     isLeaf = False
 
     allowedMethods = ("GET")

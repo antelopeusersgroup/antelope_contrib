@@ -1,5 +1,4 @@
 from __main__ import config
-import os
 import dbwfserver.resource as resource
 from twisted.application import internet, service
 from twisted.web import server, static
@@ -11,14 +10,7 @@ for port,db  in config.run_server.items():
 
     root.putChild('static', static.File(config.static_dir))
 
-    #
-    # favicon.ico
-    #
-    favicon = static.File(
-        os.path.join( config.static_dir, 'images/favicon.ico'),
-        defaultType='image/vnd.microsoft.icon')
-
-    root.putChild('favicon.ico', favicon)
+    root.putChild('favicon.ico', resource.FaviconResource(config))
 
     site = server.Site(root)
 
