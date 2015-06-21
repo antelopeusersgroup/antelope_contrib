@@ -62,7 +62,7 @@ int MWget_model_tt_slow(Arr *stations,
 	char *method;
 	TTGeometry geometry;
 	TTTime *atime;
-	TTSlow *u0,*u;
+	TTSlow *u0;
 	Tbl *treturn=NULL,*ureturn=NULL;
 	int error_count=0;
 	double *twork;

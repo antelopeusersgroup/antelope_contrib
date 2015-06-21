@@ -527,7 +527,7 @@ void M_estimator_double_n_vector(double *v,
 		scale = compute_nvector_scale(residuals,n,nv,row);
 		if(scale < fminsc) scale = fminsc;
 		for(i=0;i<n;++i) delta_mean[i] = 0.0;
-		for(j=0;j<nv;++j)
+		for(j=0,sum_weights=0.0;j<nv;++j)
 		{
 			dcopy(n,residuals+j*n,1,col,1);
 			dvmag = dnrm2(n,col,1);
@@ -607,7 +607,6 @@ Author:  Gary Pavlis
 double d1_jack_err(int n, double *x)
 {
 	double *pval;
-	double xbardot;
 	double jkerror;
 	double mean;
 	int i,j;

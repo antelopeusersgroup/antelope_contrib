@@ -32,7 +32,7 @@ MWbasis  *load_multiwavelets_pf(Pf *pf,int *nwavelets)
 			nsamples*(*nwavelets),*nwavelets,nsamples,nrows);
 	mw = (MWbasis *)calloc(*nwavelets, sizeof(MWbasis));
 	if(mw == NULL)
-		elog_die(0,"Cannot alloc %d multiwavelet structures\n",nwavelets);
+		elog_die(0,"Cannot alloc %d multiwavelet structures\n",*nwavelets);
 	for(i=0,k=0;i<(*nwavelets);++i)
 	{
 		mw[i].r = calloc(nsamples,sizeof(float));
@@ -163,7 +163,7 @@ MWtrace **MWtransform(float *trace, double dt, double starttime, int nsamples,
 	MWtrace **allmw;  /* working matrix variable */
 	int i,j;
 	int ii,k;
-	double stime,etime;  /* start end times of working trace */
+	double stime;  /* start end times of working trace */
 	int n;  /* samples in current trace */
 	double dtnew;  /* sample interval of current band */
 	double dtprevious,stprevious;

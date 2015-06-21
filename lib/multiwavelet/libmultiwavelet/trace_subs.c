@@ -41,8 +41,8 @@ November 2000
 
 int mwap_load_sta(Dbptr db, Dbptr tr, double s, double e, char *sta)
 {
-	int nsamp;
-	double time, endtime,samprate,calib;
+	long nsamp;
+	double samprate,calib;
 	double hang,vang,edepth;
 	char chan[10];
 	static Hook *hook=NULL;
@@ -52,7 +52,7 @@ int mwap_load_sta(Dbptr db, Dbptr tr, double s, double e, char *sta)
 	int nmatch;
 	int i,ierr;
         float *data;
-        int datasz;
+        long datasz;
         double t0,t1;
 	char net[4]="MW";   /* This is a required key on trace table so 
 				we just set it to a value */
@@ -63,16 +63,16 @@ int mwap_load_sta(Dbptr db, Dbptr tr, double s, double e, char *sta)
 	if(dbt.record == dbINVALID) return(dbINVALID);
 	dbk = dblookup(db,0,"wfdisc",0,0);
 	dbk.record = dbSCRATCH;
-	dbputv(dbk,0,"sta",sta,"time",s,"endtime",e,0);
+	dbputv(dbk,0,"sta",sta,"time",s,"endtime",e,NULL);
 
-	pattern = strtbl("sta","time::endtime",0);
+	pattern = strtbl("sta","time::endtime",0L);
 	nmatch = dbmatches(dbk,dbt,&pattern,&pattern,&hook,&matches);
 	if( (nmatch == dbINVALID) || (nmatch == 0) )return(nmatch);
 	for(i=0,ntrread=0;i<maxtbl(matches);++i)
 	{
 		data = NULL;
 		datasz = 0;
-		dbt.record = (int)gettbl(matches,i);
+		dbt.record = (long)gettbl(matches,i);
 		ierr = trgetwf(dbt,0,&data,&datasz,s,e,&t0,&t1,&nsamp,0,0);
 		if(ierr)
 		{
@@ -90,7 +90,7 @@ int mwap_load_sta(Dbptr db, Dbptr tr, double s, double e, char *sta)
 				"hang",&hang,
 				"vang",&vang,
 				"edepth",&edepth,
-				0);
+				NULL);
 		if(ierr)  
 		{
 		   elog_notify(0,
@@ -110,7 +110,7 @@ int mwap_load_sta(Dbptr db, Dbptr tr, double s, double e, char *sta)
 				"data",data,
 				"hang",hang,
 				"vang",vang,
-				0);
+				NULL);
 		if(ierr<0)
 		{
 			elog_notify(0,"Error appending to trace table for %s:%s at %s\nProbably data loss and associated memory leak\n",
@@ -162,8 +162,6 @@ Dbptr mwap_readdata(Dbptr db, Arr *arrivals,
 	double wstart, wend;  /* relative window positions */
 
 	Dbptr tr;  /* trace data base pointer */
-	Dbptr dbwf; 
-	char ss[30];
 	int nsta;  /* count of number of stations from subset group */
 	char *sta;  /* holds station name */
 	Tbl *t;  /* keysarr tbl of arrivals */
@@ -232,7 +230,7 @@ Author:  Gary Pavlis
 int free_noncardinal_traces(Dbptr tr)
 {
 	Dbptr db;
-	int nrec;
+	long nrec;
 	char chan[20];
 	char *cardinal[3]={ EW, NS, VERTICAL };
 	int i,found;
@@ -242,7 +240,7 @@ int free_noncardinal_traces(Dbptr tr)
 
 	for(db.record=0;db.record<nrec;++db.record)
 	{
-		dbgetv(db,0,"chan",chan,0);
+		dbgetv(db,0,"chan",chan,NULL);
 		for(found=0,i=0;i<3;++i)
 		{
 			if(!strcmp(chan,cardinal[i])) 
