@@ -555,7 +555,6 @@ void M_estimator_double_n_vector(double *v,
 		free(col);
 		free(row);
 		free(delta_mean);
-		free(delta_mean);
 		return;
 	}
 	/* This is the value of beta recommended by chave and thomson, 1987,
@@ -588,7 +587,6 @@ void M_estimator_double_n_vector(double *v,
 
 	free(col);
 	free(row);
-	free(delta_mean);
 	free(delta_mean);
 	free(residuals);
 }
