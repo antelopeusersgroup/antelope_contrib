@@ -556,7 +556,7 @@ int set_pwstatics(Arr *stations,
 	if(dbgetv(db,0,"origin.lat",&(source.lat),
 		"origin.lon",&(source.lon),
 		"origin.depth",&(source.z),
-		"origin.time",&(source.time),0) == dbINVALID)
+		"origin.time",&(source.time),NULL) == dbINVALID)
 	{
 		elog_notify(0,"set_pwstatics:  dbgetv error reading origin data\nStatics will all be set to zero\n");
 		orig_error=1;

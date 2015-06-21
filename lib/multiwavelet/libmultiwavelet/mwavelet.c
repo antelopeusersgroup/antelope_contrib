@@ -119,7 +119,7 @@ Arr *tr_mwtransform(
 {
 	Dbptr dbgrp;
 	Tbl *sortkeys,*grpkeys;
-	int nrows;
+	long nrows;
 	Dbptr dbbundle;
 	double rwinstart, rwinend;  /* relative start and end times in s*/
 	double trace_start, trace_end;  /* trace start and end absolute times */
@@ -130,7 +130,7 @@ Arr *tr_mwtransform(
 	double *atime;
 
 	Trsample *trdata;
-	int nsamp;
+	long nsamp;
 	double samprate,si;
 
 	int istart; 
