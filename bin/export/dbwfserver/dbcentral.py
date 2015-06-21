@@ -12,6 +12,7 @@ self.type to "dbcentral".
 
 
 @author: Juan Reyes <reyes@ucsd.edu>
+@author: Geoff Davis <gadavis@ucsd.edu>
 
 @usage:
   Create:
@@ -56,20 +57,18 @@ class DbcentralException(Exception):
     def __init__(self, msg):
         self.msg = msg
     def __repr__(self):
-        return 'DbcentralException: %s' % (self.msg)
-    def __str__(self):
-        return repr(self)
+        return 'DbcentralException(msg=%r)' % (self.msg)
 
 class UnknownVolumeTypeException(DbcentralException):
     """
-    Raised when the cluster database contains an unknown Volume type.
+    The Dbcentral cluster database contains an unknown Volume type.
     """
     def __init__(self,volumetype):
         self.volumetype = volumetype
+        msg = 'Volume type "%s" in cluster database not understood' % volumetype
+        DbcentralException.__init__(msg)
     def __repr__(self):
-        return('Volume type "%s" in cluster database not understood' % volumetype)
-    def __str__(self):
-        return repr(self)
+        return('UnknownVolumeTypeException(volumetype=%r)'%self.volumetype)
 
 class NoDatabaseException(DbcentralException):
     """
@@ -142,20 +141,27 @@ class Dbcentral:
         self.logger.debug( '_get_list(): ' )
         self._get_list()
 
+    def __repr__(self):
+        return (
+            "%s(dbname=%r, nickname=%r, debug=%r, required_tables=%r, type=%r, dbs=%r)"%(
+                self.__class__.__name__,
+                self.path, self.nickname, self.debug, self.required_tables,
+                self.type,self.dbs))
 
     def __str__(self):
         """
         end-user/application display of content using print() or log.msg()
         """
-        return ''.join(["\nDbcentral:\t%s: %s" % \
-                (value,self.dbs[value]) for value in sorted(self.dbs.keys())])
-
+        start="An instance of the %s class at %r containing %d databases: " % (
+            self.__class__.__name__, self.path, len(self.dbs))
+        middle=' ,'.join(self.dbs.keys())
+        return start+middle
 
     def info(self):
-        self.logger.info( "Dbcentral.nickname() => %s" % self.nickname )
-        self.logger.info( "Dbcentral.type() => %s" % self.type )
-        self.logger.info( "Dbcentral.path() => %s" % self.path )
-        self.logger.info( "Dbcentral.list() => %s" % self.list() )
+        self.logger.info( "Dbcentral.nickname => %s" % self.nickname )
+        self.logger.info( "Dbcentral.type => %s" % self.type )
+        self.logger.info( "Dbcentral.path => %s" % self.path )
+        self.logger.info( "Dbcentral.list => %s" % self.list() )
         for element in sorted(self.dbs):
             self.logger.info( "%s => %s" % (element,self.dbs[element]['times']) )
 
@@ -180,13 +186,6 @@ class Dbcentral:
 
         raise DbcentralException( "No db match for time=>[%s]" % time )
 
-
-    def __dell__(self):
-        """
-        method to cleanup dict.
-        """
-
-        self.dbs = {}
 
     def _get_list(self):
         try:
@@ -425,26 +424,28 @@ def main():
     Opens the Antelope demo database and runs some tests on it
     """
     import logging
+    from pprint import pprint
     logging.basicConfig()
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
     time =  1262404000.00000
 
-    dbcntl = Dbcentral('/opt/antelope/data/db/demo/demo',debug=True)
+    dbcntl = Dbcentral('/opt/antelope/data/db/demo/demo', debug=True,
+                       required_tables=['wfdisc','stachan']
+                      )
 
-    logger.info( 'dbcntl = Dbcentral("%s","%s")' % (dbcntl.path,dbcntl.nickname) )
-    logger.info( 'dbcntl.type => %s' % dbcntl.type )
-    logger.info( 'dbcntl.nickname => %s' % dbcntl.nickname )
-    logger.info( '%s' % dbcntl )
-    logger.info( 'dbcntl.list() => %s' % dbcntl.list() )
-    logger.info( 'dbcntl(%s) => %s' % (time,dbcntl(time)) )
+    print 'dbcntl.__repr__() = %r' % dbcntl
+    pprint(dbcntl,indent=10,width=1,depth=1)
+    pprint(dbcntl.dbs,indent=10,width=1,depth=None)
+    print 'dbcntl.str__() is %s' % dbcntl
+    print ( 'dbcntl(%s) == %s' % (time,dbcntl(time)) )
     try:
         dbcntl.purge('test')
     except Exception, e:
         logger.info('dbcntl.purge(%s) => %s' % ('test',e) )
 
-    logger.info( 'Done with Dbcentral demo.' )
+    print('Done with Dbcentral demo.')
 
 
 if __name__ == '__main__':
