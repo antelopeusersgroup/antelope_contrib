@@ -6,7 +6,6 @@ import twisted.internet.reactor
 import twisted.web.static
 from twisted.internet.threads import deferToThread
 from dbcentral import Dbcentral
-import antelope.datascope as datascope
 import antelope.stock as stock
 from twisted.python import log
 import twisted.web.server
@@ -68,7 +67,11 @@ class QueryParserResource(twisted.web.resource.Resource):
         # Open db using Dbcentral CLASS
         #
         self.logger.debug("QueryParser(): Init DB: Create Dbcentral object with database(%s)." % self.dbname)
-        self.db = Dbcentral(self.dbname,self.config.nickname,self.config.debug)
+        self.db = Dbcentral(self.dbname,
+                            self.config.nickname,
+                            self.config.debug,
+                            ['wfdisc','sitechan']
+                           )
         if self.config.debug: self.db.info()
 
         if not self.db.list():
@@ -78,14 +81,14 @@ class QueryParserResource(twisted.web.resource.Resource):
 
 
         self.tvals = {
-                "filters": '<option value="None">None</option>',
-                "dbname": self.dbname,
-                "display_arrivals": '',
-                "display_points": '',
-                "proxy_url": self.config.proxy_url,
-                "dbname": self.dbname,
-                "application_title": self.config.application_title,
-            }
+            "filters": '<option value="None">None</option>',
+            "dbname": self.dbname,
+            "display_arrivals": '',
+            "display_points": '',
+            "proxy_url": self.config.proxy_url,
+            "dbname": self.dbname,
+            "application_title": self.config.application_title,
+        }
 
         for filter in self.config.filters:
             self.tvals['filters'] += '<option value='+filter.replace(' ','_')+'>'
@@ -97,85 +100,6 @@ class QueryParserResource(twisted.web.resource.Resource):
 
         if self.config.display_points:
             self.tvals['display_points'] = 'checked="checked"'
-
-        #
-        # We might need to remove
-        # databases without wfdisc table
-        #
-        remove = []
-
-        for dbname in sorted(self.db.list()):
-
-            #
-            # Test database access.
-            #
-            self.logger.debug("QueryParser(): Init(): try dbopen [%s]" % dbname)
-
-            try:
-                db_temp = datascope.dbopen( dbname , "r" )
-            except datascope.DatascopeException, e:
-                self.logger.error('dbopen(%s) =>(%s)\n' % (dbname,e))
-                remove.append(dbname)
-                continue
-
-            # This is broken
-            #self.logger.debug("QueryParser(): Init(): Dbptr: [%s,%s,%s,%s]" % (
-            #    db_temp['database'],db_temp['table'],db_temp['field'],
-            #    db_temp['record'])
-
-            table_list =  ['wfdisc','sitechan']
-
-            for tbl in table_list:
-                self.logger.debug(
-                    'QueryParser(): Init(): Check table  %s[%s].' % (
-                        dbname,tbl))
-
-                try:
-                    db_temp = db_temp.lookup( table=tbl )
-                except Exception, e:
-                    self.logger.exception('%s.%s not present (%s)' % (
-                        dbname,tbl,e))
-                    remove.append(dbname)
-                    continue
-
-                try:
-                    db_temp.query(datascope.dbTABLE_PRESENT)
-                except Exception,e:
-                    self.logger.exception('%s.%s not present (%s)' % (
-                        dbname,tbl,e))
-                    remove.append(dbname)
-                    continue
-
-                try:
-                    records = db_temp.query(datascope.dbRECORD_COUNT)
-                except Exception, e:
-                    self.logger.exception('%s.%s( dbRECORD_COUNT )=>(%s)' % (
-                        dbname,tbl,e))
-                    if tbl == 'wfdisc': remove.append(dbname)
-                    continue
-
-
-                if not records and tbl == 'wfdisc':
-                    self.logger.error('%s.%s( dbRECORD_COUNT )=>(%s) Empty table!!!!' % (dbname,tbl,records))
-                    remove.append(dbname)
-                    continue
-
-                self.logger.debug('%s records=>[%s]' % (tbl,records))
-
-            try:
-                db_temp.close()
-            except:
-                self.logger.exception('dbclose(%s) =>(%s)' % (dbname,e))
-                remove.append(dbname)
-                continue
-
-
-        for db_temp in remove:
-            self.logger.info("Removing %s from Dbcentral object" % db_temp)
-            self.db.purge(db_temp)
-
-        if len(remove):
-            self.logger.info("QueryParser(): Init(): New list: dbcentral.list() => %s" % self.db.list())
 
         if not self.db.list():
             self.logger.critical(

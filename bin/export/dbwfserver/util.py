@@ -4,6 +4,8 @@ import antelope.datascope as datascope
 import antelope.stock as stock
 from collections import defaultdict
 
+logger = logging.getLogger(__name__)
+
 """
 Utility functions and classes for dbwfserver
 
