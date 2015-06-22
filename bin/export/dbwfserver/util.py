@@ -3,6 +3,7 @@ import logging
 import antelope.datascope as datascope
 import antelope.stock as stock
 from collections import defaultdict
+from string import Template
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,10 @@ def isNumber(test):
                 return None
     except:
         return None
+
+def load_template(template_path):
+    """Load a template from the specified path"""
+    return Template(open(template_path).read())
 
 class Db_nulls():
     """
