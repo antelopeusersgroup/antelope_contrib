@@ -51,6 +51,9 @@ class QueryParserResource(twisted.web.resource.Resource):
         self.logger.info('        Loading!        ')
         self.logger.info('########################')
 
+        self.init_finished=False
+        self.init_failure=False
+
         self.config = config
         self.dbname = dbname
         self.loading_stations = True
@@ -109,7 +112,18 @@ class QueryParserResource(twisted.web.resource.Resource):
                 'No valid databases to work with! -v or -V for more info')
             return False
 
-        deferToThread(self._init_in_thread)
+        d=deferToThread(self._init_in_thread)
+        d.addCallback(self._init_finished)
+        d.addErrback(self._init_failed)
+
+    def _init_finished(self,d):
+        self.init_finished=True
+
+    def _init_failed(self,failure):
+        self.init_failure=True
+        self.logger.critical('An error occurred during initialization: ' +
+                             str(failure))
+        sys.exit(twisted.internet.reactor.stop())
 
     def _init_in_thread(self):
 
@@ -695,11 +709,13 @@ class QueryParserResource(twisted.web.resource.Resource):
         else:
             page = ""
 
-        run = "dbwfserver_extract %s %s %s %s %s %s %s %s %s -n %s -m %s %s %s %s 2>&1" % ( regex, coverage, filter, page, calibrate, precision, realtime, median, period, self.config.max_traces, self.config.max_points, tempdb, start, end)
+        run = "dbwfserver_extract %s %s %s %s %s %s %s %s %s -n %s -m %s %s %s %s 2>&1" % (
+            regex, coverage, filter, page, calibrate, precision, realtime,
+            median, period, self.config.max_traces, self.config.max_points,
+            tempdb, start, end
+        )
 
-        self.logger.info("*********")
         self.logger.info("QueryParser(): get_data(): Extraction command: [%s]" % run)
-        self.logger.info("*********")
 
         # Method 1
         #master, slave = pty.openpty()
