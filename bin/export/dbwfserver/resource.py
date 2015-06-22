@@ -7,7 +7,6 @@ import twisted.web.static
 from twisted.internet.threads import deferToThread
 from dbcentral import Dbcentral
 import antelope.stock as stock
-from twisted.python import log
 import twisted.web.server
 import json
 from string import Template
@@ -43,7 +42,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
     allowedMethods = ("GET")
 
-    def __init__(self,config,db):
+    def __init__(self,config,dbname):
 
         self.logger=logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         self.logger.info('########################')
 
         self.config = config
-        self.dbname = db
+        self.dbname = dbname
         self.loading_stations = True
         self.loading_events = True
 
@@ -67,17 +66,17 @@ class QueryParserResource(twisted.web.resource.Resource):
         # Open db using Dbcentral CLASS
         #
         self.logger.debug("QueryParser(): Init DB: Create Dbcentral object with database(%s)." % self.dbname)
-        self.db = Dbcentral(self.dbname,
+        self.dbcentral = Dbcentral(self.dbname,
                             self.config.nickname,
                             self.config.debug,
                             ['wfdisc','sitechan']
                            )
-        if self.config.debug: self.db.info()
+        if self.config.debug: self.dbcentral.info()
 
-        if not self.db.list():
+        if not self.dbcentral.list():
             self.logger.critical('Init DB: No databases to use! (%s)' %
                                  self.dbname)
-            sys.exit(reactor.stop())
+            sys.exit(twisted.internet.reactor.stop())
 
 
         self.tvals = {
@@ -101,7 +100,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         if self.config.display_points:
             self.tvals['display_points'] = 'checked="checked"'
 
-        if not self.db.list():
+        if not self.dbcentral.list():
             self.logger.critical(
                 'No valid databases to work with! -v or -V for more info')
             return False
@@ -111,13 +110,13 @@ class QueryParserResource(twisted.web.resource.Resource):
     def _init_in_thread(self):
 
         self.logger.info('Loading Stations()')
-        self.stations = Stations(self.config,self.db)
+        self.stations = Stations(self.config,self.dbcentral)
         self.loading_stations = False
         self.logger.info('Done loading Stations()')
 
         if self.config.event == 'true':
             self.logger.info('Loading Events()')
-            self.events = Events(self.db)
+            self.events = Events(self.dbcentral)
             self.loading_events = False
             self.logger.info('Done loading Events()')
         else:
@@ -128,7 +127,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
     def getChild(self, name, uri):
 
-        #if self.config.debug: log.msg("getChild(): name:%s uri:%s" % (name,uri))
+        #self.logger.debug("getChild(): name:%s uri:%s" % (name,uri))
         return self
 
 
@@ -257,19 +256,17 @@ class QueryParserResource(twisted.web.resource.Resource):
             query.update( { "calibrate":self.config.apply_calib } )
 
 
-        log.msg('')
-        log.msg('QueryParser(): render_uri() uri.prepath => path(%s)[%s]' % (len(path),path) )
-        log.msg('QueryParser(): render_uri() query => [%s]' % query)
-        log.msg('')
+        self.logger.debug('QueryParser(): render_uri() uri.prepath => path(%s)[%s]' % (len(path),path) )
+        self.logger.debug('QueryParser(): render_uri() query => [%s]' % query)
 
         if query['data']:
 
 
-                if self.config.debug: log.msg('QueryParser(): render_uri() "data" query')
+                self.logger.debug('QueryParser(): render_uri() "data" query')
 
                 if len(path) == 0:
                     #ERROR: we need one option
-                    log.msg('QueryParser(): render_uri() ERROR: Empty "data" query!')
+                    self.logger.error('QueryParser(): render_uri() ERROR: Empty "data" query!')
                     return self.uri_results(uri,'Invalid data query.')
 
 
@@ -280,7 +277,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     Called with or without argument.
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => events')
+                    self.logger.debug('QueryParser(): render_uri() query => data => events')
                     if self.config.event != 'true':
                         return self.uri_results(uri,{})
 
@@ -301,7 +298,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     for all wfs in the cluster of dbs.
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => dates')
+                    self.logger.debug('QueryParser(): render_uri() query => data => dates')
 
                     return self.uri_results( uri, self.stations.dates() )
 
@@ -314,7 +311,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     for all stations in the cluster of dbs.
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => dates')
+                    self.logger.debug('QueryParser(): render_uri() query => data => dates')
 
                     if len(path) == 2:
                         return self.uri_results( uri, self.stations.stadates(path[1]) )
@@ -333,7 +330,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     Called with argument return dictionary
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => stations')
+                    self.logger.debug('QueryParser(): render_uri() query => data => stations')
 
                     if len(path) == 2:
                         return self.uri_results( uri, self.stations(path[1]) )
@@ -347,7 +344,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     Return channels list as JSON objects. For client ajax calls.
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => channels')
+                    self.logger.debug('QueryParser(): render_uri() query => data => channels')
 
                     if len(path) == 2:
                         stas = self.stations.convert_sta(path[1].split('|'))
@@ -362,7 +359,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     Return JSON object for epoch(now).
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => now')
+                    self.logger.debug('QueryParser(): render_uri() query => data => now')
 
                     return self.uri_results( uri, [stock.now()] )
 
@@ -373,7 +370,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     Return list of filters as JSON objects. For client ajax calls.
                     """
 
-                    if self.config.debug: log.msg('QueryParser(): render_uri() query => data => filters %s' % self.config.filters)
+                    self.logger.debug('QueryParser(): render_uri() query => data => filters %s' % self.config.filters)
 
                     return self.uri_results( uri, self.config.filters )
 
@@ -454,7 +451,7 @@ class QueryParserResource(twisted.web.resource.Resource):
             localhost/data/channels
             localhost/data/wf/sta/chan/time/time/page
         """
-        if self.config.debug: log.msg("QueryParser(): _parse_request(): URI: %s" % str(args) )
+        self.logger.debug("QueryParser(): _parse_request(): URI: %s" % str(args) )
 
         uri = {}
         time_window = float(self.config.default_time_window)
@@ -471,7 +468,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         } )
 
         if 'data' in args:
-            if self.config.verbose: log.msg("QueryParser() _parse_request(): data query!")
+            self.logger.info("QueryParser() _parse_request(): data query!")
             uri['data'] = True
             args.remove('data')
 
@@ -551,8 +548,7 @@ class QueryParserResource(twisted.web.resource.Resource):
             if not uri['end']:
                 uri['end'] = uri['start'] + time_window
 
-        if self.config.verbose:
-            log.msg("QueryParser(): _parse_request(): [sta:%s chan:%s start:%s end:%s]" % (uri['sta'], uri['chan'], uri['start'], uri['end']) )
+        self.logger.debug("QueryParser(): _parse_request(): [sta:%s chan:%s start:%s end:%s]" % (uri['sta'], uri['chan'], uri['start'], uri['end']) )
 
         return uri
 
@@ -615,7 +611,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
         if not end: end = start + self.config.default_time_window
 
-        tempdb = self.db(start)
+        tempdb = self.dbcentral(start)
         if not tempdb:
             response_data = "Not valid database for this time [%s]" % start
             self.logger.error(response_data)
