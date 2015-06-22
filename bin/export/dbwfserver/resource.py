@@ -130,34 +130,18 @@ class QueryParserResource(twisted.web.resource.Resource):
         #self.logger.debug("getChild(): name:%s uri:%s" % (name,uri))
         return self
 
-    def _render_waiting(self, uri):
-        """ Output an error page while waiting for initialization
-
-        """
-        html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % self.config.application_title
-        html +=  "<p>Waiting for Stations: %s</p></br>" % self.loading_stations
-        html +=  "<p>Waiting for Events: %s</p></br>" % self.loading_events
-        html +=  "</body></html>"
-        uri.setHeader("content-type", "text/html")
-        uri.setResponseCode( 500 )
-        uri.write(html)
-        uri.finish()
-
 
     def render_GET(self, uri):
 
+        self.logger.debug("QueryParser(): render_GET(): uri: %s" % uri)
+
+        self.logger.debug('')
         self.logger.debug('QueryParser(): render_GET(%s)' % uri)
-
-        if self.loading_stations or self.loading_events:
-            self._render_waiting(uri)
-            return
-
         self.logger.debug('QueryParser(): render_GET() uri.uri:%s' % uri.uri)
         self.logger.debug('QueryParser(): render_GET() uri.args:%s' % (uri.args) )
         self.logger.debug('QueryParser(): render_GET() uri.prepath:%s' % (uri.prepath) )
         self.logger.debug('QueryParser(): render_GET() uri.postpath:%s' % (uri.postpath) )
         self.logger.debug('QueryParser(): render_GET() uri.path:%s' % (uri.path) )
-
 
         (host,port) = uri.getHeader('host').split(':', 1)
         self.logger.debug('QueryParser():\tQUERY: %s ' % uri)
@@ -169,6 +153,17 @@ class QueryParserResource(twisted.web.resource.Resource):
         #uri.setHost(host,self.config.port)
 
 
+        if self.loading_stations or self.loading_events:
+            html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % self.config.application_title
+            html +=  "<p>Waiting for Stations: %s</p></br>" % self.loading_stations
+            html +=  "<p>Waiting for Events: %s</p></br>" % self.loading_events
+            html +=  "</body></html>"
+            uri.setHeader("content-type", "text/html")
+            uri.setResponseCode( 500 )
+            uri.write(html)
+            uri.finish()
+            return
+
         d = twisted.internet.defer.Deferred()
         d.addCallback( self.render_uri )
         twisted.internet.reactor.callInThread(d.callback, uri)
@@ -176,6 +171,8 @@ class QueryParserResource(twisted.web.resource.Resource):
         self.logger.debug("QueryParser(): render_GET() - return server.NOT_DONE_YET")
 
         return twisted.web.server.NOT_DONE_YET
+
+
 
     def render_uri(self,uri):
 
@@ -264,6 +261,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
         if query['data']:
 
+
                 self.logger.debug('QueryParser(): render_uri() "data" query')
 
                 if len(path) == 0:
@@ -273,6 +271,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
 
                 elif path[0] == 'events':
+
                     """
                     Return events dictionary as JSON objects. For client ajax calls.
                     Called with or without argument.
@@ -293,6 +292,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
 
                 elif path[0] == 'dates':
+
                     """
                     Return list of yearday values for time in db
                     for all wfs in the cluster of dbs.
@@ -404,6 +404,9 @@ class QueryParserResource(twisted.web.resource.Resource):
                 else:
                     #ERROR: Unknown query type.
                     return self.uri_results( uri, "Unknown query type:(%s)" % path )
+
+
+
 
         response_meta.update(self.tvals)
 
