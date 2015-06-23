@@ -86,12 +86,13 @@ class ProgressLogger:
             time_now - self.start_time)
 
 
-    def finish(self,level=self.level):
+    def finish(self, level=None):
         """Signal that the task has finished"""
+        if level is None: level=self.level
         time_now=time.time()
         self.logger.log(level, self.name +
                         "Finished at " + str(time_now) +
-                        self._get_time_text(time_now)
+                        self._get_tick_text(time_now)
                        )
 
 def load_template(template_path):
@@ -221,6 +222,7 @@ class Stations():
         self.first = True
         self.dbcentral = db
         self.stachan_cache = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self.wfdisc_stachan = defaultdict(set)
         self.offset = -1
         self.wfdates = defaultdict(lambda: defaultdict(dict))
         self.maxtime = -1
@@ -337,8 +339,10 @@ class Stations():
                 dbwfdisc.record = j
 
                 try:
-                    self.wfdates[stock.yearday(dbwfdisc.getv('time')[0])] = 1
-                except Exception, e:
+                    sta,chan,dbtime = dbwfdisc.getv('sta','chan','time')
+                    self.wfdisc_stachan[sta].add(chan)
+                    self.wfdates[stock.yearday(dbtime)] = 1
+                except datascope.DatascopeException, e:
                     self.logger.exception('(%s=>%s)' % (Exception,e))
 
             prog.finish()
@@ -369,17 +373,24 @@ class Stations():
 
                 ssc.record = j
                 try:
-                    sta, chan, ondate, offdate = ssc.getv('sta','chan','ondate','offdate')
+                    sta, chan, ondate, offdate = ssc.getv(
+                        'sta', 'chan', 'ondate', 'offdate')
                 except Exception, e:
                     self.logger.exception('Station(): (%s=>%s)' % (Exception,e))
 
                 ondate = stock.str2epoch(str(ondate))
-                if offdate != -1: offdate = stock.str2epoch(str(offdate))
+                if chan in self.wfdisc_stachan[sta]:
+                    if offdate != -1: offdate = stock.str2epoch(str(offdate))
 
-                self.stachan_cache[sta][chan]['dates'].extend([[ondate,offdate]])
+                    self.stachan_cache[sta][chan]['dates'].extend([[ondate,offdate]])
 
-                self.logger.debug("Station(): %s.%s dates: %s" % (
-                    sta,chan,self.stachan_cache[sta][chan]['dates']))
+                    self.logger.debug("Station(): %s.%s dates: %s" % (
+                        sta,chan,self.stachan_cache[sta][chan]['dates']))
+                else:
+                    self.logger.debug(
+                        'Station(): %s.%s was not in the wfdisc. Skipping' % (
+                            sta, chan)
+                    )
 
             try:
                 ssc.free()
