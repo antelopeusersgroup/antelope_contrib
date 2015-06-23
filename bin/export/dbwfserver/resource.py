@@ -151,7 +151,7 @@ class QueryParserResource(twisted.web.resource.Resource):
     def _render_loading(self, request):
         """Output an error page while loading Stations and Events"""
 
-        responseCode = 500
+        responseCode = 503
         #html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % self.config.application_title
         #html +=  "<p>Waiting for Stations: %s</p></br>" % self.loading_stations
         #html +=  "<p>Waiting for Events: %s</p></br>" % self.loading_events
@@ -163,7 +163,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                 <head><title>ERROR: $responseCode - $appname</title></head>
                 <body>
                     <h1>ERROR: $responseCode - $appname</h1>
-                    <p>The DBWFSERVER $appname is still starting up.</p>
+                    <p>The DBWFSERVER $appname is still starting up. Try again later.</p>
                     <p>Waiting for Stations: $loading_stations</p>
                     <p>Waiting for Events: $loading_events</p>
                 </body>
