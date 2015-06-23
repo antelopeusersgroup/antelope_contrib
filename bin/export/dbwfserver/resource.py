@@ -195,16 +195,10 @@ class QueryParserResource(twisted.web.resource.Resource):
         if self.loading_stations or self.loading_events:
             return self._render_loading(request)
 
-
-        (host,port) = request.getHeader('host').split(':', 1)
         self.logger.debug('QueryParser():\tQUERY: %s ' % request)
-        self.logger.debug('QueryParser():\tHostname => [%s:%s]'% (host,port))
         self.logger.debug('QueryParser():\tHost=> [%s]'% request.host)
         self.logger.debug('QueryParser():\tsocket.gethostname() => [%s]'% socket.gethostname())
         self.logger.debug('')
-        #self.logger.debug('QueryParser():\tsocket.getsockname() => [%s]'% request.host.getsockname())
-        #request.setHost(host,self.config.port)
-
 
         d = twisted.internet.defer.Deferred()
         d.addCallback( self.render_uri )
