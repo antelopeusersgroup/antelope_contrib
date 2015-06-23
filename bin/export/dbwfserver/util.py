@@ -91,7 +91,7 @@ class ProgressLogger:
         if level is None: level=self.level
         time_now=time.time()
         self.logger.log(level, self.name +
-                        "Finished at " + str(time_now) +
+                        "Finished at " + str(time_now) + " " +
                         self._get_tick_text(time_now)
                        )
 
