@@ -70,7 +70,8 @@ class ProgressLogger:
         self.current_tick += 1
         time_now=time.time()
         if (
-            ((self.tick_interval > 0) and (self.tick % self.tick_interval == 0)) or
+            ((self.tick_interval > 0) and
+             (self.tick % self.tick_interval == 0)) or
             (time_now - self.last_output > self.time_interval)
         ):
             self.logger.log(self.level, self.name +
@@ -293,8 +294,6 @@ class Stations():
 
         """
 
-        debug_status_nrec = 0 # spam a status message every n records
-        debug_status_interval = 1 # spam a status message every n milliseconds
         records = 0
 
         self.logger.info("Stations(): update cache")
