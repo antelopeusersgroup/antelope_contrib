@@ -62,7 +62,7 @@ int MWget_model_tt_slow(Arr *stations,
 	char *method;
 	TTGeometry geometry;
 	TTTime *atime;
-	TTSlow *u0,*u;
+	TTSlow *u0;
 	Tbl *treturn=NULL,*ureturn=NULL;
 	int error_count=0;
 	double *twork;
@@ -72,7 +72,7 @@ int MWget_model_tt_slow(Arr *stations,
 	if(dbgetv(db,0,"origin.lat",&(geometry.source.lat),
 		"origin.lon",&(geometry.source.lon),
 		"origin.depth",&(geometry.source.z),
-		"origin.time",&(geometry.source.time),0) == dbINVALID)
+		"origin.time",&(geometry.source.time),NULL) == dbINVALID)
 	{
 		elog_complain(0,"MWget_model_tt_slow:  dbgetv error reading origin data\nCannot compute theoretical arrival times and slowness\n");
 		return(-1);	

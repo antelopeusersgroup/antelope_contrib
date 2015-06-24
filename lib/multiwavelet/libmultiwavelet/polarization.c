@@ -35,7 +35,7 @@ Particle_Motion_Ellipse compute_particle_motion(complex x,
 	double a,b;
 	double phi1,phi2;
 	double x1[3],x2[3];
-	double nrmx1,nrmx2,xmaj,xmin;
+	double nrmx1,nrmx2;
 	Particle_Motion_Ellipse e;
 
 
@@ -292,7 +292,7 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	because a projection is always <= original */
 	for(i=0;i<n;++i)
 	{
-		double minor_nrm,major_nrm;
+		double minor_nrm;
 		minor_nrm = dnrm2(3,v+i*3,1);
 		/* Not needed because the major axis vector
 		was previously normalized to unit length 

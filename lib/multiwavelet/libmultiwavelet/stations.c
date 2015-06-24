@@ -13,7 +13,6 @@ Written:  August 19, 1998 +
 /* small companion initializer to function below */
 void initialize_MWstation(MWstation *s,int nbands)
 {
-	int i;
 	s->sta = NULL;
 	s->lat = 0.0;
 	s->lon = 0.0;
@@ -254,11 +253,10 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 	Tbl *t;
 	char *key;
 	int yrday;
-	Dbptr dbscr;
 	static Hook *hook=NULL;
 	Tbl *match_tbl;
 	MWstation *s;
-	int ondate,offdate;
+	long ondate,offdate;
 	char refsta[10];  /*This is used as input buffer that
 				is duped to store in each s object*/
 	char refsta0[10];  /* Used for comparison to guarantee there
@@ -273,10 +271,10 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 
 	for(i=0,nset=0;i<maxtbl(t);i++)
 	{
-		int nmatch;
+		long nmatch;
 		key = gettbl(t,i);
 		s = (MWstation *)getarr(a,key);
-		dbputv(dbs,0,"sta",s->sta,0);
+		dbputv(dbs,0,"sta",s->sta,NULL);
 		nmatch = dbmatches(dbs,db,0,0,&hook,&match_tbl);
 		if(nmatch == dbINVALID)
 			elog_die(0,"dbmatches error looking for entries for station %s\n",s->sta);
@@ -300,9 +298,9 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 			{
 				for(j=0;j<maxtbl(match_tbl);j++)
 				{
-					db.record = (int)gettbl(match_tbl,j);
+					db.record = (long)gettbl(match_tbl,j);
 					if(dbgetv(db,0,"ondate",&ondate,
-							"offdate",&offdate,0)
+							"offdate",&offdate,NULL)
 						== dbINVALID)
 					{
 						elog_notify(0,"load_station_geometry:  dbgetv error while searching for ondate/offdate match for station %s\nBlundering on\n", 
@@ -322,9 +320,9 @@ int load_station_geometry(Dbptr db, Arr *a, double time)
 				"dnorth",&(s->dnorth),
 				"deast",&(s->deast),
 				"refsta",refsta,
-				0) == dbINVALID)
+				NULL) == dbINVALID)
 			{
-				elog_notify(0,"load_station_geometry:  dbgetv error reading record %d for station %s in site table\nStation deleted from list\n",
+				elog_notify(0,"load_station_geometry:  dbgetv error reading record %ld for station %s in site table\nStation deleted from list\n",
 					db.record,s->sta);
 				delarr(a,s->sta);
 				free_MWstation(s);
@@ -383,7 +381,7 @@ int load_initial_statics(Pf *pf, Arr *a)
 	for(i=0,nset=0;i<maxtbl(t);i++)
 	{
 		line = gettbl(t,i);
-		if((sscanf(line,"%s %lf %lf",sta,&statics)) != 2)
+		if((sscanf(line,"%s %lf",sta,&statics)) != 2)
 		{
 			elog_notify(0,"Syntax error reading line from initial_statics Tbl\nOffending line->%s\n",
 				line);
