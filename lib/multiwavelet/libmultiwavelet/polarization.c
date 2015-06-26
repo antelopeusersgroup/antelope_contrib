@@ -1,4 +1,5 @@
 #include <math.h>
+#include <float.h>
 #include "stock.h"
 #include "perf.h"
 #include "arrays.h"
@@ -158,7 +159,14 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	M_estimator_double_n_vector(v,3,n,
 		IQ_SCALE_RELATIVE,PM_MINSCALE_MAJOR,avg,weight);
 	nrm_major = dnrm2(3,avg,1);
-	for(i=0;i<3;++i) pmavg->major[i] = avg[i]/nrm_major;
+	for(i=0;i<3;++i) 
+	{
+	    /* Needed to avoid random NaN */
+	    if(nrm_major<FLT_EPSILON)
+	    	pmavg->major[i] = avg[i];
+	    else
+		pmavg->major[i] = avg[i]/nrm_major;
+	}
 
 	/* Error estimates are computed completely differently here from
 	that described in Bear and Pavlis (1999).  Rather than use a 

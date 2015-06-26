@@ -310,6 +310,9 @@ float M_estimator_float(float *x,int nx,int mode,double minscale)
 	stats=MW_calc_statistics_float(wtres,nx);
 	fmean = stats.median;
 	if(IQ_SCALE_RELATIVE)
+	    if(fmean<FLT_EPSILON)
+		fminsc = minscale;
+	    else
 		fminsc = fmean*((float)minscale);
 	else
 		fminsc = (float)minscale;
@@ -515,6 +518,9 @@ void M_estimator_double_n_vector(double *v,
 	for(j=0;j<nv;++j) weight[j] = 1.0; /* done to make sure scale
 					is computed correctly on first pass*/
 	if(mode==IQ_SCALE_RELATIVE)
+	    if(vmag<FLT_EPSILON)
+		fminsc= minscale;
+	    else
 		fminsc = vmag*minscale;
 	else
 		fminsc = minscale;
