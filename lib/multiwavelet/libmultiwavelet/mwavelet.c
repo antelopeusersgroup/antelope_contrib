@@ -119,7 +119,7 @@ Arr *tr_mwtransform(
 {
 	Dbptr dbgrp;
 	Tbl *sortkeys,*grpkeys;
-	int nrows,nchan;
+	long nrows;
 	Dbptr dbbundle;
 	double rwinstart, rwinend;  /* relative start and end times in s*/
 	double trace_start, trace_end;  /* trace start and end absolute times */
@@ -130,10 +130,9 @@ Arr *tr_mwtransform(
 	double *atime;
 
 	Trsample *trdata;
-	int nsamp;
+	long nsamp;
 	double samprate,si;
 
-	int is, ie, nrec;
 	int istart; 
 	int points_to_process;
 	MWtrace ***mwt; 
@@ -170,16 +169,16 @@ Arr *tr_mwtransform(
 
 	for(dbgrp.record=0;dbgrp.record<nrows;++dbgrp.record)
 	{
-		int is,ie,nrec,irec;
+		long is,ie,nrec;
 		double reclen;
 		double s1, s2, tsegment;
 		if(dbgetv(dbgrp,0,
 			"sta",sta,
 			"chan",chan,
 			"bundle",&dbbundle,
-			0) == dbINVALID)
+			NULL) == dbINVALID)
 		{
-			  elog_complain(0,"dbgetv error while reading record %d of sta/chan grouping table\nData loss likely\n",
+			  elog_complain(0,"dbgetv error while reading record %ld of sta/chan grouping table\nData loss likely\n",
 					dbgrp.record);
 			  continue;
 		}
@@ -209,7 +208,7 @@ fprintf(stderr,"DEBUG:  entered gap loop for %s:%s\n",sta,chan);
 				/*I intentionally don't trap errors here.
 				It should never happen.*/
 				dbgetv(tr,0,"time",&trace_start,
-					"endtime",&trace_end,0);
+					"endtime",&trace_end,NULL);
 				if(trace_end <= swtime) continue;
 				if(trace_start >= ewtime) continue;
 				if(trace_start < swtime)
@@ -240,7 +239,7 @@ fprintf(stderr,"DEBUG:  entered gap loop for %s:%s\n",sta,chan);
 				"endtime", &trace_end,
 				"nsamp",&nsamp,
 				"samprate",&samprate,
-				"data",&(trdata),0);
+				"data",&(trdata),NULL);
 
 		si = 1.0/samprate;
 		/*We want to be careful to keep times accurate to 
@@ -655,7 +654,7 @@ Written:  Sept. 1999
 MWgather *MWgather_transformation(MWgather *ingath,double *u)
 {
 	MWgather *gather;
-	int i,j,ii,nz;
+	int i,nz;
 	complex *z1, *z2, *z3;  /*work vectors holds transformed seismograms */
 	int nsta,nz_sta;
 	complex ztmp;
@@ -1316,6 +1315,9 @@ int idbug, jdbug;
 
 	allot(complex *,A,(g->nsta)*(w.length));
 	allot(float *,svalue,MIN(g->nsta,w.length));
+        /* These are not used - explicitly set to NULL as a style thing */
+        U=NULL;
+        Vt=NULL;
 	for(i=0,ii=0;i<(g->nsta);++i)
 	{
 		if((g->x3[i]) == NULL) continue;
@@ -1442,7 +1444,6 @@ void compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 	MW_scalar_statistics stats; 
 	float peak_semb;
 	int lag_at_peak;
-	char *array_name;
 	int *window_error;
 
 
@@ -1842,7 +1843,7 @@ int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	double *avgamp, double *amperr, int *ampndgf)
 {
 	int nsta,nsta_used,nsta_test;
-	int i,j,ii;
+	int i,j;
 	double U[9];  /* transformation matrix */
 	MWgather **trans_gath;
 	double *current_moveout;  /* initially copy of moveout, but changes
@@ -1851,6 +1852,8 @@ int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 			station.  Stored in a parallel array to 
 			moveout and elements of MWgather */
 	complex *A,*Usvd,*Vt;  /* Usvd and Vt are not actually accessed at present*/
+        Usvd=NULL;
+        Vt=NULL;
 	float *svalues,*sv1;  /* svalues is a work space, sv1 stores largest
 				singular value for each wavelet */
 	complex *eigenvectors;  /* Eigenvectors for each wavelet are 
@@ -2216,11 +2219,12 @@ void compute_mw_particle_motion(MWgather **g,int nwavelets,double timeref,
 {
 	int nsta,nsta_used,nrows,info;
 	int i,j,ii,jj;
-	MWgather **trans_gath;
 	int *alllags;  /* base lag computed from moveout for each 
 			station.  Stored in a parallel array to 
 			moveout and elements of MWgather */
 	complex *A,*U,*Vt;  /* U and Vt are not actually accessed at present*/
+        U=NULL;
+        Vt=NULL;
 	float *svalues;  /* singular value work vector */
 	float *weights;  /* Holds row of weights */
 	Particle_Motion_Ellipse *ematrix;  /* this is set to be a 

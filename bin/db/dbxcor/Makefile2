@@ -11,7 +11,7 @@ cxxflags=-g
 ldlibs= -L./SciPlot -L$(XMOTIFLIB) -lseisw -lsciplot -lXm -lXt \
   -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp
 
-CLEAN =
+SUBDIR=/contrib
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
