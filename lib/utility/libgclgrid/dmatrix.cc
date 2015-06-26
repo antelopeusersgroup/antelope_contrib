@@ -1,6 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include "dmatrix.h"
+#include "perf.h"
 
 using namespace std;
 dmatrix::dmatrix()
