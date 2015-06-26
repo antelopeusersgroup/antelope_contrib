@@ -1,5 +1,6 @@
 #include "dmatrix.h"
 #include "gclgrid.h"
+#include "perf.h"
 /* function prototype used only here (FORTRAN routine) */
 extern "C" {
 extern void fmeweights_(double *,double *,double *,int *);

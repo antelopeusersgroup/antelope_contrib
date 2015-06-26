@@ -2,7 +2,6 @@
 #define _DMATRIX_H_
 #include <string>
 #include <iostream>
-#include "perf.h"
 #include <sstream>
 using namespace std;
 //==================================================================
