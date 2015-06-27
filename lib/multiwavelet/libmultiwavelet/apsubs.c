@@ -417,7 +417,7 @@ int compute_plane_wave_static(MWstation *s,
 	char *method;
 	TTGeometry geometry;
 	TTTime *atime;
-	TTSlow *u0,*u;
+	TTSlow *u0;
 	char refphase[TTPHASE_SIZE];
 	MWSlowness_vector slow;
 	int tresult,uresult;
@@ -486,7 +486,7 @@ int compute_plane_wave_static(MWstation *s,
 	tresult = ttcalc(method,model,phase,0,&geometry,&treturn,&hook);
 	if(tresult)
 	{
-		elog_complain(0,"Error computing travel time from model %s using method %d for station %s\nStatic set to zero\n",
+		elog_complain(0,"Error computing travel time from model %s using method %s for station %s\nStatic set to zero\n",
 			model, method, s->sta);
 		s->plane_wave_static = 0.0;
 		freetbl(treturn,free);
@@ -556,7 +556,7 @@ int set_pwstatics(Arr *stations,
 	if(dbgetv(db,0,"origin.lat",&(source.lat),
 		"origin.lon",&(source.lon),
 		"origin.depth",&(source.z),
-		"origin.time",&(source.time),0) == dbINVALID)
+		"origin.time",&(source.time),NULL) == dbINVALID)
 	{
 		elog_notify(0,"set_pwstatics:  dbgetv error reading origin data\nStatics will all be set to zero\n");
 		orig_error=1;
@@ -849,7 +849,6 @@ int estimate_slowness_vector(
 	int error_code=0;
 	int nsvused;
 	int iteration=0;
-	double dtref;
 	double dutest;
 	int info;
 

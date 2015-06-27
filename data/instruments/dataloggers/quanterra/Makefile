@@ -37,5 +37,6 @@ DATA= 	qx80-90.pf \
     qep_ch2.pf \
     qep_ch3.pf 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

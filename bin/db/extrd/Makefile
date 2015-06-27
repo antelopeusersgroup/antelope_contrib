@@ -1,24 +1,23 @@
-# @(#)Makefile	1.1 3/14/95 
-# Makefile for extrd
+BIN  = extrd
+MAN1 = $(BIN).1
 
-BIN = extrd
-MAN1 = extrd.1
 cflags  = -g
 ldlibs  = -lscv2 -ldbl2 $(TRLIBS)
- 
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
+OBJS  = $(BIN).o
+OBJS += create_dir.o
+OBJS += dtsplit.o
+OBJS += find_path.o
+OBJS += get_data.o
+OBJS += mkfname.o
+OBJS += parse_name.o
+OBJS += steim_util.o
+OBJS += sig_hdlr.o
+OBJS += util.o
+OBJS += wrt_data.o
 
-OBJS	= extrd.o\
-	  create_dir.o\
-	  dtsplit.o\
-	  find_path.o\
-	  get_data.o\
-	  mkfname.o\
-	  parse_name.o\
-	  steim_util.o\
-	  sig_hdlr.o\
-	  util.o\
-	  wrt_data.o
-$(BIN):	$(OBJS)
+$(BIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)

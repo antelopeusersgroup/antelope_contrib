@@ -1,6 +1,15 @@
-from __main__ import *
+import os
+import sys
+import getopt
+import antelope.datascope as datascope
+import antelope.stock as stock
 
 class Config_Server():
+    """
+    Configure the dbwfserver
+
+    """
+
     def __init__(self):
         self.event               = 'false'
         self.pfname              = 'dbwfserver'
@@ -26,7 +35,6 @@ class Config_Server():
         self.verbose             = False
         self.debug               = False
         self.daemonize           = False
-        #self.import_paths        = ()
         self.default_time_window = -1
         self.filters             = []
         self.run_server          = {}
@@ -144,21 +152,10 @@ class Config_Server():
             self.filters = list(pf.get( "filters" ) )
         except:
             pass
-        #try:
-        #    self.import_paths = pf.get( "import_paths" )
-        #except:
-        #    pass
 
 
     def configure(self):
-        # 
-        # Expand paths
         #
-        #for p in self.import_paths:
-        #    log.msg('Expnding path: %s' % p)
-        #    sys.path.insert(0, p)
-
-        # 
         # Fix paths
         #
         self.template = ("%s/%s/%s" % (self.antelope,self.local_data,self.template))
@@ -166,14 +163,14 @@ class Config_Server():
         self.jquery_dir = ("%s/%s/%s" % (self.antelope,self.local_data,self.jquery_dir))
         self.static_dir = ("%s/%s/%s" % (self.antelope,self.local_data,self.static_dir))
 
-        # 
+        #
         # Sanity check
         #
         if not os.path.isfile(self.template):
             sys.exit('\n\nERROR: No template found (%s)\n'% self.template)
 
 
-        # Build dictionary of servers we want to run 
+        # Build dictionary of servers we want to run
         if self.dbname and self.port:
 
             # only one for now
@@ -192,7 +189,7 @@ class Config_Server():
             argv_remap.append("-n")
 
         argv_remap.append("-y")
-        argv_remap.append(os.path.join(os.environ['ANTELOPE'], 'data/python/dbwfserver/server.py'))
+        argv_remap.append(os.path.join(os.environ['ANTELOPE'], 'contrib/data/python/dbwfserver/server.py'))
 
         if os.path.isdir('./state'):
             pid_path = './state'
@@ -231,7 +228,6 @@ class Config_Server():
         if attrname == "verbose": return self.verbose
         if attrname == "debug": return self.debug
         if attrname == "daemonize": return self.daemonize
-        #if attrname == "import_paths": return self.import_paths
         if attrname == "default_time_window": return self.time_window
         if attrname == "filters": return self.filters
         if attrname == "run_server": return self.run_server

@@ -10,7 +10,7 @@ libahio.a : ioroutin.o
 
 libahio$(DSUFFIX) : ioroutin.o
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
 
 libcmplx.a : cmplx.o
 	$(RM) $@
@@ -19,7 +19,7 @@ libcmplx.a : cmplx.o
 
 libcmplx$(DSUFFIX) : cmplx.o
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
 
 libts.a : tssubs.o
 	$(RM) $@
@@ -28,7 +28,7 @@ libts.a : tssubs.o
 
 libts$(DSUFFIX) : tssubs.o
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
 
 libfft.a : fftsubs.o
 	$(RM) $@
@@ -37,5 +37,5 @@ libfft.a : fftsubs.o
 
 libfft$(DSUFFIX) : fftsubs.o
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(DOBJS) $(TSORT) 
 

@@ -1,5 +1,6 @@
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
 clean::

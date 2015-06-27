@@ -9,6 +9,7 @@ MAN3=mwtransform.3
 CLEAN= 		
 ldlibs= -lgenloc $(PERFLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=			
 
@@ -25,4 +26,4 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(CONTRIBDLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)

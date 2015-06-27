@@ -17,6 +17,7 @@ MAN3= \
 
 ldlibs=	$(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=schema
 
@@ -29,4 +30,4 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(LDFLAGS) $(DLDLIBS) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(LDFLAGS) $(DLDLIBS) 

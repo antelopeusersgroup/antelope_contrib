@@ -6,6 +6,7 @@ MAN5=pfstream.5
 
 #ldlibs= -lbrttutil $(THREAD) $(DBLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 
@@ -16,4 +17,4 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(CONTRIBDLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)

@@ -2,6 +2,7 @@ CLEAN= matlab_release
 
 ANTELOPEMAKELOCAL= $(ANTELOPE)/local/include/antelopemake.local
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 

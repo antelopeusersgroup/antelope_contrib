@@ -4,6 +4,7 @@ PF=
 MAN1=eqcellphone_release.1
 
 ldlibs=	 $(ORBLIBS)
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 			
 DIRS=			

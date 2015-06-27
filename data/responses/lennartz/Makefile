@@ -5,6 +5,7 @@ DATA= le_3d_20s \
 	le3d_20 \
 	Lennartz_LE-3D_20s_Technical_data.pdf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

@@ -1,0 +1,16 @@
+
+time  9/04/2005   1:37:18.033
+
+net AK Alaska
+sta CM6 64.88 -147.55 .444 cmg6td test
+
+datalogger cmg6d T6055d CMG6 # Guralp CMG6TD Datalogger
+
+sensor cmg6t 0.0 T6055t  # Guralp CMG6TD
+   axis Z - - - ch1
+   axis N - - - ch2
+   axis E - - - ch3
+
+   samplerate 50sps
+# add
+

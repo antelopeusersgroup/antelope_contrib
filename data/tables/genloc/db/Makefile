@@ -4,4 +4,5 @@ DATA= vmodel \
       vmodel_example.mod1d \
       vmodel_example.ttcalc
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

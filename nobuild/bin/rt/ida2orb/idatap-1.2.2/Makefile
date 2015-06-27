@@ -1,4 +1,5 @@
 cflags = -Iinclude
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS= 
 

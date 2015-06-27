@@ -12,16 +12,15 @@ cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC
 ldlibs= $(STOCKLIBS) $(ORBLIBS) -lpforbstat
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
+SUBDIR= /contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
-
-SUBDIR= /local
 
 DBG=
 
 ORBOBJS= Orb.o
 $(PHPDLIB) : $(ORBOBJS)
 	$(RM) $@
-	$(DLD) $(PHPDLDFLAGS) -o $(PHPDLIB) $(LORDER) $(ORBOBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(PHPDLDFLAGS) -o $(PHPDLIB) $(LORDER) $(ORBOBJS) $(TSORT) $(DLDLIBS)

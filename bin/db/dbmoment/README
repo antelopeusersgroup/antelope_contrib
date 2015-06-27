@@ -1,0 +1,32 @@
+# Moment Tensor Code
+
+### CODE DEPENDENCY:
+The demo code will make some shell calls to SAC. The SAC software
+is distributed for free by IRIS but you need to request a copy
+by hand on their website. http://ds.iris.edu/ds/nodes/dmc/forms/sac/
+For development I'm including a copy of the code on the subfolder
+NOT_TO_DISTRIBUTE tha you can install on your computer before running
+the demo code.
+
+
+
+### Building from source
+You need to have $ANTELOPE defined in your environment. Then run...
+
+    make;
+    make install;
+
+### Running the demo code
+The Dreger's source code is included in the distribution
+and we include a full example to work on the original
+code. The data needed for the example is located on
+the folder "EXAMPLE".
+
+For this you have to:
+
+    make; make install;
+    dbmoment -d EXAMPLE/example_1 1
+
+
+
+And you will see a new "mt" table on that TESTDB used.

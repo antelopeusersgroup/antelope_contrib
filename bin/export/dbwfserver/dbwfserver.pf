@@ -11,32 +11,28 @@ max_points  800
 
 max_traces  20
 
-# HTML templates 
+# HTML templates
 antelope        &env(ANTELOPE)
-local_data      data/www/dbwfserver
+local_data      contrib/data/www/dbwfserver
 template        template.html
 plot_template   plot.html
 jquery_dir      static/jquery
 static_dir      static
 
 # in case of errors...
-display_tracebacks False 
+display_tracebacks False
 
 # Set app default control values
 apply_calib True
 display_arrivals True
 display_points False
 
-jquery_ui_style black-tie           #options { base, black-tie, blitzer, cupertino, 
+jquery_ui_style black-tie           #options { base, black-tie, blitzer, cupertino,
                                 #           dark-hive, dot-luv, eggplant, excite-bike
-                                #           flick, hot-sneaks, humanity, le-frog, 
+                                #           flick, hot-sneaks, humanity, le-frog,
                                 #           mint-choc, overcast, pepper-grinder, redmond,
                                 #           smoothness, south-street, start, sunny, swanky-purse,
                                 #           trontastic, ui-darkness, ui-lightness and vader  }
-
-#import_paths &Tbl{
-#    /opt/antelope/5.0-64/data
-#}
 
 filters &Tbl{ # filter specifications
 WAV

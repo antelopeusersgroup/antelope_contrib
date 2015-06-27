@@ -6,23 +6,24 @@ DATA=evlink sclink wfprocess xcorarrival xcorbeam xsaa
 PF=dbxcor.pf
 MAN1=dbxcor.1
 DBG=-g
-cxxflags=-g 
+cxxflags=-g
 
 ldlibs= -L./SciPlot -L$(XMOTIFLIB) -lseisw -lsciplot -lXm -lXt \
-  -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp 
+  -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp
 
-CLEAN = 
+SUBDIR=/contrib
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
-include $(ANTELOPEMAKE)  	
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(XMOTIFINCLUDE)
 
 OBJS=	dbxcor.o \
-  session_manager.o 
-  
+  session_manager.o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

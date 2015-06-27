@@ -9,9 +9,5 @@ DATA = bkgrd_1x50.png \
  favicon.ico \
 
 
-#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-#include $(ANTELOPEMAKELOCAL)
-
-#SUBDIR= /local

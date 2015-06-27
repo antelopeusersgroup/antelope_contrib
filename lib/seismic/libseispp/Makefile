@@ -1,4 +1,5 @@
 LIB=libseispp.a
+LICENSES=license_libseispp.txt
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
 # BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
@@ -65,6 +66,9 @@ MAN3=Basic_Time_Series.3 \
   Top_Mute.3
 DBG=-g
 
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 OBJS=ArrivalUpdater.o \
@@ -127,6 +131,9 @@ $(LIB) : $(OBJS)
 	$(RM) $@
 	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
+
+$(LICENSES) : LICENSE
+	cp $< $@
 
 #$(DLIB) : $(OBJS)
 #	$(RM) $@

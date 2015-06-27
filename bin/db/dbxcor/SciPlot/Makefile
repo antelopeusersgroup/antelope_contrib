@@ -4,7 +4,8 @@ cflags = -I$(XMOTIFINCLUDE)
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
 
-include $(ANTELOPEMAKE)  	
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 #cflags=-Dsun -Dsparc -DSVR4 -DSYSV
@@ -13,5 +14,5 @@ include $(ANTELOPEMAKELOCAL)
 OBJS=SciPlot.o SciPlotUtil.o
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $(OBJS) 
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@

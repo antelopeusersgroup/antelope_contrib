@@ -73,7 +73,6 @@ MWstack *MWextract_stack_window(MWstack *instack,Time_Window *win)
 	int tstart, tend;  /* start and end values(in samples) actually used */
 	int nused;
 	int lag;
-	int ierr;
 	char *message="MWextract_stack_window:  requested window is inconsistent with the stack window";
 
 	MWstack *outstack;
@@ -385,7 +384,6 @@ MWstack *MWrobuststack(complex ***z,
 	double cmag;
 	int iteration;
 	double dzmod,ctest;
-	complex *A;
 
 	/* We scan for the first and last number in timeweight that are nonzero.
 	We need to use a reduced workspace to build stack to avoid biasing statistics

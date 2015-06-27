@@ -1,6 +1,7 @@
 LIB	= libmw.a
 DLIB=$(LIB:.a=$(DSUFFIX))
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=			
 
@@ -73,7 +74,7 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(CONTRIBDLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT)
         
 
 # $Id$ 

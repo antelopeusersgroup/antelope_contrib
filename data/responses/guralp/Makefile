@@ -63,6 +63,7 @@ DATA=  \
     SWA-D24-3D08
 
                        
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

@@ -33,4 +33,5 @@ DOC=ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html \
 	ccdoc.class_summary.html \
 	gclgrid.db \
 	index.html
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

@@ -13,6 +13,7 @@ MAN5=		# man pages for file formats
 cflags=-g
 ldlibs= $(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 
@@ -23,4 +24,4 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(CONTRIBDLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)

@@ -1,2 +1,2 @@
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-

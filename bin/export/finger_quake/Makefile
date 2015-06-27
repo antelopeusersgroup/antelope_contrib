@@ -1,8 +1,5 @@
+BIN  = finger_quake
+MAN1 = $(BIN).1
 
-BIN= finger_quake
-
-MAN1= finger_quake.1
-
-CLEAN=
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

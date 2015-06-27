@@ -1,5 +1,5 @@
 PF=dblocgrad.pf
-BIN=dblocgrad		
+BIN=dblocgrad
 DATADIR=schemas
 DATA=css_vel
 
@@ -7,11 +7,10 @@ DATA=css_vel
 fflags= -w
 ldlibs=$(DBLIBS)
 
-include $(ANTELOPEMAKE)  	
-DIRS=			
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+DIRS=
 
 OBJS=dblocgrad.o locsubs_flv.o matsubs.o tracesubs_flv.o
 $(BIN) : $(OBJS)
 	$(FC) $(FFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-# $Id$ 

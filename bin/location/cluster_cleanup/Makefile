@@ -1,11 +1,20 @@
-BIN=cluster_cleanup
-PF=cluster_cleanup.pf
+BIN  = cluster_cleanup
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+LICENSES = license_cluster_cleanup.txt
 
-MAN1=	cluster_cleanup.1
-ldlibs=-lgenloc -lgclgrid -lperf -lglputil -ltrvltm -lseispp -lperf $(DBLIBS) $(TRLIBS)
+ldlibs  = -lgenloc -lgclgrid -lperf -lglputil -ltrvltm -lseispp -lperf
+ldlibs += $(DBLIBS) $(TRLIBS)
 
-include $(ANTELOPEMAKE)  	
+CLEAN = $(LICENSES)
 
-OBJS=cluster_cleanup.o
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+$(LICENSES) : LICENSE
+	cp $< $@

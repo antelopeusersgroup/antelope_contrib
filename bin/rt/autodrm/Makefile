@@ -1,4 +1,3 @@
-
 BIN = \
 	autodrm \
 	autodrm2db \
@@ -22,7 +21,10 @@ DATA=help forward
 CLEAN=autodrm.pf
 
 ldlibs=$(TRLIBS)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
 PIECES=autodrm.xpl \
@@ -31,14 +33,14 @@ PIECES=autodrm.xpl \
 	outage.pl \
 	response.pl \
 	station.pl \
-	waveform.pl 
+	waveform.pl
 
 autodrm : $(PIECES)
 	cp -f $(ANTELOPE)/data/templates/xpl $@
 	cat $(PIECES) >> $@
 	chmod +x $@
 
-autodrm_wrapper : autodrm_wrapper.id 
+autodrm_wrapper : autodrm_wrapper.id
 	produce autodrm_wrapper
 	chmod +x $@
 

@@ -1,17 +1,14 @@
-BIN=	orbptrigger
-PF=		# parameter files to be placed in data/pf
-MAN1=	orbptrigger.1	# man pages for commands
+BIN  = orbptrigger
+MAN1 = $(BIN).1
 
-CLEAN= 		# Extra files which should be removed during a "make clean"
-
-cflags=
 ldlibs= $(ORBLIBS)
 
-include $(ANTELOPEMAKE) # This line must appear following the definitions above, 
-			# and before the DIRS definition below..
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
 DIRS=
 
-OBJS=	strutils.o orbptrigger.o
+OBJS = strutils.o $(BIN).o
 
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

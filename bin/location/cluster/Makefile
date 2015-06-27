@@ -1,11 +1,21 @@
-BIN=cluster
-PF=cluster.pf
+BIN  = cluster
+PF   = $(BIN).pf
+LICENSES = license_cluster.txt
 
-MAN1=	cluster.1
-ldlibs=-lgenloc -lgclgrid -lperf -lglputil -ltrvltm -lseispp -lperf $(DBLIBS) $(TRLIBS)
+MAN1 = $(BIN).1
 
-include $(ANTELOPEMAKE)  	
+ldlibs  = -lgenloc -lgclgrid -lperf -lglputil -ltrvltm -lseispp -lperf
+ldlibs += $(DBLIBS) $(TRLIBS)
 
-OBJS=cluster.o
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+$(LICENSES) : LICENSE
+	cp $< $@

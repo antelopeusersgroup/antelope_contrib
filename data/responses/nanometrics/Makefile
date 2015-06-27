@@ -35,6 +35,7 @@ DATA= taurus_inf_aa \
       trident_50sps_fir2    \
       trident_50sps_fir3    \
       trillium_120          \
+      trillium_120PH          \
       trillium_240_1          \
       trillium_240_2          \
       trillium_240_obsip_sio \
@@ -77,6 +78,7 @@ DATA= taurus_inf_aa \
       hrd24_iir \
       hrd24aaf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

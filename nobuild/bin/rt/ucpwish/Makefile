@@ -4,6 +4,7 @@ cflags =  $(TCLINCLUDE)
 ldflags = -L$(TCLLIB)
 ldlibs = -lrtucp $(TKLIBS) -ltkx $(TCLLIBS) -ltclx -ldefunctpkt $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 

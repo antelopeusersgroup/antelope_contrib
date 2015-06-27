@@ -1,8 +1,20 @@
+LIB=libmatlabprocessor.a
+#DLIB=$(LIB:.a=$(DSUFFIX))
+#BUNDLE=$(LIB:.a=.bundle)
+INCLUDE=MatlabProcessor.h
 
-all clean Include install installMAN pf relink tags uninstall test :: FORCED
-	@-if localmake_config matlab  ; then \
-	    $(MAKE) -f Makefile2 $@ ; \
-	fi
+MAN3=MatlabProcessor.3
+DBG=-g
 
-FORCED:
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 
+CXXFLAGS += -I$(MATLAB)/extern/include
+LDLIBS += -L$(MATLAB)/bin/maci64 -R$(MATLAB)/bin/maci64 -leng -lmx -lut -lmat
+
+OBJS=MatlabProcessor.o
+
+$(LIB) : $(OBJS)
+	$(RM) $@
+	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS)
+	$(RANLIB) $@

@@ -4,7 +4,5 @@ PF= csi2orb.pf
 
 ldlibs = $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-
-
-

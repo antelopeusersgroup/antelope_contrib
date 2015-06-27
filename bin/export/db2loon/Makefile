@@ -1,10 +1,14 @@
-BIN= db2loon
+BIN  = db2loon
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
+LICENSES = license_db2loon.txt
 
-MAN1= db2loon.1
-PF= db2loon.pf
+CLEAN = $(LICENSES)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=
 
-$(BIN): $(BIN).xpl
+$(LICENSES) : LICENSE
+	cp $< $@

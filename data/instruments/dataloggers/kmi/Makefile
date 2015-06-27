@@ -12,5 +12,6 @@ DATA=     etna.pf \
     rock_causal_5.pf
 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

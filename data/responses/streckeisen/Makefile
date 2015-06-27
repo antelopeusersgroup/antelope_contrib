@@ -12,6 +12,7 @@ DATA= sts1 \
 	STS-2_sn_response.pdf \
 	STS-2.5-HF-Zeroes-Poles.pdf
                        
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

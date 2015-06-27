@@ -9,6 +9,8 @@ Maintained by members of the [Antelope Users Group][aug].
   [brtt]: http://www.brtt.com
   [aug]: http://www.antelopeusersgroup.org
 
+Source code is available on GitHub: http://github.com/antelopeusersgroup/antelope_contrib
+
 Inclusion in Antelope
 ---------------------
 
@@ -17,7 +19,7 @@ release of Antelope, subject to some basic quality control guidelines. The
 [contributing](#contributing) section below contains some guidelines.
 
 
-Layout of this repository
+Layout of the antelope\_contrib Git repository
 -------------------------
 
 Code in this repository is laid out in a few top-level dirctories.
@@ -84,7 +86,7 @@ these macros. Basic boot-strapping for `localmake` looks like this:
 Compilation
 -----------
 
-    cd $ANTELOPE/src
+    cd $ANTELOPE/src # or where ever you checked out the repository
     make Include
     make
     make install
@@ -94,12 +96,24 @@ Compilation
 As a rule, all code in this repository must at a minimum:
 
 1. compile cleanly on the supported Antelope platforms
-2. contain a Makefile set up to use the `antelopemake(5)` rules
-3. include a man page describing how to use the program or library. This can either be
+2. contain a Makefile set up to use the `antelopemake(5)` rules, and the SUBDIR
+   macro set to `/contrib`
+3. include a man page describing how to use the program or library. This can be
    formatted by hand or created with a documentation package like Doxygen,
-   sphinx or javadoc. The resultant troff-formatted manpage must be committed
-   with the code.
-4. include a file called `LICENSE` that clearly states the license that program is released under.
+   sphinx, pod2man, or javadoc.
+4. include a file called `LICENSE` that clearly states the license that program
+   is released with.
+
+Example Makefile
+----------------
+
+```
+BIN = myprog
+MAN1 = $(BIN).1
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+```
 
 The AUG wiki page on Github contains [instructions on how to get started
 contributing][contribute] to this repository.
@@ -109,7 +123,7 @@ contributing][contribute] to this repository.
 All code in this repository is expected to be readily distributed. In order for pre-compiled versions
 of your code to be included with the Antelope distribution, it must be accompanied by a LICENSE file,
 and be of a type that lends itself to inclusion in commercial packages. Generally speaking, BSD and MIT
-style licenses are ok, but GNU GPL and LGPL are not. For more information, please see 
+style licenses are ok, but GNU GPL and LGPL are not. For more information, please see
 [BRTT's contrib licensing page](http://www.brtt.com/contrib_software.html).
 
   [contribute]: https://github.com/antelopeusersgroup/antelope_contrib/wiki/Setting-up-to-modify-Antelope-contrib-via-git

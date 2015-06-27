@@ -1,6 +1,11 @@
+BIN  = dbfix_calib
+MAN1 = $(BIN).1
+LICENSES = license_dbfix_calib.txt
 
-BIN= dbfix_calib
+CLEAN= $(LICENSES)
 
-MAN1= dbfix_calib.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
+$(LICENSES) : LICENSE 
+	cp $< $@

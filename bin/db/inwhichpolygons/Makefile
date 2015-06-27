@@ -1,9 +1,11 @@
-BIN=inwhichpolygons distancetopolygon
-MAN1=inwhichpolygons.1 distancetopolygon.1
+BIN  = inwhichpolygons distancetopolygon
+MAN1 = inwhichpolygons.1 distancetopolygon.1
 
 CLEAN=
 
-ldlibs=	$(DBLIBS)	-lpolygon # libraries to link in.
+ldlibs = $(DBLIBS) -lpolygon
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=

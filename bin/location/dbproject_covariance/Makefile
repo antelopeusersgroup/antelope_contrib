@@ -1,13 +1,19 @@
-
-BIN= dbproject_covariance
-PF= chi2.pf
-MAN1= dbproject_covariance.1
+BIN  = dbproject_covariance
+MAN1 = $(BIN).1
+PF   = chi2.pf
+LICENSES = license_dbproject_covariance.txt
 
 ldlibs= -lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS)
 
+CLEAN= $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 SUBDIR=/contrib
 
 OBJS= $(BIN).o
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+$(LICENSES) : LICENSE
+	cp $< $@

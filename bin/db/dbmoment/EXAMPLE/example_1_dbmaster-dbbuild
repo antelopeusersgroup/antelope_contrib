@@ -1,0 +1,555 @@
+raze
+
+
+time  1/01/1990   0:00:00.000
+net XX Fake Example 1
+sta STA1 32.000 -117.000 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1990   0:00:00.000
+net XX Fake Example 1
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1990   0:00:00.000
+net XX Fake Example 1
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1990   0:00:00.000
+net XX Fake Example 1
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1990   0:00:00.000
+net XX Fake Example
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+
+sta STA2 31.6863733799645 -116.321437825202 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 20sps
+add
+
+
+sta STA3 31.5749110315741 -116.192281632765 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1990   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+
+sta STA2 31.6863733799645 -116.321437825202 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 20sps
+add
+
+
+sta STA3 31.5749110315741 -116.192281632765 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 20sps
+add
+
+
+sta STA2 31.6863733799645 -116.321437825202 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 20sps
+add
+
+
+sta STA3 31.5749110315741 -116.192281632765 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 20sps
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8845337397155  -116.816298059833 0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6863733799645 -116.321437825202 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5749110315741 -116.192281632765 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8861965866683 -116.815949368619  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6876605097859 -116.320152612793 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5759871889803 -116.190753646011 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8812740055979 -116.816981573691  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6838501413701 -116.323957164221 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5728013535072 -116.195276891057 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.884227555241 -116.816362263888  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6861363759697 -116.321674470848 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8841 -116.8165  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6861363759697 -116.321674470848 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8845 -116.8162  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6861363759697 -116.321674470848 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6861363759697 -116.321674470848 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6861 -116.3216 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6864 -116.3213 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6867 -116.3210 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5747128739065 -116.192562981127 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6867 -116.3210 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5749  -116.1920 0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+raze
+
+
+time  1/01/1970   0:00:00.000
+net XX Fake Example
+
+
+sta STA1 31.8848 -116.8160  0.00 Example station 1
+datalogger Passcal_q330_linear  9999 XX_STA1
+    sensor cmg3t 9999  TEST_STA1
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA2 31.6867 -116.3210 0.00 Example station 2
+datalogger Passcal_q330_linear  8888 XX_STA1
+    sensor cmg3t 8888  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+
+
+sta STA3 31.5750  -116.1918  0.00 Example station 3
+datalogger Passcal_q330_linear  7777 XX_STA1
+    sensor cmg3t 7777  TEST_STA2
+        samplerate 200sps
+            channel Z  Z
+            channel N  R
+            channel E  T
+add
+

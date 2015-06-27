@@ -1,4 +1,3 @@
-
 BIN= db2sql
 PF= db2sql.pf
 
@@ -11,12 +10,11 @@ fflags=
 ldflags=
 ldlibs= -ldb2sql $(DBLIBS)
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
+SUBDIR= /contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
-
-SUBDIR= /local
 
 DIRS=
 

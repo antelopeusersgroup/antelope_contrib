@@ -9,6 +9,7 @@ fflags=
 ldflags=
 ldlibs=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 SUBDIR= /local

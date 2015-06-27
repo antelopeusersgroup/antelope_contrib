@@ -3,7 +3,9 @@
 
 LIB = libslink.a
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
 OBJS = gswap.o unpack.o msrecord.o genutils.o strutils.o \
@@ -12,5 +14,5 @@ OBJS = gswap.o unpack.o msrecord.o genutils.o strutils.o \
 
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $(OBJS) 
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@

@@ -1,7 +1,8 @@
-BIN= baler_msd_proc
-PF= baler_msd_proc.pf
-MAN1= baler_msd_proc.1
+BIN  = baler_msd_proc
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

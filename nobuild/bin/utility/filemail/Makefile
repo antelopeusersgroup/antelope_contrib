@@ -5,5 +5,6 @@ PF= filemail.pf
 DATADIR= perl
 DATA= filemail.pm
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

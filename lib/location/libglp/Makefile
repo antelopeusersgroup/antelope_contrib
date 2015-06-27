@@ -1,10 +1,14 @@
 LIB=		libglp.a
+LICENSES= license_libglp.txt
 
 CLEAN= 		
 
 ldflags=
 ldlibs=
 
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 
@@ -23,5 +27,7 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 
+$(LICENSES) : LICENSE
+	cp $< $@
 
 # $Id$ 

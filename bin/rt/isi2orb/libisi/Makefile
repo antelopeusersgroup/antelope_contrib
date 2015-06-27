@@ -1,4 +1,3 @@
-
 LIB= libisi.a
 DOCDIR= ext/isi
 DOC= isi.pdf iacp.pdf
@@ -8,17 +7,18 @@ INCLUDE= libisi_iacp.h \
 	 libisi_list.h \
 	 libisi_platform.h \
 	 libisi_stdtypes.h \
-	 libisi_util.h 
+	 libisi_util.h
 
 MAN3= libisi.3
 
 CLEAN= *.h *.c *pdf
 
-cflags= -D$(OSNAME) 
+cflags= -D$(OSNAME)
 fflags=
 ldflags=
 ldlibs=
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 DIRS=
@@ -29,11 +29,11 @@ ISI_INCLUDE_DIR=     $(ISI_TOOLKIT_DIR)/include
 ISI_LIB_DIR=         $(ISI_TOOLKIT_DIR)/lib
 UNPACKED=	     $(ISI_TOOLKIT_DIR)/unpacked
 
-clean :: 
+clean ::
 	$(RM) -rf $(ISI_TOOLKIT_DIR)
 
 $(UNPACKED): $(ISI_TOOLKIT_TARBALL)
-	gunzip -c $(ISI_TOOLKIT_TARBALL) | tar xf - 
+	gunzip -c $(ISI_TOOLKIT_TARBALL) | tar xf -
 	-$(RM) *.c *.h
 	cp $(ISI_INCLUDE_DIR)/iacp.h libisi_iacp.h
 	cp $(ISI_INCLUDE_DIR)/ida.h libisi_ida.h
@@ -54,7 +54,7 @@ $(UNPACKED): $(ISI_TOOLKIT_TARBALL)
 	perl -p -i -e "s/date_time/isi_util_date_time/" *.c *.h
 	touch $(UNPACKED)
 
-$(INCLUDE): $(UNPACKED) 
+$(INCLUDE): $(UNPACKED)
 
 $(DOC):
 	$(RM) $@
@@ -90,7 +90,7 @@ ISI_OBJS = \
       isi_string.o \
       isi_ts.o \
       isi_utils.o \
-      isi_wfdisc.o 
+      isi_wfdisc.o
 
 LOGIO_OBJS = \
       logio_dump.o \
@@ -112,16 +112,16 @@ UTIL_OBJS = \
       util_string.o \
       util_swap.o \
       util_timefunc.o \
-      util_timer.o 
-      
+      util_timer.o
+
 OBJS = $(IACP_OBJS) $(ISI_OBJS) $(LOGIO_OBJS) $(UTIL_OBJS)
 
-$(OBJS): $(UNPACKED) 
+$(OBJS): $(UNPACKED)
 	$(CC) $(CFLAGS) -c $*.c
 
 $(LIB): $(OBJS) $(INCLUDE) $(UNPACKED)
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $(OBJS) 
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@
 
 

@@ -1,12 +1,13 @@
-BIN=polygon2xy xy2polygon
+BIN  = polygon2xy xy2polygon
+MAN1 = polygon2xy.1 xy2polygon.1
 
-MAN1=polygon2xy.1 xy2polygon.1
+ldlibs = $(DBLIBS)-lpolygon
 
-
-ldlibs=	$(DBLIBS)	-lpolygon 
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
+
 OBJS1=polygon2xy.o
 OBJS2=xy2polygon.o
 

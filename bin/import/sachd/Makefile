@@ -1,9 +1,15 @@
-BIN = sachd
-MAN1 = sachd.1
+BIN  = sachd
+MAN1 = $(BIN).1
+LICENSES = license_sachd.txt
 
-ldlibs	= $(DBLIBS)
+ldlibs= $(DBLIBS)
 
-include	$(ANTELOPEMAKE)
+CLEAN= $(LICENSES)
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
 DIRS=
 
-# $Id$ 
+$(LICENSES) : LICENSE
+	cp $< $@

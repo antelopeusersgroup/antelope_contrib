@@ -1,11 +1,12 @@
-# %W% %G% 
-# Makefile for b3s2
 PF=b3s2orb.pf
 BIN = b3s2orb
 MAN1=b3s2orb.1
 
-ldlibs	=  -ldefunctpkt -lorb $(TRLIBS) $(X11LIBS) -lxview -lolgx 
+ldlibs	=  -ldefunctpkt -lorb $(TRLIBS) $(X11LIBS) -lxview -lolgx
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIR=
 
 OBJST	= b3s2.o\

@@ -1,0 +1,5 @@
+#
+schema css3.0
+dblocks none
+dbidserver 
+dbpath  ./{example_1}:./{example_1_dbmaster}

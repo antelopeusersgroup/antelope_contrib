@@ -1,6 +1,11 @@
+BIN  = dbfix_cals_segtype
+MAN1 = $(BIN).1
+LICENSES = license_dbfix_cals_segtype.txt
 
-BIN= dbfix_cals_segtype
+CLEAN = $(LICENSES)
 
-MAN1= dbfix_cals_segtype.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
+$(LICENSES) : LICENSE
+	cp $< $@

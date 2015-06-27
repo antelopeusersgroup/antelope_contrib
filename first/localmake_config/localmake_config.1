@@ -1,0 +1,304 @@
+.TH LOCALMAKE_CONFIG 1
+.SH NAME
+localmake_config \- Manage connections between Antelope-contrib code and software external to Antelope
+.SH SYNOPSIS
+.nf
+\fBlocalmake_config\fP [-ilvf] [\fIcapability\fP [, \fIcapability\fP...]]
+.fi
+.SH DESCRIPTION
+Most source-code in the Antelope contributed-code repository compiles without any dependencies
+on software outside of the self-contained Antelope directory hierarchy. Such code is thus able to
+use the standard Antelope make-rules and build mechanisms documented in antelopemake(5) and
+antelopemakefile(5). Occasionally, however, tools in the Antelope contributed-code repository have been
+written to link against and use tools that are not part of the self-contained Antelope distribution.
+Classic examples are the Antelope Toolbox for Matlab, which uses Matlab from Mathworks, Inc.; the PHP
+and Python interfaces to Antelope; and the dbxcor(1) cross-correlation processor, which uses the X-Motif
+libraries. The \fBlocalmake_config\fP program represents an attempt to standardize how such external
+dependencies are configured and linked within the Antelope contributed-code distribution.
+
+Basically, \fBlocalmake_config\fP manages two kinds of entities: \fIcapabilities\fP (such as
+\fIphp\fP, \fIpython\fP, or \fImatlab\fP), which may be enabled or disabled; and \fImacros\fP (such
+as \fIMATLAB\fP, \fIPYTHONINCLUDE\fP, etc.), which may be either blank or filled-in with pathnames
+for the local system. \fBlocalmake_config\fP does not compile anything. All it does is set up the
+necessary conditions for external links to succeed. (In order to compile desired software
+elements, either execute \fImake install\fP in the appropriate source-code directories, or alternatively
+use the \fBlocalmake(1)\fP program, after you finish running \fBlocalmake_config\fP).
+
+When \fBlocalmake_config\fP is run without any \fIcapability\fP arguments on the command-line, it
+launches the \fBlocalmake\fP program in \fI-c\fP i.e. configuration mode. This allows the normal user
+to specify which externally-dependent capabilities to enable, and where to find the necessary
+supporting components on their system.
+
+The local configuration of external components (as well as the behaviour of the \fBlocalmake_config\fP
+program itself), is controlled by a parameter file on the local system which is kept in
+.nf
+
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
+
+.fi
+If this does not exist, \fBlocalmake_config\fP makes an initial version of the file when it first runs.
+
+Once configured, \fBlocalmake_config\fP creates a set of local make-rules to handle all configured
+dependencies. By default, these local make-rules are stored in
+.nf
+
+        $ANTELOPE/contrib/include/antelopemake.local
+
+.fi
+Do not edit the above file of make rules directly, as it will be automatically overwritten upon
+any changes to the \fIlocalmake_config.pf\fP parameter file and re-run of \fBlocalmake_config\fP.
+All changes by the user must be made to the file \fIlocalmake_config.pf\fP, either by hand or by using
+the \fBlocalmake\fP GUI.
+
+An alternative to running the \fBlocalmake\fP GUI to configure the local system would be
+to edit by hand the configuration file
+.nf
+
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
+
+.fi
+For example the edits to the above file
+in support of the \fImatlab\fP capability would be changing
+.nf
+
+        capabilities &Arr{
+            matlab 0
+        }
+
+.fi
+to
+.nf
+
+        capabilities &Arr{
+            matlab 1
+        }
+
+.fi
+And, for the platform on which you're running (\fIDarwin\fP, \fISunOS\fP, or \fILinux\fP),
+filling in the MATLAB macro, e.g. changing
+.nf
+
+        macros &Arr{
+            MATLAB
+       }
+
+.fi
+to
+.nf
+
+        macros &Arr{
+            MATLAB /Applications/MATLAB_R2009b.app
+        }
+
+.fi
+
+.SS 'Verify' mode
+N.B. This man-page section is for people developing Antelope-contrib
+software that depends on external utilities and for those curious
+about all underlying technical details. If you're just configuring
+and compiling software to use on your own system, not writing any,
+the explanations above should suffice.
+
+In addition to allowing the user to configure external software
+linkages to the Antelope-contrib code base, \fBlocalmake_config\fP
+functions as part of the automated software compilation process.
+
+When \fBlocalmake_config\fP is run with one or more \fIcapability\fP
+arguments on the command-line, it starts in \fIverify\fP mode. This
+is used within some Antelope-contrib make files to manage compilation
+against external dependencies. In \fIverify\fP mode, \fBlocalmake_config\fP
+tests the listed \fIcapabilities\fP to see whether they 1) are
+enabled for use; 2) are properly supported by non-blank values for
+all the macros they require; and 3) pass all the tests listed in
+\fIlocalmake_config.pf\fP for the given \fIcapability\fP. If all
+of these indicate that whatever depends on the \fIcapability\fP
+should be compiled, \fBlocalmake_config\fP exits with exit-code of
+0. Otherwise, \fBlocalmake_config\fP exits with an exit code of -1,
+which is intended to stop compilation in the current directory.
+
+The way this is used in the Antelope-contrib compilation structure
+(based on antelopemake(5)) is as follows. First, instead of
+implementing one \fIMakefile\fP in the style of antelopemake(5),
+the developer implements two separate files: \fImakefile\fP and
+\fIMakefile2\fP. The former executes \fBlocalmake_config\fP, naming
+the desired capability on the command-line, and determining whether
+or not to proceed with compilation. For example, in a directory
+that depends on the \fIpython\fP capability, \fImakefile\fP would
+look like this:
+.nf
+
+        all Include install installMAN pf relink tags test :: FORCED
+                @-if localmake_config python ; then \\
+                    $(MAKE) -f Makefile2 $@ ; \\
+                fi
+
+        clean uninstall :: FORCED
+                $(MAKE) -f Makefile2 $@
+
+        FORCED:
+
+.fi
+
+The \fIMakefile2\fP rules would then follow the format documented
+in antelopemakefile(5), though with the line
+
+.nf
+
+        include $(ANTELOPEMAKE)
+
+.fi
+
+expanded to say
+
+.nf
+
+        ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
+        include $(ANTELOPEMAKE) include $(ANTELOPEMAKELOCAL)
+
+        SUBDIR= /contrib
+
+.fi
+
+Note that the assignment of \fISUBDIR\fP to \fI/contrib\fP may be
+appropriate only in some situations. With this structure, the macros
+supporting the \fIpython\fP \fIcapability\fP (as configured in
+\fIlocalmake_config.pf\fP, currently \fIPYTHONINCLUDE\fP and
+\fPPYTHON_EXECUTABLE\fP) will now be available for use in
+\fIMakefile2\fP.
+
+.SH OPTIONS
+.IP -i
+Install make rules and exit.
+.IP -l
+List available capabilities and whether they're enabled or disabled, then exit.
+.IP -v
+Verbose
+.IP -f
+Force make rules to be generated regardless of input file age
+.SH FILES
+The master parameter-file controlling the behavior of
+\fBlocalmake_config\fP, and hence all the compilation tasks it
+governs, is
+.nf
+
+      $ANTELOPE/contrib/data/pf/localmake_config.pf
+
+.fi
+A starting draft of this file may be obtained from
+.nf
+
+        $ANTELOPE/data/pf/localmake_config_proto.pf
+
+.fi
+When \fBlocalmake_config\fP runs, it checks and updates the automated set of make rules currently in
+.nf
+
+        $ANTELOPE/contrib/include/antelopemake.local
+
+.fi
+.SH ENVIRONMENT
+\fBlocalmake_config\fP depends on the environment variables \fIANTELOPE\fP, \fIPFPATH\fP, and \fIANTELOPEMAKE\fP as documented
+in the man-page antelopeenv(5).
+.SH PARAMETER FILE
+This section describes the parameter-file for \fBlocalmake_config\fP. Generally this parameter-file
+is created automatically by \fBlocalmake_config\fP and/or the \fBlocalmake\fP GUI in \fIconfigure\fP
+mode. It may, however, be hand-edited or created by system administrators for each platform. In that
+case to configure a system one needs only to A) mark each capability with a \fI0\fP or \fI1\fP value in
+the \fIenable\fP sub-parameter; and B) Fill in the desired macro values in the \fImacros\fP array.
+Note that due to coding limitations, the booleans for enabling individual capabilities should be
+explicitly 0 or 1 (i.e. not any of the string boolean values such as "yes", "no", "true", "ok" etc.).
+
+.SS "Parameter Explanations"
+
+.IP capabilities
+This array is a simplified version of the \fIcapabilities\fP array in \fIlocalmake.pf\fP,
+with one key for each capability and a value for each capability which is a boolean specifying
+whether the capability is enabled on this operating system.
+.IP macros
+This array is a simplified version of the \fImacros\fP array in \fIlocalmake.pf\fP,
+with one key for each macro and a value for each capability which is a string specifying
+the value of the macro (possibly empty) on this operating system.
+
+.SS "Parameter File Example"
+.nf
+
+capabilities        &Arr{
+    boost              0
+    matlab             0
+    perl_DBI           0
+    php                0
+    python             0
+    python_amqplib     0
+    python_matplotlib  0
+    python_pygraphviz  0
+    vtk                0
+    xmotif             0
+}
+macros        &Arr{
+    BOOSTINCLUDE
+    BOOSTLIB
+    MATLAB
+    PHP_EXECUTABLE      /usr/bin/php
+    PHP_INC             /usr/include/php
+    PYTHONINCLUDE       /usr/include/python2.6
+    PYTHON_EXECUTABLE   /usr/bin/python
+    VTKINCLUDE
+    VTKLIB
+    VTKROOT
+    XMOTIFINCLUDE
+    XMOTIFLIB
+}
+.fi
+.SH EXAMPLE
+To run \fBlocalmake_config\fP in \fIconfigure\fP mode, enter its name on the command line with no arguments:
+.in 2c
+.ft CW
+.nf
+
+% localmake_config
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBlocalmake_config\fP exits with a status of 0 if compilation based on the named capabilities is
+approved to proceed, or with a non-zero status if compilation should not proceed (\fIcapability\fP
+is disabled or failed one or more of its tests).
+.SH "SEE ALSO"
+.nf
+localmake(1), antelopemakelocal(5), antelopemake(5), antelopemakefile(5)
+.fi
+.SH "BUGS AND CAVEATS"
+This program has undergone multiple restructurings to get the design right. Hopefully the
+current version has succeeded. In particular, the \fIlocalmake_config_proto.pf\fP file
+has been eliminated.
+
+\fBlocalmake_config\fP internally sets and uses \fIPFPATH\fP to include \fI$ANTELOPE/contrib/data/pf\fP.
+
+\fBlocalmake_config\fP always rebuilds the make rules in
+\fI$ANTELOPE/contrib/include/antelopemake.local\fP if that file has
+a timestamp older than the master parameter file
+\fI$ANTELOPE/contrib/data/pf/localmake_config.pf\fP.  If an automated
+or other process (e.g. directory copy etc.) changes the timestamp
+on the former file to be later than that on the master parameter
+file, \fBlocalmake_config\fP will not know to update the latter.
+
+Changes made to the user's configuration via the \fBlocalmake_config\fP
+Graphical User Interface must be saved to disk using the yellow
+\fIsave configuration\fP button (enabled and visible when there are
+changes to be saved) or the \fIFile->Save and Quit\fP menu item,
+in order for the changes to take effect.
+
+Because \fBlocalmake_config\fP automatically keeps the local make
+rules up to date, it requires write permission to
+\fI$ANTELOPE/contrib/data/pf/localmake_config.pf\fP and
+\fI$ANTELOPE/contrib/include/antelopemake.local\fP. This is considered
+reasonable since compilation and installation requires write
+permission in \fI$ANTELOPE\fP anyways.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi

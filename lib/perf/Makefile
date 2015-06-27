@@ -1,6 +1,7 @@
 LIB=libperf.a
 INCLUDE=perf.h f2c.h
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
@@ -369,5 +370,5 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+	$(DLD) $(CONTRIBDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 

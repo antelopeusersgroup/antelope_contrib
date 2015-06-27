@@ -1,7 +1,6 @@
-BIN=db2ph
-#MAN1=db2ph.1
-PF=db2ph.pf
+BIN  = db2ph
+PF   = $(BIN).pf
+#MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
-

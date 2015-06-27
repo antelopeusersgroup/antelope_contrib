@@ -2,11 +2,7 @@ DATADIR = www/dbwfserver
 DATA = template.html \
 	   plot.html
 
-#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-#include $(ANTELOPEMAKELOCAL)
-
-#SUBDIR= /local
 
 DIRS = static

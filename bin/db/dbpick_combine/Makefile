@@ -1,6 +1,5 @@
+BIN  = dbpick_combine
+MAN1 = $(BIN).1
 
-BIN= dbpick_combine		# commands to be placed in bin
-
-MAN1= dbpick_combine.1		# man pages for commands
-
-include $(ANTELOPEMAKE)  	
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)

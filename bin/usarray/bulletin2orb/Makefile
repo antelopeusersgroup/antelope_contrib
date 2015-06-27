@@ -1,12 +1,11 @@
-
-BIN=bulletin2orb	
-PF=bulletin2orb.pf	
+BIN  = bulletin2orb
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
 DATADIR=perl
-DATA=bulletin.pm 
+DATA=bulletin.pm
 
-MAN1=bulletin2orb.1	
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

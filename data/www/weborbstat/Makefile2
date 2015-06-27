@@ -1,6 +1,6 @@
 DATADIR= www/cgibin
 
-DATA= weborbstat.php 
+DATA= weborbstat.php
 
 PF = weborbstat.pf
 
@@ -8,9 +8,8 @@ MAN3H= weborbstat.3h
 
 CLEAN = *.php
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
+SUBDIR= /contrib
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
-
-SUBDIR= /local

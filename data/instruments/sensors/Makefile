@@ -118,6 +118,7 @@ DATA= \
     titan_4g.pf \
     trillium_40.pf \
     trillium_120.pf \
+    trillium_120PH.pf \
     trillium_240_1.pf \
     trillium_240_2.pf \
     trillium_240_ss_obsip_sio.pf \
@@ -130,5 +131,6 @@ DATA= \
     validyne.pf \
     wr1.pf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

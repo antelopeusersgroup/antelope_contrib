@@ -26,5 +26,6 @@ DATA= hrd24.pf \
     taurus_std.pf \
     trident.pf 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

@@ -1,16 +1,22 @@
-BIN=sgnloc
-PF=sgnloc.pf
-MAN1=sgnloc.1
+BIN  = sgnloc
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+LICENSES= license_sgnloc.txt
 
-cflags = 
-ldflags = 
+cflags =
+ldflags =
 ldlibs= -lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS)
+
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
-OBJS= sgnloc.o
-CC=cc
+OBJS = $(BIN).o
 $(BIN):$(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
-# $Id$ 
+$(LICENSES) : LICENSE
+	cp $< $@

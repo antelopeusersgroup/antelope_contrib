@@ -6,4 +6,5 @@ DATA=eqresponse_template.fm
 MAN1=eqrespond.1
 PF=eqrelease.pf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

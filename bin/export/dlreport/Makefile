@@ -1,7 +1,6 @@
-BIN=	dlreport   
+BIN  = dlreport
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
-MAN1=	dlreport.1			
-
-PF=	dlreport.pf
-
-include $(ANTELOPEMAKE)  	
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)

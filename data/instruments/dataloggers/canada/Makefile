@@ -63,5 +63,6 @@ DATA= \
     yka_hf.pf \
     yka_sp.pf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

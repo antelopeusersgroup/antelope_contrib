@@ -1,7 +1,8 @@
-BIN= baler_active_to_dmc
-PF= baler_active_to_dmc.pf
-MAN1= baler_active_to_dmc.1
+BIN  = baler_active_to_dmc
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

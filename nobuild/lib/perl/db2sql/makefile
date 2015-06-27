@@ -7,6 +7,7 @@ PD=$(ANTELOPE)/data/perl
 PM=$(ANTELOPE)/man
 
 ldlibs=-ldb2sql $(DBLIBS)
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS= hints
 

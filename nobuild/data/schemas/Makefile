@@ -8,4 +8,5 @@ DATA= Acronyms1.2 \
       dbrecenteqs1.2 \
       places1.2
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

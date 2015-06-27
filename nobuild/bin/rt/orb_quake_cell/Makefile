@@ -4,6 +4,7 @@ PF=orb_quake_cell.pf
 MAN1=orb_quake_cell.1
 
 ldlibs=	 $(TRLIBS) -lorb -lxtra -lPkt $(SVR4LIBS)
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 			
 DIRS=			

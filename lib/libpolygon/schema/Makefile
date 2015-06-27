@@ -3,6 +3,7 @@ DATA=polygon1.2
 MAN5=polygon1.2.5 polygon_schema.5
 CLEAN= tempdb tempdb.out 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE) 
 DIRS=
 

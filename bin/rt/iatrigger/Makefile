@@ -1,6 +1,12 @@
-BIN = iatrigger
-PF= iatrigger.pf
+BIN  = iatrigger
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+LICENSES = license_iatrigger.txt
 
-MAN1 = iatrigger.1
+CLEAN= $(LICENSES)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
+$(LICENSES) : LICENSE
+	cp $< $@

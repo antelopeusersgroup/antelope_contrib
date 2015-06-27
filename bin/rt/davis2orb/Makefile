@@ -1,8 +1,8 @@
-BIN= davis2orb
-MAN1= davis2orb.1
-PF= davis2orb.pf
+BIN  = davis2orb
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
+
 ldlibs = $(ORBLIBS)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-
-
-

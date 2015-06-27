@@ -1,11 +1,19 @@
-BIN=pmelavg
-PF=pmelavg.pf
+BIN  = pmelavg
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+LICENSES=license_pmelavg.txt
 
-MAN1=	pmelavg.1
-ldlibs= -lgenloc -lglputil $(DBLIBS)  \
--ltrvltm -ldl -lm -lperf
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
+ldlibs  = -lgenloc -lglputil $(DBLIBS)
+ldlibs += -ltrvltm -ldl -lm -lperf
 
-OBJS=pmelavg.o
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS=$(BIN).o
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+$(LICENSES) : LICENSE
+	cp $< $@

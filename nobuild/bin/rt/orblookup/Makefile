@@ -4,4 +4,5 @@ MAN1=orblook.1 orblookup.1
 
 ldlibs=$(ORBLIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

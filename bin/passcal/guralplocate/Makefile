@@ -1,12 +1,15 @@
-BIN=guralplocate
+BIN  = guralplocate
+MAN1 = $(BIN).1
 
-MAN1=guralplocate.1
 cflags=-g
 ldlibs=$(DBLIBS) -lmultiwavelet $(TRLIBS) -lgenloc -lperf
 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-OBJS=guralplocate.o
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

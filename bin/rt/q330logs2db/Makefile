@@ -1,6 +1,7 @@
-BIN=q330logs2db
-MAN1= q330logs2db.1
+BIN  = q330logs2db
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

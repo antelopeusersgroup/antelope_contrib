@@ -4,6 +4,7 @@ MAN1=tabcalc.1 hypotab.1
 CLEAN= tabcalc hypotab ptt2stt
 ldlibs=-lglp
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 TOBJS= tabcalc.o \

@@ -1,8 +1,6 @@
-BIN=	logs2dlevent		
-PF=	logs2dlevent.pf			
+BIN  = logs2dlevent
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1=	logs2dlevent.1			
-
-
-include $(ANTELOPEMAKE)  	
-			
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)

@@ -1,3 +1,4 @@
-BIN=mwap
+BIN = mwap
 
-include $(ANTELOPEMAKE)  
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)

@@ -1,0 +1,37 @@
+#
+# 1D velocity structure appropiate
+# used by PGC for the Washington area.
+#
+
+database            pds1
+
+db_path             ./greens_func
+
+decay               6.0
+
+start_frequency     1
+
+end_frequency       512
+
+samplerate           2
+
+# Phase velocity window
+cmax    10000
+c1      30
+c2      2.9
+cmin    2.5
+
+
+velocity_reduction   10
+
+
+
+# MODEL PARAMETERS
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+model &Literal{
+4.00    2.29   2.14   1.00   225.0   100.0
+5.50    3.14   2.56   5.00   225.0   100.0
+6.60    3.77   2.87  16.00   225.0   100.0
+7.09    3.98   3.00  13.00   225.0   100.0
+8.10    4.55   3.29 120.00   225.0   100.0
+ }

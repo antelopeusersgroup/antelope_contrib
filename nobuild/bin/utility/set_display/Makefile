@@ -12,6 +12,7 @@ fflags=
 ldflags= 
 ldlibs=	 $(DBLIBS) $(X11LIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 			
 DIRS=			

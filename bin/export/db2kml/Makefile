@@ -1,7 +1,6 @@
-BIN= db2kml
+BIN  = db2kml
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-PF= db2kml.pf
-MAN1 = db2kml.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-

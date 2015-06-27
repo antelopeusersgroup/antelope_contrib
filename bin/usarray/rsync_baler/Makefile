@@ -1,5 +1,6 @@
-PF=rsync_baler.pf 
+PF=rsync_baler.pf
 MAN1=rsync_baler.1 rsync_baler2json.1
 BIN=rsync_baler rsync_baler2json
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

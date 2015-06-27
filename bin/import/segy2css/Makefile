@@ -1,10 +1,8 @@
-#$Name $Revision$ $Date$ 
-# Makefile for sgy2css
-
-BIN 	= segy2css
-MAN1 = segy2css.1
+BIN  = segy2css
+MAN1 = $(BIN).1
 ldlibs = $(DBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
@@ -15,9 +13,7 @@ OBJS = decode.o \
 	tmutils.o \
 	util.o \
 	wrt_segdata.o \
-	wrt_segwfd.o 
+	wrt_segwfd.o
 
 $(BIN) : $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) 
-
-# $Id$ 
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

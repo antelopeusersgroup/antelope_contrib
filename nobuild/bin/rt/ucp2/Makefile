@@ -18,6 +18,7 @@ TCL= daspar.tcl \
 DATADIR=tcl/ucp2
 DATA=tclIndex $(TCL)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE) 
 DIRS=
 

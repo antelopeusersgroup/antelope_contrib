@@ -1,5 +1,7 @@
-BIN=dbsubset2orb
-MAN1=dbsubset2orb.1
+BIN  = dbsubset2orb
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=

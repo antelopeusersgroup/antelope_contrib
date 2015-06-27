@@ -3,14 +3,16 @@ PF=   ew2orb.pf orb2ew.pf earthworm.pf
 MAN1= ew2orb.1  orb2ew.1
 MAN5= earthworm.5
 INCLUDE= trace_buf.h
+LICENSES= license_ew2orb.txt license_orb2ew.txt
 
-CLEAN=
+CLEAN= $(LICENSES)
 
 cflags=
 fflags=
 ldflags=
 ldlibs= -lbrttutil -lbrttpkt $(ORBLIBS) $(THREAD)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
 
@@ -28,3 +30,6 @@ ew2orb: $(EW2ORB_OBJS)
 orb2ew: $(ORB2EW_OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(ORB2EW_OBJS) $(LDFLAGS) $(LDLIBS)
+
+$(LICENSES): LICENSE
+	cp $< $@

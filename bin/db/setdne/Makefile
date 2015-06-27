@@ -1,12 +1,13 @@
-BIN=setdne
-
-MAN1=setdne.1		# man pages for commands
-
+BIN  = setdne
+MAN1 = $(BIN).1
 
 cflags=-g
-ldlibs=$(DBLIBS)		# libraries to link in.
+ldlibs=$(DBLIBS)
 
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
-OBJS=	setdne.o
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
+OBJS = $(BIN).o
+
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

@@ -1,11 +1,8 @@
-BIN=	mchedr2db    	
+BIN  = mchedr2db
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
 
-MAN1=	mchedr2db.1
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 
-PF=	mchedr2db.pf			
-
-include $(ANTELOPEMAKE) 
-
-DIRS = 
-
-			
+DIRS =

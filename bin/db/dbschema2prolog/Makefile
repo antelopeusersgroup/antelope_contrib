@@ -1,4 +1,11 @@
-BIN= dbschema2prolog
-MAN1= dbschema2prolog.1
+BIN  = dbschema2prolog
+MAN1 = $(BIN).1
+LICENSES = license_dbschema2prolog.txt
 
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
+$(LICENSES) : LICENSE
+	cp $< $@

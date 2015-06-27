@@ -1,7 +1,13 @@
-
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+FIRSTDIRS=first
+DIRS=first lib bin data java adm
 
-DIRS=makes lib bin data java adm
+TOPDOCS=README.md
 
-# $Id$ 
+install::
+	$(INSTALL) $(TOPDOCS) $(DEST)
+
+uninstall::
+	@echo uninstalling $(TOPDOCS)
+	$(RM) $(TOPDOCS)

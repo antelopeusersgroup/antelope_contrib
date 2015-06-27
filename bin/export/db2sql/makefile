@@ -1,11 +1,9 @@
-
 all Include install installMAN pf relink tags test :: FORCED
 	@-if localmake_config perl_DBI ; then \
 	    $(MAKE) -f Makefile2 $@ ; \
 	fi
 
 clean uninstall :: FORCED
-	$(MAKE) -f Makefile2 $@ 
+	$(MAKE) -f Makefile2 $@
 
 FORCED:
-

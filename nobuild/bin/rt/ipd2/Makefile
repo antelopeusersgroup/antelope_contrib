@@ -6,6 +6,7 @@ MAN1= ipd2.1
 ldflags=-L.
 ldlibs	= -ldefunctpkt2 -lorb $(TRLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 OBJSM	= ipd2.o\
 	  newpf.o\

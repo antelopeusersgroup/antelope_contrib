@@ -31,6 +31,7 @@ DATA=	iceworm1.3 \
 	Travel1.2 \
 	webbullets1.0
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 
 # $Id$ 

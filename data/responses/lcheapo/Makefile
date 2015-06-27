@@ -14,4 +14,5 @@ DATA= abalones_filtered_c1 \
       lch_4_sinc3_5
 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

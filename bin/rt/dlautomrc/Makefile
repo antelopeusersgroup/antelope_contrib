@@ -1,7 +1,7 @@
-BIN=dlautomrc
-MAN1=dlautomrc.1
-PF=dlautomrc.pf
+BIN  = dlautomrc
+MAN1 = $(BIN).1
+PF   = ($BIN).pf
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=
-

@@ -1,11 +1,14 @@
-BIN = dbrtfm
-
-MAN1 = dbrtfm.1
-
-PF = dbrtfm.pf 
-
+BIN  = dbrtfm
+MAN1 = $(BIN).1
+PF   = $(BIN).pf
+DATA = $(BIN).1
 DATADIR = schemas
+LICENSES = license_dbrtfm.txt
 
-DATA = dbrtfm1.1
+CLEAN = $(LICENSES)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
+$(LICENSES) : LICENSE
+	cp $< $@

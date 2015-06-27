@@ -99,6 +99,7 @@ DATA= \
 	q-92s6 \
 	Readme.Qx80
                            
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
 DIRS=
 

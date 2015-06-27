@@ -1,7 +1,7 @@
+BIN  = init_training
+PF   = $(BIN).pf
 
-BIN= init_training
-PF= init_training.pf
+MAN1 = $(BIN).1
 
-MAN1= init_training.1
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

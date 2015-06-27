@@ -1,8 +1,7 @@
 BIN=fill_gaps
 MAN1=fill_gaps.1
 
-#ldlibs=$(DBLIBS)
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-DIRS=
 
+DIRS=

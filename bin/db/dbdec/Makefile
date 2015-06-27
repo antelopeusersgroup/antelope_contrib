@@ -1,18 +1,14 @@
-
-BIN=		dbdec
-
-MAN1=		dbdec.1
+BIN  = dbdec
+MAN1 = $(BIN).1
 
 cflags=-g
-ldlibs=		-lscv2 -ldbl2 $(TRLIBS)
+ldlibs=-lscv2 -ldbl2 $(TRLIBS)
 
-include $(ANTELOPEMAKE)  	
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
+
 DIRS=
 
-OBJS=	dbdec.o merge_db.o
+OBJS=$(BIN).o merge_db.o
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-
-
-# $Id$ 

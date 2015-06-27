@@ -1,4 +1,5 @@
-BIN= smc2db
-MAN1= smc2db.1
+BIN  = smc2db
+MAN1 = $(BIN).1
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

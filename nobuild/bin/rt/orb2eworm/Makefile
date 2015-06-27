@@ -6,4 +6,5 @@ cflags= -D_SPARC -D_SOLARIS -mt
 ldflags= -xildoff 
 ldlibs= -lwormsol -lwormutil -lwormds $(ORBLIBS) $(THREAD)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)

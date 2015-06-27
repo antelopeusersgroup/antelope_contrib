@@ -10,5 +10,6 @@ DATA=     rt130.pf \
     rt97_06.pf \
     rt97_80.pf 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 DIRS=

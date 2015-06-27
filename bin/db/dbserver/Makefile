@@ -1,11 +1,12 @@
 BIN = dbserver
-MAN1= dbserver.1
+MAN1= $(BIN).1
 
-ldlibs=	-ldbl2 -ldbptolemy -ldbxml $(DBLIBS) $(ORBLIBS)
+ldlibs=-ldbl2 -ldbptolemy -ldbxml $(DBLIBS) $(ORBLIBS)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
-OBJS = dbserver.o
+OBJS = $(BIN).o
 
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

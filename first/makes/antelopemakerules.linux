@@ -1,0 +1,13 @@
+# These are additional makerules for the Antelope Contributed Software
+# repository
+
+# Platform-specific makerules for Linux
+# Use LDEXTRA and friends to insert contrib into linker and compiler flags
+CXXEXTRA += -I$(ANTELOPE)/contrib/include
+FEXTRA   += -I$(ANTELOPE)/contrib/include
+CEXTRA   += -I$(ANTELOPE)/contrib/include
+LDEXTRA  += -L$(ANTELOPE)/contrib/lib -Wl,-rpath,$(ANTELOPE)/contrib/lib
+LDEXTRA  += -L$(ANTELOPE)/contrib/static
+
+CONTRIBDLDFLAGS  = $(ldflags) $(LDEXTRA) $(LDPATH) $(LDRUN) -shared
+CONTRIBDLDFLAGS += -Wl,-soname,$@

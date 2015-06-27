@@ -1,6 +1,12 @@
-BIN = iarequest
-PF= iarequest.pf
+BIN  = iarequest
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
+LICENSES = license_iarequest.txt
 
-MAN1 = iarequest.1
+CLEAN= $(LICENSES)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
+$(LICENSES) : LICENSE
+	cp $< $@

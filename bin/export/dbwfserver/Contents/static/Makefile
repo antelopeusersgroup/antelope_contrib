@@ -1,10 +1,6 @@
 DATADIR = www/dbwfserver/static/
 
-#ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
-
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
-#include $(ANTELOPEMAKELOCAL)
-
-#SUBDIR= /local
 
 DIRS = images jquery css

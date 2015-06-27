@@ -15,6 +15,7 @@ fflags=
 ldflags=
 ldlibs= -lcgeom $(DBLIBS) $(ORBLIBS) $(THREAD)
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 OBJS= orb_quake_alarm.o

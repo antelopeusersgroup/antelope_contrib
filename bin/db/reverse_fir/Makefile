@@ -1,19 +1,8 @@
-BIN= 	reverse_fir	# commands to be placed in bin
-LIB=		# libraries to be placed in lib
-DATADIR=	# directory under $(ANTELOPE)/data in which to put $(DATA) files
-DATA=		# data files to be placed in data/$(DATADIR)
-INCLUDE=	# include files to be placed in include
-PF=	reverse_fir.pf	# parameter files to be placed in data/pf
+BIN  = reverse_fir
+PF   = $(BIN).pf
+MAN1 = $(BIN).1
 
-MAN1=reverse_fir.1		# man pages for commands
-MAN3=		# man pages for library routines
-MAN5=		# man pages for file formats
+SUBDIR=/contrib
+include $(ANTELOPEMAKE)
 
-CLEAN= 		# Extra files which should be removed during a "make clean"
-
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
-			# and before the DIRS definition below..
-DIRS=			# Omit this line to run make in subdirectories, or
-			# fill in to run make only in certain subdirectories
-#SUBDIR=/local
-SUBDIR=
+DIRS=

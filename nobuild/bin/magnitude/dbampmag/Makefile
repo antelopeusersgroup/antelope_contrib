@@ -9,6 +9,7 @@ cflags =  -g
 ldflags = 
 ldlibs = -lbrttfilter -lbrttutil $(TRLIBS) $(SVR4LIBS) 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 #SUBDIR=/local
 DIRS=

@@ -10,6 +10,7 @@ DOC= \
     Antelope_Toolbox_for_Matlab.html \
     Antelope_Toolbox_for_Matlab.pdf 
 
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 

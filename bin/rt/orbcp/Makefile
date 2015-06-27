@@ -1,18 +1,22 @@
-BIN = orbcp
+BIN  = orbcp
+MAN1 = $(BIN).1
+LICENSES = license_orbcp.txt
 
-MAN1 = orbcp.1
-
-cflags =  -g
-ldflags = 
+cflags = -g
+ldflags =
 ldlibs= $(ORBLIBS)
 
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)
+
 DIRS=
 
-OBJS= \
-	orbcp.o
+OBJS= $(BIN).o
 
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
-# $Id$ 
+$(LICENSES) : LICENSE
+	cp $< $@
