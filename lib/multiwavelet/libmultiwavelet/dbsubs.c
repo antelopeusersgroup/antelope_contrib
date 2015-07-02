@@ -50,7 +50,7 @@ int MWdb_save_slowness_vector(char *phase,
 	double peakcm,
 	Dbptr db)
 {
-	double slo, azimuth, cxx, cyy, cxy;
+	double slo, azimuth;
 	char cmeasure[2];
 
 	slo = hypot(u->ux,u->uy);
@@ -69,8 +69,8 @@ int MWdb_save_slowness_vector(char *phase,
 	}
 
 	if( dbaddv(db,0,"sta",array,
-		"evid",evid,
-		"bankid",bankid,
+		"evid",(long)evid,
+		"bankid",(long)bankid,
 		"phase", phase,
 		"fc",fc,
 		"fwin",fwin,
@@ -85,7 +85,7 @@ int MWdb_save_slowness_vector(char *phase,
 		"ncomp",ncomp,
 		"cohtype",cmeasure,
 		"cohmeas",peakcm,
-		"algorithm","mwap",0) < 0) 
+		"algorithm","mwap",NULL) < 0) 
 	{
 		elog_notify(0,
 			"dbaddv error for mwslow table on evid %d fc=%lf\n",
@@ -136,8 +136,8 @@ int MWdb_save_avgamp(char *array,
 	/* Note algorithm and ampcomp are frozen here.   */
 
 	if( dbaddv(db,0,"sta",array,
-		"evid",evid,
-		"bankid",bankid,
+		"evid",(long)evid,
+		"bankid",(long)bankid,
 		"phase", phase,
 		"fc",fc,
 		"ampcomp",AMPCOMP,
@@ -146,7 +146,7 @@ int MWdb_save_avgamp(char *array,
 		"mwamp",mwamp,
 		"erramp",erramp,
 		"ndgf",ndgf,
-		"algorithm","mwap",0) < 0) 
+		"algorithm","mwap",NULL) < 0) 
 	{
 		elog_notify(0,
 			"dbaddv error for mwavgamp table on evid %d with  fc=%lf\n",
@@ -252,9 +252,9 @@ int MWdb_save_statics(
 		    if( dbaddv(dbsnr,0,
 			"sta",sta,
 			"fc",fc,
-			"bankid",bankid,
+			"bankid",(long)bankid,
 			"phase",phase,
-			"evid",evid,
+			"evid",(long)evid,
 			"nstime",snr->nstime,
 			"netime",snr->netime,
 			"sstime",snr->sstime,
@@ -263,7 +263,7 @@ int MWdb_save_statics(
 			"snrn",snr->ratio_n,
 			"snre",snr->ratio_e,
 			"snr3c",snr->ratio_3c,
-			"algorithm","mwap",0) < 0) 
+			"algorithm","mwap",NULL) < 0) 
 		    {
 			elog_notify(0,"mwtstatic dbaddv error for station %s\n",sta);
 
@@ -300,9 +300,9 @@ int MWdb_save_statics(
 				ierr = dbaddv(dbt,0,
 					"sta",sta,
 					"fc",fc,
-					"bankid",bankid,
+					"bankid",(long)bankid,
 					"phase",phase,
-					"evid",evid,
+					"evid",(long)evid,
 					"time",time,
 					"twin",twin,
 					"wgt",s->current_weight_base,
@@ -312,7 +312,7 @@ int MWdb_save_statics(
 					"errstatic",mws->sigma_t,
 					"ndgf",mws->ndgf,
 					"datum",refelev,
-					"algorithm","mwap",0);
+					"algorithm","mwap",NULL);
 			}
 		    	else
 			{
@@ -320,9 +320,9 @@ int MWdb_save_statics(
 				ierr = dbaddv(dbt,0,
 					"sta",sta,
 					"fc",fc,
-					"bankid",bankid,
+					"bankid",(long)bankid,
 					"phase",phase,
-					"evid",evid,
+					"evid",(long)evid,
 					"time",time,
 					"twin",twin,
 					"wgt",s->current_weight_base,
@@ -333,7 +333,7 @@ int MWdb_save_statics(
 					"ndgf",mws->ndgf,
 					"datum",refelev,
 					"timeres",resid,
-					"algorithm","mwap",0);
+					"algorithm","mwap",NULL);
 			}
 			if(ierr<0)
 			{
@@ -354,16 +354,16 @@ int MWdb_save_statics(
 				"sta",sta,
 				"ampcomp",AMPCOMP,
 				"fc",fc,
-				"bankid",bankid,
+				"bankid",(long)bankid,
 				"phase",phase,
-				"evid",evid,
+				"evid",(long)evid,
 				"time",time,
 				"twin",twin,
 				"wgt",s->current_weight_base,
 				"ndgf",mws->ndgf,
 				"ampstatic",ampdb,
 				"erramp",aerrdb,
-				"algorithm","mwap",0) < 0) 
+				"algorithm","mwap",NULL) < 0) 
 			    {
 				elog_notify(0,"mwtstatic dbaddv error for station %s\n",sta);
 
@@ -419,7 +419,6 @@ int MWdb_save_pm(
 	Dbptr db)
 {
 
-	char *sta;
 	int i;
 	Particle_Motion_Ellipse *pm;
 	Particle_Motion_Error *pmerr;
@@ -467,10 +466,10 @@ int MWdb_save_pm(
 			minema = deg(scoor.theta);
 			if( dbaddv(db,0,
 				"sta",g->sta[i]->sta,
-				"bankid",bankid,
+				"bankid",(long)bankid,
 				"fc",fc,
 				"phase",phase,
-				"evid",evid,
+				"evid",(long)evid,
 				"time",time,
 				"twin",twin,
 				"pmtype","ss",
@@ -487,9 +486,10 @@ int MWdb_save_pm(
 				"majndgf",pmerr->ndgf_major,
 				"minndgf",pmerr->ndgf_minor,
 				"rectndgf",pmerr->ndgf_rect,
-				"algorithm","mwap",0) < 0) 
+				"algorithm","mwap",NULL) < 0) 
 			{
-				elog_notify(0,"dbaddv error in mwpm table for station %s\n",sta);
+				elog_notify(0,"dbaddv error in mwpm table for station %s\n",
+                                        g->sta[i]->sta);
 
 				++errcount;
 			}
@@ -505,10 +505,10 @@ int MWdb_save_pm(
 	minema = deg(scoor.theta);
 	if( dbaddv(db,0,
 		"sta",array,
-		"bankid",bankid,
+		"bankid",(long)bankid,
 		"fc",fc,
 		"phase",phase,
-		"evid",evid,
+		"evid",(long)evid,
 		"time",time,
 		"twin",twin,
 		"pmtype","aa",
@@ -525,7 +525,7 @@ int MWdb_save_pm(
 		"majndgf",pmaerr->ndgf_major,
 		"minndgf",pmaerr->ndgf_minor,
 		"rectndgf",pmaerr->ndgf_rect,
-	   "algorithm","mwap",0) < 0) 
+	   "algorithm","mwap",NULL) < 0) 
 	{
 		elog_notify(0,"dbaddv error saving array average particle motion parameters in mwpm table for evid %d\n",
 			evid);
@@ -559,15 +559,14 @@ Written: April 2002
 
 MWbasis *load_multiwavelets_db(Dbptr db, Pf *pf,int *nwavelets, int *bankid)
 {
-	MWbasis *mwb;
-	int nw;
+	MWbasis *mwb=NULL;
 	char *select_condition;
 	Dbptr dbv;
-	int nrecords;
+	long nrecords;
 	/* These are the attribute in the mwdisc table minus
 	those returned in the argument list */
 
-	int nsamp,foff;
+	long nsamp,foff;
 	double f0,fw;
 	char datatype[4],mworder[4];
 	char fname[128];
@@ -588,14 +587,14 @@ MWbasis *load_multiwavelets_db(Dbptr db, Pf *pf,int *nwavelets, int *bankid)
 		elog_complain(0,"load_multiwavelet_db:  multiple records in mwdisc match the condition %s\nUsing first record found\n",
 			select_condition);
 	dbv.record=0;
-	dbgetv(dbv,0,"bankid",bankid,
+	dbgetv(dbv,0,"bankid",(long)bankid,
 		"nsamp",&nsamp,
 		"nwavelets",nwavelets,
 		"f0",&f0,
 		"fw",&fw,
 		"datatype",datatype,
 		"foff",&foff,
-		"mworder",mworder,0);
+		"mworder",mworder,NULL);
 	if(strcmp(datatype,"t4"))
 		elog_die(0,"multiwavelets must be in t4 binary form\n");
 	if(strcmp(mworder,"ti") || strcmp(mworder,"ts") )
@@ -645,16 +644,16 @@ MWbasis *load_multiwavelets_db(Dbptr db, Pf *pf,int *nwavelets, int *bankid)
 				nr=fread(mwb[i].r,sizeof(float),nsamp,fp);
 				ni=fread(mwb[i].i,sizeof(float),nsamp,fp);
 				if( (nr!=nsamp) || (ni!=nsamp) )
-					elog_die(0,"read error on file %s while reading wavelet %d\nRead %d real and %d imaginary samples while expecting %d\n",
+					elog_die(0,"read error on file %s while reading wavelet %d\nRead %d real and %d imaginary samples while expecting %ld\n",
 						fname,i,
 						nr,ni,nsamp);
 			}
 		}
+	        fclose(fp);
 	}
 	else
 		elog_die(0,"load_multiwavelet_db: don't know how to read mworder %s\nCurrently support only ti and ts\n",
 			mworder);
 	
-	fclose(fp);
 	return(mwb);
 }

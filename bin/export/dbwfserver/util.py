@@ -1,8 +1,12 @@
 import re
+import sys
 import logging
 import antelope.datascope as datascope
 import antelope.stock as stock
 from collections import defaultdict
+from string import Template
+import time
+from twisted.internet import reactor
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +37,73 @@ def isNumber(test):
                 return None
     except:
         return None
+
+class ProgressLogger:
+    """Output a log message every time_interval seconds or tick_interval ticks"""
+
+    def __init__(self, name, total_ticks, time_interval=1, tick_interval=False,
+                 logger=logging.getLogger(__name__),
+                 level=logging.INFO):
+        self.name=name
+        self.total_ticks=total_ticks
+        if self.total_ticks <= 0:
+            logger.warning("Total ticks is %d, should be > 0. Using 1")
+            self.total_ticks = 1
+        self.tick_interval=tick_interval
+        self.time_interval=time_interval
+
+        self.logger=logger
+        self.last_output=-1
+        self.start_time=time.time()
+        self.current_tick=0
+        self.level=level
+
+    def progress(self):
+        """ Get the current progress as a percentage """
+        if self.total_ticks == 0:
+            self.logger.critical("progress: Total ticks set to 0, should be greater than 0")
+            return 100
+        return (float(self.current_tick)/self.total_ticks)*100
+
+
+    def tick(self):
+        """
+        Iterate the progress logger by one tick
+
+        If the tick_interval or time_interval have been reached, output a log
+        message
+        """
+        self.current_tick += 1
+        time_now=time.time()
+        if (
+            ((self.tick_interval > 0) and
+             (self.tick % self.tick_interval == 0)) or
+            (time_now - self.last_output > self.time_interval)
+        ):
+            self.logger.log(self.level, self.name +
+                            self._get_tick_text(time_now))
+            self.last_output = time_now
+
+    def _get_tick_text(self, time_now):
+        return '%d of %d (%.1f %%) %d s' % (
+            self.current_tick,
+            self.total_ticks,
+            self.progress(),
+            time_now - self.start_time)
+
+
+    def finish(self, level=None):
+        """Signal that the task has finished"""
+        if level is None: level=self.level
+        time_now=time.time()
+        self.logger.log(level, self.name +
+                        "Finished at " + str(time_now) + " " +
+                        self._get_tick_text(time_now)
+                       )
+
+def load_template(template_path):
+    """Load a template from the specified path"""
+    return Template(open(template_path).read())
 
 class Db_nulls():
     """
@@ -157,6 +228,7 @@ class Stations():
         self.first = True
         self.dbcentral = db
         self.stachan_cache = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self.wfdisc_stachan = defaultdict(set)
         self.offset = -1
         self.wfdates = defaultdict(lambda: defaultdict(dict))
         self.maxtime = -1
@@ -240,69 +312,54 @@ class Stations():
 
             dates = {}
 
+            query_start_time = time.time()
             try:
+                self.logger.debug("Dbopen "+dbname)
                 db = datascope.dbopen( dbname , 'r' )
-                db = db.lookup( table='wfdisc',field='time')
-                records = db.query(datascope.dbRECORD_COUNT)
-                self.mintime = db.ex_eval('min(time)')
-                self.maxtime   = db.ex_eval('max(endtime)')
+                table='wfdisc'
+                field='time'
+                self.logger.debug("Dblookup table=%s field=%s" % (table,field))
+                dbwfdisc = db.lookup( table=table,field=field)
+                self.logger.debug("Getting record count of "+table)
+                records = dbwfdisc.query(datascope.dbRECORD_COUNT)
+                self.mintime = dbwfdisc.ex_eval('min(time)')
+                self.maxtime   = dbwfdisc.ex_eval('max(endtime)')
             except Exception,e:
                 self.logger.exception('Problem with wfdisc table. %s: %s' % (
                     Exception, e))
                 sys.exit(reactor.stop())
 
+            elapsed_time = time.time() - query_start_time
+            self.logger.debug(
+                "Intial dbquery and wfdisc record count took %d seconds" %
+                elapsed_time)
             if self.maxtime > stock.now() or self.maxtime > (stock.now()-3600):
                 self.maxtime = -1
 
 
-            #
-            # Method 1
-            #   python tools
-            #
+            self.logger.debug("Starting wfdisc processing of %d records" % records)
+            prog=ProgressLogger("Stations: processing wfdisc record ",
+                                records, logger=self.logger)
             for j in range(records):
-                db.record = j
+                prog.tick()
+                dbwfdisc.record = j
+
                 try:
-                    self.wfdates[stock.yearday(db.getv('time')[0])] = 1
-                except Exception, e:
+                    sta,chan,dbtime = dbwfdisc.getv('sta','chan','time')
+                    self.wfdisc_stachan[sta].add(chan)
+                    self.wfdates[stock.yearday(dbtime)] = 1
+                except datascope.DatascopeException, e:
                     self.logger.exception('(%s=>%s)' % (Exception,e))
 
+            prog.finish()
             self.logger.debug('Stations(): maxtime: %s' % self.maxtime)
             self.logger.debug('Stations(): mintime: %s' % self.mintime)
             self.logger.debug('Stations(): dates: %s' % dates.keys())
 
             try:
-                db.close()
-            except:
-                pass
-
-            #
-            # Method 2
-            #   system tools
-            #
-            #run = "%s/bin/dbselect %s.wfdisc 'yearday(time)'" % (os.environ['ANTELOPE'],dbname)
-
-            #print "*********"
-            #print "Dates: "
-            #print "*********"
-            #for file in os.popen(run).readlines():
-            #    dates[file.strip()] = 1
-            #l = dates.keys()
-            #print l
-            #print "*********"
-            #sys.exit(reactor.stop())
-
-            #start_day = stock.str2epoch(stock.epoch2str(start,'%D'))
-            #end_day = stock.str2epoch(stock.epoch2str(end,'%D'))
-            #if self.wfdate:
-            #    if self.wfdate[0] > start_day: self.wfdate[0] = start_day
-            #    if self.wfdate[1] < start_day: self.wfdate[0] = start_day
-            #self.wfdates = [start_day,end_day]
-
-            try:
-                db = datascope.dbopen( dbname , 'r' )
-                db = db.lookup( table='sitechan')
-                db = db.sort(['sta', 'chan'])
-                records = db.query(datascope.dbRECORD_COUNT)
+                dbsitechan = db.lookup( table='sitechan')
+                ssc = dbsitechan.sort(['sta', 'chan'])
+                records = ssc.query(datascope.dbRECORD_COUNT)
 
             except Exception,e:
                 self.logger.exception(
@@ -315,31 +372,44 @@ class Stations():
                     "Stations(): No records after sitechan sort.")
                 sys.exit(reactor.stop())
 
-
+            prog=ProgressLogger("Stations: processing stachan record ",
+                                records, logger=self.logger)
             for j in range(records):
+                prog.tick()
 
-                db.record = j
+                ssc.record = j
                 try:
-                    sta, chan, ondate, offdate = db.getv('sta','chan','ondate','offdate')
+                    sta, chan, ondate, offdate = ssc.getv(
+                        'sta', 'chan', 'ondate', 'offdate')
                 except Exception, e:
                     self.logger.exception('Station(): (%s=>%s)' % (Exception,e))
 
                 ondate = stock.str2epoch(str(ondate))
-                if offdate != -1: offdate = stock.str2epoch(str(offdate))
+                if chan in self.wfdisc_stachan[sta]:
+                    if offdate != -1: offdate = stock.str2epoch(str(offdate))
 
-                self.stachan_cache[sta][chan]['dates'].extend([[ondate,offdate]])
+                    self.stachan_cache[sta][chan]['dates'].extend([[ondate,offdate]])
 
-                self.logger.debug("Station(): %s.%s dates: %s" % (
-                    sta,chan,self.stachan_cache[sta][chan]['dates']))
+                    self.logger.debug("Station(): %s.%s dates: %s" % (
+                        sta,chan,self.stachan_cache[sta][chan]['dates']))
+                else:
+                    self.logger.debug(
+                        'Station(): %s.%s was not in the wfdisc. Skipping' % (
+                            sta, chan)
+                    )
 
             try:
+                ssc.free()
                 db.close()
             except:
                 pass
 
 
-        self.logger.info("Stations(): Done updating cache (%s) stations." % \
-                         len(self.stachan_cache))
+        prog.finish(level=logging.INFO)
+
+        self.logger.info(
+            "Stations(): Done updating cache (%s) sta-chan pairs." %
+            len(self.stachan_cache))
 
     def min_time(self):
         """

@@ -53,7 +53,7 @@ void MWsave_gather(
 	FILE *fpr,*fpi;
 	int i,j,k;
 	double *t;
-	char *dir;
+	char *dir=NULL;
 
 	allot(double *,t,nt);
 	for(i=0;i<nt;++i) t[i] = t0+dt*((double)i);
@@ -132,7 +132,7 @@ void MWsave_coherence(
 	FILE *fpr,*fpi;
 	int i,j,k;
 	double *t;
-	char *dir;
+	char *dir=NULL;
 
 	allot(double *,t,nt);
 	for(i=0;i<nt;++i) t[i] = t0+dt*((double)i);

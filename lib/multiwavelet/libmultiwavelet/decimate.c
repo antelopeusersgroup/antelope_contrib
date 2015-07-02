@@ -54,7 +54,7 @@ Tbl **define_decimation(Pf *pf, int *nbands)
 }
 
 /* This routine looks at a sequence of css response files passed
-through the dec_stages list of file names, reads these response
+through the decdef tbl of file names, reads these response
 files, and stores the description of them in a series of output 
 Tbls.  
 arguments:
@@ -81,7 +81,6 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 	Response *rsp;
 	char string[512];
 	FILE *file;
-	char **dec_stages;
 
 	FIR_decimation *decptr;
  	Response *resp;
@@ -137,12 +136,12 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 			get_response_stage_fir_ncoefs (rsp, j, &srate, &dec_factor, &nnum, &nden);
 			if (nden > 1) {
 				elog_notify(0, "read_dec_files: Dont know how to do IIR filters (%s).\n",
-										dec_stages[i]);
+                                        decfile);
 				return (0);
 			}
 			if (nnum < 1) {
 				elog_notify(0, "read_dec_files: No numerator terms (%s).\n",
-										dec_stages[i]);
+                                        decfile);
 				return (0);
 			}
 			ok=1;
@@ -150,7 +149,7 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 		}
 		if (!ok) {
 			elog_notify(0, "read_dec_files: no fir stage on file '%s'.\n",
-							dec_stages[i]);
+                                        decfile);
 			return (0);
 		}
 		for (j=0; j<n; j++) {
@@ -170,12 +169,10 @@ int read_dec_files (Tbl *decdef, int *dec_fac, Tbl **decimators)
 
 	for (i=0; i<n; i++) {
 		Response_group *gpi;
-		int dec_factor, nnum, nden, n2;
+		int dec_factor, nnum, nden;
 		double srate;
 		double *coefsi, *coefs_err;
 		double *coefdi, *coefd_err;
-		float *cfs;
-		int *numb, *decf;
 
 		decptr = (FIR_decimation *) malloc(sizeof(FIR_decimation));
 		if(decptr == NULL)

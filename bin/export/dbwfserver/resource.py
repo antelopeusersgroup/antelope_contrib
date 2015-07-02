@@ -11,7 +11,8 @@ import twisted.web.server
 import json
 from string import Template
 import logging
-from dbwfserver.util import isNumber, Events, Stations
+from dbwfserver.util import isNumber, Events, Stations, load_template
+from textwrap import dedent
 
 """
 Twisted.web resources for use by the dbwfserver application
@@ -50,10 +51,16 @@ class QueryParserResource(twisted.web.resource.Resource):
         self.logger.info('        Loading!        ')
         self.logger.info('########################')
 
+        self.init_finished=False
+        self.init_failure=False
+
         self.config = config
         self.dbname = dbname
         self.loading_stations = True
         self.loading_events = True
+
+        self.root_template = load_template(self.config.template)
+        self.plot_template = load_template(self.config.plot_template)
 
         #
         # Initialize Classes
@@ -105,7 +112,18 @@ class QueryParserResource(twisted.web.resource.Resource):
                 'No valid databases to work with! -v or -V for more info')
             return False
 
-        deferToThread(self._init_in_thread)
+        d=deferToThread(self._init_in_thread)
+        d.addCallback(self._init_finished)
+        d.addErrback(self._init_failed)
+
+    def _init_finished(self,d):
+        self.init_finished=True
+
+    def _init_failed(self,failure):
+        self.init_failure=True
+        self.logger.critical('An error occurred during initialization: ' +
+                             str(failure))
+        sys.exit(twisted.internet.reactor.stop())
 
     def _init_in_thread(self):
 
@@ -125,48 +143,66 @@ class QueryParserResource(twisted.web.resource.Resource):
         self.logger.info('READY!')
 
 
-    def getChild(self, name, uri):
+    def getChild(self, name, request):
 
-        #self.logger.debug("getChild(): name:%s uri:%s" % (name,uri))
+        #self.logger.debug("getChild(): name:%s request:%s" % (name,request))
         return self
 
+    def _render_loading(self, request):
+        """Output an error page while loading Stations and Events"""
 
-    def render_GET(self, uri):
+        responseCode = 503
+        #html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % self.config.application_title
+        #html +=  "<p>Waiting for Stations: %s</p></br>" % self.loading_stations
+        #html +=  "<p>Waiting for Events: %s</p></br>" % self.loading_events
+        #html +=  "</body></html>"
 
-        self.logger.debug("QueryParser(): render_GET(): uri: %s" % uri)
+        html_template=Template(dedent(
+            """\
+            <html>
+                <head><title>ERROR: $responseCode - $appname</title></head>
+                <body>
+                    <h1>ERROR: $responseCode - $appname</h1>
+                    <p>The DBWFSERVER $appname is still starting up. Try again later.</p>
+                    <p>Waiting for Stations: $loading_stations</p>
+                    <p>Waiting for Events: $loading_events</p>
+                </body>
+            </html>
+            """))
 
-        self.logger.debug('')
-        self.logger.debug('QueryParser(): render_GET(%s)' % uri)
-        self.logger.debug('QueryParser(): render_GET() uri.uri:%s' % uri.uri)
-        self.logger.debug('QueryParser(): render_GET() uri.args:%s' % (uri.args) )
-        self.logger.debug('QueryParser(): render_GET() uri.prepath:%s' % (uri.prepath) )
-        self.logger.debug('QueryParser(): render_GET() uri.postpath:%s' % (uri.postpath) )
-        self.logger.debug('QueryParser(): render_GET() uri.path:%s' % (uri.path) )
+        html = html_template.substitute(
+            appname          = self.config.application_title,
+            responseCode     = responseCode,
+            loading_stations = self.loading_stations,
+            loading_events   = self.loading_events,
+        )
 
-        (host,port) = uri.getHeader('host').split(':', 1)
-        self.logger.debug('QueryParser():\tQUERY: %s ' % uri)
-        self.logger.debug('QueryParser():\tHostname => [%s:%s]'% (host,port))
-        self.logger.debug('QueryParser():\tHost=> [%s]'% uri.host)
-        self.logger.debug('QueryParser():\tsocket.gethostname() => [%s]'% socket.gethostname())
-        self.logger.debug('')
-        #self.logger.debug('QueryParser():\tsocket.getsockname() => [%s]'% uri.host.getsockname())
-        #uri.setHost(host,self.config.port)
 
+        request.setHeader("content-type", "text/html")
+        request.setResponseCode( responseCode )
+        self.logger.debug("_render_loading returning: \n" + html)
+        return html
+
+    def render_GET(self, request):
+
+        self.logger.debug('QueryParser(): render_GET(%s)' % request)
+        self.logger.debug('QueryParser(): render_GET() request.uri:%s' % request.uri)
+        self.logger.debug('QueryParser(): render_GET() request.args:%s' % (request.args) )
+        self.logger.debug('QueryParser(): render_GET() request.prepath:%s' % (request.prepath) )
+        self.logger.debug('QueryParser(): render_GET() request.postpath:%s' % (request.postpath) )
+        self.logger.debug('QueryParser(): render_GET() request.path:%s' % (request.path) )
 
         if self.loading_stations or self.loading_events:
-            html =  "<html><head><title>%s</title></head><body><h1>DBWFSERVER:</h1></br><h3>Server Loading!</h3></br>" % self.config.application_title
-            html +=  "<p>Waiting for Stations: %s</p></br>" % self.loading_stations
-            html +=  "<p>Waiting for Events: %s</p></br>" % self.loading_events
-            html +=  "</body></html>"
-            uri.setHeader("content-type", "text/html")
-            uri.setResponseCode( 500 )
-            uri.write(html)
-            uri.finish()
-            return
+            return self._render_loading(request)
+
+        self.logger.debug('QueryParser():\tQUERY: %s ' % request)
+        self.logger.debug('QueryParser():\tHost=> [%s]'% request.host)
+        self.logger.debug('QueryParser():\tsocket.gethostname() => [%s]'% socket.gethostname())
+        self.logger.debug('')
 
         d = twisted.internet.defer.Deferred()
         d.addCallback( self.render_uri )
-        twisted.internet.reactor.callInThread(d.callback, uri)
+        twisted.internet.reactor.callInThread(d.callback, request)
 
         self.logger.debug("QueryParser(): render_GET() - return server.NOT_DONE_YET")
 
@@ -174,7 +210,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
 
 
-    def render_uri(self,uri):
+    def render_uri(self,request):
 
         #
         # Clean and prep vars
@@ -198,7 +234,7 @@ class QueryParserResource(twisted.web.resource.Resource):
         # remove all empty  elements
         # This (localhost:8008/stations/) is the same as # (localhost:8008/stations)
         #
-        path = uri.prepath
+        path = request.prepath
         while True:
             try:
                 path.remove('')
@@ -209,18 +245,18 @@ class QueryParserResource(twisted.web.resource.Resource):
         # Parse all elements on the list
         query = self._parse_request(path)
 
-        if 'precision' in uri.args:
-            query.update( { "precision":int(uri.args['precision'][0]) })
+        if 'precision' in request.args:
+            query.update( { "precision":int(request.args['precision'][0]) })
         else:
             query.update( { "precision":1} )
 
-        if 'period' in uri.args:
-            query.update( { "period":int(uri.args['period'][0]) })
+        if 'period' in request.args:
+            query.update( { "period":int(request.args['period'][0]) })
         else:
             query.update( { "period":0} )
 
-        if 'median' in uri.args:
-            test = uri.args['median'][0]
+        if 'median' in request.args:
+            test = request.args['median'][0]
             if test.lower() in ("yes", "true", "t", "1"):
                 query.update( { "median":1 } )
             else:
@@ -228,8 +264,8 @@ class QueryParserResource(twisted.web.resource.Resource):
         else:
             query.update( { "median":0 } )
 
-        if 'realtime' in uri.args:
-            test = uri.args['realtime'][0]
+        if 'realtime' in request.args:
+            test = request.args['realtime'][0]
             if test.lower() in ("yes", "true", "t", "1"):
                 query.update( { "realtime":1 } )
             else:
@@ -238,25 +274,25 @@ class QueryParserResource(twisted.web.resource.Resource):
             query.update( { "realtime":0 } )
 
 
-        if 'filter' in uri.args:
-            filter = uri.args['filter'][0]
+        if 'filter' in request.args:
+            filter = request.args['filter'][0]
             query.update( { "filter":filter.replace('_',' ') } )
         else:
             query.update( { "filter":'None' } )
 
 
-        if 'calibrate' in uri.args:
-            test = uri.args['calibrate'][0]
+        if 'calibrate' in request.args:
+            test = request.args['calibrate'][0]
             if test.lower() in ("yes", "true", "t", "1"):
                 query.update( { "calibrate":1 } )
             else:
                 query.update( { "calibrate":0 } )
         else:
-            uri.args.update( { "calibrate":[self.config.apply_calib] } )
+            request.args.update( { "calibrate":[self.config.apply_calib] } )
             query.update( { "calibrate":self.config.apply_calib } )
 
 
-        self.logger.debug('QueryParser(): render_uri() uri.prepath => path(%s)[%s]' % (len(path),path) )
+        self.logger.debug('QueryParser(): render_uri() request.prepath => path(%s)[%s]' % (len(path),path) )
         self.logger.debug('QueryParser(): render_uri() query => [%s]' % query)
 
         if query['data']:
@@ -267,7 +303,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                 if len(path) == 0:
                     #ERROR: we need one option
                     self.logger.error('QueryParser(): render_uri() ERROR: Empty "data" query!')
-                    return self.uri_results(uri,'Invalid data query.')
+                    return self.uri_results(request,'Invalid data query.')
 
 
                 elif path[0] == 'events':
@@ -279,16 +315,16 @@ class QueryParserResource(twisted.web.resource.Resource):
 
                     self.logger.debug('QueryParser(): render_uri() query => data => events')
                     if self.config.event != 'true':
-                        return self.uri_results(uri,{})
+                        return self.uri_results(request,{})
 
                     elif len(path) == 2:
-                        return self.uri_results( uri, self.events(path[1]) )
+                        return self.uri_results( request, self.events(path[1]) )
 
                     elif len(path) == 3:
-                        return self.uri_results( uri, self.events.phases(path[1],path[2]) )
+                        return self.uri_results( request, self.events.phases(path[1],path[2]) )
 
                     else:
-                        return self.uri_results(uri,self.events.table() )
+                        return self.uri_results(request,self.events.table() )
 
 
                 elif path[0] == 'dates':
@@ -300,7 +336,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
                     self.logger.debug('QueryParser(): render_uri() query => data => dates')
 
-                    return self.uri_results( uri, self.stations.dates() )
+                    return self.uri_results( request, self.stations.dates() )
 
 
 
@@ -314,12 +350,12 @@ class QueryParserResource(twisted.web.resource.Resource):
                     self.logger.debug('QueryParser(): render_uri() query => data => dates')
 
                     if len(path) == 2:
-                        return self.uri_results( uri, self.stations.stadates(path[1]) )
+                        return self.uri_results( request, self.stations.stadates(path[1]) )
 
                     if len(path) == 3:
-                        return self.uri_results( uri, self.stations.stadates(path[1],path[2]) )
+                        return self.uri_results( request, self.stations.stadates(path[1],path[2]) )
 
-                    return self.uri_results( uri, self.stations.stadates() )
+                    return self.uri_results( request, self.stations.stadates() )
 
 
 
@@ -333,9 +369,9 @@ class QueryParserResource(twisted.web.resource.Resource):
                     self.logger.debug('QueryParser(): render_uri() query => data => stations')
 
                     if len(path) == 2:
-                        return self.uri_results( uri, self.stations(path[1]) )
+                        return self.uri_results( request, self.stations(path[1]) )
 
-                    return self.uri_results( uri, self.stations.list() )
+                    return self.uri_results( request, self.stations.list() )
 
 
                 elif path[0] == 'channels':
@@ -348,9 +384,9 @@ class QueryParserResource(twisted.web.resource.Resource):
 
                     if len(path) == 2:
                         stas = self.stations.convert_sta(path[1].split('|'))
-                        return self.uri_results( uri, self.stations.channels( stas ) )
+                        return self.uri_results( request, self.stations.channels( stas ) )
 
-                    return self.uri_results( uri, self.stations.channels() )
+                    return self.uri_results( request, self.stations.channels() )
 
 
                 elif path[0] == 'now':
@@ -361,7 +397,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
                     self.logger.debug('QueryParser(): render_uri() query => data => now')
 
-                    return self.uri_results( uri, [stock.now()] )
+                    return self.uri_results( request, [stock.now()] )
 
 
                 elif path[0] == 'filters':
@@ -372,7 +408,7 @@ class QueryParserResource(twisted.web.resource.Resource):
 
                     self.logger.debug('QueryParser(): render_uri() query => data => filters %s' % self.config.filters)
 
-                    return self.uri_results( uri, self.config.filters )
+                    return self.uri_results( request, self.config.filters )
 
 
                 elif path[0] == 'wf':
@@ -384,7 +420,7 @@ class QueryParserResource(twisted.web.resource.Resource):
                     self.logger.debug(
                         "QueryParser(): render_uri(): get_data(%s))" % query)
 
-                    return self.uri_results( uri, self.get_data(query) )
+                    return self.uri_results( request, self.get_data(query) )
 
 
 
@@ -397,13 +433,13 @@ class QueryParserResource(twisted.web.resource.Resource):
 
                     query.update( { "coverage": 1 } )
 
-                    return self.uri_results( uri, self.get_data(query) )
+                    return self.uri_results( request, self.get_data(query) )
 
 
 
                 else:
                     #ERROR: Unknown query type.
-                    return self.uri_results( uri, "Unknown query type:(%s)" % path )
+                    return self.uri_results( request, "Unknown query type:(%s)" % path )
 
 
 
@@ -411,7 +447,10 @@ class QueryParserResource(twisted.web.resource.Resource):
         response_meta.update(self.tvals)
 
         if not path:
-            return  self.uri_results( uri, Template(open(self.config.template).read()).safe_substitute(response_meta) )
+            return  self.uri_results(
+                request,
+                self.root_template.safe_substitute(response_meta)
+            )
 
         response_meta['meta_query'] = {}
         response_meta['meta_query']['sta'] = query['sta']
@@ -420,19 +459,24 @@ class QueryParserResource(twisted.web.resource.Resource):
         response_meta['meta_query']['time_end'] = query['end']
         response_meta['meta_query']['page'] = query['page']
 
-        if uri.args:
-            response_meta['setupUI'] = json.dumps(uri.args)
+        if request.args:
+            response_meta['setupUI'] = json.dumps(request.args)
 
         response_meta['meta_query'] = json.dumps( response_meta['meta_query'] )
 
         if path[0] == 'wf':
-                return  self.uri_results( uri, Template(open(self.config.template).read()).safe_substitute(response_meta) )
+            return  self.uri_results(
+                request,
+                self.root_template.safe_substitute(response_meta)
+            )
 
         elif path[0] == 'plot':
-                return  self.uri_results( uri, Template(open(self.config.plot_template).read()).safe_substitute(response_meta) )
+            return  self.uri_results(
+                request,
+                self.plot_template.safe_substitute(response_meta)
+            )
 
-        return self.uri_results( uri, "Invalid query."  )
-
+        return self.uri_results( request, "Invalid query."  )
 
 
     def _parse_request(self,args):
@@ -659,11 +703,13 @@ class QueryParserResource(twisted.web.resource.Resource):
         else:
             page = ""
 
-        run = "dbwfserver_extract %s %s %s %s %s %s %s %s %s -n %s -m %s %s %s %s 2>&1" % ( regex, coverage, filter, page, calibrate, precision, realtime, median, period, self.config.max_traces, self.config.max_points, tempdb, start, end)
+        run = "dbwfserver_extract %s %s %s %s %s %s %s %s %s -n %s -m %s %s %s %s 2>&1" % (
+            regex, coverage, filter, page, calibrate, precision, realtime,
+            median, period, self.config.max_traces, self.config.max_points,
+            tempdb, start, end
+        )
 
-        self.logger.info("*********")
         self.logger.info("QueryParser(): get_data(): Extraction command: [%s]" % run)
-        self.logger.info("*********")
 
         # Method 1
         #master, slave = pty.openpty()

@@ -1,3 +1,4 @@
+import os
 import sys
 import platform
 import logging
@@ -43,6 +44,10 @@ def main():
     # Refer to global config var, necessary for twistd override
     global config
 
+    # Always release the Python GIL when using the Antelope bindings
+    os.environ['ANTELOPE_PYTHON_GILRELEASE']='1'
+
+    # Set up the logging infrastructure
     logger=logging.getLogger('dbwfserver')
 
     #Configure system with command-line flags and pf file values.

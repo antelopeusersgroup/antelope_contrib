@@ -35,7 +35,6 @@ void check_required_pf(Pf *pf)
 	int i,j,nitems;
 	int itest, ilowcheck, ihighcheck;
 	double dtest, dlowcheck, dhighcheck;
-	int bool;
 	char *line;
 	char *ctest;
 	char name[50];
@@ -361,7 +360,7 @@ int irregular_to_regular_interpolate(double *x1, double *y1, int n1,
 		}
 		while (istart<0);
 	}
-	for(i=istart,i1=i1start;i<ny,i1<n1-1;++i1)
+	for(i=istart,i1=i1start;(i<ny)||(i1<n1-1);++i1)
 	{
 		if(x1[i1+1]==x1[i1])continue;
 		grad = (y1[i1+1]-y1[i1])/(x1[i1+1]-x1[i1]);
