@@ -6,6 +6,10 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "stock.h"
 #ifndef NO_ANTELOPE
 #include "arrays.h"
@@ -447,6 +451,16 @@ protected:
 	map<string,long> mint;
 	map<string,bool> mbool;
 	map<string,string> mstring;
+private:
+        friend class boost::serialization::access;
+        template<class Archive>
+            void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & mreal;
+            ar & mint;
+            ar & mbool;
+            ar & mstring;
+        };
 };
 
 //
