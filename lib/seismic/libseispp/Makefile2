@@ -66,12 +66,13 @@ MAN3=Basic_Time_Series.3 \
   Top_Mute.3
 DBG=-g
 
-cxxflags=-I/opt/boost/include
-
 CLEAN = $(LICENSES)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
+include $(ANTELOPEMAKELOCAL)
+
+CXXFLAGS += -I$(BOOSTINCLUDE)
 
 OBJS=ArrivalUpdater.o \
   AttributeCrossReference.o \
