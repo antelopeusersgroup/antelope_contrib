@@ -1,6 +1,10 @@
 #ifndef _TIMESERIES_H_
 #define _TIMESERIES_H_
 #include <vector>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "BasicTimeSeries.h"
 #ifndef NO_ANTELOPE
 #include "dbpp.h"
@@ -120,6 +124,14 @@ public:
 // Scans for defined gaps and sets the data to zero in time periods defined by gaps.
 **/
 	void zero_gaps();
+private:
+        friend class boost::serialization::access;
+        template<class Archive>void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & boost::serialization::base_object<Metadata>(*this);
+            ar & boost::serialization::base_object<BasicTimeSeries>(*this);
+            ar & s;
+        };
 };
 /*!
 // Output a TimeSeries as ascii data to an output stream.
