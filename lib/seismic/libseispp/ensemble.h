@@ -14,6 +14,11 @@
 
 #include <memory>
 #include <vector>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "coords.h"
 
 #ifndef NO_ANTELOPE
@@ -201,6 +206,13 @@ public:
 // Standard assignment operator.
 **/
 	TimeSeriesEnsemble& operator=(const TimeSeriesEnsemble& tseold);
+private:
+        friend class boost::serialization::access;
+        template<class Archive>void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & boost::serialization::base_object<Metadata>(*this);
+            ar & member;
+        };
 };
 
 /*!
@@ -314,6 +326,13 @@ public:
 // Standard assignment operator.
 **/
 	ThreeComponentEnsemble& operator=(const ThreeComponentEnsemble& tseold);
+private:
+        friend class boost::serialization::access;
+        template<class Archive>void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & boost::serialization::base_object<Metadata>(*this);
+            ar & member;
+        };
 };
 /*!
 \brief Remove a member of the ensemble using an index.
