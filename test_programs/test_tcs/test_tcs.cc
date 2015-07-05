@@ -1,3 +1,7 @@
+#include <fstream>
+#include <boost/config.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "Metadata.h"
 #include "seispp.h"
 using namespace std;
@@ -50,7 +54,7 @@ int main(int argc, char **argv)
    {
 	int i,j;
 	cout << "Testing simple constructors" << endl;
-	ThreeComponentSeismogram s1();
+	ThreeComponentSeismogram s1;
         cout << "Success"<<endl;
         cout << "Testing space allocating constructor"<<endl;
 	ThreeComponentSeismogram s2(100);
@@ -310,6 +314,31 @@ int main(int argc, char **argv)
         cout << "Finished:  Verify that input B channel data match output exactly.  "<<endl
             <<"Final dbsave run in this program runs rotate_to_standard before writing result"<<endl
             <<"This is an important test of reversibility"<<endl;
+        cout << "Test boost serialization code to save restored test data to file testserial.dat"<<endl;
+        ofstream ofs("testserial.dat");
+        boost::archive::text_oarchive oa(ofs);
+        oa << s4;
+        ofs.close();
+        cout << "Success"<<endl
+            << "Attempting restore"
+            <<endl;
+        ThreeComponentSeismogram s6;
+        ifstream ifs("testserial.dat");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> s6;
+        ifs.close();
+        cout << "Comparing before and after serialize" <<endl;
+        dmatrix d4=s4.u;
+        dmatrix d6=s6.u;
+        dmatrix dio=d4-d6;
+        double testsum;
+        testsum=0.0;
+        for(i=0;i<dio.rows();++i)
+            for(j=0;j<dio.columns();++j)
+                testsum += dio(i,j)*dio(i,j);
+        cout << "Sum of squares of difference input - output"
+            << testsum<<endl;;
+
     }
     catch (SeisppError&  serr)
     {

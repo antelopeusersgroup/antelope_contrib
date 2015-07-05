@@ -1,0 +1,12 @@
+BIN=test_tcs
+ldlibs=-lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) -lperf -lgclgrid -lboost_serialization
+SUBDIR=/contrib
+
+include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+LDFLAGS += -L$(BOOSTLIB)
+OBJS=test_tcs.o
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

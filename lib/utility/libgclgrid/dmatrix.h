@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <boost/serialization/vector.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 using namespace std;
@@ -237,7 +239,8 @@ public:
 //@}
   void zero();
 protected:
-   double *ary;
+   //double *ary;
+   vector<double> ary;   // initial size of container 0
    int length;
    int nrr, ncc;
 private:
@@ -246,7 +249,7 @@ private:
                            const unsigned int version)
    {
        ar & nrr & ncc & length;
-       for(int i=0;i<length;++i) ar & ary[i];
+       ar & ary;
    }
 };
 //@{
