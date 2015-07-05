@@ -2,6 +2,7 @@
 #include <math.h>
 #include "dmatrix.h"
 #include "perf.h"
+#include <boost/array.hpp>
 
 using namespace std;
 dmatrix::dmatrix()
@@ -9,7 +10,7 @@ dmatrix::dmatrix()
   nrr=0;
   ncc=0;
   length=0;
-  ary=NULL;
+  ary.reserve(0);
 }
 dmatrix::dmatrix(int nr, int nc)
 {
@@ -17,11 +18,12 @@ dmatrix::dmatrix(int nr, int nc)
   ncc=nc;
   length=nr*nc;
   if(length<1)
-      {
+  {
       length=1;
       nrr=ncc=0;
-      }
-  ary=new double[length];
+  }
+  ary.resize(length);
+  this->zero();
 }
 
 dmatrix::dmatrix(const dmatrix& other)
@@ -29,13 +31,12 @@ dmatrix::dmatrix(const dmatrix& other)
   nrr=other.nrr;
   ncc=other.ncc;
   length=other.length;
-  ary=new double[length];
-  memcpy(ary,other.ary, length*sizeof(double));
+  ary=other.ary;
   }
 
 dmatrix::~dmatrix()
 {
-if(ary!=NULL) delete [] ary;
+//if(ary!=NULL) delete [] ary;
 }
 
 double &dmatrix::operator()(int rowindex, int colindex)
@@ -63,22 +64,20 @@ double* dmatrix::get_address(int rowindex, int colindex)
   if (colindex<0) out_of_range=1;
   if (out_of_range)
         throw dmatrix_index_error(nrr,ncc,rowindex,colindex);
-  ptr = ary + rowindex+(nrr)*(colindex);
+  ptr=&(ary[rowindex+(nrr)*(colindex)]);
   return(ptr);
 }
 
 dmatrix& dmatrix::operator=(const dmatrix& other)
 {
-if(&other!=this) 
-{
+    if(&other!=this) 
+    {
 	ncc=other.ncc;
 	nrr=other.nrr;
 	length=other.length;
-	if(ary!=NULL) delete [] ary;
-	ary= new double[length];
-	memcpy(ary,other.ary, length*sizeof(double));
-} 
-return *this;
+        ary=other.ary;
+    } 
+    return *this;
 }
 
 void dmatrix::operator+=(const dmatrix& other)
@@ -119,18 +118,22 @@ int i;
 return tempmat;
 }
 
-dmatrix operator*(const dmatrix& x1,const dmatrix& b)
+dmatrix operator*(dmatrix& x1,dmatrix& b)
 {
 	int i,j,k;
 	double xval,bval;
-	if(x1.ncc!=b.nrr)
-		throw dmatrix_size_error(x1.nrr, x1.ncc, b.nrr, b.length);
-	dmatrix prod(x1.nrr,b.ncc);
-	for(i=0;i<x1.nrr;i++)
-	  for(j=0;j<b.ncc;j++)
+        /* The computed length in last arg to the error object is a relic*/
+	if(x1.columns()!=b.rows())
+		throw dmatrix_size_error(x1.rows(), x1.columns(), 
+                        b.rows(), b.rows()*b.columns());
+	dmatrix prod(x1.rows(),b.columns());
+	for(i=0;i<x1.rows();i++)
+	  for(j=0;j<b.columns();j++)
 	  {
-		prod(i,j)=ddot(x1.ncc,&(x1.ary[i]),x1.nrr,
-			&(b.ary[j*(b.nrr)]),1);
+              double *x1ptr,*bptr;
+              x1ptr=x1.get_address(i,0);
+              bptr=b.get_address(0,j);
+              prod(i,j)=ddot(x1.columns(),x1ptr,x1.rows(),bptr,1);
 	  }
 	return prod;
 }
@@ -188,7 +191,7 @@ istream& operator>>(istream& is, dmatrix& x1)
 
 void dmatrix::zero()
 {
-	for(int i=0;i<length;++i) ary[i]=0.0;
+    for(int i=0;i<length;++i) ary[i]=0.0;
 }
 int *dmatrix::size()
 {
@@ -217,9 +220,7 @@ dvector& dvector::operator=(const dvector& other)
 		ncc=1;
 		nrr=other.nrr;
 		length=other.length;
-		if(ary!=NULL) delete [] ary;
-		ary= new double[length];
-		memcpy(ary,other.ary, length*sizeof(double));
+                ary=other.ary;
 	} 
 	return *this;
 }
@@ -228,9 +229,7 @@ dvector::dvector(const dvector& other)
 	ncc=1;
 	nrr=other.nrr;
 	length=other.length;
-	if(ary!=NULL) delete [] ary;
-	ary= new double[length];
-	memcpy(ary,other.ary, length*sizeof(double));
+        ary=other.ary;
 }
 double &dvector::operator()(int rowindex)
 {
