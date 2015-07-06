@@ -1,0 +1,83 @@
+
+orb_plugin:
+
+This is a SeedLink plugin to grab data from an Antelope ORB.  The
+plugin packages any selected data streams coming into the Antelope
+ring buffer as 512-byte big-endian miniSEED records and sends them to
+the controlling SeedLink daemon.  No 're-ordering' of data is
+performed, it is assumed that data comes into the ORB sequentially.
+This may cause unexpected behavior with data streams allowing
+out-of-order transmission/reception such as CD-1, likely resulting in
+many unfilled miniSEED records.
+
+All data streams are converted to miniSEED records except for any data
+that is already in a 512-byte miniSEED record.  These records are
+passed directly to the SeedLink server, preserving the original data
+record (and included blockettes) that came into the ORB.  The
+re-packaing of these ORB packets can be forced using the '-p' option.
+
+The Seismological Communications Processor (SeisComP) is developed by
+the GEOFON Project.  The SeedLink server and protocol are used as the
+network transport layer of this system.  For more information
+regarding SeisComP or SeedLink visit the GEOFON site at:
+http://www.gfz-potsdam.de/geofon/
+
+
+Usage: orb_plugin [-v] [-t] [-m match] [-n number] [-s pktid|time]
+                  [-S statefile[:pkts]] -o orb
+
+  -v                  Verbosity, up to 3 levels.
+  -p                  Re-package original 512-byte miniSEED records
+  -t                  Trim partially overlapping data.
+  -m match            Regular expression to match ORB packets,
+                        default is all waveform data.
+  -r reject           Regular expression to reject ORB packets.
+  -n number           Number of packets, otherwise continuous.
+  -s pktid|time       Start position in ORB, pktid or time,
+                        default is next packet.
+  -S statefile[:pkts] File for saving/restoring the ORB position,
+                        restored ORB position is overridden by '-s'.
+                        The position will  be saved every 'pkts' number
+                        of packets received, if provided.
+  -o orb              Required, location of the ORB in host:port format.
+
+
+In the case of partially overlapping data, the data stream will be reset
+(and will include the overlap) unless the '-t' option is used.
+
+[Building]
+
+This software has been tested with Antelope 4.6, if you have an older
+version it will probably not compile.
+
+This software requires an Antelope build environment for compilation.
+At a minimum the $ANTLOPE and $ANTELOPEMAKE environment variables should
+be set correctly.
+
+A simple 'make' should build the executable (orb_plugin) which can
+then be copied to the appropriate SeisComP installation.
+
+[Plugin.h]
+  The SeedLink plugin interface code included with this software is from
+  SeisComP-2.0 (SeedLink-3.0).  If you are compiling for a different
+  version of SeedLink you may need to replace plugin.h and plugin.c with
+  those from the SeisComP/SeedLink system you are using.
+
+[Antelope runtime libraries]
+This software depends on the Antelope runtime libraries.  This requires
+that the runtime libraries exist on the host executing the plugin, and
+thus, the host running the SeedLink daemon.
+
+[1001 blockette (timing quality)]
+The plugin will attempt to create a 1001 blockette in the same way as
+done by Comserv when the original data packet is of type QCDAT
+(Quanterra data as collected by qt2orb).  Comserv will also modify the
+IO flags in the fixed header based on timing quality, this is not done
+here.
+
+Original data stream mangling: since this plugin 'repackages' the data,
+i.e. record_in != record_out, the 1001 blockettes do not necessarily
+get packaged with the exact data they came in with, but they are
+probably never more than 1 record off (most likely only some fraction
+of a record).  A very minor issue I think.
+
