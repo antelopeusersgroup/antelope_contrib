@@ -1,5 +1,13 @@
 6 July 2015
   - Update to libslink to 2.4b.
+  - Small fix to logging shim functions to avoid compiler warnings.
+  - version 4.2.
+
+31 August 2012
+  - Update to allow more packet types to be forwared to the orb, for
+      example state-of-health channels should now work.
+  - Cleanup some compiler warnings, fix a teeny-tiny print bug.
+  - version 4.1.
 
 5 March 2008
   - Update to libslink 2.1 which includes the ability to use wildcards
@@ -37,7 +45,7 @@
 25 Feb 2004
   - Split the '-d' option into two options '-dm' and '-dc' to 
       specify databases for mapping and calib, etc. separately.
-  - Significant cleanup/update to the mseed2orbpkt.c code, not
+  - Significant cleanup/update to the mseed2orbpkt.c code, now
       it's much more simple.
   - version 3.3
 	
