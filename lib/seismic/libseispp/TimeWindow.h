@@ -1,5 +1,7 @@
 #ifndef _TIMEWINDOW_H_
 #define _TIMEWINDOW_H_
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 namespace SEISPP
 {
 using namespace std;
@@ -50,6 +52,14 @@ public:
 	{
 		return(end-start);
 	};
+private:
+        friend class boost::serialization::access;
+        template<class Archive>
+            void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & start;
+            ar & end;
+        };
 };
 
 /* This strange looking function is a C++ function object.

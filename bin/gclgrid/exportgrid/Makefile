@@ -1,12 +1,11 @@
-BIN  = exportgrid
-MAN1 = $(BIN).1
-cflags=-g
-ldlibs=-lseispp -ltrvltm -lgclgrid $(TRLIBS) $(DBLIBS) -lperf -lm -lseispp
 
-SUBDIR=/contrib
-include $(ANTELOPEMAKE)
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-OBJS=$(BIN).o
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-$(BIN) : $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+FORCED:
+

@@ -20,6 +20,8 @@ include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(XMOTIFINCLUDE)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+LDFLAGS += -L$(BOOSTLIB)
 
 OBJS=	dbxcor.o \
   session_manager.o

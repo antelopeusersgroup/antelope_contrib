@@ -1,4 +1,5 @@
 #include <vector>
+#include "perf.h"
 #include "TimeWindow.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"

@@ -10,6 +10,7 @@ It is used by the MultichannelCorrelator object which is why it is placed
 in this file and at the top.
 */
 
+#include "perf.h"
 #include "MultichannelCorrelator.h"
 #include "seispp.h"
 

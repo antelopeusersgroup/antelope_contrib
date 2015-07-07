@@ -1,65 +1,11 @@
-LIB=libgclgrid.a
 
-DIRS=htdocs
-DATADIR=schemas
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-INCLUDE=gclgrid.h GCLgridError.h dmatrix.h
-MAN3= dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-DBG=-g
+FORCED:
 
-
-SUBDIR=/contrib
-include $(ANTELOPEMAKE)  	
-
-OBJS=converters.o \
-    create_destroy.o \
-    decimate.o \
-    dbsubs.o \
-    dx_output.o \
-    ellipsoid.o \
-    extract_component.o \
-    fileoutput.o \
-    flatten.o \
-    fme_weights.o \
-    initialize1d.o \
-    interpolate.o \
-    lookup.o \
-    operators.o  \
-    dmatrix.o \
-    extract_gridline.o \
-    pathintegral.o \
-    remapgrid.o \
-    tapergrid.o \
-    ustrans.o \
-    zero.o
-
-converters.cc:gclgrid.h
-converters.cc:dmatrix.h
-create_destroy.cc:gclgrid.h
-dbsubs.cc:gclgrid.h
-decimate.cc:gclgrid.h
-dmatrix.cc:dmatrix.h
-dx_output.cc:gclgrid.h
-elipsoid.cc:gclgrid.h
-extract_component.cc:gclgrid.h
-extract_gridline.cc:gclgrid.h
-extract_gridline.cc:dmatrix.h
-flatten.cc:gclgrid.h
-initialize1d.cc:gclgrid.h
-interpolate.cc:gclgrid.h
-interpolate.cc:dmatrix.h
-lookup.cc:gclgrid.h
-operators.cc:gclgrid.h
-pathintegral.cc:gclgrid.h
-pathintegral.cc:dmatrix.h
-remapgrid.cc:gclgrid.h
-tapergrid.cc:gclgrid.h
-ustrans.cc:gclgrid.h
-ustrans.cc:dmatrix.h
-zero.cc:gclgrid.h
-
-$(LIB) : $(OBJS)
-	$(RM) $@
-	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS) 
-	$(RANLIB) $@
