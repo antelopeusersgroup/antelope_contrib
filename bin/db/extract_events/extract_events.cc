@@ -14,6 +14,12 @@
 #include "seispp.h"
 #include "tr.h"
 #include "msd.h"
+/* This blas function is needed in this program.  For years I used perf.h, but 
+   at this time (July 2015) perf.h is creating a type conflict for complex.  
+   The simplest solution is top put this prototype here */
+extern "C"{
+void dcopy ( int n, double *dx, int incx, double *dy, int incy );
+}
 using namespace std;
 using namespace SEISPP;
 /* Used here to fetch calib from Metadata.  Assumes pf is properly

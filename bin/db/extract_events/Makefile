@@ -1,14 +1,11 @@
-BIN  = extract_events
-PF   = $(BIN).pf
-MAN1 = $(BIN).1
 
-DBG = -g
-ldlibs= -lgclgrid -lseispp $(TRLIBS) -lperf
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-SUBDIR=/contrib
-include $(ANTELOPEMAKE)
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-OBJS = $(BIN).o
-$(BIN) : $(OBJS)
-	$(RM) $@
-	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+FORCED:
+
