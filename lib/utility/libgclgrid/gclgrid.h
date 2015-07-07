@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include "stock.h" 
-#include "perf.h"
 #include "coords.h"
 #include "dmatrix.h"
 #include "GCLgridError.h"

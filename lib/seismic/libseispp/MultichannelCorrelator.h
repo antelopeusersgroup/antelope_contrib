@@ -4,13 +4,11 @@
 #include <vector>
 #include <math.h>
 
-#include "perf.h"
 #include "stock.h"
 #include "coords.h"
 #include "pf.h"
 #include "tt.h"
 #include "db.h"
-#include "f2c.h"
 #include "TimeSeries.h"
 #include "ensemble.h"
 #include "stack.h"

@@ -1,6 +1,6 @@
 
 all Include install installMAN pf relink tags test :: FORCED
-	@-if localmake_config xmotif ; then \
+	@-if localmake_config xmotif boost ; then \
 	    $(MAKE) -f Makefile2 $@ ; \
 	fi
 

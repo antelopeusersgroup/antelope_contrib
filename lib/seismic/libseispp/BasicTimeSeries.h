@@ -2,6 +2,9 @@
 #define _BASICTIMESERIES_H_
 #include <ostream>
 #include <set>
+#include <boost/serialization/set.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "TimeWindow.h"
 namespace SEISPP
 {
@@ -79,6 +82,14 @@ public:
 // Standard copy constructor.
 **/
 	BasicTimeSeries(const BasicTimeSeries&);
+/*! \brief Virtual destructor.
+
+  A base class with virtual members like this requires this 
+  incantation to avoid some odd conflicts.  This particular one 
+  was added to make the boost::serialization code work properly.
+  The geeky details for why this is necessary can be found in 
+  Scott Meyers book "Effective C++" */
+        virtual ~BasicTimeSeries(){};
 /*!
 // Checks if a sample defined by an integer offset value is a data gap.
 // Calls like seis.is_gap(is) return true if sample is is a data gap.  
@@ -195,6 +206,18 @@ protected:
 * data. */
 	set<TimeWindow,TimeWindowCmp> gaps;
 	
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+            void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & live;
+        ar & t0;
+        ar & dt;
+        ar & tref;
+        ar & ns;
+        ar & gaps;
+    };
 };
 /*! Convert a TimeWindow to a SampleRange object.
 

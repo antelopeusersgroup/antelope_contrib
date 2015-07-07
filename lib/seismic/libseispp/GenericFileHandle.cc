@@ -1,5 +1,6 @@
 #include <float.h>
 #include <sys/stat.h>
+#include "perf.h"
 #include "SeisppError.h"
 #include "TimeSeries.h"
 #include "ensemble.h"

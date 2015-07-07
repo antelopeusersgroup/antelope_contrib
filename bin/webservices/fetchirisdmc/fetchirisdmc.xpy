@@ -55,9 +55,7 @@ def fetchdmcthread(dbin,number_threads,rin,pf):
         agentname='%s_%d' % (agentnamebase,rank)
         #print 'agent name=',agentname
 
-#client=Client("IRIS",user_agent=agentname,timeout=180,debug=False)
-#        client=Client("IRIS",user_agent=agentname,debug=True)
-        client=Client("IRIS",user_agent=agentname,timeout=wsto)
+        client=Client("IRIS")
     except Exception as e:
         currenttime = strftime("%Y-%m-%d %H:%M:%S", localtime())
         print "[", currenttime, "] Client setup failed for thread ",rank
@@ -94,7 +92,11 @@ def fetchdmcthread(dbin,number_threads,rin,pf):
                     css_sta=values[1]
                     sta=values[2]
                     t0=values[3]
+                    t0s=t0+float(start)
+                    t0e=t0+float(end)
                     tutc=UTCDateTime(t0)
+                    stime=UTCDateTime(t0s)
+                    etime=UTCDateTime(t0e)
                     if(tutc.year != current_year):
                         if(current_year < 0):
                             current_year = tutc.year
@@ -106,20 +108,21 @@ def fetchdmcthread(dbin,number_threads,rin,pf):
                     arrivals_processed += 1
                     try:
                         fname=dirname+'/'+net+'_'+css_sta+'.m'
-                        client.get_waveforms(net,sta,"*","?H*",tutc+start,tutc+end, filename=fname)
+                        client.get_waveforms(net,sta,"*","?H*",stime,etime, filename=fname)
                         files_written += 1
                     except Exception as e:
                         currenttime = strftime("%Y-%m-%d %H:%M:%S", localtime())
                         print "[", currenttime, "] get_waveforms threw an error, skipping ",net,":",sta, "Time ",tutc, "Start ",start, "End ",end
-# turn these on for more info - eventually will be in a verbose option
-#exc_type, exc_value, exc_traceback = sys.exc_info()
-#traceback.print_exception(exc_type, exc_value, exc_traceback)
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        traceback.print_exception(exc_type, exc_value, exc_traceback)
                         pass
         print 'Thread ',rank,' processed ',arrivals_processed,' and wrote ',\
             files_written,' files.'
     except Exception as e:
         currenttime = strftime("%Y-%m-%d %H:%M:%S", localtime())
         print "[", currenttime, "] thread ",rank," problems in main loop for row ",irec
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback.print_exception(exc_type, exc_value, exc_traceback)
 
 
 # ==================  main================================
@@ -196,7 +199,7 @@ if(nrecs <= 0):
 # This long subset condition is built from the pf inputs
 # It assumes assoc has delta values
 #
-substr="delta>%f && delta<%f && iphase=~/%s/" % (mindistance,maxdistance,reference_phase)
+substr="delta>%f && delta<%f && iphase=~/%s/" % (float(mindistance),float(maxdistance),reference_phase)
 db=db.subset(substr)
 if(len(subset_condition)>0):
     db=db.subset(subset_condition)
