@@ -10,6 +10,8 @@ DBG=-g
 
 
 SUBDIR=/contrib
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
 include $(ANTELOPEMAKE)  	
 include $(ANTELOPEMAKELOCAL)
 

@@ -6,6 +6,8 @@ DBG = -g
 ldlibs= -lgclgrid -lseispp $(TRLIBS) -lperf
 
 SUBDIR=/contrib
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)

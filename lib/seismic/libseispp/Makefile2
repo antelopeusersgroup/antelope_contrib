@@ -70,6 +70,7 @@ CLEAN = $(LICENSES)
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(BOOSTINCLUDE)
