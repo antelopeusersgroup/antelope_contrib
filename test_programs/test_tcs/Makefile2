@@ -2,7 +2,9 @@ BIN=test_tcs
 ldlibs=-lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) -lperf -lgclgrid -lboost_serialization
 SUBDIR=/contrib
 
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
+include $(ANTELOPEMAKE)  	
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
 LDFLAGS += -L$(BOOSTLIB)
