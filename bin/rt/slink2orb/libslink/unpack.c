@@ -217,7 +217,7 @@ sl_msr_unpack (SLlog * log, SLMSrecord * msr, int swapflag)
       break;
       
     default:
-      sl_log_rl (log, 2, 0, "Unable to unpack format %d for %s.%s.%s.%s\n", format,
+      sl_log_rl (log, 2, 0, "Unable to unpack format %d for %.5s.%.2s.%.2s.%.3s\n", format,
 	      msr->fsdh.station, msr->fsdh.network,
 	      msr->fsdh.location, msr->fsdh.channel);
 

@@ -1,0 +1,28 @@
+#
+#
+# Nmake file - Windows version
+# Use 'nmake -f Makefile.win'
+
+NODEBUG=1
+
+!include <ntwin32.mak>
+
+INCS = /I..
+LIBS = ../libdali.lib ws2_32.lib advapi32.lib
+BIN = daliclient.exe
+
+OBJS =	daliclient.obj
+
+cflags = $(cflags) -DWIN32
+
+all: daliclient
+
+daliclient: $(OBJS)
+	link.exe /nologo /out:$(BIN) $(LIBS) $(OBJS)
+
+.c.obj:
+	$(cc) /nologo $(cflags) $(cdebug) $(cvarsmt) $(tflags) $(INCS) $<
+
+# Clean-up directives
+clean:
+	-del a.out core *.o *.obj *% *~ $(BIN)

@@ -6,13 +6,12 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2008.028
+ * modified: 2013.305
  ***************************************************************************/
 
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "libslink.h"
 
@@ -78,7 +77,7 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
   
   while ( (sl_readline (streamfd, line, sizeof(line))) >= 0 )
     {
-      fields = sscanf (line, "%2s %5s %99[a-zA-Z0-9?. ]\n",
+      fields = sscanf (line, "%2s %5s %99[a-zA-Z0-9!?. ]\n",
 		       net, sta, selectors);
       
       /* Ignore blank or comment lines */
