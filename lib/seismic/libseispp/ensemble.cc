@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "SeisppKeywords.h"
+#include "perf.h"
 #include "ensemble.h"
 #ifndef NO_ANTELOPE
 #include "tr.h"

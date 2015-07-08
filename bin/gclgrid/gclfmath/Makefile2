@@ -1,0 +1,17 @@
+BIN  = gclfmath
+MAN1 = $(BIN).1
+
+ldlibs=-lm -lgclgrid -lseispp -lperf $(DBLIBS)
+
+SUBDIR=/contrib
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)
+CXXFLAGS += -I$(BOOSTINCLUDE)
+LDFLAGS += -L$(BOOSTLIB)
+
+OBJS=$(BIN).o
+
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

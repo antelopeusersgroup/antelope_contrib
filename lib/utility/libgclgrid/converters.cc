@@ -2,6 +2,7 @@
 #include <math.h>
 #include "dmatrix.h"
 #include "gclgrid.h"
+#include "perf.h"
 
 
 void BasicGCLgrid::set_transformation_matrix()
