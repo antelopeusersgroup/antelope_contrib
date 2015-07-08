@@ -46,6 +46,9 @@ class ProgressLogger:
                  level=logging.INFO):
         self.name=name
         self.total_ticks=total_ticks
+        if self.total_ticks <= 0:
+            logger.warning("Total ticks is %d, should be > 0. Using 1")
+            self.total_ticks = 1
         self.tick_interval=tick_interval
         self.time_interval=time_interval
 
@@ -57,6 +60,9 @@ class ProgressLogger:
 
     def progress(self):
         """ Get the current progress as a percentage """
+        if self.total_ticks == 0:
+            self.logger.critical("progress: Total ticks set to 0, should be greater than 0")
+            return 100
         return (float(self.current_tick)/self.total_ticks)*100
 
 

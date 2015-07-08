@@ -1,21 +1,28 @@
-# Use this Makefile to build this package for Antelope 4.9
-#  It may work for older versions, but known to work only for 4.9
 LIB=libseispp.a
+LICENSES=license_libseispp.txt
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
+# BUNDLE=$(LIB:.a=.bundle)
 DIRS=htdocs
+ldlibs=-lgclgrid
 INCLUDE=ArrivalUpdater.h \
+  AttributeCrossReference.h \
   AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
+  EventCatalog.h \
   FixedFormatTrace.h \
+  GenericFileHandle.h \
   HeaderMap.h \
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
+  PfStyleMetadata.h \
   ProcessingQueue.h \
+  SacFileHandle.h \
   SeisppError.h\
   SeisppKeywords.h \
   SignalToNoise.h \
+  SimpleWavelets.h \
   SphericalCoordinate.h\
   StationChannelMap.h\
   ThreeComponentChannelMap.h\
@@ -23,6 +30,7 @@ INCLUDE=ArrivalUpdater.h \
   TimeSeries.h\
   TimeVariableWeight.h\
   TimeWindow.h\
+  VectorStatistics.h\
   VelocityModel_1d.h\
   XcorAnalysisSetting.h \
   XcorProcessingEngine.h \
@@ -42,7 +50,8 @@ INCLUDE=ArrivalUpdater.h \
 # an external program
 PF=seispp_attribute_maps.pf \
   metadata_defaults.pf \
-  HeaderMap.pf
+  HeaderMap.pf \
+  SacFileHandle.pf
 MAN3=Basic_Time_Series.3 \
   Datascope_Handle.3 \
   GCLrays.3 \
@@ -57,20 +66,32 @@ MAN3=Basic_Time_Series.3 \
   Top_Mute.3
 DBG=-g
 
+CLEAN = $(LICENSES)
+
+SUBDIR=/contrib
 include $(ANTELOPEMAKE)  	
-CXXFLAGS+=-DOLDANTELOPE
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+include $(ANTELOPEMAKELOCAL)
+
+CXXFLAGS += -I$(BOOSTINCLUDE)
 
 OBJS=ArrivalUpdater.o \
+  AttributeCrossReference.o \
   AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \
+  EventCatalog.o \
   FixedFormatTrace.o  \
+  GenericFileHandle.o \
   HeaderMap.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
+  PfStyleMetadata.o \
   ProcessingQueue.o \
+  SacFileHandle.o \
   SignalToNoise.o \
+  SimpleWavelets.o \
   StationChannelMap.o \
   ThreeComponentChannelMap.o \
   ThreeComponentSeismogram.o \
@@ -101,6 +122,7 @@ OBJS=ArrivalUpdater.o \
   seismicarray.o \
   slice_and_dice.o \
   slowness.o \
+  sparse_convolve.o \
   sort_ensembles.o \
   spherical_coordinate.o \
   stack.o \
@@ -114,6 +136,12 @@ $(LIB) : $(OBJS)
 	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
+$(LICENSES) : LICENSE
+	cp $< $@
+
 #$(DLIB) : $(OBJS)
 #	$(RM) $@
 #	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+#$(BUNDLE) : $(OBJS)
+#	$(RM) $@
+#	$(DLD)  -flat_namespace -bundle -undefined suppress -o $@   $(OBJS) $(LDFLAGS) $(DLDLIBS)

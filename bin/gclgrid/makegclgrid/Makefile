@@ -1,17 +1,11 @@
-BIN  = makegclgrid
-PF   = $(BIN).pf
-MAN1 = $(BIN).1
 
-DATADIR=schemas/css3.0.ext
-DATA=gclgdisk gclfield
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-ldlibs= $(DBLIBS) -lgclgrid -lseispp -ltrvltm $(TRLIBS) -lperf
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-SUBDIR=/contrib
-include $(ANTELOPEMAKE)
-DIRS=
+FORCED:
 
-OBJS=$(BIN).o
-
-$(BIN) : $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
