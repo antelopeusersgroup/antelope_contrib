@@ -1,0 +1,25 @@
+
+Documentation of the libdali interfaces can be found in the 'doc'
+directory.
+
+-- daliclient.c --
+
+An example DataLink client written in C that demonstrates general
+usage of libdali.  A Makefile is provided to build the client.  The
+client does not exercise all of the functionality of libdali.  For a
+more comprehensive example the developer is referred to the source
+code for dalitool.
+
+Solaris: to compile daliclient.c the Makefile needs to be edited 
+(comments are included in the Makefile).
+
+Windows: to compile daliclient.c use the Nmake compatible Makefile.win
+(e.g. >nmake -f Makefile.win) or Watcom's Wmake with Makefile.wat
+(e.g. >wmake -f Makefile.wat). 
+
+
+-- streamlist.conf --
+
+An example stream list that can be used with the -m or -r arguments
+of daliclient or with the dl_read_streamlist() function from libdali.
+
