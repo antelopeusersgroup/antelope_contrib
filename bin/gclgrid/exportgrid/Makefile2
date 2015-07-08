@@ -4,6 +4,8 @@ cflags=-g
 ldlibs=-lseispp -ltrvltm -lgclgrid $(TRLIBS) $(DBLIBS) -lperf -lm -lseispp
 
 SUBDIR=/contrib
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)

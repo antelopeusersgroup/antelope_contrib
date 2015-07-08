@@ -8,6 +8,8 @@ DATA=gclgdisk gclfield
 ldlibs= $(DBLIBS) -lgclgrid -lseispp -ltrvltm $(TRLIBS) -lperf
 
 SUBDIR=/contrib
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
