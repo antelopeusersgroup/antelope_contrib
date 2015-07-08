@@ -5,7 +5,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2007.169
+ * modified: 2012.152
  ***************************************************************************/
 
 #include <stdlib.h>
@@ -399,6 +399,19 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 /***************************************************************************
  * sl_collect_nb:
  *
+ * A wrapper for sl_collect_nb_size() to operate with the default
+ * Mini-SEED record size.
+ ***************************************************************************/
+int
+sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
+{
+  return sl_collect_nb_size (slconn, slpack, SLRECSIZE);
+}
+
+
+/***************************************************************************
+ * sl_collect_nb_size:
+ *
  * Routine to manage a connection to a SeedLink server based on the values
  * given in the slconn struct and collect data.
  *
@@ -411,9 +424,15 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
  * have been received, slpack is set to NULL.  When the connection was
  * closed by the server or the termination sequence completed
  * SLTERMINATE is returned and the slpack pointer is set to NULL.
+ * 
+ * 6 Apr 2012 - Jacob Crummey:
+ * Added sl_collect_nb_size() to allow for selecting SeedLink record
+ * packet size.  Possible values for slrecsize are 128, 256, 512.
+ * There is no error checking, so the value of slrecsize must be
+ * checked before passing it to sl_collect_nb_size().
  ***************************************************************************/
 int
-sl_collect_nb (SLCD * slconn, SLpacket ** slpack) 
+sl_collect_nb_size (SLCD * slconn, SLpacket ** slpack, int slrecsize)
 {
   int    bytesread;
   double current_time;
@@ -569,7 +588,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
   */
         
   /* Process data in buffer */
-  while (slconn->stat->recptr - slconn->stat->sendptr >= SLHEADSIZE + SLRECSIZE)
+  while (slconn->stat->recptr - slconn->stat->sendptr >= SLHEADSIZE + slrecsize)
     {
       retpacket = 1;
       
@@ -622,12 +641,12 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
 	}
       
       /* Increment the send pointer */
-      slconn->stat->sendptr += (SLHEADSIZE + SLRECSIZE);
+      slconn->stat->sendptr += (SLHEADSIZE + slrecsize);
       
       /* Return packet */
       if ( retpacket )
 	{
-	  *slpack = (SLpacket *) &slconn->stat->databuf[slconn->stat->sendptr - (SLHEADSIZE + SLRECSIZE)];
+	  *slpack = (SLpacket *) &slconn->stat->databuf[slconn->stat->sendptr - (SLHEADSIZE + slrecsize)];
 	  return SLPACKET;
 	}
     }
@@ -765,7 +784,7 @@ update_stream (SLCD * slconn, SLpacket * slpack)
   
   if ( (seqnum = sl_sequence (slpack)) == -1 )
     {
-      sl_log_r (slconn, 2, 0, "update_stream(): could not determine sequence number\b");
+      sl_log_r (slconn, 2, 0, "update_stream(): could not determine sequence number\n");
       return -1;
     }
   
@@ -888,6 +907,7 @@ sl_newslcd (void)
   slconn->resume         = 1;
   slconn->multistation   = 0;
   slconn->dialup         = 0;
+  slconn->batchmode      = 0;
   slconn->lastpkttime    = 0;
   slconn->terminate      = 0;
   

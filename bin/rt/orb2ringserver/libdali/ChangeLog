@@ -1,0 +1,98 @@
+2013.210: 1.6
+	- dl_position(): return 0 when packet was not found.  Differentiates
+	between successful request (but no match) and function error.
+	Previously this function returned either a positive packet ID value
+	or -1, where -1 was returned when packet was not found.
+	Fixes from Doug Neuhauser:
+	- dl_position(): allow specification of LIBDALI_POSITION_EARLIEST and
+	LIBDALI_POSITION_LATEST in parameter sanity check.  Oops.
+	- dl_disconnect(): continue shutdown when socket value is 0.
+
+2011.262: 1.5
+	- Add '_ld' suffix to declaration of pivotal_gmtime_r_stamp in
+	timeutils.c to avoid conflicts with other libraries.  Thanks to Doug
+	Neuhauser for the tip.
+
+2011.004: 1.4
+	- Correct return code for dl_position() for errors.
+	- Increase verbosity level for debugging message in dl_write().
+
+2011.003: 1.3
+	- Add support to dl_position() to set read position to earliest
+	or latest packet, thanks to Doug Neuhauser for the patch.
+	- Updates in connection.c from Doug Neuhauser for invalid socket
+	descriptor handling.
+	- Add internal dl_gmtime_r() to avoid the not thread-safe call to
+	the system gmtime().  The internal version handles dates beyond year
+	2038 and is 64-bit friendly.
+	- Rework/casting of printing/scanning for clean 64-bit build.
+
+2008.284: 1.2
+	- Change dl_write() to return an error -1 when the server
+	acknowledgement indicates there was an error.  Also print the
+	server replies indicating errors at a lower verbosity level than
+	acknowledgements indicating success.
+
+2008.256: 1.1
+	- DataLink protocol addition of packet end time changes, this
+	modified the WRITE command and PACKET response to include
+	both the packt data start and end times. 
+	
+2008.196: 1.0
+	- Do not fail if setsockopt() failed to set socket timeouts.
+
+2008.193: 0.9.7
+	- Modify behavior of dl_read() to consume data from a packet
+	that is too large for the supplied buffer.
+	- Generalize the names of the arguments to dl_splitstreamid().
+	- Parse PACKETSIZE capabilities flag from server, store in
+	new DLCP.maxpktsize and check size in dl_write().
+	- Add documentation tagging for Doxygen to all sources.
+
+2008.173: 0.9.6
+	- Add DLCP.writeperm flag and set to true if the server
+	returns the write permission flag in it's capabilities
+	string.
+
+2008.169: 0.9.5
+	- Add DLCP.iotimeout parameter and set the socket timeout
+	options (SO_SNDTIMEO and SO_RCVTIMEO) if they exist on the
+	system, otherwise use an alarm timer to interrupt send/recv
+	calls.  These measures should reset connections in bad network
+	environments.  Timeout defaults to 60 seconds.
+
+2008.078:
+	- Use io.h header instead of unistd.h for Win32.
+
+2008.075: 0.9.4
+	- Replace redundant error message for unsuccessful sending of
+	WRITE commands with a check for reply from server in
+	dl_sendpacket().
+	- Remove const qualifier from user-supplied logging functions. 
+	- Fix dlp_genclientid() and defines for Win32.
+
+2008.074: 0.9.3
+	- Update dlp_genclientid() to lookup the current user without
+	needing an interactive shell login.
+	- Fix dl_freedlcp(), address and client ID strings are now static.
+
+2008.072: 0.9.2
+	- Implement dlp_genclientid() routine to generate client IDs.
+	- Change dl_newdlcp() to take address and progname arguments,
+	these strings will be copied and stored in the DLCP struct
+	and freed with dl_freedlcp().  dl_newdlcp() now sets the client
+	ID using dlp_genclientid().
+	- Change portable define DLP_DARWIN to DLP_BSD to cover all BSDs.
+
+2008.070: 0.9.1
+	- Add an infomatch argument to dl_getinfo() and add the match
+	expression to the INFO request.  Allows limiting a request for
+	CONNECTIONS to specific clients.
+
+2008.060:
+	- Change dl_getinfo() to take a pointer-to-a-pointer for the
+	info buffer and allocate an appropriate size buffer when
+	the maxinfosize argument is 0.
+
+2008.057: 0.9
+	- Initial version, derived from libslink 2.0.
