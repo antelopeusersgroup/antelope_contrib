@@ -4,6 +4,7 @@ MAN1 = $(BIN).1
 ldlibs=-lm -lgclgrid -lseispp -lperf $(DBLIBS)
 
 SUBDIR=/contrib
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(BOOSTINCLUDE)
