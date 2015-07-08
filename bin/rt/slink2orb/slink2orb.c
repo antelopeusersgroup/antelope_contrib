@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2008.065
+ * modified: 2015.187
  ***************************************************************************/
 
 #include <signal.h>
@@ -20,7 +20,7 @@
 
 #include "mseed2orbpkt.h"
 
-static char   *version     = "4.0 (2008.065)";
+static char   *version     = "4.2 (2015.187)";
 static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
@@ -159,9 +159,13 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 
   char srcname[ORBSRCNAME_SIZE];
   
-  /* Process waveform data and send it on */
-  if ( packet_type == SLDATA )
+  /* Process regular miniSEED records and send them on */
+  if ( packet_type >= SLDATA && packet_type <= SLNUM )
     {
+      mseedret = mseed2orbpkt(msrecord, packet_size, calibdb, mappingdb,
+			      remap, srcname, &time, &packet, &nbytes,
+			      &bufsize);
+      
       if ( verbose >= 3)
 	{
 	  char *s = strydtime(time);
@@ -169,10 +173,6 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 		  srcname, s, seqnum);
 	  free(s);
 	}
-      
-      mseedret = mseed2orbpkt(msrecord, packet_size, calibdb, mappingdb,
-			      remap, srcname, &time, &packet, &nbytes,
-			      &bufsize);
       
       if (mseedret == 0)
 	{ 
@@ -516,7 +516,7 @@ dummy_handler(int sig)
 static void
 elog_printlog (char const *msg)
 {
-  elog_notify(0, (char *) msg);
+  elog_notify(0, "%s", msg);
 }
 
 
@@ -527,7 +527,7 @@ elog_printlog (char const *msg)
 static void
 elog_printerr (char const *msg)
 {
-  elog_complain(0, (char *) msg);
+  elog_complain(0, "%s", msg);
 }
 
 
@@ -548,7 +548,7 @@ usage(void)
 	 "\n"
 	 "Chad Trabant\n"
 	 "ORFEUS/EC-Project MEREDIAN\n"
-         "IRIS Data Management Center\n"
+	 "IRIS Data Management Center\n"
 	 "\n"
 	 "Please report problems to chad@iris.washington.edu\n"
 	 "\n");

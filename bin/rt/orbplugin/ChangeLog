@@ -1,0 +1,82 @@
+2015.187:
+	- Incorportate minor changes from Niko Horn (ZAMG) for 64-bit
+	compatibility with Antelope 5.0+.
+	- Remove cflags=-O from Makefile and this does not appear to be
+	supported syntax for the build system any longer.
+
+2004.355:
+	- Add channel start time to verbose channel message.
+	- Add diagnostics messages for ORB position resurrection and
+	initialization.
+	
+2004.316:
+	- Set the msd->hook pointer to 0 (was chandata) before calling
+	msdfree() when resetting a data stream.  This should keep
+	free_hook() from being called, which wouldn't work with our
+	pointer anyway.
+
+2004.237:
+	- Update to work with multiplexed ORB packets (more than one
+	channel per packet).
+	- The creation of 1001 blockettes for QCDAT ORB packets now	
+	includes a blockette header that is always big-endian.
+	- Include a more efficient find_reclen() routine to verify SEED
+	and return record length.
+	- Update to the newer Antelope msd_* family of library interfaces.
+	- Remove the old comserv headers that were not needed.
+
+2004.018:
+	- Update the plugin.c and plugin.h files from the current
+	  SeisComP-2.0 distribution.
+	- Add functionality to detect when the incoming ORB packets have
+	  512-byte miniSEED records in them and pass them directly
+	  (without repackaging) to the controlling SeedLink server.  This
+	  behavior can be turned off with the new -p' option, causing all
+	  data to be (re)packed into 512-byte miniSEED records regardless
+	  of their original type.
+
+2002.254:
+	- Updated some pointer assignments to get rid of compiler warnings
+	  with GCC.  Basic testing under a Linux environment, everything
+	  seems to work fine.
+
+	- Renamed the Makefile.sun to Makefile as it will work fine under
+	  Solaris or Linux as long as the ANTELOPEMAKE env. var. is set
+	  correctly.  A Makefile.sungcc is still included for people using
+	  GCC under Solaris.
+	
+2002.154:
+	- Changed the reference to 'private' member in Steim structures.
+	  This was renamed from 'private' to 'pvt' starting with
+	  Antelope 4.4.
+	- Added an '-o' flag for the ORB location instead of assuming
+	  it is the last argument.  Better behavior for a SL plugin.
+
+2002.030:
+	- Added an '-r' flag for a packet rejection specification
+	
+2001.353:
+	- Changed orbreap_nd() call to orbreap() and all the other things
+	  needed to make the module data driven.
+	- Changed the statefile saving interval to number of packets
+	  received instead of elapsed seconds.  This makes more sense when
+	  using the blocking call to orbreap().
+	- Fixed the statefile string parsing.
+	- Added a Makefile.gcc for compiling with GNU's gcc and updated
+	  the README file build instructions.
+	
+2001.261:
+	- Removed the code creating 100 blockettes (actual sample rate).
+	  Records now have a 64 byte header and 7 frames of data.
+	- Added ability to generate a 1001 blockette (timing quality)
+	  when the original packet is of type QCDAT (Quanterra data as
+	  collected by qt2orb).  The timing quality is calculated
+	  in the same way as done by Comserv.  *caveats* read 'README'
+	
+2001.???:
+	- Changed the poll interval to 50000 usec instead of 100000.
+	- Used orbresurrect rather than a regular resurrect.
+
+Before:
+	- Added a feature to trim partially overlapping data.
+	- Added state (ORB position) saving functionality.

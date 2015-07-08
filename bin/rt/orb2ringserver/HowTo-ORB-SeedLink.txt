@@ -1,0 +1,42 @@
+
+This is a description of how to set up a SeedLink data exchange server
+for data in an Antelope ORB using the ringserver and orb2ringserver
+programs.
+
+These instructions are written with the assumption that the ringserver
+and orb2ringserver binaries will be managed using Antelope's rtm
+framework commonly used to managed other processes in an Antelope
+real-time system.
+
+1. Build latest ringserver program, source code available here:
+https://seiscode.iris.washington.edu/projects/ringserver
+
+2. Build latest orb2ringserver program, source code available here:
+https://seiscode.iris.washington.edu/projects/orb2ringserver
+
+3. Create a directory for the ringserver to store it's buffers:
+
+$ mkdir ring
+
+4. Add ringserver and orb2ringserver commands to rtexec.pf:
+
+ringserver      ringserver -Rd ring -Rs 1G -DL 16000 -SL 18000 -I "XX Seismic Network" 
+orb2ringserver  orb2ringserver -m '.*BHZ.*' localhost:6510 localhost:16000
+
+These options will configure the ringserver with a 1 gigabyte buffer
+size (equivalent RAM is used) and transfer all BHZ channels from a
+local ORB to the ringserver. The -I option configures the ringserver
+(SeedLink server) identifier and should be changed to identify your
+organization.
+
+5. Enable the ringserver and orb2ringserver processes in the rtexec.pf
+file either by adding entries to the Run Array or by toggling them in
+the GUI.
+
+More options are available for the ringserver, such as enabling
+shipment logging of all SeedLink connections, changing buffer sizes,
+limited access via IP addresses, etc. See the ringserver(1) man page
+for full details.
+
+Likewise, more options are available for orb2ringserver, see the
+orb2ringserver(1) man page for full details.

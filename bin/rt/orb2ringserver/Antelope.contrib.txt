@@ -1,0 +1,6 @@
+
+This is a copy of the orb2ringserver code for the Antelope contrib
+repository.  The primary repository is maintained at:
+
+https://seiscode.iris.washington.edu/projects/orb2ringserver
+
