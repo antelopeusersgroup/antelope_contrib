@@ -11,7 +11,7 @@
  * Originally based on the SeedLink interface of the modified Comserv in
  * SeisComP written by Andres Heinloo
  *
- * Version: 2007.284
+ * Version: 2010.075
  ***************************************************************************/
 
 #include <stdio.h>
@@ -22,6 +22,7 @@
 
 /* Functions only used in this source file */
 int sl_sayhello (SLCD * slconn);
+int sl_batchmode (SLCD * slconn);
 int sl_negotiate_uni (SLCD * slconn);
 int sl_negotiate_multi (SLCD * slconn);
 
@@ -754,11 +755,24 @@ sl_connect (SLCD * slconn, int sayhello)
 		  slconn->sladdr);
       
       slconn->link = sock;
+
+      if ( slconn->batchmode )
+	  slconn->batchmode = 1;
       
       /* Everything should be connected, say hello if requested */
       if ( sayhello )
 	{
 	  if (sl_sayhello (slconn) == -1)
+	    {
+	      slp_sockclose (sock);
+	      return -1;
+	    }
+	}
+      
+      /* Try to enter batch mode if requested */
+      if ( slconn->batchmode )
+        {
+          if (sl_batchmode (slconn) == -1)
 	    {
 	      slp_sockclose (sock);
 	      return -1;
@@ -924,12 +938,13 @@ sl_sayhello (SLCD * slconn)
       char *extreply = 0;
       
       /* Current capabilities:
-       *   SLPROTO:3.0 = SeedLink protocol version 3.0
+       *   SLPROTO:3.1 = SeedLink protocol version
        *   CAP         = CAPABILITIES command support
        *   EXTREPLY    = Extended reply message handling
        *   NSWILDCARD  = Network and station code wildcard support
+       *   BATCH       = BATCH command mode support
        */
-      sprintf (sendstr, "CAPABILITIES SLPROTO:3.0 CAP EXTREPLY NSWILDCARD\r");
+      sprintf (sendstr, "CAPABILITIES SLPROTO:3.1 CAP EXTREPLY NSWILDCARD BATCH\r");
       
       /* Send CAPABILITIES and recv response */
       sl_log_r (slconn, 1, 2, "[%s] sending: %s\n", slconn->sladdr, sendstr);
@@ -975,6 +990,67 @@ sl_sayhello (SLCD * slconn)
   
   return 0;
 }  /* End of sl_sayhello() */
+
+
+/***************************************************************************
+ * sl_batchmode:
+ *
+ * Send the BATCH command to switch the connection to batch command
+ * mode, in this mode the server will not send acknowledgments (OK or
+ * ERROR) after recognized commands are submitted.
+ *
+ * Returns -1 on errors, 0 on success (regardless if the command was accepted).
+ * Sets slconn->batchmode accordingly.
+ ***************************************************************************/
+int
+sl_batchmode (SLCD * slconn)
+{
+  char sendstr[100];    /* A buffer for command strings */
+  char readbuf[100];    /* A buffer for server reply */
+  int bytesread = 0;
+  
+  if ( ! slconn )
+    return -1;
+  
+  if (sl_checkversion (slconn, 3.1) < 0)
+    {
+      sl_log_r (slconn, 2, 0,
+		"[%s] detected SeedLink version (%.3f) does not support the BATCH command\n",
+		slconn->sladdr, slconn->protocol_ver);
+      return -1;
+    }
+  
+  /* Send BATCH and recv response */
+  sprintf (sendstr, "BATCH\r");
+  sl_log_r (slconn, 1, 2, "[%s] sending: %s\n", slconn->sladdr, sendstr);
+  bytesread = sl_senddata (slconn, (void *) sendstr, strlen (sendstr), slconn->sladdr,
+			   readbuf, sizeof (readbuf));
+  
+  if ( bytesread < 0 )
+    {		/* Error from sl_senddata() */
+      return -1;
+    }
+  
+  /* Check response to BATCH */
+  if (!strncmp (readbuf, "OK\r", 3) && bytesread >= 4)
+    {
+      sl_log_r (slconn, 1, 2, "[%s] BATCH accepted\n", slconn->sladdr);
+      slconn->batchmode = 2;
+    }
+  else if (!strncmp (readbuf, "ERROR\r", 6) && bytesread >= 7)
+    {
+      sl_log_r (slconn, 1, 2, "[%s] BATCH not accepted\n", slconn->sladdr);
+    }
+  else
+    {
+      sl_log_r (slconn, 2, 0,
+		"[%s] invalid response to BATCH command: %.*s\n",
+		slconn->sladdr, bytesread, readbuf);
+      return -1;
+    }
+  
+  return 0;
+}  /* End of sl_batchmode() */
 
 
 /***************************************************************************
@@ -1128,7 +1204,16 @@ sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
       /* Clear response buffer */
       memset (resp, 0, resplen);
       
-      bytesread = sl_recvresp (slconn, resp, resplen, buffer, ident);
+      if ( slconn->batchmode == 2 )
+        {
+	  /* Fake OK response */
+	  strcpy(resp, "OK\r\n");
+	  bytesread = 4;
+	}
+      else
+        {
+          bytesread = sl_recvresp (slconn, resp, resplen, buffer, ident);
+	}
     }
   
   return bytesread;

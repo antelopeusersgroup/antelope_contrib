@@ -23,13 +23,7 @@
  *	a[a-z]c		aac abc acc ...
  *	a[-a-z]c	a-c aac abc ...
  *
- * $Log$
- * Revision 1.1  2008/03/06 00:36:41  chad
- * add new libslink files
- *
- * Revision 1.1  2007/10/09 00:47:17  chad
- * add extended reply message handling
- *
+ * $Log: not supported by cvs2svn $
  * Revision 1.4sl  2007/06/18  12:47:00  ct
  * Rename globmatch to sl_globmatch for integration into libslink.
  *
