@@ -63,22 +63,6 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 			dbhv.db.record<ensemble_bundle.end_record;
 			++i,++dbhv.db.record)
 		{
-			try {
-				d = new TimeSeries(*rdbhv,
-					station_mdl,am);
-			} catch (SeisppError& dberr)
-			{
-				cerr << "Problem with member "
-					<< i 
-					<< " in ensemble construction" << endl;
-				dberr.log_error();
-				cerr << "Data for this member skipped" << endl;
-				continue;
-			}
-			//other errors require aborting
-			catch (...){throw;};
-			member.push_back(*d);
-			delete d;
 			// copy global metadata only for the first 
 			// row in this view
 			if(i==0)
@@ -96,12 +80,30 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
 				{
 					dbhvsta=dbhv;
 				}
+                                try{
 				Metadata ens_md(dynamic_cast<DatabaseHandle&>(dbhvsta),
 					ensemble_mdl,am);
 				copy_selected_metadata(ens_md,
 					dynamic_cast<Metadata&>(*this),
 					ensemble_mdl);
+                                }catch(...){throw;};
 			}
+			try {
+				d = new TimeSeries(*rdbhv,
+					station_mdl,am);
+			} catch (SeisppError& dberr)
+			{
+				cerr << "Problem with member "
+					<< i 
+					<< " in ensemble construction" << endl;
+				dberr.log_error();
+				cerr << "Data for this member skipped" << endl;
+				continue;
+			}
+			//other errors require aborting
+			catch (...){throw;};
+			member.push_back(*d);
+			delete d;
 		}
                 if(SEISPP_verbose) cout <<this_function_base_message
                     << ":  Number of seismograms loaded="
@@ -681,26 +683,11 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 			dbhv.db.record<ensemble_bundle.end_record;
 			++i,++dbhv.db.record)
 		{
-			try {
-				data3c = new ThreeComponentSeismogram(*rdbhv,
-					station_mdl,am);
-			} catch (SeisppError& dberr)
-			{
-				cerr << "Problem with member "
-					<< i 
-					<< " in ensemble construction" << endl;
-				dberr.log_error();
-				cerr << "Data for this member skipped" << endl;
-				continue;
-			}
-			//With any other error we cannot continue
-			catch(...) {throw;};
-			member.push_back(*data3c);
-			delete data3c;
 			// copy global metadata only for the first 
 			// row in this view
 			if(i==0)
 			{
+                            try{
 				DatascopeHandle dbhvsta;
 				if(dbhv.is_bundle)
 				{
@@ -719,7 +706,24 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 				copy_selected_metadata(ens_md,
 					dynamic_cast<Metadata&>(*this),
 					ensemble_mdl);
+                            }catch(...){throw;};
 			}
+			try {
+				data3c = new ThreeComponentSeismogram(*rdbhv,
+					station_mdl,am);
+			} catch (SeisppError& dberr)
+			{
+				cerr << "Problem with member "
+					<< i 
+					<< " in ensemble construction" << endl;
+				dberr.log_error();
+				cerr << "Data for this member skipped" << endl;
+				continue;
+			}
+			//With any other error we cannot continue
+			catch(...) {throw;};
+			member.push_back(*data3c);
+			delete data3c;
 		}
                 if(SEISPP_verbose) cout <<this_function_base_message
                     << ":  Number of seismograms loaded="
