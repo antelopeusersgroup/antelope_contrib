@@ -110,7 +110,7 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         void plot(ThreeComponentSeismogram& d,bool blocking=true);
         /*! Make new plot parameters active.
 
-          This plot object inherits another a Metadata object.  You can thus use the 
+          This plot object inherits a Metadata object.  You can thus use the 
           get and put methods in Metadata to change parameters internally to this object's
           internal data definitions.  The design of the Widget used to implement this 
           class requires an explicit push of the entire Metadata object through an 

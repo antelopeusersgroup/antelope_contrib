@@ -31,7 +31,23 @@ here.  See documentation for SeismicPlot for a longer explanation.
 class TimeWindowPicker : public SeismicPlot
 {
 public:
+    /*! Default constructor.
+
+      The default constructor does little more than call the 
+      SeismicPlot default constructor.  That looks for a default
+      pf definition in a standard place.  
+      */
     TimeWindowPicker();
+    /*! Call with setup parameters.
+
+      This constructor explicitly passes plot parameters through
+      the Metadata object.   The parameters are not different from
+      the base class SeismicPlot.   
+
+      \param md is the Metadata object with plot parameters.
+      \exception SeisppError object thrown if parameters are missing 
+      or something goes haywired in launching the window. 
+      */
     TimeWindowPicker(Metadata& md);
     /*! Fetch the picked time window.
 
@@ -59,6 +75,16 @@ public:
     is normally called to "try again". 
     */
     void repick();
+    /* \brief Initialize window markers.
+
+       This method is heavily used internally to set the position of the
+       time window markers.  For the public interface it can be a useful
+       way to set a default initial window.   e.g. it is commonly useful
+       to start with a default time window that can be just accepted in
+       most cases making the gui more efficient to use.
+
+       \param tw is the window to be posted on the plot.
+       */
     void setpick(TimeWindow tw);
 private:
     void enable_picking();

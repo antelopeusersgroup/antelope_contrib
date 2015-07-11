@@ -36,8 +36,25 @@ here.  See documentation for SeismicPlot for a longer explanation.
 class TraceEditPlot : public SeismicPlot
 {
 public:
+    /*! Default constructor. 
+
+      Does little more than call the default constructor for its parent
+      SeismicPlot.*/
     TraceEditPlot();
+    /*! Construct with explicit plot parameters.
+
+      This constructor explicitly passes plot parameters through a
+      metadata object.  Little more than a call to base class
+      SeismicPlot constructor. */
     TraceEditPlot(Metadata& md);
+    /*! \brief Return list of kills.
+
+      Edits are explicitly killed by the widget and made into flat
+      lines on the plot.  They are also marked dead.  However, it often
+      necessary to get the list of which seismograms were marked bad.
+      This does this by returning these as an STL set of integers 
+      defining ensemble members marked bad.   The user can use these
+      to either edit the ensemble or make sure dead is dead.  */
     set<int> report_kills();
     /*! Toggle between single trace and cutoff mode editing. 
      
@@ -56,6 +73,19 @@ private:
        set 2 for cutoff mode */
     int edit_mode;
 };
+/*! \brief Companion procedure for report_kills method of TraceEditPlot object.
+
+  Use this procedure to kill ensemble members defined by the stl set 
+  container returned by the report_kills method.
+
+  \param ensemble is that was passed to TraceEditPlot and interactively edited.
+  \param kills is the output of the report_kills method of TraceEditPlot.
+
+  \exception SeisppError will be thrown if the kill list has an invalid integer.
+        This should not normally happen, but would likely indicate a coding 
+        error.
+
+  */
 template <class T> void killmembers(T& ensemble,set<int> kills)
 {
     if(kills.empty()) return;
