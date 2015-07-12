@@ -2,7 +2,7 @@ LIB=libsciplot.a
 
 cflags = -I$(XMOTIFINCLUDE)
 
-ANTELOPEMAKELOCAL = $(ANTELOPE)/local/include/antelopemake.local
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

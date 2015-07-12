@@ -13,6 +13,7 @@ include $(ANTELOPEMAKE)
 include $(ANTELOPEMAKELOCAL)
 
 CXXFLAGS += -I$(XMOTIFINCLUDE)
+CXXFLAGS += -I$(BOOSTINCLUDE)
 #Remove this comment to enable verbose stuff from seisw widget
 #CXXFLAGS += -DDEBUG_WIDGET
 

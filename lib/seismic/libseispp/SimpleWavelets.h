@@ -31,11 +31,11 @@ TimeSeries gaussian_wavelet(int n, double dt, double sigma,
 
   \param n length of output time series object to hold wavelet
   \param dt sample interval of output time series.  Length with be
-     (n-1)*dt with the 0 time at n/2.  
-  \param nu ricker wavelet width parameter.  Note nu=1/f_m where f_m is
+     (n-1)*dt with the 0 time at n/2.   
+  \param nu ricker wavelet width parameter that is commonly called
      the peak frequency.   Note time between negative sidebands is 
-     sqrt(6)*nu/pi and zero crossing measure of peak width is 
-     sqrt(2)*nu/pi.
+     sqrt(6)/(nu*pi) and zero crossing measure of peak width is 
+     sqrt(2)/(nu*pi).
   \param normalize is the normalization method to use.  Only PEAK
     or NONE are accepted.  If passed AREA this will throw an exception. 
  
