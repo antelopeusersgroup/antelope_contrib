@@ -1,0 +1,31 @@
+/**
+  \mainpage Geographic Curvilinear Coordinates library.
+
+  This library implements the concept of a geographic curvilinear coordinate library 
+introduced in a paper by Fan and Pavlis (2006) - in Computers and Geosciences.  
+The details are given in that paper, but the key concept is a data object that a 
+distorted box chopped into ordered cells.  That is, a GCLgrid3d object is topologically
+equivalent to a box cut into equal sized cubes.   There is a parallel series of 2D 
+objects embedded in 3D.  A type example is digital topography that defines a meshed 
+surface on a uniform grid.  
+
+The grid concept is linked to the concept of a scalar and vector field.   There
+are thus 2D and 3D scalar and vector field objects that are used to hang generic 
+data onto grid notes defined by the GCLgrid and GCLgrid3d objects.
+
+The other key concept this library encapsulates is abstraction of the conversion from
+Geographic coordinates to a local Cartesian system.  This reduces internal calculational
+effort to search grids by keeping spherical geometry as an external storage concept.   
+i.e. all geometry inside the library uses the Cartesian system but export methods
+exist to always retain the original georeferencing of an object.  We have also used
+this approach extensively for conversion of 3D objects to a Cartesian system that
+can be visualized in 3D with the paraview package (http://www.paraview.org).
+
+Finally, this library contains a rather different component that is here largely for
+historical reasons: a lightweight matrix/vector pair of objects called dmatrix and dvector.
+This is in this library because of a set of procedures related to something we called
+raygrid objects in the plane wave migration code.   A seismic ray path in these procedures
+is defined as a matrix of cartesian points that define a path.  
+
+\author Gary L. Pavlis, Department of Geological Sciences, Indiana University
+*/
