@@ -6,7 +6,7 @@ mk_dbops \- update dbops tables after station install, removal, adoption, transi
 .SH SYNOPSIS
 .nf
 \fBmk_dbops \fP
-	{-I | -U  | -R | -A }
+	{-I | -U  | -R | -A | -D}
 	[-k]
 	[-n]
 	[-v]
@@ -71,7 +71,7 @@ these orbs and dbs, with command line overrides possible.
 .LP
 See the EXAMPLE section for how needed command line options differ depending on the type
 of update (installation, comms update, removal, or adoption).  One and only one of \fI-I\fP, 
-\fI-U\fP, \fI-R\fP or \fI-A\fP must be used.  
+\fI-U\fP, \fI-R\fP, \fI-A\fP, or \fI-D\fP must be used.  
 
 .IP -I
 Station installation.  Updates occur in three tables:  comm, deployment, 
@@ -86,6 +86,12 @@ Station removal.  Updates occur in three tables:  comm, deployment,
 and dlsite.  Requires that \fItimestamp\fP be the station decertification time.  
 If the station operation is taken over by another group, use the 
 \fI-A\fP option instead. 
+.IP -D
+Drop station.  Updates occur in three tables:  comm, deployment, 
+and dlsite.  Requires that \fItimestamp\fP be the station decertification time.  
+Used when a station is still in operations, normally by an outside group, (i.e. has
+not been removed)  and thus has no endtime in the stage table, but the station is 
+to be removed from the "deployment" (i.e. closed in the vnet).
 .IP -A
 Station adoption.  Updates occur in adoption and deployment tables.  Updates may 
 also occur in dlsite and comm if the adoption type is not EARN.  This option starts 
@@ -301,8 +307,8 @@ the script alerts but does not die.
 .LP
 .SH EXAMPLE
 .LP  
-There are four different modes of operation for this program:  installation,
-update, removal, or adoption.
+There are five different modes of operation for this program:  installation,
+update, removal, drop, or adoption.
 .LP
    For a new installation: 
 
@@ -315,6 +321,10 @@ update, removal, or adoption.
    For a station removal:
 
        mk_dbops -R [-k] [-v] [-p pf] [-W wfDB] [-s siteDB] dbopsdb snet sta decert_time 
+
+   For a station to be dropped:
+
+       mk_dbops -D [-k] [-v] [-p pf] [-W wfDB] [-s siteDB] dbopsdb snet sta decert_time 
 
    For a station transition to regional network:
 
@@ -379,6 +389,21 @@ Keep backups of the comm, deployment and site tables.
 .ft CW
 .nf
 %\fB mk_dbops -k -R dbops/usarray TA DONE 2008:353:18:30:00 \fP
+.fi
+.ft R
+.in
+
+.SS Drop Station
+
+.LP 
+Update the comm, deployment and dlsite tables for XX GONE.  Decertification 
+(time VND was passed along dropping the station) was 08/07/2015 17:30:00.  
+Keep backups of the comm, deployment and site tables.
+
+.in 2c
+.ft CW
+.nf
+%\fB mk_dbops -k -D dbops/usarray XX GONE 2015:219:17:30:00 \fP
 .fi
 .ft R
 .in
@@ -465,8 +490,8 @@ things to check:
 Are you matching the proper channels available for that station?  
 .LP
 The parameter file has a channel sifter in it called \fIchan_match\fP.  For instance,
-if you have BHZ channels in your metadata and the parameter file is set to use HHZ channels, 
-you will see this error.
+if you have HHZ channels in your metadata for the particular station and the parameter 
+file is set to use BHZ channels (the default), you will see this error.
 
 .IP \(bu
 Have you closed off the records for that station in the metadata?  
@@ -508,7 +533,7 @@ option, you could be pointing at the wrong database.
 \fBq330_location(1)\fP
 .fi
 .SH "BUGS AND CAVEATS"
-This script is firmly founded upon assumptions made in the operational model
+This script is firmly founded upon assumptions made regarding the operational model
 of your network.  Testing has not been attempted for setups outside what is 
 in use at the ANF.  For instance, you may run across errors if you do not 
 operate separate \fIprelim\fP and \fIcmd\fP orbs.

@@ -20,7 +20,7 @@ use Getopt::Std;
 # jeakin@ucsd.edu
 #
 
-our ($opt_k,$opt_n,$opt_v,$opt_y,$opt_I,$opt_R,$opt_U,$opt_A,$opt_m,$opt_w,$opt_W);
+our ($opt_k,$opt_n,$opt_v,$opt_y,$opt_I,$opt_R,$opt_U,$opt_A,$opt_D,$opt_m,$opt_w,$opt_W);
 our ($opt_s,$opt_S,$opt_p,$opt_P,$opt_C,$opt_V,$opt_d,$opt_e);
 our ($dbops,$snet,$sta,$mytime,$newprovider,$newcommtype,$newvnet,$mydb,$newpower,$newdutycycle,$power,$dutycycle);
 our ($samecomm,$type,$atype,$stime,$table,$table_filename);
@@ -28,7 +28,7 @@ our ($newnet,$newsta,$newDCC);
 our ($ctime,$cendtime,$wfendtime,$sendtime,$dtime,$endtime);
 our ($nbytes,$packet,$pkttime,$srcname,$pktid,$select,$n);
 our ($model,$ssident,$dltime,$idtag,$lat,$lon,$elev);
-our ($dmctime,$pdcc,$sdcc,$dlname,$startnull,$endnull,$earntime,$atime); 
+our ($pdcc,$sdcc,$dlname,$startnull,$endnull,$earntime,$atime); 
 our ($stasub,$dlstasub,$nullsub,$commsub,$dlsitesub,$depsub,$chansub,$stagesub,$wfsub,$vnetsub);
 our ($status_orb,$cmd_orb,$prelim_orb,$wfdb,$vnet,$packet_ext,$preorb,$statorb,$cmdorb);
 our (%Pf,$pf,$prelimwf_db,$sitedb,$newdb,$newdbpath,$newsuffix);
@@ -44,8 +44,8 @@ our (@adoption_record,@dep_record,@deptable,@comm_record,@commtable,@dlsite_reco
 
   elog_notify($cmd);
 
-  if ( !getopts('knvyIRUAm:w:W:s:S:p:P:C:V:d:e:') || @ARGV < 4 || @ARGV > 6 ) {
-    die ("USAGE: $0 { -I | -U | -R | -A }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
+  if ( !getopts('knvyIRUADm:w:W:s:S:p:P:C:V:d:e:') || @ARGV < 4 || @ARGV > 6 ) {
+    die ("USAGE: $0 { -I | -U | -R | -A | -D }  [-k] [-n] [-v] [-V vnet] [-p pf] [-m match_pkts] [-P prelimORB] [-S statusORB] [-C cmdORB] [-w prelimwfDB] [-W wfDB] [-s siteDB] [-d yes|no|string] [-e powersource] dbopsdb snet sta timestamp [comm_provider [comm_type] ]  \n");
   }
 
   $dbops	= $ARGV[0];
@@ -86,21 +86,10 @@ our (@adoption_record,@dep_record,@deptable,@comm_record,@commtable,@dlsite_reco
   }
 
 
-if ($opt_e) {
-   $power = $opt_e;
-} else {
-   $power = "-";
-}
-
-if ($opt_d) {
-   $dutycycle = $opt_d;
-} else {
-   $dutycycle = "-";
-}
+$power = $opt_e ? $opt_e : "-" ;
+$dutycycle = $opt_d ? $opt_d : "-" ;
 
 # set up some defaults
-
-$dmctime	= 19880899199.00000;		# DMC requested time translates to 12/31/2599 23:59:59 
 
 $pdcc	=	"-";
 $sdcc	=	"-";
@@ -133,7 +122,6 @@ $chansub	= $Pf{channel_match};
 
 $chansub	= "chan=~/$chansub/" ;
 
-$stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&endtime!='9999999999.99900'" ;
 $wfsub 	= "$stasub && $chansub";
 
 # command line overrides 
@@ -162,11 +150,7 @@ if (defined $newprovider) {
   }
 }
 
-if ($opt_s) {
-  $sitedb		= $opt_s ;
-} else {
-  $sitedb		= $dbops ;
-}
+$sitedb  = $opt_s ? $opt_s : $dbops ;
 
 @ops		= dbopen ( $dbops, "r+") ; 
 @stage 		= dbopen_table ( $sitedb.".stage", "r") ; 
@@ -185,19 +169,27 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W || $opt_A);
 
   if ($opt_I) {
     $type = "INSTALL" ;
-    if ($opt_R || $opt_U || $opt_A ) {
-	elog_die("Must use only one of -A, -I, -R, -U \n");
+    if ($opt_R || $opt_U || $opt_A || $opt_D ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
+
   } elsif ($opt_R) {
     $type = "REMOVAL" ;
-    if ($opt_I || $opt_U || $opt_A ) {
-	elog_die("Must use only one of -A, -I, -R, -U \n");
+    if ($opt_I || $opt_U || $opt_A || $opt_D ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
+
+  } elsif ($opt_D) {
+    $type = "DROP" ;
+    if ($opt_I || $opt_U || $opt_A || $opt_R ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
+    } 
+
 
   } elsif ($opt_A) {
     $type = "ADOPTION" ;
-    if ($opt_I || $opt_U || $opt_R ) {
-	elog_die("Must use only one of -A, -I, -R, or -U \n");
+    if ($opt_I || $opt_U || $opt_R || $opt_D ) {
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
 
     $atype	= ask( "Adoption type (E|T|R|X|-):  " ) ;
@@ -263,11 +255,11 @@ elog_notify(0,"\t wf     database: $wfdb\n") if ($opt_R || $opt_W || $opt_A);
   } elsif ($opt_U) {
     $type = "UPDATE" ;
     if ($opt_R || $opt_I ) {
-	elog_die("Must use only one of -A, -I, -R, -U \n");
+	elog_die("Must use only one of -A, -I, -R, -U, -D \n");
     } 
 
   } else {
-    elog_die("Must specify either -I, -R, or -U, -A.  Corresponds to install, removal, update, or adoption \n");
+    elog_die("Must specify either -I, -R, -U, -A, -D.  Corresponds to install, removal, update, adoption, or drop. \n");
   }
 
   elog_notify("\n  ---  Dbops update type:   $type  --- \n\n");
@@ -414,7 +406,7 @@ if ($opt_U) {
 
     &backup_tables("adoption", "comm", "deployment", "dlsite");
 
-    $sendtime	= &get_stageendtime ;
+    $sendtime	= &get_stageendtime ;	# this should look for non-null/non-future stage.endtime
     $wfendtime	= &get_wfendtime ;
 
     if ( $wfendtime > $sendtime ) {
@@ -438,9 +430,10 @@ if ($opt_U) {
   }
 
 
-} elsif ($opt_R) {
+} elsif ($opt_R || $opt_D ) {
 
-  elog_notify("Starting REMOVAL specific commands\n");
+  elog_notify("Starting $type specific commands\n") ; 
+
   elog_notify("Command line timestamp:  ". &strydtime($mytime) . " used for deployment.decert_time \n");
 
   &backup_tables("comm", "deployment", "dlsite");
@@ -560,9 +553,15 @@ sub get_stageendtime {		# get the stage.endtime
 
   elog_notify ("Starting get_stageendtime\n");
 
+#  $stagesub	= "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&(endtime!='9999999999.99900'||endtime!>now())" ;
+
+# if it's a "Dropped" station, endtime might be NULL/future
+# get single record by sta/chan/gtype stagesub without endtime, then sort stage in reverse for most recent record?
+
+  $stagesub = $opt_D ? "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&(endtime=='9999999999.99900'||endtime>now())" : "sta=='$sta'&&$chansub&&gtype=~/sensor|seismometer/&&(endtime!='9999999999.99900'||endtime!>now())"  ; 
+
   @single_stage	= dbsubset (@stage, $stagesub) ;		
-  @single_stage	= dbsort(@single_stage, "endtime") ;	# get single record that will be updated
-  
+
   elog_die("No matching records in stage table for station $sta.  Possibly check stagesub: $stagesub \n") if (!dbquery(@single_stage, "dbRECORD_COUNT") ) ; 
 
   $single_stage[3] 	= dbquery(@single_stage, "dbRECORD_COUNT") - 1 ;	# get last record, which should indicate close time
