@@ -394,10 +394,8 @@ class Locator:
                             % (arrival.phase, arrival.sta))
                     continue
                 arrivals += [arrival]
-#Make sure there are at least 5 arrivals to use in relocation
-        #if len(arrivals) < 5:
-#The above line is Amir's, the below line is Malcolm's
-        if len(arrivals) < 10:
+#Make sure there are at least pfile['nobs'] arrivals to use in relocation
+        if len(arrivals) < self.nobs:
             logger.info("[evid: %d] Only %d valid arrivals found. Skipping "\
                     "relocation." % (event.evid, len(arrivals)))
             return None, None
