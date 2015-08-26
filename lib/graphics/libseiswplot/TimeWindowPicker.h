@@ -1,5 +1,5 @@
 #ifndef _TIME_WINDOW_PICKER_H_
-#define _TIME_WINDOW_PICKER_H__
+#define _TIME_WINDOW_PICKER_H_
 #include "TimeWindow.h"
 #include "SeismicPlot.h"
 #include "display_marker.h"
