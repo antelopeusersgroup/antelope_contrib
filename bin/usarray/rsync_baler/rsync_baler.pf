@@ -23,6 +23,15 @@ md5_folder              recover
 
 baler_model             PacketBaler44
 
+avoid_ips  &Tbl{
+    10.32.32.0/23       # AEC
+    10.23.24.0/21       # AEC
+    10.23.64.0/21       # AEC
+    10.31.5.0/24        # BGAN
+    192.168.20.0/24     # OmniSpace
+    169.228.44.192/32   # Iridium
+}
+
 # avoid_on_day_of_week
 # Will be implemented like this...
 # $opt_r  = $opt_r || $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} ;
