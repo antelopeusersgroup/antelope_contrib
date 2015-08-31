@@ -33,6 +33,7 @@ use LWP ;
 use Fcntl ;
 use POSIX ;
 use archive ;
+use subnetMatch ;
 use utilfunct qw[getparam check_procs];
 use sysinfo ;
 use Net::Ping ;
@@ -51,7 +52,7 @@ our(%pf) ;
 our(%logs,%errors) ;
 our($to_parent,$nstas,$get_sta,$parent,$host) ;
 our($string,$problems,$nchild,$file_fetch) ;
-our($subject,$start,$end,$run_time_str) ;
+our($avoid_ips,$subject,$start,$end,$run_time_str) ;
 our($opt_n,$opt_x,$opt_V,$opt_r,$opt_s,$opt_h,$opt_v,$opt_m,$opt_p,$opt_d) ;
 
 use constant false => 0 ;
@@ -133,6 +134,13 @@ fork_notify("Getting params from: $opt_p") if $opt_v ;
 if ( $pf{avoid_on_day_of_week} ) {
     $opt_r ||= $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} ;
 }
+
+#
+# Load reject IPS from parameter file.
+# Should be fine with NULL input from the PF file.
+#
+$avoid_ips = subnet_match( @{$pf{avoid_ips}} ) ;
+
 
 #
 #  Set File::Fetch options
@@ -321,6 +329,8 @@ sub get_info_for_sta {
     ($dlsta,$net) = dbgetv(@db_sta, qw/dlsta net/)
         if ( $db_sta[3] >= 0 ) ;
 
+    fork_die("MISSING $sta in sstabaler table!!!!!!") unless $dlsta ;
+
     $sta_hash{dlsta}  = $dlsta ;
     $sta_hash{net}    = $net ;
     $sta_hash{status} = 'Decom' ;
@@ -356,12 +366,21 @@ sub get_info_for_sta {
             else {
                 fork_complain("Failed grep on IP (ip'$ip',dlsta'$dlsta')") ;
             }
+
         }
     }
 
     if ( $opt_d ) {
         fork_notify("$dlsta => $sta $net") ;
         fork_notify("$dlsta => $sta_hash{status}") ;
+    }
+
+    #
+    # Verify if IP is in range of restiction list
+    #
+    if ( $sta_hash{ip} && $avoid_ips->($sta_hash{ip}) ) {
+        fork_complain("$dlsta $sta_hash{ip} matches entry in AVOID IP LIST')") ;
+        $sta_hash{ip} = 0 ;
     }
 
     fork_notify("$dlsta => $sta_hash{ip}:$pf{http_port}") ;
