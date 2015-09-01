@@ -24,12 +24,8 @@ md5_folder              recover
 baler_model             PacketBaler44
 
 avoid_ips  &Tbl{
-    10.32.32.0/23       # AEC
-    10.23.24.0/21       # AEC
-    10.23.64.0/21       # AEC
-    10.31.5.0/24        # BGAN
-    192.168.20.0/24     # OmniSpace
-    169.228.44.192/32   # Iridium
+    10.10.10.0/23       # TEST
+    192.168.0.0         # TEST
 }
 
 # avoid_on_day_of_week
