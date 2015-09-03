@@ -3,7 +3,7 @@
 exportgrid - ascii output of GCLgrid objects
 .SH SYNOPSIS
 .nf
-exportgrid db|fname gridname [-fin -f fieldname -3d -vector n -o outfile -dir outdir]
+exportgrid db|fname gridname [-fin -f fieldname -3d (-scalar | -vector n) -o outfile -dir outdir]
 .fi
 .SH DESCRIPTION
 .LP
@@ -31,11 +31,24 @@ File mode switch (see above).
 .IP -f
 Dump the field with the unique name \fIfieldname\fR defined in the gclfield
 table.  The field and grid names must be consistent or the program will
-abort.
+abort.  When reading from a database this is the key defined in the
+fieldname attribute of the gclfield table.  When -fin in set (file input
+mode) this is assume to be the base file name containing the field
+object you want to export as text to stdout.
 .IP -3d
 Switch to 3d mode.  The default assumes the grid/field are 2d objects.
+.IP -scalar
+Assume the field being referenced is a scalar field object.  If it is not
+the program will abort with an error message saying that.  
+Note that if -f is used either -scalar or -vector must be defined.
 .IP -vector
 Assume the field being referenced is a vector field object.  
+When -vector is set you must define the number of vector components
+expected.  This must match data or the program will exit. This is 
+an intentional sanity check.   This number is defined in the gclfield
+table in database mode or the pf component of the file pair when 
+running in file mode (-fin). 
+Note that if -f is used either -scalar or -vector must be defined.
 .LP
 The -f, -3d, and -vector options work together to define the type of 
 object the program tries to load.  If -f is not used the assumption is
