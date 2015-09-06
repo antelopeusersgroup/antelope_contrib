@@ -86,11 +86,16 @@ public:
        \param tw is the window to be posted on the plot.
        */
     void setpick(TimeWindow tw);
-private:
     void enable_picking();
+private:
+    Widget pick_menu;
+    void build_pick_menu();
     TimeWindow picked_window;
     bool pick_completed;
     DisplayMarkerDataRec markers;
 };
+void pick_tw_callback(Widget w, XtPointer client_data, XtPointer userdata);
+void arm_tw_pick_callback(Widget w,
+                XtPointer client_data, XtPointer userdata);
 } // End SEISPP namespace encapsulation
 #endif
