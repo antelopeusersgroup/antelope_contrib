@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 		else if(sarg=="-scalar")
                 {
 			scalarfield=true;
+                        isfield=true;
                 }
                 else if(sarg=="-dir")
                 {
@@ -180,7 +181,7 @@ int main(int argc, char **argv)
                             }
                             else
                             {
-                                GCLscalarfield field(fieldname,formstr);
+                                GCLscalarfield field(fname,formstr);
                                 cout << field;
                             }
 			}
