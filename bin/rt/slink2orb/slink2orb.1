@@ -1,4 +1,4 @@
-.TH SLINK2ORB 1 2008/03/05
+.TH SLINK2ORB 1 2012/08/31
 .SH NAME
 slink2orb \- SeedLink to Antelope ORB module
 .SH SYNOPSIS
@@ -55,7 +55,7 @@ sequence number(s) of the last valid packet(s) received when exiting.
 On startup, slink2orb will attempt to read the specified \fIstatefile\fR
 and configure the SeedLink server to start with the next packet, if
 possible.  Intermediate state saves can be enabled and controlled
-with the \fIsavestate\fR value in the parameter file (see below).
+with the \fIstateint\fR value in the parameter file (see below).
 
 .IP "-r"
 Use either the database specified with the -dm option or the local
@@ -144,14 +144,12 @@ number.  This can be used to protect against abnormal (power failure)
 program exits.  The default value is 0, which disables this feature.
 
 .IP "\fIselectors\fR"
-This can be used, as described above, to limit the data stream sent by the
-SeedLink server to specific channels and types.  Multiple selectors are
-separates by space(s).  Note: only Mini-SEED waveform data records are
-forwared to the ORB, all other types will be dropped.  Basically you might
-as well use ".D" on all your selectors because everything else is ignored.
-The default is no defined selectors which causes SeedLink to send all
-available types and channels.  When using multi-station mode ('stations'
-array is defined), this serves as default selectors.
+This can be used, as described above, to limit the data stream sent by
+the SeedLink server to specific channels and types.  Multiple
+selectors are separates by space(s).  The default is no defined
+selectors which causes SeedLink to send all available types and
+channels.  When using multi-station mode ('stations' array is
+defined), this serves as default selectors.
 
 .IP "\fIstations\fR array"
 If this array is present then the connection is configured in

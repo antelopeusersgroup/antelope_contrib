@@ -1,3 +1,4 @@
+#include "perf.h"
 #include "ThreeComponentSeismogram.h"
 #include "TimeSeries.h"
 #include "seispp.h"

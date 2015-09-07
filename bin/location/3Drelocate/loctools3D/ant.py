@@ -516,11 +516,19 @@ def write_origin(origin, dbout):
         view = tbl_site.subset('sta =~ /%s/ && ondate < _%f_ && ' \
                                '(offdate == -1 || offdate > _%f_)'
                                % (arrival.sta, origin.time, origin.time))
-        view.record = 0
         if view.record_count == 0:
             logger.debug("Subset expression 'sta =~ /%s/ && ondate < _%f_ "\
                     "&& (offdate == -1 || offdate > _%f_)' yielded 0 "\
                     "results." % (arrival.sta, origin.time, origin.time))
+            view.free()
+            view = tbl_site.subset('sta =~ /%s/' % arrival.sta)
+            view_ = view.sort('ondate')
+            view.free()
+            view = view_
+            if view.record_count == 0:
+                logger.debug("No rows in site table for sta: %s" % arrival.sta)
+                continue
+        view.record = 0
         stalat, stalon = view.getv('lat', 'lon')
         seaz = azimuth(stalat, stalon,
                              origin.lat, origin.lon)

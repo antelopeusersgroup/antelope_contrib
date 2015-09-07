@@ -1,4 +1,5 @@
 #include <math.h>
+#include <float.h>
 #include "stock.h"
 #include "perf.h"
 #include "arrays.h"
@@ -35,7 +36,7 @@ Particle_Motion_Ellipse compute_particle_motion(complex x,
 	double a,b;
 	double phi1,phi2;
 	double x1[3],x2[3];
-	double nrmx1,nrmx2,xmaj,xmin;
+	double nrmx1,nrmx2;
 	Particle_Motion_Ellipse e;
 
 
@@ -158,7 +159,14 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	M_estimator_double_n_vector(v,3,n,
 		IQ_SCALE_RELATIVE,PM_MINSCALE_MAJOR,avg,weight);
 	nrm_major = dnrm2(3,avg,1);
-	for(i=0;i<3;++i) pmavg->major[i] = avg[i]/nrm_major;
+	for(i=0;i<3;++i) 
+	{
+	    /* Needed to avoid random NaN */
+	    if(nrm_major<FLT_EPSILON)
+	    	pmavg->major[i] = avg[i];
+	    else
+		pmavg->major[i] = avg[i]/nrm_major;
+	}
 
 	/* Error estimates are computed completely differently here from
 	that described in Bear and Pavlis (1999).  Rather than use a 
@@ -292,7 +300,7 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	because a projection is always <= original */
 	for(i=0;i<n;++i)
 	{
-		double minor_nrm,major_nrm;
+		double minor_nrm;
 		minor_nrm = dnrm2(3,v+i*3,1);
 		/* Not needed because the major axis vector
 		was previously normalized to unit length 

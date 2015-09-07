@@ -14,7 +14,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2006.344
+ * modified: 2012.152
  ***************************************************************************/
 
 #include <stdio.h>
@@ -117,6 +117,19 @@ sl_msr_free ( SLMSrecord ** msr )
 /***************************************************************************
  * sl_msr_parse:
  *
+ * A wrapper for sl_msr_parse_size() 
+ ***************************************************************************/
+SLMSrecord *
+sl_msr_parse (SLlog * log, const char * msrecord, SLMSrecord ** ppmsr,
+	      int8_t blktflag, int8_t unpackflag)
+{
+  return sl_msr_parse_size (log, msrecord, ppmsr, blktflag, unpackflag, SLRECSIZE);
+}
+
+
+/***************************************************************************
+ * sl_msr_parse_size:
+ *
  * Parses a SEED record header/blockettes and populates a SLMSrecord struct.
  *
  * If 'blktflag' is true the blockettes will also be parsed.  The parser
@@ -140,10 +153,16 @@ sl_msr_free ( SLMSrecord ** msr )
  *
  * Returns a pointer to the SLMSrecord struct populated on success.  On
  * error *ppmsr is set to NULL and NULL is returned.
+ *
+ * 6 Apr 2012 - Jacob Crummey:
+ * Added sl_msr_parse_size() to allow for selecting SeedLink record
+ * packet size.  Possible values for slrecsize are 128, 256, 512.
+ * There is no error checking, so the value of slrecsize must be
+ * checked before passing it to sl_msr_parse_size().
  ***************************************************************************/
 SLMSrecord *
-sl_msr_parse (SLlog * log, const char * msrecord, SLMSrecord ** ppmsr,
-	      int8_t blktflag, int8_t unpackflag )
+sl_msr_parse_size (SLlog * log, const char * msrecord, SLMSrecord ** ppmsr,
+		   int8_t blktflag, int8_t unpackflag, int slrecsize)
 {
   int swapflag = 0;		        /* is swapping needed? */
   uint16_t begin_blockette;	        /* byte offset for next blockette */
@@ -244,7 +263,7 @@ sl_msr_parse (SLlog * log, const char * msrecord, SLMSrecord ** ppmsr,
       begin_blockette = msr->fsdh.begin_blockette;
       
       while ((begin_blockette != 0) &&
-	     (begin_blockette <= SLRECSIZE))
+	     (begin_blockette <= slrecsize))
 	{
 	  
 	  memcpy ((void *) blkt_head, msrecord + begin_blockette,
@@ -378,7 +397,7 @@ sl_msr_print (SLlog * log, SLMSrecord * msr, int details)
     }
 
   /* Build a start time string */
-  snprintf (stime, 27, "%04d,%03d,%02d:%02d:%02d.%06d",
+  snprintf (stime, sizeof(stime), "%04d,%03d,%02d:%02d:%02d.%06d",
 	    msr->fsdh.start_time.year, msr->fsdh.start_time.day,
 	    msr->fsdh.start_time.hour, msr->fsdh.start_time.min,
 	    msr->fsdh.start_time.sec, usec);

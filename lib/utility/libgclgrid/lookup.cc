@@ -12,6 +12,7 @@ from this Antelope library.  This is for efficiency as blas versions of
 same have no advantage for 3 element vectors */
 #include "coords.h"
 #include "gclgrid.h"
+#include "perf.h"
 class GridCell
 {
 public:

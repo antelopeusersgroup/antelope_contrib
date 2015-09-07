@@ -39,7 +39,7 @@ int MWcoherence(MWstack *stack,complex ***z,double **coherence,double *cohb)
         int i,j,k;
         complex **residuals;
 	complex cwork;
-	double coh,z2,r2;
+	double z2,r2;
 	double *z2b,*r2b;  /* accumulated sums for beam */
 	/* These are copies of size variables from stack used
 	to make this more readable. */

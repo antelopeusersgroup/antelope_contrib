@@ -310,6 +310,9 @@ float M_estimator_float(float *x,int nx,int mode,double minscale)
 	stats=MW_calc_statistics_float(wtres,nx);
 	fmean = stats.median;
 	if(IQ_SCALE_RELATIVE)
+	    if(fmean<FLT_EPSILON)
+		fminsc = minscale;
+	    else
 		fminsc = fmean*((float)minscale);
 	else
 		fminsc = (float)minscale;
@@ -515,6 +518,9 @@ void M_estimator_double_n_vector(double *v,
 	for(j=0;j<nv;++j) weight[j] = 1.0; /* done to make sure scale
 					is computed correctly on first pass*/
 	if(mode==IQ_SCALE_RELATIVE)
+	    if(vmag<FLT_EPSILON)
+		fminsc= minscale;
+	    else
 		fminsc = vmag*minscale;
 	else
 		fminsc = minscale;
@@ -527,7 +533,7 @@ void M_estimator_double_n_vector(double *v,
 		scale = compute_nvector_scale(residuals,n,nv,row);
 		if(scale < fminsc) scale = fminsc;
 		for(i=0;i<n;++i) delta_mean[i] = 0.0;
-		for(j=0;j<nv;++j)
+		for(j=0,sum_weights=0.0;j<nv;++j)
 		{
 			dcopy(n,residuals+j*n,1,col,1);
 			dvmag = dnrm2(n,col,1);
@@ -555,7 +561,7 @@ void M_estimator_double_n_vector(double *v,
 		free(col);
 		free(row);
 		free(delta_mean);
-		free(delta_mean);
+                free(residuals);
 		return;
 	}
 	/* This is the value of beta recommended by chave and thomson, 1987,
@@ -589,7 +595,6 @@ void M_estimator_double_n_vector(double *v,
 	free(col);
 	free(row);
 	free(delta_mean);
-	free(delta_mean);
 	free(residuals);
 }
 /* Delete one jackknife error estimator.  Uses simple formula 
@@ -609,7 +614,6 @@ Author:  Gary Pavlis
 double d1_jack_err(int n, double *x)
 {
 	double *pval;
-	double xbardot;
 	double jkerror;
 	double mean;
 	int i,j;

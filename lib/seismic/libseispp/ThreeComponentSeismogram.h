@@ -1,5 +1,7 @@
 #ifndef _THREECOMPONENTSEISMOGRAM_H_
 #define _THREECOMPONENTSEISMOGRAM_H_
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "Metadata.h"
 #include "BasicTimeSeries.h"
 #include "TimeSeries.h"
@@ -347,6 +349,17 @@ method defined below.
 \param vs0 Surface S wave velocity.
 **/
 	void free_surface_transformation(SlownessVector u, double vp0, double vs0);
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+                    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<Metadata>(*this);
+        ar & boost::serialization::base_object<BasicTimeSeries>(*this);
+        ar & components_are_orthogonal & components_are_cardinal;
+        ar & tmatrix;
+        ar & u;
+    };
 };
 //
 ////////////////////////////////////////////////////
@@ -390,5 +403,6 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
 \param component is the component to extract (0, 1, or 2)
 **/
 TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
+
 } // End namespace SEISPP declaration
 #endif
