@@ -38,7 +38,7 @@ void dummy_sighandler (int sig);
 void term_sighandler (int sig);
 
 short int stopsig = 0;
-char *version = "1.4 (2003.017)";
+char *version = "1.4a (2015.022)";
 char *statefile = 0;
 int orb = 0;
 
@@ -353,12 +353,11 @@ main (int argc, char **argv)
 	  if (subreq)
 	    {			/* If substitution should be applied */
 	      struct Packet *Pkt = NULL;
+		  int my_pkttype=unstuffPkt (srcname, time, packet, nbytes, &Pkt);
 
 	      /* Process a database table packet */
-	      if (!strncmp (srcname, "/db/", 4))
+	      if ( my_pkttype == Pkt_db )
 		{		/* If a DB table packet */
-		  unstuffPkt (srcname, time, packet, nbytes, &Pkt);
-
 		  /* Find packet values to substitute */
 		  for (l = 0; subarr[l] != NULL; l++)
 		    {
@@ -394,9 +393,8 @@ main (int argc, char **argv)
 		}
 
 	      /* Process parameter file packet */
-	      else if (!strncmp (srcname, "/pf/", 4))
+	      else if (my_pkttype == Pkt_pf) 
 		{		/* If a PF packet */
-		  unstuffPkt (srcname, time, packet, nbytes, &Pkt);
 
 		  /* Find packet values to substitute */
 		  for (l = 0; subarr[l] != NULL; l++)
@@ -425,7 +423,7 @@ main (int argc, char **argv)
 			    }
 
 			  /* Assume rt1.0 schema and generate a scratch DB */
-			  tdb = dbtmp ("rt1.0");
+			  tdb = dbtmp ("css3.0");
 			  tdb = dblookup (tdb, 0, table, 0, 0);
 			  tdb.record = dbSCRATCH;
 
