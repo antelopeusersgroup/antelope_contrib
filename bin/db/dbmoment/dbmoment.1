@@ -6,6 +6,32 @@ dbmoment \- moment tensor calculation for given origin
 \fBdbmoment \fP[-vd] [-p \fIpfname\fP] \fIdatabase\fP \fIevid/orid\fP
 .fi
 
+.SH CODE LIMITATIONS
+################################
+##                             #
+##  ***  READ THIS FIRST  ***  #
+##                             #
+################################
+
+The dbmoment tool implementation included in the distribution is
+the core component of the more complex TDMT_INV toolbox that is in
+use by other networks. We completed this first step of mapping the
+source data and the final results values to Antelope but many steps in the
+middle are out of our control and in need of evaluation. This first
+version lacks the capability of correctly resampling the data to match
+the synthetics and deconvolve the instrument response from the traces.
+
+ The example dataset included on the distribution is already preprocessed
+ to those requirements and the dbmoment code can produce good results with
+ it. At this time if the tool is used to evaluate any external dataset the
+ user is responsible for the preprocessing of the data. The data should be
+ resampled to 1Hz and all instrument responses removed from it. Then we
+ need new wfdisc records tracking those new files. We also need an event for
+ those traces and arrivals associated with those traces. The system should be able
+ to correctly analyze the event and produce a valid result. In any other
+ condition the tool will most like output a core file and crash.
+
+
 .SH DEPENDENCY
 The demo code will make some shell calls to SAC. The SAC software
 is distributed for free by IRIS but you need to request a copy

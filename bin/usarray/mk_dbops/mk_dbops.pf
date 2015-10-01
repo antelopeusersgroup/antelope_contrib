@@ -43,6 +43,7 @@ vsat
 }
 
 accepted_comm_providers &Tbl{
+AIRWARE
 ATT
 Cal_Ore tel
 DSL Frontier
