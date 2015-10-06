@@ -29,6 +29,8 @@
 use strict "vars" ;
 use warnings ;
 
+use lib "$ENV{ANTELOPE}/contrib/data/perl" ;
+
 use LWP ;
 use Fcntl ;
 use POSIX ;
@@ -53,7 +55,7 @@ our(%pf) ;
 our(%logs,%errors) ;
 our($to_parent,$nstas,$get_sta,$parent,$host) ;
 our($string,$problems,$nchild,$file_fetch) ;
-our($avoid_ips,$subject,$start,$end,$run_time_str) ;
+our($force_include,$avoid_ips,$subject,$start,$end,$run_time_str) ;
 our($opt_n,$opt_x,$opt_r,$opt_s,$opt_h,$opt_w,$opt_v,$opt_m,$opt_p,$opt_d) ;
 
 use constant false => 0 ;
@@ -139,6 +141,7 @@ if ( $pf{avoid_on_day_of_week} ) {
 # Should be fine with NULL input from the PF file.
 #
 $avoid_ips = subnet_match( @{$pf{avoid_ips}} ) ;
+$force_include = subnet_match( @{$pf{force_include}} ) ;
 
 
 #
@@ -343,9 +346,11 @@ sub get_info_for_sta {
     # Verify if IP is in range of restiction list
     #
     if ( $sta_hash{ip} && $avoid_ips->($sta_hash{ip}) ) {
-        fork_complain("\t$sta_hash{dlsta} $sta_hash{ip} matches entry in AVOID IP LIST')") ;
-        $sta_hash{ip} = 0 ;
-        fork_log( "\tip: $sta_hash{ip}" ) ;
+        unless ( $force_include->($sta_hash{ip}) ) {
+            fork_complain("\t$sta_hash{dlsta} $sta_hash{ip} matches entry in AVOID IP LIST')") ;
+            $sta_hash{ip} = 0 ;
+            fork_log( "\tip: $sta_hash{ip}" ) ;
+        }
     }
 
     return %sta_hash ;

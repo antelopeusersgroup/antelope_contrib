@@ -19,11 +19,14 @@ md5_folder              recover
 
 #regex_for_files         ^(..-...._4-(S-)?\d{14})$
 #folder_with_files       s?data
-#md5_folder              recover
+#md5_folder
 
 avoid_ips  &Tbl{
     10.10.10.0/23       # TEST
     192.168.0.0         # TEST
+}
+force_include  &Tbl{
+    192.168.1.1         # TEST
 }
 
 # avoid_on_day_of_week
