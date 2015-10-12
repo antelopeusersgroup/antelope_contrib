@@ -100,8 +100,8 @@ $opt_p ||= "rsync_baler.pf" ;
 %pf = getparam($opt_p) ;
 
 
-fork_log("$0 @ARGV") ;
-fork_log("Starting at ".strydtime($start)." on $host") ;
+fork_notify("$0 @ARGV") ;
+fork_notify("Starting at ".strydtime($start)." on $host") ;
 
 if ( $get_sta ) {
     # run as child...
@@ -303,6 +303,7 @@ sub get_info_for_sta {
         next if $data_hash->{sta} !~ /$sta/ ;
 
         $sta_hash{dlsta} = $data_hash->{'id'};
+        $sta_hash{net} = $data_hash->{'snet'};
         $sta_hash{snet} = $data_hash->{'snet'};
         $sta_hash{sta} = $data_hash->{'sta'};
         $sta_hash{time} = $data_hash->{'time'};
@@ -407,7 +408,7 @@ sub run_in_threads {
 
 
         fork_debug("Now: ".@procs." procs") ;
-        fork_notify("Starting $sta: $cmd ") ;
+        fork_log("Starting $sta: $cmd ") ;
 
         ##################
         #   OLD METHOD   #
