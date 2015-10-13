@@ -4,7 +4,7 @@ SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 
 #CFLAGS=-Wno-implicit -Wno-return-type -c -O -DENVIRONMENT
-CFLAGS=-c -O -DENVIRONMENT
+CFLAGS=-c -DENVIRONMENT
 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
