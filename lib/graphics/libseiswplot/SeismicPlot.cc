@@ -12,21 +12,7 @@ using namespace SEISPP;
 #define APP_CLASS "seismicplot"
 // this constant cloned from dbxcor
 #define MAINFORM_GRID_CNT 15
-/* This is cloned from dbxcor.  It is used as a compact data structure to sent to 
-   a procedure immediately below (BuildMenu) that constructs a widget based on this specification*/
-typedef struct _menu_item
-{
-        char              *label;          /* the label for the item */
-        WidgetClass       *class1;          /* pushbutton, label, separator... */
-        char               mnemonic;       /* mnemonic; NULL if none */
-        char              *accelerator;    /* accelerator; NULL if none */
-        char              *accel_text;     /* to be converted to compound string */
-        void             (*callback)(Widget,void *,void *);    /* routine to call; NULL if none */
-        XtPointer          callback_data;  /* client_data for callback() */
-        Widget           w;
-        struct _menu_item *subitems;       /* pullright menu items, if not NULL */
-} MenuItem;
-
+#include "seiswplot.h"
 /* Pulldown menus are built from cascade buttons, so this function
 ** also includes pullright menus. Create the menu, the cascade button
 ** that owns the menu, and then the submenu items.
@@ -242,6 +228,15 @@ SeismicPlot::~SeismicPlot()
 void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
 {
     try{
+        const string base_error("SeismicPlot::plot method:  ");
+        /* The Seisw widget only works with relative time.   Abort
+           if any seismograms are on an absolute time base */
+        for(int i=0;i<d.member.size();++i)
+            if(d.member[i].tref==absolute)
+                throw SeisppError(base_error
+                        + "input TimeSeriesEnsemble has absolute time set\n"
+                        + "Implementation only supports relative time.\n"
+                        + "Convert all times to relative with ator");
 	XtAppLock(AppContext);
         /* Make an internal copy of d managed by the object to be 
            consistent with 3C data.  We intentionally do not manage
@@ -255,6 +250,7 @@ void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
             block_till_exit_pushed=true;
         else
             block_till_exit_pushed=false;
+        cerr <<"starting event handler"<<endl;
         if(!EventLoopIsActive) 
             this->launch_Xevent_thread_handler();
     }
@@ -279,6 +275,10 @@ void SeismicPlot::refresh()
 void SeismicPlot::plot(TimeSeries& d,bool block_for_event)
 {
     try {
+        if(d.tref == absolute)
+            throw SeisppError(string("SeismicPlot::plot method for ")
+                    + "TimeSeries object:  "
+                    + "Implementation only accepts data with relative time");
         TimeSeriesEnsemble e;
         e.member.push_back(d);
         this->plot(e,block_for_event);
@@ -287,6 +287,10 @@ void SeismicPlot::plot(TimeSeries& d,bool block_for_event)
 void SeismicPlot::plot(ThreeComponentSeismogram& d,bool block_for_event)
 {
     try {
+        if(d.tref == absolute)
+            throw SeisppError(string("SeismicPlot::plot method for ")
+                    + "ThreeComponentSeismogram object:  "
+                    + "Implementation only accepts data with relative time");
         ThreeComponentEnsemble dtmp;
         dtmp.member.push_back(d);
         /*this assumes dtmp will be copied to 3 components "comp" in private 
@@ -298,7 +302,16 @@ void SeismicPlot::plot(ThreeComponentSeismogram& d,bool block_for_event)
 void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
 {
     try {
-        if(!ThreeComponentMode) throw SeisppError(string("SeismicPlot::plot method:  ")
+        const string base_error("SeismicPlot::plot method:  ");
+        /* The Seisw widget only works with relative time.   Abort
+           if any seismograms are on an absolute time base */
+        for(int i=0;i<d.member.size();++i)
+            if(d.member[i].tref==absolute)
+                throw SeisppError(base_error
+                        + "input ThreeComponentEnsemble has absolute time set\n"
+                        + "Implementation only supports relative time.\n"
+                        + "Convert all times to relative with ator");
+        if(!ThreeComponentMode) throw SeisppError(base_error
                 + "Trying to plot 3c mode with ThreeComponentMode not set.  Fix pf");
         cerr << "Entering 3c plot method"<<endl;
         int k;

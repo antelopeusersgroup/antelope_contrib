@@ -6,6 +6,8 @@
 
 use strict;
 use warnings;
+
+use lib "$ENV{ANTELOPE}/contrib/data/perl" ;
 use subnetMatch;
 
 my @subnets =  qw(

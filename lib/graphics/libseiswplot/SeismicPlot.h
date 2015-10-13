@@ -108,6 +108,20 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
             the plot is generated and the program continues immediately. 
           */
         void plot(ThreeComponentSeismogram& d,bool blocking=true);
+        /*! Set blocking on or off.
+
+          Constructors can enable the plot as blocking or nonblocking. 
+          If blocking the plot will stay active until the exit menu
+          (x key) is clicked.  If set nonblocking a plot will return 
+          immediately but still be in a potentially useful state.  
+          The assumption is there is no point in turning blocking off,
+          but it can be useful to turn it on to retry something in a
+          gui.  Mostly useful for children of this like TimeWindowPicker.
+          */
+        void enable_blocking()
+        {
+            block_till_exit_pushed=true;
+        };
         /*! Make new plot parameters active.
 
           This plot object inherits a Metadata object.  You can thus use the 
@@ -142,6 +156,7 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
           doesn't belong here and a caller should never ever touch this. */
         XtAppContext AppContext;
         friend class TraceEditPlot;
+        friend class TimeWindowPicker;
     protected:
         /* When true calls to plot will block until until the exit button is
            pushed.   When false a call to plot immediately returns. */
