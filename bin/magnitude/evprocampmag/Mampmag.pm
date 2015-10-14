@@ -93,7 +93,7 @@ sub ampmag_trace_computestats {
 		my $dt = 1.0 / $samprate;
 		my @data=trdata(@dbtrace);
 		my $last_samp= time2samp($t2 - $t1 , $dt);
-		$last_samp++; 
+		#$last_samp++; 
 		for (my $i=0; $i <= $last_samp; $i++) {
 			my $stime =  $t1 + ($i * $dt);
 			if ($stime < $tstart) { next; }
@@ -129,7 +129,7 @@ sub ampmag_setup_processes {
     }
 
     if ( ref($obj->{params}{channels}) ne "ARRAY" ) {
-        addlog ( $obj, 0, "channels table not defined in parameter file" ) ;
+        addlog ( $obj, 0, "channels is not an array in parameter file" ) ;
         return "skip" ;
     }
 
@@ -387,16 +387,16 @@ sub ampmag_process_channel {
 		my ( $dt, $isamp ) ;
 
 		$dt = 1.0 / $samprate ;
-		$isamp = time2samp ( $self->{stations}{$sta}{noise_tstart} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{noise_tstart} - $t0, $dt ) ;
 		$isamp++;
 		$self->{stations}{$sta}{noise_tstart} = $t0 + $isamp * $dt ;
-		$isamp = time2samp ( $self->{stations}{$sta}{noise_tend} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{noise_tend} - $t0, $dt ) ;
 		$isamp--;
 		$self->{stations}{$sta}{noise_tend} = $t0 + $isamp * $dt ;
-		$isamp = time2samp ( $self->{stations}{$sta}{signal_tstart} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{signal_tstart} - $t0, $dt ) ;
 		$isamp++;
 		$self->{stations}{$sta}{signal_tstart} = $t0 + $isamp * $dt ;
-		$isamp = time2samp ( $self->{stations}{$sta}{signal_tend} - $t0, $ dt ) ;
+		$isamp = time2samp ( $self->{stations}{$sta}{signal_tend} - $t0, $dt ) ;
 		$isamp--;
 		$self->{stations}{$sta}{signal_tend} = $t0 + $isamp * $dt ;
 		undef $self->{stations}{$sta}{channels}{$chan}{first} ;
