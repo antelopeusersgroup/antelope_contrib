@@ -50,8 +50,7 @@ a system( \fIcommand\fP ...) call.  This is a required argument.
 The command string is scanned for pairs of '%' or '@' characters.
 Anything inside pairs of these delimiters is substituted with matching
 values of parameters/fields from parameter file or database table packets.
-This only works with these two types of packets, indicated by
-source names starting with "/pf/" or "/db/".  The delimiters must
+This only works with these two types of packets. The delimiters must
 fit the parameter/field name tightly, i.e. spaces inside the
 delimiters are treated as part of the parameter/field name.  See
 LIMITATIONS below.
@@ -125,4 +124,6 @@ performed.
 .nf
 Chad Trabant
 ORFEUS Data Center/EC-Project MEREDIAN
+modified by Nikolaus Horn to work with all 
+parameter-file or database packets, independent of the sourcename.
 .fi

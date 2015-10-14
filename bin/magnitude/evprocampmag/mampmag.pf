@@ -53,6 +53,8 @@ mlampmag_params &Arr{
     maximum_bad_fraction         0.2
     auth_accept        .*
     output_magtype              ml
+    mean_magnitude		yes # default
+    use_p2p_amplitude		yes
     output_auth            		ampmag
     output_stamag               yes
     output_wfmeas               yes

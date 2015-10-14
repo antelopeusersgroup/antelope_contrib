@@ -29,23 +29,27 @@ sub init_globals {
 sub stateswitch {
 	( $line ) = @_;
 
-	if( $line =~ /^\s*DATA_TYPE\s+(\S+)\s+(\S+)/i ) {
-		$type = uc( $1 );
-		if( $type ne "MET" ) {
-			die( "File $ARGV Not in MET format\n" ); 
-		}
-		$format = uc( $2 );
-		if( $format ne "IMS1.0" &&
+	if( $line =~ /^\s*BEGIN\s+(\S+)\s+/i ) {
+		$format = uc( $1 );
+		if( $format ne "IMS2.0" &&
 		    $format ne "IMS2.0" ) {
 			die( "File $ARGV Not in IMS1.0, " .
 			     "or IMS2.0 format\n" ); 
 		}
-		$State = "sta";
+		$State = "startup";
 		return 1;
 	}
-	if( $line =~ /^\s*DATA_TYPE\s+(\S+)\s+(\S+)/i ) {
-    }
-
+	if( $line =~ /^\s*DATA_TYPE\s+(\S+)\s+/i ) {
+		$type = uc( $1 );
+		if( $type eq "MET" ) {
+			$State = "sta";
+		}
+		return 1;
+	}
+	if( $line =~ /^\s*STOP\s+/i ) {
+		$State = "startup";
+		return 1;
+	}
 	return 0;
 }
 
@@ -81,6 +85,7 @@ sub addline {
         eval {
             $endtime=str2epoch($ts);
         };
+		$endtime -= 0.001;
 		#whow, they are using DIFFERENT null values. 
 		#This here ignores everythoin starting with -99
 		# physically, this should be ok. Only winddirection could be affected...
