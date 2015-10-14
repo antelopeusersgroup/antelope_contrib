@@ -70,11 +70,11 @@ defaults are provided - you must run the `localmake_config` command to set up
 these macros. Basic boot-strapping for `localmake` looks like this:
 
     # Install the localmake_config command from source
-    cd $ANTELOPE/src/lib/localmake_config
+    cd $ANTELOPE/src/first/localmake_config
     make Include
 
     # Install the localmake command
-    cd ../../bin/utility/localmake
+    cd ../localmake
     make Include; make; make install
     cd ../../
 

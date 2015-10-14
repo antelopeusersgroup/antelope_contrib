@@ -245,9 +245,15 @@ def create_event_list(view):
                       commid=commid,
                       lddate=lddate)
         view2 = view.subset('evid == %d' % evid)
-        view2 = view2.join('origin')
-        view2 = view2.subset('orid == prefor')
-        view2 = view2.separate('origin')
+        view2_ = view2.join('origin')
+        view2.free()
+        view2 = view2_
+        view2_ = view2.subset('orid == prefor')
+        view2.free()
+        view2 = view2_
+        view2_ = view2.separate('origin')
+        view2.free()
+        view2 = view2_
         for record2 in view2.iter_record():
             lat = record2.getv('lat')[0]
             lon = record2.getv('lon')[0]
@@ -276,8 +282,12 @@ def create_event_list(view):
             commid = record2.getv('commid')[0]
             lddate = record2.getv('lddate')[0]
             view3 = view2.subset('orid == %d' % orid)
-            view3 = view3.join('assoc')
-            view3 = view3.join('arrival')
+            view3_ = view3.join('assoc')
+            view3.free()
+            view3 = view3_
+            view3_ = view3.join('arrival')
+            view3.free()
+            view3 = view3_
             arrival_data = [record3.getv('sta',
                                          'arrival.time',
                                          'iphase', 'arid', 'deltim')\
@@ -314,6 +324,8 @@ def create_event_list(view):
         if event.set_prefor(event.prefor) < 0:
             continue
         event_list += [event]
+        view2.free()
+        view3.free()
     return event_list
 
 def create_station_list(view):
@@ -331,7 +343,7 @@ def create_station_list(view):
     This method does NOT open or close the database passed in.
 
     Example:
-    n [1]: import sys
+    In [1]: import sys
 
     In [2]: import os
 
@@ -516,12 +528,21 @@ def write_origin(origin, dbout):
         view = tbl_site.subset('sta =~ /%s/ && ondate < _%f_ && ' \
                                '(offdate == -1 || offdate > _%f_)'
                                % (arrival.sta, origin.time, origin.time))
-        view.record = 0
         if view.record_count == 0:
             logger.debug("Subset expression 'sta =~ /%s/ && ondate < _%f_ "\
                     "&& (offdate == -1 || offdate > _%f_)' yielded 0 "\
                     "results." % (arrival.sta, origin.time, origin.time))
+            view.free()
+            view = tbl_site.subset('sta =~ /%s/' % arrival.sta)
+            view_ = view.sort('ondate')
+            view.free()
+            view = view_
+            if view.record_count == 0:
+                logger.debug("No rows in site table for sta: %s" % arrival.sta)
+                continue
+        view.record = 0
         stalat, stalon = view.getv('lat', 'lon')
+        view.free()
         seaz = azimuth(stalat, stalon,
                              origin.lat, origin.lon)
         esaz = azimuth(origin.lat, origin.lon,
@@ -707,7 +728,7 @@ def pfile_2_cfg(pfile, config_file):
             pfile = '%s.pf' %pfile 
         pfile = pfin(pfile)
     else:
-        pfile = pfread('3Dreloc')
+        pfile = pfread('3Drelocate')
     for key1 in pfile.keys():
         if isinstance(pfile[key1], dict):
             config.add_section(key1)

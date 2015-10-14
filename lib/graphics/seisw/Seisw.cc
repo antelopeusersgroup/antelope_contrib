@@ -744,7 +744,7 @@ cerr << "first_trace_offset = "<< p->first_trace_offset <<endl;
 cerr << "use_variable_trace_spacing = "<< p->use_variable_trace_spacing <<endl<<endl;
 }
 }
-#endif`
+#endif
 
 
 void compute_and_set_resolution(ExmSeiswWidget sw, SeiswPar *spar)
@@ -1243,6 +1243,9 @@ static void Btn3MotionProc (
                         String *params,
                         Cardinal *num_params)
 {
+#ifdef DEBUG_WIDGET
+cerr << "Entering Btn3MotionProc"<<endl;
+#endif
     ExmSeiswWidget sw=(ExmSeiswWidget)w;
     SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
     SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
@@ -1372,6 +1375,10 @@ static void Btn3DownProc (
         ExmSeiswWidget sw = (ExmSeiswWidget)w;
         SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
         SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
+#ifdef DEBUG_WIDGET
+cerr << "Entering Btn3DownProc"<<endl;
+showpar(spar);
+#endif
 
 	if (sw->seisw.display_only!=0) return;
 
@@ -1411,6 +1418,10 @@ static void Btn3UpProc (
         ExmSeiswWidget sw = (ExmSeiswWidget)w;
         SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
         SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
+#ifdef DEBUG_WIDGET
+cerr << "Entering Btn3UpProc"<<endl;
+showpar(spar);
+#endif
         SeismicPick * spick=static_cast<SeismicPick *>(sw->seisw.seisw_pick);
 	TimeWindow temp_tw;
         float temp_x1, temp_x2;
