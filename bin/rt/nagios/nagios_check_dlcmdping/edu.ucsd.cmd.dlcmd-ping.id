@@ -54,7 +54,7 @@ to see if anything at all responds.
   "Dltypes" = "-"
 </parameters>
 <command-line>
-path = "/opt/antelope/$id/bin"
+path = "/opt/antelope/$id/contrib/bin"
 cmd = "nagios_check_dlcmdping --timeout ${timeout} --orb ${address}:${Orbport} --targets '${Targets}' --dltypes '${Dltypes}'"
 </command-line>
 <command-exit>
