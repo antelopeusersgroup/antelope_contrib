@@ -7,38 +7,43 @@ mail_parser [-v] [-m] [-f logfile] [-l library_path]
 		[-p pffile] [file [file...]]
 .fi
 .SH DESCRIPTION
-Often it is convenient to have a variety of automatic email information and 
-request messages come into a single address for reformatting (info intake) 
-and data-distribution (info requests). 
+Often it is convenient to have a variety of automatic email information and
+request messages come into a single address for reformatting (info intake)
+and data-distribution (info requests).
 
-N.B. DISCLAIMER: All mail handling utilities in the Antelope contributed-code repository are provided as-is, with no guarantee either express or implied that they will function as desired, as described, or as expected. All risk of loss or difficulty of any sort from running these utilites is assumed solely by the end user. 
+N.B. DISCLAIMER: All mail handling utilities in the Antelope contributed-code
+repository are provided as-is, with no guarantee either express or implied that
+they will function as desired, as described, or as expected. All risk of loss
+or difficulty of any sort from running these utilites is assumed solely by the
+end user.
 
-mail_parser takes a mail file composed of one or more messages, parses the 
+mail_parser takes a mail file composed of one or more messages, parses the
 input into component messages, and searches its parameter file for perl-script
 handlers that apply to the given sender and subject. If no handler is found,
 the message is ignored. Otherwise the message is handed to the first handler
-that applies and the rest of the handlers are skipped for that message. The
-mail_parser parameter file specifies perl regular expressions which the
-email sender and subject must match in order for the handler to be used on it. 
+that applies. The rest of the handlers are skipped for that message, unless the
+handler has it's "continue" option set to 1 in the parameter file. The
+mail_parser parameter file specifies perl regular expressions which the email
+sender and subject must match in order for the handler to be used on it.
 
 If no filename or filenames are specified on the command line, mail_parser
-expects to receive input from standard-in. 
+expects to receive input from standard-in.
 
-When multiple mail-messages are stored in files, embedded lines in each 
-message that start with "From " are escaped with a '>' character. When 
-mail messages are delivered into a .forward file, these escape-characters 
-are removed. Therefore mail-parser requires a command-line switch to 
-toggle between two different modes. The '-m' switch allows the input 
-to be parsed into multiple messages if multiple messages are present. This 
+When multiple mail-messages are stored in files, embedded lines in each
+message that start with "From " are escaped with a '>' character. When
+mail messages are delivered into a .forward file, these escape-characters
+are removed. Therefore mail-parser requires a command-line switch to
+toggle between two different modes. The '-m' switch allows the input
+to be parsed into multiple messages if multiple messages are present. This
 mode assumes that embedded From lines are properly escaped. The -m option
 is recommended when reading from a file. In the mode without -m, mail_parser
-assumes that only one message is being fed to it. Embedded From lines 
-are ignored. This mode (without -m) is recommended when mail_parser is 
+assumes that only one message is being fed to it. Embedded From lines
+are ignored. This mode (without -m) is recommended when mail_parser is
 being fed directly from a mail utility, for example via a .forward file.
 
-The parameter file entries for individual handlers may contain parameters 
-specific to each handler, in addition to the required sender and subject 
-regular expressions. 
+The parameter file entries for individual handlers may contain parameters
+specific to each handler, in addition to the required sender and subject
+regular expressions.
 
 If a mail message is found for which a given handler applies, mail_parser loads
 the handler and runs it. This is most easily shown with an example. If a mail
@@ -52,16 +57,16 @@ submit_pepp handler from the mail_parser.pf parameter file.
 
 Installing mail_parser to handle mail for a given email account usually
 requires the mail_parser_wrapper(1) script also, which is documented
-separately. 
+separately.
 
 .SH OPTIONS
 .IP "-v"
 verbose output
 .IP "-l \fIlib_dir\fR"
-Specify library directory with *.pl files containing handlers. 
+Specify library directory with *.pl files containing handlers.
 Note that if handlers are contained in the standard $(ANTELOPE)/data/perl
-directory this should not be necessary. 
-.IP "-p \fIpffile\fR" 
+directory this should not be necessary.
+.IP "-p \fIpffile\fR"
 Specify the parameter file. Default is mail_parser.pf
 .IP "-f \fIlogfile\fR"
 Specify a file for log messages and program output
@@ -70,15 +75,19 @@ Enable splitting of the input file(s) into multiple mail messages
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
-The mail_parser parameter file contains an ordered table of associative 
-arrays. Each handler will have an associative array containing at least 
-three key-value pairs: one for subject, one for sender, and one for handler 
+The mail_parser parameter file contains an ordered table of associative
+arrays. Each handler will have an associative array containing at least
+three key-value pairs: one for subject, one for sender, and one for handler
 name. The first two are Perl regular-expressions specifying the mail-messages
-for which the handler should be applied. The third is the name of the handler 
+for which the handler should be applied. The third is the name of the handler
 itself. Handlers will be tested against incoming mail messages in the order
-in which the handlers appear in this table. The example shown here is 
-for the submit_pepp handler. For further details on this handler, please 
-see the submit_pepp(3) man page. 
+in which the handlers appear in this table. The example shown here is
+for the submit_pepp handler. For further details on this handler, please
+see the submit_pepp(3) man page.
+
+The continue parameter for a given handler specified whether other handlers
+will be tried if the current handler matches a given message. If 0 (the
+default), no further attempts to match a handler to a message are made.
 .nf
 .ft CW
 .in 2c
@@ -174,7 +183,7 @@ No handler for
 
 END
 
-Security restriction: ANTELOPE environment variable must 
+Security restriction: ANTELOPE environment variable must
 match ^/opt/antelope. Bye.
 
 Security problem with handler name $handler
@@ -187,15 +196,15 @@ mail_parser_wrapper(1), submit_pepp(3), pf(5), perl(1),
 sendmail(1), aliases(4), autodrm(1), autodrm_wrapper(1)
 .fi
 .SH "BUGS AND CAVEATS"
-mail_parser was originally written with Perl taint-checking turned on. Because 
-some of the handlers commit tasks (file writing etc.) that do not 
+mail_parser was originally written with Perl taint-checking turned on. Because
+some of the handlers commit tasks (file writing etc.) that do not
 pass Perl taint-checking, taint-checking has been turned off in the mail_parser
 script. However it is good to keep security in mind when writing individual
-handlers. If handler content permits it, the operator may want to turn 
+handlers. If handler content permits it, the operator may want to turn
 taint-checking back on.
 
-parameters passed to individual handlers via the mail_parser.pf parameter 
-file will be affected by the standard parameter-file parsing. For 
+parameters passed to individual handlers via the mail_parser.pf parameter
+file will be affected by the standard parameter-file parsing. For
 example, characters such as the pound character must be escaped with a
 backslash.
 
@@ -203,20 +212,20 @@ sendmail security may affect the installation of this command to automatically
 process incoming mail. For details, see your system administrator.
 
 mail_parser is written so that if something goes wrong, it will report the error
-but still die with exit status of zero. This prevents mail_parser problems 
+but still die with exit status of zero. This prevents mail_parser problems
 from causing the input email to bounce back to the sender, i.e. automatically
-airing dirty laundry in public. The price of this feature is that any eval 
-commands in handlers must be replaced by calls to myeval(), or alternatively 
-the author needs more hints about perl. 
+airing dirty laundry in public. The price of this feature is that any eval
+commands in handlers must be replaced by calls to myeval(), or alternatively
+the author needs more hints about perl.
 
-Two options would be nice to have: logging of incoming email messages, and 
-an option to specify forwarding addresses in the mail_parser parameter file. 
+Two options would be nice to have: logging of incoming email messages, and
+an option to specify forwarding addresses in the mail_parser parameter file.
 The former at least is straightforward. Both of these goals may be accomplished
 through appropriate setup of the .forward file. The advantage of parameter-file
-specification of forwarding addresses is that the choice of forwarding 
-recipients could be tailored to the filtering on sender/subject. Initial 
-experiments with the Mail::Internet->smtpsend() were left aside in the 
-interests of getting real work done. 
+specification of forwarding addresses is that the choice of forwarding
+recipients could be tailored to the filtering on sender/subject. Initial
+experiments with the Mail::Internet->smtpsend() were left aside in the
+interests of getting real work done.
 
 .SH AUTHOR
 .nf
@@ -224,4 +233,9 @@ Kent Lindquist
 Geophysical Institute
 University of Alaska, Fairbanks
 .fi
-.\" $Id$
+
+Updates by:
+.nf
+Geoff Davis
+UC San Diego
+.fi
