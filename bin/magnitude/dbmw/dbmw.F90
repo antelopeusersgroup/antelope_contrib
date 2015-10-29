@@ -3,14 +3,15 @@ logical :: dir_e
 logical :: exis
 character*100 table
 character *100 chanexpr
-character *100 dbmasdir	,stringS		
+character *100 dbmasdir,stringS	
 character*150 subset,subchan
 character*64 dir
+character*15 keyname,pro_fix
 character*10 evento
 character*4 Ptype,Stype
 integer aphas,verb,runflag,chanflag,Mwflag
-integer itest,nch,nch1,arid,icha,commid
-real*8  postime,startime,diff 
+integer itest,nch,nch1,arid,icha,commid,aridts
+real*8  pretime,postime,startime,diff 
 !integer pf,retcode,d2npts,nptsN,strlen
 integer retcode,d2npts,nptsN,strlen
 integer*8 pf
@@ -20,7 +21,7 @@ real dati(NMAX),x(NMAX) ,noise(NMAX),noisS(NMAX),rappsr(NMAX),sismS(NMAX)
 real sismoN(NMAX),sismoE(NMAX),sismtmp(NMAX)
 real sismo(NMAX),sismoA(NMAX),sismoV(NMAX),sismoD(NMAX)
 real sismorg(NMAX),xtim
-real *8 t1_req, t1o_req, t1,t2,samprate,calib
+real *8 t0_req, t1_req, t1o_req, t1,t2,samprate,calib
 real *8 t3_req, t4_req, t4o_req, t3
 real sampint
 !----------------------------------------------
@@ -32,39 +33,42 @@ integer NMAX64
 integer*8 nsamp
 integer nptsM
 real*8  otime,olat,olon,slat,slon,elat,elon,ml,stopti
-integer db_o(4),db_or(4),dbresult(4),db_ar(4),db_net(4),db_ml(4)
+integer db_o(4),db_or(4),dbresult(4),db_ar(4),db_ml(4)
 integer db(4),db_re(4),db_re1(4),db_si(4),db_in(4),db_wf(4)
 integer db_ca(4),db_caO(4),db_ca_(4)
-integer db_as(4),db_s(4),db_i(4),db_w(4),dbmw(4),dbmwn(4)
+integer db_as(4),db_s(4),db_i(4),db_w(4),dbmw(4),dbmwn(4),dbmagn(4),dbmag(4)
+integer lastid(4)
 integer n_w, n_ca, n_st, n_in, n_or, n_o, n_wf, n_net
 integer n_ml, nn, nw, nwn, nn1
-integer orid, evid 
+integer orid, evid, oridmag, oridmg
 integer npts
 !
 !---------------------------------------------
 real *8 spikv,wfinizio,wffine,tnoise
 real spik,inc,first,last,Gampl
-character*6 sta,sta_
+character*6 sta,sta_,stats
 character *8 chan,chan_
 character*128 string_t1,string_t2,string_t3,string_Pph,string_Sph
 character*100 rfile,resfile,filename
 character*100 filexy,filepr,filepr1,filspt,filelog,filepf,dirpr,home_dir
 real zero,xmean
 real*8 depth,arrP,arrS,arrP_,arrS_,res,resP,resS,resmin,sphasetime,pphasetime
+real*8 odep
 real*8 arrSo
 integer iargc,npts_i,errfl,nptsSi
 character*278 dbreco
 character*155 dbreco1
-character*182 dbremw
-character*136 dbremwn
-character*50 label
+character*182 dbremw,dbremag
+character*136 dbremwn,dbremagn
+character*100 label
 character*30 filter
 character*24 param(NMAX),ptest,mtest,smw(NMAX)
 character*20 string_ot,string_ot1
 character*15 auth
 character*8 ntest,nmw(NMAX)
+character*6 magtype, magtyts
 character*7 labor,labev
-character*4 labMw					
+character*4 labMw
 character*1 segtype
 character*1 idum
 real*8 ff1, ff2, f1, f2
@@ -83,6 +87,7 @@ integer ispike,ihou,flagerr,usta,rsta,tsta
 real*8 inizio,startwin,stopwin,startnoise,stopnoise
 real*8 staMw(100),staM0(100),staeqR(100),staf0(100)
 real*8 netMw,netM0,netf0,neteqR,sigmaMw
+real*8 rho_pf,v_pf,k_pf,Q_f0,Q_f1,Q_f2
 common/BUT/sqbsum,abmax,hsb1(NMAX),hsb2(NMAX)
 COMMON/CPAZ/ t,phase(NMAX),absval(NMAX),freq(NMAX)
 COMMON/RDATI/ff1,ff2,ifilt,np1,np2
@@ -94,14 +99,14 @@ COMMON/BT3/PD1(100),IP1
 COMMON/FRANGE/PERMIN,PERMAX,IRANGE
 COMMON/MWCOM/orid,evid,lddate,arrP,arrS,Ptype,Stype,auth,chan
 COMMON/MWCOM01/staMw,staM0,staeqR,staf0,nmwdat
+COMMON/MwCOM02/rho_pf,v_pf,k_pf,Q_f0,Q_f1,Q_f2
 
-logical exi
-character*60 command
+character*120 command
 
-        external fill
+external fill
 
-include "inc/db.i"
-include "inc/coords.i"
+include "db.i"
+include "coords.i"
 
 !-------------------------------------------------------------------
 ! DATA
@@ -109,6 +114,7 @@ include "inc/coords.i"
       data pi/3.141592654/
       data grav/981./
       runflag = 0
+      lstflag = 0
 !--------------------------------------------------------------------
 
 if ( iargc() .gt. 2 .or. iargc() .lt. 1) then
@@ -124,20 +130,19 @@ call getarg (1, filepf )
 
 if (iargc() .eq. 2) runflag = 1
 
-print *, "ORID!", orid
-
 strlen = LEN(TRIM(ADJUSTL(filepf)))
 filepf = filepf(1:strlen)
 !--------------------------------------------------------------------
-auth='dbmwMAC'
-depth = 10.
+auth='dbmw'
 Mwflag = 1
-Q = 400
+
 !--------------------------------------------------------------------
-write(6,*) "-------------------------------------------"
-write(6,*) "- Program dbmw version dbmwSUN March 2012 -"
-write(6,*) "-------------------------------------------"
-write(6,*)  "open pf file: ",filepf(1:strlen)
+write(6,*) "******************************************"
+write(6,*) "* Program dbmw version 6.10 Jun 2015     *"
+write(6,*) "* Antelope release 5.4                   *"
+write(6,*) "* Giovanni Costa                         *"
+write(6,*) "******************************************"
+write(6,*)  "- pf file: ",filepf(1:strlen)
 !--------------------------------------------------------------------
 ! 	 READ PF file start
 !
@@ -150,6 +155,7 @@ if ( retcode .ne. 0 ) call complain ( 0, "Error in parameter file:" )
     call pfget_string ( pf, 'home_dir',home_dir)
     call pfget_string ( pf, 'stringS',stringS )
     call pfget_int ( pf, 'verb', verb )
+    call pfget_double( pf, 'pretime', pretime )
     call pfget_double( pf, 'postime', postime )
     call pfget_int ( pf, 'ispike', ispike )
     call pfget_int ( pf, 'nfin', nfin )
@@ -164,7 +170,7 @@ if ( retcode .ne. 0 ) call complain ( 0, "Error in parameter file:" )
     call pfget_int ( pf, 'np2', np2 )
     call pfget_double ( pf, 'tnoise', tnoise )
     call pfget_int ( pf, 'aphas', aphas )
-    call pfget_double ( pf, 'PERMIN', permin )	  
+    call pfget_double ( pf, 'PERMIN', permin ) 
     call pfget_double ( pf, 'PERMAX', permax )
     call pfget_string ( pf, 'chanexpr', chanexpr )
     call pfget_double( pf, 'magmin', magmin )
@@ -173,11 +179,18 @@ if ( retcode .ne. 0 ) call complain ( 0, "Error in parameter file:" )
     call pfget_double ( pf, 'distmax2', distmax2 )
     call pfget_double ( pf, 'distmax3', distmax3 )
     call pfget_double ( pf, 'distmax4', distmax4 )
+    call pfget_double ( pf, 'depth', depth )
+    call pfget_double ( pf, 'Q_f0', Q_f0 )
+    call pfget_double ( pf, 'Q_f1', Q_f1 )
+    call pfget_double ( pf, 'Q_f2', Q_f2 )
+    call pfget_double ( pf, 'rho_pf', rho_pf )
+    call pfget_double ( pf, 'v_pf', v_pf )
+    call pfget_double ( pf, 'k_pf', k_pf )
 !--------------------------------------------------------------------	
         startime = str2epoch(stringS)
-	tnoise = tnoise +1.
+tnoise = tnoise +1.
 !
-	call pffree ( pf )
+call pffree ( pf )
 !
 ! 	 READ PF file stop
 !####################################################################
@@ -186,11 +199,7 @@ filelog = home_dir(1:strlen)//'/logs/dbmw.log'
 dbmasdir = home_dir(1:strlen)//'/dbmaster'
 dirpr = home_dir(1:strlen)//'/PARAM/'
 
-!print *, 'Open pf file', filelog
-
-!open(6,file=filelog,position='APPEND')
-
-print *, 'Open database ',table
+print *, '- database: ',table
 
 !--------------------------------------------------------------------
 !
@@ -203,11 +212,11 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
   call dbquery (db_or,dbRECORD_COUNT, n_or)
 
         if(runflag.eq.0.and.startime.gt.0.0001) then
-	  write(subset,*) "time > ",startime
-	  call dbsubset(db_or,db_or,subset,"")
-	  call dbquery (db_or,dbRECORD_COUNT, n_or)
-	endif
-	call dblookup(db_w, db, "", "wfdisc", "", "")
+          write(subset,*) "time > ",startime
+          call dbsubset(db_or,db_or,subset,"")
+          call dbquery (db_or,dbRECORD_COUNT, n_or)
+        endif
+        call dblookup(db_w, db, "", "wfdisc", "", "")
         call dbquery (db_w,dbRECORD_COUNT, n_w)
         call dblookup(db_caO, db, "", "calibration", "", "")
         call dbquery (db_caO,dbRECORD_COUNT, n_ca)
@@ -221,6 +230,8 @@ itest = dbclose(db)
 !
 !---------------------------------------------------------------------
 do imain=0,n_or-1
+
+lstflag = 0
 
 itest = dbopen_database ( table, "r+", db )
 
@@ -243,16 +254,15 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
 
   db_or(4) = imain
   if(runflag.lt.1) then
-    if( dbgetv (db_or,"","orid",orid,"evid",evid,NULL).lt.0) call complain (0, "dbgetv error" )    
-print *, "Son qui 1"
+    if( dbgetv (db_or,"","orid",orid,"evid",evid,NULL).lt.0) call complain (0, "dbgetv error 1" )    
   endif
 !
-      write(subset,*) "orid == ",orid
-	  call dbsubset(db_o,db_or,subset,"")
-	  call dbquery (db_o,dbRECORD_COUNT, n_o)
-	  call dbjoin(db_wf,db_w,db_o,0,0,0,0,"")
-	  call dbquery (db_wf,dbRECORD_COUNT, n_wf)
-print *, 'DPC_1 n_w n_wf n_ca, n_w: ', n_wf, n_ca, n_w
+  write(subset,*) "orid == ",orid
+  call dbsubset(db_o,db_or,subset,"")
+  call dbquery (db_o,dbRECORD_COUNT, n_o)
+  call dbjoin(db_wf,db_w,db_o,0,0,0,0,"")
+  call dbquery (db_wf,dbRECORD_COUNT, n_wf)
+!print *, 'DPC_1 n_w n_wf n_ca, n_w: ', n_wf, n_ca, n_w
 !---------------------------------------------------------------------
 !   
 !	  MAIN if over waveforms
@@ -263,15 +273,19 @@ print *, 'DPC_1 n_w n_wf n_ca, n_w: ', n_wf, n_ca, n_w
    do i=0, n_o-1
         db_o(4) = i
         if( dbgetv ( db_o,"",  &
-        &   "evid",evid,"lat",olat,"lon",olon,"time",otime,"ml",ml,NULL) &
-        &   .lt. 0) call complain (0, "dbgetv error" )
-print *, "Son qui 2"
+        &   "evid",evid,"lat",olat,"lon",olon,"depth",odep,"time",otime,"ml",ml,NULL) &
+        &   .lt. 0) call complain (0, "dbgetv error 2" )
    enddo
+   pro_fix = 'fixed!'
+   if(odep.gt.0.0) then
+     depth = odep
+     pro_fix = ''
+   endif
 !
-	   if(ml.lt.2.0) distrad=distmax1/111.195
-	   if(ml.ge.2.0.and.ml.lt.4.0) distrad=distmax2/111.195
-	   if(ml.ge.4.0.and.ml.lt.6.0) distrad=distmax3/111.195
-	   if(ml.ge.6.0) distrad=distmax4/111.195
+   if(ml.lt.2.0) distrad=distmax1/111.195
+   if(ml.ge.2.0.and.ml.lt.4.0) distrad=distmax2/111.195
+   if(ml.ge.4.0.and.ml.lt.6.0) distrad=distmax3/111.195
+   if(ml.ge.6.0) distrad=distmax4/111.195
            distmin = distmin/111.195
 !		
       call epoch2str(string_ot,otime,"%D %k %M %S")
@@ -285,8 +299,11 @@ print *, "Son qui 2"
 
 if(ml.ge.magmin.and.n_ca.gt.0) then
 
-print *,'Origin time: ',string_ot,'Lat.',olat,'Lon.',olon,'Ml = ',ml,' ORID: ',orid
-print *,' Event ACCEPTED'	 
+print *,'ORID: ',orid
+print *,'Origin time: ',string_ot
+print *,'Lat.',olat,'Lon.',olon,'Dep.',fixdep, depth
+print *,'Ml = ',ml
+print *,' Event ACCEPTED' 
 print *,' Number of stations: ', n_w
 !---------------------------------------------------------------------
 !   
@@ -301,7 +318,7 @@ print *, '======================================================================
 
         dbresult(4) = ista
         if( dbgetv ( dbresult,"","sta",sta,"chan",chan,NULL) &
-        &      .lt. 0) call complain (0, "dbgetv error" )
+        &      .lt. 0) call complain (0, "dbgetv error 3" )
         
         call dblookup(db_ar, db, "","arrival", "", "")
         call dblookup(db_as, db, "","assoc", "", "")
@@ -310,11 +327,11 @@ print *, '======================================================================
         call dblookup(db_i, db, "", "instrument", "", "")
 
         call nchar(sta,nch)
-	subset = 'sta == "'//sta(1:nch)//'"'
+        subset = 'sta == "'//sta(1:nch)//'"'
 !print *, 'Mac_006 subset:', subset
         call dbsubset(db_si,db_si,subset,"")
         call dbjoin(db_re,db_o,db_si,0,0,0,0,"")
-	call dbquery(db_re,dbRECORD_COUNT, n_st)
+        call dbquery(db_re,dbRECORD_COUNT, n_st)
 !----------------------------------------------------------------------
 ! response filename
 !
@@ -333,7 +350,7 @@ print *, '======================================================================
       do i=0, n_in-1
         db_in(4) = i
         if( dbgetv ( db_in,"","dir",dir,"dfile",rfile,"ncalib",calib,NULL) &
-        &      .lt. 0) call complain (0, "dbgetv error" )
+        &      .lt. 0) call complain (0, "dbgetv error 4" )
         if(dbex_compile(db_in,'extfile()',ex,0).lt.0) call complain(0,'dbex_compile problem!')
         if(dbex_eval(db_in,ex,0,resfile).lt.0) call complain(0,'dbex_eval problem!')
       enddo
@@ -342,20 +359,20 @@ print *, '======================================================================
       do i=0, n_st-1
          db_re(4) = i
          if( dbgetv ( db_re,"","sta",sta,"lat",olat,"lon",olon,"site.lat",slat,"site.lon",slon,NULL) &
-        &   .lt. 0) call complain (0, "dbgetv error" )
+        &   .lt. 0) call complain (0, "dbgetv error 5" )
       enddo
 !---------------------------------------------------------------------------  
        IF(olon.GE.0.0) olon=360.0-olon
        IF(olon.LT.0.0) olon=-olon
        IF(slon.GE.0.0) slon=360.0-slon
        IF(slon.LT.0.0) slon=-slon
-        diff=olon+(360.-slon)
-        IF(diff.GE.360.) diff=diff-360.
-	    elat = olat
-	    elon = olon
+       diff=olon+(360.-slon)
+       IF(diff.GE.360.) diff=diff-360.
+       elat = olat
+       elon = olon
 
-        CALL DISTAN(elat,elon,slat,slon,delta1,dista,az)
-		
+       CALL DISTAN(elat,elon,slat,slon,delta1,dista,az)
+
         write(6,*) 'Distance epic.:', dista
         ipdista=sqrt(dista**2+depth**2)
         write(6,*) 'Distance hypo.:', ipdista
@@ -375,36 +392,35 @@ print *, '======================================================================
     endif
 !----------------------------------------------------------------------
         mlsta=-999.0
-        call dblookup(db_net, db, "", "stamag", "", "")
-	    call dbquery(db_net,dbRECORD_COUNT, n_net)
+        call dblookup(dbmag, db, "", "stamag", "", "")
+        call dbquery(dbmag,dbRECORD_COUNT, n_net)
         call nchar(sta,nch)
         subset = 'sta == "'//sta(1:nch)//'" && magtype == "ml"'
-        call dbsubset(db_ml,db_net,subset,"")
+        call dbsubset(db_ml,dbmag,subset,"")
         write(subset,*) "orid == ",orid
-	    call dbsubset(db_ml,db_ml,subset,"")
-	    call dbquery(db_ml,dbRECORD_COUNT, n_ml)
+        call dbsubset(db_ml,db_ml,subset,"")
+        call dbquery(db_ml,dbRECORD_COUNT, n_ml)
         if(n_ml.eq.1) then
-		  db_ml(4)=0
+          db_ml(4)=0
           if( dbgetv ( db_ml,"","magnitude",mlsta,NULL) &
-          &      .lt. 0) call complain (0, "dbgetv error" )  
-		endif
-
+          &      .lt. 0) call complain (0, "dbgetv error 6" )  
+        endif
 !----------------------------------------------------------------------
 !  Calculate phases
 ! 
-	 arrP=pphasetime(delta1,depth)+otime
-	 arrS=sphasetime(delta1,depth)+otime
-	 Ptype='synt'
-	 Stype='synt'
-	 resP=0.0
-	 resS=0.0
+        arrP=pphasetime(delta1,depth)+otime
+        arrS=sphasetime(delta1,depth)+otime
+        Ptype='synt'
+        Stype='synt'
+        resP=0.0
+        resS=0.0
 !-----------------------------------------------------------------------
 !  extract db phases
 !
     if(aphas.lt.1) then
-   	 call dbjoin(db_re,db_o,db_as,0,0,0,0,"")
-     call dbsubset(db_re,db_re,subset,"")
- 	 call dbjoin(db_re,db_re,db_ar,0,0,0,0,"")
+      call dbjoin(db_re,db_o,db_as,0,0,0,0,"")
+      call dbsubset(db_re,db_re,subset,"")
+      call dbjoin(db_re,db_re,db_ar,0,0,0,0,"")
 !
 ! P phase
 !
@@ -419,7 +435,7 @@ print *, '======================================================================
        do i=0, n_w-1
            db_re1(4) = i
          if( dbgetv ( db_re1,"","arrival.time",arrP_,"timeres",res,"arid",arid,"seaz",seaz,"esaz",esaz,NULL) &
-         &      .lt. 0) call complain (0, "dbgetv error" )
+         &      .lt. 0) call complain (0, "dbgetv error 7" )
 	     if(abs(res).lt.resmin) then 
 	       resmin=abs(res)
 		   arrP=arrP_
@@ -442,7 +458,7 @@ print *, '======================================================================
        do i=0, n_w-1
            db_re1(4) = i
          if( dbgetv ( db_re1,"","arrival.time",arrS_,"timeres",res,NULL) &
-         &      .lt. 0) call complain (0, "dbgetv error" )
+         &      .lt. 0) call complain (0, "dbgetv error 8" )
 	     if(abs(res).lt.resmin) then 
 	       resmin=abs(res)
 		   resS=res
@@ -452,7 +468,7 @@ print *, '======================================================================
 	   Stype='db  '
 	 endif
 !
-	endif
+       endif
 !
 !print *, "Azimuth vari:", seaz,esaz,az
 
@@ -463,7 +479,7 @@ print *, '======================================================================
 
      call strtime(string_Pph,arrP)
      call strtime(string_Sph,arrS)
-					
+
      if(verb.ge.1) write(6,"('    P phase: ',a25,' res: ',f7.3,1x,a4,' S phase: ',a25,' res: ',f7.3,1x,a4)") &
     &   string_Pph,resP,Ptype,string_Sph,resS,Stype
 
@@ -482,8 +498,8 @@ print *, '======================================================================
         do i=0, n_ca-1
           db_ca_(4) = i
           if( dbgetv ( db_ca_,"","samprate",samprate,"calib",calib,"segtype",segtype,NULL) &
-             &      .lt. 0) call complain (0, "dbgetv error" )
-	enddo
+             &      .lt. 0) call complain (0, "dbgetv error 9" )
+        enddo
 !----------------------------------------------------------------------
 !   Check calib   
 !
@@ -496,6 +512,7 @@ print *, '======================================================================
 !----------------------------------------------------------------------
 !   Define signal-noise start time and end time
 !         
+	 t0_req = arrP - pretime
          t1_req = arrP + postime
 	 t1o_req = t1_req
 	 t3_req = arrP - tnoise - 2.
@@ -539,19 +556,19 @@ print *, '======================================================================
 
      if(nn .gt. NMAX) then
 	        print *, "Number of records in wfparam table:", nn
-			call die ( 0, "Table wfparam number of record > NMAX" )
+                call die ( 0, "Table wfparam number of record > NMAX" )
      endif
 
      write(ptest,'(a6,1x,a8,1x,i8)') sta,chan,orid
 
      npar = nn
      do i=0,nn-1
-       dbP1(4) = i					   
+       dbP1(4) = i
        itest=dbget(dbP1,dbreco)
        param(i)=dbreco(1:24)
        if(ptest.eq.dbreco(1:24)) then
-	 itest=dbmark(dbP1)
-	 npar=npar-1
+         itest=dbmark(dbP1)
+         npar=npar-1
        endif
        dbreco=''
      enddo
@@ -587,6 +604,28 @@ print *, '======================================================================
 !--------------------------------------------------------------------- 
      if(icha.eq.2.and.Mwflag.gt.0) then
 !----------------------------------------------------------------------
+!    Open output table stamag
+!
+!         call dblookup(dbmag, db, "", "stamag", "", "")
+         if(dbmag(2) .lt. 0) call die ( 0, "Can't open stamag table" )
+         call dbquery ( dbmag, dbRECORD_COUNT, nmg )
+         nremag = nmg
+         if(nmg.gt.0) then
+           do i=0,nmg-1
+             dbmag(4) = i
+         if( dbgetv(dbmag,"","orid",oridmg,"sta",stats,"magtype",magtyts,NULL).lt.0) &
+           & call complain (0, "dbgetv error 10" )
+             if(oridmg.eq.orid.and.magtyts.eq.'mw'.and.stats.eq.sta) then
+               itest=dbmark(dbmag)
+               nremag=nremag-1
+             endif
+             dbremag=''
+           enddo
+           nremag=nremag+1
+           itest=dbcrunch(dbmag)
+         endif
+         call dbquery ( dbmag, dbRECORD_COUNT, nmg )
+!----------------------------------------------------------------------
 !    Open output table stamw
 !
          call dblookup(dbmw, db, "", "stamw", "", "")
@@ -595,23 +634,23 @@ print *, '======================================================================
 
          if(nw .gt. NMAX) call die ( 0, "Table stamw number of record > NMAX" )
 
-	 write(mtest,'(a6,1x,a2,"T     ",1x,i8)') sta,chan(1:2),orid
+         write(mtest,'(a6,1x,a2,"T     ",1x,i8)') sta,chan(1:2),orid
 
-	 nremw = nw
-	 if(nw.gt.0) then
-	 do i=0,nw-1
-	   dbmw(4) = i					   
-	   itest=dbget(dbmw,dbremw)
-	   smw(i)=dbremw(1:24)
-           if(mtest.eq.dbremw(1:24)) then
-	     itest=dbmark(dbmw)
-	     nremw=nremw-1
-	   endif
-	   dbremw=''
-	 enddo
-         nremw=nremw+1
-         itest=dbcrunch(dbmw) 
-       endif
+          nremw = nw
+          if(nw.gt.0) then
+            do i=0,nw-1
+              dbmw(4) = i
+              itest=dbget(dbmw,dbremw)
+              smw(i)=dbremw(1:24)
+              if(mtest.eq.dbremw(1:24)) then
+                itest=dbmark(dbmw)
+                nremw=nremw-1
+              endif
+              dbremw=''
+            enddo
+            nremw=nremw+1
+            itest=dbcrunch(dbmw) 
+          endif
 !----------------------------------------------------------------------
 !    Open output table netmw
 !
@@ -626,25 +665,53 @@ print *, '======================================================================
        nremwn = nwn
        if(nwn.gt.0) then
          do i=0,nwn-1
-	    dbmwn(4) = i					   
-	    itest=dbget(dbmwn,dbremwn)
-	    nmw(i)=dbremwn(1:8)
-            if(ntest.eq.dbremwn(1:8)) then
-	      itest=dbmark(dbmwn)
-	      nremwn=nremwn-1
-	    endif
-	    dbremwn=''
-	  enddo
+           dbmwn(4) = i   
+           itest=dbget(dbmwn,dbremwn)
+           nmw(i)=dbremwn(1:8)
+           if(ntest.eq.dbremwn(1:8)) then
+             itest=dbmark(dbmwn)
+             nremwn=nremwn-1
+           endif
+           dbremwn=''
+         enddo
        endif
        nremwn=nremwn+1
        itest=dbcrunch(dbmwn) 
 
-      endif
+!----------------------------------------------------------------------
+!    Open output table netmag
+!
+       call dblookup(dbmagn, db, "", "netmag", "", "")
+       call dblookup(lastid, db, "", "lastid", "", "")
+
+       if(dbmagn(2) .lt. 0) call die ( 0, "Can't open netmag table" )
+       if(lastid(2) .lt. 0) call die ( 0, "Can't open lastid table" )
+
+       call dbquery ( dbmagn, dbRECORD_COUNT, nmagn )
+
+       write(ntest,'(i8)') orid
+
+       nremagn = nmagn
+       if(nmagn.gt.0) then
+         do i=0,nmagn-1
+           dbmagn(4) = i
+           if( dbgetv (dbmagn,"","orid",oridmag,"magtype",magtype,NULL).lt.0) call complain (0, "dbgetv error 11" )
+           if(oridmag.eq.orid.and.magtype.eq.'mw') then
+             itest=dbmark(dbmagn)
+             nremagn=nremagn-1
+           endif
+           dbremagn=''
+         enddo
+       endif
+       nremagn=nremagn+1
+       itest=dbcrunch(dbmagn)
+
+     endif
 !----------------------------------------------------------------------
 ! read waveforms
 !
           npts=0
-	  dati=0.0
+          dati=0.0
 
           if(verb.gt.1) then 
             call strtime(string_t1,t1_req)
@@ -655,21 +722,21 @@ print *, '======================================================================
 
           nptsM = 0
 
-	  do i=0,n_wf-1
+          do i=0,n_wf-1
             db_wf(4) = i
-	    if(dbgetv(db_wf,"","sta",sta_,"chan",chan_,"time",wfinizio,"endtime",wffine,"nsamp",nsamp,NULL).lt.0) &
-		&  call complain (0,"dbgetv error")
-	    if(sta_.eq.sta.and.chan_.eq.chan) then
-	    if(nsamp.lt.npts_i) then
-	      npts_i=nsamp
-	      t1_req = t3_req + (npts_i-1)/samprate + 1.
-	    endif
-            if(t1_req.gt.wffine) t1_req=wffine 
-            if(t3_req.lt.wfinizio) t3_req=wfinizio
-            NMAX64 = NMAX            
-	    call trgetwf2 ( db_wf, 0, dati, NMAX64, t3_req, t1_req, &
+            if(dbgetv(db_wf,"","sta",sta_,"chan",chan_,"time",wfinizio,"endtime",wffine,"nsamp",nsamp,NULL).lt.0) &
+              &  call complain (0,"dbgetv error 12")
+            if(sta_.eq.sta.and.chan_.eq.chan) then
+              if(nsamp.lt.npts_i) then
+                npts_i=nsamp
+                t1_req = t3_req + (npts_i-1)/samprate + 1.
+              endif
+              if(t1_req.gt.wffine) t1_req=wffine 
+              if(t3_req.lt.wfinizio) t3_req=wfinizio
+              NMAX64 = NMAX            
+              call trgetwf2 ( db_wf, 0, dati, NMAX64, t3_req, t1_req, &
                  &  t3, t1, nptsM, fill, NULL )
-	    endif
+            endif
           enddo
 
           npts =nptsM
@@ -683,49 +750,44 @@ print *, '======================================================================
             write(6,*) '     From trgetwf2 start: ',string_t3(1:24), ' stop: ',string_t1(1:24)
           endif
 
-	  npts_t=(t1-t3)*samprate
+          npts_t=(t1-t3)*samprate
 
 !-------------------------------------------------------------------
 !  Check npts
 !
     if(npts.gt.0.and.npts.lt.NMAX) then
 !-------------------------------------------------------------------
-            if((t3_req-t3).lt.0.0.and.abs(t3_req-t3).gt.0.5) then 
-	      if(verb.ge.1) write(6,*) 'tnoise ',tnoise+(t3_req-t3),' less then pf tnoise ',tnoise
-	    endif
-	    if((t1+0.5).lt.t1_req) write(6,*) '     Wform end time less then pf posttime ',postime 
+         if((t3_req-t3).lt.0.0.and.abs(t3_req-t3).gt.0.5) then 
+           if(verb.ge.1) write(6,*) 'Pretime ',pretime+(t3_req-t3),' less then pf pretime ',pretime
+        endif
+        if((t1+0.5).lt.t1_req) write(6,*) '     Wform end time less then pf posttime ',postime 
 
 !-----------------------------------------------------------------------
 !  Signal pre-process
 !
-             npts=npts-1
-	     sismo=0.0
-	     flagerr = 0
+        npts=npts-1
+        sismo=0.0
+        flagerr = 0
 !----------------------------------------------------------------------
 !  	Test data missing (overlapping???)
 ! 
 
-	     do i2=1,npts
-               sismo(i2)=dati(i2+1)
-	       sismorg(i2)=sismo(i2)
-	       if(i2.lt.npts-1) then
-	         if(abs(dati(i2+1)).gt.1.0e+38.and.abs(dati(i2+2)).gt.1.0e+38) flagerr = 1
-	       endif
-             enddo
-!	     do i=1,npts
-!	       xtim=xtim+1./samprate
-!	       write(43,*) xtim,sismo(i),dati(i)
-!	     enddo
-!	     close(43)
+        do i2=1,npts
+           sismo(i2)=dati(i2+1)
+           sismorg(i2)=sismo(i2)
+           if(i2.lt.npts-1) then
+             if(abs(dati(i2+1)).gt.1.0e+38.and.abs(dati(i2+2)).gt.1.0e+38) flagerr = 1
+           endif
+        enddo
 
-	     if(flagerr.lt.1) then
+        if(flagerr.lt.1) then
 
 !----------------------------------------------------------------------
 !   Despike
 !
-             spikv = 1.0e+03
-             spik = spikv 
-	     if(ispike.eq.1) call rspike(sismo,npts,spik,NMAX)
+        spikv = 1.0e+03
+        spik = spikv 
+        if(ispike.eq.1) call rspike(sismo,npts,spik,NMAX)
 !----------------------------------------------------------------------
 !   Remove mean
 !
@@ -742,7 +804,7 @@ print *, '======================================================================
 !----------------------------------------------------------------------
 !   D2
 !								
-	     if(iwin.eq.1) call d2(sismo,npts,d2npts,NMAX)
+             if(iwin.eq.1) call d2(sismo,npts,d2npts,NMAX)
 !------------------------------------------------------------------------
 ! Read response file and calib costant
 !
@@ -753,11 +815,11 @@ print *, '======================================================================
 !
              Gampl = calib
 
-	     sismotmp=0.0
+             sismotmp=0.0
 
- 	     do i2=1,npts
+             do i2=1,npts
                 sismo(i2)=sismo(i2)*Gampl
-	        sismtmp(i2) = sismo(i2)
+                sismtmp(i2) = sismo(i2)
              enddo
 
 !		  xtim=0.0 
@@ -773,33 +835,33 @@ print *, '======================================================================
          inizio = arrP - 1. - t3
          startwin = arrS - (inizio*0.1) - t3
          stopwin = arrS + dista/3. - t3
-		 startnoise = 0.0
-		 stopnoise = tnoise  - 1.
+         startnoise = 0.0
+         stopnoise = tnoise  - 1.
 
          if ( startwin.lt.0 ) call complain ( 0, "Error in Mw window definition!" )
 
-		 nstartS = int(inizio*samprate)+1
-		 nptsSi =  npts - nstartS
+         nstartS = int(inizio*samprate)+1
+         nptsSi =  npts - nstartS
          
-		 nptsS = int(startwin*samprate)+1		 
-		 nptsW = int((stopwin-startwin)*samprate)+1
+         nptsS = int(startwin*samprate)+1 
+         nptsW = int((stopwin-startwin)*samprate)+1
 
-		 nptsN = int(tnoise * samprate)+1
+         nptsN = int(tnoise * samprate)+1
 
 !----------------------------------------------------------------------------
 !  Check for errors in windows definition  
 !
-		 flagerr = 0
-		 if(nptsSi.lt.1.or.nptsS.lt.1.or.nptsW.lt.1.or.nptsN.lt.1) flagerr  = 1
-		 if(nptsS.gt.nptsSi.or.nptsN.gt.nptsSi) flagerr = 1
-		 if(inizio.le.0.0) flagerr = 1
+         flagerr = 0
+         if(nptsSi.lt.1.or.nptsS.lt.1.or.nptsW.lt.1.or.nptsN.lt.1) flagerr  = 1
+         if(nptsS.gt.nptsSi.or.nptsN.gt.nptsSi) flagerr = 1
+         if(inizio.le.0.0) flagerr = 1
 !
          if(flagerr.lt.1) then
 
 !---------------------------------------------------------------------------
 !   Prepare signals for computation
 !
-		   call nchar(sta,nch)
+         call nchar(sta,nch)
 !	           filename=sta(1:nch)//'Segnale.dat'
 !	           open(45,file=filename)
 !	           filename=sta(1:nch)//'Noise.dat'
@@ -1179,12 +1241,15 @@ print *, '======================================================================
 !	              
 	      delhou=abs(PD(1)-PD(2))
               Housner=0.0
+              Housner1=0.0
               do ihou=1,200
 !	        write(31,*) PD(ihou),SV(3,ihou),pssv(3,ihou)
-                if(PD(ihou).ge.PERMIN.and.PD(ihou).le.PERMAX) then
+                Housner1=Housner1+(SV(1,ihou)*delhou)
+                if(PD(ihou).ge.0.1.and.PD(ihou).le.2.5) then
 	          Housner=Housner+(SV(1,ihou)*delhou)
                 endif
 	      enddo
+              write(*,*) "     Housner1, Housner:", Housner1, Housner
 !---------------------------------------------------------------------------
 !   write parameters file
 !
@@ -1298,7 +1363,7 @@ print *, '======================================================================
 ! End check npts
 !----------------------------------------------------------------------
 
-	     enddo
+         enddo
 !
 !   End loop over channels
 !----------------------------------------------------------------------
@@ -1314,11 +1379,11 @@ print *, '======================================================================
 !----------------------------------------
    if(chanflag.eq.2.and.Mwflag.eq.1) then
 
- 	 chanflag = 0
-!	 azR=270.-azN
-     azR=azN-90.
+      chanflag = 0
+!     azR=270.-azN
+      azR=azN-90.
 
-	 arrSo = arrS-otime
+      arrSo = arrS-otime
 
 !----------------------------------------------------------------------
 !   Enter in Mw_core for Mw computation
@@ -1327,13 +1392,45 @@ print *, '======================================================================
      call Mw_core(dbremw,sismoE,sismoN,tR,npts,nptsW,inc,azR,arrSo,dista,Q,finf,fsup,segtype,samprate,sta,verb)
 
 !--------------------------------------------------------------------------------
-! add row to database 
+! add row to stamw database 
 !
          if(verb.ge.1) write(6,*) '  Add new record to table .stamw' 
- 	 istor=dbmw(4) 
-	 dbmw(4)=nremw
-	 itest=dbadd(dbmw,dbremw)
-	 if(itest.lt.0) call die ( 0, "Can't write record" )
+print *, '  Add new record to table .stamw'
+         istor=dbmw(4) 
+         dbmw(4)=nremw
+         itest=dbadd(dbmw,dbremw)
+         if(itest.lt.0) call die ( 0, "Can't write record" )
+!--------------------------------------------------------------------^M
+! extract magid from lastid table                   
+!
+      if(lstflag.eq.0) then
+        call dbquery (lastid,dbRECORD_COUNT,lstid)
+        do ilst=0,lstid-1
+          lastid(4) = ilst
+          if( dbgetv (lastid,"","keyname",keyname,"keyvalue",keyvalue,NULL).lt.0) call complain (0, "dbgetv error 13")
+          if(keyname.eq.'magid') then
+            magid = keyvalue
+            itest=dbmark(lastid)
+            magid = magid + 1
+            if(dbputv(lastid,"","keyname",keyname,"keyvalue",magid,"lddate",lddate,0).lt.0) call complain (0, "dbputv error 14" )
+          endif
+        enddo
+        itest=dbcrunch(lastid)
+        lstflag = 1
+      endif
+      call dbquery (lastid,dbRECORD_COUNT,lstid)
+!--------------------------------------------------------------------------------
+! add row to stamag database 
+!
+         call dbquery (dbmag,dbRECORD_COUNT,ndbmg)
+         dbmag(4)= ndbmg
+         itest = dbaddnull(dbmag)
+         if(dbputv(dbmag,"","magid",magid,"sta",sta,"arid",arid, &
+           & "orid",orid,"evid",evid,"magtype",'mw',"magnitude",staMw(nmwdat), &
+           & "auth",auth,"lddate",lddate,0).lt.0) &
+           &  call complain (0, "dbputv error" )
+         call dbquery (dbmag,dbRECORD_COUNT,ndbmg)
+!---------------------------------------------------------------------------------
 !
    else
    if(verb.ge.1) then
@@ -1436,11 +1533,9 @@ endif	 ! magnitudo min n_ca
    netM0=netM0/float(nmwdat)
    netf0=netf0/float(nmwdat)
    neteqR=neteqR/float(nmwdat)
-
    do ii=1,nmwdat
-     sigmaMw=sigmaMw+(staMw(ii)-netMw)
+     sigmaMw=sigmaMw+(staMw(ii)-netMw)**2
    enddo
-
    sigmaMw = sqrt(sigmaMw**2/float(nmwdat))
 
 !--------------------------------------------------------------------------------
@@ -1460,6 +1555,21 @@ endif	 ! magnitudo min n_ca
       dbmwn(4)=nremwn
       itestn = dbadd(dbmwn,dbremwn)
       if(itestn.lt.0) call die ( 0, "Can't write record" )
+
+!--------------------------------------------------------------------^M
+! write records in netmag table
+!
+
+      call dbquery (dbmagn,dbRECORD_COUNT,ndbmg)
+      dbmagn(4)= ndbmg
+print *, 'Scrivo netmag table, records presenti:', ndbmg
+print *, magid, orid, evid, magtype, usta, netMw, signamw, auth, lddate
+      itest = dbaddnull(dbmagn)
+      if(dbputv(dbmagn,"","magid",magid,"orid",orid,"evid",evid, &
+        & "magtype",'mw',"nsta",usta,"magnitude",netMw,"uncertainty",sigmamw, &
+        & "auth",auth,"lddate",lddate,0).lt.0) &
+        &  call complain (0, "dbputv error 15" )
+       call dbquery (dbmagn,dbRECORD_COUNT,ndbmg)
 !---------------------------------------------------------------------------------
 !  End MW network table
 !
@@ -2005,7 +2115,7 @@ end
        if(ifr.eq.1) XGAU(1)=CZERO
 !                                                                     
        Y=-LOG(CUTAMP)/(XCUTOF-XPEAK)**2 
-	 argmax=0.0                                        
+       argmax=0.0                                        
        DO 530 I=2,ICC
 !
         if(ifr.eq.0) J=I
@@ -2020,12 +2130,12 @@ end
         XGAU(J)=CONE                                                              
         GO TO 530                                                                 
    50   continue
-        ARG=Y*(OMEGA-XPEAK)**2	                                                      
+        ARG=Y*(OMEGA-XPEAK)**2                                                     
         IF(ARG.LT.130.0d+00)  GO TO 51
         XGAU(J)=CZERO                                                             
         GO TO 530 
    51   continue
-	  if(abs(ARG).gt.argmax) argmax=abs(ARG)                                                                
+        if(abs(ARG).gt.argmax) argmax=abs(ARG)                                                                
         XGAU(J)=EXP(-ARG)                                                       
   530   CONTINUE
         if(iter.eq.1) then
@@ -2836,13 +2946,13 @@ end
       F2=-COS(SLA)
       G2=SIN(SLA)*COS(SLO)
       H2=SIN(SLA)*SIN(SLO)
-      DS=A1*A2+B1*B2+C1*C2				  
+      DS=A1*A2+B1*B2+C1*C2
       DELTA=ACOS(DS)
       Z=(A2-G1)**2+(B2-H1)**2+(C2-F1)**2
       if(abs(delta).lt.1.0e-07) delta=1.0e-07
       TMP=(Z-2)/(2.*SIN(DELTA))
-	  if(tmp.gt.1.0) tmp=1.0
-	  if(tmp.lt.-1.0) tmp=-1.0
+      if(tmp.gt.1.0) tmp=1.0
+      if(tmp.lt.-1.0) tmp=-1.0
       Z=ACOS(TMP)*RD
 !---------- CALCOLO RAGGIO MEDIO STAZIONE-EPICENTRO --------
       ALAT=(ELAT+SLA)/2.
@@ -2852,7 +2962,7 @@ end
       DELTA=DELTA*RD
       DIST=DELTA*AR
 !-----------------------------------------------------------
-write(6,*) 'SUB DISTAN: ',ELAT,ELON,SLAT,SLON,DELTA,DIST,Z
+!write(6,*) 'SUB DISTAN: ',ELAT,ELON,SLAT,SLON,DELTA,DIST,Z
       RETURN
       END
 !
@@ -2861,30 +2971,30 @@ write(6,*) 'SUB DISTAN: ',ELAT,ELON,SLAT,SLON,DELTA,DIST,Z
       parameter (NMAX = 100000)
 !
       DIMENSION dati(NMAX),dati1(NMAX)
-	  integer npts, spts, sptsd2, fpts
+      integer npts, spts, sptsd2, fpts
 
-	  sptsd2 = spts/2
+      sptsd2 = spts/2
 
-	  dati1 = 0.0
-	  do i=2,npts
-	  fpts=0
-	    do ii=2,spts
-		 iii=i+(ii-sptsd2)-1
-		 if(iii.ge.1.and.iii.le.npts) then
-		  dati1(i) = dati1(i)+dati(iii)
-		  fpts=fpts+1
-		 endif 
-		enddo
-		dati1(i) = dati1(i)/fpts
-	  enddo
-	  return
-	  end
+      dati1 = 0.0
+      do i=2,npts
+        fpts=0
+        do ii=2,spts
+          iii=i+(ii-sptsd2)-1
+          if(iii.ge.1.and.iii.le.npts) then
+            dati1(i) = dati1(i)+dati(iii)
+            fpts=fpts+1
+          endif 
+        enddo
+        dati1(i) = dati1(i)/fpts
+      enddo
+      return
+      end
 !----------------------------------------------------------------------
       SUBROUTINE F1F2(rappsr,freq,npts,fmin,fmax,tnoise)
       parameter (NMAX = 100000)
-	  real*8 tnoise
-	  real freq(NMAX),rappsr(NMAX),fmin,fmax,freqmin
-	  integer sup,inf
+      real*8 tnoise
+      real freq(NMAX),rappsr(NMAX),fmin,fmax,freqmin
+      integer sup,inf
 
 !
 ! F min
@@ -2976,12 +3086,13 @@ SUBROUTINE Mw_core(dbremw,sismoEc,sismoNc,t,npts,nptsW,inc,azR,arrSo,dista,Q,fin
   integer npts,nptsW,verb
 !  integer NMAX,e,i,ii,nch,npts2,nptse ,test,test1,inf,sup
   integer e,i,ii,nch,npts2,nptse ,test,test1,inf,sup
-  real pi,freq1				  
+  real pi,freq1
   real *8 arrP,arrS,lddate
   real *8 omega,SD2,SV2,stressdrop,rho,v,k
   real V2(NMAX),S2(NMAX)
   real*8 staMw(100),staM0(100),staeqR(100),staf0(100)
   real*8 Mw,M0,f0
+  real*8 rho_pf,v_pf,k_pf,Q_f0,Q_f1,Q_f2
   character*1 segtype
   character*4 Ptype,Stype
   character*8 chamw,chan
@@ -2993,6 +3104,7 @@ SUBROUTINE Mw_core(dbremw,sismoEc,sismoNc,t,npts,nptsW,inc,azR,arrSo,dista,Q,fin
   COMMON/DERI/xder
   COMMON/MWCOM/orid,evid,lddate,arrP,arrS,Ptype,Stype,auth,chan
   COMMON/MWCOM01/staMw,staM0,staeqR,staf0,nmwdat
+  COMMON/MwCOM02/rho_pf,v_pf,k_pf,Q_f0,Q_f1,Q_f2
    
   pi=3.141592653589793
   chamw=chan(1:2)//'T'
@@ -3000,217 +3112,200 @@ SUBROUTINE Mw_core(dbremw,sismoEc,sismoNc,t,npts,nptsW,inc,azR,arrSo,dista,Q,fin
   qual = -999.0
 
   nmwdat = nmwdat + 1
-  print *, '>>>>>>>>>>>>>>>>> SUP: ', fsup
   !if(fsup.gt.20.0) fsup = 20.0
-	  
+
 !------------------------------------------------------------------------
 
   
-	  sismoE=0.0
-	  sismoN=0.0
-	  sismoT=0.0
+ sismoE=0.0
+ sismoN=0.0
+ sismoT=0.0
 
-	  do i=1,nptsW
-		sismoE(i)=sismoEc(i)*1.0E-09
-		sismoN(i)=sismoNc(i)*1.0E-09
-	  enddo
+ do i=1,nptsW
+   sismoE(i)=sismoEc(i)*1.0E-09
+   sismoN(i)=sismoNc(i)*1.0E-09
+ enddo
 
-	  if(verb.ge.1) write(6,*) '     Signal-noise rotation, azimuth = ',azR
+ if(verb.ge.1) write(6,*) '     Signal-noise rotation, azimuth = ',azR
 
       call rotasig(sismoE,sismoN,sismoT,nptsW,azR)
 
-	  if(verb.eq.3) then
-	    call nchar(sta,nch)
-	    filename=sta(1:nch)//'MWindow.dat'
- 	    open(57,file=filename)
-	    filename=sta(1:nch)//'MWspettri.dat'
- 	    open(56,file=filename)
+ if(verb.eq.3) then
+   call nchar(sta,nch)
+   filename=sta(1:nch)//'MWindow.dat'
+   open(57,file=filename)
+   filename=sta(1:nch)//'MWspettri.dat'
+   open(56,file=filename)
 
-		x=0.0
-	    do i=1,nptsW
-		    x=x+(1.0/samprate)
-	    	write(57,*)	x,sismoE(i),sismoN(i),sismoT(i)
-	    enddo
+   x=0.0
+   do i=1,nptsW
+     x=x+(1.0/samprate)
+     write(57,*) x,sismoE(i),sismoN(i),sismoT(i)
+   enddo
 
-	    close (57)
-	  endif
+   close (57)
+ endif
 
-	  spet=0.0
-	  spet1=0.0
-	  spetrD=0.0
-	  spetrV=0.0
+ spet=0.0
+ spet1=0.0
+ spetrD=0.0
+ spetrV=0.0
 
- 	  spetT=cmplx(0.0,0.0)
-	  spetD=cmplx(0.0,0.0)
- 	  spetV=cmplx(0.0,0.0)
- 	  spetT(1)=cmplx(0.0,0.0)
-	  spetD(1)=cmplx(0.0,0.0)
- 	  spetV(1)=cmplx(0.0,0.0)
+ spetT=cmplx(0.0,0.0)
+ spetD=cmplx(0.0,0.0)
+ spetV=cmplx(0.0,0.0)
+ spetT(1)=cmplx(0.0,0.0)
+ spetD(1)=cmplx(0.0,0.0)
+ spetV(1)=cmplx(0.0,0.0)
 !---------------------------------------------------------------------------
 !   D2
 !	
 !print *,'Entro in D2 2',nptsW
-							  
-	   call d2(sismoT,nptsW,20,NMAX)
+ call d2(sismoT,nptsW,20,NMAX)
 
 !---------------------------------------------------------------------------
-       do i=2,npts
-         spetT(i)=cmplx(sismoT(i),0.0)
-		 x=x+(1.0/samprate)
-	   enddo
+ do i=2,npts
+   spetT(i)=cmplx(sismoT(i),0.0)
+   x=x+(1.0/samprate)
+ enddo
 
 !---------------------------------------------------------------------------
 !   Compute FFT
 !
-      call pfft(npts,spetT,-1.,NMAX)
+ call pfft(npts,spetT,-1.,NMAX)
 
-	    freq1=0.0
-	    npts2 = npts/2			  
+ freq1=0.0
+ npts2 = npts/2
 !----------------------------------------------------------
 !  Deconvolve response 
 !
 
-	   do i=2,npts2+1
-
-	      freq1=freq1+inc
-
-		  spetT(i) = (1.0/samprate)*(spetT(i)/t(i))
+ do i=2,npts2+1
+   freq1=freq1+inc
+   spetT(i) = (1.0/samprate)*(spetT(i)/t(i))
 
 !
 ! Input in Acceleration
 !
 
-	            if(segtype.eq.'A') then
-	             spetV(i) = spetT(i)/xder(i)
-	             spetD(i) = spetV(i)/xder(i)
-			    endif
+   if(segtype.eq.'A') then
+     spetV(i) = spetT(i)/xder(i)
+     spetD(i) = spetV(i)/xder(i)
+   endif
 
 !
 ! Input in Velocity
 !
 
-	            if(segtype.eq.'V') then
-	             spetV(i) = spetT(i)
-	             spetD(i) = spetV(i)/xder(i)	                	                
-				endif					 
+   if(segtype.eq.'V') then
+     spetV(i) = spetT(i)
+     spetD(i) = spetV(i)/xder(i)                              
+   endif
 !
 ! Input in Displacement
 !
-	            if(segtype.eq.'D') then
-	             spetD(i) = spetT(i)
-                 spetV(i) = spetD(i)*xder(i)
-			    endif
-		  
-		spetrD(i)=abs(spetD(i))
-		spetrV(i)=abs(spetV(i))
-	   
-	  enddo 
+   if(segtype.eq.'D') then
+     spetD(i) = spetT(i)
+     spetV(i) = spetD(i)*xder(i)
+   endif
+   spetrD(i)=abs(spetD(i))
+   spetrV(i)=abs(spetV(i))
+   
+ enddo 
 
 !
 !
 !--------------------------------------------------------------
-      call SMOOTH(spetrD,spet,npts2+1,3)
-      call SMOOTH(spetrV,spet1,npts2+1,3)
+ call SMOOTH(spetrD,spet,npts2+1,3)
+ call SMOOTH(spetrV,spet1,npts2+1,3)
 
-	  freq1=0.0
+ freq1=0.0
 
-	  do i=2,npts2+1
-		spetrD(i)=spet(i)
- 		spetrV(i)=spet1(i)
-		freq1=freq1+inc
+ do i=2,npts2+1
+   spetrD(i)=spet(i)
+   spetrV(i)=spet1(i)
+   freq1=freq1+inc
 
 !
 !  Q correction  
 !
-!         Q=400.*(freq1/1.0)**0.55
-          Q=80.*(freq1/1.0)**1.1
+!  Q=400.*(freq1/1.0)**0.55
+   Q=80.*(freq1/1.0)**1.1
          
 
-		spetrDq(i)= spetrD(i)*exp((pi*arrSo*freq1)/Q)
-		spetrVq(i)= spetrV(i)*exp((pi*arrSo*freq1)/Q)
+   spetrDq(i)= spetrD(i)*exp((pi*arrSo*freq1)/Q)
+   spetrVq(i)= spetrV(i)*exp((pi*arrSo*freq1)/Q)
 !
 !  Distance correction 
 !
-		spetrDqd(i)=spetrDq(i)*dista*1000.0
-		spetrVqd(i)=spetrVq(i)*dista*1000.0
+   spetrDqd(i)=spetrDq(i)*dista*1000.0
+   spetrVqd(i)=spetrVq(i)*dista*1000.0
 
-		if(verb.eq.3) write(56,*) freq1,abs(spetT(i)),spetrD(i),spetrV(i),spetrDq(i),spetrVq(i),spetrDqd(i),spetrVqd(i)
-!		if(verb.eq.3) write(56,*) spetrDqd(i),spetrVqd(i)
+   if(verb.eq.3) write(56,*) freq1,abs(spetT(i)),spetrD(i),spetrV(i),spetrDq(i),spetrVq(i),spetrDqd(i),spetrVqd(i)
+!  if(verb.eq.3) write(56,*) spetrDqd(i),spetrVqd(i)
 
-	  enddo
+ enddo
 
-     if(verb.eq.3) close(56)
+ if(verb.eq.3) close(56)
 !------------------------------------------------------------
 ! Andrews - Antonella 2008
 !------------------------------------------------------------
-      rho = 2700.
-      v = 3400.
-      e=0
-      k=0.63
+ rho = rho_pf
+ v = v_pf   
+ k = k_pf
 !------------------------------------------------------------	  
-      freq1=0.0
-      SD2= 0.0
-      SV2= 0.0
+ freq1=0.0
+ SD2= 0.0
+ SV2= 0.0
 
-      fsup=40.
+ test=0
+ test1=0
 
-      test=0
-      test1=0
+ e = 0
+ do ii=2,npts2+1
+   freq1=freq1+inc
+   if(freq1.ge.finf.and.freq1.le.fsup) then
+     e=e+1
+     if(test.eq.0) then
+       inf=ii
+       test=1
+     endif
+     S2(e)=spetrDqd(ii)**2
+     V2(e)=spetrVqd(ii)**2
+     sup=ii
+   endif
+ enddo
 
-      do ii=2,npts2+1
-        freq1=freq1+inc
-	if(freq1.ge.finf.and.freq1.le.fsup) then
-          e=e+1
-          if(test.eq.0) then
-	    inf=ii
-	    test=1
-	  endif
-          S2(e)=spetrDqd(ii)**2
-          V2(e)=spetrVqd(ii)**2
-          sup=ii
-	endif
-      enddo
+ nptse=e
 
-      nptse=e
+ do i=1,nptse-1
+   SD2=SD2+((S2(i)+S2(i+1))*inc/2.)
+ enddo
 
-      do i=1,nptse-1
+ SD2=2.*SD2
 
-        SD2=SD2+((S2(i)+S2(i+1))*inc/2.)
+ do i=1,nptse-1
+   SV2=SV2+((V2(i)+V2(i+1))*inc/2.)
+ enddo
 
-      enddo
+ SV2=2.*SV2
+ omega=sqrt(4.*(SD2**(3./2.))*(SV2**(-1./2.)))
+ f0=(1/(2.*pi))*sqrt(SV2/SD2)
+ M0=omega*4*pi*k_pf*rho_pf*(v_pf**3.)
+ Mw=(2./3.)*log10(M0)-6.1
 
-      SD2=2.*SD2
+! Madariaga
 
-      do i=1,nptse-1
-
-        SV2=SV2+((V2(i)+V2(i+1))*inc/2.)
-
-      enddo
-
-      SV2=2.*SV2
-
-      omega=sqrt(4.*(SD2**(3./2.))*(SV2**(-1./2.)))
-
-      f0=(1/(2.*pi))*sqrt(SV2/SD2)
-      
-	  M0=omega*4*pi*k*rho*(v**3.)
-      
-	  Mw=(2./3.)*log10(M0)-6.1
-      
-	  stressdrop=7./16.*(2.*pi/2.34/3400.)**3.*M0*f0**3.
-
-	  eqray= 2.34*3400./(2.0*pi*f0*1000.)
-	  
-	  if(verb.ge.1) write(6,100) Mw,M0,f0,stressdrop
-
- 100  format(6x,'Mw = ',f5.2,' M0 = ',e13.6,' f0 = ',f7.2,' Stressdrop = ',e13.6)
-
+ stressdrop=7./16.*(2.*pi/2.34/v)**3.*M0*f0**3.
+ eqray= 2.34*v/(2.0*pi*f0*1000.)
+ if(verb.ge.1) write(6,100) Mw,M0,f0,stressdrop
+   100  format(6x,'Mw = ',f5.2,' M0 = ',e13.6,' f0 = ',f7.2,' Stressdrop = ',e13.6)
 !--------------------------------------------------------------------------------
 ! add row to database 
 !
-      dbremw=''
-	  write(dbremw,110) sta,chamw,orid,evid,Mw,M0,f0,eqray,dista,azR,qual, &
-	   & arrP,Ptype,arrS,Stype,segtype,auth,commid,lddate
+  dbremw=''
+  write(dbremw,110) sta,chamw,orid,evid,Mw,M0,f0,eqray,dista,azR,qual, &
+    & arrP,Ptype,arrS,Stype,segtype,auth,commid,lddate
  110  format(a6,1x,a8,1x,i8,1x,i8,1x,f7.2,1x,e9.3,5(1x,f7.2),2(1x,f17.5,1x,a4),1x,a1,1x,a15,1x,i8,1x,f17.5)
 !--------------------------------------------------------------------------------  
 

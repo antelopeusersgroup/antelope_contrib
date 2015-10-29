@@ -1,0 +1,191 @@
+# DPC procedure extansions (Giovanni 01/2015
+
+Attribute smslv
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-999" )
+        Description ( "It is the alert level to send sms" )
+        Detail {
+                It is the alert level to send sms.
+        }
+        ;
+
+Attribute emaillv
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-999" )
+        Description ( "It is the alert level to send E-mail " )
+        Detail {
+                It is the alert level to send E-mail.
+        }
+        ;
+
+Attribute name
+        String (64)
+        Format ( "%-64s" )
+        Null ( "-" )
+        Description ( "name" )
+        Detail {
+                This attribute is the name of the person which receive the
+                sms or/and the E-mail alert.
+        }
+        ;
+
+Attribute institution
+        String (64)
+        Format ( "%-64s" )
+        Null ( "-" )
+        Description ( "Institution" )
+        Detail {
+                This attribute is the Institution of the person which receive the
+                sms or/and the E-mail alert.
+        }
+        ;
+
+Attribute email_
+        String (64)
+        Format ( "%-64s" )
+        Null ( "-" )
+        Description ( "E-mail address" )
+        Detail {
+                This attribute is the E-mail address of the person which receive the
+                E-mail alert.
+        }
+        ;
+
+Attribute phone
+        String (20)
+        Format ( "%-20s" )
+        Null ( "-" )
+        Description ( "Phone number" )
+        Detail {
+                This attribute is the Phone number of the person which receive the
+                sms alert.
+        }
+        ;
+
+Attribute alert
+        String (8)
+        Format ( "%-8s" )
+        Null ( "-" )
+        Description ( "" )
+        Detail {
+                This attribute is the aleet level label.
+        }
+        ;
+
+Attribute alev
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-999" )
+        Description ( "number of messages sent for this event " )
+        Detail {
+                number of messages sent for this event.
+        }
+        ;
+
+Attribute assmin
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-999" )
+        Description ( "Min associations to send alert " )
+        Detail {
+                This is the minimum associations to send alert.
+        }
+        ;
+
+Attribute mgmin
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "Min magnitude to send alert " )
+        Detail {
+                  This is the minimum magnitude to send alert.
+        }
+                ;
+
+Attribute dismin
+        Real (7)
+        Format ( "%7.2f" )
+        Null ( "-999.00" )
+        Description ( "Min epicentral distance to send alert " )
+        Detail {
+                  This is the minimum epicentral distance to send alert.
+        }
+        ;
+
+Attribute city
+        String (20)
+        Format ( "%-20s" )
+        Null ( "-" )
+        Description ( "Interreg city" )
+        Detail {
+        	This attribute containes the cities from where conmpute the epicentral distance to send 
+                alert}
+        ;
+
+Attribute ccod
+        String (5)
+        Format ( "%-5s" )
+        Null ( "-" )
+        Description ( "Interreg city cod" )
+        Detail {
+                This attribute containes the code corrisponding to the cities
+                from where conmpute the epicentral distance to send 
+                alert}
+        ;
+
+Attribute msg
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-999" )
+        Description ( "number of messages sent for this event " )
+        Detail {
+                number of messages sent for this event.
+        }
+        ;
+
+
+Relation DSTalert
+        Fields ( name phone email_ smslv emaillv institution lddate )
+        Primary ( name )
+        Foreign ( smslv )
+        Defines name
+        Description ( "People list" )
+        Detail {
+                List of the people which receive the alert from DSTproc.
+        }
+        ;
+Relation DSTalev
+        Fields ( alert alev mgmin dismin assmin lddate )
+        Primary ( alev mgmin dismin assmin )
+        Defines alev
+        Description ( "Alert level" )
+        Detail {
+                This Attribute il the alert level.
+        }
+        ;
+
+Relation DSTcity
+        Fields ( city ccod lat lon lddate )
+        Primary ( city )
+        Foreign ( ccod )
+        Defines city
+        Description ( "Alert city list" )
+        Detail {
+                List of the cities form where compute the epicentral distance
+                used to send alert.
+        }
+        ;
+
+Relation DSTproc
+        Fields ( evid orid review smslv emaillv msg auth lddate )
+        Primary ( evid )
+        Alternate ( orid )
+        Foreign ( evid  )
+        Defines orid
+        Description ( "Last location used for DST.proc" )
+        Detail {
+                Last location used by DST.proc to decide if send a new sms.
+        }
+        ;
