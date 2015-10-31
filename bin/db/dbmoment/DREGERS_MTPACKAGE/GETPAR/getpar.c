@@ -227,16 +227,20 @@ gp_do_environment(ac,av)
 int ac; char **av;
    {
 	char **ae;
+    int c; // Added by Juan Reyes
 	register char *pl, *pn, *pv;
 	char name[MAXNAME], value[MAXVALUE], t;
 
 	/* The environ pointer ae, is assumed to have a specific relation
 	   to the arg pointer av. This may not be portable. */
 	ae= av +(ac+1);
+    c = strlen(ae); // Added by Juan Reyes
 	if(ae == NULL) return NULL;
 
-	while(*ae != NULL)
+	//while(*ae != NULL)
+	while( c > -1 )  // Added by Juan Reyes
 	   {
+        c--;    // Added by Juan Reyes
 		pl= *ae++;
 		while(*pl == ' ' || *pl == '\t') pl++;
 		/* get name */

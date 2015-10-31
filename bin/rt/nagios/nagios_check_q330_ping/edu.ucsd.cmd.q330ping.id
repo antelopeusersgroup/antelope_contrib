@@ -33,7 +33,7 @@ Critical - The percentage of ping packets lost out of the total sent that sets a
 </parameters>
 
 <command-line>
-  path = "/opt/antelope/$id/bin"
+  path = "/opt/antelope/$id/contrib/bin"
   cmd = "nagios_check_q330_ping -H ${ADDRESS} -n ${Packets} -w ${Alarm} -c ${Critical}"
 </command-line>
 

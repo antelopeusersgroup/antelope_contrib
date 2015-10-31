@@ -6,48 +6,48 @@ delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
 $ENV{'PATH'} = "/bin:/usr/bin:$ENV{'ANTELOPE'}/bin:$ENV{'ANTELOPE'}/local/bin:$ENV{'ANTELOPE'}/contrib/bin";
 
 sub pop_message {
-	local( @message );
+    local( @message );
 
-	@message = ();
+    @message = ();
 
-	if( $opt_m ) {
+    if( $opt_m ) {
 
-		while( $line = shift( @input ) ) {
+        while( $line = shift( @input ) ) {
 
-			if( ! scalar( @message ) ) {
-				if( $line !~ /^From / ) {
-					next;
-				} else {
-					push( @message, $line );
-				}
-			} else {
-				if( $line =~ /^From / ) {
-					unshift( @input, $line );
-					last;
-				} else {
-					push( @message, $line );
-				}
-			}
-		}
+            if( ! scalar( @message ) ) {
+                if( $line !~ /^From / ) {
+                    next;
+                } else {
+                    push( @message, $line );
+                }
+            } else {
+                if( $line =~ /^From / ) {
+                    unshift( @input, $line );
+                    last;
+                } else {
+                    push( @message, $line );
+                }
+            }
+        }
 
-	} else {
+    } else {
 
-		@message = splice( @input, 0 );
-	}
+        @message = splice( @input, 0 );
+    }
 
-	return @message;
+    return @message;
 }
 
 sub redirect_output {
-	my( $logfile ) = @_ ;
+    my( $logfile ) = @_ ;
 
-	open( STDOUT, ">>$logfile" ) || die( "Can't redirect stdout" );
-	open( STDERR, ">>&STDOUT" ) || die( "Can't dup stdout" );
+    open( STDOUT, ">>$logfile" ) || die( "Can't redirect stdout" );
+    open( STDERR, ">>&STDOUT" ) || die( "Can't dup stdout" );
 
-	select( STDERR );
-	$| = 1;
-	select( STDOUT );
-	$| = 1;
+    select( STDERR );
+    $| = 1;
+    select( STDOUT );
+    $| = 1;
 }
 
 # prepare the way for handlers that require Datascope
@@ -69,99 +69,109 @@ $SIG{__DIE__} = sub { unless( $IN_EVAL ) { print $_[0]; exit 0; } };
 
 sub myeval (&) {
 
-	my $coderef = shift;
+    my $coderef = shift;
 
-	$IN_EVAL++;
+    $IN_EVAL++;
 
-	$retval = eval { &$coderef };
+    $retval = eval { &$coderef };
 
-	$IN_EVAL = 0;
+    $IN_EVAL = 0;
 
-	return $retval;
+    return $retval;
 }
 
 $antelope = $ENV{ANTELOPE};
 if( $antelope =~ m@^(/opt/antelope/.*)$@ ) {
-	$antelope = $1;
+    $antelope = $1;
 } else {
-	die( "Security restriction: ANTELOPE environment variable " .
-	     "must match ^/opt/antelope. Bye.\n" );
+    die( "Security restriction: ANTELOPE environment variable " .
+         "must match ^/opt/antelope. Bye.\n" );
 }
 
 $Program = $0;
 $Program =~ s@^.*/@@;
 
 if ( ! getopts('f:l:p:vm') ) {
-	die( "Usage: $Program [-f output_file] [-l lib_dir] " .
-	      "[-p pffile] [-v] [-m] [file [file...]]\n" );
+    die( "Usage: $Program [-f output_file] [-l lib_dir] " .
+          "[-p pffile] [-v] [-m] [file [file...]]\n" );
 } else {
-	$verbose = $opt_v ? 1 : 0;
-	$Pf = $opt_p ? $opt_p : "$Program";
-	if( $opt_l ) {
-		unshift( @INC, $opt_l );
-	}
-	if( $opt_f ) {
-		redirect_output( $opt_f );
-	}
+    $verbose = $opt_v ? 1 : 0;
+    $Pf = $opt_p ? $opt_p : "$Program";
+    if( $opt_l ) {
+        unshift( @INC, $opt_l );
+    }
+    if( $opt_f ) {
+        redirect_output( $opt_f );
+    }
 }
 
 myeval { $handler_tableref = pfget( $Pf, "Handlers" ); };
 
 if( ! defined( $handler_tableref ) ) {
-	die( "Couldn't find Handlers table in parameter file $Pf " .
-			"(is $Pf accessible??)\n" );
+    die( "Couldn't find Handlers table in parameter file $Pf " .
+            "(is $Pf accessible??)\n" );
 }
 
 @input = <>;
 
 MESSAGE: while( @message = pop_message() ) {
 
-	$message = Mail::Internet->new( \@message );
+    $message = Mail::Internet->new( \@message );
 
-	chomp( $subject = $message->get("Subject") );
-	chomp( $from = $message->get("From") );
+    chomp( $subject = $message->get("Subject") );
+    chomp( $from = $message->get("From") );
 
-	if( $verbose ) {
-		print STDERR "\nBEGIN: ",
-			     strtime( str2epoch( "now" ) ),
-			     " UTC\n";
-	}
+    if( $verbose ) {
+        print STDERR "\nBEGIN: ",
+                 strtime( str2epoch( "now" ) ),
+                 " UTC\n";
+    }
 
-	foreach $entry ( @{$handler_tableref} ) {
+    foreach $entry ( @{$handler_tableref} ) {
 
-		$sender_pattern = %{$entry}->{sender};
-		$sender_pattern =~ s/@/\\@/g;
+        $sender_pattern = $entry->{sender};
+        $sender_pattern =~ s/@/\\@/g;
 
-		$subject_pattern = %{$entry}->{subject};
+        $subject_pattern = $entry->{subject};
 
-		if( $from =~ /$sender_pattern/i &&
-		    $subject =~ /$subject_pattern/ ) {
+        # handler_continue controls whether we attempt to match any more
+        # message handlers if the current handler applies to the current
+        # message. The default is to not match further handlers (the original
+        # behavior)
+        my $handler_continue = 0; # Don't continue matching handlers to message
+        if (exists(${$entry}{'continue'})) {
+            $handler_continue = $entry->{continue};
+        }
 
-			$handler = %{$entry}->{handler};
+        if( $from =~ /$sender_pattern/i &&
+            $subject =~ /$subject_pattern/ ) {
 
-			if( $handler =~ m@^([^/]*)$@ ) {
-				$handler = $1;
-				require "$handler.pl";
-			} else {
-				print STDERR "Security problem " .
-					"with handler name $handler\n";
-				next MESSAGE;
-			}
+            $handler = $entry->{handler};
 
-			$handler .= "_handler";
+            if( $handler =~ m@^([^/]*)$@ ) {
+                $handler = $1;
+                print STDERR "Running handler $handler\n" if $verbose;
+                require "$handler.pl";
+            } else {
+                print STDERR "Security problem " .
+                    "with handler name $handler\n";
+                next MESSAGE unless ($handler_continue);
+            }
 
-			&$handler( $message, $entry );
+            $handler .= "_handler";
 
-			if( $verbose ) {
-				print STDERR "\nEND\n";
-			}
+            &$handler( $message, $entry );
 
-			next MESSAGE;
-		}
-	}
+            if( $verbose ) {
+                print STDERR "\nEND\n";
+            }
 
-	if( $verbose ) {
-		print "No handler for\n\tSubject: $subject\n\tFrom: $from\n";
-		print STDERR "\nEND\n";
-	}
+            next MESSAGE unless ($handler_continue);
+        }
+    }
+
+    if( $verbose ) {
+        print "No handler for\n\tSubject: $subject\n\tFrom: $from\n";
+        print STDERR "\nEND\n";
+    }
 }
