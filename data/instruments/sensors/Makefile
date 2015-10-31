@@ -85,6 +85,9 @@ DATA= \
     rt151_30.pf \
     rt151_60.pf \
     rt151_120.pf \
+    rt151A_60.pf \
+    rt151B_60.pf \
+    rt151o_60.pf \
     s13_yka.pf \
     s13.pf \
     s13e.pf \

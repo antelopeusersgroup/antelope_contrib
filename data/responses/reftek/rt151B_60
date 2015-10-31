@@ -1,14 +1,14 @@
-# Reftec 151A 60sec Broadband Seismometer 
+# Reftec 151 30sec Broadband Seismometer 
 # Normalized  response relative to velocity
 # All poles and zeroes in radians/sec
 # sensitivity  2000 v/m/sec
-theoretical   1 sensor   paz    pz6seismo
-63165
+theoretical   1 sensor   paz    documentation
+98692.37
 4             Poles
 -0.07405E+00    0.07405E+00    0.0000E+00    0.0000E+00
 -0.07405E+00   -0.07405E+00    0.0000E+00    0.0000E+00
--1.7772E+02     1.77720E+02    0.0000E+00    0.0000E+00
--1.7772E+02    -1.77720E+02    0.0000E+00    0.0000E+00
+-2.22140E+02    2.22140E+02    0.0000E+00    0.0000E+00
+-2.22140E+02   -2.22140E+02    0.0000E+00    0.0000E+00
 2             Zeros
  0.0000E+00   0.0000E+00    0.0000E+00    0.0000E+00
  0.0000E+00   0.0000E+00    0.0000E+00    0.0000E+00
