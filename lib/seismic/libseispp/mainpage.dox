@@ -1,0 +1,27 @@
+/**
+  \mainpage C++ Seismic Data Processing Library.
+
+This is a collection C++ code for seismology data processing.   It abstracts
+a number of key seismology concepts commonly dealt using more primitive 
+computing concepts like fortran arrays.   Notable examples are a polymorphic
+set of objects  with a BasicTimeSeries at the root, a Metadata object to hold
+data traditionally stored as headers, generic ensembles, a generic reader, 
+a generic database interface, and a series of processing objects.   The library 
+also includes a prototype generic graphics library based on X motif.   I hope 
+at some point to replace the dependence of this library on the rather archaic
+Motif library with a newer graphics library like Qt.  The intent is that the 
+interface should make it relatively easy for an application to switch to a different graphics 
+library when the revised implementation is finished.   i.e. this should (one day) be an example
+of the OOP key concept that the interface separates the user from the implementation.
+
+An important limitation of this package all potential users should recognize is that it
+depends heavily upon the Antelope package.  Antelope is a commercial software package sold
+by Boulder Real Time Technologies (http://www.brtt.com).   However, all research universities
+in the US have open access to this package through an educational licensing agreement.  The 
+details of their licensing arrangement can be found on their web site.  A subset of the 
+components of this library can be build using the -DNO_ANTELOPE flag to make components of
+the system useful for international collaborators.   This capability is used in the
+full open source package pwmig distributed through github.iu.edu.
+
+\author Gary L. Pavlis, Dept. of Geol. Sci., Indiana University
+*/

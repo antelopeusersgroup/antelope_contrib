@@ -1,0 +1,51 @@
+.TH "dbcorrelate" 1 "September 5, 2012"
+.SH NAME
+dbcorrelate \- cross-correlate body-wave phases
+.SH SYNOPSIS
+.B "dbcorrelate database dbpath flag winlen laglen cccmin infile outfile"
+.SH DESCRIPTION
+dbcorrelate reads in a list of orid pairs and find the matching phases to be
+cross-correlated for each event pair and then compute the cross-correlation.
+It assumes "event_pairs" has been run.  That preprocessor makes a list of
+origin pairs and their respective julian dates, in freeform, thus
+
+orid1 orid2 jdate1 jdate2
+
+For each matching arrival found for a given pair, the waveforms are
+cross-correlated to get a delay time estimate for the events, to be used in
+relocation of the events, such as in HYPODD.
+
+If the database is broken out into years and days under some directory,
+then the database name must be uniform over all years and days such that
+
+dbpath/yyyy/jjj
+
+is the relative path to a daily database.
+
+Note: There may be multiple wfdisc entries that go with a given phase.
+Some logic is used to choose the first adequate entry in such cases because
+only one waveform can be used in the cross-correlation.
+
+The following input parameters are used:
+
+  database= specifies the database name
+  dbpath=   specifies the full path to database
+  flag=     (1 or 0) describes the database configuration:
+             1 = database is broken out into yyyy/jjj subdirectories
+             0 = database is not broken out, just one database 
+             in dbpath
+  winlen=   length (seconds) of the waveforms to be correlated.
+  laglen=   maximum length of waveform offset (seconds) in correlation
+  cccmin=   minimum acceptable correlation value (about 0.7)
+  infile=   input file (created with "event_pairs" program)
+  outfile=  output file in which results are written
+
+.SH OPTIONS
+.B None
+.SH NOTES
+.SH "SEE ALSO"
+event_pairs create_ccfile
+.SH BUGS
+.B None known
+.SH AUTHOR
+David von Seggern
