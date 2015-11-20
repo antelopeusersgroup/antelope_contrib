@@ -1,3 +1,5 @@
+# logs2dlevent.pf
+
 match &Tbl{
 UMSG
 recenter
@@ -9,12 +11,22 @@ getannc
 getstatus
 reboot
 msg
-Calibration
+C1_QCAL
+Cannot execute calibration command
+Calibration start
+Calibration aborted
+data_cal_error
+data_leap
 Removal
 removal
+# ANF tracking of pump on and reserve power
+isp2
+data_opto_input.*ti.*
+data_opto_input = isp.*ti
 }
 
 reject &Tbl{
+B44-
 Processing
 sbpwr
 Baler
@@ -26,14 +38,22 @@ Error
 #Sending
 Issuing
 DEBUGC
+DEBUGT
+q3302ew
+acok.*ti
+blank
+resetting
+Seneca
+Pecos
+ip.*change
+20.10.201.1
 }
 
 dlevents &Arr{
 #	dlevtype	log_phrase
 	service		UMSG
 	service		msg 
-	massrecenter	recenter
-	massrecenter	massrecenter
+	massrecenter	recenter|massrecenter
 	sensor_lock	masslock
 	sensor_unlock	massunlock
 	sensor_cal   	calibration
@@ -42,7 +62,13 @@ dlevents &Arr{
 	request_status	getstatus
 	baler		Baler
 	reboot		reboot
-	sensor_cal	Calibration
+	cal_cmd_error	CI_QCAL|Cannot execute calibration 
+	sensor_cal	Calibration start
+	sensor_cal_abort	Calibration aborted
+	data_cal_error	data_cal_error
+	pump_on		data_opto_input = .*ips2.*
+	reserve_power	data_opto_input.*ti.*
+	leap_second	data_leap
 }
 
 convert_umsg &Arr{
@@ -56,5 +82,6 @@ convert_umsg &Arr{
         ^lock            sensor_lock
 #        Cal             sensor_cal
 } 
+
 
 
