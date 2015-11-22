@@ -446,18 +446,12 @@ public:
             (current default is a two file output separating the 
             header and data.  Hence users should avoid .ext
             file names like myfile.dat.)
-          \parm enforce_object_type is used to turn type checking 
-          on an off.   When true (default) file object type must 
-          match the type of the constructor.   Useful for subclasses
-          in some situations and to read a grid linked to a field
-          ignoring the field data.
 
 
           \exception GCLgridError is throw if save fails.
         */
         void save(string fname, string dir, 
-                string format=default_output_format,
-                bool enforce_object_type=true);
+                string format=default_output_format);
 	/*! 
 	// Find the index position of a point in a GCLgrid.  
 	// This is a low level function to find the location of a point
