@@ -254,7 +254,7 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
 
   db_or(4) = imain
   if(runflag.lt.1) then
-    if( dbgetv (db_or,"","orid",orid,"evid",evid,NULL).lt.0) call complain (0, "dbgetv error 1" )    
+    if( dbgetv (db_or,"","orid",orid,"evid",evid,0).lt.0) call complain (0, "dbgetv error 1" )    
   endif
 !
   write(subset,*) "orid == ",orid
@@ -273,7 +273,7 @@ if ( db(3) .lt. 0 ) call dblookup(db_or, db, "", "origin", "", "")
    do i=0, n_o-1
         db_o(4) = i
         if( dbgetv ( db_o,"",  &
-        &   "evid",evid,"lat",olat,"lon",olon,"depth",odep,"time",otime,"ml",ml,NULL) &
+        &   "evid",evid,"lat",olat,"lon",olon,"depth",odep,"time",otime,"ml",ml,0) &
         &   .lt. 0) call complain (0, "dbgetv error 2" )
    enddo
    pro_fix = 'fixed!'
@@ -317,7 +317,7 @@ do ista=0,n_w-1
 print *, '==============================================================================='
 
         dbresult(4) = ista
-        if( dbgetv ( dbresult,"","sta",sta,"chan",chan,NULL) &
+        if( dbgetv ( dbresult,"","sta",sta,"chan",chan,0) &
         &      .lt. 0) call complain (0, "dbgetv error 3" )
         
         call dblookup(db_ar, db, "","arrival", "", "")
@@ -349,7 +349,7 @@ print *, '======================================================================
  if(n_in.gt.0) then
       do i=0, n_in-1
         db_in(4) = i
-        if( dbgetv ( db_in,"","dir",dir,"dfile",rfile,"ncalib",calib,NULL) &
+        if( dbgetv ( db_in,"","dir",dir,"dfile",rfile,"ncalib",calib,0) &
         &      .lt. 0) call complain (0, "dbgetv error 4" )
         if(dbex_compile(db_in,'extfile()',ex,0).lt.0) call complain(0,'dbex_compile problem!')
         if(dbex_eval(db_in,ex,0,resfile).lt.0) call complain(0,'dbex_eval problem!')
@@ -358,7 +358,7 @@ print *, '======================================================================
 !
       do i=0, n_st-1
          db_re(4) = i
-         if( dbgetv ( db_re,"","sta",sta,"lat",olat,"lon",olon,"site.lat",slat,"site.lon",slon,NULL) &
+         if( dbgetv ( db_re,"","sta",sta,"lat",olat,"lon",olon,"site.lat",slat,"site.lon",slon,0) &
         &   .lt. 0) call complain (0, "dbgetv error 5" )
       enddo
 !---------------------------------------------------------------------------  
@@ -402,7 +402,7 @@ print *, '======================================================================
         call dbquery(db_ml,dbRECORD_COUNT, n_ml)
         if(n_ml.eq.1) then
           db_ml(4)=0
-          if( dbgetv ( db_ml,"","magnitude",mlsta,NULL) &
+          if( dbgetv ( db_ml,"","magnitude",mlsta,0) &
           &      .lt. 0) call complain (0, "dbgetv error 6" )  
         endif
 !----------------------------------------------------------------------
@@ -434,7 +434,7 @@ print *, '======================================================================
      if(n_w.gt.0) then
        do i=0, n_w-1
            db_re1(4) = i
-         if( dbgetv ( db_re1,"","arrival.time",arrP_,"timeres",res,"arid",arid,"seaz",seaz,"esaz",esaz,NULL) &
+         if( dbgetv ( db_re1,"","arrival.time",arrP_,"timeres",res,"arid",arid,"seaz",seaz,"esaz",esaz,0) &
          &      .lt. 0) call complain (0, "dbgetv error 7" )
 	     if(abs(res).lt.resmin) then 
 	       resmin=abs(res)
@@ -457,7 +457,7 @@ print *, '======================================================================
      if(n_w.gt.0) then
        do i=0, n_w-1
            db_re1(4) = i
-         if( dbgetv ( db_re1,"","arrival.time",arrS_,"timeres",res,NULL) &
+         if( dbgetv ( db_re1,"","arrival.time",arrS_,"timeres",res,0) &
          &      .lt. 0) call complain (0, "dbgetv error 8" )
 	     if(abs(res).lt.resmin) then 
 	       resmin=abs(res)
@@ -497,7 +497,7 @@ print *, '======================================================================
      if(n_ca.ge.1) then
         do i=0, n_ca-1
           db_ca_(4) = i
-          if( dbgetv ( db_ca_,"","samprate",samprate,"calib",calib,"segtype",segtype,NULL) &
+          if( dbgetv ( db_ca_,"","samprate",samprate,"calib",calib,"segtype",segtype,0) &
              &      .lt. 0) call complain (0, "dbgetv error 9" )
         enddo
 !----------------------------------------------------------------------
@@ -613,7 +613,7 @@ print *, '======================================================================
          if(nmg.gt.0) then
            do i=0,nmg-1
              dbmag(4) = i
-         if( dbgetv(dbmag,"","orid",oridmg,"sta",stats,"magtype",magtyts,NULL).lt.0) &
+         if( dbgetv(dbmag,"","orid",oridmg,"sta",stats,"magtype",magtyts,0).lt.0) &
            & call complain (0, "dbgetv error 10" )
              if(oridmg.eq.orid.and.magtyts.eq.'mw'.and.stats.eq.sta) then
                itest=dbmark(dbmag)
@@ -695,7 +695,7 @@ print *, '======================================================================
        if(nmagn.gt.0) then
          do i=0,nmagn-1
            dbmagn(4) = i
-           if( dbgetv (dbmagn,"","orid",oridmag,"magtype",magtype,NULL).lt.0) call complain (0, "dbgetv error 11" )
+           if( dbgetv (dbmagn,"","orid",oridmag,"magtype",magtype,0).lt.0) call complain (0, "dbgetv error 11" )
            if(oridmag.eq.orid.and.magtype.eq.'mw') then
              itest=dbmark(dbmagn)
              nremagn=nremagn-1
@@ -724,7 +724,7 @@ print *, '======================================================================
 
           do i=0,n_wf-1
             db_wf(4) = i
-            if(dbgetv(db_wf,"","sta",sta_,"chan",chan_,"time",wfinizio,"endtime",wffine,"nsamp",nsamp,NULL).lt.0) &
+            if(dbgetv(db_wf,"","sta",sta_,"chan",chan_,"time",wfinizio,"endtime",wffine,"nsamp",nsamp,0).lt.0) &
               &  call complain (0,"dbgetv error 12")
             if(sta_.eq.sta.and.chan_.eq.chan) then
               if(nsamp.lt.npts_i) then
@@ -735,7 +735,7 @@ print *, '======================================================================
               if(t3_req.lt.wfinizio) t3_req=wfinizio
               NMAX64 = NMAX            
               call trgetwf2 ( db_wf, 0, dati, NMAX64, t3_req, t1_req, &
-                 &  t3, t1, nptsM, fill, NULL )
+                 &  t3, t1, nptsM, fill, 0 )
             endif
           enddo
 
@@ -1407,7 +1407,7 @@ print *, '  Add new record to table .stamw'
         call dbquery (lastid,dbRECORD_COUNT,lstid)
         do ilst=0,lstid-1
           lastid(4) = ilst
-          if( dbgetv (lastid,"","keyname",keyname,"keyvalue",keyvalue,NULL).lt.0) call complain (0, "dbgetv error 13")
+          if( dbgetv (lastid,"","keyname",keyname,"keyvalue",keyvalue,0).lt.0) call complain (0, "dbgetv error 13")
           if(keyname.eq.'magid') then
             magid = keyvalue
             itest=dbmark(lastid)
