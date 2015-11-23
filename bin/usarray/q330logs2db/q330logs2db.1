@@ -1,43 +1,50 @@
 .TH q33logs2db 1 
 
 .SH NAME 
-q330logs2db \- monitor q330 log files for particular phrases and add to a db table
+q330logs2db \- monitor q330 log files for particular phrases and add to a db table, and possibly Slack
 
 .SH SYNOPSIS
 .nf
-q330logs2db  [-p pf] [-v] [-l match_logname] [-s {OLDEST|start_time} | -S statefile ] orb db
+q330logs2db  [-p pf] [-q] [-X] [-v] [-l match_logname] [-s {OLDEST|start_time} | -S statefile ] orb db
 .fi
 
 .SH DESCRIPTION
 \fBq330logs2db\fP monitors log packets produced by \fBq3302orb\fP(1) to
 find rows which match a regular expression.  The simple match (and reject) 
-expressions are kept in a parameter file, q330logs2db.pf.  The matching lines
-are placed as a dlcomment into a dlevent table and tagged with a dlevtype.  
-See also the programs \fBlogs2dlevent\fP(1) and \fBdlreport\fP(1) which review
-the logs written out by \fBorb2logs\fP(1).  \fBdlreport\fP can be run to 
-summarize the events.  The parameter files for \fBq330logs2db\fP and 
-\fBlogs2dlevent\fP are identical.
+expressions are kept in a parameter file, q330logs2db.pf.  In the default 
+mode of operation matching, lines are placed as a dlcomment into a dlevent 
+table and tagged with a dlevtype.  See also the programs \fBlogs2dlevent\fP(1) 
+and \fBdlreport\fP(1) which review the logs written out by \fBorb2logs\fP(1).  
+\fBdlreport\fP can be run to summarize the events.  The parameter files for 
+\fBq330logs2db\fP and \fBlogs2dlevent\fP require the same information.  
+Slack integration has also been added such that in addition to (or instead of)
+adding comments to a dlevent table, messages of interest can be sent to a Slack
+chat channel..
 .LP
 The intent for this script is that it will be run on an operational real-time 
 system to help summarize various interactions with the datalogger (currently 
 only tested on a Q330).  It assumes that interactions via Willard are noted
 with a UMSG or via output from dlcmd.  Hopefully, you can convince those who
 interact with the datalogger via a UMSG to use standard phrases... otherwise
-this script might be of little use except for capturing commands send by the
+this script might be of little use except for capturing commands sent by the
 data center.  If the output from dlcmd changes, this script will likely be 
 less effective.  There have been multiple changes in the message format for 
 \fBq3302orb\fP over the years, so results may vary depending on your log vintage.
 
 .SH OPTIONS
 
-.IP "-p pf"
-Parameter file name.  Default is q330logs2db.pf.
 .IP "-l match_logname"
 Regular expression to reduce the number of sources to monitor. The default 
 is to review all sources with "log" in the name.  This would include both the
 log messages relating to the q3302orb instance \fItargetname\fP/log and to the
 dataloggers \fIdlname\fP/log.  You may wish to use an expression that would filter 
 out logs such as the \fItargetname\fP/log packets produced by \fBq3302orb\fP.
+.IP "-p pf"
+Parameter file name.  Default is q330logs2db.pf.
+.IP "-q"
+Quietly skip writing dlevent database.  Only valid if \fI-X\fP option is used. 
+When this option is used the \fIdb\fP argument on the command line can be skipped.
+If it is used, it will be ignored and no database output. 
 .IP "-s {OLDEST|time}"
 Where to start in the ORB.  Use either \fIOLDEST\fP or a time string.  This is 
 an optional argument.  If not used, \fBq330logs2db\fP starts with the next 
@@ -50,6 +57,11 @@ when it is started and stopped.
 Verbose output.
 .IP "-V"
 Very verbose output.
+.IP "-X" 
+Send messages to a \fBSlack\fP channel.  This requires an active team on https://slack.com.  
+You must add the "Incoming WebHooks" as an integration to your channel.  Give it a custom name
+(i.e. "q330-umsgs"), describe it, and copy the "Webhook URL".  The "Webhook URL" is required 
+and is the value for \fIslack_hook_url\fP in the parameter file.
 .IP "orb"
 Orb where log packets are available.  
 .IP "db"
@@ -78,25 +90,50 @@ getconfig
 getannc
 getstatus
 reboot
+msg
+C1_QCAL
+Cannot execute calibration command
+Calibration start
+Calibration aborted
+data_cal_error
+data_leap
+Removal
+removal
+# ANF tracking of pump on and reserve power
+isp2
+data_opto_input.*ti.*
+data_opto_input = isp.*ti
 }
 
 reject &Tbl{
-#Processing
+B44-
+Processing
 sbpwr
 Baler
 dopen
 QMASERV
 C1_UMSG
+C1_PULSE
 Error
-Sending
+#Sending
 Issuing
+DEBUGC
+DEBUGT
+q3302ew
+acok.*ti
+blank
+resetting
+Seneca
+Pecos
+ip.*change
+20.10.201.1
 }
 
 dlevents &Arr{
 #	dlevtype	log_phrase
 	service		UMSG
-	massrecenter	recenter
-	massrecenter	massrecenter
+	service		msg 
+	massrecenter	recenter|massrecenter
 	sensor_lock	masslock
 	sensor_unlock	massunlock
 	sensor_cal   	calibration
@@ -105,6 +142,13 @@ dlevents &Arr{
 	request_status	getstatus
 	baler		Baler
 	reboot		reboot
+	cal_cmd_error	CI_QCAL|Cannot execute calibration 
+	sensor_cal	Calibration start
+	sensor_cal_abort	Calibration aborted
+	data_cal_error	data_cal_error
+	pump_on		data_opto_input = .*ips2.*
+	reserve_power	data_opto_input.*ti.*
+	leap_second	data_leap
 }
 
 convert_umsg &Arr{
@@ -115,9 +159,15 @@ convert_umsg &Arr{
         MRC             massrecenter
         mrc             massrecenter
         unlock          sensor_unlock
-        lock            sensor_lock
-        Cal             sensor_cal
+        ^lock            sensor_lock
+#        Cal             sensor_cal
 } 
+
+# get the proper hook url generated by visiting https://$YOURTEAM.slack.com/services/new/incoming-webhook
+slack_hook_url  https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
 
 .fi
 .ft P
@@ -172,12 +222,38 @@ q330logs2db -s "11/1/2008 00:00:00" $STATUSORB $DB
 .ft R
 .in
 
+.LP
+Assuming you have already setup the integration hooks for Slack, capture all umsg available in the 
+status ORB and write to Slack
+.in 2c
+.ft CW
+.nf
+q330logs2db -p q330logs2db_umsg_only.pf -X -l "TA_.*" $STATUSORB 
+.fi
+.ft R
+.in
+
+In this case the q330logs2dbumsg_only.pf file has the following information which differs
+from the default q330logs2db.pf:
+.in 2c
+.ft CW
+.nf
+cat q330logs2db_umsg.pf
+match &Tbl{
+UMSG
+}
+slack_hook_url  https://hooks.slack.com/services/T0XXXXXGP/B0XXXXXT4/YXXXXXXXXXXXXXXXXXXXXXXP
+.fi
+.ft R
+.in
+
 .SH "SEE ALSO"
 .nf
 dlreport(1)
 dlcmd(1)
 logs2dlevent(1)
 q3302orb(1)
+http://slack.com
 .fi
 
 .SH "BUGS AND CAVEATS"
@@ -194,6 +270,11 @@ events that you might find interesting.
 Greps of strings from log packets which change format over time are obviously 
 prone to errors.  You may not get all of the information you want in the 
 dlcomment field.
+.LP
+The ugliest regex ever was used to get past some unclear oddities in text 
+returned in the q330 logs.  If your umsgs in Slack appear garbled, the regex
+match to clean the input comment may be the problem. 
+
 .LP
 .SH AUTHOR
 .nf

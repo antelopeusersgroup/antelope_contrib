@@ -12,9 +12,10 @@
 # J.Eakins
 # 11/19/2008
 #
+#  Added ability to send messages direct to Slack
+#  11/16/2015
 
     use strict ;
-#    use diagnostics ;
     use Datascope ;
     use archive;
     use orb;
@@ -24,7 +25,7 @@
 
     elog_init ( $0, @ARGV) ;
 
-    our ( $opt_l, $opt_p, $opt_s, $opt_S, $opt_v, $opt_V );
+    our ( $opt_l, $opt_p, $opt_q, $opt_s, $opt_S, $opt_v, $opt_V, $opt_X );
 
     my ($logsource, $orbname, $dbname, $orb, $pktid, $srcname, $net, $sta, $chan, $loc );
     my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref);
@@ -33,7 +34,7 @@
     my (%dlevents, $key, $value, %event_phrase, %convert_umsg, @match, @reject);    
     my ($target, @dlevent_record, @dbl, @db); 
     my ($dbout, $statefile);
-    my ($search_pattern, $reject_pattern);
+    my ($search_pattern, $reject_pattern, $url);
     my ($com1, $com2, $com3, $com4, $com5, $com6);
     my ($now, $t, $n, $pktstart, $time, $log) ;
     my ($prog_name, $cmdline);
@@ -44,15 +45,25 @@
 # -s where to start reviewing log packets.  Default is only look at new packets.
 # -S state file.  
 # -S overrides -s; if no -S or -s, starts with newest packet.
+# -X pipes messages to Slack (needs to have slack_hook_url defined in pf file))
+# -q don't write out to database (useful if only want Slack messages)
 
-if (! getopts('p:l:s:S:vV')  || @ARGV != 2 ) {
+
+if (! getopts('qp:l:s:S:vVX')  || (@ARGV < 1 || @ARGV > 2 ) ) { 
     elog_complain("\nGetopts or number of arguments failure.\n");
     &usage;
 } else {
     $orbname	=  $ARGV[0]  ;
-    $dbout	=  $ARGV[1]  ;
+    $dbout	=  $ARGV[1]  if !$opt_q ;
 }
     
+elog_die("Must use '-X' if using '-q'\n") if ($opt_q && !$opt_X) ; 
+
+if (!$opt_q && (@ARGV < 2)) {
+  elog_complain("Need to specify a database\n") ; 
+  &usage;
+}
+
 $prog_name = $0 ;
 $prog_name =~ s".*/"";
 
@@ -116,11 +127,8 @@ if ( $opt_s && ( ! $opt_S || ! -e $statefile ) ) {
    }
    elog_notify("starting from pktid: $pktstart\n");
 
-} elsif ($opt_s) {	# implies there is an $opt_S too
-   elog_complain("Using state file instead of -s\n");
-}
-
-if ( $opt_S ) {
+} elsif ($opt_S) {	# implies there is an $opt_S too
+   elog_complain("Using state file for first pktid\n");
 
    $stop = 0;
    $pktid = 0;
@@ -178,6 +186,7 @@ for (; $stop == 0 ; ) {
 # if unstuffed source packet matches then open db and add record
 
       $log = $pkt->string;
+
       if (defined $log) {
 	if ( $log =~ /($search_pattern)/ ) {
 	   if ( $log =~ /($reject_pattern)/) {
@@ -196,6 +205,12 @@ for (; $stop == 0 ; ) {
 	     elog_notify(0, "Evtime: $evtime\n") if $opt_V ;
 	     $evtime	= str2epoch($evtime);
 	     elog_notify(0, "Evtime: $evtime\n") if $opt_V ;
+
+	     if ( !$dlsta =~ /[A-Z,0-9]{2}\_[A-Z,0-9]{3,6}/) {
+		elog_notify(0,"This does not look like a valid dlsta: $dlsta.   Skipping\n") if $opt_v; 
+		next;
+	     }
+
 	     $comment = "$com1";
              if ($comment =~ /LOG/) {   # Try to get correct info from Calibration message
                 # skip com2 - com4 as currently they are another date (earlier versions have this as log info, see elsif below)
@@ -245,29 +260,12 @@ for (; $stop == 0 ; ) {
 		}
 	     }
 
-	     # add contents to database
-	     elog_notify(0,"Opening db: $dbout\n") if $opt_V;
-	     @db = dbopen($dbout, "r+") ;
-	     @dbl = dblookup(@db, "", "dlevent" , "", "") ;
-	     @dlevent_record = ();
-	     push(@dlevent_record,	"dlname", $dlsta,
-					"time", $evtime,
-					"dlevtype", $dlevtype,
-					"dlcomment", $comment,
-					) ;
 
-	     elog_notify(0, "Creating dlevent_record\n") if ($opt_V);
-	     eval { dbaddv(@dbl,@dlevent_record) };
+	     # add contents to databas, skip if -q
+	     &post2db unless $opt_q ;
 
-     	     if ($@) {
-		warn $@;
-		elog_notify(0, "Duplicate comment... Dlsta: $dlsta, Time: $evtime, Evtype: $dlevtype\n");
-		elog_complain(0, "Duplicate comment.  Will ignore.\n") if ($opt_v || $opt_V);
-	     }
-	     # close db, then look at next packet 
-	     dbfree(@dbl);
-             dbclose (@db) ;
-
+# add in Slack integration.  Value for Slack URL needs to be specified in pf file
+	     post2slack($dlsta,$comment,$dlevtype) if ($opt_X) ;
 	   }
 	} else {
 #	   print "Pattern does not match\n";
@@ -302,13 +300,13 @@ sub trim {
 
 sub run {               # run system cmds safely
     my ( $cmd ) = @_ ;
+
     system ( $cmd ) ;
     if ($?) {
         elog_complain(0, "$cmd error $? \n") ; 
         exit(1);
     }   
 }
-
 
 sub cmdline { # &cmdline();
 
@@ -348,12 +346,60 @@ sub get_pf {
    $ref	= pfget($pf, "reject");
    @reject	= @$ref;
 
+   $url		= pfget ($pf, "slack_hook_url") if $opt_X ;
+   
 }
 
+sub post2db {
+
+  elog_notify(0,"Opening db: $dbout\n") if $opt_V;
+  @db = dbopen($dbout, "r+") ;
+  @dbl = dblookup(@db, "", "dlevent" , "", "") ;
+  @dlevent_record = ();
+  push(@dlevent_record,	"dlname", $dlsta,
+	"time", $evtime,
+	"dlevtype", $dlevtype,
+	"dlcomment", $comment,
+	) ;
+
+  elog_notify(0, "Creating dlevent_record\n") if ($opt_V);
+  eval { dbaddv(@dbl,@dlevent_record) };
+
+  if ($@) {
+    warn $@;
+    elog_notify(0, "Duplicate comment... Dlsta: $dlsta, Time: $evtime, Evtype: $dlevtype\n");
+    elog_complain(0, "Duplicate comment.  Will ignore.\n") if ($opt_v || $opt_V);
+  }
+  # close db, then look at next packet 
+  dbfree(@dbl);
+  dbclose (@db) ;
+}
+
+sub post2slack {
+
+   my ($dlsta,$comment,$dlevtype) = (@_);
+
+   $evtime = strtime($evtime);
+   my $text = "$dlsta  \|  $dlevtype \| $evtime  \| $comment" ;
+
+   $text =~  s/[^a-zA-Z0-9\.=\s\_\-!\@\$\%#><\[\]\|\)\(\^\/\\\?\:]//g ; 
+
+   elog_notify ("Posting umsg to Slack: $text \n") if $opt_v ;
+
+
+# Both of the below commands worked.  Not sure which should be preferred
+#   my $mycmd = "curl -s -d \'payload={\"text\":\"$text\"}\' $url";
+   my $mycmd = "curl -X POST -s --data-urlencode \'payload={\"text\":\"$text\"}\' $url";
+
+# must use "open" to get rid of "ok" response when a message posts to Slack
+   open (FH, "$mycmd |") || die "Failed: $!\n";
+   sleep 2; 	# attempt to bypass "(23) Failed writing body"
+   close (FH)  || die "can't close: $?" ; 
+}
 
 sub usage { 
         print STDERR <<END;
-            \nUSAGE: $0 [-p pf] [-v] [-l match_logname] [-S state] [-s {start_time|OLDEST}] orb db 
+            \nUSAGE: $0 [-p pf] [-v] [-q] [-X] [-l match_logname] [-S state] [-s {start_time|OLDEST}] orb db 
 
 END
         exit(1);
