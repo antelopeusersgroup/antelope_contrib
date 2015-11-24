@@ -260,9 +260,11 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
         if verbosity > 1:
             print " - Join snetsta table"
         dbm = dbm.join('snetsta', outer=True)
+        dbm = dbm.sort( ['snet','sta'] )
     else:
         if verbosity > 1:
             print " * NOTE: Cannot join 'snetsta' table"
+        dbm = dbm.sort( ['sta'] )
 
 
     for nex in staexpr:
@@ -282,19 +284,21 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
             print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
         sys.exit(1)
 
-    sitestr = ["\t<Folder>"]
-    sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
-    sitestr.append("\t\t<name>Stations</name>")
-
+    sitestr = []
+    openfolder = False
+    activenet = ''
+    nownet = ''
     for i in range(dbm.query('dbRECORD_COUNT')):
         dbm.record = i
         per_sta_info = {}
+        #print "%s" % dbm.getv('snet')[0]
         for f in fields:
             per_sta_info[f] = dbm.getv(f)[0]
             if f == 'elev':
                 per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
 
             if f == 'snet':
+                nownet = per_sta_info[f]
                 if per_sta_info[f] in stylestation:
                     stastyle = per_sta_info[f]
                 else:
@@ -309,7 +313,21 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
         #    stastyle = 'activeStation'
         # Lets color them by network...
 
+        if nownet != activenet and openfolder:
+            sitestr.append("\t</Folder>")
+            openfolder = False
+            activenet = ''
+
+
+        if not openfolder:
+            openfolder = True
+            activenet = nownet
+            sitestr.append("\t<Folder>")
+            sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
+            sitestr.append("\t\t<name>%s Stations</name>" % nownet)
+
         sitestr.append(create_site(per_sta_info, visibility, stastyle))
+
     sitestr.append("\t</Folder>")
 
 
