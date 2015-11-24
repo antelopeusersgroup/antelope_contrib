@@ -231,7 +231,7 @@ def create_site(meta_dict_site, visibility, style):
     siteplace.append("\t\t\t\t]]>\n")
     siteplace.append("\t\t\t</description>\n")
     siteplace.append("\t\t\t<styleUrl>#%s</styleUrl>\n" % style)
-    siteplace.append("\t\t\t<Style><IconStyle><scale>0.7</scale><color>FFFFFFFF</color></IconStyle></Style>\n")
+    #siteplace.append("\t\t\t<Style><IconStyle><scale>0.7</scale><color>FFFFFFFF</color></IconStyle></Style>\n")
     siteplace.append("\t\t\t<Point>\n\t\t\t\t<altitudeMode>absolute</altitudeMode>\n")
     siteplace.append("\t\t\t\t<coordinates>%s,%s,%s</coordinates>\n" % (meta_dict_site['lon'], meta_dict_site['lat'], meta_dict_site['elev']))
     siteplace.append("\t\t\t</Point>\n\t\t</Placemark>\n")
@@ -427,6 +427,10 @@ def kml_styles(pf_result, verbosity=0):
         for key in sorted(my_styles.iterkeys()):
             style_id = my_styles[key]['id']
             style_scale = my_styles[key]['scale']
+            try:
+                icon_style_scale = my_styles[key]['iconscale']
+            except:
+                icon_style_scale = my_styles[key]['scale']
             style_href = pf_result['styles']['imagepath'] + my_styles[key]['href']
             styleout = '''
             <Style id="%s">
@@ -436,11 +440,15 @@ def kml_styles(pf_result, verbosity=0):
                 <BalloonStyle><text>$[description]</text><bgColor>ffffffff</bgColor><textColor>ff000000</textColor></BalloonStyle>
             </Style>
             '''
-            style_list.append(styleout % (style_id, style_href, style_scale, style_href, style_scale))
+            style_list.append(styleout % (style_id, style_href, icon_style_scale, style_href, style_scale))
     if not pf_result['config']['subset'] or pf_result['config']['subset'] == 'stations':
         for key in sorted(my_sta_styles.iterkeys()):
             style_id = my_sta_styles[key]['id']
             style_scale = my_sta_styles[key]['scale']
+            try:
+                icon_style_scale = my_sta_styles[key]['iconscale']
+            except:
+                icon_style_scale = my_sta_styles[key]['scale']
             style_href = pf_result['styles']['imagepath'] + my_sta_styles[key]['href']
             sta_styleout = '''
             <Style id="%s">
@@ -450,7 +458,7 @@ def kml_styles(pf_result, verbosity=0):
                 <BalloonStyle><text>$[description]</text><bgColor>ffffffff</bgColor><textColor>ff000000</textColor></BalloonStyle>
             </Style>
             '''
-            style_list.append(sta_styleout % (style_id, style_href, style_scale, style_href, style_scale))
+            style_list.append(sta_styleout % (style_id, style_href, icon_style_scale, style_href, style_scale))
     return ''.join(style_list)
 
 def main():
