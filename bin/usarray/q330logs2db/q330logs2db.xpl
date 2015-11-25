@@ -1,10 +1,3 @@
-: # use perl
-eval 'exec $ANTELOPE/bin/perl -S $0 "$@"'
-if 0;
-
-use lib "$ENV{ANTELOPE}/data/perl" ;
-use lib "$ENV{ANTELOPE}/contrib/data/perl" ;
-
 
 #
 #  Searches for important user messages from q330 log files 
