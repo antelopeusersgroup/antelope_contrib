@@ -42,7 +42,7 @@ static Arr *Hooks = 0;
 
 static char *Elog_replacement = 0;
 
-static function_entry Datascope_functions[] = {
+static zend_function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
 	PHP_FE(dbextfile, NULL)		
 	PHP_FE(dbfind, NULL)		

@@ -40,7 +40,7 @@ static int le_Orb_Packet;
 
 #define PHP_ORB_PACKET_RES_NAME "Orb_Packet"
 
-static function_entry Orb_functions[] = {
+static zend_function_entry Orb_functions[] = {
 	PHP_FE(orbopen, NULL)		
 	PHP_FE(orbping, NULL)		
 	PHP_FE(orbtell, NULL)		

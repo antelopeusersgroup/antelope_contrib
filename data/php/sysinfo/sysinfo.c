@@ -31,7 +31,7 @@
  * the name of the PHP function */
 #undef now
 
-function_entry sysinfo_functions[] = {
+zend_function_entry sysinfo_functions[] = {
 	PHP_FE(my_ip, NULL)		
 	PHP_FE(my_hardware, NULL)		
 	PHP_FE(my_hostname, NULL)		
