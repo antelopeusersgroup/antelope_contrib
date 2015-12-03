@@ -136,7 +136,7 @@ PHP_METHOD(orb_pkt, parts);
 
 zend_class_entry *php_orb_pkt_entry;
 #define PHP_ORB_PKT_NAME "orb_pkt"
-static function_entry php_orb_pkt_functions[] = {
+static zend_function_entry php_orb_pkt_functions[] = {
 	PHP_ME(orb_pkt, packettype, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, time, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, nchannels, NULL, ZEND_ACC_PUBLIC)
@@ -171,7 +171,7 @@ PHP_METHOD(orb_channel, data);
 
 zend_class_entry *php_orb_chan_entry;
 #define PHP_ORB_CHAN_NAME "orb_channel"
-static function_entry php_orb_chan_functions[] = {
+static zend_function_entry php_orb_chan_functions[] = {
 	PHP_ME(orb_channel, nsamp, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_channel, iuser1, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_channel, iuser2, NULL, ZEND_ACC_PUBLIC)
@@ -228,7 +228,7 @@ PHP_METHOD(orb_stat, stalled);
 
 zend_class_entry *php_orb_stat_entry;
 #define PHP_ORB_STAT_NAME "orb_stat"
-static function_entry php_orb_stat_functions[] = {
+static zend_function_entry php_orb_stat_functions[] = {
 	PHP_ME(orb_stat, when, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_stat, started, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_stat, orb_start, NULL, ZEND_ACC_PUBLIC)
@@ -275,7 +275,7 @@ PHP_METHOD(orb_source, soldest);
 
 zend_class_entry *php_orb_source_entry;
 #define PHP_ORB_SOURCE_NAME "orb_source"
-static function_entry php_orb_source_functions[] = {
+static zend_function_entry php_orb_source_functions[] = {
 	PHP_ME(orb_source, srcname, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_source, slatest_time, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_source, soldest_time, NULL, ZEND_ACC_PUBLIC)
@@ -325,7 +325,7 @@ PHP_METHOD(orb_client, stash_per_sec);
 
 zend_class_entry *php_orb_client_entry;
 #define PHP_ORB_CLIENT_NAME "orb_client"
-static function_entry php_orb_client_functions[] = {
+static zend_function_entry php_orb_client_functions[] = {
 	PHP_ME(orb_client, lastpkt, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, started, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_client, address, NULL, ZEND_ACC_PUBLIC)
