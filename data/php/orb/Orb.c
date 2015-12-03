@@ -2,10 +2,10 @@
  *   Antelope Orb interface for PHP
  *
  *   Copyright (c) 2005-2006 Lindquist Consulting, Inc.
- *   All rights reserved. 
- *                                                                     
- *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
- * 
+ *   All rights reserved.
+ *
+ *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc.
+ *
  *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
  *   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
  *   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -15,9 +15,9 @@
  *   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  *   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- *   This software may be used freely in any way as long as 
- *   the copyright statement above is not removed. 
- * 
+ *   This software may be used freely in any way as long as
+ *   the copyright statement above is not removed.
+ *
  */
 
 #include <netinet/in.h>
@@ -41,31 +41,31 @@ static int le_Orb_Packet;
 #define PHP_ORB_PACKET_RES_NAME "Orb_Packet"
 
 static zend_function_entry Orb_functions[] = {
-	PHP_FE(orbopen, NULL)		
-	PHP_FE(orbping, NULL)		
-	PHP_FE(orbtell, NULL)		
-	PHP_FE(orbposition, NULL)		
-	PHP_FE(orbafter, NULL)		
-	PHP_FE(orbseek, NULL)		
-	PHP_FE(orbwait, NULL)		
-	PHP_FE(orbclose, NULL)		
-	PHP_FE(orbselect, NULL)		
-	PHP_FE(orbreject, NULL)		
-	PHP_FE(orbreap, NULL)		
-	PHP_FE(orbreap_timeout, NULL)		
-	PHP_FE(orbget, NULL)		
-	PHP_FE(orbput, NULL)		
-	PHP_FE(orbputx, NULL)		
-	PHP_FE(orbstat, NULL)		
-	PHP_FE(orbsources, NULL)		
-	PHP_FE(orbclients, NULL)		
-	PHP_FE(pforbstat, NULL)		
-	PHP_FE(split_srcname, NULL)		
-	PHP_FE(join_srcname, NULL)		
-	PHP_FE(suffix2pkttype, NULL)		
-	PHP_FE(unstuffpkt, NULL)		
+	PHP_FE(orbopen, NULL)
+	PHP_FE(orbping, NULL)
+	PHP_FE(orbtell, NULL)
+	PHP_FE(orbposition, NULL)
+	PHP_FE(orbafter, NULL)
+	PHP_FE(orbseek, NULL)
+	PHP_FE(orbwait, NULL)
+	PHP_FE(orbclose, NULL)
+	PHP_FE(orbselect, NULL)
+	PHP_FE(orbreject, NULL)
+	PHP_FE(orbreap, NULL)
+	PHP_FE(orbreap_timeout, NULL)
+	PHP_FE(orbget, NULL)
+	PHP_FE(orbput, NULL)
+	PHP_FE(orbputx, NULL)
+	PHP_FE(orbstat, NULL)
+	PHP_FE(orbsources, NULL)
+	PHP_FE(orbclients, NULL)
+	PHP_FE(pforbstat, NULL)
+	PHP_FE(split_srcname, NULL)
+	PHP_FE(join_srcname, NULL)
+	PHP_FE(suffix2pkttype, NULL)
+	PHP_FE(unstuffpkt, NULL)
 	PHP_FE(orbpkt_string, NULL)
-	{NULL, NULL, NULL}	
+	{NULL, NULL, NULL}
 };
 
 zend_module_entry Orb_module_entry = {
@@ -370,14 +370,14 @@ _php_free_Orb_Packet( zend_rsrc_list_entry *rsrc TSRMLS_DC ) {
 	Packet *packet = (Packet *) rsrc->ptr;
 
 	if( packet != (Packet *) NULL ) {
-		
+
 		freePkt( packet );
 	}
 
 	return;
 }
 
-void 
+void
 register_Orb_constants( INIT_FUNC_ARGS )
 {
 	int	i;
@@ -385,7 +385,7 @@ register_Orb_constants( INIT_FUNC_ARGS )
 	for( i = 0; i < Orbxlatn; i++ ) {
 
 		zend_register_long_constant( Orbxlat[i].name,
-					     strlen( Orbxlat[i].name ) + 1, 
+					     strlen( Orbxlat[i].name ) + 1,
 					     Orbxlat[i].num,
 					     CONST_CS | CONST_PERSISTENT,
 					     module_number TSRMLS_CC );
@@ -394,7 +394,7 @@ register_Orb_constants( INIT_FUNC_ARGS )
 	for( i = 0; i < Orbconstn; i++ ) {
 
 		zend_register_long_constant( Orbconst[i].name,
-					     strlen( Orbconst[i].name ) + 1, 
+					     strlen( Orbconst[i].name ) + 1,
 					     Orbconst[i].num,
 					     CONST_CS | CONST_PERSISTENT,
 					     module_number TSRMLS_CC );
@@ -403,34 +403,34 @@ register_Orb_constants( INIT_FUNC_ARGS )
 	for( i = 0; i < Pktxlatn; i++ ) {
 
 		zend_register_long_constant( Pktxlat[i].name,
-					     strlen( Pktxlat[i].name ) + 1, 
+					     strlen( Pktxlat[i].name ) + 1,
 					     Pktxlat[i].num,
 					     CONST_CS | CONST_PERSISTENT,
 					     module_number TSRMLS_CC );
 	}
 }
 
-void 
+void
 register_pforbstat_constants( INIT_FUNC_ARGS )
 {
-	REGISTER_LONG_CONSTANT( "PFORBSTAT_SERVER", 
-				 PFORBSTAT_SERVER, 
-				 CONST_CS | CONST_PERSISTENT );
-				 
-	REGISTER_LONG_CONSTANT( "PFORBSTAT_SOURCES", 
-				 PFORBSTAT_SOURCES, 
+	REGISTER_LONG_CONSTANT( "PFORBSTAT_SERVER",
+				 PFORBSTAT_SERVER,
 				 CONST_CS | CONST_PERSISTENT );
 
-	REGISTER_LONG_CONSTANT( "PFORBSTAT_CLIENTS", 
-				 PFORBSTAT_CLIENTS, 
+	REGISTER_LONG_CONSTANT( "PFORBSTAT_SOURCES",
+				 PFORBSTAT_SOURCES,
 				 CONST_CS | CONST_PERSISTENT );
 
-	REGISTER_LONG_CONSTANT( "PFORBSTAT_DATABASES", 
-				 PFORBSTAT_DATABASES, 
+	REGISTER_LONG_CONSTANT( "PFORBSTAT_CLIENTS",
+				 PFORBSTAT_CLIENTS,
 				 CONST_CS | CONST_PERSISTENT );
 
-	REGISTER_LONG_CONSTANT( "PFORBSTAT_CONNECTIONS", 
-				 PFORBSTAT_CONNECTIONS, 
+	REGISTER_LONG_CONSTANT( "PFORBSTAT_DATABASES",
+				 PFORBSTAT_DATABASES,
+				 CONST_CS | CONST_PERSISTENT );
+
+	REGISTER_LONG_CONSTANT( "PFORBSTAT_CONNECTIONS",
+				 PFORBSTAT_CONNECTIONS,
 				 CONST_CS | CONST_PERSISTENT );
 	return;
 
@@ -445,48 +445,48 @@ register_Orb_classes( TSRMLS_D )
 	zend_class_entry ce_source;
 	zend_class_entry ce_client;
 
-	memcpy( &orb_pkt_obj_handlers, 
+	memcpy( &orb_pkt_obj_handlers,
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
 	orb_pkt_obj_handlers.clone_obj = NULL;
-	INIT_CLASS_ENTRY( ce_pkt, PHP_ORB_PKT_NAME, php_orb_pkt_functions );	
+	INIT_CLASS_ENTRY( ce_pkt, PHP_ORB_PKT_NAME, php_orb_pkt_functions );
 	ce_pkt.create_object = orb_pkt_obj_new;
 	php_orb_pkt_entry = zend_register_internal_class( &ce_pkt TSRMLS_CC );
 
-	memcpy( &orb_chan_obj_handlers, 
+	memcpy( &orb_chan_obj_handlers,
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
 	orb_chan_obj_handlers.clone_obj = NULL;
-	INIT_CLASS_ENTRY( ce_chan, PHP_ORB_CHAN_NAME, php_orb_chan_functions );	
+	INIT_CLASS_ENTRY( ce_chan, PHP_ORB_CHAN_NAME, php_orb_chan_functions );
 	ce_chan.create_object = orb_chan_obj_new;
 	php_orb_chan_entry = zend_register_internal_class( &ce_chan TSRMLS_CC );
 
-	memcpy( &orb_stat_obj_handlers, 
+	memcpy( &orb_stat_obj_handlers,
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
 	orb_stat_obj_handlers.clone_obj = NULL;
-	INIT_CLASS_ENTRY( ce_stat, PHP_ORB_STAT_NAME, php_orb_stat_functions );	
+	INIT_CLASS_ENTRY( ce_stat, PHP_ORB_STAT_NAME, php_orb_stat_functions );
 	ce_stat.create_object = orb_stat_obj_new;
 	php_orb_stat_entry = zend_register_internal_class( &ce_stat TSRMLS_CC );
 
-	memcpy( &orb_source_obj_handlers, 
+	memcpy( &orb_source_obj_handlers,
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
 	orb_source_obj_handlers.clone_obj = NULL;
-	INIT_CLASS_ENTRY( ce_source, PHP_ORB_SOURCE_NAME, php_orb_source_functions );	
+	INIT_CLASS_ENTRY( ce_source, PHP_ORB_SOURCE_NAME, php_orb_source_functions );
 	ce_source.create_object = orb_source_obj_new;
 	php_orb_source_entry = zend_register_internal_class( &ce_source TSRMLS_CC );
 
-	memcpy( &orb_client_obj_handlers, 
+	memcpy( &orb_client_obj_handlers,
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
 	orb_client_obj_handlers.clone_obj = NULL;
-	INIT_CLASS_ENTRY( ce_client, PHP_ORB_CLIENT_NAME, php_orb_client_functions );	
+	INIT_CLASS_ENTRY( ce_client, PHP_ORB_CLIENT_NAME, php_orb_client_functions );
 	ce_client.create_object = orb_client_obj_new;
 	php_orb_client_entry = zend_register_internal_class( &ce_client TSRMLS_CC );
 
@@ -495,10 +495,10 @@ register_Orb_classes( TSRMLS_D )
 
 PHP_MINIT_FUNCTION(Orb)
 {
-	le_Orb_Packet = zend_register_list_destructors_ex( 
-				_php_free_Orb_Packet, NULL, 
+	le_Orb_Packet = zend_register_list_destructors_ex(
+				_php_free_Orb_Packet, NULL,
 				PHP_ORB_PACKET_RES_NAME, 0 );
-	
+
 	register_Orb_constants( INIT_FUNC_ARGS_PASSTHRU );
 
 	register_pforbstat_constants( INIT_FUNC_ARGS_PASSTHRU );
@@ -590,15 +590,15 @@ pkt2zval( int type, char *srcname, Packet *pkt )
 	zend_class_entry *ce;
 	php_orb_pkt_obj *intern;
 
-	ce = zend_fetch_class( PHP_ORB_PKT_NAME, 
-			       strlen( PHP_ORB_PKT_NAME ), 
+	ce = zend_fetch_class( PHP_ORB_PKT_NAME,
+			       strlen( PHP_ORB_PKT_NAME ),
 			       ZEND_FETCH_CLASS_AUTO );
 
 	MAKE_STD_ZVAL( zval_pkt );
 
 	object_init_ex( zval_pkt, ce );
 
-	intern = (php_orb_pkt_obj *) 
+	intern = (php_orb_pkt_obj *)
 			zend_objects_get_address( zval_pkt TSRMLS_CC );
 
 	intern->type = type;
@@ -613,13 +613,13 @@ pktchan2zval( PktChannel *pktchan, int pkt_res, zval *zval_pktchan )
 	zend_class_entry *ce;
 	php_orb_chan_obj *intern;
 
-	ce = zend_fetch_class( PHP_ORB_CHAN_NAME, 
-			       strlen( PHP_ORB_CHAN_NAME ), 
+	ce = zend_fetch_class( PHP_ORB_CHAN_NAME,
+			       strlen( PHP_ORB_CHAN_NAME ),
 			       ZEND_FETCH_CLASS_AUTO );
 
 	object_init_ex( zval_pktchan, ce );
 
-	intern = (php_orb_chan_obj *) 
+	intern = (php_orb_chan_obj *)
 			zend_objects_get_address( zval_pktchan TSRMLS_CC );
 
 	intern->pktchan = pktchan;
@@ -630,19 +630,19 @@ pktchan2zval( PktChannel *pktchan, int pkt_res, zval *zval_pktchan )
 	return;
 }
 
-static void 
+static void
 orbstat2zval( Orbstat *os, zval *zval_orbstat )
 {
 	zend_class_entry *ce;
 	php_orb_stat_obj *intern;
 
-	ce = zend_fetch_class( PHP_ORB_STAT_NAME, 
-			       strlen( PHP_ORB_STAT_NAME ), 
+	ce = zend_fetch_class( PHP_ORB_STAT_NAME,
+			       strlen( PHP_ORB_STAT_NAME ),
 			       ZEND_FETCH_CLASS_AUTO );
 
 	object_init_ex( zval_orbstat, ce );
 
-	intern = (php_orb_stat_obj *) 
+	intern = (php_orb_stat_obj *)
 			zend_objects_get_address( zval_orbstat TSRMLS_CC );
 
 	intern->os = os;
@@ -650,19 +650,19 @@ orbstat2zval( Orbstat *os, zval *zval_orbstat )
 	return;
 }
 
-static void 
+static void
 orbsource2zval( Orbsrc *os, zval *zval_orbsource )
 {
 	zend_class_entry *ce;
 	php_orb_source_obj *intern;
 
-	ce = zend_fetch_class( PHP_ORB_SOURCE_NAME, 
-			       strlen( PHP_ORB_SOURCE_NAME ), 
+	ce = zend_fetch_class( PHP_ORB_SOURCE_NAME,
+			       strlen( PHP_ORB_SOURCE_NAME ),
 			       ZEND_FETCH_CLASS_AUTO );
 
 	object_init_ex( zval_orbsource, ce );
 
-	intern = (php_orb_source_obj *) 
+	intern = (php_orb_source_obj *)
 			zend_objects_get_address( zval_orbsource TSRMLS_CC );
 
 	intern->os = os;
@@ -670,19 +670,19 @@ orbsource2zval( Orbsrc *os, zval *zval_orbsource )
 	return;
 }
 
-static void 
+static void
 orbclient2zval( Orbclient *oc, zval *zval_orbclient )
 {
 	zend_class_entry *ce;
 	php_orb_client_obj *intern;
 
-	ce = zend_fetch_class( PHP_ORB_CLIENT_NAME, 
-			       strlen( PHP_ORB_CLIENT_NAME ), 
+	ce = zend_fetch_class( PHP_ORB_CLIENT_NAME,
+			       strlen( PHP_ORB_CLIENT_NAME ),
 			       ZEND_FETCH_CLASS_AUTO );
 
 	object_init_ex( zval_orbclient, ce );
 
-	intern = (php_orb_client_obj *) 
+	intern = (php_orb_client_obj *)
 			zend_objects_get_address( zval_orbclient TSRMLS_CC );
 
 	intern->oc = oc;
@@ -690,7 +690,7 @@ orbclient2zval( Orbclient *oc, zval *zval_orbclient )
 	return;
 }
 
-void 
+void
 orb_pkt_obj_free_resources( php_orb_pkt_obj *intern )
 {
 	if( intern ) {
@@ -701,7 +701,7 @@ orb_pkt_obj_free_resources( php_orb_pkt_obj *intern )
 	return;
 }
 
-void 
+void
 orb_chan_obj_free_resources( php_orb_chan_obj *intern )
 {
 	if( intern ) {
@@ -712,26 +712,26 @@ orb_chan_obj_free_resources( php_orb_chan_obj *intern )
 	return;
 }
 
-void 
+void
 orb_stat_obj_free_resources( php_orb_stat_obj *intern )
 {
-	; 
+	;
 
 	return;
 }
 
-void 
+void
 orb_source_obj_free_resources( php_orb_source_obj *intern )
 {
-	; 
+	;
 
 	return;
 }
 
-void 
+void
 orb_client_obj_free_resources( php_orb_client_obj *intern )
 {
-	; 
+	;
 
 	return;
 }
@@ -814,13 +814,13 @@ orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC )
 
 	ALLOC_HASHTABLE( intern->std.properties );
 	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
-	zend_hash_copy( intern->std.properties, 
+	zend_hash_copy( intern->std.properties,
 			&class_type->default_properties,
 			(copy_ctor_func_t) zval_add_ref,
 			(void *) &tmp,
 			sizeof(zval *));
-	retval.handle = zend_objects_store_put( intern, 
-		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+	retval.handle = zend_objects_store_put( intern,
+		(zend_objects_store_dtor_t) zend_objects_destroy_object,
 		(zend_objects_free_object_storage_t) orb_pkt_obj_free_storage,
 		NULL TSRMLS_CC);
 	retval.handlers = &orb_pkt_obj_handlers;
@@ -841,13 +841,13 @@ orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC )
 
 	ALLOC_HASHTABLE( intern->std.properties );
 	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
-	zend_hash_copy( intern->std.properties, 
+	zend_hash_copy( intern->std.properties,
 			&class_type->default_properties,
 			(copy_ctor_func_t) zval_add_ref,
 			(void *) &tmp,
 			sizeof(zval *));
-	retval.handle = zend_objects_store_put( intern, 
-		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+	retval.handle = zend_objects_store_put( intern,
+		(zend_objects_store_dtor_t) zend_objects_destroy_object,
 		(zend_objects_free_object_storage_t) orb_chan_obj_free_storage,
 		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
@@ -868,13 +868,13 @@ orb_stat_obj_new( zend_class_entry *class_type TSRMLS_DC )
 
 	ALLOC_HASHTABLE( intern->std.properties );
 	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
-	zend_hash_copy( intern->std.properties, 
+	zend_hash_copy( intern->std.properties,
 			&class_type->default_properties,
 			(copy_ctor_func_t) zval_add_ref,
 			(void *) &tmp,
 			sizeof(zval *));
-	retval.handle = zend_objects_store_put( intern, 
-		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+	retval.handle = zend_objects_store_put( intern,
+		(zend_objects_store_dtor_t) zend_objects_destroy_object,
 		(zend_objects_free_object_storage_t) orb_stat_obj_free_storage,
 		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
@@ -895,13 +895,13 @@ orb_source_obj_new( zend_class_entry *class_type TSRMLS_DC )
 
 	ALLOC_HASHTABLE( intern->std.properties );
 	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
-	zend_hash_copy( intern->std.properties, 
+	zend_hash_copy( intern->std.properties,
 			&class_type->default_properties,
 			(copy_ctor_func_t) zval_add_ref,
 			(void *) &tmp,
 			sizeof(zval *));
-	retval.handle = zend_objects_store_put( intern, 
-		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+	retval.handle = zend_objects_store_put( intern,
+		(zend_objects_store_dtor_t) zend_objects_destroy_object,
 		(zend_objects_free_object_storage_t) orb_source_obj_free_storage,
 		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
@@ -922,13 +922,13 @@ orb_client_obj_new( zend_class_entry *class_type TSRMLS_DC )
 
 	ALLOC_HASHTABLE( intern->std.properties );
 	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
-	zend_hash_copy( intern->std.properties, 
+	zend_hash_copy( intern->std.properties,
 			&class_type->default_properties,
 			(copy_ctor_func_t) zval_add_ref,
 			(void *) &tmp,
 			sizeof(zval *));
-	retval.handle = zend_objects_store_put( intern, 
-		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+	retval.handle = zend_objects_store_put( intern,
+		(zend_objects_store_dtor_t) zend_objects_destroy_object,
 		(zend_objects_free_object_storage_t) orb_client_obj_free_storage,
 		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
@@ -941,7 +941,7 @@ get_this_orb_pkt_res( zval *object )
 {
 	php_orb_pkt_obj *intern;
 
-	intern = (php_orb_pkt_obj *) 
+	intern = (php_orb_pkt_obj *)
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->pkt_res;
@@ -971,7 +971,7 @@ get_this_orb_pkt_type( zval *object )
 {
 	php_orb_pkt_obj *intern;
 
-	intern = (php_orb_pkt_obj *) 
+	intern = (php_orb_pkt_obj *)
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->type;
@@ -982,7 +982,7 @@ get_this_orb_pktchan( zval *object )
 {
 	php_orb_chan_obj *intern;
 
-	intern = (php_orb_chan_obj *) 
+	intern = (php_orb_chan_obj *)
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->pktchan;
@@ -993,7 +993,7 @@ get_this_orb_stat( zval *object )
 {
 	php_orb_stat_obj *intern;
 
-	intern = (php_orb_stat_obj *) 
+	intern = (php_orb_stat_obj *)
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->os;
@@ -1004,7 +1004,7 @@ get_this_orb_source( zval *object )
 {
 	php_orb_source_obj *intern;
 
-	intern = (php_orb_source_obj *) 
+	intern = (php_orb_source_obj *)
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->os;
@@ -1015,7 +1015,7 @@ get_this_orb_client( zval *object )
 {
 	php_orb_client_obj *intern;
 
-	intern = (php_orb_client_obj *) 
+	intern = (php_orb_client_obj *)
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->oc;
@@ -1033,7 +1033,7 @@ PHP_FUNCTION(template)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&db_array )
 	    == FAILURE) {
 
@@ -1061,7 +1061,7 @@ PHP_FUNCTION(orbopen)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 					&orbname, &orbname_len,
 					&perm, &perm_len )
 	    == FAILURE) {
@@ -1092,7 +1092,7 @@ PHP_FUNCTION(orbclose)
 
 		return;
 	}
-	
+
 	rc = orbclose( (int) orbfd );
 
 	RETURN_LONG( rc );
@@ -1122,12 +1122,12 @@ PHP_FUNCTION(orbreap)
 
 		return;
 	}
-	
-	rc = orbreap( (int) orbfd, &pktid, srcname, &pkttime, 
+
+	rc = orbreap( (int) orbfd, &pktid, srcname, &pkttime,
 		      &pkt, &nbytes, &bufsize );
 
 	if( rc < 0 ) {
-		
+
 		zend_error( E_ERROR, "orbreap failed" );
 
 		return;
@@ -1174,12 +1174,12 @@ PHP_FUNCTION(orbreap_timeout)
 
 		return;
 	}
-	
-	rc = orbreap_timeout( (int) orbfd, (int) maxseconds, &pktid, 
+
+	rc = orbreap_timeout( (int) orbfd, (int) maxseconds, &pktid,
 			srcname, &pkttime, &pkt, &nbytes, &bufsize );
 
 	if( rc < 0 ) {
-		
+
 		return;
 	}
 
@@ -1225,36 +1225,36 @@ PHP_FUNCTION(orbget)
 
 		return;
 	}
-	
+
 	if( Z_TYPE_P( zval_which ) == IS_STRING ) {
 
 		which = xlatname( Z_STRVAL_P( zval_which ), Orbconst, Orbconstn );
 
 		if( which == -1 ) {
 
-			zend_error( E_ERROR, 
+			zend_error( E_ERROR,
 		     	   "orbget 'which' code not recognized" );
 
 			return;
 		}
-	
+
 	} else if( Z_TYPE_P( zval_which ) == IS_LONG ) {
 
 		which = Z_LVAL_P( zval_which );
 
 	} else {
 
-		zend_error( E_ERROR, 
+		zend_error( E_ERROR,
 		     "orget 'which' argument must be string or integer" );
 
 		return;
 	}
 
-	rc = orbget( (int) orbfd, which, &pktid, srcname, &pkttime, 
+	rc = orbget( (int) orbfd, which, &pktid, srcname, &pkttime,
 		      &pkt, &nbytes, &bufsize );
 
 	if( rc < 0 ) {
-		
+
 		zend_error( E_ERROR, "orbget failed" );
 
 		return;
@@ -1295,14 +1295,14 @@ PHP_FUNCTION(orbput)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "lsdsl", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "lsdsl",
 		&orbfd, &srcname, &srcname_len, &time,
 		&packet, &packet_len, &nbytes )
 	    == FAILURE) {
 
 		return;
 	}
-	
+
 	rc = orbput( (int) orbfd, srcname, time, packet, (int) nbytes );
 
 	RETURN_LONG( rc );
@@ -1327,14 +1327,14 @@ PHP_FUNCTION(orbputx)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "lsdsl", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "lsdsl",
 		&orbfd, &srcname, &srcname_len, &time,
 		&packet, &packet_len, &nbytes )
 	    == FAILURE) {
 
 		return;
 	}
-	
+
 	pktid = orbputx( (int) orbfd, srcname, time, packet, (int) nbytes );
 
 	RETURN_LONG( pktid );
@@ -1359,7 +1359,7 @@ PHP_FUNCTION(orbstat)
 
 		return;
 	}
-	
+
 	rc = orbstat( (int) orbfd, &os );
 
 	orbstat2zval( os, return_value );
@@ -1391,7 +1391,7 @@ PHP_FUNCTION(orbsources)
 
 		return;
 	}
-	
+
 	rc = orbsources( (int) orbfd, &when, &sources, &nsources );
 
 	MAKE_STD_ZVAL( list );
@@ -1439,7 +1439,7 @@ PHP_FUNCTION(orbclients)
 
 		return;
 	}
-	
+
 	rc = orbclients( (int) orbfd, &when, &clients, &nclients );
 
 	MAKE_STD_ZVAL( list );
@@ -1481,7 +1481,7 @@ PHP_FUNCTION(orbtell)
 
 		return;
 	}
-	
+
 	pktid = orbtell( (int) orbfd );
 
 	RETURN_LONG( pktid );
@@ -1505,7 +1505,7 @@ PHP_FUNCTION(orbping)
 
 		return;
 	}
-	
+
 	orbping( (int) orbfd, &version );
 
 	RETURN_LONG( version );
@@ -1532,7 +1532,7 @@ PHP_FUNCTION(orbselect)
 
 		return;
 	}
-	
+
 	rc = orbselect( (int) orbfd, regex );
 
 	RETURN_LONG( rc );
@@ -1559,7 +1559,7 @@ PHP_FUNCTION(orbreject)
 
 		return;
 	}
-	
+
 	rc = orbreject( (int) orbfd, regex );
 
 	RETURN_LONG( rc );
@@ -1585,7 +1585,7 @@ PHP_FUNCTION(orbafter)
 
 		return;
 	}
-	
+
 	pktid = orbafter( (int) orbfd, time );
 
 	RETURN_LONG( pktid );
@@ -1612,7 +1612,7 @@ PHP_FUNCTION(orbposition)
 
 		return;
 	}
-	
+
 	pktid = orbposition( (int) orbfd, from );
 
 	RETURN_LONG( pktid );
@@ -1646,19 +1646,19 @@ PHP_FUNCTION(orbseek)
 
 		if( which == -1 ) {
 
-			zend_error( E_ERROR, 
+			zend_error( E_ERROR,
 		     	   "orbseek 'which' code not recognized" );
 
 			return;
 		}
-	
+
 	} else if( Z_TYPE_P( zval_which ) == IS_LONG ) {
 
 		which = Z_LVAL_P( zval_which );
 
 	} else {
 
-		zend_error( E_ERROR, 
+		zend_error( E_ERROR,
 		     "orbseek 'which' argument must be string or integer" );
 
 		return;
@@ -1693,7 +1693,7 @@ PHP_FUNCTION(orbwait)
 
 		return;
 	}
-	
+
 	rc = orbwait( (int) orbfd, re, mintime, timeout );
 
 	RETURN_LONG( rc );
@@ -1718,13 +1718,13 @@ PHP_FUNCTION(pforbstat)
 
 		return;
 	}
-	
+
 	pf = pforbstat( (int) orbfd, (int) flags );
 
 	if( pf != NULL ) {
 
 		pf2zval( pf, return_value );
-	
+
 		pffree( pf );
 	}
 
@@ -1735,7 +1735,7 @@ PHP_FUNCTION(pforbstat)
 /* N.B. the following function needs to be lowercase; despite the case-
  * insensitivity of PHP functions to the interpreter, the Zend engine
  * only handles the implementation well if the C-side function name
- * is all lowercase. Thus 'unstuffpkt' instead of 'unstuffPkt': 
+ * is all lowercase. Thus 'unstuffpkt' instead of 'unstuffPkt':
  */
 
 /* {{{ proto array unstuffPkt( string srcname, double time, string packet, int nbytes ) */
@@ -1757,18 +1757,18 @@ PHP_FUNCTION(unstuffpkt)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "sdsl", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "sdsl",
 		&srcname, &srcname_len, &time,
 		&packet, &packet_len, &nbytes )
 	    == FAILURE) {
 
 		return;
 	}
-	
+
 	rc = unstuffPkt( srcname, time, packet, (int) nbytes, &pkt );
 
 	if( rc < 0 ) {
-		
+
 		zend_error( E_ERROR, "unstuffPkt failed" );
 
 		return;
@@ -1803,18 +1803,18 @@ PHP_FUNCTION(orbpkt_string)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "sdsl", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "sdsl",
 		&srcname, &srcname_len, &time,
 		&packet, &packet_len, &nbytes )
 	    == FAILURE) {
 
 		return;
 	}
-	
+
 	forbpkt = forbpacket_string( srcname, time, packet, (int) nbytes );
 
 	if( forbpkt == 0 ) {
-		
+
 		zend_error( E_ERROR, "orbpkt_string failed" );
 
 		return;
@@ -1900,9 +1900,9 @@ PHP_METHOD(orb_pkt, channels)
 	} else if( ichannel >= maxtbl( pkt->channels ) ) {
 
 		sprintf( msg, "Channel index %ld too high; packet contains "
-			      "only %ld channels\n", 
+			      "only %ld channels\n",
 			      ichannel, maxtbl( pkt->channels ) );
-		
+
 		ZVAL_NULL( return_value );
 
 	} else {
@@ -1910,7 +1910,7 @@ PHP_METHOD(orb_pkt, channels)
 		pktchan = gettbl( pkt->channels, ichannel );
 
 		if( pktchan == (PktChannel *) NULL ) {
-			
+
 			zend_error( E_WARNING, "Null PktChannel structure!\n" );
 
 			ZVAL_NULL( return_value );
@@ -1958,14 +1958,14 @@ PHP_METHOD(orb_pkt, dfile)
 	pkt = get_this_orb_pkt( getThis() );
 
 	if( pkt->dfile != NULL && pkt->dfile_size > 0 ) {
-		
+
 		array_init( return_value );
 
 		add_next_index_string( return_value, pkt->dfile, 1 );
 		add_next_index_long( return_value, pkt->dfile_size );
 
 	} else {
-		
+
 		ZVAL_NULL( return_value );
 	}
 
@@ -2897,7 +2897,7 @@ PHP_FUNCTION(split_srcname)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 					&srcname, &srcname_len )
 	    == FAILURE) {
 
@@ -2908,28 +2908,28 @@ PHP_FUNCTION(split_srcname)
 
 	array_init( return_value );
 
-	add_assoc_string_ex( return_value, 
-			     "net", strlen( "net" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "net", strlen( "net" ) + 1,
 			     parts.src_net, 1 );
 
-	add_assoc_string_ex( return_value, 
-			     "sta", strlen( "sta" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "sta", strlen( "sta" ) + 1,
 			     parts.src_sta, 1 );
 
-	add_assoc_string_ex( return_value, 
-			     "chan", strlen( "chan" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "chan", strlen( "chan" ) + 1,
 			     parts.src_chan, 1 );
 
-	add_assoc_string_ex( return_value, 
-			     "loc", strlen( "loc" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "loc", strlen( "loc" ) + 1,
 			     parts.src_loc, 1 );
 
-	add_assoc_string_ex( return_value, 
-			     "suffix", strlen( "suffix" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "suffix", strlen( "suffix" ) + 1,
 			     parts.src_suffix, 1 );
 
-	add_assoc_string_ex( return_value, 
-			     "subcode", strlen( "subcode" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "subcode", strlen( "subcode" ) + 1,
 			     parts.src_subcode, 1 );
 
 	return;
@@ -2965,7 +2965,7 @@ PHP_FUNCTION(join_srcname)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ssssss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ssssss",
 					&net, &net_len,
 					&sta, &sta_len,
 					&chan, &chan_len,
@@ -3003,7 +3003,7 @@ PHP_FUNCTION(suffix2pkttype)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 					&suffix, &suffix_len )
 	    == FAILURE) {
 
@@ -3014,14 +3014,14 @@ PHP_FUNCTION(suffix2pkttype)
 
 	array_init( return_value );
 
-	add_assoc_string_ex( return_value, 
-			     "name", strlen( "name" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "name", strlen( "name" ) + 1,
 			     pktt->name,  1 );
 
 	add_assoc_long( return_value, "content", pktt->content );
 
-	add_assoc_string_ex( return_value, 
-			     "desc", strlen( "desc" ) + 1, 
+	add_assoc_string_ex( return_value,
+			     "desc", strlen( "desc" ) + 1,
 			     pktt->desc, 1 );
 
 	return;

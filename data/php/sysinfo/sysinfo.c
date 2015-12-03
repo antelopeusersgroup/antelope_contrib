@@ -17,7 +17,7 @@
  *
  *   This software may be used freely in any way as long as
  *   the copyright statement above is not removed.
- * 
+ *
  */
 
 #include "php.h"
@@ -32,26 +32,26 @@
 #undef now
 
 zend_function_entry sysinfo_functions[] = {
-	PHP_FE(my_ip, NULL)		
-	PHP_FE(my_hardware, NULL)		
-	PHP_FE(my_hostname, NULL)		
-	PHP_FE(my_os, NULL)		
-	PHP_FE(my_username, NULL)		
-	PHP_FE(ip2name, NULL)		
-	PHP_FE(name2ip, NULL)		
-	PHP_FE(ip, NULL)		 
-	PHP_FE(pidexecname, NULL)		 
-	PHP_FE(pidcmdline, NULL)		 
-	PHP_FE(pidpwd, NULL)		 
-	PHP_FE(pid_exists, NULL)		 
-	PHP_FE(pidinfo, NULL)		 
-	PHP_FE(nomem, NULL)		 
-	PHP_FE(sysloadavg, NULL)		 
-	PHP_FE(sysmem, NULL)		 
-	PHP_FE(sysmounted, NULL)		 
-	PHP_FE(syscpu, NULL)		 
-	PHP_FE(statvfs, NULL)		 
-	{NULL, NULL, NULL}	
+	PHP_FE(my_ip, NULL)
+	PHP_FE(my_hardware, NULL)
+	PHP_FE(my_hostname, NULL)
+	PHP_FE(my_os, NULL)
+	PHP_FE(my_username, NULL)
+	PHP_FE(ip2name, NULL)
+	PHP_FE(name2ip, NULL)
+	PHP_FE(ip, NULL)
+	PHP_FE(pidexecname, NULL)
+	PHP_FE(pidcmdline, NULL)
+	PHP_FE(pidpwd, NULL)
+	PHP_FE(pid_exists, NULL)
+	PHP_FE(pidinfo, NULL)
+	PHP_FE(nomem, NULL)
+	PHP_FE(sysloadavg, NULL)
+	PHP_FE(sysmem, NULL)
+	PHP_FE(sysmounted, NULL)
+	PHP_FE(syscpu, NULL)
+	PHP_FE(statvfs, NULL)
+	{NULL, NULL, NULL}
 };
 
 zend_module_entry sysinfo_module_entry = {
@@ -191,7 +191,7 @@ PHP_FUNCTION(ip2name)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", &ip, &ip_len ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &ip, &ip_len )
 		== FAILURE ) {
 
 		return;
@@ -217,7 +217,7 @@ PHP_FUNCTION(name2ip)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", &name, &name_len ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &name, &name_len )
 		== FAILURE ) {
 
 		return;
@@ -241,7 +241,7 @@ PHP_FUNCTION(ip)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", &ip, &ip_len ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &ip, &ip_len )
 		== FAILURE ) {
 
 		return;
@@ -264,7 +264,7 @@ PHP_FUNCTION(pidexecname)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid )
 		== FAILURE ) {
 
 		return;
@@ -293,7 +293,7 @@ PHP_FUNCTION(pidcmdline)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid )
 		== FAILURE ) {
 
 		return;
@@ -322,7 +322,7 @@ PHP_FUNCTION(pidpwd)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid )
 		== FAILURE ) {
 
 		return;
@@ -350,7 +350,7 @@ PHP_FUNCTION(pid_exists)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid )
 		== FAILURE ) {
 
 		return;
@@ -375,7 +375,7 @@ PHP_FUNCTION(pidinfo)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &pid )
 		== FAILURE ) {
 
 		return;
@@ -384,7 +384,7 @@ PHP_FUNCTION(pidinfo)
 	rc = pidinfo( pid, &process );
 
 	if( rc < 0 ) {
-		
+
 		zend_error( E_ERROR, "pidinfo failed!\n" );
 	}
 
@@ -419,7 +419,7 @@ PHP_FUNCTION(nomem)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ll", &address, &nbytes ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ll", &address, &nbytes )
 		== FAILURE ) {
 
 		return;
@@ -529,14 +529,14 @@ PHP_FUNCTION(statvfs)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", &path, &path_len ) 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &path, &path_len )
 		== FAILURE ) {
 
 		return;
 	}
 
 	if( std_statvfs( path, &sbuf ) != 0 ) {
-	
+
 		zend_error( E_ERROR, "Failed to get stat information for path!\n" );
 	}
 
@@ -546,12 +546,12 @@ PHP_FUNCTION(statvfs)
 
 	add_assoc_double( return_value, "Mb_total", bs * sbuf.f_blocks );
 	add_assoc_double( return_value, "Mb_avail", bs * sbuf.f_bavail );
-	add_assoc_double( return_value, "used", 
+	add_assoc_double( return_value, "used",
 					1. - (1.*sbuf.f_bavail)/sbuf.f_blocks );
 
 	add_assoc_long( return_value, "inodes", sbuf.f_files );
 	add_assoc_long( return_value, "inodes_avail", sbuf.f_favail );
-	add_assoc_double( return_value, "inodes_used", 
+	add_assoc_double( return_value, "inodes_used",
 					1. - (1.*sbuf.f_favail)/sbuf.f_files );
 
 	add_assoc_long( return_value, "id", sbuf.f_fsid );
@@ -580,12 +580,12 @@ PHP_FUNCTION(sysmounted)
 
 
 	for( i = 0; i < maxtbl( sysmnt ); i++ ) {
-		
+
 		amount = (SysMounted *) gettbl( sysmnt, i );
 
 		allot( char *, mountrow, sizeof( amount->mountpt ) +
 					 sizeof( amount->fstype ) +
-					 sizeof( amount->host ) + 
+					 sizeof( amount->host ) +
 					 sizeof( amount->source ) + 20 );
 
 		sprintf( mountrow, "%s\t%s\t%s\t%s",
@@ -595,7 +595,7 @@ PHP_FUNCTION(sysmounted)
 				   amount->source );
 
 		add_next_index_string( return_value, mountrow, 1 );
-		
+
 		free( mountrow );
 	}
 
