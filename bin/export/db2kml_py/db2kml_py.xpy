@@ -212,8 +212,14 @@ def get_orig_records(database, pf, verbosity=0):
 def create_site(meta_dict_site, visibility, style):
     """Create KML for site icons
     """
+    # Convert to XML standard time
+
     siteplace = ["\t\t<Placemark>\n\t\t\t<name>%s</name>\n" % meta_dict_site['sta']]
     siteplace.append("\t\t\t<visibility>%s</visibility>\n" % visibility)
+    siteplace.append("\t\t\t<TimeSpan>\n")
+    siteplace.append("\t\t\t\t<begin>%s</begin>\n" % meta_dict_site['time_xml'])
+    siteplace.append("\t\t\t\t<end>%s</end>\n" % meta_dict_site['endtime_xml'])
+    siteplace.append("\t\t\t</TimeSpan>\n")
     siteplace.append("\t\t\t<description>\n")
     siteplace.append("\t\t\t\t<![CDATA[\n")
     siteplace.append("<p><strong>%s_%s</strong></p>\n" % (meta_dict_site['snet'],meta_dict_site['sta']))
@@ -231,7 +237,6 @@ def create_site(meta_dict_site, visibility, style):
     siteplace.append("\t\t\t\t]]>\n")
     siteplace.append("\t\t\t</description>\n")
     siteplace.append("\t\t\t<styleUrl>#%s</styleUrl>\n" % style)
-    #siteplace.append("\t\t\t<Style><IconStyle><scale>0.7</scale><color>FFFFFFFF</color></IconStyle></Style>\n")
     siteplace.append("\t\t\t<Point>\n\t\t\t\t<altitudeMode>absolute</altitudeMode>\n")
     siteplace.append("\t\t\t\t<coordinates>%s,%s,%s</coordinates>\n" % (meta_dict_site['lon'], meta_dict_site['lat'], meta_dict_site['elev']))
     siteplace.append("\t\t\t</Point>\n\t\t</Placemark>\n")
@@ -294,6 +299,15 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
         #print "%s" % dbm.getv('snet')[0]
         for f in fields:
             per_sta_info[f] = dbm.getv(f)[0]
+
+            if f == 'ondate':
+                epoch = stock.str2epoch( str(per_sta_info['ondate']) )
+                per_sta_info['time_xml'] = stock.epoch2str(epoch, "%Y-%m-%dT%H:%M:%SZ")
+
+            if f == 'offdate':
+                epoch = stock.str2epoch( str(per_sta_info['offdate']) )
+                per_sta_info['endtime_xml'] = stock.epoch2str(epoch, "%Y-%m-%dT%H:%M:%SZ")
+
             if f == 'elev':
                 per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
 
