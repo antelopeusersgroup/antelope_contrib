@@ -302,10 +302,18 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
 
             if f == 'ondate':
                 epoch = stock.str2epoch( str(per_sta_info['ondate']) )
+
+                if not int(epoch) or stock.now() < epoch:
+                    epoch = 0
+
                 per_sta_info['time_xml'] = stock.epoch2str(epoch, "%Y-%m-%dT%H:%M:%SZ")
 
             if f == 'offdate':
-                epoch = stock.str2epoch( str(per_sta_info['offdate']) )
+                epoch = stock.str2epoch( str( per_sta_info['offdate'] ) )
+
+                if epoch < 1 or stock.now() < epoch:
+                    epoch = stock.now()
+
                 per_sta_info['endtime_xml'] = stock.epoch2str(epoch, "%Y-%m-%dT%H:%M:%SZ")
 
             if f == 'elev':
