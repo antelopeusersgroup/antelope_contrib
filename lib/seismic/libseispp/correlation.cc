@@ -178,6 +178,8 @@ TimeSeries correlation(ThreeComponentSeismogram& x, ThreeComponentSeismogram& y,
 	int lz=ly-lx;
 	TimeSeries z(dynamic_cast<Metadata&>(y),false);
         z.s.reserve(lz);
+        /* Necessary to initialize stl container this way */
+        for(i=0;i<lz;++i) z.s.push_back(0.0);
 	z.t0=y.t0-x.t0;
 	z.dt=x.dt;  // probably not necessary, but forced initialization always good.
 	z.ns=lz;
