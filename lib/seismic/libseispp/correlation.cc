@@ -57,6 +57,7 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 			z.s[i]/= (nrmx*nrmy);
 		}
 	}
+        z.live=true;
 	return z;
 }
 		
@@ -141,6 +142,7 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 			}
 		}
 	}
+        z.live=true;
 	return z;
 }
 TimeSeries correlation(ThreeComponentSeismogram& x, ThreeComponentSeismogram& y,
@@ -200,6 +202,7 @@ TimeSeries correlation(ThreeComponentSeismogram& x, ThreeComponentSeismogram& y,
 			z.s[i]/= (nrmx*nrmy);
 		}
 	}
+        z.live=true;
 	return z;
 }
 		
