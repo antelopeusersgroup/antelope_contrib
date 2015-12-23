@@ -5,7 +5,7 @@ namespace SEISPP {
 
 void pick_tw_callback(Widget w, XtPointer client_data, XtPointer userdata)
 {
-    cerr << "Entering pick_tw_callback"<<endl;
+    //cerr << "Entering pick_tw_callback"<<endl;
     TimeWindowPicker *picker_handle=reinterpret_cast<TimeWindowPicker*>
         (client_data);
     TimeWindow twinpicked;
@@ -29,24 +29,21 @@ void pick_tw_callback(Widget w, XtPointer client_data, XtPointer userdata)
     if(spick->type == WINDOW) 
         picker_handle->setpick(twinpicked);
 
-    cerr << "Leaving pick_tw_callback"<<endl;
+    //cerr << "Leaving pick_tw_callback"<<endl;
 }
 void arm_tw_pick_callback(Widget w, 
         XtPointer client_data, XtPointer userdata)
 {
-    cerr << "Entering arm_tw_pick_callback"  <<endl;
+    //cerr << "Entering arm_tw_pick_callback"  <<endl;
     TimeWindowPicker *picker_handle=reinterpret_cast<TimeWindowPicker*>
         (client_data);
     picker_handle->enable_blocking();
-    //DEBUG - try preset of markers
-    TimeWindow tmp(5.0,30.0);
-    picker_handle->setpick(tmp);
     picker_handle->enable_picking();
-    cerr << "Exiting arm_tw_pick_callback"  <<endl;
+    //cerr << "Exiting arm_tw_pick_callback"  <<endl;
 }
 void TimeWindowPicker::enable_picking()
 {
-    cerr << "Entering enable_picking"  <<endl;
+    //cerr << "Entering enable_picking"  <<endl;
     this->block_till_exit_pushed=true;
     int k,kmax;
     if(ThreeComponentMode)
@@ -55,11 +52,12 @@ void TimeWindowPicker::enable_picking()
         kmax=1;
     for(k=0;k<kmax;++k)
     {
-        cerr << "Adding callbacks for seisw widget number "<<k<<endl;
+        //cerr << "Adding callbacks for seisw widget number "<<k<<endl;
         XtRemoveAllCallbacks(seisw[k],ExmNbtn3Callback);
         XtAddCallback(seisw[k],ExmNbtn3Callback,pick_tw_callback,(XtPointer)this);
     }
     //DEBUG - using routine from internet search
+    /*
     for(k=0;k<kmax;++k)
     {
         cerr << "Testing seisw widget number "<<k<<endl;
@@ -83,7 +81,8 @@ void TimeWindowPicker::enable_picking()
                 cerr << "Returned unrecognized value"<<endl;
         };
     }
-    cerr << "Exiting enable_picking"  <<endl;
+    */
+    //cerr << "Exiting enable_picking"  <<endl;
 }
 TimeWindowPicker::TimeWindowPicker() : SeismicPlot(), picked_window()
 {
@@ -93,10 +92,10 @@ TimeWindowPicker::TimeWindowPicker() : SeismicPlot(), picked_window()
 TimeWindowPicker::TimeWindowPicker(Metadata& md) : SeismicPlot(md) ,
     picked_window()
 {
-    cerr << "Entering TimeWindowPicker(Metadata) constructor"<<endl;
+    //cerr << "Entering TimeWindowPicker(Metadata) constructor"<<endl;
     build_pick_menu();
     pick_completed=false;
-    cerr << "Exiting TimeWindowPicker(Metadata) constructor"<<endl;
+    //cerr << "Exiting TimeWindowPicker(Metadata) constructor"<<endl;
 }
 TimeWindow TimeWindowPicker::get()
 {
@@ -128,7 +127,7 @@ void TimeWindowPicker::build_pick_menu()
 }
 void TimeWindowPicker::setpick(TimeWindow twinpicked)
 {
-    cerr << "Entering setpick"<<endl;
+    //cerr << "Entering setpick"<<endl;
     picked_window=twinpicked;
     pick_completed=true;
     // freeze this for now
@@ -141,6 +140,6 @@ void TimeWindowPicker::setpick(TimeWindow twinpicked)
         kmax=1;
     for(k=0;k<kmax;++k)
         XtVaSetValues(this->seisw[k],ExmNdisplayMarkers,&markers,NULL);
-    cerr << "Leaving setpick"<<endl;
+    //cerr << "Leaving setpick"<<endl;
 }
 } // End SEISPP namespace encapsulation
