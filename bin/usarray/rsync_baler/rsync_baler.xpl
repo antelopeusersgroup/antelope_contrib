@@ -263,6 +263,8 @@ sub get_stations_from_url {
     my ($ip,$dlsta,$net,$sta) ;
     my %sta_hash ;
 
+    my $avoid_today = $pf{avoid_on_day_of_week}{epoch2str( now(), "%A" )} || '';
+
     my $json_data = get_json( $pf{json_url} ) ;
 
     for my $data_hash ( @$json_data ) {
@@ -274,6 +276,7 @@ sub get_stations_from_url {
         # Filter out station if needed
         next if $opt_s and $sta !~ /$opt_s/ ;
         next if $opt_r and $sta =~ /$opt_r/ ;
+        next if $avoid_today and $sta =~ /$avoid_today/ ;
 
         $sta_hash{$sta}{'dlsta'} = $data_hash->{'id'};
         $sta_hash{$sta}{'snet'} = $data_hash->{'snet'};
