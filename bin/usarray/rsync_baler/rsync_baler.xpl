@@ -1510,20 +1510,31 @@ sub download_file {
     # Verify size of file
     ($type, $size) = head( $url ) or fork_complain("ERROR $url: $!") ;
     fork_debug("New downloaded file $where:   type:$type    size:$size") ;
-    fork_complain("Problem with file size. $where Reported:$size") if -s $where != $size ;
+
+    # If size of file is not the expected
+    if ( -s $where != $size ) {
+        fork_complain("Problem with file size. $where Reported:$size")
+        move($where,"$path/trash/$file")
+            or fork_complain("Can't move $where to $path/trash/") ;
+        return ;
+    }
 
     # Size 591 is a text page of HTTP errors.
-    fork_complain("Problem with the file. $where from $url")
-        if -s $where == 591 ;
+    if ( -s $where == 591 ) {
+        fork_complain("Problem with the file. $where from $url")
+        move($where,"$path/trash/$file")
+            or fork_complain("Can't move $where to $path/trash/") ;
+        return ;
+    }
 
     #fork_complain("ERROR on $file after download. Problem with name")
     #   unless $where =~ /$temp_new[-1]/ ;
 
-    #fork_complain("Cannot see $file after download") unless -f $where ;
+    fork_complain("Cannot see $where after download") unless -f $where ;
 
     return $where if -f $where ;
 
-    return
+    return ;
 
 }
 
@@ -2157,8 +2168,10 @@ sub get_medias_and_lists {
     fork_complain("Cannot find MEDIA 1 in http://$ip:$pf{http_port}/stats.html")
         unless $active ;
 
-    fork_complain("Cannot find MEDIA 2 in http://$ip:$pf{http_port}/stats.html")
-        unless $reserve ;
+    if ( $pf{media2_warning} ) {
+        fork_complain("Cannot find MEDIA 2 in http://$ip:$pf{http_port}/stats.html")
+            unless $reserve ;
+    }
 
     $active  ||= '' ;
     $reserve ||= '' ;

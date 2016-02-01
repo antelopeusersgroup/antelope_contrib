@@ -16,6 +16,8 @@ limit_history           0   # in secs. 0 to avoid limit
 
 use_md5                 True
 
+media2_warning          True
+
 bandwidth_limits &Arr{  # days /  Megabytes
     1   1000
     21  3000
