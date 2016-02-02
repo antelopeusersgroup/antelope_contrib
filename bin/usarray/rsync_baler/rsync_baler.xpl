@@ -481,7 +481,7 @@ sub run_in_threads {
 
 }
 
-sub test_missing_children { # &missing_children ( $string, \%logs, \%errors ) ; 
+sub test_missing_children { # &missing_children ( $string, \%logs, \%errors ) ;
     my ( $string, $logs, $errors ) = @_ ;
     my ( $line ) ;
 
@@ -1063,15 +1063,24 @@ sub get_data {
         return ;
     }
 
-    foreach $file ( sort keys %flagged ) {
-        fork_debug("$file => $flagged{$file}") ;
+    #
+    # Download the missing files. Start at newest.
+    #
+    if ( $pf{newest_first} ) {
+        @download_list = sort {$b cmp $a} keys %flagged ;
+    } else {
+        @download_list = sort {$a cmp $b} keys %flagged ;
     }
-    fork_log('Files to download: ' . join(' ' ,sort keys %flagged)) ;
 
     #
-    # Download the missing files
+    # Log list of files
     #
-    FILE: foreach $file ( sort keys %flagged ) {
+    foreach $file ( @download_list ) {
+        fork_debug("$file => $flagged{$file}") ;
+    }
+    fork_log('Files to download: ' . join(' ' ,@download_list)) ;
+
+    FILE: foreach $file ( @download_list ) {
 
         $dir = $flagged{$file} ;
         $where = '' ;
@@ -1166,12 +1175,12 @@ sub get_data {
                 $dir = ( $f =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
 
                 #
-                # For now ALL data files are in some "data" 
+                # For now ALL data files are in some "data"
                 # directory. The md5's are in "recover"
                 # direcotries that we get on a different
                 # function.
                 #
-                # Lists may vary in names that are 
+                # Lists may vary in names that are
                 # impossible to predict.
                 # Example: TA_445A
                 # list.active.admin.gz
@@ -1194,7 +1203,7 @@ sub get_data {
                 # list.reserve.sdata.gz
                 # list.reserve.wfdisc.gz
                 #
-                # The regex will allow us to get the possible 
+                # The regex will allow us to get the possible
                 # variations on the names. Then we can build
                 # a good URL for the file.
                 #
@@ -1513,7 +1522,7 @@ sub download_file {
 
     # If size of file is not the expected
     if ( -s $where != $size ) {
-        fork_complain("Problem with file size. $where Reported:$size")
+        fork_complain("Problem with file size. $where Reported:$size") ;
         move($where,"$path/trash/$file")
             or fork_complain("Can't move $where to $path/trash/") ;
         return ;
