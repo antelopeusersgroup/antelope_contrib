@@ -193,6 +193,7 @@ SeismicPlot::SeismicPlot()
                 + pfglobal_name);
     try {
 	Metadata md(pf);
+        *this=Metadata::operator=(md);
         //DEBUG
         //cerr << md;
 	pffree(pf);
