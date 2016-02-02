@@ -645,7 +645,7 @@ sub get_data {
     my ($digest,$hexd,$md5,$remote_file_content, $remote_file_handle) ;
     my ($stat,$mode,$f,$http_folder,$md5_lib,@original_downloads) ;
     my (@lists,@dbscr,@recs,@data,@db_r,%remove,%flagged,@db,@db_t) ;
-    my ($media_active, $media_reserve,%downloaded) ;
+    my (@download_list, $media_active, $media_reserve,%downloaded) ;
     my ($mlimit, $days);
     my ($start_of_report) ;
 
@@ -1530,7 +1530,7 @@ sub download_file {
 
     # Size 591 is a text page of HTTP errors.
     if ( -s $where == 591 ) {
-        fork_complain("Problem with the file. $where from $url")
+        fork_complain("Problem with the file. $where from $url") ;
         move($where,"$path/trash/$file")
             or fork_complain("Can't move $where to $path/trash/") ;
         return ;
