@@ -541,7 +541,7 @@ void DatascopeHandle::natural_join(string table1, string table2)
 	Dbptr dbj1, dbj2;
 	dbj1 = dblookup(db,0,const_cast<char *>(table1.c_str()),0,0);
 	dbj2 = dblookup(db,0,const_cast<char *>(table2.c_str()),0,0);
-	db = dbjoin(dbj1, dbj2,0,0,0,0,0);
+	db = dbjoin(dbj1, dbj2,0L,0L,0L,0L,0L);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbjoin of tables ")
 			+ table1 
@@ -557,7 +557,7 @@ void DatascopeHandle::natural_join(string table)
 {
 	parent_table=db;
 	db = dbjoin(db,dblookup(db,0,const_cast<char *>(table.c_str()),0,0),
-		0,0,0,0,0);
+		0L,0L,0L,0L,0L);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbjoin: append to current view with table") 
 			+ table 
@@ -578,7 +578,7 @@ void DatascopeHandle::join(Dbptr dbj2,
 	t1 = list_to_tbl(joinkeys1);
 	t2 = list_to_tbl(joinkeys2);
 	parent_table=db;
-	db = dbjoin(db, dbj2,&t1,&t2,0,0,0);
+	db = dbjoin(db, dbj2,&t1,&t2,0L,0L,0L);
 	freetbl(t1,free);
 	freetbl(t2,free);
 	if(db.table==dbINVALID)
@@ -627,7 +627,7 @@ void DatascopeHandle::leftjoin(string t,
 	Dbptr dbj1;
 	parent_table=db;
 	dbj1 = dblookup(db,0,const_cast<char *>(t.c_str()),0,0);
-	db = dbjoin(dbj1, db,&t1,&t2,0,0,0);
+	db = dbjoin(dbj1, db,&t1,&t2,0L,0L,0L);
 	freetbl(t1,free);
 	freetbl(t2,free);
 	if(db.table==dbINVALID)
@@ -817,5 +817,41 @@ void DatascopeHandle::manage_parent()
 		}
 	}
 }
+void DatascopeHandle::nojoin(string t2)
+{
+    parent_table=db;
+    Dbptr db2=dblookup(db,0,const_cast<char *>(t2.c_str()),0,0);
+    db=dbnojoin(this->db,db2,0L,0L,0L);
+    if(db.table==dbINVALID)
+        throw SeisppDberror(string("dbnojoin:  dbnojoin operation returned dbINVALID applied against table ")
+                + t2,db,complain);
+    if(!retain_parent) manage_parent();
+    if(views!=NULL) views->insert(db.table);
+}
+
+void DatascopeHandle::nojoin(string table, list<string> key1, list<string> key2)
+{
+	Dbptr dbj2 = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
+	Tbl *t1,*t2;
+	t1 = list_to_tbl(key1);
+	t2 = list_to_tbl(key2);
+	parent_table=db;
+	db = dbnojoin(db, dbj2,&t1,&t2,0L);
+	freetbl(t1,free);
+	freetbl(t2,free);
+	if(db.table==dbINVALID)
+	{
+		char buf[128];
+		stringstream ss(buf);
+		ss << "DatascopeHandle::nojoin method:  "
+		   << "dbnojoin failed for table number ="
+		   << dbj2.table;
+		throw SeisppDberror(ss.str(),
+			db,complain);
+	}
+	if(!retain_parent) manage_parent();
+	if(views!=NULL) views->insert(db.table);
+}
+
 } // End SEISPP namespace declaration
 #endif
