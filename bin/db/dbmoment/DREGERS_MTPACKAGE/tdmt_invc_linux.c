@@ -203,7 +203,16 @@ if(wflag==1 && (nsta >= 1))
 
      }
   }
-       
+else
+  {
+  fprintf(out,"Station Information\n");
+  l=0;
+  for(i=0; i < nsta; i++)
+     {
+     fprintf(out,"Station(%d): %s  R=%.1fkm  AZI=%.1f  Zcor=%d\n", i, ss[i].name,ss[i].dist,ss[i].azi*180.0/PI,ss[i].zz);
+     }
+  }
+
 
 
    /* INVERSION ROUTINE */

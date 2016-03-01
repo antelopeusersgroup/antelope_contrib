@@ -8,8 +8,11 @@
 # need to load it into a wfdisc table with the
 # included script in the EXAMPLE directory.
 
+antelope        &env(ANTELOPE)
 
-tmp_folder      /tmp/dbmoment/
+
+tmp_folder      .dbmoment
+image_folder    dbmoment_images
 
 clean_tmp       False
 
@@ -19,14 +22,12 @@ clean_tmp       False
 # Response database if different from main database
 #resp_db    /opt/antelope/data/db/demo/demo
 
-# Green's functions database
-# Should be different than main database since we
-# need a dedicated wfdisc table.
-green_db    greens_db/green
-
 # Name of the library to use
-# for Green'sFunction class
-gf_lib green
+# for Synthetic Function class
+synth_lib synthetics
+# Synthetics functions database foldrer. Database name
+# will be created by the program.
+synth_db_folder    synthetics_db/
 
 # Name of the library to use
 # for Inversion class
@@ -38,19 +39,24 @@ data_lib data
 
 # Name of the library to use
 # for Event class
-event_lib event
+event_lib origin
 
 # channel to use in MT-inversion, default is LH. If higher sample rate channels are chosen, 
 # the data is downsampled to 1 Hz.
 chan_to_use .*
 
 # Name of the model parameter file
-model_name SOCAL_MODEL
+model_path  &Tbl{
+    &{antelope}/contrib/data/dbmoment_models/
+    ~/dbmoment_models/
+    ./
+}
+model_file SOCAL_MODEL.pf
 
 # Maximum number of stations to use in the inversion
 #     - Minimum of eight, one for each division 
 #       of the cardinal and intercardinal directions
-sta_max 12
+sta_max 15
 
 sta_min 3
 
@@ -58,30 +64,114 @@ depth_min       1
 
 depth_max       400
 
-distance_min    1
+stations_arrivals_only     False
 
-distance_max    200
+recursive_analysis         True
+
+min_variance     70
+
+min_quality     2
+
+# Verify that the individual inversions are within
+# a threshold of the reported magnitud if available
+# from the database.
+filter_individual_mw    True
+individual_mw_threshold    1.0
 
 
 allowed_segtype  &Tbl{
     D
-    #    V  # not working for Velocity traces #
+    V
+    A
 }
 
 
 # The high_pass and low_pass filter corners are
 # given in hertz. An acausal (two pass), 4th
 # order butterworth filter is applied
-filter_high_pass   0.02
-filter_low_pass    0.1
+mag_0 &Arr{
+    filter  BW 0.02 4 0.1 4
+    distance_min    0
+    distance_max    80
+    time_window     100
+}
+
+mag_1 &Arr{
+    filter  BW 0.02 4 0.1 4
+    distance_min    0
+    distance_max    90
+    time_window     100
+}
+
+mag_2 &Arr{
+    filter  BW 0.02 4 0.1 4
+    distance_min    0
+    distance_max    100
+    time_window     120
+}
+
+mag_3 &Arr{
+    filter  BW 0.02 4 0.1 4
+    distance_min    5
+    distance_max    150
+    time_window     120
+}
+
+mag_4 &Arr{
+    filter  BW 0.02 4 0.05 4
+    distance_min    5
+    distance_max    200
+    time_window     150
+}
+
+mag_5 &Arr{
+    filter  BW 0.02 4 0.05 4
+    distance_min    20
+    distance_max    250
+    time_window     160
+}
+
+mag_6 &Arr{
+    filter  BW 0.01 4 0.05 4
+    distance_min    50
+    distance_max    300
+    time_window     170
+}
+
+mag_7 &Arr{
+    filter  BW 0.01 4 0.05 4
+    distance_min    70
+    distance_max    350
+    time_window     180
+}
+
+mag_8 &Arr{
+    filter  BW 0.005 4 0.02 4
+    distance_min    100
+    distance_max    350
+    time_window     190
+}
+
+mag_9 &Arr{
+    filter  BW 0.005 4 0.02 4
+    distance_min    200
+    distance_max    400
+    time_window     200
+}
+
+mag_10 &Arr{
+    filter BW 0.005 4 0.02 4
+    distance_min    200
+    distance_max    400
+    time_window     200
+}
 
 
 # Test for some executables neened for the example code
 find_executables     &Tbl{
-    sac
+    fortran_fkrprog
     fromHelm
     window
-    bin2sac
     sac2bin
     mkHelm
     mv
@@ -89,3 +179,14 @@ find_executables     &Tbl{
     wvint9
     tdmt_invc
 }
+
+acknowledgement &Literal{
+    Moment tensor computed using the tdmt-invc package developed by
+    Douglas Dreger of the Berkeley Seismological Laboratory, and Green’s
+    functions were computed using the FKRPROG software developed by
+    Chandan Saikia with URS.
+
+    Antelope's implementation of code by "Juan Reyes"<jreyes1108@gmail.com>
+}
+
+pf_revision_time 1456531200

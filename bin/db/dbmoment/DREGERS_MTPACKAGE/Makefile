@@ -1,9 +1,7 @@
-BIN = example2wfdisc \
-	fromHelm \
+BIN = fromHelm \
 	mkHelm \
 	window \
 	sac2bin \
-	bin2sac \
 	fortran_fkrprog \
 	wvint9 \
 	putmt \
@@ -36,9 +34,6 @@ window: libget.a
 
 sac2bin: libget.a
 	$(CC) $(CFLAGS) -o sac2bin sac2bin.c libget.a
-
-bin2sac: libget.a
-	$(CC) $(CFLAGS) -o bin2sac bin2sac.c libget.a
 
 putmt: libget.a
 	$(CC) $(CFLAGS) -g -o putmt putmt.c readhelm.c libget.a -lm

@@ -17,7 +17,7 @@ The Moment Tensor calculation tool included in this distribution is
 the core component of the more complex Time-Domain Moment Tensor
 INVerse Code (TDMT_INVC) toolbox by Douglas Dreger of the Berkeley
 Seismological Laboratory that is in use by miltiple other networks.
-The basics on the methods implemented here is described in Jost and
+The basics on the methods implemented here are described in Jost and
 Herrmann(1989).
 
 The calibration of the tool by the implementation of an appropriate 1-D
@@ -27,32 +27,26 @@ that limit the types of events that we can analyze to be:
     1) Regional events
     2) No big magnitudes. Mw<7.5
 
-We completed this first step of mapping the
-source data and the final results values to Antelope but many steps in the
-middle are out of our control and in need of evaluation. This first
-version lacks the capability of correctly resampling the data to match
-the synthetics and deconvolve the instrument response from the traces.
+We completed the mapping of the source code and some examples from the
+original repo distributed by Dreger. This first version will do all the
+data processing in Antelope and removed all SAC dependencies.
 
-The example dataset included on the distribution is already preprocessed
-to those requirements and the dbmoment code can produce good results with
-it. At this time if the tool is used to evaluate any external dataset the
-user is responsible for the preprocessing of the data. The data should be
-resampled to 1Hz and all instrument responses removed from it. Then we
-need new wfdisc records tracking those new files. We also need an event for
-those traces and arrivals associated with those traces. The system should be able
-to correctly analyze the event and produce a valid result. In any other
-condition the tool will most like output a core file and crash.
+.SH USER REQUIREMENTS
+The code requires a good 2-D model of the region of interest. Some examples
+are provided on the distribution. The full explanation of the values needed
+for the model are described on the original PDF distributed by Dreger.
+The folder MODELS will be installed in the $ANTELOPE/contrib/ directory.
 
-
-.SH DEPENDENCY
-The demo code will make some shell calls to SAC. The SAC software
-is distributed for free by IRIS but you need to request a copy
-on their website. http://ds.iris.edu/ds/nodes/dmc/forms/sac/
+.SH ACKNOWLEDGEMENT
+Moment tensors code extracted from mtpackagev1.1 package developed by
+Douglas Dreger of the Berkeley Seismological Laboratory. Green’s
+functions computed using the FKRPROG software developed by Chandan Saikia
+of URS.
 
 
 .SH DESCRIPTION
 The \fBdbmoment\fP application calculates the moment tensor for a given
-origin-id (\fIevidd/orid\fP) for stations with arrivals associated to that
+event id (\fIevid\fP) for stations with arrivals associated to that
 event.
 
 The time domain seismic moment tensor inversion software package written
@@ -65,184 +59,208 @@ for data access and handling. The new code archives all data products into a
 Center for Seismic Studies (CSS) 3.0 schema table for easy access and distribution
 of solutions. This tool is focused on analyzing local to regional earthquakes. A
 calibrated velocity model representative of the south-west continental United States
-is included and used for the included example.
+is included and used for the included examples.
 
 The accompanying Green's functions are either read from the database or generated
 dynamically and stored in a database wfdisc. The tool uses a Frequency-Wavenumber
-integration program included in Dreger's original distribution. 
-
-.SH ACKNOWLEDGEMENT
-Moment tensors code extracted from mtpackagev1.1 package developed by
-Douglas Dreger of the Berkeley Seismological Laboratory. Green’s
-functions computed using the FKRPROG software developed by Chandan Saikia
-of URS.
+integration program included in Dreger's original distribution.
 
 .SH OPTIONS
 .IP -v
-Verbose output
+Verbose output. Opens final PNG with results.
 .IP -d
-Debug output
+Debug output. Opens final PNG with results.
+.IP -o
+The provided id in command-line is an ORID and \fBnot\fP an EVID
+.IP -x
+Debug data processing. Makes an image on every data extraction and waits for user review.
+.IP "-f 'BW 0.02 4 0.05 4'"
+Use the quoted text as filter instead.
 .IP "-p pfname"
-Override the default parameter-file \fBdbmoment\fP.pf
+Override the default parameter-file \fBdbmoment.pf\fP
+.IP "-m modelname"
+Forced a velocity model instead of the PF configured. \fBSOCAL_MODEL.pf\fP
+.IP "-c value"
+Set a new minimum correlation value threshold instead of using the one in the PF
 .IP "-s station_select_regex"
-String to subset the list of stations to use on the calculatoin.
+String to subset the list of stations to use on the calculation.
 .IP "-r station_reject_regex"
-String to reject stations on the calculatoin.
+String to reject stations on the calculation.
+.IP "-z "STA1:3,STA2:3,STA3:5"
+Forced ZCOR values of some stations. This is a shift in time.
+
+
 .SH PARAMETER FILE
-An example \fBdbmoment\fP parameter file (as specified by \fIpfname\fP) is as follows:
+Some important values from the parameter file:
 
-.nf
-tmp_folder      /tmp/dbmoment/
+.IP \fIantelope\fP
+Global variable to make full path later in the PF file.
 
-clean_tmp       False
+.IP \fImodel_file\fP
+Model for the production of synthetic traces. Just the name. Look
+for the file in the "model_path" list. Overwrite with -m flag if needed.
 
-# Waveform database if different form main database
-#wave_db    /opt/antelope/data/db/demo/demo
+.IP \fImodel_path\fP
+All directories to search for the velocity models. Stop on first match.
 
-# Response database if different from main database
-#resp_db    /opt/antelope/data/db/demo/demo
-
-# Green's functions database if different from main database
-green_db    greens_db/green
-
-# Name of the library to use
-# for Green'sFunction class
-gf_lib green
-
-# Name of the library to use
-# for Inversion class
-inv_lib inversion
-
-# Name of the library to use
-# for Data class
-data_lib data
-
-# Name of the library to use
-# for Event class
-event_lib event
-
-# channel to use in MT-inversion, default is LH. If higher sample rate channels are chosen, 
-# the data is downsampled to 1 Hz.
-chan_to_use .*
-
-# Name of the model parameter file
-model_name SOCAL_MODEL
-
-# Maximum number of stations to use in the inversion
-#     - Minimum of eight, one for each division 
-#       of the cardinal and intercardinal directions
-statmax 24
-
-depth_min       0
-
-depth_max       400
-
-distance_min    0
-
-distance_max    100
-
-allowed_segtype  &Tbl{
-    D
-    V
-}
-
-
-# The high_pass and low_pass filter corners are
-# given in hertz. An acausal (two pass), 4th
-# order butterworth filter is applied
-filter_high_pass    0.02
-filter_low_pass    0.02
-
-
-# Test for some executables neened for the example code
-find_executables     &Tbl{
-    sac
-    fromHelm
-    window
-    bin2sac
-    sac2bin
-    mkHelm
-    mv
-    rm
-    wvint9
-    tdmt_invc
-}
-.fi
-
-.IP \fImodel_type\fP
-Type of model which is ued in the inversion, v for
-velocity and d for displacement
 .IP \fItmp_folder\fP
-All temporary files will be written to this folder. Default "/tmp/dbmoment/".
+All temporary files will be written to this folder. Default "./dbmoment/".
+
+.IP \fIimage_folder\fP
+All results will produce an image that will be archived in this folder.
+
 .IP \fIclean_tmp\fP
 If True then we clean the temporary folder before exiting the code. False will
 keep all temporary files on the folder. Good for troubleshooting problems with
 the tool.
+
 .IP \fIchan_to_use\fP
 Channels which are used in the inversion.
+
 .IP \fIdepth_min/depth_max\fP
-Only work with event depths within this range.
-.IP \fIdistance_min/distance_max\fP
-Only work with stations within this range to the event.
+Only work with event depths within this range. Verify with values in MODEL!
+
 .IP \fIsta_max\fP
 Only calculate the inversion for no more than this amount.
+
 .IP \fIsta_min\fP
 Avoid running the inversion if we don't get at least this amount of stations.
+
 .IP \fIfind_executables\fP
 Look for these names on the PATH and keep the full path to them in memory. Replace
 the path on some scripts that we create on the tmp_folder.
 
+.IP \fIrecursive_analysis\fP
+After the first inversion try to remove traces with bad correlations. If we have
+unused stations then add the new sites and re-run inversion.
+
+.IP \fImin_variance\fP
+Avoid stations with variance reduction lower than this.
+
+.IP \fImin_quality\fP
+Each inversion will return a QUALITY value from 0 to 4. Set this as a filter to
+avoid injecting bad quality inversions to the database.
+
+.IP \fIfilter_individual_mw\fP
+Each station is inverted individually and a max correlation and individual
+magnitud is produced. At this point we can avoid adding stations that are
+not matching the expected magnitud already present in the database.
+
 .SH EXAMPLE
 
-Dreger’s original code contains an example dataset for us to test the code. The 
-EXAMPLE_1 from the original distribution was migrated to an Antelope database 
-consisting of a wfdisc table, an origin and event table and associated dbmaster 
-tables needed. We started by mapping the original files ‘testdata[1,2,3]’  to 
-rows on a wfdisc table. The records on the original database are already rotated 
-to ZRT, calibrated, filtered and instrument response corrected. We set a flag 
-in the code to avoid doing any of those processes if you are running with 
-ORID = 1 (our example). We also added a dbbuild batch file to put some generic 
-metadata for stations. We decided for stations names [STA1, STA2, STA3]. The 
-only reference to a location in the example is giving by the azimuth and distance 
-form the event to each station. WE assigned a random location to the EVID=1 and 
-then calculated theoretical location to each station from that information. 
-This created an even with 3 stations located at 100 km each and azimuths of [10,40,50]. 
+Dreger’s original code contains an example dataset for us to test the code. The
+EXAMPLE_1 from the original distribution was migrated to an Antelope database
+consisting of a wfdisc table, an origin and event table and associated dbmaster
+tables needed. We started by mapping the original files "testdata[1,2,3]"  to
+rows on a wfdisc table. The records on the original database are already rotated
+to ZRT, calibrated, filtered and instrument response corrected.
 
-To run the experiment you need to compile the code and then cal dbmoment with 
-the name of the example database and our example ORID. 
+We also added a dbbuild batch file to put some generic metadata for stations.
+We decided for stations names [STA1, STA2, STA3]. The only reference to a
+location in the example is giving by the azimuth and distance
+form the event to each station. WE assigned a random location to the EVID=1 and
+then calculated theoretical location to each station from that information.
+This created an even with 3 stations located at 100 km each and azimuths of [10,40,50].
 
-% \fB dbmoment\fP -d EXAMPLE/example_1 1
+To run the experiment you need to compile the code. Run this on the code folder:
 
-If you want to debug a problme then use this format to run a clean version:
+    make clean && make && make install
 
-% \fBmake\fP; \fBmake\fP install; \fBrm\fP -f greens_db; \fBdbmoment\fP -d EXAMPLE/example_1 1
+Then you can run both examples by simply using the command:
+
+     \fBrun_dbmoment_example\fP
+
+If you want to run each individual example by hand then you can:
+
+    % cd $(ANTELOPE)/contrib/example/dbmoment/
+    % \fBrm\fP -rf synthetics_db
+    % \fBrm\fP -rf .dbmoment
+    % \fB dbmoment\fP -v EXAMPLE_1/example_1 1
+    % \fB dbmoment\fP -v EXAMPLE_2/example_2 1
+
+All temporary working files will go into the ./.dbmoment/ directory, the images with
+results will go into ./dbmoment_images/ and synthetics will be saved in ./synthetics_db/
+folder.
 
 
- This will create a temporary working directory in /tmp/dbmoment/ used to save 
- the files and scripts that we are submitting to the binary executables to 
- calculate the inversion. First step of the calculation is for the code to 
- extract all event information from the tables and identify the stations needed. 
- Then the code will extract the traces for each of the stations and will create 
- GreenFunctions for each of the stations. If the GreenFunctions are not present 
- in our GF’s archive then the tool will create the traces dynamically. Then all 
- information is put on disk in the temporary directory and presented to tdmt_invc 
- to calculate the results. The code will parse all results return to STDOUT and 
- will also read a results file placed on the temporary folder by the tdmt_invc binary. 
+.SH VELOCITY MODELS
+We are collecting all velocity models into a dedicated folder inside the repo
+and copying this folder to the contributed folder structure in the main code
+distribution folder. The models have a ParameterFile structure and are named in the same
+way any other parameter file is but are not included in the general
+repository for PF files in Antelope. The implications are that your dbmoment.pf
+file will need a full path to the velocity model file because it will not be in
+the PFPATH environmental configuration.
+The best option will be for you create your own velocity models and
+to keep them in a local folder and list this on the dbmoment.pf configuration.
+We also appreciate greatly if you can upload your local velocity model to the
+contributed code repository and make them available to anyone analyzing
+events in similar locations.
 
- Running on debug mode (-d) will produce a plot at the end script that will 
- compare the original traces with the theoretical calculations for each station 
- based on our GreenFunctions and the values of the tensor returned by the tool. 
- At the end of every run the system will update the “mt” table and the “nutmeg” 
- tables with the results. If a previous entry for the same ORID is found on the 
- tables then we remove the old entry before adding a new row with the new results. 
+.SH CODE STEPS
+ First step of the calculation is for the code to open the event database and
+ extract all event information from the tables and identify the stations needed.
+ This will look into any other reported magnitude and associated arrivals to the event.
+
+ Then the code will extract the traces for each of the stations and will fetch
+ synthetics for each of the stations. If the synthetics are not present
+ in our database then the tool will create the traces dynamically. Then all
+ stations are evaluated to see if they fit the requirements for distance. All
+ valid stations will get a first round of individual inversions for this event.
+
+ Then we subset for the stations with correlations above our limit and we order
+ them starting with the best correlation. We select the first group for inversion
+ to the max number set in the parameter file. After that first inversion the code
+ will exit or continue to a secondary review if the recursive flag is set to True
+ in the parameter file.
+
+ If we are running recursively then we select the worst performer of the group and
+ we evaluate the correlation. If we find the correlation under our threshold then
+ we remove the site and we try to add a new station. We send the new group to the
+ next inversion and we evaluate the results one more time.
+
+ This recursive method continues until:
+    1) All sites correlation are above our threshold limit
+    2) We run out of stations.
+
+ Running on (-v) or (-d) mode will produce a plot at the end script that will
+ compare the original traces with the theoretical calculations for each station
+ based on our synthetics and the values of the tensor returned by the tool.
+
+ At the end of every run the system will update the “mt” table and the “netmag”
+ tables with the results. If a previous entry for the same ID and AUTH is found on the
+ tables then we remove the old entry before adding a new row with the new results.
+
+.SH SYNTHETIC TRACES
+Synthetics are archived on a wfdisc table using a schema based on depth and distance to the
+event. We use a model of lazy evaluation which delays the creation of a synthetic trace
+until its value is needed.
+
+The value for the station name is our DEPTH to the event. The value for the channel
+is our event to station DISTANCE and the seismic element is specified in the
+LOC code of the channel name.
+i.e.
+    depth: 8
+    distance: 10
+    element: TDS
+    => 8_10_TDS ( format: sta_chan_loc )
+
+The format allows us to clearly see all traces related to the same depth on the
+dbpick window organized by distance. It inverts the originally proposed schema
+but the benefits justify the changes. If you ran versions of the code earlier
+than 1/2016 then you might need to remove the synthetic databases and allow the
+software to produce new versions of it.
 
 .SH SEE ALSO
+run_dbmoment_example(1)
 antelope_python(3y)
 
-.SH AUTHORS
+.SH AUTHOR
+Juan Reyes (UCSD)
+
+.SH COLLABORATORS
 .nf
 Matt Koes (PGC, Canada/UCSD)
 Rob Newman (UCSD)
-Juan Reyes (UCSD)
 Gert-Jan van den Hazel (Orfeus Data Center/UCSD)
 .fi
