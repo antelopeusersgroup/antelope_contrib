@@ -185,7 +185,7 @@ standard antelope parameter file location under a frozen name
 (SeismicPlot.pf).  */
 SeismicPlot::SeismicPlot()
 {
-    cerr << "Entered default constructor"<<endl;
+    //cerr << "Entered default constructor"<<endl;
     Pf *pf;
     const string pfglobal_name("SeismicPlot");
     if(pfread(const_cast<char *>(pfglobal_name.c_str()),&pf))
@@ -193,6 +193,9 @@ SeismicPlot::SeismicPlot()
                 + pfglobal_name);
     try {
 	Metadata md(pf);
+        *this=Metadata::operator=(md);
+        //DEBUG
+        //cerr << md;
 	pffree(pf);
         this->initialize_widgets(md);
         EventLoopIsActive=false;
@@ -211,7 +214,7 @@ SeismicPlot::SeismicPlot(Metadata& md) : Metadata(md)
 /* Destructor  is not trivial here */
 SeismicPlot::~SeismicPlot()
 {
-    cerr << "Entering destructor"<<endl;
+    //cerr << "Entering destructor"<<endl;
     /* This may not be necessary, but probably prudent to avoid a deadlock */
     if(EventLoopIsActive) this->ExitDisplay();
     if(comp0!=NULL) delete comp0;
@@ -314,7 +317,7 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
                         + "Convert all times to relative with ator");
         if(!ThreeComponentMode) throw SeisppError(base_error
                 + "Trying to plot 3c mode with ThreeComponentMode not set.  Fix pf");
-        cerr << "Entering 3c plot method"<<endl;
+        //cerr << "Entering 3c plot method"<<endl;
         int k;
 	XtAppLock(AppContext);
         for(k=0;k<3;++k)
