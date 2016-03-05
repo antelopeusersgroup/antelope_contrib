@@ -250,7 +250,8 @@ void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
             block_till_exit_pushed=true;
         else
             block_till_exit_pushed=false;
-        cerr <<"starting event handler"<<endl;
+        //DEBUG
+        //cerr <<"starting event handler"<<endl;
         if(!EventLoopIsActive) 
             this->launch_Xevent_thread_handler();
     }
