@@ -483,11 +483,17 @@ def write_antelope_ttgrid(station_list, calc_S_tt, pfile):
     ttgrid_compile_input.write('stations\t%d\n' % len(station_list))
     for sta in station_list:
         ttgrid_compile_input.write('%s\t%f\t%f\t%f\n' % (sta.sta, sta.lat, sta.lon, sta.elev))
+    #count the number of nodes along the z-axis with depth >= 0
+    nr = len([1 for ir in range(prop_grid['nr']) if (pfile['earth_radius'] -\
+            (prop_grid['minr']+ ir * prop_grid['dr'])) >= 0])
+    #ttgrid_compile_input.write('sources\t%d\n' % \
+    #        (prop_grid['nlat'] * prop_grid['nlon'] * prop_grid['nr']))
     ttgrid_compile_input.write('sources\t%d\n' % \
-            (prop_grid['nlat'] * prop_grid['nlon'] * prop_grid['nr']))
+            (prop_grid['nlat'] * prop_grid['nlon'] * nr))
     for ilon in range(prop_grid['nlon']):
         for ilat in range(prop_grid['nlat']):
-            for ir in range(prop_grid['nr']):
+            #for ir in range(prop_grid['nr']):
+            for ir in range(nr):
                 ttgrid_compile_input.write('%f\t%f\t%f\n' % \
                         (prop_grid['minlat'] + ilat * prop_grid['dlat'],
                          prop_grid['minlon'] + ilon * prop_grid['dlon'],
@@ -496,7 +502,13 @@ def write_antelope_ttgrid(station_list, calc_S_tt, pfile):
     ttgrid_compile_input.write('ttimes\n')
     for ilon in range(prop_grid['nlon']):
         for ilat in range(prop_grid['nlat']):
-            for ir in range(prop_grid['nr']):
+            #for ir in range(prop_grid['nr']):
+            for ir in range(nr):
+                logger.info('Writing travel times for node at {} {} {}.'.format(
+                    prop_grid['minlat'] + ilat * prop_grid['dlat'],
+                    prop_grid['minlon'] + ilon * prop_grid['dlon'],
+                    pfile['earth_radius'] - (prop_grid['minr'] \
+                        + ir * prop_grid['dr'])))
                 for sta in station_list:
                     if calc_S_tt:
                         P_ttfile = open('%s.P.traveltime' % sta.sta, 'r')

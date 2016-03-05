@@ -1,10 +1,8 @@
-
 DATADIR= templates
-DATA= xpls.header xpls.footer
+DATA= xpls.header xpls.footer xpl.contrib
 
 CLEAN= xpls.header
 
-SUBDIR=/contrib
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 

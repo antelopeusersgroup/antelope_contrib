@@ -1,0 +1,7 @@
+
+ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
+
+SUBDIR= /contrib
+
+include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKELOCAL)

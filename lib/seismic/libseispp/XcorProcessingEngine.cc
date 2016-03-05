@@ -9,6 +9,7 @@
 #ifndef NO_ANTELOPE
 
 #include <algorithm>
+#include "perf.h"
 #include "SeisppKeywords.h"
 #include "XcorProcessingEngine.h"
 

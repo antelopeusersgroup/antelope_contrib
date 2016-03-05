@@ -42,95 +42,95 @@ static Arr *Hooks = 0;
 
 static char *Elog_replacement = 0;
 
-static function_entry Datascope_functions[] = {
-	PHP_FE(dbex_eval, NULL)		
-	PHP_FE(dbextfile, NULL)		
-	PHP_FE(dbfind, NULL)		
-	PHP_FE(dbmatches, NULL)		
-	PHP_FE(dbgetv, NULL)		
-	PHP_FE(dbaddv, NULL)		
-	PHP_FE(dbputv, NULL)		
-	PHP_FE(dbadd_remark, NULL)		
-	PHP_FE(dbget_remark, NULL)		
-	PHP_FE(dbget, NULL)		
-	PHP_FE(dbput, NULL)		
-	PHP_FE(dbaddnull, NULL)		
-	PHP_FE(dbadd, NULL)		
-	PHP_FE(dblookup, NULL)		
-	PHP_FE(dbnrecs, NULL)		
-	PHP_FE(ds_dbopen, NULL)		
-	PHP_FE(ds_dbopen_database, NULL)		
-	PHP_FE(ds_dbopen_table, NULL)		
-	PHP_FE(ds_dbtmp, NULL)		
-	PHP_FE(ds_dbcreate, NULL)		
-	PHP_FE(dbfree, NULL)		
-	PHP_FE(ds_dbclose, NULL)		
-	PHP_FE(dbinvalid, NULL)		
-	PHP_FE(dbstrtype, NULL)		
-	PHP_FE(dbdestroy, NULL)		
-	PHP_FE(dbtruncate, NULL)		
-	PHP_FE(dbsort, NULL)		
-	PHP_FE(dbgroup, NULL)		
-	PHP_FE(dbungroup, NULL)		
-	PHP_FE(dbjoin, NULL)		
-	PHP_FE(dbnojoin, NULL)		
-	PHP_FE(dbtheta, NULL)		
-	PHP_FE(dbprocess, NULL)		
-	PHP_FE(dbsubset, NULL)		
-	PHP_FE(dbseparate, NULL)		
-	PHP_FE(dbsever, NULL)		
-	PHP_FE(dbunjoin, NULL)		
-	PHP_FE(dbbase, NULL)		
-	PHP_FE(db2xml, NULL)		
-	PHP_FE(dbquery, NULL)		
-	PHP_FE(dbresponse, NULL)		
-	PHP_FE(dbwrite_view, NULL)		
-	PHP_FE(dbread_view, NULL)		
-	PHP_FE(dbsave_view, NULL)		
-	PHP_FE(dbcompile, NULL)		
-	PHP_FE(dbnextid, NULL)		
-	PHP_FE(dbmark, NULL)		
-	PHP_FE(dbdelete, NULL)		
-	PHP_FE(dbcrunch, NULL)		
-	PHP_FE(dblist2subset, NULL)		
-	PHP_FE(dbget_range, NULL)		
-	PHP_FE(eval_response, NULL)		
-	PHP_FE(pfget, NULL)		
-	PHP_FE(pfget_boolean, NULL)		
-	PHP_FE(pfupdate, NULL)		
-	PHP_FE(pffiles, NULL)		
-	PHP_FE(pf2string, NULL)		
-	PHP_FE(pfrequire, NULL)		
-	PHP_FE(pfcompile, NULL)		
-	PHP_FE(pfwrite, NULL)		
-	PHP_FE(pfput, NULL)		
-	PHP_FE(pfdel, NULL)		
-	PHP_FE(pf2xml, NULL)		
-	PHP_FE(strtdelta, NULL)		
-	PHP_FE(strtime, NULL)		
-	PHP_FE(strydtime, NULL)		
-	PHP_FE(strdate, NULL)		
-	PHP_FE(strlocaltime, NULL)		
-	PHP_FE(strlocalydtime, NULL)		
-	PHP_FE(strlocaldate, NULL)		
+static zend_function_entry Datascope_functions[] = {
+	PHP_FE(dbex_eval, NULL)
+	PHP_FE(dbextfile, NULL)
+	PHP_FE(dbfind, NULL)
+	PHP_FE(dbmatches, NULL)
+	PHP_FE(dbgetv, NULL)
+	PHP_FE(dbaddv, NULL)
+	PHP_FE(dbputv, NULL)
+	PHP_FE(dbadd_remark, NULL)
+	PHP_FE(dbget_remark, NULL)
+	PHP_FE(dbget, NULL)
+	PHP_FE(dbput, NULL)
+	PHP_FE(dbaddnull, NULL)
+	PHP_FE(dbadd, NULL)
+	PHP_FE(dblookup, NULL)
+	PHP_FE(dbnrecs, NULL)
+	PHP_FE(ds_dbopen, NULL)
+	PHP_FE(ds_dbopen_database, NULL)
+	PHP_FE(ds_dbopen_table, NULL)
+	PHP_FE(ds_dbtmp, NULL)
+	PHP_FE(ds_dbcreate, NULL)
+	PHP_FE(dbfree, NULL)
+	PHP_FE(ds_dbclose, NULL)
+	PHP_FE(dbinvalid, NULL)
+	PHP_FE(dbstrtype, NULL)
+	PHP_FE(dbdestroy, NULL)
+	PHP_FE(dbtruncate, NULL)
+	PHP_FE(dbsort, NULL)
+	PHP_FE(dbgroup, NULL)
+	PHP_FE(dbungroup, NULL)
+	PHP_FE(dbjoin, NULL)
+	PHP_FE(dbnojoin, NULL)
+	PHP_FE(dbtheta, NULL)
+	PHP_FE(dbprocess, NULL)
+	PHP_FE(dbsubset, NULL)
+	PHP_FE(dbseparate, NULL)
+	PHP_FE(dbsever, NULL)
+	PHP_FE(dbunjoin, NULL)
+	PHP_FE(dbbase, NULL)
+	PHP_FE(db2xml, NULL)
+	PHP_FE(dbquery, NULL)
+	PHP_FE(dbresponse, NULL)
+	PHP_FE(dbwrite_view, NULL)
+	PHP_FE(dbread_view, NULL)
+	PHP_FE(dbsave_view, NULL)
+	PHP_FE(dbcompile, NULL)
+	PHP_FE(dbnextid, NULL)
+	PHP_FE(dbmark, NULL)
+	PHP_FE(dbdelete, NULL)
+	PHP_FE(dbcrunch, NULL)
+	PHP_FE(dblist2subset, NULL)
+	PHP_FE(dbget_range, NULL)
+	PHP_FE(eval_response, NULL)
+	PHP_FE(pfget, NULL)
+	PHP_FE(pfget_boolean, NULL)
+	PHP_FE(pfupdate, NULL)
+	PHP_FE(pffiles, NULL)
+	PHP_FE(pf2string, NULL)
+	PHP_FE(pfrequire, NULL)
+	PHP_FE(pfcompile, NULL)
+	PHP_FE(pfwrite, NULL)
+	PHP_FE(pfput, NULL)
+	PHP_FE(pfdel, NULL)
+	PHP_FE(pf2xml, NULL)
+	PHP_FE(strtdelta, NULL)
+	PHP_FE(strtime, NULL)
+	PHP_FE(strydtime, NULL)
+	PHP_FE(strdate, NULL)
+	PHP_FE(strlocaltime, NULL)
+	PHP_FE(strlocalydtime, NULL)
+	PHP_FE(strlocaldate, NULL)
 	PHP_FE(now, NULL)
 	PHP_FE(is_epoch_string, NULL)
 	PHP_FE(epoch2str, NULL)
 	PHP_FE(str2epoch, NULL)
 	PHP_FE(epoch, NULL)
-	PHP_FE(yearday, NULL)			 
-	PHP_FE(trapply_calib, NULL)		
-	PHP_FE(trloadchan, NULL)		
-	PHP_FE(trsample, NULL)		
-	PHP_FE(trsamplebins, NULL)		
-	PHP_FE(trfilter, NULL)		
-	PHP_FE(trfree, NULL)		
-	PHP_FE(trdestroy, NULL)		
-	PHP_FE(trextract_data, NULL)		
-	PHP_FE(trdata, NULL)		
-	PHP_FE(trdatabins, NULL)		
-	PHP_FE(trsplit, NULL)		
-	PHP_FE(trsplice, NULL)		
+	PHP_FE(yearday, NULL)
+	PHP_FE(trapply_calib, NULL)
+	PHP_FE(trloadchan, NULL)
+	PHP_FE(trsample, NULL)
+	PHP_FE(trsamplebins, NULL)
+	PHP_FE(trfilter, NULL)
+	PHP_FE(trfree, NULL)
+	PHP_FE(trdestroy, NULL)
+	PHP_FE(trextract_data, NULL)
+	PHP_FE(trdata, NULL)
+	PHP_FE(trdatabins, NULL)
+	PHP_FE(trsplit, NULL)
+	PHP_FE(trsplice, NULL)
 	PHP_FE(trendtime, NULL)
 	PHP_FE(trnsamp, NULL)
 	PHP_FE(trsamp2time, NULL)
@@ -171,7 +171,7 @@ static function_entry Datascope_functions[] = {
 	PHP_FE(elog_mark, NULL)
 	PHP_FE(elog_flush, NULL)
 	PHP_FE(elog_callback, NULL)
-	{NULL, NULL, NULL}	
+	{NULL, NULL, NULL}
 };
 
 zend_module_entry Datascope_module_entry = {
@@ -192,7 +192,7 @@ ZEND_GET_MODULE(Datascope)
 static void
 _php_free_dbresponse( zend_rsrc_list_entry *rsrc TSRMLS_DC ) {
 	Response *response = (Response *) rsrc->ptr;
-	
+
 	free_response( response );
 }
 
@@ -203,7 +203,7 @@ void register_Datascope_constants( INIT_FUNC_ARGS )
 	for( i = 0; i < NDbxlat; i++ ) {
 
 		zend_register_long_constant( Dbxlat[i].name,
-					     strlen( Dbxlat[i].name ) + 1, 
+					     strlen( Dbxlat[i].name ) + 1,
 					     Dbxlat[i].num,
 					     CONST_CS | CONST_PERSISTENT,
 					     module_number TSRMLS_CC );
@@ -212,8 +212,8 @@ void register_Datascope_constants( INIT_FUNC_ARGS )
 
 PHP_MINIT_FUNCTION(Datascope)
 {
-	le_dbresponse = zend_register_list_destructors_ex( 
-					_php_free_dbresponse, NULL, 
+	le_dbresponse = zend_register_list_destructors_ex(
+					_php_free_dbresponse, NULL,
 					"dbresponse", 0 );
 
 	register_Datascope_constants( INIT_FUNC_ARGS_PASSTHRU );
@@ -280,7 +280,7 @@ z_arrval_to_strtbl( zval *array, Tbl **tbl )
 
 		*tbl = 0;
 		return -1;
-	} 
+	}
 
 	target_hash = Z_ARRVAL_P( array );
 
@@ -319,7 +319,7 @@ z_arrval_to_inttbl( zval *array, Tbl **tbl )
 
 		*tbl = 0;
 		return -1;
-	} 
+	}
 
 	target_hash = Z_ARRVAL_P( array );
 
@@ -358,7 +358,7 @@ z_arrval_hashtype( zval *array )
 	if( Z_TYPE_P( array ) != IS_ARRAY ) {
 
 		return HASH_KEY_NON_EXISTANT;
-	} 
+	}
 
 	target_hash = Z_ARRVAL_P( array );
 
@@ -376,7 +376,7 @@ z_arrval_hashtype( zval *array )
 		type = zend_hash_get_current_key_type( target_hash );
 
 		if( type == HASH_KEY_IS_STRING ) {
-			
+
 			retcode = HASH_KEY_IS_STRING;
 
 			break;
@@ -410,7 +410,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
 			sprintf( value->s, "%ld", Z_LVAL_PP( zvalue ) );
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
-			if( Z_BVAL_PP( zvalue ) ) { 
+			if( Z_BVAL_PP( zvalue ) ) {
 				sprintf( value->s, "true" );
 			} else {
 				sprintf( value->s, "false" );
@@ -476,7 +476,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 	return 0;
 }
 
-static int 
+static int
 zval2pf( zval *zvalue, Pf **pf )
 {
 	int	retcode = 0;
@@ -531,7 +531,7 @@ zval2pf( zval *zvalue, Pf **pf )
 
 		while( nelements-- > 0 ) {
 
-			zend_hash_get_current_data( target_hash, 
+			zend_hash_get_current_data( target_hash,
 						    (void **) &entry );
 
 			zval2pf( *entry, &pfvalue );
@@ -555,8 +555,8 @@ zval2pf( zval *zvalue, Pf **pf )
 		while( nelements-- > 0 ) {
 
 			zend_hash_get_current_key( target_hash, &key, &num, 1 );
-						   
-			zend_hash_get_current_data( target_hash, 
+
+			zend_hash_get_current_data( target_hash,
 						    (void **) &entry );
 
 			zval2pf( *entry, &pfvalue );
@@ -569,7 +569,7 @@ zval2pf( zval *zvalue, Pf **pf )
 		}
 
 	} else {
-		
+
 		zend_error( E_ERROR, "Type not supported for pf conversion\n" );
 
 		retcode = -1;
@@ -653,7 +653,7 @@ PHP_FUNCTION(template)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&db_array )
 	    == FAILURE) {
 
@@ -683,7 +683,7 @@ PHP_FUNCTION(elog_init)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( thisfunction_argc TSRMLS_CC, "la", 
+	if( zend_parse_parameters( thisfunction_argc TSRMLS_CC, "la",
 					&argc, &zval_argv )
 	    == FAILURE) {
 
@@ -691,7 +691,7 @@ PHP_FUNCTION(elog_init)
 	}
 
 	if( zend_hash_num_elements( Z_ARRVAL_P( zval_argv ) ) != argc ) {
-		
+
 		zend_error( E_ERROR, "argc and argv do not match!\n" );
 	}
 
@@ -705,7 +705,7 @@ PHP_FUNCTION(elog_init)
 
 		rc = zend_hash_get_current_data( argv_hash, (void **) &entry );
 
-		if( ( rc == SUCCESS ) && 
+		if( ( rc == SUCCESS ) &&
 		    ( Z_TYPE_PP( entry ) == IS_STRING ) ) {
 
 			Cstyle_argv[iarg] = Z_STRVAL_PP( entry );
@@ -714,7 +714,7 @@ PHP_FUNCTION(elog_init)
 
 			free( Cstyle_argv );
 
-			zend_error( E_ERROR, "Second argument must be " 
+			zend_error( E_ERROR, "Second argument must be "
 					     "an array of strings\n" );
 		}
 
@@ -756,20 +756,20 @@ elog_callback( int severity, char *logstring, Tbl *Elog )
 
 	params[1] = &zval_logstring;
 
-	rc = call_user_function_ex( CG(function_table), 
-				    NULL, 
-				    function_name, 
-				    &retval, 
+	rc = call_user_function_ex( CG(function_table),
+				    NULL,
+				    function_name,
+				    &retval,
 				    2,
 				    params,
-				    0, 
+				    0,
 				    NULL TSRMLS_CC );
 
 	zval_dtor( function_name );
 
 	if( rc != SUCCESS ) {
-		
-		sprintf( msg, "Elog callback to function '%s' failed!\n", 
+
+		sprintf( msg, "Elog callback to function '%s' failed!\n",
 			 Elog_replacement );
 
 		zend_error( E_WARNING, "%s", msg );
@@ -780,7 +780,7 @@ elog_callback( int severity, char *logstring, Tbl *Elog )
 	if( Z_TYPE_P( retval ) != IS_LONG ) {
 
 		sprintf( msg, "Elog callback function '%s' must return an "
-			      "integer! Callback failed.\n", 
+			      "integer! Callback failed.\n",
 			      Elog_replacement );
 
 		zend_error( E_WARNING, "%s", msg );
@@ -807,7 +807,7 @@ PHP_FUNCTION(elog_callback)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 					&replacement, &replacement_len )
 	    == FAILURE) {
 
@@ -1065,7 +1065,7 @@ PHP_FUNCTION(yesno)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&s, &s_len )
 	    == FAILURE) {
 
@@ -1091,7 +1091,7 @@ PHP_FUNCTION(makedir)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&dir, &dir_len )
 	    == FAILURE) {
 
@@ -1117,7 +1117,7 @@ PHP_FUNCTION(make_pathdirs)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&filename, &filename_len )
 	    == FAILURE) {
 
@@ -1146,7 +1146,7 @@ PHP_FUNCTION(datafile)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&envname, &envname_len, &filename, &filename_len )
 	    == FAILURE) {
 
@@ -1163,7 +1163,7 @@ PHP_FUNCTION(datafile)
 	dfile_safe_copy = estrdup( dfile );
 
 	free( dfile );
-	
+
 	RETURN_STRING( dfile_safe_copy, 0 );
 }
 /* }}} */
@@ -1188,10 +1188,10 @@ PHP_FUNCTION(datapath)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ssss", 
-			&envname, &envname_len, 
-			&dirname, &dirname_len, 
-			&filename, &filename_len, 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ssss",
+			&envname, &envname_len,
+			&dirname, &dirname_len,
+			&filename, &filename_len,
 			&suffix, &suffix_len )
 	    == FAILURE) {
 
@@ -1208,7 +1208,7 @@ PHP_FUNCTION(datapath)
 	dfile_safe_copy = estrdup( dfile );
 
 	free( dfile );
-	
+
 	RETURN_STRING( dfile_safe_copy, 0 );
 }
 /* }}} */
@@ -1226,7 +1226,7 @@ PHP_FUNCTION(abspath)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&rel, &rel_len )
 	    == FAILURE) {
 
@@ -1234,7 +1234,7 @@ PHP_FUNCTION(abspath)
 	}
 
 	abspath( rel, abs );
-	
+
 	RETURN_STRING( abs, 1 );
 }
 /* }}} */
@@ -1254,7 +1254,7 @@ PHP_FUNCTION(relpath)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&from, &from_len, &to, &to_len )
 	    == FAILURE) {
 
@@ -1262,7 +1262,7 @@ PHP_FUNCTION(relpath)
 	}
 
 	relpath( from, to, rel );
-	
+
 	RETURN_STRING( rel, 1 );
 }
 /* }}} */
@@ -1283,19 +1283,19 @@ PHP_FUNCTION(cleanpath)
 
 	} else if( argc == 1 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "s",
 				&path, &path_len )
 	    	== FAILURE) {
-	
+
 			return;
 		}
 
 	} else {		/* argc == 2 */
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "sl", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "sl",
 				&path, &path_len, &nolinks )
 	    	== FAILURE) {
-	
+
 			return;
 		}
 	}
@@ -1303,7 +1303,7 @@ PHP_FUNCTION(cleanpath)
 	flags = nolinks;
 
 	cleanpath( path, flags, new );
-	
+
 	RETURN_STRING( new, 1 );
 }
 /* }}} */
@@ -1324,7 +1324,7 @@ PHP_FUNCTION(concatpaths)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&a, &a_len, &b, &b_len )
 	    == FAILURE) {
 
@@ -1336,7 +1336,7 @@ PHP_FUNCTION(concatpaths)
 	new_safe_copy = estrdup( new );
 
 	free( new );
-	
+
 	RETURN_STRING( new_safe_copy, 0 );
 }
 /* }}} */
@@ -1356,7 +1356,7 @@ PHP_FUNCTION(parsepath)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&a, &a_len )
 	    == FAILURE) {
 
@@ -1394,7 +1394,7 @@ PHP_FUNCTION(map_autodrm_netsta)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&anet, &anet_len, &fsta, &fsta_len )
 	    == FAILURE) {
 
@@ -1402,7 +1402,7 @@ PHP_FUNCTION(map_autodrm_netsta)
 	}
 
 	map_autodrm_netsta( anet, fsta, sta );
-	
+
 	RETURN_STRING( sta, 1 );
 }
 /* }}} */
@@ -1424,7 +1424,7 @@ PHP_FUNCTION(map_autodrm_chanaux)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "sss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "sss",
 		&sta, &sta_len, &fchan, &fchan_len, &aux, &aux_len )
 	    == FAILURE) {
 
@@ -1432,7 +1432,7 @@ PHP_FUNCTION(map_autodrm_chanaux)
 	}
 
 	map_autodrm_chanaux( sta, fchan, aux, chan );
-	
+
 	RETURN_STRING( chan, 1 );
 }
 /* }}} */
@@ -1451,7 +1451,7 @@ PHP_FUNCTION(autodrm_net)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&sta, &sta_len )
 	    == FAILURE) {
 
@@ -1464,7 +1464,7 @@ PHP_FUNCTION(autodrm_net)
 
 	add_next_index_string( return_value, anet, 1 );
 	add_next_index_string( return_value, fsta, 1 );
-	
+
 	return;
 }
 /* }}} */
@@ -1485,7 +1485,7 @@ PHP_FUNCTION(autodrm_aux)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&sta, &sta_len, &chan, &chan_len )
 	    == FAILURE) {
 
@@ -1498,7 +1498,7 @@ PHP_FUNCTION(autodrm_aux)
 
 	add_next_index_string( return_value, fchan, 1 );
 	add_next_index_string( return_value, aux, 1 );
-	
+
 	return;
 }
 /* }}} */
@@ -1518,7 +1518,7 @@ PHP_FUNCTION(map_seed_netsta)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&snet, &snet_len, &fsta, &fsta_len )
 	    == FAILURE) {
 
@@ -1526,7 +1526,7 @@ PHP_FUNCTION(map_seed_netsta)
 	}
 
 	map_seed_netsta( snet, fsta, sta );
-	
+
 	RETURN_STRING( sta, 1 );
 }
 /* }}} */
@@ -1548,7 +1548,7 @@ PHP_FUNCTION(map_seed_chanloc)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "sss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "sss",
 		&sta, &sta_len, &fchan, &fchan_len, &loc, &loc_len )
 	    == FAILURE) {
 
@@ -1556,7 +1556,7 @@ PHP_FUNCTION(map_seed_chanloc)
 	}
 
 	map_seed_chanloc( sta, fchan, loc, chan );
-	
+
 	RETURN_STRING( chan, 1 );
 }
 /* }}} */
@@ -1575,7 +1575,7 @@ PHP_FUNCTION(seed_net)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 			&sta, &sta_len )
 	    == FAILURE) {
 
@@ -1588,7 +1588,7 @@ PHP_FUNCTION(seed_net)
 
 	add_next_index_string( return_value, snet, 1 );
 	add_next_index_string( return_value, fsta, 1 );
-	
+
 	return;
 }
 /* }}} */
@@ -1609,7 +1609,7 @@ PHP_FUNCTION(seed_loc)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 			&sta, &sta_len, &chan, &chan_len )
 	    == FAILURE) {
 
@@ -1622,7 +1622,7 @@ PHP_FUNCTION(seed_loc)
 
 	add_next_index_string( return_value, fchan, 1 );
 	add_next_index_string( return_value, loc, 1 );
-	
+
 	return;
 }
 /* }}} */
@@ -1640,7 +1640,7 @@ PHP_FUNCTION(finit_db)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&db_array )
 	    == FAILURE) {
 
@@ -1688,7 +1688,7 @@ PHP_FUNCTION(is_epoch_string)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 				&timestring, &timestring_len )
 	    == FAILURE) {
 
@@ -1720,7 +1720,7 @@ PHP_FUNCTION(epoch)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "l", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "l",
 				&yearday )
 	    == FAILURE) {
 
@@ -1745,7 +1745,7 @@ PHP_FUNCTION(yearday)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "d", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "d",
 				&epoch )
 	    == FAILURE) {
 
@@ -1771,7 +1771,7 @@ PHP_FUNCTION(str2epoch)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 				&timestring, &timestring_len )
 	    == FAILURE) {
 
@@ -1802,7 +1802,7 @@ PHP_FUNCTION(epoch2str)
 
 	} else if( argc == 2 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "ds", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "ds",
 			&epoch, &format, &format_len )
 	    		== FAILURE) {
 
@@ -1811,7 +1811,7 @@ PHP_FUNCTION(epoch2str)
 
 	} else {	/* argc == 3 */
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "dss", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "dss",
 			&epoch, &format, &format_len, &timezone, &timezone_len )
 	    		== FAILURE) {
 
@@ -1822,10 +1822,10 @@ PHP_FUNCTION(epoch2str)
 	timestring = zepoch2str( epoch, format, timezone );
 
 	if( timestring == 0 ) {
-		
+
 		zend_error( E_ERROR, "Time conversion failure\n" );
 		return;
-	} 
+	}
 
 	timestring_safe_copy = estrdup( timestring );
 
@@ -1848,14 +1848,14 @@ PHP_FUNCTION(grn)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd",
 				&lat, &lon )
 	    == FAILURE) {
 
 		return;
 	}
 
-	grn = grnumber( lat, lon ); 
+	grn = grnumber( lat, lon );
 
 	RETURN_LONG( grn );
 }
@@ -1875,14 +1875,14 @@ PHP_FUNCTION(grname)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd",
 				&lat, &lon )
 	    == FAILURE) {
 
 		return;
 	}
 
-	grn = grnumber( lat, lon ); 
+	grn = grnumber( lat, lon );
 
 	grname( grn, name );
 
@@ -1904,7 +1904,7 @@ PHP_FUNCTION(srn)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd",
 				&lat, &lon )
 	    == FAILURE) {
 
@@ -1913,7 +1913,7 @@ PHP_FUNCTION(srn)
 
 	grn = grnumber( lat, lon );
 
-	srn = srnumber( grn ); 
+	srn = srnumber( grn );
 
 	RETURN_LONG( srn );
 }
@@ -1934,7 +1934,7 @@ PHP_FUNCTION(srname)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd",
 				&lat, &lon )
 	    == FAILURE) {
 
@@ -1943,7 +1943,7 @@ PHP_FUNCTION(srname)
 
 	grn = grnumber( lat, lon );
 
-	srn = srnumber( grn ); 
+	srn = srnumber( grn );
 
 	srname( srn, name );
 
@@ -1965,7 +1965,7 @@ PHP_FUNCTION(trtime2samp)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ddd", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddd",
 			&time0, &samprate, &time1 )
 	    == FAILURE) {
 
@@ -1992,7 +1992,7 @@ PHP_FUNCTION(trsamp2time)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ddl", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddl",
 			&time0, &samprate, &isamp )
 	    == FAILURE) {
 
@@ -2019,7 +2019,7 @@ PHP_FUNCTION(trsamprate)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "dld", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "dld",
 			&time0, &nsamp, &endtime )
 	    == FAILURE) {
 
@@ -2046,7 +2046,7 @@ PHP_FUNCTION(trnsamp)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ddd", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddd",
 			&time0, &samprate, &endtime )
 	    == FAILURE) {
 
@@ -2073,7 +2073,7 @@ PHP_FUNCTION(trendtime)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ddl", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddl",
 			&time0, &samprate, &nsamp )
 	    == FAILURE) {
 
@@ -2116,7 +2116,7 @@ PHP_FUNCTION(pfupdate)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 					&pfname, &pfname_len )
 	    == FAILURE) {
 
@@ -2144,7 +2144,7 @@ PHP_FUNCTION(pfrequire)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 				&pfname, &pfname_len, &atime, &atime_len )
 	    == FAILURE) {
 
@@ -2173,7 +2173,7 @@ PHP_FUNCTION(pfwrite)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 				&filename, &filename_len, &pfname, &pfname_len )
 	    == FAILURE) {
 
@@ -2212,7 +2212,7 @@ PHP_FUNCTION(pfcompile)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 				&value, &value_len, &pfname, &pfname_len )
 	    == FAILURE) {
 
@@ -2254,7 +2254,7 @@ PHP_FUNCTION(pf2string)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 					&pfname, &pfname_len )
 	    == FAILURE) {
 
@@ -2265,7 +2265,7 @@ PHP_FUNCTION(pf2string)
 
 		zend_error( E_ERROR, "failure opening parameter file\n" );
 	}
-	
+
 	value = pf2string( pf );
 
 	value_safe_copy = estrdup( value );
@@ -2292,7 +2292,7 @@ PHP_FUNCTION(pffiles)
 
 	} else if( argc == 1 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "s",
 						&pfname, &pfname_len )
 	    		== FAILURE) {
 
@@ -2301,7 +2301,7 @@ PHP_FUNCTION(pffiles)
 
 	} else {	/* argc == 2 */
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "sl", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "sl",
 						&pfname, &pfname_len, &all )
 	    		== FAILURE) {
 
@@ -2344,7 +2344,7 @@ PHP_FUNCTION(pfdel)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 					&pfname, &pfname_len,
 					&key, &key_len )
 	    == FAILURE) {
@@ -2361,17 +2361,17 @@ PHP_FUNCTION(pfdel)
 
 	if( pfvalue == (Pf *) NULL  ) {
 
-		sprintf( errstring, 
+		sprintf( errstring,
 			"parameter '%s' not found in parameter-file '%s'\n",
 			key, pfname );
 
 		zend_error( E_ERROR, "%s", errstring );
-	} 
-	
+	}
+
 	if( pf2zval( pfvalue, return_value ) < 0 ) {
 
 		zend_error( E_ERROR, "pfdel: failed to convert value\n" );
-	} 
+	}
 
 	pffree( pfvalue );
 
@@ -2401,7 +2401,7 @@ PHP_FUNCTION(pf2xml)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s|sss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s|sss",
 					&pfname, &pfname_len,
 					&flags_string, &flags_string_len,
 					&prolog, &prolog_len,
@@ -2417,7 +2417,7 @@ PHP_FUNCTION(pf2xml)
 	}
 
 	if( name == (char *) NULL ) {
-		
+
 		name = pfname;
 	}
 
@@ -2467,7 +2467,7 @@ PHP_FUNCTION(pfget)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 					&pfname, &pfname_len,
 					&key, &key_len )
 	    == FAILURE) {
@@ -2484,17 +2484,17 @@ PHP_FUNCTION(pfget)
 
 	if( rc < 0  ) {
 
-		sprintf( errstring, 
+		sprintf( errstring,
 			"parameter '%s' not found in parameter-file '%s'\n",
 			key, pfname );
 
 		zend_error( E_ERROR, "%s", errstring );
-	} 
-	
+	}
+
 	if( pf2zval( pfvalue, return_value ) < 0 ) {
 
 		zend_error( E_ERROR, "pfget: failed to convert value\n" );
-	} 
+	}
 
 	return;
 }
@@ -2518,8 +2518,8 @@ PHP_FUNCTION(pfput)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "szs", 
-					&key, &key_len, &zval_pfvalue, 
+	if( zend_parse_parameters( argc TSRMLS_CC, "szs",
+					&key, &key_len, &zval_pfvalue,
 					&pfname, &pfname_len )
 	    == FAILURE) {
 
@@ -2536,7 +2536,7 @@ PHP_FUNCTION(pfput)
 	rc = zval2pf( zval_pfvalue, &pfvalue );
 
 	if( rc != 0 ) {
-		
+
 		zend_error( E_ERROR, "pfput failed\n" );
 	}
 
@@ -2562,7 +2562,7 @@ PHP_FUNCTION(pfget_boolean)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 					&pfname, &pfname_len,
 					&key, &key_len )
 	    == FAILURE) {
@@ -2647,8 +2647,8 @@ PHP_FUNCTION(trdata)
 	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, NULL );
 
 	if( nsamp_available == 0 || data == NULL ) {
-	
-		zend_error( E_ERROR, 
+
+		zend_error( E_ERROR,
 			"trextract_data: no data in trace object\n" );
 	}
 
@@ -2657,7 +2657,7 @@ PHP_FUNCTION(trdata)
 	nsamp_retrieve = nsamp_available - i0;
 
 	if( nsamp_retrieve < nsamp_requested ) {
-		
+
 		zend_error( E_WARNING, "trdata: requested more samples than "
 			"are available in this row; truncating returned "
 			"array\n" );
@@ -2666,11 +2666,11 @@ PHP_FUNCTION(trdata)
 
 		nsamp_retrieve = nsamp_requested;
 	}
-		
+
 	for( idest = 0, isource = i0;
-		idest < nsamp_retrieve; 
+		idest < nsamp_retrieve;
 			idest++, isource++ ) {
-		
+
 		add_index_double( return_value, idest, (double) data[isource] );
 	}
 
@@ -2747,8 +2747,8 @@ PHP_FUNCTION(trdatabins)
 	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, NULL );
 
 	if( nsamp_available == 0 || data == NULL ) {
-	
-		zend_error( E_ERROR, 
+
+		zend_error( E_ERROR,
 			"trextract_data: no data in trace object\n" );
 	}
 
@@ -2757,7 +2757,7 @@ PHP_FUNCTION(trdatabins)
 	nsamp_retrieve = nsamp_available - i0;
 
 	if( nsamp_retrieve < nsamp_requested ) {
-		
+
 		zend_error( E_WARNING, "trdatabins: requested more samples "
 			"than are available in this row; truncating returned "
 			"array\n" );
@@ -2770,9 +2770,9 @@ PHP_FUNCTION(trdatabins)
 	idest = 0;
 
 	for( isource = i0; isource < i0 + nsamp_retrieve; isource++ ) {
-		
+
 		if( ( isource - i0 ) % binsize == 0 ) {
-			
+
 			if( isource != i0 ) {
 
 				add_index_double( return_value, idest++, min );
@@ -2783,12 +2783,12 @@ PHP_FUNCTION(trdatabins)
 		}
 
 		if( max < (double) data[isource] ) {
-			
+
 			max = (double) data[isource];
 		}
 
 		if( min > (double) data[isource] ) {
-			
+
 			min = (double) data[isource];
 		}
 	}
@@ -2849,15 +2849,15 @@ PHP_FUNCTION(trextract_data)
 	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, NULL );
 
 	if( nsamp == 0 || data == NULL ) {
-	
-		zend_error( E_ERROR, 
+
+		zend_error( E_ERROR,
 			"trextract_data: no data in trace object\n" );
 	}
 
 	array_init( return_value );
 
 	for( i = 0; i < nsamp; i++ ) {
-		
+
 		add_index_double( return_value, i, (double) data[i] );
 	}
 
@@ -2877,7 +2877,7 @@ PHP_FUNCTION(trapply_calib)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&tr_array )
 	    == FAILURE) {
 
@@ -2906,7 +2906,7 @@ PHP_FUNCTION(trsplit)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&tr_array )
 	    == FAILURE) {
 
@@ -2935,7 +2935,7 @@ PHP_FUNCTION(trsplice)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&tr_array )
 	    == FAILURE) {
 
@@ -2964,7 +2964,7 @@ PHP_FUNCTION(trfree)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&tr_array )
 	    == FAILURE) {
 
@@ -2993,7 +2993,7 @@ PHP_FUNCTION(trdestroy)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "a",
 					&tr_array )
 	    == FAILURE) {
 
@@ -3025,7 +3025,7 @@ PHP_FUNCTION(trfilter)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 			&tr_array, &filter, &filter_len )
 	    == FAILURE) {
 
@@ -3079,7 +3079,7 @@ PHP_FUNCTION(trloadchan)
 		efree( args );
 		zend_error( E_ERROR, "Error reading dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) == IS_DOUBLE ) {
 
@@ -3090,7 +3090,7 @@ PHP_FUNCTION(trloadchan)
 		t0_string = Z_STRVAL_PP( args[1] );
 
 		if( dbstrtype( db, t0_string ) == strTIME ) {
-			
+
 			t0 = str2epoch( t0_string );
 
 		} else {
@@ -3124,7 +3124,7 @@ PHP_FUNCTION(trloadchan)
 		t1_string = Z_STRVAL_PP( args[2] );
 
 		if( dbstrtype( db, t1_string ) == strTIME ) {
-			
+
 			t1 = str2epoch( t1_string );
 
 		} else {
@@ -3224,7 +3224,7 @@ PHP_FUNCTION(trsample)
 		efree( args );
 		zend_error( E_ERROR, "Error reading dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) == IS_DOUBLE ) {
 
@@ -3235,7 +3235,7 @@ PHP_FUNCTION(trsample)
 		t0_string = Z_STRVAL_PP( args[1] );
 
 		if( dbstrtype( db, t0_string ) == strTIME ) {
-			
+
 			t0 = str2epoch( t0_string );
 
 		} else {
@@ -3269,7 +3269,7 @@ PHP_FUNCTION(trsample)
 		t1_string = Z_STRVAL_PP( args[2] );
 
 		if( dbstrtype( db, t1_string ) == strTIME ) {
-			
+
 			t1 = str2epoch( t1_string );
 
 		} else {
@@ -3321,7 +3321,7 @@ PHP_FUNCTION(trsample)
 		if( Z_TYPE_PP( args[5] ) != IS_LONG ) {
 
 			efree( args );
-			zend_error( E_ERROR, 
+			zend_error( E_ERROR,
 				"apply_calib must be an integer value\n" );
 			return;
 
@@ -3334,7 +3334,7 @@ PHP_FUNCTION(trsample)
 	tr = trloadchan( db, t0, t1, sta, chan );
 
 	if( apply_calib ) {
-		
+
 		trapply_calib( tr );
 	}
 
@@ -3344,7 +3344,7 @@ PHP_FUNCTION(trsample)
 
 	for( tr.record = 0; tr.record < nrecs; tr.record++ ) {
 
-		dbgetv( tr, 0, "time", &time, 
+		dbgetv( tr, 0, "time", &time,
 			       "nsamp", &nsamp,
 			       "samprate", &samprate,
 			       "data", &data,
@@ -3352,12 +3352,12 @@ PHP_FUNCTION(trsample)
 
 		for( itrace = 0; itrace < nsamp; itrace++ ) {
 
-			add_index_double( return_value, 
-					  ireturn++, 
+			add_index_double( return_value,
+					  ireturn++,
 					  SAMP2TIME( time, samprate, itrace ) );
 
-			add_index_double( return_value, 
-					  ireturn++, 
+			add_index_double( return_value,
+					  ireturn++,
 					  (double) data[itrace] );
 		}
 	}
@@ -3418,7 +3418,7 @@ PHP_FUNCTION(trsamplebins)
 		efree( args );
 		zend_error( E_ERROR, "Error reading dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) == IS_DOUBLE ) {
 
@@ -3429,7 +3429,7 @@ PHP_FUNCTION(trsamplebins)
 		t0_string = Z_STRVAL_PP( args[1] );
 
 		if( dbstrtype( db, t0_string ) == strTIME ) {
-			
+
 			t0 = str2epoch( t0_string );
 
 		} else {
@@ -3463,7 +3463,7 @@ PHP_FUNCTION(trsamplebins)
 		t1_string = Z_STRVAL_PP( args[2] );
 
 		if( dbstrtype( db, t1_string ) == strTIME ) {
-			
+
 			t1 = str2epoch( t1_string );
 
 		} else {
@@ -3526,7 +3526,7 @@ PHP_FUNCTION(trsamplebins)
 		if( Z_TYPE_PP( args[6] ) != IS_LONG ) {
 
 			efree( args );
-			zend_error( E_ERROR, 
+			zend_error( E_ERROR,
 				"apply_calib must be an integer value\n" );
 			return;
 
@@ -3539,7 +3539,7 @@ PHP_FUNCTION(trsamplebins)
 	tr = trloadchan( db, t0, t1, sta, chan );
 
 	if( apply_calib ) {
-		
+
 		trapply_calib( tr );
 	}
 
@@ -3549,7 +3549,7 @@ PHP_FUNCTION(trsamplebins)
 
 	for( tr.record = 0; tr.record < nrecs; tr.record++ ) {
 
-		dbgetv( tr, 0, "time", &time, 
+		dbgetv( tr, 0, "time", &time,
 			       "nsamp", &nsamp,
 			       "samprate", &samprate,
 			       "data", &data,
@@ -3561,19 +3561,19 @@ PHP_FUNCTION(trsamplebins)
 
 				if( itrace != 0 ) {
 
-					add_index_double( return_value, 
-					  		  ireturn++, 
+					add_index_double( return_value,
+					  		  ireturn++,
 					  		  min );
 
-					add_index_double( return_value, 
-					  		  ireturn++, 
+					add_index_double( return_value,
+					  		  ireturn++,
 					  		  max );
 				}
 
-				add_index_double( return_value, 
-					  	ireturn++, 
-					  	SAMP2TIME( time, 
-							   samprate, 
+				add_index_double( return_value,
+					  	ireturn++,
+					  	SAMP2TIME( time,
+							   samprate,
 							   itrace ) );
 
 				min = max = (double) data[itrace];
@@ -3617,7 +3617,7 @@ PHP_FUNCTION(dblist2subset)
 
 	} else if( argc == 2 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "aa", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "aa",
 					&db_array, &list_array )
 	    	== FAILURE) {
 
@@ -3636,7 +3636,7 @@ PHP_FUNCTION(dblist2subset)
 
 	} else {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "a",
 						&db_array )
 	    	== FAILURE) {
 
@@ -3654,7 +3654,7 @@ PHP_FUNCTION(dblist2subset)
 	db = dblist2subset( db, list );
 
 	if( list ) {
-		
+
 		freetbl( list, 0 );
 	}
 
@@ -3678,13 +3678,13 @@ PHP_FUNCTION(dbput)
 
 	} else if( argc == 2 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array, &row, &row_len )
 	    	== FAILURE) {
 
 			return;
 		}
-	
+
 	} else {
 
 		if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array )
@@ -3722,20 +3722,20 @@ PHP_FUNCTION(dbget)
 
 	} else if( argc == 2 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "al", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "al",
 					&db_array, &scratch )
 	    	== FAILURE) {
 
 			return;
 		}
 
-		/* It's the presence, not the value of the argument 
+		/* It's the presence, not the value of the argument
 		   that counts here: */
 
 		scratch = 1;
 
 	} else { 	/* argc == 1 */
-	
+
 		if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array )
 	    		== FAILURE) {
 
@@ -3770,14 +3770,14 @@ PHP_FUNCTION(dbget)
 		rc = dbget( db, item );
 
 		if( rc < 0 ) {
-			
+
 			efree( item );
 
 			RETURN_STRING( "", 1 );
 
 		} else {
 
-			RETURN_STRING( item, 0 );				
+			RETURN_STRING( item, 0 );
 		}
 	}
 }
@@ -3798,7 +3798,7 @@ PHP_FUNCTION(dbcompile)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array, &element, &element_len )
 	    == FAILURE) {
 
@@ -3830,7 +3830,7 @@ PHP_FUNCTION(dbadd_remark)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array, &remark, &remark_len )
 	    == FAILURE) {
 
@@ -3876,7 +3876,7 @@ PHP_FUNCTION(dbget_remark)
 
 	if( rc == 0 ) {
 
-		remark_safe_copy = estrdup( remark );		
+		remark_safe_copy = estrdup( remark );
 
 		free( remark );
 
@@ -3904,7 +3904,7 @@ PHP_FUNCTION(dbstrtype)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array, &value, &value_len )
 	    == FAILURE) {
 
@@ -3958,7 +3958,7 @@ PHP_FUNCTION(dbnextid)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array, &id_name, &id_name_len )
 	    == FAILURE) {
 
@@ -3992,7 +3992,7 @@ PHP_FUNCTION(dbwrite_view)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array, &filename, &filename_len )
 	    == FAILURE) {
 
@@ -4004,7 +4004,7 @@ PHP_FUNCTION(dbwrite_view)
 	}
 
 	if( ( fpview = fopen( filename, "w" ) ) == NULL ) {
-		
+
 		sprintf( errmsg, "Failed to open file '%s'", filename );
 		zend_error( E_ERROR, "%s", errmsg );
 	}
@@ -4063,7 +4063,7 @@ PHP_FUNCTION(dbread_view)
 
 	} else if( argc == 1 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "s",
 						&filename, &filename_len )
 	    	== FAILURE) {
 
@@ -4072,7 +4072,7 @@ PHP_FUNCTION(dbread_view)
 
 	} else if( argc == 2 ) {
 
-		if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+		if( zend_parse_parameters( argc TSRMLS_CC, "ss",
 						&filename, &filename_len,
 						&name, &name_len )
 	    	== FAILURE) {
@@ -4082,7 +4082,7 @@ PHP_FUNCTION(dbread_view)
 	}
 
 	if( ( fpview = fopen( filename, "r" ) ) == NULL ) {
-		
+
 		sprintf( errmsg, "Failed to open file '%s'", filename );
 		zend_error( E_ERROR, "%s", errmsg );
 	}
@@ -4214,7 +4214,7 @@ PHP_FUNCTION(db2xml)
 		return;
 	}
 
-	if( argc >= 2 ) { 
+	if( argc >= 2 ) {
 
 		args = (zval ***) emalloc( argc * sizeof(zval **) );
 
@@ -4229,13 +4229,13 @@ PHP_FUNCTION(db2xml)
 			efree( args );
 			zend_error( E_ERROR, "the flags argument must be a string\n" );
 		} else {
-			
+
 			flags_string = Z_STRVAL_PP( args[1] );
 
 			if( ! strcmp( flags_string, "DBXML_PRIMARY" ) ) {
-				
+
 				flags |= DBXML_PRIMARY;
-			
+
 			} else if( ! strcmp( flags_string, "" ) ) {
 
 				;
@@ -4256,7 +4256,7 @@ PHP_FUNCTION(db2xml)
 			zend_error( E_ERROR, "rootnode argument must be a string\n" );
 
 		} else {
-			
+
 			rootnode = Z_STRVAL_PP( args[2] );
 		}
 	}
@@ -4269,23 +4269,23 @@ PHP_FUNCTION(db2xml)
 			zend_error( E_ERROR, "rownode argument must be a string\n" );
 
 		} else {
-			
+
 			rownode = Z_STRVAL_PP( args[3] );
 		}
 	}
 
 	if( argc >= 5 ) {
-	
+
 		if( z_arrval_to_strtbl( *args[4], &fields ) < 0 ) {
 
 			efree( args );
-			zend_error( E_ERROR, 
+			zend_error( E_ERROR,
 			"The fields argument must not be a non-empty list\n" );
 		}
 	}
 
 	if( argc >= 6 ) {
-	
+
 		if( z_arrval_to_strtbl( *args[5], &expressions ) < 0 ) {
 
 			efree( args );
@@ -4293,7 +4293,7 @@ PHP_FUNCTION(db2xml)
 			if( fields ) {
 				freetbl( fields, free );
 			}
-			zend_error( E_ERROR, 
+			zend_error( E_ERROR,
 			"The expressions argument must not be a non-empty list\n" );
 		}
 	}
@@ -4307,12 +4307,12 @@ PHP_FUNCTION(db2xml)
 		     (void **) &xml, flags );
 
 	if( fields ) {
-		
+
 		freetbl( fields, free );
 	}
 
 	if( expressions ) {
-		
+
 		freetbl( expressions, free );
 	}
 
@@ -4322,7 +4322,7 @@ PHP_FUNCTION(db2xml)
 
 	} else {
 
-		xml_safe_copy = estrdup( xml );		
+		xml_safe_copy = estrdup( xml );
 
 		free( xml );
 
@@ -4345,7 +4345,7 @@ PHP_FUNCTION(dbresponse)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( 1 TSRMLS_CC, "s", 
+	if( zend_parse_parameters( 1 TSRMLS_CC, "s",
 					&filename, &filename_len )
 	    == FAILURE) {
 
@@ -4388,7 +4388,7 @@ PHP_FUNCTION(eval_response)
 		return;
 	}
 
-	ZEND_FETCH_RESOURCE( response, Response *, &res, -1, 
+	ZEND_FETCH_RESOURCE( response, Response *, &res, -1,
 			     "dbresponse", le_dbresponse );
 
 	if( ! response ) {
@@ -4427,7 +4427,7 @@ PHP_FUNCTION(dbfind)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( 2 TSRMLS_CC, "as", 
+	if( zend_parse_parameters( 2 TSRMLS_CC, "as",
 					&db_array,
 					&expr, &expr_len )
 	    == FAILURE) {
@@ -4439,7 +4439,7 @@ PHP_FUNCTION(dbfind)
 		return;
 	}
 
-	if( argc > 2 ) { 
+	if( argc > 2 ) {
 
 		args = (zval ***) emalloc( argc * sizeof(zval **) );
 
@@ -4673,7 +4673,7 @@ PHP_FUNCTION(dbquery)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "az", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "az",
 					&db_array,
 					&zval_dbcode )
 	    == FAILURE) {
@@ -4697,7 +4697,7 @@ PHP_FUNCTION(dbquery)
 
 	} else {
 
-		zend_error( E_ERROR, 
+		zend_error( E_ERROR,
 			"second argument to dbquery() not understood\n" );
 	}
 
@@ -4756,7 +4756,7 @@ PHP_FUNCTION(dbquery)
 
 			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
-                break;  
+                break;
 
         case dbTABLE_IS_WRITEABLE:
         case dbTABLE_IS_VIEW:
@@ -4771,7 +4771,7 @@ PHP_FUNCTION(dbquery)
 
 			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
-                break;  
+                break;
 
         case dbFIELD_TYPE:
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
@@ -4782,8 +4782,8 @@ PHP_FUNCTION(dbquery)
 
 			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
-                break;  
- 
+                break;
+
         case dbLINK_FIELDS:
         case dbSCHEMA_FIELDS:
 	case dbSCHEMA_TABLES:
@@ -4806,8 +4806,8 @@ PHP_FUNCTION(dbquery)
 
 			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
-                break;  
- 
+                break;
+
         default:
 		sprintf( errmsg, "dbquery: bad code '%d'", dbcode );
 		zend_error( E_ERROR, "%s", errmsg );
@@ -4830,7 +4830,7 @@ PHP_FUNCTION(dbtruncate)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "al", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "al",
 					&db_array, &nrecords )
 	    == FAILURE) {
 
@@ -4861,7 +4861,7 @@ PHP_FUNCTION(dbbase)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array,
 					&tablename, &tablename_len )
 	    == FAILURE) {
@@ -4893,7 +4893,7 @@ PHP_FUNCTION(dbsubset)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array,
 					&expr, &expr_len )
 	    == FAILURE) {
@@ -4925,7 +4925,7 @@ PHP_FUNCTION(dbseparate)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array,
 					&table, &table_len )
 	    == FAILURE) {
@@ -4957,7 +4957,7 @@ PHP_FUNCTION(dbsever)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array,
 					&table, &table_len )
 	    == FAILURE) {
@@ -4990,7 +4990,7 @@ PHP_FUNCTION(dbunjoin)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array,
 					&database, &database_len )
 	    == FAILURE) {
@@ -5025,7 +5025,7 @@ PHP_FUNCTION(dbex_eval)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "as",
 					&db_array,
 					&expr, &expr_len )
 	    == FAILURE) {
@@ -5060,7 +5060,7 @@ PHP_FUNCTION(dbex_eval)
 		RETVAL_DOUBLE( value.d );
 		break;
 	default:
-		sprintf( warning, 
+		sprintf( warning,
 			"Can't interpret field of type %s",
 			xlatnum( type, Dbxlat, NDbxlat ) );
 		zend_error( E_WARNING, "%s", warning );
@@ -5106,7 +5106,7 @@ PHP_FUNCTION(dbnojoin)
 		efree( args );
 		zend_error( E_ERROR, "Error reading first dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
 
@@ -5118,7 +5118,7 @@ PHP_FUNCTION(dbnojoin)
 		efree( args );
 		zend_error( E_ERROR, "Error reading second dbpointer\n" );
 		return;
-	}	
+	}
 
 	for( i = 2; i < argc; i++ ) {
 
@@ -5147,7 +5147,7 @@ PHP_FUNCTION(dbnojoin)
 			pushtbl( pattern2, strdup( key ) );
 
 		} else {
-			
+
 			key = strdup( key );
 
 			halves = split( key, '#' );
@@ -5164,12 +5164,12 @@ PHP_FUNCTION(dbnojoin)
 	db = dbnojoin( db1, db2, &pattern1, &pattern2, 0 );
 
 	if( pattern1 != (Tbl *) NULL ) {
-	
+
 		freetbl( pattern1, free );
 	}
 
 	if( pattern2 != (Tbl *) NULL ) {
-	
+
 		freetbl( pattern2, free );
 	}
 
@@ -5189,7 +5189,7 @@ PHP_FUNCTION(dbsort)
 	Tbl	*sortfields = 0;
 	int	flags = 0;
 	int	i;
-	
+
 	if( argc < 1 ) {
 
 		WRONG_PARAM_COUNT;
@@ -5216,7 +5216,7 @@ PHP_FUNCTION(dbsort)
 		zend_error( E_ERROR, "Error reading bpointer\n" );
 
 		return;
-	}	
+	}
 
 	for( i = 1; i < argc; i++ ) {
 
@@ -5268,7 +5268,7 @@ PHP_FUNCTION(dbgroup)
 	char	*key;
 	Tbl	*groupfields = 0;
 	int	i;
-	
+
 	if( argc < 2 ) {
 
 		WRONG_PARAM_COUNT;
@@ -5292,7 +5292,7 @@ PHP_FUNCTION(dbgroup)
 		efree( args );
 		zend_error( E_ERROR, "Error reading bpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
 
@@ -5368,7 +5368,7 @@ PHP_FUNCTION(dbjoin)
 		efree( args );
 		zend_error( E_ERROR, "Error reading first dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
 
@@ -5380,7 +5380,7 @@ PHP_FUNCTION(dbjoin)
 		efree( args );
 		zend_error( E_ERROR, "Error reading second dbpointer\n" );
 		return;
-	}	
+	}
 
 	for( i = 2; i < argc; i++ ) {
 
@@ -5417,7 +5417,7 @@ PHP_FUNCTION(dbjoin)
 			pushtbl( pattern2, strdup( key ) );
 
 		} else {
-			
+
 			key = strdup( key );
 
 			halves = split( key, '#' );
@@ -5446,7 +5446,7 @@ PHP_FUNCTION(dbjoin)
 	}
 
 	if( pattern2 != (Tbl *) NULL ) {
-	
+
 		if( patterns_allocated ) {
 
 			freetbl( pattern2, free );
@@ -5496,7 +5496,7 @@ PHP_FUNCTION(dbtheta)
 		efree( args );
 		zend_error( E_ERROR, "Error reading first dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
 
@@ -5508,7 +5508,7 @@ PHP_FUNCTION(dbtheta)
 		efree( args );
 		zend_error( E_ERROR, "Error reading second dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( argc == 3 ) {
 
@@ -5571,7 +5571,7 @@ PHP_FUNCTION(dbmatches)
 		efree( args );
 		zend_error( E_ERROR, "Error reading first dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
 
@@ -5583,7 +5583,7 @@ PHP_FUNCTION(dbmatches)
 		efree( args );
 		zend_error( E_ERROR, "Error reading second dbpointer\n" );
 		return;
-	}	
+	}
 
 	if( Z_TYPE_PP( args[2] ) != IS_STRING ) {
 
@@ -5596,7 +5596,7 @@ PHP_FUNCTION(dbmatches)
 	hookname = Z_STRVAL_PP( args[2] );
 
 	if( Hooks == (Arr *) NULL ) {
-		
+
 		Hooks = newarr( 0 );
 	}
 
@@ -5636,7 +5636,7 @@ PHP_FUNCTION(dbmatches)
 			pushtbl( tpattern, strdup( key ) );
 
 		} else {
-			
+
 			key = strdup( key );
 
 			halves = split( key, '#' );
@@ -5662,24 +5662,24 @@ PHP_FUNCTION(dbmatches)
 	}
 
 	if( hook_is_new && hook != (Hook *) NULL ) {
-		
+
 		setarr( Hooks, hookname, hook );
 	}
 
 	array_init( return_value );
 
 	for( i = 0; i < maxtbl( matches ); i++ ) {
-		
+
 		add_index_long( return_value, i, (long) gettbl( matches, i ) );
 	}
 
 	if( kpattern != (Tbl *) NULL ) {
-	
+
 		freetbl( kpattern, free );
 	}
 
 	if( tpattern != (Tbl *) NULL ) {
-	
+
 		freetbl( tpattern, free );
 	}
 
@@ -5739,8 +5739,8 @@ PHP_FUNCTION(dbprocess)
 	}
 
 	db = dbprocess( db, cmdlist, 0 );
-	
-	if( cmdlist ) { 
+
+	if( cmdlist ) {
 
 		freetbl( cmdlist, 0 );
 	}
@@ -6014,7 +6014,7 @@ PHP_FUNCTION(dbputv)
 		rc = dbquery( db, dbFIELD_TYPE, &type );
 
 		if( rc == dbINVALID ) {
-			
+
 			zend_error( E_ERROR, "Error getting fieldtype\n" );
 		}
 
@@ -6096,7 +6096,7 @@ PHP_FUNCTION(dbaddv)
 	rc = dbget( db, 0 );
 
 	if( rc == dbINVALID ) {
-		
+
 		zend_error( E_ERROR, "Error getting null record\n" );
 	}
 
@@ -6128,7 +6128,7 @@ PHP_FUNCTION(dbaddv)
 		rc = dbquery( db, dbFIELD_TYPE, &type );
 
 		if( rc == dbINVALID ) {
-			
+
 			zend_error( E_ERROR, "Error getting fieldtype\n" );
 		}
 
@@ -6275,7 +6275,7 @@ PHP_FUNCTION(dbgetv)
 
 				efree( args );
 
-				zend_error( E_ERROR, 
+				zend_error( E_ERROR,
 					"fieldnames must be strings\n" );
 
 			} else {
@@ -6345,7 +6345,7 @@ PHP_FUNCTION(dbgetv)
 			}
 			break;
 		default:
-			sprintf( warning, 
+			sprintf( warning,
 				"dbgetv can't interpret field of type %s",
 				xlatnum( type, Dbxlat, NDbxlat ) );
 			zend_error( E_WARNING, "%s", warning );
@@ -6377,8 +6377,8 @@ PHP_FUNCTION(dbadd)
 	if( argc < 1 || argc > 2 ) {
 
 		WRONG_PARAM_COUNT;
-	} 
-	
+	}
+
 	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
 
 		return;
@@ -6429,8 +6429,8 @@ PHP_FUNCTION(dbextfile)
 	if( argc < 1 || argc > 2 ) {
 
 		WRONG_PARAM_COUNT;
-	} 
-	
+	}
+
 	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
 
 		return;
@@ -6488,7 +6488,7 @@ PHP_FUNCTION(dblookup)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "assss", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "assss",
 					&db_array,
 					&database, &database_len,
 					&table, &table_len,
@@ -6518,21 +6518,21 @@ PHP_FUNCTION(ds_dbopen)
 	char	*perm = NULL;
 	int	perm_len;
 	int	argc = ZEND_NUM_ARGS();
-	
+
 	if( argc != 2 ) {
 
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
-					&dbname, &dbname_len, 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
+					&dbname, &dbname_len,
 					&perm, &perm_len )
 	    == FAILURE) {
 
 		return;
 	}
 
-	dbopen( dbname, perm, &db ); 
+	dbopen( dbname, perm, &db );
 
 	RETURN_DBPTR( db );
 }
@@ -6547,21 +6547,21 @@ PHP_FUNCTION(ds_dbopen_database)
 	char	*perm = NULL;
 	int	perm_len;
 	int	argc = ZEND_NUM_ARGS();
-	
+
 	if( argc != 2 ) {
 
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
-					&dbname, &dbname_len, 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
+					&dbname, &dbname_len,
 					&perm, &perm_len )
 	    == FAILURE) {
 
 		return;
 	}
 
-	dbopen_database( dbname, perm, &db ); 
+	dbopen_database( dbname, perm, &db );
 
 	RETURN_DBPTR( db );
 }
@@ -6576,21 +6576,21 @@ PHP_FUNCTION(ds_dbopen_table)
 	char	*perm = NULL;
 	int	perm_len;
 	int	argc = ZEND_NUM_ARGS();
-	
+
 	if( argc != 2 ) {
 
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
-					&dbname, &dbname_len, 
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss",
+					&dbname, &dbname_len,
 					&perm, &perm_len )
 	    == FAILURE) {
 
 		return;
 	}
 
-	dbopen_table( dbname, perm, &db ); 
+	dbopen_table( dbname, perm, &db );
 
 	RETURN_DBPTR( db );
 }
@@ -6603,13 +6603,13 @@ PHP_FUNCTION(ds_dbtmp)
 	char	*schema = NULL;
 	int	schema_len;
 	int	argc = ZEND_NUM_ARGS();
-	
+
 	if( argc != 1 ) {
 
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "s",
 				   &schema, &schema_len )
 	    == FAILURE) {
 
@@ -6637,29 +6637,29 @@ PHP_FUNCTION(ds_dbcreate)
 	int	detail_len;
 	int	argc = ZEND_NUM_ARGS();
 	int	rc;
-	
+
 	if( argc < 1 || argc > 5 ) {
 
 		WRONG_PARAM_COUNT;
 	}
 
 	if( argc == 1 &&
-		zend_parse_parameters( argc TSRMLS_CC, "s", 
+		zend_parse_parameters( argc TSRMLS_CC, "s",
 				   &filename, &filename_len )
 	    == FAILURE) {
 
 		return;
 
-	} else if( argc == 2 && 
-		zend_parse_parameters( argc TSRMLS_CC, "ss", 
+	} else if( argc == 2 &&
+		zend_parse_parameters( argc TSRMLS_CC, "ss",
 				   &filename, &filename_len,
 				   &schema, &schema_len )
 	    == FAILURE) {
 
 		return;
 
-	} else if( argc == 3 && 
-		zend_parse_parameters( argc TSRMLS_CC, "sss", 
+	} else if( argc == 3 &&
+		zend_parse_parameters( argc TSRMLS_CC, "sss",
 				   &filename, &filename_len,
 				   &schema, &schema_len,
 				   &dbpath, &dbpath_len )
@@ -6667,8 +6667,8 @@ PHP_FUNCTION(ds_dbcreate)
 
 		return;
 
-	} else if( argc == 4 && 
-		zend_parse_parameters( argc TSRMLS_CC, "ssss", 
+	} else if( argc == 4 &&
+		zend_parse_parameters( argc TSRMLS_CC, "ssss",
 				   &filename, &filename_len,
 				   &schema, &schema_len,
 				   &dbpath, &dbpath_len,
@@ -6677,8 +6677,8 @@ PHP_FUNCTION(ds_dbcreate)
 
 		return;
 
-	} else if( argc == 5 && 
-		zend_parse_parameters( argc TSRMLS_CC, "sssss", 
+	} else if( argc == 5 &&
+		zend_parse_parameters( argc TSRMLS_CC, "sssss",
 				   &filename, &filename_len,
 				   &schema, &schema_len,
 				   &dbpath, &dbpath_len,

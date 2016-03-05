@@ -4,13 +4,11 @@
 #include <vector>
 #include <math.h>
 
-#include "perf.h"
 #include "stock.h"
 #include "coords.h"
 #include "pf.h"
 #include "tt.h"
 #include "db.h"
-#include "f2c.h"
 #include "TimeSeries.h"
 #include "ensemble.h"
 #include "stack.h"
@@ -46,18 +44,6 @@ in the window the procedure returns immediately with a default TimeSeries object
 containing no data.  The caller should test for this condition by examining the 
 live variable of the output.  The trace will be marked live if the correlation was
 successful, but live will be false if gaps were detected and correlation failed. 
-\par
-A more subtle problem with gaps arises if on of the inputs (x or y) has a gap at
-the beginning or end of the time window to be processed.  In the seispp library
-this type of situation is not always flagged as a gap because it can happen 
-naturally when, for example, dealing with segmented data derived either from
-a triggered instrument or extraction from continuous data.  This situation is 
-handled by testing the feasibility of the correlation by examining the size
-of x and y.  If x is shorter than y this function returns a null seismogram
-with no data and marked dead.  Thus, just as with an internal gap the caller
-must handle this situation and always test for a return marked dead.
-If SEISPP_verbose is true an error announcing this will be pushed to stderr.
-Otherwise this potential error situation is done silently.
 \par
 Although the procedure does not test this it makes a somewhat implicit assumption the
 data have been converted to a relative time reference frame.  This was done to make
@@ -139,6 +125,49 @@ ator method of the TimeSeries object.
 */
 TimeSeries correlation(TimeSeries& x, TimeSeries& y,
 		TimeWindow cwin, bool normalize=false);
+/*! \brief Cross-correlation procedure for ThreeComponentSeismogram  objects.
+
+This is procedure computes the cross correlation in a vector sense between
+two ThreeComponentSeismogram object.  It is conceptually similar to the 
+similar procedures in defined in this library for TimeSeries objects.
+In fact the implementation was produced by simply editing the algorithm for
+TimeSeries objects.   Vector correlation is computed as the dot product
+between x and y at variable lag summed for all three components.   
+The correlation interval is defined by the length of the two components.
+The input x MUST be shorter than y or the procedure will throw and 
+exception.  The range of lags is defined by the samples x can fit in y.
+\par 
+This procedure checks for gaps in the correlation window of y.  
+It also checks for any gaps in x  If any gaps are present
+the procedure returns immediately with a default TimeSeries object 
+containing no data and marked dead.  The caller should test for this condition by examining the 
+live variable of the output.  The trace will be marked live if the correlation was
+successful, but live will be false if gaps were detected and correlation failed. 
+\par
+Although the procedure does not test this it makes a somewhat implicit assumption the
+data have been converted to a relative time reference frame.  This was done to make
+the procedure work with both common source and common receiver gathers (receiver
+array versus source array processing to those not as familiar with the exploration
+geophysics jargon).  Have the correlator defined on an absolute time base is 
+particularly problematic. Hence, before calling this function create a relative 
+time reference data set using something like ArrivalTimeReference or force each 
+trace passed through this procedure to have a relative time base using the 
+ator method of the TimeSeries object.
+
+\return A new TimeSeries object containing the cross-correlation function.  
+	The correlation trace contains a copy of the Metadata of the correlated (y)
+	trace.  Be warned that this may leave some relics in this object's 
+	Metadata that are not correct.
+\param x correlator function (i.e. this is the trace that is shifted in the operation).
+\param y data to correlate x against.  The length of y must be more than x or an error
+	will be thrown.
+\param normalize if true the output is normalized by the L2 norm of x and y in the
+    correlation window (3C L2 norm means sum of a global sum of squares across components)..  
+
+\exception SeisppError is thrown if sample rates of x and y do not match 
+*/
+TimeSeries correlation(ThreeComponentSeismogram& x, 
+        ThreeComponentSeismogram& y,bool normalize=false);
 
 /*! \brief Encapsulates data defining the peak of a cross-correlation function.
 *

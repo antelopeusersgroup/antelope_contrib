@@ -1,0 +1,42 @@
+#
+# 1D velocity structure appropiate
+# for the Sierra Nevada and
+# Southern California regions.
+#
+name            SOCAL_MODEL
+
+decay           6.0
+
+start_frequency 1
+
+end_frequency   512
+
+samplerate      4
+
+# Phase velocity window
+cmax    10000
+c1      30
+c2      2.9
+cmin    2.5
+
+
+velocity_reduction   10
+
+
+
+distance_min   0
+
+distance_max   500
+
+distance_step  5
+
+
+
+# MODEL PARAMETERS
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+model &Literal{
+5.5     5.5     3.18    2.4     600     300
+8.0     6.3     3.64    2.67    600     300
+19.0    6.7     3.87    2.8     600     300
+400.0   7.8     4.5     3.3     600     300
+ }

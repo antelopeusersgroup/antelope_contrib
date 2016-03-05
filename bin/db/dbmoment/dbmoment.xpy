@@ -1,17 +1,18 @@
 """
 dbmoment.py
 
-    Calculates the moment tensor for a given event (evid/orid) for a certain amount of stations 
-    (defined in the parameter file). The accompanying Green's functions are either  read  from  a
-    pre-constructed wfdisc table in a database or generated and stored in a database wfdisc table. 
-    It relies significantly on the  Antelope  Python Interface (Datascope and Stock), NumPy and
+    Calculates the moment tensor for a given event (evid/orid) for a certain amount of stations
+    (defined in the parameter file). The accompanying synthetic functions are either  read  from  a
+    pre-constructed wfdisc table in a database or generated and stored in thata database wfdisc table.
+    It relies significantly on the  Antelope  Python Interface (Datascope and Stock), NumPy/Pylab and
     Matplotlib.
 
     Print Help:
         dbmoment -h
 
-    @authors
+    @author:
             Juan Reyes <jreyes1108@gmail.com>
+    @contributors:
             Gert-Jan van den Hazel <hazelvd@knmi.nl>
             Rob Newman <robertlnewman@gmail.com>
             Matt Koes <mattkoes@uvic.ca>
@@ -25,16 +26,8 @@ import sys
 import glob
 import stat
 import json
-
-try:
-    import logging as logging
-    logging.basicConfig(format='dbmoment[%(levelname)s]: %(message)s')
-    logging.addLevelName(35, "NOTIFY")
-    logger = logging.getLogger()
-
-except Exception,e:
-    sys.exit('Problems loading logging lib. %s' % e)
-
+import inspect
+import logging
 
 from tempfile import mkstemp
 from distutils import spawn
@@ -48,207 +41,399 @@ import subprocess
 try:
     import antelope.stock as stock
     import antelope.datascope as datascope
+    import antelope._response as response
 
 except Exception,e:
     sys.exit("Import Error: [%s] Do you have ANTELOPE installed correctly?" % e)
 
-# PYLAB
+# Pylab-Numpy
 try:
-    import pylab as pylab
+    raise
+    from pylab import array, zeros, ones, sin, cos, delete
+    from pylab import insert, concatenate, pi
+    from pylab import fft, fftfreq, irfft
+except Exception,e:
+    try:
+        from numpy import array, zeros, ones, sin, cos, delete
+        from numpy import insert, concatenate, pi
+        from numpy.fft import fft
+        from numpy.fft import fftfreq
+        from numpy.fft import irfft
+    except Exception,e:
+        sys.exit("Import Error: [%s] Do you have PYLAB or NUMPY installed correctly?" % e)
+
+# Matplotlib
+try:
     from matplotlib  import pyplot
 except Exception,e:
     sys.exit("Import Error: [%s] Do you have PYLAB installed correctly?" % e)
 
+# OBSPY - optional
+try:
+    from obspy.imaging.mopad_wrapper import beach as beachball
+except Exception,e:
+    beachball = False
 
-# Need global here
+
+
+"""
+Some parameters are needed on all modlues. Listing those
+here as "global" variables.
+"""
 executables = {}
-tmp_folder = '/tmp/dbmoment/'
 clean_tmp = False
+
+# synth_channels will be accessed in functions.py
 synth_channels = ["TSS","TDS","XSS","XDS","XDD","ZSS","ZDS","ZDD"]
+# seismic_channels will be accessed on functions.py and data.py
 seismic_channels = ["T", "R", "Z"]
 
 
-# Help functions and Classes
-try:
-    from moment_tensor.functions import *
-    from moment_tensor.mt import *
-except Exception,e:
-    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
 
 
 """
-Configure parameters from command-line and the pf-file
-Check command line options Use Antelope's built-in PFPATH to
-determine the paths to search for the parameter file
+Configure parameters from command-line.
 """
-
-usage = "Usage: dbmoment [-vd] [-p pfname] [-s select] [-r reject] database evid/orid"
+usage = "Usage: dbmoment [-oxvd] [-m MODELNAME.pf] [-c min_variance] [-p pfname] [-z 'STA1:5,STA2:5'] [-s select] [-r reject] database evid/orid"
 parser = OptionParser(usage=usage)
+
+# Use event id as ORID
+parser.add_option("-o", action="store_true", dest="orid",
+        default=False, help="event id is ORID")
+
 # Vebose output
 parser.add_option("-v", action="store_true", dest="verbose",
         default=False, help="verbose output")
+
 # Debug output
 parser.add_option("-d", action="store_true", dest="debug",
         default=False, help="debug output")
-# PF
+
+# Plot each data group for a site (real and synth) and wait.
+parser.add_option("-x", action="store_true", dest="debug_each",
+        default=False, help="debug output each station plot")
+
+# Plot a debugging beachball on the final image is possible..
+parser.add_option("-b", action="store_true", dest="beachball",
+        default=False, help="debug flag for development only")
+
+# MinVariance: forced the min-limit threshold of the variance reduction value
+parser.add_option("-c", action="store", dest="min_fit", type="string",
+        default='', help="Set min. variance reduction threshold")
+
+# Zcor: forced the zcor value of a station. Format: "STA1:2,STA2:1,STA3:4"
+parser.add_option("-z", action="store", dest="zcor", type="string",
+        default='', help="Set some Zcor values for stations")
+
+# Master parameter file for dbmoment. NOT THE MODEL!
 parser.add_option("-p", action="store", dest="pf", type="string",
         default='dbmoment.pf', help="parameter file path")
-# Select string
+
+# MODEL parameter file!
+parser.add_option("-m", action="store", dest="model", type="string",
+        default='', help="Forced this MODEL file")
+
+# BW filter to use for all traces. If not set then get one from the PF
+# following the value of the event's magnitude.
+parser.add_option("-f", action="store", dest="filter", type="string",
+        default=False, help="Forced a filter on the data")
+
+# Select the listed stations ONLY!
 parser.add_option("-s", action="store", dest="select", type="string",
         default='', help="only select these stations")
-# Reject string
+
+# Reject The listed stations from the process.
 parser.add_option("-r", action="store", dest="reject", type="string",
         default='', help="reject these stations")
 
 (options, args) = parser.parse_args()
 
+
+# If we don't have 2 arguments then exit.
 if len(args) != 2:
     sys.exit( usage );
 
+
+# Set log level
+loglevel = 'WARNING'
 if options.debug:
-    logger.setLevel(logging.DEBUG)
-    debug('Set log level to DEBUG')
+    loglevel = 'DEBUG'
 elif options.verbose:
-    logger.setLevel(logging.INFO)
-    log('Set log level to INFO')
+    loglevel = 'INFO'
 
+# FOR DEVELOPMENT ONLY. NEED LIBRARY AND FLAG TO BE ACTIVE
+if beachball and not options.beachball:
+    beachball = False
+
+# All modules should use the same logging function. We have
+# a nice method defined in the logging_helper lib that helps
+# link the logging on all of the modules.
+try:
+    from dbmoment.logging_helper import getLogger
+except Exception,e:
+    sys.exit('Problems loading logging lib. %s' % e)
+
+
+# New logger object and set loglevel
+logging = getLogger(loglevel=loglevel)
+logging.info('loglevel=%s' % loglevel)
+
+
+
+
+# The main process runs on the "mt" class and the
+# "functions" import is needed by almost ALL modlues.
+try:
+    from dbmoment.functions import *
+    from dbmoment.mt import *
+except Exception,e:
+    sys.exit("Import Error: [%s] Problem with mt_fucntions load." % e)
+
+
+
+# Parse arguments from command-line
 database = args[0]
-evid     = args[1]
-log("database [%s]" % database)
-log("evid [%s]" % evid)
+id     = args[1]
+logging.info("database [%s]" % database)
+logging.info("id [%s]" % id)
 
+
+
+'''
+Read parameters from the ParameterFile.
+Defaults to the dbmoment.pf name.
+'''
 if not options.pf: options.pf = 'dbmoment'
 options.pf = stock.pffiles(options.pf)[-1]
-log("Parameter file to use [%s]" % options.pf)
+logging.info("Parameter file to use [%s]" % options.pf)
 
+'''
+Need to verify that we have a modern version of the parameter file.
+Older versions will break the code or will produce erroneous results.
+
+Function pfrequire will return any of these:
+PF_MTIME_OK, PF_MTIME_NOT_FOUND, PF_MTIME_OLD, PF_SYNTAX_ERROR, or PF_NOT_FOUND
+
+Set limit to parameter file. Only versions after 2016-02-27
+'''
+pf_object = open_verify_pf( options.pf, 1456531200 )
 pf_object = stock.pfread(options.pf)
-tmp_folder = os.path.normpath(safe_pf_get(pf_object, 'tmp_folder','/tmp/dbmoment'))
+tmp_folder = os.path.relpath(safe_pf_get(pf_object, 'tmp_folder','.dbmoment'))
 clean_tmp = stock.yesno(str(safe_pf_get(pf_object, 'clean_tmp', True)))
-model = safe_pf_get(pf_object, 'model_name', 'unknown')
-
 execs = safe_pf_get(pf_object, 'find_executables', [])
 
-find_executables( execs )
+model_path = safe_pf_get(pf_object, 'model_path')
+model_file = safe_pf_get(pf_object, 'model_file')
 
+
+model_pf = get_model_pf( model_file, model_path, options.model)
+model_name = safe_pf_get(model_pf, 'name')
+
+if not model_name:
+    logging.warning('There was a problem while reading model file.')
+    logging.error('Cannot get value for [name] in model PF file.')
+
+logging.info('Using model %s' % model_name )
+
+
+
+"""
+Most modules will make system calls to external
+executables that should be present on the system's
+$PATH. This function will make sure that we see
+all of those executables and that we track the full
+path to them. If anything is missing from the $PATH
+then we stop here and we print a nice log about it.
+"""
+find_executables( execs )
 if not os.path.isfile(options.pf):
     sys.exit('ERROR: Cannot find pf(%s)' % options.pf )
 
-# Get db ready
+
+
+
+# Open database and make new object for it
 try:
     db = datascope.dbopen( database, "r+" )
 except Exception,e:
     error('Problems opening database: %s %s %s' % (database,Exception, e) )
 
+
+"""
+Need to start with a test to verify the "event" table.
+If we see the event table then we use the provided ID
+as an "evid". If no event table present then we use the
+ID as an "orid". If command line flag -o is used then the
+ID is forced to be ORID.
+"""
 event_table = db.lookup(table='event')
-mt_table = db.lookup(table='mt')
-netmag_table = db.lookup(table='netmag')
+logging.info('Test if event table present: %s' % event_table.query(datascope.dbTABLE_PRESENT) )
 
-
-# Verify that we have the event
-log('Test if event table present: %s' % event_table.query(datascope.dbTABLE_PRESENT) )
-
-if event_table.query(datascope.dbTABLE_PRESENT):
-    steps = ['dbopen origin']
-    steps.extend(['dbjoin -o event'])
-    steps.extend(['dbsubset (evid==%s && prefor==orid) || orid==%s' % (evid,evid)])
+# Test if we see the table
+if not options.orid and event_table.query(datascope.dbTABLE_PRESENT):
+    steps = [ 'dbopen event' ]
+    steps.extend([ 'dbjoin origin' ])
+    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % id ])
 else:
     steps = ['dbopen origin']
-    steps.extend(['dbsubset orid==%s' % evid ])
+    steps.extend(['dbsubset orid==%s' % id ])
 
-log( ', '.join(steps) )
+logging.info( ', '.join(steps) )
 
 with datascope.freeing(db.process( steps )) as dbview:
-    debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,evid) )
+    logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,id) )
+
     if not dbview.record_count:
-        error('No records found for evid=[%s] nor orid=[%s]' % (evid,evid))
+        logging.error( 'No records found for id=[%s]' % id )
     elif dbview.record_count > 1:
-        error( 'Found (%s) events with id=[%s]' % (dbview.record_count,evid) )
+        logging.error( 'Found (%s) events with id=[%s]' % (dbview.record_count,id) )
     else:
         dbview.record = 0
         orid = dbview.getv('orid')[0]
-        log('Found 1 record for id=[%s] => orid=%s' % (evid,orid))
+        logging.info('Found 1 record for id=[%s] => orid=%s' % (id,orid))
 
-log("Cleanup" )
+
+"""
+The process will work on a hidden folder that we use
+to place data files and temp configuration files for our
+velocify model. The default value for this folder is .dbmoment
+and should be present on the same directory that you are running
+the code on. Sometimes we might not clean the files at the end
+of the run to have some history and debugging information. Need
+to make sure that we start with a clean folder now.
+"""
+logging.info("Cleanup" )
 cleanup(tmp_folder)
 
 
-log("Loading module [ DbMoment ]" )
-if int(evid) == 1 and int(orid) == 1:
-    demo = True
-else:
-    demo = False
+# Load our main module and start the processing of the event
+logging.info("Loading module [ DbMoment ]" )
+dbmnt = DbMoment(database, options, model_pf)
 
-dbmnt = DbMoment(database,options.pf,options.debug,demo)
-
-log("Process evid [ %s ]" % evid )
-results = dbmnt.mt(evid,options.select,options.reject)
+# This should bring back all the information neeed for us to
+# push this back to the database.
+logging.info("Process id [ %s ]" % orid )
+results = dbmnt.mt( orid )
 
 
-# Look for values on results for MT table
+"""
+Now that we completed the inversion we now have to add the results
+to our main database. In this case we are not sure about the values
+that we should get from the inversion so I'm going to test for ALL
+valid entries on the mt table.
+"""
 to_insert = []
 fields = [ "tmpp", "tmrp", "tmrr", "tmrt", "tmtp","estatus", "rstatus", "utime",
     "tmtt", "taxlength", "taxplg", "taxazm", "paxlength", "paxplg", "paxazm",
     "naxlength", "naxplg", "naxazm", "scm", "pdc", "str1", "dip1", "rake1", "str2",
     "dip2", "rake2", "drdepth", "drtime", "drlat", "drlon", "drmag", "drmagt", ]
 
+# Nice print of the results
 for f in fields:
     if f in results:
-        debug('Found field [%s] on solution [%s]' % (f,results[f]))
+        logging.debug('Found field [%s] on solution [%s]' % (f,results[f]))
         to_insert.append( (f,results[f]) )
 
 
 if not len(to_insert):
-    error('Nothing usefull on returned object form dbmnt.mt() => %s' % results)
+    logging.error('Nothing usefull on returned object form dbmnt.mt() => %s' % results)
 
+
+db.close()
+
+
+
+'''
+
+ADD RESULTS TO MT TABLE
+
+'''
+# We have results, lets add them to the table
+try:
+    db = datascope.dbopen( database, "r+" )
+except Exception,e:
+    error('Problems opening database: %s %s %s' % (database,Exception, e) )
+
+mt_table = db.lookup(table='mt')
 to_insert.append( ('orid', orid) )
 to_insert.append( ('mtid', mt_table.nextid('mtid')) )
-to_insert.append( ('auth', model) )
+to_insert.append( ('auth', "mt.%s" % model_name) )
 
-log("Save results to database")
+logging.info("Save results to database")
 
-cleanup_db(mt_table, 'orid==%s' % orid)
+# Maybe we already have an entry with same orid/auth. Need to remove that.
+cleanup_db(mt_table, 'orid==%s && auth=~/mt.%s/' % (orid,model_name) )
 
-log('Insert values to MT table')
+
+# Insert the new values
+logging.info('Insert values to MT table')
 try:
     new_rec = mt_table.addv(*to_insert)
 except Exception,e:
-    error('Problems inserting values into table: %s' % e)
-debug(to_insert)
+    logging.error('Problems inserting values into table: %s' % e)
+logging.debug(to_insert)
 
-notify('New record on mt table [%s]' % new_rec)
+logging.notify('New record on mt table [%s]' % new_rec)
 
+
+# Print each value from the new row
 mt_table.record = new_rec
 for key in mt_table.query(datascope.dbTABLE_FIELDS):
-    notify(' %s => %s' % (key, mt_table.getv(key)[0]) )
+    logging.debug(' %s => %s' % (key, mt_table.getv(key)[0]) )
 
+db.close()
+
+
+'''
+
+ADD RESULTS TO NETMAG TABLE
+
+'''
 # Look for values on results for NETMAG table
-cleanup_db(netmag_table, 'orid==%s' % orid)
+try:
+    db = datascope.dbopen( database, "r+" )
+except Exception,e:
+    error('Problems opening database: %s %s %s' % (database,Exception, e) )
+
+netmag_table = db.lookup(table='netmag')
+
+# Clean previous version of this same calculation
+cleanup_db(netmag_table, 'orid==%s && auth=~/mt.%s/' % (orid,model_name) )
 to_insert = [
     ('magid',netmag_table.nextid('magid')),
     ('orid',orid),
-    ('evid',evid),
+    ('evid',id),
     ('net','-'),
     ('magtype',results['drmagt']),
     ('magnitude',results['drmag']),
-    ('auth', model),
-    ('nsta',len(results['acc'].keys()))
+    ('auth', "mt.%s" % model_name),
+    ('nsta',len(results['variance'].keys()))
     ]
-log('Insert values to MT table')
-debug(to_insert)
+
+logging.info('Insert values to netmag table')
+logging.debug(to_insert)
+
 try:
     new_rec = netmag_table.addv(*to_insert)
 except Exception,e:
-    error('Problems inserting values into table: %s' % e)
+    logging.error('Problems inserting values into table: %s' % e)
 
-notify('New record on netmag table [%s]' % new_rec)
+logging.notify('New record on netmag table [%s]' % new_rec)
 
+# Print each value from the new row
 netmag_table.record = new_rec
 for key in netmag_table.query(datascope.dbTABLE_FIELDS):
-    notify(' %s => %s' % (key, netmag_table.getv(key)[0]) )
+    logging.info(' %s => %s' % (key, netmag_table.getv(key)[0]) )
 
 
-#mt_table.close()
 
+
+'''
+CLEANUP
+'''
+# Maybe we want to keep the temp files...
 if clean_tmp: cleanup(tmp_folder)
+
+
 
 sys.exit(0)

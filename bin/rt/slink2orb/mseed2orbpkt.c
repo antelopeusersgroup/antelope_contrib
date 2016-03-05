@@ -3,8 +3,9 @@
  * Wrap a Mini-SEED record to make an Antelope ORB packet of type 'SEED'
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
+ *                     now: IRIS Data Management Center
  *
- * version 2007.158
+ * version 2012.244
  */
 
 #include <stdlib.h>
@@ -25,7 +26,7 @@ mseed2orbpkt ( char *msrec, int mssize, char *calibdb, char *mappingdb,
                int remap, char *srcname, double *time, char **packet,
                int *nbytes, int *bufsize )
 {
-  int reclen;
+  int reclen = 0;
   int retcode = 0;
   int version = 2;
   double calib = 0.0;

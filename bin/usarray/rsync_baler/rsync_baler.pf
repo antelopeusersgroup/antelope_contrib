@@ -1,5 +1,4 @@
-database   /anf/TA/dbs/dbops/usarray        #path to master database 
-                                            #with stations and ips
+json_url   http://anf.ucsd.edu/api/ta/stations/?all=true&fields=id|sta|snet|time|endtime|orbcomms&tag=low48&snet=TA
 
 local_data_dir          /anf/TA/baler/work/ #local directory for archive
 
@@ -9,9 +8,25 @@ http_port               5381                #port for http connections
 
 max_procs               35                  #number of simultaneous processes
 
-max_child_run_time      36000               #stop downloading files 
-                                            #after this number of 
+max_child_run_time      36000               #stop downloading files
+                                            #after this number of
                                             #seconds. 0 = disable.
+
+limit_history           0   # in secs. 0 to avoid limit
+
+use_md5                 True
+
+media2_warning          True
+
+newest_first            True
+
+bandwidth_limits &Arr{  # days /  Megabytes
+    1   1000
+    21  3000
+}
+
+connect_pause           5
+max_attempts            20
 
 regex_for_files         ^(..-...._4-\d{14})$
 folder_with_files       data
@@ -19,9 +34,15 @@ md5_folder              recover
 
 #regex_for_files         ^(..-...._4-(S-)?\d{14})$
 #folder_with_files       s?data
-#md5_folder              recover
+#md5_folder
 
-baler_model             PacketBaler44
+avoid_ips  &Tbl{
+    10.10.10.0/23       # TEST
+    192.168.0.0         # TEST
+}
+force_include  &Tbl{
+    192.168.1.1         # TEST
+}
 
 # avoid_on_day_of_week
 # Will be implemented like this...

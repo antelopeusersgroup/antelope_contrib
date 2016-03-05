@@ -8,7 +8,7 @@
  int correlate(),fclose();
  FILE *fopen(), *par,*fd, *fd1, *fd2, *fd3, *out;
 
-main()
+int main()
  {
  int i,j,l,N,Np,Z,k,ntr,nsta,vsize,nn,*npts,wflag=0;
  int depth,cnt1, cnt2, cnt3, np2,QUAL,plotflag,WCNT;
@@ -36,7 +36,7 @@ out=fopen("mt_inv_redi.out","a");
 
 fscanf(par,"%d %d %d %d\n",&nsta,&depth,&wflag,&plotflag);
 fprintf(out,"Depth=%d\n",depth);
-fprintf(stderr,"Depth=%d\n",depth);
+//fprintf(stderr,"Depth=%d\n",depth);
 
 AIV=(double **)malloc(sizeof(double *)*5);
 for(i=0 ; i < 5 ; i++)
@@ -189,13 +189,13 @@ gg=(struct GREEN *)malloc(sizeof(struct GREEN)*(2*nsta));
 /*Construct distance 1/R weighting*/
 if(wflag==1 && (nsta >= 1))
   {
-  fprintf(stderr,"Station Information\n");
+  //fprintf(stderr,"Station Information\n");
   fprintf(out,"Station Information\n");
   l=0;
   for(i=0; i < nsta; i++)
      {
      cormax = ss[i].dist / mindist;
-     fprintf(stderr,"Station(%d): %s  R=%.1fkm  AZI=%.1f  W=%.3f  Zcor=%d\n", i, ss[i].name,ss[i].dist,ss[i].azi*180.0/PI,cormax,ss[i].zz);
+     //fprintf(stderr,"Station(%d): %s  R=%.1fkm  AZI=%.1f  W=%.3f  Zcor=%d\n", i, ss[i].name,ss[i].dist,ss[i].azi*180.0/PI,cormax,ss[i].zz);
      fprintf(out,"Station(%d): %s  R=%.1fkm  AZI=%.1f  W=%.3f  Zcor=%d\n", i, ss[i].name,ss[i].dist,ss[i].azi*180.0/PI,cormax,ss[i].zz);
      N = ss[i].nn;
      for(j=0; j < 3*N; j++)
@@ -203,7 +203,16 @@ if(wflag==1 && (nsta >= 1))
 
      }
   }
-       
+else
+  {
+  fprintf(out,"Station Information\n");
+  l=0;
+  for(i=0; i < nsta; i++)
+     {
+     fprintf(out,"Station(%d): %s  R=%.1fkm  AZI=%.1f  Zcor=%d\n", i, ss[i].name,ss[i].dist,ss[i].azi*180.0/PI,ss[i].zz);
+     }
+  }
+
 
 
    /* INVERSION ROUTINE */
@@ -334,8 +343,8 @@ Pdc    = (float) d_pcdc;
 Pclvd  = (float) d_pcclvd;
 Piso    = (float) d_pciso;
 
-fprintf(stderr,"Mo=%g\nMw=%.1f\nStrike=%.0f ; %.0f\nRake=%.0f ; %.0f\nDip=%.0f; %.0f\nPdc=%.0f\nPclvd=%.0f\nPiso=%.0f\n",
-       Mo,Mw,Strike,St2,Rake,Rk2,Dip,Dp2,Pdc,Pclvd,Piso);
+//fprintf(stderr,"Mo=%g\nMw=%.1f\nStrike=%.0f ; %.0f\nRake=%.0f ; %.0f\nDip=%.0f; %.0f\nPdc=%.0f\nPclvd=%.0f\nPiso=%.0f\n",
+//       Mo,Mw,Strike,St2,Rake,Rk2,Dip,Dp2,Pdc,Pclvd,Piso);
 fprintf(out,"Mo=%g\nMw=%.1f\nStrike=%.0f ; %.0f\nRake=%.0f ; %.0f\nDip=%.0f ; %.0f\nPdc=%.0f\nPclvd=%.0f\nPiso=%.0f\n",
        Mo,Mw,Strike,St2,Rake,Rk2,Dip,Dp2,Pdc,Pclvd,Piso);
 
@@ -347,7 +356,7 @@ if(plotflag==1)
   */
 fprintf(out,"Variance=%.3e\n",E);
 fprintf(out,"VarRed=%.3e\n",VR);
-fprintf(stderr,"Var/Pdc=%.3e\n",E/Pdc);
+//fprintf(stderr,"Var/Pdc=%.3e\n",E/Pdc);
 fprintf(out,"Var/Pdc=%.3e\n",E/Pdc);
 if(VR < 20.0) QUAL=0;
 if(VR > 20.0 && VR < 40.0) QUAL=1;
@@ -355,10 +364,10 @@ if(VR > 40.0 && VR < 60.0) QUAL=2;
 if(VR > 60.0 && VR < 80.0) QUAL=3;
 if(VR > 80.0) QUAL=4;
 fprintf(out,"Quality=%d\n",QUAL);
-fprintf(stderr,"Quality=%d\n",QUAL);
+//fprintf(stderr,"Quality=%d\n",QUAL);
 
 
-
+return 0;
 
 
 }

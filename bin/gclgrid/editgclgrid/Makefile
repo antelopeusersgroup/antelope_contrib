@@ -1,13 +1,11 @@
-BIN  = editgclgrid
-PF   = $(BIN).pf
-MAN1 = $(BIN).1
 
-ldlibs= $(DBLIBS) -lgclgrid -lseispp -ltrvltm $(TRLIBS) -lperf
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-SUBDIR=/contrib
-include $(ANTELOPEMAKE)
-DIRS=
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-OBJS = $(BIN).o
-$(BIN) : $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+FORCED:
+

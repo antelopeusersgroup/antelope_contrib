@@ -7,12 +7,15 @@ using namespace std;
 using namespace SEISPP;
 void usage()
 {
-	cerr << "exportgrid db|fname gridname [-fin -f fieldname -3d -vector n -o outfile -dir outdir] "<<endl
+	cerr << "exportgrid db|fname gridname "
+            << "[-fin -f fieldname -3d (-vector n | scalar)" 
+            << "-o outfile -dir outdir] "<<endl
 		<< " outputs GCLgrid or field objects to stdout"<<endl
                 << " -fin selects file based input with name fname (arg1) - default is db input"<<endl
 		<< " Dumps only grid unless -f is used."<<endl
                 << " Use -3d if data are defined on a 3d grid (default is 2d)"<<endl
-                << " Use -vector if the data are a vector field (default is scalar). n is vector size"<<endl
+                << " Use -vector if the data are a vector field. n is vector size"<<endl
+                << " Use -scalar if the data are a scalar field."<<endl
                 << " -o saves to outfile using pfhdr format (used mainly for conversion from db)"<<endl
                 << " -dir defines directory where file based saves will be done (default is curent directory)"<<endl
                 << "  ( -o not allowed with -fin option)"<<endl;
@@ -34,6 +37,7 @@ int main(int argc, char **argv)
 	bool threedmode(false);
 	bool isfield(false);
 	bool vectorfield(false);
+        bool scalarfield(false);
         bool write_file_output(false);
         int nv;  // expected number of vector components in read
         string outfile;
@@ -62,6 +66,11 @@ int main(int argc, char **argv)
 			if(i==argc) usage();
                         nv=atoi(argv[i]);
                 }
+		else if(sarg=="-scalar")
+                {
+			scalarfield=true;
+                        isfield=true;
+                }
                 else if(sarg=="-dir")
                 {
 			++i;
@@ -78,6 +87,15 @@ int main(int argc, char **argv)
 		else
 			usage();
 	}
+        if(isfield && ( !(vectorfield || scalarfield) ))
+        {
+            cerr << "Arguments imply field data (-f was used) but "
+                << "you did not use -vector of -scalar. "<<endl
+                << "You must specific -scalor or -vector with -f flag"
+                <<endl;
+            usage();
+        }
+
         if(write_file_output && (!dbmode)) usage();
 	try {
 		DatascopeHandle dbh;
@@ -141,15 +159,31 @@ int main(int argc, char **argv)
 		    {
 			if(vectorfield)
 			{
+                            if(dbmode)
+                            {
 				GCLvectorfield field(dbh,gridname,fieldname,nv);
 				cout << field;
                                 if(write_file_output) field.save(outfile,outdir);
+                            }
+                            else
+                            {
+                                GCLvectorfield field(fieldname,formstr);
+                                cout << field;
+                            }
 			}
 			else
 			{
+                            if(dbmode)
+                            {
 				GCLscalarfield field(dbh,gridname,fieldname);
 				cout << field;
                                 if(write_file_output) field.save(outfile,outdir);
+                            }
+                            else
+                            {
+                                GCLscalarfield field(fname,formstr);
+                                cout << field;
+                            }
 			}
 		     }
 		     else

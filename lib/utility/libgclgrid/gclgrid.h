@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include "stock.h" 
-#include "perf.h"
 #include "coords.h"
 #include "dmatrix.h"
 #include "GCLgridError.h"
@@ -395,6 +394,7 @@ public:
           file used to store the actual data. Most applications will 
           likely want to force default and use only one argument to
           this constructor.
+
           */
         GCLgrid(string fname, string format=default_output_format);
 /*! Standard copy constructor.*/
@@ -446,6 +446,7 @@ public:
             (current default is a two file output separating the 
             header and data.  Hence users should avoid .ext
             file names like myfile.dat.)
+
 
           \exception GCLgridError is throw if save fails.
         */
@@ -880,8 +881,14 @@ public:
           file used to store the actual data. Most applications will 
           likely want to force default and use only one argument to
           this constructor.
+          \parm enforce_object_type is used to turn type checking 
+          on an off.   When true (default) file object type must 
+          match the type of the constructor.   Useful for subclasses
+          in some situations and to read a grid linked to a field
+          ignoring the field data.
           */
-        GCLscalarfield(string fname, string format=default_output_format);
+        GCLscalarfield(string fname, string format=default_output_format,
+                bool enforce_object_type=true);
 	/*! 
 	// Destructor.  
 	// Nontrivial destructor as it has to destroy components
@@ -1073,8 +1080,14 @@ public:
           file used to store the actual data. Most applications will 
           likely want to force default and use only one argument to
           this constructor.
+          \parm enforce_object_type is used to turn type checking 
+          on an off.   When true (default) file object type must 
+          match the type of the constructor.   Useful for subclasses
+          in some situations and to read a grid linked to a field
+          ignoring the field data.
           */
-        GCLvectorfield(string fname, string format=default_output_format);
+        GCLvectorfield(string fname, string format=default_output_format,
+                bool enforce_object_type=true);
 	/** Standard assignment operator. */
 	GCLvectorfield& operator=(const GCLvectorfield&);
 	/*! 

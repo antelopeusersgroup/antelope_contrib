@@ -1,0 +1,203 @@
+
+filter &Tbl{
+DEMEAN;BW 0.5 3 2 3
+}
+
+netname test
+phase P
+data_window_start -40.0
+data_window_end 400.0
+data_time_pad 20.0
+beam_window_start -20.0
+beam_window_end 150.0
+robust_beam_window_start -5.0
+robust_beam_window_end 60.0
+noise_window_start -20.0
+noise_window_end -5.0
+signal_window_start 0.0
+signal_window_end 15.0
+lag_cutoff 5.0
+lag_limit 1.0
+InputAttributeMap css3.0
+OutputAttributeMap css3.0
+target_sample_interval 0.1
+output_dir autoxcor
+apply_free_surface_transform	1
+
+semblance_window 50
+semblance_lower_limit 0.3
+semblance_window_start -5.0
+
+station_mdlist &Tbl{
+sta string
+lat real
+lon real
+elev real
+nsamp int
+samprate real
+datatype string
+dfile string
+dir string
+foff int
+time real
+endtime real 
+timetype string
+}
+
+Ensemble_mdlist &Tbl{
+evid int
+}
+
+Beam_mdlist &Tbl{
+    pwfid int
+    wfprocess.timetype string
+    wfprocess.dir string
+    wfprocess.dfile string
+    wfprocess.algorithm string
+}
+
+output_mdlist &Tbl{
+sta string
+chan string
+nsamp int
+samprate real
+datatype string
+time real
+endtime real 
+dir string
+dfile string
+}
+
+# resammpling recipe
+resample_definitions    &Arr{
+    250 &Arr{
+        Decimator_response_files        &Tbl{
+            5   response/RT72A_5_f
+            5   response/RT72A_5_f
+        }
+        high_limit      251
+        low_limit       249
+    }
+    200 &Arr{
+        Decimator_response_files        &Tbl{
+            5   response/RT72A_5_f
+            4   response/RT72A_4_f
+        }
+        high_limit      201
+        low_limit       199
+    }
+    120 &Arr{
+        Decimator_response_files        &Tbl{
+            0.75      resample
+            4   response/RT72A_4_f
+            4   response/RT72A_4_f
+        }
+        high_limit      121
+        low_limit       119
+    }
+    100 &Arr{
+        Decimator_response_files        &Tbl{
+            5   response/RT72A_5_f
+            2   response/RT72A_2_f
+        }
+        high_limit      101
+        low_limit       99
+    }
+    80  &Arr{
+        Decimator_response_files        &Tbl{
+            4       response/RT72A_4_f
+            2       response/RT72A_2_f
+        }
+        high_limit      81
+        low_limit       79
+    }
+    50  &Arr{
+        Decimator_response_files        &Tbl{
+            5       response/RT72A_5_f
+        }
+        high_limit      51
+        low_limit       49
+    }
+    25  &Arr{
+        Decimator_response_files        &Tbl{
+            0.5      resample
+            5       response/RT72A_5_f
+        }
+        high_limit      26
+        low_limit       24
+    }
+    20  &Arr{
+        Decimator_response_files        &Tbl{
+            2       response/RT72A_2_f
+        }
+        high_limit      21
+        low_limit       19
+    }
+    33.5        &Arr{
+        Decimator_response_files        &Tbl{
+            0.8375      resample
+            4       response/RT72A_4_f
+        }
+        high_limit      34.5
+        low_limit       32.5
+    }
+    40  &Arr{
+        Decimator_response_files        &Tbl{
+            4       response/RT72A_4_f
+        }
+        high_limit      41
+        low_limit       39
+    }
+}
+
+# Used to construct StationChannelMap object
+StationChannelMap       &Arr{
+    default     &Tbl{
+        BHE 0 0
+        BHN 1 0
+        BHZ 2 0
+        HHE 0 1
+        HHN 1 1
+        HHZ 2 1
+        LHE 0 2
+        LHN 1 2
+        LHZ 2 2
+        BH1 0 3
+        BH2 1 3
+        BH3 2 3
+        BH1_00 0 5
+        BH2_00 1 5
+        BHZ_00 2 5
+        BHE_00 0 6
+        BHN_00 1 6
+        BHE_01 0 7
+        BHN_01 1 7
+        BHZ_01 2 7
+        BHE_10 0 8
+        BHN_10 1 8
+        BHZ_10 2 8
+        BHE_HR 0 9
+        BHN_HR 1 9
+        BHZ_HR 2 9
+        BH1_10 0 10
+        BH2_10 1 10
+        BH1_60 0 11
+        BH2_60 1 11
+        BHZ_60 2 11
+        BH1_HR 0 12
+        BH2_HR 1 12
+        HH1 0 13
+        HH2 1 13
+        HH1_00 0 14
+        HH2_00 1 14
+        HH1_10 0 15
+        HH2_10 1 15
+        HHZ_10 2 15
+        HHE_00 0 16
+        HHN_00 1 16
+        HHZ_00 2 16
+        HHE_01 0 17
+        HHN_01 1 17
+        HHZ_01 2 17
+    }
+}

@@ -1,0 +1,69 @@
+.TH SUBNETMATCH 3P 
+
+.SH NAME
+subnetMatch \- Perl library to match an ipv4 address to subnets
+
+subnetMatch_test \- Simple perl script to test library 
+
+NO BRTT SUPPORT!!!!!!
+
+.SH SYNOPSIS
+.nf
+
+    use subnetMatch;
+    my @subnets =  qw(
+              10.10.10.10/255.255.255.255
+              10.22.22.0/255.255.255.0
+              2.2.2.2
+              15.15.15.15/24
+    );
+
+    my $match_nets = subnet_match( @subnets );
+
+    print $match_nets->($ip) ? 'yes' : 'no';
+
+.fi
+.SH DESCRIPTION
+
+We want a simple method to avoid connecting to some Balers on the field
+that might be using satlinks. We know the IP or IP-rage of the stations
+that we don't want to connect to. It is easy to list them in a parameter
+file. This tool can get a list of subnets and verify if each of the posible
+IPs is in that group.
+
+.SH EXAMPLE
+Run subnetMatch_test for an example on your terminal.
+
+.in 2c
+.ft CW
+.nf
+    use subnetMatch;
+    my @subnets =  qw(
+              10.10.10.10/255.255.255.255
+              10.22.22.0/255.255.255.0
+              2.2.2.2
+              15.15.15.15/24
+    );
+
+    my $match_nets = subnet_match( @subnets );
+
+    print $match_nets->($ip) ? 'yes' : 'no';
+
+.fi
+.ft R
+.in
+
+.SH RETURN VALUES
+True or False
+
+.SH LIBRARY
+None.
+
+.SH "BUGS AND CAVEATS"
+May break if you submit wrong values to the tool. Very little or none
+is done to verify validity of parameters.
+
+.SH AUTHOR
+Juan Reyes <reyes@ucsd.edu>
+
+NO BRTT SUPPORT!!!!!!

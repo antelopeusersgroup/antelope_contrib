@@ -1,5 +1,7 @@
 #ifndef _THREECOMPONENTSEISMOGRAM_H_
 #define _THREECOMPONENTSEISMOGRAM_H_
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include "Metadata.h"
 #include "BasicTimeSeries.h"
 #include "TimeSeries.h"
@@ -320,6 +322,18 @@ method defined below.
 \param nu defines direction of x3 direction (longitudinal) as a unit vector with three components.
 **/
 	void rotate(double nu[3]);
+        /*! \brief Rotate horizontals by a simple angle in degrees.
+
+          A common transformation in 3C processing is a rotation of the 
+          horizontal components by an angle.  This leaves the vertical
+          (assumed here x3) unaltered.   This routine rotates the horizontals
+          by angle phi using with positive phi counterclockwise as in 
+          polar coordinates and the azimuth angle of spherical coordinates.
+
+          \param phi rotation angle around x3 axis in counterclockwise
+            direction (in radians).
+            */
+        void rotate(double phi);
 	// This applies a general transform with a 3x3 matrix.  
 	// User should set components_are_orthogonal true if they
 	// are so after this transformation.  The default assumes not
@@ -347,6 +361,17 @@ method defined below.
 \param vs0 Surface S wave velocity.
 **/
 	void free_surface_transformation(SlownessVector u, double vp0, double vs0);
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+                    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<Metadata>(*this);
+        ar & boost::serialization::base_object<BasicTimeSeries>(*this);
+        ar & components_are_orthogonal & components_are_cardinal;
+        ar & tmatrix;
+        ar & u;
+    };
 };
 //
 ////////////////////////////////////////////////////
@@ -390,5 +415,6 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
 \param component is the component to extract (0, 1, or 2)
 **/
 TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
+
 } // End namespace SEISPP declaration
 #endif

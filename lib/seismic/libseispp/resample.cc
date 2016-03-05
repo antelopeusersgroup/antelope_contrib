@@ -12,12 +12,12 @@ Written:  Winter spring 2004
 #include <list>
 #include <vector>
 #include <sstream>
+#include "perf.h"
 using namespace std;
 #include "seispp.h"
 #include "interpolator1d.h"
 #include "resample.h"
 #include "response.h"
-#include "perf.h"
 namespace SEISPP 
 {
 using namespace std;

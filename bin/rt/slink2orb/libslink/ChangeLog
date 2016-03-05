@@ -1,10 +1,37 @@
+2013.305: version 2.4b
+	- sl_read_streamlist(): Allow '!' character in selectors field, this
+	is allowed to negate selector(s).  This routine is only used when
+	parsing selections from a file.
+
+2012.152: version 2.4
+	- Integrate a patch from Jacob Crummey that adds support for data
+	record lengths other than 512-byte.  The client must know apriori
+	the record lengths to expect, by default 512-byte record lengths
+	are used and expected by all SeedLink clients, so this is only
+	useful in particular situations (e.g. low latency data collection).
+
+2010.075: version 2.3
+	- Add BATCH mode support, patch from Andres Heinloo/GFZ.
+	- Add protocol version check for BATCH command >= 3.1.
+	- Increase header search length and hostname resolution buffer (GFZ).
+	- Set protocol version to 3.1.
+
+2009.318: version 2.2c
+	- Add proper string limit for snprintf() call in sl_msr_print().
+
+2009.050: version 2.2b
+	- Add an include for sys/stat.h for Solaris in slplatform.h.
+
+2008.078: version 2.2
+	- Use io.h header instead of unistd.h on Win32.
+
 2008.028: version 2.1
 	- Convert all buffered IO file operations to unbuffered IO routines.
 	- Add sl_readline() to genutils.c to read and return a line, defined
 	by newline characters, from unbuffered IO, i.e. a file descriptor.
 	- Add slp_openfile() to slplatform.[ch] to portably open files.
 	- Change Makefile and src/Makefile to use user defined CC and CFLAGS.
-	
+
 2007.284: version 2.0 (no version change)
 	- Use memchr() instead of strnstr() in network.c for portability.
 	- Add globmatch.obj to Makefile.wat and Makefile.win.
