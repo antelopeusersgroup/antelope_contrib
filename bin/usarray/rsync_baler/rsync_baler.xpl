@@ -392,7 +392,7 @@ sub run_in_threads {
         #
         # Read messages from pipes
         #
-        test_nonblock_read(\%archive,\%logs,\%errors) ;
+        nonblock_read(\%archive,\%logs,\%errors) ;
 
         #
         # Stop if we are at max procs
@@ -463,7 +463,7 @@ sub run_in_threads {
     #nonblock_read(\%archive,\%logs,\%errors) while check_procs(@procs) ;
     while ( 1 ){
 
-        test_nonblock_read(\%archive,\%logs,\%errors) ;
+        nonblock_read(\%archive,\%logs,\%errors) ;
 
         last unless scalar check_procs(@procs) ;
 
@@ -579,13 +579,13 @@ sub test_log_print { # &log_print ( \%logs ) ;
     fork_notify('') ;
 }
 
-sub test_nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
+sub nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
     my ( $stas, $logs, $errors ) = @_ ;
     my ( $fh, $fileline, $line )  ;
 
-    fork_debug('test_nonblock_read()') ;
+    fork_debug('nonblock_read()') ;
     foreach my $sta (sort keys %$stas) {
-        fork_debug("test_nonblock_read($sta)") ;
+        fork_debug("nonblock_read($sta)") ;
 
         next unless $fh = $stas->{$sta}->{fh} ;
         fork_debug( $parent, "nonblock_read $sta    $stas->{$sta}->{fh}" );
@@ -713,11 +713,9 @@ sub get_data {
     #
     # Limit the downloads to some Megabytes in some days
     #
+    $d_data = total_data_downloaded($sta,$days) || 0.0 ;
+    fork_log("$sta downloaded $d_data Mbyts in last $days days.") ;
     while ( ($days, $mlimit) = each $pf{bandwidth_limits} ) {
-
-        $d_data = total_data_downloaded($sta,$days) || 0.0 ;
-        fork_log("$sta downloaded $d_data Mbyts in last $days days.") ;
-
         if ( $d_data > $mlimit ) {
             dbunlock("${path}/${sta}_baler") ;
             fork_die("$sta downloaded ( $d_data ) Mbts in the last $days days! STOP PROCESS.") ;
@@ -1108,14 +1106,11 @@ sub get_data {
         #
         # Limit the downloads to some Megabytes in some time (days)
         #
+        $d_data = total_data_downloaded($sta,$days) || 0.0 ;
+        fork_debug("$sta downloaded $d_data Mbyts in last $days days.") ;
         while ( ($days, $mlimit) = each $pf{bandwidth_limits} ) {
-
-            $d_data = total_data_downloaded($sta,$days) || 0.0 ;
-            fork_debug("$sta downloaded $d_data Mbyts in last $days days.") ;
-
             if ( $d_data > $mlimit ) {
-                fork_complain("$sta downloaded ( $d_data ) Mbts in the last $days days! STOP PROCESS.") ;
-                next FILE;
+                fork_die("$sta downloaded ( $d_data ) Mbts in the last $days days! STOP PROCESS.") ;
             }
 
         }
@@ -2379,7 +2374,7 @@ sub fork_log { # &fork_log ( $parent, $line ) ;
         return;
     }
 
-    elog_notify( $line );
+    elog_notify( $line ) if $opt_v;
 
     return;
 }
@@ -2406,7 +2401,7 @@ sub fork_debug { # &fork_debug ( $parent, $line ) ;
         return;
     }
 
-    elog_debug( $line );
+    elog_debug( $line ) if $opt_d ;
 
     return;
 }
