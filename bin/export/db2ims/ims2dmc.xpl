@@ -225,7 +225,7 @@ if ($opt_m) {
       # need to preserve orbxfer2.pf before changing dirs
       $pfstring = pf2string('orbxfer2.pf') ;
       $pfobject = "/tmp/foo_orbxfer2.pf" ;
-      $pftmp    = File::Temp->new( TEMPLATE=>'orbxfer2_XXX', DIR=>'/tmp/', SUFFIX=>'.pf' ) ;
+      $pftmp    = File::Temp->new( TEMPLATE=>'orbxfer2_XXXX', DIR=>'/tmp/', SUFFIX=>'.pf' ) ;
       $pffile   = $pftmp->filename ;
 
       pfnew($pfobject);
