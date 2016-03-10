@@ -210,12 +210,12 @@ else {
 #
 # Print error logs
 #
-( $nchild, $problems ) = &test_problem_print ( \%errors ) ;
+( $nchild, $problems ) = &problem_print ( \%errors ) ;
 
 #
 # Print logs
 #
-&test_log_print ( \%logs ) ;
+&log_print ( \%logs ) ;
 
 
 fork_log("started at ".strydtime($start)." on $host") ;
@@ -506,7 +506,7 @@ sub test_missing_children { # &missing_children ( $string, \%logs, \%errors ) ;
     return ;
 }
 
-sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) ;
+sub problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) ;
     my $errors = shift ;
     my ( @total ) ;
     my ( $nchild, $nerr, $nprob ) ;
@@ -514,10 +514,10 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
     $nchild = $nerr = $nprob = 0 ;
 
 
-    fork_complain('') ;
-    fork_complain('') ;
-    fork_complain("-------- Problems: --------") ;
-    fork_complain('') ;
+    elog_complain('') ;
+    elog_complain('') ;
+    elog_complain("-------- Problems: --------") ;
+    elog_complain('') ;
 
 
     for my $k ( sort keys %$errors) {
@@ -525,7 +525,7 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
         next if ( $errors->{$k}->{problems} == 0 ) ;
         $nchild++ ;
         $nprob++ ;
-        fork_complain("On child $k:") ;
+        elog_complain("On child $k:") ;
 
         @total = () ;
         for my $j ( keys %{$errors->{$k}} ) {
@@ -534,33 +534,33 @@ sub test_problem_print { # ( $nchild, $problems ) = &problem_print ( \%errors ) 
         }
 
         for my $j ( sort {$a <=> $b} @total ) {
-            fork_complain("   $j) $errors->{$k}->{$j}") ;
+            elog_complain("   $j) $errors->{$k}->{$j}") ;
             $nerr++ ;
         }
 
-        fork_complain('') ;
+        elog_complain('') ;
     }
 
-    fork_complain("No problems in script.") unless $nprob ;
+    elog_complain("No problems in script.") unless $nprob ;
 
-    fork_complain("-------- End of problems: --------") ;
-    fork_complain('') ;
+    elog_complain("-------- End of problems: --------") ;
+    elog_complain('') ;
 
     return ( $nchild, $nerr ) ;
 }
 
-sub test_log_print { # &log_print ( \%logs ) ;
+sub log_print { # &log_print ( \%logs ) ;
     my $logs = shift ;
     my ( @total ) ;
 
-    fork_notify('') ;
-    fork_notify('') ;
-    fork_notify("-------- Logs: --------") ;
-    fork_notify('') ;
+    elog_notify('') ;
+    elog_notify('') ;
+    elog_notify("-------- Logs: --------") ;
+    elog_notify('') ;
 
     for my $k ( sort keys %$logs) {
 
-        fork_notify("On child $k:") ;
+        elog_notify("On child $k:") ;
 
         @total = () ;
         for my $j ( keys %{$logs->{$k}} ) {
@@ -569,14 +569,14 @@ sub test_log_print { # &log_print ( \%logs ) ;
         }
 
         for my $j ( sort {$a <=> $b} @total ) {
-            fork_notify("   $j) $logs->{$k}->{$j}") ;
+            elog_notify("   $j) $logs->{$k}->{$j}") ;
         }
 
-        fork_notify('') ;
+        elog_notify('') ;
     }
 
-    fork_notify("-------- End of logs: --------") ;
-    fork_notify('') ;
+    elog_notify("-------- End of logs: --------") ;
+    elog_notify('') ;
 }
 
 sub nonblock_read { # &nonblock_read ( \%stas, \%logs, \%errors ) ;
@@ -1360,7 +1360,8 @@ sub get_data {
     delete $flagged{$_} foreach @total_downloads ;
 
     if ( scalar keys %flagged ) {
-        fork_complain('Missing: '.join(' ',sort keys %flagged)) ;
+        fork_complain('Missing: '.scalar keys %flagged . ' files') ;
+        fork_debug('Missing: '.join(' ',sort keys %flagged)) ;
     }
 
     #
@@ -1513,20 +1514,29 @@ sub download_file {
 
     # Verify size of file
     ($type, $size) = head( $url ) or fork_complain("ERROR $url: $!") ;
-    fork_debug("New downloaded file $where:   type:$type    size:$size") ;
 
-    # If size of file is not the expected
-    if ( -s $where != $size ) {
-        fork_complain("Problem with file size. $where Reported:$size") ;
-        move($where,"$path/trash/$file")
-            or fork_complain("Can't move $where to $path/trash/") ;
-        return ;
+    if ( $size ){
+
+        fork_debug("New downloaded file $where:   type:$type    size:$size") ;
+
+        # If size of file is not the expected
+        if ( -s $where != $size ) {
+            fork_complain("Problem with file size of $where Reported:$size") ;
+            move($where,"$path/trash/")
+                or fork_complain("Can't move $where to $path/trash/") ;
+            return ;
+        }
+
+    } else {
+
+        fork_complain("Can't get size of $url on HTTP call.") ;
+
     }
 
     # Size 591 is a text page of HTTP errors.
     if ( -s $where == 591 ) {
         fork_complain("Problem with the file. $where from $url") ;
-        move($where,"$path/trash/$file")
+        move($where,"$path/trash/")
             or fork_complain("Can't move $where to $path/trash/") ;
         return ;
     }
@@ -2387,7 +2397,7 @@ sub fork_notify { # &fork_notify ( $parent, $line ) ;
         return;
     }
 
-    elog_notify( $line );
+    elog_notify( $line ) if $opt_v;
 
     return;
 }
@@ -2414,7 +2424,7 @@ sub fork_complain { # &fork_complain ( $parent, $line ) ;
         return;
     }
 
-    elog_complain( $line );
+    elog_complain( $line ) if $opt_v;
 
     return  ;
 }
@@ -2429,8 +2439,8 @@ sub fork_die { # &fork_die ( $parent, $line ) ;
     } else {
 
         fork_complain( $line );
-        fork_log("done with station") ;
-        exit ;
+        fork_complain("end station thread") ;
+        exit 1;
 
     }
 }
