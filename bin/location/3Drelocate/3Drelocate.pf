@@ -30,7 +30,7 @@ vgrids_S                ${BASEDIR}/locate/fm3d/Vs/vgrids.in
 #
 #These parameters are used by both programs generate_ttimes_fm3d and 3Drelocate.
 ################################################################################
-earth_radius            6371.0 #Barring supernatural causes, this shouldn't change
+earth_radius            6371.0
 #This defines the grid of nodes for which travel-times are calculated
 propagation_grid &Arr{
     minlat      32.5     #Minimum latitude

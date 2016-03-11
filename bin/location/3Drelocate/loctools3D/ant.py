@@ -186,6 +186,13 @@ def get_null_value(table, field):
                     'stime': -1.00,\
                     'conf': 0.000,\
                     'commid': -1,\
+                    'lddate': -9999999999.99900},\
+            'emodel': {
+                    'orid': -1,\
+                    'emodelx': -1,\
+                    'emodely': -1,\
+                    'emodelz': -1,\
+                    'emodelt': -1,\
                     'lddate': -9999999999.99900}
             }
     return nulls[table][field]
@@ -394,6 +401,17 @@ def create_station_list(view):
         sta, lat, lon, elev = record.getv('sta', 'lat', 'lon', 'elev')
         station_list += [Station(sta, lat, lon, elev)]
     return station_list
+
+def write_emodel(emodel, dbout):
+    tbl_emodel = dbout.lookup(table='emodel')
+    emodel = map_null_values(tbl_emodel, emodel)
+    tbl_emodel.record = tbl_emodel.addnull()
+    tbl_emodel.putv(('orid', emodel.orid),
+                     ('emodelx', emodel.emodelx),
+                     ('emodely', emodel.emodely),
+                     ('emodelz', emodel.emodelz),
+                     ('emodelt', emodel.emodelt))
+    return 0
 
 def write_origerr(origerr, dbout):
     tbl_origerr = dbout.lookup(table='origerr')
