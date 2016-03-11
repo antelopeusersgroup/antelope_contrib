@@ -713,9 +713,9 @@ sub get_data {
     #
     # Limit the downloads to some Megabytes in some days
     #
-    $d_data = total_data_downloaded($sta,$days) || 0.0 ;
-    fork_log("$sta downloaded $d_data Mbyts in last $days days.") ;
     while ( ($days, $mlimit) = each $pf{bandwidth_limits} ) {
+        $d_data = total_data_downloaded($sta,$days) || 0.0 ;
+        fork_log("$sta downloaded $d_data Mbyts in last $days days.") ;
         if ( $d_data > $mlimit ) {
             dbunlock("${path}/${sta}_baler") ;
             fork_die("$sta downloaded ( $d_data ) Mbts in the last $days days! STOP PROCESS.") ;
@@ -1106,9 +1106,9 @@ sub get_data {
         #
         # Limit the downloads to some Megabytes in some time (days)
         #
-        $d_data = total_data_downloaded($sta,$days) || 0.0 ;
-        fork_debug("$sta downloaded $d_data Mbyts in last $days days.") ;
         while ( ($days, $mlimit) = each $pf{bandwidth_limits} ) {
+            $d_data = total_data_downloaded($sta,$days) || 0.0 ;
+            fork_debug("$sta downloaded $d_data Mbyts in last $days days.") ;
             if ( $d_data > $mlimit ) {
                 fork_die("$sta downloaded ( $d_data ) Mbts in the last $days days! STOP PROCESS.") ;
             }
