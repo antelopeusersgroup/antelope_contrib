@@ -1,0 +1,48 @@
+#
+# 1D velocity structure appropiate
+# for Sounth and Central regions in Alaska
+#
+name            SCAK_MODEL
+
+decay           4.0
+
+start_frequency 1
+
+#end_frequency   2048
+end_frequency   512
+
+samplerate      10
+
+# Phase velocity window
+cmax    10000
+c1      30
+c2      1.9
+cmin    1.7
+
+
+velocity_reduction   10.0
+
+
+distance_min   0
+
+distance_max   500
+
+distance_step  5
+
+
+
+
+# MODEL PARAMETERS
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+model &Literal{
+4.0     5.3     3.01    2.52    600     300
+1.0     5.6     3.18    2.61    600     300
+4.0     5.6     3.18    2.6     600     300
+5.0     6.2     3.52    2.78    600     300
+5.0     6.9     3.92    2.97    600     300
+5.0     7.4     4.20    3.12    600     300
+9.0     7.7     4.37    3.20    600     300
+16.0    7.9     4.49    3.26    600     300
+17.0    8.1     4.60    3.32    600     300
+400.0   8.3     4.72    3.37    600     300
+ }

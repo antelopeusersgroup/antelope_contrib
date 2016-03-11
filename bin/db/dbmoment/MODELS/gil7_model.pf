@@ -1,0 +1,47 @@
+#
+# 1D velocity structure appropiate
+# for the Sierra Nevada and
+# Southern California regions.
+#
+name            gil7-MODEL
+
+decay           6.0
+
+start_frequency 1
+
+end_frequency   512
+
+samplerate      4
+
+# Phase velocity window
+cmax    10000
+c1      30
+c2      1.2
+cmin    1.0
+
+
+velocity_reduction   8.0
+
+
+distance_min   0
+
+distance_max   500
+
+distance_step  5
+
+
+
+
+# MODEL PARAMETERS
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+model &Literal{
+1.0     3.2     1.5     2.28    600     300
+2.0     4.5     2.4     2.28    600     300
+1.0     4.8     2.78    2.58    600     300
+1.0     5.51    3.18    2.58    600     300
+9.0     6.21    3.4     2.68    600     300
+8.0     6.89    3.98    3.0     600     300
+60.0    7.83    4.52    3.26    600     300
+}
+
+pf_revision_time 1450217227
