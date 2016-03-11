@@ -1,5 +1,5 @@
 #
-# 1D velocity structure appropiate
+# 1D velocity structure appropriate
 # for the Aleutians region
 #
 name            ALEUT_MODEL
@@ -29,7 +29,7 @@ distance_step  5
 
 
 # MODEL PARAMETERS
-# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), density(g/cc), Q-alpha, Q-beta
 model &Literal{
 4.0     4.7     2.67    2.35    600     300
 4.0     5.3     3.01    2.52    600     300

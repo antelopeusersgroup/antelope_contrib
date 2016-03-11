@@ -94,12 +94,16 @@ seismic_channels = ["T", "R", "Z"]
 """
 Configure parameters from command-line.
 """
-usage = "Usage: dbmoment [-oxvd] [-m MODELNAME.pf] [-c min_variance] [-p pfname] [-z 'STA1:5,STA2:5'] [-s select] [-r reject] database evid/orid"
+
+usage = "\n\tUsage:\n"
+usage += "\t\tdbmoment [-xvd] [-m MODELNAME.pf] [-c min_variance] [-p pfname] [-z 'STA1:5,STA2:5'] [-s select] [-r reject] database ORID \n"
+usage += "\t\tdbmoment -e [-xvd] [-m MODELNAME.pf] [-c min_variance] [-p pfname] [-z 'STA1:5,STA2:5'] [-s select] [-r reject] database EVID \n"
+
 parser = OptionParser(usage=usage)
 
-# Use event id as ORID
-parser.add_option("-o", action="store_true", dest="orid",
-        default=False, help="event id is ORID")
+# Use provided ID as EVID
+parser.add_option("-e", action="store_true", dest="evid",
+        default=False, help="id is EVID")
 
 # Vebose output
 parser.add_option("-v", action="store_true", dest="verbose",
@@ -182,7 +186,7 @@ logging.info('loglevel=%s' % loglevel)
 
 
 # The main process runs on the "mt" class and the
-# "functions" import is needed by almost ALL modlues.
+# "functions" import is needed by almost ALL modules.
 try:
     from dbmoment.functions import *
     from dbmoment.mt import *
@@ -260,17 +264,15 @@ except Exception,e:
 
 
 """
-Need to start with a test to verify the "event" table.
-If we see the event table then we use the provided ID
-as an "evid". If no event table present then we use the
-ID as an "orid". If command line flag -o is used then the
-ID is forced to be ORID.
+Default is for ID as an "orid".
+If command line flag -e is used then the
+ID is forced to be EVID.
 """
 event_table = db.lookup(table='event')
 logging.info('Test if event table present: %s' % event_table.query(datascope.dbTABLE_PRESENT) )
 
 # Test if we see the table
-if not options.orid and event_table.query(datascope.dbTABLE_PRESENT):
+if options.evid and event_table.query(datascope.dbTABLE_PRESENT):
     steps = [ 'dbopen event' ]
     steps.extend([ 'dbjoin origin' ])
     steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % id ])
@@ -286,7 +288,7 @@ with datascope.freeing(db.process( steps )) as dbview:
     if not dbview.record_count:
         logging.error( 'No records found for id=[%s]' % id )
     elif dbview.record_count > 1:
-        logging.error( 'Found (%s) events with id=[%s]' % (dbview.record_count,id) )
+        logging.error( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,id) )
     else:
         dbview.record = 0
         orid = dbview.getv('orid')[0]
@@ -296,7 +298,7 @@ with datascope.freeing(db.process( steps )) as dbview:
 """
 The process will work on a hidden folder that we use
 to place data files and temp configuration files for our
-velocify model. The default value for this folder is .dbmoment
+velocity model. The default value for this folder is .dbmoment
 and should be present on the same directory that you are running
 the code on. Sometimes we might not clean the files at the end
 of the run to have some history and debugging information. Need
@@ -310,7 +312,7 @@ cleanup(tmp_folder)
 logging.info("Loading module [ DbMoment ]" )
 dbmnt = DbMoment(database, options, model_pf)
 
-# This should bring back all the information neeed for us to
+# This should bring back all the information need for us to
 # push this back to the database.
 logging.info("Process id [ %s ]" % orid )
 results = dbmnt.mt( orid )
@@ -336,7 +338,7 @@ for f in fields:
 
 
 if not len(to_insert):
-    logging.error('Nothing usefull on returned object form dbmnt.mt() => %s' % results)
+    logging.error('Nothing useful on returned object form dbmnt.mt() => %s' % results)
 
 
 db.close()

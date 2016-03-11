@@ -34,7 +34,7 @@ class Synthetics():
         try:
             if not os.path.exists(self.archive): os.makedirs(self.archive)
         except Exception,e:
-            self.logging.error('Cannot create direcotry (%s) %s => %s' % (self.archive,Exception,e))
+            self.logging.error('Cannot create directory (%s) %s => %s' % (self.archive,Exception,e))
 
         if not os.path.exists(self.archive):
             self.logging.error( 'Missing GF archive: %s' % self.archive )
@@ -141,7 +141,7 @@ class Synthetics():
 
             self.logging.debug('Test if depth: %f is above model layer: %f' % (self.depth, d))
             if d > self.depth:
-                # Add new leyer
+                # Add new layer
                 self.logging.debug('insert at: %s' % y)
                 self.D.insert( y, missing )
                 self.A.insert( y, self.A[y] )

@@ -3,17 +3,15 @@
 Folder is intended to facilitate the use of the original Dreger's code
 with the dbmoment tool. The original source and several helper functions
 are in this folder. Doing a "make; make install;" on the folder will
-produce all requred code and will add it to your Antelope folder
-structure. Then you can go to the directory with the example data and
-configuratoin file to run the example: " cd ../example/ "
+produce all required code and will add it to your Antelope's folder
+structure.
 
 FOLDERS:
 All folders here are require by the original code. There are commands on
 our Makefile to go into those folders and compile the code that we need.
 There should be no need for you to compile anything on them by hand.
     1) GETPAR
-    2) NRC
-    3) STDPLT
+    2) C_CODE
 
 ### OTHER CODE
 
@@ -23,7 +21,7 @@ of the dbmoment code against the original code example.
 
 This code will create a wfdisc table referencing the data for the examples in
 Dreger’s MTPACKAGE code. The Examples in the distribution are written in plain
-text (ascii) following Helmberger Format for seismograms. There is a small
+text (ascii) following Helmberger Format. There is a small
 header for every trace. The header contains the samplerate and the total number
 of samples. The start and endtime are omitted and we are forced to set the
 trace to start at 0 and end at (total_points * samplerate) time.

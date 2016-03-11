@@ -1,4 +1,9 @@
-REBUILD DBMASTER OF EXAMPLE
+# NOTES
+There should be no need to run this code. All is already
+included in the distribution. Including this here in case
+more information is needed on how this work was accomplished.
+
+BUILD DBMASTER OF EXAMPLE
 
     dbbuild -b example_1_dbmaster dbbuild.batch
 
@@ -9,7 +14,7 @@ First we set the location of the event to something simple:
     31.0000, -117.0000
 
 Then we calculate the rest based on the information that
-Dregers presents.
+Dreger presents.
 
 # NEED LOCATIONS ON AZIMUTHS 10, 40 and 50...
 # SAME DISTANCE TO ALL...
@@ -17,10 +22,10 @@ Dregers presents.
 km2deg(100)
      .898311481377436
 luapele:EXAMPLE reyes$ for d in 10 40 50; do  dbcalc -c "latitude(31.0000,-117.0000,0.898311,$d)" example_1.site; done
-     31.8845337397155 
-     31.6863733799645 
-     31.5749110315741 
+     31.8845337397155
+     31.6863733799645
+     31.5749110315741
 luapele:EXAMPLE reyes$ for d in 10 40 50; do  dbcalc -c "longitude(31.0000,-117.0000,0.898311,$d)" example_1.site; done
-     -116.816298059833 
-     -116.321437825202 
-     -116.192281632765 
+     -116.816298059833
+     -116.321437825202
+     -116.192281632765

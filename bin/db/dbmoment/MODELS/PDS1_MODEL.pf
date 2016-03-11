@@ -1,5 +1,5 @@
 #
-# 1D velocity structure appropiate
+# 1D velocity structure appropriate
 # used by PGC for the Washington area.
 #
 
@@ -33,7 +33,7 @@ distance_step  5
 
 
 # MODEL PARAMETERS
-# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), density(g/cc), Q-alpha, Q-beta
 model &Literal{
 4.00    2.29   2.14   1.00   225.0   100.0
 5.50    3.14   2.56   5.00   225.0   100.0

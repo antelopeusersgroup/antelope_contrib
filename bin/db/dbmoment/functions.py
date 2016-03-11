@@ -38,34 +38,6 @@ def fix_amplitud(tr, value):
 
     return tr
 
-#def filter_with_padding(tr, filter):
-#    logging.debug('Aplly filter %s' % (filter) )
-#
-#
-#    # Need to double our traces
-#    for rec in tr.iter_record():
-#
-#        data = array( rec.trdata() )
-#
-#        #ones = pylab.ones( len(data) )
-#        zeros_data = zeros( len(data) )
-#        #zeros_data = zeros( 200 )
-#        #ones_data *= data[0]
-#
-#        rec.trputdata( pylab.concatenate([zeros_data , data]) )
-#
-#
-#    # apply the filter
-#    tr.trfilter( filter )
-#
-#    # remove the padding
-#    for rec in tr.iter_record():
-#
-#        data = array( rec.trdata() )
-#        rec.trputdata( data[len(data)/2:] )
-#        #rec.trputdata( data[200:] )
-#
-#    return tr
 
 def add_trace_to_plot( data, style='r', label='signal', count=1, item=1, delay=0, jump=1):
 
@@ -184,11 +156,6 @@ def decimate_trace( tr, newsps ):
 
     try:
         tr.trfilter('DECIMATE BY %i' % oldsps)
-        # decimate data
-        #for f in decimate_file(oldsps,newsps):
-        #    full_path = os.environ['ANTELOPE'] + '/contrib/data/responses/' + f
-        #    logging.info('filter(DECIMATE %s)' % full_path)
-        #    tr.trfilter('DECIMATE %s' % full_path)
     except Exception,e:
         logging.error('decimate %s: %s' % (Exception,e))
 
@@ -212,53 +179,6 @@ def decimate_trace( tr, newsps ):
     tr.record = datascope.dbALL
 
     return tr
-
-
-def decimate_file(have=1,want=1):
-    """
-    Function to return needed response file for proper decimation.
-
-        DECIMATE fir_file
-            This implements a decimation filter. The decimation is performed
-            after applying one or more FIR anti-alias filters to  the  data.
-            The  FIR  filters  are  specified  in  the  standard  instrument
-            response  file,   fir_file   (the   format   is   specified   in
-            response(5)).   The  response  function  specified  in  fir_file
-            should only contain FIR stages with  their  decimation  factors.
-
-    Selecting a series of files with simple decimation factors to build our
-    new time-series with the requested samplerate.
-        % egrep "decimation factor" * |grep trident
-            (standard input):96:trident_100sps_fir1:# decimation factor     15
-            (standard input):97:trident_100sps_fir2:# decimation factor     10
-            (standard input):95:trident_1000sps_fir3:# decimation factor     2
-
-    """
-
-    logging.debug("FKRPROG.PY: decimate_file()")
-
-    factor = int(have/want)
-
-    logging.debug("FKRPROG.PY: decimate_file()  -  factor [%s]" % factor)
-
-    if factor == 1:
-        return []
-    elif factor == 2:
-        return ['F96CM']
-    elif factor == 4:
-        return ['F72BM']
-    elif factor == 10:
-        return ['F260M']
-    elif factor == 20:
-        return ['dec20to1']
-    elif factor == 40:
-        return ['dec40to1']
-    elif factor == 50:
-        return ['FS2D5M','F260M']
-    elif factor == 100:
-        return ['F260M','F260M']
-    else:
-        raise SystemExit('\n\nERROR: Cannot decimate by (%s) only [2,4,10,20,40,50,100]\n\n' % factor)
 
 
 def fix_exec(content):
