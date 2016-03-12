@@ -1,10 +1,8 @@
 # EXAMPLE_CODE
 
-Folder is intended to facilitate the use of the original Dreger's code
-with the dbmoment tool. The original source and several helper functions
-are in this folder. Doing a "make; make install;" on the folder will
-produce all required code and will add it to your Antelope's folder
-structure.
+Folder includes the original Dreger's code.  Doing a "make; make install;"
+on the folder will produce all required code and will add it to your
+Antelope's folder structure.
 
 FOLDERS:
 All folders here are require by the original code. There are commands on
