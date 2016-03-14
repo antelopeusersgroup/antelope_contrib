@@ -1,3 +1,12 @@
+#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+#
+#   Written by Juan Reyes
+#
+#   This software may be used freely in any way as long as
+#   the copyright statement above is not removed.
+
+
+
 # Try to make a generic logging setup for dbmoment.
 # This function will return an object
 # of the logging class. If none available with

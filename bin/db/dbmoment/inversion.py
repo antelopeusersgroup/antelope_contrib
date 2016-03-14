@@ -1,3 +1,11 @@
+#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+#
+#   Written by Juan Reyes
+#
+#   This software may be used freely in any way as long as
+#   the copyright statement above is not removed.
+
+
 from __main__ import *      # Get all the libraries from parent
 
 class MomentTensor():
@@ -22,29 +30,6 @@ class MomentTensor():
             'Rake':[],
             'Dip':[]
         }
-        #self.results = {
-        #    'Depth':None,
-        #    'zcor':{},
-        #    'variance':{},
-        #    'Mxx':None,
-        #    'Mxy':None,
-        #    'Mxz':None,
-        #    'Myy':None,
-        #    'Myz':None,
-        #    'Mzz':None,
-        #    'Mo':None,
-        #    'Mw':None,
-        #    'Strike':[],
-        #    'Rake':[],
-        #    'Dip':[],
-        #    'Pdc':None,
-        #    'Pclvd':None,
-        #    'Piso':None,
-        #    'Variance':None,
-        #    'VarRed':None,
-        #    'Var/Pdc':None,
-        #    'Quality':None
-        #}
 
     def set_depth(self, depth):
         self.depth = depth
@@ -144,29 +129,6 @@ class MomentTensor():
             'Rake':[],
             'Dip':[]
         }
-        #self.results = {
-        #    'Depth':None,
-        #    'zcor':{},
-        #    'variance':{},
-        #    'Mxx':None,
-        #    'Mxy':None,
-        #    'Mxz':None,
-        #    'Myy':None,
-        #    'Myz':None,
-        #    'Mzz':None,
-        #    'Mo':None,
-        #    'Mw':None,
-        #    'Strike':[],
-        #    'Rake':[],
-        #    'Dip':[],
-        #    'Pdc':None,
-        #    'Pclvd':None,
-        #    'Piso':None,
-        #    'Variance':None,
-        #    'VarRed':None,
-        #    'Var/Pdc':None,
-        #    'Quality':None
-        #}
 
         cmd = 'tdmt_invc'
 

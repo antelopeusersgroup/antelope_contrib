@@ -1,6 +1,6 @@
 #
-# 1D velocity structure appropiate
-# for Sounth and Central regions in Alaska
+# 1D velocity structure appropriate
+# for South and Central regions in Alaska
 #
 name            SCAK_MODEL
 
@@ -33,7 +33,7 @@ distance_step  5
 
 
 # MODEL PARAMETERS
-# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), dnesity(g/cc), Q-alpha, Q-beta
+# Layer: thickness(km), p-velocity(km/s), s-velocity(km/s), density(g/cc), Q-alpha, Q-beta
 model &Literal{
 4.0     5.3     3.01    2.52    600     300
 1.0     5.6     3.18    2.61    600     300

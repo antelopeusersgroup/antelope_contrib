@@ -1,0 +1,17 @@
+This license document relates to all files in this directory.
+
+Original TDMT_INV code by Douglas Dreger (Berkeley Seismological Lab.).
+
+Original Green's function computed with code by Chandan Saikia (URS).
+
+Original disclaimer statement on Dreger's documentation:
+    This software is freely distributed for non-commercial use. The reporting of
+    seismic moment tensor solutions obtained using this software on the WWW and in the
+    technical literature should include the following acknowledgement statement.
+
+Original acknowledgement statement:
+
+    Moment tensor computed using the tdmt-invc package developed by
+    Douglas Dreger of the Berkeley Seismological Laboratory, and Green’s
+    functions were computed using the FKRPROG software developed by
+    Chandan Saikia with URS.

@@ -1,3 +1,11 @@
+#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+#
+#   Written by Juan Reyes
+#
+#   This software may be used freely in any way as long as
+#   the copyright statement above is not removed.
+
+
 from __main__ import *      # _et all the libraries from parent
 
 
@@ -5,7 +13,7 @@ class DbMoment(Station):
     '''
     Main class for calculating moment tensors of events
 
-    This class is responsable for importing all modules needed for the
+    This class is responsible for importing all modules needed for the
     calculation of the MT. The main PF file "dbmoment.pf" will specify
     the names of the modules that we want and will have the main parameters
     for the inversion. The velocity model needed for the Synthetics is
@@ -324,7 +332,7 @@ class DbMoment(Station):
                         (sta, single_fit['zcor'][sta], single_fit['variance'][sta]) )
 
 
-        # Let's redifine total_stations with the sorted list of "good" stations
+        # Let's redefine total_stations with the sorted list of "good" stations
         total_stations = sorted(good_stations.keys(), key=lambda x: float(good_stations[x].variance), reverse=True )
 
 

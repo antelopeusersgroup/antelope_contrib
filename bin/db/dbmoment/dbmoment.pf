@@ -1,7 +1,7 @@
 # parameter file for dbmoment
 # In this version of the parameter file
 # we are going to replace the provided Python
-# libreries with a version that will prepare
+# libraries with a version that will prepare
 # the parameter for us to run the original code
 # compiled in Dreger's distribution. The data for
 # the event is included as an example and we just
@@ -25,7 +25,7 @@ clean_tmp       False
 # Name of the library to use
 # for Synthetic Function class
 synth_lib synthetics
-# Synthetics functions database foldrer. Database name
+# Synthetics functions database folder. Database name
 # will be created by the program.
 synth_db_folder    synthetics_db/
 
@@ -54,8 +54,8 @@ model_path  &Tbl{
 model_file SOCAL_MODEL.pf
 
 # Maximum number of stations to use in the inversion
-#     - Minimum of eight, one for each division 
-#       of the cardinal and intercardinal directions
+#     - Minimum of eight, one for each division
+#       of the cardinal and inter-cardinal directions
 sta_max 15
 
 sta_min 3
@@ -73,7 +73,7 @@ min_variance     70
 min_quality     2
 
 # Verify that the individual inversions are within
-# a threshold of the reported magnitud if available
+# a threshold of the reported magnitude if available
 # from the database.
 filter_individual_mw    True
 individual_mw_threshold    1.0
@@ -167,7 +167,7 @@ mag_10 &Arr{
 }
 
 
-# Test for some executables neened for the example code
+# Test for some executables needed for the example code
 find_executables     &Tbl{
     fortran_fkrprog
     fromHelm
