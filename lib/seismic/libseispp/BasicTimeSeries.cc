@@ -114,11 +114,22 @@ ostream& operator<<(ostream& os,BasicTimeSeries& y)
 	set<TimeWindow,TimeWindowCmp>::iterator g;
 	for(g=y.gaps.begin();g!=y.gaps.end();++g)
 	{
+            if(y.tref==relative)
+            {
 		os << "Data gap in TimeWindow=("
 			<< g->start
 			<<","
 			<<g->end
 			<<")"<<endl;
+            }
+            else
+            {
+		os << "Data gap in TimeWindow=("
+			<< strtime(g->start)
+			<<","
+			<<strtime(g->end)
+			<<")"<<endl;
+            }
 	}
 	return(os);
 }
