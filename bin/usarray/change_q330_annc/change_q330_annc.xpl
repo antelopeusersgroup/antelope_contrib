@@ -16,7 +16,7 @@ our ($dlsta, $inp, $ssident, $ip, $pfname, $str, $k, $kcnt, $getannc, $change, $
 our (@db, @db2, @dlevent, @dbstaq330, @dbq, @q330comm);
 
 our ($dbin, $targetname, $dbsub, $targetsub, $dlselect, $dlreject, $nrecs);
-our ($cmdto, $rqcmd, $row, $setannccmd, $umsg, $eeprom, $auth, $newip, $port_base);
+our ($cmdto, $rqcmd, $row, $setannccmd, $umsg, $eeprom, $auth, $newip, $port_base, $whodat);
 our ($status, $logdir, $logtime);
 
 our (%Pf,%Pfannc) = () ;
@@ -592,7 +592,13 @@ sub setannc  {		# setannc
   if (!$opt_n) {
 
 # send a message saying the annc is going to change
-  $umsg	=  "q330util $port_base $auth $cmdto umsg $dlinfo{ip},$dlinfo{ssident},0,'Changing POC/annc structure.  -- ANF'" ;
+  if ($Pf{umsg_institution}) {
+    $whodat =  "$Pf{umsg_institution}" . "(" . $ENV{USER} . ")" ;
+  } else {
+    $whodat =  "datacenter" . "(" . $ENV{USER} . ")"  ;
+  }
+
+  $umsg	=  "q330util $port_base $auth $cmdto umsg $dlinfo{ip},$dlinfo{ssident},0,'Changing POC/annc structure.  -- $whodat'" ;
 		
     if ($opt_v) {
        open (UMSG, "$umsg |" ) || die "umsg cmd failed for $dlinfo{ip},$dlinfo{ssident}: $! \n";
