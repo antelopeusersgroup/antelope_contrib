@@ -399,7 +399,7 @@ class Locator:
         if len(arrivals) < self.nobs:
             logger.info("[evid: %d] Only %d valid arrivals found. Skipping "\
                     "relocation." % (event.evid, len(arrivals)))
-            return None, None
+            return None, None, None
         stations = [arrival.sta for arrival in arrivals]
         predicted_travel_times = read_predicted_travel_times(arrivals,
                                                              tt_map_dir,
@@ -442,7 +442,7 @@ class Locator:
             u, tt_updated, P_residuals, S_residuals = result
             sdobs = 9.99 #THIS IS A DUMMY VALUE!!
         else:
-            return None, None
+            return None, None, None
         origerr = Origerr(sdobs)
         newloc = [newlon, newlat, newz] = \
                 [minlon + u[0] * dlon,
@@ -457,7 +457,7 @@ class Locator:
         if newloc[0] < min(qlon) or newloc[0] > max(qlon) or\
                 newloc[1] < min(qlat) or newloc[1] > max(qlat) or\
                 newloc[2] < min(qdep) or newloc[2] > max(qdep):
-            return None, None
+            return None, None, None
         logger.debug("[evid: %d] Sub-grid location inversion complete." %\
                 event.evid)
 #Update calculated travel times in Event object
@@ -472,16 +472,17 @@ class Locator:
         logger.debug("[evid: %d] Starting bootstrap error analysis" %\
                 event.evid)
         start_time = time.time()
-        emodelx, emodely, emodelz, emodelt = self.run_bootstrap(minx, miny, minz,
-                                                                qx, qy, qz,
-                                                                arrivals,
-                                                                predicted_travel_times,
-                                                                li,
-                                                                qlon, qlat, qdep,
-                                                                P_residuals, S_residuals,
-                                                                minlon, dlon,
-                                                                minlat, dlat,
-                                                                earth_rad, minr, dz)
+        emodelx, emodely, emodelz, emodelt, remark =\
+                self.run_bootstrap(minx, miny, minz,
+                                   qx, qy, qz,
+                                   arrivals,
+                                   predicted_travel_times,
+                                   li,
+                                   qlon, qlat, qdep,
+                                   P_residuals, S_residuals,
+                                   minlon, dlon,
+                                   minlat, dlat,
+                                   earth_rad, minr, dz)
         elapsed_time = time.time() - start_time
         logger.info("[evid: %d] Bootstrap error analysis took %.3f seconds" %\
                 (event.evid, elapsed_time))
@@ -500,10 +501,11 @@ class Locator:
                     'propagation_grid': self.propagation_grid}
         logger.debug('[evid: %d] Updating predicted arrival times.' %\
                 event.evid)
-        new_origin.update_predarr_times(cfg_dict, predicted_travel_times)
+        print new_origin.lat, new_origin.lon, new_origin.depth
+        #new_origin.update_predarr_times(cfg_dict, predicted_travel_times)
         logger.debug('[evid: %d] Predicted arrival times updated.' %\
                 event.evid)
-        return new_origin, emodel
+        return new_origin, emodel, remark
 
     def get_subgrid_loc_new(self,
                             ix,
@@ -724,7 +726,9 @@ class Locator:
         synth_arrs = []
         #for arrival
         locs = []
-        for i in range(100):
+        i, fcnt, tcnt = 0, 0, 0
+        while i < self.n_bootsamp:
+            tcnt += 1.
             for arrival in arrivals:
                 if arrival.phase == 'P':
                     residuals = P_residuals
@@ -747,6 +751,10 @@ class Locator:
                                               qlon, qlat, qdep)
             if result:
                 u, tt_updated, P_residuals, S_residuals = result
+                i += 1
+            else:
+                fcnt += 1.
+                continue
             newloc = [newlon, newlat, newz] = \
                     [minlon + u[0] * dlon,
                             minlat + u[1] * dlat,
@@ -757,6 +765,11 @@ class Locator:
             otime = u[3]
             #print newloc, otime
             locs += [(newlon, newlat, newz, otime)]
+        if fcnt > 0:
+            remark = Remark('%5.1f %% of bootstrap iteration(s) failed to '\
+                    'converge.' % ((fcnt / tcnt) * 100.))
+        else:
+            remark = None
         sigma_lon = np.array([loc[0] for loc in locs]).std()
         sigma_lat = np.array([loc[1] for loc in locs]).std()
         sigma_depth = np.array([loc[2] for loc in locs]).std()
@@ -793,7 +806,7 @@ class Locator:
             ax.set_xlabel('Time Bin [s]')
             ax.set_ylabel('Count')
             plt.show()
-        return emodelx, emodely, emodelz, emodelt
+        return emodelx, emodely, emodelz, emodelt, remark
 
     def get_subgrid_loc(self, ix, iy, iz, arrivals, pred_tts, li):
         '''
@@ -906,6 +919,7 @@ def uniq(input):
             output.append(x)
     return output
 
+
 class Station:
     '''
     A container class for station location data.
@@ -936,7 +950,7 @@ class Station:
         ret += 'elev:\t\t%s\n' % self.elev
         return ret
 
-class Event():
+class Event:
     '''
     A container class for earthquake event data. Mirrors the Event
     table of the CSS3.0 databse schema.
@@ -1305,11 +1319,14 @@ class Event():
                                 commid=commid,
                                 lddate=lddate)]
 
+class Remark:
+    def __init__(self, remark, lineno=1, commid=None, lddate=None):
+        self.remark = remark
+        self.lineno = lineno
+        self.commid = commid
+        self.lddate = lddate
+
 class Emodel:
-    '''
-    A container class for earthquake event data. Mirrors the Origerr
-    table of the CSS3.0 databse schema.
-    '''
     def __init__(self,
                  emodelx,
                  emodely,
