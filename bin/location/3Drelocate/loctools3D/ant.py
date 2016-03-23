@@ -193,6 +193,11 @@ def get_null_value(table, field):
                     'emodely': -1,\
                     'emodelz': -1,\
                     'emodelt': -1,\
+                    'lddate': -9999999999.99900},\
+            'remark': {
+                    'commid': -1,\
+                    'lineno': -1,\
+                    'remark': '-',\
                     'lddate': -9999999999.99900}
             }
     return nulls[table][field]
@@ -401,6 +406,17 @@ def create_station_list(view):
         sta, lat, lon, elev = record.getv('sta', 'lat', 'lon', 'elev')
         station_list += [Station(sta, lat, lon, elev)]
     return station_list
+
+def write_remark(remark, dbout):
+    tbl_remark = dbout.lookup(table='remark')
+    remark.commid = dbout.nextid('commid')
+    remark = map_null_values(tbl_remark, remark)
+    tbl_remark.record = tbl_remark.addnull()
+    tbl_remark.putv(('commid', remark.commid),
+                    ('lineno', remark.lineno),
+                    ('remark', remark.remark))
+    return remark.commid
+
 
 def write_emodel(emodel, dbout):
     tbl_emodel = dbout.lookup(table='emodel')
