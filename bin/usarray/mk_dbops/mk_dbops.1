@@ -542,7 +542,7 @@ or \fI-C\fP.
 Perhaps you are not running a prelim orb to segregate the data.  Check that you have your orbs 
 specified correctly.
 
-.IP "\fINo records in certified wf db matching N25K for chan=~/HNZ|[BH]HZ/\fP"
+.IP "\fINo records in certified wf db matching XXXX for chan=~/HNZ|[BH]HZ/\fP"
 Check the values of \fIwfdb\fP or possibly \fIchannel_match\fP in \fImk_dbops.pf\fP.  You likely are
 pointing at the wrong database where the waveforms reside.  Alternatively, if you are using the \fI-W\fP 
 option, you could be pointing at the wrong database.
@@ -606,6 +606,13 @@ to update the comm table.
 The deployment table subset has been modified to include the vnet.  This should
 deal with instances for example where you had a station operational as TA, it was
 adopted/transitioned to operations as N4, and then you have to close the station.
+
+As of March 2016, the values for the deployment.time and deployment.endtime fields 
+will use more accurate times based on finding first or last data values from
+a \fBtrloadchan(1)\fP.  This helps when waveforms are written out with \fBorb2wf(1)\fP
+rather than \fBorb2db(1)\fP because \fBorb2wf\fP produces a full daylong wfdisc record
+rather than the more detailed time and endtime found from an \fBorb2db\fP wfdisc
+record. 
 
 .SH AUTHOR
 Jennifer Eakins
