@@ -4,7 +4,7 @@ precision */
 #include   <stdio.h>
 #include   <stdlib.h> 
 #include   <math.h> 
-#include   "C_CODE/nrutil.h" 
+#include   "C_CODE/c_util.h" 
 
 #define SWAP(a,b) {double temp=(a);(a)=(b);(b)=temp;}
 void gaussj();

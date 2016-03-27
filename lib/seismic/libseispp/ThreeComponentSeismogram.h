@@ -322,6 +322,18 @@ method defined below.
 \param nu defines direction of x3 direction (longitudinal) as a unit vector with three components.
 **/
 	void rotate(double nu[3]);
+        /*! \brief Rotate horizontals by a simple angle in degrees.
+
+          A common transformation in 3C processing is a rotation of the 
+          horizontal components by an angle.  This leaves the vertical
+          (assumed here x3) unaltered.   This routine rotates the horizontals
+          by angle phi using with positive phi counterclockwise as in 
+          polar coordinates and the azimuth angle of spherical coordinates.
+
+          \param phi rotation angle around x3 axis in counterclockwise
+            direction (in radians).
+            */
+        void rotate(double phi);
 	// This applies a general transform with a 3x3 matrix.  
 	// User should set components_are_orthogonal true if they
 	// are so after this transformation.  The default assumes not

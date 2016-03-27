@@ -50,13 +50,13 @@ Initial setup
 
 ### For Bourne shells:
 
-    . /opt/antelope/5.3/setup.sh
+    . /opt/antelope/5.5/setup.sh
     cd $ANTELOPE
     git clone https://github.com/antelopeusersgroup/antelope_contrib.git src
 
 ### For C shells:
 
-    source /opt/antelope/5.3/setup.csh
+    source /opt/antelope/5.5/setup.csh
     cd $ANTELOPE
     git clone https://github.com/antelopeusersgroup/antelope_contrib.git src
 

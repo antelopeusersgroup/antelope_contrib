@@ -1,4 +1,4 @@
-LIB = nrcv2.a
+LIB = c_libs.a
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)

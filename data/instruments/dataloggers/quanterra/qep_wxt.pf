@@ -2,9 +2,9 @@ originator     Jennifer Eakins, UCSD
 last_modified  2011-06-15
 
 category	ANF 
-configuration	qep, w/ fixed vaisala wxt250 weather station
+configuration	qep, w/ fixed vaisala wxt520 weather station
 
-description	qep, w/ fixed vaisala wxt250 weather station
+description	qep, w/ fixed vaisala wxt520 weather station
 dfile 		qep 		# no response, qep = dummy
 
 soh		LWD_EP LWS_EP LKO_EP LDV_EP LIO_EP LRO_EP LRH_EP LKH_EP LEH_EP LEW_EP LER_EP
