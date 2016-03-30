@@ -414,24 +414,12 @@ class Locator:
         qx = range(0, nlon - 1)
         qy = range(0, nlat - 1)
         qz = range(0, nz - 1)
-        #minx, miny, minz, otime, ha = grid_search_abs(qx,
-        #                                              qy,
-        #                                              qz,
-        #                                              arrivals,
-        #                                              predicted_travel_times,
-        #                                              li)
-        #print minx, miny, minz, otime, ha
         minx, miny, minz, otime, ha = grid_search(qx,
                                                  qy,
                                                  qz,
                                                  arrivals,
                                                  predicted_travel_times,
                                                  li)
-        #print minx, Cminx
-        #print miny, Cminy
-        #print minz, Cminz
-        #print otime, Cotime
-        #print ha, Cha
         logger.debug("[evid: %d] Grid search complete." % event.evid)
 #Best-fit grid point
 #        glon = qlon[minx]
@@ -725,7 +713,7 @@ class Locator:
         return u_prime, tt_updated, P_residuals, S_residuals
 
     def run_bootstrap(self,
-                      minx, miny, minz,
+                      ominx, ominy, ominz,
                       qx, qy, qz,
                       arrivals,
                       pred_tts,
@@ -735,6 +723,7 @@ class Locator:
                       minlon, dlon,
                       minlat, dlat,
                       earth_rad, minr, dz):
+        SUBGRID_NX, SUBGRID_NY, SUBGRID_NZ = 10, 10, 5 #THIS NEEDS TO BE MOVED TO A PARATMER FILE!
         PLOT = False
         if PLOT:
             import matplotlib.pyplot as plt
@@ -762,7 +751,10 @@ class Locator:
             minx, miny, minz, otime, ha = grid_search(qx, qy, qz,
                                                         synth_arrs,
                                                         pred_tts,
-                                                        li)
+                                                        li,
+                                                        subgrid=(ominx, SUBGRID_NX,
+                                                                 ominy, SUBGRID_NY,
+                                                                 ominz, SUBGRID_NZ))
             result = self.get_subgrid_loc_new(minx, miny, minz,
                                               synth_arrs,
                                               pred_tts,
@@ -784,7 +776,7 @@ class Locator:
             otime = u[3]
             #print newloc, otime
             locs += [(newlon, newlat, newz, otime)]
-            print minx, miny, minz, otime, ha, newlon, newlat, newz
+            #print minx, miny, minz, otime, ha, newlon, newlat, newz
         if fcnt > 0:
             remark = Remark('%5.1f %% of bootstrap iteration(s) failed to '\
                     'converge.' % ((fcnt / tcnt) * 100.))
