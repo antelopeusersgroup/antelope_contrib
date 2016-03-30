@@ -2,7 +2,7 @@
 #include <float.h>
 
 static PyObject *
-core_tools_c_grid_search(PyObject *self, PyObject *args)
+core_tools_c_grid_search(PyObject *self, PyObject *args, PyObject *keywds)
 {
     PyObject* qx;
     PyObject* qy;
@@ -20,39 +20,98 @@ core_tools_c_grid_search(PyObject *self, PyObject *args)
     PyObject* estots;
     PyObject* resids;
     PyObject* temp;
+    PyObject* sgrd = Py_None;
     Py_ssize_t index;
-    int qxl;
-    int qyl;
-    int qzl;
     int arrsl;
     int i,j,k,l;
     int flag;
+    long qxm;
+    long qym;
+    long qzm;
     long ist, jst, kst;
     double estot;
     double msft;
     double bmsft;
     double bot;
+    static char *kwlist[] = {"qx", "qy", "qz", "arrs", "pred_tts", "lind", "subgrid", NULL};
 
-    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O",
-                          &PyList_Type, &qx,
-                          &PyList_Type, &qy,
-                          &PyList_Type, &qz,
-                          &PyList_Type, &arrs,
-                          &PyDict_Type, &pred_tts,
-                          &lind))
+    //if (!PyArg_ParseTuple(args, "O!O!O!O!O!O",
+    //                      &PyList_Type, &qx,
+    //                      &PyList_Type, &qy,
+    //                      &PyList_Type, &qz,
+    //                      &PyList_Type, &arrs,
+    //                      &PyDict_Type, &pred_tts,
+    //                      &lind))
+    //    return NULL;
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "O!O!O!O!O!O|O", kwlist,
+                                      &PyList_Type, &qx,
+                                      &PyList_Type, &qy,
+                                      &PyList_Type, &qz,
+                                      &PyList_Type, &arrs,
+                                      &PyDict_Type, &pred_tts,
+                                      &lind,
+                                      &sgrd) )
         return NULL;
-    ist = 0;
-    jst = 0;
-    kst = 0;
-    qxl = PyList_Size(qx);
-    qyl = PyList_Size(qy);
-    qzl = PyList_Size(qz);
+    if ( sgrd == Py_None ){
+        ist = 0;
+        jst = 0;
+        kst = 0;
+        qxm = PyList_Size(qx);
+        qym = PyList_Size(qy);
+        qzm = PyList_Size(qz);
+    }
+    else{
+        if ( PyList_Check(sgrd) ){
+            temp = PyList_AsTuple(sgrd);
+            Py_DECREF(sgrd);
+            sgrd = temp;
+
+        }
+        temp = PyNumber_Subtract(PyTuple_GetItem(sgrd, 0), PyTuple_GetItem(sgrd, 1));
+        if ( PyInt_AsLong(temp) < 0 )
+            ist = 0;
+        else
+            ist = PyInt_AsLong(temp);
+        Py_DECREF(temp);
+        temp = PyNumber_Add(PyTuple_GetItem(sgrd, 0), PyTuple_GetItem(sgrd, 1));
+        if ( PyInt_AsLong(temp) > PyList_Size(qx) )
+            qxm = PyList_Size(qx);
+        else
+            qxm = PyInt_AsLong(temp);
+        Py_DECREF(temp);
+
+        temp = PyNumber_Subtract(PyTuple_GetItem(sgrd, 2), PyTuple_GetItem(sgrd, 3));
+        if ( PyInt_AsLong(temp) < 0 )
+            jst = 0;
+        else
+            jst = PyInt_AsLong(temp);
+        Py_DECREF(temp);
+        temp = PyNumber_Add(PyTuple_GetItem(sgrd, 2), PyTuple_GetItem(sgrd, 3));
+        if ( PyInt_AsLong(temp) > PyList_Size(qy) )
+            qym = PyList_Size(qy);
+        else
+            qym = PyInt_AsLong(temp);
+        Py_DECREF(temp);
+
+        temp = PyNumber_Subtract(PyTuple_GetItem(sgrd, 4), PyTuple_GetItem(sgrd, 5));
+        if ( PyInt_AsLong(temp) < 0 )
+            kst = 0;
+        else
+            kst = PyInt_AsLong(temp);
+        Py_DECREF(temp);
+        temp = PyNumber_Add(PyTuple_GetItem(sgrd, 4), PyTuple_GetItem(sgrd, 5));
+        if ( PyInt_AsLong(temp) > PyList_Size(qz) )
+            qzm = PyList_Size(qz);
+        else
+            qzm = PyInt_AsLong(temp);
+        Py_DECREF(temp);
+    }
     arrsl = PyList_Size(arrs);
 
     bmsft = DBL_MAX;
-    for (i = ist; i < qxl; i++ ){
-        for (j = jst; j < qyl; j++ ){
-            for (k = kst; k < qzl; k++ ){
+    for (i = ist; i < qxm; i++ ){
+        for (j = jst; j < qym; j++ ){
+            for (k = kst; k < qzm; k++ ){
                 bot = 4.0;
                 estots = PyList_New(0);
                 resids = PyList_New(0);
@@ -113,7 +172,7 @@ core_tools_c_grid_search(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef CoreToolsCMethods[] = {
-    {"grid_search", core_tools_c_grid_search, METH_VARARGS,
+    {"grid_search", (PyCFunction)core_tools_c_grid_search, METH_VARARGS | METH_KEYWORDS,
      "Perform grid search for best-fitting hypocenter location."},
     {NULL, NULL, 0, NULL}
 };
