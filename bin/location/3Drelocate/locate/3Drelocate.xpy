@@ -37,8 +37,9 @@ def _main():
     from logging import getLogger
     from loctools3D.ant import pfile_2_cfg,\
                                    create_event_list,\
+                                   write_emodel,\
                                    write_origin,\
-                                   write_origerr
+                                   write_remark
     from loctools3D.core_tools import Locator,\
                                     parse_cfg,\
                                     verify_config_file
@@ -67,6 +68,7 @@ def _main():
                  prop_grid['minlon'] + (prop_grid['nlon'] - 1) * prop_grid['dlon']))
         view.free()
         view = tmp
+        print view.record_count
         if args.subset:
             #view = tbl_event.join('origin')
             tmp = view.subset(args.subset)
@@ -81,15 +83,18 @@ def _main():
             for event in event_list:
                 origin = event.preferred_origin
                 logger.info('[evid: %d] Relocating.' % event.evid)
-                origin, origerr = locator.locate_eq(origin)
+                origin, emodel, remark = locator.locate_eq(origin)
                 if origin == None:
                     logger.info('[evid: %d] Could not relocate.' % event.evid)
                     continue
                 logger.debug('[evid: %d] Writing origin to database.' %\
                         event.evid)
+                if remark:
+                    commid = write_remark(remark, db)
+                    origin.commid = commid
                 orid = write_origin(origin, db)
-                origerr.set_orid(orid)
-                write_origerr(origerr, db)
+                emodel.set_orid(orid)
+                write_emodel(emodel, db)
                 logger.debug('[evid: %d] Finished writing origin to '\
                         'database.' % event.evid)
     return 0
