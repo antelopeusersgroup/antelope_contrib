@@ -50,13 +50,13 @@ Initial setup
 
 ### For Bourne shells:
 
-    . /opt/antelope/5.3/setup.sh
+    . /opt/antelope/5.5/setup.sh
     cd $ANTELOPE
     git clone https://github.com/antelopeusersgroup/antelope_contrib.git src
 
 ### For C shells:
 
-    source /opt/antelope/5.3/setup.csh
+    source /opt/antelope/5.5/setup.csh
     cd $ANTELOPE
     git clone https://github.com/antelopeusersgroup/antelope_contrib.git src
 
@@ -70,11 +70,11 @@ defaults are provided - you must run the `localmake_config` command to set up
 these macros. Basic boot-strapping for `localmake` looks like this:
 
     # Install the localmake_config command from source
-    cd $ANTELOPE/src/lib/localmake_config
+    cd $ANTELOPE/src/first/localmake_config
     make Include
 
     # Install the localmake command
-    cd ../../bin/utility/localmake
+    cd ../localmake
     make Include; make; make install
     cd ../../
 

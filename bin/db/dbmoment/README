@@ -1,13 +1,28 @@
 # Moment Tensor Code
 
-### CODE DEPENDENCY:
-The demo code will make some shell calls to SAC. The SAC software
-is distributed for free by IRIS but you need to request a copy
-by hand on their website. http://ds.iris.edu/ds/nodes/dmc/forms/sac/
-For development I'm including a copy of the code on the subfolder
-NOT_TO_DISTRIBUTE tha you can install on your computer before running
-the demo code.
+#################################
+##                              #
+##  DBMOMENT CODE LIMITATIONS   #
+##                              #
+#################################
 
+The dbmoment tool implementation included in the distribution is
+the core component of the more complex TDMT_INV toolbox that is in
+use by multiple seismic networks. We completed this first step of
+mapping the source data and the final results values to Antelope.
+
+All data gets resampled to 1Hz before inversion. The instrument response
+will be convolved into the synthetic trace instead of deconvolving the
+real data element from the station.
+
+Inversion will have the same limitations as the original Dreger's
+code and users should be familiar with Dreger's documentation.
+
+
+### CODE DEPENDENCY:
+-NONE-
+We removed all external dependancies to SAC and all data processing
+is perform in Antelope.
 
 
 ### Building from source
@@ -17,16 +32,22 @@ You need to have $ANTELOPE defined in your environment. Then run...
     make install;
 
 ### Running the demo code
-The Dreger's source code is included in the distribution
-and we include a full example to work on the original
-code. The data needed for the example is located on
-the folder "EXAMPLE".
+The Dreger's inversion source code is included in the distribution
+and we include 2 full example to work on the original code.
+The data needed for the example is located on folders "EXAMPLE_1" and
+"EXAMPLE_2". You can run the code from the same repo or run the script
+*run_dbmoment_example* to automate the process.
 
 For this you have to:
 
-    make; make install;
-    dbmoment -d EXAMPLE/example_1 1
+    make clean; make; make install;
+    cd ~
+    run_dbmoment_example
 
+This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
+will run both examples. You will see several new folders.
 
-
-And you will see a new "mt" table on that TESTDB used.
+    .dbmoment       => Temp folder for calculations.
+    synthetics_db   => Includes all databases for synthetics.
+    dbmoment_images => Default folder to save the results in PNG files.
+    mt db tables    => Results will go into a new 'mt' table.

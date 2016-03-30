@@ -113,6 +113,7 @@ layer THICKNESS not DEPTH. */
 VelocityModel_1d::VelocityModel_1d(string fname,
 	string form, string property) throw(VelocityModel_1d_IOerror)
 {
+        const string base_error("VelocityModel_1d file constructor:  ");
 	int i;
 
 	ifstream input;
@@ -138,6 +139,8 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 			input >> f1;
 			input >> f2;
 			input >> f3;
+                        if(input.bad())
+                            throw SeisppError(base_error+"read error.   Check data file="+fname);
 			if(form=="rbh")
 				for(i=0;i<7;++i) input >> skipper;
 			if(input.eof()) break;
@@ -180,6 +183,8 @@ VelocityModel_1d::VelocityModel_1d(string fname,
                 stringstream ss(line);
                 ss>>modname;  ss>>property_name;
                 ss>>zin;   ss>>vin;   ss>>gradin;
+                if(input.bad())
+                            throw SeisppError(base_error+"read error.   Check data file="+fname);
                 if(i==0) 
                 {
                     mnlast=modname;

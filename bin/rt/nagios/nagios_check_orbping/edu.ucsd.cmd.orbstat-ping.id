@@ -28,7 +28,7 @@ will show up in the orbserver logs
 </parameters>
 
 <command-line>
-path = "/opt/antelope/$id/bin"
+path = "/opt/antelope/$id/contrib/bin"
 cmd = "nagios_check_orbping -o ${ADDRESS}:${Orb}"
 
 </command-line>

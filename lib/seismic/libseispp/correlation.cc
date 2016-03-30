@@ -57,6 +57,7 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 			z.s[i]/= (nrmx*nrmy);
 		}
 	}
+        z.live=true;
 	return z;
 }
 		
@@ -141,7 +142,71 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 			}
 		}
 	}
+        z.live=true;
 	return z;
 }
+TimeSeries correlation(ThreeComponentSeismogram& x, ThreeComponentSeismogram& y,
+        bool normalize)
+{
+	int i,k;
+	int lx,ly;
+	const string base_message("ThreeComponentSeismogra Correlation procedure:  ");
+
+	/* This assumes default constructors marks null trace dead */
+	if(!(x.live) || !(y.live) || x.has_gap() || y.has_gap()) return (TimeSeries());
+        lx=x.u.columns();
+        ly=y.u.columns();
+	if(ly<lx)
+	{
+	    if(SEISPP_verbose)
+	    {
+		cerr << base_message << "cannot compute cross correlation. "<<endl
+			<<"Number samples in target less than samples in correlator waveform"<<endl
+			<<"Correlator returns an empty (dead) ThreeComponentSeismogram object."<<endl;
+	    }
+	}
+	/* this comes from seispp and is used to regular question of
+	if sample rates match to some tolerance */
+	if(!SampleIntervalsMatch<ThreeComponentSeismogram>(x,y.dt) )
+	{
+		throw SeisppError(base_message+string(" sample rates do not match"));
+	}
+        /* We clone the correlation metadata from y.  This will leave debris since
+           the output is a TimeSeries and the parent is a ThreeComponentSeismogram.
+           Could cause downstream problems, but fixing would require a messy
+           editing. */
+	int lz=ly-lx;
+	TimeSeries z(dynamic_cast<Metadata&>(y),false);
+        z.s.reserve(lz);
+        /* Necessary to initialize stl container this way */
+        for(i=0;i<lz;++i) z.s.push_back(0.0);
+	z.t0=y.t0-x.t0;
+	z.dt=x.dt;  // probably not necessary, but forced initialization always good.
+	z.ns=lz;
+        /* Vector cross-correlation.   sum a each lag allows this simple formula
+           using ddot */
+	for(i=0;i<lz;++i)
+	{
+            z.s[i]=0.0;
+            for(k=0;k<3;++k)
+                z.s[i]+=ddot(lx,x.u.get_address(k,0),3,y.u.get_address(k,i),3);
+	}
+	if(normalize)
+	{
+                /* Caution - this depends upon a detail of how
+                   u is stored. In dmatrix object data are stored
+                   in a contiguous array and this assumes that*/
+		double nrmx=dnrm2(3*lx,x.u.get_address(0,0),1);
+		double nrmy;
+		for(i=0;i<lz;++i)
+		{
+			nrmy=dnrm2(3*lx,y.u.get_address(0,i),1);
+			z.s[i]/= (nrmx*nrmy);
+		}
+	}
+        z.live=true;
+	return z;
+}
+		
 		
 } // End SEISPP namespace declaration

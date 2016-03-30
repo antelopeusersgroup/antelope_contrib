@@ -956,6 +956,44 @@ void ThreeComponentSeismogram::rotate(double nu[3])
 	SphericalCoordinate xsc=UnitVectorToSpherical(nu);
 	this->rotate(xsc);
 }
+/* simplified procedure to rotate only zonal angle by phi radians. 
+ Similar to above but using only azimuth angle AND doing a simple
+ rotation in the horizontal plane.  Efficient algorithm only 
+ alters 0 and 1 components. */
+void ThreeComponentSeismogram::rotate(double phi)
+{
+	if( (ns<=0) || !live) return; // do nothing in these situations
+	int i;
+	double a,b;
+        /* Restore to cardinate coordinates */
+        this->rotate_to_standard();
+        a=cos(phi);
+        b=sin(phi);
+	tmatrix[0][0] = a;
+	tmatrix[1][0] = b;
+	tmatrix[2][0] = 0.0;
+	tmatrix[0][1] = -b;
+	tmatrix[1][1] = a;
+	tmatrix[2][1] = 0.0;
+	tmatrix[0][2] = 0.0;
+	tmatrix[1][2] = 0.0;
+	tmatrix[2][2] = 1.0;
+
+        /* Now multiply the data by this transformation matrix.  
+         Not trick in this i only goes to 2 because 3 component
+         is an identity.*/
+	double *work[2];
+	for(i=0;i<2;++i)work[i] = new double[ns];
+	for(i=0;i<2;++i)
+	{
+		dcopy(ns,u.get_address(0,0),3,work[i],1);
+		dscal(ns,tmatrix[i][0],work[i],1);
+		daxpy(ns,tmatrix[i][1],u.get_address(1,0),3,work[i],1);
+	}
+	for(i=0;i<2;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
+	components_are_cardinal=false;
+	for(i=0;i<2;++i) delete [] work[i];
+}
 void ThreeComponentSeismogram::apply_transformation_matrix(double a[3][3])
 {
 	if( (ns<=0) || !live) return; // do nothing in these situations

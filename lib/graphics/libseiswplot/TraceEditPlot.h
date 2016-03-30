@@ -1,5 +1,5 @@
 #ifndef _TRACEEDITPLOT_H_
-#define _TRACEEDITPLOT_H__
+#define _TRACEEDITPLOT_H_
 #include "SeismicPlot.h"
 #define SINGLE_TRACE_EDIT_MODE 1
 #define CUTOFF_EDIT_MODE 2
