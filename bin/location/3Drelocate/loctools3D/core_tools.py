@@ -21,9 +21,7 @@ from numpy import append,\
                   zeros
 import numpy as np
 import random
-#######TESTING
 from core_tools_c import grid_search
-#############
 
 logger = logging.getLogger(__name__)
 
