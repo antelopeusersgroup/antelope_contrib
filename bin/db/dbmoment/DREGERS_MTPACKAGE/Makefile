@@ -14,12 +14,12 @@ include $(ANTELOPEMAKE)
 DIRS= GETPAR C_CODE
 
 %.o: %.c
-	$(CC) $(cflags) -o $@ $< libget.a nrcv2.a
+	$(CC) $(cflags) -o $@ $< libget.a c_libs.a
 
 libget.a:
 	(cd GETPAR; make;)
 
-nrcv2.a:
+c_libs.a:
 	(cd C_CODE; make;)
 
 
@@ -44,5 +44,5 @@ fortran_fkrprog:
 wvint9:
 	$(FC) $(FFLAGS) -o $@ wvint9.f cwrite.c
 
-tdmt_invc: nrcv2.a  tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o  fitcheck2.o fmap_subs_linux.o
-	$(FC) $(FFLAGS) -o tdmt_invc tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o fitcheck2.o fmap_subs_linux.o nrcv2.a
+tdmt_invc: c_libs.a  tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o  fitcheck2.o fmap_subs_linux.o
+	$(FC) $(FFLAGS) -o tdmt_invc tdmt_invc_linux.o minvdbl_linux.o correl2b_linux.o readhelm.o fitcheck2.o fmap_subs_linux.o c_libs.a

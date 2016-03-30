@@ -1,7 +1,7 @@
 BIN = dbmoment run_dbmoment_example
 PF = dbmoment.pf
 
-MAN1 = dbmoment.1
+MAN1 = dbmoment.1 run_dbmoment_example.1
 
 DATADIR = python/dbmoment
 

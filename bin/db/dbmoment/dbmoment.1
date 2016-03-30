@@ -3,7 +3,10 @@
 dbmoment \- moment tensor calculation for given origin
 .SH SYNOPSIS
 .nf
-\fBdbmoment \fP[-vd] [-p \fIpfname\fP] \fIdatabase\fP \fIevid/orid\fP
+\fBdbmoment \fP[-vd] [-p \fIpfname\fP] \fIdatabase\fP \fIorid\fP
+.fi
+.nf
+\fBdbmoment \fP[-vd] [-p \fIpfname\fP] \fI-e\fP \fIdatabase\fP \fIevid\fP
 .fi
 
 .SH CODE LIMITATIONS
@@ -16,7 +19,7 @@ dbmoment \- moment tensor calculation for given origin
 The Moment Tensor calculation tool included in this distribution is
 the core component of the more complex Time-Domain Moment Tensor
 INVerse Code (TDMT_INVC) toolbox by Douglas Dreger of the Berkeley
-Seismological Laboratory that is in use by miltiple other networks.
+Seismological Laboratory that is in use by multiple other networks.
 The basics on the methods implemented here are described in Jost and
 Herrmann(1989).
 
@@ -46,8 +49,9 @@ of URS.
 
 .SH DESCRIPTION
 The \fBdbmoment\fP application calculates the moment tensor for a given
-event id (\fIevid\fP) for stations with arrivals associated to that
-event.
+origin id (\fIorid\fP) for stations with (or without) arrivals associated
+to that event. If not configured to use arrivals only then the system can
+calculate predicted arrivals to the stations.
 
 The time domain seismic moment tensor inversion software package written
 by Dreger (2003) and updated by Minson & Dreger (2008) has been repackaged
@@ -56,22 +60,22 @@ Real Time Technology (BRTT) Antelope Environmental Monitoring System.
 
 The new code-base utilizes the Python interface to Antelope (Lindquist et al., 2008)
 for data access and handling. The new code archives all data products into a
-Center for Seismic Studies (CSS) 3.0 schema table for easy access and distribution
+Center for Seismic Studies (CSS) 3.0 schema table \fBmt\fP for easy access and distribution
 of solutions. This tool is focused on analyzing local to regional earthquakes. A
 calibrated velocity model representative of the south-west continental United States
 is included and used for the included examples.
 
 The accompanying Green's functions are either read from the database or generated
-dynamically and stored in a database wfdisc. The tool uses a Frequency-Wavenumber
-integration program included in Dreger's original distribution.
+dynamically and stored in a dedicated database with a wfdisc. The tool uses a
+Frequency-Wavenumber integration program included in Dreger's original distribution.
 
 .SH OPTIONS
 .IP -v
 Verbose output. Opens final PNG with results.
 .IP -d
 Debug output. Opens final PNG with results.
-.IP -o
-The provided id in command-line is an ORID and \fBnot\fP an EVID
+.IP -e
+The provided id in command-line is an EVID and \fBnot\fP an ORID
 .IP -x
 Debug data processing. Makes an image on every data extraction and waits for user review.
 .IP "-f 'BW 0.02 4 0.05 4'"
@@ -143,8 +147,8 @@ avoid injecting bad quality inversions to the database.
 
 .IP \fIfilter_individual_mw\fP
 Each station is inverted individually and a max correlation and individual
-magnitud is produced. At this point we can avoid adding stations that are
-not matching the expected magnitud already present in the database.
+magnitude is produced. At this point we can avoid adding stations that are
+not matching the expected magnitude already present in the database.
 
 .SH EXAMPLE
 
@@ -158,9 +162,9 @@ to ZRT, calibrated, filtered and instrument response corrected.
 We also added a dbbuild batch file to put some generic metadata for stations.
 We decided for stations names [STA1, STA2, STA3]. The only reference to a
 location in the example is giving by the azimuth and distance
-form the event to each station. WE assigned a random location to the EVID=1 and
+form the event to each station. We assigned a random location to the EVID=1 and
 then calculated theoretical location to each station from that information.
-This created an even with 3 stations located at 100 km each and azimuths of [10,40,50].
+This created an event with 3 stations located at 100 km each and azimuths of [10,40,50].
 
 To run the experiment you need to compile the code. Run this on the code folder:
 
@@ -186,7 +190,7 @@ folder.
 .SH VELOCITY MODELS
 We are collecting all velocity models into a dedicated folder inside the repo
 and copying this folder to the contributed folder structure in the main code
-distribution folder. The models have a ParameterFile structure and are named in the same
+distribution folder. The files have a ParameterFile structure and are named in the same
 way any other parameter file is but are not included in the general
 repository for PF files in Antelope. The implications are that your dbmoment.pf
 file will need a full path to the velocity model file because it will not be in
@@ -201,6 +205,8 @@ events in similar locations.
  First step of the calculation is for the code to open the event database and
  extract all event information from the tables and identify the stations needed.
  This will look into any other reported magnitude and associated arrivals to the event.
+ Having a magnitude calculated for the event is a fundamental step that will change
+ the configuration selected for the analysis of the event.
 
  Then the code will extract the traces for each of the stations and will fetch
  synthetics for each of the stations. If the synthetics are not present
@@ -209,18 +215,18 @@ events in similar locations.
  valid stations will get a first round of individual inversions for this event.
 
  Then we subset for the stations with correlations above our limit and we order
- them starting with the best correlation. We select the first group for inversion
+ them starting with the best variance reduction. We select the first group for inversion
  to the max number set in the parameter file. After that first inversion the code
  will exit or continue to a secondary review if the recursive flag is set to True
  in the parameter file.
 
  If we are running recursively then we select the worst performer of the group and
- we evaluate the correlation. If we find the correlation under our threshold then
- we remove the site and we try to add a new station. We send the new group to the
- next inversion and we evaluate the results one more time.
+ we evaluate the variance reduction. If we find the variance reduction under
+ our threshold then we remove the site and we try to add a new station.
+ We send the new group to the next inversion and we evaluate the results one more time.
 
  This recursive method continues until:
-    1) All sites correlation are above our threshold limit
+    1) All sites variance reduction are above our threshold limit
     2) We run out of stations.
 
  Running on (-v) or (-d) mode will produce a plot at the end script that will
