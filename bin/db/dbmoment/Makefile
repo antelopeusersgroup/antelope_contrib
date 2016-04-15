@@ -28,3 +28,7 @@ include $(ANTELOPEMAKE)
 
 DIRS = DREGERS_MTPACKAGE MODELS
 
+$(DEST)/man/man1/dbmoment.1: dbmoment.1
+	installman -W dbmoment.1 $(DEST)/man/man1 
+	installman -W run_dbmoment_example.1 $(DEST)/man/man1 
+
