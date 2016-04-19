@@ -22,6 +22,18 @@ from optparse import OptionParser
 import antelope.datascope as datascope
 import antelope.stock as stock
 
+
+def parseepoch( t ):
+    '''
+    Parse epoch and covert to day only with no hours.
+    '''
+    if not int( t ) or t > stock.now():
+        t = stock.now()
+
+    return stock.str2epoch( stock.strdate( t ) )
+
+
+
 def configure():
     """Gather command line
     options"""
@@ -255,22 +267,10 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
         sys.exit( "* Cannot open database '%s'" % dbmaster )
 
 
-    dbm = db.lookup(table='site')
-    if not dbm.query('dbTABLE_PRESENT'):
-        sys.exit( "* Cannot open site table '%s'" % dbmaster )
-
-
-    test_net = db.lookup(table='snetsta')
-    if test_net.query('dbTABLE_PRESENT'):
-        if verbosity > 1:
-            print " - Join snetsta table"
-        dbm = dbm.join('snetsta', outer=True)
-        dbm = dbm.sort( ['snet','sta'] )
-    else:
-        if verbosity > 1:
-            print " * NOTE: Cannot join 'snetsta' table"
-        dbm = dbm.sort( ['sta'] )
-
+    dbm = db.lookup(table='deployment')
+    dbm = dbm.join('site', outer=True)
+    dbm = dbm.join('snetsta', outer=True)
+    dbm = dbm.sort( ['snet','sta'] )
 
     for nex in staexpr:
         if nex:
@@ -279,7 +279,7 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
     if not stock.yesno(inactive):
         if verbosity > 0:
             print "- Subsetting database '%s' for active stations" % dbmaster
-        dbm = dbm.subset('offdate == NULL || offdate > %s' % stock.yearday(stock.now()) )
+        dbm = dbm.subset('endtime == NULL || endtime > %s' % stock.now() )
 
 
     if dbm.query('dbRECORD_COUNT') < 1:
@@ -289,6 +289,8 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
             print "* ERROR: Dbmaster database (%s) generated view contains no records." % dbmaster
         sys.exit(1)
 
+
+
     sitestr = []
     openfolder = False
     activenet = ''
@@ -296,43 +298,32 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
     for i in range(dbm.query('dbRECORD_COUNT')):
         dbm.record = i
         per_sta_info = {}
-        #print "%s" % dbm.getv('snet')[0]
-        for f in fields:
-            per_sta_info[f] = dbm.getv(f)[0]
 
-            if f == 'ondate':
-                epoch = stock.str2epoch( str(per_sta_info['ondate']) )
+        per_sta_info['lat'] = dbm.getv('lat')[0]
+        per_sta_info['lon'] = dbm.getv('lon')[0]
+        per_sta_info['elev'] = dbm.getv('elev')[0]
 
-                if not int(epoch) or stock.now() < epoch:
-                    epoch = 0
+        time = parseepoch( dbm.getv('time')[0] )
+        if time < 0: continue
 
-                per_sta_info['time_xml'] = stock.epoch2str(epoch, "%Y-%m-%dT%H:%M:%SZ")
+        per_sta_info['time'] = time
+        per_sta_info['time_xml'] = stock.epoch2str(time, "%Y-%m-%dT%H:%M:%SZ")
 
-            if f == 'offdate':
-                epoch = stock.str2epoch( str( per_sta_info['offdate'] ) )
 
-                if epoch < 1 or stock.now() < epoch:
-                    epoch = stock.now()
+        endtime = parseepoch( dbm.getv('endtime')[0] )
+        if not int(endtime) or stock.now() < endtime:
+            endtime = stock.now()
+        per_sta_info['endtime'] = endtime
+        per_sta_info['endtime_xml'] = stock.epoch2str(endtime, "%Y-%m-%dT%H:%M:%SZ")
 
-                per_sta_info['endtime_xml'] = stock.epoch2str(epoch, "%Y-%m-%dT%H:%M:%SZ")
+        nownet = dbm.getv('snet')[0]
+        per_sta_info['snet'] = nownet
+        per_sta_info['sta'] = dbm.getv('sta')[0]
+        if nownet in stylestation:
+            stastyle = nownet
+        else:
+            stastyle = 'others'
 
-            if f == 'elev':
-                per_sta_info[f] = per_sta_info[f] * 1000 # convert km to meters for correct GE rendering
-
-            if f == 'snet':
-                nownet = per_sta_info[f]
-                if per_sta_info[f] in stylestation:
-                    stastyle = per_sta_info[f]
-                else:
-                    stastyle = 'others'
-
-        #if inactive:
-        #    if dbm.getv('offdate')[0] < 0: # dbNULL value is -1
-        #        stastyle = 'activeStation'
-        #    else:
-        #        stastyle = 'inactiveStation'
-        #else:
-        #    stastyle = 'activeStation'
         # Lets color them by network...
 
         if nownet != activenet and openfolder:
@@ -340,13 +331,18 @@ def get_site_records(dbmaster, stylestation, staexpr, fields, visibility, inacti
             openfolder = False
             activenet = ''
 
+        try:
+            fullname = "%s: %s" % (nownet,stylestation[nownet]['name'])
+        except:
+            fullname = "%s: - " % nownet
 
         if not openfolder:
             openfolder = True
             activenet = nownet
             sitestr.append("\t<Folder>")
             sitestr.append("\t\t<visibility>%s</visibility>" % visibility)
-            sitestr.append("\t\t<name>%s Stations</name>" % nownet)
+            sitestr.append("\t\t<name>%s</name>" % fullname )
+            sitestr.append("\t\t<styleUrl>#%s</styleUrl>\n" % nownet)
 
         sitestr.append(create_site(per_sta_info, visibility, stastyle))
 
