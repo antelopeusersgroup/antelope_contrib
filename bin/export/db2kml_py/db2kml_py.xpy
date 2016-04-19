@@ -64,7 +64,7 @@ def configure():
     if verbose:
         print "- Read configuration parameter file (pf): %s" % options.pf
 
-    pf = stock.pfupdate(options.pf)
+    pf = stock.pfread(options.pf)
 
     #if not options.pf:
     #    pfs_tuple = list(stock.pffiles('db2kml_py'))
