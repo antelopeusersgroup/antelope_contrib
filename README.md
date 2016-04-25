@@ -147,7 +147,8 @@ SUBDIR=/contrib
 include $(ANTELOPEMAKE)
 ```
 
-<h3 id="licensing">Licensing</h3>
+Licensing
+=========
 
 All code in this repository is expected to be readily distributed. In order for
 pre-compiled versions of your code to be included with the Antelope
