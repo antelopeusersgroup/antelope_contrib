@@ -8,7 +8,6 @@
 #
 #  Program setup
 #
-#{{{
 
 use sysinfo;
 use Datascope;
@@ -107,10 +106,8 @@ use List::Util qw[max min];
 
     exit 0;
 
-#}}}
 
 sub get_stations_from_db {
-#{{{
     my ($dlsta,$vnet,$net,$sta,$time,$endtime);
     my %sta_hash;
     my @db_1;
@@ -190,11 +187,9 @@ sub get_stations_from_db {
     eval { dbclose(@db_on);  };
 
     return \%sta_hash;
-#}}}
 }
 
 sub build_json {
-#{{{
     $stations = shift;
     my (@bw);
     my ($dfile);
@@ -272,19 +267,13 @@ sub build_json {
         @dbr_grouped = dbgroup(@dbr_sorted,'status');
 
 
-        #elog_notify("FIELD: ".$_) foreach dbquery(@dbr_grouped,'dbTABLE_FIELDS');
-        #$recs =  dbquery(@dbr_grouped,'dbRECORD_COUNT');
-        #for ( $dbr_grouped[3] = 0 ; $dbr_grouped[3] < $recs; @dbr_grouped[3]++ ) {
-        #elog_notify( $_ ) foreach dbgetv(@dbr_grouped,qw/status bundle/);
-        #}
-
-
 
         $f = dbfind(@dbr_grouped, 'status =~ /flagged/', -1);
         $e = dbfind(@dbr_grouped, 'status =~ /error-download/', -1);
         $d = dbfind(@dbr_grouped, 'status =~ /downloaded/', -1);
+        $s = dbfind(@dbr_grouped, 'status =~ /(skipped|avoid)/', -1);
 
-        #elog_notify("d: $d f: $f e: $e");
+
 
         #
         # Get list of flagged files
@@ -332,16 +321,9 @@ sub build_json {
                 $total_7 += $bytes if $time > $last_7;
                 $total_30 += $bytes if $time > $last_30;
 
-                #elog_notify("$time ?> $last_7");
-                #elog_notify("true") if $endtime > $last_7;
-                #elog_notify("total_7 = $total_7");
-                #elog_notify("$endtime ?> $last_30");
-                #elog_notify("true") if $endtime > $last_30;
-                #elog_notify("total_30 = $total_30");
 
             }
         }
-        #elog_die('end');
 
         #
         # Check for missing files
@@ -359,6 +341,30 @@ sub build_json {
 
         $text .= ",\n\t\"missing\": " . scalar(@missing);
         $text .= ",\n\t\"downloaded\": " . scalar(@downloaded);
+
+        #
+        # Get list of skipped files
+        #
+        if ( $s >= 0 ) {
+            @dbr_grouped[3] = $s;
+            @dbr_temp= split(" ",dbgetv(@dbr_grouped,"bundle"));
+            for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
+                $dbr_temp[3] = $t;
+                push @skipped, dbgetv (@dbr_temp, 'dfile');
+            }
+        }
+        if ( scalar @skipped ) {
+
+            @skipped =  grep { $_ = "\"$_\"" } @skipped;
+            $text .= ",\n\t\"skipped_files\": [" . join(',',@skipped) . "]";
+
+        }
+        else {
+            $text .= ",\n\t\"skipped_files\": 0";
+        }
+
+        elog_notify("Station $temp_sta skipped files:[@skipped]") if $opt_v;
+
 
         if ( $last_file  and $last_time ) {
             $last_time = epoch2str($last_time,"%Y-%m-%d");
@@ -412,32 +418,6 @@ sub build_json {
             $text .= ",\n\t\"error-download\": \"UNKNOWN\"";
         }
 
-        #
-        # Get list by month
-        #
-        #$text .= ",\n\t\"files\": {";
-
-        #@queries = build_time_regex($temp_sta,$stations->{$temp_sta}->{dates});
-
-        #foreach (@queries) {
-
-        #    #
-        #    # Open db and search for files here
-        #    #
-        #    @dbr_temp= dbsubset ( @dbr, "dfile =~ /($_)/ && status == 'downloaded'");
-        #    $nrecords = dbquery(@dbr_temp, 'dbRECORD_COUNT') ;
-
-        #    $text .= " \"$_\": \"$nrecords\",";
-        #    dbfree(@dbr_temp);
-
-        #}
-
-        #dbclose(@dbr);
-
-
-        #$text .= "{" if (chop($text) eq '{');
-
-        #$text .= "}\n";
 
         # for Kbytes
         $total_7 = sprintf("%0.2f", $total_7/1024);
@@ -462,11 +442,9 @@ sub build_json {
     export("\n}");
     close( JSON ) if $json;
 
-#}}}
 }
 
 sub export {
-#{{{
     $text = shift;
 
     if ( $json ) {
@@ -476,11 +454,9 @@ sub export {
     else {
         elog_notify($text);
     }
-#}}}
 }
 
 sub build_time_regex {
-#{{{
     my $sta      = shift;
     my @dates    = shift;
     my $folder   = shift || '';
@@ -563,11 +539,9 @@ sub build_time_regex {
 
     return sort keys %queries;
 
-#}}}
 }
 
 sub open_db {
-#{{{
     my $sta = shift;
     my @db;
 
@@ -598,11 +572,9 @@ sub open_db {
     return unless @db;
     return @db;
 
-#}}}
 }
 
 sub read_local {
-#{{{
     my $sta = shift;
     my %list;
     my $file;
@@ -639,11 +611,9 @@ sub read_local {
 
     return sort keys %list;
 
-#}}}
 }
 
 sub prepare_path {
-#{{{
     my $station  = shift;
 
     elog_die("prepare_path(). Cannot produce path! We need a station name...") unless $station;
@@ -652,11 +622,9 @@ sub prepare_path {
 
     elog_notify("$sta path: $path ") if $opt_v;
     return $path;
-#}}}
 }
 
 sub average {
-#{{{
     # usage: $average = average(\@array)
     my ($array_ref) = @_;
     my $sum;
@@ -664,11 +632,9 @@ sub average {
     return unless $count;
     foreach (@$array_ref) { $sum += $_; }
     return $sum / $count;
-#}}}
 }
 
 sub median {
-#{{{
     # usage: $median = median(\@array)
     my ($array_ref) = @_;
     my $count = scalar @$array_ref;
@@ -687,11 +653,9 @@ sub median {
     else {
         return ($array[$count/2] + $array[$count/2 - 1]) / 2;
     }
-#}}}
 }
 
 sub unique_array {
-#{{{
     # usage 1: $unique = unique_array(\@array)
     # usage 2: $unique = unique_array(\@array,\@delete)
     my $original = shift;
@@ -701,11 +665,9 @@ sub unique_array {
     @temp{@$original} = ();
     delete @temp {@$delete} if $delete;
     return sort keys %temp;
-#}}}
 }
 
 __END__
-#{{{
 =pod
 
 =head1 NAME
@@ -772,4 +734,3 @@ The script is simple and may fail if used outside ANF-TA installation.
 Juan C. Reyes <reyes@ucsd.edu>
 
 =cut
-#}}}
