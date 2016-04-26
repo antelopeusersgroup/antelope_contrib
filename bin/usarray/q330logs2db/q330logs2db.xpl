@@ -133,7 +133,7 @@ if ( $opt_s && ( ! $opt_S || ! -e $statefile ) ) {
    }
    elog_notify("starting from pktid: $pktstart\n");
 
-} elsif ($opt_s && $opt_S) {	# implies there is an $opt_S too
+} elsif ($opt_S) {	# implies there is an $opt_S too
    elog_complain("Using state file for first pktid\n");
    elog_complain("State file overrides -s $opt_s \n") if $opt_s ;
 
