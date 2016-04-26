@@ -328,7 +328,6 @@ sub cmdline { # &cmdline();
     $cmdline = $cmdline . " -S $opt_S " if $opt_S;
     $cmdline = $cmdline . " -s $opt_s " if $opt_s;
     $cmdline = $cmdline . " @ARGV \n" ;
-            \nUSAGE: $0 [-p pf] [-v] [-q] [-X] [-l match_logname] [-S state] [-s {start_time|OLDEST}] orb db 
 
     return;
 }
