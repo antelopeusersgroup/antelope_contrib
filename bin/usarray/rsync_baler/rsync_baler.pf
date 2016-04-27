@@ -12,6 +12,8 @@ max_child_run_time      36000               #stop downloading files
                                             #after this number of
                                             #seconds. 0 = disable.
 
+limit_innactive_age     15552000   # Max time to work on closed sites. Skip after this age. 180 days
+
 limit_history           0   # in secs. 0 to avoid limit
 
 use_md5                 True
