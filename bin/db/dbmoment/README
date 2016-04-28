@@ -25,13 +25,6 @@ We removed all external dependencies to SAC and all data processing
 is perform in Antelope.
 
 
-### Building from source
-You need to have $ANTELOPE defined in your environment. Then run in
-this directory...
-
-    make;
-    make install;
-
 ### Running the demo code
 The Dreger's inversion source code is included in the distribution
 and we include 2 full examples from the original distribution.
@@ -39,16 +32,13 @@ The data needed for the example is located on folders "EXAMPLE_1" and
 "EXAMPLE_2". You can run the code from the same repo or run the script
 *run_dbmoment_example* to automate the process.
 
-For this you have to:
+For this you have to (folder is optional, default to working directory):
 
-    make clean; make; make install;
-    cd ~
-    run_dbmoment_example
+    run_dbmoment_example [/tmpfolder/]
 
-This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
+This will go or create an example folder (working directory or other) and
 will run both examples. You will see several new folders.
 
     .dbmoment       => Temp folder for calculations.
     synthetics_db   => Includes all databases for synthetics.
     dbmoment_images => Default folder to save the results in PNG files.
-    mt db tables    => Results will go into a new 'mt' table.
