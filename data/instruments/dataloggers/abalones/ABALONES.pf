@@ -2,14 +2,14 @@ originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
 last_modified  2013-08
 
 category    OBSIP
-configuration   ABALONES-4x4
+configuration   ABALONES
 
-description ABALONES-4x4
-dfile ABALONES-4x4
+description ABALONES
+dfile ABALONES
 
 
 info    &Literal{
-ABALONES-4x4, OBSIP SIO
+ABALONES, OBSIP SIO
 }
 
 streams 4000sps 2000sps 1000sps 500sps 250sps 200sps 125sps 100sps 50sps 40sps 25sps 20sps 10sps 5sps 1sps

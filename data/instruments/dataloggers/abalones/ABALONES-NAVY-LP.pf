@@ -2,14 +2,14 @@ originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
 last_modified  12-2014
 
 category    OBSIP
-configuration   ABALONES-4x4-NAVY-LP
+configuration   ABALONES-NAVY-LP
 
-description ABALONES-4x4-NAVY-LP
-dfile ABALONES-4x4-NAVY-LP
+description ABALONES-NAVY-LP
+dfile ABALONES-NAVY-LP
 
 
 info    &Literal{
-ABALONES-4x4-NAVY-LP-FILTERED, OBSIP SIO
+ABALONES-NAVY-LP FILTERED, OBSIP SIO
 }
 
 #
