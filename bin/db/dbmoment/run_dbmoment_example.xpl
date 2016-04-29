@@ -41,7 +41,7 @@ print "\nCHANGE TO DIRECTORY: [$path]\n";
 
 # TEST FOR EXAMPLE DIRECTORY
 unless ( -d $path ) {
-    if ( askyn( "DO YOU WANT TO CREATE DIRECTORY [$path] ?") ) {
+    if ( askyn( "DO YOU WANT TO CREATE DIRECTORY [$path] ? ") ) {
         makedir( $path ) ;
     }
 }
@@ -66,12 +66,19 @@ $example_2 = "$ENV{ANTELOPE}/contrib/example/dbmoment/EXAMPLE_2/example_2" ;
 die( "\n*ERROR* MISSING EXAMPLE DATA: [$example_1]\n") unless -f $example_1 ;
 die( "\n*ERROR* MISSING EXAMPLE DATA: [$example_2]\n") unless -f $example_2 ;
 
+print "\nCOPY [$example_1] TO [$path/]\n";
+system( "dbcp $example_1 $path/" ) ;
+print "\nCOPY [$example_2] TO [$path/]\n";
+system( "dbcp $example_2 $path/" ) ;
+
 
 # RUN EXAMPLES
 foreach ( 1, 2) {
     print "\nSTART EXAMPLE $_\n";
-    print "\ndbmoment -v $ENV{ANTELOPE}/contrib/example/dbmoment/EXAMPLE_$_/example_$_ 1\n";
-    system( "dbmoment -v $ENV{ANTELOPE}/contrib/example/dbmoment/EXAMPLE_$_/example_$_ 1" );
+    die( "\n*ERROR* MISSING EXAMPLE DATA: [$path/example_$_]\n") unless -f "$path/example_$_" ;
+    print "\ndbmoment -v example_$_ 1\n";
+    system( "dbmoment -v example_$_ 1" );
+    system( "qtmapevents  example_$_ &" );
     print "\nDONE WITH EXAMPLE $_\n";
 }
 
