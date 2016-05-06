@@ -257,6 +257,7 @@ void SeismicPlot::plot(TimeSeriesEnsemble& d,bool block_for_event)
         //cerr <<"starting event handler"<<endl;
         if(!EventLoopIsActive) 
             this->launch_Xevent_thread_handler();
+        XmUpdateDisplay(this->toplevel);
     }
     catch(...){throw;}
 }
@@ -360,6 +361,7 @@ void SeismicPlot::plot(ThreeComponentEnsemble& d,bool block_for_event)
             block_till_exit_pushed=false;
         if(!EventLoopIsActive) 
             this->launch_Xevent_thread_handler();
+        XmUpdateDisplay(this->toplevel);
     }catch(...){throw;}
 }
 void EventHandler(SeismicPlot *plot_handle)
