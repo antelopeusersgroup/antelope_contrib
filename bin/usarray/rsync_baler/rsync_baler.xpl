@@ -230,7 +230,8 @@ fork_die("Can't work without (JSON) url pf[json_url] => $pf{json_url}")
 # CHILD PROCESS...  Get data from the stations
 #
 if ( $get_sta ) {
-    exit get_data($get_sta) ; # CHILD PROCESS WILL END HERE!!!!
+    get_data($get_sta) ; # CHILD PROCESS WILL END HERE!!!!
+    exit 0;
 }
 
 
@@ -698,7 +699,7 @@ sub get_data {
     # value limit_innactive_age in parameter
     # file.
     #
-    if ( $pf{limit_innactive_age}  and $endtime > 0) {
+    if ( $pf{limit_innactive_age}  and int($endtime) > 0) {
         if ( $pf{limit_innactive_age} < (now() - $endtime)  ) {
             fork_notify("STOP $sta, more than $pf{limit_innactive_age} seconds old.") ;
             exit ;
@@ -1360,7 +1361,7 @@ sub get_data {
 
     delete $flagged{$_} foreach @total_downloads ;
 
-    if ( scalar keys %flagged ) {
+    if ( scalar keys %flagged > 0 ) {
         fork_complain('Missing: '.scalar keys %flagged . ' files') ;
         fork_debug('Missing: '.join(' ',sort keys %flagged)) ;
     }
@@ -1383,7 +1384,7 @@ sub get_data {
 
     dbunlock("${path}/${sta}_baler") ;
 
-    return ;
+    return 0;
 
 }
 
