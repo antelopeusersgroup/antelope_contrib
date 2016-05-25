@@ -71,6 +71,7 @@ char           *wfdir;
     int             num_samps;	       /* Number of samples in the segment */
     float          *seg_data;	       /* Measured segment data            */
     char           *station;	       /* Station name                     */
+    char           *netstachanloc;     /* netcode, station, channel, loc   */
     char           *channel;	       /* Channel name                     */
     double          tstart;	       /* Segment start-time               */
     struct date_time human_time;       /* Epoch time for humans            */
@@ -97,7 +98,8 @@ char           *wfdir;
     /* SCV station specifiers */
     SCV_get ((char *) scv, SCV_NSEGS, &nsegs,
 	     SCV_STA, &station,
-	     SCV_CHAN, &channel, NULL);
+	     SCV_CHAN, &channel,
+	     SCV_NETSTACHANLOC, &netstachanloc,NULL);
 
     /* Write out each segment to a new sac file */
     trace = SCV_get_rawtrace (scv, tstrt, tend);
@@ -228,6 +230,10 @@ char           *wfdir;
 	/* kstnm - station name */
 	sprintf (character, "%-8.8s", station);
 	strncpy (sach.kstnm, character, 8);
+
+	/* knetwk - network station */
+	sprintf (character, "%-8.8s", strtok(netstachanloc,"_"));
+	strncpy (sach.knetwk, character, 8);
 
 	/* stla / stlo / stel - station layout */
 	SCV_get ((char *) scv,
