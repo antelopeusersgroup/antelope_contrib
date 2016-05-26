@@ -271,7 +271,7 @@ sub build_json {
         $f = dbfind(@dbr_grouped, 'status =~ /flagged/', -1);
         $e = dbfind(@dbr_grouped, 'status =~ /error-download/', -1);
         $d = dbfind(@dbr_grouped, 'status =~ /downloaded/', -1);
-        $s = dbfind(@dbr_grouped, 'status =~ /(skipped|avoid)/', -1);
+        #$s = dbfind(@dbr_grouped, 'status =~ /(skipped|avoid)/', -1);
 
 
 
@@ -345,25 +345,25 @@ sub build_json {
         #
         # Get list of skipped files
         #
-        if ( $s >= 0 ) {
-            @dbr_grouped[3] = $s;
-            @dbr_temp= split(" ",dbgetv(@dbr_grouped,"bundle"));
-            for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
-                $dbr_temp[3] = $t;
-                push @skipped, dbgetv (@dbr_temp, 'dfile');
-            }
-        }
-        if ( scalar @skipped ) {
+        #if ( $s >= 0 ) {
+        #    @dbr_grouped[3] = $s;
+        #    @dbr_temp= split(" ",dbgetv(@dbr_grouped,"bundle"));
+        #    for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
+        #        $dbr_temp[3] = $t;
+        #        push @skipped, dbgetv (@dbr_temp, 'dfile');
+        #    }
+        #}
+        #if ( scalar @skipped ) {
 
-            @skipped =  grep { $_ = "\"$_\"" } @skipped;
-            $text .= ",\n\t\"skipped_files\": [" . join(',',@skipped) . "]";
+        #    @skipped =  grep { $_ = "\"$_\"" } @skipped;
+        #    $text .= ",\n\t\"skipped_files\": [" . join(',',@skipped) . "]";
 
-        }
-        else {
-            $text .= ",\n\t\"skipped_files\": 0";
-        }
+        #}
+        #else {
+        #    $text .= ",\n\t\"skipped_files\": 0";
+        #}
 
-        elog_notify("Station $temp_sta skipped files:[@skipped]") if $opt_v;
+        #elog_notify("Station $temp_sta skipped files:[@skipped]") if $opt_v;
 
 
         if ( $last_file  and $last_time ) {
