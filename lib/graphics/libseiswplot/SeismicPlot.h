@@ -157,6 +157,8 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         XtAppContext AppContext;
         friend class TraceEditPlot;
         friend class TimeWindowPicker;
+        friend class GenericTimePicker;
+        friend class ThreeCEnsembleTimePicker;
     protected:
         /* When true calls to plot will block until until the exit button is
            pushed.   When false a call to plot immediately returns. */
