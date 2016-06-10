@@ -8,7 +8,10 @@ using namespace std;
 using namespace SEISPP;
 namespace SEISPP
 {
+/*! Used to store times indexed by a station name. */
 typedef map<string,double> StaTimes;
+/*! Used to store times indexed by the integer index of the member vector 
+  of a ThreeComponentSeismogram object being plotted. */
 typedef map<int,double> IndexTimes;
 /* This is the metadata key to set the utc (epoch) time of the 0 time
 for a seismogram handled by this object.  Caller needs to make sure
@@ -29,7 +32,7 @@ assumption is that adjacent seismograms in ensemble order have enough similarity
 that alignment by a common signal feature like the first break or a zero
 crossing makes sense.
 
-The implementation uses motif widget used in dbxcor but operating in a very
+The implementation uses a motif widget used in dbxcor but operating in a very
 different mode.   The user is presented with 3 windows, one for each of the
 three components.   MB2 is used to pick times.   Because of the internal
 limits of the seisw widget this has to be done like picking in seismic unix
