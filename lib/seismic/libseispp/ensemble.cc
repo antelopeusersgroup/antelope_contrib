@@ -829,25 +829,6 @@ double PeakAmplitude(ThreeComponentSeismogram *p)
 	amp=max_element(ampvec.begin(),ampvec.end());
 	return(*amp);
 }
-#ifndef NO_ANTELOPE
-double PeakAmplitude(ComplexTimeSeries *p)
-{
-	if(!(p->live) || ((p->ns)<=0)) return(0.0);
-	vector<double> ampvec;
-	ampvec.resize(p->s.size());
-	double ampval;
-	// This might be a bit faster if done with an iterator,
-	// but this is clearer I think. 
-	for(int j=0;j<p->s.size();++j)
-	{
-		ampval=abs(p->s[j]);
-		ampvec.push_back(ampval);
-	}
-	vector<double>::iterator amp;
-	amp=max_element(ampvec.begin(),ampvec.end());
-	return(*amp);
-}
-#endif
 void ScaleMember(TimeSeries *p,double scale)
 {
 	if(!(p->live) || ((p->ns)<=0)) return;
@@ -865,18 +846,4 @@ void ScaleMember(ThreeComponentSeismogram *p,double scale)
 	// Using the blas for efficiency
 	dscal(size,scale,p->u.get_address(0,0),1);
 }
-#ifndef NO_ANTELOPE
-void ScaleMember(ComplexTimeSeries *p,double scale)
-{
-	if(!(p->live) || ((p->ns)<=0)) return;
-	// This algorithm could maybe be done with the blas cscal, but
-	// am not sure a vector<Complex> would work correctly with cscal.
-	// We'll use this stl iterator version instead and depend on 
-	// the use of operator *= which is defined in C++ for complex.
-	vector<Complex>::iterator siter;
-	for(siter=p->s.begin();siter!=p->s.end();++siter)
-		*siter *= scale;
-
-}
-#endif
 } // Termination of namespace SEISPP definitions

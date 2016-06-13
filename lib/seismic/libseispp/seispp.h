@@ -37,7 +37,7 @@
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #ifndef NO_ANTELOPE
-#include "ComplexTimeSeries.h"
+//#include "ComplexTimeSeries.h"
 #include "seismicarray.h"
 #endif
 #include "ensemble.h"
@@ -495,9 +495,11 @@ long dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 //\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 **/
+/*
 long dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
+        */
 
 #endif
 
