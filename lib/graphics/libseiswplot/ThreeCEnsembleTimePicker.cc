@@ -14,6 +14,8 @@ namespace SEISPP
   /* This is the callback routine used for component 1 (0)*/
 void pick_times_callback1(Widget w, void *cdata, void *udata)
 {
+    //DEBUG
+    cerr << "Entered pick_times_callback1"<<endl;
   ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
   tcp->set_active_component(0);
   vector<SeismicPick> picks= tcp->pick_times();
@@ -24,6 +26,8 @@ void pick_times_callback1(Widget w, void *cdata, void *udata)
 /* This is the callback routine used for component 2 (1)*/
 void pick_times_callback2(Widget w, void *cdata, void *udata)
 {
+    //DEBUG
+    cerr << "Entered pick_times_callback2"<<endl;
 ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
 tcp->set_active_component(1);
 vector<SeismicPick> picks= tcp->pick_times();
@@ -34,6 +38,8 @@ tcp->set_pick_times(picks);
 /* This is the callback routine used for component 3 (2)*/
 void pick_times_callback3(Widget w, void *cdata, void *udata)
 {
+    //DEBUG
+    cerr << "Entered pick_times_callback3"<<endl;
 ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
 tcp->set_active_component(2);
 vector<SeismicPick> picks= tcp->pick_times();
@@ -70,10 +76,23 @@ void ThreeCEnsembleTimePicker::build_pick_menu()
   e plot windows with the same structure. */
   for(int k=0;k<3;++k)
   {
-    this->pick_menu[k]=BuildMenu(components[k].menu_bar,XmMENU_PULLDOWN,
-          (char *)"Pick Times",'E',
-          false,pickdata);
-    XtManageChild(components[k].menu_bar);
+      switch(k)
+      {
+          case 0:
+            this->pick_menu[k]=BuildMenu(comp0.menu_bar,
+                    XmMENU_PULLDOWN,(char *)"Pick Times",'P',false,pickdata);
+            XtManageChild(comp0.menu_bar);
+            break;
+          case 1:
+            this->pick_menu[k]=BuildMenu(comp1.menu_bar,
+                    XmMENU_PULLDOWN,(char *)"Pick Times",'P',false,pickdata);
+            XtManageChild(comp1.menu_bar);
+            break;
+          case 2:
+            this->pick_menu[k]=BuildMenu(comp2.menu_bar,
+                    XmMENU_PULLDOWN,(char *)"Pick Times",'P',false,pickdata);
+            XtManageChild(comp2.menu_bar);
+      };
   }
 }
 ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker()
@@ -85,39 +104,72 @@ ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker()
     a SeismicPlot is scalar by default.  That is the current situation
     but this is a nasty mysterious feature that could bite someone.  */
     int k;
-    GenericTimePicker *ptr;
-    ptr=&(components[0]);
-    for(k=0;k<3;++k,ptr++)
-      ptr=new GenericTimePicker;
     this->build_pick_menu();
     active_component=0;
+    //this->set_active_component(0);
   }catch(...){throw;};
 }
-ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker(Metadata& md)
+ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker(Metadata md)
+    : comp0(md), comp1(md), comp2(md)
 {
+    //DEBUG
+    cerr << "Entered ThreeCEnsembleTimePicker constructor"<<endl;
   data_loaded=false;
   nd=0;
   try{
     int k;
-    GenericTimePicker *ptr;
-    ptr=&(components[0]);
-    for(k=0;k<3;++k,ptr++)
-      ptr=new GenericTimePicker(md);
+    char title[50];
+    for(k=0;k<3;++k)
+    {
+      sprintf(title,"ThreeCEnsemblePicker:  component %d",k);
+      switch(k)
+      {
+          case 0:
+              comp0.put("title",title);
+              break;
+          case 1:
+              comp1.put("title",title);
+              break;
+          case 2:
+              comp2.put("title",title);
+      };
+    }
     this->build_pick_menu();
-    active_component=0;
+    try{
+        active_component=md.get_int("initial_active_component");
+    }catch(...)
+    {
+        active_component=0;
+    }
+    //this->set_active_component(active_component);
   }catch(...){throw;};
 }
 ThreeCEnsembleTimePicker::~ThreeCEnsembleTimePicker()
 {
-  try{
-    int k;
-    GenericTimePicker *ptr;
-    for(k=0;k<3;++k)
+    //DEBUG
+    cerr << "In Destructor for ThreeCEnsembleTimePicker"<<endl;
+    comp0.ExitDisplay();
+    comp1.ExitDisplay();
+    comp2.ExitDisplay();
+}
+void ThreeCEnsembleTimePicker::set_active_component(int ic)
+{
+    /* Make sure all the windows event handler threads are killed */
+    //comp0.ExitDisplay();
+    //comp1.ExitDisplay();
+    //comp2.ExitDisplay();
+    active_component=ic;
+    switch(active_component)
     {
-      ptr=&(components[k]);
-      delete ptr;
+        case 0:
+            comp0.Activate();
+            break;
+        case 1:
+            comp1.Activate();
+            break;
+        case 2:
+            comp2.Activate();
     }
-  }catch(...){throw;};
 }
 int ThreeCEnsembleTimePicker::plot(ThreeComponentEnsemble& din)
 {
@@ -138,7 +190,17 @@ int ThreeCEnsembleTimePicker::plot(ThreeComponentEnsemble& din)
       auto_ptr<TimeSeriesEnsemble> ptr;
       ptr=ExtractComponent(d0,k);
       d[k]=TimeSeriesEnsemble(*ptr);
-      components[k].plot(d[k]);
+      switch(k)
+      {
+          case 0:
+              comp0.plot(d[k],false);
+              break;
+          case 1:
+              comp1.plot(d[k],false);
+              break;
+          case 2:
+              comp2.plot(d[k],false);
+      };
     }
     data_loaded=true;
     nd=d0.member.size();
@@ -316,7 +378,9 @@ void ThreeCEnsembleTimePicker::align()
         d[k].member[i].put(TCPICKKEY,0.0);
       }
     }
-    for(k=0;k<3;++k)components[k].plot(d[k]);
+    comp0.plot(d[0]);
+    comp1.plot(d[1]);
+    comp2.plot(d[2]);
   }catch(...){throw;};
 }
 void ThreeCEnsembleTimePicker::reset()
@@ -328,18 +392,52 @@ void ThreeCEnsembleTimePicker::reset()
       auto_ptr<TimeSeriesEnsemble> ptr;
       ptr=ExtractComponent(d0,k);
       d[k]=(*ptr);
-      components[k].plot(d[k]);
+      switch(k)
+      {
+          case 0:
+              comp0.plot(d[0]);
+              break;
+          case 1:
+              comp1.plot(d[1]);
+              break;
+          case 2:
+              comp2.plot(d[2]);
+      };
     }
   }catch(...){throw;};
+}
+vector<SeismicPick>  ThreeCEnsembleTimePicker::pick_times()
+{
+    try{
+        //DEBUG
+        cerr<<"Entered ThreeCEnsembleTimePicker::pick_times()"<<endl;
+        vector<SeismicPick> result;
+        switch(active_component)
+        {
+            case 0:
+                comp0.enable_blocking();
+                result=comp0.pick_all();
+                break;
+            case 1:
+                comp1.enable_blocking();
+                result=comp1.pick_all();
+                break;
+            case 2:
+                comp2.enable_blocking();
+                result=comp2.pick_all();
+                break;
+            default:
+                cerr << "Illegal value for active_component="<<active_component<<endl
+                    << "This should not happen - FATAL ERROR"<<endl;
+                exit(-1);
+        };
+        return result;
+    }catch(...){throw;};
 }
 void ThreeCEnsembleTimePicker::refine_picks()
 {
-  try{
-    int k;
-    for(k=0;k<3;++k)
-    {
-      components[k].plot(d[k]);
-    }
-  }catch(...){throw;};
-}
+    set_active_component(active_component);
+    vector<SeismicPick> picks=this->pick_times();
+    this->set_pick_times(picks);
+} 
 } // End SEISPP encapsulation

@@ -56,7 +56,7 @@ public:
   /*! Default constructor - uses default pf stored in antelope contrib data*/
   ThreeCEnsembleTimePicker();
   /*! Construct with parameters defined by a Metadata object */
-  ThreeCEnsembleTimePicker(Metadata& md);
+  ThreeCEnsembleTimePicker(Metadata md);
   /*! Destructor - nontrivial as it has to destroy windows */
   ~ThreeCEnsembleTimePicker();
   /*! \brief plot and pick an ensemble.
@@ -102,9 +102,21 @@ public:
   void align();
   /* Start over - restores original data and removes alignments */
   void reset();
+  /*! Pick times for active component.
 
-  /*! Rearm the picker for refining picks.  */
-  void refine_picks();
+  This gizmo is made to do a series of picks on the active component
+  window and cache the internally.  They are retrieved with the set of get
+  times methods.   Note the picks are stored in the metadata (headers) of 
+  each seismogram loaded for processing.  If align is not called the new
+  picks overwrite the previous.   If align is called before this the new picks
+  are treated as a correction (update) to the previous.  This allows iterative 
+  picking until the results are what is desired. 
+  
+  \return vector of picks - normally should immediately call the set_pick_times method 
+  with the data returned.
+  */
+  vector<SeismicPick> pick_times();
+
   /*! Sets which component should be the active pick window.
 
   \param ic - component to make active (0, 1, or 2).
@@ -125,14 +137,15 @@ public:
           size of picks vector)
           */
   int set_pick_times(vector<SeismicPick> picks);
-  /*! Pick times for active component.
+  /*! called to refine picks.
 
-  This gizmo is made to do a series of picks on the active component
-  window and cache the internally.  They are retrieved with the set of get
-  times methods*/
-  vector<SeismicPick> pick_times();
+    This is an alternative to selecting the component to pick from menu bar.   
+    */
+  void refine_picks();
 private:
-  GenericTimePicker components[3];
+  GenericTimePicker comp0;
+  GenericTimePicker comp1;
+  GenericTimePicker comp2;
   /* This is a copy of data currently plotted.   Necessary to guarantee
   order and also allow station indexing */
   ThreeComponentEnsemble d0;
