@@ -142,6 +142,13 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         void ExitDisplay(){
             EventLoopIsActive=false; 
         };
+        /*! Public method to make window active.*/
+        void Activate()
+        {
+            /* I think this is necessary to make this behave right*/
+            if(!EventLoopIsActive)
+                this->launch_Xevent_thread_handler();
+        };
         /*! Used internally by event loop thread to test for termination.
 
           his really shouldn't be int he public interface, but I couldn't figure out
@@ -159,7 +166,7 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         friend class TimeWindowPicker;
         friend class GenericTimePicker;
         friend class ThreeCEnsembleTimePicker;
-    protected:
+    //protected:
         /* When true calls to plot will block until until the exit button is
            pushed.   When false a call to plot immediately returns. */
         bool block_till_exit_pushed;

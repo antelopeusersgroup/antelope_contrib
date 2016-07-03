@@ -40,6 +40,12 @@ public:
   Caller will need to work through that array to extract the information in
   the picks */
   vector<SeismicPick> pick_all();
+  /*! Post a new pick to list.
+   
+   This method is used by callbacks to add a new pick to the list.  
+   This essentially just does a push_back to the internal array of 
+   picks */
+  void post(SeismicPick pick);
 private:
   vector<SeismicPick> allpicks;
 };

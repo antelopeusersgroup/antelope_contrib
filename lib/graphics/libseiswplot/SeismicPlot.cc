@@ -107,14 +107,17 @@ void continue_callback(Widget w, XtPointer client_data, XtPointer call_data)
 void SeismicPlot::initialize_widgets(Metadata& md)
 {
     try{
+        char *initargs[1];
+        int nargs;
         ThreeComponentMode=md.get_bool("ThreeComponentMode");
         comp0=NULL;  comp1=NULL;  comp2=NULL;
-        argc=1;
-        argv[0]=strdup("SeismicPlotWidget");
+        string wintitle=md.get_string("windowtitle");
+        initargs[0]=strdup(wintitle.c_str());
+        nargs=1;
         XtSetLanguageProc(NULL, NULL, NULL);
         XtToolkitThreadInitialize();
         toplevel = XtVaAppInitialize(&AppContext, (char *)"seismicplot",NULL,0,
-                                &argc,argv, NULL,NULL);
+                                &nargs,initargs, NULL,NULL);
         main_w=XmCreateForm(toplevel,(char *) "seismicplot",NULL,0);
         EventLoopIsActive=false;
         menu_bar=XmCreateMenuBar(main_w,(char *)"menuBar",NULL,0);

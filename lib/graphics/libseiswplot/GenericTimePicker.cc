@@ -3,6 +3,22 @@ namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
+/* This is the callback procedure that handles a pick made with Btn2 */
+void GTPBtn2Callback(Widget w, void *client_data, void *userdata)
+{
+  GenericTimePicker *gtp=reinterpret_cast<GenericTimePicker *>(client_data);
+  SeismicPick *thispick;
+  /* The seisw widget has a dumb dependence on this being set to NULL initially so we have go force it
+   * here */
+  XtVaGetValues(w,ExmNseiswPick,&thispick,NULL);
+  //DEBUG
+  cerr << "In GTPBtn2Callback:  pick extracted="
+          << thispick->type<<" "
+          << thispick->time<<" "
+          << thispick->amplitude<<" "
+          << thispick->trace_number<<endl;
+  gtp->post(*thispick);
+}
 GenericTimePicker::GenericTimePicker() : SeismicPlot()
 {
   const string base_error("GenericTimePicker default constructor:  ");
@@ -10,6 +26,8 @@ GenericTimePicker::GenericTimePicker() : SeismicPlot()
         + "ThreeComponentMode is set true.\n"
         + "This picker works only on scalar data.  Edit pf file.");
   allpicks.reserve(1);
+  //XtRemoveAllCallbacks(this->seisw[0],ExmNbtn2Callback);
+  //XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
 
 }
 GenericTimePicker::GenericTimePicker(Metadata& md) : SeismicPlot(md)
@@ -19,6 +37,12 @@ GenericTimePicker::GenericTimePicker(Metadata& md) : SeismicPlot(md)
         + "ThreeComponentMode is set true.\n"
         + "This picker works only on scalar data.  Edit pf file.");
   allpicks.reserve(1);
+  //XtRemoveAllCallbacks(this->seisw[0],ExmNbtn2Callback);
+  //XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
+}
+void GenericTimePicker::post(SeismicPick pick_to_add)
+{
+    allpicks.push_back(pick_to_add);
 }
 SeismicPick GenericTimePicker::pick_one()
 {
@@ -30,24 +54,25 @@ SeismicPick GenericTimePicker::pick_one()
 }
 vector<SeismicPick> GenericTimePicker::pick_all()
 {
-  try{
+     try{
+    //DEBUB
+    cerr << "Entered GenericTimePicker::pick_all"<<endl;
     allpicks.clear();
     /* As a sanity check we should impose a limit on times through this
     loop to prevent a runaway if btn2 is stuck for some reason.
     */
-    int count(0);
-    const int MaxPicks(1000);
+    int count;
+    XtRemoveAllCallbacks(this->seisw[0],ExmNbtn2Callback);
+    XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
     /* This will loop until we enter x on the display or hit the exit menu
     item in the SeismicPlot gui.   Simple solution requiring no new widgets */
     while(this->EventLoopIsActive)
     {
-      SeismicPick thispick;
-      XtVaGetValues(this->seisw[0],ExmNseiswPick,&thispick,NULL);
-      allpicks.push_back(thispick);
-      ++count;
-      if(count>MaxPicks)throw SeisppError(string("GenericTimePicker::pick_all:  ")
-          + "Pick loop hit limit of 1000 picks - exiting to stop a runwawy");
+        count=allpicks.size();
+        cerr << "Number of picks made so far="<<count<<endl;
+        sleep(5);
     }
+    return allpicks;
   }catch(...){throw;};
 }
 } // End SEISPP namespace encapsulation
