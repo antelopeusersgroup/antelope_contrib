@@ -18,7 +18,7 @@ void pick_times_callback1(Widget w, void *cdata, void *udata)
     cerr << "Entered pick_times_callback1"<<endl;
   ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
   tcp->set_active_component(0);
-  vector<SeismicPick> picks= tcp->pick_times();
+  vector<SeismicPick> picks= tcp->run_picker();
   /* This sets the TCPICKKEY fields of each seismogram with pick times.
   Made a procedure as this is common code to all 3 component callbacks. */
   tcp->set_pick_times(picks);
@@ -30,7 +30,7 @@ void pick_times_callback2(Widget w, void *cdata, void *udata)
     cerr << "Entered pick_times_callback2"<<endl;
 ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
 tcp->set_active_component(1);
-vector<SeismicPick> picks= tcp->pick_times();
+vector<SeismicPick> picks= tcp->run_picker();
 /* This sets the TCPICKKEY fields of each seismogram with pick times.
 Made a procedure as this is common code to all 3 component callbacks. */
 tcp->set_pick_times(picks);
@@ -42,7 +42,7 @@ void pick_times_callback3(Widget w, void *cdata, void *udata)
     cerr << "Entered pick_times_callback3"<<endl;
 ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
 tcp->set_active_component(2);
-vector<SeismicPick> picks= tcp->pick_times();
+vector<SeismicPick> picks= tcp->run_picker();
 /* This sets the TCPICKKEY fields of each seismogram with pick times.
 Made a procedure as this is common code to all 3 component callbacks. */
 tcp->set_pick_times(picks);
@@ -105,6 +105,7 @@ ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker()
     but this is a nasty mysterious feature that could bite someone.  */
     int k;
     this->build_pick_menu();
+    t0_align_key_d0 = t0shift_key;
     active_component=0;
     //this->set_active_component(0);
   }catch(...){throw;};
@@ -141,6 +142,7 @@ ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker(Metadata md)
     {
         active_component=0;
     }
+    t0_align_key_d0 = md.get_string("t0_align_key");
     //this->set_active_component(active_component);
   }catch(...){throw;};
 }
@@ -175,12 +177,24 @@ int ThreeCEnsembleTimePicker::plot(ThreeComponentEnsemble& din)
 {
   try{
     d0=din;
+    d0_original=din;
+    pick_state.clear();
+    pick_state.reserve(d0.member.size());
     /* Initialize pick field for all data.  We assume the components
     will inherit this value.  Current implementation does that, but that
     should not be considered a given. */
     vector<ThreeComponentSeismogram>::iterator dptr;
     for(dptr=d0.member.begin();dptr!=d0.member.end();++dptr)
+    {
       dptr->put(TCPICKKEY,null_pick);
+      double t0initial;
+      t0initial=dptr->get_double(t0_align_key_d0);
+      dptr->put(t0shift_key,t0initial);
+      if(dptr->live)
+          pick_state.push_back(LIVE);
+      else
+          pick_state.push_back(ALLDEAD);
+    }
     int k;
     for(k=0;k<3;++k)
     {
@@ -218,10 +232,13 @@ IndexTimes ThreeCEnsembleTimePicker::get_member_times()
       vector<ThreeComponentSeismogram>::iterator dptr;
       for(i=0,dptr=d0.member.begin();dptr!=d0.member.end();++i,++dptr)
       {
-        arrivaltime=dptr->get_double(TCPICKKEY);
-        if(arrivaltime>null_pick_test)
+        if(dptr->live)
         {
+          arrivaltime=dptr->get_double(TCPICKKEY);
+          if(arrivaltime>null_pick_test)
+          {
             result.insert(pair<int,double>(i,arrivaltime));
+          }
         }
       }
     }
@@ -245,10 +262,13 @@ StaTimes ThreeCEnsembleTimePicker::get_sta_times()
     {
       for(i=0,dptr=d0.member.begin();dptr!=d0.member.end();++i,++dptr)
       {
-        arrivaltime=dptr->get_double(TCPICKKEY);
-        if(arrivaltime>null_pick_test)
+        if(dptr->live)
         {
-          result.insert(pair<string,double>(sta,arrivaltime));
+          arrivaltime=dptr->get_double(TCPICKKEY);
+          if(arrivaltime>null_pick_test)
+          {
+            result.insert(pair<string,double>(sta,arrivaltime));
+          }
         }
       }
     }
@@ -272,13 +292,16 @@ IndexTimes ThreeCEnsembleTimePicker::get_absolute_member_times()
       vector<ThreeComponentSeismogram>::iterator dptr;
       for(i=0,dptr=d0.member.begin();dptr!=d0.member.end();++i,++dptr)
       {
-        arrivaltime=dptr->get_double(TCPICKKEY);
-        if(arrivaltime>null_pick_test)
+        if(dptr->live)
         {
-          /* This assumes time contains the utc time of the t0 reference
-          point */
-          t0=dptr->get_double("time");
-          result.insert(pair<int,double>(i,t0+arrivaltime));
+          arrivaltime=dptr->get_double(TCPICKKEY);
+          if(arrivaltime>null_pick_test)
+          {
+            /* This assumes time contains the utc time of the t0 reference
+            point */
+            t0=dptr->get_double("time");
+            result.insert(pair<int,double>(i,t0+arrivaltime));
+          }
         }
       }
     }
@@ -303,12 +326,15 @@ StaTimes ThreeCEnsembleTimePicker::get_absolute_sta_times()
     vector<ThreeComponentSeismogram>::iterator dptr;
     for(i=0,dptr=d0.member.begin();dptr!=d0.member.end();++i,++dptr)
     {
-      arrivaltime=dptr->get_double(TCPICKKEY);
-      if(arrivaltime>null_pick_test)
+      if(dptr->live)
       {
-        sta=dptr->get_string("sta");
-        t0=dptr->get_double("time");
-        result.insert(pair<string,double>(sta,arrivaltime+t0));
+        arrivaltime=dptr->get_double(TCPICKKEY);
+        if(arrivaltime>null_pick_test)
+        {
+          sta=dptr->get_string("sta");
+          t0=dptr->get_double("time");
+          result.insert(pair<string,double>(sta,arrivaltime+t0));
+        }
       }
     }
   }
@@ -359,6 +385,8 @@ void ThreeCEnsembleTimePicker::align()
     int i,k;
     for(i=0;i<nd;++i)
     {
+      /* Do nothing to anything marked dead */
+      if(!d0.member[i].live) continue;
       double t0s,arrivaltime;
       arrivaltime=d0.member[i].get_double(TCPICKKEY);
       /*Silently skip unpicked data*/
@@ -387,6 +415,17 @@ void ThreeCEnsembleTimePicker::reset()
 {
   try{
     int k;
+    /* Note d0 is edited but d0_original is the unaltered original */
+    d0=d0_original;
+    pick_state.clear();
+    vector<ThreeComponentSeismogram>::iterator dptr;
+    for(dptr=d0.member.begin();dptr!=d0.member.end();++dptr)
+    {
+        if(dptr->live)
+            pick_state.push_back(LIVE);
+        else
+            pick_state.push_back(ALLDEAD);
+    }
     for(k=0;k<3;++k)
     {
       auto_ptr<TimeSeriesEnsemble> ptr;
@@ -406,11 +445,11 @@ void ThreeCEnsembleTimePicker::reset()
     }
   }catch(...){throw;};
 }
-vector<SeismicPick>  ThreeCEnsembleTimePicker::pick_times()
+vector<SeismicPick>  ThreeCEnsembleTimePicker::run_picker()
 {
     try{
         //DEBUG
-        cerr<<"Entered ThreeCEnsembleTimePicker::pick_times()"<<endl;
+        cerr<<"Entered ThreeCEnsembleTimePicker::run_picker()"<<endl;
         vector<SeismicPick> result;
         switch(active_component)
         {
@@ -434,10 +473,68 @@ vector<SeismicPick>  ThreeCEnsembleTimePicker::pick_times()
         return result;
     }catch(...){throw;};
 }
-void ThreeCEnsembleTimePicker::refine_picks()
+int ThreeCEnsembleTimePicker::pick()
 {
     set_active_component(active_component);
-    vector<SeismicPick> picks=this->pick_times();
-    this->set_pick_times(picks);
+    vector<SeismicPick> picks=this->run_picker();
+    int nset;
+    nset=this->set_pick_times(picks);
+    return nset;
 } 
+ThreeComponentEnsemble ThreeCEnsembleTimePicker::picked_data()
+{
+    /* Because we are storing the picks in the headers of d0 this
+     * routine is trivial.   Could have put it in the include file
+     * but it is possible this might change so thought it better to
+     * put it in the cc file */
+    return d0;
+}
+void ThreeCEnsembleTimePicker::kill_unpicked()
+{
+    int i,k;
+    vector<ThreeComponentSeismogram>::iterator d0ptr;
+    /* This loop trusts components in d array are the same size
+     * as d0 */
+    for(d0ptr=d0.member.begin(),i=0;d0ptr!=d0.member.end();++d0ptr,++i)
+    {
+        double arrivaltime;
+        arrivaltime=d0ptr->get_double(TCPICKKEY);
+        /* This is true if the pick is null  - reverse numeric test of
+         * every other occurence like this. */
+        if(arrivaltime<=null_pick_test)
+        {
+            switch(pick_state[i])
+            {
+                case LIVE:
+                case MOSTLY_DEAD_ALL_DAY:
+                    pick_state[i]=MOSTLY_DEAD_ALL_DAY;
+                case ALLDEAD:
+                    /* This is redundant, for DEAD case but small cost for
+                     * safety.  Notice lack of break makes this executed
+                     * for MOSTLY_DEAD_ALL_DAY case too. */
+                    d0ptr->live=false;
+                    for(k=0;k<3;++k)
+                        d[k].member[i].live=false;
+                    d0ptr->live=false;
+
+            };
+        }
+    }
+}
+void ThreeCEnsembleTimePicker::resurrect()
+{
+    int i,k;
+    /* We assume d0 and the components are all the same size */
+    for(i=0;i<d0.member.size();++i)
+    {
+        if(pick_state[i]==MOSTLY_DEAD_ALL_DAY)
+        {
+            d0.member[i].live=true;
+            for(k=0;k<3;++k)
+                d[k].member[i].live=true;
+            pick_state[i]=LIVE;
+        }
+    }
+}
+
 } // End SEISPP encapsulation

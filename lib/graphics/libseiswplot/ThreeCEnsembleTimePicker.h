@@ -4,6 +4,10 @@
 #include <vector>
 #include <map>
 #include "GenericTimePicker.h"
+/* Used only in the private part of this object.   Used by resurrect
+ * method to know which seismograms should be brought back to life and
+ * which should be left dead */
+enum PickState {ALLDEAD,MOSTLY_DEAD_ALL_DAY,LIVE};
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP
@@ -115,7 +119,7 @@ public:
   \return vector of picks - normally should immediately call the set_pick_times method 
   with the data returned.
   */
-  vector<SeismicPick> pick_times();
+  vector<SeismicPick> run_picker();
 
   /*! Sets which component should be the active pick window.
 
@@ -137,20 +141,56 @@ public:
           size of picks vector)
           */
   int set_pick_times(vector<SeismicPick> picks);
-  /*! called to refine picks.
+  /*! Run picker and set pick times.
 
-    This is an alternative to selecting the component to pick from menu bar.   
+   This would be the normal method called top pick an ensemble.   
+   Picks are stored internally.  This method always blocks until 
+   the exit command (menu item) is initiated in the gui.   This 
+   method can also be viewed (more or less) as running run_picker
+   followed be set_pick_times.   
+
+   Note also the data need to retrieved when picking is finished on 
+   an ensemble or results will be lose.
+
+   \return Returns number of picks set in this run.
     */
-  void refine_picks();
+  int pick();
+  /*! \brief Mark unpicked data dead
+
+    It is sometimes convenient to mark the seismograms dead that have
+    not been picked.  This is, for example, an easy way on the display
+    that you want to be sure to drop.   This method should normally be 
+    followed by the plot method to verify it did what you wanted.  
+    In the seisw widget the unpicked traces will marked dead.
+
+    This can be reversed with the resurrect method. 
+    */
+  void kill_unpicked();
+  /*! \brief Restore data killed by the kill_unpicked method.
+   
+    This method restores data marked dead with any previous calls to the
+    kill_unpicked method.  */
+  void resurrect();
+  /*! \brief Return data with picks set in headers.
+   
+    Because this beast works by setting pick relative times in the 
+    data ensemble header an alternative to the pick retrieval methods
+    is to just return the entire ensemble that contains the pick
+    values.  That is what this method does.
+    */
+  ThreeComponentEnsemble picked_data();
 private:
   GenericTimePicker comp0;
   GenericTimePicker comp1;
   GenericTimePicker comp2;
-  /* This is a copy of data currently plotted.   Necessary to guarantee
-  order and also allow station indexing */
+  /* This is a copy of data currently plotted in the original 3C object
+   * format.   Metadata and kill states are maintained in this copy.*/
   ThreeComponentEnsemble d0;
   /* This is the working data ensemble but split into components */
   TimeSeriesEnsemble d[3];
+  /* This is a raw copy of the data being plotted.  It is cached and
+   * used only if the reset method is called. */
+  ThreeComponentEnsemble d0_original;
   /* This is used as a ready sanity check */
   bool data_loaded;
   /* Cached for convenience = number of seismograms in working ensemble */
@@ -163,7 +203,14 @@ private:
   int active_component;
   /* This is used by constructors to build the above 4 widgets. */
   void build_pick_menu();
-
+  /* This is set from Metadata.  The  t0shift attribute is initialized
+   * with the value extracted by this key */
+  string t0_align_key_d0;
+  /* This vector is used by resurrect to know which data to restore.   
+   * This is not just a true false test because there are three possiblities:
+   * dead on entry, marked dead by not being picked, and live.  Hence
+   * we use this enum. */
+  vector<PickState> pick_state;
 };
 /*! \brief Returns an edited ensemble with pick times set.
 
