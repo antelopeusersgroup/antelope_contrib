@@ -6,8 +6,10 @@
 #include "GenericTimePicker.h"
 /* Used only in the private part of this object.   Used by resurrect
  * method to know which seismograms should be brought back to life and
- * which should be left dead */
-enum PickState {ALLDEAD,MOSTLY_DEAD_ALL_DAY,LIVE};
+ * which should be left dead.  Note initialized to ALLDEAD for 
+ * traces marked dead on entry and MOSTLY_DEAD_ALL_DAY for traces
+ * live on entry but not picked.   */
+enum PickState {ALLDEAD,MOSTLY_DEAD_ALL_DAY,PICKED};
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP

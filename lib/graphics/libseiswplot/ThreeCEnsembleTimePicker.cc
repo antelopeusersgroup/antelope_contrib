@@ -191,7 +191,7 @@ int ThreeCEnsembleTimePicker::plot(ThreeComponentEnsemble& din)
       t0initial=dptr->get_double(t0_align_key_d0);
       dptr->put(t0shift_key,t0initial);
       if(dptr->live)
-          pick_state.push_back(LIVE);
+          pick_state.push_back(MOSTLY_DEAD_ALL_DAY);
       else
           pick_state.push_back(ALLDEAD);
     }
@@ -352,18 +352,32 @@ int ThreeCEnsembleTimePicker::set_pick_times(vector<SeismicPick> p)
     PointPick pp;
     int i,k;
     int count;
+    int nd=d0.member.size();
     vector<SeismicPick>::iterator ptr;
     for(count=0,ptr=p.begin();ptr!=p.end();++ptr)
     {
+        //DEBUG
+        cout << "Pick number "<<count<<" has type="<<ptr->type<<endl;
       /* Silently drop picks not tagged as point poicks */
       if(ptr->type == POINT)
       {
         ++count;
         pp=ptr->get_point();
         i=ptr->get_trace_number();
-        d0.member[i].put(TCPICKKEY,pp.time);
-        for(k=0;k<3;++k)
-            d[k].member[i].put(TCPICKKEY,pp.time);
+        if(i>=0 && i<nd)
+        {
+            pick_state[i]=PICKED;
+            d0.member[i].put(TCPICKKEY,pp.time);
+            for(k=0;k<3;++k)
+                d[k].member[i].put(TCPICKKEY,pp.time);
+        }
+        else
+        {
+            cerr << "Warning:  dropping eroneous pick with trace number "
+                << i << " which is out of range 0 to "<<nd-1<<endl;
+        }
+        //DEBUG
+        cout << "Set pick for trace number "<<i<<" to "<<pp.time<<endl;
       }
     }
     return count;
@@ -422,7 +436,7 @@ void ThreeCEnsembleTimePicker::reset()
     for(dptr=d0.member.begin();dptr!=d0.member.end();++dptr)
     {
         if(dptr->live)
-            pick_state.push_back(LIVE);
+            pick_state.push_back(MOSTLY_DEAD_ALL_DAY);
         else
             pick_state.push_back(ALLDEAD);
     }
@@ -491,7 +505,7 @@ ThreeComponentEnsemble ThreeCEnsembleTimePicker::picked_data()
 }
 void ThreeCEnsembleTimePicker::kill_unpicked()
 {
-    int i,k;
+    int i,j,k;
     vector<ThreeComponentSeismogram>::iterator d0ptr;
     /* This loop trusts components in d array are the same size
      * as d0 */
@@ -499,15 +513,16 @@ void ThreeCEnsembleTimePicker::kill_unpicked()
     {
         double arrivaltime;
         arrivaltime=d0ptr->get_double(TCPICKKEY);
+        //DEBUG
+        cout << "kill_unpicked: i="<<i<<" atime="<<arrivaltime<<" state="<<pick_state[i]<<endl;
         /* This is true if the pick is null  - reverse numeric test of
-         * every other occurence like this. */
+         * every other occurence like this. Assumes null_pick_test is
+         * a large positive number.*/
         if(arrivaltime<=null_pick_test)
         {
             switch(pick_state[i])
             {
-                case LIVE:
                 case MOSTLY_DEAD_ALL_DAY:
-                    pick_state[i]=MOSTLY_DEAD_ALL_DAY;
                 case ALLDEAD:
                     /* This is redundant, for DEAD case but small cost for
                      * safety.  Notice lack of break makes this executed
@@ -515,26 +530,36 @@ void ThreeCEnsembleTimePicker::kill_unpicked()
                     d0ptr->live=false;
                     for(k=0;k<3;++k)
                         d[k].member[i].live=false;
-                    d0ptr->live=false;
-
+                    break;
+                case PICKED:
+                    d0ptr->live=true;
+                    for(k=0;k<3;++k)
+                        d[k].member[i].live=true;
             };
         }
     }
+    comp0.plot(d[0]);
+    comp1.plot(d[1]);
+    comp2.plot(d[2]);
 }
 void ThreeCEnsembleTimePicker::resurrect()
 {
-    int i,k;
+    int i,j,k;
     /* We assume d0 and the components are all the same size */
     for(i=0;i<d0.member.size();++i)
     {
-        if(pick_state[i]==MOSTLY_DEAD_ALL_DAY)
+        if(pick_state[i]==MOSTLY_DEAD_ALL_DAY) 
         {
+
             d0.member[i].live=true;
             for(k=0;k<3;++k)
                 d[k].member[i].live=true;
-            pick_state[i]=LIVE;
+            pick_state[i]=MOSTLY_DEAD_ALL_DAY;
         }
     }
+    comp0.plot(d[0]);
+    comp1.plot(d[1]);
+    comp2.plot(d[2]);
 }
 
 } // End SEISPP encapsulation
