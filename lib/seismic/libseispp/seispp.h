@@ -767,6 +767,18 @@ template <class Tensemble> void LagShift(Tensemble& d,
 		throw SeisppError(error2);
 	}
 }
+template <class Tensemble> Tensemble remove_dead(Tensemble& d)
+{
+    Tensemble dedit(dynamic_cast<Metadata&>(d),1);
+    int nd=d.member.size();
+    int i;
+    for(i=0;i<nd;++i)
+    {
+        if(d.member[i].live)
+            dedit.member.push_back(d.member[i]);
+    }
+    return dedit;
+}
 /*! \brief Test a generic time series object for sample rate match with standard.
 
 With real data there is often an issue about the actual sample rate of data
