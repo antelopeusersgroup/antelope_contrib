@@ -108,7 +108,7 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
             the plot is generated and the program continues immediately. 
           */
         void plot(ThreeComponentSeismogram& d,bool blocking=true);
-        /*! Set blocking on or off.
+        /*! Turn blocking on.
 
           Constructors can enable the plot as blocking or nonblocking. 
           If blocking the plot will stay active until the exit menu
@@ -121,6 +121,11 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         void enable_blocking()
         {
             block_till_exit_pushed=true;
+        };
+        /*! Turn blocking off (opposite of enable_blocking) */
+        void disable_blocking()
+        {
+            block_till_exit_pushed=false;
         };
         /*! Make new plot parameters active.
 
