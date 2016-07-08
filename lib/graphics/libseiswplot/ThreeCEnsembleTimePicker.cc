@@ -2,13 +2,6 @@
 #include "seiswplot.h"
 using namespace std;
 using namespace SEISPP;
-/* key for arrival time - only used in the scope of this file */
-const string TCPICKKEY("arrivaltime");
-/* TCPICKKEY values are initialzied to this value to mark them as not having a
-pick */
-const double null_pick(-9.999e99);
-/* this is the test value - smaller than this defines null */
-const double null_pick_test(-1e20);
 namespace SEISPP
 {
   /* This is the callback routine used for component 1 (0)*/
@@ -420,9 +413,9 @@ void ThreeCEnsembleTimePicker::align()
         d[k].member[i].put(TCPICKKEY,0.0);
       }
     }
-    comp0.plot(d[0]);
-    comp1.plot(d[1]);
-    comp2.plot(d[2]);
+    comp0.plot(d[0],false);
+    comp1.plot(d[1],false);
+    comp2.plot(d[2],false);
   }catch(...){throw;};
 }
 void ThreeCEnsembleTimePicker::reset()
@@ -470,14 +463,17 @@ vector<SeismicPick>  ThreeCEnsembleTimePicker::run_picker()
             case 0:
                 comp0.enable_blocking();
                 result=comp0.pick_all();
+                comp0.disable_blocking();
                 break;
             case 1:
                 comp1.enable_blocking();
                 result=comp1.pick_all();
+                comp1.disable_blocking();
                 break;
             case 2:
                 comp2.enable_blocking();
                 result=comp2.pick_all();
+                comp2.disable_blocking();
                 break;
             default:
                 cerr << "Illegal value for active_component="<<active_component<<endl
@@ -538,9 +534,9 @@ void ThreeCEnsembleTimePicker::kill_unpicked()
             };
         }
     }
-    comp0.plot(d[0]);
-    comp1.plot(d[1]);
-    comp2.plot(d[2]);
+    comp0.plot(d[0],false);
+    comp1.plot(d[1],false);
+    comp2.plot(d[2],false);
 }
 void ThreeCEnsembleTimePicker::resurrect()
 {

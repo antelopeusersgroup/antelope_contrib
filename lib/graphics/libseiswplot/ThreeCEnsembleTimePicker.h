@@ -10,6 +10,13 @@
  * traces marked dead on entry and MOSTLY_DEAD_ALL_DAY for traces
  * live on entry but not picked.   */
 enum PickState {ALLDEAD,MOSTLY_DEAD_ALL_DAY,PICKED};
+/* key for arrival time set by this picker */
+const string TCPICKKEY("arrivaltime");
+/* TCPICKKEY values are initialzied to this value to mark them as not having a
+pick */
+const double null_pick(-9.999e99);
+/* this is the test value - smaller than this defines null */
+const double null_pick_test(-1e20);
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP

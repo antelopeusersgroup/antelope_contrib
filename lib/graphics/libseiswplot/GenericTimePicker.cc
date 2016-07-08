@@ -12,11 +12,13 @@ void GTPBtn2Callback(Widget w, void *client_data, void *userdata)
    * here */
   XtVaGetValues(w,ExmNseiswPick,&thispick,NULL);
   //DEBUG
+  /*
   cerr << "In GTPBtn2Callback:  pick extracted="
           << thispick->type<<" "
           << thispick->time<<" "
           << thispick->amplitude<<" "
           << thispick->trace_number<<endl;
+          */
   gtp->post(*thispick);
 }
 GenericTimePicker::GenericTimePicker() : SeismicPlot()
@@ -66,11 +68,12 @@ vector<SeismicPick> GenericTimePicker::pick_all()
     XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
     /* This will loop until we enter x on the display or hit the exit menu
     item in the SeismicPlot gui.   Simple solution requiring no new widgets */
+    cerr << "GerericTimePicker is active"<<endl;
     while(this->EventLoopIsActive)
     {
         count=allpicks.size();
         cerr << "Number of picks made so far="<<count<<endl;
-        sleep(5);
+        sleep(1);
     }
     return allpicks;
   }catch(...){throw;};
