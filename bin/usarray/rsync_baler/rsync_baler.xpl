@@ -699,7 +699,7 @@ sub get_data {
     # value limit_innactive_age in parameter
     # file.
     #
-    if ( $pf{limit_innactive_age}  and int($endtime) > 0) {
+    if ( $pf{limit_innactive_age}  and  $endtime != '-' and int($endtime) > 0) {
         if ( $pf{limit_innactive_age} < (now() - $endtime)  ) {
             fork_notify("STOP $sta, more than $pf{limit_innactive_age} seconds old.") ;
             exit ;
