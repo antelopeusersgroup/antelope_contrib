@@ -370,7 +370,7 @@ int ThreeCEnsembleTimePicker::set_pick_times(vector<SeismicPick> p)
                 << i << " which is out of range 0 to "<<nd-1<<endl;
         }
         //DEBUG
-        cout << "Set pick for trace number "<<i<<" to "<<pp.time<<endl;
+        //cout << "Set pick for trace number "<<i<<" to "<<pp.time<<endl;
       }
     }
     return count;

@@ -58,7 +58,7 @@ vector<SeismicPick> GenericTimePicker::pick_all()
 {
      try{
     //DEBUB
-    cerr << "Entered GenericTimePicker::pick_all"<<endl;
+    //cerr << "Entered GenericTimePicker::pick_all"<<endl;
     allpicks.clear();
     /* As a sanity check we should impose a limit on times through this
     loop to prevent a runaway if btn2 is stuck for some reason.
