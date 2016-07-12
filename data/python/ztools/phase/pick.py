@@ -17,7 +17,7 @@ import time
 import numpy as np
 from numpy.random import random_integers
 #from obspy.signal.trigger import triggerOnset
-from scipy.signal import argrelmin, argrelmax
+from ztools.phase.fpeak import argrelmin, argrelmax
 
 # Personal libraries
 import ztools.phase.algorithm as alg
