@@ -11,10 +11,10 @@ void pick_times_callback1(Widget w, void *cdata, void *udata)
     cerr << "Entered pick_times_callback1"<<endl;
   ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
   tcp->set_active_component(0);
-  vector<SeismicPick> picks= tcp->run_picker();
+  //vector<SeismicPick> picks= tcp->run_picker();
   /* This sets the TCPICKKEY fields of each seismogram with pick times.
   Made a procedure as this is common code to all 3 component callbacks. */
-  tcp->set_pick_times(picks);
+  //tcp->set_pick_times(picks);
 }
 /* This is the callback routine used for component 2 (1)*/
 void pick_times_callback2(Widget w, void *cdata, void *udata)
@@ -23,10 +23,10 @@ void pick_times_callback2(Widget w, void *cdata, void *udata)
     cerr << "Entered pick_times_callback2"<<endl;
 ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
 tcp->set_active_component(1);
-vector<SeismicPick> picks= tcp->run_picker();
+//vector<SeismicPick> picks= tcp->run_picker();
 /* This sets the TCPICKKEY fields of each seismogram with pick times.
 Made a procedure as this is common code to all 3 component callbacks. */
-tcp->set_pick_times(picks);
+//tcp->set_pick_times(picks);
 }
 /* This is the callback routine used for component 3 (2)*/
 void pick_times_callback3(Widget w, void *cdata, void *udata)
@@ -35,10 +35,10 @@ void pick_times_callback3(Widget w, void *cdata, void *udata)
     cerr << "Entered pick_times_callback3"<<endl;
 ThreeCEnsembleTimePicker *tcp=reinterpret_cast<ThreeCEnsembleTimePicker *>(cdata);
 tcp->set_active_component(2);
-vector<SeismicPick> picks= tcp->run_picker();
+//vector<SeismicPick> picks= tcp->run_picker();
 /* This sets the TCPICKKEY fields of each seismogram with pick times.
 Made a procedure as this is common code to all 3 component callbacks. */
-tcp->set_pick_times(picks);
+//tcp->set_pick_times(picks);
 }
 /* This is a helper for the constructors that sets up the control widgets in
 on place.  Avoids code duplication in multiple constructors */
@@ -149,11 +149,24 @@ ThreeCEnsembleTimePicker::~ThreeCEnsembleTimePicker()
 }
 void ThreeCEnsembleTimePicker::set_active_component(int ic)
 {
-    /* Make sure all the windows event handler threads are killed */
-    //comp0.ExitDisplay();
-    //comp1.ExitDisplay();
-    //comp2.ExitDisplay();
+    /* Make sure all picking is not active in current active window */
+    switch(active_component)
+    {
+        case 0:
+            if(comp0.picker_is_active())
+                comp0.stop_picker();
+            break;
+        case 1:
+            if(comp1.picker_is_active())
+                comp1.stop_picker();
+            break;
+        case 2:
+            if(comp1.picker_is_active())
+                comp1.stop_picker();
+    }
     active_component=ic;
+    /* This assumes the Activate method is stateless and won't launch 
+     * a new thread handler.   Current SeismicPlot does that. */
     switch(active_component)
     {
         case 0:

@@ -28,6 +28,7 @@ GenericTimePicker::GenericTimePicker() : SeismicPlot()
         + "ThreeComponentMode is set true.\n"
         + "This picker works only on scalar data.  Edit pf file.");
   allpicks.reserve(1);
+  picker_active=false;
   //XtRemoveAllCallbacks(this->seisw[0],ExmNbtn2Callback);
   //XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
 
@@ -41,6 +42,7 @@ GenericTimePicker::GenericTimePicker(Metadata& md) : SeismicPlot(md)
   allpicks.reserve(1);
   //XtRemoveAllCallbacks(this->seisw[0],ExmNbtn2Callback);
   //XtAddCallback(this->seisw[0],ExmNbtn2Callback,GTPBtn2Callback,this);
+  picker_active=false;
 }
 void GenericTimePicker::post(SeismicPick pick_to_add)
 {
@@ -57,7 +59,8 @@ SeismicPick GenericTimePicker::pick_one()
 vector<SeismicPick> GenericTimePicker::pick_all()
 {
      try{
-    //DEBUB
+    picker_active=true;
+    //DEBUG
     //cerr << "Entered GenericTimePicker::pick_all"<<endl;
     allpicks.clear();
     /* As a sanity check we should impose a limit on times through this
@@ -75,7 +78,14 @@ vector<SeismicPick> GenericTimePicker::pick_all()
         cerr << "Number of picks made so far="<<count<<endl;
         sleep(1);
     }
+    picker_active=false;
     return allpicks;
   }catch(...){throw;};
+}
+void GenericTimePicker::stop_picker()
+{
+    this->ExitDisplay();
+    this->disable_blocking();
+    picker_active=false;
 }
 } // End SEISPP namespace encapsulation

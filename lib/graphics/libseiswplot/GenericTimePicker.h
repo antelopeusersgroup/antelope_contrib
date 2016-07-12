@@ -46,8 +46,11 @@ public:
    This essentially just does a push_back to the internal array of 
    picks */
   void post(SeismicPick pick);
+  void stop_picker();
+  bool picker_is_active(){return picker_active;};
 private:
   vector<SeismicPick> allpicks;
+  bool picker_active;
 };
 } // End SEISPP namespace encapsulation
 #endif
