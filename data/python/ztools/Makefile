@@ -2,6 +2,6 @@ DATADIR=python/ztools
 
 DATA=__init__.pyc
 
-SUBDIR=/contrib
+#SUBDIR=/contrib
 
 include $(ANTELOPEMAKE)
