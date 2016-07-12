@@ -13,7 +13,7 @@ SUBDIR=/contrib
 #Needed eventually
 #MAN3=
 
-ccflags=$(XMOTIFINCLUDE)
+cxxflags=-g $(XMOTIFINCLUDE)
 
 ANTELOPEMAKELOCAL = $(ANTELOPE)/contrib/include/antelopemake.local
 
