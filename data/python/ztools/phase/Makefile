@@ -8,8 +8,6 @@ DATA=algorithm.so\
 	migrate.pyc\
 	pick.pyc
 
-#SUBDIR=/contrib
-
 all :: algorithm.so detect.pyc fpeak.pyc gen.pyc __init__.pyc migrate.pyc pick.pyc
 
 algorithm.so: src/algorithm.f90
