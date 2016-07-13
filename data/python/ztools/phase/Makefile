@@ -19,7 +19,6 @@ CLEAN=algorithm.so\
 	*.pyc
 
 %.pyc : %.py
-	echo $(PYTHON)
 	$(RM) $@
 	awk '/__future__/ { print }' $*.py >> _$*.py
 	cat ../pyc_header >> _$*.py

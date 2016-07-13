@@ -1,0 +1,128 @@
+.TH DBMW 1
+.SH dbmw
+dbmw \- moment magnitude calculation from multi-taper spectral analysis
+.SH SYNOPSIS
+.nf
+\fBdbmw\fP \fB[-h] [-c chan] [-s subset] [-d] [-v] [-r reject] [-p] [-x dist]\fP
+\fIdb [velocity_model]\fP
+.fi
+.SH DESCRIPTION
+
+\fBdbmw\fP will estimate moment magnitude from the low-frequency asymptote of
+stacked P and S wave spectra determined using multi-taper spectral analysis
+techniques. The method implemented in this program is documented in manuscript
+\fIAnalysis of earthquake body wave spectra for potency and magnitude values:
+Implications for magnitude scaling relations\fP currently under review by
+Geophysical Journal International. See BUGS AND CAVEATS section for external
+dependencies.
+
+.SH OPTIONS
+.IP -h
+.fi
+Print help.
+.IP "-c channel_subset"
+.fi
+Channel subset expression to select stations to use in magnitude calculation.
+.IP "-s subset"
+.fi
+Event subset expression to select events to calculate magnitude for.
+.IP -d
+.fi
+Only use defining phases in magnitude calculation.
+.IP
+.fi -v
+Verbose flag.
+.IP "-r reject_expression"
+.fi
+Station rejection expression.
+.IP -p
+.fi
+Enable plotting of spectra and best fitting model.
+.IP "-x distance"
+.fi
+Minimum hypocentral distance allowed for stations used in magnitude calculation.
+.SH FILES
+.IP \fBvelocity_model\fP
+
+.ft R
+.in 2c
+.nf
+
+.ne 12
+
+This is the velocity/attentuation structure model to be used in correcting for
+source and propagation effects. Format is white-space separated fields; depth to
+top of layer, S-wave velocity, P-wave velocity, S-wave Q-value, P-wave Q-value.
+The default velocity model file is installed in $ANTELOPE/data/velocity/socal
+and is as follows:
+
+0.0     2.76471     4.7000      24      17
+1.0     2.93582     4.9909      36      24
+1.5     3.02138     5.1363      106     52
+2.0     3.10694     5.2818      106     52
+5.5     3.18        5.50        1000    1000
+16.0    3.64        6.30        1000    1000
+32.0    3.87        6.70        1000    1000
+122     4.50        7.798       1000    1000
+
+.nf
+.fi
+.ft R
+
+.SH EXAMPLE
+.ft R
+.in 2c
+.nf
+
+.ne 12
+
+[mcwhite@whitehawk-CentOS test]$ \fBdbmw test\fP
+Starting...
+Getting site metadata.
+Initializing thread
+Starting origin_reap_thread.
+Starting origin_process_thread.
+1: 21 P spectra, 18 S spectra, 7 P 6 S, orbassoc_l
+Finished calculating spectra for all stations
+Fitting model to stack
+Finished fitting model..best results are:
+phase=P, Mw=2.10, fc=4.74, [2.09, 2.11], VR=1.00
+Finished calculating spectra for all stations
+Fitting model to stack
+Finished fitting model..best results are:
+phase=S, Mw=1.87, fc=3.15, [1.86, 1.88], VR=1.00
+2.0963676309
+1.86679394692
+1 Mw=1.98
+2: 21 P spectra, 15 S spectra, 7 P 5 S, orbassoc_l
+Finished calculating spectra for all stations
+Fitting model to stack
+Finished fitting model..best results are:
+phase=P, Mw=1.82, fc=13.97, [1.81, 1.83], VR=1.00
+Finished calculating spectra for all stations
+Fitting model to stack
+Finished fitting model..best results are:
+phase=S, Mw=1.99, fc=3.34, [1.98, 2.00], VR=1.00
+1.81913410188
+1.98693806978
+2 Mw=1.90
+
+.nf
+.fi
+.ft R
+
+.SH "BUGS AND CAVEATS"
+External dependencies (Python packages) not included:
+.IP "\fBscipy\fP - http://www.scipy.org"
+.IP "\fBnitime\fP - http://www.nipy.org/nitime"
+
+.SH AUTHOR
+.ft R
+.in 2c
+.nf
+Zachary Ross
+California Institute of Technology
+
+Malcolm White
+University of Southern California
+malcolcw@usc.edu
