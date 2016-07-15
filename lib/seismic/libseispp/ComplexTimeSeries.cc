@@ -1,8 +1,13 @@
 #include "tr.h" // Antelope trace library
+#include "Metadata.h"
 #include "SeisppError.h"
 #include "ComplexTimeSeries.h"
+#include "dmatrix.h"
 namespace SEISPP
 {
+    /* WARNING:   this prototype belongs in an include file.   It 
+     * is defined in readwrite.cc. */
+long int vector_fwrite(double *x,int n, string dir, string fname);
 using namespace std;
 using namespace SEISPP;
 //
@@ -455,6 +460,108 @@ ostream& operator << (ostream& os,ComplexTimeSeries& z)
 	for(zptr=z.s.begin();zptr!=z.s.end();++zptr)
 		os << *zptr <<endl;
 	return(os);
+}
+/* Helper procedures start here.  These once upon a time were spread
+ * in other files. */
+
+double PeakAmplitude(ComplexTimeSeries *p)
+{
+        if(!(p->live) || ((p->ns)<=0)) return(0.0);
+        vector<double> ampvec;
+        ampvec.resize(p->s.size());
+        double ampval;
+        // This might be a bit faster if done with an iterator,
+        // but this is clearer I think. 
+        for(int j=0;j<p->s.size();++j)
+        {
+                ampval=abs(p->s[j]);
+                ampvec.push_back(ampval);
+        }
+        vector<double>::iterator amp;
+        amp=max_element(ampvec.begin(),ampvec.end());
+        return(*amp);
+}
+void ScaleMember(ComplexTimeSeries *p,double scale)
+{
+        if(!(p->live) || ((p->ns)<=0)) return;
+        // This algorithm could maybe be done with the blas cscal, but
+        // am not sure a vector<Complex> would work correctly with cscal.
+        // We'll use this stl iterator version instead and depend on 
+        // the use of operator *= which is defined in C++ for complex.
+        vector<Complex>::iterator siter;
+        for(siter=p->s.begin();siter!=p->s.end();++siter)
+                *siter *= scale;
+
+}
+/* database save routine - also once was in a different file */
+long dbsave(ComplexTimeSeries& tcs, 
+	Dbptr db,
+		string table, 
+			MetadataList& mdl, 
+				AttributeMap& am)
+{
+	int recnumber;
+	string field_name;
+
+	if(!tcs.live) return(-1);  // return immediately if this is marked dead
+	if(table=="wfdisc")
+		throw SeisppError(string("dbsave(ComplexTimeSeries):")
+			+string("wfdisc incompatible with a ComplexTimeSeries.  Check documentation for alternatives.\n"));
+	
+	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
+	recnumber = dbaddnull(db);
+	if(recnumber==dbINVALID) 
+		throw SeisppError(string("dbsave:  dbaddnull failed on table "+table));
+	db.record=recnumber;
+	try {
+		save_metadata_for_object(dynamic_cast<Metadata&>(tcs),
+			db,table,mdl,am);
+		// Even if they were written in the above loop the contents 
+		// of the object just override the metadata versions.  
+		// This is safer than depending on the metadata
+		double etime;
+		etime = tcs.endtime();
+		string sdtype("cx"); // special datatype signals complex
+		dbputv(db,0,"time",tcs.t0,
+			"endtime",etime,
+			"samprate",1.0/tcs.dt,
+			"nsamp",tcs.ns,
+			"datatype",sdtype.c_str(),NULL);
+		char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
+		long int foff;  // actual foff reset in db record
+		// assume these were set in mdl.  probably should have a cross check
+		dbgetv(db,0,"dir",dir,"dfile",dfile,NULL);
+		// make sure the directory is present
+		if(makedir(dir))
+		{
+			dbmark(db);
+			throw SeisppError(string("makedir(dir) failed with dir=")
+					+ string(dir));
+		}
+		dmatrix cmpxdata(2,tcs.ns);
+		for(int i=0;i<tcs.ns;++i)
+		{
+			cmpxdata(0,i)=tcs.s[i].real();
+			cmpxdata(1,i)=tcs.s[i].imag();
+		}
+		// Note we always write these as doubles.  I don't
+		// expect to save a datatype with this class of 
+		// object database writers.
+		foff=vector_fwrite(cmpxdata.get_address(0,0),tcs.ns*2,
+			string(dir),string(dfile));
+		// Above returns and off that we need to set 
+		// in the database as the absolutely correct value
+		// Reasons is that if the file exists these functions
+		// always append and return foff.
+		dbputv(db,0,"foff",foff,NULL);
+		return(recnumber);
+	}
+	catch (SeisppError& serr)
+	{
+		// delete this database row if we had an error
+		dbmark(db);
+		throw serr;
+	}
 }
 
 } // End SEISPP namespace declaration

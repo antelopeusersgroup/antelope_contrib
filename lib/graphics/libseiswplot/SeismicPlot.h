@@ -108,7 +108,7 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
             the plot is generated and the program continues immediately. 
           */
         void plot(ThreeComponentSeismogram& d,bool blocking=true);
-        /*! Set blocking on or off.
+        /*! Turn blocking on.
 
           Constructors can enable the plot as blocking or nonblocking. 
           If blocking the plot will stay active until the exit menu
@@ -121,6 +121,11 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         void enable_blocking()
         {
             block_till_exit_pushed=true;
+        };
+        /*! Turn blocking off (opposite of enable_blocking) */
+        void disable_blocking()
+        {
+            block_till_exit_pushed=false;
         };
         /*! Make new plot parameters active.
 
@@ -142,6 +147,13 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         void ExitDisplay(){
             EventLoopIsActive=false; 
         };
+        /*! Public method to make window active.*/
+        void Activate()
+        {
+            /* I think this is necessary to make this behave right*/
+            if(!EventLoopIsActive)
+                this->launch_Xevent_thread_handler();
+        };
         /*! Used internally by event loop thread to test for termination.
 
           his really shouldn't be int he public interface, but I couldn't figure out
@@ -157,7 +169,9 @@ class SeismicPlot : public BasicSeisPlot, public Metadata
         XtAppContext AppContext;
         friend class TraceEditPlot;
         friend class TimeWindowPicker;
-    protected:
+        friend class GenericTimePicker;
+        friend class ThreeCEnsembleTimePicker;
+    //protected:
         /* When true calls to plot will block until until the exit button is
            pushed.   When false a call to plot immediately returns. */
         bool block_till_exit_pushed;

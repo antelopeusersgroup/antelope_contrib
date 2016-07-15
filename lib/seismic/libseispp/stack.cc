@@ -39,6 +39,8 @@ namespace SEISPP
                 {
                     moveout=d.member[i].get_double(moveout_keyword);
                     twd=twin.shift(moveout);
+                    if( (twd.end<d.member[i].t0)
+                        || (twd.start>d.member[i].endtime()) ) continue;
                     if(d.member[i].is_gap(twd))
                     {
                         weights.push_back(0.0);
@@ -65,6 +67,16 @@ namespace SEISPP
             // consistent with other methods below.
             double ampscale=dnrm2(stack.ns,&(stack.s[0]),1);
             stack.put(beam_rms_key,ampscale/sqrt(static_cast<double>(stack.ns)));
+            /* We need to set these to some default values to allow this
+             * option to be used in MultichannelCorrelator.  Without it 
+             * that object will throw a MetadataGetError when trying to 
+             * fetch these. */
+            for(i=0;i<nmember;++i)
+            {
+                d.member[i].put(coherence_keyword,0.0);
+                d.member[i].put(amplitude_static_keyword,1.0);
+                d.member[i].put(stack_weight_keyword,1.0);
+            }
             stacktype=BasicStack;
         }
         catch(...)
