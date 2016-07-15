@@ -271,6 +271,10 @@ IndexTimes ThreeCEnsembleTimePicker::get_member_times()
                     << "Report to author"<<endl;
             }
             arrivaltime=dptr->get_double(t0shift_key);
+            /* If align hasn't been called we can get times 
+             * as sum of arrivaltime+pickdata.  We assume that 
+             * when align is called TCPICKEY references a 0 value */
+            arrivaltime+=pickdata;
             result.insert(pair<int,double>(i,arrivaltime));
           }
         }
@@ -313,6 +317,10 @@ StaTimes ThreeCEnsembleTimePicker::get_sta_times()
                     << "Report to author"<<endl;
             }
             arrivaltime=dptr->get_double(t0shift_key);
+            /* If align hasn't been called we can get times 
+             * as sum of arrivaltime+pickdata.  We assume that 
+             * when align is called TCPICKEY references a 0 value */
+            arrivaltime+=pickdata;
             result.insert(pair<string,double>(sta,arrivaltime));
           }
         }
