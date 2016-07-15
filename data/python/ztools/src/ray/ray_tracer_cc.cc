@@ -187,8 +187,8 @@ static struct PyMethodDef methods[] =
 };
 
 
-PyMODINIT_FUNC initray_tracer (void)
+PyMODINIT_FUNC initray_tracer_cc (void)
 {
-    (void)Py_InitModule("ray_tracer", methods);
+    (void)Py_InitModule("ray_tracer_cc", methods);
     import_array();
 }

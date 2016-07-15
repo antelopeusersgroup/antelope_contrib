@@ -1,5 +1,3 @@
-sys.path.append(os.environ['ANTELOPE'] + "/data/velocity")
-
 import antelope.datascope as ds
 
 from antelope.datascope import closing,\
@@ -23,9 +21,9 @@ from scipy.signal import decimate
 from scipy.interpolate import interp1d
 import time
 import ztools.response as respmod
-import moment as mo
+import ztools.moment as mo
 from nitime.algorithms.spectral import multi_taper_psd
-import raytracer as rt
+import ztools.ray.raytracer as rt
 import matplotlib as mpl
 
 def var_red(source, f, fc, omega, n):

@@ -1,6 +1,7 @@
-DATADIR=python/ztools
+DATADIR=python/ztools/ray
 
-DATA=ray_tracer_cc.so\
+DATA=__init__.pyc\
+	 ray_tracer_cc.so\
 	 raytracer.pyc
 
 include $(ANTELOPEMAKE)
@@ -8,18 +9,10 @@ include $(ANTELOPEMAKE)
 all :: ray_tracer_cc.so raytracer.pyc
 
 ray_tracer_cc.so: ray_tracer_cc.cc
-	$(PYTHON) setup.py build && mv build/lib*/ray_tracer_cc.so . && rm -r build
+	$(PYTHON) setup.py build && mv build/lib*/ray_tracer_cc.so .
 
-CLEAN=ray_tracer_cc.so\
+CLEAN=__init__.pyc\
+	  ray_tracer_cc.so\
 	  raytracer.pyc
-
-%.pyc : %.py
-	$(RM) $@
-	awk '/__future__/ { print }' $*.py >> _$*.py
-	cat ../../pyc_header >> _$*.py
-	awk '($$0 !~ "__future__") { print }' $*.py >> _$*.py
-	$(PYTHON) -c 'import py_compile; py_compile.compile("_$<")'
-	$(RM) _$*.py
-	mv _$*.pyc $*.pyc
 
 DIRS=
