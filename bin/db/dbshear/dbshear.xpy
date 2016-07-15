@@ -1,4 +1,4 @@
-from os.path import splitext, isfile
+from os.path import splitext
 from os import getpid
 from time import sleep
 import re
@@ -7,11 +7,7 @@ from multiprocessing import Manager, Process, Queue
 from collections import deque
 from Queue import Empty
 from numpy import arange,\
-                  array,\
-                  float32,\
-                  float64,\
-                  int32,\
-                  int64
+                  array
 from antelope.orb import Orb,\
                          OrbAfterError,\
                          OrbIncompleteException,\
@@ -31,14 +27,10 @@ from antelope.stock import epoch2str,\
                            pfin,\
                            pfread,\
                            now
-from ztools.phase.pick import shear_pick
-import ztools.dbshear as alg
+
+from ztools.shear.pick import shear_pick
 
 logger = logging.getLogger(__name__)
-
-class MyError(Exception):
-    def __init__(self):
-        pass
 
 class TraceAddError(Exception):
     def __init__(self):
@@ -63,8 +55,6 @@ class SourceInventory:
 
     def get_sources(self, net, sta, chan, time=None):
         if self.type == 'orb':
-            if sta[:3] == "%s_" % net:
-                sta = sta[3:]
             if net not in self.inventory:
                 self.inventory[net] = {}
             if sta not in self.inventory[net]:
@@ -429,12 +419,6 @@ class DataBackEndObject:
                             tr3c.tr_h1,
                             tr3c.tr_h2):
                 tr_data = my_tr.tr
-                ###THIS IS GOING TO SLOW THINGS DOWN AND NEEDS TO BE FIXED!
-                if isinstance(tr_data[0], int64) and  not isinstance(tr_data[0], float64):
-                    if isinstance(tr_data[0], int64) or isinstance(tr_data[0], int32):
-                        tr_data = [int(v) for v in tr_data]
-                    elif isinstance(tr_data[0], float64) or isinstance(tr_data[0], float32):
-                        tr_data = [float(v) for v in tr_data]
                 with trdestroying(trnew('/tmp/test_tr')) as tr:
                     tr = tr.lookup(table='trace')
                     tr.record = tr.addnull()
@@ -758,15 +742,12 @@ class Trace3C():
         if isinstance(dataobj, PktChannel):
             if dataobj.sta != self.sta:
                 return self
-                #raise TraceAddError()
             if dataobj.chan != self.tr_z.chan and\
                     dataobj.chan != self.tr_h1.chan and\
                     dataobj.chan != self.tr_h2.chan:
                 return self
-                #raise TraceAddError()
             if dataobj.samprate != self.samprate:
                 return self
-                #raise TraceAddError()
             if dataobj.chan == self.tr_z.chan:
                 self.tr_z += dataobj
             elif dataobj.chan == self.tr_h1.chan:
@@ -797,10 +778,6 @@ class Trace3C():
         ax2 = fig.add_subplot(3, 1, 2)
         ax3 = fig.add_subplot(3, 1, 3)
         t = [self.tr_z.time + i * self.tr_z.dt for i in range(self.tr_z.nsamp)]
-        #logger.error('{} {} {} {}'.format(len(t),
-                                          #len(self.tr_z.tr),
-                                          #len(self.tr_h1.tr),
-                                          #len(self.tr_h1.tr)))
         ax1.plot(t, self.tr_z.tr)
         ax2.plot(t, self.tr_h1.tr)
         ax3.plot(t, self.tr_h2.tr)
@@ -1024,7 +1001,7 @@ def parse_pfile(pfile):
     """
     if not pfile:
         pfile = pfread('dbshear')
-    elif not isfile(pfile):
+    elif not os.path.isfile(pfile):
         pfile = pfread('dbshear')
     elif splitext(pfile)[1] == '.pf':
         pfile = pfin(pfile)
