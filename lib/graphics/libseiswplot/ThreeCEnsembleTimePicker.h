@@ -4,32 +4,32 @@
 #include <vector>
 #include <map>
 #include "GenericTimePicker.h"
+using namespace std;
+using namespace SEISPP;
+namespace SEISPP
+{
 /* Used only in the private part of this object.   Used by resurrect
  * method to know which seismograms should be brought back to life and
  * which should be left dead.  Note initialized to ALLDEAD for 
  * traces marked dead on entry and MOSTLY_DEAD_ALL_DAY for traces
  * live on entry but not picked.   */
 enum PickState {ALLDEAD,MOSTLY_DEAD_ALL_DAY,PICKED};
-/* key for arrival time set by this picker */
-const string TCPICKKEY("arrivaltime");
+/* key for relative time picks used within this object. */
+const string TCPICKKEY("pickedtime");
 /* TCPICKKEY values are initialzied to this value to mark them as not having a
 pick */
 const double null_pick(-9.999e99);
 /* this is the test value - smaller than this defines null */
 const double null_pick_test(-1e20);
-using namespace std;
-using namespace SEISPP;
-namespace SEISPP
-{
+/* This is the metadata key to set the utc (epoch) time of the 0 time
+for a seismogram handled by this object.  Caller needs to make sure
+this is so or chaos may result.*/
+const string t0shift_key("t0shift");
 /*! Used to store times indexed by a station name. */
 typedef map<string,double> StaTimes;
 /*! Used to store times indexed by the integer index of the member vector 
   of a ThreeComponentSeismogram object being plotted. */
 typedef map<int,double> IndexTimes;
-/* This is the metadata key to set the utc (epoch) time of the 0 time
-for a seismogram handled by this object.  Caller needs to make sure
-this is so or chaos may result.*/
-const string t0shift_key("t0shift");
 /* \brief Arrival time picker for three component data.
 
 This object is aimed as a simple interface for a picking window
@@ -61,6 +61,12 @@ Repeat until happy.   The object intentionally does NOT contain any gui
 elements to control this because an application can either add that
 element to the gui or do this through the command line interface.
 
+A VERY IMPORTANT limitation to keep in mind is that we assume that because
+picking is blind the user will always call the align method before pulling
+any of the data with any of the getters.   get_member_times and 
+get_sta_times may not yield the right answer if this is not done.  There
+are curently no safety features to protect the innocent from this feature.
+
 \author Gary L. Pavlis, Dept. of Geol. Sci, Indiana University
 */
 class ThreeCEnsembleTimePicker
@@ -78,31 +84,27 @@ public:
   refine_picks method should be used to modify picks.
 
   \param din - input ensemble.
+  \param initialize - effects the behaviour of the time shifting variable
+     stored internally in picking. When plotting a new data set for the
+     first time set this true.  Default is false which will not alter
+     any of the pick variables. 
 
   \returns - number of seismograms loaded and plotted
   */
-  int plot(ThreeComponentEnsemble& din);
+  int plot(ThreeComponentEnsemble& din,bool initialize=false);
   /*! Return picked times indexed by station name.
 
-  Times returned are relative to 0 reference of each seismogram. */
+  Times returned are relative to original time reference for each seismogram.
+  That means an epoch time for absolute tref or relative to some 0 for 
+  something like active source data. */
   StaTimes get_sta_times();
   /*! Return picked times indexed by ensemble member index.
 
-  Times returned are relative to 0 reference of each seismogram.*/
+  Times returned are relative to original time reference of each seismogram.
+  That means an epoch time for absolute tref or relative to some 0 for 
+  something like active source data. */
   IndexTimes get_member_times();
-  /*! Return absolute (UTC) time indexed by station name.
-
-  This method returns epoch times.   It assuumes the Metadata field
-  times has been set to convert pick time to utc.
-  */
-  StaTimes get_absolute_sta_times();
-  /*! Return absolute (UTC) times indexed by ensemble member number.
-
-  This method returns epoch times.   It assuumes the Metadata field
-  times has been set to convert pick time to utc.
-  */
-  IndexTimes get_absolute_member_times();
-  /* \brief Align displayed data with pick times.
+  /*! \brief Align displayed data with pick times.
 
   When working with multichannel data adjacent seismograms will have similar
   signals.   In that situation similarity can be appraised by aligning
@@ -113,6 +115,16 @@ public:
   time standard t0shift is an epoch time and can be saved as an arrival
   time estimate (e.g. in an css database arrival table).*/
   void align();
+  /*! \brief  Align with a set of external lag estimates.
+   *
+   * This overloaded version of align applies lags in the input 
+   * vector and adjust the times to align with those lags.   This
+   * is used, for example, in a code I wrote to use cross-correlation
+   * to provide a secondary alignment.   
+   *
+   * Unset lag estimates should be flagged with the null_pick value
+   * defined in the header to this file */
+  void align(vector<double>& lags);
   /* Start over - restores original data and removes alignments */
   void reset();
   /*! Pick times for active component.
@@ -152,7 +164,7 @@ public:
   int set_pick_times(vector<SeismicPick> picks);
   /*! Run picker and set pick times.
 
-   This would be the normal method called top pick an ensemble.   
+   This would be the normal method called to pick an ensemble.   
    Picks are stored internally.  This method always blocks until 
    the exit command (menu item) is initiated in the gui.   This 
    method can also be viewed (more or less) as running run_picker
@@ -221,47 +233,5 @@ private:
    * we use this enum. */
   vector<PickState> pick_state;
 };
-/*! \brief Returns an edited ensemble with pick times set.
-
-This procedure is used to store pick times produced by a ThreeCEnsembleTimePicker
-in the Metadata area of each seimogram of the parent.   This version assumes
-station name indexing can be used so it uses the StaTime output.
-This procedure intentionally edits the ensemble rather than returning a copy
-because metadata edits take trivial effort and copying an ensemble can be
-a huge overhead.
-
-\param picks - output of pick_times method of ThreeCEnsembleTimePicker.
-\param d - parent data to store picks
-\param key - metadata key used to store the pick time.
-\param kill_unpicked - when true unpicked seismograms will be marked dead (live
-attribute will be set false).   Default is false.
-
-\return - number of picks set
-
-*/
-int set_arrival_times(StaTimes& picks, ThreeComponentEnsemble& d, string key,
-                        bool kill_unpicked=false);
-
-
-/*! \brief Returns an edited ensemble with pick times set.
-
-This procedure is used to store pick times produced by a ThreeCEnsembleTimePicker
-in the Metadata area of each seimogram of the parent.   This version utilizes
-simple vector indexing returned through IndexTimes.
-This procedure intentionally edits the ensemble rather than returning a copy
-because metadata edits take trivial effort and copying an ensemble can be
-a huge overhead.
-
-\param picks - output of pick_times method of ThreeCEnsembleTimePicker.
-\param d - parent data to store picks
-\param key - metadata key used to store the pick time.
-\param kill_unpicked - when true unpicked seismograms will be marked dead (live
-attribute will be set false).   Default is false.
-
-\return - number of picks set
-
-*/
-int set_arrival_times(IndexTimes& picks, ThreeComponentEnsemble& d, string key,
-                        bool kill_unpicked=false);
 }  // End SEISPP namespace declaration
 #endif
