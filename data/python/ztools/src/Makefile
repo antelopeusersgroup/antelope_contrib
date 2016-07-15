@@ -1,1 +1,1 @@
-include $(ANTELOPEMAKE)
+include ${ANTELOPEMAKE}
