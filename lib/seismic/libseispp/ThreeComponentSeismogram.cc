@@ -1137,15 +1137,8 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 {
 	if(this!=&seisin)
 	{
-		mreal=seisin.mreal;
-		mint=seisin.mint;
-		mbool=seisin.mbool;
-		mstring=seisin.mstring;
-		live=seisin.live;
-		dt=seisin.dt;
-		t0=seisin.t0;
-		ns=seisin.ns;
-		tref=seisin.tref;
+                this->BasicTimeSeries::operator=(seisin);
+                this->Metadata::operator=(seisin);
 		components_are_orthogonal=seisin.components_are_orthogonal;
 		components_are_cardinal=seisin.components_are_cardinal;
 		for(int i=0;i<3;++i)
@@ -1156,7 +1149,6 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 			}
 		}
 		u=seisin.u;
-		gaps=seisin.gaps;
 	}
 	return(*this);
 }
