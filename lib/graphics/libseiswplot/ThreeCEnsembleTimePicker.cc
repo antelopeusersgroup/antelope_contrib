@@ -94,7 +94,6 @@ ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker()
     but this is a nasty mysterious feature that could bite someone.  */
     int k;
     this->build_pick_menu();
-    t0_align_key_d0 = string("origin.time");
     active_component=0;
     //this->set_active_component(0);
   }catch(...){throw;};
@@ -129,15 +128,6 @@ ThreeCEnsembleTimePicker::ThreeCEnsembleTimePicker(Metadata md)
     }catch(...)
     {
         active_component=0;
-    }
-    t0_align_key_d0 = md.get_string("t0_align_key");
-    if(t0_align_key_d0==t0shift_key)
-    {
-        throw SeisppError(base_error
-                + "Illegal value of parameter t0_align_key="
-                + t0_align_key_d0
-                +"\nThis matches internal shift key attribute and is not allowed\n"
-                + "Choose anything else");
     }
     //this->set_active_component(active_component);
   }catch(...){throw;};
@@ -196,15 +186,10 @@ int ThreeCEnsembleTimePicker::plot(ThreeComponentEnsemble& din,
     vector<ThreeComponentSeismogram>::iterator dptr;
     for(dptr=d0.member.begin();dptr!=d0.member.end();++dptr)
     {
-      dptr->put(TCPICKKEY,null_pick);
+      if(initialize) dptr->put(TCPICKKEY,null_pick);
       if(dptr->live)
       {
           pick_state.push_back(MOSTLY_DEAD_ALL_DAY);
-          if(initialize)
-          {
-            double t0initial=dptr->get_double(t0_align_key_d0);
-            dptr->put(t0shift_key,t0initial);
-          }
       }
       else
           pick_state.push_back(ALLDEAD);
@@ -270,7 +255,7 @@ IndexTimes ThreeCEnsembleTimePicker::get_member_times()
                     << "This is a state problem that is a bug.  "
                     << "Report to author"<<endl;
             }
-            arrivaltime=dptr->get_double(t0shift_key);
+            arrivaltime=dptr->time_reference();
             /* If align hasn't been called we can get times 
              * as sum of arrivaltime+pickdata.  We assume that 
              * when align is called TCPICKEY references a 0 value */
@@ -316,7 +301,7 @@ StaTimes ThreeCEnsembleTimePicker::get_sta_times()
                     << "This is a state problem that is a bug.  "
                     << "Report to author"<<endl;
             }
-            arrivaltime=dptr->get_double(t0shift_key);
+            arrivaltime=dptr->time_reference();
             /* If align hasn't been called we can get times 
              * as sum of arrivaltime+pickdata.  We assume that 
              * when align is called TCPICKEY references a 0 value */
@@ -345,7 +330,7 @@ int ThreeCEnsembleTimePicker::set_pick_times(vector<SeismicPick> p)
     for(count=0,ptr=p.begin();ptr!=p.end();++ptr)
     {
         //DEBUG
-        cout << "Pick number "<<count<<" has type="<<ptr->type<<endl;
+        //cout << "Pick number "<<count<<" has type="<<ptr->type<<endl;
       /* Silently drop picks not tagged as point poicks */
       if(ptr->type == POINT)
       {
@@ -373,9 +358,7 @@ int ThreeCEnsembleTimePicker::set_pick_times(vector<SeismicPick> p)
 }
 /* This is a key method that should normally be called after any picks.
  * It permanantely alters t0 of each live seismogram and the t0shift variable.
- * The original time reference is assumed to be stored in an independent
- * metadata attribute defined by the key t0_align_key_d0 if one wants to 
- * compare to the original reference.   It shifts t0 by lags stored
+ * It shifts t0 by lags stored
  * in TCPICKKEY, alters and resets t0shift, and then zeros the content of
  * the TCPICKKEY attribute.
  */
@@ -391,17 +374,17 @@ void ThreeCEnsembleTimePicker::align()
       arrivaltime=d0.member[i].get_double(TCPICKKEY);
       /*Silently skip unpicked data*/
       if(arrivaltime<null_pick_test) continue;
-      t0s=d0.member[i].get_double(t0shift_key);
+      t0s=d0.member[i].time_reference();
       t0s+=arrivaltime;
       d0.member[i].put(t0shift_key,t0s);
-      d0.member[i].t0-=arrivaltime;
+      d0.member[i].shift(arrivaltime);
       /* arrival time needs to now be reset to 0 */
       d0.member[i].put(TCPICKKEY,0.0);
       /* Do exactly the same thing to the components and call the plot method
       to display the changes */
       for(k=0;k<3;++k)
       {
-        d[k].member[i].t0-=arrivaltime;
+        d[k].member[i].shift(arrivaltime);
         d[k].member[i].put(t0shift_key,t0s);
         d[k].member[i].put(TCPICKKEY,0.0);
       }
@@ -429,14 +412,14 @@ void ThreeCEnsembleTimePicker::align(vector<double>& lags)
             {
                 if(lags[i]>null_pick_test)
                 {
-                    t0s=d0.member[i].get_double(t0shift_key);
+                    t0s=d0.member[i].time_reference();
                     t0s+=lags[i];
                     d0.member[i].put(t0shift_key,t0s);
-                    d0.member[i].t0-= lags[i];
+                    d0.member[i].shift(lags[i]);
                     d0.member[i].put(TCPICKKEY,0.0);
                     for(k=0;k<3;++k)
                     {
-                        d[k].member[i].t0-= lags[i];
+                        d[k].member[i].shift(lags[i]);
                         d[k].member[i].put(t0shift_key,t0s);
                         d[k].member[i].put(TCPICKKEY,0.0);
                     }
@@ -543,7 +526,7 @@ void ThreeCEnsembleTimePicker::kill_unpicked()
         double arrivaltime;
         arrivaltime=d0ptr->get_double(TCPICKKEY);
         //DEBUG
-        cout << "kill_unpicked: i="<<i<<" atime="<<arrivaltime<<" state="<<pick_state[i]<<endl;
+        //cout << "kill_unpicked: i="<<i<<" atime="<<arrivaltime<<" state="<<pick_state[i]<<endl;
         /* This is true if the pick is null  - reverse numeric test of
          * every other occurence like this. Assumes null_pick_test is
          * a large positive number.*/
@@ -570,6 +553,25 @@ void ThreeCEnsembleTimePicker::kill_unpicked()
     comp0.plot(d[0],false);
     comp1.plot(d[1],false);
     comp2.plot(d[2],false);
+}
+ void ThreeCEnsembleTimePicker::mark_all_live_picked()
+{
+    /* Silently do nothing if data are not loaded */
+    if(data_loaded)
+    {
+        int i,k;
+        vector<ThreeComponentSeismogram>::iterator dptr;
+        for(i=0,dptr=d0.member.begin();dptr!=d0.member.end();++dptr,++i)
+        {
+            if(dptr->live)
+            {
+                pick_state[i]=PICKED;
+                dptr->put(TCPICKKEY,0.0);
+                for(k=0;k<3;++k)
+                    d[k].member[i].put(TCPICKKEY,0.0);
+            }
+        }
+    }
 }
 void ThreeCEnsembleTimePicker::resurrect()
 {

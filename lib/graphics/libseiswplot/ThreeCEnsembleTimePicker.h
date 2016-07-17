@@ -192,7 +192,21 @@ public:
     This method restores data marked dead with any previous calls to the
     kill_unpicked method.  */
   void resurrect();
+  /*! Mark all live data valid.
+
+    Sometimes one wants to assume the data have previously been 
+    picked and all we want to do is tweek the previous picks.   
+    This method sets internals to define all live data as
+    having been picked already.  Warning:  it also zeros the pick
+    lag field so if called after a set of picks not stored with
+    align the picks will be lost. 
+
+    This method should always be called when working on previously 
+    picked data.
+    */
+  void mark_all_live_picked();
   /*! \brief Return data with picks set in headers.
+
    
     Because this beast works by setting pick relative times in the 
     data ensemble header an alternative to the pick retrieval methods
@@ -224,9 +238,6 @@ private:
   int active_component;
   /* This is used by constructors to build the above 4 widgets. */
   void build_pick_menu();
-  /* This is set from Metadata.  The  t0shift attribute is initialized
-   * with the value extracted by this key */
-  string t0_align_key_d0;
   /* This vector is used by resurrect to know which data to restore.   
    * This is not just a true false test because there are three possiblities:
    * dead on entry, marked dead by not being picked, and live.  Hence
