@@ -176,18 +176,48 @@ public:
 //\param tshift - time shift applied to data before switching data to relative time mode.
 **/
 	void ator(double tshift);
-/*!
-// Relative to absolute time conversion.
-// Sometimes we want to convert data from relative time to 
-// to an absolute time standard.  An example would be converting
-// segy shot data to something that could be processed like earthquake
-// data in a css3.0 database.
-// This operation simply switches the tref 
-// variable and alters t0 by tshift.
-//\param tshift - time shift applied to data before switching data to absolute time mode.
-// 
+/*!  Relative to absolute time conversion.
+ Sometimes we want to convert data from relative time to 
+ to an absolute time standard.  An example would be converting
+ segy shot data to something that could be processed like earthquake
+ data in a css3.0 database.
+ This operation simply switches the tref 
+ variable and alters t0 by tshift.
+\param tshift - time shift applied to data before switching data to absolute time mode.
+
+NOTE:  This method is maintained only for backward compatibility.   May be depricated
+   in favor of method that uses internally stored private shift variable. 
 **/
 	void rtoa(double tshift);
+/*! Relative to absolute time conversion.
+ Sometimes we want to convert data from relative time to 
+ to an absolute time standard.  An example would be converting
+ segy shot data to something that could be processed like earthquake
+ data in a css3.0 database.
+
+ This method returns data previously converted to relative back to absolute using the
+ internally stored time shift attribute. */
+        void rtoa();
+/*! Shift the reference time.
+ 
+  Sometimes we need to shift the reference time t0.  An example is a moveout correction.
+  This method shifts the reference time by dt.   Note a positive dt means data aligned to 
+  zero will be shifted left because relative time is t-t0.
+  */
+        void shift(double dt);
+/*! Return the reference time.
+ 
+  We distinguish relative and absolute time by a time shift constant
+  stored with the object.   This returns the time shift to return
+  data to an epoch time. 
+
+  \throw SeisppError object if the request is not rational.  That is this
+  request only makes sense if the data began with an absolute time and was
+  converted with the ator method.   Some cross checks are made for consistency
+  that can throw an error in this condition. */
+        double time_reference();
+/*! Standard assignment operator. */
+        BasicTimeSeries& operator=(const BasicTimeSeries& parent);
 /*!
 // Outputs the data members of this base class.
 // Main use of this function is for ease of output in an ascii format.
@@ -207,6 +237,13 @@ protected:
 	set<TimeWindow,TimeWindowCmp> gaps;
 	
 private:
+    /* We actually test for t0shift two ways.  If this is true we always accept it.
+     * If false we check for nonzero t0shift and override if necessary. 
+     * */
+    bool t0shift_is_valid;
+    /*When ator or rtoa are called this variable defines the conversion back
+     * and forth.  The shift method should be used to change it. */
+    double t0shift;
     friend class boost::serialization::access;
     template<class Archive>
             void serialize(Archive & ar, const unsigned int version)
@@ -216,6 +253,8 @@ private:
         ar & dt;
         ar & tref;
         ar & ns;
+        ar & t0shift_is_valid;
+        ar & t0shift;
 /* for latest Xcode and clang, this will not serialize.  Since I've not 
 uniformly handled gaps for now anyway will remove this until a reason 
 is found that it breaks.
