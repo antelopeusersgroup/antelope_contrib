@@ -1,0 +1,73 @@
+.TH COMPARE_SENSORS 1
+.SH COMPARE_SENSORS
+compare_sensors \- compare calibration of co-located strong-motion and broadband
+instruments
+.SH SYNOPSIS
+.nf
+\fBcompare_sensors [-h] [-s output_file]\fP \fIsta vel_chan acc_chan db time twin [filter]\fP
+.fi
+.SH DESCRIPTION
+This is a simple script to perform a crude calibration comparison of co-located
+strong-motion and broadband instruments. Velocity data is demeaned,
+differentiated to cast data to units of acceleration and then frequency filtered
+to remove signal outside the instrument passband. Accleration data is demeaned
+and the same frequency filter is applied. These processed time-series are plotted
+separately and superimposed for visual comparison. This method is sufficient for
+determining significant calibration errors (eg. factors of 2, 4...) and is not
+intended for high-precision instrument calibration.
+.SH OPTIONS
+.IP -h
+
+Print help.
+
+.IP "-s output_file"
+
+Save plot to output_file.
+
+.IP sta
+
+Station code.
+
+.IP vel_chan
+
+Velocity channel code.
+
+.IP acc_chan
+
+Acceleration channel code.
+
+.IP db
+
+Database.
+
+.IP time
+
+String representing start time of comparison data window (converted to epoch
+time using str2epoch).
+
+.IP twin
+
+Length of data comparison time window in seconds.
+
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+[mcwhite@whitehawk-CentOS 2011]$ compare_sensors PFO HHZ HNZ
+anza_2011 "2011001 01:00:00" 45
+
+.SH "SEE ALSO"
+.nf
+str2epoch(3)
+.fi
+.SH AUTHOR
+.ft R
+.in 2c
+.nf
+
+Malcolm White
+mcwhite@ucsd.edu
+University of California San Diego
