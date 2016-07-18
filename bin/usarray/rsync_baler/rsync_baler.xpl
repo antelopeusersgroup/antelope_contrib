@@ -699,7 +699,7 @@ sub get_data {
     # value limit_innactive_age in parameter
     # file.
     #
-    if ( $pf{limit_innactive_age}  and  $endtime ne '-' and int($endtime) > 0) {
+    if ( $pf{limit_innactive_age}  and  $status ne 'Active' and int($endtime) > 0) {
         if ( $pf{limit_innactive_age} < (now() - $endtime)  ) {
             fork_notify("STOP $sta, more than $pf{limit_innactive_age} seconds old.") ;
             exit ;
@@ -1088,7 +1088,7 @@ sub get_data {
     dbclose(@db) ;
 
 
-    unless (keys %{$flagged}) {
+    unless (keys %flagged) {
         fork_log("No new files. http://$ip:$pf{http_port}") ;
         dbunlock("${path}/${sta}_baler") ;
         return ;
@@ -1105,10 +1105,10 @@ sub get_data {
     #
     if ( $pf{newest_first} ) {
         # Start at newest.
-        @download_list = sort {$b cmp $a} keys %{$flagged} ;
+        @download_list = sort {$b cmp $a} keys %flagged ;
     } else {
         # Start at oldest.
-        @download_list = sort {$a cmp $b} keys %{$flagged} ;
+        @download_list = sort {$a cmp $b} keys %flagged ;
     }
 
     #
@@ -1362,8 +1362,8 @@ sub get_data {
     delete $flagged{$_} foreach @total_downloads ;
 
     if ( scalar keys %flagged > 0 ) {
-        fork_debug('Missing: '.join(' ',sort keys %{$flagged})) ;
-        fork_complain('Missing: '.scalar keys %{$flagged} . ' files') ;
+        fork_debug('Missing: '.join(' ',sort keys %flagged)) ;
+        fork_complain('Missing: '.scalar keys %flagged . ' files') ;
     }
 
     #
