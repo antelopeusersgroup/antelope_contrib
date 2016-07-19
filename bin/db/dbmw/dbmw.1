@@ -3,41 +3,39 @@
 dbmw \- moment magnitude calculation from multi-taper spectral analysis
 .SH SYNOPSIS
 .nf
-\fBdbmw\fP \fB[-h] [-c chan] [-s subset] [-d] [-v] [-r reject] [-p] [-x dist]\fP
-\fIdb [velocity_model]\fP
+\fBdbmw\fP \fB[-h] [-c chan_subset] [-e event_subset] [-d] [-p] [-r reject]
+[-v] [-x dist]\fP \fIdb [velocity_model]\fP
 .fi
 .SH DESCRIPTION
 
 \fBdbmw\fP will estimate moment magnitude from the low-frequency asymptote of
 stacked P and S wave spectra determined using multi-taper spectral analysis
-techniques. The method implemented in this program is documented in manuscript
-\fIAnalysis of earthquake body wave spectra for potency and magnitude values:
-Implications for magnitude scaling relations\fP currently under review by
-Geophysical Journal International. See BUGS AND CAVEATS section for external
-dependencies.
+techniques. The method implemented in this program is documented in
+Ross et al. 2016. See REFERENCES section for external documentation and
+DEPENDENCIES section for external dependencies.
 
 .SH OPTIONS
 .IP -h
 .fi
 Print help.
-.IP "-c channel_subset"
+.IP "-c chan_subset"
 .fi
 Channel subset expression to select stations to use in magnitude calculation.
-.IP "-s subset"
-.fi
-Event subset expression to select events to calculate magnitude for.
 .IP -d
 .fi
 Only use defining phases in magnitude calculation.
-.IP
-.fi -v
-Verbose flag.
+.IP "-e event_subset"
+.fi
+Event subset expression to select events to calculate magnitude for.
+.IP -p
+.fi
+Parameter file.
 .IP "-r reject_expression"
 .fi
 Station rejection expression.
-.IP -p
+.IP -v
 .fi
-Enable plotting of spectra and best fitting model.
+Verbose flag.
 .IP "-x distance"
 .fi
 Minimum hypocentral distance allowed for stations used in magnitude calculation.
@@ -77,41 +75,62 @@ and is as follows:
 .ne 12
 
 [mcwhite@whitehawk-CentOS test]$ \fBdbmw test\fP
-Starting...
-Getting site metadata.
-Initializing thread
-Starting origin_reap_thread.
-Starting origin_process_thread.
-1: 21 P spectra, 18 S spectra, 7 P 6 S, orbassoc_l
-Finished calculating spectra for all stations
-Fitting model to stack
-Finished fitting model..best results are:
-phase=P, Mw=2.10, fc=4.74, [2.09, 2.11], VR=1.00
-Finished calculating spectra for all stations
-Fitting model to stack
-Finished fitting model..best results are:
-phase=S, Mw=1.87, fc=3.15, [1.86, 1.88], VR=1.00
-2.0963676309
-1.86679394692
-1 Mw=1.98
-2: 21 P spectra, 15 S spectra, 7 P 5 S, orbassoc_l
-Finished calculating spectra for all stations
-Fitting model to stack
-Finished fitting model..best results are:
-phase=P, Mw=1.82, fc=13.97, [1.81, 1.83], VR=1.00
-Finished calculating spectra for all stations
-Fitting model to stack
-Finished fitting model..best results are:
-phase=S, Mw=1.99, fc=3.34, [1.98, 2.00], VR=1.00
-1.81913410188
-1.98693806978
-2 Mw=1.90
+2016202 12:19:32::INFO:: Starting...
+2016202 12:19:32::INFO:: Getting site metadata.
+2016202 12:19:32::INFO:: Initializing thread
+2016202 12:19:32::INFO:: Starting origin_reap_thread.
+2016202 12:19:32::INFO:: Starting origin_process_thread.
+2016202 12:19:33::INFO:: 23: 18 P spectra, 18 S spectra, 6 P 6 S, orbassoc_l
+2016202 12:19:33::INFO:: Finished calculating spectra for all stations
+2016202 12:19:33::INFO:: Fitting model to stack
+2016202 12:19:37::INFO:: Finished fitting model..best results are:
+2016202 12:19:37::INFO:: phase=P, Mw=2.04, fc=3.34, [2.02, 2.05], VR=1.00
+2016202 12:19:37::INFO:: Finished calculating spectra for all stations
+2016202 12:19:37::INFO:: Fitting model to stack
+2016202 12:19:41::INFO:: Finished fitting model..best results are:
+2016202 12:19:41::INFO:: phase=S, Mw=1.73, fc=3.34, [1.72, 1.74], VR=1.00
+2016202 12:19:41::INFO:: 2.03508361333
+2016202 12:19:41::INFO:: 1.72970003275
+2016202 12:19:41::INFO:: 23 Mw=1.88
+2016202 12:19:41::INFO:: 24: 18 P spectra, 18 S spectra, 6 P 6 S, orbassoc_l
+2016202 12:19:42::INFO:: Finished calculating spectra for all stations
+2016202 12:19:42::INFO:: Fitting model to stack
+2016202 12:19:45::INFO:: Finished fitting model..best results are:
+2016202 12:19:45::INFO:: phase=P, Mw=1.56, fc=12.20, [1.52, 1.60], VR=1.00
+2016202 12:19:45::INFO:: Finished calculating spectra for all stations
+2016202 12:19:45::INFO:: Fitting model to stack
+2016202 12:19:49::INFO:: Finished fitting model..best results are:
+2016202 12:19:49::INFO:: phase=S, Mw=1.62, fc=3.55, [1.58, 1.66], VR=1.00
+2016202 12:19:49::INFO:: 1.55854234326
+2016202 12:19:49::INFO:: 1.62286254088
+2016202 12:19:49::INFO:: 24 Mw=1.59
+
+
+[mcwhite@whitehawk-CentOS test]$ \fBdbmw -c 'chan =~ /..Z/' -e 'evid == 23' test\fP
+2016202 14:23:10::INFO:: Starting...
+2016202 14:23:10::INFO:: Getting site metadata.
+2016202 14:23:10::INFO:: Initializing thread
+2016202 14:23:10::INFO:: Starting origin_reap_thread.
+2016202 14:23:10::INFO:: Starting origin_process_thread.
+2016202 14:23:10::INFO:: 23: 18 P spectra, 0 S spectra, 6 P 0 S, orbassoc_l
+2016202 14:23:10::INFO:: Finished calculating spectra for all stations
+2016202 14:23:10::INFO:: Fitting model to stack
+2016202 14:23:14::INFO:: Finished fitting model..best results are:
+2016202 14:23:14::INFO:: phase=P, Mw=2.04, fc=3.34, [2.02, 2.05], VR=1.00
+2016202 14:23:14::INFO:: 2.03508361333
+2016202 14:23:14::INFO:: 23 Mw=2.04
 
 .nf
 .fi
 .ft R
 
-.SH "BUGS AND CAVEATS"
+.SH REFERENCES
+.nf
+Ross, Z. E., Y. Ben-Zion, M. White, F. L. Vernon (2016). Analysis of earthquake body wave spectra for potency and magnitude values:
+Implications for magnitude scaling relations \fIGeophy. J. Int. (in review)\fP.
+.fi
+
+.SH DEPENDENCIES
 External dependencies (Python packages) not included:
 .IP "\fBscipy\fP - http://www.scipy.org"
 .IP "\fBnitime\fP - http://www.nipy.org/nitime"
