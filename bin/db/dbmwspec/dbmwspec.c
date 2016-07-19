@@ -337,7 +337,6 @@ int main(int argc, char **argv)
 			dblookup(dbi,0,"arrival",0,0), 0L, 0L, 0L, 0L, 0L);
 	dbi = dbjoin( dbi,dblookup(dbi,0,"sensor",0,0), 0L, 0L, 0L, 0L, 0L);
 	dbi = dbjoin( dbi,dblookup(dbi,0,"instrument",0,0),  0L, 0L, 0L, 0L, 0L);
-	dbi = dbjoin( dbi,dblookup(dbi,0,"affiliation",0,0),  0L, 0L, 0L, 0L, 0L);
 
 	/* Now we have to sort the db.  This is necessary to fix the 
 	case of overlapping waveform segments (see below).  I'm sorting
@@ -358,7 +357,7 @@ int main(int argc, char **argv)
 	
 	dbquery(dball,dbRECORD_COUNT, &narr);
 	if(narr<=0) elog_die(0,"Working view has no data after dbjoins\n");
-	fprintf(stdout,"dbmwpec:  wfdisc->arrival->sensor->instrument->affiliation join of %s has %ld rows\n",
+	fprintf(stdout,"dbmwpec:  wfdisc->arrival->sensor->instrument join of %s has %ld rows\n",
 				dbin,narr);
 
 	/* Now we loop through the recipe file specification and 
