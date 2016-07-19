@@ -154,16 +154,16 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 {
 	int crunch_table=0;  /* Set to 1 if any rows get marked */
 	int dups=0;  /* set to 1 whenever duplicate records are found */
-	int ilow,ihigh;  /* range or matching records to scan */
+	long ilow,ihigh;  /* range or matching records to scan */
 	double a_time,time,endtime;
 	double alast;
 	char sta[8],chan[10],sta_last[8],chan_last[10];
-	int nrows;
+	long nrows;
 
 	dbquery(db,dbRECORD_COUNT,&nrows);
 	if(nrows <= 2) return;
 	db.record = 0;
-	dbgetv(db,0,"sta",sta_last,"chan",chan_last,"arrival.time",&alast,0);
+	dbgetv(db,0,"sta",sta_last,"chan",chan_last,"arrival.time",&alast,NULL);
 
 	/* we intentionally start with the second record here for reasons
 	that should be obvious */
@@ -172,7 +172,7 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 	{
 		ilow = (db.record) - 1;
 		ihigh = ilow;
-		dbgetv(db,0,"sta",sta,"chan",chan,"arrival.time",&a_time,0);
+		dbgetv(db,0,"sta",sta,"chan",chan,"arrival.time",&a_time,NULL);
 		while( (!strcmp(sta,sta_last)) && (!strcmp(chan,chan_last))
 			&& (alast == a_time) && (db.record<nrows) )
 		{
@@ -181,7 +181,7 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 			ihigh = db.record;
 			++db.record;
 			dbgetv(db,0,"sta",sta,"chan",chan,
-					"arrival.time",&a_time,0);
+					"arrival.time",&a_time,NULL);
 		}
 		if(dups)
 		{
@@ -197,7 +197,7 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 						"chan",chan,
 						"time",&time,
 						"endtime",&endtime,
-						"arrival.time",&a_time,0);
+						"arrival.time",&a_time,NULL);
 					elog_log(0,"Deleting redundant entry for sta:chan %s:%s in dbsubset view\nRows deleted = ",
 						sta,chan);
 					if( ((a_time+sps->start) >= time)
@@ -208,7 +208,7 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 					else
 					{
 						dbmark(db);
-						fprintf(stdout,"%d,",db.record);
+						fprintf(stdout,"%ld,",db.record);
 					}
 
 						
@@ -216,7 +216,7 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 				else
 				{
 					dbmark(db);
-					fprintf(stdout," %d",db.record);
+					fprintf(stdout," %ld",db.record);
 				}
 			}
 			fprintf(stdout,"\n");
@@ -224,7 +224,7 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 			db.record = ihigh + 1;
 			if(db.record >= nrows) break;
 			dbgetv(db,0,"sta",sta_last,"chan",chan_last,
-					"arrival.time",&alast,0);
+					"arrival.time",&alast,NULL);
 		}
 		else
 		{
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
 	Tbl            *phases;	/* table of pointers to list of windows to
 				 * estimate spectra for */
 	int             i, j, k;
-	int             narr, nsite;
+	long             narr, nsite;
 
 	Dbptr           dbi;	/* db being worked on */
 	Dbptr	dball;  /* join of wfdisc and arrival table */
@@ -336,10 +336,10 @@ int main(int argc, char **argv)
 	/* join the full wfdisc and arrival tables.  We keep the pointer
 	because we reuse it repeatedly in the loop below */
 	dbi = dbjoin( dblookup(dbi,0,"wfdisc",0,0),
-			dblookup(dbi,0,"arrival",0,0), 0, 0, 0, 0, 0);
-	dbi = dbjoin( dbi,dblookup(dbi,0,"sensor",0,0), 0, 0, 0, 0, 0);
-	dbi = dbjoin( dbi,dblookup(dbi,0,"instrument",0,0),  0, 0, 0, 0, 0);
-	dbi = dbjoin( dbi,dblookup(dbi,0,"affiliation",0,0),  0, 0, 0, 0, 0);
+			dblookup(dbi,0,"arrival",0,0), 0L, 0L, 0L, 0L, 0L);
+	dbi = dbjoin( dbi,dblookup(dbi,0,"sensor",0,0), 0L, 0L, 0L, 0L, 0L);
+	dbi = dbjoin( dbi,dblookup(dbi,0,"instrument",0,0),  0L, 0L, 0L, 0L, 0L);
+	dbi = dbjoin( dbi,dblookup(dbi,0,"affiliation",0,0),  0L, 0L, 0L, 0L, 0L);
 
 	/* Now we have to sort the db.  This is necessary to fix the 
 	case of overlapping waveform segments (see below).  I'm sorting
@@ -351,7 +351,7 @@ int main(int argc, char **argv)
         pushtbl(sortkeys,"chan");
         pushtbl(sortkeys,"arrival.time");
         pushtbl(sortkeys,"time");
-        dball = dbsort(dbi,sortkeys,0,0);
+        dball = dbsort(dbi,sortkeys,0L,0L);
 	/* the previous view was pretty large, so we should free it up */
 /*
 	dbfree (dbi);
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 	
 	dbquery(dball,dbRECORD_COUNT, &narr);
 	if(narr<=0) elog_die(0,"Working view has no data after dbjoins\n");
-	fprintf(stdout,"dbmwpec:  wfdisc->arrival->sensor->instrument->affiliation join of %s has %d rows\n",
+	fprintf(stdout,"dbmwpec:  wfdisc->arrival->sensor->instrument->affiliation join of %s has %ld rows\n",
 				dbin,narr);
 
 	/* Now we loop through the recipe file specification and 
@@ -369,7 +369,7 @@ int main(int argc, char **argv)
 		Dbptr           db_this_phase;	/* db subset of picks of
 						 * current phase */
 		Spectra_phase_specification *this_phase;
-		int nrecords;
+		long nrecords;
 		char string[32];
 
 		/* Extract entries in arrival table that match current phase */
@@ -393,7 +393,7 @@ int main(int argc, char **argv)
 		fix_overlapping_segments(db_this_phase,this_phase);
 
 		dbquery(db_this_phase, dbRECORD_COUNT, &nrecords);
-		fprintf(stdout,"This should yield %d spectral estimates\n",nrecords);
+		fprintf(stdout,"This should yield %ld spectral estimates\n",nrecords);
 
 		for (db_this_phase.record = 0; db_this_phase.record < nrecords;
 			++db_this_phase.record) 
@@ -401,10 +401,10 @@ int main(int argc, char **argv)
 			/* These are variables extracted from db */
 
 			double calib,samprate,time,endtime;
-			int foff;
+			long foff;
 			char sta[7],chan[9];
 			double pick,azimuth;
-			int arid;
+			long arid;
 			/* Other necessary variables */
 			double tstart,tend;  /* time window for spectra*/
 			float xi,seavg,dt;
@@ -426,8 +426,7 @@ int main(int argc, char **argv)
 				"calib",&calib,
 				"arrival.time",&pick,
 				"arid",&arid,
-				"azimuth",&azimuth,
-							0);
+				"azimuth",&azimuth,NULL);
 			/* calculate the start and end time of the window
 			to derive the spectra from, and then read in this
 			time window */
