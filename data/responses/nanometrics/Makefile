@@ -76,7 +76,10 @@ DATA= taurus_inf_aa \
       hrd24_s2 \
       hrd24_s3 \
       hrd24_iir \
-      hrd24aaf
+      hrd24aaf \
+      centaur_100sps_s1 \
+      centaur_100sps_s2 \
+      centaur_100sps_s3
 
 SUBDIR=/contrib
 include $(ANTELOPEMAKE)
