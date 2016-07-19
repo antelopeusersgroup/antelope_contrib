@@ -111,7 +111,7 @@ void parse_spectra_windows(Pf *pf,Tbl **phases)
 	{
 		double start,end,tbwp;
 		line = gettbl(t,i);
-		sscanf(line, "%s %s %lg %lg %lf",
+		sscanf(line, "%s%lg%lg%lf",
 		     phase, &start, &end, &tbwp);
 		sps = (Spectra_phase_specification *)
 			 malloc(sizeof(Spectra_phase_specification));
@@ -258,15 +258,13 @@ int main(int argc, char **argv)
 	char           *dbin, *pffile=strdup("dbmwspec");
 	Tbl            *phases;	/* table of pointers to list of windows to
 				 * estimate spectra for */
-	int             i, j, k;
-	long             narr, nsite;
+	int             i, j;
+	long             narr;
 
 	Dbptr           dbi;	/* db being worked on */
 	Dbptr	dball;  /* join of wfdisc and arrival table */
-	Dbptr 	dbs;  /* dball subset */
 
 	char           *spec_dir = NULL;
-	int             ierr;	/* int return from assorted functions */
 	Tbl *sortkeys;
 	double pspec_conversion_factor;
 	Pf *pf;
@@ -377,7 +375,7 @@ int main(int argc, char **argv)
 		sprintf(string, "iphase =~ /%s/", this_phase->phase_reference);
 		db_this_phase = dbsubset(dball, string, 0);
 		if (dbi.record == dbINVALID) {
-			elog_notify(0, "dbmwspec:  db error parsing phase &s\n",
+			elog_notify(0, "dbmwspec:  db error parsing phase %s\n",
 				this_phase->phase_reference);
 			continue;
 		}
@@ -401,21 +399,20 @@ int main(int argc, char **argv)
 			/* These are variables extracted from db */
 
 			double calib,samprate,time,endtime;
-			long foff;
 			char sta[7],chan[9];
 			double pick,azimuth;
 			long arid;
 			/* Other necessary variables */
 			double tstart,tend;  /* time window for spectra*/
 			float xi,seavg,dt;
-			int nfft,ntest,ierr; /* variables used by powspc*/
+			int nfft,ierr; /* variables used by powspc*/
 			int div; /* used in calculating nfft*/
 			float *freq,*spec,*errspc;  /* arrays used by powspc*/
 			double tsread,teread;
-			int npts;
+			long npts;
 
 			/* other variables */
-			int nsamples;
+			long nsamples;
 
 			dbgetv(db_this_phase, 0,
 				"sta",sta,
@@ -466,7 +463,7 @@ int main(int argc, char **argv)
 			if(npts<MINSAMP)
 			{
 				dbserr("Absurdly short trace", sta,chan,pick,0);
-				elog_notify(0,"Length of in window = %d\nSkipped\n",
+				elog_notify(0,"Length of in window = %ld\nSkipped\n",
 					npts);
 				continue;
 			}
@@ -498,7 +495,9 @@ int main(int argc, char **argv)
 				dbserr("Window has too many samples:  trimmed to MAXSAMPLES",
 				       sta, chan, pick,  0);
 			}
-			powspc_(&npts, seis, &nfft, &dt,
+                        int npts_fort;
+                        npts_fort=(int)(npts);
+			powspc_(&npts_fort, seis, &nfft, &dt,
 				&(this_phase->tbwp), freq,
 			   spec, errspc, &xi, &seavg, &jack, &ierr);
 
@@ -552,18 +551,18 @@ int main(int argc, char **argv)
 			 */
 
 			if (correct_response) {
-				if (ierr = correct_for_response(freq, spec,
-					  (nfft / 2 + 1), db_this_phase)) {
+				if ((ierr = correct_for_response(freq, spec,
+					  (nfft / 2 + 1), db_this_phase))) {
 					if(ierr<0)
 					{
-						elog_complain(0,"correct_response failed completely for %s %s %s\n",
+						elog_complain(0,"correct_response failed completely for %s %s %lf\n",
 							sta,chan,pick);
 
 					}
 					else if(ierr> 0)
 					{
-						elog_complain(0,"%d eval_response errors for %s %s %s\n",
-							sta,chan,pick);
+						elog_complain(0,"%d eval_response errors for %s %s %lf\n",
+							ierr,sta,chan,pick);
 					}
 				}
 			}
