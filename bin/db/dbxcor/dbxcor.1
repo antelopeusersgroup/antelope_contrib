@@ -829,6 +829,13 @@ merged into one table that can work on both modes.
 The informational text window does not refresh properly.  Whenever a message is posted
 to that window the text is pushed to a line above the scroll bar and is not visible 
 until the user hits the scrollbar widget to shift the text downward.
+.IP (5)
+When running on a database for event processing the event and origin tables 
+must exist and be consistent.  This situation produces this error message 
+that is easily misunderstood:
+.nf
+DatascopeMatchHandle constructor:  Input view does not contain a table containing the attribute orid
+.fi
 .SH AUTHOR
 Peng Wang (pewang@indiana.edu) wrote the GUI.  The seismic analysis sections
 were written by Gary Pavlis (pavlis@indiana.edu).  Later versions of the gui 

@@ -1,6 +1,7 @@
 #ifndef __DISPLAY_MARKER_H
 
 #define __DISPLAY_MARKER_H
+using namespace SEISPP;
 
 #include <string.h>
 #include <TimeWindow.h>

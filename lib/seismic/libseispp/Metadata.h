@@ -524,8 +524,29 @@ string pftbl2string(Pf *pf, const char *tag);
 \return STL list container of std::string objects derived from tbl lines.
 */
 list<string> pftbl2list(Pf *pf, const char *tag);
+/*! \brief Saves a specified list of Metadata components to an antelope db.
+
+  Any object that is a child of Metadata can find this procedure useful.
+  It saves a list of metadata to a specified database table.
+  NOTE VERY IMPORTANT ASSUMPTION:  the Datascope db pointer must have
+  the record field set to the correct insertion point or this procedure
+  will throw an exception and fail.
+
+  \param md - Metadata from which the data are to be extracted
+  \param db - Antelope Dbptr of table to which these are to be saved
+  \param table - name of the table where the data are to be written
+            (Used for consistency check - db must point to this table)
+  \param mdl - list of metadata to write to db
+  \param am - internal to external name mapping object
+
+  \exception - SeisppError object will be throw for a variety of 
+     problems.  Most common is if the name is not defined on one
+     side or the other (i.e. ask to save something not stored in 
+     metadata or name requested to save is not defined in table. )
+     */
+void save_metadata_for_object(Metadata& md,Dbptr db, string table,
+        MetadataList& mdl, AttributeMap& am);
+
 #endif
-
-
 } // End namespace SEISPP declaration
 #endif

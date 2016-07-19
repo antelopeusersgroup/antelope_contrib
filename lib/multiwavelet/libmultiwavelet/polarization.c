@@ -233,7 +233,7 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	{
 		for(j=0;j<3;++j) 
 		{
-			work[j] = ddot(3,v+j+3*i,1,U+j,3);
+			work[j] = ddot(3,v+3*i,1,U+j,3);
 		}
 		dcopy(3,work,1,v+3*i,1);
 	}

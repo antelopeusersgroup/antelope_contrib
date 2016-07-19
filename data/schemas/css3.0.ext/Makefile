@@ -18,7 +18,8 @@ DATA = \
 	stabaler \
 	staq330 \
 	wfoffset \
-	wfsrb
+	wfsrb \
+	tortrk
 
 DATADIR = schemas/css3.0.ext
 

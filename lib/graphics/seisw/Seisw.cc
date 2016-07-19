@@ -1298,6 +1298,9 @@ static void Btn2DownProc (
                         String *params,
                         Cardinal *num_params)
 {
+#ifdef DEBUG_WIDGET
+cerr << "Entering Btn2DownProc in widget"<<endl;
+#endif
         ExmSeiswWidget sw = (ExmSeiswWidget)w;
         SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
         SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
@@ -1319,6 +1322,10 @@ static void Btn2DownProc (
                                   spar->x2begb,spar->x2endb,sca->p2beg,sca->p2end);
         spick->trace_number=get_trace_number(w, spick->get_x2()); 
 
+#ifdef DEBUG_WIDGET
+cerr << "Leaving Btn2DownProc"<<endl
+<< "Pick set trace_number="<<spick->trace_number<<endl;
+#endif
 }
 
 static void Btn2UpProc (

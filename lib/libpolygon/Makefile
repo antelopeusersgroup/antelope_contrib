@@ -9,11 +9,12 @@ MAN3= \
 	 isGeographicallyInside.3 \
 	 polycode.3 \
 	 polygon.3 \
-	 polygon.so.3 \
 	 polytype.3 \
 	 readPolygon.3 \
 	 windrose.3 \
 	 writePolygonData.3
+
+#	 polygon.so.3 \
 
 ldlibs=	$(DBLIBS)
 

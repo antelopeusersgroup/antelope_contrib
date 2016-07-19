@@ -18,7 +18,7 @@ info    &Literal{
 category    OBSIP
 configuration   T-240 Single-Sided
 
-description Nanometrics Trillium 240 Single-Sided
+description T240 Single-Sided
 dfile   trillium_240_ss_obsip_sio
 
 rsptype                 V       # velocity instrument

@@ -1,123 +1,273 @@
+#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
+#
+#   Written by Juan Reyes
+#
+#   This software may be used freely in any way as long as
+#   the copyright statement above is not removed.
+
+
 from __main__ import *      # _et all the libraries from parent
 
-class Waveforms(Records):
+class Waveforms():
     """Class for extracting wavform data
     from the database and creating the plots.
     """
 
-    def __init__(self,dbname,chan='.*',allowed_segtype=[]):
-        self.database = dbname
-        self.chan_to_use = chan
+    def __init__(self,dbname,allowed_segtype=[]):
+
+        self.logging = getLogger('Waveforms')
+
+        self.databasename = dbname
+        self.database = None
+        self.dbpath = os.path.dirname( os.path.abspath(dbname) )
         self.allowed_segtype = allowed_segtype
-        log( 'Init Waveforms Class: db=%s' % self.database )
+        self.logging.debug( 'Init Waveforms Class: db=%s' % self.database )
+
+        # From main dbmoment.xpy script. Also used in functions.py
+        global seismic_channels
+        self.seismic_channels = seismic_channels
 
         # Get db ready
         try:
-            self.db = datascope.dbopen( self.database, "r+" )
-            self.db = self.db.lookup(table='wfdisc')
+            self.database = datascope.dbopen( self.databasename, "r+" )
+            self.db = self.database.lookup(table='wfdisc')
         except Exception,e:
-            error('Problems opening wfdisc: %s %s' % (self.database,e) )
+            self.logging.error('Problems opening wfdisc: %s %s' % (self.database,e) )
 
         if not self.db.record_count:
-            error( 'No data in wfdisc %s' % self.database )
+            self.logging.error( 'No data in wfdisc %s' % self.database )
 
-    def get_waveforms(self, sta, start, esaz, tw=200, rotate=True):
+    def get_waveforms(self, sta, chans, start, esaz=0, seaz=0, delay=0, tw=200,
+                    bw_filter=None, debug_plot=False):
 
-        log('Get %s data from %s' % (sta,self.database) )
-        log('esaz: %s' % esaz )
+        start = int(delay+start)
+        end = int(delay+start+tw)
 
-        start = float(start)
-        end = float(start+tw-1)
-        debug('start: %s' % start )
-        debug('end: %s' % end )
+        self.logging.debug('Get %s data from %s' % (sta,self.database) )
+        self.logging.debug('start: %s end:%s' % (start,end) )
 
         results = False
 
-        regex = 'sta=~/%s/ && chan=~/%s/ && endtime > %s && time < %s' % \
-                ( sta,self.chan_to_use, start, end )
+        steps = ['dbopen wfdisc']
+        steps.extend(['dbsubset sta=~/%s/ && chan=~/%s/ && endtime > %s && time < %s' % \
+                ( sta, chans, start, end ) ])
+        steps.extend(['dbjoin sensor'])
+        steps.extend(['dbjoin instrument'])
 
-        with datascope.freeing(self.db.subset( regex )) as dbview:
+        self.logging.debug( 'Database query for waveforms:' )
+        self.logging.debug( ', '.join(steps) )
+
+        with datascope.freeing(self.database.process( steps )) as dbview:
+
             if not dbview.record_count:
-                # This failed. Lets see what we have in the db
-                log( 'No traces after subset for [%s]' % regex )
+                # This failed.
+                self.logging.warning( 'No traces after subset for [%s]' % ', '.join(steps) )
                 return False
 
-            if dbview.record_count > 3:
-                # This failed. Lets see what we have in the db
-                log( 'Too many traces after subset for [%s]' % regex )
+            if dbview.record_count != 3:
+                # This failed.
+                self.logging.warning( 'Need 3 traces after subset for [%s]. Now %s' % \
+                        (sta, dbview.record_count) )
                 return False
 
+            # Need some information for trace calibration and later
+            # instrument response application to the GreensFunctions.
+            dbview.record = 0
+
+            # Get response file path from database row
+            self.logging.debug('Get reponse file from database entry')
+            responsefile = dbview.extfile('instrument')
+            self.logging.debug(responsefile)
+
+            if len(responsefile) > 0:
+                responsefile = responsefile[1]
+            else:
+                responsefile = False
+
+            self.logging.debug('Response file: %s' % responsefile)
+
+            # Extract some parameters from instrument and wfdsic table
+            ( insname, instype, samprate, ncalib, segtype ) = \
+                    dbview.getv( 'instrument.insname', 'instrument.instype',
+                            'wfdisc.samprate', 'instrument.ncalib',
+                            'wfdisc.segtype' )
+
+            dbview.record = datascope.dbALL
+
+
+            # Segtypes are set in the parameter file. Need to know what
+            # we get from the wfdisc so we can match GreensFunctions units.
+            if not segtype in self.allowed_segtype:
+                # SKIP THIS SITE
+                self.logging.warning( 'Skipping station: %s Wrong type: %s' % (sta,segtype) )
+                return False
+
+            # Bring the data into memory. Join segments if fragmented.
             try:
-                # padd a little the requested trace. we will remove that later
-                tr = dbview.trload_css( start-60, end+60 )
-                tr.trapply_calib()
+                tr = dbview.trload_cssgrp( start, end + 1 )
                 tr.trsplice()
             except Exception, e:
-                sys.exit('Could not prepare data for %s:%s [%s]' % (sta,self.chan_to_use, e))
+                sys.exit('Could not prepare data for %s:%s [%s]' % (sta,chans, e))
 
-            if not tr.record_count: return results
-
-            if rotate:
-                try:
-                    # For instance, for a P wave propagating at an azimuth of 45 degrees
-                    # (i.e. propagating from SW to NE) with a computed emergence angle of
-                    # 15 degrees from the vertical, trrotate would rotate the data into
-                    # ray coordinates with X1 being the pure radial direction and x2 being
-                    # the pure SH direction by setting phi=-45.0 and theta = -75.0).
-                    rotchan = ('R', 'T', 'Z')
-                    debug( 'Rotate to %s esaz:%s' %  (rotchan,esaz) )
-                    tr.trrotate(-float(esaz), 0, rotchan)
-                except Exception, e:
-                    error('Could not rotate data %s [%s]' % (sta, e))
-
-            log('Number of traces for %s: %s' % (sta, tr.record_count))
-
-            tr = tr.subset('sta =~ /%s/ && chan =~ /R|T|Z/' % sta)
-            tr.record = 0
-            sps = tr.getv('samprate')[0]
-            segtype = tr.getv('segtype')[0]
-            tr.record = datascope.dbALL
-
-            if not segtype in self.allowed_segtype:
-                # remove if needed
-                warning( 'Skipping station: %s Wrong type: %s' % (sta,segtype) )
+            # Stop here if we don't have something to work with.
+            if not tr.record_count:
+                self.logging.warning( 'No data after trload for %s' % sta )
                 return False
 
+            #
+            # CONVERT TO CM
+            #
 
+            # Use calib values from instrument table if missing on wfdisc
+            for t in tr.iter_record():
+                if not float( t.getv('calib')[0] ):
+                    t.putv( ('calib',ncalib) )
+
+            # Need real units, not counts.
+            tr.trapply_calib()
+
+            # Integrate if needed to get displacement
+            if segtype == 'A':
+                tr.trfilter('INT2')
+                # Need to bring the data from nm to cm and match the gf's
+                tr.trfilter( "G 0.0000001" )
+                segtype = 'D'
+            elif segtype == 'V':
+                tr.trfilter('INT')
+                # Need to bring the data from nm to cm and match the gf's
+                tr.trfilter( "G 0.0000001" )
+                segtype = 'D'
+            elif segtype == 'D':
+                # Need to bring the data from nm to cm and match the gf's
+                tr.trfilter( "G 0.0000001" )
+
+            if debug_plot:
+                fig = plot_tr_object( tr, 'raw-disp', style='b')
+
+
+            #
+            # FILTERING
+            #
+
+            # Demean the trace
+            tr.trfilter('DEMEAN')
+
+            self.logging.debug('Filter data from %s with [%s]' % (sta, bw_filter))
+            try:
+                tr.trfilter( bw_filter )
+            except Exception,e:
+                self.logging.error('Problems with the filter %s => %s' % (bw_filter,e))
+
+            if debug_plot:
+                plot_tr_object( tr, 'filtered', style='g', fig=fig)
+
+
+
+
+
+
+            #
+            # ROTATION
+            #
+            #Pull name of one channel.
+            tr.record = 0
+            channame = tr.getv('chan')[0]
+            tr.record = datascope.dbALL
+
+            #Verify if we need rotation. Example 1 was alredy on TRZ format.
+            #if not channame in ['R','T','Z']:
+            if not channame in self.seismic_channels:
+                self.logging.debug( 'Rotate to esaz:%s' %  esaz )
+
+
+                """
+                Now we need to rotate the horizontal channels.
+                """
+                #tr.trrotate(  float(esaz), 0, ('T','R','Z') )
+                tr.trrotate(  float(esaz), 0, self.seismic_channels )
+
+                self.logging.debug('Number of traces for %s: %s' % (sta, tr.record_count))
+            else:
+                self.logging.notify('Not rotation needed. Found %s in wfdisc.' % channame)
+
+            # Subset for the rotated channels only
+            tr = tr.subset('chan =~ /R|T|Z/')
+            self.logging.debug('Number of traces for %s: %s' % (sta, tr.record_count))
+
+            # Stop here if we lost all traces.
+            if not tr.record_count: return False
+
+            if debug_plot:
+                plot_tr_object( tr, 'rotaded', style='r', fig=fig)
+
+
+
+
+
+
+            #
+            # DECIMATE
+            #
+
+            # OLD Decimate trace
+            #tr = decimate_trace( tr, 1 )
+
+            # NEW Decimate trace
+            #decimate_string = 'DECIMATE BY %i' % samprate
+            #self.logging.debug( decimate_string )
+            #tr.trfilter ( decimate_string )
+
+            #if debug_plot:
+            #    plot_tr_object( tr, 'decimated', jump=samprate, style='y', fig=fig)
+
+            # Not working for now. Adding some method at extraction time for now.
+
+
+
+            #
+            # EXTRACT DATA
+            #
+
+            # Make a new Record object and pass the value of the instrument
+            # response file.
+            #responsefile = '%s/%s/%s' % (self.dbpath,rdir,rdfile) 
+            results =  Records(1, segtype=segtype, response=responsefile)
+
+            this = 1
             for trace in tr.iter_record():
                 (tsta,chan) = trace.getv('sta','chan')
 
-                debug( "sta=%s chan=%s" % (tsta,chan) )
+                self.logging.debug( "sta=%s chan=%s" % (tsta,chan) )
 
-                #with datascope.trfreeing(tr):
-                #    for trace in tr.iter_record():
                 chan, time, endtime= trace.getv('chan', 'time', 'endtime')
-                debug('%s => requested(%s,%s) got(%s,%s)' % \
+                self.logging.debug('%s => requested(%s,%s) got(%s,%s)' % \
                         (chan, start, end, time, endtime) )
 
-                if not verify_trace_time(start, end, time, endtime):
-                    # remove from memory if needed
-                    warning( 'Skipping station: %s' % sta )
+                # TEMP decimation method. 
+                # We are way above the min freq for this to be a problem.
+                newdata = []
+                data = trace.trdata()[int(delay*samprate):int(tw*samprate)]
+                for x in range(0,len(data),int(samprate)):
+                    newdata.append( data[x] )
+                data = newdata
+
+
+                if not data:
+                    # SKIP THIS SITE
+                    self.logging.warning( 'Skipping station. No data extracted: %s' % sta )
                     return False
+                else:
+                    self.logging.debug('Appending data to Record on %s %s' % (sta, chan))
+                    results.set_data( chan, data)
 
-                if not results:
-                    # need new object
-                    results =  Records(sps,segtype)
+                if debug_plot:
+                    add_trace_to_plot( results.get( chan ), '.k', 'final-%s' % trace.getv('chan')[0],
+                            tr.record_count, this, delay=delay, jump=samprate)
+                    this += 1
 
-
-                # Placing inside Trace object
-                data =  clean_trace( trace.trdata(), sps, time, endtime, start, end )
-                debug('Appending data to Record on %s %s' % (sta, chan))
-                results.set_data( chan, data)
-                #log (data[:5])
+        if debug_plot: pyplot.show()
 
         return results
 
 
-if __name__ == "__main__":
-    print "Moment Tensor Data Extaction Library:"
-    print "\tDon't run directly. Import into code."
-    print "\n\n"
-    print "No BRTT support."
-    print "Juan Reyes <reyes@ucsd.edu>"
-    sys.exit(9)
+if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's dbmoment module. Not to run directly!!!! **\n" )
