@@ -241,7 +241,7 @@ def origin_reap_thread(db):
                     s_arr += [Arrival(sta, arr_time, phase, chan=chan)]
         logger.debug("Putting origin %d on queue" % orid)
         input_q.put((Origin(lat, lon, depth, time, auth, \
-                     orid=orid, evid=evid, unc_z=pfile['unc_z']), \
+                     orid=orid, evid=evid, unc_z=1.5), \
                      p_arr, s_arr))
     prefor.free()
     gr1_.free()
@@ -339,13 +339,8 @@ def process_origin_thread(db):
                 # Make sure station is beyond min distance
                 stla = site_md[arr.sta]['lat']
                 stlo = site_md[arr.sta]['lon']
-                #r = dist(stla, stlo, origin.lat, origin.lon)[0]*111.11
-                #r = np.sqrt(r**2 + origin.depth**2)
-                #if r < args.dist:
-                #    continue
-
                 # Try and grab data for all 3 components
-                for chan in chans:  
+                for chan in chans:
                     # Build phase trace
                     start = arr.time - 0.5*pfile['trace_twin']
                     end = arr.time + 0.5*pfile['trace_twin']

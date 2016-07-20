@@ -317,7 +317,7 @@ class DataBackEndObject:
             wf_orb.connect()
             try:
                 wf_orb.seek(wf_orb.after(time\
-                        - pfile['start_lag'] - 2 * pfile['max_packet_length']))
+                        - pfile['start_lead'] - 2 * pfile['max_packet_length']))
             except (OrbAfterError, OrbSeekError) as err:
                 logger.debug("Failed to retrieve data for detection on {}:{} "\
                         "at {}\n\t{}".format(sta,
@@ -342,7 +342,7 @@ class DataBackEndObject:
                            src1[0],
                            src2[0],
                            src3[0],
-                           time - pfile['start_lag'],
+                           time - pfile['start_lead'],
                            time + pfile['end_lag'],
                            samprate)
             if not multiplexed:
@@ -437,7 +437,7 @@ class DataBackEndObject:
             tr3c.tr_h2.tr = array(trs[2])
             return tr3c
         elif self.wf_src_type == 'db':
-            tstart = time - pfile['start_lag']
+            tstart = time - pfile['start_lead']
             tend = time + pfile['end_lag']
             traces = []
             logger.debug("Getting data for {} {} - {}".format(sta,
@@ -490,7 +490,7 @@ class DataBackEndObject:
                            triplet[0],
                            triplet[1],
                            triplet[2],
-                           time - pfile['start_lag'],
+                           time - pfile['start_lead'],
                            time + pfile['end_lag'],
                            traces[0].samprate)
             if traces[0].nsamp != traces[1].nsamp or\
@@ -943,7 +943,7 @@ def shear_wave_detector_thread(data_beo, terminate):
             elif chan_index == 1:
                 chan = tr3c.tr_h2.chan
             if ptime != None:
-                ptime += p_det.time - pfile['start_lag']
+                ptime += p_det.time - pfile['start_lead']
                 picks += [(ptime, chan_index + 1)]
                 det = Detection(srcid='PLACEHOLDER',
                                 sta=p_det.sta,
