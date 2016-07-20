@@ -39,6 +39,37 @@ Verbose flag.
 .IP "-x distance"
 .fi
 Minimum hypocentral distance allowed for stations used in magnitude calculation.
+.SH "PARAMETER FILE"
+.IP sitedir
+.fi
+Site directory with installations of Python module dependencies.
+.IP max_input_q_size
+.fi
+Maximum number of unprocessd origins on the input queue at a time.
+.IP max_output_q_size
+.fi
+Maximum number of processed origins on the output queue at a time.
+.IP n_threads
+.fi
+Number of processing threads.
+.IP trace_twin
+.fi
+Length (in seconds) of trace data time window around phase arrival to load.
+.IP spec_twin
+.fi
+Length (in seconds) of trace data time window used to calculate spectra.
+.IP density
+.fi
+Rock density, a uniform value is used.
+.IP water_level
+.fi
+Water level fraction used for instrument response deconvolution.
+.IP n_min_phase
+.fi
+Minimum number of phases required to make a measurement.
+.IP freq_max
+.fi
+Maximum frequency used in fitting process.
 .SH FILES
 .IP \fBvelocity_model\fP
 
@@ -126,8 +157,9 @@ and is as follows:
 
 .SH REFERENCES
 .nf
-Ross, Z. E., Y. Ben-Zion, M. White, F. L. Vernon (2016). Analysis of earthquake body wave spectra for potency and magnitude values:
-Implications for magnitude scaling relations \fIGeophy. J. Int. (in review)\fP.
+Ross, Z.E., Y. Ben-Zion, M.C. White, F.L. Vernon (2016). Analysis of earthquake
+body wave spectra for potency and magnitude values: Implications for magnitude
+scaling relations \fIGeophy. J. Int. (in review)\fP.
 .fi
 
 .SH DEPENDENCIES

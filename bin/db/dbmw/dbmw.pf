@@ -11,5 +11,4 @@ dec_freq            40
 water_level         0.01
 n_min_phase         8
 max_jobs_respawn    30
-unc_z               1.5
 freq_max            40
