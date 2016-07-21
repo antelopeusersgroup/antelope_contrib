@@ -978,7 +978,7 @@ sub get_data {
 
     dbclose(@db) ;
 
-    fork_log("From-DB: $_") foreach ( sort keys %{$flagged} ) ;
+    fork_log("From-DB: $_") foreach ( sort keys %flagged ) ;
 
     # Done with the local database.
 
