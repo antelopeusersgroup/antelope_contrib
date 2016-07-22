@@ -1,0 +1,14 @@
+sitedir            /opt/anf/5.6/lib/python
+max_input_q_size    20
+max_output_q_size   20
+n_threads           1
+trace_twin          20
+spec_twin           1.0
+Qp                  500
+Qs                  500
+density             2.85
+dec_freq            40
+water_level         0.01
+n_min_phase         8
+max_jobs_respawn    30
+freq_max            40
