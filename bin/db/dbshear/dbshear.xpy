@@ -432,9 +432,9 @@ class DataBackEndObject:
                     tr.trputdata(tr_data)
                     tr.trfilter(pfile['filter'])
                     trs += [tr.trdata()]
-            tr3c.tr_z.tr = array(trs[0])
-            tr3c.tr_h1.tr = array(trs[1])
-            tr3c.tr_h2.tr = array(trs[2])
+            tr3c.tr_z.tr = trs[0]
+            tr3c.tr_h1.tr = trs[1]
+            tr3c.tr_h2.tr = trs[2]
             return tr3c
         elif self.wf_src_type == 'db':
             tstart = time - pfile['start_lead']
@@ -756,9 +756,9 @@ class Trace3C():
                 self.tr_h2 += dataobj
             if self.tr_z.is_full and self.tr_h1.is_full and self.tr_h2.is_full:
                 self.is_full = True
-                self.tr_z.tr = array(self.tr_z.tr)
-                self.tr_h1.tr = array(self.tr_h1.tr)
-                self.tr_h2.tr = array(self.tr_h2.tr)
+                self.tr_z.tr = self.tr_z.tr
+                self.tr_h1.tr = self.tr_h1.tr
+                self.tr_h2.tr = self.tr_h2.tr
         elif isinstance(dataobj, Trace):
             if dataobj.chan == self.tr_z.chan:
                 self.tr_z = dataobj
