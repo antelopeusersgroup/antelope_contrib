@@ -6,6 +6,7 @@ change_q330_annc \- change or review the annc structure on a q330 datalogger
 .nf
 \fBchange_q330_annc \fP
 	[-a authcode]
+	[-A new_authcode]
 	[-d dlevent_db]
 	[-l logdir]
 	[-n ]
@@ -61,6 +62,10 @@ option enabled!\fP
 .IP "-a authcode" 
 Password/authentication code for the q330 datalogger.  Default of 0000000000000000 is tried, 
 but alternates can be specified with this option or in the parameter file.
+.IP "-A new_authcode" 
+New authcode.  Modify the password/authentication code for the q330 datalogger if it is different
+from the 16 digit hex value specified here.  A successful change will result in a save to eeprom
+and a reboot of the datalogger.  USE WITH CAUTION!!!  No change will occur if \fI-n\fP is specified. 
 .IP -f
 This is a "force" option that will report any pre-existing oddities
 in setup but will go ahead and change them to your new ones.  This could have potentially critical/disasterous 
@@ -400,6 +405,32 @@ No changes to POC setup needed for: TA_I60A
 Could not reach TA_I61A after attempting all alternate authorization code(s) 
 Station TA_I61A was unreachable. 
 
+.IP \(bu
+Test a proposed change of the authorization code/password for a single station.  
+Note that any necessary changes to the POC setup will also be reported but not
+attempted because of the use of \fI-n\fP..
+.in 2c
+.ft CW
+.nr
+.ne
+%\fB change_q330_annc -A 0000000000BADBAD -n -s "TA_ABCD" db/usarray\fP
+
+TA_ABCD is not in the exclude list in the parameter file.  Getting annc structures
+   Problem - resume_time_in_minutes is 5 rather than 10 for TA_ABCD XXX.XX.XX.X 
+     resume_time_in_minutes will be changed to 10 for TA_ABCD
+   Problem - resume_time_in_minutes is 10 rather than  for TA_ABCD XXX.XX.XX.X 
+     resume_time_in_minutes will be changed to  for TA_ABCD
+   POC setup count is 6 rather than 5 for TA_ABCD
+Changes to POC setup needed for: TA_ABCD 
+
+	User specified -n prevents setannc from running. 
+	   annc structure remains as before for TA_ABCD 
+
+2016-222 21:52:47 perl *complain*: Datalogger auth code,  0000000000000000, differs from to-be-used auth code, 0000000000BADBAD from command line use of -A
+	User specified -n prevents setauth from running. 
+	   auth code remains as before for TA_ABCD 
+
+
 
 .SH DIAGNOSTICS
 .IP "Could not reach XX_ABCD after attempting all alternate authorization code(s)"
@@ -424,6 +455,10 @@ q330_baler(1)
 .SH "BUGS AND CAVEATS"
 .LP
 Assumes same authorization code across all ports.  
+.LP
+Changing the authorization code via this command, but not in the q3302orb parameter files
+will result in loss of data collection as the datalogger will reboot and the registration
+attempt via q3302orb will fail due to a now invalid auth code.
 .LP
 I expect log messages might be confusing if you have a single datalogger recording 
 two stations worth of data (i.e. both XX_ABCD and XX_EFGH are collected via a single
