@@ -1,7 +1,7 @@
-.TH RUN_DBMOMENT_EXAMPLE 1
+.TH DBMOMENT_RUN_EXAMPLE 1
 
 .SH NAME
-run_dbmoment_example \- run dbmoment on 2 example events
+dbmoment_run_example \- run dbmoment on 2 example events
 
 .SH SYNOPSIS
 The Dreger's inversion source code is included in the contributed code
@@ -17,22 +17,23 @@ code and users should be familiar with Dreger's documentation.
 You need to have $ANTELOPE defined in your environment. Then
 compile the source code.
 
+    make clean;
     make;
     make install;
 
+It will require write access to the example folder:
+
+    $ANTELOPE/contrib/example/dbmoment/
 
 .SH PARAMETER FILE
 None.
 
 .SH EXAMPLE
-You can run the dbmoment code by hand from the same repo or
-run *run_dbmoment_example* to automate the process.
+You can run the dbmoment code by hand from any directory.
 
-For this you have to:
+Run directly in terminal:
 
-    make clean; make; make install;
-    cd ~
-    run_dbmoment_example
+    dbmoment_run_example
 
 This will go to the example folder "$ANTELOPE/contrib/example/dbmoment/" and
 will run both examples. You will see several new folders.

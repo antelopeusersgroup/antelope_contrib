@@ -1,6 +1,6 @@
 #include"tdmt_invb.h"
-void correl();
-float *vector();
+void c_correlate();
+float *vec();
 
 int correlate(ss,gg,i,np2)
     int i, np2;
@@ -12,9 +12,9 @@ int correlate(ss,gg,i,np2)
     float *data1, *data2, *ans;
 
 
-	data1=vector(1,np2);
-	data2=vector(1,np2);
-	ans  =vector(1,2*np2);
+	data1=vec(1,np2);
+	data2=vec(1,np2);
+	ans  =vec(1,2*np2);
 
     for(j=0; j < 20; j++)  /*Initialize cormax for each component*/
 	 {
@@ -35,7 +35,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u1[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[0] < ABS(ans[j+1]))
@@ -55,7 +55,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u2[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[1] < ABS(ans[j+1]))
@@ -81,7 +81,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u3[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[2] < ABS(ans[j+1]))
@@ -101,7 +101,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u4[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[3] < ABS(ans[j+1]))
@@ -121,7 +121,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u5[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[4] < ABS(ans[j+1]))
@@ -147,7 +147,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u6[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[5] < ABS(ans[j+1]))
@@ -167,7 +167,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u7[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[6] < ABS(ans[j+1]))
@@ -187,7 +187,7 @@ int correlate(ss,gg,i,np2)
       else
         data2[j+1]=gg[i].u8[j];
 
-    correl(data1,data2,np2,ans);
+    c_correlate(data1,data2,np2,ans);
 
       for(j=0; j < np2/2; j++)
            if(cormax[7] < ABS(ans[j+1]))
@@ -202,9 +202,9 @@ int correlate(ss,gg,i,np2)
 	     }
 
 
-free_vector(data1,1,np2);
-free_vector(data2,1,np2);
-free_vector(ans,1,2*np2);
+f_vec(data1,1,np2);
+f_vec(data2,1,np2);
+f_vec(ans,1,2*np2);
 
 return(zvalue);
 
