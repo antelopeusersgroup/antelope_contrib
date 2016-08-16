@@ -805,11 +805,19 @@ void ThreeComponentSeismogram::rotate_to_standard()
 		//Perf lib matrix inversion routine using LU factorizatoin
 		// Note this is changed from parent code.  Untested.
 		dgetrf_(&asize,&asize,a,&asize,ipivot,&info);
-		if(info!=0) throw(SeisppError(
+		if(info!=0) 
+                {
+                    for(i=0;i<3;++i) delete [] work[i];
+                    throw(SeisppError(
 			string("rotate_to_standard:  LU factorization of transformation matrix failed")));
+                }
 		dgetri_(&asize,a,&asize,ipivot,awork,&ldwork,&info);
-		if(info!=0) throw(SeisppError(
+		if(info!=0) 
+                {
+                    for(i=0;i<3;++i) delete [] work[i];
+                    throw(SeisppError(
 			string("rotate_to_standard:  LU factorization inversion of transformation matrix failed")));
+                }
 		
 		tmatrix[0][0] = a[0];
 		tmatrix[1][0] = a[1];
