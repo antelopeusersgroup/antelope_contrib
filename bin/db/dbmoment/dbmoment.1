@@ -40,9 +40,27 @@ are provided on the distribution. The full explanation of the values needed
 for the model are described on the original PDF distributed by Dreger.
 The folder MODELS will be installed in the $ANTELOPE/contrib/ directory.
 
+.SH DATABASE REQUIREMENTS
+The code requires some information about the stations, the event(s) that
+will be processed, and the actual data files. The list of tables that are
+required by the code:
+    arrival
+    assoc
+    event ( if running with the -e flag )
+    instrument
+    netmag
+    origin
+    sensor
+    site
+    wfdisc
+
+The code will later update the 'netmag' and will update (or create) an 'mt'
+table with results. There will be a directory with synthetic traces with a
+different wfdisc table than the original data.
+
 .SH ACKNOWLEDGEMENT
 Moment tensors code extracted from mtpackagev1.1 package developed by
-Douglas Dreger of the Berkeley Seismological Laboratory. Green’s
+Douglas Dreger of the Berkeley Seismological Laboratory. Green's
 functions computed using the FKRPROG software developed by Chandan Saikia
 of URS.
 
@@ -90,7 +108,7 @@ Set a new minimum correlation value threshold instead of using the one in the PF
 String to subset the list of stations to use.
 .IP "-r 'STA1|STA2|STA3'"
 String to reject stations.
-.IP "-z 'STA1:3,STA2:3,STA3:5'
+.IP "-z 'STA1:3,STA2:3,STA3:5'"
 Forced ZCOR values of some stations. This is a shift in time.
 
 
@@ -152,7 +170,7 @@ not matching the expected magnitude already present in the database.
 
 .SH EXAMPLE
 
-Dreger’s original code contains an example dataset for users to test the code. The
+Dreger's original code contains an example dataset for users to test the code. The
 EXAMPLE_1 from the original distribution was migrated to an Antelope database
 consisting of a wfdisc table, an origin and event tables and associated dbmaster
 tables needed. The records on the original database are already rotated
