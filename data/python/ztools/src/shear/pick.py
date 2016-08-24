@@ -2,10 +2,6 @@ import ztools.shear.dbshear as algorithm
 
 def shear_pick(Z, N, E, dt):
     from __main__ import pfile
-    p_on = pfile['p_on']
-    p_min = pfile['p_min']
-    s_on = pfile['s_on']
-    s_off = pfile['s_off']
     cov_len = pfile['cov_len']
     min_dt = pfile['min_dt']
     k_len = pfile['k_len']

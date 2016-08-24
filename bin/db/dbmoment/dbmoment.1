@@ -40,9 +40,27 @@ are provided on the distribution. The full explanation of the values needed
 for the model are described on the original PDF distributed by Dreger.
 The folder MODELS will be installed in the $ANTELOPE/contrib/ directory.
 
+.SH DATABASE REQUIREMENTS
+The code requires some information about the stations, the event(s) that
+will be processed, and the actual data files. The list of tables that are
+required by the code:
+    arrival
+    assoc
+    event ( if running with the -e flag )
+    instrument
+    netmag
+    origin
+    sensor
+    site
+    wfdisc
+
+The code will later update the 'netmag' and will update (or create) an 'mt'
+table with results. There will be a directory with synthetic traces with a
+different wfdisc table than the original data.
+
 .SH ACKNOWLEDGEMENT
 Moment tensors code extracted from mtpackagev1.1 package developed by
-Douglas Dreger of the Berkeley Seismological Laboratory. Green’s
+Douglas Dreger of the Berkeley Seismological Laboratory. Green's
 functions computed using the FKRPROG software developed by Chandan Saikia
 of URS.
 
@@ -71,26 +89,26 @@ Frequency-Wavenumber integration program included in Dreger's original distribut
 
 .SH OPTIONS
 .IP -v
-Verbose output. Opens final PNG with results.
+Verbose output. Opens final PNG image with results.
 .IP -d
-Debug output. Opens final PNG with results.
+Debug output. Opens final PNG image with results.
 .IP -e
-The provided id in command-line is an EVID and \fBnot\fP an ORID
+The provided id in command-line is an EVID instead of an ORID
 .IP -x
 Debug data processing. Makes an image on every data extraction and waits for user review.
 .IP "-f 'BW 0.02 4 0.05 4'"
-Use the quoted text as filter instead.
+Use the quoted text as filter instead of option from PF file.
 .IP "-p pfname"
 Override the default parameter-file \fBdbmoment.pf\fP
-.IP "-m modelname"
-Forced a velocity model instead of the PF configured. \fBSOCAL_MODEL.pf\fP
+.IP "-m SOCAL_MODEL"
+Use a different velocity model instead of the PF configured value. \fBSOCAL_MODEL.pf\fP
 .IP "-c value"
-Set a new minimum correlation value threshold instead of using the one in the PF
-.IP "-s station_select_regex"
-String to subset the list of stations to use on the calculation.
-.IP "-r station_reject_regex"
-String to reject stations on the calculation.
-.IP "-z "STA1:3,STA2:3,STA3:5"
+Set a new minimum correlation value threshold instead of using the one in the PF.
+.IP "-s 'STA1|STA2|STA3'"
+String to subset the list of stations to use.
+.IP "-r 'STA1|STA2|STA3'"
+String to reject stations.
+.IP "-z 'STA1:3,STA2:3,STA3:5'"
 Forced ZCOR values of some stations. This is a shift in time.
 
 
@@ -115,7 +133,7 @@ All results will produce an image that will be archived in this folder.
 
 .IP \fIclean_tmp\fP
 If True then we clean the temporary folder before exiting the code. False will
-keep all temporary files on the folder. Good for troubleshooting problems with
+keep all temporary files in the folder. Good for troubleshooting problems with
 the tool.
 
 .IP \fIchan_to_use\fP
@@ -152,27 +170,23 @@ not matching the expected magnitude already present in the database.
 
 .SH EXAMPLE
 
-Dreger’s original code contains an example dataset for us to test the code. The
+Dreger's original code contains an example dataset for users to test the code. The
 EXAMPLE_1 from the original distribution was migrated to an Antelope database
-consisting of a wfdisc table, an origin and event table and associated dbmaster
-tables needed. We started by mapping the original files "testdata[1,2,3]"  to
-rows on a wfdisc table. The records on the original database are already rotated
+consisting of a wfdisc table, an origin and event tables and associated dbmaster
+tables needed. The records on the original database are already rotated
 to ZRT, calibrated, filtered and instrument response corrected.
 
-We also added a dbbuild batch file to put some generic metadata for stations.
-We decided for stations names [STA1, STA2, STA3]. The only reference to a
-location in the example is giving by the azimuth and distance
-form the event to each station. We assigned a random location to the EVID=1 and
-then calculated theoretical location to each station from that information.
-This created an event with 3 stations located at 100 km each and azimuths of [10,40,50].
+A new dbbuild batch file was created to put some generic metadata for stations.
+Generic stations names [STA1, STA2, STA3] are used. There is an EVID=1 in the database
+with correct arrival times, azimuths, and distances to the stations.
+This event is located at 100 km from each site and azimuths of [10,40,50].
 
-To run the experiment you need to compile the code. Run this on the code folder:
+There is a second database in EVENT_2 example folder with raw data files and
+metadata downloaded from IRIS for those sites.
 
-    make clean && make && make install
+You can run both examples by simply using the command:
 
-Then you can run both examples by simply using the command:
-
-     \fBrun_dbmoment_example\fP
+     \fBdbmoment_run_example\fP
 
 If you want to run each individual example by hand then you can:
 
@@ -182,8 +196,8 @@ If you want to run each individual example by hand then you can:
     % \fB dbmoment\fP -v EXAMPLE_1/example_1 1
     % \fB dbmoment\fP -v EXAMPLE_2/example_2 1
 
-All temporary working files will go into the ./.dbmoment/ directory, the images with
-results will go into ./dbmoment_images/ and synthetics will be saved in ./synthetics_db/
+All temporary working files will go into the local .dbmoment/ directory, the images with
+results will go into dbmoment_images/ and synthetics will be saved in synthetics_db/
 folder.
 
 
@@ -202,17 +216,29 @@ contributed code repository and make them available to anyone analyzing
 events in similar locations.
 
 .SH CODE STEPS
- First step of the calculation is for the code to open the event database and
+ First step for dbmoment is for the code to open the event database and
  extract all event information from the tables and identify the stations needed.
  This will look into any other reported magnitude and associated arrivals to the event.
  Having a magnitude calculated for the event is a fundamental step that will change
  the configuration selected for the analysis of the event.
 
- Then the code will extract the traces for each of the stations and will fetch
- synthetics for each of the stations. If the synthetics are not present
- in our database then the tool will create the traces dynamically. Then all
- stations are evaluated to see if they fit the requirements for distance. All
- valid stations will get a first round of individual inversions for this event.
+ All stations are evaluated to see if they fit the requirements for distance.
+ In case we are using existing arrivals only for the inversion then no
+ theoretical arrivals are calculated for the selected channels.
+
+ The code will then extract the traces for each of the selected stations and
+ will fetch synthetics for each depth-distance combination between the stations and
+ the origin of the event. If the synthetics are not present in our database then
+ dbmoment will create the traces dynamically. In case of new synthetics are produced
+ then we save them in a dedicated wfdisc table for synthetics. The name of the model
+ used is important in this database. If you change the model then the process will
+ generate new synthetic traces. If you change values within the configuration of your
+ model then you should delete the previous archive of synthetics and allow the
+ process to generate new traces.
+
+ All valid stations will get a first round of individual inversions for this event.
+ This will give us the maximum correlation and time shift that we can get from that
+ site with respect to the synthetics.
 
  Then we subset for the stations with correlations above our limit and we order
  them starting with the best variance reduction. We select the first group for inversion
@@ -258,7 +284,7 @@ than 1/2016 then you might need to remove the synthetic databases and allow the
 software to produce new versions of it.
 
 .SH SEE ALSO
-run_dbmoment_example(1)
+dbmoment_run_example(1)
 antelope_python(3y)
 
 .SH AUTHOR

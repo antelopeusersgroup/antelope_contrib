@@ -1,30 +1,26 @@
-import antelope.datascope as ds
-
-from antelope.datascope import closing,\
-                               dbopen,\
-                               Dbptr,\
-                               trdestroying,\
-                               trnew, \
-                               TrdataError, \
-                               freeing
-from math import cos, pi
-from multiprocessing import Process, Queue, Pool
-import numpy as np
-from scipy.fftpack import fft,\
-                          fftfreq,\
-                          ifft,\
-                          fftshift,\
-                          rfft,\
-                          rfftfreq
-
-from scipy.signal import decimate
-from scipy.interpolate import interp1d
-import time
-import ztools.response as respmod
-import ztools.moment as mo
-from nitime.algorithms.spectral import multi_taper_psd
-import ztools.ray.raytracer as rt
-import matplotlib as mpl
+def _configure_logging(logfile, level="INFO"):
+    level = getattr(logging, level)
+    for name in (__name__,):
+        logger = logging.getLogger(name)
+        logger.setLevel(level)
+        if level == logging.DEBUG:
+            formatter = logging.Formatter(fmt='%(asctime)s::%(levelname)s::'\
+                                              '%(name)s::%(funcName)s():: '\
+                                              '%(message)s',
+                                          datefmt='%Y%j %H:%M:%S')
+        else:
+            formatter = logging.Formatter(fmt='%(asctime)s::%(levelname)s::'\
+                                              ' %(message)s',
+                                          datefmt='%Y%j %H:%M:%S')
+        if logfile:
+            file_handler = logging.FileHandler(logfile)
+            file_handler.setLevel(level)
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(level)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
 
 def var_red(source, f, fc, omega, n):
     lsrc = np.log10(source)
@@ -96,48 +92,92 @@ def get_rad_pat(azim, inc, foc_mech, phase):
 def parse_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('db', type=str, help='input database')
-    parser.add_argument('velocity_model', type=str, nargs='?', help='velocity model')
-    parser.add_argument('-c', '--chan', type=str, default='chan =~ /.[HN].*/', \
+    parser.add_argument('db',
+                        type=str,
+                        help='input database')
+    parser.add_argument('velocity_model',
+                        type=str,
+                        nargs='?',
+                        help='velocity model')
+    parser.add_argument('-c',
+                        '--chan_subset',
+                        type=str,
+                        default='chan =~ /.[HN].*/', \
                         help='chan subset expression')
-    parser.add_argument('-s', '--subset', type=str, help='subset expression')
-    parser.add_argument('-d', '--defining', default=False, action='store_true', \
+    parser.add_argument('-d',
+                        '--defining',
+                        default=False,
+                        action='store_true',
                         help='use defining phase picks only [False]')
-    parser.add_argument('-v', '--verbose', default=False, action='store_true', \
-                        help='Verbose output [off]')
-    parser.add_argument('-r', '--rej', type=str, help='reject stations')
-    parser.add_argument('-p', '--plot', default=False, action='store_true', \
-                        help='Enable plotting of spectra and best fit model')
-    parser.add_argument('-x', '--dist', default=0, type=float, \
+    parser.add_argument('-e',
+                        '--event_subset',
+                        type=str,
+                        help='channel subset expression')
+    parser.add_argument('-p',
+                        '--pfile',
+                        type=str,
+                        help="parameter file")
+    parser.add_argument('-r',
+                        '--rej',
+                        type=str,
+                        help='reject stations')
+    parser.add_argument('-v',
+                        '--verbose',
+                        default=False,
+                        action='store_true',
+                        help='verbose')
+    parser.add_argument('-x',
+                        '--dist',
+                        default=0,
+                        type=float,
                         help='Minimum hypocentral distance allowed [0]')
 
     return parser.parse_args()
 
-def parse_pfile():
-    return {'max_input_q_size': 20,
-            'max_output_q_size': 20,
-            'max_clipped': 4,
-            'n_threads': 1,
-            'trace_twin': 20,
-            'spec_twin': 1.0,
-            'Qp': 500,
-            'Qs': 500,
-            'Q_min': 100,
-            'Q_max': 1000,
-            'density': 2.85,
-            #'dec_freq': 100,
-            'dec_freq': 40,
-            'water_level': 0.01,
-            'n_min_phase': 8,
-            'max_jobs_respawn': 30,
-            'unc_z': 1.5,
-            'freq_max': 40,
-            'snr_thr': 5.0
-            }
+def parse_pfile(pfile):
+    """
+    Parse parameter file.
+    """
+    if not pfile:
+        pfile = pfread('dbmw')
+    elif not os.path.isfile(pfile):
+        pfile = pfread('dbmw')
+    elif splitext(pfile)[1] == '.pf':
+        pfile = pfin(pfile)
+    else:
+        pfile = pfin('%s.pf' % pfile)
+    pfile = pfile.pf2dict()
+    return eval_pfile(pfile)
+
+def eval_pfile(pfile):
+    """
+    Appropriately type-cast paramters from parameter file.
+    """
+    def eval_element(element):
+        try:
+            element = eval(element)
+        except (NameError, SyntaxError):
+            pass
+        return element
+    for key in pfile:
+        if key in locals():
+            continue
+        elif isinstance(pfile[key], dict):
+            eval_pfile(pfile[key])
+        elif isinstance(pfile[key], tuple):
+            pfile[key] = list(pfile[key])
+            for i in range(len(pfile[key])):
+                if isinstance(pfile[key][i], dict):
+                    pfile[key][i] = eval_pfile(pfile[key][i])
+                else:
+                    pfile[key][i] = eval_element(pfile[key][i])
+        else:
+            pfile[key] = eval_element(pfile[key])
+    return pfile
 
 def get_site_metadata():
     sites_metadata = {}
-    print 'Getting site metadata.'
+    logger.info('Getting site metadata.')
     with closing(dbopen(args.db, 'r')) as db:
         tbl_site = db.lookup(table='site')
         for site in tbl_site.iter_record():
@@ -150,14 +190,14 @@ def get_site_metadata():
 
 def origin_reap_thread(db):
     global args, pfile, input_q
-    print 'Starting origin_reap_thread.'
+    logger.info('Starting origin_reap_thread.')
     dbtable = db.lookup(table='origin')
     prefor = dbtable.join('event')
     with freeing(prefor):
         prefor = prefor.subset('orid==prefor')
-    if args.subset:
+    if args.event_subset:
         with freeing(prefor):
-            prefor = prefor.subset(args.subset)
+            prefor = prefor.subset(args.event_subset)
     with freeing(prefor):
         prefor = prefor.join('assoc')
     with freeing(prefor):
@@ -166,7 +206,7 @@ def origin_reap_thread(db):
         with freeing(prefor):
             prefor = prefor.subset('timedef =~ /d/')
     with freeing(prefor):
-        prefor = prefor.subset(args.chan)
+        prefor = prefor.subset(args.chan_subset)
     with freeing(prefor):
         prefor = prefor.sort( ['orid', 'sta'])
     gr1_ = prefor.group(['orid', 'sta'])
@@ -199,10 +239,9 @@ def origin_reap_thread(db):
                     p_arr += [Arrival(sta, arr_time, phase, chan=chan)]
                 if phase == 'S':
                     s_arr += [Arrival(sta, arr_time, phase, chan=chan)]
-        if args.verbose:
-            print "Putting origin %d on queue" % orid
+        logger.debug("Putting origin %d on queue" % orid)
         input_q.put((Origin(lat, lon, depth, time, auth, \
-                     orid=orid, evid=evid, unc_z=pfile['unc_z']), \
+                     orid=orid, evid=evid, unc_z=1.5), \
                      p_arr, s_arr))
     prefor.free()
     gr1_.free()
@@ -219,18 +258,18 @@ def prepare_trace(sta, chan, origin, start_time, end_time, db, \
     if trace == "clip":
         return "clip"
     elif trace != None:
-        delta, az = antelope.coords.dist(origin.lat, origin.lon, 
+        delta, az = antelope.coords.dist(origin.lat, origin.lon,
                                          site_md[trace.sta]['lat'],
                                          site_md[trace.sta]['lon'])
         a = delta*111.111#*np.cos(np.radians(site_md[trace.sta]['lat']))
         trace.user1 = np.sqrt(a**2 + origin.depth**2)
-        trace.user2 = a 
+        trace.user2 = a
         #if arrival is not None:
         #    trace.user2 = arrival.time - origin.time
     else:
         return None
     return trace
- 
+
 def get_chans(sta_chan, time, db):
     from antelope.stock import yearday
     jdate = yearday(time)
@@ -255,7 +294,7 @@ def get_chans(sta_chan, time, db):
 def process_origin_thread(db):
     from antelope.coords import dist
     global input_q, output_q, p_file, site_md, vmod
-    print 'Starting origin_process_thread.'
+    logger.info('Starting origin_process_thread.')
     for i in xrange(pfile['max_jobs_respawn']):
         # Pull origin from the queue and get all relevant data
         origin = input_q.get()
@@ -263,9 +302,8 @@ def process_origin_thread(db):
             output_q.put(None)
             return 0
         origin, p_arrivals, s_arrivals = origin
-        if args.verbose:
-            print 'Processing origin %d: %d P, %d S' % \
-                  (origin.orid, len(p_arrivals), len(s_arrivals))
+        logger.debug('Processing origin %d: %d P, %d S' % \
+                (origin.orid, len(p_arrivals), len(s_arrivals)))
         phases = {'P': p_arrivals, 'S': s_arrivals}
         stations = [x.sta for x in p_arrivals]
         chans = [x.chan for x in p_arrivals]
@@ -284,8 +322,8 @@ def process_origin_thread(db):
             if v.record_count == 0:
                 fm = None
             else:
-                print "Focal mechanism available for orid: %d" % \
-                      origin.orid
+                logger.info("Focal mechanism available for orid: %d" % \
+                      origin.orid)
                 v.record = 0
                 strike, dip, rake = v.getv('str1', 'dip1', 'rake1')
                 fm = (strike, dip, rake)
@@ -301,13 +339,8 @@ def process_origin_thread(db):
                 # Make sure station is beyond min distance
                 stla = site_md[arr.sta]['lat']
                 stlo = site_md[arr.sta]['lon']
-                #r = dist(stla, stlo, origin.lat, origin.lon)[0]*111.11
-                #r = np.sqrt(r**2 + origin.depth**2)
-                #if r < args.dist:
-                #    continue
-
                 # Try and grab data for all 3 components
-                for chan in chans:  
+                for chan in chans:
                     # Build phase trace
                     start = arr.time - 0.5*pfile['trace_twin']
                     end = arr.time + 0.5*pfile['trace_twin']
@@ -342,9 +375,9 @@ def process_origin_thread(db):
                     traces[phase] += [trace]
                     noises[phase] += [noise]
 
-        print "%d: %d P spectra, %d S spectra, %d P %d S, %s" % \
+        logger.info("%d: %d P spectra, %d S spectra, %d P %d S, %s" % \
                 (origin.orid, len(traces['P']), len(traces['S']), \
-                 len(p_arrivals), len(s_arrivals), origin.auth)
+                 len(p_arrivals), len(s_arrivals), origin.auth))
 
         if len(traces['P']) + len(traces['S']) < pfile['n_min_phase']:
             continue
@@ -360,16 +393,16 @@ def process_origin_thread(db):
         mags = []
         n_phase = 0
         if out['P'] is not None:
-            print out['P'][0]
+            logger.info(out['P'][0])
             mags.append(out['P'][0])
         if out['S'] is not None:
-            print out['S'][0]
+            logger.info(out['S'][0])
             mags.append(out['S'][0])
         if len(mags) == 0:
             continue
         Mw = np.mean(mags)
         output_q.put([origin.orid, origin.evid, Mw, 0, len(mags)])
-        print "%d Mw=%3.2f" % (origin.orid, Mw)
+        logger.info("%d Mw=%3.2f" % (origin.orid, Mw))
 
 def distance(lat1, lon1, lat2, lon2, in_km=False):
     if in_km:
@@ -395,29 +428,22 @@ def bootstrap(samples, n_boots):
 
 def get_trace(sta, chan, time, endtime, db):
     global pfile, args
-    #if args.verbose:
-    #    print 'Getting trace data for %s %s.' % (sta, chan)
     tbl_wfdisc = db.lookup(table='wfdisc')
     with trdestroying(tbl_wfdisc.trloadchan(time, endtime, sta, chan)) as tmp_tr:
-        #print "endtime > _%f_ && time < _%f_ && sta =~ /%s/ && chan =~ /%s/" % (time, endtime, sta, chan)
         if tmp_tr.record_count > 1:
-            if args.verbose:
-                print "Error reading data: rec count greater than ="
+            logger.error("Error reading data: rec count greater than =")
             return None
         try:
             tr = Trace(tmp_tr, attach_response=True)
         except TrdataError:
-            if args.verbose:
-                print "Error reading data for %s %s" % (sta, chan)
+            logger.error("Error reading data for %s %s" % (sta, chan))
             return None
         except ResponseError:
-            if args.verbose:
-                print "ERROR: couldn't read instrument response files"
+            logger.error("ERROR: couldn't read instrument response files")
             return None
         except ClippedData:
-            if args.verbose:
-                print "%s %s is clipped" % (sta, chan)
-            return "clip" 
+            logger.error("%s %s is clipped" % (sta, chan))
+            return "clip"
         if tr.samprate < pfile['dec_freq']:
             return None
             tr.decimate(int(tr.samprate / pfile['dec_freq']))
@@ -505,7 +531,7 @@ class Spectrum:
         rot_spec = np.zeros(self.sp.size)
         lzero = 0
         if (expon == 0):
-            print "Error: exponent of 0 used for rot_amp_spec"
+            logger.error("Error: exponent of 0 used for rot_amp_spec")
             raise ValueError
         nstart = 0
         if self.f[0] == 0:
@@ -551,9 +577,9 @@ def get_moment(origin, traces, noises, phase, foc_mech=None):
     elif phase == "S":
         Q = pfile['Qs']
         rad_pat = 0.63
-        col = 1 
+        col = 1
     else:
-        print "Error: get_moment phase is not P or S"
+        logger.warning("Phase is not P or S.")
 
     # Calculate spectra for noise and phase windows
     specs = []
@@ -570,7 +596,7 @@ def get_moment(origin, traces, noises, phase, foc_mech=None):
         noise_tr = [x for x in noises if x.sta == sta]
         # Check that 3 components exist for both noise and phase
         if len(phase_tr) != 3 or len(noise_tr) != 3:
-            print "Missing a component for station %s" % sta
+            logger.warning("Missing a component for station %s" % sta)
             continue
         tmp_phs = []
         tmp_noi = []
@@ -601,17 +627,7 @@ def get_moment(origin, traces, noises, phase, foc_mech=None):
     if len(specs) < 5:
         return None
 
-    print "Finished calculating spectra for all stations"
-    #mod = np.loadtxt(velmodf)
-    #layers = mod[:,0]
-    #if phase == 'P':
-    #    vels = mod[:,2]
-    #    Q = mod[:,3]
-    #if phase == 'S':
-    #    vels = mod[:,1]
-    #    Q = mod[:,4]
-    #vels = vmod.vp if phase == 'P' else vmod.vs
-    #Q = vmod.Qp if phase == 'P' else vmod.Qs
+    logger.info("Finished calculating spectra for all stations")
     tracer = rt.RayTracer(vmod.depths, vmod.Vp, origin.depth, Q_vals=vmod.Qp)\
              if phase == 'P'\
              else rt.RayTracer(vmod.depths, vmod.Vs, origin.depth, Q_vals=vmod.Qs)
@@ -636,37 +652,37 @@ def get_moment(origin, traces, noises, phase, foc_mech=None):
 
     range_o = (0.75*np.max(stack.sp), 1.25*np.max(stack.sp))
     range_n = (1.5, 3.0)
-    print "Fitting model to stack"
+    logger.info("Fitting model to stack")
 
     best_model = fit_src(stack.sp, stack.f, range_fc, range_o, range_n)
-    print "Finished fitting model..best results are:"
+    logger.info("Finished fitting model..best results are:")
     fc, omega, n = best_model
     Mw, unc_vel = moment(omega, phase, origin.depth, unc_z=origin.unc_z)
 
     # Estimate the station/focal sphere uncertainties
     unc_mw = unc_vel
-    
-    print "phase=%s, Mw=%3.2f, fc=%4.2f, [%3.2f, %3.2f], VR=%3.2f" % \
-          (phase, Mw, fc, Mw-unc_mw, Mw+unc_mw, 1.0)
-     
-    if args.plot:
-        freqs = np.arange(2.0, stack.f[-1], 0.1)
-        synth = source_model(freqs, fc, omega, n)
-        import pylab as plt
-        if phase == 'P':
-            color = 'r'
-            plt.clf()
-        else:
-            color = 'k'
-        plt.subplot(211)
-        plt.loglog(stack.f, stack.sp, color, linewidth=2.0)
-        plt.loglog(freqs, synth, color+'--', linewidth=2.0)
-        plt.subplot(212)
-        plt.loglog(snr_freq, snr_stack, color, linewidth=2.0)
 
-        if phase == 'S':
-            plt.show()
-            plt.clf()
+    logger.info("phase=%s, Mw=%3.2f, fc=%4.2f, [%3.2f, %3.2f], VR=%3.2f" % \
+          (phase, Mw, fc, Mw-unc_mw, Mw+unc_mw, 1.0))
+
+    #if args.plot:
+    #    freqs = np.arange(2.0, stack.f[-1], 0.1)
+    #    synth = source_model(freqs, fc, omega, n)
+    #    import pylab as plt
+    #    if phase == 'P':
+    #        color = 'r'
+    #        plt.clf()
+    #    else:
+    #        color = 'k'
+    #    plt.subplot(211)
+    #    plt.loglog(stack.f, stack.sp, color, linewidth=2.0)
+    #    plt.loglog(freqs, synth, color+'--', linewidth=2.0)
+    #    plt.subplot(212)
+    #    plt.loglog(snr_freq, snr_stack, color, linewidth=2.0)
+
+    #    if phase == 'S':
+    #        plt.show()
+    #        plt.clf()
     return Mw, unc_mw, len(specs)
 
 class MetaResponse:
@@ -699,7 +715,7 @@ class ResponseInventory:
             view_ = view.join('instrument')
             view.free()
             view = view_
-            view_ = view.subset(args.chan)
+            view_ = view.subset(args.chan_subset)
             view.free()
             view = view_
             for record in view.iter_record():
@@ -965,12 +981,11 @@ def detection_output_thread(db):
         else:
             write_moment(db, res)
 
-def main():
+def main(_args, _pfile):
     global args, pfile, input_q, output_q, site_md, resp_inv, vmod
     mpl.rcParams['pdf.fonttype'] = 42
-    args = parse_args()
-    pfile = parse_pfile()
-    print 'Starting...'
+    args, pfile = _args, _pfile
+    logger.info('Starting...')
     input_q = Queue(maxsize=pfile['max_input_q_size'])
     output_q = Queue(maxsize=pfile['max_output_q_size'])
     site_md = get_site_metadata()
@@ -987,7 +1002,7 @@ def main():
         reaper.start()
         for i in range(pfile['n_threads']):
             p = Process(target=process_origin_thread, args=(db,))
-            print "Initializing thread"
+            logger.info("Initializing thread")
             p.start()
             processes += [p]
         output_proc = Process(target=detection_output_thread, args=(db,))
@@ -1003,4 +1018,49 @@ def main():
             time.sleep(30)
 
 if __name__ == '__main__':
-    main()
+    # Parse command line options.
+    _args = parse_args()
+    # Import Antelope functionality to read parameter file.
+    from antelope.stock import pfin,\
+                               pfread
+    # Read parameter file.
+    _pfile = parse_pfile(_args.pfile)
+    # If a sitedir is specified in parameter file, add it to the search
+    # path.
+    if _pfile['sitedir']:
+        import site
+        site.addsitedir(_pfile['sitedir'])
+    # Import built-in modules.
+    import time
+    import logging
+    from math import cos, pi
+    from multiprocessing import Process, Queue, Pool
+    # Import third-party modules
+    import numpy as np
+    import matplotlib as mpl
+    from antelope.datascope import closing,\
+                                dbopen,\
+                                Dbptr,\
+                                trdestroying,\
+                                trnew, \
+                                TrdataError, \
+                                freeing
+    from nitime.algorithms.spectral import multi_taper_psd
+    from scipy.fftpack import fft,\
+                            fftfreq,\
+                            ifft,\
+                            fftshift,\
+                            rfft,\
+                            rfftfreq
+    from scipy.signal import decimate
+    from scipy.interpolate import interp1d
+    # Import locally defined modules.
+    import ztools.moment as mo
+    import ztools.ray.raytracer as rt
+    import ztools.response as respmod
+    # Configure and retreive logger.
+    _args.verbose = "INFO" if not _args.verbose else "DEBUG"
+    _configure_logging("dbmw.log", _args.verbose)
+    logger = logging.getLogger(__name__)
+    # Start main execution.
+    main(_args, _pfile)
