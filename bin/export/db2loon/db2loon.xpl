@@ -1,5 +1,8 @@
+use Data::Dumper ;
+
 require "getopts.pl";
 use Datascope;
+
 
 #####
 #MAIN
@@ -123,6 +126,7 @@ if( ! empty( $subset_expr ) ) {
         @dbprocess_commands = grep( ! /^<SUBSET>$/, @dbprocess_commands );
 }
 
+# Subset database based on command line arguments (options).
 @db = dbprocess( @db, @dbprocess_commands );
 
 if( $db[0] < 0 || $db[1] < 0 ) {
@@ -131,6 +135,12 @@ if( $db[0] < 0 || $db[1] < 0 ) {
 }
 
 $norigins = dbquery( @db, dbRECORD_COUNT );
+
+# TMulder - 2016 Jul 27
+# Debugging: use the lines below to see what is in the @db view.
+$db_tablecreation = dbquery( @db, dbTABLE_CREATION);
+$db_viewtables = dbquery( @db, dbVIEW_TABLES);
+$db_viewtablecount = dbquery( @db, dbVIEW_TABLE_COUNT);
 
 if( $norigins <= 0 ) {
 
@@ -142,6 +152,15 @@ $all = "";
 #mw88 - This was a for loop which subsetted the database per orid and passed these subsets to format_pickfile one at a time.
 #Database is no longer subsetted per orid, and entire database is passed to format_pickfile.
 #Outermost curly braces are insignificant as is whitespace (indentation).
+# TMulder - 2016 Jul 26
+#	Note that @db is a VIEW based on pf subset and option subset.
+#	Need to find a) number of origins (see $norigins, above) and b) number of magnitudes
+#	per origin from netmag table. Entire database was being passed into various subroutines 
+#	with no subsetting occurring in subroutines. This let to multiple solution, error, 
+#	and mag rows for one origin with multiple magnitudes (ant versions > 4.11). 
+#	Now explicit subsetting is occuring in each format block subroutine (i.e. soln error, 
+#	magnitude).
+
 {
         ($pickblob, $origin_time, $suffix ) = format_pickfile( @db );
 
@@ -155,6 +174,7 @@ $all = "";
 
                 open( P, ">$pickfile" );
                 print P "$pickblob";
+		print "$pickfile\n";
                 close( P );
 
         } else {
@@ -228,6 +248,7 @@ if( $opt_i ) {
 #########
 sub format_pickfile{
 
+	#print( "   SUB_FORMAT_PICKFILE\n" );
 	my( @db ) = @_;
         my( $pickblob ) = "";
 
@@ -239,6 +260,11 @@ sub format_pickfile{
 
 	@db = dbprocess( @db, "dbungroup" );
 	@db2 = @db;
+
+# check for a) number of origins and b) number of mags per origin
+	$norigins = dbquery( @db, dbRECORD_COUNT );
+	@db_unique_orids = dbprocess( @db, "dbsort -u orid" );
+	$unique_origins = dbquery( @db_unique_orids, dbRECORD_COUNT );
 
 	$pickblob .= format_solution_error_block( @db );
 	$pickblob .= format_magnitudes_block( @db );
@@ -273,10 +299,10 @@ sub format_pickfile{
 
                 my( $sta, $chan, $iphase, $arrtime, $origin_time,
                 $qual, $fm, $timedef, $timeres,
-                $wgt, $delta, $esaz, $ema ) = dbgetv( @db, "sta", "chan", "iphase",
+                $wgt, $delta, $esaz, $ema, $arrival_auth ) = dbgetv( @db, "sta", "chan", "iphase",
                                                      "arrival.time", "origin.time",
                                                      "qual", "fm", "timedef", "timeres",
-                                                     "wgt", "delta", "esaz", "ema" );
+                                                     "wgt", "delta", "esaz", "ema", "arrival.auth" );
 
 		$timeres = 0.00 if ( abs( $timeres ) > 9.99 );
 
@@ -287,14 +313,21 @@ sub format_pickfile{
                 #                               $qual, $fm, $timedef, $timeres,
                 #                               $wgt, $delta, $esaz, $ema, $pref_agency );
 		#HACK - The $auth_agency_default variable (PGC for all intensive purposes) is used
-		#as the agency for pahse rows. A general solution is to provide a mapping from
+		#as the agency for phase rows. A general solution is to provide a mapping from
 		#arrival.auth to agency code. This is currently a moot point as all phase data
 		#is coming from PGC, so $auth_agency_default = "PGC" provides adequate behaviour.
 		#In implementing the proposed general solution, the potential for name collisions
 		#exists.
+		# TM 2016-04-12
+		# Fixed above Hack.
+		# Created arrival_auth and arrival_agency for phase row authorship.
+		# This is populated by dbpick so user will need
+		# to add those codes into pf auth_agency table.
+
+		my( $arrival_agency ) = auth_to_agency( $arrival_auth );
                 $pickblob .= format_phase_row( $origin_time, $sta, $chan, $iphase, $arrtime,
                                                $qual, $fm, $timedef, $timeres,
-                                               $wgt, $delta, $esaz, $ema, $auth_agency_default );
+                                               $wgt, $delta, $esaz, $ema, $arrival_agency );
         }
 
         if( $dbout_name ne "" ) {
@@ -308,31 +341,84 @@ sub format_pickfile{
                 dbunjoin( @dbout, $dbout_name );
         }
 
-        @db2 = dbprocess( @db2, "dbjoin -o stamag" );
+	# Start creating views for formating amplitude rows.  Main issue is stamag and associated
+	# delta (distance) info cannot be achieved within one view. Create two separate views, 
+	# sort stations by distance (db3_delta view) and lookup station and magnitude info
+	# in the second view (db3_stamags view).  Views: @db2 view is being abandoned, 
+	# @db3_stamag, @db3_delta, @db3_magtypes are now used for the 'format_amplitude_row' data.
+
+#        @db2 = dbprocess( @db2, "dbjoin -o stamag" );
         
-#	@db = dbprocess( @db, "dbseparate stamag" );
+##	@db = dbprocess( @db, "dbseparate stamag" );
 # separating stamag causes new view to be sorted by sta rather than by delta as desired
 # the following three commands are intended to sort stamag values by distance from hypocentre
 
-	@db2 = dbsubset( @db2, "sta == stamag.sta" );
+#	@db2 = dbsubset( @db2, "sta == stamag.sta" );
 
 
-	@db2 = dbsort( @db2, "-u", "sta" );
+#	@db2 = dbsort( @db2, "-u", "sta" );
 
-	@db2 = dbsort( @db2, "delta" );
+#	@db2 = dbsort( @db2, "stamag.magtype", "delta" );
 
-        my( $nstamags ) = dbquery( @db2, dbRECORD_COUNT );
+	@db3 = dbopen( $dbname, "r" );
+	@db3 = dblookup( @db3, 0, "origin", 0, 0 );
+	@db3 = dbsubset( @db3, "evid == $evid" );
+
+	@db3_stamags = dbprocess( @db3, "dbjoin netmag" );
+	@db3_stamags = dbprocess( @db3_stamags, "dbjoin stamag magid" );
+	@db3_stamags = dbprocess( @db3_stamags, "dbjoin arrival arid" );
+	@db3_stamags = dbprocess( @db3_stamags, "dbjoin -o assoc arid" );
+
+	@db3_magtype = dbsort( @db3_stamags, "-u", "magtype" );
+
+	@db3_delta = dbprocess( @db3, "dbjoin assoc" );
+	@db3_delta = dbprocess( @db3_delta, "dbjoin arrival" );
+	@db3_delta = dbsort( @db3_delta, "-u", "delta" );
+
+        my( $nstamags ) = dbquery( @db3_stamags, dbRECORD_COUNT );
+        my( $ndelta ) = dbquery( @db3_delta, dbRECORD_COUNT );
+	my( $nmagtype ) = dbquery( @db3_magtype, dbRECORD_COUNT );
+
+#        my( $nstamags ) = dbquery( @db2, dbRECORD_COUNT );
+	my( $nrecord ) = 0;
 
         $pickblob .= "C Statn IC nHHMM SSSSS TCorr  -Phase-- Period " .
                      "-Amplitude-- T  -Magnitude-- Agncy\n";
 
-        for( $db2[3] = 0; $db2[3] < $nstamags; $db2[3]++ ) {
+#        for( $db2[3] = 0; $db2[3] < $nstamags; $db2[3]++ ) {
+#        for( $db3_stamags[3] = 0; $db3_stamags[3] < $nstamagsA; $db3_stamags[3]++ ) {
 
-                ( $sta, $magtype, $mag ) = dbgetv( @db2, "sta", "stamag.magtype", "stamag.magnitude" );
-# magtype and magnitude from stamag table were changed to stamag.magtype and stamag.magnitude because this is where the
-# pertinent data is stored
+	# For each magnitude type (e.g. ml, mn) do...
+	for( $db3_magtype[3] = 0; $db3_magtype[3] < $nmagtype; $db3_magtype[3]++ ) {
+		my( $magtype_x ) = dbgetv( @db3_magtype, "stamag.magtype" );
 
-		$magtype = correct_magtype_code( $magtype );
+		# For each distance sorted stations (@db3_delta)...get station mags, etc.
+        	for( $db3_delta[3] = 0; $db3_delta[3] < $ndelta; $db3_delta[3]++ ) {
+
+			my( $sta_delta, $delta) = dbgetv( @db3_delta, "sta", "delta" );
+
+			# Need to catch instances where dbfind fails and print out an appropriate
+			# error message.
+			my( $nrecord ) = dbfind( @db3_stamags, "sta =~ /$sta_delta/ && magtype =~ /$magtype_x/" );
+			my( $nrecord ) = int( $nrecord );
+
+			if( $nrecord >= 0 ) {
+				my( $nrecord ) = int( $nrecord );
+				$db3_stamags[3] = $nrecord;
+				my( $sta, $per, $amp, $magtype, $mag, $arrival_auth ) = dbgetv( @db3_stamags, "stamag.sta", "arrival.per", "arrival.amp", "stamag.magtype", "stamag.magnitude", "arrival.auth" );
+				print( "arrival.per = $per\n" );
+				#my( $stamag_auth ) = "GSC";
+
+
+				#( $sta, $magtype, $mag, $per, $amp, $stamag_auth ) = dbgetv( @db3_stamags, "sta", "stamag.magtype", "stamag.magnitude", "arrival.per", "arrival.amp", "stamag.auth" );
+				$magtype = correct_magtype_code( $magtype );
+	   
+                #( $sta, $magtype, $mag, $per, $amp, $stamag_auth ) = dbgetv( @db2, "sta", "stamag.magtype", "stamag.magnitude", "arrival.per", "arrival.amp", "stamag.auth" );
+	# T.Mulder 2016-07-18
+	# magtype and magnitude from stamag table were changed to stamag.magtype and stamag.magnitude
+	# because this is where the pertinent data is stored.
+
+				$magtype = correct_magtype_code( $magtype );
 
                 #$pickblob .= format_amplitude_row( $sta, $magtype, $mag, $pref_agency );
 		#HACK - The $auth_agency_default variable (PGC for all intensive purposes) is used
@@ -341,7 +427,16 @@ sub format_pickfile{
 		#is coming from PGC, so $auth_agency_default = "PGC" provides adequate behaviour.
 		#In implementing the proposed general solution, the potential for name collisions
 		#exists.
-                $pickblob .= format_amplitude_row( $sta, $magtype, $mag, $auth_agency_default );
+		# TM 2016-04-12
+		# Fixed above Hack.
+		# Created stamag_auth and stamag_agency for amplitude authorship.
+		# This is populated by dbml and dbevproc so user will need
+		# to add those codes into pf auth_agency table.
+
+				my( $agency ) = auth_to_agency( $arrival_auth );
+                		$pickblob .= format_amplitude_row( $sta, $magtype, $mag, $agency );
+			}
+		}
         }
 
         if( $dbout_name ne "" ) {
@@ -356,6 +451,11 @@ sub format_pickfile{
 sub format_solution_error_block{
 
 	my( @db ) = @_;
+	#print("\n   SUB_FORMAT_SOLUTION_ERROR_BLOCK\n");
+
+	# check for a) number of origins and b) number of mags per origin
+	@db_unique_orids = dbprocess( @db, "dbsort -u orid" );
+	$unique_origins = dbquery( @db_unique_orids, dbRECORD_COUNT );
 
 	my( $numRecords ) = dbquery( @db, dbRECORD_COUNT );
 
@@ -365,6 +465,12 @@ sub format_solution_error_block{
 
 	@db = dbsort( @db, "abs( orid - prefor )" );
 
+	$db[3] = 0;
+	my( $orid ) = dbgetv( @db, "orid" );
+	my( $orid_count ) = 1;
+	my( $prev_orid ) = 0;
+
+	# Iterate over each record in the view.
 	for( $db[ 3 ] = 0; $db[ 3 ] < $numRecords; $db[ 3 ]++ ){
 
 		my( $defining ) = 0;
@@ -372,6 +478,10 @@ sub format_solution_error_block{
 		my( $origin_time, $event_type, $auth, $orid ) = dbgetv( @db, "origin.time", "origin.etype", "origin.auth", "origin.orid" );
 
 		my( $lat, $lon, $depth, $ndef, $evid ) = dbgetv( @db, "lat", "lon", "depth", "ndef", "evid" );
+
+		# T.Mulder - 2016 Jul 28
+		# mag_type, mag, and magid are defined here as drawing the correct mag out of the %magnitudes hash is impossible.
+		my( $magtype, $mag, $magid ) = dbgetv( @db, "netmag.magtype", "netmag.magnitude", "netmag.magid" );
 
 		my( $algorithm, $dtype ) = dbgetv( @db, "algorithm", "dtype" );
 
@@ -385,7 +495,11 @@ sub format_solution_error_block{
 
 		my( $model ) = algorithm_to_model( $algorithm );
 
+
+		# T.Mulder 2016-07-28
+		# Changed mag to pref_mag and magtype to pref_magtype
 		my( $mag, $magtype ) = get_pref_magnitude( @db );
+#		( $pref_mag, $pref_magtype ) = get_pref_magnitude( @db );
 
 		my( $laterr ) = abs( $smajax / 2.0*cos( $strike * 2.0 * 3.1416 / 360.0 ) );
 
@@ -404,9 +518,16 @@ sub format_solution_error_block{
 
                 }
 	
-		$pickblob .= format_origin_row( $defining, $origin_time, $lat, $lon, $depth, $ndef, $magtype, $mag, $agency, $event_type, $model );
+		unless( $prev_orid == $orid && orid_count != 1 ) {
 
-		$pickblob .= format_error_row( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr, $sdepth, $smajax, $sminax, $strike, $agency, $origin_time, $orid );
+			$pickblob .= format_origin_row( $defining, $origin_time, $lat, $lon, $depth, $ndef, $magtype, $mag, $agency, $event_type, $model );
+			$pickblob .= format_error_row( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr, $sdepth, $smajax, $sminax, $strike, $agency, $origin_time, $orid ); 
+
+		} 
+
+		$prev_orid = $orid;
+                $orid_count++;
+
 	}
 
 	return( $pickblob );
@@ -414,6 +535,7 @@ sub format_solution_error_block{
 }
 
 sub format_origin_row {
+	#print("\n\t SUB_FORMAT_ORIGIN_ROW\n");
 
         my( $defining, $origin_time, $lat, $lon, $depth,
             $ndef, $magtype, $mag, $agency, $event_type, $model ) = @_;
@@ -446,13 +568,26 @@ sub format_origin_row {
 
 	}
 
+	my( $magtype ) = correct_magtype_code( $magtype );
 	$row .= sprintf( "     %3d    %-4s  %5.2f ", $ndef, $magtype, $mag );
+
+#	if( $defining ) {
+#
+#		$row .= sprintf( "     %3d    %-4s  %5.2f ", $ndef, $pref_magtype, $pref_mag );
+#
+#	} else {
+#
+#		$row .= sprintf( "     %3d    %-4s  %5.2f ", $ndef, $magtype, $mag );
+#
+#	}
+
         $row .= " $agency\n";
 
         return $row;
 }
 
 sub format_error_row {
+	#print ("\n\t SUB_FORMAT_ERROR_ROW\n");
 
         my( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr,
             $sdepth, $smajax, $sminax, $strike, $agency, $time, $orid ) = @_;
@@ -461,7 +596,7 @@ sub format_error_row {
 
         my( $e ) = "E";
 
-	$e = "e" unless($defining );
+	$e = "e" unless( $defining );
 
         my( $model ) = &algorithm_to_model( $algorithm );
         my( $locator ) = &algorithm_to_locator( $algorithm );
@@ -549,9 +684,10 @@ print "XXX$strikeXXX\n";
 
 sub format_magnitudes_block{
 
+	#print ("\n   SUB_FORMAT_MAGNITUDES_BLOCK\n");
 	my( @db ) = @_;
 
-	$db[ 3 ] = 0; #this step may be redundant
+	$db[ 3 ] = 0;
 
 	@db = dbsort( @db, "abs( orid - prefor )" ); #this step may be redundant
 
@@ -559,9 +695,15 @@ sub format_magnitudes_block{
 
 	my( $mag_block ) = "";
 
+	$db[3] = 0;
+	my( $orid ) = dbgetv( @db, "orid" );
+	my( $orid_count ) = 1;
+	my( $prev_orid ) = 0;
+
 	for( $db[ 3 ] = 0; $db[ 3 ] < $numRecords; $db[ 3 ]++ ){
 
 		my( $defining, $primary_magnitude_flag ) = ( 0, 0 );
+		my( $orid ) = dbgetv( @db, "orid" );
 
 		if ( $db[ 3 ] == 0 ){
 
@@ -570,6 +712,9 @@ sub format_magnitudes_block{
 		}
 
 		my( %magnitudes ) = get_all_magnitudes( @db );
+		#print ("\t get_all_magnitudes returns: \n");
+		#print Dumper(\%magnitudes);
+		#print ("\n");
 
 		my( @priority_sorted_magtypes ) = priority_sort_magtypes( %magnitudes );
 
@@ -578,6 +723,8 @@ sub format_magnitudes_block{
 		my( $auth ) = dbgetv( @db, "origin.auth" );
 
 		my( $agency ) = auth_to_agency( $auth );
+
+		unless( $prev_orid == $orid && orid_count != 1 ) {
 
 		foreach ( @priority_sorted_magtypes ){
 
@@ -593,7 +740,11 @@ sub format_magnitudes_block{
 
 			$mag_block .= format_magnitude_row( $defining, $magtype, $mag, $uncertainty, $nsta, $agency, $primary_magnitude_flag );
 
+
 			$primary_magnitude_flag = 0;
+			$prev_orid = $orid;
+                	$orid_count++;
+		}
 		}
 
 	}
@@ -603,6 +754,7 @@ sub format_magnitudes_block{
 }
 
 sub format_magnitude_row {
+	#print("\n\t\t SUB_FORMAT_MAGNITUDES_ROW\n");
         my( $defining, $magtype, $mag, $magerr, $nmagsta, $agency, $flag ) = @_;
 
         my( $row );
@@ -641,6 +793,7 @@ sub format_magnitude_row {
 
 sub format_amplitude_row {
         my( $sta, $magtype, $mag, $agency ) = @_;
+	#print("\n   SUB FORMAT_AMPLITUDE_ROW\n");
 
         my( $row );
 
@@ -656,6 +809,7 @@ sub format_phase_row {
         my( $origin_time, $sta, $chan, $iphase, $arrtime,
             $qual, $fm, $timedef, $timeres,
             $wgt, $delta, $esaz, $ema, $agency ) = @_;
+	#print("\n   SUB FORMAT_PHASE_ROW\n");
 
         my( $row );
 
@@ -741,6 +895,7 @@ sub get_all_magnitudes{
 #returns a hash table containing all magnitudes associated with a single origin referenced by @db
 
         my( @db ) = @_;
+	#print("\n\tSUB GET_ALL_MAGNITUDES\n");
 
         my( $ml, $mb, $ms, $orid, $algorithm, $auth ) = dbgetv( @db, "ml", "mb", "ms", "orid", "algorithm", "origin.auth" );
 
@@ -762,7 +917,7 @@ sub get_all_magnitudes{
 
         for( $db[ 3 ]= 0; $db[ 3 ] < $norecords; $db[ 3 ]++ ){
 
-                my( $magtype, $mag ) = dbgetv( @db, "magtype", "magnitude" );
+                my( $magtype, $mag, $magid ) = dbgetv( @db, "magtype", "magnitude", "magid" );
 
                 $magnitudes{ $magtype } = $mag unless( $magtype =~ /-/ );
         }
@@ -803,7 +958,11 @@ sub get_all_magnitudes{
 
 							my( $magtype, $mag ) = dbgetv( @db_bulletin, "magtype", "magnitude" );
 
-							$magtype =~ tr/[A-Z]/[a-z]/;
+							# This was originally defined globally and was preventing
+							# magtype from being properly set in origin row.
+							# T.Mulder 2016-07-28
+							my( $magtype ) =~ tr/[A-Z]/[a-z]/;
+#							$magtype =~ tr/[A-Z]/[a-z]/;
 
 							$magnitudes{ $magtype } = $mag;
 						}
@@ -819,6 +978,7 @@ sub get_all_magnitudes{
 sub get_pref_magnitude{
 
         my( @db ) = @_;
+	#print("\n\tSUB GET_PREF_MAGNITUDE\n");
 
         my( %magnitudes ) = get_all_magnitudes( @db );
 
@@ -835,6 +995,7 @@ sub get_pref_magnitude{
                 }
 
         }
+	#print Dumper(\%magnitudes);
 
 	$pref_magtype = correct_magtype_code( $pref_magtype );
 
@@ -894,6 +1055,14 @@ sub verify_event_type{
 
                 if( !defined( $event_type_keep ) ){
 
+			foreach $key ( keys( %event_types ) ) {
+
+				if( $event_type =~ /$key/ ) {
+					return $event_types{$key};
+
+				}
+		}
+
                         return ( $event_type , $event_type );
 
                 }
@@ -904,6 +1073,7 @@ sub verify_event_type{
 
                 }
         }
+
 
         if( $event_type eq "-"){
 
@@ -926,6 +1096,7 @@ sub verify_event_type{
 
 sub correct_magtype_code{
 
+	#print("\n\t\t  SUB_CORRECT_MAGTYPE_CODE\n");
 	my( $magtype ) = @_;
 
 	$magtype =~ s/(.*)/\L$1/i; #cast magtype to lowercase equivalent
@@ -1029,7 +1200,7 @@ sub read_pf {
         $pickfile_name_pattern  = pfget( $Pf, "pickfile_name_pattern" );
         $primary_agency         = pfget( $Pf, "primary_agency" );
         $ignore_fm              = pfget( $Pf, "ignore_fm" );
-	$primary_agency		= pfget( $Pf, "primary_agency" );
+	#$primary_agency		= pfget( $Pf, "primary_agency" );
 
         @email_recipients       = @{pfget( $Pf, "email_recipients" )};
         @auth_suffixes          = @{pfget( $Pf, "auth_suffixes" )};
@@ -1041,4 +1212,5 @@ sub read_pf {
 	%correct_magtype_codes	= %{pfget( $Pf, "correct_magtype_codes" )};
 	%magtype_priorities	= %{pfget( $Pf, "magtype_priorities" )};
 	%bulletin_paths		= %{pfget( $Pf, "bulletin_paths" )};
+	%event_types		= %{pfget( $Pf, "event_types" )};
 }
