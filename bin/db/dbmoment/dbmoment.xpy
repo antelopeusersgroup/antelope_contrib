@@ -205,9 +205,10 @@ except Exception,e:
 
 # Parse arguments from command-line
 database = args[0]
-id     = args[1]
+evid = -1
+orid = args[1]
 logging.info("database [%s]" % database)
-logging.info("id [%s]" % id)
+logging.info("id [%s]" % orid)
 
 
 
@@ -281,26 +282,27 @@ logging.info('Test if event table present: %s' % event_table.query(datascope.dbT
 
 # Test if we see the table
 if options.evid and event_table.query(datascope.dbTABLE_PRESENT):
+    evid = orid
     steps = [ 'dbopen event' ]
     steps.extend([ 'dbjoin origin' ])
-    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % id ])
+    steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % evid ])
 else:
     steps = ['dbopen origin']
-    steps.extend(['dbsubset orid==%s' % id ])
+    steps.extend(['dbsubset orid==%s' % orid ])
 
 logging.info( ', '.join(steps) )
 
 with datascope.freeing(db.process( steps )) as dbview:
-    logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,id) )
+    logging.debug( 'Found (%s) events with id=[%s]' % (dbview.record_count,orid) )
 
     if not dbview.record_count:
-        logging.error( 'No records found for id=[%s]' % id )
+        logging.error( 'No records found for id=[%s]' % orid )
     elif dbview.record_count > 1:
-        logging.error( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,id) )
+        logging.error( 'Found (%s) events/orids with id=[%s]' % (dbview.record_count,orid) )
     else:
         dbview.record = 0
         orid = dbview.getv('orid')[0]
-        logging.info('Found 1 record for id=[%s] => orid=%s' % (id,orid))
+        logging.info('Found 1 record with orid=[%s]' % orid)
 
 
 """
@@ -322,7 +324,7 @@ dbmnt = DbMoment(database, options, model_pf)
 
 # This should bring back all the information need for us to
 # push this back to the database.
-logging.info("Process id [ %s ]" % orid )
+logging.info("Process orid [ %s ]" % orid )
 results = dbmnt.mt( orid )
 
 
@@ -412,7 +414,7 @@ cleanup_db(netmag_table, 'orid==%s && auth=~/mt.%s/' % (orid,model_name) )
 to_insert = [
     ('magid',netmag_table.nextid('magid')),
     ('orid',orid),
-    ('evid',id),
+    ('evid',evid),
     ('net','-'),
     ('magtype',results['drmagt']),
     ('magnitude',results['drmag']),
