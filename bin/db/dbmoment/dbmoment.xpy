@@ -205,7 +205,7 @@ except Exception,e:
 
 # Parse arguments from command-line
 database = args[0]
-evid = -1
+evid = args[1]
 orid = args[1]
 logging.info("database [%s]" % database)
 logging.info("id [%s]" % orid)
@@ -282,7 +282,6 @@ logging.info('Test if event table present: %s' % event_table.query(datascope.dbT
 
 # Test if we see the table
 if options.evid and event_table.query(datascope.dbTABLE_PRESENT):
-    evid = orid
     steps = [ 'dbopen event' ]
     steps.extend([ 'dbjoin origin' ])
     steps.extend([ 'dbsubset (evid==%s && prefor==orid) ' % evid ])
@@ -302,7 +301,8 @@ with datascope.freeing(db.process( steps )) as dbview:
     else:
         dbview.record = 0
         orid = dbview.getv('orid')[0]
-        logging.info('Found 1 record with orid=[%s]' % orid)
+        evid = dbview.getv('evid')[0]
+        logging.info('Found 1 record with evid=[%s] orid=[%s]' % (evid,orid) )
 
 
 """
