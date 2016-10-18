@@ -367,12 +367,15 @@ sub get_info_for_sta {
             #
             # Use this regex to clean the IP string...
             #
-            if ( $sta_hash{ip} =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/ ) {
+            if ( $sta_hash{ip} =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}):([\d]{4}):/ ) {
                 $sta_hash{ip} = $1 ;
+                $sta_hash{port} = int($2) + int($pf{http_port_offset}) ;
+
             }
             else {
                 fork_complain("Failed grep on IP (ip'$sta_hash{ip}',dlsta'$sta_hash{dlsta}')") ;
                 $sta_hash{ip} = 0 ;
+                $sta_hash{port} = 0 ;
             }
 
         }
@@ -381,6 +384,7 @@ sub get_info_for_sta {
         fork_log( "\tendtime: $sta_hash{endtime}" ) ;
         fork_log( "\tstatus: $sta_hash{status}" ) ;
         fork_log( "\tip: $sta_hash{ip}" ) ;
+        fork_log( "\tport: $sta_hash{port}" ) ;
 
 
     }
@@ -686,6 +690,7 @@ sub get_data {
     my $type    = '' ;
     my $resp    = 0 ;
     my $ip     = $table{ip} or 0;
+    my $port   = $table{port} or 0;
     my $dlsta  = $table{dlsta} ;
     my $net    = $table{net} ;
     my $status = $table{status} ;
@@ -742,10 +747,10 @@ sub get_data {
     #
     # No more to do in this case.
     #
-    unless ( $ip ) {
-        dbunlock("${path}/${sta}_baler") ;
-        fork_die("$sta has no IP") ;
-    }
+    #unless ( $ip ) {
+    #    dbunlock("${path}/${sta}_baler") ;
+    #    fork_die("$sta has no IP") ;
+    #}
 
     #
     # Limit the downloads to some Megabytes in some days
@@ -760,11 +765,6 @@ sub get_data {
 
     }
 
-    #
-    # Ping the station
-    #
-    $p = Net::Ping->new("tcp", 5) ;
-    $p->port_number($pf{http_port}) ;
     $record=0 ;
 
     # Need the infinite loop so you can easily control this from
@@ -772,13 +772,29 @@ sub get_data {
     while ( 1 ) {
         $record++;
 
-        last if $p->ping($ip) ;
+        %table = get_info_for_sta($sta) ;
+        $ip     = $table{ip} or 0;
+        $port   = $table{port} or 0;
+
+        fork_log("Ping $sta on http://$ip:$port") ;
+
+        #
+        # Ping the station
+        #
+        if ( $ip and $port ) {
+            $p = Net::Ping->new("tcp", 25) ;
+            $p->port_number($port) ;
+            last if $p->ping($ip) ;
+            fork_complain( "http://$ip:$port not responding. wait($pf{connect_pause})" ) ;
+        } else {
+            fork_complain( "Address problem. IP:$ip PORT:$port. wait($pf{connect_pause})" ) ;
+        }
 
         sleep $pf{connect_pause} ;
 
         if ( $record == $pf{max_attempts} ) {
             dbunlock("${path}/${sta}_baler") ;
-            fork_die("$sta on http://$ip:$pf{http_port} NOT RESPONDING!") ;
+            fork_die("$sta on http://$ip:$port NOT RESPONDING!") ;
         }
     }
     fork_log("$sta responded after $record attempts and $pf{connect_pause} secs wait time." )
@@ -793,7 +809,7 @@ sub get_data {
     # Read that status page on the baler and scrape the values from the text
     #
     ($media_active, $media_reserve, @lists)
-        = get_medias_and_lists($sta,$ip) ;
+        = get_medias_and_lists($sta,$ip,$port) ;
     $media_active ||= 'unknown' ;
     $media_reserve ||= 'unknown' ;
 
@@ -987,7 +1003,7 @@ sub get_data {
 
     unless ( keys %remote ) {
         dbunlock("${path}/${sta}_baler") ;
-        fork_die("Can't get list of files: $ip:$pf{http_port})") ;
+        fork_die("Can't get list of files: $ip:$port)") ;
     }
 
     # There is a parameter to set the max amount of time
@@ -1089,7 +1105,7 @@ sub get_data {
 
 
     unless (keys %flagged) {
-        fork_log("No new files. http://$ip:$pf{http_port}") ;
+        fork_log("No new files. http://$ip:$port") ;
         dbunlock("${path}/${sta}_baler") ;
         return ;
     }
@@ -1198,10 +1214,10 @@ sub get_data {
         #
         if ( $dir ) {
 
-            fork_log("download_file($dir/$file,$path,$ip)") ;
+            fork_log("download_file($dir/$file,$path,$ip,$port)") ;
 
             $start_file = now() ;
-            $where = download_file("$dir/$file",$path,$ip) || '' ;
+            $where = download_file("$dir/$file",$path,$ip,$port) || '' ;
             $end_file = now() ;
 
         } else {
@@ -1221,7 +1237,7 @@ sub get_data {
 
                 $start_file = now() ;
                 fork_log("attempt download: $dir/$1/$file") ;
-                $where = download_file("$dir/$1/$file",$path,$ip) || '' ;
+                $where = download_file("$dir/$1/$file",$path,$ip,$port) || '' ;
                 $end_file = now() ;
                 last if $where ;
 
@@ -1356,7 +1372,7 @@ sub get_data {
     }
 
     unless ( scalar @total_downloads ) {
-        fork_die("NO DOWNLOADS!!!! http://$ip:$pf{http_port}");
+        fork_die("NO DOWNLOADS!!!! http://$ip:$port");
     }
 
     delete $flagged{$_} foreach @total_downloads ;
@@ -1475,6 +1491,7 @@ sub download_file {
     my $file = shift ;
     my $path = shift ;
     my $ip = shift ;
+    my $port = shift ;
     my ($file_fetch,$where,$url) ;
     my $type = 'error' ;
     my $size = 0 ;
@@ -1488,7 +1505,7 @@ sub download_file {
 
     #$file = join('/',@temp_new) ;
 
-    $url = "http://$ip:$pf{http_port}/$file" ;
+    $url = "http://$ip:$port/$file" ;
 
     fork_debug( "Build File::Fetch object: $url") ;
 
@@ -2007,9 +2024,9 @@ sub get_md5 {
 
             fork_debug("attempt download of MD5: $d/$1/$file") ;
 
-            $where = download_file("$d/$1/$file",$local_path,$ip) ;
+            $where = download_file("$d/$1/$file",$local_path,$ip,$port) ;
             last if $where ;
-            $where = download_file("$d/$1/$file",$local_path,$ip) ;
+            $where = download_file("$d/$1/$file",$local_path,$ip,$port) ;
             last if $where ;
 
         }
@@ -2111,6 +2128,7 @@ sub get_medias_and_lists {
     # We try 2 times anyway....
     my $sta = shift ;
     my $ip = shift ;
+    my $port = shift ;
     my (@text,$line,$browser, $resp) ;
     my $active = '' ;
     my $reserve = '' ;
@@ -2121,19 +2139,19 @@ sub get_medias_and_lists {
     $resp = $browser->timeout(120) ;
 
     fork_debug("$sta:\tLWP::UserAgent->get("
-        ."http://$ip:$pf{http_port}/stats.html)") ;
+        ."http://$ip:$port/stats.html)") ;
 
-    $resp = $browser->get("http://$ip:$pf{http_port}/stats.html") ;
+    $resp = $browser->get("http://$ip:$port/stats.html") ;
 
     unless ( $resp->is_success ) {
 
         fork_debug("2nd time.... $sta:"
             ."\tLWP::UserAgent->get("
-            ."http://$ip:$pf{http_port}/stats.html)") ;
+            ."http://$ip:$port/stats.html)") ;
 
-        $resp = $browser->get("http://$ip:$pf{http_port}/stats.html") ;
+        $resp = $browser->get("http://$ip:$port/stats.html") ;
 
-        fork_complain("Missing http://$ip:$pf{http_port}/stats.html")
+        fork_complain("Missing http://$ip:$port/stats.html")
             unless $resp ;
 
         return unless $resp ;
@@ -2179,23 +2197,24 @@ sub get_medias_and_lists {
     }
     else {
 
-        fork_complain("problem reading http://$ip:$pf{http_port}/stats.html") ;
+        fork_complain("problem reading http://$ip:$port/stats.html") ;
         return ;
 
     }
 
-    fork_complain("Cannot find MEDIA 1 in http://$ip:$pf{http_port}/stats.html")
+    fork_complain("Cannot find MEDIA 1 in http://$ip:$port/stats.html")
         unless $active ;
 
-    if ( $pf{media2_warning} ) {
-        fork_complain("Cannot find MEDIA 2 in http://$ip:$pf{http_port}/stats.html")
-            unless $reserve ;
-    }
+    # Alaska sites may have only 1 media
+    #if ( $pf{media2_warning} ) {
+    #    fork_complain("Cannot find MEDIA 2 in http://$ip:$port/stats.html")
+    #        unless $reserve ;
+    #}
 
     $active  ||= '' ;
     $reserve ||= '' ;
 
-    fork_log("get_medias_and_lists(http://$ip:$pf{http_port}/stats.html) => ($active,$reserve)") ;
+    fork_log("get_medias_and_lists(http://$ip:$port/stats.html) => ($active,$reserve)") ;
 
     return ($active,$reserve,@dir) ;
 
@@ -2346,9 +2365,14 @@ sub dbunlock { # $lock_status = &dbunlock ( $db ) ;
         if ( $pf{unlock_time} < &now() ) {
 
             fork_complain (
-                sprintf ("$db was already unlocked at %s",
+                sprintf ("$db was already unlocked or auto-unlock time in the past: %s",
                     strydtime ( $pf{unlock_time} )
                 ) ) ;
+            fork_complain ( "program    [$0]      $pf{program}" ) ;
+            fork_complain ( "host       [$host]   $pf{host}" ) ;
+            fork_complain ( "pid        [$pid]    $pf{pid}" ) ;
+            fork_complain ( "lock_time      $pf{lock_time}" ) ;
+            fork_complain ( "unlock_time    $pf{unlock_time}" ) ;
             exit 1 ;
 
         }
