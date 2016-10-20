@@ -961,7 +961,7 @@ sub get_data {
                 dbputv(@db,'attempts',int(dbgetv(@db,'attempts'))+1,"lddate",dbgetv(@db,"lddate")) ;
 
                 # Get the md5 file
-                dbputv(@db, "md5", get_md5($sta,$dfile,$ip,\@lists),
+                dbputv(@db, "md5", get_md5($sta,$dfile,$ip, $port, \@lists),
                         "lddate",dbgetv(@db,"lddate") ) ;
 
                 # Verify.
@@ -999,7 +999,7 @@ sub get_data {
     # Done with the local database.
 
     # Now read the Baler...
-    %remote = read_baler( $sta, $ip, \@lists, $media_active, $media_reserve) ;
+    %remote = read_baler( $sta, $ip, $port, \@lists, $media_active, $media_reserve) ;
 
     unless ( keys %remote ) {
         dbunlock("${path}/${sta}_baler") ;
@@ -1260,7 +1260,7 @@ sub get_data {
 
             if ( yesno( $pf{use_md5} ) ) {
 
-                $md5 = get_md5($sta,$file,$ip,\@lists) || 'error' ;
+                $md5 = get_md5($sta,$file,$ip,$port,\@lists) || 'error' ;
 
                 if ( $md5 =~ /(\S{32})/ ) {
                     fork_log("$file verified with md5: $md5") ;
@@ -1284,7 +1284,7 @@ sub get_data {
             move("$path/trash/$file","$path/$file")
                 or fork_complain("Can't move $file to $path") ;
             if ( yesno( $pf{use_md5} ) ) {
-                $md5 = get_md5($sta,$file,$ip,\@lists) || 'error' ;
+                $md5 = get_md5($sta,$file,$ip,$port,\@lists) || 'error' ;
             }
 
         } else {
@@ -1880,6 +1880,7 @@ sub fix_local {
 sub read_baler {
     my $sta   = shift ;
     my $ip    = shift ;
+    my $port    = shift ;
     my $dir   = shift ;
     my $media_active    = shift ;
     my $media_reserve    = shift ;
@@ -1917,7 +1918,7 @@ sub read_baler {
         #
         eval{
             $file_fetch = File::Fetch->new(
-                uri => "http://$ip:$pf{http_port}/$list") ;
+                uri => "http://$ip:$port/$list") ;
         } ;
         fork_complain("File::Fetch($list) => $@") if $@ ;
 
@@ -1941,7 +1942,7 @@ sub read_baler {
         }
 
         unless ( $where ) {
-            fork_complain("Error fetching:  http://$ip:$pf{http_port}/$list") ;
+            fork_complain("Error fetching:  http://$ip:$port/$list") ;
             next ;
         }
 
@@ -1991,6 +1992,7 @@ sub get_md5 {
     my $sta  = shift ;
     my $file  = shift ;
     my $ip    = shift ;
+    my $port    = shift ;
     my $lists    = shift ;
     my ($old,$md5_lib,$f,$d,$digest,$md5,$local_path,$folder) ;
     my ($where) ;
