@@ -379,6 +379,11 @@ sub get_info_for_sta {
             }
 
         }
+        else{
+            fork_complain("No ORBCOMMS information on $sta_hash{dlsta}") ;
+            $sta_hash{ip} = 0 ;
+            $sta_hash{port} = 0 ;
+        }
 
         fork_log( "\ttime: $sta_hash{time}" ) ;
         fork_log( "\tendtime: $sta_hash{endtime}" ) ;
