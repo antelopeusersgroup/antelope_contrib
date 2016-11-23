@@ -729,7 +729,7 @@ sub get_data {
     #
     # Try to lock baler database.
     #
-    if ( dblock("${path}/${sta}_baler",$pf{max_child_run_time}) ) {
+    if ( dblock("${path}/${sta}_baler",int($pf{max_child_run_time})*1.5) ) {
         fork_die("Cannot lock database ${path}/${sta}_baler") ;
     }
 
@@ -1951,8 +1951,9 @@ sub read_baler {
             next ;
         }
 
-        fork_complain("ERROR after download of: $list")
-            unless -e $list ;
+        fork_debug("Success in download of: $list") if -e $list ;
+
+        fork_complain("ERROR after download of: $list") unless -e $list ;
 
         open $input, "<$list" ;
         $files = new IO::Uncompress::AnyUncompress $input
@@ -1976,11 +1977,11 @@ sub read_baler {
             $name = pop(@temp_dir) ;
             next unless $name ;
             #fork_debug("passed name test") ;
-            #fork_debug("Test $name => $pf{regex_for_files}")  ;
+            fork_debug("Test $name => $pf{regex_for_files}")  ;
             next unless  $name =~ /($pf{regex_for_files})/ ;
-            #fork_debug("passed regex") ;
+            fork_debug("passed regex") ;
             next unless $name =~ /.*(${sta}|EXMP).*/ ;
-            #fork_debug("passed ${sta}|EXMP regex") ;
+            fork_debug("passed ${sta}|EXMP regex") ;
             unshift(@temp_dir, $list =~ /active/ ? 'WDIR' : 'WDIR2' ) ;
 
             $list{$name} = join('/',@temp_dir) ;
