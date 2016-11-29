@@ -1465,7 +1465,7 @@ sub total_data_downloaded {
 
     $start = str2epoch("-${days}days") ;
     @db= dbsubset ( @db,
-        "status =~ /downloaded/ && time >= $start ") ;
+        "status =~ /downloaded/ && time >= $start && endtime != NULL") ;
 
     unless ( dbquery(@db, dbRECORD_COUNT) ){
         dbclose(@db) ;

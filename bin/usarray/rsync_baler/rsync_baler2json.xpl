@@ -304,7 +304,7 @@ sub build_json {
     my (@bw);
     my ($dfile);
     my (@flagged,@downloaded,@missing);
-    my ($text,$time);
+    my ($text,$time,$endtime);
     my (@dbr,@dbr_temp,@queries);
     my (@dbr_grouped);
     my ($average,$median);
@@ -412,7 +412,7 @@ sub build_json {
             for ( $t = $dbr_temp[3] ; $t < $dbr_temp[2] ; $t++ ) {
                 $dbr_temp[3] = $t;
 
-                ($file, $time, $bytes, $bandwidth, $md5) = dbgetv(@dbr_temp, qw/dfile time filebytes bandwidth md5/);
+                ($file, $time, $endtime, $bytes, $bandwidth, $md5) = dbgetv(@dbr_temp, qw/dfile time endtime filebytes bandwidth md5/);
                 #elog_notify("$file, $time, $status, $bytes, $bandwidth, $md5");
 
                 push @downloaded, $file;
@@ -431,6 +431,7 @@ sub build_json {
                 $md5_error += 1 if  $md5 =~ /.*error.*/;
                 $md5_missing += 1 if  $md5 =~ /.*missing.*/;
 
+                next unless $endtime =~ /^\d+$/ ;
                 $total_7 += $bytes if $time > $last_7;
                 $total_30 += $bytes if $time > $last_30;
 
