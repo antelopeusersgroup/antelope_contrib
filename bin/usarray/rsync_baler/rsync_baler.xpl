@@ -357,32 +357,32 @@ sub get_info_for_sta {
         $sta_hash{status} = 'Decom' ;
         if ($sta_hash{endtime} eq '-') {
             $sta_hash{status} = 'Active' ;
-        }
 
+            if ( $data_hash->{'orbcomms'} ) {
+                $sta_hash{ip} = $data_hash->{'orbcomms'}->{'inp'};
+                fork_debug( "\tip: $sta_hash{ip}" ) ;
 
-        if ( $data_hash->{'orbcomms'} ) {
-            $sta_hash{ip} = $data_hash->{'orbcomms'}->{'inp'};
-            fork_debug( "\tip: $sta_hash{ip}" ) ;
+                #
+                # Use this regex to clean the IP string...
+                #
+                if ( $sta_hash{ip} =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}):([\d]{4}):/ ) {
+                    $sta_hash{ip} = $1 ;
+                    $sta_hash{port} = int($2) + int($pf{http_port_offset}) ;
 
-            #
-            # Use this regex to clean the IP string...
-            #
-            if ( $sta_hash{ip} =~ /([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}):([\d]{4}):/ ) {
-                $sta_hash{ip} = $1 ;
-                $sta_hash{port} = int($2) + int($pf{http_port_offset}) ;
+                }
+                else {
+                    fork_complain("Failed grep on IP (ip'$sta_hash{ip}',dlsta'$sta_hash{dlsta}')") ;
+                    $sta_hash{ip} = 0 ;
+                    $sta_hash{port} = 0 ;
+                }
 
             }
-            else {
-                fork_complain("Failed grep on IP (ip'$sta_hash{ip}',dlsta'$sta_hash{dlsta}')") ;
+            else{
+                fork_complain("No ORBCOMMS information on $sta_hash{dlsta}") ;
                 $sta_hash{ip} = 0 ;
                 $sta_hash{port} = 0 ;
             }
 
-        }
-        else{
-            fork_complain("No ORBCOMMS information on $sta_hash{dlsta}") ;
-            $sta_hash{ip} = 0 ;
-            $sta_hash{port} = 0 ;
         }
 
         fork_log( "\ttime: $sta_hash{time}" ) ;
@@ -1382,9 +1382,9 @@ sub get_data {
 
     delete $flagged{$_} foreach @total_downloads ;
 
-    if ( scalar keys %flagged > 0 ) {
-        fork_debug('Missing: '.join(' ',sort keys %flagged)) ;
-        fork_complain('Missing: '.scalar keys %flagged . ' files') ;
+    if ( scalar keys %$flagged > 0 ) {
+        fork_debug('Missing: '.join(' ',sort keys %$flagged)) ;
+        fork_complain('Missing: '.scalar keys %$flagged . ' files') ;
     }
 
     #
