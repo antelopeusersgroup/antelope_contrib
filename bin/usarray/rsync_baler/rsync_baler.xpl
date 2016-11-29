@@ -1382,9 +1382,9 @@ sub get_data {
 
     delete $flagged{$_} foreach @total_downloads ;
 
-    if ( scalar keys %$flagged > 0 ) {
-        fork_debug('Missing: '.join(' ',sort keys %$flagged)) ;
-        fork_complain('Missing: '.scalar keys %$flagged . ' files') ;
+    if ( scalar keys %flagged > 0 ) {
+        #fork_debug('Missing: '.join(' ',sort keys %flagged)) ;
+        fork_complain('Missing: '. scalar keys %flagged . ' files') ;
     }
 
     #
