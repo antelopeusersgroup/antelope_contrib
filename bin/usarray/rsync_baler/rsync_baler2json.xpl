@@ -431,9 +431,8 @@ sub build_json {
                 $md5_error += 1 if  $md5 =~ /.*error.*/;
                 $md5_missing += 1 if  $md5 =~ /.*missing.*/;
 
-                next unless $endtime =~ /^\d+$/ ;
-                $total_7 += $bytes if $time > $last_7;
-                $total_30 += $bytes if $time > $last_30;
+                $total_7 += $bytes if $time > $last_7 and $endtime < now();
+                $total_30 += $bytes if $time > $last_30 and $endtime < now();
 
 
             }
