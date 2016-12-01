@@ -56,7 +56,7 @@ use IO::Uncompress::AnyUncompress qw[anyuncompress $AnyUncompressError] ;
 our(%pf) ;
 our(%logs,%errors) ;
 our($to_parent,$nstas,$get_sta,$parent,$host) ;
-our($problems,$nchild,$file_fetch) ;
+our($problems,$nchild,$file_fetch,$start_sta) ;
 our($force_include,$avoid_ips,$subject,$start,$end,$run_time_str) ;
 our($opt_n,$opt_x,$opt_r,$opt_s,$opt_h,$opt_w,$opt_v,$opt_m,$opt_p,$opt_d) ;
 
@@ -698,7 +698,8 @@ sub get_data {
     my $status = $table{status} ;
     my $endtime = $table{endtime} ;
     my $path = prepare_path($sta,$status) ;
-    my $start_sta = now() ;
+
+    $start_sta = now() ;
 
 
     #
@@ -787,9 +788,9 @@ sub get_data {
             $p = Net::Ping->new("tcp", 25) ;
             $p->port_number($port) ;
             last if $p->ping($ip) ;
-            fork_complain( "http://$ip:$port not responding. wait($pf{connect_pause})" ) ;
+            fork_log( "http://$ip:$port not responding. wait($pf{connect_pause})" ) ;
         } else {
-            fork_complain( "Address problem. IP:$ip PORT:$port. wait($pf{connect_pause})" ) ;
+            fork_log( "Address problem. IP:$ip PORT:$port. wait($pf{connect_pause})" ) ;
         }
 
         sleep $pf{connect_pause} ;
@@ -1023,6 +1024,7 @@ sub get_data {
         #dbunlock("${path}/${sta}_baler") ;
         fork_die("$sta Problems on db open!") ;
     }
+
     foreach $f ( sort keys %remote ) {
         # Don't verify checksum files
         next if $f =~ /\.md5/ ;
@@ -2500,7 +2502,12 @@ sub fork_die { # &fork_die ( $parent, $line ) ;
         my $full_path = "${path}/${get_sta}_baler";
         dbunlock( $full_path ) if -f $full_path ;
 
-        fork_complain( "$get_sta:DIED: $line" );
+        #
+        # Calc the total time to rsync station
+        #
+
+        fork_complain( "$get_sta:DIED: $line after ".  strtdelta( now() - $start_sta ) ) ;
+
         exit 9;
 
     }
