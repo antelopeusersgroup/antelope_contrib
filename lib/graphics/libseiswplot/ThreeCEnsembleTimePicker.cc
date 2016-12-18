@@ -326,6 +326,35 @@ StaTimes ThreeCEnsembleTimePicker::get_sta_times()
     return result;
   }catch(...){throw;};
 }
+IndexTimes ThreeCEnsembleTimePicker::get_member_picks()
+{
+  try{
+    IndexTimes result;
+    if(data_loaded)
+    {
+      int i;
+      double time_picked;
+      vector<ThreeComponentSeismogram>::iterator dptr;
+      for(i=0,dptr=d0.member.begin();dptr!=d0.member.end();++i,++dptr)
+      {
+        if(dptr->live)
+        {
+          if(pick_state[i]==PICKED)
+          {
+            time_picked=dptr->get_double(last_pick_key);
+            result.insert(pair<int,double>(i,time_picked));
+          }
+        }
+      }
+    }
+    else
+    {
+      cerr << "ThreeCEnsembleTimePicker::get_member_picks(WARNING):  no data loaded"
+        <<endl << "Returning empty pick table"<<endl;
+    }
+    return result;
+  }catch(...){throw;};
+}
 int ThreeCEnsembleTimePicker::set_pick_times(vector<SeismicPick> p)
 {
   try{
@@ -381,6 +410,10 @@ void ThreeCEnsembleTimePicker::align()
       if(!d0.member[i].live) continue;
       double t0s,arrivaltime;
       arrivaltime=d0.member[i].get_double(TCPICKKEY);
+      /* TCPICKKEY is volatile and is reset by this method. 
+         We keep the same data in last_pick_key in case we
+         want to retrieve it with the get_member_picks method */
+      d0.member[i].put(last_pick_key,arrivaltime);
       /*Silently skip unpicked data*/
       if(arrivaltime<null_pick_test) continue;
       t0s=d0.member[i].get_double(t0shift_key);
@@ -421,6 +454,9 @@ void ThreeCEnsembleTimePicker::align(vector<double>& lags)
             {
                 if(lags[i]>null_pick_test)
                 {
+                  /* We set last_pick_key to save this pick
+                     as TCPICKKEY is volatile and reset to 0 below */
+                    d0.member[i].put(last_pick_key,lags[i]);
                     t0s=d0.member[i].get_double(t0shift_key);
                     t0s+=lags[i];
                     d0.member[i].put(t0shift_key,t0s);
