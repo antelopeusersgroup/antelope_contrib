@@ -1,0 +1,155 @@
+#
+# quakeml.pf -- settings for converting CSS to QuakeML
+#
+
+
+# Resource Identifiers
+#----------------------------------------------------------------------------#
+# The URI schema name prefix is not strictly a part of the resource identifier.
+# The URI schema name smi stands for seismological meta-information, thus indicating
+# a connection to a set of metadata associated with the resource.
+uri_prefix quakeml
+
+# This is used as a unique authority string in all URI's.
+# For the description of resources which are not
+# officially controlled by an authority, local
+# identifiers can be assigned using the keyword “local” as agency_uri.
+agency_uri  local               # ie anf.ucsd.edu
+
+agency_id  xx                   # ie TA
+
+#---- NOT IN USE NOW ----#
+agency_catalog_name  demo       # ie ANF
+#------------------------#
+
+author  Antelope event2qml process # ie Array Network Facility, UCSD
+
+author_uri  demo                # ie anf.ucsd.edu
+
+# These are for overriding origin type codes translation
+# mapping set in the code.
+etype_map &Arr{
+    L   earthquake
+    LF  earthquake
+    f   earthquake
+    RN  earthquake
+    rn  earthquake
+    p   explosion
+    pL  not reported
+    im  not reported
+    ma  earthquake
+    m   not reported
+    o   other event
+}
+
+Q_NAMESPACE         http://quakeml.org/xmlns/quakeml/1.2    # xmlns:q
+CATALOG_NAMESPACE   http://anss.org/xmlns/catalog/0.1       # xmlns:catalog
+BED_NAMESPACE       http://quakeml.org/xmlns/bed/1.2        # xmlns
+BEDRT_NAMESPACE     http://quakeml.org/xmlns/bed-rt/1.2     # xmlns
+
+# Only allow the listed Mag types
+magnitude_type_subset &Tbl{
+    .*
+}
+
+review_flags &Tbl{
+    y
+    yes
+    r
+    reviewed
+}
+
+
+# Avoid some elements on the final QuakeML output by
+# setting them to false here. This is a configuration
+# for the css2qml function and not for the Event
+# object configuration. The Event will try to load
+# all information it finds in the database for the selected
+# EVID.
+add_origin     true
+add_magnitude  true
+add_fplane     true
+add_mt         true
+add_stamag     true
+add_arrival    true
+add_detection  true
+
+
+event_info_description Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki
+
+event_info_comment  Antelope QuakeML conversion using event2qml software.
+
+
+#
+# File writing mode if already present.
+#   True  = append
+#   False = overwrites
+# If set to False then it overwrites the file.
+append_to_output_file   False
+
+
+#
+# SELECT AND REJECT STATEMENTS FOR DATABASE ENTRIES
+#
+# !!!!! ALL NON-NULL OR EMPTY VALUES (select and reject) WILL BE APPLIED !!!!!!
+#
+# If you have an empty select and empty reject then
+# all entries will pass. All values will be submitted
+# to the dbsubset function with the respective syntax:
+#   SELECT will use =~      #i.e. dbsubset =~ /.*UCSD.*/
+#   REJECT will use !~      #i.e. dbsubset !~ /.*USGS.*/
+#
+event_auth_select &Tbl{
+    #.*
+}
+event_auth_reject &Tbl{
+    #USGS.*      # avoid sending USGS information back to ANSS
+}
+
+origin_auth_select &Tbl{
+    #.*
+}
+origin_auth_reject &Tbl{
+    #UCSD.*      # avoid sending USGS information back to ANSS
+    #USGS.*      # avoid sending USGS information back to ANSS
+}
+
+arrival_auth_select &Tbl{
+    #.*
+}
+arrival_auth_reject &Tbl{
+    #USGS.*      # avoid sending USGS information back to ANSS
+}
+
+detection_state_select &Tbl{
+    #.*
+}
+
+detection_state_reject &Tbl{
+    ON      # avoid sending ON OFF states
+    OFF     # avoid sending ON OFF states
+}
+
+netmag_auth_select &Tbl{
+    #.*
+}
+netmag_auth_reject &Tbl{
+    #USGS.*      # avoid sending USGS information back to ANSS
+}
+
+mt_auth_select &Tbl{
+    #.*
+}
+mt_auth_reject &Tbl{
+    #USGS.*      # avoid sending USGS information back to ANSS
+}
+
+fplane_auth_select &Tbl{
+    #.*
+}
+fplane_auth_reject &Tbl{
+    #USGS.*      # avoid sending USGS information back to ANSS
+}
+
+
+pf_revision_time    1472083200

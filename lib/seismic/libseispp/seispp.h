@@ -37,7 +37,7 @@
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #ifndef NO_ANTELOPE
-#include "ComplexTimeSeries.h"
+//#include "ComplexTimeSeries.h"
 #include "seismicarray.h"
 #endif
 #include "ensemble.h"
@@ -495,9 +495,11 @@ long dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 //\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 **/
+/*
 long dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
+        */
 
 #endif
 
@@ -764,6 +766,18 @@ template <class Tensemble> void LagShift(Tensemble& d,
 		mde.log_error();
 		throw SeisppError(error2);
 	}
+}
+template <class Tensemble> Tensemble remove_dead(Tensemble& d)
+{
+    Tensemble dedit(dynamic_cast<Metadata&>(d),1);
+    int nd=d.member.size();
+    int i;
+    for(i=0;i<nd;++i)
+    {
+        if(d.member[i].live)
+            dedit.member.push_back(d.member[i]);
+    }
+    return dedit;
 }
 /*! \brief Test a generic time series object for sample rate match with standard.
 

@@ -450,6 +450,30 @@ public:
 	* \exception SeisppDberror is thrown if dbjoin fails.
 	*/
 	void natural_join(string t2);
+        /*! Apply nojoin operation of named table with default keys.
+
+          Datascope has a nojoin operator that returns a view with rows that
+          have no matching entries in a table against which it references.
+          This version of of this method uses default join keys for t2
+          with the current view.
+
+          \param t2 is the name of the second table to be tested.
+          */
+        void nojoin(string t2);
+        /*! Apply nojoin operation of named table with specified keys.
+
+          Datascope has a nojoin operator that returns a view with rows that
+          have no matching entries in a table against which it references.
+          This version of this method uses keys specified by two input 
+          lists.
+
+          \param t2 is the name of the second table to be tested.
+          \param key1 is the set of keys to match in the current view
+             this handle defines.
+          \param key2 is the set of keys to match against key1 list
+             for the right table to which the nojoin operation is applied.
+             */
+        void nojoin(string t2, list<string> key1, list<string> key2);
 	/*! Subset the current view by a specific sort clause.
 	*  Subsetting a view by a specific criteria is a basic dbms operation.
 	*  This  method is a front end to the datascope (Antelope) procedure 

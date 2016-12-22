@@ -1,0 +1,117 @@
+originator     \"Juan Reyes\"\<reyes@ucsd.edu\>
+last_modified  12-2014
+
+category    OBSIP
+configuration   ABALONES-NAVY-LP
+
+description ABALONES-NAVY-LP
+dfile ABALONES-NAVY-LP
+
+
+info    &Literal{
+ABALONES-NAVY-LP FILTERED, OBSIP SIO
+}
+
+#
+# NOTE:
+#   USING this pf for filtered channels
+#   We cannot specify 2 streams with the
+#   same samplerate on the same file. If
+#   you discover how to do it then send me
+#   an email. reyes@ucsd.edu
+#
+
+streams 50sps 100sps
+
+# Problems wiht samprate 333...
+# 512000/1536 = 333.3333333 and not 333
+#333sps    333  a/d_192   f1 f2
+
+# definitions of streams
+50sps      50  a/d sinc1 sinc2 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2 fir_50_c3
+100sps    100  a/d sinc1 sinc2_3 sinc2_4 sinc3 sinc3_4 sinc3_5 f1 f2 fir_50_c3
+
+# Gains: Nominal sensitivity (in ounits/iunits) for datalogger
+# Voltage range: +/- 2.47 V, max counts over this range of
+# –6,100,300 to 6,102,081.
+# This gives S(a/d) = 4.94 / 12,202,381 = 0.405x10**-6 V/count
+# = 0.405 microV/count = 2469135 counts/V
+
+gains 2469135
+
+
+# Stages
+
+a/d     &Arr{
+    samprate    512000
+    gtype       digitizer
+    iunits      V
+    ounits      counts
+    sn          datalogger
+}
+
+sinc1    &Arr{
+    gtype       FIR_decimator
+    decifac     8
+    response    &datafile(responses/lch_4_sinc1)
+}
+
+sinc2      &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2)
+}
+
+sinc2_3    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_3)
+}
+
+sinc2_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc2_4)
+}
+
+sinc3       &Arr{
+    gtype       FIR_decimator
+    decifac     5
+    response    &datafile(responses/lch_4_sinc3)
+}
+
+sinc3_4    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_4)
+}
+
+sinc3_5    &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_sinc3_5)
+}
+
+sinc3_6    &Arr{
+    gtype       FIR_decimator
+    decifac     3
+    response    &datafile(responses/lch_4_sinc3_6)
+}
+
+f1          &Arr{
+    gtype       FIR_decimator
+    decifac     4
+    response    &datafile(responses/lch_4_f1)
+}
+
+f2          &Arr{
+    gtype       FIR_decimator
+    decifac     2
+    response    &datafile(responses/lch_4_f2)
+}
+# configuration for NAVY filtered data
+fir_50_c3          &Arr{
+    gtype       FIR_decimator
+    decifac     1
+    response    &datafile(responses/abalones_filtered_c3)
+} 

@@ -1,0 +1,69 @@
+.TH DBMOMENT_RUN_EXAMPLE 1
+
+.SH NAME
+dbmoment_run_example \- run dbmoment on 2 example events
+
+.SH SYNOPSIS
+The Dreger's inversion source code is included in the contributed code
+repo as well as 2 full examples from the original distribution.
+The data needed for the example is located on folders "EXAMPLE_1" and
+"EXAMPLE_2".
+
+This test script will have a default value for the temporary test folder
+or you can specify one at the command-line. The default value is in your
+home folder.
+
+Inversion will have the same limitations as the original Dreger's
+code and users should be familiar with Dreger's documentation.
+
+
+.SH ENVIRONMENT AND DEPENDENCIES
+You need to have $ANTELOPE defined in your environment. Then
+compile the source code.
+
+    make clean;
+    make;
+    make install;
+
+It will require write access to the example folder:
+
+    $ANTELOPE/contrib/example/dbmoment/
+
+.SH PARAMETER FILE
+None.
+
+.SH EXAMPLE
+You can run the dbmoment code by hand from any directory.
+
+For this you have 2 options. You can run without arguments and create a new
+dbmoment_example folder on the working directory or you can specify one
+argument for the base path to the dbmoment_example folder.
+
+    dbmoment_run_example
+
+    or
+
+    dbmoment_run_example /Users/cooluser/dbmoment/
+
+This will make the directory if missing and will run both examples.
+You will see several new folders.
+
+    .dbmoment       => Temp folder for calculations.
+    synthetics_db   => Includes all databases for synthetics.
+    dbmoment_images => Default folder to save the results in PNG files.
+
+
+.SH "BUGS AND CAVEATS"
+The first example is set at time 0 so the final date will display as
+"1/01/1970 0:00:00.0" on the results and the PDF image. This is a
+consequence of not having an event time nor time for the seismic traces
+on the original example from Dreger's distribution.
+
+.SH "SEE ALSO"
+.nf
+dbmoment(1)
+.fi
+
+.SH AUTHOR
+Juan Reyes (UCSD)
+
