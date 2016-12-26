@@ -26,7 +26,7 @@ ThreeCPlot::ThreeCPlot(Metadata& md) : comp0(md),comp1(md),comp2(md)
     }
   }catch(...){throw;};
 }
-void ThreeCPlot::plot(ThreeComponentEnsemble& d)
+void ThreeCPlot::plot(ThreeComponentEnsemble& d,bool block)
 {
   try{
     int k;
@@ -35,31 +35,47 @@ void ThreeCPlot::plot(ThreeComponentEnsemble& d)
     {
       auto_ptr<TimeSeriesEnsemble> ptr;
       ptr=ExtractComponent(d,k);
-      /* Evil interface collision - this seems necessary to avoid mysterious
-       * errors when the widget plots this */
-      dtmp[k]=TimeSeriesEnsemble(*ptr);
       /*SeismicPlot copies the data so we don't bother to make a copy here
       and just recycle ptr for each component */
       switch(k)
       {
         case 0:
-          comp0.plot(dtmp[0],true);
+          comp0.plot(*ptr,false);
           break;
         case 1:
-          comp1.plot(dtmp[1],true);
+          comp1.plot(*ptr,false);
           break;
         case 2:
-          comp2.plot(dtmp[2],true);
+          comp2.plot(*ptr,block);
       };
     }
   }catch(...){throw;};
 }
-void ThreeCPlot::plot(ThreeComponentSeismogram& d1)
+void ThreeCPlot::plot(ThreeComponentSeismogram& d1,bool block)
 {
   try{
     ThreeComponentEnsemble d;
     d.member.push_back(d1);
-    this->plot(d);
+    this->plot(d,block);
   }catch(...){throw;};
+}
+set<int> ThreeCPlot::report_kills()
+{
+    try{
+        set<int> allkills,compkills;
+        set<int>::iterator kptr;
+        allkills=comp0.report_kills();
+        compkills=comp1.report_kills();
+        for(kptr=compkills.begin();kptr!=compkills.end();++kptr)
+        {
+            allkills.insert(*kptr);
+        }
+        compkills=comp2.report_kills();
+        for(kptr=compkills.begin();kptr!=compkills.end();++kptr)
+        {
+            allkills.insert(*kptr);
+        }
+        return allkills;
+    }catch(...){throw;};
 }
 } // End SEISPP namespace encapsulation

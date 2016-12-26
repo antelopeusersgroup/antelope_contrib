@@ -1,5 +1,6 @@
 #ifndef _THREECPLOT_H_
 #define _THREECPLOT_H_
+#include <set>
 #include "Metadata.h"
 #include "ensemble.h"
 #include "TraceEditPlot.h"
@@ -27,12 +28,18 @@ public:
   it to allow one to tell which window is which. */
   ThreeCPlot(Metadata& md);
   /*! \brief plot a 3c ensemble.
-
-  Unlike SeismicPlot this procedure never blocks.  The intent is you only want
-  to see data and not interact with it, which is a simplification from the o
-  original design. */
-  void plot(ThreeComponentEnsemble& d);
-  void plot(ThreeComponentSeismogram& d1);
+   * */
+  void plot(ThreeComponentEnsemble& d,bool block=true);
+  void plot(ThreeComponentSeismogram& d1,bool block=true);
+  /*! \brief Return which signals have been marked dead.
+   *
+    This object enables the window in edit mode Which allows
+  the user to mark signals to be killed.   This method returns an
+  stl set of ensemble member positions of all signals marked bad 
+  in any of the 3 windows this object draws.  It uses a method
+  with the same name in TraceEditPlot for each component and then
+  returns the union of the 3 sets */
+  set<int> report_kills();
 private:
   TraceEditPlot comp0,comp1,comp2;
 };
