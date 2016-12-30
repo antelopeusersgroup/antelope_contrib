@@ -1,0 +1,13 @@
+k_len       1.0
+k_buf       0.3
+cov_len     3.0
+min_dt      1.0
+n_detection_threads 4
+thread_respawn_time 300
+p_state lp #flag local (assumed) P-wave detections
+s_state ls #flag for local S-wave detections
+start_lead 6.0
+end_lag   14.0
+filter BW 3 4 20 4
+schema  css3.0
+max_packet_length 6.0

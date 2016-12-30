@@ -4,7 +4,7 @@
 
 #include"tdmt_invb.h"
 
- void gaussj();
+ void gj();
  int correlate(),fclose();
  FILE *fopen(), *par,*fd, *fd1, *fd2, *fd3, *out;
 

@@ -15,7 +15,7 @@ include $(ANTELOPEMAKELOCAL)
 CXXFLAGS += -I$(XMOTIFINCLUDE)
 CXXFLAGS += -I$(BOOSTINCLUDE)
 #Remove this comment to enable verbose stuff from seisw widget
-#CXXFLAGS += -DDEBUG_WIDGET
+#CXXFLAGS += -g -DDEBUG_WIDGET
 
 OBJS=	SeismicPick.o Seisw.o colormap.o parameters.o
 $(LIB) : $(OBJS)

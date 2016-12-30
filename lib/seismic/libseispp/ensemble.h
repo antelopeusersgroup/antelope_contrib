@@ -28,7 +28,6 @@
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #ifndef NO_ANTELOPE
-#include "ComplexTimeSeries.h"
 #include "StationChannelMap.h"
 #endif
 #include "Hypocenter.h"
@@ -366,10 +365,6 @@ double PeakAmplitude(TimeSeries *p);
 /*! Measures peak amplitude (L2 norm of 3 components) for a ThreeComponent
 Seismogram. */
 double PeakAmplitude(ThreeComponentSeismogram *p);
-/*! Measures peak amplitude for a ComplexTimeSeries. */
-#ifndef NO_ANTELOPE
-double PeakAmplitude(ComplexTimeSeries *p);
-#endif
 
 /*! Generic algorithm to measure and set peak amplitude as a scaling attribute.
 
@@ -472,10 +467,6 @@ template <class Tensemble,class Tmember>
 void ScaleMember(TimeSeries *p,double scale);
 /*! Scales a ThreeComponentSeismogram object by scale. */
 void ScaleMember(ThreeComponentSeismogram *p,double scale);
-#ifndef NO_ANTELOPE
-/*! Scales a ComplexTimeSeries object by scale. */
-void ScaleMember(ComplexTimeSeries *p,double scale);
-#endif
 
 /* Companion to above */
 

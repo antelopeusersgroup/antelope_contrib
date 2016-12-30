@@ -133,7 +133,7 @@ if ( $opt_s && ( ! $opt_S || ! -e $statefile ) ) {
    }
    elog_notify("starting from pktid: $pktstart\n");
 
-} elsif ($opt_s && $opt_S) {	# implies there is an $opt_S too
+} elsif ($opt_S) {	# implies there is an $opt_S too
    elog_complain("Using state file for first pktid\n");
    elog_complain("State file overrides -s $opt_s \n") if $opt_s ;
 
@@ -328,7 +328,6 @@ sub cmdline { # &cmdline();
     $cmdline = $cmdline . " -S $opt_S " if $opt_S;
     $cmdline = $cmdline . " -s $opt_s " if $opt_s;
     $cmdline = $cmdline . " @ARGV \n" ;
-            \nUSAGE: $0 [-p pf] [-v] [-q] [-X] [-l match_logname] [-S state] [-s {start_time|OLDEST}] orb db 
 
     return;
 }
