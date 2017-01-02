@@ -33,7 +33,7 @@ $total = $#ARGV + 1;
 if ($total eq 1) {
     $path = $ARGV[0];
 } else {
-    print "\nYOU CAN ALSO RUN WITH EXPLICIT PATH: run_dbmoment_example /foo/bar/temp/folder \n";
+    print "\nYOU CAN ALSO RUN WITH EXPLICIT PATH: dbmoment_run_example /foo/bar/temp/folder \n";
     $path = getcwd() . "/dbmoment_example/";
 }
 
