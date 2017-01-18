@@ -613,7 +613,7 @@ class Synthetics():
     def _fkrsort_script(self,samplerate):
         self.logging.debug('New fkrsort script samplerate=[%s]' % samplerate)
 
-        text = "#! /bin/csh\nset dt={:0.4f}\n".format(1/samplerate)
+        text = "#! /bin/csh -f\nset dt={:0.4f}\n".format(1/samplerate)
         text += '''
 
 set npts=2048
