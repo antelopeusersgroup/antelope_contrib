@@ -4,14 +4,14 @@ from export_events.functions import *
 
 
 class css2qml():
-    """
+    '''
     Converter to QuakeML schema from CSS3.0 schema
 
-    """
+    '''
 
-    def __init__( self, event=None, evid=None, review_flags= ['r','y'], author_uri='', etype_map=None,
+    def __init__( self, event=None, evid=None, review_flags= ['r','y'], etype_map=None,
             uri_prefix='quakeml',agency_uri='local', agency_id='xx',
-            author='antelope.event2qml', agency_catalog_name ='antelope',
+            author='antelope.event2qml', 
             q='http://quakeml.org/xmlns/quakeml/1.2', catalog='http://anss.org/xmlns/catalog/0.1',
             bed='http://quakeml.org/xmlns/bed/1.2', bedrt='http://quakeml.org/xmlns/bed-rt/1.2',
             info_description='', info_comment='', add_origin=True,
@@ -27,9 +27,7 @@ class css2qml():
         self.uri_prefix = uri_prefix
         self.agency_uri = str(agency_uri).replace('/', '_').replace(' ', '_').lower()
         self.agency_id = str(agency_id).replace('/', '_').replace(' ', '_').lower()
-        self.agency_catalog_name = str(agency_catalog_name).replace('/', '_').replace(' ', '_').lower()
         self.author = author
-        self.author_uri = author_uri
 
         self.reviewed_flags = review_flags
         self.placesdb = None
@@ -41,15 +39,15 @@ class css2qml():
         else:
             # Default CSS3.0 etypes to QML event types
             self.etype_map = {
-                'qb' : "quarry blast",
-                'eq' : "earthquake",
-                'me' : "meteorite",
-                'ex' : "explosion",
-                'o'  : "other event",
-                'l'  : "earthquake",
-                'r'  : "earthquake",
-                't'  : "earthquake",
-                'f'  : "earthquake",
+                'qb' : 'quarry blast',
+                'eq' : 'earthquake',
+                'me' : 'meteorite',
+                'ex' : 'explosion',
+                'o'  : 'other event',
+                'l'  : 'earthquake',
+                'r'  : 'earthquake',
+                't'  : 'earthquake',
+                'f'  : 'earthquake',
             }
 
         # Namespaces URLs
@@ -139,9 +137,9 @@ class css2qml():
             if magnitude_list:
                 preferedMagnitudeID = '%08d' % float( magnitude_list[0]['netmag.magid'] )
                 self.logging.debug( 'preferredMagnitudeID: %s' %  preferedMagnitudeID )
-                self.EventParameters['event']['preferredMagnitudeID'] = preferedMagnitudeID
+                self.EventParameters['event']['preferredMagnitudeID'] = self._id('magnitude', preferedMagnitudeID)
                 if self.namespace == self.bedrt:
-                    self.EventParameters['event']['magnitudeReference'] = preferedMagnitudeID
+                    self.EventParameters['event']['magnitudeReference'] = self._id('magnitude', preferedMagnitudeID)
 
             # GET all magnitudes defined for event
             if self.namespace == self.bed:
@@ -202,24 +200,28 @@ class css2qml():
         return {
             '@publicID': self._id('eventParameters', self.evid),
             'description': self.info_description,
-            'comment': self.info_comment,
+            'comment' : {
+                'text': self.info_comment
+            },
             'creationInfo': {
-                'creationTime': self._utc_datetime( stock.now() ) ,
-                'authorID': self.author,
-                'agencyID': self.agency_id,
+                'creationTime': self._utc_datetime() ,
+                'author': self.author,
+                'agencyID': self.agency_id.lower() ,
+                'agencyURI': self._uri() ,
+                'version': stock.now()
             }
         }
 
 
     def new_event( self, event=None, evid=None ):
-        """
+        '''
         Add a new event to the object.
 
         This is called from __init__ if we provide an event
         object when we instantiate the class. If not then
         the new_event() method should be called directly.
 
-        """
+        '''
 
         self.logging.debug( 'Process new event' )
 
@@ -238,15 +240,14 @@ class css2qml():
         # By default we have a NULL event structure. If we want to delete an event
         # from the catalog then we forward this simple object with the correct evid.
         self.qmlEvent = {
-            '@publicID': self._id('event', id=self.evid),
-            'type': "not existing",
+            '@publicID': self._id('event', self.evid),
+            'type': 'not existing',
             'creationInfo' : {
                 'creationTime': self._utc_datetime() ,
-                'authorID': self.author,
-                'authorURI': self.author_uri,
-                'agencyURI': self.agency_uri ,
+                'author': self.author,
+                'agencyURI': self._uri() ,
                 'agencyID': self.agency_id.lower() ,
-                'version': self._utc_datetime()
+                'version': stock.now()
             }
         }
 
@@ -264,11 +265,13 @@ class css2qml():
 
             # Extend element with catalog information
             self.qmlEvent.update( self._catalog_info( self.evid, auth=self.event['event.auth'], event=True ) )
-            # Since we do have an actual event then lets rewrite those values
+            # Since we do have an actual event then lets rewrite those values.
+            # If we don't reset "type" then the event will be removed from the catalog.
             self.qmlEvent['type'] = 'earthquake'
-            self.qmlEvent['@publicID'] = self._id( 'event', id=self.event['event.evid'] )
+            self.qmlEvent['@publicID'] = self._id( 'event', self.event['event.evid'] )
 
             if self.event['event.lddate']:
+                # Set times to valid ones.
                 self.qmlEvent['creationInfo']['creationTime'] = self._utc_datetime( self.event['event.lddate'] )
                 self.qmlEvent['creationInfo']['version'] = int( float( self.event['event.lddate'] ) )
 
@@ -278,23 +281,23 @@ class css2qml():
 
 
     def _origin_type(self, etype):
-        """
+        '''
         Map a CSS3.0 etype origin flag to a QuakeML event type
 
         Return a proper event_type from a CSS3.0 etype flag stored in an origin
         The default value in the database is  a dash "-" and that will produce
         a response of "not reported".
-        """
+        '''
 
         if etype and etype in self.etype_map:
             return self.etype_map[ etype ]
         else:
-            return "not reported"
+            return 'not reported'
 
 
 
-    def get_origin_status(self, test):
-        """
+    def get_mode_status(self, test):
+        '''
         Return mode and status based on author
 
 
@@ -312,20 +315,20 @@ class css2qml():
             - final
             - rejected
 
-        """
+        '''
         if test in self.reviewed_flags:
-            return "automatic", "preliminary"
+            return 'manual', 'reviewed'
         else:
-            return "manual", "reviewed"
+            return 'automatic', 'preliminary'
 
 
     def _convert_origin(self, origin):
-        """
+        '''
         Return a dict of QuakeML origin from a dict of CSS key/values
 
-        """
+        '''
 
-        mode, status = self.get_origin_status( origin['origin.review'] )
+        mode, status = self.get_mode_status( origin['origin.review'] )
 
         #-- Solution Uncertainties ----------------------------------
         # in CSS the ellipse is projected onto the horizontal plane
@@ -347,7 +350,7 @@ class css2qml():
             lon_u = m2deg_lon(e, lat=origin['origin.lat'] )
 
             uncertainty = {
-                'preferredDescription': "uncertainty ellipse",
+                'preferredDescription': 'uncertainty ellipse',
                 'maxHorizontalUncertainty': a,
                 'minHorizontalUncertainty': b,
                 'azimuthMaxHorizontalUncertainty': s,
@@ -363,37 +366,48 @@ class css2qml():
         #-- Basic Hypocenter ----------------------------------------
         qmlorigin = {
             '@publicID': self._id( 'origin', origin['origin.orid'] ),
-            'latitude':  filter_none( { 'value': origin['origin.lat'], 'uncertainty': lat_u } ),
-            'longitude': filter_none( { 'value': origin['origin.lon'], 'uncertainty': lon_u } ),
-            'depth': filter_none( {
+            'latitude':  {
+                'value': origin['origin.lat']
+                },
+            'longitude': {
+                'value': origin['origin.lon']
+                },
+            'depth': {
                 'value': km2m( origin['origin.depth'] )
-                } ),
-            'time': filter_none( {
+                },
+            'time': {
                 'value': self._utc_datetime( origin['origin.time'])
-                } ),
+                },
             'quality': {
                 'standardError': origin['origerr.sdobs'],
                 'usedPhaseCount': origin['origin.ndef'],
                 'associatedPhaseCount': origin['origin.nass']
                 },
-            'originUncertainty': uncertainty,
             'evaluationMode': mode,
             'evaluationStatus': status,
             'type': self._origin_type( origin['origin.etype'] or 'e' ) or 'other event',
             'comment' : {
-                'id': self._id( 'origin', origin['origin.orid'] ),
                 'text': 'algorithm:%s' % origin['origin.algorithm']
             },
             'creationInfo' : {
-                'authorID': origin['origin.auth'],
+                'author': origin['origin.auth'],
+                'version': origin['origin.lddate']
             }
         }
 
+        if lat_u:
+            qmlorigin['latitude']['uncertainty'] = lat_u
+        if lon_u:
+            qmlorigin['longitude']['uncertainty'] = lon_u
+
+        if uncertainty:
+            qmlorigin['originUncertainty'] = uncertainty
+
         if origin['origerr.sdepth']:
-            qmlorigin['depth']['uncertanty'] = km2m( origin['origerr.sdepth'])
+            qmlorigin['depth']['uncertainty'] = km2m( origin['origerr.sdepth'])
 
         if origin['origerr.stime']:
-            qmlorigin['time']['uncertanty'] = km2m( origin['origerr.stime'])
+            qmlorigin['time']['uncertainty'] = km2m( origin['origerr.stime'])
 
         # Verify if we want to add arrivals to this origin
         if self.add_arrival:
@@ -407,29 +421,34 @@ class css2qml():
         return qmlorigin
 
     def _convert_magnitudes(self, mag):
-        """
+        '''
         Return a dict of QuakeML magnitude from a dict of CSS key/values
         corresponding to one record.
 
-        """
+        '''
 
         self.logging.debug( '_convert_magnitudes()' )
         self.logging.debug( mag )
 
-        return {
+        results = {
             '@publicID': self._id('magnitude', mag['netmag.magid']),
             'mag': {
-                'value': mag['netmag.magnitude'],
-                'uncertainty': mag['netmag.uncertainty']
+                'value': mag['netmag.magnitude']
                 },
             'type': mag['netmag.magtype'],
-            'stationCount': mag['netmag.nsta'],
-            'originID': self._id('origin', mag['netmag.orid']),
-            'methodID': mag['netmag.auth'],
+            'stationCount': mag['netmag.nsta'] or 0,
+            'originID': self._id( 'origin', mag['netmag.orid'] ),
+            'methodID': self._uri( mag['netmag.auth'] ),
             'creationInfo': {
                 'creationTime': self._utc_datetime(mag['netmag.lddate']),
+                'author': mag['netmag.auth']
                 }
             }
+
+        if mag['netmag.uncertainty']:
+            results['mag']['uncertainty'] = mag['netmag.uncertainty']
+
+        return results
 
 
     def _convert_stamags(self, stamag):
@@ -443,19 +462,24 @@ class css2qml():
         self.logging.debug( '_convert_stamags()' )
         self.logging.debug( stamag )
 
-        return {
+        results = {
             '@publicID': self._id( 'magnitude/station', stamag['stamag.magid'], stamag['stamag.sta'] ),
             'mag': {
-               'value': stamag['stamag.magnitude'],
-               'uncertainty': stamag['stamag.uncertainty'] or 0.0,
+               'value': stamag['stamag.magnitude']
                },
             'type': stamag['stamag.magtype'],
-            'methodID': stamag['stamag.auth'],
-            'originID': self._id('origin', stamag['stamag.orid']),
+            'originID': self._id( 'origin', stamag['stamag.orid'] ),
+            'methodID': self._uri( stamag['stamag.auth'] ),
             'creationInfo': {
                'creationTime': self._utc_datetime(stamag['stamag.lddate']),
+                'author': stamag['stamag.auth']
                }
         }
+
+        if stamag['stamag.uncertainty']:
+            results['stamag']['uncertainty'] = stamag['stamag.uncertainty']
+
+        return results
 
 
     def _convert_pick(self, pick):
@@ -468,13 +492,7 @@ class css2qml():
         self.logging.debug( '_convert_pick()' )
         self.logging.debug( pick )
 
-        # PICK MODE
-        if pick['arrival.auth'] == 'orbassoc':
-            pick_mode = "automatic"
-            pick_status = "preliminary"
-        else:
-            pick_mode = "manual"
-            pick_status = "reviewed"
+        pick_mode, pick_status = self.get_mode_status( pick['arrival.auth'] )
 
         # parse channel and location name
         chan_loc = pick['arrival.chan'].split('_')
@@ -488,8 +506,7 @@ class css2qml():
         results =  {
             '@publicID': self._id( 'pick', pick['arrival.arid'] ),
             'time': {
-               'value': self._utc_datetime(pick['arrival.time']),
-               'uncertainty': pick['arrival.deltim'],
+               'value': self._utc_datetime(pick['arrival.time'])
             },
             'waveformID': {
                 '@stationCode':  pick['arrival.sta'],
@@ -503,26 +520,30 @@ class css2qml():
                 'value': pick['assoc.esaz']
             },
             'creationInfo': {
-                'author': pick['arrival.auth'],
-                'creationTime': self._utc_datetime(pick['arrival.lddate'])
+                'creationTime': self._utc_datetime(pick['arrival.lddate']),
+                'author': pick['arrival.auth']
             },
             'evaluationMode': pick_mode,
             'evaluationStatus': pick_status
         }
 
+        if pick['arrival.deltim']:
+            results['time']['uncertainty'] = pick['arrival.deltim']
+
         if pick['arrival.snr']:
-            results['comment'] = {}
-            results['comment']['text'] = 'snr: %s' % pick['arrival.snr']
+            results['comment'] = {
+                'text': 'snr: %s' % pick['arrival.snr']
+            }
 
         # ONSET
         try:
             on_qual = pick['arrival.qual'].lower()
             if 'i' in on_qual:
-                results['onset'] = "impulsive"
+                results['onset'] = 'impulsive'
             elif 'e' in on_qual:
-                results['onset'] = "emergent"
+                results['onset'] = 'emergent'
             elif 'w' in on_qual:
-                results['onset'] = "questionable"
+                results['onset'] = 'questionable'
         except:
             pass
 
@@ -530,11 +551,11 @@ class css2qml():
         try:
             pol = pick['arrival.fm'].lower()
             if 'c' in pol or 'u' in pol:
-                results['polarity'] = "positive"
+                results['polarity'] = 'positive'
             elif 'd' in pol or 'r' in pol:
-                results['polarity'] = "negative"
+                results['polarity'] = 'negative'
             elif '.' in pol:
-                results['polarity'] = "undecidable"
+                results['polarity'] = 'undecidable'
         except:
             pass
 
@@ -554,11 +575,6 @@ class css2qml():
         # ID
         self.detection_id_counter = self.detection_id_counter + 1
         valid_id = self.detection_id_counter
-
-
-        # PICK MODE
-        pick_mode = "automatic"
-        pick_status = "preliminary"
 
         # parse channel and location name
         chan_loc = pick['detection.chan'].split('_')
@@ -588,8 +604,8 @@ class css2qml():
                 'creationTime': self._utc_datetime(pick['detection.lddate'])
             },
             'filterID': self._id( 'filter/bandpass/butterworth', pick['detection.filter'] ),
-            'evaluationMode': pick_mode,
-            'evaluationStatus': pick_status
+            'evaluationMode': 'automatic',
+            'evaluationStatus': 'preliminary'
         }
 
     def _convert_arrival(self, arrival):
@@ -617,7 +633,7 @@ class css2qml():
             'distance': arrival['assoc.delta'],
             'timeResidual': arrival['assoc.timeres'],
             'timeWeight': timeWeight,
-            'earthModelID': arrival['assoc.vmodel'],
+            'earthModelID': self._id( 'earthmodel', arrival['assoc.vmodel'] ),
 
             'creationInfo': {
                'creationTime': self._utc_datetime(arrival['assoc.lddate']),
@@ -626,11 +642,11 @@ class css2qml():
 
 
     def _convert_fplane(self, fp, table='fplane' ):
-        """
+        '''
         Return a dict of focalMechanism from an dict of CSS key/values
         corresponding to one record.
 
-        """
+        '''
 
         if table == 'fplane':
             pub_id = fp['fplane.mtid']
@@ -640,7 +656,7 @@ class css2qml():
             pub_id = fp['%s.lddate' % table ]
 
         # Determine from auth field
-        mode, status = self.get_origin_status( fp['%s.auth' % table ] )
+        mode, status = self.get_mode_status( fp['%s.auth' % table ] )
 
         nodal_planes = {
             'nodalPlane1': {
@@ -680,20 +696,20 @@ class css2qml():
             'principalAxes': principal_axes,
             'creationInfo': {
                 'creationTime': self._utc_datetime( fp['%s.lddate' % table ] ),
-                'authorID': fp['%s.auth' % table ],
+                'author': fp['%s.auth' % table ]
             },
-            'evaluationMode': fp['%s.rstatus' % table] or mode,
-            'evaluationStatus': fp['%s.estatus' % table] or status,
+            'evaluationMode': mode,
+            'evaluationStatus': status,
         }
         return focal_mechanism
 
 
     def _convert_mt(self, mt):
-        """
+        '''
         Map BRTT CSS table 'mt' record to a FocalMechanism
 
 
-        """
+        '''
 
         focal_mech = self._convert_fplane( mt, table='mt' )
 
@@ -722,7 +738,7 @@ class css2qml():
 
 
     def _catalog_info( self, id, auth=None, namespace=None, event=False ):
-        """
+        '''
         Alternative ID Standard
 
 
@@ -750,27 +766,12 @@ class css2qml():
 
 
         In this case we are limiting this function to eventID and eventSource.
-        """
+        '''
 
         d = {}
         temp = []
         ext_org = False
         ext_net = False
-
-
-        #
-        # Internal ID and name
-        #
-        if not namespace:
-            namespace = self.agency_catalog_name
-
-        # ------- REMOVING THIS PART TO AVOID VALIDATION ERRORS ------- #
-        #try:
-        #    d[ '@%s:dataid' % namespace.lower() ] = '%d' % id
-        #except:
-        #    d[ '@%s:dataid' % namespace.lower() ] = '%s' % id
-
-        #d[ '@%s:datasource' % namespace.lower() ] = self.agency_id.lower()
 
 
         #
@@ -837,8 +838,34 @@ class css2qml():
 
         return stock.epoch2str( timestamp , '%Y-%m-%dT%H:%M:%S.%sZ', tz='UTC')
 
-    def _id( self, id_type, id, alt_id=None ):
-        """
+    def _uri( self, auth=None ):
+        '''
+        Scheme for resource identifiers which adopts the format of Uniform Resource Identifiers
+        (URIs, Berners-Lee et al. 1998).
+
+        As a recommendation, authority identifiers should be built similar to existing
+        web URLs, but in reversed order, so that the distinction between URLs (that
+        relate directly to web content) and URIs (that are just identifiers) becomes
+        apparent. A recommended scheme for authority IDs is
+
+            'top-level domain'.'organisation/institution'[.'sub-unit of organisation']
+
+        Note that the last part is optional. Example authority IDs that are already
+        actively used in the respective institutions are ch.ethz.sed for the Swiss
+        Seismological Service at ETH Zurich, and eu.emsc for the European
+        Mediterranean Seismological Centre.
+
+        '''
+
+        uri = '%s:%s' % (self.uri_prefix, self.agency_uri )
+
+        if auth:
+            uri += '/%s' % auth
+
+        return uri
+
+    def _id( self, name, serial=None, alt_id=None ):
+        '''
         Create Resource identifiers for elemtns (public IDs)
         Using documentation on ANSS Quakeml ID Standards
         https://github.com/usgs/Quakeml/wiki/ANSS-Quakeml-ID-Standards
@@ -863,26 +890,26 @@ class css2qml():
             <extendedid> is any additional information required to make this
                 id unique within <type> for this event, e.g. timestamp, magnitude type
 
-        """
+        '''
 
         try:
-            if 'event' == id_type:
+            if 'event' == name:
                 # Event elements most be 8 digit ints.
-                id = "%08d" % int(float( id ))
+                serial = '%08d' % int(float( serial ))
             else:
-                id = "%d" % int(float( id ))
+                serial = '%d' % int(float( serial ))
         except:
             # Other elements just need to be unique.
-            id = str(id).replace('/', '_').replace(' ', '_').lower()
+            serial = str(serial).replace('/', '_').replace(' ', '_').lower()
 
-        rid = "%s:%s.%s/%s/%s" % \
+        rid = '%s:%s.%s/%s/%s' % \
                 (self.uri_prefix, self.agency_id.lower(),
-                self.agency_uri, id_type, id )
+                self.agency_uri, name, serial )
 
         if alt_id:
-            rid += "/%s" % alt_id
+            rid += '/%s' % alt_id
 
         return rid
 
 
-if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's qml module. Not to run directly!!!! **\n" )
+if __name__ == '__main__': raise ImportError( "\n\n\tAntelope's qml module. Not to run directly!!!! **\n" )
