@@ -1,7 +1,7 @@
-import math
+from functions import km2m, get_NE_on_ellipse, m2deg_lat, m2deg_lon
 
-from export_events.functions import *
-
+from antelope import stock
+from export_events.logging_helper import getLogger
 
 class css2qml():
     '''
@@ -9,14 +9,14 @@ class css2qml():
 
     '''
 
-    def __init__( self, event=None, evid=None, review_flags= ['r','y'], etype_map=None,
+    def __init__(self, event=None, evid=None, review_flags= ['r','y'], etype_map=None,
             uri_prefix='quakeml',agency_uri='local', agency_id='xx',
-            author='antelope.event2qml', 
+            author='antelope.event2qml',
             q='http://quakeml.org/xmlns/quakeml/1.2', catalog='http://anss.org/xmlns/catalog/0.1',
             bed='http://quakeml.org/xmlns/bed/1.2', bedrt='http://quakeml.org/xmlns/bed-rt/1.2',
             info_description='', info_comment='', add_origin=True,
             add_magnitude=True, add_fplane=True, add_mt=True, add_stamag=True,
-            add_arrival=True ):
+            add_arrival=True):
 
         self.logging = getLogger('css2qml')
 
@@ -39,15 +39,15 @@ class css2qml():
         else:
             # Default CSS3.0 etypes to QML event types
             self.etype_map = {
-                'qb' : 'quarry blast',
-                'eq' : 'earthquake',
-                'me' : 'meteorite',
-                'ex' : 'explosion',
-                'o'  : 'other event',
-                'l'  : 'earthquake',
-                'r'  : 'earthquake',
-                't'  : 'earthquake',
-                'f'  : 'earthquake',
+                'qb': 'quarry blast',
+                'eq': 'earthquake',
+                'me': 'meteorite',
+                'ex': 'explosion',
+                'o': 'other event',
+                'l': 'earthquake',
+                'r': 'earthquake',
+                't': 'earthquake',
+                'f': 'earthquake',
             }
 
         # Namespaces URLs
@@ -67,14 +67,14 @@ class css2qml():
         self.add_stamag = add_stamag
         self.add_arrival = add_arrival
 
-        self.logging.debug( 'Init css2qml Class:' )
+        self.logging.debug('Init css2qml Class:')
 
 
         # If we have an event then configure the object with the info
         if event or evid:
-            self.new_event( event=event, evid=evid )
+            self.new_event(event=event, evid=evid)
 
-    def dump( self, namespace='BED' ):
+    def dump(self, namespace='BED'):
         '''
         Return dict of QuakeML root element given eventParameters dict
 
@@ -82,7 +82,7 @@ class css2qml():
         '''
 
         if not self.evid and not self.event:
-            self.logging.error( 'event(): Need "event" or "evid" to configure object.' )
+            self.logging.error('event(): Need "event" or "evid" to configure object.')
 
         if namespace == 'BED-RT':
             self.namespace = self.bedrt
@@ -90,7 +90,7 @@ class css2qml():
             # defaults to basic
             self.namespace = self.bed
 
-        self.logging.info( 'export QuakeML parameters for namespace: %s' % self.namespace )
+        self.logging.info('export QuakeML parameters for namespace: %s' % self.namespace)
 
         self.EventParameters = self._new_EventParameters()
 
@@ -99,7 +99,7 @@ class css2qml():
 
         # Add Origin elements
         if self.add_origin:
-            origins = [ self._convert_origin(o) for o in self.event.all_origins() ]
+            origins = [self._convert_origin(o) for o in self.event.all_origins()]
 
             # Set the preferrdOriginID if you have a prefor on the event table
             if self.event['event.prefor']:
@@ -117,69 +117,87 @@ class css2qml():
 
         # Add Picks elements
         if self.add_arrival:
-            # Add individual seismic arrivals (arrival table) only. Not the assoc table.
+            # Add individual seismic arrivals (arrival table) only. Not the
+            # assoc table.
             if self.namespace == self.bed:
                 self.EventParameters['event']['pick'] = \
-                        [ self._convert_pick(m) for m in self.event.all_arrivals() ] + \
-                        [ self._convert_detection(m) for m in self.event.all_detections() ]
+                        [self._convert_pick(m)
+                         for m in self.event.all_arrivals()] + \
+                        [self._convert_detection(m)
+                         for m in self.event.all_detections()]
             else:
                 self.EventParameters['pick'] = \
-                        [ self._convert_pick(m) for m in self.event.all_arrivals() ] + \
-                        [ self._convert_detection(m) for m in self.event.all_detections() ]
+                        [self._convert_pick(m)
+                         for m in self.event.all_arrivals()] + \
+                        [self._convert_detection(m)
+                         for m in self.event.all_detections()]
 
 
         # Add Magnitude elements
         if self.add_magnitude:
 
-            # GET value for preferredMagnitudeID ( magnitudeReference ? )
-            magnitude_list = self.event.all_mags_orid( self.event['event.prefor'] )
+            # GET value for preferredMagnitudeID (magnitudeReference ?)
+            magnitude_list = self.event.all_mags_orid(
+                self.event['event.prefor'])
 
             if magnitude_list:
-                preferedMagnitudeID = '%08d' % float( magnitude_list[0]['netmag.magid'] )
-                self.logging.debug( 'preferredMagnitudeID: %s' %  preferedMagnitudeID )
-                self.EventParameters['event']['preferredMagnitudeID'] = self._id('magnitude', preferedMagnitudeID)
+                preferedMagnitudeID = '%08d' % float(
+                    magnitude_list[0]['netmag.magid'])
+                self.logging.debug('preferredMagnitudeID: %s' %
+                                   preferedMagnitudeID)
+                self.EventParameters['event']['preferredMagnitudeID'] = \
+                    self._id('magnitude', preferedMagnitudeID)
                 if self.namespace == self.bedrt:
-                    self.EventParameters['event']['magnitudeReference'] = self._id('magnitude', preferedMagnitudeID)
+                    self.EventParameters['event']['magnitudeReference'] = \
+                        self._id('magnitude', preferedMagnitudeID)
 
             # GET all magnitudes defined for event
             if self.namespace == self.bed:
                 self.EventParameters['event']['magnitude'] = \
-                        [ self._convert_magnitudes(m) for m in self.event.all_magnitudes() ]
+                        [self._convert_magnitudes(m)
+                         for m in self.event.all_magnitudes()]
             else:
                 self.EventParameters['magnitude'] = \
-                        [ self._convert_magnitudes(m) for m in self.event.all_magnitudes() ]
+                        [self._convert_magnitudes(m)
+                         for m in self.event.all_magnitudes()]
 
 
         # Add StrationMagnitude elements
         if self.add_stamag:
 
-            # Add individual station magnitude estimates upon measurements on specific phases.
+            # Add individual station magnitude estimates upon measurements on
+            # specific phases.
             if self.namespace == self.bed:
                 self.EventParameters['event']['stationMagnitude'] = \
-                        [ self._convert_stamags(m) for m in self.event.all_stamags() ]
+                        [self._convert_stamags(m)
+                         for m in self.event.all_stamags()]
             else:
                 self.EventParameters['stationMagnitude'] = \
-                        [ self._convert_stamags(m) for m in self.event.all_stamags() ]
+                        [self._convert_stamags(m)
+                         for m in self.event.all_stamags()]
 
 
         # Add MomentTensor elements
         if self.add_mt:
-            moment_tensors = [ self._convert_mt(m) for m in self.event.all_mts() ]
+            moment_tensors = [self._convert_mt(m)
+                              for m in self.event.all_mts()]
         else:
             moment_tensors = []
 
         if self.add_fplane:
-            fplanes    = [ self._convert_fplane(m) for m in self.event.all_fplanes() ]
+            fplanes = [self._convert_fplane(m)
+                       for m in self.event.all_fplanes()]
         else:
             fplanes = []
 
         # Add FocalMechs and MTs if we got any
         if moment_tensors or fplanes:
             if self.namespace == self.bed:
-                self.EventParameters['event']['focalMechanism'] = moment_tensors + fplanes
+                self.EventParameters['event']['focalMechanism'] = \
+                    moment_tensors + fplanes
             else:
-                self.EventParameters['focalMechanism'] = moment_tensors + fplanes
-
+                self.EventParameters['focalMechanism'] = \
+                    moment_tensors + fplanes
 
         return {
             'q:quakeml': {
@@ -190,17 +208,19 @@ class css2qml():
             }
         }
 
-    def _new_EventParameters( self ):
+    def _new_EventParameters(self):
         '''
-        Base QuakeML event structure. Includes namespace definitions and basic elements.
+        Base QuakeML event structure. Includes namespace definitions and basic
+        elements.
         '''
 
-        # Basic EventParameters object. This class serves as a container for Event objects.
+        # Basic EventParameters object. This class serves as a container for
+        # Event objects.
 
         return {
             '@publicID': self._id('eventParameters', self.evid),
             'description': self.info_description,
-            'comment' : {
+            'comment': {
                 'text': self.info_comment
             },
             'creationInfo': {
@@ -213,7 +233,7 @@ class css2qml():
         }
 
 
-    def new_event( self, event=None, evid=None ):
+    def new_event(self, event=None, evid=None):
         '''
         Add a new event to the object.
 
@@ -223,10 +243,11 @@ class css2qml():
 
         '''
 
-        self.logging.debug( 'Process new event' )
+        self.logging.debug('Process new event')
 
         if not evid and not event:
-            self.logging.error( 'event(): Need "event" or "evid" to configure object.' )
+            self.logging.error(
+                'event(): Need "event" or "evid" to configure object.')
 
         # Clean all previous information on events.
         if event: self.event = event
@@ -235,14 +256,15 @@ class css2qml():
             self.evid = event.evid
         except:
             self.evid = evid
-        self.logging.debug( 'EVID: %s' % event.evid )
+        self.logging.debug('EVID: %s' % event.evid)
 
-        # By default we have a NULL event structure. If we want to delete an event
-        # from the catalog then we forward this simple object with the correct evid.
+        # By default we have a NULL event structure. If we want to delete an
+        # event from the catalog then we forward this simple object with the
+        # correct evid.
         self.qmlEvent = {
             '@publicID': self._id('event', self.evid),
             'type': 'not existing',
-            'creationInfo' : {
+            'creationInfo': {
                 'creationTime': self._utc_datetime() ,
                 'author': self.author,
                 'agencyURI': self._uri() ,
@@ -264,19 +286,24 @@ class css2qml():
             '''
 
             # Extend element with catalog information
-            self.qmlEvent.update( self._catalog_info( self.evid, auth=self.event['event.auth'], event=True ) )
+            self.qmlEvent.update(self._catalog_info(
+                self.evid, auth=self.event['event.auth'], event=True))
             # Since we do have an actual event then lets rewrite those values.
-            # If we don't reset "type" then the event will be removed from the catalog.
+            # If we don't reset "type" then the event will be removed from the
+            # catalog.
             self.qmlEvent['type'] = 'earthquake'
-            self.qmlEvent['@publicID'] = self._id( 'event', self.event['event.evid'] )
+            self.qmlEvent['@publicID'] = self._id('event',
+                                                  self.event['event.evid'])
 
             if self.event['event.lddate']:
                 # Set times to valid ones.
-                self.qmlEvent['creationInfo']['creationTime'] = self._utc_datetime( self.event['event.lddate'] )
-                self.qmlEvent['creationInfo']['version'] = int( float( self.event['event.lddate'] ) )
+                self.qmlEvent['creationInfo']['creationTime'] = \
+                    self._utc_datetime(self.event['event.lddate'])
+                self.qmlEvent['creationInfo']['version'] = \
+                    int(float(self.event['event.lddate']))
 
         else:
-            self.logging.warning( 'not a valid event' )
+            self.logging.warning('not a valid event')
 
 
 
@@ -290,7 +317,7 @@ class css2qml():
         '''
 
         if etype and etype in self.etype_map:
-            return self.etype_map[ etype ]
+            return self.etype_map[etype]
         else:
             return 'not reported'
 
@@ -301,14 +328,17 @@ class css2qml():
         Return mode and status based on author
 
 
-        From: QuakeML An XML Representation of Seismological Data Basic Event Description Version 1.2
+        From: QuakeML An XML Representation of Seismological Data Basic Event
+        Description Version 1.2
 
         3.4.1. EvaluationMode
-        Mode of an evaluation (used in Pick, Amplitude, Magnitude, Origin, FocalMechanism). Allowed values are
+        Mode of an evaluation (used in Pick, Amplitude, Magnitude, Origin,
+        FocalMechanism). Allowed values are:
             - manual
             - automatic.
         3.4.2. EvaluationStatus
-        Status of of an evaluation (used in Pick, Amplitude, Magnitude, Origin, FocalMechanism). Allowed values are
+        Status of of an evaluation (used in Pick, Amplitude, Magnitude, Origin,
+        FocalMechanism). Allowed values are:
             - preliminary
             - confirmed
             - reviewed
@@ -321,25 +351,25 @@ class css2qml():
         else:
             return 'automatic', 'preliminary'
 
-
     def _convert_origin(self, origin):
         '''
         Return a dict of QuakeML origin from a dict of CSS key/values
 
+        Notes re: solution uncertainties.
+        1. In CSS the ellipse is projected onto the horizontal plane using the
+            covariance matrix
+        2. Sometimes the origin may not join with the origerr table
         '''
 
-        mode, status = self.get_mode_status( origin['origin.review'] )
+        mode, status = self.get_mode_status(origin['origin.review'])
 
-        #-- Solution Uncertainties ----------------------------------
-        # in CSS the ellipse is projected onto the horizontal plane
-        # using the covariance matrix
-        # Sometimes the origin may not join with the origerr table
-        try:
+         try:
             a = km2m(origin['origerr.smajax'])
             b = km2m(origin['origerr.sminax'])
             s = origin['origerr.strike']
         except:
-            self.logging.warning( 'missing ORIGERR info for orid:[%s]' % origin['origin.orid'] )
+            self.logging.warning('missing ORIGERR info for orid:[%s]' %
+                                 origin['origin.orid'])
             a = False
             b = False
             s = False
@@ -347,7 +377,7 @@ class css2qml():
         if all([a, b, s]):
             n, e = get_NE_on_ellipse(a, b, s)
             lat_u = m2deg_lat(n)
-            lon_u = m2deg_lon(e, lat=origin['origin.lat'] )
+            lon_u = m2deg_lon(e, lat=origin['origin.lat'])
 
             uncertainty = {
                 'preferredDescription': 'uncertainty ellipse',
@@ -363,20 +393,20 @@ class css2qml():
             lon_u = None
             uncertainty = None
 
-        #-- Basic Hypocenter ----------------------------------------
+        # Basic Hypocenter
         qmlorigin = {
-            '@publicID': self._id( 'origin', origin['origin.orid'] ),
-            'latitude':  {
+            '@publicID': self._id('origin', origin['origin.orid']),
+            'latitude': {
                 'value': origin['origin.lat']
                 },
             'longitude': {
                 'value': origin['origin.lon']
                 },
             'depth': {
-                'value': km2m( origin['origin.depth'] )
+                'value': km2m(origin['origin.depth'])
                 },
             'time': {
-                'value': self._utc_datetime( origin['origin.time'])
+                'value': self._utc_datetime(origin['origin.time'])
                 },
             'quality': {
                 'standardError': origin['origerr.sdobs'],
@@ -385,11 +415,11 @@ class css2qml():
                 },
             'evaluationMode': mode,
             'evaluationStatus': status,
-            'type': self._origin_type( origin['origin.etype'] or 'e' ) or 'other event',
-            'comment' : {
+            'type': self._origin_type(origin['origin.etype'] or 'e') or 'other event',
+            'comment': {
                 'text': 'algorithm:%s' % origin['origin.algorithm']
             },
-            'creationInfo' : {
+            'creationInfo': {
                 'author': origin['origin.auth'],
                 'version': origin['origin.lddate']
             }
@@ -404,19 +434,21 @@ class css2qml():
             qmlorigin['originUncertainty'] = uncertainty
 
         if origin['origerr.sdepth']:
-            qmlorigin['depth']['uncertainty'] = km2m( origin['origerr.sdepth'])
+            qmlorigin['depth']['uncertainty'] = km2m(origin['origerr.sdepth'])
 
         if origin['origerr.stime']:
-            qmlorigin['time']['uncertainty'] = km2m( origin['origerr.stime'])
+            qmlorigin['time']['uncertainty'] = km2m(origin['origerr.stime'])
 
         # Verify if we want to add arrivals to this origin
         if self.add_arrival:
-            qmlorigin['arrival'] = \
-                    [ self._convert_arrival(a) for a in self.event.all_arrivals_orid( origin['origin.orid'] )]
-
+            qmlorigin['arrival'] = [
+                self._convert_arrival(item)
+                for item in self.event.all_arrivals_orid(
+                    origin['origin.orid'])]
 
         # Extend element with catalog information
-        qmlorigin.update( self._catalog_info( origin['origin.orid'], auth=origin['origin.auth'] ) )
+        qmlorigin.update(self._catalog_info(origin['origin.orid'],
+                                            auth=origin['origin.auth']))
 
         return qmlorigin
 
@@ -427,8 +459,8 @@ class css2qml():
 
         '''
 
-        self.logging.debug( '_convert_magnitudes()' )
-        self.logging.debug( mag )
+        self.logging.debug('_convert_magnitudes()')
+        self.logging.debug(mag)
 
         results = {
             '@publicID': self._id('magnitude', mag['netmag.magid']),
@@ -437,8 +469,8 @@ class css2qml():
                 },
             'type': mag['netmag.magtype'],
             'stationCount': mag['netmag.nsta'] or 0,
-            'originID': self._id( 'origin', mag['netmag.orid'] ),
-            'methodID': self._uri( mag['netmag.auth'] ),
+            'originID': self._id('origin', mag['netmag.orid']),
+            'methodID': self._uri(mag['netmag.auth']),
             'creationInfo': {
                 'creationTime': self._utc_datetime(mag['netmag.lddate']),
                 'author': mag['netmag.auth']
@@ -450,28 +482,27 @@ class css2qml():
 
         return results
 
-
     def _convert_stamags(self, stamag):
         '''
         Map stamag record to StationMagnitude
 
-        Add individual station magnitude estimates upon measurements on specific phases.
+        Add individual station magnitude estimates upon measurements on
+        specific phases.
         '''
-
-
-        self.logging.debug( '_convert_stamags()' )
-        self.logging.debug( stamag )
+        self.logging.debug('_convert_stamags()')
+        self.logging.debug(stamag)
 
         results = {
-            '@publicID': self._id( 'magnitude/station', stamag['stamag.magid'], stamag['stamag.sta'] ),
+            '@publicID': self._id('magnitude/station', stamag['stamag.magid'],
+                                  stamag['stamag.sta']),
             'mag': {
                'value': stamag['stamag.magnitude']
                },
             'type': stamag['stamag.magtype'],
-            'originID': self._id( 'origin', stamag['stamag.orid'] ),
-            'methodID': self._uri( stamag['stamag.auth'] ),
+            'originID': self._id('origin', stamag['stamag.orid']),
+            'methodID': self._uri(stamag['stamag.auth']),
             'creationInfo': {
-               'creationTime': self._utc_datetime(stamag['stamag.lddate']),
+                'creationTime': self._utc_datetime(stamag['stamag.lddate']),
                 'author': stamag['stamag.auth']
                }
         }
@@ -481,7 +512,6 @@ class css2qml():
 
         return results
 
-
     def _convert_pick(self, pick):
         '''
         Experimental map of just CSS arrival to QML pick.
@@ -489,29 +519,29 @@ class css2qml():
 
         '''
 
-        self.logging.debug( '_convert_pick()' )
-        self.logging.debug( pick )
+        self.logging.debug('_convert_pick()')
+        self.logging.debug(pick)
 
-        pick_mode, pick_status = self.get_mode_status( pick['arrival.auth'] )
+        pick_mode, pick_status = self.get_mode_status(pick['arrival.auth'])
 
         # parse channel and location name
         chan_loc = pick['arrival.chan'].split('_')
         if len(chan_loc) > 1:
             chan = chan_loc[0]
-            loc= chan_loc[1]
+            loc = chan_loc[1]
         else:
             chan = pick['arrival.chan']
             loc = ''
 
-        results =  {
-            '@publicID': self._id( 'pick', pick['arrival.arid'] ),
+        results = {
+            '@publicID': self._id('pick', pick['arrival.arid']),
             'time': {
                'value': self._utc_datetime(pick['arrival.time'])
             },
             'waveformID': {
-                '@stationCode':  pick['arrival.sta'],
-                '@channelCode':  chan,
-                '@networkCode':  pick['snetsta.snet'],
+                '@stationCode': pick['arrival.sta'],
+                '@channelCode': chan,
+                '@networkCode': pick['snetsta.snet'],
                 '@locationCode': loc,
                 '#text': self._id('waveform', pick['arrival.chanid'])
             },
@@ -569,8 +599,8 @@ class css2qml():
 
         '''
 
-        self.logging.debug( '_convert_detection()' )
-        self.logging.debug( pick )
+        self.logging.debug('_convert_detection()')
+        self.logging.debug(pick)
 
         # ID
         self.detection_id_counter = self.detection_id_counter + 1
@@ -580,30 +610,32 @@ class css2qml():
         chan_loc = pick['detection.chan'].split('_')
         if len(chan_loc) > 1:
             chan = chan_loc[0]
-            loc= chan_loc[1]
+            loc = chan_loc[1]
         else:
             chan = pick['detection.chan']
             loc = ''
 
         return {
-            '@publicID': self._id( 'pick', valid_id, pick['detection.srcid'] ),
+            '@publicID': self._id('pick', valid_id, pick['detection.srcid']),
             'time': {
                'value': self._utc_datetime(pick['detection.time']),
             },
             'waveformID': {
-                '@stationCode':  pick['detection.sta'],
-                '@channelCode':  chan,
-                '@networkCode':  pick['snetsta.snet'],
+                '@stationCode': pick['detection.sta'],
+                '@channelCode': chan,
+                '@networkCode': pick['snetsta.snet'],
                 '@locationCode': loc,
                 '#text': self._id('waveform', pick['sitechan.chanid'])
             },
             'comment': {
-                'text': 'snr:%s, state:%s' % ( pick['detection.snr'], pick['detection.state'] )
+                'text': 'snr:%s, state:%s' % (pick['detection.snr'],
+                                              pick['detection.state'])
             },
             'creationInfo': {
                 'creationTime': self._utc_datetime(pick['detection.lddate'])
             },
-            'filterID': self._id( 'filter/bandpass/butterworth', pick['detection.filter'] ),
+            'filterID': self._id('filter/bandpass/butterworth',
+                                 pick['detection.filter']),
             'evaluationMode': 'automatic',
             'evaluationStatus': 'preliminary'
         }
@@ -615,8 +647,8 @@ class css2qml():
 
         '''
 
-        self.logging.debug( '_convert_arrival()' )
-        self.logging.debug( arrival )
+        self.logging.debug('_convert_arrival()')
+        self.logging.debug(arrival)
 
         if arrival['assoc.wgt']:
             timeWeight = arrival['assoc.wgt']
@@ -626,14 +658,15 @@ class css2qml():
             timeWeight = 0
 
         return {
-            '@publicID': self._id( 'arrival', arrival['assoc.arid'], arrival['assoc.orid'] ),
-            'pickID': self._id( 'pick', arrival['assoc.arid'] ),
+            '@publicID': self._id('arrival', arrival['assoc.arid'],
+                                  arrival['assoc.orid']),
+            'pickID': self._id('pick', arrival['assoc.arid']),
             'phase': arrival['assoc.phase'],
             'azimuth': arrival['assoc.esaz'],
             'distance': arrival['assoc.delta'],
             'timeResidual': arrival['assoc.timeres'],
             'timeWeight': timeWeight,
-            'earthModelID': self._id( 'earthmodel', arrival['assoc.vmodel'] ),
+            'earthModelID': self._id('earthmodel', arrival['assoc.vmodel']),
 
             'creationInfo': {
                'creationTime': self._utc_datetime(arrival['assoc.lddate']),
@@ -641,7 +674,7 @@ class css2qml():
         }
 
 
-    def _convert_fplane(self, fp, table='fplane' ):
+    def _convert_fplane(self, fp, table='fplane'):
         '''
         Return a dict of focalMechanism from an dict of CSS key/values
         corresponding to one record.
@@ -653,50 +686,50 @@ class css2qml():
         if table == 'mt':
             pub_id = fp['mt.mechid']
         else:
-            pub_id = fp['%s.lddate' % table ]
+            pub_id = fp['%s.lddate' % table]
 
         # Determine from auth field
-        mode, status = self.get_mode_status( fp['%s.auth' % table ] )
+        mode, status = self.get_mode_status(fp['%s.auth' % table])
 
         nodal_planes = {
             'nodalPlane1': {
-                'strike': { 'value': fp['%s.str1' % table ] },
-                'dip': { 'value': fp['%s.dip1' % table ] },
-                'rake': { 'value': fp['%s.rake1' % table ] }
+                'strike': { 'value': fp['%s.str1' % table] },
+                'dip': { 'value': fp['%s.dip1' % table] },
+                'rake': { 'value': fp['%s.rake1' % table] }
             },
             'nodalPlane2': {
-                'strike': { 'value': fp['%s.str2' % table ] },
-                'dip': { 'value': fp['%s.dip2' % table ] },
-                'rake': { 'value': fp['%s.rake2' % table ] }
+                'strike': { 'value': fp['%s.str2' % table] },
+                'dip': { 'value': fp['%s.dip2' % table] },
+                'rake': { 'value': fp['%s.rake2' % table] }
             }
         }
 
         principal_axes = {
             'nAxis': {
-                'length': { 'value': fp['%s.naxlength' % table ] },
-                'azimuth': { 'value': fp['%s.naxazm' % table ] },
-                'plunge': { 'value': fp['%s.naxplg' % table ] }
+                'length': { 'value': fp['%s.naxlength' % table] },
+                'azimuth': { 'value': fp['%s.naxazm' % table] },
+                'plunge': { 'value': fp['%s.naxplg' % table] }
             },
             'tAxis': {
-                'length': { 'value': fp['%s.taxlength' % table ] },
-                'azimuth': { 'value': fp['%s.taxazm' % table ] },
-                'plunge': { 'value': fp['%s.taxplg' % table ] }
+                'length': { 'value': fp['%s.taxlength' % table] },
+                'azimuth': { 'value': fp['%s.taxazm' % table] },
+                'plunge': { 'value': fp['%s.taxplg' % table] }
             },
             'pAxis': {
-                'length': { 'value': fp['%s.paxlength' % table ] },
-                'azimuth': { 'value': fp['%s.paxazm' % table ] },
-                'plunge': { 'value': fp['%s.paxplg' % table ] }
+                'length': { 'value': fp['%s.paxlength' % table] },
+                'azimuth': { 'value': fp['%s.paxazm' % table] },
+                'plunge': { 'value': fp['%s.paxplg' % table] }
             }
         }
 
         focal_mechanism = {
-            '@publicID': fp['mt.qmlid'] or self._id( 'focalMechanism', pub_id ),
-            'triggeringOriginID': self._id( 'origin', fp['%s.orid' % table ] ),
+            '@publicID': fp['mt.qmlid'] or self._id('focalMechanism', pub_id),
+            'triggeringOriginID': self._id('origin', fp['%s.orid' % table]),
             'nodalPlanes': nodal_planes,
             'principalAxes': principal_axes,
             'creationInfo': {
-                'creationTime': self._utc_datetime( fp['%s.lddate' % table ] ),
-                'author': fp['%s.auth' % table ]
+                'creationTime': self._utc_datetime(fp['%s.lddate' % table]),
+                'author': fp['%s.auth' % table]
             },
             'evaluationMode': mode,
             'evaluationStatus': status,
@@ -711,11 +744,11 @@ class css2qml():
 
         '''
 
-        focal_mech = self._convert_fplane( mt, table='mt' )
+        focal_mech = self._convert_fplane(mt, table='mt')
 
         moment_tensor = {
-            '@publicID': self._id(  'momentTensor', mt['mt.mtid'] ),
-            'derivedOrigin': self._id('origin', mt['mt.orid'] ),
+            '@publicID': self._id( 'momentTensor', mt['mt.mtid']),
+            'derivedOrigin': self._id('origin', mt['mt.orid']),
             'scalarMoment': mt['mt.scm'],
             'doubleCouple': mt['mt.pdc'],
             'tensor': {
@@ -727,7 +760,7 @@ class css2qml():
                 'Mtp': { 'value': mt['mt.tmtp'] }
             },
             'creationInfo': {
-                'creationTime': self._utc_datetime( mt['mt.lddate'] ),
+                'creationTime': self._utc_datetime(mt['mt.lddate']),
             }
         }
 
@@ -737,7 +770,7 @@ class css2qml():
         return focal_mech
 
 
-    def _catalog_info( self, id, auth=None, namespace=None, event=False ):
+    def _catalog_info(self, id, auth=None, namespace=None, event=False):
         '''
         Alternative ID Standard
 
@@ -770,7 +803,6 @@ class css2qml():
 
         d = {}
         temp = []
-        ext_org = False
         ext_net = False
 
 
@@ -785,12 +817,11 @@ class css2qml():
                 temp = str(auth).split(':')
                 if not temp: raise Exception('wrong format')
             except Exception,e:
-                self.logging.debug( 'Problem parsing auth for _catalog_info [%s]=>%s' % (auth,e) )
+                self.logging.debug('Problem parsing auth for _catalog_info [%s]=>%s' % (auth,e))
 
-            #self.logging.debug( temp )
+            #self.logging.debug(temp)
             if len(temp) > 1:
 
-                ext_org = str(temp[0]).lower()
                 ext_net = temp[1].lower()
 
         # If found then add SNET of this datasource
@@ -798,18 +829,18 @@ class css2qml():
 
             # If this is an event object then add special element
             if event:
-                d[ '@catalog:eventsource' ]  = ext_net
+                d['@catalog:eventsource']  = ext_net
 
                 # ------- REMOVING THIS PART TO AVOID VALIDATION ERRORS ------- #
                 # For internal organization tracking only
-                #d[ '@%s:eventsource' % ext_org ]  = ext_net
+                #d['@%s:eventsource' % ext_org]  = ext_net
 
             else:
-                d[ '@catalog:datasource' ]  = ext_net
+                d['@catalog:datasource']  = ext_net
 
                 # ------- REMOVING THIS PART TO AVOID VALIDATION ERRORS ------- #
                 # For internal organization tracking only
-                #d[ '@%s:datasource' % ext_org ]  = ext_net
+                #d['@%s:datasource' % ext_org]  = ext_net
 
         else:
             #
@@ -817,18 +848,18 @@ class css2qml():
             #
 
             if event:
-                d[ '@catalog:eventid' ] = '%d' % id
-                d[ '@catalog:eventsource' ] = self.agency_id.lower()
-                d[ '@catalog:datasource' ] = self.agency_id.lower()
+                d['@catalog:eventid'] = '%d' % id
+                d['@catalog:eventsource'] = self.agency_id.lower()
+                d['@catalog:datasource'] = self.agency_id.lower()
             else:
-                d[ '@catalog:dataid' ] = '%d' % id
-                d[ '@catalog:datasource' ] = self.agency_id.lower()
+                d['@catalog:dataid'] = '%d' % id
+                d['@catalog:datasource'] = self.agency_id.lower()
 
-        #self.logging.debug( d )
+        #self.logging.debug(d)
         return d
 
 
-    def _utc_datetime( self, timestamp=None ):
+    def _utc_datetime(self, timestamp=None):
         '''
         Returns the UTC dateTime
         The representation is according to ISO 8601
@@ -836,9 +867,9 @@ class css2qml():
 
         if not timestamp: timestamp = stock.now()
 
-        return stock.epoch2str( timestamp , '%Y-%m-%dT%H:%M:%S.%sZ', tz='UTC')
+        return stock.epoch2str(timestamp , '%Y-%m-%dT%H:%M:%S.%sZ', tz='UTC')
 
-    def _uri( self, auth=None ):
+    def _uri(self, auth=None):
         '''
         Scheme for resource identifiers which adopts the format of Uniform Resource Identifiers
         (URIs, Berners-Lee et al. 1998).
@@ -857,14 +888,14 @@ class css2qml():
 
         '''
 
-        uri = '%s:%s' % (self.uri_prefix, self.agency_uri )
+        uri = '%s:%s' % (self.uri_prefix, self.agency_uri)
 
         if auth:
             uri += '/%s' % auth
 
         return uri
 
-    def _id( self, name, serial=None, alt_id=None ):
+    def _id(self, name, serial=None, alt_id=None):
         '''
         Create Resource identifiers for elemtns (public IDs)
         Using documentation on ANSS Quakeml ID Standards
@@ -895,16 +926,16 @@ class css2qml():
         try:
             if 'event' == name:
                 # Event elements most be 8 digit ints.
-                serial = '%08d' % int(float( serial ))
+                serial = '%08d' % int(float(serial))
             else:
-                serial = '%d' % int(float( serial ))
+                serial = '%d' % int(float(serial))
         except:
             # Other elements just need to be unique.
             serial = str(serial).replace('/', '_').replace(' ', '_').lower()
 
         rid = '%s:%s.%s/%s/%s' % \
                 (self.uri_prefix, self.agency_id.lower(),
-                self.agency_uri, name, serial )
+                self.agency_uri, name, serial)
 
         if alt_id:
             rid += '/%s' % alt_id
@@ -912,4 +943,4 @@ class css2qml():
         return rid
 
 
-if __name__ == '__main__': raise ImportError( "\n\n\tAntelope's qml module. Not to run directly!!!! **\n" )
+if __name__ == '__main__': raise ImportError("\n\n\tAntelope's qml module. Not to run directly!!!! **\n")
