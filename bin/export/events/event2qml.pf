@@ -8,6 +8,7 @@
 # The URI schema name prefix is not strictly a part of the resource identifier.
 # The URI schema name smi stands for seismological meta-information, thus indicating
 # a connection to a set of metadata associated with the resource.
+
 uri_prefix quakeml
 
 # This is used as a unique authority string in all URI's.
