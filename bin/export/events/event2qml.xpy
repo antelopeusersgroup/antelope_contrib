@@ -135,7 +135,6 @@ if __name__ == '__main__':
     options.pf = stock.pffiles(options.pf)[-1]
     logging.info("Parameter file to use [%s]" % options.pf)
     pf_object = open_verify_pf( options.pf, 1472083200 )
-
     uri_prefix = safe_pf_get( pf_object, 'uri_prefix', 'quakeml' )
     agency_uri = safe_pf_get( pf_object, 'agency_uri', 'local' )
     agency_id = safe_pf_get( pf_object, 'agency_id', 'xx' )
@@ -257,6 +256,10 @@ if __name__ == '__main__':
         valid = 'unknown'
         schema_file = os.environ['ANTELOPE'] + '/contrib/data/quakeml/QuakeML-1.2.rng'
         logging.debug( 'Looking for file: %s' % schema_file )
+
+        if not os.path.exists( schema_file ):
+            ROOT = os.path.abspath(os.path.dirname(__file__))
+            schema_file = os.path.join(ROOT + '/schemas/QuakeML-1.2.rng')
 
         if os.path.exists( schema_file ):
 

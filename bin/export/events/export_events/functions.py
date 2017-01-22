@@ -208,7 +208,7 @@ def safe_pf_get(pf, field, defaultval=False):
     logging = getLogger()
 
     value = defaultval
-    if field in pf:
+    if pf.has_key(field):
         try:
             value = pf.get(field, defaultval)
         except Exception as ex:
