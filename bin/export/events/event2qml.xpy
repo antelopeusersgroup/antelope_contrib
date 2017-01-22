@@ -120,50 +120,71 @@ if __name__ == '__main__':
     # Pull values from ParameterFile
     options.pf = stock.pffiles(options.pf)[-1]
     logging.info("Parameter file to use [%s]" % options.pf)
-    pf_object = open_verify_pf( options.pf, 1472083200 )
-    uri_prefix = safe_pf_get( pf_object, 'uri_prefix', 'quakeml' )
-    agency_uri = safe_pf_get( pf_object, 'agency_uri', 'local' )
-    agency_id = safe_pf_get( pf_object, 'agency_id', 'xx' )
-    author = safe_pf_get( pf_object, 'author', 'antelope.event2qml' )
+    pf_object = open_verify_pf(options.pf, 1472083200)
+    uri_prefix = safe_pf_get(pf_object, 'uri_prefix', 'quakeml')
+    agency_uri = safe_pf_get(pf_object, 'agency_uri', 'local')
+    agency_id = safe_pf_get(pf_object, 'agency_id', 'xx')
+    author = safe_pf_get(pf_object, 'author', 'antelope.event2qml')
 
-    etype_map = safe_pf_get( pf_object, 'etype_map', {} )
-    preferred_magtypes = safe_pf_get( pf_object, 'preferred_magtypes', [] )
-    Q_NAMESPACE = safe_pf_get( pf_object, 'Q_NAMESPACE', 'http://quakeml.org/xmlns/quakeml/1.2' )
-    CATALOG_NAMESPACE = safe_pf_get( pf_object, 'CATALOG_NAMESPACE', 'http://anss.org/xmlns/catalog/0.1' )
-    BED_NAMESPACE = safe_pf_get( pf_object, 'BED_NAMESPACE', 'http://quakeml.org/xmlns/bed/1.2' )
-    BEDRT_NAMESPACE = safe_pf_get( pf_object, 'BEDRT_NAMESPACE', 'http://quakeml.org/xmlns/bed-rt/1.2' )
-    review_flags = safe_pf_get( pf_object, 'review_flags', ['r','y'] )
+    etype_map = safe_pf_get(pf_object, 'etype_map', {})
+    preferred_magtypes = safe_pf_get(pf_object, 'preferred_magtypes', [])
+    Q_NAMESPACE = safe_pf_get(pf_object, 'Q_NAMESPACE',
+                              'http://quakeml.org/xmlns/quakeml/1.2')
+    CATALOG_NAMESPACE = safe_pf_get(pf_object, 'CATALOG_NAMESPACE',
+                                    'http://anss.org/xmlns/catalog/0.1')
+    BED_NAMESPACE = safe_pf_get(pf_object, 'BED_NAMESPACE',
+                                'http://quakeml.org/xmlns/bed/1.2')
+    BEDRT_NAMESPACE = safe_pf_get(pf_object, 'BEDRT_NAMESPACE',
+                                  'http://quakeml.org/xmlns/bed-rt/1.2')
+    review_flags = safe_pf_get(pf_object, 'review_flags', ['r', 'y'])
 
-    magnitude_type_subset = safe_pf_get( pf_object, 'magnitude_type_subset', ['.*'] )
+    magnitude_type_subset = safe_pf_get(pf_object,
+                                        'magnitude_type_subset', ['.*'])
 
-    info_description = safe_pf_get( pf_object, 'event_info_description', '' )
-    info_comment = safe_pf_get( pf_object, 'event_info_comment', '' )
+    info_description = safe_pf_get(pf_object, 'event_info_description', '')
+    info_comment = safe_pf_get(pf_object, 'event_info_comment', '')
 
-    append_to_output_file = stock.yesno( safe_pf_get( pf_object, 'append_to_output_file', 'true' ) )
+    append_to_output_file = stock.yesno(
+        safe_pf_get(pf_object, 'append_to_output_file', 'true'))
 
-    add_mt = stock.yesno( safe_pf_get( pf_object, 'add_mt', 'true' ) )
-    add_origin = stock.yesno( safe_pf_get( pf_object, 'add_origin', 'true' ) )
-    add_fplane = stock.yesno( safe_pf_get( pf_object, 'add_fplane', 'true' ) )
-    add_stamag = stock.yesno( safe_pf_get( pf_object, 'add_stamag', 'true' ) )
-    add_arrival = stock.yesno( safe_pf_get( pf_object, 'add_arrival', 'true' ) )
-    add_detection = stock.yesno( safe_pf_get( pf_object, 'add_detection', 'true' ) )
-    add_magnitude = stock.yesno( safe_pf_get( pf_object, 'add_magnitude', 'true' ) )
+    add_mt = stock.yesno(safe_pf_get(pf_object, 'add_mt', 'true'))
+    add_origin = stock.yesno(safe_pf_get(pf_object, 'add_origin', 'true'))
+    add_fplane = stock.yesno(safe_pf_get(pf_object, 'add_fplane', 'true'))
+    add_stamag = stock.yesno(safe_pf_get(pf_object, 'add_stamag', 'true'))
+    add_arrival = stock.yesno(safe_pf_get(pf_object, 'add_arrival', 'true'))
+    add_detection = stock.yesno(
+        safe_pf_get(pf_object, 'add_detection', 'true'))
+    add_magnitude = stock.yesno(
+        safe_pf_get(pf_object, 'add_magnitude', 'true'))
 
-    mt_auth_select = filter(None, safe_pf_get( pf_object, 'mt_auth_select', [] ) )
-    mt_auth_reject = filter(None, safe_pf_get( pf_object, 'mt_auth_reject', [] ) )
-    event_auth_select = filter(None, safe_pf_get( pf_object, 'event_auth_select', [] ) )
-    event_auth_reject = filter(None, safe_pf_get( pf_object, 'event_auth_reject', [] ) )
-    netmag_auth_select = filter(None, safe_pf_get( pf_object, 'netmag_auth_select', [] ) )
-    netmag_auth_reject = filter(None, safe_pf_get( pf_object, 'netmag_auth_reject', [] ) )
-    fplane_auth_select = filter(None, safe_pf_get( pf_object, 'fplane_auth_select', [] ) )
-    fplane_auth_reject = filter(None, safe_pf_get( pf_object, 'fplane_auth_reject', [] ) )
-    origin_auth_select = filter(None, safe_pf_get( pf_object, 'origin_auth_select', [] ) )
-    origin_auth_reject = filter(None, safe_pf_get( pf_object, 'origin_auth_reject', [] ) )
-    arrival_auth_select = filter(None, safe_pf_get( pf_object, 'arrival_auth_select', [] ) )
-    arrival_auth_reject = filter(None, safe_pf_get( pf_object, 'arrival_auth_reject', [] ) )
-    detection_state_select = filter(None, safe_pf_get( pf_object, 'detection_state_select', [] ) )
-    detection_state_reject = filter(None, safe_pf_get( pf_object, 'detection_state_reject', [] ) )
-
+    mt_auth_select = filter(
+        None, safe_pf_get(pf_object, 'mt_auth_select', []))
+    mt_auth_reject = filter(
+        None, safe_pf_get(pf_object, 'mt_auth_reject', []))
+    event_auth_select = filter(
+        None, safe_pf_get(pf_object, 'event_auth_select', []))
+    event_auth_reject = filter(
+        None, safe_pf_get(pf_object, 'event_auth_reject', []))
+    netmag_auth_select = filter(
+        None, safe_pf_get(pf_object, 'netmag_auth_select', []))
+    netmag_auth_reject = filter(
+        None, safe_pf_get(pf_object, 'netmag_auth_reject', []))
+    fplane_auth_select = filter(
+        None, safe_pf_get(pf_object, 'fplane_auth_select', []))
+    fplane_auth_reject = filter(
+        None, safe_pf_get(pf_object, 'fplane_auth_reject', []))
+    origin_auth_select = filter(
+        None, safe_pf_get(pf_object, 'origin_auth_select', []))
+    origin_auth_reject = filter(
+        None, safe_pf_get(pf_object, 'origin_auth_reject', []))
+    arrival_auth_select = filter(
+        None, safe_pf_get(pf_object, 'arrival_auth_select', []))
+    arrival_auth_reject = filter(
+        None, safe_pf_get(pf_object, 'arrival_auth_reject', []))
+    detection_state_select = filter(
+        None, safe_pf_get(pf_object, 'detection_state_select', []))
+    detection_state_reject = filter(
+        None, safe_pf_get(pf_object, 'detection_state_reject', []))
 
     # New event object
     logging.info('Init Event()')
@@ -245,11 +266,11 @@ if __name__ == '__main__':
             '/contrib/data/quakeml/QuakeML-1.2.rng'
         logging.debug('Looking for file: %s' % schema_file)
 
-        if not os.path.exists( schema_file ):
+        if not os.path.exists(schema_file):
             ROOT = os.path.abspath(os.path.dirname(__file__))
             schema_file = os.path.join(ROOT + '/schemas/QuakeML-1.2.rng')
 
-        if os.path.exists( schema_file ):
+        if os.path.exists(schema_file):
 
             logging.debug('Read file: %s' % schema_file)
 
