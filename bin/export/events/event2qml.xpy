@@ -1,16 +1,4 @@
-import os
-import sys
-from optparse import OptionParser
-from io import StringIO
-
-usage = """
-\n\t\tevent2qml [-h] [-v] [-d] [-p pfname] [-s XSD_schema] database [EVID]
 """
-
-version = '1.0'
-
-description = """
-
 QuakeML export infrastructure for Antelope
 ---------------------------------------------------------------------------
 This code attempts to convert 1 (or more) seismic event(s) and all
@@ -36,12 +24,21 @@ Original QuakeML translation:
     Nevada Seismological Laboratory
     markwilliams@seismo.unr.edu
 
-
 XML parser:
     XMLTODICT.PY = Parse the given XML input and convert it into a dictionary.
     #Copyright (C) 2012 Martin Blech and individual contributors.
-
 """
+
+import os
+import sys
+from optparse import OptionParser
+from io import StringIO
+
+usage = """
+\n\t\tevent2qml [-h] [-v] [-d] [-p pfname] [-s XSD_schema] database [EVID]
+"""
+
+version = '1.0'
 
 try:
     sys.path.append(os.environ['ANTELOPE'] + "/data/python")
@@ -75,7 +72,7 @@ if __name__ == '__main__':
     format.
     """
     parser = OptionParser(usage=usage, version="%prog " + version,
-                          description=description)
+                          description=__file__.__docstring__)
 
     parser.add_option("-s", action="store", dest="schema", default='',
                       help="XML Schema Definition to implement")
@@ -109,7 +106,7 @@ if __name__ == '__main__':
     if len(args) > 1:
         evid = int(args[1])
     else:
-        evid = False
+        evid = 0
 
     logging.info(' '.join(sys.argv))
     logging.info(parser.get_version())

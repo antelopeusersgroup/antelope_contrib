@@ -363,7 +363,7 @@ class css2qml():
 
         mode, status = self.get_mode_status(origin['origin.review'])
 
-         try:
+        try:
             a = km2m(origin['origerr.smajax'])
             b = km2m(origin['origerr.sminax'])
             s = origin['origerr.strike']
