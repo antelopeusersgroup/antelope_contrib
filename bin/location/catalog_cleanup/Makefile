@@ -1,15 +1,11 @@
-BIN  = catalog_cleanup
-MAN1 = catalog_cleanup.1
 
-cflags=-g
-ldlibs= $(DBLIBS) -lseispp
+all Include install installMAN pf relink tags test :: FORCED
+	@-if localmake_config boost ; then \
+	    $(MAKE) -f Makefile2 $@ ; \
+	fi
 
-SUBDIR=/contrib
-include $(ANTELOPEMAKE)
+clean uninstall :: FORCED
+	$(MAKE) -f Makefile2 $@
 
-DIRS=
+FORCED:
 
-OBJS = $(BIN).o HypocenterCSS30.o
-$(BIN) : $(OBJS)
-	$(RM) $@
-	$(CXX) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
