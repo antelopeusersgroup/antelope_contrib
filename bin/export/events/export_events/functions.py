@@ -3,13 +3,11 @@ export_events.functions
 
 Some functions used by event2qml main code
 """
-
 import math
+import logging
 
 import antelope.stock as stock
 import antelope.datascope as datascope
-
-from export_events.logging_helper import getLogger
 
 
 def simple_table_present(table, dbpointer):
@@ -22,19 +20,17 @@ def simple_table_present(table, dbpointer):
     should be verified already.
     '''
 
-    logging = getLogger()
-
-    # Test if we have an event table first.
-    logging.debug('dbTALBE_PRESENT(%s)' % table)
+    logger = logging.getLogger(__name__)
+    logger.debug('dbTALBE_PRESENT(%s)' % table)
 
     try:
         view = dbpointer.lookup(table=table)
     except Exception as ex:
-        logging.warning('export_events.simple_table_present: %s ' % ex)
+        logger.warning('Exception, %s' % ex)
         return False
 
-    logging.debug('db.query(dbTABLE_PRESENT) => %s' %
-                  view.query(datascope.dbTABLE_PRESENT))
+    logger.debug('db.query(dbTABLE_PRESENT) => %s' %
+                 view.query(datascope.dbTABLE_PRESENT))
 
     if not view.query(datascope.dbTABLE_PRESENT):
         return False
@@ -55,31 +51,26 @@ def verify_table(table=False, database=False, dbpointer=False):
     cleaning later. The local view of the table will be
     freed.
     '''
-
-    logging = getLogger()
-
-    # Get db ready
+    logger = logging.getLogger(__name__)
     if not database and not dbpointer:
-        logging.warning('export_events.verify_table: '
-                        'Need database or dbpointer')
+        logger.warning('Need database or dbpointer')
         return False
 
     if not dbpointer:
-        logging.debug('dbopen(%s)' % database)
+        logger.debug('dbopen(%s)' % database)
         dbpointer = datascope.dbopen(database, "r")
 
     if table:
         # Test if we have some table first.
-        logging.debug('db.lookup(%s)' % table)
+        logger.debug('db.lookup(%s)' % table)
         view = dbpointer.lookup(table=table)
 
         if not view.query(datascope.dbTABLE_PRESENT):
-            logging.warning('export_events.verify_table: '
-                            'Missing [%s] table in database' % table)
+            logger.warning('Missing [%s] table in database' % table)
             return False
         else:
-            logging.debug('db.query(dbTABLE_PRESENT) => %s' %
-                          view.query(datascope.dbTABLE_PRESENT))
+            logger.debug('db.query(dbTABLE_PRESENT) => %s' %
+                         view.query(datascope.dbTABLE_PRESENT))
 
     return dbpointer
 
@@ -88,7 +79,6 @@ def is_null(value, null_value):
     '''
     Verify if our value matches the NULL
     representation of that field.
-
     '''
     # Try int value
     try:
@@ -112,21 +102,19 @@ def get_all_fields(dbpointer, nulls={}):
     At a given database pointer to a particular record query for valid
     table fields and pull all values. Return a dictionary with the values.
     '''
-
-    logging = getLogger()
-
     results = {}
+    logger = logging.getLogger(__name__)
 
     if not dbpointer:
-        logging.warning('export_events.get_all_fields: Need dbpointer')
+        logger.warning('Need dbpointer')
         return results
 
     try:
         if not dbpointer.query(datascope.dbTABLE_PRESENT):
-            logging.warning('export_events.get_all_fields: No records')
+            logger.warning('No records')
             return results
     except Exception:
-        logging.warning('export_events.get_all_fields: Error on dbpointer')
+        logger.warning('Error on dbpointer')
         return results
 
     for x in range(dbpointer.query(datascope.dbFIELD_COUNT)):
@@ -137,27 +125,27 @@ def get_all_fields(dbpointer, nulls={}):
         field = dbpointer.query(datascope.dbFIELD_NAME)
 
         test = "%s.%s" % (table, field)
-        # logging.debug('Extract field %s' % test)
+        # logger.debug('Extract field %s' % test)
 
         value = dbpointer.getv(test)[0]
 
         # Verify value with NULL options for those fields.
         if nulls and test in nulls:
-            # logging.debug('verify null on: [%s] == [%s] '
+            # logger.debug('verify null on: [%s] == [%s] '
             #               % (value,nulls[test]))
             if is_null(value, nulls[test]):
-                logging.debug('AVOID NULL VALUE: [%s] ' % value)
+                logger.debug('AVOID NULL VALUE: [%s] ' % value)
                 continue
         else:
-            # logging.debug('Save value for NULL [%s] on %s' % (value, test))
+            # logger.debug('Save value for NULL [%s] on %s' % (value, test))
             pass
 
         results[test] = value
 
         if nulls:
-            logging.debug('%s => %s' % (test, results[test]))
+            logger.debug('%s => %s' % (test, results[test]))
 
-    # logging.debug(results)
+    # logger.debug(results)
 
     return results
 
@@ -168,36 +156,34 @@ def open_verify_pf(pf, mttime=False):
     the value of PF_MTTIME if needed.
     Returns pf_object
     '''
-
-    logging = getLogger()
-
-    logging.debug('Look for parameter file: %s' % pf)
+    logger = logging.getLogger(__name__)
+    logger.debug('Look for parameter file: %s' % pf)
 
     if mttime:
-        logging.debug('Verify that %s is newer than %s' % (pf, mttime))
+        logger.debug('Verify that %s is newer than %s' % (pf, mttime))
 
         PF_STATUS = stock.pfrequire(pf, mttime)
         if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
-            logging.warning('Problems looking for %s.' % pf +
-                            ' PF_MTTIME_NOT_FOUND.')
-            logging.error('No MTTIME in PF file. '
-                          'Need a new version of the %s file!!!' % pf)
+            logger.warning('Problems looking for %s.' % pf +
+                           ' PF_MTTIME_NOT_FOUND.')
+            logger.error('No MTTIME in PF file. '
+                         'Need a new version of the %s file!!!' % pf)
         elif PF_STATUS == stock.PF_MTIME_OLD:
-            logging.warning('Problems looking for %s. PF_MTTIME_OLD.' % pf)
-            logging.error('Need a new version of the %s file!!!' % pf)
+            logger.warning('Problems looking for %s. PF_MTTIME_OLD.' % pf)
+            logger.error('Need a new version of the %s file!!!' % pf)
         elif PF_STATUS == stock.PF_SYNTAX_ERROR:
-            logging.warning('Problems looking for %s. PF_SYNTAX_ERROR.' % pf)
-            logging.error('Need a working version of the %s file!!!' % pf)
+            logger.warning('Problems looking for %s. PF_SYNTAX_ERROR.' % pf)
+            logger.error('Need a working version of the %s file!!!' % pf)
         elif PF_STATUS == stock.PF_NOT_FOUND:
-            logging.warning('Problems looking for %s. PF_NOT_FOUND.' % pf)
-            logging.error('No file  %s found!!!' % pf)
+            logger.warning('Problems looking for %s. PF_NOT_FOUND.' % pf)
+            logger.error('No file  %s found!!!' % pf)
 
-        logging.debug('%s => PF_MTIME_OK' % pf)
+        logger.debug('%s => PF_MTIME_OK' % pf)
 
     try:
         return stock.pfread(pf)
     except Exception as ex:
-        logging.error('Problem looking for %s => %s' % (pf, ex))
+        logger.error('Problem looking for %s => %s' % (pf, ex))
 
 
 def safe_pf_get(pf, field, defaultval=False):
@@ -205,17 +191,16 @@ def safe_pf_get(pf, field, defaultval=False):
     Safe method to extract values from parameter file
     with a default value option.
     '''
-    logging = getLogger()
-
+    logger = logging.getLogger(__name__)
     value = defaultval
     if pf.has_key(field):  # noqa
         try:
             value = pf.get(field, defaultval)
         except Exception as ex:
-            logging.warning('Problem with safe_pf_get(%s, %s)' % (field, ex))
+            logger.warning('Problem with safe_pf_get(%s, %s)' % (field, ex))
             pass
 
-    logging.debug("pf.get(%s,%s) => %s" % (field, defaultval, value))
+    logger.debug("pf.get(%s,%s) => %s" % (field, defaultval, value))
 
     return value
 

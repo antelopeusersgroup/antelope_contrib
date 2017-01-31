@@ -1,6 +1,6 @@
 """
 This module is in charge of pulling information from a
-Datascope table ( view? ) and keep all rows in memory.
+Datascope table (view?) and keep all rows in memory.
 We create an object with multiple methods to
 interact with the databases and attributes to
 keep the field information easily accessible to
@@ -8,15 +8,14 @@ the parent process.
 
 Juan Reyes
 reyes@ucsd.edu
-
-
 """
 
 import json
+import logging
 import antelope.datascope as datascope
 
-from export_events.logging_helper import getLogger
 from export_events.functions import verify_table, get_all_fields
+
 
 class Document():
     """
@@ -25,39 +24,33 @@ class Document():
     Store all information of a single row from a
     datascope view. Similar to a NoSQL document in
     JSON format.
-
     """
 
-    def __init__(self, *args):
+    def __init__(self, data):
 
-        self.logging = getLogger()
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug('New Document')
 
-        self.logging.debug('New Document')
-
-        self.data = args[0]
+        self.data = data
 
     def __str__(self):
-        return "\n%s" % json.dumps( self.data)
+        return "\n%s" % json.dumps(self.data)
 
     def __getitem__(self, name):
         try:
-            return self.data[ name ]
+            return self.data[name]
         except:
             return ''
 
 
-class Collection( Document ):
+class Collection(Document):
     """
     Class for maintaining a Datascope view in memory.
-
-
     """
 
-    def __init__(self, database=None, dbpointer=None, table=None ):
+    def __init__(self, database=None, dbpointer=None, table=None):
 
-        self.logging = getLogger()
-        self.logging.debug('New Collection')
-
+        self.logger = logging.getLogger(__name__)
         self.documents = {}
 
         self.database = database    # database name
@@ -65,7 +58,6 @@ class Collection( Document ):
         self.table = table         # database table name
 
         self.db = verify_table(self.table, self.database, self.db)
-
 
     def clean(self):
         self.documents = {}
@@ -81,46 +73,46 @@ class Collection( Document ):
 
     def __getitem__(self, name):
         try:
-            return self.documents[ name ]
+            return self.documents[name]
         except:
             return ''
 
     def keys(self, reverse=False):
-        return  self.documents.keys()
+        return self.documents.keys()
 
     def values(self, sort=False, reverse=False):
         if sort:
-            return  sorted(self.documents.values(), key=lambda v: v[sort] , reverse=reverse)
+            return sorted(self.documents.values(),
+                          key=lambda v: v[sort], reverse=reverse)
         else:
-            return  self.documents.values()
-
+            return self.documents.values()
 
     def get_view(self, steps, key=None):
         """
         Open view, run commands and get entries.
         """
 
-        self.logging.debug( ', '.join(steps) )
+        self.logger.debug(', '.join(steps))
 
         if not self.db:
-            self.logging.warning( 'Problems with database pointer' )
+            self.logger.warning('Table does not exist: %s' % self.table)
             return
 
-        with datascope.freeing(self.db.process( steps )) as dbview:
+        with datascope.freeing(self.db.process(steps)) as dbview:
 
             # Get NULL values
             dbview.record = datascope.dbNULL
-            nulls = get_all_fields( dbview )
+            nulls = get_all_fields(dbview)
 
             for r in dbview.iter_record():
 
-                self.logging.debug( 'New document' )
-                temp = get_all_fields( r,nulls )
+                self.logger.debug('New document')
+                data = get_all_fields(r, nulls)
 
                 if key:
-                    self.documents[ temp[ key ] ] = Document( temp )
+                    self.documents[data[key]] = Document(data)
                 else:
-                    self.documents[ len(self.documents) ] = Document( temp )
+                    self.documents[len(self.documents)] = Document(data)
 
-
-if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's qml module. Not to run directly!!!! **\n" )
+if __name__ == "__main__":
+    raise ImportError("\n\n\tAntelope's qml module. Do not run directly! **\n")

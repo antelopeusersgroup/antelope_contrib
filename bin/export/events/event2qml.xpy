@@ -41,7 +41,6 @@ usage = """
 version = '1.0'
 
 try:
-    sys.path.append(os.environ['ANTELOPE'] + "/data/python")
     from antelope import stock
 except Exception as ex:
     sys.exit("Import Error: [%s] Do you have ANTELOPE installed correctly?" %
@@ -63,6 +62,10 @@ try:
 except Exception as e:
     validation = False
 
+_DEFAULT_SCHEMA_PATH = os.path.join(os.environ['ANTELOPE'], 'contrib', 'data',
+                                    'quakeml')
+_DEFAULT_SCHEMA = 'QuakeML-1.2.rng'
+
 if __name__ == '__main__':
     """
     event2qml primary exec.
@@ -72,18 +75,20 @@ if __name__ == '__main__':
     format.
     """
     parser = OptionParser(usage=usage, version="%prog " + version,
-                          description=__file__.__docstring__)
+                          description=__doc__)
 
-    parser.add_option("-s", action="store", dest="schema", default='',
+    parser.add_option("-s", "--schema", action="store",
+                      default=os.path.join(_DEFAULT_SCHEMA_PATH,
+                                           _DEFAULT_SCHEMA),
                       help="XML Schema Definition to implement")
-    parser.add_option("-v", action="store_true", dest="verbose",
-                      help="run with verbose output")
-    parser.add_option("-d", action="store_true", dest="debug",
-                      help="run with debug output")
-    parser.add_option("-p", action="store", dest="pf", default='event2qml.pf',
+    parser.add_option("-p", "--pf", action="store", default='event2qml.pf',
                       help="parameter file to use")
-    parser.add_option("-o", action="store", dest="output_file", default=False,
+    parser.add_option("-o", "--output_file", action="store", default=None,
                       help="Save output to file")
+    parser.add_option("-v", "--verbose", action="store_true",
+                      help="run with verbose output")
+    parser.add_option("-d", "--debug", action="store_true",
+                      help="run with debug output")
 
     (options, args) = parser.parse_args()
 
@@ -259,13 +264,12 @@ if __name__ == '__main__':
         logging.debug('Try to validate the results:')
 
         valid = 'unknown'
-        schema_file = os.environ['ANTELOPE'] + \
-            '/contrib/data/quakeml/QuakeML-1.2.rng'
+        schema_file = args.schema
         logging.debug('Looking for file: %s' % schema_file)
 
         if not os.path.exists(schema_file):
             ROOT = os.path.abspath(os.path.dirname(__file__))
-            schema_file = os.path.join(ROOT + '/schemas/QuakeML-1.2.rng')
+            schema_file = os.path.join(ROOT, 'schemas', _DEFAULT_SCHEMA)
 
         if os.path.exists(schema_file):
 
