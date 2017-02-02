@@ -28,7 +28,9 @@ class Document():
 
     def __init__(self, data):
 
-        self.logger = logging.getLogger(__name__)
+        module_class = '.'.join([self.__class__.__module__,
+                                 self.__class__.__name__])
+        self.logger = logging.getLogger(module_class)
         self.logger.debug('New Document')
 
         self.data = data
@@ -37,10 +39,10 @@ class Document():
         return "\n%s" % json.dumps(self.data)
 
     def __getitem__(self, name):
-        try:
+        if name in self.data.keys():
             return self.data[name]
-        except:
-            return ''
+        else:
+            return None
 
 
 class Collection(Document):
@@ -50,7 +52,9 @@ class Collection(Document):
 
     def __init__(self, database=None, dbpointer=None, table=None):
 
-        self.logger = logging.getLogger(__name__)
+        module_class = '.'.join([self.__class__.__module__,
+                                 self.__class__.__name__])
+        self.logger = logging.getLogger(module_class)
         self.documents = {}
 
         self.database = database    # database name
@@ -80,16 +84,25 @@ class Collection(Document):
     def keys(self, reverse=False):
         return self.documents.keys()
 
-    def values(self, sort=False, reverse=False):
-        if sort:
-            return sorted(self.documents.values(),
-                          key=lambda v: v[sort], reverse=reverse)
+    def values(self, subset_dict=None, sort_by=None, reverse=False):
+        '''
+        Return values, optionally sorted and/or subsetted.
+        '''
+        data = self.documents.values()
+        if subset_dict is not None:
+            for key, value in subset_dict.items():
+                if value is None:
+                    continue
+                data = [item for item in data if item[key] == value]
+        if sort_by is not None:
+            return sorted(data, key=lambda item: item[sort_by],
+                          reverse=reverse)
         else:
-            return self.documents.values()
+            return data
 
     def get_view(self, steps, key=None):
         """
-        Open view, run commands and get entries.
+        Extract data for each row and all atributes in database view.
         """
 
         self.logger.debug(', '.join(steps))
@@ -104,10 +117,9 @@ class Collection(Document):
             dbview.record = datascope.dbNULL
             nulls = get_all_fields(dbview)
 
-            for r in dbview.iter_record():
+            for row in dbview.iter_record():
 
-                self.logger.debug('New document')
-                data = get_all_fields(r, nulls)
+                data = get_all_fields(row, nulls)
 
                 if key:
                     self.documents[data[key]] = Document(data)

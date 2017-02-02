@@ -1,220 +1,293 @@
+'''
+This module defines a class, css2qml, which can be used to convert CSS3.0
+(as extended by Antelope) to the QuakeML schema.
+'''
+import os
+import re
+import sys
 import logging
 
-from functions import km2m, get_NE_on_ellipse, m2deg_lat, m2deg_lon
+from functions import km2m, get_ne_on_ellipse, m2deg_lat, m2deg_lon
 
 from antelope import stock
 
+# Support for QuakeML event types using single letter codes for event type
+# and certainty from:
+# Storchak, D., Earle, P., Bossu, R., Presgrave, B., Harris, J., & Godey, S.
+# (2012, March 26). Nomenclature of Event Types. Part of the NEIC-ISC-EMSC
+# coordination. Retrieved January 24, 2017, from
+# http://www.isc.ac.uk/standards/event_types/event_types.pdf
+#
+# The keys to these dictionaries are regular expressions; if no match is found
+# then a value of None should be assigned to the event type or certainty.
+DEFAULT_ETYPE_EVENT_TYPE_MAP = {
+    '[knsu]e': 'earthquake',
+    '[knsu]a': 'anthropogenic event',
+    '[knsu]x': 'explosion',
+    '[knsu]f': 'accidental explosion',
+    '[knsu]h': 'chemical explosion',
+    '[knsu]g': 'controlled explosion',
+    '[knsu]j': 'experimental explosion',
+    '[knsu]d': 'industrial explosion',
+    '[knsu]m': 'mining explosion',
+    '[knsu]n': 'nuclear explosion',
+    '[knsu]i': 'induced or triggered event',
+    '[knsu]r': 'rock burst',
+    '[knsu]w': 'reservoir loading',
+    '[knsu]k': 'fluid injection',
+    '[knsu]q': 'fluid extraction',
+    '[knsu]p': 'crash',
+    '[knsu]o': 'other',
+    '[knsu]s': 'atmospheric event',
+    '[knsu]b': 'avalanche',
+    '[knsu]z': 'ice quake',
+    '[knsu]l': 'landslide',
+    '[knsu]t': 'meteorite',
+    '[knsu]v': 'volcanic eruption',
+    '[knsu]u': 'not reported',
+    'qb': 'quarry blast',
+    'eq': 'earthquake',
+    'me': 'meteorite',
+    'ex': 'explosion',
+    'o': 'other event',
+    'l': 'earthquake',
+    'r': 'earthquake',
+    't': 'earthquake',
+    'f': 'earthquake',
+    }
 
+DEFAULT_ETYPE_CERTAINTY_MAP = {
+    'k[abdefghijklmnopqrstuvwxz]': 'known',
+    's[abdefghijklmnopqrstuvwxz]': 'suspected',
+    }
+
+NAMESPACES = ['BED', 'BED-RT']
+
+
+# pylint:disable=logging-not-lazy
 class css2qml():
     '''
     Converter to QuakeML schema from CSS3.0 schema
     '''
-    def __init__(self, event=None, evid=None,
-                 review_flags=('y', 'yes', 'r', 'reviewed', 'orbassoc'),
-                 etype_map=None, uri_prefix='quakeml', agency_uri='local',
-                 agency_id='xx', author='antelope.event2qml',
-                 q='http://quakeml.org/xmlns/quakeml/1.2',
-                 catalog='http://anss.org/xmlns/catalog/0.1',
-                 bed='http://quakeml.org/xmlns/bed/1.2',
-                 bedrt='http://quakeml.org/xmlns/bed-rt/1.2',
-                 info_description='', info_comment='', add_origin=True,
-                 add_magnitude=True, add_fplane=True, add_mt=True,
-                 add_stamag=True, add_arrival=True):
+    def __init__(self, event,
+                 reviewed_flags=('y*', 'r*', 'pre*', 'fin*'),
+                 automatic_authors=('oa*', 'orbassoc'),
+                 auth_magnitude_strip=('mb', 'ml', 'mn', 'mw', 'mwb',
+                                       'mwp', 'mwr', 'mww', ' m'),
+                 etype_type_map=None, etype_certainty_map=None,
+                 uri_prefix='quakeml', agency_uri='local',
+                 default_network='XX', agency_id='xx',
+                 catalog_author=None,
+                 qml_ns='http://quakeml.org/xmlns/quakeml/1.2',
+                 anss_catalog_ns='http://anss.org/xmlns/catalog/0.1',
+                 qml_bed_ns='http://quakeml.org/xmlns/bed/1.2',
+                 qml_bedrt_ns='http://quakeml.org/xmlns/bed-rt/1.2',
+                 info_description=None,
+                 info_comment=None,
+                 add_origin=True, add_magnitude=True, add_stamag=True,
+                 add_arrival=True, add_fplane=True, add_mt=True,
+                 add_detection=True, extend_anss_catalog=False):
 
-        self.logger = logging.getLogger(__name__)
+        file_class = '.'.join([os.path.basename(__file__),
+                               self.__class__.__name__])
+        self.logger = logging.getLogger(file_class)
 
-        self.evid = {}
-        self.event = {}
-        self.qmlEvents = []
+        if catalog_author is None:
+            catalog_author = file_class
+        if etype_type_map is None:
+            etype_type_map = DEFAULT_ETYPE_EVENT_TYPE_MAP
+        if etype_certainty_map is None:
+            etype_certainty_map = DEFAULT_ETYPE_CERTAINTY_MAP
 
+        # parameters for filling in event metadata
         self.uri_prefix = uri_prefix
         self.agency_uri = \
             str(agency_uri).replace('/', '_').replace(' ', '_').lower()
         self.agency_id = \
             str(agency_id).replace('/', '_').replace(' ', '_').lower()
-        self.author = author
-
-        self.reviewed_flags = review_flags
-        self.placesdb = None
-        self._prefmags = []
-        self.detection_id_counter = 0
-
-        if etype_map is not None:
-            self.etype_map = etype_map
-        else:
-            # Default CSS3.0 etypes to QML event types
-            self.etype_map = {
-                'qb': 'quarry blast',
-                'eq': 'earthquake',
-                'me': 'meteorite',
-                'ex': 'explosion',
-                'o': 'other event',
-                'l': 'earthquake',
-                'r': 'earthquake',
-                't': 'earthquake',
-                'f': 'earthquake',
-            }
-
-        # Namespaces URLs
-        self.q = q
-        self.catalog = catalog
-        self.bed = bed
-        self.bedrt = bedrt
-
-        # default to BED since we don't want to do RT for now
-        self.namespace = self.bed
-
+        self.default_network = '%-2s' % default_network[:2].upper()
+        self.catalog_author = catalog_author
         self.info_description = info_description
         self.info_comment = info_comment
 
+        # parameters for field conversion
+        self.reviewed_flags = reviewed_flags
+        self.automatic_authors = automatic_authors
+        self.auth_magnitude_strip = auth_magnitude_strip
+        self.etype_type_map = etype_type_map
+        self.etype_certainty_map = etype_certainty_map
+
+        # namespaces
+        self.qml_ns = qml_ns
+        self.anss_catalog_ns = anss_catalog_ns
+        self.qml_bed_ns = qml_bed_ns
+        self.qml_bedrt_ns = qml_bedrt_ns
+
+        # flags controlling verbosity of QuakeML output
         self.add_origin = add_origin
         self.add_magnitude = add_magnitude
         self.add_fplane = add_fplane
         self.add_mt = add_mt
         self.add_stamag = add_stamag
         self.add_arrival = add_arrival
+        self.add_detection = add_detection
+        self.extend_anss_catalog = extend_anss_catalog
 
-        self.logger.debug('Init css2qml Class:')
+        # database reader
+        self.event = event
 
-        # If we have an event then configure the object with the info
-        if event or evid:
-            self.new_event(event=event, evid=evid)
+        # initialize result
+        self.qml_events = []
+        self.detection_id_counter = 0
 
-    def dump(self, namespace='BED'):
+    def dump(self, evids, namespace='BED'):
         '''
-        Return dict of QuakeML root element given eventParameters dict
-
-        Dynamically test for namespace and change between RT and Basic formats.
+        Generate dictionary of QuakeML elements given a list of evids.
         '''
-
-        if not self.evid and not self.event:
+        if not isinstance(evids, list):
+            evids = [evids]
+        if namespace not in NAMESPACES:
             self.logger.error(
-                'event(): Need "event" or "evid" to configure object.')
+                'Namespace %s not in [%s], falling back to %s.'
+                % (namespace, ', '.join(NAMESPACES), NAMESPACES[0]))
+            namespace = NAMESPACES[0]
 
         if namespace == 'BED-RT':
-            self.namespace = self.bedrt
-        else:
-            # defaults to basic
-            self.namespace = self.bed
+            namespace = self.qml_bedrt_ns
+        elif namespace == 'BED':
+            namespace = self.qml_bed_ns
 
-        self.logger.info('export QuakeML parameters for namespace: %s' %
-                         self.namespace)
+        self.logger.info('Dumping into namespace: %s' % namespace)
 
-        self.EventParameters = self._new_EventParameters()
+        event_parameters_dict = self._new_event_parameters()
 
-        # Add events
-        self.EventParameters['event'] = self.qmlEvents
-
-        for i, qmlEvent in enumerate(self.qmlEvents):
-            # Add Origin elements
+        # initialize children of EventParameters
+        event_parameters_dict['event'] = self.qml_events
+        if namespace == self.qml_bedrt_ns:
             if self.add_origin:
-                origins = [self._convert_origin(o)
-                           for o in self.event.all_origins()]
+                event_parameters_dict['origin'] = []
+            if self.add_arrival or self.add_detection:
+                event_parameters_dict['pick'] = []
+            if self.add_magnitude:
+                event_parameters_dict['magnitude'] = []
+            if self.add_stamag:
+                event_parameters_dict['stationMagnitude'] = []
+                event_parameters_dict['amplitude'] = []
+            if self.add_mt or self.add_fplane:
+                event_parameters_dict['focalMechanism'] = []
 
-                # Set the preferrdOriginID if you have a prefor on the event table
+        for i, evid in enumerate(evids):
+
+            self.logger.info('Dumping evid %d of %d [%d]'
+                             % (i + 1, len(evids), evid))
+            event_dict = self.new_event(evid)
+
+            if self.add_origin:
+
+                # set perferred origin
                 if self.event['event.prefor']:
-                    self.EventParameters['event'][i]['preferredOriginID'] = \
-                            self._id('origin', self.event['event.prefor'])
+                    prefor_id = self._id('origin', self.event['event.prefor'])
+                    event_dict['preferredOriginID'] = prefor_id
+                    if namespace == self.qml_bedrt_ns:
+                        event_dict['originReferece'] = prefor_id
 
-                if self.namespace == self.bed:
-                    self.EventParameters['event'][i]['origin'] = origins
+                converted_origins = [
+                    self._convert_origin(item)
+                    for item in self.event.all_origins()]
+
+                if namespace == self.qml_bed_ns:
+                    event_dict['origin'] = converted_origins
                 else:
-                    # for real-time only
-                    self.EventParameters['origin'] = origins
-                    self.EventParameters['event'][i]['originReferece'] = \
-                        self._id('origin', self.event['event.prefor'])
+                    event_parameters_dict['origin'] += converted_origins
 
-            # Add Pick elements
+            converted_picks = []
             if self.add_arrival:
-                # Add individual seismic arrivals (arrival table) only. Not the
-                # assoc table.
-                if self.namespace == self.bed:
-                    self.EventParameters['event'][i]['pick'] = \
-                            [self._convert_pick(m)
-                             for m in self.event.all_arrivals()] + \
-                            [self._convert_detection(m)
-                             for m in self.event.all_detections()]
-                else:
-                    self.EventParameters['pick'] = \
-                            [self._convert_pick(m)
-                             for m in self.event.all_arrivals()] + \
-                            [self._convert_detection(m)
-                             for m in self.event.all_detections()]
+                converted_picks += \
+                    [self._convert_pick(item)
+                     for item in self.event.all_arrivals()]
+            if self.add_detection:
+                converted_picks += \
+                    [self._convert_detection(item)
+                     for item in self.event.all_detections()]
 
-            # Add Magnitude elements
+            if namespace == self.qml_bed_ns:
+                event_dict['pick'] = converted_picks
+            else:
+                event_parameters_dict['pick'] += converted_picks
+
             if self.add_magnitude:
 
-                # GET value for preferredMagnitudeID (magnitudeReference ?)
-                magnitude_list = self.event.all_mags_orid(
-                    self.event['event.prefor'])
+                converted_mags = [
+                    self._convert_magnitudes(item)
+                    for item in self.event.all_magnitudes()]
 
-                if magnitude_list:
-                    preferedMagnitudeID = '%08d' % float(
-                        magnitude_list[0]['netmag.magid'])
-                    self.logger.debug('preferredMagnitudeID: %s' %
-                                       preferedMagnitudeID)
-                    self.EventParameters['event'][i]['preferredMagnitudeID'] = \
-                        self._id('magnitude', preferedMagnitudeID)
-                    if self.namespace == self.bedrt:
-                        self.EventParameters['event'][i]['magnitudeReference'] = \
-                            self._id('magnitude', preferedMagnitudeID)
+                # set perferred magnitude
+                if len(converted_mags) > 0:
+                    # TODO: can preferred magnitude be properly handled by
+                    # Antelope?
+                    preferred_magnitude = converted_mags[0]['@publicID']
+                    self.logger.debug('Choosing preferred magnitude: %s' %
+                                      preferred_magnitude)
+                    event_dict['preferredMagnitudeID'] = preferred_magnitude
 
-                # GET all magnitudes defined for event
-                if self.namespace == self.bed:
-                    self.EventParameters['event'][i]['magnitude'] = \
-                            [self._convert_magnitudes(m)
-                             for m in self.event.all_magnitudes()]
-                else:
-                    self.EventParameters['magnitude'] = \
-                            [self._convert_magnitudes(m)
-                             for m in self.event.all_magnitudes()]
+                    if namespace == self.qml_bedrt_ns:
+                        event_dict['magnitudeReference'] = preferred_magnitude
 
-            # Add StrationMagnitude elements
+                    if namespace == self.qml_bed_ns:
+                        event_dict['magnitude'] = converted_mags
+                    else:
+                        event_parameters_dict['magnitude'] += converted_mags
+
             if self.add_stamag:
+                converted_stamags = [
+                    self._convert_stamags(item)
+                    for item in self.event.all_stamags()]
+                converted_amplitudes = [
+                    self._convert_amplitudes(item)
+                    for item in self.event.all_stamags()]
 
-                # Add individual station magnitude estimates upon measurements on
-                # specific phases.
-                if self.namespace == self.bed:
-                    self.EventParameters['event'][i]['stationMagnitude'] = \
-                            [self._convert_stamags(m)
-                             for m in self.event.all_stamags()]
+                if namespace == self.qml_bed_ns:
+                    event_dict['stationMagnitude'] = converted_stamags
+                    event_dict['amplitude'] = converted_amplitudes
                 else:
-                    self.EventParameters['stationMagnitude'] = \
-                            [self._convert_stamags(m)
-                             for m in self.event.all_stamags()]
+                    event_parameters_dict['stationMagnitude'] += \
+                        converted_stamags
+                    event_parameters_dict['amplitude'] += converted_amplitudes
 
-            # Add MomentTensor elements
             if self.add_mt:
-                moment_tensors = [self._convert_mt(m)
-                                  for m in self.event.all_mts()]
+                moment_tensors = [
+                    self._convert_mt(item)
+                    for item in self.event.all_mts()]
             else:
                 moment_tensors = []
 
             if self.add_fplane:
-                fplanes = [self._convert_fplane(m)
-                           for m in self.event.all_fplanes()]
+                fplanes = [
+                    self._convert_fplane(item)
+                    for item in self.event.all_fplanes()]
             else:
                 fplanes = []
 
-            # Add FocalMechs and MTs if we got any
             if moment_tensors or fplanes:
-                if self.namespace == self.bed:
-                    self.EventParameters['event'][i]['focalMechanism'] = \
+                if namespace == self.qml_bed_ns:
+                    event_dict['focalMechanism'] = \
                         moment_tensors + fplanes
                 else:
-                    self.EventParameters['focalMechanism'] = \
+                    event_parameters_dict['focalMechanism'] += \
                         moment_tensors + fplanes
+
+            self.qml_events.append(event_dict)
 
         return {
             'q:quakeml': {
-                '@xmlns:q': self.q,
-                '@xmlns': self.namespace,
-                '@xmlns:catalog': self.catalog,
-                'eventParameters': self.EventParameters,
+                '@xmlns:q': self.qml_ns,
+                '@xmlns': namespace,
+                '@xmlns:catalog': self.anss_catalog_ns,
+                'eventParameters': event_parameters_dict,
                 }
             }
 
-    def _new_EventParameters(self):
+    def _new_event_parameters(self):
         '''
         Base QuakeML event structure. Includes namespace definitions and basic
         elements.
@@ -223,132 +296,259 @@ class css2qml():
         # Basic EventParameters object. This class serves as a container for
         # Event objects.
 
-        return {
-            '@publicID': self._id('eventParameters', self.evid),
-            'description': self.info_description,
-            'comment': {
-                'text': self.info_comment,
-                },
+        event_parameters_dict = {
+            '@publicID': self.event.database,
             'creationInfo': {
                 'creationTime': self._utc_datetime(),
-                'author': self.author,
+                'author': __name__,
                 'agencyID': self.agency_id.lower(),
-                'agencyURI': self._uri(),
-                'version': stock.now(),
+                # 'agencyURI': self._uri(),
+                # 'version': stock.now(),
                 }
             }
 
-    def new_event(self, event=None, evid=None):
+        if self.info_comment:
+            event_parameters_dict['comment'] = {'text': self.info_comment}
+
+        if self.info_description:
+            event_parameters_dict['description'] = self.info_description
+
+        return event_parameters_dict
+
+    def new_event(self, evid):
         '''
-        Add a new event to the object.
+        Add a new event by evid. Primary conversion method.
 
-        This is called from __init__ if we provide an event
-        object when we instantiate the class. If not then
-        the new_event() method should be called directly.
+        If event not in database then set to null event.
+        When a null event is imported into a database, and a matching
+        resource id is found, the intention is for that event to be deleted.
         '''
-        self.logger.debug('Process new event')
-
-        if not evid and not event:
-            self.logger.error(
-                'Need "event" or "evid" to configure object.')
-
-        # Clean all previous information on events.
-        if event:
-            self.event = event
-
-        try:
-            self.evid = event.evid
-        except:
-            self.evid = evid
-        self.logger.debug('EVID: %s' % event.evid)
-
-        # By default we have a NULL event structure. If we want to delete an
-        # event from the catalog then we forward this simple object with the
-        # correct evid.
-        self.qmlEvents.append({
-            '@publicID': self._id('event', self.evid),
+        # start by constructing null event
+        event_dict = {
+            '@publicID': self._id('event', evid),
             'type': 'not existing',
             'creationInfo': {
                 'creationTime': self._utc_datetime(),
-                'author': self.author,
-                'agencyURI': self._uri(),
+                'author': self.catalog_author,
                 'agencyID': self.agency_id.lower(),
-                'version': stock.now(),
+                # 'agencyURI': self._uri(),
+                # 'version': stock.now(),
                 }
-            })
+            }
 
-        if self.event and self.event.is_valid():
-            '''
-            Primary conversion method. If no event then set to null event.
+        self.event.get_event(evid)
+        if self.event and self.event.evid == evid and self.event.valid:
 
-            If we get an object to convert then we make
-            a new instance of our converter and we send
-            the object there.
-            '''
+            self.logger.debug('Found evid [%s]' % evid)
+            agency, author, _, _, _ = self.split_auth(self.event['event.auth'])
 
-            # Extend element with catalog information
-            self.qmlEvents[-1].update(self._catalog_info(
-                self.evid, auth=self.event['event.auth'], event=True))
-            # Since we do have an actual event then lets rewrite those values.
-            # If we don't reset "type" then the event will be removed from the
-            # catalog.
-            self.qmlEvents[-1]['type'] = 'earthquake'
-            self.qmlEvents[-1]['@publicID'] = self._id('event',
-                                                  self.event['event.evid'])
+            if self.extend_anss_catalog:
+                event_dict.update(self._catalog_info(
+                    evid, auth=self.event['event.auth'], event=True))
 
-            if self.event['event.lddate']:
-                # Set times to valid ones.
-                self.qmlEvents[-1]['creationInfo']['creationTime'] = \
-                    self._utc_datetime(self.event['event.lddate'])
-                self.qmlEvents[-1]['creationInfo']['version'] = \
-                    int(float(self.event['event.lddate']))
+            # infer event tyep and certainty from preferred origin
+            # TODO: add evaluation status and mode?
+            record = self.event.all_origins(orid=self.event['event.prefor'])[0]
+            etype = record['origin.etype']
+            event_dict['type'] = self.get_event_type(etype)
+            event_dict['certainty'] = self.get_event_certainty(etype)
 
+            event_dict['@publicID'] = self._id('event',
+                                               self.event['event.evid'])
+            event_dict['creationInfo'] = self._creation_info(
+                    record, 'event', agency, author)
         else:
-            self.logger.warning('not a valid event')
+            self.logger.warning('Evid [%s] not available, adding null event.'
+                                % evid)
 
-    def _origin_type(self, etype):
+        return event_dict
+
+    @staticmethod
+    def _regex_get(value, mapping):
         '''
-        Map a CSS3.0 etype origin flag to a QuakeML event type
+        First value from mapping dictionary where value matches a key.
 
-        Return a proper event_type from a CSS3.0 etype flag stored in an origin
-        The default value in the database is  a dash "-" and that will produce
-        a response of "not reported".
+        Regex equivalent of:
+            return mapping[value] if value in mapping else None
         '''
+        return next((mapping[key] for key in mapping
+                     if re.match(key, value)), None)
 
-        if etype and etype in self.etype_map:
-            return self.etype_map[etype]
+    @staticmethod
+    def _regex_in(value, items):
+        '''
+        First value from mapping dictionary where value matches a key.
+
+        Regex equivalent of:
+            return True if value in items else None
+        '''
+        for item in items:
+            if re.match(item, value):
+                return True
+        return False
+
+    @staticmethod
+    def get_method_model(algorithm):
+        '''
+        Infer method and model from CSS3.0 'algorithm'
+
+        Returns
+        -------
+        3-tuple of str:
+            method_rid, model, quality
+        '''
+        if algorithm is None:
+            return None, None, None
+
+        if ':' in algorithm:
+            method, model = algorithm.split(':', 1)
         else:
-            return 'not reported'
+            method, model = 'grassoc', algorithm
 
-    def get_mode_status(self, test):
+        if '(' in model and ')' in model:
+            model, quality = model.split('(')
+            quality = quality.split(')')[0]
+        else:
+            quality = ''
+
+        method_rid = "{0}/{1}".format('method', method)
+
+        return method_rid, model, quality
+
+    def split_auth(self, auth):
         '''
-        Return mode and status based on author
+        Splits an CSS3.0 'auth' string into its component parts.
+        Anything prior to a colon is considered the agency.
+        An attempt is made to strip recognized trailing magnitude types
+        specified using auth_magnitude_strip.
 
-
-        From: QuakeML An XML Representation of Seismological Data Basic Event
-        Description Version 1.2
-
-        3.4.1. EvaluationMode
-        Mode of an evaluation (used in Pick, Amplitude, Magnitude, Origin,
-        FocalMechanism). Allowed values are:
-            - manual
-            - automatic.
-        3.4.2. EvaluationStatus
-        Status of of an evaluation (used in Pick, Amplitude, Magnitude, Origin,
-        FocalMechanism). Allowed values are:
-            - preliminary
-            - confirmed
-            - reviewed
-            - final
-            - rejected
-
+        Returns
+        -------
+        5-tuple of str:
+            agency, author, magnitude_types, method, info
         '''
-        if test in self.reviewed_flags:
+        if auth is None:
+            return None, None, None, None, None
+
+        # usage for picks in arrival table
+        if 'dbp' in auth:
+            method, author, info = auth.split(':', 2)
+            return None, author, None, method, info
+
+        # usage in amplitudes in arrival table, netmag and stamag table
+        if 'dbevproc' in auth:
+            if ':' in auth:
+                method, info = auth.split(':', 1)
+            else:
+                method, info = auth, None
+            return None, None, None, method, info
+
+        # usage in origin table and magnitudes from foreign agencies
+        if ':' in auth:
+            agency, author = auth.split(':', 1)
+        else:
+            agency, author = '', auth
+        agency = agency.strip().strip('{}').strip()
+        author = author.strip().strip('{}').strip()
+
+        # deal with silly concatenation of magnitudes onto auth field
+        magnitude_types = []
+        while any([author[-len(recognized_magnitude):].lower() ==
+                   recognized_magnitude.lower()
+                   for recognized_magnitude in self.auth_magnitude_strip]):
+            for recognized_magnitude in self.auth_magnitude_strip:
+                magnitude_type = author[-len(recognized_magnitude):]
+                if magnitude_type.lower() == recognized_magnitude.lower():
+                    magnitude_types += [magnitude_type]
+                    author = author[:len(author) - len(recognized_magnitude)]
+                    author = author.strip()
+        magnitude_types = []
+        return agency, author, magnitude_types, None, None
+
+    def get_event_type(self, etype):
+        '''
+        Map a CSS3.0 etype origin flag to a QuakeML event type.
+
+        Returns
+        -------
+        str
+            event_type
+        '''
+        return self._regex_get(etype, self.etype_type_map)
+
+    def get_event_certainty(self, etype):
+        '''
+        Map a CSS3.0 etype origin flag to a QuakeML event type certainty.
+
+        Returns
+        -------
+        str
+            event_type_certainty
+        '''
+        return self._regex_get(etype, self.etype_certainty_map)
+
+    def get_mode_status_auth(self, auth):
+        '''
+        Infer mode and status from CSS3.0 'auth' string.
+
+        Returns
+        -------
+        2-tuple: (str, str)
+            mode, status
+        '''
+        if self._regex_in(auth, self.automatic_authors):
+            return 'automatic', 'preliminary'
+        else:
+            return 'manual', 'reviewed'
+
+    def get_mode_status_review(self, review):
+        '''
+        Infer mode and status from review status.
+
+        Returns
+        -------
+        2-tuple: (str, str)
+            mode, status
+        '''
+        if self._regex_in(review, self.reviewed_flags):
             return 'manual', 'reviewed'
         else:
             return 'automatic', 'preliminary'
 
-    def _convert_origin(self, origin):
+    def _creation_info(self, record, table, agency=None, author=None):
+        '''
+        Construct a valid QuakeML creationInfo dictionary given a record from a
+        view, and the table from which that view was constructed.
+        '''
+        table_lddate = '%s.lddate' % table
+        creation_info_dict = {
+            'creationTime': self._utc_datetime(record[table_lddate]),
+            }
+        if author is not None:
+            creation_info_dict['author'] = author
+        if agency is not None:
+            creation_info_dict['agencyID'] = agency
+
+        return creation_info_dict
+
+    def _waveform_id(self, record, table):
+        '''
+        Construct a valid QuakeML waveformID dictionary given a record from a
+        view, and the table from which that view was constructed.
+        '''
+        table_sta = '%s.sta' % table
+        table_chan = '%s.chan' % table
+        waveform_id_dict = {
+            '@networkCode': record['snetsta.snet'] or self.default_network,
+            '@stationCode': record['snetsta.fsta'] or record[table_sta],
+            '@locationCode': record['schanloc.loc'] or '',
+            '@channelCode': record['schanloc.fchan'] or record[table_chan],
+            # '#text': self._id('stachan', record[table_sta],
+            #                   record[table_chan]),
+            }
+        return waveform_id_dict
+
+    def _convert_origin(self, record):
         '''
         Return a dict of QuakeML origin from a dict of CSS key/values
 
@@ -358,400 +558,374 @@ class css2qml():
         2. Sometimes the origin may not join with the origerr table
         '''
 
-        mode, status = self.get_mode_status(origin['origin.review'])
+        mode, status = self.get_mode_status_review(record['origin.review'])
+        method_rid, model, _ = self.get_method_model(
+            record['origin.algorithm'])
+        model_rid = "{0}/{1}".format('vmodel', model) if model else None
+        agency, author, _, _, _ = self.split_auth(record['origin.auth'])
 
-        try:
-            a = km2m(origin['origerr.smajax'])
-            b = km2m(origin['origerr.sminax'])
-            s = origin['origerr.strike']
-        except:
-            self.logger.warning('missing ORIGERR info for orid:[%s]' %
-                                origin['origin.orid'])
-            a = False
-            b = False
-            s = False
+        smajax = km2m(record['origerr.smajax'])
+        sminax = km2m(record['origerr.sminax'])
+        strike = record['origerr.strike']
 
-        if all([a, b, s]):
-            n, e = get_NE_on_ellipse(a, b, s)
-            lat_u = m2deg_lat(n)
-            lon_u = m2deg_lon(e, lat=origin['origin.lat'])
+        if all([smajax, sminax, strike]):
+            ns_error_m, ew_error_m = get_ne_on_ellipse(smajax, sminax, strike)
+            latsd = m2deg_lat(ns_error_m)
+            lonsd = m2deg_lon(ew_error_m, latitude=record['origin.lat'])
 
             uncertainty = {
                 'preferredDescription': 'uncertainty ellipse',
-                'maxHorizontalUncertainty': a,
-                'minHorizontalUncertainty': b,
-                'azimuthMaxHorizontalUncertainty': s,
+                'maxHorizontalUncertainty': smajax,
+                'minHorizontalUncertainty': sminax,
+                'azimuthMaxHorizontalUncertainty': strike,
                 }
 
-            if origin['origerr.conf']:
-                uncertainty['confidenceLevel'] = origin['origerr.conf'] * 100.
+            if record['origerr.conf'] is not None:
+                uncertainty['confidenceLevel'] = record['origerr.conf'] * 100.
         else:
-            lat_u = None
-            lon_u = None
+            self.logger.warning('Missing origerr table info for orid:[%s]' %
+                                record['origin.orid'])
+            latsd = None
+            lonsd = None
             uncertainty = None
 
-        # Basic Hypocenter
-        qmlorigin = {
-            '@publicID': self._id('origin', origin['origin.orid']),
-            'latitude': {
-                'value': origin['origin.lat'],
-                },
-            'longitude': {
-                'value': origin['origin.lon'],
-                },
-            'depth': {
-                'value': km2m(origin['origin.depth']),
-                },
-            'time': {
-                'value': self._utc_datetime(origin['origin.time']),
-                },
+        qml_dict = {
+            '@publicID': self._id('origin', record['origin.orid']),
+            'latitude': {'value': record['origin.lat']},
+            'longitude': {'value': record['origin.lon']},
+            'depth': {'value': km2m(record['origin.depth'])},
+            'time': {'value': self._utc_datetime(record['origin.time'])},
             'quality': {
-                'standardError': origin['origerr.sdobs'],
-                'usedPhaseCount': origin['origin.ndef'],
-                'associatedPhaseCount': origin['origin.nass'],
+                'standardError': record['origerr.sdobs'],
+                'usedPhaseCount': record['origin.ndef'],
+                'associatedPhaseCount': record['origin.nass'],
                 },
             'evaluationMode': mode,
             'evaluationStatus': status,
-            'type': self._origin_type(origin['origin.etype'] or
-                                      'e') or 'other event',
-            'comment': {
-                'text': 'algorithm:%s' % origin['origin.algorithm'],
-                },
-            'creationInfo': {
-                'author': origin['origin.auth'],
-                'version': origin['origin.lddate'],
-                }
-            }
+            'methodID': method_rid,
+            'creationInfo': self._creation_info(
+                record, 'origin', agency, author),
+             }
 
-        if lat_u:
-            qmlorigin['latitude']['uncertainty'] = lat_u
-        if lon_u:
-            qmlorigin['longitude']['uncertainty'] = lon_u
-
+        if model_rid:
+            qml_dict['earthModelID'] = model_rid
+        if latsd is not None:
+            qml_dict['latitude']['uncertainty'] = latsd
+        if lonsd is not None:
+            qml_dict['longitude']['uncertainty'] = lonsd
         if uncertainty:
-            qmlorigin['originUncertainty'] = uncertainty
+            qml_dict['originUncertainty'] = uncertainty
+        if record['origerr.sdepth'] is not None:
+            qml_dict['depth']['uncertainty'] = km2m(record['origerr.sdepth'])
+        if record['origerr.stime'] is not None:
+            qml_dict['time']['uncertainty'] = km2m(record['origerr.stime'])
 
-        if origin['origerr.sdepth']:
-            qmlorigin['depth']['uncertainty'] = km2m(origin['origerr.sdepth'])
-
-        if origin['origerr.stime']:
-            qmlorigin['time']['uncertainty'] = km2m(origin['origerr.stime'])
-
-        # Verify if we want to add arrivals to this origin
         if self.add_arrival:
-            qmlorigin['arrival'] = [
-                self._convert_arrival(item)
-                for item in self.event.all_arrivals_orid(
-                    origin['origin.orid'])]
+            qml_dict['arrival'] = [self._convert_arrival(item)
+                                   for item in self.event.all_arrivals(
+                                       orid=record['origin.orid'])]
 
-        # Extend element with catalog information
-        qmlorigin.update(self._catalog_info(origin['origin.orid'],
-                                            auth=origin['origin.auth']))
+        if self.extend_anss_catalog:
+            qml_dict.update(self._catalog_info(record['origin.orid'],
+                                               auth=record['origin.auth']))
 
-        return qmlorigin
+        return qml_dict
 
-    def _convert_magnitudes(self, mag):
+    def _convert_magnitudes(self, record):
         '''
         Return a dict of QuakeML magnitude from a dict of CSS key/values
         corresponding to one record.
 
         '''
-
-        self.logger.debug('_convert_magnitudes()')
-        self.logger.debug(mag)
-
+        # pylint:disable=protected-access
+        self.logger.debug(sys._getframe().f_code.co_name)
+        self.logger.debug(str(record))
+        agency, author, _, method, _ = self.split_auth(record['netmag.auth'])
         results = {
-            '@publicID': self._id('magnitude', mag['netmag.magid']),
-            'mag': {
-                'value': mag['netmag.magnitude'],
-                },
-            'type': mag['netmag.magtype'],
-            'stationCount': mag['netmag.nsta'] or 0,
-            'originID': self._id('origin', mag['netmag.orid']),
-            'methodID': self._uri(mag['netmag.auth']),
-            'creationInfo': {
-                'creationTime': self._utc_datetime(mag['netmag.lddate']),
-                'author': mag['netmag.auth']
-                }
+            '@publicID': self._id('magnitude', record['netmag.magid']),
+            'mag': {'value': record['netmag.magnitude']},
+            'type': record['netmag.magtype'],
+            'stationCount': record['netmag.nsta'] or 0,
+            'originID': self._id('origin', record['netmag.orid']),
+            'methodID': method,
+            'creationInfo': self._creation_info(
+                record, 'netmag', agency, author),
             }
 
-        if mag['netmag.uncertainty']:
-            results['mag']['uncertainty'] = mag['netmag.uncertainty']
+        if record['netmag.uncertainty'] is not None:
+            results['mag']['uncertainty'] = record['netmag.uncertainty']
 
         return results
 
-    def _convert_stamags(self, stamag):
+    def _convert_stamags(self, record):
         '''
-        Map stamag record to StationMagnitude
+        Convert CSS3.0 stamag view record to QuakeML stationMagnitude
+        dictionary.
+        '''
+        # pylint:disable=protected-access
+        self.logger.debug(sys._getframe().f_code.co_name)
+        self.logger.debug(str(record))
 
-        Add individual station magnitude estimates upon measurements on
-        specific phases.
-        '''
-        self.logger.debug('_convert_stamags()')
-        self.logger.debug(stamag)
+        agency, author, _, method, _ = self.split_auth(
+            record['stamag.auth'])
 
         results = {
-            '@publicID': self._id('magnitude/station', stamag['stamag.magid'],
-                                  stamag['stamag.sta']),
-            'mag': {
-               'value': stamag['stamag.magnitude'],
-               },
-            'type': stamag['stamag.magtype'],
-            'originID': self._id('origin', stamag['stamag.orid']),
-            'methodID': self._uri(stamag['stamag.auth']),
-            'creationInfo': {
-                'creationTime': self._utc_datetime(stamag['stamag.lddate']),
-                'author': stamag['stamag.auth'],
-                }
+            '@publicID': self._id('magnitude/station', record['stamag.magid'],
+                                  record['stamag.sta']),
+            'originID': self._id('origin', record['stamag.orid']),
+            'mag': {'value': record['stamag.magnitude']},
+            'type': record['stamag.magtype'],
+            'amplitudeID': self._id('amplitude', record['stamag.arid'],
+                                    record['stamag.sta']),
+            'methodID': method,
+            'waveformID': self._waveform_id(record, 'stamag'),
+            'creationInfo': self._creation_info(
+                    record, 'stamag', agency, author)
             }
 
-        if stamag['stamag.uncertainty']:
-            results['stamag']['uncertainty'] = stamag['stamag.uncertainty']
+        if record['stamag.uncertainty'] is not None:
+            results['stamag']['uncertainty'] = record['stamag.uncertainty']
 
         return results
 
-    def _convert_pick(self, pick):
+    def _convert_amplitudes(self, record):
         '''
-        Experimental map of just CSS arrival to QML pick.
-
-
+        Convert CSS3.0 stamag & arrival view record to QuakeML amplitude
+        dictionary.
         '''
-        self.logger.debug('_convert_pick()')
-        self.logger.debug(pick)
+        # pylint:disable=protected-access
+        self.logger.debug(sys._getframe().f_code.co_name + ': ' + str(record))
 
-        pick_mode, pick_status = self.get_mode_status(pick['arrival.auth'])
+        amplitude = record['arrival.amp']
+        if amplitude is not None:
+            amplitude *= 1e9
 
-        # parse channel and location name
-        chan_loc = pick['arrival.chan'].split('_')
-        if len(chan_loc) > 1:
-            chan = chan_loc[0]
-            loc = chan_loc[1]
+        if record['stamag.phase'].upper() == 'ML':
+            unit = 'm'
         else:
-            chan = pick['arrival.chan']
-            loc = ''
+            unit = 'm/s'
+
+        agency, author, _, method, _ = self.split_auth(
+            record['stamag.auth'])
 
         results = {
-            '@publicID': self._id('pick', pick['arrival.arid']),
-            'time': {
-                'value': self._utc_datetime(pick['arrival.time']),
+            '@publicID': self._id('amplitude', record['stamag.arid'],
+                                  record['stamag.sta']),
+            'amplitude': {'value': amplitude},
+            'type': 'A' + record['stamag.phase'].upper(),
+            'unit': unit,
+            'methodID': method,
+            'period': {'value': record['arrival.per']},
+            'snr': record['arrival.snr'],
+            'timeWindow': {
+                'begin': 0,
+                'end': 0,
+                'reference': self._utc_datetime(record['arrival.time']),
                 },
-            'waveformID': {
-                '@stationCode': pick['arrival.sta'],
-                '@channelCode': chan,
-                '@networkCode': pick['snetsta.snet'],
-                '@locationCode': loc,
-                '#text': self._id('waveform', pick['arrival.chanid']),
-                },
-            'phaseHint': pick['arrival.phase'] or pick['arrival.iphase'],
-            'backazimuth': {
-                'value': pick['assoc.esaz'],
-                },
-            'creationInfo': {
-                'creationTime': self._utc_datetime(pick['arrival.lddate']),
-                'author': pick['arrival.auth'],
-                },
+            'waveformID': self._waveform_id(record, 'stamag'),
+            'magnitudeHint': record['stamag.phase'],
+            'creationInfo': self._creation_info(
+                    record, 'arrival', agency, author)
+            }
+
+        if record['arrival.amp']:
+            results['genericAmplitude']['value'] = record['arrival.amp']*1e9
+
+        return results
+
+    def _convert_pick(self, record):
+        '''
+        Map CSS3.0 arrival to QuakeML Pick.
+        '''
+        # pylint:disable=protected-access
+        self.logger.debug(sys._getframe().f_code.co_name + ': ' + str(record))
+
+        auth = record['arrival.auth']
+        agency, author, _, method, _ = self.split_auth(auth)
+        pick_mode, pick_status = self.get_mode_status_auth(auth)
+
+        results = {
+            '@publicID': self._id('pick', record['arrival.arid']),
+            'time': {'value': self._utc_datetime(record['arrival.time'])},
+            'waveformID': self._waveform_id(record, 'arrival'),
+            'methodID': method,
+            'backazimuth': {'value': record['assoc.esaz']},
+            'phaseHint': record['arrival.phase'] or record['arrival.iphase'],
             'evaluationMode': pick_mode,
             'evaluationStatus': pick_status,
+            'creationInfo': self._creation_info(
+                    record, 'arrival', agency, author),
             }
 
-        if pick['arrival.deltim']:
-            results['time']['uncertainty'] = pick['arrival.deltim']
+        if record['arrival.deltim']:
+            results['time']['uncertainty'] = record['arrival.deltim']
 
-        if pick['arrival.snr']:
-            results['comment'] = {
-                'text': 'snr: %s' % pick['arrival.snr'],
-               }
+        if record['arrival.snr']:
+            results['comment'] = {'text': 'snr: %s' % record['arrival.snr']}
 
-        # ONSET
-        try:
-            on_qual = pick['arrival.qual'].lower()
-            if 'i' in on_qual:
+        if record['arrival.qual'] is not None:
+            onset_quality = record['arrival.qual'].lower()
+            if 'i' in onset_quality:
                 results['onset'] = 'impulsive'
-            elif 'e' in on_qual:
+            elif 'e' in onset_quality:
                 results['onset'] = 'emergent'
-            elif 'w' in on_qual:
+            elif 'w' in onset_quality:
                 results['onset'] = 'questionable'
-        except:
-            pass
 
-        # POLARITY
-        try:
-            pol = pick['arrival.fm'].lower()
-            if 'c' in pol or 'u' in pol:
+        if record['arrival.fm'] is not None:
+            polarity = record['arrival.fm'].lower()
+            if 'c' in polarity or 'u' in polarity:
                 results['polarity'] = 'positive'
-            elif 'd' in pol or 'r' in pol:
+            elif 'd' in polarity or 'r' in polarity:
                 results['polarity'] = 'negative'
-            elif '.' in pol:
+            elif '.' in polarity:
                 results['polarity'] = 'undecidable'
-        except:
-            pass
 
         return results
 
-    def _convert_detection(self, pick):
+    def _convert_detection(self, record):
         '''
-        Experimental map of just CSS detections to QML pick.
+        Map CSS3.0 detections to QuakeML Pick.
         '''
-        self.logger.debug('_convert_detection()')
-        self.logger.debug(pick)
+        # pylint:disable=protected-access
+        self.logger.debug(sys._getframe().f_code.co_name)
+        self.logger.debug(str(record))
 
-        # ID
         self.detection_id_counter = self.detection_id_counter + 1
         valid_id = self.detection_id_counter
 
-        # parse channel and location name
-        chan_loc = pick['detection.chan'].split('_')
-        if len(chan_loc) > 1:
-            chan = chan_loc[0]
-            loc = chan_loc[1]
-        else:
-            chan = pick['detection.chan']
-            loc = ''
-
         return {
-            '@publicID': self._id('pick', valid_id, pick['detection.srcid']),
-            'time': {
-                'value': self._utc_datetime(pick['detection.time']),
-                },
-            'waveformID': {
-                '@stationCode': pick['detection.sta'],
-                '@channelCode': chan,
-                '@networkCode': pick['snetsta.snet'],
-                '@locationCode': loc,
-                '#text': self._id('waveform', pick['sitechan.chanid']),
-                },
+            '@publicID': self._id('detection', valid_id,
+                                  record['detection.srcid']),
+            'time': {'value': self._utc_datetime(record['detection.time'])},
+            'waveformID': self._waveform_id(record, 'detection'),
             'comment': {
-                'text': 'snr:%s, state:%s' % (pick['detection.snr'],
-                                              pick['detection.state']),
+                'text': 'snr:%s, state:%s' % (record['detection.snr'],
+                                              record['detection.state']),
                 },
-            'creationInfo': {
-                'creationTime': self._utc_datetime(pick['detection.lddate']),
-                },
+            'creationInfo': self._creation_info(record, 'detection'),
             'filterID': self._id('filter/bandpass/butterworth',
-                                 pick['detection.filter']),
+                                 record['detection.filter']),
             'evaluationMode': 'automatic',
             'evaluationStatus': 'preliminary',
             }
 
-    def _convert_arrival(self, arrival):
+    def _convert_arrival(self, record):
         '''
-        Experimental map of just CSS arrival to QML pick.
+        Map CSS3.0 arrival to QuakeML Arrival.
         '''
-        self.logger.debug('_convert_arrival()')
-        self.logger.debug(arrival)
+        # pylint:disable=protected-access
+        self.logger.debug(sys._getframe().f_code.co_name)
+        self.logger.debug(str(record))
 
-        if arrival['assoc.wgt']:
-            timeWeight = arrival['assoc.wgt']
-        elif arrival['assoc.timedef']:
-            timeWeight = 1
+        if record['assoc.wgt'] is not None:
+            weight = record['assoc.wgt']
+        elif record['assoc.timedef'] is not None:
+            weight = 1
         else:
-            timeWeight = 0
+            weight = 0
 
         return {
-            '@publicID': self._id('arrival', arrival['assoc.arid'],
-                                  arrival['assoc.orid']),
-            'pickID': self._id('pick', arrival['assoc.arid']),
-            'phase': arrival['assoc.phase'],
-            'azimuth': arrival['assoc.esaz'],
-            'distance': arrival['assoc.delta'],
-            'timeResidual': arrival['assoc.timeres'],
-            'timeWeight': timeWeight,
-            'earthModelID': self._id('earthmodel', arrival['assoc.vmodel']),
-
-            'creationInfo': {
-                'creationTime': self._utc_datetime(arrival['assoc.lddate']),
-                }
+            '@publicID': self._id('arrival', record['assoc.arid'],
+                                  record['assoc.orid']),
+            'pickID': self._id('pick', record['assoc.arid']),
+            'phase': record['assoc.phase'],
+            'azimuth': record['assoc.esaz'],
+            'distance': record['assoc.delta'],
+            'timeResidual': record['assoc.timeres'],
+            'timeWeight': weight,
+            'earthModelID': self._id('earthmodel', record['assoc.vmodel']),
+            'creationInfo': self._creation_info(
+                    record, 'assoc')
             }
 
-    def _convert_fplane(self, fp, table='fplane'):
+    def _convert_fplane(self, record, table='fplane'):
         '''
         Return a dict of focalMechanism from an dict of CSS key/values
         corresponding to one record.
         '''
         if table == 'fplane':
-            pub_id = fp['fplane.mtid']
-        if table == 'mt':
-            pub_id = fp['mt.mechid']
+            pub_id = record['fplane.mtid']
+        if table == 'record':
+            pub_id = record['mt.mechid']
         else:
-            pub_id = fp['%s.lddate' % table]
+            pub_id = record['%s.lddate' % table]
 
         # Determine from auth field
-        mode, status = self.get_mode_status(fp['%s.auth' % table])
+        mode, status = self.get_mode_status_auth(record['%s.auth' % table])
+        agency, author, _, _, _ = self.split_auth(record['%s.auth' % table])
 
         nodal_planes = {
             'nodalPlane1': {
-                'strike': {'value': fp['%s.str1' % table]},
-                'dip': {'value': fp['%s.dip1' % table]},
-                'rake': {'value': fp['%s.rake1' % table]},
+                'strike': {'value': record['%s.str1' % table]},
+                'dip': {'value': record['%s.dip1' % table]},
+                'rake': {'value': record['%s.rake1' % table]},
                 },
             'nodalPlane2': {
-                'strike': {'value': fp['%s.str2' % table]},
-                'dip': {'value': fp['%s.dip2' % table]},
-                'rake': {'value': fp['%s.rake2' % table]},
+                'strike': {'value': record['%s.str2' % table]},
+                'dip': {'value': record['%s.dip2' % table]},
+                'rake': {'value': record['%s.rake2' % table]},
                 }
             }
 
         principal_axes = {
             'nAxis': {
-                'length': {'value': fp['%s.naxlength' % table]},
-                'azimuth': {'value': fp['%s.naxazm' % table]},
-                'plunge': {'value': fp['%s.naxplg' % table]},
+                'length': {'value': record['%s.naxlength' % table]},
+                'azimuth': {'value': record['%s.naxazm' % table]},
+                'plunge': {'value': record['%s.naxplg' % table]},
                 },
             'tAxis': {
-                'length': {'value': fp['%s.taxlength' % table]},
-                'azimuth': {'value': fp['%s.taxazm' % table]},
-                'plunge': {'value': fp['%s.taxplg' % table]},
+                'length': {'value': record['%s.taxlength' % table]},
+                'azimuth': {'value': record['%s.taxazm' % table]},
+                'plunge': {'value': record['%s.taxplg' % table]},
                 },
             'pAxis': {
-                'length': {'value': fp['%s.paxlength' % table]},
-                'azimuth': {'value': fp['%s.paxazm' % table]},
-                'plunge': {'value': fp['%s.paxplg' % table]},
+                'length': {'value': record['%s.paxlength' % table]},
+                'azimuth': {'value': record['%s.paxazm' % table]},
+                'plunge': {'value': record['%s.paxplg' % table]},
                 }
             }
 
         focal_mechanism = {
-            '@publicID': fp['mt.qmlid'] or self._id('focalMechanism', pub_id),
-            'triggeringOriginID': self._id('origin', fp['%s.orid' % table]),
+            '@publicID': (record['mt.qmlid'] or
+                          self._id('focalMechanism', pub_id)),
+            'triggeringOriginID': self._id('origin',
+                                           record['%s.orid' % table]),
             'nodalPlanes': nodal_planes,
             'principalAxes': principal_axes,
-            'creationInfo': {
-                'creationTime': self._utc_datetime(fp['%s.lddate' % table]),
-                'author': fp['%s.auth' % table],
-                },
+            'creationInfo': self._creation_info(record, table, agency, author),
             'evaluationMode': mode,
             'evaluationStatus': status,
         }
         return focal_mechanism
 
-    def _convert_mt(self, mt):
+    def _convert_mt(self, record):
         '''
         Map BRTT CSS table 'mt' record to a FocalMechanism
         '''
-        focal_mech = self._convert_fplane(mt, table='mt')
+        focal_mech = self._convert_fplane(record, table='mt')
 
         moment_tensor = {
-            '@publicID': self._id('momentTensor', mt['mt.mtid']),
-            'derivedOrigin': self._id('origin', mt['mt.orid']),
-            'scalarMoment': mt['mt.scm'],
-            'doubleCouple': mt['mt.pdc'],
+            '@publicID': self._id('momentTensor', record['mt.mtid']),
+            'derivedOrigin': self._id('origin', record['mt.orid']),
+            'scalarMoment': record['mt.scm'],
+            'doubleCouple': record['mt.pdc'],
             'tensor': {
-                'Mrr': {'value': mt['mt.tmrr']},
-                'Mtt': {'value': mt['mt.tmtt']},
-                'Mpp': {'value': mt['mt.tmpp']},
-                'Mrt': {'value': mt['mt.tmrt']},
-                'Mrp': {'value': mt['mt.tmrp']},
-                'Mtp': {'value': mt['mt.tmtp']},
+                'Mrr': {'value': record['mt.tmrr']},
+                'Mtt': {'value': record['mt.tmtt']},
+                'Mpp': {'value': record['mt.tmpp']},
+                'Mrt': {'value': record['mt.tmrt']},
+                'Mrp': {'value': record['mt.tmrp']},
+                'Mtp': {'value': record['mt.tmtp']},
                 },
-            'creationInfo': {
-                'creationTime': self._utc_datetime(mt['mt.lddate']),
-                }
+            'creationInfo': self._creation_info(record, table='mt'),
             }
 
         focal_mech['momentTensor'] = moment_tensor
 
         return focal_mech
 
-    def _catalog_info(self, id, auth=None, namespace=None, event=False):
+    def _catalog_info(self, eventid, auth=None, event=False):
         '''
         Alternative ID Standard
 
@@ -776,7 +950,7 @@ class css2qml():
 
         In this case we are limiting this function to eventID and eventSource.
         '''
-        d = {}
+        catalog_dict = {}
         temp = []
         ext_net = False
 
@@ -803,38 +977,39 @@ class css2qml():
         if ext_net:
             # If this is an event object then add special element
             if event:
-                d['@catalog:eventsource'] = ext_net
+                catalog_dict['@catalog:eventsource'] = ext_net
 
                 # ------ REMOVING THIS PART TO AVOID VALIDATION ERRORS ------ #
                 # For internal organization tracking only
-                # d['@%s:eventsource' % ext_org] = ext_net
+                # catalog_dict['@%s:eventsource' % ext_org] = ext_net
 
             else:
-                d['@catalog:datasource'] = ext_net
+                catalog_dict['@catalog:datasource'] = ext_net
 
                 # ------ REMOVING THIS PART TO AVOID VALIDATION ERRORS ------ #
                 # For internal organization tracking only
-                # d['@%s:datasource' % ext_org] = ext_net
+                # catalog_dict['@%s:datasource' % ext_org] = ext_net
 
         else:  # Internal ID and name
             if event:
-                d['@catalog:eventid'] = '%d' % id
-                d['@catalog:eventsource'] = self.agency_id.lower()
-                d['@catalog:datasource'] = self.agency_id.lower()
+                catalog_dict['@catalog:eventid'] = '%d' % eventid
+                catalog_dict['@catalog:eventsource'] = self.agency_id.lower()
+                catalog_dict['@catalog:datasource'] = self.agency_id.lower()
             else:
-                d['@catalog:dataid'] = '%d' % id
-                d['@catalog:datasource'] = self.agency_id.lower()
+                catalog_dict['@catalog:dataid'] = '%d' % eventid
+                catalog_dict['@catalog:datasource'] = self.agency_id.lower()
 
-        # self.logger.debug(d)
-        return d
+        # self.logger.debug(catalog_dict)
+        return catalog_dict
 
-    def _utc_datetime(self, timestamp=None):
+    @staticmethod
+    def _utc_datetime(timestamp=None):
         '''
         Returns the UTC dateTime.
 
         The representation is according to ISO 8601.
         '''
-        if not timestamp:
+        if timestamp is None:
             timestamp = stock.now()
 
         return stock.epoch2str(timestamp, '%Y-%m-%dT%H:%M:%S.%sZ', tz='UTC')
@@ -894,12 +1069,12 @@ class css2qml():
                 magnitude type
         '''
         try:
-            if 'event' == name:
+            if name == 'event':
                 # Event elements most be 8 digit ints.
                 serial = '%08d' % int(float(serial))
             else:
                 serial = '%d' % int(float(serial))
-        except:
+        except Exception:
             # Other elements just need to be unique.
             serial = str(serial).replace('/', '_').replace(' ', '_').lower()
 

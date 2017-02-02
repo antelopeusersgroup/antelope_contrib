@@ -1,8 +1,9 @@
-"""
+'''
 export_events.functions
 
 Some functions used by event2qml main code
-"""
+'''
+# pylint:disable=logging-not-lazy,broad-except
 import math
 import logging
 
@@ -29,16 +30,13 @@ def simple_table_present(table, dbpointer):
         logger.warning('Exception, %s' % ex)
         return False
 
-    logger.debug('db.query(dbTABLE_PRESENT) => %s' %
-                 view.query(datascope.dbTABLE_PRESENT))
+    result = view.query(datascope.dbTABLE_PRESENT)
+    logger.debug('view.query(dbTABLE_PRESENT) => %s' % result)
 
-    if not view.query(datascope.dbTABLE_PRESENT):
-        return False
-
-    return True
+    return result
 
 
-def verify_table(table=False, database=False, dbpointer=False):
+def verify_table(table=None, database=None, dbpointer=None):
     '''
     Open a database or database pointer and verify a table
 
@@ -52,25 +50,24 @@ def verify_table(table=False, database=False, dbpointer=False):
     freed.
     '''
     logger = logging.getLogger(__name__)
-    if not database and not dbpointer:
+    if database is None and dbpointer is None:
         logger.warning('Need database or dbpointer')
-        return False
+        return None
 
-    if not dbpointer:
+    if database is not None:
         logger.debug('dbopen(%s)' % database)
         dbpointer = datascope.dbopen(database, "r")
 
-    if table:
+    if table is not None:
         # Test if we have some table first.
         logger.debug('db.lookup(%s)' % table)
         view = dbpointer.lookup(table=table)
 
         if not view.query(datascope.dbTABLE_PRESENT):
-            logger.warning('Missing [%s] table in database' % table)
-            return False
+            logger.info('Table [%s] not in database' % table)
+            return None
         else:
-            logger.debug('db.query(dbTABLE_PRESENT) => %s' %
-                         view.query(datascope.dbTABLE_PRESENT))
+            logger.debug('Table [%s] present in database' % table)
 
     return dbpointer
 
@@ -97,11 +94,14 @@ def is_null(value, null_value):
     return False
 
 
-def get_all_fields(dbpointer, nulls={}):
+def get_all_fields(dbpointer, nulls=None):
     '''
     At a given database pointer to a particular record query for valid
     table fields and pull all values. Return a dictionary with the values.
     '''
+    if nulls is None:
+        nulls = {}
+
     results = {}
     logger = logging.getLogger(__name__)
 
@@ -162,19 +162,19 @@ def open_verify_pf(pf, mttime=False):
     if mttime:
         logger.debug('Verify that %s is newer than %s' % (pf, mttime))
 
-        PF_STATUS = stock.pfrequire(pf, mttime)
-        if PF_STATUS == stock.PF_MTIME_NOT_FOUND:
+        pf_status = stock.pfrequire(pf, mttime)
+        if pf_status == stock.PF_MTIME_NOT_FOUND:
             logger.warning('Problems looking for %s.' % pf +
                            ' PF_MTTIME_NOT_FOUND.')
             logger.error('No MTTIME in PF file. '
                          'Need a new version of the %s file!!!' % pf)
-        elif PF_STATUS == stock.PF_MTIME_OLD:
+        elif pf_status == stock.PF_MTIME_OLD:
             logger.warning('Problems looking for %s. PF_MTTIME_OLD.' % pf)
             logger.error('Need a new version of the %s file!!!' % pf)
-        elif PF_STATUS == stock.PF_SYNTAX_ERROR:
+        elif pf_status == stock.PF_SYNTAX_ERROR:
             logger.warning('Problems looking for %s. PF_SYNTAX_ERROR.' % pf)
             logger.error('Need a working version of the %s file!!!' % pf)
-        elif PF_STATUS == stock.PF_NOT_FOUND:
+        elif pf_status == stock.PF_NOT_FOUND:
             logger.warning('Problems looking for %s. PF_NOT_FOUND.' % pf)
             logger.error('No file  %s found!!!' % pf)
 
@@ -198,7 +198,6 @@ def safe_pf_get(pf, field, defaultval=False):
             value = pf.get(field, defaultval)
         except Exception as ex:
             logger.warning('Problem with safe_pf_get(%s, %s)' % (field, ex))
-            pass
 
     logger.debug("pf.get(%s,%s) => %s" % (field, defaultval, value))
 
@@ -206,7 +205,7 @@ def safe_pf_get(pf, field, defaultval=False):
 
 
 # def _str(item):
-#    """Return a string no matter what"""
+#    '''Return a string no matter what'''
 #    if item is not None:
 #        return str(item)
 #    else:
@@ -214,9 +213,9 @@ def safe_pf_get(pf, field, defaultval=False):
 #
 
 # def _dict(*args, **kwargs):
-#    """
+#    '''
 #    Return a dict only if at least one value is not None
-#    """
+#    '''
 #    dict_ = Dict(*args, **kwargs)
 #    if dict_.values() == [None] * len(dict_):
 #        return None
@@ -224,49 +223,71 @@ def safe_pf_get(pf, field, defaultval=False):
 
 
 def filter_none(obj):
-    """
-    Return a dict only if the value for key "value" is not None
-    """
+    '''
+    Return a dict only if the value for key "value" is not None.
+    '''
     if obj.get('value') is None:
         return None
     return obj
 
 
-def km2m(dist):
-    """Convert from km to m only if dist is not None"""
-
-    return float(dist) * 1000.0
-
-
-def m2deg_lat(dist):
-    return float(dist) / 110600.0
+def km2m(distance_km):
+    '''Convert distance_km to meters only if not None.'''
+    if distance_km is None:
+        return None
+    else:
+        return float(distance_km) * 1000.
 
 
-def m2deg_lon(dist, lat=0.0):
-    M = 6367449.0
-    return float(dist) / (math.pi / 180.0) / M / math.cos(math.radians(lat))
+EARTH_MEAN_MERIDIONAL_RADIUS_M = 6367449.
+M_PER_DEGREE_LATITUDE = math.pi*EARTH_MEAN_MERIDIONAL_RADIUS_M/180.
+EARTH_MEAN_EQUATORIAL_RADIUS_M = 6378137.
+M_PER_DEGREE_LONGITUDE = math.pi*EARTH_MEAN_EQUATORIAL_RADIUS_M/180.
 
 
-def _eval_ellipse(a, b, angle):
-    return a*b/(math.sqrt((b*math.cos(math.radians(angle)))**2 +
-                          (a*math.sin(math.radians(angle)))**2))
+def m2deg_lat(distance_m):
+    '''Convert distance_m to degrees latitude only if not None.'''
+    if distance_m is None:
+        return None
+    else:
+        return float(distance_m) / M_PER_DEGREE_LATITUDE
 
 
-def get_NE_on_ellipse(A, B, strike):
-    """
-    Return the solution for points N and E on an ellipse
+def m2deg_lon(distance_m, latitude=0.0):
+    '''Convert distance_m to degrees longitude only if not None.'''
+    if distance_m is None:
+        return None
+    else:
+        return (float(distance_m) / M_PER_DEGREE_LONGITUDE /
+                math.cos(math.radians(latitude)))
 
-    A : float of semi major axis
-    B : float of semi minor axis
-    strike : angle of major axis from North
+
+def _eval_ellipse(smajax, sminax, angle):
+    return smajax*sminax/(math.sqrt((sminax*math.cos(math.radians(angle)))**2 +
+                                    (smajax*math.sin(math.radians(angle)))**2))
+
+
+def get_ne_on_ellipse(smajax, sminax, strike):
+    '''
+    Return the solution for points north and east on an ellipse
+
+    Arguments
+    ---------
+    smajax: float
+        semi-major axis
+    sminax: float
+        semi-minor axis
+    strike: float
+        orientation of major axis, angle measured from north
 
     Returns
     -------
-    n, e : floats of ellipse solution at north and east
-    """
-    n = _eval_ellipse(A, B, strike)
-    e = _eval_ellipse(A, B, strike-90)
-    return n, e
+    2-tuple of floats:
+        north, east
+    '''
+    north = _eval_ellipse(smajax, sminax, strike)
+    east = _eval_ellipse(smajax, sminax, strike-90)
+    return north, east
 
 
 if __name__ == "__main__":

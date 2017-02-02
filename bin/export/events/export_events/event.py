@@ -1,4 +1,4 @@
-"""
+'''
 This module is in charge of pulling the event
 information from the Antelope Datascope database.
 We create an object with multiple methods to
@@ -8,7 +8,8 @@ the parent process.
 
 Juan Reyes
 reyes@ucsd.edu
-"""
+'''
+import os
 import logging
 
 import antelope.stock as stock
@@ -20,14 +21,16 @@ from export_events.functions import (simple_table_present, verify_table,
 from export_events.db_collection import Collection
 
 
+# pylint:disable=logging-not-lazy
 class Event():
-    """
-    Class for creating event objects.
-    Extract all information needed for the event and
-    keep the information inside the object.
-    """
-    def __init__(self, database=None, dbpointer=None,
-                 magnitude_type_subset=['.*'],
+    '''
+    Reads and stores event data from an Antelope database.
+
+    Extracts all information needed for a given event and keeps the information
+    inside the object.
+    '''
+    def __init__(self, database,
+                 magnitude_type_subset=('.*'),
                  event_auth_select=(), event_auth_reject=(),
                  origin_auth_select=(), origin_auth_reject=(),
                  arrival_auth_select=(), arrival_auth_reject=(),
@@ -36,13 +39,12 @@ class Event():
                  fplane_auth_select=(), fplane_auth_reject=(),
                  detection_state_select=(), detection_state_reject=()):
 
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('.'.join([self.__class__.__module__,
+                                                  self.__class__.__name__]))
+        self.database = database  # descriptor
 
-        self.database = database    # database name
-        self.db = dbpointer         # database pointer
-
+        # configure filters
         self.magnitude_type_subset = magnitude_type_subset
-
         self.event_auth_select = event_auth_select
         self.event_auth_reject = event_auth_reject
         self.origin_auth_select = origin_auth_select
@@ -58,9 +60,11 @@ class Event():
         self.fplane_auth_select = fplane_auth_select
         self.fplane_auth_reject = fplane_auth_reject
 
-        self.logger.debug('Init Event Class: db=%s' % self.database)
+        dirname, basename = os.path.split(self.database)
+        self.logger.info('Descriptor path: db=%s' % dirname)
+        self.logger.info('Descriptor file: db=%s' % basename)
 
-        self.db = verify_table('event', self.database, self.db)
+        self.db = verify_table('event', self.database)
 
         self._clean()
 
@@ -69,6 +73,17 @@ class Event():
             return self.event_data[name]
         except:
             return ''
+
+    def __str__(self):
+        contents = []
+        for container in ['origins', 'arrivals', 'detections',
+                          'stamags', 'magnitudes', 'fplanes', 'mts']:
+            count = len(getattr(self, container).values())
+            if count > 0:
+                contents += ['%d %s' % (count, container)]
+        return '%s evid [%d] containing: %s' % (self.__class__.__name__,
+                                                self.evid,
+                                                ', '.join(contents))
 
     def is_valid(self):
         return self.valid
@@ -88,109 +103,87 @@ class Event():
         self.fplanes = Collection(dbpointer=self.db, table='fplane')
         self.mts = Collection(dbpointer=self.db, table='mt')
 
-    def all_origins(self, reverse=False):
-        try:
-            return self.origins.values(sort='origin.lddate', reverse=reverse)
-        except:
-            return []
+    def all_origins(self, orid=None, sort_by='origin.lddate', reverse=False):
+        '''Get all origins, optionally filtered by evid.'''
 
-    def all_arrivals(self, reverse=False):
-        try:
-            return self.arrivals.values(sort='assoc.delta', reverse=reverse)
-        except:
-            return []
+        return self.origins.values(subset_dict={'origin.orid': orid},
+                                   sort_by=sort_by,
+                                   reverse=reverse)
 
-    def all_detections(self, reverse=False):
-        try:
-            return self.detections.values(sort='detection.time',
-                                          reverse=reverse)
-        except:
-            return []
+    def all_arrivals(self, orid=None, sort_by='assoc.delta', reverse=False):
+        '''Get all arrivals, optionally filtered by orid.'''
 
-    def all_arrivals_orid(self, orid, reverse=False):
-        try:
-            return [a for a in self.all_arrivals() if a['assoc.orid'] == orid]
-        except:
-            return []
+        return self.arrivals.values(subset_dict={'assoc.orid': orid},
+                                    sort_by=sort_by,
+                                    reverse=reverse)
 
-    def all_stamags(self, reverse=False):
-        try:
-            return self.stamags.values(sort='stamag.lddate', reverse=reverse)
-        except:
-            return []
+    def all_detections(self, sort_by='assoc.delta', reverse=False):
+        '''Get all detections.'''
 
-    def all_magnitudes(self, reverse=False):
-        try:
-            return self.magnitudes.values(sort='netmag.lddate',
-                                          reverse=reverse)
-        except:
-            return []
+        return self.detections.values(sort_by=sort_by, reverse=reverse)
 
-    def all_mags_orid(self, orid, reverse=False):
-        try:
-            return sorted([a for a in self.all_magnitudes()
-                           if a['netmag.orid'] == orid],
-                          key=lambda v: v['netmag.lddate'], reverse=reverse)
-        except:
-            return []
+    def all_stamags(self, sort_by='stamag.lddate', reverse=False):
+        '''
+        Get all station magnitudes, optionally filtered by evid and orid.
+        '''
+        return self.stamags.values(sort_by=sort_by,
+                                   reverse=reverse)
 
-    def all_fplanes(self, reverse=False):
-        try:
-            return sorted(self.fplanes.values(),
-                          key=lambda v: v['fplane.lddate'], reverse=reverse)
-        except:
-            return []
+    def all_magnitudes(self, sort_by='netmag.lddate',
+                       reverse=False):
+        '''
+        Get all magnitudes, optionally filtered by evid and orid.
+        '''
 
-    def all_mts(self, reverse=False):
-        try:
-            return sorted(self.mts.values(), key=lambda v: v['mt.lddate'],
-                          reverse=reverse)
-        except:
-            return []
+        return self.magnitudes.values(sort_by=sort_by,
+                                      reverse=reverse)
+
+    def all_fplanes(self, sort_by='fplane.lddate', reverse=False):
+        '''Get all focal planes, optionally filtered by mtid and mechid.'''
+
+        return self.fplanes.values(sort_by=sort_by,
+                                   reverse=reverse)
+
+    def all_mts(self, sort_by='mt.lddate', reverse=False):
+        '''Get all moment tensors, optionally filtered by orid.'''
+
+        return self.mts.values(sort_by=sort_by,
+                               reverse=reverse)
 
     def get_event(self, evid=None):
-        """
-        Open event database and get values.
-        """
+        '''
+        Get data from all tables for one event.
+        '''
         self.evid = evid
         self.valid = False
 
-        self.logger.info('Get evid %s from %s' % (self.evid, self.database))
+        self.logger.info('Get evid %s from %s'
+                         % (self.evid, os.path.basename(self.database)))
 
         steps = ['dbopen event']
-        if evid is not None:
-            steps.extend(['dbsubset evid==%s' % self.evid])
-        [steps.extend(['dbsubset auth =~ /%s/' % x])
-         for x in self.event_auth_select if self.event_auth_select]
-        [steps.extend(['dbsubset auth !~ /%s/' % x])
-         for x in self.event_auth_reject if self.event_auth_reject]
+        steps += ['dbsubset evid==%s' % self.evid]
+        steps += ['dbsubset auth =~ /%s/' % auth
+                  for auth in self.event_auth_select]
+        steps += ['dbsubset auth !~ /%s/' % auth
+                  for auth in self.event_auth_reject]
 
-        self.logger.debug('Database query for event info:')
-        self.logger.debug(', '.join(steps))
+        self.logger.info('Processing: ' + ', '.join(steps))
 
         with datascope.freeing(self.db.process(steps)) as dbview:
-            self.logger.info('Found %d event(s) with evid [%s]' %
-                             (dbview.record_count, self.evid))
             if not dbview.record_count:
-                # This failed.
-                self.logger.warning('No event after subset')
+                self.logger.warning('No event found')
                 return
+            if dbview.record_count > 1:
+                self.logger.error('%d events found matching evid [%d]'
+                                  % (len(dbview.record_count), self.evid))
+            else:
+                self.logger.debug('Found evid [%d]' % self.evid)
 
-            if int(dbview.record_count) > 1:
-                # This failed.
-                self.logger.error('More than one evid [%s] in %s' %
-                                  (self.evid, self.database))
-
-            # Get NULL values
             dbview.record = datascope.dbNULL
             nulls = get_all_fields(dbview)
 
-            # we should only have 1 here
-            for temp in dbview.iter_record():
-
-                self.logger.debug('Extracting info for event from db')
-
-                self.event_data = get_all_fields(temp, nulls)
+            for row in dbview.iter_record():
+                self.event_data = get_all_fields(row, nulls)
                 self.valid = True
 
         self._get_origins()
@@ -200,7 +193,7 @@ class Event():
             self.logger.warning('Missing prefor [%s] for evid:[%s]' %
                                 (self.event_data['event.prefor'], self.evid))
             try:
-                last_origin = self.origins.values(sort='origin.lddate',
+                last_origin = self.origins.values(sort_by='origin.lddate',
                                                   reverse=True)[0]
             except:
                 last_origin = None
@@ -214,83 +207,93 @@ class Event():
                 self.event_data['event.prefor'] = last_origin['origin.orid']
 
         self._get_arrivals()
+        self._get_detections()
         self._get_stamag()
         self._get_netmag()
         self._get_fplane()
         self._get_mts()
 
     def _get_origins(self):
-        """
+        '''
         Open origin table and get all associated orids for the evid.
-        """
-        self.logger.debug('Get origins for  %s' % self.evid)
+        '''
+        self.logger.info('Getting origins for evid [%d]' % self.evid)
 
         steps = ['dbopen origin']
-        steps.extend(['dbsubset evid == %s' % self.evid])
-        [steps.extend(['dbsubset auth =~ /%s/' % x])
-         for x in self.origin_auth_select if self.origin_auth_select]
-        [steps.extend(['dbsubset auth !~ /%s/' % x])
-         for x in self.origin_auth_reject if self.origin_auth_reject]
-        steps.extend(['dbjoin -o origerr'])
+        steps += ['dbsubset evid==%s' % self.evid]
+        steps += ['dbsubset auth =~ /%s/' % auth
+                  for auth in self.origin_auth_select]
+        steps += ['dbsubset auth !~ /%s/' % auth
+                  for auth in self.origin_auth_reject]
+        steps += ['dbjoin -o origerr']
 
         self.origins.get_view(steps, key='origin.orid')
 
     def _get_arrivals(self):
-        """
-        Open assoc and arrival databases and get all data for the orid.
+        '''
+        Open assoc and arrival databases and get all data for current evid.
         Save the origin parameters in memory.
-        """
+        '''
         for orid in self.origins.keys():
-            self.logger.debug('Get arrivals for orid %s' % orid)
+            self.logger.debug('Loading arrivals for orid [%s]' % orid)
 
             steps = ['dbopen assoc']
-            steps.extend(['dbsubset orid==%s' % orid])
-            steps.extend(['dbjoin arrival'])
-            steps.extend(['dbjoin -o sitechan'])
-            steps.extend(['dbjoin -o snetsta'])
-            [steps.extend(['dbsubset auth =~ /%s/' % x])
-             for x in self.arrival_auth_select if self.arrival_auth_select]
-            [steps.extend(['dbsubset auth !~ /%s/' % x])
-             for x in self.arrival_auth_reject if self.arrival_auth_reject]
+            steps += ['dbsubset orid==%s' % orid]
+            steps += ['dbjoin arrival']
+            steps += ['dbjoin -o snetsta']
+            steps += ['dbjoin -o schanloc sta chan']
+            steps += ['dbsubset auth =~ /%s/' % auth
+                      for auth in self.arrival_auth_select]
+            steps += ['dbsubset auth !~ /%s/' % auth
+                      for auth in self.arrival_auth_reject]
 
             self.arrivals.get_view(steps, key='arrival.arid')
 
-        self._get_detections()
-
     def _get_detections(self):
-        """
+        '''
         Open detection table and get all data for a particular ORID.
         Save the origin parameters in memory.
-        """
+        '''
+        if not simple_table_present('detection', self.db):
+            return
+
         start = int(stock.now())
         end = 0
 
-        # Calculate time window for event
+        self.logger.debug('Basing detection window on arrivals for evid [%s]'
+                          % self.evid)
         for orid in self.origins.keys():
-            self.logger.debug('Get arrivals for orid %s' % orid)
-            for arrival in self.all_arrivals_orid(orid):
+            arrivals = self.all_arrivals(orid=orid)
+            for arrival in arrivals:
 
-                try:
-                    if int(arrival['arrival.time']) < start:
-                        start = int(arrival['arrival.time'])
+                if 'arrival.time' in arrival:
+                    time = arrival['arrival.time']
+                else:
+                    time = start
 
-                    if int(arrival['arrival.time']) > end:
-                        end = int(arrival['arrival.time'])
-                except:
-                    pass
+                if 'arrival.deltim' in arrival:
+                    deltim = arrival['arrival.deltim']
+                else:
+                    deltim = 0
+
+                if time - deltim < start:
+                    start = time - deltim
+
+                if time + deltim > end:
+                    end = time + deltim
 
         if end > start:
-            # We have a good time window. Let's get the entries.
+            self.logger.debug('Windowing detections from %s to %s'
+                              % (stock.epoch2str(start, '%G %T')[:-4],
+                                 stock.epoch2str(end, '%G %T')[:-4]))
             steps = ['dbopen detection']
-            steps.extend(['dbsubset time > %s && time < %s' % (start, end)])
-            steps.extend(['dbjoin -o snetsta'])
-            steps.extend(['dbjoin -o sitechan'])
-            [steps.extend(['dbsubset state =~ /%s/' % x])
-             for x in self.detection_state_select
-             if self.detection_state_select]
-            [steps.extend(['dbsubset state !~ /%s/' % x])
-             for x in self.detection_state_reject
-             if self.detection_state_reject]
+            steps += ['dbsubset time > %s && time < %s' % (start, end)]
+            steps += ['dbjoin -o snetsta']
+            steps += ['dbjoin -o schanloc sta chan']
+            steps += ['dbsubset state =~ /%s/' % state
+                      for state in self.detection_state_select]
+            steps += ['dbsubset state !~ /%s/' % state
+                      for state in self.detection_state_reject]
 
             self.detections.get_view(steps)
 
@@ -300,9 +303,12 @@ class Event():
                 (start, end))
 
     def _get_stamag(self):
-        """
+        '''
         Open stamag table and get all rows for the orid.
-        """
+
+        Arrival table is joined so that result is useful for both amplitudes
+        and station magnitudes.
+        '''
         if not simple_table_present('stamag', self.db):
             return
 
@@ -310,18 +316,21 @@ class Event():
             self.logger.debug('Get netmag for orid %s' % orid)
 
             steps = ['dbopen stamag']
-            steps.extend(['dbsubset orid == %s' % orid])
-            [steps.extend(['dbsubset auth =~ /%s/' % x])
-             for x in self.netmag_auth_select if self.netmag_auth_select]
-            [steps.extend(['dbsubset auth !~ /%s/' % x])
-             for x in self.netmag_auth_reject if self.netmag_auth_reject]
+            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset auth =~ /%s/' % auth
+                      for auth in self.netmag_auth_select]
+            steps += ['dbsubset auth !~ /%s/' % auth
+                      for auth in self.netmag_auth_reject]
+            steps += ['dbjoin arrival']
+            steps += ['dbjoin -o snetsta']
+            steps += ['dbjoin -o schanloc sta chan']
 
             self.stamags.get_view(steps)
 
     def _get_netmag(self):
-        """
+        '''
         Open netmag table and get all rows for the orid.
-        """
+        '''
         if not simple_table_present('netmag', self.db):
             return
 
@@ -329,20 +338,21 @@ class Event():
             self.logger.debug('Get netmag for orid %s' % orid)
 
             steps = ['dbopen netmag']
-            steps.extend(['dbsubset orid == %s' % orid])
-            [steps.extend(['dbsubset magtype =~ /%s/' % x])
-             for x in self.magnitude_type_subset if self.magnitude_type_subset]
-            [steps.extend(['dbsubset auth =~ /%s/' % x])
-             for x in self.netmag_auth_select if self.netmag_auth_select]
-            [steps.extend(['dbsubset auth !~ /%s/' % x])
-             for x in self.netmag_auth_reject if self.netmag_auth_reject]
+            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset magtype =~ /%s/' % x
+                      for x in self.magnitude_type_subset
+                      if self.magnitude_type_subset]
+            steps += ['dbsubset auth =~ /%s/' % auth
+                      for auth in self.netmag_auth_select]
+            steps += ['dbsubset auth !~ /%s/' % auth
+                      for auth in self.netmag_auth_reject]
 
             self.magnitudes.get_view(steps, key='netmag.magid')
 
     def _get_fplane(self):
-        """
+        '''
         Open fplane table and get all rows for the orid.
-        """
+        '''
         if not simple_table_present('fplane', self.db):
             return
 
@@ -350,17 +360,18 @@ class Event():
             self.logger.debug('Get fplane for orid %s' % orid)
 
             steps = ['dbopen fplane']
-            steps.extend(['dbsubset orid == %s' % orid])
-            [steps.extend(['dbsubset auth =~ /%s/' % x])
-             for x in self.fplane_auth_select if self.fplane_auth_select]
-            [steps.extend(['dbsubset auth !~ /%s/' % x])
-             for x in self.fplane_auth_reject if self.fplane_auth_reject]
+            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset auth =~ /%s/' % auth
+                      for auth in self.fplane_auth_select]
+            steps += ['dbsubset auth !~ /%s/' % auth
+                      for auth in self.fplane_auth_reject]
+
             self.fplanes.get_view(steps, key='fplane.mechid')
 
     def _get_mts(self):
-        """
+        '''
         Open moment tensors table and get all rows for the orid.
-        """
+        '''
         if not simple_table_present('mt', self.db):
             return
 
@@ -368,11 +379,11 @@ class Event():
             self.logger.debug('Get moment tensors for orid %s' % orid)
 
             steps = ['dbopen mt']
-            steps.extend(['dbsubset orid == %s' % orid])
-            [steps.extend(['dbsubset auth =~ /%s/' % x])
-             for x in self.mt_auth_select if self.mt_auth_select]
-            [steps.extend(['dbsubset auth !~ /%s/' % x])
-             for x in self.mt_auth_reject if self.mt_auth_reject]
+            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset auth =~ /%s/' % auth
+                      for auth in self.mt_auth_select]
+            steps += ['dbsubset auth !~ /%s/' % auth
+                      for auth in self.mt_auth_reject]
 
             self.mts.get_view(steps, key='mt.mtid')
 

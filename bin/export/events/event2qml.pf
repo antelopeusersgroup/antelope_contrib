@@ -22,7 +22,7 @@ author  Antelope event2qml process # ie Array Network Facility, UCSD
 
 # These are for overriding origin type codes translation
 # mapping set in the code.
-etype_map &Arr{
+etype_type_map &Arr{
     L   earthquake
     LF  earthquake
     f   earthquake
