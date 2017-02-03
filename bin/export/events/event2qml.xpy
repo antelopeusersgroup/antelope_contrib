@@ -26,18 +26,18 @@ XML parser:
     XMLTODICT.PY = Parse the given XML input and convert it into a dictionary.
     #Copyright (C) 2012 Martin Blech and individual contributors.
 '''
+# pylint: disable=logging-not-lazy
 
 import os
 import sys
+import argparse
 import logging
-from io import BytesIO
-from pkg_resources import get_distribution
 from logging.config import dictConfig
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from pkg_resources import get_distribution
 
 try:
     from antelope import stock
-except Exception as ex:
+except ImportError as ex:
     sys.exit("Import Error: [%s] Do you have ANTELOPE installed correctly?" %
              ex)
 
@@ -46,19 +46,19 @@ try:
     from export_events.event import Event
     from export_events.css2qml import css2qml
     from export_events.xmltodict import xmlencode
-except Exception as ex:
+except ImportError as ex:
     sys.exit("[%s] Error loading  qml functions." % ex)
 
 
 try:
     from lxml import etree
-    validation = True
-except Exception as e:
-    validation = False
+    VALIDATION_POSSIBLE = True
+except ImportError:
+    VALIDATION_POSSIBLE = False
 
 
 FILE_NAME = os.path.basename(__file__)
-LOG_FILE_NAME = os.path.splitext(FILE_NAME)[0] + '.LOG'
+LOG_FILE_NAME = os.path.splitext(FILE_NAME)[0] + '.log'
 
 LOG_SETTINGS = {
     'version': 1,  # logging schema
@@ -100,26 +100,31 @@ _DEFAULT_SCHEMA_PATH = os.path.join(
 _DEFAULT_SCHEMA = 'QuakeML-1.2.rng'
 
 
-class MyParser(ArgumentParser):
-    '''Trigger printing of help on any error.'''
-    def error(self, message):
-        sys.stderr.write('error: %s\n' % message)
-        self.print_help()
-        sys.exit(2)
-
-if __name__ == '__main__':
+def _argparser():
     '''
-    event2qml primary exec.
-
-    Configure the program with the listed values in the command line
-    and parameter file and convert all possible events into QuakeML
-    format.
+    Process command-line arguments.
     '''
+    class MyFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                      argparse.RawDescriptionHelpFormatter):
+        '''
+        Preserve linefeeds in docstring and include default values in help.
+        '''
+        pass
 
-    parser = MyParser(
-        description=__doc__,
-        version="%(prog)s " + get_distribution('export_events').version,
-        formatter_class=RawDescriptionHelpFormatter)
+    class MyParser(argparse.ArgumentParser):
+        '''
+        Trigger printing of help on any argument parsing error.
+        '''
+        def error(self, message):
+            sys.stderr.write('error: %s\n' % message)
+            self.print_help()
+            sys.exit(2)
+
+    # pylint: disable=no-member
+    version = get_distribution('export_events').version
+    parser = MyParser(description=__doc__,
+                      formatter_class=MyFormatter,
+                      version='export_events %s' % version)
     parser.add_argument('database',
                         help='path to Antelope database or descriptor')
     parser.add_argument('evid', type=int,
@@ -134,11 +139,28 @@ if __name__ == '__main__':
                         help='Antelope-style parameter file')
     parser.add_argument('-l', '--log', default='WARNING',
                         help='Console logging level: DEBUG, INFO, WARNING')
+    return parser
 
-    if len(sys.argv) == 1:
+
+# pylint: disable=too-many-locals,too-many-statements
+def main(argv=()):
+    '''
+    Command-line interface for event2qml.
+
+    Returns
+    -------
+    int:
+        0: successful termination,
+        1: processing error,
+        2: argument parsing error
+    '''
+
+    parser = _argparser()
+
+    if len(argv) == 1:
         parser.print_help()
-        sys.exit(1)
-    args = parser.parse_args(sys.argv[1:])
+        return 2
+    args = parser.parse_args(argv[1:])
 
     LOG_SETTINGS['handlers']['console'].update({'level': args.log.upper()})
     dictConfig(LOG_SETTINGS)
@@ -258,6 +280,7 @@ if __name__ == '__main__':
                         info_description=info_description,
                         info_comment=info_comment,
                         add_origin=add_origin,
+                        preferred_magtypes=preferred_magtypes,
                         add_magnitude=add_magnitude, add_stamag=add_stamag,
                         add_fplane=add_fplane, add_mt=add_mt,
                         add_arrival=add_arrival, add_detection=add_detection,
@@ -278,14 +301,14 @@ if __name__ == '__main__':
             logger.info('Writing to: %s' % args.output_file)
             mode = 'w'
 
-        with open(args.output_file, mode) as file:
-            file.write(results)
+        with open(args.output_file, mode) as output_file_object:
+            output_file_object.write(results)
 
     else:
         logger.debug('Print Event in QuakeML format to stdout')
-        # print(results)
+        print(results)  # pylint: disable=superfluous-parens
 
-    if validation:
+    if VALIDATION_POSSIBLE:
         logger.info('Attempting validation against schema: ' +
                     os.path.basename(args.schema))
 
@@ -294,8 +317,9 @@ if __name__ == '__main__':
         logger.debug('Looking for file: %s' % schema_file)
 
         if not os.path.exists(schema_file):
-            ROOT = os.path.abspath(os.path.dirname(__file__))
-            schema_file = os.path.join(ROOT, 'schemas', _DEFAULT_SCHEMA)
+            package_root = os.path.abspath(os.path.dirname(__file__))
+            schema_file = os.path.join(package_root, 'schemas',
+                                       _DEFAULT_SCHEMA)
 
         if os.path.exists(schema_file):
 
@@ -308,3 +332,9 @@ if __name__ == '__main__':
 
         else:
             logger.error('Could not find schema definition: %s' % schema_file)
+            return 1
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
