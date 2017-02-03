@@ -1,0 +1,134 @@
+2017-02-02 17:16:25 - INFO     __main__ - Namespace(database='example/gsc-east-3event', evid=448480, log='INFO', output_file=None, pf='event2qml.pf', schema='/opt/antelope/5.6/contrib/data/quakeml/QuakeML-1.2.rng')
+2017-02-02 17:16:25 - INFO     __main__ - version: %(prog)s 1.0
+2017-02-02 17:16:25 - INFO     __main__ - log level: INFO
+2017-02-02 17:16:25 - INFO     __main__ - database: example/gsc-east-3event
+2017-02-02 17:16:25 - INFO     __main__ - evid: 448480
+2017-02-02 17:16:25 - INFO     __main__ - Parameter file to use [event2qml.pf]
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Look for parameter file: event2qml.pf
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Verify that event2qml.pf is newer than 1472083200
+2017-02-02 17:16:25 - DEBUG    export_events.functions - event2qml.pf => PF_MTIME_OK
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(uri_prefix,quakeml) => quakeml
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(agency_uri,local) => local
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(agency_id,xx) => xx
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(author,antelope.event2qml) => Antelope event2qml process
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(etype_map,{}) => {'LF': 'earthquake', 'ma': 'earthquake', 'f': 'earthquake', 'm': 'not reported', 'L': 'earthquake', 'o': 'other event', 'p': 'explosion', 'im': 'not reported', 'RN': 'earthquake', 'rn': 'earthquake', 'pL': 'not reported'}
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(preferred_magtypes,[]) => []
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(Q_NAMESPACE,http://quakeml.org/xmlns/quakeml/1.2) => http://quakeml.org/xmlns/quakeml/1.2
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(CATALOG_NAMESPACE,http://anss.org/xmlns/catalog/0.1) => http://anss.org/xmlns/catalog/0.1
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(BED_NAMESPACE,http://quakeml.org/xmlns/bed/1.2) => http://quakeml.org/xmlns/bed/1.2
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(BEDRT_NAMESPACE,http://quakeml.org/xmlns/bed-rt/1.2) => http://quakeml.org/xmlns/bed-rt/1.2
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(review_flags,['r', 'y']) => ('y', 'yes', 'r', 'reviewed', 'orbassoc')
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(magnitude_type_subset,['.*']) => ('.*',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(event_info_description,) => Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(event_info_comment,) => Antelope QuakeML conversion using event2qml software.
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(append_to_output_file,true) => False
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_mt,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_origin,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_fplane,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_stamag,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_arrival,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_detection,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(add_magnitude,true) => true
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(mt_auth_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(mt_auth_reject,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(event_auth_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(event_auth_reject,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(netmag_auth_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(netmag_auth_reject,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(fplane_auth_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(fplane_auth_reject,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(origin_auth_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(origin_auth_reject,[]) => ('', '')
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(arrival_auth_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(arrival_auth_reject,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(detection_state_select,[]) => ('',)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - pf.get(detection_state_reject,[]) => ('ON', 'OFF')
+2017-02-02 17:16:25 - INFO     __main__ - Init Event()
+2017-02-02 17:16:25 - INFO     export_events.event.Event - Descriptor path: db=example
+2017-02-02 17:16:25 - INFO     export_events.event.Event - Descriptor file: db=gsc-east-3event
+2017-02-02 17:16:25 - DEBUG    export_events.functions - dbopen(example/gsc-east-3event)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(event)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Table [event] present in database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(origin)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Table [origin] present in database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(assoc)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Table [assoc] present in database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(detection)
+2017-02-02 17:16:25 - WARNING  export_events.functions - Table [detection] missing from database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(stamag)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Table [stamag] present in database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(netmag)
+2017-02-02 17:16:25 - DEBUG    export_events.functions - Table [netmag] present in database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(fplane)
+2017-02-02 17:16:25 - WARNING  export_events.functions - Table [fplane] missing from database
+2017-02-02 17:16:25 - DEBUG    export_events.functions - db.lookup(mt)
+2017-02-02 17:16:25 - WARNING  export_events.functions - Table [mt] missing from database
+2017-02-02 17:16:25 - INFO     __main__ - Init QuakeML object
+2017-02-02 17:22:49 - INFO     __main__ - Namespace(database='example/gsc-east-3event', evid=448480, log='INFO', output_file=None, pf='event2qml.pf', schema='/opt/antelope/5.6/contrib/data/quakeml/QuakeML-1.2.rng')
+2017-02-02 17:22:49 - INFO     __main__ - version: %(prog)s 1.0
+2017-02-02 17:22:49 - INFO     __main__ - log level: INFO
+2017-02-02 17:22:49 - INFO     __main__ - database: example/gsc-east-3event
+2017-02-02 17:22:49 - INFO     __main__ - evid: 448480
+2017-02-02 17:22:49 - INFO     __main__ - Parameter file to use [event2qml.pf]
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Look for parameter file: event2qml.pf
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Verify that event2qml.pf is newer than 1472083200
+2017-02-02 17:22:49 - DEBUG    export_events.functions - event2qml.pf => PF_MTIME_OK
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(uri_prefix,quakeml) => quakeml
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(agency_uri,local) => local
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(agency_id,xx) => xx
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(default_network,XX) => XX
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(catalog_author,antelope.event2qml) => antelope.event2qml
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(etype_type_map,{}) => {}
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(etype_certainty_map,{}) => {}
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(preferred_magtypes,[]) => []
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(Q_NAMESPACE,http://quakeml.org/xmlns/quakeml/1.2) => http://quakeml.org/xmlns/quakeml/1.2
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(CATALOG_NAMESPACE,http://anss.org/xmlns/catalog/0.1) => http://anss.org/xmlns/catalog/0.1
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(BED_NAMESPACE,http://quakeml.org/xmlns/bed/1.2) => http://quakeml.org/xmlns/bed/1.2
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(BEDRT_NAMESPACE,http://quakeml.org/xmlns/bed-rt/1.2) => http://quakeml.org/xmlns/bed-rt/1.2
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(review_flags,['r', 'y']) => ('y', 'yes', 'r', 'reviewed', 'orbassoc')
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(magnitude_type_subset,['.*']) => ('.*',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(event_info_description,) => Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(event_info_comment,) => Antelope QuakeML conversion using event2qml software.
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(append_to_output_file,true) => False
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_mt,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_origin,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_fplane,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_stamag,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_arrival,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_detection,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(add_magnitude,true) => true
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(mt_auth_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(mt_auth_reject,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(event_auth_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(event_auth_reject,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(netmag_auth_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(netmag_auth_reject,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(fplane_auth_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(fplane_auth_reject,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(origin_auth_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(origin_auth_reject,[]) => ('', '')
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(arrival_auth_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(arrival_auth_reject,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(detection_state_select,[]) => ('',)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - pf.get(detection_state_reject,[]) => ('ON', 'OFF')
+2017-02-02 17:22:49 - INFO     __main__ - Init Event()
+2017-02-02 17:22:49 - INFO     export_events.event.Event - Descriptor path: db=example
+2017-02-02 17:22:49 - INFO     export_events.event.Event - Descriptor file: db=gsc-east-3event
+2017-02-02 17:22:49 - DEBUG    export_events.functions - dbopen(example/gsc-east-3event)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(event)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Table [event] present in database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(origin)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Table [origin] present in database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(assoc)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Table [assoc] present in database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(detection)
+2017-02-02 17:22:49 - WARNING  export_events.functions - Table [detection] missing from database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(stamag)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Table [stamag] present in database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(netmag)
+2017-02-02 17:22:49 - DEBUG    export_events.functions - Table [netmag] present in database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(fplane)
+2017-02-02 17:22:49 - WARNING  export_events.functions - Table [fplane] missing from database
+2017-02-02 17:22:49 - DEBUG    export_events.functions - db.lookup(mt)
+2017-02-02 17:22:49 - WARNING  export_events.functions - Table [mt] missing from database
+2017-02-02 17:22:49 - INFO     __main__ - Init QuakeML object

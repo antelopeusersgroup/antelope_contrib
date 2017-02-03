@@ -9,11 +9,19 @@ the parent process.
 Juan Reyes
 reyes@ucsd.edu
 '''
+# pylint: disable=logging-not-lazy
+from __future__ import print_function
+
 import os
 import logging
 
-import antelope.stock as stock
-import antelope.datascope as datascope
+try:
+    from antelope import stock
+    from antelope import datascope
+except ImportError as ex:
+    print('Do you have Antelope installed correctly?')
+    print(ex)
+
 
 from export_events.functions import (simple_table_present, verify_table,
                                      get_all_fields)
@@ -21,8 +29,7 @@ from export_events.functions import (simple_table_present, verify_table,
 from export_events.db_collection import Collection
 
 
-# pylint:disable=logging-not-lazy
-class Event():
+class Event(object):
     '''
     Reads and stores event data from an Antelope database.
 
@@ -66,13 +73,20 @@ class Event():
 
         self.db = verify_table('event', self.database)
 
-        self._clean()
+        self.valid = False
+        self.evid = None
+        self.event_data = {}
+
+        self.origins = Collection(dbpointer=self.db, table='origin')
+        self.arrivals = Collection(dbpointer=self.db, table='assoc')
+        self.detections = Collection(dbpointer=self.db, table='detection')
+        self.stamags = Collection(dbpointer=self.db, table='stamag')
+        self.magnitudes = Collection(dbpointer=self.db, table='netmag')
+        self.fplanes = Collection(dbpointer=self.db, table='fplane')
+        self.mts = Collection(dbpointer=self.db, table='mt')
 
     def __getitem__(self, name):
-        try:
-            return self.event_data[name]
-        except:
-            return ''
+        return self.event_data[name]
 
     def __str__(self):
         contents = []
@@ -84,24 +98,6 @@ class Event():
         return '%s evid [%d] containing: %s' % (self.__class__.__name__,
                                                 self.evid,
                                                 ', '.join(contents))
-
-    def is_valid(self):
-        return self.valid
-
-    def _clean(self):
-
-        self.event_data = {}
-
-        self.evid = None
-        self.valid = False
-
-        self.origins = Collection(dbpointer=self.db, table='origin')
-        self.arrivals = Collection(dbpointer=self.db, table='assoc')
-        self.detections = Collection(dbpointer=self.db, table='detection')
-        self.stamags = Collection(dbpointer=self.db, table='stamag')
-        self.magnitudes = Collection(dbpointer=self.db, table='netmag')
-        self.fplanes = Collection(dbpointer=self.db, table='fplane')
-        self.mts = Collection(dbpointer=self.db, table='mt')
 
     def all_origins(self, orid=None, sort_by='origin.lddate', reverse=False):
         '''Get all origins, optionally filtered by evid.'''
@@ -190,21 +186,20 @@ class Event():
 
         # Verify that we have the prefor in origin list...
         if not self.origins.exists(self.event_data['event.prefor']):
-            self.logger.warning('Missing prefor [%s] for evid:[%s]' %
-                                (self.event_data['event.prefor'], self.evid))
-            try:
-                last_origin = self.origins.values(sort_by='origin.lddate',
-                                                  reverse=True)[0]
-            except:
-                last_origin = None
-
-            if not last_origin:
+            self.logger.warning(
+                'Missing orid [%s] for evid [%s], cannot set as preferred'
+                % (self.event_data['event.prefor'], self.evid))
+            origins = self.origins.values(sort_by='origin.lddate',
+                                          reverse=True)
+            if len(origins) > 0:
+                preferred_orid = origins[0]['origin.orid']
+                self.event_data['event.prefor'] = preferred_orid
                 self.logger.warning(
-                    'No valid origin for this event evid:[%s]' % self.evid)
+                    'Set oldest orid [%s] as preferred for evid [%s]'
+                    % (preferred_orid, self.evid))
             else:
-                self.logger.warning('Set [%s] as prefor for evid:[%s]' %
-                                    (last_origin['origin.orid'], self.evid))
-                self.event_data['event.prefor'] = last_origin['origin.orid']
+                self.logger.warning(
+                    'No origin for evid [%s], canot set preferred' % self.evid)
 
         self._get_arrivals()
         self._get_detections()

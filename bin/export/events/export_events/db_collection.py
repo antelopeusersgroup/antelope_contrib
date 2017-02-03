@@ -9,15 +9,22 @@ the parent process.
 Juan Reyes
 reyes@ucsd.edu
 """
+# pylint: disable=logging-not-lazy
+from __future__ import print_function
 
 import json
 import logging
-import antelope.datascope as datascope
+
+try:
+    from antelope import datascope
+except ImportError as ex:
+    print('Do you have Antelope installed correctly?')
+    print(ex)
 
 from export_events.functions import verify_table, get_all_fields
 
 
-class Document():
+class Document(object):
     """
     Class for creating rows storage objects.
 
@@ -52,6 +59,8 @@ class Collection(Document):
 
     def __init__(self, database=None, dbpointer=None, table=None):
 
+        super(Collection, self).__init__('')
+
         module_class = '.'.join([self.__class__.__module__,
                                  self.__class__.__name__])
         self.logger = logging.getLogger(module_class)
@@ -64,24 +73,21 @@ class Collection(Document):
         self.db = verify_table(self.table, self.database, self.db)
 
     def clean(self):
+        '''Clear out document data.'''
         self.documents = {}
 
     def __str__(self):
         return self.documents.keys()
 
     def exists(self, name):
-        try:
-            return name in self.documents
-        except:
-            return False
+        '''Test if key is present in document dictionaries.'''
+        return name in self.documents
 
     def __getitem__(self, name):
-        try:
-            return self.documents[name]
-        except:
-            return ''
+        return self.documents[name]
 
-    def keys(self, reverse=False):
+    def keys(self):
+        '''List of keys present in document dictionaries.'''
         return self.documents.keys()
 
     def values(self, subset_dict=None, sort_by=None, reverse=False):

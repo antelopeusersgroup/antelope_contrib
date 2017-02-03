@@ -1,0 +1,1279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<q:quakeml xmlns="http://quakeml.org/xmlns/bed/1.2" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns:catalog="http://anss.org/xmlns/catalog/0.1">
+	<eventParameters publicID="example/gsc-east-3event">
+		<comment>
+			<text>Antelope QuakeML conversion using event2qml software.</text>
+		</comment>
+		<event publicID="quakeml:xx.local/event/00356108" catalog:eventsource="mkolaj">
+			<origin catalog:datasource="mkolaj mnml" publicID="quakeml:xx.local/origin/448480">
+				<earthModelID>vmodel/cn01</earthModelID>
+				<arrival publicID="quakeml:xx.local/arrival/1378965/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>2.065</distance>
+					<pickID>quakeml:xx.local/pick/1378965</pickID>
+					<azimuth>212.02</azimuth>
+					<phase>Pn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.668Z</creationTime>
+					</creationInfo>
+					<timeResidual>-0.01</timeResidual>
+					<timeWeight>1.0</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378966/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>2.065</distance>
+					<pickID>quakeml:xx.local/pick/1378966</pickID>
+					<azimuth>212.02</azimuth>
+					<phase>Pg</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.671Z</creationTime>
+					</creationInfo>
+					<timeResidual>-0.413</timeResidual>
+					<timeWeight>0.095</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378971/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>2.065</distance>
+					<pickID>quakeml:xx.local/pick/1378971</pickID>
+					<azimuth>212.02</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.674Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.054</timeResidual>
+					<timeWeight>0.153</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378967/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>2.595</distance>
+					<pickID>quakeml:xx.local/pick/1378967</pickID>
+					<azimuth>207.36</azimuth>
+					<phase>Pn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.677Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.152</timeResidual>
+					<timeWeight>0.056</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378975/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>2.595</distance>
+					<pickID>quakeml:xx.local/pick/1378975</pickID>
+					<azimuth>207.36</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.708Z</creationTime>
+					</creationInfo>
+					<timeResidual>2.442</timeResidual>
+					<timeWeight>0.0</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378978/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>3.083</distance>
+					<pickID>quakeml:xx.local/pick/1378978</pickID>
+					<azimuth>206.93</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.683Z</creationTime>
+					</creationInfo>
+					<timeResidual>1.066</timeResidual>
+					<timeWeight>0.018</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378968/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>3.083</distance>
+					<pickID>quakeml:xx.local/pick/1378968</pickID>
+					<azimuth>206.93</azimuth>
+					<phase>Pn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.680Z</creationTime>
+					</creationInfo>
+					<timeResidual>-1.979</timeResidual>
+					<timeWeight>0.013</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378969/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>3.247</distance>
+					<pickID>quakeml:xx.local/pick/1378969</pickID>
+					<azimuth>19.71</azimuth>
+					<phase>Pn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.686Z</creationTime>
+					</creationInfo>
+					<timeResidual>2.055</timeResidual>
+					<timeWeight>0.017</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378981/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>3.604</distance>
+					<pickID>quakeml:xx.local/pick/1378981</pickID>
+					<azimuth>139.42</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.693Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.911</timeResidual>
+					<timeWeight>0.025</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378970/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>3.604</distance>
+					<pickID>quakeml:xx.local/pick/1378970</pickID>
+					<azimuth>139.42</azimuth>
+					<phase>Pn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.689Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.126</timeResidual>
+					<timeWeight>0.047</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378983/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>3.963</distance>
+					<pickID>quakeml:xx.local/pick/1378983</pickID>
+					<azimuth>244.74</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.696Z</creationTime>
+					</creationInfo>
+					<timeResidual>0.039</timeResidual>
+					<timeWeight>0.015</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378977/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>4.404</distance>
+					<pickID>quakeml:xx.local/pick/1378977</pickID>
+					<azimuth>311.43</azimuth>
+					<phase>Pg</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.699Z</creationTime>
+					</creationInfo>
+					<timeResidual>-1.861</timeResidual>
+					<timeWeight>0.014</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378984/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>4.404</distance>
+					<pickID>quakeml:xx.local/pick/1378984</pickID>
+					<azimuth>311.43</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.702Z</creationTime>
+					</creationInfo>
+					<timeResidual>1.211</timeResidual>
+					<timeWeight>0.007</timeWeight>
+				</arrival>
+				<arrival publicID="quakeml:xx.local/arrival/1378985/448480">
+					<earthModelID>quakeml:xx.local/vmodel/1dcvl_cn01</earthModelID>
+					<distance>4.649</distance>
+					<pickID>quakeml:xx.local/pick/1378985</pickID>
+					<azimuth>239.49</azimuth>
+					<phase>Sn</phase>
+					<creationInfo>
+						<creationTime>2016-07-21T16:02:07.705Z</creationTime>
+					</creationInfo>
+					<timeResidual>2.0</timeResidual>
+					<timeWeight>0.03</timeWeight>
+				</arrival>
+				<methodID>method/dbgenloc</methodID>
+				<originUncertainty>
+					<maxHorizontalUncertainty>13225.9</maxHorizontalUncertainty>
+					<minHorizontalUncertainty>6898.5</minHorizontalUncertainty>
+					<azimuthMaxHorizontalUncertainty>310.86</azimuthMaxHorizontalUncertainty>
+					<preferredDescription>uncertainty ellipse</preferredDescription>
+				</originUncertainty>
+				<quality>
+					<usedPhaseCount>13</usedPhaseCount>
+					<associatedPhaseCount>14</associatedPhaseCount>
+					<standardError>1.2168</standardError>
+				</quality>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:18.072Z</creationTime>
+					<agencyID>GSC</agencyID>
+					<author>mkolaj</author>
+				</creationInfo>
+				<evaluationMode>manual</evaluationMode>
+				<longitude>
+					<uncertainty>0.131907842012</uncertainty>
+					<value>-61.0968</value>
+				</longitude>
+				<depth>
+					<uncertainty>0.0</uncertainty>
+					<value>18000.0</value>
+				</depth>
+				<time>
+					<uncertainty>370.0</uncertainty>
+					<value>2016-07-12T03:47:06.339Z</value>
+				</time>
+				<latitude>
+					<uncertainty>0.0748130745068</uncertainty>
+					<value>52.0506</value>
+				</latitude>
+			</origin>
+			<preferredOriginID>quakeml:xx.local/origin/448480</preferredOriginID>
+			<certainty></certainty>
+			<creationInfo>
+				<creationTime>2017-02-03T19:57:34.957Z</creationTime>
+				<agencyID>GSC</agencyID>
+				<author>mkolaj</author>
+			</creationInfo>
+			<magnitude publicID="quakeml:xx.local/magnitude/33882">
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.610Z</creationTime>
+				</creationInfo>
+				<stationCount>4</stationCount>
+				<mag>
+					<uncertainty>0.14</uncertainty>
+					<value>2.54</value>
+				</mag>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</magnitude>
+			<magnitude publicID="quakeml:xx.local/magnitude/33881">
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:16.077Z</creationTime>
+				</creationInfo>
+				<stationCount>7</stationCount>
+				<mag>
+					<uncertainty>0.17</uncertainty>
+					<value>3.09</value>
+				</mag>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</magnitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378988/SMQ">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.1</value>
+				</period>
+				<snr>3.5667</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.047Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="CN" stationCode="SMQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:49:19.220Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378988/SMQ">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.1</value>
+				</period>
+				<snr>3.5667</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.047Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="CN" stationCode="SMQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:49:19.220Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378979/MKVL">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.02</value>
+				</period>
+				<snr>2.0489</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.087Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:40.130Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378979/MKVL">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.02</value>
+				</period>
+				<snr>2.0489</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.087Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:40.130Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378982/PCAQ">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.64</value>
+				</period>
+				<snr>3.5775</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.095Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:48.070Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378982/PCAQ">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.64</value>
+				</period>
+				<snr>3.5775</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.095Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:48.070Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378974/NATG">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.14</value>
+				</period>
+				<snr>1.5968</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.103Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:09.830Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378974/NATG">
+				<magnitudeHint>mn</magnitudeHint>
+				<period>
+					<value>0.14</value>
+				</period>
+				<snr>1.5968</snr>
+				<unit>m/s</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.103Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:09.830Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AMN</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378986/DRLN">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.3528</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.426Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHN" locationCode="" networkCode="CN" stationCode="DRLN"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:49:10.900Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378986/DRLN">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.3528</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.426Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHN" locationCode="" networkCode="CN" stationCode="DRLN"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:49:10.900Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378989/ICQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.0846</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.435Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="ICQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:50:06.475Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378989/ICQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.0846</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.435Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="ICQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:50:06.475Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378987/SCHQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.3179</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.444Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="SCHQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:49:16.225Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378987/SCHQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.3179</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.444Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="SCHQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:49:16.225Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378973/MKVL">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.2401</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.452Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:09.280Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378973/MKVL">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.2401</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.452Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:09.280Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378972/PCAQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>3.7725</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.460Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:07.420Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378972/PCAQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>3.7725</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.460Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:07.420Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378976/NATG">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.2919</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.468Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHE" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:21.570Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378976/NATG">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.2919</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.468Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHE" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:21.570Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378980/GAAQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.963</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.476Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="GAAQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:42.180Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<amplitude publicID="quakeml:xx.local/amplitude/1378980/GAAQ">
+				<magnitudeHint>ml</magnitudeHint>
+				<period>
+					<value></value>
+				</period>
+				<snr>2.963</snr>
+				<unit>m</unit>
+				<methodID>dbevproc</methodID>
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:35.476Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="GAAQ"></waveformID>
+				<timeWindow>
+					<begin>0</begin>
+					<end>0</end>
+					<reference>2016-07-12T03:48:42.180Z</reference>
+				</timeWindow>
+				<amplitude>
+					<value></value>
+				</amplitude>
+				<type>AML</type>
+			</amplitude>
+			<pick publicID="quakeml:xx.local/pick/1378965">
+				<creationInfo>
+					<creationTime>2016-07-13T13:43:19.207Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>0.048</uncertainty>
+					<value>2016-07-12T03:47:40.027Z</value>
+				</time>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<backazimuth>
+					<value>212.02</value>
+				</backazimuth>
+				<phaseHint>Pn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378966">
+				<creationInfo>
+					<creationTime>2016-07-21T15:58:19.650Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>0.507</uncertainty>
+					<value>2016-07-12T03:47:43.070Z</value>
+				</time>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<backazimuth>
+					<value>212.02</value>
+				</backazimuth>
+				<phaseHint>Pg</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378971">
+				<creationInfo>
+					<creationTime>2016-07-13T13:48:35.783Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>0.313</uncertainty>
+					<value>2016-07-12T03:48:05.079Z</value>
+				</time>
+				<waveformID channelCode="HHE" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<backazimuth>
+					<value>212.02</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378967">
+				<creationInfo>
+					<creationTime>2016-07-13T13:43:43.901Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>0.862</uncertainty>
+					<value>2016-07-12T03:47:47.379Z</value>
+				</time>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<backazimuth>
+					<value>207.36</value>
+				</backazimuth>
+				<phaseHint>Pn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378975">
+				<creationInfo>
+					<creationTime>2016-07-21T15:58:38.073Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>1.003</uncertainty>
+					<value>2016-07-12T03:48:20.010Z</value>
+				</time>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<backazimuth>
+					<value>207.36</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378978">
+				<creationInfo>
+					<creationTime>2016-07-13T13:49:16.922Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>2.691</uncertainty>
+					<value>2016-07-12T03:48:30.178Z</value>
+				</time>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="GAAQ"></waveformID>
+				<backazimuth>
+					<value>206.93</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378968">
+				<creationInfo>
+					<creationTime>2016-07-13T13:49:35.059Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>3.68</uncertainty>
+					<value>2016-07-12T03:47:51.865Z</value>
+				</time>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="GAAQ"></waveformID>
+				<backazimuth>
+					<value>206.93</value>
+				</backazimuth>
+				<phaseHint>Pn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378969">
+				<creationInfo>
+					<creationTime>2016-07-13T13:45:23.632Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>2.744</uncertainty>
+					<value>2016-07-12T03:47:58.126Z</value>
+				</time>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<backazimuth>
+					<value>19.71</value>
+				</backazimuth>
+				<phaseHint>Pn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378981">
+				<creationInfo>
+					<creationTime>2016-07-13T13:50:43.189Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>1.94</uncertainty>
+					<value>2016-07-12T03:48:42.403Z</value>
+				</time>
+				<waveformID channelCode="BHN" locationCode="" networkCode="CN" stationCode="DRLN"></waveformID>
+				<backazimuth>
+					<value>139.42</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378970">
+				<creationInfo>
+					<creationTime>2016-07-13T13:45:51.711Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>1.026</uncertainty>
+					<value>2016-07-12T03:48:01.065Z</value>
+				</time>
+				<waveformID channelCode="BHZ" locationCode="" networkCode="CN" stationCode="DRLN"></waveformID>
+				<backazimuth>
+					<value>139.42</value>
+				</backazimuth>
+				<phaseHint>Pn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378983">
+				<creationInfo>
+					<creationTime>2016-07-13T13:42:25.314Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>3.218</uncertainty>
+					<value>2016-07-12T03:48:50.025Z</value>
+				</time>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="CN" stationCode="SMQ"></waveformID>
+				<backazimuth>
+					<value>244.74</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378977">
+				<creationInfo>
+					<creationTime>2016-07-13T13:47:08.024Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>3.415</uncertainty>
+					<value>2016-07-12T03:48:23.514Z</value>
+				</time>
+				<waveformID channelCode="BHZ" locationCode="" networkCode="CN" stationCode="SCHQ"></waveformID>
+				<backazimuth>
+					<value>311.43</value>
+				</backazimuth>
+				<phaseHint>Pg</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378984">
+				<creationInfo>
+					<creationTime>2016-07-13T13:51:47.766Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>7.127</uncertainty>
+					<value>2016-07-12T03:49:01.660Z</value>
+				</time>
+				<waveformID channelCode="BHN" locationCode="" networkCode="CN" stationCode="SCHQ"></waveformID>
+				<backazimuth>
+					<value>311.43</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<pick publicID="quakeml:xx.local/pick/1378985">
+				<creationInfo>
+					<creationTime>2016-07-13T13:52:18.766Z</creationTime>
+					<author>mkolaj</author>
+				</creationInfo>
+				<methodID>dbp</methodID>
+				<evaluationStatus>reviewed</evaluationStatus>
+				<time>
+					<uncertainty>1.612</uncertainty>
+					<value>2016-07-12T03:49:08.176Z</value>
+				</time>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="ICQ"></waveformID>
+				<backazimuth>
+					<value>239.49</value>
+				</backazimuth>
+				<phaseHint>Sn</phaseHint>
+				<evaluationMode>manual</evaluationMode>
+			</pick>
+			<preferredMagnitudeID>quakeml:xx.local/magnitude/33882</preferredMagnitudeID>
+			<type></type>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/SMQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378988/SMQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.33</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.545Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="CN" stationCode="SMQ"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/SMQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378988/SMQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.33</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.545Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="EHZ" locationCode="" networkCode="CN" stationCode="SMQ"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/MKVL">
+				<amplitudeID>quakeml:xx.local/amplitude/1378979/MKVL</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.57</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.550Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/MKVL">
+				<amplitudeID>quakeml:xx.local/amplitude/1378979/MKVL</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.57</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.550Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/PCAQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378982/PCAQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.61</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.553Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/PCAQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378982/PCAQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.61</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.553Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/NATG">
+				<amplitudeID>quakeml:xx.local/amplitude/1378974/NATG</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.5</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.556Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33882/NATG">
+				<amplitudeID>quakeml:xx.local/amplitude/1378974/NATG</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.5</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.556Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHZ" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<type>mn</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/DRLN">
+				<amplitudeID>quakeml:xx.local/amplitude/1378986/DRLN</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.2</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.900Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHN" locationCode="" networkCode="CN" stationCode="DRLN"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/DRLN">
+				<amplitudeID>quakeml:xx.local/amplitude/1378986/DRLN</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.2</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.900Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHN" locationCode="" networkCode="CN" stationCode="DRLN"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/ICQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378989/ICQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.43</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.903Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="ICQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/ICQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378989/ICQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.43</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.903Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="ICQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/SCHQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378987/SCHQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.09</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.907Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="SCHQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/SCHQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378987/SCHQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.09</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.907Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="BHE" locationCode="" networkCode="CN" stationCode="SCHQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/MKVL">
+				<amplitudeID>quakeml:xx.local/amplitude/1378973/MKVL</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.86</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.911Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/MKVL">
+				<amplitudeID>quakeml:xx.local/amplitude/1378973/MKVL</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.86</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.911Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="PO" stationCode="MKVL"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/PCAQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378972/PCAQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.09</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.915Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/PCAQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378972/PCAQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.09</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.915Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="PCAQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/NATG">
+				<amplitudeID>quakeml:xx.local/amplitude/1378976/NATG</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.3</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.918Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHE" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/NATG">
+				<amplitudeID>quakeml:xx.local/amplitude/1378976/NATG</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>2.3</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.918Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHE" locationCode="" networkCode="CN" stationCode="NATG"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/GAAQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378980/GAAQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.19</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.922Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="GAAQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+			<stationMagnitude publicID="quakeml:xx.local/magnitude/station/33881/GAAQ">
+				<amplitudeID>quakeml:xx.local/amplitude/1378980/GAAQ</amplitudeID>
+				<methodID>dbevproc</methodID>
+				<mag>
+					<value>3.19</value>
+				</mag>
+				<creationInfo>
+					<creationTime>2016-07-21T16:02:15.922Z</creationTime>
+				</creationInfo>
+				<waveformID channelCode="HHN" locationCode="" networkCode="CN" stationCode="GAAQ"></waveformID>
+				<type>ml</type>
+				<originID>quakeml:xx.local/origin/448480</originID>
+			</stationMagnitude>
+		</event>
+		<description>Using ANSS Quakeml Standards https://github.com/usgs/Quakeml/wiki</description>
+		<creationInfo>
+			<creationTime>2017-02-03T19:57:34.817Z</creationTime>
+			<agencyID>xx</agencyID>
+			<author>export_events.css2qml</author>
+		</creationInfo>
+	</eventParameters>
+</q:quakeml>

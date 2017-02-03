@@ -4,11 +4,17 @@ export_events.functions
 Some functions used by event2qml main code
 '''
 # pylint:disable=logging-not-lazy,broad-except
+from __future__ import print_function
+
 import math
 import logging
 
-import antelope.stock as stock
-import antelope.datascope as datascope
+try:
+    from antelope import stock
+    from antelope import datascope
+except ImportError as ex:
+    print('Do you have Antelope installed correctly?')
+    print(ex)
 
 
 def simple_table_present(table, dbpointer):
@@ -77,21 +83,13 @@ def is_null(value, null_value):
     Verify if our value matches the NULL
     representation of that field.
     '''
-    # Try int value
+    # try numeric equality
     try:
         if int(float(value)) == int(float(null_value)):
             return True
-    except:
-        pass
-
-    # Now test string representation
-    try:
-        if str(value) == str(null_value):
-            return True
-    except:
-        pass
-
-    return False
+    except ValueError:
+        # try string equality
+        return str(value) == str(null_value)
 
 
 def get_all_fields(dbpointer, nulls=None):
@@ -111,7 +109,7 @@ def get_all_fields(dbpointer, nulls=None):
 
     try:
         if not dbpointer.query(datascope.dbTABLE_PRESENT):
-            logger.warning('No records')
+            logger.debug('No records')
             return results
     except Exception:
         logger.warning('Error on dbpointer')

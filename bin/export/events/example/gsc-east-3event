@@ -1,0 +1,6 @@
+#
+schema css3.0
+dblocks nfs
+dbidserver anthub-o1:2499
+dbpath /antelope/rtsystems/gsc/dbmaster/{gsc}
+

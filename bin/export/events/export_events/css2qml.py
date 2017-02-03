@@ -2,14 +2,20 @@
 This module defines a class, css2qml, which can be used to convert CSS3.0
 (as extended by Antelope) to the QuakeML schema.
 '''
+from __future__ import print_function
 import os
-import re
+import rede
 import sys
 import logging
 
-from functions import km2m, get_ne_on_ellipse, m2deg_lat, m2deg_lon
+from export_events.functions import (
+    km2m, get_ne_on_ellipse, m2deg_lat, m2deg_lon)
 
-from antelope import stock
+try:
+    from antelope import stock
+except ImportError as ex:
+    print('Do you have Antelope installed correctly?')
+    print(ex)
 
 # Support for QuakeML event types using single letter codes for event type
 # and certainty from:
@@ -65,7 +71,7 @@ NAMESPACES = ['BED', 'BED-RT']
 
 
 # pylint:disable=logging-not-lazy
-class css2qml():
+class css2qml(object):
     '''
     Converter to QuakeML schema from CSS3.0 schema
     '''
@@ -82,13 +88,13 @@ class css2qml():
                  anss_catalog_ns='http://anss.org/xmlns/catalog/0.1',
                  qml_bed_ns='http://quakeml.org/xmlns/bed/1.2',
                  qml_bedrt_ns='http://quakeml.org/xmlns/bed-rt/1.2',
-                 info_description=None,
-                 info_comment=None,
+                 info_description=None, info_comment=None,
+                 preferred_magtypes=None,
                  add_origin=True, add_magnitude=True, add_stamag=True,
                  add_arrival=True, add_fplane=True, add_mt=True,
                  add_detection=True, extend_anss_catalog=False):
 
-        file_class = '.'.join([os.path.basename(__file__),
+        file_class = '.'.join([os.path.splitext(os.path.basename(__file__))[0],
                                self.__class__.__name__])
         self.logger = logging.getLogger(file_class)
 
@@ -109,6 +115,7 @@ class css2qml():
         self.catalog_author = catalog_author
         self.info_description = info_description
         self.info_comment = info_comment
+        self.preferred_magtypes = preferred_magtypes
 
         # parameters for field conversion
         self.reviewed_flags = reviewed_flags
@@ -206,6 +213,8 @@ class css2qml():
                     [self._convert_pick(item)
                      for item in self.event.all_arrivals()]
             if self.add_detection:
+                # TODO: if we can only count on getting all detections
+                # in "RT" schema, then perhaps we only write them then
                 converted_picks += \
                     [self._convert_detection(item)
                      for item in self.event.all_detections()]
@@ -223,8 +232,7 @@ class css2qml():
 
                 # set perferred magnitude
                 if len(converted_mags) > 0:
-                    # TODO: can preferred magnitude be properly handled by
-                    # Antelope?
+                    # TODO: implement preferred_magtypes
                     preferred_magnitude = converted_mags[0]['@publicID']
                     self.logger.debug('Choosing preferred magnitude: %s' %
                                       preferred_magnitude)
@@ -346,7 +354,7 @@ class css2qml():
                 event_dict.update(self._catalog_info(
                     evid, auth=self.event['event.auth'], event=True))
 
-            # infer event tyep and certainty from preferred origin
+            # infer event type and certainty from preferred origin
             # TODO: add evaluation status and mode?
             record = self.event.all_origins(orid=self.event['event.prefor'])[0]
             etype = record['origin.etype']
@@ -356,7 +364,7 @@ class css2qml():
             event_dict['@publicID'] = self._id('event',
                                                self.event['event.evid'])
             event_dict['creationInfo'] = self._creation_info(
-                    record, 'event', agency, author)
+                record, 'event', agency, author)
         else:
             self.logger.warning('Evid [%s] not available, adding null event.'
                                 % evid)
@@ -583,8 +591,8 @@ class css2qml():
             if record['origerr.conf'] is not None:
                 uncertainty['confidenceLevel'] = record['origerr.conf'] * 100.
         else:
-            self.logger.warning('Missing origerr table info for orid:[%s]' %
-                                record['origin.orid'])
+            self.logger.debug('Missing origerr table info for orid [%s]' %
+                              record['origin.orid'])
             latsd = None
             lonsd = None
             uncertainty = None
@@ -605,7 +613,7 @@ class css2qml():
             'methodID': method_rid,
             'creationInfo': self._creation_info(
                 record, 'origin', agency, author),
-             }
+            }
 
         if model_rid:
             qml_dict['earthModelID'] = model_rid
@@ -680,7 +688,7 @@ class css2qml():
             'methodID': method,
             'waveformID': self._waveform_id(record, 'stamag'),
             'creationInfo': self._creation_info(
-                    record, 'stamag', agency, author)
+                record, 'stamag', agency, author)
             }
 
         if record['stamag.uncertainty'] is not None:
@@ -725,7 +733,7 @@ class css2qml():
             'waveformID': self._waveform_id(record, 'stamag'),
             'magnitudeHint': record['stamag.phase'],
             'creationInfo': self._creation_info(
-                    record, 'arrival', agency, author)
+                record, 'arrival', agency, author)
             }
 
         if record['arrival.amp']:
@@ -754,7 +762,7 @@ class css2qml():
             'evaluationMode': pick_mode,
             'evaluationStatus': pick_status,
             'creationInfo': self._creation_info(
-                    record, 'arrival', agency, author),
+                record, 'arrival', agency, author),
             }
 
         if record['arrival.deltim']:
@@ -834,9 +842,9 @@ class css2qml():
             'distance': record['assoc.delta'],
             'timeResidual': record['assoc.timeres'],
             'timeWeight': weight,
-            'earthModelID': self._id('earthmodel', record['assoc.vmodel']),
+            'earthModelID': self._id('vmodel', record['assoc.vmodel']),
             'creationInfo': self._creation_info(
-                    record, 'assoc')
+                record, 'assoc')
             }
 
     def _convert_fplane(self, record, table='fplane'):
@@ -956,21 +964,13 @@ class css2qml():
 
         # EXTERNAL ID if any set. Test for 2-part names like "ORG:SNET"
         if auth:
-
             # In case it comes from an external source. Usually
             # it will have the format ORG:SNET
-            try:
-                temp = str(auth).split(':')
-                if not temp:
-                    raise Exception('wrong format')
-            except Exception as ex:
+            temp = str(auth).split(':')
+            if not temp:
                 self.logger.debug(
-                    'Problem parsing auth for _catalog_info [%s]=>%s' %
-                    (auth, ex))
-
-            # self.logger.debug(temp)
+                    'Problem parsing auth [%s]' % auth)
             if len(temp) > 1:
-
                 ext_net = temp[1].lower()
 
         # If found then add SNET of this datasource
@@ -1074,7 +1074,7 @@ class css2qml():
                 serial = '%08d' % int(float(serial))
             else:
                 serial = '%d' % int(float(serial))
-        except Exception:
+        except ValueError:
             # Other elements just need to be unique.
             serial = str(serial).replace('/', '_').replace(' ', '_').lower()
 
