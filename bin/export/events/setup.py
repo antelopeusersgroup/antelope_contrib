@@ -30,6 +30,7 @@ def convert_xpy_to_py(xpy_file_name):
             if line.startswith('#'):
                 output_file.write(line + '\n')
                 comment_follows = False
+                continue
             if line.startswith("'''"):
                 output_file.write(line + '\n')
                 comment_follows = not comment_follows
@@ -37,7 +38,6 @@ def convert_xpy_to_py(xpy_file_name):
 
             # write Antelope import lines just after initial comments
             if not comment_follows and not header_written:
-
                 output_file.write(ANTELOPE_IMPORT)
                 header_written = True
             else:  # write rest of input, skipping lines in Antelope import
@@ -49,7 +49,7 @@ from __future__ import print_function
 import os
 import sys
 
-sys.path.append(os.environ['ANTELOPE'] + "/data/python")
+sys.path.append(os.environ["ANTELOPE"] + "/data/python")
 '''
 
 convert_xpy_to_py('event2qml.xpy')
