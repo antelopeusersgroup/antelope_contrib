@@ -86,7 +86,10 @@ class Event(object):
         self.mts = Collection(dbpointer=self.db, table='mt')
 
     def __getitem__(self, name):
-        return self.event_data[name]
+        if name in self.event_data:
+            return self.event_data[name]
+        else:
+            return None
 
     def __str__(self):
         contents = []
