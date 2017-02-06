@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 QuakeML export infrastructure for Antelope
 ------------------------------------------
