@@ -4,7 +4,7 @@ This module defines a class, css2qml, which can be used to convert CSS3.0
 '''
 from __future__ import print_function
 import os
-import rede
+import re
 import sys
 import logging
 
@@ -348,8 +348,8 @@ class css2qml(object):
         if self.event and self.event.evid == evid and self.event.valid:
 
             self.logger.debug('Found evid [%s]' % evid)
-            agency, author, _, _, _ = self.split_auth(self.event['event.auth'])
-
+            agency, author, _, _, _ = self.split_auth(
+                self.event['event.auth'])
             if self.extend_anss_catalog:
                 event_dict.update(self._catalog_info(
                     evid, auth=self.event['event.auth'], event=True))
@@ -379,17 +379,23 @@ class css2qml(object):
         Regex equivalent of:
             return mapping[value] if value in mapping else None
         '''
-        return next((mapping[key] for key in mapping
-                     if re.match(key, value)), None)
+        if value is None:
+            return None
+        else:
+            return next((mapping[key] for key in mapping
+                         if re.match(key, value)), None)
 
     @staticmethod
     def _regex_in(value, items):
         '''
-        First value from mapping dictionary where value matches a key.
+        Returns true if value matches a regex in the keys of items dictionary.
 
         Regex equivalent of:
             return True if value in items else None
         '''
+        if value is None:
+            return False
+
         for item in items:
             if re.match(item, value):
                 return True
