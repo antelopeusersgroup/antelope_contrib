@@ -743,7 +743,7 @@ class css2qml(object):
             }
 
         if record['arrival.amp']:
-            results['genericAmplitude']['value'] = record['arrival.amp']*1e9
+            results['genericAmplitude'] = {'value': record['arrival.amp']*1e9}
 
         return results
 
