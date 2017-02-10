@@ -673,6 +673,7 @@ def find_executables( execs ):
 def plot_results( id, stations, results, event, folder='./',
                        acknowledgement='dbmoment'):
 
+    from __main__ import logging
 
     total = 1
 

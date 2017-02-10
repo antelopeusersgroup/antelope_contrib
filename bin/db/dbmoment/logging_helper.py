@@ -42,12 +42,6 @@
 
 from __main__ import *      # Get all the libraries from parent
 
-#import os
-#import sys
-#import json
-#import logging
-#import inspect
-#
 
 def getLogger(name='', loglevel=False):
 
@@ -67,12 +61,28 @@ def getLogger(name='', loglevel=False):
         return logging.getLogger(name)
 
     newlogger = logging.getLogger(name)
+    newlogger.propagate = False
 
     if not len(newlogger.handlers):
         # We need new logger
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter( '%(asctime)s %(name)s[%(levelname)s]: %(message)s')
 
+        # Maybe we want to log to a file
+        if LOG_FILENAME:
+
+
+            if int(LOG_MAX_COUNT):
+                count = int(LOG_MAX_COUNT)
+            else:
+                count = 5
+            handler = logging.handlers.RotatingFileHandler( LOG_FILENAME, backupCount=count)
+
+            # Check if log exists and should therefore be rolled
+            if os.path.isfile(LOG_FILENAME): handler.doRollover()
+
+        else:
+            handler = logging.StreamHandler()
+
+        formatter = logging.Formatter( '%(asctime)s %(name)s[%(levelname)s]: %(message)s')
         handler.setFormatter(formatter)
         newlogger.addHandler(handler)
 
@@ -83,6 +93,7 @@ def getLogger(name='', loglevel=False):
             newlogger.setLevel( logging.getLogger(main).getEffectiveLevel() )
         else:
             newlogger.setLevel( logging.getLevelName( loglevel ) )
+
 
         def niceprint(msg):
             try:
@@ -100,7 +111,7 @@ def getLogger(name='', loglevel=False):
             self.log(40, niceprint(message), *args, **kws)
             self.log(40, '***')
             self.log(40, '***')
-            sys.exit( '\nExit from dbmoment with errors.\n' )
+            sys.exit( niceprint(message) )
 
         def newnotify(self, message, *args, **kws):
             self.log(35, niceprint(message), *args, **kws)
@@ -120,7 +131,7 @@ def getLogger(name='', loglevel=False):
             self.log(50, niceprint(message), *args, **kws)
             self.log(50, '***')
             self.log(50, '***')
-            sys.exit( '\nExit from dbmoment with errors.\n' )
+            sys.exit( niceprint(message) )
 
         logging.Logger.critical = newcritical
         logging.Logger.error = newerror

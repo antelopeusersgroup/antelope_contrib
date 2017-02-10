@@ -4,6 +4,9 @@
 dbmoment_run_example \- run dbmoment on 2 example events
 
 .SH SYNOPSIS
+    dbmoment_run_example [temp_dir]
+
+.SH DESCRIPTION
 The Dreger's inversion source code is included in the contributed code
 repo as well as 2 full examples from the original distribution.
 The data needed for the example is located on folders "EXAMPLE_1" and
@@ -24,6 +27,12 @@ compile the source code.
 It will require write access to the example folder:
 
     $ANTELOPE/contrib/example/dbmoment/
+
+OR...  you can run with a possible argument for a
+work folder that the process will use to create
+some tables that will link to the ones in the
+main distribution. You need to do this if you
+don't have write access to $ANTELOPE folder.
 
 .SH PARAMETER FILE
 None.
