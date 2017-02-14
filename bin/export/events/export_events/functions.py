@@ -5,6 +5,7 @@ Some functions used by event2qml main code
 '''
 # pylint:disable=logging-not-lazy,broad-except
 from __future__ import print_function
+from past.builtins import basestring
 
 import math
 import logging
@@ -19,25 +20,31 @@ except ImportError as ex:
 
 def simple_table_present(table, dbpointer):
     '''
-    Verify if we have a table before we run the command.
+    Determine if table is present in database.
 
     Similar to verify_table but without rising exceptions
     and without returning any objects back. It will only work
     out a dbpointer and not a database name. The pointer
     should be verified already.
     '''
-
+    assert isinstance(table, basestring)
+    assert isinstance(dbpointer, datascope.Dbptr)
     logger = logging.getLogger(__name__)
 
     try:
         view = dbpointer.lookup(table=table)
-    except Exception as ex:
-        logger.warning(
-            'Exception while checking for presence of table %s: %s'
-            % (table, ex))
-        return False
+        is_present = view.query(datascope.dbTABLE_PRESENT)
+        # view.free()
+    except (datascope.DblookupDatabaseError,
+            datascope.DblookupTableError,
+            datascope.DblookupFieldError,
+            datascope.DblookupRecordError,
+            datascope.DbqueryError) as ex:
+        logger.error('While checking for table: ' + table)
+        logger.error(repr(ex))
+        is_present = False
 
-    return view.query(datascope.dbTABLE_PRESENT)
+    return is_present
 
 
 def verify_table(table, database=None, dbpointer=None):
@@ -53,22 +60,19 @@ def verify_table(table, database=None, dbpointer=None):
     cleaning later. The local view of the table will be
     freed.
     '''
+    assert (isinstance(database, basestring) or
+            isinstance(dbpointer, datascope.Dbptr))
+
+    if not isinstance(dbpointer, datascope.Dbptr):
+        dbpointer = datascope.dbopen(database)
+
     logger = logging.getLogger(__name__)
-    assert database is not None or dbpointer is not None
-
-    if database is not None:
-        dbpointer = datascope.dbopen(database, "r")
-
-    # Test if we have some table first.
-    view = dbpointer.lookup(table=table)
-
-    if not view.query(datascope.dbTABLE_PRESENT):
+    if simple_table_present(table, dbpointer):
+        logger.debug('Table [%s] present in database' % table)
+        return dbpointer
+    else:
         logger.debug('Table [%s] not in database' % table)
         return None
-    else:
-        logger.debug('Table [%s] present in database' % table)
-
-    return dbpointer
 
 
 def is_null(value, null_value):

@@ -48,6 +48,8 @@ class DatabaseReader(object):
 
         self.logger = logging.getLogger('.'.join([self.__class__.__module__,
                                                   self.__class__.__name__]))
+        self.logger.debug('Initializing')
+
         self.database = database  # descriptor
 
         # configure filters
@@ -72,24 +74,13 @@ class DatabaseReader(object):
         self.logger.info('Descriptor file: %s' % basename)
 
         self.db = verify_table('event', self.database)
-
-        self.valid = False
-        self.evid = None
-        self.event_data = None
-
-        self.origins = None
-        self.arrivals = None
-        self.detections = None
-        self.stamags = None
-        self.magnitudes = None
-        self.fplanes = None
-        self.mts = None
-        self.remarks = None
+        self.clean()
 
     def clean(self):
         '''
         Clean up local storage of event details.
         '''
+        self.logger.debug('Cleaning')
         self.valid = False
         self.evid = None
         self.event_data = {}
@@ -111,7 +102,7 @@ class DatabaseReader(object):
 
     def __str__(self):
         contents = []
-        for container in ['origins', 'arrivals', 'detections',
+        for container in ['origins', 'arrivals', 'detections', 'remarks',
                           'stamags', 'magnitudes', 'fplanes', 'mts']:
             count = len(getattr(self, container).values())
             if count > 0:
@@ -180,6 +171,50 @@ class DatabaseReader(object):
                                    sort_by=sort_by,
                                    reverse=reverse)
 
+    def get_evids(self, subset=None):
+        '''
+        Returns list of events by evid.
+
+        An optional subset can be specified to return a subset of of events
+        by time, location, evid or orid.
+
+        Parameters
+        ----------
+        subset: str
+            see "man dbexpressions" for syntax
+
+        Returns
+        -------
+        list of integers
+            event (evid) identifiers in database meeting subset condition
+        '''
+
+        evids = []
+        self.logger.info('Getting evids matching subset: %s' % subset)
+        try:
+            view = self.db.lookup(table='origin')
+            if subset is not None:
+                try:
+                    view = view.subset(subset)
+                except datascope.DbsubsetError as ex:
+                    self.logger.error('While applying subset: ' + subset)
+                    self.logger.error(repr(ex))
+            evids = [record.getv('evid')[0]
+                     for record in view.iter_record()]
+        except (datascope.DblookupDatabaseError,
+                datascope.DblookupTableError,
+                datascope.DblookupFieldError,
+                datascope.DblookupRecordError) as ex:
+            self.logger.error('While looking up table: origin')
+            self.logger.error(repr(ex))
+
+        if len(evids) == 0:
+            self.logger.error('No events found.')
+        else:
+            self.logger.info('%d events found.' % len(evids))
+
+        return sorted(list(set(evids)))
+
     def get_event(self, evid=None):
         '''
         Get data from all tables for one event.
@@ -187,9 +222,8 @@ class DatabaseReader(object):
         self.clean()
 
         self.evid = evid
-        self.valid = False
 
-        self.logger.info('Constructing event view for evid [%d]' % self.evid)
+        self.logger.debug('Constructing event view for evid [%d]' % self.evid)
 
         steps = ['dbopen event']
         steps += ['dbsubset evid==%d' % self.evid]
@@ -198,24 +232,28 @@ class DatabaseReader(object):
         steps += ['dbsubset auth !~ /%s/' % auth
                   for auth in self.event_auth_reject]
 
-        self.logger.info('Processing: ' + ', '.join(steps))
+        self.logger.debug('Processing: ' + ', '.join(steps))
 
-        with datascope.freeing(self.db.process(steps)) as dbview:
-            if not dbview.record_count:
-                self.logger.warning('No event found')
-                return
-            if dbview.record_count > 1:
-                self.logger.error('%d events found matching evid [%d]'
-                                  % (len(dbview.record_count), self.evid))
-            else:
-                self.logger.debug('Found evid [%d]' % self.evid)
+        try:
+            with datascope.freeing(self.db.process(steps)) as dbview:
+                if not dbview.record_count:
+                    self.logger.warning('No event found')
+                    return
+                if dbview.record_count > 1:
+                    self.logger.warning(
+                        '%d events found matching evid [%d]'
+                        % (len(dbview.record_count), self.evid))
+                else:
+                    self.logger.debug('Found evid [%d]' % self.evid)
 
-            dbview.record = datascope.dbNULL
-            nulls = get_all_fields(dbview)
+                dbview.record = datascope.dbNULL
+                nulls = get_all_fields(dbview)
 
-            for row in dbview.iter_record():
-                self.event_data = get_all_fields(row, nulls)
-                self.valid = True
+                for row in dbview.iter_record():
+                    self.event_data = get_all_fields(row, nulls)
+                    self.valid = True
+        except datascope.DbprocessError as ex:
+            self.logger.error(repr(ex))
 
         self._get_origins()
 
@@ -242,14 +280,13 @@ class DatabaseReader(object):
         self._get_netmag()
         self._get_fplane()
         self._get_mts()
-
         self._get_comments()
 
     def _get_origins(self):
         '''
         Open origin table and get all associated orids for the evid.
         '''
-        self.logger.info('Constructing origin view for evid [%d]' % self.evid)
+        self.logger.debug('Constructing origin view for evid [%d]' % self.evid)
 
         steps = ['dbopen origin']
         steps += ['dbsubset evid==%d' % self.evid]

@@ -110,26 +110,29 @@ class Collection(Document):
         Extract data for each row and all atributes in database view.
         """
 
-        self.logger.debug(', '.join(steps))
+        self.logger.debug('Processing: ' + ', '.join(steps))
 
         if not self.db:
             self.logger.warning('Table does not exist: %s' % self.table)
             return
 
-        with datascope.freeing(self.db.process(steps)) as dbview:
+        try:
+            with datascope.freeing(self.db.process(steps)) as dbview:
 
-            # Get NULL values
-            dbview.record = datascope.dbNULL
-            nulls = get_all_fields(dbview)
+                # Get NULL values
+                dbview.record = datascope.dbNULL
+                nulls = get_all_fields(dbview)
 
-            for row in dbview.iter_record():
+                for row in dbview.iter_record():
 
-                data = get_all_fields(row, nulls)
+                    data = get_all_fields(row, nulls)
 
-                if key:
-                    self.documents[data[key]] = Document(data)
-                else:
-                    self.documents[len(self.documents)] = Document(data)
+                    if key:
+                        self.documents[data[key]] = Document(data)
+                    else:
+                        self.documents[len(self.documents)] = Document(data)
+        except datascope.DbprocessErorr as ex:
+            self.logger.error(repr(ex))
 
 if __name__ == "__main__":
     raise ImportError("\n\n\tAntelope's qml module. Do not run directly! **\n")

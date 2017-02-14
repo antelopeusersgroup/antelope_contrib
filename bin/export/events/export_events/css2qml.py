@@ -99,6 +99,7 @@ class Css2Qml(object):
         file_class = '.'.join([os.path.splitext(os.path.basename(__file__))[0],
                                self.__class__.__name__])
         self.logger = logging.getLogger(file_class)
+        self.logger.debug('Initializing')
 
         if catalog_author is None:
             catalog_author = file_class
@@ -153,6 +154,13 @@ class Css2Qml(object):
         '''
         Generate dictionary of QuakeML elements given a list of evids.
         '''
+        self.logger.debug('Dumping CSS3.0 to QuakeML')
+        if len(evids) <= 7:
+            self.logger.info('%d evids: %s' % (len(evids), evids))
+        else:
+            self.logger.info(
+                '%d evids: [%s, ..., %s]'
+                % (len(evids), str(evids[:3])[1:-1], str(evids[-3:])[1:-1]))
         if not isinstance(evids, list):
             evids = [evids]
         if namespace not in NAMESPACES:
