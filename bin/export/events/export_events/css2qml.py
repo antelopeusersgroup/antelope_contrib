@@ -5,7 +5,6 @@ This module defines a class, css2qml, which can be used to convert CSS3.0
 from __future__ import print_function
 import os
 import re
-import sys
 import logging
 
 from export_events.functions import (
@@ -67,13 +66,16 @@ DEFAULT_ETYPE_CERTAINTY_MAP = {
     's[abdefghijklmnopqrstuvwxz]': 'suspected',
     }
 
+FELT_KEYWORDS = ['felt', 'damag', 'ressenti', 'dommag']
+AKA_KEYWORDS = ['known as', 'connu']
+
 NAMESPACES = ['BED', 'BED-RT']
 
 
 # pylint:disable=logging-not-lazy
-class css2qml(object):
+class Css2Qml(object):
     '''
-    Converter to QuakeML schema from CSS3.0 schema
+    Converter from CSS3.0 to QuakeML schemas.
     '''
     def __init__(self, event,
                  reviewed_flags=('y*', 'r*', 'pre*', 'fin*'),
@@ -249,10 +251,10 @@ class css2qml(object):
             if self.add_stamag:
                 converted_stamags = [
                     self._convert_stamags(item)
-                    for item in self.event.all_stamags()]
+                    for item in self.event.all_station_magnitudes()]
                 converted_amplitudes = [
                     self._convert_amplitudes(item)
-                    for item in self.event.all_stamags()]
+                    for item in self.event.all_station_magnitudes()]
 
                 if namespace == self.qml_bed_ns:
                     event_dict['stationMagnitude'] = converted_stamags
@@ -299,11 +301,9 @@ class css2qml(object):
         '''
         Base QuakeML event structure. Includes namespace definitions and basic
         elements.
+
+        This class serves as a container for Event objects.
         '''
-
-        # Basic EventParameters object. This class serves as a container for
-        # Event objects.
-
         event_parameters_dict = {
             '@publicID': self.event.database,
             'creationInfo': {
@@ -332,7 +332,7 @@ class css2qml(object):
         resource id is found, the intention is for that event to be deleted.
         '''
         # start by constructing null event
-        event_dict = {
+        qml_dict = {
             '@publicID': self._id('event', evid),
             'type': 'not existing',
             'creationInfo': {
@@ -347,29 +347,31 @@ class css2qml(object):
         self.event.get_event(evid)
         if self.event and self.event.evid == evid and self.event.valid:
 
-            self.logger.debug('Found evid [%s]' % evid)
-            agency, author, _, _, _ = self.split_auth(
-                self.event['event.auth'])
+            self.logger.debug('Converting event.evid [%d]'
+                              % self.event['event.evid'])
+            agency, author, _, _, _ = self.split_auth(self.event['event.auth'])
             if self.extend_anss_catalog:
-                event_dict.update(self._catalog_info(
+                qml_dict.update(self._catalog_info(
                     evid, auth=self.event['event.auth'], event=True))
 
             # infer event type and certainty from preferred origin
             # TODO: add evaluation status and mode?
             record = self.event.all_origins(orid=self.event['event.prefor'])[0]
             etype = record['origin.etype']
-            event_dict['type'] = self.get_event_type(etype)
-            event_dict['certainty'] = self.get_event_certainty(etype)
 
-            event_dict['@publicID'] = self._id('event',
-                                               self.event['event.evid'])
-            event_dict['creationInfo'] = self._creation_info(
+            qml_dict['@publicID'] = self._id('event', self.event['event.evid'])
+            qml_dict['type'] = self.get_event_type(etype)
+            qml_dict['certainty'] = self.get_event_certainty(etype)
+            qml_dict['creationInfo'] = self._creation_info(
                 record, 'event', agency, author)
+
+            qml_dict.update(self._convert_event_comments())
+
         else:
             self.logger.warning('Evid [%s] not available, adding null event.'
                                 % evid)
 
-        return event_dict
+        return qml_dict
 
     @staticmethod
     def _regex_get(value, mapping):
@@ -571,6 +573,8 @@ class css2qml(object):
             covariance matrix
         2. Sometimes the origin may not join with the origerr table
         '''
+        self.logger.debug('Converting origin.orid [%d]'
+                          % record['origin.orid'])
 
         mode, status = self.get_mode_status_review(record['origin.review'])
         method_rid, model, _ = self.get_method_model(
@@ -639,6 +643,8 @@ class css2qml(object):
                                    for item in self.event.all_arrivals(
                                        orid=record['origin.orid'])]
 
+        qml_dict.update(self._convert_comments(record['origin.commid']))
+
         if self.extend_anss_catalog:
             qml_dict.update(self._catalog_info(record['origin.orid'],
                                                auth=record['origin.auth']))
@@ -649,13 +655,12 @@ class css2qml(object):
         '''
         Return a dict of QuakeML magnitude from a dict of CSS key/values
         corresponding to one record.
-
         '''
         # pylint:disable=protected-access
-        self.logger.debug(sys._getframe().f_code.co_name)
-        self.logger.debug(str(record))
+        self.logger.debug('Converting netmag.magid [%d]'
+                          % record['netmag.magid'])
         agency, author, _, method, _ = self.split_auth(record['netmag.auth'])
-        results = {
+        qml_dict = {
             '@publicID': self._id('magnitude', record['netmag.magid']),
             'mag': {'value': record['netmag.magnitude']},
             'type': record['netmag.magtype'],
@@ -667,23 +672,24 @@ class css2qml(object):
             }
 
         if record['netmag.uncertainty'] is not None:
-            results['mag']['uncertainty'] = record['netmag.uncertainty']
+            qml_dict['mag']['uncertainty'] = record['netmag.uncertainty']
 
-        return results
+        qml_dict.update(self._convert_comments(record['netmag.commid']))
+
+        return qml_dict
 
     def _convert_stamags(self, record):
         '''
         Convert CSS3.0 stamag view record to QuakeML stationMagnitude
         dictionary.
         '''
-        # pylint:disable=protected-access
-        self.logger.debug(sys._getframe().f_code.co_name)
-        self.logger.debug(str(record))
+        self.logger.debug('Converting stamag.magid [%d]'
+                          % record['stamag.magid'])
 
         agency, author, _, method, _ = self.split_auth(
             record['stamag.auth'])
 
-        results = {
+        qml_dict = {
             '@publicID': self._id('magnitude/station', record['stamag.magid'],
                                   record['stamag.sta']),
             'originID': self._id('origin', record['stamag.orid']),
@@ -698,17 +704,19 @@ class css2qml(object):
             }
 
         if record['stamag.uncertainty'] is not None:
-            results['stamag']['uncertainty'] = record['stamag.uncertainty']
+            qml_dict['stamag']['uncertainty'] = record['stamag.uncertainty']
 
-        return results
+        qml_dict.update(self._convert_comments(record['netmag.commid']))
+
+        return qml_dict
 
     def _convert_amplitudes(self, record):
         '''
         Convert CSS3.0 stamag & arrival view record to QuakeML amplitude
         dictionary.
         '''
-        # pylint:disable=protected-access
-        self.logger.debug(sys._getframe().f_code.co_name + ': ' + str(record))
+        self.logger.debug('Converting stamag.arid [%d]'
+                          % record['stamag.arid'])
 
         amplitude = record['arrival.amp']
         if amplitude is not None:
@@ -722,7 +730,7 @@ class css2qml(object):
         agency, author, _, method, _ = self.split_auth(
             record['stamag.auth'])
 
-        results = {
+        qml_dict = {
             '@publicID': self._id('amplitude', record['stamag.arid'],
                                   record['stamag.sta']),
             'amplitude': {'value': amplitude},
@@ -743,22 +751,24 @@ class css2qml(object):
             }
 
         if record['arrival.amp']:
-            results['genericAmplitude'] = {'value': record['arrival.amp']*1e9}
+            qml_dict['genericAmplitude'] = {'value': record['arrival.amp']*1e9}
 
-        return results
+        qml_dict.update(self._convert_comments(record['arrival.commid']))
+
+        return qml_dict
 
     def _convert_pick(self, record):
         '''
         Map CSS3.0 arrival to QuakeML Pick.
         '''
-        # pylint:disable=protected-access
-        self.logger.debug(sys._getframe().f_code.co_name + ': ' + str(record))
+        self.logger.debug('Converting arrival.arid [%d]'
+                          % record['arrival.arid'])
 
         auth = record['arrival.auth']
         agency, author, _, method, _ = self.split_auth(auth)
         pick_mode, pick_status = self.get_mode_status_auth(auth)
 
-        results = {
+        qml_dict = {
             '@publicID': self._id('pick', record['arrival.arid']),
             'time': {'value': self._utc_datetime(record['arrival.time'])},
             'waveformID': self._waveform_id(record, 'arrival'),
@@ -772,43 +782,44 @@ class css2qml(object):
             }
 
         if record['arrival.deltim']:
-            results['time']['uncertainty'] = record['arrival.deltim']
+            qml_dict['time']['uncertainty'] = record['arrival.deltim']
 
         if record['arrival.snr']:
-            results['comment'] = {'text': 'snr: %s' % record['arrival.snr']}
+            qml_dict['comment'] = {'text': 'snr: %s' % record['arrival.snr']}
 
         if record['arrival.qual'] is not None:
             onset_quality = record['arrival.qual'].lower()
             if 'i' in onset_quality:
-                results['onset'] = 'impulsive'
+                qml_dict['onset'] = 'impulsive'
             elif 'e' in onset_quality:
-                results['onset'] = 'emergent'
+                qml_dict['onset'] = 'emergent'
             elif 'w' in onset_quality:
-                results['onset'] = 'questionable'
+                qml_dict['onset'] = 'questionable'
 
         if record['arrival.fm'] is not None:
             polarity = record['arrival.fm'].lower()
             if 'c' in polarity or 'u' in polarity:
-                results['polarity'] = 'positive'
+                qml_dict['polarity'] = 'positive'
             elif 'd' in polarity or 'r' in polarity:
-                results['polarity'] = 'negative'
+                qml_dict['polarity'] = 'negative'
             elif '.' in polarity:
-                results['polarity'] = 'undecidable'
+                qml_dict['polarity'] = 'undecidable'
 
-        return results
+        # n.b. picks don't get comments, arrivals and amplitudes do
+
+        return qml_dict
 
     def _convert_detection(self, record):
         '''
         Map CSS3.0 detections to QuakeML Pick.
         '''
-        # pylint:disable=protected-access
-        self.logger.debug(sys._getframe().f_code.co_name)
-        self.logger.debug(str(record))
+        self.logger.debug('Converting detection.srcid [%d]'
+                          % record['detection.srcid'])
 
         self.detection_id_counter = self.detection_id_counter + 1
         valid_id = self.detection_id_counter
 
-        return {
+        qml_dict = {
             '@publicID': self._id('detection', valid_id,
                                   record['detection.srcid']),
             'time': {'value': self._utc_datetime(record['detection.time'])},
@@ -823,14 +834,13 @@ class css2qml(object):
             'evaluationMode': 'automatic',
             'evaluationStatus': 'preliminary',
             }
+        return qml_dict
 
     def _convert_arrival(self, record):
         '''
         Map CSS3.0 arrival to QuakeML Arrival.
         '''
-        # pylint:disable=protected-access
-        self.logger.debug(sys._getframe().f_code.co_name)
-        self.logger.debug(str(record))
+        self.logger.debug('Converting assoc.arid [%d]' % record['assoc.arid'])
 
         if record['assoc.wgt'] is not None:
             weight = record['assoc.wgt']
@@ -839,7 +849,7 @@ class css2qml(object):
         else:
             weight = 0
 
-        return {
+        qml_dict = {
             '@publicID': self._id('arrival', record['assoc.arid'],
                                   record['assoc.orid']),
             'pickID': self._id('pick', record['assoc.arid']),
@@ -852,18 +862,24 @@ class css2qml(object):
             'creationInfo': self._creation_info(
                 record, 'assoc')
             }
+        qml_dict.update(self._convert_comments(record['assoc.commid']))
+
+        return qml_dict
 
     def _convert_fplane(self, record, table='fplane'):
         '''
         Return a dict of focalMechanism from an dict of CSS key/values
         corresponding to one record.
         '''
+
         if table == 'fplane':
-            pub_id = record['fplane.mtid']
+            id_key = 'fplane.mtid'
         if table == 'record':
-            pub_id = record['mt.mechid']
+            id_key = 'mt.mechid'
         else:
-            pub_id = record['%s.lddate' % table]
+            id_key = '%s.lddate' % table
+
+        self.logger.debug('Converting assoc.arid [%d]' % record[id_key])
 
         # Determine from auth field
         mode, status = self.get_mode_status_auth(record['%s.auth' % table])
@@ -900,9 +916,9 @@ class css2qml(object):
                 }
             }
 
-        focal_mechanism = {
+        qml_dict = {
             '@publicID': (record['mt.qmlid'] or
-                          self._id('focalMechanism', pub_id)),
+                          self._id('focalMechanism', record[id_key])),
             'triggeringOriginID': self._id('origin',
                                            record['%s.orid' % table]),
             'nodalPlanes': nodal_planes,
@@ -911,13 +927,15 @@ class css2qml(object):
             'evaluationMode': mode,
             'evaluationStatus': status,
         }
-        return focal_mechanism
+
+        return qml_dict
 
     def _convert_mt(self, record):
         '''
         Map BRTT CSS table 'mt' record to a FocalMechanism
         '''
-        focal_mech = self._convert_fplane(record, table='mt')
+        self.logger.debug('Converting mt.mtid [%d]' % record['mt.mtid'])
+        qml_dict = self._convert_fplane(record, table='mt')
 
         moment_tensor = {
             '@publicID': self._id('momentTensor', record['mt.mtid']),
@@ -935,9 +953,76 @@ class css2qml(object):
             'creationInfo': self._creation_info(record, table='mt'),
             }
 
-        focal_mech['momentTensor'] = moment_tensor
+        qml_dict['momentTensor'] = moment_tensor
 
-        return focal_mech
+        return qml_dict
+
+    def _convert_event_comments(self):
+        '''
+        Sort event-related comments into generic comments and descriptions.
+        '''
+        records = self.event.all_comments(commid=self.event['event.commid'])
+
+        qml_dict = {}
+        for record in records:
+            is_description = False
+            for keywords, description_type in zip(
+                    [FELT_KEYWORDS, AKA_KEYWORDS],
+                    ['felt report', 'earthquake name']):
+
+                if any([keyword in record['remark.remark']
+                        for keyword in keywords]):
+                    self.logger.debug(
+                        'Converting remark commid [%d] lineno [%d] '
+                        'to event description'
+                        % (record['remark.commid'], record['remark.lineno']))
+                    if 'description' not in qml_dict:
+                        qml_dict['description'] = []
+                    qml_dict['description'] += [{
+                        'text': record['remark.remark'],
+                        'type': description_type,
+                        }]
+                    is_description = True
+                    continue
+
+            if is_description:
+                continue
+
+            if 'comment' not in qml_dict:
+                qml_dict['comment'] = []
+            qml_dict['comment'] += self._convert_comment(record)
+
+        return qml_dict
+
+    def _convert_comments(self, commid):
+        '''
+        Construct a QuakeML dictionary of comments from the view of all
+        comments associated with this event, given a comment id.
+        '''
+        comment_records = self.event.all_comments(commid=commid)
+
+        qml_dict = {}
+        if len(comment_records) > 0:
+            qml_dict['comment'] = [self._convert_comment(item)
+                                   for item in comment_records]
+
+        return qml_dict
+
+    def _convert_comment(self, record):
+        '''
+        Return QuakeML comment dictionary given a dictionary of
+        CSS key/values corresponding a row of the remark table.
+        '''
+        self.logger.debug(
+            'Converting remark commid [%d] lineno [%d] to comment'
+            % (record['remark.commid'], record['remark.lineno']))
+        qml_dict = {
+            '@publicID': self._id('internal', record['remark.lineno']),
+            'text': record['remark.remark'],
+            'creationInfo': self._creation_info(record, 'remark'),
+            }
+
+        return qml_dict
 
     def _catalog_info(self, eventid, auth=None, event=False):
         '''
@@ -964,6 +1049,7 @@ class css2qml(object):
 
         In this case we are limiting this function to eventID and eventSource.
         '''
+        self.logger.debug('Adding ANSS tags for eventid [%d]' % eventid)
         catalog_dict = {}
         temp = []
         ext_net = False
@@ -1005,7 +1091,6 @@ class css2qml(object):
                 catalog_dict['@catalog:dataid'] = '%d' % eventid
                 catalog_dict['@catalog:datasource'] = self.agency_id.lower()
 
-        # self.logger.debug(catalog_dict)
         return catalog_dict
 
     @staticmethod

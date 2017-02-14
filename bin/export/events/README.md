@@ -30,12 +30,11 @@ Each module should be as generic as possible. Instead of having one Class for ev
 table that you are handling try to make a generic version that will handle all tables.
 If we document them consistently then we can share them between applications.
 
-    css2qml.py              Convert an Event() object into QuakeML() object.
+    css2qml.py              Convert CSS3.0 dictionaries to QuakeML dictionaries.
     db_collection.py        Abstract objects to store information from Datascope tables.
-    event.py                Lead the information from 1 event from a CSS3.0 database.
-    functions.py            Several functions to test the status of databases and convert values.
-    logging_helper.py       Generic logging tool mainly replacing elog functionality.
-    xmltodict.py            External code that will convert a Python dict into XML.
+    db_reader.py            Read event data from a CSS3.0 database.
+    functions.py            Test status of databases and convert values.
+    xmltodict.py            Convert a Python dictionary into XML.
 
 
 QuakeML

@@ -28,23 +28,21 @@ def simple_table_present(table, dbpointer):
     '''
 
     logger = logging.getLogger(__name__)
-    logger.debug('dbTALBE_PRESENT(%s)' % table)
 
     try:
         view = dbpointer.lookup(table=table)
     except Exception as ex:
-        logger.warning('Exception, %s' % ex)
+        logger.warning(
+            'Exception while checking for presence of table %s: %s'
+            % (table, ex))
         return False
 
-    result = view.query(datascope.dbTABLE_PRESENT)
-    logger.debug('view.query(dbTABLE_PRESENT) => %s' % result)
-
-    return result
+    return view.query(datascope.dbTABLE_PRESENT)
 
 
-def verify_table(table=None, database=None, dbpointer=None):
+def verify_table(table, database=None, dbpointer=None):
     '''
-    Open a database or database pointer and verify a table
+    Open a database or database pointer and verify existence of a table.
 
     On multiple objects (classes) we perform the same process
     of verifying the presence of a table before we get to
@@ -56,24 +54,19 @@ def verify_table(table=None, database=None, dbpointer=None):
     freed.
     '''
     logger = logging.getLogger(__name__)
-    if database is None and dbpointer is None:
-        logger.warning('Need database or dbpointer')
-        return None
+    assert database is not None or dbpointer is not None
 
     if database is not None:
-        logger.debug('dbopen(%s)' % database)
         dbpointer = datascope.dbopen(database, "r")
 
-    if table is not None:
-        # Test if we have some table first.
-        logger.debug('db.lookup(%s)' % table)
-        view = dbpointer.lookup(table=table)
+    # Test if we have some table first.
+    view = dbpointer.lookup(table=table)
 
-        if not view.query(datascope.dbTABLE_PRESENT):
-            logger.info('Table [%s] not in database' % table)
-            return None
-        else:
-            logger.debug('Table [%s] present in database' % table)
+    if not view.query(datascope.dbTABLE_PRESENT):
+        logger.debug('Table [%s] not in database' % table)
+        return None
+    else:
+        logger.debug('Table [%s] present in database' % table)
 
     return dbpointer
 
@@ -97,53 +90,29 @@ def get_all_fields(dbpointer, nulls=None):
     At a given database pointer to a particular record query for valid
     table fields and pull all values. Return a dictionary with the values.
     '''
-    if nulls is None:
-        nulls = {}
-
     results = {}
-    logger = logging.getLogger(__name__)
+    # logger = logging.getLogger(__name__)
 
-    if not dbpointer:
-        logger.warning('Need dbpointer')
+    if not dbpointer or not dbpointer.query(datascope.dbTABLE_PRESENT):
         return results
 
-    try:
-        if not dbpointer.query(datascope.dbTABLE_PRESENT):
-            logger.debug('No records')
-            return results
-    except Exception:
-        logger.warning('Error on dbpointer')
-        return results
+    for index in range(dbpointer.query(datascope.dbFIELD_COUNT)):
 
-    for x in range(dbpointer.query(datascope.dbFIELD_COUNT)):
-
-        dbpointer.field = x
+        dbpointer.field = index
 
         table = dbpointer.query(datascope.dbFIELD_BASE_TABLE)
         field = dbpointer.query(datascope.dbFIELD_NAME)
 
-        test = "%s.%s" % (table, field)
-        # logger.debug('Extract field %s' % test)
+        table_field = "%s.%s" % (table, field)
+        value = dbpointer.getv(table_field)[0]
 
-        value = dbpointer.getv(test)[0]
-
-        # Verify value with NULL options for those fields.
-        if nulls and test in nulls:
-            # logger.debug('verify null on: [%s] == [%s] '
-            #               % (value,nulls[test]))
-            if is_null(value, nulls[test]):
-                logger.debug('AVOID NULL VALUE: [%s] ' % value)
+        if nulls is not None and table_field in nulls:
+            if is_null(value, nulls[table_field]):
+                # logger.debug('Skipping null "%s" in "%s"'
+                #              % (value, table_field))
                 continue
-        else:
-            # logger.debug('Save value for NULL [%s] on %s' % (value, test))
-            pass
 
-        results[test] = value
-
-        if nulls:
-            logger.debug('%s => %s' % (test, results[test]))
-
-    # logger.debug(results)
+        results[table_field] = value
 
     return results
 

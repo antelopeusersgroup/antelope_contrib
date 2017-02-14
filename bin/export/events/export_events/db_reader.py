@@ -29,7 +29,7 @@ from export_events.functions import (simple_table_present, verify_table,
 from export_events.db_collection import Collection
 
 
-class Event(object):
+class DatabaseReader(object):
     '''
     Reads and stores event data from an Antelope database.
 
@@ -68,11 +68,28 @@ class Event(object):
         self.fplane_auth_reject = fplane_auth_reject
 
         dirname, basename = os.path.split(self.database)
-        self.logger.info('Descriptor path: db=%s' % dirname)
-        self.logger.info('Descriptor file: db=%s' % basename)
+        self.logger.info('Descriptor path: %s' % dirname)
+        self.logger.info('Descriptor file: %s' % basename)
 
         self.db = verify_table('event', self.database)
 
+        self.valid = False
+        self.evid = None
+        self.event_data = None
+
+        self.origins = None
+        self.arrivals = None
+        self.detections = None
+        self.stamags = None
+        self.magnitudes = None
+        self.fplanes = None
+        self.mts = None
+        self.remarks = None
+
+    def clean(self):
+        '''
+        Clean up local storage of event details.
+        '''
         self.valid = False
         self.evid = None
         self.event_data = {}
@@ -84,6 +101,7 @@ class Event(object):
         self.magnitudes = Collection(dbpointer=self.db, table='netmag')
         self.fplanes = Collection(dbpointer=self.db, table='fplane')
         self.mts = Collection(dbpointer=self.db, table='mt')
+        self.remarks = Collection(dbpointer=self.db, table='remark')
 
     def __getitem__(self, name):
         if name in self.event_data:
@@ -103,7 +121,7 @@ class Event(object):
                                                 ', '.join(contents))
 
     def all_origins(self, orid=None, sort_by='origin.lddate', reverse=False):
-        '''Get all origins, optionally filtered by evid.'''
+        '''Get all origins, optionally filtered by orid.'''
 
         return self.origins.values(subset_dict={'origin.orid': orid},
                                    sort_by=sort_by,
@@ -121,46 +139,60 @@ class Event(object):
 
         return self.detections.values(sort_by=sort_by, reverse=reverse)
 
-    def all_stamags(self, sort_by='stamag.lddate', reverse=False):
+    def all_station_magnitudes(self, orid=None, sort_by='stamag.lddate',
+                               reverse=False):
         '''
         Get all station magnitudes, optionally filtered by evid and orid.
         '''
-        return self.stamags.values(sort_by=sort_by,
+        return self.stamags.values(subset_dict={'stamag.orid': orid},
+                                   sort_by=sort_by,
                                    reverse=reverse)
 
-    def all_magnitudes(self, sort_by='netmag.lddate',
+    def all_magnitudes(self, orid=None, sort_by='netmag.lddate',
                        reverse=False):
         '''
         Get all magnitudes, optionally filtered by evid and orid.
         '''
 
-        return self.magnitudes.values(sort_by=sort_by,
+        return self.magnitudes.values(subset_dict={'netmag.orid': orid},
+                                      sort_by=sort_by,
                                       reverse=reverse)
 
-    def all_fplanes(self, sort_by='fplane.lddate', reverse=False):
+    def all_fplanes(self, orid=None, sort_by='fplane.lddate', reverse=False):
         '''Get all focal planes, optionally filtered by mtid and mechid.'''
 
-        return self.fplanes.values(sort_by=sort_by,
+        return self.fplanes.values(subset_dict={'fplane.orid': orid},
+                                   sort_by=sort_by,
                                    reverse=reverse)
 
-    def all_mts(self, sort_by='mt.lddate', reverse=False):
+    def all_mts(self, orid=None, sort_by='mt.lddate', reverse=False):
         '''Get all moment tensors, optionally filtered by orid.'''
 
-        return self.mts.values(sort_by=sort_by,
+        return self.mts.values(subset_dict={'mt.orid': orid},
+                               sort_by=sort_by,
                                reverse=reverse)
+
+    def all_comments(self, commid=None,
+                     sort_by='remark.lineno', reverse=False):
+        '''Get all remarks, filtered by commid, and sorted by lineno.'''
+
+        return self.remarks.values(subset_dict={'remark.commid': commid},
+                                   sort_by=sort_by,
+                                   reverse=reverse)
 
     def get_event(self, evid=None):
         '''
         Get data from all tables for one event.
         '''
+        self.clean()
+
         self.evid = evid
         self.valid = False
 
-        self.logger.info('Get evid %s from %s'
-                         % (self.evid, os.path.basename(self.database)))
+        self.logger.info('Constructing event view for evid [%d]' % self.evid)
 
         steps = ['dbopen event']
-        steps += ['dbsubset evid==%s' % self.evid]
+        steps += ['dbsubset evid==%d' % self.evid]
         steps += ['dbsubset auth =~ /%s/' % auth
                   for auth in self.event_auth_select]
         steps += ['dbsubset auth !~ /%s/' % auth
@@ -211,14 +243,16 @@ class Event(object):
         self._get_fplane()
         self._get_mts()
 
+        self._get_comments()
+
     def _get_origins(self):
         '''
         Open origin table and get all associated orids for the evid.
         '''
-        self.logger.info('Getting origins for evid [%d]' % self.evid)
+        self.logger.info('Constructing origin view for evid [%d]' % self.evid)
 
         steps = ['dbopen origin']
-        steps += ['dbsubset evid==%s' % self.evid]
+        steps += ['dbsubset evid==%d' % self.evid]
         steps += ['dbsubset auth =~ /%s/' % auth
                   for auth in self.origin_auth_select]
         steps += ['dbsubset auth !~ /%s/' % auth
@@ -233,10 +267,10 @@ class Event(object):
         Save the origin parameters in memory.
         '''
         for orid in self.origins.keys():
-            self.logger.debug('Loading arrivals for orid [%s]' % orid)
+            self.logger.debug('Constructing arrival view for orid [%d]' % orid)
 
             steps = ['dbopen assoc']
-            steps += ['dbsubset orid==%s' % orid]
+            steps += ['dbsubset orid==%d' % orid]
             steps += ['dbjoin arrival']
             steps += ['dbjoin -o snetsta']
             steps += ['dbjoin -o schanloc sta chan']
@@ -258,7 +292,7 @@ class Event(object):
         start = int(stock.now())
         end = 0
 
-        self.logger.debug('Basing detection window on arrivals for evid [%s]'
+        self.logger.debug('Basing detection window on arrivals for evid [%d]'
                           % self.evid)
         for orid in self.origins.keys():
             arrivals = self.all_arrivals(orid=orid)
@@ -311,10 +345,10 @@ class Event(object):
             return
 
         for orid in self.origins.keys():
-            self.logger.debug('Get netmag for orid %s' % orid)
+            self.logger.debug('Constructing stamag view for orid [%d]' % orid)
 
             steps = ['dbopen stamag']
-            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset orid == %d' % orid]
             steps += ['dbsubset auth =~ /%s/' % auth
                       for auth in self.netmag_auth_select]
             steps += ['dbsubset auth !~ /%s/' % auth
@@ -333,10 +367,10 @@ class Event(object):
             return
 
         for orid in self.origins.keys():
-            self.logger.debug('Get netmag for orid %s' % orid)
+            self.logger.debug('Constructing netmag view for orid [%d]' % orid)
 
             steps = ['dbopen netmag']
-            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset orid == %d' % orid]
             steps += ['dbsubset magtype =~ /%s/' % x
                       for x in self.magnitude_type_subset
                       if self.magnitude_type_subset]
@@ -355,10 +389,10 @@ class Event(object):
             return
 
         for orid in self.origins.keys():
-            self.logger.debug('Get fplane for orid %s' % orid)
+            self.logger.debug('Constructing fplane view for orid [%d]' % orid)
 
             steps = ['dbopen fplane']
-            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset orid == %d' % orid]
             steps += ['dbsubset auth =~ /%s/' % auth
                       for auth in self.fplane_auth_select]
             steps += ['dbsubset auth !~ /%s/' % auth
@@ -374,10 +408,11 @@ class Event(object):
             return
 
         for orid in self.origins.keys():
-            self.logger.debug('Get moment tensors for orid %s' % orid)
+            self.logger.debug('Constructing moment tensor view for orid [%s]'
+                              % orid)
 
             steps = ['dbopen mt']
-            steps += ['dbsubset orid == %s' % orid]
+            steps += ['dbsubset orid == %d' % orid]
             steps += ['dbsubset auth =~ /%s/' % auth
                       for auth in self.mt_auth_select]
             steps += ['dbsubset auth !~ /%s/' % auth
@@ -385,6 +420,39 @@ class Event(object):
 
             self.mts.get_view(steps, key='mt.mtid')
 
+    def _get_comments(self):
+        '''
+        Open remark table and get all commids associated with this event.
+        '''
+        if not simple_table_present('remark', self.db):
+            return
+
+        self.logger.debug('Getting remarks for evid [%d]' % self.evid)
+
+        # compose a list of all comment ids related to this event
+        commids = []
+        if 'event.commid' in self.event_data:
+            commids += [self.event_data['event.commid']]
+
+        document_lists = [
+            self.all_origins(), self.all_arrivals(), self.all_arrivals(),
+            self.all_magnitudes(), self.all_station_magnitudes()]
+        table_names = ['origin', 'assoc', 'arrival', 'netmag', 'stamag']
+
+        for documents, table in zip(document_lists, table_names):
+            key = '%s.commid' % table
+            commids += [document[key] for document in documents
+                        if key in document.data]
+
+        if len(commids) == 0:
+            return
+
+        # construct an appropriate view of the remark table
+        steps = ['dbopen remark']
+        steps += ['dbsubset %s' % '||'.join(['commid==%d' % commid
+                                             for commid in commids])]
+
+        self.remarks.get_view(steps, key='remark.commid')
 
 if __name__ == '__main__':
     raise ImportError("\n\n\tAntelope's qml module. Do not run directly! **\n")

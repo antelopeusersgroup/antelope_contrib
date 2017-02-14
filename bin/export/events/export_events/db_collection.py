@@ -35,11 +35,6 @@ class Document(object):
 
     def __init__(self, data):
 
-        module_class = '.'.join([self.__class__.__module__,
-                                 self.__class__.__name__])
-        self.logger = logging.getLogger(module_class)
-        self.logger.debug('New Document')
-
         self.data = data
 
     def __str__(self):
@@ -58,6 +53,10 @@ class Collection(Document):
     """
 
     def __init__(self, database=None, dbpointer=None, table=None):
+        '''
+        Either a database descriptor or a database pointer must be provided.
+        Optionally the name of a table to be verified present can be provided.
+        '''
 
         super(Collection, self).__init__('')
 

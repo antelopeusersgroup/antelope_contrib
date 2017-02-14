@@ -44,8 +44,8 @@ except ImportError as ex:
 
 try:
     from export_events.functions import open_verify_pf, safe_pf_get
-    from export_events.event import Event
-    from export_events.css2qml import css2qml
+    from export_events.db_reader import DatabaseReader
+    from export_events.css2qml import Css2Qml
     from export_events.xmltodict import xmlencode
 except ImportError as ex:
     sys.exit("[%s] Error loading  qml functions." % ex)
@@ -250,42 +250,44 @@ def main(argv=()):
         None, safe_pf_get(pf_object, 'detection_state_reject', []))
 
     logging.debug('Initializing database reader')
-    reader = Event(args.database,
-                   magnitude_type_subset=magnitude_type_subset,
-                   event_auth_select=event_auth_select,
-                   event_auth_reject=event_auth_reject,
-                   origin_auth_select=origin_auth_select,
-                   origin_auth_reject=origin_auth_reject,
-                   arrival_auth_select=arrival_auth_select,
-                   arrival_auth_reject=arrival_auth_reject,
-                   netmag_auth_select=netmag_auth_select,
-                   netmag_auth_reject=netmag_auth_reject,
-                   detection_state_select=detection_state_select,
-                   detection_state_reject=detection_state_reject,
-                   mt_auth_select=mt_auth_select,
-                   mt_auth_reject=mt_auth_reject,
-                   fplane_auth_select=fplane_auth_select,
-                   fplane_auth_reject=fplane_auth_reject)
+    reader = DatabaseReader(
+        args.database,
+        magnitude_type_subset=magnitude_type_subset,
+        event_auth_select=event_auth_select,
+        event_auth_reject=event_auth_reject,
+        origin_auth_select=origin_auth_select,
+        origin_auth_reject=origin_auth_reject,
+        arrival_auth_select=arrival_auth_select,
+        arrival_auth_reject=arrival_auth_reject,
+        netmag_auth_select=netmag_auth_select,
+        netmag_auth_reject=netmag_auth_reject,
+        detection_state_select=detection_state_select,
+        detection_state_reject=detection_state_reject,
+        mt_auth_select=mt_auth_select,
+        mt_auth_reject=mt_auth_reject,
+        fplane_auth_select=fplane_auth_select,
+        fplane_auth_reject=fplane_auth_reject)
 
     logging.debug('Initializing CSS3.0 to QuakeML converter')
-    converter = css2qml(reader,
-                        reviewed_flags=reviewed_flags,
-                        automatic_authors=automatic_authors,
-                        etype_type_map=etype_type_map,
-                        etype_certainty_map=etype_certainty_map,
-                        uri_prefix=uri_prefix, agency_uri=agency_uri,
-                        default_network=default_network, agency_id=agency_id,
-                        catalog_author=catalog_author,
-                        qml_ns=qml_ns, anss_catalog_ns=anss_catalog_ns,
-                        qml_bed_ns=qml_bed_ns, qml_bedrt_ns=qml_bedrt_ns,
-                        info_description=info_description,
-                        info_comment=info_comment,
-                        add_origin=add_origin,
-                        preferred_magtypes=preferred_magtypes,
-                        add_magnitude=add_magnitude, add_stamag=add_stamag,
-                        add_fplane=add_fplane, add_mt=add_mt,
-                        add_arrival=add_arrival, add_detection=add_detection,
-                        extend_anss_catalog=extend_anss_catalog)
+    converter = Css2Qml(
+        reader,
+        reviewed_flags=reviewed_flags,
+        automatic_authors=automatic_authors,
+        etype_type_map=etype_type_map,
+        etype_certainty_map=etype_certainty_map,
+        uri_prefix=uri_prefix, agency_uri=agency_uri,
+        default_network=default_network, agency_id=agency_id,
+        catalog_author=catalog_author,
+        qml_ns=qml_ns, anss_catalog_ns=anss_catalog_ns,
+        qml_bed_ns=qml_bed_ns, qml_bedrt_ns=qml_bedrt_ns,
+        info_description=info_description,
+        info_comment=info_comment,
+        add_origin=add_origin,
+        preferred_magtypes=preferred_magtypes,
+        add_magnitude=add_magnitude, add_stamag=add_stamag,
+        add_fplane=add_fplane, add_mt=add_mt,
+        add_arrival=add_arrival, add_detection=add_detection,
+        extend_anss_catalog=extend_anss_catalog)
 
     logging.debug('Initializing database reader')
     reader.get_event(args.evid)
