@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import re
 import logging
+from collections import OrderedDict
 
 from export_events.functions import (
     km2m, get_ne_on_ellipse, m2deg_lat, m2deg_lon)
@@ -25,51 +26,65 @@ except ImportError as ex:
 #
 # The keys to these dictionaries are regular expressions; if no match is found
 # then a value of None should be assigned to the event type or certainty.
-DEFAULT_ETYPE_EVENT_TYPE_MAP = {
-    '[knsu]e': 'earthquake',
-    '[knsu]a': 'anthropogenic event',
-    '[knsu]x': 'explosion',
-    '[knsu]f': 'accidental explosion',
-    '[knsu]h': 'chemical explosion',
-    '[knsu]g': 'controlled explosion',
-    '[knsu]j': 'experimental explosion',
-    '[knsu]d': 'industrial explosion',
-    '[knsu]m': 'mining explosion',
-    '[knsu]n': 'nuclear explosion',
-    '[knsu]i': 'induced or triggered event',
-    '[knsu]r': 'rock burst',
-    '[knsu]w': 'reservoir loading',
-    '[knsu]k': 'fluid injection',
-    '[knsu]q': 'fluid extraction',
-    '[knsu]p': 'crash',
-    '[knsu]o': 'other',
-    '[knsu]s': 'atmospheric event',
-    '[knsu]b': 'avalanche',
-    '[knsu]z': 'ice quake',
-    '[knsu]l': 'landslide',
-    '[knsu]t': 'meteorite',
-    '[knsu]v': 'volcanic eruption',
-    '[knsu]u': 'not reported',
-    'qb': 'quarry blast',
-    'eq': 'earthquake',
-    'me': 'meteorite',
-    'ex': 'explosion',
-    'o': 'other event',
-    'l': 'earthquake',
-    'r': 'earthquake',
-    't': 'earthquake',
-    'f': 'earthquake',
-    }
+DEFAULT_ETYPE_EVENT_TYPE_MAP = OrderedDict([
+    ('[knsu]e', 'earthquake'),
+    ('[knsu]d', 'industrial explosion'),
+    ('[knsu]m', 'mining explosion'),
+    ('[knsu]r', 'rock burst'),
+    ('[knsu]w', 'reservoir loading'),
+    ('[knsu]k', 'fluid injection'),
+    ('[knsu]q', 'fluid extraction'),
+    ('[knsu]a', 'anthropogenic event'),
+    ('[knsu]x', 'explosion'),
+    ('[knsu]f', 'accidental explosion'),
+    ('[knsu]h', 'chemical explosion'),
+    ('[knsu]g', 'controlled explosion'),
+    ('[knsu]j', 'experimental explosion'),
+    ('[knsu]n', 'nuclear explosion'),
+    ('[knsu]i', 'induced or triggered event'),
+    ('[knsu]p', 'crash'),
+    ('[knsu]o', 'other'),
+    ('[knsu]s', 'atmospheric event'),
+    ('[knsu]b', 'avalanche'),
+    ('[knsu]z', 'ice quake'),
+    ('[knsu]l', 'landslide'),
+    ('[knsu]t', 'meteorite'),
+    ('[knsu]v', 'volcanic eruption'),
+    ('[knsu]u', 'not reported'),
+    ('qb', 'quarry blast'),
+    ('eq', 'earthquake'),
+    ('me', 'meteorite'),
+    ('ex', 'explosion'),
+    ('o', 'other event'),
+    ('l', 'earthquake'),
+    ('r', 'earthquake'),
+    ('t', 'earthquake'),
+    ('f', 'earthquake'),
+    ])
 
-DEFAULT_ETYPE_CERTAINTY_MAP = {
-    'k[abdefghijklmnopqrstuvwxz]': 'known',
-    's[abdefghijklmnopqrstuvwxz]': 'suspected',
-    }
+DEFAULT_ETYPE_CERTAINTY_MAP = OrderedDict([
+    ('k[abdefghijklmnopqrstuvwxz]', 'known'),
+    ('s[abdefghijklmnopqrstuvwxz]', 'suspected'),
+    ])
 
 FELT_KEYWORDS = ['felt', 'damag', 'ressenti', 'dommag']
 AKA_KEYWORDS = ['known as', 'connu']
 
 NAMESPACES = ['BED', 'BED-RT']
+
+
+def _value_dict(value):
+    return OrderedDict([('value', value)])
+
+
+def _optional_update(dictionary, key, value):
+    if value is None:
+        return
+    if isinstance(value, list) and len(value) == 0:
+        return
+    if isinstance(value, OrderedDict) and len(value) == 0:
+        return
+    dictionary[key] = value
 
 
 # pylint:disable=logging-not-lazy
@@ -149,6 +164,9 @@ class Css2Qml(object):
         # initialize result
         self.qml_events = []
         self.detection_id_counter = 0
+
+    def _time_dict(self, value):
+        return _value_dict(self._utc_datetime(value))
 
     def dump(self, evids, namespace='BED'):
         '''
@@ -296,14 +314,14 @@ class Css2Qml(object):
 
             self.qml_events.append(event_dict)
 
-        return {
-            'q:quakeml': {
-                '@xmlns:q': self.qml_ns,
-                '@xmlns': namespace,
-                '@xmlns:catalog': self.anss_catalog_ns,
-                'eventParameters': event_parameters_dict,
-                }
-            }
+        return OrderedDict([
+            ('q:quakeml', OrderedDict([
+                ('@xmlns:q', self.qml_ns),
+                ('@xmlns', namespace),
+                ('@xmlns:catalog', self.anss_catalog_ns),
+                ('eventParameters', event_parameters_dict),
+                ]))
+            ])
 
     def _new_event_parameters(self):
         '''
@@ -312,19 +330,21 @@ class Css2Qml(object):
 
         This class serves as a container for Event objects.
         '''
-        event_parameters_dict = {
-            '@publicID': self.event.database,
-            'creationInfo': {
-                'creationTime': self._utc_datetime(),
-                'author': __name__,
-                'agencyID': self.agency_id.lower(),
-                # 'agencyURI': self._uri(),
-                # 'version': stock.now(),
-                }
-            }
+        event_parameters_dict = OrderedDict([
+            ('@publicID', self.event.database),
+            ('creationInfo', OrderedDict([
+                ('creationTime', self._utc_datetime()),
+                ('author', __name__),
+                ('agencyID', self.agency_id.lower()),
+                # ('agencyURI', self._uri()),
+                # ('version', stock.now()),
+                ]))
+            ])
 
         if self.info_comment:
-            event_parameters_dict['comment'] = {'text': self.info_comment}
+            event_parameters_dict['comment'] = OrderedDict([
+                ('text', self.info_comment),
+                ])
 
         if self.info_description:
             event_parameters_dict['description'] = self.info_description
@@ -340,17 +360,16 @@ class Css2Qml(object):
         resource id is found, the intention is for that event to be deleted.
         '''
         # start by constructing null event
-        qml_dict = {
-            '@publicID': self._id('event', evid),
-            'type': 'not existing',
-            'creationInfo': {
-                'creationTime': self._utc_datetime(),
-                'author': self.catalog_author,
-                'agencyID': self.agency_id.lower(),
-                # 'agencyURI': self._uri(),
-                # 'version': stock.now(),
-                }
-            }
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('event', evid)),
+            ('type', 'not existing'),
+            ('certainty', None),
+            ('creationInfo', OrderedDict([
+                ('creationTime', self._utc_datetime()),
+                ('author', self.catalog_author),
+                ('agencyID', self.agency_id.lower()),
+                ]))
+            ])
 
         self.event.get_event(evid)
         if self.event and self.event.evid == evid and self.event.valid:
@@ -373,7 +392,10 @@ class Css2Qml(object):
             qml_dict['creationInfo'] = self._creation_info(
                 record, 'event', agency, author)
 
-            qml_dict.update(self._convert_event_comments())
+            description_list, comment_list = \
+                self._event_description_comment_lists()
+            _optional_update(qml_dict, 'comment', comment_list)
+            _optional_update(qml_dict, 'description', description_list)
 
         else:
             self.logger.warning('Evid [%s] not available, adding null event.'
@@ -545,15 +567,15 @@ class Css2Qml(object):
         view, and the table from which that view was constructed.
         '''
         table_lddate = '%s.lddate' % table
-        creation_info_dict = {
-            'creationTime': self._utc_datetime(record[table_lddate]),
-            }
-        if author is not None:
-            creation_info_dict['author'] = author
-        if agency is not None:
-            creation_info_dict['agencyID'] = agency
 
-        return creation_info_dict
+        qml_dict = OrderedDict()
+        if agency is not None:
+            qml_dict['agencyID'] = agency
+        if author is not None:
+            qml_dict['author'] = author
+        qml_dict['creationTime'] = self._utc_datetime(record[table_lddate])
+
+        return qml_dict
 
     def _waveform_id(self, record, table):
         '''
@@ -562,15 +584,13 @@ class Css2Qml(object):
         '''
         table_sta = '%s.sta' % table
         table_chan = '%s.chan' % table
-        waveform_id_dict = {
-            '@networkCode': record['snetsta.snet'] or self.default_network,
-            '@stationCode': record['snetsta.fsta'] or record[table_sta],
-            '@locationCode': record['schanloc.loc'] or '',
-            '@channelCode': record['schanloc.fchan'] or record[table_chan],
-            # '#text': self._id('stachan', record[table_sta],
-            #                   record[table_chan]),
-            }
-        return waveform_id_dict
+        qml_dict = OrderedDict([
+            ('@networkCode', record['snetsta.snet'] or self.default_network),
+            ('@stationCode', record['snetsta.fsta'] or record[table_sta]),
+            ('@locationCode', record['schanloc.loc'] or ''),
+            ('@channelCode', record['schanloc.fchan'] or record[table_chan]),
+            ])
+        return qml_dict
 
     def _convert_origin(self, record):
         '''
@@ -587,8 +607,26 @@ class Css2Qml(object):
         mode, status = self.get_mode_status_review(record['origin.review'])
         method_rid, model, _ = self.get_method_model(
             record['origin.algorithm'])
-        model_rid = "{0}/{1}".format('vmodel', model) if model else None
         agency, author, _, _, _ = self.split_auth(record['origin.auth'])
+        model_rid = "{0}/{1}".format('vmodel', model) if model else None
+
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('origin', record['origin.orid'])),
+            ('time', self._time_dict(record['origin.time'])),
+            ('latitude', _value_dict(record['origin.lat'])),
+            ('longitude', _value_dict(record['origin.lon'])),
+            ('depth', _value_dict(km2m(record['origin.depth']))),
+            ('quality', OrderedDict([
+                ('associatedPhaseCount', record['origin.nass']),
+                ('usedPhaseCount', record['origin.ndef']),
+                ('standardError', record['origerr.sdobs']),
+                ])),
+            ('evaluationMode', mode),
+            ('evaluationStatus', status),
+            ('methodID', method_rid),
+            ])
+
+        _optional_update(qml_dict, 'earthModelID', model_rid)
 
         smajax = km2m(record['origerr.smajax'])
         sminax = km2m(record['origerr.sminax'])
@@ -599,12 +637,12 @@ class Css2Qml(object):
             latsd = m2deg_lat(ns_error_m)
             lonsd = m2deg_lon(ew_error_m, latitude=record['origin.lat'])
 
-            uncertainty = {
-                'preferredDescription': 'uncertainty ellipse',
-                'maxHorizontalUncertainty': smajax,
-                'minHorizontalUncertainty': sminax,
-                'azimuthMaxHorizontalUncertainty': strike,
-                }
+            uncertainty = OrderedDict([
+                ('preferredDescription', 'uncertainty ellipse'),
+                ('maxHorizontalUncertainty', smajax),
+                ('minHorizontalUncertainty', sminax),
+                ('azimuthMaxHorizontalUncertainty', strike),
+                ])
 
             if record['origerr.conf'] is not None:
                 uncertainty['confidenceLevel'] = record['origerr.conf'] * 100.
@@ -615,43 +653,23 @@ class Css2Qml(object):
             lonsd = None
             uncertainty = None
 
-        qml_dict = {
-            '@publicID': self._id('origin', record['origin.orid']),
-            'latitude': {'value': record['origin.lat']},
-            'longitude': {'value': record['origin.lon']},
-            'depth': {'value': km2m(record['origin.depth'])},
-            'time': {'value': self._utc_datetime(record['origin.time'])},
-            'quality': {
-                'standardError': record['origerr.sdobs'],
-                'usedPhaseCount': record['origin.ndef'],
-                'associatedPhaseCount': record['origin.nass'],
-                },
-            'evaluationMode': mode,
-            'evaluationStatus': status,
-            'methodID': method_rid,
-            'creationInfo': self._creation_info(
-                record, 'origin', agency, author),
-            }
+        _optional_update(qml_dict['time'], 'uncertainty',
+                         record['origerr.stime'])
+        _optional_update(qml_dict['latitude'], 'uncertainty', latsd)
+        _optional_update(qml_dict['longitude'], 'uncertainty', lonsd)
+        _optional_update(qml_dict['depth'], 'uncertainty',
+                         km2m(record['origerr.sdepth']))
+        _optional_update(qml_dict, 'originUncertainty', uncertainty)
+        _optional_update(qml_dict, 'comment',
+                         self._comment_list(record['origin.commid']))
 
-        if model_rid:
-            qml_dict['earthModelID'] = model_rid
-        if latsd is not None:
-            qml_dict['latitude']['uncertainty'] = latsd
-        if lonsd is not None:
-            qml_dict['longitude']['uncertainty'] = lonsd
-        if uncertainty:
-            qml_dict['originUncertainty'] = uncertainty
-        if record['origerr.sdepth'] is not None:
-            qml_dict['depth']['uncertainty'] = km2m(record['origerr.sdepth'])
-        if record['origerr.stime'] is not None:
-            qml_dict['time']['uncertainty'] = km2m(record['origerr.stime'])
+        qml_dict['creationInfo'] = self._creation_info(record, 'origin',
+                                                       agency, author)
 
         if self.add_arrival:
             qml_dict['arrival'] = [self._convert_arrival(item)
                                    for item in self.event.all_arrivals(
                                        orid=record['origin.orid'])]
-
-        qml_dict.update(self._convert_comments(record['origin.commid']))
 
         if self.extend_anss_catalog:
             qml_dict.update(self._catalog_info(record['origin.orid'],
@@ -667,23 +685,24 @@ class Css2Qml(object):
         # pylint:disable=protected-access
         self.logger.debug('Converting netmag.magid [%d]'
                           % record['netmag.magid'])
+
         agency, author, _, method, _ = self.split_auth(record['netmag.auth'])
-        qml_dict = {
-            '@publicID': self._id('magnitude', record['netmag.magid']),
-            'mag': {'value': record['netmag.magnitude']},
-            'type': record['netmag.magtype'],
-            'stationCount': record['netmag.nsta'] or 0,
-            'originID': self._id('origin', record['netmag.orid']),
-            'methodID': method,
-            'creationInfo': self._creation_info(
-                record, 'netmag', agency, author),
-            }
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('magnitude', record['netmag.magid'])),
+            ('mag', _value_dict(record['netmag.magnitude'])),
+            ('type', record['netmag.magtype']),
+            ('originID', self._id('origin', record['netmag.orid'])),
+            ])
 
-        if record['netmag.uncertainty'] is not None:
-            qml_dict['mag']['uncertainty'] = record['netmag.uncertainty']
+        _optional_update(qml_dict['mag'], 'uncertainty',
+                         record['netmag.uncertainty']),
+        _optional_update(qml_dict, 'methodID', method),
+        _optional_update(qml_dict, 'stationCount', record['netmag.nsta']),
+        _optional_update(qml_dict, 'comment',
+                         self._comment_list(record['netmag.commid']))
 
-        qml_dict.update(self._convert_comments(record['netmag.commid']))
-
+        qml_dict['creationInfo'] = self._creation_info(record, 'netmag',
+                                                       agency, author)
         return qml_dict
 
     def _convert_stamags(self, record):
@@ -694,27 +713,26 @@ class Css2Qml(object):
         self.logger.debug('Converting stamag.magid [%d]'
                           % record['stamag.magid'])
 
-        agency, author, _, method, _ = self.split_auth(
-            record['stamag.auth'])
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('magnitude/station', record['stamag.magid'],
+                                   record['stamag.sta'])),
+            ('originID', self._id('origin', record['stamag.orid'])),
+            ('mag', _value_dict(record['stamag.magnitude'])),
+            ('type', record['stamag.magtype']),
+            ('amplitudeID', self._id('amplitude', record['stamag.arid'],
+                                     record['stamag.sta'])),
+            ('waveformID', self._waveform_id(record, 'stamag')),
+            ])
 
-        qml_dict = {
-            '@publicID': self._id('magnitude/station', record['stamag.magid'],
-                                  record['stamag.sta']),
-            'originID': self._id('origin', record['stamag.orid']),
-            'mag': {'value': record['stamag.magnitude']},
-            'type': record['stamag.magtype'],
-            'amplitudeID': self._id('amplitude', record['stamag.arid'],
-                                    record['stamag.sta']),
-            'methodID': method,
-            'waveformID': self._waveform_id(record, 'stamag'),
-            'creationInfo': self._creation_info(
-                record, 'stamag', agency, author)
-            }
+        agency, author, _, method, _ = self.split_auth(record['stamag.auth'])
+        _optional_update(qml_dict, 'methodID', method),
+        _optional_update(qml_dict['mag'], 'uncertainty',
+                         record['stamag.uncertainty'])
 
-        if record['stamag.uncertainty'] is not None:
-            qml_dict['stamag']['uncertainty'] = record['stamag.uncertainty']
-
-        qml_dict.update(self._convert_comments(record['netmag.commid']))
+        _optional_update(qml_dict, 'comment',
+                         self._comment_list(record['netmag.commid']))
+        qml_dict['creationInfo'] = self._creation_info(record, 'stamag',
+                                                       agency, author)
 
         return qml_dict
 
@@ -738,30 +756,33 @@ class Css2Qml(object):
         agency, author, _, method, _ = self.split_auth(
             record['stamag.auth'])
 
-        qml_dict = {
-            '@publicID': self._id('amplitude', record['stamag.arid'],
-                                  record['stamag.sta']),
-            'amplitude': {'value': amplitude},
-            'type': 'A' + record['stamag.phase'].upper(),
-            'unit': unit,
-            'methodID': method,
-            'period': {'value': record['arrival.per']},
-            'snr': record['arrival.snr'],
-            'timeWindow': {
-                'begin': 0,
-                'end': 0,
-                'reference': self._utc_datetime(record['arrival.time']),
-                },
-            'waveformID': self._waveform_id(record, 'stamag'),
-            'magnitudeHint': record['stamag.phase'],
-            'creationInfo': self._creation_info(
-                record, 'arrival', agency, author)
-            }
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('amplitude', record['stamag.arid'],
+                                   record['stamag.sta'])),
+            ('amplitude', _value_dict(amplitude)),
+            ('type', 'A' + record['stamag.phase'].upper()),
+            ('unit', unit),
+            ('methodID', method),
+            ('period', _value_dict(record['arrival.per'])),
+            ('snr', record['arrival.snr']),
+            ('timeWindow', OrderedDict([
+                ('begin', 0),
+                ('end', 0),
+                ('reference', self._utc_datetime(record['arrival.time'])),
+                ])),
+            ('waveformID', self._waveform_id(record, 'stamag')),
+            ('magnitudeHint', record['stamag.phase']),
+            ])
 
         if record['arrival.amp']:
-            qml_dict['genericAmplitude'] = {'value': record['arrival.amp']*1e9}
+            qml_dict['genericAmplitude'] = _value_dict(record['arrival.amp'] *
+                                                       1e9)
 
-        qml_dict.update(self._convert_comments(record['arrival.commid']))
+        _optional_update(qml_dict, 'comment',
+                         self._comment_list(record['arrival.commid']))
+
+        qml_dict['creationInfo'] = self._creation_info(record, 'arrival',
+                                                       agency, author)
 
         return qml_dict
 
@@ -776,24 +797,24 @@ class Css2Qml(object):
         agency, author, _, method, _ = self.split_auth(auth)
         pick_mode, pick_status = self.get_mode_status_auth(auth)
 
-        qml_dict = {
-            '@publicID': self._id('pick', record['arrival.arid']),
-            'time': {'value': self._utc_datetime(record['arrival.time'])},
-            'waveformID': self._waveform_id(record, 'arrival'),
-            'methodID': method,
-            'backazimuth': {'value': record['assoc.esaz']},
-            'phaseHint': record['arrival.phase'] or record['arrival.iphase'],
-            'evaluationMode': pick_mode,
-            'evaluationStatus': pick_status,
-            'creationInfo': self._creation_info(
-                record, 'arrival', agency, author),
-            }
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('pick', record['arrival.arid'])),
+            ('time', self._time_dict(record['arrival.time'])),
+            ('waveformID', self._waveform_id(record, 'arrival')),
+            ('methodID', method),
+            ('backazimuth', _value_dict(record['assoc.esaz'])),
+            ('phaseHint', record['arrival.phase'] or record['arrival.iphase']),
+            ('evaluationMode', pick_mode),
+            ('evaluationStatus', pick_status),
+            ])
 
-        if record['arrival.deltim']:
-            qml_dict['time']['uncertainty'] = record['arrival.deltim']
+        _optional_update(qml_dict['time'], 'uncertainty',
+                         record['arrival.deltim'])
 
         if record['arrival.snr']:
-            qml_dict['comment'] = {'text': 'snr: %s' % record['arrival.snr']}
+            qml_dict['comment'] = OrderedDict([
+                ('text', 'snr: %s' % record['arrival.snr']),
+                ])
 
         if record['arrival.qual'] is not None:
             onset_quality = record['arrival.qual'].lower()
@@ -814,6 +835,8 @@ class Css2Qml(object):
                 qml_dict['polarity'] = 'undecidable'
 
         # n.b. picks don't get comments, arrivals and amplitudes do
+        qml_dict['creationInfo'] = self._creation_info(record, 'arrival',
+                                                       agency, author)
 
         return qml_dict
 
@@ -827,21 +850,21 @@ class Css2Qml(object):
         self.detection_id_counter = self.detection_id_counter + 1
         valid_id = self.detection_id_counter
 
-        qml_dict = {
-            '@publicID': self._id('detection', valid_id,
-                                  record['detection.srcid']),
-            'time': {'value': self._utc_datetime(record['detection.time'])},
-            'waveformID': self._waveform_id(record, 'detection'),
-            'comment': {
-                'text': 'snr:%s, state:%s' % (record['detection.snr'],
-                                              record['detection.state']),
-                },
-            'creationInfo': self._creation_info(record, 'detection'),
-            'filterID': self._id('filter/bandpass/butterworth',
-                                 record['detection.filter']),
-            'evaluationMode': 'automatic',
-            'evaluationStatus': 'preliminary',
-            }
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('detection', valid_id,
+                                   record['detection.srcid'])),
+            ('time', self._time_dict(record['detection.time'])),
+            ('waveformID', self._waveform_id(record, 'detection')),
+            ('comment', OrderedDict([
+                ('text', 'snr:%s, state:%s' % (record['detection.snr'],
+                                               record['detection.state'])),
+                ])),
+            ('creationInfo', self._creation_info(record, 'detection')),
+            ('filterID', self._id('filter/bandpass/butterworth',
+                                  record['detection.filter'])),
+            ('evaluationMode', 'automatic'),
+            ('evaluationStatus', 'preliminary'),
+            ])
         return qml_dict
 
     def _convert_arrival(self, record):
@@ -857,20 +880,22 @@ class Css2Qml(object):
         else:
             weight = 0
 
-        qml_dict = {
-            '@publicID': self._id('arrival', record['assoc.arid'],
-                                  record['assoc.orid']),
-            'pickID': self._id('pick', record['assoc.arid']),
-            'phase': record['assoc.phase'],
-            'azimuth': record['assoc.esaz'],
-            'distance': record['assoc.delta'],
-            'timeResidual': record['assoc.timeres'],
-            'timeWeight': weight,
-            'earthModelID': self._id('vmodel', record['assoc.vmodel']),
-            'creationInfo': self._creation_info(
-                record, 'assoc')
-            }
-        qml_dict.update(self._convert_comments(record['assoc.commid']))
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('arrival', record['assoc.arid'],
+                                   record['assoc.orid'])),
+            ('pickID', self._id('pick', record['assoc.arid'])),
+            ('phase', record['assoc.phase']),
+            ('azimuth', record['assoc.esaz']),
+            ('distance', record['assoc.delta']),
+            ('timeResidual', record['assoc.timeres']),
+            ('timeWeight', weight),
+            ('earthModelID', self._id('vmodel', record['assoc.vmodel'])),
+            ])
+
+        _optional_update(qml_dict, 'comment',
+                         self._comment_list(record['assoc.commid']))
+
+        qml_dict['creationInfo'] = self._creation_info(record, 'assoc')
 
         return qml_dict
 
@@ -893,48 +918,50 @@ class Css2Qml(object):
         mode, status = self.get_mode_status_auth(record['%s.auth' % table])
         agency, author, _, _, _ = self.split_auth(record['%s.auth' % table])
 
-        nodal_planes = {
-            'nodalPlane1': {
-                'strike': {'value': record['%s.str1' % table]},
-                'dip': {'value': record['%s.dip1' % table]},
-                'rake': {'value': record['%s.rake1' % table]},
-                },
-            'nodalPlane2': {
-                'strike': {'value': record['%s.str2' % table]},
-                'dip': {'value': record['%s.dip2' % table]},
-                'rake': {'value': record['%s.rake2' % table]},
-                }
-            }
+        nodal_planes = OrderedDict([
+            ('nodalPlane1', OrderedDict([
+                ('strike', _value_dict(record['%s.str1' % table])),
+                ('dip', _value_dict(record['%s.dip1' % table])),
+                ('rake', _value_dict(record['%s.rake1' % table])),
+                ])),
+            ('nodalPlane2', OrderedDict([
+                ('strike', _value_dict(record['%s.str2' % table])),
+                ('dip', _value_dict(record['%s.dip2' % table])),
+                ('rake', _value_dict(record['%s.rake2' % table])),
+                ])),
+            ])
 
-        principal_axes = {
-            'nAxis': {
-                'length': {'value': record['%s.naxlength' % table]},
-                'azimuth': {'value': record['%s.naxazm' % table]},
-                'plunge': {'value': record['%s.naxplg' % table]},
-                },
-            'tAxis': {
-                'length': {'value': record['%s.taxlength' % table]},
-                'azimuth': {'value': record['%s.taxazm' % table]},
-                'plunge': {'value': record['%s.taxplg' % table]},
-                },
-            'pAxis': {
-                'length': {'value': record['%s.paxlength' % table]},
-                'azimuth': {'value': record['%s.paxazm' % table]},
-                'plunge': {'value': record['%s.paxplg' % table]},
-                }
-            }
+        principal_axes = OrderedDict([
+            ('nAxis', OrderedDict([
+                ('length', _value_dict(record['%s.naxlength' % table])),
+                ('azimuth', _value_dict(record['%s.naxazm' % table])),
+                ('plunge', _value_dict(record['%s.naxplg' % table])),
+                ])),
+            ('tAxis', OrderedDict([
+                ('length', _value_dict(record['%s.taxlength' % table])),
+                ('azimuth', _value_dict(record['%s.taxazm' % table])),
+                ('plunge', _value_dict(record['%s.taxplg' % table])),
+                ])),
+            ('pAxis', OrderedDict([
+                ('length', _value_dict(record['%s.paxlength' % table])),
+                ('azimuth', _value_dict(record['%s.paxazm' % table])),
+                ('plunge', _value_dict(record['%s.paxplg' % table])),
+                ])),
+            ])
 
-        qml_dict = {
-            '@publicID': (record['mt.qmlid'] or
-                          self._id('focalMechanism', record[id_key])),
-            'triggeringOriginID': self._id('origin',
-                                           record['%s.orid' % table]),
-            'nodalPlanes': nodal_planes,
-            'principalAxes': principal_axes,
-            'creationInfo': self._creation_info(record, table, agency, author),
-            'evaluationMode': mode,
-            'evaluationStatus': status,
-        }
+        qml_dict = OrderedDict([
+            ('@publicID', (record['mt.qmlid'] or
+                           self._id('focalMechanism', record[id_key]))),
+            ('triggeringOriginID', self._id('origin',
+                                            record['%s.orid' % table])),
+            ('nodalPlanes', nodal_planes),
+            ('principalAxes', principal_axes),
+            ('evaluationMode', mode),
+            ('evaluationStatus', status),
+            ])
+
+        qml_dict['creationInfo'] = self._creation_info(record, table,
+                                                       agency, author)
 
         return qml_dict
 
@@ -945,33 +972,38 @@ class Css2Qml(object):
         self.logger.debug('Converting mt.mtid [%d]' % record['mt.mtid'])
         qml_dict = self._convert_fplane(record, table='mt')
 
-        moment_tensor = {
-            '@publicID': self._id('momentTensor', record['mt.mtid']),
-            'derivedOrigin': self._id('origin', record['mt.orid']),
-            'scalarMoment': record['mt.scm'],
-            'doubleCouple': record['mt.pdc'],
-            'tensor': {
-                'Mrr': {'value': record['mt.tmrr']},
-                'Mtt': {'value': record['mt.tmtt']},
-                'Mpp': {'value': record['mt.tmpp']},
-                'Mrt': {'value': record['mt.tmrt']},
-                'Mrp': {'value': record['mt.tmrp']},
-                'Mtp': {'value': record['mt.tmtp']},
-                },
-            'creationInfo': self._creation_info(record, table='mt'),
-            }
+        moment_tensor = OrderedDict([
+            ('@publicID', self._id('momentTensor', record['mt.mtid'])),
+            ('derivedOrigin', self._id('origin', record['mt.orid'])),
+            ('scalarMoment', record['mt.scm']),
+            ('doubleCouple', record['mt.pdc']),
+            ('tensor', OrderedDict([
+                ('Mrr', _value_dict(record['mt.tmrr'])),
+                ('Mtt', _value_dict(record['mt.tmtt'])),
+                ('Mpp', _value_dict(record['mt.tmpp'])),
+                ('Mrt', _value_dict(record['mt.tmrt'])),
+                ('Mrp', _value_dict(record['mt.tmrp'])),
+                ('Mtp', _value_dict(record['mt.tmtp'])),
+                ])),
+            ])
 
         qml_dict['momentTensor'] = moment_tensor
 
+        qml_dict['creationInfo'] = self._creation_info(record, table='mt')
+
         return qml_dict
 
-    def _convert_event_comments(self):
+    def _event_description_comment_lists(self):
         '''
-        Sort event-related comments into generic comments and descriptions.
+        Construct lists of comments and descriptions from event remarks.
+
+        This is one of the few functions here which may be unique to the
+        Geological Survey of Canada - at least the bilingual keywords are.
         '''
         records = self.event.all_comments(commid=self.event['event.commid'])
 
-        qml_dict = {}
+        description_list = []
+        comment_list = []
         for record in records:
             is_description = False
             for keywords, description_type in zip(
@@ -984,37 +1016,32 @@ class Css2Qml(object):
                         'Converting remark commid [%d] lineno [%d] '
                         'to event description'
                         % (record['remark.commid'], record['remark.lineno']))
-                    if 'description' not in qml_dict:
-                        qml_dict['description'] = []
-                    qml_dict['description'] += [{
-                        'text': record['remark.remark'],
-                        'type': description_type,
-                        }]
+
+                    description_list += OrderedDict([
+                        ('text', record['remark.remark']),
+                        ('type', description_type),
+                        ])
                     is_description = True
                     continue
 
-            if is_description:
-                continue
+            if not is_description:
+                comment_list += self._convert_comment(record)
 
-            if 'comment' not in qml_dict:
-                qml_dict['comment'] = []
-            qml_dict['comment'] += self._convert_comment(record)
+        return description_list, comment_list
 
-        return qml_dict
-
-    def _convert_comments(self, commid):
+    def _comment_list(self, commid):
         '''
         Construct a QuakeML dictionary of comments from the view of all
         comments associated with this event, given a comment id.
         '''
         comment_records = self.event.all_comments(commid=commid)
 
-        qml_dict = {}
+        comment_list = []
         if len(comment_records) > 0:
-            qml_dict['comment'] = [self._convert_comment(item)
-                                   for item in comment_records]
+            comment_list = [self._convert_comment(item)
+                            for item in comment_records]
 
-        return qml_dict
+        return comment_list
 
     def _convert_comment(self, record):
         '''
@@ -1024,11 +1051,11 @@ class Css2Qml(object):
         self.logger.debug(
             'Converting remark commid [%d] lineno [%d] to comment'
             % (record['remark.commid'], record['remark.lineno']))
-        qml_dict = {
-            '@publicID': self._id('internal', record['remark.lineno']),
-            'text': record['remark.remark'],
-            'creationInfo': self._creation_info(record, 'remark'),
-            }
+        qml_dict = OrderedDict([
+            ('@publicID', self._id('internal', record['remark.lineno'])),
+            ('text', record['remark.remark']),
+            ('creationInfo', self._creation_info(record, 'remark')),
+            ])
 
         return qml_dict
 
@@ -1058,7 +1085,7 @@ class Css2Qml(object):
         In this case we are limiting this function to eventID and eventSource.
         '''
         self.logger.debug('Adding ANSS tags for eventid [%d]' % eventid)
-        catalog_dict = {}
+        catalog_dict = OrderedDict()
         temp = []
         ext_net = False
 
