@@ -18,17 +18,14 @@ except ImportError as ex:
     print(ex)
 
 
-def simple_table_present(table, dbpointer):
+def table_present(dbpointer, table):
     '''
     Determine if table is present in database.
 
-    Similar to verify_table but without rising exceptions
-    and without returning any objects back. It will only work
-    out a dbpointer and not a database name. The pointer
-    should be verified already.
+    Errors are logged on exceptions; otherwise silent.
     '''
-    assert isinstance(table, basestring)
     assert isinstance(dbpointer, datascope.Dbptr)
+    assert isinstance(table, basestring)
     logger = logging.getLogger(__name__)
 
     try:
@@ -45,34 +42,6 @@ def simple_table_present(table, dbpointer):
         is_present = False
 
     return is_present
-
-
-def verify_table(table, database=None, dbpointer=None):
-    '''
-    Open a database or database pointer and verify existence of a table.
-
-    On multiple objects (classes) we perform the same process
-    of verifying the presence of a table before we get to
-    interact with it. This will make that process easy since
-    you can get to that point either from a database name
-    or from a database pointer. The function will return
-    the database pointer that you are responsible for
-    cleaning later. The local view of the table will be
-    freed.
-    '''
-    assert (isinstance(database, basestring) or
-            isinstance(dbpointer, datascope.Dbptr))
-
-    if not isinstance(dbpointer, datascope.Dbptr):
-        dbpointer = datascope.dbopen(database)
-
-    logger = logging.getLogger(__name__)
-    if simple_table_present(table, dbpointer):
-        logger.debug('Table [%s] present in database' % table)
-        return dbpointer
-    else:
-        logger.debug('Table [%s] not in database' % table)
-        return None
 
 
 def is_null(value, null_value):
@@ -95,7 +64,6 @@ def get_all_fields(dbpointer, nulls=None):
     table fields and pull all values. Return a dictionary with the values.
     '''
     results = {}
-    # logger = logging.getLogger(__name__)
 
     if not dbpointer or not dbpointer.query(datascope.dbTABLE_PRESENT):
         return results
@@ -173,24 +141,6 @@ def safe_pf_get(pf, field, defaultval=False):
     logger.debug("pf.get(%s,%s) => %s" % (field, defaultval, value))
 
     return value
-
-
-# def _str(item):
-#    '''Return a string no matter what'''
-#    if item is not None:
-#        return str(item)
-#    else:
-#        return ''
-#
-
-# def _dict(*args, **kwargs):
-#    '''
-#    Return a dict only if at least one value is not None
-#    '''
-#    dict_ = Dict(*args, **kwargs)
-#    if dict_.values() == [None] * len(dict_):
-#        return None
-#    return dict_
 
 
 def filter_none(obj):

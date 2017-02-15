@@ -14,6 +14,7 @@ from __future__ import print_function
 
 import os
 import logging
+from collections import OrderedDict
 
 try:
     from antelope import stock
@@ -23,9 +24,7 @@ except ImportError as ex:
     print(ex)
 
 
-from export_events.functions import (simple_table_present, verify_table,
-                                     get_all_fields)
-
+from export_events.functions import table_present
 from export_events.db_collection import Collection
 
 
@@ -37,7 +36,7 @@ class DatabaseReader(object):
     inside the object.
     '''
     def __init__(self, database,
-                 magnitude_type_subset=('.*'),
+                 magnitude_type_subset='.*',
                  event_auth_select=(), event_auth_reject=(),
                  origin_auth_select=(), origin_auth_reject=(),
                  arrival_auth_select=(), arrival_auth_reject=(),
@@ -50,8 +49,8 @@ class DatabaseReader(object):
                                                   self.__class__.__name__]))
         self.logger.debug('Initializing')
 
-        self.database = database  # descriptor
-
+        if isinstance(magnitude_type_subset, str):
+            magnitude_type_subset = [magnitude_type_subset]
         # configure filters
         self.magnitude_type_subset = magnitude_type_subset
         self.event_auth_select = event_auth_select
@@ -69,22 +68,25 @@ class DatabaseReader(object):
         self.fplane_auth_select = fplane_auth_select
         self.fplane_auth_reject = fplane_auth_reject
 
+        self.database = database  # descriptor
         dirname, basename = os.path.split(self.database)
         self.logger.info('Descriptor path: %s' % dirname)
         self.logger.info('Descriptor file: %s' % basename)
 
-        self.db = verify_table('event', self.database)
-        self.clean()
+        self.db = datascope.dbopen(database)
+        self.table_present = OrderedDict([
+            (table, table_present(self.db, table))
+            for table in ['event', 'origin', 'origerr', 'assoc', 'arrival',
+                          'snetsta', 'schanloc', 'netmag', 'stamag', 'wfmeas',
+                          'remark', 'detection', 'fplane', 'mt']])
+        for table, present in self.table_present.iteritems():
+            self.logger.info('Table "%s" %s in database'
+                             % (table, 'present' if present else 'not'))
 
-    def clean(self):
-        '''
-        Clean up local storage of event details.
-        '''
-        self.logger.debug('Cleaning')
         self.valid = False
         self.evid = None
-        self.event_data = {}
 
+        self.events = Collection(dbpointer=self.db, table='event')
         self.origins = Collection(dbpointer=self.db, table='origin')
         self.arrivals = Collection(dbpointer=self.db, table='assoc')
         self.detections = Collection(dbpointer=self.db, table='detection')
@@ -94,22 +96,137 @@ class DatabaseReader(object):
         self.mts = Collection(dbpointer=self.db, table='mt')
         self.remarks = Collection(dbpointer=self.db, table='remark')
 
-    def __getitem__(self, name):
-        if name in self.event_data:
-            return self.event_data[name]
+    def clean(self):
+        '''
+        Clean up local storage of event details.
+        '''
+        self.logger.debug('Cleaning')
+
+        self.valid = False
+        self.evid = None
+
+        self.events.clean()
+        self.origins.clean()
+        self.arrivals.clean()
+        self.detections.clean()
+        self.stamags.clean()
+        self.magnitudes.clean()
+        self.fplanes.clean()
+        self.mts.clean()
+        self.remarks.clean()
+
+    def __getitem__(self, key):
+        if key in self:
+            return self.events.values()[0].data[key]
         else:
             return None
 
+    def __setitem__(self, key, value):
+        if self.valid:
+            self.events.values()[0].data[key] = value
+
+    def __contains__(self, key):
+        if self.valid:
+            return key in self.events.values()[0].data
+        else:
+            return False
+
     def __str__(self):
         contents = []
-        for container in ['origins', 'arrivals', 'detections', 'remarks',
-                          'stamags', 'magnitudes', 'fplanes', 'mts']:
+        for container in ['origins', 'arrivals', 'detections', 'magnitudes',
+                          'stamags', 'fplanes', 'mts', 'remarks']:
             count = len(getattr(self, container).values())
             if count > 0:
                 contents += ['%d %s' % (count, container)]
         return '%s evid [%d] containing: %s' % (self.__class__.__name__,
                                                 self.evid,
                                                 ', '.join(contents))
+
+    def get_evids(self, subset=None):
+        '''
+        Returns list of events by evid.
+
+        An optional subset can be specified to return a subset of of events
+        by time, location, evid or orid.
+
+        Parameters
+        ----------
+        subset: str
+            see "man dbexpressions" for syntax
+
+        Returns
+        -------
+        list of integers
+            event (evid) identifiers in database meeting subset condition
+        '''
+
+        evids = []
+        self.logger.info('Getting evids matching subset: %s' % subset)
+        try:
+            view = self.db.lookup(table='origin')
+            if subset is not None:
+                try:
+                    view = view.subset(subset)
+                except datascope.DbsubsetError as ex:
+                    self.logger.error('While applying subset: ' + subset)
+                    self.logger.error(repr(ex))
+            evids = [record.getv('evid')[0]
+                     for record in view.iter_record()]
+        except (datascope.DblookupDatabaseError,
+                datascope.DblookupTableError,
+                datascope.DblookupFieldError,
+                datascope.DblookupRecordError) as ex:
+            self.logger.error('While looking up table: origin')
+            self.logger.error(repr(ex))
+
+        if len(evids) == 0:
+            self.logger.error('No events found.')
+        else:
+            self.logger.info('%d events found.' % len(evids))
+
+        return sorted(list(set(evids)))
+
+    def get_event(self, evid=None):
+        '''
+        Get data from all tables for specified event.
+        '''
+        self.clean()
+        self.evid = evid
+        self._get_event()
+
+        if len(self.events.values()) == 1 and self['event.evid'] == evid:
+            self.logger.debug('Found evid [%d]' % evid)
+        else:
+            self.logger.warning('%d events found matching evid [%d]'
+                                % (len(self.events.values()), self.evid))
+            self.valid = False
+
+        self._get_origins()
+
+        # verify that we have a preferred origin
+        if not self.origins.exists(self['event.prefor']):
+            self.logger.warning(
+                'Missing orid [%s] for evid [%s], cannot set as preferred'
+                % (self['event.prefor'], self.evid))
+            origins = self.origins.values(sort_by='origin.lddate',
+                                          reverse=True)
+            if len(origins) > 0:
+                preferred_orid = origins[0]['origin.orid']
+                self['event.prefor'] = preferred_orid
+                self.logger.warning(
+                    'Set oldest orid [%s] as preferred for evid [%s]'
+                    % (preferred_orid, self.evid))
+            else:
+                self.logger.warning(
+                    'No origin for evid [%s], canot set preferred' % self.evid)
+
+        self._get_arrivals()
+        self._get_detections()
+        self._get_stamag()
+        self._get_netmag()
+        self._get_fplane()
+        self._get_mts()
+        self._get_comments()
 
     def all_origins(self, orid=None, sort_by='origin.lddate', reverse=False):
         '''Get all origins, optionally filtered by orid.'''
@@ -171,58 +288,12 @@ class DatabaseReader(object):
                                    sort_by=sort_by,
                                    reverse=reverse)
 
-    def get_evids(self, subset=None):
+    def _get_event(self):
         '''
-        Returns list of events by evid.
-
-        An optional subset can be specified to return a subset of of events
-        by time, location, evid or orid.
-
-        Parameters
-        ----------
-        subset: str
-            see "man dbexpressions" for syntax
-
-        Returns
-        -------
-        list of integers
-            event (evid) identifiers in database meeting subset condition
+        Open event table and get all data for current event.
         '''
-
-        evids = []
-        self.logger.info('Getting evids matching subset: %s' % subset)
-        try:
-            view = self.db.lookup(table='origin')
-            if subset is not None:
-                try:
-                    view = view.subset(subset)
-                except datascope.DbsubsetError as ex:
-                    self.logger.error('While applying subset: ' + subset)
-                    self.logger.error(repr(ex))
-            evids = [record.getv('evid')[0]
-                     for record in view.iter_record()]
-        except (datascope.DblookupDatabaseError,
-                datascope.DblookupTableError,
-                datascope.DblookupFieldError,
-                datascope.DblookupRecordError) as ex:
-            self.logger.error('While looking up table: origin')
-            self.logger.error(repr(ex))
-
-        if len(evids) == 0:
-            self.logger.error('No events found.')
-        else:
-            self.logger.info('%d events found.' % len(evids))
-
-        return sorted(list(set(evids)))
-
-    def get_event(self, evid=None):
-        '''
-        Get data from all tables for one event.
-        '''
-        self.clean()
-
-        self.evid = evid
-
+        if not self.table_present['event']:
+            return
         self.logger.debug('Constructing event view for evid [%d]' % self.evid)
 
         steps = ['dbopen event']
@@ -232,60 +303,15 @@ class DatabaseReader(object):
         steps += ['dbsubset auth !~ /%s/' % auth
                   for auth in self.event_auth_reject]
 
-        self.logger.debug('Processing: ' + ', '.join(steps))
-
-        try:
-            with datascope.freeing(self.db.process(steps)) as dbview:
-                if not dbview.record_count:
-                    self.logger.warning('No event found')
-                    return
-                if dbview.record_count > 1:
-                    self.logger.warning(
-                        '%d events found matching evid [%d]'
-                        % (len(dbview.record_count), self.evid))
-                else:
-                    self.logger.debug('Found evid [%d]' % self.evid)
-
-                dbview.record = datascope.dbNULL
-                nulls = get_all_fields(dbview)
-
-                for row in dbview.iter_record():
-                    self.event_data = get_all_fields(row, nulls)
-                    self.valid = True
-        except datascope.DbprocessError as ex:
-            self.logger.error(repr(ex))
-
-        self._get_origins()
-
-        # Verify that we have the prefor in origin list...
-        if not self.origins.exists(self.event_data['event.prefor']):
-            self.logger.warning(
-                'Missing orid [%s] for evid [%s], cannot set as preferred'
-                % (self.event_data['event.prefor'], self.evid))
-            origins = self.origins.values(sort_by='origin.lddate',
-                                          reverse=True)
-            if len(origins) > 0:
-                preferred_orid = origins[0]['origin.orid']
-                self.event_data['event.prefor'] = preferred_orid
-                self.logger.warning(
-                    'Set oldest orid [%s] as preferred for evid [%s]'
-                    % (preferred_orid, self.evid))
-            else:
-                self.logger.warning(
-                    'No origin for evid [%s], canot set preferred' % self.evid)
-
-        self._get_arrivals()
-        self._get_detections()
-        self._get_stamag()
-        self._get_netmag()
-        self._get_fplane()
-        self._get_mts()
-        self._get_comments()
+        self.events.get_view(steps, key='event.evid')
+        self.valid = True
 
     def _get_origins(self):
         '''
-        Open origin table and get all associated orids for the evid.
+        Open origin and origin error tables and get all data for current event.
         '''
+        if not self.table_present['origin']:
+            return
         self.logger.debug('Constructing origin view for evid [%d]' % self.evid)
 
         steps = ['dbopen origin']
@@ -294,36 +320,51 @@ class DatabaseReader(object):
                   for auth in self.origin_auth_select]
         steps += ['dbsubset auth !~ /%s/' % auth
                   for auth in self.origin_auth_reject]
-        steps += ['dbjoin -o origerr']
+        if self.table_present['origerr']:
+            steps += ['dbjoin -o origerr']
 
         self.origins.get_view(steps, key='origin.orid')
 
+    def _seed_channel_steps(self):
+        '''
+        Returns antelope.dbprocess steps for joining tables with sta and chan
+        to snetsta and schanloc to obtain full SEED channel specifications.
+        '''
+        steps = []
+        if (self.table_present['snetsta'] and
+                self.table_present['schanloc']):
+            steps += ['dbjoin -o snetsta']
+            steps += ['dbjoin -o schanloc sta chan']
+        return steps
+
     def _get_arrivals(self):
         '''
-        Open assoc and arrival databases and get all data for current evid.
-        Save the origin parameters in memory.
+        Open assoc and arrival tables and get all data for current event.
         '''
+        if not (self.table_present['assoc'] and self.table_present['arrival']):
+            return
+
         for orid in self.origins.keys():
             self.logger.debug('Constructing arrival view for orid [%d]' % orid)
 
             steps = ['dbopen assoc']
             steps += ['dbsubset orid==%d' % orid]
             steps += ['dbjoin arrival']
-            steps += ['dbjoin -o snetsta']
-            steps += ['dbjoin -o schanloc sta chan']
             steps += ['dbsubset auth =~ /%s/' % auth
                       for auth in self.arrival_auth_select]
             steps += ['dbsubset auth !~ /%s/' % auth
                       for auth in self.arrival_auth_reject]
+            steps += self._seed_channel_steps()
 
             self.arrivals.get_view(steps, key='arrival.arid')
 
     def _get_detections(self):
         '''
-        Open detection table and get all data for a particular ORID.
-        Save the origin parameters in memory.
+        Open detection table and get all data for current event.
+
+        TODO: Deal with mopping up of detections not associated with events
         '''
-        if not simple_table_present('detection', self.db):
+        if not self.table_present['detection']:
             return
 
         start = int(stock.now())
@@ -357,12 +398,11 @@ class DatabaseReader(object):
                                  stock.epoch2str(end, '%G %T')[:-4]))
             steps = ['dbopen detection']
             steps += ['dbsubset time > %s && time < %s' % (start, end)]
-            steps += ['dbjoin -o snetsta']
-            steps += ['dbjoin -o schanloc sta chan']
             steps += ['dbsubset state =~ /%s/' % state
                       for state in self.detection_state_select]
             steps += ['dbsubset state !~ /%s/' % state
                       for state in self.detection_state_reject]
+            steps += self._seed_channel_steps()
 
             self.detections.get_view(steps)
 
@@ -373,12 +413,12 @@ class DatabaseReader(object):
 
     def _get_stamag(self):
         '''
-        Open stamag table and get all rows for the orid.
+        Open station magnitude table and get all data for current event.
 
-        Arrival table is joined so that result is useful for both amplitudes
-        and station magnitudes.
+        Arrival and wfmeas tables are joined so that result is useful for both
+        amplitudes and station magnitudes.
         '''
-        if not simple_table_present('stamag', self.db):
+        if not self.table_present['stamag']:
             return
 
         for orid in self.origins.keys():
@@ -391,16 +431,17 @@ class DatabaseReader(object):
             steps += ['dbsubset auth !~ /%s/' % auth
                       for auth in self.netmag_auth_reject]
             steps += ['dbjoin arrival']
-            steps += ['dbjoin -o snetsta']
-            steps += ['dbjoin -o schanloc sta chan']
+            steps += self._seed_channel_steps()
+            if self.table_present['wfmeas']:
+                steps += ['dbjoin -o wfmeas']
 
             self.stamags.get_view(steps)
 
     def _get_netmag(self):
         '''
-        Open netmag table and get all rows for the orid.
+        Open network magnitude table and get all data for current event.
         '''
-        if not simple_table_present('netmag', self.db):
+        if not self.table_present['netmag']:
             return
 
         for orid in self.origins.keys():
@@ -420,9 +461,9 @@ class DatabaseReader(object):
 
     def _get_fplane(self):
         '''
-        Open fplane table and get all rows for the orid.
+        Open focal plane table and get all data for current event.
         '''
-        if not simple_table_present('fplane', self.db):
+        if not self.table_present['fplane']:
             return
 
         for orid in self.origins.keys():
@@ -439,9 +480,9 @@ class DatabaseReader(object):
 
     def _get_mts(self):
         '''
-        Open moment tensors table and get all rows for the orid.
+        Open moment tensor table and get all data for current event.
         '''
-        if not simple_table_present('mt', self.db):
+        if not self.table_present['mt']:
             return
 
         for orid in self.origins.keys():
@@ -459,17 +500,17 @@ class DatabaseReader(object):
 
     def _get_comments(self):
         '''
-        Open remark table and get all commids associated with this event.
+        Open remark table and get all data for current event.
         '''
-        if not simple_table_present('remark', self.db):
+        if not self.table_present['remark']:
             return
 
         self.logger.debug('Getting remarks for evid [%d]' % self.evid)
 
         # compose a list of all comment ids related to this event
         commids = []
-        if 'event.commid' in self.event_data:
-            commids += [self.event_data['event.commid']]
+        if 'event.commid' in self:
+            commids += [self['event.commid']]
 
         document_lists = [
             self.all_origins(), self.all_arrivals(), self.all_arrivals(),

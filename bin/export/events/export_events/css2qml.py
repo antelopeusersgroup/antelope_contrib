@@ -173,6 +173,8 @@ class Css2Qml(object):
         Generate dictionary of QuakeML elements given a list of evids.
         '''
         self.logger.debug('Dumping CSS3.0 to QuakeML')
+        if not isinstance(evids, list):
+            evids = [evids]
         if len(evids) <= 7:
             self.logger.info('%d evids: %s' % (len(evids), evids))
         else:
@@ -765,14 +767,19 @@ class Css2Qml(object):
             ('methodID', method),
             ('period', _value_dict(record['arrival.per'])),
             ('snr', record['arrival.snr']),
-            ('timeWindow', OrderedDict([
-                ('begin', 0),
-                ('end', 0),
-                ('reference', self._utc_datetime(record['arrival.time'])),
-                ])),
             ('waveformID', self._waveform_id(record, 'stamag')),
             ('magnitudeHint', record['stamag.phase']),
             ])
+
+        if 'wfmeas.tmeas' in record:
+            qml_dict['timeWindow'] = OrderedDict([
+                ('begin', record['wfmeas.tmeas'] - record['wfmeas.time']),
+                ('end', record['wfmeas.endtime'] - record['wfmeas.tmeas']),
+                ('reference', self._utc_datetime(record['wfmeas.tmeas'])),
+                ])
+            qml_dict['filterID'] = record['wfmeas.filter']
+            qml_dict['comment'] = OrderedDict([
+                ('text', record['wfmeas.meastype'])])
 
         if record['arrival.amp']:
             qml_dict['genericAmplitude'] = _value_dict(record['arrival.amp'] *

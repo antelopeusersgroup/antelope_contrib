@@ -11,6 +11,7 @@ reyes@ucsd.edu
 """
 # pylint: disable=logging-not-lazy
 from __future__ import print_function
+from past.builtins import basestring
 
 import json
 import logging
@@ -21,7 +22,7 @@ except ImportError as ex:
     print('Do you have Antelope installed correctly?')
     print(ex)
 
-from export_events.functions import verify_table, get_all_fields
+from export_events.functions import table_present, get_all_fields
 
 
 class Document(object):
@@ -33,16 +34,19 @@ class Document(object):
     JSON format.
     """
 
-    def __init__(self, data):
+    def __init__(self, data=None):
 
         self.data = data
 
     def __str__(self):
         return "\n%s" % json.dumps(self.data)
 
-    def __getitem__(self, name):
-        if name in self.data.keys():
-            return self.data[name]
+    def __contains__(self, key):
+        return key in self.data.keys()
+
+    def __getitem__(self, key):
+        if key in self:
+            return self.data[key]
         else:
             return None
 
@@ -55,21 +59,24 @@ class Collection(Document):
     def __init__(self, database=None, dbpointer=None, table=None):
         '''
         Either a database descriptor or a database pointer must be provided.
-        Optionally the name of a table to be verified present can be provided.
+
+        Note
+        ----
+        Checking for existence of tables is done when view is constructed.
+        The table property is effectively purely a label.
         '''
+        super(Collection, self).__init__()
+        self.logger = logging.getLogger('.'.join([self.__class__.__module__,
+                                                  self.__class__.__name__]))
 
-        super(Collection, self).__init__('')
+        assert (isinstance(database, basestring) or
+                isinstance(dbpointer, datascope.Dbptr))
+        if not isinstance(dbpointer, datascope.Dbptr):
+            dbpointer = datascope.dbopen(database)
 
-        module_class = '.'.join([self.__class__.__module__,
-                                 self.__class__.__name__])
-        self.logger = logging.getLogger(module_class)
         self.documents = {}
-
-        self.database = database    # database name
-        self.db = dbpointer         # database pointer
-        self.table = table         # database table name
-
-        self.db = verify_table(self.table, self.database, self.db)
+        self.db = dbpointer
+        self.table = table
 
     def clean(self):
         '''Clear out document data.'''
@@ -109,17 +116,24 @@ class Collection(Document):
         """
         Extract data for each row and all atributes in database view.
         """
-
-        self.logger.debug('Processing: ' + ', '.join(steps))
-
-        if not self.db:
-            self.logger.warning('Table does not exist: %s' % self.table)
-            return
+        for step in steps:
+            if 'dbopen' in step or 'dbjoin' in step:
+                table = next(item for item in step.split()
+                             if item not in ['dbopen', 'dbjoin', '-o'])
+                if not table_present(self.db, table):
+                    self.logger.error('Table does not exist: %s' % table)
+                    return
 
         try:
             with datascope.freeing(self.db.process(steps)) as dbview:
 
-                # Get NULL values
+                if not dbview.record_count:
+                    self.logger.warning('Process returned empty view: ' +
+                                        ', '.join(steps))
+                    return
+                else:
+                    self.logger.debug('Processing: ' + ', '.join(steps))
+
                 dbview.record = datascope.dbNULL
                 nulls = get_all_fields(dbview)
 
@@ -131,7 +145,9 @@ class Collection(Document):
                         self.documents[data[key]] = Document(data)
                     else:
                         self.documents[len(self.documents)] = Document(data)
+
         except datascope.DbprocessErorr as ex:
+            self.logger.error('Processing: ' + ', '.join(steps))
             self.logger.error(repr(ex))
 
 if __name__ == "__main__":
