@@ -36,7 +36,7 @@ class DatabaseReader(object):
     inside the object.
     '''
     def __init__(self, database,
-                 magnitude_type_subset='.*',
+                 magnitude_type_subset=('.*',),
                  event_auth_select=(), event_auth_reject=(),
                  origin_auth_select=(), origin_auth_reject=(),
                  arrival_auth_select=(), arrival_auth_reject=(),
@@ -49,8 +49,6 @@ class DatabaseReader(object):
                                                   self.__class__.__name__]))
         self.logger.debug('Initializing')
 
-        if isinstance(magnitude_type_subset, str):
-            magnitude_type_subset = [magnitude_type_subset]
         # configure filters
         self.magnitude_type_subset = magnitude_type_subset
         self.event_auth_select = event_auth_select
