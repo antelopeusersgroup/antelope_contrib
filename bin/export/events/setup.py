@@ -8,7 +8,7 @@ import os
 import re
 from setuptools import setup, find_packages
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 
 def convert_xpy_to_py(xpy_file_name):

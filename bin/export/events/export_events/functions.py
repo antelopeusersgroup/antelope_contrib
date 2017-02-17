@@ -24,9 +24,11 @@ def table_present(dbpointer, table):
 
     Errors are logged on exceptions; otherwise silent.
     '''
-    assert isinstance(dbpointer, datascope.Dbptr)
-    assert isinstance(table, basestring)
     logger = logging.getLogger(__name__)
+    if not isinstance(dbpointer, datascope.Dbptr):
+        return False
+    if not isinstance(table, basestring):
+        return False
 
     try:
         view = dbpointer.lookup(table=table)
@@ -53,7 +55,7 @@ def is_null(value, null_value):
     try:
         if int(float(value)) == int(float(null_value)):
             return True
-    except ValueError:
+    except (ValueError, TypeError):
         # try string equality
         return str(value) == str(null_value)
 
@@ -63,20 +65,38 @@ def get_all_fields(dbpointer, nulls=None):
     At a given database pointer to a particular record query for valid
     table fields and pull all values. Return a dictionary with the values.
     '''
+    logger = logging.getLogger(__name__)
     results = {}
 
-    if not dbpointer or not dbpointer.query(datascope.dbTABLE_PRESENT):
+    assert isinstance(dbpointer, datascope.Dbptr)
+    if not dbpointer.query(datascope.dbTABLE_PRESENT):
+        logger.warning('Table not present, returning nothing.')
         return results
 
     for index in range(dbpointer.query(datascope.dbFIELD_COUNT)):
 
         dbpointer.field = index
 
-        table = dbpointer.query(datascope.dbFIELD_BASE_TABLE)
-        field = dbpointer.query(datascope.dbFIELD_NAME)
+        try:
+            table = dbpointer.query(datascope.dbFIELD_BASE_TABLE)
+            field = dbpointer.query(datascope.dbFIELD_NAME)
+        except datascope.DbqueryError as ex:
+            logger.debug('Problem querying field index %d, skipping.', index)
+            logger.error(repr(ex))
+            continue
 
         table_field = "%s.%s" % (table, field)
-        value = dbpointer.getv(table_field)[0]
+        fields_without_nulls = ['wfmeas.val1', 'wfmeas.val2']
+        if table_field in fields_without_nulls and nulls is None:
+            value = None
+        else:
+            try:
+                value = dbpointer.getv(table_field)[0]
+            except datascope.DbgetvError as ex:
+                logger.debug('Problem getting %s for %s, setting to None'
+                             % ('null' if nulls is None else 'value',
+                                table_field))
+                value = None
 
         if nulls is not None and table_field in nulls:
             if is_null(value, nulls[table_field]):

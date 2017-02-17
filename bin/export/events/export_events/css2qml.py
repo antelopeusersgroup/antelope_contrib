@@ -3,10 +3,16 @@ This module defines a class, css2qml, which can be used to convert CSS3.0
 (as extended by Antelope) to the QuakeML schema.
 '''
 from __future__ import print_function
+from builtins import chr
+from past.builtins import xrange
+
 import os
 import re
+import sys
+import unicodedata
 import logging
 from collections import OrderedDict
+from math import floor, log10
 
 from export_events.functions import (
     km2m, get_ne_on_ellipse, m2deg_lat, m2deg_lon)
@@ -53,7 +59,7 @@ DEFAULT_ETYPE_EVENT_TYPE_MAP = OrderedDict([
     ('[knsu]u', 'not reported'),
     ('qb', 'quarry blast'),
     ('eq', 'earthquake'),
-    ('me', 'meteorite'),
+    ('me', 'rock burst'),  # 'mining event' is more likely than 'meteorite'
     ('ex', 'explosion'),
     ('o', 'other event'),
     ('l', 'earthquake'),
@@ -73,8 +79,12 @@ AKA_KEYWORDS = ['known as', 'connu']
 NAMESPACES = ['BED', 'BED-RT']
 
 
+def _dict(key, value):
+    return OrderedDict([(key, value)])
+
+
 def _value_dict(value):
-    return OrderedDict([('value', value)])
+    return _dict('value', value)
 
 
 def _optional_update(dictionary, key, value):
@@ -85,6 +95,16 @@ def _optional_update(dictionary, key, value):
     if isinstance(value, OrderedDict) and len(value) == 0:
         return
     dictionary[key] = value
+
+
+all_chars = (chr(i) for i in xrange(sys.maxunicode))
+control_chars = ''.join(c for c in all_chars
+                        if unicodedata.category(c)[0] == 'C')
+non_printable_regex = re.compile('[%s]' % re.escape(control_chars))
+
+
+def remove_control_chars(string):
+    return non_printable_regex.sub('', string)
 
 
 # pylint:disable=logging-not-lazy
@@ -188,6 +208,8 @@ class Css2Qml(object):
                 'Namespace %s not in [%s], falling back to %s.'
                 % (namespace, ', '.join(NAMESPACES), NAMESPACES[0]))
             namespace = NAMESPACES[0]
+        if len(evids) == 0:
+            return {}
 
         if namespace == 'BED-RT':
             namespace = self.qml_bedrt_ns
@@ -213,10 +235,15 @@ class Css2Qml(object):
             if self.add_mt or self.add_fplane:
                 event_parameters_dict['focalMechanism'] = []
 
-        for i, evid in enumerate(evids):
+        info_increment = max(10**floor(log10(max(len(evids), 1)) - 0.5), 1)
+        for i, evid in enumerate(evids, start=1):
 
-            self.logger.info('Dumping evid %d of %d [%d]'
-                             % (i + 1, len(evids), evid))
+            if i % info_increment == 0 or i == len(evids):
+                self.logger.info('Dumping evid %d of %d [%d]'
+                                 % (i, len(evids), evid))
+            else:
+                self.logger.debug('Dumping evid %d of %d [%d]'
+                                  % (i, len(evids), evid))
             event_dict = self.new_event(evid)
 
             if self.add_origin:
@@ -338,18 +365,16 @@ class Css2Qml(object):
                 ('creationTime', self._utc_datetime()),
                 ('author', __name__),
                 ('agencyID', self.agency_id.lower()),
-                # ('agencyURI', self._uri()),
-                # ('version', stock.now()),
                 ]))
             ])
 
-        if self.info_comment:
+        if self.info_comment is not None:
             event_parameters_dict['comment'] = OrderedDict([
                 ('text', self.info_comment),
                 ])
 
-        if self.info_description:
-            event_parameters_dict['description'] = self.info_description
+        _optional_update(event_parameters_dict, 'description',
+                         self.info_description)
 
         return event_parameters_dict
 
@@ -662,8 +687,8 @@ class Css2Qml(object):
         _optional_update(qml_dict['depth'], 'uncertainty',
                          km2m(record['origerr.sdepth']))
         _optional_update(qml_dict, 'originUncertainty', uncertainty)
-        _optional_update(qml_dict, 'comment',
-                         self._comment_list(record['origin.commid']))
+        if record['origin.commid'] is not None:
+            qml_dict['comment'] = self._comment_list(record['origin.commid'])
 
         qml_dict['creationInfo'] = self._creation_info(record, 'origin',
                                                        agency, author)
@@ -698,10 +723,10 @@ class Css2Qml(object):
 
         _optional_update(qml_dict['mag'], 'uncertainty',
                          record['netmag.uncertainty']),
-        _optional_update(qml_dict, 'methodID', method),
+        _optional_update(qml_dict, 'methodID',  record['netmag.auth']),
         _optional_update(qml_dict, 'stationCount', record['netmag.nsta']),
-        _optional_update(qml_dict, 'comment',
-                         self._comment_list(record['netmag.commid']))
+        if record['netmag.commid'] is not None:
+            qml_dict['comment'] = self._comment_list(record['netmag.commid'])
 
         qml_dict['creationInfo'] = self._creation_info(record, 'netmag',
                                                        agency, author)
@@ -725,71 +750,111 @@ class Css2Qml(object):
                                      record['stamag.sta'])),
             ('waveformID', self._waveform_id(record, 'stamag')),
             ])
-
-        agency, author, _, method, _ = self.split_auth(record['stamag.auth'])
-        _optional_update(qml_dict, 'methodID', method),
         _optional_update(qml_dict['mag'], 'uncertainty',
                          record['stamag.uncertainty'])
 
-        _optional_update(qml_dict, 'comment',
-                         self._comment_list(record['netmag.commid']))
-        qml_dict['creationInfo'] = self._creation_info(record, 'stamag',
-                                                       agency, author)
+        _optional_update(qml_dict, 'methodID', record['stamag.auth'] or
+                         record['arrival.auth'] or record['wfmeas.auth']),
+
+        if record['stamag.commid'] is not None:
+            qml_dict['comment'] = self._comment_list(record['stamag.commid'])
+        qml_dict['creationInfo'] = self._creation_info(record, 'stamag')
 
         return qml_dict
 
     def _convert_amplitudes(self, record):
         '''
-        Convert CSS3.0 stamag & arrival view record to QuakeML amplitude
-        dictionary.
+        Convert CSS3.0 stamag & arrival & wfmeas view record to QuakeML
+        amplitude dictionary.
         '''
         self.logger.debug('Converting stamag.arid [%d]'
                           % record['stamag.arid'])
 
-        amplitude = record['arrival.amp']
+        # look first in wfmeas.val1 for amplitude
+        amplitude = record['wfmeas.val1']
         if amplitude is not None:
-            amplitude *= 1e9
+            unit = record['wfmeas.units1']
 
-        if record['stamag.phase'].upper() == 'ML':
-            unit = 'm'
+            if unit in ['m', 's', 'm/s', 'm/(s*s)', 'm*s', 'dimensionless',
+                        None]:
+                pass
+            elif unit == 'mmwa':
+                amplitude = amplitude*1e-3
+                unit = 'm'
+            elif unit == 'nmwa':
+                amplitude = amplitude*1e-9
+                unit = 'm'
+            elif unit == 'nm/s':
+                amplitude = amplitude*1e-9
+                unit = 'm/s'
+            else:
+                self.logger.warn('Unit "%s" for arid [%d] not recognized'
+                                 % (unit, record['wfmeas.arid']))
+
+            if record['arrival.amp'] is not None:
+                self.logger.debug(
+                    'Found wfmeas.val1 (%g %s), discarding arrival.amp (%g nm)'
+                    % (amplitude, unit, record['arrival.amp']))
         else:
-            unit = 'm/s'
+            amplitude = record['arrival.amp']
+            if amplitude is not None:
+                amplitude *= 1e9
+                unit = 'm'
+            else:
+                unit = None
 
-        agency, author, _, method, _ = self.split_auth(
-            record['stamag.auth'])
+        # look first in wfmeas.val2 for period
+        if (record['wfmeas.val2'] is not None and
+                record['wfmeas.val2'] != 0 and
+                record['wfmeas.units2'] == 's'):
+            period = record['wfmeas.val1']
+            if record['arrival.per'] is not None:
+                self.logger.debug(
+                    'Found wfmeas.val2 (%g s), discarding arrival.per (%g s)'
+                    % (period, record['arrival.per']))
+        else:
+            period = record['arrival.per']
+            if (record['wfmeas.val2'] is not None and
+                    record['wfmeas.val2'] != 0):
+                self.logger.debug(
+                    'Discarding wfmeas.val2 (%g s)'
+                    % (record['wfmeas.val2'], record['wfmeas.units2'] or ''))
 
         qml_dict = OrderedDict([
             ('@publicID', self._id('amplitude', record['stamag.arid'],
                                    record['stamag.sta'])),
-            ('amplitude', _value_dict(amplitude)),
+            ('genericAmplitude', _value_dict(amplitude)),
             ('type', 'A' + record['stamag.phase'].upper()),
             ('unit', unit),
-            ('methodID', method),
-            ('period', _value_dict(record['arrival.per'])),
+            ('methodID', record['wfmeas.auth'] or record['stamag.auth']),
+            ('period', _value_dict(period)),
             ('snr', record['arrival.snr']),
-            ('waveformID', self._waveform_id(record, 'stamag')),
-            ('magnitudeHint', record['stamag.phase']),
             ])
 
-        if 'wfmeas.tmeas' in record:
+        reference = record['wfmeas.tmeas']
+        if reference is not None:
+            begin = record['wfmeas.tmeas']
+            end = record['wfmeas.endtime']
+            if begin is None:
+                begin = reference
+            if end is None:
+                end = reference
+
             qml_dict['timeWindow'] = OrderedDict([
-                ('begin', record['wfmeas.tmeas'] - record['wfmeas.time']),
-                ('end', record['wfmeas.endtime'] - record['wfmeas.tmeas']),
-                ('reference', self._utc_datetime(record['wfmeas.tmeas'])),
+                ('begin', reference - begin),
+                ('end', end - reference),
+                ('reference', self._utc_datetime(reference)),
                 ])
-            qml_dict['filterID'] = record['wfmeas.filter']
-            qml_dict['comment'] = OrderedDict([
-                ('text', record['wfmeas.meastype'])])
 
-        if record['arrival.amp']:
-            qml_dict['genericAmplitude'] = _value_dict(record['arrival.amp'] *
-                                                       1e9)
+        qml_dict['waveformID'] = self._waveform_id(record, 'stamag')
+        _optional_update(qml_dict, 'filterID', record['wfmeas.filter'])
+        _optional_update(qml_dict, 'magnitudeHint', record['stamag.phase'])
+        qml_dict['evaluationMode'] = 'automatic'
+        if record['wfmeas.meastype']:
+            qml_dict['comment'] = _dict(
+                    'text', 'wfmeas.meastype: ' + record['wfmeas.meastype'])
 
-        _optional_update(qml_dict, 'comment',
-                         self._comment_list(record['arrival.commid']))
-
-        qml_dict['creationInfo'] = self._creation_info(record, 'arrival',
-                                                       agency, author)
+        qml_dict['creationInfo'] = self._creation_info(record, 'arrival')
 
         return qml_dict
 
@@ -896,11 +961,11 @@ class Css2Qml(object):
             ('distance', record['assoc.delta']),
             ('timeResidual', record['assoc.timeres']),
             ('timeWeight', weight),
-            ('earthModelID', self._id('vmodel', record['assoc.vmodel'])),
             ])
 
-        _optional_update(qml_dict, 'comment',
-                         self._comment_list(record['assoc.commid']))
+        _optional_update(qml_dict, 'earthModelID', record['assoc.vmodel'])
+        if record['assoc.commid'] is not None:
+            qml_dict['comment'] = self._comment_list(record['assoc.commid'])
 
         qml_dict['creationInfo'] = self._creation_info(record, 'assoc')
 
@@ -1000,6 +1065,16 @@ class Css2Qml(object):
 
         return qml_dict
 
+    def _printable(self, string):
+        '''Remove characters which can't be decoded as unicode.'''
+        string_replace = string.decode('UTF-8', errors='replace')
+        self.logger.info('Remark: ' + string_replace)
+
+        string_ignore = string.decode('UTF-8', errors='ignore')
+        if string_ignore != string_replace:
+            self.logger.warning('Stripping unencodable characters from remark')
+        return string_ignore
+
     def _event_description_comment_lists(self):
         '''
         Construct lists of comments and descriptions from event remarks.
@@ -1017,22 +1092,22 @@ class Css2Qml(object):
                     [FELT_KEYWORDS, AKA_KEYWORDS],
                     ['felt report', 'earthquake name']):
 
-                if any([keyword in record['remark.remark']
+                if any([keyword.lower() in record['remark.remark'].lower()
                         for keyword in keywords]):
                     self.logger.debug(
                         'Converting remark commid [%d] lineno [%d] '
                         'to event description'
                         % (record['remark.commid'], record['remark.lineno']))
 
-                    description_list += OrderedDict([
-                        ('text', record['remark.remark']),
+                    description_list += [OrderedDict([
+                        ('text', self._printable(record['remark.remark'])),
                         ('type', description_type),
-                        ])
+                        ])]
                     is_description = True
                     continue
 
             if not is_description:
-                comment_list += self._convert_comment(record)
+                comment_list += [self._convert_comment(record)]
 
         return description_list, comment_list
 
@@ -1055,12 +1130,13 @@ class Css2Qml(object):
         Return QuakeML comment dictionary given a dictionary of
         CSS key/values corresponding a row of the remark table.
         '''
+
         self.logger.debug(
             'Converting remark commid [%d] lineno [%d] to comment'
             % (record['remark.commid'], record['remark.lineno']))
         qml_dict = OrderedDict([
             ('@publicID', self._id('internal', record['remark.lineno'])),
-            ('text', record['remark.remark']),
+            ('text', self._printable(record['remark.remark'])),
             ('creationInfo', self._creation_info(record, 'remark')),
             ])
 

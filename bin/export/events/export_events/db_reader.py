@@ -67,11 +67,20 @@ class DatabaseReader(object):
         self.fplane_auth_reject = fplane_auth_reject
 
         self.database = database  # descriptor
-        dirname, basename = os.path.split(self.database)
-        self.logger.info('Descriptor path: %s' % dirname)
-        self.logger.info('Descriptor file: %s' % basename)
+        if not os.path.exists(self.database):
+            self.logger.error('Database descriptor does not exist: ' +
+                             database)
+        else:
+            dirname, basename = os.path.split(self.database)
+            self.logger.info('Descriptor path: %s' % dirname)
+            self.logger.info('Descriptor file: %s' % basename)
 
-        self.db = datascope.dbopen(database)
+        try:
+            self.db = datascope.dbopen(database)
+        except datascope.DbopenError as ex:
+            self.logger.error(repr(ex))
+            self.db = None
+
         self.table_present = OrderedDict([
             (table, table_present(self.db, table))
             for table in ['event', 'origin', 'origerr', 'assoc', 'arrival',
@@ -278,9 +287,11 @@ class DatabaseReader(object):
                                sort_by=sort_by,
                                reverse=reverse)
 
-    def all_comments(self, commid=None,
-                     sort_by='remark.lineno', reverse=False):
+    def all_comments(self, commid=None, sort_by=('remark.commid',
+                                                 'remark.lineno'),
+                     reverse=False):
         '''Get all remarks, filtered by commid, and sorted by lineno.'''
+        # TODO: rename all_remarks
 
         return self.remarks.values(subset_dict={'remark.commid': commid},
                                    sort_by=sort_by,
@@ -296,9 +307,9 @@ class DatabaseReader(object):
 
         steps = ['dbopen event']
         steps += ['dbsubset evid==%d' % self.evid]
-        steps += ['dbsubset auth =~ /%s/' % auth
+        steps += ['dbsubset auth=~/%s/' % auth
                   for auth in self.event_auth_select]
-        steps += ['dbsubset auth !~ /%s/' % auth
+        steps += ['dbsubset auth!~/%s/' % auth
                   for auth in self.event_auth_reject]
 
         self.events.get_view(steps, key='event.evid')
@@ -314,9 +325,9 @@ class DatabaseReader(object):
 
         steps = ['dbopen origin']
         steps += ['dbsubset evid==%d' % self.evid]
-        steps += ['dbsubset auth =~ /%s/' % auth
+        steps += ['dbsubset auth=~/%s/' % auth
                   for auth in self.origin_auth_select]
-        steps += ['dbsubset auth !~ /%s/' % auth
+        steps += ['dbsubset auth!~/%s/' % auth
                   for auth in self.origin_auth_reject]
         if self.table_present['origerr']:
             steps += ['dbjoin -o origerr']
@@ -348,9 +359,9 @@ class DatabaseReader(object):
             steps = ['dbopen assoc']
             steps += ['dbsubset orid==%d' % orid]
             steps += ['dbjoin arrival']
-            steps += ['dbsubset auth =~ /%s/' % auth
+            steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.arrival_auth_select]
-            steps += ['dbsubset auth !~ /%s/' % auth
+            steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.arrival_auth_reject]
             steps += self._seed_channel_steps()
 
@@ -395,10 +406,10 @@ class DatabaseReader(object):
                               % (stock.epoch2str(start, '%G %T')[:-4],
                                  stock.epoch2str(end, '%G %T')[:-4]))
             steps = ['dbopen detection']
-            steps += ['dbsubset time > %s && time < %s' % (start, end)]
-            steps += ['dbsubset state =~ /%s/' % state
+            steps += ['dbsubset time>%s && time<%s' % (start, end)]
+            steps += ['dbsubset state=~/%s/' % state
                       for state in self.detection_state_select]
-            steps += ['dbsubset state !~ /%s/' % state
+            steps += ['dbsubset state!~/%s/' % state
                       for state in self.detection_state_reject]
             steps += self._seed_channel_steps()
 
@@ -423,10 +434,10 @@ class DatabaseReader(object):
             self.logger.debug('Constructing stamag view for orid [%d]' % orid)
 
             steps = ['dbopen stamag']
-            steps += ['dbsubset orid == %d' % orid]
-            steps += ['dbsubset auth =~ /%s/' % auth
+            steps += ['dbsubset orid==%d' % orid]
+            steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.netmag_auth_select]
-            steps += ['dbsubset auth !~ /%s/' % auth
+            steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.netmag_auth_reject]
             steps += ['dbjoin arrival']
             steps += self._seed_channel_steps()
@@ -446,13 +457,13 @@ class DatabaseReader(object):
             self.logger.debug('Constructing netmag view for orid [%d]' % orid)
 
             steps = ['dbopen netmag']
-            steps += ['dbsubset orid == %d' % orid]
-            steps += ['dbsubset magtype =~ /%s/' % x
+            steps += ['dbsubset orid==%d' % orid]
+            steps += ['dbsubset magtype=~/%s/' % x
                       for x in self.magnitude_type_subset
                       if self.magnitude_type_subset]
-            steps += ['dbsubset auth =~ /%s/' % auth
+            steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.netmag_auth_select]
-            steps += ['dbsubset auth !~ /%s/' % auth
+            steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.netmag_auth_reject]
 
             self.magnitudes.get_view(steps, key='netmag.magid')
@@ -468,10 +479,10 @@ class DatabaseReader(object):
             self.logger.debug('Constructing fplane view for orid [%d]' % orid)
 
             steps = ['dbopen fplane']
-            steps += ['dbsubset orid == %d' % orid]
-            steps += ['dbsubset auth =~ /%s/' % auth
+            steps += ['dbsubset orid==%d' % orid]
+            steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.fplane_auth_select]
-            steps += ['dbsubset auth !~ /%s/' % auth
+            steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.fplane_auth_reject]
 
             self.fplanes.get_view(steps, key='fplane.mechid')
@@ -488,10 +499,10 @@ class DatabaseReader(object):
                               % orid)
 
             steps = ['dbopen mt']
-            steps += ['dbsubset orid == %d' % orid]
-            steps += ['dbsubset auth =~ /%s/' % auth
+            steps += ['dbsubset orid==%d' % orid]
+            steps += ['dbsubset auth=~/%s/' % auth
                       for auth in self.mt_auth_select]
-            steps += ['dbsubset auth !~ /%s/' % auth
+            steps += ['dbsubset auth!~/%s/' % auth
                       for auth in self.mt_auth_reject]
 
             self.mts.get_view(steps, key='mt.mtid')
@@ -522,13 +533,15 @@ class DatabaseReader(object):
 
         if len(commids) == 0:
             return
+        self.logger.debug('Associating commids %s with evid [%d]'
+                          % (commids, self.evid))
 
         # construct an appropriate view of the remark table
         steps = ['dbopen remark']
         steps += ['dbsubset %s' % '||'.join(['commid==%d' % commid
                                              for commid in commids])]
 
-        self.remarks.get_view(steps, key='remark.commid')
+        self.remarks.get_view(steps)
 
 if __name__ == '__main__':
     raise ImportError("\n\n\tAntelope's qml module. Do not run directly! **\n")

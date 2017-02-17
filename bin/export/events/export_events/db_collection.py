@@ -13,6 +13,7 @@ reyes@ucsd.edu
 from __future__ import print_function
 from past.builtins import basestring
 
+from operator import itemgetter
 import json
 import logging
 
@@ -27,7 +28,7 @@ from export_events.functions import table_present, get_all_fields
 
 class Document(object):
     """
-    Class for creating rows storage objects.
+    Storage class for a single row of an Antelope database view.
 
     Store all information of a single row from a
     datascope view. Similar to a NoSQL document in
@@ -51,9 +52,9 @@ class Document(object):
             return None
 
 
-class Collection(Document):
+class Collection(object):
     """
-    Class for maintaining a Datascope view in memory.
+    Storage class for an Antelope database view.
     """
 
     def __init__(self, database=None, dbpointer=None, table=None):
@@ -65,13 +66,11 @@ class Collection(Document):
         Checking for existence of tables is done when view is constructed.
         The table property is effectively purely a label.
         '''
-        super(Collection, self).__init__()
         self.logger = logging.getLogger('.'.join([self.__class__.__module__,
                                                   self.__class__.__name__]))
 
-        assert (isinstance(database, basestring) or
-                isinstance(dbpointer, datascope.Dbptr))
-        if not isinstance(dbpointer, datascope.Dbptr):
+        if (not isinstance(dbpointer, datascope.Dbptr) and
+                isinstance(database, basestring)):
             dbpointer = datascope.dbopen(database)
 
         self.documents = {}
@@ -100,15 +99,19 @@ class Collection(Document):
         '''
         Return values, optionally sorted and/or subsetted.
         '''
+        if isinstance(sort_by, str):
+            sort_by = [sort_by]
+
         data = self.documents.values()
+
         if subset_dict is not None:
             for key, value in subset_dict.items():
                 if value is None:
                     continue
                 data = [item for item in data if item[key] == value]
+
         if sort_by is not None:
-            return sorted(data, key=lambda item: item[sort_by],
-                          reverse=reverse)
+            return sorted(data, key=itemgetter(*sort_by), reverse=reverse)
         else:
             return data
 
@@ -127,9 +130,9 @@ class Collection(Document):
         try:
             with datascope.freeing(self.db.process(steps)) as dbview:
 
-                if not dbview.record_count:
-                    self.logger.warning('Process returned empty view: ' +
-                                        ', '.join(steps))
+                if dbview.record_count == 0:
+                    self.logger.debug('Process returned empty view: ' +
+                                      ', '.join(steps))
                     return
                 else:
                     self.logger.debug('Processing: ' + ', '.join(steps))
@@ -141,12 +144,12 @@ class Collection(Document):
 
                     data = get_all_fields(row, nulls)
 
-                    if key:
+                    if key is not None:
                         self.documents[data[key]] = Document(data)
                     else:
                         self.documents[len(self.documents)] = Document(data)
 
-        except datascope.DbprocessErorr as ex:
+        except datascope.DbprocessError as ex:
             self.logger.error('Processing: ' + ', '.join(steps))
             self.logger.error(repr(ex))
 
