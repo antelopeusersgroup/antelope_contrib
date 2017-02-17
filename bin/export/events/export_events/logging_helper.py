@@ -1,26 +1,14 @@
-#   Copyright (c) 2016 Boulder Real Time Technologies, Inc.
-#
-#   Written by Juan Reyes
-#
-#   This software may be used freely in any way as long as
-#   the copyright statement above is not removed.
-
-
-
-# Try to make a generic logging setup for dbmoment.
+# Try to make a generic logging setup.
 # This function will return an object
 # of the logging class. If none available with
 # requested name then it will configure one for
 # you.
 
-# Import like this...
-
-#       from dbmoment.logging import getLogger
-
-# Then create a new object like this...
+# Create a new object like this...
 
 #       option 1) logging = getLogger()
 #       option 2) logging = getLogger(self.__class__.__name__)
+#       option 3) logging = getLogger('name')
 
 # You can then log strings to console using any of the
 # provided methods.
@@ -40,7 +28,14 @@
 #   logging.debug(obj)
 #   logging.debug('test')
 
-from __main__ import *      # Get all the libraries from parent
+#from __main__ import *      # Get all the libraries from parent
+
+#
+import os
+import sys
+import inspect
+import logging
+
 
 
 def getLogger(name='', loglevel=False):
@@ -61,28 +56,12 @@ def getLogger(name='', loglevel=False):
         return logging.getLogger(name)
 
     newlogger = logging.getLogger(name)
-    newlogger.propagate = False
 
     if not len(newlogger.handlers):
         # We need new logger
-
-        # Maybe we want to log to a file
-        if LOG_FILENAME:
-
-
-            if int(LOG_MAX_COUNT):
-                count = int(LOG_MAX_COUNT)
-            else:
-                count = 5
-            handler = logging.handlers.RotatingFileHandler( LOG_FILENAME, backupCount=count)
-
-            # Check if log exists and should therefore be rolled
-            if os.path.isfile(LOG_FILENAME): handler.doRollover()
-
-        else:
-            handler = logging.StreamHandler()
-
+        handler = logging.StreamHandler()
         formatter = logging.Formatter( '%(asctime)s %(name)s[%(levelname)s]: %(message)s')
+
         handler.setFormatter(formatter)
         newlogger.addHandler(handler)
 
@@ -93,7 +72,6 @@ def getLogger(name='', loglevel=False):
             newlogger.setLevel( logging.getLogger(main).getEffectiveLevel() )
         else:
             newlogger.setLevel( logging.getLevelName( loglevel ) )
-
 
         def niceprint(msg):
             try:
@@ -111,7 +89,7 @@ def getLogger(name='', loglevel=False):
             self.log(40, niceprint(message), *args, **kws)
             self.log(40, '***')
             self.log(40, '***')
-            sys.exit( niceprint(message) )
+            sys.exit( '\nExit from dbmoment with errors.\n' )
 
         def newnotify(self, message, *args, **kws):
             self.log(35, niceprint(message), *args, **kws)
@@ -131,7 +109,7 @@ def getLogger(name='', loglevel=False):
             self.log(50, niceprint(message), *args, **kws)
             self.log(50, '***')
             self.log(50, '***')
-            sys.exit( niceprint(message) )
+            sys.exit( '\nExit from dbmoment with errors.\n' )
 
         logging.Logger.critical = newcritical
         logging.Logger.error = newerror
@@ -144,4 +122,5 @@ def getLogger(name='', loglevel=False):
     return newlogger
 
 
-if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's dbmoment module. Not to run directly!!!! **\n" )
+
+if __name__ == "__main__": raise ImportError( "\n\n\tAntelope's qml module. Not to run directly!!!! **\n" )

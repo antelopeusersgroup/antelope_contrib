@@ -89,7 +89,7 @@ class DbMoment(Station):
         if options.min_fit: self.min_variance = int( options.min_fit )
 
         # stations
-        self.chan_to_use = safe_pf_get(self.pf, 'chan_to_use','BH.*')
+        self.chan_to_use = safe_pf_get(self.pf, 'chan_to_use',['.*'])
         self.sta_max = int(float(safe_pf_get(self.pf, 'sta_max', 25)))
         self.sta_min = int(float(safe_pf_get(self.pf, 'sta_min', 3)))
 

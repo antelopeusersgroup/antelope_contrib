@@ -179,6 +179,7 @@ class Origin():
         self.logging.debug('Get netmag for orid %s' % self.orid )
 
         magnitude = None
+        magtype = None
         steps = ['dbopen netmag']
         steps.extend([ 'dbsubset orid == %s' % self.orid ])
         steps.extend(['dbsort lddate'])

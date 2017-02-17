@@ -203,7 +203,6 @@ def cleanup_db(db,match):
     logging.debug( 'dbTABLE_PRESENT => %s' % db.query(datascope.dbTABLE_PRESENT) )
     logging.debug( 'dbTABLE_IS_WRITABLE => %s' % db.query(datascope.dbTABLE_IS_WRITABLE) )
 
-    need_crunch = False
     if db.query(datascope.dbTABLE_PRESENT):
         while db.record_count:
 
@@ -217,12 +216,6 @@ def cleanup_db(db,match):
             db.record = record
             db.mark()
             logging.debug('%s marked' % record)
-            need_crunch = True
-
-        if need_crunch:
-            logging.debug('db.crunch()' )
-            db.crunch()
-
 
 
 class fkrprogException(Exception):
@@ -680,6 +673,7 @@ def find_executables( execs ):
 def plot_results( id, stations, results, event, folder='./',
                        acknowledgement='dbmoment'):
 
+    from __main__ import logging
 
     total = 1
 

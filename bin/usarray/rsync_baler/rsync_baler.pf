@@ -4,7 +4,7 @@ local_data_dir          /anf/TA/baler/work/ #local directory for archive
 
 download_timeout        300                 # in seconds
 
-http_port               5381                #port for http connections
+http_port_offset        49                  #port for http connections 5381. For rt 5332
 
 max_procs               35                  #number of simultaneous processes
 
