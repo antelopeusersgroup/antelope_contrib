@@ -3,13 +3,9 @@ This module defines a class, css2qml, which can be used to convert CSS3.0
 (as extended by Antelope) to the QuakeML schema.
 '''
 from __future__ import print_function
-from builtins import chr
-from past.builtins import xrange
 
 import os
 import re
-import sys
-import unicodedata
 import logging
 from collections import OrderedDict
 from math import floor, log10
@@ -97,22 +93,12 @@ def _optional_update(dictionary, key, value):
     dictionary[key] = value
 
 
-all_chars = (chr(i) for i in xrange(sys.maxunicode))
-control_chars = ''.join(c for c in all_chars
-                        if unicodedata.category(c)[0] == 'C')
-non_printable_regex = re.compile('[%s]' % re.escape(control_chars))
-
-
-def remove_control_chars(string):
-    return non_printable_regex.sub('', string)
-
-
 # pylint:disable=logging-not-lazy
 class Css2Qml(object):
     '''
     Converter from CSS3.0 to QuakeML schemas.
     '''
-    def __init__(self, event,
+    def __init__(self, reader,
                  reviewed_flags=('y*', 'r*', 'pre*', 'fin*'),
                  automatic_authors=('oa*', 'orbassoc'),
                  auth_magnitude_strip=('mb', 'ml', 'mn', 'mw', 'mwb',
@@ -179,14 +165,49 @@ class Css2Qml(object):
         self.extend_anss_catalog = extend_anss_catalog
 
         # database reader
-        self.event = event
+        self.reader = reader
 
         # initialize result
         self.qml_events = []
         self.detection_id_counter = 0
+        self.newest_lddate = 0
 
     def _time_dict(self, value):
         return _value_dict(self._utc_datetime(value))
+
+    def _creation_info(self, record, table, agency=None, author=None):
+        '''
+        Construct a valid QuakeML creationInfo dictionary given a record from a
+        view, and the table from which that view was constructed.
+        '''
+        table_lddate = '%s.lddate' % table
+        time = record[table_lddate]
+        if time > self.newest_lddate:
+            self.newest_lddate = time
+
+        qml_dict = OrderedDict()
+        if agency is not None:
+            qml_dict['agencyID'] = agency
+        if author is not None:
+            qml_dict['author'] = author
+        qml_dict['creationTime'] = self._utc_datetime(time)
+
+        return qml_dict
+
+    def _waveform_id(self, record, table):
+        '''
+        Construct a valid QuakeML waveformID dictionary given a record from a
+        view, and the table from which that view was constructed.
+        '''
+        table_sta = '%s.sta' % table
+        table_chan = '%s.chan' % table
+        qml_dict = OrderedDict([
+            ('@networkCode', record['snetsta.snet'] or self.default_network),
+            ('@stationCode', record['snetsta.fsta'] or record[table_sta]),
+            ('@locationCode', record['schanloc.loc'] or ''),
+            ('@channelCode', record['schanloc.fchan'] or record[table_chan]),
+            ])
+        return qml_dict
 
     def dump(self, evids, namespace='BED'):
         '''
@@ -249,15 +270,15 @@ class Css2Qml(object):
             if self.add_origin:
 
                 # set perferred origin
-                if self.event['event.prefor']:
-                    prefor_id = self._id('origin', self.event['event.prefor'])
+                if self.reader['event.prefor']:
+                    prefor_id = self._id('origin', self.reader['event.prefor'])
                     event_dict['preferredOriginID'] = prefor_id
                     if namespace == self.qml_bedrt_ns:
                         event_dict['originReferece'] = prefor_id
 
                 converted_origins = [
                     self._convert_origin(item)
-                    for item in self.event.all_origins()]
+                    for item in self.reader.all_origins()]
 
                 if namespace == self.qml_bed_ns:
                     event_dict['origin'] = converted_origins
@@ -268,13 +289,13 @@ class Css2Qml(object):
             if self.add_arrival:
                 converted_picks += \
                     [self._convert_pick(item)
-                     for item in self.event.all_arrivals()]
+                     for item in self.reader.all_arrivals()]
             if self.add_detection:
                 # TODO: if we can only count on getting all detections
                 # in "RT" schema, then perhaps we only write them then
                 converted_picks += \
                     [self._convert_detection(item)
-                     for item in self.event.all_detections()]
+                     for item in self.reader.all_detections()]
 
             if namespace == self.qml_bed_ns:
                 event_dict['pick'] = converted_picks
@@ -285,7 +306,7 @@ class Css2Qml(object):
 
                 converted_mags = [
                     self._convert_magnitudes(item)
-                    for item in self.event.all_magnitudes()]
+                    for item in self.reader.all_magnitudes()]
 
                 # set perferred magnitude
                 if len(converted_mags) > 0:
@@ -306,10 +327,10 @@ class Css2Qml(object):
             if self.add_stamag:
                 converted_stamags = [
                     self._convert_stamags(item)
-                    for item in self.event.all_station_magnitudes()]
+                    for item in self.reader.all_station_magnitudes()]
                 converted_amplitudes = [
                     self._convert_amplitudes(item)
-                    for item in self.event.all_station_magnitudes()]
+                    for item in self.reader.all_station_magnitudes()]
 
                 if namespace == self.qml_bed_ns:
                     event_dict['stationMagnitude'] = converted_stamags
@@ -322,14 +343,14 @@ class Css2Qml(object):
             if self.add_mt:
                 moment_tensors = [
                     self._convert_mt(item)
-                    for item in self.event.all_mts()]
+                    for item in self.reader.all_mts()]
             else:
                 moment_tensors = []
 
             if self.add_fplane:
                 fplanes = [
                     self._convert_fplane(item)
-                    for item in self.event.all_fplanes()]
+                    for item in self.reader.all_fplanes()]
             else:
                 fplanes = []
 
@@ -342,6 +363,10 @@ class Css2Qml(object):
                         moment_tensors + fplanes
 
             self.qml_events.append(event_dict)
+
+        record = {'catalog.lddate': self.newest_lddate}
+        event_parameters_dict['creationInfo'] = self._creation_info(
+            record, 'catalog',  self.agency_id, __name__)
 
         return OrderedDict([
             ('q:quakeml', OrderedDict([
@@ -359,15 +384,8 @@ class Css2Qml(object):
 
         This class serves as a container for Event objects.
         '''
-        event_parameters_dict = OrderedDict([
-            ('@publicID', self.event.database),
-            ('creationInfo', OrderedDict([
-                ('creationTime', self._utc_datetime()),
-                ('author', __name__),
-                ('agencyID', self.agency_id.lower()),
-                ]))
-            ])
-
+        event_parameters_dict = OrderedDict()
+        event_parameters_dict['@publicID'] = self.reader.database
         if self.info_comment is not None:
             event_parameters_dict['comment'] = OrderedDict([
                 ('text', self.info_comment),
@@ -386,47 +404,56 @@ class Css2Qml(object):
         When a null event is imported into a database, and a matching
         resource id is found, the intention is for that event to be deleted.
         '''
-        # start by constructing null event
-        qml_dict = OrderedDict([
-            ('@publicID', self._id('event', evid)),
-            ('type', 'not existing'),
-            ('certainty', None),
-            ('creationInfo', OrderedDict([
-                ('creationTime', self._utc_datetime()),
-                ('author', self.catalog_author),
-                ('agencyID', self.agency_id.lower()),
-                ]))
-            ])
 
-        self.event.get_event(evid)
-        if self.event and self.event.evid == evid and self.event.valid:
+        self.reader.get_event(evid)
+        if self.reader and self.reader.evid == evid and self.reader.valid:
 
             self.logger.debug('Converting event.evid [%d]'
-                              % self.event['event.evid'])
-            agency, author, _, _, _ = self.split_auth(self.event['event.auth'])
-            if self.extend_anss_catalog:
-                qml_dict.update(self._catalog_info(
-                    evid, auth=self.event['event.auth'], event=True))
-
-            # infer event type and certainty from preferred origin
-            # TODO: add evaluation status and mode?
-            record = self.event.all_origins(orid=self.event['event.prefor'])[0]
-            etype = record['origin.etype']
-
-            qml_dict['@publicID'] = self._id('event', self.event['event.evid'])
-            qml_dict['type'] = self.get_event_type(etype)
-            qml_dict['certainty'] = self.get_event_certainty(etype)
-            qml_dict['creationInfo'] = self._creation_info(
-                record, 'event', agency, author)
-
+                              % self.reader['event.evid'])
+            agency, author, _, _, _ = self.split_auth(
+                self.reader['event.auth'])
             description_list, comment_list = \
                 self._event_description_comment_lists()
-            _optional_update(qml_dict, 'comment', comment_list)
+
+            # infer event type and certainty from preferred origin
+            record = self.reader.all_origins(
+                orid=self.reader['event.prefor'])[0]
+            etype = record['origin.etype']
+
+            qml_dict = OrderedDict([
+                ('@publicID', self._id('event', self.reader['event.evid'])),
+                ('type', self.get_event_type(etype)),
+                ('certainty', self.get_event_certainty(etype)),
+                ])
             _optional_update(qml_dict, 'description', description_list)
+            _optional_update(qml_dict, 'comment', comment_list)
+            # TODO: add evaluation status and mode? How?
+            try:
+                qml_dict['creationInfo'] = self._creation_info(
+                    self.reader.events.values()[0].data, 'event',
+                    agency, author)
+            except TypeError as ex:
+                print(record)
+                raise ex
+
+            if self.extend_anss_catalog:
+                qml_dict.update(self._catalog_info(
+                    evid, auth=self.reader['event.auth'], event=True))
 
         else:
             self.logger.warning('Evid [%s] not available, adding null event.'
                                 % evid)
+
+            qml_dict = OrderedDict([
+                ('@publicID', self._id('event', self.reader['event.evid'])),
+                ('type', 'not existing'),
+                ('certainty', None),
+                ('creationInfo', OrderedDict([
+                    ('creationTime', self._utc_datetime(stock.now())),
+                    ('author', self.catalog_author),
+                    ('agencyID', self.agency_id.lower()),
+                    ]))
+                ])
 
         return qml_dict
 
@@ -588,37 +615,6 @@ class Css2Qml(object):
         else:
             return 'automatic', 'preliminary'
 
-    def _creation_info(self, record, table, agency=None, author=None):
-        '''
-        Construct a valid QuakeML creationInfo dictionary given a record from a
-        view, and the table from which that view was constructed.
-        '''
-        table_lddate = '%s.lddate' % table
-
-        qml_dict = OrderedDict()
-        if agency is not None:
-            qml_dict['agencyID'] = agency
-        if author is not None:
-            qml_dict['author'] = author
-        qml_dict['creationTime'] = self._utc_datetime(record[table_lddate])
-
-        return qml_dict
-
-    def _waveform_id(self, record, table):
-        '''
-        Construct a valid QuakeML waveformID dictionary given a record from a
-        view, and the table from which that view was constructed.
-        '''
-        table_sta = '%s.sta' % table
-        table_chan = '%s.chan' % table
-        qml_dict = OrderedDict([
-            ('@networkCode', record['snetsta.snet'] or self.default_network),
-            ('@stationCode', record['snetsta.fsta'] or record[table_sta]),
-            ('@locationCode', record['schanloc.loc'] or ''),
-            ('@channelCode', record['schanloc.fchan'] or record[table_chan]),
-            ])
-        return qml_dict
-
     def _convert_origin(self, record):
         '''
         Return a dict of QuakeML origin from a dict of CSS key/values
@@ -695,7 +691,7 @@ class Css2Qml(object):
 
         if self.add_arrival:
             qml_dict['arrival'] = [self._convert_arrival(item)
-                                   for item in self.event.all_arrivals(
+                                   for item in self.reader.all_arrivals(
                                        orid=record['origin.orid'])]
 
         if self.extend_anss_catalog:
@@ -1082,7 +1078,7 @@ class Css2Qml(object):
         This is one of the few functions here which may be unique to the
         Geological Survey of Canada - at least the bilingual keywords are.
         '''
-        records = self.event.all_comments(commid=self.event['event.commid'])
+        records = self.reader.all_comments(commid=self.reader['event.commid'])
 
         description_list = []
         comment_list = []
@@ -1116,7 +1112,7 @@ class Css2Qml(object):
         Construct a QuakeML dictionary of comments from the view of all
         comments associated with this event, given a comment id.
         '''
-        comment_records = self.event.all_comments(commid=commid)
+        comment_records = self.reader.all_comments(commid=commid)
 
         comment_list = []
         if len(comment_records) > 0:
@@ -1218,9 +1214,6 @@ class Css2Qml(object):
 
         The representation is according to ISO 8601.
         '''
-        if timestamp is None:
-            timestamp = stock.now()
-
         return stock.epoch2str(timestamp, '%Y-%m-%dT%H:%M:%S.%sZ', tz='UTC')
 
     def _uri(self, auth=None):
